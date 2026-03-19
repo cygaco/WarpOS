@@ -37,11 +37,12 @@ bb3fe31 Fix DM panel sizing and ProfileEditor z-index clipping
 - Encrypted client storage (AES-GCM)
 - Two-phase AI pipeline (MARKET_PREP → MARKET)
 - Pipeline tracing
-- Claude Code hooks (format, typecheck, lint, secret-guard, session-start)
+- Claude Code hooks (8): format, typecheck, lint, secret-guard, session-start, session-stop, prompt-logger, compact-saver
 - 11 slash commands (skills)
+- Automatic session handoff (Stop → SessionStart chain)
+- Concurrency-safe WarpOS sync protocol
 
 ## Known Issues
 
 - BD returns annual salaries for contract roles (no hourly rate data)
 - Component filenames don't match step numbers (off-by-2 from old architecture)
-- CLAUDE.md has redundancy between root and project copies

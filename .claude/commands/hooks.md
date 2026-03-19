@@ -7,7 +7,7 @@ Develop Claude Code hooks for this project. Hooks are lifecycle scripts that run
 
 ## Context
 
-Hook config lives in `.claude/settings.json` under the `hooks` key. Hook scripts live in `.claude/hooks/`. Hooks receive JSON on stdin with `session_id`, `cwd`, `hook_event_name`, `tool_name`, `tool_input`, `tool_use_id`.
+Hook config lives in `.claude/settings.json` under the `hooks` key. Hook scripts live in `scripts/hooks/`. Hooks receive JSON on stdin with `session_id`, `cwd`, `hook_event_name`, `tool_name`, `tool_input`, `tool_use_id`.
 
 Exit codes: 0 = success, 2 = blocking error (stderr shown to Claude), other = non-blocking warning.
 
@@ -20,7 +20,7 @@ Matchers: case-sensitive, pipe-delimited (e.g. `Edit|Write`). Match against tool
 ### `/hooks` (no args) — Audit
 
 1. Read `.claude/settings.json` and list all active hooks
-2. Read each hook script in `.claude/hooks/` and summarize what it does
+2. Read each hook script in `scripts/hooks/` and summarize what it does
 3. Check for issues: missing scripts, wrong paths, slow hooks (anything doing full-project scans)
 4. Report a table:
 
@@ -43,7 +43,7 @@ Matchers: case-sensitive, pipe-delimited (e.g. `Edit|Write`). Match against tool
    - Which event (PreToolUse, PostToolUse, etc.)
    - Which matcher (Bash, Edit|Write, etc.)
    - What the script should do
-2. Write the hook script to `.claude/hooks/`
+2. Write the hook script to `scripts/hooks/`
 3. Update `.claude/settings.json` to wire it in
 4. Test it by triggering the relevant tool
 
@@ -63,7 +63,7 @@ Matchers: case-sensitive, pipe-delimited (e.g. `Edit|Write`). Match against tool
 
 ### `/hooks sync` — Copy hooks to WarpOS
 
-1. Copy all `.claude/hooks/` scripts to `../WarpOS/.claude/hooks/`
+1. Copy all `scripts/hooks/` scripts to `../WarpOS/scripts/hooks/`
 2. Merge hook config from `.claude/settings.json` into `../WarpOS/.claude/settings.json`
 3. Commit and push WarpOS with a descriptive message
 4. Report what was synced

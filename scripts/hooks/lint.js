@@ -2,25 +2,29 @@
 // PostToolUse hook: runs ESLint on the changed file after Edit/Write.
 // Catches lint issues at edit time. Non-blocking (exit 0) — warnings only.
 
-const { execSync } = require('child_process');
+const { execSync } = require("child_process");
 
-let input = '';
-process.stdin.on('data', chunk => input += chunk);
-process.stdin.on('end', () => {
+let input = "";
+process.stdin.on("data", (chunk) => (input += chunk));
+process.stdin.on("end", () => {
   try {
     const event = JSON.parse(input);
-    const filePath = event.tool_input?.file_path || event.tool_input?.content?.file_path;
+    const filePath =
+      event.tool_input?.file_path || event.tool_input?.content?.file_path;
 
     // Only lint JS/TS files
     if (!filePath || !/\.(ts|tsx|js|jsx)$/.test(filePath)) {
       process.exit(0);
     }
 
-    const result = execSync(`npx next lint --file "${filePath}" --no-cache 2>&1`, {
-      cwd: event.cwd,
-      stdio: ['pipe', 'pipe', 'pipe'],
-      timeout: 15000,
-    });
+    const result = execSync(
+      `npx next lint --file "${filePath}" --no-cache 2>&1`,
+      {
+        cwd: event.cwd,
+        stdio: ["pipe", "pipe", "pipe"],
+        timeout: 15000,
+      },
+    );
 
     const output = result.toString().trim();
     // If there are warnings, show them but don't block

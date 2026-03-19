@@ -2,14 +2,15 @@
 // PostToolUse hook: runs tsc --noEmit on the changed file after Edit/Write
 // Catches type errors at edit time, not build time.
 
-const { execSync } = require('child_process');
+const { execSync } = require("child_process");
 
-let input = '';
-process.stdin.on('data', chunk => input += chunk);
-process.stdin.on('end', () => {
+let input = "";
+process.stdin.on("data", (chunk) => (input += chunk));
+process.stdin.on("end", () => {
   try {
     const event = JSON.parse(input);
-    const filePath = event.tool_input?.file_path || event.tool_input?.content?.file_path;
+    const filePath =
+      event.tool_input?.file_path || event.tool_input?.content?.file_path;
 
     // Only check .ts/.tsx files
     if (!filePath || !/\.(ts|tsx)$/.test(filePath)) {
@@ -19,8 +20,8 @@ process.stdin.on('end', () => {
     // Run tsc on just this file using the project's tsconfig
     execSync(`npx tsc --noEmit --pretty "${filePath}"`, {
       cwd: event.cwd,
-      stdio: ['pipe', 'pipe', 'pipe'],
-      timeout: 15000
+      stdio: ["pipe", "pipe", "pipe"],
+      timeout: 15000,
     });
 
     // Clean exit = no type errors

@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/hooks/secret-guard.js"
+            "command": "node scripts/hooks/secret-guard.js"
           }
         ]
       }
@@ -17,15 +17,35 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/hooks/format.js"
+            "command": "node scripts/hooks/format.js"
           },
           {
             "type": "command",
-            "command": "node .claude/hooks/typecheck.js"
+            "command": "node scripts/hooks/typecheck.js"
           },
           {
             "type": "command",
-            "command": "node .claude/hooks/lint.js"
+            "command": "node scripts/hooks/lint.js"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node scripts/hooks/prompt-logger.js"
+          }
+        ]
+      }
+    ],
+    "PostCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node scripts/hooks/compact-saver.js"
           }
         ]
       }
@@ -35,7 +55,17 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/hooks/session-start.js"
+            "command": "node scripts/hooks/session-start.js"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node scripts/hooks/session-stop.js"
           }
         ]
       }
