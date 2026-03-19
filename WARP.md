@@ -8,6 +8,7 @@
 Warp is not a product. It is the machine that builds products.
 
 Six layers:
+
 1. **Shared infrastructure** — auth, database, billing, APIs shared across all products
 2. **Automation layer** — workflow automations that eliminate repetitive human effort
 3. **AI orchestration** — prompt systems, agent pipelines, Claude integrations
@@ -17,22 +18,24 @@ Six layers:
 
 ## Current Stack
 
-| Layer | Tool | Notes |
-|-------|------|-------|
-| Frontend | Next.js 16 + React 19 | TypeScript, Turbopack |
-| Backend | Next.js API routes | Serverless, Vercel |
-| Database | Supabase (Postgres) | Per-product schemas in shared instance |
-| AI | Claude API (Anthropic) | Primary model layer, server-side only |
-| Hosting | Vercel | Hobby plan (60s timeout), upgrade path to Pro |
-| Payments | Stripe | Not yet wired |
-| Auth | Supabase Auth | Not yet wired to products |
-| Automation | n8n (planned) | Self-hosted or cloud |
-| Data | Supabase + localStorage (encrypted) | Products use encrypted client storage for now |
+| Layer      | Tool                                | Notes                                         |
+| ---------- | ----------------------------------- | --------------------------------------------- |
+| Frontend   | Next.js 16 + React 19               | TypeScript, Turbopack                         |
+| Backend    | Next.js API routes                  | Serverless, Vercel                            |
+| Database   | Supabase (Postgres)                 | Per-product schemas in shared instance        |
+| AI         | Claude API (Anthropic)              | Primary model layer, server-side only         |
+| Hosting    | Vercel                              | Hobby plan (60s timeout), upgrade path to Pro |
+| Payments   | Stripe                              | Not yet wired                                 |
+| Auth       | Supabase Auth                       | Not yet wired to products                     |
+| Automation | n8n (planned)                       | Self-hosted or cloud                          |
+| Data       | Supabase + localStorage (encrypted) | Products use encrypted client storage for now |
 
 ## Shared Patterns (Validated in Production)
 
 ### Deus Mechanicus — Dev Tools Hub
+
 Product-agnostic dev tools framework. Any product exports a `ProductManifest` and gets:
+
 - Fast-forward bar (jump to any step with test data)
 - QA test runner (server + client suites)
 - Data inspector (live session state)
@@ -43,36 +46,40 @@ Schema: `schemas/deus-mechanicus.ts`
 First implementation: consumer product (`src/lib/deus-mechanicus.ts` + `src/components/DeusMechanicus.tsx`)
 
 ### Warp Profiles — Cross-Product Test Data
+
 Product-agnostic identity + product-specific extensions. A profile created in consumer product can be loaded in any future product.
 
 Schema: `schemas/warp-profile.ts`
 Format: `{ meta, warp (shared identity), consumer-product? (product extension), ... }`
 
 ### Encrypted Client Storage
+
 AES-GCM via Web Crypto API. Key derived per-session. Products store session data in encrypted localStorage — no server-side persistence needed for MVP.
 
 ### Two-Phase AI Pipeline
+
 Pattern: raw data → Phase 1 (structured intelligence report) → Phase 2 (final analysis). Decouples data preparation from decision-making. Enables fallback (skip Phase 1 if it fails).
 
 First implementation: consumer product market analysis (MARKET_PREP → MARKET)
 
 ### Pipeline Tracing
+
 Structured logging at each pipeline stage. Format: `[PIPELINE] STAGE_NAME { data }`. Stages are product-specific but the tracer is generic.
 
 ## Products
 
-| Product | Stage | Stack Delta | Contributes Back |
-|---------|-------|-------------|-----------------|
-| consumer product | Building MVP | Bright Data API, Upstash Redis | Deus Mechanicus, Warp Profiles, encrypted storage, two-phase AI pipeline, pipeline tracing |
+| Product  | Stage        | Stack Delta                    | Contributes Back                                                                                                                       |
+| -------- | ------------ | ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
+| consumer product | Building MVP | Bright Data API, Upstash Redis | Deus Mechanicus, Warp Profiles, encrypted storage, two-phase AI pipeline, pipeline tracing, Claude Code hooks (5), slash commands (11) |
 
 ## AI Orchestration Patterns
 
-| Pattern | Description | Products |
-|---------|-------------|----------|
-| Structured extraction | Parse unstructured input → typed JSON | consumer product (resume parsing) |
-| Two-phase analysis | Raw data → intelligence report → decision output | consumer product (market analysis) |
-| Targeted generation | Profile + context → personalized output | consumer product (resume/LinkedIn gen) |
-| Prompt injection defense | External data wrapped in `<untrusted_*>` tags | consumer product (job descriptions) |
+| Pattern                  | Description                                      | Products                       |
+| ------------------------ | ------------------------------------------------ | ------------------------------ |
+| Structured extraction    | Parse unstructured input → typed JSON            | consumer product (resume parsing)      |
+| Two-phase analysis       | Raw data → intelligence report → decision output | consumer product (market analysis)     |
+| Targeted generation      | Profile + context → personalized output          | consumer product (resume/LinkedIn gen) |
+| Prompt injection defense | External data wrapped in `<untrusted_*>` tags    | consumer product (job descriptions)    |
 
 ## Operating Principles
 
@@ -86,13 +93,15 @@ Structured logging at each pipeline stage. Format: `[PIPELINE] STAGE_NAME { data
 
 ## Decisions Log
 
-| Date | Decision | Chosen | Why |
-|------|----------|--------|-----|
-| 2026-03-18 | Market analysis pipeline | Two-phase (MARKET_PREP → MARKET) | Single-pass produced wrong categories for non-FT roles; decoupling lets each phase focus |
-| 2026-03-19 | Dev tools framework | Product manifest pattern (Deus Mechanicus) | Lets any product get dev tools by exporting a manifest — no per-product UI work |
-| 2026-03-19 | Test data system | Warp Profiles (product-agnostic + extensions) | Test identities should be shared across products, not siloed |
-| 2026-03-19 | Client storage | Encrypted localStorage (AES-GCM) | No server persistence needed for MVP; encryption protects PII at rest |
+| Date       | Decision                 | Chosen                                                                   | Why                                                                                      |
+| ---------- | ------------------------ | ------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------- |
+| 2026-03-18 | Market analysis pipeline | Two-phase (MARKET_PREP → MARKET)                                         | Single-pass produced wrong categories for non-FT roles; decoupling lets each phase focus |
+| 2026-03-19 | Dev tools framework      | Product manifest pattern (Deus Mechanicus)                               | Lets any product get dev tools by exporting a manifest — no per-product UI work          |
+| 2026-03-19 | Test data system         | Warp Profiles (product-agnostic + extensions)                            | Test identities should be shared across products, not siloed                             |
+| 2026-03-19 | Client storage           | Encrypted localStorage (AES-GCM)                                         | No server persistence needed for MVP; encryption protects PII at rest                    |
+| 2026-03-19 | Claude Code hooks        | 5 lifecycle hooks (format, typecheck, lint, secret-guard, session-start) | Catch errors at edit time, not build time; guard secrets structurally                    |
+| 2026-03-19 | Skills system            | 11 slash commands as markdown protocol files                             | Zero tokens when inactive; encode expertise the agent can invoke on demand               |
 
 ---
 
-*Last updated: 2026-03-19*
+_Last updated: 2026-03-19_
