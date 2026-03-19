@@ -1,2 +1,34 @@
-# warp
-Beating heart of the product foundry.
+# WarpOS
+
+The internal operating system of an AI-native venture studio. Every product builds on it. Every product contributes back to it.
+
+## What This Is
+
+WarpOS is the shared context, schemas, patterns, and conventions that all products in the studio inherit. It's not a runtime — it's a knowledge backbone that Claude Code sessions pull from to maintain coherence across products.
+
+## Structure
+
+```
+WarpOS/
+├── WARP.md              — Core backbone overview (the main doc)
+├── CLAUDE.md            — Instructions for Claude Code sessions in this repo
+├── studio/              — Company, principles, playbooks
+├── products/            — Product cards (one per product)
+├── schemas/             — Shared TypeScript interfaces
+├── ai/                  — Claude system prompts, orchestration patterns
+└── .claude/commands/    — Slash commands for syncing
+```
+
+## How Products Use This
+
+Each product repo can pull context from WarpOS:
+1. `WARP.md` is the universal context — attach to Claude Projects or reference in CLAUDE.md
+2. `schemas/` contains canonical interfaces (Warp Profiles, Deus Mechanicus manifests)
+3. `products/[name].md` is the living product card
+4. `ai/SYSTEM_PROMPT.md` is the default Claude Project system prompt
+
+## Products
+
+| Product | Status | What It Does |
+|---------|--------|-------------|
+| [consumer product](products/consumer-product.md) | Building MVP | Job search wizard — resume → market analysis → targeted resumes → auto-apply |
