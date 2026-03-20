@@ -3,6 +3,7 @@
 // Catches type errors at edit time, not build time.
 
 const { execSync } = require("child_process");
+const path = require("path");
 
 let input = "";
 process.stdin.on("data", (chunk) => (input += chunk));
@@ -17,8 +18,10 @@ process.stdin.on("end", () => {
       process.exit(0);
     }
 
-    // Run tsc on just this file using the project's tsconfig
-    execSync(`npx tsc --noEmit --pretty "${filePath}"`, {
+    // Run the project's own tsc to avoid npx resolving the wrong "tsc" package
+    const ext = process.platform === "win32" ? ".cmd" : "";
+    const tscBin = path.join(event.cwd, "node_modules", ".bin", "tsc" + ext);
+    execSync(`"${tscBin}" --noEmit --pretty "${filePath}"`, {
       cwd: event.cwd,
       stdio: ["pipe", "pipe", "pipe"],
       timeout: 15000,

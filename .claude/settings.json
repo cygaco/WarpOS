@@ -30,6 +30,16 @@
         ]
       }
     ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node scripts/hooks/session-start.js"
+          }
+        ]
+      }
+    ],
     "UserPromptSubmit": [
       {
         "hooks": [
@@ -46,16 +56,6 @@
           {
             "type": "command",
             "command": "node scripts/hooks/compact-saver.js"
-          }
-        ]
-      }
-    ],
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node scripts/hooks/session-start.js"
           }
         ]
       }

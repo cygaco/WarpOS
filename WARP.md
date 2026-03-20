@@ -70,7 +70,7 @@ Structured logging at each pipeline stage. Format: `[PIPELINE] STAGE_NAME { data
 
 | Product  | Stage        | Stack Delta                    | Contributes Back                                                                                                                                     |
 | -------- | ------------ | ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| consumer product | Building MVP | Bright Data API, Upstash Redis | Deus Mechanicus, Warp Profiles, encrypted storage, two-phase AI pipeline, pipeline tracing, Claude Code hooks (8), slash commands (11), auto-handoff |
+| consumer product | Building MVP | Bright Data API, Upstash Redis | Deus Mechanicus, Warp Profiles, encrypted storage, two-phase AI pipeline, pipeline tracing, Claude Code hooks (8), slash commands (12), auto-handoff |
 
 ## AI Orchestration Patterns
 
@@ -100,9 +100,9 @@ Structured logging at each pipeline stage. Format: `[PIPELINE] STAGE_NAME { data
 | 2026-03-19 | Test data system         | Warp Profiles (product-agnostic + extensions)                | Test identities should be shared across products, not siloed                             |
 | 2026-03-19 | Client storage           | Encrypted localStorage (AES-GCM)                             | No server persistence needed for MVP; encryption protects PII at rest                    |
 | 2026-03-19 | Claude Code hooks        | 8 lifecycle hooks across 5 events                            | Catch errors at edit time; guard secrets; auto-handoff between sessions                  |
-| 2026-03-19 | Skills system            | 11 slash commands as markdown protocol files                 | Zero tokens when inactive; encode expertise the agent can invoke on demand               |
+| 2026-03-19 | Skills system            | 12 slash commands as markdown protocol files                 | Zero tokens when inactive; encode expertise the agent can invoke on demand               |
 | 2026-03-19 | Auto-handoff             | Stop→SessionStart hook chain + prompt logger + compact saver | Sessions chain automatically — no manual context transfer needed                         |
 
 ---
 
-_Last updated: 2026-03-19_
+_Last updated: 2026-03-19 (sync)_

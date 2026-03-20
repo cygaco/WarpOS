@@ -6,7 +6,7 @@ Job search assistant: resume → targeted resumes, LinkedIn content, form answer
 
 ## Architecture
 
-- **Framework**: Next.js 16.1.6 (Turbopack), React 19, TypeScript
+- **Framework**: Next.js 16.2.0 (Turbopack), React 19, TypeScript
 - **Hosting**: Vercel (Hobby plan — 60s function timeout)
 - **AI**: Claude API via `/api/claude` route (server-side, key never exposed)
 - **Job Data**: Bright Data LinkedIn Jobs Scraper API via `/api/jobs` route
