@@ -68,18 +68,21 @@ Structured logging at each pipeline stage. Format: `[PIPELINE] STAGE_NAME { data
 
 ## Products
 
-| Product  | Stage        | Stack Delta                    | Contributes Back                                                                                                                                     |
-| -------- | ------------ | ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| consumer product | Building MVP | Bright Data API, Upstash Redis | Deus Mechanicus, Warp Profiles, encrypted storage, two-phase AI pipeline, pipeline tracing, Claude Code hooks (8), slash commands (12), auto-handoff |
+| Product  | Stage        | Stack Delta                            | Contributes Back                                                                                                                                                                                                   |
+| -------- | ------------ | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| consumer product | Building MVP | Bright Data API, Upstash Redis, Stripe | Deus Mechanicus, Warp Profiles, encrypted storage, two-phase AI pipeline, pipeline tracing, Claude Code hooks (8), slash commands (13), auto-handoff, progressive disclosure pattern, streaming generation pattern |
 
 ## AI Orchestration Patterns
 
-| Pattern                  | Description                                      | Products                       |
-| ------------------------ | ------------------------------------------------ | ------------------------------ |
-| Structured extraction    | Parse unstructured input → typed JSON            | consumer product (resume parsing)      |
-| Two-phase analysis       | Raw data → intelligence report → decision output | consumer product (market analysis)     |
-| Targeted generation      | Profile + context → personalized output          | consumer product (resume/LinkedIn gen) |
-| Prompt injection defense | External data wrapped in `<untrusted_*>` tags    | consumer product (job descriptions)    |
+| Pattern                  | Description                                       | Products                       |
+| ------------------------ | ------------------------------------------------- | ------------------------------ |
+| Structured extraction    | Parse unstructured input → typed JSON             | consumer product (resume parsing)      |
+| Two-phase analysis       | Raw data → intelligence report → decision output  | consumer product (market analysis)     |
+| Targeted generation      | Profile + context → personalized output           | consumer product (resume/LinkedIn gen) |
+| Prompt injection defense | External data wrapped in `<untrusted_*>` tags     | consumer product (job descriptions)    |
+| Progressive disclosure   | Show N items initially, expand on demand          | consumer product (Deep Dive Q&A)       |
+| Streaming generation     | Show partial results immediately, load rest async | consumer product (resume generation)   |
+| Smart conditional gen    | Skip generation when output would be identical    | consumer product (General resume skip) |
 
 ## Operating Principles
 
@@ -105,4 +108,4 @@ Structured logging at each pipeline stage. Format: `[PIPELINE] STAGE_NAME { data
 
 ---
 
-_Last updated: 2026-03-19 (sync)_
+_Last updated: 2026-03-23 (sync)_
