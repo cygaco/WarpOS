@@ -1,17 +1,17 @@
 # consumer product — Product Status
 
-**Last synced:** 2026-03-23
+**Last synced:** 2026-03-24
 **Branch:** master
-**Latest commit:** ebfeb44
-**Total commits:** 46
+**Latest commit:** 39baea5
+**Total commits:** 63
 
 ## Recent Commits
 
-- `ebfeb44` Security hardening + resume UX overhaul from e2e walkthrough
-- `ede6c90` Audit fixes + onboarding UX polish
-- `909f1c0` Redesign onboarding: resume-first landing, one-question-per-screen, smart defaults
-- `d9f3d54` Merge pull request #2 — editable dummy profile
-- `1dcd09b` Add editable dummy profile with persistent overrides in DM mode
+- `39baea5` Docs knowledge base, CLAUDE.md expansion, Toast refactor, progress fix
+- `d2a5afd` UX polish: competitiveness gains inline, RocketBar layout, resume card animations
+- `8a2bcd6` Security hardening: webhook verification, auth gates, origin checks, input validation
+- `02d31d1` Lens audit fixes: storage validation, orphan cleanup, prompt drift, docs
+- `8fdb13b` Merge search + analysis progress into one seamless 10-step flow
 
 ## Current Step Definitions
 
@@ -31,9 +31,11 @@
 
 ## Key Changes This Sync
 
-- Security hardening: email regex, console log gating, extension manifest, Stripe metadata validation
-- Resume UX overhaul: collapsed cards, copy hero buttons, streaming generation, smart General (skip when master is short)
-- Deep Dive progressive disclosure: show 3 questions, expand for more
-- Skills filter: job titles excluded from recommended keywords (prompt + code)
-- Soft gate bypassed in DM mode for unblocked e2e testing
-- Security audit score: 8.5/10, no critical vulns
+- Full docs/ knowledge base added (canonical, design system, copy system, story standards, architecture)
+- CLAUDE.md expanded with auth, payments, validators, generators, and all API routes
+- Toast component refactored: inline `<style>` → globals.css keyframes
+- Progress percentage fix: hardcoded `11` → `STEP_TOTAL` constant
+- UX polish: competitiveness gains inline, RocketBar layout, resume card animations
+- Security hardening: webhook verification, auth gates, origin checks, input validation
+- Lens audit fixes: storage validation, orphan cleanup, prompt drift
+- Merged search + analysis progress into one seamless 10-step flow
