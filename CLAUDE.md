@@ -1,24 +1,27 @@
 # WarpOS — CLAUDE.md
 
-## What This Repo Is
-WarpOS is the shared knowledge backbone for an AI-native venture studio. It contains the context, schemas, patterns, and conventions that all products inherit. It is NOT a runtime or deployable — it's a reference repo.
+This is a reference repo, not a runtime. Nobody writes features here. Claude Code opens it to read context or sync state back.
 
-## How to Work in This Repo
-- **WARP.md** is the core document. Keep it current — products depend on it.
-- **products/*.md** are living product cards. Update when product state changes.
-- **schemas/*.ts** are canonical interfaces. Changes here propagate to all products.
-- **studio/** contains company context — principles, playbooks, team.
-- **ai/** contains Claude integration patterns and system prompts.
+## Read `WarpOS.md` first
+
+That's the core document — stack, validated patterns, products, decisions log. Everything substantive lives there.
 
 ## Rules
-- Keep docs concise. No filler. Every line should be load-bearing.
+
+- Keep docs concise. Every line should be load-bearing.
 - When updating a product card, include the date.
 - When adding a schema, add a brief doc comment explaining what it's for.
 - Playbooks must be validated (tested in a real product) before being added.
 - Never remove a product card — mark it as "Killed" with a date and reason.
-
-## Conventions
 - Dates: YYYY-MM-DD
 - Product stages: Discovery → Validation → Building MVP → Live → Scaling → Killed
 - Schema files: TypeScript interfaces only, no implementations
-- All Claude prompts use the Tokenizer rules (see `ai/TOKENIZER.md`)
+
+## What does NOT belong in this repo
+
+- System prompts, prompt templates, or instruction files (Notion → Operations → AI Projects)
+- Token/output/clarification rules (Notion → Operations → AI Projects → Shared Rules)
+- Company overview, playbooks, or workflows (Notion → Warp Drive)
+- Anything a human reads in a chat session — that's Notion's job
+
+This repo holds code-adjacent things only: schemas, hooks, commands, patterns, templates, product cards, and WarpOS.md.

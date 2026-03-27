@@ -11,7 +11,7 @@ Multiple products may sync to WarpOS from different sessions. Follow this protoc
 
 1. **Pull before sync** — always `git -C ../WarpOS pull --rebase origin main` before making changes. This ensures you have the latest state from other products.
 2. **Product-scoped files are safe** — anything under `products/{name}/` can't conflict with other products.
-3. **Shared files need care** — `WARP.md`, `.claude/hooks/`, `.claude/commands/`, `schemas/`, `ai/patterns.md` could conflict if two products sync simultaneously.
+3. **Shared files need care** — `WarpOS.md`, `.claude/hooks/`, `.claude/commands/`, `schemas/`, `patterns/` could conflict if two products sync simultaneously.
 4. **On push conflict** — if `git push` fails (another product pushed first), pull-rebase and retry once. If that also fails, create a branch `sync/{product}-{date}` and push there instead, then tell the user to merge manually.
 
 ## Steps
@@ -36,7 +36,7 @@ Multiple products may sync to WarpOS from different sessions. Follow this protoc
    - Current step definitions from constants.ts
    - Updated timestamp
 
-9. **Update WARP.md** — update the product table and any new validated patterns or decisions. When editing WARP.md, only touch your product's row in tables — don't rewrite other products' rows.
+9. **Update WarpOS.md** — update the product table and any new validated patterns or decisions. When editing WarpOS.md, only touch your product's row in tables — don't rewrite other products' rows.
 
 10. **Diff and confirm** — show the user what changed in WarpOS before committing.
 

@@ -15,15 +15,17 @@ Steps:
 2. **Verify repo health** — confirm the remote is `cygaco/WarpOS`, show current branch and latest commit.
 
 3. **Check directory structure** — verify or create the expected WarpOS layout:
+
    ```
    WarpOS/
-   ├── WARP.md              # Cross-product context, validated patterns, decisions
+   ├── WarpOS.md            # Cross-product context, validated patterns, decisions
    ├── products/            # Product cards (one per Warp product)
    │   └── consumer-product.md
    ├── schemas/             # Canonical shared interfaces (DM manifest, Warp profiles)
    └── ai/                  # AI orchestration patterns, prompt templates
        └── patterns.md
    ```
+
    Create any missing directories or placeholder files.
 
 4. **Report** — show the user what's at `../WarpOS/` and confirm `/warp-sync` is ready to use.
