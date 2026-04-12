@@ -11,7 +11,7 @@ process.stdin.on("data", (chunk) => (input += chunk));
 process.stdin.on("end", () => {
   try {
     const event = JSON.parse(input);
-    const cwd = event.cwd;
+    const cwd = process.env.CLAUDE_PROJECT_DIR || event.cwd;
     const claudeDir = path.join(cwd, ".claude");
     const summaryPath = path.join(claudeDir, ".compact-summary.md");
 

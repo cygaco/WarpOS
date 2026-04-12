@@ -1,34 +1,55 @@
 #!/usr/bin/env node
-// UserPromptSubmit hook: logs each user message to .claude/.session-prompts.log
-// The Stop hook reads this log to build a richer handoff with conversation context.
+// UserPromptSubmit hook: logs each user message to centralized events log.
 
-const fs = require("fs");
-const path = require("path");
+const { log } = require("./lib/logger");
 
 let input = "";
 process.stdin.on("data", (chunk) => (input += chunk));
 process.stdin.on("end", () => {
   try {
     const event = JSON.parse(input);
-    const cwd = event.cwd;
-    const claudeDir = path.join(cwd, ".claude");
-    const logPath = path.join(claudeDir, ".session-prompts.log");
+    const rawPrompt = event.prompt || event.tool_input?.prompt || "";
 
-    // Extract the user's message from the hook input
-    // UserPromptSubmit receives: { session_id, cwd, hook_event_name, prompt }
-    const prompt = event.prompt || event.tool_input?.prompt || "";
+    // Strip system XML to extract actual user text
+    const stripped = rawPrompt
+      .replace(/<system-reminder>[\s\S]*?<\/system-reminder>/g, "")
+      .replace(/<task-notification>[\s\S]*?<\/task-notification>/g, "")
+      .replace(/<command-message>[\s\S]*?<\/command-message>/g, "")
+      .replace(/<command-name>[\s\S]*?<\/command-name>/g, "")
+      .replace(/<command-args>[\s\S]*?<\/command-args>/g, "")
+      .replace(/<local-command-caveat>[\s\S]*?<\/local-command-caveat>/g, "")
+      .trim();
 
-    if (!prompt || prompt.trim().length === 0) {
+    if (!stripped || stripped.length === 0) {
       process.exit(0);
       return;
     }
 
-    // Skip slash commands logged as-is (they'll be expanded)
-    // But DO log them — they show intent
-    const timestamp = new Date().toISOString().slice(11, 19);
-    const line = `[${timestamp}] ${prompt.trim().replace(/\n/g, " ").slice(0, 200)}\n`;
+    // Detect plan-related responses
+    const trimmed = stripped.trim();
+    const isPlanResponse =
+      /^(yes|no,|approve|reject|modify|change|instead|looks good|go ahead|do it|approved|rejected|lgtm|proceed|ship it|not yet)/i.test(
+        trimmed,
+      );
+    const isPlanDiscussion =
+      /\b(plan|approach|proposal|changes?|splash radius|your call|phase|mvp|roadmap)\b/i.test(
+        trimmed,
+      );
 
-    fs.appendFileSync(logPath, line);
+    // Log to centralized events log (full raw + stripped summary)
+    log(
+      "prompt",
+      {
+        raw: rawPrompt,
+        stripped: stripped.replace(/\n/g, " ").slice(0, 500),
+        length: rawPrompt.length,
+        is_slash: stripped.startsWith("/"),
+        is_plan_response: isPlanResponse,
+        is_plan_discussion: isPlanDiscussion,
+      },
+      { actor: "user" },
+    );
+
     process.exit(0);
   } catch {
     process.exit(0); // non-blocking

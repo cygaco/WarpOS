@@ -1,0 +1,20 @@
+{
+  "version": "0.1.0",
+  "minCompatible": "0.1.0",
+  "breaking": [],
+  "changelog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-04-12",
+      "changes": [
+        "Initial framework extraction from consumer product",
+        "45+ skills across 18 namespaces",
+        "14 generic hooks with lib modules",
+        "4 Alex agents (alpha, beta, gamma, delta) + 8 general agents",
+        "Agent system protocols (adhoc + oneshot modes)",
+        "CLAUDE.md framework (sections 1-5: identity, reasoning, ops loop, autonomy, memory)",
+        "Plan logging system (plans.jsonl, auto-archive, plan response tagging)"
+      ]
+    }
+  ]
+}

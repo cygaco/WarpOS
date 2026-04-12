@@ -47,6 +47,38 @@ process.stdin.on("end", () => {
         pattern: /eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}/,
         name: "JWT token",
       },
+      {
+        pattern: /ghp_[a-zA-Z0-9_]{36}/,
+        name: "GitHub personal access token",
+      },
+      {
+        pattern: /gho_[a-zA-Z0-9_]{36}/,
+        name: "GitHub OAuth token",
+      },
+      {
+        pattern: /ghu_[a-zA-Z0-9_]{36}/,
+        name: "GitHub user-to-server token",
+      },
+      {
+        pattern: /STRIPE_SECRET_KEY\s*=\s*['"]?sk_/,
+        name: "Stripe secret key assignment",
+      },
+      {
+        pattern: /STRIPE_WEBHOOK_SECRET\s*=\s*['"]?whsec_/,
+        name: "Stripe webhook secret assignment",
+      },
+      {
+        pattern: /JWT_SECRET\s*=\s*['"]?[^'"]{10,}/,
+        name: "JWT secret assignment",
+      },
+      {
+        pattern: /GOOGLE_CLIENT_SECRET\s*=\s*['"]?[^'"]{10,}/,
+        name: "Google OAuth client secret",
+      },
+      {
+        pattern: /LINKEDIN_CLIENT_SECRET\s*=\s*['"]?[^'"]{10,}/,
+        name: "LinkedIn OAuth client secret",
+      },
     ];
 
     for (const { pattern, name } of secretPatterns) {

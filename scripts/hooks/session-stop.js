@@ -5,15 +5,34 @@
 const { execSync } = require("child_process");
 const fs = require("fs");
 const path = require("path");
+const { logEvent, log, query } = require("./lib/logger");
+let _projectName = "Project";
+try {
+  const { getProjectName } = require("./lib/project-config");
+  _projectName = getProjectName() || "Project";
+} catch {
+  /* no project-config — use default */
+}
 
 let input = "";
 process.stdin.on("data", (chunk) => (input += chunk));
 process.stdin.on("end", () => {
   try {
     const event = JSON.parse(input);
-    const cwd = event.cwd;
+    // Use CLAUDE_PROJECT_DIR (reliable) instead of event.cwd (can be a subdirectory)
+    const cwd = process.env.CLAUDE_PROJECT_DIR || event.cwd;
     const claudeDir = path.join(cwd, ".claude");
     const handoffsDir = path.join(claudeDir, "handoffs");
+
+    // Idempotent guard — don't regenerate if already done this session
+    const guardPath = path.join(claudeDir, ".session-handoff-done");
+    if (fs.existsSync(guardPath)) {
+      process.stderr.write(
+        "[Session Stop] Handoff already generated this session — skipping\n",
+      );
+      process.exit(0);
+      return;
+    }
 
     // Ensure handoffs dir exists
     if (!fs.existsSync(handoffsDir)) {
@@ -25,7 +44,7 @@ process.stdin.on("end", () => {
     const date = now.toISOString().slice(0, 10);
     const time = now.toISOString().slice(11, 16).replace(":", "");
 
-    lines.push(`# Handoff — consumer product — ${date}`);
+    lines.push(`# Handoff — ${_projectName} — ${date}`);
     lines.push("");
 
     // === BRANCH STATE ===
@@ -71,24 +90,67 @@ process.stdin.on("end", () => {
       /* ignore */
     }
 
-    // === SESSION CONVERSATION (from prompt logger) ===
-    const promptLogPath = path.join(claudeDir, ".session-prompts.log");
-    if (fs.existsSync(promptLogPath)) {
-      try {
-        const prompts = fs.readFileSync(promptLogPath, "utf-8").trim();
-        if (prompts.length > 0) {
-          lines.push("## Session Conversation");
-          lines.push("");
-          lines.push(
-            "User messages this session (chronological — shows intent and decisions):",
-          );
-          lines.push("");
-          prompts.split("\n").forEach((p) => lines.push(`- ${p}`));
-          lines.push("");
-        }
-      } catch {
-        /* ignore */
+    // === SESSION CONVERSATION (from centralized event log) ===
+    try {
+      const prompts = query({ cat: "prompt", limit: 50 });
+      if (prompts.length > 0) {
+        lines.push("## Session Conversation");
+        lines.push("");
+        lines.push(
+          "User messages this session (chronological — shows intent and decisions):",
+        );
+        lines.push("");
+        prompts.forEach((e) => {
+          const ts = new Date(e.ts).toISOString().slice(11, 19);
+          const text = e.data?.stripped || "(no text)";
+          lines.push(`- [${ts}] ${text.slice(0, 200)}`);
+        });
+        lines.push("");
       }
+    } catch {
+      /* ignore */
+    }
+
+    // === PLANS GENERATED THIS SESSION ===
+    try {
+      const planEvents = query({ cat: "plan", limit: 10 });
+      if (planEvents.length > 0) {
+        lines.push("## Plans Generated");
+        lines.push("");
+        for (const e of planEvents) {
+          const ts = new Date(e.ts).toISOString().slice(11, 19);
+          const file = e.data?.file || "unknown";
+          lines.push(`- [${ts}] **${file}** (${e.data?.tool || "?"})`);
+          if (e.data?.content) {
+            const preview = e.data.content
+              .replace(/\n/g, " ")
+              .slice(0, 300)
+              .trim();
+            lines.push(`  > ${preview}...`);
+          }
+        }
+        lines.push("");
+      }
+
+      // Plan-related user decisions
+      const planResponses = query({ cat: "prompt", limit: 50 });
+      const decisions = planResponses.filter(
+        (e) => e.data?.is_plan_response || e.data?.is_plan_discussion,
+      );
+      if (decisions.length > 0) {
+        lines.push("## Plan Decisions");
+        lines.push("");
+        for (const d of decisions.slice(-10)) {
+          const ts = new Date(d.ts).toISOString().slice(11, 19);
+          const tag = d.data?.is_plan_response ? "[DECISION]" : "[DISCUSS]";
+          lines.push(
+            `- [${ts}] ${tag} ${(d.data?.stripped || "").slice(0, 200)}`,
+          );
+        }
+        lines.push("");
+      }
+    } catch {
+      /* ignore */
     }
 
     // === COMPACTION SUMMARIES (from compact-saver) ===
@@ -204,9 +266,160 @@ process.stdin.on("end", () => {
       /* ignore */
     }
 
+    // === SPEC HEALTH (classified drift with confidence) ===
+    try {
+      const {
+        compileAllTruth,
+        checkFixtureDrift,
+      } = require("../../scripts/truth-compiler");
+      const results = compileAllTruth();
+      const totals = { danger: 0, review: 0, cosmetic: 0, clear: 0 };
+      const dangerItems = [];
+      for (const r of results) {
+        totals.danger += r.summary.danger || 0;
+        totals.review += r.summary.review || 0;
+        totals.cosmetic += r.summary.cosmetic || 0;
+        totals.clear += r.summary.clear || 0;
+        for (const gap of r.gaps) {
+          if (gap.tier === 3)
+            dangerItems.push(`${gap.file} ← ${gap.staleFrom}`);
+        }
+      }
+      // Fixture drift
+      let fixtureDriftCount = 0;
+      try {
+        fixtureDriftCount = checkFixtureDrift().length;
+      } catch {
+        /* optional */
+      }
+      const total =
+        totals.danger + totals.review + totals.cosmetic + totals.clear;
+      if (total > 0 || fixtureDriftCount > 0) {
+        lines.push("## Spec Health");
+        lines.push("");
+        const parts = [];
+        if (totals.danger > 0) parts.push(`${totals.danger} DANGER`);
+        if (totals.review > 0) parts.push(`${totals.review} REVIEW`);
+        if (totals.cosmetic > 0) parts.push(`${totals.cosmetic} COSMETIC`);
+        if (totals.clear > 0) parts.push(`${totals.clear} CLEAR`);
+        if (parts.length > 0) lines.push(`- Spec drift: ${parts.join(", ")}`);
+        if (fixtureDriftCount > 0)
+          lines.push(
+            `- Fixture drift: ${fixtureDriftCount} (holdout, boss-only)`,
+          );
+        if (dangerItems.length > 0) {
+          for (const item of dangerItems.slice(0, 5)) {
+            lines.push(`  - DANGER: ${item}`);
+          }
+        }
+        lines.push("");
+      }
+    } catch {
+      /* spec health is optional */
+    }
+
+    // === ASSESS SESSION (do→assess→improve loop) ===
+    try {
+      const assessScript = path.join(cwd, "scripts", "assess-session.js");
+      if (fs.existsSync(assessScript)) {
+        const assessOutput = execSync(`node "${assessScript}"`, {
+          cwd,
+          stdio: ["pipe", "pipe", "pipe"],
+          timeout: 10000,
+        })
+          .toString()
+          .trim();
+        if (assessOutput) {
+          lines.push("## Session Assessment");
+          lines.push("");
+          assessOutput.split("\n").forEach((l) => lines.push(`- ${l}`));
+          lines.push("");
+        }
+      }
+    } catch {
+      /* assessment is optional */
+    }
+
+    // === RETRO CHECK ===
+    try {
+      const sessionStartPath = path.join(claudeDir, ".session-start-commit");
+      const sessionStartTime = fs.existsSync(sessionStartPath)
+        ? fs.statSync(sessionStartPath).mtimeMs
+        : Date.now() - 3600000; // fallback: 1h ago
+
+      // Count tool calls this session to determine if session was substantive
+      let toolCallCount = 0;
+      try {
+        const toolEvents = query({ cat: "tool", limit: 500 });
+        toolCallCount = toolEvents.length;
+      } catch {
+        toolCallCount = 0;
+      }
+
+      // Only check for retro if session had meaningful activity
+      if (toolCallCount >= 10) {
+        let hasRetro = false;
+        const retroDirs = [
+          path.join(cwd, "docs", "09-agentic-system", "retro"),
+          path.join(cwd, ".claude", "retros"),
+        ];
+
+        for (const retroDir of retroDirs) {
+          if (fs.existsSync(retroDir)) {
+            try {
+              const entries = fs.readdirSync(retroDir, { withFileTypes: true });
+              for (const entry of entries) {
+                const full = path.join(retroDir, entry.name);
+                try {
+                  const stat = fs.statSync(full);
+                  if (stat.mtimeMs > sessionStartTime) {
+                    hasRetro = true;
+                    break;
+                  }
+                } catch {
+                  /* skip */
+                }
+              }
+            } catch {
+              /* skip */
+            }
+          }
+          if (hasRetro) break;
+        }
+
+        if (!hasRetro) {
+          lines.push("## Retro Warning");
+          lines.push("");
+          lines.push(
+            "**WARNING:** No retro was created this session. Convention requires /retro after significant work.",
+          );
+          lines.push("");
+          logEvent(
+            "warn",
+            "system",
+            "no-retro-created",
+            "",
+            `Session had ${toolCallCount} tool calls but no retro document`,
+          );
+          process.stderr.write(
+            "\x1b[33m[session-stop] WARNING: No retro created this session.\x1b[0m\n",
+          );
+        }
+      }
+    } catch {
+      /* retro check is optional */
+    }
+
     // Write handoff
     const handoff = lines.join("\n");
     fs.writeFileSync(path.join(claudeDir, "handoff.md"), handoff);
+    logEvent(
+      "lifecycle",
+      "alex",
+      "session-stop",
+      "",
+      `branch=${branch || "unknown"} handoff=${handoff.length} chars`,
+    );
 
     // Timestamped copy
     fs.writeFileSync(path.join(handoffsDir, `${date}-${time}.md`), handoff);
@@ -229,14 +442,40 @@ process.stdin.on("end", () => {
     }
 
     // Clean up session-scoped files
-    const cleanup = [startCommitPath, promptLogPath, compactPath];
-    cleanup.forEach((f) => {
+    [startCommitPath, compactPath].forEach((f) => {
       try {
         if (fs.existsSync(f)) fs.unlinkSync(f);
       } catch {
         /* ignore */
       }
     });
+
+    // Auto-post session summary to cross-session inbox
+    try {
+      const summaryMatch = handoff.match(
+        /## Session Conversation[\s\S]*?- \[.*?\] (.+)/,
+      );
+      const branchMatch = handoff.match(/Branch: `(.+?)`/);
+      const sessionId =
+        process.env.CLAUDE_SESSION_ID || `session-${Date.now().toString(36)}`;
+      const fromLabel = `${branchMatch ? branchMatch[1] : "unknown"} / ${sessionId}`;
+      const messageText = `Session ended. ${summaryMatch ? "Last task: " + summaryMatch[1].slice(0, 200) : "See handoff for details."}`;
+
+      log(
+        "inbox",
+        {
+          from: fromLabel,
+          message: messageText,
+          files_changed: [],
+        },
+        { session: sessionId },
+      );
+    } catch {
+      /* inbox post is optional */
+    }
+
+    // Mark handoff as done (idempotent guard — reuses guardPath from line 19)
+    fs.writeFileSync(guardPath, new Date().toISOString());
 
     process.stderr.write(
       `[Session Stop] Handoff saved + copied to clipboard\n`,

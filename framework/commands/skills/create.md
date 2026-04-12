@@ -1,0 +1,122 @@
+---
+description: Create a new skill from a description — supports simple, multi-phase, and parallel workflows
+---
+
+# /skill:create — Create a New Skill
+
+## Usage
+
+```
+/skill:create <name> "<description>"
+/skill:create  (interactive — will ask for name and description)
+```
+
+## Procedure
+
+### Step 1: Parse input
+
+Extract the skill name and description from the user's command. If not provided, ask:
+- "What should this skill be called?" (lowercase, hyphens for spaces)
+- "What should it do?" (one sentence)
+
+### Step 2: Determine skill shape
+
+Based on the description, classify:
+
+| Shape | When | File structure |
+|-------|------|---------------|
+| **Simple** | Single procedure, sequential steps | `namespace/name.md` |
+| **Multi-phase** | Multiple distinct phases (research → analyze → apply) | `namespace/name.md` with `## Phase N` sections |
+| **Parallel** | Phases that run concurrently | Same as multi-phase, mark with `**PARALLEL**` |
+| **Subcommanded** | Multiple modes or entry points | `namespace/sub1.md`, `namespace/sub2.md` — one file per subcommand |
+
+Multi-phase and parallel are NOT separate systems — they're just skills with richer step structure.
+
+### Step 3A: Generate single skill file (simple, multi-phase, parallel)
+
+**Path:** `.claude/commands/<namespace>/<name>.md`
+
+If the namespace directory doesn't exist, create it. If adding to an existing namespace, just add the file.
+
+```markdown
+---
+description: <one-line description — shown in /command autocomplete>
+---
+
+# /<namespace>:<name> — <Title>
+
+<One-line description of what this skill does and when to use it.>
+
+## Input
+
+`$ARGUMENTS` — <what the user passes>
+
+## Procedure
+
+### Step 1: <Action>
+<Instructions>
+
+### Step 2: <Action>
+<Instructions>
+```
+
+For multi-phase skills, use `## Phase N: <Name>` with steps inside each phase.
+For parallel phases, add `**PARALLEL**` and describe concurrent steps.
+
+### Step 3B: Generate subcommanded skill (multiple entry points)
+
+**Path:** `.claude/commands/<namespace>/` directory with one `.md` per subcommand.
+
+For each subcommand, create a separate file:
+
+```
+.claude/commands/<namespace>/
+  sub1.md    → registers as /namespace:sub1
+  sub2.md    → registers as /namespace:sub2
+  sub3.md    → registers as /namespace:sub3
+```
+
+Each file has its own frontmatter, title, and procedure:
+
+```markdown
+---
+description: <what this subcommand does>
+---
+
+# /<namespace>:<subcommand> — <Title>
+
+<Description>
+
+## Input
+
+`$ARGUMENTS` — <what the user passes>
+
+## Procedure
+...
+```
+
+**CRITICAL:** Do NOT create a root `.md` file (e.g., `<namespace>.md`) alongside the directory. It won't register as a skill AND it blocks sub-skill detection. The subcommand files ARE the skills.
+
+### Step 4: Phase design rules (for multi-phase and parallel skills)
+
+- Each phase has a clear input and output
+- **PARALLEL** phases: all steps launch in one message, results collected after all complete
+- Phases reference prior phase output by name (e.g., "Read the reports from Phase 2")
+- For CLI tools (codex, gemini, claude), use the validated patterns:
+  - Codex: `timeout 300 codex exec --full-auto -m o3 -C "$CLAUDE_PROJECT_DIR" "prompt"`
+  - Gemini: `echo "context" | gemini -p "instruction" -o text 2>/dev/null > output.md` — `-p` flag is REQUIRED for headless mode. Without it, piped stdin hangs.
+  - Claude: `claude --bare -p --dangerously-skip-permissions --model sonnet "prompt"`
+  - All need `timeout` wrapper. Stdout redirect (`> file.md`) is more reliable than asking the AI to write files.
+- Error handling: each phase should note what to do if it fails (skip, retry, warn user)
+
+### Step 5: Verify
+
+Read the created file(s) back. Confirm:
+- Frontmatter has `description`
+- Steps are numbered and specific
+- File paths are correct
+- No root `.md` alongside a subcommand directory
+- CLI commands use validated patterns
+
+Report: "Created `/namespace:name` — N steps. Try it with `/namespace:name`."
+For subcommanded: "Created `/namespace` — N subcommands: `:sub1`, `:sub2`, `:sub3`."

@@ -12,8 +12,9 @@ process.stdin.on("end", () => {
     const filePath =
       event.tool_input?.file_path || event.tool_input?.content?.file_path;
 
-    // Only format files prettier understands
-    if (!filePath || !/\.(ts|tsx|js|jsx|json|css|md)$/.test(filePath)) {
+    // Only format code files — exclude .md (prose docs with nested code fences
+    // cause prettier to corrupt/empty files, see HYGIENE.md wipe incident)
+    if (!filePath || !/\.(ts|tsx|js|jsx|json|css)$/.test(filePath)) {
       process.exit(0);
     }
 

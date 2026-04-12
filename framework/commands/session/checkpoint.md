@@ -1,0 +1,34 @@
+---
+description: Force an immediate session checkpoint save
+user-invocable: true
+---
+
+# /session:checkpoint — Force Checkpoint
+
+Save an immediate checkpoint of current session state. Captures what git can't recover: conversation context and tool activity.
+
+## What Gets Saved
+
+Writes `.claude/.session-checkpoint.json` with:
+- Timestamp + reason: "manual"
+- Last 30 lines of prompt log (user messages — the things lost on /clear or compaction)
+- Last 10 tool call entries (what was being worked on)
+
+## Procedure
+
+```bash
+cat .claude/.session-prompts.log | tail -30
+tail -10 .claude/.session-tracking.jsonl
+```
+
+Write to `.claude/.session-checkpoint.json` and confirm:
+
+```
+Checkpoint saved at {timestamp}
+Prompts captured: {N}
+Tool calls captured: {N}
+```
+
+Also update `.claude/.last-checkpoint` timestamp so the periodic checkpoint timer resets.
+
+One line output, done.

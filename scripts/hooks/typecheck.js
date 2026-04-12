@@ -18,10 +18,15 @@ process.stdin.on("end", () => {
       process.exit(0);
     }
 
-    // Run the project's own tsc to avoid npx resolving the wrong "tsc" package
-    const ext = process.platform === "win32" ? ".cmd" : "";
-    const tscBin = path.join(event.cwd, "node_modules", ".bin", "tsc" + ext);
-    execSync(`"${tscBin}" --noEmit --pretty "${filePath}"`, {
+    // Run tsc via node directly — .bin symlinks are unreliable on Windows
+    const tscBin = path.join(
+      event.cwd,
+      "node_modules",
+      "typescript",
+      "bin",
+      "tsc",
+    );
+    execSync(`node "${tscBin}" --noEmit --pretty "${filePath}"`, {
       cwd: event.cwd,
       stdio: ["pipe", "pipe", "pipe"],
       timeout: 15000,
