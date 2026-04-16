@@ -17,9 +17,9 @@ Enter adhoc team mode. Creates an agent team with Alpha (lead) + Beta (judgment)
 
 ### Step 1: Verify team readiness
 
-1. Confirm Beta agent file exists: `.claude/agents/alex/beta.md`
-2. Confirm Gamma agent file exists: `.claude/agents/alex/gamma.md`
-3. Confirm adhoc protocol exists: `.claude/agents/.system/adhoc/protocol.md`
+1. Confirm Beta agent file exists: `.claude/agents/00-alex/beta.md`
+2. Confirm Gamma agent file exists: `.claude/agents/00-alex/gamma.md`
+3. Confirm adhoc protocol exists: `.claude/agents/01-adhoc/.system/protocol.md`
 
 If any are missing, warn and offer to continue in solo mode instead.
 
@@ -50,7 +50,7 @@ Build cycle: dispatch → gauntlet (eval + security + compliance + QA) → fix �
 
 ### Step 4: Update heartbeat (if store exists)
 
-If `.claude/agents/.system/oneshot/store.json` exists and has a heartbeat, update:
+If `.claude/agents/store.json` exists and has a heartbeat, update:
 ```json
 { "agent": "alpha", "workstream": "adhoc" }
 ```

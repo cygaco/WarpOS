@@ -19,7 +19,7 @@ Shows what's enforced, what's not, and where the gaps are.
 - `.claude/settings.json` — hook registrations
 - `scripts/hooks/*.js` — read each hook to understand what it blocks/warns/allows
 - `scripts/hooks/lib/*.js` — shared gate modules (gate-schema.js, etc.)
-- `docs/09-agentic-system/retro/*/HYGIENE.md` — gap IDs and closure status
+- `the retro directory (check manifest.json projectPaths.retro for location)/*/HYGIENE.md` — gap IDs and closure status
 
 ### Step 2: Build enforcement inventory
 

@@ -18,9 +18,9 @@ Initiate a oneshot build. Delta (δ) takes over as the standalone orchestrator. 
 
 Before launching, verify:
 
-1. **Store exists:** `.claude/agents/.system/oneshot/store.json` — if not, warn that a fresh store is needed
-2. **Protocol exists:** `.claude/agents/.system/oneshot/protocol.md`
-3. **Task manifest exists:** `.claude/agents/.system/oneshot/task-manifest.md`
+1. **Store exists:** `.claude/agents/store.json` — if not, warn that a fresh store is needed
+2. **Protocol exists:** `.claude/agents/02-oneshot/.system/protocol.md`
+3. **Task manifest exists:** `.claude/agents/02-oneshot/.system/task-manifest.md`
 4. **Skeleton stubs exist:** Check that the features listed in the task manifest have corresponding stub files
 5. **Foundation passes:** Run the build command from project-config to verify the skeleton compiles
 
@@ -42,7 +42,7 @@ Alpha/Beta: NOT ACTIVE during oneshot
 
 Alpha is now handing off to Delta. Read and execute the Delta protocol:
 
-1. Read `.claude/agents/alex/delta.md` — Delta's full identity and instructions
+1. Read `.claude/agents/00-alex/delta.md` — Delta's full identity and instructions
 2. Follow Delta's startup procedure (read all oneshot/ files)
 3. Begin the state machine from wherever store.json indicates
 
@@ -50,6 +50,6 @@ From this point forward, you ARE Delta. Alpha's doctrine (reasoning engine, sess
 
 ### Step 4: Execute
 
-Run the oneshot build following `.claude/agents/.system/oneshot/protocol.md`.
+Run the oneshot build following `.claude/agents/02-oneshot/.system/protocol.md`.
 
 When complete or halted, output the DELTA_RESULT as defined in delta.md.

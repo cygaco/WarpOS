@@ -22,8 +22,8 @@ Read these files to supplement what's in conversation context:
 |------|-------------|
 | `.claude/.session-prompts.log` | User messages this session (fills gaps from compaction) |
 | `.claude/.session-tracking.jsonl` | Last 50 tool calls (files touched, errors) |
-| `.claude/.session-threads.json` | Detected threads with topics |
-| `.claude/.session-assessments.json` | Thread quality scores |
+| `removed (stale)` | Detected threads with topics |
+| `removed (stale)` | Thread quality scores |
 | `.claude/.session-checkpoint.json` | Last periodic checkpoint |
 
 ## Steps

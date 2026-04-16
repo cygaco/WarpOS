@@ -47,7 +47,7 @@ git branch --all | grep -E 'agent/|wt-|temp'
 ### Phase C: Code Diff Scan (~2 commands)
 
 ```bash
-git log --oneline -1 -- 'docs/09-agentic-system/retro/'
+git log --oneline -1 -- 'the retro directory (check manifest.json projectPaths.retro for location)/'
 git diff {baseline}..HEAD --stat -- 'src/' 'scripts/'
 git diff {baseline}..HEAD -- 'src/' | head -500
 ```

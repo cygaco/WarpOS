@@ -8,19 +8,21 @@
 
 const fs = require("fs");
 const path = require("path");
-const { PROJECT } = require("./paths");
+const { PROJECT, PATHS } = require("./paths");
 
-const CLAUDE_DIR = path.join(PROJECT, ".claude");
-const MEMORY_DIR = path.join(CLAUDE_DIR, "memory");
+// All paths from paths.json — portable across projects
+const MEMORY_DIR =
+  PATHS.memory || path.join(PROJECT, ".claude", "project", "memory");
+const AGENTS_DIR = PATHS.agents || path.join(PROJECT, ".claude", "agents");
 const LEARNINGS_FILE = path.join(MEMORY_DIR, "learnings.jsonl");
 const TRACES_FILE = path.join(MEMORY_DIR, "traces.jsonl");
+
 // Beta decisions file — uses project-config if available, falls back to "alex"
 let BETA_DECISIONS_FILE;
 try {
   const { getAgentName } = require("./project-config");
   BETA_DECISIONS_FILE = path.join(
-    CLAUDE_DIR,
-    "agents",
+    AGENTS_DIR,
     getAgentName(),
     ".workspace",
     "beta",
@@ -28,8 +30,7 @@ try {
   );
 } catch {
   BETA_DECISIONS_FILE = path.join(
-    CLAUDE_DIR,
-    "agents",
+    AGENTS_DIR,
     "alex",
     ".workspace",
     "beta",

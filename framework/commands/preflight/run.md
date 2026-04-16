@@ -49,10 +49,10 @@ You are a run transition auditor for the consumer product project. Your job is t
 ### Files to Read
 
 - .claude/agents/.system/oneshot/store.json
-- docs/09-agentic-system/retro/ (list all run folders)
+- the retro directory (check manifest.json projectPaths.retro for location)/ (list all run folders)
 - For the LATEST retro folder, read ALL files: RETRO.md, BUGS.md, LEARNINGS.md, HYGIENE.md, and any other .md files
-- .claude/agents/.system/oneshot/protocol.md (verify it references the latest HYGIENE)
-- .claude/agents/.system/agent-system.md (verify schema matches store.json)
+- .claude/agents/02-oneshot/.system/protocol.md (verify it references the latest HYGIENE)
+- .claude/agents/.system.md (verify schema matches store.json)
 
 ### Checks
 

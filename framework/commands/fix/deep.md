@@ -18,8 +18,8 @@ If no arguments: scan the current conversation for the most recent error or comp
 
 **Goal**: Search memory for similar past problems before diagnosing.
 
-1. Search `.claude/memory/traces.jsonl` for similar problems (grep for keywords from the error)
-2. Search `.claude/memory/learnings.jsonl` for related learnings
+1. Search `.claude/project/memory/traces.jsonl` for similar problems (grep for keywords from the error)
+2. Search `.claude/project/memory/learnings.jsonl` for related learnings
 3. If a match is found: surface the prior framework, outcome, and quality score
 4. Use this to bias framework selection in Phase 1.3 (but don't blindly reuse — compare context first)
 
@@ -33,8 +33,8 @@ If no arguments: scan the current conversation for the most recent error or comp
 
 Collect all available signals:
 - Parse `$ARGUMENTS` for: error messages, HTTP codes, file paths, stack traces, timestamps
-- Search `.claude/memory/learnings.jsonl` for similar past issues (grep for keywords from the error)
-- Search `docs/09-agentic-system/retro/*/BUGS.md` for prior occurrences
+- Search `.claude/project/memory/learnings.jsonl` for similar past issues (grep for keywords from the error)
+- Search `the retro directory (check manifest.json projectPaths.retro for location)/*/BUGS.md` for prior occurrences
 - Check `git log --oneline -20` for recent changes that might be related
 - If a file is mentioned, read it. If a stack trace exists, read the top frame.
 
@@ -170,7 +170,7 @@ For each solution, assess:
 
 Also check:
 - Does a similar fix exist in `git log`? If so, reference it.
-- Does a hygiene rule in `docs/09-agentic-system/retro/*/HYGIENE.md` address this pattern?
+- Does a hygiene rule in `the retro directory (check manifest.json projectPaths.retro for location)/*/HYGIENE.md` address this pattern?
 
 **Recommend** the solution with the best correctness + lowest blast radius. If two are tied, prefer the one that prevents recurrence.
 
@@ -190,17 +190,17 @@ Also check:
 
 ### 5.0 Log Reasoning Trace + Score Quality
 
-Append a reasoning trace to `.claude/memory/traces.jsonl` with:
+Append a reasoning trace to `.claude/project/memory/traces.jsonl` with:
 - `framework_selected`: The framework used in Phase 1.3
 - `framework_rationale`: WHY that framework was chosen
 - `history_match`: Trace ID from Phase 0 if one was found
 - `quality_score`: Score the fix 0-4 using the quality scale in CLAUDE.md §2
 - `source`: "fix:deep"
 
-Append directly to `.claude/memory/traces.jsonl` — do NOT delegate to a separate `/reasoning:log` call (it gets forgotten). Write the trace inline as part of Phase 5. Cross-link to the learning created in 5.1.
+Append directly to `.claude/project/memory/traces.jsonl` — do NOT delegate to a separate `/reasoning:log` call (it gets forgotten). Write the trace inline as part of Phase 5. Cross-link to the learning created in 5.1.
 
 **Write method for traces.jsonl and learnings.jsonl** (memory-guard enforced):
-- **Use:** `node -e "const fs=require('fs'); fs.appendFileSync(require('path').join(process.env.CLAUDE_PROJECT_DIR||'.', '.claude/memory/FILE'), JSON.stringify(entry)+'\\n')"`
+- **Use:** `node -e "const fs=require('fs'); fs.appendFileSync(require('path').join(process.env.CLAUDE_PROJECT_DIR||'.', '.claude/project/memory/FILE'), JSON.stringify(entry)+'\\n')"`
 - **Or:** Edit tool for updating existing entries
 - **NEVER:** `writeFileSync` (blocked), bash `>>` or `echo >>` redirects (blocked by echo/redirect guards)
 
@@ -212,7 +212,7 @@ If this bug reveals a pattern (not a one-off typo):
 {"ts":"YYYY-MM-DD","intent":"bug_fix","tip":"<what was learned — max 300 chars>","effective":null,"pending_validation":true,"score":0,"source":"fix:deep"}
 ```
 
-Append to `.claude/memory/learnings.jsonl` using the write method above.
+Append to `.claude/project/memory/learnings.jsonl` using the write method above.
 
 ### 5.2 Prevention Recommendation
 
@@ -232,7 +232,7 @@ State the recommendation but do NOT auto-apply prevention measures. The user dec
 ### 5.3 Bug Registry
 
 If this session is during an agent run (check for active run context):
-- Append to `docs/09-agentic-system/retro/{NN}/BUGS.md` with: symptom, root cause, fix, severity
+- Append to `the retro directory (check manifest.json projectPaths.retro for location)/{NN}/BUGS.md` with: symptom, root cause, fix, severity
 - If it's a pattern bug, also update `HYGIENE.md`
 
 ### 5.4 Capture Eval Fixture

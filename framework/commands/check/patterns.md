@@ -23,16 +23,16 @@ Spawn ONE Explore agent (thoroughness: very thorough). Produces intelligence for
 ### Files to Read
 
 ```
-docs/09-agentic-system/retro/{each NN}/BUGS.md
-docs/09-agentic-system/retro/{each NN}/HYGIENE.md
-docs/09-agentic-system/retro/{each NN}/LEARNINGS.md
-docs/09-agentic-system/retro/{latest}/RETRO.md
-docs/09-agentic-system/retro/{latest}/DEPRECATED.md (if exists)
+the retro directory (check manifest.json projectPaths.retro for location)/{each NN}/BUGS.md
+the retro directory (check manifest.json projectPaths.retro for location)/{each NN}/HYGIENE.md
+the retro directory (check manifest.json projectPaths.retro for location)/{each NN}/LEARNINGS.md
+the retro directory (check manifest.json projectPaths.retro for location)/{latest}/RETRO.md
+the retro directory (check manifest.json projectPaths.retro for location)/{latest}/DEPRECATED.md (if exists)
 ```
 
 ### Output: META-RETRO.md
 
-Overwrites `docs/09-agentic-system/retro/META-RETRO.md` with 5 sections:
+Overwrites `the retro directory (check manifest.json projectPaths.retro for location)/META-RETRO.md` with 5 sections:
 
 #### 1. Repeat Problem Areas
 
@@ -80,11 +80,11 @@ Scan for automation gaps and propose linter/hook/skill improvements.
 
 ### Step 1: Load Sources
 
-1. `docs/09-agentic-system/retro/*/HYGIENE.md` — hygiene rules across runs (if they exist)
-2. `docs/09-agentic-system/retro/*/BUGS.md` — bug entries across runs (if they exist)
+1. `the retro directory (check manifest.json projectPaths.retro for location)/*/HYGIENE.md` — hygiene rules across runs (if they exist)
+2. `the retro directory (check manifest.json projectPaths.retro for location)/*/BUGS.md` — bug entries across runs (if they exist)
 3. `git log --since="7 days ago" --name-only` — file hotspots
-4. `.claude/events/events.jsonl` — recent change events
-5. `.claude/memory/learnings.jsonl` — recurring learnings
+4. `.claude/project/events/events.jsonl` — recent change events
+5. `.claude/project/memory/learnings.jsonl` — recurring learnings
 
 ### Step 2: Load Current Automation
 

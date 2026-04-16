@@ -4,7 +4,7 @@ description: Ingest external knowledge from files, links, or YouTube videos and 
 
 # /learner — External Knowledge Ingestion
 
-Takes a file, URL, or YouTube video and extracts actionable knowledge. Analyzes it for relevance to the consumer product system. Proposes or auto-applies improvements to strategies, skills, hooks, linters, or specs.
+Takes a file, URL, or YouTube video and extracts actionable knowledge. Analyzes it for relevance to the current project and WarpOS system. Proposes or auto-applies improvements to strategies, skills, hooks, linters, or specs.
 
 ## Usage
 
@@ -64,7 +64,7 @@ Raw VTT files have timestamps and duplicated lines. Clean them:
 After extracting content, analyze it through these lenses:
 
 ### Step 1: Relevance Scan
-Ask: "What in this content is relevant to the consumer product system?"
+Ask: "What in this content is relevant to our project and the WarpOS system?"
 
 Categories to look for:
 - **Prompting techniques** — better ways to communicate with AI
@@ -206,7 +206,7 @@ This skill can be invoked proactively in these situations:
 
 📚 Learning: "Test behavior, not implementation. Query by role/label, not class/id."
 📖 Source: Kent C. Dodds blog — "The more your tests resemble the way your software is used..."
-📍 Apply to: docs/09-agentic-system/retro/03/HYGIENE.md (new rule)
+📍 Apply to: the retro directory (check manifest.json projectPaths.retro for location)/03/HYGIENE.md (new rule)
 🔧 Change: Add Rule 40: "Tests should assert on user-visible behavior, not internal state"
 ⭐ Confidence: high
 ```

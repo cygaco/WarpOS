@@ -29,32 +29,47 @@
 
 const fs = require("fs");
 const path = require("path");
-const { PROJECT } = require("./paths");
+const { PROJECT, PATHS } = require("./paths");
 
 // ── Paths ───────────────────────────────────────────────
 
-const EVENTS_DIR = path.join(PROJECT, ".claude", "events");
+const EVENTS_DIR = PATHS.events || path.join(PROJECT, ".claude", "events");
+const RUNTIME_DIR = PATHS.runtime || path.join(PROJECT, ".claude", "runtime");
 const LOG_FILE = path.join(EVENTS_DIR, "events.jsonl");
 const LOCK_FILE = path.join(PROJECT, ".claude", ".store-lock");
-const SESSION_ID_FILE = path.join(PROJECT, ".claude", ".session-id");
+const SESSION_ID_FILE = path.join(RUNTIME_DIR, ".session-id");
 
 // Backward compat: some hooks import EVENTS_FILE
 const EVENTS_FILE = LOG_FILE;
 
-// ── Agent workspace paths (reads team name from project-config) ──
-// Graceful: if no project-config or workspace exists, agent fan-out is skipped
+// ── Agent system paths (reads team name from manifest) ──
+// Graceful: if no manifest or .system dir exists, agent fan-out is skipped
 let WORKSPACE = "";
 let WORKSPACE_EVENTS = "";
 try {
   const { getAgentName } = require("./project-config");
   const agentName = getAgentName();
-  const ws = path.join(PROJECT, ".claude", "agents", agentName, ".workspace");
-  if (fs.existsSync(ws)) {
-    WORKSPACE = ws;
-    WORKSPACE_EVENTS = path.join(ws, "events.jsonl");
+  // Try new structure first (00-alex/.system), fall back to old (.workspace)
+  const agentDir = path.join(PROJECT, ".claude", "agents", `00-${agentName}`);
+  const sysDir = path.join(agentDir, ".system");
+  const wsDir = path.join(
+    PROJECT,
+    ".claude",
+    "agents",
+    agentName,
+    ".workspace",
+  );
+  const dir = fs.existsSync(sysDir)
+    ? sysDir
+    : fs.existsSync(wsDir)
+      ? wsDir
+      : "";
+  if (dir) {
+    WORKSPACE = dir;
+    WORKSPACE_EVENTS = path.join(dir, "events.jsonl");
   }
 } catch {
-  /* no project-config available — global mode */
+  /* no manifest available — global mode */
 }
 
 // ── Category fan-out: parallel event files for fast lookup ──
@@ -63,6 +78,7 @@ const CATEGORY_FILES = {
   spec: [path.join(EVENTS_DIR, "requirements.jsonl")],
   code: [path.join(EVENTS_DIR, "code.jsonl")],
   plan: [path.join(EVENTS_DIR, "plans.jsonl")],
+  requirement_staged: [path.join(EVENTS_DIR, "requirements-staged.jsonl")],
 };
 
 // Only add agent fan-out if workspace exists
@@ -114,6 +130,9 @@ function ensureDir() {
   try {
     if (!fs.existsSync(EVENTS_DIR)) {
       fs.mkdirSync(EVENTS_DIR, { recursive: true });
+    }
+    if (!fs.existsSync(RUNTIME_DIR)) {
+      fs.mkdirSync(RUNTIME_DIR, { recursive: true });
     }
     _dirChecked = true;
   } catch {
@@ -311,5 +330,6 @@ module.exports = {
   EVENTS_FILE,
   LOG_FILE,
   EVENTS_DIR,
+  RUNTIME_DIR,
   CATEGORY_FILES,
 };

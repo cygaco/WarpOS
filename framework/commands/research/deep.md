@@ -78,7 +78,7 @@ You are a Research Director planning a multi-team investigation. Three autonomou
 
 USER'S TOPIC: {$ARGUMENTS}
 
-CONTEXT: This research will be applied to a production software project — a Next.js job search app with AI agent orchestration, Chrome extension, and multi-model pipeline (consumer product).
+CONTEXT: This research will be applied to a production software project. Read CLAUDE.md and PROJECT.md (if they exist) for project-specific context. If unavailable, treat as general software engineering research.
 
 Produce a research brief as a JSON object. Organize the investigation into 4 phases, each with its own sub-questions, evidence priorities, and completion criteria:
 
@@ -624,9 +624,9 @@ Sources cited that don't exist or don't say what was claimed.
 Ranked by confidence AND actionability:
 1. {takeaway} — Confidence: {H/M/L}, Actionable: {now/soon/later}
 
-## Applicability to consumer product
+## Applicability to This Project
 
-How findings apply to: AI agents, Next.js, job search, Chrome extension, multi-model pipeline.
+How findings apply to the current project. Read CLAUDE.md and PROJECT.md for context on what the project does and its tech stack.
 
 ## Gaps & Future Research
 

@@ -19,7 +19,7 @@ Take the user's input and expand it into a structured research prompt. The promp
 1. State the research question clearly
 2. Ask for: current state of the art, key approaches, trade-offs, practical implementation advice, pitfalls, and real-world examples
 3. Request structured output with sections and citations where possible
-4. Specify the context: "This research will be applied to a software project (Next.js job search app with AI agent orchestration system)"
+4. Specify the context: read CLAUDE.md and PROJECT.md for project context. If unavailable, say "This research will be applied to a software project."
 
 Generate a `topic-slug` from the input (lowercase, hyphenated, max 40 chars). Example: "self-improving AI agents" → `self-improving-ai-agents`.
 
@@ -112,9 +112,9 @@ Where sources contradict — note which is likely correct and why.
 
 Ranked list of actionable insights, most impactful first.
 
-## Applicability to consumer product
+## Applicability to This Project
 
-How these findings apply to this specific project (AI agents, Next.js, job search, Chrome extension).
+How these findings apply to the current project. Read CLAUDE.md and PROJECT.md for project context.
 
 ## Raw Reports
 

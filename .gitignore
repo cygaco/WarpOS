@@ -15,3 +15,16 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
+
+# WarpOS Runtime (session-specific, DO NOT commit)
+.claude/project/events/
+.claude/project/memory/
+.claude/runtime/
+.claude/content/
+.claude/.session-id
+.claude/handoffs/
+.claude/handoff.md
+.claude/agents/*/events.jsonl
+.claude/agents/*/.workspace/
+.claude/agents/*/.system/events.jsonl
+.claude/logs/

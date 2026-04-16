@@ -42,6 +42,24 @@ One story = one decision or one behavior.
 
 ---
 
+## Agent Instructions Header
+
+Every STORIES.md file should begin with an Agent Instructions block. This tells builder agents how to interpret and implement the stories:
+
+```markdown
+> **Agent Instructions**
+>
+> 1. Each story = one code path you implement as a unit — do not combine stories
+> 2. Check `Depends on:` before starting — if a dependency story isn't built, stop and report
+> 3. The `Data:` field tells you exactly which TypeScript interfaces and fields to read/write
+> 4. Your output will be evaluated against criteria you cannot see — build to the spec, not to assumed tests
+> 5. If a story's acceptance criteria conflict with another story, escalate — do not guess
+```
+
+This block is read by builder agents before they start implementing. It prevents common agent mistakes (combining stories, skipping dependencies, guessing at test criteria).
+
+---
+
 ## Required Story Format
 
 Every Granular Story **must** follow this format:

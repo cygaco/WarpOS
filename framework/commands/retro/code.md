@@ -59,7 +59,7 @@ This matters because retro:code scans `git diff` — uncommitted work is invisib
 
 ```bash
 # Last retro commit
-git log --oneline -1 -- 'docs/09-agentic-system/retro/'
+git log --oneline -1 -- 'the retro directory (check manifest.json projectPaths.retro for location)/'
 
 # What files changed
 git diff {baseline}..HEAD --stat -- 'src/' 'scripts/'

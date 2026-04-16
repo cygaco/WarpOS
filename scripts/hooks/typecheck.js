@@ -4,6 +4,7 @@
 
 const { execSync } = require("child_process");
 const path = require("path");
+const fs = require("fs");
 
 let input = "";
 process.stdin.on("data", (chunk) => (input += chunk));
@@ -19,15 +20,16 @@ process.stdin.on("end", () => {
     }
 
     // Run tsc via node directly — .bin symlinks are unreliable on Windows
-    const tscBin = path.join(
-      event.cwd,
-      "node_modules",
-      "typescript",
-      "bin",
-      "tsc",
-    );
+    const cwd = event.cwd || process.env.CLAUDE_PROJECT_DIR || ".";
+    const tscBin = path.join(cwd, "node_modules", "typescript", "bin", "tsc");
+
+    // Gracefully skip if TypeScript is not installed
+    if (!fs.existsSync(tscBin)) {
+      process.exit(0);
+    }
+
     execSync(`node "${tscBin}" --noEmit --pretty "${filePath}"`, {
-      cwd: event.cwd,
+      cwd,
       stdio: ["pipe", "pipe", "pipe"],
       timeout: 15000,
     });
@@ -37,12 +39,17 @@ process.stdin.on("end", () => {
   } catch (err) {
     if (err.stderr || err.stdout) {
       const output = (err.stderr || err.stdout).toString().trim();
-      if (output) {
+      // Only block on actual type errors, not missing-binary errors
+      if (
+        output &&
+        !output.includes("Cannot find module") &&
+        !output.includes("ENOENT")
+      ) {
         process.stderr.write(`Type error in edited file:\n${output}\n`);
-        process.exit(2); // blocking error — Claude sees it and should fix
+        process.exit(2);
       }
     }
-    // Non-type errors (timeout, etc.) — don't block
+    // Non-type errors (timeout, missing tools, etc.) — don't block
     process.exit(0);
   }
 });

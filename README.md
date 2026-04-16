@@ -1,54 +1,54 @@
 # WarpOS
 
-An AI operating system for Claude Code. Agents, skills, hooks, memory, reasoning — everything you need to build products with an autonomous AI teammate.
+An AI operating system for Claude Code. It gives you a team of AI agents that plan, build, review, and learn — so you can focus on what matters.
 
 **Platform:** Windows only (for now)
 **Version:** 0.1.0
 
 ## What Is This?
 
-WarpOS turns Claude Code into an AI operating system called **Alex**. Alex has:
+You know how using Claude Code feels like talking to a smart colleague? WarpOS turns that colleague into a full team.
 
-- **4 agent modes** — Solo (just you + Alex), Adhoc (team of 3 agents building features), and Oneshot (full autonomous builds)
-- **59 skills** — slash commands for fixing bugs (`/fix:fast`), running retrospectives (`/retro:full`), deep research (`/research:deep`), managing sessions (`/session:handoff`), and more
-- **14 hooks** — automated guards that run on every action: format code, check secrets, log events, enhance prompts with AI
-- **Reasoning engine** — classifies every problem, selects the right framework, scores fix quality 0-4
-- **Learning system** — logs lessons, promotes them through validation, turns patterns into enforced rules
-- **Memory** — event log, learnings, traces, cross-session inbox. Alex remembers across sessions
-- **Requirements system** — templates for PRDs, user stories, architecture docs, design systems
+Instead of one assistant, you get:
+- **An architect** that plans what to build and in what order
+- **A judgment model** that catches bad decisions before they cost you time
+- **A builder** that writes code in isolated branches so your main code stays clean
+- **Reviewers** that automatically check every build for bugs, security issues, and spec compliance
+
+Plus **66 skills** (commands you can run like `/fix:fast` or `/research:deep`), **25 automated hooks** (things that happen automatically, like secret scanning and code formatting), and a **learning system** that remembers what works across sessions.
 
 ## Quick Start
 
-### Prerequisites
+### What You Need
 
-1. **Claude Code** — [Install from Anthropic](https://claude.ai/code)
-2. **Node.js** — v18+ (hooks are Node scripts)
-3. **Git** — for version control
+1. **Claude Code** — the CLI tool from Anthropic
+2. **Node.js 18+** — the hooks are JavaScript
+3. **Git** — for version control and builder isolation
 
-### Install (Manual — MVP)
+### Install
 
-```bash
-# 1. Clone WarpOS (you need repo access)
-git clone https://github.com/cygaco/WarpOS.git ~/.warp
+```powershell
+# 1. Clone WarpOS (you need an invite)
+git clone https://github.com/cygaco/WarpOS.git
 
-# 2. Copy framework to global Claude Code config
-mkdir -p ~/.claude/scripts/hooks/lib ~/.claude/commands
-cp -r ~/.warp/scripts/hooks/* ~/.claude/scripts/hooks/
-cp -r ~/.warp/framework/commands/* ~/.claude/commands/
-cp ~/.warp/framework/CLAUDE.md ~/.claude/CLAUDE.md
-
-# 3. Copy requirements templates to your project
-cp -r ~/.warp/requirements/ your-project/requirements/
+# 2. Run the installer, pointing it at your project
+powershell -ExecutionPolicy Bypass -File WarpOS/install.ps1 path/to/your/project
 ```
+
+That's it. The installer:
+- Creates the directory structure your project needs
+- Copies all agents, skills, and hooks
+- Detects your tech stack and configures everything
+- Sets up automated hooks for code quality and security
+- Generates a project manifest
 
 ### Verify
 
-Open Claude Code in any project. You should see WarpOS skills when you type `/`. Try:
+Open Claude Code in your project. Type:
 
 ```
-/fix:fast     — Quick bug fix
-/session:handoff  — Generate a session handoff
-/retro:full   — Run a full retrospective
+/warp:health    — Check that everything is set up correctly
+/warp:tour      — Get a guided introduction to everything
 ```
 
 ## Start Here (5 Core Skills)
@@ -84,7 +84,7 @@ WarpOS/
 ## All Skills
 
 <details>
-<summary>Click to see all 59 skills</summary>
+<summary>Click to see all 66 skills</summary>
 
 ### Build & Fix
 - `/fix:fast` — Quick fix (direct investigation)
@@ -166,10 +166,19 @@ WarpOS/
 - `/preflight:run` — Pre-run verification (7 passes)
 - `/preflight:improve` — Update preflight based on gaps
 
+### Red Team & Security
+- `/redteam:full` — Full red team audit (11 personas)
+- `/redteam:scan` — Quick deterministic security scan
+- `/reqs:review` — Review requirement drift entries
+
 ### Other
 - `/beta:mine` — Mine patterns from user behavior
 - `/fav:list` — Browse favorite moments
 - `/fav:search` — Search favorites
+- `/ui:review` — Design system compliance audit
+- `/check:refs` — Cross-file reference integrity
+- `/warp:health` — Verify WarpOS installation
+- `/warp:tour` — Guided introduction
 </details>
 
 ## Agents
@@ -181,7 +190,7 @@ WarpOS/
 | Alex Gamma (γ) | Builder | Adhoc feature builds, dispatches sub-agents |
 | Alex Delta (δ) | Runner | Oneshot full skeleton builds |
 
-Plus 8 general agents: Auditor, Builder, Compliance, Evaluator, Fix-Agent, Lead, QA, Security.
+Plus build agents for each mode: Builder, Evaluator, Compliance, Auditor, QA (with 13 failure-mode personas), Red Team (with 11 security personas), and Fix Agent. 38 agent files total.
 
 ## Requirements System
 
@@ -199,22 +208,22 @@ Templates for every document type you need to build a product:
 
 All templates include `<!-- GUIDANCE: -->` comments explaining what to write.
 
-## Products
+## Your Project
 
-| Product | Status | Description |
-|---------|--------|-------------|
-| [consumer product](products/consumer-product.md) | Building MVP | Job search wizard — resume → market analysis → targeted resumes → auto-apply |
+When you install WarpOS, it creates a `manifest.json` in your `.claude/` directory. This tells Alex about your project — what framework you use, where your source code lives, what features you're building.
 
-## Contributing
+You can customize everything:
+- Edit `CLAUDE.md` to tell Alex about your project
+- Edit `.claude/manifest.json` to configure hooks and guards
+- Create feature specs in your requirements directory
+- Use `/skills:create` to add your own custom skills
 
-WarpOS is a private repo. If you have access:
+## Support
 
-1. Work on your `users/{your-name}/` branch
-2. Push product cards, bug reports, suggestions to your branch
-3. Vlad reviews and merges to main
-
-Report issues with `/warp:bug` (auto-collects context).
+Questions? Issues? Reach out to the person who shared this repo with you. You can also:
+- Run `/warp:health` to diagnose issues
+- Check the system updates log in `.claude/project/reference/`
 
 ## License
 
-Private. Shared by invitation only.
+Private. Shared by invitation only. Free for initial testers.

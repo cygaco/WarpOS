@@ -20,9 +20,9 @@ Show the 20 most recent with date, time, and first line (title) of each:
 ```
 Recent Sessions (20 most recent):
 
-1. 2026-04-02 08:13 — Handoff — consumer product — domain pills + retro redesign
-2. 2026-04-01 16:37 — Handoff — consumer product — load hanging investigation
-3. 2026-04-01 08:52 — Handoff — consumer product — Run 006 complete
+1. 2026-04-02 08:13 — Handoff — feature polish + retro redesign
+2. 2026-04-01 16:37 — Handoff — load hanging investigation
+3. 2026-04-01 08:52 — Handoff — Run 006 complete
 ...
 ```
 

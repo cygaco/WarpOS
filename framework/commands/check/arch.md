@@ -23,11 +23,18 @@ Spawn an Explore agent. Focus: can agents build from these docs without contradi
 
 ### Files to Read
 
-- `.claude/agents/.system/agent-system.md`, `oneshot/protocol.md`, `TASK-MANIFEST.md`, `PROMPT-TEMPLATES.md`
-- `.claude/agents/.system/oneshot/compliance.md`, `INTEGRATION-MAP.md`, `FILE-OWNERSHIP.md`, `store.json`
-- `src/lib/types.ts`, `src/lib/constants.ts`
-- `.claude/settings.json`
-- Each feature's PRD.md and STORIES.md (for cross-referencing acceptance criteria)
+First, read `.claude/manifest.json` to discover:
+- Feature list from `build.features[]`
+- Foundation files from `fileOwnership.foundation`
+- Project paths from `projectPaths`
+- Build commands from `buildCommands`
+
+Then read:
+- `.claude/agents/.system.md` and mode-specific protocols (`01-adhoc/.system/protocol.md`, `02-oneshot/.system/protocol.md`)
+- Agent store: `.claude/agents/store.json` (if it exists)
+- `.claude/settings.json` (hook registration)
+- Foundation files listed in manifest
+- Each feature's PRD.md and STORIES.md (in the specs directory from manifest)
 
 ### Buildability Checks (from preflight Pass 3)
 

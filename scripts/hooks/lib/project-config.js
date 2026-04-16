@@ -1,7 +1,7 @@
 /**
  * Project config loader for hook scripts.
  *
- * Loads and caches .claude/agents/.system/project-config.json.
+ * Loads and caches .claude/manifest.json (was project-config.json).
  * All hooks import from this instead of hardcoding project-specific
  * paths, feature names, or dependency maps.
  *
@@ -17,10 +17,7 @@ let _cache = null;
 
 function loadConfig() {
   if (_cache) return _cache;
-  const configPath = path.join(
-    PROJECT,
-    ".claude/agents/.system/project-config.json",
-  );
+  const configPath = path.join(PROJECT, ".claude", "manifest.json");
   try {
     const raw = fs.readFileSync(configPath, "utf8");
     _cache = JSON.parse(raw);
@@ -47,7 +44,7 @@ function getProjectName() {
 
 /** @returns {Array<{id: string, name: string, phase: number, dependencies: string[]}>} */
 function getFeatures() {
-  return loadConfig().features || [];
+  return loadConfig().build?.features || loadConfig().features || [];
 }
 
 /** @returns {string[]} All feature IDs */
@@ -91,17 +88,21 @@ function getBuildCommands() {
 
 /** @returns {Array<{id: number, name: string, order: number, parallel: boolean}>} */
 function getPhases() {
-  return loadConfig().phases || [];
+  return loadConfig().build?.phases || loadConfig().phases || [];
 }
 
 /** @returns {Object<string, string>} Feature ID → directory name overrides */
 function getFeatureIdToDir() {
-  return loadConfig().featureIdToDir || {};
+  return (
+    loadConfig().build?.featureIdToDir || loadConfig().featureIdToDir || {}
+  );
 }
 
 /** @returns {string} Agent team name (e.g. "alex") */
 function getAgentName() {
-  return loadConfig().agentTeam?.name || "alex";
+  return (
+    loadConfig().agents?.team?.name || loadConfig().agentTeam?.name || "alex"
+  );
 }
 
 /** @returns {string} Agent team directory path */
@@ -112,6 +113,7 @@ function getAgentDir() {
 /** @returns {Object} Full agent team config (name, identity, agents map) */
 function getAgentTeam() {
   return (
+    loadConfig().agents?.team ||
     loadConfig().agentTeam || { name: "alex", identity: "Alex", agents: {} }
   );
 }
@@ -132,7 +134,11 @@ function getProjectStack() {
 
 /** @returns {string} WarpOS product slug (e.g. "consumer-product") */
 function getWarpProduct() {
-  return loadConfig().warpProduct || getProjectName().toLowerCase();
+  return (
+    loadConfig().project?.slug ||
+    loadConfig().warpProduct ||
+    getProjectName().toLowerCase()
+  );
 }
 
 /** Clear cache (useful for tests or hot-reload) */

@@ -21,28 +21,29 @@ Spawn an Explore agent to read ALL spec files and check everything below.
 
 ### Files to Read
 
-For each of the 13 features (auth, auto-apply, competitiveness, deep-dive-qa, deus-mechanicus, extension, linkedin, market-research, onboarding, resume-generation, rockets-economy, skills-curation), read ALL of:
-- `docs/05-features/{feature}/PRD.md`
-- `docs/05-features/{feature}/HL-STORIES.md`
-- `docs/05-features/{feature}/STORIES.md`
-- `docs/05-features/{feature}/INPUTS.md`
-- `docs/05-features/{feature}/COPY.md`
+1. Read `.claude/manifest.json` to get the feature list from `build.features[].id`
+2. Read `.claude/manifest.json` `projectPaths.specs` for the features directory (default: `docs/05-features/`)
+3. Read `.claude/manifest.json` `build.featureIdToDir` for any ID-to-directory mappings
 
-Also read:
-- `src/lib/types.ts` (TypeScript interfaces — source of truth for data fields)
-- `src/lib/constants.ts` (step/phase definitions)
-- `src/lib/rockets.ts` (rocket cost table)
-- `docs/03-requirement-standards/STORIES-COMMON.md` (shared behaviors CS-001 through CS-009)
-- `docs/03-requirement-standards/GRANULAR_STORIES.md` (story format rules)
-- `docs/03-requirement-standards/HIGH_LEVEL_STORIES.md` (HL story rules)
-- `docs/04-architecture/FLOW_SPEC.md` (entry states, gates, parallelism)
-- `docs/00-canonical/GLOSSARY.md` (step number to component filename mapping)
+For each feature found in the manifest, read ALL of:
+- `{specs_dir}/{feature}/PRD.md`
+- `{specs_dir}/{feature}/HL-STORIES.md`
+- `{specs_dir}/{feature}/STORIES.md`
+- `{specs_dir}/{feature}/INPUTS.md`
+- `{specs_dir}/{feature}/COPY.md`
 
-### Feature Directory Names
+Also read any files listed in `manifest.fileOwnership.foundation` — these are the project's shared infrastructure files (types, constants, etc.).
 
-auth, auto-apply, competitiveness, deep-dive-qa, deus-mechanicus, extension, linkedin, market-research, onboarding, resume-generation, rockets-economy, skills-curation
+If no manifest exists, scan the features directory to discover feature folders dynamically.
 
-Note: feature ID "rockets" maps to directory "rockets-economy".
+### Requirement Standards (if they exist)
+
+Check for and read any files in:
+- `docs/03-requirement-standards/` or `requirements/03-requirement-standards/`
+- `docs/04-architecture/` or `requirements/04-architecture/`
+- `docs/00-canonical/` or `requirements/00-canonical/`
+
+Skip any that don't exist — not all projects have a full spec structure yet.
 
 ### Consistency Checks (from preflight Pass 1)
 

@@ -148,6 +148,15 @@ Review Alex β's performance since last sleep:
    - Check for uncommitted changes → warn in sleep journal
    - Detect orphan agent worktree branches (`agent/wt-*`) → log count, suggest cleanup
 
+6. **Requirement drift summary**
+   - Read `.claude/events/requirements-staged.jsonl`
+   - Filter for `status === "pending"` (last-write-wins by `id`)
+   - If count > 0: display summary table grouped by feature (feature, count, highest drift_type)
+   - If overwrites exist: flag as warning — "N spec overwrites pending review"
+   - If count > 10: suggest grouping by feature for efficiency
+   - Prompt: "Run `/reqs:review` to process, or they'll carry to next session"
+   - Log deferred entries to cross-session inbox so next session sees them
+
 ### Phase 3: Replay (NREM Stage 2 — Spindle-Mediated Review)
 
 **Biology:** Sleep spindles (10-15 Hz) create temporal windows for synaptic plasticity. During these windows, the brain reviews the day's experiences from new angles, finding patterns the waking mind missed.
@@ -161,9 +170,9 @@ Review Alex β's performance since last sleep:
    - Were there questions that should have been asked?
 
 2. **Cross-reference with retro docs**
-   - Load `docs/09-agentic-system/retro/*/BUGS.md` — today's work related to known patterns?
-   - Load `docs/09-agentic-system/retro/*/HYGIENE.md` — did today's work follow or violate rules?
-   - Load `docs/09-agentic-system/retro/*/LEARNINGS.md` — old learnings newly relevant?
+   - Load `the retro directory (check manifest.json projectPaths.retro for location)/*/BUGS.md` — today's work related to known patterns?
+   - Load `the retro directory (check manifest.json projectPaths.retro for location)/*/HYGIENE.md` — did today's work follow or violate rules?
+   - Load `the retro directory (check manifest.json projectPaths.retro for location)/*/LEARNINGS.md` — old learnings newly relevant?
 
 3. **Detect blind spots**
    - What parts of the system haven't been touched in 2+ weeks?
@@ -189,7 +198,7 @@ Review Alex β's performance since last sleep:
      - **Analogy:** What would this look like in a different domain?
      - **Elimination:** What if we removed the hardest constraint?
    - Let past dream imagery inform the current session — if a symbol from last week's dream connects to tonight's problem, follow that thread
-   - Write dream solutions to `.claude/.sleep-dreams.md`
+   - Write dream solutions to `.claude/dreams/sleep-dreams.md`
 
 2. **Dream Visualization (ASCII paintings)**
 
@@ -208,7 +217,7 @@ Review Alex β's performance since last sleep:
    - Each painting gets a **"Deep Read"** afterward — what did the subconscious surface?
 
    Save to `.claude/dreams/YYYY-MM-DD.md` (one file per sleep cycle, accumulates).
-   Also include inline in `.claude/.sleep-dreams.md` for immediate review.
+   Also include inline in `.claude/dreams/sleep-dreams.md` for immediate review.
 
    Structure per dream:
    ```
@@ -239,7 +248,7 @@ Review Alex β's performance since last sleep:
 5. **User coaching synthesis**
    - Based on session patterns, user corrections, and blind spots
    - Draft a gentle suggestion for next session start
-   - Write to `.claude/.sleep-coaching.md`
+   - Write to `.claude/dreams/sleep-coaching.md`
 
 6. **Alex β pattern mining**
    - Run `/beta:mine` analysis inline (not as a separate agent)
@@ -279,7 +288,7 @@ Review Alex β's performance since last sleep:
      - Key unresolved items from tonight's sleep
      - Dream solutions worth reviewing
      - Suggested first task for next session
-   - Write to `.claude/.sleep-coaching.md`
+   - Write to `.claude/dreams/sleep-coaching.md`
 
 3. **Propose next evolution**
    - Based on everything discovered during sleep, propose 1-3 improvements
@@ -301,7 +310,7 @@ Review Alex β's performance since last sleep:
 
 ## Output: Sleep Journal
 
-All phases append to `.claude/.sleep-journal.md`:
+All phases append to `.claude/dreams/sleep-journal.md`:
 
 ```markdown
 # Sleep Journal — YYYY-MM-DD
@@ -343,16 +352,16 @@ All phases append to `.claude/.sleep-journal.md`:
 ## Growth
 - System strength: {trend}
 - Biggest leverage point: {recommendation}
-- Morning briefing: written to .sleep-coaching.md
+- Morning briefing: written to dreams/sleep-coaching.md
 - False memory check: {count} learnings verified against code
 ```
 
 ## Session Start Integration
 
 When the next session starts, the context enhancer reads:
-- `.claude/.sleep-journal.md` → surfaces key findings
-- `.claude/.sleep-coaching.md` → morning briefing + growth suggestions
-- `.claude/.sleep-dreams.md` → creative solutions to review
+- `.claude/dreams/sleep-journal.md` → surfaces key findings
+- `.claude/dreams/sleep-coaching.md` → morning briefing + growth suggestions
+- `.claude/dreams/sleep-dreams.md` → creative solutions to review
 - `.claude/dreams/` → persistent dream gallery (one file per sleep cycle, accumulates over time)
 
 ## Important
