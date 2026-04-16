@@ -71,4 +71,4 @@ Alpha's full reasoning engine, operational loop, and autonomy boundaries are def
 
 ## Recovery
 
-If CLAUDE.md is lost or corrupted, this file + `beta-persona.md` + `gamma.md` contain enough context to reconstruct the system.
+If CLAUDE.md is lost or corrupted, this file + `judgement-model.md` + `gamma.md` contain enough context to reconstruct the system.

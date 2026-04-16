@@ -1,104 +1,145 @@
-# PRD: Onboarding Wizard
+# PRD: Onboarding
 
 > **Agent Instructions**
 >
-> 1. Read this entire PRD before writing any code — Section 8 is your primary implementation guide
-> 2. The acceptance criteria in linked stories are your contract
+> 1. Read this entire PRD before writing any code — Section 8 (Feature Description) is your primary implementation guide
+> 2. The acceptance criteria in linked stories are your contract — if it's not specified, don't build it
 > 3. Check Section 9 (Dependencies) — if a dependency isn't built yet, stop and report
-> 4. If something is ambiguous, escalate — do not guess
+> 4. Your output will be evaluated against criteria you cannot see — build to the spec, not to assumed tests
+> 5. If something in this PRD is ambiguous or contradictory, escalate — do not guess
 
 ## 1. Title + Classification
 
-**Onboarding (Data Import, Preferences, Profile Generation)** — MVP
+**Onboarding (Setup Wizard)** — MVP
 
 ## 2. Screen
 
-Onboarding, Steps 1–3. Composite component: `OnboardingPage`. The entire multi-step flow is self-contained.
+<!-- Which step/screen/phase does this feature live on? Include component filenames matching the project GLOSSARY. -->
+
+Onboarding, Steps 1–3. Composite component: `OnboardingPage.tsx`. The entire onboarding flow is self-contained.
 
 ## 3. Context
 
-Onboarding is the foundation of the entire product. Every downstream feature depends on the data collected here. A user who abandons onboarding produces zero value. The flow must feel fast, low-friction, and progressively rewarding: import data, set preferences, and receive an AI-generated profile — all in under 5 minutes.
+Onboarding is the foundation of the entire product. Every downstream feature depends on the data collected here. A user who abandons onboarding produces zero value. The flow must feel fast, low-friction, and progressively rewarding.
 
 ## 4. JTBD (Jobs To Be Done)
 
-> When I start using a new tool, I want to quickly import my existing data and set my preferences, so I can get personalized results without manually entering everything.
+> When I start using this product for the first time, I want to quickly provide my information and set my preferences, so I can get personalized results without extensive manual setup.
 
-> When I see my AI-generated profile, I want to verify it understands my situation and goals, so I can trust the system to work for me downstream.
-
-> When I have a non-standard background, I want the tool to capture that context, so I get advice that accounts for my real situation, not a generic template.
+> When I see my generated profile, I want to verify it understood me correctly, so I can trust the system going forward.
 
 ## 5. Emotional Framing
 
-- **Entry**: Hopeful but skeptical — "Will this actually work for me?" They've tried tools before. They need to feel this one is different within 60 seconds.
-- **During**: Progressive confidence — each completed sub-step builds trust. Data import should feel like magic ("it got everything right"). Preferences should feel empowering ("I'm in control"). Profile generation should feel validating ("it really understands me").
-- **Exit**: Energized and ready — "My setup is complete. Let's go."
+- **Entry**: Hopeful but skeptical — "Will this actually work for me?" The user needs to feel this is different within 60 seconds.
+- **During**: Progressive confidence — each completed step builds trust. The system should feel smart ("it got everything right").
+- **Exit**: Energized and ready — "Everything is set up. Let's go."
 
 ## 6. Goals
 
-- User completes full onboarding (import → preferences → profile) in under 5 minutes
-- Data import succeeds on 95%+ of well-formatted inputs
-- Zero data loss — every field the user fills is persisted to session
-- Profile generation produces actionable output on first attempt for 90%+ of users
-- Preferences capture enough signal to drive relevant downstream features
+- User completes full onboarding in under 5 minutes
+- Zero data loss — every field the user fills is persisted
+- Generated profile is accurate on first attempt for 90%+ of users
+- Preferences capture enough signal to drive downstream features
 
 ## 7. Assumptions
 
-- Users have existing data in a common format (PDF, DOCX, TXT, or plain text they can paste)
-- AI parsing handles 95%+ of well-formatted inputs without hallucination
-- 10MB file limit is sufficient for any reasonable upload
-- Session state auto-saves at each sub-step boundary
+- Users have relevant input data available (file, text, or manual entry)
+- Standard file formats are supported (PDF, DOCX, TXT)
+- AI parsing succeeds on well-formatted input
+- Users will correct parsing errors if prompted
 
 ## 8. Feature Description
 
-Onboarding is a 3-step wizard that transforms raw user data into a structured profile with preferences.
+<!-- Write this as if building from scratch. No "before/after" language. This is the complete target state. -->
 
-**Step 1: Data Import**
+### Step 1: Data Import
 
-User provides their data via: drag-and-drop file upload (PDF, DOCX, TXT — 10MB limit) or paste. System triggers AI parsing as a background task and advances to Step 2. User does NOT wait for parsing.
+The user provides their input data via file upload or text paste. Accepted formats: PDF, DOCX, TXT, MD. Max file size: 10MB. The system parses the input using AI and extracts structured data.
 
-A persistent status banner shows parsing progress:
-- During: "Processing your data..." (yellow)
-- Success: "Data processed ✓" (green)
-- Failure: "Processing failed. Retry?" (red) — does NOT block Step 2
+**Parsing flow:**
+1. User uploads file or pastes text
+2. System sends raw text to AI for structured extraction
+3. AI returns typed data object
+4. System displays parsed preview for user review
+5. User confirms or edits the extracted data
 
-**Parallel Processing Principle:** Data parsing and preference collection run concurrently. User never waits idle. Only Step 3 (profile generation) requires parsed data.
+**Error handling:** If parsing fails, show a clear error with the option to retry or paste text manually. Never show a blank screen.
 
-**Step 2: Preferences**
+### Step 2: Preferences
 
-Multiple substeps collecting user intent — independent of imported data. Each substep auto-saves to session. Substeps are ordered and cannot be skipped. Going back preserves entered data.
+The user sets their preferences through a multi-section form. Each section captures a different dimension of what the user wants.
 
-**Step 3: Profile Generation**
+**Sections:**
+- Direction (what they're looking for)
+- Type (format/category preferences)
+- Constraints (hard requirements)
+- Quick Check (validation questions)
 
-AI generates a structured profile from imported data + preferences. User reviews, edits if needed, and confirms. This is the synchronization point where parsed data and preferences merge.
+All preferences persist to encrypted session storage. Each section auto-saves on completion.
 
-Session auto-saves at each boundary. Refresh/return resumes where the user left off.
+### Step 3: Profile Generation
+
+The system generates a comprehensive profile from the imported data + preferences. This is the AI's understanding of the user — displayed for review and confirmation.
+
+**Profile includes:** Core identity, domain expertise, key strengths, areas for growth, and recommended focus areas.
+
+The user reviews the profile and can regenerate if unsatisfied (costs system resources — track usage).
 
 ## 9. Dependencies / Blockers
 
-- AI parsing API (must be available for Step 1)
-- Session storage (localStorage or server-side)
-- File upload handling (client-side validation + server processing)
+- Foundation types must be defined (data interfaces)
+- AI integration must be functional (API calls)
+- Encrypted storage must be implemented
 
-## 10. UI Reference
+## 10. Feature Cost
+
+AI calls per onboarding: 2 (parse + profile generation). Track per-user usage.
+
+## 11. Impact Metrics
+
+- Onboarding completion rate (target: 85%+)
+- Time to complete (target: < 5 min)
+- Profile accuracy (user acceptance rate on first generation)
+
+## 12. UI Reference
+
+<!-- ASCII wireframe, screenshot link, or mockup reference -->
 
 ```
-┌─────────────────────────────────┐
-│  Step 1    Step 2    Step 3     │  ← Progress indicator
-│  ●─────────○─────────○          │
-├─────────────────────────────────┤
-│                                 │
-│   Drop your file here           │
-│   ┌───────────────────┐        │
-│   │   📄 drag & drop  │        │
-│   │   or click to     │        │
-│   │   browse           │        │
-│   └───────────────────┘        │
-│                                 │
-│   Or paste text below:          │
-│   ┌───────────────────┐        │
-│   │                   │        │
-│   └───────────────────┘        │
-│                                 │
-│              [Continue →]       │
-└─────────────────────────────────┘
+┌──────────────────────────────────────┐
+│  Step 1: Import Your Data            │
+│  ┌────────────────────────────┐      │
+│  │  Drop file here or paste   │      │
+│  │  text below                │      │
+│  └────────────────────────────┘      │
+│  [Upload File]  [Paste Text]         │
+│                           [Next →]   │
+└──────────────────────────────────────┘
 ```
+
+## 13. Implementation Map
+
+| File | Changes | Reuse |
+|------|---------|-------|
+| `src/components/steps/Step1Import.tsx` | New — file upload + paste UI | Use foundation UI components |
+| `src/components/steps/Step2Preferences.tsx` | New — multi-section form | Use foundation form components |
+| `src/components/steps/Step3Profile.tsx` | New — profile display + regenerate | Use foundation card components |
+| `src/components/pages/OnboardingPage.tsx` | New — step routing + progress | Foundation layout |
+
+## 14. Test Plan
+
+1. Upload a valid PDF → data parsed and displayed correctly
+2. Upload an invalid file type → error message with accepted formats
+3. Complete all preference sections → data persists across refresh
+4. Generate profile → meaningful output displayed
+5. Refresh mid-onboarding → resume at current step with data intact
+
+## 15. Out of Scope
+
+- Account creation (separate feature)
+- Payment integration
+- Advanced profile editing post-onboarding
+
+## 16. Open Questions
+
+n/a

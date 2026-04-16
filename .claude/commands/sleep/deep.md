@@ -114,7 +114,7 @@ Review Alex β's performance since last sleep:
 1. Read `.claude/agents/00-alex/.system/beta/events.jsonl` — all entries since last sleep
 2. Count: total consultations, escalations, overrides
 3. For non-overridden decisions older than 24h: mark as tentatively validated
-4. Update confidence levels in `.claude/agents/00-alex/.system/beta/beta-persona.md` confidence table:
+4. Update confidence levels in `.claude/agents/00-alex/.system/beta/judgement-model.md` confidence table:
    - Topics with 3+ unoverridden decisions: increase confidence one level
    - Topics with 2+ overrides: decrease confidence one level
    - Topics with 3+ overrides: add to Anti-Patterns section
@@ -254,7 +254,7 @@ Review Alex β's performance since last sleep:
    - Run `/beta:mine` analysis inline (not as a separate agent)
    - Mine prompt sequences, skill chains, frustration-to-enforcement patterns, decision cycles
    - Write recommendations to `.claude/agents/00-alex/.system/beta/.beta-mining-recommendations.md`
-   - Do NOT directly modify `beta-persona.md` — recommendations only (review phases recommend, don't execute)
+   - Do NOT directly modify `judgement-model.md` — recommendations only (review phases recommend, don't execute)
 
 ### Phase 5: Repair (Deep Sleep Tissue Repair)
 
@@ -298,7 +298,7 @@ Review Alex β's performance since last sleep:
 4a. **Alex β evolution summary**
    - Summarize Alex β's performance: decisions made, accuracy, confidence changes
    - Review `.claude/agents/00-alex/.system/beta/.beta-mining-recommendations.md` if it exists
-   - Propose which recommendations to integrate into `beta-persona.md` (recommendations only — Alex α integrates during next waking session)
+   - Propose which recommendations to integrate into `judgement-model.md` (recommendations only — Alex α integrates during next waking session)
    - Write to sleep journal
 
 4. **False memory guard**

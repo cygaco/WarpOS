@@ -10,7 +10,7 @@ Audit the entire skill system and clean up dead weight.
 
 Prefer `.claude/maps/skills.jsonl` (structured, has `referenced_by` arrays per skill):
 - **If it exists**: parse each line as JSON. Use the `referenced_by`, `calls`, `reads`, and `writes` fields as the cross-reference graph for Phases 1-3.
-- **If it doesn't exist**: fall back to `.claude/reference/skill-map.md`, or run `/maps:skills` to build it.
+- **If it doesn't exist**: fall back to `.claude/project/maps/skills.jsonl`, or run `/maps:skills` to build it.
 
 **Staleness check:** Read the `_meta` line and compare `version` date against today. If > 3 days old, print: "Map may be stale — running /maps:skills --refresh first." Then refresh before proceeding.
 

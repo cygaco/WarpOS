@@ -1,41 +1,46 @@
-# High-Level Stories: Onboarding Wizard
+# High-Level Stories: Onboarding
 
-### HL-ONBOARD-1: Import my data
+> **Agent Instructions**
+>
+> These stories define INTENT and OUTCOMES, not implementation details.
+> Granular stories (STORIES.md) break each HL story into atomic behaviors.
 
-**As a** new user
-**I want to** upload or paste my existing data
-**So that** the system understands my background without manual entry
+---
 
-**Acceptance:** User provides a file or text, sees it parsed into structured fields within 10 seconds.
+### HL-ONB-01: Data Import (MVP)
 
-**Emotional target:** Effortless — "that was easy, it understood everything"
+> As a User, I want to import my existing data (file or text), so the system can understand who I am without me typing everything from scratch.
 
-### HL-ONBOARD-2: Set my preferences
+**Success:** User provides input and sees a structured preview of their parsed data within 30 seconds.
 
-**As a** new user
-**I want to** tell the system what I'm looking for
-**So that** downstream features are personalized to my goals
+**Granular stories:** GS-ONB-01 (file upload), GS-ONB-02 (size validation), GS-ONB-03 (text paste), GS-ONB-04 (AI parsing)
 
-**Acceptance:** User completes all preference substeps. Preferences are saved and visible in profile.
+---
 
-**Emotional target:** Empowered — "I'm in control of what this tool does for me"
+### HL-ONB-02: Preferences (MVP)
 
-### HL-ONBOARD-3: Review my profile
+> As a User, I want to tell the system what I'm looking for, so it can personalize everything downstream.
 
-**As a** new user
-**I want to** see an AI-generated profile based on my data and preferences
-**So that** I can verify the system understands me before proceeding
+**Success:** User completes all preference sections and data persists across refresh.
 
-**Acceptance:** Profile displays structured summary of parsed data + preferences. User can edit any field. Confirmation advances to the next phase.
+**Granular stories:** GS-ONB-05 (preference collection)
 
-**Emotional target:** Validated — "it really gets me"
+---
 
-### HL-ONBOARD-4: Resume where I left off
+### HL-ONB-03: Profile Generation (MVP)
 
-**As a** returning user
-**I want to** pick up onboarding from where I stopped
-**So that** I don't have to re-enter anything
+> As a User, I want to see an AI-generated profile that summarizes my strengths and goals, so I can verify the system understands me before proceeding.
 
-**Acceptance:** Refreshing or returning resumes at the exact substep with all data preserved.
+**Success:** Profile is generated, displayed, and the user confirms it's accurate.
 
-**Emotional target:** Reliable — "my progress is safe"
+**Granular stories:** GS-ONB-06 (profile generation)
+
+---
+
+### HL-ONB-04: Session Persistence (MVP)
+
+> As a User, I want my progress saved automatically, so I can close the browser and come back later without losing anything.
+
+**Success:** Refresh at any step → resume exactly where left off with all data intact.
+
+**Granular stories:** GS-ONB-07 (session persistence)

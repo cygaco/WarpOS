@@ -1,115 +1,146 @@
-# Granular Stories: Onboarding Wizard
+# Granular Stories: Onboarding
 
-## Step 1: Data Import
+> **Agent Instructions**
+>
+> 1. Each story = one code path you implement as a unit — do not combine stories
+> 2. Check `Depends on:` before starting — if a dependency story isn't built, stop and report
+> 3. The `Data:` field tells you exactly which interfaces and fields to read/write
+> 4. Your output will be evaluated against criteria you cannot see — build to the spec, not to assumed tests
+> 5. If a story's acceptance criteria conflict with another story, escalate — do not guess
 
-### S-ONBOARD-1: File upload via drag-and-drop
+---
 
-**Given** user is on the onboarding start screen
-**When** user drags a file (PDF, DOCX, or TXT, under 10MB) onto the drop zone
-**Then** file is accepted, parsing begins in background, user advances to Step 2
+## Parent: HL-ONB-01 — Data Import (MVP)
 
-**Edge cases:**
-- File is not PDF/DOCX/TXT → show error "Please upload a PDF, Word, or text file"
-- File is > 10MB → show error "File too large (max 10MB)"
-- File is 0 bytes → show error "This file appears to be empty"
+<!-- parallel-safe: GS-ONB-01, GS-ONB-02 can be implemented independently -->
 
-**Refs:** PRD §8 (Step 1), HL-ONBOARD-1
+### GS-ONB-01: File Upload Acceptance
 
-### S-ONBOARD-2: File upload via click-to-browse
+> As a User, I want to provide my data as a PDF, DOCX, TXT, or MD file, so that the system can extract structured information from my existing document.
 
-**Given** user is on the onboarding start screen
-**When** user clicks the upload area and selects a file from the file picker
-**Then** same behavior as drag-and-drop (S-ONBOARD-1)
+**Depends on:** none
+**Data:** `SessionData.rawInput` → `src/lib/types.ts`
+**Entry state:** Fresh — first arrival at Step 1, no data uploaded yet
+**Verifiable by:** Upload a `.pdf` → file accepted and `rawInput` populated; upload a `.exe` → error message displayed naming accepted formats.
+**Inherits:** CS-003
 
-**Refs:** PRD §8 (Step 1), HL-ONBOARD-1
+**Acceptance Criteria:**
 
-### S-ONBOARD-3: Text paste fallback
+- Files with extensions `.pdf`, `.docx`, `.txt`, and `.md` are accepted
+- Files with any other extension are rejected with an error naming accepted formats
+- The system cannot silently ignore an unsupported file type
 
-**Given** user is on the onboarding start screen
-**When** user pastes text into the text input area and clicks Continue
-**Then** text is saved as raw input, parsing begins, user advances to Step 2
+---
 
-**Edge cases:**
-- Empty paste → Continue button disabled
-- Paste > 50,000 characters → show warning "Text is very long, parsing may take longer"
+### GS-ONB-02: File Size Validation
 
-**Refs:** PRD §8 (Step 1), HL-ONBOARD-1
+> As a System, I want to reject files exceeding 10MB, so that processing resources are not consumed by unreasonably large uploads.
 
-### S-ONBOARD-4: Background parsing status
+**Depends on:** none
+**Data:** none (validation before data enters the model)
+**Entry state:** Any
+**Verifiable by:** Upload an 11MB file → error message with size limit; upload a 5MB file → accepted.
 
-**Given** parsing is running in background
-**When** parsing completes (success or failure)
-**Then** status banner updates: green for success, red with retry for failure
+**Acceptance Criteria:**
 
-**Edge cases:**
-- Parsing times out after 30 seconds → show "Processing is taking longer than expected. Retry?"
-- User is on Step 2 when parsing completes → banner updates silently, no interruption
+- Files > 10MB are rejected with a message: "File too large. Maximum size is 10MB."
+- The size check happens before any AI processing
 
-**Refs:** PRD §8 (Parallel Processing), HL-ONBOARD-1
+---
 
-## Step 2: Preferences
+### GS-ONB-03: Text Paste Alternative
 
-### S-ONBOARD-5: Preference substep navigation
+> As a User, I want to paste my text directly instead of uploading a file, so that I can use the system even if I don't have a file handy.
 
-**Given** user is on any preference substep
-**When** user completes the substep and clicks Continue
-**Then** data is saved to session, next substep loads
+**Depends on:** none
+**Data:** `SessionData.rawInput` → `src/lib/types.ts`
+**Entry state:** Fresh — no data uploaded or pasted yet
+**Verifiable by:** Paste 500 words of text → rawInput populated; paste empty string → validation error.
 
-**Edge cases:**
-- User clicks Back → returns to previous substep with data preserved
-- User refreshes → resumes at current substep with all data intact
+**Acceptance Criteria:**
 
-**Refs:** PRD §8 (Step 2), HL-ONBOARD-2
+- A text area is available as an alternative to file upload
+- Pasted text is trimmed and validated (minimum 50 characters)
+- Empty or whitespace-only input is rejected
+- After pasting, the same parsing pipeline runs as for file upload
 
-### S-ONBOARD-6: Preference validation
+---
 
-**Given** user is on a preference substep with required fields
-**When** user clicks Continue without filling required fields
-**Then** validation errors shown inline, Continue blocked
+### GS-ONB-04: AI Parsing
 
-**Refs:** PRD §8 (Step 2), HL-ONBOARD-2
+> As a User, I want my uploaded data to be automatically parsed into structured fields, so I don't have to manually enter everything.
 
-## Step 3: Profile Generation
+**Depends on:** GS-ONB-01 or GS-ONB-03
+**Data:** `SessionData.rawInput` → `SessionData.parsed` → `src/lib/types.ts`
+**Entry state:** rawInput populated (file uploaded or text pasted)
+**Verifiable by:** Upload valid file → parsed object contains expected fields; upload gibberish → graceful error with retry option.
 
-### S-ONBOARD-7: Generate profile from data + preferences
+**Acceptance Criteria:**
 
-**Given** user has completed Step 2 and parsing has succeeded
-**When** user arrives at Step 3
-**Then** AI generates a structured profile, displayed for review within 15 seconds
+- Raw input is sent to AI for structured extraction
+- AI returns a typed object matching the expected interface
+- Loading state shown during parsing (with progress indicator)
+- Parse errors show a retry button and option to paste text manually
+- Parsed data is displayed for user review before proceeding
+**Inherits:** CS-002
 
-**Edge cases:**
-- Parsing failed → show "We need your data to generate a profile. Please retry the upload."
-- AI generation fails → show "Profile generation failed. Retry?" with retry button
-- AI returns incomplete profile → show what's available with "Some fields couldn't be determined" note
+---
 
-**Refs:** PRD §8 (Step 3), HL-ONBOARD-3
+## Parent: HL-ONB-02 — Preferences (MVP)
 
-### S-ONBOARD-8: Edit generated profile
+### GS-ONB-05: Preference Collection
 
-**Given** user is viewing the generated profile
-**When** user clicks any editable field
-**Then** field becomes editable inline, changes save on blur
+> As a User, I want to set my preferences through a guided form, so the system knows what I'm looking for.
 
-**Refs:** PRD §8 (Step 3), HL-ONBOARD-3
+**Depends on:** GS-ONB-04
+**Data:** `SessionData.preferences` → `src/lib/types.ts`
+**Entry state:** Returning — parsed data exists, preferences not yet set
+**Verifiable by:** Complete all preference sections → preferences object fully populated in session.
 
-### S-ONBOARD-9: Confirm profile and proceed
+**Acceptance Criteria:**
 
-**Given** user is viewing the generated profile
-**When** user clicks "Looks good" / Confirm
-**Then** profile is saved to session, user advances to next product phase
+- All preference sections are presented sequentially
+- Each section auto-saves on completion
+- User can navigate back to previous sections
+- All fields persist across browser refresh
+**Inherits:** CS-001
 
-**Refs:** PRD §8 (Step 3), HL-ONBOARD-3
+---
 
-## Session Persistence
+## Parent: HL-ONB-03 — Profile Generation (MVP)
 
-### S-ONBOARD-10: Resume onboarding after refresh
+### GS-ONB-06: Profile Generation
 
-**Given** user has completed substeps 1-N and refreshes the page
-**When** onboarding page loads
-**Then** user is placed at substep N+1 with all previous data intact
+> As a User, I want the system to generate a comprehensive profile from my data and preferences, so I can verify it understands me correctly.
 
-**Edge cases:**
-- Session data is corrupt → reset to Step 1, show "Your previous progress couldn't be restored"
-- Session expired → same as corrupt, clean restart
+**Depends on:** GS-ONB-05
+**Data:** `SessionData.parsed` + `SessionData.preferences` → `SessionData.profile` → `src/lib/types.ts`
+**Entry state:** Returning — preferences complete, profile not yet generated
+**Verifiable by:** Click generate → profile displayed with all expected sections; profile fields are derived from parsed data (not hallucinated).
 
-**Refs:** PRD §8 (session auto-save), HL-ONBOARD-4
+**Acceptance Criteria:**
+
+- Profile generated from parsed data + preferences via AI call
+- Profile displayed in a reviewable card format
+- User can regenerate if unsatisfied (with usage tracking)
+- Generated profile is verified against input data (no hallucinated fields)
+- Loading state during generation
+**Inherits:** CS-002
+
+---
+
+### GS-ONB-07: Session Persistence Across Refresh
+
+> As a User, I want my onboarding progress to survive a page refresh, so I don't lose my work.
+
+**Depends on:** none
+**Data:** All SessionData fields → encrypted localStorage
+**Entry state:** Any — applies at every step
+**Verifiable by:** Complete Step 1, refresh browser → Step 1 data intact, user returns to Step 1 completed state.
+
+**Acceptance Criteria:**
+
+- All session data is persisted to encrypted storage after every state change
+- On page load, existing session data is loaded and the user resumes at their last step
+- No flash of empty state before session loads
+**Inherits:** CS-001

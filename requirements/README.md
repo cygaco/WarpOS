@@ -13,10 +13,10 @@ A structured documentation framework for building products. Each folder contains
 | `04-architecture/` | Technical design | STACK, DATA_FLOW, SECURITY |
 | `05-features/` | Feature specs (one folder per feature) | See `_example-onboarding/` |
 | `06-operations/` | Deployment and monitoring | DEPLOYMENT |
-| `07-security/` | Security review process | SECURITY_REVIEW |
+| `07-security/` | Red team report template | REDTEAM_REPORT |
 | `08-testing/` | Test strategy | TEST_STRATEGY |
 | `09-automation/` | CI/CD and scheduled tasks | CI_CD |
-| `audit-reports/` | Systematic review template | AUDIT_TEMPLATE |
+| `99-audits/` | Systematic review template | AUDIT_TEMPLATE |
 
 ## How to Use
 

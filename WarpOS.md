@@ -42,14 +42,12 @@ Product-agnostic dev tools framework. Any product exports a `ProductManifest` an
 - Pipeline tracer (data flow debugging)
 - Warp Profiles (cross-product test identities)
 
-Schema: `schemas/deus-mechanicus.ts`
 First implementation: consumer product (`src/lib/deus-mechanicus.ts` + `src/components/DeusMechanicus.tsx`)
 
 ### Warp Profiles — Cross-Product Test Data
 
 Product-agnostic identity + product-specific extensions. A profile created in consumer product can be loaded in any future product.
 
-Schema: `schemas/warp-profile.ts`
 Format: `{ meta, warp (shared identity), consumer-product? (product extension), ... }`
 
 ### Encrypted Client Storage

@@ -81,8 +81,6 @@ WarpOS/
 │   ├── 01-09/             — Design, copy, architecture, security, testing, CI/CD
 │   └── 05-features/       — Feature spec templates + example
 ├── patterns/              — Validated implementation patterns
-├── schemas/               — Reusable TypeScript interfaces
-└── templates/             — Stack-specific templates (Next.js, Playwright)
 ```
 
 > **Note:** The `.claude/` directory in this repo IS the framework. When installed into your project, its contents are copied to your project's `.claude/` directory. The file paths inside agent specs reference `.claude/agents/...` — those paths are correct for the installed location in your project.

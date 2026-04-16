@@ -18,7 +18,7 @@ Terms as we use them. Not industry definitions — ours.
 
 **Red Line** — A decision domain where Alex β must always ESCALATE regardless of confidence. Product UX, spec semantics, money, doctrine changes. These are domains where the user's taste cannot be modeled from patterns alone.
 
-**Judgment Model** — The persona document (`beta-persona.md`) that encodes the user's decision patterns, principles, and delegation preferences. Not a personality simulation — a decision-pattern reference. Each principle has WHAT, WHY, GENERALIZE, and EXAMPLE.
+**Judgment Model** — The persona document (`judgement-model.md`) that encodes the user's decision patterns, principles, and delegation preferences. Not a personality simulation — a decision-pattern reference. Each principle has WHAT, WHY, GENERALIZE, and EXAMPLE.
 
 **Precedent** — A prior Alex β decision logged in `.system/beta/events.jsonl`. When a new question matches a precedent's domain and context, Alex β should follow it unless material context differs. Precedent reduces drift and improves consistency.
 

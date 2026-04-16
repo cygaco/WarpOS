@@ -6,7 +6,7 @@ description: Mine patterns from user behavior — prompts, decisions, skill chai
 
 Analyzes user behavior patterns across all data sources to improve Alex β's persona.
 Output goes to `.claude/agents/00-alex/.system/beta/.beta-mining-recommendations.md` (staging area).
-Sleep reviews recommendations — this skill does NOT directly modify `beta-persona.md`.
+Sleep reviews recommendations — this skill does NOT directly modify `judgement-model.md`.
 
 ## Data Sources
 

@@ -1,51 +1,49 @@
-# Inputs: Onboarding Wizard
+# Inputs: Onboarding
 
-## Step 1: Data Import
+## Step 1 — Data Import
 
 ### File Upload
 
-- **Type:** file
-- **Required:** yes (either file or text paste)
-- **Validation:** PDF, DOCX, or TXT; max 10MB; non-empty
-- **Error message:** "Please upload a PDF, Word, or text file (max 10MB)"
-- **Stored as:** SessionData.rawInput
-- **Consumed by:** AI parsing (Step 1), profile generation (Step 3)
+| Field | Type | Validation | Required |
+|-------|------|-----------|----------|
+| file | File (PDF, DOCX, TXT, MD) | Max 10MB, accepted extensions only | Yes (or text paste) |
 
 ### Text Paste
 
-- **Type:** text (textarea)
-- **Required:** yes (if no file uploaded)
-- **Validation:** min 50 characters, max 50,000 characters
-- **Error message:** "Please paste at least 50 characters"
-- **Stored as:** SessionData.rawInput
-- **Consumed by:** AI parsing (Step 1), profile generation (Step 3)
+| Field | Type | Validation | Required |
+|-------|------|-----------|----------|
+| text | string | Min 50 chars, trimmed, no whitespace-only | Yes (or file upload) |
 
-## Step 2: Preferences
+**Output:** `SessionData.rawInput` — raw text extracted from file or pasted directly
 
-### Goal / Direction
+## Step 2 — Preferences
 
-- **Type:** select
-- **Required:** yes
-- **Options:** <!-- Define based on your product domain -->
-- **Stored as:** SessionData.preferences.direction
-- **Consumed by:** profile generation, downstream features
+| Field | Type | Options/Validation | Required |
+|-------|------|-------------------|----------|
+| direction | enum | User-defined options per product | Yes |
+| type | enum | User-defined options per product | Yes |
+| constraints | string[] | Free-text list of hard requirements | No |
+| quickCheck | boolean[] | Yes/No validation questions | Yes |
 
-### Category / Type
+**Output:** `SessionData.preferences` — structured preference object
 
-- **Type:** multiselect
-- **Required:** yes (at least 1)
-- **Options:** <!-- Define based on your product domain -->
-- **Stored as:** SessionData.preferences.categories
-- **Consumed by:** search, recommendations
+## Step 3 — Profile Generation
 
-### Location
+No user input — this step is AI-generated from Steps 1 + 2.
 
-- **Type:** text (with autocomplete)
-- **Required:** no
-- **Default:** "Remote"
-- **Stored as:** SessionData.preferences.location
-- **Consumed by:** search filters
+**Output:** `SessionData.profile` — AI-generated structured profile
 
-### Additional Preferences
+## Data Flow
 
-<!-- GUIDANCE: Add more preference fields as needed. Follow the same format for each. -->
+```
+Step 1 (rawInput)
+  ↓ AI parsing
+  → SessionData.parsed
+  
+Step 2 (preferences)
+  → SessionData.preferences
+
+Step 3 (profile generation)
+  ← SessionData.parsed + SessionData.preferences
+  → SessionData.profile
+```

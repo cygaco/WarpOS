@@ -1,66 +1,45 @@
-# Copy: Onboarding Wizard
+# Copy: Onboarding
 
-## Step 1: Data Import
+## Step 1 — Data Import
 
-### Heading
-"Let's get started"
+| Element | Copy |
+|---------|------|
+| **Heading** | Import Your Data |
+| **Subheading** | Upload a file or paste text — we'll extract the important stuff. |
+| **Upload button** | Upload File |
+| **Paste button** | Paste Text |
+| **File accepted** | Got it! Parsing your data... |
+| **File rejected** | That file type isn't supported. Try PDF, DOCX, TXT, or MD. |
+| **File too large** | File too large. Maximum size is 10MB. |
+| **Parse success** | Here's what we found. Review and confirm. |
+| **Parse fail** | Something went wrong parsing your data. Try pasting the text directly. |
+| **Empty paste** | Paste at least a few sentences so we have something to work with. |
 
-### Subheading
-"Upload your file or paste your text below. We'll extract the key details automatically."
+## Step 2 — Preferences
 
-### File Drop Zone
-- Default: "Drop your file here, or click to browse"
-- Hover: "Release to upload"
-- Accepted formats: "PDF, Word, or text files up to 10MB"
+| Element | Copy |
+|---------|------|
+| **Heading** | What are you looking for? |
+| **Subheading** | This helps us personalize everything for you. |
+| **Section complete** | ✓ Saved |
+| **All complete** | Preferences set. Let's build your profile. |
 
-### Parsing Status Banner
-- In progress: "Processing your data in the background..."
-- Success: "Data processed successfully ✓"
-- Failure: "We couldn't process that file. [Try again]"
-- Timeout: "This is taking longer than expected. [Retry]"
+## Step 3 — Profile Generation
 
-### Errors
-- Wrong format: "Please upload a PDF, Word, or text file"
-- Too large: "That file is too large. Maximum size is 10MB."
-- Empty file: "This file appears to be empty. Try a different one."
+| Element | Copy |
+|---------|------|
+| **Heading** | Your Profile |
+| **Subheading** | Here's how we understand you. Review and confirm. |
+| **Generating** | Building your profile... |
+| **Regenerate** | Not quite right? Regenerate |
+| **Confirm** | Looks good — let's go! |
+| **Success toast** | Profile confirmed. You're all set. |
 
-## Step 2: Preferences
+## Error States (Global)
 
-### Heading
-"Tell us what you're looking for"
-
-### Subheading
-"These preferences personalize everything downstream. You can change them later."
-
-### Navigation
-- Continue: "Continue →"
-- Back: "← Back"
-- Skip (if applicable): "Skip for now"
-
-## Step 3: Profile Review
-
-### Heading
-"Here's what we found"
-
-### Subheading
-"Review your profile below. Click any field to edit."
-
-### Buttons
-- Confirm: "Looks good — let's go"
-- Edit hint: "Click any field to edit"
-
-### Loading
-- Generating: "Building your profile..."
-- Almost done: "Almost there..."
-
-### Errors
-- Generation failed: "We couldn't generate your profile. [Try again]"
-- Parsing needed: "We need your data first. [Go back to upload]"
-
-## Empty States
-
-### No data yet
-"Upload your file or paste your text to get started."
-
-### Profile field unknown
-"We couldn't determine this automatically. Click to add it."
+| Condition | Copy |
+|-----------|------|
+| Network offline | You appear to be offline. Your data is saved locally. |
+| AI timeout | Taking longer than expected. Retrying... |
+| AI failure | Something went wrong. Try again, or paste your text manually. |
+| Session expired | Your session has expired. Your data is still saved locally. |

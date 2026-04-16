@@ -38,7 +38,7 @@ For each broken ref, check if the target was renamed (grep for the filename) or 
 
 ### Orphaned Files
 - Not all orphans are dead weight — entry points (CLAUDE.md, top-level configs) and event logs are excluded automatically.
-- Review orphans by directory. Files in `retros/`, `research/`, and `audit-reports/` are often standalone records.
+- Review orphans by directory. Files in `retros/`, `research/`, and `99-audits/` are often standalone records.
 - True orphans (abandoned skills, dead hooks, stale maps) should be deleted or re-linked.
 
 ## Step 3: Report

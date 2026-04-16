@@ -21,7 +21,7 @@ If not found, list available skills and ask which one to delete.
 
 ### Step 2: Impact check
 
-First, check `.claude/maps/skills.jsonl` — find the entry matching this skill and read its `referenced_by` array. This gives you structured inbound references (who calls this skill). If the JSONL map doesn't exist, fall back to `.claude/reference/skill-map.md`.
+First, check `.claude/maps/skills.jsonl` — find the entry matching this skill and read its `referenced_by` array. This gives you structured inbound references (who calls this skill). If the JSONL map doesn't exist, fall back to `.claude/project/maps/skills.jsonl`.
 
 **Staleness check:** Read the `_meta` line (line 1) and compare `version` date against today. If > 3 days old, print: "Map may be stale — grep results below are authoritative."
 
