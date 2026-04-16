@@ -136,17 +136,33 @@ process.stdin.on("end", () => {
         process.exit(0);
       }
 
+      // Strip fd-to-fd redirects (e.g., 2>&1, 1>&2) and 2>/dev/null —
+      // these are not file overwrites and must not trigger the guard.
+      const cmdForRedirectCheck = cmd
+        .replace(/\d?>&\d+/g, "")
+        .replace(/\d?>\s*\/dev\/(null|stderr|stdout)/g, "");
+
       // Allow append redirects (>>) — these are safe for append-only files
-      if (/>>/.test(cmd) && !/(?<![>])>\s*[^>]/.test(cmd.replace(/>>/g, ""))) {
+      if (
+        />>/.test(cmdForRedirectCheck) &&
+        !/(?<![>])>\s*[^>]/.test(cmdForRedirectCheck.replace(/>>/g, ""))
+      ) {
         process.exit(0);
       }
 
       // Block truncation/overwrite patterns
-      // 1. Redirect overwrite: > file or >file
-      if (/(?<!=)>\s*[^>]/.test(cmd) && !/>>/.test(cmd.split(">")[0] + ">")) {
+      // 1. Redirect overwrite: > file or >file (to an actual file, not a fd)
+      if (
+        /(?<!=)>\s*[^>&]/.test(cmdForRedirectCheck) &&
+        !/>>/.test(cmdForRedirectCheck.split(">")[0] + ">")
+      ) {
         // Check if the redirect targets a protected file
         for (const f of PROTECTED_FILES) {
-          if (cmd.includes(f)) {
+          // Only block if the file appears AFTER a `>` — i.e. it's actually a redirect target
+          const redirectTarget = /(?<!=)(?<!>)>\s*(\S+)/.exec(
+            cmdForRedirectCheck,
+          );
+          if (redirectTarget && redirectTarget[1].includes(f)) {
             block(
               `Overwrite redirect to ${f} blocked. Use logger.js for events or appendFileSync for memory files.`,
             );
