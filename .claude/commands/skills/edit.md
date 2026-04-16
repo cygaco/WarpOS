@@ -32,7 +32,7 @@ Before editing, grep for references to this skill across the system:
 1. **Other skills**: `grep -r "/namespace:name" .claude/commands/` — which skills call or reference this one?
 2. **CLAUDE.md**: Does the system prompt reference this skill by name?
 3. **Hook scripts**: `grep -r "namespace:name\|namespace/name" scripts/hooks/` — any hooks reference it?
-4. **Systems manifest**: `grep "namespace/name\|namespace:name" .claude/memory/systems.jsonl`
+4. **Systems manifest**: `grep "namespace/name\|namespace:name" .claude/project/memory/systems.jsonl`
 5. **Reference docs**: `grep -r "namespace:name" .claude/reference/`
 
 Report what connects to this skill before making changes. If the edit changes the skill's name, interface, or output format, flag the connected files that may need updating.

@@ -3,7 +3,7 @@
 /**
  * smart-context.js — Merged prompt engineer + context curator
  *
- * Replaces both prompt-enhancer.js and context-enhancer.js.
+ * Replaces both smart-context.js and smart-context.js.
  * One Haiku call per message: infers intent, enriches the prompt,
  * and selects relevant context from all memory stores.
  *

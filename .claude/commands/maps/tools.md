@@ -9,7 +9,7 @@ Unified inventory of everything the system uses as a tool. Supports preflight de
 ## Input
 
 `$ARGUMENTS` — optional flags:
-- `--refresh` — re-scan all sources, rebuild `.claude/maps/tools.jsonl` + `.claude/maps/tools.md`
+- `--refresh` — re-scan all sources, rebuild `.claude/project/maps/tools.jsonl` + `.claude/project/maps/tools.md`
 - `--health` — run health checks for all external CLIs and API services
 - `--deps <skill>` — show dependency chain for a specific skill
 - No flags: render from existing map (or build if none exists)
@@ -18,7 +18,7 @@ Unified inventory of everything the system uses as a tool. Supports preflight de
 
 ### Step 1: Check state
 
-If `.claude/maps/tools.jsonl` exists and `--refresh` not passed → skip to Step 5 (render).
+If `.claude/project/maps/tools.jsonl` exists and `--refresh` not passed → skip to Step 5 (render).
 Otherwise → Step 2 (build).
 
 ### Step 2: Scan sources
@@ -33,18 +33,18 @@ Known services: Claude API, Bright Data, OpenAI Deep Research, Gemini API, Upsta
 
 **Platform tools** — enumerate Claude Code built-in tools (Read, Edit, Write, Bash, Grep, Glob, Agent, WebSearch, WebFetch) and MCP tools.
 
-**Skills** — read `.claude/maps/skills.jsonl`, create cross-ref entries with `external_deps` field.
+**Skills** — read `.claude/project/maps/skills.jsonl`, create cross-ref entries with `external_deps` field.
 
-**Hooks** — read `.claude/maps/hooks.jsonl`, create cross-ref entries.
+**Hooks** — read `.claude/project/maps/hooks.jsonl`, create cross-ref entries.
 
-### Step 3: Build `.claude/maps/tools.jsonl` + `.claude/maps/tools.md`
+### Step 3: Build `.claude/project/maps/tools.jsonl` + `.claude/project/maps/tools.md`
 
 Write JSONL with `_meta` header, then entries grouped by category.
 Write MD with: summary, external CLIs table, API services table, dependency matrix, env var checklist, cost summary.
 
 ### Step 4: Clear staleness
 
-After writing output, clear the `tools` entry from `.claude/maps/.stale.json` if it exists.
+After writing output, clear the `tools` entry from `.claude/project/maps/.stale.json` if it exists.
 
 ### Step 5: Render / Health check
 

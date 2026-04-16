@@ -51,7 +51,7 @@ After applying the fix:
 ## Step 4: Log (if new pattern)
 
 If this bug reveals a pattern that could recur:
-- Append a learning to `.claude/memory/learnings.jsonl`:
+- Append a learning to `.claude/project/memory/learnings.jsonl`:
   ```json
   {"ts":"YYYY-MM-DD","intent":"bug_fix","tip":"what was learned","effective":null,"pending_validation":true,"score":0,"source":"fix:fast"}
   ```
@@ -59,7 +59,7 @@ If this bug reveals a pattern that could recur:
 
 ## Step 5: Reasoning Trace (if non-trivial)
 
-If the fix was more than a typo/import fix, log a reasoning trace to `.claude/memory/traces.jsonl`:
+If the fix was more than a typo/import fix, log a reasoning trace to `.claude/project/memory/traces.jsonl`:
 - `framework_selected`: "direct"
 - `source`: "fix:fast"
 - `quality_score`: Score the fix 0-4 using the quality scale in CLAUDE.md §2

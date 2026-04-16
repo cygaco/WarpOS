@@ -4,7 +4,7 @@ description: Read the cross-session inbox — see what other Alex sessions have 
 
 # /session:read — Read Cross-Session Inbox
 
-Reads `.claude/events/events.jsonl (cat=inbox)` and displays all messages from the last 24 hours.
+Reads `.claude/project/events/events.jsonl (cat=inbox)` and displays all messages from the last 24 hours.
 
 ## Input
 

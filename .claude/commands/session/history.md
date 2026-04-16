@@ -12,7 +12,7 @@ Browse past session handoffs. Useful for finding what happened in a prior sessio
 ### Step 1: List recent handoffs
 
 ```bash
-ls -lt .claude/handoffs/ | head -20
+ls -lt .claude/runtime/handoffs/ | head -20
 ```
 
 Show the 20 most recent with date, time, and first line (title) of each:

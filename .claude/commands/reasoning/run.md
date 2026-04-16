@@ -14,7 +14,7 @@ If no arguments: scan the conversation for the most recent problem or decision p
 
 ## Phase 0: Check History
 
-Search `.claude/memory/traces.jsonl` and `.claude/memory/learnings.jsonl` for keywords from the problem:
+Search `.claude/project/memory/traces.jsonl` and `.claude/project/memory/learnings.jsonl` for keywords from the problem:
 1. Grep for keywords. Filter traces by matching `problem_type`.
 2. If match: note framework used, outcome, quality score.
 3. If learning match: note tip and conditions.
@@ -114,7 +114,7 @@ Two questions:
 1. Am I solving symptom or cause? (Quality 1 or 3+?)
 2. Was this the right approach? Would a different framework have been better?
 
-Append trace to `.claude/memory/traces.jsonl`:
+Append trace to `.claude/project/memory/traces.jsonl`:
 ```json
 {"id":"RT-NNN","ts":"ISO","problem_type":"...","mode":"quick|deep","framework_selected":"...","hypotheses":[],"outcome":"...","quality_score":null,"source":"reasoning:run"}
 ```

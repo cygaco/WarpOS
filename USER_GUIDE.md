@@ -145,8 +145,8 @@ The `/learn:conversation` capture is what makes the fix stick for next time. Wit
 ```
 /maps:all        # regenerates every map from current state
 → catches stale hook refs, broken skill dependencies, orphaned systems
-→ /check:refs    # optional — cross-file integrity
-→ /check:specs   # optional — spec drift
+→ /check:references    # optional — cross-file integrity
+→ /check:requirements   # optional — spec drift
 ```
 
 ### "I want this skill to exist"

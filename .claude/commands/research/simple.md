@@ -127,7 +127,7 @@ How these findings apply to the current project. Read CLAUDE.md and PROJECT.md f
 
 From the synthesis, extract learnings and apply them:
 
-1. **Learnings**: For each actionable insight, append to `.claude/memory/learnings.jsonl`:
+1. **Learnings**: For each actionable insight, append to `.claude/project/memory/learnings.jsonl`:
    ```json
    {"ts":"YYYY-MM-DD","intent":"external","tip":"the learning","effective":null,"pending_validation":true,"score":0,"source":"research/{topic-slug}"}
    ```

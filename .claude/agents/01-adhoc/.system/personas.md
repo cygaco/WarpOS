@@ -252,7 +252,7 @@ grep -n "export interface\|export type" src/lib/types.ts
 
 **Commands:**
 ls scripts/hooks/*.js
-tail -100 .claude/events/events.jsonl
+tail -100 .claude/project/events/events.jsonl
 
 **Severity:** HIGH if hook has no settings.json entry
 

@@ -28,7 +28,7 @@ Build capability: Alpha builds directly (no gauntlet)
 
 ### Step 2: Update heartbeat (if store exists)
 
-If `.claude/agents/.system/oneshot/store.json` exists and has a heartbeat, update:
+If `.claude/agents/store.json` exists and has a heartbeat, update:
 ```json
 { "agent": "alpha", "workstream": "solo" }
 ```

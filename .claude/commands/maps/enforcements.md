@@ -9,7 +9,7 @@ Shows what's enforced, what's not, and where the gaps are.
 ## Input
 
 `$ARGUMENTS` — optional flags:
-- `--refresh` — re-scan hooks + settings.json, rebuild `.claude/maps/enforcements.jsonl` + `.claude/maps/enforcements.md`
+- `--refresh` — re-scan hooks + settings.json, rebuild `.claude/project/maps/enforcements.jsonl` + `.claude/project/maps/enforcements.md`
 - No flags: display current map
 
 ## Procedure
@@ -44,8 +44,8 @@ For each hook, determine:
 ### Step 4: Write output
 
 Generate both files:
-- `.claude/maps/enforcements.jsonl` — one meta line + one line per hook/module
-- `.claude/maps/enforcements.md` — human-readable with hook chain, gate types, gap summary
+- `.claude/project/maps/enforcements.jsonl` — one meta line + one line per hook/module
+- `.claude/project/maps/enforcements.md` — human-readable with hook chain, gate types, gap summary
 
 **JSONL meta line schema:**
 ```json
@@ -80,7 +80,7 @@ Generate both files:
 
 ### Step 5: Clear staleness
 
-After writing output, clear the `enforcements` entry from `.claude/maps/.stale.json`:
-1. Read `.claude/maps/.stale.json`
+After writing output, clear the `enforcements` entry from `.claude/project/maps/.stale.json`:
+1. Read `.claude/project/maps/.stale.json`
 2. Delete the `enforcements` key
 3. Write back (or delete file if empty)

@@ -650,7 +650,7 @@ What couldn't be answered. What needs experimentation.
 
 ## Phase 5: Apply Learnings
 
-1. **Learnings**: For each HIGH-confidence actionable insight, append to `.claude/memory/learnings.jsonl`:
+1. **Learnings**: For each HIGH-confidence actionable insight, append to `.claude/project/memory/learnings.jsonl`:
    ```json
    {"ts":"YYYY-MM-DD","intent":"external","tip":"the learning","effective":null,"pending_validation":true,"score":0,"source":"deep-research/{topic-slug}"}
    ```
@@ -688,7 +688,7 @@ After everything is done (synthesis written, learnings saved), print a boxed ter
 
   CONTRARIAN: {one-line summary of the strongest counter-argument}
 
-  LEARNINGS SAVED: {N} to .claude/memory/learnings.jsonl
+  LEARNINGS SAVED: {N} to .claude/project/memory/learnings.jsonl
   FULL SYNTHESIS:  docs/99-resources/research/{topic-slug}/SYNTHESIS.md
 ═══════════════════════════════════════════════════
 ```

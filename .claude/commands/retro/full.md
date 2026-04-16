@@ -54,7 +54,7 @@ git diff {baseline}..HEAD -- 'src/' | head -500
 
 ### Phase C2: Requirement Propagation Check
 
-Delegate to `/check:specs drift`. This queries the event log for spec and code events, cross-references per feature, checks hierarchy propagation.
+Delegate to `/check:requirements drift`. This queries the event log for spec and code events, cross-references per feature, checks hierarchy propagation.
 
 Add findings under REQUIREMENTS PROPAGATION:
 ```

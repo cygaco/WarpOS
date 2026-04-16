@@ -20,7 +20,7 @@ For each pass, collect all findings as a JSON array. After all requested passes 
 
 ## Pass 1-2: Spec Consistency & Coverage
 
-Delegate to `/check:specs static`.
+Delegate to `/check:requirements static`.
 
 This runs all spec checks: consistency (S1-S8), coverage (S9-S17), and quality (S18-S23). See check/specs.md for the full check list.
 
@@ -28,13 +28,13 @@ This runs all spec checks: consistency (S1-S8), coverage (S9-S17), and quality (
 
 ## Pass 3: Agent Buildability
 
-Delegate to `/check:arch internal` — runs buildability checks A1-A12 only.
+Delegate to `/check:architecture internal` — runs buildability checks A1-A12 only.
 
 ---
 
 ## Pass 4: Environment Readiness
 
-Delegate to `/check:env ready` — runs environment checks E1-E14.
+Delegate to `/check:environment ready` — runs environment checks E1-E14.
 
 ---
 
@@ -44,15 +44,17 @@ Delegate to `/check:env ready` — runs environment checks E1-E14.
 
 **Prompt for agent:**
 
-You are a run transition auditor for the consumer product project. Your job is to verify that the previous run was properly closed out and the system is ready for a new run. Be exhaustive.
+You are a run transition auditor for the current project. Your job is to verify that the previous run was properly closed out and the system is ready for a new run. Be exhaustive.
+
+Resolve the project name from `.claude/manifest.json` → `project.name` and use it in output messages.
 
 ### Files to Read
 
-- .claude/agents/.system/oneshot/store.json
-- the retro directory (check manifest.json projectPaths.retro for location)/ (list all run folders)
-- For the LATEST retro folder, read ALL files: RETRO.md, BUGS.md, LEARNINGS.md, HYGIENE.md, and any other .md files
-- .claude/agents/02-oneshot/.system/protocol.md (verify it references the latest HYGIENE)
-- .claude/agents/.system.md (verify schema matches store.json)
+- `.claude/agents/store.json` (the build system state — resolve via `paths.store`)
+- Retro directory (resolve via `manifest.projectPaths.retro`; fall back to `.claude/project/retros/` or skip if neither exists)
+- For the LATEST retro folder: `RETRO.md`, `BUGS.md`, `LEARNINGS.md`, `HYGIENE.md`, and any other `.md` files
+- `.claude/agents/02-oneshot/.system/protocol.md` (verify it references the latest HYGIENE)
+- `.claude/agents/02-oneshot/.system/file-ownership.md` (if present; oneshot uses this to enforce ownership)
 
 ### Checks
 
@@ -75,9 +77,9 @@ Same JSON array format as other passes.
 
 ## Pass 6: Agent Architecture Completeness
 
-Delegate to `/check:arch internal` — runs architecture completeness checks A13-A26 (including the agentic flow audit).
+Delegate to `/check:architecture internal` — runs architecture completeness checks A13-A26 (including the agentic flow audit).
 
-Note: When running all passes, Pass 3 delegates to check:arch for A1-A12, and Pass 6 delegates for A13-A26. The check:arch skill handles both sets. If running just Pass 6, specify that only A13-A26 checks should run.
+Note: When running all passes, Pass 3 delegates to `check:architecture internal` for A1-A12, and Pass 6 delegates for A13-A26. The `check:architecture` skill handles both sets. If running just Pass 6, specify that only A13-A26 checks should run.
 
 ---
 

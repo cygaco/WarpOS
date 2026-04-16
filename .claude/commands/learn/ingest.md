@@ -94,14 +94,14 @@ For each insight, determine where it should be applied:
 
 | Category | Target Files | Action Type |
 |----------|-------------|-------------|
-| prompting | context-enhancer.js, memory/learnings.jsonl | New enhancement strategy or learned tip |
+| prompting | smart-context.js, memory/learnings.jsonl | New enhancement strategy or learned tip |
 | agents | .claude/agents/*.md, AGENT-SYSTEM.md | Agent behavior update, new agent proposal |
 | code | scripts/lint-*.js, HYGIENE.md | New lint rule, hygiene pattern |
 | architecture | docs/04-architecture/*.md, SPEC_GRAPH.json | Architecture doc update, new graph edge |
 | process | .claude/commands/*.md, docs/03-*/*.md | Skill update, process doc update |
 | security | docs/07-security/*.md, scripts/hooks/*-guard.js | Security policy, new guard hook |
 | ux | docs/01-design-system/*.md, docs/05-features/*/COPY.md | Design pattern, copy improvement |
-| meta | docs/00-canonical/*.md, CLAUDE.md, .claude/memory/ | System-level improvement |
+| meta | docs/00-canonical/*.md, CLAUDE.md, .claude/project/memory/ | System-level improvement |
 
 ### Step 4: Generate Proposals
 
@@ -127,8 +127,8 @@ For each applicable insight, generate a concrete proposal:
 
 Each insight goes to one of two destinations based on what it is:
 
-**Prompt tips** (category: `prompting`) → `.claude/memory/learnings.jsonl`
-These are surfaced by the context-enhancer in future sessions. They don't need building.
+**Prompt tips** (category: `prompting`) → `.claude/project/memory/learnings.jsonl`
+These are surfaced by the smart-context in future sessions. They don't need building.
 ```json
 {
   "ts": "2026-04-01",
@@ -141,7 +141,7 @@ These are surfaced by the context-enhancer in future sessions. They don't need b
 }
 ```
 
-**Build proposals** (category: `agents`, `code`, `architecture`, `process`, `security`, `ux`, `meta`) → `.claude/memory/learnings.jsonl`
+**Build proposals** (category: `agents`, `code`, `architecture`, `process`, `security`, `ux`, `meta`) → `.claude/project/memory/learnings.jsonl`
 These are actionable insights that will be surfaced in future sessions via the prompt enhancer.
 ```json
 {
@@ -157,7 +157,7 @@ These are actionable insights that will be surfaced in future sessions via the p
 }
 ```
 
-**Always log to** `.claude/events/events.jsonl` regardless of destination:
+**Always log to** `.claude/project/events/events.jsonl` regardless of destination:
 ```json
 {
   "id": "EVT-xxx",

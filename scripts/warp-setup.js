@@ -258,7 +258,7 @@ installed += hookCount;
 const pathsFile = path.join(TARGET, ".claude/paths.json");
 if (!fs.existsSync(pathsFile)) {
   const paths = {
-    version: 2,
+    version: 3,
     events: ".claude/project/events",
     memory: ".claude/project/memory",
     maps: ".claude/project/maps",
@@ -276,9 +276,27 @@ if (!fs.existsSync(pathsFile)) {
     dreams: ".claude/dreams",
     favorites: ".claude/content/favorites",
     hooks: "scripts/hooks",
+    hookLib: "scripts/hooks/lib",
+    patterns: "patterns",
+    requirements: "requirements",
     manifest: ".claude/manifest.json",
     settings: ".claude/settings.json",
     store: ".claude/agents/store.json",
+    eventsFile: ".claude/project/events/events.jsonl",
+    toolsFile: ".claude/project/events/tools.jsonl",
+    requirementsFile: ".claude/project/events/requirements.jsonl",
+    requirementsStagedFile: ".claude/project/events/requirements-staged.jsonl",
+    learningsFile: ".claude/project/memory/learnings.jsonl",
+    tracesFile: ".claude/project/memory/traces.jsonl",
+    systemsFile: ".claude/project/memory/systems.jsonl",
+    judgmentModel: ".claude/agents/00-alex/.system/beta/judgement-model.md",
+    judgmentRecommendations:
+      ".claude/agents/00-alex/.system/beta/judgement-model-recommendations.md",
+    betaSourceData: ".claude/agents/00-alex/.system/beta/beta-source-data.md",
+    betaEvents: ".claude/agents/00-alex/.system/beta/events.jsonl",
+    lexicon: ".claude/agents/00-alex/.system/lexicon.md",
+    pathsLib: "scripts/hooks/lib/paths.js",
+    loggerLib: "scripts/hooks/lib/logger.js",
   };
   fs.writeFileSync(pathsFile, JSON.stringify(paths, null, 2) + "\n");
   log("ok", "Created paths.json");
@@ -509,6 +527,7 @@ const hookConfig = {
         {
           command: `node "$CLAUDE_PROJECT_DIR/scripts/hooks/store-validator.js"`,
         },
+        { command: `node "$CLAUDE_PROJECT_DIR/scripts/hooks/path-guard.js"` },
       ],
     },
     {

@@ -35,7 +35,7 @@ Look for: build → bug report → meta-system creation → refine → back to p
 query({cat: "tool", limit: 200})
 ```
 Find tools that fire within 60 seconds of each other. Which skills are always run in sequence?
-Example: `/check:specs` always followed by `/maps:all`?
+Example: `/check:requirements` always followed by `/maps:all`?
 
 ### 1c. Frustration-to-Enforcement
 Match prompt entries containing frustration signals ("keeps happening", "how do I get you to", "stuck in a loop", repeated corrections) to subsequent hook/skill creation events within 2 sessions.

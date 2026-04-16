@@ -25,7 +25,7 @@ Every problem, every session, every task — this is the cycle:
 
 ## Self-Modification Tracking
 
-When modifying infrastructure (CLAUDE.md, hooks, skills, agents): the `systems-sync.js` hook auto-logs to the centralized logger (category: `modification`). Legacy dual-write to `.claude/memory/modifications.jsonl` is still active.
+When modifying infrastructure (CLAUDE.md, hooks, skills, agents): the `systems-sync.js` hook auto-logs to the centralized logger (category: `modification`). Legacy dual-write to `.claude/project/memory/modifications.jsonl` is still active.
 
 ## Systems Manifest
 

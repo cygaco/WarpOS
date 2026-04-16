@@ -9,10 +9,10 @@ Visualize how hooks are wired: which events trigger which scripts.
 ## Input
 
 `$ARGUMENTS` — optional flags:
-- `--refresh` — re-scan settings.json + scripts/hooks/, rebuild `.claude/maps/hooks.jsonl` + `.claude/maps/hooks.md`
+- `--refresh` — re-scan settings.json + scripts/hooks/, rebuild `.claude/project/maps/hooks.jsonl` + `.claude/project/maps/hooks.md`
 - `--terminal` — render as ASCII art (default)
-- `--file` — write to `.claude/maps/hooks.txt`
-- `--html` — write styled HTML to `.claude/maps/hooks.html`
+- `--file` — write to `.claude/project/maps/hooks.txt`
+- `--html` — write styled HTML to `.claude/project/maps/hooks.html`
 
 ## Procedure
 
@@ -27,7 +27,7 @@ Visualize how hooks are wired: which events trigger which scripts.
 - No orphan scripts (on disk but not wired)
 - Event names are valid Claude Code events
 - Matcher patterns are syntactically correct
-- Generate `.claude/maps/hooks.jsonl` + `.claude/maps/hooks.md`
+- Generate `.claude/project/maps/hooks.jsonl` + `.claude/project/maps/hooks.md`
 
 ### Step 3: Build graph
 
@@ -39,8 +39,8 @@ Visualize how hooks are wired: which events trigger which scripts.
 
 ### Step 4: Clear staleness
 
-After writing output, clear the `hooks` entry from `.claude/maps/.stale.json` if it exists:
-1. Read `.claude/maps/.stale.json`
+After writing output, clear the `hooks` entry from `.claude/project/maps/.stale.json` if it exists:
+1. Read `.claude/project/maps/.stale.json`
 2. Delete the `hooks` key
 3. Write back (or delete file if empty)
 
@@ -49,8 +49,8 @@ After writing output, clear the `hooks` entry from `.claude/maps/.stale.json` if
 Example terminal:
 ```
 UserPromptSubmit
-  ├─▶ prompt-enhancer.js
-  └─▶ context-enhancer.js
+  ├─▶ smart-context.js
+  └─▶ smart-context.js
 
 PreToolUse [Bash]
   └─▶ gate-check.js

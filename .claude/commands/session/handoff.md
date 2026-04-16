@@ -24,7 +24,7 @@ Read these files to supplement what's in conversation context:
 | `.claude/.session-tracking.jsonl` | Last 50 tool calls (files touched, errors) |
 | `removed (stale)` | Detected threads with topics |
 | `removed (stale)` | Thread quality scores |
-| `.claude/.session-checkpoint.json` | Last periodic checkpoint |
+| `.claude/runtime/.session-checkpoint.json` | Last periodic checkpoint |
 
 ## Steps
 
@@ -36,6 +36,7 @@ Run in parallel:
 - Read conversation context for decisions, bugs, deferred items
 - Read `.session-prompts.log` for user messages (fills compaction gaps)
 - Read last 50 lines of `.session-tracking.jsonl` for tool activity
+- Read `.claude/project/events/requirements-staged.jsonl` — count pending entries grouped by feature
 
 ### 2. Build the Handoff
 
@@ -74,9 +75,22 @@ Run in parallel:
 
 [Prioritized, specific list]
 
+## Pending Requirement Changes
+
+[If any pending entries exist in requirements-staged.jsonl, show:]
+
+| Feature | Count | Highest Priority |
+|---------|-------|-----------------|
+| {feature} | {N} | {drift_type} |
+
+[If none: omit this section entirely]
+
+Run `/check:requirements review` to process these before ending the session.
+
 ## Warnings
 
 [Don't-touch items, known broken state, pending work]
+[If pending requirement overwrites exist, add: "**N spec overwrites pending review** — code behavior has diverged from specs. Run `/check:requirements review`."]
 
 ## Key Context
 
@@ -87,7 +101,7 @@ Run in parallel:
 
 **Detection:** Check if this session had Alex β active:
 1. Read `.claude/agents/00-alex/.system/beta/events.jsonl` — any entries from today's date?
-2. Grep `.claude/events/events.jsonl` for `"beta"` category entries from this session
+2. Grep `.claude/project/events/events.jsonl` for `"beta"` category entries from this session
 
 If either is true, append this section after Key Context:
 
@@ -101,11 +115,11 @@ If either is true, append this section after Key Context:
 [Decisions Alex β tagged as "next session" or deferred explicitly]
 
 ### Pending inbox items
-[Cross-session items still unresolved — check .claude/events/events.jsonl category "inbox"]
+[Cross-session items still unresolved — check .claude/project/events/events.jsonl category "inbox"]
 ```
 
 Gather data for each subsection:
-- **Escalations:** Search conversation context and `.system/beta/events.jsonl` for `ESCALATE` entries without a corresponding user response
+- **Escalations:** Search conversation context and `.claude/agents/00-alex/.system/beta/events.jsonl` for `ESCALATE` entries without a corresponding user response
 - **Deferred:** Search Alex β decisions for "next session", "defer", "later" in the answer or reasoning
 - **Inbox:** Query events with `category: "inbox"` that have no `resolved: true` — these are cross-session messages still pending
 
@@ -125,8 +139,8 @@ If Alex β was NOT active this session, skip this entire section.
 
 ### 4. Save
 
-- Always save to `.claude/handoff.md` (overwrite)
-- Also save timestamped copy to `.claude/handoffs/{YYYY-MM-DD-HHMM}.md`
+- Always save to `.claude/runtime/handoff.md` (overwrite)
+- Also save timestamped copy to `.claude/runtime/handoffs/{YYYY-MM-DD-HHMM}.md`
 - Display on screen (unless `quiet` variant)
 
 ## Quality Rules

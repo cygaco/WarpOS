@@ -93,5 +93,5 @@ See PRD_TEMPLATE.md § "One-Shot Generation" for section-level inclusion rules.
 After implementation, specs and code can diverge. Detection methods:
 
 - **Automated:** Hook-based spec drift tracking marks files STALE when dependencies change
-- **Manual:** Periodic `/check:specs` audit compares spec claims to code reality
+- **Manual:** Periodic `/check:requirements` audit compares spec claims to code reality
 - **Prevention:** Implementation Map in PRD creates a traceable link between spec and code

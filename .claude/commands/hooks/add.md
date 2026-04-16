@@ -11,7 +11,7 @@ Takes a description of what the hook should do and:
    - Which event (PreToolUse, PostToolUse, etc.)
    - Which matcher (Bash, Edit|Write, etc.)
    - What the script should do
-2. **Check execution order** — Read `.claude/maps/hooks.jsonl` and find all hooks registered for the same event+matcher. Display the current chain with execution order. Show where the new hook will be inserted. If the new hook is fail-closed, warn: "This hook will block all subsequent hooks in the chain on failure." This is advisory — does not block creation.
+2. **Check execution order** — Read `.claude/project/maps/hooks.jsonl` and find all hooks registered for the same event+matcher. Display the current chain with execution order. Show where the new hook will be inserted. If the new hook is fail-closed, warn: "This hook will block all subsequent hooks in the chain on failure." This is advisory — does not block creation.
 3. Writes the hook script to `scripts/hooks/`
    - If the hook needs file path comparison or PROJECT resolution, import from shared utilities:
      ```js

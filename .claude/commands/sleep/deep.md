@@ -39,7 +39,7 @@ This architecture is grounded in research on how the human brain uses sleep for 
 
 #### 1a. Importance Tagging Audit
 
-Before consolidation, ensure learnings have importance signals. Read `.claude/memory/learnings.jsonl` and classify each entry:
+Before consolidation, ensure learnings have importance signals. Read `.claude/project/memory/learnings.jsonl` and classify each entry:
 
 | Signal | Criteria | Importance |
 |--------|----------|------------|
@@ -83,7 +83,7 @@ Apply decay function to restore signal-to-noise ratio:
 If the same learning pattern appears 3+ times with `effective: true`:
 - Promote to permanent rule:
   - Code pattern → HYGIENE rule in latest retro
-  - Enhancement strategy → hardcode in `prompt-enhancer.js`
+  - Enhancement strategy → hardcode in `smart-context.js`
   - Workflow pattern → create a skill via `/skills:create`
 - Once promoted, remove the individual learnings (memory is now in "neocortex")
 
@@ -97,7 +97,7 @@ The brain preferentially replays memories at risk of being overwritten:
 #### 1g. Retroactive Reclassification (Reasoning Engine)
 
 Re-evaluate recent reasoning traces to prevent quality inflation:
-1. Read `.claude/memory/traces.jsonl` — find all traces from the last 7 days with `quality_score >= 2`
+1. Read `.claude/project/memory/traces.jsonl` — find all traces from the last 7 days with `quality_score >= 2`
 2. For each trace: did the fix hold? Check if similar bugs reappeared (search learnings, git log, BUGS.md)
 3. Did conditions change? Is the fix still valid in the current codebase?
 4. Does a better fix exist? Has a subsequent trace solved the same root cause more completely?
@@ -130,7 +130,7 @@ Review Alex β's performance since last sleep:
    - Remove any orphan temp files in `.claude/`
 
 2. **Compact event log**
-   - Read `.claude/events/events.jsonl`
+   - Read `.claude/project/events/events.jsonl`
    - Events older than 30 days: compress into monthly summary
    - Keep recent events in full detail
 
@@ -148,12 +148,12 @@ Review Alex β's performance since last sleep:
    - Detect orphan agent worktree branches (`agent/wt-*`) → log count, suggest cleanup
 
 6. **Requirement drift summary**
-   - Read `.claude/events/requirements-staged.jsonl`
+   - Read `.claude/project/events/requirements-staged.jsonl`
    - Filter for `status === "pending"` (last-write-wins by `id`)
    - If count > 0: display summary table grouped by feature (feature, count, highest drift_type)
    - If overwrites exist: flag as warning — "N spec overwrites pending review"
    - If count > 10: suggest grouping by feature for efficiency
-   - Prompt: "Run `/reqs:review` to process, or they'll carry to next session"
+   - Prompt: "Run `/check:requirements review` to process, or they'll carry to next session"
    - Log deferred entries to cross-session inbox so next session sees them
 
 ### Phase 3: Replay (NREM Stage 2 — Spindle-Mediated Review)

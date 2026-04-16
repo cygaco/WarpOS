@@ -56,6 +56,6 @@ Append confirmed entries to the appropriate retro docs:
 - Bugs → `BUGS.md` (with next BUG-NNN ID)
 - Patterns → `HYGIENE.md` (with next Rule NN)
 - Decisions, deferred, UX → `RETRO.md`
-- Surprises that are learnings → `.claude/memory/learnings.jsonl`
+- Surprises that are learnings → `.claude/project/memory/learnings.jsonl`
 
 If no retro directory exists for the current run, ask the user where to write.

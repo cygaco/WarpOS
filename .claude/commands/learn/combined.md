@@ -16,14 +16,14 @@ Launch two agents in parallel:
 Execute the full `/learn:conversation` procedure (Phase A + A.5 + B). Extract learnings from the current conversation — corrections, effective patterns, discoveries. Audit existing learning statuses. Review and maintain learning quality.
 
 **Agent B — Event log learnings:**
-Execute the full `/learn:events` procedure. Mine `.claude/events/events.jsonl` for behavioral patterns — tool hotspots, prompt patterns, spec drift, hook triggers, modification frequency.
+Execute the full `/learn:events` procedure. Mine `.claude/project/events/events.jsonl` for behavioral patterns — tool hotspots, prompt patterns, spec drift, hook triggers, modification frequency.
 
-Both agents write their findings to `.claude/memory/learnings.jsonl` using appendFileSync.
+Both agents write their findings to `.claude/project/memory/learnings.jsonl` using appendFileSync.
 
 ### Step 2: Deduplicate
 
 After both agents complete:
-1. Read `.claude/memory/learnings.jsonl`
+1. Read `.claude/project/memory/learnings.jsonl`
 2. Find entries with duplicate or overlapping tips (same insight, different wording)
 3. Keep the entry with higher score or more specific conditions
 4. Remove duplicates using Edit tool

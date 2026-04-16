@@ -11,12 +11,12 @@ Visualize the systems manifest as a dependency graph.
 `$ARGUMENTS` — optional flags:
 - `--refresh` — verify all systems (files exist, hooks wired, status honest), update systems.jsonl
 - `--terminal` — render as ASCII art (default)
-- `--file` — write to `.claude/maps/systems.txt`
-- `--html` — write styled HTML to `.claude/maps/systems.html`
+- `--file` — write to `.claude/project/maps/systems.txt`
+- `--html` — write styled HTML to `.claude/project/maps/systems.html`
 
 ## Procedure
 
-### Step 1: Read `.claude/memory/systems.jsonl`
+### Step 1: Read `.claude/project/memory/systems.jsonl`
 
 Parse each system entry: id, name, status, category, files, depends_on.
 

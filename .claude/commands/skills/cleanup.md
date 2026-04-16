@@ -8,7 +8,7 @@ Audit the entire skill system and clean up dead weight.
 
 ## Phase 0: Load or Build Skill Map
 
-Prefer `.claude/maps/skills.jsonl` (structured, has `referenced_by` arrays per skill):
+Prefer `.claude/project/maps/skills.jsonl` (structured, has `referenced_by` arrays per skill):
 - **If it exists**: parse each line as JSON. Use the `referenced_by`, `calls`, `reads`, and `writes` fields as the cross-reference graph for Phases 1-3.
 - **If it doesn't exist**: fall back to `.claude/project/maps/skills.jsonl`, or run `/maps:skills` to build it.
 
@@ -36,7 +36,7 @@ For each skill file, check:
 
 1. **Title freshness**: Does the `#` title match the current skill name? (e.g., still says `/overseer:review` after rename)
 2. **Dead skill references**: Does it reference `/namespace:skill` names that no longer exist? (e.g., `/reasoning:trace` after rename to `/reasoning:log`)
-3. **Dead file path references**: Does it reference file paths (`.claude/commands/...`, `scripts/hooks/...`, `.claude/memory/...`) that don't exist on disk? Grep for paths, verify each with Glob or file existence check.
+3. **Dead file path references**: Does it reference file paths (`.claude/commands/...`, `scripts/hooks/...`, `.claude/project/memory/...`) that don't exist on disk? Grep for paths, verify each with Glob or file existence check.
 4. **Duplicate functionality**: Are two skills doing the same thing? (e.g., `self-qa:fix` vs `lens:fix` overlap)
 5. **Frontmatter hygiene**: Only `description:` is required. `name:` is optional (overrides display name). Extra fields (`created`, `source`, `depends-on`, `status`) are metadata bloat — remove them.
 6. **Stale instructions**: Does it reference deprecated systems (daemon, pipeline, overseer namespace)?
@@ -45,7 +45,7 @@ For each skill file, check:
 
 Don't rely on a hardcoded list of deprecated systems — check dynamically:
 
-1. **Read `.claude/memory/systems.jsonl`** — get every system ID and its `status` (active, broken, stub, untested)
+1. **Read `.claude/project/memory/systems.jsonl`** — get every system ID and its `status` (active, broken, stub, untested)
 2. **For each skill**, check if it references systems, hooks, or files that:
    - Don't exist in the systems manifest at all (orphan reference)
    - Have `status: "broken"` (reference to known-broken system)

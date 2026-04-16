@@ -1,56 +1,66 @@
+---
+description: Design system compliance audit — read-only check of components against the project's design-system docs
+---
+
 # /ui:review — Design System Compliance Audit
 
-Read-only audit of component(s) against the consumer product design system. Reports violations without fixing them.
+Read-only audit of component(s) against the project's design system. Reports violations without fixing them.
 
 ## Input
 
-`$ARGUMENTS` — file path(s) or glob pattern to audit. If empty, audit all files in `src/components/`.
+`$ARGUMENTS` — file path(s) or glob pattern to audit. If empty, audit all component files in the project's primary source directory (resolve via `manifest.source_dirs`).
 
 ## Process
 
-1. Read the design system docs:
-   - `docs/01-design-system/COMPONENT_LIBRARY.md` (component catalog, variants, known issues)
-   - `docs/01-design-system/COLOR_SEMANTICS.md` (color usage rules)
-   - `docs/01-design-system/FEEDBACK_PATTERNS.md` (toast, loading, notification patterns)
-   - `docs/01-design-system/UX_PRINCIPLES.md` (interaction principles)
+### 1. Resolve design-system location
 
-2. Read the target file(s) from `$ARGUMENTS`
+Read `.claude/paths.json` for `requirements` base. Then try:
+- `requirements/01-design-system/COMPONENT_LIBRARY.md`
+- `requirements/01-design-system/COLOR_SEMANTICS.md`
+- `requirements/01-design-system/FEEDBACK_PATTERNS.md` (optional)
+- `requirements/01-design-system/UX_PRINCIPLES.md` (optional)
 
-3. Check each file for these violations:
+Legacy fallback: `docs/01-design-system/...` (same filenames).
 
-### Color Compliance
-- Hardcoded hex values in style objects (should use `var(--token)`)
-- Tailwind color utility classes (project uses CSS custom properties, not Tailwind colors)
-- Unknown/undefined CSS custom property references (not in globals.css)
+If none exist, report "No design system docs found — `/ui:review` requires at least `COMPONENT_LIBRARY.md` and `COLOR_SEMANTICS.md` under `requirements/01-design-system/`." and exit.
 
-### Component Usage
-- Raw `<button>` elements (should use `<Btn>`)
-- Raw `<input>` elements (should use `<Inp>`)
-- Raw `<select>` elements (should use `<Sel>`)
-- Raw `<dialog>` or modal patterns (should use `<PrivacyModal>` pattern or future Radix Dialog)
-- Missing component variants that need to be created
+### 2. Read the target files from `$ARGUMENTS`
 
-### Accessibility (WCAG 2.1 AA)
+If `$ARGUMENTS` is empty, use `manifest.source_dirs[0]` or fall back to `src/components/`.
+
+### 3. Check each file for violations
+
+The exact rules depend on what the design-system docs say. Below are the **common categories** — match them against the actual rules in the design-system docs.
+
+### Color compliance
+- Hardcoded hex values in style objects (should use `var(--token)` or the project's equivalent)
+- Framework-native color utility classes when the design system mandates custom properties
+- References to CSS custom properties that don't exist in the global stylesheet
+
+### Component usage
+- Raw HTML primitives where the design system mandates a wrapper (e.g., `<button>` → `<Btn>`, `<input>` → `<Inp>`)
+- Missing variants that the design system requires
+- Modal/dialog patterns that don't match the project's chosen primitive
+
+### Accessibility (WCAG 2.1 AA baseline)
 - Interactive elements without accessible names (missing aria-label, aria-labelledby, or visible text)
-- Images/SVGs without alt text or role="presentation"
+- Images/SVGs without alt text or `role="presentation"`
 - Color as sole state indicator (needs icon/text pair)
 - Missing focus management for dynamic content
 - onClick on non-interactive elements (`<div onClick>` instead of `<button>`)
 
-### Theme Compliance
-- Gradients (not in dark corporate theme)
-- Frosted glass / glassmorphism effects
-- Emoji in UI text
+### Theme compliance
+- Visual effects prohibited by the project's theme (e.g., gradients, glassmorphism — check COMPONENT_LIBRARY.md)
+- Emoji in UI text (unless explicitly allowed)
 - Generic placeholder copy ("Lorem ipsum", "Click here")
-- Spacing values outside the standard scale (8/12/16/20/32px)
-- Border radius values not using design tokens
+- Spacing or border-radius values outside the documented scale
 
-### Pattern Compliance
-- JS-based hover (onMouseEnter/onMouseLeave) outside existing ui/ components
-- Inconsistent padding (check against COMPONENT_LIBRARY.md standards)
+### Pattern compliance
+- JS-based hover patterns (onMouseEnter/onMouseLeave) when CSS would suffice
+- Inconsistent padding vs. the documented component standards
 - Missing loading states for async operations
 - Missing error states for fallible operations
-- Toast/notification patterns not using Toast component
+- Toast/notification patterns that bypass the project's Toast primitive
 
 ## Output
 

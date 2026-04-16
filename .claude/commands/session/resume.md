@@ -16,9 +16,9 @@ Load the most recent handoff or checkpoint and display it. Use when:
 
 Check in priority order (stop at first hit):
 
-1. `.claude/handoff.md` — most recent full handoff
-2. `.claude/.session-checkpoint.json` — periodic checkpoint
-3. `.claude/handoffs/` — most recent timestamped file
+1. `.claude/runtime/handoff.md` — most recent full handoff
+2. `.claude/runtime/.session-checkpoint.json` — periodic checkpoint
+3. `.claude/runtime/handoffs/` — most recent timestamped file
 4. `.claude/.session-prompts.log.prev` — archived prompt log from last session
 
 ### Step 2: Display it

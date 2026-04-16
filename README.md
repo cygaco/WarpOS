@@ -102,10 +102,10 @@ WarpOS/
 ### Quality
 - `/qa:audit` — Full codebase QA audit (7 failure-mode personas)
 - `/qa:check` — Passive QA scan on recent changes
-- `/check:arch` — Architecture integrity check
-- `/check:env` — Environment readiness audit
+- `/check:architecture` — Architecture integrity check
+- `/check:environment` — Environment readiness audit
 - `/check:patterns` — Cross-run intelligence and automation proposals
-- `/check:specs` — Spec consistency and drift detection
+- `/check:requirements` — Spec consistency and drift detection
 
 ### Learning & Memory
 - `/learn:combined` — Extract learnings from conversation + events
@@ -175,14 +175,14 @@ WarpOS/
 ### Red Team & Security
 - `/redteam:full` — Full red team audit (11 personas)
 - `/redteam:scan` — Quick deterministic security scan
-- `/reqs:review` — Review requirement drift entries
+- `/check:requirements review` — Review requirement drift entries
 
 ### Other
 - `/beta:mine` — Mine patterns from user behavior
 - `/fav:list` — Browse favorite moments
 - `/fav:search` — Search favorites
 - `/ui:review` — Design system compliance audit
-- `/check:refs` — Cross-file reference integrity
+- `/check:references` — Cross-file reference integrity
 - `/warp:health` — Verify WarpOS installation
 - `/warp:tour` — Guided introduction
 </details>

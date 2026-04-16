@@ -9,14 +9,14 @@ Single owner for "Are the specs consistent, complete, and up to date with the co
 Three modes:
 - **static** — full audit across all features (use before agent runs or periodic health check)
 - **drift** — what changed this session, did specs propagate? (embedded in `/retro:full`)
-- **review** — batch-review pending drift entries staged by `edit-watcher` (absorbed the old `/reqs:review` skill)
+- **review** — batch-review pending drift entries staged by `edit-watcher` (absorbed the old `/check:requirements review` skill)
 
 ## Input
 
 `$ARGUMENTS` — Mode selection:
 - No args — `static` full audit
 - `drift` — session-diff propagation check
-- `review` — pending drift review (absorbed old `/reqs:review`)
+- `review` — pending drift review (absorbed old `/check:requirements review`)
 - `<feature-name>` — scope static or drift to one feature
 - `<feature-name> --drift` — combine: feature-scoped drift check
 - `review --compact` — one-line summary per pending entry (triage mode)
@@ -145,7 +145,7 @@ Then hand off: `"Use /check:requirements review to process {N} pending drift ent
 
 ---
 
-## Mode: review — Batch Drift Review (absorbed old /reqs:review)
+## Mode: review — Batch Drift Review (absorbed old /check:requirements review)
 
 Process pending drift entries staged by the `drift` mode or by the `edit-watcher` hook.
 

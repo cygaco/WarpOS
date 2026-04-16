@@ -36,7 +36,7 @@ Scores a fix or decision on the 0-4 quality scale. Can also retroactively reclas
 
 ### 1. Read the Trace
 
-Read `.claude/memory/traces.jsonl`, find the matching trace by ID or recency.
+Read `.claude/project/memory/traces.jsonl`, find the matching trace by ID or recency.
 
 ### 2. Gather Evidence
 

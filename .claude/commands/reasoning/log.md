@@ -5,7 +5,7 @@ description: Log a reasoning episode — record what framework was used, why, an
 
 # /reasoning:log — Log Reasoning Episode
 
-Records a reasoning episode to `.claude/memory/traces.jsonl`. Called manually after investigation is complete, or by `/fix:deep`, `/fix:fast`.
+Records a reasoning episode to `.claude/project/memory/traces.jsonl`. Called manually after investigation is complete, or by `/fix:deep`, `/fix:fast`.
 
 ## Input
 
@@ -18,7 +18,7 @@ Records a reasoning episode to `.claude/memory/traces.jsonl`. Called manually af
 
 ### 1. Determine IDs
 
-Read `.claude/memory/traces.jsonl`, find the highest `RT-NNN` id, increment by 1.
+Read `.claude/project/memory/traces.jsonl`, find the highest `RT-NNN` id, increment by 1.
 
 **Chain detection:**
 - If "continue" or if a trace was already logged in this conversation → same chain, increment `seq`
@@ -85,7 +85,7 @@ Hypotheses are optional for simple fixes. Required when the investigation tested
 
 ### 5. Append
 
-Append the JSON line to `.claude/memory/traces.jsonl`.
+Append the JSON line to `.claude/project/memory/traces.jsonl`.
 
 ### 6. Output
 

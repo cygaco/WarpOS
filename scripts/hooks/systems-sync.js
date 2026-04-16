@@ -7,7 +7,7 @@
  *
  *   1. MAP STALENESS — If you edit a skill, hook, or config file, marks
  *      the corresponding map stale in paths.maps/.stale.json. The
- *      context-enhancer then shows "Stale maps: ..." in your next prompt.
+ *      smart-context then shows "Stale maps: ..." in your next prompt.
  *
  *   2. CROSS-SESSION BROADCAST — For high-impact files (CLAUDE.md,
  *      settings.json, types.ts, constants.ts, globals.css, tsconfig.json,

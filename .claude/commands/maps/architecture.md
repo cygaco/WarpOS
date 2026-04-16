@@ -11,8 +11,8 @@ Visualize the application structure: API routes, page components, library module
 `$ARGUMENTS` — optional flags:
 - `--refresh` — re-scan src/, rebuild `.claude/reference/architecture-map.md`
 - `--terminal` — render as ASCII art (default)
-- `--file` — write to `.claude/maps/architecture.txt`
-- `--html` — write styled HTML to `.claude/maps/architecture.html`
+- `--file` — write to `.claude/project/maps/architecture.txt`
+- `--html` — write styled HTML to `.claude/project/maps/architecture.html`
 
 ## Procedure
 

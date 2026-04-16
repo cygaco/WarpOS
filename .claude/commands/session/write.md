@@ -4,7 +4,7 @@ description: Post a message to the cross-session inbox so other Alex sessions ca
 
 # /session:write — Cross-Session Message
 
-Posts an inbox event to `.claude/events/events.jsonl` (cat=inbox) that all other Alex sessions will see on their next prompt (via context-enhancer).
+Posts an inbox event to `.claude/project/events/events.jsonl` (cat=inbox) that all other Alex sessions will see on their next prompt (via smart-context).
 
 ## Input
 
@@ -32,9 +32,9 @@ If no uncommitted changes, check `git log --since="2 hours ago" --name-only --fo
 
 **c) Last user task:** Read the conversation context — what was the user's last major request or goal? Summarize in one line.
 
-**d) Learnings added:** Check if any learnings were appended to `.claude/memory/learnings.jsonl` this session (compare line count or check recent timestamps).
+**d) Learnings added:** Check if any learnings were appended to `.claude/project/memory/learnings.jsonl` this session (compare line count or check recent timestamps).
 
-**e) Systems changed:** Check if any of these were modified: `CLAUDE.md`, `.claude/commands/**`, `scripts/hooks/**`, `.claude/reference/**`, `.claude/memory/systems.jsonl`. List which ones.
+**e) Systems changed:** Check if any of these were modified: `CLAUDE.md`, `.claude/commands/**`, `scripts/hooks/**`, `.claude/reference/**`, `.claude/project/memory/systems.jsonl`. List which ones.
 
 **f) Research outputs:** Check if any new files exist in `docs/99-resources/research/` that weren't there before.
 
@@ -73,7 +73,7 @@ Use the centralized logger to write the inbox event:
 node -e "const {log}=require('./scripts/hooks/lib/logger'); log('inbox', {from:'...', message:'...', files_changed:[...]}, {session:'...'}); console.log('OK')"
 ```
 
-No cleanup needed — events.jsonl is append-only, context-enhancer already filters by 24h TTL.
+No cleanup needed — events.jsonl is append-only, smart-context already filters by 24h TTL.
 
 ### 4. Confirm
 

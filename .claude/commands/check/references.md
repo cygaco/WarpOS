@@ -70,9 +70,9 @@ Common renames to check first (old → new):
 - old `check:refs` → `check:references`
 - old `check:specs` → `check:requirements`
 - old `reqs:review` → `check:requirements review`
-- `.claude/events/` → `.claude/project/events/`
-- `.claude/memory/` → `.claude/project/memory/`
-- `.claude/maps/` → `.claude/project/maps/`
+- `.claude/project/events/` → `.claude/project/events/`
+- `.claude/project/memory/` → `.claude/project/memory/`
+- `.claude/project/maps/` → `.claude/project/maps/`
 - `.claude/handoffs/` → `.claude/runtime/handoffs/`
 - `.claude/logs/` → `.claude/runtime/logs/`
 

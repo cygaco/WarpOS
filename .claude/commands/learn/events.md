@@ -4,7 +4,7 @@ description: Mine the event log for learnings — patterns, anomalies, and insig
 
 # /learn:events — Event Log Mining
 
-Reads `.claude/events/events.jsonl` and extracts learnings from behavioral patterns. The event log captures everything — tool calls, prompts, spec changes, audit actions, modifications, inbox messages. This skill finds the signal in that noise.
+Reads `.claude/project/events/events.jsonl` and extracts learnings from behavioral patterns. The event log captures everything — tool calls, prompts, spec changes, audit actions, modifications, inbox messages. This skill finds the signal in that noise.
 
 ## Input
 
@@ -14,14 +14,14 @@ Reads `.claude/events/events.jsonl` and extracts learnings from behavioral patte
 
 ### Step 1: Load events
 
-Read `.claude/events/events.jsonl`. Filter by arguments if provided. Get a count per category to understand the data shape.
+Read `.claude/project/events/events.jsonl`. Filter by arguments if provided. Get a count per category to understand the data shape.
 
 ```bash
 # Category breakdown
-grep -oP '"cat":"[^"]*"' .claude/events/events.jsonl | sort | uniq -c | sort -rn
+grep -oP '"cat":"[^"]*"' .claude/project/events/events.jsonl | sort | uniq -c | sort -rn
 
 # Recent events (last N lines for quick scan)
-tail -50 .claude/events/events.jsonl
+tail -50 .claude/project/events/events.jsonl
 ```
 
 ### Step 2: Analyze by category
@@ -74,7 +74,7 @@ Save as learnings? (all / pick numbers / skip)
 
 ### Step 5: Save confirmed learnings
 
-Append confirmed entries to `.claude/memory/learnings.jsonl`:
+Append confirmed entries to `.claude/project/memory/learnings.jsonl`:
 ```json
 {"ts":"ISO","intent":"event_analysis","tip":"...","conditions":{"source":"events.jsonl","category":"...","evidence":"..."},"fix_quality":null,"score":0,"source":"learn:events","status":"logged"}
 ```

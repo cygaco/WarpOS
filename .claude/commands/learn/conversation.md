@@ -37,9 +37,9 @@ Non-obvious things learned about the codebase, tools, or environment:
 
 1. Scan the full conversation chronologically
 2. For each finding, draft a learning entry
-3. Read `.claude/memory/learnings.jsonl` — check for duplicates
+3. Read `.claude/project/memory/learnings.jsonl` — check for duplicates
 4. For each new learning, append using **one of these methods only** (memory-guard blocks everything else):
-   - **Node.js appendFileSync** (preferred for batch): `node -e "const fs=require('fs'); const path=require('path'); fs.appendFileSync(path.join(process.env.CLAUDE_PROJECT_DIR||'.', '.claude/memory/learnings.jsonl'), JSON.stringify(entry)+'\\n')"`
+   - **Node.js appendFileSync** (preferred for batch): `node -e "const fs=require('fs'); const path=require('path'); fs.appendFileSync(path.join(process.env.CLAUDE_PROJECT_DIR||'.', '.claude/project/memory/learnings.jsonl'), JSON.stringify(entry)+'\\n')"`
    - **Edit tool** for updating existing entries (score bumps, status changes)
    - **NEVER** use: `writeFileSync` (blocked), bash `>>` redirects (fragile), `echo >>` (blocked by echo guard)
 
@@ -90,7 +90,7 @@ Before extracting new learnings, audit the status of existing learnings in this 
 
 ### Process
 
-1. Read `.claude/memory/learnings.jsonl`
+1. Read `.claude/project/memory/learnings.jsonl`
 2. For each learning, determine its status this session:
    - **Implemented**: Check `implemented_by` field — list these first
    - **Informed**: Did you consciously use this learning to make a decision? Be honest — only count if you can point to the specific decision
@@ -103,7 +103,7 @@ Before extracting new learnings, audit the status of existing learnings in this 
 LEARNINGS STATUS:
   Implemented: #NN [category] tip → enforced by: hook/rule/lint
   Informed:    #NN [category] tip → decision it guided
-  Injected:    N learnings surfaced by context-enhancer
+  Injected:    N learnings surfaced by smart-context
   Dormant:     N learnings not surfaced this session
   
   Promotion candidates (high score, not implemented):
@@ -135,11 +135,11 @@ For each entry with `status: "validated"` and high score (>0.7):
 
 1. Remove duplicate tips (same meaning, different wording)
 2. Remove stale learnings (reference files/functions that no longer exist — verify by checking filesystem)
-3. Rewrite `.claude/memory/learnings.jsonl` with cleaned entries
+3. Rewrite `.claude/project/memory/learnings.jsonl` with cleaned entries
 
 ### B.3 Check Self-Modifications
 
-Read `.claude/memory/modifications.jsonl` (if it exists). For each entry with `status: "untested"`:
+Read `.claude/project/memory/modifications.jsonl` (if it exists). For each entry with `status: "untested"`:
 1. Check if the modified file still contains the change
 2. Assess: did the expected outcome materialize?
 3. Update status to `validated` or `reverted`
@@ -152,7 +152,7 @@ Read `.claude/memory/modifications.jsonl` (if it exists). For each entry with `s
 LEARNINGS STATUS:
   Implemented: N (enforced by hooks/rules/lint)
   Informed:    N (actively guided decisions this session)
-  Injected:    N (surfaced by context-enhancer, passive)
+  Injected:    N (surfaced by smart-context, passive)
   Dormant:     N (not surfaced)
   
   Promotion candidates: N (high score, not yet implemented)
