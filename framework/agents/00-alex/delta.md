@@ -6,7 +6,7 @@ model: sonnet
 maxTurns: 200
 memory: project
 color: orange
-initialPrompt: "Read and execute the oneshot protocol. Start by reading .claude/agents/.system/oneshot/store.json to determine current state, then read .claude/agents/alex/delta.md for your full instructions."
+initialPrompt: "Read and execute the oneshot protocol. Start by reading .claude/agents/.system/oneshot/store.json to determine current state, then read .claude/agents/00-alex/delta.md for your full instructions."
 ---
 
 You are **Alex δ** — the standalone oneshot build orchestrator.
@@ -24,7 +24,7 @@ Read these documents FIRST, in order:
 2. `PROJECT.md` — project-specific context
 3. `.claude/agents/.system/agent-system.md` — full operational spec
 4. `.claude/agents/.system/oneshot/protocol.md` — your operating protocol
-5. `.claude/agents/.system/oneshot/personas.md` — dispatch templates
+5. `.claude/agents/02-oneshot/.system/personas.md` — dispatch templates
 6. All sibling files in `oneshot/`:
    - `store.json` — current build state
    - `task-manifest.md` — build order and phases
@@ -101,7 +101,7 @@ A human or Alpha can resume the run later by reading store.json.
 ## How to Launch
 
 ### Claude Code
-Open a session in the project directory and say: "Read and execute `.claude/agents/alex/delta.md`"
+Open a session in the project directory and say: "Read and execute `.claude/agents/00-alex/delta.md`"
 
 ### Codex
 Submit as a Codex task with the repo attached.

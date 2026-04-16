@@ -5,7 +5,7 @@ description: Mine patterns from user behavior — prompts, decisions, skill chai
 # /beta:mine — Pattern Mining for Alex β's Judgment Model
 
 Analyzes user behavior patterns across all data sources to improve Alex β's persona.
-Output goes to `.claude/agents/alex/.workspace/beta/.beta-mining-recommendations.md` (staging area).
+Output goes to `.claude/agents/00-alex/.system/beta/.beta-mining-recommendations.md` (staging area).
 Sleep reviews recommendations — this skill does NOT directly modify `beta-persona.md`.
 
 ## Data Sources
@@ -14,7 +14,7 @@ Sleep reviews recommendations — this skill does NOT directly modify `beta-pers
 |--------|----------|-------------|
 | Prompts | `.claude/events/events.jsonl` (cat: prompt) | Prompt sequences, frustration signals |
 | Tool events | `.claude/events/tools.jsonl` | Skill chains, tool co-occurrence |
-| Alex β decisions | `.claude/agents/alex/.workspace/beta/events.jsonl` | Accuracy, topic confidence |
+| Alex β decisions | `.claude/agents/00-alex/.system/beta/events.jsonl` | Accuracy, topic confidence |
 | Git | `git log --all --format` | Feature lifecycle, decision cycles |
 | Learnings | `.claude/memory/learnings.jsonl` | User corrections, preference signals |
 | Spec events | `.claude/events/requirements.jsonl` | Build/meta cycles |
@@ -41,7 +41,7 @@ Example: `/check:specs` always followed by `/maps:all`?
 Match prompt entries containing frustration signals ("keeps happening", "how do I get you to", "stuck in a loop", repeated corrections) to subsequent hook/skill creation events within 2 sessions.
 
 ### 1d. Decision Accuracy (if Alex β decisions exist)
-Read `.claude/agents/alex/.workspace/beta/events.jsonl`. Calculate:
+Read `.claude/agents/00-alex/.system/beta/events.jsonl`. Calculate:
 - Total consultations, escalations, overrides
 - Override rate per topic category
 - Topics where Alex β is consistently wrong → recommend confidence decrease
@@ -62,7 +62,7 @@ Bucket all events by hour. Look for clusters:
 
 ## Phase 2: Format Recommendations
 
-Write findings to `.claude/agents/alex/.workspace/beta/.beta-mining-recommendations.md`:
+Write findings to `.claude/agents/00-alex/.system/beta/.beta-mining-recommendations.md`:
 
 ```markdown
 # Alex β Mining Recommendations — [date]
@@ -86,4 +86,4 @@ Report to the user:
 - Patterns found (count by type)
 - Confidence adjustments recommended
 - Any new anti-patterns discovered
-- Next step: "Review `.claude/agents/alex/.workspace/beta/.beta-mining-recommendations.md` or let `/sleep:deep` integrate during Phase 4"
+- Next step: "Review `.claude/agents/00-alex/.system/beta/.beta-mining-recommendations.md` or let `/sleep:deep` integrate during Phase 4"

@@ -9,22 +9,22 @@
 
 | Agent | Symbol | Role | Spec |
 |-------|--------|------|------|
-| **Alpha** | α | Architect, orchestrator | [alpha.md](.claude/agents/alex/alpha.md) |
-| **Beta** | β | Judgment model | [beta.md](.claude/agents/alex/beta.md) |
-| **Gamma** | γ | Adhoc build orchestrator | [gamma.md](.claude/agents/alex/gamma.md) |
-| **Delta** | δ | Standalone oneshot orchestrator | [delta.md](.claude/agents/alex/delta.md) |
+| **Alpha** | α | Architect, orchestrator | [alpha.md](.claude/agents/00-alex/alpha.md) |
+| **Beta** | β | Judgment model | [beta.md](.claude/agents/00-alex/beta.md) |
+| **Gamma** | γ | Adhoc build orchestrator | [gamma.md](.claude/agents/00-alex/gamma.md) |
+| **Delta** | δ | Standalone oneshot orchestrator | [delta.md](.claude/agents/00-alex/delta.md) |
 
 ## Build Agents
 
 | Agent | Role | Spec |
 |-------|------|------|
-| **Builder** | Code writer (scoped) | [builder.md](.claude/agents/general/builder.md) |
-| **Evaluator** | Code reviewer (pass/fail) | [evaluator.md](.claude/agents/general/evaluator.md) |
-| **Security** | Vulnerability scanner | [security.md](.claude/agents/general/security.md) |
-| **Compliance** | Process auditor (cross-provider) | [compliance.md](.claude/agents/general/compliance.md) |
-| **Auditor** | Pattern analyst, environment evolver | [auditor.md](.claude/agents/general/auditor.md) |
-| **QA** | Failure scanner (self-orchestrating) | [qa.md](.claude/agents/general/qa.md) |
-| **Fix Agent** | Bug fixer (scoped) | [fix-agent.md](.claude/agents/general/fix-agent.md) |
+| **Builder** | Code writer (scoped) | [adhoc](01-adhoc/builder/) / [oneshot](02-oneshot/builder/) |
+| **Evaluator** | Code reviewer (pass/fail) | [adhoc](01-adhoc/evaluator/) / [oneshot](02-oneshot/evaluator/) |
+| **Security** | Vulnerability scanner | [adhoc](01-adhoc/redteam/) / [oneshot](02-oneshot/redteam/) |
+| **Compliance** | Process auditor (cross-provider) | [adhoc](01-adhoc/compliance/) / [oneshot](02-oneshot/compliance/) |
+| **Auditor** | Pattern analyst, environment evolver | [oneshot](02-oneshot/auditor/) |
+| **QA** | Failure scanner (self-orchestrating) | [adhoc](01-adhoc/qa/) / [oneshot](02-oneshot/qa/) |
+| **Fix Agent** | Bug fixer (scoped) | [adhoc](01-adhoc/fixer/) / [oneshot](02-oneshot/fixer/) |
 
 ## Build Modes
 

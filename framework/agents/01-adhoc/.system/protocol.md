@@ -19,7 +19,7 @@ Gamma dispatches Layer 2 agents via the `claude` CLI (the Agent tool is not avai
 claude -p --model sonnet --agent <agent-name> "prompt"
 ```
 
-Available agents: `builder`, `evaluator`, `security`, `compliance`, `qa`, `fix-agent`, `auditor` (all under `.claude/agents/general/`).
+Available agents: `builder`, `evaluator`, `security`, `compliance`, `qa`, `fix-agent`, `auditor` (all under `.claude/agents/01-adhoc/`).
 
 - One builder per feature. Sequential dispatches (CLI is blocking).
 - Pass the feature spec (PRD + stories) and the adhoc prompt template.

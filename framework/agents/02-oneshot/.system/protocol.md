@@ -308,4 +308,4 @@ Follow the same rules as this orchestration protocol. Do not re-build completed 
 
 This protocol is executed by **Alex δ (Delta)** — the standalone oneshot orchestrator. Delta IS the session. It is not spawned by Alpha.
 
-See `.claude/agents/alex/delta.md` for Delta's full agent definition.
+See `.claude/agents/00-alex/delta.md` for Delta's full agent definition.

@@ -14,19 +14,19 @@ Terms as we use them. Not industry definitions — ours.
 
 **DECIDE** — Alex β's response when it can answer as the user would with >= 0.7 confidence. Alex α treats this as the user's answer and proceeds without asking the real user. Logged to `.system/beta/events.jsonl`.
 
-**ESCALATE** — Alex β's response when it cannot confidently simulate Vlad's judgment. Alex α must ask the real user via AskUserQuestion, prefixed with "ESCALATE:" to pass the beta-gate hook. Escalation is cheap; wrong decisions are expensive.
+**ESCALATE** — Alex β's response when it cannot confidently simulate the user's judgment. Alex α must ask the real user via AskUserQuestion, prefixed with "ESCALATE:" to pass the beta-gate hook. Escalation is cheap; wrong decisions are expensive.
 
-**Red Line** — A decision domain where Alex β must always ESCALATE regardless of confidence. Product UX, spec semantics, money, doctrine changes. These are domains where Vlad's taste cannot be modeled from patterns alone.
+**Red Line** — A decision domain where Alex β must always ESCALATE regardless of confidence. Product UX, spec semantics, money, doctrine changes. These are domains where the user's taste cannot be modeled from patterns alone.
 
-**Judgment Model** — The persona document (`beta-persona.md`) that encodes Vlad's decision patterns, principles, and delegation preferences. Not a personality simulation — a decision-pattern reference. Each principle has WHAT, WHY, GENERALIZE, and EXAMPLE.
+**Judgment Model** — The persona document (`beta-persona.md`) that encodes the user's decision patterns, principles, and delegation preferences. Not a personality simulation — a decision-pattern reference. Each principle has WHAT, WHY, GENERALIZE, and EXAMPLE.
 
 **Precedent** — A prior Alex β decision logged in `.system/beta/events.jsonl`. When a new question matches a precedent's domain and context, Alex β should follow it unless material context differs. Precedent reduces drift and improves consistency.
 
-**Calibration** — A correction from Vlad after Alex β made a wrong DECIDE. The correction updates the persona doc's Corrections Log and decreases confidence on that topic. Three corrections on the same topic moves it to Anti-Patterns.
+**Calibration** — A correction from the user after Alex β made a wrong DECIDE. The correction updates the persona doc's Corrections Log and decreases confidence on that topic. Three corrections on the same topic moves it to Anti-Patterns.
 
-**Goal language** — When Vlad frames intent as an outcome ("users shouldn't feel overwhelmed") rather than a directive ("make it one screen"). Goals reveal the WHY behind decisions. Alex β should recognize goal-framing, translate goals into concrete actions, and log the goal as evidence for the underlying principle. Contrast with directive language ("do X").
+**Goal language** — When the user frames intent as an outcome ("users shouldn't feel overwhelmed") rather than a directive ("make it one screen"). Goals reveal the WHY behind decisions. Alex β should recognize goal-framing, translate goals into concrete actions, and log the goal as evidence for the underlying principle. Contrast with directive language ("do X").
 
-**Directive language** — When Vlad specifies an exact action ("make it one screen", "kill category ranking"). Directives specify WHAT to do. When both a goal and a directive are present, validate that the directive serves the goal.
+**Directive language** — When the user specifies an exact action ("make it one screen", "kill category ranking"). Directives specify WHAT to do. When both a goal and a directive are present, validate that the directive serves the goal.
 
 **DIRECTIVE** — Alex β's proactive command to Alex α. Unlike DECIDE (reactive answer), DIRECTIVE tells α what to do next without being asked. Includes an ACTION (what to do) and a TRIGGER (completion condition). Confidence threshold: 0.75+. Below that, use DECIDE or ESCALATE instead.
 

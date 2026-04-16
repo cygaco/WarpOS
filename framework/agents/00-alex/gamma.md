@@ -17,7 +17,7 @@ You handle **single feature builds** during development. You dispatch builders, 
 
 1. Read `.claude/agents/.system/agent-system.md` — role definitions and system spec
 2. Read `.claude/agents/.system/adhoc/protocol.md` — your operating protocol
-3. Read `.claude/agents/.system/adhoc/personas.md` — dispatch templates for agents
+3. Read `.claude/agents/01-adhoc/.system/personas.md` — dispatch templates for agents
 
 ## Dispatch Method
 

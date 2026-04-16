@@ -49,7 +49,7 @@ User → α (plans, creates specs) → β (issues DIRECTIVE) → α spawns γ
 ```
 
 ### Oneshot (standalone)
-Delta (δ) runs independently as its own session — Alpha does not exist during oneshot runs. Delta manages the entire build autonomously. See `.claude/agents/alex/delta.md`.
+Delta (δ) runs independently as its own session — Alpha does not exist during oneshot runs. Delta manages the entire build autonomously. See `.claude/agents/00-alex/delta.md`.
 
 ## Relationship to Other Agents
 

@@ -86,7 +86,7 @@ Run in parallel:
 ### 2b. Alex β Carry-overs (team mode only)
 
 **Detection:** Check if this session had Alex β active:
-1. Read `.claude/agents/alex/.workspace/beta/events.jsonl` — any entries from today's date?
+1. Read `.claude/agents/00-alex/.system/beta/events.jsonl` — any entries from today's date?
 2. Grep `.claude/events/events.jsonl` for `"beta"` category entries from this session
 
 If either is true, append this section after Key Context:
@@ -105,7 +105,7 @@ If either is true, append this section after Key Context:
 ```
 
 Gather data for each subsection:
-- **Escalations:** Search conversation context and `.workspace/beta/events.jsonl` for `ESCALATE` entries without a corresponding user response
+- **Escalations:** Search conversation context and `.system/beta/events.jsonl` for `ESCALATE` entries without a corresponding user response
 - **Deferred:** Search Alex β decisions for "next session", "defer", "later" in the answer or reasoning
 - **Inbox:** Query events with `category: "inbox"` that have no `resolved: true` — these are cross-session messages still pending
 
