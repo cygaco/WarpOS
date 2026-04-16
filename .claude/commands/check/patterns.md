@@ -4,125 +4,171 @@ description: Cross-run intelligence and automation proposals — diagnose recurr
 
 # /check:patterns — Pattern Intelligence
 
-Single owner for "What patterns keep recurring?" Replaces retro:meta and eval:automation.
+Single owner for "What patterns keep recurring across sessions and runs?" Mines learnings, traces, events, retros, and beta decisions to find repeat offenders and propose automation. Complements `/learn:events` (which discovers patterns from raw events) by focusing on **cross-run** recurrence.
 
 ## Input
 
 `$ARGUMENTS` — Mode selection:
 - No args — run both modes (diagnose then propose)
-- `diagnose` — Cross-run analysis only (embedded in retro:full)
-- `propose` — Automation gap proposals only (embedded in eval:all)
-- `apply` — Propose + auto-apply approved proposals
+- `diagnose` — Cross-run analysis only (embedded in `/retro:full`)
+- `propose` — Automation gap proposals only (embedded in `/sleep:deep`)
+- `apply` — propose + auto-apply approved proposals (requires confirmation)
+- `--since=7d` / `--since=30d` — time window (default: 14d)
+- `--json` — raw JSON output
+
+---
+
+## Files to read (all modes)
+
+Resolve via `paths.json`:
+- `paths.memory/learnings.jsonl` — validated learnings (cross-session)
+- `paths.memory/traces.jsonl` — reasoning episodes with quality scores
+- `paths.events/events.jsonl` — raw event log
+- `paths.events/code.jsonl` — code-level events
+- `paths.agentSystem/beta/events.jsonl` — beta decision history
+- `paths.memory/systems.jsonl` — system changes over time
+- `paths.maps/enforcements.jsonl` — current automation coverage
+- `paths.runtime/handoffs/*.md` — session summaries
+- `paths.reference/reasoning-frameworks.md` — quality scoring rubric
+- Retro docs — resolve from `manifest.projectPaths.retro` if present; else skip
+
+`git log --since=<window>` for commit-level signals.
 
 ---
 
 ## Mode: diagnose — Cross-Run Analysis
 
-Spawn ONE Explore agent (thoroughness: very thorough). Produces intelligence for the next run.
+Spawn one Explore agent (thoroughness: very thorough). Produces intelligence for the next run.
 
-### Files to Read
+### Step 1: Load signals
 
-```
-the retro directory (check manifest.json projectPaths.retro for location)/{each NN}/BUGS.md
-the retro directory (check manifest.json projectPaths.retro for location)/{each NN}/HYGIENE.md
-the retro directory (check manifest.json projectPaths.retro for location)/{each NN}/LEARNINGS.md
-the retro directory (check manifest.json projectPaths.retro for location)/{latest}/RETRO.md
-the retro directory (check manifest.json projectPaths.retro for location)/{latest}/DEPRECATED.md (if exists)
-```
+- Learnings within window, grouped by category and tag
+- Traces with `quality_score <= 2` (weak fixes — possible recurring issues)
+- Beta DIRECTIVE decisions that repeated similar directives
+- Event spikes (bursts of error events, repeated hook blocks)
+- Git: files edited 3+ times in window → hotspots
 
-### Output: META-RETRO.md
+### Step 2: Cluster
 
-Overwrites `the retro directory (check manifest.json projectPaths.retro for location)/META-RETRO.md` with 5 sections:
+Group signals by theme:
+- **Same root cause across sessions** — e.g. "Windows path bug" appears in 3 hooks (RT-004 archetype)
+- **Same skill failing repeatedly** — e.g. `/fix:fast` re-escalated to `/fix:deep` N times
+- **Same file edited for the same reason** — e.g. types file for the 5th rename this month
+- **Hook blocks triggering same false positive** — e.g. memory-guard on `2>&1` redirects
 
-#### 1. Repeat Problem Areas
+### Step 3: Produce META-INTELLIGENCE report
 
-| Pattern | Runs | Count | Status |
-|---------|------|-------|--------|
-| React strict mode ref bugs | 01, 03, 06 | 8 | Declining (HYGIENE Rule 12 helping) |
-| Stale closure / intermediate save | 03, 06 | 5 | Persistent (needs gate) |
+Overwrites `paths.reference/META-INTELLIGENCE.md` (or a retro subpath if manifest has one):
 
-#### 2. Rule Effectiveness Scorecard
+```markdown
+# Pattern Intelligence — {date}
 
-| Rule | Added | Recurred? | Verdict |
-|------|-------|-----------|---------|
-| Rule 12 — mountedRef pattern | Run 01 | Yes (03), No (06) | EFFECTIVE |
-| Rule 25 — saveSession before onComplete | Run 03 | Yes (06) | NEEDS ENFORCEMENT |
+## 1. Repeat Problem Areas
+
+| Pattern | Occurrences | Window | Status | Root cause | Prevention |
+|---------|-------------|--------|--------|------------|------------|
+
+## 2. Rule Effectiveness Scorecard
+
+| Rule / Learning | Added | Recurred? | Verdict | Suggested next step |
+|-----------------|-------|-----------|---------|---------------------|
 
 Verdicts: EFFECTIVE / NEEDS ENFORCEMENT / UNTESTED / DEPRECATED
 
-#### 3. Agent Performance Trends
+## 3. Agent Performance Trends
 
-| Agent Type | Run 03 | Run 06 | Trend | Common Failure |
-|-----------|--------|--------|-------|----------------|
+| Agent | This window | Previous | Trend | Common failure mode |
+|-------|-------------|----------|-------|---------------------|
 
-#### 4. Run-Over-Run Metrics
+## 4. Skill Usage Patterns
 
-| Metric | Run 01 | Run 02 | ... |
-|--------|--------|--------|-----|
-| Total bugs | | | |
-| P0/P1 bugs | | | |
-| New HYGIENE rules | | | |
-| Repeat bugs | | | |
+| Skill | Calls | Success rate | Chained-into | Chained-after |
+|-------|-------|--------------|--------------|---------------|
 
-#### 5. Top 3 Prevention Proposals
+## 5. Top 3 Prevention Proposals
 
-Concrete, implementable actions. Each cites: bug class, estimated reduction, implementation path.
+Concrete, implementable actions. Each cites: pattern cluster, estimated friction reduction, implementation path, who implements (skill/hook/manifest edit).
+```
 
-### Token Budget
+### Token budget
 
-~8-12 retro files, ~600-1000 lines. ~6-8K tokens.
+~8-12 source files, ~600-1000 lines after filtering. ~6-8K tokens.
 
 ---
 
 ## Mode: propose — Automation Gap Proposals
 
-Scan for automation gaps and propose linter/hook/skill improvements.
+Scan for patterns that are **recurring but not automated**, propose concrete fixes.
 
-### Step 1: Load Sources
+### Step 1: Load current automation
 
-1. `the retro directory (check manifest.json projectPaths.retro for location)/*/HYGIENE.md` — hygiene rules across runs (if they exist)
-2. `the retro directory (check manifest.json projectPaths.retro for location)/*/BUGS.md` — bug entries across runs (if they exist)
-3. `git log --since="7 days ago" --name-only` — file hotspots
-4. `.claude/project/events/events.jsonl` — recent change events
-5. `.claude/project/memory/learnings.jsonl` — recurring learnings
+- `scripts/hooks/*.js` — hook scripts
+- `.claude/settings.json` — hook wiring
+- `.claude/commands/**/*.md` — all skills
+- `paths.maps/enforcements.jsonl` — coverage map
 
-### Step 2: Load Current Automation
+### Step 2: Cross-reference with signals
 
-1. `scripts/lint-*.js` — linter checks
-2. `scripts/hooks/*.js` — hook scripts
-3. `.claude/settings.json` — hook wiring
-4. `.claude/commands/**/*.md` — all skills
+For each recurring pattern found in diagnose mode:
+- Is there a hook that prevents it? If no → propose
+- Is there a skill that handles it? If no → propose
+- Is there a learning without backing enforcement? → propose
 
-### Step 3: Cross-Reference
+For each file hotspot (edited 3+ times with similar intent):
+- Propose a lint rule, a template, or a hook matcher
 
-- For each HYGIENE rule: automated by linter/hook/skill? If not → propose
-- For each recurring BUG pattern (same root cause 2+ runs): prevented? If not → propose
-- For file hotspots (edited 3+ times): propose lint rule
+For each false-positive block pattern in hooks:
+- Propose a refinement to the guard's regex/logic
 
-### Step 4: Present or Apply
+### Step 3: Present
 
 **Report mode** (default):
+
 ```
-Proposal: [what to add/change]
-Where: [file path]
-Because: [HYGIENE Rule NN / BUG-NNN / observer pattern]
-Code: [exact change]
+Proposal {N}: {one-line summary}
+  Where: {file path to modify or create}
+  Because: {pattern evidence — cite learning ID / bug cluster / trace ID}
+  Implementation:
+    - {exact change or new file to create}
+  Expected impact: {qualitative}
+  Confidence: {high | medium | low}
 ```
 
-Wait for approval. Accept: "approve all", "approve 1,3,5", "skip 2".
+Wait for approval. Accept: "approve all", "approve 1,3,5", "skip 2", "edit 2" (user provides alternative).
 
 **Apply mode** (`apply` arg):
-- One git commit per proposal
-- Never modifies more than 3 files per proposal
+- One git commit per approved proposal
+- Never modifies more than 3 files per proposal without explicit confirmation
 - Never removes existing checks — only adds
-- Low-confidence proposals skipped
+- Low-confidence proposals skipped by default (require `--include-low`)
 
-### Step 5: Summary
+### Step 4: Summary
 
-Table of findings: proposed, applied, skipped.
+```
+| Proposal | Status | Commit |
+|----------|--------|--------|
+| {N} — {summary} | applied / skipped / rejected | {sha if applied} |
+```
 
 ---
 
 ## Combined Mode (no args)
 
-Runs diagnose first, then feeds its Top 3 Prevention Proposals into propose mode as additional sources. This creates the full intelligence pipeline: what recurs → what to automate.
+Runs `diagnose` first, then feeds its "Top 3 Prevention Proposals" into `propose` mode as additional sources. Full pipeline: **what recurs → what to automate → approved changes**.
+
+---
+
+## When to run
+
+- **End of a multi-day work push** — `diagnose` to see what kept coming up
+- **On `/sleep:deep`** — embedded automatically in Phase 5 (growth)
+- **After a series of similar-looking bugs** — `diagnose --since=7d` to confirm the cluster
+- **Monthly** — `propose` with `--since=30d` for bigger structural proposals
+
+## Related
+
+- `/learn:events` — pattern extraction from raw events (single-session)
+- `/learn:combined` — conversation + event learning (single-session)
+- `/retro:full` — session-level retrospective (feeds into this)
+- `/hooks:friction` — specifically finds friction patterns suggesting missing hooks
+- `/maps:enforcements` — current automation coverage (this skill proposes additions to it)
