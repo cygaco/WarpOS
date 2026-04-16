@@ -51,6 +51,8 @@ Open Claude Code in your project. Type:
 /warp:tour      — Get a guided introduction to everything
 ```
 
+Then read **[USER_GUIDE.md](USER_GUIDE.md)** — the daily-rhythm guide. Modes, the five-terminal setup, skill sequences, and (most important) git discipline.
+
 ## Start Here (5 Core Skills)
 
 | Skill | What it does |
