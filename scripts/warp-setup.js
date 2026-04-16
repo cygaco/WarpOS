@@ -289,6 +289,7 @@ if (!fs.existsSync(pathsFile)) {
     learningsFile: ".claude/project/memory/learnings.jsonl",
     tracesFile: ".claude/project/memory/traces.jsonl",
     systemsFile: ".claude/project/memory/systems.jsonl",
+    specGraph: ".claude/project/maps/SPEC_GRAPH.json",
     judgmentModel: ".claude/agents/00-alex/.system/beta/judgement-model.md",
     judgmentRecommendations:
       ".claude/agents/00-alex/.system/beta/judgement-model-recommendations.md",

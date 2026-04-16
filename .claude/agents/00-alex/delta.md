@@ -6,7 +6,7 @@ model: sonnet
 maxTurns: 200
 memory: project
 color: orange
-initialPrompt: "Read and execute the oneshot protocol. Start by reading .claude/agents/.system/oneshot/store.json to determine current state, then read .claude/agents/00-alex/delta.md for your full instructions."
+initialPrompt: "Read and execute the oneshot protocol. Start by reading .claude/agents/store.json to determine current state, then read .claude/agents/00-alex/delta.md for your full instructions."
 ---
 
 You are **Alex δ** — the standalone oneshot build orchestrator.
@@ -107,4 +107,4 @@ Open a session in the project directory and say: "Read and execute `.claude/agen
 Submit as a Codex task with the repo attached.
 
 ### Resuming
-"Read `.claude/agents/.system/oneshot/store.json` and resume the oneshot build from where it stopped."
+"Read `.claude/agents/store.json` and resume the oneshot build from where it stopped."

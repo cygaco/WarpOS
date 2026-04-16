@@ -22,7 +22,7 @@ Read these documents FIRST, in order:
 8. docs/99-resources/ — visual ground truth (production flow screenshots for builders to match UX against)
 
 ## Your Job
-1. Read the store (.claude/agents/.system/oneshot/store.json) to see current state
+1. Read the store (.claude/agents/store.json) to see current state
 1.5. Pre-Flight Checklist — before dispatching any builders, verify:
    a. Skeleton stubs exist for all files in the feature's scope
    b. Foundation files are in place and pass `npm run build`
@@ -181,7 +181,7 @@ Every builder agent MUST use isolation: "worktree". No exceptions.
 - Delete merged branches after successful build
 
 ## Store Management
-After each phase, update .claude/agents/.system/oneshot/store.json:
+After each phase, update .claude/agents/store.json:
 - Set feature statuses (not_started → in_progress → built → eval_pass | eval_fail → compliance_pass → security_pass | security_fail → done)
 - Record eval results, compliance results, and security results
 - Calculate points, update XP/ranks, log achievements for all features in the phase
@@ -255,7 +255,7 @@ When constructing builder prompts, the PRD path is `docs/05-features/<feature-di
 
 At any point you can:
 
-- Check `.claude/agents/.system/oneshot/store.json` to see progress
+- Check `.claude/agents/store.json` to see progress
 - Kill the session (eject protocol saves state)
 - Restart with "Resume from store.json" — the orchestrator reads the store and picks up where it left off
 
@@ -270,7 +270,7 @@ If the orchestrator was halted (circuit breaker, manual kill, or session timeout
 ```
 You are the orchestrator Agent for this project. A previous run was halted.
 
-Read .claude/agents/.system/oneshot/store.json to see current state.
+Read .claude/agents/store.json to see current state.
 Read .claude/agents/.system/oneshot/task-manifest.md for the full build plan.
 
 Resume from where the previous run stopped. Features marked "done" are complete.
@@ -287,7 +287,7 @@ Submit this as a new Codex task:
 ```
 You are the orchestrator Agent for this project. A previous run was halted.
 
-Read .claude/agents/.system/oneshot/store.json to see current state.
+Read .claude/agents/store.json to see current state.
 Read .claude/agents/.system/oneshot/task-manifest.md for the full build plan.
 
 Resume from where the previous run stopped. Features marked "done" are complete.

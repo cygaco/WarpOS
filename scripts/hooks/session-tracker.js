@@ -97,7 +97,7 @@ try {
     if ((toolName === "Write" || toolName === "Edit") && toolInput.file_path) {
       const rel = relFile || "";
       if (
-        rel.includes(".claude/plans/") &&
+        rel.includes(".claude/runtime/plans/") &&
         !rel.includes("/archive/") &&
         rel.endsWith(".md")
       ) {
