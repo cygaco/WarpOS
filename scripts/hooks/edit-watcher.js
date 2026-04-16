@@ -5,7 +5,7 @@
  *
  * When any file is edited, this hook checks if it matters and does 4 things:
  *
- *   1. EVENT LOG — Records what changed to .claude/events/events.jsonl
+ *   1. EVENT LOG — Records what changed to paths.events/events.jsonl
  *      so session handoffs and retros can see what happened.
  *
  *   2. STALENESS — Looks up SPEC_GRAPH.json to find docs that depend on

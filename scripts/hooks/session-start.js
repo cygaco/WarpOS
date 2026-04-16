@@ -9,7 +9,8 @@
 const { execSync } = require("child_process");
 const fs = require("fs");
 const path = require("path");
-const { logEvent, query } = require("./lib/logger");
+const { logEvent, query, RUNTIME_DIR } = require("./lib/logger");
+const { PATHS } = require("./lib/paths");
 
 let input = "";
 process.stdin.on("data", (chunk) => (input += chunk));
@@ -21,9 +22,11 @@ process.stdin.on("end", () => {
     const source = event.source || "startup";
     const checks = [];
     const claudeDir = path.join(cwd, ".claude");
-    const checkpointPath = path.join(claudeDir, ".session-checkpoint.json");
-    const guardPath = path.join(claudeDir, ".session-handoff-done");
-    const sessionIdPath = path.join(claudeDir, ".session-id");
+    const runtimeDir = path.join(claudeDir, "runtime");
+    fs.mkdirSync(runtimeDir, { recursive: true });
+    const checkpointPath = path.join(runtimeDir, ".session-checkpoint.json");
+    const guardPath = path.join(runtimeDir, ".session-handoff-done");
+    const sessionIdPath = path.join(runtimeDir, ".session-id");
 
     // ── Generate Session ID ──────────────────────────────────
     // Each session gets a unique short ID (e.g., "s-1a2b3c")
@@ -140,7 +143,7 @@ process.stdin.on("end", () => {
             }
           }
           fs.writeFileSync(
-            path.join(claudeDir, ".topology-snapshot.json"),
+            path.join(runtimeDir, ".topology-snapshot.json"),
             JSON.stringify(snapshot, null, 2),
           );
         }
@@ -155,19 +158,14 @@ process.stdin.on("end", () => {
       try {
         const sleepFiles = [
           {
-            path: ".sleep-journal.md",
+            path: "dreams/journal.md",
             prefix: "SLEEP JOURNAL (last night):\n",
             limit: 1500,
           },
           {
-            path: ".sleep-coaching.md",
+            path: "dreams/coaching.md",
             prefix: "COACHING SUGGESTION:\n",
             limit: 500,
-          },
-          {
-            path: ".sleep-dreams.md",
-            prefix: "DREAM SOLUTIONS (speculative — review before applying):\n",
-            limit: 1000,
           },
         ];
         for (const sf of sleepFiles) {
@@ -224,7 +222,7 @@ process.stdin.on("end", () => {
     let handoffContext = "";
 
     // Priority 1: handoff.md (most recent, written by session-stop)
-    const handoffPath = path.join(claudeDir, "handoff.md");
+    const handoffPath = path.join(runtimeDir, "handoff.md");
     if (fs.existsSync(handoffPath)) {
       try {
         const stat = fs.statSync(handoffPath);
@@ -265,7 +263,7 @@ process.stdin.on("end", () => {
     // Priority 3: most recent timestamped handoff from handoffs/ directory
     if (!handoffContext) {
       try {
-        const handoffsDir = path.join(claudeDir, "handoffs");
+        const handoffsDir = PATHS.handoffs;
         if (fs.existsSync(handoffsDir)) {
           const files = fs
             .readdirSync(handoffsDir)
@@ -296,15 +294,12 @@ process.stdin.on("end", () => {
       checks.push("Handoff: none found");
     }
 
-    // ── Output ────────────────────────────────────────────────
-    // Banner removed — Alex α confirms handoff verbally in first response.
-
     // ── Systems Health Nudge ────────────────────────────────
     let systemsNudge = "";
     if (source === "startup" || source === "clear") {
       try {
         // Count pending learnings
-        const learningsPath = path.join(claudeDir, "memory", "learnings.jsonl");
+        const learningsPath = path.join(PATHS.memory, "learnings.jsonl");
         if (fs.existsSync(learningsPath)) {
           const lines = fs
             .readFileSync(learningsPath, "utf8")
@@ -332,7 +327,7 @@ process.stdin.on("end", () => {
       // Prune old session/instance log directories (keep last 5)
       // Dirs are named "s-{sid}_{iid}" (new) or "s-{sid}" (legacy)
       try {
-        const logsDir = path.join(claudeDir, "logs");
+        const logsDir = PATHS.logs;
         if (fs.existsSync(logsDir)) {
           const dirs = fs
             .readdirSync(logsDir, { withFileTypes: true })
@@ -410,8 +405,10 @@ function saveCheckpoint(claudeDir, reason) {
       .join("\n");
   }
 
+  const rtDir = path.join(claudeDir, "runtime");
+  fs.mkdirSync(rtDir, { recursive: true });
   fs.writeFileSync(
-    path.join(claudeDir, ".session-checkpoint.json"),
+    path.join(rtDir, ".session-checkpoint.json"),
     JSON.stringify(checkpoint, null, 2),
   );
 }

@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 // Stop hook: auto-generates handoff when a session ends + copies to clipboard.
-// Assembles: git state + user prompt log + compact summaries → .claude/handoff.md
+// Assembles: git state + user prompt log + compact summaries → paths.handoffLatest
 
 const { execSync } = require("child_process");
 const fs = require("fs");
 const path = require("path");
-const { logEvent, log, query } = require("./lib/logger");
+const { logEvent, log, query, RUNTIME_DIR } = require("./lib/logger");
+const { PATHS } = require("./lib/paths");
 let _projectName = "Project";
 try {
   const { getProjectName } = require("./lib/project-config");
@@ -22,10 +23,12 @@ process.stdin.on("end", () => {
     // Use CLAUDE_PROJECT_DIR (reliable) instead of event.cwd (can be a subdirectory)
     const cwd = process.env.CLAUDE_PROJECT_DIR || event.cwd;
     const claudeDir = path.join(cwd, ".claude");
-    const handoffsDir = path.join(claudeDir, "handoffs");
+    const handoffsDir = PATHS.handoffs;
 
     // Idempotent guard — don't regenerate if already done this session
-    const guardPath = path.join(claudeDir, ".session-handoff-done");
+    const runtimeDir = PATHS.runtime;
+    fs.mkdirSync(runtimeDir, { recursive: true });
+    const guardPath = path.join(runtimeDir, ".session-handoff-done");
     if (fs.existsSync(guardPath)) {
       process.stderr.write(
         "[Session Stop] Handoff already generated this session — skipping\n",
@@ -412,7 +415,7 @@ process.stdin.on("end", () => {
 
     // Write handoff
     const handoff = lines.join("\n");
-    fs.writeFileSync(path.join(claudeDir, "handoff.md"), handoff);
+    fs.writeFileSync(path.join(runtimeDir, "handoff.md"), handoff);
     logEvent(
       "lifecycle",
       "alex",

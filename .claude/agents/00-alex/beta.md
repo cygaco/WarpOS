@@ -19,7 +19,7 @@ You are NOT the user. You are a model of their decision patterns. When uncertain
 1. Read `.claude/agents/00-alex/.system/beta/judgement-model.md` — your judgment model (principles, delegation matrix, escalation rules, decision heuristics, mined patterns, evolution arc, behavioral patterns)
 2. Read `.claude/agents/00-alex/.system/lexicon.md` — shared terminology between you and Alex α
 3. Read `.claude/agents/00-alex/.system/beta/events.jsonl` — check for precedent on similar questions (last 20 entries)
-4. Read `.claude/agents/00-alex/.system/beta/.beta-mining-recommendations.md` — mined behavioral patterns with evidence (prompt sequences, skill chains, frustration-to-enforcement cycles, time-of-day patterns)
+4. Read `.claude/agents/00-alex/.system/beta/judgement-model-recommendations.md` — mined behavioral patterns with evidence (prompt sequences, skill chains, frustration-to-enforcement cycles, time-of-day patterns)
 5. Read `.claude/agents/00-alex/.system/beta/beta-source-data.md` — deep analysis from branch evolution, system architecture, and prompt pattern agents
 6. If Alex α's message includes a GAMMA_RESULT, analyze the build outcome and determine what α should do next
 7. Analyze Alex α's question against ALL of the above — persona, patterns, precedent, source data, and your confidence

@@ -206,6 +206,7 @@ const dirs = [
   ".claude/agents",
   ".claude/commands",
   ".claude/content",
+  ".claude/dreams",
   "scripts/hooks/lib",
 ];
 
@@ -257,7 +258,7 @@ installed += hookCount;
 const pathsFile = path.join(TARGET, ".claude/paths.json");
 if (!fs.existsSync(pathsFile)) {
   const paths = {
-    version: 1,
+    version: 2,
     events: ".claude/project/events",
     memory: ".claude/project/memory",
     maps: ".claude/project/maps",
@@ -265,13 +266,19 @@ if (!fs.existsSync(pathsFile)) {
     runtime: ".claude/runtime",
     logs: ".claude/runtime/logs",
     handoffs: ".claude/runtime/handoffs",
+    handoffLatest: ".claude/runtime/handoff.md",
     plans: ".claude/runtime/plans",
     agents: ".claude/agents",
+    agentSystem: ".claude/agents/00-alex/.system",
+    betaSystem: ".claude/agents/00-alex/.system/beta",
     commands: ".claude/commands",
     content: ".claude/content",
-    dreams: ".claude/content/dreams",
+    dreams: ".claude/dreams",
     favorites: ".claude/content/favorites",
+    hooks: "scripts/hooks",
     manifest: ".claude/manifest.json",
+    settings: ".claude/settings.json",
+    store: ".claude/agents/store.json",
   };
   fs.writeFileSync(pathsFile, JSON.stringify(paths, null, 2) + "\n");
   log("ok", "Created paths.json");
@@ -492,7 +499,16 @@ const hookConfig = {
       matcher: "Edit|Write",
       hooks: [
         { command: `node "$CLAUDE_PROJECT_DIR/scripts/hooks/secret-guard.js"` },
+        {
+          command: `node "$CLAUDE_PROJECT_DIR/scripts/hooks/foundation-guard.js"`,
+        },
+        {
+          command: `node "$CLAUDE_PROJECT_DIR/scripts/hooks/ownership-guard.js"`,
+        },
         { command: `node "$CLAUDE_PROJECT_DIR/scripts/hooks/memory-guard.js"` },
+        {
+          command: `node "$CLAUDE_PROJECT_DIR/scripts/hooks/store-validator.js"`,
+        },
       ],
     },
     {
@@ -514,11 +530,18 @@ const hookConfig = {
     {
       matcher: "Edit|Write",
       hooks: [
+        { command: `node "$CLAUDE_PROJECT_DIR/scripts/hooks/format.js"` },
+        { command: `node "$CLAUDE_PROJECT_DIR/scripts/hooks/typecheck.js"` },
+        { command: `node "$CLAUDE_PROJECT_DIR/scripts/hooks/lint.js"` },
         { command: `node "$CLAUDE_PROJECT_DIR/scripts/hooks/edit-watcher.js"` },
+        { command: `node "$CLAUDE_PROJECT_DIR/scripts/hooks/systems-sync.js"` },
+        {
+          command: `node "$CLAUDE_PROJECT_DIR/scripts/hooks/save-session-lint.js"`,
+        },
         {
           command: `node "$CLAUDE_PROJECT_DIR/scripts/hooks/learning-validator.js"`,
         },
-        { command: `node "$CLAUDE_PROJECT_DIR/scripts/hooks/systems-sync.js"` },
+        { command: `node "$CLAUDE_PROJECT_DIR/scripts/hooks/ui-lint.js"` },
       ],
     },
   ],

@@ -13,7 +13,7 @@ Other mode: `/sleep:quick` (phases 1-2 only, ~5 min).
 
 ## Neuroscience Basis
 
-This architecture is grounded in research on how the human brain uses sleep for learning (see `docs/99-resources/research/brain-sleep-learning-agentic-ai/SYNTHESIS.md`). Key biological principles applied:
+This architecture is grounded in research on how the human brain uses sleep for learning. Key biological principles applied:
 
 | Brain Mechanism | System Implementation | Phase |
 |---|---|---|
@@ -133,7 +133,6 @@ Review Alex β's performance since last sleep:
    - Read `.claude/events/events.jsonl`
    - Events older than 30 days: compress into monthly summary
    - Keep recent events in full detail
-   - Run `node scripts/materialize-decisions.js` to regenerate human-readable view
 
 3. **Clear orphan STALE markers**
    - STALE markers older than 7 days: clear and log
@@ -198,7 +197,7 @@ Review Alex β's performance since last sleep:
      - **Analogy:** What would this look like in a different domain?
      - **Elimination:** What if we removed the hardest constraint?
    - Let past dream imagery inform the current session — if a symbol from last week's dream connects to tonight's problem, follow that thread
-   - Write dream solutions to `.claude/dreams/sleep-dreams.md`
+   - Write dream solutions to `.claude/dreams/YYYY-MM-DD.md`
 
 2. **Dream Visualization (ASCII paintings)**
 
@@ -216,8 +215,7 @@ Review Alex β's performance since last sleep:
    - The image should feel like a dream — surreal, layered, ambiguous
    - Each painting gets a **"Deep Read"** afterward — what did the subconscious surface?
 
-   Save to `.claude/dreams/YYYY-MM-DD.md` (one file per sleep cycle, accumulates).
-   Also include inline in `.claude/dreams/sleep-dreams.md` for immediate review.
+   Save to `.claude/dreams/YYYY-MM-DD.md` (one file per sleep cycle).
 
    Structure per dream:
    ```
@@ -248,13 +246,13 @@ Review Alex β's performance since last sleep:
 5. **User coaching synthesis**
    - Based on session patterns, user corrections, and blind spots
    - Draft a gentle suggestion for next session start
-   - Write to `.claude/dreams/sleep-coaching.md`
+   - Append a new dated section to `.claude/dreams/coaching.md` using appendFileSync — never overwrite
 
 6. **Alex β pattern mining**
    - Run `/beta:mine` analysis inline (not as a separate agent)
    - Mine prompt sequences, skill chains, frustration-to-enforcement patterns, decision cycles
-   - Write recommendations to `.claude/agents/00-alex/.system/beta/.beta-mining-recommendations.md`
-   - Do NOT directly modify `judgement-model.md` — recommendations only (review phases recommend, don't execute)
+   - Write recommendations to `.claude/agents/00-alex/.system/beta/judgement-model-recommendations.md`
+   - Do NOT directly modify `judgement-model.md` — recommendations only. Run `/beta:integrate` to apply validated recommendations.
 
 ### Phase 5: Repair (Deep Sleep Tissue Repair)
 
@@ -288,7 +286,7 @@ Review Alex β's performance since last sleep:
      - Key unresolved items from tonight's sleep
      - Dream solutions worth reviewing
      - Suggested first task for next session
-   - Write to `.claude/dreams/sleep-coaching.md`
+   - Append a new dated section to `.claude/dreams/coaching.md` using appendFileSync — never overwrite
 
 3. **Propose next evolution**
    - Based on everything discovered during sleep, propose 1-3 improvements
@@ -297,8 +295,8 @@ Review Alex β's performance since last sleep:
 
 4a. **Alex β evolution summary**
    - Summarize Alex β's performance: decisions made, accuracy, confidence changes
-   - Review `.claude/agents/00-alex/.system/beta/.beta-mining-recommendations.md` if it exists
-   - Propose which recommendations to integrate into `judgement-model.md` (recommendations only — Alex α integrates during next waking session)
+   - Review `.claude/agents/00-alex/.system/beta/judgement-model-recommendations.md` if it exists
+   - Propose which recommendations to integrate into `judgement-model.md` — run `/beta:integrate` to apply
    - Write to sleep journal
 
 4. **False memory guard**
@@ -310,7 +308,7 @@ Review Alex β's performance since last sleep:
 
 ## Output: Sleep Journal
 
-All phases append to `.claude/dreams/sleep-journal.md`:
+Append a new dated section to `.claude/dreams/journal.md` using appendFileSync — never overwrite:
 
 ```markdown
 # Sleep Journal — YYYY-MM-DD
@@ -352,22 +350,22 @@ All phases append to `.claude/dreams/sleep-journal.md`:
 ## Growth
 - System strength: {trend}
 - Biggest leverage point: {recommendation}
-- Morning briefing: written to dreams/sleep-coaching.md
+- Morning briefing: appended to dreams/coaching.md
 - False memory check: {count} learnings verified against code
 ```
 
 ## Session Start Integration
 
 When the next session starts, the context enhancer reads:
-- `.claude/dreams/sleep-journal.md` → surfaces key findings
-- `.claude/dreams/sleep-coaching.md` → morning briefing + growth suggestions
-- `.claude/dreams/sleep-dreams.md` → creative solutions to review
-- `.claude/dreams/` → persistent dream gallery (one file per sleep cycle, accumulates over time)
+- `.claude/dreams/journal.md` → surfaces key findings from each sleep cycle
+- `.claude/dreams/coaching.md` → morning briefing + growth suggestions
+- `.claude/dreams/YYYY-MM-DD.md` → dream paintings and deep reads (one file per sleep cycle, accumulates over time)
 
 ## Important
 
 - Sleep never deletes data permanently — it compresses and archives
-- Sleep journal is append-only (one entry per cycle)
+- Journal (`journal.md`) is append-only (one dated section per cycle, never overwrite)
+- Coaching (`coaching.md`) is append-only (one dated section per cycle, never overwrite)
 - Dream solutions are speculative — tagged as "dream", not decisions
 - In light mode: repair queues fixes for morning approval
 - In dark mode: repair auto-applies with atomic commits

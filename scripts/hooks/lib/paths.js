@@ -29,21 +29,35 @@ try {
       .map(([k, v]) => [k, path.join(PROJECT, v)]),
   );
 } catch {
-  // Fallback: paths.json missing — use defaults
+  // Fallback: paths.json missing — use defaults matching the install layout
   PATHS = {
-    events: path.join(PROJECT, ".claude", "events"),
-    memory: path.join(PROJECT, ".claude", "memory"),
-    maps: path.join(PROJECT, ".claude", "maps"),
-    reference: path.join(PROJECT, ".claude", "reference"),
+    events: path.join(PROJECT, ".claude", "project", "events"),
+    memory: path.join(PROJECT, ".claude", "project", "memory"),
+    maps: path.join(PROJECT, ".claude", "project", "maps"),
+    reference: path.join(PROJECT, ".claude", "project", "reference"),
     runtime: path.join(PROJECT, ".claude", "runtime"),
-    logs: path.join(PROJECT, ".claude", "logs"),
-    handoffs: path.join(PROJECT, ".claude", "handoffs"),
-    plans: path.join(PROJECT, ".claude", "plans"),
+    logs: path.join(PROJECT, ".claude", "runtime", "logs"),
+    handoffs: path.join(PROJECT, ".claude", "runtime", "handoffs"),
+    handoffLatest: path.join(PROJECT, ".claude", "runtime", "handoff.md"),
+    plans: path.join(PROJECT, ".claude", "runtime", "plans"),
     agents: path.join(PROJECT, ".claude", "agents"),
+    agentSystem: path.join(PROJECT, ".claude", "agents", "00-alex", ".system"),
+    betaSystem: path.join(
+      PROJECT,
+      ".claude",
+      "agents",
+      "00-alex",
+      ".system",
+      "beta",
+    ),
     commands: path.join(PROJECT, ".claude", "commands"),
     content: path.join(PROJECT, ".claude", "content"),
     dreams: path.join(PROJECT, ".claude", "dreams"),
-    favorites: path.join(PROJECT, ".claude", "favorites"),
+    favorites: path.join(PROJECT, ".claude", "content", "favorites"),
+    hooks: path.join(PROJECT, "scripts", "hooks"),
+    manifest: path.join(PROJECT, ".claude", "manifest.json"),
+    settings: path.join(PROJECT, ".claude", "settings.json"),
+    store: path.join(PROJECT, ".claude", "agents", "store.json"),
   };
 }
 

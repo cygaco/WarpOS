@@ -11,7 +11,7 @@
  * original prompt passes through with no context injected.
  *
  * Session dedup: tracks what's been injected per terminal session.
- * Permanent logs in .claude/logs/{sessionId}/.
+ * Permanent logs under paths.logs / {sessionId}/.
  */
 
 const fs = require("fs");
@@ -19,7 +19,7 @@ const path = require("path");
 const https = require("https");
 const crypto = require("crypto");
 
-const { PROJECT } = require("./lib/paths");
+const { PROJECT, PATHS } = require("./lib/paths");
 const { getProjectName, getProjectStack } = require("./lib/project-config");
 const { getSessionId } = require("./lib/logger");
 const {
@@ -117,7 +117,7 @@ If no enrichment needed and no items are relevant:
 
 function getLogDir() {
   const sessionId = getSessionId();
-  const dir = path.join(CLAUDE_DIR, "logs", sessionId);
+  const dir = path.join(PATHS.logs, sessionId);
   try {
     fs.mkdirSync(dir, { recursive: true });
   } catch {
@@ -375,6 +375,28 @@ async function main() {
     event = JSON.parse(chunks.join(""));
   } catch {
     process.exit(0);
+  }
+
+  // Heartbeat: if adhoc team dir exists, write session ID for team-guard identity check
+  // Session ID changes when Claude restarts — no TTL needed, no stale-on-idle risk
+  try {
+    const adhocDir = path.join(
+      process.env.HOME || process.env.USERPROFILE || "",
+      ".claude",
+      "teams",
+      "adhoc",
+    );
+    if (fs.existsSync(adhocDir)) {
+      const sid = getSessionId();
+      if (sid && sid !== "unknown") {
+        fs.writeFileSync(
+          path.join(adhocDir, "heartbeat.json"),
+          JSON.stringify({ sessionId: sid }),
+        );
+      }
+    }
+  } catch {
+    /* non-critical */
   }
 
   const rawPrompt = event?.prompt || event?.tool_input?.prompt || "";

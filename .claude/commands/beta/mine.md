@@ -5,19 +5,19 @@ description: Mine patterns from user behavior — prompts, decisions, skill chai
 # /beta:mine — Pattern Mining for Alex β's Judgment Model
 
 Analyzes user behavior patterns across all data sources to improve Alex β's persona.
-Output goes to `.claude/agents/00-alex/.system/beta/.beta-mining-recommendations.md` (staging area).
+Output goes to `.claude/agents/00-alex/.system/beta/judgement-model-recommendations.md` (staging area).
 Sleep reviews recommendations — this skill does NOT directly modify `judgement-model.md`.
 
 ## Data Sources
 
 | Source | Location | Pattern Type |
 |--------|----------|-------------|
-| Prompts | `.claude/events/events.jsonl` (cat: prompt) | Prompt sequences, frustration signals |
-| Tool events | `.claude/events/tools.jsonl` | Skill chains, tool co-occurrence |
+| Prompts | `.claude/project/events/events.jsonl` (cat: prompt) | Prompt sequences, frustration signals |
+| Tool events | `.claude/project/events/tools.jsonl` | Skill chains, tool co-occurrence |
 | Alex β decisions | `.claude/agents/00-alex/.system/beta/events.jsonl` | Accuracy, topic confidence |
 | Git | `git log --all --format` | Feature lifecycle, decision cycles |
-| Learnings | `.claude/memory/learnings.jsonl` | User corrections, preference signals |
-| Spec events | `.claude/events/requirements.jsonl` | Build/meta cycles |
+| Learnings | `.claude/project/memory/learnings.jsonl` | User corrections, preference signals |
+| Spec events | `.claude/project/events/requirements.jsonl` | Build/meta cycles |
 
 ## Phase 1: Extract Patterns
 
@@ -62,7 +62,7 @@ Bucket all events by hour. Look for clusters:
 
 ## Phase 2: Format Recommendations
 
-Write findings to `.claude/agents/00-alex/.system/beta/.beta-mining-recommendations.md`:
+Write findings to `.claude/agents/00-alex/.system/beta/judgement-model-recommendations.md`:
 
 ```markdown
 # Alex β Mining Recommendations — [date]
@@ -86,4 +86,4 @@ Report to the user:
 - Patterns found (count by type)
 - Confidence adjustments recommended
 - Any new anti-patterns discovered
-- Next step: "Review `.claude/agents/00-alex/.system/beta/.beta-mining-recommendations.md` or let `/sleep:deep` integrate during Phase 4"
+- Next step: "Review `.claude/agents/00-alex/.system/beta/judgement-model-recommendations.md` or let `/sleep:deep` integrate during Phase 4"

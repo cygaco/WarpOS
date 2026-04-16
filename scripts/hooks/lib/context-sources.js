@@ -188,7 +188,9 @@ function getSystemState() {
 
   // Stale maps
   try {
-    const staleFile = path.join(CLAUDE_DIR, "maps", ".stale.json");
+    const mapsDir =
+      PATHS.maps || path.join(PROJECT, ".claude", "project", "maps");
+    const staleFile = path.join(mapsDir, ".stale.json");
     if (fs.existsSync(staleFile)) {
       const stale = JSON.parse(fs.readFileSync(staleFile, "utf8"));
       const staleNames = Object.keys(stale);

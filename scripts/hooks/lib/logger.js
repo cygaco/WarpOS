@@ -1,7 +1,7 @@
 /**
  * logger.js — Centralized event logger for all hooks.
  *
- * Single append-only JSONL log at .claude/events/events.jsonl.
+ * Single append-only JSONL log at paths.events/events.jsonl.
  * Replaces scattered logging across system-events.jsonl, events.jsonl,
  * modifications.jsonl, inbox.jsonl, .session-tracking.jsonl, and
  * .session-prompts.log.
@@ -33,7 +33,8 @@ const { PROJECT, PATHS } = require("./paths");
 
 // ── Paths ───────────────────────────────────────────────
 
-const EVENTS_DIR = PATHS.events || path.join(PROJECT, ".claude", "events");
+const EVENTS_DIR =
+  PATHS.events || path.join(PROJECT, ".claude", "project", "events");
 const RUNTIME_DIR = PATHS.runtime || path.join(PROJECT, ".claude", "runtime");
 const LOG_FILE = path.join(EVENTS_DIR, "events.jsonl");
 const LOCK_FILE = path.join(PROJECT, ".claude", ".store-lock");
