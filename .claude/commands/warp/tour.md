@@ -88,8 +88,11 @@ Run `/warp:health` and show the results. If anything is yellow or red, explain w
 "That's the tour! Here's what I'd suggest:
 
 1. **Try `/fix:fast` on a real bug** — see how the diagnostic system works
-2. **Try `/maps:architecture`** — see your project through Alex's eyes
-3. **When you're ready to build a feature**, switch to `/mode:adhoc` and describe what you want
+2. **Run `/maps:all`** — I'll scan your project and build a map of everything
+3. **Ask me to help with your product brief** — say 'Help me write a product brief for my project' and I'll interview you about what you're building, then fill in the requirements templates
+4. **When you're ready to build a feature**, switch to `/mode:adhoc` and describe what you want
+
+You also have requirements templates in your project (under `requirements/` if installed, or you can create them). These are like blueprints — they help Alex understand exactly what you want built. I can help you fill them in just by asking you questions about your project.
 
 Everything else — the enforcements, the review pipeline, the memory system — works automatically in the background. You don't need to think about it.
 

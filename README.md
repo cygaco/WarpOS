@@ -65,21 +65,27 @@ Open Claude Code in your project. Type:
 
 ```
 WarpOS/
-├── framework/           — The AI operating system
-│   ├── CLAUDE.md        — Alex identity, reasoning engine, operational loop
-│   ├── agents/          — 4 Alex agents + 8 general agents
-│   ├── commands/        — 59 skills (slash commands)
-│   └── reference/       — Reasoning frameworks, skill map
-├── requirements/        — Documentation templates (PRD, stories, architecture)
-│   ├── 00-canonical/    — Product foundations (brief, model, glossary)
-│   ├── 01-09/           — Design, copy, architecture, security, testing, CI/CD
-│   └── 05-features/     — Feature spec templates + example onboarding wizard
-├── patterns/            — Validated implementation patterns
-├── schemas/             — Reusable TypeScript interfaces
-├── templates/           — Stack-specific templates (Next.js, Playwright)
-├── scripts/hooks/       — 14 automated hooks + lib modules
-└── products/            — Product cards (one per project)
+├── CLAUDE.md              — Alex identity doc (copied to your project)
+├── AGENTS.md              — Agent system router (copied to your project)
+├── install.ps1            — Windows installer entry point
+├── .claude/               — The AI operating system
+│   ├── agents/            — 4 Alex agents + build agents per mode
+│   │   ├── 00-alex/       — Alpha, Beta, Gamma, Delta
+│   │   ├── 01-adhoc/      — Adhoc mode agents (builder, evaluator, QA, etc.)
+│   │   └── 02-oneshot/    — Oneshot mode agents + state machine docs
+│   ├── commands/          — 66 skills (slash commands)
+│   └── project/reference/ — Reasoning frameworks, operational loop
+├── scripts/hooks/         — 25 automated hooks + lib modules
+├── requirements/          — Documentation templates (PRD, stories, architecture)
+│   ├── 00-canonical/      — Product foundations (brief, model, glossary)
+│   ├── 01-09/             — Design, copy, architecture, security, testing, CI/CD
+│   └── 05-features/       — Feature spec templates + example
+├── patterns/              — Validated implementation patterns
+├── schemas/               — Reusable TypeScript interfaces
+└── templates/             — Stack-specific templates (Next.js, Playwright)
 ```
+
+> **Note:** The `.claude/` directory in this repo IS the framework. When installed into your project, its contents are copied to your project's `.claude/` directory. The file paths inside agent specs reference `.claude/agents/...` — those paths are correct for the installed location in your project.
 
 ## All Skills
 

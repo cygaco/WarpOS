@@ -223,7 +223,7 @@ console.log(`\n${HEADER}  INSTALLING FRAMEWORK${RESET}`);
 
 // Agents
 const agentCount = copyDir(
-  path.join(WARPOS, "framework/agents"),
+  path.join(WARPOS, ".claude/agents"),
   path.join(TARGET, ".claude/agents"),
 );
 log("ok", `Agents: ${agentCount} files installed`);
@@ -231,7 +231,7 @@ installed += agentCount;
 
 // Skills/Commands
 const skillCount = copyDir(
-  path.join(WARPOS, "framework/commands"),
+  path.join(WARPOS, ".claude/commands"),
   path.join(TARGET, ".claude/commands"),
 );
 log("ok", `Skills: ${skillCount} files installed`);
@@ -239,7 +239,7 @@ installed += skillCount;
 
 // Reference docs
 const refCount = copyDir(
-  path.join(WARPOS, "framework/reference"),
+  path.join(WARPOS, ".claude/project/reference"),
   path.join(TARGET, ".claude/project/reference"),
 );
 log("ok", `Reference docs: ${refCount} files installed`);
@@ -350,7 +350,49 @@ if (!fs.existsSync(manifestFile)) {
   installed++;
 }
 
-// ── 7. Create empty memory stores ───────────────────────
+// ── 7. Create store.json (required for build modes) ─────
+const storeFile = path.join(TARGET, ".claude/agents/store.json");
+if (!fs.existsSync(storeFile)) {
+  const store = {
+    features: {},
+    tasks: [],
+    bugDataset: [],
+    conflictDataset: [],
+    cycle: 0,
+    circuitBreaker: "closed",
+    consecutiveFailures: 0,
+    totalFailures: 0,
+    lastCooldownMs: 0,
+    evolution: [],
+    heartbeat: {
+      cycle: 0,
+      phase: 0,
+      feature: "",
+      agent: "",
+      status: "idle",
+      cycleStep: null,
+      workstream: null,
+      timestamp: new Date().toISOString(),
+    },
+    compliance: {
+      command: "codex",
+      fallback: "claude",
+      model: "gpt-4o",
+      syntax: 'codex exec "prompt"',
+      note: "Optional — falls back to Claude if unavailable",
+    },
+    snapshots: { features: {}, interfaces: {}, datasets: {} },
+    knownStubs: [],
+    points: { configs: {} },
+    runLog: { runId: null, startedAt: null, entries: [], finalStatus: null },
+    sharedFiles: {},
+  };
+  fs.writeFileSync(storeFile, JSON.stringify(store, null, 2) + "\n");
+  log("ok", "Created store.json (build system state)");
+  installed++;
+}
+
+// ── 8. Create empty memory stores ───────────────────────
 const memoryFiles = [
   ".claude/project/events/events.jsonl",
   ".claude/project/memory/learnings.jsonl",
@@ -518,7 +560,7 @@ fs.writeFileSync(settingsFile, JSON.stringify(settings, null, 2) + "\n");
 console.log(`\n${HEADER}  FRAMEWORK DOCS${RESET}`);
 
 const claudeMdTarget = path.join(TARGET, "CLAUDE.md");
-const claudeMdSource = path.join(WARPOS, "framework/CLAUDE.md");
+const claudeMdSource = path.join(WARPOS, "CLAUDE.md");
 if (!fs.existsSync(claudeMdTarget) && fs.existsSync(claudeMdSource)) {
   fs.copyFileSync(claudeMdSource, claudeMdTarget);
   log("ok", "Created CLAUDE.md");
@@ -529,7 +571,7 @@ if (!fs.existsSync(claudeMdTarget) && fs.existsSync(claudeMdSource)) {
 }
 
 const agentsMdTarget = path.join(TARGET, "AGENTS.md");
-const agentsMdSource = path.join(WARPOS, "framework/AGENTS.md");
+const agentsMdSource = path.join(WARPOS, "AGENTS.md");
 if (!fs.existsSync(agentsMdTarget) && fs.existsSync(agentsMdSource)) {
   fs.copyFileSync(agentsMdSource, agentsMdTarget);
   log("ok", "Created AGENTS.md");
@@ -547,6 +589,8 @@ if (warnings > 0)
   console.log(`  ${WARN} ${warnings} warnings (existing files kept)`);
 console.log(`\n  Next steps:`);
 console.log(`  1. Open Claude Code in your project`);
-console.log(`  2. Type /warp:health to verify everything works`);
-console.log(`  3. Type /warp:tour for a guided introduction`);
-console.log(`  4. Start building!\n`);
+console.log(`  2. Type /warp:tour for a guided introduction`);
+console.log(`  3. Type /warp:health to verify everything works`);
+console.log(`  4. Type /maps:all to generate your project maps`);
+console.log(`  5. Ask Alex to help you fill in your requirements templates`);
+console.log(`     (e.g., "Help me write a product brief for my project")\n`);
