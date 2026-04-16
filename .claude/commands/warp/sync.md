@@ -1,64 +1,46 @@
 ---
-name: warp-sync
-description: Sync local state to WarpOS repo — product card, hooks, skills, schemas, CLAUDE.md, patterns
+description: Update WarpOS from the latest version on GitHub
 ---
 
-Sync the current product's state to the WarpOS repo at `../WarpOS/` (relative to the project root).
+# /warp:sync — Update WarpOS
 
-## Concurrency Safety
+Pull the latest version of WarpOS from GitHub and update your project's framework files.
 
-Multiple products may sync to WarpOS from different sessions. Follow this protocol:
+## Procedure
 
-1. **Pull before sync** — always `git -C ../WarpOS pull --rebase origin main` before making changes. This ensures you have the latest state from other products.
-2. **Product-scoped files are safe** — anything under `products/{name}/` can't conflict with other products.
-3. **Shared files need care** — `WARP.md`, `.claude/hooks/`, `.claude/commands/`, `schemas/`, `ai/patterns.md` could conflict if two products sync simultaneously.
-4. **On push conflict** — if `git push` fails (another product pushed first), pull-rebase and retry once. If that also fails, create a branch `sync/{product}-{date}` and push there instead, then tell the user to merge manually.
+### Step 1: Find WarpOS repo
 
-## Steps
+Check for `../WarpOS/` relative to the project root. If not found, tell the user to run `/warp:init` first.
 
-1. **Check WarpOS exists** — verify `../WarpOS/` is a git repo. If not, tell the user to run `/warp-init`.
+### Step 2: Pull latest
 
-2. **Pull latest** — `git -C ../WarpOS pull --rebase origin main` to get any changes from other products.
+```bash
+git -C ../WarpOS pull --rebase origin main
+```
 
-3. **Sync CLAUDE.md** — copy the project's `CLAUDE.md` to `../WarpOS/products/consumer-product/CLAUDE.md`. This is the canonical product context file.
+Report the new commit hash and any changes.
 
-4. **Sync hooks** — copy ALL `.claude/hooks/` scripts to `../WarpOS/.claude/hooks/`. Merge hook config from `.claude/settings.json` into `../WarpOS/.claude/settings.json`. Every hook goes — format, typecheck, lint, secret-guard, session-start, and any future ones.
+### Step 3: Compare versions
 
-5. **Sync skills** — copy ALL `.claude/commands/*.md` files. Product-specific skills (like `/qa`, `/step`, `/dm`) go into `../WarpOS/products/consumer-product/commands/`. Shared skills (like `/lens`, `/deploy`, `/status`, `/hooks`, `/handoff`, `/warp-init`, `/warp-sync`, `/warp-check`) go into `../WarpOS/.claude/commands/`.
+Read `../WarpOS/version.json` and compare with `.claude/manifest.json` warpos.version.
 
-6. **Sync schemas** — copy `src/lib/deus-mechanicus.ts` (interfaces only) and `src/lib/warp-profiles.ts` to `../WarpOS/schemas/`. Extract just the TypeScript interfaces, not implementations.
+If versions match: "You're up to date."
+If WarpOS is newer: show what changed and offer to update.
 
-7. **Sync patterns** — if any new AI orchestration patterns exist (prompts in `src/lib/prompts.ts`), summarize them in `../WarpOS/ai/patterns.md`.
+### Step 4: Update framework files
 
-8. **Update product card** — update `../WarpOS/products/consumer-product/status.md` with:
-   - Current branch and commit count
-   - Recent commits (last 5)
-   - Current step definitions from constants.ts
-   - Updated timestamp
+If the user confirms, copy updated files:
+- `.claude/agents/` — agent definitions (skip files the user has customized)
+- `.claude/commands/` — skills (skip user-created skills)
+- `.claude/project/reference/` — framework reference docs
+- `scripts/hooks/` — hook implementations
+- `CLAUDE.md` and `AGENTS.md` — only if user hasn't customized them
 
-9. **Update WARP.md** — update the product table and any new validated patterns or decisions. When editing WARP.md, only touch your product's row in tables — don't rewrite other products' rows.
+For each file that exists in both locations:
+- If the user's version is different from WarpOS, ask: keep yours, take WarpOS version, or skip
 
-10. **Diff and confirm** — show the user what changed in WarpOS before committing.
+### Step 5: Update version
 
-11. **Commit and push** — commit all WarpOS changes with message: `sync(consumer-product): [summary]`. Push to origin/main. If push fails due to conflict, pull-rebase and retry. If still fails, push to `sync/consumer-product-YYYY-MM-DD` branch and tell the user.
+Update `.claude/manifest.json` warpos.version to match the new version.
 
-12. **Surface opportunities** — scan for things that COULD be added to WarpOS but aren't tracked yet:
-
-| What | Source | Value | Effort |
-| ---- | ------ | ----- | ------ |
-
-Check for:
-
-- **Environment configs**: `.env.example`, `tsconfig.json`, `next.config.*` — project template potential
-- **CI/CD**: GitHub Actions, Vercel config, deploy scripts — shared infra patterns
-- **Test infrastructure**: Test harness, QA suites, test data generators — shared testing framework
-- **UI components**: `src/components/ui/` — shared component kit
-- **API patterns**: Rate limiting, auth middleware, error handling — shared API patterns
-- **Extension patterns**: `extension/` manifest, content scripts — shared extension template
-- **Documentation**: `docs/` folder, competitive analysis — shared knowledge base
-- **Type definitions**: Product-agnostic types — shared type library
-- **Utility functions**: Encryption, validation, formatting utils — shared utils
-
-Only surface opportunities that don't already exist in WarpOS. Mark each with value (high/medium/low) and effort (high/medium/low).
-
-Report what was synced and what opportunities were found.
+Report what was updated.
