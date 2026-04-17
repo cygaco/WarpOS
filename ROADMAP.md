@@ -149,9 +149,31 @@ Not a ship blocker. Once cross-provider is live:
 - [x] `warp-setup.js` writes `WARPOS_NEXT_STEPS.md` at project root — users reference it in the fresh Claude Code session after restart
 - [x] Installer "NEXT STEPS" output now tells users to close + reopen Claude Code before anything else
 - [x] `/warp:uninstall` skill created — clean removal with restore from backup
+- [x] CLAUDE.md auto-append when user has existing content (2026-04-18)
+- [x] AGENTS.md auto-append same pattern as CLAUDE.md (2026-04-18 — prior behavior kept client's and skipped WarpOS's, breaking γ dispatch)
 - [ ] **Follow-up:** wire `/warp:setup` CLAUDE.md merge step into the installer itself (currently split between script + skill; consider unified)
 - [ ] **Follow-up:** dry-run mode (`--dry-run`) currently parses the flag but doesn't actually skip writes — needs real implementation
 - [ ] **Follow-up:** `warp-setup.js` should emit `manifest.warpos.installed: true` on success (currently unset) so `/warp:setup` Step 1 check works
+
+### Install safety — branch isolation + conflict resolution (2026-04-18)
+
+Raised by user after the first real-project install. Current installer runs directly on whatever branch the user is on (usually `main`) — a bad install could contaminate their shippable branch. We back up files but not git state.
+
+- [ ] **`--branch` default:** installer creates `warp/install-<timestamp>` branch, checks out, runs install there. Prints "Install is on branch X. Review with `git diff main`, merge with `git checkout main && git merge X`, discard with `git branch -D X`." Add `--direct` flag to opt-out.
+- [ ] **Refuse install on `main` by default** — require either `--branch <name>` or explicit `--yes-install-on-main`.
+- [ ] **Wire `--dry-run` to actually skip writes** — currently the flag is parsed but never gates the writes. Print every file it WOULD touch, then exit clean.
+- [ ] **Pre-install state snapshot** — `git status`, current branch name, uncommitted file count written into `.warpos-backup/<ts>/install-context.json` so uninstall can report "you had N uncommitted changes at install time".
+- [ ] **Same-name agent collision detection** — scan target `.claude/agents/` for basenames that match WarpOS agent roles (`builder`, `evaluator`, `fixer`, `qa`, `redteam`, `compliance`, `auditor`, `alpha`, `beta`, `gamma`, `delta`). If any match at any depth, prompt user: (a) keep yours / (b) rename yours to `<name>-custom.md` / (c) replace with WarpOS's. Unresolved collisions silently break the gauntlet.
+- [ ] **Ghost-file cleanup on re-install** — installer leaves orphan files from prior WarpOS versions (e.g., `warp/init.md` after rename to `warp/setup.md`). Installer should write a ship-manifest of every file it owns, and on re-install offer to delete ghosts (files in ship-manifest from prior version but not current).
+- [ ] **Customer-agent namespace convention** — document that WarpOS owns `.claude/agents/00-*/`, `01-*/`, `02-*/` and clients should put custom agents under `.claude/agents/99-custom/`. Installer checks + refuses to write into `99-*` slots.
+- [ ] **Post-install integrity check** — run `/warp:health --strict` at end of install; if any red, roll back to `.warpos-backup/<ts>/` automatically with user confirmation.
+
+### Guard strengthening (2026-04-18)
+
+Surfaced when I force-pushed to scrub history and my own merge-guard blocked `--force` but not `+refspec` syntax.
+
+- [ ] **merge-guard: catch all force-push forms** — current regex only catches `--force` and `-f`. Git also supports `+refs/heads/X:refs/heads/X` (plus-prefix refspec) to force-update a branch. Extend regex to: `(--force|-f\b|\s\+\S+:\S+|\s\+[a-zA-Z])` when matched against a `git push` command.
+- [ ] **team-guard: tiered agent allowlist for adhoc mode** (β RT-010). Alpha can spawn research agents (Explore, Plan, general-purpose). Build-chain agents (builder, evaluator, fixer, compliance, redteam, auditor, qa) are Gamma-only. Currently team-guard is permissive.
 
 ### Namespace reorganization
 - [ ] Merge `/retro:context` + `/retro:code` into `/retro:full` as modes (not separate skills)
