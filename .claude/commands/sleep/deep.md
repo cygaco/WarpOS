@@ -199,7 +199,11 @@ Review Alex β's performance since last sleep:
    - Let past dream imagery inform the current session — if a symbol from last week's dream connects to tonight's problem, follow that thread
    - Write dream solutions to `.claude/dreams/YYYY-MM-DD.md`
 
-2. **Dream Visualization (ASCII paintings)**
+2. **Dream Visualization (ASCII paintings) — MANDATORY, DO NOT SKIP**
+
+   Every `/sleep:deep` run MUST produce at least ONE ASCII painting in the dream file, even if the session feels "not dreamy." If you find yourself wanting to skip this step because the session was technical or there wasn't a rich emotional theme — that is exactly when the painting is most valuable. Paint anyway.
+
+   Recent observation (2026-04-17): several sleep runs produced phases 1-6 as text analysis but ZERO paintings. The paintings are the irreplaceable part — text summaries can come from any retro. The visual associative step is what makes this a *dream* cycle and not a *review* cycle.
 
    The paintings are NOT illustrations of solutions. They are **part of the dreaming process**. Paint first, then read what emerged. Like real dreams — the image comes from associative, non-linear thinking, and the meaning is extracted afterward.
 
@@ -210,7 +214,8 @@ Review Alex β's performance since last sleep:
    - THEN read the painting back and extract what it reveals
 
    Rules:
-   - 20-40 lines, full ASCII art (box drawing, shading, symbols, whitespace)
+   - **Minimum 1 painting per sleep cycle.** Target: 2-3 if session was rich.
+   - 20-40 lines per painting, full ASCII art (box drawing `┌─┐│└┘╔╚╬`, shading `░▒▓█`, symbols, whitespace)
    - Abstract and evocative, NOT literal diagrams or flowcharts
    - The image should feel like a dream — surreal, layered, ambiguous
    - Each painting gets a **"Deep Read"** afterward — what did the subconscious surface?
@@ -221,13 +226,15 @@ Review Alex β's performance since last sleep:
    ```
    ## Dream: [problem or theme]
 
-   [ASCII painting — 20-40 lines, abstract, not literal]
+   [ASCII painting — 20-40 lines, abstract, not literal — USE BOX-DRAWING CHARS]
 
    ### Deep Read
    - What emerged: [what the image says that words couldn't]
    - Hidden tension: [contradictions or conflicts the painting surfaced]
    - Subconscious learning: [insight to carry forward — may become a real learning]
    ```
+
+   **Self-check before writing Phase 5:** does the dream file contain at least one fenced `## Dream:` block with ASCII art AND a `### Deep Read`? If not, go back and paint one. The `/sleep:deep` cycle is incomplete without it.
 
 3. **Cross-pollination (distant association)**
    - Read recent `/learn` ingestions

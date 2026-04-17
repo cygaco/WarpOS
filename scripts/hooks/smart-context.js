@@ -53,7 +53,14 @@ if (!process.env.ANTHROPIC_API_KEY) {
 const API_KEY = process.env.ANTHROPIC_API_KEY || "";
 const MODEL = "claude-haiku-4-5-20251001";
 const MAX_TOKENS = 600;
-const TIMEOUT_MS = 8000;
+const TIMEOUT_MS = 15000;
+
+// Cap payload size per source. Observed: at 131 learnings the full-pool
+// payload consistently timed out at the old 8s ceiling (LRN-2026-04-17
+// smart-context timeout class). Haiku still sees the most recent slice.
+const MAX_LEARNINGS = 60;
+const MAX_TRACES = 20;
+const MAX_DECISIONS = 20;
 
 // ── Skip words (single-word approvals) ──────────────────
 
@@ -422,22 +429,26 @@ async function main() {
   const inbox = loadInbox();
   const systemState = getSystemState();
 
-  // Haiku always sees the FULL pool — dedup happens on OUTPUT, not INPUT.
-  // This way Haiku can always judge all learnings, even if some were injected before.
+  // Haiku sees the most recent slice per source — dedup happens on OUTPUT, not INPUT.
+  // Full pool grew to 131+ learnings and consistently timed out the API call.
+  // Slice picks the tail (newest entries) since JSONL is append-ordered.
+  const recentLearnings = allLearnings.slice(-MAX_LEARNINGS);
+  const recentTraces = allTraces.slice(-MAX_TRACES);
+  const recentDecisions = allDecisions.slice(-MAX_DECISIONS);
 
-  // Build Haiku payload from full pools
+  // Build Haiku payload from recent slices
   const sections = [];
-  if (allLearnings.length > 0)
+  if (recentLearnings.length > 0)
     sections.push(
-      `=== LEARNINGS (${allLearnings.length}) ===\n${formatLearningsForHaiku(allLearnings)}`,
+      `=== LEARNINGS (${recentLearnings.length} of ${allLearnings.length}) ===\n${formatLearningsForHaiku(recentLearnings)}`,
     );
-  if (allTraces.length > 0)
+  if (recentTraces.length > 0)
     sections.push(
-      `=== REASONING TRACES (${allTraces.length}) ===\n${formatTracesForHaiku(allTraces)}`,
+      `=== REASONING TRACES (${recentTraces.length} of ${allTraces.length}) ===\n${formatTracesForHaiku(recentTraces)}`,
     );
-  if (allDecisions.length > 0)
+  if (recentDecisions.length > 0)
     sections.push(
-      `=== BETA DECISIONS (${allDecisions.length}) ===\n${formatDecisionsForHaiku(allDecisions)}`,
+      `=== BETA DECISIONS (${recentDecisions.length} of ${allDecisions.length}) ===\n${formatDecisionsForHaiku(recentDecisions)}`,
     );
   if (systemState.length > 0)
     sections.push(
