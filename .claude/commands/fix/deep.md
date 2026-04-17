@@ -8,6 +8,8 @@ Full investigation pipeline. Classifies the error, selects the right diagnostic 
 
 Use this for: regressions, intermittent bugs, multi-system failures, agent hangs, vague symptoms, recurring issues.
 
+> **⚠ MANDATORY — Phase 5.0 trace logging is non-optional.** Past runs have skipped it. Every `/fix:deep` invocation MUST append a trace entry to `paths.tracesFile` before reporting the fix. If you finish without logging the trace, the run is incomplete and future `/fix:deep` calls lose the pattern-match benefit. See Phase 5.0 for the exact write command.
+
 ## Input
 
 `$ARGUMENTS` — Error description, stack trace, symptom, or context.
@@ -18,8 +20,8 @@ If no arguments: scan the current conversation for the most recent error or comp
 
 **Goal**: Search memory for similar past problems before diagnosing.
 
-1. Search `.claude/project/memory/traces.jsonl` for similar problems (grep for keywords from the error)
-2. Search `.claude/project/memory/learnings.jsonl` for related learnings
+1. Search `paths.tracesFile` for similar problems (grep for keywords from the error)
+2. Search `paths.learningsFile` for related learnings
 3. If a match is found: surface the prior framework, outcome, and quality score
 4. Use this to bias framework selection in Phase 1.3 (but don't blindly reuse — compare context first)
 
@@ -33,7 +35,7 @@ If no arguments: scan the current conversation for the most recent error or comp
 
 Collect all available signals:
 - Parse `$ARGUMENTS` for: error messages, HTTP codes, file paths, stack traces, timestamps
-- Search `.claude/project/memory/learnings.jsonl` for similar past issues (grep for keywords from the error)
+- Search `paths.learningsFile` for similar past issues (grep for keywords from the error)
 - Search `the retro directory (check manifest.json projectPaths.retro for location)/*/BUGS.md` for prior occurrences
 - Check `git log --oneline -20` for recent changes that might be related
 - If a file is mentioned, read it. If a stack trace exists, read the top frame.
@@ -188,21 +190,32 @@ Also check:
 
 ## Phase 5: Learn & Prevent
 
-### 5.0 Log Reasoning Trace + Score Quality
+### 5.0 Log Reasoning Trace + Score Quality — MANDATORY
 
-Append a reasoning trace to `.claude/project/memory/traces.jsonl` with:
+**Do this FIRST, before any other Phase 5 step.** Past `/fix:deep` runs have silently skipped trace logging because it was buried at the end. The trace is the *output* of this skill — without it, Phase 0 of the next `/fix:deep` run has nothing to pattern-match against.
+
+Append a reasoning trace to `paths.tracesFile` with:
+- `id`: `RT-<next-integer>` (count existing entries + 1)
+- `ts`: ISO timestamp
 - `framework_selected`: The framework used in Phase 1.3
 - `framework_rationale`: WHY that framework was chosen
-- `history_match`: Trace ID from Phase 0 if one was found
+- `history_match`: Trace ID from Phase 0 if one was found (else null)
+- `problem`: One-sentence symptom
+- `root_cause`: The root cause statement from Phase 2
+- `fix`: One-sentence fix description
 - `quality_score`: Score the fix 0-4 using the quality scale in CLAUDE.md §2
 - `source`: "fix:deep"
+- `learning_id`: ID of the learning appended in 5.1 (cross-link)
 
-Append directly to `.claude/project/memory/traces.jsonl` — do NOT delegate to a separate `/reasoning:log` call (it gets forgotten). Write the trace inline as part of Phase 5. Cross-link to the learning created in 5.1.
+**Exact write command** (memory-guard enforced, do NOT deviate):
 
-**Write method for traces.jsonl and learnings.jsonl** (memory-guard enforced):
-- **Use:** `node -e "const fs=require('fs'); fs.appendFileSync(require('path').join(process.env.CLAUDE_PROJECT_DIR||'.', '.claude/project/memory/FILE'), JSON.stringify(entry)+'\\n')"`
-- **Or:** Edit tool for updating existing entries
-- **NEVER:** `writeFileSync` (blocked), bash `>>` or `echo >>` redirects (blocked by echo/redirect guards)
+```bash
+node -e "const {PATHS}=require('./scripts/hooks/lib/paths'); const fs=require('fs'); fs.appendFileSync(PATHS.tracesFile, JSON.stringify({id:'RT-XXX',ts:new Date().toISOString(),/* ... */})+'\n')"
+```
+
+**Never use:** `writeFileSync` (blocked), bash `>>` or `echo >>` redirects (blocked by echo/redirect guards), literal path strings (use `PATHS.tracesFile` per Paths SSoT).
+
+**Self-check before reporting the fix:** did you run the node append command above? If no, stop and run it. Reporting a fix without logging the trace is an incomplete `/fix:deep` run.
 
 ### 5.1 Log the Fix
 
@@ -212,7 +225,7 @@ If this bug reveals a pattern (not a one-off typo):
 {"ts":"YYYY-MM-DD","intent":"bug_fix","tip":"<what was learned — max 300 chars>","effective":null,"pending_validation":true,"score":0,"source":"fix:deep"}
 ```
 
-Append to `.claude/project/memory/learnings.jsonl` using the write method above.
+Append to `paths.learningsFile` using `appendFileSync` (same method as 5.0, different PATHS key).
 
 ### 5.2 Prevention Recommendation
 

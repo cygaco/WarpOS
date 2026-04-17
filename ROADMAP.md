@@ -58,6 +58,17 @@ Items that are currently NEITHER created NOR assumed (just missing):
 - `.env.example` template
 - Environment flavor selection (minimal / full / security-heavy bundles)
 
+### Gitignore audit (2026-04-17 — flagged by user)
+
+Current `.gitignore` excludes `.claude/project/events/` and `.claude/project/memory/` — this protects privacy but **events and learnings are not backed up anywhere**. If a dev laptop dies, reasoning traces and event history are lost. Consider:
+
+- A redacted subset that *is* committable (e.g. a weekly digest)
+- Opt-in encrypted backup to a gitignored-by-default side-branch
+- Confirm every directory that is ignored is genuinely session-ephemeral — audit line-by-line
+- Write a `/warp:backup` skill that pushes events/memory to a private mirror repo (opt-in)
+
+Priority: medium — not blocking launch, but a data-loss risk that compounds over time.
+
 ---
 
 ## Phase 2 — Skills & systems
