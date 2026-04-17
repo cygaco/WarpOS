@@ -1259,8 +1259,13 @@ console.log(
   `${BOX_MID}  \x1b[2mEither way:\x1b[0m first prompt should be \x1b[1m/warp:health\x1b[0m              ${BOX_MID}`,
 );
 console.log(`${BOX_BOT}\n`);
-console.log(`  After restart, these skills are available:`);
-console.log(`    \x1b[1m/warp:health\x1b[0m          verify everything works`);
+console.log(`  First skill to run in Claude Code:`);
+console.log(
+  `    \x1b[1m/warp:setup\x1b[0m           confirms install state + guides you from here`,
+);
+console.log(``);
+console.log(`  Other useful skills (after /warp:setup gives the green light):`);
+console.log(`    \x1b[1m/warp:health\x1b[0m          verify every subsystem`);
 console.log(`    \x1b[1m/check:system\x1b[0m         manifest vs disk`);
 console.log(`    \x1b[1m/check:environment\x1b[0m    provider CLIs + auth`);
 console.log(`    \x1b[1m/discover:systems\x1b[0m     6-angle system inventory`);
