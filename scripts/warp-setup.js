@@ -978,15 +978,61 @@ const hookConfig = {
   StopFailure: sessionStopEntry,
 };
 
-// Only add hooks that aren't already registered
-for (const [event, matchers] of Object.entries(hookConfig)) {
-  if (!settings.hooks[event]) {
-    settings.hooks[event] = matchers;
-    log("ok", `Registered hooks for ${event}`);
+// Merge WarpOS hooks with any user-existing hooks, per event.
+// Each event's value is an array of { matcher, hooks: [...] } blocks.
+// We want: (a) preserve every user block, (b) add our blocks, (c) dedupe our
+// own entries so re-running the installer is idempotent.
+function warposScriptPath(entry) {
+  // Stable identity for a WarpOS hook entry — the command string.
+  return typeof entry === "object" && entry?.command ? entry.command : null;
+}
+
+function mergeEventHooks(existing, incoming) {
+  // existing: array of blocks already in user's settings.hooks[event]
+  // incoming: array of blocks WarpOS wants to register
+  const result = Array.isArray(existing) ? [...existing] : [];
+
+  for (const block of incoming) {
+    // Does the user already have a block with the same matcher?
+    const match = result.find(
+      (b) => (b.matcher || "") === (block.matcher || ""),
+    );
+    if (match) {
+      // Merge our hook entries INTO the existing matcher's hooks list, deduping
+      // by command string. User's other hooks for this matcher stay intact.
+      match.hooks = match.hooks || [];
+      const existingCmds = new Set(match.hooks.map(warposScriptPath));
+      for (const entry of block.hooks) {
+        if (!existingCmds.has(warposScriptPath(entry))) {
+          match.hooks.push(entry);
+        }
+      }
+    } else {
+      // No matching block — append our full block alongside user's.
+      result.push(block);
+    }
+  }
+  return result;
+}
+
+for (const [event, incomingBlocks] of Object.entries(hookConfig)) {
+  const before = JSON.stringify(settings.hooks[event] || []);
+  settings.hooks[event] = mergeEventHooks(
+    settings.hooks[event],
+    incomingBlocks,
+  );
+  const after = JSON.stringify(settings.hooks[event]);
+  if (before === after) {
+    log("ok", `${event}: WarpOS hooks already registered (no-op, idempotent)`);
+  } else if (before === "[]") {
+    log("ok", `Registered WarpOS hooks for ${event}`);
     installed++;
   } else {
-    log("warn", `Hooks already registered for ${event} — kept existing`);
-    warnings++;
+    log(
+      "ok",
+      `Merged WarpOS hooks into existing ${event} (user hooks preserved)`,
+    );
+    installed++;
   }
 }
 
