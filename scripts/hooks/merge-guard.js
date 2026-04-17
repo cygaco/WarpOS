@@ -248,13 +248,27 @@ process.stdin.on("end", () => {
       block("rm on src/ or docs/ blocked: use git to manage file lifecycle.");
     }
 
-    // 6. git push --force — block force pushes
-    if (/git\s+push\s+.*--force/.test(cmd) || /git\s+push\s+-f\b/.test(cmd)) {
-      block("git push --force blocked: destructive operation.");
+    // 6. git push force forms — block all three:
+    //    (a) --force / --force-with-lease
+    //    (b) -f short flag
+    //    (c) +refspec form: git push origin +main  (equivalent to --force)
+    //    LRN-2026-04-18: old regex caught only (a) and (b); +main syntax bypassed the guard.
+    if (
+      /git\s+push\s+.*--force/.test(cmd) ||
+      /git\s+push\s+-f\b/.test(cmd) ||
+      /git\s+push\s+\S+\s+\+\S+/.test(cmd)
+    ) {
+      block(
+        "git push force-push blocked: destructive operation. (matched: --force / -f / +refspec)",
+      );
     }
 
     // 7. git push (non-force) — advisory warning, not a block
-    if (/git\s+push\b/.test(cmd) && !/--force|-f\b|--dry-run/.test(cmd)) {
+    if (
+      /git\s+push\b/.test(cmd) &&
+      !/--force|-f\b|--dry-run/.test(cmd) &&
+      !/git\s+push\s+\S+\s+\+\S+/.test(cmd)
+    ) {
       logEvent(
         "warn",
         "system",
