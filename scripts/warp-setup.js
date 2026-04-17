@@ -892,70 +892,59 @@ for (const perm of requiredPerms) {
 // Add hook registrations if not present
 if (!settings.hooks) settings.hooks = {};
 
+// Hook-entry helper: Claude Code schema requires every hook to have type:"command".
+// Also: event keys must be single event names (Stop, SessionEnd, StopFailure as
+// three separate keys — NOT "Stop|SessionEnd|StopFailure" as one key).
+const cmd = (script) => ({
+  type: "command",
+  command: `node "$CLAUDE_PROJECT_DIR/scripts/hooks/${script}"`,
+});
+
+const sessionStopEntry = [
+  {
+    matcher: "",
+    hooks: [cmd("session-stop.js")],
+  },
+];
+
 const hookConfig = {
   SessionStart: [
     {
       matcher: "",
-      hooks: [
-        {
-          command: `node "$CLAUDE_PROJECT_DIR/scripts/hooks/session-start.js"`,
-        },
-      ],
+      hooks: [cmd("session-start.js")],
     },
   ],
   UserPromptSubmit: [
     {
       matcher: "",
-      hooks: [
-        {
-          command: `node "$CLAUDE_PROJECT_DIR/scripts/hooks/smart-context.js"`,
-        },
-        {
-          command: `node "$CLAUDE_PROJECT_DIR/scripts/hooks/prompt-logger.js"`,
-        },
-      ],
+      hooks: [cmd("smart-context.js"), cmd("prompt-logger.js")],
     },
   ],
   PreToolUse: [
     {
       matcher: "Bash",
-      hooks: [
-        { command: `node "$CLAUDE_PROJECT_DIR/scripts/hooks/merge-guard.js"` },
-        { command: `node "$CLAUDE_PROJECT_DIR/scripts/hooks/memory-guard.js"` },
-      ],
+      hooks: [cmd("merge-guard.js"), cmd("memory-guard.js")],
     },
     {
       matcher: "Edit|Write",
       hooks: [
-        { command: `node "$CLAUDE_PROJECT_DIR/scripts/hooks/secret-guard.js"` },
-        {
-          command: `node "$CLAUDE_PROJECT_DIR/scripts/hooks/foundation-guard.js"`,
-        },
-        {
-          command: `node "$CLAUDE_PROJECT_DIR/scripts/hooks/ownership-guard.js"`,
-        },
-        { command: `node "$CLAUDE_PROJECT_DIR/scripts/hooks/memory-guard.js"` },
-        {
-          command: `node "$CLAUDE_PROJECT_DIR/scripts/hooks/store-validator.js"`,
-        },
-        { command: `node "$CLAUDE_PROJECT_DIR/scripts/hooks/path-guard.js"` },
+        cmd("secret-guard.js"),
+        cmd("foundation-guard.js"),
+        cmd("ownership-guard.js"),
+        cmd("memory-guard.js"),
+        cmd("store-validator.js"),
+        cmd("path-guard.js"),
       ],
     },
     {
       matcher: "Agent",
-      hooks: [
-        { command: `node "$CLAUDE_PROJECT_DIR/scripts/hooks/team-guard.js"` },
-      ],
+      hooks: [cmd("team-guard.js")],
     },
   ],
   PostToolUse: [
     {
       matcher: "",
-      hooks: [
-        {
-          command: `node "$CLAUDE_PROJECT_DIR/scripts/hooks/session-tracker.js"`,
-        },
-      ],
+      hooks: [cmd("session-tracker.js")],
     },
     {
       matcher: "Edit|Write",
@@ -964,40 +953,29 @@ const hookConfig = {
         // (exits 0) when its underlying tool (prettier / tsc / eslint) is
         // absent — see the hook source. This keeps install simple and lets
         // users add tooling later without re-registering.
-        { command: `node "$CLAUDE_PROJECT_DIR/scripts/hooks/format.js"` },
-        { command: `node "$CLAUDE_PROJECT_DIR/scripts/hooks/typecheck.js"` },
-        { command: `node "$CLAUDE_PROJECT_DIR/scripts/hooks/lint.js"` },
-        { command: `node "$CLAUDE_PROJECT_DIR/scripts/hooks/edit-watcher.js"` },
-        { command: `node "$CLAUDE_PROJECT_DIR/scripts/hooks/systems-sync.js"` },
-        {
-          command: `node "$CLAUDE_PROJECT_DIR/scripts/hooks/save-session-lint.js"`,
-        },
-        {
-          command: `node "$CLAUDE_PROJECT_DIR/scripts/hooks/learning-validator.js"`,
-        },
-        { command: `node "$CLAUDE_PROJECT_DIR/scripts/hooks/ui-lint.js"` },
-        { command: `node "$CLAUDE_PROJECT_DIR/scripts/hooks/path-guard.js"` },
+        cmd("format.js"),
+        cmd("typecheck.js"),
+        cmd("lint.js"),
+        cmd("edit-watcher.js"),
+        cmd("systems-sync.js"),
+        cmd("save-session-lint.js"),
+        cmd("learning-validator.js"),
+        cmd("ui-lint.js"),
+        cmd("path-guard.js"),
       ],
     },
   ],
   PostCompact: [
     {
       matcher: "",
-      hooks: [
-        {
-          command: `node "$CLAUDE_PROJECT_DIR/scripts/hooks/compact-saver.js"`,
-        },
-      ],
+      hooks: [cmd("compact-saver.js")],
     },
   ],
-  "Stop|SessionEnd|StopFailure": [
-    {
-      matcher: "",
-      hooks: [
-        { command: `node "$CLAUDE_PROJECT_DIR/scripts/hooks/session-stop.js"` },
-      ],
-    },
-  ],
+  // Session lifecycle: session-stop.js registered on all three end-of-session events.
+  // Claude Code schema requires separate keys per event, not a pipe-joined key.
+  Stop: sessionStopEntry,
+  SessionEnd: sessionStopEntry,
+  StopFailure: sessionStopEntry,
 };
 
 // Only add hooks that aren't already registered
