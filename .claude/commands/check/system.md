@@ -22,10 +22,15 @@ Single owner for "What systems are actually in this project, and does the manife
 
 ## Files to read
 
-Resolve via `paths.json`:
+**First, resolve paths.** Always start by reading `.claude/paths.json` — that's the canonical path registry. If it doesn't exist, fall back to `scripts/hooks/lib/paths.js` defaults, and warn that paths.json is missing.
+
+Then, from that registry:
 - `paths.manifest` — project identity
-- `paths.systemsFile` — current catalogue
-- `paths.agents`, `paths.commands`, `paths.hooks`, `paths.hookLib`, `paths.patterns`, `paths.reference`, `paths.requirements`, `paths.maps`, `paths.memory`, `paths.events`, `paths.agentSystem`, `paths.betaSystem`
+- `paths.systemsFile` — current catalogue (what this skill updates)
+- `paths.agents`, `paths.commands`, `paths.hooks`, `paths.hookLib`, `paths.patterns`, `paths.reference`, `paths.requirements`, `paths.maps`, `paths.memory`, `paths.events`, `paths.agentSystem`, `paths.betaSystem` — directory roots to enumerate
+- `paths.eventsFile`, `paths.learningsFile`, `paths.tracesFile`, `paths.systemsFile`, `paths.betaEvents` — individual store files
+
+If any of these keys are missing from `paths.json`, flag it — the registry is the system and should always be complete.
 
 ---
 

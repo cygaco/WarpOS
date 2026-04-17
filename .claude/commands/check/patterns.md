@@ -20,17 +20,20 @@ Single owner for "What patterns keep recurring across sessions and runs?" Mines 
 
 ## Files to read (all modes)
 
-Resolve via `paths.json`:
-- `paths.memory/learnings.jsonl` — validated learnings (cross-session)
-- `paths.memory/traces.jsonl` — reasoning episodes with quality scores
-- `paths.events/events.jsonl` — raw event log
-- `paths.events/code.jsonl` — code-level events
-- `paths.agentSystem/beta/events.jsonl` — beta decision history
-- `paths.memory/systems.jsonl` — system changes over time
-- `paths.maps/enforcements.jsonl` — current automation coverage
-- `paths.runtime/handoffs/*.md` — session summaries
+All paths below are **keys in `paths.json`** — read the registry at `.claude/paths.json` first, then resolve:
+
+- `paths.learningsFile` — validated learnings (cross-session)
+- `paths.tracesFile` — reasoning episodes with quality scores
+- `paths.eventsFile` — raw event log
+- `paths.events/code.jsonl` — code-level events (under `paths.events` dir)
+- `paths.betaEvents` — beta decision history (= `paths.betaSystem/events.jsonl`)
+- `paths.systemsFile` — system changes over time
+- `paths.maps/enforcements.jsonl` — current automation coverage (under `paths.maps` dir)
+- `paths.handoffs/*.md` — session summaries
 - `paths.reference/reasoning-frameworks.md` — quality scoring rubric
 - Retro docs — resolve from `manifest.projectPaths.retro` if present; else skip
+
+`paths.agentSystem`, `paths.betaSystem`, `paths.maps`, etc. are all keys in `paths.json`. If any are missing, warn — the registry should be complete.
 
 `git log --since=<window>` for commit-level signals.
 

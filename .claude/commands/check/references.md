@@ -79,7 +79,7 @@ Common renames to check first (old → new):
 ### SPEC_GRAPH Issues
 
 - Edges pointing to nonexistent files mean staleness propagation is broken for that path
-- Fix by updating the SPEC_GRAPH file (location: `paths.reference/SPEC_GRAPH.json` or `docs/00-canonical/SPEC_GRAPH.json`)
+- Fix by updating the SPEC_GRAPH file (location: `paths.specGraph` (default: `.claude/project/maps/SPEC_GRAPH.json`)
 - If the SPEC_GRAPH doesn't exist, skip this category silently
 
 ### Orphaned Files

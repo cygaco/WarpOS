@@ -29,6 +29,104 @@ Determine the input type and extract content accordingly:
 1. WebSearch for the page title + "transcript" or "summary"
 2. Ask user to paste the content manually
 
+### Web Page — Crawl Mode (`--crawl` or auto-detect)
+
+Generic, topic-agnostic. If the page looks like an **index / hub / catalog / overview** for anything (documentation tree, course syllabus, model catalog, glossary, library index, spec directory, conference schedule, blog archive), the crawl unpacks it — fetches the links, fetches any referenced external tools, and aggregates.
+
+**When to crawl:** auto-detect if any of these are true, or if the user passes `--crawl` explicitly:
+- URL path looks index-like: ends in or contains `/docs`, `/models`, `/api`, `/reference`, `/guides`, `/tutorials`, `/articles`, `/posts`, `/catalog`, `/index`, or terminates in a trailing slash on a short path
+- The fetched page content contains **>5 outbound links that share the same domain or the same URL prefix** as the input URL
+- Page title contains words like "Overview", "Index", "Catalog", "All …", "Directory"
+- Explicit `--crawl` flag regardless of heuristics
+
+When in doubt, **ask the user once**: "This looks like a hub page — want me to crawl sub-pages (y/N)?"
+
+---
+
+**Crawl procedure (works for any topic):**
+
+1. **Fetch the hub page** via WebFetch. Use this prompt verbatim — it's designed to extract links regardless of topic:
+   ```
+   List every link on this page. For each link, include:
+     - anchor text (or title if different)
+     - absolute URL (resolve relative links against the page URL)
+     - whether it appears to be a sub-page under this page's topic (same host AND path prefix overlaps, OR same documentation tree)
+     - whether it references an external tool, CLI, SDK, library, or dependency by name
+
+   Also give:
+     - topic: one sentence describing what this page is
+     - dependencies: any tools/libraries/services the page says you need to use it (name + why)
+
+   Return JSON:
+   { topic: "...", links: [{text, url, is_subpage, is_dependency}], dependencies: [{name, reason}] }
+   ```
+
+   Do not skip links. The heuristics at this step are conservative on purpose — **extract everything, filter later.**
+
+2. **Filter sub-pages** from the extracted links:
+   - Same host as the hub URL, OR
+   - Same URL path prefix (e.g. hub is `/docs/` → keep `/docs/*`)
+   - Dedupe by URL
+   - Cap at 20 fetches per crawl to avoid runaway runs (user can raise with `--max=50`)
+   - If >20, sort by shortest path depth first (top-level sections before deep leaves) and take the top 20
+
+3. **Fetch each sub-page in parallel**. Use WebFetch with this focused prompt:
+   ```
+   What does this page document or describe? (one paragraph)
+   List every literal identifier on the page — names, IDs, flags, config keys, function signatures, model IDs, CLI options — with their exact strings.
+   Include every code example verbatim.
+   Note any caveats, deprecations, version constraints, or warnings.
+   Return JSON: { summary, identifiers: [...], examples: [...], caveats: [...] }
+   ```
+
+4. **Follow dependencies** — for each entry in the hub's `dependencies`:
+   - If the dependency has a canonical docs URL mentioned on the hub, use that
+   - Otherwise `WebSearch` for `"<dependency name> official docs"` and use the top result
+   - `WebFetch` that URL with the same prompt as step 3
+   - If the page itself looks like a hub (apply the same heuristics), treat it as a nested crawl — recurse with `depth = depth + 1`, **cap recursion at depth 2** from the original hub
+   - If the dependency is a CLI tool, **always** try to also fetch the CLI reference page (common URL patterns: `/reference`, `/cli`, `/commands`, `/cli/reference`)
+
+5. **Aggregate** — produce a single merged knowledge object:
+   ```json
+   {
+     "hub": { "url": "...", "topic": "...", "crawled_at": "<ISO>" },
+     "subpages": [
+       { "url": "...", "title": "...", "summary": "...", "identifiers": [...], "examples": [...], "caveats": [...] }
+     ],
+     "dependencies": [
+       { "name": "...", "reason": "...", "docs_url": "...", "identifiers": [...], "cli_syntax": "...", "cli_reference_url": "..." }
+     ],
+     "failed_fetches": [ { "url": "...", "reason": "..." } ]
+   }
+   ```
+
+6. **Recap banner** (always print before analysis — user can redirect):
+   ```
+   ┌─ CRAWL RECAP ─────────────────────────
+   │ Hub:          <topic>
+   │ URL:          <hub url>
+   │ Sub-pages:    <N> fetched / <M> discovered
+   │ Dependencies: <D> followed (+ <C> CLI references)
+   │ Failed:       <F> pages skipped (see failed_fetches)
+   │ Recursion:    depth <depth> / cap 2
+   └────────────────────────────────────────
+   ```
+   Then proceed to the Analysis Pipeline treating **all fetched pages** (hub + subpages + dependencies) as the input corpus.
+
+**Rate-limit / failure safety:** if any `WebFetch` fails, returns empty, or times out, log it to `failed_fetches` and continue. Never abort the whole crawl for one failed page.
+
+---
+
+**Fixture examples (this is the pattern, not a hardcoded flow):**
+
+- **Technical docs hub** (what we tested): `https://platform.openai.com/docs/models` → crawl discovers `gpt-5.4`, `gpt-5.4-mini`, etc., each sub-page extracts model IDs + context sizes + strengths. Hub mentions "Codex CLI" as a dependency → follow to `https://developers.openai.com/codex/cli/reference` and extract exact flags.
+- **Library overview**: `https://react.dev/reference/react` → crawl extracts every hook signature and example.
+- **API index**: `https://docs.anthropic.com/en/api` → crawl extracts every endpoint with its payload schema and example.
+- **Blog archive**: `https://kentcdodds.com/blog` → crawl each post, extract the thesis + each technique mentioned.
+- **Glossary**: any `GLOSSARY.md` or `/terms` page → each defined term becomes an identifier; cross-references become dependencies.
+
+The crawl logic doesn't care about the topic. It cares about: find links, classify them, fetch them, aggregate. **Any topic, any hub, any depth up to 2.**
+
 ### YouTube Video
 **Detection:** URL contains `youtube.com/watch`, `youtu.be/`, or `youtube.com/shorts`
 **Method (try in order):**
