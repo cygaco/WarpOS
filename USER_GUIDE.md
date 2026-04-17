@@ -27,21 +27,28 @@ That's the baseline. Everything else builds on it.
 
 ## 2. The Three Modes
 
-Pick one at the start of every session. Switch with `/mode:solo`, `/mode:adhoc`, `/mode:oneshot`.
+Pick ONE at a time. Modes are **project-wide and persistent** — whatever you set stays active until you change it, across every terminal you open. You can't have solo in one terminal and adhoc in another simultaneously; switching in any terminal switches for all. Switch with `/mode:solo`, `/mode:adhoc`, `/mode:oneshot`.
 
 | Mode | Who's in the room | When to use |
 |---|---|---|
 | **solo** | You + Alex α | System tweaking, quick edits, exploratory reading, skill management. Default most of the day. |
 | **adhoc** | α + β (judgment) + γ (builder orchestrator) | Building **one feature** with oversight. Gamma dispatches builder → evaluator → compliance → qa → redteam gauntlet. |
-| **oneshot** | δ (standalone) | **"Build me this entire skeleton while I go to bed."** Delta runs a state machine with cycles, fix loops, points. No α/β involved. |
+| **oneshot** | δ (standalone) | **End-to-end rebuild of an entire codebase from requirements.** Run when the existing code has drifted badly from its specs or a feature came out muddled. Delta runs a state machine with cycles, fix loops, points, rebuilds feature-by-feature in dependency order. No α/β involved. |
 
 **Starting solo:** just type. You're Alex's pair.
 
 **Starting adhoc:** `/mode:adhoc` → describe the feature. Alpha plans, Beta judges the plan (DECIDE / DIRECTIVE / ESCALATE), Gamma dispatches. Use this when the feature is significant enough to warrant review.
 
-**Starting oneshot:** `/mode:oneshot` → write a skeleton spec → Delta builds every feature in dependency order with full gauntlet between phases. Wake up to either a completed project or a detailed halt report.
+> **Note:** even when it's just you + α in the room (γ idle, no build in flight), α still **probes β** on every non-trivial decision in adhoc mode. You'll see β's DECIDE / DIRECTIVE responses appear in your log. That's the mode doing its job — β is always watching, not just during builds.
 
-**Rule of thumb:** solo for 80% of work, adhoc for real feature builds, oneshot for overnight or skeleton-from-scratch runs.
+**Starting oneshot:** first run `/preflight:run` (non-negotiable — see §5.6), then `/mode:oneshot` → write a skeleton spec → Delta builds every feature in dependency order with full gauntlet between phases. Wake up to either a completed project or a detailed halt report.
+
+**When oneshot makes sense:**
+- Cleaning up a project where features came out muddled and need a clean rewrite from spec
+- Quality pass: features work but violate your design system / architecture / spec — rebuild them right
+- Bootstrapping a new product from spec alone, no code yet (skeleton mode)
+
+**Rule of thumb:** solo for 80% of work, adhoc for real feature builds, oneshot for overnight rebuilds or skeleton-from-scratch runs.
 
 ---
 
@@ -89,11 +96,21 @@ Add a 5th **Research** terminal when you kick off `/research:deep` (15–40 min)
 
 ### Cross-terminal coordination
 
-When Terminal N finishes something important, it runs:
+When Terminal N finishes something important, it runs `/session:write` with a note **written for another Alex to pick up cold.** Not "done" — enough context that a different terminal, which didn't watch any of this happen, can continue the work.
 
+Bad:
 ```
-/session:write "gamma finished auth feature build, all gates passed, on branch feat/auth"
+/session:write "done"
+/session:write "fixed the bug"
 ```
+
+Good:
+```
+/session:write "gamma finished auth build on feat/auth. All 6 gauntlet gates passed. Branch pushed to origin. Ready for /commit:both from Terminal 4."
+/session:write "investigated the session-crash bug: root cause is TIMEOUT_MS=8000 in smart-context.js, context payload too big at 131 learnings. Fix drafted but not applied — needs β confirm on whether to slice or raise timeout."
+```
+
+The rule: **write as if handing off to another session that has no idea what you just did.** Include what happened, what state we're in, and what should happen next.
 
 Terminal M's next prompt automatically reads the inbox via `smart-context.js` and picks up the note. **You don't have to copy-paste between terminals.** Each one independently sees what the others did.
 
@@ -193,17 +210,25 @@ No copy-paste between windows. Every terminal independently sees the timeline.
 | `/check:system` | System inventory — scan disk vs manifest, flag drift. |
 | **`/check:all`** | **Runs all six in parallel, produces one unified report with ship/block/caution verdict.** Pre-ship gate. |
 
-**Preflight** — the **pre-run** workflow for heavy agent sessions.
+**Preflight** — the **pre-run** workflow that prepares everything Delta needs **for `/mode:oneshot`**.
+
+ELI5: Oneshot is Delta building your entire codebase overnight. It builds from **skeleton stubs** — one-line placeholder files for every feature, created before the run starts. Delta replaces each stub with real code, phase by phase. Preflight is the bouncer at the door: it makes sure every stub is in place, every spec is consistent, every dependency is declared, and the branch is clean, *before* Delta touches anything. If preflight fails, Delta doesn't start.
+
+The 7 passes preflight runs:
+1. **Branch setup** — creates `skeleton-testN` branch off main, ensures clean working tree
+2. **Skeleton stubs** — creates one-line placeholder files for every feature Delta will build; Delta replaces these, not empty dirs
+3. **Spec consistency** — every feature dir has PRD + STORIES + INPUTS; template versions match; no STALE banners
+4. **Environment readiness** — node, git, provider CLIs, API keys, Claude Code settings
+5. **Run transition** — archives the previous oneshot's retros; resets the store cycle counter
+6. **Architecture** — cross-references between specs are valid; SPEC_GRAPH has no dangling edges
+7. **Skeleton check** — every stub file matches an entry in the manifest feature list
 
 | Skill | Purpose |
 |---|---|
-| `/preflight:run` | 7-pass verification before `/mode:adhoc` or `/mode:oneshot`. Branch setup, skeleton stubs, spec consistency, env readiness, run transition, architecture, skeleton check. |
+| `/preflight:run` | Runs the 7 passes above. Only needed for oneshot. |
 | `/preflight:improve` | Update preflight passes based on gaps discovered during runs. |
 
-**Run `/preflight:run` before:**
-- Any `/mode:oneshot` kickoff (non-negotiable)
-- `/mode:adhoc` for a feature you haven't touched before
-- Returning to a branch after more than a day away
+**Run `/preflight:run` before every `/mode:oneshot` kickoff.** Non-negotiable — Delta's state machine assumes the skeleton + specs + branch are already set up. No other mode needs it; solo and adhoc just work off main.
 
 **Retro** — retrospective analysis. **Best during and after oneshot runs**; also useful at feature boundaries.
 

@@ -83,10 +83,71 @@ const TARGET = path.resolve(argv[0] || ".");
 const WARPOS = path.resolve(__dirname, "..");
 const YES = flags.has("--yes") || flags.has("-y"); // skip interview, use defaults
 const DRY_RUN = flags.has("--dry-run");
+const SKIP_BACKUP = flags.has("--skip-backup");
 
 if (!fs.existsSync(TARGET)) {
   console.error(`Target directory does not exist: ${TARGET}`);
   process.exit(1);
+}
+
+// ── Backup existing config before installer touches anything ─────
+// /warp:uninstall reads this backup to restore the project's pre-install state.
+function backupExisting() {
+  if (SKIP_BACKUP) return null;
+  const ts = new Date().toISOString().replace(/[:.]/g, "-");
+  const backupRoot = path.join(TARGET, ".warpos-backup", ts);
+  const backupTargets = [
+    "CLAUDE.md",
+    "AGENTS.md",
+    ".gitignore",
+    ".claude",
+    "scripts/hooks",
+  ];
+  let backedUp = 0;
+  for (const rel of backupTargets) {
+    const src = path.join(TARGET, rel);
+    if (!fs.existsSync(src)) continue;
+    const dest = path.join(backupRoot, rel);
+    fs.mkdirSync(path.dirname(dest), { recursive: true });
+    const stat = fs.statSync(src);
+    if (stat.isDirectory()) {
+      // recursive copy
+      const copyDirRecursive = (s, d) => {
+        fs.mkdirSync(d, { recursive: true });
+        for (const entry of fs.readdirSync(s, { withFileTypes: true })) {
+          const sp = path.join(s, entry.name);
+          const dp = path.join(d, entry.name);
+          if (entry.isDirectory()) copyDirRecursive(sp, dp);
+          else fs.copyFileSync(sp, dp);
+        }
+      };
+      copyDirRecursive(src, dest);
+    } else {
+      fs.copyFileSync(src, dest);
+    }
+    backedUp++;
+  }
+  if (backedUp > 0) {
+    // write a marker for /warp:uninstall to find
+    fs.writeFileSync(
+      path.join(backupRoot, "BACKUP_MANIFEST.json"),
+      JSON.stringify(
+        {
+          created: new Date().toISOString(),
+          files_backed_up: backedUp,
+          warpos_version: WARPOS,
+        },
+        null,
+        2,
+      ),
+    );
+    log(
+      "ok",
+      `Backed up ${backedUp} pre-install file(s) to .warpos-backup/${ts}/`,
+    );
+    log("info", "/warp:uninstall restores from this backup.");
+  }
+  return backupRoot;
 }
 
 // ── Interview helpers ───────────────────────────────────
@@ -298,6 +359,11 @@ const hookTools = {
   tsc: hasTsConfig && (detectTool("tsc") || detectTool("npx tsc")),
   eslint: detectTool("eslint") || detectTool("npx eslint"),
 };
+
+// ── 2.5 Backup existing config before any destructive writes ────
+console.log(`\n${HEADER}  BACKUP${RESET}`);
+const backupPath = backupExisting();
+if (!backupPath) log("info", "No pre-install files to back up (clean target).");
 
 // ── 3. Create directory structure ───────────────────────
 console.log(`\n${HEADER}  CREATING STRUCTURE${RESET}`);
@@ -1030,10 +1096,104 @@ if (geminiPresent) {
   console.log(`       Auth:     gemini auth login   (or set GEMINI_API_KEY)`);
 }
 
+// ── Write WARPOS_NEXT_STEPS.md for the user to reference in the new session ─────
+const nextStepsPath = path.join(TARGET, "WARPOS_NEXT_STEPS.md");
+const nextStepsContent = `# WarpOS — Next Steps After Setup
+
+WarpOS was just installed on this project on ${new Date().toISOString()}.
+
+## 1. Close this Claude Code session and open a fresh one
+
+The installer registered hooks in \`.claude/settings.json\`, but **Claude Code
+only reads settings.json on launch**. Any session currently open is still
+running on pre-install settings — hooks won't fire. Close + reopen Claude Code
+in this project before doing anything else.
+
+Keep this terminal's history visible in another window if you want to reference
+what the install did — this file is also here for that.
+
+## 2. Merge Alex into CLAUDE.md (if needed)
+
+The installer preserved your existing \`CLAUDE.md\` (if you had one). But WarpOS
+needs the Alex α identity, autonomy rules, and β consultation protocol active
+for \`/mode:*\` and agent dispatch to work. In the fresh session, run:
+
+\`\`\`
+/warp:setup
+\`\`\`
+
+It will detect the partial install, offer to merge \`../WarpOS/CLAUDE.md\` into
+yours (three strategies: append / replace / interactive), and finish any
+remaining steps. If you installed via the raw \`warp-setup.js\` script, this
+is the step you haven't run yet.
+
+## 3. Verify
+
+\`\`\`
+/warp:health            # overall status — expect mostly green
+/check:environment      # provider CLIs + auth detection
+/check:system           # manifest vs disk, expect 0 drift
+/discover:systems       # 6-angle inventory — expect Solid ~10
+\`\`\`
+
+## 4. Generate maps
+
+\`\`\`
+/maps:all               # architecture, hooks, memory, skills, systems, tools
+\`\`\`
+
+## 5. Take the tour
+
+\`\`\`
+/warp:tour              # guided walkthrough of every WarpOS subsystem
+\`\`\`
+
+## 6. Start using it
+
+- Type \`/mode:solo\` to stay solo for your first hour
+- Try \`/fix:fast "any error message"\` for a quick fix
+- Try "Help me write a product brief for this project" — Alex will guide you through \`requirements/\`
+
+## Read
+
+- \`USER_GUIDE.md\` in the WarpOS repo (at \`../WarpOS/USER_GUIDE.md\`) — the workflow docs
+- \`CLAUDE.md\` at the root of this project — Alex identity
+- \`AGENTS.md\` — agent system reference
+
+## If anything fails
+
+- Run \`/warp:uninstall\` to remove WarpOS cleanly (reverts CLAUDE.md, settings, deletes .claude/)
+- Your pre-install state is backed up at \`.warpos-backup/<timestamp>/\`
+- File an issue at https://github.com/cygaco/WarpOS/issues
+
+---
+
+Written by \`warp-setup.js\`. Safe to delete after your first successful session.
+`;
+try {
+  if (!fs.existsSync(nextStepsPath)) {
+    fs.writeFileSync(nextStepsPath, nextStepsContent);
+    log("ok", "Wrote WARPOS_NEXT_STEPS.md at project root");
+  }
+} catch {
+  /* non-critical */
+}
+
 console.log(`\n${HEADER}  NEXT STEPS${RESET}`);
-console.log(`  1. Open Claude Code in your project`);
-console.log(`  2. Type /warp:tour for a guided introduction`);
+console.log(
+  `  A \x1b[1mWARPOS_NEXT_STEPS.md\x1b[0m file was written at your project root.`,
+);
+console.log(`  Read it in your next Claude Code session. Short version:\n`);
+console.log(
+  `  1. \x1b[1mClose this Claude Code session and open a fresh one\x1b[0m`,
+);
+console.log(`     (hooks just registered won't fire until next launch)`);
+console.log(
+  `  2. Type /warp:setup to finish the CLAUDE.md merge + verification`,
+);
 console.log(`  3. Type /warp:health to verify everything works`);
-console.log(`  4. Type /check:environment to verify provider CLIs + auth`);
-console.log(`  5. Type /maps:all to generate your project maps`);
-console.log(`  6. Ask Alex to help you fill in your requirements templates\n`);
+console.log(`  4. Type /warp:tour for a guided introduction`);
+console.log(`  5. Ask Alex to help you fill in your requirements templates\n`);
+console.log(
+  `  If something goes wrong: \x1b[1m/warp:uninstall\x1b[0m restores your pre-install state.\n`,
+);

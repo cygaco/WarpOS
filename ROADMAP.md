@@ -121,7 +121,7 @@ Not a ship blocker. Once cross-provider is live:
 - [ ] `/check:hooks` — hook test harness via synthetic payloads (extends `/hooks:test`)
 - [ ] `/warp:doctor` — single-command full diagnostic (runs `health` + `check:*` suite)
 - [ ] `/warp:update` — see Installer section above
-- [ ] `/warp:uninstall` — clean removal
+- [x] `/warp:uninstall` — clean removal with restore from `.warpos-backup/` **SHIPPED 2026-04-18**
 - [ ] `/agents:list` + `/agents:test` — first-class observability for the agent system
 - [ ] `/paths:validate` + `/paths:add` — see Path System above
 - [ ] `/linters:run` — unified lint runner (linters are a system per feedback)
@@ -136,6 +136,22 @@ Not a ship blocker. Once cross-provider is live:
 - [ ] `/retro:code`, `/retro:full` — remove stale "retro directory" manifest.json references; either hard-code `.claude/project/retros/` or make optional
 - [ ] `/warp:sync` — add fallback if `../WarpOS/version.json` doesn't exist (git tags / commit hash)
 - [ ] `/warp:init` — parameterize GitHub URL (hardcodes `cygaco/WarpOS.git`)
+
+### Mode persistence clarity (2026-04-18)
+- [ ] Mode (solo / adhoc / oneshot) is project-wide and persistent — switching in any terminal switches it for ALL terminals on that project. User guide now documents this. Behavior is already correct in code but was not documented — also surface this in `/mode:*` skill output on entry (e.g. "Adhoc mode active for project X — all your open terminals now share this mode").
+- [x] USER_GUIDE.md §2 updated to clarify: modes are project-wide, not per-terminal; even in adhoc with just α + user, α probes β on non-trivial decisions.
+- [x] USER_GUIDE.md §5.6 Preflight explained ELI5 with 7-pass breakdown; clarified it's ONLY for oneshot.
+- [x] USER_GUIDE.md §4 cross-terminal coordination language now explicit: write for an Alex that wasn't there.
+
+### Installer + setup UX (2026-04-18)
+- [x] Renamed `/warp:init` → `/warp:setup` — covers clone + install + CLAUDE.md merge + restart + verify
+- [x] `warp-setup.js` backs up pre-install files to `.warpos-backup/<timestamp>/` (CLAUDE.md, AGENTS.md, .gitignore, .claude/, scripts/hooks/)
+- [x] `warp-setup.js` writes `WARPOS_NEXT_STEPS.md` at project root — users reference it in the fresh Claude Code session after restart
+- [x] Installer "NEXT STEPS" output now tells users to close + reopen Claude Code before anything else
+- [x] `/warp:uninstall` skill created — clean removal with restore from backup
+- [ ] **Follow-up:** wire `/warp:setup` CLAUDE.md merge step into the installer itself (currently split between script + skill; consider unified)
+- [ ] **Follow-up:** dry-run mode (`--dry-run`) currently parses the flag but doesn't actually skip writes — needs real implementation
+- [ ] **Follow-up:** `warp-setup.js` should emit `manifest.warpos.installed: true` on success (currently unset) so `/warp:setup` Step 1 check works
 
 ### Namespace reorganization
 - [ ] Merge `/retro:context` + `/retro:code` into `/retro:full` as modes (not separate skills)
