@@ -1266,6 +1266,9 @@ console.log(
 console.log(``);
 console.log(`  Other useful skills (after /warp:setup gives the green light):`);
 console.log(`    \x1b[1m/warp:health\x1b[0m          verify every subsystem`);
+console.log(
+  `    \x1b[1m/maps:all\x1b[0m             generate relationship maps (powers smart-context enrichment)`,
+);
 console.log(`    \x1b[1m/check:system\x1b[0m         manifest vs disk`);
 console.log(`    \x1b[1m/check:environment\x1b[0m    provider CLIs + auth`);
 console.log(`    \x1b[1m/discover:systems\x1b[0m     6-angle system inventory`);
