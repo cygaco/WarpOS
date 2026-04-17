@@ -1,194 +1,188 @@
 ---
-description: Set up WarpOS end-to-end — clone, install, merge CLAUDE.md, restart, verify, first tour
+description: Set up WarpOS end-to-end — clone, install, merge CLAUDE.md, restart, verify. Safe to re-run; auto-detects and completes missing steps.
 user-invocable: true
 ---
 
 # /warp:setup — Full WarpOS Setup
 
-The one-command onboarding. This is the entry point for new users. Handles every step from "git clone" to "system healthy and ready to use" without the user needing to know what any of the underlying pieces are.
+The one-command onboarding. You run `/warp:setup`, the skill does everything for you — clone, install, merge Alex into your CLAUDE.md, write next-steps, verify. Re-running is safe: the skill checks what's already in place and picks up from the first missing step.
 
-Formerly `/warp:init`. Renamed because it does the *whole setup*, not just the init step.
+Formerly `/warp:init`. Renamed because it does the whole setup.
+
+## How it works
+
+The skill checks 5 signals in your project, in this order, and runs whatever step is missing:
+
+| Signal | Check | If missing, run |
+|---|---|---|
+| **1. WarpOS repo nearby** | `../WarpOS/` exists as a git clone | Step A — clone |
+| **2. Framework files installed** | `.claude/manifest.json` has `warpos.installed: true` | Step B — run installer |
+| **3. Alex identity in CLAUDE.md** | `CLAUDE.md` contains the string `"You are **Alex α**"` | Step C — merge CLAUDE.md |
+| **4. Hooks schema valid** | `.claude/settings.json` has `"type": "command"` on every hook entry | Step D — rerun installer to rebuild settings |
+| **5. Next-steps written** | `WARPOS_NEXT_STEPS.md` exists at project root OR user has already completed first-run verification | Step E — write guide |
+
+If everything passes, the skill reports "WarpOS is fully set up" and suggests `/warp:health`.
 
 ## Procedure
 
-### Step 1 — Already installed?
+### Phase 1 — Assess current state
 
-Look for `.claude/manifest.json` in the project root.
+Read these files (silently, report only what's missing):
 
-If it exists and has `warpos.installed: true`:
-- Report "WarpOS is already installed in this project — install metadata found in `.claude/manifest.json`."
-- Offer three next actions:
-  - `/warp:health` — verify current install
-  - `/warp:uninstall` — remove WarpOS completely (with backup) and start clean
-  - `/warp:sync` — pull latest WarpOS updates from GitHub
-- Stop.
+1. `ls ../WarpOS/` — repo present?
+2. `.claude/manifest.json` → parse → does `warpos.installed === true`?
+3. `CLAUDE.md` → grep for `Alex α` → present?
+4. `.claude/settings.json` → parse → do hook entries have `type: "command"`?
+5. `WARPOS_NEXT_STEPS.md` → exists?
 
-### Step 2 — Find or clone WarpOS
+Tell the user exactly what state their project is in, before doing anything:
 
-Ask the user (unless invoked with `--source <url>`):
-- "Which WarpOS repo should I use?" (default: `https://github.com/cygaco/WarpOS.git`; forks are OK; private forks require a GitHub PAT or deploy key)
+> Checking your WarpOS install…
+>
+> - `../WarpOS/` repo: ✓ present (commit <sha>) | ✗ missing
+> - Framework files: ✓ installed (version <v>) | ✗ not installed
+> - Alex identity in CLAUDE.md: ✓ merged | ✗ missing
+> - Hook schema: ✓ valid | ✗ needs refresh
+> - Next-steps guide: ✓ written | ✗ missing
+>
+> I'll run <N> step(s) to complete your setup. Here's what I'll do:
+> [list the remaining steps]
+>
+> Ready? [any reply proceeds; "no" stops]
 
-Check if the repo exists nearby:
-1. Look for `../WarpOS/` relative to the project root
-2. If found: offer two options — "use this one" or "re-clone from GitHub for a fresh copy"
-3. If not found: clone it → `git clone <source-url> ../WarpOS`
-4. If clone fails (403/404/auth): the repo may be private. Tell the user: "This WarpOS repo is private. You need either (a) a GitHub account added as a collaborator, or (b) a Personal Access Token with `repo` scope set in `git credential` helper, or (c) a deploy key on this machine. Request access from the repo owner."
+### Step A — Clone WarpOS
 
-### Step 3 — Back up existing config
+Only if `../WarpOS/` is missing.
 
-Before the installer runs, if the target has pre-existing content that the installer would touch, back it up to `.warpos-backup/<timestamp>/`:
-- `CLAUDE.md` (if exists) → copy to backup
-- `.claude/` (if exists and non-empty) → copy entire tree
-- `.gitignore` (if exists) → copy
-- `scripts/hooks/` (if exists) → copy
-- `AGENTS.md` (if exists) → copy
+```bash
+git clone https://github.com/cygaco/WarpOS.git ../WarpOS
+```
 
-Report: "Backed up existing config to `.warpos-backup/<timestamp>/`. `/warp:uninstall` will restore from this if you decide to remove WarpOS later."
+If the clone fails (private repo, no access):
+> "The WarpOS repo requires access. If you have a GitHub account, ask the owner to add you as a collaborator, then run `/warp:setup` again. If you were given a personal access token, run this first:
+> `git config --global credential.helper store`
+> `git clone https://<PAT>@github.com/cygaco/WarpOS.git ../WarpOS`"
 
-### Step 4 — Run the installer
+### Step B — Run the installer
+
+Only if framework files missing.
 
 ```bash
 node ../WarpOS/scripts/warp-setup.js . --interactive
 ```
 
-Interactive mode enables the 5-question interview:
-1. Project name (default: current dir basename)
-2. One-line pitch (blank OK for now; fills PROJECT.md later)
-3. Primary user (who uses this product?)
-4. Main branch (auto-detected via `git symbolic-ref`)
-5. ANTHROPIC_API_KEY location (for smart-context Haiku enrichment)
+Walk the user through the 5-question interview:
+1. Project name (default: current dir basename — accept if matches)
+2. One-line pitch (can be blank; tell them "fine, we'll fill PROJECT.md later")
+3. Primary user
+4. Main branch (auto-detected; confirm)
+5. ANTHROPIC_API_KEY location (smart-context needs it — tell them `.env.local` is fine; if they skip, warn that prompt enrichment will be disabled)
 
-Pass `--yes` instead to accept all defaults (fully non-interactive — useful in CI).
+Watch for the installer's summary. Report success/warnings to the user.
 
-The installer will report what it does per step. Watch for:
-- `✓ Created manifest.json for "<name>"` — base install succeeded
-- `✓ Seeded systems.jsonl with 16 canonical tiers` — systems layer ready
-- `✓ Appended runtime block to .gitignore` — privacy protection active
-- `! CLAUDE.md already exists — kept yours` — user's CLAUDE.md preserved (we handle this in Step 5)
+### Step C — Merge Alex into CLAUDE.md
 
-### Step 5 — Merge Alex into CLAUDE.md
+This is the step the installer can't do because your CLAUDE.md is personal. The skill does it conversationally.
 
-**This is the step the installer cannot do alone.** The installer won't overwrite CLAUDE.md because your existing content matters. But WarpOS needs the Alex α identity block for `/mode:*`, agent dispatch, autonomy rules, and β consultation to work.
+**Check if CLAUDE.md exists:**
 
-Check if the user already has `CLAUDE.md` at the project root.
+If NOT:
+- Copy `../WarpOS/CLAUDE.md` → `./CLAUDE.md`
+- Tell user: "Alex identity installed in CLAUDE.md."
+- Done.
 
-**If CLAUDE.md does NOT exist:**
-Copy `../WarpOS/CLAUDE.md` → `./CLAUDE.md`. Tell the user: "Alex identity installed."
+If YES (user has existing content):
+- Read user's CLAUDE.md — count lines, summarize first heading
+- Read `../WarpOS/CLAUDE.md`
+- Present the 3 merge strategies to the user IN PLAIN LANGUAGE:
 
-**If CLAUDE.md EXISTS with content:**
-Show the user a summary of both files (their existing CLAUDE.md and the Alex framework CLAUDE.md from WarpOS) and ask which approach they want:
+> Your project already has a CLAUDE.md with <N> lines (starts with "<first heading>"). I need to add the Alex framework (~90 lines: identity, autonomy rules, reasoning protocol, β consultation, memory map).
+>
+> Three options:
+> - **A: Append** — keep your content exactly as-is, add the Alex framework below it with a horizontal rule separator. Safest, fully reversible. **Recommended.**
+> - **B: Replace** — use only the Alex framework. Do this if your CLAUDE.md was the Claude Code default or nearly empty.
+> - **C: Show me both** — I'll paste both side-by-side and you tell me what to keep.
+>
+> Which? (A / B / C)
 
-- **(A) Append** — add the Alex framework section below their existing content with a horizontal rule between them. Lowest risk, reversible. Recommended default.
-- **(B) Replace** — overwrite their CLAUDE.md entirely with the Alex one. Suggest this only if their existing CLAUDE.md is trivial (empty, Claude Code default, or under 20 lines).
-- **(C) Interactive merge** — walk through each section of the Alex CLAUDE.md (Identity, Autonomy, Reasoning, Memory, etc.) and ask user if they want it appended. Use this for users with substantial existing CLAUDE.md content who want selectivity.
+Based on the answer:
 
-After the merge, tell them: "Alex identity is now active in CLAUDE.md. Your original content is preserved in `.warpos-backup/<timestamp>/CLAUDE.md` if you ever want to revert."
+**A (Append):**
+```bash
+# Backup first
+cp CLAUDE.md .warpos-backup/CLAUDE.md.pre-merge
 
-### Step 6 — Install provider CLIs (recommended)
+# Append with separator
+cat ../WarpOS/CLAUDE.md >> CLAUDE.md
+# (prepend separator: use Edit tool to add "\n\n---\n\n" before the appended block)
+```
+(In practice, read user's CLAUDE.md, read WarpOS CLAUDE.md, write combined.)
 
-WarpOS routes review-layer agents through **OpenAI (Codex CLI)** and security through **Gemini CLI** for model diversity — same-model review is blind to shared failure modes. Without these CLIs, agents fall back to Claude (still works, just loses the diversity benefit).
+**B (Replace):**
+```bash
+cp CLAUDE.md .warpos-backup/CLAUDE.md.pre-merge
+cp ../WarpOS/CLAUDE.md CLAUDE.md
+```
 
-Show the user this block and walk them through it:
+**C (Side-by-side):**
+Display both files inline. Ask the user which sections of WarpOS's CLAUDE.md to include. Build a merged version from their selections.
+
+After either path:
+- Confirm with user: "Merged. Your original is saved at `.warpos-backup/CLAUDE.md.pre-merge` if you want to revert."
+
+### Step D — Verify hook schema
+
+Read `.claude/settings.json`. For every event in `settings.hooks`, check that every entry inside `hooks: [...]` has `type: "command"`. If any lack it:
+
+> Your settings.json has hook entries in the old schema. I'll re-run the installer to rebuild settings.json with the current schema. Your existing custom hooks (if any) will be preserved.
+
+Then run:
+```bash
+rm .claude/settings.json
+node ../WarpOS/scripts/warp-setup.js . --skip-backup
+```
+
+(The `--skip-backup` flag is fine — we already have a backup from the prior install.)
+
+### Step E — Write next-steps guide
+
+Only if `WARPOS_NEXT_STEPS.md` is missing. Write it with the content from `warp-setup.js` (the installer normally writes this; only needed if somehow missing).
+
+### Phase 2 — Tell user to restart Claude Code
+
+**This is the critical moment.** All file-based setup is now complete, but Claude Code won't recognize the new hooks until it reloads `settings.json` — which only happens at launch.
+
+Tell the user, VERBATIM:
+
+> ✓ Setup complete. One last thing: **close this Claude Code session and open a fresh one in the same project.**
+>
+> Why: Claude Code reads settings.json only when it starts. Any hooks we just registered won't fire until you restart.
+>
+> When you reopen, your first prompt will be intercepted by `smart-context.js` (the prompt enrichment hook), logged by `prompt-logger.js`, and your Edits/Writes will go through the guard chain. That's when WarpOS is actually alive in this project.
+>
+> I've written `WARPOS_NEXT_STEPS.md` at the root of this project — read it in your next session. It has the verification commands and first-use tips. I'll also auto-run `/warp:health` the moment you prompt me next session.
+
+### Phase 3 — Provider CLIs (optional)
+
+AFTER the user restarts, the first `/warp:health` will flag missing provider CLIs. At that point, if they want full model diversity, show:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  Provider CLIs — install these for full model diversity    │
+│  Provider CLIs — optional, install if you want them        │
 ├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  OpenAI Codex  (for evaluator, compliance, qa, auditor)    │
+│  OpenAI Codex  (evaluator, compliance, qa, auditor)        │
 │    npm i -g @openai/codex                                   │
 │    codex login                                              │
-│    # or: export OPENAI_API_KEY=sk-...                       │
 │                                                             │
-│  Gemini CLI    (for redteam / security)                    │
+│  Gemini CLI    (redteam / security)                        │
 │    npm i -g @google/gemini-cli                              │
 │    gemini auth login                                        │
-│    # or: export GEMINI_API_KEY=...                          │
 │                                                             │
 │  Skip either → agents fall back to Claude automatically.   │
-│  Verify: /check:environment                                 │
-│                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-### Step 7 — Restart Claude Code
-
-**Critical.** The installer added hook entries to `.claude/settings.json`, but Claude Code only reads `settings.json` on launch. **The hooks are registered but not active in the currently-open session.**
-
-Tell the user, verbatim:
-
-> Your install is almost done. Close this Claude Code window (or the whole terminal) and open a fresh one in this project. Your next prompt will trigger all the new hooks. Keep this terminal's history handy — you may want to reference what we just did.
->
-> Before you close this one, let me write a `WARPOS_NEXT_STEPS.md` at the project root so you have the rest of the setup in front of you after you restart.
-
-### Step 8 — Write next-steps file
-
-Write `WARPOS_NEXT_STEPS.md` at the project root with the following content:
-
-```markdown
-# WarpOS — Next Steps After Setup
-
-WarpOS was just installed on this project. Here's what to do in the fresh Claude Code session:
-
-## Verify the install
-
-```
-/warp:health            # overall status — expect mostly green
-/check:environment      # provider CLIs + auth detection
-/check:system           # manifest vs disk, expect 0 drift
-/discover:systems       # 6-angle inventory — expect Solid ~10
-```
-
-## Generate your project maps
-
-```
-/maps:all               # architecture, hooks, memory, skills, systems, tools
-```
-
-## Get the tour
-
-```
-/warp:tour              # guided walkthrough of every WarpOS subsystem
-```
-
-## Start using it
-
-- Type `/mode:solo` to stay solo for your first hour
-- Try `/fix:fast "any error message"` for a quick fix
-- Try "Help me write a product brief for this project" — Alex will guide you through `requirements/`
-
-## Read
-
-- `USER_GUIDE.md` in the WarpOS repo (at `../WarpOS/USER_GUIDE.md`) — the workflow docs
-- `CLAUDE.md` at the root of this project — Alex identity
-- `AGENTS.md` — agent system reference
-
-## If anything fails
-
-- Run `/warp:uninstall` to remove WarpOS cleanly (reverts CLAUDE.md, settings, deletes .claude/)
-- File an issue at https://github.com/cygaco/WarpOS/issues
-
----
-
-Written by `/warp:setup` on <current ISO date>.
-This file is safe to delete after your first successful session.
-```
-
-### Step 9 — Confirm completion
-
-Tell the user:
-
-> Setup complete. Summary:
-> - ✓ WarpOS cloned to `../WarpOS/`
-> - ✓ Framework files installed in `.claude/` + `scripts/hooks/`
-> - ✓ `manifest.json`, `paths.json`, `store.json`, `systems.jsonl` created
-> - ✓ Hooks registered in `.claude/settings.json` (will fire on next launch)
-> - ✓ CLAUDE.md has Alex identity (merge strategy: <A/B/C>)
-> - ✓ `.gitignore` runtime block added
-> - ✓ `WARPOS_NEXT_STEPS.md` written — read it in your next session
-> - ⚠ Provider CLIs: <codex status> / <gemini status>
->
-> **Close this Claude Code session and open a fresh one in this project to activate the hooks.** Then follow `WARPOS_NEXT_STEPS.md`.
+Don't block on this. Setup is already complete without them.
 
 ## Flags
 
@@ -203,3 +197,13 @@ Tell the user:
 - `/warp:sync` — pull latest WarpOS updates from GitHub (non-destructive)
 - `/warp:health` — post-install verification
 - `/warp:tour` — guided subsystem walkthrough
+
+## Why re-run is safe
+
+Every step has an is-done signal. Steps only run when their signal is missing. So:
+- First-time setup runs all 5 steps
+- Partial install (installer succeeded but user never merged CLAUDE.md) resumes at Step C
+- Everything done → skill reports "fully set up, run /warp:health" and exits
+- Breaking change in schema? Re-run → Step D rebuilds settings.json
+
+Users never have to think about "which step am I at" — the skill figures it out.
