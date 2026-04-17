@@ -46,10 +46,12 @@ Read these documents before reviewing:
 
 ## Output Format
 
+Produce this JSON as the **last fenced block** of your response. `parseProviderJson` extracts the final ```json fence — no prose or other blocks should follow it.
+
 ```json
 {
   "feature": "{{FEATURE_NAME}}",
-  "pass": true|false,
+  "pass": true,
   "droppedRequirements": ["story ID + description of what's missing"],
   "phantomCompletions": ["file:line — what looks implemented but isn't"],
   "hardcodedValues": ["file:line — value and why it's suspicious"],
@@ -57,6 +59,8 @@ Read these documents before reviewing:
   "cosmeticViolations": ["file:line — what looks right but isn't"]
 }
 ```
+
+`pass` is `false` if ANY entry in `droppedRequirements` or `phantomCompletions` is non-empty. Other categories are warnings, not failures.
 
 ## Rules
 

@@ -46,5 +46,27 @@ Also read `docs/00-canonical/fixtures/README.md` for the fixture schema.
 6. **Design Compliance** — all color via CSS custom properties (no hardcoded hex), all interactive elements use `src/components/ui/` components (no raw HTML), accessible names on interactive elements, no Tailwind color utilities
 
 ### Output
-Score 0-100. Below 50 = FAIL. Below 80 = WARNING. Produce a structured ReviewResult JSON.
+
+Score 0-100. Below 50 = FAIL. Below 80 = WARNING. Produce a structured `ReviewResult` JSON as the LAST block of your response.
+
+```json
+{
+  "feature": "{{FEATURE_NAME}}",
+  "score": 0,
+  "verdict": "PASS" | "WARNING" | "FAIL",
+  "checks": {
+    "spec_conformance":    { "pass": true, "notes": "..." },
+    "hygiene":             { "pass": true, "notes": "..." },
+    "fixture_parity":      { "pass": true, "notes": "..." },
+    "integration":         { "pass": true, "notes": "..." },
+    "open_loop":           { "pass": true, "notes": "..." },
+    "design_compliance":   { "pass": true, "notes": "..." }
+  },
+  "blocking_issues": ["<one per line>"],
+  "warnings": ["<one per line>"],
+  "suggested_fixes": ["<actionable, scoped>"]
+}
+```
+
+`verdict` derives from `score`: >= 80 PASS, 50–79 WARNING, < 50 FAIL. Keep the JSON as the final fenced block — the orchestrator extracts it with `parseProviderJson`.
 ```

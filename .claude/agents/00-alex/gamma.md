@@ -28,10 +28,26 @@ The Agent tool is **not available to teammates**. Dispatch Layer 2 agents via Ba
 For every agent dispatch:
 
 ```bash
-# 1. Write the full prompt to a temp file (never inline — escaping hell)
+# 1. PRE-FETCH referenced context — codex/gemini CLIs pipe stdin; they can't
+#    follow relative file paths the way Claude's native Agent tool does.
+#    The orchestrator MUST inline every file the agent's .md tells it to read.
+#
+#    Example for evaluator: read and inline the PRD, STORIES, holdout fixtures,
+#    the builder's output diff. Concatenate into the prompt body below.
+
 PROMPT_FILE=$(mktemp "$CLAUDE_PROJECT_DIR/.claude/runtime/.gamma-prompt.XXXXXX")
 cat > "$PROMPT_FILE" << 'EOF'
 <full agent prompt including instructions, inputs, expected output schema>
+
+--- BEGIN file: requirements/05-features/<feature>/PRD.md ---
+<inlined content>
+--- END file ---
+
+--- BEGIN file: requirements/05-features/<feature>/STORIES.md ---
+<inlined content>
+--- END file ---
+
+<...additional inlined files the agent's prompt references...>
 EOF
 
 # 2. Read the role's provider from the manifest
@@ -39,10 +55,11 @@ PROVIDER=$(node -e "console.log(require('$CLAUDE_PROJECT_DIR/scripts/hooks/lib/p
 
 # 3. Route
 if [ "$PROVIDER" = "claude" ]; then
-  # Native Claude dispatch
+  # Native Claude dispatch — can follow relative file paths, inlining optional
   RESULT=$(claude -p --model sonnet --agent <role> "$(cat "$PROMPT_FILE")")
 else
-  # Cross-provider (OpenAI / Gemini) — scripts/dispatch-agent.js handles it
+  # Cross-provider (OpenAI / Gemini) — inlining REQUIRED (step 1 above)
+  # scripts/dispatch-agent.js handles codex exec --full-auto -m MODEL - or gemini -m MODEL -p
   RESULT=$(node "$CLAUDE_PROJECT_DIR/scripts/dispatch-agent.js" <role> "$PROMPT_FILE")
   # If exit 1 (provider CLI unavailable), fall back to Claude
   if [ $? -ne 0 ]; then
@@ -51,8 +68,13 @@ else
   fi
 fi
 
+# 4. Parse result — expect JSON object as last ```json fence
+PARSED=$(echo "$RESULT" | node -e "const {parseProviderJson}=require('$CLAUDE_PROJECT_DIR/scripts/hooks/lib/providers'); let s='';process.stdin.on('data',c=>s+=c);process.stdin.on('end',()=>{const r=parseProviderJson(s);console.log(JSON.stringify(r))})")
+
 rm -f "$PROMPT_FILE"
 ```
+
+**Key rule:** Claude-native dispatch can follow file refs in the prompt by using the Agent tool's implicit Read. **Codex/Gemini stdin dispatch cannot** — they see only the text piped in. Every file the agent's prompt says to read must be inlined by γ before dispatch. Skipping this is the #1 way a cross-provider run fails silently.
 
 ### Available agents and their default providers
 

@@ -85,19 +85,25 @@ Run these checks IN ORDER on the agent's output:
 - 80-100: Pass → mark complete
 
 ## Output Format
-For each feature reviewed, produce:
+
+For each feature reviewed, produce the JSON below as the **last fenced block** of your response. `parseProviderJson` extracts the final ```json fence — no prose or other blocks should follow.
+
+If reviewing multiple features in one dispatch, wrap them in an array at the top level (`[{...}, {...}]`); otherwise emit a single object.
+
 ```json
 {
   "feature": "{{FEATURE_NAME}}",
-  "step": {{STEP_NUMBER}},
-  "pass": true|false,
-  "score": 0-100,
+  "step": 0,
+  "pass": true,
+  "score": 0,
   "violations": ["specific failure with file path"],
   "warnings": ["suspicious but non-fatal"],
   "scopeViolations": ["files modified outside ownership"],
   "groundingFailures": ["entities referenced but not in input"]
 }
 ```
+
+`pass` is `true` iff `score >= 80` AND `violations` + `scopeViolations` + `groundingFailures` are all empty.
 
 ## Rules
 - You do NOT fix code

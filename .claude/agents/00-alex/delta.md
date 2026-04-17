@@ -57,9 +57,20 @@ Delta dispatches agents via Bash, routing by provider. Read `manifest.agentProvi
 
 ```bash
 # For each agent dispatch:
+# 1. PRE-FETCH every file the agent's prompt says to read, inline it in the
+#    prompt body. Codex/Gemini CLIs pipe stdin; they do NOT follow relative
+#    file paths. Only Claude's native Agent tool can. Inlining is mandatory
+#    for cross-provider routes.
+
 PROMPT_FILE=$(mktemp "$CLAUDE_PROJECT_DIR/.claude/runtime/.delta-prompt.XXXXXX")
 cat > "$PROMPT_FILE" << 'EOF'
 <full agent prompt + inputs + expected output schema>
+
+--- BEGIN file: <path> ---
+<inlined content>
+--- END file ---
+
+<...repeat for every file referenced in the agent's .md...>
 EOF
 
 PROVIDER=$(node -e "console.log(require('$CLAUDE_PROJECT_DIR/scripts/hooks/lib/providers').getProviderForRole('<role>'))")
@@ -74,8 +85,14 @@ else
     RESULT=$(claude -p --model sonnet --agent <role> "$(cat "$PROMPT_FILE")")
   fi
 fi
+
+# Parse result — expect JSON envelope as the last ```json fence
+PARSED=$(echo "$RESULT" | node -e "const {parseProviderJson}=require('$CLAUDE_PROJECT_DIR/scripts/hooks/lib/providers'); let s='';process.stdin.on('data',c=>s+=c);process.stdin.on('end',()=>{const r=parseProviderJson(s);console.log(JSON.stringify(r))})")
+
 rm -f "$PROMPT_FILE"
 ```
+
+**Critical:** Claude-native dispatch can follow file refs in the prompt via the Agent tool's implicit Read. **Codex/Gemini stdin dispatch cannot** — they see only what you pipe in. Every file the agent's prompt says to read must be inlined before dispatch. Skipping this = silent failure.
 
 **Default routing** (`manifest.agentProviders`):
 

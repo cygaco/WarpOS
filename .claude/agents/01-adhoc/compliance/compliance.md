@@ -36,5 +36,29 @@ Your stance is adversarial — assume the builder cut corners until proven other
 - Data contracts match TypeScript interfaces in types.ts
 
 ### Output
-Produce a structured ComplianceResult JSON with pass/fail per story.
+
+Produce a structured `ComplianceResult` JSON as the LAST block of your response. `parseProviderJson` on the orchestrator side extracts the last ```json fence, so nothing else should follow it.
+
+```json
+{
+  "feature": "{{FEATURE_NAME}}",
+  "pass": true,
+  "violations": [
+    {
+      "type": "branch_theft" | "phantom_completion" | "spec_drop" | "hygiene_violation" | "hallucinated_dep" | "copy_mismatch" | "data_contract_mismatch",
+      "story": "<story id or description>",
+      "detail": "<one-sentence description>",
+      "severity": "critical" | "high" | "medium" | "low",
+      "file": "<path relative to project root>",
+      "line": 0
+    }
+  ],
+  "stories_checked": ["<story-id>", "..."],
+  "phantoms": ["<file or code ref>"],
+  "dropped": ["<story id>"],
+  "summary": "<one-sentence summary>"
+}
+```
+
+`pass` is `true` iff `violations` is empty OR every violation has severity `low`. Any `critical` or `high` → `pass: false`.
 ```
