@@ -42,13 +42,13 @@ Product-agnostic dev tools framework. Any product exports a `ProductManifest` an
 - Pipeline tracer (data flow debugging)
 - Warp Profiles (cross-product test identities)
 
-First implementation: consumer product (`src/lib/deus-mechanicus.ts` + `src/components/DeusMechanicus.tsx`)
+First implementation: a real consumer product (private), see `src/lib/deus-mechanicus.ts` + `src/components/DeusMechanicus.tsx` in that project.
 
 ### Warp Profiles — Cross-Product Test Data
 
-Product-agnostic identity + product-specific extensions. A profile created in consumer product can be loaded in any future product.
+Product-agnostic identity + product-specific extensions. A profile created in one product can be loaded in any future WarpOS-based product.
 
-Format: `{ meta, warp (shared identity), consumer-product? (product extension), ... }`
+Format: `{ meta, warp (shared identity), <product-slug>? (product extension), ... }`
 
 ### Encrypted Client Storage
 
@@ -58,7 +58,7 @@ AES-GCM via Web Crypto API. Key derived per-session. Products store session data
 
 Pattern: raw data → Phase 1 (structured intelligence report) → Phase 2 (final analysis). Decouples data preparation from decision-making. Enables fallback (skip Phase 1 if it fails).
 
-First implementation: consumer product market analysis (MARKET_PREP → MARKET)
+First implementation: a market-analysis feature in the source consumer product (MARKET_PREP → MARKET).
 
 ### Pipeline Tracing
 
@@ -66,21 +66,21 @@ Structured logging at each pipeline stage. Format: `[PIPELINE] STAGE_NAME { data
 
 ## Products
 
-| Product  | Stage        | Stack Delta                            | Contributes Back                                                                                                                                                                                                                                   |
-| -------- | ------------ | -------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| consumer product | Building MVP | Bright Data API, Upstash Redis, Stripe | Deus Mechanicus, Warp Profiles, encrypted storage, two-phase AI pipeline, pipeline tracing, Claude Code hooks (8), slash commands (13), auto-handoff, progressive disclosure pattern, streaming generation pattern, docs knowledge base (30 files) |
+The first WarpOS-based product is private — the framework was extracted from it. Future WarpOS-based products can contribute back shared patterns, agents, hooks, or skills via pull request.
 
 ## AI Orchestration Patterns
 
-| Pattern                  | Description                                       | Products                       |
-| ------------------------ | ------------------------------------------------- | ------------------------------ |
-| Structured extraction    | Parse unstructured input → typed JSON             | consumer product (resume parsing)      |
-| Two-phase analysis       | Raw data → intelligence report → decision output  | consumer product (market analysis)     |
-| Targeted generation      | Profile + context → personalized output           | consumer product (resume/LinkedIn gen) |
-| Prompt injection defense | External data wrapped in `<untrusted_*>` tags     | consumer product (job descriptions)    |
-| Progressive disclosure   | Show N items initially, expand on demand          | consumer product (Deep Dive Q&A)       |
-| Streaming generation     | Show partial results immediately, load rest async | consumer product (resume generation)   |
-| Smart conditional gen    | Skip generation when output would be identical    | consumer product (General resume skip) |
+Each pattern below was discovered and battle-tested in a real consumer product before being generalized into WarpOS.
+
+| Pattern                  | Description                                       | Example domain     |
+| ------------------------ | ------------------------------------------------- | ------------------ |
+| Structured extraction    | Parse unstructured input → typed JSON             | Resume parsing     |
+| Two-phase analysis       | Raw data → intelligence report → decision output  | Market analysis    |
+| Targeted generation      | Profile + context → personalized output           | Document generation |
+| Prompt injection defense | External data wrapped in `<untrusted_*>` tags     | User-supplied text  |
+| Progressive disclosure   | Show N items initially, expand on demand          | Q&A flows           |
+| Streaming generation     | Show partial results immediately, load rest async | Long-form output    |
+| Smart conditional gen    | Skip generation when output would be identical    | Caching layer       |
 
 ## Operating Principles
 

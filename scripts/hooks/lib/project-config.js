@@ -132,7 +132,7 @@ function getProjectStack() {
     : cfg.project?.framework || "";
 }
 
-/** @returns {string} WarpOS product slug (e.g. "consumer-product") */
+/** @returns {string} WarpOS product slug (e.g. "my-app") */
 function getWarpProduct() {
   return (
     loadConfig().project?.slug ||

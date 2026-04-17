@@ -100,9 +100,9 @@ Paths Registry (paths.json) ◄────── EVERYTHING above resolves path
 
 | Category | Count |
 |---|---|
-| Agents (active .md files) | 37 (WarpOS) / 73 (consumer-project, includes retros) |
+| Agents (active .md files) | 37 (WarpOS baseline) |
 | Hooks (.js files in paths.hooks) | 31 |
-| Skills (.md files in paths.commands) | 66 (WarpOS) / 68 (consumer-project — content/) |
+| Skills (.md files in paths.commands) | 66 (WarpOS baseline; consumer projects may add content/) |
 | Reference docs | 4 |
 | Linter scripts | 5 |
 | Patterns library | 5 |

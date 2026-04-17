@@ -89,7 +89,7 @@ Note: When running all passes, Pass 3 delegates to `check:architecture internal`
 
 **Prompt for agent:**
 
-You are a skeleton state auditor for the consumer product project. Verify that ALL feature-owned files are proper skeleton stubs, and that ALL foundation files are intact. If invoked with --gut mode, also gut any non-stub feature files.
+You are a skeleton state auditor for this project. Verify that ALL feature-owned files are proper skeleton stubs, and that ALL foundation files are intact. If invoked with --gut mode, also gut any non-stub feature files.
 
 ### Reference: FILE-OWNERSHIP.md
 

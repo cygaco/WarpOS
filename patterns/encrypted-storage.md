@@ -149,4 +149,4 @@ function migrate(data: SessionData): SessionData {
 
 ## First implementation
 
-consumer product: `src/lib/storage.ts`
+Example project: `src/lib/storage.ts`

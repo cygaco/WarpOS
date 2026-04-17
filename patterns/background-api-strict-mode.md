@@ -64,4 +64,4 @@ useEffect(() => {
 
 ## Source
 
-Discovered in consumer product onboarding redesign (2026-03-23). Background resume parsing was silently failing in dev mode. Production (no Strict Mode) worked fine, making it hard to catch.
+Discovered during an onboarding redesign (2026-03-23). Background resume parsing was silently failing in dev mode. Production (no Strict Mode) worked fine, making it hard to catch.

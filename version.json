@@ -7,7 +7,7 @@
       "version": "0.1.0",
       "date": "2026-04-12",
       "changes": [
-        "Initial framework extraction from consumer product",
+        "Initial framework extraction from a real consumer product",
         "45+ skills across 18 namespaces",
         "14 generic hooks with lib modules",
         "4 Alex agents (alpha, beta, gamma, delta) + 8 general agents",

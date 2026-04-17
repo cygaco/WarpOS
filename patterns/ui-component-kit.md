@@ -81,4 +81,4 @@ Always use the barrel export, never import from individual files directly.
 
 ## First implementation
 
-consumer product: `src/components/ui/`
+Example project: `src/components/ui/`

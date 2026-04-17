@@ -167,4 +167,4 @@ if (response.status === 429) {
 
 ## First implementation
 
-consumer product: `src/app/api/claude/route.ts`, `src/app/api/jobs/route.ts`
+Example project: `src/app/api/claude/route.ts`, `src/app/api/jobs/route.ts`

@@ -22,7 +22,7 @@ Current: `logger.js` abstracts appends to `events.jsonl`; `memory-guard.js` bloc
 
 - [x] memory-guard fixed to not block `2>&1` fd redirects (false positive blocked read commands)
 - [ ] **Follow-up:** dedicated `/events:tail`, `/events:query` skills (currently done via ad-hoc node oneliners)
-- [ ] **Follow-up:** events retention policy — events.jsonl at 6.7MB in consumer-project. Compress / roll when crosses threshold (sleep:deep handles this manually today)
+- [ ] **Follow-up:** events retention policy — events.jsonl crosses ~6MB in real-world usage. Compress / roll when above threshold (sleep:deep handles this manually today)
 - [ ] **Follow-up:** structured query language for events.jsonl (current: grep + filter)
 
 ### Installer — Created vs Assumed model
@@ -132,7 +132,7 @@ Not a ship blocker. Once cross-provider is live:
 - [ ] `/research:deep` — 728 lines, likely untested, model versions stale. Either validate end-to-end OR deprecate in favor of `/research:simple`
 - [ ] `/research:simple` — add synthesis phase (merge reports → SYNTHESIS.md)
 - [x] `/sleep:deep` — REM Phase 4 painting step made MANDATORY with self-check gate (2026-04-17). Vague phase 1c/1e thresholds still deferred.
-- [ ] `/ui:review` — genericized (no longer hardcodes "consumer product"); add parameterized design-system path support
+- [ ] `/ui:review` — genericize (no hardcoded product names); add parameterized design-system path support
 - [ ] `/retro:code`, `/retro:full` — remove stale "retro directory" manifest.json references; either hard-code `.claude/project/retros/` or make optional
 - [ ] `/warp:sync` — add fallback if `../WarpOS/version.json` doesn't exist (git tags / commit hash)
 - [ ] `/warp:init` — parameterize GitHub URL (hardcodes `cygaco/WarpOS.git`)
@@ -184,6 +184,6 @@ Treat WarpOS itself as a product-in-WarpOS with its own `requirements/05-feature
 
 ## Notes
 
-- All changes must ship to both `consumer-project` and `WarpOS` during co-development. Use `/hooks:sync` pattern (extended to skills too).
+- During co-development against a private consumer project, every WarpOS change should also ship to that project (or vice versa). Use `/hooks:sync` pattern (extended to skills too).
 - Privacy audit required before every public push. `/check:privacy` should be the gate.
 - Main branch must stay shippable at all times. Exploratory work happens on feature branches. (This is §2 of `USER_GUIDE.md` — the #1 newbie trap.)
