@@ -1057,13 +1057,34 @@ console.log(`\n${HEADER}  FRAMEWORK DOCS${RESET}`);
 
 const claudeMdTarget = path.join(TARGET, "CLAUDE.md");
 const claudeMdSource = path.join(WARPOS, "CLAUDE.md");
+const ALEX_MARKER = "You are **Alex α**";
 if (!fs.existsSync(claudeMdTarget) && fs.existsSync(claudeMdSource)) {
+  // No CLAUDE.md → just copy the Alex one.
   fs.copyFileSync(claudeMdSource, claudeMdTarget);
-  log("ok", "Created CLAUDE.md");
+  log("ok", "Created CLAUDE.md with Alex identity");
   installed++;
-} else if (fs.existsSync(claudeMdTarget)) {
-  log("warn", "CLAUDE.md already exists — kept yours");
-  warnings++;
+} else if (fs.existsSync(claudeMdTarget) && fs.existsSync(claudeMdSource)) {
+  // User has their own CLAUDE.md. Two cases:
+  const userContent = fs.readFileSync(claudeMdTarget, "utf8");
+  if (userContent.includes(ALEX_MARKER)) {
+    // Alex already merged (or user pasted it themselves) — no-op.
+    log("ok", "CLAUDE.md already has Alex identity — no merge needed");
+  } else {
+    // Merge: append WarpOS's Alex CLAUDE.md below user's content, with a
+    // visible separator. Backup already taken at start of install.
+    const alexContent = fs.readFileSync(claudeMdSource, "utf8");
+    const separator = userContent.endsWith("\n") ? "\n---\n\n" : "\n\n---\n\n";
+    fs.writeFileSync(claudeMdTarget, userContent + separator + alexContent);
+    log(
+      "ok",
+      "Merged Alex framework into your existing CLAUDE.md (appended below your content)",
+    );
+    log(
+      "info",
+      "Revert: copy .warpos-backup/<ts>/CLAUDE.md back over CLAUDE.md",
+    );
+    installed++;
+  }
 }
 
 const agentsMdTarget = path.join(TARGET, "AGENTS.md");
@@ -1203,21 +1224,47 @@ try {
   /* non-critical */
 }
 
-console.log(`\n${HEADER}  NEXT STEPS${RESET}`);
+// Bright, attention-grabbing restart banner. Users MISS single-line notices.
+const BOX_TOP =
+  "\x1b[33m╔══════════════════════════════════════════════════════════════════╗\x1b[0m";
+const BOX_MID = "\x1b[33m║\x1b[0m";
+const BOX_BOT =
+  "\x1b[33m╚══════════════════════════════════════════════════════════════════╝\x1b[0m";
+console.log(`\n${BOX_TOP}`);
 console.log(
-  `  A \x1b[1mWARPOS_NEXT_STEPS.md\x1b[0m file was written at your project root.`,
+  `${BOX_MID}  \x1b[1;33mYOU MUST RESTART CLAUDE CODE NOW\x1b[0m                                  ${BOX_MID}`,
 );
-console.log(`  Read it in your next Claude Code session. Short version:\n`);
 console.log(
-  `  1. \x1b[1mClose this Claude Code session and open a fresh one\x1b[0m`,
+  `${BOX_MID}                                                                  ${BOX_MID}`,
 );
-console.log(`     (hooks just registered won't fire until next launch)`);
 console.log(
-  `  2. Type /warp:setup to finish the CLAUDE.md merge + verification`,
+  `${BOX_MID}  The hooks I just registered won't fire until Claude Code        ${BOX_MID}`,
 );
-console.log(`  3. Type /warp:health to verify everything works`);
-console.log(`  4. Type /warp:tour for a guided introduction`);
-console.log(`  5. Ask Alex to help you fill in your requirements templates\n`);
 console.log(
-  `  If something goes wrong: \x1b[1m/warp:uninstall\x1b[0m restores your pre-install state.\n`,
+  `${BOX_MID}  reloads \x1b[1msettings.json\x1b[0m — which only happens at launch.            ${BOX_MID}`,
+);
+console.log(
+  `${BOX_MID}                                                                  ${BOX_MID}`,
+);
+console.log(
+  `${BOX_MID}  1. \x1b[1mClose this Claude Code window entirely\x1b[0m                      ${BOX_MID}`,
+);
+console.log(
+  `${BOX_MID}  2. Reopen Claude Code in this project                           ${BOX_MID}`,
+);
+console.log(
+  `${BOX_MID}  3. Your first prompt should be: \x1b[1m/warp:health\x1b[0m                  ${BOX_MID}`,
+);
+console.log(`${BOX_BOT}\n`);
+console.log(`  After restart, these skills are available:`);
+console.log(`    \x1b[1m/warp:health\x1b[0m          verify everything works`);
+console.log(`    \x1b[1m/check:system\x1b[0m         manifest vs disk`);
+console.log(`    \x1b[1m/check:environment\x1b[0m    provider CLIs + auth`);
+console.log(`    \x1b[1m/discover:systems\x1b[0m     6-angle system inventory`);
+console.log(`    \x1b[1m/warp:tour\x1b[0m            guided walkthrough`);
+console.log(
+  `    \x1b[1m/warp:uninstall\x1b[0m       if something is wrong, revert cleanly\n`,
+);
+console.log(
+  `  Full details in \x1b[1mWARPOS_NEXT_STEPS.md\x1b[0m at your project root.\n`,
 );
