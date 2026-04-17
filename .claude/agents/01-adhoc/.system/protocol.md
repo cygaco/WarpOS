@@ -19,7 +19,7 @@ Gamma dispatches Layer 2 agents via the `claude` CLI (the Agent tool is not avai
 claude -p --model sonnet --agent <agent-name> "prompt"
 ```
 
-Available agents: `builder`, `evaluator`, `security`, `compliance`, `qa`, `fix-agent`, `auditor` (all under `.claude/agents/01-adhoc/`).
+Available agents: `builder`, `evaluator`, `compliance`, `qa`, `redteam`, `fixer` (all under `.claude/agents/01-adhoc/`). Note: `auditor` is oneshot-only — adhoc has no auditor in the gauntlet.
 
 - One builder per feature. Sequential dispatches (CLI is blocking).
 - Pass the feature spec (PRD + stories) and the adhoc prompt template.
@@ -28,9 +28,9 @@ Available agents: `builder`, `evaluator`, `security`, `compliance`, `qa`, `fix-a
 
 After builder completes, dispatch each reviewer via CLI:
 - **Evaluator** — 5-check review protocol (structural, grounding, coverage, negative, open-loop)
-- **Security** — OWASP Top 10 + project-specific checks
 - **Compliance** — spec adherence + code quality
 - **QA** — 7 failure-mode personas
+- **Redteam** — OWASP Top 10 + adversarial patterns + security-sensitive code review
 
 Dispatch sequentially (CLI `-p` is blocking). Collect ALL four results before proceeding.
 
@@ -38,7 +38,7 @@ Dispatch sequentially (CLI `-p` is blocking). Collect ALL four results before pr
 
 If any gauntlet reviewer reports failures:
 1. Merge all findings into a single fix brief
-2. Dispatch fix-agent via CLI: `claude -p --model sonnet --agent fix-agent "fix brief..."`
+2. Dispatch fixer via CLI: `claude -p --model sonnet --agent fixer "fix brief..."`
 3. Max 3 fix attempts per feature
 4. After each fix: targeted re-review (only re-check what failed)
 
@@ -60,7 +60,7 @@ GAMMA_RESULT:
     - feature: "<name>"
       evaluator: "pass" | "fail"
       compliance: "pass" | "fail" | "skipped"
-      security: "pass" | "fail"
+      redteam: "pass" | "fail"
       qa: "pass" | "fail"
   halt_reason: "<if halted>"
   next_recommendation: "<what gamma thinks should happen next>"
