@@ -19,27 +19,36 @@ If it exists and has `warpos.installed: true`:
 
 ### Step 2: Find or clone WarpOS
 
-Check if the WarpOS repo exists nearby:
+Ask the user (unless invoked with `--source <url>`):
+- "Which WarpOS repo should I use?" (default: `https://github.com/cygaco/WarpOS.git`; forks are OK)
+
+Check if the repo exists nearby:
 1. Look for `../WarpOS/` relative to the project root
-2. If not found, clone it: `git clone https://github.com/cygaco/WarpOS.git ../WarpOS`
+2. If not found, clone it: `git clone <source-url> ../WarpOS`
 3. If clone fails (no access), tell the user they need an invite and how to request one
 
 ### Step 3: Run the installer
 
-Run the WarpOS installer:
 ```bash
-node ../WarpOS/scripts/warp-setup.js .
+# --interactive enables the 5-question interview (project name, pitch, main branch, WarpOS URL).
+# Without --interactive, the installer uses detection defaults.
+node ../WarpOS/scripts/warp-setup.js . --interactive
 ```
+
+Pass `--yes` instead to accept all defaults (fully non-interactive — useful in CI).
 
 This will:
 - Check prerequisites (Node 18+, Git, Windows)
-- Detect your project's tech stack
-- Create the `.claude/` directory structure
-- Copy agents, skills, hooks, and reference docs
-- Generate manifest.json and paths.json
-- Create store.json for the build system
-- Register hooks in settings.json
-- Create CLAUDE.md and AGENTS.md
+- Detect project's tech stack and main branch (via `git symbolic-ref`)
+- Detect available quality tools (prettier, tsc, eslint) — only register hooks whose tool is present
+- Create `.claude/` directory structure
+- Copy agents, skills, hooks, reference docs
+- Generate `manifest.json` (with project.name, git.mainBranch, warpos.source)
+- Generate `paths.json` (37+ keys — the single source of truth)
+- Create `store.json`, empty memory stores
+- Append runtime exclusions to `.gitignore` (managed block, idempotent)
+- Register hooks in `settings.json` (only hooks with available tools)
+- Create `CLAUDE.md` and `AGENTS.md`
 
 ### Step 4: Verify
 

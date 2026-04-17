@@ -10,12 +10,17 @@ Pull the latest version of WarpOS from GitHub and update your project's framewor
 
 ### Step 1: Find WarpOS repo
 
-Check for `../WarpOS/` relative to the project root. If not found, tell the user to run `/warp:init` first.
+Read `manifest.warpos.source` — this is the URL the user configured at install time (default `https://github.com/cygaco/WarpOS.git`, but may be a fork).
+
+Check for a local clone at `../WarpOS/` relative to the project root. If not found, tell the user to:
+1. `git clone {manifest.warpos.source} ../WarpOS`
+2. Re-run `/warp:sync`
 
 ### Step 2: Pull latest
 
 ```bash
-git -C ../WarpOS pull --rebase origin main
+# uses the local clone — the remote was already set when the user cloned
+git -C ../WarpOS pull --rebase
 ```
 
 Report the new commit hash and any changes.

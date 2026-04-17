@@ -21,6 +21,7 @@
 const { execSync } = require("child_process");
 const fs = require("fs");
 const path = require("path");
+const readline = require("readline");
 
 const OK = "\x1b[32m  ✓  \x1b[0m";
 const WARN = "\x1b[33m  !  \x1b[0m";
@@ -76,12 +77,73 @@ function copyDir(src, dest) {
 }
 
 // ── Parse arguments ─────────────────────────────────────
-const TARGET = path.resolve(process.argv[2] || ".");
+const argv = process.argv.slice(2).filter((a) => !a.startsWith("--"));
+const flags = new Set(process.argv.slice(2).filter((a) => a.startsWith("--")));
+const TARGET = path.resolve(argv[0] || ".");
 const WARPOS = path.resolve(__dirname, "..");
+const YES = flags.has("--yes") || flags.has("-y"); // skip interview, use defaults
+const DRY_RUN = flags.has("--dry-run");
 
 if (!fs.existsSync(TARGET)) {
   console.error(`Target directory does not exist: ${TARGET}`);
   process.exit(1);
+}
+
+// ── Interview helpers ───────────────────────────────────
+function ask(rl, question, defaultValue) {
+  return new Promise((resolve) => {
+    const suffix = defaultValue ? `\x1b[2m [${defaultValue}]\x1b[0m` : "";
+    rl.question(`  ${question}${suffix} > `, (answer) => {
+      resolve(answer.trim() || defaultValue || "");
+    });
+  });
+}
+
+function detectMainBranch(targetDir) {
+  try {
+    const head = execSync("git symbolic-ref refs/remotes/origin/HEAD", {
+      cwd: targetDir,
+      stdio: ["pipe", "pipe", "pipe"],
+    })
+      .toString()
+      .trim();
+    const m = head.match(/origin\/(.+)$/);
+    if (m) return m[1];
+  } catch {
+    /* no remote or detached HEAD */
+  }
+  try {
+    const branches = execSync("git branch --list main master", {
+      cwd: targetDir,
+      stdio: ["pipe", "pipe", "pipe"],
+    })
+      .toString()
+      .trim();
+    if (branches.includes("main")) return "main";
+    if (branches.includes("master")) return "master";
+  } catch {
+    /* not a git repo */
+  }
+  return "main";
+}
+
+function detectTool(tool) {
+  try {
+    execSync(`${tool} --version`, { stdio: ["pipe", "pipe", "pipe"] });
+    return true;
+  } catch {
+    /* not installed or not in PATH */
+  }
+  try {
+    // Also check node_modules/.bin for local installs
+    const localBin = path.join(TARGET, "node_modules", ".bin", tool);
+    if (fs.existsSync(localBin) || fs.existsSync(localBin + ".cmd")) {
+      return true;
+    }
+  } catch {
+    /* skip */
+  }
+  return false;
 }
 
 // ── Header ──────────────────────────────────────────────
@@ -190,6 +252,52 @@ if (hasPackageJson) {
 
 log("ok", `Stack: ${stack}, Framework: ${framework}`);
 if (hasTsConfig) log("ok", "TypeScript detected");
+
+log(
+  "info",
+  `Project name: ${path.basename(TARGET)} (pass --interactive to override)`,
+);
+
+// ── 2.5. Collect interview answers ──────────────────────
+// Defaults from scan. Interactive mode (readline) runs iff --interactive flag is set
+// AND stdin is a TTY. Otherwise: use defaults, ship.
+const projectNameDefault = path.basename(TARGET);
+const mainBranchDefault = detectMainBranch(TARGET);
+const warposSourceDefault = "https://github.com/cygaco/WarpOS.git";
+
+const interview = {
+  projectName: projectNameDefault,
+  pitch: "",
+  mainBranch: mainBranchDefault,
+  warposSource: warposSourceDefault,
+};
+
+async function runInterview() {
+  if (YES || !flags.has("--interactive")) return;
+  if (!process.stdin.isTTY) return;
+  console.log(`\n${HEADER}  INTERVIEW${RESET}`);
+  console.log(`  (5 questions — press Enter to accept defaults)\n`);
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
+  interview.projectName = await ask(rl, "Project name", projectNameDefault);
+  interview.pitch = await ask(rl, "One-line pitch", "");
+  interview.mainBranch = await ask(rl, "Main branch", mainBranchDefault);
+  interview.warposSource = await ask(
+    rl,
+    "WarpOS repo URL (for /warp:sync, /warp:check)",
+    warposSourceDefault,
+  );
+  rl.close();
+}
+
+// Detect available tools for hook bundle selection
+const hookTools = {
+  prettier: detectTool("prettier") || detectTool("npx prettier"),
+  tsc: hasTsConfig && (detectTool("tsc") || detectTool("npx tsc")),
+  eslint: detectTool("eslint") || detectTool("npx eslint"),
+};
 
 // ── 3. Create directory structure ───────────────────────
 console.log(`\n${HEADER}  CREATING STRUCTURE${RESET}`);
@@ -310,19 +418,23 @@ if (!fs.existsSync(pathsFile)) {
 // ── 6. Create manifest.json ─────────────────────────────
 const manifestFile = path.join(TARGET, ".claude/manifest.json");
 if (!fs.existsSync(manifestFile)) {
-  const projectName = path.basename(TARGET);
+  const projectName = interview.projectName || path.basename(TARGET);
   const manifest = {
     $schema: "warpos/manifest/v1",
     project: {
       name: projectName,
       slug: projectName.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
-      description: "",
+      description: interview.pitch || "",
       techStack: [stack],
       framework: framework,
+    },
+    git: {
+      mainBranch: interview.mainBranch,
     },
     warpos: {
       version: "0.1.0",
       installed: true,
+      source: interview.warposSource,
       features: ["agents", "hooks", "skills", "memory", "maps", "events"],
     },
     agents: {
@@ -436,6 +548,57 @@ for (const file of memoryFiles) {
     log("info", `Created empty: ${file}`);
     installed++;
   }
+}
+
+// ── 8.5. Append runtime exclusions to .gitignore ────────
+// Every client must keep WarpOS runtime artifacts out of their public repo.
+// We write an idempotent block between markers; re-running the installer updates it in place.
+const gitignorePath = path.join(TARGET, ".gitignore");
+const GITIGNORE_START = "# >>> WarpOS runtime (managed, do not edit) >>>";
+const GITIGNORE_END = "# <<< WarpOS runtime <<<";
+const runtimeBlock = [
+  GITIGNORE_START,
+  ".claude/runtime/",
+  ".claude/content/",
+  ".claude/project/events/",
+  ".claude/project/memory/",
+  ".claude/agents/*/.workspace/",
+  ".claude/agents/**/events.jsonl",
+  ".claude/.session-id",
+  ".claude/.session-prompts.log",
+  ".claude/.session-tracking.jsonl",
+  ".claude/.store-lock",
+  GITIGNORE_END,
+].join("\n");
+
+let gitignoreContent = "";
+try {
+  gitignoreContent = fs.readFileSync(gitignorePath, "utf8");
+} catch {
+  /* file doesn't exist — we'll create it */
+}
+
+if (gitignoreContent.includes(GITIGNORE_START)) {
+  // Replace existing managed block
+  const before = gitignoreContent.split(GITIGNORE_START)[0];
+  const after =
+    gitignoreContent.split(GITIGNORE_END)[1] !== undefined
+      ? gitignoreContent.split(GITIGNORE_END)[1]
+      : "";
+  const updated = before + runtimeBlock + after;
+  if (updated !== gitignoreContent) {
+    fs.writeFileSync(gitignorePath, updated);
+    log("ok", "Updated .gitignore runtime block");
+  } else {
+    log("ok", ".gitignore runtime block up to date");
+  }
+} else {
+  // Append new block
+  const sep =
+    gitignoreContent && !gitignoreContent.endsWith("\n") ? "\n\n" : "\n";
+  fs.writeFileSync(gitignorePath, gitignoreContent + sep + runtimeBlock + "\n");
+  log("ok", "Appended runtime block to .gitignore");
+  installed++;
 }
 
 // ── 8. Merge settings.json ──────────────────────────────
@@ -553,9 +716,22 @@ const hookConfig = {
     {
       matcher: "Edit|Write",
       hooks: [
-        { command: `node "$CLAUDE_PROJECT_DIR/scripts/hooks/format.js"` },
-        { command: `node "$CLAUDE_PROJECT_DIR/scripts/hooks/typecheck.js"` },
-        { command: `node "$CLAUDE_PROJECT_DIR/scripts/hooks/lint.js"` },
+        // Quality hooks — only registered if the underlying tool is present.
+        // If missing: they can be enabled later via /hooks:enable <name> once you install prettier/tsc/eslint.
+        ...(hookTools.prettier
+          ? [{ command: `node "$CLAUDE_PROJECT_DIR/scripts/hooks/format.js"` }]
+          : []),
+        ...(hookTools.tsc
+          ? [
+              {
+                command: `node "$CLAUDE_PROJECT_DIR/scripts/hooks/typecheck.js"`,
+              },
+            ]
+          : []),
+        ...(hookTools.eslint
+          ? [{ command: `node "$CLAUDE_PROJECT_DIR/scripts/hooks/lint.js"` }]
+          : []),
+        // Framework hooks — always registered, use paths.json + manifest, no external tool deps
         { command: `node "$CLAUDE_PROJECT_DIR/scripts/hooks/edit-watcher.js"` },
         { command: `node "$CLAUDE_PROJECT_DIR/scripts/hooks/systems-sync.js"` },
         {
@@ -564,7 +740,10 @@ const hookConfig = {
         {
           command: `node "$CLAUDE_PROJECT_DIR/scripts/hooks/learning-validator.js"`,
         },
-        { command: `node "$CLAUDE_PROJECT_DIR/scripts/hooks/ui-lint.js"` },
+        // ui-lint is design-system-specific — only useful if design system docs are present
+        ...(fs.existsSync(path.join(TARGET, "requirements/01-design-system"))
+          ? [{ command: `node "$CLAUDE_PROJECT_DIR/scripts/hooks/ui-lint.js"` }]
+          : []),
       ],
     },
   ],
@@ -598,6 +777,20 @@ for (const [event, matchers] of Object.entries(hookConfig)) {
     log("warn", `Hooks already registered for ${event} — kept existing`);
     warnings++;
   }
+}
+
+// Report hooks skipped due to missing tools
+const skipped = [];
+if (!hookTools.prettier) skipped.push("format.js (prettier not found)");
+if (!hookTools.tsc) skipped.push("typecheck.js (tsc not found)");
+if (!hookTools.eslint) skipped.push("lint.js (eslint not found)");
+if (!fs.existsSync(path.join(TARGET, "requirements/01-design-system")))
+  skipped.push("ui-lint.js (no design system docs)");
+if (skipped.length > 0) {
+  log(
+    "info",
+    `Skipped ${skipped.length} hook(s): ${skipped.join(", ")} — install the tool and edit settings.json to enable`,
+  );
 }
 
 fs.writeFileSync(settingsFile, JSON.stringify(settings, null, 2) + "\n");

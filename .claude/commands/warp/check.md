@@ -10,7 +10,7 @@ Compare your project's WarpOS installation against the latest version in the War
 
 ### Step 1: Find WarpOS repo
 
-Check for `../WarpOS/` relative to the project root. If not found, tell the user to run `/warp:init` first.
+Read `manifest.warpos.source` — the repo URL configured at install time. Check for a local clone at `../WarpOS/`. If not found, tell the user to `git clone {manifest.warpos.source} ../WarpOS` first.
 
 ### Step 2: Compare files
 
