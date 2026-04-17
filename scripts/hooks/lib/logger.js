@@ -18,6 +18,11 @@
  *   decision     — gate checks, approvals, denials
  *   block        — blocked actions (elevated from audit)
  *   lifecycle    — session start/stop/checkpoint
+ *   attestation  — learning→enforcement link provenance. Schema:
+ *                  data: { learning_id, target, status: "current"|"stale",
+ *                           verified_at, reason? }.
+ *                  Emitted when /learn:integrate marks a learning implemented,
+ *                  and re-emitted by validators when the target disappears.
  *
  * Usage:
  *   const { log, query, logEvent } = require("./lib/logger");
