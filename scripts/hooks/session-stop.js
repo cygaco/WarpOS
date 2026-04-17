@@ -37,6 +37,27 @@ process.stdin.on("end", () => {
       return;
     }
 
+    // Preserve guard — if handoff.md starts with "<!-- preserve: ... -->",
+    // a manual/crafted handoff is in place. Write only the timestamped copy,
+    // don't touch handoff.md.
+    const handoffLatest =
+      PATHS.handoffLatest || path.join(runtimeDir, "handoff.md");
+    let preserveManual = false;
+    try {
+      if (fs.existsSync(handoffLatest)) {
+        const first = fs.readFileSync(handoffLatest, "utf8").slice(0, 200);
+        if (first.includes("<!-- preserve:")) {
+          preserveManual = true;
+          process.stderr.write(
+            "[Session Stop] handoff.md has preserve marker — writing timestamped copy only\n",
+          );
+        }
+      }
+    } catch {
+      /* ignore */
+    }
+    // `preserveManual` is consulted when writing handoff.md below
+
     // Ensure handoffs dir exists
     if (!fs.existsSync(handoffsDir)) {
       fs.mkdirSync(handoffsDir, { recursive: true });
@@ -413,9 +434,11 @@ process.stdin.on("end", () => {
       /* retro check is optional */
     }
 
-    // Write handoff
+    // Write handoff — but preserve a manual handoff if its preserve marker is set
     const handoff = lines.join("\n");
-    fs.writeFileSync(path.join(runtimeDir, "handoff.md"), handoff);
+    if (!preserveManual) {
+      fs.writeFileSync(path.join(runtimeDir, "handoff.md"), handoff);
+    }
     logEvent(
       "lifecycle",
       "alex",

@@ -563,12 +563,14 @@ if (!fs.existsSync(storeFile)) {
   installed++;
 }
 
-// ── 8. Create empty memory stores ───────────────────────
+// ── 8. Create memory stores ─────────────────────────────
+// events + learnings + traces start empty. systems gets seeded with the
+// 16 canonical WarpOS system tiers so `/check:system` has a baseline to
+// diff against from day one. The scanner rewrites this file when it runs.
 const memoryFiles = [
   ".claude/project/events/events.jsonl",
   ".claude/project/memory/learnings.jsonl",
   ".claude/project/memory/traces.jsonl",
-  ".claude/project/memory/systems.jsonl",
 ];
 
 for (const file of memoryFiles) {
@@ -578,6 +580,152 @@ for (const file of memoryFiles) {
     log("info", `Created empty: ${file}`);
     installed++;
   }
+}
+
+// Seed systems.jsonl with canonical 16-tier WarpOS system inventory
+const systemsFile = path.join(TARGET, ".claude/project/memory/systems.jsonl");
+if (!fs.existsSync(systemsFile)) {
+  const now = new Date().toISOString();
+  const seed = [
+    {
+      id: "identity",
+      name: "Alex identity",
+      category: "identity",
+      files: ["CLAUDE.md", "AGENTS.md"],
+      status: "active",
+      created: now,
+    },
+    {
+      id: "agents",
+      name: "Agent team + build chains",
+      category: "agents",
+      dir: ".claude/agents",
+      status: "active",
+      created: now,
+    },
+    {
+      id: "skills",
+      name: "Skills",
+      category: "capability",
+      dir: ".claude/commands",
+      status: "active",
+      created: now,
+    },
+    {
+      id: "hooks",
+      name: "Hooks",
+      category: "automation",
+      dir: "scripts/hooks",
+      status: "active",
+      created: now,
+    },
+    {
+      id: "memory",
+      name: "Memory stores",
+      category: "memory",
+      keys: [
+        "eventsFile",
+        "learningsFile",
+        "tracesFile",
+        "systemsFile",
+        "betaEvents",
+      ],
+      status: "active",
+      created: now,
+    },
+    {
+      id: "maps",
+      name: "Relationship maps",
+      category: "infrastructure",
+      key: "maps",
+      status: "active",
+      created: now,
+    },
+    {
+      id: "paths-registry",
+      name: "Paths registry",
+      category: "infrastructure",
+      path: ".claude/paths.json",
+      status: "active",
+      created: now,
+    },
+    {
+      id: "manifest",
+      name: "Project manifest",
+      category: "infrastructure",
+      key: "manifest",
+      status: "active",
+      created: now,
+    },
+    {
+      id: "settings",
+      name: "Hook settings",
+      category: "infrastructure",
+      key: "settings",
+      status: "active",
+      created: now,
+    },
+    {
+      id: "store",
+      name: "Build store",
+      category: "orchestration",
+      key: "store",
+      status: "active",
+      created: now,
+    },
+    {
+      id: "spec-graph",
+      name: "Spec dependency graph",
+      category: "infrastructure",
+      key: "specGraph",
+      status: "active",
+      created: now,
+    },
+    {
+      id: "reference-docs",
+      name: "Reference documentation",
+      category: "knowledge",
+      key: "reference",
+      status: "active",
+      created: now,
+    },
+    {
+      id: "patterns",
+      name: "Engineering patterns library",
+      category: "knowledge",
+      key: "patterns",
+      status: "active",
+      created: now,
+    },
+    {
+      id: "requirements-templates",
+      name: "Requirements spec templates",
+      category: "product",
+      key: "requirements",
+      status: "active",
+      created: now,
+    },
+    {
+      id: "installer",
+      name: "Installer",
+      category: "product",
+      files: ["scripts/warp-setup.js", "install.ps1", "version.json"],
+      status: "active",
+      created: now,
+    },
+    {
+      id: "linters",
+      name: "Lint suite",
+      category: "quality",
+      files: ["scripts/path-lint.js"],
+      status: "active",
+      created: now,
+    },
+  ];
+  const content = seed.map((e) => JSON.stringify(e)).join("\n") + "\n";
+  fs.writeFileSync(systemsFile, content);
+  log("ok", `Seeded systems.jsonl with 16 canonical tiers`);
+  installed++;
 }
 
 // ── 8.5. Append runtime exclusions to .gitignore ────────

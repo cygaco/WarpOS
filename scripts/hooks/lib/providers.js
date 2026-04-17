@@ -193,26 +193,31 @@ function runProvider(role, prompt, opts = {}) {
   fs.writeFileSync(promptFile, prompt, "utf8");
 
   try {
+    // Read prompt content directly — `cat file |` fails on Windows cmd.exe
+    // (Node's default execSync shell). Passing the prompt as stdin via the
+    // `input:` option is shell-agnostic and handles any file content.
+    const promptContent = fs.readFileSync(promptFile, "utf8");
+
     let cmd;
     if (providerName === "openai") {
       // codex exec reads stdin when passed `-` as the prompt.
       // --full-auto = workspace-write sandbox + on-request approval (needed in non-TTY).
-      // Output: streams progress to stderr, final message to stdout.
-      cmd = `cat "${promptFile}" | ${cfg.cli} exec --full-auto -m ${model} -`;
+      cmd = `${cfg.cli} exec --full-auto -m ${model} -`;
     } else if (providerName === "gemini") {
       // gemini CLI: context on stdin, instruction via -p, text output.
-      // 2>/dev/null suppresses auth warnings for scripted use.
-      cmd = `cat "${promptFile}" | ${cfg.cli} -m ${model} -p "Process the instructions on stdin and produce the requested output." -o text 2>/dev/null`;
+      cmd = `${cfg.cli} -m ${model} -p "Process the instructions on stdin and produce the requested output." -o text`;
     } else {
       // Generic pattern from cfg.syntax (used when manifest overrides defaults)
-      cmd = `cat "${promptFile}" | ${cfg.syntax.replace("{model}", model)}`;
+      cmd = `${cfg.syntax.replace("{model}", model)}`;
     }
 
     const output = execSync(cmd, {
       cwd: PROJECT,
       timeout: timeoutMs,
       stdio: ["pipe", "pipe", "pipe"],
+      input: promptContent,
       maxBuffer: 32 * 1024 * 1024, // 32MB for long review outputs
+      shell: true,
     })
       .toString()
       .trim();
