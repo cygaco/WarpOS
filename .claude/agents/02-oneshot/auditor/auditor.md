@@ -4,6 +4,9 @@ description: Analyzes patterns across evaluator/security/compliance results, bug
 tools: Read, Grep, Glob, Bash, Edit, Write
 disallowedTools: Agent
 model: inherit
+provider: openai
+provider_model: gpt-5.4-mini
+provider_fallback: claude
 maxTurns: 40
 effort: high
 color: purple

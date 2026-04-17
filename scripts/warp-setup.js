@@ -461,11 +461,39 @@ if (!fs.existsSync(manifestFile)) {
     },
     source_dirs: stack === "node" ? ["src/"] : [],
     build: { features: [], phases: [] },
+    // Cross-provider agent diversity — review-layer on GPT, security on Gemini,
+    // orchestration/code on Claude. See scripts/hooks/lib/providers.js.
     providers: {
+      claude: {
+        cli: "claude",
+        default_model: "sonnet",
+        invocation: "native",
+      },
+      openai: {
+        cli: "codex",
+        default_model: "gpt-5.4",
+        fallback: "claude",
+        syntax: "codex exec --model {model}",
+      },
+      gemini: {
+        cli: "gemini",
+        default_model: "gemini-2.5-pro",
+        fallback: "claude",
+        syntax: "gemini -m {model} -p",
+      },
+    },
+    agentProviders: {
+      alpha: "claude",
+      beta: "claude",
+      gamma: "claude",
+      delta: "claude",
       builder: "claude",
-      evaluator: "claude",
-      compliance: "codex",
-      complianceFallback: "claude",
+      fixer: "claude",
+      evaluator: "openai",
+      compliance: "openai",
+      auditor: "openai",
+      qa: "openai",
+      redteam: "gemini",
     },
     buildCommands: {},
     fileOwnership: { foundation: [] },
@@ -518,9 +546,9 @@ if (!fs.existsSync(storeFile)) {
     compliance: {
       command: "codex",
       fallback: "claude",
-      model: "gpt-4o",
-      syntax: 'codex exec "prompt"',
-      note: "Optional — falls back to Claude if unavailable",
+      model: "gpt-5.4",
+      syntax: "codex exec --model gpt-5.4",
+      note: "Deprecated — use manifest.providers + manifest.agentProviders instead. Kept for backwards compat.",
     },
     snapshots: { features: {}, interfaces: {}, datasets: {} },
     knownStubs: [],
@@ -716,22 +744,13 @@ const hookConfig = {
     {
       matcher: "Edit|Write",
       hooks: [
-        // Quality hooks — only registered if the underlying tool is present.
-        // If missing: they can be enabled later via /hooks:enable <name> once you install prettier/tsc/eslint.
-        ...(hookTools.prettier
-          ? [{ command: `node "$CLAUDE_PROJECT_DIR/scripts/hooks/format.js"` }]
-          : []),
-        ...(hookTools.tsc
-          ? [
-              {
-                command: `node "$CLAUDE_PROJECT_DIR/scripts/hooks/typecheck.js"`,
-              },
-            ]
-          : []),
-        ...(hookTools.eslint
-          ? [{ command: `node "$CLAUDE_PROJECT_DIR/scripts/hooks/lint.js"` }]
-          : []),
-        // Framework hooks — always registered, use paths.json + manifest, no external tool deps
+        // All quality hooks registered unconditionally. Each hook self-skips
+        // (exits 0) when its underlying tool (prettier / tsc / eslint) is
+        // absent — see the hook source. This keeps install simple and lets
+        // users add tooling later without re-registering.
+        { command: `node "$CLAUDE_PROJECT_DIR/scripts/hooks/format.js"` },
+        { command: `node "$CLAUDE_PROJECT_DIR/scripts/hooks/typecheck.js"` },
+        { command: `node "$CLAUDE_PROJECT_DIR/scripts/hooks/lint.js"` },
         { command: `node "$CLAUDE_PROJECT_DIR/scripts/hooks/edit-watcher.js"` },
         { command: `node "$CLAUDE_PROJECT_DIR/scripts/hooks/systems-sync.js"` },
         {
@@ -740,10 +759,8 @@ const hookConfig = {
         {
           command: `node "$CLAUDE_PROJECT_DIR/scripts/hooks/learning-validator.js"`,
         },
-        // ui-lint is design-system-specific — only useful if design system docs are present
-        ...(fs.existsSync(path.join(TARGET, "requirements/01-design-system"))
-          ? [{ command: `node "$CLAUDE_PROJECT_DIR/scripts/hooks/ui-lint.js"` }]
-          : []),
+        { command: `node "$CLAUDE_PROJECT_DIR/scripts/hooks/ui-lint.js"` },
+        { command: `node "$CLAUDE_PROJECT_DIR/scripts/hooks/path-guard.js"` },
       ],
     },
   ],
@@ -779,17 +796,17 @@ for (const [event, matchers] of Object.entries(hookConfig)) {
   }
 }
 
-// Report hooks skipped due to missing tools
-const skipped = [];
-if (!hookTools.prettier) skipped.push("format.js (prettier not found)");
-if (!hookTools.tsc) skipped.push("typecheck.js (tsc not found)");
-if (!hookTools.eslint) skipped.push("lint.js (eslint not found)");
+// Report which tools are missing (hooks self-skip silently — this is just info)
+const missing = [];
+if (!hookTools.prettier) missing.push("prettier");
+if (!hookTools.tsc) missing.push("tsc (TypeScript)");
+if (!hookTools.eslint) missing.push("eslint");
 if (!fs.existsSync(path.join(TARGET, "requirements/01-design-system")))
-  skipped.push("ui-lint.js (no design system docs)");
-if (skipped.length > 0) {
+  missing.push("design-system docs (for ui-lint)");
+if (missing.length > 0) {
   log(
     "info",
-    `Skipped ${skipped.length} hook(s): ${skipped.join(", ")} — install the tool and edit settings.json to enable`,
+    `All hooks wired. Tool(s) missing: ${missing.join(", ")} — related hooks self-skip until installed; no action needed.`,
   );
 }
 

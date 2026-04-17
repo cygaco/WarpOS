@@ -51,6 +51,43 @@ Each cycle follows:
 9. Update store.json
 10. Proceed to next phase → repeat until all features done
 
+## Dispatch Method (cross-provider)
+
+Delta dispatches agents via Bash, routing by provider. Read `manifest.agentProviders[<role>]` to know which CLI to use.
+
+```bash
+# For each agent dispatch:
+PROMPT_FILE=$(mktemp "$CLAUDE_PROJECT_DIR/.claude/runtime/.delta-prompt.XXXXXX")
+cat > "$PROMPT_FILE" << 'EOF'
+<full agent prompt + inputs + expected output schema>
+EOF
+
+PROVIDER=$(node -e "console.log(require('$CLAUDE_PROJECT_DIR/scripts/hooks/lib/providers').getProviderForRole('<role>'))")
+
+if [ "$PROVIDER" = "claude" ]; then
+  RESULT=$(claude -p --model sonnet --agent <role> "$(cat "$PROMPT_FILE")")
+else
+  # Cross-provider (OpenAI / Gemini) — scripts/dispatch-agent.js handles it
+  RESULT=$(node "$CLAUDE_PROJECT_DIR/scripts/dispatch-agent.js" <role> "$PROMPT_FILE")
+  if [ $? -ne 0 ]; then
+    echo "Provider unavailable — falling back to Claude for <role>"
+    RESULT=$(claude -p --model sonnet --agent <role> "$(cat "$PROMPT_FILE")")
+  fi
+fi
+rm -f "$PROMPT_FILE"
+```
+
+**Default routing** (`manifest.agentProviders`):
+
+| Role | Provider | Model |
+|---|---|---|
+| `builder`, `fixer` | claude | sonnet |
+| `evaluator`, `compliance` | openai | gpt-5.4 |
+| `qa`, `auditor` | openai | gpt-5.4-mini |
+| `redteam` | gemini | gemini-2.5-pro |
+
+Why: same-model review is blind to shared failure modes. GPT reviews Claude's output with a different lens; Gemini's adversarial corpus makes it stronger on security.
+
 ## Restrictions
 
 - **Do NOT read source code.** You dispatch agents who read code.

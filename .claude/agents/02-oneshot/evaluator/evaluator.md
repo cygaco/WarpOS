@@ -4,6 +4,9 @@ description: Reviews builder output against spec AND holdout golden fixtures. Ru
 tools: Read, Grep, Glob, Bash
 disallowedTools: Agent, Edit, Write
 model: inherit
+provider: openai
+provider_model: gpt-5.4
+provider_fallback: claude
 maxTurns: 40
 color: yellow
 ---

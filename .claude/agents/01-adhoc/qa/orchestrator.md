@@ -4,6 +4,9 @@ description: Self-orchestrating QA scanner with 13 failure-mode personas across 
 tools: Read, Grep, Glob, Bash, Agent
 disallowedTools: Edit, Write
 model: sonnet
+provider: openai
+provider_model: gpt-5.4-mini
+provider_fallback: claude
 maxTurns: 60
 color: yellow
 ---

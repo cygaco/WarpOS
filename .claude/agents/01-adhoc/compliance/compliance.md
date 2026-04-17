@@ -4,6 +4,9 @@ description: Adversarial compliance reviewer — audits builder output for proce
 tools: Read, Grep, Glob, Bash
 disallowedTools: Agent, Edit, Write
 model: inherit
+provider: openai
+provider_model: gpt-5.4
+provider_fallback: claude
 maxTurns: 40
 color: pink
 ---

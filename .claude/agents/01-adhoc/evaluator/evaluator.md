@@ -4,9 +4,15 @@ description: Reviews builder output against spec AND holdout golden fixtures. Ru
 tools: Read, Grep, Glob, Bash
 disallowedTools: Agent, Edit, Write
 model: inherit
+provider: openai
+provider_model: gpt-5.4
+provider_fallback: claude
 maxTurns: 40
 color: yellow
 ---
+
+<!-- Cross-provider: this agent runs on GPT-5.4 for review diversity. Claude-generated code reviewed by Claude is blind to shared failure modes. See manifest.agentProviders + scripts/hooks/lib/providers.js. Falls back to Claude if codex CLI unavailable. -->
+
 
 # Adhoc Evaluator Dispatch Template
 
