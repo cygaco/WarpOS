@@ -1,0 +1,16 @@
+{"id":"identity","name":"Alex identity","category":"identity","files":["CLAUDE.md","AGENTS.md"]}
+{"id":"agents","name":"Agent team + build chains","category":"agents","count":37}
+{"id":"skills","name":"Skills","category":"capability","count":67}
+{"id":"hooks","name":"Hooks","category":"automation","count":32}
+{"id":"memory","name":"Memory stores","category":"memory","count":8}
+{"id":"maps","name":"Relationship maps","category":"infrastructure","dir":".claude/project/maps"}
+{"id":"paths-registry","name":"Paths registry","category":"infrastructure","path":".claude/paths.json"}
+{"id":"manifest","name":"Project manifest","category":"infrastructure","path":".claude/manifest.json"}
+{"id":"settings","name":"Hook settings","category":"infrastructure","path":".claude/settings.json"}
+{"id":"store","name":"Build store","category":"orchestration","path":".claude/agents/store.json"}
+{"id":"spec-graph","name":"Spec dependency graph","category":"infrastructure","path":".claude/project/maps/SPEC_GRAPH.json"}
+{"id":"reference-docs","name":"Reference documentation","category":"knowledge","count":4}
+{"id":"patterns","name":"Engineering patterns library","category":"knowledge","count":5}
+{"id":"requirements-templates","name":"Requirements spec templates","category":"product","count":30}
+{"id":"installer","name":"Installer","category":"product","files":["scripts/warp-setup.js","install.ps1","version.json"]}
+{"id":"linters","name":"Lint suite","category":"quality","files":["scripts/path-lint.js"]}

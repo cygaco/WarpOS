@@ -1,0 +1,8 @@
+{"id":"events","path":".claude/project/events/events.jsonl","category":"events","entryCount":0,"exists":false}
+{"id":"tools","path":".claude/project/events/tools.jsonl","category":"events","entryCount":0,"exists":false}
+{"id":"requirements","path":".claude/project/events/requirements.jsonl","category":"events","entryCount":0,"exists":false}
+{"id":"requirements-staged","path":".claude/project/events/requirements-staged.jsonl","category":"events","entryCount":0,"exists":false}
+{"id":"learnings","path":".claude/project/memory/learnings.jsonl","category":"memory","entryCount":0,"exists":false}
+{"id":"traces","path":".claude/project/memory/traces.jsonl","category":"memory","entryCount":0,"exists":false}
+{"id":"systems","path":".claude/project/memory/systems.jsonl","category":"memory","entryCount":0,"exists":false}
+{"id":"beta-events","path":".claude/agents/00-alex/.system/beta/events.jsonl","category":"beta","entryCount":0,"exists":false}

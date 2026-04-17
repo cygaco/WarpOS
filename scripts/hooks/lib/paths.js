@@ -110,6 +110,13 @@ try {
       "memory",
       "systems.jsonl",
     ),
+    specGraph: path.join(
+      PROJECT,
+      ".claude",
+      "project",
+      "maps",
+      "SPEC_GRAPH.json",
+    ),
     judgmentModel: path.join(
       PROJECT,
       ".claude",
