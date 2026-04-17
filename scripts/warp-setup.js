@@ -255,6 +255,9 @@ log("ok", `Hooks: ${hookCount} files installed`);
 installed += hookCount;
 
 // ── 5. Create paths.json ────────────────────────────────
+// Principle: paths.json is CREATED at install time, never ASSUMED to exist pre-install.
+// WarpOS does not ship a paths.json — the installer builds it here so every client
+// project gets its own. To move a location, edit this object (and lib/paths.js fallback).
 const pathsFile = path.join(TARGET, ".claude/paths.json");
 if (!fs.existsSync(pathsFile)) {
   const paths = {
