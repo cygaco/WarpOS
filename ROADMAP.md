@@ -25,11 +25,38 @@ Current: `logger.js` abstracts appends to `events.jsonl`; `memory-guard.js` bloc
 - [ ] **Follow-up:** events retention policy — events.jsonl at 6.7MB in consumer-project. Compress / roll when crosses threshold (sleep:deep handles this manually today)
 - [ ] **Follow-up:** structured query language for events.jsonl (current: grep + filter)
 
-### Installer
-- [x] `warp-setup.js` generates paths.json v3 with all keys
+### Installer — Created vs Assumed model
+Current: 13-step install. 8 items are CREATED (paths, manifest, store, memory, settings, dirs), 5 items are ASSUMED (agents, skills, hooks, reference, CLAUDE.md copied verbatim).
+
+- [x] `warp-setup.js` generates paths.json v3 with all keys (CREATED)
 - [x] Registers the 31 real hooks (not phantom ones)
-- [ ] **Follow-up:** `/warp:update` skill — pull latest WarpOS, compare, apply diff (analog to `/warp:sync`)
-- [ ] **Follow-up:** install-test harness — `warp-setup.js --dry-run` on a fresh tmp dir, verify every claim in the setup output
+- [x] WarpOS repo no longer ships a committed `paths.json` — clients get one built by the installer
+- [ ] **Phase 1 ship blocker:** `.gitignore` mutation — append WarpOS runtime exclusion block to target's `.gitignore` to prevent session-data leaks
+- [ ] **Interview phase** — warp-setup asks 5–10 questions before acting:
+  - project name (override basename detection)
+  - one-line pitch
+  - primary user
+  - main branch (detected via `git symbolic-ref refs/remotes/origin/HEAD`, confirm)
+  - WarpOS repo URL (default `cygaco/WarpOS`, support forks)
+  - ANTHROPIC_API_KEY location
+  - Result written to `manifest.git.mainBranch`, `manifest.warpos.source`, `manifest.project.*`
+- [ ] **Tool-detected hook bundles** — check for prettier/tsc/eslint/python/etc. present, only register hooks whose tooling exists. Surface skipped hooks with "install X then run `/hooks:enable <name>`"
+- [ ] **Requirements pre-fill** — `/warp:init` runs after install, interviews the user, writes filled `CORE_BRIEF.md`, `PRODUCT_MODEL.md`, `GLOSSARY.md`, `USER_COHORTS.md` (not skeleton + guidance comments)
+- [ ] **Parameterize `/warp:*` repo URLs** — `/warp:sync`, `/warp:check`, `/warp:init` read `manifest.warpos.source`, not hardcoded
+- [ ] **Parameterize project name** — all skills/docs that mention project name read from `manifest.project.name`
+- [ ] **Install-test harness** — `warp-setup.js --dry-run` on a fresh tmp dir, verify every claim in the setup output
+- [ ] **`/warp:update` skill** — pull latest WarpOS, compare, apply diff (analog to `/warp:sync`)
+- [ ] **`/warp:uninstall` skill** — clean removal
+
+### Gaps from the Created vs Assumed audit
+
+Items that are currently NEITHER created NOR assumed (just missing):
+- `.gitignore` runtime exclusions — **leak risk**
+- Main branch name — assumed "main" everywhere
+- Project name — used basename, no override
+- Git remote URL — hardcoded in `/warp:sync`
+- `.env.example` template
+- Environment flavor selection (minimal / full / security-heavy bundles)
 
 ---
 
