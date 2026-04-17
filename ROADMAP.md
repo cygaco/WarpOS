@@ -168,9 +168,9 @@ Raised by user after the first real-project install. Current installer runs dire
 - [ ] **Customer-agent namespace convention** — document that WarpOS owns `.claude/agents/00-*/`, `01-*/`, `02-*/` and clients should put custom agents under `.claude/agents/99-custom/`. Installer checks + refuses to write into `99-*` slots.
 - [ ] **Post-install integrity check** — run `/warp:health --strict` at end of install; if any red, roll back to `.warpos-backup/<ts>/` automatically with user confirmation.
 
-### Requirements system — missing in installer (2026-04-18)
+### Requirements system — shipped but not being installed (2026-04-18, FIXED)
 
-**Major gap surfaced during first-install test.** The framework documents `requirements/` throughout (paths.json has a `requirements` key, systems.jsonl seeds `requirements-templates` with `count: 0`, USER_GUIDE + skills + NEXT_STEPS.md all reference filling them in), but **WarpOS ships zero template files**. Users get a broken promise: "ask Alex to help fill in your requirements templates" → there are no templates.
+**Correction to earlier entry.** WarpOS source actually DOES have 30 requirement template files across 10 numbered subdirs (`00-canonical/`, `01-design-system/`, `02-copy-system/`, `03-requirement-standards/`, `04-architecture/`, `05-features/`, `06-operations/`, `07-security/`, `08-testing/`, `09-automation/`) plus `_example-onboarding` feature skeleton. The files exist. The installer just wasn't copying them. FIXED in this session — installer now copies `requirements/`, `patterns/`, and `.claude/project/maps/` baseline. Historical note on what was missing: Users get a broken promise: "ask Alex to help fill in your requirements templates" → there are no templates.
 
 What jobhunter-app (the source project) has under `docs/` that WarpOS should ship as `requirements/`:
 
