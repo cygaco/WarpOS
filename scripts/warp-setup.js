@@ -1232,28 +1232,31 @@ const BOX_BOT =
   "\x1b[33m╚══════════════════════════════════════════════════════════════════╝\x1b[0m";
 console.log(`\n${BOX_TOP}`);
 console.log(
-  `${BOX_MID}  \x1b[1;33mYOU MUST RESTART CLAUDE CODE NOW\x1b[0m                                  ${BOX_MID}`,
+  `${BOX_MID}  \x1b[1;33mNEXT: OPEN CLAUDE CODE IN THIS PROJECT\x1b[0m                            ${BOX_MID}`,
 );
 console.log(
   `${BOX_MID}                                                                  ${BOX_MID}`,
 );
 console.log(
-  `${BOX_MID}  The hooks I just registered won't fire until Claude Code        ${BOX_MID}`,
+  `${BOX_MID}  \x1b[1mAlready have it open?\x1b[0m  Close it entirely and reopen — Claude    ${BOX_MID}`,
 );
 console.log(
-  `${BOX_MID}  reloads \x1b[1msettings.json\x1b[0m — which only happens at launch.            ${BOX_MID}`,
+  `${BOX_MID}  Code only reads \x1b[1msettings.json\x1b[0m at launch, so hooks won't fire     ${BOX_MID}`,
+);
+console.log(
+  `${BOX_MID}  until you restart.                                              ${BOX_MID}`,
 );
 console.log(
   `${BOX_MID}                                                                  ${BOX_MID}`,
 );
 console.log(
-  `${BOX_MID}  1. \x1b[1mClose this Claude Code window entirely\x1b[0m                      ${BOX_MID}`,
+  `${BOX_MID}  \x1b[1mNot open yet?\x1b[0m  Just open it — you're good. No restart needed.   ${BOX_MID}`,
 );
 console.log(
-  `${BOX_MID}  2. Reopen Claude Code in this project                           ${BOX_MID}`,
+  `${BOX_MID}                                                                  ${BOX_MID}`,
 );
 console.log(
-  `${BOX_MID}  3. Your first prompt should be: \x1b[1m/warp:health\x1b[0m                  ${BOX_MID}`,
+  `${BOX_MID}  \x1b[2mEither way:\x1b[0m first prompt should be \x1b[1m/warp:health\x1b[0m              ${BOX_MID}`,
 );
 console.log(`${BOX_BOT}\n`);
 console.log(`  After restart, these skills are available:`);
