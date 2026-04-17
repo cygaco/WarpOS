@@ -168,6 +168,38 @@ Raised by user after the first real-project install. Current installer runs dire
 - [ ] **Customer-agent namespace convention** — document that WarpOS owns `.claude/agents/00-*/`, `01-*/`, `02-*/` and clients should put custom agents under `.claude/agents/99-custom/`. Installer checks + refuses to write into `99-*` slots.
 - [ ] **Post-install integrity check** — run `/warp:health --strict` at end of install; if any red, roll back to `.warpos-backup/<ts>/` automatically with user confirmation.
 
+### Requirements system — missing in installer (2026-04-18)
+
+**Major gap surfaced during first-install test.** The framework documents `requirements/` throughout (paths.json has a `requirements` key, systems.jsonl seeds `requirements-templates` with `count: 0`, USER_GUIDE + skills + NEXT_STEPS.md all reference filling them in), but **WarpOS ships zero template files**. Users get a broken promise: "ask Alex to help fill in your requirements templates" → there are no templates.
+
+What jobhunter-app (the source project) has under `docs/` that WarpOS should ship as `requirements/`:
+
+- `requirements/00-canonical/` — project-level truth docs
+  - `CORE_BRIEF.md` (the product in one page)
+  - `PRODUCT_MODEL.md` (data model + state machine)
+  - `GLOSSARY.md` (terms)
+  - `USER_COHORTS.md` (target users)
+- `requirements/01-design-system/` — UI rules
+  - `COMPONENT_LIBRARY.md` (registered components)
+  - `COLOR_SEMANTICS.md` (design tokens)
+  - `ANIMATION_MOTION.md`, `FEEDBACK_PATTERNS.md`, `RESPONSIVE.md`
+- `requirements/02-copy-system/` — microcopy, tone, variants
+- `requirements/03-requirement-standards/` — `PRD_TEMPLATE.md`, `STORIES_TEMPLATE.md`, `INPUTS_TEMPLATE.md`, `HL-STORIES_TEMPLATE.md`, field spec standards
+- `requirements/04-architecture/` — architecture decision records template + examples
+- `requirements/05-features/` — per-feature dir structure (PRD + STORIES + INPUTS + COPY)
+  - Ship empty dir with one **example feature** folder showing the shape, not client content
+- `requirements/.decisions/` — ADR template
+
+Action items:
+- [ ] **Extract templates from jobhunter:** copy the canonical structure, strip all consumer-product-specific content, reduce to fillable skeletons with guidance comments. Place in WarpOS repo at `requirements/`.
+- [ ] **Installer copies `requirements/` to target** if target has no `requirements/` dir — same copy-if-missing pattern as `.claude/`. Never overwrite if target has one.
+- [ ] **One example feature** — ship `requirements/05-features/example-feature/` with PRD + STORIES + INPUTS demonstrating the schema. Users delete or rename when they create their first real feature.
+- [ ] **`/check:requirements` dry-run on fresh install** — should report "0 features defined, ready for first `/skills:create` or `Help me write a product brief`" cleanly instead of erroring on missing dirs.
+- [ ] **Update `warp-setup.js` skeleton check** to stop referencing `requirements/01-design-system` path existence as a `ui-lint` enablement signal before the templates actually ship (currently generates a misleading warning on every install).
+- [ ] **Update `systems.jsonl` seed** — `requirements-templates` entry currently seeded with `count: 0`; once templates ship, bump to real count and add `files: [...]` listing the templates.
+
+Priority: **high for v0.2.0** — the framework's value prop ("ask Alex to help write specs") is broken without templates. Current installs look complete but the `requirements/` dir is silently missing.
+
 ### Guard strengthening (2026-04-18)
 
 Surfaced when I force-pushed to scrub history and my own merge-guard blocked `--force` but not `+refspec` syntax.
