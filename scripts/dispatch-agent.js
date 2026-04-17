@@ -34,6 +34,71 @@ const {
   providerAvailable,
   parseProviderJson,
 } = require("./hooks/lib/providers");
+const { PATHS } = require("./hooks/lib/paths");
+
+/**
+ * Find an agent spec file for a role by scanning .claude/agents/.
+ * Agents live at either:
+ *   .claude/agents/<mode>/<role>/<role>.md
+ *   .claude/agents/<mode>/<role>/orchestrator.md
+ *   .claude/agents/00-alex/<role>.md
+ */
+function findAgentSpec(role) {
+  const agentsDir =
+    PATHS.agents || path.join(PATHS.claudeDir || ".claude", "agents");
+  if (!fs.existsSync(agentsDir)) return null;
+  const stack = [agentsDir];
+  while (stack.length) {
+    const dir = stack.pop();
+    let entries;
+    try {
+      entries = fs.readdirSync(dir, { withFileTypes: true });
+    } catch {
+      continue;
+    }
+    for (const ent of entries) {
+      const full = path.join(dir, ent.name);
+      if (ent.isDirectory()) {
+        stack.push(full);
+      } else if (ent.isFile() && ent.name.endsWith(".md")) {
+        const stem = ent.name.replace(/\.md$/, "");
+        if (stem === role || stem === "orchestrator") {
+          try {
+            const body = fs.readFileSync(full, "utf8");
+            const fmMatch = body.match(/^---\n([\s\S]*?)\n---/);
+            if (fmMatch) {
+              const nameMatch = fmMatch[1].match(/^name:\s*(\S+)/m);
+              if (nameMatch && nameMatch[1] === role) return full;
+              if (stem === role) return full;
+            } else if (stem === role) {
+              return full;
+            }
+          } catch {
+            /* skip */
+          }
+        }
+      }
+    }
+  }
+  return null;
+}
+
+/**
+ * Parse an agent spec's frontmatter and return the declared `provider_model`.
+ */
+function getRoleModel(role) {
+  const spec = findAgentSpec(role);
+  if (!spec) return null;
+  try {
+    const body = fs.readFileSync(spec, "utf8");
+    const fmMatch = body.match(/^---\n([\s\S]*?)\n---/);
+    if (!fmMatch) return null;
+    const m = fmMatch[1].match(/^provider_model:\s*(\S+)/m);
+    return m ? m[1] : null;
+  } catch {
+    return null;
+  }
+}
 
 const [, , role, promptArg] = process.argv;
 
@@ -100,10 +165,15 @@ if (!providerAvailable(provider)) {
   process.exit(1);
 }
 
-const result = runProvider(role, prompt);
+// Honor the agent's frontmatter-declared provider_model (e.g. qa → gpt-5.4-mini,
+// evaluator → gpt-5.4, redteam → gemini-3.1-pro-preview) instead of falling back
+// to the provider default for every role.
+const roleModel = getRoleModel(role);
+const result = runProvider(role, prompt, roleModel ? { model: roleModel } : {});
 
 // Add role + structured output to result
 result.role = role;
+if (roleModel) result.specModel = roleModel;
 const parsed = parseProviderJson(result.output);
 if (parsed) result.parsed = parsed;
 
