@@ -428,6 +428,41 @@ const hookCount = copyDir(
 log("ok", `Hooks: ${hookCount} files installed`);
 installed += hookCount;
 
+// Top-level scripts that support hooks/skills (path linter, cross-provider
+// dispatcher, map generator). These are NOT under scripts/hooks/, so the
+// recursive hook-copy misses them. Explicitly copy each one.
+const topLevelScripts = [
+  "path-lint.js",
+  "dispatch-agent.js",
+  "generate-maps.js",
+];
+let scriptCount = 0;
+for (const name of topLevelScripts) {
+  const src = path.join(WARPOS, "scripts", name);
+  const dest = path.join(TARGET, "scripts", name);
+  if (fs.existsSync(src) && !fs.existsSync(dest)) {
+    fs.copyFileSync(src, dest);
+    scriptCount++;
+  }
+}
+if (scriptCount > 0) {
+  log(
+    "ok",
+    `Top-level scripts: ${scriptCount} installed (path-lint, dispatch-agent, generate-maps)`,
+  );
+  installed += scriptCount;
+}
+
+// Also copy scripts/tools/ if present (attestation emitter etc.)
+const toolsSrc = path.join(WARPOS, "scripts/tools");
+if (fs.existsSync(toolsSrc)) {
+  const toolsCount = copyDir(toolsSrc, path.join(TARGET, "scripts/tools"));
+  if (toolsCount > 0) {
+    log("ok", `Tool scripts: ${toolsCount} installed`);
+    installed += toolsCount;
+  }
+}
+
 // ── 5. Create paths.json ────────────────────────────────
 // Principle: paths.json is CREATED at install time, never ASSUMED to exist pre-install.
 // WarpOS does not ship a paths.json — the installer builds it here so every client
