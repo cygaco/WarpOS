@@ -62,6 +62,46 @@ Items that are currently NEITHER created NOR assumed (just missing):
 
 ## Phase 2 — Skills & systems
 
+### Cross-provider agent diversity (high priority)
+
+**Problem:** all review and security agents currently run on Claude (same model that generates the code under review). Same-model review is blind to shared failure modes. Per Alex β decision 2026-04-16: "having the same model review its own work is not good."
+
+**Solution:** route review-layer agents through OpenAI CLI (`codex`), security orchestration through Gemini CLI. Uses the existing `store.compliance` CLI-bridge pattern, generalized.
+
+Target model mapping:
+
+| Agent | Provider | Model | Rationale |
+|---|---|---|---|
+| alpha, beta, gamma, delta | Claude | sonnet (or inherit) | Orchestration, judgment continuity — keep Claude |
+| builder (×2), fixer (×2) | Claude | sonnet | Code generation — Claude is tuned here |
+| **evaluator (×2)** | **OpenAI** | **gpt-5.4** | Deep review with different lens; 1M context fits spec+code+fixtures |
+| **compliance (×2)** | **OpenAI** | **gpt-5.4** | Adversarial integrity — flagship, not mini |
+| **auditor (oneshot)** | **OpenAI** | **gpt-5.4-mini** | Cross-cycle pattern synthesis; many small inputs |
+| **qa (×2)** | **OpenAI** | **gpt-5.4-mini** | 13 failure-mode personas × volume |
+| **redteam (×2)** | **Gemini** | **gemini-2.5-pro** | 11 attack-chain personas — different adversarial training corpus |
+
+Implementation:
+- [ ] Extend `manifest.providers` with `claude`, `openai`, `gemini` entries (cli, default_model, fallback)
+- [ ] Add `manifest.agentProviders` mapping role → provider
+- [ ] New lib module: `scripts/hooks/lib/providers.js` — wraps `execSync` calls to `codex` / `gemini` CLIs
+- [ ] Update γ/δ dispatch to read `agentProviders[<role>]` and route accordingly (Claude sub-agent vs CLI call)
+- [ ] `/check:environment` verifies `codex` and `gemini` CLIs present if configured
+- [ ] Fallback: CLI missing → use `fallback` model (always Claude)
+- [ ] Per-agent prompts stay in the .md files (agent gets the same prompt regardless of provider)
+- [ ] Response parsing adapter — normalize GPT/Gemini output to match Claude sub-agent JSON shape
+
+Effort: ~6 hours. First post-ship week.
+
+### Token usage optimization (deferred per user directive)
+
+Not a ship blocker. Once cross-provider is live:
+- [ ] Track per-agent token usage in events log — category `provider-call`
+- [ ] Per-provider cost dashboard (estimate from token counts)
+- [ ] Prompt compression for GPT/Gemini — the Claude-tuned prompts are often verbose; condense for cross-provider
+- [ ] Cache the "system/identity" portion of review prompts where provider supports it (OpenAI prompt caching, Gemini context caching)
+- [ ] Tiered fallback: gpt-5.4 → gpt-5.4-mini → claude if primary times out or rate-limits
+- [ ] Per-agent model override via env var (`WARPOS_EVALUATOR_MODEL=gpt-5.4-mini`) for cost-sensitive users
+
 ### Missing skills identified in audit
 - [ ] `/check:system` — systems audit (scans for every system, diffs manifest)
 - [ ] `/check:privacy` — pre-publish scan for personal data (names, session artifacts, learnings, credentials)
