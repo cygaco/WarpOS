@@ -84,7 +84,7 @@ rm -f "$PROMPT_FILE"
 | `builder`, `fixer` | claude | sonnet |
 | `evaluator`, `compliance` | openai | gpt-5.4 |
 | `qa`, `auditor` | openai | gpt-5.4-mini |
-| `redteam` | gemini | gemini-2.5-pro |
+| `redteam` | gemini | gemini-3.1-pro-preview |
 
 Why: same-model review is blind to shared failure modes. GPT reviews Claude's output with a different lens; Gemini's adversarial corpus makes it stronger on security.
 

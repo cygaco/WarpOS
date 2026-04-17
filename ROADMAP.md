@@ -78,7 +78,7 @@ Target model mapping:
 | **compliance (×2)** | **OpenAI** | **gpt-5.4** | Adversarial integrity — flagship, not mini |
 | **auditor (oneshot)** | **OpenAI** | **gpt-5.4-mini** | Cross-cycle pattern synthesis; many small inputs |
 | **qa (×2)** | **OpenAI** | **gpt-5.4-mini** | 13 failure-mode personas × volume |
-| **redteam (×2)** | **Gemini** | **gemini-2.5-pro** | 11 attack-chain personas — different adversarial training corpus |
+| **redteam (×2)** | **Gemini** | **gemini-3.1-pro-preview** | 11 attack-chain personas — different adversarial training corpus |
 
 Implementation:
 - [ ] Extend `manifest.providers` with `claude`, `openai`, `gemini` entries (cli, default_model, fallback)

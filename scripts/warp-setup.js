@@ -473,12 +473,14 @@ if (!fs.existsSync(manifestFile)) {
         cli: "codex",
         default_model: "gpt-5.4",
         fallback: "claude",
-        syntax: "codex exec --model {model}",
+        // `codex exec --full-auto -m <model> -` (dash reads prompt from stdin; --full-auto = non-TTY approval)
+        syntax: "codex exec --full-auto -m {model} -",
       },
       gemini: {
         cli: "gemini",
-        default_model: "gemini-2.5-pro",
+        default_model: "gemini-3.1-pro-preview",
         fallback: "claude",
+        // `gemini -m <model> -p <instruction> -o text` (context via stdin)
         syntax: "gemini -m {model} -p",
       },
     },

@@ -66,7 +66,7 @@ From `manifest.agentProviders` (fresh install):
 | `compliance` | openai | gpt-5.4 |
 | `qa` | openai | gpt-5.4-mini |
 | `auditor` | openai | gpt-5.4-mini |
-| `redteam` | gemini | gemini-2.5-pro |
+| `redteam` | gemini | gemini-3.1-pro-preview |
 
 **Why different providers:** a Claude-generated builder output reviewed by a Claude evaluator is same-model review — blind to shared failure modes. GPT for review, Gemini for security orchestration = different lens → catches what Claude misses.
 

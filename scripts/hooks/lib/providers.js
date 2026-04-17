@@ -58,16 +58,20 @@ const DEFAULT_PROVIDERS = {
     cli: "codex",
     default_model: "gpt-5.4",
     fallback: "claude",
-    syntax: `codex exec --model {model}`,
-    // stdin: prompt
-    // stdout: response text
+    // Per https://developers.openai.com/codex/cli/reference :
+    //   `codex exec` with `-` reads prompt from stdin.
+    //   `--full-auto` enables workspace-write sandbox + on-request approvals (needed in non-TTY runs).
+    //   `-m <model>` or `--model <model>` selects the model.
+    //   `-o <file>` writes last-message response for reliable capture.
+    syntax: `codex exec --full-auto -m {model} -`,
   },
   gemini: {
     cli: "gemini",
-    default_model: "gemini-2.5-pro",
+    default_model: "gemini-3.1-pro-preview",
     fallback: "claude",
+    // Gemini CLI: pipe context on stdin, instruction via `-p`, plain-text output via `-o text`.
+    // `gemini-3.1-pro-preview` has thinking mode + 1M input context — ideal for attack-chain reasoning.
     syntax: `gemini -m {model} -p`,
-    // Gemini CLI: `cat prompt.txt | gemini -m MODEL -p "instruction" -o text`
   },
 };
 
@@ -187,13 +191,16 @@ function runProvider(role, prompt, opts = {}) {
   try {
     let cmd;
     if (providerName === "openai") {
-      // Codex: reads prompt from stdin
-      cmd = `cat "${promptFile}" | ${cfg.cli} exec --model ${model}`;
+      // codex exec reads stdin when passed `-` as the prompt.
+      // --full-auto = workspace-write sandbox + on-request approval (needed in non-TTY).
+      // Output: streams progress to stderr, final message to stdout.
+      cmd = `cat "${promptFile}" | ${cfg.cli} exec --full-auto -m ${model} -`;
     } else if (providerName === "gemini") {
-      // Gemini: -p instruction on command line, prompt via stdin
-      cmd = `cat "${promptFile}" | ${cfg.cli} -m ${model} -p "Process the instructions on stdin and produce the requested output." -o text`;
+      // gemini CLI: context on stdin, instruction via -p, text output.
+      // 2>/dev/null suppresses auth warnings for scripted use.
+      cmd = `cat "${promptFile}" | ${cfg.cli} -m ${model} -p "Process the instructions on stdin and produce the requested output." -o text 2>/dev/null`;
     } else {
-      // Generic pattern from cfg.syntax
+      // Generic pattern from cfg.syntax (used when manifest overrides defaults)
       cmd = `cat "${promptFile}" | ${cfg.syntax.replace("{model}", model)}`;
     }
 
