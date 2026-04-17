@@ -11,7 +11,7 @@
 {"id":"hook:gauntlet-gate","name":"gauntlet-gate.js","path":"scripts/hooks/gauntlet-gate.js","registered":false,"exists":true,"size":7322,"modified":"2026-04-15T21:41:18.038Z"}
 {"id":"hook:learning-validator","name":"learning-validator.js","path":"scripts/hooks/learning-validator.js","registered":false,"exists":true,"size":6416,"modified":"2026-04-15T21:41:17.876Z"}
 {"id":"hook:lint","name":"lint.js","path":"scripts/hooks/lint.js","registered":true,"exists":true,"size":2684,"modified":"2026-04-15T21:41:17.931Z"}
-{"id":"hook:memory-guard","name":"memory-guard.js","path":"scripts/hooks/memory-guard.js","registered":false,"exists":true,"size":8388,"modified":"2026-04-16T21:59:28.367Z"}
+{"id":"hook:memory-guard","name":"memory-guard.js","path":"scripts/hooks/memory-guard.js","registered":false,"exists":true,"size":8460,"modified":"2026-04-17T04:04:52.659Z"}
 {"id":"hook:merge-guard","name":"merge-guard.js","path":"scripts/hooks/merge-guard.js","registered":false,"exists":true,"size":7859,"modified":"2026-04-16T19:48:32.224Z"}
 {"id":"hook:ownership-guard","name":"ownership-guard.js","path":"scripts/hooks/ownership-guard.js","registered":false,"exists":true,"size":3627,"modified":"2026-04-15T21:41:17.893Z"}
 {"id":"hook:path-guard","name":"path-guard.js","path":"scripts/hooks/path-guard.js","registered":false,"exists":true,"size":4366,"modified":"2026-04-16T22:50:37.742Z"}
@@ -35,3 +35,4 @@
 {"id":"hooklib:logger","name":"logger.js","path":"scripts/hooks/lib/logger.js","lib":true,"exists":true,"size":10860,"modified":"2026-04-16T19:48:55.080Z"}
 {"id":"hooklib:paths","name":"paths.js","path":"scripts/hooks/lib/paths.js","lib":true,"exists":true,"size":5290,"modified":"2026-04-17T02:16:58.200Z"}
 {"id":"hooklib:project-config","name":"project-config.js","path":"scripts/hooks/lib/project-config.js","lib":true,"exists":true,"size":4446,"modified":"2026-04-15T21:41:18.185Z"}
+{"id":"hooklib:providers","name":"providers.js","path":"scripts/hooks/lib/providers.js","lib":true,"exists":true,"size":8943,"modified":"2026-04-17T03:23:08.886Z"}

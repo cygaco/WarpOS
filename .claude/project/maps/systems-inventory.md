@@ -1,12 +1,12 @@
 # Systems Inventory
 
-Generated: 2026-04-17T02:24:56.503Z
+Generated: 2026-04-17T04:05:37.518Z
 
 | id | name | category | count |
 |---|---|---|---|
 | identity | Alex identity | identity |  |
 | agents | Agent team + build chains | agents | 37 |
-| skills | Skills | capability | 67 |
+| skills | Skills | capability | 68 |
 | hooks | Hooks | automation | 32 |
 | memory | Memory stores | memory | 8 |
 | maps | Relationship maps | infrastructure |  |

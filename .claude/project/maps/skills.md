@@ -1,11 +1,12 @@
 # Skills Map
 
-Generated: 2026-04-17T02:24:56.503Z
+Generated: 2026-04-17T04:05:37.518Z
 
 | id | namespace | name | description |
 |---|---|---|---|
 | skill:beta:integrate | beta | integrate | Apply validated recommendations from beta mining into the judgment model |
 | skill:beta:mine | beta | mine | Mine patterns from user behavior — prompts, decisions, skill chains, evolution cycles |
+| skill:check:all | check | all | Run every check in parallel and produce one unified report — architecture, environment, references, requirements, patterns, system. One command for full project health. |
 | skill:check:architecture | check | architecture | Architecture integrity — do the layers connect? agent system, cross-layer seams, documentation health |
 | skill:check:environment | check | environment | Environment readiness and tooling quality — fast go/no-go or deep audit |
 | skill:check:patterns | check | patterns | Cross-run intelligence and automation proposals — diagnose recurring patterns or propose prevention |

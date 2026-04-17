@@ -199,8 +199,11 @@ process.stdin.on("end", () => {
         }
       }
 
-      // 5. echo/printf overwrite (echo "" > file) — exclude >> (append)
-      if (/\b(echo|printf)\b/.test(cmd) && /(?<![>])>\s*[^>]/.test(cmd)) {
+      // 5. echo/printf overwrite (echo "" > file) — exclude >> (append) and fd redirects like 2>&1
+      if (
+        /\b(echo|printf)\b/.test(cmd) &&
+        /(?<!=)(?<!>)>\s*[^>&]/.test(cmdForRedirectCheck)
+      ) {
         for (const f of PROTECTED_FILES) {
           if (cmd.includes(f)) {
             block(

@@ -1,6 +1,6 @@
 # Hooks Map
 
-Generated: 2026-04-17T02:24:56.503Z
+Generated: 2026-04-17T04:05:37.518Z
 
 | id | name | path | registered | size | modified |
 |---|---|---|---|---|---|
@@ -17,7 +17,7 @@ Generated: 2026-04-17T02:24:56.503Z
 | hook:gauntlet-gate | gauntlet-gate.js | scripts/hooks/gauntlet-gate.js | false | 7322 | 2026-04-15T21:41:18.038Z |
 | hook:learning-validator | learning-validator.js | scripts/hooks/learning-validator.js | false | 6416 | 2026-04-15T21:41:17.876Z |
 | hook:lint | lint.js | scripts/hooks/lint.js | true | 2684 | 2026-04-15T21:41:17.931Z |
-| hook:memory-guard | memory-guard.js | scripts/hooks/memory-guard.js | false | 8388 | 2026-04-16T21:59:28.367Z |
+| hook:memory-guard | memory-guard.js | scripts/hooks/memory-guard.js | false | 8460 | 2026-04-17T04:04:52.659Z |
 | hook:merge-guard | merge-guard.js | scripts/hooks/merge-guard.js | false | 7859 | 2026-04-16T19:48:32.224Z |
 | hook:ownership-guard | ownership-guard.js | scripts/hooks/ownership-guard.js | false | 3627 | 2026-04-15T21:41:17.893Z |
 | hook:path-guard | path-guard.js | scripts/hooks/path-guard.js | false | 4366 | 2026-04-16T22:50:37.742Z |
@@ -41,3 +41,4 @@ Generated: 2026-04-17T02:24:56.503Z
 | hooklib:logger | logger.js | scripts/hooks/lib/logger.js |  | 10860 | 2026-04-16T19:48:55.080Z |
 | hooklib:paths | paths.js | scripts/hooks/lib/paths.js |  | 5290 | 2026-04-17T02:16:58.200Z |
 | hooklib:project-config | project-config.js | scripts/hooks/lib/project-config.js |  | 4446 | 2026-04-15T21:41:18.185Z |
+| hooklib:providers | providers.js | scripts/hooks/lib/providers.js |  | 8943 | 2026-04-17T03:23:08.886Z |
