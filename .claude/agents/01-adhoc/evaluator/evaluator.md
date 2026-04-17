@@ -23,6 +23,20 @@ You are an Evaluator agent. Review builder output for correctness, completeness,
 - Feature: {{FEATURE_NAME}}
 - Builder files: {{FILE_LIST}}
 
+### Pre-check — CWD & branch
+
+BEFORE reading anything, run:
+```bash
+git rev-parse --show-toplevel
+git branch --show-current
+```
+
+If `rev-parse` fails (not a git repo) OR the branch name doesn't match what the orchestrator passed as `{{WORKTREE_BRANCH}}` (when provided), BAIL with:
+```json
+{"verdict":"FAIL","score":0,"bail":"cwd-mismatch","expected":"<branch>","actual":"<branch>","reason":"evaluator invoked outside expected worktree — review would read stale files"}
+```
+Do NOT proceed to the 6-Check Protocol. The orchestrator should re-dispatch from the correct worktree. This prevents the class of bug where evaluators score against main-branch files while the builder wrote to a worktree branch (LRN-2026-04-05 evaluator CWD drift).
+
 ### Read these first
 1. `.claude/agents/.system.md` (your role definition)
 2. The feature spec: `docs/05-features/{{FEATURE_SLUG}}/PRD.md`

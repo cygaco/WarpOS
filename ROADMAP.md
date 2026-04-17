@@ -141,6 +141,9 @@ Not a ship blocker. Once cross-provider is live:
 - [ ] Merge `/fav:list` + `/fav:search` into `/fav` with args
 - [ ] Consider moving `/hooks:friction` analysis into `/check:patterns propose`
 
+### Spec-propagation closer (Batch G, deferred from 2026-04-17 /check:all remediation)
+- [ ] Close the loop between `/check:requirements drift` detection and actual spec updates. Current state: drift markers stage into `requirements-staged.jsonl`, reviewer manually triages. Missing: a propagation-closer that (a) walks dependent spec nodes via SPEC_GRAPH, (b) surfaces which downstream files MUST be updated when a root spec changes, (c) fails the gauntlet until propagation is attested. Design separately before implementation. β DECIDE 2026-04-17: defer to Phase 2, design as its own skill.
+
 ---
 
 ## Phase 3 — Product-as-product

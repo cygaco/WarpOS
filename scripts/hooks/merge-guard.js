@@ -173,19 +173,20 @@ process.stdin.on("end", () => {
       );
     }
 
-    // Fast-path: allowlist check (most Bash calls are reads)
-    for (const prefix of ALLOWLIST) {
-      if (cmd.startsWith(prefix) || cmd.startsWith("cd ")) {
-        allow(cmd);
-      }
-    }
-
-    // Also allow piped commands that start with allowed prefixes
-    const firstCmd = cmd.split("&&")[0].split("|")[0].split(";")[0].trim();
-    for (const prefix of ALLOWLIST) {
-      if (firstCmd.startsWith(prefix)) {
-        allow(cmd);
-      }
+    // Fast-path: allowlist check — ALL sub-commands in a chain must be safe
+    // to exit early. Avoids `git status && rm -rf src/` sneaking past because
+    // the first token matches. Matches memory-guard's pattern (LRN-2026-04-17).
+    const subCmds = cmd
+      .split(/\s*(?:&&|\|\||\||;)\s*/)
+      .map((c) => c.trim())
+      .filter(Boolean);
+    const isSafeSub = (c) =>
+      c.startsWith("cd ") ||
+      c === "cd" ||
+      ALLOWLIST.some((prefix) => c.startsWith(prefix));
+    const allSafe = subCmds.length > 0 && subCmds.every(isSafeSub);
+    if (allSafe) {
+      allow(cmd);
     }
 
     // === Block rules ===

@@ -73,7 +73,9 @@ process.stdin.on("end", () => {
         "alpha",
         "gamma",
         "evaluator",
+        "redteam",
         "security",
+        "fixer",
         "compliance",
       ].includes(currentAgent)
     ) {

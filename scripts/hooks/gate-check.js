@@ -15,8 +15,16 @@ const RESET = "\x1b[0m";
 const DEPS = getDeps();
 const FEATURE_NAMES = getFeatureIds();
 
-// Non-builder role keywords — if present, skip gating
-const SKIP_ROLES = ["evaluator", "security", "fix", "auditor"];
+// Non-builder role keywords — if present, skip gating.
+// Matches adhoc agent names (Batch A rename 2026-04-17): security→redteam, fix→fixer.
+const SKIP_ROLES = [
+  "evaluator",
+  "redteam",
+  "fixer",
+  "auditor",
+  "compliance",
+  "qa",
+];
 
 function loadStore() {
   let agentsDir;

@@ -42,9 +42,11 @@ process.stdin.on("end", () => {
 
     const feature = featureMatch[1];
 
-    // Skip review/evaluator/security/compliance/qa agents — they don't need gate checks
+    // Skip review/evaluator/redteam/compliance/qa agents — they don't need gate checks.
+    // Matches Batch A rename (2026-04-17): security→redteam, fix agent→fixer.
+    // Legacy names (security, fix agent) kept for backwards-compat with older prompts.
     if (
-      /evaluator|security|compliance|fix agent|auditor|test|qa.*scan|qa.*analy|qa.*orchestrat/i.test(
+      /evaluator|redteam|security|compliance|fixer|fix agent|auditor|test|qa.*scan|qa.*analy|qa.*orchestrat/i.test(
         prompt.substring(0, 500),
       )
     ) {
