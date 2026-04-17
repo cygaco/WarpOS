@@ -13,6 +13,14 @@ description: Create a new skill from a description — supports simple, multi-ph
 
 ## Procedure
 
+### Step 0: Paths rule (read this first)
+
+When you author the new skill's content, reference project paths via **`paths.X` keys** (e.g. `paths.eventsFile`, `paths.learningsFile`, `paths.hooks`, `paths.maps`), **not** literal strings like `.claude/project/memory/learnings.jsonl`. The registry lives at `.claude/paths.json`; literals rot when we move things.
+
+If you need to mention the resolved location for reader clarity, use: `` `paths.learningsFile` (`.claude/project/memory/learnings.jsonl`) `` — key first, literal in parens.
+
+This is enforced at commit time by `scripts/path-lint.js` (critical findings exit 1). Upstream enforcement starts here.
+
 ### Step 1: Parse input
 
 Extract the skill name and description from the user's command. If not provided, ask:

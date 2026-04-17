@@ -14,9 +14,15 @@ description: Edit an existing skill
 
 ## Procedure
 
+### Step 0: Paths rule (read this first)
+
+When editing, reference project paths via **`paths.X` keys** (e.g. `paths.eventsFile`, `paths.learningsFile`), not literal strings. If you're about to type `.claude/project/memory/learnings.jsonl` in the skill body, use `paths.learningsFile` instead. Registry lives at `.claude/paths.json`.
+
+If your edit REPLACES an old literal with another literal, you're creating the problem. Replace with a `paths.X` key.
+
 ### Step 1: Find the skill
 
-Look for `.claude/commands/<name>.md`. If it doesn't exist, list available skills and ask which one to edit.
+Look for the skill file under `paths.commands/<namespace>/<name>.md`. If it doesn't exist, list available skills and ask which one to edit.
 
 ### Step 2: Read current content
 

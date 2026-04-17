@@ -55,17 +55,27 @@ Before using AskUserQuestion, consult **Alex β** (`.claude/agents/00-alex/beta.
 
 **Oneshot** — δ runs standalone. Full skeleton builds with state machine, cycles, points. No Alpha/Beta.
 
+## Paths — Single Source of Truth
+
+**Rule:** when writing skills, agents, hooks, or docs, reference project paths via `paths.X` keys (e.g. `paths.eventsFile`, `paths.learningsFile`, `paths.hooks`) **not** as literal strings. The registry lives at `.claude/paths.json` and resolves to current canonical locations; literal paths rot when we move things.
+
+- Code (`.js`): `const { PATHS } = require("./lib/paths"); fs.appendFileSync(PATHS.eventsFile, ...)`
+- Skills/agents/docs (`.md`): say `paths.eventsFile` in prose, with the resolved path in parentheses only if genuinely informative
+- Renames / removals: one change in `paths.json` propagates; if you update the literal everywhere instead, you fork the registry
+
+The path-guard hook warns when stale literals appear; path-lint exits 1 on criticals. But **the rule is upstream of the guards** — apply it at write-time.
+
 ## Memory
 
-| Store | Path | Purpose |
+| Store | `paths.*` key | Purpose |
 |-------|------|---------|
-| Events | `.claude/project/events/events.jsonl` | Append-only log |
-| Learnings | `.claude/project/memory/learnings.jsonl` | Semantic memory — see learning-lifecycle.md |
-| Traces | `.claude/project/memory/traces.jsonl` | Reasoning episodes |
-| Systems | `.claude/project/memory/systems.jsonl` | Systems manifest |
-| Maps | `.claude/project/maps/` | Relationship graphs |
+| Events | `paths.eventsFile` | Append-only log (via `logger.js`) |
+| Learnings | `paths.learningsFile` | Semantic memory — see learning-lifecycle.md |
+| Traces | `paths.tracesFile` | Reasoning episodes |
+| Systems | `paths.systemsFile` | Systems manifest |
+| Maps | `paths.maps/` | Relationship graphs |
 | Paths | `.claude/paths.json` | Centralized path registry — all hooks read from here |
-| Manifest | `.claude/manifest.json` | Project identity card — metadata, features, providers |
+| Manifest | `paths.manifest` | Project identity card — metadata, features, providers |
 
 ### Prompt Pipeline
 
