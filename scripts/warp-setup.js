@@ -1089,13 +1089,25 @@ if (!fs.existsSync(claudeMdTarget) && fs.existsSync(claudeMdSource)) {
 
 const agentsMdTarget = path.join(TARGET, "AGENTS.md");
 const agentsMdSource = path.join(WARPOS, "AGENTS.md");
+const AGENTS_MARKER = "Alex identity card";
 if (!fs.existsSync(agentsMdTarget) && fs.existsSync(agentsMdSource)) {
   fs.copyFileSync(agentsMdSource, agentsMdTarget);
-  log("ok", "Created AGENTS.md");
+  log("ok", "Created AGENTS.md with WarpOS agent system");
   installed++;
-} else if (fs.existsSync(agentsMdTarget)) {
-  log("warn", "AGENTS.md already exists — kept yours");
-  warnings++;
+} else if (fs.existsSync(agentsMdTarget) && fs.existsSync(agentsMdSource)) {
+  const userAgents = fs.readFileSync(agentsMdTarget, "utf8");
+  if (userAgents.includes(AGENTS_MARKER)) {
+    log("ok", "AGENTS.md already has WarpOS agent system — no merge needed");
+  } else {
+    const warpAgents = fs.readFileSync(agentsMdSource, "utf8");
+    const sep = userAgents.endsWith("\n") ? "\n---\n\n" : "\n\n---\n\n";
+    fs.writeFileSync(agentsMdTarget, userAgents + sep + warpAgents);
+    log(
+      "ok",
+      "Merged WarpOS agent system into your existing AGENTS.md (appended below your content)",
+    );
+    installed++;
+  }
 }
 
 // ── Summary ─────────────────────────────────────────────
