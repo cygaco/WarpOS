@@ -50,11 +50,40 @@ This will:
 - Register hooks in `settings.json` (only hooks with available tools)
 - Create `CLAUDE.md` and `AGENTS.md`
 
-### Step 4: Verify
+### Step 4: Install provider CLIs (recommended)
+
+WarpOS routes review-layer agents through **OpenAI (Codex CLI)** and security through **Gemini CLI** for model diversity — same-model review is blind to shared failure modes. Without these CLIs, agents fall back to Claude (still works, just loses the diversity benefit).
+
+Show the user this block and walk them through it:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  Provider CLIs — install these for full model diversity    │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  OpenAI Codex  (for evaluator, compliance, qa, auditor)    │
+│    npm i -g @openai/codex                                   │
+│    codex login                                              │
+│    # or: export OPENAI_API_KEY=sk-...                       │
+│                                                             │
+│  Gemini CLI    (for redteam / security)                    │
+│    npm i -g @google/gemini-cli                              │
+│    gemini auth login                                        │
+│    # or: export GEMINI_API_KEY=...                          │
+│                                                             │
+│  Skip either → agents fall back to Claude automatically.   │
+│  Verify: /check:environment                                 │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Step 5: Verify
 
 Run `/warp:health` to make sure everything is set up correctly.
 
-### Step 5: Get started
+`/check:environment` will tell you which provider CLIs are detected — if you skipped step 4, it'll flag the missing ones.
+
+### Step 6: Get started
 
 Suggest the user run `/warp:tour` for a guided introduction, or jump straight in with:
 - `/fix:fast` to try fixing a bug

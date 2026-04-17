@@ -840,15 +840,52 @@ if (!fs.existsSync(agentsMdTarget) && fs.existsSync(agentsMdSource)) {
 }
 
 // ── Summary ─────────────────────────────────────────────
+// ── Provider CLI check (informational) ──────────────────
+const codexPresent = cmdExists("codex");
+const geminiPresent = cmdExists("gemini");
+
 console.log(`\n${"─".repeat(54)}`);
 console.log(`${HEADER}  SETUP COMPLETE${RESET}\n`);
 console.log(`  ${OK} ${installed} files installed`);
 if (warnings > 0)
   console.log(`  ${WARN} ${warnings} warnings (existing files kept)`);
-console.log(`\n  Next steps:`);
+
+console.log(`\n${HEADER}  PROVIDER CLIs${RESET}`);
+console.log(
+  `  WarpOS routes review/security agents through other AI providers`,
+);
+console.log(
+  `  for model diversity. Same-model review is blind to shared failure`,
+);
+console.log(`  modes — so evaluator/compliance/qa/auditor run on OpenAI, and`);
+console.log(
+  `  redteam runs on Gemini. Without these CLIs, agents fall back to`,
+);
+console.log(`  Claude (still works, just loses the diversity benefit).\n`);
+
+if (codexPresent) {
+  console.log(`  ${OK} Codex CLI detected (review agents will use OpenAI)`);
+} else {
+  console.log(
+    `  ${WARN} Codex CLI missing — review agents will fall back to Claude`,
+  );
+  console.log(`       Install:  npm i -g @openai/codex`);
+  console.log(`       Auth:     codex login   (or set OPENAI_API_KEY)`);
+}
+if (geminiPresent) {
+  console.log(`  ${OK} Gemini CLI detected (redteam will use Gemini)`);
+} else {
+  console.log(
+    `  ${WARN} Gemini CLI missing — redteam will fall back to Claude`,
+  );
+  console.log(`       Install:  npm i -g @google/gemini-cli`);
+  console.log(`       Auth:     gemini auth login   (or set GEMINI_API_KEY)`);
+}
+
+console.log(`\n${HEADER}  NEXT STEPS${RESET}`);
 console.log(`  1. Open Claude Code in your project`);
 console.log(`  2. Type /warp:tour for a guided introduction`);
 console.log(`  3. Type /warp:health to verify everything works`);
-console.log(`  4. Type /maps:all to generate your project maps`);
-console.log(`  5. Ask Alex to help you fill in your requirements templates`);
-console.log(`     (e.g., "Help me write a product brief for my project")\n`);
+console.log(`  4. Type /check:environment to verify provider CLIs + auth`);
+console.log(`  5. Type /maps:all to generate your project maps`);
+console.log(`  6. Ask Alex to help you fill in your requirements templates\n`);

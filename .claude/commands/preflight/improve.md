@@ -27,15 +27,15 @@ Ask (or parse from args): What did preflight miss? What should it have caught?
 
 | If the gap is about... | Update this file |
 |---|---|
-| Spec/story/copy/data field inconsistencies | `.claude/commands/check/specs.md` (static mode) |
-| Missing test coverage, story gaps, metadata | `.claude/commands/check/specs.md` (static mode) |
-| Spec drift, propagation after code changes | `.claude/commands/check/specs.md` (drift mode) |
-| Agent manifests, ownership, buildability | `.claude/commands/check/arch.md` (internal mode) |
-| Architecture mechanism implementation | `.claude/commands/check/arch.md` (internal mode) |
-| Cross-layer seams, doc→agent integration | `.claude/commands/check/arch.md` (seams mode) |
-| Doc quality, foundation, infra data | `.claude/commands/check/arch.md` (health mode) |
-| Environment, build, hooks, scripts, git state | `.claude/commands/check/env.md` (ready mode) |
-| Hook/skill quality, config, test infra | `.claude/commands/check/env.md` (audit mode) |
+| Spec/story/copy/data field inconsistencies | `.claude/commands/check/requirements.md` (static mode) |
+| Missing test coverage, story gaps, metadata | `.claude/commands/check/requirements.md` (static mode) |
+| Spec drift, propagation after code changes | `.claude/commands/check/requirements.md` (drift mode) |
+| Agent manifests, ownership, buildability | `.claude/commands/check/architecture.md` (internal mode) |
+| Architecture mechanism implementation | `.claude/commands/check/architecture.md` (internal mode) |
+| Cross-layer seams, doc→agent integration | `.claude/commands/check/architecture.md` (seams mode) |
+| Doc quality, foundation, infra data | `.claude/commands/check/architecture.md` (health mode) |
+| Environment, build, hooks, scripts, git state | `.claude/commands/check/environment.md` (ready mode) |
+| Hook/skill quality, config, test infra | `.claude/commands/check/environment.md` (audit mode) |
 | Run transition, retro, store reset, hygiene | `.claude/commands/preflight/run.md` (Pass 5 inline) |
 | Skeleton stubs, foundation files, gutting | `.claude/commands/preflight/run.md` (Pass 7 inline) |
 | Recurring patterns, automation proposals | `.claude/commands/check/patterns.md` |

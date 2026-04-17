@@ -42,6 +42,30 @@ That's it. The installer:
 - Sets up automated hooks for code quality and security
 - Generates a project manifest
 
+### Optional: provider CLIs (recommended)
+
+WarpOS runs review agents on a *different* AI provider than the one generating code — same-model review is blind to shared failure modes. By default:
+
+- **Evaluator / Compliance / QA / Auditor** use **OpenAI (Codex CLI)** — deeper review with a different lens
+- **Redteam (security)** uses **Gemini** — different adversarial training corpus catches different attack chains
+- Everything else stays on Claude
+
+The installer auto-detects these CLIs. **Missing CLIs → graceful fallback to Claude** (still works, just loses diversity).
+
+To get full diversity:
+
+```powershell
+# OpenAI — for review agents
+npm i -g @openai/codex
+codex login                         # or: $env:OPENAI_API_KEY = "sk-..."
+
+# Gemini — for security agent
+npm i -g @google/gemini-cli
+gemini auth login                   # or: $env:GEMINI_API_KEY = "..."
+```
+
+Verify with `/check:environment` after install.
+
 ### Verify
 
 Open Claude Code in your project. Type:

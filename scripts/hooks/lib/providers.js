@@ -109,10 +109,14 @@ function getProviderConfig(providerName) {
 }
 
 // ── Availability ────────────────────────────────────────────
+// Actually INVOKE the binary with --version — a dead PATH entry (shim / broken
+// symlink) will fail, which `which` / `where` would falsely report as present.
+// 3s timeout is enough for a version print; anything longer = dead command.
 function cliAvailable(cmd) {
   try {
-    execSync(`which ${cmd} 2>/dev/null || where ${cmd} 2>NUL`, {
+    execSync(`${cmd} --version`, {
       stdio: ["pipe", "pipe", "pipe"],
+      timeout: 3000,
     });
     return true;
   } catch {

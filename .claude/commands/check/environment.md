@@ -70,14 +70,22 @@ Spawn a general-purpose agent (runs commands). Focus: **is everything ready to g
 - **E23 Stale worktrees** — `git worktree list` — flag any pointing to missing paths
 - **E24 .gitignore has runtime entries** — `.claude/runtime/`, `.claude/project/events/`, `.claude/project/memory/`, `.claude/agents/**/events.jsonl` — ERROR if any missing
 
-### Compliance CLI (optional)
+### Cross-provider CLIs (required by review/security agents)
 
-- **E25 Codex available** — `codex --version`. WARN if missing (fallback documented).
-- **E26 Gemini available** — `gemini --version`. INFO if missing.
+Read `manifest.agentProviders` to determine which providers this project uses. For each non-Claude provider, the corresponding CLI must be present — without it, the agent dispatches fall back to Claude (degrades model diversity).
+
+- **E25 Codex (OpenAI) CLI** — `codex --version`. Required iff any role in `manifest.agentProviders` maps to `"openai"`. By default: `evaluator`, `compliance`, `qa`, `auditor`. If configured-but-missing → ERROR; if no openai roles configured → skip.
+  - Install: `npm i -g @openai/codex`
+  - Auth: set `OPENAI_API_KEY` env var or run `codex login`
+- **E26 Gemini CLI** — `gemini --version`. Required iff any role maps to `"gemini"`. By default: `redteam`. If configured-but-missing → ERROR; if no gemini roles configured → skip.
+  - Install: `npm i -g @google/gemini-cli`
+  - Auth: set `GEMINI_API_KEY` env var OR run `gemini auth login` (OAuth → `~/.gemini/oauth_creds.json`)
+- **E27 Provider config in store** — verify `paths.store.providers` (if present) has matching entries for every provider referenced in `manifest.agentProviders`.
+- **E28 Provider fallback chain** — every non-Claude provider in `manifest.providers` must declare a `fallback`. If any is missing → WARN (loss of fallback safety).
 
 ### Platform
 
-- **E27 Platform note** — if `process.platform !== 'win32'`, WARN (WarpOS MVP is Windows-only; features may degrade)
+- **E29 Platform note** — if `process.platform !== 'win32'`, WARN (WarpOS MVP is Windows-only; features may degrade)
 
 ### Output
 
