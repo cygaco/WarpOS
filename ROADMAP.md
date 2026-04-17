@@ -92,16 +92,16 @@ Target model mapping:
 | **redteam (×2)** | **Gemini** | **gemini-3.1-pro-preview** | 11 attack-chain personas — different adversarial training corpus |
 
 Implementation:
-- [ ] Extend `manifest.providers` with `claude`, `openai`, `gemini` entries (cli, default_model, fallback)
-- [ ] Add `manifest.agentProviders` mapping role → provider
-- [ ] New lib module: `scripts/hooks/lib/providers.js` — wraps `execSync` calls to `codex` / `gemini` CLIs
-- [ ] Update γ/δ dispatch to read `agentProviders[<role>]` and route accordingly (Claude sub-agent vs CLI call)
-- [ ] `/check:environment` verifies `codex` and `gemini` CLIs present if configured
-- [ ] Fallback: CLI missing → use `fallback` model (always Claude)
-- [ ] Per-agent prompts stay in the .md files (agent gets the same prompt regardless of provider)
-- [ ] Response parsing adapter — normalize GPT/Gemini output to match Claude sub-agent JSON shape
+- [x] Extend `manifest.providers` with `claude`, `openai`, `gemini` entries (cli, default_model, fallback)
+- [x] Add `manifest.agentProviders` mapping role → provider
+- [x] New lib module: `scripts/hooks/lib/providers.js` — wraps `execSync` calls to `codex` / `gemini` CLIs
+- [x] Update γ/δ dispatch to read `agentProviders[<role>]` and route accordingly (via `scripts/dispatch-agent.js`)
+- [x] `/check:environment` verifies `codex` and `gemini` CLIs present if configured (E25-E26 checks)
+- [x] Fallback: CLI missing → use `fallback` model (always Claude) — `provider_fallback: claude` in agent frontmatter
+- [x] Per-agent prompts stay in the .md files (agent gets the same prompt regardless of provider)
+- [x] Response parsing adapter — `parseProviderJson` normalizes GPT/Gemini output to match Claude sub-agent JSON shape
 
-Effort: ~6 hours. First post-ship week.
+**SHIPPED 2026-04-17.** Strict model assertion added (commit f7f5885) so silent downgrades fail loudly. `actualModel` from CLI stats vs declared `model` detected via `modelsMatch()`.
 
 ### Token usage optimization (deferred per user directive)
 
@@ -114,7 +114,8 @@ Not a ship blocker. Once cross-provider is live:
 - [ ] Per-agent model override via env var (`WARPOS_EVALUATOR_MODEL=gpt-5.4-mini`) for cost-sensitive users
 
 ### Missing skills identified in audit
-- [ ] `/check:system` — systems audit (scans for every system, diffs manifest)
+- [x] `/check:system` — systems audit (scans for every system, diffs manifest)  **SHIPPED**
+- [x] `/discover:systems` — multi-angle discovery (6 lenses, surfaces emergent/ghost systems)  **SHIPPED 2026-04-17** (beyond scope of original ask)
 - [ ] `/check:privacy` — pre-publish scan for personal data (names, session artifacts, learnings, credentials)
 - [ ] `/check:install` — verify a fresh install is complete end-to-end
 - [ ] `/check:hooks` — hook test harness via synthetic payloads (extends `/hooks:test`)
@@ -130,7 +131,7 @@ Not a ship blocker. Once cross-provider is live:
 ### Existing skill follow-ups
 - [ ] `/research:deep` — 728 lines, likely untested, model versions stale. Either validate end-to-end OR deprecate in favor of `/research:simple`
 - [ ] `/research:simple` — add synthesis phase (merge reports → SYNTHESIS.md)
-- [ ] `/sleep:deep` — operationalize vague phases (1c dedup algorithm, 1e pattern threshold, 4 REM dream templates)
+- [x] `/sleep:deep` — REM Phase 4 painting step made MANDATORY with self-check gate (2026-04-17). Vague phase 1c/1e thresholds still deferred.
 - [ ] `/ui:review` — genericized (no longer hardcodes "consumer product"); add parameterized design-system path support
 - [ ] `/retro:code`, `/retro:full` — remove stale "retro directory" manifest.json references; either hard-code `.claude/project/retros/` or make optional
 - [ ] `/warp:sync` — add fallback if `../WarpOS/version.json` doesn't exist (git tags / commit hash)
