@@ -1,0 +1,18 @@
+{
+  "hooks": {
+    "stale_since": "2026-04-09T17:12:40.324Z",
+    "trigger": "scripts/hooks/memory-guard.js"
+  },
+  "memory": {
+    "stale_since": "2026-04-09T17:12:40.325Z",
+    "trigger": "scripts/hooks/memory-guard.js"
+  },
+  "tools": {
+    "stale_since": "2026-04-09T17:12:40.325Z",
+    "trigger": "scripts/hooks/memory-guard.js"
+  },
+  "skills": {
+    "stale_since": "2026-04-09T18:17:14.834Z",
+    "trigger": ".claude/commands/qa/check.md"
+  }
+}
