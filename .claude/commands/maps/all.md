@@ -33,14 +33,17 @@ Check these files for existence and last modified date:
 | Systems manifest | `/maps:systems` (renders from `systems.jsonl`) |
 | Architecture | `/maps:architecture` |
 
-**Manual registries** (`docs/`):
-| Registry | File | Maintained by |
-|----------|------|--------------|
-| Field values | `docs/00-canonical/FIELD_REGISTRY.json` | Manual + edit-watcher drift detection |
-| Spec dependencies | `docs/00-canonical/SPEC_GRAPH.json` | Manual |
-| Product data flow | `.claude/agents/INTEGRATION-MAP.md` | Manual |
-| Copy surfaces | `docs/02-copy-system/SURFACE_MAP.md` | Manual |
-| Reasoning frameworks | `.claude/reference/reasoning-frameworks.md` | Manual |
+**Manual registries** — resolve via `paths.json` keys where available; literal paths are project-specific:
+
+| Registry | Resolved path | Maintained by |
+|----------|---------------|---------------|
+| Field values | `docs/00-canonical/FIELD_REGISTRY.json` (literal — project-specific) | Manual + edit-watcher drift detection |
+| Spec dependencies | `paths.specGraph` → `.claude/project/maps/SPEC_GRAPH.json` | Manual |
+| Product data flow | `paths.agents` + `/02-oneshot/.system/integration-map.md` → `.claude/agents/02-oneshot/.system/integration-map.md` | Manual |
+| Copy surfaces | `docs/02-copy-system/SURFACE_MAP.md` (literal — project-specific) | Manual |
+| Reasoning frameworks | `paths.reference` + `/reasoning-frameworks.md` → `.claude/project/reference/reasoning-frameworks.md` | Manual |
+
+When this skill runs, read `.claude/paths.json` first and resolve each key to its current value. Do NOT hardcode the old pre-refactor paths like `.claude/agents/INTEGRATION-MAP.md` or `.claude/reference/reasoning-frameworks.md` — those locations moved during the project reorganization. If a file resolves to a path that doesn't exist, search under `paths.agents/**` and `paths.reference/**` before flagging as MISSING — it may have moved again.
 
 ### Step 2: Check staleness
 

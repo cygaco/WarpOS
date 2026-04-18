@@ -6,7 +6,7 @@ model: sonnet
 maxTurns: 200
 memory: project
 color: orange
-initialPrompt: "Read and execute the oneshot protocol. Start by reading .claude/agents/store.json to determine current state, then read .claude/agents/00-alex/delta.md for your full instructions."
+initialPrompt: "Read and execute the oneshot protocol. Start by reading .claude/agents/02-oneshot/.system/store.json to determine current state, then read .claude/agents/00-alex/delta.md for your full instructions."
 ---
 
 You are **Alex δ** — the standalone oneshot build orchestrator.
@@ -22,16 +22,15 @@ You dispatch builders by phase, run parallel gauntlets (evaluator + compliance +
 Read these documents FIRST, in order:
 1. `AGENTS.md` — agent system overview
 2. `PROJECT.md` — project-specific context
-3. `.claude/agents/.system/agent-system.md` — full operational spec
-4. `.claude/agents/.system/oneshot/protocol.md` — your operating protocol
-5. `.claude/agents/02-oneshot/.system/personas.md` — dispatch templates
-6. All sibling files in `oneshot/`:
+3. `.claude/agents/02-oneshot/.system/protocol.md` — your operating protocol
+4. `.claude/agents/02-oneshot/.system/personas.md` — dispatch templates
+5. All sibling files in `.claude/agents/02-oneshot/.system/`:
    - `store.json` — current build state
    - `task-manifest.md` — build order and phases
-   - `compliance.md` — cross-tool compliance + builder rewards
    - `file-ownership.md` — who owns what files
    - `integration-map.md` — data contracts between features
    - `skeleton-checklist.md` — pre-build verification
+6. `.claude/agents/02-oneshot/compliance/compliance.md` — cross-tool compliance + builder rewards
 
 ## Scope
 
