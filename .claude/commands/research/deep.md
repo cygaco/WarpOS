@@ -63,7 +63,15 @@ Log which engines are available. If all auth methods fail for an engine, skip it
 
 Generate `topic-slug` from the user's input (lowercase, hyphenated, max 40 chars).
 
-Create output directory: `docs/99-resources/research/{topic-slug}/` and `docs/99-resources/research/{topic-slug}/.tmp/`
+**Resolve the output base from `paths.research`** (never hardcode — read from `.claude/paths.json`):
+
+```bash
+RESEARCH_BASE=$(node -e "console.log(JSON.parse(require('fs').readFileSync('.claude/paths.json','utf8')).research)")
+OUTDIR="$RESEARCH_BASE/{topic-slug}"
+mkdir -p "$OUTDIR/.tmp"
+```
+
+All subsequent bash blocks reference `$OUTDIR` (resolved above). Per CLAUDE.md: paths must go through `paths.X`, not literals. If `paths.research` changes in `paths.json`, this skill follows automatically.
 
 **Write the prompt to a temp file** (never inline complex prompts in bash):
 
@@ -139,7 +147,7 @@ cat "$OUTDIR/.tmp/research-brief-prompt.txt" | gemini -m gemini-3.1-pro-preview 
 
 If both Gemini models fail (output file empty or 0 bytes), write the brief yourself as a fallback.
 
-Parse the JSON output. Save to `docs/99-resources/research/{topic-slug}/BRIEF.md`:
+Parse the JSON output. Save to `$OUTDIR/BRIEF.md`:
 
 ```markdown
 # Research Brief: {Topic}
@@ -151,7 +159,7 @@ Parse the JSON output. Save to `docs/99-resources/research/{topic-slug}/BRIEF.md
 {formatted brief content — render the JSON fields as readable markdown sections}
 ```
 
-Also save the raw JSON to `docs/99-resources/research/{topic-slug}/brief.json` for machine parsing.
+Also save the raw JSON to `$OUTDIR/brief.json` for machine parsing.
 
 Read the saved brief back — this is what goes to all three engines (with per-engine instructions).
 
@@ -173,7 +181,7 @@ export $(grep -E "^(OPENAI_API_KEY|GEMINI_API_KEY|GOOGLE_API_KEY)=" .env.local 2
 
 **Before launching**: Create a session file for crash recovery:
 ```bash
-echo '{}' > "docs/99-resources/research/{topic-slug}/.session.json"
+echo '{}' > "$OUTDIR/.session.json"
 ```
 
 ---
@@ -190,7 +198,7 @@ The API accepts requests but fails asynchronously if unverified — detect on fi
 
 ```bash
 export $(grep -E "^(OPENAI_API_KEY|GEMINI_API_KEY|GOOGLE_API_KEY)=" .env.local 2>/dev/null | xargs)
-OUTDIR="docs/99-resources/research/{topic-slug}"
+OUTDIR="$OUTDIR"
 mkdir -p "$OUTDIR/.tmp"
 
 # Helper: build input for a single phase (0-indexed) — writes to $OUTDIR/.tmp/phase-input.txt
@@ -384,7 +392,7 @@ fi
 
 ```bash
 export $(grep -E "^(OPENAI_API_KEY|GEMINI_API_KEY|GOOGLE_API_KEY)=" .env.local 2>/dev/null | xargs)
-OUTDIR="docs/99-resources/research/{topic-slug}"
+OUTDIR="$OUTDIR"
 mkdir -p "$OUTDIR/.tmp"
 
 # Build payload via temp file
@@ -492,7 +500,7 @@ You are conducting deep research across 4 phases. Be exhaustive — this is the 
 RESEARCH BRIEF:
 {full brief from Phase 1, including claude_instructions and all 4 phases}
 
-OUTPUT FILE: docs/99-resources/research/{topic-slug}/claude-report.md
+OUTPUT FILE: $OUTDIR/claude-report.md
 
 PROCESS — follow these 4 phases mapped to 3 search rounds:
 
@@ -554,7 +562,7 @@ After all three complete:
 1. Check which reports were created:
 ```bash
 for f in openai-report.md gemini-report.md claude-report.md; do
-  path="docs/99-resources/research/{topic-slug}/$f"
+  path="$OUTDIR/$f"
   if [ -f "$path" ]; then
     lines=$(wc -l < "$path")
     echo "$f: $lines lines"
@@ -573,7 +581,7 @@ From across all reports, pick the 5 most important cited URLs. Use WebFetch to v
 
 ## Phase 4: Deep Synthesis
 
-Read all available reports and verification results. Create `docs/99-resources/research/{topic-slug}/SYNTHESIS.md`:
+Read all available reports and verification results. Create `$OUTDIR/SYNTHESIS.md`:
 
 ```markdown
 # {Topic} — Deep Research Synthesis
@@ -677,7 +685,7 @@ After everything is done (synthesis written, learnings saved), print a boxed ter
   Query:    {original user query}
   Engines:  {which succeeded} / {which failed or skipped}
   Duration: {total wall-clock time}
-  Reports:  docs/99-resources/research/{topic-slug}/
+  Reports:  $OUTDIR/
 
   TOP 3 FINDINGS:
   1. {highest-confidence actionable finding}
@@ -689,7 +697,7 @@ After everything is done (synthesis written, learnings saved), print a boxed ter
   CONTRARIAN: {one-line summary of the strongest counter-argument}
 
   LEARNINGS SAVED: {N} to .claude/project/memory/learnings.jsonl
-  FULL SYNTHESIS:  docs/99-resources/research/{topic-slug}/SYNTHESIS.md
+  FULL SYNTHESIS:  $OUTDIR/SYNTHESIS.md
 ═══════════════════════════════════════════════════
 ```
 

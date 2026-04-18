@@ -1,7 +1,7 @@
 {
   "$schema": "warpos/framework-manifest/v1",
   "version": "0.1.0",
-  "generated_at": "2026-04-18T21:10:42.941Z",
+  "generated_at": "2026-04-18T21:24:57.432Z",
   "generated_by": "scripts/generate-framework-manifest.js",
   "counts": {
     "agent": 37,

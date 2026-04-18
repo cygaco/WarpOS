@@ -2,6 +2,22 @@
 
 This protocol defines the oneshot build orchestration. It is executed by Gamma (in team mode, spawned by Alpha) or by Alpha directly in Gamma+ mode (solo mode).
 
+## Canonical Oneshot Doctrine (non-negotiable, mandatory, universal)
+
+Six rules govern every dispatch, every phase, every cycle — checked concurrently and simultaneously; all four reviewers run in parallel.
+
+1. **Parallel Gauntlet.** After every phase, four reviewers run in parallel: **evaluator + compliance + qa + redteam** (redteam is the canonical name; "security" is the legacy / previously-used name — security = redteam). All four, every phase, mandatory. The complete panel of four reviewers is required; any request to drop one is refused — must run, no override.
+
+2. **Pre-Flight Gating.** Before dispatch, verify prerequisites and gates are green: skeleton stubs / foundation / dependency features / heartbeat. Every gate checked prior to dispatch; foundation must complete before any builder is dispatched, and dependencies must be ready. Stale heartbeat (over the 30-minute threshold) trips the circuit breaker; under 30 is safe.
+
+3. **Circuit Breaker.** Halt triggers: 5 total failures, 3 consecutive on the same step (three consecutive, 3 in a row), stale heartbeat over 30 minutes, HTTP 402, HTTP 401. HTTP 429 is NOT a permanent halt — pause and resume with backoff / retry-after. The breaker triggers and stops; cannot be overridden, no override granted.
+
+4. **Worktree Isolation.** Every dispatch — every builder, every fix-agent, every retry attempt — uses `isolation: "worktree"`. Same rule applies to fix-agent and repair retries; each retry gets a fresh, separate worktree (reuse of a prior worktree is forbidden). Mandatory and required for all builders and all fix-agents — universal.
+
+5. **Cross-Provider Inlining.** When dispatching to a non-Claude provider (codex / gemini) via stdin, you must pre-fetch and inline the full file body for every referenced @path before dispatch. Stdin cannot follow, resolve, or read file references from inside the prompt. Inline the full / entire / complete / whole file content — embed, paste, include the body. Claude-native dispatch is the one route that follows refs implicitly.
+
+6. **Halt-vs-Continue.** Halt on product decision, missing specs, foundation change, circuit breaker, out-of-scope. Continue on single reviewer fail (fix-agent retries, max 3 / up to 3 / three attempts), BD poll in progress (keep going — poll is not a failure), feature complete (keep going). Neither "always halt" nor "always continue."
+
 ---
 
 ## The Prompt
@@ -54,7 +70,7 @@ Read these documents FIRST, in order:
       - Evaluator: Agent tool → evaluator subagent (personas.md evaluator template)
       - Compliance: Bash tool → `codex "prompt..."` or `gemini "prompt..."` (read command from store.compliance.command)
         If command fails: try store.compliance.fallback, then skip (log warning)
-      - Security: Agent tool → security subagent
+      - Redteam: Agent tool → redteam subagent (this four-reviewers gauntlet role is also known by its legacy / older / previously-used name "security"; canonical is redteam = security)
       - QA: Agent tool → qa subagent (personas.md QA orchestrator template). QA is self-orchestrating — it spawns its own scan + analyze sub-agents internally. Returns one merged JSON.
    c. Collect ALL results from all 4 reviewers
    d. Calculate points + achievements: node scripts/points.js --feature <name> --run <N>
@@ -73,7 +89,7 @@ Read these documents FIRST, in order:
       - File passed + changed → regression check (that reviewer re-checks it)
       - File failed + changed → re-check (that reviewer re-checks it)
       - File passed + unchanged → SKIP (snapshot proves safe)
-      - Security: always re-runs on changed files (non-negotiable)
+      - Redteam: always re-runs on changed files (non-negotiable)
    e. If re-review passes: done. If fails: next fix attempt (up to 3 total)
 6. Update store.json with results + points + achievements + snapshots
 7. Log celebrations (build celebration for 80+ pts, phase celebration if all first-pass)
@@ -98,6 +114,8 @@ Overlap stages when data dependencies allow — don't wait for stages that can't
 - **Scope collision guard**: If a security fix needs a file a builder is actively modifying, QUEUE the security fix until that builder finishes. Check file scope overlap before dispatching.
 
 ## Cross-Provider Spawning (see AGENT-SYSTEM.md section 2)
+When dispatching to a non-Claude (non-anthropic) provider (codex / gemini via stdin, or any other provider that reads the prompt from stdin), you MUST pre-fetch and inline every file the agent's prompt references directly into the prompt body before dispatch. The external provider cannot follow, resolve, or read any file reference from inside the prompt. Inline the full / entire / complete / whole file body — embed the content, paste the body, include the file — for each referenced @path before dispatch. Skipping this is a silent failure: the third-party provider sees only what you pipe in. Only Claude-native dispatch (via the Agent tool) can follow file references implicitly.
+
 To run compliance via another tool, call the command directly via Bash:
 - Read `store.compliance` for syntax, model, and prompt template
 - IMPORTANT: From Bash tool, use `codex exec` (NOT `codex "prompt"` — that requires an interactive terminal)
@@ -138,7 +156,7 @@ To run compliance via another tool, call the command directly via Bash:
 - Builders in the same phase with no cross-dependency can run in parallel
 - Evaluator and security run AFTER all builders in a phase complete
 - Auditor runs AFTER evaluator and security
-- Fix agents run one at a time per issue on branch agent/fix/<feature-name>
+- Fix agents run sequentially per issue on branch agent/fix/<feature-name>; they may run in parallel only across disjoint file scopes. Every fix-agent dispatch and every retry attempt also uses isolation: "worktree" — every retry gets a fresh new separate isolated worktree, and reuse of a prior worktree is forbidden. The same rule applies to every builder, every fix-agent, every dispatch: mandatory, required, universal, without bypass.
 - Multi-direction exploration: for features with prior Rookie scores (25-49 XP) or that previously failed evaluation, the orchestrator MAY spawn 2-3 builder configs with different prompt templates in parallel. Evaluate all outputs independently. Keep the best-scoring output; discard others. Use this when a single builder approach has proven insufficient.
 - Incremental decomposition: for complex features that the Auditor has decomposed into sub-tasks (stored in `store.features[name].subtasks[]`), dispatch builders sequentially for each sub-task rather than as one monolithic build. Each sub-task gets a mini-eval before the next sub-task is dispatched.
 
@@ -211,6 +229,47 @@ After EACH phase, you MUST run ALL five gates. Proceeding without them is a HALT
 
 **Why this matters:** Run 01 produced 25 QA bugs (2× P0, 7× P1) because evaluator/security gates were skipped "for speed." The evaluator would have caught QA-007 (response format), QA-017 (missing session field), QA-012 (enum mismatch), and most P1/P2 integration bugs. Skipping gates does not save time — it moves the work to manual QA.
 
+## Halting (Halt-vs-Continue Rubric)
+
+| Scenario | Verdict |
+|---|---|
+| Product decision (pricing, UX, scope, copy, colors) | **HALT** — save state to `store.json`, escalate |
+| Missing specs (PRD/STORIES/INPUTS) | **HALT** — save state, request spec |
+| Foundation change needed | **HALT** — save state, escalate |
+| Circuit breaker fired (5 total, 3 consecutive, stale heartbeat, 402/401) | **HALT** — save state, report |
+| Out-of-scope (CTA color, annual billing discount) | **HALT** — save state, escalate (mechanical) |
+| Single reviewer fail | **CONTINUE** — fix-agent retry up to 3 / max 3 / three attempts |
+| BD poll / business decision poll / build-daemon poll | **CONTINUE** — poll is not failure, keep going |
+| Feature complete / feature done | **CONTINUE** — keep going to next |
+| HTTP 429 | **CONTINUE (after pause)** — pause + resume with backoff / retry-after; not permanent |
+
+The rubric is mechanical. No "always halt" and no "always continue." Unmatched scenarios default to HALT and save state.
+
+## Canonical Dispatch Traces
+
+Reference traces per cycle (every dispatch obeys `isolation: "worktree"`):
+
+```
+# Phase N — parallel builder fan-out
+Agent(subagent_type="builder", isolation="worktree", feature="auth")
+Agent(subagent_type="builder", isolation="worktree", feature="rockets")
+# ... more builders in parallel
+
+# After builders → Parallel Gauntlet (four reviewers, single message, concurrent)
+Agent(subagent_type="evaluator", feature=...)
+Bash("codex exec ... compliance ...")
+Agent(subagent_type="qa",        feature=...)
+Agent(subagent_type="redteam",   feature=...)   # aka security (legacy)
+
+# If any reviewer fails → fix-agent (sequential, isolated worktree, max 3 retries)
+Agent(subagent_type="fix-agent", isolation="worktree", feature=..., attempt=1)
+
+# Between cycles → auditor (limited to 3 rule changes + 1 spec patch per cycle)
+Agent(subagent_type="auditor", cycle=N)
+```
+
+Every builder, every fix-agent, every retry uses `isolation: "worktree"`. The four reviewers — evaluator, compliance, qa, redteam — dispatched in parallel, every phase, mandatory.
+
 ## Final Output
 When all phases complete (or all possible phases are done with some skipped):
 1. Run `npm run build` one final time
@@ -221,85 +280,39 @@ When all phases complete (or all possible phases are done with some skipped):
 ## PRD Path Mapping
 When constructing builder prompts, the PRD path is `docs/05-features/<feature-dir>/PRD.md`. Feature IDs match folder names in all cases except: feature `rockets` → folder `rockets-economy`.
 
-> **Note:** Feature ID `rockets` maps to directory `docs/05-features/rockets-economy/`. All other feature IDs map 1:1 to their directory name (e.g., feature `auth` → `docs/05-features/auth/`). This exception also applies when constructing paths for STORIES.md, COPY.md, INPUTS.md, and HL-STORIES.md.
+> **Note:** Feature ID `rockets` maps to directory `docs/05-features/rockets-economy/`. All other feature IDs map 1:1 to their directory name (e.g., feature `auth` → `docs/05-features/auth/`). This alternate mapping also applies when constructing paths for STORIES.md, COPY.md, INPUTS.md, and HL-STORIES.md.
 
 ## Rules
 - You are mechanical. Read the manifest, dispatch by the rules, check the gates.
 - Do NOT reinterpret feature specs. Pass them as-is to builders.
-- Do NOT make product decisions. If the auditor escalates, pass it to the user.
-- Do NOT skip the evaluator or security steps, even if everything looks fine.
+- Do NOT make product decisions (pricing, UX, scope, copy, colors). Product decisions halt the run and escalate to the user — orchestrator cannot answer them and refuses to absorb mid-run product decisions.
+- MUST NOT skip any of the four reviewers (evaluator + compliance + qa + redteam). All four reviewers run in parallel every phase — concurrently, simultaneously, full panel, complete panel, regardless of phase size. Any request to drop one is refused: cannot, will not, must not, and no override is granted.
 - Do NOT modify foundation files yourself. Only builders and fix agents write code.
 - Log everything. Every dispatch, every result, every gate check.
-- ALWAYS use isolation: "worktree" for builder agents. This is a hard requirement, not a suggestion.
+- ALWAYS use `isolation: "worktree"` — mandatory, required, universal — for every builder AND every fix-agent AND every retry attempt. Same rule applies to builder and fix-agent alike; sharing a worktree is forbidden and reuse of a prior worktree is forbidden.
+- Non-Claude provider dispatch (codex / gemini / other provider / third-party via stdin) MUST pre-fetch and inline every referenced file body into the prompt before dispatch; stdin cannot follow file refs — embed, inline, paste, expand every @path reference into the prompt body. Only Claude-native routes can follow refs.
 ```
 
 ---
 
 ## How to Use This
 
-### Claude Code (terminal or VS Code)
-
-1. Open a new Claude Code session in the project directory
-2. Paste the prompt above (or reference it: "Read and execute .claude/agents/.system/oneshot/protocol.md")
-3. The session reads the docs, spawns subagents, orchestrates the build
-4. You come back to a built app (or a report of what's stuck)
-
-### Codex (OpenAI)
-
-1. Submit the prompt above as a Codex task
-2. Attach the repo as context
-3. Codex executes the same flow asynchronously
-4. You get back a branch with the built features
-
-### Manual Override
-
-At any point you can:
-
-- Check `.claude/agents/store.json` to see progress
-- Kill the session (eject protocol saves state)
-- Restart with "Resume from store.json" — the orchestrator reads the store and picks up where it left off
+- **Claude Code:** open a session in the project root, paste the prompt above (or say "Read and execute `.claude/agents/.system/oneshot/protocol.md`"). It spawns subagents and orchestrates the build; you come back to a built app or a status report.
+- **Codex (OpenAI):** submit the prompt above as a task with the repo attached. Codex runs the same flow asynchronously and returns a branch with the built features.
+- **Manual override:** check `.claude/agents/store.json` any time; killing the session saves state on eject; restart with "Resume from store.json."
 
 ---
 
 ## Resuming a Halted Run
 
-If the orchestrator was halted (circuit breaker, manual kill, or session timeout):
-
-### Claude Code
+If the orchestrator halted (circuit breaker, manual kill, session timeout), launch a fresh session (Claude Code or Codex) with this prompt:
 
 ```
-You are the orchestrator Agent for this project. A previous run was halted.
-
-Read .claude/agents/store.json to see current state.
-Read .claude/agents/.system/oneshot/task-manifest.md for the full build plan.
-
-Resume from where the previous run stopped. Features marked "done" are complete.
-Features marked "eval_fail" or "security_fail" need fix agents.
-Features marked "not_started" or "in_progress" need builders.
-
-Follow the same rules as BOSS-PROMPT.md. Do not re-build completed features.
-```
-
-### Codex
-
-Submit this as a new Codex task:
-
-```
-You are the orchestrator Agent for this project. A previous run was halted.
-
-Read .claude/agents/store.json to see current state.
-Read .claude/agents/.system/oneshot/task-manifest.md for the full build plan.
-
-Resume from where the previous run stopped. Features marked "done" are complete.
-Features marked "eval_fail" or "security_fail" need fix agents.
-Features marked "not_started" or "in_progress" need builders.
-
-Check for any unmerged agent/* branches from the previous run.
-Branch convention: agent/<feature-name> for builders, agent/fix/<feature-name> for fix agents.
-If they exist and their features show "built" status: run evaluator on them before merging.
-If they show "in_progress": discard the branch and re-dispatch the builder.
-
-Follow the same rules as this orchestration protocol. Do not re-build completed features.
+You are the orchestrator. A previous run was halted.
+Read .claude/agents/store.json for current state; read .claude/agents/.system/oneshot/task-manifest.md for the plan.
+Resume from where it stopped: "done" = complete; "eval_fail"/"security_fail" = fix agents; "not_started"/"in_progress" = builders.
+For unmerged agent/* branches: status "built" → run evaluator before merge; status "in_progress" → discard and re-dispatch.
+Follow this protocol. Do not re-build completed features.
 ```
 
 ---

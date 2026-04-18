@@ -23,9 +23,15 @@ Take the user's input and expand it into a structured research prompt. The promp
 
 Generate a `topic-slug` from the input (lowercase, hyphenated, max 40 chars). Example: "self-improving AI agents" → `self-improving-ai-agents`.
 
-Create the output directory: `docs/99-resources/research/{topic-slug}/`
+**Resolve the output base from `paths.research`** (never hardcode):
 
-Save the brief to `docs/99-resources/research/{topic-slug}/BRIEF.md`.
+```bash
+RESEARCH_BASE=$(node -e "console.log(JSON.parse(require('fs').readFileSync('.claude/paths.json','utf8')).research)")
+OUTDIR="$RESEARCH_BASE/{topic-slug}"
+mkdir -p "$OUTDIR"
+```
+
+Save the brief to `$OUTDIR/BRIEF.md`.
 
 ## Phase 2: Parallel Research (3 agents)
 
@@ -37,7 +43,7 @@ Use the Agent tool with a general-purpose agent. The agent should:
 - Use WebSearch to find 5-10 relevant sources
 - Use WebFetch to read the most promising 3-5 sources
 - Synthesize findings into a structured report
-- Save to `docs/99-resources/research/{topic-slug}/claude-report.md`
+- Save to `$OUTDIR/claude-report.md`
 
 The agent prompt should include the full research brief and instruct it to write the report file directly.
 
@@ -46,7 +52,7 @@ The agent prompt should include the full research brief and instruct it to write
 Use Bash to run:
 ```bash
 timeout 300 codex exec --full-auto -m o3 -C "$CLAUDE_PROJECT_DIR" \
-  "Research the following topic thoroughly and write your findings to docs/99-resources/research/{topic-slug}/chatgpt-report.md. Include sections: Overview, Key Approaches, Trade-offs, Implementation Advice, Pitfalls, Examples, Sources. Topic: {research prompt}"
+  "Research the following topic thoroughly and write your findings to $OUTDIR/chatgpt-report.md. Include sections: Overview, Key Approaches, Trade-offs, Implementation Advice, Pitfalls, Examples, Sources. Topic: {research prompt}"
 ```
 
 Notes:
@@ -61,7 +67,7 @@ Notes:
 
 Use Bash to run:
 ```bash
-timeout 300 gemini -p "Research the following topic thoroughly. Write your complete findings in markdown format with these sections: Overview, Key Approaches, Trade-offs, Implementation Advice, Pitfalls, Examples, Sources. Be thorough and cite real sources. Topic: {research prompt}" -o text 2>/dev/null > docs/99-resources/research/{topic-slug}/gemini-report.md
+timeout 300 gemini -p "Research the following topic thoroughly. Write your complete findings in markdown format with these sections: Overview, Key Approaches, Trade-offs, Implementation Advice, Pitfalls, Examples, Sources. Be thorough and cite real sources. Topic: {research prompt}" -o text 2>/dev/null > $OUTDIR/gemini-report.md
 ```
 
 Notes:
@@ -87,7 +93,7 @@ If fewer than 2 reports exist, warn the user but continue with what's available.
 
 ## Phase 4: Synthesize
 
-Read all available reports and create `docs/99-resources/research/{topic-slug}/SYNTHESIS.md` with:
+Read all available reports and create `$OUTDIR/SYNTHESIS.md` with:
 
 ```markdown
 # {Topic} — Research Synthesis

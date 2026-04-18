@@ -4,7 +4,7 @@ description: Post a message to the cross-session inbox so other Alex sessions ca
 
 # /session:write — Cross-Session Message
 
-Posts an inbox event to `.claude/project/events/events.jsonl` (cat=inbox) that all other Alex sessions will see on their next prompt (via smart-context).
+Posts an inbox event to `.claude/project/events/events.jsonl` (cat=inbox) that all other Alex sessions will see on their next prompt (via context-enhancer).
 
 ## Input
 
@@ -36,7 +36,7 @@ If no uncommitted changes, check `git log --since="2 hours ago" --name-only --fo
 
 **e) Systems changed:** Check if any of these were modified: `CLAUDE.md`, `.claude/commands/**`, `scripts/hooks/**`, `.claude/reference/**`, `.claude/project/memory/systems.jsonl`. List which ones.
 
-**f) Research outputs:** Check if any new files exist in `docs/99-resources/research/` that weren't there before.
+**f) Research outputs:** Check if any new files exist under `paths.research` (`docs/99-resources/01-research/`) that weren't there before.
 
 **g) Spec changes:** Check for modified files in `docs/05-features/` or `docs/04-architecture/`.
 
@@ -50,7 +50,7 @@ Session ended. Last task: {user's last major request}
 {Key files: list of important changed files, max 10}
 {If learnings added: "+N learnings"}
 {If systems changed: "Systems modified: CLAUDE.md, hooks/foo.js, ..."}
-{If research: "Research: docs/99-resources/research/{slug}/"}
+{If research: "Research: {paths.research}/{slug}/"}
 {If $ARGUMENTS provided: "Note: {user's message}"}
 ```
 
@@ -59,7 +59,7 @@ Session ended. Last task: {user's last major request}
 ```json
 {
   "ts": "ISO-8601 timestamp",
-  "session_id": "read from .claude/.session-id",
+  "session_id": "read from .claude/runtime/.session-id",
   "from": "{branch} / {one-line task descriptor}",
   "message": "{auto-composed message above}",
   "files_changed": ["auto-gathered list"]
@@ -73,7 +73,7 @@ Use the centralized logger to write the inbox event:
 node -e "const {log}=require('./scripts/hooks/lib/logger'); log('inbox', {from:'...', message:'...', files_changed:[...]}, {session:'...'}); console.log('OK')"
 ```
 
-No cleanup needed — events.jsonl is append-only, smart-context already filters by 24h TTL.
+No cleanup needed — events.jsonl is append-only, context-enhancer already filters by 24h TTL.
 
 ### 4. Confirm
 

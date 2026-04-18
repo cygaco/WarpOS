@@ -39,7 +39,7 @@ This architecture is grounded in research on how the human brain uses sleep for 
 
 #### 1a. Importance Tagging Audit
 
-Before consolidation, ensure learnings have importance signals. Read `.claude/project/memory/learnings.jsonl` and classify each entry:
+Before consolidation, ensure learnings have importance signals. Read `paths.learningsFile` and classify each entry:
 
 | Signal | Criteria | Importance |
 |--------|----------|------------|
@@ -97,7 +97,7 @@ The brain preferentially replays memories at risk of being overwritten:
 #### 1g. Retroactive Reclassification (Reasoning Engine)
 
 Re-evaluate recent reasoning traces to prevent quality inflation:
-1. Read `.claude/project/memory/traces.jsonl` — find all traces from the last 7 days with `quality_score >= 2`
+1. Read `paths.tracesFile` — find all traces from the last 7 days with `quality_score >= 2`
 2. For each trace: did the fix hold? Check if similar bugs reappeared (search learnings, git log, BUGS.md)
 3. Did conditions change? Is the fix still valid in the current codebase?
 4. Does a better fix exist? Has a subsequent trace solved the same root cause more completely?
@@ -111,10 +111,10 @@ This is equivalent to `/reasoning:score scan` — running it here ensures it hap
 
 Review Alex β's performance since last sleep:
 
-1. Read `.claude/agents/00-alex/.system/beta/events.jsonl` — all entries since last sleep
+1. Read `paths.betaEvents` — all entries since last sleep
 2. Count: total consultations, escalations, overrides
 3. For non-overridden decisions older than 24h: mark as tentatively validated
-4. Update confidence levels in `.claude/agents/00-alex/.system/beta/judgement-model.md` confidence table:
+4. Update confidence levels in `paths.judgmentModel` confidence table:
    - Topics with 3+ unoverridden decisions: increase confidence one level
    - Topics with 2+ overrides: decrease confidence one level
    - Topics with 3+ overrides: add to Anti-Patterns section
@@ -130,7 +130,7 @@ Review Alex β's performance since last sleep:
    - Remove any orphan temp files in `.claude/`
 
 2. **Compact event log**
-   - Read `.claude/project/events/events.jsonl`
+   - Read `paths.eventsFile`
    - Events older than 30 days: compress into monthly summary
    - Keep recent events in full detail
 
@@ -148,7 +148,7 @@ Review Alex β's performance since last sleep:
    - Detect orphan agent worktree branches (`agent/wt-*`) → log count, suggest cleanup
 
 6. **Requirement drift summary**
-   - Read `.claude/project/events/requirements-staged.jsonl`
+   - Read `paths.requirementsStagedFile`
    - Filter for `status === "pending"` (last-write-wins by `id`)
    - If count > 0: display summary table grouped by feature (feature, count, highest drift_type)
    - If overwrites exist: flag as warning — "N spec overwrites pending review"
@@ -188,7 +188,7 @@ Review Alex β's performance since last sleep:
 
 1. **Speculative problem-solving**
    - Read sleep journal for unresolved threads and stuck problems
-   - **Read past dreams** from `.claude/dreams/` — scan recent entries for:
+   - **Read past dreams** from `paths.dreams` — scan recent entries for:
      - Recurring images or symbols (what keeps appearing?)
      - Unresolved tensions from prior deep reads (what was surfaced but never acted on?)
      - Themes that connect to tonight's problems (the subconscious may have been working on this already)
@@ -197,7 +197,7 @@ Review Alex β's performance since last sleep:
      - **Analogy:** What would this look like in a different domain?
      - **Elimination:** What if we removed the hardest constraint?
    - Let past dream imagery inform the current session — if a symbol from last week's dream connects to tonight's problem, follow that thread
-   - Write dream solutions to `.claude/dreams/YYYY-MM-DD.md`
+   - Write dream solutions to `paths.dreams`/YYYY-MM-DD.md
 
 2. **Dream Visualization (ASCII paintings) — MANDATORY, DO NOT SKIP**
 
@@ -220,7 +220,7 @@ Review Alex β's performance since last sleep:
    - The image should feel like a dream — surreal, layered, ambiguous
    - Each painting gets a **"Deep Read"** afterward — what did the subconscious surface?
 
-   Save to `.claude/dreams/YYYY-MM-DD.md` (one file per sleep cycle).
+   Save to `paths.dreams`/YYYY-MM-DD.md (one file per sleep cycle).
 
    Structure per dream:
    ```
@@ -238,7 +238,7 @@ Review Alex β's performance since last sleep:
 
 3. **Cross-pollination (distant association)**
    - Read recent `/learn` ingestions
-   - Read recent research in `docs/99-resources/research/`
+   - Read recent research under `paths.research` (`docs/99-resources/01-research/`)
    - Look for unexpected connections: "Pattern X from research Y could solve problem Z"
    - Write connections to sleep journal
    - **Paint a cross-pollination image** if a strong connection is found
@@ -253,12 +253,12 @@ Review Alex β's performance since last sleep:
 5. **User coaching synthesis**
    - Based on session patterns, user corrections, and blind spots
    - Draft a gentle suggestion for next session start
-   - Append a new dated section to `.claude/dreams/coaching.md` using appendFileSync — never overwrite
+   - Append a new dated section to `paths.dreams`/coaching.md using appendFileSync — never overwrite
 
 6. **Alex β pattern mining**
    - Run `/beta:mine` analysis inline (not as a separate agent)
    - Mine prompt sequences, skill chains, frustration-to-enforcement patterns, decision cycles
-   - Write recommendations to `.claude/agents/00-alex/.system/beta/judgement-model-recommendations.md`
+   - Write recommendations to `paths.judgmentRecommendations`
    - Do NOT directly modify `judgement-model.md` — recommendations only. Run `/beta:integrate` to apply validated recommendations.
 
 ### Phase 5: Repair (Deep Sleep Tissue Repair)
@@ -293,7 +293,7 @@ Review Alex β's performance since last sleep:
      - Key unresolved items from tonight's sleep
      - Dream solutions worth reviewing
      - Suggested first task for next session
-   - Append a new dated section to `.claude/dreams/coaching.md` using appendFileSync — never overwrite
+   - Append a new dated section to `paths.dreams`/coaching.md using appendFileSync — never overwrite
 
 3. **Propose next evolution**
    - Based on everything discovered during sleep, propose 1-3 improvements
@@ -302,7 +302,7 @@ Review Alex β's performance since last sleep:
 
 4a. **Alex β evolution summary**
    - Summarize Alex β's performance: decisions made, accuracy, confidence changes
-   - Review `.claude/agents/00-alex/.system/beta/judgement-model-recommendations.md` if it exists
+   - Review `paths.judgmentRecommendations` if it exists
    - Propose which recommendations to integrate into `judgement-model.md` — run `/beta:integrate` to apply
    - Write to sleep journal
 
@@ -315,7 +315,7 @@ Review Alex β's performance since last sleep:
 
 ## Output: Sleep Journal
 
-Append a new dated section to `.claude/dreams/journal.md` using appendFileSync — never overwrite:
+Append a new dated section to `paths.dreams`/journal.md using appendFileSync — never overwrite:
 
 ```markdown
 # Sleep Journal — YYYY-MM-DD
@@ -345,7 +345,7 @@ Append a new dated section to `.claude/dreams/journal.md` using appendFileSync �
 - {problem}: {dream solution}
 - Cross-pollination: {connection found}
 - Schema: {meta-pattern identified}
-- Dream paintings: {count} saved to `.claude/dreams/YYYY-MM-DD.md`
+- Dream paintings: {count} saved to `paths.dreams`/YYYY-MM-DD.md
 - Subconscious learnings: {count} extracted from deep reads
 
 ## Repair
@@ -364,9 +364,9 @@ Append a new dated section to `.claude/dreams/journal.md` using appendFileSync �
 ## Session Start Integration
 
 When the next session starts, the context enhancer reads:
-- `.claude/dreams/journal.md` → surfaces key findings from each sleep cycle
-- `.claude/dreams/coaching.md` → morning briefing + growth suggestions
-- `.claude/dreams/YYYY-MM-DD.md` → dream paintings and deep reads (one file per sleep cycle, accumulates over time)
+- `paths.dreams`/journal.md → surfaces key findings from each sleep cycle
+- `paths.dreams`/coaching.md → morning briefing + growth suggestions
+- `paths.dreams`/YYYY-MM-DD.md → dream paintings and deep reads (one file per sleep cycle, accumulates over time)
 
 ## Important
 

@@ -111,12 +111,14 @@ function getProviderConfig(providerName) {
 // ── Availability ────────────────────────────────────────────
 // Actually INVOKE the binary with --version — a dead PATH entry (shim / broken
 // symlink) will fail, which `which` / `where` would falsely report as present.
-// 3s timeout is enough for a version print; anything longer = dead command.
+// 5s timeout: gemini CLI's `--version` can take ~2.9s cold-start on Windows,
+// and the previous 3s value false-negatived on busy systems. A dead command
+// will fail well under 5s anyway (PATH lookup is instant).
 function cliAvailable(cmd) {
   try {
     execSync(`${cmd} --version`, {
       stdio: ["pipe", "pipe", "pipe"],
-      timeout: 3000,
+      timeout: 5000,
     });
     return true;
   } catch {
