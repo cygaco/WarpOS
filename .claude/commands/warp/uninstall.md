@@ -41,7 +41,9 @@ Check for `.claude/manifest.json` with `warpos.installed: true`.
 
 If not found: "No WarpOS install detected here. Nothing to uninstall." Stop.
 
-If found but no backup in `.warpos-backup/`: warn the user — "No pre-install backup found. Uninstall will still work but won't restore your original CLAUDE.md. Proceed anyway? (y/n)"
+**Also read `.claude/framework-installed.json`** if present — this is the authoritative list of every asset the installer placed. If present, uninstall walks THIS list (exhaustive); if absent, falls back to recursive directory deletion (older installs predating the manifest).
+
+If no backup in `.warpos-backup/`: warn the user — "No pre-install backup found. Uninstall will still work but won't restore your original CLAUDE.md. Proceed anyway? (y/n)"
 
 ### Step 2 — Announce what will happen
 
@@ -101,10 +103,13 @@ In this exact order (least-destructive first):
 
 1. Restore `CLAUDE.md` from backup (overwrite the current one)
 2. Restore `.gitignore` from backup (or strip managed block if no backup)
-3. Delete `.claude/` directory recursively
-4. Delete `scripts/hooks/` if WarpOS created it (check backup — if a pre-install `scripts/hooks/` was backed up, restore it; otherwise delete)
-5. Delete WarpOS-owned top-level scripts: `dispatch-agent.js`, `warp-setup.js`, `path-lint.js`, `tools/`
-6. Delete `AGENTS.md` if WarpOS created it (restore from backup if user had their own)
+3. **If `.claude/framework-installed.json` exists** — walk `installed_files` and `generated_files`, delete each one. This is the exhaustive path; it removes exactly what the installer placed, no more, no less.
+4. **If no snapshot exists** (older install) — fall back to the pre-snapshot procedure:
+   - Delete `.claude/` directory recursively
+   - Delete `scripts/hooks/` (restore from backup if a pre-install version existed)
+   - Delete WarpOS-owned top-level scripts: `dispatch-agent.js`, `warp-setup.js`, `path-lint.js`, `generate-maps.js`, `generate-framework-manifest.js`, `tools/`
+   - Delete `AGENTS.md` (restore from backup if user had their own)
+5. After file deletion, clean up empty parent dirs left behind (e.g. if `.claude/project/` only contained WarpOS assets, `rmdir` it).
 
 ### Step 5 — Strip settings.json
 

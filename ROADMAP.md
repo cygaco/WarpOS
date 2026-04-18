@@ -4,6 +4,49 @@ Post-MVP work. Items grouped by phase.
 
 ---
 
+## ✅ Shipped in v0.1.1 (2026-04-18)
+
+The install-hardening batch. Every item below was a ROADMAP entry from 2026-04-17 or 04-18 that now ships in production.
+
+### Installer foundation
+- [x] **Ship-manifest system** — `.claude/framework-manifest.json` declares every shippable asset; installer iterates the manifest instead of hand-coded `copyDir` calls. Generator: `scripts/generate-framework-manifest.js`. (205 assets + 9 generated.)
+- [x] **Framework-installed snapshot** — target projects get `.claude/framework-installed.json` at install; uninstall walks it exhaustively; re-install diffs old vs new for ghost-file detection.
+- [x] **Ghost-file cleanup on re-install** — installer detects files declared by prior install but removed/renamed upstream; `--clean-ghosts` flag removes them.
+- [x] **`--dry-run` actually works** — flag was parsed but unused; now prints the full plan (per-kind counts, would-skip existing, would-generate, ghost count) and exits without writes.
+- [x] **Installer copy-scope gap closed** — first-install on aiweb missed 46 files (requirements + patterns + maps + top-level scripts). Manifest makes this impossible: if it's in the manifest, the installer sees it.
+- [x] **Top-level scripts ship too** — `path-lint.js`, `dispatch-agent.js`, `generate-maps.js`, `generate-framework-manifest.js`.
+
+### Installer UX
+- [x] **CLAUDE.md auto-merge** — if target has existing `CLAUDE.md`, installer appends Alex identity with `---` separator; backup kept.
+- [x] **AGENTS.md auto-merge** — same pattern; prior behavior silently kept user's AGENTS.md without Alex system, breaking γ dispatch.
+- [x] **Restart banner handles both paths** — "already have Claude Code open? close + reopen. not open yet? just open" — replaces the old "YOU MUST RESTART NOW" that confused first-time users.
+- [x] **`WARPOS_NEXT_STEPS.md` written at project root** — user references it in the fresh session.
+- [x] **`/warp:init` → `/warp:setup`** — resumable state-machine skill; 5 signals checked, only missing steps run. Safe to re-run. `/warp:uninstall` shipped.
+- [x] **Pre-install backup** — `.warpos-backup/<ts>/` captures CLAUDE.md, AGENTS.md, .gitignore, .claude/, scripts/hooks/ before any write.
+
+### Hook correctness
+- [x] **Hook schema: `type:"command"` required** — installer was writing just `{command}`; Claude Code's validator rejected at launch. Fixed via `cmd()` helper.
+- [x] **Single-event keys** — `"Stop|SessionEnd|StopFailure"` pipe-joined was "Unknown hook event"; split into three top-level keys.
+- [x] **Per-matcher hook merge** — if user has any pre-existing hook in an event, old logic skipped WarpOS's whole set. Now: append WarpOS hooks into matching matcher, dedup by command string. User's hooks preserved.
+- [x] **merge-guard catches `+refspec` force-push** — was only catching `--force` and `-f`; `git push origin +main` bypassed the guard. Fixed.
+- [x] **Framework-manifest guard** — PreToolUse Bash hook blocks commits that stage tracked assets without re-staging the manifest. Enforces "regenerate before commit." β DECIDE: block, don't mutate.
+
+### Skills + docs
+- [x] **`/discover:systems`** — 6-angle discovery (declarative/structural/behavioral/refgraph/convention/historical).
+- [x] **`/warp:uninstall`** — clean removal with restore from `.warpos-backup/`; consumes `framework-installed.json` for exhaustive file list.
+- [x] **Attestation events schema** — `cat: "attestation"` in events.jsonl tracks learning → enforcement provenance. One-shot emitters: `scripts/tools/emit-attestation-events.js`, `emit-integrate-events.js`.
+- [x] **USER_GUIDE §2 clarity** — modes are project-wide and persistent; adhoc still probes β with just α + user; oneshot is end-to-end-rebuild from requirements.
+- [x] **USER_GUIDE §5.6 preflight ELI5** — 7-pass breakdown; ONLY for oneshot.
+- [x] **`/sleep:deep` Phase 4 painting MANDATORY** — several cycles had skipped the ASCII art step; now self-check-gated.
+
+### Privacy + public release
+- [x] **Repo transitioned private → public** — `cygaco/WarpOS` now public.
+- [x] **History scrub via git-filter-repo** — 68 commits rewritten; zero references to private product/repo names in any commit.
+- [x] **Redteam audit (4 parallel scans)** — 0 credentials, 0 PII, 0 tracked-but-ignored. IP hygiene scrub landed in 20+ files.
+- [x] **smart-context Haiku timeout + payload caps** — was 8000ms on unbounded context; now 15000ms + per-source caps (60 learnings, 20 traces, 20 decisions).
+
+---
+
 ## Phase 1 — Ship-week hardening (2026-04-17 target)
 
 ### Path System (Command 1 from session 2026-04-16)

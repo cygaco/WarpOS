@@ -1,0 +1,1111 @@
+{
+  "$schema": "warpos/framework-manifest/v1",
+  "version": "0.1.0",
+  "generated_at": "2026-04-18T21:10:42.941Z",
+  "generated_by": "scripts/generate-framework-manifest.js",
+  "counts": {
+    "agent": 37,
+    "skill": 70,
+    "reference": 4,
+    "maps_baseline": 11,
+    "hook": 34,
+    "hook_lib": 6,
+    "tool": 2,
+    "requirement": 30,
+    "pattern": 5,
+    "top_script": 4,
+    "framework_doc": 2
+  },
+  "total": 205,
+  "assets": {
+    "agent": [
+      {
+        "src": ".claude/agents/.system.md",
+        "dest": ".claude/agents/.system.md",
+        "kind": "agent"
+      },
+      {
+        "src": ".claude/agents/00-alex/.system/beta/judgement-model.md",
+        "dest": ".claude/agents/00-alex/.system/beta/judgement-model.md",
+        "kind": "agent"
+      },
+      {
+        "src": ".claude/agents/00-alex/.system/lexicon.md",
+        "dest": ".claude/agents/00-alex/.system/lexicon.md",
+        "kind": "agent"
+      },
+      {
+        "src": ".claude/agents/00-alex/alpha.md",
+        "dest": ".claude/agents/00-alex/alpha.md",
+        "kind": "agent"
+      },
+      {
+        "src": ".claude/agents/00-alex/beta.md",
+        "dest": ".claude/agents/00-alex/beta.md",
+        "kind": "agent"
+      },
+      {
+        "src": ".claude/agents/00-alex/delta.md",
+        "dest": ".claude/agents/00-alex/delta.md",
+        "kind": "agent"
+      },
+      {
+        "src": ".claude/agents/00-alex/gamma.md",
+        "dest": ".claude/agents/00-alex/gamma.md",
+        "kind": "agent"
+      },
+      {
+        "src": ".claude/agents/01-adhoc/.system/personas.md",
+        "dest": ".claude/agents/01-adhoc/.system/personas.md",
+        "kind": "agent"
+      },
+      {
+        "src": ".claude/agents/01-adhoc/.system/protocol.md",
+        "dest": ".claude/agents/01-adhoc/.system/protocol.md",
+        "kind": "agent"
+      },
+      {
+        "src": ".claude/agents/01-adhoc/builder/builder.md",
+        "dest": ".claude/agents/01-adhoc/builder/builder.md",
+        "kind": "agent"
+      },
+      {
+        "src": ".claude/agents/01-adhoc/compliance/compliance.md",
+        "dest": ".claude/agents/01-adhoc/compliance/compliance.md",
+        "kind": "agent"
+      },
+      {
+        "src": ".claude/agents/01-adhoc/evaluator/evaluator.md",
+        "dest": ".claude/agents/01-adhoc/evaluator/evaluator.md",
+        "kind": "agent"
+      },
+      {
+        "src": ".claude/agents/01-adhoc/fixer/fixer.md",
+        "dest": ".claude/agents/01-adhoc/fixer/fixer.md",
+        "kind": "agent"
+      },
+      {
+        "src": ".claude/agents/01-adhoc/qa/analyze.md",
+        "dest": ".claude/agents/01-adhoc/qa/analyze.md",
+        "kind": "agent"
+      },
+      {
+        "src": ".claude/agents/01-adhoc/qa/orchestrator.md",
+        "dest": ".claude/agents/01-adhoc/qa/orchestrator.md",
+        "kind": "agent"
+      },
+      {
+        "src": ".claude/agents/01-adhoc/qa/scan.md",
+        "dest": ".claude/agents/01-adhoc/qa/scan.md",
+        "kind": "agent"
+      },
+      {
+        "src": ".claude/agents/01-adhoc/redteam/analyze.md",
+        "dest": ".claude/agents/01-adhoc/redteam/analyze.md",
+        "kind": "agent"
+      },
+      {
+        "src": ".claude/agents/01-adhoc/redteam/orchestrator.md",
+        "dest": ".claude/agents/01-adhoc/redteam/orchestrator.md",
+        "kind": "agent"
+      },
+      {
+        "src": ".claude/agents/01-adhoc/redteam/scan.md",
+        "dest": ".claude/agents/01-adhoc/redteam/scan.md",
+        "kind": "agent"
+      },
+      {
+        "src": ".claude/agents/02-oneshot/.system/file-ownership.md",
+        "dest": ".claude/agents/02-oneshot/.system/file-ownership.md",
+        "kind": "agent"
+      },
+      {
+        "src": ".claude/agents/02-oneshot/.system/integration-map.md",
+        "dest": ".claude/agents/02-oneshot/.system/integration-map.md",
+        "kind": "agent"
+      },
+      {
+        "src": ".claude/agents/02-oneshot/.system/personas.md",
+        "dest": ".claude/agents/02-oneshot/.system/personas.md",
+        "kind": "agent"
+      },
+      {
+        "src": ".claude/agents/02-oneshot/.system/protocol.md",
+        "dest": ".claude/agents/02-oneshot/.system/protocol.md",
+        "kind": "agent"
+      },
+      {
+        "src": ".claude/agents/02-oneshot/.system/skeleton-checklist.md",
+        "dest": ".claude/agents/02-oneshot/.system/skeleton-checklist.md",
+        "kind": "agent"
+      },
+      {
+        "src": ".claude/agents/02-oneshot/.system/task-manifest.md",
+        "dest": ".claude/agents/02-oneshot/.system/task-manifest.md",
+        "kind": "agent"
+      },
+      {
+        "src": ".claude/agents/02-oneshot/auditor/auditor.md",
+        "dest": ".claude/agents/02-oneshot/auditor/auditor.md",
+        "kind": "agent"
+      },
+      {
+        "src": ".claude/agents/02-oneshot/builder/builder.md",
+        "dest": ".claude/agents/02-oneshot/builder/builder.md",
+        "kind": "agent"
+      },
+      {
+        "src": ".claude/agents/02-oneshot/compliance/compliance.md",
+        "dest": ".claude/agents/02-oneshot/compliance/compliance.md",
+        "kind": "agent"
+      },
+      {
+        "src": ".claude/agents/02-oneshot/compliance/spec.md",
+        "dest": ".claude/agents/02-oneshot/compliance/spec.md",
+        "kind": "agent"
+      },
+      {
+        "src": ".claude/agents/02-oneshot/evaluator/evaluator.md",
+        "dest": ".claude/agents/02-oneshot/evaluator/evaluator.md",
+        "kind": "agent"
+      },
+      {
+        "src": ".claude/agents/02-oneshot/fixer/fixer.md",
+        "dest": ".claude/agents/02-oneshot/fixer/fixer.md",
+        "kind": "agent"
+      },
+      {
+        "src": ".claude/agents/02-oneshot/qa/analyze.md",
+        "dest": ".claude/agents/02-oneshot/qa/analyze.md",
+        "kind": "agent"
+      },
+      {
+        "src": ".claude/agents/02-oneshot/qa/orchestrator.md",
+        "dest": ".claude/agents/02-oneshot/qa/orchestrator.md",
+        "kind": "agent"
+      },
+      {
+        "src": ".claude/agents/02-oneshot/qa/scan.md",
+        "dest": ".claude/agents/02-oneshot/qa/scan.md",
+        "kind": "agent"
+      },
+      {
+        "src": ".claude/agents/02-oneshot/redteam/analyze.md",
+        "dest": ".claude/agents/02-oneshot/redteam/analyze.md",
+        "kind": "agent"
+      },
+      {
+        "src": ".claude/agents/02-oneshot/redteam/orchestrator.md",
+        "dest": ".claude/agents/02-oneshot/redteam/orchestrator.md",
+        "kind": "agent"
+      },
+      {
+        "src": ".claude/agents/02-oneshot/redteam/scan.md",
+        "dest": ".claude/agents/02-oneshot/redteam/scan.md",
+        "kind": "agent"
+      }
+    ],
+    "skill": [
+      {
+        "src": ".claude/commands/beta/integrate.md",
+        "dest": ".claude/commands/beta/integrate.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/beta/mine.md",
+        "dest": ".claude/commands/beta/mine.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/check/all.md",
+        "dest": ".claude/commands/check/all.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/check/architecture.md",
+        "dest": ".claude/commands/check/architecture.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/check/environment.md",
+        "dest": ".claude/commands/check/environment.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/check/patterns.md",
+        "dest": ".claude/commands/check/patterns.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/check/references.md",
+        "dest": ".claude/commands/check/references.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/check/requirements.md",
+        "dest": ".claude/commands/check/requirements.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/check/system.md",
+        "dest": ".claude/commands/check/system.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/commit/both.md",
+        "dest": ".claude/commands/commit/both.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/commit/local.md",
+        "dest": ".claude/commands/commit/local.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/commit/remote.md",
+        "dest": ".claude/commands/commit/remote.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/discover/systems.md",
+        "dest": ".claude/commands/discover/systems.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/fav/list.md",
+        "dest": ".claude/commands/fav/list.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/fav/search.md",
+        "dest": ".claude/commands/fav/search.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/fix/deep.md",
+        "dest": ".claude/commands/fix/deep.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/fix/fast.md",
+        "dest": ".claude/commands/fix/fast.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/hooks/add.md",
+        "dest": ".claude/commands/hooks/add.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/hooks/disable.md",
+        "dest": ".claude/commands/hooks/disable.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/hooks/friction.md",
+        "dest": ".claude/commands/hooks/friction.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/hooks/sync.md",
+        "dest": ".claude/commands/hooks/sync.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/hooks/test.md",
+        "dest": ".claude/commands/hooks/test.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/learn/combined.md",
+        "dest": ".claude/commands/learn/combined.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/learn/conversation.md",
+        "dest": ".claude/commands/learn/conversation.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/learn/events.md",
+        "dest": ".claude/commands/learn/events.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/learn/ingest.md",
+        "dest": ".claude/commands/learn/ingest.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/maps/all.md",
+        "dest": ".claude/commands/maps/all.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/maps/architecture.md",
+        "dest": ".claude/commands/maps/architecture.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/maps/enforcements.md",
+        "dest": ".claude/commands/maps/enforcements.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/maps/hooks.md",
+        "dest": ".claude/commands/maps/hooks.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/maps/memory.md",
+        "dest": ".claude/commands/maps/memory.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/maps/skills.md",
+        "dest": ".claude/commands/maps/skills.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/maps/systems.md",
+        "dest": ".claude/commands/maps/systems.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/maps/tools.md",
+        "dest": ".claude/commands/maps/tools.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/mode/adhoc.md",
+        "dest": ".claude/commands/mode/adhoc.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/mode/oneshot.md",
+        "dest": ".claude/commands/mode/oneshot.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/mode/solo.md",
+        "dest": ".claude/commands/mode/solo.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/preflight/improve.md",
+        "dest": ".claude/commands/preflight/improve.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/preflight/run.md",
+        "dest": ".claude/commands/preflight/run.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/qa/audit.md",
+        "dest": ".claude/commands/qa/audit.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/qa/check.md",
+        "dest": ".claude/commands/qa/check.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/reasoning/log.md",
+        "dest": ".claude/commands/reasoning/log.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/reasoning/run.md",
+        "dest": ".claude/commands/reasoning/run.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/reasoning/score.md",
+        "dest": ".claude/commands/reasoning/score.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/redteam/full.md",
+        "dest": ".claude/commands/redteam/full.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/redteam/scan.md",
+        "dest": ".claude/commands/redteam/scan.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/research/deep.md",
+        "dest": ".claude/commands/research/deep.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/research/simple.md",
+        "dest": ".claude/commands/research/simple.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/retro/code.md",
+        "dest": ".claude/commands/retro/code.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/retro/context.md",
+        "dest": ".claude/commands/retro/context.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/retro/full.md",
+        "dest": ".claude/commands/retro/full.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/session/checkpoint.md",
+        "dest": ".claude/commands/session/checkpoint.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/session/handoff.md",
+        "dest": ".claude/commands/session/handoff.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/session/history.md",
+        "dest": ".claude/commands/session/history.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/session/read.md",
+        "dest": ".claude/commands/session/read.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/session/resume.md",
+        "dest": ".claude/commands/session/resume.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/session/write.md",
+        "dest": ".claude/commands/session/write.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/skills/cleanup.md",
+        "dest": ".claude/commands/skills/cleanup.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/skills/create.md",
+        "dest": ".claude/commands/skills/create.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/skills/delete.md",
+        "dest": ".claude/commands/skills/delete.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/skills/edit.md",
+        "dest": ".claude/commands/skills/edit.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/sleep/deep.md",
+        "dest": ".claude/commands/sleep/deep.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/sleep/quick.md",
+        "dest": ".claude/commands/sleep/quick.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/ui/review.md",
+        "dest": ".claude/commands/ui/review.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/warp/check.md",
+        "dest": ".claude/commands/warp/check.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/warp/health.md",
+        "dest": ".claude/commands/warp/health.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/warp/setup.md",
+        "dest": ".claude/commands/warp/setup.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/warp/sync.md",
+        "dest": ".claude/commands/warp/sync.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/warp/tour.md",
+        "dest": ".claude/commands/warp/tour.md",
+        "kind": "skill"
+      },
+      {
+        "src": ".claude/commands/warp/uninstall.md",
+        "dest": ".claude/commands/warp/uninstall.md",
+        "kind": "skill"
+      }
+    ],
+    "reference": [
+      {
+        "src": ".claude/project/reference/learning-lifecycle.md",
+        "dest": ".claude/project/reference/learning-lifecycle.md",
+        "kind": "reference"
+      },
+      {
+        "src": ".claude/project/reference/operational-loop.md",
+        "dest": ".claude/project/reference/operational-loop.md",
+        "kind": "reference"
+      },
+      {
+        "src": ".claude/project/reference/reasoning-frameworks.md",
+        "dest": ".claude/project/reference/reasoning-frameworks.md",
+        "kind": "reference"
+      },
+      {
+        "src": ".claude/project/reference/SYSTEMS.md",
+        "dest": ".claude/project/reference/SYSTEMS.md",
+        "kind": "reference"
+      }
+    ],
+    "maps_baseline": [
+      {
+        "src": ".claude/project/maps/hooks.jsonl",
+        "dest": ".claude/project/maps/hooks.jsonl",
+        "kind": "maps_baseline"
+      },
+      {
+        "src": ".claude/project/maps/hooks.md",
+        "dest": ".claude/project/maps/hooks.md",
+        "kind": "maps_baseline"
+      },
+      {
+        "src": ".claude/project/maps/memory.jsonl",
+        "dest": ".claude/project/maps/memory.jsonl",
+        "kind": "maps_baseline"
+      },
+      {
+        "src": ".claude/project/maps/memory.md",
+        "dest": ".claude/project/maps/memory.md",
+        "kind": "maps_baseline"
+      },
+      {
+        "src": ".claude/project/maps/skills.jsonl",
+        "dest": ".claude/project/maps/skills.jsonl",
+        "kind": "maps_baseline"
+      },
+      {
+        "src": ".claude/project/maps/skills.md",
+        "dest": ".claude/project/maps/skills.md",
+        "kind": "maps_baseline"
+      },
+      {
+        "src": ".claude/project/maps/systems-inventory.jsonl",
+        "dest": ".claude/project/maps/systems-inventory.jsonl",
+        "kind": "maps_baseline"
+      },
+      {
+        "src": ".claude/project/maps/systems-inventory.md",
+        "dest": ".claude/project/maps/systems-inventory.md",
+        "kind": "maps_baseline"
+      },
+      {
+        "src": ".claude/project/maps/systems.md",
+        "dest": ".claude/project/maps/systems.md",
+        "kind": "maps_baseline"
+      },
+      {
+        "src": ".claude/project/maps/tools.jsonl",
+        "dest": ".claude/project/maps/tools.jsonl",
+        "kind": "maps_baseline"
+      },
+      {
+        "src": ".claude/project/maps/tools.md",
+        "dest": ".claude/project/maps/tools.md",
+        "kind": "maps_baseline"
+      }
+    ],
+    "hook": [
+      {
+        "src": "scripts/hooks/beta-gate.js",
+        "dest": "scripts/hooks/beta-gate.js",
+        "kind": "hook"
+      },
+      {
+        "src": "scripts/hooks/boss-boundary.js",
+        "dest": "scripts/hooks/boss-boundary.js",
+        "kind": "hook"
+      },
+      {
+        "src": "scripts/hooks/compact-saver.js",
+        "dest": "scripts/hooks/compact-saver.js",
+        "kind": "hook"
+      },
+      {
+        "src": "scripts/hooks/create-worktree-from-head.js",
+        "dest": "scripts/hooks/create-worktree-from-head.js",
+        "kind": "hook"
+      },
+      {
+        "src": "scripts/hooks/create-worktree-from-head.sh",
+        "dest": "scripts/hooks/create-worktree-from-head.sh",
+        "kind": "hook"
+      },
+      {
+        "src": "scripts/hooks/cycle-enforcer.js",
+        "dest": "scripts/hooks/cycle-enforcer.js",
+        "kind": "hook"
+      },
+      {
+        "src": "scripts/hooks/edit-watcher.js",
+        "dest": "scripts/hooks/edit-watcher.js",
+        "kind": "hook"
+      },
+      {
+        "src": "scripts/hooks/excalidraw-guard.js",
+        "dest": "scripts/hooks/excalidraw-guard.js",
+        "kind": "hook"
+      },
+      {
+        "src": "scripts/hooks/format.js",
+        "dest": "scripts/hooks/format.js",
+        "kind": "hook"
+      },
+      {
+        "src": "scripts/hooks/foundation-guard.js",
+        "dest": "scripts/hooks/foundation-guard.js",
+        "kind": "hook"
+      },
+      {
+        "src": "scripts/hooks/framework-manifest-guard.js",
+        "dest": "scripts/hooks/framework-manifest-guard.js",
+        "kind": "hook"
+      },
+      {
+        "src": "scripts/hooks/gate-check.js",
+        "dest": "scripts/hooks/gate-check.js",
+        "kind": "hook"
+      },
+      {
+        "src": "scripts/hooks/gauntlet-gate.js",
+        "dest": "scripts/hooks/gauntlet-gate.js",
+        "kind": "hook"
+      },
+      {
+        "src": "scripts/hooks/learning-validator.js",
+        "dest": "scripts/hooks/learning-validator.js",
+        "kind": "hook"
+      },
+      {
+        "src": "scripts/hooks/lint.js",
+        "dest": "scripts/hooks/lint.js",
+        "kind": "hook"
+      },
+      {
+        "src": "scripts/hooks/memory-guard.js",
+        "dest": "scripts/hooks/memory-guard.js",
+        "kind": "hook"
+      },
+      {
+        "src": "scripts/hooks/merge-guard.js",
+        "dest": "scripts/hooks/merge-guard.js",
+        "kind": "hook"
+      },
+      {
+        "src": "scripts/hooks/ownership-guard.js",
+        "dest": "scripts/hooks/ownership-guard.js",
+        "kind": "hook"
+      },
+      {
+        "src": "scripts/hooks/path-guard.js",
+        "dest": "scripts/hooks/path-guard.js",
+        "kind": "hook"
+      },
+      {
+        "src": "scripts/hooks/prompt-logger.js",
+        "dest": "scripts/hooks/prompt-logger.js",
+        "kind": "hook"
+      },
+      {
+        "src": "scripts/hooks/prompt-validator.js",
+        "dest": "scripts/hooks/prompt-validator.js",
+        "kind": "hook"
+      },
+      {
+        "src": "scripts/hooks/ref-checker.js",
+        "dest": "scripts/hooks/ref-checker.js",
+        "kind": "hook"
+      },
+      {
+        "src": "scripts/hooks/save-session-lint.js",
+        "dest": "scripts/hooks/save-session-lint.js",
+        "kind": "hook"
+      },
+      {
+        "src": "scripts/hooks/secret-guard.js",
+        "dest": "scripts/hooks/secret-guard.js",
+        "kind": "hook"
+      },
+      {
+        "src": "scripts/hooks/session-start.js",
+        "dest": "scripts/hooks/session-start.js",
+        "kind": "hook"
+      },
+      {
+        "src": "scripts/hooks/session-stop.js",
+        "dest": "scripts/hooks/session-stop.js",
+        "kind": "hook"
+      },
+      {
+        "src": "scripts/hooks/session-tracker.js",
+        "dest": "scripts/hooks/session-tracker.js",
+        "kind": "hook"
+      },
+      {
+        "src": "scripts/hooks/smart-context.js",
+        "dest": "scripts/hooks/smart-context.js",
+        "kind": "hook"
+      },
+      {
+        "src": "scripts/hooks/store-validator.js",
+        "dest": "scripts/hooks/store-validator.js",
+        "kind": "hook"
+      },
+      {
+        "src": "scripts/hooks/systems-sync.js",
+        "dest": "scripts/hooks/systems-sync.js",
+        "kind": "hook"
+      },
+      {
+        "src": "scripts/hooks/team-guard.js",
+        "dest": "scripts/hooks/team-guard.js",
+        "kind": "hook"
+      },
+      {
+        "src": "scripts/hooks/typecheck.js",
+        "dest": "scripts/hooks/typecheck.js",
+        "kind": "hook"
+      },
+      {
+        "src": "scripts/hooks/ui-lint.js",
+        "dest": "scripts/hooks/ui-lint.js",
+        "kind": "hook"
+      },
+      {
+        "src": "scripts/hooks/worktree-preflight.js",
+        "dest": "scripts/hooks/worktree-preflight.js",
+        "kind": "hook"
+      }
+    ],
+    "hook_lib": [
+      {
+        "src": "scripts/hooks/lib/context-sources.js",
+        "dest": "scripts/hooks/lib/context-sources.js",
+        "kind": "hook_lib"
+      },
+      {
+        "src": "scripts/hooks/lib/gate-schema.js",
+        "dest": "scripts/hooks/lib/gate-schema.js",
+        "kind": "hook_lib"
+      },
+      {
+        "src": "scripts/hooks/lib/logger.js",
+        "dest": "scripts/hooks/lib/logger.js",
+        "kind": "hook_lib"
+      },
+      {
+        "src": "scripts/hooks/lib/paths.js",
+        "dest": "scripts/hooks/lib/paths.js",
+        "kind": "hook_lib"
+      },
+      {
+        "src": "scripts/hooks/lib/project-config.js",
+        "dest": "scripts/hooks/lib/project-config.js",
+        "kind": "hook_lib"
+      },
+      {
+        "src": "scripts/hooks/lib/providers.js",
+        "dest": "scripts/hooks/lib/providers.js",
+        "kind": "hook_lib"
+      }
+    ],
+    "tool": [
+      {
+        "src": "scripts/tools/emit-attestation-events.js",
+        "dest": "scripts/tools/emit-attestation-events.js",
+        "kind": "tool"
+      },
+      {
+        "src": "scripts/tools/emit-integrate-events.js",
+        "dest": "scripts/tools/emit-integrate-events.js",
+        "kind": "tool"
+      }
+    ],
+    "requirement": [
+      {
+        "src": "requirements/00-canonical/CORE_BRIEF.md",
+        "dest": "requirements/00-canonical/CORE_BRIEF.md",
+        "kind": "requirement"
+      },
+      {
+        "src": "requirements/00-canonical/FAILURE_STATES.md",
+        "dest": "requirements/00-canonical/FAILURE_STATES.md",
+        "kind": "requirement"
+      },
+      {
+        "src": "requirements/00-canonical/GLOSSARY_TEMPLATE.md",
+        "dest": "requirements/00-canonical/GLOSSARY_TEMPLATE.md",
+        "kind": "requirement"
+      },
+      {
+        "src": "requirements/00-canonical/GOLDEN_PATHS.md",
+        "dest": "requirements/00-canonical/GOLDEN_PATHS.md",
+        "kind": "requirement"
+      },
+      {
+        "src": "requirements/00-canonical/PRODUCT_MODEL.md",
+        "dest": "requirements/00-canonical/PRODUCT_MODEL.md",
+        "kind": "requirement"
+      },
+      {
+        "src": "requirements/00-canonical/USER_COHORTS.md",
+        "dest": "requirements/00-canonical/USER_COHORTS.md",
+        "kind": "requirement"
+      },
+      {
+        "src": "requirements/01-design-system/COLOR_SEMANTICS.md",
+        "dest": "requirements/01-design-system/COLOR_SEMANTICS.md",
+        "kind": "requirement"
+      },
+      {
+        "src": "requirements/01-design-system/COMPONENT_LIBRARY.md",
+        "dest": "requirements/01-design-system/COMPONENT_LIBRARY.md",
+        "kind": "requirement"
+      },
+      {
+        "src": "requirements/01-design-system/UX_PRINCIPLES.md",
+        "dest": "requirements/01-design-system/UX_PRINCIPLES.md",
+        "kind": "requirement"
+      },
+      {
+        "src": "requirements/02-copy-system/COPY_STRATEGY.md",
+        "dest": "requirements/02-copy-system/COPY_STRATEGY.md",
+        "kind": "requirement"
+      },
+      {
+        "src": "requirements/03-requirement-standards/GRANULAR_STORIES.md",
+        "dest": "requirements/03-requirement-standards/GRANULAR_STORIES.md",
+        "kind": "requirement"
+      },
+      {
+        "src": "requirements/03-requirement-standards/HIGH_LEVEL_STORIES.md",
+        "dest": "requirements/03-requirement-standards/HIGH_LEVEL_STORIES.md",
+        "kind": "requirement"
+      },
+      {
+        "src": "requirements/03-requirement-standards/INPUTS_TEMPLATE.md",
+        "dest": "requirements/03-requirement-standards/INPUTS_TEMPLATE.md",
+        "kind": "requirement"
+      },
+      {
+        "src": "requirements/03-requirement-standards/PRD_TEMPLATE.md",
+        "dest": "requirements/03-requirement-standards/PRD_TEMPLATE.md",
+        "kind": "requirement"
+      },
+      {
+        "src": "requirements/03-requirement-standards/REVIEW_PROCESS.md",
+        "dest": "requirements/03-requirement-standards/REVIEW_PROCESS.md",
+        "kind": "requirement"
+      },
+      {
+        "src": "requirements/03-requirement-standards/STORIES-COMMON.md",
+        "dest": "requirements/03-requirement-standards/STORIES-COMMON.md",
+        "kind": "requirement"
+      },
+      {
+        "src": "requirements/04-architecture/DATA_FLOW.md",
+        "dest": "requirements/04-architecture/DATA_FLOW.md",
+        "kind": "requirement"
+      },
+      {
+        "src": "requirements/04-architecture/SECURITY.md",
+        "dest": "requirements/04-architecture/SECURITY.md",
+        "kind": "requirement"
+      },
+      {
+        "src": "requirements/04-architecture/STACK.md",
+        "dest": "requirements/04-architecture/STACK.md",
+        "kind": "requirement"
+      },
+      {
+        "src": "requirements/05-features/_example-onboarding/COPY.md",
+        "dest": "requirements/05-features/_example-onboarding/COPY.md",
+        "kind": "requirement"
+      },
+      {
+        "src": "requirements/05-features/_example-onboarding/HL-STORIES.md",
+        "dest": "requirements/05-features/_example-onboarding/HL-STORIES.md",
+        "kind": "requirement"
+      },
+      {
+        "src": "requirements/05-features/_example-onboarding/INPUTS.md",
+        "dest": "requirements/05-features/_example-onboarding/INPUTS.md",
+        "kind": "requirement"
+      },
+      {
+        "src": "requirements/05-features/_example-onboarding/PRD.md",
+        "dest": "requirements/05-features/_example-onboarding/PRD.md",
+        "kind": "requirement"
+      },
+      {
+        "src": "requirements/05-features/_example-onboarding/STORIES.md",
+        "dest": "requirements/05-features/_example-onboarding/STORIES.md",
+        "kind": "requirement"
+      },
+      {
+        "src": "requirements/06-operations/DEPLOYMENT.md",
+        "dest": "requirements/06-operations/DEPLOYMENT.md",
+        "kind": "requirement"
+      },
+      {
+        "src": "requirements/07-security/REDTEAM_REPORT.md",
+        "dest": "requirements/07-security/REDTEAM_REPORT.md",
+        "kind": "requirement"
+      },
+      {
+        "src": "requirements/08-testing/TEST_STRATEGY.md",
+        "dest": "requirements/08-testing/TEST_STRATEGY.md",
+        "kind": "requirement"
+      },
+      {
+        "src": "requirements/09-automation/CI_CD.md",
+        "dest": "requirements/09-automation/CI_CD.md",
+        "kind": "requirement"
+      },
+      {
+        "src": "requirements/99-audits/AUDIT_TEMPLATE.md",
+        "dest": "requirements/99-audits/AUDIT_TEMPLATE.md",
+        "kind": "requirement"
+      },
+      {
+        "src": "requirements/README.md",
+        "dest": "requirements/README.md",
+        "kind": "requirement"
+      }
+    ],
+    "pattern": [
+      {
+        "src": "patterns/ai-orchestration.md",
+        "dest": "patterns/ai-orchestration.md",
+        "kind": "pattern"
+      },
+      {
+        "src": "patterns/background-api-strict-mode.md",
+        "dest": "patterns/background-api-strict-mode.md",
+        "kind": "pattern"
+      },
+      {
+        "src": "patterns/encrypted-storage.md",
+        "dest": "patterns/encrypted-storage.md",
+        "kind": "pattern"
+      },
+      {
+        "src": "patterns/rate-limiting.md",
+        "dest": "patterns/rate-limiting.md",
+        "kind": "pattern"
+      },
+      {
+        "src": "patterns/ui-component-kit.md",
+        "dest": "patterns/ui-component-kit.md",
+        "kind": "pattern"
+      }
+    ],
+    "top_script": [
+      {
+        "src": "scripts/dispatch-agent.js",
+        "dest": "scripts/dispatch-agent.js",
+        "kind": "top_script"
+      },
+      {
+        "src": "scripts/generate-framework-manifest.js",
+        "dest": "scripts/generate-framework-manifest.js",
+        "kind": "top_script"
+      },
+      {
+        "src": "scripts/generate-maps.js",
+        "dest": "scripts/generate-maps.js",
+        "kind": "top_script"
+      },
+      {
+        "src": "scripts/path-lint.js",
+        "dest": "scripts/path-lint.js",
+        "kind": "top_script"
+      }
+    ],
+    "framework_doc": [
+      {
+        "src": "AGENTS.md",
+        "dest": "AGENTS.md",
+        "kind": "framework_doc",
+        "merge": "append-if-exists"
+      },
+      {
+        "src": "CLAUDE.md",
+        "dest": "CLAUDE.md",
+        "kind": "framework_doc",
+        "merge": "append-if-exists"
+      }
+    ]
+  },
+  "generated_files": [
+    {
+      "dest": ".claude/paths.json",
+      "builder": "paths-builder"
+    },
+    {
+      "dest": ".claude/manifest.json",
+      "builder": "manifest-builder"
+    },
+    {
+      "dest": ".claude/agents/store.json",
+      "builder": "store-builder"
+    },
+    {
+      "dest": ".claude/project/memory/events.jsonl",
+      "builder": "empty-file"
+    },
+    {
+      "dest": ".claude/project/memory/learnings.jsonl",
+      "builder": "empty-file"
+    },
+    {
+      "dest": ".claude/project/memory/traces.jsonl",
+      "builder": "empty-file"
+    },
+    {
+      "dest": ".claude/project/memory/systems.jsonl",
+      "builder": "systems-seeder"
+    },
+    {
+      "dest": ".claude/settings.json",
+      "builder": "settings-merger",
+      "idempotent": true
+    },
+    {
+      "dest": ".gitignore",
+      "builder": "gitignore-block-appender",
+      "idempotent": true
+    }
+  ]
+}
