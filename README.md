@@ -27,12 +27,19 @@ Plus **66 skills** (commands you can run like `/fix:fast` or `/research:deep`), 
 
 ### Install
 
-```powershell
-# 1. Clone WarpOS (you need an invite)
+```
+Open your project in your IDE of choice, then open a fresh terminal and:
+
+# 1. Clone WarpOS
 git clone https://github.com/cygaco/WarpOS.git
 
-# 2. Run the installer, pointing it at your project
-powershell -ExecutionPolicy Bypass -File WarpOS/install.ps1 path/to/your/project
+# 2. Run the installer
+node ../WarpOS/scripts/warp-setup.js
+
+# 3
+Run claude in your terminal, and perform:
+/warp:setup to finish up, and then
+/warp:tour to learn about the system.
 ```
 
 That's it. The installer:
