@@ -26,8 +26,7 @@ Read these documents FIRST, in order:
 4. `.claude/agents/02-oneshot/.system/personas.md` — dispatch templates
 5. All sibling files in `.claude/agents/02-oneshot/.system/`:
    - `store.json` — current build state
-   - `task-manifest.md` — build order and phases
-   - `file-ownership.md` — who owns what files
+   - `.claude/manifest.json` (→ `build.phases` + `build.features`) — canonical build order, phase groupings, and per-feature dependencies. There is no separate task-manifest or file-ownership file; foundation files are in `manifest.fileOwnership.foundation` and per-feature file scope is in `store.features[<name>].files`.
    - `integration-map.md` — data contracts between features
    - `skeleton-checklist.md` — pre-build verification
 6. `.claude/agents/02-oneshot/compliance/compliance.md` — cross-tool compliance + builder rewards
@@ -51,6 +50,14 @@ Each cycle follows:
 10. Proceed to next phase → repeat until all features done
 
 ## Dispatch Method (cross-provider)
+
+> ### ⚠ CANONICAL DISPATCH — NO EXCEPTIONS
+>
+> **All 7 build-chain roles** (`builder`, `fixer`, `evaluator`, `compliance`, `qa`, `redteam`, `auditor`) **MUST** be dispatched via Bash subprocess using the pattern below. **Do NOT use the in-process `Agent` tool** for any of these roles.
+>
+> **Why:** in-process `Agent` dispatch returns the entire agent prose response into the orchestrator's conversation turn (50–100K tokens per reviewer). The Bash path captures stdout to a shell variable and `parseProviderJson` extracts only the JSON envelope (~2K). Running skeleton builds via `Agent` tool hit a context ceiling after 2 phases in run-09; the same work via Bash dispatch fit in one session in prior runs.
+>
+> The `Agent` tool remains fine for research roles (`Explore`, `Plan`, `general-purpose`) and for `beta` / user-facing consultation. Only the 7 build-chain roles are forbidden.
 
 Delta dispatches agents via Bash, routing by provider. Read `manifest.agentProviders[<role>]` to know which CLI to use.
 
@@ -110,6 +117,7 @@ Why: same-model review is blind to shared failure modes. GPT reviews Claude's ou
 - **Do NOT make product decisions.** If you encounter a product question, halt and save state.
 - **Do NOT modify foundation files.** Flag foundation-update requests.
 - **ALWAYS use `isolation: "worktree"`** for builder agents. No exceptions.
+- **β is NOT available in oneshot.** Halt-and-save to `store.json` is the escalation path for decisions outside Delta's mechanical scope — do NOT send messages to Beta, do NOT ask the user. Resume-from-store is the designed path for restarting after human intervention.
 
 ## Final Report
 

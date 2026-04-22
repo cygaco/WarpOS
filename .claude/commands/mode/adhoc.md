@@ -23,6 +23,21 @@ Enter adhoc team mode. Creates an agent team with Alpha (lead) + Beta (judgment)
 
 If any are missing, warn and offer to continue in solo mode instead.
 
+### Step 1.5: Write mode marker
+
+Write `.claude/runtime/mode.json` so `smart-context.js` hook emits the adhoc team-mode directive on subsequent prompts:
+
+```js
+const fs = require("fs");
+const path = require("path");
+const runtimeDir = path.join(".claude", "runtime");
+fs.mkdirSync(runtimeDir, { recursive: true });
+fs.writeFileSync(
+  path.join(runtimeDir, "mode.json"),
+  JSON.stringify({ mode: "adhoc", setAt: new Date().toISOString() }, null, 2) + "\n"
+);
+```
+
 ### Step 2: Create agent team
 
 Create a team and spawn two teammates with specific names:

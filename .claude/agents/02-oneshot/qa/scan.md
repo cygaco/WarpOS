@@ -7,7 +7,7 @@ Scan type: {{SCAN_TYPE}}
 Feature: {{FEATURE_NAME}}
 Files: {{FILE_LIST}}
 
-Read `.claude/agents/02-oneshot/.system/file-ownership.md` to verify scope boundaries.
+Read `.claude/manifest.json` (`fileOwnership.foundation`) and `.claude/agents/02-oneshot/.system/store.json` (`features[<name>].files`) to verify scope boundaries.
 
 ID range: QA-001 through QA-499.
 
@@ -72,7 +72,7 @@ grep -rn "TODO: implement\|Not implemented" src/
 
 ### 6. Spec Ghost (`spec-ghost`)
 **Detection patterns:**
-- When field removed from types.ts, grep all layers: prompts.ts, dispatch templates, PRDs, STORIES.md, task-manifest.md, integration-map.md, store.json
+- When field removed from types.ts, grep all layers: prompts.ts, dispatch templates, PRDs, STORIES.md, integration-map.md, store.json, manifest.json
 - Cross-reference exported types against all spec layers
 
 **Commands:**

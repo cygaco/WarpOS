@@ -41,7 +41,7 @@ Read these documents before reviewing:
 1. docs/05-features/{{FEATURE_DIR}}/STORIES.md (the contract — every granular story must be implemented)
 2. docs/05-features/{{FEATURE_DIR}}/PRD.md (feature description and acceptance criteria)
 3. docs/05-features/{{FEATURE_DIR}}/INPUTS.md (control types, validation, data contracts — verify all wires exist)
-4. .claude/agents/02-oneshot/.system/file-ownership.md (verify scope)
+4. .claude/manifest.json (fileOwnership.foundation) + .claude/agents/02-oneshot/.system/store.json (features[<name>].files) — verify scope
 5. The builder's actual output files
 
 ## Output Format

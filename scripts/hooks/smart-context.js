@@ -508,21 +508,97 @@ async function main() {
   // Curated context
   let context = assembleContext(result, injectedHashes);
 
-  // Team mode enforcement: remind Alpha to route through Beta
+  // Mode-aware directive emission.
+  //
+  // Resolution order (highest priority first):
+  //   1. ONESHOT — oneshot store.heartbeat.agent === "delta" AND fresh (<60min).
+  //      Delta is standalone; β is NOT available; halt-and-save is the escalation.
+  //   2. SOLO — .claude/runtime/mode.json says {mode: "solo"}. Alpha talks to user
+  //      directly (feedback_solo_no_beta). No team-mode directive.
+  //   3. ADHOC — legacy fallback: ~/.claude/teams/adhoc/config.json exists.
+  //      α + β + γ team is active; route decisions through Beta.
+  //   4. Unknown → emit nothing (no mode detected).
   try {
-    const teamConfig = path.join(
+    const oneshotStorePath = path.join(
+      PROJECT,
+      ".claude",
+      "agents",
+      "02-oneshot",
+      ".system",
+      "store.json",
+    );
+    const modeMarkerPath = path.join(
+      PROJECT,
+      ".claude",
+      "runtime",
+      "mode.json",
+    );
+    const adhocTeamConfigPath = path.join(
       process.env.HOME || process.env.USERPROFILE || "",
       ".claude",
       "teams",
       "adhoc",
       "config.json",
     );
-    if (fs.existsSync(teamConfig)) {
-      context +=
-        (context ? "\n\n" : "") +
-        "TEAM MODE ACTIVE: Do NOT ask the user questions. " +
-        "Route ALL decisions through Beta (β) via SendMessage. " +
-        "Only address user when Beta returns ESCALATE.";
+
+    let directive = null;
+
+    // 1. Oneshot — via Delta heartbeat freshness.
+    if (fs.existsSync(oneshotStorePath)) {
+      try {
+        const store = JSON.parse(fs.readFileSync(oneshotStorePath, "utf8"));
+        const hb = store && store.heartbeat;
+        if (hb && hb.agent === "delta" && hb.timestamp) {
+          const ageMs = Date.now() - new Date(hb.timestamp).getTime();
+          if (Number.isFinite(ageMs) && ageMs < 60 * 60 * 1000) {
+            directive =
+              "ONESHOT MODE ACTIVE: Follow delta.md protocol. " +
+              "Do NOT consult Beta (β is not available in oneshot). " +
+              "Decisions outside Delta's mechanical scope: halt and save state to store.json. " +
+              "The user can resume via /mode:oneshot in a fresh session.";
+          }
+        }
+      } catch {
+        /* store parse error — fall through */
+      }
+    }
+
+    // 2. Solo — via explicit mode marker.
+    if (!directive && fs.existsSync(modeMarkerPath)) {
+      try {
+        const marker = JSON.parse(fs.readFileSync(modeMarkerPath, "utf8"));
+        if (marker && marker.mode === "solo") {
+          directive = null; // intentional: solo = no directive, talk to user directly.
+        } else if (marker && marker.mode === "adhoc") {
+          directive =
+            "TEAM MODE ACTIVE: Do NOT ask the user questions. " +
+            "Route ALL decisions through Beta (β) via SendMessage. " +
+            "Only address user when Beta returns ESCALATE.";
+        } else if (marker && marker.mode === "oneshot") {
+          // Belt-and-suspenders for oneshot before heartbeat has settled.
+          directive =
+            "ONESHOT MODE ACTIVE: Follow delta.md protocol. " +
+            "Do NOT consult Beta (β is not available in oneshot). " +
+            "Decisions outside Delta's mechanical scope: halt and save state to store.json.";
+        }
+      } catch {
+        /* marker parse error — fall through */
+      }
+    }
+
+    // 3. Adhoc fallback via legacy team config. Only fire if no mode marker exists
+    //    AND no fresh oneshot heartbeat — otherwise marker / heartbeat wins.
+    if (directive === null && !fs.existsSync(modeMarkerPath)) {
+      if (fs.existsSync(adhocTeamConfigPath)) {
+        directive =
+          "TEAM MODE ACTIVE: Do NOT ask the user questions. " +
+          "Route ALL decisions through Beta (β) via SendMessage. " +
+          "Only address user when Beta returns ESCALATE.";
+      }
+    }
+
+    if (directive) {
+      context += (context ? "\n\n" : "") + directive;
     }
   } catch {
     /* best-effort */

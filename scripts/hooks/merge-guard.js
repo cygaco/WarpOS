@@ -232,6 +232,11 @@ process.stdin.on("end", () => {
     }
 
     // 4. node -e with fs write operations — bypass Edit hooks
+    // NOTE: this rule ONLY fires on the `-e` flag (inline script). Standalone
+    // script files (`node scripts/foo.js`) are allowed — that's the intended
+    // escape hatch for state updates that don't fit Edit/Write tool (e.g.
+    // rewriting a 65KB store.json). Add your utility to scripts/ and invoke
+    // it as a file; the PostToolUse formatter will keep it tidy.
     if (
       /node\s+-e\s/.test(cmd) &&
       /fs\.(writeFileSync|appendFileSync|write|createWriteStream)|require\s*\(\s*['"]fs['"]\s*\)/.test(
@@ -239,7 +244,7 @@ process.stdin.on("end", () => {
       )
     ) {
       block(
-        "node -e with fs write blocked: use Edit/Write tools instead (hooks enforce ownership).",
+        "node -e with fs write blocked: use Edit/Write tools, or put the logic in a `scripts/*.js` file and run `node scripts/<name>.js`. Hooks enforce ownership on Edit/Write but allow standalone scripts.",
       );
     }
 
@@ -260,6 +265,13 @@ process.stdin.on("end", () => {
     ) {
       block(
         "git push force-push blocked: destructive operation. (matched: --force / -f / +refspec)",
+      );
+    }
+
+    // 6b. karpathy-run/* branches — block any push (experiment branches, never publish)
+    if (/git\s+push\b.*karpathy-run\//.test(cmd)) {
+      block(
+        "karpathy-run/* branches are experiment-only; never pushed to remote. Use /karpathy:integrate to land the winning variant onto a feature branch off main.",
       );
     }
 

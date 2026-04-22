@@ -115,11 +115,6 @@
         "kind": "agent"
       },
       {
-        "src": ".claude/agents/02-oneshot/.system/file-ownership.md",
-        "dest": ".claude/agents/02-oneshot/.system/file-ownership.md",
-        "kind": "agent"
-      },
-      {
         "src": ".claude/agents/02-oneshot/.system/integration-map.md",
         "dest": ".claude/agents/02-oneshot/.system/integration-map.md",
         "kind": "agent"
@@ -137,11 +132,6 @@
       {
         "src": ".claude/agents/02-oneshot/.system/skeleton-checklist.md",
         "dest": ".claude/agents/02-oneshot/.system/skeleton-checklist.md",
-        "kind": "agent"
-      },
-      {
-        "src": ".claude/agents/02-oneshot/.system/task-manifest.md",
-        "dest": ".claude/agents/02-oneshot/.system/task-manifest.md",
         "kind": "agent"
       },
       {

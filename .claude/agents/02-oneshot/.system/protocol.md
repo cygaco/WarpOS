@@ -31,11 +31,11 @@ Read these documents FIRST, in order:
 2. CLAUDE.md — app architecture
 3. .claude/agents/.system/agent-system.md — full operational spec
 4. .claude/agents/.system/oneshot/compliance.md — cross-tool compliance + builder rewards
-5. .claude/agents/.system/oneshot/task-manifest.md — build order and phases
-6. .claude/agents/.system/oneshot/file-ownership.md — who owns what files
-7. .claude/agents/.system/oneshot/integration-map.md — data contracts between features
-7. docs/09-agentic-system/retro/06/HYGIENE.md — 53 rules from runs 01+02+03+06 (MUST be included in every builder prompt). Run 06 addendum includes Rules 43-53. Prior runs' rules 1-42 remain in effect (referenced by the addendum).
-8. docs/99-resources/ — visual ground truth (production flow screenshots for builders to match UX against)
+5. `.claude/manifest.json` → `build.phases` + `build.features` — build order, phase groupings, and per-feature dependencies. This is the canonical phase graph.
+6. `.claude/agents/02-oneshot/.system/store.json` → `features[<name>].files` — canonical per-feature file ownership. (Foundation files are in `.claude/manifest.json` → `fileOwnership.foundation`.)
+7. `.claude/agents/02-oneshot/.system/integration-map.md` — data contracts between features
+8. `.claude/agents/02-oneshot/.system/retros/` — latest numbered folder's HYGIENE.md contains the cumulative hygiene rules from all prior runs (MUST be referenced in every builder prompt). Use the HIGHEST numbered retro folder — it supersedes earlier versions while retaining their rules by reference.
+9. `docs/99-resources/` — visual ground truth (production flow screenshots for builders to match UX against)
 
 ## Your Job
 1. Read the store (.claude/agents/store.json) to see current state
@@ -47,7 +47,7 @@ Read these documents FIRST, in order:
    e. All dependency features show "done" status in the store
    f. `store.heartbeat` is updated with current phase/feature
    If any check fails, fix the issue before dispatching. Do not dispatch into a broken environment.
-2. Determine the next phase to execute from TASK-MANIFEST.md
+2. Determine the next phase to execute by reading `.claude/manifest.json` → `build.phases` (ordered list of phases with `parallel: true|false`) and `build.features` (each feature's `phase` id + `dependencies` array + `sequential?` override). The canonical phase graph lives there — there is no separate task-manifest file.
 2.5. Duplicate check — before spawning any builder, reviewer, or fix agent, re-read `store.features[name].status` to verify it hasn't changed since you last read the store. Another agent may have completed or failed in the meantime. If status has changed, skip the dispatch and re-plan.
 3. For each task in the phase:
    a. Construct the builder prompt using personas.md.
@@ -114,7 +114,16 @@ Overlap stages when data dependencies allow — don't wait for stages that can't
 - **Scope collision guard**: If a security fix needs a file a builder is actively modifying, QUEUE the security fix until that builder finishes. Check file scope overlap before dispatching.
 
 ## Cross-Provider Spawning (see AGENT-SYSTEM.md section 2)
-When dispatching to a non-Claude (non-anthropic) provider (codex / gemini via stdin, or any other provider that reads the prompt from stdin), you MUST pre-fetch and inline every file the agent's prompt references directly into the prompt body before dispatch. The external provider cannot follow, resolve, or read any file reference from inside the prompt. Inline the full / entire / complete / whole file body — embed the content, paste the body, include the file — for each referenced @path before dispatch. Skipping this is a silent failure: the third-party provider sees only what you pipe in. Only Claude-native dispatch (via the Agent tool) can follow file references implicitly.
+
+> ### ⚠ CANONICAL DISPATCH — NO EXCEPTIONS
+>
+> **All 7 build-chain roles** (`builder`, `fixer`, `evaluator`, `compliance`, `qa`, `redteam`, `auditor`) **MUST** be dispatched via Bash subprocess — `claude -p --agent <role>` for Claude-routed roles, `node scripts/dispatch-agent.js <role> $PROMPT` for OpenAI/Gemini-routed roles. **Do NOT use the in-process `Agent` tool** for any of these roles.
+>
+> See `.claude/agents/00-alex/delta.md` Dispatch Method section for the full reference pattern. The pattern captures stdout to a shell variable and parses the JSON envelope via `scripts/hooks/lib/providers::parseProviderJson` — this keeps the orchestrator's conversation lean so a full skeleton build fits in one session.
+>
+> `Agent` tool remains acceptable for research roles (`Explore`, `Plan`, `general-purpose`) — only the 7 build-chain roles are forbidden.
+
+When dispatching to a non-Claude (non-anthropic) provider (codex / gemini via stdin, or any other provider that reads the prompt from stdin), you MUST pre-fetch and inline every file the agent's prompt references directly into the prompt body before dispatch. The external provider cannot follow, resolve, or read any file reference from inside the prompt. Inline the full / entire / complete / whole file body — embed the content, paste the body, include the file — for each referenced @path before dispatch. Skipping this is a silent failure: the third-party provider sees only what you pipe in. Only Claude-native dispatch (via `claude -p --agent`) can follow file references implicitly.
 
 To run compliance via another tool, call the command directly via Bash:
 - Read `store.compliance` for syntax, model, and prompt template
@@ -309,7 +318,7 @@ If the orchestrator halted (circuit breaker, manual kill, session timeout), laun
 
 ```
 You are the orchestrator. A previous run was halted.
-Read .claude/agents/store.json for current state; read .claude/agents/.system/oneshot/task-manifest.md for the plan.
+Read .claude/agents/02-oneshot/.system/store.json for current state; read .claude/manifest.json (build.phases + build.features) for the phase plan.
 Resume from where it stopped: "done" = complete; "eval_fail"/"security_fail" = fix agents; "not_started"/"in_progress" = builders.
 For unmerged agent/* branches: status "built" → run evaluator before merge; status "in_progress" → discard and re-dispatch.
 Follow this protocol. Do not re-build completed features.

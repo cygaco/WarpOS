@@ -15,7 +15,22 @@ Enter solo mode. No agent team — just Alpha working directly with the user. Si
 
 ## Procedure
 
-### Step 1: Set mode context
+### Step 1: Write mode marker
+
+Write `.claude/runtime/mode.json` so `smart-context.js` hook suppresses the team-mode / Beta-routing directive on subsequent prompts (solo = Alpha talks to user directly):
+
+```js
+const fs = require("fs");
+const path = require("path");
+const runtimeDir = path.join(".claude", "runtime");
+fs.mkdirSync(runtimeDir, { recursive: true });
+fs.writeFileSync(
+  path.join(runtimeDir, "mode.json"),
+  JSON.stringify({ mode: "solo", setAt: new Date().toISOString() }, null, 2) + "\n"
+);
+```
+
+### Step 2: Set mode context
 
 Acknowledge the mode switch:
 

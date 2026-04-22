@@ -38,7 +38,7 @@ Read these documents before reviewing:
 1. AGENTS.md (review protocol section)
 2. .claude/agents/.system.md (evaluator protocol in section 10, golden fixtures in section 11)
 4. .claude/agents/02-oneshot/.system/integration-map.md (verify contracts are met)
-5. .claude/agents/02-oneshot/.system/file-ownership.md (verify no scope violations)
+5. .claude/manifest.json (fileOwnership.foundation) + .claude/agents/02-oneshot/.system/store.json (features[<name>].files) — verify no scope violations
 6. docs/05-features/{{FEATURE_DIR}}/INPUTS.md (verify data contracts — every field listed in "Consumed by" must have a wire in the builder's code)
 7. docs/04-architecture/DATA-CONTRACTS.md (wiring verification rules)
 8. docs/01-design-system/COMPONENT_LIBRARY.md (component catalog and design tokens)

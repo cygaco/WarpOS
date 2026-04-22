@@ -11,6 +11,10 @@ Alpha dispatches gamma in adhoc mode for:
 
 ## Protocol
 
+> ### ⚠ CANONICAL DISPATCH — NO EXCEPTIONS
+>
+> **All build-chain roles** (`builder`, `fixer`, `evaluator`, `compliance`, `qa`, `redteam`) **MUST** be dispatched via Bash subprocess — `claude -p --agent <role>` for Claude-routed, `node scripts/dispatch-agent.js <role>` for OpenAI/Gemini-routed. **Do NOT use the in-process `Agent` tool** for any of these roles, even when running locally as Claude. The `Agent` tool returns the full agent response into the orchestrator conversation; Bash dispatch captures stdout and parses only the JSON envelope. See `.claude/agents/00-alex/gamma.md` Dispatch Method for the full reference pattern.
+
 ### 1. Dispatch builder(s)
 
 Gamma dispatches Layer 2 agents via the `claude` CLI (the Agent tool is not available to teammates):

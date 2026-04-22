@@ -23,7 +23,7 @@ You are stateless. You receive context, produce code, and return. You know nothi
 Read these documents IN ORDER before writing any code:
 0. docs/09-agentic-system/retro/ — read the LATEST run's HYGIENE.md (highest numbered folder in docs/09-agentic-system/retro/) — patterns from prior runs, MUST follow, violations are hard fails
 1. AGENTS.md (root instructions — hard rules, foundation files, review protocol)
-2. .claude/agents/02-oneshot/.system/file-ownership.md (your file scope for {{FEATURE_NAME}})
+2. .claude/manifest.json (`fileOwnership.foundation` — read-only for you) + .claude/agents/02-oneshot/.system/store.json (`features[{{FEATURE_NAME}}].files` — your file scope)
 3. .claude/agents/02-oneshot/.system/integration-map.md (what data you consume and produce)
 4. docs/05-features/{{FEATURE_DIR}}/PRD.md (your feature spec — FEATURE_DIR is the PRD folder name; for feature `rockets` it is `rockets-economy`, all others match the feature ID)
 5. docs/05-features/{{FEATURE_DIR}}/STORIES.md (granular stories — one story = one code path)

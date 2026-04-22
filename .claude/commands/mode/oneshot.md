@@ -18,15 +18,30 @@ Initiate a oneshot build. Delta (δ) takes over as the standalone orchestrator. 
 
 Before launching, verify:
 
-1. **Store exists:** `.claude/agents/store.json` — if not, warn that a fresh store is needed
+1. **Store exists:** `.claude/agents/02-oneshot/.system/store.json` — if not, warn that a fresh store is needed
 2. **Protocol exists:** `.claude/agents/02-oneshot/.system/protocol.md`
-3. **Task manifest exists:** `.claude/agents/02-oneshot/.system/task-manifest.md`
-4. **Skeleton stubs exist:** Check that the features listed in the task manifest have corresponding stub files
+3. **Phase graph exists:** `.claude/manifest.json` has `build.phases` and `build.features` populated (this is the canonical phase graph; there is no separate task-manifest file)
+4. **Skeleton stubs exist:** for each feature in `store.features`, confirm the files listed in `features[<name>].files` exist and are skeleton stubs (check against `store.knownStubs`)
 5. **Foundation passes:** Run the build command from project-config to verify the skeleton compiles
 
 If any check fails, report what's missing and stop. Do NOT launch Delta into a broken environment.
 
-### Step 2: Set mode context
+### Step 2: Write mode marker
+
+Write `.claude/runtime/mode.json` so `smart-context.js` hook emits the correct directive on subsequent prompts (oneshot suppresses the team-mode / Beta-routing directive):
+
+```js
+const fs = require("fs");
+const path = require("path");
+const runtimeDir = path.join(".claude", "runtime");
+fs.mkdirSync(runtimeDir, { recursive: true });
+fs.writeFileSync(
+  path.join(runtimeDir, "mode.json"),
+  JSON.stringify({ mode: "oneshot", setAt: new Date().toISOString() }, null, 2) + "\n"
+);
+```
+
+### Step 3: Set mode context
 
 Acknowledge the mode switch:
 

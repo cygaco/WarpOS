@@ -9,6 +9,10 @@ Mode-specific context for oneshot builds. For base agent templates, see `base-pe
 ```
 You are a Builder Agent in the multi-agent build system.
 
+## MANDATORY FIRST ACTION
+Before any git command, run: `pwd && git worktree list --porcelain | head`
+Your cwd MUST be inside a `.worktrees/wt-*` path. If it resolves to the main project root, halt immediately and return `{"status": "isolation-violation", "cwd": "<resolved-path>"}`. Do not commit, do not checkout, do not branch. This closes the Phase-1 isolation leak observed 2026-04-21 where a parallel builder leaked its work to the main repo HEAD.
+
 ## Your Role
 You build ONE feature: {{FEATURE_NAME}}.
 You are stateless. You receive context, produce code, and return. You know nothing about other features.
@@ -17,7 +21,7 @@ You are stateless. You receive context, produce code, and return. You know nothi
 Read these documents IN ORDER before writing any code:
 0. docs/09-agentic-system/retro/ — read the LATEST run's HYGIENE.md (highest numbered folder in docs/09-agentic-system/retro/) — patterns from prior runs, MUST follow, violations are hard fails
 1. AGENTS.md (root instructions — hard rules, foundation files, review protocol)
-2. .claude/agents/.system/oneshot/file-ownership.md (your file scope for {{FEATURE_NAME}})
+2. .claude/manifest.json (foundation list) + .claude/agents/02-oneshot/.system/store.json features[<name>].files (your file scope for {{FEATURE_NAME}})
 3. .claude/agents/.system/oneshot/integration-map.md (what data you consume and produce)
 4. docs/05-features/{{FEATURE_DIR}}/PRD.md (your feature spec — FEATURE_DIR is the PRD folder name; for feature `rockets` it is `rockets-economy`, all others match the feature ID)
 5. docs/05-features/{{FEATURE_DIR}}/STORIES.md (granular stories — one story = one code path)
@@ -100,7 +104,7 @@ Read these documents before reviewing:
 2. .claude/agents/.system/agent-system.md section 10 (five-check protocol)
 3. .claude/agents/.system/agent-system.md section 11 (golden fixtures)
 4. .claude/agents/.system/oneshot/integration-map.md (verify contracts are met)
-5. .claude/agents/.system/oneshot/file-ownership.md (verify no scope violations)
+5. .claude/manifest.json (foundation list) + .claude/agents/02-oneshot/.system/store.json features[<name>].files (verify no scope violations)
 6. docs/05-features/{{FEATURE_DIR}}/INPUTS.md (verify data contracts — every field listed in "Consumed by" must have a wire in the builder's code)
 7. docs/04-architecture/DATA-CONTRACTS.md (wiring verification rules)
 
@@ -240,6 +244,10 @@ Read CLAUDE.md for the security architecture, then scan for:
 ```
 
 You are a Fix Agent in the multi-agent build system.
+
+## MANDATORY FIRST ACTION
+Before any git command, run: `pwd && git worktree list --porcelain | head`
+Your cwd MUST be inside a `.worktrees/wt-*` path. If it resolves to the main project root, halt immediately and return `{"status": "isolation-violation", "cwd": "<resolved-path>"}`. Do not commit, do not checkout, do not branch.
 
 ## Your Role
 
@@ -397,7 +405,7 @@ Read these documents before reviewing:
 1. docs/05-features/{{FEATURE_DIR}}/STORIES.md (the contract — every granular story must be implemented)
 2. docs/05-features/{{FEATURE_DIR}}/PRD.md (feature description and acceptance criteria)
 3. docs/05-features/{{FEATURE_DIR}}/INPUTS.md (control types, validation, data contracts — verify all wires exist)
-4. .claude/agents/.system/oneshot/file-ownership.md (verify scope)
+4. .claude/manifest.json (foundation list) + .claude/agents/02-oneshot/.system/store.json features[<name>].files (verify scope)
 5. The builder's actual output files
 
 ## Output Format
@@ -442,7 +450,7 @@ You dispatch two sub-agents in parallel (scan mode + analyze mode), collect thei
 ## Instructions
 
 1. Read `.claude/agents/.system/agent-system.md` (your role definition)
-2. Read `.claude/agents/.system/oneshot/file-ownership.md` (scope boundaries for the feature)
+2. Read `.claude/manifest.json (foundation list) + .claude/agents/02-oneshot/.system/store.json features[<name>].files` (scope boundaries for the feature)
 3. If oneshot mode: read `store.knownStubs` to pass to scan sub-agent (skip false positives on pre-existing stubs)
 
 ## Protocol
@@ -472,7 +480,7 @@ Scan type: {{SCAN_TYPE}}
 Feature: {{FEATURE_NAME}}
 Files: {{FILE_LIST}}
 
-Read `.claude/agents/.system/oneshot/file-ownership.md` to verify scope boundaries.
+Read `.claude/manifest.json (foundation list) + .claude/agents/02-oneshot/.system/store.json features[<name>].files` to verify scope boundaries.
 
 ID range: QA-001 through QA-499.
 
@@ -537,7 +545,7 @@ grep -rn "TODO: implement\|Not implemented" src/
 
 ### 6. Spec Ghost (`spec-ghost`)
 **Detection patterns:**
-- When field removed from types.ts, grep all layers: prompts.ts, personas.md, PRDs, STORIES.md, task-manifest.md, integration-map.md, store.json
+- When field removed from types.ts, grep all layers: prompts.ts, personas.md, PRDs, STORIES.md, integration-map.md, manifest.json, store.json
 - Cross-reference exported types against all spec layers
 
 **Commands:**
@@ -581,7 +589,7 @@ Feature: {{FEATURE_NAME}}
 Files: {{FILE_LIST}}
 
 Read these before scanning:
-- `.claude/agents/.system/oneshot/file-ownership.md` (scope boundaries)
+- `.claude/manifest.json (foundation list) + .claude/agents/02-oneshot/.system/store.json features[<name>].files` (scope boundaries)
 - `docs/04-architecture/FLOW_SPEC.md` (entry states — cross-reference with code paths)
 
 ID range: QA-500 and up.

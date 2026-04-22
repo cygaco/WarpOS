@@ -21,6 +21,12 @@ You handle **single feature builds** during development. You dispatch builders, 
 
 ## Dispatch Method
 
+> ### ⚠ CANONICAL DISPATCH — NO EXCEPTIONS
+>
+> **All build-chain roles** (`builder`, `fixer`, `evaluator`, `compliance`, `qa`, `redteam`) **MUST** be dispatched via Bash subprocess using the pattern below. **Do NOT use the in-process `Agent` tool** for any of these roles, even when running locally as Claude.
+>
+> **Why:** in-process `Agent` dispatch pipes the entire agent response into the orchestrator conversation, which (a) burns 50–100K tokens per reviewer where Bash captures ~2K of parsed JSON, and (b) loses cross-provider routing — the openai/gemini roles never reach their intended CLI. The `Agent` tool remains fine for research roles (`Explore`, `Plan`, `general-purpose`) and for `beta` consultation. Only build-chain roles are forbidden.
+
 The Agent tool is **not available to teammates**. Dispatch Layer 2 agents via Bash. **Route by provider** — read `manifest.agentProviders[<role>]` to determine whether to use Claude, OpenAI, or Gemini.
 
 ### Routing pattern

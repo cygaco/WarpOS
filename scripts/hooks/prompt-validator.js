@@ -8,10 +8,35 @@
  * - Evaluator prompts reference golden fixtures
  * - All dispatches are logged to System Events
  *
+ * Role resolution: prefer explicit tool_input.subagent_type when present;
+ * fall back to detectRole(prompt) text inference. This prevents false
+ * positives where a fixer/compliance prompt that happens to start with
+ * `feature: <name>` gets misclassified as builder and wrongly blocked.
+ *
  * Closes: GAP-501 through GAP-506 (6 gaps).
  */
 
 const { logEvent } = require("./lib/logger");
+
+// Known subagent_type values that should map directly to a role.
+// Everything outside this set falls through to detectRole(prompt).
+const KNOWN_SUBAGENT_TYPES = new Set([
+  "builder",
+  "fixer",
+  "evaluator",
+  "compliance",
+  "qa",
+  "redteam",
+  "security",
+  "auditor",
+]);
+
+function resolveRole(subagentType, prompt) {
+  if (subagentType && KNOWN_SUBAGENT_TYPES.has(subagentType)) {
+    return subagentType;
+  }
+  return detectRole(prompt);
+}
 
 function detectRole(prompt) {
   const head = prompt.slice(0, 500).toLowerCase();
@@ -49,12 +74,14 @@ process.stdin.on("end", () => {
       process.exit(0);
     }
 
-    const prompt = (event.tool_input || {}).prompt || "";
+    const toolInput = event.tool_input || {};
+    const prompt = toolInput.prompt || "";
     if (!prompt) {
       process.exit(0);
     }
 
-    const role = detectRole(prompt);
+    const subagentType = toolInput.subagent_type || "";
+    const role = resolveRole(subagentType, prompt);
     const feature = extractFeature(prompt);
     const warnings = [];
     const blocks = [];

@@ -26,7 +26,7 @@ You dispatch two sub-agents in parallel (scan mode + analyze mode), collect thei
 ## Instructions
 
 1. Read `.claude/agents/.system.md` (your role definition)
-2. Read `.claude/agents/02-oneshot/.system/file-ownership.md` (scope boundaries for the feature)
+2. Read `.claude/manifest.json` (`fileOwnership.foundation`) + `.claude/agents/02-oneshot/.system/store.json` (`features[<name>].files`) — scope boundaries for the feature
 3. If oneshot mode: read `store.knownStubs` to pass to scan sub-agent (skip false positives on pre-existing stubs)
 
 ## Protocol
