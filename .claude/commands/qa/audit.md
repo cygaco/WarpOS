@@ -19,7 +19,7 @@ Glob these categories:
 - API routes: `src/app/api/**/route.ts`
 - Libraries: `src/lib/**/*.ts`
 - Hooks: `scripts/hooks/**/*.js`
-- Specs: `docs/05-features/**/*.md`
+- Specs: `requirements/05-features/**/*.md`
 - Architecture: `docs/04-architecture/**/*.md`
 
 ### Step 2: Determine Scope

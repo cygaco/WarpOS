@@ -25,18 +25,13 @@ If any are missing, warn and offer to continue in solo mode instead.
 
 ### Step 1.5: Write mode marker
 
-Write `.claude/runtime/mode.json` so `smart-context.js` hook emits the adhoc team-mode directive on subsequent prompts:
+Run the canonical mode-set CLI (validates the transition and writes the v2 marker schema):
 
-```js
-const fs = require("fs");
-const path = require("path");
-const runtimeDir = path.join(".claude", "runtime");
-fs.mkdirSync(runtimeDir, { recursive: true });
-fs.writeFileSync(
-  path.join(runtimeDir, "mode.json"),
-  JSON.stringify({ mode: "adhoc", setAt: new Date().toISOString() }, null, 2) + "\n"
-);
+```bash
+node scripts/mode-set.js adhoc --by alpha
 ```
+
+If the prior mode is `oneshot` with an `activeBuild`, the CLI refuses — halt the build first.
 
 ### Step 2: Create agent team
 

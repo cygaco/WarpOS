@@ -4,13 +4,13 @@ description: Cross-run intelligence and automation proposals — diagnose recurr
 
 # /check:patterns — Pattern Intelligence
 
-Single owner for "What patterns keep recurring across sessions and runs?" Mines learnings, traces, events, retros, and beta decisions to find repeat offenders and propose automation. Complements `/learn:events` (which discovers patterns from raw events) by focusing on **cross-run** recurrence.
+Single owner for "What patterns keep recurring across sessions and runs?" Mines learnings, traces, events, retros, and beta decisions to find repeat offenders and propose automation. Complements `/learn:deep` (which extracts patterns from conversation + events + retros) by focusing on **cross-run** recurrence.
 
 ## Input
 
 `$ARGUMENTS` — Mode selection:
 - No args — run both modes (diagnose then propose)
-- `diagnose` — Cross-run analysis only (embedded in `/retro:full`)
+- `diagnose` — Cross-run analysis only (embedded in `/oneshot:retro`)
 - `propose` — Automation gap proposals only (embedded in `/sleep:deep`)
 - `apply` — propose + auto-apply approved proposals (requires confirmation)
 - `--since=7d` / `--since=30d` — time window (default: 14d)
@@ -58,6 +58,22 @@ Group signals by theme:
 - **Same skill failing repeatedly** — e.g. `/fix:fast` re-escalated to `/fix:deep` N times
 - **Same file edited for the same reason** — e.g. types file for the 5th rename this month
 - **Hook blocks triggering same false positive** — e.g. memory-guard on `2>&1` redirects
+- **Recurring-issues count drift** — run `node scripts/recurring-issues-helper.js scan` to get current 7d block counts; compare each signature's actual count to the recorded `count` field in `paths.recurringIssuesFile`. If `actual_count > recorded_count * 5` (the recorded count is more than 5× stale), flag as INFO/WARN. Rationale: L10 run-10-prep — RI-004 (`node -e fs.write blocked`) was recorded count=2 but scan showed 31× actual over 7d. Stale counts lead to under-prioritized permanent-fix work. Suggested action: increment count via `/issues:log` re-invocation, OR auto-increment in this check via a `--sync-counts` flag. Severity: WARN.
+
+### Step 2.5: Echo-trap audit
+
+Read `paths.reference/echo-trap-monitoring.md` for the full signal catalogue. Run these detectors against `paths.eventsFile`, `paths.tracesFile`, and `paths.betaEvents`:
+
+- **Tool-call echo** — same `tool_name` + hashed `tool_input` ≥ 3× in a 20-call sliding window, excluding Read/Grep/Glob and short responses
+- **Agent-dispatch echo** — same `subagent_type` with prompt-similarity ≥ 0.85 ≥ 2× in a 10-dispatch window
+- **Trajectory entropy** — Shannon entropy of last 30 tool types < log2(3); flag as cycling
+- **Reasoning ping-pong** — two `paths.tracesFile` entries with `quality_score ≤ 2` swapping `framework` on the same problem hash within a session
+- **Beta directive recurrence** — same DIRECTIVE in `paths.betaEvents` ≥ 3× same calendar day with same problem signature
+- **Hook-block recurrence** — already covered by `scripts/check-guard-promotion.js`; surface its output here
+
+Filter false positives per the anti-pattern list in the reference doc (build-polling, parallel surveys, user-driven repeats).
+
+Each fired detector produces a row for the META-INTELLIGENCE report's new "Echo-trap audit" section.
 
 ### Step 3: Produce META-INTELLIGENCE report
 
@@ -87,6 +103,13 @@ Verdicts: EFFECTIVE / NEEDS ENFORCEMENT / UNTESTED / DEPRECATED
 
 | Skill | Calls | Success rate | Chained-into | Chained-after |
 |-------|-------|--------------|--------------|---------------|
+
+## 4b. Echo-Trap Audit
+
+| Detector | Fires (window) | Top signature | Recommended action |
+|----------|----------------|---------------|---------------------|
+
+Detectors per `paths.reference/echo-trap-monitoring.md`. Empty rows = healthy. First fire = advisory; second = Beta consultation; third = orchestrator hard-stop with ESCALATE.
 
 ## 5. Top 3 Prevention Proposals
 
@@ -161,6 +184,27 @@ Runs `diagnose` first, then feeds its "Top 3 Prevention Proposals" into `propose
 
 ---
 
+## Guard promotion status
+
+Warn-only guards (those gated behind a `*_STRICT=1` envvar) can drift indefinitely if they keep firing without ever tightening to a hard block. Each such guard carries a `PROMOTION_TRIGGER` header comment declaring the audit-event actions it emits and the 7-day threshold that flips it to block-mode.
+
+Run the promotion checker and include its output in the report:
+
+```bash
+node scripts/check-guard-promotion.js
+```
+
+Interpretation:
+
+- **OK** — no audit events in the last 7 days; no action needed
+- **NEAR_THRESHOLD** — 1 to 4 events; monitor
+- **CANDIDATE** — 5+ events in 7 days; propose flipping from warn-only to hard-block (remove the `STRICT` env gate in the guard, or commit a corresponding fix that addresses the root cause)
+- **OVERDUE** — `next_review` date has passed; re-evaluate the trigger criteria even if counts are low
+
+When in `propose` mode, every **CANDIDATE** row should become a proposal: "Remove `STRICT` env gate from `<guard>.js` — it fired N times in the last 7d without resolution." Cite the audit-event action names from `metric_query` as evidence.
+
+---
+
 ## When to run
 
 - **End of a multi-day work push** — `diagnose` to see what kept coming up
@@ -170,8 +214,7 @@ Runs `diagnose` first, then feeds its "Top 3 Prevention Proposals" into `propose
 
 ## Related
 
-- `/learn:events` — pattern extraction from raw events (single-session)
-- `/learn:combined` — conversation + event learning (single-session)
-- `/retro:full` — session-level retrospective (feeds into this)
+- `/learn:deep` — extracts patterns from conversation + event log + oneshot retro files (single-session)
+- `/oneshot:retro` — session-level retrospective (feeds into this)
 - `/hooks:friction` — specifically finds friction patterns suggesting missing hooks
 - `/maps:enforcements` — current automation coverage (this skill proposes additions to it)

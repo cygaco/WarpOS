@@ -169,4 +169,4 @@ Use whichever path is faster for the current session.
 - `/warp:health` — lightweight rollup (faster, less detail)
 - `/warp:doctor` — planned: `/warp:health` + `/check:all` + deltas
 - `/sleep:deep` Phase 2 — runs `/check:all --fast` as part of cleanup
-- `/preflight:run` — pre-agent-run subset (architecture + environment + requirements)
+- `/oneshot:preflight` — pre-agent-run subset (architecture + environment + requirements)

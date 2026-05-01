@@ -36,6 +36,7 @@ Based on the recommendation type:
 | Confidence adjustment | Confidence table |
 | New anti-pattern | Anti-Patterns section |
 | Persona gap | Flag for user — may need a new principle |
+| Decision Policy gap | Flag for user — target `paths.decisionPolicy` or `paths.currentStage`; never auto-apply |
 
 For each recommendation:
 1. Show the proposed change

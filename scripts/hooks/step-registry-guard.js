@@ -1,13 +1,27 @@
 #!/usr/bin/env node
 /**
+ * PROMOTED 2026-04-28: was warn-only, now hard-blocks by default.
+ *
+ * Default: STRICT — emits `decision: block` on any violation outside the allow-lists.
+ * Opt-out: `STEP_REGISTRY_GUARD_STRICT=0` (warn-only mode for emergency unblocks).
+ *
+ * Allow-lists:
+ *   ALLOW_LIST_SUBSTRINGS — files that legitimately need integer step references
+ *     (the enum definition, the storage migrator, hooks themselves)
+ *   KNOWN_VIOLATIONS_FILES — files with PRE-EXISTING violations being migrated
+ *     gradually. Don't add new entries here without a tracking issue. Each entry
+ *     is tech-debt that should be paid down by switching to the Step enum.
+ */
+
+/**
  * step-registry-guard.js — PreToolUse hook for Edit|Write.
  *
- * Warns when new code hardcodes an integer step instead of using the
+ * Blocks new code that hardcodes an integer step instead of using the
  * `Step` enum from `src/lib/types.ts` (source of truth:
  * docs/00-canonical/STEPS.json).
  *
- * Non-blocking by default (warns on stderr). Set STEP_REGISTRY_GUARD_STRICT=1
- * to block.
+ * Blocking by default. Set STEP_REGISTRY_GUARD_STRICT=0 to downgrade to warn-only
+ * (emergency only — accumulates tech debt).
  *
  * What it catches in newly-written content (source files only):
  *   - `currentStep === 5`, `currentStep <= 3`, `currentStep > 0` (any comparator)
@@ -30,7 +44,8 @@ const path = require("path");
 
 const { PROJECT, PATHS, relPath } = require("./lib/paths");
 
-const STRICT = process.env.STEP_REGISTRY_GUARD_STRICT === "1";
+// Default to strict (blocking). Opt-out: STEP_REGISTRY_GUARD_STRICT=0
+const STRICT = process.env.STEP_REGISTRY_GUARD_STRICT !== "0";
 
 const STEP_PATTERNS = [
   {
@@ -54,6 +69,19 @@ const ALLOW_LIST_SUBSTRINGS = [
   "src/lib/test-harness.ts",
   "scripts/hooks/",
 ];
+
+// Files with pre-existing violations being migrated gradually. Each entry is
+// tech debt — should eventually use STEP_TO_INT[Step.X] instead of integer
+// literals. Don't add new entries without a tracking issue.
+//
+// Status as of 2026-04-29:
+//   src/app/page.tsx — 7 of 9 hardcoded integer comparisons migrated to
+//     STEP_TO_INT[Step.X] in commit set following 31118c0. Remaining 2
+//     compare against 0 (the "no step yet" intro state, lines ~190 and
+//     ~257) — Step enum has no Step.INTRO entry, and adding one would be
+//     a wider-fan-out change. Leave allow-listed; revisit when types.ts
+//     gets an explicit pre-onboarding state.
+const KNOWN_VIOLATIONS_FILES = ["src/app/page.tsx"];
 
 // --- STEPS.json registry schema validation ---------------------------
 // Runs when the user edits docs/00-canonical/STEPS.json. Reconstructs
@@ -179,8 +207,9 @@ function emitRegistryFindings(rel, findings) {
     "for step order + phase membership. Downstream: src/lib/types.ts `Step`",
     "enum, the 3 canonical docs' step tables, scripts/hooks/step-registry-guard.js.",
     "",
-    "This is a WARNING — the edit is allowed. Fix at write-time to avoid",
-    "runtime breakage. Set STEP_REGISTRY_GUARD_STRICT=1 to block.",
+    STRICT
+      ? "This edit is BLOCKED. Fix the schema violations before retrying."
+      : "This is a WARNING (STEP_REGISTRY_GUARD_STRICT=0 set — opt-out mode).",
   );
   process.stderr.write(lines.join("\n") + "\n");
 
@@ -260,6 +289,11 @@ process.stdin.on("end", () => {
     process.exit(0);
   }
 
+  // Known pre-existing violations — file-level allow-list with tracked tech debt
+  if (KNOWN_VIOLATIONS_FILES.some((f) => rel === f || rel.endsWith("/" + f))) {
+    process.exit(0);
+  }
+
   const body =
     (event.tool_input?.content || "") +
     "\n" +
@@ -295,8 +329,9 @@ process.stdin.on("end", () => {
     "Source of truth: docs/00-canonical/STEPS.json. Use the `Step` enum",
     "from src/lib/types.ts (STEP_TO_INT / INT_TO_STEP) instead of raw integers.",
     "",
-    "This is a WARNING — the edit is allowed. Fix at write-time to avoid",
-    "accumulating tech debt. Set STEP_REGISTRY_GUARD_STRICT=1 to block.",
+    STRICT
+      ? "This edit is BLOCKED. Replace the integer literal with the Step enum."
+      : "This is a WARNING (STEP_REGISTRY_GUARD_STRICT=0 set — opt-out mode).",
   );
 
   process.stderr.write(lines.join("\n") + "\n");

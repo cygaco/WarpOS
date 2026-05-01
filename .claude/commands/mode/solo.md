@@ -17,18 +17,13 @@ Enter solo mode. No agent team — just Alpha working directly with the user. Si
 
 ### Step 1: Write mode marker
 
-Write `.claude/runtime/mode.json` so `smart-context.js` hook suppresses the team-mode / Beta-routing directive on subsequent prompts (solo = Alpha talks to user directly):
+Run the canonical mode-set CLI (validates the transition and writes the v2 marker schema with `enteredAt`, `enteredBy`, `allowedTransitions`, `activeBuild`, `lockOwner`):
 
-```js
-const fs = require("fs");
-const path = require("path");
-const runtimeDir = path.join(".claude", "runtime");
-fs.mkdirSync(runtimeDir, { recursive: true });
-fs.writeFileSync(
-  path.join(runtimeDir, "mode.json"),
-  JSON.stringify({ mode: "solo", setAt: new Date().toISOString() }, null, 2) + "\n"
-);
+```bash
+node scripts/mode-set.js solo --by alpha
 ```
+
+If the prior mode has an `activeBuild` or different `lockOwner`, the CLI will refuse and print why. Halt the active build first or pass `--force` (logs the override).
 
 ### Step 2: Set mode context
 

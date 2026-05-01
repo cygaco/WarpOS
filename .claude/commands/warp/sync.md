@@ -1,51 +1,37 @@
 ---
-description: Update WarpOS from the latest version on GitHub
+description: "DEPRECATED alias for /warp:update — kept so existing references and muscle memory keep working. Removed in warpos@1.0.0."
+user-invocable: true
 ---
 
-# /warp:sync — Update WarpOS
+# /warp:sync — DEPRECATED, use /warp:update
 
-Pull the latest version of WarpOS from GitHub and update your project's framework files.
+This skill is a wrapper that forwards to `/warp:update`. The canonical entry point is **/warp:update**.
 
-## Procedure
+## Why the rename
 
-### Step 1: Find WarpOS repo
+Phase 4 split the original `/warp:sync` operation into two clearer commands:
 
-Read `manifest.warpos.source` — this is the URL the user configured at install time (default `https://github.com/cygaco/WarpOS.git`, but may be a fork).
+- **`/warp:update`** — pull WarpOS canonical → this project (the inbound direction; what `/warp:sync` always did).
+- **`/warp:promote`** — push this project's framework changes → WarpOS canonical (the outbound direction; new in 0.1.0).
 
-Check for a local clone at `../WarpOS/` relative to the project root. If not found, tell the user to:
-1. `git clone {manifest.warpos.source} ../WarpOS`
-2. Re-run `/warp:sync`
+Calling `/warp:sync` will execute `/warp:update` with all arguments preserved, plus a one-line deprecation notice. The behavior is identical — only the canonical name changed.
 
-### Step 2: Pull latest
+## Migration
 
-```bash
-# uses the local clone — the remote was already set when the user cloned
-git -C ../WarpOS pull --rebase
+If your habit is `/warp:sync` to "fetch and apply": that's exactly what `/warp:update` does by default. No flag changes required.
+
+If you want to push outgoing changes: that was never `/warp:sync`'s job. You want `/warp:promote`.
+
+## Removal
+
+This alias is scheduled for removal at `warpos@1.0.0`. Update any docs, READMEs, scripts, or skill references that still call `/warp:sync`.
+
+## Implementation
+
+Reads `$ARGUMENTS` and dispatches:
+
+```
+/warp:update $ARGUMENTS
 ```
 
-Report the new commit hash and any changes.
-
-### Step 3: Compare versions
-
-Read `../WarpOS/version.json` and compare with `.claude/manifest.json` warpos.version.
-
-If versions match: "You're up to date."
-If WarpOS is newer: show what changed and offer to update.
-
-### Step 4: Update framework files
-
-If the user confirms, copy updated files:
-- `.claude/agents/` — agent definitions (skip files the user has customized)
-- `.claude/commands/` — skills (skip user-created skills)
-- `.claude/project/reference/` — framework reference docs
-- `scripts/hooks/` — hook implementations
-- `CLAUDE.md` and `AGENTS.md` — only if user hasn't customized them
-
-For each file that exists in both locations:
-- If the user's version is different from WarpOS, ask: keep yours, take WarpOS version, or skip
-
-### Step 5: Update version
-
-Update `.claude/manifest.json` warpos.version to match the new version.
-
-Report what was updated.
+If `/warp:update` is not yet present in the install (older WarpOS clone), fall back to the prior `/warp:sync` body — but warn loudly that the install needs `/warp:update` migration `004-rename-warp-sync-to-update`.

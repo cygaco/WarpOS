@@ -7,13 +7,13 @@ Lightweight gauntlet loop for building individual features or tasks outside of f
 Alpha dispatches gamma in adhoc mode for:
 - Single feature builds during development
 - Bug fix gauntlet runs
-- Any builder -> evaluator -> fix loop that doesn't need the full oneshot orchestration
+- Any builder -> reviewer -> fix loop that doesn't need the full oneshot orchestration
 
 ## Protocol
 
 > ### ⚠ CANONICAL DISPATCH — NO EXCEPTIONS
 >
-> **All build-chain roles** (`builder`, `fixer`, `evaluator`, `compliance`, `qa`, `redteam`) **MUST** be dispatched via Bash subprocess — `claude -p --agent <role>` for Claude-routed, `node scripts/dispatch-agent.js <role>` for OpenAI/Gemini-routed. **Do NOT use the in-process `Agent` tool** for any of these roles, even when running locally as Claude. The `Agent` tool returns the full agent response into the orchestrator conversation; Bash dispatch captures stdout and parses only the JSON envelope. See `.claude/agents/00-alex/gamma.md` Dispatch Method for the full reference pattern.
+> **All build-chain roles** (`builder`, `fixer`, `reviewer`, `compliance`, `qa`, `redteam`) **MUST** be dispatched via Bash subprocess — `claude -p --agent <role>` for Claude-routed, `node scripts/dispatch-agent.js <role>` for OpenAI/Gemini-routed. **Do NOT use the in-process `Agent` tool** for any of these roles, even when running locally as Claude. The `Agent` tool returns the full agent response into the orchestrator conversation; Bash dispatch captures stdout and parses only the JSON envelope. See `.claude/agents/00-alex/gamma.md` Dispatch Method for the full reference pattern.
 
 ### 1. Dispatch builder(s)
 
@@ -23,7 +23,7 @@ Gamma dispatches Layer 2 agents via the `claude` CLI (the Agent tool is not avai
 claude -p --model sonnet --agent <agent-name> "prompt"
 ```
 
-Available agents: `builder`, `evaluator`, `compliance`, `qa`, `redteam`, `fixer` (all under `.claude/agents/01-adhoc/`). Note: `auditor` is oneshot-only — adhoc has no auditor in the gauntlet.
+Available agents: `builder`, `reviewer`, `compliance`, `qa`, `redteam`, `fixer` (all under `.claude/agents/01-adhoc/`). Note: `learner` is oneshot-only — adhoc has no learner in the gauntlet (the learner runs cross-cycle pattern analysis, which only oneshot has cycles for).
 
 - One builder per feature. Sequential dispatches (CLI is blocking).
 - Pass the feature spec (PRD + stories) and the adhoc prompt template.
@@ -31,12 +31,13 @@ Available agents: `builder`, `evaluator`, `compliance`, `qa`, `redteam`, `fixer`
 ### 2. Run gauntlet
 
 After builder completes, dispatch each reviewer via CLI:
-- **Evaluator** — 5-check review protocol (structural, grounding, coverage, negative, open-loop)
-- **Compliance** — spec adherence + code quality
+- **Reviewer** — 7-check protocol (structural, grounding, coverage, negative, open-loop, design-compliance, code-quality)
+- **Compliance** — spec adherence + process integrity
 - **QA** — 7 failure-mode personas
 - **Redteam** — OWASP Top 10 + adversarial patterns + security-sensitive code review
+- **req-reviewer** _(Phase 3E, 2026-04-30)_ — requirements drift: behavior↔requirement↔code↔test traceability + shared-contract propagation + risk-class agreement against ChangePlan. Skipped only if `requirements/_index/requirements.graph.json` is missing (older installs).
 
-Dispatch sequentially (CLI `-p` is blocking). Collect ALL four results before proceeding.
+Dispatch sequentially (CLI `-p` is blocking). Collect ALL five results before proceeding. If `req-reviewer` returns `fail` with severity `error` finding category `risk_class_disagreement` or `contract_propagation_missed`, treat as a blocking finding regardless of the other four reviewers' verdicts.
 
 ### 3. Fix cycle (if needed)
 
@@ -62,10 +63,19 @@ GAMMA_RESULT:
       fix_attempts: <N>
   gate_checks:
     - feature: "<name>"
-      evaluator: "pass" | "fail"
+      reviewer: "pass" | "fail"
       compliance: "pass" | "fail" | "skipped"
       redteam: "pass" | "fail"
       qa: "pass" | "fail"
+  human_report:
+    verdict: "<pass/fail/halted in one sentence>"
+    what_changed: ["<material change>"]
+    why: "<why this work mattered>"
+    risks_remaining: ["<known residual risk or none>"]
+    what_was_rejected: ["<out-of-scope or rejected change>"]
+    what_was_tested: ["<gate/test/review>"]
+    needs_human_decision: ["<decision or none>"]
+    recommended_next_action: "<one next action>"
   halt_reason: "<if halted>"
   next_recommendation: "<what gamma thinks should happen next>"
 ```

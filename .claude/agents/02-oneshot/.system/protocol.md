@@ -18,6 +18,12 @@ Six rules govern every dispatch, every phase, every cycle — checked concurrent
 
 6. **Halt-vs-Continue.** Halt on product decision, missing specs, foundation change, circuit breaker, out-of-scope. Continue on single reviewer fail (fix-agent retries, max 3 / up to 3 / three attempts), BD poll in progress (keep going — poll is not a failure), feature complete (keep going). Neither "always halt" nor "always continue."
 
+7. **Decision Policy.** `paths.decisionPolicy` is the source of truth for Class A/B/C classification, escalation red lines, scoring rubric, and the 4-condition tech-introduction rule. During a oneshot run: Class A decisions are mechanical (Delta + gauntlet handle silently); Class B decisions require an ADR file dropped to `paths.policy/adr/NNNN-slug.md` before next cycle; Class C decisions halt the cycle (extends rule 6 above with a named taxonomy). The Learner is the primary enforcer of this rule — every proposed change must carry a `class` tag.
+
+8. **Builder Envelope Guards.** After every builder dispatch, before marking the feature `built`:
+   - **Empty-merge check** — `git diff --name-only master...agent/<feature>`; if empty AND verdict=pass → `BUILDER_EMPTY_MERGE` runLog entry, halt cycle, reason `EMPTY_MERGE_BUG_071`. Catches the BUG-071 class deterministically. No auto-retry.
+   - **Tech-introduction check** — if `files_modified` includes `package.json`, parse for new deps; for each, log `NEW_DEP_CANDIDATE` and require ADR before next phase. Class B treatment.
+
 ---
 
 ## The Prompt
@@ -36,6 +42,9 @@ Read these documents FIRST, in order:
 7. `.claude/agents/02-oneshot/.system/integration-map.md` — data contracts between features
 8. `.claude/agents/02-oneshot/.system/retros/` — latest numbered folder's HYGIENE.md contains the cumulative hygiene rules from all prior runs (MUST be referenced in every builder prompt). Use the HIGHEST numbered retro folder — it supersedes earlier versions while retaining their rules by reference.
 9. `docs/99-resources/` — visual ground truth (production flow screenshots for builders to match UX against)
+10. `paths.decisionPolicy` — Class A/B/C taxonomy, escalation red lines, scoring rubric, tech-introduction rule. Cited by Doctrine rule 7 above.
+11. `paths.currentStage` — current product stage (`mvp` / `beta` / `production`) and stage-specific priorities/avoid-list. Stage shifts the rubric weights; rule changes that conflict with current stage priorities should be flagged or deferred.
+12. `paths.adrIndex` — settled architecture decisions plus the numbered ADR archive at `paths.policy/adr/`. Check precedent before any Class B decision; if a tradeoff was already settled in a prior run's ADR, cite it instead of re-deciding.
 
 ## Your Job
 1. Read the store (.claude/agents/store.json) to see current state
@@ -50,7 +59,7 @@ Read these documents FIRST, in order:
 2. Determine the next phase to execute by reading `.claude/manifest.json` → `build.phases` (ordered list of phases with `parallel: true|false`) and `build.features` (each feature's `phase` id + `dependencies` array + `sequential?` override). The canonical phase graph lives there — there is no separate task-manifest file.
 2.5. Duplicate check — before spawning any builder, reviewer, or fix agent, re-read `store.features[name].status` to verify it hasn't changed since you last read the store. Another agent may have completed or failed in the meantime. If status has changed, skip the dispatch and re-plan.
 3. For each task in the phase:
-   a. Construct the builder prompt using personas.md.
+   a. Construct the builder prompt via `node scripts/delta-dispatch-builder.js <feature>`. The script writes the prompt to `.claude/runtime/dispatch/<feature>-prompt.txt` and a launcher to `<feature>-launch.sh`.
       CRITICAL: The FIRST line of every builder prompt MUST be `feature: <name>` (e.g., `feature: auth`).
       The gate-check hook matches this declaration to enforce dependency gating. Without it, the hook
       falls back to task-ID matching and may not identify the feature correctly.
@@ -60,22 +69,24 @@ Read these documents FIRST, in order:
    d. Collect the result
 3.5. Before dispatching builders for any feature, run:
      node scripts/validate-gates.js --advance <phase-number>
-     If it returns non-zero, you MUST run evaluator/security on blocking features first.
+     If it returns non-zero, you MUST run reviewer/security on blocking features first.
 3.6. Heartbeat — after each significant action (dispatch, review collection, gate check), write to `store.heartbeat`:
      { "cycle": <N>, "phase": <N>, "feature": "<name>", "status": "<dispatching|reviewing|gating>", "timestamp": "<ISO 8601>" }
      This lets external monitors detect hangs. See Circuit Breaker Rules for staleness threshold.
 4. After all builders in a phase complete — run the PARALLEL GAUNTLET:
    a. Snapshot all files in scope for each feature (sha256 hash per file)
-   b. Fan-out — spawn ALL 4 reviewers in parallel (single message, multiple tool calls):
-      - Evaluator: Agent tool → evaluator subagent (personas.md evaluator template)
+   b. Fan-out — spawn ALL 5 reviewers in parallel (single message, multiple tool calls):
+      - Reviewer: `claude -p --agent reviewer "<prompt>"` (prompt body built by `scripts/delta-build-reviewer-prompt.js`); reviewer.md frontmatter sets provider/model/effort
       - Compliance: Bash tool → `codex "prompt..."` or `gemini "prompt..."` (read command from store.compliance.command)
         If command fails: try store.compliance.fallback, then skip (log warning)
-      - Redteam: Agent tool → redteam subagent (this four-reviewers gauntlet role is also known by its legacy / older / previously-used name "security"; canonical is redteam = security)
-      - QA: Agent tool → qa subagent (personas.md QA orchestrator template). QA is self-orchestrating — it spawns its own scan + analyze sub-agents internally. Returns one merged JSON.
-   c. Collect ALL results from all 4 reviewers
-   d. Calculate points + achievements: node scripts/points.js --feature <name> --run <N>
-   e. Run auditor analysis (spawn auditor subagent to check for patterns).
-      The Auditor is limited to max 3 rule changes + max 1 spec patch per cycle. If the Auditor proposes more, the orchestrator defers excess changes to the next cycle.
+      - Redteam: `claude -p --agent redteam "<prompt>"` (this four-reviewers gauntlet role is also known by its legacy / older / previously-used name "security"; canonical is redteam = security)
+      - QA: `claude -p --agent qa "<prompt>"`. QA is self-orchestrating — it spawns its own scan + analyze sub-agents internally. Returns one merged JSON.
+      - **req-reviewer** _(Phase 3E added 2026-04-30)_: `claude -p --agent req-reviewer "<prompt>"` — requirements drift: behavior↔requirement↔code↔test traceability + shared-contract propagation + risk-class agreement. Skipped only if `requirements/_index/requirements.graph.json` is missing (older installs). Findings of category `risk_class_disagreement` or `contract_propagation_missed` are blocking regardless of the other four panel verdicts.
+   c. Collect ALL results from all 5 reviewers
+   d. **Test-runner gate (Gate 6).** After the four-reviewer panel passes, spawn `test-runner` for each feature in the phase via `claude -p --agent test-runner ...`. Inputs: `{{FEATURE}}`, `{{WORKTREE_BRANCH}}`, `{{TIMEOUT_MS=180000}}`. The agent runs `npx playwright test requirements/<feature>` headless, parses the JSON reporter output, and emits a `TestResult` envelope (PASS|FAIL|SKIP|HANG). If the feature touched UI (changed files intersect `src/components/**` or `src/app/**`), ALSO spawn `visual-review` in parallel with the test-runner. Visual-review uses the project-registered Playwright MCP server (`.mcp.json`) to drive a real browser; findings of severity `critical` or `high` count as a gate failure. Both must pass before merge to skeleton branch.
+   e. Calculate points + achievements: node scripts/points.js --feature <name> --run <N>
+   f. Run learner analysis (spawn learner subagent to check for patterns).
+      The Learner is limited to max 3 rule changes + max 1 spec patch per cycle. If the Learner proposes more, the orchestrator defers excess changes to the next cycle.
 5. If ANY reviewer fails:
    a. Merge ALL failures from all reviewers into a UNIFIED fix brief using this structure:
       - TASK: what's broken (merged failures from all reviewers)
@@ -198,7 +209,7 @@ Every builder agent MUST use isolation: "worktree". No exceptions.
 ## Codex Dispatch Rules
 - Each builder is submitted as an async Codex task on its own branch agent/<feature-name>
 - Create the branch from current master BEFORE submitting the task
-- Include in the task prompt: builder template (from personas.md), branch name, file scope
+- Include in the task prompt: builder template (built by `scripts/delta-dispatch-builder.js`), branch name, file scope
 - Poll for task completion — polling is NOT a failure (same patience as BD polling)
 - Builders in the same phase with no cross-dependency can run as parallel Codex tasks
 - Evaluator and security run AFTER all builder tasks in a phase complete
@@ -223,13 +234,14 @@ Each cycle follows:
 - Escalation: circuit breaker if 3 consecutive failures or 5 total failures
 
 ## Acceptance Gates (MANDATORY — Run 01 skipped these, resulting in 25 QA bugs (2× P0, 7× P1). Run 02 MUST NOT skip.)
-After EACH phase, you MUST run ALL five gates. Proceeding without them is a HALT-worthy violation.
+After EACH phase, you MUST run ALL six gates. Proceeding without them is a HALT-worthy violation.
 
 1. `npm run build` passes clean
-2. Evaluator agent scores >= 80 for all features in the phase
+2. Reviewer (formerly Evaluator) agent scores >= 80 for all features in the phase
 3. Compliance reviewer passes (all checks, or reduced checks for All-Star rank)
-4. Security agent shows no critical or high vulnerabilities
+4. Redteam (formerly Security) shows no critical or high vulnerabilities
 5. No file ownership violations
+6. **Test-runner verdict = PASS** for every feature in the phase that touched UI (`src/components/**` or `src/app/**`) or has tests at `requirements/<feature>/tests/`. Verdict `SKIP` (no tests yet) is acceptable for now but MUST be tracked as a Phase D coverage gap. Verdict `FAIL` triggers fix-agent dispatch like any reviewer fail. Verdict `HANG` triggers `INVESTIGATE` — do NOT auto-spawn fix-agent (could be infra). For UI-touching features, **also** spawn `visual-review` in parallel; its findings of severity `critical` or `high` count as a gate failure.
 
 **Gate enforcement protocol:**
 - Before advancing to the next phase, write a `GATE_CHECK` entry to store.json runLog with: phase number, build result, evaluator result, security result
@@ -284,12 +296,13 @@ When all phases complete (or all possible phases are done with some skipped):
 1. Run `npm run build` one final time
 2. Run full security scan
 3. Report: features completed, features skipped (with reasons), total cycles, total fix attempts
-4. Commit all changes with message: "feat: agent build — [list of features completed]"
+4. Include the standard human_report shape: verdict, what changed, why, risks remaining, what was rejected, what was tested, what needs human decision, recommended next action
+5. Commit all changes with message: "feat: agent build — [list of features completed]"
 
 ## PRD Path Mapping
-When constructing builder prompts, the PRD path is `docs/05-features/<feature-dir>/PRD.md`. Feature IDs match folder names in all cases except: feature `rockets` → folder `rockets-economy`.
+When constructing builder prompts, the PRD path is `requirements/05-features/<feature-dir>/PRD.md`. Feature IDs match folder names in all cases except: feature `rockets` → folder `rockets-economy`.
 
-> **Note:** Feature ID `rockets` maps to directory `docs/05-features/rockets-economy/`. All other feature IDs map 1:1 to their directory name (e.g., feature `auth` → `docs/05-features/auth/`). This alternate mapping also applies when constructing paths for STORIES.md, COPY.md, INPUTS.md, and HL-STORIES.md.
+> **Note:** Feature ID `rockets` maps to directory `requirements/05-features/rockets-economy/`. All other feature IDs map 1:1 to their directory name (e.g., feature `auth` → `requirements/05-features/auth/`). This alternate mapping also applies when constructing paths for STORIES.md, COPY.md, INPUTS.md, and HL-STORIES.md.
 
 ## Rules
 - You are mechanical. Read the manifest, dispatch by the rules, check the gates.

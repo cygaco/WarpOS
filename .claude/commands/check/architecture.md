@@ -45,7 +45,7 @@ Spawn an Explore agent. Focus: **can agents build from these docs without contra
 - `.claude/agents/01-adhoc/*/` and `.claude/agents/02-oneshot/*/` — build-chain agent definitions
 - `.claude/project/reference/{reasoning-frameworks,operational-loop,learning-lifecycle}.md`
 - Foundation files listed in `manifest.fileOwnership.foundation`
-- Each feature's spec files (resolve `requirements/05-features/{feature}/` from manifest; fall back to `docs/05-features/`)
+- Each feature's spec files (resolve `requirements/05-features/{feature}/` from manifest; fall back to `requirements/05-features/`)
 
 ### Internal checks (I1–I12)
 
@@ -61,6 +61,11 @@ Spawn an Explore agent. Focus: **can agents build from these docs without contra
 - **I10 Role completeness** — each build-chain role (builder, evaluator, compliance, qa, redteam, fixer, auditor) has an agent file in the relevant mode dir
 - **I11 Known stubs exist** — every file in `store.knownStubs` exists AND contains a stub marker
 - **I12 Locked interfaces** — every entry in `store.lockedInterfaces` references a real exported type
+- **I13 Step registry consistency** — verify `docs/00-canonical/STEPS.json` exists, is valid JSON, and passes step-registry-guard schema validation. Run `node scripts/generate-steps-maps.js --check` — if exit ≠ 0, flag as ERROR (canonical doc tables have drifted from registry). Severity: ERROR.
+- **I14 Canonical dispatch callouts present** — verify `delta.md`, `gamma.md`, `01-adhoc/.system/protocol.md`, and `02-oneshot/.system/protocol.md` each contain a callout that build-chain roles (builder, evaluator, compliance, qa, redteam, fixer, auditor) MUST dispatch via `claude -p --agent` Bash subprocess + `parseProviderJson`, NOT via the in-process `Agent` tool. Grep for `claude -p --agent` or `parseProviderJson` in each of those four files; if any is missing the callout, flag as ERROR. Rationale: L1 run-09 — Agent-tool dispatch returned 50–100K tokens of agent prose per reviewer into the orchestrator and halted a full-session run at Phase 2. Severity: ERROR.
+- **I15 Worktree isolation preamble in build personas** — verify every builder and fixer persona (`01-adhoc/builder.md`, `01-adhoc/fixer.md`, `02-oneshot/builder.md`, `02-oneshot/fixer.md`) includes an explicit isolation preamble that runs `pwd && git worktree list --porcelain` at dispatch time and aborts if the working directory is not under `.claude/runtime/worktrees/`. Grep for `git worktree list --porcelain` in each persona file; missing preamble in any role → ERROR. Rationale: L2 run-09 — first parallel dispatch leaked to main repo dir when two `worktree add` calls fired simultaneously; mitigation is only effective if preamble is in the persona. Severity: ERROR.
+- **I16 Builder dispatch references latest HYGIENE** — verify builder/fixer personas reference the highest-numbered retro's HYGIENE file (resolve via `ls .claude/agents/02-oneshot/.system/retros/ | sort -n | tail -1`). If persona references an older retro (e.g. "retro 08 HYGIENE" when retro 10 exists), flag as WARN. Rationale: L7 run-09 — Rules 62/63/64 were the ruleset that broke Phase 1 Rockets; stale references leave builders blind to the class of bugs that keeps recurring. Severity: WARN.
+- **I17 validate-gates.js PHASES sync with manifest** — every `manifest.build.features[].id` MUST appear in the `PHASES` dict in `scripts/validate-gates.js` at the matching phase number. Conversely, every entry in PHASES must correspond to a manifest feature. Build `Set<feature_id>` from each, symmetric difference must be empty. To check: load both files, parse PHASES from validate-gates.js (regex `(\d+(?:\.\d+)?)\s*:\s*\[([^\]]+)\]`), compare to `manifest.build.features.map(f => f.id)` grouped by phase. Missing entry in PHASES → ERROR. Missing manifest entry but present in PHASES → ERROR (orphan gate). **Exemption: phase=0 (foundation).** The unified `foundation` manifest entry is a product-level abstraction; PHASES enumerates 10 granular `foundation-*` build-orchestration sub-units (foundation-types, foundation-constants, etc.). Both representations are valid at different layers. Skip the symmetric-diff check for phase 0 entries; instead, verify that EVERY file in `manifest.fileOwnership.foundation` is owned by exactly one `foundation-*` entry's `files[]` in store. Rationale: L9 run-10-prep — backend gate sync was the immediate trigger; L12 follow-up — initial enforcement also fired on legitimate foundation schema split, treating two-views as drift. Severity: ERROR (phase ≥ 1); phase=0 uses different validation.
 
 ---
 
@@ -70,7 +75,7 @@ Spawn an Explore agent. Focus: **where layers connect, where they contradict.**
 
 ### Requirements × Architecture
 
-- **S1 Stories → types** — `STORIES.md` `Data:` fields exist in the project's types file(s) (resolve via `manifest.foundation`)
+- **S1 Specs → foundation types** — every type/field reference in `PRD.md`, `INPUTS.md`, and `STORIES.md` (across all features) MUST resolve to an actual export in `src/lib/types.ts` (or whichever foundation type file `manifest.fileOwnership.foundation` lists). How to check: (a) extract the named-type set from the foundation file (regex `export (type|interface|enum)\s+(\w+)`); (b) for each spec doc, grep for `<TypeName>\.<fieldName>` patterns AND for `Data:` lines (legacy STORIES convention); (c) for each `<TypeName>` referenced in specs, parse the foundation type body and confirm `<fieldName>` exists. Flag any reference to a non-existent type or field as ERROR: "`<feature>/<doc>` references `<TypeName>.<fieldName>` but `<TypeName>` in `<foundation file>` has no such field." Rationale: L13 run-10-prep — backend PRD added references to `SessionData.activeTicketId` for tab-close recovery; if foundation type wasn't updated to match, builder would write `session.activeTicketId = ...` and `npm run build` would fail mid-run, halting Delta. R8 / former-S1 only covered STORIES `Data:` lines — too narrow; PRD prose and INPUTS field tables also reference types and were uncovered. Severity: ERROR.
 - **S2 Stories → prompts** — prompt template names in stories match actual template names in code
 - **S3 Stories → validation** — error messages and constraint values match validation rules
 - **S4 INPUTS → consumers** — every consumed-by feature has a matching story
@@ -113,6 +118,7 @@ Resolve directory: `requirements/00-canonical/` (or legacy `docs/00-canonical/`)
 
 - **H5 STACK.md, DATA_FLOW.md, SECURITY.md** — present, non-empty, current
 - **H6 DATA_FLOW matches code paths** — every producer-consumer pair resolves
+- **H17 Production baseline** — run `node scripts/checks/production-baseline.js`. Missing production, accessibility, analytics, disaster recovery, release readiness, or deprecation policy docs are production-readiness failures.
 
 ### Feature docs (05-features)
 

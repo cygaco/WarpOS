@@ -35,6 +35,12 @@ const {
   parseProviderJson,
 } = require("./hooks/lib/providers");
 const { PATHS } = require("./hooks/lib/paths");
+const {
+  acquireSlotSync,
+  releaseSlot,
+} = require("./hooks/lib/concurrency-lock");
+const { record: recordProviderTrace } = require("./agents/provider-trace");
+const { validate: validateAgentOutput } = require("./agents/output-validator");
 
 /**
  * Find an agent spec file for a role by scanning .claude/agents/.
@@ -136,6 +142,7 @@ if (!prompt.trim()) {
 }
 
 const provider = getProviderForRole(role);
+const promptBytes = Buffer.byteLength(prompt, "utf8");
 
 if (provider === "claude") {
   console.error(
@@ -152,7 +159,39 @@ if (provider === "claude") {
   process.exit(2);
 }
 
+// Phase 5T F8: Gemini redteam prompts above 75KB routinely timed out.
+// Return a structured fallback signal before spending the provider timeout.
+if (provider === "gemini" && role === "redteam" && promptBytes > 75 * 1024) {
+  const fallbackResult = {
+    ok: false,
+    provider,
+    role,
+    fallback: true,
+    error: `Prompt is ${promptBytes} bytes; redteam/gemini limit is 75KB. Split the scan or fall back to Claude redteam.`,
+  };
+  recordProviderTrace({
+    role,
+    expectedProvider: provider,
+    actualProvider: "claude",
+    fellBack: true,
+    fallbackReason: fallbackResult.error,
+    promptBytes,
+    ok: false,
+  });
+  console.log(JSON.stringify(fallbackResult));
+  process.exit(1);
+}
+
 if (!providerAvailable(provider)) {
+  recordProviderTrace({
+    role,
+    expectedProvider: provider,
+    actualProvider: "claude",
+    fellBack: true,
+    fallbackReason: `Provider ${provider} CLI not available`,
+    promptBytes,
+    ok: false,
+  });
   console.log(
     JSON.stringify({
       ok: false,
@@ -165,17 +204,77 @@ if (!providerAvailable(provider)) {
   process.exit(1);
 }
 
-// Honor the agent's frontmatter-declared provider_model (e.g. qa → gpt-5.4-mini,
-// evaluator → gpt-5.4, redteam → gemini-3.1-pro-preview) instead of falling back
-// to the provider default for every role.
-const roleModel = getRoleModel(role);
-const result = runProvider(role, prompt, roleModel ? { model: roleModel } : {});
+// Acquire a per-provider concurrency slot. Caps protect against API rate
+// limits and concurrency-induced failures (e.g. gemini reliably errors on
+// 15+ parallel calls but is fine 1-by-1 — observed during run-12 redteam
+// gauntlet, retro 2026-04-29). On slot-acquire timeout, return fallback:true
+// so the orchestrator routes to claude instead of waiting indefinitely.
+const slotTimeoutMs = parseInt(
+  process.env.DISPATCH_SLOT_TIMEOUT_MS || `${10 * 60 * 1000}`,
+  10,
+);
+const slot = acquireSlotSync(provider, { timeoutMs: slotTimeoutMs });
+if (!slot) {
+  recordProviderTrace({
+    role,
+    expectedProvider: provider,
+    actualProvider: "claude",
+    fellBack: true,
+    fallbackReason: `Provider ${provider} concurrency cap full after ${slotTimeoutMs}ms`,
+    promptBytes,
+    ok: false,
+  });
+  console.log(
+    JSON.stringify({
+      ok: false,
+      provider,
+      role,
+      fallback: true,
+      error: `Provider ${provider} concurrency cap full after ${slotTimeoutMs}ms — falling back to Claude. Tune via ${provider.toUpperCase()}_MAX_CONCURRENCY env var.`,
+    }),
+  );
+  process.exit(1);
+}
 
-// Add role + structured output to result
-result.role = role;
-if (roleModel) result.specModel = roleModel;
-const parsed = parseProviderJson(result.output);
-if (parsed) result.parsed = parsed;
+let result;
+try {
+  // Honor the agent's frontmatter-declared provider_model (e.g. qa → gpt-5.4-mini,
+  // evaluator → gpt-5.4, redteam → gemini-3.1-pro-preview) instead of falling back
+  // to the provider default for every role.
+  const roleModel = getRoleModel(role);
+  result = runProvider(role, prompt, roleModel ? { model: roleModel } : {});
+
+  // Add role + structured output to result
+  result.role = role;
+  if (roleModel) result.specModel = roleModel;
+  const parsed = parseProviderJson(result.output);
+  if (parsed) result.parsed = parsed;
+  const envelopeValidation = validateAgentOutput(role, parsed || result.output || "");
+  result.envelopeValidation = {
+    ok: envelopeValidation.ok,
+    errors: envelopeValidation.errors || [],
+    normalized: envelopeValidation.normalized
+      ? {
+          agent: envelopeValidation.normalized.agent,
+          verdict: envelopeValidation.normalized.verdict,
+          findings: envelopeValidation.normalized.findings.length,
+          requiresHuman: envelopeValidation.normalized.requiresHuman,
+        }
+      : null,
+  };
+  recordProviderTrace({
+    role,
+    expectedProvider: provider,
+    actualProvider: result.provider || provider,
+    model: result.model || roleModel || null,
+    fellBack: !!result.fallback,
+    fallbackReason: result.error || null,
+    promptBytes,
+    ok: result.ok,
+  });
+} finally {
+  releaseSlot(slot);
+}
 
 console.log(JSON.stringify(result));
 process.exit(result.ok ? 0 : 1);

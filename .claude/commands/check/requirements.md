@@ -6,17 +6,31 @@ description: Specification consistency, coverage, and drift — static audit, ch
 
 Single owner for "Are the specs consistent, complete, and up to date with the code?"
 
+## Phase 3 — Engine
+
+Five backing modules under `scripts/requirements/` (Phase 3A + 3D + 3F + 3K):
+
+| Tool | Purpose |
+|------|---------|
+| `node scripts/requirements/graph-build.js` | Rebuild `requirements/_index/requirements.graph.json` from PRDs + STORIES + HL-STORIES + contracts. Use `--check` for staleness gate. |
+| `node scripts/requirements/gate.js` | Freshness Gate. Exit 0 green / 1 yellow / 2 red. Wired into merge-guard, preflight, and CI (Phase 5M). |
+| `node scripts/requirements/review.js` | Coverage report — orphans, duplicates, stale_pending_review counts, per-feature verification ratios. |
+| `node scripts/requirements/apply-rco.js --auto-expire 30` | Auto-close open RCOs older than 30 days (Class C exempt). Run during `/learn:integrate`. |
+| `node scripts/requirements/stage-rco.js --backfill` | Migrate legacy staged-drift entries to schema v2. |
+
+The slash-command modes below remain. They wrap and complement the engine.
+
 Three modes:
 - **static** — full audit across all features (use before agent runs or periodic health check)
-- **drift** — what changed this session, did specs propagate? (embedded in `/retro:full`)
-- **review** — batch-review pending drift entries staged by `edit-watcher` (absorbed the old `/check:requirements review` skill)
+- **drift** — what changed this session, did specs propagate? (embedded in `/oneshot:retro`)
+- **review** — batch-review pending drift entries staged by `edit-watcher` (absorbed the old `/reqs:review` skill)
 
 ## Input
 
 `$ARGUMENTS` — Mode selection:
 - No args — `static` full audit
 - `drift` — session-diff propagation check
-- `review` — pending drift review (absorbed old `/check:requirements review`)
+- `review` — pending drift review (absorbed old `/reqs:review`)
 - `<feature-name>` — scope static or drift to one feature
 - `<feature-name> --drift` — combine: feature-scoped drift check
 - `review --compact` — one-line summary per pending entry (triage mode)
@@ -29,7 +43,7 @@ Three modes:
 
 1. `.claude/paths.json` — canonical paths
 2. `.claude/manifest.json` — `build.features[]`, `projectPaths.specs`, `build.featureIdToDir`
-3. Resolve spec directory: `manifest.projectPaths.specs` (default `requirements/05-features/`, fallback `docs/05-features/`)
+3. Resolve spec directory: `manifest.projectPaths.specs` (default `requirements/05-features/`, fallback `requirements/05-features/`)
 4. Requirement standards (if present): `requirements/03-requirement-standards/`, `requirements/04-architecture/`, `requirements/00-canonical/`
 5. Foundation files from `manifest.fileOwnership.foundation`
 
@@ -65,9 +79,10 @@ For each feature in manifest:
 
 ### Coverage checks
 
-- **R11 Every `build.features[].id` has a folder** with the 3 required files
-- **R12 No orphan spec folders** — every folder under `{specs}/` matches a manifest feature (or is explicitly archived)
-- **R13 Foundation files mentioned** — every `fileOwnership.foundation` file referenced by at least one spec that justifies its shared status
+- **R11 Every `build.features[].id` has a folder with all 5 required files** — `PRD.md`, `HL-STORIES.md`, `STORIES.md`, `INPUTS.md`, `COPY.md` must all exist. Missing any one → ERROR. **Exemption: `phase=0` features (foundation infrastructure)** are not user-facing product features and don't have spec folders by design — their canonical home is `manifest.fileOwnership.foundation`, not `requirements/05-features/`. Skip the 5-file requirement when `feature.phase === 0`. Rationale: L8 run-10-prep — backend feature was added with only PRD.md (4 missing) and would have silently entered run-10 with no spec for builders to build against. L11 — initial too-aggressive enforcement flagged manifest's unified `foundation` (a phase-0 build-orchestration concept) as missing a docs folder it was never meant to have. Severity upgraded from WARN to ERROR for phase ≥ 1; phase=0 is exempt. No exemptions for "thin" product features.
+- **R12 No orphan spec folders** — every folder under `{specs}/` matches a manifest feature (or is explicitly archived). Severity: ERROR.
+- **R13 Foundation files mentioned** — every `fileOwnership.foundation` file referenced by at least one spec that justifies its shared status. Severity: WARN.
+- **R16 No orphan code files** — every TypeScript file under `src/components/`, `src/app/api/`, `src/lib/`, `src/hooks/`, `extension/` MUST be owned by exactly one of: (a) some `store.features[<id>].files[]` array, or (b) `manifest.fileOwnership.foundation`, or (c) explicitly listed in a `manifest.fileOwnership.shared` allowlist (if defined). Build the union of all owned file paths from store + foundation; glob the actual src/ tree; symmetric diff. Files-on-disk-not-owned → ERROR: "`<path>` exists in code but no feature owns it; either add to `store.features[<owner>].files[]` or to `fileOwnership.foundation`." Files-owned-not-on-disk are caught by I11 (knownStubs exist). Rationale: L14 run-10-prep — system reminders repeatedly surface "Code without specs: AimPage.tsx, ConfettiBurst.tsx, Step8Skills.tsx" but no preflight check formalizes this. Orphan code is dangerous because (1) builders can't know to update it during runs (no spec drives it), (2) gut-mode skips it (not in any feature's files[]), (3) it accumulates as drift weight. Severity: ERROR. Exemptions: files prefixed `.` or under `__tests__/`, `*.test.ts(x)`, `*.spec.ts(x)`, `*.stories.tsx`.
 
 ### Drift indicators (static signal)
 
@@ -97,7 +112,7 @@ For each feature in manifest:
 
 ## Mode: drift — Session Diff Propagation
 
-After a coding session (or embedded in `/retro:full`), checks whether code edits that affect specs were propagated to the spec files.
+After a coding session (or embedded in `/oneshot:retro`), checks whether code edits that affect specs were propagated to the spec files.
 
 ### Step 1: Load session signal
 
@@ -145,15 +160,25 @@ Then hand off: `"Use /check:requirements review to process {N} pending drift ent
 
 ---
 
-## Mode: review — Batch Drift Review (absorbed old /check:requirements review)
+## Mode: review — Batch Drift Review (absorbed old /reqs:review)
 
 Process pending drift entries staged by the `drift` mode or by the `edit-watcher` hook.
 
 ### Step 1: Load pending entries
 
-Read `paths.events/requirements-staged.jsonl`. Parse all lines, apply last-write-wins resolution (if multiple entries share `id`, latest wins). Filter to `status === "pending"`.
+Use the reconciler at `scripts/lib/staged-drift-reconciler.js`:
 
-If a `<feature>` argument was given, also filter by `feature`.
+```js
+const { reconcile } = require("./scripts/lib/staged-drift-reconciler");
+const r = reconcile(".claude/project/events/requirements-staged.jsonl");
+// r.pending = entries whose latest status_update (or envelope.status if no
+// update yet) resolves to "pending". Joined cross the audit trail — does NOT
+// trust the original envelope's frozen `data.status: "pending"` field.
+```
+
+Why the reconciler matters: the staged-drift file is append-only. When a drift entry is decided (approved / rejected / deferred), the decision lands as a separate `status_update` line — the original envelope keeps its `data.status: "pending"` forever. A naive read of envelopes shows hundreds of false-pending. Run-12 NEXT.md reported "71 pending" while the true count was 1; run-13 verified via `scripts/test-staged-drift-reconciler.js`.
+
+If a `<feature>` argument was given, also filter `r.pending` by `feature`.
 
 If zero pending: report `"No pending requirement changes."` and exit.
 
@@ -247,7 +272,7 @@ For deferred entries: `status: "deferred"`.
 ## When to run
 
 - **Before starting a build session** — `static` (scoped to the feature you'll touch)
-- **Embedded in `/retro:full`** — `drift` (automatic)
+- **Embedded in `/oneshot:retro`** — `drift` (automatic)
 - **After `edit-watcher` stages drift entries** — `review` (manual, when ready to process)
 - **Weekly / on `/sleep:deep`** — `static` full audit for gradual drift
 - **Before publishing a spec-facing release** — full `static` audit
@@ -256,6 +281,6 @@ For deferred entries: `status: "deferred"`.
 
 - `/check:architecture` — doc/agent consistency (pairs with this)
 - `/check:references` — raw file-path existence (subset of R1, R8)
-- `/retro:full` — runs `drift` mode automatically
-- `/learn:events` — finds spec-drift patterns across sessions
+- `/oneshot:retro` — runs `drift` mode automatically
+- `/learn:deep` — finds spec-drift patterns across sessions (Phase B event-log mining)
 - `edit-watcher` hook — auto-stages drift entries via paths.events/requirements-staged.jsonl

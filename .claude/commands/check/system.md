@@ -49,7 +49,7 @@ These are the canonical WarpOS system categories. Scan each, produce a list, com
 - `paths.agents/00-alex/*.md` — core team (alpha, beta, gamma, delta)
 - `paths.agents/01-adhoc/**/*.md` — adhoc-mode build-chain agents
 - `paths.agents/02-oneshot/**/*.md` — oneshot-mode build-chain agents
-- `paths.agentSystem/*` — shared agent system files (protocol, lexicon, personas)
+- `paths.agentSystem/*` — shared agent system files (protocol, lexicon, policy)
 - `paths.betaSystem/*` — Beta's judgment model
 
 ### 3. Skills (procedural memory)

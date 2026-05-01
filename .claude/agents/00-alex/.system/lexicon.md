@@ -38,6 +38,6 @@ Terms as we use them. Not industry definitions — ours.
 
 **Pseudoname** — Human-readable name for each agent: Alex Alpha (α), Alex Beta (β), Alex Gamma (γ). All interchangeable with the Greek-letter form.
 
-**GAMMA_RESULT** — Structured result format γ returns to α after completing a scoped build task. Contains: scope, status, features completed/failed, gate checks, points summary, circuit breaker state, halt reason, and next recommendation.
+**GAMMA_RESULT** — Structured result format γ returns to α after completing a scoped build task. Contains: scope, status, features completed/failed, gate checks, a human_report block, halt reason, and next recommendation.
 
 **Context every turn** — The principle that every prompt receives enriched context automatically, without the user or agent having to request it. Implemented by `smart-context.js` (prompt pipeline hook), which injects relevant learnings, reasoning history, system state, and cross-session inbox into `additionalContext` on every turn. The agent never operates context-free — even cold starts get memory-informed context. Contrast with on-demand context, where agents must explicitly query for what they need.

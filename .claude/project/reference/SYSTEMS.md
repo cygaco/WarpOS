@@ -58,7 +58,7 @@ Last updated: 2026-04-16.
 | beta | 2 | mine patterns, integrate recommendations |
 | check | 6 | architecture, environment, patterns, references, requirements, system |
 | commit | 3 | local, remote, both |
-| content | 2 | linkedin, contra (consumer-project-only) |
+| content | 2 | linkedin, contra (jobhunter-only) |
 | fav | 2 | list, search |
 | fix | 2 | fast, deep |
 | hooks | 5 | add, disable, friction, sync, test |

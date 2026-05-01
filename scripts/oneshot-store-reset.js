@@ -46,11 +46,46 @@ s.totalFailures = 0;
 s.circuitBreaker = "CLOSED";
 s.lastCooldownMs = 0;
 
+// Close the prior runLog before starting a new one. Pass 5.1 audit
+// previously WARNed/ERRORed because finalStatus stayed null across runs
+// and prior summary lingered (e.g. "Run 006" still in the field at the
+// start of run 10). Archive prior runLog into runLogHistory[] and start
+// fresh.
 s.runLog = s.runLog || {};
-s.runLog.finalStatus = null;
-s.runLog.startedAt = new Date().toISOString();
-s.runLog.haltReason = null;
-s.runLog.branch = branch;
+if (
+  s.runLog.finalStatus === null &&
+  (s.runLog.startedAt || s.runLog.summary || s.runLog.branch)
+) {
+  // Implicit completion — running preflight implies prior run is over.
+  s.runLog.finalStatus = "completed";
+  s.runLog.endedAt = new Date().toISOString();
+  s.runLog.closedBy = "oneshot-store-reset.js (implicit)";
+}
+if (s.runLog.startedAt || s.runLog.summary) {
+  s.runLogHistory = s.runLogHistory || [];
+  s.runLogHistory.push({ ...s.runLog });
+  // Cap history at 20 entries — older runs live in retros/.
+  if (s.runLogHistory.length > 20) {
+    s.runLogHistory = s.runLogHistory.slice(-20);
+  }
+}
+
+// Derive runId from branch name (skeleton-test10 → run-010).
+const runIdMatch = (branch || "").match(/skeleton-test(\d+)/);
+const runId = runIdMatch
+  ? `run-${String(runIdMatch[1]).padStart(3, "0")}`
+  : null;
+
+// Fresh runLog for this run.
+s.runLog = {
+  runId,
+  branch,
+  startedAt: new Date().toISOString(),
+  finalStatus: null,
+  endedAt: null,
+  haltReason: null,
+  summary: null,
+};
 
 s.heartbeat = {
   cycle: 0,

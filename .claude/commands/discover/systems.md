@@ -105,7 +105,7 @@ Git co-modification. Files changed together repeatedly are almost certainly one 
 - Count co-occurrences: pairs modified ≥3 times together
 - Surface the top 20 pair-clusters
 
-**Signal:** reveals *feature* cohesion invisible to dir structure (e.g. `scripts/hooks/foo.js` + `.claude/commands/foo.md` + `docs/05-features/foo/PRD.md` = one feature even though 3 dirs).
+**Signal:** reveals *feature* cohesion invisible to dir structure (e.g. `scripts/hooks/foo.js` + `.claude/commands/foo.md` + `requirements/05-features/foo/PRD.md` = one feature even though 3 dirs).
 **Noise:** omnibus commits touching many unrelated files skew the signal. Filter commits with >20 files.
 
 ---
@@ -190,7 +190,7 @@ Because one angle lies. The declared inventory lies when someone forgets to upda
 - `/check:system` — inventories Angle 1 only (declarative). This skill supersets it.
 - `/maps:systems` — builds the dependency graph this skill's Angle 4 also uses; reuse the cache if fresh.
 - `/check:references` — Angle 4 overlap, but `/check:references` is looking for BROKEN refs; this skill uses refs to discover systems.
-- `/preflight:run` — runs a subset (Angles 1, 2, 5) as part of pre-run verification.
+- `/oneshot:preflight` — runs a subset (Angles 1, 2, 5) as part of pre-run verification.
 - `/learn:integrate` — when this skill promotes an Emergent to the manifest, log a `learn` event; the next `/learn:integrate` run may want to validate.
 
 ---

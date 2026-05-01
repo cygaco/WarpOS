@@ -156,6 +156,17 @@ Review Alex β's performance since last sleep:
    - Prompt: "Run `/check:requirements review` to process, or they'll carry to next session"
    - Log deferred entries to cross-session inbox so next session sees them
 
+7. **Recurring system-issues review**
+   ```bash
+   node scripts/recurring-issues-helper.js list
+   node scripts/recurring-issues-helper.js scan
+   ```
+   - For each open issue in the curated list:
+     - If a recent commit landed a permanent fix (cross-reference `git log --oneline --since="last sleep"` against the issue's title/category), suggest `/issues:resolve <id> "<commit-summary>"`
+     - If `last_seen` is older than 30 days AND no instance has fired since, suggest demoting to `monitoring` status
+   - For scan candidates with count ≥ 3 not already tracked: queue as next-session prompt to run `/issues:log`
+   - Log to sleep journal under "Recurring system issues: N open, M resolution-candidates, K new scan-candidates"
+
 ### Phase 3: Replay (NREM Stage 2 — Spindle-Mediated Review)
 
 **Biology:** Sleep spindles (10-15 Hz) create temporal windows for synaptic plasticity. During these windows, the brain reviews the day's experiences from new angles, finding patterns the waking mind missed.

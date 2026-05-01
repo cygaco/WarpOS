@@ -7,6 +7,7 @@ model: sonnet
 provider: openai
 provider_model: gpt-5.4-mini
 provider_fallback: claude
+provider_reasoning_effort: medium
 maxTurns: 60
 color: yellow
 ---
@@ -43,5 +44,6 @@ You dispatch two sub-agents in parallel (scan mode + analyze mode), collect thei
    - Sum `files_checked`
    - Recalculate `summary` from merged totals
 5. If a sub-agent fails or returns invalid JSON: include the other sub-agent's results, note the failure in summary
-6. Return ONLY the merged JSON object — no prose
+6. Return ONLY the merged JSON envelope — no prose. Envelope shape:
+   `{"agent":"qa","version":1,"verdict":"pass|warn|fail","confidence":0.0,"findings":[],"requiresHuman":false,"details":{...merged QA fields...}}`
 ```

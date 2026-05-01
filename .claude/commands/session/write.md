@@ -1,14 +1,28 @@
 ---
-description: Post a message to the cross-session inbox so other Alex sessions can see it
+description: Post a message to the cross-session inbox so other Alex sessions can see it. Default is fully automatic — no arguments needed. Use `--about <topic>` to focus the broadcast on a specific topic the user wants emphasized.
 ---
 
 # /session:write — Cross-Session Message
 
 Posts an inbox event to `.claude/project/events/events.jsonl` (cat=inbox) that all other Alex sessions will see on their next prompt (via context-enhancer).
 
+**Default behavior is fully automatic** — `/session:write` with no arguments auto-gathers everything worth sharing and broadcasts. You don't decide what to include; the skill does.
+
+## Modes
+
+| Invocation | Behavior |
+|------------|----------|
+| `/session:write` | Auto-gather + write to inbox. This is the **auto mode** — no user input needed. Message covers whatever stood out this session. |
+| `/session:write <note>` | Auto-gather + append the user's note verbatim at the end + write to inbox. |
+| `/session:write --about <topic>` | **Topic-focused mode.** User tells the skill what the message should be *about*; skill auto-gathers, filters/re-orders the gathered context to emphasize that topic, composes a focused message, and writes to inbox. Still a write, not read-only. Example: `/session:write --about our new backend idea and how it impacted requirements` → broadcast message centers on the backend design + its spec impact, not on a generic session summary. |
+
 ## Input
 
-`$ARGUMENTS` — Optional. A message or note to include. If omitted, the skill auto-gathers ALL context — you don't need to think about what to share.
+`$ARGUMENTS` — Optional.
+
+- If the first token is `--about`, treat the rest of the arguments as the **topic** the user wants the broadcast message to focus on. The skill still writes to the inbox; the topic tells it what to emphasize from the auto-gathered context. Non-topical material is dropped from the final message (kept only if it's critical context).
+- Otherwise the arguments are treated as a free-form user note appended to the auto-composed message.
+- If omitted entirely, the skill auto-gathers ALL context and broadcasts without user direction.
 
 ## Process
 
@@ -38,7 +52,7 @@ If no uncommitted changes, check `git log --since="2 hours ago" --name-only --fo
 
 **f) Research outputs:** Check if any new files exist under `paths.research` (`docs/99-resources/01-research/`) that weren't there before.
 
-**g) Spec changes:** Check for modified files in `docs/05-features/` or `docs/04-architecture/`.
+**g) Spec changes:** Check for modified files in `requirements/05-features/` or `docs/04-architecture/`.
 
 ### 2. Build Message
 
@@ -66,7 +80,19 @@ Session ended. Last task: {user's last major request}
 }
 ```
 
-### 3. Write via Logger
+### 3. Branch by mode
+
+**If `--about <topic>` in $ARGUMENTS** (topic-focused mode):
+
+Recompose the message so it is *about* the topic the user specified. Steps:
+
+1. Re-rank the gathered context by relevance to the topic (files, systems, decisions that touch the topic go first; unrelated noise is dropped).
+2. Include a one-line framing at the top: `Topic: {user's --about string}`.
+3. Compose a dense, topic-focused message that a future session would need to continue that specific thread (not a generic session log).
+4. Write to inbox via the logger as normal.
+5. Confirm with a brief "Shared to inbox (topic-focused): ..." note.
+
+**Otherwise** (default / note-appended mode): write via the logger with the auto-composed message; append user's free-form note verbatim if provided.
 
 Use the centralized logger to write the inbox event:
 ```bash
@@ -82,6 +108,8 @@ Output a brief confirmation:
 Shared to inbox: "{first 80 chars of message}"
 Other sessions will see this on their next prompt.
 ```
+
+Always output the confirmation — both default and `--about` modes write to the inbox.
 
 ## Auto-Share Triggers
 

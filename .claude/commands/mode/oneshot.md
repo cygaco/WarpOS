@@ -28,18 +28,13 @@ If any check fails, report what's missing and stop. Do NOT launch Delta into a b
 
 ### Step 2: Write mode marker
 
-Write `.claude/runtime/mode.json` so `smart-context.js` hook emits the correct directive on subsequent prompts (oneshot suppresses the team-mode / Beta-routing directive):
+Run the canonical mode-set CLI. Oneshot takes a lock — `lockOwner` is `delta` and `activeBuild` is the current store branch:
 
-```js
-const fs = require("fs");
-const path = require("path");
-const runtimeDir = path.join(".claude", "runtime");
-fs.mkdirSync(runtimeDir, { recursive: true });
-fs.writeFileSync(
-  path.join(runtimeDir, "mode.json"),
-  JSON.stringify({ mode: "oneshot", setAt: new Date().toISOString() }, null, 2) + "\n"
-);
+```bash
+node scripts/mode-set.js oneshot --by alpha --lock-owner delta --active-build "$(git rev-parse --abbrev-ref HEAD)"
 ```
+
+The lock blocks transitions until Delta halts and clears it (Delta writes `--lock-owner ""` on halt). If a stale lock blocks you, halt the build first or pass `--force`.
 
 ### Step 3: Set mode context
 

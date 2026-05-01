@@ -1,0 +1,90 @@
+---
+description: "Unified WarpOS diagnostic — runs every health check in one place. Like /warp:health but full-coverage."
+user-invocable: true
+---
+
+# /warp:doctor — Comprehensive WarpOS diagnostic
+
+Phase 4F entry point. Aggregates every check that exists across the system into one report. Use this when:
+
+- After `/warp:update --apply` completes — verify the install is healthy.
+- Before `/warp:release` — confirm the source repo is green.
+- After a long session — sweep for accumulated drift.
+- When `/warp:health` reports yellow and you want the deeper view.
+
+## Difference from /warp:health
+
+- `/warp:health` = quick status (10s) — green/yellow/red per system, designed for "is anything broken?" triage.
+- `/warp:doctor` = full diagnostic (1-3 min) — runs every check + every gate + every fixture, surfaces every finding, classifies severity.
+
+## Usage
+
+| Invocation | Behavior |
+|---|---|
+| `/warp:doctor` | Full diagnostic. Default. |
+| `/warp:doctor --quick` | Skip fixtures. ~30s. |
+| `/warp:doctor --gates-only` | Run only the release gates (use before `/warp:release`). |
+| `/warp:doctor --json` | Machine-readable output. |
+| `/warp:doctor --worktrees` | Also enumerate active worktrees + their dirty state. |
+
+## What runs
+
+In parallel where possible:
+
+1. **`/warp:health`** — install integrity, ownership, missing files.
+2. **`/check:references`** — broken cross-file links.
+3. **`/check:requirements`** + `node scripts/requirements/gate.js` — spec drift.
+4. **`/paths:lint --strict`** — path coherence.
+5. **`/check:architecture`** — agent system + cross-layer seams.
+6. **`/hooks:test --all`** — every hook against its fixtures (Phase 5G; doctor surfaces the gap if the hook lacks fixtures).
+7. **`scripts/schemas/validate.js`** — every config validates against its `$schema`.
+8. **`scripts/warpos/release-build.js <current-version> --check`** — current capsule integrity.
+9. **Runtime-leak scan** — anything under `paths.runtime/` accidentally tracked in git.
+10. **Version consistency** — `version.json`, `framework-manifest.json`, capsule `release.json` all agree on current version.
+
+## Output shape
+
+For each check:
+
+```
+[GRN ] check_name: 1-line message
+[YEL ] check_name: 1-line message
+[RED ] check_name: 1-line message
+        - finding 1
+        - finding 2
+```
+
+Final summary:
+
+```
+Summary: N green · M yellow · K red — overall <PASS|WARN|FAIL>
+```
+
+Fail = any red. Warn = any yellow without red. Pass = all green.
+
+## Release gates (Phase 4H)
+
+When called as `/warp:doctor --gates-only`, runs only the 10 release gates:
+
+1. Path Coherence — `node scripts/paths/gate.js`
+2. Framework Manifest — `node scripts/generate-framework-manifest.js --check`
+3. Reference Integrity — `/check:references --json`
+4. Hook Registration — `/hooks:test --registered`
+5. Hook Fixture Tests — `/hooks:test --all` (skipped if 5G hasn't shipped fixtures yet; surfaced as YEL not RED until then)
+6. Fresh Install Fixture — `node scripts/test-fresh-install.js` (skipped if `fixtures/install-empty-next-app/` missing — Phase 4G)
+7. Update Fixture from previous — `node scripts/warpos/update.js --to <prev-version> --dry-run` against `fixtures/update-from-<prev>-clean/`
+8. Customized Install Fixture — same engine against `fixtures/update-from-<prev>-customized/`
+9. Runtime Leak Scan — `git ls-files | grep -E '\\.claude/runtime/|\\.claude/project/events/'` empty
+10. Version Consistency — `version.json` `version` matches `framework-manifest.json` `version` matches latest capsule's `release.json` `version`
+
+If any gate fails, `/warp:release` stops; the publish does not proceed.
+
+## Failure recovery
+
+The output for each red finding includes a fix hint. For framework-level fixes (path-registry drift, manifest regen) the hints reference the regenerator script. For project-level findings (open Class C RCO, stale spec) the hints reference the appropriate `/check:*` skill.
+
+## See also
+
+- `/warp:health` — the lightweight check, designed to run frequently.
+- `/warp:release` — uses `/warp:doctor --gates-only` as its first step.
+- `/check:all` — runs the project-level checks; `/warp:doctor` is the framework-level superset.

@@ -35,7 +35,8 @@ The skeleton is the instrumented starting point that all agents build against. I
 
 ### playwright.config.ts
 
-- Test dir: `./e2e`
+- Test dir: `./requirements`
+- Test match: `**/tests/**/*.spec.ts` (per-feature folder convention)
 - Fully parallel
 - Projects: chromium (desktop), mobile (375x812)
 - Web server: `npm run dev` on port 3000
@@ -146,7 +147,7 @@ src/
     test-harness.ts     — QA runner
     scraper-scripts.ts  — BD page scripts
     deus-mechanicus.ts  — manifest interfaces
-    deus-mechanicus-<product>.ts — manifest factory
+    deus-mechanicus-jobzooka.ts — manifest factory
     warp-profiles.ts    — cross-product profiles
 
 extension/
@@ -157,7 +158,7 @@ extension/
   popup.css
   popup.js
 
-e2e/                    — Playwright tests
+requirements/           — Per-feature folders, each with tests/ subfolder; _shared/ for fixtures + helpers (was e2e/)
 scripts/                — lint-prds.js
 public/                 — favicon.ico, pdf.worker.min.mjs
 ```

@@ -9,6 +9,7 @@ provider_model: gemini-3.1-pro-preview
 provider_fallback: claude
 maxTurns: 60
 color: red
+provider_reasoning_effort: high
 ---
 
 # Red Team Orchestrator Dispatch Template
@@ -34,5 +35,6 @@ You are the Red Team Orchestrator. You dispatch two sub-agents in parallel (scan
    - Sum `files_checked`
    - Recalculate `summary` from merged totals
 5. If a sub-agent fails or returns invalid JSON: include the other sub-agent's results, note the failure in summary
-6. Return ONLY the merged JSON object — no prose
+6. Return ONLY the merged JSON envelope — no prose. Envelope shape:
+   `{"agent":"redteam","version":1,"verdict":"pass|warn|fail","confidence":0.0,"findings":[],"requiresHuman":false,"details":{...merged security fields...}}`
 ```

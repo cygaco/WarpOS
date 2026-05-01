@@ -53,6 +53,19 @@ const { PATHS } = (() => {
   }
 })();
 
+// Phase 1B — augment hardcoded rules with the generator's output
+// (scripts/path-lint.rules.generated.json). When present, its rules layer on
+// top of the embedded ones below; this is how new rules added to the registry
+// (e.g. the docs/05-features → requirements/05-features CRITICAL added in
+// Phase 1) take effect without editing this script.
+const GENERATED_RULES = (() => {
+  try {
+    return require("./path-lint.rules.generated.json");
+  } catch {
+    return null;
+  }
+})();
+
 const PROJECT = path.resolve(process.env.CLAUDE_PROJECT_DIR || ".");
 const argv = process.argv.slice(2);
 const FLAGS = {
@@ -190,6 +203,35 @@ const WARN = [
   },
 ];
 
+// Layer in any registry-derived rules from path-lint.rules.generated.json.
+// Phase 1B: keeps the registry as the single source of truth for new rules
+// while preserving the embedded ones above as the fallback.
+if (GENERATED_RULES) {
+  for (const r of GENERATED_RULES.critical || []) {
+    if (!r.match) continue;
+    try {
+      CRITICAL.push({
+        re: new RegExp(r.match, "g"),
+        suggestion: r.suggestion || "",
+        why: r.why || "registry rule",
+      });
+    } catch {
+      /* skip malformed */
+    }
+  }
+  for (const r of GENERATED_RULES.warn || []) {
+    if (!r.match || !r.key) continue;
+    try {
+      WARN.push({
+        re: new RegExp(r.match, "g"),
+        key: r.key,
+      });
+    } catch {
+      /* skip malformed */
+    }
+  }
+}
+
 const EXTENSIONS = new Set([".md", ".js", ".json"]);
 const SKIP_DIRS = new Set([
   "node_modules",
@@ -213,11 +255,27 @@ const SKIP_SUBSTRINGS = [
   "/check/references.md", // rename catalog lives here
   ".claude/dreams/",
   ".claude/agents/02-oneshot/.system/retros/", // historical retros
+  ".claude/agents/.system/dispatch-backups/", // dispatch snapshots
   "backups/",
   "SYSTEMS-REFERENCE.md", // doc being migrated
   "warpos-system-updates", // historical migration doc
   "warpos-roadmap.md", // roadmap docs
   "ROADMAP.md",
+  ".claude/.session-checkpoint.json", // periodic snapshot of past prompts
+  ".claude/.last-checkpoint", // periodic snapshot
+  ".claude/.agent-result-hashes.json", // tool call hashes
+  "CHANGELOG.md", // historical changelog mentions superseded paths
+  "CHANGELOG-test-system.md", // historical changelog of old paths
+  "BACKLOG.md", // backlog references work history and archived framework planning
+  "scripts/append-trace-rt013.js", // RT-013 incident documentation
+  "scripts/hooks/team-guard.js", // documents RT-013 fix in comment
+  "warpos/paths.registry.json", // registry holds the regex strings as data
+  "scripts/path-lint.rules.generated.json", // generated mirror of registry
+  "schemas/paths.schema.json", // generated schema
+  "docs/04-architecture/PATH_KEYS.md", // generated reference doc
+  // Phase 4 — capsule + migration historical references
+  "warpos/releases/", // changelogs / upgrade-notes name the renamed paths
+  "migrations/0.0.0-to-0.1.0/003-docs-to-requirements.js", // semantic purpose IS the rewrite
 ];
 
 const critical = [];

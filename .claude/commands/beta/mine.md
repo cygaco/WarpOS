@@ -78,6 +78,12 @@ Write findings to `.claude/agents/00-alex/.system/beta/judgement-model-recommend
 
 ## Persona Gaps
 - Questions Alex β couldn't answer with no matching principle
+
+## Decision Policy Gaps
+- Cases where β couldn't classify a question as Class A/B/C cleanly (target: `paths.decisionPolicy`)
+- Cases where the scoring rubric weights felt wrong for the current product stage (target: `paths.currentStage` or `paths.decisionPolicy`)
+- Cases where an escalation red line was hit but β was unsure whether it really applied (target: `paths.decisionPolicy` red lines section)
+- Note: these never auto-apply via `/beta:integrate` — always user-flagged for review
 ```
 
 ## Phase 3: Summary

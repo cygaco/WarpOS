@@ -52,7 +52,7 @@ Right now you're in solo mode. Try `/mode:adhoc` when you're ready to build your
 
 - `/fix:fast` — Got a bug? Just describe it and I'll find and fix it.
 - `/maps:architecture` — See how your project is structured.
-- `/learn:conversation` — I review what we've learned and remember it for next time.
+- `/learn:deep` — I review what we've learned this session (and from event log + recent retros) and remember it for next time.
 - `/session:handoff` — Save everything about this session so the next one picks up where we left off.
 - `/sleep:quick` — Let me consolidate what I've learned (takes about 2 minutes).
 - `/research:simple` — Need to research something? I'll query multiple AI models and synthesize the results.

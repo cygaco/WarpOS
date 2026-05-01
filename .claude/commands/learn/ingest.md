@@ -198,7 +198,7 @@ For each insight, determine where it should be applied:
 | architecture | docs/04-architecture/*.md, SPEC_GRAPH.json | Architecture doc update, new graph edge |
 | process | .claude/commands/*.md, docs/03-*/*.md | Skill update, process doc update |
 | security | docs/07-security/*.md, scripts/hooks/*-guard.js | Security policy, new guard hook |
-| ux | docs/01-design-system/*.md, docs/05-features/*/COPY.md | Design pattern, copy improvement |
+| ux | docs/01-design-system/*.md, requirements/05-features/*/COPY.md | Design pattern, copy improvement |
 | meta | docs/00-canonical/*.md, CLAUDE.md, .claude/project/memory/ | System-level improvement |
 
 ### Step 4: Generate Proposals

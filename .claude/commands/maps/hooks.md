@@ -50,7 +50,7 @@ Example terminal:
 ```
 UserPromptSubmit
   ├─▶ smart-context.js
-  └─▶ smart-context.js
+  └─▶ prompt-logger.js
 
 PreToolUse [Bash]
   └─▶ gate-check.js

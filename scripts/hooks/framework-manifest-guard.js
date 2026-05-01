@@ -59,6 +59,20 @@ const TRACKED_TOP_LEVEL = [
   "AGENTS.md",
 ];
 
+// Phase 2A: paths-related files. When any of these are staged, also require
+// scripts/paths/gate.js to pass. Reuses the same fail-closed semantics as
+// the manifest staging check.
+const PATHS_RELATED = [
+  "warpos/paths.registry.json",
+  ".claude/paths.json",
+  "scripts/hooks/lib/paths.generated.js",
+  "scripts/path-lint.rules.generated.json",
+  "schemas/paths.schema.json",
+  "docs/04-architecture/PATH_KEYS.md",
+  "scripts/paths/build.js",
+  "scripts/paths/gate.js",
+];
+
 function block(reason) {
   try {
     const { logEvent } = require("./lib/logger");
@@ -104,6 +118,36 @@ process.stdin.on("end", () => {
     }
 
     const stagedTracked = staged.filter(isTracked);
+    const stagedPaths = staged.filter((f) => PATHS_RELATED.includes(f));
+
+    // Phase 2A: when paths-related files are staged, the path coherence
+    // gate must pass before commit. Run it synchronously; block on failure.
+    // Independent from manifest-staging check below — both can fire.
+    if (stagedPaths.length > 0) {
+      const { spawnSync } = require("child_process");
+      const result = spawnSync(
+        process.execPath,
+        [path.join(PROJECT_DIR, "scripts", "paths", "gate.js")],
+        { cwd: PROJECT_DIR, encoding: "utf8" },
+      );
+      if (result.status !== 0) {
+        const out = (result.stdout || "").split("\n").slice(-12).join("\n");
+        block(
+          [
+            "framework-manifest-guard: path coherence gate failed.",
+            "Staged paths-related files require scripts/paths/gate.js to pass:",
+            "",
+            ...stagedPaths.map((f) => `  - ${f}`),
+            "",
+            "Gate output (tail):",
+            out,
+            "",
+            "Fix the findings or run: node scripts/paths/build.js",
+          ].join("\n"),
+        );
+      }
+    }
+
     if (stagedTracked.length === 0) process.exit(0); // no tracked changes
 
     const manifestStaged = staged.includes(".claude/framework-manifest.json");

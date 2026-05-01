@@ -5,8 +5,9 @@ tools: Read, Grep, Glob, Bash
 disallowedTools: Agent, Edit, Write
 model: inherit
 provider: openai
-provider_model: gpt-5.4
+provider_model: gpt-5.5
 provider_fallback: claude
+provider_reasoning_effort: high
 maxTurns: 40
 color: pink
 ---
@@ -38,9 +39,9 @@ Do NOT "check if this code meets standards." Instead: find evidence that this co
 
 Read these documents before reviewing:
 
-1. docs/05-features/{{FEATURE_DIR}}/STORIES.md (the contract — every granular story must be implemented)
-2. docs/05-features/{{FEATURE_DIR}}/PRD.md (feature description and acceptance criteria)
-3. docs/05-features/{{FEATURE_DIR}}/INPUTS.md (control types, validation, data contracts — verify all wires exist)
+1. requirements/05-features/{{FEATURE_DIR}}/STORIES.md (the contract — every granular story must be implemented)
+2. requirements/05-features/{{FEATURE_DIR}}/PRD.md (feature description and acceptance criteria)
+3. requirements/05-features/{{FEATURE_DIR}}/INPUTS.md (control types, validation, data contracts — verify all wires exist)
 4. .claude/manifest.json (fileOwnership.foundation) + .claude/agents/02-oneshot/.system/store.json (features[<name>].files) — verify scope
 5. The builder's actual output files
 

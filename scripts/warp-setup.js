@@ -1252,29 +1252,90 @@ if (!fs.existsSync(agentsMdTarget) && fs.existsSync(agentsMdSource)) {
 }
 
 // ── Write framework-installed.json snapshot ─────────────
-// Snapshot of everything the ship-manifest declared at install time, written
-// to the target project. Ghost-file detection on re-install compares this
-// against the then-current manifest. /warp:uninstall walks this list
-// backwards for exhaustive removal.
+// Phase 1D — schema v2 captures per-asset hash + mergeStrategy + owner so
+// /warp:update can do a real three-way merge later. Per-asset record:
+//   src, dest, installedHash (what we shipped), currentHashAtInstall (what
+//   the target had if we skipped due to existing), owner, mergeStrategy.
+// Adds: installedVersion, installedCommit (from WarpOS source repo HEAD when
+//       resolvable), installedAt, source.
+//   generated[]: every per-project file the installer creates from a builder.
 try {
-  const installedFiles = [];
-  for (const entries of Object.values(shipManifest.assets)) {
-    for (const e of entries) installedFiles.push(e.dest);
+  const cryptoMod = require("crypto");
+  function sha256OfFile(absPath) {
+    if (!absPath || !fs.existsSync(absPath)) return null;
+    return cryptoMod
+      .createHash("sha256")
+      .update(fs.readFileSync(absPath))
+      .digest("hex")
+      .slice(0, 12);
   }
+
+  // Resolve installedCommit from WarpOS repo HEAD if we can. Fail open.
+  let installedCommit = null;
+  try {
+    installedCommit = execSync("git rev-parse HEAD", {
+      cwd: WARPOS,
+      stdio: ["pipe", "pipe", "pipe"],
+    })
+      .toString()
+      .trim();
+  } catch {
+    /* not a git repo or no HEAD — fine */
+  }
+
+  const installedFiles = [];
+  const perAsset = [];
+  for (const [kind, entries] of Object.entries(shipManifest.assets)) {
+    for (const e of entries) {
+      installedFiles.push(e.dest);
+      const srcAbs = path.join(WARPOS, e.src);
+      const destAbs = path.join(TARGET, e.dest);
+      perAsset.push({
+        id: e.id || null,
+        kind,
+        src: e.src,
+        dest: e.dest,
+        installedHash: e.sha256 || sha256OfFile(srcAbs),
+        currentHashAtInstall: sha256OfFile(destAbs),
+        owner: e.owner || "framework",
+        mergeStrategy: e.mergeStrategy || "replace_if_unmodified",
+        introducedIn: e.introducedIn || null,
+      });
+    }
+  }
+
+  const generated = [];
+  for (const g of shipManifest.generated_files || []) {
+    const destAbs = path.join(TARGET, g.dest);
+    generated.push({
+      dest: g.dest,
+      builder: g.builder,
+      idempotent: !!g.idempotent,
+      hashAtInstall: sha256OfFile(destAbs),
+    });
+  }
+
   const snapshot = {
-    $schema: "warpos/framework-installed/v1",
+    $schema: "warpos/framework-installed/v2",
     manifest_version: shipManifest.version,
-    installed_at: new Date().toISOString(),
+    manifest_schema: shipManifest.$schema || "warpos/framework-manifest/v1",
+    installedVersion: shipManifest.version,
+    installedCommit,
+    installedAt: new Date().toISOString(),
     source: interview.warposSource || "https://github.com/cygaco/WarpOS.git",
-    installed_files: installedFiles.sort(),
-    generated_files: shipManifest.generated_files.map((g) => g.dest).sort(),
     counts: shipManifest.counts,
+    installed_files: installedFiles.sort(),
+    assets: perAsset.sort((a, b) => a.dest.localeCompare(b.dest)),
+    generated: generated.sort((a, b) => a.dest.localeCompare(b.dest)),
   };
   fs.writeFileSync(
     installedSnapshotPath,
     JSON.stringify(snapshot, null, 2) + "\n",
   );
-  log("ok", "Wrote .claude/framework-installed.json (for uninstall + sync)");
+  log(
+    "ok",
+    `Wrote .claude/framework-installed.json (schema v2: ${perAsset.length} assets + ${generated.length} generated)`,
+  );
 } catch (e) {
   log("warn", `Could not write framework-installed.json: ${e.message}`);
 }
