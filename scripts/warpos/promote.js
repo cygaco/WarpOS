@@ -43,10 +43,17 @@ const REPO_ROOT = path.resolve(__dirname, "..", "..");
 // Framework-owned tree roots. Only files under these prefixes are candidates
 // for promotion. Anything outside is considered project / app code and
 // ignored.
+//
+// 2026-05-01 fix: framework-manifest.json + paths.json had been missing from
+// this list, leaving the WarpOS canonical clone with a stale install manifest
+// (0.1.0, 203 assets) and no path registry at all — install.ps1 silently
+// installed a degraded subset on consumer projects.
 const FRAMEWORK_PREFIXES = [
   ".claude/agents/",
   ".claude/commands/",
   ".claude/project/reference/",
+  ".claude/framework-manifest.json",
+  ".claude/paths.json",
   "scripts/",
   "schemas/",
   "warpos/",
@@ -87,10 +94,13 @@ const EXCLUDE_PREFIXES = [
 // not as filled values. settings.json gets per-project env vars
 // (CLAUDE_RUN_NUMBER, CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS) that must NOT
 // overwrite the canonical distribution settings.
+//
+// 2026-05-01 fix: paths.json removed — it's framework-canonical (every
+// consumer project shares the same path layout). Earlier classification as
+// template-review was over-conservative and blocked routine promotion.
 const TEMPLATE_REVIEW_PATHS = [
   ".claude/manifest.json",
   ".claude/agents/02-oneshot/.system/store.json",
-  ".claude/paths.json",
   ".claude/settings.json",
 ];
 
