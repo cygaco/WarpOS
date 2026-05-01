@@ -320,17 +320,194 @@ async function run(opts) {
     };
   }
 
-  // Apply mode is intentionally NOT implemented in this Phase 4 baseline.
-  // The Phase 4 gate only requires --dry-run to return a sane plan; the
-  // actual three-way merge + migration runner will land in 4.5 once a real
-  // upgrade target exists. Refusing to apply prevents an under-tested code
-  // path from corrupting an install.
+  // ── Apply path ──────────────────────────────────────────
+  // 2026-05-01: implemented alongside promote.js apply. Mirrors the same
+  // contract: refuse if any Class C surfaced, otherwise walk the plan,
+  // copy/delete files, and write framework-installed.json with new state.
+  if (byClass.C.length > 0) {
+    const offenders = byClass.C.slice(0, 10).map(
+      (d) => `${d.category}: ${d.dest}`,
+    );
+    return {
+      ok: false,
+      mode: "apply",
+      error: `ESCALATE: ${byClass.C.length} Class C item(s) must be resolved before --apply. Sample:\n  ${offenders.join("\n  ")}`,
+      report,
+    };
+  }
+
+  const sourceRoot = opts.sourceRoot
+    ? path.resolve(opts.sourceRoot)
+    : capsule.dir;
+
+  const applyResult = applyUpdateDecisions(
+    sourceRoot,
+    REPO_ROOT,
+    decisions,
+    capsule.manifest,
+    {
+      confirmDeletes: !!opts.confirmDeletes,
+    },
+  );
+
+  // Update framework-installed.json snapshot.
+  const newInstalled = buildInstalledSnapshot(
+    target,
+    capsule,
+    applyResult,
+    installed,
+  );
+  fs.writeFileSync(
+    INSTALLED_FILE,
+    JSON.stringify(newInstalled, null, 2) + "\n",
+  );
+
   return {
-    ok: false,
+    ok: applyResult.ok,
     mode: "apply",
-    error:
-      "Apply path not yet implemented in 0.1.0 baseline. Use --dry-run for now; --apply lands in the next release.",
     report,
+    apply: applyResult,
+  };
+}
+
+// ── Apply helpers ───────────────────────────────────────
+
+function ensureDir(p) {
+  fs.mkdirSync(p, { recursive: true });
+}
+
+function flattenSourceAssets(manifest) {
+  // Returns Map<dest, asset> where asset has src + dest.
+  const out = new Map();
+  for (const kind of Object.keys(manifest.assets || {})) {
+    for (const a of manifest.assets[kind]) {
+      out.set(a.dest, { ...a, kind });
+    }
+  }
+  return out;
+}
+
+function applyUpdateDecisions(
+  sourceRoot,
+  targetRoot,
+  decisions,
+  capsuleManifest,
+  opts,
+) {
+  const counts = {
+    added: 0,
+    updated: 0,
+    deleted: 0,
+    deletes_skipped: 0,
+    merged: 0,
+    skipped_no_op: 0,
+    errors: 0,
+  };
+  const errors = [];
+
+  // sourceRoot is the capsule dir; capsule's manifest knows where each src
+  // file lives in the *source* (relative to sourceRoot's parent — the
+  // WarpOS clone). For simplicity we resolve `src` relative to the source
+  // tree two levels up from the capsule (warpos/releases/<v>/ → repo root).
+  const sourceTreeRoot = path.resolve(sourceRoot, "..", "..");
+  const sourceAssets = flattenSourceAssets(capsuleManifest);
+
+  for (const d of decisions) {
+    const dstAbs = path.join(targetRoot, d.dest);
+    try {
+      switch (d.category) {
+        case "ADD_SAFE":
+        case "UPDATE_SAFE":
+        case "GENERATED_REBUILD":
+        case "MERGE_SAFE": {
+          const asset = sourceAssets.get(d.dest);
+          if (!asset) {
+            counts.errors += 1;
+            errors.push({
+              dest: d.dest,
+              error: "asset not in source manifest",
+            });
+            break;
+          }
+          const srcAbs = path.join(sourceTreeRoot, asset.src);
+          if (!fs.existsSync(srcAbs)) {
+            counts.errors += 1;
+            errors.push({
+              dest: d.dest,
+              error: `source missing: ${asset.src}`,
+            });
+            break;
+          }
+          ensureDir(path.dirname(dstAbs));
+          fs.copyFileSync(srcAbs, dstAbs);
+          if (d.category === "ADD_SAFE") counts.added += 1;
+          else if (d.category === "MERGE_SAFE") counts.merged += 1;
+          else counts.updated += 1;
+          break;
+        }
+        case "DELETE_SAFE": {
+          if (!opts.confirmDeletes) {
+            counts.deletes_skipped += 1;
+            break;
+          }
+          if (fs.existsSync(dstAbs)) {
+            fs.unlinkSync(dstAbs);
+            counts.deleted += 1;
+          }
+          break;
+        }
+        case "LOCAL_ONLY":
+        case "LOCAL_CUSTOMIZED":
+          counts.skipped_no_op += 1;
+          break;
+        default:
+          counts.skipped_no_op += 1;
+      }
+    } catch (e) {
+      counts.errors += 1;
+      errors.push({ dest: d.dest, category: d.category, error: e.message });
+    }
+  }
+
+  return { ok: counts.errors === 0, counts, errors };
+}
+
+function buildInstalledSnapshot(version, capsule, applyResult, prior) {
+  const assets = [];
+  for (const kind of Object.keys(capsule.manifest.assets || {})) {
+    for (const a of capsule.manifest.assets[kind]) {
+      const localPath = path.join(REPO_ROOT, a.dest);
+      const localHash = fs.existsSync(localPath) ? sha256File(localPath) : null;
+      assets.push({
+        id: a.id,
+        kind,
+        dest: a.dest,
+        owner: a.owner || "framework",
+        mergeStrategy: a.mergeStrategy,
+        installedHash: a.sha256 || localHash,
+        currentHashAtInstall: localHash,
+        introducedIn: a.introducedIn || version,
+      });
+    }
+  }
+  return {
+    $schema: "warpos/framework-installed/v2",
+    installedVersion: version,
+    installedCommit:
+      capsule.release.sourceCommit || (prior && prior.installedCommit) || null,
+    installedAt: new Date().toISOString(),
+    source: capsule.dir,
+    target: REPO_ROOT,
+    pathRegistryVersion: "v4",
+    manifestSchema: "warpos/framework-manifest/v2",
+    assets,
+    generated: [
+      ".claude/paths.json",
+      ".claude/manifest.json",
+      ".claude/settings.json",
+      ".claude/agents/store.json",
+    ],
+    applyCounts: applyResult.counts,
   };
 }
 
@@ -346,6 +523,8 @@ if (require.main === module) {
     apply: args.includes("--apply"),
     dryRun: args.includes("--dry-run"),
     json: args.includes("--json"),
+    confirmDeletes: args.includes("--confirm-deletes"),
+    sourceRoot: get("--source-root"),
   };
   run(opts)
     .then((r) => {
@@ -370,15 +549,51 @@ if (require.main === module) {
       }
       console.log(`  Migrations: ${r.report.migrations.length}`);
       console.log(`  Post-update checks: ${r.report.postUpdateChecks.length}`);
+      const isApply = r.mode === "apply" && r.apply;
+      const ac = isApply ? r.apply.counts : null;
+      if (isApply) {
+        console.log("");
+        console.log(
+          `Apply: added=${ac.added} updated=${ac.updated} merged=${ac.merged} deleted=${ac.deleted} (skipped=${ac.deletes_skipped}) no-op=${ac.skipped_no_op} errors=${ac.errors}`,
+        );
+      }
       printHumanReport("warp:update", {
-        verdict: r.report.classCounts.C > 0 ? "Needs human decision" : "Dry-run plan ready",
-        whatChanged: `${r.report.fromVersion} -> ${r.report.toVersion}; ${Object.keys(r.report.counts).length} categories classified`,
+        verdict:
+          r.report.classCounts.C > 0
+            ? "Needs human decision"
+            : isApply
+              ? "Update applied"
+              : "Dry-run plan ready",
+        whatChanged: isApply
+          ? `${r.report.fromVersion} → ${r.report.toVersion}; ${ac.added + ac.updated + ac.merged + ac.deleted} files written/removed`
+          : `${r.report.fromVersion} -> ${r.report.toVersion}; ${Object.keys(r.report.counts).length} categories classified`,
         why: "Classifies local framework assets against the target release capsule before any apply path runs.",
-        risksRemaining: r.report.classCounts.C > 0 ? `${r.report.classCounts.C} Class C item(s)` : "Apply mode is still disabled in this baseline.",
-        whatWasRejected: r.mode === "dry-run" ? "No files were changed." : "Apply path refused.",
+        risksRemaining:
+          r.report.classCounts.C > 0
+            ? `${r.report.classCounts.C} Class C item(s)`
+            : isApply
+              ? ac.deletes_skipped > 0
+                ? `${ac.deletes_skipped} delete(s) deferred — re-run with --confirm-deletes.`
+                : "None — verify with /warp:doctor."
+              : "Run --apply to execute the plan.",
+        whatWasRejected:
+          r.mode === "dry-run"
+            ? "No files were changed."
+            : isApply
+              ? ac.errors > 0
+                ? `${ac.errors} write(s) failed — see error list.`
+                : "Class C items (none surfaced)."
+              : "Apply path refused.",
         whatWasTested: `${r.report.migrations.length} migration reference(s), ${r.report.postUpdateChecks.length} post-update check(s) listed`,
-        needsHumanDecision: r.report.classCounts.C > 0 ? "Resolve Class C items before apply." : "None for dry-run.",
-        recommendedNextAction: "Review the plan; run /warp:doctor before any future apply.",
+        needsHumanDecision:
+          r.report.classCounts.C > 0
+            ? "Resolve Class C items before apply."
+            : isApply
+              ? "Run /warp:doctor to verify the install is healthy."
+              : "None for dry-run.",
+        recommendedNextAction: isApply
+          ? "node scripts/warpos/release-gates.js (or /warp:doctor)"
+          : "Review the plan; pass --apply to execute, or /warp:doctor to verify pre-flight.",
       });
     })
     .catch((e) => {

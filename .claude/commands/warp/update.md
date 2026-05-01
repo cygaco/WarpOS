@@ -13,7 +13,8 @@ Phase 4C entry point. The actual engine lives at `scripts/warpos/update.js`. Thi
 |---|---|
 | `/warp:update` | Dry-run against latest available release capsule. Prints the 12-category plan + class-A/B/C breakdown. **Safe.** |
 | `/warp:update 0.2.0` | Dry-run against capsule `warpos/releases/0.2.0/`. |
-| `/warp:update --apply` | **Apply** the latest plan. Class A auto-apply, Class B apply-with-reviewer, Class C escalates. (Apply path lands in 0.1.x — currently dry-run only in 0.1.0 baseline.) |
+| `/warp:update --apply` | **Apply** the latest plan. Class A auto-apply, Class B apply-with-reviewer, Class C escalates. |
+| `/warp:update --apply --confirm-deletes` | Same as above, plus actually executes Class A `DELETE_SAFE` removals (otherwise deferred). |
 | `/warp:update --json` | Machine-readable output. |
 
 ## Procedure
@@ -57,15 +58,18 @@ Then render the standard human report shape:
 
 ### Step 4 — if --apply
 
-> **0.1.0 baseline note:** the engine refuses `--apply` in this release (`update.js` returns `ok: false`). The full apply path — three-way merge runner, postUpdateChecks gate, installed-snapshot writer, rollback-tag automation — lands in 0.1.x once the WarpOS canonical clone is wired and a real downstream upgrade target exists. Until then, `/warp:update` is dry-run only. The skill should surface the engine's `error` field unmodified rather than swallow it.
+The engine walks the plan and writes to the local install:
+- Class A `ADD_SAFE` / `UPDATE_SAFE` / `GENERATED_REBUILD` / `MERGE_SAFE` → copy from capsule's source tree to the local destination.
+- Class A `DELETE_SAFE` → deferred unless `--confirm-deletes` is passed (matches `promote.js` semantics).
+- Class A `LOCAL_ONLY` / `LOCAL_CUSTOMIZED` → no-op.
+- Class B `MERGE_SAFE` / `RENAME_SAFE` / `MIGRATION_REQUIRED` → applied in this run; reviewer surfaces in the report.
+- Class C — refused. Engine returns `ok:false` with an `ESCALATE:` error and a sample of offenders.
 
-Once the apply path ships:
+After the apply, run the `postUpdateChecks` from `release.json` in order. Any non-zero exit → stop, surface the failing check, and recommend `/warp:doctor` to verify state.
 
-Run engine in apply mode. After it returns, run the `postUpdateChecks` from `release.json` in order. Any non-zero exit → stop, surface the failing check.
+### Step 5 — write installed snapshot
 
-### Step 5 — write installed snapshot _(0.1.x, not 0.1.0 baseline)_
-
-The engine updates `.claude/framework-installed.json` with the new `installedVersion`, `installedCommit`, `installedAt`, per-asset `installedHash`, and the `generated[]` array.
+The engine updates `.claude/framework-installed.json` with the new `installedVersion`, `installedCommit`, `installedAt`, per-asset `installedHash`, and the `generated[]` array. The snapshot is the source of truth `/warp:update` reads on the next run to classify local-vs-installed drift.
 
 ## Failure modes
 
