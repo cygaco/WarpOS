@@ -390,7 +390,12 @@ async function run(opts) {
     JSON.stringify(stamp, null, 2) + "\n",
   );
 
-  const commitMessage = buildCommitMessage(sourceVersion, applyResult);
+  const sourceLabel = detectSourceLabel(REPO_ROOT);
+  const commitMessage = buildCommitMessage(
+    sourceVersion,
+    applyResult,
+    sourceLabel,
+  );
   fs.writeFileSync(
     path.join(targetRoot, ".warpos-sync-commit-msg.txt"),
     commitMessage,
@@ -402,6 +407,7 @@ async function run(opts) {
     report,
     apply: applyResult,
     sourceVersion,
+    sourceLabel,
     commitMessage,
   };
 }
@@ -487,11 +493,38 @@ function applyDecisions(sourceRoot, targetRoot, decisions, opts) {
   return { ok: counts.errors === 0, counts, errors };
 }
 
-function buildCommitMessage(sourceVersion, applyResult) {
+function detectSourceLabel(repoRoot) {
+  // Prefer .claude/manifest.json#project.slug, then package.json#name, then
+  // the directory basename. Avoids hardcoded "jobhunter" — promote.js is
+  // framework-canonical and must work from any source repo.
+  try {
+    const manifest = JSON.parse(
+      fs.readFileSync(path.join(repoRoot, ".claude", "manifest.json"), "utf8"),
+    );
+    const slug =
+      manifest?.project?.slug ||
+      (manifest?.project?.name || "").toLowerCase().replace(/\s+/g, "-");
+    if (slug) return slug;
+  } catch {
+    /* fall through */
+  }
+  try {
+    const pkg = JSON.parse(
+      fs.readFileSync(path.join(repoRoot, "package.json"), "utf8"),
+    );
+    if (pkg?.name) return pkg.name;
+  } catch {
+    /* fall through */
+  }
+  return path.basename(repoRoot) || "product-repo";
+}
+
+function buildCommitMessage(sourceVersion, applyResult, sourceLabel) {
   const v = sourceVersion || "unknown";
   const c = applyResult.counts;
+  const label = sourceLabel || "product-repo";
   const lines = [
-    `sync(from-jobhunter): warpos@${v}`,
+    `sync(from-${label}): warpos@${v}`,
     "",
     "Promotion via scripts/warpos/promote.js --apply.",
     "",
@@ -588,7 +621,7 @@ if (require.main === module) {
               ? "Review the .warpos-sync-commit-msg.txt and target diff, then commit + push."
               : "None for dry-run.",
         recommendedNextAction: isApply
-          ? `cd ${r.report.targetRoot} && git add -A && git commit -F .warpos-sync-commit-msg.txt && git push origin main`
+          ? `cd "${r.report.targetRoot}" && git status, then git add only the framework paths you want to promote, commit using .warpos-sync-commit-msg.txt as the message body, and push when reviewed. Do NOT auto-push from a promote run.`
           : "Review Class B/C entries before promoting to the canonical WarpOS clone.",
       });
       if (!r.ok) {

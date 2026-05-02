@@ -232,7 +232,29 @@ if (GENERATED_RULES) {
   }
 }
 
-const EXTENSIONS = new Set([".md", ".js", ".json"]);
+// 0.1.2: extended coverage from {md,js,json} to also include the file types
+// that ship product/framework wiring — TS/TSX, shell, powershell, YAML.
+// Hardcoded paths in `.ts` config or a `.ps1` install script were silently
+// invisible to path-lint pre-0.1.2; framework-owned files in those formats
+// could drift behind the registry.
+const EXTENSIONS = new Set([
+  ".md",
+  ".js",
+  ".cjs",
+  ".mjs",
+  ".json",
+  ".ts",
+  ".tsx",
+  ".sh",
+  ".ps1",
+  ".yml",
+  ".yaml",
+]);
+
+// Per-line escape: any line containing this marker is excluded from lint
+// rules. Use sparingly in framework-owned files (history, examples, the
+// rule definitions themselves). Documented in PATH_KEYS.md.
+const ALLOW_MARKER = "path-literal-allowed";
 const SKIP_DIRS = new Set([
   "node_modules",
   ".git",
@@ -289,6 +311,8 @@ function shouldSkip(rel) {
 function lintContent(rel, content) {
   const lines = content.split("\n");
   lines.forEach((line, i) => {
+    // Skip lines that explicitly opted out (rare; for legitimate examples).
+    if (line.includes(ALLOW_MARKER)) return;
     // Skip lines marked as historical / example in the nearby 3 lines
     for (const rule of CRITICAL) {
       const m = line.match(rule.re);

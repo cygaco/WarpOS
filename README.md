@@ -196,8 +196,11 @@ WarpOS/
 
 ### WarpOS
 - `/warp:check` — Compare local vs WarpOS
-- `/warp:init` — Initialize WarpOS in a project
-- `/warp:sync` — Sync local changes to/from WarpOS
+- `/warp:setup` — Initialize WarpOS in a project (replaces older `/warp:init`)
+- `/warp:update` — Pull canonical WarpOS into this install (the primary inbound command)
+- `/warp:promote` — Push this repo's framework changes to canonical WarpOS (outbound)
+- `/warp:doctor` — Verify the install after an update
+- `/warp:sync` — DEPRECATED alias for `/warp:update`; removed in 1.0.0
 
 ### Preflight
 - `/preflight:run` — Pre-run verification (7 passes)

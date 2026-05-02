@@ -4,6 +4,33 @@ Post-MVP work. Items grouped by phase.
 
 ---
 
+## ✅ Shipped in v0.1.2 (2026-05-01)
+
+Patch release closing the architecture-drift loop:
+
+- Installer derives `.claude/paths.json` and per-project warpos version from
+  `warpos/paths.registry.json` + `version.json` instead of hardcoding.
+- New `warpos/hooks.registry.json` is the single source of truth for hooks.
+  `scripts/hooks/build.js` derives `.claude/settings.json` (hooks block) and
+  `scripts/hooks/hook-manifest.json` from the registry. `warp-setup.js` and
+  `scripts/hooks/test.js` consume the registry.
+- `/warp:update` rewritten: cross-repo aware (`--source`/`--target`),
+  robust source-tree-root walk, real migration runner (via
+  `migrations-loader.applyAll`), real post-update check execution,
+  transaction record + per-file backup, `MERGE_SAFE` no longer pretends a
+  merge (customized files are now `MERGE_CONFLICT`).
+- `/warp:promote` no longer hardcodes a source-repo name; detects it from
+  `manifest.json#project.slug` or `package.json#name`.
+- `path-lint.js` extension coverage extended to `ts/tsx/sh/ps1/yml/yaml`
+  (was md/js/json only). New `path-literal-allowed` per-line escape.
+<!-- path-literal-allowed: roadmap naming the deprecated literal that was replaced -->
+- `spec-test-staleness.js` reads `paths.specsRoot` (was hardcoded
+  `docs/05-features` — silent no-op since the rename).
+- `release-gates.js` reference-integrity gate marked `manual` (was lying as
+  `green`).
+- README + USER_GUIDE list `/warp:update` as the primary inbound command;
+  `/warp:sync` documented as deprecated alias.
+
 ## ✅ Shipped in v0.1.1 (2026-04-18)
 
 The install-hardening batch. Every item below was a ROADMAP entry from 2026-04-17 or 04-18 that now ships in production.

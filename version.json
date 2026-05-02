@@ -1,14 +1,15 @@
 {
   "$schema": "warpos/version/v1",
   "name": "warpos",
-  "version": "0.1.1",
-  "description": "WarpOS — autonomous AI operating system for software engineering. Phase 4-6 quality-gate hardening + lib-bypass hygiene rule.",
+  "version": "0.1.2",
+  "description": "WarpOS — autonomous AI operating system for software engineering. Registry-driven hooks, transactional updates, honest release gates, generic promotion.",
   "releasedAt": "2026-05-01",
-  "minUpgradeableFrom": null,
+  "minUpgradeableFrom": "0.1.0",
   "channel": "main",
   "frameworkManifestSchema": "warpos/framework-manifest/v2",
   "pathRegistrySchema": "warpos/paths/v4",
+  "hooksRegistrySchema": "warpos/hooks-registry/v1",
   "decisionPolicySchema": "warpos/decision-policy/v1",
-  "previousVersions": ["0.1.0"],
-  "notes": "Patch release capturing post-0.1.0 phase 4-6 quality-gate hardening, session telemetry, and the third Refactor & Rename Hygiene rule (lib-only fixes don't protect bypassing callers). No schema changes; no migrations required."
+  "previousVersions": ["0.1.0", "0.1.1"],
+  "notes": "Patch release closing the architecture-drift loop opened by the 2026-05-01 audit. Highlights: (1) installer derives paths.json + warpos version from registries — no more hand-rolled paths object. (2) New hooks.registry.json drives hook-manifest.json + .claude/settings.json + warp-setup hookConfig from a single source of truth. (3) /warp:update gained source-tree-root walk, real migration runner, post-update check execution, transaction record + rollback notes, honest MERGE_SAFE/MERGE_CONFLICT semantics. (4) /warp:promote stripped of hardcoded source-repo names; detects label dynamically. (5) Path lint covers .ts/.tsx/.sh/.ps1/.yml/.yaml. (6) /warp:sync deprecation finalised. (7) Reference-integrity gate marked manual (was lying as green). No schema bumps — additive only."
 }
