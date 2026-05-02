@@ -4,6 +4,100 @@ Post-MVP work. Items grouped by phase.
 
 ---
 
+## 🔧 Known issues / 0.1.5 backlog
+
+### release-build provenance: post-update check refers to script absent after update (REPORTED-2026-05-02)
+
+A consumer running `/warp:update --to 0.1.4` reported `engine ok:false`
+because `release.json#postUpdateChecks` references
+`scripts/hooks/build.js`, which the consumer's project did not have
+after the apply ran (or had but the check resolved to a wrong path).
+
+The 0.1.4 capsule's manifest snapshot DOES list
+`scripts/hooks/build.js` (verified in canonical), so the bug is on the
+update or release-build side, not in the manifest:
+
+Hypotheses to investigate in 0.1.5:
+
+1. **Old update.js on consumer** — pre-0.1.2 update.js used a brittle
+   `../..` resolution from the capsule dir that landed at `warpos/`
+   instead of the repo root. Any consumer still running pre-0.1.2
+   update.js will fail to copy source files even though the manifest
+   lists them. Fix: surface a one-shot bootstrap to upgrade update.js
+   itself before running the rest of the apply, OR ship a fallback in
+   the capsule that uses absolute source paths.
+2. **Post-update check status mapping** — current update.js classifies
+   missing scripts as `degraded` (non-blocking). If the consumer's
+   update.js classifies them as `failed`, the engine returns
+   `ok:false` even though the actual update succeeded. Fix: either
+   normalize the status taxonomy across versions, or ship a
+   compatibility shim in release.json.
+3. **Capsule-vs-source provenance gap** — the capsule snapshots the
+   manifest but NOT the actual source files. Consumers must have a
+   matching source tree (canonical clone) at the right commit. Fix:
+   either ship the source files inside the capsule, or have the
+   release.json pin the canonical commit hash so update.js can verify
+   the source tree matches.
+
+Same family of issue as the **0.1.1 capsule-checksum drift** seen
+during the 0.1.2 cut: capsule artifacts get out of sync with their
+source-of-truth between when the manifest is snapshotted and when
+checksums are computed.
+
+### release-build manifest-staleness: must regen manifest before snapshotting
+
+Today `scripts/warpos/release-build.js` copies the live
+`.claude/framework-manifest.json` into the capsule. If the manifest
+isn't regenerated immediately before, the capsule snapshot lags
+reality. `release-canonical.js` stage 4 covers this for the
+product-driven flow, but a direct `node scripts/warpos/release-build.js
+<v>` invocation does not. Fix: have `release-build.js` itself run
+`generate-framework-manifest.js --check` and refuse if stale.
+
+### Runtime-leak gitignore gap
+
+Files like `.claude/.session-checkpoint.json`,
+`.claude/.session-start-commit`, `.claude/project/builds/` regularly
+sneak into commits because the `.gitignore` runtime block doesn't
+cover them. Fix: extend the runtime block in
+`scripts/warp-setup.js#GITIGNORE` and ship the expanded block as part
+of a future install/update.
+
+### `production_baseline` and `contract_versioning` gates relaxed via templates (RESOLVED IN 0.1.4)
+
+Resolved in 0.1.4 by adding generic framework templates directly to
+canonical's `requirements/04-architecture/` (PRODUCTION_BASELINE,
+ACCESSIBILITY_BASELINE, ANALYTICS, DISASTER_RECOVERY,
+RELEASE_READINESS, DEPRECATION_POLICY) plus 3 generic contracts
+(USER, SESSION, ROUTING). Listed here for traceability.
+
+---
+
+## ✅ Shipped in v0.1.4 (2026-05-02)
+
+Cleanup release that closes the gate-blocker chain:
+
+- Generic framework templates added to `requirements/04-architecture/`:
+  PRODUCTION_BASELINE, ACCESSIBILITY_BASELINE, ANALYTICS,
+  DISASTER_RECOVERY, RELEASE_READINESS, DEPRECATION_POLICY.
+- 3 generic contract templates added to
+  `requirements/04-architecture/contracts/`: USER, SESSION, ROUTING.
+  Each declares `id`/`version`/`changeType`/section §7 per
+  `contract-versioning.js` requirements.
+- First release cut end-to-end via the new product-side
+  `/warp:release` skill (all 11 stages green).
+
+## ✅ Shipped in v0.1.3 (2026-05-02)
+
+- Product-side `/warp:release` driver
+  (`scripts/warpos/release-canonical.js`).
+- `framework-manifest-guard.js` false-positive fix: runs
+  `generate-framework-manifest.js --check` before blocking; allows
+  multi-stage commits where manifest at HEAD already covers staged
+  content.
+- `scripts/paths/gate.js` now skips `.warpos/transactions/` (transaction
+  records are append-only event logs, not framework code).
+
 ## ✅ Shipped in v0.1.2 (2026-05-01)
 
 Patch release closing the architecture-drift loop:

@@ -29,14 +29,14 @@
     "paths_engine": 4,
     "schema": 3,
     "migration": 4,
-    "release_capsule": 12,
+    "release_capsule": 15,
     "paths_registry": 1,
     "top_script": 4,
     "version_file": 1,
     "installer_script": 1,
     "framework_doc": 2
   },
-  "total": 385,
+  "total": 388,
   "assets": {
     "agent": [
       {
@@ -4602,6 +4602,42 @@
         "introducedIn": "0.0.0",
         "removedIn": null,
         "replaces": null
+      },
+      {
+        "id": "release_capsule.0.1.4.changelog.md",
+        "src": "warpos/releases/0.1.4/changelog.md",
+        "dest": "warpos/releases/0.1.4/changelog.md",
+        "kind": "release_capsule",
+        "sha256": "3da0fcb249eb",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "release_capsule.0.1.4.release.json",
+        "src": "warpos/releases/0.1.4/release.json",
+        "dest": "warpos/releases/0.1.4/release.json",
+        "kind": "release_capsule",
+        "sha256": "e8f2a083b2e4",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "release_capsule.0.1.4.upgrade-notes.md",
+        "src": "warpos/releases/0.1.4/upgrade-notes.md",
+        "dest": "warpos/releases/0.1.4/upgrade-notes.md",
+        "kind": "release_capsule",
+        "sha256": "36db823190e8",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
       }
     ],
     "paths_registry": [
@@ -4674,7 +4710,7 @@
         "src": "version.json",
         "dest": "version.json",
         "kind": "version_file",
-        "sha256": "8fe78e6c0e66",
+        "sha256": "005a741ecb34",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
