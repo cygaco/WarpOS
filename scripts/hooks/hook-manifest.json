@@ -1,7 +1,7 @@
 {
   "$schema": "warpos/hook-manifest/v1",
   "generatedFrom": "warpos/hooks.registry.json",
-  "updatedAt": "2026-05-01T22:08:40.831Z",
+  "updatedAt": "2026-05-01T22:21:10.309Z",
   "hooks": {
     "session-start.js": {
       "script": "scripts/hooks/session-start.js",

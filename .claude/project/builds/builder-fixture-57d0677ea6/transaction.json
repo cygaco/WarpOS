@@ -1,0 +1,29 @@
+{
+  "$schema": "warpos/build-transaction/v1",
+  "buildId": "builder-fixture-57d0677ea6",
+  "role": "builder",
+  "feature": "fixture",
+  "startedAt": "2026-05-02T02:29:51.922Z",
+  "cwd": ".",
+  "allowedFiles": [
+    "src/lib/types.ts"
+  ],
+  "forbiddenFiles": [
+    "package.json",
+    "package-lock.json",
+    ".env",
+    ".claude/project/events/"
+  ],
+  "expectedOutputs": [
+    "json-envelope",
+    "typecheck-clean",
+    "commit-sha"
+  ],
+  "validationGates": [
+    "node scripts/agents/output-validator.js",
+    "node scripts/deps/admission.js",
+    "node scripts/requirements/gate.js"
+  ],
+  "rollbackPlan": "Revert the agent branch or discard the worktree; main worktree is not modified by build-chain agents.",
+  "status": "started"
+}

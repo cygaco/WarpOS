@@ -566,40 +566,56 @@ for (const [kind, n] of Object.entries(installedByKind).sort(
 installed += installedThisRun;
 
 // ── 5. Create paths.json ────────────────────────────────
-// Principle: paths.json is GENERATED from warpos/paths.registry.json at
-// install time, never hand-maintained inside the installer. The registry
-// is the single source of truth — adding/renaming a key happens once,
-// upstream of any installer change.
-//
-// Pre-0.1.2 the installer hand-rolled a `version: 3` paths object that drifted
-// behind the registry (then at v4) by an entire schema bump. New installs got
-// a degraded paths.json missing requirementsRoot/specsRoot/decisionLedger/
-// providerTrace and a stale schema version. Fixed: read the registry and
-// derive the runtime shape — same logic scripts/paths/build.js uses.
+// Principle: paths.json is CREATED at install time, never ASSUMED to exist pre-install.
+// WarpOS does not ship a paths.json — the installer builds it here so every client
+// project gets its own. To move a location, edit this object (and lib/paths.js fallback).
 const pathsFile = path.join(TARGET, ".claude/paths.json");
 if (!fs.existsSync(pathsFile)) {
-  let pathsContent;
-  try {
-    const { loadRegistry, buildPathsJson } = require("./paths/lib/registry");
-    const registry = loadRegistry(WARPOS);
-    pathsContent = JSON.stringify(buildPathsJson(registry), null, 2) + "\n";
-  } catch (e) {
-    log("fail", `Could not load paths registry: ${e.message}`);
-    log("info", "Run `node scripts/paths/build.js` in the WarpOS repo first.");
-    process.exit(1);
-  }
-  fs.writeFileSync(pathsFile, pathsContent);
-  log("ok", "Created paths.json from warpos/paths.registry.json");
+  const paths = {
+    version: 3,
+    events: ".claude/project/events",
+    memory: ".claude/project/memory",
+    maps: ".claude/project/maps",
+    reference: ".claude/project/reference",
+    runtime: ".claude/runtime",
+    logs: ".claude/runtime/logs",
+    handoffs: ".claude/runtime/handoffs",
+    handoffLatest: ".claude/runtime/handoff.md",
+    plans: ".claude/runtime/plans",
+    agents: ".claude/agents",
+    agentSystem: ".claude/agents/00-alex/.system",
+    betaSystem: ".claude/agents/00-alex/.system/beta",
+    commands: ".claude/commands",
+    content: ".claude/content",
+    dreams: ".claude/dreams",
+    favorites: ".claude/content/favorites",
+    hooks: "scripts/hooks",
+    hookLib: "scripts/hooks/lib",
+    patterns: "patterns",
+    requirements: "requirements",
+    manifest: ".claude/manifest.json",
+    settings: ".claude/settings.json",
+    store: ".claude/agents/store.json",
+    eventsFile: ".claude/project/events/events.jsonl",
+    toolsFile: ".claude/project/events/tools.jsonl",
+    requirementsFile: ".claude/project/events/requirements.jsonl",
+    requirementsStagedFile: ".claude/project/events/requirements-staged.jsonl",
+    learningsFile: ".claude/project/memory/learnings.jsonl",
+    tracesFile: ".claude/project/memory/traces.jsonl",
+    systemsFile: ".claude/project/memory/systems.jsonl",
+    specGraph: ".claude/project/maps/SPEC_GRAPH.json",
+    judgmentModel: ".claude/agents/00-alex/.system/beta/judgement-model.md",
+    judgmentRecommendations:
+      ".claude/agents/00-alex/.system/beta/judgement-model-recommendations.md",
+    betaSourceData: ".claude/agents/00-alex/.system/beta/beta-source-data.md",
+    betaEvents: ".claude/agents/00-alex/.system/beta/events.jsonl",
+    lexicon: ".claude/agents/00-alex/.system/lexicon.md",
+    pathsLib: "scripts/hooks/lib/paths.js",
+    loggerLib: "scripts/hooks/lib/logger.js",
+  };
+  fs.writeFileSync(pathsFile, JSON.stringify(paths, null, 2) + "\n");
+  log("ok", "Created paths.json");
   installed++;
-}
-
-// Resolve the canonical WarpOS version once for use in manifest + snapshot.
-let WARPOS_VERSION = "0.0.0";
-try {
-  const { readWarpOSVersion } = require("./paths/lib/registry");
-  WARPOS_VERSION = readWarpOSVersion(WARPOS).version || "0.0.0";
-} catch {
-  /* fall back below */
 }
 
 // ── 6. Create manifest.json ─────────────────────────────
@@ -619,7 +635,7 @@ if (!fs.existsSync(manifestFile)) {
       mainBranch: interview.mainBranch,
     },
     warpos: {
-      version: WARPOS_VERSION,
+      version: "0.1.0",
       installed: true,
       source: interview.warposSource,
       features: ["agents", "hooks", "skills", "memory", "maps", "events"],
@@ -1016,24 +1032,92 @@ if (!settings.hooks) settings.hooks = {};
 // Hook-entry helper: Claude Code schema requires every hook to have type:"command".
 // Also: event keys must be single event names (Stop, SessionEnd, StopFailure as
 // three separate keys — NOT "Stop|SessionEnd|StopFailure" as one key).
-//
-// Pre-0.1.2 the hookConfig was hand-coded here AND in scripts/hooks/test.js
-// AND in scripts/hooks/hook-manifest.json. Adding a hook required editing
-// all three. Now: read the canonical hook registry and derive once.
-const { buildSettingsHooks } = require("./hooks/build");
-let hookConfig;
-try {
-  const hooksRegistry = JSON.parse(
-    fs.readFileSync(path.join(WARPOS, "warpos", "hooks.registry.json"), "utf8"),
-  );
-  hookConfig = buildSettingsHooks(hooksRegistry);
-} catch (e) {
-  log(
-    "fail",
-    `Could not load warpos/hooks.registry.json: ${e.message}. Run \`node scripts/hooks/build.js\` in the WarpOS repo first.`,
-  );
-  process.exit(1);
-}
+const cmd = (script) => ({
+  type: "command",
+  command: `node "$CLAUDE_PROJECT_DIR/scripts/hooks/${script}"`,
+});
+
+const sessionStopEntry = [
+  {
+    matcher: "",
+    hooks: [cmd("session-stop.js")],
+  },
+];
+
+const hookConfig = {
+  SessionStart: [
+    {
+      matcher: "",
+      hooks: [cmd("session-start.js")],
+    },
+  ],
+  UserPromptSubmit: [
+    {
+      matcher: "",
+      hooks: [cmd("smart-context.js"), cmd("prompt-logger.js")],
+    },
+  ],
+  PreToolUse: [
+    {
+      matcher: "Bash",
+      hooks: [
+        cmd("merge-guard.js"),
+        cmd("memory-guard.js"),
+        cmd("framework-manifest-guard.js"),
+      ],
+    },
+    {
+      matcher: "Edit|Write",
+      hooks: [
+        cmd("secret-guard.js"),
+        cmd("foundation-guard.js"),
+        cmd("ownership-guard.js"),
+        cmd("memory-guard.js"),
+        cmd("store-validator.js"),
+        cmd("path-guard.js"),
+      ],
+    },
+    {
+      matcher: "Agent",
+      hooks: [cmd("team-guard.js")],
+    },
+  ],
+  PostToolUse: [
+    {
+      matcher: "",
+      hooks: [cmd("session-tracker.js")],
+    },
+    {
+      matcher: "Edit|Write",
+      hooks: [
+        // All quality hooks registered unconditionally. Each hook self-skips
+        // (exits 0) when its underlying tool (prettier / tsc / eslint) is
+        // absent — see the hook source. This keeps install simple and lets
+        // users add tooling later without re-registering.
+        cmd("format.js"),
+        cmd("typecheck.js"),
+        cmd("lint.js"),
+        cmd("edit-watcher.js"),
+        cmd("systems-sync.js"),
+        cmd("save-session-lint.js"),
+        cmd("learning-validator.js"),
+        cmd("ui-lint.js"),
+        cmd("path-guard.js"),
+      ],
+    },
+  ],
+  PostCompact: [
+    {
+      matcher: "",
+      hooks: [cmd("compact-saver.js")],
+    },
+  ],
+  // Session lifecycle: session-stop.js registered on all three end-of-session events.
+  // Claude Code schema requires separate keys per event, not a pipe-joined key.
+  Stop: sessionStopEntry,
+  SessionEnd: sessionStopEntry,
+  StopFailure: sessionStopEntry,
+};
 
 // Merge WarpOS hooks with any user-existing hooks, per event.
 // Each event's value is an array of { matcher, hooks: [...] } blocks.

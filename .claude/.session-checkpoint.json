@@ -1,0 +1,12 @@
+{
+  "timestamp": "2026-05-02T02:29:39.311Z",
+  "reason": "periodic",
+  "promptLog": "[22:10:21] /fixture hook smoke test\n[22:10:30] /fixture hook smoke test\n[22:17:33] /fixture hook smoke test\n[22:19:07] /fixture hook smoke test\n[02:29:38] /fixture hook smoke test",
+  "recentTools": [
+    "2026-05-01T22:10:22 Edit ok tmp/hook-fixture.txt",
+    "2026-05-01T22:10:31 Edit ok tmp/hook-fixture.txt",
+    "2026-05-01T22:17:34 Edit ok tmp/hook-fixture.txt",
+    "2026-05-01T22:19:08 Edit ok tmp/hook-fixture.txt",
+    "2026-05-02T02:29:39 Edit ok tmp/hook-fixture.txt"
+  ]
+}
