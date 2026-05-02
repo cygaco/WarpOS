@@ -77,8 +77,8 @@ audit. No schema changes; no destructive migrations.
 
 ### Stale spec-path cleanup
 
-<!-- path-literal-allowed: changelog naming the deprecated literal that was replaced -->
-- `scripts/hooks/spec-test-staleness.js` previously matched the
+<!-- path-literal-allowed: changelog naming the deprecated alias for context -->
+- `scripts/hooks/spec-test-staleness.js` previously matched the <!-- path-literal-allowed: explaining the rename -->
   pre-rename `docs/05-features/.../*.md` regex; the rename to
   `requirements/05-features` (Phase 1 final-A) made the hook silently
   no-op for current spec edits. Now resolves `paths.specsRoot` from the
