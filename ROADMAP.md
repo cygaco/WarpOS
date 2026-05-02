@@ -23,8 +23,8 @@ Patch release closing the architecture-drift loop:
   `manifest.json#project.slug` or `package.json#name`.
 - `path-lint.js` extension coverage extended to `ts/tsx/sh/ps1/yml/yaml`
   (was md/js/json only). New `path-literal-allowed` per-line escape.
-<!-- path-literal-allowed: roadmap naming the deprecated literal that was replaced -->
 - `spec-test-staleness.js` reads `paths.specsRoot` (was hardcoded
+  <!-- path-literal-allowed: roadmap naming the deprecated literal -->
   `docs/05-features` — silent no-op since the rename).
 - `release-gates.js` reference-integrity gate marked `manual` (was lying as
   `green`).

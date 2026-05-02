@@ -278,6 +278,9 @@ function checkDeprecatedAliases() {
     "CHANGELOG.md",
     "CHANGELOG-test-system.md",
     "backups/",
+    // Transaction records describe what we did, including naming the
+    // deprecated path. Append-only event logs, not framework code.
+    ".warpos/transactions/",
     "scripts/warpos/codemod-docs-to-requirements.js",
     // Phase 4B migration: this script's semantic purpose IS to rewrite the
     // legacy path; the literal is data, not navigation.
