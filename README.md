@@ -3,7 +3,7 @@
 An AI operating system for Claude Code. It gives you a team of AI agents that plan, build, review, and learn — so you can focus on what matters.
 
 **Platform:** Windows only (for now)
-**Version:** 0.1.0
+**Version:** 0.1.4
 
 ## What Is This?
 
@@ -15,7 +15,7 @@ Instead of one assistant, you get:
 - **A builder** that writes code in isolated branches so your main code stays clean
 - **Reviewers** that automatically check every build for bugs, security issues, and spec compliance
 
-Plus **66 skills** (commands you can run like `/fix:fast` or `/research:deep`), **25 automated hooks** (things that happen automatically, like secret scanning and code formatting), and a **learning system** that remembers what works across sessions.
+Plus **95 skills** (commands you can run like `/fix:fast` or `/research:deep`), **52 automated hooks** (things that happen automatically, like secret scanning and code formatting), and a **learning system** that remembers what works across sessions.
 
 ## Quick Start
 
@@ -90,7 +90,7 @@ Then read **[USER_GUIDE.md](USER_GUIDE.md)** — the daily-rhythm guide. Modes, 
 |-------|-------------|
 | `/fix:fast` | Quick diagnosis: read error, find cause, fix it, verify |
 | `/fix:deep` | Deep fix with framework selection, 5 solutions, root cause analysis |
-| `/retro:full` | Full retrospective: context + git log + code diffs, 9 categories |
+| `/oneshot:retro` | Full retrospective: context + git log + code diffs, 9 categories |
 | `/session:handoff` | Generate rich handoff doc for the next session |
 | `/commit:both` | Stage, commit, and push with smart message |
 
@@ -106,9 +106,9 @@ WarpOS/
 │   │   ├── 00-alex/       — Alpha, Beta, Gamma, Delta
 │   │   ├── 01-adhoc/      — Adhoc mode agents (builder, evaluator, QA, etc.)
 │   │   └── 02-oneshot/    — Oneshot mode agents + state machine docs
-│   ├── commands/          — 66 skills (slash commands)
+│   ├── commands/          — 95 skills (slash commands)
 │   └── project/reference/ — Reasoning frameworks, operational loop
-├── scripts/hooks/         — 25 automated hooks + lib modules
+├── scripts/hooks/         — 52 automated hooks + lib modules
 ├── requirements/          — Documentation templates (PRD, stories, architecture)
 │   ├── 00-canonical/      — Product foundations (brief, model, glossary)
 │   ├── 01-09/             — Design, copy, architecture, security, testing, CI/CD
@@ -121,7 +121,7 @@ WarpOS/
 ## All Skills
 
 <details>
-<summary>Click to see all 66 skills</summary>
+<summary>Click to see all 95 skills</summary>
 
 ### Build & Fix
 - `/fix:fast` — Quick fix (direct investigation)
@@ -130,19 +130,30 @@ WarpOS/
 - `/commit:remote` — Push to remote
 - `/commit:both` — Commit + push
 
-### Quality
-- `/qa:audit` — Full codebase QA audit (7 failure-mode personas)
+### Quality & Checks
+- `/qa:audit` — Full codebase QA audit (failure-mode personas)
 - `/qa:check` — Passive QA scan on recent changes
+- `/check:all` — Run every check in parallel — unified report
 - `/check:architecture` — Architecture integrity check
+- `/check:coherence` — System coherence graph (15 drift types)
+- `/check:design-system` — Design-system compliance scan
 - `/check:environment` — Environment readiness audit
+- `/check:install` — Verify a fresh WarpOS install
 - `/check:patterns` — Cross-run intelligence and automation proposals
+- `/check:privacy` — Pre-publish scan for personal data
+- `/check:references` — Cross-file reference integrity
 - `/check:requirements` — Spec consistency and drift detection
+- `/check:system` — System inventory vs manifest
+- `/check:timeline` — Reconstruct a build timeline
+
+### Red Team & Security
+- `/redteam:full` — Full red team audit (11 personas)
+- `/redteam:scan` — Quick deterministic security scan
 
 ### Learning & Memory
-- `/learn:combined` — Extract learnings from conversation + events
-- `/learn:conversation` — Mine conversation for learnings
-- `/learn:events` — Mine event log for patterns
+- `/learn:deep` — Combined learning extraction (conversation + events + retros)
 - `/learn:ingest` — Ingest external knowledge (files, links, videos)
+- `/learn:integrate` — Promote validated learnings into enforcement
 - `/sleep:deep` — Full consolidation cycle (15-30 min)
 - `/sleep:quick` — Light nap (5 min)
 
@@ -150,11 +161,6 @@ WarpOS/
 - `/reasoning:run` — Reason through a problem with auto-framework selection
 - `/reasoning:log` — Log a reasoning episode
 - `/reasoning:score` — Score fix quality (0-4)
-
-### Retrospective
-- `/retro:full` — Full retro (9 categories)
-- `/retro:code` — Scan git diff for code-level signals
-- `/retro:context` — Scan conversation for retro signals
 
 ### Research
 - `/research:deep` — Multi-model deep research (Claude + OpenAI + Gemini)
@@ -165,25 +171,38 @@ WarpOS/
 - `/session:checkpoint` — Force checkpoint save
 - `/session:resume` — Load last handoff
 - `/session:history` — Browse recent sessions
+- `/session:recap` — Catch up on the last N turns
 - `/session:read` — Read cross-session inbox
 - `/session:write` — Post to cross-session inbox
+- `/session:takenotes` — Append a timestamped note
 
-### Observability
+### Observability — Maps
 - `/maps:all` — Refresh all maps
 - `/maps:architecture` — App structure map
+- `/maps:enforcements` — Enforcement coverage
 - `/maps:hooks` — Hook wiring diagram
 - `/maps:memory` — Memory store relationships
 - `/maps:skills` — Skill dependency graph
-- `/maps:systems` — Systems manifest
+- `/maps:steps` — Regenerate step tables in canonical docs
+- `/maps:systems` — Systems manifest graph
 - `/maps:tools` — Tool registry
-- `/maps:enforcements` — Enforcement coverage
+
+### Discovery
+- `/discover:orphaned` — Find deferred or abandoned work
+- `/discover:systems` — Multi-angle system discovery (6 lenses)
 
 ### Agent Modes
 - `/mode:solo` — Solo mode (just you + Alex)
 - `/mode:adhoc` — Team mode (Alpha + Beta + Gamma)
 - `/mode:oneshot` — Oneshot build (Delta standalone)
 
-### Infrastructure
+### Oneshot
+- `/oneshot:start` — Lightweight kickoff
+- `/oneshot:preflight` — Pre-run preflight (branch + skeleton + 7-pass audit)
+- `/oneshot:improve` — Update preflight passes based on gaps
+- `/oneshot:retro` — Post-run retrospective (9 categories)
+
+### Skills & Hooks Infrastructure
 - `/skills:create` — Create a new skill
 - `/skills:edit` — Edit existing skill
 - `/skills:delete` — Delete skill
@@ -194,31 +213,46 @@ WarpOS/
 - `/hooks:friction` — Find missing hooks
 - `/hooks:sync` — Sync hooks to WarpOS
 
+### Issues
+- `/issues:list` — List recurring system issues
+- `/issues:log` — Record a new instance of a recurring issue
+- `/issues:resolve` — Mark a recurring issue resolved
+- `/issues:scan` — Pattern-mine events for repeat audit-block signatures
+
+### Paths Registry
+- `/paths:add` — Add a paths registry key
+- `/paths:convert` — Convert hardcoded literals to `paths.*`
+- `/paths:coverage` — Path registry documentation coverage
+- `/paths:doctor` — Validate path registry
+- `/paths:explain` — Explain one paths registry key
+- `/paths:rename` — Rename a paths registry key
+
 ### WarpOS
+- `/warp:setup` — Initialize WarpOS in a project
+- `/warp:update` — Pull canonical WarpOS into this install (primary inbound)
+- `/warp:promote` — Push framework changes to canonical (outbound)
+- `/warp:release` — Drive a full WarpOS release
 - `/warp:check` — Compare local vs WarpOS
-- `/warp:setup` — Initialize WarpOS in a project (replaces older `/warp:init`)
-- `/warp:update` — Pull canonical WarpOS into this install (the primary inbound command)
-- `/warp:promote` — Push this repo's framework changes to canonical WarpOS (outbound)
-- `/warp:doctor` — Verify the install after an update
+- `/warp:health` — Verify WarpOS installation
+- `/warp:doctor` — Unified WarpOS diagnostic
+- `/warp:tour` — Guided introduction
+- `/warp:deprecate` — Create a deprecation proposal
+- `/warp:uninstall` — Clean removal with restore from backup
 - `/warp:sync` — DEPRECATED alias for `/warp:update`; removed in 1.0.0
 
-### Preflight
-- `/preflight:run` — Pre-run verification (7 passes)
-- `/preflight:improve` — Update preflight based on gaps
-
-### Red Team & Security
-- `/redteam:full` — Full red team audit (11 personas)
-- `/redteam:scan` — Quick deterministic security scan
-- `/check:requirements review` — Review requirement drift entries
+### Karpathy (autoresearch)
+- `/karpathy:run` — Closed-loop experiment with autonomous review
+- `/karpathy:integrate` — Merge winning artifact into main
+- `/karpathy:status` — Read-only status dashboard
 
 ### Other
 - `/beta:mine` — Mine patterns from user behavior
+- `/beta:integrate` — Apply validated recommendations into the judgment model
 - `/fav:list` — Browse favorite moments
 - `/fav:search` — Search favorites
 - `/ui:review` — Design system compliance audit
-- `/check:references` — Cross-file reference integrity
-- `/warp:health` — Verify WarpOS installation
-- `/warp:tour` — Guided introduction
+- `/content:contra` — Create a Contra portfolio post
+- `/content:linkedin` — Create a LinkedIn post
 </details>
 
 ## Agents
@@ -230,7 +264,7 @@ WarpOS/
 | Alex Gamma (γ) | Builder | Adhoc feature builds, dispatches sub-agents |
 | Alex Delta (δ) | Runner | Oneshot full skeleton builds |
 
-Plus build agents for each mode: Builder, Evaluator, Compliance, Auditor, QA (with 13 failure-mode personas), Red Team (with 11 security personas), and Fix Agent. 38 agent files total.
+Plus build agents for each mode: Builder, Evaluator, Compliance, Auditor, QA (with 13 failure-mode personas), Red Team (with 11 security personas), and Fix Agent. 56 agent files total.
 
 ## Requirements System
 

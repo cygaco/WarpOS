@@ -100,11 +100,11 @@ Each pattern below was discovered and battle-tested in a real consumer product b
 | 2026-03-19 | Dev tools framework      | Product manifest pattern (Deus Mechanicus)                   | Lets any product get dev tools by exporting a manifest — no per-product UI work           |
 | 2026-03-19 | Test data system         | Warp Profiles (product-agnostic + extensions)                | Test identities should be shared across products, not siloed                              |
 | 2026-03-19 | Client storage           | Encrypted localStorage (AES-GCM)                             | No server persistence needed for MVP; encryption protects PII at rest                     |
-| 2026-03-19 | Claude Code hooks        | 8 lifecycle hooks across 5 events                            | Catch errors at edit time; guard secrets; auto-handoff between sessions                   |
-| 2026-03-19 | Skills system            | 12 slash commands as markdown protocol files                 | Zero tokens when inactive; encode expertise the agent can invoke on demand                |
+| 2026-03-19 | Claude Code hooks        | 52 lifecycle hooks (registry-driven)                         | Catch errors at edit time; guard secrets; auto-handoff between sessions                   |
+| 2026-03-19 | Skills system            | 95 slash commands as markdown protocol files                 | Zero tokens when inactive; encode expertise the agent can invoke on demand                |
 | 2026-03-19 | Auto-handoff             | Stop→SessionStart hook chain + prompt logger + compact saver | Sessions chain automatically — no manual context transfer needed                          |
-| 2026-03-24 | Docs knowledge base      | 30 canonical docs across 6 categories                        | Gives Claude full product context without prompting — design, copy, architecture, stories |
+| 2026-03-24 | Docs knowledge base      | 39 canonical requirement templates across 10 categories      | Gives Claude full product context without prompting — design, copy, architecture, stories |
 
 ---
 
-_Last updated: 2026-03-24 (sync)_
+_Last updated: 2026-05-03 (sync — counts re-checked against framework-manifest)_

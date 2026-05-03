@@ -19,7 +19,7 @@ Every problem, every session, every task — this is the cycle:
 - **After significant work:** `/retro` to capture learnings.
 - **After self-modifications:** Update systems manifest, log to events.jsonl (category: `modification`).
 - **Pattern repeats 3x:** Create a skill (`/skills:create`).
-- **Errors accumulate:** `/learn:conversation` to review and validate pending learnings.
+- **Errors accumulate:** `/learn:deep` to review and validate pending learnings.
 - **Session ending:** `/sleep` or `/session:handoff`.
 - **Don't know something:** Research immediately (WebSearch/WebFetch). Don't guess.
 

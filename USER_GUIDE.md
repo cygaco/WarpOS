@@ -16,7 +16,7 @@ If you've just installed, start at §1. If you want the mode summary, skip to §
 6. Type `/mode:solo` — stay solo for your first hour
 7. Fix anything red before doing real work
 
-Don't touch the team modes yet. Don't run `/preflight:run`. Don't spawn agents. Just type prompts and watch what fires:
+Don't touch the team modes yet. Don't run `/oneshot:preflight`. Don't spawn agents. Just type prompts and watch what fires:
 - Every prompt → `smart-context.js` runs, injects relevant memory
 - Every Edit/Write → format + typecheck + lint + guards fire
 - Every session end → handoff is generated
@@ -41,7 +41,7 @@ Pick ONE at a time. Modes are **project-wide and persistent** — whatever you s
 
 > **Note:** even when it's just you + α in the room (γ idle, no build in flight), α still **probes β** on every non-trivial decision in adhoc mode. You'll see β's DECIDE / DIRECTIVE responses appear in your log. That's the mode doing its job — β is always watching, not just during builds.
 
-**Starting oneshot:** first run `/preflight:run` (non-negotiable — see §5.6), then `/mode:oneshot` → write a skeleton spec → Delta builds every feature in dependency order with full gauntlet between phases. Wake up to either a completed project or a detailed halt report.
+**Starting oneshot:** first run `/oneshot:preflight` (non-negotiable — see §5.6), then `/mode:oneshot` → write a skeleton spec → Delta builds every feature in dependency order with full gauntlet between phases. Wake up to either a completed project or a detailed halt report.
 
 **When oneshot makes sense:**
 - Cleaning up a project where features came out muddled and need a clean rewrite from spec
@@ -126,10 +126,9 @@ Six command families cover 90% of daily work.
 
 | Skill | Purpose |
 |---|---|
-| `/learn:conversation` | Extract learnings from the current conversation — things you corrected, patterns you noticed. Append to `paths.learningsFile`. |
-| `/learn:events` | Mine the raw event log for patterns (tool-call hotspots, frustration signals, repeat errors). |
-| `/learn:combined` | Runs `/learn:conversation` + `/learn:events` in parallel, deduplicates, appends. Use this most of the time. |
+| `/learn:deep` | Combined extraction from three sources in parallel — conversation (corrections, surprises), event log (tool hotspots, frustration signals), and oneshot retro files. Dedupes and appends to `paths.learningsFile`. Replaces the old `/learn:conversation` + `/learn:events` + `/learn:combined`. |
 | `/learn:ingest <url or file>` | Ingest external knowledge — webpages, YouTube transcripts, research docs. Supports hub crawling: give it `platform.openai.com/docs/models`, it fetches every model page + dependencies. |
+| `/learn:integrate` | Promote validated high-score learnings into actual system enforcement (hooks, rules, skills, agent specs, reference docs). |
 
 **When to run:** after any meaningful debugging session, after reading something genuinely useful, at the end of a productive stretch. If you don't capture the pattern, you'll debug it again in 3 weeks.
 
@@ -152,7 +151,7 @@ Six command families cover 90% of daily work.
 
 **Rule of thumb:** if you're stuck >15 min → `/fix:deep`. Fast is for trivially local issues.
 
-**Always follow fix with capture:** `/fix:deep → /learn:conversation`. The fix alone doesn't prevent repeat; the learning does.
+**Always follow fix with capture:** `/fix:deep → /learn:deep`. The fix alone doesn't prevent repeat; the learning does.
 
 ### 5.4 Sleep suite — consolidate memory
 
@@ -225,27 +224,25 @@ The 7 passes preflight runs:
 
 | Skill | Purpose |
 |---|---|
-| `/preflight:run` | Runs the 7 passes above. Only needed for oneshot. |
-| `/preflight:improve` | Update preflight passes based on gaps discovered during runs. |
+| `/oneshot:preflight` | Runs the 7 passes above. Only needed for oneshot. |
+| `/oneshot:improve` | Update preflight passes based on gaps discovered during runs. |
 
-**Run `/preflight:run` before every `/mode:oneshot` kickoff.** Non-negotiable — Delta's state machine assumes the skeleton + specs + branch are already set up. No other mode needs it; solo and adhoc just work off main.
+**Run `/oneshot:preflight` before every `/mode:oneshot` kickoff.** Non-negotiable — Delta's state machine assumes the skeleton + specs + branch are already set up. No other mode needs it; solo and adhoc just work off main.
 
 **Retro** — retrospective analysis. **Best during and after oneshot runs**; also useful at feature boundaries.
 
 | Skill | Purpose |
 |---|---|
-| `/retro:context` | Light — scan conversation for bug reports, decisions, deferred items. Mid-run check. |
-| `/retro:code` | Scan git diff for code-level signals (bug fixes, new patterns, hygiene rules needed). |
-| `/retro:full` | Everything — context + git log + code diffs + cross-run analysis, 9 categories. Run at the END of a oneshot run or major feature. |
+| `/oneshot:retro` | Full retrospective — context + git log + code diffs + cross-run analysis across all 9 categories. Default = full; args allow surgical access to subsets (e.g. `--context-only`, `--code-only`). Run at the END of a oneshot run or major feature; can also run mid-run for a phase boundary check. |
 
-**Oneshot rhythm:** `/retro:context` after each phase → `/retro:full` at the end → `/learn:combined` to capture. Without this, you lose the expensive intelligence from the run.
+**Oneshot rhythm:** `/oneshot:retro` (in `--context-only` mode) after each phase → full `/oneshot:retro` at the end → `/learn:deep` to capture. Without this, you lose the expensive intelligence from the run.
 
 ---
 
 ## 6. The Daily Loop
 
 ```
-work → milestone → /learn:combined → /sleep:quick → next
+work → milestone → /learn:deep → /sleep:quick → next
 ```
 
 **Milestone** = a unit you'd describe to a teammate ("auth flow done", "prompt pipeline refactored"). Not too small, not 6 hours long.
@@ -258,7 +255,7 @@ Once a day, do a full `/sleep:deep` on a break. It's where patterns become hooks
 
 | Store | Key | Writes when | Used for |
 |---|---|---|---|
-| Event log | `paths.eventsFile` | Every tool call, prompt, hook fire | Source of truth. Mine with `/learn:events`. |
+| Event log | `paths.eventsFile` | Every tool call, prompt, hook fire | Source of truth. Mine with `/learn:deep --events-only`. |
 | Learnings | `paths.learningsFile` | `/learn:*`, `/sleep:*` | Long-term patterns, injected into every prompt. |
 | Reasoning traces | `paths.tracesFile` | `/reasoning:log`, `/reasoning:run`, `/fix:deep` | Dataset of your problem-solving. |
 | Systems manifest | `paths.systemsFile` | `systems-sync.js`, `/check:system` | Living inventory of what exists. |
@@ -291,7 +288,7 @@ Never edit these by hand — `memory-guard` will block. Read them with the skill
 - **Don't work on main.** Always branch.
 - **Don't let work pile up uncommitted.** Terminal 4 should fire every milestone.
 - **Don't run team modes for solo tasks.** Agent overhead is real.
-- **Don't skip `/learn:conversation` after a hard fix.** You'll repeat the debugging.
+- **Don't skip `/learn:deep` after a hard fix.** You'll repeat the debugging.
 - **Don't forget `/maps:all` after structural changes.** Stale maps mislead the next session.
 - **Don't ignore `/warp:health` yellow items.** They compound.
 - **Don't edit `events.jsonl` / `learnings.jsonl` directly.** The guard will block; the system will drift.
