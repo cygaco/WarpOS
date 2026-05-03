@@ -3,7 +3,7 @@
 An AI operating system for Claude Code. It gives you a team of AI agents that plan, build, review, and learn — so you can focus on what matters.
 
 **Platform:** Windows only (for now)
-**Version:** 0.1.4
+**Version:** 0.2.0
 
 ## What Is This?
 

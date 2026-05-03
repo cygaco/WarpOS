@@ -73,6 +73,21 @@ RELEASE_READINESS, DEPRECATION_POLICY) plus 3 generic contracts
 
 ---
 
+## ✅ Shipped in v0.2.0 (2026-05-03)
+
+Structural rename pass closing the docs/requirements/warpos naming-confusion class identified in the 2026-05-03 audit.
+
+- **`requirements/` → `_requirements/`**, **`docs/` → `_docs/`**, **`warpos/` → `framework/`** — top-level renames for project-root visibility (underscore-meta sorts to top alongside `.claude/`) and JTBD-clear naming for the distribution capsules.
+- **Renumbered requirements chapters**: deleted duplicate `03-requirement-standards/`, slid 04→03, 05→04, …, 09→08, 99-audits→`_audits/`. New chapter `09-integrations/` from the merged docs.
+- **Merged `docs/*` framework dirs back into `_requirements/*`** (00-canonical, 01-design-system, 02-copy-system, 04-architecture, audit-reports). `_docs/` now holds only the three project carve-outs: user-communication, research, karpathy-auto-research.
+- **`scripts/warpos/promote.js` FRAMEWORK_PREFIXES** expanded to include `_requirements/`, `_docs/`, `framework/` — closes the silent-drop bug that blocked all prior `requirements/`-shape changes from reaching consumers.
+- **6 new paths.json keys**: `architectureRoot`, `designSystemRoot`, `auditsRoot`, `integrationsRoot`, `docsRoot`, `frameworkRoot`.
+- **paths schema v4 → v5**.
+- **4 forward migration scripts** at `migrations/0.1.x-to-0.2.0/` (idempotent — detect already-applied state and no-op).
+- **10 new `/check:warpos-*` skills** (5 mechanical fully implemented, 5 reasoned-stubs designed for `/reasoning:run` refinement) so this regression class is impossible going forward.
+- **`.gitignore` template additions**: `.warpos/`, `qa-*.png`, `runtime/qa-*/`, `runtime/research/`, `runtime/logs/`, `.claude/.session-start-commit`, `.claude/agents/store.json`, `.claude/project/maps/.stale.json`.
+- **Release gates**: 10 green · 3 yellow · 0 red · 1 manual · overall PASS.
+
 ## ✅ Shipped in v0.1.4 (2026-05-02)
 
 Cleanup release that closes the gate-blocker chain:
