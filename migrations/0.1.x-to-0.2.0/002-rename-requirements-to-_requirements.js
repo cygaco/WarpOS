@@ -64,11 +64,12 @@ function main() {
     return 1;
   }
   // Step 1: remove duplicate 03-requirement-standards if present
-  const dupe = path.join(OLD, "03-requirement-standards");
+  // path-literal-allowed: migration data, not navigation
+  const dupe = path.join(OLD, "03-requirement-standards"); // path-literal-allowed: migration data
   if (fs.existsSync(dupe) && fs.existsSync(path.join(OLD, "_standards"))) {
-    gitRm("requirements/03-requirement-standards");
+    gitRm("requirements/03-requirement-standards"); // path-literal-allowed: migration data
     console.log(
-      "[002] Removed requirements/03-requirement-standards/ (duplicate of _standards/).",
+      "[002] Removed requirements/03-requirement-standards/ (duplicate of _standards/).", // path-literal-allowed: migration data
     );
   }
   // Step 2: chapter renumber under old top-level name (cleaner git rename detection)

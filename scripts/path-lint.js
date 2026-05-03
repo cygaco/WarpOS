@@ -300,7 +300,9 @@ const SKIP_SUBSTRINGS = [
   "migrations/0.0.0-to-0.1.0/003-docs-to-requirements.js", // semantic purpose IS the rewrite
   ".warpos/", // per-install transactional state (audit log)
   "scripts/one-off/codemod-track-b5.js", // Track C codemod encodes paths as data
+  "scripts/one-off/codemod-track-b2-b3.js", // Track B2-B3 codemod encodes paths as data
   "runtime/canonical-skeleton/", // Track A.2 preserved templates pre-overwrite for canonical mirror
+  "version.json", // release notes describe pre-rename paths
 ];
 
 const critical = [];

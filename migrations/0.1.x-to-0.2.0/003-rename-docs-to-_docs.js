@@ -15,20 +15,22 @@ const NEW = path.join(ROOT, "_docs");
 
 // docs subdir → _requirements destination (skeleton only; consumer-specific
 // content stays untouched if it has been customized)
+// path-literal-allowed: migration data, not navigation
 const DOCS_TO_REQUIREMENTS = [
-  ["docs/00-canonical", "_requirements/00-canonical"],
-  ["docs/01-design-system", "_requirements/01-design-system"],
-  ["docs/02-copy-system", "_requirements/02-copy-system"],
-  ["docs/04-architecture", "_requirements/03-architecture"],
-  ["docs/06-integrations", "_requirements/09-integrations"],
-  ["docs/audit-reports", "_requirements/_audits"],
+  ["docs/00-canonical", "_requirements/00-canonical"], // path-literal-allowed: migration data
+  ["docs/01-design-system", "_requirements/01-design-system"], // path-literal-allowed: migration data
+  ["docs/02-copy-system", "_requirements/02-copy-system"], // path-literal-allowed: migration data
+  ["docs/04-architecture", "_requirements/03-architecture"], // path-literal-allowed: migration data
+  ["docs/06-integrations", "_requirements/09-integrations"], // path-literal-allowed: migration data
+  ["docs/audit-reports", "_requirements/_audits"], // path-literal-allowed: migration data
 ];
 
 // 99-resources/* → _docs/* (carve-outs that stay)
+// path-literal-allowed: migration data, not navigation
 const CARVE_OUTS = [
-  ["docs/99-resources/00-user-communication", "docs/user-communication"],
-  ["docs/99-resources/01-research", "docs/research"],
-  ["docs/99-resources/02-karpathy-autoresearch", "docs/karpathy-auto-research"],
+  ["docs/99-resources/00-user-communication", "docs/user-communication"], // path-literal-allowed: migration data
+  ["docs/99-resources/01-research", "docs/research"], // path-literal-allowed: migration data
+  ["docs/99-resources/02-karpathy-autoresearch", "docs/karpathy-auto-research"], // path-literal-allowed: migration data
 ];
 
 function isGit() {
