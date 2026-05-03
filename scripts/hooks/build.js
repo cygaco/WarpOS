@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 /**
- * scripts/hooks/build.js — generate hook artifacts from warpos/hooks.registry.json
+ * scripts/hooks/build.js — generate hook artifacts from framework/hooks.registry.json
  *
  * Inputs:
- *   warpos/hooks.registry.json     (single source of truth — id, script, event/matcher,
+ *   framework/hooks.registry.json     (single source of truth — id, script, event/matcher,
  *                                   failMode, fixturesRequired)
  *
  * Outputs:
@@ -29,7 +29,7 @@ const fs = require("fs");
 const path = require("path");
 
 const ROOT = path.resolve(__dirname, "..", "..");
-const REGISTRY_FILE = path.join(ROOT, "warpos", "hooks.registry.json");
+const REGISTRY_FILE = path.join(ROOT, "framework", "hooks.registry.json");
 const CHECK_MODE = process.argv.includes("--check");
 
 const OUT_HOOK_MANIFEST = path.join(
@@ -93,7 +93,7 @@ function buildHookManifest(registry) {
   }
   return {
     $schema: "warpos/hook-manifest/v1",
-    generatedFrom: "warpos/hooks.registry.json",
+    generatedFrom: "framework/hooks.registry.json",
     updatedAt,
     hooks,
   };

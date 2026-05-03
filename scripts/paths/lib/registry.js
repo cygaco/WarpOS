@@ -3,7 +3,7 @@
  * update-engine, doctor) that need the path registry without rebuilding
  * the full artifact set.
  *
- * Single source of truth: warpos/paths.registry.json.
+ * Single source of truth: framework/paths.registry.json.
  * Generators in scripts/paths/build.js consume the same file; this helper
  * exists so callers do NOT duplicate that registry → flat-paths logic
  * (which is exactly the rot warp-setup.js had pre-0.1.2).
@@ -12,11 +12,11 @@ const fs = require("fs");
 const path = require("path");
 
 const ROOT = path.resolve(__dirname, "..", "..", "..");
-const REGISTRY_FILE = path.join(ROOT, "warpos", "paths.registry.json");
+const REGISTRY_FILE = path.join(ROOT, "framework", "paths.registry.json");
 
 function loadRegistry(rootOverride) {
   const file = rootOverride
-    ? path.join(rootOverride, "warpos", "paths.registry.json")
+    ? path.join(rootOverride, "framework", "paths.registry.json")
     : REGISTRY_FILE;
   if (!fs.existsSync(file)) {
     throw new Error(`paths registry not found at ${file}`);

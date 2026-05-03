@@ -18,7 +18,7 @@ Default mode reports findings and exits 0 so existing products can adopt the che
 
 ## Checks
 
-1. Required design docs exist under `docs/01-design-system/`.
+1. Required design docs exist under `_requirements/01-design-system/`.
 2. JSX/TSX does not use raw hex color literals in UI styling.
 3. JSX/TSX does not use raw Tailwind theme color utilities for product theme colors.
 4. Feature components use local UI primitives instead of raw `button`, `input`, `select`, or `textarea` controls.
@@ -30,6 +30,6 @@ Intentional exceptions live in `scripts/checks/design-system.allowlist.json`. Ea
 
 ## Related
 
-- `requirements/04-architecture/ACCESSIBILITY_BASELINE.md`
-- `requirements/04-architecture/PRODUCTION_BASELINE.md`
+- `_requirements/03-architecture/ACCESSIBILITY_BASELINE.md`
+- `_requirements/03-architecture/PRODUCTION_BASELINE.md`
 - `scripts/hooks/ui-lint.js`

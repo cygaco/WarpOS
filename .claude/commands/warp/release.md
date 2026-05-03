@@ -36,7 +36,7 @@ The orchestrator runs 11 stages (0-10). Each emits a receipt `{stage, ok, what, 
 | 2 | compute-version | Bump per --version (patch \| minor \| major \| <x.y.z>) |
 | 3 | bump-version | Write new version.json in canonical |
 | 4 | regen-manifest | Regenerate canonical's .claude/framework-manifest.json |
-| 5 | create-capsule-skeleton | Create warpos/releases/<v>/{release.json, changelog.md, upgrade-notes.md} |
+| 5 | create-capsule-skeleton | Create framework/releases/<v>/{release.json, changelog.md, upgrade-notes.md} |
 | 6 | build-capsule | Run release-build.js — manifest snapshot + checksums |
 | 7 | run-gates | release-gates.js (block on RED, warn on yellow/manual) |
 | 8 | commit-release-branch | git -C <canonical> checkout -b release/<v> + commit |

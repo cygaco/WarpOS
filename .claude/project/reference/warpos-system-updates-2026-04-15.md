@@ -67,8 +67,8 @@ Added new fields to Jobzooka's manifest:
 - `component_feature_map: { Step1Resume: "onboarding", ... }` — full 30-entry map
 - `spec_patterns: [...]` — 11 regex patterns as strings
 - `code_patterns: [...]` — 2 regex patterns
-- `features_dir: "requirements/05-features"`
-- `canonical_dir: "docs/00-canonical"`
+- `features_dir: "_requirements/05-features"`
+- `canonical_dir: "_docs/00-canonical"`
 
 ## Skill Scrubbing (20+ files)
 
@@ -85,7 +85,7 @@ Added new fields to Jobzooka's manifest:
 - `research/simple.md` — Same changes.
 
 ### Bulk retro path replacement (8 files)
-Replaced `docs/09-agentic-system/retro` with `the retro directory (check manifest.json projectPaths.retro for location)` in:
+Replaced `_docs/09-agentic-system/retro` with `the retro directory (check manifest.json projectPaths.retro for location)` in:
 - check/patterns.md, fix/deep.md, preflight/run.md, sleep/deep.md, learn/ingest.md, maps/enforcements.md, retro/full.md, retro/code.md
 
 ### Other scrubs

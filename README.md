@@ -109,7 +109,7 @@ WarpOS/
 │   ├── commands/          — 95 skills (slash commands)
 │   └── project/reference/ — Reasoning frameworks, operational loop
 ├── scripts/hooks/         — 52 automated hooks + lib modules
-├── requirements/          — Documentation templates (PRD, stories, architecture)
+├── _requirements/          — Documentation templates (PRD, stories, architecture)
 │   ├── 00-canonical/      — Product foundations (brief, model, glossary)
 │   ├── 01-09/             — Design, copy, architecture, security, testing, CI/CD
 │   └── 05-features/       — Feature spec templates + example

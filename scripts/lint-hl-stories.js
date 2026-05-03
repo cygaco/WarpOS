@@ -8,7 +8,7 @@ const path = require("path");
 const { PROJECT, PATHS } = require("./hooks/lib/paths");
 
 const ROOT = PROJECT;
-const FEATURES_DIR = PATHS.specsRoot || path.join(ROOT, "requirements", "05-features");
+const FEATURES_DIR = PATHS.specsRoot || path.join(ROOT, "requirements", "04-features");
 const ALLOWED_ROLES = [
   "user",
   "system",

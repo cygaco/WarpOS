@@ -42,7 +42,7 @@ function readJsonOrNull(file) {
 }
 
 function getRegistryVersion() {
-  const reg = readJsonOrNull(path.join(ROOT, "warpos", "paths.registry.json"));
+  const reg = readJsonOrNull(path.join(ROOT, "framework", "paths.registry.json"));
   return reg.ok && reg.data ? reg.data.version : null;
 }
 

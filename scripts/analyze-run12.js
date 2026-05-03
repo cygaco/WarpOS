@@ -107,7 +107,7 @@ Object.entries(fileEdits)
   .slice(0, 15)
   .forEach(([k, v]) => console.log(" ", v + "x:", k));
 
-// 6. Spec edits (requirements/specs)
+// 6. Spec edits (_requirements/specs)
 const specEdits = events.filter((e) => {
   if (e.cat !== "tool") return false;
   const d = e.data || {};

@@ -14,7 +14,7 @@ What we will do, in one sentence. State the chosen option directly. No hedging.
 
 What problem are we solving? What constraints exist? What changed that made this decision necessary?
 
-Keep this section to the actual context. Don't restate the product or the stack — link to `docs/00-canonical/` or `docs/04-architecture/` for those.
+Keep this section to the actual context. Don't restate the product or the stack — link to `_requirements/00-canonical/` or `_requirements/03-architecture/` for those.
 
 ## Options considered
 
@@ -56,4 +56,4 @@ How we would change this later if we needed to. What's the cost? What signals wo
 
 - Related ADRs (supersedes, supersedes-by, related)
 - Implementation PR / commit
-- Relevant `docs/04-architecture/` files this decision touches
+- Relevant `_requirements/03-architecture/` files this decision touches

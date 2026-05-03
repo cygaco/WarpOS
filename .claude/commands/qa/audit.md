@@ -19,8 +19,8 @@ Glob these categories:
 - API routes: `src/app/api/**/route.ts`
 - Libraries: `src/lib/**/*.ts`
 - Hooks: `scripts/hooks/**/*.js`
-- Specs: `requirements/05-features/**/*.md`
-- Architecture: `docs/04-architecture/**/*.md`
+- Specs: `_requirements/04-features/**/*.md`
+- Architecture: `_requirements/03-architecture/**/*.md`
 
 ### Step 2: Determine Scope
 
@@ -42,7 +42,7 @@ Scope: ${ARGUMENTS ? "Only persona: " + ARGUMENTS : "All 7 personas"}
 For each persona in scope, systematically:
 a. Stale Reader: scan all loadSession() files, cross-ref with useEffect deps and prop signatures
 b. Phantom Render: scan useRef(false) files, conditional render patterns in step components
-c. Cascade Amplifier: count STALE markers in docs/, check hooks for non-idempotent ops
+c. Cascade Amplifier: count STALE markers in _docs/, check hooks for non-idempotent ops
 d. Gate Dodger: audit all API routes for auth (getAuthToken + verifyJWT), rate limiting, CSRF, validation
 e. Zombie Agent: check git worktree list, grep for TODO stubs, check events for dispatch-unknown
 f. Spec Ghost: cross-reference types.ts exports against all spec layers

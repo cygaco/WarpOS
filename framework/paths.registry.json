@@ -1,7 +1,7 @@
 {
   "$schema": "warpos/paths-registry/v1",
   "version": 4,
-  "_doc": "Path identity registry. Source of truth for project-relative paths. Consumed by scripts/paths/build.js, which derives: (1) .claude/paths.json (flat key→string used by hooks at runtime), (2) scripts/hooks/lib/paths.generated.js (fallback when paths.json missing), (3) scripts/path-lint.rules.generated.json (regex arrays for path-lint critical+warn), (4) schemas/paths.schema.json (validator), (5) docs/04-architecture/PATH_KEYS.md (human reference). To rename a path: edit here, run scripts/paths/build.js, commit all generated artifacts together.",
+  "_doc": "Path identity registry. Source of truth for project-relative paths. Consumed by scripts/paths/build.js, which derives: (1) .claude/paths.json (flat key→string used by hooks at runtime), (2) scripts/hooks/lib/paths.generated.js (fallback when paths.json missing), (3) scripts/path-lint.rules.generated.json (regex arrays for path-lint critical+warn), (4) schemas/paths.schema.json (validator), (5) requirements/03-architecture/PATH_KEYS.md (human reference). To rename a path: edit here, run scripts/paths/build.js, commit all generated artifacts together.",
   "_field_meaning": {
     "path": "Project-relative path from repo root, forward slashes",
     "kind": "dir | file | jsonl | json | md | js — drives schema validators + lint rules",
@@ -208,7 +208,7 @@
       "docsToken": "paths.patterns"
     },
     "requirements": {
-      "path": "requirements",
+      "path": "_requirements",
       "kind": "dir",
       "owner": "project",
       "mutable": true,
@@ -216,41 +216,119 @@
       "docsToken": "paths.requirements"
     },
     "requirementsRoot": {
-      "path": "requirements",
+      "path": "_requirements",
       "kind": "dir",
       "owner": "project",
       "mutable": true,
       "introducedIn": "0.1.0",
       "aliases": ["requirements"],
       "docsToken": "paths.requirementsRoot",
-      "_note": "Phase 1 introduced this alias to make 'spec home' explicit. Existing 'requirements' key remains for backward compat."
+      "_note": "Track B 2026-05-03 renamed requirements -> _requirements for project-root visibility. Phase 1 introduced this alias to make 'spec home' explicit. Bare 'requirements' deprecation NOT in deprecatedAliases (matches English word too aggressively); rely on path-lint regex match patterns instead."
     },
     "specsRoot": {
-      "path": "requirements/05-features",
+      "path": "_requirements/04-features",
       "kind": "dir",
       "owner": "project",
       "mutable": true,
       "introducedIn": "0.1.0",
-      "replaces": "manifest.projectPaths.specs (was docs/05-features)",
-      "deprecatedAliases": ["docs/05-features"],
+      "replaces": "manifest.projectPaths.specs (originally docs/05-features, then requirements/05-features, then requirements/04-features)",
+      "deprecatedAliases": [
+        "requirements/05-features",
+        "requirements/04-features",
+        "docs/05-features"
+      ],
       "docsToken": "paths.specsRoot",
-      "_note": "Phase 1 final-A moved docs/05-features → requirements/05-features. Manifest projectPaths.specs is bound to this in Phase 1 final-D."
+      "_note": "Track B 2026-05-03 renamed requirements/04-features -> _requirements/04-features. Track C earlier renumbered 05-features -> 04-features."
     },
     "research": {
-      "path": "docs/99-resources/01-research",
+      "path": "_docs/research",
       "kind": "dir",
       "owner": "project",
       "mutable": true,
       "introducedIn": "0.0.0",
+      "deprecatedAliases": ["docs/research", "docs/99-resources/01-research"],
       "docsToken": "paths.research"
     },
     "karpathyRuns": {
-      "path": "docs/99-resources/02-karpathy-autoresearch",
+      "path": "_docs/karpathy-auto-research",
       "kind": "dir",
       "owner": "runtime",
       "mutable": true,
       "introducedIn": "0.0.0",
+      "deprecatedAliases": [
+        "docs/karpathy-auto-research",
+        "docs/99-resources/02-karpathy-autoresearch"
+      ],
       "docsToken": "paths.karpathyRuns"
+    },
+    "architectureRoot": {
+      "path": "_requirements/03-architecture",
+      "kind": "dir",
+      "owner": "framework",
+      "mutable": true,
+      "introducedIn": "0.2.0",
+      "deprecatedAliases": [
+        "requirements/04-architecture",
+        "docs/04-architecture",
+        "requirements/03-architecture"
+      ],
+      "docsToken": "paths.architectureRoot",
+      "_note": "Track B 2026-05-03 introduced this key to replace many hardcoded references."
+    },
+    "designSystemRoot": {
+      "path": "_requirements/01-design-system",
+      "kind": "dir",
+      "owner": "framework",
+      "mutable": true,
+      "introducedIn": "0.2.0",
+      "deprecatedAliases": [
+        "requirements/01-design-system",
+        "docs/01-design-system"
+      ],
+      "docsToken": "paths.designSystemRoot"
+    },
+    "auditsRoot": {
+      "path": "_requirements/_audits",
+      "kind": "dir",
+      "owner": "framework",
+      "mutable": true,
+      "introducedIn": "0.2.0",
+      "deprecatedAliases": [
+        "requirements/99-audits",
+        "requirements/_audits",
+        "docs/audit-reports"
+      ],
+      "docsToken": "paths.auditsRoot"
+    },
+    "integrationsRoot": {
+      "path": "_requirements/09-integrations",
+      "kind": "dir",
+      "owner": "project",
+      "mutable": true,
+      "introducedIn": "0.2.0",
+      "deprecatedAliases": [
+        "docs/06-integrations",
+        "requirements/09-integrations"
+      ],
+      "docsToken": "paths.integrationsRoot"
+    },
+    "docsRoot": {
+      "path": "_docs",
+      "kind": "dir",
+      "owner": "project",
+      "mutable": true,
+      "introducedIn": "0.2.0",
+      "docsToken": "paths.docsRoot",
+      "_note": "Track B 2026-05-03 renamed docs -> _docs. Now contains only carve-outs: user-communication, research, karpathy-auto-research."
+    },
+    "frameworkRoot": {
+      "path": "framework",
+      "kind": "dir",
+      "owner": "framework",
+      "mutable": true,
+      "introducedIn": "0.2.0",
+      "docsToken": "paths.frameworkRoot",
+      "_note": "Track B 2026-05-03 renamed warpos -> framework (JTBD: framework distribution capsules + canonical registries). Bare 'warpos' is the framework brand name (used in version.json, schema URIs); deprecation handled via path-lint regex matchers, not deprecatedAliases."
     },
     "manifest": {
       "path": ".claude/manifest.json",
@@ -315,6 +393,14 @@
       "mutable": true,
       "introducedIn": "0.0.0",
       "docsToken": "paths.toolsFile"
+    },
+    "skillUsageFile": {
+      "path": ".claude/project/events/skill-usage.jsonl",
+      "kind": "jsonl",
+      "owner": "runtime",
+      "mutable": true,
+      "introducedIn": "0.1.3",
+      "docsToken": "paths.skillUsageFile"
     },
     "requirementsFile": {
       "path": ".claude/project/events/requirements.jsonl",
@@ -505,8 +591,83 @@
       },
       {
         "match": "docs\\/05-features\\/",
-        "suggestion": "requirements/05-features/ (or paths.specsRoot)",
-        "why": "Phase 1 final-A: docs/05-features → requirements/05-features"
+        "suggestion": "requirements/04-features/ (or paths.specsRoot)",
+        "why": "Phase 1 final-A: requirements/04-features → requirements/04-features (now requirements/04-features after Track C 2026-05-03 renumber)"
+      },
+      {
+        "match": "requirements\\/05-features\\/",
+        "suggestion": "requirements/04-features/ (or paths.specsRoot)",
+        "why": "Track C 2026-05-03 renumbered chapters: 05-features → 04-features"
+      },
+      {
+        "match": "requirements\\/04-architecture\\/",
+        "suggestion": "requirements/03-architecture/",
+        "why": "Track C 2026-05-03 renumbered chapters: 04-architecture → 03-architecture"
+      },
+      {
+        "match": "requirements\\/06-operations\\/",
+        "suggestion": "requirements/05-operations/",
+        "why": "Track C 2026-05-03 renumbered chapters: 06 → 05"
+      },
+      {
+        "match": "requirements\\/07-security\\/",
+        "suggestion": "requirements/06-security/",
+        "why": "Track C 2026-05-03 renumbered chapters: 07 → 06"
+      },
+      {
+        "match": "requirements\\/08-testing\\/",
+        "suggestion": "requirements/07-testing/",
+        "why": "Track C 2026-05-03 renumbered chapters: 08 → 07"
+      },
+      {
+        "match": "requirements\\/09-automation\\/",
+        "suggestion": "requirements/08-automation/",
+        "why": "Track C 2026-05-03 renumbered chapters: 09 → 08"
+      },
+      {
+        "match": "requirements\\/99-audits\\/",
+        "suggestion": "requirements/_audits/",
+        "why": "Track C 2026-05-03 collapsed 99-audits → _audits (underscore-meta)"
+      },
+      {
+        "match": "requirements\\/03-requirement-standards\\/",
+        "suggestion": "requirements/_standards/",
+        "why": "Track C 2026-05-03 deleted requirements/_standards/ (duplicate of _standards/)"
+      },
+      {
+        "match": "docs\\/00-canonical\\/",
+        "suggestion": "requirements/00-canonical/",
+        "why": "Track C 2026-05-03 merged docs back into requirements"
+      },
+      {
+        "match": "docs\\/01-design-system\\/",
+        "suggestion": "requirements/01-design-system/",
+        "why": "Track C 2026-05-03 merged docs back into requirements"
+      },
+      {
+        "match": "docs\\/02-copy-system\\/",
+        "suggestion": "requirements/02-copy-system/",
+        "why": "Track C 2026-05-03 merged docs back into requirements"
+      },
+      {
+        "match": "docs\\/04-architecture\\/",
+        "suggestion": "requirements/03-architecture/",
+        "why": "Track C 2026-05-03 merged docs back into requirements"
+      },
+      {
+        "match": "docs\\/06-integrations\\/",
+        "suggestion": "requirements/09-integrations/",
+        "why": "Track C 2026-05-03 merged requirements/09-integrations into NEW requirements/09-integrations/"
+      },
+      {
+        "match": "docs\\/audit-reports\\/",
+        "suggestion": "requirements/_audits/",
+        "why": "Track C 2026-05-03 collapsed audit reports under _audits/"
+      },
+      {
+        "match": "docs\\/99-resources\\/",
+        "suggestion": "docs/{user-communication,research,karpathy-auto-research}/",
+        "why": "Track C 2026-05-03 flattened docs/ — three carve-outs lifted to docs/ root"
       },
       {
         "match": "docs\\/03-requirement-standards\\/",
@@ -547,8 +708,8 @@
     ".claude/project/decisions/",
     ".claude/project/memory/",
     ".claude/project/maps/",
-    "requirements/99-audits/",
-    "docs/99-resources/",
+    "requirements/_audits/",
+    "docs/",
     ".claude/paths.json",
     "scripts/path-lint.js",
     "scripts/hooks/path-guard.js",
@@ -561,7 +722,7 @@
     "warpos-system-updates",
     "warpos-roadmap.md",
     "ROADMAP.md",
-    "warpos/paths.registry.json",
+    "framework/paths.registry.json",
     "scripts/path-lint.rules.generated.json",
     "scripts/hooks/lib/paths.generated.js"
   ],

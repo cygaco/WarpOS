@@ -56,7 +56,7 @@ const { PATHS } = (() => {
 // Phase 1B — augment hardcoded rules with the generator's output
 // (scripts/path-lint.rules.generated.json). When present, its rules layer on
 // top of the embedded ones below; this is how new rules added to the registry
-// (e.g. the docs/05-features → requirements/05-features CRITICAL added in
+// (e.g. the _requirements/04-features → _requirements/04-features CRITICAL added in
 // Phase 1) take effect without editing this script.
 const GENERATED_RULES = (() => {
   try {
@@ -269,8 +269,8 @@ const SKIP_SUBSTRINGS = [
   ".claude/project/events/",
   ".claude/project/memory/",
   ".claude/project/maps/",
-  "requirements/99-audits/",
-  "docs/99-resources/",
+  "_requirements/_audits/",
+  "_docs/",
   ".claude/paths.json",
   "scripts/path-lint.js",
   "scripts/hooks/path-guard.js", // holds the patterns by design
@@ -291,13 +291,16 @@ const SKIP_SUBSTRINGS = [
   "BACKLOG.md", // backlog references work history and archived framework planning
   "scripts/append-trace-rt013.js", // RT-013 incident documentation
   "scripts/hooks/team-guard.js", // documents RT-013 fix in comment
-  "warpos/paths.registry.json", // registry holds the regex strings as data
+  "framework/paths.registry.json", // registry holds the regex strings as data
   "scripts/path-lint.rules.generated.json", // generated mirror of registry
   "schemas/paths.schema.json", // generated schema
-  "docs/04-architecture/PATH_KEYS.md", // generated reference doc
+  "_requirements/03-architecture/PATH_KEYS.md", // generated reference doc
   // Phase 4 — capsule + migration historical references
-  "warpos/releases/", // changelogs / upgrade-notes name the renamed paths
+  "framework/releases/", // changelogs / upgrade-notes name the renamed paths
   "migrations/0.0.0-to-0.1.0/003-docs-to-requirements.js", // semantic purpose IS the rewrite
+  ".warpos/", // per-install transactional state (audit log)
+  "scripts/one-off/codemod-track-b5.js", // Track C codemod encodes paths as data
+  "runtime/canonical-skeleton/", // Track A.2 preserved templates pre-overwrite for canonical mirror
 ];
 
 const critical = [];

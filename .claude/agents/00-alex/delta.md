@@ -32,7 +32,7 @@ Read these documents FIRST, in order:
    - `skeleton-checklist.md` — pre-build verification
 6. `paths.decisionPolicy` — Class A/B/C taxonomy, escalation red lines, scoring rubric, and the 4-condition tech-introduction rule. Beta (in adhoc) loads this on every invocation; Delta loads it once per run.
 7. `paths.currentStage` — current product stage (`mvp`, `beta`, `production`) and stage-specific priorities/avoid-list. Stage shifts the rubric weights.
-8. `paths.adrIndex` — pointer to settled architecture decisions in `docs/04-architecture/` plus the numbered ADR archive. Check precedent here before any Class B decision.
+8. `paths.adrIndex` — pointer to settled architecture decisions in `_requirements/03-architecture/` plus the numbered ADR archive. Check precedent here before any Class B decision.
 9. `.claude/agents/02-oneshot/compliance/compliance.md` — cross-tool compliance + builder rewards
 
 ## Scope

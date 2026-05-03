@@ -109,7 +109,7 @@ Update the store with:
 - New tasks (build, fix, or foundation-update) — each tagged `class: A | B | C`
 - Updated feature statuses
 - Incremented cycle counter
-- Any spec/rule changes (as file edits to docs/09-agentic-system/ files) — each tagged `class: A | B | C` in the `store.evolution` entry
+- Any spec/rule changes (as file edits to _docs/09-agentic-system/ files) — each tagged `class: A | B | C` in the `store.evolution` entry
 - For Class B changes: ADR file dropped at `paths.policy/adr/NNNN-slug.md` and INDEX.md row added
 - For Class C changes: structured escalation brief, no silent application
 - `decision_policy_gaps[]` array (optional) — questions where classification was unclear, for `/beta:mine` to pick up next cycle

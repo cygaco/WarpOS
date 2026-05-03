@@ -20,7 +20,7 @@ A structured documentation framework for building products. Each folder contains
 
 ## How to Use
 
-1. Copy the templates you need into your project's `requirements/` folder
+1. Copy the templates you need into your project's `_requirements/` folder
 2. Fill in the sections, following the `<!-- GUIDANCE: -->` comments
 3. For features, create a folder per feature in `05-features/` with: PRD.md, STORIES.md, HL-STORIES.md, INPUTS.md, COPY.md
 4. See `05-features/_example-onboarding/` for a complete example

@@ -77,8 +77,8 @@ project/
 │   ├── components/    # React components
 │   ├── lib/           # Shared utilities
 │   └── styles/        # Global styles
-├── docs/              # Documentation
-├── requirements/      # Product specs
+├── _docs/              # Documentation
+├── _requirements/      # Product specs
 ├── scripts/           # Build and utility scripts
 ├── .claude/           # WarpOS configuration
 └── extension/         # Browser extension (if applicable)

@@ -35,7 +35,7 @@ After builder completes, dispatch each reviewer via CLI:
 - **Compliance** — spec adherence + process integrity
 - **QA** — 7 failure-mode personas
 - **Redteam** — OWASP Top 10 + adversarial patterns + security-sensitive code review
-- **req-reviewer** _(Phase 3E, 2026-04-30)_ — requirements drift: behavior↔requirement↔code↔test traceability + shared-contract propagation + risk-class agreement against ChangePlan. Skipped only if `requirements/_index/requirements.graph.json` is missing (older installs).
+- **req-reviewer** _(Phase 3E, 2026-04-30)_ — requirements drift: behavior↔requirement↔code↔test traceability + shared-contract propagation + risk-class agreement against ChangePlan. Skipped only if `_requirements/_index/requirements.graph.json` is missing (older installs).
 
 Dispatch sequentially (CLI `-p` is blocking). Collect ALL five results before proceeding. If `req-reviewer` returns `fail` with severity `error` finding category `risk_class_disagreement` or `contract_propagation_missed`, treat as a blocking finding regardless of the other four reviewers' verdicts.
 

@@ -249,7 +249,7 @@ Review Alex β's performance since last sleep:
 
 3. **Cross-pollination (distant association)**
    - Read recent `/learn` ingestions
-   - Read recent research under `paths.research` (`docs/99-resources/01-research/`)
+   - Read recent research under `paths.research` (`_docs/research/`)
    - Look for unexpected connections: "Pattern X from research Y could solve problem Z"
    - Write connections to sleep journal
    - **Paint a cross-pollination image** if a strong connection is found

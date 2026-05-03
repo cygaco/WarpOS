@@ -37,7 +37,7 @@ Not a win at this stage:
 ## Avoid at this stage
 
 - Premature microservices
-- Custom infrastructure (use Vercel + Upstash + the stack in `docs/04-architecture/STACK.md`)
+- Custom infrastructure (use Vercel + Upstash + the stack in `_requirements/03-architecture/STACK.md`)
 - Scale optimization (premature; revisit at `beta`)
 - New vendors (the four-condition rule in `paths.decisionPolicy` applies)
 - Complex abstractions for hypothetical future scale

@@ -37,11 +37,11 @@ grep -rn "{.*&&.*<[A-Z]" src/components/
 ### 3. Cascade Amplifier (`cascade-amplifier`)
 **Detection patterns:**
 - Non-idempotent operations in hooks/watchers
-- STALE marker count: `grep -r "STALE" docs/` — alert if >20
+- STALE marker count: `grep -r "STALE" _docs/` — alert if >20
 - Non-idempotent side effects triggered on every render cycle
 
 **Commands:**
-grep -r "STALE" docs/ | wc -l
+grep -r "STALE" _docs/ | wc -l
 grep -rn "setInterval\|addEventListener" scripts/hooks/
 
 **Severity:** HIGH if in spec-graph watcher, HIGH if STALE count > 20

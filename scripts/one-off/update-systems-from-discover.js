@@ -102,7 +102,7 @@ const EMERGENT_ADDS = [
   {
     id: "warpos-release-capsules",
     category: "release-tooling",
-    files: ["warpos/releases/"],
+    files: ["framework/releases/"],
     notes:
       "Per-version capsule directories (release.json, framework-manifest.json, checksums.json, changelog.md). Discovered by /discover:systems run-12 (angles 2,3,6).",
     added: today,

@@ -26,13 +26,13 @@ Your cwd MUST be inside a `.worktrees/wt-*` path. If it resolves to the main pro
 
 ### Read these first
 1. `.claude/agents/.system.md` (your role definition)
-2. The feature spec: `requirements/05-features/{{FEATURE_SLUG}}/PRD.md`
-3. The feature stories: `requirements/05-features/{{FEATURE_SLUG}}/STORIES.md`
+2. The feature spec: `_requirements/04-features/{{FEATURE_SLUG}}/PRD.md`
+3. The feature stories: `_requirements/04-features/{{FEATURE_SLUG}}/STORIES.md`
 4. Foundation files you depend on (read-only): `src/lib/types.ts`, `src/lib/constants.ts`
 5. Latest hygiene rules: `.claude/agents/02-oneshot/.system/retros/` (highest numbered folder, HYGIENE.md)
-6. Design system: `docs/01-design-system/COMPONENT_LIBRARY.md` (component variants, tokens, patterns)
-7. Design tokens: `docs/01-design-system/COLOR_SEMANTICS.md` (color usage rules)
-8. If building UI: `docs/01-design-system/FEEDBACK_PATTERNS.md` and `docs/01-design-system/UX_PRINCIPLES.md`
+6. Design system: `_requirements/01-design-system/COMPONENT_LIBRARY.md` (component variants, tokens, patterns)
+7. Design tokens: `_requirements/01-design-system/COLOR_SEMANTICS.md` (color usage rules)
+8. If building UI: `_requirements/01-design-system/FEEDBACK_PATTERNS.md` and `_requirements/01-design-system/UX_PRINCIPLES.md`
 
 ### Rules
 - Do NOT modify foundation files. If you need a type or constant added, note it in your output.

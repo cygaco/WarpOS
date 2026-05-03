@@ -67,7 +67,7 @@ Plans that got written but the implementation may not have followed.
 
 **Sources:**
 - `paths.plans/*` (any plan file > 30 days old whose filename or contents reference an open feature)
-- `docs/00-canonical/PRODUCT_MODEL.md` change log entries with no follow-up
+- `_requirements/00-canonical/PRODUCT_MODEL.md` change log entries with no follow-up
 - Memory: project memories with "plan in progress" status (search `memory/MEMORY.md` for "plan", "in progress", "WIP")
 
 **Signal:** plan exists, but no commits in the last 14 days touch the plan's feature dirs.
@@ -97,8 +97,8 @@ git status --porcelain | grep '^??' | head -50
 
 Filter out known ephemera (cache files, OS turds). What's left is intentional content the user/Claude wrote but never staged.
 
-**Signal:** untracked `.md` files at project root, untracked dirs under `docs/`, untracked `.json` files under `.claude/project/maps/` not in `.gitignore`.
-**Action:** stage and commit, archive to `docs/99-archive/`, or delete.
+**Signal:** untracked `.md` files at project root, untracked dirs under `_docs/`, untracked `.json` files under `.claude/project/maps/` not in `.gitignore`.
+**Action:** stage and commit, archive to `_docs/99-archive/`, or delete.
 
 ### Lens 7 — Validation backlog
 
@@ -204,7 +204,7 @@ Other Alex sessions that ended with open questions or incomplete handoffs.
   "ranAt": "<ISO>",
   "lenses": ["explicit","runtime-notes","todos","plans","branches","untracked","validation","inbox"],
   "items": [
-    {"item": "rockets / rockets-economy rename drift", "lenses": ["explicit","branches"], "age_days": 21, "bucket": "hot", "action": "git mv requirements/05-features/rockets-economy/ requirements/05-features/rockets/ OR edit manifest"},
+    {"item": "rockets / rockets-economy rename drift", "lenses": ["explicit","branches"], "age_days": 21, "bucket": "hot", "action": "git mv _requirements/04-features/rockets-economy/ _requirements/04-features/rockets/ OR edit manifest"},
     ...
   ],
   "summary": {"hot": 12, "cold": 8, "stale": 21, "echo": 14}

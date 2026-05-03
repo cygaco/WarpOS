@@ -134,7 +134,7 @@ Not a ship blocker. Once cross-provider is live:
 
 ## Phase 3 — Product-as-product
 
-Treat WarpOS itself as a product-in-WarpOS with its own `requirements/05-features/`:
+Treat WarpOS itself as a product-in-WarpOS with its own `_requirements/04-features/`:
 - [ ] Write PRDs for installer, session-lifecycle, paths-resolution, hook-pipeline
 - [ ] Spec the Alex agent team as a feature with stories
 - [ ] Run `/preflight:run` against WarpOS itself before every push

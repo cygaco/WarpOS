@@ -2,7 +2,7 @@
 
 Authoring reference for keys in the YAML frontmatter at the top of each `.claude/agents/**/*.md` file. The dispatch CLI (`node scripts/dispatch.js`, or `npm run dispatch`) reads and writes most of the dispatch keys here; everything else is hand-edited.
 
-> Companion docs: `docs/06-integrations/PROVIDER/{01-anthropic,02-openai,03-google-gemini}.md` for valid (provider, model, effort) tuples; `scripts/hooks/lib/providers.js:55-87` for runtime defaults.
+> Companion docs: `_requirements/09-integrations/PROVIDER/{01-anthropic,02-openai,03-google-gemini}.md` for valid (provider, model, effort) tuples; `scripts/hooks/lib/providers.js:55-87` for runtime defaults.
 
 ## Quick start with the CLI
 
@@ -118,7 +118,7 @@ Allowed values:
 
 When `provider` is set to a non-Anthropic value, `model` is ignored and `provider_model` is used instead.
 
-See `docs/06-integrations/PROVIDER/01-anthropic.md` for the full model table.
+See `_requirements/09-integrations/PROVIDER/01-anthropic.md` for the full model table.
 
 ### `provider` (string, optional)
 
@@ -166,7 +166,7 @@ Reasoning depth for the provider. Valid values vary:
 | `openai` | `low` \| `medium` \| `high` \| `xhigh` | `xhigh` (reviewer/compliance/learner); `medium` (qa) |
 | `gemini` | (no-op — thinking always-on for pro tier) | `high` (documented; flag is empty) |
 
-See `docs/06-integrations/PROVIDER/<provider>.md` for per-model effort matrix.
+See `_requirements/09-integrations/PROVIDER/<provider>.md` for per-model effort matrix.
 
 ### `effort` (string, optional)
 
@@ -259,7 +259,7 @@ The CLI rejects saves that:
 
 - `.claude/manifest.json` (`agentProviders` block) — project-level provider mapping per role
 - `scripts/hooks/lib/providers.js:55-87` — env-var defaults and effort-flag builders
-- `docs/06-integrations/PROVIDER/` — per-provider model tables
+- `_requirements/09-integrations/PROVIDER/` — per-provider model tables
 - `scripts/dispatch/catalog.js` — JS source of truth for dropdowns and validation
 - `scripts/dispatch.js` — CLI entrypoint
 - `.claude/agents/.system.md` — top-level agent system spec

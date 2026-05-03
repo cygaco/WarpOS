@@ -15,7 +15,7 @@
  *   2  Compute new version (patch | minor | <explicit>)
  *   3  Bump <canonical>/version.json
  *   4  Regen <canonical>/.claude/framework-manifest.json
- *   5  Create <canonical>/warpos/releases/<v>/ skeleton
+ *   5  Create <canonical>/framework/releases/<v>/ skeleton
  *   6  Build capsule (release-build.js)
  *   7  Run release gates
  *   8  Commit on release/<v> branch in canonical
@@ -445,7 +445,7 @@ git reset --hard pre-warpos-${version}-update
 }
 
 function stageCreateSkeleton(opts, canonical, current, next) {
-  const dir = path.join(canonical, "warpos", "releases", next);
+  const dir = path.join(canonical, "framework", "releases", next);
   const release = path.join(dir, "release.json");
   const changelog = path.join(dir, "changelog.md");
   const upgrade = path.join(dir, "upgrade-notes.md");
@@ -521,8 +521,8 @@ function stageBuildCapsule(opts, canonical, next) {
     6,
     true,
     `Built capsule ${next} (manifest snapshot + checksums)`,
-    path.join(canonical, "warpos", "releases", next),
-    `git -C ${canonical} checkout HEAD -- warpos/releases/${next}/checksums.json warpos/releases/${next}/framework-manifest.json`,
+    path.join(canonical, "framework", "releases", next),
+    `git -C ${canonical} checkout HEAD -- framework/releases/${next}/checksums.json framework/releases/${next}/framework-manifest.json`,
   );
 }
 
@@ -619,7 +619,7 @@ function stageCommit(opts, canonical, next) {
     "add",
     "version.json",
     ".claude/framework-manifest.json",
-    `warpos/releases/${next}`,
+    `framework/releases/${next}`,
   ]);
   if (!add.ok) {
     return receipt(

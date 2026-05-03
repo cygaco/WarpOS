@@ -87,7 +87,7 @@ When a Class B decision has multiple viable options, score each option on these 
 
 | Criterion | Weight at MVP | What to look for |
 |---|---|---|
-| Product fit | high | Does this serve a user value identified in `docs/00-canonical/PRODUCT_MODEL.md`? |
+| Product fit | high | Does this serve a user value identified in `_requirements/00-canonical/PRODUCT_MODEL.md`? |
 | Simplicity | high | Easy to understand on first read, easy to maintain, fits the existing mental model |
 | Reliability | high | Likely to work in production without surprise failures on the happy path |
 | Reversibility | high | Can we change our mind in a week without rewriting half the system? |
@@ -110,7 +110,7 @@ When a Class B decision has multiple viable options, score each option on these 
 
 Do not introduce a new service, framework, database, queue, vendor, or major dependency unless **all four** conditions hold:
 
-1. The current stack (`docs/04-architecture/STACK.md`) cannot reasonably solve the problem.
+1. The current stack (`_requirements/03-architecture/STACK.md`) cannot reasonably solve the problem.
 2. The benefit outweighs the added complexity (score it on the rubric — must beat "use what we have" by a clear margin).
 3. The decision is documented as an ADR in `paths.policy/adr/`.
 4. Implementation includes tests and a rollback path.
@@ -131,10 +131,10 @@ This rule exists because asking the user for routine technical choices is the bo
 
 ## References
 
-- **User value grounding:** `docs/00-canonical/PRODUCT_MODEL.md`, `CORE_BRIEF.md`, `USER_COHORTS.md`, `GOLDEN_PATHS.md`
-- **Current stack:** `docs/04-architecture/STACK.md`
+- **User value grounding:** `_requirements/00-canonical/PRODUCT_MODEL.md`, `CORE_BRIEF.md`, `USER_COHORTS.md`, `GOLDEN_PATHS.md`
+- **Current stack:** `_requirements/03-architecture/STACK.md`
 - **Reasoning frameworks:** `paths.reference/reasoning-frameworks.md`
 - **Beta judgment mechanics:** `paths.judgmentModel`
 - **Current product stage:** `paths.currentStage`
-- **Settled architecture decisions:** `docs/04-architecture/` (these ARE our ADR archive, just not numbered)
+- **Settled architecture decisions:** `_requirements/03-architecture/` (these ARE our ADR archive, just not numbered)
 - **New ADRs:** `paths.policy/adr/` — one file per decision, `NNNN-slug.md`

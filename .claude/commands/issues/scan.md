@@ -27,7 +27,7 @@ Render the script output directly. Don't summarize.
 # Audit-block signatures (last 7d), ranked
 
 - **17×** merge-guard-blocked :: node -e with fs write blocked: use Edit/Write tools, or put
-- **7×** merge-guard-blocked :: rm on src/ or docs/ blocked: use git to manage file lifecycl
+- **7×** merge-guard-blocked :: rm on src/ or _docs/ blocked: use git to manage file lifecycl
 - **5×** merge-guard-blocked :: git push force-push blocked: destructive operation. (matched
 - **2×** beta-gate-blocked :: Alex β not consulted
 

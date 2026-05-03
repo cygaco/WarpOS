@@ -8,7 +8,7 @@ const path = require("path");
 const { execSync } = require("child_process");
 
 const ROOT = path.resolve(__dirname, "..", "..");
-const CONTRACT_DIR = path.join(ROOT, "requirements", "04-architecture", "contracts");
+const CONTRACT_DIR = path.join(ROOT, "requirements", "03-architecture", "contracts");
 
 function rel(abs) {
   return path.relative(ROOT, abs).replace(/\\/g, "/");

@@ -179,8 +179,8 @@ When all features show `done` in the store:
 | Resume after halt  | Paste resume prompt (see above)                                              |
 | Verify build       | `npm run build`                                                              |
 | See agent branches | `git branch -a`                                                              |
-| Feature specs      | `requirements/05-features/*/PRD.md`                                                  |
+| Feature specs      | `_requirements/04-features/*/PRD.md`                                                  |
 | Agent system rules | `.claude/agents/.system/agent-system.md`                                     |
 | File ownership     | `.claude/agents/02-oneshot/.system/store.json → features[<name>].files`      |
 | Build order        | `.claude/manifest.json → build.phases`                                       |
-| Env var guide      | `docs/09-agentic-system/ENV-SETUP.md`                                        |
+| Env var guide      | `_docs/09-agentic-system/ENV-SETUP.md`                                        |

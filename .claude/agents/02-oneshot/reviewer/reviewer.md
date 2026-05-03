@@ -57,29 +57,29 @@ Read these documents before reviewing:
 2. .claude/agents/.system.md (reviewer protocol in section 10, golden fixtures in section 11)
 4. .claude/agents/02-oneshot/.system/integration-map.md (verify contracts are met)
 5. .claude/manifest.json (fileOwnership.foundation) + .claude/agents/02-oneshot/.system/store.json (features[<name>].files) — verify no scope violations
-6. requirements/05-features/{{FEATURE_DIR}}/INPUTS.md (verify data contracts — every field listed in "Consumed by" must have a wire in the builder's code)
-7. docs/04-architecture/DATA-CONTRACTS.md (wiring verification rules)
-8. docs/01-design-system/COMPONENT_LIBRARY.md (component catalog and design tokens)
-9. docs/01-design-system/COLOR_SEMANTICS.md (color usage rules)
+6. _requirements/04-features/{{FEATURE_DIR}}/INPUTS.md (verify data contracts — every field listed in "Consumed by" must have a wire in the builder's code)
+7. _requirements/03-architecture/DATA-CONTRACTS.md (wiring verification rules)
+8. _requirements/01-design-system/COMPONENT_LIBRARY.md (component catalog and design tokens)
+9. _requirements/01-design-system/COLOR_SEMANTICS.md (color usage rules)
 
 ## Holdout Evaluation (CRITICAL)
-You MUST read `docs/00-canonical/fixtures/step-expectations.json` BEFORE reviewing any feature that touches a step component. This file contains golden criteria that BUILDERS NEVER SEE — required fields, grounding rules, content constraints, and forbidden patterns.
+You MUST read `_requirements/00-canonical/fixtures/step-expectations.json` BEFORE reviewing any feature that touches a step component. This file contains golden criteria that BUILDERS NEVER SEE — required fields, grounding rules, content constraints, and forbidden patterns.
 
-You MUST also check for `requirements/05-features/{{FEATURE_DIR}}/fixtures/golden.json`. If it exists, read it and apply its `groundingInvariants` and `goldenPairs` rules in addition to step-expectations. These per-feature fixtures cover high-synthesis-risk features (resume-generation, auto-apply, market-research, deep-dive-qa). They contain golden input→output pairs and grounding invariants that are also BUILDERS NEVER SEE.
+You MUST also check for `_requirements/04-features/{{FEATURE_DIR}}/fixtures/golden.json`. If it exists, read it and apply its `groundingInvariants` and `goldenPairs` rules in addition to step-expectations. These per-feature fixtures cover high-synthesis-risk features (resume-generation, auto-apply, market-research, deep-dive-qa). They contain golden input→output pairs and grounding invariants that are also BUILDERS NEVER SEE.
 
 The builder builds from the spec (STORIES.md, PRD.md). You evaluate against BOTH the spec AND the holdout fixtures (step-expectations + per-feature golden if present). If the builder's output satisfies the spec but fails any fixture criterion, that is a HARD FAIL.
 
-Also read `docs/00-canonical/fixtures/README.md` for the fixture schema.
+Also read `_requirements/00-canonical/fixtures/README.md` for the fixture schema.
 
 ### Fallback Evaluation Order (when no fixture exists)
 
 For steps without an entry in `step-expectations.json` AND no per-feature `fixtures/golden.json`, the fallback evaluation order is:
 
-1. **`requirements/05-features/{{FEATURE_DIR}}/PRD.md`** — Section 8 (Feature Description) is the primary spec; Section 17 (Grounding Rules) lists builder-visible grounding invariants
-2. **`requirements/05-features/{{FEATURE_DIR}}/STORIES.md`** — every GS-* granular story acceptance criterion is a contract; missing implementation = HARD FAIL
-3. **`requirements/05-features/{{FEATURE_DIR}}/INPUTS.md`** — every field in the "Consumed by" table must have a wire in the builder's code
-4. **`docs/04-architecture/DATA-CONTRACTS.md`** — cross-feature wiring rules
-5. **`docs/01-design-system/COMPONENT_LIBRARY.md`** + **`COLOR_SEMANTICS.md`** — design system gates
+1. **`_requirements/04-features/{{FEATURE_DIR}}/PRD.md`** — Section 8 (Feature Description) is the primary spec; Section 17 (Grounding Rules) lists builder-visible grounding invariants
+2. **`_requirements/04-features/{{FEATURE_DIR}}/STORIES.md`** — every GS-* granular story acceptance criterion is a contract; missing implementation = HARD FAIL
+3. **`_requirements/04-features/{{FEATURE_DIR}}/INPUTS.md`** — every field in the "Consumed by" table must have a wire in the builder's code
+4. **`_requirements/03-architecture/DATA-CONTRACTS.md`** — cross-feature wiring rules
+5. **`_requirements/01-design-system/COMPONENT_LIBRARY.md`** + **`COLOR_SEMANTICS.md`** — design system gates
 6. **`CLAUDE.md`** + **`HYGIENE.md`** — code-quality and idiom rules (Checks 6 + 7)
 
 In your `ReviewResult` JSON, the `evaluationSources` field MUST list which sources you actually used. Be explicit: `["step-expectations.json:step-3", "PRD.md§17", "STORIES.md GS-PROF-01..GS-PROF-12"]`. This makes the bar measurable and inspectable. A reviewer that only cites "vibes" or generic principles is failing its job.

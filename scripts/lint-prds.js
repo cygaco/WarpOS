@@ -21,7 +21,7 @@ const { PROJECT, PATHS } = require("./hooks/lib/paths");
 // ── Config ───────────────────────────────────────────────────────────────
 
 const ROOT = PROJECT;
-const FEATURES_DIR = PATHS.specsRoot || path.join(ROOT, "requirements", "05-features");
+const FEATURES_DIR = PATHS.specsRoot || path.join(ROOT, "requirements", "04-features");
 const SRC_DIR = path.join(ROOT, "src");
 
 const REQUIRED_SECTIONS = [

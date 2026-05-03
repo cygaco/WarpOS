@@ -12,7 +12,7 @@ System capabilities achieved and roadmap for what comes next. Ordered by depende
 - [x] Environment setup (Next.js 16, Turbopack, Vercel)
 
 ### Spec Pipeline
-- [x] Canonical requirement documents (docs/00-canonical/)
+- [x] Canonical requirement documents (_requirements/00-canonical/)
 - [x] PRDs for all 13 features
 - [x] High-level stories for all 13 features
 - [x] Granular stories with agentic metadata (Depends on, Entry state, Verifiable by)

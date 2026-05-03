@@ -22,7 +22,7 @@ happened so the orchestrator can dispatch a fix-agent if needed.
 
 The orchestrator passes you these variables:
 
-- `{{FEATURE}}` — feature ID (matches `requirements/<feature>/`)
+- `{{FEATURE}}` — feature ID (matches `_requirements/<feature>/`)
 - `{{WORKTREE_BRANCH}}` — branch the builder wrote to (verify CWD on this branch)
 - `{{TIMEOUT_MS}}` — hard cap for the entire suite (default 180000)
 
@@ -49,7 +49,7 @@ wrong branch (LRN-2026-04-05).
 Run:
 
 ```bash
-ls requirements/{{FEATURE}}/tests/*.spec.ts 2>/dev/null | wc -l
+ls _requirements/{{FEATURE}}/tests/*.spec.ts 2>/dev/null | wc -l
 ```
 
 If 0, EMIT (not bail — this is a coverage gap, not an error):
@@ -78,7 +78,7 @@ TEST_OUT=$(mktemp)
 TEST_JSON=$(mktemp)
 TEST_EXIT=0
 
-npx playwright test "requirements/{{FEATURE}}" \
+npx playwright test "_requirements/{{FEATURE}}" \
   --project=chromium \
   --reporter=list,json \
   > "$TEST_OUT" 2>&1 || TEST_EXIT=$?
@@ -130,7 +130,7 @@ Always emit a single JSON object as your final message. Wrap in a fenced
   "failures": [
     {
       "test": "<test title>",
-      "file": "<requirements/.../foo.spec.ts:line>",
+      "file": "<_requirements/.../foo.spec.ts:line>",
       "error": "<truncated error message>",
       "screenshot": "<test-results/.../test-failed-1.png>" | null,
       "annotations": ["skeleton" | "flaky" | ...]
@@ -166,9 +166,9 @@ cat > ".claude/runtime/test-runs/<feature>.json" <<JSON
   "last_pass": "<ISO-8601 now>",
   "last_pass_commit": "$COMMIT",
   "spec_files_at_pass": [
-    <list of requirements/05-features/<feature>/*.md paths>
+    <list of _requirements/04-features/<feature>/*.md paths>
   ],
-  "test_files": [<list of requirements/<feature>/tests/*.spec.ts paths>],
+  "test_files": [<list of _requirements/<feature>/tests/*.spec.ts paths>],
   "summary": {<copy of summary from this run>}
 }
 JSON
@@ -188,7 +188,7 @@ is project-runtime data (under `.claude/runtime/`) and is gitignored.
 ## Caching / hashes
 
 If `store.snapshots.test_runs[<feature>]` matches the current
-hash of `requirements/<feature>/tests/` AND the feature's source-file hashes
+hash of `_requirements/<feature>/tests/` AND the feature's source-file hashes
 haven't changed, you MAY emit a cached PASS verdict instead of re-running.
 Include `"cached": true` in the JSON. Default: don't cache; full run.
 

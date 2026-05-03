@@ -12,7 +12,7 @@ const fs = require("fs");
 const path = require("path");
 
 const dryRun = process.argv.includes("--dry-run");
-const featuresDir = path.join(__dirname, "..", "docs", "05-features");
+const featuresDir = path.join(__dirname, "..", "requirements", "04-features");
 
 const prdFiles = fs
   .readdirSync(featuresDir, { withFileTypes: true })

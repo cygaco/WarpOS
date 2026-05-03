@@ -45,7 +45,7 @@ Spawn an Explore agent. Focus: **can agents build from these docs without contra
 - `.claude/agents/01-adhoc/*/` and `.claude/agents/02-oneshot/*/` — build-chain agent definitions
 - `.claude/project/reference/{reasoning-frameworks,operational-loop,learning-lifecycle}.md`
 - Foundation files listed in `manifest.fileOwnership.foundation`
-- Each feature's spec files (resolve `requirements/05-features/{feature}/` from manifest; fall back to `requirements/05-features/`)
+- Each feature's spec files (resolve `_requirements/04-features/{feature}/` from manifest; fall back to `_requirements/04-features/`)
 
 ### Internal checks (I1–I12)
 
@@ -61,7 +61,7 @@ Spawn an Explore agent. Focus: **can agents build from these docs without contra
 - **I10 Role completeness** — each build-chain role (builder, evaluator, compliance, qa, redteam, fixer, auditor) has an agent file in the relevant mode dir
 - **I11 Known stubs exist** — every file in `store.knownStubs` exists AND contains a stub marker
 - **I12 Locked interfaces** — every entry in `store.lockedInterfaces` references a real exported type
-- **I13 Step registry consistency** — verify `docs/00-canonical/STEPS.json` exists, is valid JSON, and passes step-registry-guard schema validation. Run `node scripts/generate-steps-maps.js --check` — if exit ≠ 0, flag as ERROR (canonical doc tables have drifted from registry). Severity: ERROR.
+- **I13 Step registry consistency** — verify `_requirements/00-canonical/STEPS.json` exists, is valid JSON, and passes step-registry-guard schema validation. Run `node scripts/generate-steps-maps.js --check` — if exit ≠ 0, flag as ERROR (canonical doc tables have drifted from registry). Severity: ERROR.
 - **I14 Canonical dispatch callouts present** — verify `delta.md`, `gamma.md`, `01-adhoc/.system/protocol.md`, and `02-oneshot/.system/protocol.md` each contain a callout that build-chain roles (builder, evaluator, compliance, qa, redteam, fixer, auditor) MUST dispatch via `claude -p --agent` Bash subprocess + `parseProviderJson`, NOT via the in-process `Agent` tool. Grep for `claude -p --agent` or `parseProviderJson` in each of those four files; if any is missing the callout, flag as ERROR. Rationale: L1 run-09 — Agent-tool dispatch returned 50–100K tokens of agent prose per reviewer into the orchestrator and halted a full-session run at Phase 2. Severity: ERROR.
 - **I15 Worktree isolation preamble in build personas** — verify every builder and fixer persona (`01-adhoc/builder.md`, `01-adhoc/fixer.md`, `02-oneshot/builder.md`, `02-oneshot/fixer.md`) includes an explicit isolation preamble that runs `pwd && git worktree list --porcelain` at dispatch time and aborts if the working directory is not under `.claude/runtime/worktrees/`. Grep for `git worktree list --porcelain` in each persona file; missing preamble in any role → ERROR. Rationale: L2 run-09 — first parallel dispatch leaked to main repo dir when two `worktree add` calls fired simultaneously; mitigation is only effective if preamble is in the persona. Severity: ERROR.
 - **I16 Builder dispatch references latest HYGIENE** — verify builder/fixer personas reference the highest-numbered retro's HYGIENE file (resolve via `ls .claude/agents/02-oneshot/.system/retros/ | sort -n | tail -1`). If persona references an older retro (e.g. "retro 08 HYGIENE" when retro 10 exists), flag as WARN. Rationale: L7 run-09 — Rules 62/63/64 were the ruleset that broke Phase 1 Rockets; stale references leave builders blind to the class of bugs that keeps recurring. Severity: WARN.
@@ -107,7 +107,7 @@ Spawn an Explore agent. Focus: **each doc layer's quality in isolation.**
 
 ### Foundation docs (00-canonical)
 
-Resolve directory: `requirements/00-canonical/` (or legacy `docs/00-canonical/`).
+Resolve directory: `_requirements/00-canonical/` (or legacy `_requirements/00-canonical/`).
 
 - **H1 Template coverage** — expected files present: `CORE_BRIEF.md`, `PRODUCT_MODEL.md`, `GLOSSARY_TEMPLATE.md` (or filled), `GOLDEN_PATHS.md`, `USER_COHORTS.md`, `FAILURE_STATES.md`
 - **H2 Glossary alignment** — terms in GLOSSARY match constants, code identifiers
@@ -141,7 +141,7 @@ For every feature folder:
 
 - Malformed JSON files → reformat
 - Orphan STALE markers older than 7 days → clear
-- Missing required templates → scaffold from WarpOS `requirements/` templates
+- Missing required templates → scaffold from WarpOS `_requirements/` templates
 - Unwired hooks (script exists, not in settings.json) → propose registration
 - Orphan hooks (script with no users) → propose deletion
 

@@ -105,7 +105,7 @@ Git co-modification. Files changed together repeatedly are almost certainly one 
 - Count co-occurrences: pairs modified ≥3 times together
 - Surface the top 20 pair-clusters
 
-**Signal:** reveals *feature* cohesion invisible to dir structure (e.g. `scripts/hooks/foo.js` + `.claude/commands/foo.md` + `requirements/05-features/foo/PRD.md` = one feature even though 3 dirs).
+**Signal:** reveals *feature* cohesion invisible to dir structure (e.g. `scripts/hooks/foo.js` + `.claude/commands/foo.md` + `_requirements/04-features/foo/PRD.md` = one feature even though 3 dirs).
 **Noise:** omnibus commits touching many unrelated files skew the signal. Filter commits with >20 files.
 
 ---
@@ -129,7 +129,7 @@ Git co-modification. Files changed together repeatedly are almost certainly one 
 
 5. **Report.** Group by bucket. For each Emergent or Ghost item, suggest a concrete next action:
    - Emergent → "Add to `paths.systemsFile` with `{id, category, files, notes: 'discovered by /discover:systems'}`"
-   - Ghost → "Remove from manifest; archive to `docs/99-archive/` if files still exist"
+   - Ghost → "Remove from manifest; archive to `_docs/99-archive/` if files still exist"
 
 6. **(Optional) `--update-manifest` mode:** for each Emergent item, offer to append an entry to `paths.systemsFile`. Use `Edit` tool (memory-guard allows Edit; never Write). User confirms per item.
 

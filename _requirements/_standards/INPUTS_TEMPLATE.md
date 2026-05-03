@@ -1,6 +1,6 @@
 # INPUTS.md — Template & Writing Guide
 
-Every feature folder in `requirements/05-features/{feature}/` should have an `INPUTS.md` that documents all user-facing input fields. This is the spec agents use to build UI and wire data.
+Every feature folder in `_requirements/04-features/{feature}/` should have an `INPUTS.md` that documents all user-facing input fields. This is the spec agents use to build UI and wire data.
 
 ## When to write one
 

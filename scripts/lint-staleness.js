@@ -2,7 +2,7 @@
 
 /**
  * lint-staleness.js
- * Scans all .md files under docs/ for <!-- STALE: --> markers.
+ * Scans all .md files under _docs/ for <!-- STALE: --> markers.
  * Reports as errors — stale files should be reviewed before builds.
  * Integrated into `npm run lint:docs`.
  */

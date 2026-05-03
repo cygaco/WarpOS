@@ -50,9 +50,9 @@ If no uncommitted changes, check `git log --since="2 hours ago" --name-only --fo
 
 **e) Systems changed:** Check if any of these were modified: `CLAUDE.md`, `.claude/commands/**`, `scripts/hooks/**`, `.claude/reference/**`, `.claude/project/memory/systems.jsonl`. List which ones.
 
-**f) Research outputs:** Check if any new files exist under `paths.research` (`docs/99-resources/01-research/`) that weren't there before.
+**f) Research outputs:** Check if any new files exist under `paths.research` (`_docs/research/`) that weren't there before.
 
-**g) Spec changes:** Check for modified files in `requirements/05-features/` or `docs/04-architecture/`.
+**g) Spec changes:** Check for modified files in `_requirements/04-features/` or `_requirements/03-architecture/`.
 
 ### 2. Build Message
 

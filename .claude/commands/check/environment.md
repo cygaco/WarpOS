@@ -4,7 +4,7 @@ description: Environment readiness and tooling quality — fast go/no-go or deep
 
 # /check:environment — Environment & Tooling Health
 
-Single owner for "Can we build and run?" Verifies prerequisites, hooks, build commands, config, and tooling quality. Pairs with `/check:architecture` (which verifies docs/agents).
+Single owner for "Can we build and run?" Verifies prerequisites, hooks, build commands, config, and tooling quality. Pairs with `/check:architecture` (which verifies _docs/agents).
 
 ## Input
 

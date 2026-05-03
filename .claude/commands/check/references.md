@@ -4,7 +4,7 @@ description: Cross-file reference integrity — broken links, orphans, stale SPE
 
 # /check:references — Reference Integrity
 
-Validates that every file path reference across `.claude/`, `requirements/` (or `docs/`), and `scripts/` resolves to a real file on disk. Catches orphaned files, broken cross-links, and stale SPEC_GRAPH edges.
+Validates that every file path reference across `.claude/`, `_requirements/` (or `_docs/`), and `scripts/` resolves to a real file on disk. Catches orphaned files, broken cross-links, and stale SPEC_GRAPH edges.
 
 This is the raw file-path-existence check. For semantic doc consistency, use `/check:architecture health`.
 
@@ -40,7 +40,7 @@ Plus project-specific paths from `manifest.source_dirs` and `manifest.projectPat
 1. **Markdown links** — `[text](path/to/file.md)` where path doesn't resolve
 2. **Code-style file refs** — backtick-wrapped paths in markdown
 3. **Bare path mentions** — string literals that look like paths
-4. **SPEC_GRAPH edges** — entries in `.claude/project/reference/SPEC_GRAPH.json` (or `docs/00-canonical/SPEC_GRAPH.json`) pointing at deleted files
+4. **SPEC_GRAPH edges** — entries in `.claude/project/reference/SPEC_GRAPH.json` (or `_requirements/00-canonical/SPEC_GRAPH.json`) pointing at deleted files
 5. **STALE markers** — `<!-- STALE -->` banners whose source files have moved or been renamed
 6. **Orphaned files** — files not referenced by any other file (excluding entry points, event logs, archives)
 

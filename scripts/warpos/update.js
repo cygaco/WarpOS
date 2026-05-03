@@ -13,7 +13,7 @@
  *
  * Algorithm:
  *   1. Read installed snapshot from <target>/.claude/framework-installed.json
- *   2. Read source release capsule from <source>/warpos/releases/<to>/release.json
+ *   2. Read source release capsule from <source>/framework/releases/<to>/release.json
  *   3. Classify each asset into one of 12 categories.
  *   4. dry-run: print plan + exit.
  *      apply  : write transaction record, copy files, run migrations,
@@ -84,7 +84,7 @@ function findRepoRootFromCapsule(capsuleDir) {
 }
 
 function loadCapsule(sourceRoot, version) {
-  const capsuleDir = path.join(sourceRoot, "warpos", "releases", version);
+  const capsuleDir = path.join(sourceRoot, "framework", "releases", version);
   const releaseFile = path.join(capsuleDir, "release.json");
   const manifestFile = path.join(capsuleDir, "framework-manifest.json");
   const checksumsFile = path.join(capsuleDir, "checksums.json");

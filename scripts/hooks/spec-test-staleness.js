@@ -3,8 +3,8 @@
  * spec-test-staleness.js — PostToolUse hook (Edit|Write).
  *
  * When a feature spec is edited (PRD.md, STORIES.md, COPY.md, INPUTS.md,
- * HL-STORIES.md inside requirements/05-features/<feature>/), check whether the
- * matching tests at requirements/<feature>/tests/*.spec.ts have been
+ * HL-STORIES.md inside _requirements/04-features/<feature>/), check whether the
+ * matching tests at _requirements/<feature>/tests/*.spec.ts have been
  * validated SINCE this edit. If not, emit a `test.stale` event.
  *
  * Last-pass timestamps live at:
@@ -24,7 +24,7 @@ const PROJECT = process.env.CLAUDE_PROJECT_DIR || process.cwd();
 
 // Resolve specsRoot from paths registry. Phase 1 final-A renamed the spec
 // home (the deprecated alias is recorded in the path registry — path-literal-allowed)
-// to requirements/05-features; this hook used to hardcode the old path
+// to _requirements/04-features; this hook used to hardcode the old path
 // (still flagged stale even after the rename) and silently no-op'd against
 // current edits.
 const { PATHS } = (() => {
@@ -37,7 +37,7 @@ const { PATHS } = (() => {
 const SPECS_ROOT_REL = (
   PATHS && PATHS.specsRoot
     ? path.relative(PROJECT, PATHS.specsRoot)
-    : "requirements/05-features"
+    : "_requirements/04-features"
 ).replace(/\\/g, "/");
 const SPECS_DIR = path.join(PROJECT, SPECS_ROOT_REL);
 const REQUIREMENTS_DIR = path.join(PROJECT, "requirements");

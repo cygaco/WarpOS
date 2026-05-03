@@ -2,7 +2,7 @@
 
 /**
  * materialize-decisions.js
- * Reads .claude/project/events/events.jsonl and generates docs/DECISIONS.md
+ * Reads .claude/project/events/events.jsonl and generates _docs/DECISIONS.md
  * Groups events by change-set, auto-fills "Why" from trigger+source fields.
  */
 

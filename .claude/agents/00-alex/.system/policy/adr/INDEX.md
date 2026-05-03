@@ -6,17 +6,17 @@ Architecture Decision Records — settled decisions Beta consults to find preced
 
 ## Where settled decisions live
 
-**Pre-2026-04-29 settled decisions** are documented in `docs/04-architecture/`. Those files ARE this project's ADR archive — they capture what was chosen and why for the Jobzooka core stack and architecture, just not in numbered ADR format. When checking precedent, search there first:
+**Pre-2026-04-29 settled decisions** are documented in `_requirements/03-architecture/`. Those files ARE this project's ADR archive — they capture what was chosen and why for the Jobzooka core stack and architecture, just not in numbered ADR format. When checking precedent, search there first:
 
-- `docs/04-architecture/STACK.md` — framework, language, hosting, styling, state, AI provider, job-data source
-- `docs/04-architecture/AUTH_SCHEMAS.md` — JWT + OAuth (Google/LinkedIn) + email/password
-- `docs/04-architecture/EXTENSION_SPEC.md` — Chrome extension architecture
-- `docs/04-architecture/API_SURFACE.md` — server route shape and contracts
-- `docs/04-architecture/DATA_FLOW.md`, `PERSISTENCE.md` — encrypted localStorage + Redis sessions
-- `docs/04-architecture/SECURITY.md` — security posture and boundaries
-- `docs/04-architecture/THIRD_PARTY.md` — vendor list (Stripe, Bright Data, Upstash, Anthropic)
-- `docs/04-architecture/PIPELINES.md`, `DATA-CONTRACTS.md` — data and pipeline contracts
-- `docs/04-architecture/ENV_VARS.md`, `VALIDATION_RULES.md`, `ERROR_RECOVERY.md` — operational
+- `_requirements/03-architecture/STACK.md` — framework, language, hosting, styling, state, AI provider, job-data source
+- `_requirements/03-architecture/AUTH_SCHEMAS.md` — JWT + OAuth (Google/LinkedIn) + email/password
+- `_requirements/03-architecture/EXTENSION_SPEC.md` — Chrome extension architecture
+- `_requirements/03-architecture/API_SURFACE.md` — server route shape and contracts
+- `_requirements/03-architecture/DATA_FLOW.md`, `PERSISTENCE.md` — encrypted localStorage + Redis sessions
+- `_requirements/03-architecture/SECURITY.md` — security posture and boundaries
+- `_requirements/03-architecture/THIRD_PARTY.md` — vendor list (Stripe, Bright Data, Upstash, Anthropic)
+- `_requirements/03-architecture/PIPELINES.md`, `DATA-CONTRACTS.md` — data and pipeline contracts
+- `_requirements/03-architecture/ENV_VARS.md`, `VALIDATION_RULES.md`, `ERROR_RECOVERY.md` — operational
 
 These were not backfilled as numbered ADRs because doing so would duplicate documentation that already exists and is well-maintained.
 

@@ -9,7 +9,7 @@ Files: {{FILE_LIST}}
 
 Read these before scanning:
 - `.claude/manifest.json` (`fileOwnership.foundation`) + `.claude/agents/02-oneshot/.system/store.json` (`features[<name>].files`) — scope boundaries
-- `docs/04-architecture/FLOW_SPEC.md` (entry states — cross-reference with code paths)
+- `_requirements/03-architecture/FLOW_SPEC.md` (entry states — cross-reference with code paths)
 
 ID range: QA-500 and up.
 

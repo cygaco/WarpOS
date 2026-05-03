@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Smoke-test for merge-guard rule 5 (rm on src/ or docs/).
+// Smoke-test for merge-guard rule 5 (rm on src/ or _docs/).
 // Verifies the per-segment scoping: rm in one segment + src/ in another
 // does NOT trigger the block. BACKLOG.md issue #9.
 //
@@ -39,7 +39,7 @@ function run(cmd) {
 const cases = [
   // Should BLOCK
   { cmd: "rm src/foo.tsx", expect: "block", name: "raw rm on src/" },
-  { cmd: "rm -rf docs/old", expect: "block", name: "raw rm -rf on docs/" },
+  { cmd: "rm -rf _docs/old", expect: "block", name: "raw rm -rf on _docs/" },
   {
     cmd: "ls && rm src/x.ts",
     expect: "block",

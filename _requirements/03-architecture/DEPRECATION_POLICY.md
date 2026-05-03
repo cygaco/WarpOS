@@ -49,5 +49,5 @@ minor releases.
 ## Tooling
 
 `/warp:deprecate` is the canonical tool to file a Minimum Deprecation
-Record. It writes to `requirements/04-architecture/DEPRECATIONS.md`
+Record. It writes to `_requirements/03-architecture/DEPRECATIONS.md`
 (or equivalent log) and links the surface to its replacement.

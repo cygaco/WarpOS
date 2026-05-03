@@ -202,7 +202,7 @@ Every feature needs a companion `COPY.md` file documenting all user-facing strin
 - **Tooltips** for all non-obvious elements
 - **Confirmation dialogs** for all destructive actions
 
-See `requirements/03-requirement-standards/` for the COPY.md template.
+See `_requirements/_standards/` for the COPY.md template.
 
 ---
 

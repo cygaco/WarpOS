@@ -158,7 +158,7 @@ extension/
   popup.css
   popup.js
 
-requirements/           — Per-feature folders, each with tests/ subfolder; _shared/ for fixtures + helpers (was e2e/)
+_requirements/           — Per-feature folders, each with tests/ subfolder; _shared/ for fixtures + helpers (was e2e/)
 scripts/                — lint-prds.js
 public/                 — favicon.ico, pdf.worker.min.mjs
 ```

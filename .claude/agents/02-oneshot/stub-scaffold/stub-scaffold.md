@@ -20,11 +20,11 @@ You regenerate ONE stub file from the feature's current spec. You do NOT impleme
 
 ## Read (in order) before writing
 
-1. `requirements/05-features/<feature-dir>/PRD.md` — Section 13 (Implementation Map) identifies this file. Sections 7 (Acceptance Criteria) and 8 describe the behavior. Signature cues live throughout.
-2. `requirements/05-features/<feature-dir>/INPUTS.md` (if exists) — control types, validation rules, exit gates, and downstream data contracts for any fields this file reads or writes.
-3. `requirements/05-features/<feature-dir>/STORIES.md` — granular stories that name fields, endpoints, event types.
+1. `_requirements/04-features/<feature-dir>/PRD.md` — Section 13 (Implementation Map) identifies this file. Sections 7 (Acceptance Criteria) and 8 describe the behavior. Signature cues live throughout.
+2. `_requirements/04-features/<feature-dir>/INPUTS.md` (if exists) — control types, validation rules, exit gates, and downstream data contracts for any fields this file reads or writes.
+3. `_requirements/04-features/<feature-dir>/STORIES.md` — granular stories that name fields, endpoints, event types.
 4. `src/lib/types.ts` — foundation types. Use these directly when the spec references them (e.g., `SessionData`, `Profile`, `ResumeStructured`).
-5. `docs/04-architecture/DATA-CONTRACTS.md` — wiring rules.
+5. `_requirements/03-architecture/DATA-CONTRACTS.md` — wiring rules.
 6. The CURRENT stub file at `<path>` — so you know what's there already (don't just re-add the drifted signatures).
 
 ## Produce

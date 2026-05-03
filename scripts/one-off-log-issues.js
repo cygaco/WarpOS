@@ -10,7 +10,7 @@ const HELPER = path.resolve(__dirname, "recurring-issues-helper.js");
 
 const cases = [
   [
-    "rm on src/ or docs/ blocked by merge-guard",
+    "rm on src/ or _docs/ blocked by merge-guard",
     "merge-guard",
     "medium",
     "Alex defaults to rm/rmdir on tracked source/spec files. merge-guard blocks 7x in 7d. Workaround: git rm or leave deletion to user. Permanent fix candidate: a skill or pre-rm script that distinguishes tracked vs ignored paths.",

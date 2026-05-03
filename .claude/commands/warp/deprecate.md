@@ -39,5 +39,5 @@ Each proposal includes:
 ## Rules
 
 - Do not remove the target in the same step unless a migration and release note already exist.
-- Path keys must also be marked in `warpos/paths.registry.json` when removal actually ships.
+- Path keys must also be marked in `framework/paths.registry.json` when removal actually ships.
 - Shipped skills and agents need a sunset window unless the item is a security hazard.

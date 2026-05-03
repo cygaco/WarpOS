@@ -56,7 +56,7 @@ const FRAMEWORK_PREFIXES = [
   ".claude/paths.json",
   "scripts/",
   "schemas/",
-  "warpos/",
+  "framework/", // 2026-05-03: renamed from warpos/ in Track B.1
   "migrations/",
   "patterns/",
   "fixtures/",
@@ -65,6 +65,10 @@ const FRAMEWORK_PREFIXES = [
   "AGENTS.md",
   "CLAUDE.md",
   "PROJECT.md",
+  // 2026-05-03 Track D: requirements + docs are in scope so structural
+  // changes (chapter renumber, _shared/_standards/_audits skeleton) propagate
+  "_requirements/",
+  "_docs/",
 ];
 
 // Always-exclude prefixes (runtime, per-project, generated, secrets).
@@ -73,6 +77,7 @@ const EXCLUDE_PREFIXES = [
   ".claude/project/events/",
   ".claude/project/memory/",
   ".claude/project/maps/", // generated
+  ".claude/project/builds/", // per-run build state
   ".claude/agents/.system/dispatch-backups/",
   ".claude/agents/02-oneshot/.system/retros/",
   ".claude/agents/02-oneshot/.system/store.json",
@@ -81,11 +86,19 @@ const EXCLUDE_PREFIXES = [
   ".claude/.agent-result-hashes.json",
   ".claude/.last-checkpoint",
   ".claude/.session-checkpoint.json",
+  ".claude/.session-start-commit",
   ".claude/scheduled_tasks.lock",
   ".claude/manifest.json", // per-project filled
   ".claude/framework-installed.json", // per-install snapshot
-  "requirements/05-features/", // project specs (jobzooka-specific)
-  "requirements/_index/", // generated graph
+  // 2026-05-03 Track D: project-specific subtrees inside the new framework dirs
+  "_requirements/04-features/", // project feature specs
+  "_requirements/_index/", // generated requirements graph
+  "_requirements/_shared/", // project-specific test fixtures + helpers
+  "_requirements/09-integrations/brightdata/", // project-specific integration
+  "_docs/research/", // project research artifacts
+  "_docs/user-communication/", // project copy/comms
+  "_docs/karpathy-auto-research/", // per-run autoresearch logs
+  ".warpos/", // per-install transactional state
   ".env",
   "node_modules/",
 ];
@@ -213,7 +226,7 @@ function classify(sourceRoot, targetRoot) {
       });
       continue;
     }
-    if (rel.startsWith("requirements/05-features/")) {
+    if (rel.startsWith("_requirements/04-features/")) {
       decisions.push({
         rel,
         category: "PROJECT_IGNORE",
@@ -223,7 +236,7 @@ function classify(sourceRoot, targetRoot) {
     }
     if (
       rel.startsWith(".claude/project/maps/") ||
-      rel.startsWith("requirements/_index/")
+      rel.startsWith("_requirements/_index/")
     ) {
       decisions.push({
         rel,

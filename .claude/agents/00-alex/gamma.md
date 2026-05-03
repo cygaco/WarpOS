@@ -46,11 +46,11 @@ PROMPT_FILE=$(mktemp "$CLAUDE_PROJECT_DIR/.claude/runtime/.gamma-prompt.XXXXXX")
 cat > "$PROMPT_FILE" << 'EOF'
 <full agent prompt including instructions, inputs, expected output schema>
 
---- BEGIN file: requirements/05-features/<feature>/PRD.md ---
+--- BEGIN file: _requirements/04-features/<feature>/PRD.md ---
 <inlined content>
 --- END file ---
 
---- BEGIN file: requirements/05-features/<feature>/STORIES.md ---
+--- BEGIN file: _requirements/04-features/<feature>/STORIES.md ---
 <inlined content>
 --- END file ---
 
@@ -121,7 +121,7 @@ Example: `"Build feature: auth"` → dispatch builder for auth, run gauntlet, fi
 After the four-reviewer gauntlet (reviewer + compliance + qa + redteam) passes
 for the feature, run the **test pilot** before reporting GAMMA_RESULT:
 
-1. **test-runner** (always, when `requirements/<feature>/tests/*.spec.ts` exists):
+1. **test-runner** (always, when `_requirements/<feature>/tests/*.spec.ts` exists):
 
    ```bash
    claude -p --agent test-runner "feature: <feature>\nbranch: <worktree-branch>\ntimeout: 180000"

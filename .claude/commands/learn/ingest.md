@@ -195,11 +195,11 @@ For each insight, determine where it should be applied:
 | prompting | smart-context.js, memory/learnings.jsonl | New enhancement strategy or learned tip |
 | agents | .claude/agents/*.md, AGENT-SYSTEM.md | Agent behavior update, new agent proposal |
 | code | scripts/lint-*.js, HYGIENE.md | New lint rule, hygiene pattern |
-| architecture | docs/04-architecture/*.md, SPEC_GRAPH.json | Architecture doc update, new graph edge |
-| process | .claude/commands/*.md, docs/03-*/*.md | Skill update, process doc update |
-| security | docs/07-security/*.md, scripts/hooks/*-guard.js | Security policy, new guard hook |
-| ux | docs/01-design-system/*.md, requirements/05-features/*/COPY.md | Design pattern, copy improvement |
-| meta | docs/00-canonical/*.md, CLAUDE.md, .claude/project/memory/ | System-level improvement |
+| architecture | _requirements/03-architecture/*.md, SPEC_GRAPH.json | Architecture doc update, new graph edge |
+| process | .claude/commands/*.md, _docs/03-*/*.md | Skill update, process doc update |
+| security | _docs/07-security/*.md, scripts/hooks/*-guard.js | Security policy, new guard hook |
+| ux | _requirements/01-design-system/*.md, _requirements/04-features/*/COPY.md | Design pattern, copy improvement |
+| meta | _requirements/00-canonical/*.md, CLAUDE.md, .claude/project/memory/ | System-level improvement |
 
 ### Step 4: Generate Proposals
 
@@ -216,7 +216,7 @@ For each applicable insight, generate a concrete proposal:
 
 ### Step 5: Apply (based on mode)
 
-**Read `docs/00-canonical/MODE.json`** to determine the current mode (`light` or `dark`).
+**Read `_requirements/00-canonical/MODE.json`** to determine the current mode (`light` or `dark`).
 
 **Light mode:** Present proposals, wait for approval
 **Dark mode:** Auto-apply high-confidence proposals, queue medium/low for review
@@ -326,7 +326,7 @@ This skill can be invoked proactively in these situations:
 
 ### Example 3: Local Research File
 ```
-/learner docs/09-agentic-system/research/03-wrong-kind-of-agent.md
+/learner _docs/09-agentic-system/research/03-wrong-kind-of-agent.md
 
 📚 Learning: "Builder agents should be stateless — context via files, not conversation history"
 📖 Source: Local research doc, section "The Stateless Builder Hypothesis"

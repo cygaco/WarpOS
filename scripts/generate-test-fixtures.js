@@ -3,10 +3,10 @@
  * generate-test-fixtures.js — bootstrap upload-test fixtures.
  *
  * Reads the calibrated Alexandra Chen persona text from
- * requirements/_shared/fixtures/dummy-session.json and emits real PDF / DOCX /
+ * _requirements/_shared/fixtures/dummy-session.json and emits real PDF / DOCX /
  * TXT files plus a set of error-path fixtures into:
  *
- *   requirements/_shared/fixtures/files/
+ *   _requirements/_shared/fixtures/files/
  *
  * This script is idempotent — re-runs overwrite. Output files are committed
  * (small, deterministic, useful for offline test runs and CI). Run from the

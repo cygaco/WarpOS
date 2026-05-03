@@ -95,7 +95,7 @@ Modules: **DUMMY PLUG** (Warp Profiles), **QA SUITE** (test runner). Step defini
 - **Flow**: POST trigger, poll progress, GET snapshot
 - **Valid `job_type`**: `"Full-time"`, `"Part-time"`, `"Contract"`, `"Temporary"`, `"Internship"`, `"Volunteer"`, `"Other"` (case-sensitive)
 - **Valid `remote`**: `"Remote"` (capital R)
-- Full BD docs in `docs/brightdata/`
+- Full BD docs in `_docs/brightdata/`
 
 **Known Issues (2026-03-18):** BD returns annual salaries for contract roles, thin data yield for non-FT types, hourly rates extracted via regex (`extractHourlyRates()`).
 
@@ -112,7 +112,7 @@ Stages: `USER_INPUT`, `QUERY_GEN`, `BD_TRIGGER`, `BD_POLL`, `BD_RESULTS`, `MARKE
 Specs top-down: PRDs, HL Stories, Granular Stories, COPY. All 13 features at each layer.
 
 ```
-requirements/05-features/{feature-slug}/
+_requirements/04-features/{feature-slug}/
   PRD.md, HL-STORIES.md, STORIES.md, COPY.md  — all 13 features complete
 ```
 
@@ -122,7 +122,7 @@ requirements/05-features/{feature-slug}/
 
 **Agentic Story Metadata:** Every granular story has `Depends on:`, `Data:`, `Entry state:`, `Verifiable by:`, `Inherits:`, and optional `<!-- parallel-safe -->`.
 
-**Regen Gap Docs** (`docs/04-architecture/`): PROMPT_TEMPLATES, DESIGN_TOKENS, VALIDATION_RULES, AUTH_SCHEMAS, EXTENSION_SPEC, ERROR_RECOVERY, FLOW_SPEC, AGENT_GUIDE.
+**Regen Gap Docs** (`_requirements/03-architecture/`): PROMPT_TEMPLATES, DESIGN_TOKENS, VALIDATION_RULES, AUTH_SCHEMAS, EXTENSION_SPEC, ERROR_RECOVERY, FLOW_SPEC, AGENT_GUIDE.
 
 ### Agent System
 
@@ -175,7 +175,7 @@ This repo (`cygaco/jobhunter-app`, branch `skeleton-test7`) is the **dev repo** 
 - `.claude/agents/**`, `.claude/commands/**`, `.claude/paths.json`, `.claude/manifest.json`
 - `CLAUDE.md` (WarpOS ships its own copy to every install)
 
-Product-specific files (`src/**`, `PROJECT.md`, `docs/**`, `requirements/**`) stay jobhunter-only.
+Product-specific files (`src/**`, `PROJECT.md`, `_docs/**`, `_requirements/**`) stay jobhunter-only.
 
 **Workflow:** before `git commit`, ask which category the change falls in. If framework: `cp` the file to the WarpOS checkout, commit + push both. Cross-repo drift compounds silently — catch it per-commit, not per-session.
 

@@ -42,29 +42,29 @@ Do NOT proceed to the 7-Check Protocol. The orchestrator should re-dispatch from
 
 ### Read these first
 1. `.claude/agents/.system.md` (your role definition)
-2. The feature spec: `requirements/05-features/{{FEATURE_SLUG}}/PRD.md`
-3. The feature stories: `requirements/05-features/{{FEATURE_SLUG}}/STORIES.md`
+2. The feature spec: `_requirements/04-features/{{FEATURE_SLUG}}/PRD.md`
+3. The feature stories: `_requirements/04-features/{{FEATURE_SLUG}}/STORIES.md`
 4. The builder's output files
-5. Design system: `docs/01-design-system/COMPONENT_LIBRARY.md` and `docs/01-design-system/COLOR_SEMANTICS.md`
+5. Design system: `_requirements/01-design-system/COMPONENT_LIBRARY.md` and `_requirements/01-design-system/COLOR_SEMANTICS.md`
 
 ### Holdout Evaluation (CRITICAL)
-You MUST read `docs/00-canonical/fixtures/step-expectations.json` BEFORE reviewing any feature that touches a step component. This file contains golden criteria that BUILDERS NEVER SEE — required fields, grounding rules, content constraints, and forbidden patterns.
+You MUST read `_requirements/00-canonical/fixtures/step-expectations.json` BEFORE reviewing any feature that touches a step component. This file contains golden criteria that BUILDERS NEVER SEE — required fields, grounding rules, content constraints, and forbidden patterns.
 
-You MUST also check for `requirements/05-features/{{FEATURE_SLUG}}/fixtures/golden.json`. If it exists, apply its `groundingInvariants` and `goldenPairs` rules in addition to step-expectations. These per-feature fixtures cover high-synthesis-risk features (resume-generation, auto-apply, market-research, deep-dive-qa).
+You MUST also check for `_requirements/04-features/{{FEATURE_SLUG}}/fixtures/golden.json`. If it exists, apply its `groundingInvariants` and `goldenPairs` rules in addition to step-expectations. These per-feature fixtures cover high-synthesis-risk features (resume-generation, auto-apply, market-research, deep-dive-qa).
 
 The builder builds from the spec (STORIES.md, PRD.md). You evaluate against BOTH the spec AND the holdout fixtures (step-expectations + per-feature golden if present). If the builder's output satisfies the spec but fails any fixture criterion, that is a HARD FAIL.
 
-Also read `docs/00-canonical/fixtures/README.md` for the fixture schema.
+Also read `_requirements/00-canonical/fixtures/README.md` for the fixture schema.
 
 ### Fallback Evaluation Order (when no fixture exists)
 
 For features without a fixture entry, fall back in this order:
 
-1. **`requirements/05-features/{{FEATURE_SLUG}}/PRD.md`** — Section 8 (Feature Description) + Section 17 (Grounding Rules)
-2. **`requirements/05-features/{{FEATURE_SLUG}}/STORIES.md`** — every GS-* acceptance criterion is a contract
-3. **`requirements/05-features/{{FEATURE_SLUG}}/INPUTS.md`** — every "Consumed by" field must have a wire
-4. **`docs/04-architecture/DATA-CONTRACTS.md`** — cross-feature wiring
-5. **`docs/01-design-system/COMPONENT_LIBRARY.md`** + **`COLOR_SEMANTICS.md`**
+1. **`_requirements/04-features/{{FEATURE_SLUG}}/PRD.md`** — Section 8 (Feature Description) + Section 17 (Grounding Rules)
+2. **`_requirements/04-features/{{FEATURE_SLUG}}/STORIES.md`** — every GS-* acceptance criterion is a contract
+3. **`_requirements/04-features/{{FEATURE_SLUG}}/INPUTS.md`** — every "Consumed by" field must have a wire
+4. **`_requirements/03-architecture/DATA-CONTRACTS.md`** — cross-feature wiring
+5. **`_requirements/01-design-system/COMPONENT_LIBRARY.md`** + **`COLOR_SEMANTICS.md`**
 6. **`CLAUDE.md`** + **`HYGIENE.md`** — code-quality and idiom rules
 
 In your `ReviewResult` JSON, the `evaluationSources` field MUST list which sources you actually used (e.g., `["PRD.md§17", "STORIES.md GS-PROF-01..12"]`). Reviewers that cite only "vibes" or generic principles are failing their job.

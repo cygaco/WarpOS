@@ -20,10 +20,10 @@ You do not write code. You produce one structured JSON envelope.
 Read these in order:
 
 1. The current `ChangePlan` envelope (passed in your prompt or read from `.claude/runtime/build/<build-id>/change-plan.json`).
-2. `requirements/_index/requirements.graph.json` — the canonical mapping from feature → requirements → files.
-3. `requirements/_index/requirements.status.json` — current verification status per requirement.
+2. `_requirements/_index/requirements.graph.json` — the canonical mapping from feature → requirements → files.
+3. `_requirements/_index/requirements.status.json` — current verification status per requirement.
 4. `.claude/project/events/requirements-staged.jsonl` — open RCOs.
-5. `requirements/04-architecture/contracts/` — shared contracts (SESSION, USER, WORKSPACE, PAYMENT, ROUTING, PERMISSIONS).
+5. `_requirements/03-architecture/contracts/` — shared contracts (SESSION, USER, WORKSPACE, PAYMENT, ROUTING, PERMISSIONS).
 6. The diff under review (passed in via `git diff master...HEAD` or your prompt).
 
 ## Six checks
@@ -44,7 +44,7 @@ Every changed requirement has either: (a) a test file under `tests/<feature>/` r
 
 ### 4. Shared contract propagation
 
-If `ChangePlan.sharedContractsTouched` is non-empty, verify that the contract file under `requirements/04-architecture/contracts/<NAME>.md` has been updated alongside the code change. Specifically: if the code mutates a producer file listed in the contract's `## 2. Producers` section, the contract's "Breaking changes" section must also be reviewed (a comment or commit message acknowledging review is sufficient — no automated parsing of human intent).
+If `ChangePlan.sharedContractsTouched` is non-empty, verify that the contract file under `_requirements/03-architecture/contracts/<NAME>.md` has been updated alongside the code change. Specifically: if the code mutates a producer file listed in the contract's `## 2. Producers` section, the contract's "Breaking changes" section must also be reviewed (a comment or commit message acknowledging review is sufficient — no automated parsing of human intent).
 
 ### 5. Drift hygiene
 

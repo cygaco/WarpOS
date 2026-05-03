@@ -304,6 +304,6 @@ Never edit these by hand — `memory-guard` will block. Read them with the skill
 - [CLAUDE.md](CLAUDE.md) — Alex identity + autonomy rules
 - [AGENTS.md](AGENTS.md) — agent system reference
 - `.claude/project/reference/` — reasoning frameworks, operational loop, learning lifecycle, SYSTEMS.md
-- `requirements/README.md` — spec templates (fill them in with Alex's help)
+- `_requirements/README.md` — spec templates (fill them in with Alex's help)
 - `patterns/` — engineering pattern library
 - [ROADMAP.md](ROADMAP.md) — what's shipping next

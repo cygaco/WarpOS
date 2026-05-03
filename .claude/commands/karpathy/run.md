@@ -461,7 +461,7 @@ On any stop condition:
 ## Constraints (non-negotiable)
 
 1. **Never touch the main checkout.** All mutations inside the worktree. Integration is a separate verb.
-2. **Every path from `paths.json`.** No literal `docs/99-resources/...` anywhere. Resolve at runtime.
+2. **Every path from `paths.json`.** No literal `_docs/...` anywhere. Resolve at runtime.
 3. **No LLM-judge scoring.** Only mechanical scorers (events.jsonl inspection, diff matching, exit codes, counters). Per the research, LLM-as-judge is biased and gameable.
 4. **Wall-clock cap per fixture is mandatory.** Step caps are insufficient — they miss infinite-call loops (the research is explicit).
 5. **Evaluator-lock before first experiment runs.** If the agent being tested can see the scorer, scores are meaningless.

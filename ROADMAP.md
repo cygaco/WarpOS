@@ -66,7 +66,7 @@ of a future install/update.
 ### `production_baseline` and `contract_versioning` gates relaxed via templates (RESOLVED IN 0.1.4)
 
 Resolved in 0.1.4 by adding generic framework templates directly to
-canonical's `requirements/04-architecture/` (PRODUCTION_BASELINE,
+canonical's `_requirements/03-architecture/` (PRODUCTION_BASELINE,
 ACCESSIBILITY_BASELINE, ANALYTICS, DISASTER_RECOVERY,
 RELEASE_READINESS, DEPRECATION_POLICY) plus 3 generic contracts
 (USER, SESSION, ROUTING). Listed here for traceability.
@@ -77,11 +77,11 @@ RELEASE_READINESS, DEPRECATION_POLICY) plus 3 generic contracts
 
 Cleanup release that closes the gate-blocker chain:
 
-- Generic framework templates added to `requirements/04-architecture/`:
+- Generic framework templates added to `_requirements/03-architecture/`:
   PRODUCTION_BASELINE, ACCESSIBILITY_BASELINE, ANALYTICS,
   DISASTER_RECOVERY, RELEASE_READINESS, DEPRECATION_POLICY.
 - 3 generic contract templates added to
-  `requirements/04-architecture/contracts/`: USER, SESSION, ROUTING.
+  `_requirements/03-architecture/contracts/`: USER, SESSION, ROUTING.
   Each declares `id`/`version`/`changeType`/section §7 per
   `contract-versioning.js` requirements.
 - First release cut end-to-end via the new product-side
@@ -103,8 +103,8 @@ Cleanup release that closes the gate-blocker chain:
 Patch release closing the architecture-drift loop:
 
 - Installer derives `.claude/paths.json` and per-project warpos version from
-  `warpos/paths.registry.json` + `version.json` instead of hardcoding.
-- New `warpos/hooks.registry.json` is the single source of truth for hooks.
+  `framework/paths.registry.json` + `version.json` instead of hardcoding.
+- New `framework/hooks.registry.json` is the single source of truth for hooks.
   `scripts/hooks/build.js` derives `.claude/settings.json` (hooks block) and
   `scripts/hooks/hook-manifest.json` from the registry. `warp-setup.js` and
   `scripts/hooks/test.js` consume the registry.
@@ -119,7 +119,7 @@ Patch release closing the architecture-drift loop:
   (was md/js/json only). New `path-literal-allowed` per-line escape.
 - `spec-test-staleness.js` reads `paths.specsRoot` (was hardcoded
   <!-- path-literal-allowed: roadmap naming the deprecated literal -->
-  `docs/05-features` — silent no-op since the rename).
+  `_requirements/04-features` — silent no-op since the rename).
 - `release-gates.js` reference-integrity gate marked `manual` (was lying as
   `green`).
 - README + USER_GUIDE list `/warp:update` as the primary inbound command;
@@ -334,35 +334,35 @@ Raised by user after the first real-project install. Current installer runs dire
 
 ### Requirements system — shipped but not being installed (2026-04-18, FIXED)
 
-**Correction to earlier entry.** WarpOS source actually DOES have 30 requirement template files across 10 numbered subdirs (`00-canonical/`, `01-design-system/`, `02-copy-system/`, `03-requirement-standards/`, `04-architecture/`, `05-features/`, `06-operations/`, `07-security/`, `08-testing/`, `09-automation/`) plus `_example-onboarding` feature skeleton. The files exist. The installer just wasn't copying them. FIXED in this session — installer now copies `requirements/`, `patterns/`, and `.claude/project/maps/` baseline. Historical note on what was missing: Users get a broken promise: "ask Alex to help fill in your requirements templates" → there are no templates.
+**Correction to earlier entry.** WarpOS source actually DOES have 30 requirement template files across 10 numbered subdirs (`00-canonical/`, `01-design-system/`, `02-copy-system/`, `03-requirement-standards/`, `04-architecture/`, `05-features/`, `06-operations/`, `07-security/`, `08-testing/`, `09-automation/`) plus `_example-onboarding` feature skeleton. The files exist. The installer just wasn't copying them. FIXED in this session — installer now copies `_requirements/`, `patterns/`, and `.claude/project/maps/` baseline. Historical note on what was missing: Users get a broken promise: "ask Alex to help fill in your requirements templates" → there are no templates.
 
-What jobhunter-app (the source project) has under `docs/` that WarpOS should ship as `requirements/`:
+What jobhunter-app (the source project) has under `_docs/` that WarpOS should ship as `_requirements/`:
 
-- `requirements/00-canonical/` — project-level truth docs
+- `_requirements/00-canonical/` — project-level truth docs
   - `CORE_BRIEF.md` (the product in one page)
   - `PRODUCT_MODEL.md` (data model + state machine)
   - `GLOSSARY.md` (terms)
   - `USER_COHORTS.md` (target users)
-- `requirements/01-design-system/` — UI rules
+- `_requirements/01-design-system/` — UI rules
   - `COMPONENT_LIBRARY.md` (registered components)
   - `COLOR_SEMANTICS.md` (design tokens)
   - `ANIMATION_MOTION.md`, `FEEDBACK_PATTERNS.md`, `RESPONSIVE.md`
-- `requirements/02-copy-system/` — microcopy, tone, variants
-- `requirements/03-requirement-standards/` — `PRD_TEMPLATE.md`, `STORIES_TEMPLATE.md`, `INPUTS_TEMPLATE.md`, `HL-STORIES_TEMPLATE.md`, field spec standards
-- `requirements/04-architecture/` — architecture decision records template + examples
-- `requirements/05-features/` — per-feature dir structure (PRD + STORIES + INPUTS + COPY)
+- `_requirements/02-copy-system/` — microcopy, tone, variants
+- `_requirements/_standards/` — `PRD_TEMPLATE.md`, `STORIES_TEMPLATE.md`, `INPUTS_TEMPLATE.md`, `HL-STORIES_TEMPLATE.md`, field spec standards
+- `_requirements/03-architecture/` — architecture decision records template + examples
+- `_requirements/04-features/` — per-feature dir structure (PRD + STORIES + INPUTS + COPY)
   - Ship empty dir with one **example feature** folder showing the shape, not client content
-- `requirements/.decisions/` — ADR template
+- `_requirements/.decisions/` — ADR template
 
 Action items:
-- [ ] **Extract templates from jobhunter:** copy the canonical structure, strip all consumer-product-specific content, reduce to fillable skeletons with guidance comments. Place in WarpOS repo at `requirements/`.
-- [ ] **Installer copies `requirements/` to target** if target has no `requirements/` dir — same copy-if-missing pattern as `.claude/`. Never overwrite if target has one.
-- [ ] **One example feature** — ship `requirements/05-features/example-feature/` with PRD + STORIES + INPUTS demonstrating the schema. Users delete or rename when they create their first real feature.
+- [ ] **Extract templates from jobhunter:** copy the canonical structure, strip all consumer-product-specific content, reduce to fillable skeletons with guidance comments. Place in WarpOS repo at `_requirements/`.
+- [ ] **Installer copies `_requirements/` to target** if target has no `_requirements/` dir — same copy-if-missing pattern as `.claude/`. Never overwrite if target has one.
+- [ ] **One example feature** — ship `_requirements/04-features/example-feature/` with PRD + STORIES + INPUTS demonstrating the schema. Users delete or rename when they create their first real feature.
 - [ ] **`/check:requirements` dry-run on fresh install** — should report "0 features defined, ready for first `/skills:create` or `Help me write a product brief`" cleanly instead of erroring on missing dirs.
-- [ ] **Update `warp-setup.js` skeleton check** to stop referencing `requirements/01-design-system` path existence as a `ui-lint` enablement signal before the templates actually ship (currently generates a misleading warning on every install).
+- [ ] **Update `warp-setup.js` skeleton check** to stop referencing `_requirements/01-design-system` path existence as a `ui-lint` enablement signal before the templates actually ship (currently generates a misleading warning on every install).
 - [ ] **Update `systems.jsonl` seed** — `requirements-templates` entry currently seeded with `count: 0`; once templates ship, bump to real count and add `files: [...]` listing the templates.
 
-Priority: **high for v0.2.0** — the framework's value prop ("ask Alex to help write specs") is broken without templates. Current installs look complete but the `requirements/` dir is silently missing.
+Priority: **high for v0.2.0** — the framework's value prop ("ask Alex to help write specs") is broken without templates. Current installs look complete but the `_requirements/` dir is silently missing.
 
 ### Guard strengthening (2026-04-18)
 
@@ -383,7 +383,7 @@ Surfaced when I force-pushed to scrub history and my own merge-guard blocked `--
 
 ## Phase 3 — Product-as-product
 
-Treat WarpOS itself as a product-in-WarpOS with its own `requirements/05-features/`:
+Treat WarpOS itself as a product-in-WarpOS with its own `_requirements/04-features/`:
 - [ ] Write PRDs for installer, session-lifecycle, paths-resolution, hook-pipeline
 - [ ] Spec the Alex agent team as a feature with stories
 - [ ] Run `/preflight:run` against WarpOS itself before every push

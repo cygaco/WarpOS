@@ -29,7 +29,7 @@ From `.warpos-backup/<latest-timestamp>/`:
 
 - Your source code (`src/`, `app/`, `pages/`, etc.) — never touched
 - `package.json`, `tsconfig.json`, any non-WarpOS config
-- `requirements/` (if it contains user-authored specs — prompts before deleting)
+- `_requirements/` (if it contains user-authored specs — prompts before deleting)
 - `patterns/` (same treatment as requirements)
 - Your git history — nothing is force-deleted from git
 

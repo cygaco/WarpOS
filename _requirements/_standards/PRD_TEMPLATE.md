@@ -15,7 +15,7 @@ PRDs are written top-down across all features before drilling into stories:
 ## File Structure
 
 ```
-requirements/05-features/{feature-slug}/
+_requirements/04-features/{feature-slug}/
   PRD.md          # Full feature spec
   COPY.md         # Microcopy companion (button labels, toasts, empty states, errors)
   HL-STORIES.md   # High-level stories (written in second pass)

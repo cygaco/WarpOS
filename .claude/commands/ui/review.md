@@ -15,14 +15,14 @@ Read-only audit of component(s) against the project's design system. Reports vio
 ### 1. Resolve design-system location
 
 Read `.claude/paths.json` for `requirements` base. Then try:
-- `requirements/01-design-system/COMPONENT_LIBRARY.md`
-- `requirements/01-design-system/COLOR_SEMANTICS.md`
-- `requirements/01-design-system/FEEDBACK_PATTERNS.md` (optional)
-- `requirements/01-design-system/UX_PRINCIPLES.md` (optional)
+- `_requirements/01-design-system/COMPONENT_LIBRARY.md`
+- `_requirements/01-design-system/COLOR_SEMANTICS.md`
+- `_requirements/01-design-system/FEEDBACK_PATTERNS.md` (optional)
+- `_requirements/01-design-system/UX_PRINCIPLES.md` (optional)
 
-Legacy fallback: `docs/01-design-system/...` (same filenames).
+Legacy fallback: `_requirements/01-design-system/...` (same filenames).
 
-If none exist, report "No design system docs found — `/ui:review` requires at least `COMPONENT_LIBRARY.md` and `COLOR_SEMANTICS.md` under `requirements/01-design-system/`." and exit.
+If none exist, report "No design system docs found — `/ui:review` requires at least `COMPONENT_LIBRARY.md` and `COLOR_SEMANTICS.md` under `_requirements/01-design-system/`." and exit.
 
 ### 2. Read the target files from `$ARGUMENTS`
 

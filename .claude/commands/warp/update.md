@@ -12,7 +12,7 @@ Phase 4C entry point. The actual engine lives at `scripts/warpos/update.js`. Thi
 | Invocation | Behavior |
 |---|---|
 | `/warp:update` | Dry-run against latest available release capsule. Prints the 12-category plan + class-A/B/C breakdown. **Safe.** |
-| `/warp:update 0.2.0` | Dry-run against capsule `warpos/releases/0.2.0/`. |
+| `/warp:update 0.2.0` | Dry-run against capsule `framework/releases/0.2.0/`. |
 | `/warp:update --apply` | **Apply** the latest plan. Class A auto-apply, Class B apply-with-reviewer, Class C escalates. |
 | `/warp:update --apply --confirm-deletes` | Same as above, plus actually executes Class A `DELETE_SAFE` removals (otherwise deferred). |
 | `/warp:update --json` | Machine-readable output. |
@@ -23,7 +23,7 @@ Phase 4C entry point. The actual engine lives at `scripts/warpos/update.js`. Thi
 
 Check `.claude/framework-installed.json` exists. If not: tell the user to run `install.ps1` first; this skill is for upgrades, not fresh installs.
 
-Check the target release capsule exists at `warpos/releases/<version>/release.json`. If not: list available capsules from `warpos/releases/`.
+Check the target release capsule exists at `framework/releases/<version>/release.json`. If not: list available capsules from `framework/releases/`.
 
 ### Step 2 — invoke engine
 
@@ -81,7 +81,7 @@ The engine updates `.claude/framework-installed.json` with the new `installedVer
 ## See also
 
 - `scripts/warpos/update.js` — the engine.
-- `warpos/releases/<version>/release.json` — capsule manifest.
+- `framework/releases/<version>/release.json` — capsule manifest.
 - `migrations/<from>-to-<to>/` — migration scripts run during apply.
 - `/warp:promote` — the outbound counterpart.
 - `/warp:release` — generate a new capsule from current state.

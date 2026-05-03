@@ -41,7 +41,7 @@ Read these documents FIRST, in order:
 6. `.claude/agents/02-oneshot/.system/store.json` → `features[<name>].files` — canonical per-feature file ownership. (Foundation files are in `.claude/manifest.json` → `fileOwnership.foundation`.)
 7. `.claude/agents/02-oneshot/.system/integration-map.md` — data contracts between features
 8. `.claude/agents/02-oneshot/.system/retros/` — latest numbered folder's HYGIENE.md contains the cumulative hygiene rules from all prior runs (MUST be referenced in every builder prompt). Use the HIGHEST numbered retro folder — it supersedes earlier versions while retaining their rules by reference.
-9. `docs/99-resources/` — visual ground truth (production flow screenshots for builders to match UX against)
+9. `_docs/` — visual ground truth (production flow screenshots for builders to match UX against)
 10. `paths.decisionPolicy` — Class A/B/C taxonomy, escalation red lines, scoring rubric, tech-introduction rule. Cited by Doctrine rule 7 above.
 11. `paths.currentStage` — current product stage (`mvp` / `beta` / `production`) and stage-specific priorities/avoid-list. Stage shifts the rubric weights; rule changes that conflict with current stage priorities should be flagged or deferred.
 12. `paths.adrIndex` — settled architecture decisions plus the numbered ADR archive at `paths.policy/adr/`. Check precedent before any Class B decision; if a tradeoff was already settled in a prior run's ADR, cite it instead of re-deciding.
@@ -81,9 +81,9 @@ Read these documents FIRST, in order:
         If command fails: try store.compliance.fallback, then skip (log warning)
       - Redteam: `claude -p --agent redteam "<prompt>"` (this four-reviewers gauntlet role is also known by its legacy / older / previously-used name "security"; canonical is redteam = security)
       - QA: `claude -p --agent qa "<prompt>"`. QA is self-orchestrating — it spawns its own scan + analyze sub-agents internally. Returns one merged JSON.
-      - **req-reviewer** _(Phase 3E added 2026-04-30)_: `claude -p --agent req-reviewer "<prompt>"` — requirements drift: behavior↔requirement↔code↔test traceability + shared-contract propagation + risk-class agreement. Skipped only if `requirements/_index/requirements.graph.json` is missing (older installs). Findings of category `risk_class_disagreement` or `contract_propagation_missed` are blocking regardless of the other four panel verdicts.
+      - **req-reviewer** _(Phase 3E added 2026-04-30)_: `claude -p --agent req-reviewer "<prompt>"` — requirements drift: behavior↔requirement↔code↔test traceability + shared-contract propagation + risk-class agreement. Skipped only if `_requirements/_index/requirements.graph.json` is missing (older installs). Findings of category `risk_class_disagreement` or `contract_propagation_missed` are blocking regardless of the other four panel verdicts.
    c. Collect ALL results from all 5 reviewers
-   d. **Test-runner gate (Gate 6).** After the four-reviewer panel passes, spawn `test-runner` for each feature in the phase via `claude -p --agent test-runner ...`. Inputs: `{{FEATURE}}`, `{{WORKTREE_BRANCH}}`, `{{TIMEOUT_MS=180000}}`. The agent runs `npx playwright test requirements/<feature>` headless, parses the JSON reporter output, and emits a `TestResult` envelope (PASS|FAIL|SKIP|HANG). If the feature touched UI (changed files intersect `src/components/**` or `src/app/**`), ALSO spawn `visual-review` in parallel with the test-runner. Visual-review uses the project-registered Playwright MCP server (`.mcp.json`) to drive a real browser; findings of severity `critical` or `high` count as a gate failure. Both must pass before merge to skeleton branch.
+   d. **Test-runner gate (Gate 6).** After the four-reviewer panel passes, spawn `test-runner` for each feature in the phase via `claude -p --agent test-runner ...`. Inputs: `{{FEATURE}}`, `{{WORKTREE_BRANCH}}`, `{{TIMEOUT_MS=180000}}`. The agent runs `npx playwright test _requirements/<feature>` headless, parses the JSON reporter output, and emits a `TestResult` envelope (PASS|FAIL|SKIP|HANG). If the feature touched UI (changed files intersect `src/components/**` or `src/app/**`), ALSO spawn `visual-review` in parallel with the test-runner. Visual-review uses the project-registered Playwright MCP server (`.mcp.json`) to drive a real browser; findings of severity `critical` or `high` count as a gate failure. Both must pass before merge to skeleton branch.
    e. Calculate points + achievements: node scripts/points.js --feature <name> --run <N>
    f. Run learner analysis (spawn learner subagent to check for patterns).
       The Learner is limited to max 3 rule changes + max 1 spec patch per cycle. If the Learner proposes more, the orchestrator defers excess changes to the next cycle.
@@ -141,7 +141,7 @@ To run compliance via another tool, call the command directly via Bash:
 - IMPORTANT: From Bash tool, use `codex exec` (NOT `codex "prompt"` — that requires an interactive terminal)
 - Run ONE feature per codex call (batching burns tokens and hits capacity)
 - Prefix prompt with `Role: Compliance.` (codex reads AGENTS.md and requires a role)
-- Tell codex exactly which files to `cat` (don't let it wander into docs/)
+- Tell codex exactly which files to `cat` (don't let it wander into _docs/)
 - Use `-C src/` flag to root codex in src/ — this prevents it from reading AGENTS.md which causes role-check refusals
 - Example: `codex exec -C src/ -s read-only -o /tmp/compliance-{feature}.txt "Role: Compliance. Cat these files: {FILE_LIST}. Read spec: {SPEC_PATH}. Find dropped requirements and phantom completions."`
 - Or use the wrapper: `bash scripts/run-compliance.sh {feature} {file1} {file2} -- {spec-path}`
@@ -241,7 +241,7 @@ After EACH phase, you MUST run ALL six gates. Proceeding without them is a HALT-
 3. Compliance reviewer passes (all checks, or reduced checks for All-Star rank)
 4. Redteam (formerly Security) shows no critical or high vulnerabilities
 5. No file ownership violations
-6. **Test-runner verdict = PASS** for every feature in the phase that touched UI (`src/components/**` or `src/app/**`) or has tests at `requirements/<feature>/tests/`. Verdict `SKIP` (no tests yet) is acceptable for now but MUST be tracked as a Phase D coverage gap. Verdict `FAIL` triggers fix-agent dispatch like any reviewer fail. Verdict `HANG` triggers `INVESTIGATE` — do NOT auto-spawn fix-agent (could be infra). For UI-touching features, **also** spawn `visual-review` in parallel; its findings of severity `critical` or `high` count as a gate failure.
+6. **Test-runner verdict = PASS** for every feature in the phase that touched UI (`src/components/**` or `src/app/**`) or has tests at `_requirements/<feature>/tests/`. Verdict `SKIP` (no tests yet) is acceptable for now but MUST be tracked as a Phase D coverage gap. Verdict `FAIL` triggers fix-agent dispatch like any reviewer fail. Verdict `HANG` triggers `INVESTIGATE` — do NOT auto-spawn fix-agent (could be infra). For UI-touching features, **also** spawn `visual-review` in parallel; its findings of severity `critical` or `high` count as a gate failure.
 
 **Gate enforcement protocol:**
 - Before advancing to the next phase, write a `GATE_CHECK` entry to store.json runLog with: phase number, build result, evaluator result, security result
@@ -300,9 +300,9 @@ When all phases complete (or all possible phases are done with some skipped):
 5. Commit all changes with message: "feat: agent build — [list of features completed]"
 
 ## PRD Path Mapping
-When constructing builder prompts, the PRD path is `requirements/05-features/<feature-dir>/PRD.md`. Feature IDs match folder names in all cases except: feature `rockets` → folder `rockets-economy`.
+When constructing builder prompts, the PRD path is `_requirements/04-features/<feature-dir>/PRD.md`. Feature IDs match folder names in all cases except: feature `rockets` → folder `rockets-economy`.
 
-> **Note:** Feature ID `rockets` maps to directory `requirements/05-features/rockets-economy/`. All other feature IDs map 1:1 to their directory name (e.g., feature `auth` → `requirements/05-features/auth/`). This alternate mapping also applies when constructing paths for STORIES.md, COPY.md, INPUTS.md, and HL-STORIES.md.
+> **Note:** Feature ID `rockets` maps to directory `_requirements/04-features/rockets-economy/`. All other feature IDs map 1:1 to their directory name (e.g., feature `auth` → `_requirements/04-features/auth/`). This alternate mapping also applies when constructing paths for STORIES.md, COPY.md, INPUTS.md, and HL-STORIES.md.
 
 ## Rules
 - You are mechanical. Read the manifest, dispatch by the rules, check the gates.

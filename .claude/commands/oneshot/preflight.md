@@ -156,7 +156,7 @@ node scripts/requirements/graph-build.js --check
 node scripts/requirements/gate.js
 ```
 
-The first verifies `requirements/_index/requirements.graph.json` is current with the spec content; exit 1 if stale. The second is the Freshness Gate from Phase 3F: it fails closed (exit 2) on missing graph, unresolved Class C RCOs, or stale_pending_review requirements without RCO coverage. Both must pass before the preflight is considered green. If only the Freshness Gate is yellow (exit 1 — unmapped staged code only), surface as warnings and let the operator decide.
+The first verifies `_requirements/_index/requirements.graph.json` is current with the spec content; exit 1 if stale. The second is the Freshness Gate from Phase 3F: it fails closed (exit 2) on missing graph, unresolved Class C RCOs, or stale_pending_review requirements without RCO coverage. Both must pass before the preflight is considered green. If only the Freshness Gate is yellow (exit 1 — unmapped staged code only), surface as warnings and let the operator decide.
 
 ### Pass 3: Agent Buildability
 
@@ -229,7 +229,7 @@ You are a skeleton state auditor. Verify that ALL feature-owned files are proper
 - **7.5 Build Verification** — `npm run build` passes clean.
 - **7.6 store.json knownStubs Alignment** — Every knownStubs file is actually a stub. Every stub file is in knownStubs.
 - **7.7 Foundation-guard heartbeat** — if this run will edit any file in `manifest.fileOwnership.foundation`, verify `.claude/agents/store.json` exists and contains `heartbeat.agent` in {alpha, gamma, boss, lead}. If absent or wrong agent, create with `{"heartbeat": {"agent": "alpha", "status": "preflight", "timestamp": "<ISO>"}}` or abort if the current agent is not authorized. Severity: WARN.
-- **7.8 Store ↔ PRD file-list coherence** — For each feature, read `requirements/05-features/<feature-dir>/PRD.md` Section 13 (Implementation Map) and diff the listed files against `store.features[<feature>].files`. Report any files present in PRD but missing from store (MISSING) or vice versa (ORPHAN). Severity: WARN.
+- **7.8 Store ↔ PRD file-list coherence** — For each feature, read `_requirements/04-features/<feature-dir>/PRD.md` Section 13 (Implementation Map) and diff the listed files against `store.features[<feature>].files`. Report any files present in PRD but missing from store (MISSING) or vice versa (ORPHAN). Severity: WARN.
 - **7.9 Stub signature drift** — For each stubbed file, extract exported type signatures and diff against the types referenced in the current PRD + INPUTS.md + foundation types in `src/lib/types.ts`. Flag mismatches as INFO/WARN.
 
 ### Pass 8: Cross-Layer Seams

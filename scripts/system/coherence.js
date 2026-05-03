@@ -156,7 +156,7 @@ function checkPattern() {
 function checkVersion() {
   const version = readJson("version.json", {});
   const manifest = readJson(".claude/framework-manifest.json", {});
-  const release = readJson(`warpos/releases/${version.version}/release.json`, {});
+  const release = readJson(`framework/releases/${version.version}/release.json`, {});
   if (!version.version || version.version !== manifest.version || version.version !== release.version) {
     return sev("red", "version.json, framework manifest, and release capsule disagree");
   }

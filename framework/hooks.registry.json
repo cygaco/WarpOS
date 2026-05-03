@@ -1,7 +1,7 @@
 {
   "$schema": "warpos/hooks-registry/v1",
   "version": 1,
-  "_doc": "Hook identity registry. Source of truth for which hooks WarpOS ships, where they bind, and how they fail. Consumed by scripts/hooks/build.js, which derives: (1) scripts/hooks/hook-manifest.json (programmatic introspection), (2) the hooks block of .claude/settings.json (the canonical distribution copy used by warp-setup.js), (3) docs/04-architecture/HOOK_REGISTRY.md (human reference). To add a hook: append an entry here, run scripts/hooks/build.js, commit all generated artifacts together. Tests against the registry are run by scripts/hooks/test.js — registry-enabled hooks must exist, fail-closed hooks must have at least one fixture (unless fixturesRequired=false).",
+  "_doc": "Hook identity registry. Source of truth for which hooks WarpOS ships, where they bind, and how they fail. Consumed by scripts/hooks/build.js, which derives: (1) scripts/hooks/hook-manifest.json (programmatic introspection), (2) the hooks block of .claude/settings.json (the canonical distribution copy used by warp-setup.js), (3) _requirements/03-architecture/HOOK_REGISTRY.md (human reference). To add a hook: append an entry here, run scripts/hooks/build.js, commit all generated artifacts together. Tests against the registry are run by scripts/hooks/test.js — registry-enabled hooks must exist, fail-closed hooks must have at least one fixture (unless fixturesRequired=false).",
   "_field_meaning": {
     "id": "stable identifier (basename without .js extension)",
     "script": "project-relative path to the hook script",

@@ -25,9 +25,9 @@ Your stance is adversarial — assume the builder cut corners until proven other
 
 ### Read these first
 1. `.claude/agents/.system.md` (your role definition)
-2. The feature spec: `requirements/05-features/{{FEATURE_SLUG}}/PRD.md`
-3. The feature stories: `requirements/05-features/{{FEATURE_SLUG}}/STORIES.md`
-4. The feature copy: `requirements/05-features/{{FEATURE_SLUG}}/COPY.md`
+2. The feature spec: `_requirements/04-features/{{FEATURE_SLUG}}/PRD.md`
+3. The feature stories: `_requirements/04-features/{{FEATURE_SLUG}}/STORIES.md`
+4. The feature copy: `_requirements/04-features/{{FEATURE_SLUG}}/COPY.md`
 
 ### Checks
 - Every story's acceptance criteria is met in code

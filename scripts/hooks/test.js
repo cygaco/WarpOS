@@ -208,7 +208,7 @@ function runFixture(scriptRel, fixtureRel) {
 //   4. Every hook in hook-manifest.json must be in the registry.
 //   5. The settings.json hooks block must equal what scripts/hooks/build.js
 //      would emit for the registry — drift = fail.
-const REGISTRY_FILE = path.join(ROOT, "warpos", "hooks.registry.json");
+const REGISTRY_FILE = path.join(ROOT, "framework", "hooks.registry.json");
 
 function loadRegistry() {
   if (!fs.existsSync(REGISTRY_FILE)) return null;
@@ -240,7 +240,7 @@ function testAll() {
         {
           hook: "registry",
           severity: "red",
-          message: "warpos/hooks.registry.json missing",
+          message: "framework/hooks.registry.json missing",
         },
       ],
     };

@@ -33,7 +33,7 @@ You do NOT write code. You do NOT auto-fix. You produce a structured
 
 The orchestrator passes:
 
-- `{{FEATURE}}` — feature ID (matches `requirements/<feature>/`)
+- `{{FEATURE}}` — feature ID (matches `_requirements/<feature>/`)
 - `{{WORKTREE_BRANCH}}` — branch the builder wrote to
 - `{{ENTRY_PATHS}}` — array of URL paths to visit, e.g. `["/", "/dashboard"]`
 - `{{DUMMY_PLUG_STEP}}` — optional onboarding step number to seed via DummyPlug
@@ -59,9 +59,9 @@ If branch mismatch, BAIL same as test-runner.
 
 Before you look at any pixels, read:
 
-- `docs/01-design-system/COMPONENT_LIBRARY.md` — what colors / spacing / type are expected
-- `docs/01-design-system/TOKENS.md` (if present) — CSS-var palette
-- `requirements/05-features/{{FEATURE}}/COPY.md` — the literal text that should appear
+- `_requirements/01-design-system/COMPONENT_LIBRARY.md` — what colors / spacing / type are expected
+- `_requirements/01-design-system/TOKENS.md` (if present) — CSS-var palette
+- `_requirements/04-features/{{FEATURE}}/COPY.md` — the literal text that should appear
 
 You are reviewing **against the spec**, not against your aesthetic. If the
 spec says "primary button uses `--color-brand-orange`," verify the rendered

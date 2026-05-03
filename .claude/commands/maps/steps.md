@@ -1,13 +1,13 @@
 ---
-description: Regenerate step tables in canonical docs from docs/00-canonical/STEPS.json — closes the last loop in the step-registry infrastructure.
+description: Regenerate step tables in canonical docs from _requirements/00-canonical/STEPS.json — closes the last loop in the step-registry infrastructure.
 ---
 
 # /maps:steps — Regenerate Step Tables from STEPS.json
 
-Reads `docs/00-canonical/STEPS.json` and rewrites the auto-generated regions in the three canonical docs:
-- `docs/00-canonical/PRODUCT_MODEL.md` — onboarding + dashboard tables in "The 10-Step Model (Target State)"
-- `docs/00-canonical/GLOSSARY.md` — Onboarding Steps + Dashboard Activities tables
-- `docs/00-canonical/GOLDEN_PATHS.md` — Flow (Target State) primary-path diagram
+Reads `_requirements/00-canonical/STEPS.json` and rewrites the auto-generated regions in the three canonical docs:
+- `_requirements/00-canonical/PRODUCT_MODEL.md` — onboarding + dashboard tables in "The 10-Step Model (Target State)"
+- `_requirements/00-canonical/GLOSSARY.md` — Onboarding Steps + Dashboard Activities tables
+- `_requirements/00-canonical/GOLDEN_PATHS.md` — Flow (Target State) primary-path diagram
 
 Each auto-generated region is delimited by `<!-- maps:steps:START (region=<name>) --- auto-generated; do not edit -->` and `<!-- maps:steps:END (region=<name>) -->`. Content between the markers is fully replaced on each run; content outside is untouched.
 
@@ -23,7 +23,7 @@ This is the loop-closer for the step-registry infrastructure. After it lands: an
 
 ## Procedure
 
-1. Resolve paths from `.claude/paths.json` (specGraph is nearby; STEPS.json lives at `docs/00-canonical/STEPS.json` — literal, not yet a paths.json key).
+1. Resolve paths from `.claude/paths.json` (specGraph is nearby; STEPS.json lives at `_requirements/00-canonical/STEPS.json` — literal, not yet a paths.json key).
 2. Invoke the regenerator: `node scripts/generate-steps-maps.js $ARGUMENTS`.
 3. If exit is non-zero AND the error is "MISSING MARKERS":
    - Report the list to the user.

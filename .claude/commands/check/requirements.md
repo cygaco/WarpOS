@@ -12,7 +12,7 @@ Five backing modules under `scripts/requirements/` (Phase 3A + 3D + 3F + 3K):
 
 | Tool | Purpose |
 |------|---------|
-| `node scripts/requirements/graph-build.js` | Rebuild `requirements/_index/requirements.graph.json` from PRDs + STORIES + HL-STORIES + contracts. Use `--check` for staleness gate. |
+| `node scripts/requirements/graph-build.js` | Rebuild `_requirements/_index/requirements.graph.json` from PRDs + STORIES + HL-STORIES + contracts. Use `--check` for staleness gate. |
 | `node scripts/requirements/gate.js` | Freshness Gate. Exit 0 green / 1 yellow / 2 red. Wired into merge-guard, preflight, and CI (Phase 5M). |
 | `node scripts/requirements/review.js` | Coverage report — orphans, duplicates, stale_pending_review counts, per-feature verification ratios. |
 | `node scripts/requirements/apply-rco.js --auto-expire 30` | Auto-close open RCOs older than 30 days (Class C exempt). Run during `/learn:integrate`. |
@@ -43,8 +43,8 @@ Three modes:
 
 1. `.claude/paths.json` — canonical paths
 2. `.claude/manifest.json` — `build.features[]`, `projectPaths.specs`, `build.featureIdToDir`
-3. Resolve spec directory: `manifest.projectPaths.specs` (default `requirements/05-features/`, fallback `requirements/05-features/`)
-4. Requirement standards (if present): `requirements/03-requirement-standards/`, `requirements/04-architecture/`, `requirements/00-canonical/`
+3. Resolve spec directory: `manifest.projectPaths.specs` (default `_requirements/04-features/`, fallback `_requirements/04-features/`)
+4. Requirement standards (if present): `_requirements/_standards/`, `_requirements/03-architecture/`, `_requirements/00-canonical/`
 5. Foundation files from `manifest.fileOwnership.foundation`
 
 If no manifest exists, scan the features directory dynamically.
@@ -79,7 +79,7 @@ For each feature in manifest:
 
 ### Coverage checks
 
-- **R11 Every `build.features[].id` has a folder with all 5 required files** — `PRD.md`, `HL-STORIES.md`, `STORIES.md`, `INPUTS.md`, `COPY.md` must all exist. Missing any one → ERROR. **Exemption: `phase=0` features (foundation infrastructure)** are not user-facing product features and don't have spec folders by design — their canonical home is `manifest.fileOwnership.foundation`, not `requirements/05-features/`. Skip the 5-file requirement when `feature.phase === 0`. Rationale: L8 run-10-prep — backend feature was added with only PRD.md (4 missing) and would have silently entered run-10 with no spec for builders to build against. L11 — initial too-aggressive enforcement flagged manifest's unified `foundation` (a phase-0 build-orchestration concept) as missing a docs folder it was never meant to have. Severity upgraded from WARN to ERROR for phase ≥ 1; phase=0 is exempt. No exemptions for "thin" product features.
+- **R11 Every `build.features[].id` has a folder with all 5 required files** — `PRD.md`, `HL-STORIES.md`, `STORIES.md`, `INPUTS.md`, `COPY.md` must all exist. Missing any one → ERROR. **Exemption: `phase=0` features (foundation infrastructure)** are not user-facing product features and don't have spec folders by design — their canonical home is `manifest.fileOwnership.foundation`, not `_requirements/04-features/`. Skip the 5-file requirement when `feature.phase === 0`. Rationale: L8 run-10-prep — backend feature was added with only PRD.md (4 missing) and would have silently entered run-10 with no spec for builders to build against. L11 — initial too-aggressive enforcement flagged manifest's unified `foundation` (a phase-0 build-orchestration concept) as missing a docs folder it was never meant to have. Severity upgraded from WARN to ERROR for phase ≥ 1; phase=0 is exempt. No exemptions for "thin" product features.
 - **R12 No orphan spec folders** — every folder under `{specs}/` matches a manifest feature (or is explicitly archived). Severity: ERROR.
 - **R13 Foundation files mentioned** — every `fileOwnership.foundation` file referenced by at least one spec that justifies its shared status. Severity: WARN.
 - **R16 No orphan code files** — every TypeScript file under `src/components/`, `src/app/api/`, `src/lib/`, `src/hooks/`, `extension/` MUST be owned by exactly one of: (a) some `store.features[<id>].files[]` array, or (b) `manifest.fileOwnership.foundation`, or (c) explicitly listed in a `manifest.fileOwnership.shared` allowlist (if defined). Build the union of all owned file paths from store + foundation; glob the actual src/ tree; symmetric diff. Files-on-disk-not-owned → ERROR: "`<path>` exists in code but no feature owns it; either add to `store.features[<owner>].files[]` or to `fileOwnership.foundation`." Files-owned-not-on-disk are caught by I11 (knownStubs exist). Rationale: L14 run-10-prep — system reminders repeatedly surface "Code without specs: AimPage.tsx, ConfettiBurst.tsx, Step8Skills.tsx" but no preflight check formalizes this. Orphan code is dangerous because (1) builders can't know to update it during runs (no spec drives it), (2) gut-mode skips it (not in any feature's files[]), (3) it accumulates as drift weight. Severity: ERROR. Exemptions: files prefixed `.` or under `__tests__/`, `*.test.ts(x)`, `*.spec.ts(x)`, `*.stories.tsx`.
