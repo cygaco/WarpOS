@@ -1,50 +1,20 @@
-# Disaster Recovery
+# Disaster Recovery Baseline
 
-> WarpOS framework template. Generic. Each project fills in concrete
-> RPO/RTO and the on-call/contact list.
+Each generated app must define how data is backed up, restored, deleted, and communicated during incidents.
 
-## Backup scope
+## Required Plan
 
-What is backed up: primary database (full daily, transaction log every
-5 min), object storage (versioned bucket with 30-day soft delete),
-secret store (per-vendor backup or replication).
+| Area | Minimum |
+|---|---|
+| Backup scope | List databases, object stores, queues, secrets, and generated assets. |
+| Backup cadence | State automatic backup frequency and manual snapshot procedure. |
+| Restore procedure | Include step-by-step restore commands or provider runbook links. |
+| RPO | Define maximum acceptable data loss. Default target: 24 hours unless the product is financial, medical, or operationally critical. |
+| RTO | Define maximum acceptable downtime. Default target: 4 hours unless the product requires stricter availability. |
+| Data deletion | Define user/workspace deletion flow and irreversible purge window. |
+| Incident contact | Define the owner or escalation channel responsible for a production incident. |
+| Verification | Restore from backup must be tested before production launch and after major schema changes. |
 
-What is NOT backed up: build artifacts, ephemeral runtime state,
-search indexes (rebuildable), CDN cache.
+## Release Gate
 
-## Restore procedure
-
-Documented runbook. Exercised at least quarterly on staging. Steps:
-
-1. Provision a clean target environment.
-2. Restore the database from the most recent backup that pre-dates
-   the incident.
-3. Replay transaction log up to the chosen recovery point.
-4. Restore object storage if affected.
-5. Run the smoke-test suite.
-6. Cut traffic over once smoke passes.
-
-## RPO
-
-Recovery Point Objective — maximum acceptable data loss.
-**Default: 5 minutes** for primary data; longer is acceptable for
-analytics tables. Each project SHOULD document its own number.
-
-## RTO
-
-Recovery Time Objective — maximum acceptable time to restore service.
-**Default: 1 hour** for stateless services, **4 hours** for primary
-database restore. Each project SHOULD document its own number.
-
-## Data deletion
-
-How user data is deleted on request: immediate logical delete (set
-`deleted_at`), within 30 days the row is removed from primary store,
-within 90 days it is removed from backups via key-rotation or
-backup-window expiry.
-
-## Incident contact
-
-Primary on-call: documented in the runbook (PagerDuty / Opsgenie).
-Secondary: engineering lead. Status communication: status page +
-incident Slack channel. Post-incident review within 5 business days.
+Release readiness requires this plan to be present and reviewed. Unknown backup or restore behavior is a shipping blocker for production-bound apps.

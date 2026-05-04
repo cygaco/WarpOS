@@ -1,8 +1,8 @@
-# High-Level Story Standards
+# Jobzooka — High-Level Story Standards
 
 ## Purpose
 
-This document defines the mandatory rules for writing and reviewing **High-Level User Stories**.
+This document defines the mandatory rules for writing and reviewing **High-Level User Stories** for Jobzooka.
 
 High-Level Stories establish **product intent, scope, and outcomes**. They describe _what success means_ without prescribing UI, interaction patterns, sequencing, or implementation details.
 
@@ -39,27 +39,28 @@ High-Level Stories must be **platform-agnostic**. They describe outcomes, not de
 
 ### Why
 
-Stories feed into one-shot code generation alongside PRD Feature Descriptions. The Feature Description specifies platform details. If stories also name platforms, they couple intent to a specific implementation — breaking portability and making full-codebase regeneration brittle.
+Stories feed into one-shot code generation alongside PRD Feature Descriptions. The Feature Description specifies platform details (Chrome extension, mobile app, API). If stories also name platforms, they couple intent to a specific implementation — breaking portability and making full-codebase regeneration brittle.
 
 ### Rules
 
-- Name the **outcome**, not the **vehicle**
+- Name the **outcome**, not the **vehicle**: "automation agent" not "Chrome extension", "the app" not "the browser"
+- Platform-specific features (e.g., the Chrome extension PRD) may reference their platform in the Feature Description, but even their HL stories should describe the outcome generically where possible
 - If a story only makes sense on one platform, that's a sign it might be a Granular Story instead
 
 ### Disallowed Terms in HL Stories
 
-| Instead of | Write |
-|------------|-------|
-| Chrome extension / mobile app | automation agent / the app |
-| browser | app / page |
-| click / tap | (omit — describe the outcome, not the gesture) |
-| button / dropdown / modal / tab | (omit — UI elements belong in Granular Stories) |
-| spinner / loading bar | (omit — describe perceived wait, not the widget) |
-| API / endpoint / JSON / Redis | (omit — technical detail belongs in PRD or Granular Stories) |
+| Instead of                      | Write                                                        |
+| ------------------------------- | ------------------------------------------------------------ |
+| Chrome extension                | automation agent                                             |
+| browser                         | app / page                                                   |
+| click / tap                     | (omit — describe the outcome, not the gesture)               |
+| button / dropdown / modal / tab | (omit — UI elements belong in Granular Stories)              |
+| spinner / loading bar           | (omit — describe perceived wait, not the widget)             |
+| API / endpoint / JSON / Redis   | (omit — technical detail belongs in PRD or Granular Stories) |
 
 ### Exception
 
-Feature PRDs whose entire scope IS a platform keep platform language in their **Feature Description** and **Granular Stories**. Their HL stories still describe the user outcome generically.
+Feature PRDs whose entire scope IS a platform (e.g., the Chrome extension PRD) keep platform language in their **Feature Description** and **Granular Stories**. Their HL stories still describe the user outcome generically.
 
 ---
 
@@ -90,10 +91,11 @@ High-Level Stories must use **normalized, generic roles** only.
 - System
 - Product Manager
 - Admin (if applicable)
+- Security Admin (if applicable)
 
 ### Disallowed
 
-- UI- or surface-specific roles (e.g., "resume uploader", "dashboard viewer")
+- UI- or surface-specific roles (e.g., "resume uploader", "rocket purchaser")
 - Persona-style roles encoding context or motivation
 - Roles that imply implementation detail
 
@@ -150,7 +152,7 @@ There is **no fixed required count**. Most stories will have **2–5 Acceptance 
 - Screen-by-screen navigation
 - Conditional or branching logic
 - Technical, architectural, or data-layer detail
-- Platform-specific terms
+- Platform-specific terms (see Platform & Implementation Neutrality)
 - Interaction verbs (click, tap, hover, drag)
 
 If an Acceptance Criterion describes _how_ something happens, it belongs in Granular Stories.
@@ -198,6 +200,22 @@ Variations and edge cases belong in:
 
 ---
 
+## Review Checklist (Mandatory)
+
+A High-Level Story is acceptable only if:
+
+1. Exactly one outcome is defined
+2. Role is explicit and normalized
+3. Acceptance Criteria clarify outcome guarantees
+4. MVP or Post-MVP classification is explicit and justified
+5. No duplication or overlap exists
+6. Language is concise and globally understandable
+7. No platform-specific or UI interaction language (see Platform & Implementation Neutrality)
+
+Failure on any item requires revision.
+
+---
+
 ## Agent Instructions Header (Required)
 
 Every `HL-STORIES.md` file MUST begin with an `<!-- Agent Instructions -->` HTML comment block before the first heading. This block tells builder agents what context to load before implementing.
@@ -211,28 +229,13 @@ Every `HL-STORIES.md` file MUST begin with an `<!-- Agent Instructions -->` HTML
   - ../STORIES.md for granular acceptance criteria
   - ../PRD.md Section 8 (Feature Description) for implementation specifics
   - ../COPY.md for all microcopy
+  - _requirements/03-architecture/FLOW_SPEC.md for entry/exit states
 -->
 
 # Feature Name — High-Level Stories
 ```
 
 Omitting this header reduces builder context quality and increases the chance of misaligned implementations.
-
----
-
-## Review Checklist (Mandatory)
-
-A High-Level Story is acceptable only if:
-
-1. Exactly one outcome is defined
-2. Role is explicit and normalized
-3. Acceptance Criteria clarify outcome guarantees
-4. MVP or Post-MVP classification is explicit and justified
-5. No duplication or overlap exists
-6. Language is concise and globally understandable
-7. No platform-specific or UI interaction language
-
-Failure on any item requires revision.
 
 ---
 

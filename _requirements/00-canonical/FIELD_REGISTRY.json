@@ -1,0 +1,248 @@
+{
+  "version": 1,
+  "description": "Single source of truth for values that appear in multiple files. When a value here changes, all appears_in files are flagged STALE. edit-watcher checks for drift.",
+
+  "rocket_costs": {
+    "market_rerun": {
+      "value": 50,
+      "unit": "rockets",
+      "appears_in": [
+        "_requirements/00-canonical/GLOSSARY.md",
+        ".claude/agents/INTEGRATION-MAP.md",
+        "_requirements/04-features/market-research/PRD.md"
+      ]
+    },
+    "targeted_tier1": {
+      "value": 50,
+      "unit": "rockets",
+      "context": "1-3 categories",
+      "appears_in": [
+        "_requirements/00-canonical/GLOSSARY.md",
+        ".claude/agents/INTEGRATION-MAP.md",
+        "_requirements/04-features/resume-generation/PRD.md"
+      ]
+    },
+    "targeted_tier2": {
+      "value": 35,
+      "unit": "rockets",
+      "context": "4-6 categories",
+      "appears_in": [
+        "_requirements/00-canonical/GLOSSARY.md",
+        ".claude/agents/INTEGRATION-MAP.md"
+      ]
+    },
+    "targeted_tier3": {
+      "value": 25,
+      "unit": "rockets",
+      "context": "7+ categories",
+      "appears_in": [
+        "_requirements/00-canonical/GLOSSARY.md",
+        ".claude/agents/INTEGRATION-MAP.md"
+      ]
+    },
+    "linkedin_rewrite": {
+      "value": 75,
+      "unit": "rockets",
+      "appears_in": [
+        "_requirements/00-canonical/GLOSSARY.md",
+        ".claude/agents/INTEGRATION-MAP.md",
+        "_requirements/04-features/linkedin/PRD.md"
+      ]
+    },
+    "free_tier": {
+      "value": 150,
+      "unit": "rockets",
+      "appears_in": [
+        "_requirements/00-canonical/GLOSSARY.md",
+        ".claude/agents/INTEGRATION-MAP.md",
+        "src/lib/rockets.ts"
+      ]
+    }
+  },
+
+  "rocket_packs": {
+    "scout": { "rockets": 100, "price_usd": 4.99 },
+    "strike": { "rockets": 300, "price_usd": 12.99 },
+    "arsenal": { "rockets": 750, "price_usd": 24.99 }
+  },
+
+  "competitiveness_thresholds": {
+    "low_max": { "value": 39, "label": "Low" },
+    "moderate_max": { "value": 69, "label": "Moderate" },
+    "strong_max": { "value": 89, "label": "Strong" },
+    "exceptional_min": { "value": 90, "label": "Exceptional" },
+    "appears_in": [
+      "_requirements/04-features/competitiveness/PRD.md",
+      "_requirements/04-features/competitiveness/STORIES.md",
+      "_requirements/04-features/competitiveness/COPY.md",
+      "src/lib/competitiveness.ts"
+    ]
+  },
+
+  "competitiveness_weights": {
+    "deep_dive_qa": { "weight": 0.15, "step": 6 },
+    "target_categories": { "weight": 0.05, "step": 5 },
+    "skill_curation": { "weight": 0.05, "step": 7 },
+    "master_resume": { "weight": 0.1, "step": 8 },
+    "general_resume": { "weight": 0.05, "step": 8 },
+    "targeted_resumes": { "weight": 0.25, "step": 8, "note": "uncapped" },
+    "linkedin": { "weight": 0.15, "step": 9 },
+    "auto_apply": { "weight": 0.1, "step": 10 },
+    "form_answers": { "weight": 0.1, "step": 10 },
+    "appears_in": [
+      ".claude/agents/INTEGRATION-MAP.md",
+      "_requirements/04-features/competitiveness/STORIES.md",
+      "src/lib/competitiveness.ts"
+    ]
+  },
+
+  "validation": {
+    "max_file_size_mb": {
+      "value": 10,
+      "appears_in": [
+        "_requirements/04-features/onboarding/PRD.md",
+        "_requirements/04-features/onboarding/INPUTS.md",
+        "_requirements/04-features/onboarding/STORIES.md"
+      ]
+    },
+    "text_paste_min_chars": {
+      "value": 50,
+      "appears_in": [
+        "_requirements/04-features/onboarding/STORIES.md",
+        "_requirements/04-features/onboarding/INPUTS.md"
+      ]
+    },
+    "parse_timeout_seconds": {
+      "value": 30,
+      "appears_in": ["_requirements/04-features/onboarding/STORIES.md"]
+    },
+    "hours_per_year": {
+      "value": 2080,
+      "appears_in": [
+        "_requirements/00-canonical/GLOSSARY.md",
+        "_requirements/04-features/onboarding/INPUTS.md"
+      ]
+    },
+    "password_min_length": {
+      "value": 8,
+      "appears_in": [
+        "_requirements/04-features/auth/STORIES.md",
+        "_requirements/04-features/auth/INPUTS.md"
+      ]
+    },
+    "password_max_length": {
+      "value": 128,
+      "appears_in": [
+        "_requirements/04-features/auth/STORIES.md",
+        "_requirements/04-features/auth/INPUTS.md"
+      ]
+    }
+  },
+
+  "enums": {
+    "employment_types": {
+      "values": ["Full-time", "Part-time", "Contract"],
+      "appears_in": [
+        "_requirements/04-features/onboarding/INPUTS.md",
+        "src/lib/types.ts"
+      ]
+    },
+    "location_types": {
+      "values": ["Remote", "Hybrid", "On-site"],
+      "appears_in": [
+        "_requirements/04-features/onboarding/INPUTS.md",
+        "src/lib/types.ts"
+      ]
+    },
+    "seniority_levels": {
+      "values": [
+        "Internship",
+        "Entry level",
+        "Associate",
+        "Mid-Senior level",
+        "Director",
+        "Executive"
+      ],
+      "appears_in": [
+        "_requirements/04-features/onboarding/INPUTS.md",
+        "src/lib/types.ts"
+      ]
+    },
+    "start_dates": {
+      "values": [
+        "Immediately",
+        "2 weeks notice",
+        "1 month notice",
+        "2 months notice"
+      ],
+      "appears_in": ["_requirements/04-features/onboarding/INPUTS.md"]
+    },
+    "degree_types": {
+      "values": [
+        "Associate's",
+        "Bachelor's",
+        "Master's",
+        "MBA",
+        "PhD",
+        "JD",
+        "MD",
+        "Other"
+      ],
+      "appears_in": ["_requirements/04-features/onboarding/INPUTS.md"]
+    },
+    "rocket_tiers": {
+      "values": ["free", "scout", "strike", "arsenal"],
+      "appears_in": ["_requirements/00-canonical/GLOSSARY.md", "src/lib/types.ts"]
+    },
+    "job_match_strength": {
+      "values": ["high", "mid", "low"],
+      "appears_in": ["src/lib/types.ts"]
+    },
+    "mining_result_status": {
+      "values": ["answered", "unanswered", "not-relevant"],
+      "appears_in": ["src/lib/types.ts"]
+    },
+    "accepted_resume_formats": {
+      "values": ["PDF", "DOCX", "TXT", "MD"],
+      "appears_in": [
+        "_requirements/04-features/onboarding/PRD.md",
+        "_requirements/04-features/onboarding/COPY.md",
+        "_requirements/04-features/onboarding/STORIES.md"
+      ]
+    }
+  },
+
+  "rate_limits": {
+    "claude_per_minute": {
+      "value": 20,
+      "appears_in": ["_requirements/00-canonical/GLOSSARY.md", "CLAUDE.md"]
+    },
+    "bright_data_per_minute": {
+      "value": 10,
+      "appears_in": ["_requirements/00-canonical/GLOSSARY.md", "CLAUDE.md"]
+    },
+    "global_per_minute": {
+      "value": 60,
+      "appears_in": ["_requirements/00-canonical/GLOSSARY.md", "CLAUDE.md"]
+    }
+  },
+
+  "prompt_keys": {
+    "values": [
+      "PARSE",
+      "PROFILE",
+      "QUERY_GEN",
+      "MARKET_PREP",
+      "MARKET",
+      "RESUME_GEN",
+      "TARGETED",
+      "LINKEDIN",
+      "APPLY"
+    ],
+    "appears_in": [
+      ".claude/agents/INTEGRATION-MAP.md",
+      "_requirements/03-architecture/PROMPT_TEMPLATES.md",
+      "src/lib/prompts.ts"
+    ]
+  }
+}

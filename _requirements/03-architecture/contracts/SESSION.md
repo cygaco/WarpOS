@@ -1,62 +1,67 @@
-<!-- WarpOS framework template. Generic Session contract. -->
-
+<!-- generated 2026-04-30 by Phase 3G — keep `id` and section names stable, edit content freely -->
 # Contract: SESSION
 
 - **id:** SESSION
-- **version:** 1.0.0
-- **changeType:** none
-- **owner:** framework
-- **used by:** auth, audit-log
+- **owner:** auth
+- **introducedIn:** 2026-04-30
+- **status:** active
+- **version:** 2.0.0
+- **changeType:** major
+- **used by:** auth, dashboard, profile, rockets-economy
+
+> **2.0.0 (breaking, 2026-05-04):** shape rewritten to reflect product-specific session contract promoted into canonical at v0.2.0. Consumers that depended on the framework-template SessionContract must adopt the new shape.
 
 ## 1. Shape
 
-```ts
-interface Session {
-  id: string;        // opaque session identifier
-  userId: string;    // → USER.id
-  createdAt: string; // ISO 8601 UTC
-  expiresAt: string; // ISO 8601 UTC; absolute, not refreshed-on-use
-  revokedAt?: string;// set when the session was explicitly invalidated
+```typescript
+interface SessionContract {
+  // Cookie configuration
+  cookieName: "__Host-Session";
+  cookieOptions: { httpOnly: true; secure: true; sameSite: "lax"; path: "/" };
+
+  // JWT payload claims
+  payload: {
+    sub: string;     // User UUID
+    scp: string[];   // e.g., ["user", "premium"]
+    jti: string;     // Unique token identifier for revocation
+    exp: number;     // 7-day TTL (seconds since epoch)
+  };
 }
 ```
 
-## 2. Invariants
+## 2. Producers
 
-- `expiresAt` > `createdAt`.
-- `revokedAt` (if set) is between `createdAt` and `now`.
-- A revoked or expired session never grants access, even within the
-  same request lifetime.
+- `packages/shared/auth.ts` (JWT signing and cookie serialization)
+- `services/backend/src/routes/auth.ts` (login / registration handlers)
 
-## 3. Lifecycle
+## 3. Consumers
 
-- Created on successful authentication (login, magic-link, SSO).
-- Read on every authenticated request via the session middleware.
-- Revoked on explicit logout, password change, or admin action.
-- Pruned from primary store after `expiresAt + 30 days` (audit window).
+- `src/middleware.ts` (Next.js Edge route protection)
+- `services/backend/src/middleware/auth.ts` (API route protection)
+- `src/lib/auth-client.ts` (frontend session parser)
 
 ## 4. Breaking changes
 
-Removing or renaming `id` / `userId` / `expiresAt` is breaking. Adding
-session metadata (e.g. device fingerprint) is non-breaking.
+- Removing the `__Host-` prefix from the cookie name
+- Changing `exp` TTL semantics or removing `jti`
+- Modifying the JWT signing algorithm (e.g., HS256 → RS256) without dual-support rollover
+- Adding fields to `payload` that bloat the cookie beyond 4096 bytes
 
-## 5. Consumers
+## 5. Required tests
 
-- `auth` — read + write.
-- `audit-log` — reads `id`, `userId`, `createdAt`, `revokedAt`.
+- JWT encode/decode round-trip verification
+- Enforced rejection of expired tokens
+- Validation that non-HTTPS environments reject `__Host-` cookies (except localhost bypass)
 
-## 6. Examples
+## 6. Drift gate
 
-```json
-{
-  "id": "sess_0193b7d4abcd",
-  "userId": "0193b7d1-2ad6-7a8b-9d3c-1e8f4b9a7c6d",
-  "createdAt": "2026-01-01T00:00:00Z",
-  "expiresAt": "2026-01-08T00:00:00Z"
-}
-```
+- `packages/shared/auth.ts`
+- `services/backend/src/routes/auth.ts`
+- `src/middleware.ts`
 
 ## 7. Versioning and compatibility
 
-Semver. Major bumps require the deprecation cycle in
-`DEPRECATION_POLICY.md`. Consumers in §5 are notified on every minor
-or major bump.
+- Patch: clarification only; no consumer migration.
+- Minor: backward-compatible field addition with default handling.
+- Major: cookie name, token claims, signing algorithm, or expiry semantics change.
+- On any version bump, notify: auth, dashboard, profile, rockets-economy.

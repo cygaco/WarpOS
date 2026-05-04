@@ -1,121 +1,124 @@
-# [Project Name] — Failure States
+# Jobzooka — Failure States
 
-Every way the product can fail and how it should respond. This is the error handling bible. Every error message, empty state, and fallback behavior is defined here.
-
----
-
-## Principles
-
-1. **Never blame the user.** Even if they caused the error. "We couldn't process that file" not "You uploaded an invalid file."
-2. **Always provide a next step.** Every error must have an action: retry, go back, try different input, or contact support.
-3. **Preserve user data.** Errors must never cause data loss. If an operation fails, the user's input is still there.
-4. **Degrade gracefully.** If a premium feature fails, the core product still works. If an API is down, show cached data or a meaningful empty state.
-5. **Log everything.** Every error is logged server-side with enough context to debug. The user never needs to report technical details.
+Unacceptable states organized by domain. If any of these states occur, it is a bug that must be fixed.
 
 ---
 
-## Failure Categories
+## Data Integrity
 
-### Network Failures
-
-| Failure | User Sees | System Does | Recovery |
-|---------|-----------|-------------|----------|
-| API timeout | "Taking longer than expected. [Retry]" | Log timeout, increment retry counter | Auto-retry once, then show manual retry |
-| API error (500) | "Something went wrong on our end. [Retry]" | Log error + request ID | Manual retry, auto-retry after 30s |
-| Network offline | "You appear to be offline. Your data is saved locally." | Queue operations for when online | Auto-resume when connection returns |
-| Rate limited | "We're processing too many requests. Please wait a moment." | Log, backoff | Auto-retry with exponential backoff |
-
-### Data Failures
-
-| Failure | User Sees | System Does | Recovery |
-|---------|-----------|-------------|----------|
-| Parse failure | "We couldn't read that file. [Try different file] or [Paste text instead]" | Log file type + first 100 bytes | Alternative input method |
-| Corrupt session | "Your previous data couldn't be loaded. Starting fresh." | Log corrupt data shape, clear session | Clean restart, offer export of raw data |
-| Missing required field | Inline validation error on the specific field | Block advancement | Fix the field |
-| Schema mismatch | Silent migration attempt, log if fails | Run schema migration | If migration fails, clear session + warn |
-
-### AI/Processing Failures
-
-| Failure | User Sees | System Does | Recovery |
-|---------|-----------|-------------|----------|
-| AI generation fails | "[Output] couldn't be generated. [Retry]" | Log prompt + error | Retry with same input |
-| AI returns garbage | "The result didn't meet our quality standards. Regenerating..." | Log bad output, auto-retry | Auto-retry with adjusted prompt |
-| AI timeout | "This is taking longer than usual. [Wait] or [Skip]" | Log timeout duration | Offer wait or skip (if step is optional) |
-| Partial AI result | Show what succeeded, mark gaps: "Some fields couldn't be determined" | Log which fields failed | Manual fill for missing fields |
-
-### User Errors
-
-| Failure | User Sees | System Does | Recovery |
-|---------|-----------|-------------|----------|
-| Invalid file type | "Please upload a [supported formats] file" | Block upload | Try different file |
-| File too large | "That file is too large. Maximum size is [limit]." | Block upload | Compress or use smaller file |
-| Empty required field | Inline error: "[Field name] is required" | Block advancement | Fill the field |
-| Invalid format | Inline error: "Please enter a valid [format]" | Block save | Fix the format |
-
-### System Failures
-
-| Failure | User Sees | System Does | Recovery |
-|---------|-----------|-------------|----------|
-| Database down | "We're experiencing issues. Your data is saved locally." | Log, alert ops | Operations from local cache |
-| Third-party service down | "This feature is temporarily unavailable." | Log, show degraded state | Retry later, show cached results |
-| Out of quota/credits | "You've used all your [credits]. [Purchase more] or [wait for reset]" | Block premium features | Purchase or wait |
-| Deployment in progress | "We're updating. Please refresh in a moment." | Serve maintenance page | Auto-refresh after deploy |
+| Failure State                                | Why It's Unacceptable                                              |
+| -------------------------------------------- | ------------------------------------------------------------------ |
+| Session data lost without user action        | User loses all progress. Trust destroyed.                          |
+| Downstream data persists after upstream edit | Stale resumes, wrong keywords, misleading analysis.                |
+| Resume contains fabricated experience        | Legal liability, ethical violation, user reputation damage.        |
+| Resume contains excluded skills              | User explicitly removed them. Violates user control.               |
+| Encrypted data decrypted by wrong device     | Security breach. (Should not be possible with device fingerprint.) |
+| Session loads with corrupted/partial data    | App in inconsistent state. Undefined behavior.                     |
 
 ---
 
-## Empty States
+## API & Pipeline
 
-<!-- GUIDANCE: What does the user see when there's no data yet? Every screen that can be empty needs a defined empty state.
-
-| Screen | Empty State Copy | CTA |
-|--------|-----------------|-----|
-| Dashboard | "Complete onboarding to see your results here" | [Start Onboarding] |
-| Results list | "No results yet. Run [action] to generate them." | [Run Action] |
-| History | "You haven't completed any sessions yet." | [Start First Session] |
--->
-
----
-
-## Error Copy Guidelines
-
-### Structure
-
-Every error message follows: **What happened** + **Why** (if helpful) + **What to do next**.
-
-### Examples
-
-- "We couldn't parse your file. The format may not be supported. [Try a different file] or [paste text instead]."
-- "Generation failed. This sometimes happens with complex inputs. [Retry] — it usually works on the second try."
-- "Your session expired. Don't worry — your data is saved. [Log in again] to continue."
-
-### Anti-Patterns
-
-- Technical jargon: "Error 500: Internal Server Error" → "Something went wrong on our end"
-- Blame: "You uploaded an invalid file" → "We couldn't read that file"
-- Dead ends: "An error occurred." (no next step) → "An error occurred. [Retry] or [Go back]"
-- Vague: "Something went wrong" (no context) → "We couldn't generate your [output]. [Retry]"
+| Failure State                                                | Why It's Unacceptable                                             |
+| ------------------------------------------------------------ | ----------------------------------------------------------------- |
+| Claude API key exposed to client                             | Security breach. Key compromise.                                  |
+| API call fails silently (no error shown)                     | User stuck in loading state forever.                              |
+| BD scraping hangs with no timeout                            | User waits indefinitely. No recourse.                             |
+| Market analysis uses synthetic/fake data in production       | Entire product value proposition is real data. Fake data = fraud. |
+| MARKET_PREP and MARKET both fail with no fallback            | User cannot proceed past step 5. Dead end.                        |
+| Prompt injection succeeds (external data alters AI behavior) | Security vulnerability. Could produce harmful output.             |
+| Rate limit hit with no feedback                              | User retries, gets more errors. Frustrating.                      |
 
 ---
 
-## Logging Requirements
+## Rocket Economy
 
-Every error must log:
-
-1. **Timestamp** — when it happened
-2. **User context** — session ID, step, what they were doing
-3. **Error context** — error type, message, stack trace
-4. **Input context** — what was submitted (sanitized, no PII in logs)
-5. **Recovery action** — what the user did next (retry, go back, abandon)
+| Failure State                                 | Why It's Unacceptable                       |
+| --------------------------------------------- | ------------------------------------------- |
+| Rockets deducted but operation fails          | User pays for nothing. Trust destroyed.     |
+| Billable operation runs without auth check    | Revenue leak. Free access to paid features. |
+| Rocket balance goes negative                  | Accounting inconsistency.                   |
+| Purchase completes but balance doesn't update | User confused, may buy again.               |
+| Free first market analysis charges rockets    | Breaks free tier promise.                   |
+| Bulk pricing not applied when applicable      | User overcharged.                           |
 
 ---
 
-## Testing Failure States
+## Resume Generation
 
-For each golden path, test:
+| Failure State                                      | Why It's Unacceptable                    |
+| -------------------------------------------------- | ---------------------------------------- |
+| Targeted resume generated without master           | No base to apply diff to. Broken output. |
+| Resume diff adds content not in master             | Fabrication risk.                        |
+| DOCX download produces corrupted file              | User can't use the output they paid for. |
+| Non-ASCII characters in ATS-optimized resume       | May break ATS parsing.                   |
+| Education shown when educationVisibility is "hide" | User privacy / preference violation.     |
 
-- [ ] Network disconnected mid-operation → data preserved, can retry when online
-- [ ] API returns 500 → error shown, retry works
-- [ ] AI returns garbage → detected, auto-retry triggers
-- [ ] Session corrupted → graceful reset, no crash
-- [ ] File upload with unsupported type → clear error, alternative offered
-- [ ] Rate limited → backoff works, user informed
+---
+
+## Auto-Apply
+
+| Failure State                                    | Why It's Unacceptable                              |
+| ------------------------------------------------ | -------------------------------------------------- |
+| Application submitted without user review        | Compliance violation. Core product promise broken. |
+| Wrong resume variant selected for category       | Application quality degraded.                      |
+| Personal info (email, phone) entered incorrectly | Broken application. User misses responses.         |
+| Extension bypasses CAPTCHA checks                | Violates bot detection systems.                    |
+| More than 40 applications in one session         | Rate abuse. Platform banning risk.                 |
+
+---
+
+## Authentication
+
+| Failure State                                      | Why It's Unacceptable                      |
+| -------------------------------------------------- | ------------------------------------------ |
+| Auth state lost after page refresh                 | User must sign in again unexpectedly.      |
+| Soft gate blocks progress permanently              | User can't continue. Dead end.             |
+| JWT expires during active session with no recovery | User loses in-progress work.               |
+| OAuth redirect fails silently                      | User clicked Sign In and nothing happened. |
+
+---
+
+## UI / UX
+
+| Failure State                                                      | Why It's Unacceptable                                      |
+| ------------------------------------------------------------------ | ---------------------------------------------------------- |
+| User can navigate to step with unmet prerequisites                 | App in inconsistent state. Missing data.                   |
+| Loading state shown indefinitely (spinner of death)                | User stuck. No escape hatch.                               |
+| Error message gives no recovery action                             | User doesn't know what to do.                              |
+| Backward navigation clears data without confirmation               | Violates user control. Data loss.                          |
+| Competitiveness score decreases without explanation                | Confusing. User did something "right" but score went down. |
+| Celebration triggers for trivial changes                           | Erodes celebration meaning.                                |
+| Modal cannot be dismissed (no close, no escape, no backdrop click) | User trapped.                                              |
+
+---
+
+## Performance
+
+| Failure State                                          | Why It's Unacceptable                                |
+| ------------------------------------------------------ | ---------------------------------------------------- |
+| Vercel function timeout on routine operation           | User gets 504 error. Must retry.                     |
+| localStorage exceeds 5MB quota                         | Session save fails silently. Data loss on next load. |
+| Multiple concurrent Claude API calls from same session | Unnecessary cost, potential rate limiting.           |
+| Memory leak from pipeline trace buffer                 | Browser tab slows down over long sessions.           |
+
+---
+
+## Dev Tools (Deus Mechanicus)
+
+| Failure State                                               | Why It's Unacceptable                         |
+| ----------------------------------------------------------- | --------------------------------------------- |
+| DeusMechanicus accessible without env gate                  | Production users see dev tools.               |
+| DeusMechanicus removed from context provider position       | All child `useDM()` calls break. App crashes. |
+| Dummy Plug data contaminates production session             | Real user data overwritten with test data.    |
+| Test API endpoint accessible in production without env gate | Information disclosure.                       |
+
+---
+
+## Data Integrity (Returning Users)
+
+| Failure State                                                      | Why It's Unacceptable                                      |
+| ------------------------------------------------------------------ | ---------------------------------------------------------- |
+| Session loads with schema version mismatch and no migration path   | User loses data or app enters undefined state.             |
+| Schema migration runs but silently drops fields                    | User's progress vanishes without explanation.              |
+| Returning user hits a step that assumes data from a newer schema   | Crash or blank UI on a step the user previously completed. |

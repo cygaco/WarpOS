@@ -55,6 +55,19 @@ Don't rely on a hardcoded list of deprecated systems — check dynamically:
 
 Present flagged skills separately with the specific dead reference and what it points to.
 
+## Phase 2c: Never-Invoked Detection (Skill Usage Counter)
+
+Read `paths.skillUsageFile` (`.claude/project/events/skill-usage.jsonl`) — the running record of slash-command invocations from `scripts/hooks/skill-counter.js`. Each line is `{ ts, skill, session, elapsedMs }`.
+
+Build a set of every skill that has ever been invoked. Compare against the inventory from Phase 1. **Flag the difference as "never invoked".**
+
+Caveats:
+- The counter only captures invocations since it was wired (Phase B of the roadmap integration plan, 2026-05-02). Older skills may legitimately predate the counter.
+- Skills invoked exclusively by agents (not the user) won't show up — only direct slash-command invocations are counted.
+- "Never invoked" is a signal for review, not an automatic delete. Cross-reference with Phase 2 (dead refs) and Phase 2b (orphan refs) before proposing removal.
+
+If the file doesn't exist or is empty, skip this phase — the counter just hasn't accumulated data yet.
+
 ## Phase 3: Classify Actions
 
 For each issue found, classify:

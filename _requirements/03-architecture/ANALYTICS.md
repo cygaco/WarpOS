@@ -1,49 +1,26 @@
-# Analytics
+# Analytics and Product Event Taxonomy
 
-> WarpOS framework template. Generic event taxonomy. Each project picks
-> a provider (PostHog / Segment / Mixpanel / etc.) and maps these names
-> to its own event schema.
+WarpOS-generated apps use a small, stable event vocabulary. Events describe user or system outcomes, not implementation details.
 
-The framework reserves a small set of event names so consumers,
-A/B test runners, and dashboards have a stable contract.
+## Standard Events
 
-## Reserved events
+| Event | Required properties | Notes |
+|---|---|---|
+| `user_signed_up` | `user_id`, `method`, `created_at` | Do not include email unless explicitly approved. |
+| `workspace_created` | `workspace_id`, `user_id`, `plan` | One event per workspace. |
+| `invite_sent` | `workspace_id`, `inviter_id`, `invite_role` | Do not log invitee email in public telemetry. |
+| `checkout_started` | `user_id`, `plan`, `price_id` | Pair with server-side payment logs. |
+| `feature_completed` | `user_id`, `feature_id`, `duration_ms` | Use canonical feature IDs. |
+| `error_seen` | `surface`, `error_code`, `recoverable` | Message text must be safe to log. |
 
-### `user_signed_up`
+## Event Rules
 
-A new user account was created. Fires once per user, the first time
-they complete signup. Properties: `source`, `referrer`, `plan`.
+- Use snake_case names.
+- Use stable IDs, not display names, for users, workspaces, plans, and features.
+- Never log secrets, raw prompts, uploaded files, resumes, payment details, or OAuth tokens.
+- Every event must have an owner, retention policy, and purpose.
+- Product analytics and framework runtime events stay separate. Framework runtime events use the existing event logger.
 
-### `workspace_created`
+## Review
 
-A new workspace / team / project (whichever the app calls it) was
-created by the user. Properties: `workspace_id`, `seat_count`.
-
-### `invite_sent`
-
-A user invited a teammate. Properties: `workspace_id`, `recipient_role`.
-
-### `checkout_started`
-
-User initiated a paid checkout flow. Properties: `plan`, `interval`,
-`currency`, `amount_cents`.
-
-### `feature_completed`
-
-A user completed a notable, named feature flow (e.g. "first resume
-generated", "onboarding finished"). Properties: `feature`, `duration_ms`.
-
-### `error_seen`
-
-User-visible error rendered. Properties: `category`, `code`,
-`route`. PII scrubbed.
-
-## Conventions
-
-- Event names: snake_case verbs in past tense.
-- Properties: snake_case. No PII unless the property is named
-  `user_id` (which is itself an opaque identifier).
-- Timestamps: server-side, ISO 8601 UTC.
-- Funnels: the framework's funnels are defined in terms of these
-  reserved events; product-specific events live in a separate
-  namespace per the project's own analytics doc.
+New event names require an entry in this document or a feature-specific extension section. Reviewers should flag unregistered product events as design drift.

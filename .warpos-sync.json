@@ -1,13 +1,13 @@
 {
-  "syncedAt": "2026-05-02T02:48:30.214Z",
+  "syncedAt": "2026-05-04T17:17:05.866Z",
   "sourceVersion": "0.1.2",
-  "sourceCommit": "d3f9d75",
+  "sourceCommit": "3718e56",
   "counts": {
-    "copied": 2,
-    "updated": 26,
+    "copied": 97,
+    "updated": 39,
     "deleted": 0,
-    "deletes_skipped": 2,
-    "migrations_copied": 4,
+    "deletes_skipped": 27,
+    "migrations_copied": 0,
     "skipped_ignore": 0,
     "errors": 0
   },

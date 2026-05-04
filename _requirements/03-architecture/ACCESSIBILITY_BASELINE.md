@@ -1,46 +1,20 @@
 # Accessibility Baseline
 
-> WarpOS framework template. Generic. Each project SHOULD audit and
-> extend.
+Generated apps must be usable with a keyboard, readable by assistive technology, and stable across common viewport sizes.
 
-WCAG 2.1 AA is the floor. Every interactive surface must meet the
-following baseline before merging to main.
+## Minimum Checks
 
-## Keyboard navigation
+| Area | Requirement |
+|---|---|
+| Keyboard navigation | Every interactive control is reachable and operable by keyboard. Focus order follows visual order. |
+| Focus states | Focus-visible styles are present, visible against the background, and not hidden by custom outlines. |
+| Semantic labels | Buttons, inputs, menus, tabs, dialogs, and icon-only controls have accessible names. |
+| Contrast | Text, focus rings, form borders, disabled states, and status colors meet WCAG AA contrast. |
+| Form errors | Errors are associated with fields and announced through accessible descriptions or live regions. |
+| Screen-reader state | Loading, success, failure, modal open/close, route changes, and async result changes are announced when they are not visually obvious. |
+| Motion | Animated or moving UI respects reduced-motion preferences. |
+| Layout | Text does not overlap, clip, or become unreadable at mobile and desktop widths. |
 
-Every action reachable by keyboard. Tab order matches visual order.
-No keyboard traps. Skip-to-content link on every page.
+## Review Hook
 
-## Focus states
-
-Visible focus ring on every interactive element. Custom focus styles
-must meet 3:1 contrast against the surrounding background.
-
-## Semantic labels
-
-Every input has an associated label. Icon-only buttons have
-`aria-label`. Landmarks (`main`, `nav`, `aside`) used correctly.
-Headings form a coherent outline (no skipped levels).
-
-## Contrast
-
-Body text meets 4.5:1 against its background. Large text and UI
-controls meet 3:1. Tested in light AND dark theme.
-
-## Form errors
-
-Errors announced to assistive tech via `aria-live` or `aria-invalid`.
-Error message linked via `aria-describedby`. Inline message in addition
-to color-only signaling.
-
-## Screen-reader state
-
-Loading, success, and error states announced via live region. Modal
-dialogs trap focus and restore on close. Route changes announce the
-new page title.
-
-## Verification
-
-Automated: `axe-core` runs in CI on every PR. Manual: keyboard-only
-walkthrough each release. Real screen-reader pass (NVDA / VoiceOver)
-each minor version.
+UI reviewers and visual-review agents must fail critical or high findings when these checks are violated. Generated apps may defer a check only with an ADR and a dated remediation plan.

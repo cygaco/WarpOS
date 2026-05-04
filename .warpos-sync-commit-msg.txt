@@ -2,10 +2,10 @@ sync(from-jobzooka): warpos@0.1.2
 
 Promotion via scripts/warpos/promote.js --apply.
 
-- 2 files added
-- 26 files updated
-- 4 migrations copied
-- 0 files deleted (2 delete(s) skipped — re-run with --confirm-deletes to apply)
+- 97 files added
+- 39 files updated
+- 0 migrations copied
+- 0 files deleted (27 delete(s) skipped — re-run with --confirm-deletes to apply)
 - 0 files skipped (generated/runtime/project-specific)
 
 See .warpos-sync.json for the full sync record.

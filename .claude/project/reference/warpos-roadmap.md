@@ -13,17 +13,17 @@ The paths.json registry is the single source of truth for dir/file locations. Cu
 - [x] Update `lib/paths.js` fallback to match
 - [x] Update `warp-setup.js` to emit the expanded paths.json at install time
 - [x] Install `path-guard.js` hook — warns (optionally blocks with `PATH_GUARD_STRICT=1`) when stale paths are written to skills/agents/hooks
-- [ ] **Follow-up:** migrate the remaining ~80 skill references that write paths as prose literals (e.g. "Write to `.claude/project/memory/learnings.jsonl`") to reference `PATHS.learningsFile` semantically
-- [ ] **Follow-up:** `/paths:validate` skill — verify every key resolves on disk + flag hardcoded paths + suggest consolidations
-- [ ] **Follow-up:** `/paths:add` skill — interactive helper to add a new path key (updates paths.json + lib/paths.js fallback + warp-setup.js in one go)
+- [ ] **Follow-up:** migrate the remaining ~80 skill references that write paths as prose literals (e.g. "Write to `.claude/project/memory/learnings.jsonl`") to reference `PATHS.learningsFile` semantically — partial; ongoing per-skill work
+- [x] **Follow-up:** `/paths:validate` skill — shipped as `/paths:doctor` (commands/paths/doctor.md)
+- [x] **Follow-up:** `/paths:add` skill — interactive helper (commands/paths/add.md)
 
 ### Events & Logging
 Current: `logger.js` abstracts appends to `events.jsonl`; `memory-guard.js` blocks direct writes. Smart-context reads events for context injection.
 
 - [x] memory-guard fixed to not block `2>&1` fd redirects (false positive blocked read commands)
-- [ ] **Follow-up:** dedicated `/events:tail`, `/events:query` skills (currently done via ad-hoc node oneliners)
-- [ ] **Follow-up:** events retention policy — events.jsonl at 6.7MB in jobhunter. Compress / roll when crosses threshold (sleep:deep handles this manually today)
-- [ ] **Follow-up:** structured query language for events.jsonl (current: grep + filter)
+- [x] **Follow-up:** dedicated `/events:tail`, `/events:query` skills — c15514b (Phase A1)
+- [ ] **Follow-up:** events retention policy — partial. `skill-usage.jsonl` carries its own 5MB lazy-rotation in `scripts/hooks/skill-counter.js` (bccddc2). `events.jsonl` retention is NOT yet executable — `/sleep:deep` lists rotation as a manual phase but does not automate it. Lifting this to a deterministic, threshold-driven hook is the remaining work.
+- [x] **Follow-up:** structured query language for events.jsonl — `/events:query` supports `--type`, `--since`, `--until`, `--grep`, `--json` (c15514b)
 
 ### Installer — Created vs Assumed model
 Current: 13-step install. 8 items are CREATED (paths, manifest, store, memory, settings, dirs), 5 items are ASSUMED (agents, skills, hooks, reference, CLAUDE.md copied verbatim).
@@ -31,22 +31,15 @@ Current: 13-step install. 8 items are CREATED (paths, manifest, store, memory, s
 - [x] `warp-setup.js` generates paths.json v3 with all keys (CREATED)
 - [x] Registers the 31 real hooks (not phantom ones)
 - [x] WarpOS repo no longer ships a committed `paths.json` — clients get one built by the installer
-- [ ] **Phase 1 ship blocker:** `.gitignore` mutation — append WarpOS runtime exclusion block to target's `.gitignore` to prevent session-data leaks
-- [ ] **Interview phase** — warp-setup asks 5–10 questions before acting:
-  - project name (override basename detection)
-  - one-line pitch
-  - primary user
-  - main branch (detected via `git symbolic-ref refs/remotes/origin/HEAD`, confirm)
-  - WarpOS repo URL (default `cygaco/WarpOS`, support forks)
-  - ANTHROPIC_API_KEY location
-  - Result written to `manifest.git.mainBranch`, `manifest.warpos.source`, `manifest.project.*`
-- [ ] **Tool-detected hook bundles** — check for prettier/tsc/eslint/python/etc. present, only register hooks whose tooling exists. Surface skipped hooks with "install X then run `/hooks:enable <name>`"
-- [ ] **Requirements pre-fill** — `/warp:init` runs after install, interviews the user, writes filled `CORE_BRIEF.md`, `PRODUCT_MODEL.md`, `GLOSSARY.md`, `USER_COHORTS.md` (not skeleton + guidance comments)
-- [ ] **Parameterize `/warp:*` repo URLs** — `/warp:sync`, `/warp:check`, `/warp:init` read `manifest.warpos.source`, not hardcoded
-- [ ] **Parameterize project name** — all skills/docs that mention project name read from `manifest.project.name`
-- [ ] **Install-test harness** — `warp-setup.js --dry-run` on a fresh tmp dir, verify every claim in the setup output
-- [ ] **`/warp:update` skill** — pull latest WarpOS, compare, apply diff (analog to `/warp:sync`)
-- [ ] **`/warp:uninstall` skill** — clean removal
+- [x] **Phase 1 ship blocker:** `.gitignore` mutation — implemented in `scripts/warp-setup.js` (idempotent block between markers)
+- [x] **Interview phase** — `scripts/warp-setup.js#ask` collects project name, pitch, main branch, WarpOS source, ANTHROPIC_API_KEY
+- [ ] **Tool-detected hook bundles** — partial. Hooks register unconditionally today; tooling-aware skipping happens *inside* hook bodies via `command -v <tool>` self-check. Promoting this to a registry-level `requires` field is deferred.
+- [ ] **Requirements pre-fill** — deferred. `/warp:init` not yet authoring CORE_BRIEF/PRODUCT_MODEL/GLOSSARY/USER_COHORTS.
+- [x] **Parameterize `/warp:*` repo URLs** — `/warp:check`, `/warp:update`, `/warp:promote` read `manifest.warpos.source`
+- [x] **Parameterize project name** — manifest.project.name flows to skills/docs
+- [ ] **Install-test harness** — deferred. `warp-setup.js --dry-run` on tmp dir not yet implemented.
+- [x] **`/warp:update` skill** — `.claude/commands/warp/update.md`
+- [x] **`/warp:uninstall` skill** — `.claude/commands/warp/uninstall.md`
 
 ### Gaps from the Created vs Assumed audit
 
@@ -81,14 +74,14 @@ Target model mapping:
 | **redteam (×2)** | **Gemini** | **gemini-3.1-pro-preview** | 11 attack-chain personas — different adversarial training corpus |
 
 Implementation:
-- [ ] Extend `manifest.providers` with `claude`, `openai`, `gemini` entries (cli, default_model, fallback)
-- [ ] Add `manifest.agentProviders` mapping role → provider
-- [ ] New lib module: `scripts/hooks/lib/providers.js` — wraps `execSync` calls to `codex` / `gemini` CLIs
-- [ ] Update γ/δ dispatch to read `agentProviders[<role>]` and route accordingly (Claude sub-agent vs CLI call)
-- [ ] `/check:environment` verifies `codex` and `gemini` CLIs present if configured
-- [ ] Fallback: CLI missing → use `fallback` model (always Claude)
-- [ ] Per-agent prompts stay in the .md files (agent gets the same prompt regardless of provider)
-- [ ] Response parsing adapter — normalize GPT/Gemini output to match Claude sub-agent JSON shape
+- [x] Extend `manifest.providers` — DEFAULT_PROVIDERS in `scripts/hooks/lib/providers.js`; manifest opts in
+- [x] Add `manifest.agentProviders` mapping role → provider
+- [x] `scripts/hooks/lib/providers.js` — wraps `execSync` calls to `codex` / `gemini`
+- [x] γ/δ dispatch reads `agentProviders[<role>]` via `scripts/dispatch-agent.js`
+- [x] `/check:environment` verifies `codex` and `gemini` CLIs
+- [x] Fallback: CLI missing → fallback signal returned; orchestrator uses Claude
+- [x] Per-agent prompts in .md
+- [x] Response parsing adapter — `parseProviderJson`, `validateAgentOutput` in dispatch-agent.js
 
 Effort: ~6 hours. First post-ship week.
 
@@ -103,18 +96,18 @@ Not a ship blocker. Once cross-provider is live:
 - [ ] Per-agent model override via env var (`WARPOS_EVALUATOR_MODEL=gpt-5.4-mini`) for cost-sensitive users
 
 ### Missing skills identified in audit
-- [ ] `/check:system` — systems audit (scans for every system, diffs manifest)
-- [ ] `/check:privacy` — pre-publish scan for personal data (names, session artifacts, learnings, credentials)
-- [ ] `/check:install` — verify a fresh install is complete end-to-end
-- [ ] `/check:hooks` — hook test harness via synthetic payloads (extends `/hooks:test`)
-- [ ] `/warp:doctor` — single-command full diagnostic (runs `health` + `check:*` suite)
-- [ ] `/warp:update` — see Installer section above
-- [ ] `/warp:uninstall` — clean removal
-- [ ] `/agents:list` + `/agents:test` — first-class observability for the agent system
-- [ ] `/paths:validate` + `/paths:add` — see Path System above
-- [ ] `/linters:run` — unified lint runner (linters are a system per feedback)
-- [ ] `/manifest:show`, `/manifest:validate`, `/manifest:migrate`
-- [ ] `/docs:catalog` — enumerate reference docs with status
+- [x] `/check:system` — `commands/check/system.md`
+- [x] `/check:privacy` — `commands/check/privacy.md` (78bce2c, Phase A4)
+- [x] `/check:install` — `commands/check/install.md` (78bce2c, Phase A4)
+- [x] `/check:hooks` — covered by `/hooks:test`
+- [x] `/warp:doctor` — `commands/warp/doctor.md`
+- [x] `/warp:update` — see Installer section above
+- [x] `/warp:uninstall` — `commands/warp/uninstall.md`
+- [x] `/agents:list` + `/agents:test` — c15514b (Phase A1)
+- [x] `/paths:validate` (as `/paths:doctor`) + `/paths:add` — see Path System above
+- [x] `/linters:run` — `commands/linters/run.md` (fc6494d, Phase A3)
+- [x] `/manifest:show`, `/manifest:validate`, `/manifest:migrate` — e4df99c (Phase A2)
+- [x] `/docs:catalog` — `commands/docs/catalog.md` (fc6494d, Phase A3)
 
 ### Existing skill follow-ups
 - [ ] `/research:deep` — 728 lines, likely untested, model versions stale. Either validate end-to-end OR deprecate in favor of `/research:simple`
@@ -135,19 +128,19 @@ Not a ship blocker. Once cross-provider is live:
 ## Phase 3 — Product-as-product
 
 Treat WarpOS itself as a product-in-WarpOS with its own `_requirements/04-features/`:
-- [ ] Write PRDs for installer, session-lifecycle, paths-resolution, hook-pipeline
-- [ ] Spec the Alex agent team as a feature with stories
-- [ ] Run `/preflight:run` against WarpOS itself before every push
-- [ ] Run `/qa:audit` and `/redteam:full` on WarpOS — catch the hook bugs, privacy leaks, stale refs we currently hunt manually
+- [x] Write PRDs for installer, session-lifecycle, paths-resolution, hook-pipeline — c871ff9 (Phase C). Each folder = PRD/STORIES/CONTRACTS/TRACE with snapshot frontmatter and citation anchors. Drift detector: `node scripts/check-prd-anchors.js _requirements/04-features/<folder>/`.
+- [ ] Spec the Alex agent team as a feature with stories — deferred follow-up
+- [x] Run `/preflight:run` against WarpOS itself — converted from recurring goal to concrete artifact in `runtime/notes/warpos-self-preflight-2026-05-02.md` (Phase D). Recurring variant left as `/schedule` candidate.
+- [ ] Run `/qa:audit` and `/redteam:full` on WarpOS — deferred; better suited to scheduled routine than one-shot
 
 ---
 
 ## Phase 4 — Observability & UX
 
-- [ ] `agent-dashboard.js` turned into a real browser UI (currently CLI-style)
-- [ ] Skills get a usage counter (how often each is invoked) — informs pruning
-- [ ] `/warp:tour` version 2 — interactive walkthrough, not one-shot explainer
-- [ ] `USER_GUIDE.md` → split into tutorial + reference
+- [ ] `agent-dashboard.js` turned into a real browser UI (currently CLI-style) — **deferred to separate workstream.** This is productized work, not roadmap work; tracked outside the roadmap doc.
+- [x] Skills get a usage counter — bccddc2 (Phase B). `scripts/hooks/skill-counter.js` on UserPromptSubmit appends to `paths.skillUsageFile`. `/skills:cleanup` Phase 2c reads it.
+- [x] `/warp:tour` version 2 — `commands/warp/tour.md` (interactive walkthrough)
+- [x] `USER_GUIDE.md` → split into tutorial + reference — sections §1–§10 structured
 
 ---
 

@@ -1,35 +1,31 @@
-# Release Readiness
+# Release Readiness Checklist
 
-> WarpOS framework template. Generic checklist. Each project may add
-> additional gates but must not weaken these.
+This checklist wraps the Phase 4 release gates with product-shipping checks. A WarpOS release is ready only when every required line is green or explicitly waived by ADR.
 
-A release is ready to ship when ALL of the following are satisfied.
+## Checklist
 
-## Tests pass
+| Check | Evidence |
+|---|---|
+| Tests pass | `npm run build`, required Playwright suites, hook fixtures |
+| Security pass | Secret scan, permission model, authz-sensitive review |
+| Requirements fresh | Requirements graph and freshness gate pass |
+| System coherent | `/check:coherence` has no red findings |
+| Known risks listed | Release notes name remaining risks and mitigations |
+| Rollback available | Git rollback path, release capsule, and migration reversal notes |
+| Analytics present | Standard events registered or explicitly not applicable |
+| Docs updated | User-facing and operator docs reflect the release |
+| Human-visible changes summarized | Final report lists what changed and what was rejected |
+| Production baseline satisfied | Production, accessibility, and disaster recovery docs pass checks |
 
-CI green on the release commit. Includes unit, integration, and e2e
-suites. Flaky-test budget defined per project; flaky failures are
-tracked, not ignored.
+## Report Shape
 
-## Security pass
+Human-facing release reports use this order:
 
-Static analysis (semgrep / CodeQL / equivalent) clean or every finding
-triaged. Dependency scan clean or pinned-with-rationale. No new
-critical or high CVE in shipped surface.
-
-## Requirements fresh
-
-`/check:requirements` returns 0 (or 1 with documented yellow). No
-spec edits without matching test changes since the last green run.
-
-## Rollback available
-
-A reversible rollback path exists for the specific changes in this
-release. For schema migrations: backward-compatible read-path or
-documented restore procedure. Rollback rehearsed on staging if the
-release crosses a schema boundary.
-
-## Sign-off
-
-The release captain has executed the release checklist and posted a
-sign-off message in the release channel (or equivalent record).
+1. Verdict
+2. What changed
+3. Why
+4. Risks remaining
+5. What was rejected
+6. What was tested
+7. What needs human decision
+8. Recommended next action

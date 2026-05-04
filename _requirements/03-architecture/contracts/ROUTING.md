@@ -1,71 +1,62 @@
-<!-- WarpOS framework template. Generic Routing contract — public URL +
-auth boundary shape. -->
-
+<!-- generated 2026-04-30 by Phase 3G — keep `id` and section names stable, edit content freely -->
 # Contract: ROUTING
 
 - **id:** ROUTING
-- **version:** 1.0.0
-- **changeType:** none
-- **owner:** framework
-- **used by:** auth, analytics, monitoring
+- **owner:** backend
+- **introducedIn:** 2026-04-30
+- **status:** active
+- **version:** 2.0.0
+- **changeType:** major
+- **used by:** auth, backend, frontend, extension
+
+> **2.0.0 (breaking, 2026-05-04):** shape rewritten from generic `Route` TS interface to product-specific Vercel / Next.js rewrite config — reflects actual Jobzooka routing surface promoted into canonical at v0.2.0. Consumers that depended on the framework-template `Route` interface must adopt the rewrite-config shape.
 
 ## 1. Shape
 
-```ts
-interface Route {
-  path: string;            // e.g. "/dashboard"
-  method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
-  authRequired: boolean;
-  rateLimit?: {            // see PRODUCTION_BASELINE.md#rate-limiting
-    windowSec: number;
-    maxRequests: number;
-  };
-  category: "page" | "api" | "asset" | "webhook";
+```json
+// Vercel / Next.js rewrite configuration shape
+{
+  "source": "/api/:path*",
+  "destination": "https://api.jobzooka.fly.dev/api/:path*",
+  "headers": [
+    { "key": "X-Forwarded-Host", "value": "jobzooka.com" }
+  ]
 }
 ```
 
-## 2. Invariants
+## 2. Producers
 
-- `path` is unique per `(method, category)` pair.
-- `authRequired: false` routes are explicitly enumerated; new routes
-  default to `authRequired: true`.
-- `webhook` routes verify the signature header before any business
-  logic runs.
+- `next.config.ts` (Next.js rewrites config)
+- `vercel.json` (Vercel routing fallback)
+- `fly.toml` (Fly.io ingress setup)
 
-## 3. Lifecycle
+## 3. Consumers
 
-- Defined at framework boot time (Next.js / Express / equivalent
-  router config).
-- Read by middleware on every request to enforce auth, rate limit,
-  and observability tagging.
-- Removed only via the deprecation cycle in `DEPRECATION_POLICY.md`.
+- `src/lib/api.ts` (frontend fetch client utilizing relative `/api` paths)
+- `extension/background.js` (browser extension API calls)
 
 ## 4. Breaking changes
 
-Removing a route, changing its method, or flipping `authRequired:
-false → true` without notice are breaking. Adding routes and
-tightening rate limits are non-breaking with a soak window.
+- Removing the rewrite that bridges Next.js App Router and the Fly.io backend
+- Dropping CORS configuration on Fly.io that expects `X-Forwarded-Host`
+- Changing the destination domain before the final production cutover is complete
+- Stripping query parameters or trailing slashes during the rewrite phase
 
-## 5. Consumers
+## 5. Required tests
 
-- `auth` — reads `authRequired`.
-- `analytics` — reads `path`, `category`.
-- `monitoring` — reads `path`, `method` for golden-signal labels.
+- Network-level E2E routing verification: frontend → proxy → backend
+- Proper forwarding of apex `__Host-` cookies across the proxy boundary
+- HTTP status code passthrough (proxy doesn't swallow 4xx / 5xx)
 
-## 6. Examples
+## 6. Drift gate
 
-```json
-{
-  "path": "/api/sessions",
-  "method": "POST",
-  "authRequired": false,
-  "rateLimit": { "windowSec": 60, "maxRequests": 5 },
-  "category": "api"
-}
-```
+- `next.config.ts`
+- `vercel.json`
+- `fly.toml`
 
 ## 7. Versioning and compatibility
 
-Semver. Removing or renaming routes requires the deprecation cycle
-in `DEPRECATION_POLICY.md`. Consumers in §5 are notified on every
-minor or major bump.
+- Patch: label or documentation change only.
+- Minor: additive route with safe default navigation.
+- Major: rewrite, destination domain, CORS, cookie forwarding, or extension API route semantics change.
+- On any version bump, notify: auth, backend, frontend, extension.

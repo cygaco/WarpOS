@@ -74,7 +74,7 @@ function isCanonicalLayout(p) {
   return (
     fs.existsSync(path.join(p, "version.json")) &&
     fs.existsSync(path.join(p, ".claude")) &&
-    fs.existsSync(path.join(p, "warpos"))
+    fs.existsSync(path.join(p, "framework"))
   );
 }
 

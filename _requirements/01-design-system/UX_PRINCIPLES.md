@@ -1,4 +1,4 @@
-# [Project Name] — UX Principles & Emotional Design
+# Jobzooka — UX Principles & Emotional Design
 
 ---
 
@@ -8,18 +8,17 @@
 
 The user must always know:
 
-- What step they're on (progress indicators, phase markers)
-- What's happening right now (loading states, processing feedback)
-- What they've accomplished (score, completed phases, outputs generated)
-- What comes next (step labels, CTA buttons, upcoming actions)
+- What step they're on (PhaseBar, SidePanel, progress pill)
+- What's happening right now (loading states, progress indicators)
+- What they've accomplished (competitiveness score, completed phases)
+- What comes next (step labels, CTA buttons)
 
-**Implementation:**
-<!-- GUIDANCE: List the components that provide system status:
-- Progress bar / phase indicator
-- Loading states with descriptive text
-- Score/progress meter
-- Step completion indicators
--->
+**Current implementation:**
+
+- PhaseBar with READY/AIM/FIRE pills + step indicators
+- ProgressSteps component during multi-phase operations
+- Competitiveness meter showing cumulative progress
+- Loading text with ellipsis during API calls
 
 ### 2. User Control & Freedom
 
@@ -29,15 +28,15 @@ The user must be able to:
 - Edit any data they've entered
 - Cancel any in-progress operation
 - Export or delete all their data
-- Skip optional features
+- Skip optional features (Deep-Dive QA has a skip path)
 
-**Implementation:**
-<!-- GUIDANCE: List the mechanisms for user control:
-- Navigation (back buttons, sidebar, keyboard shortcuts)
-- Data editing (inline edit, re-run)
-- Cancel/abort (AbortController on API calls)
-- Privacy controls (export, import, delete)
--->
+**Current implementation:**
+
+- Backward navigation via SidePanel/PhaseBar
+- Invalidation system clears stale data when edits are made
+- AbortController on long API calls
+- PrivacyModal for export/import/delete
+- Keyboard navigation (Backspace = back, "?" = hub)
 
 ### 3. Consistency & Standards
 
@@ -45,145 +44,157 @@ The UI should be predictable:
 
 - Same action = same appearance everywhere
 - Color meanings are stable (green = done, orange = action, red = error)
-- Button patterns are consistent (one component with variants)
+- Button patterns are consistent (Btn component with variants)
 - Feedback patterns are consistent (toasts for confirmations, inline for errors)
 
-**Known gaps:**
-<!-- GUIDANCE: Document inconsistencies for cleanup:
-- Button inconsistency (raw HTML vs component in places)
-- Spacing inconsistency (different padding values)
-- Icon alignment inconsistency
--->
+**Current gaps (flagged for regen):**
+
+- Button inconsistency (raw `<button>` vs Btn component in several places)
+- Card padding inconsistency (`p-4` vs `p-5`)
+- Icon alignment inconsistency (flex gap vs margin)
 
 ### 4. Error Prevention
 
 The system should prevent errors before they happen:
 
 - Validation before submission (input fields, file types)
-- Confirmation dialogs for destructive actions
-- Disabled states on invalid actions (can't proceed until data is valid)
-- Smart defaults that reduce user input
-- Guardrails on navigation (data gates prevent skipping required steps)
+- Confirmation dialogs before destructive actions (invalidation)
+- Disabled states for actions that can't be taken yet
+- Rate limiting feedback before hitting limits
 
 ### 5. Recognition Over Recall
 
-- Labels on every action (no icon-only buttons without tooltips)
-- Prefilled fields from previously entered data
-- Context-sensitive help (inline hints, not separate help pages)
-- Persistent navigation showing where the user is
+The user shouldn't have to remember information:
+
+- Step labels describe what each step does
+- Market analysis surfaces keywords and categories (user selects, doesn't generate)
+- Form answers are pre-filled from earlier data
+- Profile is AI-generated from resume (user verifies, doesn't write from scratch)
 
 ### 6. Flexibility & Efficiency
 
-- Keyboard navigation for power users
-- Skip-ahead paths for returning users with saved data
-- Bulk operations where applicable
-- Progressive disclosure (simple first, details on demand)
+Power users should be able to move faster:
+
+- Keyboard shortcuts (Backspace, "?")
+- Direct step navigation via SidePanel
+- Bulk operations (Download All resumes, Select All categories)
+- Dirty tracking skips invalidation when nothing changed
 
 ### 7. Aesthetic & Minimalist Design
 
-- Every element earns its place — remove anything that doesn't serve the current step
-- Content hierarchy: one primary action per screen
-- Whitespace is a feature, not waste
-- Animations serve purpose (progress, attention, delight) — never decoration
+Every element should earn its place:
+
+- Dark theme reduces visual noise
+- Muted text for secondary information
+- Progressive disclosure (expandable sections, tabs)
+- No decorative elements that don't serve a function
 
 ---
 
-## Emotional Design
+## Emotional Design Framework
 
-### Feedback Moments
+What the user should FEEL at each phase of the wizard.
 
-<!-- GUIDANCE: Map key moments where the product should produce an emotional response:
+### Onboarding (Steps 1–3): Confidence
 
-| Moment | Emotion | Mechanism |
-|--------|---------|-----------|
-| First output generated | Accomplishment | Celebration animation + score jump |
-| Phase completed | Progress | Phase transition with visual flourish |
-| Error recovered | Relief | "Back on track" confirmation |
-| Final output ready | Empowerment | Summary of everything created |
--->
+**Target emotion:** "This is going to work."
 
-### Loading State Psychology
+- Resume parsing should feel like magic (fast, accurate extraction)
+- Profile generation should validate the user's experience ("It understood my career")
+- Preferences should feel comprehensive but not overwhelming
+- Celebration at onboarding completion reinforces commitment
 
-<!-- GUIDANCE: Loading states are emotional design opportunities:
+**Design signals:**
 
-| Duration | User Experience | Design Response |
-|----------|----------------|-----------------|
-| < 1 second | Instant | No indicator needed |
-| 1-3 seconds | Brief wait | Skeleton screen or spinner |
-| 3-10 seconds | Noticeable wait | Progress text: "Analyzing..." |
-| 10-30 seconds | Long wait | Phased progress: "Step 1 of 3..." |
-| 30+ seconds | Anxiety | Time estimate + what's happening + cancel option |
--->
+- Quick progress through sub-steps
+- AI badge on generated content (shows intelligence, not templates)
+- Celebration overlay with confetti after step 3
 
-### Celebration Design
+### READY Phase (Steps 4–5): Curiosity
 
-<!-- GUIDANCE: When and how to celebrate user achievements:
+**Target emotion:** "Show me what's out there."
 
-Rules:
-1. Celebrate meaningful milestones, not trivial actions
-2. Celebrations should be brief (< 2 seconds)
-3. User can dismiss immediately
-4. Never celebrate if the outcome was an error
-5. Scale intensity to significance (small success = subtle, major milestone = confetti)
--->
+- Search queries should feel targeted (not generic)
+- Market analysis should reveal insights the user didn't know
+- Categories should feel like real opportunities, not abstract groupings
+- Compensation data should give context ("Am I being paid fairly?")
+
+**Design signals:**
+
+- Real job count from real scraping (not synthetic)
+- Category descriptions explain WHY each is relevant to the user
+- Discovery recommendations spark "I hadn't thought of that"
+- Competitiveness score gives a baseline ("Here's where I stand")
+
+### AIM Phase (Steps 6–9): Control
+
+**Target emotion:** "I'm in the driver's seat."
+
+- Deep-Dive QA lets the user add context the resume missed
+- Skills curation gives direct control over keyword inclusion
+- Resume generation produces tangible, downloadable output
+- LinkedIn content is ready to use immediately
+
+**Design signals:**
+
+- Toggle controls for every skill (include/exclude)
+- Category selection (toggle on/off) at Step 5 lock
+- DOCX download = real, usable artifact
+- Competitiveness score climbing with each completed step
+- Score celebrations reinforce progress
+
+### FIRE Phase (Step 10): Momentum
+
+**Target emotion:** "Let's go. I'm ready."
+
+- Everything is assembled: resumes, LinkedIn, form answers, heuristics
+- Auto-apply path is clear and straightforward
+- Manual guide provides fallback if extension isn't used
+- The system has done the hard work; user just needs to execute
+
+**Design signals:**
+
+- Chrome prompt is one click to copy
+- Heuristics are concrete (apply-if/skip-if lists)
+- Resume selection is automatic per category
+- Session summary shows everything that was generated
 
 ---
 
-## Responsive Design
+## Information Hierarchy
 
-### Breakpoints
+### Visual Weight (Highest to Lowest)
 
-<!-- GUIDANCE: Define your breakpoints and what changes:
+1. **Primary CTA** — Orange button, most visually prominent
+2. **Headings** — Section orientation
+3. **Active content** — Cards, data displays, form fields
+4. **Secondary actions** — Ghost/outline buttons, text links
+5. **Helper text** — Muted color, smaller font
+6. **System chrome** — PhaseBar, RocketBar, SidePanel (present but not attention-grabbing)
 
-| Breakpoint | Width | Navigation | Layout Changes |
-|------------|-------|-----------|----------------|
-| Mobile | < 768px | Bottom nav or hamburger | Single column, stacked cards |
-| Tablet | 768-1023px | Sidebar collapses | Two columns where appropriate |
-| Desktop | ≥ 1024px | Full sidebar | Multi-column, side panels |
--->
+### Progressive Disclosure Pattern
 
-### Mobile-First Rules
-
-1. Every screen must be usable on mobile
-2. Touch targets: minimum 44x44px
-3. No hover-dependent interactions (always have a tap equivalent)
-4. Text readable without zooming (minimum 16px body text)
+- **Default visible:** Primary content, main CTA, current step
+- **Expand to see:** Details, sub-sections, additional options
+- **Modal/overlay:** Confirmations, settings, purchases, auth
+- **Hidden:** Dev tools (Deus Mechanicus), keyboard shortcuts
 
 ---
 
 ## Accessibility
 
-### Minimum Requirements
+### Current Implementation
 
-- **Keyboard navigation:** Every interactive element reachable via Tab, activatable via Enter/Space
-- **Screen readers:** All images have alt text, all form fields have labels, all buttons have accessible names
-- **Color contrast:** Minimum 4.5:1 for body text, 3:1 for large text (WCAG AA)
-- **Focus management:** Visible focus indicators, logical tab order, focus trapped in modals
-- **Reduced motion:** Respect `prefers-reduced-motion` — disable all animations
+- Focus ring: `2px solid --primary`, `outline-offset: 2px` (global)
+- Keyboard navigation: Backspace (back), "?" (hub toggle)
+- Color contrast: Generally sufficient (white text on dark backgrounds)
+- Screen reader: Basic support (standard HTML elements)
 
-### Focus Order
+### Gaps (Flagged for Regen)
 
-<!-- GUIDANCE: Define the expected tab order for each major screen:
-1. Skip to main content link
-2. Navigation elements
-3. Main content area (top to bottom, left to right)
-4. Primary action (CTA button)
-5. Secondary actions
--->
-
----
-
-## Review Checklist
-
-A screen passes UX review if:
-
-1. [ ] System status is visible (user knows where they are and what's happening)
-2. [ ] User can go back and undo
-3. [ ] Colors and patterns are consistent with the rest of the app
-4. [ ] Errors are prevented where possible, handled gracefully where not
-5. [ ] No icon-only buttons without labels or tooltips
-6. [ ] Works on mobile (touch targets, no hover-dependent interactions)
-7. [ ] Keyboard navigable (Tab through all elements, Enter activates)
-8. [ ] Loading states defined for all async operations
-9. [ ] Empty states defined for all data-dependent views
-10. [ ] Celebrations/feedback match the emotional arc
+- No ARIA labels on custom components
+- No skip-to-content link
+- CompetitivenessMeter (SVG arc) has no text alternative
+- Color alone used for some state indicators (should add icons/text)
+- Tab order not explicitly managed
+- No reduced-motion media query support

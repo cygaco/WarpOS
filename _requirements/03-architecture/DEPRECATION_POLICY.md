@@ -1,53 +1,42 @@
-# Deprecation Policy
+# Deprecation and Removal Policy
 
-> WarpOS framework template. Generic policy. Each project may extend
-> with additional notice periods or domain-specific rules.
+No shipped WarpOS capability may disappear without a deprecation path.
 
-## Lifecycle states
+## Applies To
 
-Every deprecatable surface (API endpoint, public type, slash skill,
-hook, env var, path-registry key) progresses through three states:
+- Agents
+- Skills and slash commands
+- Hooks
+- Path keys
+- Requirements
+- Patterns
+- Generated files
+- Release capsule fields
+- Public scripts
 
-### Deprecated
+## Lifecycle
 
-In-progress removal. Still functional. Emits a one-time warning when
-used (in dev) or is annotated `@deprecated` in code. Documented in
-this section's table.
-
-### Sunset pending
-
-Final notice. Functional for one more minor version. Warnings escalate
-to one-per-call. A removal date is published.
-
-### Removed
-
-Symbol no longer exists. Calls fail with a clear error pointing at the
-replacement.
+| Stage | Requirement |
+|---|---|
+| Active | Normal support. |
+| Deprecated | Replacement named, migration path documented, warnings emitted where practical. |
+| Sunset pending | Removal version and date recorded. Migration script exists if files or schemas move. |
+| Removed | Manifest marks `removedIn`; release notes name the removal and rollback path. |
 
 ## Minimum Deprecation Record
 
-Every deprecation MUST land with a record in the policy log:
+Each deprecation must include:
 
-```text
-- surface:        <e.g. /warp:sync>
-- deprecated in:  <semver>
-- sunset in:      <semver>
-- removed in:     <semver>
-- replacement:    <e.g. /warp:update>
-- rationale:      <one sentence>
-```
+- Stable ID
+- Type
+- Current owner
+- Replacement or reason no replacement exists
+- First deprecated version
+- Earliest removal version
+- Migration script or manual migration instructions
+- User-visible warning text if applicable
+- Rollback path
 
-Without this record, the surface is not considered deprecated; it is
-broken.
+## Command
 
-## Notice period
-
-Minimum 1 minor release between Deprecated and Removed. Major
-deprecations (cross-system rename, schema break) require minimum 2
-minor releases.
-
-## Tooling
-
-`/warp:deprecate` is the canonical tool to file a Minimum Deprecation
-Record. It writes to `_requirements/03-architecture/DEPRECATIONS.md`
-(or equivalent log) and links the surface to its replacement.
+`/warp:deprecate <id>` writes a guarded deprecation proposal. The command is backed by `scripts/warpos/deprecate.js`.

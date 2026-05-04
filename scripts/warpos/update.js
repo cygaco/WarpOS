@@ -70,7 +70,7 @@ function findRepoRootFromCapsule(capsuleDir) {
     if (
       fs.existsSync(path.join(current, "version.json")) &&
       fs.existsSync(path.join(current, ".claude")) &&
-      fs.existsSync(path.join(current, "warpos"))
+      fs.existsSync(path.join(current, "framework"))
     ) {
       return current;
     }

@@ -1,8 +1,8 @@
-# Granular Story Standards
+# Jobzooka — Granular Story Standards
 
 ## Purpose
 
-This document defines the mandatory rules for writing and reviewing **Granular User Stories**.
+This document defines the mandatory rules for writing and reviewing **Granular User Stories** for Jobzooka.
 
 Granular Stories translate approved High-Level intent into **explicit, testable system behavior**. They are written so that design, engineering, and QA teams can implement and validate functionality **without inference, interpretation, or follow-up questions**.
 
@@ -42,24 +42,6 @@ One story = one decision or one behavior.
 
 ---
 
-## Agent Instructions Header
-
-Every STORIES.md file should begin with an Agent Instructions block. This tells builder agents how to interpret and implement the stories:
-
-```markdown
-> **Agent Instructions**
->
-> 1. Each story = one code path you implement as a unit — do not combine stories
-> 2. Check `Depends on:` before starting — if a dependency story isn't built, stop and report
-> 3. The `Data:` field tells you exactly which TypeScript interfaces and fields to read/write
-> 4. Your output will be evaluated against criteria you cannot see — build to the spec, not to assumed tests
-> 5. If a story's acceptance criteria conflict with another story, escalate — do not guess
-```
-
-This block is read by builder agents before they start implementing. It prevents common agent mistakes (combining stories, skipping dependencies, guessing at test criteria).
-
----
-
 ## Required Story Format
 
 Every Granular Story **must** follow this format:
@@ -72,8 +54,8 @@ Each story includes structured metadata lines after the blockquote, before Accep
 
 - **`Depends on:`** — List of GS IDs that must be implemented first. `none` if the story is self-contained. Enables agents to resolve implementation order and identifies which stories can be built in parallel.
 - **`Data:`** — TypeScript interface(s) and field(s) this story reads or writes, with file path. e.g., `SessionData.profile → src/lib/types.ts`. Tells the agent exactly what data shapes to work with.
-- **`Entry state:`** — **Required for stories that implement step/screen components.** Optional for validation-only or utility stories. Describes the session/UI condition under which this behavior applies. Valid values: `Fresh`, `Returning`, `Async-complete`, `Error-recovery`, `Any`.
-- **`Verifiable by:`** — How to programmatically confirm the behavior works. e.g., "session storage contains `user.name`", "error element is visible", "API was called with expected payload". Gives agents enough to write their own tests.
+- **`Entry state:`** — **Required for stories that implement step/screen components.** Optional for validation-only or utility stories. Describes the session/UI condition under which this behavior applies. Valid values: `Fresh`, `Returning`, `Async-complete`, `Error-recovery`, `Any`. Multiple entry states mean multiple conditions must be handled. Reference `_requirements/03-architecture/FLOW_SPEC.md` for the canonical entry state tables. e.g., `"Fresh — first arrival at Step 1, no resume uploaded yet"` or `"Returning — resumeStructured exists, show parsed preview"`. Place after `Data:` and before `Verifiable by:` in the metadata block.
+- **`Verifiable by:`** — How to programmatically confirm the behavior works. e.g., "session storage contains `personal.name`", "error element with class `.upload-error` is visible", "API `/api/claude` was called with action `PARSE`". Gives agents enough to write their own tests.
 
 ### Parallel Clusters
 
@@ -81,7 +63,7 @@ Stories within a feature that share no dependencies can be implemented simultane
 
 ### Shared Behaviors
 
-Cross-cutting behaviors (session persistence, loading states, validation patterns) are defined once in a `STORIES-COMMON.md` file. Feature stories reference shared stories by ID rather than re-specifying the behavior. Format: `Inherits: CS-XXX`.
+Cross-cutting behaviors (session persistence, loading states, validation patterns) are defined once in `_requirements/_standards/STORIES-COMMON.md`. Feature stories reference shared stories by ID rather than re-specifying the behavior. Format: `Inherits: CS-XXX`.
 
 ### Rules
 
@@ -158,9 +140,9 @@ Every Granular Story must include **at least one explicit boundary** defining:
 
 Examples:
 
-- Preventing downstream processing without upstream data
+- Preventing resume generation without market analysis
 - Blocking navigation to a step whose prerequisites are unmet
-- Disallowing output generation while input is incomplete
+- Disallowing targeted resume generation while master is absent
 - Preventing auto-submission without user review
 
 If no prevention or boundary exists, the story is incomplete.
@@ -204,19 +186,19 @@ Granular Stories may reference UI **only at a behavioral level**.
 
 When the behavior works the same regardless of platform, use behavioral language:
 
-| Avoid | Use instead |
-|-------|-------------|
-| click, tap | select, activate, trigger, invoke |
-| button | action, control |
-| dropdown | selector, selection list |
-| modal | dialog |
-| hover | inspect, request details for |
-| tooltip | contextual detail, on-demand detail |
-| checkbox | toggle |
-| popup (generic) | overlay |
-| "in one click" | "with a single action" (or omit) |
+| Avoid           | Use instead                         |
+| --------------- | ----------------------------------- |
+| click, tap      | select, activate, trigger, invoke   |
+| button          | action, control                     |
+| dropdown        | selector, selection list            |
+| modal           | dialog                              |
+| hover           | inspect, request details for        |
+| tooltip         | contextual detail, on-demand detail |
+| checkbox        | toggle                              |
+| popup (generic) | overlay                             |
+| "in one click"  | "with a single action" (or omit)    |
 
-**Exception:** Named platform elements are allowed when the story defines platform-dependent behavior.
+**Exception:** Named platform elements are allowed when the story defines platform-dependent behavior (e.g., "Easy Apply button" on LinkedIn, Chrome extension popup, `chrome.runtime` APIs). See Platform & Implementation References below.
 
 Granular Stories define **what happens**, not how it looks.
 
@@ -230,9 +212,14 @@ Unlike High-Level Stories (which must be platform-neutral), Granular Stories des
 
 ### Rules
 
-- Reference platforms only when the behavior differs by platform
+- Reference platforms only when the behavior differs by platform (e.g., "Extension sends a message to the web app via chrome.runtime")
 - If the behavior is the same regardless of platform, keep it generic
 - Platform details in Granular Stories must not contradict the parent HL story's platform-neutral framing — they refine it
+
+### Example
+
+- HL Story: "As a User, I want to launch automated job applications through an automation agent"
+- Granular Story: "As a User, I want the Chrome extension to navigate to the next Easy Apply listing after submitting an application" — platform-specific behavior that implements the generic outcome
 
 ---
 

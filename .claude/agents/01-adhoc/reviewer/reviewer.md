@@ -48,13 +48,13 @@ Do NOT proceed to the 7-Check Protocol. The orchestrator should re-dispatch from
 5. Design system: `_requirements/01-design-system/COMPONENT_LIBRARY.md` and `_requirements/01-design-system/COLOR_SEMANTICS.md`
 
 ### Holdout Evaluation (CRITICAL)
-You MUST read `_requirements/00-canonical/fixtures/step-expectations.json` BEFORE reviewing any feature that touches a step component. This file contains golden criteria that BUILDERS NEVER SEE — required fields, grounding rules, content constraints, and forbidden patterns.
+You MUST read `_requirements/_shared/canonical-fixtures/step-expectations.json` BEFORE reviewing any feature that touches a step component. This file contains golden criteria that BUILDERS NEVER SEE — required fields, grounding rules, content constraints, and forbidden patterns.
 
 You MUST also check for `_requirements/04-features/{{FEATURE_SLUG}}/fixtures/golden.json`. If it exists, apply its `groundingInvariants` and `goldenPairs` rules in addition to step-expectations. These per-feature fixtures cover high-synthesis-risk features (resume-generation, auto-apply, market-research, deep-dive-qa).
 
 The builder builds from the spec (STORIES.md, PRD.md). You evaluate against BOTH the spec AND the holdout fixtures (step-expectations + per-feature golden if present). If the builder's output satisfies the spec but fails any fixture criterion, that is a HARD FAIL.
 
-Also read `_requirements/00-canonical/fixtures/README.md` for the fixture schema.
+Also read `_requirements/_shared/canonical-fixtures/README.md` for the fixture schema.
 
 ### Fallback Evaluation Order (when no fixture exists)
 

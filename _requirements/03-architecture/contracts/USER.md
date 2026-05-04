@@ -1,68 +1,66 @@
-<!-- WarpOS framework template. Generic User contract. Each project MAY
-extend the shape but MUST keep id+email+createdAt as required fields. -->
-
+<!-- generated 2026-04-30 by Phase 3G — keep `id` and section names stable, edit content freely -->
 # Contract: USER
 
 - **id:** USER
-- **version:** 1.0.0
-- **changeType:** none
-- **owner:** framework
-- **used by:** auth, profile, sessions, billing
+- **owner:** profile
+- **introducedIn:** 2026-04-30
+- **status:** active
+- **version:** 2.0.0
+- **changeType:** major
+- **used by:** rockets-economy, profile, auth, market-research
+
+> **2.0.0 (breaking, 2026-05-04):** shape rewritten to reflect product-specific user contract promoted into canonical at v0.2.0. Consumers that depended on the framework-template UserAccount interface must adopt the new shape.
 
 ## 1. Shape
 
-```ts
-interface User {
-  id: string;            // opaque identifier (UUID v4 by default)
-  email: string;         // RFC 5322; case-insensitive uniqueness
-  createdAt: string;     // ISO 8601 UTC
-  displayName?: string;  // user-supplied; max 80 chars
-  locale?: string;       // BCP 47 (e.g. "en-US")
+```typescript
+interface UserAccount {
+  id: string;               // UUID v4
+  email: string;            // Normalized lowercase email
+  rockets: number;          // Integer, current balance (min 0)
+  tier: "free" | "pro";     // Access tier
+  usage: {
+    applicationsSent: number;
+    searchesRun: number;
+  };
+  createdAt: string;        // ISO-8601 timestamp
+  scope: string[];          // Merged scopes
+  deleted: boolean;         // Soft delete flag
 }
 ```
 
-## 2. Invariants
+## 2. Producers
 
-- `id` is immutable for the lifetime of the user.
-- `email` is unique per workspace; case folded for comparison.
-- `createdAt` ≤ now at all times.
+- `packages/shared/db/schema.ts` (Drizzle / Prisma schema definition)
+- `services/backend/src/models/user.ts` (user creation and state mutations)
 
-## 3. Lifecycle
+## 3. Consumers
 
-- Created by signup or admin invite.
-- Updated by user (display name, locale) or admin (email under privacy
-  rules).
-- Soft-deleted by user request (`deleted_at` set), purged after the
-  retention window in DISASTER_RECOVERY.md.
+- `services/backend/src/routes/rockets.ts` (economy deductions)
+- `src/app/(authenticated)/profile/page.tsx` (user view)
+- `services/backend/src/routes/auth.ts` (identity hydration)
 
 ## 4. Breaking changes
 
-A change is breaking if it removes a required field, changes the type
-of a required field, or tightens an invariant in a way that existing
-data could violate. Loosening invariants and adding optional fields
-are non-breaking.
+- Renaming `rockets` to a different currency label
+- Changing `rockets` type from integer to float / decimal
+- Removing or renaming `usage` counters which heavily break gamification
+- Bypassing the `deleted: true` soft-delete convention to hard-delete rows
 
-## 5. Consumers
+## 5. Required tests
 
-- `auth` — reads `id`, `email`, `createdAt`.
-- `profile` — reads + writes `displayName`, `locale`.
-- `sessions` — reads `id`.
-- `billing` — reads `id`, `email`.
+- DB serialization / deserialization precision for JSONB usage fields
+- Constraints preventing `rockets` balance from dropping below 0
+- Safe serialization preventing password hashes from leaking into this shape
 
-## 6. Examples
+## 6. Drift gate
 
-```json
-{
-  "id": "0193b7d1-2ad6-7a8b-9d3c-1e8f4b9a7c6d",
-  "email": "alex@example.com",
-  "createdAt": "2026-01-01T00:00:00Z",
-  "displayName": "Alex",
-  "locale": "en-US"
-}
-```
+- `packages/shared/db/schema.ts`
+- `packages/shared/types/user.ts`
 
 ## 7. Versioning and compatibility
 
-This contract follows semver. Major bumps require a deprecation cycle
-per `DEPRECATION_POLICY.md` (minimum 1 minor release before removal).
-Consumers listed in §5 are notified on every minor or major bump.
+- Patch: documentation or validation copy only.
+- Minor: backward-compatible optional field with default serialization.
+- Major: identity, email normalization, currency, tier, usage, or deletion semantics change.
+- On any version bump, notify: rockets-economy, profile, auth, market-research.

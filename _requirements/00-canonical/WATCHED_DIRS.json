@@ -1,0 +1,151 @@
+{
+  "version": 1,
+  "description": "Convention-based directory watching. The Overseer and edit-watcher scan these at runtime to detect new/deleted files across all categories. Nothing is hardcoded.",
+
+  "directories": [
+    {
+      "path": "_requirements/04-features/*/",
+      "category": "feature_specs",
+      "convention": "Each subdir is a feature. Expected file types defined in SPEC_GRAPH.file_types.known.",
+      "on_new_dir": {
+        "action": "register_feature",
+        "details": "Add feature ID to GLOSSARY, manifest.json build.phases, and store.json features[<name>].files. Scaffold missing standard files."
+      },
+      "on_new_file": {
+        "action": "register_file_type",
+        "details": "Add to SPEC_GRAPH.file_types.discovered. Propose PRECEDENCE level and graph edges."
+      },
+      "on_delete_dir": {
+        "action": "deregister_feature",
+        "details": "Remove from GLOSSARY, manifest.json build.phases, and store.json features[<name>].files. Check for orphan story references."
+      },
+      "on_delete_file": {
+        "action": "clean_references",
+        "details": "Remove SPEC_GRAPH edges. Clear STALE markers referencing deleted file."
+      }
+    },
+    {
+      "path": ".claude/agents/",
+      "category": "agents",
+      "convention": "Each .md file is an agent definition with YAML frontmatter (name, description, tools, model).",
+      "on_new_file": {
+        "action": "register_agent",
+        "details": "Add to .claude/agents/.system/agent-system.md role list, and store.json features[<name>].files if it owns files."
+      },
+      "on_delete_file": {
+        "action": "deregister_agent",
+        "details": "Remove from dispatch tables, store.json features[*].files ownership records, and manifest.json agent references."
+      }
+    },
+    {
+      "path": ".claude/commands/",
+      "category": "skills",
+      "convention": "Each .md file is a skill. Subdirs contain sub-skills for multi-mode skills (audit/, preflight/).",
+      "on_new_file": {
+        "action": "register_skill",
+        "details": "Verify YAML frontmatter present. Check for references in CLAUDE.md. Add to skill index if missing."
+      },
+      "on_delete_file": {
+        "action": "deregister_skill",
+        "details": "Remove references from CLAUDE.md, other skills, and any scheduled triggers."
+      }
+    },
+    {
+      "path": "scripts/hooks/",
+      "category": "hooks",
+      "convention": "Each .js file is a hook script. Must be wired in .claude/settings.json to be active.",
+      "on_new_file": {
+        "action": "verify_wiring",
+        "details": "Check if script is referenced in settings.json. If not, warn: unwired hook detected."
+      },
+      "on_delete_file": {
+        "action": "clean_wiring",
+        "details": "Remove from settings.json hooks array. Check for other hooks that depend on it."
+      }
+    },
+    {
+      "path": "scripts/",
+      "category": "linters",
+      "convention": "Files matching lint-*.js are linters. Must be in package.json lint:docs script.",
+      "file_pattern": "lint-*.js",
+      "on_new_file": {
+        "action": "register_linter",
+        "details": "Add to package.json lint:docs script chain. Verify it exports a runnable check."
+      },
+      "on_delete_file": {
+        "action": "deregister_linter",
+        "details": "Remove from package.json lint:docs. Check if other scripts depend on it."
+      }
+    },
+    {
+      "path": "_requirements/03-architecture/",
+      "category": "architecture",
+      "convention": "Each .md file is an architecture specification. May define cross-cutting contracts.",
+      "on_new_file": {
+        "action": "register_architecture_doc",
+        "details": "Add to SPEC_GRAPH explicit edges if it references features or types. Add to AGENT_GUIDE read list."
+      },
+      "on_delete_file": {
+        "action": "clean_graph_edges",
+        "details": "Remove from SPEC_GRAPH. Check for references in CLAUDE.md, AGENT_GUIDE, builder prompts."
+      }
+    },
+    {
+      "path": "_requirements/09-integrations/",
+      "category": "integrations",
+      "convention": "Each subdir is a third-party integration. knowledge/ contains reference docs.",
+      "on_new_dir": {
+        "action": "register_integration",
+        "details": "Add to THIRD_PARTY.md. Create SPEC_GRAPH edges to features that use it."
+      },
+      "on_delete_dir": {
+        "action": "deregister_integration",
+        "details": "Remove from THIRD_PARTY.md. Clean up SPEC_GRAPH edges."
+      }
+    },
+    {
+      "path": ".claude/agents/.system/oneshot/retros/",
+      "category": "retro",
+      "convention": "Each numbered subdir (01/, 02/, etc.) is a run retrospective.",
+      "on_new_dir": {
+        "action": "verify_retro_structure",
+        "details": "Verify BUGS.md, HYGIENE.md, LEARNINGS.md, RETRO.md exist. Scaffold missing files."
+      }
+    },
+    {
+      "path": "_requirements/00-canonical/",
+      "category": "canonical",
+      "convention": "System-level canonical documents. Highest authority for product definitions.",
+      "on_new_file": {
+        "action": "register_canonical",
+        "details": "High authority — add to SPEC_GRAPH as a root node. Update CLAUDE.md Key Files if significant."
+      },
+      "on_delete_file": {
+        "action": "warn_canonical_deletion",
+        "details": "Canonical deletions are high-impact. Require explicit confirmation even in dark mode."
+      }
+    },
+    {
+      "path": "_requirements/_standards/",
+      "category": "standards",
+      "convention": "Templates and rules for spec writing. Changes cascade to all feature specs.",
+      "on_new_file": {
+        "action": "register_standard",
+        "details": "Add as SPEC_GRAPH template edge to relevant feature file types."
+      },
+      "on_delete_file": {
+        "action": "clean_template_references",
+        "details": "Remove template edges from SPEC_GRAPH."
+      }
+    },
+    {
+      "path": "extension/",
+      "category": "extension",
+      "convention": "Chrome extension files. Manifest V3.",
+      "on_new_file": {
+        "action": "register_extension_file",
+        "details": "Verify referenced in manifest.json. Update EXTENSION_SPEC.md if structural."
+      }
+    }
+  ]
+}

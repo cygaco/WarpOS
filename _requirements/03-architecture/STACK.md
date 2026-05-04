@@ -1,124 +1,212 @@
-# [Project Name] — Stack & Deployment
+# Jobzooka — Stack & Deployment
 
-> **Note:** Core stack and env vars may also be documented in `CLAUDE.md`. This file adds detail not covered there. If they conflict, CLAUDE.md wins.
+> **v3 (2026-04-23)** — Aligned with `_requirements/04-features/backend/PRD.md` v3. The v1 stack was Vercel-only with a hard 60s function-timeout constraint; v3 splits into **Vercel frontend + Fly backend (API + worker) + Fly Postgres** behind Cloudflare, which removes the 60s cap entirely.
 
 ---
 
 ## Core Stack
 
-<!-- GUIDANCE: Document every technology choice. Include version and WHY it was chosen.
+### Frontend (Vercel)
 
-| Layer | Technology | Version | Notes |
-|-------|-----------|---------|-------|
-| Framework | [e.g., Next.js] | [version] | [App Router, key features used] |
-| UI Library | [e.g., React] | [version] | [Server/client components] |
-| Language | [e.g., TypeScript] | [Strict mode] | [All source files] |
-| Hosting | [e.g., Vercel] | [Plan] | [Timeout limits, deployment model] |
-| AI | [e.g., Claude API] | [Model] | [Via server-side route] |
-| Data Source | [e.g., External API] | [Version] | [What data, dataset IDs] |
-| Rate Limiting | [e.g., Upstash Redis] | [Library] | [Strategy: sliding window, per-IP] |
-| Encryption | [e.g., Web Crypto API] | [Algorithm] | [What's encrypted, where] |
-| Styling | [e.g., Tailwind / CSS vars] | — | [Approach: tokens, inline, utility classes] |
-| Auth | [e.g., JWT + OAuth] | [Library] | [Providers, session strategy] |
-| Payments | [e.g., Stripe] | [Library] | [What's paid, webhook handling] |
--->
+| Layer         | Technology            | Version                  | Notes                                                                                  |
+| ------------- | --------------------- | ------------------------ | -------------------------------------------------------------------------------------- |
+| Framework     | Next.js               | 16.2.1                   | App Router, Turbopack dev server                                                       |
+| UI Library    | React                 | 19                       | Server and client components                                                           |
+| Language      | TypeScript            | Strict mode              | All source files                                                                       |
+| Hosting       | Vercel                | Hobby plan               | Host for UI + `/.well-known/api-config` (deprecation-banner-only) + legacy `/api/*` during rollback window |
+| Encryption    | Web Crypto API        | AES-GCM                  | Client-side localStorage encryption                                                    |
+| Styling       | CSS Custom Properties | —                        | Tailwind imported for base reset; components use CSS vars + inline styles              |
+
+### Backend (Fly.io)
+
+| Layer              | Technology                       | Version      | Notes                                                                                 |
+| ------------------ | -------------------------------- | ------------ | ------------------------------------------------------------------------------------- |
+| Framework          | Hono                             | latest       | TypeScript, runs on Node. Two Fly processes: `api` + `worker` in one image.           |
+| Runtime            | Node                             | 22 LTS       | Exec-form Dockerfile (`CMD ["node", ...]`) — shell wrappers swallow SIGTERM (F4).     |
+| TLS termination    | Nginx sidecar                    | 1.28         | Terminates Cloudflare Authenticated Origin Pulls (mTLS); proxies plaintext to Hono on localhost:3000. Required because no all-Hono+Fly+AOP example exists as of April 2026. |
+| Database           | Postgres (Fly Postgres)          | 16           | Authoritative for financial state: ledger, Stripe idempotency, admin users, recovery codes, apply outcomes, audit log. Added in v3 per research F1 (Upstash is eventually-consistent only). |
+| Job queue (internal) | Graphile Worker                | latest       | Runs inside Postgres — enables transactional enqueue (`BEGIN; INSERT INTO ledger; ADD JOB; COMMIT;`).                                                   |
+| Job queue (egress) | Upstash QStash                   | —            | For webhooks + cross-service job dispatch. HMAC-signed; double-rotation lockout guarded via `qstash:last_rotation_deployed_at` flag. |
+| Cache / scratch    | Upstash Redis                    | —            | Rate limit, WebAuthn challenges, scope cache (read-through), ticket scratch, ops-UI audit live-tail. Not financial-state authoritative. |
+| Blob store         | Cloudflare R2                    | —            | Signed URLs ≤15 min TTL, private bucket, object-key `{userId}/{ticketId}/result.{ext}`, Object Lock for audit-log archives. Free egress. |
+| AI                 | Anthropic Claude                 | claude-sonnet-4-6 / claude-opus-4-7 | Prompt Caching mandatory from day 1 (research F14 — ~90% input cost reduction). Batch API for non-interactive chains. |
+| Job scraping       | Bright Data                      | LinkedIn Jobs Scraper | Dataset: `gd_lpfll7v5hcqtkxl6l`. Called from worker, not API.                  |
+| Auth               | JWT + OAuth + WebAuthn           | `arctic` ^3.7.0, `@simplewebauthn/server` latest | Google/LinkedIn OAuth, email/password, cookie-based JWT on apex (`__Host-` prefix preferred), WebAuthn for admin (≥2 passkeys + 10 Argon2id recovery codes). |
+| Payments           | Stripe                           | `stripe-js` ^8.11.0 | Three-state idempotency in Postgres `stripe_webhook_idempotency`.               |
+| Rate limiting      | `@upstash/ratelimit`             | latest       | Sliding window; per-IP, per-user, per-ASN (CF), global, daily budget.                 |
+
+### Edge (Cloudflare)
+
+| Layer              | Technology                       | Notes                                                                                                                   |
+| ------------------ | -------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| DNS                | Cloudflare DNS                   | Apex + obscure API subdomain (rotatable via admin-panel Ops).                                                           |
+| WAF + DDoS         | Cloudflare (free tier)           | Bot Fight Mode, Always Use HTTPS at edge, HSTS, ASN + country blocklist.                                                |
+| CAPTCHA            | Cloudflare Turnstile (free)      | Invisible challenge on anonymous PARSE/PROFILE; upgrade from v2 "accepted risk".                                        |
+| mTLS               | Authenticated Origin Pulls       | **Per-zone custom cert** (NOT the shared CF cert — shared cert is vulnerable to CF-bypass-CF attack per research F2).   |
+| Rate limiting      | Cloudflare edge rules            | Per-ASN + per-country pre-filter; reduces load before Fly's in-app rate limiter.                                        |
+
+**Geofencing (Pro tier, $20/mo)** is explicitly **out of MVP** — per-ASN blocklist on the free tier covers the main abuse vectors.
 
 ---
 
-## Build & Dev Commands
+## Build & Dev
 
-| Command | Purpose |
-|---------|---------|
-| `npm run dev` | Start dev server |
-| `npm run build` | Production build |
-| `npm run test` | Run tests |
-| `npm run lint` | Lint code |
-<!-- GUIDANCE: Add all commands from package.json scripts that developers need -->
+| Command               | Purpose                                                         |
+| --------------------- | --------------------------------------------------------------- |
+| `npm run dev`         | Frontend dev server (Next.js + Turbopack, port 3000)            |
+| `npm run build`       | Frontend production build                                       |
+| `npm run backend:dev` | Backend dev server (Hono on port 3001)                          |
+| `npm run backend:build` | Backend production build (outputs `services/backend/dist/`)   |
+| `npm run worker:dev`  | Worker process in dev mode (QStash consumer + Graphile Worker)  |
+| `npm run test`        | Playwright E2E tests                                            |
+| `npm run db:migrate`  | Apply Postgres migrations                                       |
+| `npm run db:seed`     | Seed local Postgres from `packages/shared/db/seed.sql`          |
 
 ---
 
-## Deployment
+## Deployment Topology
 
-<!-- GUIDANCE: Document:
-- **Platform**: Where it's hosted, deployment trigger
-- **Function timeout**: Server-side limits
-- **API routes**: List all server-side routes
-- **Static assets**: How they're served (CDN, etc.)
-- **Environment variables**: Where configured (dashboard, .env.local)
--->
+```
+                         ┌───────────────────────────────────────┐
+  User browser    ───▶  │ Vercel (static HTML, /.well-known)    │
+  (HTML + app)          └───────────┬───────────────────────────┘
+                                    │ XHR to ${API_BASE_URL}
+                                    ▼
+                         ┌───────────────────────────────────────┐
+                         │ Cloudflare (WAF, DDoS, Bot Fight,    │
+                         │ Turnstile, ASN blocklist, HSTS edge,  │
+                         │ AOP mTLS with per-zone cert)          │
+                         └───────────┬───────────────────────────┘
+                                     │ mutual TLS
+                                     ▼
+                         ┌───────────────────────────────────────┐
+                         │ Fly.io — one image, two processes:   │
+                         │   [api]    → Nginx ▸ Hono HTTP        │
+                         │   [worker] → QStash consumer + Graphile Worker + drain handler │
+                         └──┬──────────────────────────┬─────────┘
+                            ▼                          ▼
+                ┌──────────────────────┐  ┌──────────────────────────────┐
+                │ Fly Postgres         │  │ Upstash QStash (egress queue)│
+                │ (financial state,    │  └──────────────────────────────┘
+                │  audit log)          │
+                └──────────────────────┘            │
+                            │                       ▼
+                            │          ┌──────────────────────────────┐
+                            │          │ Upstash Redis (rate, cache,  │
+                            └─────────▶│ scope, ticket scratch, audit │
+                                       │ live-tail stream)            │
+                                       └──────────────────────────────┘
+                                                 │
+                                                 ▼
+                                       ┌──────────────────────────────┐
+                                       │ Cloudflare R2 (blobs >256KB, │
+                                       │ audit archive w/ Object Lock)│
+                                       └──────────────────────────────┘
+```
+
+### Staging vs Production
+
+**Required** per research F18 / backend PRD §9:
+
+- Separate Fly app (`jobzooka-backend-staging`)
+- Separate Upstash Redis + QStash projects
+- Separate Fly Postgres cluster
+- Stripe **test-mode keys** (production keys never in staging; CI enforces)
+- `ENVIRONMENT=staging` required in CI secrets before integration tests run
+- Production Stripe keys live only in production Fly secrets, never in GitHub Actions
 
 ---
 
 ## Key Constraints
 
-<!-- GUIDANCE: Document technical limitations that affect feature design:
+1. **60-second timeout is no longer a hard cap** (v2 was Vercel-bound; v3 moves long-running operations to the Fly worker process group where they can run for minutes or hours). The natural duration of the job is the cap, not infra.
+2. **No direct origin access.** Fly rejects any connection that doesn't present Cloudflare's per-zone mTLS cert (Layer 0 in SECURITY.md). Staging origin is similarly pinned.
+3. **Worker SIGTERM drain is mandatory.** `fly.toml` sets `kill_timeout=300`, `kill_signal=SIGTERM`, `auto_stop_machines=false` on the worker. Dockerfile uses exec-form `CMD ["node", ...]`. Explicit drain handler checkpoints in-flight Claude calls to Postgres + Redis before exit.
+4. **Prompt Caching is mandatory** on every Claude call. System prompt + PROMPT_RULES + canonical context wrapped in `cache_control: {type: "ephemeral"}`. Alert if cache hit rate <80%.
+5. **Single-page app behavior retained** — Next.js App Router, client-side state, `src/lib/api.ts` is the single boundary to the backend.
+6. **No Tailwind utility classes in components** — components use CSS custom properties + inline styles. `@import "tailwindcss"` in globals.css provides base reset only.
 
-1. **Timeout limits** — Server-side function timeouts affect long operations
-2. **API rate limits** — External API limits that affect feature design
-3. **Bundle size** — Client-side size limits or lazy loading requirements
-4. **Browser support** — Minimum browser versions, mobile support
-5. **Concurrent connections** — Database connection limits, websocket limits
+---
 
-For each constraint: what it is, what it affects, and any workarounds.
--->
+## Cost Model (research F13, F14, F15)
+
+| Component                  | MVP (<1k DAU) | At 10k DAU           | First bottleneck                                           |
+| -------------------------- | ------------- | -------------------- | ---------------------------------------------------------- |
+| Fly.io API + Worker        | $5–15/mo      | $30–60/mo            | Egress at $0.02/GB NA-EU (mitigated by R2 free egress)     |
+| Fly Postgres               | $15–30/mo     | Same                 | Trivial load at 10k DAU / 100k txns/day                    |
+| Upstash Redis + QStash     | Free tier     | **$200/mo (Prod Pack)** — required for SLA + SOC-2 if taking payments | SLA/compliance |
+| Cloudflare (WAF, R2, Turnstile, AOP) | Free tier | $5–20/mo for R2 storage | R2 egress is FREE (big vs S3)                    |
+| Anthropic Claude           | $3-15 / 1M tokens | **Mandatory: Prompt Caching (90% input savings) + Batch API (50% off async)** | Without caching, Claude dominates the bill by 1k DAU |
+
+**Headline:** without Prompt Caching + Batch API enabled, Anthropic spend at 10k DAU is ~10× what it needs to be. R2 is unusually cheap (free egress). Vendor-lockin moat is low — each component has a clear migration path off (Fly→Render/Cloud Run, Upstash→Redis Cloud, QStash→SQS+Lambda, Postgres→RDS).
 
 ---
 
 ## File Structure
 
-<!-- GUIDANCE: Document the project's directory structure:
-
 ```
-project/
-├── src/
-│   ├── app/           # Routes and pages
-│   │   ├── api/       # Server-side API routes
-│   │   └── page.tsx   # Main page
-│   ├── components/    # React components
-│   ├── lib/           # Shared utilities
-│   └── styles/        # Global styles
-├── _docs/              # Documentation
-├── _requirements/      # Product specs
-├── scripts/           # Build and utility scripts
-├── .claude/           # WarpOS configuration
-└── extension/         # Browser extension (if applicable)
+.
+├── src/                           # Next.js frontend
+│   ├── app/
+│   │   ├── page.tsx               # Main wizard orchestrator
+│   │   ├── layout.tsx
+│   │   ├── globals.css
+│   │   ├── api/                   # Legacy routes — kept during 7-day rollback window with full new-backend security parity; 410 Gone after
+│   │   └── .well-known/
+│   │       └── api-config/route.ts  # Deprecation banner only (not primary discovery)
+│   ├── components/ …              # unchanged — UI components
+│   └── lib/                       # Client-side helpers
+│       ├── api.ts                 # Boundary — every fetch uses ${API_BASE_URL} prefix
+│       ├── storage.ts             # Client AES-GCM encrypted localStorage
+│       ├── pipeline.ts            # Pipeline tracer
+│       ├── competitiveness.ts     # Client-side scoring (reads apply outcomes)
+│       └── …                      # dummy data, test harness, DM helpers
+├── packages/
+│   └── shared/                    # NEW in v3 — shared across Next.js + backend
+│       ├── rockets.ts             # ROCKET_COSTS, ROCKET_PACKS (migrated from src/lib/)
+│       ├── prompts.ts             # PROMPTS, wrapUntrustedData()
+│       ├── types.ts               # Server-relevant types
+│       ├── errors.ts              # safeErrorMessage(), error code enum
+│       ├── redaction.ts           # pino redaction list
+│       └── db/
+│           ├── schema.ts          # Drizzle/Prisma Postgres schema
+│           └── migrations/
+├── services/
+│   └── backend/                   # NEW in v3 — the backend service
+│       ├── src/
+│       │   ├── api.ts             # Hono entrypoint
+│       │   ├── worker.ts          # QStash + Graphile consumer + drain handler
+│       │   ├── routes/            # auth, rockets, stripe, claude, jobs, tickets, apply, extension, admin, health
+│       │   ├── middleware/        # origin-pin, qstash-verify, scope, idempotency
+│       │   ├── ledger.ts          # Postgres-backed atomic ledger
+│       │   ├── tickets.ts         # Ticket lifecycle + ownership check
+│       │   ├── drain.ts           # SIGTERM drain
+│       │   ├── prompt-caching.ts  # cache_control wrapper + hit-rate metrics
+│       │   ├── r2.ts              # Signed URL generation
+│       │   ├── webauthn/          # Passkey enrollment + assertion + recovery codes
+│       │   └── admin/             # Static HTML + vanilla JS panel
+│       ├── docker/
+│       │   ├── Dockerfile         # Multi-stage, exec-form CMDs
+│       │   └── Dockerfile.nginx   # Nginx sidecar for AOP mTLS
+│       ├── nginx.conf             # ssl_verify_client on + proxy_pass
+│       ├── fly.toml               # [processes] api + worker; kill_timeout=300
+│       └── scripts/
+│           └── seed-admin.js      # One-time admin-scope provisioning
+├── extension/                     # Chrome extension (Manifest V3)
+├── ops/
+│   └── runbooks/
+│       ├── rotate-slug.md         # Slug rotation procedure
+│       └── rotate-aop-cert.md     # AOP per-zone cert rotation
+└── _docs/                          # This doc suite
 ```
--->
 
 ---
 
-## Third-Party Dependencies
+## See also
 
-<!-- GUIDANCE: List significant dependencies with their purpose. Not every npm package — just the ones that affect architecture or have licensing implications.
-
-| Package | Purpose | License | Alternatives Considered |
-|---------|---------|---------|------------------------|
-| [name] | [what it does] | [MIT/Apache/etc] | [what else was considered and why this won] |
--->
-
----
-
-## Performance Budget
-
-<!-- GUIDANCE: Define performance targets:
-
-| Metric | Target | Current |
-|--------|--------|---------|
-| First Contentful Paint | < 1.5s | |
-| Time to Interactive | < 3s | |
-| Largest Contentful Paint | < 2.5s | |
-| Bundle size (gzipped) | < 200KB | |
-| API response time (p95) | < 2s | |
--->
-
----
-
-## Stack Decision Log
-
-<!-- GUIDANCE: When you make a significant technology choice, log it here:
-
-### [Date]: Chose [Technology] over [Alternative]
-**Context:** What we needed
-**Decision:** What we chose and why
-**Consequences:** What this means for the project (good and bad)
--->
+- **Source of truth:** `_requirements/04-features/backend/PRD.md` (v3)
+- **Per-route contracts:** `_requirements/03-architecture/API_SURFACE.md`
+- **Security model:** `_requirements/03-architecture/SECURITY.md`
+- **Persistence split (Postgres vs Redis):** `_requirements/03-architecture/PERSISTENCE.md`
+- **Environment variables:** `_requirements/03-architecture/ENV_VARS.md`
+- **Third-party services:** `_requirements/03-architecture/THIRD_PARTY.md`
