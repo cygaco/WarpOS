@@ -81,10 +81,9 @@ function rename(root) {
   // Step 1: remove duplicate 03-requirement-standards if _standards/ present.
   const dupe = path.join(OLD, "03-requirement-standards");
   if (fs.existsSync(dupe) && fs.existsSync(path.join(OLD, "_standards"))) {
-    gitRm(root, "requirements/03-requirement-standards");
-    log.push(
-      "removed requirements/03-requirement-standards/ (dup of _standards/)",
-    );
+    const dupePath = "requirements/03-requirement-standards"; // path-literal-allowed: migration data
+    gitRm(root, dupePath);
+    log.push(`removed ${dupePath}/ (dup of _standards/)`);
   }
   // Step 2: chapter renumber (under old top-level name for cleaner git history).
   for (const [from, to] of RENUMBER) {

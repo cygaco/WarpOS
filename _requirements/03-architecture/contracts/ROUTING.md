@@ -5,9 +5,11 @@
 - **owner:** backend
 - **introducedIn:** 2026-04-30
 - **status:** active
-- **version:** 1.0.0
-- **changeType:** none
+- **version:** 2.0.0
+- **changeType:** major
 - **used by:** auth, backend, frontend, extension
+
+> **2.0.0 (breaking, 2026-05-04):** shape rewritten from generic `Route` TS interface to product-specific Vercel / Next.js rewrite config — reflects actual Jobzooka routing surface promoted into canonical at v0.2.0. Consumers that depended on the framework-template `Route` interface must adopt the rewrite-config shape.
 
 ## 1. Shape
 
