@@ -60,7 +60,10 @@ const FRAMEWORK_PREFIXES = [
   "migrations/",
   "patterns/",
   "fixtures/",
-  "version.json",
+  // version.json is canonical-owned. Product repos carry their own
+  // installed-at-version stamp (.claude/framework-installed.json#installedVersion);
+  // promoting product/version.json clobbered canonical 0.2.0 -> 0.1.2 in
+  // 2026-05-04, then release-canonical bumped from the wrong base. Keep it out.
   "install.ps1",
   "AGENTS.md",
   "CLAUDE.md",

@@ -5,11 +5,9 @@
 - **owner:** profile
 - **introducedIn:** 2026-04-30
 - **status:** active
-- **version:** 2.0.0
-- **changeType:** major
+- **version:** 1.0.0
+- **changeType:** none
 - **used by:** rockets-economy, profile, auth, market-research
-
-> **2.0.0 (breaking, 2026-05-04):** shape rewritten to reflect product-specific user contract promoted into canonical at v0.2.0. Consumers that depended on the framework-template UserAccount interface must adopt the new shape.
 
 ## 1. Shape
 

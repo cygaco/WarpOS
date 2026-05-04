@@ -1,16 +1,13 @@
 #!/usr/bin/env node
-/* WarpOS 0.1.x → 0.2.0 migration 002 — rename requirements/ to _requirements/.
+/* WarpOS 0.1.x -> 0.2.0 migration 002 — rename requirements/ to _requirements/.
  *
- * Idempotent. Also handles the chapter renumber + 03-requirement-standards
- * removal that was bundled with the rename.
+ * Bundles the chapter renumber (04-architecture -> 03-architecture etc.) and
+ * removes the duplicate 03-requirement-standards/ if _standards/ is present.
+ * Idempotent.
  */
 const fs = require("fs");
 const path = require("path");
 const { spawnSync } = require("child_process");
-
-const ROOT = process.env.CLAUDE_PROJECT_DIR || process.cwd();
-const OLD = path.join(ROOT, "requirements");
-const NEW = path.join(ROOT, "_requirements");
 
 const RENUMBER = [
   ["04-architecture", "03-architecture"],
@@ -22,72 +19,109 @@ const RENUMBER = [
   ["99-audits", "_audits"],
 ];
 
-function gitMv(from, to) {
-  const isGit = fs.existsSync(path.join(ROOT, ".git"));
-  if (isGit)
-    return (
-      spawnSync("git", ["mv", from, to], { cwd: ROOT, stdio: "inherit" })
-        .status === 0
-    );
-  fs.renameSync(path.join(ROOT, from), path.join(ROOT, to));
+function resolveRoot(ctx) {
+  return (
+    (ctx && ctx.targetRoot) || process.env.CLAUDE_PROJECT_DIR || process.cwd()
+  );
+}
+
+function isGit(root) {
+  return fs.existsSync(path.join(root, ".git"));
+}
+
+function gitMv(root, from, to) {
+  if (isGit(root)) {
+    const r = spawnSync("git", ["mv", from, to], {
+      cwd: root,
+      encoding: "utf8",
+    });
+    return r.status === 0;
+  }
+  fs.renameSync(path.join(root, from), path.join(root, to));
   return true;
 }
 
-function gitRm(target) {
-  const isGit = fs.existsSync(path.join(ROOT, ".git"));
-  const abs = path.join(ROOT, target);
+function gitRm(root, target) {
+  const abs = path.join(root, target);
   if (!fs.existsSync(abs)) return true;
-  if (isGit)
-    return (
-      spawnSync("git", ["rm", "-rf", target], { cwd: ROOT, stdio: "inherit" })
-        .status === 0
-    );
+  if (isGit(root)) {
+    const r = spawnSync("git", ["rm", "-rf", target], {
+      cwd: root,
+      encoding: "utf8",
+    });
+    return r.status === 0;
+  }
   fs.rmSync(abs, { recursive: true, force: true });
   return true;
 }
 
-function main() {
+function rename(root) {
+  const OLD = path.join(root, "requirements");
+  const NEW = path.join(root, "_requirements");
+  const log = [];
   if (fs.existsSync(NEW) && !fs.existsSync(OLD)) {
-    console.log(
-      "[002] _requirements/ already present; requirements/ absent — no-op.",
-    );
-    return 0;
+    return {
+      ok: true,
+      status: "noop",
+      reason: "_requirements/ already present",
+      log,
+    };
   }
   if (!fs.existsSync(OLD)) {
-    console.log("[002] requirements/ not found; nothing to migrate.");
-    return 0;
+    return { ok: true, status: "noop", reason: "requirements/ not found", log };
   }
   if (fs.existsSync(NEW)) {
-    console.error(
-      "[002] BOTH requirements/ and _requirements/ exist — manual review required.",
-    );
-    return 1;
+    return {
+      ok: false,
+      status: "conflict",
+      reason: "BOTH requirements/ and _requirements/ exist — manual review",
+      log,
+    };
   }
-  // Step 1: remove duplicate 03-requirement-standards if present
-  // path-literal-allowed: migration data, not navigation
-  const dupe = path.join(OLD, "03-requirement-standards"); // path-literal-allowed: migration data
+  // Step 1: remove duplicate 03-requirement-standards if _standards/ present.
+  const dupe = path.join(OLD, "03-requirement-standards");
   if (fs.existsSync(dupe) && fs.existsSync(path.join(OLD, "_standards"))) {
-    gitRm("requirements/03-requirement-standards"); // path-literal-allowed: migration data
-    console.log(
-      "[002] Removed requirements/03-requirement-standards/ (duplicate of _standards/).", // path-literal-allowed: migration data
+    gitRm(root, "requirements/03-requirement-standards");
+    log.push(
+      "removed requirements/03-requirement-standards/ (dup of _standards/)",
     );
   }
-  // Step 2: chapter renumber under old top-level name (cleaner git rename detection)
+  // Step 2: chapter renumber (under old top-level name for cleaner git history).
   for (const [from, to] of RENUMBER) {
     const fromAbs = path.join(OLD, from);
     const toAbs = path.join(OLD, to);
     if (fs.existsSync(fromAbs) && !fs.existsSync(toAbs)) {
-      gitMv(`requirements/${from}`, `requirements/${to}`);
-      console.log(
-        `[002] Renumbered requirements/${from}/ → requirements/${to}/.`,
-      );
+      gitMv(root, `requirements/${from}`, `requirements/${to}`);
+      log.push(`renumbered ${from} -> ${to}`);
     }
   }
-  // Step 3: top-level rename
-  gitMv("requirements", "_requirements");
-  console.log("[002] Renamed requirements/ → _requirements/.");
-  return 0;
+  // Step 3: top-level rename.
+  if (!gitMv(root, "requirements", "_requirements")) {
+    return { ok: false, status: "rename-failed", reason: "git mv failed", log };
+  }
+  log.push("renamed requirements/ -> _requirements/");
+  return { ok: true, status: "renamed", log };
+}
+
+async function apply(ctx) {
+  return rename(resolveRoot(ctx));
+}
+
+function main() {
+  const r = rename(resolveRoot(null));
+  for (const line of r.log) console.log(`[002] ${line}`);
+  if (r.reason) console.log(`[002] ${r.status}: ${r.reason}`);
+  return r.ok ? 0 : 1;
 }
 
 if (require.main === module) process.exit(main());
-module.exports = { main };
+
+module.exports = {
+  id: "002-rename-requirements-to-_requirements",
+  from: "0.1.x",
+  to: "0.2.0",
+  description:
+    "Rename requirements/ -> _requirements/, renumber chapters, drop dup 03-requirement-standards",
+  apply,
+  main,
+};

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/* WarpOS 0.1.x → 0.2.0 migration 004 — paths schema v4 → v5.
+/* WarpOS 0.1.x -> 0.2.0 migration 004 — paths schema v4 -> v5.
  *
  * v5 changes:
  *   - requirements/* path values become _requirements/*
@@ -12,24 +12,23 @@
 const fs = require("fs");
 const path = require("path");
 
-const ROOT = process.env.CLAUDE_PROJECT_DIR || process.cwd();
-const PATHS_FILE = path.join(ROOT, ".claude", "paths.json");
+function resolveRoot(ctx) {
+  return (
+    (ctx && ctx.targetRoot) || process.env.CLAUDE_PROJECT_DIR || process.cwd()
+  );
+}
 
-function main() {
+function bump(root) {
+  const PATHS_FILE = path.join(root, ".claude", "paths.json");
   if (!fs.existsSync(PATHS_FILE)) {
-    console.log("[004] .claude/paths.json not found; nothing to migrate.");
-    return 0;
+    return { ok: true, status: "noop", reason: ".claude/paths.json not found" };
   }
   const data = JSON.parse(fs.readFileSync(PATHS_FILE, "utf8"));
   if (data.version >= 5) {
-    console.log("[004] paths schema already at v5+; no-op.");
-    return 0;
+    return { ok: true, status: "noop", reason: "paths schema already v5+" };
   }
-  // Bump schema + version
   data.$schema = "warpos/paths/v5";
   data.version = 5;
-
-  // Update existing keys
   const updates = {
     requirements: "_requirements",
     requirementsRoot: "_requirements",
@@ -40,7 +39,6 @@ function main() {
   for (const [k, v] of Object.entries(updates)) {
     if (data[k] !== undefined) data[k] = v;
   }
-  // Add new keys (idempotent — only set if missing)
   const adds = {
     architectureRoot: "_requirements/03-architecture",
     designSystemRoot: "_requirements/01-design-system",
@@ -53,9 +51,26 @@ function main() {
     if (data[k] === undefined) data[k] = v;
   }
   fs.writeFileSync(PATHS_FILE, JSON.stringify(data, null, 2) + "\n");
-  console.log("[004] paths schema migrated v4 → v5.");
-  return 0;
+  return { ok: true, status: "migrated" };
+}
+
+async function apply(ctx) {
+  return bump(resolveRoot(ctx));
+}
+
+function main() {
+  const r = bump(resolveRoot(null));
+  console.log(`[004] ${r.status}${r.reason ? `: ${r.reason}` : ""}`);
+  return r.ok ? 0 : 1;
 }
 
 if (require.main === module) process.exit(main());
-module.exports = { main };
+
+module.exports = {
+  id: "004-paths-schema-v4-to-v5",
+  from: "0.1.x",
+  to: "0.2.0",
+  description: "Bump .claude/paths.json from schema v4 to v5",
+  apply,
+  main,
+};
