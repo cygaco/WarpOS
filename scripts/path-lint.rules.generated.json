@@ -267,6 +267,26 @@
     {
       "match": "\\.warpos/promote-reports",
       "key": "warposPromoteReports"
+    },
+    {
+      "match": "\\.claude/project/sprint/current-sprint\\.yaml",
+      "key": "sprintCurrent"
+    },
+    {
+      "match": "\\.claude/project/sprint/sprint-progress\\.yaml",
+      "key": "sprintProgress"
+    },
+    {
+      "match": "issues\\.md",
+      "key": "sprintIssuesLedger"
+    },
+    {
+      "match": "\\.claude/project/reference/sprint-workflow\\.md",
+      "key": "sprintReference"
+    },
+    {
+      "match": "\\.claude/agents/00-alex/\\.system/policy/sprint-routing\\.json",
+      "key": "sprintRouting"
     }
   ],
   "skipSubstrings": [
@@ -275,6 +295,7 @@
     ".claude/project/decisions/",
     ".claude/project/memory/",
     ".claude/project/maps/",
+    ".claude/project/sprint/",
     "requirements/_audits/",
     "docs/",
     ".claude/paths.json",

@@ -1,10 +1,11 @@
-# install.ps1 — WarpOS installer (PowerShell, Windows-first)
+# install.ps1 - WarpOS installer (PowerShell, Windows-first)
 #
-# Phase 4 prereq (2026-04-30). Designed from scratch — no prior install.ps1
+# Phase 4 prereq (2026-04-30). Designed from scratch - no prior install.ps1
 # was preserved. Mirrors the contract documented in:
 #   - paths.json $schema "warpos/paths/v4"
 #   - framework-manifest.json $schema "warpos/framework-manifest/v2"
 #   - version.json $schema "warpos/version/v1"
+#   - sprint workflow $schema "warpos/sprint/*/v1"  (Sprint v0.1, 0.4.0)
 #
 # Usage:
 #   .\install.ps1                    # install into current directory
@@ -12,6 +13,19 @@
 #   .\install.ps1 -DryRun             # show plan only, no writes
 #   .\install.ps1 -SkipPrompt          # accept defaults; non-interactive
 #   .\install.ps1 -Update              # call /warp:update path instead
+#
+# What's installed:
+#   - Framework assets enumerated in .claude\framework-manifest.json
+#     (agents, hooks, commands, schemas, templates, reference docs,
+#     scripts/warpos, scripts/sprint, scripts/paths, scripts/hooks, etc.)
+#   - .claude\framework-installed.json snapshot for /warp:update
+#
+# What is NOT installed:
+#   - Live runtime state (.claude\runtime\, .claude\project\events\,
+#     .claude\project\memory\, .claude\project\sprint\, etc.) - these are
+#     written by the agent / sprint commands at runtime.
+#   - issues.md (repo root) - created on first /sprint:plan or by
+#     `node scripts\sprint\init.js`.
 
 param(
     [string]$Target = (Get-Location).Path,
@@ -21,7 +35,8 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-$Script:WARPOS_VERSION = "0.1.0"
+# Fallback only - version.json is the source of truth, read below.
+$Script:WARPOS_VERSION = "0.4.0"
 
 function Write-Step($msg) { Write-Host "[install] $msg" -ForegroundColor Cyan }
 function Write-Warn($msg) { Write-Host "[install] WARN: $msg" -ForegroundColor Yellow }
@@ -39,7 +54,7 @@ foreach ($req in @(".claude\framework-manifest.json", ".claude\paths.json", "ver
 
 $VersionFile = Get-Content (Join-Path $Source "version.json") -Raw | ConvertFrom-Json
 if ($VersionFile.version -ne $Script:WARPOS_VERSION) {
-    Write-Warn "version.json reports $($VersionFile.version), script expects $Script:WARPOS_VERSION — proceeding with $($VersionFile.version)"
+    Write-Warn "version.json reports $($VersionFile.version), script expects $Script:WARPOS_VERSION - proceeding with $($VersionFile.version)"
     $Script:WARPOS_VERSION = $VersionFile.version
 }
 
@@ -47,7 +62,7 @@ Write-Step "WarpOS $Script:WARPOS_VERSION installer"
 Write-Step "Source: $Source"
 Write-Step "Target: $Target"
 if ($DryRun)      { Write-Step "Mode:   DRY-RUN (no files written)" }
-elseif ($Update)  { Write-Step "Mode:   UPDATE (delegate to /warp:update — fresh-copy path skipped)" }
+elseif ($Update)  { Write-Step "Mode:   UPDATE (delegate to /warp:update - fresh-copy path skipped)" }
 else              { Write-Step "Mode:   FRESH-INSTALL" }
 
 # Pre-existing install detection. Keep this before the -Update branch so
@@ -64,7 +79,7 @@ if ($Update) {
         exit 1
     }
     Write-Step ""
-    Write-Step "/warp:update is the canonical update path — install.ps1 -Update no longer copies files."
+    Write-Step "/warp:update is the canonical update path - install.ps1 -Update no longer copies files."
     Write-Step "Open the project in Claude Code and run:"
     Write-Step "    /warp:update                     # dry-run"
     Write-Step "    /warp:update --apply             # apply (when 0.1.x lands)"
@@ -80,7 +95,7 @@ if (Test-Path $ExistingInstall) {
     if (-not $Update -and -not $SkipPrompt) {
         $resp = Read-Host "Continue with FRESH install (overwrites)? [y/N]"
         if ($resp -ne "y") {
-            Write-Step "Aborted — use -Update to upgrade in-place"
+            Write-Step "Aborted - use -Update to upgrade in-place"
             exit 0
         }
     }
@@ -101,12 +116,12 @@ if ($DryRun) {
     exit 0
 }
 
-# Stage 1 — copy framework-owned assets and record per-asset SHA256.
+# Stage 1 - copy framework-owned assets and record per-asset SHA256.
 # Phase 4 fix-forward (codex review 2026-04-30 critical #2): the prior
 # revision left assets[] and installedHash empty, which made every
 # downstream /warp:update misclassify all files as MERGE_CONFLICT. Now we
 # hash each copied byte and record it in $InstalledAssets for Stage 2.
-Write-Step "Stage 1/3 — copying assets"
+Write-Step "Stage 1/3 - copying assets"
 $Copied = 0
 $Skipped = 0
 $InstalledAssets = @()
@@ -115,7 +130,7 @@ foreach ($kind in $Manifest.assets.PSObject.Properties.Name) {
         $srcPath  = Join-Path $Source $asset.src
         $destPath = Join-Path $Target $asset.dest
         if (-not (Test-Path $srcPath)) {
-            Write-Warn "Source missing: $($asset.src) — skipped"
+            Write-Warn "Source missing: $($asset.src) - skipped"
             $Skipped += 1
             continue
         }
@@ -138,10 +153,10 @@ foreach ($kind in $Manifest.assets.PSObject.Properties.Name) {
         }
     }
 }
-Write-Step "Stage 1/3 — copied $Copied, skipped $Skipped, hashed $($InstalledAssets.Count)"
+Write-Step "Stage 1/3 - copied $Copied, skipped $Skipped, hashed $($InstalledAssets.Count)"
 
-# Stage 2 — write framework-installed.json snapshot
-Write-Step "Stage 2/3 — writing install snapshot"
+# Stage 2 - write framework-installed.json snapshot
+Write-Step "Stage 2/3 - writing install snapshot"
 $installRecord = [ordered]@{
     "`$schema"          = "warpos/framework-installed/v2"
     installedVersion    = $Script:WARPOS_VERSION
@@ -162,12 +177,27 @@ $installRecord = [ordered]@{
 }
 $installRecord | ConvertTo-Json -Depth 10 |
     Out-File -FilePath (Join-Path $Target ".claude\framework-installed.json") -Encoding utf8
-Write-Step "Stage 2/3 — snapshot at .claude\framework-installed.json"
+Write-Step "Stage 2/3 - snapshot at .claude\framework-installed.json"
 
-# Stage 3 — post-install hint
-Write-Step "Stage 3/3 — install complete"
+# Stage 3 - post-install hint
+Write-Step "Stage 3/3 - install complete"
 Write-Step "Next step: open the project in Claude Code; run /warp:health or /warp:doctor to verify."
 if ($Update) {
     Write-Step "UPDATE mode: now run /warp:update --dry-run from inside the project to plan deltas."
 }
+
+# Sprint Workflow v0.1 (0.4.0+) - opt-in adoption note.
+$SprintSchemaDir = Join-Path $Target "schemas\sprint"
+if (Test-Path $SprintSchemaDir) {
+    Write-Step ""
+    Write-Step "Sprint Workflow v0.1 is available in this install."
+    Write-Step "To opt in: node scripts\sprint\init.js --project ""<your project>"""
+    Write-Step "Then in Claude Code: /sprint:plan ""<brief plain-language request>"""
+    Write-Step "Reference: paths.sprintReference (.claude\project\reference\sprint-workflow.md)"
+    Write-Step "Docs:      _docs\sprint\ (OVERVIEW, DOWNSTREAM_ADOPTION, CRASH_RECOVERY, etc.)"
+    Write-Step ""
+    Write-Step "Existing /mode:solo, /mode:adhoc, /mode:oneshot keep working unchanged."
+    Write-Step "Sprint is ADDITIVE - opt out by not running /sprint:* commands."
+}
+
 exit 0

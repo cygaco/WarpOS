@@ -1,0 +1,177 @@
+# Sprint v0.1 — Crash Recovery
+
+A sprint must be recoverable after session crash, context reset,
+terminal interruption, or agent restart. The mechanism is files, not
+chat.
+
+## Three sources of recovery truth
+
+1. **`paths.sprintProgress`** (`.claude/project/sprint/sprint-progress.yaml`)
+   The live checkpoint. Single file. Always points at the latest known
+   state.
+2. **`paths.sprintCurrent`** (`.claude/project/sprint/current-sprint.yaml`)
+   The live current sprint. `crash_recovery.resume_command` and
+   `crash_recovery.resume_summary` mirror sprint-progress.
+3. **`paths.sprintCheckpoints`** (`.claude/project/sprint/checkpoints/<sprint>-<n>.yaml`)
+   Frozen historical copies. Sequence numbered. The audit trail when
+   live state is corrupted.
+
+## The recovery procedure
+
+When a fresh agent enters a repo with a sprint tracker:
+
+### 1. Read sprint-progress.yaml
+
+```bash
+cat .claude/project/sprint/sprint-progress.yaml
+```
+
+Look at:
+
+- `current_phase` — what phase of the sprint we were in
+  (idle | plan | design | execute | release | retrospective).
+- `current_command` — what `/sprint:*` was last running.
+- `current_ticket`, `current_task`, `current_loop` — for in-flight
+  execution.
+- `status` — `starting | running | paused | blocked | waiting_on_human |
+  waiting_on_external_service | stopped | completed | errored`.
+- `last_completed_step` — last thing that finished cleanly.
+- `next_action` — plain English instruction for resume.
+- `resume_command` — the exact `/sprint:*` command to re-run.
+- `resume_notes` — context for the resume.
+- `safe_to_continue` — boolean. If `false`, do NOT auto-resume.
+- `stop_reason` — populated when the loop stopped intentionally.
+- `blockers` — list of unresolved issues.
+- `approvals_needed` — pending approval refs.
+- `external_services_needed` — pending ESD refs.
+
+### 2. Read current-sprint.yaml#crash_recovery
+
+The `crash_recovery` block mirrors the relevant sprint-progress fields,
+plus:
+
+- `active_files` — list of files being edited at the time.
+- `dirty_state` — were there uncommitted modifications?
+- `last_checkpoint` — pointer to the frozen checkpoint.
+
+### 3. If `safe_to_continue: true`
+
+Re-run `resume_command`. Most sprint commands are idempotent — they
+detect existing state and pick up from there.
+
+### 4. If `safe_to_continue: false`
+
+Investigate before resuming. Common causes:
+
+- A partial Plan Contract write (the YAML may be missing required
+  fields).
+- A Beta-escalation that was never surfaced to the user.
+- A test run that started but the result wasn't captured.
+- A ticket status change that didn't update current-sprint buckets.
+
+To investigate:
+
+```bash
+# Compare frozen checkpoints to current state.
+ls .claude/project/sprint/checkpoints/
+cat .claude/project/sprint/checkpoints/<latest>.yaml
+node scripts/sprint/validate.js .claude/project/sprint/current-sprint.yaml
+node scripts/sprint/validate.js .claude/project/sprint/sprint-progress.yaml
+```
+
+Fix any schema-level corruption (e.g. truncated yaml from a crash mid-
+write). Then either:
+
+- Roll forward: edit `safe_to_continue: true` and re-run resume_command.
+- Roll back: copy a frozen checkpoint over `sprint-progress.yaml` and
+  re-run `resume_command` from there.
+
+### 5. If the sprint is in Ralph execution
+
+Read `paths.sprintRalph/<sprint>/<ticket>.yaml`:
+
+- `phase` tells you the loop step (plan | act | test | review | record |
+  checkpoint | stopped).
+- `status` tells you whether the loop was running or had stopped (and
+  why).
+- `failed_attempts` and `last_checks` give you the recent failure
+  history.
+- `next_action` is the resume hint.
+- `resume_instructions` is the explicit text.
+
+Common stop reasons and their unblock:
+
+| Stop reason | Unblock |
+|---|---|
+| stopped_approval_required | Record an approval YAML, then re-run `/sprint:execute --ticket <T-id>`. |
+| stopped_human_setup_required | Confirm the ESD's `human_setup_steps` are done, update via `external-service.js update`, then resume. |
+| stopped_repeated_failure | Mark the issue deferred/abandoned, or escalate via `/fix:deep`. |
+| stopped_scope_expansion | Either expand the Plan Contract (re-plan) or move the new scope into a new ticket. |
+| stopped_destructive_action_needed | Ask the user. Do not auto-proceed. |
+| stopped_production_deploy_needed | Switch to `/sprint:release`. |
+| stopped_beta_warning | Surface the Beta concern to the user. |
+| stopped_unclear_intent | Re-plan via `/sprint:plan`. |
+
+## Recovery from corrupted tracker
+
+If `current-sprint.yaml` or `sprint-progress.yaml` is unreadable:
+
+1. Find the most recent good frozen checkpoint:
+
+   ```bash
+   ls -t .claude/project/sprint/checkpoints/ | head
+   ```
+
+2. Validate it:
+
+   ```bash
+   node scripts/sprint/validate.js .claude/project/sprint/checkpoints/<latest>.yaml
+   ```
+
+3. Copy it over `sprint-progress.yaml`:
+
+   ```bash
+   cp .claude/project/sprint/checkpoints/<latest>.yaml \
+      .claude/project/sprint/sprint-progress.yaml
+   ```
+
+4. Re-derive `current-sprint.yaml#crash_recovery` by reading the
+   checkpoint and updating the fields.
+
+5. Re-run `resume_command`.
+
+## What NOT to do during recovery
+
+- Do NOT delete the tracker dir. The audit trail is the recovery
+  surface.
+- Do NOT re-run `scripts/sprint/init.js --force` on a live sprint.
+  It will clobber `current-sprint.yaml` and `sprint-progress.yaml`.
+- Do NOT skip the `safe_to_continue: false` check. That flag exists
+  to prevent auto-resuming into a corrupt state.
+- Do NOT assume team-task state is the source of truth. It's not.
+  Sprint tracker is.
+- Do NOT rely on chat history. Files only.
+
+## Checkpoint discipline (write-time)
+
+When writing a sprint command, the checkpoint discipline is:
+
+1. **At command start** — write a checkpoint with
+   `last_completed_step: command_started`, status `running`.
+2. **After each meaningful step** — checkpoint with the step name.
+3. **Before any operation that might fail** — checkpoint with
+   `safe_to_continue: false` until it completes.
+4. **After any operation that succeeded** — checkpoint with
+   `safe_to_continue: true`.
+5. **At command end** — checkpoint with `status: completed` or
+   `paused`.
+
+`scripts/sprint/checkpoint.js` is the single writer. It always:
+
+- Updates `paths.sprintProgress` (the live file).
+- Writes a frozen copy under `paths.sprintCheckpoints/<sprint>-<n>.yaml`.
+
+## See also
+
+- `paths.sprintReference` — full reference doc.
+- `_docs/sprint/RALPH_LOOP.md` — Ralph loop crash semantics.

@@ -80,7 +80,26 @@ const PATHS = {
   "providerFallbackPolicy": path.join(PROJECT, ".claude", "agents", "00-alex", ".system", "policy", "provider-fallback.json"),
   "warposFlagLedger": path.join(PROJECT, "warpos-to-update.md"),
   "warposPromotedArchive": path.join(PROJECT, "warpos-promoted-archive.md"),
-  "warposPromoteReports": path.join(PROJECT, ".warpos", "promote-reports")
+  "warposPromoteReports": path.join(PROJECT, ".warpos", "promote-reports"),
+  "sprintRoot": path.join(PROJECT, ".claude", "project", "sprint"),
+  "sprintCurrent": path.join(PROJECT, ".claude", "project", "sprint", "current-sprint.yaml"),
+  "sprintProgress": path.join(PROJECT, ".claude", "project", "sprint", "sprint-progress.yaml"),
+  "sprintHistory": path.join(PROJECT, ".claude", "project", "sprint", "history"),
+  "sprintPlanContracts": path.join(PROJECT, ".claude", "project", "sprint", "plan-contracts"),
+  "sprintTickets": path.join(PROJECT, ".claude", "project", "sprint", "tickets"),
+  "sprintIssues": path.join(PROJECT, ".claude", "project", "sprint", "issues"),
+  "sprintIssuesLedger": path.join(PROJECT, "issues.md"),
+  "sprintExternalServices": path.join(PROJECT, ".claude", "project", "sprint", "external-services"),
+  "sprintReleases": path.join(PROJECT, ".claude", "project", "sprint", "releases"),
+  "sprintApprovals": path.join(PROJECT, ".claude", "project", "sprint", "approvals"),
+  "sprintDecisions": path.join(PROJECT, ".claude", "project", "sprint", "decisions"),
+  "sprintRalph": path.join(PROJECT, ".claude", "project", "sprint", "ralph"),
+  "sprintCheckpoints": path.join(PROJECT, ".claude", "project", "sprint", "checkpoints"),
+  "sprintRequirements": path.join(PROJECT, ".claude", "project", "sprint", "requirements"),
+  "sprintTemplates": path.join(PROJECT, "framework", "templates", "sprint"),
+  "sprintSchemas": path.join(PROJECT, "schemas", "sprint"),
+  "sprintReference": path.join(PROJECT, ".claude", "project", "reference", "sprint-workflow.md"),
+  "sprintRouting": path.join(PROJECT, ".claude", "agents", "00-alex", ".system", "policy", "sprint-routing.json")
 };
 
 module.exports = { PROJECT, PATHS };

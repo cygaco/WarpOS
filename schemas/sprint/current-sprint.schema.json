@@ -1,0 +1,239 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "warpos/sprint/current-sprint/v1",
+  "title": "WarpOS Sprint v0.1 — Current Sprint",
+  "description": "paths.sprintCurrent. Live sprint state. Always exactly one current-sprint.yaml per downstream repo. Status 'not_started' is valid (init.js writes that on first run).",
+  "type": "object",
+  "required": [
+    "schema",
+    "id",
+    "title",
+    "objective",
+    "status",
+    "created_at",
+    "updated_at",
+    "current_phase",
+    "mode_invocation_required_by_user",
+    "tickets",
+    "requirements",
+    "checks",
+    "approvals",
+    "reports",
+    "ralph",
+    "crash_recovery"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema": { "type": "string", "const": "warpos/sprint/current-sprint/v1" },
+    "id": { "type": "string", "pattern": "^SP-[0-9]{8}-[0-9]{3}$" },
+    "title": { "type": "string" },
+    "objective": { "type": "string" },
+    "status": {
+      "type": "string",
+      "enum": [
+        "not_started",
+        "planning",
+        "designing",
+        "ready_for_execution",
+        "executing",
+        "waiting_on_human",
+        "waiting_on_external_service",
+        "in_review",
+        "blocked",
+        "releasing",
+        "closed",
+        "abandoned"
+      ]
+    },
+    "created_at": { "type": "string", "format": "date-time" },
+    "updated_at": { "type": "string", "format": "date-time" },
+    "source_request": { "type": "string" },
+    "interpreted_intent": { "type": "string" },
+    "plan_contract": {
+      "type": "string",
+      "description": "Pointer to plan-contracts/<id>.yaml"
+    },
+    "risk_level": {
+      "type": "string",
+      "enum": ["low", "medium", "high", "critical"]
+    },
+    "approval_state": {
+      "type": "string",
+      "enum": [
+        "none_required",
+        "plan_pending",
+        "design_pending",
+        "execution_pending",
+        "release_pending",
+        "approved",
+        "rejected"
+      ]
+    },
+    "current_phase": {
+      "type": "string",
+      "enum": ["idle", "plan", "design", "execute", "release", "retrospective"]
+    },
+    "recommended_mode": {
+      "type": "string",
+      "enum": ["solo", "adhoc", "oneshot", "no_recommendation"]
+    },
+    "mode_invocation_required_by_user": { "type": "boolean", "const": true },
+    "external_services": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "identified": { "type": "array", "items": { "type": "string" } },
+        "blocked": { "type": "array", "items": { "type": "string" } },
+        "ready": { "type": "array", "items": { "type": "string" } },
+        "mocked": { "type": "array", "items": { "type": "string" } },
+        "deferred": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "tickets": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "proposed": { "type": "array", "items": { "type": "string" } },
+        "planned": { "type": "array", "items": { "type": "string" } },
+        "designed": { "type": "array", "items": { "type": "string" } },
+        "ready_for_execution": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "in_progress": { "type": "array", "items": { "type": "string" } },
+        "blocked": { "type": "array", "items": { "type": "string" } },
+        "waiting_on_human": { "type": "array", "items": { "type": "string" } },
+        "waiting_on_external_service": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "in_review": { "type": "array", "items": { "type": "string" } },
+        "qa_failed": { "type": "array", "items": { "type": "string" } },
+        "redteam_failed": { "type": "array", "items": { "type": "string" } },
+        "done": { "type": "array", "items": { "type": "string" } },
+        "released": { "type": "array", "items": { "type": "string" } },
+        "deferred": { "type": "array", "items": { "type": "string" } },
+        "abandoned": { "type": "array", "items": { "type": "string" } },
+        "reopened": { "type": "array", "items": { "type": "string" } },
+        "superseded": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "requirements": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "prd": { "type": "string" },
+        "high_level_stories": { "type": "string" },
+        "granular_stories": { "type": "string" },
+        "copy": { "type": "string" },
+        "inputs": { "type": "string" },
+        "trace": { "type": "string" },
+        "acceptance_criteria": { "type": "string" },
+        "qa_plan": { "type": "string" },
+        "redteam_plan": { "type": "string" },
+        "release_plan": { "type": "string" }
+      }
+    },
+    "checks": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "lint": { "$ref": "#/definitions/checkState" },
+        "typecheck": { "$ref": "#/definitions/checkState" },
+        "tests": { "$ref": "#/definitions/checkState" },
+        "build": { "$ref": "#/definitions/checkState" },
+        "qa": { "$ref": "#/definitions/checkState" },
+        "redteam": { "$ref": "#/definitions/checkState" }
+      }
+    },
+    "approvals": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "plan": { "$ref": "#/definitions/approvalState" },
+        "design": { "$ref": "#/definitions/approvalState" },
+        "execution": { "$ref": "#/definitions/approvalState" },
+        "release": { "$ref": "#/definitions/approvalState" },
+        "external_services": { "$ref": "#/definitions/approvalState" }
+      }
+    },
+    "reports": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "plan": { "type": "string" },
+        "design": { "type": "string" },
+        "execution": { "type": "string" },
+        "release": { "type": "string" }
+      }
+    },
+    "ralph": {
+      "type": "object",
+      "required": ["active"],
+      "additionalProperties": false,
+      "properties": {
+        "active": { "type": "boolean" },
+        "current_ticket": { "type": ["string", "null"] },
+        "current_loop": { "type": ["integer", "null"], "minimum": 0 },
+        "status": {
+          "type": "string",
+          "enum": [
+            "idle",
+            "plan",
+            "act",
+            "test",
+            "review",
+            "record",
+            "checkpoint",
+            "stopped"
+          ]
+        },
+        "last_checkpoint": { "type": ["string", "null"] },
+        "next_action": { "type": ["string", "null"] }
+      }
+    },
+    "crash_recovery": {
+      "type": "object",
+      "required": ["safe_to_continue"],
+      "additionalProperties": false,
+      "properties": {
+        "last_checkpoint": { "type": ["string", "null"] },
+        "resume_command": { "type": "string" },
+        "resume_summary": { "type": "string" },
+        "active_files": { "type": "array", "items": { "type": "string" } },
+        "dirty_state": { "type": "boolean" },
+        "blockers": { "type": "array", "items": { "type": "string" } },
+        "safe_to_continue": { "type": "boolean" }
+      }
+    }
+  },
+  "definitions": {
+    "checkState": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["unknown", "passing", "failing", "skipped", "not_run"]
+        },
+        "last_run": { "type": ["string", "null"] },
+        "evidence": { "type": "string" }
+      }
+    },
+    "approvalState": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "required": { "type": "boolean" },
+        "state": {
+          "type": "string",
+          "enum": ["not_required", "pending", "approved", "rejected", "waived"]
+        },
+        "ref": {
+          "type": ["string", "null"],
+          "description": "Pointer to approvals/<id>.yaml"
+        }
+      }
+    }
+  }
+}

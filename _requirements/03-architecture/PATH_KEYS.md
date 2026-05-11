@@ -70,6 +70,25 @@ Markdown convention: reference paths as `paths.X` in prose. Code: `const { PATHS
 | `skillUsageFile` | `.claude/project/events/skill-usage.jsonl` | jsonl | runtime | yes | 0.1.3 |  |
 | `specGraph` | `.claude/project/maps/SPEC_GRAPH.json` | json | generated | yes | 0.0.0 |  |
 | `specsRoot` | `_requirements/04-features` | dir | project | yes | 0.1.0 | replaces `manifest.projectPaths.specs (originally docs/05-features, then requirements/05-features, then requirements/04-features)` |
+| `sprintApprovals` | `.claude/project/sprint/approvals` | dir | runtime | yes | 0.4.0 |  |
+| `sprintCheckpoints` | `.claude/project/sprint/checkpoints` | dir | runtime | yes | 0.4.0 |  |
+| `sprintCurrent` | `.claude/project/sprint/current-sprint.yaml` | yaml | runtime | yes | 0.4.0 |  |
+| `sprintDecisions` | `.claude/project/sprint/decisions` | dir | runtime | yes | 0.4.0 | Sprint-scope decisions. Distinct from paths.decisions (proje |
+| `sprintExternalServices` | `.claude/project/sprint/external-services` | dir | runtime | yes | 0.4.0 |  |
+| `sprintHistory` | `.claude/project/sprint/history` | dir | runtime | yes | 0.4.0 |  |
+| `sprintIssues` | `.claude/project/sprint/issues` | dir | runtime | yes | 0.4.0 | Structured per-issue yaml. Per-project bug inbox issues.md ( |
+| `sprintIssuesLedger` | `issues.md` | md | project | yes | 0.4.0 | Human-readable per-project bug inbox at repo root. Distinct  |
+| `sprintPlanContracts` | `.claude/project/sprint/plan-contracts` | dir | runtime | yes | 0.4.0 |  |
+| `sprintProgress` | `.claude/project/sprint/sprint-progress.yaml` | yaml | runtime | yes | 0.4.0 |  |
+| `sprintRalph` | `.claude/project/sprint/ralph` | dir | runtime | yes | 0.4.0 |  |
+| `sprintReference` | `.claude/project/reference/sprint-workflow.md` | md | framework | no | 0.4.0 |  |
+| `sprintReleases` | `.claude/project/sprint/releases` | dir | runtime | yes | 0.4.0 |  |
+| `sprintRequirements` | `.claude/project/sprint/requirements` | dir | runtime | yes | 0.4.0 | Sprint-scope requirement bundles (PRD/STORIES/COPY/INPUTS/TR |
+| `sprintRoot` | `.claude/project/sprint` | dir | runtime | yes | 0.4.0 | Sprint Workflow v0.1 — downstream live tracker root. Created |
+| `sprintRouting` | `.claude/agents/00-alex/.system/policy/sprint-routing.json` | json | framework | no | 0.4.0 |  |
+| `sprintSchemas` | `schemas/sprint` | dir | framework | no | 0.4.0 |  |
+| `sprintTemplates` | `framework/templates/sprint` | dir | framework | no | 0.4.0 |  |
+| `sprintTickets` | `.claude/project/sprint/tickets` | dir | runtime | yes | 0.4.0 |  |
 | `store` | `.claude/agents/store.json` | json | runtime | yes | 0.0.0 |  |
 | `systemsFile` | `.claude/project/memory/systems.jsonl` | jsonl | runtime | yes | 0.0.0 |  |
 | `toolsFile` | `.claude/project/events/tools.jsonl` | jsonl | runtime | yes | 0.0.0 |  |

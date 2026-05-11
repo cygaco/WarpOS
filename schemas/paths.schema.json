@@ -361,6 +361,101 @@
       "type": "string",
       "const": ".warpos/promote-reports",
       "description": "dir (runtime) — paths.warposPromoteReports"
+    },
+    "sprintRoot": {
+      "type": "string",
+      "const": ".claude/project/sprint",
+      "description": "dir (runtime) — paths.sprintRoot"
+    },
+    "sprintCurrent": {
+      "type": "string",
+      "const": ".claude/project/sprint/current-sprint.yaml",
+      "description": "yaml (runtime) — paths.sprintCurrent"
+    },
+    "sprintProgress": {
+      "type": "string",
+      "const": ".claude/project/sprint/sprint-progress.yaml",
+      "description": "yaml (runtime) — paths.sprintProgress"
+    },
+    "sprintHistory": {
+      "type": "string",
+      "const": ".claude/project/sprint/history",
+      "description": "dir (runtime) — paths.sprintHistory"
+    },
+    "sprintPlanContracts": {
+      "type": "string",
+      "const": ".claude/project/sprint/plan-contracts",
+      "description": "dir (runtime) — paths.sprintPlanContracts"
+    },
+    "sprintTickets": {
+      "type": "string",
+      "const": ".claude/project/sprint/tickets",
+      "description": "dir (runtime) — paths.sprintTickets"
+    },
+    "sprintIssues": {
+      "type": "string",
+      "const": ".claude/project/sprint/issues",
+      "description": "dir (runtime) — paths.sprintIssues"
+    },
+    "sprintIssuesLedger": {
+      "type": "string",
+      "const": "issues.md",
+      "description": "md (project) — paths.sprintIssuesLedger"
+    },
+    "sprintExternalServices": {
+      "type": "string",
+      "const": ".claude/project/sprint/external-services",
+      "description": "dir (runtime) — paths.sprintExternalServices"
+    },
+    "sprintReleases": {
+      "type": "string",
+      "const": ".claude/project/sprint/releases",
+      "description": "dir (runtime) — paths.sprintReleases"
+    },
+    "sprintApprovals": {
+      "type": "string",
+      "const": ".claude/project/sprint/approvals",
+      "description": "dir (runtime) — paths.sprintApprovals"
+    },
+    "sprintDecisions": {
+      "type": "string",
+      "const": ".claude/project/sprint/decisions",
+      "description": "dir (runtime) — paths.sprintDecisions"
+    },
+    "sprintRalph": {
+      "type": "string",
+      "const": ".claude/project/sprint/ralph",
+      "description": "dir (runtime) — paths.sprintRalph"
+    },
+    "sprintCheckpoints": {
+      "type": "string",
+      "const": ".claude/project/sprint/checkpoints",
+      "description": "dir (runtime) — paths.sprintCheckpoints"
+    },
+    "sprintRequirements": {
+      "type": "string",
+      "const": ".claude/project/sprint/requirements",
+      "description": "dir (runtime) — paths.sprintRequirements"
+    },
+    "sprintTemplates": {
+      "type": "string",
+      "const": "framework/templates/sprint",
+      "description": "dir (framework) — paths.sprintTemplates"
+    },
+    "sprintSchemas": {
+      "type": "string",
+      "const": "schemas/sprint",
+      "description": "dir (framework) — paths.sprintSchemas"
+    },
+    "sprintReference": {
+      "type": "string",
+      "const": ".claude/project/reference/sprint-workflow.md",
+      "description": "md (framework) — paths.sprintReference"
+    },
+    "sprintRouting": {
+      "type": "string",
+      "const": ".claude/agents/00-alex/.system/policy/sprint-routing.json",
+      "description": "json (framework) — paths.sprintRouting"
     }
   }
 }
