@@ -162,6 +162,19 @@ Tell the user, VERBATIM:
 >
 > I've written `WARPOS_NEXT_STEPS.md` at the root of this project — read it in your next session. It has the verification commands and first-use tips. I'll also auto-run `/warp:health` the moment you prompt me next session.
 
+### Phase 2.5 — Dispatch + provider sanity (Phase 0)
+
+Run these once, after restart, before the user dispatches anything:
+
+```bash
+node scripts/dispatch/prune-dead-locks.js
+node scripts/warpos/provider-health-check.js --summary
+```
+
+If `provider-health-check` flags any non-green provider, print its
+`suggestion` field verbatim to the user. The check is fail-open and
+should NOT block setup.
+
 ### Phase 3 — Provider CLIs (optional)
 
 AFTER the user restarts, the first `/warp:health` will flag missing provider CLIs. At that point, if they want full model diversity, show:

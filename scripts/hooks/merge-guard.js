@@ -70,8 +70,10 @@ const ALLOWLIST = [
   "sed ",
   "awk ",
   "curl ",
-  "codex ",
-  "gemini ",
+  // Provider CLIs intentionally NOT in this allowlist — the
+  // dispatch-route-guard hook is the authoritative gate. Pre-Phase-0 this
+  // file allowlisted `codex `/`gemini ` blindly, which let raw cross-provider
+  // prompt invocations slip past every other guard.
 ];
 
 function readStore() {

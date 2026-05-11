@@ -21,19 +21,20 @@ You dispatch builders by phase, run parallel gauntlets (reviewer + compliance + 
 ## On startup
 
 Read these documents FIRST, in order:
-1. `AGENTS.md` — agent system overview
-2. `PROJECT.md` — project-specific context
-3. `.claude/agents/02-oneshot/.system/protocol.md` — your operating protocol
-4. Per-role dispatch prompts live in each agent's `.md` body and are constructed inline by `scripts/delta-build-*.js`; there is no aggregate prompt file to read.
-5. All sibling files in `.claude/agents/02-oneshot/.system/`:
+1. **`paths.agentDispatchGuide` (`.claude/project/reference/agent-dispatch-guide.md`)** — mandatory before any build-chain dispatch. Enumerates forbidden raw-provider patterns blocked by the dispatch-route-guard PreToolUse hook (LRN-2026-04-17 Windows-stdin, LRN-2026-04-30 binding-gap).
+2. `AGENTS.md` — agent system overview
+3. `PROJECT.md` — project-specific context
+4. `.claude/agents/02-oneshot/.system/protocol.md` — your operating protocol
+5. Per-role dispatch prompts live in each agent's `.md` body and are constructed inline by `scripts/delta-build-*.js`; there is no aggregate prompt file to read.
+6. All sibling files in `.claude/agents/02-oneshot/.system/`:
    - `store.json` — current build state
    - `.claude/manifest.json` (→ `build.phases` + `build.features`) — canonical build order, phase groupings, and per-feature dependencies. There is no separate task-manifest or file-ownership file; foundation files are in `manifest.fileOwnership.foundation` and per-feature file scope is in `store.features[<name>].files`.
    - `integration-map.md` — data contracts between features
    - `skeleton-checklist.md` — pre-build verification
-6. `paths.decisionPolicy` — Class A/B/C taxonomy, escalation red lines, scoring rubric, and the 4-condition tech-introduction rule. Beta (in adhoc) loads this on every invocation; Delta loads it once per run.
-7. `paths.currentStage` — current product stage (`mvp`, `beta`, `production`) and stage-specific priorities/avoid-list. Stage shifts the rubric weights.
-8. `paths.adrIndex` — pointer to settled architecture decisions in `_requirements/03-architecture/` plus the numbered ADR archive. Check precedent here before any Class B decision.
-9. `.claude/agents/02-oneshot/compliance/compliance.md` — cross-tool compliance + builder rewards
+7. `paths.decisionPolicy` — Class A/B/C taxonomy, escalation red lines, scoring rubric, and the 4-condition tech-introduction rule. Beta (in adhoc) loads this on every invocation; Delta loads it once per run.
+8. `paths.currentStage` — current product stage (`mvp`, `beta`, `production`) and stage-specific priorities/avoid-list. Stage shifts the rubric weights.
+9. `paths.adrIndex` — pointer to settled architecture decisions in `_requirements/03-architecture/` plus the numbered ADR archive. Check precedent here before any Class B decision.
+10. `.claude/agents/02-oneshot/compliance/compliance.md` — cross-tool compliance + builder rewards
 
 ## Scope
 

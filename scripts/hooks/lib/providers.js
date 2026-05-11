@@ -427,22 +427,47 @@ function runProvider(role, prompt, opts = {}) {
       // model actually served the request (preview models can silently fall
       // back under load). We extract response as `output` and record the
       // served model as `actualModel`.
-      cmd = `${cfg.cli} -m ${model} -p "Process the instructions on stdin and produce the requested output." -o json`;
+      //
+      // Phase 0 workstream E: optional --skip-trust. The gemini CLI refuses
+      // to run outside a trusted directory on some platforms. The flag is
+      // gated by env (WARPOS_GEMINI_TRUST_BYPASS=1) so projects can opt in
+      // without changing source. Default OFF — trust enforcement may be
+      // intentional in regulated repos.
+      const trustFlag =
+        process.env.WARPOS_GEMINI_TRUST_BYPASS === "1" ? " --skip-trust" : "";
+      cmd = `${cfg.cli}${trustFlag} -m ${model} -p "Process the instructions on stdin and produce the requested output." -o json`;
     } else {
       // Generic pattern from cfg.syntax (used when manifest overrides defaults)
       cmd = `${cfg.syntax.replace("{model}", model).replace("{reasoning}", reasoningFlag)}`;
     }
 
-    const rawOutput = execSync(cmd, {
+    // Phase 0 workstream C: capture stderr so silent zero-byte deaths leave
+    // evidence. execSync only returns stdout; stderr is reachable only via the
+    // thrown error's `.stderr` field in the catch branch. To preserve stderr
+    // for both success AND failure paths we use spawnSync inline.
+    const { spawnSync } = require("child_process");
+    const spawned = spawnSync(cmd, {
       cwd: PROJECT,
       timeout: timeoutMs,
-      stdio: ["pipe", "pipe", "pipe"],
       input: promptContent,
       maxBuffer: 32 * 1024 * 1024, // 32MB for long review outputs
       shell: true,
-    })
-      .toString()
-      .trim();
+      encoding: "buffer",
+    });
+    if (spawned.error) throw spawned.error;
+    const stdoutBuf = spawned.stdout || Buffer.alloc(0);
+    const stderrBuf = spawned.stderr || Buffer.alloc(0);
+    const rawOutput = stdoutBuf.toString("utf8").trim();
+    const stderrText = stderrBuf.toString("utf8");
+    const stderrBytes = stderrBuf.length;
+    if (spawned.status !== 0) {
+      const errMessage = stderrText.trim() || `exit ${spawned.status}`;
+      const e = new Error(errMessage);
+      e.stderr = stderrText;
+      e.status = spawned.status;
+      e.stderrBytes = stderrBytes;
+      throw e;
+    }
 
     // Gemini JSON envelope unwrap + actual-model audit
     let output = rawOutput;
@@ -481,6 +506,7 @@ function runProvider(role, prompt, opts = {}) {
       model,
       actualModel,
       output,
+      stderrBytes,
       cmd: cmd.slice(0, 200),
     };
   } catch (err) {
@@ -491,6 +517,7 @@ function runProvider(role, prompt, opts = {}) {
       output: "",
       fallback: true,
       error: String(err.message || err).slice(0, 500),
+      stderrBytes: typeof err.stderrBytes === "number" ? err.stderrBytes : 0,
     };
   } finally {
     // Cleanup temp file unless debugging

@@ -9,6 +9,7 @@ Markdown convention: reference paths as `paths.X` in prose. Code: `const { PATHS
 | Key | Path | Kind | Owner | Mutable | Introduced | Notes |
 |---|---|---|---|---|---|---|
 | `adrIndex` | `.claude/agents/00-alex/.system/policy/adr/INDEX.md` | md | project | yes | 0.0.0 |  |
+| `agentDispatchGuide` | `.claude/project/reference/agent-dispatch-guide.md` | md | framework | no | 0.3.0 |  |
 | `agents` | `.claude/agents` | dir | framework | no | 0.0.0 |  |
 | `agentSystem` | `.claude/agents/00-alex/.system` | dir | framework | no | 0.0.0 |  |
 | `architectureRoot` | `_requirements/03-architecture` | dir | framework | yes | 0.2.0 | Track B 2026-05-03 introduced this key to replace many hardc |
@@ -23,6 +24,9 @@ Markdown convention: reference paths as `paths.X` in prose. Code: `const { PATHS
 | `decisionPolicy` | `.claude/agents/00-alex/.system/policy/decision-policy.md` | md | project | yes | 0.0.0 |  |
 | `decisions` | `.claude/project/decisions` | dir | runtime | yes | 0.1.0 |  |
 | `designSystemRoot` | `_requirements/01-design-system` | dir | framework | yes | 0.2.0 |  |
+| `dispatchCompletionsFile` | `.claude/runtime/dispatch-completions.jsonl` | jsonl | runtime | yes | 0.3.0 |  |
+| `dispatchDeathsFile` | `.claude/runtime/dispatch-deaths.jsonl` | jsonl | runtime | yes | 0.3.0 |  |
+| `dispatchLocks` | `.claude/runtime/dispatch-locks` | dir | runtime | yes | 0.3.0 |  |
 | `docsRoot` | `_docs` | dir | project | yes | 0.2.0 | Track B 2026-05-03 renamed docs -> _docs. Now contains only  |
 | `dreams` | `.claude/dreams` | dir | runtime | yes | 0.0.0 |  |
 | `events` | `.claude/project/events` | dir | runtime | yes | 0.0.0 |  |
@@ -51,6 +55,8 @@ Markdown convention: reference paths as `paths.X` in prose. Code: `const { PATHS
 | `patterns` | `patterns` | dir | framework | no | 0.0.0 |  |
 | `plans` | `.claude/runtime/plans` | dir | runtime | yes | 0.0.0 |  |
 | `policy` | `.claude/agents/00-alex/.system/policy` | dir | project | yes | 0.0.0 |  |
+| `providerFallbackPolicy` | `.claude/agents/00-alex/.system/policy/provider-fallback.json` | json | framework | no | 0.3.0 |  |
+| `providerTmp` | `.claude/runtime/.provider-tmp` | dir | runtime | yes | 0.3.0 |  |
 | `providerTrace` | `.claude/project/decisions/provider-trace.jsonl` | jsonl | runtime | yes | 0.1.0 |  |
 | `recurringIssuesFile` | `.claude/project/memory/recurring-issues.jsonl` | jsonl | runtime | yes | 0.0.0 |  |
 | `reference` | `.claude/project/reference` | dir | framework | no | 0.0.0 |  |
@@ -68,6 +74,9 @@ Markdown convention: reference paths as `paths.X` in prose. Code: `const { PATHS
 | `systemsFile` | `.claude/project/memory/systems.jsonl` | jsonl | runtime | yes | 0.0.0 |  |
 | `toolsFile` | `.claude/project/events/tools.jsonl` | jsonl | runtime | yes | 0.0.0 |  |
 | `tracesFile` | `.claude/project/memory/traces.jsonl` | jsonl | runtime | yes | 0.0.0 |  |
+| `warposFlagLedger` | `warpos-to-update.md` | md | project | yes | 0.3.0 |  |
+| `warposPromotedArchive` | `warpos-promoted-archive.md` | md | project | yes | 0.3.0 |  |
+| `warposPromoteReports` | `.warpos/promote-reports` | dir | runtime | yes | 0.3.0 |  |
 
 ## Owner classification
 

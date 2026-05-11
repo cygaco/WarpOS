@@ -97,6 +97,24 @@ Check for (report as informational, not blocking):
 
 For each missing: INFO — "Optional. Install for enhanced features."
 
+### 11. Provider Health (Phase 0)
+
+Run `node scripts/warpos/provider-health-check.js --summary`. Report each
+configured provider as green/yellow/red and surface the one-line `suggestion`
+field for any non-green status.
+
+States recognised (per `scripts/hooks/lib/provider-health.js`):
+`ok`, `cli_missing`, `auth_missing`, `auth_source_mismatch`,
+`model_not_found`, `quota_exhausted`, `free_tier_limit_zero`,
+`stale_cli_registry`, `trusted_directory_required`, `provider_timeout`,
+`unknown_error`.
+
+### 12. Dispatch Hygiene (Phase 0)
+
+Run `node scripts/dispatch/prune-dead-locks.js`. Report `scanned`/`removed_dead`
+and per-provider before/after counts. Non-blocking — eager cleanup that costs
+nothing when nothing is dead.
+
 ## Output Format
 
 ```

@@ -529,6 +529,78 @@
       "mutable": false,
       "introducedIn": "0.0.0",
       "docsToken": "paths.loggerLib"
+    },
+    "agentDispatchGuide": {
+      "path": ".claude/project/reference/agent-dispatch-guide.md",
+      "kind": "md",
+      "owner": "framework",
+      "mutable": false,
+      "introducedIn": "0.3.0",
+      "docsToken": "paths.agentDispatchGuide"
+    },
+    "dispatchLocks": {
+      "path": ".claude/runtime/dispatch-locks",
+      "kind": "dir",
+      "owner": "runtime",
+      "mutable": true,
+      "introducedIn": "0.3.0",
+      "docsToken": "paths.dispatchLocks"
+    },
+    "dispatchDeathsFile": {
+      "path": ".claude/runtime/dispatch-deaths.jsonl",
+      "kind": "jsonl",
+      "owner": "runtime",
+      "mutable": true,
+      "introducedIn": "0.3.0",
+      "docsToken": "paths.dispatchDeathsFile"
+    },
+    "dispatchCompletionsFile": {
+      "path": ".claude/runtime/dispatch-completions.jsonl",
+      "kind": "jsonl",
+      "owner": "runtime",
+      "mutable": true,
+      "introducedIn": "0.3.0",
+      "docsToken": "paths.dispatchCompletionsFile"
+    },
+    "providerTmp": {
+      "path": ".claude/runtime/.provider-tmp",
+      "kind": "dir",
+      "owner": "runtime",
+      "mutable": true,
+      "introducedIn": "0.3.0",
+      "docsToken": "paths.providerTmp"
+    },
+    "providerFallbackPolicy": {
+      "path": ".claude/agents/00-alex/.system/policy/provider-fallback.json",
+      "kind": "json",
+      "owner": "framework",
+      "mutable": false,
+      "introducedIn": "0.3.0",
+      "docsToken": "paths.providerFallbackPolicy"
+    },
+    "warposFlagLedger": {
+      "path": "warpos-to-update.md",
+      "kind": "md",
+      "owner": "project",
+      "mutable": true,
+      "introducedIn": "0.3.0",
+      "docsToken": "paths.warposFlagLedger"
+    },
+    "warposPromotedArchive": {
+      "path": "warpos-promoted-archive.md",
+      "kind": "md",
+      "owner": "project",
+      "mutable": true,
+      "introducedIn": "0.3.0",
+      "docsToken": "paths.warposPromotedArchive"
+    },
+    "warposPromoteReports": {
+      "path": ".warpos/promote-reports",
+      "kind": "dir",
+      "owner": "runtime",
+      "mutable": true,
+      "introducedIn": "0.3.0",
+      "docsToken": "paths.warposPromoteReports"
     }
   },
   "lintRules": {
@@ -698,7 +770,16 @@
       "store",
       "specGraph",
       "manifest",
-      "settings"
+      "settings",
+      "agentDispatchGuide",
+      "dispatchLocks",
+      "dispatchDeathsFile",
+      "dispatchCompletionsFile",
+      "providerTmp",
+      "providerFallbackPolicy",
+      "warposFlagLedger",
+      "warposPromotedArchive",
+      "warposPromoteReports"
     ],
     "_warnKeys_doc": "These keys point at single files. Hardcoded literal use should warn (paths.X is preferred). build.js generates regex arrays from the registry path values."
   },

@@ -28,6 +28,7 @@
 
 const fs = require("fs");
 const path = require("path");
+const crypto = require("crypto");
 const {
   runProvider,
   getProviderForRole,
@@ -42,17 +43,176 @@ const {
 const { record: recordProviderTrace } = require("./agents/provider-trace");
 const { validate: validateAgentOutput } = require("./agents/output-validator");
 
+// ── Telemetry helpers (Phase 0 workstream C) ──────────────
+//
+// Every dispatch gets a unique dispatch_id. Completion + silent-death markers
+// are persisted to durable JSONL files under .claude/runtime/ so a post-mortem
+// can answer "did the process actually run and produce nothing, or was it
+// pre-empted before runProvider returned?". Fail-open everywhere — never let
+// telemetry crash an otherwise-successful dispatch.
+
+function makeDispatchId() {
+  return (
+    "d-" + Date.now().toString(36) + "-" + crypto.randomBytes(4).toString("hex")
+  );
+}
+
+function cmdlineChecksum(role, provider, promptBytes) {
+  return (
+    "sha256:" +
+    crypto
+      .createHash("sha256")
+      .update(`${role}|${provider}|${promptBytes}|${process.argv.join(" ")}`)
+      .digest("hex")
+      .slice(0, 32)
+  );
+}
+
+function ensureDir(p) {
+  try {
+    fs.mkdirSync(p, { recursive: true });
+  } catch {
+    /* ignore */
+  }
+}
+
+function appendJsonl(file, record) {
+  try {
+    ensureDir(path.dirname(file));
+    fs.appendFileSync(file, JSON.stringify(record) + "\n");
+  } catch {
+    /* fail-open — telemetry never blocks dispatch */
+  }
+}
+
+function recordCompletion(record) {
+  const file =
+    PATHS.dispatchCompletionsFile ||
+    path.join(PATHS.runtime || ".claude/runtime", "dispatch-completions.jsonl");
+  appendJsonl(file, record);
+}
+
+function recordDeath(record) {
+  const file =
+    PATHS.dispatchDeathsFile ||
+    path.join(PATHS.runtime || ".claude/runtime", "dispatch-deaths.jsonl");
+  appendJsonl(file, record);
+}
+
 /**
  * Find an agent spec file for a role by scanning .claude/agents/.
  * Agents live at either:
  *   .claude/agents/<mode>/<role>/<role>.md
  *   .claude/agents/<mode>/<role>/orchestrator.md
  *   .claude/agents/00-alex/<role>.md
+ *
+ * Phase 0 workstream F — mode-aware resolution. Roles like `builder`,
+ * `reviewer`, `qa` exist in BOTH 01-adhoc/ and 02-oneshot/ with subtly
+ * different specs. The pre-Phase-0 walker picked the first match in DFS
+ * order, which depended on filesystem layout. Now resolution order is:
+ *
+ *   1. process.env.WARPOS_MODE explicit (`adhoc` | `oneshot` | `solo`)
+ *   2. inferred from `.claude/agents/02-oneshot/.system/store.json#status`
+ *      (running → oneshot)
+ *   3. `00-alex/<role>.md` for orchestrator/identity roles (alpha, beta,
+ *      gamma, delta)
+ *   4. first match in DFS order (legacy fallback)
  */
+
+function detectMode() {
+  const explicit = process.env.WARPOS_MODE;
+  if (explicit && /^(adhoc|oneshot|solo)$/i.test(explicit))
+    return explicit.toLowerCase();
+  try {
+    const storePath =
+      PATHS.oneshotStore ||
+      path.join(
+        PATHS.agents || ".claude/agents",
+        "02-oneshot",
+        ".system",
+        "store.json",
+      );
+    if (fs.existsSync(storePath)) {
+      const store = JSON.parse(fs.readFileSync(storePath, "utf8"));
+      if (store && store.status === "running") return "oneshot";
+    }
+  } catch {
+    /* fall through */
+  }
+  return "adhoc";
+}
+
+function modeSubdir(mode) {
+  if (mode === "oneshot") return "02-oneshot";
+  if (mode === "adhoc") return "01-adhoc";
+  return null;
+}
+
+function specMatchesRole(filePath, role) {
+  try {
+    const body = fs.readFileSync(filePath, "utf8");
+    const fmMatch = body.match(/^---\n([\s\S]*?)\n---/);
+    if (fmMatch) {
+      const nameMatch = fmMatch[1].match(/^name:\s*(\S+)/m);
+      if (nameMatch && nameMatch[1] === role) return true;
+    }
+  } catch {
+    /* unreadable */
+  }
+  return false;
+}
+
+function tryDirect(role, ...candidates) {
+  for (const c of candidates) {
+    if (!c) continue;
+    if (fs.existsSync(c)) {
+      // Prefer files whose frontmatter `name:` matches the role, but accept
+      // when stem matches and frontmatter is silent.
+      if (specMatchesRole(c, role)) return c;
+      const stem = path.basename(c).replace(/\.md$/, "");
+      if (stem === role) return c;
+    }
+  }
+  return null;
+}
+
 function findAgentSpec(role) {
   const agentsDir =
     PATHS.agents || path.join(PATHS.claudeDir || ".claude", "agents");
   if (!fs.existsSync(agentsDir)) return null;
+
+  const mode = detectMode();
+  const modeDir = modeSubdir(mode);
+
+  // 1. Mode-specific direct hits
+  if (modeDir) {
+    const modeRoot = path.join(agentsDir, modeDir);
+    const direct = tryDirect(
+      role,
+      path.join(modeRoot, role, `${role}.md`),
+      path.join(modeRoot, role, "orchestrator.md"),
+      path.join(modeRoot, `${role}.md`),
+    );
+    if (direct) return direct;
+  }
+
+  // 2. 00-alex orchestrator/identity roles
+  const alex = tryDirect(role, path.join(agentsDir, "00-alex", `${role}.md`));
+  if (alex) return alex;
+
+  // 3. Cross-mode opposite direction (e.g. running adhoc but only oneshot has it)
+  const fallbackDir = modeDir === "01-adhoc" ? "02-oneshot" : "01-adhoc";
+  const fallbackRoot = path.join(agentsDir, fallbackDir);
+  const fallback = tryDirect(
+    role,
+    path.join(fallbackRoot, role, `${role}.md`),
+    path.join(fallbackRoot, role, "orchestrator.md"),
+    path.join(fallbackRoot, `${role}.md`),
+  );
+  if (fallback) return fallback;
+
+  // 4. Legacy DFS — kept for backward compatibility when a role lives in a
+  //    non-standard subdir.
   const stack = [agentsDir];
   while (stack.length) {
     const dir = stack.pop();
@@ -69,19 +229,7 @@ function findAgentSpec(role) {
       } else if (ent.isFile() && ent.name.endsWith(".md")) {
         const stem = ent.name.replace(/\.md$/, "");
         if (stem === role || stem === "orchestrator") {
-          try {
-            const body = fs.readFileSync(full, "utf8");
-            const fmMatch = body.match(/^---\n([\s\S]*?)\n---/);
-            if (fmMatch) {
-              const nameMatch = fmMatch[1].match(/^name:\s*(\S+)/m);
-              if (nameMatch && nameMatch[1] === role) return full;
-              if (stem === role) return full;
-            } else if (stem === role) {
-              return full;
-            }
-          } catch {
-            /* skip */
-          }
+          if (specMatchesRole(full, role) || stem === role) return full;
         }
       }
     }
@@ -104,6 +252,17 @@ function getRoleModel(role) {
   } catch {
     return null;
   }
+}
+
+// Allow test code to require() this module without triggering the CLI flow.
+if (require.main !== module) {
+  module.exports = {
+    findAgentSpec,
+    getRoleModel,
+    detectMode,
+    modeSubdir,
+  };
+  return;
 }
 
 const [, , role, promptArg] = process.argv;
@@ -143,6 +302,12 @@ if (!prompt.trim()) {
 
 const provider = getProviderForRole(role);
 const promptBytes = Buffer.byteLength(prompt, "utf8");
+
+// Phase 0 workstream C: stamp telemetry identity for this dispatch.
+const dispatchId = makeDispatchId();
+const dispatchStartedAt = new Date().toISOString();
+const dispatchStartedMs = Date.now();
+const cmdChecksum = cmdlineChecksum(role, provider, promptBytes);
 
 if (provider === "claude") {
   console.error(
@@ -213,7 +378,16 @@ const slotTimeoutMs = parseInt(
   process.env.DISPATCH_SLOT_TIMEOUT_MS || `${10 * 60 * 1000}`,
   10,
 );
-const slot = acquireSlotSync(provider, { timeoutMs: slotTimeoutMs });
+const slot = acquireSlotSync(provider, {
+  timeoutMs: slotTimeoutMs,
+  meta: {
+    dispatch_id: dispatchId,
+    role,
+    provider,
+    prompt_bytes: promptBytes,
+    cmdline_checksum: cmdChecksum,
+  },
+});
 if (!slot) {
   recordProviderTrace({
     role,
@@ -249,7 +423,10 @@ try {
   if (roleModel) result.specModel = roleModel;
   const parsed = parseProviderJson(result.output);
   if (parsed) result.parsed = parsed;
-  const envelopeValidation = validateAgentOutput(role, parsed || result.output || "");
+  const envelopeValidation = validateAgentOutput(
+    role,
+    parsed || result.output || "",
+  );
   result.envelopeValidation = {
     ok: envelopeValidation.ok,
     errors: envelopeValidation.errors || [],
@@ -272,6 +449,56 @@ try {
     promptBytes,
     ok: result.ok,
   });
+
+  // Phase 0 workstream C: completion + silent-death telemetry.
+  const stdoutBytes = result.output
+    ? Buffer.byteLength(String(result.output), "utf8")
+    : 0;
+  const stderrBytes = result.stderrBytes || 0;
+  const completedAt = new Date().toISOString();
+  const completedMs = Date.now();
+  const elapsedMs = completedMs - dispatchStartedMs;
+  recordCompletion({
+    dispatch_id: dispatchId,
+    pid: process.pid,
+    role,
+    provider,
+    model: result.model || roleModel || null,
+    started_at: dispatchStartedAt,
+    completed_at: completedAt,
+    elapsed_ms: elapsedMs,
+    prompt_bytes: promptBytes,
+    cmdline_checksum: cmdChecksum,
+    exit_code: result.ok ? 0 : 1,
+    stdout_bytes: stdoutBytes,
+    stderr_bytes: stderrBytes,
+    fallback: !!result.fallback,
+    ok: !!result.ok,
+  });
+
+  // Silent zero-byte death: process returned a non-ok with no stdout AND no
+  // captured stderr — this is the LRN-2026-04-17 / 2026-04-30 binding-gap
+  // failure signature. Persist for post-mortem so future flag-drain / health
+  // checks can flag the pattern instead of swallowing it.
+  if (!result.ok && stdoutBytes === 0 && stderrBytes === 0) {
+    recordDeath({
+      dispatch_id: dispatchId,
+      timestamp: completedAt,
+      pid: process.pid,
+      role,
+      provider,
+      model: result.model || roleModel || null,
+      prompt_bytes: promptBytes,
+      cmdline_checksum: cmdChecksum,
+      exit_code: null,
+      stdout_bytes: 0,
+      stderr_bytes: 0,
+      last_stdout_mtime: null,
+      last_stderr_mtime: null,
+      reason: "silent_zero_byte_death",
+      hint: result.error || null,
+    });
+  }
 } finally {
   releaseSlot(slot);
 }

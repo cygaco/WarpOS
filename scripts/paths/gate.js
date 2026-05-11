@@ -296,6 +296,7 @@ function checkDeprecatedAliases() {
     "warpos-system-updates",
     "warpos-roadmap.md",
     "ROADMAP.md",
+    "WARPOS_ROADMAP.md", // Phase 0 workstream H — canonical-only framework backlog
     // Per-session runtime checkpoint (snapshot of past prompts; not framework code)
     ".claude/.session-checkpoint.json",
     ".claude/.last-checkpoint",

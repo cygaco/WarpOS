@@ -1,0 +1,41 @@
+{
+  "$schema": "warpos/provider-fallback/v1",
+  "version": 1,
+  "comment": "Phase 0 workstream E scaffold. Documented but not yet enforced — runProvider's existing fallback signals (fallback:true on quota/timeout/cli-missing) drive routing today. Once /warp:promote-flags drains the dispatch backlog, lift this into runProvider so the chain is honoured automatically.",
+  "policies": {
+    "redteam": {
+      "primary": "gemini:gemini-3.1-pro-preview",
+      "fallback": "claude:claude-opus-4-7",
+      "rationale": "redteam runs adversarial-corpus reasoning; gemini-pro-preview is the strong primary, claude-opus is the most capable fallback that won't degrade depth on long attack chains."
+    },
+    "reviewer": {
+      "primary": "openai:gpt-5.5",
+      "fallback": "claude:claude-sonnet-4-6",
+      "rationale": "GPT-5.5 xhigh is the diversity lens against Claude builders. Falling back to claude-sonnet-4-6 keeps gauntlets moving when codex is unreachable."
+    },
+    "compliance": {
+      "primary": "openai:gpt-5.5",
+      "fallback": "claude:claude-sonnet-4-6"
+    },
+    "qa": {
+      "primary": "openai:gpt-5.4-mini",
+      "fallback": "claude:claude-haiku-4-5-20251001",
+      "rationale": "qa runs 13 personas — cost-balanced primary. Haiku fallback keeps per-persona cost predictable on outages."
+    },
+    "learner": {
+      "primary": "openai:gpt-5.5",
+      "fallback": "claude:claude-sonnet-4-6"
+    }
+  },
+  "on_failure": [
+    "quota_exhausted",
+    "free_tier_limit_zero",
+    "model_not_found",
+    "stale_cli_registry",
+    "provider_timeout",
+    "auth_missing",
+    "trusted_directory_required"
+  ],
+  "do_not_fall_back": ["strictFailure", "auth_source_mismatch"],
+  "notes": "auth_source_mismatch deliberately does NOT auto-fall-back. The user has set both API key AND OAuth — failing closed surfaces the configuration ambiguity rather than silently using the wrong account."
+}

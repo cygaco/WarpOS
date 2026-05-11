@@ -60,5 +60,14 @@
   "betaEvents": ".claude/agents/00-alex/.system/beta/events.jsonl",
   "lexicon": ".claude/agents/00-alex/.system/lexicon.md",
   "pathsLib": "scripts/hooks/lib/paths.js",
-  "loggerLib": "scripts/hooks/lib/logger.js"
+  "loggerLib": "scripts/hooks/lib/logger.js",
+  "agentDispatchGuide": ".claude/project/reference/agent-dispatch-guide.md",
+  "dispatchLocks": ".claude/runtime/dispatch-locks",
+  "dispatchDeathsFile": ".claude/runtime/dispatch-deaths.jsonl",
+  "dispatchCompletionsFile": ".claude/runtime/dispatch-completions.jsonl",
+  "providerTmp": ".claude/runtime/.provider-tmp",
+  "providerFallbackPolicy": ".claude/agents/00-alex/.system/policy/provider-fallback.json",
+  "warposFlagLedger": "warpos-to-update.md",
+  "warposPromotedArchive": "warpos-promoted-archive.md",
+  "warposPromoteReports": ".warpos/promote-reports"
 }

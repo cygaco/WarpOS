@@ -231,6 +231,42 @@
     {
       "match": "\\.claude/settings\\.json",
       "key": "settings"
+    },
+    {
+      "match": "\\.claude/project/reference/agent-dispatch-guide\\.md",
+      "key": "agentDispatchGuide"
+    },
+    {
+      "match": "\\.claude/runtime/dispatch-locks",
+      "key": "dispatchLocks"
+    },
+    {
+      "match": "\\.claude/runtime/dispatch-deaths\\.jsonl",
+      "key": "dispatchDeathsFile"
+    },
+    {
+      "match": "\\.claude/runtime/dispatch-completions\\.jsonl",
+      "key": "dispatchCompletionsFile"
+    },
+    {
+      "match": "\\.claude/runtime/\\.provider-tmp",
+      "key": "providerTmp"
+    },
+    {
+      "match": "\\.claude/agents/00-alex/\\.system/policy/provider-fallback\\.json",
+      "key": "providerFallbackPolicy"
+    },
+    {
+      "match": "warpos-to-update\\.md",
+      "key": "warposFlagLedger"
+    },
+    {
+      "match": "warpos-promoted-archive\\.md",
+      "key": "warposPromotedArchive"
+    },
+    {
+      "match": "\\.warpos/promote-reports",
+      "key": "warposPromoteReports"
     }
   ],
   "skipSubstrings": [

@@ -71,7 +71,16 @@ const PATHS = {
   "betaEvents": path.join(PROJECT, ".claude", "agents", "00-alex", ".system", "beta", "events.jsonl"),
   "lexicon": path.join(PROJECT, ".claude", "agents", "00-alex", ".system", "lexicon.md"),
   "pathsLib": path.join(PROJECT, "scripts", "hooks", "lib", "paths.js"),
-  "loggerLib": path.join(PROJECT, "scripts", "hooks", "lib", "logger.js")
+  "loggerLib": path.join(PROJECT, "scripts", "hooks", "lib", "logger.js"),
+  "agentDispatchGuide": path.join(PROJECT, ".claude", "project", "reference", "agent-dispatch-guide.md"),
+  "dispatchLocks": path.join(PROJECT, ".claude", "runtime", "dispatch-locks"),
+  "dispatchDeathsFile": path.join(PROJECT, ".claude", "runtime", "dispatch-deaths.jsonl"),
+  "dispatchCompletionsFile": path.join(PROJECT, ".claude", "runtime", "dispatch-completions.jsonl"),
+  "providerTmp": path.join(PROJECT, ".claude", "runtime", ".provider-tmp"),
+  "providerFallbackPolicy": path.join(PROJECT, ".claude", "agents", "00-alex", ".system", "policy", "provider-fallback.json"),
+  "warposFlagLedger": path.join(PROJECT, "warpos-to-update.md"),
+  "warposPromotedArchive": path.join(PROJECT, "warpos-promoted-archive.md"),
+  "warposPromoteReports": path.join(PROJECT, ".warpos", "promote-reports")
 };
 
 module.exports = { PROJECT, PATHS };

@@ -70,6 +70,16 @@ gemini -m gemini-3.1-pro-preview -p "<instruction>" < context.txt
 
 The catalog (`scripts/dispatch/catalog.js`) deliberately excludes this model. CLI will not offer it.
 
+## Known field issues (DISCOVERED-2026-05-11, tracked via /warp:flag)
+
+- `gemini-3.1-flash` and `gemini-3.1-flash-lite` in `scripts/dispatch/catalog.js` return HTTP 404 `ModelNotFoundError: models/gemini-3.1-flash is not found for API version v1beta` from gemini-cli 0.41.2. Currently surfaced via `provider-health.js → status: model_not_found` with the suggestion to upgrade the CLI. Pending decision: drop these entries from catalog or wait for the API to catch up. See `warpos-to-update.md` and `provider-health.js`.
+- Gemini CLI's bundled model registry (`models list`) lags the API. A `model_not_found` from `gemini -m <id> -p` does NOT necessarily mean the model is gone — try a CLI upgrade first.
+- If `GEMINI_API_KEY` is set in the harness env AND the CLI's `~/.gemini/settings.json` declares `auth.selectedType: oauth-personal`, the CLI may silently use the OAuth account and ignore the API key. `provider-health.js` flags this as `auth_source_mismatch`; `smart-context.js` injects a one-shot session warning so the operator sees the configuration ambiguity before interpreting failures.
+
+## Trusted-directory requirement
+
+Gemini CLI on some platforms refuses to run outside a trusted directory. `providers.js` supports an opt-in bypass: set `WARPOS_GEMINI_TRUST_BYPASS=1` in the harness env and the dispatcher passes `--skip-trust` to gemini invocations. Default is OFF (trust enforcement may be intentional). `provider-health.js` reports `trusted_directory_required` when it detects the failure signature.
+
 ## Project decisions
 
 - **redteam:** `gemini-3.1-pro-preview` (always-on thinking provides cognitive diversity vs Claude/OpenAI). Fallback to `anthropic` when CLI unavailable.

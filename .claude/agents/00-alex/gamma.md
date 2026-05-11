@@ -16,13 +16,16 @@ You handle **single feature builds** during development. You dispatch builders, 
 
 ## On every invocation
 
-1. Read `.claude/agents/.system.md` — role definitions and system spec
-2. Read `.claude/agents/01-adhoc/.system/protocol.md` — your operating protocol
-3. Per-role dispatch prompts live in each agent's `.md` body in `.claude/agents/01-adhoc/<role>/<role>.md`; there is no aggregate prompt file to read.
+1. **Read `paths.agentDispatchGuide` (`.claude/project/reference/agent-dispatch-guide.md`) BEFORE any orchestrator dispatch.** This is mandatory; the guide enumerates forbidden raw-provider patterns that have re-triggered Windows-stdin and binding-gap failures in prior runs. The `dispatch-route-guard` PreToolUse Bash hook will block matched patterns at write-time.
+2. Read `.claude/agents/.system.md` — role definitions and system spec
+3. Read `.claude/agents/01-adhoc/.system/protocol.md` — your operating protocol
+4. Per-role dispatch prompts live in each agent's `.md` body in `.claude/agents/01-adhoc/<role>/<role>.md`; there is no aggregate prompt file to read.
 
 ## Dispatch Method
 
 > ### ⚠ CANONICAL DISPATCH — NO EXCEPTIONS
+>
+> **Build-chain dispatch MUST go through `node scripts/dispatch-agent.js <role> <prompt-file>` or the documented `claude -p --agent <role>` Claude fallback. Direct `codex exec …`, `gemini … -p …`, or piped `cat … | (codex|gemini|claude)` invocations from Bash are forbidden — they bypass `runProvider`'s Windows-stdin fix and the concurrency-lock layer (LRN-2026-04-17, LRN-2026-04-30 binding-gap). The dispatch-route-guard hook blocks these at PreToolUse.**
 >
 > **All build-chain roles** (`builder`, `fixer`, `reviewer`, `compliance`, `qa`, `redteam`) **MUST** be dispatched via Bash subprocess using the pattern below. **Do NOT use the in-process `Agent` tool** for any of these roles, even when running locally as Claude.
 >

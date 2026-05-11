@@ -316,6 +316,51 @@
       "type": "string",
       "const": "scripts/hooks/lib/logger.js",
       "description": "js (framework) — paths.loggerLib"
+    },
+    "agentDispatchGuide": {
+      "type": "string",
+      "const": ".claude/project/reference/agent-dispatch-guide.md",
+      "description": "md (framework) — paths.agentDispatchGuide"
+    },
+    "dispatchLocks": {
+      "type": "string",
+      "const": ".claude/runtime/dispatch-locks",
+      "description": "dir (runtime) — paths.dispatchLocks"
+    },
+    "dispatchDeathsFile": {
+      "type": "string",
+      "const": ".claude/runtime/dispatch-deaths.jsonl",
+      "description": "jsonl (runtime) — paths.dispatchDeathsFile"
+    },
+    "dispatchCompletionsFile": {
+      "type": "string",
+      "const": ".claude/runtime/dispatch-completions.jsonl",
+      "description": "jsonl (runtime) — paths.dispatchCompletionsFile"
+    },
+    "providerTmp": {
+      "type": "string",
+      "const": ".claude/runtime/.provider-tmp",
+      "description": "dir (runtime) — paths.providerTmp"
+    },
+    "providerFallbackPolicy": {
+      "type": "string",
+      "const": ".claude/agents/00-alex/.system/policy/provider-fallback.json",
+      "description": "json (framework) — paths.providerFallbackPolicy"
+    },
+    "warposFlagLedger": {
+      "type": "string",
+      "const": "warpos-to-update.md",
+      "description": "md (project) — paths.warposFlagLedger"
+    },
+    "warposPromotedArchive": {
+      "type": "string",
+      "const": "warpos-promoted-archive.md",
+      "description": "md (project) — paths.warposPromotedArchive"
+    },
+    "warposPromoteReports": {
+      "type": "string",
+      "const": ".warpos/promote-reports",
+      "description": "dir (runtime) — paths.warposPromoteReports"
     }
   }
 }
