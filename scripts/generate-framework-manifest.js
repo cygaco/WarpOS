@@ -75,7 +75,11 @@ function isExcluded(relPath) {
   // Release capsules ship their metadata, notes, and migrations. The manifest
   // snapshot and checksums inside each capsule are generated from this manifest,
   // so including them would make `manifest -> capsule -> manifest` unstable.
-  if (/^warpos\/releases\/[^/]+\/(framework-manifest|checksums)\.json$/.test(relPath)) {
+  if (
+    /^warpos\/releases\/[^/]+\/(framework-manifest|checksums)\.json$/.test(
+      relPath,
+    )
+  ) {
     return true;
   }
   return EXCLUDE_RELATIVE_PREFIXES.some(
@@ -161,6 +165,13 @@ const ASSET_DIRS = [
   { src: "scripts/preflight", kind: "preflight_tool" },
   { src: "scripts/requirements", kind: "requirements_engine" },
   { src: "scripts/paths", kind: "paths_engine" },
+  // 0.4.2 fix-forward: scripts/sprint/ (Sprint Workflow v0.1 engine) and
+  // scripts/dispatch/ (dispatch infrastructure) were missing from the
+  // scan list — so product repos installing 0.4.0/0.4.1 received the
+  // slash commands but not the backing scripts. Adding both as
+  // first-class kinds.
+  { src: "scripts/sprint", kind: "sprint_engine" },
+  { src: "scripts/dispatch", kind: "dispatch_engine" },
   { src: "schemas", kind: "schema" },
   { src: "migrations", kind: "migration" },
   { src: "framework/releases", kind: "release_capsule" },

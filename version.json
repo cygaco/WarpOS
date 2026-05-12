@@ -1,7 +1,7 @@
 {
   "$schema": "warpos/version/v1",
   "name": "warpos",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "WarpOS — autonomous AI operating system for software engineering. Registry-driven hooks, transactional updates, honest release gates, generic promotion.",
   "releasedAt": "2026-05-11",
   "minUpgradeableFrom": "0.1.2",
@@ -21,7 +21,8 @@
     "0.2.1",
     "0.2.2",
     "0.3.0",
-    "0.4.0"
+    "0.4.0",
+    "0.4.1"
   ],
-  "notes": "Update-path usability fix. update.js auto-discovers canonical WarpOS clones via sibling walk (../WarpOS, ../warpos) and manifest.json#warpos.source / framework-installed.json#source. Product repos can now run /warp:update --to <version> without a manual --source flag when a sibling canonical exists. Pass --no-discover to disable. /warp:update skill updated to no longer pre-bail on missing local capsule. No other changes since 0.4.0."
+  "notes": "Critical install bug fixes for 0.4.0/0.4.1. (1) scripts/sprint/ and scripts/dispatch/ were missing from the manifest scan, so product repos installing 0.4.0/0.4.1 received the /sprint:* slash commands but not the backing engine scripts; 27 files missing per install. Added scripts/sprint as kind sprint_engine and scripts/dispatch as kind dispatch_engine. (2) install.ps1 wrote framework-installed.json via PowerShell 5.1's Out-File -Encoding utf8, which emits a UTF-8 BOM; JSON.parse rejects BOM so the snapshot was unreadable and /warp:update silently broke. Replaced with .NET WriteAllText + explicit no-BOM encoding. (3) install.ps1 never copied .claude/framework-manifest.json itself; the product's manifest stayed at whatever version it was at install time, so /warp:doctor reported manifest_stale forever. Now copied as part of Stage 2. All product repos must re-bootstrap via install.ps1 once to receive the missing scripts + the BOM-free snapshot + the refreshed manifest."
 }

@@ -36,7 +36,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 # Fallback only - version.json is the source of truth, read below.
-$Script:WARPOS_VERSION = "0.4.0"
+$Script:WARPOS_VERSION = "0.4.2"
 
 function Write-Step($msg) { Write-Host "[install] $msg" -ForegroundColor Cyan }
 function Write-Warn($msg) { Write-Host "[install] WARN: $msg" -ForegroundColor Yellow }
@@ -175,9 +175,28 @@ $installRecord = [ordered]@{
         ".claude/framework-installed.json"
     )
 }
-$installRecord | ConvertTo-Json -Depth 10 |
-    Out-File -FilePath (Join-Path $Target ".claude\framework-installed.json") -Encoding utf8
-Write-Step "Stage 2/3 - snapshot at .claude\framework-installed.json"
+# 0.4.2 fix-forward: PowerShell 5.1's `Out-File -Encoding utf8` writes
+# UTF-8 WITH BOM. JSON.parse rejects BOM. Use .NET WriteAllText with an
+# explicit no-BOM UTF-8 encoding so /warp:update can re-read the snapshot.
+$installRecordJson = $installRecord | ConvertTo-Json -Depth 10
+$installRecordPath = Join-Path $Target ".claude\framework-installed.json"
+$utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+[System.IO.File]::WriteAllText($installRecordPath, $installRecordJson, $utf8NoBom)
+Write-Step "Stage 2/3 - snapshot at .claude\framework-installed.json (no BOM)"
+
+# 0.4.2 fix-forward: also copy framework-manifest.json itself. Previously
+# install.ps1 iterated $Manifest.assets but never copied the manifest file
+# itself, so the product's .claude/framework-manifest.json stayed at the
+# version that was current when the product was last installed. /warp:doctor
+# reported manifest_stale because of this.
+$ManifestSrc = Join-Path $Source ".claude\framework-manifest.json"
+$ManifestDst = Join-Path $Target ".claude\framework-manifest.json"
+$ManifestDstDir = Split-Path -Parent $ManifestDst
+if (-not (Test-Path $ManifestDstDir)) {
+    New-Item -ItemType Directory -Path $ManifestDstDir -Force | Out-Null
+}
+Copy-Item -Path $ManifestSrc -Destination $ManifestDst -Force
+Write-Step "Stage 2/3 - framework-manifest.json copied ($Script:WARPOS_VERSION)"
 
 # Stage 3 - post-install hint
 Write-Step "Stage 3/3 - install complete"
