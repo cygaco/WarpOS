@@ -1,7 +1,7 @@
 {
   "$schema": "warpos/version/v1",
   "name": "warpos",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "description": "WarpOS — autonomous AI operating system for software engineering. Registry-driven hooks, transactional updates, honest release gates, generic promotion.",
   "releasedAt": "2026-05-11",
   "minUpgradeableFrom": "0.1.2",
@@ -22,7 +22,8 @@
     "0.2.2",
     "0.3.0",
     "0.4.0",
-    "0.4.1"
+    "0.4.1",
+    "0.4.2"
   ],
-  "notes": "Critical install bug fixes for 0.4.0/0.4.1. (1) scripts/sprint/ and scripts/dispatch/ were missing from the manifest scan, so product repos installing 0.4.0/0.4.1 received the /sprint:* slash commands but not the backing engine scripts; 27 files missing per install. Added scripts/sprint as kind sprint_engine and scripts/dispatch as kind dispatch_engine. (2) install.ps1 wrote framework-installed.json via PowerShell 5.1's Out-File -Encoding utf8, which emits a UTF-8 BOM; JSON.parse rejects BOM so the snapshot was unreadable and /warp:update silently broke. Replaced with .NET WriteAllText + explicit no-BOM encoding. (3) install.ps1 never copied .claude/framework-manifest.json itself; the product's manifest stayed at whatever version it was at install time, so /warp:doctor reported manifest_stale forever. Now copied as part of Stage 2. All product repos must re-bootstrap via install.ps1 once to receive the missing scripts + the BOM-free snapshot + the refreshed manifest."
+  "notes": "Manifest-regen fix. 0.4.2's install.ps1 copied the canonical's framework-manifest.json into product repos (473 assets), but /warp:doctor's manifest_stale check compares the local file to what generate-framework-manifest.js produces when run locally — which includes product-specific commands/agents (488+). So 0.4.2 installs always reported manifest_stale yellow. 0.4.3 replaces the static copy with a target-side regen: install.ps1 runs `node scripts/generate-framework-manifest.js` in the target after copying assets, producing a manifest that reflects the product's actual file tree. Fallback to canonical-copy on a fresh install where the generator isn't on target yet. Re-bootstrap any product repo to clear the doctor yellow."
 }

@@ -36,7 +36,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 # Fallback only - version.json is the source of truth, read below.
-$Script:WARPOS_VERSION = "0.4.2"
+$Script:WARPOS_VERSION = "0.4.3"
 
 function Write-Step($msg) { Write-Host "[install] $msg" -ForegroundColor Cyan }
 function Write-Warn($msg) { Write-Host "[install] WARN: $msg" -ForegroundColor Yellow }
@@ -184,19 +184,41 @@ $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
 [System.IO.File]::WriteAllText($installRecordPath, $installRecordJson, $utf8NoBom)
 Write-Step "Stage 2/3 - snapshot at .claude\framework-installed.json (no BOM)"
 
-# 0.4.2 fix-forward: also copy framework-manifest.json itself. Previously
-# install.ps1 iterated $Manifest.assets but never copied the manifest file
-# itself, so the product's .claude/framework-manifest.json stayed at the
-# version that was current when the product was last installed. /warp:doctor
-# reported manifest_stale because of this.
-$ManifestSrc = Join-Path $Source ".claude\framework-manifest.json"
-$ManifestDst = Join-Path $Target ".claude\framework-manifest.json"
-$ManifestDstDir = Split-Path -Parent $ManifestDst
-if (-not (Test-Path $ManifestDstDir)) {
-    New-Item -ItemType Directory -Path $ManifestDstDir -Force | Out-Null
+# 0.4.3 fix-forward: regenerate framework-manifest.json against the
+# target's actual file tree instead of copying the canonical's snapshot.
+# 0.4.2 copied canonical's manifest (473 assets), but in product repos
+# generate-framework-manifest.js scans the target and finds 488+ (extra
+# project-specific commands/agents). The doctor's "manifest_stale"
+# check compared local file to local regen, so the install copy was
+# always wrong in product repos. Now: write the manifest by running the
+# generator against the target's own scripts. The first install copies
+# generate-framework-manifest.js as an asset; we invoke that copy.
+$GeneratorPath = Join-Path $Target "scripts\generate-framework-manifest.js"
+if (Test-Path $GeneratorPath) {
+    Push-Location $Target
+    try {
+        & node $GeneratorPath 2>&1 | Out-Null
+        if ($LASTEXITCODE -eq 0) {
+            Write-Step "Stage 2/3 - framework-manifest.json regenerated against $Target ($Script:WARPOS_VERSION)"
+        } else {
+            Write-Warn "framework-manifest.json regenerator returned $LASTEXITCODE - falling back to canonical copy"
+            Copy-Item -Path (Join-Path $Source ".claude\framework-manifest.json") -Destination (Join-Path $Target ".claude\framework-manifest.json") -Force
+        }
+    } finally {
+        Pop-Location
+    }
+} else {
+    # No generator on target (very fresh install). Fall back to copying the
+    # canonical snapshot; the next install run will regenerate locally.
+    $ManifestSrc = Join-Path $Source ".claude\framework-manifest.json"
+    $ManifestDst = Join-Path $Target ".claude\framework-manifest.json"
+    $ManifestDstDir = Split-Path -Parent $ManifestDst
+    if (-not (Test-Path $ManifestDstDir)) {
+        New-Item -ItemType Directory -Path $ManifestDstDir -Force | Out-Null
+    }
+    Copy-Item -Path $ManifestSrc -Destination $ManifestDst -Force
+    Write-Step "Stage 2/3 - framework-manifest.json copied from canonical (no generator on target yet)"
 }
-Copy-Item -Path $ManifestSrc -Destination $ManifestDst -Force
-Write-Step "Stage 2/3 - framework-manifest.json copied ($Script:WARPOS_VERSION)"
 
 # Stage 3 - post-install hint
 Write-Step "Stage 3/3 - install complete"
