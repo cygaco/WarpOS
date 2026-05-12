@@ -1,7 +1,7 @@
 {
   "$schema": "warpos/version/v1",
   "name": "warpos",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "WarpOS — autonomous AI operating system for software engineering. Registry-driven hooks, transactional updates, honest release gates, generic promotion.",
   "releasedAt": "2026-05-11",
   "minUpgradeableFrom": "0.1.2",
@@ -20,7 +20,8 @@
     "0.2.0",
     "0.2.1",
     "0.2.2",
-    "0.3.0"
+    "0.3.0",
+    "0.4.0"
   ],
-  "notes": "Sprint Workflow v0.1 — adds /sprint:plan, /sprint:design, /sprint:execute, /sprint:release as a product-workflow layer above existing modes. Plan Contract artifact bridges brief founder intent to durable, evidence-labeled, approval-aware, crash-recoverable sprint state. 10 new schemas under schemas/sprint/. 19 new tracker paths in framework/paths.registry.json (sprint*/) — all owner:runtime|framework, no live tracker state seeded in the framework repo. Tickets sit below requirements/stories/COPY/INPUTS/TRACE/AC. Ralph loop integration for governed plan/act/test/review/record/checkpoint per ticket with crash-safe progress. External Service Dependency artifact for signup/billing/credentials/OAuth/DNS/compliance lifecycle. Sprint routing policy at paths.sprintRouting declares model classes per phase; honors paths.providerFallbackPolicy. Existing modes, hooks, paths, agents, requirements, and capsule layout are unchanged. See _docs/sprint/FINAL_REPORT.md."
+  "notes": "Update-path usability fix. update.js auto-discovers canonical WarpOS clones via sibling walk (../WarpOS, ../warpos) and manifest.json#warpos.source / framework-installed.json#source. Product repos can now run /warp:update --to <version> without a manual --source flag when a sibling canonical exists. Pass --no-discover to disable. /warp:update skill updated to no longer pre-bail on missing local capsule. No other changes since 0.4.0."
 }

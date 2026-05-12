@@ -83,6 +83,52 @@ function findRepoRootFromCapsule(capsuleDir) {
   );
 }
 
+// 0.4.1: when sourceRoot doesn't have the target capsule, try to discover
+// a canonical WarpOS clone via the same walk release-canonical.js uses:
+// sibling ../WarpOS, sibling ../warpos, manifest.json#warpos.source.
+// Returns an absolute path to the canonical, or null if nothing usable.
+function discoverCanonical(targetRoot, version) {
+  const tries = [];
+  tries.push(path.resolve(targetRoot, "..", "WarpOS"));
+  tries.push(path.resolve(targetRoot, "..", "warpos"));
+  try {
+    const manifestPath = path.join(targetRoot, ".claude", "manifest.json");
+    if (fs.existsSync(manifestPath)) {
+      const m = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+      const src = m && m.warpos && m.warpos.source;
+      if (src && !/^https?:\/\//.test(src)) tries.push(path.resolve(src));
+    }
+  } catch {
+    /* manifest optional */
+  }
+  // Also try the framework-installed.json's recorded source path.
+  try {
+    const fi = path.join(targetRoot, ".claude", "framework-installed.json");
+    if (fs.existsSync(fi)) {
+      const j = JSON.parse(fs.readFileSync(fi, "utf8"));
+      if (j && j.source && !/^https?:\/\//.test(j.source)) {
+        tries.push(path.resolve(j.source));
+      }
+    }
+  } catch {
+    /* optional */
+  }
+  for (const candidate of tries) {
+    if (!fs.existsSync(candidate)) continue;
+    if (!fs.existsSync(path.join(candidate, "version.json"))) continue;
+    if (!fs.existsSync(path.join(candidate, "framework"))) continue;
+    const capsule = path.join(
+      candidate,
+      "framework",
+      "releases",
+      version,
+      "release.json",
+    );
+    if (fs.existsSync(capsule)) return candidate;
+  }
+  return null;
+}
+
 function loadCapsule(sourceRoot, version) {
   const capsuleDir = path.join(sourceRoot, "framework", "releases", version);
   const releaseFile = path.join(capsuleDir, "release.json");
@@ -575,8 +621,28 @@ async function run(opts) {
   const dryRun = !!opts.dryRun || !apply;
 
   // Resolve source/target roots. Defaults to self-update against REPO_ROOT.
-  const sourceRoot = opts.source ? path.resolve(opts.source) : REPO_ROOT;
+  let sourceRoot = opts.source ? path.resolve(opts.source) : REPO_ROOT;
   const targetRoot = opts.target ? path.resolve(opts.target) : REPO_ROOT;
+
+  // 0.4.1: if --source wasn't passed AND the target capsule isn't in the
+  // local REPO_ROOT, walk sibling clones / manifest hint to find a canonical
+  // that has it. This makes `/warp:update --to <v>` work in product repos
+  // that have a sibling WarpOS clone without forcing the user to remember
+  // --source. Honours --no-discover to disable.
+  if (!opts.source && target && !opts.noDiscover) {
+    const haveLocal = fs.existsSync(
+      path.join(sourceRoot, "framework", "releases", target, "release.json"),
+    );
+    if (!haveLocal) {
+      const discovered = discoverCanonical(targetRoot, target);
+      if (discovered) {
+        process.stderr.write(
+          `[update] capsule ${target} not in local framework/releases/ — using canonical at ${discovered}\n`,
+        );
+        sourceRoot = discovered;
+      }
+    }
+  }
 
   const installedFile = path.join(
     targetRoot,
@@ -790,6 +856,7 @@ if (require.main === module) {
     json: args.includes("--json"),
     confirmDeletes: args.includes("--confirm-deletes"),
     source: get("--source"),
+    noDiscover: args.includes("--no-discover"),
     target: get("--target"),
     // Legacy: --source-root pointed at the source tree directly. Kept for
     // back-compat. Prefer --source.
@@ -918,4 +985,11 @@ if (require.main === module) {
     });
 }
 
-module.exports = { run, classify, planClass, findRepoRootFromCapsule };
+module.exports = {
+  run,
+  classify,
+  planClass,
+  findRepoRootFromCapsule,
+  discoverCanonical,
+  loadCapsule,
+};

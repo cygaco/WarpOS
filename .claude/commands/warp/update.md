@@ -23,7 +23,7 @@ Phase 4C entry point. The actual engine lives at `scripts/warpos/update.js`. Thi
 
 Check `.claude/framework-installed.json` exists. If not: tell the user to run `install.ps1` first; this skill is for upgrades, not fresh installs.
 
-Check the target release capsule exists at `framework/releases/<version>/release.json`. If not: list available capsules from `framework/releases/`.
+**Do NOT pre-check the local `framework/releases/<version>/` directory.** 0.4.1+ update.js auto-discovers canonical clones via sibling walk (`../WarpOS`, `../warpos`) and via `manifest.json#warpos.source` / `framework-installed.json#source`. If the local repo's `framework/releases/` is stale, the engine reads the capsule from canonical and the slash command stays silent about the lookup. Only fall back to "list available capsules" if the engine itself reports the capsule can't be found anywhere.
 
 ### Step 2 — invoke engine
 
@@ -31,6 +31,8 @@ Check the target release capsule exists at `framework/releases/<version>/release
 node scripts/warpos/update.js --to <version> --dry-run    # default
 node scripts/warpos/update.js --to <version> --apply       # if --apply supplied
 ```
+
+The engine prints `[update] capsule <v> not in local framework/releases/ — using canonical at <path>` to stderr when it auto-discovered a sibling/manifest-pointed clone. Pass that line through verbatim so the user sees where the source came from. Pass `--no-discover` to disable the walk (useful for closed-environment tests).
 
 Capture stdout. The engine emits a 12-category classification plus Class A/B/C totals.
 
