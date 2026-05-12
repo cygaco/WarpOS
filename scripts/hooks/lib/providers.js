@@ -445,11 +445,18 @@ function runProvider(role, prompt, opts = {}) {
     // evidence. execSync only returns stdout; stderr is reachable only via the
     // thrown error's `.stderr` field in the catch branch. To preserve stderr
     // for both success AND failure paths we use spawnSync inline.
+    //
+    // 0.4.4 fix: with `encoding: "buffer"` Node requires `input` to be a
+    // Buffer (not a string). Phase 0 shipped this combination with a string
+    // input and threw "Unknown encoding: buffer" before the CLI ran —
+    // silently breaking every diff-model review in adhoc + sprint flows.
+    // Wrap promptContent in Buffer.from() so the stdin path matches the
+    // stdout/stderr buffer treatment.
     const { spawnSync } = require("child_process");
     const spawned = spawnSync(cmd, {
       cwd: PROJECT,
       timeout: timeoutMs,
-      input: promptContent,
+      input: Buffer.from(promptContent, "utf8"),
       maxBuffer: 32 * 1024 * 1024, // 32MB for long review outputs
       shell: true,
       encoding: "buffer",

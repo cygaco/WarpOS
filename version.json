@@ -1,7 +1,7 @@
 {
   "$schema": "warpos/version/v1",
   "name": "warpos",
-  "version": "0.4.3",
+  "version": "0.4.4",
   "description": "WarpOS — autonomous AI operating system for software engineering. Registry-driven hooks, transactional updates, honest release gates, generic promotion.",
   "releasedAt": "2026-05-11",
   "minUpgradeableFrom": "0.1.2",
@@ -23,7 +23,8 @@
     "0.3.0",
     "0.4.0",
     "0.4.1",
-    "0.4.2"
+    "0.4.2",
+    "0.4.3"
   ],
-  "notes": "Manifest-regen fix. 0.4.2's install.ps1 copied the canonical's framework-manifest.json into product repos (473 assets), but /warp:doctor's manifest_stale check compares the local file to what generate-framework-manifest.js produces when run locally — which includes product-specific commands/agents (488+). So 0.4.2 installs always reported manifest_stale yellow. 0.4.3 replaces the static copy with a target-side regen: install.ps1 runs `node scripts/generate-framework-manifest.js` in the target after copying assets, producing a manifest that reflects the product's actual file tree. Fallback to canonical-copy on a fresh install where the generator isn't on target yet. Re-bootstrap any product repo to clear the doctor yellow."
+  "notes": "Dispatch-stdin fix. Phase 0 (b3a5ab06) converted runProvider's execSync to spawnSync to capture stderr for silent-zero-byte-death telemetry but shipped an incompatible call shape: encoding:'buffer' with a STRING input. Node requires Buffer-typed input when encoding is 'buffer' and throws ERR_UNKNOWN_ENCODING synchronously before the CLI is invoked. Every diff-model review across the framework (gauntlet, sprint planning, redteam, qa, compliance) silently failed at the dispatch layer; callers misattributed to LRN-2026-04-17 cmd.exe stdin or fell back to self-review. 0.4.4 wraps the input in Buffer.from(promptContent, 'utf8') — single-line change in scripts/hooks/lib/providers.js. Test added at scripts/test-providers-stdin-fix.js (3/3 ok, validates buggy shape still throws and fix roundtrips). Re-bootstrap product repos to receive the fix."
 }
