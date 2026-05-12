@@ -2,7 +2,7 @@
   "schema": "warpos/release/v1",
   "version": "0.4.2",
   "createdAt": "2026-05-11T00:00:00.000Z",
-  "commit": null,
+  "commit": "0c4f542",
   "minUpgradeableFrom": "0.2.2",
   "requiresFreshInstallFromBelow": null,
   "manifestSchema": "warpos/framework-manifest/v2",
