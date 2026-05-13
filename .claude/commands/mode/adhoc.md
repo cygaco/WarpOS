@@ -118,6 +118,15 @@ from inside the repo:
 
 - **`TeamCreate --force-replace`** does not exist. The only way to refresh
   a defunct team is to recreate manually.
+- **`SendMessage` IS available in the harness** — the Agent tool's spawn
+  output returns a stable `agentId` and an explicit hint `Use SendMessage
+  with to: <id> to continue this agent.` The remaining limitation is that
+  the SendMessage **schema is not discoverable via ToolSearch keyword
+  lookup** (`select:SendMessage` returns empty). Attempt the call anyway —
+  it may resolve at use-time. The directive is: ToolSearch absence ≠
+  harness absence; the spawn output is ground truth. (Validated
+  2026-05-13: Beta agentId `ac69b6bf3df4747c3`, Gamma agentId
+  `ad97643d7efe975f4` were both spawned with the hint in their output.)
 - **`SendMessage` to a maxTurns-reaped teammate** returns an error string
   but does not auto-respawn. Alpha must detect the failure and re-spawn.
 - **`claim_on_startup: false`** is not a harness setting — the directive in

@@ -17,6 +17,16 @@
  *   0  init done or already exists
  *   1  template load failed
  *   2  bad args
+ *
+ * SCHEMA FIELD REMINDER (2026-05-13 — see LRN row 28):
+ *   Every sprint yaml under paths.sprintRoot MUST emit a `schema:` header
+ *   matching `warpos/sprint/<kind>/v1`. The sprint-tracker-guard hook
+ *   fires a warn on every Write that omits it (21x warns in 3d). The
+ *   init.js templates + ensureActiveRegistry() below already include the
+ *   field — DO NOT remove it from a template "to simplify" it. If you
+ *   add a new yaml writer (release.js, plan.js, checkpoint.js, etc.) or
+ *   a fresh template under framework/templates/sprint/<kind>/, schema:
+ *   is the FIRST key. Schemas live in schemas/sprint/*.schema.json.
  */
 
 "use strict";

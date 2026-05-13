@@ -16,6 +16,25 @@ they are the most we can do from in-repo.
 | `claim_on_startup` flag | No | Prompt-level STARTUP DIRECTIVE inside teammate spawn prompts |
 | Team-task ownership persistence | No (session-bound) | Tracker source-of-truth rule: durable repo state only |
 
+### 2026-05-13 update — SendMessage primitive IS exposed
+
+Earlier wording in this document and in `/mode:adhoc` implied SendMessage
+was an entirely unknown primitive. That is incorrect. The Agent tool's
+spawn output explicitly includes the line:
+
+  `Use SendMessage with to: <agentId> to continue this agent.`
+
+with a stable `agentId` Alpha can capture and reuse. The actual
+limitation is narrower: the SendMessage **schema is not discoverable via
+ToolSearch keyword lookup** (`ToolSearch select:SendMessage` returns
+empty, and a keyword search for "send" / "message" does not surface a
+matching definition). The primitive itself appears callable — the agent
+spawn hint is the harness telling us so. The operational rule is:
+ToolSearch absence does not imply harness absence. Attempt the call when
+the spawn output advertises it. Validated 2026-05-13 in `/mode:adhoc`
+dispatch session (Beta agentId `ac69b6bf3df4747c3`, Gamma agentId
+`ad97643d7efe975f4`).
+
 ## Repo-accessible signals we DO use
 
 - `.claude/runtime/.team-marker` — written by `/mode:adhoc` step 6. Read

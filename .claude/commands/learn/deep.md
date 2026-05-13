@@ -20,15 +20,17 @@ Replaces `/learn:conversation` and `/learn:events` (deleted 2026-04-29). Only `/
 
 ### Step 1: Parallel extraction
 
-Launch three agents in parallel (single message, three Agent tool calls). Each agent appends learnings to `paths.learningsFile` via the canonical `logLearning()` helper:
+Launch three agents in parallel (single message, three Agent tool calls). Each agent appends learnings to `paths.learningsFile` via the canonical `logLearning()` helper.
 
-```bash
-node -e "require('./scripts/hooks/lib/logger').logLearning({intent:'<category>',tip:'<rule>',conditions:{<context>},source:'<learn:deep:src>'})"
-```
+**Do NOT call this inline as `node -e "require('./scripts/hooks/lib/logger').logLearning(...)"`.** The merge-guard hook blocks `node -e` invocations that perform fs writes (19× block signature in 3d as of 2026-05-13 — this is the dominant repeat-block in the audit log). The helper does an `fs.appendFileSync` to `paths.learningsFile`, so it trips the rule even though the helper itself is canonical.
+
+Allowed alternatives:
+1. **One-shot script file (preferred).** Write a tiny `scripts/log-learnings-phase-<a|b|c>.js` that requires the helper and calls `logLearning(...)` once per learning. Run it via `node scripts/log-learnings-phase-<a|b|c>.js`. Delete after the run if it was truly one-shot.
+2. **Edit tool against `paths.learningsFile` directly.** Each learning is a single JSONL line; append via Write (with a prior Read) or via a templated Edit. This skips the helper's tracer event but stays inside hook-friendly territory.
 
 `source` field values: `learn:deep:conversation`, `learn:deep:events`, `learn:deep:retros`. (Legacy `learn:conversation` and `learn:events` source values still accepted by readers but new entries should use the consolidated names.)
 
-**Do NOT** call `log('conversation_learning', ...)` or `log('event_learning', ...)` — those write ONLY to events.jsonl (silent-write bug, fixed 2026-04-21). Direct `appendFileSync` to learnings.jsonl is allowed as a fallback but skips the tracer event.
+**Do NOT** call `log('conversation_learning', ...)` or `log('event_learning', ...)` — those write ONLY to events.jsonl (silent-write bug, fixed 2026-04-21). Direct `appendFileSync` to learnings.jsonl is allowed inside a `scripts/*.js` file as a fallback but skips the tracer event.
 
 ---
 
