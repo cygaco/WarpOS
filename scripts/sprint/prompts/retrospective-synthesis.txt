@@ -82,6 +82,29 @@ cannot escape into instructions.
 }
 ```
 
+# Schema field shapes (STRICT — validator rejects mismatches)
+
+The retro YAML is validated against `schemas/sprint/sprint-retrospective.schema.json`.
+Get these wrong and the merger silently drops your fields or the validator
+rejects the whole retro. Read these before emitting JSON.
+
+- **summary:** `string` (single paragraph, plain prose).
+- **outcomes_shipped:** `Object[]`. Each item: `{ outcome: string, evidence: string[], planned: boolean }`. Required: `outcome`. Example: `{ "outcome": "Sprint helper ships with --json mode", "evidence": ["T-20260513-001"], "planned": true }`.
+- **outcomes_missed:** `Object[]`. Each item: `{ outcome: string, reason: string, disposition: "deferred"|"abandoned"|"rescoped"|"blocked"|"unknown" }`. Required: `outcome`. `disposition` is a CLOSED ENUM.
+- **plan_quality_actual:** `Object` with fields: `predicted_status` (string, required), `actual_status` ("held"|"drifted"|"broke"|"unknown", required), `predicted_confidence` (string), `evidence_gaps_predicted` (string[]), `evidence_gaps_actual` (string[]), `notes` (string).
+- **scope_variant_actual:** `Object` with: `planned_variant` ("minimal_safe"|"recommended"|"expanded"|"unknown", required), `actual_variant` ("minimal_safe"|"recommended"|"expanded"|"mixed"|"unknown", required), `adhered` (boolean), `drift_notes` (string). Both variant fields are CLOSED ENUMS.
+- **surprises:** `Object[]` — NOT `string[]`. Each item: `{ surprise: string, impact: string, evidence: string[] }`. Required: `surprise`. Example: `{ "surprise": "PR review flagged a missing migration", "impact": "+1 day", "evidence": ["I-20260513-007"] }`.
+- **friction_points:** `Object[]`. Each item: `{ friction: string, category: <enum>, evidence: string[], severity: "low"|"medium"|"high" }`. Required: `friction`. `category` is a CLOSED ENUM with EXACTLY these values: `"tooling" | "process" | "spec" | "approval" | "external_service" | "ai_model" | "infrastructure" | "team" | "scope" | "other"`. Do NOT invent categories — pick the best fit, fall back to `"other"`.
+- **action_items:** `Object[]`. Each item: `{ action: string, owner: string, due_by: string, linked_friction: string }`. Required: `action`. `owner` is a free-form string (recommended values: `alpha`, `user`, `gamma`, `beta`, `delta`). `due_by` is a free-form string (recommended: `next_sprint` or ISO date).
+- **key_tradeoffs:** `string[]` — NOT `Object[]`. Each element is a single-line summary string. Example: `["Picked synth-on-demand over auto-synth to keep retros honest"]`.
+- **learning_candidates:** `Object[]`. Each item: `{ learning: string, evidence: string[], promote_via: "learn:integrate"|"manual"|"deferred" }`. Required: `learning` (NOT `candidate` — the field name is literally `learning`). `promote_via` is a CLOSED ENUM.
+- **beta_decisions_reviewed:** `Object[]`. Each item: `{ decision: string, verdict: "DECIDE"|"DIRECTIVE"|"ESCALATE"|"unknown", outcome: string }`. Required: `decision`. `verdict` is a CLOSED ENUM (uppercase).
+- **synthesis_metadata:** `Object` with: `model_class` (string), `provider` (string), `model_id` (string), `duration_ms` (integer), `output_chars` (integer), `fallback_reason` (string|null).
+
+If you have nothing to say for an `Object[]` field, emit `[]` — do NOT
+omit the field, and do NOT emit a string array where the schema demands
+objects. The validator will reject mixed shapes.
+
 # Evidence rules per section
 
 - **outcomes_shipped:** Each entry MUST reference at least one

@@ -656,6 +656,17 @@ function copyC7(reason) {
 function main() {
   const args = parseArgs(process.argv);
 
+  // Warn when neither --synthesis nor --no-synth supplied.
+  // Operators expect synth by default; silent skeleton fallback is a footgun.
+  // Don't warn for --review-only (which bypasses synthesis entirely).
+  if (!args.synthesis && !args.noSynth && !args.reviewOnly) {
+    process.stderr.write(
+      "retrospective.js: no --synthesis <file> provided and --no-synth not set; " +
+        "defaulting to skeleton mode. To get LLM-synthesized retro, invoke via " +
+        "/sprint:retrospective skill OR generate synthesis JSON first.\n",
+    );
+  }
+
   // Mutually-exclusive flag check (INPUTS IN-4).
   if (args.reviewOnly && args.force) {
     process.stderr.write(

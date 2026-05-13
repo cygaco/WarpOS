@@ -100,4 +100,4 @@ Each AC is a testable Given/When/Then. Tickets link to their AC ids.
 
 ## S-18 — ADR for multi-sprint lane architecture
 
-- **AC-18.1** Given `paths.policy/adr/`, when listed, then there is a new ADR file named `NNNN-multi-sprint-parallel-lanes.md` documenting: context, decision (recommended variant + worktree default), rejected alternatives (minimal_safe, expanded coordinator), consequences (operational burden, follow-up sprints), Beta verdict reference.
+- **AC-18.1** Given `paths.policy/adr/`, when listed, then there is a new ADR file named `0002-multi-sprint-parallel-lanes.md` documenting: context, decision (recommended variant + worktree default), rejected alternatives (minimal_safe, expanded coordinator), consequences (operational burden, follow-up sprints), Beta verdict reference.

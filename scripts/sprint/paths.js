@@ -57,6 +57,64 @@
 
 const fs = require("fs");
 const path = require("path");
+
+// Worktree shadow rescue: when invoked from a `.claude/worktrees/<agent>` shadow,
+// CLAUDE_PROJECT_DIR is typically unset and the hook paths lib resolves PROJECT
+// to the worktree (which has no sprint registry). Resolve to the canonical
+// main worktree's repo root before requiring `../hooks/lib/paths`.
+// Fail-safe: any error leaves CLAUDE_PROJECT_DIR unset (current behavior).
+(function rescueProjectDirFromWorktree() {
+  try {
+    if (process.env.CLAUDE_PROJECT_DIR) return;
+    const cwd = process.cwd();
+    const looksLikeWorktree =
+      /[\\/]\.claude[\\/]worktrees[\\/]/.test(cwd) ||
+      /worktrees/.test(path.basename(path.dirname(cwd)));
+    // Heuristic 2: in a worktree, .git is a FILE (gitdir pointer), not a dir.
+    let gitFile = false;
+    try {
+      const gitPath = path.join(cwd, ".git");
+      const st = fs.statSync(gitPath);
+      gitFile = st.isFile();
+    } catch {
+      // no .git at cwd, walk up checking
+      let cursor = cwd;
+      for (let i = 0; i < 6; i++) {
+        try {
+          const st = fs.statSync(path.join(cursor, ".git"));
+          gitFile = st.isFile();
+          break;
+        } catch {
+          const parent = path.dirname(cursor);
+          if (parent === cursor) break;
+          cursor = parent;
+        }
+      }
+    }
+    if (!looksLikeWorktree && !gitFile) return;
+    const { execSync } = require("child_process");
+    // Ask git for the common dir; the parent of `.git/worktrees` is the
+    // canonical main worktree.
+    const commonDir = execSync("git rev-parse --git-common-dir", {
+      cwd,
+      stdio: ["ignore", "pipe", "ignore"],
+      encoding: "utf8",
+    }).trim();
+    if (!commonDir) return;
+    const abs = path.isAbsolute(commonDir)
+      ? commonDir
+      : path.resolve(cwd, commonDir);
+    // commonDir points at the main repo's `.git` (e.g. `/path/main/.git`);
+    // its parent is the canonical main worktree.
+    const mainRoot = path.dirname(abs);
+    if (mainRoot && fs.existsSync(mainRoot)) {
+      process.env.CLAUDE_PROJECT_DIR = mainRoot;
+    }
+  } catch {
+    // Fail-open: leave CLAUDE_PROJECT_DIR unset.
+  }
+})();
+
 const { PROJECT, PATHS } = require("../hooks/lib/paths");
 
 function p(key, fallbackRel) {

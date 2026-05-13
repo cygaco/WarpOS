@@ -74,7 +74,7 @@ WarpOS supports more than one sprint coexisting at any time. Two sprints can exe
 | `scripts/hooks/lib/logger.js` (sprint_id field) | verified_from_repo |
 | `.claude/project/reference/sprint-workflow.md` | verified_from_repo |
 | `_docs/sprint/*` (existing 12 + 1 new) | verified_from_repo |
-| `.claude/agents/00-alex/.system/policy/adr/NNNN-multi-sprint-parallel-lanes.md` (new) | inferred_from_repo |
+| `.claude/agents/00-alex/.system/policy/adr/0002-multi-sprint-parallel-lanes.md` (new) | inferred_from_repo |
 
 ## External Service Dependencies
 

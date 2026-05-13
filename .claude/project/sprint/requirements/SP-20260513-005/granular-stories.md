@@ -52,7 +52,7 @@ with no actionable next step (cited as the precipitating cause of this
 sprint — see failure-mining.md F-1).
 
 Deliverable: `.claude/commands/check/warpos-capsule-resolvable.md` +
-`scripts/warpos/checks/capsule-resolvable.js`.
+`scripts/checks/warpos-capsule-resolvable.js`.
 
 Acceptance criteria: AC-S-3.1, AC-S-3.2, AC-S-3.3.
 

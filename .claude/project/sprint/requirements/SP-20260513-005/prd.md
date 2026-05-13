@@ -215,6 +215,40 @@ but are not gating the update.
   still resolve and run the full migration chain. Validated by QA cross-
   version replay bench (S-9).
 
+### Red-team-derived requirements (promoted from redteam-plan.md)
+
+- **R-30** (RT-1) — `--rollback <txId>` is itself transactional. Before
+  the rollback overwrites any post-apply file, snapshot every file it
+  will touch into `<txDir>/rollback-undo/<rel-path>` so the operator can
+  "undo the undo." COPY C-7 documents that `--rollback` is itself
+  transactional.
+
+- **R-31** (RT-2) — `snapshot.json` is written ONCE atomically at
+  `transaction.begin()` (tempfile + `fs.rename`, then `chmod 0o400`).
+  Subsequent transaction state goes to an append-only
+  `snapshot.delta.jsonl`. Rollback reads `snapshot.json + delta` together
+  AND verifies the snapshot hash recorded at begin; if it doesn't match,
+  refuse rollback and emit TR-3 with
+  `outcome="rollback-refused-snapshot-tampered"`.
+
+- **R-32** (RT-3) — Concurrent-apply guard. At `transaction.begin()`,
+  write a lock file at `<targetRoot>/.warpos/transactions/active.lock`
+  containing the txId. If the lock already exists, refuse `--apply` and
+  surface "another warpos update is in progress (or crashed)." Lock is
+  removed on commit or rollback completion.
+
+- **R-33** (RT-4) — At `transaction.begin()`, re-run a fast subset of
+  preflight gates (`install-baseline`, `manifest-honesty`,
+  `tracked-transients`) to catch state-of-the-world drift between
+  preflight and apply. If the second pass disagrees with the first,
+  refuse apply and direct the operator to re-run `/warp:update`.
+
+- **R-34** (RT-5) — Each NEW preflight gate carries an explicit override
+  flag where safe (`--allow-version-drift`, `--force-fresh`,
+  `--source <path>`); `migration-presence` has no override. Override
+  usage emits a TR-1 event with `data.overrideUsed=true` so we can mine
+  for over-aggressive gates post-launch.
+
 ## Non-Goals
 
 - Rewriting `update.js` from scratch (it was just rewritten in 0.5.0).

@@ -22,7 +22,7 @@ TRACE links the source request to the requirement, the code change, the test, th
 | Same                                      | R-6   | S-15         | C-2, C-3 | —    | — | T-014     | `.claude/commands/sprint/status.md` (new); `scripts/sprint/status.js` (new) | golden output test                          | (this sprint)       | —                                         |
 | Same                                      | R-7   | S-16         | —     | —      | — | T-015     | `scripts/hooks/sprint-tracker-guard.js`                    | `scripts/test-sprint-hooks.js`                          | (this sprint)       | —                                         |
 | Same                                      | R-8   | S-17         | —     | —      | — | T-016..017 | `_docs/sprint/LANES.md` (new); 4 existing docs; `sprint-workflow.md` | docs-only                                  | (this sprint)       | —                                         |
-| Same                                      | R-8   | S-18         | —     | —      | — | T-018     | `paths.policy/adr/NNNN-multi-sprint-parallel-lanes.md` (new) | —                                                    | (this sprint)       | —                                         |
+| Same                                      | R-8   | S-18         | —     | —      | — | T-018     | `paths.policy/adr/0002-multi-sprint-parallel-lanes.md` (new) | —                                                    | (this sprint)       | —                                         |
 
 ## Events captured
 

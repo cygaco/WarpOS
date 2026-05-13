@@ -12,7 +12,7 @@
 
 | Source | Requirement | Story | COPY | INPUT | ESD | Ticket | Code | Test | Release | Learning |
 |---|---|---|---|---|---|---|---|---|---|---|
-| Operator runs /warp:update --to v --apply | R-1..R-12 | S-1..S-4 | C-1..C-5 | IN-1, IN-4 | — | T-NNN preflight | `scripts/warpos/preflight.js`, `scripts/warpos/checks/*.js` | `scripts/warpos/test-cross-version-replay.js` | release-plan.md | F-1..F-9 (failure-mining.md) |
+| Operator runs /warp:update --to v --apply | R-1..R-12 | S-1..S-4 | C-1..C-5 | IN-1, IN-4 | — | T-NNN preflight | `scripts/warpos/preflight.js`, `scripts/checks/warpos-*.js` | `scripts/warpos/test-cross-version-replay.js` | release-plan.md | F-1..F-9 (failure-mining.md) |
 | Operator runs /warp:update --apply (commit phase) | R-13..R-18 | S-5, S-6 | C-6, C-7 | IN-2 | — | T-NNN transaction | `scripts/warpos/transaction.js`, `update.js` apply | same | release-plan.md | F-10 (trust loss) |
 | Operator sees post-apply evidence | R-19..R-21 | S-7, S-8 | C-8, C-9 | IN-3, IN-5 | SP-002 (provider-smoke) | T-NNN postflight | `scripts/warpos/postflight.js` | same | release-plan.md | — |
 | Failure event mining | R-22..R-24 | S-9, S-11 | — | IN-1 | — | T-NNN events | `scripts/warpos/lib/update-events.js` | n/a | — | LRN candidate |

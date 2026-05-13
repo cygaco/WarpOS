@@ -117,6 +117,63 @@ function moveStatus(current, ticketId, fromStatus, toStatus) {
   }
 }
 
+// Full bucket re-sync: defensively remove the ticket id from EVERY bucket,
+// then push to the bucket matching the new status. Closes the drift bug
+// where a ticket's stale entry in `proposed` survived after `update --status`
+// flipped it to `done`/`in_review` (SP-002 redispatch).
+const ALL_BUCKETS = [
+  "proposed",
+  "planned",
+  "designed",
+  "ready_for_execution",
+  "in_progress",
+  "blocked",
+  "waiting_on_human",
+  "waiting_on_external_service",
+  "in_review",
+  "qa_failed",
+  "redteam_failed",
+  "done",
+  "released",
+  "deferred",
+  "abandoned",
+  "reopened",
+  "superseded",
+];
+
+function resyncBuckets(current, ticketId, toStatus) {
+  if (!current.tickets) current.tickets = {};
+  for (const b of ALL_BUCKETS) {
+    if (Array.isArray(current.tickets[b])) {
+      current.tickets[b] = current.tickets[b].filter((x) => x !== ticketId);
+    }
+  }
+  if (toStatus) {
+    if (!Array.isArray(current.tickets[toStatus])) {
+      current.tickets[toStatus] = [];
+    }
+    if (!current.tickets[toStatus].includes(ticketId)) {
+      current.tickets[toStatus].push(ticketId);
+    }
+  }
+}
+
+// Resolve the per-sprint current.yaml for the ticket's own sprint, not the
+// active-sprints primary. This matters when /sprint:ticket update --id <id>
+// is invoked from a session whose primary is a different sprint than the
+// ticket's home.
+function currentForTicket(t) {
+  if (t && t.sprint) {
+    try {
+      const per = SPRINT.forSprint(t.sprint);
+      if (per && per.current) return per.current;
+    } catch {
+      // fall through to global
+    }
+  }
+  return SPRINT.current;
+}
+
 function parseFlags(argv, start) {
   const out = {};
   for (let i = start; i < argv.length; i++) {
@@ -270,11 +327,15 @@ function cmdUpdate(argv) {
   writeYaml(tp, t);
 
   if (statusChanged) {
-    const current = loadCurrent();
+    // Resolve the ticket's own sprint current.yaml — not necessarily the
+    // active-sprints primary. Then do a FULL bucket resync (defensive against
+    // prior drift where a stale id sat in `proposed` after status flipped).
+    const currentPath = currentForTicket(t);
+    const current = readYamlMaybe(currentPath);
     if (current) {
-      moveStatus(current, t.id, previousStatus, t.status);
+      resyncBuckets(current, t.id, t.status);
       current.updated_at = nowIso();
-      writeYaml(SPRINT.current, current);
+      writeYaml(currentPath, current);
     }
   }
   process.stdout.write(`updated ${t.id} status=${t.status}\n`);

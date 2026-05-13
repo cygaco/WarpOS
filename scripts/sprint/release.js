@@ -237,15 +237,41 @@ function cmdDeploy(argv) {
     );
     return 1;
   }
-  release.deployed_at = nowIso();
+  const now = nowIso();
+  release.deployed_at = now;
   release.deployed_by = f.by || "human";
   release.deployment_target = f.target || release.deployment_target;
   release.status = "deployed";
-  release.updated_at = nowIso();
+  release.updated_at = now;
   writeYaml(rp, release);
   process.stdout.write(
     `release ${release.id} marked deployed (target=${release.deployment_target})\n`,
   );
+  // Auto-flip active-sprints status: releasing/executing/etc. -> closed.
+  // Without this, /sprint:retrospective rejects the sprint (status gate)
+  // and operators have to hand-edit active-sprints.yaml before closeout.
+  // Idempotent: if entry is already `closed`, leave it (no extra write).
+  // Fail-open: never let registry flip block the deploy mark.
+  try {
+    const reg = readYamlMaybe(SPRINT.activeRegistry);
+    if (reg && Array.isArray(reg.sprints)) {
+      const entry = reg.sprints.find((s) => s.id === release.sprint);
+      if (entry && entry.status !== "closed" && entry.status !== "abandoned") {
+        const prev = entry.status;
+        entry.status = "closed";
+        entry.updated_at = now;
+        reg.updated_at = now;
+        writeYaml(SPRINT.activeRegistry, reg);
+        process.stdout.write(
+          `sprint ${release.sprint} status: ${prev} -> closed\n`,
+        );
+      }
+    }
+  } catch (err) {
+    process.stderr.write(
+      `warning: could not flip active-sprints status: ${err.message}\n`,
+    );
+  }
   return 0;
 }
 

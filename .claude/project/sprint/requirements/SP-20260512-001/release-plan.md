@@ -19,7 +19,7 @@ Honored by `/sprint:release`. Lists conditions under which this sprint may ship.
 - [ ] No new ESDs declared (sprint confirmed `none_expected` in Plan Contract).
 - [ ] No required env vars added.
 - [ ] Migration approval recorded in `paths.sprintApprovals/` (the legacy-delete confirmation from `G-MIGRATION-VERIFY`).
-- [ ] ADR file written under `paths.policy/adr/NNNN-multi-sprint-parallel-lanes.md` (S-18 / Beta `OPEN_ADR: true` flag).
+- [ ] ADR file written under `paths.policy/adr/0002-multi-sprint-parallel-lanes.md` (S-18 / Beta `OPEN_ADR: true` flag).
 
 ## Release artifacts
 

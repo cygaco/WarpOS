@@ -11,10 +11,21 @@
     "mainBranch": "main"
   },
   "warpos": {
-    "version": "0.2.2",
+    "version": "0.5.0",
     "installed": true,
     "source": "self",
-    "features": ["agents", "hooks", "skills", "memory", "maps", "events"]
+    "features": [
+      "agents",
+      "hooks",
+      "skills",
+      "memory",
+      "maps",
+      "events",
+      "sprint",
+      "product-bootstrap",
+      "providers",
+      "transactions"
+    ]
   },
   "agents": {
     "team": {

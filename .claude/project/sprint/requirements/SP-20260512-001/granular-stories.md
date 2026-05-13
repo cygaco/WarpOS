@@ -196,8 +196,8 @@ Linked: `H-3`, `R-8`. Files: `_docs/sprint/LANES.md` (new), 4 existing `_docs/sp
 ### S-18 — ADR for multi-sprint lane architecture
 
 **As** the framework's decision archive
-**I want** a new `.claude/agents/00-alex/.system/policy/adr/NNNN-multi-sprint-parallel-lanes.md` capturing the lane model, isolation choice (worktree by default), and the deferred-coordinator decision
+**I want** a new `.claude/agents/00-alex/.system/policy/adr/0002-multi-sprint-parallel-lanes.md` capturing the lane model, isolation choice (worktree by default), and the deferred-coordinator decision
 **So that** future maintainers know why the design is shaped this way
 
 Acceptance criteria: `AC-18.1`.
-Linked: `R-8`. Files: `paths.policy/adr/NNNN-multi-sprint-parallel-lanes.md` (new). Required by Beta `OPEN_ADR: true` flag.
+Linked: `R-8`. Files: `paths.policy/adr/0002-multi-sprint-parallel-lanes.md` (new). Required by Beta `OPEN_ADR: true` flag.

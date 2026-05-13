@@ -39,7 +39,7 @@
 - **AC-5.2:** Given the generated catalog, when I count entries, then count matches `.claude/commands/**/*.md` file count (minus any explicit excludes).
 - **AC-5.3:** Given each catalog entry, when I inspect, then it has `{id, slug, description, tags, location}` and `description` is non-empty.
 - **AC-5.4:** Given a new skill is added to `.claude/commands/**`, when the regen hook (or install) runs, then the catalog updates to include it within one cycle.
-- **AC-5.5:** Given `paths.skillCatalog` is added to `.claude/paths.json`, when `node scripts/check-paths.js` (or equivalent) runs, then the key resolves to a real file (no path-lint failures).
+- **AC-5.5:** Given `paths.skillCatalog` is added to `.claude/paths.json`, when `node scripts/hooks/path-lint.js` (or equivalent) runs, then the key resolves to a real file (no path-lint failures).
 
 ## S-6 — Adherence telemetry plumbing
 

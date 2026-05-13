@@ -16,7 +16,7 @@
 | RCA design decision | R-3 | S-3 | C-3 | IN-6 | — | T-002-3 | `.claude/agents/00-alex/.system/policy/provider-failure-modes.json` | `tests/failure-modes.catalog.test.js` | R-3 | — |
 | RCA design decision | R-4 | S-4 | — | — | — | T-002-4 | `scripts/warpos/lib/provider-rca.js` | `tests/provider-rca.unit.test.js` | R-4 | — |
 | Autofix design decision | R-5 | S-5 | C-4 | IN-4 | — | T-002-5 | `scripts/warpos/lib/provider-autofix.js` | `tests/provider-autofix.unit.test.js` | R-5 | — |
-| Observability requirement | R-6 | S-7 | — | — | — | T-002-7 | `scripts/warpos/lib/smoke-events.js` (or inline) | `tests/smoke-events.test.js` | R-6 | — |
+| Observability requirement | R-6 | S-7 | — | — | — | T-002-7 | `scripts/warpos/lib/update-events.js` (shared with SP-005) or inline in `scripts/warpos/provider-smoke.js` via `logger.js` | `tests/smoke-events.test.js` | R-6 | — |
 | Cross-platform binding-gap | R-8 | S-8 | — | — | — | T-002-8 | (contract — no new code; consumes existing `dispatch-route-guard`) | `tests/provider-smoke.windows-stdin.test.js` | R-8 | LRN-2026-04-30 |
 
 ## TR-1 — `provider-smoke` lifecycle event
