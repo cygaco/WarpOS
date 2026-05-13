@@ -1,0 +1,32 @@
+schema: warpos/sprint/ralph-progress/v1
+sprint: SP-20260512-001
+ticket: T-20260512-005
+current_loop: 1
+phase: stopped
+started_at: "2026-05-12T22:52:11.564Z"
+updated_at: "2026-05-12T22:55:15.631Z"
+status: completed
+completed_tasks:
+  - "plan: Diagnosed: (1) fs.js writeYaml uses naive JSON.stringify wrapper that emits checks.lint as a string in some round-trip paths; (2) schema requires requirements.* to be string but template defaults to null. Fixing schema to accept [string,null] for requirements.* and fixing fs.js yaml writer to emit proper nested object syntax."
+  - "act: fs.js parseInlineValue gained flow-mapping + flow-sequence support; schema loosened to allow null on plan_contract/requirements.*/reports.*; new init-template tests pass."
+  - "test: AC-5.1 satisfied: scripts/test-sprint-hooks.js exits 0 with 14 passed/0 failed; the two new init-template subtests pass; live tracker validates clean."
+remaining_tasks:
+  - diagnose template-vs-schema mismatch
+  - fix current-sprint.yaml.tmpl
+  - run validate.js
+  - extend test-sprint-hooks.js
+blockers: []
+failed_attempts: []
+last_checks:
+  ran_at: "2026-05-12T22:55:05.729Z"
+  passing:
+    - sprint-hooks-tests
+    - current-sprint-schema-validate
+    - sprint-progress-schema-validate
+  failing: []
+next_action: "Init template bug fixed at parser level (fs.js parseInlineValue handles flow mappings) plus schema loosened to allow null on plan_contract/requirements.*/reports.*. Live tracker repaired in place."
+external_dependency_status: []
+stop_reason: completed
+resume_instructions: "Read this file. Resume at the phase listed. If status is stopped_*, investigate the stop_reason first."
+checkpoint_pointers:
+  - "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\ralph\\SP-20260512-001\\T-20260512-005.yaml"

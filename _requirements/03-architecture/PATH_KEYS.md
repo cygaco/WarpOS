@@ -70,6 +70,7 @@ Markdown convention: reference paths as `paths.X` in prose. Code: `const { PATHS
 | `skillUsageFile` | `.claude/project/events/skill-usage.jsonl` | jsonl | runtime | yes | 0.1.3 |  |
 | `specGraph` | `.claude/project/maps/SPEC_GRAPH.json` | json | generated | yes | 0.0.0 |  |
 | `specsRoot` | `_requirements/04-features` | dir | project | yes | 0.1.0 | replaces `manifest.projectPaths.specs (originally docs/05-features, then requirements/05-features, then requirements/04-features)` |
+| `sprintActiveRegistry` | `.claude/project/sprint/active-sprints.yaml` | yaml | runtime | yes | 0.5.0 | Sprint Workflow v0.2 — top-level registry of every live spri |
 | `sprintApprovals` | `.claude/project/sprint/approvals` | dir | runtime | yes | 0.4.0 |  |
 | `sprintCheckpoints` | `.claude/project/sprint/checkpoints` | dir | runtime | yes | 0.4.0 |  |
 | `sprintCurrent` | `.claude/project/sprint/current-sprint.yaml` | yaml | runtime | yes | 0.4.0 |  |
@@ -87,6 +88,7 @@ Markdown convention: reference paths as `paths.X` in prose. Code: `const { PATHS
 | `sprintRoot` | `.claude/project/sprint` | dir | runtime | yes | 0.4.0 | Sprint Workflow v0.1 — downstream live tracker root. Created |
 | `sprintRouting` | `.claude/agents/00-alex/.system/policy/sprint-routing.json` | json | framework | no | 0.4.0 |  |
 | `sprintSchemas` | `schemas/sprint` | dir | framework | no | 0.4.0 |  |
+| `sprintSprints` | `.claude/project/sprint/sprints` | dir | runtime | yes | 0.5.0 | Sprint Workflow v0.2 — directory containing per-sprint subdi |
 | `sprintTemplates` | `framework/templates/sprint` | dir | framework | no | 0.4.0 |  |
 | `sprintTickets` | `.claude/project/sprint/tickets` | dir | runtime | yes | 0.4.0 |  |
 | `store` | `.claude/agents/store.json` | json | runtime | yes | 0.0.0 |  |

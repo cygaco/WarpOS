@@ -1,7 +1,13 @@
 {
   "$schema": "warpos/sprint-routing/v1",
   "version": 1,
-  "comment": "Sprint Workflow v0.1 routing policy. Declarative — runProvider still controls actual provider selection. Honored by /sprint:plan, /sprint:design, /sprint:execute, /sprint:release where a model class is needed (planning, review, scoping, judgment). No new SDK installs; routing intent is preserved by class even when provider-fallback.json drives an actual swap.",
+  "comment": "Sprint Workflow v0.2 routing policy. Declarative — runProvider still controls actual provider selection. Honored by /sprint:plan, /sprint:design, /sprint:execute, /sprint:release where a model class is needed (planning, review, scoping, judgment). No new SDK installs; routing intent is preserved by class even when provider-fallback.json drives an actual swap. v0.2 adds the `concurrency` block — advisory knobs for parallel-sprint lanes.",
+  "concurrency": {
+    "max_lanes": 2,
+    "default_lane": "default",
+    "default_isolation": "worktree",
+    "rationale": "Number of sprints that may execute concurrently before /sprint:execute halts new ones. v0.2 ships advisory-only — no hard cap yet. default_lane is the lane type assigned when /sprint:plan omits one. default_isolation is the recommended isolation type for non-default lanes (worktree reuses the builder/oneshot primitive)."
+  },
   "policies": {
     "planning": {
       "model_class": "strongest_reasoning",

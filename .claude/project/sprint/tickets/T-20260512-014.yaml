@@ -1,0 +1,57 @@
+schema: warpos/sprint/ticket/v1
+id: T-20260512-014
+title: "Append-singleton sprint-id tagging (events, ledger, beta, issues)"
+type: feature
+status: done
+sprint: SP-20260512-001
+created_at: "2026-05-12T22:29:05.813Z"
+updated_at: "2026-05-13T00:53:16.403Z"
+owner: null
+owner_agent: alpha
+risk_level: medium
+approval_required: false
+approval_state: not_required
+source_request: Enable multiple WarpOS sprints to run in parallel.
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260512-0001.yaml"
+linked_requirements:
+  - R-5
+linked_high_level_story: H-5
+linked_granular_story: S-14
+linked_prd: ".claude/project/sprint/requirements/SP-20260512-001/prd.md"
+linked_copy: []
+linked_inputs: []
+linked_trace:
+  - TR-5
+linked_acceptance_criteria:
+  - AC-14.1
+  - AC-14.2
+  - AC-14.3
+linked_issues: []
+linked_decisions: []
+linked_external_services: []
+linked_files:
+  - scripts/test-sprint-hooks.js
+linked_tests: []
+linked_commits: []
+linked_prs: []
+linked_release: null
+description: "Add `sprint_id` field (or null) to: `scripts/hooks/lib/logger.js#logEvent` rows; decision-ledger appenders (find every site via grep); Beta events appender; `scripts/sprint/issue.js create` YAML records. Update `issues.md` ledger append to prefix `## [SP-X]` on the heading line. Pre-existing rows without `sprint_id` continue to parse; readers treat them as null. No retro-fill."
+user_value: ""
+business_value: ""
+acceptance_criteria:
+  - AC-14.1
+  - AC-14.2
+  - AC-14.3
+non_goals: []
+implementation_notes: ""
+qa_notes: ""
+redteam_notes: ""
+trace_notes: ""
+blocked_by:
+  - T-20260512-001
+blocks: []
+fix_attempts: []
+ralph_progress: null
+completion_evidence:
+  - "AC-14.1, AC-14.2, AC-14.3 verified"
+reopen_history: []

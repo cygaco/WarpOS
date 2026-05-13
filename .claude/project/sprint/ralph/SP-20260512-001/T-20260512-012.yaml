@@ -1,0 +1,28 @@
+schema: warpos/sprint/ralph-progress/v1
+sprint: SP-20260512-001
+ticket: T-20260512-012
+current_loop: 1
+phase: stopped
+started_at: "2026-05-12T23:03:35.043Z"
+updated_at: "2026-05-12T23:04:03.236Z"
+status: completed
+completed_tasks:
+  - "plan: Added concurrency block to sprint-routing.json (max_lanes=2, default_lane=default, default_isolation=worktree). Exposed via routing.concurrency()."
+  - "test: AC-12.1 (concurrency block present in sprint-routing.json): satisfied. AC-12.2 (routing.concurrency() returns the parsed block): satisfied."
+remaining_tasks:
+  - add concurrency block to sprint-routing.json
+  - expose via routing.js
+blockers: []
+failed_attempts: []
+last_checks:
+  ran_at: "2026-05-12T23:04:02.995Z"
+  passing:
+    - routing-validate-ok
+    - routing-concurrency-exposes-block
+  failing: []
+next_action: "Advisory-only in v0.2; future ticket can enforce max_lanes hard cap."
+external_dependency_status: []
+stop_reason: completed
+resume_instructions: "Read this file. Resume at the phase listed. If status is stopped_*, investigate the stop_reason first."
+checkpoint_pointers:
+  - "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\ralph\\SP-20260512-001\\T-20260512-012.yaml"

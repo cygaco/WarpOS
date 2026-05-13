@@ -1,8 +1,8 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "warpos/sprint/current-sprint/v1",
-  "title": "WarpOS Sprint v0.1 — Current Sprint",
-  "description": "paths.sprintCurrent. Live sprint state. Always exactly one current-sprint.yaml per downstream repo. Status 'not_started' is valid (init.js writes that on first run).",
+  "title": "WarpOS Sprint v0.2 — Current Sprint",
+  "description": "Per-sprint live state. v0.2 layout: .claude/project/sprint/sprints/<SP-id>/current.yaml. Legacy v0.1 layout (paths.sprintCurrent at the sprint root) still validates against this schema and is migrated by scripts/sprint/migrate-v0.2.js. The active set of sprints is enumerated in paths.sprintActiveRegistry.",
   "type": "object",
   "required": [
     "schema",
@@ -50,8 +50,8 @@
     "source_request": { "type": "string" },
     "interpreted_intent": { "type": "string" },
     "plan_contract": {
-      "type": "string",
-      "description": "Pointer to plan-contracts/<id>.yaml"
+      "type": ["string", "null"],
+      "description": "Pointer to plan-contracts/<id>.yaml. Null until /sprint:plan writes one."
     },
     "risk_level": {
       "type": "string",
@@ -78,6 +78,20 @@
       "enum": ["solo", "adhoc", "oneshot", "no_recommendation"]
     },
     "mode_invocation_required_by_user": { "type": "boolean", "const": true },
+    "lane": {
+      "type": "object",
+      "required": ["type", "value", "isolation_notes"],
+      "additionalProperties": false,
+      "description": "Sprint lane (v0.2). Declares how this sprint isolates its execution from other concurrently-active sprints. `default` shares the working tree; `worktree` runs Ralph inside a git worktree; `branch` is light isolation. Default is { type: default, value: null }.",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["default", "worktree", "branch"]
+        },
+        "value": { "type": ["string", "null"] },
+        "isolation_notes": { "type": "string" }
+      }
+    },
     "external_services": {
       "type": "object",
       "additionalProperties": false,
@@ -121,17 +135,18 @@
     "requirements": {
       "type": "object",
       "additionalProperties": false,
+      "description": "Pointers to requirement files. Null until /sprint:design renders each.",
       "properties": {
-        "prd": { "type": "string" },
-        "high_level_stories": { "type": "string" },
-        "granular_stories": { "type": "string" },
-        "copy": { "type": "string" },
-        "inputs": { "type": "string" },
-        "trace": { "type": "string" },
-        "acceptance_criteria": { "type": "string" },
-        "qa_plan": { "type": "string" },
-        "redteam_plan": { "type": "string" },
-        "release_plan": { "type": "string" }
+        "prd": { "type": ["string", "null"] },
+        "high_level_stories": { "type": ["string", "null"] },
+        "granular_stories": { "type": ["string", "null"] },
+        "copy": { "type": ["string", "null"] },
+        "inputs": { "type": ["string", "null"] },
+        "trace": { "type": ["string", "null"] },
+        "acceptance_criteria": { "type": ["string", "null"] },
+        "qa_plan": { "type": ["string", "null"] },
+        "redteam_plan": { "type": ["string", "null"] },
+        "release_plan": { "type": ["string", "null"] }
       }
     },
     "checks": {
@@ -160,11 +175,12 @@
     "reports": {
       "type": "object",
       "additionalProperties": false,
+      "description": "Pointers to report files. Null until the corresponding phase finishes.",
       "properties": {
-        "plan": { "type": "string" },
-        "design": { "type": "string" },
-        "execution": { "type": "string" },
-        "release": { "type": "string" }
+        "plan": { "type": ["string", "null"] },
+        "design": { "type": ["string", "null"] },
+        "execution": { "type": ["string", "null"] },
+        "release": { "type": ["string", "null"] }
       }
     },
     "ralph": {

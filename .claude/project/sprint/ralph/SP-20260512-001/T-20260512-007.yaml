@@ -1,0 +1,31 @@
+schema: warpos/sprint/ralph-progress/v1
+sprint: SP-20260512-001
+ticket: T-20260512-007
+current_loop: 1
+phase: stopped
+started_at: "2026-05-12T23:12:47.301Z"
+updated_at: "2026-05-12T23:15:00.310Z"
+status: completed
+completed_tasks:
+  - "plan: Added SPRINT.parseSprintArg(argv) helper to paths.js. Wired into all 8 helpers (plan/design/execute/release/ticket/issue/external-service/checkpoint) at main() entry. Side-effect sets process.env.WARPOS_SPRINT_ID so logger + decision-ledger auto-tag."
+  - "test: AC-7.1 (known id accepted): passing. AC-7.2 (omitted defaults to primary): passing. AC-7.3 (unknown id exits non-zero + COPY C-10): passing."
+remaining_tasks:
+  - add parseSprintArg helper
+  - wire into 8 helpers
+  - tests
+blockers: []
+failed_attempts: []
+last_checks:
+  ran_at: "2026-05-12T23:15:00.071Z"
+  passing:
+    - sprint-flag-accepts-known-id
+    - sprint-flag-rejects-unknown-id
+    - sprint-flag-default-to-primary
+    - suite-29/29
+  failing: []
+next_action: "Unblocks T-008 (command body docs)."
+external_dependency_status: []
+stop_reason: completed
+resume_instructions: "Read this file. Resume at the phase listed. If status is stopped_*, investigate the stop_reason first."
+checkpoint_pointers:
+  - "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\ralph\\SP-20260512-001\\T-20260512-007.yaml"

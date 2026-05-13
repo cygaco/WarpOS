@@ -1,0 +1,35 @@
+schema: warpos/sprint/sprint-progress/v1
+sprint: SP-20260512-001
+updated_at: "2026-05-12T23:25:16.060Z"
+current_phase: execute
+current_command: "/sprint:execute"
+current_ticket: null
+current_task: null
+current_loop: null
+status: paused
+last_completed_step: wave-2-complete-17-of-18-tickets
+next_action: "T-004 (migration script) is the last leaf. It moves live SP-20260512-001 from layout=legacy_root to per_sprint_subdir. Has --dry-run/--apply/--rollback. Approval AP-20260512-001 (destructive_migration) confirms at COPY C-7 prompt inside --apply. Recommend running it as a focused /sprint:execute --ticket T-20260512-004 pass since it's the only destructive ticket left."
+active_files: []
+modified_files: []
+checks_last_run: null
+checks_passing: []
+checks_failing: []
+blockers: []
+approvals_needed:
+  - AP-20260512-001
+external_services_needed: []
+issues_opened: []
+tickets_updated:
+  - T-20260512-008
+  - T-20260512-010
+  - T-20260512-011
+  - T-20260512-013
+  - T-20260512-014
+  - T-20260512-015
+  - T-20260512-016
+  - T-20260512-017
+ralph_checkpoint: null
+resume_command: "/sprint:execute --ticket T-20260512-004"
+resume_notes: "17 of 18 tickets in_review. Remaining: T-004 migration only. Live SP-20260512-001 still at legacy_root layout (intentional — migration is the closing ticket). All other v0.2 surfaces are in place: registry, resolver, --sprint flag, conflict-check, worktree+warmup, status command, sprint-id tagging, ADR, docs. 36 sprint-hook tests pass. Tracker validates clean."
+safe_to_continue: true
+stop_reason: null

@@ -1,0 +1,33 @@
+schema: warpos/sprint/ralph-progress/v1
+sprint: SP-20260512-001
+ticket: T-20260512-013
+current_loop: 1
+phase: stopped
+started_at: "2026-05-12T23:18:25.664Z"
+updated_at: "2026-05-12T23:20:33.366Z"
+status: completed
+completed_tasks:
+  - "plan: scripts/sprint/conflict-check.js (~180 lines) computes surface-set intersection across active sprints' Plan Contracts. Emits TR-4 sprint.conflict_check.run. Integrated into plan.js (warn-only) and execute.js cmdStart (block unless --allow-overlap; override logged to decision-ledger as manual_allow_overlap)."
+  - "test: AC-13.1 (disjoint surfaces exit 0): passing. AC-13.2 (overlap exits non-zero, lists surface + other-sprint-id): passing. AC-13.3 (--allow-overlap proceeds AND logs override to decision-ledger): passing. Severity model: clean | warn (plan-time) | block (execute-time). plan.js prints warn but never fails the run; execute.js cmdStart blocks unless override."
+remaining_tasks:
+  - write conflict-check.js
+  - "integrate into plan.js (warn)"
+  - "integrate into execute.js cmdStart (block unless --allow-overlap)"
+  - log overrides to decision-ledger
+  - add tests
+blockers: []
+failed_attempts: []
+last_checks:
+  ran_at: "2026-05-12T23:20:33.078Z"
+  passing:
+    - conflict-check-clean
+    - conflict-check-detects-overlap
+    - conflict-check-allow-overlap
+    - suite-34/34
+  failing: []
+next_action: "Severity gates: plan-time warn, execute-time block. Override logged to decision-ledger as manual_allow_overlap."
+external_dependency_status: []
+stop_reason: completed
+resume_instructions: "Read this file. Resume at the phase listed. If status is stopped_*, investigate the stop_reason first."
+checkpoint_pointers:
+  - "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\ralph\\SP-20260512-001\\T-20260512-013.yaml"

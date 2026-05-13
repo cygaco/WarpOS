@@ -25,12 +25,24 @@ production-deploy needs.
 ## Inputs
 
 ```text
-/sprint:execute [--ticket <T-id>]
+/sprint:execute [--ticket <T-id>] [--sprint <SP-id>] [--allow-overlap]
 ```
 
-If `--ticket` is omitted, pick the first ticket in
-`paths.sprintCurrent.tickets.ready_for_execution`. If none exists, halt
-and tell the user.
+- `--ticket <T-id>` — execute one specific ticket. If omitted, pick the
+  first ticket in the targeted sprint's `ready_for_execution` bucket.
+- `--sprint <SP-id>` (v0.2) — target a specific sprint. Defaults to
+  `paths.sprintActiveRegistry#primary`. Unknown id → exit non-zero
+  with COPY C-10.
+- `--allow-overlap` (v0.2) — proceed even when
+  `scripts/sprint/conflict-check.js` reports `affected_surfaces`
+  overlap with another live sprint. The override is logged to
+  `paths.decisionLedger` with reason `manual_allow_overlap`.
+
+If the target sprint has `lane.type === "worktree"`, Ralph phases run
+inside the lane's git worktree (the sprint's `lane.value`). The first
+agent dispatch fires a no-op warm-up agent first to dodge the
+`first-parallel-dispatch leaks to main repo HEAD` issue
+(LRN-2026-04-17, see `_docs/sprint/LANES.md`).
 
 ## Procedure
 

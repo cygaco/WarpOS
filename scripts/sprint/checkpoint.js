@@ -73,6 +73,8 @@ function frozenCheckpointPath(sprintId) {
 }
 
 function main() {
+  const sa = SPRINT.parseSprintArg(process.argv);
+  if (sa.error) return 1;
   const a = parseArgs(process.argv);
   if (!a.sprint) {
     process.stderr.write("required: --sprint <id>\n");

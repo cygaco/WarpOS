@@ -90,6 +90,89 @@ function loadSprint() {
   return current;
 }
 
+// T-20260512-010 + T-20260512-011 — lane-aware execute.
+// Honors current.lane:
+//   - default     → no chdir, no warm-up (no isolation needed)
+//   - worktree    → validates lane.value, captures HEAD for drift,
+//                   fires no-op warm-up (TR-3), chdir's into the lane
+//   - branch      → light isolation (currently treated like default;
+//                   v0.3 may add branch-switching semantics)
+//
+// The "warm-up" addresses LRN-2026-04-17 (parallel-dispatch first leak)
+// by doing a single sequential read inside the worktree before any
+// further activity. `git rev-parse HEAD` is the cheapest read that
+// also captures the lane HEAD for drift detection (redteam probe A-4).
+function prepareLane(current, opts = {}) {
+  const lane = current.lane || { type: "default", value: null };
+  if (lane.type === "default") {
+    return { ok: true, lane, headSha: null, chdirTarget: null };
+  }
+  if (lane.type === "branch") {
+    // v0.2: branch lanes share the working tree — no chdir, no warm-up.
+    // v0.3 may introduce `git switch` here.
+    return { ok: true, lane, headSha: null, chdirTarget: null };
+  }
+  if (lane.type === "worktree") {
+    if (!lane.value) {
+      return {
+        ok: false,
+        error: `/sprint:execute refused: lane.type=worktree but lane.value is null. Set lane.value to the worktree path.`,
+      };
+    }
+    const worktreePath = path.isAbsolute(lane.value)
+      ? lane.value
+      : path.join(SPRINT.PROJECT, lane.value);
+    if (!fs.existsSync(worktreePath)) {
+      return {
+        ok: false,
+        error: `/sprint:execute refused: lane worktree missing at \`${lane.value}\`. Run \`git worktree add ${lane.value}\` then retry. (Worktree creation is intentionally manual — the helper does not create branches for you.)`,
+      };
+    }
+    // Capture HEAD via git rev-parse — also primes the worktree process
+    // (the LRN-2026-04-17 "first-dispatch-leak-workaround").
+    let headSha = null;
+    if (!opts.skipWarmup) {
+      try {
+        const { spawnSync } = require("child_process");
+        const r = spawnSync("git", ["-C", worktreePath, "rev-parse", "HEAD"], {
+          encoding: "utf8",
+        });
+        if (r.status === 0) {
+          headSha = (r.stdout || "").trim();
+        }
+      } catch {
+        /* git missing or worktree not actually a repo — fail open */
+      }
+      // Log TR-3 — `sprint.warmup_dispatch` event.
+      try {
+        const { log } = require("../hooks/lib/logger");
+        log(
+          "audit",
+          {
+            type: "warmup",
+            action: "sprint.warmup_dispatch",
+            target: lane.value,
+            detail: `first-dispatch-leak-workaround; head=${headSha || "?"}`,
+          },
+          { actor: "sprint", sprint_id: current.id },
+        );
+      } catch {
+        /* logger missing — best-effort */
+      }
+    }
+    return {
+      ok: true,
+      lane,
+      headSha,
+      chdirTarget: worktreePath,
+    };
+  }
+  return {
+    ok: false,
+    error: `unknown lane.type: ${lane.type}`,
+  };
+}
+
 function cmdStart(argv) {
   const f = parseFlags(argv, 3);
   if (!f.ticket) {
@@ -98,6 +181,49 @@ function cmdStart(argv) {
   }
   const current = loadSprint();
   if (!current) return 1;
+  // T-20260512-010 + T-20260512-011 — lane awareness + warm-up.
+  const laneRes = prepareLane(current, {
+    skipWarmup: f["skip-warmup"] === true || f["skip-warmup"] === "true",
+  });
+  if (!laneRes.ok) {
+    process.stderr.write(laneRes.error + "\n");
+    return 1;
+  }
+  // T-20260512-013 conflict-check at execute-time: blocks unless
+  // --allow-overlap, in which case the override is logged to
+  // paths.decisionLedger as `manual_allow_overlap`.
+  try {
+    const { checkSprint, formatReport } = require("./conflict-check");
+    const cc = checkSprint(current.id, {
+      phase: "execute",
+      allowOverlap: !!f["allow-overlap"],
+    });
+    if (cc.severity === "block" && !f["allow-overlap"]) {
+      process.stderr.write(formatReport(cc, { allowOverlap: false }) + "\n");
+      return 1;
+    }
+    if (cc.severity === "block" && f["allow-overlap"]) {
+      try {
+        const { appendDecision } = require("../decisions/ledger");
+        appendDecision({
+          class: "B",
+          owner: "alpha",
+          topic: "sprint-execute-overlap",
+          decision: `Proceed despite overlap (sprint=${current.id})`,
+          why: `--allow-overlap passed; ${cc.conflicts.length} surface conflict(s) with ${new Set(cc.conflicts.map((c) => c.other_sprint_id)).size} other sprint(s)`,
+          reversible: true,
+          reversalPlan: "Stop /sprint:execute and rescope affected_surfaces",
+          tags: "manual_allow_overlap,sprint,conflict-check",
+          source: "scripts/sprint/execute.js",
+          sprint_id: current.id,
+        });
+      } catch {
+        /* decision-ledger missing — best-effort */
+      }
+    }
+  } catch {
+    /* conflict-check missing — fail open */
+  }
   const rp = ralphPath(current.id, f.ticket);
   ensureDir(path.dirname(rp));
   const now = nowIso();
@@ -123,6 +249,16 @@ function cmdStart(argv) {
       "Read this file. Resume at the phase listed. If status is stopped_*, investigate the stop_reason first.",
     checkpoint_pointers: [],
   };
+  // T-010 lane-HEAD capture lands on the Ralph file so subsequent phases
+  // can detect drift (redteam A-4). Lane info is informational here;
+  // fully-fledged drift detection ships in v0.3.
+  if (laneRes.lane && laneRes.lane.type === "worktree") {
+    ralph.lane = {
+      type: "worktree",
+      value: laneRes.lane.value,
+      head_sha_on_entry: laneRes.headSha || null,
+    };
+  }
   writeYaml(rp, ralph);
   // update current.ralph
   current.ralph = {
@@ -272,6 +408,8 @@ function cmdShow(argv) {
 }
 
 function main() {
+  const sa = SPRINT.parseSprintArg(process.argv);
+  if (sa.error) return 1;
   const cmd = process.argv[2];
   switch (cmd) {
     case "start":

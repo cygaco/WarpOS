@@ -1,0 +1,45 @@
+schema: warpos/sprint/sprint-progress/v1
+sprint: SP-20260512-001
+updated_at: "2026-05-12T22:32:38.024Z"
+current_phase: design
+current_command: "/sprint:design"
+current_ticket: null
+current_task: null
+current_loop: null
+status: running
+last_completed_step: design_scaffolded_and_tickets_minted
+next_action: "Run /sprint:execute on the first ready_for_execution ticket. 8 tickets are ready (no upstream dependencies); execution order: T-005 (init template bugfix) → T-001 (active-sprints registry) → T-002 (per-sprint subdirs, blocked_by T-005) → ... See ticket.blocked_by chains. Migration ticket T-004 has approval AP-20260512-001 pending; confirmation fires at COPY C-7 inside migrate-v0.2.js --apply."
+active_files: []
+modified_files: []
+checks_last_run: null
+checks_passing: []
+checks_failing: []
+blockers: []
+approvals_needed:
+  - AP-20260512-001
+external_services_needed: []
+issues_opened: []
+tickets_updated:
+  - T-20260512-001
+  - T-20260512-002
+  - T-20260512-003
+  - T-20260512-004
+  - T-20260512-005
+  - T-20260512-006
+  - T-20260512-007
+  - T-20260512-008
+  - T-20260512-009
+  - T-20260512-010
+  - T-20260512-011
+  - T-20260512-012
+  - T-20260512-013
+  - T-20260512-014
+  - T-20260512-015
+  - T-20260512-016
+  - T-20260512-017
+  - T-20260512-018
+ralph_checkpoint: null
+resume_command: "/sprint:execute"
+resume_notes: "Design complete at scale=m. 18 tickets minted: 8 ready_for_execution, 10 designed (with blocked_by chains). 1 approval pending (AP-20260512-001, destructive_migration, linked T-004). Beta DECIDE on variant pick (confidence 0.82) AND on 4-question design spot-check (confidence 0.83). Both logged to paths.betaEvents."
+safe_to_continue: true
+stop_reason: null

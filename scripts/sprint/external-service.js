@@ -292,6 +292,8 @@ function cmdGate(argv) {
 }
 
 function main() {
+  const sa = SPRINT.parseSprintArg(process.argv);
+  if (sa.error) return 1;
   const cmd = process.argv[2];
   switch (cmd) {
     case "create":

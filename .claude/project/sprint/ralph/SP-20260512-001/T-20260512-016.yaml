@@ -1,0 +1,32 @@
+schema: warpos/sprint/ralph-progress/v1
+sprint: SP-20260512-001
+ticket: T-20260512-016
+current_loop: 1
+phase: stopped
+started_at: "2026-05-12T23:09:26.980Z"
+updated_at: "2026-05-12T23:10:12.042Z"
+status: completed
+completed_tasks:
+  - "plan: Guard already auto-loads schemas by ; added 4 test cases covering per-sprint subdir current.yaml + active-sprints.yaml (valid + malformed)."
+  - "test: AC-16.1 (valid yaml under sprints/<id>/ allowed): satisfied. AC-16.2 (malformed yaml blocked): satisfied. Guard required no code changes — its -based schema dispatch already worked."
+remaining_tasks:
+  - "verify guard accepts sprints/<id>/current.yaml"
+  - add tests for new layout
+  - add tests for active-sprints.yaml
+blockers: []
+failed_attempts: []
+last_checks:
+  ran_at: "2026-05-12T23:10:11.797Z"
+  passing:
+    - tracker-allows-per-sprint-subdir
+    - tracker-blocks-malformed-subdir
+    - tracker-allows-active-sprints
+    - tracker-blocks-missing-primary
+    - suite-23/23
+  failing: []
+next_action: "Pure test-coverage ticket; the guard logic already covered the case."
+external_dependency_status: []
+stop_reason: completed
+resume_instructions: "Read this file. Resume at the phase listed. If status is stopped_*, investigate the stop_reason first."
+checkpoint_pointers:
+  - "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\ralph\\SP-20260512-001\\T-20260512-016.yaml"

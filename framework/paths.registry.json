@@ -627,6 +627,24 @@
       "introducedIn": "0.4.0",
       "docsToken": "paths.sprintProgress"
     },
+    "sprintActiveRegistry": {
+      "path": ".claude/project/sprint/active-sprints.yaml",
+      "kind": "yaml",
+      "owner": "runtime",
+      "mutable": true,
+      "introducedIn": "0.5.0",
+      "docsToken": "paths.sprintActiveRegistry",
+      "_note": "Sprint Workflow v0.2 — top-level registry of every live sprint. Lifts the single-current-sprint singleton. Written by scripts/sprint/init.js on first run; updated by /sprint:plan when new sprints are created. Replaces the singleton constraint declared in v0.1's current-sprint schema."
+    },
+    "sprintSprints": {
+      "path": ".claude/project/sprint/sprints",
+      "kind": "dir",
+      "owner": "runtime",
+      "mutable": true,
+      "introducedIn": "0.5.0",
+      "docsToken": "paths.sprintSprints",
+      "_note": "Sprint Workflow v0.2 — directory containing per-sprint subdirs (sprints/<SP-id>/current.yaml + progress.yaml). Replaces v0.1 singletons after T-20260512-002 migration."
+    },
     "sprintHistory": {
       "path": ".claude/project/sprint/history",
       "kind": "dir",

@@ -25,11 +25,12 @@ invokes the deploy and `/sprint:release deploy` only marks it.
 ## Inputs
 
 ```text
-/sprint:release [--id <RL-id>] [--title "<t>"] [--version "<v>"] [--target "<env>"]
+/sprint:release [--id <RL-id>] [--title "<t>"] [--version "<v>"] [--target "<env>"] [--sprint <SP-id>]
 ```
 
 If `--id` is omitted and no in-progress release exists, a new one is
-prepared.
+prepared. `--sprint <SP-id>` (v0.2) targets a specific sprint;
+omitted → registry primary; unknown id → COPY C-10.
 
 ## Procedure
 

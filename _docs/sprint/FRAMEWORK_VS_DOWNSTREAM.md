@@ -1,7 +1,9 @@
-# Sprint v0.1 — Framework vs Downstream
+# Sprint v0.2 — Framework vs Downstream
 
-The hard rule for sprint v0.1: **live tracker state lives in the
-downstream product repo, never in the framework repo.**
+The hard rule for sprint v0.2: **live tracker state lives in the
+downstream product repo, never in the framework repo.** v0.2 adds
+per-sprint subdirs and the active-sprints registry but the
+framework/downstream separation is unchanged.
 
 ## In the framework repo (this one)
 
@@ -21,8 +23,11 @@ them via `/warp:update`.
 
 The framework repo MUST NOT contain:
 
-- `.claude/project/sprint/current-sprint.yaml` (any non-test instance)
-- `.claude/project/sprint/sprint-progress.yaml` (any non-test instance)
+- `.claude/project/sprint/active-sprints.yaml` (v0.2 — any non-test instance)
+- `.claude/project/sprint/sprints/<SP-id>/current.yaml` (v0.2 — any non-test instance)
+- `.claude/project/sprint/sprints/<SP-id>/progress.yaml` (v0.2 — any non-test instance)
+- `.claude/project/sprint/current-sprint.yaml` (legacy v0.1 — any non-test instance)
+- `.claude/project/sprint/sprint-progress.yaml` (legacy v0.1 — any non-test instance)
 - `.claude/project/sprint/plan-contracts/*.yaml` (real ones)
 - `.claude/project/sprint/tickets/*.yaml`
 - `.claude/project/sprint/issues/*.yaml`

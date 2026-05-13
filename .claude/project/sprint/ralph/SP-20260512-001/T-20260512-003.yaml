@@ -1,0 +1,31 @@
+schema: warpos/sprint/ralph-progress/v1
+sprint: SP-20260512-001
+ticket: T-20260512-003
+current_loop: 1
+phase: stopped
+started_at: "2026-05-12T23:02:23.569Z"
+updated_at: "2026-05-12T23:03:20.020Z"
+status: completed
+completed_tasks:
+  - "plan: Added lane field to current-sprint.schema.json and plan-contract.schema.json. Updated plan.js to write lane in fresh PCs and inherit it on current-sprint. Backfilled live tracker."
+  - "test: AC-3.1 (no 'always one' phrase): satisfied — replaced description in T-002. AC-3.2 (lane: {type:worktree, value:'../warpos-lane-b'} validates): tested by hand via the schema's enum + nullable value. AC-9.1 (plan-contract required lane block): satisfied. AC-9.2 (plan.js writes default lane on omission): satisfied."
+remaining_tasks:
+  - add lane field to current-sprint schema
+  - add lane field to plan-contract schema
+  - backfill live current-sprint.lane
+  - backfill live PC-20260512-0001.lane
+blockers: []
+failed_attempts: []
+last_checks:
+  ran_at: "2026-05-12T23:03:19.778Z"
+  passing:
+    - current-sprint-validate-with-lane
+    - plan-contract-validate-with-lane
+    - sprint-hooks-suite-19/19
+  failing: []
+next_action: "Schema-only changes; live state backfilled with default lane."
+external_dependency_status: []
+stop_reason: completed
+resume_instructions: "Read this file. Resume at the phase listed. If status is stopped_*, investigate the stop_reason first."
+checkpoint_pointers:
+  - "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\ralph\\SP-20260512-001\\T-20260512-003.yaml"

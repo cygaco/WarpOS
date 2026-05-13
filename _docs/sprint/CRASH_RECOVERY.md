@@ -1,20 +1,30 @@
-# Sprint v0.1 — Crash Recovery
+# Sprint v0.2 — Crash Recovery
 
 A sprint must be recoverable after session crash, context reset,
 terminal interruption, or agent restart. The mechanism is files, not
-chat.
+chat. v0.2 adds the multi-sprint registry — recovery starts by
+reading `active-sprints.yaml` to find out which sprints exist before
+looking up their individual progress.
 
-## Three sources of recovery truth
+## Recovery truth sources (v0.2)
 
-1. **`paths.sprintProgress`** (`.claude/project/sprint/sprint-progress.yaml`)
-   The live checkpoint. Single file. Always points at the latest known
-   state.
-2. **`paths.sprintCurrent`** (`.claude/project/sprint/current-sprint.yaml`)
-   The live current sprint. `crash_recovery.resume_command` and
-   `crash_recovery.resume_summary` mirror sprint-progress.
-3. **`paths.sprintCheckpoints`** (`.claude/project/sprint/checkpoints/<sprint>-<n>.yaml`)
-   Frozen historical copies. Sequence numbered. The audit trail when
+1. **`paths.sprintActiveRegistry`** (`active-sprints.yaml`)
+   The list of live sprints. Read first. `primary` is the default
+   target; helpers honor `--sprint <SP-id>` to address others.
+2. **Per-sprint `progress.yaml`**
+   For each sprint in the registry, the live checkpoint at
+   `sprints/<SP-id>/progress.yaml` (v0.2 layout) or
+   `paths.sprintProgress` (legacy v0.1 install with
+   `layout: legacy_root` in the registry).
+3. **Per-sprint `current.yaml`**
+   `sprints/<SP-id>/current.yaml` mirrors the resume command in
+   `crash_recovery.resume_command` / `crash_recovery.resume_summary`.
+4. **`paths.sprintCheckpoints`** (`checkpoints/<SP-id>-<n>.yaml`)
+   Frozen historical copies, sequence numbered. The audit trail when
    live state is corrupted.
+
+Run `/sprint:status` for a one-glance view of the registry and every
+sprint's resume command.
 
 ## The recovery procedure
 

@@ -318,8 +318,80 @@ function parseInlineValue(s) {
       return s.slice(1, -1);
     }
   }
-  // inline {} object — minimal: keep as raw string
+  // YAML flow mapping: { k1: v1, k2: v2, ... }
+  if (s.startsWith("{") && s.endsWith("}")) {
+    return parseFlowMapping(s);
+  }
+  // YAML flow sequence: [ v1, v2, ... ]
+  if (s.startsWith("[") && s.endsWith("]")) {
+    return parseFlowSequence(s);
+  }
   return s;
+}
+
+// Splits flow content on commas at depth 0, respecting nested {...}/[...]
+// and double-quoted strings. Does not handle single-quoted yaml strings
+// (we don't emit them).
+function splitFlowItems(inner) {
+  const items = [];
+  let depth = 0;
+  let inStr = false;
+  let buf = "";
+  for (let i = 0; i < inner.length; i++) {
+    const c = inner[i];
+    if (inStr) {
+      buf += c;
+      if (c === "\\" && i + 1 < inner.length) {
+        buf += inner[++i];
+        continue;
+      }
+      if (c === '"') inStr = false;
+      continue;
+    }
+    if (c === '"') {
+      inStr = true;
+      buf += c;
+      continue;
+    }
+    if (c === "{" || c === "[") {
+      depth++;
+      buf += c;
+      continue;
+    }
+    if (c === "}" || c === "]") {
+      depth--;
+      buf += c;
+      continue;
+    }
+    if (c === "," && depth === 0) {
+      items.push(buf.trim());
+      buf = "";
+      continue;
+    }
+    buf += c;
+  }
+  if (buf.trim().length > 0) items.push(buf.trim());
+  return items;
+}
+
+function parseFlowMapping(s) {
+  const inner = s.slice(1, -1).trim();
+  if (inner === "") return {};
+  const out = {};
+  for (const item of splitFlowItems(inner)) {
+    const idx = item.indexOf(":");
+    if (idx < 0) continue;
+    const k = item.slice(0, idx).trim();
+    const v = item.slice(idx + 1).trim();
+    out[k] = parseInlineValue(v);
+  }
+  return out;
+}
+
+function parseFlowSequence(s) {
+  const inner = s.slice(1, -1).trim();
+  if (inner === "") return [];
+  return splitFlowItems(inner).map(parseInlineValue);
 }
 
 module.exports = {

@@ -119,4 +119,16 @@ if (require.main === module) {
   process.exit(main());
 }
 
-module.exports = { loadPolicy, cmdValidate };
+function concurrency() {
+  const p = loadPolicy();
+  if (!p) return null;
+  return (
+    p.concurrency || {
+      max_lanes: 1,
+      default_lane: "default",
+      default_isolation: "worktree",
+    }
+  );
+}
+
+module.exports = { loadPolicy, cmdValidate, concurrency };

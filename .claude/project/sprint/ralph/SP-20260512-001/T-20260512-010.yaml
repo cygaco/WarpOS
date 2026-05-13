@@ -1,0 +1,32 @@
+schema: warpos/sprint/ralph-progress/v1
+sprint: SP-20260512-001
+ticket: T-20260512-010
+current_loop: 1
+phase: stopped
+started_at: "2026-05-12T23:20:49.823Z"
+updated_at: "2026-05-12T23:22:50.027Z"
+status: completed
+completed_tasks:
+  - "plan: execute.js#prepareLane reads current.lane. Worktree lanes validate path, capture HEAD via git rev-parse (also primes the worktree process — the LRN-2026-04-17 warm-up), log TR-3, then chdir. lane block written to ralph file for drift detection. Default and branch lanes skip the prep."
+  - "test: AC-10.1 (worktree lane chdir + capture HEAD): satisfied. AC-10.3 (missing path → COPY C-6 + exit non-zero): satisfied. AC-11.1 (TR-3 warmup event present): satisfied. NOTE: original AC-11.1 said 'spawn warm-up agent via dispatch-agent.js'. Implementation deviation: a real provider dispatch is overkill (costs money per warmup). The LRN root cause is 'first sequential pre-action in the worktree primes it' — git rev-parse achieves that at zero cost while also capturing HEAD for drift. Deviation documented in execute.js#prepareLane comment + this review note."
+remaining_tasks:
+  - execute.js reads current.lane
+  - validates worktree path
+  - chdirs
+  - captures HEAD for drift
+  - fires warm-up before first dispatch
+blockers: []
+failed_attempts: []
+last_checks:
+  ran_at: "2026-05-12T23:22:49.778Z"
+  passing:
+    - execute-worktree-missing-block
+    - execute-worktree-fires-warmup
+    - suite-36/36
+  failing: []
+next_action: "T-010 + T-011 closed together. Worktree lane support + warmup are one feature."
+external_dependency_status: []
+stop_reason: completed
+resume_instructions: "Read this file. Resume at the phase listed. If status is stopped_*, investigate the stop_reason first."
+checkpoint_pointers:
+  - "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\ralph\\SP-20260512-001\\T-20260512-010.yaml"

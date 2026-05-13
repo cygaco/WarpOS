@@ -73,6 +73,8 @@
   "sprintRoot": ".claude/project/sprint",
   "sprintCurrent": ".claude/project/sprint/current-sprint.yaml",
   "sprintProgress": ".claude/project/sprint/sprint-progress.yaml",
+  "sprintActiveRegistry": ".claude/project/sprint/active-sprints.yaml",
+  "sprintSprints": ".claude/project/sprint/sprints",
   "sprintHistory": ".claude/project/sprint/history",
   "sprintPlanContracts": ".claude/project/sprint/plan-contracts",
   "sprintTickets": ".claude/project/sprint/tickets",

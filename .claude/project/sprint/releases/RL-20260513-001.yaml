@@ -1,0 +1,59 @@
+schema: warpos/sprint/release/v1
+id: RL-20260513-001
+sprint: SP-20260512-001
+title: "Multi-sprint parallelism (Sprint Workflow v0.2)"
+version: "0.2.0-sprint-workflow"
+status: deployed
+checklist:
+  tickets_done_or_deferred: true
+  blocking_issues_resolved: true
+  requirements_satisfied: true
+  copy_satisfied: true
+  inputs_satisfied: true
+  trace_satisfied: true
+  acceptance_criteria_satisfied: true
+  qa_passed: true
+  redteam_passed: true
+  external_services_ready: true
+  credentials_present: true
+  release_notes_written: true
+  docs_updated: true
+  analytics_updated: true
+  migration_plan: true
+  rollback_plan: true
+  approval_recorded: true
+  post_release_monitoring_plan: true
+approval_ref: AP-20260513-002
+changelog_path: _docs/sprint/CHANGELOG_v0.2.md
+release_report_path: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\releases\\RL-20260513-001.report.md"
+linked_tickets:
+  - T-20260512-001
+  - T-20260512-002
+  - T-20260512-003
+  - T-20260512-004
+  - T-20260512-005
+  - T-20260512-006
+  - T-20260512-007
+  - T-20260512-008
+  - T-20260512-009
+  - T-20260512-010
+  - T-20260512-011
+  - T-20260512-012
+  - T-20260512-013
+  - T-20260512-014
+  - T-20260512-015
+  - T-20260512-016
+  - T-20260512-017
+  - T-20260512-018
+linked_issues: []
+linked_external_services: []
+deployment_environment: internal-canary
+deployment_target: internal-canary
+deployed_at: "2026-05-13T04:55:44.364Z"
+deployed_by: user
+rollback_at: null
+rollback_reason: null
+retrospective_ref: null
+learning_candidates: []
+created_at: "2026-05-13T04:46:40.202Z"
+updated_at: "2026-05-13T04:55:46.530Z"

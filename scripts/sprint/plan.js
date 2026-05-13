@@ -90,6 +90,7 @@ function ensureCurrentSprint() {
     current_phase: "plan",
     recommended_mode: "no_recommendation",
     mode_invocation_required_by_user: true,
+    lane: { type: "default", value: null, isolation_notes: "" },
     external_services: {
       identified: [],
       blocked: [],
@@ -248,6 +249,11 @@ function writePlanContract(payload, current) {
       payload.execution_allowed_without_design || false,
     recommended_mode: payload.recommended_mode || "no_recommendation",
     mode_invocation_required_by_user: true,
+    lane: payload.lane || {
+      type: "default",
+      value: null,
+      isolation_notes: "",
+    },
     beta_review: payload.beta_review || {
       required: false,
       likely_founder_rejection_risks: [],
@@ -332,6 +338,12 @@ function updateCurrent(current, planContract, payload) {
       : "planning";
   current.recommended_mode = planContract.recommended_mode;
   current.risk_level = planContract.scope.risk_level;
+  // Inherit lane from the Plan Contract.
+  current.lane = planContract.lane || {
+    type: "default",
+    value: null,
+    isolation_notes: "",
+  };
   current.title =
     payload.sprint_title ||
     current.title ||
@@ -359,6 +371,8 @@ function updateCurrent(current, planContract, payload) {
 }
 
 function main() {
+  const sa = SPRINT.parseSprintArg(process.argv);
+  if (sa.error) return 1;
   const args = parseArgs(process.argv);
   if (!args.payload) {
     process.stderr.write("required: --payload <json-file>\n");
@@ -373,6 +387,16 @@ function main() {
   process.stdout.write(
     `current-sprint: ${SPRINT.current} (sprint=${current.id})\n`,
   );
+  // T-20260512-013 conflict-check at plan-time: warn-only, never blocks.
+  try {
+    const { checkSprint, formatReport } = require("./conflict-check");
+    const cc = checkSprint(current.id, { phase: "plan" });
+    if (cc.severity === "warn") {
+      process.stderr.write(formatReport(cc, {}) + "\n");
+    }
+  } catch {
+    /* conflict-check missing — fail open */
+  }
   process.stdout.write(`next: ${planContract.next_recommended_command}\n`);
   return 0;
 }

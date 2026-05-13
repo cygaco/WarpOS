@@ -1,0 +1,21 @@
+schema: warpos/sprint/approval/v1
+id: AP-20260513-002
+sprint: SP-20260512-001
+level: release_approval_required
+required_for: "internal-canary release of RL-20260513-001 (Sprint Workflow v0.2)"
+linked_ticket: null
+linked_external_service: null
+linked_release: RL-20260513-001
+linked_decision: DEC-20260513-rl-001
+state: approved
+requested_by: alpha
+decided_by: user
+decided_at: "2026-05-13T04:50:00.000Z"
+reason: "User typed 'approved' in chat at 2026-05-13T04:50:00Z (after AskUserQuestion Approve selection had been blocked by transcript-integrity classifier). 17/18 release checks green pre-approval; internal-canary target; rollback path tested."
+evidence:
+  - "release.js check 17/18 green (approval is the 18th); qa+redteam=passing; lint+tests passing; 36/36 sprint-hooks + 9/9 migration tests"
+  - "AP-20260512-001 destructive_migration approved; legacy_paths_deleted=true; 150 fields verified; TR-6 emitted"
+  - "_docs/sprint/CHANGELOG_v0.2.md drafted"
+  - "User typed 'approved' in chat (transcript) after Beta-escalated ask"
+created_at: "2026-05-13T04:49:26.333Z"
+updated_at: "2026-05-13T04:50:00.000Z"

@@ -1,0 +1,35 @@
+schema: warpos/sprint/ralph-progress/v1
+sprint: SP-20260512-001
+ticket: T-20260512-002
+current_loop: 1
+phase: stopped
+started_at: "2026-05-12T22:59:12.213Z"
+updated_at: "2026-05-12T23:01:58.840Z"
+status: completed
+completed_tasks:
+  - "plan: scripts/sprint/paths.js gained SPRINT.active()/SPRINT.entry()/SPRINT.forSprint(); SPRINT.current/progress are now layout-aware getters. scripts/sprint/init.js writes fresh installs to sprints/<id>/. Schema descriptions for current-sprint and sprint-progress updated to v0.2 (no 'always one' language)."
+  - "test: T-002 ACs: AC-2.1 (helpers write under sprints/<id>/) and AC-2.2 (two-sprint isolation) both pass. T-006 ACs (covered by same loop): AC-6.1 forSprint(id) returns {current,progress,ralph,checkpoints,requirements,history}; AC-6.2 active() returns primary; AC-6.3 SPRINT.current/progress back-compat aliases still work via getters and resolve to legacy_root or per_sprint_subdir based on registry."
+remaining_tasks:
+  - make SPRINT.current/progress getters that read active-sprints
+  - "add forSprint(id) and active()"
+  - "update init.js to write sprints/<id>/ for fresh installs"
+  - update sprint-progress schema description
+  - extend tests
+blockers: []
+failed_attempts: []
+last_checks:
+  ran_at: "2026-05-12T23:01:58.596Z"
+  passing:
+    - "sprint-hooks-suite(19/19)"
+    - active-sprints-validate
+    - current-sprint-validate-legacy_root
+    - current-sprint-validate-per_sprint_subdir
+    - AC-2.1
+    - AC-2.2
+  failing: []
+next_action: "T-002 + T-006 closed together (tightly coupled — resolver and layout shape are one design). Live SP-20260512-001 stays at layout=legacy_root; T-004 migration script will flip it."
+external_dependency_status: []
+stop_reason: completed
+resume_instructions: "Read this file. Resume at the phase listed. If status is stopped_*, investigate the stop_reason first."
+checkpoint_pointers:
+  - "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\ralph\\SP-20260512-001\\T-20260512-002.yaml"

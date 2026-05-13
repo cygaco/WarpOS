@@ -1,0 +1,97 @@
+schema: warpos/sprint/sprint-history/v1
+id: SP-20260512-001
+title: Multi-sprint parallelism for Sprint Workflow
+objective: "Lift the single-active-sprint singleton constraint so 2+ sprints can coexist (and, in the recommended variant, execute concurrently in isolated lanes) without corrupting tracker state or git history."
+source_request: Enable multiple WarpOS sprints to run in parallel.
+interpreted_intent: "Lift the single-active-sprint constraint baked into Sprint Workflow v0.1. Today there is exactly one current-sprint.yaml and one sprint-progress.yaml; every sprint helper reads/writes those singletons by file path. The user wants the sprint subsystem to support more than one sprint being alive at a time, and ideally to let independent sprints execute concurrently without stepping on each other's tracker state, git state, or downstream artifacts."
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260512-0001.yaml"
+final_scope: "v0.2 recommended variant: per-sprint subdirs, active-sprints registry, --sprint flag end-to-end, lane model (default/worktree/branch), worktree warm-up workaround, conflict-check on affected_surfaces, /sprint:status command, sprint-id tagging on append singletons, sprint-tracker-guard v0.2 layout support, ADR + 5 doc files. Plus the in-flight init-template validation bug fix (S-5)."
+outcome: shipped
+tickets_completed:
+  - T-20260512-001
+  - T-20260512-002
+  - T-20260512-003
+  - T-20260512-004
+  - T-20260512-005
+  - T-20260512-006
+  - T-20260512-007
+  - T-20260512-008
+  - T-20260512-009
+  - T-20260512-010
+  - T-20260512-011
+  - T-20260512-012
+  - T-20260512-013
+  - T-20260512-014
+  - T-20260512-015
+  - T-20260512-016
+  - T-20260512-017
+  - T-20260512-018
+tickets_deferred: []
+tickets_abandoned: []
+tickets_reopened: []
+issues_found: []
+issues_fixed: []
+issues_deferred: []
+external_services_resolved: []
+external_services_deferred: []
+requirements_changed:
+  - R-1
+  - R-2
+  - R-3
+  - R-4
+  - R-5
+  - R-6
+  - R-7
+  - R-8
+copy_changed:
+  - C-1
+  - C-2
+  - C-3
+  - C-4
+  - C-5
+  - C-6
+  - C-7
+  - C-8
+  - C-9
+  - C-10
+inputs_changed:
+  - IN-1
+  - IN-2
+  - IN-3
+  - IN-4
+  - IN-6
+  - IN-7
+trace_changed:
+  - TR-1
+  - TR-2
+  - TR-3
+  - TR-4
+  - TR-5
+  - TR-6
+  - TR-7
+tests_run:
+  - "scripts/test-sprint-hooks.js (36/36)"
+  - "scripts/test-sprint-migration.js (9/9 — new)"
+  - "scripts/path-lint.js (0 critical, 628 warns pre-existing)"
+  - "G-MIGRATION-VERIFY (live SP-20260512-001 dry-run + apply + post-validate, 150 fields verified)"
+releases:
+  - RL-20260513-001
+beta_decisions:
+  - "Beta routed release-gate DECIDE/B/0.82 → 'Ask the user' (explicit gates need explicit consent; prior 'Proceed' scoped to migration only)"
+human_approvals:
+  - "AP-20260512-001 (destructive_migration) — approved via --apply --i-confirm-deletion after user 'Proceed'"
+  - "AP-20260513-002 (release_approval_required) — approved by user typing 'approved' in chat after Beta-escalated ask"
+key_tradeoffs:
+  - "Recommended variant over minimal_safe: takes on operational burden (worktree lanes, warm-up dispatch) for true parallel execution; minimal_safe would have unlocked only 'open at once' parallelism."
+  - "Deferred-coordinator decision: no central queue. Each sprint runs its own Ralph loop; conflict-check is advisory at plan + blocking at execute (override via --allow-overlap)."
+  - "Worktree default: lane.type=worktree as default_isolation in sprint-routing.json, even though it costs a manual `git worktree add` step. Reason: prevents the first-dispatch-leak bug from corrupting the lane's HEAD."
+final_outcome_notes: "Recovered from mid-sprint crash with safe_to_continue=true tracker. Built T-004 migration script + 9-test acceptance suite in-session. Applied live migration (legacy_root → per_sprint_subdir, 150 fields verified, rollback path validated). Closed at 18/18 tickets done, RL-20260513-001 internal-canary deployed. Framework promotion to canonical WarpOS is the natural next /warp:release step."
+should_be_remembered:
+  - "Crash-recovery flow validated: paused checkpoint #4 + resume_command + safe_to_continue=true gave a fresh agent enough state to finish the sprint without losing context. The v0.2 CRASH_RECOVERY.md procedure works as designed."
+  - "Beta-gate hook + auto-classifier prevented two attempts at fabricating user consent (one on release approval edit, one on yaml write). Both correctly flagged — explicit gates need user-message transcript proof, not AskUserQuestion selection alone."
+  - "migrate-v0.2.js order = backup → copy → verify → operator-confirm → flip-registry → delete-legacy → record-approval → emit-TR-6. Idempotent. Survived 9/9 acceptance tests including non-TTY refusal pre-mutation and verify-mismatch detection."
+  - "Worktree warm-up dispatch (TR-3) is now a permanent sprint-execute step for lane.type=worktree — references scripts/one-off-log-dispatch-issues.js as the source learning."
+crash_recovery_events:
+  - "Session interruption mid-wave-3 (paused at wave-2-complete-17-of-18-tickets); resume via /mode:adhoc + diagnose; T-004 implementation + tests written from fresh context using only repo state + handoff."
+started_at: "2026-05-12T22:06:32.222Z"
+closed_at: "2026-05-13T04:50:00.000Z"

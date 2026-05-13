@@ -1,8 +1,45 @@
-# Sprint Workflow v0.1 — Reference
+# Sprint Workflow v0.2 — Reference
 
 Canonical agent-loaded reference for the `/sprint:*` commands. Cite
-from `paths.sprintReference`. The four commands live under
+from `paths.sprintReference`. The five commands live under
 `.claude/commands/sprint/` and the helpers under `scripts/sprint/`.
+
+## Lanes & parallel sprints (v0.2)
+
+Sprint Workflow v0.2 (SP-20260512-001, ADR 0002) lifts the
+single-current-sprint constraint:
+
+- `paths.sprintActiveRegistry` (`active-sprints.yaml`) lists every
+  live sprint. Exactly one `primary` — the default target when
+  `--sprint` is omitted.
+- Per-sprint state lives at `sprints/<SP-id>/{current,progress}.yaml`.
+  Legacy v0.1 installs keep `current-sprint.yaml` + `sprint-progress.yaml`
+  at the root with `layout: legacy_root` in the registry; the
+  migration script (`scripts/sprint/migrate-v0.2.js`) flips them on
+  user confirmation.
+- Each sprint declares a `lane`: `default` (shares working tree),
+  `worktree:<path>` (Ralph runs inside a git worktree, reusing the
+  builder/oneshot isolation primitive), or `branch:<name>` (light
+  isolation).
+- `/sprint:execute` honors `lane.type === "worktree"` and fires a
+  one-shot warm-up dispatch first (LRN-2026-04-17 workaround) before
+  any real Ralph dispatch.
+- `scripts/sprint/conflict-check.js` (T-013) refuses to launch a
+  second sprint whose `affected_surfaces` overlap with a live sprint's
+  unless `--allow-overlap` is passed (logged to the decision ledger).
+- Append singletons (`paths.eventsFile`, `paths.decisionLedger`,
+  `paths.betaEvents`, `issues.md`) tag every new row with `sprint_id`.
+  Pre-existing rows without the field still parse — readers treat
+  missing as null. No retro-fill.
+- `/sprint:status` lists every live sprint in one table — lane,
+  status, phase, current ticket, current loop, last checkpoint,
+  resume command. Read-only.
+- Concurrency knobs live in `paths.sprintRouting#concurrency`:
+  `max_lanes: 2`, `default_lane: "default"`,
+  `default_isolation: "worktree"`. Advisory only in v0.2.
+
+See `_docs/sprint/LANES.md` for the design rationale, lane types,
+worktree creation example, and the warm-up dispatch contract.
 
 ## Hierarchy (top to bottom)
 
@@ -47,10 +84,16 @@ for non-trivial work.
 | `/sprint:design`  | Plan Contract → PRD/STORIES/COPY/INPUTS/TRACE/AC/QA/release + tickets | design |
 | `/sprint:execute` | Tickets → Ralph loops + checks + issues + checkpoints | execution |
 | `/sprint:release` | Sprint → release record, approval, deploy mark, retrospective | release |
+| `/sprint:status`  | List every live sprint (v0.2) | read-only |
 
 There is no `/sprint:resume` skill. Resume behavior is in each
-command's "Recovery" section and is driven entirely by
-`paths.sprintProgress`.
+command's "Recovery" section and is driven entirely by per-sprint
+`progress.yaml` (or the legacy `paths.sprintProgress` singleton on
+unmigrated v0.1 installs).
+
+All five commands accept `--sprint <SP-id>` (v0.2). Omitted →
+`paths.sprintActiveRegistry#primary`. Unknown id → exit non-zero with
+COPY C-10 "unknown sprint" message.
 
 ## Relationship to modes
 

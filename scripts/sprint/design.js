@@ -224,6 +224,8 @@ function scaffold(args) {
 }
 
 function main() {
+  const sa = SPRINT.parseSprintArg(process.argv);
+  if (sa.error) return 1;
   const args = parseArgs(process.argv);
   return scaffold(args);
 }

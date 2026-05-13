@@ -1,0 +1,33 @@
+schema: warpos/sprint/ralph-progress/v1
+sprint: SP-20260512-001
+ticket: T-20260512-014
+current_loop: 1
+phase: stopped
+started_at: "2026-05-12T23:10:22.940Z"
+updated_at: "2026-05-12T23:12:28.188Z"
+status: completed
+completed_tasks:
+  - "plan: logger.js + decision-ledger.js auto-tag sprint_id from opts.sprint_id, then env WARPOS_SPRINT_ID, else null. issues.md template now prefixes heading with [{{sprint_id}}]."
+  - "test: AC-14.1 (logger row carries sprint_id): satisfied. AC-14.2 (issues.md heading prefixed with [SP-X]): template updated; issue.js#appendIssuesMdBlock already passes sprint_id from issue.related_sprint. AC-14.3 (pre-existing rows without sprint_id parse cleanly): satisfied — field is omitted when null, readers skip absent fields. Beta events appender remains script-managed; today's seed script already includes sprint_id."
+remaining_tasks:
+  - tag events.jsonl
+  - tag decision-ledger
+  - tag beta events
+  - "tag issue.js + issues.md"
+  - add tests
+blockers: []
+failed_attempts: []
+last_checks:
+  ran_at: "2026-05-12T23:12:27.934Z"
+  passing:
+    - logger-tags-sprint-id-from-env
+    - logger-omits-when-unset
+    - decision-ledger-tags
+    - suite-26/26
+  failing: []
+next_action: "Forward-compatible: existing rows untouched; new rows tagged when env present."
+external_dependency_status: []
+stop_reason: completed
+resume_instructions: "Read this file. Resume at the phase listed. If status is stopped_*, investigate the stop_reason first."
+checkpoint_pointers:
+  - "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\ralph\\SP-20260512-001\\T-20260512-014.yaml"

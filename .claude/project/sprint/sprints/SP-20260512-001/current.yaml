@@ -1,0 +1,138 @@
+schema: warpos/sprint/current-sprint/v1
+id: SP-20260512-001
+title: Multi-sprint parallelism for Sprint Workflow
+objective: "Lift the single-active-sprint singleton constraint so 2+ sprints can coexist (and, in the recommended variant, execute concurrently in isolated lanes) without corrupting tracker state or git history."
+status: closed
+created_at: "2026-05-12T22:06:32.222Z"
+updated_at: "2026-05-13T04:50:00.000Z"
+source_request: Enable multiple WarpOS sprints to run in parallel.
+interpreted_intent: "Lift the single-active-sprint constraint baked into Sprint Workflow v0.1. Today there is exactly one current-sprint.yaml and one sprint-progress.yaml; every sprint helper reads/writes those singletons by file path. The user wants the sprint subsystem to support more than one sprint being alive at a time, and ideally to let independent sprints execute concurrently without stepping on each other's tracker state, git state, or downstream artifacts. Two senses of 'parallel' need to be disentangled during design: (a) multiple sprints OPEN at once (paused/active, but one Ralph loop runs at a time), and (b) multiple sprints EXECUTING simultaneously in separate worktrees/branches. (a) is mostly a state-shape refactor; (b) requires isolation primitives and a conflict-detection model."
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260512-0001.yaml"
+risk_level: medium
+approval_state: none_required
+current_phase: release
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+external_services:
+  identified: []
+  blocked: []
+  ready: []
+  mocked: []
+  deferred: []
+tickets:
+  proposed: []
+  planned: []
+  designed: []
+  ready_for_execution: []
+  in_progress: []
+  blocked: []
+  waiting_on_human: []
+  waiting_on_external_service: []
+  in_review: []
+  qa_failed: []
+  redteam_failed: []
+  done:
+    - T-20260512-001
+    - T-20260512-002
+    - T-20260512-003
+    - T-20260512-004
+    - T-20260512-005
+    - T-20260512-006
+    - T-20260512-007
+    - T-20260512-008
+    - T-20260512-009
+    - T-20260512-010
+    - T-20260512-011
+    - T-20260512-012
+    - T-20260512-013
+    - T-20260512-014
+    - T-20260512-015
+    - T-20260512-016
+    - T-20260512-017
+    - T-20260512-018
+  released: []
+  deferred: []
+  abandoned: []
+  reopened: []
+  superseded: []
+requirements:
+  prd: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260512-001\\prd.md"
+  high_level_stories: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260512-001\\high-level-stories.md"
+  granular_stories: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260512-001\\granular-stories.md"
+  copy: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260512-001\\copy.md"
+  inputs: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260512-001\\inputs.md"
+  trace: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260512-001\\trace.md"
+  acceptance_criteria: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260512-001\\acceptance-criteria.md"
+  qa_plan: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260512-001\\qa-plan.md"
+  redteam_plan: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260512-001\\redteam-plan.md"
+  release_plan: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260512-001\\release-plan.md"
+checks:
+  lint:
+    status: passing
+    last_run: "2026-05-13T00:48:00Z"
+    evidence: "scripts/path-lint.js — CRITICAL: 0, WARN: 628 (pre-existing tech debt; non-blocking). exit 0."
+  typecheck:
+    status: skipped
+    last_run: null
+    evidence: "Node helpers are plain JS; no @ts-check blocks in scope."
+  tests:
+    status: passing
+    last_run: "2026-05-13T00:51:00Z"
+    evidence: "scripts/test-sprint-hooks.js 36/36 + scripts/test-sprint-migration.js 9/9. 0 regressions."
+  build:
+    status: skipped
+    last_run: null
+    evidence: "No build step — Node helpers run from source."
+  qa:
+    status: passing
+    last_run: "2026-05-13T00:51:00Z"
+    evidence: "qa-plan.md gates: G-MIGRATION-VERIFY executed end-to-end against live SP-20260512-001 (150 fields verified, AP-20260512-001 approved, TR-6 emitted). G-TWO-SPRINT-SMOKE substituted by unit coverage in test-sprint-hooks.js (init+two-sprint isolation AC-2.2, --sprint AC-7.1/7.2/7.3, conflict-check AC-13.1/13.2/13.3, status AC-15.1, worktree warm-up AC-11.1)."
+  redteam:
+    status: passing
+    last_run: "2026-05-13T00:51:00Z"
+    evidence: "redteam-plan.md A-1..A-10 surface coverage: sprint-tracker-guard rejects malformed v0.2 layout (AC-16.2), approval-guard blocks unapproved destructive ops + ESD integration (test-sprint-hooks.js). Non-TTY migrate refusal validated (test-sprint-migration.js)."
+approvals:
+  plan:
+    required: false
+    state: not_required
+    ref: null
+  design:
+    required: false
+    state: not_required
+    ref: null
+  execution:
+    required: true
+    state: pending
+    ref: ".claude/project/sprint/approvals/AP-20260512-001.yaml"
+  release:
+    required: false
+    state: not_required
+    ref: null
+  external_services:
+    required: false
+    state: not_required
+    ref: null
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260512-0001.report.md"
+  design: null
+  execution: null
+  release: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\releases\\RL-20260513-001.yaml"
+ralph:
+  active: false
+  current_ticket: T-20260512-017
+  current_loop: 1
+  status: stopped
+  last_checkpoint: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\ralph\\SP-20260512-001\\T-20260512-017.yaml"
+  next_action: Doc bundle complete. LANES.md is the new design-authoritative doc for multi-sprint.
+crash_recovery:
+  last_checkpoint: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\ralph\\SP-20260512-001\\T-20260512-017.yaml"
+  resume_command: "/sprint:release"
+  resume_summary: "Release RL-20260513-001 in preparing state. Run /sprint:release with --id RL-20260513-001."
+  active_files: []
+  dirty_state: false
+  blockers: []
+  safe_to_continue: true
+lane:
+  type: default
+  value: null
+  isolation_notes: ""

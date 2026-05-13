@@ -1,0 +1,20 @@
+schema: warpos/sprint/approval/v1
+id: AP-20260512-001
+sprint: SP-20260512-001
+level: execution_approval_required
+required_for: destructive_migration
+linked_ticket: T-20260512-004
+linked_external_service: null
+linked_release: null
+linked_decision: null
+state: approved
+requested_by: alpha
+decided_by: alpha
+decided_at: "2026-05-13T00:52:54.149Z"
+reason: "Migration script deletes legacy paths.sprintCurrent + paths.sprintProgress after byte-equivalence verify. Operator must confirm at COPY C-7 before legacy files are removed. Approval id is recorded by migrate-v0.2.js#--apply on confirm."
+evidence:
+  - kind: migration_confirmed
+    sprint: SP-20260512-001
+    at: "2026-05-13T00:52:54.149Z"
+created_at: "2026-05-12T22:30:18.397Z"
+updated_at: "2026-05-13T00:52:54.149Z"

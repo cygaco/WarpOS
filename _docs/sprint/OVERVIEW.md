@@ -1,9 +1,11 @@
-# Sprint Workflow v0.1 — Overview
+# Sprint Workflow v0.2 — Overview
 
-A four-command sprint layer above WarpOS's existing modes. Turns brief
+A five-command sprint layer above WarpOS's existing modes. Turns brief
 plain-language intent into durable, evidence-labeled, approval-aware
 work that survives crashes and integrates with existing requirements,
-issues, hooks, and learning systems.
+issues, hooks, and learning systems. As of v0.2 (SP-20260512-001),
+multiple sprints can coexist and execute concurrently in isolated
+lanes; see `LANES.md`.
 
 ## The shape
 
@@ -12,7 +14,11 @@ issues, hooks, and learning systems.
 /sprint:design    → Requirements + Tickets (PRD, stories, COPY, INPUTS, TRACE, AC, QA, redteam, release plan)
 /sprint:execute   → Ralph loops          (governed plan/act/test/review/record/checkpoint per ticket)
 /sprint:release   → Release record       (final checks, approval, deploy mark, retrospective)
+/sprint:status    → Live sprint list     (v0.2 — read-only view of every active sprint)
 ```
+
+All commands accept `--sprint <SP-id>` to target a specific sprint;
+omitted → registry primary; unknown id → exit non-zero with COPY C-10.
 
 ## Why it exists
 
@@ -34,9 +40,16 @@ A sprint workflow ensures:
 All live sprint state lives in the **downstream product repo**:
 
 ```
-.claude/project/sprint/        (paths.sprintRoot)
-issues.md                      (paths.sprintIssuesLedger, repo root)
+.claude/project/sprint/                    (paths.sprintRoot)
+  active-sprints.yaml                       (paths.sprintActiveRegistry — v0.2)
+  sprints/<SP-id>/current.yaml + progress.yaml  (per-sprint state — v0.2)
+  ...
+issues.md                                   (paths.sprintIssuesLedger, repo root)
 ```
+
+Legacy v0.1 installs keep `current-sprint.yaml` + `sprint-progress.yaml`
+at the sprint root with `layout: legacy_root` in the registry. Run
+`scripts/sprint/migrate-v0.2.js` to move them.
 
 The WarpOS **framework** repo ships templates + schemas + commands +
 docs — no live tracker state.

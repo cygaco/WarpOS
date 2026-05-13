@@ -24,13 +24,16 @@ service dependency.
 ## Inputs
 
 ```text
-/sprint:design [--documentation-scale xs|s|m|l|xl] [--force]
+/sprint:design [--documentation-scale xs|s|m|l|xl] [--force] [--sprint <SP-id>]
 ```
 
 - `--documentation-scale` defaults to `m`. For xs/s, COPY/INPUTS/TRACE
   and the red-team / release plans may be skipped.
 - `--force` overwrites existing requirement files. Default is to
   refuse.
+- `--sprint <SP-id>` (v0.2) targets a specific sprint instead of the
+  registry primary. Defaults to `paths.sprintActiveRegistry#primary`.
+  Unknown id → exit non-zero with COPY C-10.
 
 ## Procedure
 

@@ -1,0 +1,28 @@
+schema: warpos/sprint/ralph-progress/v1
+sprint: SP-20260512-001
+ticket: T-20260512-018
+current_loop: 1
+phase: stopped
+started_at: "2026-05-12T23:04:10.826Z"
+updated_at: "2026-05-12T23:05:15.336Z"
+status: completed
+completed_tasks:
+  - "plan: Wrote ADR 0002-multi-sprint-parallel-lanes.md. Linked from INDEX.md."
+  - "test: AC-18.1 (ADR file present documenting context/decision/rejected alternatives/consequences + Beta verdict ref): satisfied."
+remaining_tasks:
+  - draft ADR
+  - link from INDEX.md
+blockers: []
+failed_attempts: []
+last_checks:
+  ran_at: "2026-05-12T23:05:15.085Z"
+  passing:
+    - adr-file-present
+    - adr-index-link-updated
+  failing: []
+next_action: "ADR 0002 captures the recommended-variant decision, the two Beta consultations, the rejected alternatives, and the reversal plan."
+external_dependency_status: []
+stop_reason: completed
+resume_instructions: "Read this file. Resume at the phase listed. If status is stopped_*, investigate the stop_reason first."
+checkpoint_pointers:
+  - "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\ralph\\SP-20260512-001\\T-20260512-018.yaml"

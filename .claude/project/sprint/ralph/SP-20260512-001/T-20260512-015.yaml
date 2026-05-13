@@ -1,0 +1,31 @@
+schema: warpos/sprint/ralph-progress/v1
+sprint: SP-20260512-001
+ticket: T-20260512-015
+current_loop: 1
+phase: stopped
+started_at: "2026-05-12T23:15:11.146Z"
+updated_at: "2026-05-12T23:16:23.233Z"
+status: completed
+completed_tasks:
+  - "plan: Wrote scripts/sprint/status.js (~150 lines) and .claude/commands/sprint/status.md skill body. Status command auto-registered (visible in available skills)."
+  - "test: AC-15.1 (lists active sprints with columns): passing. AC-15.2 (shows current_ticket + current_loop when executing): live-tested with SP-20260512-001 mid-T-015 — output shows ticket=T-20260512-015 loop=1. Read-only — no tracker writes."
+remaining_tasks:
+  - write status.js
+  - write status.md
+  - "wire to sprint:status namespace"
+  - add test
+blockers: []
+failed_attempts: []
+last_checks:
+  ran_at: "2026-05-12T23:16:22.982Z"
+  passing:
+    - status-lists-active-sprints
+    - status-marks-primary
+    - status-tests-pass-31/31
+  failing: []
+next_action: "Adds orphan + missing-subdir detection per redteam A-2."
+external_dependency_status: []
+stop_reason: completed
+resume_instructions: "Read this file. Resume at the phase listed. If status is stopped_*, investigate the stop_reason first."
+checkpoint_pointers:
+  - "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\ralph\\SP-20260512-001\\T-20260512-015.yaml"

@@ -1,0 +1,33 @@
+schema: warpos/sprint/ralph-progress/v1
+sprint: SP-20260512-001
+ticket: T-20260512-001
+current_loop: 1
+phase: stopped
+started_at: "2026-05-12T22:55:39.555Z"
+updated_at: "2026-05-12T22:58:04.647Z"
+status: completed
+completed_tasks:
+  - "plan: Wrote schemas/sprint/active-sprints.schema.json; registered sprintActiveRegistry + sprintSprints in framework/paths.registry.json; regenerated paths artifacts; updated scripts/sprint/paths.js and init.js to seed the registry; seeded live SP-20260512-001 entry."
+  - "test: AC-1.1 (init writes registry on first run): passing. AC-1.2 (validate.js exits 0): passing. AC-1.3 (primary id matches seeded entry): passing."
+remaining_tasks:
+  - write active-sprints schema
+  - update init.js to seed registry
+  - seed live tracker
+  - validate
+  - extend tests
+blockers: []
+failed_attempts: []
+last_checks:
+  ran_at: "2026-05-12T22:58:04.425Z"
+  passing:
+    - active-sprints-schema-validate
+    - init-seeds-registry
+    - primary-points-at-seeded-sprint
+    - sprint-hooks-suite
+  failing: []
+next_action: "Active-sprints registry schema + seeder landed. Live SP-20260512-001 reflected in registry with layout=legacy_root (T-002 will flip it to per_sprint_subdir)."
+external_dependency_status: []
+stop_reason: completed
+resume_instructions: "Read this file. Resume at the phase listed. If status is stopped_*, investigate the stop_reason first."
+checkpoint_pointers:
+  - "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\ralph\\SP-20260512-001\\T-20260512-001.yaml"

@@ -1,0 +1,28 @@
+schema: warpos/sprint/ralph-progress/v1
+sprint: SP-20260512-001
+ticket: T-20260512-008
+current_loop: 1
+phase: stopped
+started_at: "2026-05-12T23:16:41.388Z"
+updated_at: "2026-05-12T23:18:09.040Z"
+status: completed
+completed_tasks:
+  - "plan: Documented --sprint flag in plan.md, design.md, execute.md (+ --allow-overlap and worktree-lane note), release.md, and paths.sprintReference (sprint-workflow.md). Added Lanes & parallel sprints section + status.md to the command table."
+  - "test: AC-8.1 (each skill body documents --sprint, default-to-primary, COPY C-10): satisfied. AC-8.2 (sprint-workflow.md has Lanes & parallel sprints section linking to LANES.md): satisfied — section added explicitly."
+remaining_tasks:
+  - "document --sprint in plan.md, design.md, execute.md, release.md, status.md (already), sprint-workflow.md"
+blockers: []
+failed_attempts: []
+last_checks:
+  ran_at: "2026-05-12T23:18:08.790Z"
+  passing:
+    - all-bodies-document-sprint
+    - sprint-workflow-has-lanes-section
+    - suite-31/31
+  failing: []
+next_action: "Docs-only ticket; reference docs anticipate _docs/sprint/LANES.md from T-017."
+external_dependency_status: []
+stop_reason: completed
+resume_instructions: "Read this file. Resume at the phase listed. If status is stopped_*, investigate the stop_reason first."
+checkpoint_pointers:
+  - "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\ralph\\SP-20260512-001\\T-20260512-008.yaml"

@@ -1,17 +1,21 @@
-# Sprint v0.1 — Relationship to Existing Modes
+# Sprint v0.2 — Relationship to Existing Modes
 
 Sprint is a workflow layer above modes. Modes (`solo`, `adhoc`,
 `oneshot`) remain user-controlled execution strategies. Sprint never
-auto-switches modes.
+auto-switches modes. In v0.2 multiple sprints can coexist; each can
+be in a different mode if needed. Modes stay orthogonal to sprint
+lanes (see `LANES.md`).
 
 ## Mental model
 
 ```
-/sprint:*  = product workflow layer  (what to do)
-/mode:*    = execution strategy layer (how to do it)
+/sprint:*  = product workflow layer   (what to do — per-sprint)
+/mode:*    = execution strategy layer (how to do it — global to the session)
+lanes      = isolation primitive      (where to do it — per-sprint, worktree/branch/default)
 ```
 
 A sprint can run in any mode. Mode choice is a separate decision.
+Lane choice is a per-sprint decision recorded on the Plan Contract.
 
 ## What each mode does for each sprint phase
 

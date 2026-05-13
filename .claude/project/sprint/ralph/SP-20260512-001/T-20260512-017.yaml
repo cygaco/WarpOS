@@ -1,0 +1,35 @@
+schema: warpos/sprint/ralph-progress/v1
+sprint: SP-20260512-001
+ticket: T-20260512-017
+current_loop: 1
+phase: stopped
+started_at: "2026-05-12T23:22:58.907Z"
+updated_at: "2026-05-12T23:24:57.080Z"
+status: completed
+completed_tasks:
+  - "plan: Wrote _docs/sprint/LANES.md (~250 lines covering lane types, worktree creation, warm-up dispatch, conflict-check, sprint-id tagging, concurrency policy, status, recovery). Updated OVERVIEW.md (v0.1→v0.2 banner + status command + active-sprints layout). Updated CRASH_RECOVERY.md (registry-first recovery). Updated FRAMEWORK_VS_DOWNSTREAM.md (added v0.2 paths). Updated MODE_RELATIONSHIP.md (lanes as third axis). sprint-workflow.md already updated in T-008."
+  - "test: AC-17.1 (LANES.md describes lane types/worktree-create/conflict-check/warm-up/citation): satisfied. AC-17.2 (5 other docs no longer call sprint a singleton; all reference active-sprints + lanes): satisfied — title rev to v0.2 + dedicated v0.2 paragraphs added."
+remaining_tasks:
+  - write LANES.md
+  - update OVERVIEW.md
+  - update CRASH_RECOVERY.md
+  - update FRAMEWORK_VS_DOWNSTREAM.md
+  - update MODE_RELATIONSHIP.md
+blockers: []
+failed_attempts: []
+last_checks:
+  ran_at: "2026-05-12T23:24:56.824Z"
+  passing:
+    - lanes-md-present
+    - overview-updated
+    - crash-recovery-updated
+    - framework-vs-downstream-updated
+    - mode-relationship-updated
+    - suite-36/36
+  failing: []
+next_action: Doc bundle complete. LANES.md is the new design-authoritative doc for multi-sprint.
+external_dependency_status: []
+stop_reason: completed
+resume_instructions: "Read this file. Resume at the phase listed. If status is stopped_*, investigate the stop_reason first."
+checkpoint_pointers:
+  - "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\ralph\\SP-20260512-001\\T-20260512-017.yaml"

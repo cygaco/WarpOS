@@ -1,0 +1,78 @@
+{
+  "$schema": "warpos/manifest/v1",
+  "project": {
+    "name": "WarpOS",
+    "slug": "warpos",
+    "description": "WarpOS canonical — autonomous AI operating system framework (Alex Alpha + multi-provider agent dispatch).",
+    "techStack": ["node"],
+    "framework": "warpos"
+  },
+  "git": {
+    "mainBranch": "main"
+  },
+  "warpos": {
+    "version": "0.2.2",
+    "installed": true,
+    "source": "self",
+    "features": ["agents", "hooks", "skills", "memory", "maps", "events"]
+  },
+  "agents": {
+    "team": {
+      "name": "alex",
+      "identity": "Alex",
+      "members": {
+        "alpha": { "symbol": "α", "role": "orchestrator" },
+        "beta": { "symbol": "β", "role": "judgment" },
+        "gamma": { "symbol": "γ", "role": "adhoc builder" },
+        "delta": { "symbol": "δ", "role": "oneshot builder" }
+      }
+    },
+    "modes": ["adhoc", "oneshot", "solo"],
+    "build": [
+      "builder",
+      "reviewer",
+      "compliance",
+      "learner",
+      "qa",
+      "redteam",
+      "fixer"
+    ]
+  },
+  "source_dirs": [],
+  "build": { "features": [], "phases": [] },
+  "providers": {
+    "claude": {
+      "cli": "claude",
+      "default_model": "sonnet",
+      "invocation": "native"
+    },
+    "openai": {
+      "cli": "codex",
+      "default_model": "gpt-5.5",
+      "fallback": "claude",
+      "syntax": "codex exec --full-auto {reasoning} -m {model} -"
+    },
+    "gemini": {
+      "cli": "gemini",
+      "default_model": "gemini-3.1-pro-preview",
+      "fallback": "claude",
+      "syntax": "gemini {reasoning} -m {model} -p"
+    }
+  },
+  "agentProviders": {
+    "alpha": "claude",
+    "beta": "claude",
+    "gamma": "claude",
+    "delta": "claude",
+    "builder": "claude",
+    "fixer": "claude",
+    "stub-scaffold": "claude",
+    "reviewer": "openai",
+    "compliance": "openai",
+    "learner": "openai",
+    "qa": "openai",
+    "redteam": "gemini"
+  },
+  "buildCommands": {},
+  "fileOwnership": { "foundation": [] }
+}

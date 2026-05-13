@@ -84,6 +84,8 @@ const PATHS = {
   "sprintRoot": path.join(PROJECT, ".claude", "project", "sprint"),
   "sprintCurrent": path.join(PROJECT, ".claude", "project", "sprint", "current-sprint.yaml"),
   "sprintProgress": path.join(PROJECT, ".claude", "project", "sprint", "sprint-progress.yaml"),
+  "sprintActiveRegistry": path.join(PROJECT, ".claude", "project", "sprint", "active-sprints.yaml"),
+  "sprintSprints": path.join(PROJECT, ".claude", "project", "sprint", "sprints"),
   "sprintHistory": path.join(PROJECT, ".claude", "project", "sprint", "history"),
   "sprintPlanContracts": path.join(PROJECT, ".claude", "project", "sprint", "plan-contracts"),
   "sprintTickets": path.join(PROJECT, ".claude", "project", "sprint", "tickets"),

@@ -24,7 +24,15 @@
 const fs = require("fs");
 const path = require("path");
 const SPRINT = require("./paths");
-const { ensureDir, readText, writeText, render, nowIso } = require("./fs");
+const {
+  ensureDir,
+  readText,
+  writeText,
+  writeYaml,
+  readYamlMaybe,
+  render,
+  nowIso,
+} = require("./fs");
 const { sprintId } = require("./ids");
 
 function parseArgs(argv) {
@@ -52,10 +60,12 @@ function status() {
     ["checkpoints", SPRINT.checkpoints],
     ["requirements", SPRINT.requirements],
     ["history", SPRINT.history],
+    ["sprints (v0.2 per-sprint subdirs)", SPRINT.sprints],
   ];
   const files = [
-    ["current-sprint.yaml", SPRINT.current],
-    ["sprint-progress.yaml", SPRINT.progress],
+    ["current-sprint.yaml (legacy v0.1)", SPRINT.current],
+    ["sprint-progress.yaml (legacy v0.1)", SPRINT.progress],
+    ["active-sprints.yaml (v0.2 registry)", SPRINT.activeRegistry],
     ["issues.md (repo root)", SPRINT.issuesLedger],
   ];
   let total = 0,
@@ -97,10 +107,36 @@ function init(args) {
     SPRINT.checkpoints,
     SPRINT.requirements,
     SPRINT.history,
+    SPRINT.sprints,
   ]) {
     ensureDir(d);
   }
-  const sid = sprintId(SPRINT.history);
+  // v0.2 — if an existing registry already lists primary, treat the
+  // install as upgraded and reuse the primary id. Otherwise bootstrap
+  // a new id and seed the registry in per_sprint_subdir layout.
+  const existingRegistry = readYamlMaybe(SPRINT.activeRegistry);
+  let sid;
+  let layout;
+  let pointer;
+  if (existingRegistry && existingRegistry.primary) {
+    sid = existingRegistry.primary;
+    const e = (existingRegistry.sprints || []).find((s) => s.id === sid);
+    layout = (e && e.layout) || "per_sprint_subdir";
+    pointer = (e && e.pointer) || `.claude/project/sprint/sprints/${sid}`;
+  } else {
+    sid = sprintId(SPRINT.history);
+    layout = "per_sprint_subdir";
+    pointer = `.claude/project/sprint/sprints/${sid}`;
+    // Seed the registry BEFORE writing the templates so SPRINT.current /
+    // SPRINT.progress getters resolve to the per_sprint_subdir layout.
+    const registryRes = ensureActiveRegistry(sid, args.force, layout, pointer);
+    if (!registryRes.wrote) {
+      // Should not happen — we just checked it doesn't exist.
+      process.stderr.write("could not write active-sprints registry\n");
+      return 1;
+    }
+    process.stdout.write(`  wrote  ${SPRINT.activeRegistry}\n`);
+  }
   const now = nowIso();
   const data = {
     sprint_id: sid,
@@ -110,6 +146,10 @@ function init(args) {
     updated_at: now,
     project_name: args.project,
   };
+  // For per_sprint_subdir, ensure the sprint's pointer dir exists.
+  if (layout === "per_sprint_subdir") {
+    ensureDir(path.join(SPRINT.PROJECT, pointer));
+  }
   const targets = [
     {
       tmpl: path.join(tmplDir, "current-sprint.yaml.tmpl"),
@@ -143,9 +183,49 @@ function init(args) {
     process.stdout.write(`  ${res.wrote ? "wrote " : "skip  "} ${t.out}\n`);
   }
   process.stdout.write(
-    `init: ${wrote} written, ${skipped} skipped (existing). Sprint id = ${sid}.\n`,
+    `init: ${wrote} written, ${skipped} skipped (existing). Sprint id = ${sid} (layout=${layout}).\n`,
   );
   return 0;
+}
+
+// v0.2 — seed paths.sprintActiveRegistry with the bootstrap sprint.
+// Layout is `per_sprint_subdir` for fresh installs (T-20260512-001/002).
+// Existing legacy_root installs stay legacy until migrate-v0.2.js runs.
+function ensureActiveRegistry(
+  sid,
+  force,
+  layout = "per_sprint_subdir",
+  pointer = null,
+) {
+  if (fs.existsSync(SPRINT.activeRegistry) && !force) {
+    return { wrote: false, reason: "exists" };
+  }
+  const now = nowIso();
+  const resolvedPointer =
+    pointer ||
+    (layout === "legacy_root"
+      ? ".claude/project/sprint"
+      : `.claude/project/sprint/sprints/${sid}`);
+  const registry = {
+    schema: "warpos/sprint/active-sprints/v1",
+    primary: sid,
+    sprints: [
+      {
+        id: sid,
+        title: "Initial sprint placeholder",
+        status: "not_started",
+        lane: { type: "default", value: null, isolation_notes: "" },
+        layout,
+        pointer: resolvedPointer,
+        created_at: now,
+        updated_at: now,
+      },
+    ],
+    created_at: now,
+    updated_at: now,
+  };
+  writeYaml(SPRINT.activeRegistry, registry);
+  return { wrote: true, reason: "ok" };
 }
 
 function main() {
@@ -158,4 +238,4 @@ if (require.main === module) {
   process.exit(main());
 }
 
-module.exports = { init, status };
+module.exports = { init, status, ensureActiveRegistry };

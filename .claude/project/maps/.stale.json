@@ -14,5 +14,9 @@
   "skills": {
     "stale_since": "2026-04-09T18:17:14.834Z",
     "trigger": ".claude/commands/qa/check.md"
+  },
+  "enforcements": {
+    "stale_since": "2026-05-11T20:58:36.014Z",
+    "trigger": "scripts/hooks/dispatch-route-guard.js"
   }
 }

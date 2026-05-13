@@ -34,6 +34,7 @@
     "execution_allowed_without_design",
     "recommended_mode",
     "mode_invocation_required_by_user",
+    "lane",
     "beta_review",
     "plan_quality",
     "next_recommended_command",
@@ -195,6 +196,20 @@
       "enum": ["solo", "adhoc", "oneshot", "no_recommendation"]
     },
     "mode_invocation_required_by_user": { "type": "boolean", "const": true },
+    "lane": {
+      "type": "object",
+      "required": ["type", "value", "isolation_notes"],
+      "additionalProperties": false,
+      "description": "Lane (v0.2). Inherited by current-sprint.lane and read by /sprint:execute. `default` shares the working tree; `worktree` runs Ralph inside a git worktree; `branch` is light isolation. Default is { type: default, value: null, isolation_notes: '' }.",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["default", "worktree", "branch"]
+        },
+        "value": { "type": ["string", "null"] },
+        "isolation_notes": { "type": "string" }
+      }
+    },
     "beta_review": {
       "type": "object",
       "required": ["required"],

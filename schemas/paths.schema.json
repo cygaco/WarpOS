@@ -377,6 +377,16 @@
       "const": ".claude/project/sprint/sprint-progress.yaml",
       "description": "yaml (runtime) — paths.sprintProgress"
     },
+    "sprintActiveRegistry": {
+      "type": "string",
+      "const": ".claude/project/sprint/active-sprints.yaml",
+      "description": "yaml (runtime) — paths.sprintActiveRegistry"
+    },
+    "sprintSprints": {
+      "type": "string",
+      "const": ".claude/project/sprint/sprints",
+      "description": "dir (runtime) — paths.sprintSprints"
+    },
     "sprintHistory": {
       "type": "string",
       "const": ".claude/project/sprint/history",

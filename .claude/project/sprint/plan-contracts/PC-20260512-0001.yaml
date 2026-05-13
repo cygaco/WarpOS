@@ -1,0 +1,222 @@
+schema: warpos/sprint/plan-contract/v1
+id: PC-20260512-0001
+created_at: "2026-05-12T22:10:05.327Z"
+updated_at: "2026-05-12T23:03:06.680Z"
+sprint: SP-20260512-001
+source_request: Enable multiple WarpOS sprints to run in parallel.
+source_request_verbatim: A way to run multiple sprints in parallel.
+request_type: architecture_change
+interpreted_intent: "Lift the single-active-sprint constraint baked into Sprint Workflow v0.1. Today there is exactly one current-sprint.yaml and one sprint-progress.yaml; every sprint helper reads/writes those singletons by file path. The user wants the sprint subsystem to support more than one sprint being alive at a time, and ideally to let independent sprints execute concurrently without stepping on each other's tracker state, git state, or downstream artifacts. Two senses of 'parallel' need to be disentangled during design: (a) multiple sprints OPEN at once (paused/active, but one Ralph loop runs at a time), and (b) multiple sprints EXECUTING simultaneously in separate worktrees/branches. (a) is mostly a state-shape refactor; (b) requires isolation primitives and a conflict-detection model."
+user_or_business_outcome: "Founder can keep more than one independent piece of work in flight (e.g. a framework hardening sprint and a product feature sprint) without serializing them. Switching contexts costs a flag, not a teardown. When work streams are truly independent (different surfaces, different worktrees), both can make progress on the same calendar day."
+affected_surfaces:
+  - surface: schemas/sprint/current-sprint.schema.json
+    evidence_level: verified_from_repo
+    notes: "Description literally states 'Always exactly one current-sprint.yaml per downstream repo' (line 5). The singleton is a declared design constraint, not just an accident of file naming."
+  - surface: schemas/sprint/sprint-progress.schema.json
+    evidence_level: verified_from_repo
+    notes: "paths.sprintProgress is treated as a single live execution checkpoint; multi-sprint requires either per-sprint progress files or a top-level pointer + per-sprint subfiles."
+  - surface: scripts/sprint/paths.js
+    evidence_level: verified_from_repo
+    notes: Exposes SPRINT.current and SPRINT.progress as absolute single paths. All sprint helpers consume these. The path resolver is the natural choke point for a per-sprint lookup.
+  - surface: "scripts/sprint/plan.js, design.js, execute.js, release.js, ticket.js, issue.js, external-service.js, checkpoint.js"
+    evidence_level: verified_from_repo
+    notes: "All eight helpers call readYamlMaybe(SPRINT.current) / writeYaml(SPRINT.current, ...) and treat the current sprint as global. Confirmed via grep across scripts/sprint/. Each needs a --sprint <SP-id> resolver (or to read an active-sprints registry)."
+  - surface: ".claude/commands/sprint/plan.md, design.md, execute.md, release.md (skill bodies)"
+    evidence_level: verified_from_repo
+    notes: "Skill prose references paths.sprintCurrent / paths.sprintProgress as singletons; resume instructions tell agents to 'read paths.sprintProgress'. Needs updates to address by sprint id."
+  - surface: scripts/hooks/sprint-tracker-guard.js
+    evidence_level: verified_from_repo
+    notes: "PreToolUse hook validates *.yaml under paths.sprintRoot against schema. New per-sprint layout must still match the guard's path expectations or the guard needs updating."
+  - surface: scripts/sprint/init.js
+    evidence_level: verified_from_repo
+    notes: "Bootstraps current-sprint.yaml + sprint-progress.yaml from templates. Multi-sprint version needs to either write the active-sprints registry on first init, or accept --sprint to scaffold an additional sprint."
+  - surface: "scripts/sprint/ids.js (sprintId generator)"
+    evidence_level: verified_from_repo
+    notes: "Sprint ids are already date-suffixed SP-YYYYMMDD-NNN with per-day counters, so multiple sprints per day already work at the id level. No id-format change required."
+  - surface: ".claude/agents/00-alex/.system/policy/sprint-routing.json"
+    evidence_level: inferred_from_repo
+    notes: "Sprint routing currently declares phase-level model classes but has no concurrency/lane block. The recommended variant needs a 'concurrency' section (max lanes, default lane, isolation default)."
+  - surface: ".claude/runtime/dispatch-locks/* + scripts/hooks/lib/concurrency-lock.js"
+    evidence_level: verified_from_repo
+    notes: "Provider-level concurrency locks already exist (used by dispatch-agent.js for slot management). Sprint-level parallel execution can ride on this primitive for provider rate limiting; we likely need a separate sprint-lane-lock layer for execution-conflict detection."
+  - surface: "issues.md (paths.sprintIssuesLedger)"
+    evidence_level: verified_from_repo
+    notes: "Single repo-root human ledger today. Two concurrent sprints can interleave appends but YAML records under paths.sprintIssues are already id-scoped. Decision: keep one human ledger, tag each entry with its sprint id; do not split."
+  - surface: ".claude/project/sprint/ralph/<sprint>/, checkpoints/, history/<sprint>/, requirements/<sprint>/"
+    evidence_level: verified_from_repo
+    notes: "Already sprint-scoped on disk. No restructure needed for the per-sprint dirs — only the two singleton yaml files at the root need lifting."
+  - surface: "_docs/sprint/* (12 docs)"
+    evidence_level: verified_from_repo
+    notes: "OVERVIEW, CRASH_RECOVERY, FRAMEWORK_VS_DOWNSTREAM, MODE_RELATIONSHIP, etc. all describe a single live sprint. Recommended variant needs a new doc (LANES.md or PARALLEL_SPRINTS.md) and edits to OVERVIEW + CRASH_RECOVERY."
+  - surface: Git working tree / branch model
+    evidence_level: assumed_from_request
+    notes: "Two sprints executing on the same working tree will collide on any overlapping file. Either (a) require non-overlapping affected_surfaces, (b) use per-sprint branches, or (c) use git worktrees (proven primitive — builders already isolate via worktree per LRN-2026 oneshot doctrine). Decision deferred to design."
+current_behavior:
+  evidence_level: verified_from_repo
+  notes: "Sprint Workflow v0.1 enforces a single active sprint via two singleton yaml files (paths.sprintCurrent, paths.sprintProgress). init.js writes them; every helper in scripts/sprint/ reads/writes them; the schema declares the constraint explicitly. There is no concept of 'inactive sprint' beyond moving to history/<sprint>/, no concept of lanes, and no concurrency lock on sprint-state writes."
+desired_behavior: "WarpOS supports more than one sprint coexisting at any time. At minimum, a user can have several sprints open in 'paused' state and switch among them by flag without losing tracker state. At the recommended level, two sprints can execute concurrently in isolated lanes (each lane scoped to a git worktree or non-overlapping surface set), with provider dispatch locks already arbitrating shared rate limits and a conflict-detection check refusing to launch overlapping work without an explicit override."
+scope:
+  size: l
+  risk_level: medium
+  complexity_drivers:
+    - "14+ files touched across schemas, scripts, commands, hooks, docs"
+    - "Two singleton files have been the de facto sprint identity for the whole v0.1 surface — migration of existing state must not corrupt the active SP-20260512-001 tracker"
+    - "Git-level isolation strategy is non-trivial: worktrees vs branches vs surface-level conflict checks each have failure modes"
+    - "Beta / decision ledger / events.jsonl are append singletons — sprint-id tagging is cheap but every appender must learn it"
+    - "Sprint Workflow v0.1 doc surface (12 _docs/sprint/* files + 5 skill bodies + sprint-workflow.md reference) needs coherent rewrite"
+    - "Hooks (sprint-tracker-guard, path-lint) must accept the new layout without false-positive blocks"
+scope_variants:
+  minimal_safe:
+    summary: "Per-sprint state, no concurrent execution. Replace paths.sprintCurrent/paths.sprintProgress singletons with per-sprint subdirs (e.g. .claude/project/sprint/sprints/<SP-id>/current.yaml + progress.yaml). Add a top-level active-sprints.yaml registry pointing at the current set. Add --sprint <SP-id> to every helper; default to the registry's primary entry when omitted. Migrate the existing SP-20260512-001 in place. Update hooks + docs. Ralph loop still runs on one sprint at a time."
+    tradeoffs:
+      - "+ Unblocks the 'have multiple workstreams alive at once' use case with a single flag, no concurrency primitives."
+      - "+ Lowest-risk migration: state shape change, no new isolation tech."
+      - "+ Forces the rest of the system to address sprints by id — a prerequisite for the recommended variant later."
+      - "- Does not let two sprints execute simultaneously; serializes work even when the work is independent."
+      - "- Founder retains the 'finish one before you start another' fatigue for genuinely orthogonal streams."
+  recommended:
+    summary: "Per-sprint state PLUS concurrent execution via lanes. Each sprint declares a lane: 'default' (current worktree), 'worktree:<path>' (git worktree, reuses builder isolation primitive), or 'branch:<name>' (light isolation). /sprint:execute runs in the lane's worktree. Sprint-routing.json gains a concurrency block (max lanes, default lane, isolation default). A lane-conflict-check refuses to launch two sprints whose affected_surfaces overlap unless the user passes --allow-overlap. Beta gets a 'lane' context field; issues.md, decision-ledger, events.jsonl, beta events tag every appended row with sprint id. Sprint commands honor --sprint <SP-id> end-to-end. Add a /sprint:status that lists all active lanes."
+    tradeoffs:
+      - "+ Delivers the actual user intent: two real workstreams making progress at the same time."
+      - "+ Worktree-based isolation reuses an already-proven primitive (oneshot/builders use it) — no new isolation tech."
+      - "+ Conflict-check is a cheap static scan against affected_surfaces; cheap insurance against the obvious foot-gun."
+      - "+ Sprint-id tagging on append singletons is non-breaking and forensically useful even without parallel sprints."
+      - "- Larger surface than minimal_safe (≈18-22 files vs ~12)."
+      - "- Worktree management adds a footprint on disk and a small chance of stale-worktree drift if the user abandons a lane mid-flight."
+      - "- Conflict-check is heuristic — false negatives if affected_surfaces is undercounted at plan time."
+  expanded:
+    summary: "Recommended PLUS an active sprint coordinator. A new helper (scripts/sprint/coordinator.js) watches the active-sprints registry, schedules /sprint:execute calls across lanes against a configurable concurrency budget, pauses lanes when one hits a high-risk gate (e.g. release approval pending elsewhere), and aggregates spend/telemetry. Adds a cross-sprint dependency declaration (sprint.requires: [SP-X]) so a sprint can block on another finishing. Adds a /sprint:dashboard summary view. Beta becomes lane-aware (one Beta thread per active lane, sharing precedent state)."
+    tradeoffs:
+      - "+ Closest to a 'real' multi-track build pipeline — scales beyond two lanes without operator babysitting."
+      - "+ Cross-sprint dependency graph captures the 'don't release X until Y ships' case explicitly."
+      - "- Coordinator is a new always-on process surface — meaningful operational burden and a new failure mode."
+      - "- Cross-sprint deps form a graph that needs cycle detection, deadlock handling, etc. Real engineering effort."
+      - "- Premature for an MVP-stage product; one user (founder) with two real workstreams does not need a scheduler."
+      - "- Wide blast radius if the coordinator misbehaves (could stall every lane)."
+assumptions:
+  safe:
+    - "Per-sprint subdirs (already true for ralph/, checkpoints/, history/, requirements/) extend cleanly to current.yaml + progress.yaml without disturbing the sprint-tracker-guard schema check."
+    - "Sprint ids (SP-YYYYMMDD-NNN) are already collision-safe across same-day creates; no id-format change is required for multi-sprint."
+    - "scripts/sprint/paths.js is the right choke point — adding a --sprint argument or active-sprint lookup there propagates to all eight callers without per-script invasive edits."
+    - "Provider-level concurrency (scripts/hooks/lib/concurrency-lock.js) already arbitrates rate limits per provider, so two concurrent sprints sharing a provider will not exceed slots."
+    - "Worktree isolation is a proven primitive in this codebase (builders / fixers already isolate per oneshot doctrine), so the recommended variant does not introduce new isolation tech."
+  unsafe:
+    - "Migrating the existing SP-20260512-001 in place must preserve byte-equivalent state in the new subdir; any silent field drop would corrupt the active sprint. Needs an explicit migration script with a verification step, not an ad-hoc move."
+    - "Two sprints touching overlapping files on the SAME worktree will produce silent merge conflicts during Ralph's commit phase. The recommended variant's conflict-check is heuristic (affected_surfaces is human-declared at plan time); under-declaration will let an overlap slip through."
+    - "issues.md is a human-curated ledger AND a machine-appended one. Multiple concurrent sprints appending will interleave; a reader using grep-by-recency will need sprint-id filtering to stay sane."
+    - "Beta is currently single-context; running two sprints in parallel may mean two Beta consultations happening at once. The events.jsonl appender can handle interleave, but precedent retrieval may return cross-sprint precedents the consulting agent does not want. Lane-tagged Beta needs design thought."
+    - "The 'first parallel dispatch leaks to main repo HEAD' issue logged in scripts/one-off-log-dispatch-issues.js may affect concurrent worktree-isolated sprint execution; warm-up dispatch workaround needs to be designed in, not bolted on."
+  needs_user_or_beta_review:
+    - "Pick scope variant: minimal_safe (state-only refactor) vs recommended (state + lanes + execution). Beta should weigh founder MVP-stage stage priorities (speed-to-ship over completeness) against the risk that minimal_safe leaves the original 'parallel' ask half-met."
+    - "If recommended is picked: confirm worktree isolation is the right default lane type (vs branch-only). Worktree gives stronger isolation; branch is cheaper but allows accidental cross-pollination via dev tools that follow HEAD."
+    - "Decide tagging strategy on append singletons (issues.md, events.jsonl, decision-ledger, beta events): tag every record with sprint id from day one even if multi-sprint is not enabled? This is non-breaking and forensically useful, but adds a small overhead everywhere."
+    - "Decide whether `/sprint:plan` should refuse to start a second sprint if the existing one is mid-execute, or simply create it and let lanes handle it. Refusing is a foot-gun guard; allowing is the whole point of the feature."
+    - "Decide on a default concurrency budget (max lanes). 2 is the obvious MVP setting (founder is one human), but Sprint-routing.json should still expose the knob."
+open_questions:
+  blocking: []
+  non_blocking:
+    - "Should the active-sprints registry be a yaml file or a directory-listing convention? File is simpler; directory-listing is self-healing."
+    - "Should /sprint:status be created in this sprint or deferred to a follow-up? Recommended variant assumes it exists; minimal_safe can ship without."
+    - "How should Beta surface 'one sprint is in approval-required state' to the other lane? Active-sprints registry could carry a lane-status field that Beta reads."
+    - "Is there a need for a sprint-level lock file (similar to dispatch-locks/) to prevent two skill invocations from racing on the same sprint's tracker? Today writes are not locked; with multi-sprint this becomes more visible."
+non_goals:
+  - "Do NOT change the sprint id format (SP-YYYYMMDD-NNN already supports multi-per-day)."
+  - "Do NOT introduce a new always-on coordinator process (that's the expanded variant; design will not propose it)."
+  - "Do NOT split issues.md into per-sprint files. Keep one human ledger; tag rows with sprint id."
+  - Do NOT change the Plan Contract schema beyond what is strictly required for sprint-id resolution.
+  - "Do NOT touch modes (solo/adhoc/oneshot). Sprint is a layer above modes and stays orthogonal."
+  - "Do NOT introduce cross-sprint dependency declarations (sprint.requires: [...]) — defer to expanded variant."
+  - Do NOT replace the Beta primitive or add a second Beta agent. Lane awareness can be a field on consultations.
+  - "Do NOT promote framework changes to canonical or run /warp:release as part of this sprint — that comes after the feature lands."
+requirement_areas:
+  - "Sprint state shape (per-sprint subdirs + active-sprints registry)"
+  - "Sprint path resolution (--sprint flag, active-sprint default)"
+  - "Sprint lane model (lane types, isolation primitives, default lane)"
+  - "Conflict detection (affected_surfaces overlap check)"
+  - "Append-singleton sprint-id tagging (issues.md, events.jsonl, decision-ledger, beta events)"
+  - "Sprint command surface (/sprint:plan, design, execute, release accept --sprint)"
+  - "Sprint status surface (/sprint:status listing active lanes)"
+  - Migration of existing SP-20260512-001 to the new layout
+  - "Hook updates (sprint-tracker-guard accepts new layout)"
+  - "Doc surface (LANES.md or PARALLEL_SPRINTS.md, plus OVERVIEW/CRASH_RECOVERY/sprint-workflow.md edits)"
+high_level_story_candidates:
+  - "As a founder, I can have two sprints open simultaneously (one paused, one active) and switch between them by flag."
+  - "As a founder, I can launch /sprint:plan on a new topic without ending the current sprint."
+  - "As a founder, when I run /sprint:execute, the system picks the right sprint by --sprint flag or defaults to the lane I most recently touched."
+  - "As a founder running two sprints in parallel lanes, the system refuses to start the second one if its declared affected_surfaces overlap with the first, unless I pass --allow-overlap."
+  - "As an agent reading issues.md, every entry tells me which sprint it belongs to."
+  - "As an agent recovering from a crash, paths.sprintProgress at the sprint level still tells me exactly which command to resume, scoped to the right sprint."
+granular_story_candidates:
+  - "scripts/sprint/paths.js exposes a per-sprint resolver: SPRINT.forSprint(sprintId).current / .progress / .ralph / .checkpoints."
+  - "scripts/sprint/init.js writes .claude/project/sprint/active-sprints.yaml on first init alongside one sprint's subdir."
+  - "scripts/sprint/init.js migrates legacy paths.sprintCurrent/paths.sprintProgress to sprints/<SP-id>/ on first invocation post-upgrade if the legacy files exist."
+  - "Every helper in scripts/sprint/*.js accepts --sprint <SP-id> (falls back to the registry's primary entry)."
+  - "schemas/sprint/active-sprints.schema.json describes the registry: lane list, statuses, isolation, pointer per entry."
+  - "schemas/sprint/current-sprint.schema.json description loses the 'always exactly one' clause."
+  - "scripts/hooks/sprint-tracker-guard.js validates files under .../sprints/<SP-id>/ with the same per-schema check."
+  - "Sprint command bodies (.claude/commands/sprint/*.md) document the --sprint flag and the active-sprints registry."
+  - ".claude/project/reference/sprint-workflow.md gets a 'Lanes & parallel sprints' section."
+  - "_docs/sprint/LANES.md (new) documents lane types, isolation, and conflict-check semantics."
+  - "Append singletons (issues.md, events.jsonl, decision-ledger, beta events) gain sprint_id on every new row; old rows keep their existing shape (forward-compatible)."
+  - "Sprint conflict-check: scripts/sprint/conflict-check.js diffs candidate affected_surfaces vs every other active sprint's affected_surfaces."
+  - "/sprint:status command lists active sprints and their lane status."
+  - "Sprint-routing.json grows a `concurrency: { max_lanes, default_lane, default_isolation }` block; routing.js exposes it."
+  - "Migration script (scripts/sprint/migrate-v0.2.js) moves the live SP-20260512-001 into the new layout and verifies byte equivalence before deleting legacy files."
+workstream_candidates:
+  - "WS-1 — Sprint state shape: per-sprint subdirs, active-sprints registry, path resolver, migration script."
+  - "WS-2 — Sprint command surface: --sprint flag end-to-end across plan/design/execute/release + ticket/issue/external-service helpers."
+  - "WS-3 — Sprint-id tagging on append singletons: issues.md, events.jsonl, decision-ledger, beta events."
+  - "WS-4 (recommended only) — Lane model: declare lane on /sprint:plan, run /sprint:execute in lane's worktree, conflict-check on launch."
+  - "WS-5 (recommended only) — /sprint:status command."
+  - "WS-6 — Docs + reference + hook updates."
+preliminary_ticket_candidates:
+  allowed: false
+  candidates: []
+  notes: "Documentation scale is 'm' (or 'l' if lanes are picked). Tickets MUST come out of /sprint:design — not /sprint:plan — per the workflow's own contract."
+external_service_dependencies:
+  status: none_expected
+  required: []
+  possible: []
+  notes: "All work is in-repo: schemas, scripts, commands, hooks, docs. No signup, no billing, no OAuth, no DNS, no compliance review."
+approval_boundaries:
+  - "No production deploy needed for this sprint itself; the sprint's own /sprint:release will eventually trigger the standard release approval but that is normal and not unique to this work."
+  - "No paid service signup, no secrets, no PII, no destructive migration of user data."
+  - "Migration of the existing SP-20260512-001 tracker is destructive-adjacent (legacy files deleted after the new layout is verified). Beta/user should be asked to confirm before the legacy files are removed — flag this in /sprint:design as a checkpoint, not a release gate."
+design_required: true
+execution_allowed_without_design: false
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+beta_review:
+  required: true
+  likely_founder_rejection_risks:
+    - "Founder may reject the expanded coordinator variant on MVP-stage simplicity grounds — design must present minimal_safe + recommended as the live choice and tag expanded as deferred."
+    - "Founder may reject worktree isolation as too heavy and prefer branch-only — design should price both and recommend worktree only if it survives Beta's simplicity weighting."
+  overbuild_risks:
+    - "Building lane-aware Beta context, /sprint:status, AND sprint-id tagging on every append singleton in one sprint may bloat scope; lane-aware Beta can be deferred if minimal Beta + a lane-id field on consultations is enough."
+    - Building a generic conflict-check engine when a simple affected_surfaces set-intersection covers the actual use case.
+    - Adding a sprint-level lock file when no concurrent write race has been observed yet.
+  missing_context_risks:
+    - "Whether downstream product repos (where Sprint is meant to be consumed) have specific multi-sprint workflows already — Sprint Workflow v0.1 just shipped, so this is unlikely but worth confirming during design."
+    - "Whether the 'first parallel dispatch leaks to main repo HEAD' issue (scripts/one-off-log-dispatch-issues.js) is fully fixed or still requires a warm-up dispatch — affects worktree lane reliability."
+plan_quality:
+  status: needs_design
+  confidence: high
+  evidence_gaps:
+    - "Exact migration strategy for SP-20260512-001 (in-place vs new-init-and-archive) — needs /sprint:design to settle."
+    - "Whether sprint-routing.json should grow concurrency block in minimal_safe or only in recommended — design call."
+    - "Whether /sprint:status is in-scope for this sprint or a follow-up — depends on chosen variant."
+  fail_reasons: []
+next_recommended_command: "/sprint:design"
+resume_instructions: "Sprint SP-20260512-001 now has Plan Contract for multi-sprint parallelism. Next: run /sprint:design to produce PRD, granular stories, COPY (CLI ergonomics for --sprint flag), TRACE (sprint lifecycle events), AC, QA plan, redteam plan, release plan, and to mint tickets per workstream. Beta should weigh in on the variant pick (minimal_safe vs recommended) at design entry. If this session crashed mid-plan, read .claude/project/sprint/sprint-progress.yaml#resume_command and rerun the command listed there."
+tracker_paths:
+  current_sprint: ".claude/project/sprint/current-sprint.yaml"
+  sprint_progress: ".claude/project/sprint/sprint-progress.yaml"
+  plan_contract: ".claude/project/sprint/plan-contracts/PC-20260512-0001.yaml"
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260512-0001.report.md"
+created_by: alpha
+updated_by: alpha
+lane:
+  type: default
+  value: null
+  isolation_notes: ""

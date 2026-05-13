@@ -45,5 +45,6 @@ When Beta returns DECIDE on a Class B decision with `OPEN_ADR: true`, Alpha drop
 | ADR | Title | Date | Status | Supersedes |
 |---|---|---|---|---|
 | [0001](0001-warp-promote-location.md) | Build /warp:promote in Jobzooka First | 2026-05-01 | accepted | - |
+| [0002](0002-multi-sprint-parallel-lanes.md) | Multi-sprint parallelism via per-sprint state + lanes | 2026-05-12 | accepted | - |
 
 When ADRs accrete, add a row here pointing at each file. Keep the table in sync with the filesystem; `/check:references` will catch drift.
