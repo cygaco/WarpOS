@@ -1050,6 +1050,161 @@ async function run(opts) {
   };
 }
 
+// ── Manual rollback CLI handler ──────────────────────────────────
+//
+// Companion to the auto-rollback inside run() (which fires on any apply or
+// migration error). The operator surface exists because:
+//   - ROLLBACK.md inside every txDir already advertises this command.
+//   - Postflight red with --strict-postflight surfaces the txId but doesn't
+//     auto-rollback (postflight is diagnostic by contract).
+//
+// Usage:
+//   node scripts/warpos/update.js --rollback <txId>
+//   node scripts/warpos/update.js --rollback=<txId>
+//   node scripts/warpos/update.js --rollback <txId> --target <install-path>
+//   node scripts/warpos/update.js --rollback <txId> --json
+//
+// Exit codes:
+//   0  — full rollback (no partial, no error)
+//   1  — partial rollback (some entries restored, some failed)
+//   4  — txDir not found / invalid txId
+//   5  — rollback threw (e.g. snapshot hash mismatch — R-31)
+function runRollbackCli(txId, opts) {
+  // paths.warposTransactionsDir = .warpos/transactions (relative to target).
+  const targetRoot = opts.target ? path.resolve(opts.target) : REPO_ROOT;
+  const txDir = path.join(targetRoot, ".warpos", "transactions", txId);
+  if (!fs.existsSync(txDir)) {
+    const msg = `rollback: transaction directory not found at ${txDir}\n  txId: ${txId}\n  target: ${targetRoot}\n  hint: list available transactions with: ls ${path.join(targetRoot, ".warpos", "transactions")}`;
+    if (opts.json) {
+      console.log(
+        JSON.stringify(
+          { ok: false, mode: "rollback", error: msg, txId, txDir },
+          null,
+          2,
+        ),
+      );
+    } else {
+      console.error(msg);
+    }
+    process.exit(4);
+  }
+  const headerFile = path.join(txDir, "header.json");
+  if (!fs.existsSync(headerFile)) {
+    const msg = `rollback: header.json missing in ${txDir} — transaction directory is corrupt or unrelated to /warp:update`;
+    if (opts.json) {
+      console.log(
+        JSON.stringify(
+          { ok: false, mode: "rollback", error: msg, txId, txDir },
+          null,
+          2,
+        ),
+      );
+    } else {
+      console.error(msg);
+    }
+    process.exit(4);
+  }
+  let header;
+  try {
+    header = JSON.parse(fs.readFileSync(headerFile, "utf8"));
+  } catch (e) {
+    const msg = `rollback: failed to parse header.json: ${e.message}`;
+    if (opts.json) {
+      console.log(
+        JSON.stringify(
+          { ok: false, mode: "rollback", error: msg, txId, txDir },
+          null,
+          2,
+        ),
+      );
+    } else {
+      console.error(msg);
+    }
+    process.exit(4);
+  }
+  // Refuse to rollback a txDir that was created with --no-transaction (it has
+  // no snapshot envelope; rollbackTransaction would fail with a worse error).
+  if (header.noTransaction) {
+    const msg = `rollback: transaction ${txId} was created with --no-transaction (no snapshot envelope to roll back). Restore manually from ${path.relative(targetRoot, txDir).replace(/\\/g, "/")}/backup/`;
+    if (opts.json) {
+      console.log(
+        JSON.stringify(
+          { ok: false, mode: "rollback", error: msg, txId, txDir, header },
+          null,
+          2,
+        ),
+      );
+    } else {
+      console.error(msg);
+    }
+    process.exit(4);
+  }
+  let result;
+  try {
+    result = transactionModule.rollbackTransaction(txDir, {
+      trigger: "operator",
+      reason: "manual-cli-rollback",
+      operator:
+        process.env.USER ||
+        process.env.USERNAME ||
+        process.env.LOGNAME ||
+        "unknown",
+      errorMessage: `Manual CLI rollback by operator (${process.env.USER || process.env.USERNAME || "unknown"})`,
+    });
+  } catch (e) {
+    const msg = `rollback: rollbackTransaction threw: ${e.message}`;
+    if (opts.json) {
+      console.log(
+        JSON.stringify(
+          { ok: false, mode: "rollback", error: msg, txId, txDir, header },
+          null,
+          2,
+        ),
+      );
+    } else {
+      console.error(msg);
+    }
+    process.exit(5);
+  }
+  const fullSuccess = !result.partial && !result.error;
+  if (opts.json) {
+    console.log(
+      JSON.stringify(
+        {
+          ok: fullSuccess,
+          mode: "rollback",
+          txId,
+          txDir,
+          fromVersion: header.fromVersion,
+          toVersion: header.toVersion,
+          restoredCount: result.restoredCount,
+          unlinkedCount: result.unlinkedCount,
+          partial: result.partial,
+          error: result.error || null,
+        },
+        null,
+        2,
+      ),
+    );
+  } else {
+    const status = fullSuccess ? "OK" : result.partial ? "PARTIAL" : "ERROR";
+    console.log(
+      `[${status}] rollback ${txId}: restored=${result.restoredCount} unlinked=${result.unlinkedCount} partial=${result.partial}`,
+    );
+    console.log(`  txDir:        ${txDir}`);
+    console.log(
+      `  fromVersion:  ${header.fromVersion} (would have been ${header.toVersion})`,
+    );
+    if (result.error) console.log(`  error:        ${result.error}`);
+    if (!fullSuccess) {
+      console.log(
+        `  inspect:      ${path.join(txDir, "diagnostics.log")} and ${path.join(txDir, "result.json")}`,
+      );
+    }
+  }
+  process.exit(fullSuccess ? 0 : 1);
+}
+
 if (require.main === module) {
   const args = process.argv.slice(2);
   const get = (flag) => {
@@ -1057,6 +1212,31 @@ if (require.main === module) {
     if (i === -1) return null;
     return args[i + 1];
   };
+  // Support both --rollback <txId> (positional) and --rollback=<txId>.
+  const getEqOrPositional = (flag) => {
+    for (let i = 0; i < args.length; i++) {
+      if (args[i].startsWith(`${flag}=`)) return args[i].slice(flag.length + 1);
+      if (args[i] === flag) return args[i + 1] || null;
+    }
+    return null;
+  };
+  // ── Early branch: --rollback <txId> ──
+  // Runs the manual rollback handler, never falls through to the normal
+  // update flow. Honours --target and --json; ignores --to/--apply/etc.
+  const rollbackArg = getEqOrPositional("--rollback");
+  if (rollbackArg !== null) {
+    if (!rollbackArg || rollbackArg.startsWith("--")) {
+      console.error(
+        "Usage: node scripts/warpos/update.js --rollback <txId> [--target <install-path>] [--json]\n  txId is the directory name under <target>/.warpos/transactions/.",
+      );
+      process.exit(2);
+    }
+    runRollbackCli(rollbackArg, {
+      target: get("--target"),
+      json: args.includes("--json"),
+    });
+    return; // unreachable — runRollbackCli always exits — but keeps lint honest.
+  }
   const opts = {
     to: get("--to"),
     apply: args.includes("--apply"),
@@ -1087,7 +1267,7 @@ if (require.main === module) {
   };
   if (!opts.to) {
     console.error(
-      "Usage: node scripts/warpos/update.js --to <version> [--source <warpos-repo>] [--target <install-path>] [--dry-run | --apply] [--confirm-deletes] [--force-fresh] [--allow-stale] [--allow-version-drift] [--no-transaction] [--skip-postflight] [--strict-postflight]",
+      "Usage: node scripts/warpos/update.js --to <version> [--source <warpos-repo>] [--target <install-path>] [--dry-run | --apply] [--confirm-deletes] [--force-fresh] [--allow-stale] [--allow-version-drift] [--no-transaction] [--skip-postflight] [--strict-postflight]\n       node scripts/warpos/update.js --rollback <txId> [--target <install-path>] [--json]",
     );
     process.exit(2);
   }

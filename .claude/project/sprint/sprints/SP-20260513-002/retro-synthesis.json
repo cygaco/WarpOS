@@ -1,0 +1,162 @@
+{
+  "summary": "Shipped provider-smoke end-to-end: orchestrator + RCA module + safe-only auto-fix dispatcher + failure-mode catalog v1 seeded from mined evidence (8 signatures from provider-health.js + cross-provider-dispatch.md). Wired into release.json#postUpdateChecks forward and into /warp:setup/update docs. Stable composable JSON contract (`{ verdict, results[], rca[], autofixes[] }`) published for SP-005's postflight to consume. All 8 tickets landed, the recommended scope variant shipped, release RL-20260513-003 deployed as 0.5.1-sp002. The hard-won constraint from CLAUDE.md's binding-gap learning (LRN-2026-04-30) was honored: smoke never shells out to codex/gemini raw — all provider probes route through probeAll, and dispatch-route-guard's watchlist was extended to lock that in.",
+  "outcomes_shipped": [
+    {
+      "outcome": "Provider-smoke orchestrator scripts/warpos/provider-smoke.js — runs probeAll, computes RCA per non-green status, applies safe auto-fixes, emits JSON contract for downstream composers",
+      "evidence": ["T-20260513-019", "RL-20260513-003"],
+      "planned": true
+    },
+    {
+      "outcome": "provider-smoke declared in every framework/releases/*/release.json#postUpdateChecks forward — /warp:update runs it as a terminal post-update check",
+      "evidence": ["T-20260513-020"],
+      "planned": true
+    },
+    {
+      "outcome": "Failure-mode catalog v1 at .claude/agents/00-alex/.system/policy/provider-failure-modes.json with schema warpos/provider-failure-modes/v1 — maps every provider-health.js status to { root_cause, fix_recipe, safe_to_autofix, remediation, fallback_allowed }",
+      "evidence": [
+        "T-20260513-021",
+        ".claude/agents/00-alex/.system/policy/provider-failure-modes.json"
+      ],
+      "planned": true
+    },
+    {
+      "outcome": "RCA module scripts/warpos/lib/provider-rca.js — pure function rca(probeResult) → catalogEntry, catalog loaded once per process, unknown_error fall-through default; unit tests passing",
+      "evidence": ["T-20260513-022"],
+      "planned": true
+    },
+    {
+      "outcome": "Auto-fix dispatcher scripts/warpos/lib/provider-autofix.js with cycle prevention — runs only safe_to_autofix:true entries, re-probes once after fix, never loops; auth-mutating recipes locked behind safe_to_autofix:false per policy",
+      "evidence": ["T-20260513-023"],
+      "planned": true
+    },
+    {
+      "outcome": "/warp:setup and /warp:update docs updated to call provider-smoke as the install/update final step with --json mode and exit-code semantics documented",
+      "evidence": ["T-20260513-024"],
+      "planned": true
+    },
+    {
+      "outcome": "Smoke events logged via lib/logger.js with cat=provider-smoke and rich fields (verdict/provider/status/root_cause/autofix_applied/autofix_success) — feeds /check:patterns trend analysis",
+      "evidence": ["T-20260513-025"],
+      "planned": true
+    },
+    {
+      "outcome": "Tests + dispatch-route-guard watchlist extension preventing regressions to the Windows cmd.exe stdin bug class (LRN-2026-04-17-n / LRN-2026-04-30 binding-gap) — smoke probes route exclusively through probeAll",
+      "evidence": ["T-20260513-026"],
+      "planned": true
+    }
+  ],
+  "outcomes_missed": [],
+  "plan_quality_actual": {
+    "predicted_status": "pass",
+    "actual_status": "held",
+    "predicted_confidence": "high",
+    "evidence_gaps_predicted": [
+      "Real failure-mode catalog needs evidence mining during /sprint:design."
+    ],
+    "evidence_gaps_actual": [
+      "Catalog seeded from provider-health.js status codes + cross-provider-dispatch.md evidence — paths.recurringIssuesFile did not yet exist, so failure mining drew from probe-source rather than telemetry.",
+      "Coupling contract with SP-005 (JSON output schema for postflight composition) needed explicit publication — handled in PRD §`Cross-sprint coupling`."
+    ],
+    "notes": "Plan Contract correctly identified scope=m, risk=medium, and the right surface set. Evidence-mining gap was real (recurring-issues.jsonl scaffolded but empty) but mitigated by drawing the catalog from provider-health.js itself + the cross-provider-dispatch.md learning record. SP-002 published a stable CLI surface (`--json --providers`) and JSON schema that SP-005 consumed verbatim — the cross-sprint coupling held."
+  },
+  "scope_variant_actual": {
+    "planned_variant": "recommended",
+    "actual_variant": "recommended",
+    "adhered": true,
+    "drift_notes": "Recommended scope shipped: catalog + RCA + safe-only auto-fix + lifecycle wiring + events logging. Expanded scope (full self-healing layer, AskUserQuestion for risky fixes, recurring-failure dashboard) deliberately deferred. Auto-fix policy stayed safe-only by default — no auth-mutating recipes promoted to safe_to_autofix:true."
+  },
+  "surprises": [
+    {
+      "surprise": "provider-health-check.js had a process.exit(0) regardless of verdict at lines 93-97 — red findings could not gate any lifecycle today even though the check is wired into /warp:health and /warp:setup. Surfaced during PRD #Current behavior write-up; provider-smoke now provides the gating layer that provider-health-check.js's design never enforced.",
+      "impact": "Mid — confirmed the founding assumption that gates exist as skills but aren't gating; provider-smoke's exit-code semantics (0 green, 0 yellow unless --exit-on-yellow, 2 red required-provider after autofix) close the gap.",
+      "evidence": ["scripts/warpos/provider-health-check.js L93-97"]
+    },
+    {
+      "surprise": "paths.recurringIssuesFile did not yet exist on disk — issues:log was scaffolded but no provider entries persisted, so the failure-mode catalog couldn't be mined from telemetry. Drew from provider-health.js status codes + cross-provider-dispatch.md instead, which proved sufficient for v1.",
+      "impact": "Low — neutral; catalog seeded from authoritative source (the probe code itself). Future revisions can mine recurring-issues.jsonl once it has signal.",
+      "evidence": ["PRD §Evidence-mined failure signatures mining note"]
+    },
+    {
+      "surprise": "auth_source_mismatch (Gemini OAuth vs GEMINI_API_KEY) was already encoded in provider-fallback.json#do_not_fall_back — the policy primitive existed before the catalog did. Catalog now references the existing do-not-fall-back semantics rather than re-encoding them.",
+      "impact": "Positive — surfaced existing-primitive reuse, avoided duplicating policy encoding.",
+      "evidence": [
+        ".claude/agents/00-alex/.system/policy/provider-fallback.json"
+      ]
+    }
+  ],
+  "friction_points": [
+    {
+      "friction": "redteam_passed: false on the release checklist — provider-smoke shipped without a completed redteam pass per release.json checklist; auto-fix surface and catalog mutation paths are exactly the kind of thing red-team should adversarially probe.",
+      "category": "process",
+      "evidence": ["RL-20260513-003 checklist.redteam_passed: false"],
+      "severity": "medium"
+    },
+    {
+      "friction": "Same sprint-helper ticket-bucket bleed seen in SP-001: SP-002's ticket numbers (T-019..T-026) ended up listed in SP-001's current.yaml#tickets.done bucket alongside SP-002's own. Cross-sprint contamination is invisible to /sprint:status — only retro time surfaces it.",
+      "category": "tooling",
+      "evidence": [
+        "SP-20260513-001/current.yaml#tickets.done contains T-019..T-026"
+      ],
+      "severity": "high"
+    },
+    {
+      "friction": "Auto-fix dispatcher's cycle-prevention contract (one re-probe after fix, never loop) is enforced in code but not encoded in the catalog schema — adding a new safe_to_autofix entry that re-triggers the original failure mode would silently violate the contract on the next probe. Add a schema-level `expected_post_fix_status` invariant in v2.",
+      "category": "spec",
+      "evidence": ["R-5"],
+      "severity": "low"
+    }
+  ],
+  "action_items": [
+    {
+      "action": "Run /redteam:full against provider-smoke before the next dependent sprint ships — focus on auto-fix safe-boundary bypass, catalog mutation persistence, and dispatch-route-guard evasion paths. Lift redteam_passed to true on the release record.",
+      "owner": "alpha",
+      "due_by": "next_sprint",
+      "linked_friction": "redteam_passed: false on the release checklist"
+    },
+    {
+      "action": "Extend the provider-failure-modes/v1 schema with `expected_post_fix_status` so catalog authors must declare the cycle-prevention invariant for every safe_to_autofix entry — caught at schema validate-time, not at runtime.",
+      "owner": "alpha",
+      "due_by": "next_sprint",
+      "linked_friction": "Auto-fix dispatcher cycle-prevention contract not encoded in schema"
+    },
+    {
+      "action": "Migrate provider-smoke event records into recurring-issues.jsonl signal pump — every red-after-autofix should land an issues:log entry automatically so the catalog can mine from telemetry in v2.",
+      "owner": "alpha",
+      "due_by": "next_sprint",
+      "linked_friction": "paths.recurringIssuesFile not yet populated; catalog couldn't be mined from telemetry"
+    }
+  ],
+  "key_tradeoffs": [
+    "Auto-fix safe-only by default vs prompted vs silent — chose safe-only by policy; auth-mutating recipes locked behind safe_to_autofix:false, never auto-promoted. Cost is some yellows surface to operator instead of self-healing; benefit is no silent auth-config mutation.",
+    "Provider-smoke as new orchestrator vs extending provider-health-check.js — chose new orchestrator to keep provider-health-check.js as a pure diagnostic; smoke composes it. Cost is one extra file; benefit is provider-health-check.js stays a stable read-only primitive.",
+    "Catalog at .claude/agents/00-alex/.system/policy/ vs scripts/warpos/lib/ — chose policy directory because failure modes are policy data (operator can override), not code. Sibling to provider-fallback.json."
+  ],
+  "learning_candidates": [
+    {
+      "learning": "When a diagnostic CLI has process.exit(0) regardless of verdict, it is a READ-ONLY primitive, not a gate — composing it as a gate requires a wrapper that respects verdict semantics. Audit every check:* and warp:* skill for similar latent gating gaps where the script declares severity but never enforces it.",
+      "evidence": ["scripts/warpos/provider-health-check.js L93-97"],
+      "promote_via": "learn:integrate"
+    },
+    {
+      "learning": "Cross-sprint coupling contracts (JSON output schema + CLI surface + exit-code semantics) must be published in the producing sprint's PRD `Cross-sprint coupling` section, not assumed by the consuming sprint. SP-002 → SP-005 worked because SP-002 explicitly froze the contract; future sprints with similar coupling should mirror the pattern.",
+      "evidence": [
+        "SP-20260513-002/prd.md §Cross-sprint coupling — SP-20260513-005"
+      ],
+      "promote_via": "learn:integrate"
+    },
+    {
+      "learning": "Safe-only auto-fix dispatchers should record a cycle-prevention invariant in the catalog schema itself, not only in dispatcher code — schemas outlive dispatcher refactors; a new author re-implementing the dispatcher must rediscover the contract from prose comments rather than from validate-time enforcement.",
+      "evidence": ["R-5"],
+      "promote_via": "manual"
+    }
+  ],
+  "beta_decisions_reviewed": [],
+  "synthesis_metadata": {
+    "model_class": "strong_reasoning",
+    "provider": "anthropic",
+    "model_id": "claude-opus-4-7",
+    "duration_ms": 0,
+    "output_chars": 0,
+    "fallback_reason": null
+  }
+}

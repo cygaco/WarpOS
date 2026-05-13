@@ -1,41 +1,103 @@
 schema: "warpos/sprint/sprint-retrospective/v1"
 sprint_id: "SP-20260513-001"
 plan_contract_id: "PC-20260513-0002"
-synthesis_mode: "skeleton"
-summary: "<TO FILL>"
+synthesis_mode: "llm"
+summary: "Shipped /product:bootstrap end-to-end in one sprint: skill scaffold + namespace, bounded discussion with section-coverage QC, MD/HTML/DOCX writers (pandoc with fail-open fallback), output-path policy with re-run versioning, paths.json self-registration, and onboarding callout. All 8 truly-owned tickets (T-027..T-034) landed, the recommended scope variant shipped, release RL-20260513-002 deployed as 0.5.1-sp001. The sprint was the first to dog-food the new multi-sprint pipeline in parallel with SP-002/SP-003/SP-004/SP-005 and surfaced the sprint-helper ticket-bucket-bleed bug class first observed at T-20260513-039 (a /sprint:design subagent invoking ticket.js without --sprint flag landed the new ticket in SP-001's bucket)."
 outcomes_shipped:
-  - outcome: "<TO FILL>"
-    evidence: []
+  - outcome: "/product:bootstrap skill scaffolded under new /product: namespace (.claude/commands/product/bootstrap.md) — invokable, help text matches COPY C-1"
+    evidence:
+      - T-20260513-027
+      - RL-20260513-002
     planned: true
-outcomes_missed:
-  - outcome: "<TO FILL>"
-    reason: "<TO FILL>"
-    disposition: unknown
+  - outcome: "Bounded AskUserQuestion discussion flow (4-8 turn budget) with section-coverage QC blocking writes until every active section has content or an explicit decline"
+    evidence:
+      - T-20260513-028
+    planned: true
+  - outcome: "MD writer with stable `## NN — Title` section headings matching ai-web-brief-v4 style — downstream parsers can index by heading"
+    evidence:
+      - T-20260513-029
+    planned: true
+  - outcome: "HTML writer with single-file output, no external network requests, family-of-doc style parity with ai-web-brief-v4.html (heading hierarchy + callouts + monospace numerals)"
+    evidence:
+      - T-20260513-030
+    planned: true
+  - outcome: "DOCX writer via pandoc shellout with fail-open fallback — MD+HTML still ship when pandoc is absent, exit 0 + install hint printed (per D-2 design decision, no `docx` npm dep added)"
+    evidence:
+      - T-20260513-031
+    planned: true
+  - outcome: "Output-path policy with slug validation, re-run versioning to `<slug>/history/<ISO>/`, and three rerun policies (version/overwrite/prompt with TTY fallback)"
+    evidence:
+      - T-20260513-032
+    planned: true
+  - outcome: "paths.json self-registration via shared helper — `paths.briefs` + `paths.briefsCurrent` registered on first successful emit, updated on subsequent runs; paths:doctor stays green"
+    evidence:
+      - T-20260513-033
+    planned: true
+  - outcome: "Onboarding callout + release-notes entry — `Start here — /product:bootstrap` added to _docs index where present, no new file created when absent (AC-S-8.3 respected)"
+    evidence:
+      - T-20260513-034
+      - _docs/sprint/CHANGELOG_0.5.1.md
+    planned: true
+outcomes_missed: []
 plan_quality_actual:
   predicted_status: pass
-  actual_status: "<TO FILL>"
+  actual_status: held
   predicted_confidence: high
   evidence_gaps_predicted:
     - "Pandoc availability on the user's Windows machine (verify at design time)."
     - "Whether ai-web-brief-v4 sections beyond the listed minimum are required (design-time decision)."
-  evidence_gaps_actual: []
-  notes: "<TO FILL>"
+  evidence_gaps_actual:
+    - "Pandoc detection path was verified at design time (D-2 decision); no execution-time surprises on the Windows host."
+    - "Section set defaulted to listed minimum (D-1); extended sections behind --section-set extended, deferred without contention."
+  notes: "Plan Contract correctly sized this as `m`/`medium`. Both flagged evidence gaps were resolved at design time via D-1 (default to listed-minimum section set) and D-2 (default to pandoc shellout with fail-open fallback). No scope drift; the recommended variant shipped exactly as scoped."
 scope_variant_actual:
   planned_variant: recommended
-  actual_variant: unknown
-  adhered: false
-  drift_notes: "<TO FILL>"
-surprises: []
+  actual_variant: recommended
+  adhered: true
+  drift_notes: "Recommended scope shipped end-to-end: skill + bounded discussion + MD + HTML + DOCX (pandoc with fallback) + paths.json + re-run versioning + onboarding callout. Expanded scope (refinement loop per-section, brief version history index, sibling /brief:rebuild + /brief:section helpers, `docx` npm fallback) deliberately deferred."
+surprises:
+  - surprise: "Sprint-helper ticket-bucket bleed: T-20260513-039 was minted by an SP-003 /sprint:design subagent calling ticket.js without --sprint flag; ticket.js read paths.sprintCurrent (registry primary = SP-001) and landed the ticket in SP-001's bucket. Marked abandoned and replaced with a correctly-tagged ticket in SP-003."
+    impact: "Mid — first observed instance of the cross-sprint contamination class. SP-001's current.yaml carries dozens of bleed tickets (T-019..T-026, T-035..T-038, T-040..T-062) that belong to SP-002/003/004/005 — a known bug ride-along for the entire parallel run."
+    evidence:
+      - T-20260513-039
+  - surprise: "Pandoc was already on PATH on the operator's Windows host at design time — the D-2 fallback (graceful skip if absent) was implemented but not exercised on the happy path; DOCX shipped on first run."
+    impact: "Low — neutral; design decision still correct for downstream operators who may not have pandoc."
+    evidence:
+      - T-20260513-031
+  - surprise: "AC-S-8.3 (no _docs/ index present → no new file created) became the actual onboarding path — the project's onboarding flow does not yet have a single index file, so the callout integration was a no-op for this repo's own dog-foot run."
+    impact: "Low — preserves the no-regress promise but masks the value of T-034 in self-testing."
+    evidence:
+      - T-20260513-034
 friction_points:
-  - friction: "<TO FILL>"
-    category: other
-    evidence: []
+  - friction: "ticket.js resolves sprint binding from paths.sprintCurrent (registry primary) when no --sprint flag is passed — subagents that fork off /sprint:design / /sprint:execute do not always inject --sprint, so new tickets land in whichever sprint is primary in active-sprints.yaml. Manifests as the SP-001 ticket bucket carrying 30+ cross-sprint tickets."
+    category: tooling
+    evidence:
+      - T-20260513-039
+      - "SP-20260513-001 current.yaml#tickets.done"
+    severity: high
+  - friction: "Sprint-history retros came back as skeleton placeholders for SP-001/002/003/005 — retrospective.js requires the caller (the /sprint:retrospective skill body) to produce the LLM synthesis JSON and pass --synthesis. The four naive script invocations during release wrote skeletons without an operator-visible warning. Same root cause as SP-004's friction item #3 — confirmed recurring."
+    category: tooling
+    evidence:
+      - "history/SP-20260513-001/retro.yaml synthesis_mode: skeleton"
+    severity: medium
+  - friction: "Multi-sprint parallelism (SP-001..SP-005 running concurrently) makes the sprint-progress.yaml a single shared file across all sprints — per-sprint progress lives under sprints/<id>/progress.yaml but the legacy global sprint-progress.yaml is still referenced in crash_recovery, leading to last-completed-step ambiguity when multiple sprints are mid-release."
+    category: process
+    evidence:
+      - "progress.yaml status: completed but crash_recovery.last_checkpoint points to global sprint-progress.yaml"
     severity: low
 action_items:
-  - action: "<TO FILL>"
+  - action: "Make ticket.js#cmdCreate refuse to mint without an explicit --sprint flag (or auto-detect from the calling subagent's context) — silent fallback to paths.sprintCurrent is the bug class. Pair with a sprint-tag-guard hook that flags tickets whose `sprint:` field disagrees with the current.yaml bucket they were appended to."
     owner: alpha
-    due_by: "<TO FILL>"
-    linked_friction: ""
+    due_by: next_sprint
+    linked_friction: ticket.js resolves sprint binding from paths.sprintCurrent when no --sprint flag is passed
+  - action: "Wire LLM synthesis into the /sprint:retrospective skill body for the default path — skill should run the synthesis prompt against the routing policy's strong_reasoning model and pass the result via --synthesis automatically. Naked retrospective.js invocations should print a stderr warning per SP-004's action #3 (still not implemented)."
+    owner: alpha
+    due_by: next_sprint
+    linked_friction: Sprint-history retros came back as skeleton placeholders
+  - action: "Sunset the global sprint-progress.yaml in favor of the per-sprint sprints/<id>/progress.yaml exclusively — update crash_recovery.last_checkpoint to point at the per-sprint path on every sprint creation."
+    owner: alpha
+    due_by: next_sprint
+    linked_friction: Multi-sprint parallelism leaves crash_recovery pointing at the global sprint-progress.yaml
 tickets_completed:
   - T-20260513-027
   - T-20260513-028
@@ -45,28 +107,44 @@ tickets_completed:
   - T-20260513-032
   - T-20260513-033
   - T-20260513-034
+  - T-20260513-062
 tickets_deferred: []
 tickets_abandoned:
   - T-20260513-039
 tickets_reopened: []
 issues_encountered: []
 beta_decisions_reviewed: []
-key_tradeoffs: []
-learning_candidates: []
+key_tradeoffs:
+  - "Pandoc shellout vs `docx` npm dep — chose pandoc with fail-open fallback (D-2). Cost is operators without pandoc lose DOCX silently (warned); benefit is no new npm dep and cross-platform parity for free."
+  - "Listed-minimum section set as default vs full ai-web-brief-v4 set (D-1) — chose listed-minimum, extended sections opt-in via --section-set extended. Honors the verbatim ask and keeps the 8-turn discussion budget honest."
+  - "Version re-runs to `<slug>/history/<ISO>/` (default) vs overwrite vs prompt — chose version as default with overwrite/prompt as opt-in flags. Cost is more disk; benefit is no silent data loss on re-run."
+learning_candidates:
+  - learning: "Sprint-helper scripts that resolve sprint binding via a registry primary (paths.sprintCurrent) are unsafe in multi-sprint parallel runs — every tracker-mutating script must require an explicit --sprint flag or auto-extract from the caller's session context. Silent fallback creates ticket-bucket contamination invisible until retro time."
+    evidence:
+      - T-20260513-039 abandoned
+    promote_via: "learn:integrate"
+  - learning: "Multi-format output skills should always honor the listed-minimum ask first and opt into extensions via a CLI flag, not flip-flop in design — D-1's commit to listed-minimum kept the discussion budget honest. Pattern: any spec that says `at minimum X, Y, Z` plus `inspired by <bigger reference>` means default to X/Y/Z, gate the rest behind --section-set."
+    evidence:
+      - PRD D-1
+    promote_via: "learn:integrate"
+  - learning: "External-binary backends (pandoc, etc.) work cleanly as default with fail-open fallback when the failure surface is one bool (`is on PATH`) and the fallback is one-line clear — design decision D-2 shipped without DOCX-on-Windows issues because the detection path was `which`/`where`, not in-process invocation."
+    evidence:
+      - T-20260513-031
+    promote_via: manual
 release_record_ref: "RL-20260513-002"
 synthesis_metadata:
-  model_class: ""
-  provider: ""
-  model_id: ""
+  model_class: strong_reasoning
+  provider: anthropic
+  model_id: claude-opus-4-7
   duration_ms: 0
   output_chars: 0
   fallback_reason: null
 signed_off_by: "alpha"
-signed_off_at: "2026-05-13T21:57:20.428Z"
+signed_off_at: "2026-05-13T22:44:51.955Z"
 retro_metadata:
-  synthesized_at: "2026-05-13T21:57:20.428Z"
+  synthesized_at: "2026-05-13T22:44:51.955Z"
   writer_version: "1.0.0"
   history_record: ""
   force_overwrite: true
-created_at: "2026-05-13T21:57:20.428Z"
-updated_at: "2026-05-13T21:57:20.428Z"
+created_at: "2026-05-13T22:44:51.955Z"
+updated_at: "2026-05-13T22:44:51.955Z"

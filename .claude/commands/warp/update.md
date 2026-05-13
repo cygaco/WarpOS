@@ -157,6 +157,59 @@ As of T-20260513-062 the tri-pillar above is wired into the engine's `run()` its
 
 Dry-run (`--dry-run` or omitting `--apply`) does **not** run preflight, transaction, or postflight — the classify step alone produces the plan, and no file touches occur. Operators who want a standalone preflight read against the install run `node scripts/warpos/preflight.js --target <root> --to <v>` directly.
 
+## `--rollback <txId>` (manual rollback CLI)
+
+The auto-rollback inside `run()` covers the *common* failure path (apply or migration throws). The manual CLI surface exists for the operator-driven cases:
+
+- Postflight surfaced reds and `--strict-postflight` was **not** set, so the run committed — but on inspection the operator wants to roll back anyway.
+- A previous run was killed mid-flight (`Ctrl-C`, OS reboot, OOM) and left `.warpos/transactions/<txId>/` with `result.json` absent or `outcome != "committed"`.
+- `ROLLBACK.md` inside every txDir already advertises this command verbatim; this section makes the operator surface real.
+
+### CLI form
+
+```bash
+node scripts/warpos/update.js --rollback <txId>                       # positional
+node scripts/warpos/update.js --rollback=<txId>                       # equals form
+node scripts/warpos/update.js --rollback <txId> --target <root>       # alternate install root
+node scripts/warpos/update.js --rollback <txId> --json                # machine-readable output
+```
+
+`<txId>` is the directory name under `<targetRoot>/.warpos/transactions/`. `--target` defaults to the repo containing `update.js` (legacy self-update mode). `paths.warposTransactionsDir` (`.warpos/transactions`) is the relative base under target.
+
+### What it does
+
+1. Resolves `<targetRoot>/.warpos/transactions/<txId>/` and verifies the directory + `header.json` exist.
+2. Refuses with exit `4` if the txDir was created with `--no-transaction` (no snapshot envelope to roll back from).
+3. Calls `transaction.rollbackTransaction(txDir, { trigger: "operator", reason: "manual-cli-rollback", operator: process.env.USER || process.env.USERNAME || "unknown", … })`.
+4. The underlying call restores every `existed_pre_apply:true` entry from `backup/<dest>`, unlinks every `existed_pre_apply:false` write that completed, hash-verifies `snapshot.json` against `header.snapshotSha256` (R-31), and clears `active.lock` (R-32).
+5. Emits a one-line summary: `[OK] rollback <txId>: restored=<n> unlinked=<n> partial=<bool>`.
+
+### Exit codes
+
+| Code | Meaning |
+|---|---|
+| `0` | Full rollback — no partial, no error. |
+| `1` | Partial rollback — some entries restored, some failed. Inspect `<txDir>/diagnostics.log` + `<txDir>/result.json`. |
+| `2` | Usage error — `--rollback` passed without a `<txId>` argument. |
+| `4` | `txDir` not found, `header.json` missing/unparseable, or transaction was `--no-transaction` (no envelope). |
+| `5` | `rollbackTransaction` threw — e.g. snapshot hash mismatch (R-31). |
+
+### Example
+
+```bash
+# After an aborted update, list the abandoned transactions:
+ls .warpos/transactions/
+
+# Roll back a specific one:
+node scripts/warpos/update.js --rollback 2026-05-13T22-42-58-072Z-warp-update-WarpOS
+
+# → [OK] rollback 2026-05-13T22-42-58-072Z-warp-update-WarpOS: restored=42 unlinked=3 partial=false
+#       txDir:        <abs-path>/.warpos/transactions/2026-05-13T22-42-58-072Z-warp-update-WarpOS
+#       fromVersion:  0.4.4 (would have been 0.5.0)
+```
+
+The rollback is itself transactional when invoked with the underlying `rollbackTransaction({ undo: true })` option (R-30 — `rollback-undo/` snapshot before mutate); the CLI does NOT pass `undo:true` by default — pass it through the programmatic API if you need it.
+
 **Override flags:**
 
 | Flag | Behavior |

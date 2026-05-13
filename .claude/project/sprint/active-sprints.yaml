@@ -22,7 +22,7 @@ sprints:
     layout: per_sprint_subdir
     pointer: ".claude/project/sprint/sprints/SP-20260513-001"
     created_at: "2026-05-13T06:27:46.887Z"
-    updated_at: "2026-05-13T21:57:20.436Z"
+    updated_at: "2026-05-13T22:44:51.964Z"
   - id: SP-20260513-002
     title: "WarpOS install/update provider smoke test + RCA"
     status: retrospected
@@ -33,7 +33,7 @@ sprints:
     layout: per_sprint_subdir
     pointer: ".claude/project/sprint/sprints/SP-20260513-002"
     created_at: "2026-05-13T06:27:46.887Z"
-    updated_at: "2026-05-13T21:56:00.973Z"
+    updated_at: "2026-05-13T22:46:02.308Z"
   - id: SP-20260513-003
     title: "Organic skill use by agents — research + mechanism"
     status: retrospected
@@ -44,7 +44,7 @@ sprints:
     layout: per_sprint_subdir
     pointer: ".claude/project/sprint/sprints/SP-20260513-003"
     created_at: "2026-05-13T06:27:46.887Z"
-    updated_at: "2026-05-13T21:56:17.074Z"
+    updated_at: "2026-05-13T22:47:16.070Z"
   - id: SP-20260513-004
     title: "/sprint:retrospective skill — close-of-sprint reflection"
     status: retrospected
@@ -66,6 +66,6 @@ sprints:
     layout: per_sprint_subdir
     pointer: ".claude/project/sprint/sprints/SP-20260513-005"
     created_at: "2026-05-13T06:27:46.887Z"
-    updated_at: "2026-05-13T21:57:01.476Z"
+    updated_at: "2026-05-13T22:49:26.947Z"
 created_at: "2026-05-12T22:57:35.667Z"
-updated_at: "2026-05-13T22:00:13.075Z"
+updated_at: "2026-05-13T22:49:26.947Z"

@@ -53,4 +53,5 @@ fix_attempts: []
 ralph_progress: null
 completion_evidence:
   - "Tri-pillar wired into update.js#run(); --dry-run smoke clean; transaction-smoke 17/17 regression PASS."
+  - "Follow-up 2026-05-13: --rollback <txId> CLI handler wired into update.js (runRollbackCli + early branch in require.main block). Supports positional + --rollback=<txId> form, --target override, --json output. Exit codes 0/1/2/4/5. Negative paths: bad txId -> exit 4, --no-transaction txDir refused, missing arg -> exit 2 usage. Calls transaction.rollbackTransaction with trigger=operator. warp/update.md gained dedicated '## --rollback <txId> (manual rollback CLI)' section. scripts/warpos/test-rollback-cli-smoke.js fixture: 16/16 PASS; transaction-smoke regression preserved 17/17 PASS. update.js LOC delta approx +172."
 reopen_history: []

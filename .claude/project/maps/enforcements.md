@@ -76,6 +76,33 @@ Generated: 2026-05-13T22:37:04.323Z
 | id | file | uncurated |
 |---|---|---|
 | banner | scripts/hooks/lib/banner.js |  |
+<!-- end of generated table; hand-curated section follows -->
+
+## Post-escalation re-curation — 2026-05-13
+
+Three hooks were escalated this session. Behavior is upgraded; descriptions below reflect the new semantics. Append-only — do not regenerate (regen will overwrite hand-curated detail).
+
+### `sprint-tracker-guard` (mixed → schema-injection + schema-validation)
+
+- **Was**: BLOCK on sprint yaml writes missing `schema:` header.
+- **Now**: AUTO-INJECT `schema: warpos/sprint/<kind>/v1` for 15 known path patterns (approvals, tickets, releases, issues, plan-contracts, external-services, checkpoints, sprints/<id>/{current,progress,retrospective}, ralph, active-sprints, legacy singletons, history). BLOCK still applies for unknown (unmapped) paths missing schema.
+- **Gates**: added `sprint-schema-injection-gate`, `sprint-schema-validation-gate` alongside the existing `sprint-tracker-gate`.
+- **Why**: 126x/day missing-schema friction (LRN-2026-05-13-sprint-schema-missing). Known paths now inject silently; unmapped paths still require explicit schema declarations so the gate still catches genuinely new file kinds.
+
+### `beta-gate` (fail-closed; gained release-gate)
+
+- **Was**: BLOCK AskUserQuestion in adhoc mode without `ESCALATE:` prefix or escape keyword.
+- **Now**: Same, PLUS BLOCK release-context AskUserQuestion when `paths.betaEvents` has no Beta entry in the last 30 minutes. `deploy` REMOVED from `ESCAPE_KEYWORDS` (it was the most common skip path and let release decisions bypass Beta entirely).
+- **Gates**: added `release-gate` alongside the existing `beta-gate`.
+- **Why**: Enforces the CLAUDE.md Beta-consultation protocol at the release boundary, not just on general adhoc questions.
+
+### `merge-guard` (cd-prefix promoted from warn to auto-strip)
+
+- **Was**: Block `node -e fs.write...` + advisory warn on cd-prefix git tails.
+- **Now**: Same blocks PLUS auto-strip `cd "<project>" && <anything>` and `cd . && <anything>` via PreToolUse Bash transform (`hookSpecificOutput.updatedInput.command`). Coverage widened beyond git tails to ANY trailing command — merge-safe (never re-runs; only rewrites).
+- **Gates**: added `path-gate` (cd-prefix coverage) alongside the existing `merge-gate`.
+- **Why**: 16x/day cd-prefix repeat (LRN-2026-05-13-cd-prefix-repeat) + merge-safe semantics (LRN-2026-05-13-merge-safe-cd-strip). Wiping out a recurring friction class rather than warning about it every time.
+
 | concurrency-lock | scripts/hooks/lib/concurrency-lock.js |  |
 | context-sources | scripts/hooks/lib/context-sources.js |  |
 | gate-schema | scripts/hooks/lib/gate-schema.js |  |
