@@ -1,0 +1,2376 @@
+{
+  "metadata": {
+    "generated": "2026-05-13T22:12:54.429Z",
+    "lastUpdated": "2026-05-13T22:12:54.429Z",
+    "total_skills": 129,
+    "namespaces": 31,
+    "user_invocable": 60,
+    "regenerated_by": "scripts/regen-maps.js"
+  },
+  "namespaces": {
+    "agents": {
+      "namespace": "agents",
+      "count": 2,
+      "skills": [
+        {
+          "id": "agents:list",
+          "name": "list",
+          "description": "Enumerate every agent spec by mode and role.",
+          "file": ".claude/commands/agents/list.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        },
+        {
+          "id": "agents:test",
+          "name": "test",
+          "description": "Smoke-dispatch one agent role (or all non-claude roles) with a tiny ping prompt.",
+          "file": ".claude/commands/agents/test.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        }
+      ]
+    },
+    "beta": {
+      "namespace": "beta",
+      "count": 2,
+      "skills": [
+        {
+          "id": "beta:integrate",
+          "name": "integrate",
+          "description": "Apply validated recommendations from beta mining into the judgment model",
+          "file": ".claude/commands/beta/integrate.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/beta:mine",
+              "/sleep:deep"
+            ]
+          }
+        },
+        {
+          "id": "beta:mine",
+          "name": "mine",
+          "description": "Mine patterns from user behavior — prompts, decisions, skill chains, evolution cycles",
+          "file": ".claude/commands/beta/mine.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [
+              ".claude/project/events/events.jsonl",
+              ".claude/project/events/requirements.jsonl",
+              ".claude/project/events/tools.jsonl",
+              ".claude/project/memory/learnings.jsonl"
+            ],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/beta:integrate",
+              "/check:requirements",
+              "/maps:all",
+              "/sleep:deep"
+            ]
+          }
+        }
+      ]
+    },
+    "check": {
+      "namespace": "check",
+      "count": 26,
+      "skills": [
+        {
+          "id": "check:all",
+          "name": "all",
+          "description": "Run every check in parallel and produce one unified report — architecture, environment, references, requirements, patterns, system. One command for full project health.",
+          "file": ".claude/commands/check/all.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/check:architecture",
+              "/check:environment",
+              "/check:patterns",
+              "/check:references",
+              "/check:requirements",
+              "/check:system",
+              "/maps:all",
+              "/oneshot:preflight",
+              "/sleep:deep",
+              "/warp:doctor",
+              "/warp:health"
+            ]
+          }
+        },
+        {
+          "id": "check:architecture",
+          "name": "architecture",
+          "description": "Architecture integrity — do the layers connect? agent system, cross-layer seams, documentation health",
+          "file": ".claude/commands/check/architecture.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/check:environment",
+              "/check:references",
+              "/check:requirements",
+              "/maps:all",
+              "/sleep:deep",
+              "/warp:health"
+            ]
+          }
+        },
+        {
+          "id": "check:coherence",
+          "name": "coherence",
+          "description": "Run the WarpOS system coherence graph across 15 drift types.",
+          "file": ".claude/commands/check/coherence.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        },
+        {
+          "id": "check:design-system",
+          "name": "design-system",
+          "description": "Design system compliance check - scans UI code for raw colors, raw primitives, missing design docs, and component-library drift",
+          "file": ".claude/commands/check/design-system.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [
+              "scripts/hooks/ui-lint.js"
+            ],
+            "calls": []
+          }
+        },
+        {
+          "id": "check:environment",
+          "name": "environment",
+          "description": "Environment readiness and tooling quality — fast go/no-go or deep audit",
+          "file": ".claude/commands/check/environment.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [
+              ".claude/project/maps/.stale.json"
+            ],
+            "writes": [],
+            "references": [
+              "scripts/hooks/prompt-validator.js",
+              "scripts/hooks/smart-context.js"
+            ],
+            "calls": [
+              "/check:architecture",
+              "/check:references",
+              "/discover:systems",
+              "/hooks:test",
+              "/maps:all",
+              "/maps:enforcements",
+              "/sleep:deep",
+              "/warp:health"
+            ]
+          }
+        },
+        {
+          "id": "check:install",
+          "name": "install",
+          "description": "Verify a fresh WarpOS install — manifest, paths, agents, hooks, version, settings.",
+          "file": ".claude/commands/check/install.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/warp:setup"
+            ]
+          }
+        },
+        {
+          "id": "check:patterns",
+          "name": "patterns",
+          "description": "Cross-run intelligence and automation proposals — diagnose recurring patterns or propose prevention",
+          "file": ".claude/commands/check/patterns.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/fix:deep",
+              "/fix:fast",
+              "/hooks:friction",
+              "/issues:log",
+              "/learn:deep",
+              "/maps:enforcements",
+              "/oneshot:retro",
+              "/sleep:deep"
+            ]
+          }
+        },
+        {
+          "id": "check:privacy",
+          "name": "privacy",
+          "description": "Pre-publish scan for personal data — credentials, emails, homedir paths, runtime files tracked by git.",
+          "file": ".claude/commands/check/privacy.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [
+              ".claude/project/memory/known-names.json"
+            ],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        },
+        {
+          "id": "check:references",
+          "name": "references",
+          "description": "Cross-file reference integrity — broken links, orphans, stale SPEC_GRAPH edges",
+          "file": ".claude/commands/check/references.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [
+              ".claude/project/maps/SPEC_GRAPH.json"
+            ],
+            "writes": [],
+            "references": [
+              "scripts/hooks/ref-checker.js"
+            ],
+            "calls": [
+              "/check:architecture",
+              "/maps:all",
+              "/skills:cleanup",
+              "/sleep:deep"
+            ]
+          }
+        },
+        {
+          "id": "check:requirements",
+          "name": "requirements",
+          "description": "Specification consistency, coverage, and drift — static audit, change-driven propagation check, or pending-drift review",
+          "file": ".claude/commands/check/requirements.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [
+              ".claude/project/events/requirements-staged.jsonl"
+            ],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/check:architecture",
+              "/check:references",
+              "/learn:deep",
+              "/learn:integrate",
+              "/oneshot:retro",
+              "/reqs:review",
+              "/sleep:deep"
+            ]
+          }
+        },
+        {
+          "id": "check:system",
+          "name": "system",
+          "description": "System inventory — enumerate every active WarpOS system, diff against manifest, report drift and gaps",
+          "file": ".claude/commands/check/system.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/check:all",
+              "/check:architecture",
+              "/check:references",
+              "/maps:systems",
+              "/sleep:deep",
+              "/warp:health"
+            ]
+          }
+        },
+        {
+          "id": "check:timeline",
+          "name": "timeline",
+          "description": "Reconstruct a build timeline from transaction, event, and provider logs.",
+          "file": ".claude/commands/check/timeline.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        },
+        {
+          "id": "check:warpos-applied-migrations",
+          "name": "warpos-applied-migrations",
+          "description": "Detect already-applied WarpOS migration scripts left on disk in consumer projects",
+          "file": ".claude/commands/check/warpos-applied-migrations.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        },
+        {
+          "id": "check:warpos-capsule-resolvable",
+          "name": "warpos-capsule-resolvable",
+          "description": "Verify the capsule for /warp:update --to <v> is resolvable from REPO_ROOT, sibling clones, manifest.warpos.source, or framework-installed.json#source.",
+          "file": ".claude/commands/check/warpos-capsule-resolvable.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/warp:update"
+            ]
+          }
+        },
+        {
+          "id": "check:warpos-install-baseline",
+          "name": "warpos-install-baseline",
+          "description": "Verify a WarpOS install baseline exists (.claude/framework-installed.json present, installedVersion ≠ 0.0.0) before /warp:update may proceed.",
+          "file": ".claude/commands/check/warpos-install-baseline.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/warp:update"
+            ]
+          }
+        },
+        {
+          "id": "check:warpos-manifest-honesty",
+          "name": "warpos-manifest-honesty",
+          "description": "Verify framework-installed.json reflects actual disk state (no missing files, no hash drift)",
+          "file": ".claude/commands/check/warpos-manifest-honesty.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/reasoning:run"
+            ]
+          }
+        },
+        {
+          "id": "check:warpos-migration-coverage",
+          "name": "warpos-migration-coverage",
+          "description": "Verify every breaking change in a WarpOS release ships with a corresponding migration script under framework/migrations — stub implementation pending refinement.",
+          "file": ".claude/commands/check/warpos-migration-coverage.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/reasoning:run"
+            ]
+          }
+        },
+        {
+          "id": "check:warpos-migration-presence",
+          "name": "warpos-migration-presence",
+          "description": "Verify every migration listed in capsule release.json#migrations[] exists in the source tree before /warp:update may apply.",
+          "file": ".claude/commands/check/warpos-migration-presence.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/warp:update"
+            ]
+          }
+        },
+        {
+          "id": "check:warpos-path-resolution",
+          "name": "warpos-path-resolution",
+          "description": "Verify every paths.json key points to an existing path (skip generated/ephemeral keys)",
+          "file": ".claude/commands/check/warpos-path-resolution.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/reasoning:run"
+            ]
+          }
+        },
+        {
+          "id": "check:warpos-promote-coverage",
+          "name": "warpos-promote-coverage",
+          "description": "Flag commits in the product repo that touched FRAMEWORK_PREFIXES paths but were never promoted to canonical WarpOS via /warp:promote — stub implementation pending refinement.",
+          "file": ".claude/commands/check/warpos-promote-coverage.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/reasoning:run",
+              "/warp:promote"
+            ]
+          }
+        },
+        {
+          "id": "check:warpos-promote-scope",
+          "name": "warpos-promote-scope",
+          "description": "Verify scripts/warpos/promote.js FRAMEWORK_PREFIXES list covers every framework-owned top-level directory, so structural changes propagate cleanly to canonical WarpOS.",
+          "file": ".claude/commands/check/warpos-promote-scope.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        },
+        {
+          "id": "check:warpos-roundtrip",
+          "name": "warpos-roundtrip",
+          "description": "Verify that promoting changes from product to canonical and back to product preserves bytes (no silent transformation through the WarpOS promote/install pipeline) — stub implementation pending refinement.",
+          "file": ".claude/commands/check/warpos-roundtrip.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/reasoning:run"
+            ]
+          }
+        },
+        {
+          "id": "check:warpos-staleness",
+          "name": "warpos-staleness",
+          "description": "Detect drift between the installed WarpOS version on disk and the latest canonical version, flagging installs that have been stale for more than seven days.",
+          "file": ".claude/commands/check/warpos-staleness.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/warp:update"
+            ]
+          }
+        },
+        {
+          "id": "check:warpos-structure-parity",
+          "name": "warpos-structure-parity",
+          "description": "Verify installed framework has the structural skeleton dirs canonical declares",
+          "file": ".claude/commands/check/warpos-structure-parity.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/warp:update"
+            ]
+          }
+        },
+        {
+          "id": "check:warpos-tracked-transients",
+          "name": "warpos-tracked-transients",
+          "description": "Catch transient state accidentally committed (.warpos/, qa-*.png, runtime/qa-*/, etc.)",
+          "file": ".claude/commands/check/warpos-tracked-transients.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        },
+        {
+          "id": "check:warpos-version-quorum",
+          "name": "warpos-version-quorum",
+          "description": "Verify version.json, .claude/framework-manifest.json, .claude/framework-installed.json, and install.ps1 header agree on the installed version (trust order = version.json wins).",
+          "file": ".claude/commands/check/warpos-version-quorum.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        }
+      ]
+    },
+    "commit": {
+      "namespace": "commit",
+      "count": 3,
+      "skills": [
+        {
+          "id": "commit:both",
+          "name": "both",
+          "description": "Commit locally then push to remote — full commit + push flow",
+          "file": ".claude/commands/commit/both.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/commit:local",
+              "/commit:remote"
+            ]
+          }
+        },
+        {
+          "id": "commit:local",
+          "name": "local",
+          "description": "Stage and commit changes locally — smart message, no push",
+          "file": ".claude/commands/commit/local.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        },
+        {
+          "id": "commit:remote",
+          "name": "remote",
+          "description": "Push current branch to remote — with safety checks",
+          "file": ".claude/commands/commit/remote.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        }
+      ]
+    },
+    "content": {
+      "namespace": "content",
+      "count": 2,
+      "skills": [
+        {
+          "id": "content:contra",
+          "name": "contra",
+          "description": "Create a Contra portfolio post with carousel images — write copy, design slides, render PNGs",
+          "file": ".claude/commands/content/contra.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        },
+        {
+          "id": "content:linkedin",
+          "name": "linkedin",
+          "description": "Create a LinkedIn post with carousel images — write copy, design slides, render PNGs",
+          "file": ".claude/commands/content/linkedin.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        }
+      ]
+    },
+    "discover": {
+      "namespace": "discover",
+      "count": 2,
+      "skills": [
+        {
+          "id": "discover:orphaned",
+          "name": "orphaned",
+          "description": "Discover orphaned work — find every deferred, forgotten, or abandoned task across NEXT.md, runtime notes, branches, untracked files, TODOs, plans, ADRs, learnings, drift queue. Classifies and proposes concrete next actions.",
+          "file": ".claude/commands/discover/orphaned.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/check:patterns",
+              "/check:requirements",
+              "/discover:systems",
+              "/issues:list",
+              "/learn:integrate",
+              "/oneshot:retro",
+              "/session:resume",
+              "/session:write"
+            ]
+          }
+        },
+        {
+          "id": "discover:systems",
+          "name": "systems",
+          "description": "Multi-angle system discovery — find every system in a project by intersecting 6 discovery lenses, surface what's declared vs what actually exists",
+          "file": ".claude/commands/discover/systems.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [
+              "scripts/hooks/foo.js"
+            ],
+            "calls": [
+              "/check:references",
+              "/check:system",
+              "/learn:integrate",
+              "/maps:systems",
+              "/oneshot:preflight"
+            ]
+          }
+        }
+      ]
+    },
+    "docs": {
+      "namespace": "docs",
+      "count": 1,
+      "skills": [
+        {
+          "id": "docs:catalog",
+          "name": "catalog",
+          "description": "Enumerate reference docs under _docs/ and paths.reference, with title/size/mtime.",
+          "file": ".claude/commands/docs/catalog.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        }
+      ]
+    },
+    "events": {
+      "namespace": "events",
+      "count": 2,
+      "skills": [
+        {
+          "id": "events:query",
+          "name": "query",
+          "description": "Query the events log by type, time range, or regex match.",
+          "file": ".claude/commands/events/query.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        },
+        {
+          "id": "events:tail",
+          "name": "tail",
+          "description": "Tail the events log — last N events with timestamp, type, and message.",
+          "file": ".claude/commands/events/tail.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        }
+      ]
+    },
+    "fav": {
+      "namespace": "fav",
+      "count": 2,
+      "skills": [
+        {
+          "id": "fav:list",
+          "name": "list",
+          "description": "Browse all saved favorite moments, grouped by category",
+          "file": ".claude/commands/fav/list.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        },
+        {
+          "id": "fav:search",
+          "name": "search",
+          "description": "Search saved favorite moments by keyword across category, title, and notes — find one specific moment you remember saving but cannot locate by category alone.",
+          "file": ".claude/commands/fav/search.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/fav:list"
+            ]
+          }
+        }
+      ]
+    },
+    "fix": {
+      "namespace": "fix",
+      "count": 2,
+      "skills": [
+        {
+          "id": "fix:deep",
+          "name": "deep",
+          "description": "Deep fix — Full diagnostic with automatic framework selection, 5 solutions, root cause analysis, and prevention",
+          "file": ".claude/commands/fix/deep.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        },
+        {
+          "id": "fix:fast",
+          "name": "fast",
+          "description": "Quick fix — Direct Investigation, no formal framework. Read error, find cause, fix it, verify.",
+          "file": ".claude/commands/fix/fast.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [
+              ".claude/project/memory/learnings.jsonl",
+              ".claude/project/memory/traces.jsonl"
+            ],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/fix:deep",
+              "/reasoning:log"
+            ]
+          }
+        }
+      ]
+    },
+    "hooks": {
+      "namespace": "hooks",
+      "count": 5,
+      "skills": [
+        {
+          "id": "hooks:add",
+          "name": "add",
+          "description": "Design and create a new hook from a description",
+          "file": ".claude/commands/hooks/add.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [
+              ".claude/project/maps/hooks.jsonl"
+            ],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        },
+        {
+          "id": "hooks:disable",
+          "name": "disable",
+          "description": "Temporarily disable a hook by moving it from settings.json into a `_disabled_hooks` section, with a one-step path to re-enable later.",
+          "file": ".claude/commands/hooks/disable.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        },
+        {
+          "id": "hooks:friction",
+          "name": "friction",
+          "description": "Analyze friction points — find patterns that suggest missing hooks",
+          "file": ".claude/commands/hooks/friction.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        },
+        {
+          "id": "hooks:sync",
+          "name": "sync",
+          "description": "Copy validated hooks from this product repo into the canonical WarpOS clone so they can ride the next /warp:release. Convenience wrapper around /warp:promote scoped to scripts/hooks/.",
+          "file": ".claude/commands/hooks/sync.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/warp:promote",
+              "/warp:release"
+            ]
+          }
+        },
+        {
+          "id": "hooks:test",
+          "name": "test",
+          "description": "Test all hooks with synthetic payloads and measure execution time",
+          "file": ".claude/commands/hooks/test.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [
+              "scripts/hooks/hook-manifest.js",
+              "scripts/hooks/test.js"
+            ],
+            "calls": []
+          }
+        }
+      ]
+    },
+    "issues": {
+      "namespace": "issues",
+      "count": 4,
+      "skills": [
+        {
+          "id": "issues:list",
+          "name": "list",
+          "description": "List recurring system issues — bugs/regressions in the agent framework, hooks, skills, .claude/, scripts/",
+          "file": ".claude/commands/issues/list.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/fix:deep",
+              "/issues:log",
+              "/issues:resolve",
+              "/issues:scan",
+              "/learn:deep"
+            ]
+          }
+        },
+        {
+          "id": "issues:log",
+          "name": "log",
+          "description": "Record a new instance of a recurring system issue — appends to recurring-issues.jsonl, dedupes by title overlap",
+          "file": ".claude/commands/issues/log.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/fix:deep",
+              "/issues:list"
+            ]
+          }
+        },
+        {
+          "id": "issues:resolve",
+          "name": "resolve",
+          "description": "Mark a recurring system issue resolved with a permanent fix summary",
+          "file": ".claude/commands/issues/resolve.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/issues:list",
+              "/issues:log"
+            ]
+          }
+        },
+        {
+          "id": "issues:scan",
+          "name": "scan",
+          "description": "Pattern-mine events.jsonl for repeat audit-block signatures — surface candidates for /issues:log",
+          "file": ".claude/commands/issues/scan.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/issues:list",
+              "/issues:log",
+              "/issues:resolve",
+              "/learn:deep",
+              "/oneshot:retro"
+            ]
+          }
+        }
+      ]
+    },
+    "karpathy": {
+      "namespace": "karpathy",
+      "count": 3,
+      "skills": [
+        {
+          "id": "karpathy:integrate",
+          "name": "integrate",
+          "description": "Review a completed /karpathy:run and merge its winning artifact(s) into main — only command that touches the live codebase from a karpathy run.",
+          "file": ".claude/commands/karpathy/integrate.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/karpathy:discard",
+              "/karpathy:run"
+            ]
+          }
+        },
+        {
+          "id": "karpathy:run",
+          "name": "run",
+          "description": "Karpathy autoresearch loop — plan a closed-loop experiment, review, then run autonomously in an isolated worktree. Optimize any editable artifact (agent spec, skill, hook policy) against a scalar metric.",
+          "file": ".claude/commands/karpathy/run.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [
+              ".claude/project/events/events.jsonl"
+            ],
+            "writes": [],
+            "references": [
+              "scripts/hooks/merge-guard.js"
+            ],
+            "calls": [
+              "/check:all",
+              "/karpathy:discard",
+              "/karpathy:integrate",
+              "/karpathy:status"
+            ]
+          }
+        },
+        {
+          "id": "karpathy:status",
+          "name": "status",
+          "description": "Read-only status dashboard for an active or completed /karpathy:run. Shows score curve, flag counts, cost burn, and stop-condition proximity without any side effects.",
+          "file": ".claude/commands/karpathy/status.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/karpathy:discard",
+              "/karpathy:integrate",
+              "/karpathy:run"
+            ]
+          }
+        }
+      ]
+    },
+    "learn": {
+      "namespace": "learn",
+      "count": 3,
+      "skills": [
+        {
+          "id": "learn:deep",
+          "name": "deep",
+          "description": "Deep learning — extracts from conversation + event log + oneshot retro files in parallel, deduplicates, reports",
+          "file": ".claude/commands/learn/deep.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [
+              ".claude/project/events/events.jsonl"
+            ],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/learn:conversation",
+              "/learn:events",
+              "/learn:ingest",
+              "/learn:integrate",
+              "/oneshot:retro",
+              "/sleep:deep"
+            ]
+          }
+        },
+        {
+          "id": "learn:ingest",
+          "name": "ingest",
+          "description": "Ingest external knowledge from files, links, or YouTube videos and apply learnings to the system",
+          "file": ".claude/commands/learn/ingest.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [
+              ".claude/project/events/events.jsonl",
+              ".claude/project/memory/learnings.jsonl"
+            ],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/eval:automation",
+              "/learn:self"
+            ]
+          }
+        },
+        {
+          "id": "learn:integrate",
+          "name": "integrate",
+          "description": "Learning integrator — promote validated high-score learnings into actual system enforcement (hooks, rules, skills, agent specs, reference docs)",
+          "file": ".claude/commands/learn/integrate.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [
+              ".claude/project/memory/learnings.jsonl"
+            ],
+            "writes": [],
+            "references": [
+              "scripts/hooks/memory-guard.js"
+            ],
+            "calls": [
+              "/check:all",
+              "/learn:deep",
+              "/learn:ingest"
+            ]
+          }
+        }
+      ]
+    },
+    "linters": {
+      "namespace": "linters",
+      "count": 1,
+      "skills": [
+        {
+          "id": "linters:run",
+          "name": "run",
+          "description": "Run every project linter (path-lint, lint-*, npm lint:*) and aggregate pass/fail.",
+          "file": ".claude/commands/linters/run.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        }
+      ]
+    },
+    "manifest": {
+      "namespace": "manifest",
+      "count": 3,
+      "skills": [
+        {
+          "id": "manifest:migrate",
+          "name": "migrate",
+          "description": "Migrate the manifest to a target WarpOS version. Dry-run by default; --apply to write.",
+          "file": ".claude/commands/manifest/migrate.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        },
+        {
+          "id": "manifest:show",
+          "name": "show",
+          "description": "Print .claude/manifest.json (pretty by default, --json for compact).",
+          "file": ".claude/commands/manifest/show.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        },
+        {
+          "id": "manifest:validate",
+          "name": "validate",
+          "description": "Validate the current .claude/manifest.json against the v1 manifest schema and report any drift, missing fields, or schema violations.",
+          "file": ".claude/commands/manifest/validate.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        }
+      ]
+    },
+    "maps": {
+      "namespace": "maps",
+      "count": 9,
+      "skills": [
+        {
+          "id": "maps:all",
+          "name": "all",
+          "description": "Registry of all maps — shows every map, its source, last updated, and staleness",
+          "file": ".claude/commands/maps/all.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [
+              ".claude/project/maps/SPEC_GRAPH.json"
+            ],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/maps:architecture",
+              "/maps:enforcements",
+              "/maps:hooks",
+              "/maps:memory",
+              "/maps:skills",
+              "/maps:systems",
+              "/maps:tools"
+            ]
+          }
+        },
+        {
+          "id": "maps:architecture",
+          "name": "architecture",
+          "description": "App structure — routes, components, libs, how they connect",
+          "file": ".claude/commands/maps/architecture.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [
+              ".claude/project/maps/architecture.html",
+              ".claude/project/maps/architecture.txt"
+            ],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        },
+        {
+          "id": "maps:enforcements",
+          "name": "enforcements",
+          "description": "Enforcement coverage — hooks, gates, gap analysis, open/closed gaps",
+          "file": ".claude/commands/maps/enforcements.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [
+              ".claude/project/maps/.stale.json",
+              ".claude/project/maps/enforcements.jsonl",
+              ".claude/project/maps/enforcements.md"
+            ],
+            "writes": [],
+            "references": [
+              "scripts/hooks/hook-name.js"
+            ],
+            "calls": []
+          }
+        },
+        {
+          "id": "maps:hooks",
+          "name": "hooks",
+          "description": "Hook wiring diagram — events, matchers, scripts, execution order",
+          "file": ".claude/commands/maps/hooks.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [
+              ".claude/project/maps/.stale.json",
+              ".claude/project/maps/hooks.html",
+              ".claude/project/maps/hooks.jsonl",
+              ".claude/project/maps/hooks.md",
+              ".claude/project/maps/hooks.txt"
+            ],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        },
+        {
+          "id": "maps:memory",
+          "name": "memory",
+          "description": "Memory store relationships — who reads/writes each store, entry counts",
+          "file": ".claude/commands/maps/memory.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [
+              ".claude/project/events/events.jsonl",
+              ".claude/project/maps/.stale.json",
+              ".claude/project/maps/enforcements.jsonl",
+              ".claude/project/maps/memory.jsonl",
+              ".claude/project/maps/memory.md"
+            ],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        },
+        {
+          "id": "maps:skills",
+          "name": "skills",
+          "description": "Skill dependency graph — namespaces, cross-references, data flow",
+          "file": ".claude/commands/maps/skills.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [
+              ".claude/project/maps/.stale.json",
+              ".claude/project/maps/enforcements.jsonl",
+              ".claude/project/maps/skills.html",
+              ".claude/project/maps/skills.jsonl",
+              ".claude/project/maps/skills.md",
+              ".claude/project/maps/skills.txt"
+            ],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/namespace:command",
+              "/x:y"
+            ]
+          }
+        },
+        {
+          "id": "maps:steps",
+          "name": "steps",
+          "description": "Regenerate step tables in canonical docs from _requirements/00-canonical/STEPS.json — closes the last loop in the step-registry infrastructure.",
+          "file": ".claude/commands/maps/steps.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/check:references",
+              "/maps:all"
+            ]
+          }
+        },
+        {
+          "id": "maps:systems",
+          "name": "systems",
+          "description": "Render the systems manifest as a dependency graph — visualize which systems depend on which, their status, and their categories so you can audit coverage and drift at a glance.",
+          "file": ".claude/commands/maps/systems.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [
+              ".claude/project/maps/systems.html",
+              ".claude/project/maps/systems.txt",
+              ".claude/project/memory/systems.jsonl"
+            ],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        },
+        {
+          "id": "maps:tools",
+          "name": "tools",
+          "description": "Tool registry — skills, hooks, external CLIs, API services, npm scripts, platform tools",
+          "file": ".claude/commands/maps/tools.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [
+              ".claude/project/maps/.stale.json",
+              ".claude/project/maps/hooks.jsonl",
+              ".claude/project/maps/skills.jsonl",
+              ".claude/project/maps/tools.jsonl",
+              ".claude/project/maps/tools.md"
+            ],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/research:deep"
+            ]
+          }
+        }
+      ]
+    },
+    "mode": {
+      "namespace": "mode",
+      "count": 3,
+      "skills": [
+        {
+          "id": "mode:adhoc",
+          "name": "adhoc",
+          "description": "Enter adhoc team mode — Alpha + Beta + Gamma for collaborative feature development",
+          "file": ".claude/commands/mode/adhoc.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [
+              "scripts/hooks/session-start.js"
+            ],
+            "calls": [
+              "/sprint:design"
+            ]
+          }
+        },
+        {
+          "id": "mode:oneshot",
+          "name": "oneshot",
+          "description": "Initiate a oneshot build — launch Delta as standalone orchestrator for full skeleton runs",
+          "file": ".claude/commands/mode/oneshot.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        },
+        {
+          "id": "mode:solo",
+          "name": "solo",
+          "description": "Enter solo mode — just Alpha and the user, no agent team",
+          "file": ".claude/commands/mode/solo.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        }
+      ]
+    },
+    "oneshot": {
+      "namespace": "oneshot",
+      "count": 4,
+      "skills": [
+        {
+          "id": "oneshot:improve",
+          "name": "improve",
+          "description": "Update preflight passes based on gaps discovered during runs. Modifies the check skills themselves.",
+          "file": ".claude/commands/oneshot/improve.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/oneshot:preflight",
+              "/oneshot:retro"
+            ]
+          }
+        },
+        {
+          "id": "oneshot:preflight",
+          "name": "preflight",
+          "description": "Pre-run preflight — branch creation + skeleton gut + 7-pass verification audit. Default = full setup+gut+audit. Args control surgical access.",
+          "file": ".claude/commands/oneshot/preflight.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/check:architecture",
+              "/check:environment",
+              "/check:requirements",
+              "/mode:oneshot",
+              "/oneshot:improve",
+              "/oneshot:retro",
+              "/oneshot:start",
+              "/preflight:run",
+              "/preflight:setup",
+              "/run:sync"
+            ]
+          }
+        },
+        {
+          "id": "oneshot:retro",
+          "name": "retro",
+          "description": "Post-run retrospective — context + git log + code diffs + cross-run analysis, all 9 categories. Default = full. Args control surgical access.",
+          "file": ".claude/commands/oneshot/retro.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/check:patterns",
+              "/check:requirements",
+              "/issues:log",
+              "/oneshot:improve",
+              "/oneshot:preflight",
+              "/oneshot:start",
+              "/retro:code",
+              "/retro:context",
+              "/retro:full"
+            ]
+          }
+        },
+        {
+          "id": "oneshot:start",
+          "name": "start",
+          "description": "Lightweight kickoff — verify ready-state and hand off to Delta. Does NOT run setup or destructive work; that's /oneshot:preflight's job.",
+          "file": ".claude/commands/oneshot/start.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/mode:adhoc",
+              "/mode:oneshot",
+              "/mode:solo",
+              "/oneshot:improve",
+              "/oneshot:preflight",
+              "/oneshot:retro"
+            ]
+          }
+        }
+      ]
+    },
+    "paths": {
+      "namespace": "paths",
+      "count": 6,
+      "skills": [
+        {
+          "id": "paths:add",
+          "name": "add",
+          "description": "Guided flow for adding a paths registry key.",
+          "file": ".claude/commands/paths/add.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        },
+        {
+          "id": "paths:convert",
+          "name": "convert",
+          "description": "Guided flow for converting hardcoded literals to paths.* tokens.",
+          "file": ".claude/commands/paths/convert.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        },
+        {
+          "id": "paths:coverage",
+          "name": "coverage",
+          "description": "Report on documentation coverage for the paths registry — which path keys are documented in PATH_KEYS.md and which are missing prose, so docs stay honest with the registry.",
+          "file": ".claude/commands/paths/coverage.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        },
+        {
+          "id": "paths:doctor",
+          "name": "doctor",
+          "description": "Validate path registry, generated artifacts, and path lint rules.",
+          "file": ".claude/commands/paths/doctor.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        },
+        {
+          "id": "paths:explain",
+          "name": "explain",
+          "description": "Explain one paths registry key — show its resolved on-disk path, owner, kind, deprecation status, and human-readable docs so callers understand what it points to.",
+          "file": ".claude/commands/paths/explain.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        },
+        {
+          "id": "paths:rename",
+          "name": "rename",
+          "description": "Guided flow for renaming a paths registry key.",
+          "file": ".claude/commands/paths/rename.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        }
+      ]
+    },
+    "product": {
+      "namespace": "product",
+      "count": 1,
+      "skills": [
+        {
+          "id": "product:bootstrap",
+          "name": "bootstrap",
+          "description": "Bootstrap a thorough product brief from a guided discussion — outputs MD/HTML (always) and DOCX (when pandoc is installed) to _docs/briefs/<slug>/",
+          "file": ".claude/commands/product/bootstrap.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/oneshot:start",
+              "/sprint:plan"
+            ]
+          }
+        }
+      ]
+    },
+    "qa": {
+      "namespace": "qa",
+      "count": 2,
+      "skills": [
+        {
+          "id": "qa:audit",
+          "name": "audit",
+          "description": "Active full-codebase QA audit — systematically walks all 7 failure-mode personas",
+          "file": ".claude/commands/qa/audit.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        },
+        {
+          "id": "qa:check",
+          "name": "check",
+          "description": "Passive QA scan on recent git diff changes — checks for 7 failure-mode signatures",
+          "file": ".claude/commands/qa/check.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        }
+      ]
+    },
+    "reasoning": {
+      "namespace": "reasoning",
+      "count": 3,
+      "skills": [
+        {
+          "id": "reasoning:log",
+          "name": "log",
+          "description": "Log a reasoning episode — record what framework was used, why, and what happened",
+          "file": ".claude/commands/reasoning/log.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [
+              ".claude/project/memory/traces.jsonl"
+            ],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/fix:deep",
+              "/fix:fast",
+              "/reasoning:score"
+            ]
+          }
+        },
+        {
+          "id": "reasoning:run",
+          "name": "run",
+          "description": "Reason through a problem or decision — auto-detects quick triage vs deep deliberation",
+          "file": ".claude/commands/reasoning/run.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [
+              ".claude/project/memory/learnings.jsonl",
+              ".claude/project/memory/traces.jsonl"
+            ],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/fix:deep",
+              "/fix:fast"
+            ]
+          }
+        },
+        {
+          "id": "reasoning:score",
+          "name": "score",
+          "description": "Score fix quality (0-4) and retroactively reclassify old fixes when new evidence appears",
+          "file": ".claude/commands/reasoning/score.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [
+              ".claude/project/memory/traces.jsonl"
+            ],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/sleep:deep"
+            ]
+          }
+        }
+      ]
+    },
+    "redteam": {
+      "namespace": "redteam",
+      "count": 2,
+      "skills": [
+        {
+          "id": "redteam:full",
+          "name": "full",
+          "description": "Full red team audit — 11 personas across deterministic scanning + LLM reasoning. Finds auth bypasses, prompt injection, business logic abuse, attack chains.",
+          "file": ".claude/commands/redteam/full.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/qa:audit"
+            ]
+          }
+        },
+        {
+          "id": "redteam:scan",
+          "name": "scan",
+          "description": "Quick red team scan — deterministic tools only (deps, routes, CVEs, secrets, config). Fast, no LLM reasoning.",
+          "file": ".claude/commands/redteam/scan.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        }
+      ]
+    },
+    "research": {
+      "namespace": "research",
+      "count": 2,
+      "skills": [
+        {
+          "id": "research:deep",
+          "name": "deep",
+          "description": "Real deep research — Gemini Thinking writes the brief, then OpenAI Deep Research API + Gemini Deep Research API + Claude multi-round search run in parallel",
+          "file": ".claude/commands/research/deep.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [
+              ".claude/project/memory/learnings.jsonl"
+            ],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        },
+        {
+          "id": "research:simple",
+          "name": "simple",
+          "description": "Deep research pipeline — queries Claude, ChatGPT (Codex), and Gemini in parallel, saves reports, synthesizes, and applies learnings",
+          "file": ".claude/commands/research/simple.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [
+              ".claude/project/memory/learnings.jsonl"
+            ],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        }
+      ]
+    },
+    "session": {
+      "namespace": "session",
+      "count": 8,
+      "skills": [
+        {
+          "id": "session:checkpoint",
+          "name": "checkpoint",
+          "description": "Force an immediate session checkpoint save — captures conversation context and tool activity that git alone cannot recover, so the session is resumable after a crash or restart.",
+          "file": ".claude/commands/session/checkpoint.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        },
+        {
+          "id": "session:handoff",
+          "name": "handoff",
+          "description": "Generate a rich AI-analyzed handoff document (replaces /handoff)",
+          "file": ".claude/commands/session/handoff.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [
+              ".claude/project/events/events.jsonl",
+              ".claude/project/events/requirements-staged.jsonl"
+            ],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/check:requirements"
+            ]
+          }
+        },
+        {
+          "id": "session:history",
+          "name": "history",
+          "description": "Browse past session handoff summaries from the handoffs directory — useful for tracking what happened in a prior session, picking up a thread, or auditing decisions over time.",
+          "file": ".claude/commands/session/history.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/session:resume"
+            ]
+          }
+        },
+        {
+          "id": "session:read",
+          "name": "read",
+          "description": "Read the cross-session inbox — see what other Alex sessions have been doing",
+          "file": ".claude/commands/session/read.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [
+              ".claude/project/events/events.jsonl"
+            ],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        },
+        {
+          "id": "session:recap",
+          "name": "recap",
+          "description": "Catch up on the last N turns of this session — what you asked, what I did, what's still pending",
+          "file": ".claude/commands/session/recap.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/session:history",
+              "/session:read",
+              "/session:resume"
+            ]
+          }
+        },
+        {
+          "id": "session:resume",
+          "name": "resume",
+          "description": "Load and display the last handoff or checkpoint — use after /clear or cold start",
+          "file": ".claude/commands/session/resume.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        },
+        {
+          "id": "session:takenotes",
+          "name": "takenotes",
+          "description": "Append a timestamped note to a per-topic file under runtime/notes/",
+          "file": ".claude/commands/session/takenotes.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        },
+        {
+          "id": "session:write",
+          "name": "write",
+          "description": "Post a message to the cross-session inbox so other Alex sessions can see it. Default is fully automatic — no arguments needed. Use `--about <topic>` to focus the broadcast on a specific topic the user wants emphasized.",
+          "file": ".claude/commands/session/write.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [
+              ".claude/project/events/events.jsonl",
+              ".claude/project/memory/learnings.jsonl",
+              ".claude/project/memory/systems.jsonl"
+            ],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        }
+      ]
+    },
+    "skills": {
+      "namespace": "skills",
+      "count": 4,
+      "skills": [
+        {
+          "id": "skills:cleanup",
+          "name": "cleanup",
+          "description": "Audit all skills for dead weight, duplicates, broken references, and namespace issues — then clean up",
+          "file": ".claude/commands/skills/cleanup.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [
+              ".claude/project/events/skill-usage.jsonl",
+              ".claude/project/maps/skills.jsonl",
+              ".claude/project/memory/...",
+              ".claude/project/memory/systems.jsonl"
+            ],
+            "writes": [],
+            "references": [
+              "scripts/hooks/skill-counter.js"
+            ],
+            "calls": [
+              "/dir:file",
+              "/maps:skills",
+              "/namespace:command",
+              "/namespace:skill",
+              "/overseer:review",
+              "/reasoning:log",
+              "/reasoning:trace",
+              "/skill:cleanup"
+            ]
+          }
+        },
+        {
+          "id": "skills:create",
+          "name": "create",
+          "description": "Create a new skill from a description — supports simple, multi-phase, and parallel workflows",
+          "file": ".claude/commands/skills/create.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [
+              ".claude/project/memory/learnings.jsonl"
+            ],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/namespace:name",
+              "/namespace:sub1",
+              "/namespace:sub2",
+              "/namespace:sub3",
+              "/skill:create"
+            ]
+          }
+        },
+        {
+          "id": "skills:delete",
+          "name": "delete",
+          "description": "Remove a skill from .claude/commands with a backup, so it can be restored if the deletion turns out to be premature.",
+          "file": ".claude/commands/skills/delete.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [
+              ".claude/project/maps/skills.jsonl",
+              ".claude/project/memory/systems.jsonl",
+              ".claude/project/memory/traces.jsonl"
+            ],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/namespace:name",
+              "/skill:delete"
+            ]
+          }
+        },
+        {
+          "id": "skills:edit",
+          "name": "edit",
+          "description": "Edit the body or frontmatter of an existing skill under .claude/commands — guided flow that preserves frontmatter contract and re-validates after the edit.",
+          "file": ".claude/commands/skills/edit.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [
+              ".claude/project/memory/learnings.jsonl",
+              ".claude/project/memory/systems.jsonl"
+            ],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/namespace:name",
+              "/skill:edit"
+            ]
+          }
+        }
+      ]
+    },
+    "sleep": {
+      "namespace": "sleep",
+      "count": 2,
+      "skills": [
+        {
+          "id": "sleep:deep",
+          "name": "deep",
+          "description": "\"Full sleep cycle — all 6 phases: NREM consolidation, cleanup, replay, REM dreaming, repair, growth (~15-30 min)\"",
+          "file": ".claude/commands/sleep/deep.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/beta:integrate",
+              "/beta:mine",
+              "/check:requirements",
+              "/issues:log",
+              "/issues:resolve",
+              "/reasoning:score",
+              "/skills:create",
+              "/sleep:quick"
+            ]
+          }
+        },
+        {
+          "id": "sleep:quick",
+          "name": "quick",
+          "description": "Light nap — NREM consolidation + glymphatic cleanup only (~5 min)",
+          "file": ".claude/commands/sleep/quick.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [
+              ".claude/project/events/requirements-staged.jsonl"
+            ],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/check:requirements",
+              "/sleep:deep"
+            ]
+          }
+        }
+      ]
+    },
+    "sprint": {
+      "namespace": "sprint",
+      "count": 6,
+      "skills": [
+        {
+          "id": "sprint:design",
+          "name": "design",
+          "description": "Turn an approved Plan Contract into PRD, stories, COPY, INPUTS, TRACE, acceptance criteria, QA, red-team, release plan — then mint tickets.",
+          "file": ".claude/commands/sprint/design.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/sprint:execute",
+              "/sprint:plan"
+            ]
+          }
+        },
+        {
+          "id": "sprint:execute",
+          "name": "execute",
+          "description": "Execute the sprint via Ralph-style plan/act/test/review/record/checkpoint loops per ticket, with crash-safe progress, issue tracking, and approval-aware stop conditions.",
+          "file": ".claude/commands/sprint/execute.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/fix:deep",
+              "/mode:oneshot",
+              "/sprint:release"
+            ]
+          }
+        },
+        {
+          "id": "sprint:plan",
+          "name": "plan",
+          "description": "Turn a brief plain-language request into a structured sprint plan and durable Plan Contract. Evidence-labeled, approval-aware, crash-recoverable.",
+          "file": ".claude/commands/sprint/plan.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/sprint:design",
+              "/sprint:execute",
+              "/sprint:release"
+            ]
+          }
+        },
+        {
+          "id": "sprint:release",
+          "name": "release",
+          "description": "Prepare and execute a sprint release — final checks, approval, deploy gate, release notes, rollback prep, retrospective trigger.",
+          "file": ".claude/commands/sprint/release.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/karpathy:integrate",
+              "/learn:integrate",
+              "/sprint:plan"
+            ]
+          }
+        },
+        {
+          "id": "sprint:retrospective",
+          "name": "retrospective",
+          "description": "Synthesize a post-sprint retrospective from tracker artifacts — outcomes, friction, action items. Idempotent, fail-open, schema-validated.",
+          "file": ".claude/commands/sprint/retrospective.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/check:patterns",
+              "/learn:integrate",
+              "/sprint:release"
+            ]
+          }
+        },
+        {
+          "id": "sprint:status",
+          "name": "status",
+          "description": "Read-only status view of every live sprint — shows id, lane, status, phase, last checkpoint, and the resume command for each in-flight sprint, and flags drift between paths.sprintActiveRegistry and on-disk sprints/.",
+          "file": ".claude/commands/sprint/status.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/sprint:execute",
+              "/sprint:plan",
+              "/sprint:release"
+            ]
+          }
+        }
+      ]
+    },
+    "ui": {
+      "namespace": "ui",
+      "count": 1,
+      "skills": [
+        {
+          "id": "ui:review",
+          "name": "review",
+          "description": "Design system compliance audit — read-only check of components against the project's design-system docs",
+          "file": ".claude/commands/ui/review.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        }
+      ]
+    },
+    "warp": {
+      "namespace": "warp",
+      "count": 13,
+      "skills": [
+        {
+          "id": "warp:check",
+          "name": "check",
+          "description": "Compare your WarpOS installation against the latest version — find stale, new, and missing items",
+          "file": ".claude/commands/warp/check.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/warp:sync"
+            ]
+          }
+        },
+        {
+          "id": "warp:deprecate",
+          "name": "deprecate",
+          "description": "\"Create a guarded WarpOS deprecation proposal for an agent, skill, hook, path, requirement, pattern, or generated file.\"",
+          "file": ".claude/commands/warp/deprecate.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        },
+        {
+          "id": "warp:doctor",
+          "name": "doctor",
+          "description": "\"Unified WarpOS diagnostic — runs every health check in one place. Like /warp:health but full-coverage.\"",
+          "file": ".claude/commands/warp/doctor.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/check:all",
+              "/check:architecture",
+              "/check:references",
+              "/check:requirements",
+              "/hooks:test",
+              "/paths:lint",
+              "/warp:health",
+              "/warp:release",
+              "/warp:update"
+            ]
+          }
+        },
+        {
+          "id": "warp:flag",
+          "name": "flag",
+          "description": "\"Append a framework-level update flag to the repo-local warpos-to-update.md ledger. Safe to run in product repos and the canonical WarpOS clone.\"",
+          "file": ".claude/commands/warp/flag.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/warp:promote",
+              "/warp:promote-flags"
+            ]
+          }
+        },
+        {
+          "id": "warp:health",
+          "name": "health",
+          "description": "Verify WarpOS installation — checks every system, reports green/yellow/red with plain-English fixes",
+          "file": ".claude/commands/warp/health.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [
+              ".claude/project/events/events.jsonl",
+              ".claude/project/memory/learnings.jsonl",
+              ".claude/project/memory/traces.jsonl"
+            ],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/warp:init"
+            ]
+          }
+        },
+        {
+          "id": "warp:promote",
+          "name": "promote",
+          "description": "\"Promote framework changes from a source product/instance repo into the canonical WarpOS clone. Always dry-run by default.\"",
+          "file": ".claude/commands/warp/promote.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/warp:release",
+              "/warp:update"
+            ]
+          }
+        },
+        {
+          "id": "warp:promote-flags",
+          "name": "promote-flags",
+          "description": "\"Drain the warpos-to-update.md flag ledger written by /warp:flag — mark entries promoted/blocked/deferred, record canonical SHAs, archive, and produce a promotion report.\"",
+          "file": ".claude/commands/warp/promote-flags.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/warp:flag",
+              "/warp:promote",
+              "/warp:release"
+            ]
+          }
+        },
+        {
+          "id": "warp:release",
+          "name": "release",
+          "description": "\"Drive a full WarpOS release of the canonical clone from this product repo — promote, bump, regen, build capsule, run gates, commit, ff-merge to main, push, tag. One command, no cd into canonical.\"",
+          "file": ".claude/commands/warp/release.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/warp:promote"
+            ]
+          }
+        },
+        {
+          "id": "warp:setup",
+          "name": "setup",
+          "description": "Set up WarpOS end-to-end — clone, install, merge CLAUDE.md, restart, verify. Safe to re-run; auto-detects and completes missing steps.",
+          "file": ".claude/commands/warp/setup.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/warp:health",
+              "/warp:init",
+              "/warp:sync",
+              "/warp:tour",
+              "/warp:uninstall"
+            ]
+          }
+        },
+        {
+          "id": "warp:sync",
+          "name": "sync",
+          "description": "\"Legacy alias for /warp:update that forwards to the canonical update flow so older references and muscle memory keep working until warpos@1.0.0; superseded by /warp:update.\"",
+          "file": ".claude/commands/warp/sync.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/warp:promote",
+              "/warp:update"
+            ]
+          }
+        },
+        {
+          "id": "warp:tour",
+          "name": "tour",
+          "description": "Guided introduction to WarpOS — explains everything in simple language, no jargon",
+          "file": ".claude/commands/warp/tour.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/fix:fast",
+              "/learn:deep",
+              "/maps:all",
+              "/maps:architecture",
+              "/mode:adhoc",
+              "/mode:oneshot",
+              "/mode:solo",
+              "/research:simple",
+              "/session:handoff",
+              "/session:read",
+              "/session:write",
+              "/sleep:quick",
+              "/warp:health"
+            ]
+          }
+        },
+        {
+          "id": "warp:uninstall",
+          "name": "uninstall",
+          "description": "Completely remove WarpOS from a project — restores pre-install state from backup",
+          "file": ".claude/commands/warp/uninstall.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [
+              ".claude/project/memory/learnings.jsonl"
+            ],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/warp:health",
+              "/warp:setup",
+              "/warp:sync"
+            ]
+          }
+        },
+        {
+          "id": "warp:update",
+          "name": "update",
+          "description": "\"Update WarpOS in this project to a target release. Default = latest. Default mode = dry-run; pass --apply to execute.\"",
+          "file": ".claude/commands/warp/update.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/check:warpos-manifest-honesty",
+              "/warp:doctor",
+              "/warp:health",
+              "/warp:promote",
+              "/warp:release"
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "summary": {
+    "by_invocability": {
+      "user_invocable": 60,
+      "system_only": 69
+    },
+    "most_referenced_namespaces": [
+      {
+        "namespace": "check",
+        "count": 26
+      },
+      {
+        "namespace": "warp",
+        "count": 13
+      },
+      {
+        "namespace": "maps",
+        "count": 9
+      },
+      {
+        "namespace": "session",
+        "count": 8
+      },
+      {
+        "namespace": "paths",
+        "count": 6
+      }
+    ]
+  }
+}

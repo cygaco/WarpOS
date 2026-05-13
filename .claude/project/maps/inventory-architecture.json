@@ -1,0 +1,27 @@
+{
+  "metadata": {
+    "generated": "2026-05-13T22:12:54.429Z",
+    "lastUpdated": "2026-05-13T22:12:54.429Z",
+    "regenerated_by": "scripts/regen-maps.js"
+  },
+  "counts": {
+    "pages": 0,
+    "dashboard": 0,
+    "dm_modules": 0,
+    "steps": 0,
+    "ui": 0,
+    "lib": 0,
+    "api_routes": 0,
+    "extension": 0
+  },
+  "sections": {
+    "pages": [],
+    "dashboard": [],
+    "dm_modules": [],
+    "steps": [],
+    "ui": [],
+    "lib": [],
+    "api_routes": [],
+    "extension": []
+  }
+}
