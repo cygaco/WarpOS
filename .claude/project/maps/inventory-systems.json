@@ -1,15 +1,320 @@
 {
   "metadata": {
-    "generated": "2026-05-13T22:12:54.429Z",
-    "lastUpdated": "2026-05-13T22:12:54.429Z",
-    "total_systems": 0,
-    "categories": 0,
-    "total_files_referenced": 0,
-    "missing_files_on_disk": 0,
+    "generated": "2026-05-13T22:37:04.323Z",
+    "lastUpdated": "2026-05-13T22:37:04.323Z",
+    "total_systems": 18,
+    "categories": 11,
+    "total_files_referenced": 97,
+    "missing_files_on_disk": 1,
     "regenerated_by": "scripts/regen-maps.js"
   },
-  "by_status": {},
-  "by_category": {},
+  "by_status": {
+    "operational": {
+      "count": 15,
+      "ids": [
+        "identity",
+        "agents",
+        "skills",
+        "hooks",
+        "memory",
+        "maps",
+        "paths-registry",
+        "manifest",
+        "settings",
+        "store",
+        "spec-graph",
+        "reference-docs",
+        "patterns",
+        "installer",
+        "linters"
+      ]
+    },
+    "untested": {
+      "count": 3,
+      "ids": [
+        "requirements-templates",
+        "skill-warp-update",
+        "skill-sprint-release"
+      ]
+    }
+  },
+  "by_category": {
+    "identity": {
+      "count": 1,
+      "systems": [
+        {
+          "id": "identity",
+          "name": "Alex identity",
+          "status": "operational",
+          "files": [
+            "CLAUDE.md",
+            "AGENTS.md"
+          ]
+        }
+      ]
+    },
+    "agents": {
+      "count": 1,
+      "systems": [
+        {
+          "id": "agents",
+          "name": "Agent team + build chains",
+          "status": "operational",
+          "files": [
+            ".claude/agents/.system.md",
+            ".claude/agents/02-oneshot/visual-review/visual-review.md",
+            ".claude/agents/02-oneshot/test-runner/test-runner.md",
+            ".claude/agents/02-oneshot/stub-scaffold/stub-scaffold.md",
+            ".claude/agents/02-oneshot/reviewer/reviewer.md",
+            ".claude/agents/02-oneshot/req-reviewer/req-reviewer.md",
+            ".claude/agents/02-oneshot/redteam/analyze.md",
+            ".claude/agents/02-oneshot/redteam/orchestrator.md",
+            ".claude/agents/02-oneshot/redteam/scan.md",
+            ".claude/agents/02-oneshot/qa/analyze.md",
+            ".claude/agents/02-oneshot/qa/orchestrator.md",
+            ".claude/agents/02-oneshot/qa/scan.md",
+            ".claude/agents/02-oneshot/learner/learner.md",
+            ".claude/agents/02-oneshot/fixer/fixer.md",
+            ".claude/agents/02-oneshot/compliance/compliance.md",
+            ".claude/agents/02-oneshot/compliance/spec.md",
+            ".claude/agents/02-oneshot/builder/builder.md",
+            ".claude/agents/02-oneshot/.system/ENV-SETUP.md",
+            ".claude/agents/02-oneshot/.system/integration-map.md",
+            ".claude/agents/02-oneshot/.system/LAUNCH-CHECKLIST.md",
+            ".claude/agents/02-oneshot/.system/protocol.md",
+            ".claude/agents/02-oneshot/.system/skeleton-checklist.md",
+            ".claude/agents/01-adhoc/reviewer/reviewer.md",
+            ".claude/agents/01-adhoc/req-reviewer/req-reviewer.md",
+            ".claude/agents/01-adhoc/redteam/analyze.md",
+            ".claude/agents/01-adhoc/redteam/orchestrator.md",
+            ".claude/agents/01-adhoc/redteam/scan.md",
+            ".claude/agents/01-adhoc/qa/analyze.md",
+            ".claude/agents/01-adhoc/qa/orchestrator.md",
+            ".claude/agents/01-adhoc/qa/scan.md",
+            ".claude/agents/01-adhoc/fixer/fixer.md",
+            ".claude/agents/01-adhoc/compliance/compliance.md",
+            ".claude/agents/01-adhoc/builder/builder.md",
+            ".claude/agents/01-adhoc/.system/protocol.md",
+            ".claude/agents/00-alex/alpha.md",
+            ".claude/agents/00-alex/beta.md",
+            ".claude/agents/00-alex/delta.md",
+            ".claude/agents/00-alex/gamma.md",
+            ".claude/agents/00-alex/.system/lexicon.md",
+            ".claude/agents/00-alex/.system/policy/current-stage.md",
+            ".claude/agents/00-alex/.system/policy/decision-policy.md",
+            ".claude/agents/00-alex/.system/policy/validation-backlog-policy.md",
+            ".claude/agents/00-alex/.system/policy/adr/0000-template.md",
+            ".claude/agents/00-alex/.system/policy/adr/0001-warp-promote-location.md",
+            ".claude/agents/00-alex/.system/policy/adr/0002-multi-sprint-parallel-lanes.md",
+            ".claude/agents/00-alex/.system/policy/adr/INDEX.md",
+            ".claude/agents/00-alex/.system/beta/beta-source-data.md",
+            ".claude/agents/00-alex/.system/beta/judgement-model-recommendations-archive.md",
+            ".claude/agents/00-alex/.system/beta/judgement-model-recommendations.md",
+            ".claude/agents/00-alex/.system/beta/judgement-model.md",
+            ".claude/agents/.system/frontmatter-guide.md",
+            ".claude/agents/.system/guides/agent-dispatch-guide.md",
+            ".claude/agents/.system/guides/oneshot-token-guide.md"
+          ]
+        }
+      ]
+    },
+    "capability": {
+      "count": 1,
+      "systems": [
+        {
+          "id": "skills",
+          "name": "Skills",
+          "status": "operational",
+          "files": []
+        }
+      ]
+    },
+    "automation": {
+      "count": 1,
+      "systems": [
+        {
+          "id": "hooks",
+          "name": "Hooks",
+          "status": "operational",
+          "files": []
+        }
+      ]
+    },
+    "memory": {
+      "count": 1,
+      "systems": [
+        {
+          "id": "memory",
+          "name": "Memory stores",
+          "status": "operational",
+          "files": []
+        }
+      ]
+    },
+    "infrastructure": {
+      "count": 5,
+      "systems": [
+        {
+          "id": "manifest",
+          "name": "Project manifest",
+          "status": "operational",
+          "files": [
+            ".claude/manifest.json"
+          ]
+        },
+        {
+          "id": "maps",
+          "name": "Relationship maps",
+          "status": "operational",
+          "files": [
+            ".claude/project/maps"
+          ]
+        },
+        {
+          "id": "paths-registry",
+          "name": "Paths registry",
+          "status": "operational",
+          "files": [
+            ".claude/paths.json"
+          ]
+        },
+        {
+          "id": "settings",
+          "name": "Hook settings",
+          "status": "operational",
+          "files": [
+            ".claude/settings.json"
+          ]
+        },
+        {
+          "id": "spec-graph",
+          "name": "Spec dependency graph",
+          "status": "operational",
+          "files": [
+            ".claude/project/maps/SPEC_GRAPH.json"
+          ]
+        }
+      ]
+    },
+    "orchestration": {
+      "count": 1,
+      "systems": [
+        {
+          "id": "store",
+          "name": "Build store",
+          "status": "operational",
+          "files": [
+            ".claude/agents/store.json"
+          ]
+        }
+      ]
+    },
+    "knowledge": {
+      "count": 2,
+      "systems": [
+        {
+          "id": "patterns",
+          "name": "Engineering patterns library",
+          "status": "operational",
+          "files": [
+            "patterns/ADMISSION.md",
+            "patterns/human-report-shape.md",
+            "patterns/path-registry.md",
+            "patterns/README.md",
+            "patterns/release-capsule.md",
+            "patterns/requirements-drift-gate.md"
+          ]
+        },
+        {
+          "id": "reference-docs",
+          "name": "Reference documentation",
+          "status": "operational",
+          "files": [
+            ".claude/project/reference/agent-dispatch-guide.md",
+            ".claude/project/reference/cross-provider-dispatch.md",
+            ".claude/project/reference/echo-trap-monitoring.md",
+            ".claude/project/reference/evolution.md",
+            ".claude/project/reference/installer-file-lifecycle.md",
+            ".claude/project/reference/karpathy-autoresearch.md",
+            ".claude/project/reference/learning-lifecycle.md",
+            ".claude/project/reference/operational-loop.md",
+            ".claude/project/reference/private-to-public-history.md",
+            ".claude/project/reference/reasoning-frameworks.md",
+            ".claude/project/reference/recurring-issues-design.md",
+            ".claude/project/reference/skill-map.md",
+            ".claude/project/reference/sprint-workflow.md",
+            ".claude/project/reference/SYSTEMS-REFERENCE.md",
+            ".claude/project/reference/SYSTEMS.md",
+            ".claude/project/reference/warpos-class-wiring.md",
+            ".claude/project/reference/warpos-launch-roadmap.md",
+            ".claude/project/reference/warpos-roadmap.md",
+            ".claude/project/reference/warpos-system-updates-2026-04-15.md"
+          ]
+        }
+      ]
+    },
+    "product": {
+      "count": 2,
+      "systems": [
+        {
+          "id": "installer",
+          "name": "Installer",
+          "status": "operational",
+          "files": [
+            "scripts/warp-setup.js",
+            "install.ps1",
+            "version.json"
+          ]
+        },
+        {
+          "id": "requirements-templates",
+          "name": "Requirements spec templates",
+          "status": "untested",
+          "files": [
+            "framework/templates/sprint/README.md"
+          ]
+        }
+      ]
+    },
+    "quality": {
+      "count": 1,
+      "systems": [
+        {
+          "id": "linters",
+          "name": "Lint suite",
+          "status": "operational",
+          "files": [
+            "scripts/lint-hl-stories.js",
+            "scripts/lint-prds.js",
+            "scripts/lint-staleness.js",
+            "scripts/lint-stories.js",
+            "scripts/path-lint.js"
+          ]
+        }
+      ]
+    },
+    "cognition": {
+      "count": 2,
+      "systems": [
+        {
+          "id": "skill-sprint-release",
+          "name": "Prepare and execute a sprint release — final checks, approval, deploy gate, release notes, rollback prep, retrospective trigger.",
+          "status": "untested",
+          "files": [
+            ".claude/commands/sprint/release.md"
+          ]
+        },
+        {
+          "id": "skill-warp-update",
+          "name": "warp-update",
+          "status": "untested",
+          "files": [
+            ".claude/commands/warp/update.md"
+          ]
+        }
+      ]
+    }
+  },
   "category_rollup": [
     {
       "id": "identity",

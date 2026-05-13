@@ -1,7 +1,7 @@
 {
   "metadata": {
-    "generated": "2026-05-13T22:12:54.429Z",
-    "lastUpdated": "2026-05-13T22:12:54.429Z",
+    "generated": "2026-05-13T22:37:04.323Z",
+    "lastUpdated": "2026-05-13T22:37:04.323Z",
     "total_skills": 129,
     "namespaces": 31,
     "user_invocable": 60,
@@ -2043,6 +2043,7 @@
             "writes": [],
             "references": [],
             "calls": [
+              "/check:patterns",
               "/karpathy:integrate",
               "/learn:integrate",
               "/sprint:plan"

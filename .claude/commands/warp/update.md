@@ -119,6 +119,44 @@ After a successful commit, the engine runs 5 checks (diagnostic — does NOT aut
 
 Per-check + aggregate events emit to `events.jsonl` (`cat=warpos.update.postflight`). An evidence package is written to `<txDir>/evidence/postflight.json` matching `IN-3`. Postflight pointer event (`cat=warpos.update.evidence`) carries the path.
 
+## Integrated flow (T-20260513-062 — `scripts/warpos/update.js#run()`)
+
+As of T-20260513-062 the tri-pillar above is wired into the engine's `run()` itself. Applying a capsule walks this exact sequence:
+
+```
+1. classify          — 12-category plan against installed snapshot
+2. ESCALATE check    — refuse if any Class C
+3. Preflight         — runPreflight() composes 10 gates; red ⇒ refuse with remediation
+4. beginTransaction  — header + plan + snapshot + capsule.json + backup/, active.lock taken,
+                       fast-preflight subset re-run (R-33), snapshot hashed (R-31)
+5. Apply (wrapped)   — applyUpdateDecisions() copies files; any error throws
+6. Migrations        — runMigrations() inside the same try; any failed migration throws
+7. ON ERROR          — rollbackTransaction() restores backups, unlinks ADDs,
+                       writes result.json{outcome:"rolled-back"}, clears lock
+8. ON SUCCESS        — write framework-installed.json, then commitTransaction()
+                       writes result.json{outcome:"committed"} + clears lock
+9. Capsule checks    — release.json#postUpdateChecks (per-capsule contract)
+10. Postflight       — runPostflight() composes 5 checks; diagnostic only,
+                       writes <txDir>/evidence/postflight.json (IN-3)
+11. Return           — { ok, preflight, apply, migrations, postUpdateChecks, postflight, transaction, transactionDir }
+```
+
+**Coexistence:** `release.json#postUpdateChecks` (the per-capsule contract every release carries) and `runPostflight()` (the framework-side composer) both run. The capsule checks fire first; postflight fires after. Either can surface failures, but only postflight produces the IN-3 evidence package. SP-002's provider-smoke participates in postflight via `postflight.js#registerExternalCheck`, which self-wires at module load.
+
+**Per-gate override flags introduced by T-062:**
+
+| Flag | Behavior |
+|---|---|
+| `--force-fresh` | Preflight: accept yellow on `install-baseline` (treat as fresh install) |
+| `--allow-stale` | Preflight: accept yellow on `staleness` |
+| `--allow-version-drift` | Preflight: accept yellow on `version-quorum` |
+| `--skip-preflight` | Bypass preflight composer entirely (NOT recommended; emergency hatch) |
+| `--no-transaction` | Skip the transaction wrapper — legacy compatibility; writes a minimal txDir without snapshot/lock/rollback |
+| `--skip-postflight` | Skip the postflight composer (suppresses the 5 diagnostic checks + IN-3 evidence) |
+| `--strict-postflight` | Treat any postflight red as a non-zero exit (still no rollback — postflight is diagnostic) |
+
+Dry-run (`--dry-run` or omitting `--apply`) does **not** run preflight, transaction, or postflight — the classify step alone produces the plan, and no file touches occur. Operators who want a standalone preflight read against the install run `node scripts/warpos/preflight.js --target <root> --to <v>` directly.
+
 **Override flags:**
 
 | Flag | Behavior |

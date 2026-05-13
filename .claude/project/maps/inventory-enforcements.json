@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "generated": "2026-05-13T22:12:54.429Z",
-    "lastUpdated": "2026-05-13T22:12:54.429Z",
-    "total_hooks": 57,
+    "generated": "2026-05-13T22:37:04.323Z",
+    "lastUpdated": "2026-05-13T22:37:04.323Z",
+    "total_hooks": 55,
     "total_modules": 13,
-    "uncurated": 24,
+    "uncurated": 0,
     "total_gaps": 84,
     "gaps_closed": 73,
     "gaps_open": 11,
@@ -39,8 +39,8 @@
       "depends_on": [
         "logger"
       ],
-      "file_size": 4190,
-      "file_modified": "2026-04-17T21:30:23.988Z"
+      "file_size": 8537,
+      "file_modified": "2026-05-13T22:25:25.822Z"
     },
     {
       "id": "boss-boundary",
@@ -73,38 +73,46 @@
     {
       "id": "build-transaction-boundary",
       "type": "hook",
-      "matcher": "?",
-      "phase": "?",
-      "mode": "?",
+      "matcher": "Agent",
+      "phase": "PreToolUse+PostToolUse",
+      "mode": "fail-open",
       "file": "scripts/hooks/build-transaction-boundary.js",
-      "file_size": 3760,
-      "file_modified": "2026-05-01T04:37:06.323Z",
       "registered": true,
-      "gates": [],
+      "gates": [
+        "build-transaction-gate"
+      ],
       "blocks": [],
       "warns": [],
-      "allows": [],
-      "gaps_closed": [],
-      "uncurated": true,
-      "uncurated_note": "added since last hand-curated regen — fields ?, ?, ? need a /maps:enforcements review"
+      "allows": [
+        "builder/fixer Agent dispatches"
+      ],
+      "gaps_closed": [
+        "GAP-1601"
+      ],
+      "pre_check": "Start transaction: derive buildId from role+feature+prompt hash; write transaction.json with allowedFiles/forbiddenFiles/expectedOutputs/validationGates/rollbackPlan.",
+      "post_check": "Finish transaction: record finishedAt, completed/failed status, finalReport with response byte count.",
+      "depends_on": [],
+      "file_size": 3760,
+      "file_modified": "2026-05-01T04:37:06.323Z",
+      "note": "Observer for builder/fixer dispatches; writes per-build transaction.json to .claude/project/builds/<id>/. Never blocks. Provides audit trail + rollback metadata for build-chain agents."
     },
     {
       "id": "build",
-      "type": "hook",
-      "matcher": "?",
-      "phase": "?",
-      "mode": "?",
+      "type": "build-tool",
+      "matcher": "(CLI tool)",
+      "phase": "manual",
+      "mode": "build-time",
       "file": "scripts/hooks/build.js",
-      "file_size": 6730,
-      "file_modified": "2026-05-03T19:46:50.715Z",
       "registered": false,
       "gates": [],
       "blocks": [],
       "warns": [],
       "allows": [],
       "gaps_closed": [],
-      "uncurated": true,
-      "uncurated_note": "added since last hand-curated regen — fields ?, ?, ? need a /maps:enforcements review"
+      "file_size": 6730,
+      "file_modified": "2026-05-03T19:46:50.715Z",
+      "note": "Build-time CLI: regenerates hook-manifest.json + .claude/settings.json#hooks from framework/hooks.registry.json. Not a runtime hook. Invoke: node scripts/hooks/build.js [--check]. Source of truth for settings.json hook wiring.",
+      "kind": "build-tool"
     },
     {
       "id": "compact-saver",
@@ -192,38 +200,69 @@
     {
       "id": "dependency-admission-guard",
       "type": "hook",
-      "matcher": "?",
-      "phase": "?",
-      "mode": "?",
+      "matcher": "Edit|Write",
+      "phase": "PreToolUse",
+      "mode": "fail-closed",
       "file": "scripts/hooks/dependency-admission-guard.js",
-      "file_size": 1300,
-      "file_modified": "2026-05-01T04:37:06.324Z",
       "registered": true,
-      "gates": [],
-      "blocks": [],
+      "gates": [
+        "dependency-admission-gate"
+      ],
+      "blocks": [
+        "package.json edits adding deps without matching record in .claude/project/decisions/dependency-admissions.jsonl"
+      ],
       "warns": [],
-      "allows": [],
-      "gaps_closed": [],
-      "uncurated": true,
-      "uncurated_note": "added since last hand-curated regen — fields ?, ?, ? need a /maps:enforcements review"
+      "allows": [
+        "package.json edits with admission record for every new dep",
+        "non-package.json edits"
+      ],
+      "gaps_closed": [
+        "GAP-1602"
+      ],
+      "pre_check": "On Edit/Write to package.json: diff old vs new deps; require admission record for every addition.",
+      "post_check": "none",
+      "depends_on": [
+        "scripts/deps/admission"
+      ],
+      "file_size": 1300,
+      "file_modified": "2026-05-01T04:37:06.324Z"
     },
     {
       "id": "dispatch-route-guard",
       "type": "hook",
-      "matcher": "?",
-      "phase": "?",
-      "mode": "?",
+      "matcher": "Bash",
+      "phase": "PreToolUse",
+      "mode": "fail-closed",
       "file": "scripts/hooks/dispatch-route-guard.js",
+      "registered": true,
+      "gates": [
+        "dispatch-route-gate"
+      ],
+      "blocks": [
+        "bare `codex exec` (must go through scripts/dispatch-agent.js)",
+        "`gemini ... -p` prompt invocations",
+        "`claude -p` without --agent fallback flag",
+        "`cat <file> | (codex|gemini|claude)` pipe-into-provider"
+      ],
+      "warns": [],
+      "allows": [
+        "`<provider> --version|--help|auth|models`",
+        "commands beginning with `node scripts/dispatch-agent.js`",
+        "`claude -p ... --agent <role>` documented fallback",
+        "WARPOS_PROVIDER_PROBE=1 one-shot bypass",
+        "WARPOS_DISPATCH_ROUTE_GUARD=off kill switch"
+      ],
+      "gaps_closed": [
+        "GAP-1603"
+      ],
+      "pre_check": "Match Bash command against provider CLI prompt patterns; block when not routed through scripts/dispatch-agent.js.",
+      "post_check": "none",
+      "depends_on": [
+        "logger"
+      ],
       "file_size": 7405,
       "file_modified": "2026-05-11T20:59:36.128Z",
-      "registered": true,
-      "gates": [],
-      "blocks": [],
-      "warns": [],
-      "allows": [],
-      "gaps_closed": [],
-      "uncurated": true,
-      "uncurated_note": "added since last hand-curated regen — fields ?, ?, ? need a /maps:enforcements review"
+      "note": "Prevents binding-gap regressions (LRN-2026-04-17 Windows stdin; LRN-2026-04-30 binding-gap) by forcing all cross-provider CLI prompt calls through the canonical wrapper that carries runProvider+concurrency-lock fixes."
     },
     {
       "id": "edit-watcher",
@@ -252,20 +291,34 @@
     {
       "id": "event-contract",
       "type": "hook",
-      "matcher": "?",
-      "phase": "?",
-      "mode": "?",
+      "matcher": "Edit|Write",
+      "phase": "PostToolUse",
+      "mode": "advisory",
       "file": "scripts/hooks/event-contract.js",
+      "registered": true,
+      "gates": [
+        "event-contract-gate"
+      ],
+      "blocks": [],
+      "warns": [
+        "jz:* event names listened-but-never-dispatched (orphan listeners)",
+        "jz:* event names dispatched-but-never-listened (orphan dispatchers)"
+      ],
+      "allows": [
+        "edits without jz:* tokens",
+        "matched listener/dispatcher pairs"
+      ],
+      "gaps_closed": [
+        "GAP-1604"
+      ],
+      "pre_check": "none",
+      "post_check": "On Edit/Write of .ts/.tsx/.js/.jsx under src/: scan project for addEventListener('jz:X') and dispatchEvent(new (Custom)Event('jz:X')) and warn on unpaired names.",
+      "depends_on": [
+        "paths"
+      ],
       "file_size": 4048,
       "file_modified": "2026-04-29T18:57:10.033Z",
-      "registered": true,
-      "gates": [],
-      "blocks": [],
-      "warns": [],
-      "allows": [],
-      "gaps_closed": [],
-      "uncurated": true,
-      "uncurated_note": "added since last hand-curated regen — fields ?, ?, ? need a /maps:enforcements review"
+      "note": "Catches incomplete event renames (retros 03/07 bug class P-07-04). Advisory only; never blocks."
     },
     {
       "id": "excalidraw-guard",
@@ -293,20 +346,36 @@
     {
       "id": "extension-edit-guard",
       "type": "hook",
-      "matcher": "?",
-      "phase": "?",
-      "mode": "?",
+      "matcher": "Edit|Write",
+      "phase": "PreToolUse",
+      "mode": "advisory",
       "file": "scripts/hooks/extension-edit-guard.js",
+      "registered": true,
+      "gates": [
+        "extension-security-gate"
+      ],
+      "blocks": [],
+      "warns": [
+        "extension/manifest.json permissions/host_permissions/externally_connectable risk",
+        "extension/background|content|config.js postMessage/fetch/eval risk",
+        "extension/popup.* CSP/inline-script risk",
+        "externally_connectable http:// or wildcards (downgrade attacks)",
+        "host_permissions <all_urls> (Chrome Web Store flag)"
+      ],
+      "allows": [
+        "edits to files outside extension/"
+      ],
+      "gaps_closed": [
+        "GAP-1605"
+      ],
+      "pre_check": "On Edit/Write to extension/manifest.json or background/content/config/popup scripts: emit CSP/CSRF/permission reminders; inspect manifest content for risk patterns.",
+      "post_check": "none",
+      "depends_on": [
+        "paths"
+      ],
       "file_size": 4484,
       "file_modified": "2026-05-02T02:38:18.834Z",
-      "registered": true,
-      "gates": [],
-      "blocks": [],
-      "warns": [],
-      "allows": [],
-      "gaps_closed": [],
-      "uncurated": true,
-      "uncurated_note": "added since last hand-curated regen — fields ?, ?, ? need a /maps:enforcements review"
+      "note": "Implements LRN-2026-04-01/02 (extension lifecycle + manifest security). Advisory only — never blocks."
     },
     {
       "id": "format",
@@ -588,8 +657,8 @@
         "paths",
         "store.json heartbeat.cycleStep"
       ],
-      "file_size": 18340,
-      "file_modified": "2026-05-11T21:00:39.663Z"
+      "file_size": 19290,
+      "file_modified": "2026-05-13T22:26:48.457Z"
     },
     {
       "id": "ownership-guard",
@@ -663,38 +732,70 @@
     {
       "id": "path-registry-guard",
       "type": "hook",
-      "matcher": "?",
-      "phase": "?",
-      "mode": "?",
+      "matcher": "Bash (git commit)",
+      "phase": "PreToolUse",
+      "mode": "fail-closed",
       "file": "scripts/hooks/path-registry-guard.js",
+      "registered": true,
+      "gates": [
+        "path-registry-gate"
+      ],
+      "blocks": [
+        "git commit staging framework/paths.registry.json without all 5 generated artifacts (paths.json, paths.generated.js, path-lint.rules.generated.json, paths.schema.json, PATH_KEYS.md) when build.js --check is stale",
+        "git commit staging generated artifacts WITHOUT framework/paths.registry.json when content doesn't match what build.js would produce (hand-edit detection)"
+      ],
+      "warns": [],
+      "allows": [
+        "commits where registry + all generated artifacts are co-staged",
+        "commits where build.js --check passes (generated artifacts current)",
+        "PATH_REGISTRY_GUARD=off kill switch",
+        "projects without framework/paths.registry.json (registry not in use yet)"
+      ],
+      "gaps_closed": [
+        "GAP-1606"
+      ],
+      "pre_check": "On git commit: diff --cached against registry+generated artifact set; run scripts/paths/build.js --check to validate currency.",
+      "post_check": "none",
+      "depends_on": [
+        "scripts/paths/build.js",
+        "logger"
+      ],
       "file_size": 5451,
       "file_modified": "2026-05-03T19:46:50.936Z",
-      "registered": true,
-      "gates": [],
-      "blocks": [],
-      "warns": [],
-      "allows": [],
-      "gaps_closed": [],
-      "uncurated": true,
-      "uncurated_note": "added since last hand-curated regen — fields ?, ?, ? need a /maps:enforcements review"
+      "note": "Mirror of framework-manifest-guard for the paths registry. Prevents registry-vs-generated drift."
     },
     {
       "id": "pre-commit-steps-check",
       "type": "hook",
-      "matcher": "?",
-      "phase": "?",
-      "mode": "?",
+      "matcher": "(git pre-commit)",
+      "phase": "git-pre-commit",
+      "mode": "fail-closed",
       "file": "scripts/hooks/pre-commit-steps-check.js",
+      "registered": true,
+      "gates": [
+        "steps-integrity-gate"
+      ],
+      "blocks": [
+        "staged _requirements/00-canonical/STEPS.json failing schema validation (invalid JSON, missing version/phases/steps, orphan step ids, missing required fields, duplicate positions)",
+        "staged STEPS.json or canonical step-table docs when generate-steps-maps.js --check reports drift between STEPS.json and the auto-gen regions in the 3 canonical docs (PRODUCT_MODEL.md, GLOSSARY.md, GOLDEN_PATHS.md)"
+      ],
+      "warns": [],
+      "allows": [
+        "commits not touching STEPS.json or the 3 canonical docs",
+        "commits with valid STEPS.json + current canonical doc tables",
+        "--no-verify bypass (re-checked in CI)"
+      ],
+      "gaps_closed": [
+        "GAP-1607"
+      ],
+      "pre_check": "Read staged blob via `git show :<path>`; validate STEPS.json schema; run scripts/generate-steps-maps.js --check for drift.",
+      "post_check": "none",
+      "depends_on": [
+        "scripts/generate-steps-maps.js"
+      ],
       "file_size": 8850,
       "file_modified": "2026-05-03T19:46:50.936Z",
-      "registered": true,
-      "gates": [],
-      "blocks": [],
-      "warns": [],
-      "allows": [],
-      "gaps_closed": [],
-      "uncurated": true,
-      "uncurated_note": "added since last hand-curated regen — fields ?, ?, ? need a /maps:enforcements review"
+      "note": "Off-registry git pre-commit hook installed by scripts/install-git-hooks.sh. Last mile before bad STEPS.json reaches main. Companion to step-registry-guard (runtime PreToolUse)."
     },
     {
       "id": "prompt-logger",
@@ -790,74 +891,146 @@
     {
       "id": "region-marker-guard",
       "type": "hook",
-      "matcher": "?",
-      "phase": "?",
-      "mode": "?",
+      "matcher": "Edit|Write",
+      "phase": "PostToolUse",
+      "mode": "advisory",
       "file": "scripts/hooks/region-marker-guard.js",
+      "registered": true,
+      "gates": [
+        "region-marker-gate"
+      ],
+      "blocks": [],
+      "warns": [
+        "orphan-start (`<!-- maps:<skill>:START (region=X) -->` with no matching END)",
+        "orphan-end (END with no preceding START)",
+        "mismatched-end (END skill/region doesn't match top-of-stack START)",
+        "nested-region (new START while prior region still open)",
+        "duplicate-region (same skill+region used twice in one file)"
+      ],
+      "allows": [
+        "edits outside _requirements/00-canonical/",
+        "non-.md files",
+        "files with no maps:* markers",
+        "balanced/non-nested marker pairs"
+      ],
+      "gaps_closed": [
+        "GAP-1608"
+      ],
+      "pre_check": "none",
+      "post_check": "On Edit/Write of _requirements/00-canonical/**/*.md: parse `<!-- maps:<skill>:START/END (region=<name>) -->` markers; stack-validate for orphans/nesting/duplicates.",
+      "depends_on": [
+        "paths",
+        "logger"
+      ],
       "file_size": 6302,
       "file_modified": "2026-05-03T19:46:50.937Z",
-      "registered": true,
-      "gates": [],
-      "blocks": [],
-      "warns": [],
-      "allows": [],
-      "gaps_closed": [],
-      "uncurated": true,
-      "uncurated_note": "added since last hand-curated regen — fields ?, ?, ? need a /maps:enforcements review"
+      "note": "Protects /maps:steps and related regenerators from silent corruption when canonical doc markers are malformed."
     },
     {
       "id": "requirement-format-guard",
       "type": "hook",
-      "matcher": "?",
-      "phase": "?",
-      "mode": "?",
+      "matcher": "Edit|Write",
+      "phase": "PreToolUse",
+      "mode": "mixed",
       "file": "scripts/hooks/requirement-format-guard.js",
+      "registered": true,
+      "gates": [
+        "requirement-format-gate"
+      ],
+      "blocks": [
+        "(strict mode only — REQUIREMENT_GUARD_STRICT=1 or `<!-- requirement-format-strict -->` file marker) any PRD/STORIES/HL-STORIES/CROSS-STANDARDS containing legacy IDs or malformed namespaced IDs"
+      ],
+      "warns": [
+        "legacy `S-<n>` identifiers in PRD.md (use GS-<FEATURE>-<NN> or REQ-<feature>-<topic>-<NNN>)",
+        "legacy story headings `### S-12: ...` in STORIES.md (use `### GS-<FEATURE>-<NN>: ...`)",
+        "malformed `GS-<lower>-<NN>` or `GS-<FEATURE>` ids",
+        "malformed `HL-<...>` ids in HL-STORIES.md",
+        "malformed `CS-<...>` ids in CROSS-STANDARDS.md"
+      ],
+      "allows": [
+        "files with `<!-- requirement-format-legacy -->` grandfather marker",
+        "files outside _requirements/",
+        "files under _requirements/_audits/",
+        "REQUIREMENT_GUARD=off kill switch"
+      ],
+      "gaps_closed": [
+        "GAP-1609"
+      ],
+      "pre_check": "On Edit/Write to _requirements/**/{PRD,STORIES,HL-STORIES,CROSS-STANDARDS}.md: load ID_PATTERNS from scripts/requirements/config.js; scan content for legacy/malformed IDs; emit warn or block based on strict mode.",
+      "post_check": "none",
+      "depends_on": [
+        "scripts/requirements/config",
+        "logger"
+      ],
       "file_size": 7236,
       "file_modified": "2026-05-11T21:18:39.855Z",
-      "registered": true,
-      "gates": [],
-      "blocks": [],
-      "warns": [],
-      "allows": [],
-      "gaps_closed": [],
-      "uncurated": true,
-      "uncurated_note": "added since last hand-curated regen — fields ?, ?, ? need a /maps:enforcements review"
+      "note": "Phase 0 workstream J. Catches requirement-format problems at write-time rather than merge time."
     },
     {
       "id": "response-size-guard",
       "type": "hook",
-      "matcher": "?",
-      "phase": "?",
-      "mode": "?",
+      "matcher": "Agent",
+      "phase": "PostToolUse",
+      "mode": "advisory",
       "file": "scripts/hooks/response-size-guard.js",
+      "registered": true,
+      "gates": [
+        "response-size-gate"
+      ],
+      "blocks": [],
+      "warns": [
+        "build-chain Agent responses >=8KB (warn tier)",
+        "build-chain Agent responses >=32KB (concern tier — orchestrator context overflow risk)"
+      ],
+      "allows": [
+        "non-build-chain Agent calls",
+        "responses <8KB",
+        "unmeasurable responses (size=0)"
+      ],
+      "gaps_closed": [
+        "GAP-1610"
+      ],
+      "pre_check": "none",
+      "post_check": "On Agent PostToolUse for builder/fixer/reviewer/evaluator/compliance/learner/auditor/qa/redteam/delta: measure response bytes; log `response_size` event with tier; emit stderr warning on warn/concern.",
+      "depends_on": [
+        "logger"
+      ],
       "file_size": 4716,
       "file_modified": "2026-04-29T05:47:23.501Z",
-      "registered": true,
-      "gates": [],
-      "blocks": [],
-      "warns": [],
-      "allows": [],
-      "gaps_closed": [],
-      "uncurated": true,
-      "uncurated_note": "added since last hand-curated regen — fields ?, ?, ? need a /maps:enforcements review"
+      "note": "Tripwire for run-8 bug class: in-process Agent dispatch returning 100K+ prose overflowed orchestrator context. Real fix is JSON-envelope prompt templates; this hook surfaces prompt-template drift."
     },
     {
       "id": "retro-presence-check",
       "type": "hook",
-      "matcher": "?",
-      "phase": "?",
-      "mode": "?",
+      "matcher": "(universal)",
+      "phase": "Stop",
+      "mode": "advisory",
       "file": "scripts/hooks/retro-presence-check.js",
+      "registered": true,
+      "gates": [
+        "retro-presence-gate"
+      ],
+      "blocks": [
+        "(enforce mode only — `--enforce` argv or RETRO_ENFORCE=1) session close on skeleton-test<N> branch when paths.oneshotRetros/<N>/RETRO.md is missing"
+      ],
+      "warns": [
+        "session closing on skeleton-test<N> branch without RETRO.md (HYGIENE Rule 64; 26% historical miss rate per run-9 cross-session inbox)"
+      ],
+      "allows": [
+        "non-skeleton branches",
+        "sessions where retros/<N>/RETRO.md exists"
+      ],
+      "gaps_closed": [
+        "GAP-1611"
+      ],
+      "pre_check": "none",
+      "post_check": "On Stop: read current git branch; if matches /^skeleton-test(\\d+)$/ and oneshotRetros/<N>/RETRO.md missing, emit warning (or block in enforce mode) before session-stop.js runs.",
+      "depends_on": [
+        "paths"
+      ],
       "file_size": 2815,
       "file_modified": "2026-04-29T23:37:50.114Z",
-      "registered": true,
-      "gates": [],
-      "blocks": [],
-      "warns": [],
-      "allows": [],
-      "gaps_closed": [],
-      "uncurated": true,
-      "uncurated_note": "added since last hand-curated regen — fields ?, ?, ? need a /maps:enforcements review"
+      "note": "HYGIENE Rule 64 enforcement. Sources: run-9 cross-session inbox sessions moc2ua2s, mocaecxt, mocd8rff. Flip default to enforce after one clean session passes."
     },
     {
       "id": "save-session-lint",
@@ -887,20 +1060,31 @@
     {
       "id": "scope-contract-guard",
       "type": "hook",
-      "matcher": "?",
-      "phase": "?",
-      "mode": "?",
+      "matcher": "Agent",
+      "phase": "PreToolUse",
+      "mode": "fail-closed",
       "file": "scripts/hooks/scope-contract-guard.js",
+      "registered": true,
+      "gates": [
+        "scope-contract-gate"
+      ],
+      "blocks": [
+        "build-chain Agent dispatches (builder/fixer/reviewer/evaluator/compliance/qa/redteam/req-reviewer/visual-review) without scopeContract|allowedFiles|forbiddenFiles|`File Scope`|`In-scope files` markers in prompt"
+      ],
+      "warns": [],
+      "allows": [
+        "non-build-chain Agent dispatches",
+        "build-chain dispatches with explicit scope markers"
+      ],
+      "gaps_closed": [
+        "GAP-1612"
+      ],
+      "pre_check": "On Agent PreToolUse: resolve role from subagent_type or prompt heuristics; if build-chain, scan prompt for scope contract markers; block on absence.",
+      "post_check": "none",
+      "depends_on": [],
       "file_size": 1758,
       "file_modified": "2026-05-01T04:37:06.323Z",
-      "registered": true,
-      "gates": [],
-      "blocks": [],
-      "warns": [],
-      "allows": [],
-      "gaps_closed": [],
-      "uncurated": true,
-      "uncurated_note": "added since last hand-curated regen — fields ?, ?, ? need a /maps:enforcements review"
+      "note": "Companion to ownership-guard. Forces builders/fixers to declare their write scope up front rather than discovering ownership violations at write-time."
     },
     {
       "id": "secret-guard",
@@ -936,20 +1120,30 @@
     {
       "id": "self-mod-governance",
       "type": "hook",
-      "matcher": "?",
-      "phase": "?",
-      "mode": "?",
+      "matcher": "Edit|Write",
+      "phase": "PreToolUse",
+      "mode": "advisory",
       "file": "scripts/hooks/self-mod-governance.js",
+      "registered": true,
+      "gates": [
+        "self-mod-gate"
+      ],
+      "blocks": [],
+      "warns": [
+        "edits to framework-owned surfaces (requiredGates() from scripts/self-mod/governance) without running the required gate commands before commit"
+      ],
+      "allows": [],
+      "gaps_closed": [
+        "GAP-1613"
+      ],
+      "pre_check": "On Edit/Write: pass relative path to scripts/self-mod/governance#requiredGates; if non-empty, emit stderr reminder listing the gates to run before commit.",
+      "post_check": "none",
+      "depends_on": [
+        "scripts/self-mod/governance"
+      ],
       "file_size": 923,
       "file_modified": "2026-05-01T04:37:06.324Z",
-      "registered": true,
-      "gates": [],
-      "blocks": [],
-      "warns": [],
-      "allows": [],
-      "gaps_closed": [],
-      "uncurated": true,
-      "uncurated_note": "added since last hand-curated regen — fields ?, ?, ? need a /maps:enforcements review"
+      "note": "Advisory reminder for framework surface edits. Real enforcement lives in CI / commit gates; this hook just surfaces what those gates are at edit-time."
     },
     {
       "id": "session-start",
@@ -1027,56 +1221,81 @@
     {
       "id": "skill-catalog-regen",
       "type": "hook",
-      "matcher": "?",
-      "phase": "?",
-      "mode": "?",
+      "matcher": "Edit|Write",
+      "phase": "PostToolUse",
+      "mode": "fail-open",
       "file": "scripts/hooks/skill-catalog-regen.js",
-      "file_size": 2181,
-      "file_modified": "2026-05-13T20:41:01.715Z",
       "registered": true,
-      "gates": [],
+      "gates": [
+        "skill-catalog-gate"
+      ],
       "blocks": [],
       "warns": [],
       "allows": [],
-      "gaps_closed": [],
-      "uncurated": true,
-      "uncurated_note": "added since last hand-curated regen — fields ?, ?, ? need a /maps:enforcements review"
+      "gaps_closed": [
+        "GAP-1614"
+      ],
+      "pre_check": "none",
+      "post_check": "On Edit/Write to .claude/commands/**/*.md: spawn detached `node scripts/generate-skill-catalog.js` to refresh paths.skillCatalog. Fail-open so the calling tool's exit is unaffected.",
+      "depends_on": [
+        "scripts/generate-skill-catalog.js"
+      ],
+      "file_size": 2181,
+      "file_modified": "2026-05-13T20:41:01.715Z",
+      "kind": "observer",
+      "note": "Observer/regenerator (per AC-5.4 SP-20260513-003). No gating; just keeps skill catalog current within one cycle of any skill edit."
     },
     {
       "id": "skill-counter",
       "type": "hook",
-      "matcher": "?",
-      "phase": "?",
-      "mode": "?",
+      "matcher": "(universal)",
+      "phase": "UserPromptSubmit",
+      "mode": "fail-open",
       "file": "scripts/hooks/skill-counter.js",
-      "file_size": 3369,
-      "file_modified": "2026-05-02T17:31:41.040Z",
       "registered": false,
       "gates": [],
       "blocks": [],
       "warns": [],
       "allows": [],
       "gaps_closed": [],
-      "uncurated": true,
-      "uncurated_note": "added since last hand-curated regen — fields ?, ?, ? need a /maps:enforcements review"
+      "pre_check": "none",
+      "post_check": "On UserPromptSubmit: parse prompt for leading `/<ns>:<name>` slash command; if present, append one JSONL event to paths.skillUsageFile. Lazy 5MB rotation. Bounded <500 byte lines.",
+      "depends_on": [
+        "paths"
+      ],
+      "file_size": 3369,
+      "file_modified": "2026-05-02T17:31:41.040Z",
+      "kind": "observer",
+      "note": "Pure counter — never blocks, writes to dedicated skill-usage.jsonl (not events.jsonl) to avoid telemetry distortion. Disposition: SUPERSEDED by skill-invocation-tracker.js (which captures invocation_path + suggestion correlation). Disabling in settings.json is intentional; left on disk for fallback / historical reference."
     },
     {
       "id": "skill-invocation-tracker",
       "type": "hook",
-      "matcher": "?",
-      "phase": "?",
-      "mode": "?",
+      "matcher": "SlashCommand|Skill",
+      "phase": "PreToolUse",
+      "mode": "fail-open",
       "file": "scripts/hooks/skill-invocation-tracker.js",
-      "file_size": 6872,
-      "file_modified": "2026-05-13T20:43:09.541Z",
       "registered": true,
-      "gates": [],
+      "gates": [
+        "skill-telemetry-gate"
+      ],
       "blocks": [],
       "warns": [],
       "allows": [],
-      "gaps_closed": [],
-      "uncurated": true,
-      "uncurated_note": "added since last hand-curated regen — fields ?, ?, ? need a /maps:enforcements review"
+      "gaps_closed": [
+        "GAP-1615"
+      ],
+      "pre_check": "On PreToolUse for SlashCommand/Skill tools: extract slug; classify invocation_path (user-slash if recent prompt is the slash command; ranker if smart-context.js had suggested it; agent-tool otherwise); compute turn_offset; log skill-suggested-vs-invoked phase=invoked event.",
+      "post_check": "none",
+      "depends_on": [
+        "paths",
+        "logger",
+        "skill-telemetry"
+      ],
+      "file_size": 6872,
+      "file_modified": "2026-05-13T20:43:09.541Z",
+      "kind": "observer",
+      "note": "Pure telemetry observer. Fail-open. Correlates skill suggestions from smart-context.js with actual invocations to measure ranker quality."
     },
     {
       "id": "smart-context",
@@ -1110,92 +1329,189 @@
     {
       "id": "spec-test-staleness",
       "type": "hook",
-      "matcher": "?",
-      "phase": "?",
-      "mode": "?",
+      "matcher": "Edit|Write",
+      "phase": "PostToolUse",
+      "mode": "advisory",
       "file": "scripts/hooks/spec-test-staleness.js",
+      "registered": true,
+      "gates": [
+        "spec-test-staleness-gate"
+      ],
+      "blocks": [],
+      "warns": [
+        "feature spec edited (PRD/STORIES/COPY/INPUTS/HL-STORIES.md under paths.specsRoot/<feature>/) when matching tests in requirements/<feature>/tests/*.spec.ts have not been validated since this edit (emits test.stale event with gap_hours)"
+      ],
+      "allows": [
+        "edits to features without test files",
+        "edits where tests have been validated more recently than this edit"
+      ],
+      "gaps_closed": [
+        "GAP-1616"
+      ],
+      "pre_check": "none",
+      "post_check": "On Edit/Write/MultiEdit under paths.specsRoot/<feature>/: read .claude/runtime/test-runs/<feature>.json last_pass timestamp; compare to edit time; emit test.stale event to events.jsonl when stale.",
+      "depends_on": [
+        "paths",
+        "logger"
+      ],
       "file_size": 5627,
       "file_modified": "2026-05-03T19:46:50.939Z",
-      "registered": true,
-      "gates": [],
-      "blocks": [],
-      "warns": [],
-      "allows": [],
-      "gaps_closed": [],
-      "uncurated": true,
-      "uncurated_note": "added since last hand-curated regen — fields ?, ?, ? need a /maps:enforcements review"
+      "note": "Informational signal for the learner and orchestrator. Last-pass timestamps are written by the test-runner agent on PASS."
     },
     {
       "id": "sprint-approval-guard",
       "type": "hook",
-      "matcher": "?",
-      "phase": "?",
-      "mode": "?",
+      "matcher": "Bash",
+      "phase": "PreToolUse",
+      "mode": "fail-closed",
       "file": "scripts/hooks/sprint-approval-guard.js",
+      "registered": true,
+      "gates": [
+        "sprint-approval-gate"
+      ],
+      "blocks": [
+        "`node scripts/sprint/release.js deploy --id <RL-id>` when paths.sprintReleases/<RL-id>.yaml has no approval_ref OR referenced paths.sprintApprovals/<AP-id>.yaml state is not approved|waived",
+        "`node scripts/sprint/external-service.js update --id <ESD-id> --status integrated` when ESD has approval_required:true and approval_state is not approved|waived",
+        "`node scripts/sprint/external-service.js update --id <ESD-id> --status ready_for_terminal_work` (same approval check)"
+      ],
+      "warns": [],
+      "allows": [
+        "all other Bash commands",
+        "sprint commands with valid approval state",
+        "SPRINT_APPROVAL_GUARD=off kill switch",
+        "commands with no --id flag (release.js errors itself)"
+      ],
+      "gaps_closed": [
+        "GAP-1617"
+      ],
+      "pre_check": "Match Bash command; parse --id; load release/ESD yaml via scripts/sprint/fs.js; resolve approval_ref to approval yaml; check state in {approved, waived}; block on missing/wrong state.",
+      "post_check": "none",
+      "depends_on": [
+        "scripts/sprint/fs",
+        "logger"
+      ],
       "file_size": 6158,
       "file_modified": "2026-05-11T22:39:29.893Z",
-      "registered": true,
-      "gates": [],
-      "blocks": [],
-      "warns": [],
-      "allows": [],
-      "gaps_closed": [],
-      "uncurated": true,
-      "uncurated_note": "added since last hand-curated regen — fields ?, ?, ? need a /maps:enforcements review"
+      "note": "Sprint Workflow v0.1 production-gate. Fails OPEN on parse error so unrelated Bash work is never broken."
     },
     {
       "id": "sprint-tracker-guard",
       "type": "hook",
-      "matcher": "?",
-      "phase": "?",
-      "mode": "?",
+      "matcher": "Edit|Write",
+      "phase": "PreToolUse",
+      "mode": "mixed",
       "file": "scripts/hooks/sprint-tracker-guard.js",
-      "file_size": 10260,
-      "file_modified": "2026-05-11T22:39:09.280Z",
       "registered": true,
-      "gates": [],
-      "blocks": [],
-      "warns": [],
-      "allows": [],
-      "gaps_closed": [],
-      "uncurated": true,
-      "uncurated_note": "added since last hand-curated regen — fields ?, ?, ? need a /maps:enforcements review"
+      "gates": [
+        "sprint-tracker-gate"
+      ],
+      "blocks": [
+        "edits to existing paths.sprintHistory/* yaml (history is append-only)",
+        "yaml under paths.sprintRoot with schema:warpos/sprint/* that fails schema validation against schemas/sprint/<name>.schema.json (type/enum/pattern/required/items violations)"
+      ],
+      "warns": [
+        "yaml under paths.sprintRoot without a `schema:` field",
+        "yaml declaring a warpos/sprint/* schema id not found in schemas/sprint/",
+        "yaml that fails to parse (allows write; helpers re-validate on read)"
+      ],
+      "allows": [
+        "files outside paths.sprintRoot",
+        "new files under paths.sprintHistory/ (archiving a closed sprint)",
+        "Edit with new_string-only (no full content available)",
+        "non-yaml files",
+        "schemas not under warpos/sprint/",
+        "SPRINT_GUARD=off kill switch"
+      ],
+      "gaps_closed": [
+        "GAP-1618"
+      ],
+      "pre_check": "On Edit/Write under paths.sprintRoot: if under paths.sprintHistory and file exists, block (immutability). For .yaml: extract `schema:`; if warpos/sprint/*, load schemas/sprint/<id>.schema.json; mini-yaml-parse content; validate against schema; block on errors.",
+      "post_check": "none",
+      "depends_on": [
+        "scripts/sprint/fs",
+        "scripts/sprint/validate",
+        "paths",
+        "logger"
+      ],
+      "file_size": 14811,
+      "file_modified": "2026-05-13T22:22:53.843Z",
+      "note": "Sprint Workflow v0.1 post-Phase-1. Prevents tracker corruption + history rewrites. Fails OPEN on internal error so non-sprint edits are never broken."
     },
     {
       "id": "step-hardcode-suggester",
       "type": "hook",
-      "matcher": "?",
-      "phase": "?",
-      "mode": "?",
+      "matcher": "Edit|Write",
+      "phase": "PostToolUse",
+      "mode": "advisory",
       "file": "scripts/hooks/step-hardcode-suggester.js",
+      "registered": true,
+      "gates": [
+        "step-hardcode-gate"
+      ],
+      "blocks": [],
+      "warns": [
+        "`currentStep <op> N` hardcoded integer comparison in src/**",
+        "`currentStep: N` integer literal in object",
+        "`setCurrentStep(N)` numeric literal — suggests STEP_TO_INT[Step.XYZ] replacement parsed from src/lib/types.ts; reports missing Step enum entries for unknown N"
+      ],
+      "allows": [
+        "src/lib/{types,constants,storage,test-harness}.ts",
+        "scripts/hooks/**",
+        "non-src/ files",
+        "non-.ts/.tsx/.js/.jsx files"
+      ],
+      "gaps_closed": [
+        "GAP-1619"
+      ],
+      "pre_check": "none",
+      "post_check": "On Edit/Write to src/**/*.{ts,tsx,js,jsx,mjs,cjs}: read post-edit body; match hardcoded step patterns; build N→Step enum reverse map from STEP_TO_INT block in src/lib/types.ts; emit suggestions (cap 16). Log audit entries.",
+      "depends_on": [
+        "paths",
+        "logger"
+      ],
       "file_size": 7337,
       "file_modified": "2026-05-03T19:46:50.939Z",
-      "registered": true,
-      "gates": [],
-      "blocks": [],
-      "warns": [],
-      "allows": [],
-      "gaps_closed": [],
-      "uncurated": true,
-      "uncurated_note": "added since last hand-curated regen — fields ?, ?, ? need a /maps:enforcements review"
+      "note": "Companion to step-registry-guard (PreToolUse hard-blocker). This Post hook surfaces the precise enum replacement so the agent can act on it."
     },
     {
       "id": "step-registry-guard",
       "type": "hook",
-      "matcher": "?",
-      "phase": "?",
-      "mode": "?",
+      "matcher": "Edit|Write",
+      "phase": "PreToolUse",
+      "mode": "fail-closed",
       "file": "scripts/hooks/step-registry-guard.js",
+      "registered": true,
+      "gates": [
+        "step-registry-gate"
+      ],
+      "blocks": [
+        "(default STRICT — opt-out STEP_REGISTRY_GUARD_STRICT=0) `currentStep <op> N` hardcoded integer comparison in src/**",
+        "`currentStep: N` integer literal",
+        "`setCurrentStep(N)` numeric literal",
+        "_requirements/00-canonical/STEPS.json edits that violate schema (invalid JSON, missing version/phases/steps, orphan ids, missing required fields, non-integer positions, duplicate positions)"
+      ],
+      "warns": [
+        "(when STEP_REGISTRY_GUARD_STRICT=0) all of the above as warnings only"
+      ],
+      "allows": [
+        "src/lib/{types,constants,storage,test-harness}.ts",
+        "scripts/hooks/**",
+        "src/app/page.tsx (KNOWN_VIOLATIONS — 2 pre-existing Step.INTRO comparisons)",
+        "non-src/ files",
+        "Markdown files (specs describe step numbers in prose)"
+      ],
+      "gaps_closed": [
+        "GAP-1620"
+      ],
+      "pre_check": "On Edit/Write to src/**/*.{ts,tsx,js,jsx}: reconstruct post-edit body; match step patterns; block. On Edit/Write to STEPS.json: parse + validate registry schema (phase membership, required fields, unique positions).",
+      "post_check": "none",
+      "depends_on": [
+        "paths",
+        "logger"
+      ],
       "file_size": 12054,
       "file_modified": "2026-05-03T19:46:50.940Z",
-      "registered": true,
-      "gates": [],
-      "blocks": [],
-      "warns": [],
-      "allows": [],
-      "gaps_closed": [],
-      "uncurated": true,
-      "uncurated_note": "added since last hand-curated regen — fields ?, ?, ? need a /maps:enforcements review"
+      "note": "Promoted 2026-04-28 from warn to hard block. Source of truth: _requirements/00-canonical/STEPS.json. Companion PostToolUse hook: step-hardcode-suggester."
     },
     {
       "id": "store-validator",
@@ -1317,38 +1633,55 @@
     {
       "id": "template-fillability",
       "type": "hook",
-      "matcher": "?",
-      "phase": "?",
-      "mode": "?",
+      "matcher": "Edit|Write",
+      "phase": "PostToolUse",
+      "mode": "advisory",
       "file": "scripts/hooks/template-fillability.js",
+      "registered": true,
+      "gates": [
+        "template-fillability-gate"
+      ],
+      "blocks": [],
+      "warns": [
+        "[TODO] placeholders in spec files",
+        "<!-- FILL: ... --> markers",
+        "TBD tokens",
+        "lorem ipsum",
+        "empty `## Acceptance Criteria` / `## AC` sections"
+      ],
+      "allows": [
+        "edits to non-spec files (only PRD/STORIES/HL-STORIES/AC/COPY/INPUTS.md scanned)",
+        "fully-filled spec sections"
+      ],
+      "gaps_closed": [
+        "GAP-1621"
+      ],
+      "pre_check": "none",
+      "post_check": "On Edit/Write to */{PRD,STORIES,HL-STORIES,AC,COPY,INPUTS}.md: read post-edit content; count placeholder markers; detect empty AC sections; emit stderr summary suggesting Alex fill them.",
+      "depends_on": [
+        "paths"
+      ],
       "file_size": 2939,
       "file_modified": "2026-04-29T23:35:48.482Z",
-      "registered": true,
-      "gates": [],
-      "blocks": [],
-      "warns": [],
-      "allows": [],
-      "gaps_closed": [],
-      "uncurated": true,
-      "uncurated_note": "added since last hand-curated regen — fields ?, ?, ? need a /maps:enforcements review"
+      "note": "Implements LRN-2026-04-16 (requirement-template fillability). Advisory only — never blocks."
     },
     {
       "id": "test",
-      "type": "hook",
-      "matcher": "?",
-      "phase": "?",
-      "mode": "?",
+      "type": "build-tool",
+      "matcher": "(CLI tool)",
+      "phase": "manual",
+      "mode": "build-time",
       "file": "scripts/hooks/test.js",
-      "file_size": 12132,
-      "file_modified": "2026-05-03T19:46:50.740Z",
       "registered": false,
       "gates": [],
       "blocks": [],
       "warns": [],
       "allows": [],
       "gaps_closed": [],
-      "uncurated": true,
-      "uncurated_note": "added since last hand-curated regen — fields ?, ?, ? need a /maps:enforcements review"
+      "file_size": 12132,
+      "file_modified": "2026-05-03T19:46:50.740Z",
+      "kind": "build-tool",
+      "note": "Hook fixture runner / CLI test harness. Expands settings.json registrations into hook manifest, then runs synthetic payloads through each hook deterministically. Not a runtime hook. Invoked by hooks:test skill and CI."
     },
     {
       "id": "typecheck",
@@ -1434,106 +1767,178 @@
     {
       "id": "banner",
       "type": "module",
+      "kind": "lib",
+      "purpose": "SessionStart banner rendering — agent identity, mode, topology snapshot",
+      "consumers": [
+        "session-start.js"
+      ],
       "file": "scripts/hooks/lib/banner.js",
       "file_size": 4462,
-      "file_modified": "2026-04-22T05:49:15.963Z",
-      "uncurated": true
+      "file_modified": "2026-04-22T05:49:15.963Z"
     },
     {
       "id": "concurrency-lock",
       "type": "module",
+      "kind": "lib",
+      "purpose": "File-based mutex for concurrent provider calls — prevents codex/gemini CLI binding-gap regressions",
+      "consumers": [
+        "providers.js",
+        "runProvider call sites"
+      ],
       "file": "scripts/hooks/lib/concurrency-lock.js",
       "file_size": 10962,
-      "file_modified": "2026-05-11T21:02:33.887Z",
-      "uncurated": true
+      "file_modified": "2026-05-11T21:02:33.887Z"
     },
     {
       "id": "context-sources",
       "type": "module",
+      "kind": "lib",
+      "purpose": "Context source enumeration — finds events/learnings/maps/handoffs for smart-context.js Haiku enrichment",
+      "consumers": [
+        "smart-context.js",
+        "session-start.js",
+        "boss-boundary.js"
+      ],
       "file": "scripts/hooks/lib/context-sources.js",
       "file_size": 8286,
-      "file_modified": "2026-05-03T19:46:50.934Z",
-      "uncurated": true
+      "file_modified": "2026-05-03T19:46:50.934Z"
     },
     {
       "id": "gate-schema",
       "type": "module",
+      "kind": "lib",
+      "purpose": "GATE_CHECK schema — defines legal values/transitions for reviewer/security/compliance verdicts in store.json",
+      "consumers": [
+        "store-validator.js",
+        "gauntlet-gate.js",
+        "gate-check.js"
+      ],
       "file": "scripts/hooks/lib/gate-schema.js",
       "file_size": 3894,
-      "file_modified": "2026-04-29T05:48:00.921Z",
-      "uncurated": true
+      "file_modified": "2026-04-29T05:48:00.921Z"
     },
     {
       "id": "logger",
       "type": "module",
+      "kind": "lib",
+      "purpose": "Canonical event/trace/audit logging — sole writer to paths.eventsFile (memory-guard enforces this). Provides log()/logEvent()/query()/getSessionId().",
+      "consumers": [
+        "nearly every hook",
+        "skill-telemetry",
+        "session-tracker",
+        "assess-session.js"
+      ],
       "file": "scripts/hooks/lib/logger.js",
       "file_size": 15612,
-      "file_modified": "2026-05-12T23:11:21.600Z",
-      "uncurated": true
+      "file_modified": "2026-05-12T23:11:21.600Z"
     },
     {
       "id": "mode",
       "type": "module",
+      "kind": "lib",
+      "purpose": "Session mode detection (solo|adhoc|oneshot) — consulted by beta-gate, team-guard, scope-contract-guard",
+      "consumers": [
+        "beta-gate.js",
+        "team-guard.js",
+        "session-start.js"
+      ],
       "file": "scripts/hooks/lib/mode.js",
       "file_size": 2540,
-      "file_modified": "2026-04-29T18:58:58.761Z",
-      "uncurated": true
+      "file_modified": "2026-04-29T18:58:58.761Z"
     },
     {
       "id": "paths.generated",
       "type": "module",
+      "kind": "generated",
+      "purpose": "Auto-generated path constants from framework/paths.registry.json — DO NOT hand-edit. Regenerated by scripts/paths/build.js.",
+      "consumers": [
+        "paths.js (delegates)",
+        "any hook needing literal paths"
+      ],
+      "generated_from": "framework/paths.registry.json",
       "file": "scripts/hooks/lib/paths.generated.js",
       "file_size": 8028,
-      "file_modified": "2026-05-13T21:01:17.228Z",
-      "uncurated": true
+      "file_modified": "2026-05-13T21:01:17.228Z"
     },
     {
       "id": "paths",
       "type": "module",
+      "kind": "lib",
+      "purpose": "Path registry API for hooks — exports PROJECT, PATHS object, relPath() helper. Reads .claude/paths.json + paths.generated.js.",
+      "consumers": [
+        "~30 hooks (edit-watcher, memory-guard, path-guard, smart-context, etc.)"
+      ],
       "file": "scripts/hooks/lib/paths.js",
       "file_size": 6081,
-      "file_modified": "2026-05-03T19:46:50.725Z",
-      "uncurated": true
+      "file_modified": "2026-05-03T19:46:50.725Z"
     },
     {
       "id": "project-config",
       "type": "module",
+      "kind": "lib",
+      "purpose": "Project-config + manifest reader — exposes layer detection (product vs tooling), feature flags, paths-aware reads of .claude/manifest.json",
+      "consumers": [
+        "smart-context.js",
+        "boss-boundary.js"
+      ],
       "file": "scripts/hooks/lib/project-config.js",
       "file_size": 4488,
-      "file_modified": "2026-04-29T05:50:17.120Z",
-      "uncurated": true
+      "file_modified": "2026-04-29T05:50:17.120Z"
     },
     {
       "id": "provider-health",
       "type": "module",
+      "kind": "lib",
+      "purpose": "Provider readiness checks (codex/gemini/claude CLI availability, auth state, rate-limit budget) — consulted before dispatching cross-provider Bash work",
+      "consumers": [
+        "providers.js",
+        "smart-context.js"
+      ],
       "file": "scripts/hooks/lib/provider-health.js",
       "file_size": 10306,
-      "file_modified": "2026-05-11T21:08:20.670Z",
-      "uncurated": true
+      "file_modified": "2026-05-11T21:08:20.670Z"
     },
     {
       "id": "providers",
       "type": "module",
+      "kind": "lib",
+      "purpose": "runProvider() canonical wrapper for cross-provider CLI calls — carries Windows-stdin fix (LRN-2026-04-17), concurrency lock, output parsing",
+      "consumers": [
+        "smart-context.js",
+        "scripts/dispatch-agent.js"
+      ],
       "file": "scripts/hooks/lib/providers.js",
       "file_size": 23843,
       "file_modified": "2026-05-12T06:58:28.992Z",
-      "uncurated": true
+      "note": "Source of binding-gap fixes. dispatch-route-guard hook exists to force every caller through this module."
     },
     {
       "id": "role-aliases",
       "type": "module",
+      "kind": "lib",
+      "purpose": "Legacy role-name aliasing (evaluator↔reviewer, auditor↔compliance) for transition compat between old and new agent specs",
+      "consumers": [
+        "team-guard.js",
+        "scope-contract-guard.js",
+        "response-size-guard.js",
+        "cycle-enforcer.js"
+      ],
       "file": "scripts/hooks/lib/role-aliases.js",
       "file_size": 1904,
-      "file_modified": "2026-04-29T05:43:47.546Z",
-      "uncurated": true
+      "file_modified": "2026-04-29T05:43:47.546Z"
     },
     {
       "id": "skill-telemetry",
       "type": "module",
+      "kind": "lib",
+      "purpose": "Skill suggestion/invocation telemetry — logSkillInvoked/logSkillSuggested, hashPrompt, TELEMETRY_DISABLED toggle. Underpins ranker quality measurement.",
+      "consumers": [
+        "skill-invocation-tracker.js",
+        "smart-context.js"
+      ],
       "file": "scripts/hooks/lib/skill-telemetry.js",
       "file_size": 5275,
-      "file_modified": "2026-05-13T20:42:22.196Z",
-      "uncurated": true
+      "file_modified": "2026-05-13T20:42:22.196Z"
     }
   ]
 }

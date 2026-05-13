@@ -75,6 +75,122 @@ function emitWarn(detail) {
   process.stderr.write("[sprint-tracker-guard] " + detail + "\n");
 }
 
+// Path-pattern → schema-kind. Keep in sync with schemas/sprint/*.schema.json.
+// Order matters: more-specific patterns first. Each entry's regex matches
+// against the repo-relative file_path (forward slashes only).
+const SCHEMA_KIND_RULES = [
+  // file-level singletons under sprintRoot
+  {
+    re: /^\.claude\/project\/sprint\/active-sprints\.yaml$/,
+    kind: "active-sprints",
+  },
+  // per-sprint subdir layout (v0.2)
+  {
+    re: /^\.claude\/project\/sprint\/sprints\/SP-[0-9]{8}-[0-9]{3}\/current\.yaml$/,
+    kind: "current-sprint",
+  },
+  {
+    re: /^\.claude\/project\/sprint\/sprints\/SP-[0-9]{8}-[0-9]{3}\/progress\.yaml$/,
+    kind: "sprint-progress",
+  },
+  // legacy v0.1 layout (paths.sprintCurrent / paths.sprintProgress)
+  {
+    re: /^\.claude\/project\/sprint\/current-sprint\.yaml$/,
+    kind: "current-sprint",
+  },
+  {
+    re: /^\.claude\/project\/sprint\/sprint-progress\.yaml$/,
+    kind: "sprint-progress",
+  },
+  // id-prefixed artifacts under typed subdirs
+  {
+    re: /^\.claude\/project\/sprint\/approvals\/AP-[0-9]{8}-[0-9]{3}\.yaml$/,
+    kind: "approval",
+  },
+  {
+    re: /^\.claude\/project\/sprint\/tickets\/T-[0-9]{8}-[0-9]{3}\.yaml$/,
+    kind: "ticket",
+  },
+  {
+    re: /^\.claude\/project\/sprint\/releases\/RL-[0-9]{8}-[0-9]{3}\.yaml$/,
+    kind: "release",
+  },
+  {
+    re: /^\.claude\/project\/sprint\/issues\/I-[0-9]{8}-[0-9]{3}\.yaml$/,
+    kind: "issue",
+  },
+  {
+    re: /^\.claude\/project\/sprint\/plan-contracts\/PC-[0-9]{8}-[0-9]{4}\.yaml$/,
+    kind: "plan-contract",
+  },
+  {
+    re: /^\.claude\/project\/sprint\/external-services\/ESD-[0-9]{8}-[0-9]{3}\.yaml$/,
+    kind: "external-service-dependency",
+  },
+  // checkpoint filename is "<SP-id>-NNNN.yaml" — checkpoints are sprint-progress shape
+  {
+    re: /^\.claude\/project\/sprint\/checkpoints\/SP-[0-9]{8}-[0-9]{3}-[0-9]{4}\.yaml$/,
+    kind: "sprint-progress",
+  },
+  // ralph per-sprint subdir holds ralph-progress
+  {
+    re: /^\.claude\/project\/sprint\/ralph\/SP-[0-9]{8}-[0-9]{3}\/.*\.yaml$/,
+    kind: "ralph-progress",
+  },
+  // history archive (also caught by Protection 2, but harmless to mention)
+  {
+    re: /^\.claude\/project\/sprint\/history\/SP-[0-9]{8}-[0-9]{3}\/sprint-history\.yaml$/,
+    kind: "sprint-history",
+  },
+  // retrospective lives under sprint dir (free-form naming)
+  {
+    re: /^\.claude\/project\/sprint\/sprints\/SP-[0-9]{8}-[0-9]{3}\/retrospective\.yaml$/,
+    kind: "sprint-retrospective",
+  },
+];
+
+function inferSchemaKind(filePath) {
+  for (const r of SCHEMA_KIND_RULES) {
+    if (r.re.test(filePath)) return r.kind;
+  }
+  return null;
+}
+
+function emitAutoInject(filePath, kind, content) {
+  // Prepend the schema header. Newline-safe.
+  const header = `schema: warpos/sprint/${kind}/v1\n`;
+  const newContent = header + content;
+  try {
+    const { logEvent } = require("./lib/logger");
+    logEvent(
+      "audit",
+      "system",
+      "sprint-tracker-auto-injected",
+      filePath.slice(0, 120),
+      `kind=${kind}`,
+    );
+  } catch {
+    /* logger optional */
+  }
+  process.stderr.write(
+    `[sprint-tracker-guard] auto-injected schema: warpos/sprint/${kind}/v1 → ${filePath}\n`,
+  );
+  // PreToolUse mutation: emit hookSpecificOutput.updatedInput with the
+  // mutated tool input. Claude Code's PreToolUse hook contract supports
+  // input mutation when a hook returns hookSpecificOutput with the
+  // tool-specific updated input shape. If the harness ignores the mutated
+  // input, the schema-missing case will fall through to the warn-only
+  // branch below (we never block on auto-injectable paths anymore).
+  const output = {
+    hookSpecificOutput: {
+      hookEventName: "PreToolUse",
+      updatedInput: { content: newContent },
+    },
+  };
+  console.log(JSON.stringify(output));
+  process.exit(0);
+}
+
 function loadSprintPaths() {
   try {
     const raw = fs.readFileSync(
@@ -308,9 +424,21 @@ function main() {
 
   const schemaId = extractSchemaField(target.content);
   if (!schemaId) {
+    // Auto-inject path: if the path matches a known sprint kind, prepend
+    // the schema header and let the write proceed with mutated content.
+    // This collapses the 126×/day "missing schema header" block class into
+    // a silent fix-forward. Source: /check:patterns 2026-05-13.
+    const kind = inferSchemaKind(target.file_path);
+    if (kind) {
+      emitAutoInject(target.file_path, kind, target.content);
+      // emitAutoInject exits the process
+    }
+    // Unknown path with no schema: keep prior warn-only behavior so we
+    // never accidentally break a write to a sprint file we don't recognize.
     emitWarn(
-      `${target.file_path}: no schema: field detected. Sprint tracker yaml MUST declare its schema. ` +
-        "Allowing (warn-only).",
+      `${target.file_path}: no schema: field detected and path doesn't match any known sprint-kind rule. ` +
+        "Sprint tracker yaml MUST declare its schema. Allowing (warn-only). " +
+        "If this is a new sprint artifact type, add a SCHEMA_KIND_RULES entry to sprint-tracker-guard.js.",
     );
     process.exit(0);
   }

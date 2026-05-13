@@ -37,6 +37,13 @@ const crypto = require("crypto");
 const { spawnSync } = require("child_process");
 const { printHumanReport } = require("./report-format");
 const migrationsLoader = require("./migrations-loader");
+// SP-20260513-005 tri-pillar — wired into run() at T-20260513-062.
+// Preflight refuses to apply when any of 10 gates blocks; transaction wraps
+// the apply + migrations in a snapshot/lock/rollback envelope; postflight
+// runs 5 diagnostic checks (incl. provider-smoke via registerExternalCheck).
+const preflightModule = require("./preflight");
+const transactionModule = require("./transaction");
+const postflightModule = require("./postflight");
 
 const REPO_ROOT = path.resolve(__dirname, "..", "..");
 
@@ -334,30 +341,15 @@ function planClass(decisions) {
 }
 
 // ── Transaction helpers ──────────────────────────────────
-
-function newTransactionId(target) {
-  const ts = new Date().toISOString().replace(/[:.]/g, "-");
-  return `${ts}-warp-update-${path.basename(target)}`;
-}
-
-function writeTransactionPlan(targetRoot, txId, header, decisions, capsule) {
-  const dir = path.join(targetRoot, ".warpos", "transactions", txId);
-  fs.mkdirSync(dir, { recursive: true });
-  fs.writeFileSync(
-    path.join(dir, "header.json"),
-    JSON.stringify(header, null, 2) + "\n",
-  );
-  fs.writeFileSync(
-    path.join(dir, "plan.json"),
-    JSON.stringify(decisions, null, 2) + "\n",
-  );
-  fs.writeFileSync(
-    path.join(dir, "capsule.json"),
-    JSON.stringify({ dir: capsule.dir, release: capsule.release }, null, 2) +
-      "\n",
-  );
-  return dir;
-}
+//
+// The old stub (writeTransactionPlan + backupFile + newTransactionId) was
+// replaced at T-20260513-062 by scripts/warpos/transaction.js, which owns
+// header/plan/snapshot/capsule writes, pre-state sha256 + backup capture,
+// the active.lock guard (R-32), atomic snapshot hashing (R-31), the fast
+// preflight subset re-run (R-33), and rollback. The legacy backupFile()
+// helper used during apply is preserved below since applyUpdateDecisions
+// captures per-file backups during the apply loop (in addition to the
+// pre-apply snapshot taken by beginTransaction).
 
 function backupFile(targetRoot, txDir, relPath) {
   const abs = path.join(targetRoot, relPath);
@@ -739,44 +731,196 @@ async function run(opts) {
     };
   }
 
-  const txId = newTransactionId(targetRoot);
-  const txDir = writeTransactionPlan(
-    targetRoot,
-    txId,
-    {
-      kind: "warp:update",
-      fromVersion,
-      toVersion: target,
-      sourceRoot,
+  // ── SP-005 Preflight (T-20260513-062) ───────────────────
+  //
+  // Run 10 gates BEFORE any file touches. Red on any gate (after override
+  // consideration) refuses apply. Yellow with matching override accepted is
+  // re-interpreted as green but logs overrideUsed=true. Skipped only with
+  // --force-fresh which is its own gate-1 override.
+  let preflightReport = null;
+  if (!opts.skipPreflight) {
+    preflightReport = preflightModule.runPreflight({
       targetRoot,
       sourceTreeRoot,
-      startedAt: new Date().toISOString(),
-    },
-    decisions,
-    capsule,
-  );
+      toVersion: target,
+      sourceRoot,
+      allowStale: !!opts.allowStale,
+      forceFresh: !!opts.forceFresh,
+      allowVersionDrift: !!opts.allowVersionDrift,
+      allRed: false,
+    });
+    if (!preflightReport.ok) {
+      const firstRed = preflightReport.gates.find((g) => g.status === "red");
+      const remediation =
+        firstRed && firstRed.remediation
+          ? `\n  Remediation:\n  ${firstRed.remediation.split("\n").join("\n  ")}`
+          : "";
+      return {
+        ok: false,
+        mode: "apply",
+        error: `PREFLIGHT BLOCKED: ${preflightReport.redCount} red gate(s). First red: ${firstRed ? firstRed.name : "<unknown>"} — ${firstRed ? firstRed.reason : ""}${remediation}`,
+        report,
+        preflight: preflightReport,
+      };
+    }
+  }
 
-  const applyResult = applyUpdateDecisions(
-    sourceTreeRoot,
-    targetRoot,
-    decisions,
-    capsule.manifest,
-    txDir,
-    {
-      confirmDeletes: !!opts.confirmDeletes,
-    },
-  );
+  // ── SP-005 Transaction begin (T-20260513-062) ───────────
+  //
+  // beginTransaction writes header/plan/snapshot/capsule, copies pre-apply
+  // backups, takes active.lock (R-32), re-runs fast preflight subset (R-33),
+  // hashes the snapshot (R-31). --no-transaction skips the wrapper for
+  // legacy compatibility but DOES still write a minimal txDir for the
+  // existing report/result.json contract.
+  let txId, txDir;
+  if (opts.noTransaction) {
+    // Legacy path: synthesize a txId + dir without the snapshot envelope.
+    const ts = new Date().toISOString().replace(/[:.]/g, "-");
+    txId = `${ts}-warp-update-${path.basename(targetRoot)}-notx`;
+    txDir = path.join(targetRoot, ".warpos", "transactions", txId);
+    fs.mkdirSync(txDir, { recursive: true });
+    fs.writeFileSync(
+      path.join(txDir, "header.json"),
+      JSON.stringify(
+        {
+          kind: "warp:update",
+          txId,
+          fromVersion,
+          toVersion: target,
+          sourceRoot,
+          targetRoot,
+          sourceTreeRoot,
+          startedAt: new Date().toISOString(),
+          noTransaction: true,
+        },
+        null,
+        2,
+      ) + "\n",
+    );
+    fs.writeFileSync(
+      path.join(txDir, "plan.json"),
+      JSON.stringify(decisions, null, 2) + "\n",
+    );
+    fs.writeFileSync(
+      path.join(txDir, "capsule.json"),
+      JSON.stringify({ dir: capsule.dir, release: capsule.release }, null, 2) +
+        "\n",
+    );
+  } else {
+    try {
+      const txBegin = transactionModule.beginTransaction({
+        targetRoot,
+        sourceTreeRoot,
+        fromVersion,
+        toVersion: target,
+        sourceRoot,
+        decisions,
+        capsule,
+        allowStale: !!opts.allowStale,
+        forceFresh: !!opts.forceFresh,
+        allowVersionDrift: !!opts.allowVersionDrift,
+        // R-33 fast-preflight already implicitly covered by the outer
+        // preflight pass above; skip if operator explicitly opted out of
+        // preflight too.
+        skipFastPreflight: !!opts.skipPreflight,
+      });
+      txId = txBegin.txId;
+      txDir = txBegin.txDir;
+    } catch (e) {
+      return {
+        ok: false,
+        mode: "apply",
+        error: `TRANSACTION BEGIN FAILED (${e.code || "unknown"}): ${e.message}`,
+        report,
+        preflight: preflightReport,
+      };
+    }
+  }
 
-  // Run migrations if any
-  const migrationsResult = await runMigrations(fromVersion, target, targetRoot);
+  // ── Apply + migrations, wrapped in try/catch for rollback ─
+  const applyStartedAt = Date.now();
+  let applyResult;
+  let migrationsResult;
+  try {
+    applyResult = applyUpdateDecisions(
+      sourceTreeRoot,
+      targetRoot,
+      decisions,
+      capsule.manifest,
+      txDir,
+      {
+        confirmDeletes: !!opts.confirmDeletes,
+      },
+    );
+    if (!applyResult.ok) {
+      const firstErr = (applyResult.errors && applyResult.errors[0]) || {
+        dest: "<unknown>",
+        error: "apply reported errors but no detail",
+      };
+      throw new Error(
+        `apply phase failed at ${firstErr.dest}: ${firstErr.error}`,
+      );
+    }
 
-  // Run post-update checks
+    // Run migrations as part of the wrapped phase — a failed migration must
+    // also roll back the file copies.
+    migrationsResult = await runMigrations(fromVersion, target, targetRoot);
+    if (migrationsResult.status === "failed") {
+      throw new Error(
+        `migration phase failed: ${migrationsResult.failed} migration(s) failed during ${fromVersion}->${target}`,
+      );
+    }
+  } catch (err) {
+    // ── Rollback ──
+    if (!opts.noTransaction) {
+      try {
+        transactionModule.rollbackTransaction(txDir, {
+          trigger: applyResult && !applyResult.ok ? "apply" : "migration",
+          failedAt:
+            (applyResult &&
+              applyResult.errors &&
+              applyResult.errors[0] &&
+              applyResult.errors[0].dest) ||
+            null,
+          errorMessage: err.message,
+        });
+      } catch (rbErr) {
+        // Rollback itself failed — surface both errors.
+        return {
+          ok: false,
+          mode: "apply",
+          error: `APPLY FAILED + ROLLBACK FAILED: ${err.message} | rollback: ${rbErr.message}`,
+          report,
+          preflight: preflightReport,
+          transaction: txId,
+          transactionDir: path.relative(targetRoot, txDir).replace(/\\/g, "/"),
+        };
+      }
+    }
+    return {
+      ok: false,
+      mode: "apply",
+      error: `APPLY ROLLED BACK: ${err.message}`,
+      report,
+      preflight: preflightReport,
+      apply: applyResult,
+      migrations: migrationsResult,
+      transaction: txId,
+      transactionDir: path.relative(targetRoot, txDir).replace(/\\/g, "/"),
+    };
+  }
+  const applyDurationMs = Date.now() - applyStartedAt;
+
+  // Run per-capsule post-update checks (release.json#postUpdateChecks).
+  // These coexist with SP-005 postflight: capsule-declared checks fire
+  // first, then the framework-side postflight composer below.
   const postUpdateResults = runPostUpdateChecks(
     capsule.release.postUpdateChecks || [],
     targetRoot,
   );
 
-  // Write updated installed snapshot
+  // Write updated installed snapshot before commit so the manifest is
+  // visible to postflight (manifest-honesty would otherwise see stale state).
   const newInstalled = buildInstalledSnapshot(
     target,
     capsule,
@@ -786,20 +930,36 @@ async function run(opts) {
   );
   fs.writeFileSync(installedFile, JSON.stringify(newInstalled, null, 2) + "\n");
 
-  // Finalize transaction
-  fs.writeFileSync(
-    path.join(txDir, "result.json"),
-    JSON.stringify(
-      {
-        completedAt: new Date().toISOString(),
-        apply: applyResult,
-        migrations: migrationsResult,
-        postUpdateChecks: postUpdateResults,
-      },
-      null,
-      2,
-    ) + "\n",
-  );
+  // ── SP-005 Transaction commit (T-20260513-062) ──────────
+  if (!opts.noTransaction) {
+    transactionModule.commitTransaction(txDir, {
+      apply: applyResult,
+      migrations: migrationsResult,
+      postUpdateChecks: postUpdateResults,
+      applyDurationMs,
+    });
+  } else {
+    // Legacy path: write our own result.json so downstream consumers still
+    // see a finalized record.
+    fs.writeFileSync(
+      path.join(txDir, "result.json"),
+      JSON.stringify(
+        {
+          completedAt: new Date().toISOString(),
+          outcome: "committed-no-transaction",
+          apply: applyResult,
+          migrations: migrationsResult,
+          postUpdateChecks: postUpdateResults,
+          rollback: null,
+        },
+        null,
+        2,
+      ) + "\n",
+    );
+  }
+
+  // Always write the human-facing ROLLBACK.md (transaction.js doesn't, by
+  // design — it owns the JSON envelope, this stays as the prose copy).
   fs.writeFileSync(
     path.join(txDir, "ROLLBACK.md"),
     [
@@ -811,11 +971,15 @@ async function run(opts) {
       "",
       `    ${path.relative(targetRoot, txDir).replace(/\\/g, "/")}/backup/`,
       "",
-      "To restore a single file:",
+      "Preferred automated path:",
+      "",
+      `    node scripts/warpos/update.js --rollback ${txId}`,
+      "",
+      "Manual restore of a single file:",
       "",
       "    cp <transaction>/backup/<rel-path> <rel-path>",
       "",
-      "To restore everything:",
+      "Manual restore of everything:",
       "",
       "    cp -r <transaction>/backup/* .",
       "",
@@ -824,19 +988,63 @@ async function run(opts) {
     ].join("\n"),
   );
 
+  // ── SP-005 Postflight (T-20260513-062) ──────────────────
+  //
+  // Runs 5 composed checks: manifest-honesty, path-resolution,
+  // applied-migrations, provider-smoke (external), /warp:health rollup.
+  // Diagnostic — does NOT roll back. Operator action surfaces in the
+  // returned report. Honour --skip-postflight + --strict-postflight.
+  let postflightReport = null;
+  if (!opts.skipPostflight) {
+    try {
+      postflightReport = postflightModule.runPostflight({
+        targetRoot,
+        txId,
+        txDir,
+        capsule: { release: capsule.release },
+        strict: !!opts.strictPostflight,
+      });
+    } catch (pfErr) {
+      // Postflight should never throw — but if it does, capture it and
+      // continue rather than masking a successful commit.
+      postflightReport = {
+        ok: false,
+        checkCount: 0,
+        redCount: 0,
+        yellowCount: 0,
+        greenCount: 0,
+        degradedCount: 1,
+        checks: [],
+        evidencePath: null,
+        operatorAction: "review-then-decide",
+        error: pfErr.message,
+      };
+    }
+  }
+
+  // Strict postflight: a red in postflight makes the overall update fail
+  // even though apply + commit succeeded. Operator opt-in only.
+  const strictBlock =
+    !!opts.strictPostflight &&
+    postflightReport &&
+    postflightReport.redCount > 0;
+
   // Update overall ok with migration + post-check results
   const allOk =
     applyResult.ok &&
     migrationsResult.status !== "failed" &&
-    !postUpdateResults.some((c) => c.status === "failed");
+    !postUpdateResults.some((c) => c.status === "failed") &&
+    !strictBlock;
 
   return {
     ok: allOk,
     mode: "apply",
     report,
+    preflight: preflightReport,
     apply: applyResult,
     migrations: migrationsResult,
     postUpdateChecks: postUpdateResults,
+    postflight: postflightReport,
     transaction: txId,
     transactionDir: path.relative(targetRoot, txDir).replace(/\\/g, "/"),
   };
@@ -861,10 +1069,25 @@ if (require.main === module) {
     // Legacy: --source-root pointed at the source tree directly. Kept for
     // back-compat. Prefer --source.
     sourceRoot: get("--source-root"),
+    // SP-005 tri-pillar flags (T-20260513-062):
+    // --force-fresh           Preflight: accept yellow on install-baseline (treat as fresh install)
+    // --allow-stale           Preflight: accept yellow on staleness
+    // --allow-version-drift   Preflight: accept yellow on version-quorum
+    // --skip-preflight        Bypass the preflight composer entirely (NOT recommended)
+    // --no-transaction        Skip the transaction wrapper (legacy compatibility)
+    // --skip-postflight       Skip the postflight composer (suppresses 5 diagnostic checks)
+    // --strict-postflight     Treat any postflight red as a non-zero exit
+    forceFresh: args.includes("--force-fresh"),
+    allowStale: args.includes("--allow-stale"),
+    allowVersionDrift: args.includes("--allow-version-drift"),
+    skipPreflight: args.includes("--skip-preflight"),
+    noTransaction: args.includes("--no-transaction"),
+    skipPostflight: args.includes("--skip-postflight"),
+    strictPostflight: args.includes("--strict-postflight"),
   };
   if (!opts.to) {
     console.error(
-      "Usage: node scripts/warpos/update.js --to <version> [--source <warpos-repo>] [--target <install-path>] [--dry-run | --apply] [--confirm-deletes]",
+      "Usage: node scripts/warpos/update.js --to <version> [--source <warpos-repo>] [--target <install-path>] [--dry-run | --apply] [--confirm-deletes] [--force-fresh] [--allow-stale] [--allow-version-drift] [--no-transaction] [--skip-postflight] [--strict-postflight]",
     );
     process.exit(2);
   }
@@ -928,6 +1151,23 @@ if (require.main === module) {
           console.log(
             `Transaction: ${r.transactionDir} (rollback instructions inside)`,
           );
+        }
+        // SP-005 preflight summary
+        if (r.preflight) {
+          console.log(
+            `Preflight: ${r.preflight.greenCount}/${r.preflight.gateCount} GREEN, ${r.preflight.redCount} RED, ${r.preflight.yellowCount} YELLOW, ${r.preflight.degradedCount} DEGRADED`,
+          );
+        }
+        // SP-005 postflight summary
+        if (r.postflight) {
+          console.log(
+            `Postflight: ${r.postflight.greenCount}/${r.postflight.checkCount} GREEN, ${r.postflight.redCount} RED, ${r.postflight.yellowCount} YELLOW, ${r.postflight.degradedCount} DEGRADED (operatorAction=${r.postflight.operatorAction})`,
+          );
+          if (r.postflight.evidencePath) {
+            console.log(
+              `  evidence: ${path.relative(r.report.targetRoot, r.postflight.evidencePath).replace(/\\/g, "/")}`,
+            );
+          }
         }
       }
       printHumanReport("warp:update", {

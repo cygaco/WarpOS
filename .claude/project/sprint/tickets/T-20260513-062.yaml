@@ -2,10 +2,10 @@ schema: warpos/sprint/ticket/v1
 id: T-20260513-062
 title: "Wire preflight/transaction/postflight INTO update.js#run()"
 type: integration
-status: proposed
+status: done
 sprint: SP-20260513-001
 created_at: "2026-05-13T21:20:34.513Z"
-updated_at: "2026-05-13T21:20:34.513Z"
+updated_at: "2026-05-13T22:22:37.682Z"
 owner: null
 owner_agent: null
 risk_level: high
@@ -51,5 +51,6 @@ blocked_by: []
 blocks: []
 fix_attempts: []
 ralph_progress: null
-completion_evidence: []
+completion_evidence:
+  - "Tri-pillar wired into update.js#run(); --dry-run smoke clean; transaction-smoke 17/17 regression PASS."
 reopen_history: []

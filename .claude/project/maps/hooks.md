@@ -1,6 +1,6 @@
 # Hooks Map
 
-Generated: 2026-05-13T22:12:54.429Z
+Generated: 2026-05-13T22:37:04.323Z
 
 **57** hook scripts (52 registered, 5 orphan), **13** lib modules, **60** wiring entries.
 
@@ -97,7 +97,7 @@ Generated: 2026-05-13T22:12:54.429Z
 
 | Hook | Registered | Size | Modified |
 |---|---|---|---|
-| beta-gate.js | yes | 4190 | 2026-04-17T21:30:23.988Z |
+| beta-gate.js | yes | 8537 | 2026-05-13T22:25:25.822Z |
 | boss-boundary.js | yes | 3095 | 2026-05-03T19:46:50.932Z |
 | build-transaction-boundary.js | yes | 3760 | 2026-05-01T04:37:06.323Z |
 | build.js | no | 6730 | 2026-05-03T19:46:50.715Z |
@@ -118,7 +118,7 @@ Generated: 2026-05-13T22:12:54.429Z
 | learning-validator.js | yes | 6622 | 2026-04-17T21:30:23.994Z |
 | lint.js | yes | 2777 | 2026-04-17T21:30:23.994Z |
 | memory-guard.js | yes | 8726 | 2026-04-17T21:30:24.000Z |
-| merge-guard.js | yes | 18340 | 2026-05-11T21:00:39.663Z |
+| merge-guard.js | yes | 19290 | 2026-05-13T22:26:48.457Z |
 | ownership-guard.js | yes | 3699 | 2026-04-29T05:47:40.874Z |
 | path-guard.js | yes | 8938 | 2026-05-03T19:46:50.935Z |
 | path-registry-guard.js | yes | 5451 | 2026-05-03T19:46:50.936Z |
@@ -143,7 +143,7 @@ Generated: 2026-05-13T22:12:54.429Z
 | smart-context.js | yes | 33997 | 2026-05-13T21:07:06.507Z |
 | spec-test-staleness.js | yes | 5627 | 2026-05-03T19:46:50.939Z |
 | sprint-approval-guard.js | yes | 6158 | 2026-05-11T22:39:29.893Z |
-| sprint-tracker-guard.js | yes | 10260 | 2026-05-11T22:39:09.280Z |
+| sprint-tracker-guard.js | yes | 14811 | 2026-05-13T22:22:53.843Z |
 | step-hardcode-suggester.js | yes | 7337 | 2026-05-03T19:46:50.939Z |
 | step-registry-guard.js | yes | 12054 | 2026-05-03T19:46:50.940Z |
 | store-validator.js | yes | 16480 | 2026-04-29T05:49:13.765Z |

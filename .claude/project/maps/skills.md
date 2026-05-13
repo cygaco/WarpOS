@@ -1,6 +1,6 @@
 # Skills Map
 
-Generated: 2026-05-13T22:12:54.429Z
+Generated: 2026-05-13T22:37:04.323Z
 
 Total: **129** skills across **31** namespaces. 60 user-invocable.
 
@@ -30,7 +30,7 @@ Total: **129** skills across **31** namespaces. 60 user-invocable.
 | design-system | Design system compliance check - scans UI code for raw colors, raw primitives, missing design docs,  | 0 | 0 |
 | environment | Environment readiness and tooling quality — fast go/no-go or deep audit | 8 | 3 |
 | install | Verify a fresh WarpOS install — manifest, paths, agents, hooks, version, settings. | 1 | 0 |
-| patterns | Cross-run intelligence and automation proposals — diagnose recurring patterns or propose prevention | 8 | 4 |
+| patterns | Cross-run intelligence and automation proposals — diagnose recurring patterns or propose prevention | 8 | 5 |
 | privacy | Pre-publish scan for personal data — credentials, emails, homedir paths, runtime files tracked by gi | 0 | 0 |
 | references | Cross-file reference integrity — broken links, orphans, stale SPEC_GRAPH edges | 4 | 8 |
 | requirements | Specification consistency, coverage, and drift — static audit, change-driven propagation check, or p | 7 | 10 |
@@ -262,7 +262,7 @@ Total: **129** skills across **31** namespaces. 60 user-invocable.
 | design | Turn an approved Plan Contract into PRD, stories, COPY, INPUTS, TRACE, acceptance criteria, QA, red- | 2 | 2 |
 | execute | Execute the sprint via Ralph-style plan/act/test/review/record/checkpoint loops per ticket, with cra | 3 | 3 |
 | plan | Turn a brief plain-language request into a structured sprint plan and durable Plan Contract. Evidenc | 3 | 4 |
-| release | Prepare and execute a sprint release — final checks, approval, deploy gate, release notes, rollback  | 3 | 4 |
+| release | Prepare and execute a sprint release — final checks, approval, deploy gate, release notes, rollback  | 4 | 4 |
 | retrospective | Synthesize a post-sprint retrospective from tracker artifacts — outcomes, friction, action items. Id | 3 | 0 |
 | status | Read-only status view of every live sprint — shows id, lane, status, phase, last checkpoint, and the | 3 | 0 |
 

@@ -1,7 +1,7 @@
 {
   "metadata": {
-    "generated": "2026-05-13T22:12:54.429Z",
-    "lastUpdated": "2026-05-13T22:12:54.429Z",
+    "generated": "2026-05-13T22:37:04.323Z",
+    "lastUpdated": "2026-05-13T22:37:04.323Z",
     "total_hooks": 57,
     "total_lib_modules": 13,
     "registered_hooks": 52,
@@ -15,8 +15,8 @@
       "path": "scripts/hooks/beta-gate.js",
       "registered": true,
       "exists": true,
-      "size": 4190,
-      "modified": "2026-04-17T21:30:23.988Z"
+      "size": 8537,
+      "modified": "2026-05-13T22:25:25.822Z"
     },
     {
       "id": "hook:boss-boundary",
@@ -43,7 +43,10 @@
       "registered": false,
       "exists": true,
       "size": 6730,
-      "modified": "2026-05-03T19:46:50.715Z"
+      "modified": "2026-05-03T19:46:50.715Z",
+      "kind": "build-tool",
+      "disposition": "standalone",
+      "note": "CLI build tool — regenerates hook-manifest.json + .claude/settings.json#hooks from framework/hooks.registry.json. Registering it as a runtime hook would recursively trigger settings.json edits. Invoked manually or by warp-setup.js."
     },
     {
       "id": "hook:compact-saver",
@@ -61,7 +64,10 @@
       "registered": false,
       "exists": true,
       "size": 4393,
-      "modified": "2026-04-17T21:30:23.990Z"
+      "modified": "2026-04-17T21:30:23.990Z",
+      "kind": "lifecycle",
+      "disposition": "standalone",
+      "note": "WorktreeCreate lifecycle hook — invoked by subagent dispatch/orchestrators (not by Claude Code settings.json). Branches new worktrees from HEAD (current branch) instead of origin/HEAD. Critical for skeleton runs where current branch has stubs but master has complete code."
     },
     {
       "id": "hook:cycle-enforcer",
@@ -204,8 +210,8 @@
       "path": "scripts/hooks/merge-guard.js",
       "registered": true,
       "exists": true,
-      "size": 18340,
-      "modified": "2026-05-11T21:00:39.663Z"
+      "size": 19290,
+      "modified": "2026-05-13T22:26:48.457Z"
     },
     {
       "id": "hook:ownership-guard",
@@ -268,7 +274,10 @@
       "registered": false,
       "exists": true,
       "size": 13704,
-      "modified": "2026-05-03T19:46:50.937Z"
+      "modified": "2026-05-03T19:46:50.937Z",
+      "kind": "cli-tool",
+      "disposition": "standalone",
+      "note": "CLI reference-integrity validator. Invoked by /check:references skill and manual audits. Registering as Edit|Write PostToolUse would be prohibitively expensive (crawls .claude/ + docs/ + scripts/hooks/ per write)."
     },
     {
       "id": "hook:region-marker-guard",
@@ -385,7 +394,10 @@
       "registered": false,
       "exists": true,
       "size": 3369,
-      "modified": "2026-05-02T17:31:41.040Z"
+      "modified": "2026-05-02T17:31:41.040Z",
+      "kind": "observer",
+      "disposition": "superseded",
+      "note": "Pure UserPromptSubmit counter — fail-open, writes to paths.skillUsageFile. Superseded 2026-05-13 by skill-invocation-tracker.js which captures invocation_path (user-slash|ranker|agent-tool) + suggestion correlation via lib/skill-telemetry. Left on disk as fallback / historical reference; not registered intentionally."
     },
     {
       "id": "hook:skill-invocation-tracker",
@@ -429,8 +441,8 @@
       "path": "scripts/hooks/sprint-tracker-guard.js",
       "registered": true,
       "exists": true,
-      "size": 10260,
-      "modified": "2026-05-11T22:39:09.280Z"
+      "size": 14811,
+      "modified": "2026-05-13T22:22:53.843Z"
     },
     {
       "id": "hook:step-hardcode-suggester",
@@ -493,7 +505,10 @@
       "registered": false,
       "exists": true,
       "size": 12132,
-      "modified": "2026-05-03T19:46:50.740Z"
+      "modified": "2026-05-03T19:46:50.740Z",
+      "kind": "build-tool",
+      "disposition": "standalone",
+      "note": "CLI hook fixture runner. Reads settings.json registrations, expands to a hook manifest, runs synthetic payloads through each hook deterministically (asserting fail-closed hooks reject malformed input). Invoked by /hooks:test skill and CI. Not a runtime hook itself."
     },
     {
       "id": "hook:typecheck",

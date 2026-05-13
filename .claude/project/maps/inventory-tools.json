@@ -1,14 +1,14 @@
 {
   "metadata": {
-    "generated": "2026-05-13T22:12:54.429Z",
-    "lastUpdated": "2026-05-13T22:12:54.429Z",
-    "total_tools": 168,
+    "generated": "2026-05-13T22:37:04.323Z",
+    "lastUpdated": "2026-05-13T22:37:04.323Z",
+    "total_tools": 170,
     "categories": 4,
     "regenerated_by": "scripts/regen-maps.js"
   },
   "categories": {
     "scripts": {
-      "count": 163,
+      "count": 165,
       "items": [
         {
           "id": "tool:agent-dashboard",
@@ -988,8 +988,8 @@
           "path": "scripts/regen-maps.js",
           "type": "script",
           "exists": true,
-          "size": 46975,
-          "modified": "2026-04-30T02:44:46.952Z"
+          "size": 47568,
+          "modified": "2026-05-13T22:31:16.988Z"
         },
         {
           "id": "tool:research-append-learnings",
@@ -1181,6 +1181,15 @@
           "modified": "2026-04-22T05:49:16.037Z"
         },
         {
+          "id": "tool:test-beta-gate-release",
+          "name": "test-beta-gate-release.js",
+          "path": "scripts/test-beta-gate-release.js",
+          "type": "script",
+          "exists": true,
+          "size": 6407,
+          "modified": "2026-05-13T22:26:01.204Z"
+        },
+        {
           "id": "tool:test-concurrency-lock",
           "name": "test-concurrency-lock.js",
           "path": "scripts/test-concurrency-lock.js",
@@ -1231,8 +1240,8 @@
           "path": "scripts/test-merge-guard-cd-prefix.js",
           "type": "script",
           "exists": true,
-          "size": 3154,
-          "modified": "2026-04-30T02:40:33.562Z"
+          "size": 4454,
+          "modified": "2026-05-13T22:28:01.534Z"
         },
         {
           "id": "tool:test-merge-guard-rm",
@@ -1296,6 +1305,15 @@
           "exists": true,
           "size": 20071,
           "modified": "2026-05-13T00:13:45.173Z"
+        },
+        {
+          "id": "tool:test-sprint-tracker-autoinject",
+          "name": "test-sprint-tracker-autoinject.js",
+          "path": "scripts/test-sprint-tracker-autoinject.js",
+          "type": "script",
+          "exists": true,
+          "size": 6473,
+          "modified": "2026-05-13T22:24:03.413Z"
         },
         {
           "id": "tool:test-sprint",
@@ -1534,7 +1552,7 @@
     }
   },
   "summary": {
-    "scripts": 163,
+    "scripts": 165,
     "npm_scripts": 0,
     "external_clis": 3,
     "xrefs": 2

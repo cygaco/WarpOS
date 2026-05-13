@@ -342,20 +342,47 @@ function regenSkills() {
 // ──────────────────── 2. /maps:hooks ────────────────────
 
 function regenHooks() {
+  // Carry-forward disposition fields for unregistered/orphan hooks so the
+  // standalone CLI / lifecycle / deprecated annotations survive regen.
+  // hooks.jsonl is otherwise rebuilt from scratch each pass.
+  const existingHooks = {};
+  const hooksPath = path.join(MAPS, "hooks.jsonl");
+  if (fs.existsSync(hooksPath)) {
+    for (const line of fs.readFileSync(hooksPath, "utf8").split(/\r?\n/)) {
+      if (!line.trim()) continue;
+      try {
+        const obj = JSON.parse(line);
+        if (obj._meta) continue;
+        if (obj.id) existingHooks[obj.id] = obj;
+      } catch {
+        /* skip */
+      }
+    }
+  }
+
   const entries = [];
   for (const f of allHookScripts) {
     const r = rel(f);
     const name = path.basename(f);
     const st = statSafe(f);
-    entries.push({
-      id: `hook:${name.replace(/\.js$/, "")}`,
+    const id = `hook:${name.replace(/\.js$/, "")}`;
+    const entry = {
+      id,
       name,
       path: r,
       registered: REGISTERED.has(name),
       exists: true,
       size: st ? st.size : 0,
       modified: st ? st.mtime.toISOString() : null,
-    });
+    };
+    // Carry-forward disposition fields (kind / disposition / note) for orphans
+    const prev = existingHooks[id];
+    if (prev) {
+      if (prev.kind) entry.kind = prev.kind;
+      if (prev.disposition) entry.disposition = prev.disposition;
+      if (prev.note) entry.note = prev.note;
+    }
+    entries.push(entry);
   }
 
   // Also enumerate lib modules (referenced by hooks but not registered)
@@ -1392,6 +1419,15 @@ function regenInventoryMd(results) {
 
 // ──────────────────── Main ────────────────────
 
+function specGraphNodeCount(p) {
+  try {
+    const sg = JSON.parse(fs.readFileSync(p, "utf8"));
+    return (sg.counts && sg.counts.nodes) || (sg.nodes && sg.nodes.length) || 0;
+  } catch {
+    return 0;
+  }
+}
+
 const before = {
   skills: lineCount(path.join(MAPS, "skills.jsonl")),
   hooks: lineCount(path.join(MAPS, "hooks.jsonl")),
@@ -1399,6 +1435,7 @@ const before = {
   memory: lineCount(path.join(MAPS, "memory.jsonl")),
   enforcements: lineCount(path.join(MAPS, "enforcements.jsonl")),
   systems_inventory: lineCount(path.join(MAPS, "systems-inventory.jsonl")),
+  spec_graph_nodes: specGraphNodeCount(path.join(MAPS, "SPEC_GRAPH.json")),
 };
 
 console.log("Before:", before);
@@ -1446,12 +1483,38 @@ console.log(
   results.enforcements,
 );
 
-console.log("\n[7/7] /maps:architecture ...");
+console.log("\n[7/8] /maps:architecture ...");
 results.architecture = regenArchitecture();
 console.log(
   "      → architecture.md, inventory-architecture.json",
   results.architecture,
 );
+
+console.log("\n[8/8] paths.specGraph (spec-graph.js) ...");
+try {
+  const { execFileSync } = require("child_process");
+  const out = execFileSync(
+    process.execPath,
+    [path.join(PROJECT, "scripts", "maps", "spec-graph.js")],
+    { encoding: "utf8" },
+  );
+  process.stdout.write(out);
+  // Parse counts from emitted SPEC_GRAPH.json for the inventory rollup.
+  try {
+    const sg = JSON.parse(
+      fs.readFileSync(path.join(MAPS, "SPEC_GRAPH.json"), "utf8"),
+    );
+    results.specGraph = {
+      nodes: sg.counts && sg.counts.nodes,
+      edges: sg.counts && sg.counts.edges,
+    };
+  } catch {
+    results.specGraph = { nodes: 0, edges: 0 };
+  }
+} catch (err) {
+  console.error("      ! spec-graph.js failed:", err.message || err);
+  results.specGraph = { nodes: 0, edges: 0, error: String(err.message || err) };
+}
 
 console.log("\nINVENTORY.md ...");
 regenInventoryMd(results);

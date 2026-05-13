@@ -1,8 +1,8 @@
 # Tools Map
 
-Generated: 2026-05-13T22:12:54.429Z
+Generated: 2026-05-13T22:37:04.323Z
 
-Scripts: **163** | npm scripts: **0** | External CLIs: **3**
+Scripts: **165** | npm scripts: **0** | External CLIs: **3**
 
 ## Utility scripts (scripts/*.js)
 
@@ -116,7 +116,7 @@ Scripts: **163** | npm scripts: **0** | External CLIs: **3**
 | read-store-state.js | 319 | 2026-04-26T07:25:07.486Z |
 | record-gate-check.js | 1916 | 2026-04-26T06:35:12.437Z |
 | recurring-issues-helper.js | 9224 | 2026-04-24T21:55:13.666Z |
-| regen-maps.js | 46975 | 2026-04-30T02:44:46.952Z |
+| regen-maps.js | 47568 | 2026-05-13T22:31:16.988Z |
 | research-append-learnings.js | 7439 | 2026-04-24T04:27:55.948Z |
 | research-build-payload.js | 5061 | 2026-04-24T03:52:21.615Z |
 | reset-cycle-step.js | 505 | 2026-04-26T06:36:12.456Z |
@@ -138,12 +138,13 @@ Scripts: **163** | npm scripts: **0** | External CLIs: **3**
 | stub-audit-run-11.js | 1435 | 2026-04-28T20:33:26.558Z |
 | sync-run-number.js | 3054 | 2026-04-25T00:47:50.602Z |
 | systems-append-run09.js | 2389 | 2026-04-22T05:49:16.037Z |
+| test-beta-gate-release.js | 6407 | 2026-05-13T22:26:01.204Z |
 | test-concurrency-lock.js | 3129 | 2026-04-29T05:07:22.633Z |
 | test-dispatch-agent-resolution.js | 2609 | 2026-05-11T21:18:03.243Z |
 | test-dispatch-route-guard.js | 2353 | 2026-05-11T21:00:11.952Z |
 | test-dispatch-telemetry.js | 3750 | 2026-05-11T21:04:53.299Z |
 | test-manifest-guard-product.js | 5363 | 2026-05-11T21:13:48.820Z |
-| test-merge-guard-cd-prefix.js | 3154 | 2026-04-30T02:40:33.562Z |
+| test-merge-guard-cd-prefix.js | 4454 | 2026-05-13T22:28:01.534Z |
 | test-merge-guard-rm.js | 2302 | 2026-05-03T19:46:50.952Z |
 | test-provider-health.js | 3258 | 2026-05-11T21:10:37.854Z |
 | test-providers-stdin-fix.js | 2160 | 2026-05-12T06:59:37.659Z |
@@ -151,6 +152,7 @@ Scripts: **163** | npm scripts: **0** | External CLIs: **3**
 | test-response-size-guard.js | 2469 | 2026-04-24T21:49:35.355Z |
 | test-sprint-hooks.js | 55673 | 2026-05-12T23:22:23.158Z |
 | test-sprint-migration.js | 20071 | 2026-05-13T00:13:45.173Z |
+| test-sprint-tracker-autoinject.js | 6473 | 2026-05-13T22:24:03.413Z |
 | test-sprint.js | 16392 | 2026-05-11T22:12:07.871Z |
 | test-staged-drift-reconciler.js | 4458 | 2026-05-03T19:46:50.952Z |
 | test-team-guard.js | 4559 | 2026-04-24T07:14:53.913Z |

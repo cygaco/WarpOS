@@ -1,4 +1,4 @@
-{"_meta":true,"name":"Tools Map","description":"Utility scripts, npm scripts, external CLIs, cross-refs to skills/hooks.","version":"2026-05-13","counts":{"scripts":163,"npm_scripts":0,"external_clis":3,"xrefs":2},"last_regenerated":"2026-05-13T22:12:54.429Z"}
+{"_meta":true,"name":"Tools Map","description":"Utility scripts, npm scripts, external CLIs, cross-refs to skills/hooks.","version":"2026-05-13","counts":{"scripts":165,"npm_scripts":0,"external_clis":3,"xrefs":2},"last_regenerated":"2026-05-13T22:37:04.323Z"}
 {"id":"tool:agent-dashboard","name":"agent-dashboard.js","path":"scripts/agent-dashboard.js","type":"script","exists":true,"size":49514,"modified":"2026-04-22T05:49:15.934Z"}
 {"id":"tool:analyze-run12-deep","name":"analyze-run12-deep.js","path":"scripts/analyze-run12-deep.js","type":"script","exists":true,"size":4452,"modified":"2026-04-29T05:13:26.862Z"}
 {"id":"tool:analyze-run12","name":"analyze-run12.js","path":"scripts/analyze-run12.js","type":"script","exists":true,"size":5612,"modified":"2026-05-03T19:46:50.924Z"}
@@ -107,7 +107,7 @@
 {"id":"tool:read-store-state","name":"read-store-state.js","path":"scripts/read-store-state.js","type":"script","exists":true,"size":319,"modified":"2026-04-26T07:25:07.486Z"}
 {"id":"tool:record-gate-check","name":"record-gate-check.js","path":"scripts/record-gate-check.js","type":"script","exists":true,"size":1916,"modified":"2026-04-26T06:35:12.437Z"}
 {"id":"tool:recurring-issues-helper","name":"recurring-issues-helper.js","path":"scripts/recurring-issues-helper.js","type":"script","exists":true,"size":9224,"modified":"2026-04-24T21:55:13.666Z"}
-{"id":"tool:regen-maps","name":"regen-maps.js","path":"scripts/regen-maps.js","type":"script","exists":true,"size":46975,"modified":"2026-04-30T02:44:46.952Z"}
+{"id":"tool:regen-maps","name":"regen-maps.js","path":"scripts/regen-maps.js","type":"script","exists":true,"size":47568,"modified":"2026-05-13T22:31:16.988Z"}
 {"id":"tool:research-append-learnings","name":"research-append-learnings.js","path":"scripts/research-append-learnings.js","type":"script","exists":true,"size":7439,"modified":"2026-04-24T04:27:55.948Z"}
 {"id":"tool:research-build-payload","name":"research-build-payload.js","path":"scripts/research-build-payload.js","type":"script","exists":true,"size":5061,"modified":"2026-04-24T03:52:21.615Z"}
 {"id":"tool:reset-cycle-step","name":"reset-cycle-step.js","path":"scripts/reset-cycle-step.js","type":"script","exists":true,"size":505,"modified":"2026-04-26T06:36:12.456Z"}
@@ -129,12 +129,13 @@
 {"id":"tool:stub-audit-run-11","name":"stub-audit-run-11.js","path":"scripts/stub-audit-run-11.js","type":"script","exists":true,"size":1435,"modified":"2026-04-28T20:33:26.558Z"}
 {"id":"tool:sync-run-number","name":"sync-run-number.js","path":"scripts/sync-run-number.js","type":"script","exists":true,"size":3054,"modified":"2026-04-25T00:47:50.602Z"}
 {"id":"tool:systems-append-run09","name":"systems-append-run09.js","path":"scripts/systems-append-run09.js","type":"script","exists":true,"size":2389,"modified":"2026-04-22T05:49:16.037Z"}
+{"id":"tool:test-beta-gate-release","name":"test-beta-gate-release.js","path":"scripts/test-beta-gate-release.js","type":"script","exists":true,"size":6407,"modified":"2026-05-13T22:26:01.204Z"}
 {"id":"tool:test-concurrency-lock","name":"test-concurrency-lock.js","path":"scripts/test-concurrency-lock.js","type":"script","exists":true,"size":3129,"modified":"2026-04-29T05:07:22.633Z"}
 {"id":"tool:test-dispatch-agent-resolution","name":"test-dispatch-agent-resolution.js","path":"scripts/test-dispatch-agent-resolution.js","type":"script","exists":true,"size":2609,"modified":"2026-05-11T21:18:03.243Z"}
 {"id":"tool:test-dispatch-route-guard","name":"test-dispatch-route-guard.js","path":"scripts/test-dispatch-route-guard.js","type":"script","exists":true,"size":2353,"modified":"2026-05-11T21:00:11.952Z"}
 {"id":"tool:test-dispatch-telemetry","name":"test-dispatch-telemetry.js","path":"scripts/test-dispatch-telemetry.js","type":"script","exists":true,"size":3750,"modified":"2026-05-11T21:04:53.299Z"}
 {"id":"tool:test-manifest-guard-product","name":"test-manifest-guard-product.js","path":"scripts/test-manifest-guard-product.js","type":"script","exists":true,"size":5363,"modified":"2026-05-11T21:13:48.820Z"}
-{"id":"tool:test-merge-guard-cd-prefix","name":"test-merge-guard-cd-prefix.js","path":"scripts/test-merge-guard-cd-prefix.js","type":"script","exists":true,"size":3154,"modified":"2026-04-30T02:40:33.562Z"}
+{"id":"tool:test-merge-guard-cd-prefix","name":"test-merge-guard-cd-prefix.js","path":"scripts/test-merge-guard-cd-prefix.js","type":"script","exists":true,"size":4454,"modified":"2026-05-13T22:28:01.534Z"}
 {"id":"tool:test-merge-guard-rm","name":"test-merge-guard-rm.js","path":"scripts/test-merge-guard-rm.js","type":"script","exists":true,"size":2302,"modified":"2026-05-03T19:46:50.952Z"}
 {"id":"tool:test-provider-health","name":"test-provider-health.js","path":"scripts/test-provider-health.js","type":"script","exists":true,"size":3258,"modified":"2026-05-11T21:10:37.854Z"}
 {"id":"tool:test-providers-stdin-fix","name":"test-providers-stdin-fix.js","path":"scripts/test-providers-stdin-fix.js","type":"script","exists":true,"size":2160,"modified":"2026-05-12T06:59:37.659Z"}
@@ -142,6 +143,7 @@
 {"id":"tool:test-response-size-guard","name":"test-response-size-guard.js","path":"scripts/test-response-size-guard.js","type":"script","exists":true,"size":2469,"modified":"2026-04-24T21:49:35.355Z"}
 {"id":"tool:test-sprint-hooks","name":"test-sprint-hooks.js","path":"scripts/test-sprint-hooks.js","type":"script","exists":true,"size":55673,"modified":"2026-05-12T23:22:23.158Z"}
 {"id":"tool:test-sprint-migration","name":"test-sprint-migration.js","path":"scripts/test-sprint-migration.js","type":"script","exists":true,"size":20071,"modified":"2026-05-13T00:13:45.173Z"}
+{"id":"tool:test-sprint-tracker-autoinject","name":"test-sprint-tracker-autoinject.js","path":"scripts/test-sprint-tracker-autoinject.js","type":"script","exists":true,"size":6473,"modified":"2026-05-13T22:24:03.413Z"}
 {"id":"tool:test-sprint","name":"test-sprint.js","path":"scripts/test-sprint.js","type":"script","exists":true,"size":16392,"modified":"2026-05-11T22:12:07.871Z"}
 {"id":"tool:test-staged-drift-reconciler","name":"test-staged-drift-reconciler.js","path":"scripts/test-staged-drift-reconciler.js","type":"script","exists":true,"size":4458,"modified":"2026-05-03T19:46:50.952Z"}
 {"id":"tool:test-team-guard","name":"test-team-guard.js","path":"scripts/test-team-guard.js","type":"script","exists":true,"size":4559,"modified":"2026-04-24T07:14:53.913Z"}

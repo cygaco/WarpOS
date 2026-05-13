@@ -34,6 +34,33 @@ omitted → registry primary; unknown id → COPY C-10.
 
 ## Procedure
 
+### Step 0 — Beta pre-flight consultation (REQUIRED in adhoc mode)
+
+**Before** invoking any AskUserQuestion to record release approval, dispatch
+SendMessage to Alex β with the release context:
+
+```text
+SendMessage(to: "Beta (β)", message: "Release pre-flight for sprint <SP-id> /
+RL-<RL-id>. Context: <one-line summary of what's shipping, target env,
+risk surface>. Verdict needed: DECIDE | DIRECTIVE | ESCALATE before I ask
+the user for production deploy approval.")
+```
+
+β responds DECIDE | DIRECTIVE | ESCALATE. Log the verdict to `paths.betaEvents`.
+Only when β returns ESCALATE do you surface to the user — and you must use
+the `ESCALATE:` prefix on the AskUserQuestion text so the beta-gate hook
+allows it through.
+
+This step closes the 15×/day bypass class found in /check:patterns
+2026-05-13: release-time questions were going direct-to-user without Beta
+consultation, violating CLAUDE.md §"β consultation protocol". The
+beta-gate hook now blocks (rather than warns) when a release-context
+question is dispatched without a recent Beta event.
+
+The beta-gate hook treats a Beta event recorded within the last 30 minutes
+mentioning "release", "RL-", "deploy", or "ship" in `data.question` or
+`data.topic_tags` as the satisfying consultation.
+
 ### Step 1 — Prepare release record
 
 ```bash

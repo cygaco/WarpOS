@@ -187,10 +187,17 @@ process.stdin.on("end", () => {
       );
     }
 
-    // Pre-allowlist advisory: redundant `cd <projectDir> && git ...` prefix.
-    // Must fire here because the allowlist exits early for "cd ... && git ...".
-    // CLAUDE.md anti-pattern: never prepend `cd <current-directory>` to git;
-    // git operates on cwd. BACKLOG.md run-12 #11: 329 occurrences in 3 days.
+    // Pre-allowlist auto-strip: redundant `cd <projectDir> && <tail>` prefix.
+    // Must fire here because the allowlist exits early for "cd ... && ...".
+    // CLAUDE.md anti-pattern: never prepend `cd <current-directory>`;
+    // tools operate on cwd. Source: /check:patterns 2026-05-13 (16x/day fires,
+    // 0 behavior change as advisory). Now mutates tool_input.command via
+    // hookSpecificOutput.updatedInput and exits — the stripped command then
+    // re-enters PreToolUse where the rest of merge-guard's rules apply.
+    //
+    // Widened from the old "only when tail starts with git" condition: any
+    // tail benefits from the strip when target === <projectDir>, because
+    // every Bash tool call already runs in the project cwd.
     {
       const m = cmd.match(
         /^\s*cd\s+(?:"([^"]+)"|'([^']+)'|(\S+))\s*&&\s*(.+)$/,
@@ -209,20 +216,32 @@ process.stdin.on("end", () => {
           target === "./" ||
           resolved === PROJECT ||
           resolved === path.resolve(PROJECT);
-        const isGitTail = /^git\b/.test(tail.trim());
-        if (isProjectDir && isGitTail) {
+        if (isProjectDir) {
+          const stripped = tail.trim();
           logEvent(
-            "warn",
+            "audit",
             "system",
-            "cd-prefix-advisory",
+            "cd-prefix-stripped",
             cmd.slice(0, 120),
-            "Redundant cd <projectDir> before git command; git uses cwd. CLAUDE.md anti-pattern.",
+            `stripped → ${stripped.slice(0, 80)}`,
           );
           process.stderr.write(
-            "\x1b[33m[merge-guard] ADVISORY: Redundant `cd <projectDir>` prefix before git. " +
-              "git operates on cwd; drop the prefix (CLAUDE.md).\x1b[0m\n",
+            "\x1b[33m[merge-guard] AUTO-STRIP: removed redundant `cd <projectDir> && ` prefix. " +
+              "Bash tool already runs in cwd; the prefix re-confuses path-aware tools (CLAUDE.md).\x1b[0m\n",
           );
-          // Continue to allowlist — advisory only, do not exit.
+          // Emit PreToolUse mutation. Claude Code's PreToolUse hook contract
+          // honors hookSpecificOutput.updatedInput.command — the tool re-runs
+          // with the new command. If the harness ignores updatedInput, the
+          // event log's `cd-prefix-stripped` count will not drop (the
+          // measurable signal that tells us to escalate).
+          const out = {
+            hookSpecificOutput: {
+              hookEventName: "PreToolUse",
+              updatedInput: { command: stripped },
+            },
+          };
+          console.log(JSON.stringify(out));
+          process.exit(0);
         }
       }
     }
