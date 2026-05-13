@@ -31,14 +31,6 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/dispatch-route-guard.js\""
-          },
-          {
-            "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/sprint-approval-guard.js\""
-          },
-          {
-            "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/merge-guard.js\""
           },
           {
@@ -52,6 +44,14 @@
           {
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/path-registry-guard.js\""
+          },
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/dispatch-route-guard.js\""
+          },
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/sprint-approval-guard.js\""
           }
         ],
         "matcher": "Bash"
@@ -96,7 +96,7 @@
           },
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/requirement-format-guard.js\""
+            "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/self-mod-governance.js\""
           },
           {
             "type": "command",
@@ -104,7 +104,7 @@
           },
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/self-mod-governance.js\""
+            "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/requirement-format-guard.js\""
           }
         ],
         "matcher": "Edit|Write"

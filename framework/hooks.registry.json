@@ -573,6 +573,61 @@
       "purpose": "Cross-file reference integrity check (invoked by /check:references slash skill).",
       "registrations": [],
       "testFixtures": []
+    },
+    {
+      "id": "dispatch-route-guard",
+      "script": "scripts/hooks/dispatch-route-guard.js",
+      "owner": "framework",
+      "enabled": true,
+      "failMode": "fail-closed",
+      "fixturesRequired": true,
+      "purpose": "Block raw cross-provider CLI prompt invocations that bypass the documented dispatch route (codex/gemini/claude piped from Bash).",
+      "registrations": [{ "event": "PreToolUse", "matcher": "Bash" }],
+      "blocks": ["raw codex|gemini|claude prompt invocations from Bash"],
+      "testFixtures": ["fixtures/hooks/default/bash-safe.json"]
+    },
+    {
+      "id": "sprint-tracker-guard",
+      "script": "scripts/hooks/sprint-tracker-guard.js",
+      "owner": "framework",
+      "enabled": true,
+      "failMode": "fail-closed",
+      "fixturesRequired": true,
+      "purpose": "Block schema-violating edits to sprint tracker yaml under .claude/project/sprint/ (v0.2 layout: per-sprint subdirs + active-sprints registry).",
+      "registrations": [{ "event": "PreToolUse", "matcher": "Edit|Write" }],
+      "blocks": [
+        "malformed sprint yaml writes",
+        "edits to existing sprint-history files"
+      ],
+      "testFixtures": ["fixtures/hooks/default/post-edit.json"]
+    },
+    {
+      "id": "sprint-approval-guard",
+      "script": "scripts/hooks/sprint-approval-guard.js",
+      "owner": "framework",
+      "enabled": true,
+      "failMode": "fail-closed",
+      "fixturesRequired": true,
+      "purpose": "Refuse Bash commands that would advance a sprint past an approval gate without the required approval record (release deploy, ESD --status integrated).",
+      "registrations": [{ "event": "PreToolUse", "matcher": "Bash" }],
+      "blocks": [
+        "release deploy without approval_ref",
+        "release deploy with pending approval",
+        "ESD --status integrated with pending approval"
+      ],
+      "testFixtures": ["fixtures/hooks/default/bash-safe.json"]
+    },
+    {
+      "id": "requirement-format-guard",
+      "script": "scripts/hooks/requirement-format-guard.js",
+      "owner": "framework",
+      "enabled": true,
+      "failMode": "fail-closed",
+      "fixturesRequired": true,
+      "purpose": "Catch requirement-format problems at write-time on PRD / requirements markdown so they don't ship with malformed structure.",
+      "registrations": [{ "event": "PreToolUse", "matcher": "Edit|Write" }],
+      "blocks": ["requirement markdown with malformed format"],
+      "testFixtures": ["fixtures/hooks/default/post-edit.json"]
     }
   ]
 }

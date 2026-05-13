@@ -30,14 +30,14 @@
     "dispatch_engine": 13,
     "schema": 14,
     "migration": 8,
-    "release_capsule": 60,
+    "release_capsule": 65,
     "paths_registry": 1,
     "top_script": 4,
     "version_file": 1,
     "installer_script": 1,
     "framework_doc": 2
   },
-  "total": 494,
+  "total": 499,
   "assets": {
     "agent": [
       {
@@ -5913,6 +5913,66 @@
         "introducedIn": "0.0.0",
         "removedIn": null,
         "replaces": null
+      },
+      {
+        "id": "release_capsule.0.5.0.changelog.md",
+        "src": "framework/releases/0.5.0/changelog.md",
+        "dest": "framework/releases/0.5.0/changelog.md",
+        "kind": "release_capsule",
+        "sha256": "16c52e6766bf",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "release_capsule.0.5.0.checksums.json",
+        "src": "framework/releases/0.5.0/checksums.json",
+        "dest": "framework/releases/0.5.0/checksums.json",
+        "kind": "release_capsule",
+        "sha256": "c83cb208c45a",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "release_capsule.0.5.0.framework-manifest.json",
+        "src": "framework/releases/0.5.0/framework-manifest.json",
+        "dest": "framework/releases/0.5.0/framework-manifest.json",
+        "kind": "release_capsule",
+        "sha256": "4d71bfe1ba0b",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "release_capsule.0.5.0.release.json",
+        "src": "framework/releases/0.5.0/release.json",
+        "dest": "framework/releases/0.5.0/release.json",
+        "kind": "release_capsule",
+        "sha256": "95fc552b74a1",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "release_capsule.0.5.0.upgrade-notes.md",
+        "src": "framework/releases/0.5.0/upgrade-notes.md",
+        "dest": "framework/releases/0.5.0/upgrade-notes.md",
+        "kind": "release_capsule",
+        "sha256": "c77a310329c7",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
       }
     ],
     "paths_registry": [
@@ -5985,7 +6045,7 @@
         "src": "version.json",
         "dest": "version.json",
         "kind": "version_file",
-        "sha256": "75492fb617f3",
+        "sha256": "c833c4de32eb",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
