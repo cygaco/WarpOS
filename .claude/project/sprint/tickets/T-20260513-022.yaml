@@ -2,10 +2,10 @@ schema: warpos/sprint/ticket/v1
 id: T-20260513-022
 title: "RCA module (scripts/warpos/lib/provider-rca.js) + unit tests"
 type: feature
-status: in_review
+status: done
 sprint: SP-20260513-002
 created_at: "2026-05-13T07:24:12.663Z"
-updated_at: "2026-05-13T20:40:24.295Z"
+updated_at: "2026-05-13T21:54:55.064Z"
 owner: null
 owner_agent: null
 risk_level: medium
@@ -50,4 +50,5 @@ fix_attempts: []
 ralph_progress: null
 completion_evidence:
   - "scripts/warpos/lib/provider-rca.js: pure rcaFor() function; tests/warpos/lib/provider-rca.unit.test.js 48/48 pass; AC-4.1/4.2/4.3 all verified incl. unknown_status preservation + defensive null-catalog fallback"
+  - User-approved release closeout 2026-05-13
 reopen_history: []

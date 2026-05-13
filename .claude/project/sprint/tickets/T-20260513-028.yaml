@@ -2,10 +2,10 @@ schema: warpos/sprint/ticket/v1
 id: T-20260513-028
 title: Bounded discussion flow with section coverage QC
 type: feature
-status: in_review
+status: done
 sprint: SP-20260513-001
 created_at: "2026-05-13T08:05:55.337Z"
-updated_at: "2026-05-13T20:49:15.669Z"
+updated_at: "2026-05-13T21:56:53.711Z"
 owner: null
 owner_agent: null
 risk_level: medium
@@ -54,4 +54,6 @@ fix_attempts: []
 ralph_progress: null
 completion_evidence:
   - "Implemented bounded-discussion contract in scripts/product/bootstrap.js: --answers-file ingestion, sanitization (ANSI/BOM strip, 4000-char cap), coverage QC. Skill markdown documents 4-8 turn budget. AC-S-2.1/2.2/2.3 covered by unit tests (coverage QC + skipped_declined satisfies). 49 assertions pass."
+  - User-approved release closeout 2026-05-13
+  - "User-approved release closeout 2026-05-13 (re-promote after concurrent race)"
 reopen_history: []

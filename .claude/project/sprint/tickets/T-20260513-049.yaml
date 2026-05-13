@@ -2,10 +2,10 @@ schema: warpos/sprint/ticket/v1
 id: T-20260513-049
 title: "S-6: Adherence telemetry — skill-suggested-vs-invoked events"
 type: trace
-status: in_review
+status: done
 sprint: SP-20260513-003
 created_at: "2026-05-13T20:23:36.193Z"
-updated_at: "2026-05-13T20:44:45.253Z"
+updated_at: "2026-05-13T21:54:58.588Z"
 owner: null
 owner_agent: null
 risk_level: medium
@@ -56,5 +56,6 @@ blocked_by: []
 blocks: []
 fix_attempts: []
 ralph_progress: null
-completion_evidence: []
+completion_evidence:
+  - "User-approved release closeout 2026-05-13; ranker ships DARK pending baseline"
 reopen_history: []

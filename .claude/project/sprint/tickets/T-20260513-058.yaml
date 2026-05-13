@@ -2,10 +2,10 @@ schema: warpos/sprint/ticket/v1
 id: T-20260513-058
 title: "Postflight external-check primitive (SP-002 boundary)"
 type: integration
-status: in_review
+status: done
 sprint: SP-20260513-005
 created_at: "2026-05-13T20:28:03.666Z"
-updated_at: "2026-05-13T21:30:00.000Z"
+updated_at: "2026-05-13T21:55:45.398Z"
 owner: alpha
 owner_agent: alpha
 risk_level: low
@@ -32,7 +32,7 @@ linked_issues: []
 linked_decisions: []
 linked_external_services: []
 linked_files:
-  - "scripts/warpos/postflight.js"
+  - scripts/warpos/postflight.js
 linked_tests: []
 linked_commits: []
 linked_prs: []
@@ -52,7 +52,19 @@ fix_attempts: []
 ralph_progress: null
 completion_evidence:
   - kind: api-surface
-    note: "postflight.js exports registerExternalCheck({name, resolvePath, required, degradedReason}) → boolean. Module-scoped singleton externalChecks[]. De-dups by name. SP-002 invocation example:\n\n    const pf = require('scripts/warpos/postflight');\n    pf.registerExternalCheck({\n      name: 'provider-smoke',\n      resolvePath: 'paths.providerSmokeSkill',\n      required: false,\n      degradedReason: 'provider-smoke skill not yet shipped',\n    });\n\nAlso exports listExternalChecks() and clearExternalChecks() for testing."
+    note: |
+  postflight.js exports registerExternalCheck({name, resolvePath, required, degradedReason}) → boolean. Module-scoped singleton externalChecks[]. De-dups by name. SP-002 invocation example:
+  
+      const pf = require('scripts/warpos/postflight');
+      pf.registerExternalCheck({
+        name: 'provider-smoke',
+        resolvePath: 'paths.providerSmokeSkill',
+        required: false,
+        degradedReason: 'provider-smoke skill not yet shipped',
+      });
+  
+  Also exports listExternalChecks() and clearExternalChecks() for testing.
   - kind: smoke-test
     note: "Test confirmed: with paths.providerSmokeSkill absent in paths.json → status:degraded with degradedReason in evidence; postflight ok=false unaffected by degraded status; AC-S-8.1 met. AC-S-8.2 covered by runExternalCheck spawnSync path (4096-byte stdout truncation, exit-code → status mapping)."
+  - User-approved release closeout 2026-05-13
 reopen_history: []

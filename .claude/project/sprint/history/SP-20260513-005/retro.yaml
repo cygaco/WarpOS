@@ -1,0 +1,74 @@
+schema: "warpos/sprint/sprint-retrospective/v1"
+sprint_id: "SP-20260513-005"
+plan_contract_id: "PC-20260513-0006"
+synthesis_mode: "skeleton"
+summary: "<TO FILL>"
+outcomes_shipped:
+  - outcome: "<TO FILL>"
+    evidence: []
+    planned: true
+outcomes_missed:
+  - outcome: "<TO FILL>"
+    reason: "<TO FILL>"
+    disposition: unknown
+plan_quality_actual:
+  predicted_status: pass
+  actual_status: "<TO FILL>"
+  predicted_confidence: medium
+  evidence_gaps_predicted:
+    - "Specific recent failure modes the operator has hit — should mine handoffs and events during design."
+    - "Existing release-gates.js coverage map — does it overlap with the new preflight composer or replace it?"
+  evidence_gaps_actual: []
+  notes: "<TO FILL>"
+scope_variant_actual:
+  planned_variant: recommended
+  actual_variant: unknown
+  adhered: false
+  drift_notes: "<TO FILL>"
+surprises: []
+friction_points:
+  - friction: "<TO FILL>"
+    category: other
+    evidence: []
+    severity: low
+action_items:
+  - action: "<TO FILL>"
+    owner: alpha
+    due_by: "<TO FILL>"
+    linked_friction: ""
+tickets_completed:
+  - T-20260513-051
+  - T-20260513-052
+  - T-20260513-053
+  - T-20260513-054
+  - T-20260513-055
+  - T-20260513-056
+  - T-20260513-057
+  - T-20260513-058
+  - T-20260513-059
+  - T-20260513-060
+  - T-20260513-061
+tickets_deferred: []
+tickets_abandoned: []
+tickets_reopened: []
+issues_encountered: []
+beta_decisions_reviewed: []
+key_tradeoffs: []
+learning_candidates: []
+release_record_ref: "RL-20260513-006"
+synthesis_metadata:
+  model_class: ""
+  provider: ""
+  model_id: ""
+  duration_ms: 0
+  output_chars: 0
+  fallback_reason: null
+signed_off_by: "alpha"
+signed_off_at: "2026-05-13T21:57:01.468Z"
+retro_metadata:
+  synthesized_at: "2026-05-13T21:57:01.468Z"
+  writer_version: "1.0.0"
+  history_record: ""
+  force_overwrite: true
+created_at: "2026-05-13T21:57:01.468Z"
+updated_at: "2026-05-13T21:57:01.468Z"

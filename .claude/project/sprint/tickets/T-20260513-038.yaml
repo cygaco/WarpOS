@@ -2,10 +2,10 @@ schema: warpos/sprint/ticket/v1
 id: T-20260513-038
 title: "Author retro.yaml.tmpl + retro.md.tmpl templates"
 type: chore
-status: in_review
+status: done
 sprint: SP-20260513-004
 created_at: "2026-05-13T20:20:32.543Z"
-updated_at: "2026-05-13T22:45:00.000Z"
+updated_at: "2026-05-13T21:55:23.658Z"
 owner: null
 owner_agent: null
 risk_level: low
@@ -29,8 +29,8 @@ linked_issues: []
 linked_decisions: []
 linked_external_services: []
 linked_files:
-  - "framework/templates/sprint/retrospective/retro.yaml.tmpl"
-  - "framework/templates/sprint/retrospective/retro.md.tmpl"
+  - framework/templates/sprint/retrospective/retro.yaml.tmpl
+  - framework/templates/sprint/retrospective/retro.md.tmpl
 linked_tests:
   - "AC-4.1: {{token}} placeholders match fs.js#render regex /\\{\\{\\s*([a-zA-Z0-9_]+)\\s*\\}\\}/"
   - "AC-4.2: MD section order matches COPY C-1 (Summary → Outcomes → Plan Quality → Scope Variant → Surprises → Friction → Action Items → Tickets Completed → Deferred/Abandoned → Issues → Beta Decisions → Key Tradeoffs → Learning Candidates → Sign-off)"
@@ -54,4 +54,5 @@ completion_evidence:
   - "AC-4.1: both .tmpl files exist with {{token}} placeholders matching fs.js#render syntax"
   - "AC-4.2: MD section order verified against COPY C-1 (14 headings, exact order)"
   - "Synthesized array sections rendered to YAML/MD strings by retrospective.js (see T-036)"
+  - User-approved release closeout 2026-05-13
 reopen_history: []

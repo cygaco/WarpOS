@@ -2,10 +2,10 @@ schema: warpos/sprint/ticket/v1
 id: T-20260513-054
 title: "NEW gates: version-quorum + install-baseline + migration-presence"
 type: feature
-status: in_review
+status: done
 sprint: SP-20260513-005
 created_at: "2026-05-13T20:27:25.515Z"
-updated_at: "2026-05-13T21:15:00.000Z"
+updated_at: "2026-05-13T21:55:36.586Z"
 owner: alpha
 owner_agent: alpha
 risk_level: medium
@@ -36,9 +36,9 @@ linked_issues: []
 linked_decisions: []
 linked_external_services: []
 linked_files:
-  - "scripts/checks/warpos-version-quorum.js"
-  - "scripts/checks/warpos-install-baseline.js"
-  - "scripts/checks/warpos-migration-presence.js"
+  - scripts/checks/warpos-version-quorum.js
+  - scripts/checks/warpos-install-baseline.js
+  - scripts/checks/warpos-migration-presence.js
   - ".claude/commands/check/warpos-version-quorum.md"
   - ".claude/commands/check/warpos-install-baseline.md"
   - ".claude/commands/check/warpos-migration-presence.md"
@@ -62,4 +62,5 @@ ralph_progress: null
 completion_evidence:
   - kind: smoke-test
     note: "version-quorum: --json → status:green sources agree on 0.5.0. install-baseline: no baseline → red; --force-fresh → yellow override. migration-presence: capsule 0.5.0 lists 0 migrations → green. All return PreflightGateResult per IN-1. AC-S-4.1/.2/.3 met for happy paths; red paths use schema-checked branches."
+  - User-approved release closeout 2026-05-13
 reopen_history: []

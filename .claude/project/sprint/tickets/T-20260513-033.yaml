@@ -2,10 +2,10 @@ schema: warpos/sprint/ticket/v1
 id: T-20260513-033
 title: paths.json registration via shared helper
 type: feature
-status: in_review
+status: done
 sprint: SP-20260513-001
 created_at: "2026-05-13T08:05:55.795Z"
-updated_at: "2026-05-13T20:49:20.969Z"
+updated_at: "2026-05-13T21:54:58.965Z"
 owner: null
 owner_agent: null
 risk_level: low
@@ -52,4 +52,5 @@ fix_attempts: []
 ralph_progress: null
 completion_evidence:
   - "Added paths.briefs and paths.briefsCurrent to framework/paths.registry.json (regenerated paths.json + paths.generated.js + path-lint.rules.generated.json + schemas/paths.schema.json + PATH_KEYS.md via scripts/paths/build.js). scripts/product/bootstrap.js#registerPaths updates both keys post-write. No registration on QC fail (AC-S-7.4). AP-20260513-003 approved. AC-S-7.1/7.2/7.3/7.4 covered."
+  - User-approved release closeout 2026-05-13
 reopen_history: []

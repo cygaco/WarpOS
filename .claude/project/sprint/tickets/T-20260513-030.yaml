@@ -2,10 +2,10 @@ schema: warpos/sprint/ticket/v1
 id: T-20260513-030
 title: HTML writer with style parity goal
 type: feature
-status: in_review
+status: done
 sprint: SP-20260513-001
 created_at: "2026-05-13T08:05:55.524Z"
-updated_at: "2026-05-13T20:49:15.799Z"
+updated_at: "2026-05-13T21:54:58.714Z"
 owner: null
 owner_agent: null
 risk_level: medium
@@ -51,4 +51,5 @@ fix_attempts: []
 ralph_progress: null
 completion_evidence:
   - "HTML writer in scripts/product/bootstrap.js#writeHtml uses framework/templates/product-bootstrap/brief.html.tmpl. Single-file HTML, DM Serif/DM Mono/Instrument Sans fonts (family resemblance with _docs/ai-web-brief-v4.html). HTML-escape per RT-4 verified by unit test. AC-S-4.1/4.2/4.3 covered."
+  - User-approved release closeout 2026-05-13
 reopen_history: []

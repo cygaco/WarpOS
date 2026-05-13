@@ -2,10 +2,10 @@ schema: warpos/sprint/ticket/v1
 id: T-20260513-057
 title: "Postflight verifier scripts/warpos/postflight.js (5 checks)"
 type: feature
-status: in_review
+status: done
 sprint: SP-20260513-005
 created_at: "2026-05-13T20:27:56.074Z"
-updated_at: "2026-05-13T21:30:00.000Z"
+updated_at: "2026-05-13T21:55:43.010Z"
 owner: alpha
 owner_agent: alpha
 risk_level: medium
@@ -37,7 +37,7 @@ linked_issues: []
 linked_decisions: []
 linked_external_services: []
 linked_files:
-  - "scripts/warpos/postflight.js"
+  - scripts/warpos/postflight.js
 linked_tests: []
 linked_commits: []
 linked_prs: []
@@ -59,6 +59,7 @@ completion_evidence:
   - kind: smoke-test
     note: "Smoke run via require('./scripts/warpos/postflight').runPostflight({targetRoot:cwd, txId, txDir:null}): 5 checks executed in order; manifest-honesty=green, path-resolution=red, applied-migrations=green, provider-smoke=degraded (paths.providerSmokeSkill unresolved), warp-health=degraded. operatorAction='review-then-decide'. Evidence package written when txDir provided. TR-5 per-check + aggregate emitted. AC-S-7.1 met. AC-S-7.2 (strict mode) covered in CLI surface via update.js wiring (deferred to next dispatch — wiring stub exists but full --strict-postflight surface lives in update.js modifications that are append-only with SP-002)."
   - kind: artifact
-    path: "scripts/warpos/postflight.js"
+    path: scripts/warpos/postflight.js
     note: "Exports runPostflight + registerExternalCheck/list/clear primitives + builtin/external check runners."
+  - User-approved release closeout 2026-05-13
 reopen_history: []

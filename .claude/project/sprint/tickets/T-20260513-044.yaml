@@ -2,10 +2,10 @@ schema: warpos/sprint/ticket/v1
 id: T-20260513-044
 title: "S-1: Reasoning episode canonicalized (RT-002)"
 type: research
-status: in_review
+status: done
 sprint: SP-20260513-003
 created_at: "2026-05-13T20:22:39.411Z"
-updated_at: "2026-05-13T20:39:35.717Z"
+updated_at: "2026-05-13T21:54:46.833Z"
 owner: null
 owner_agent: null
 risk_level: low
@@ -50,5 +50,6 @@ blocked_by: []
 blocks: []
 fix_attempts: []
 ralph_progress: null
-completion_evidence: []
+completion_evidence:
+  - "User-approved release closeout 2026-05-13; ranker ships DARK pending baseline"
 reopen_history: []

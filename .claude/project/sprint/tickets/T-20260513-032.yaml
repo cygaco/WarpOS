@@ -2,10 +2,10 @@ schema: warpos/sprint/ticket/v1
 id: T-20260513-032
 title: "Output path policy + re-run versioning + slug validation"
 type: feature
-status: in_review
+status: done
 sprint: SP-20260513-001
 created_at: "2026-05-13T08:05:55.702Z"
-updated_at: "2026-05-13T20:49:20.908Z"
+updated_at: "2026-05-13T21:54:58.900Z"
 owner: null
 owner_agent: null
 risk_level: medium
@@ -59,4 +59,5 @@ fix_attempts: []
 ralph_progress: null
 completion_evidence:
   - "Slug regex ^[a-z0-9][a-z0-9-]{0,63}$ enforced (exit 2 with normalized suggestion). Output dir resolution + containment check (RT-1) blocks ../ escapes. --rerun-policy version moves prior brief into <slug>/history/<ISO-8601>/. --rerun-policy overwrite replaces. --rerun-policy prompt falls back to version when non-TTY. Lock file (RT-5) acquired pre-write with stale-lock recovery (10min). AC-S-6.1 through 6.6 covered."
+  - User-approved release closeout 2026-05-13
 reopen_history: []

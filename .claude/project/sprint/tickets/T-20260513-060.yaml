@@ -2,10 +2,10 @@ schema: warpos/sprint/ticket/v1
 id: T-20260513-060
 title: "/warp:update.md procedure update + troubleshooting"
 type: docs
-status: in_review
+status: done
 sprint: SP-20260513-005
 created_at: "2026-05-13T20:28:20.088Z"
-updated_at: "2026-05-13T21:30:00.000Z"
+updated_at: "2026-05-13T21:55:49.876Z"
 owner: alpha
 owner_agent: alpha
 risk_level: low
@@ -72,4 +72,5 @@ completion_evidence:
   - kind: artifact
     path: ".claude/commands/warp/update.md"
     note: "Append-only update: added Preflight section (10 gates table with mitigations + override flags), Transaction section (begin/commit/rollback semantics + R-30/R-31/R-32/R-33), Postflight section (5 checks + SP-002 provider-smoke annotation), full override-flag table, and Troubleshooting section indexed to F-1..F-9 from failure-mining.md. See Also section now references preflight.js / transaction.js / postflight.js / lib/update-events.js. AC-S-10.1/.2 met. Coordinates with SP-002 via append-only contract — SP-002 may add one bullet to the Postflight section for provider-smoke."
+  - User-approved release closeout 2026-05-13
 reopen_history: []

@@ -2,10 +2,10 @@ schema: warpos/sprint/ticket/v1
 id: T-20260513-031
 title: "DOCX writer with pandoc shellout + fallback"
 type: feature
-status: in_review
+status: done
 sprint: SP-20260513-001
 created_at: "2026-05-13T08:05:55.617Z"
-updated_at: "2026-05-13T20:49:20.844Z"
+updated_at: "2026-05-13T21:54:58.800Z"
 owner: null
 owner_agent: null
 risk_level: medium
@@ -54,4 +54,5 @@ fix_attempts: []
 ralph_progress: null
 completion_evidence:
   - "DOCX writer in scripts/product/bootstrap.js#writeDocx: probes pandoc via 'where pandoc' (Windows) / 'which pandoc' (Unix) with 2s timeout. Pandoc NOT on PATH on dev env → fallback path is shipped (clear install hint with winget/choco/brew/apt). --docx-backend pandoc + absent exits 5 BEFORE any writes. --docx-backend none skips silently. AC-S-5.1/5.2/5.3/5.4 covered. pandoc-available not exercised yet (ESD-20260513-001 deferred)."
+  - User-approved release closeout 2026-05-13
 reopen_history: []

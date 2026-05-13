@@ -2,10 +2,10 @@ schema: warpos/sprint/ticket/v1
 id: T-20260513-041
 title: "Design + wire the synthesis prompt"
 type: feature
-status: in_review
+status: done
 sprint: SP-20260513-004
 created_at: "2026-05-13T20:20:57.228Z"
-updated_at: "2026-05-13T23:28:00.000Z"
+updated_at: "2026-05-13T21:55:30.897Z"
 owner: null
 owner_agent: null
 risk_level: medium
@@ -60,4 +60,5 @@ completion_evidence:
   - "Routing entry in sprint-routing.json#policies.retrospective; verified via scripts/sprint/routing.js"
   - "Prompt enforces evidence-only synthesis (AC-6.2), unknown markers (AC-6.3), injection-defense delimiters (redteam A-3)"
   - "Output shape mirrors retro YAML — host merger picks whitelisted keys, skeleton fills the rest"
+  - User-approved release closeout 2026-05-13
 reopen_history: []

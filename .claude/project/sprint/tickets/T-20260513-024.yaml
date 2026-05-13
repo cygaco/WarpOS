@@ -2,10 +2,10 @@ schema: warpos/sprint/ticket/v1
 id: T-20260513-024
 title: "Wire provider-smoke calls into /warp:setup + /warp:update docs"
 type: docs
-status: in_review
+status: done
 sprint: SP-20260513-002
 created_at: "2026-05-13T07:24:14.907Z"
-updated_at: "2026-05-13T21:04:01.339Z"
+updated_at: "2026-05-13T21:54:59.297Z"
 owner: null
 owner_agent: null
 risk_level: low
@@ -50,4 +50,5 @@ fix_attempts: []
 ralph_progress: null
 completion_evidence:
   - "setup.md + update.md provider-smoke sections shipped (separate H2 from SP-005 ownership, append-only). registerExternalCheck wire-up live in scripts/warpos/postflight.js (self-register on module-load, idempotent). paths.providerSmokeSkill key added to .claude/paths.json."
+  - User-approved release closeout 2026-05-13
 reopen_history: []

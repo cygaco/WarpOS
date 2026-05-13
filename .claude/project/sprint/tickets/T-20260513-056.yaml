@@ -2,10 +2,10 @@ schema: warpos/sprint/ticket/v1
 id: T-20260513-056
 title: Atomic commit-or-rollback during apply
 type: feature
-status: in_review
+status: done
 sprint: SP-20260513-005
 created_at: "2026-05-13T20:27:47.339Z"
-updated_at: "2026-05-13T21:30:00.000Z"
+updated_at: "2026-05-13T21:55:41.017Z"
 owner: alpha
 owner_agent: alpha
 risk_level: high
@@ -37,8 +37,8 @@ linked_decisions:
   - AP-20260513-007
 linked_external_services: []
 linked_files:
-  - "scripts/warpos/transaction.js"
-  - "scripts/warpos/test-transaction-smoke.js"
+  - scripts/warpos/transaction.js
+  - scripts/warpos/test-transaction-smoke.js
 linked_tests: []
 linked_commits: []
 linked_prs: []
@@ -60,6 +60,7 @@ completion_evidence:
   - kind: smoke-test
     note: "test-transaction-smoke.js: rollback path. restoredCount=1 (UPDATE_SAFE backup), unlinkedCount=1 (ADD_SAFE), partial=false. Pre-existing file content restored verbatim; added file unlinked; active.lock cleared. result.json{outcome:'rolled-back', rollback.restoredCount+unlinkedCount=2}. AC-S-6.1/.2 met. AC-S-6.3 rollback-partial branch covered in code (writeDiagnostic + outcome:rollback-partial)."
   - kind: artifact
-    path: "scripts/warpos/transaction.js"
+    path: scripts/warpos/transaction.js
     note: "rollbackTransaction(txDir, opts) implements R-30 (--undo snapshots pre-rollback), R-31 (hash verify before restore), R-32 (clears active.lock). AP-20260513-007 approval honored."
+  - User-approved release closeout 2026-05-13
 reopen_history: []

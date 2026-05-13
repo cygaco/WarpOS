@@ -2,10 +2,10 @@ schema: warpos/sprint/ticket/v1
 id: T-20260513-061
 title: "Failure event schema + emission (lib/update-events.js)"
 type: trace
-status: in_review
+status: done
 sprint: SP-20260513-005
 created_at: "2026-05-13T20:28:28.583Z"
-updated_at: "2026-05-13T21:30:00.000Z"
+updated_at: "2026-05-13T21:55:51.949Z"
 owner: alpha
 owner_agent: alpha
 risk_level: low
@@ -35,7 +35,7 @@ linked_issues: []
 linked_decisions: []
 linked_external_services: []
 linked_files:
-  - "scripts/warpos/lib/update-events.js"
+  - scripts/warpos/lib/update-events.js
 linked_tests: []
 linked_commits: []
 linked_prs: []
@@ -55,8 +55,9 @@ fix_attempts: []
 ralph_progress: null
 completion_evidence:
   - kind: artifact
-    path: "scripts/warpos/lib/update-events.js"
+    path: scripts/warpos/lib/update-events.js
     note: "Exports emitPreflightGate, emitPreflightSummary, emitTransactionStart, emitTransactionCommit, emitTransactionRollback, emitPostflight, emitPostflightCheck, emitEvidence — 8 emitters for 6 TRACE event categories (TR-1..TR-6). Categories: warpos.update.preflight, warpos.update.transaction.{start,commit,rollback}, warpos.update.postflight, warpos.update.evidence. Fail-open: I/O errors swallowed. Resolves events file via WARPOS_EVENTS_FILE env, paths.eventsFile in .claude/paths.json, or conventional fallback."
   - kind: smoke-test
     note: "resolveEventsFile(cwd) returns the canonical events.jsonl path. preflight.js and postflight.js both wire to it; transaction.js too. AC-S-11.1/.2 covered structurally — actual count assertions deferred to update.js integration tests in a follow-up dispatch (the integration boundary is append-only with SP-002 on update.js)."
+  - User-approved release closeout 2026-05-13
 reopen_history: []

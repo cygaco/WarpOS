@@ -2,10 +2,10 @@ schema: warpos/sprint/ticket/v1
 id: T-20260513-048
 title: "S-5: Skill catalog generator + paths.skillCatalog index"
 type: feature
-status: in_review
+status: done
 sprint: SP-20260513-003
 created_at: "2026-05-13T20:23:26.615Z"
-updated_at: "2026-05-13T21:08:22.162Z"
+updated_at: "2026-05-13T21:54:56.604Z"
 owner: null
 owner_agent: null
 risk_level: medium
@@ -56,4 +56,5 @@ fix_attempts: []
 ralph_progress: null
 completion_evidence:
   - "paths.skillCatalog NOW registered in framework/paths.registry.json#paths.skillCatalog (kind=json, owner=generated, introducedIn=0.5.1) and propagated to .claude/paths.json via scripts/paths/build.js. Catalog regenerated to 129 entries. AC-5.5 now satisfied (was missing in prior in_review note)."
+  - "User-approved release closeout 2026-05-13; ranker ships DARK pending baseline"
 reopen_history: []

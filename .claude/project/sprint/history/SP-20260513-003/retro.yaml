@@ -1,0 +1,69 @@
+schema: "warpos/sprint/sprint-retrospective/v1"
+sprint_id: "SP-20260513-003"
+plan_contract_id: "PC-20260513-0004"
+synthesis_mode: "skeleton"
+summary: "<TO FILL>"
+outcomes_shipped:
+  - outcome: "<TO FILL>"
+    evidence: []
+    planned: true
+outcomes_missed:
+  - outcome: "<TO FILL>"
+    reason: "<TO FILL>"
+    disposition: unknown
+plan_quality_actual:
+  predicted_status: pass
+  actual_status: "<TO FILL>"
+  predicted_confidence: medium
+  evidence_gaps_predicted:
+    - "Baseline adherence rate is unknown — design should establish it before deciding on telemetry scope."
+  evidence_gaps_actual: []
+  notes: "<TO FILL>"
+scope_variant_actual:
+  planned_variant: recommended
+  actual_variant: unknown
+  adhered: false
+  drift_notes: "<TO FILL>"
+surprises: []
+friction_points:
+  - friction: "<TO FILL>"
+    category: other
+    evidence: []
+    severity: low
+action_items:
+  - action: "<TO FILL>"
+    owner: alpha
+    due_by: "<TO FILL>"
+    linked_friction: ""
+tickets_completed:
+  - T-20260513-044
+  - T-20260513-045
+  - T-20260513-046
+  - T-20260513-047
+  - T-20260513-048
+  - T-20260513-049
+  - T-20260513-050
+tickets_deferred: []
+tickets_abandoned: []
+tickets_reopened: []
+issues_encountered: []
+beta_decisions_reviewed: []
+key_tradeoffs: []
+learning_candidates: []
+release_record_ref: "RL-20260513-004"
+synthesis_metadata:
+  model_class: ""
+  provider: ""
+  model_id: ""
+  duration_ms: 0
+  output_chars: 0
+  fallback_reason: null
+signed_off_by: "alpha"
+signed_off_at: "2026-05-13T21:56:17.066Z"
+retro_metadata:
+  synthesized_at: "2026-05-13T21:56:17.066Z"
+  writer_version: "1.0.0"
+  history_record: ""
+  force_overwrite: true
+created_at: "2026-05-13T21:56:17.066Z"
+updated_at: "2026-05-13T21:56:17.066Z"

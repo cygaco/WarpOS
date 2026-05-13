@@ -2,10 +2,10 @@ schema: warpos/sprint/ticket/v1
 id: T-20260513-034
 title: "Onboarding callout + docs/release-notes entry"
 type: chore
-status: in_review
+status: done
 sprint: SP-20260513-001
 created_at: "2026-05-13T08:05:55.900Z"
-updated_at: "2026-05-13T20:49:21.030Z"
+updated_at: "2026-05-13T21:54:59.036Z"
 owner: null
 owner_agent: null
 risk_level: low
@@ -50,4 +50,5 @@ fix_attempts: []
 ralph_progress: null
 completion_evidence:
   - "Drafted release notes at _docs/sprint/CHANGELOG_0.5.1.md documenting the new /product:bootstrap skill, /product: namespace, paths.briefs/briefsCurrent keys, TRACE events, and downstream consumers. No _docs/ index or onboarding file exists in this repo, so no callout was added — respects AC-S-8.3 (no new file invented). AC-S-8.1 is gated-on-existing per β; AC-S-8.2 trivially passes (no existing onboarding tests)."
+  - User-approved release closeout 2026-05-13
 reopen_history: []

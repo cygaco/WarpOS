@@ -2,10 +2,10 @@ schema: warpos/sprint/ticket/v1
 id: T-20260513-051
 title: "Failure-mode mining catalog for /warp:update"
 type: research
-status: in_review
+status: done
 sprint: SP-20260513-005
 created_at: "2026-05-13T20:26:58.808Z"
-updated_at: "2026-05-13T21:05:00.000Z"
+updated_at: "2026-05-13T21:55:29.918Z"
 owner: alpha
 owner_agent: alpha
 risk_level: low
@@ -50,4 +50,5 @@ completion_evidence:
   - kind: artifact
     path: ".claude/project/sprint/sprints/SP-20260513-005/failure-mining.md"
     note: "10 failure signatures (F-1..F-10) with cited timestamps from handoffs + events.jsonl. AC-S-1.1 satisfied (>=8 signatures, citations, coverage map)."
+  - User-approved release closeout 2026-05-13
 reopen_history: []

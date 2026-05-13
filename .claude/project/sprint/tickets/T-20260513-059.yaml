@@ -2,10 +2,10 @@ schema: warpos/sprint/ticket/v1
 id: T-20260513-059
 title: Cross-version replay test bench
 type: qa
-status: in_review
+status: done
 sprint: SP-20260513-005
 created_at: "2026-05-13T20:28:11.175Z"
-updated_at: "2026-05-13T21:30:00.000Z"
+updated_at: "2026-05-13T21:55:47.734Z"
 owner: alpha
 owner_agent: alpha
 risk_level: medium
@@ -29,8 +29,8 @@ linked_issues: []
 linked_decisions: []
 linked_external_services: []
 linked_files:
-  - "scripts/warpos/test-cross-version-replay.js"
-  - "scripts/warpos/test-transaction-smoke.js"
+  - scripts/warpos/test-cross-version-replay.js
+  - scripts/warpos/test-transaction-smoke.js
 linked_tests: []
 linked_commits: []
 linked_prs: []
@@ -52,6 +52,7 @@ completion_evidence:
   - kind: smoke-test
     note: "node scripts/warpos/test-cross-version-replay.js → ALL 7 ASSERTIONS PASSED. Scenario 1 (clean fixture at 0.4.4 → 0.5.0): install-baseline green, capsule-resolvable green, version-quorum green, migration-presence green. Scenario 2 (drift mutation: framework-manifest claims 0.2.2): version-quorum RED with disagreement evidence; preflight ok=false redCount=2. R-34 override branch: with --allow-version-drift, version-quorum re-interpreted as yellow with overrideUsed=true. AC-S-9.1/.2 met."
   - kind: artifact
-    path: "scripts/warpos/test-cross-version-replay.js"
+    path: scripts/warpos/test-cross-version-replay.js
     note: "Fixture-builder + test harness. Builds runtime/qa-warp-update/clean-0.4.4/. Note: per Plan Contract, this dispatch ships the SMOKE bench with two scenarios; full multi-hop matrix (cross-capsule chain) is deferred to a follow-up ticket."
+  - User-approved release closeout 2026-05-13
 reopen_history: []

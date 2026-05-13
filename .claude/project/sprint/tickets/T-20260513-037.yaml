@@ -2,10 +2,10 @@ schema: warpos/sprint/ticket/v1
 id: T-20260513-037
 title: Write skill doc .claude/commands/sprint/retrospective.md
 type: feature
-status: in_review
+status: done
 sprint: SP-20260513-004
 created_at: "2026-05-13T20:20:19.587Z"
-updated_at: "2026-05-13T23:18:00.000Z"
+updated_at: "2026-05-13T21:55:21.673Z"
 owner: null
 owner_agent: null
 risk_level: low
@@ -63,4 +63,5 @@ completion_evidence:
   - "Sections match release.md structure: When-to-use, Inputs, Procedure (numbered), Outputs, Recovery, Approval gates, Routing, Reference"
   - "Inputs table covers --sprint, --no-synth, --force, --review-only, --no-plan-contract, --retry-synth, --signed-off-by (covers IN-1..8)"
   - "Procedure documents the 7 steps: confirm closed → collect → synthesize → review → write → sign-off → surface (matches PRD R-3)"
+  - User-approved release closeout 2026-05-13
 reopen_history: []

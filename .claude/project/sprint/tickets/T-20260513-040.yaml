@@ -2,10 +2,10 @@ schema: warpos/sprint/ticket/v1
 id: T-20260513-040
 title: "Status transition closed to retrospected + active-sprints enum update"
 type: feature
-status: in_review
+status: done
 sprint: SP-20260513-004
 created_at: "2026-05-13T20:20:45.361Z"
-updated_at: "2026-05-13T23:05:00.000Z"
+updated_at: "2026-05-13T21:55:28.704Z"
 owner: null
 owner_agent: null
 risk_level: medium
@@ -61,4 +61,5 @@ completion_evidence:
   - "AC-5.2 + AC-5.3: retrospective.js#flipStatusToRetrospected — idempotent; tested live against SP-20260512-001"
   - "Hard gate: sprint not in closed|abandoned → script exits 3 with COPY C-2; TR-4 emitted via logEvent"
   - "AP-20260513-005 covers this (PRD design decision #3 + R-5 scope)"
+  - User-approved release closeout 2026-05-13
 reopen_history: []

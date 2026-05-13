@@ -2,10 +2,10 @@ schema: warpos/sprint/ticket/v1
 id: T-20260513-023
 title: "Auto-fix dispatcher (scripts/warpos/lib/provider-autofix.js) — safe-only"
 type: feature
-status: in_review
+status: done
 sprint: SP-20260513-002
 created_at: "2026-05-13T07:24:13.562Z"
-updated_at: "2026-05-13T20:45:55.482Z"
+updated_at: "2026-05-13T21:54:57.294Z"
 owner: null
 owner_agent: null
 risk_level: medium
@@ -50,4 +50,5 @@ fix_attempts: []
 ralph_progress: null
 completion_evidence:
   - "scripts/warpos/lib/provider-autofix.js: safe-only dispatcher with closed ALLOWED_RECIPE_KINDS {set_env_and_reprobe, retry_with_same_timeout} + ALLOWED_ENV_KEYS {GEMINI_CLI_TRUST_WORKSPACE} + FORBIDDEN_ENV_SUBSTRINGS {API_KEY,TOKEN,AUTH,SECRET,PASSWORD,SESSION,OAUTH,...}. tests/warpos/lib/provider-autofix.unit.test.js 59/59 pass including RT-2 catalog lint (no safe_to_autofix=true entry can mutate operator auth). AC-5.1/5.2/5.3 all green. Wired into provider-smoke.js#run."
+  - User-approved release closeout 2026-05-13
 reopen_history: []

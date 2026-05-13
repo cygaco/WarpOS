@@ -2,10 +2,10 @@ schema: warpos/sprint/ticket/v1
 id: T-20260513-020
 title: Wire provider-smoke into release.json postUpdateChecks
 type: integration
-status: in_review
+status: done
 sprint: SP-20260513-002
 created_at: "2026-05-13T07:24:10.444Z"
-updated_at: "2026-05-13T20:48:08.342Z"
+updated_at: "2026-05-13T21:54:49.456Z"
 owner: null
 owner_agent: null
 risk_level: medium
@@ -49,4 +49,5 @@ fix_attempts: []
 ralph_progress: null
 completion_evidence:
   - "scripts/warpos/release-canonical.js#buildSkeletonReleaseJson now emits provider-smoke as terminal postUpdateChecks entry. Sealed 0.5.0 capsule untouched (checksum integrity preserved). tests/warpos/release-postUpdateChecks.test.js 73/73 pass — covers RT-4 (no shell interpolation in any historical capsule) + AC-2.1 entry-shape contract. SP-005 boundary: standalone CLI; can migrate to registerExternalCheck when SP-005 exposes it."
+  - User-approved release closeout 2026-05-13
 reopen_history: []

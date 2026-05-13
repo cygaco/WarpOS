@@ -7,11 +7,11 @@ linked_ticket: null
 linked_external_service: null
 linked_release: RL-20260513-004
 linked_decision: null
-state: pending
+state: approved
 requested_by: alpha
-decided_by: null
-decided_at: null
-reason: ""
+decided_by: user
+decided_at: "2026-05-13T22:50:00.000Z"
+reason: "User explicit approval 2026-05-13: 'I give you approval to do all of that. APPROVED.' Note: ranker ships DARK by SKILL_RANKER_ENABLED env flag; operator flips after 24-48h baseline."
 evidence:
   - "Release record RL-20260513-004 at status=preparing; auto-detectable gates green."
   - "7 tickets in_review (T-044..T-050). Audit critical=0 after fixing 18 critical skill-description issues inline."

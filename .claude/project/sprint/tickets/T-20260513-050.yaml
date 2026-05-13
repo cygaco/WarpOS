@@ -2,10 +2,10 @@ schema: warpos/sprint/ticket/v1
 id: T-20260513-050
 title: "S-7: Skill description audit — flag ambiguous / missing for ranker quality"
 type: qa
-status: in_review
+status: done
 sprint: SP-20260513-003
 created_at: "2026-05-13T20:23:44.766Z"
-updated_at: "2026-05-13T21:08:11.940Z"
+updated_at: "2026-05-13T21:55:00.586Z"
 owner: null
 owner_agent: null
 risk_level: low
@@ -50,4 +50,5 @@ fix_attempts: []
 ralph_progress: null
 completion_evidence:
   - "Audit report written to runtime/notes/skill-description-audit.md. Initial run flagged 18 criticals; all fixed inline (description expansions + STUB/DEPRECATED reordering to satisfy stop-leader heuristic). Final audit: scanned=129 ok=18 tag-only=111 critical=0 (AC-7.1/7.2/7.3). Script re-runnable and deterministic; tag-only entries deferred per ticket scope."
+  - "User-approved release closeout 2026-05-13; ranker ships DARK pending baseline"
 reopen_history: []

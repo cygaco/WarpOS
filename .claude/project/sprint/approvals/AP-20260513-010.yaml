@@ -7,11 +7,11 @@ linked_ticket: null
 linked_external_service: null
 linked_release: RL-20260513-003
 linked_decision: null
-state: pending
+state: approved
 requested_by: alpha
-decided_by: null
-decided_at: null
-reason: ""
+decided_by: user
+decided_at: "2026-05-13T22:50:00.000Z"
+reason: "User explicit approval 2026-05-13: 'I give you approval to do all of that. APPROVED.'"
 evidence:
   - "Release record RL-20260513-003 at status=preparing; auto-detectable gates green for requirements/copy/inputs/trace/AC/qa/external-services/creds/notes/docs/migration/rollback/monitoring."
   - "8 tickets: 3 done (T-019/T-021/T-025), 5 in_review (T-020/T-022/T-023/T-024/T-026). 299 test cases passing across 5 suites."

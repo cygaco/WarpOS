@@ -2,10 +2,10 @@ schema: warpos/sprint/ticket/v1
 id: T-20260513-046
 title: "S-3: Lexicon updated with skill-use vocabulary (4 entries)"
 type: docs
-status: in_review
+status: done
 sprint: SP-20260513-003
 created_at: "2026-05-13T20:23:07.533Z"
-updated_at: "2026-05-13T21:08:02.611Z"
+updated_at: "2026-05-13T21:54:51.852Z"
 owner: null
 owner_agent: null
 risk_level: low
@@ -50,4 +50,5 @@ fix_attempts: []
 ralph_progress: null
 completion_evidence:
   - "Lexicon Skill Use section appended at paths.lexicon with 6 entries (Organic skill use, Skill ranker, Skill catalog, Skill-suggested, Skill-invoked, Adherence rate); format mirrors existing entries (AC-3.1/3.2)."
+  - "User-approved release closeout 2026-05-13; ranker ships DARK pending baseline"
 reopen_history: []

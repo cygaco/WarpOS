@@ -2,10 +2,10 @@ schema: warpos/sprint/ticket/v1
 id: T-20260513-053
 title: "NEW gate skill check:warpos-capsule-resolvable"
 type: feature
-status: in_review
+status: done
 sprint: SP-20260513-005
 created_at: "2026-05-13T20:27:16.879Z"
-updated_at: "2026-05-13T21:15:00.000Z"
+updated_at: "2026-05-13T21:55:34.438Z"
 owner: alpha
 owner_agent: alpha
 risk_level: medium
@@ -32,7 +32,7 @@ linked_issues: []
 linked_decisions: []
 linked_external_services: []
 linked_files:
-  - "scripts/checks/warpos-capsule-resolvable.js"
+  - scripts/checks/warpos-capsule-resolvable.js
   - ".claude/commands/check/warpos-capsule-resolvable.md"
 linked_tests: []
 linked_commits: []
@@ -54,4 +54,5 @@ ralph_progress: null
 completion_evidence:
   - kind: smoke-test
     note: "node scripts/checks/warpos-capsule-resolvable.js --to 0.5.0 --json → status:green resolvedAt=framework/releases/0.5.0; --to 0.99.99 --json → status:red with availableVersions + 3-step remediation. AC-S-3.1/.2 met. Malformed-JSON path implemented as inline try/catch in inspect() — AC-S-3.3 covered (no throw)."
+  - User-approved release closeout 2026-05-13
 reopen_history: []
