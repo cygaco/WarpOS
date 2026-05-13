@@ -2,15 +2,15 @@ schema: warpos/sprint/current-sprint/v1
 id: SP-20260513-005
 title: "Harden /warp:update — preflight + transactional apply + postflight verify"
 objective: "Make /warp:update reliable enough that operators can update downstream projects without fear: preflight gates, transactional apply with rollback, postflight verification."
-status: executing
+status: releasing
 created_at: "2026-05-13T06:27:46.887Z"
-updated_at: "2026-05-13T21:35:00.000Z"
+updated_at: "2026-05-13T21:28:12.204Z"
 source_request: "Harden /warp:update — operator reports fear and tons of troubleshooting on every version bump. Add preflight + postflight + rollback so updates either succeed cleanly or stop without damage."
 interpreted_intent: "Reduce the failure rate (and emotional cost) of /warp:update when applied to downstream projects. Identify recurring failure modes from session + event history, add preflight gates that prevent unsafe applies, wrap the apply phase transactionally with rollback on any failure, and verify the install postflight before declaring success."
 plan_contract: ".claude/project/sprint/plan-contracts/PC-20260513-0006.yaml"
 risk_level: high
 approval_state: none_required
-current_phase: execute
+current_phase: release
 recommended_mode: adhoc
 mode_invocation_required_by_user: true
 lane:
@@ -113,7 +113,7 @@ reports:
   plan: ".claude/project/sprint/plan-contracts/PC-20260513-0006.report.md"
   design: null
   execution: null
-  release: null
+  release: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\releases\\RL-20260513-006.yaml"
 ralph:
   active: false
   current_ticket: null
@@ -123,8 +123,8 @@ ralph:
   next_action: null
 crash_recovery:
   last_checkpoint: ".claude/project/sprint/sprint-progress.yaml"
-  resume_command: "/sprint:design"
-  resume_summary: "Sprint SP-20260513-005 design scaffolded (scale=l). Next: mint tickets from granular-stories, then run /sprint:execute."
+  resume_command: "/sprint:release"
+  resume_summary: "Release RL-20260513-006 in preparing state. Run /sprint:release with --id RL-20260513-006."
   active_files: []
   dirty_state: false
   blockers: []

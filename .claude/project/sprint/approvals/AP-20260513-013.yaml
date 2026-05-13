@@ -1,0 +1,26 @@
+schema: warpos/sprint/approval/v1
+id: AP-20260513-013
+sprint: SP-20260513-005
+level: release_approval_required
+required_for: "Production deploy of RL-20260513-006 — hardened /warp:update: preflight composer + transactional apply wrapper + postflight verifier + 4 new check:warpos-* gates + registerExternalCheck primitive."
+linked_ticket: null
+linked_external_service: null
+linked_release: RL-20260513-006
+linked_decision: null
+state: pending
+requested_by: alpha
+decided_by: null
+decided_at: null
+reason: ""
+evidence:
+  - "Release record RL-20260513-006 at status=preparing; auto-detectable gates green."
+  - "11 tickets in_review (T-051..T-061). transaction-smoke 17/17 PASS, cross-version-replay 7/7 PASS."
+  - "R-30..R-34 red-team mitigations baked in: hashed atomic snapshot, active.lock concurrent guard, re-run fast preflight at begin, explicit override flags. (Note: R-30..R-34 are stranded in redteam-plan.md not yet promoted to prd.md — see /check:requirements.)"
+  - "KNOWN FOLLOW-UP T-20260513-062 (proposed): wire runPreflight→beginTransaction→apply-try/catch→commit/rollback→runPostflight INTO update.js#run() itself. Modules deliberately standalone in dispatch 1 to preserve append-only boundary with SP-002. Integration unblocked now that SP-002 ships."
+  - "registerExternalCheck primitive exposed; SP-002 self-registers `provider-smoke` at module load."
+  - "AP-007 (transactional-apply architecture, Class C) + AP-008 (release-gates.js extension, Class B) were the build-time approvals; this AP-013 is the deploy-time approval."
+  - "redteam_passed gate intentionally not flipped — RT mitigations in design + transaction-smoke tests + cross-version-replay tests don't substitute for a formal redteam audit pass."
+  - "Release notes at _docs/sprint/CHANGELOG_0.5.1.md."
+  - "User pre-authorized release intent 2026-05-13: 'I APPROVE ALL. APPROVED.' — approval state remains pending pending final human review + actual deploy out-of-band."
+created_at: "2026-05-13T22:35:00.000Z"
+updated_at: "2026-05-13T22:35:00.000Z"

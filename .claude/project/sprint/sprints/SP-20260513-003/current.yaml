@@ -2,15 +2,15 @@ schema: warpos/sprint/current-sprint/v1
 id: SP-20260513-003
 title: "Organic skill use by agents — research + mechanism"
 objective: "Make Alpha (and other agents) reach for skills under .claude/commands organically, beginning with /reasoning:run to choose the mechanism."
-status: designing
+status: releasing
 created_at: "2026-05-13T06:27:46.887Z"
-updated_at: "2026-05-13T20:24:04.343Z"
+updated_at: "2026-05-13T21:28:12.084Z"
 source_request: "Get agents to use skills under .claude/commands organically, without the user having to prompt manually each time. Use /reasoning:run to examine the best approach."
 interpreted_intent: "Raise the rate at which agents — primarily Alpha, also Beta/Gamma/Delta — invoke existing skills under .claude/commands when the user's request matches a skill's purpose, without the user typing the slash command. User explicitly requested /reasoning:run as the first step to evaluate mechanism candidates."
 plan_contract: ".claude/project/sprint/plan-contracts/PC-20260513-0004.yaml"
 risk_level: medium
 approval_state: none_required
-current_phase: design
+current_phase: release
 recommended_mode: solo
 mode_invocation_required_by_user: true
 lane:
@@ -109,7 +109,7 @@ reports:
   plan: ".claude/project/sprint/plan-contracts/PC-20260513-0004.report.md"
   design: null
   execution: null
-  release: null
+  release: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\releases\\RL-20260513-004.yaml"
 ralph:
   active: false
   current_ticket: null
@@ -119,8 +119,8 @@ ralph:
   next_action: null
 crash_recovery:
   last_checkpoint: ".claude/project/sprint/sprint-progress.yaml"
-  resume_command: "/sprint:design"
-  resume_summary: "Sprint SP-20260513-003 design scaffolded (scale=m). Next: mint tickets from granular-stories, then run /sprint:execute."
+  resume_command: "/sprint:release"
+  resume_summary: "Release RL-20260513-004 in preparing state. Run /sprint:release with --id RL-20260513-004."
   active_files: []
   dirty_state: false
   blockers: []

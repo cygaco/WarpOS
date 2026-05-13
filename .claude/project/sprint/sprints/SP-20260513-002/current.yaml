@@ -2,15 +2,15 @@ schema: warpos/sprint/current-sprint/v1
 id: SP-20260513-002
 title: "WarpOS install/update provider smoke test + RCA"
 objective: "Guarantee that after /warp:install or /warp:update, every required provider works — or the framework explains why and fixes it when safe."
-status: executing
+status: releasing
 created_at: "2026-05-13T06:27:46.887Z"
-updated_at: "2026-05-13T21:40:00.000Z"
+updated_at: "2026-05-13T21:28:12.022Z"
 source_request: "Smoke test that runs after /warp:install and /warp:update to verify models/providers work, with root-cause analysis and auto-fix when a provider is broken."
 interpreted_intent: "Wire the existing provider-health primitive into /warp:install and /warp:update lifecycles as a smoke gate; on red/yellow status, run an RCA that maps the failure status to a known root cause and applies an auto-fix when safe, else prints explicit remediation."
 plan_contract: ".claude/project/sprint/plan-contracts/PC-20260513-0003.yaml"
 risk_level: medium
 approval_state: none_required
-current_phase: execute
+current_phase: release
 recommended_mode: adhoc
 mode_invocation_required_by_user: true
 lane:
@@ -110,7 +110,7 @@ reports:
   plan: ".claude/project/sprint/plan-contracts/PC-20260513-0003.report.md"
   design: null
   execution: null
-  release: null
+  release: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\releases\\RL-20260513-003.yaml"
 ralph:
   active: false
   current_ticket: null
@@ -120,8 +120,8 @@ ralph:
   next_action: null
 crash_recovery:
   last_checkpoint: ".claude/project/sprint/sprint-progress.yaml"
-  resume_command: "/sprint:design"
-  resume_summary: "Sprint SP-20260513-002 design scaffolded (scale=m). Next: mint tickets from granular-stories, then run /sprint:execute."
+  resume_command: "/sprint:release"
+  resume_summary: "Release RL-20260513-003 in preparing state. Run /sprint:release with --id RL-20260513-003."
   active_files: []
   dirty_state: false
   blockers: []

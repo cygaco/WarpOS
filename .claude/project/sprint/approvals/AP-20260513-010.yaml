@@ -1,0 +1,24 @@
+schema: warpos/sprint/approval/v1
+id: AP-20260513-010
+sprint: SP-20260513-002
+level: release_approval_required
+required_for: "Production deploy of RL-20260513-003 — provider smoke + RCA + safe-only auto-fix dispatcher + failure-mode catalog wired into /warp:install and /warp:update lifecycles."
+linked_ticket: null
+linked_external_service: null
+linked_release: RL-20260513-003
+linked_decision: null
+state: pending
+requested_by: alpha
+decided_by: null
+decided_at: null
+reason: ""
+evidence:
+  - "Release record RL-20260513-003 at status=preparing; auto-detectable gates green for requirements/copy/inputs/trace/AC/qa/external-services/creds/notes/docs/migration/rollback/monitoring."
+  - "8 tickets: 3 done (T-019/T-021/T-025), 5 in_review (T-020/T-022/T-023/T-024/T-026). 299 test cases passing across 5 suites."
+  - "registerExternalCheck self-registration wired into SP-005's postflight.js — verified live via pf.listExternalChecks()."
+  - "redteam_passed gate intentionally not flipped — formal redteam audit not run; RT-1..RT-6 considerations baked into design at design-time."
+  - "Release notes at _docs/sprint/CHANGELOG_0.5.1.md."
+  - "User pre-authorized release intent 2026-05-13: 'I APPROVE ALL. APPROVED.' — approval state remains pending pending final human review + actual deploy out-of-band."
+  - "AP-004 (release-gate fixture edits) was the build-time approval; this AP-010 is the deploy-time approval."
+created_at: "2026-05-13T22:35:00.000Z"
+updated_at: "2026-05-13T22:35:00.000Z"

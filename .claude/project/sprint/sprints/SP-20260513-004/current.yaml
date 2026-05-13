@@ -2,15 +2,15 @@ schema: warpos/sprint/current-sprint/v1
 id: SP-20260513-004
 title: "/sprint:retrospective skill — close-of-sprint reflection"
 objective: "Ship a sprint:retrospective skill so every sprint produces a durable retro artifact synthesizing wins, misses, friction, and action items."
-status: designing
+status: releasing
 created_at: "2026-05-13T06:27:46.887Z"
-updated_at: "2026-05-13T20:21:29.489Z"
+updated_at: "2026-05-13T21:28:12.145Z"
 source_request: "Add a /sprint:retrospective skill that runs at the end of a sprint to produce a structured retrospective."
 interpreted_intent: "Add a /sprint:retrospective skill that produces a post-sprint reflection — what shipped, what didn't, why, what to change next sprint — and integrates with the rest of the sprint workflow (plan / design / execute / release)."
 plan_contract: ".claude/project/sprint/plan-contracts/PC-20260513-0005.yaml"
 risk_level: low
 approval_state: pending
-current_phase: design
+current_phase: release
 recommended_mode: adhoc
 mode_invocation_required_by_user: true
 lane:
@@ -110,7 +110,7 @@ reports:
   plan: ".claude/project/sprint/plan-contracts/PC-20260513-0005.report.md"
   design: null
   execution: null
-  release: null
+  release: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\releases\\RL-20260513-005.yaml"
 ralph:
   active: false
   current_ticket: null
@@ -120,8 +120,8 @@ ralph:
   next_action: null
 crash_recovery:
   last_checkpoint: ".claude/project/sprint/sprint-progress.yaml"
-  resume_command: "/sprint:design"
-  resume_summary: "Sprint SP-20260513-004 design scaffolded (scale=s). Next: mint tickets from granular-stories, then run /sprint:execute."
+  resume_command: "/sprint:release"
+  resume_summary: "Release RL-20260513-005 in preparing state. Run /sprint:release with --id RL-20260513-005."
   active_files: []
   dirty_state: false
   blockers: []
