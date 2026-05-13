@@ -1,9 +1,9 @@
 schema: warpos/sprint/active-sprints/v1
-primary: SP-20260512-001
+primary: SP-20260513-001
 sprints:
   - id: SP-20260512-001
     title: Multi-sprint parallelism for Sprint Workflow
-    status: closed
+    status: retrospected
     lane:
       type: default
       value: null
@@ -11,6 +11,61 @@ sprints:
     layout: per_sprint_subdir
     pointer: ".claude/project/sprint/sprints/SP-20260512-001"
     created_at: "2026-05-12T22:06:32.222Z"
-    updated_at: "2026-05-13T04:50:00.000Z"
+    updated_at: "2026-05-13T20:51:59.736Z"
+  - id: SP-20260513-001
+    title: "/product:bootstrap skill — guided product brief in MD/HTML/DOCX"
+    status: designing
+    lane:
+      type: default
+      value: null
+      isolation_notes: ""
+    layout: per_sprint_subdir
+    pointer: ".claude/project/sprint/sprints/SP-20260513-001"
+    created_at: "2026-05-13T06:27:46.887Z"
+    updated_at: "2026-05-13T06:35:00.000Z"
+  - id: SP-20260513-002
+    title: "WarpOS install/update provider smoke test + RCA"
+    status: planning
+    lane:
+      type: default
+      value: null
+      isolation_notes: ""
+    layout: per_sprint_subdir
+    pointer: ".claude/project/sprint/sprints/SP-20260513-002"
+    created_at: "2026-05-13T06:27:46.887Z"
+    updated_at: "2026-05-13T06:27:46.887Z"
+  - id: SP-20260513-003
+    title: "Organic skill use by agents — research + mechanism"
+    status: planning
+    lane:
+      type: default
+      value: null
+      isolation_notes: ""
+    layout: per_sprint_subdir
+    pointer: ".claude/project/sprint/sprints/SP-20260513-003"
+    created_at: "2026-05-13T06:27:46.887Z"
+    updated_at: "2026-05-13T06:27:46.887Z"
+  - id: SP-20260513-004
+    title: "/sprint:retrospective skill — close-of-sprint reflection"
+    status: planning
+    lane:
+      type: default
+      value: null
+      isolation_notes: ""
+    layout: per_sprint_subdir
+    pointer: ".claude/project/sprint/sprints/SP-20260513-004"
+    created_at: "2026-05-13T06:27:46.887Z"
+    updated_at: "2026-05-13T06:27:46.887Z"
+  - id: SP-20260513-005
+    title: "Harden /warp:update — preflight + transactional apply + postflight verify"
+    status: executing
+    lane:
+      type: default
+      value: null
+      isolation_notes: ""
+    layout: per_sprint_subdir
+    pointer: ".claude/project/sprint/sprints/SP-20260513-005"
+    created_at: "2026-05-13T06:27:46.887Z"
+    updated_at: "2026-05-13T21:35:00.000Z"
 created_at: "2026-05-12T22:57:35.667Z"
-updated_at: "2026-05-13T04:50:00.000Z"
+updated_at: "2026-05-13T20:51:59.736Z"

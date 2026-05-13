@@ -1,6 +1,7 @@
 ---
-description: Browse recent session summaries from handoffs/ directory
+description: Browse past session handoff summaries from the handoffs directory — useful for tracking what happened in a prior session, picking up a thread, or auditing decisions over time.
 user-invocable: true
+tags: [session, history, handoffs]
 ---
 
 # /session:history — Session History

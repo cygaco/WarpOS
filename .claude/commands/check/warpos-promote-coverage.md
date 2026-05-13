@@ -1,5 +1,6 @@
 ---
-description: STUB — flag commits to FRAMEWORK_PREFIXES that were never promoted
+description: Flag commits in the product repo that touched FRAMEWORK_PREFIXES paths but were never promoted to canonical WarpOS via /warp:promote — stub implementation pending refinement.
+tags: [check, warpos, promote, stub]
 ---
 
 # /check:warpos-promote-coverage — STUB

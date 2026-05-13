@@ -1,6 +1,7 @@
 ---
-description: Force an immediate session checkpoint save
+description: Force an immediate session checkpoint save — captures conversation context and tool activity that git alone cannot recover, so the session is resumable after a crash or restart.
 user-invocable: true
+tags: [session, checkpoint, crash-recovery]
 ---
 
 # /session:checkpoint — Force Checkpoint

@@ -1,0 +1,50 @@
+schema: warpos/sprint/ticket/v1
+id: T-20260513-021
+title: "Failure-mode catalog v1 (.claude/agents/00-alex/.system/policy/provider-failure-modes.json) + schema"
+type: feature
+status: done
+sprint: SP-20260513-002
+created_at: "2026-05-13T07:24:11.785Z"
+updated_at: "2026-05-13T20:41:46.485Z"
+owner: null
+owner_agent: null
+risk_level: low
+approval_required: false
+approval_state: not_required
+source_request: "Smoke test that runs after /warp:install and /warp:update to verify models/providers work, with root-cause analysis and auto-fix when a provider is broken."
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260513-0003.yaml"
+linked_requirements:
+  - R-3
+linked_high_level_story: H-1
+linked_granular_story: S-3
+linked_prd: ".claude/project/sprint/requirements/SP-20260513-002/prd.md"
+linked_copy: []
+linked_inputs: []
+linked_trace: []
+linked_acceptance_criteria:
+  - AC-3.1
+  - AC-3.2
+linked_issues: []
+linked_decisions: []
+linked_external_services: []
+linked_files: []
+linked_tests: []
+linked_commits: []
+linked_prs: []
+linked_release: null
+description: "Author the failure-mode catalog: 10 entries covering cli_missing, auth_missing, auth_source_mismatch (do_not_fall_back), model_not_found, stale_cli_registry, trusted_directory_required (only safe_to_autofix=true), provider_timeout, quota_exhausted, free_tier_limit_zero, unknown_error. Schema warpos/provider-failure-modes/v1. β: catalog API shape must lock before SP-005 consumes it."
+user_value: ""
+business_value: ""
+acceptance_criteria: []
+non_goals: []
+implementation_notes: "Catalog JSON + schema written direct by Alpha. 10 entries: cli_missing, auth_missing, auth_source_mismatch (fallback_allowed=false per do_not_fall_back), model_not_found, stale_cli_registry, trusted_directory_required (only safe_to_autofix=true), provider_timeout, quota_exhausted, free_tier_limit_zero, unknown_error. Aligned with provider-fallback.json. provider-smoke.js#loadFailureModeCatalog now reads from this."
+qa_notes: ""
+redteam_notes: ""
+trace_notes: ""
+blocked_by: []
+blocks: []
+fix_attempts: []
+ralph_progress: null
+completion_evidence:
+  - "Catalog v1 at .claude/agents/00-alex/.system/policy/provider-failure-modes.json (schema warpos/provider-failure-modes/v1). 10 entries cover full provider-health status surface. AC-3.1/3.2/3.3 all green (smoke unit test suite 81 cases)."
+reopen_history: []

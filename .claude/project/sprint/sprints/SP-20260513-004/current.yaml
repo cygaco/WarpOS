@@ -1,0 +1,128 @@
+schema: warpos/sprint/current-sprint/v1
+id: SP-20260513-004
+title: "/sprint:retrospective skill — close-of-sprint reflection"
+objective: "Ship a sprint:retrospective skill so every sprint produces a durable retro artifact synthesizing wins, misses, friction, and action items."
+status: designing
+created_at: "2026-05-13T06:27:46.887Z"
+updated_at: "2026-05-13T20:21:29.489Z"
+source_request: "Add a /sprint:retrospective skill that runs at the end of a sprint to produce a structured retrospective."
+interpreted_intent: "Add a /sprint:retrospective skill that produces a post-sprint reflection — what shipped, what didn't, why, what to change next sprint — and integrates with the rest of the sprint workflow (plan / design / execute / release)."
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260513-0005.yaml"
+risk_level: low
+approval_state: pending
+current_phase: design
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+lane:
+  type: default
+  value: null
+  isolation_notes: ""
+external_services:
+  identified: []
+  blocked: []
+  ready: []
+  mocked: []
+  deferred: []
+tickets:
+  proposed: []
+  planned: []
+  designed:
+    - T-20260513-035
+    - T-20260513-036
+    - T-20260513-037
+    - T-20260513-038
+    - T-20260513-040
+    - T-20260513-041
+    - T-20260513-042
+    - T-20260513-043
+  ready_for_execution: []
+  in_progress: []
+  blocked: []
+  waiting_on_human: []
+  waiting_on_external_service: []
+  in_review: []
+  qa_failed: []
+  redteam_failed: []
+  done: []
+  released: []
+  deferred: []
+  abandoned: []
+  reopened: []
+  superseded: []
+requirements:
+  prd: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260513-004\\prd.md"
+  high_level_stories: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260513-004\\high-level-stories.md"
+  granular_stories: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260513-004\\granular-stories.md"
+  copy: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260513-004\\copy.md"
+  inputs: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260513-004\\inputs.md"
+  trace: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260513-004\\trace.md"
+  acceptance_criteria: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260513-004\\acceptance-criteria.md"
+  qa_plan: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260513-004\\qa-plan.md"
+  redteam_plan: null
+  release_plan: null
+checks:
+  lint:
+    status: not_run
+    last_run: null
+    evidence: ""
+  typecheck:
+    status: not_run
+    last_run: null
+    evidence: ""
+  tests:
+    status: not_run
+    last_run: null
+    evidence: ""
+  build:
+    status: not_run
+    last_run: null
+    evidence: ""
+  qa:
+    status: not_run
+    last_run: null
+    evidence: ""
+  redteam:
+    status: not_run
+    last_run: null
+    evidence: ""
+approvals:
+  plan:
+    required: false
+    state: not_required
+    ref: null
+  design:
+    required: false
+    state: not_required
+    ref: null
+  execution:
+    required: true
+    state: pending
+    ref: ".claude/project/sprint/approvals/AP-20260513-005.yaml"
+  release:
+    required: false
+    state: not_required
+    ref: null
+  external_services:
+    required: false
+    state: not_required
+    ref: null
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260513-0005.report.md"
+  design: null
+  execution: null
+  release: null
+ralph:
+  active: false
+  current_ticket: null
+  current_loop: null
+  status: idle
+  last_checkpoint: null
+  next_action: null
+crash_recovery:
+  last_checkpoint: ".claude/project/sprint/sprint-progress.yaml"
+  resume_command: "/sprint:design"
+  resume_summary: "Sprint SP-20260513-004 design scaffolded (scale=s). Next: mint tickets from granular-stories, then run /sprint:execute."
+  active_files: []
+  dirty_state: false
+  blockers: []
+  safe_to_continue: true

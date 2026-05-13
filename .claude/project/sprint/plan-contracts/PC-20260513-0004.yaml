@@ -1,0 +1,159 @@
+schema: warpos/sprint/plan-contract/v1
+id: PC-20260513-0004
+created_at: "2026-05-13T06:30:17.344Z"
+updated_at: "2026-05-13T06:30:17.344Z"
+sprint: SP-20260513-003
+source_request: "Get agents to use skills under .claude/commands organically, without the user having to prompt manually each time. Use /reasoning:run to examine the best approach."
+source_request_verbatim: "Actually getting our agents to use skills (under .claude/commands) organically, without me having to do it all the time! /reasoning:run to best examine what to do."
+request_type: operating_loop
+interpreted_intent: "Raise the rate at which agents — primarily Alpha, also Beta/Gamma/Delta — invoke existing skills under .claude/commands when the user's request matches a skill's purpose, without the user typing the slash command. User explicitly requested /reasoning:run as the first step to evaluate mechanism candidates."
+user_or_business_outcome: "The existing skill library becomes high-leverage by default. Operators stop having to remember which slash command applies; Alex picks it. The user's manual-prompting overhead drops."
+affected_surfaces:
+  - surface: CLAUDE.md
+    evidence_level: verified_from_repo
+    notes: "Agent identity + behavior rules. Likely amendment target."
+  - surface: ".claude/agents/00-alex/"
+    evidence_level: verified_from_repo
+    notes: Alpha agent system. Where reasoning lives.
+  - surface: ".claude/agents/00-alex/.system/lexicon.md (paths.lexicon)"
+    evidence_level: verified_from_repo
+    notes: "Lexicon — possible home for skill-use vocabulary."
+  - surface: ".claude/project/reference/operational-loop.md"
+    evidence_level: verified_from_repo
+    notes: "10-step cycle reference per CLAUDE.md. Likely needs skill-aware step."
+  - surface: scripts/hooks/smart-context.js
+    evidence_level: inferred_from_repo
+    notes: "Prompt pipeline. Candidate insertion point for a skill ranker (recommended scope)."
+  - surface: ".claude/commands/* (skill metadata)"
+    evidence_level: verified_from_repo
+    notes: Existing skill descriptions need audit for ranker quality.
+  - surface: ".claude/project/reference/reasoning-frameworks.md"
+    evidence_level: verified_from_repo
+    notes: "Per CLAUDE.md; reasoning episode lands somewhere downstream."
+current_behavior:
+  evidence_level: verified_from_repo
+  notes: "Skills are user-invocable slash commands. Smart-context enriches prompts with memory but does not surface relevant skills. CLAUDE.md mentions skills only in passing; no explicit 'prefer skills' rule. Agents discover skills only through the system-reminder skill list, which is long and unranked."
+desired_behavior: "When the user's prompt or current task matches a skill's purpose, the relevant skill is surfaced to the agent with high signal (system-reminder, additionalContext from smart-context, or a heuristic router). The agent then invokes it organically. Manual invocation by the user remains a no-op override."
+scope:
+  size: m
+  risk_level: medium
+  complexity_drivers:
+    - "Multiple plausible mechanisms — must choose via /reasoning:run before any code"
+    - "Meta-question: this is partly research, partly behavior change"
+    - "High blast radius — a bad ranker could spam the agent with irrelevant skills"
+    - "Token cost — advertising all ~120 skills every turn is wasteful"
+    - "Adherence measurement — how do we know it's working?"
+scope_variants:
+  minimal_safe:
+    summary: "Run /reasoning:run to pick approach. Then add a small set of high-leverage skill-use directives to CLAUDE.md + lexicon (e.g., 'when a user asks for X, prefer skill Y'). No code changes. Measure adherence in one session."
+    tradeoffs:
+      - Lowest risk
+      - Likely weakest effect
+      - Easy to revert
+  recommended:
+    summary: "/reasoning:run produces a written recommendation. Implement: (a) CLAUDE.md amendment with a 'prefer existing skills' rule; (b) smart-context.js enrichment that ranks top-3 relevant skills against the prompt (Haiku call already in pipeline) and injects them as additionalContext. Adherence logged."
+    tradeoffs:
+      - Honors the request
+      - "Adds cost per prompt (modest, Haiku already runs)"
+      - Quality depends on skill descriptions
+  expanded:
+    summary: "Above + a learning loop (track skills surfaced vs invoked, score adherence, adjust weights), a friction-driven proposer (if user types steps a skill could've done, suggest the skill mid-session), a skill-metadata audit + improvement pass."
+    tradeoffs:
+      - Highest leverage
+      - Largest scope
+      - "Requires telemetry + learning integration"
+assumptions:
+  safe:
+    - "User explicitly requested /reasoning:run first — research must precede code."
+    - "CLAUDE.md is the right place to encode high-leverage behavior rules (existing pattern)."
+    - Existing smart-context.js is the right hook for runtime enrichment if chosen.
+  unsafe:
+    - Whether prompt-time skill injection is cheap enough for every turn.
+    - "Whether agents will obey a CLAUDE.md rule reliably (priors say partially)."
+    - Whether existing skill descriptions are good enough for a ranker.
+  needs_user_or_beta_review:
+    - "Mechanism choice (CLAUDE.md rule vs smart-context ranker vs hook reminder vs combo)."
+    - Cost budget for skill injection.
+    - Whether hidden / non-user-invocable skills should be in the catalog.
+open_questions:
+  blocking: []
+  non_blocking:
+    - "Which model ranks skills? (Haiku already used in smart-context — likely reuse)"
+    - "Should hidden / non-user-invocable skills be in the catalog?"
+    - "How do we evaluate adherence — telemetry, manual review, both?"
+    - "Should agent-spawned agents (gamma, builder, reviewer) also reach for skills, or only top-level Alpha?"
+non_goals:
+  - "Removing user agency (user can always /<skill> manually or override)"
+  - Auto-executing skills without confirmation when they touch irreversible operations
+  - Replacing AskUserQuestion or the decision protocol
+  - Re-architecting the skill system itself
+requirement_areas:
+  - "/reasoning:run episode (research deliverable)"
+  - CLAUDE.md amendment
+  - "smart-context.js enrichment (recommended scope)"
+  - skill-relevance ranker
+  - "skill catalog index (descriptions + tags)"
+  - adherence telemetry
+high_level_story_candidates:
+  - "As Alpha, when a user's request matches a skill, I reach for the skill instead of ad-hoc tooling."
+  - "As a user, I don't have to remember the slash command — Alex picks it."
+  - "As an operator, I can see telemetry on how often skills were correctly chosen."
+granular_story_candidates:
+  - "/reasoning:run produces a written recommendation with ≥3 candidate mechanisms and a chosen path."
+  - "CLAUDE.md updated with the 'prefer skills when applicable' rule."
+  - "smart-context.js extended to surface top-K relevant skills based on the user prompt (recommended scope)."
+  - "Adherence telemetry logged to events.jsonl under type=skill-suggested-vs-invoked."
+  - "Skill descriptions audited for ranker quality (rewrite anything ambiguous)."
+workstream_candidates:
+  - "Research — /reasoning:run + written episode"
+  - CLAUDE.md / lexicon updates
+  - "Smart-context enrichment (skill ranker)"
+  - "Telemetry + learning integration"
+  - Skill metadata audit
+preliminary_ticket_candidates:
+  allowed: false
+  candidates: []
+  notes: "Tickets minted in /sprint:design AFTER /reasoning:run picks the mechanism. Premature ticketing would lock in a mechanism before research is done."
+external_service_dependencies:
+  status: none_expected
+  required: []
+  possible: []
+  notes: Pure framework / agent-system work.
+approval_boundaries:
+  - "CLAUDE.md changes affect every session — Class B (architecture-ish)"
+  - "Smart-context cost increase — measure before approving"
+  - Anything that mutates dispatch behavior across all agents
+design_required: true
+execution_allowed_without_design: false
+recommended_mode: solo
+mode_invocation_required_by_user: true
+lane:
+  type: default
+  value: null
+  isolation_notes: ""
+beta_review:
+  required: true
+  likely_founder_rejection_risks:
+    - "Skipping the /reasoning:run step (user explicitly requested it)."
+    - Picking a mechanism without comparing alternatives.
+    - Adding cost without measuring effect.
+  overbuild_risks:
+    - "Building telemetry + learner integration in MVP before knowing if the simple CLAUDE.md rule even works."
+  missing_context_risks:
+    - No baseline measurement of how often skills are organically invoked today.
+plan_quality:
+  status: pass
+  confidence: medium
+  evidence_gaps:
+    - "Baseline adherence rate is unknown — design should establish it before deciding on telemetry scope."
+  fail_reasons: []
+next_recommended_command: "/reasoning:run on \"how do we get agents to organically use skills under .claude/commands\" — then /sprint:design --sprint <this-sprint-id>."
+resume_instructions: "Plan Contract written. First action: run /reasoning:run on the mechanism question, log the episode, then run /sprint:design --sprint <this-sprint-id> with the chosen mechanism as input."
+tracker_paths:
+  current_sprint: ".claude/project/sprint/current-sprint.yaml"
+  sprint_progress: ".claude/project/sprint/sprint-progress.yaml"
+  plan_contract: ".claude/project/sprint/plan-contracts/PC-20260513-0004.yaml"
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260513-0004.report.md"
+created_by: alpha
+updated_by: alpha

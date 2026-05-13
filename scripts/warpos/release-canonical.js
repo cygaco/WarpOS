@@ -370,11 +370,19 @@ function buildSkeletonReleaseJson(canonical, version) {
     pathRegistryVersion: (v.pathRegistrySchema || "").split("/").pop() || "v4",
     hooksRegistrySchema: v.hooksRegistrySchema || "warpos/hooks-registry/v1",
     migrations: [],
+    // SP-20260513-002 (T-20260513-020): provider-smoke is the terminal
+    // post-update check. Static literal — RT-4 disallows shell interpolation.
+    // SP-005 owns the orchestration in scripts/warpos/update.js; we declare
+    // the entry here as a standalone CLI invocation. When SP-005 exposes
+    // registerExternalCheck (scripts/warpos/postflight.js), provider-smoke
+    // can be migrated to register through that primitive; until then it
+    // continues to ride the postUpdateChecks array.
     postUpdateChecks: [
       "node scripts/paths/build.js --check",
       "node scripts/paths/gate.js",
       "node scripts/hooks/build.js --check",
       "node scripts/hooks/test.js",
+      "node scripts/warpos/provider-smoke.js --providers claude,openai,gemini",
     ],
     checksumsFile: "checksums.json",
   };

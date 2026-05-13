@@ -1,5 +1,6 @@
 ---
-description: STUB — verify every breaking change ships with a migration script
+description: Verify every breaking change in a WarpOS release ships with a corresponding migration script under framework/migrations — stub implementation pending refinement.
+tags: [check, warpos, migration, stub]
 ---
 
 # /check:warpos-migration-coverage — STUB

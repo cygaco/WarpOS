@@ -1,0 +1,19 @@
+schema: warpos/sprint/approval/v1
+id: AP-20260513-003
+sprint: SP-20260513-001
+level: execution_approval_required
+required_for: "Create /product: command namespace + register paths.briefs and paths.briefsCurrent in .claude/paths.json. New top-level skill namespace is architectural surface — touches the commands index and the paths registry contract."
+linked_ticket: T-20260513-033
+linked_external_service: null
+linked_release: null
+linked_decision: null
+state: approved
+requested_by: alpha
+decided_by: user
+decided_at: "2026-05-13T22:30:00.000Z"
+reason: "User explicit approval 2026-05-13: 'I APPROVE ALL. APPROVED.'"
+evidence:
+  - "β directive 2026-05-13 (consolidated execute-order consult): mint-now rather than fold-into-ticket; a standalone approval record protects against silent namespace sprawl."
+  - "Plan Contract PC-20260513-0002 lists this as one of three approval_boundaries (the other two are pandoc-pathing and docx-npm-dep)."
+created_at: "2026-05-13T07:18:00.000Z"
+updated_at: "2026-05-13T08:30:00.000Z"

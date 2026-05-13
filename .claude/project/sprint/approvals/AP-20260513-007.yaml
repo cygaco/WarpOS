@@ -1,0 +1,21 @@
+schema: warpos/sprint/approval/v1
+id: AP-20260513-007
+sprint: SP-20260513-005
+level: execution_approval_required
+required_for: "Architectural change to scripts/warpos/update.js — wrap the apply phase in a transactional commit-or-rollback envelope. Extracts new scripts/warpos/transaction.js exporting begin/commit/rollback; mutates update.js#run() to try/catch around the apply loop and invoke rollbackTransaction() on any thrown error during copy/migration. Snapshot + backup of every touched file goes to <targetRoot>/.warpos/transactions/<txId>/. Class C (irreversible flow change — every future /warp:update apply across every downstream WarpOS install will run under this transaction wrapper). Includes red-team-added R-30..R-34 mitigations: transactional --rollback (RT-1), hashed/atomic snapshot.json (RT-2), active.lock concurrent-apply guard (RT-3), re-run-fast-preflight at transaction.begin() (RT-4), explicit override flags per gate (RT-5)."
+linked_ticket: T-20260513-055
+linked_external_service: null
+linked_release: null
+linked_decision: null
+state: approved
+requested_by: user
+decided_by: user
+decided_at: "2026-05-13T22:30:00.000Z"
+reason: "User explicit approval 2026-05-13: 'I APPROVE ALL. APPROVED.' — covers Class C transactional-apply architecture change."
+evidence:
+  - "PC-20260513-0006 approval_boundaries: 'Architectural change to the release/update flow — Class B/C' AND 'Rollback behavior — must itself be reversible'."
+  - "failure-mining.md F-10 (operator trust loss) is the founding metric; the transactional wrapper is the central mitigation that addresses it."
+  - "Red-team RT-1..RT-5 each produce a hardening requirement (R-30..R-34) that lives inside the transaction wrapper boundary."
+  - "Blocks T-20260513-055 (transaction wrapper) and T-20260513-056 (atomic rollback) until approved."
+created_at: "2026-05-13T20:55:00.000Z"
+updated_at: "2026-05-13T20:55:00.000Z"

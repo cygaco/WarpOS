@@ -1,5 +1,6 @@
 ---
-description: Detect installed-version vs canonical-version drift (>7d stale)
+description: Detect drift between the installed WarpOS version on disk and the latest canonical version, flagging installs that have been stale for more than seven days.
+tags: [check, warpos, staleness]
 ---
 
 # /check:warpos-staleness

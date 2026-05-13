@@ -172,6 +172,15 @@
           }
         ],
         "matcher": "AskUserQuestion"
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/skill-invocation-tracker.js\""
+          }
+        ],
+        "matcher": "SlashCommand|Skill"
       }
     ],
     "PostToolUse": [
@@ -249,6 +258,10 @@
           {
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/spec-test-staleness.js\""
+          },
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/skill-catalog-regen.js\""
           }
         ],
         "matcher": "Edit|Write"

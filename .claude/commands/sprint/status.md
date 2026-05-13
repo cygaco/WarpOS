@@ -1,3 +1,9 @@
+---
+description: Read-only status view of every live sprint — shows id, lane, status, phase, last checkpoint, and the resume command for each in-flight sprint, and flags drift between paths.sprintActiveRegistry and on-disk sprints/.
+user-invocable: true
+tags: [sprint, status, read-only]
+---
+
 # /sprint:status — Sprint Status
 
 Read-only view of every live sprint. Shows id, lane, status, phase,

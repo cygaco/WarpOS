@@ -1,7 +1,8 @@
 ---
-description: Validate .claude/manifest.json against the v1 schema.
+description: Validate the current .claude/manifest.json against the v1 manifest schema and report any drift, missing fields, or schema violations.
 user-invocable: true
 namespace: manifest
+tags: [manifest, validate, schema]
 reads: [paths.manifest]
 writes: []
 ---

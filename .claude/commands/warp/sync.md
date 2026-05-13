@@ -1,6 +1,7 @@
 ---
-description: "DEPRECATED alias for /warp:update — kept so existing references and muscle memory keep working. Removed in warpos@1.0.0."
+description: "Legacy alias for /warp:update that forwards to the canonical update flow so older references and muscle memory keep working until warpos@1.0.0; superseded by /warp:update."
 user-invocable: true
+tags: [warpos, sync, deprecated]
 ---
 
 # /warp:sync — DEPRECATED, use /warp:update

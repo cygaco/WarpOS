@@ -17,6 +17,8 @@ Markdown convention: reference paths as `paths.X` in prose. Code: `const { PATHS
 | `betaEvents` | `.claude/agents/00-alex/.system/beta/events.jsonl` | jsonl | runtime | yes | 0.0.0 |  |
 | `betaSourceData` | `.claude/agents/00-alex/.system/beta/beta-source-data.md` | md | runtime | yes | 0.0.0 |  |
 | `betaSystem` | `.claude/agents/00-alex/.system/beta` | dir | framework | yes | 0.0.0 |  |
+| `briefs` | `_docs/briefs` | dir | project | yes | 0.5.1 |  |
+| `briefsCurrent` | `_docs/briefs` | dir | runtime | yes | 0.5.1 |  |
 | `commands` | `.claude/commands` | dir | framework | no | 0.0.0 |  |
 | `content` | `.claude/content` | dir | runtime | yes | 0.0.0 |  |
 | `currentStage` | `.claude/agents/00-alex/.system/policy/current-stage.md` | md | project | yes | 0.0.0 |  |
@@ -67,6 +69,7 @@ Markdown convention: reference paths as `paths.X` in prose. Code: `const { PATHS
 | `research` | `_docs/research` | dir | project | yes | 0.0.0 |  |
 | `runtime` | `.claude/runtime` | dir | runtime | yes | 0.0.0 |  |
 | `settings` | `.claude/settings.json` | json | project | yes | 0.0.0 |  |
+| `skillCatalog` | `.claude/runtime/skill-catalog.json` | json | generated | yes | 0.5.1 | Generated compact index of every user-invocable slash comman |
 | `skillUsageFile` | `.claude/project/events/skill-usage.jsonl` | jsonl | runtime | yes | 0.1.3 |  |
 | `specGraph` | `.claude/project/maps/SPEC_GRAPH.json` | json | generated | yes | 0.0.0 |  |
 | `specsRoot` | `_requirements/04-features` | dir | project | yes | 0.1.0 | replaces `manifest.projectPaths.specs (originally docs/05-features, then requirements/05-features, then requirements/04-features)` |

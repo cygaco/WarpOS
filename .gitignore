@@ -28,3 +28,7 @@ Thumbs.db
 .claude/agents/*/.workspace/
 .claude/agents/*/.system/events.jsonl
 .claude/logs/
+
+# WarpOS transaction snapshots (SP-20260513-005 — per-update, per-machine)
+.warpos/transactions/
+runtime/qa-warp-update/

@@ -1,0 +1,58 @@
+schema: warpos/sprint/ticket/v1
+id: T-20260513-035
+title: Author sprint-retrospective.schema.json sibling schema
+type: decision
+status: in_review
+sprint: SP-20260513-004
+created_at: "2026-05-13T20:19:56.472Z"
+updated_at: "2026-05-13T22:40:00.000Z"
+owner: null
+owner_agent: null
+risk_level: low
+approval_required: true
+approval_state: approved
+source_request: "Add a /sprint:retrospective skill that runs at the end of a sprint to produce a structured retrospective."
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260513-0005.yaml"
+linked_requirements:
+  - R-1
+linked_high_level_story: H-1
+linked_granular_story: S-1
+linked_prd: ".claude/project/sprint/requirements/SP-20260513-004/prd.md"
+linked_copy: []
+linked_inputs:
+  - IN-7
+linked_trace: []
+linked_acceptance_criteria:
+  - AC-1.1
+  - AC-1.2
+  - AC-1.3
+linked_issues: []
+linked_decisions: []
+linked_external_services: []
+linked_files:
+  - "schemas/sprint/sprint-retrospective.schema.json"
+linked_tests:
+  - "node scripts/sprint/validate.js (12/12 schemas loaded; new one parses)"
+linked_commits: []
+linked_prs: []
+linked_release: null
+description: "Decide and ship the sibling-schema approach: new file at schemas/sprint/sprint-retrospective.schema.json. additionalProperties:false, required fields include sprint_id, plan_contract_id, outcomes_shipped, outcomes_missed, plan_quality_actual, scope_variant_actual, friction_points, action_items, signed_off_by, signed_off_at. Sibling chosen over extending sprint-history.schema.json — see prd.md Design Decision 1. Touches workflow contract → approval AP-20260513-005 gates this ticket."
+user_value: ""
+business_value: ""
+acceptance_criteria: []
+non_goals: []
+implementation_notes: ""
+qa_notes: ""
+redteam_notes: ""
+trace_notes: ""
+blocked_by: []
+blocks: []
+fix_attempts: []
+ralph_progress: null
+completion_evidence:
+  - "schemas/sprint/sprint-retrospective.schema.json written"
+  - "AC-1.1: validate.js loads 12 schemas including warpos/sprint/sprint-retrospective/v1"
+  - "AC-1.2: required[] contains schema, sprint_id, plan_contract_id, outcomes_shipped, outcomes_missed, plan_quality_actual, scope_variant_actual, friction_points, action_items, signed_off_by, signed_off_at"
+  - "AC-1.3: sample-retro validation deferred to T-036 smoke (real --no-synth retro for SP-20260512-001 will validate)"
+  - "AP-20260513-005 approved 2026-05-13 (sibling schema decision per PRD DD-1)"
+reopen_history: []

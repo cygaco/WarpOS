@@ -1,0 +1,59 @@
+schema: warpos/sprint/sprint-progress/v1
+sprint: SP-20260513-005
+updated_at: "2026-05-13T21:40:00.000Z"
+current_phase: execute
+current_command: "/sprint:execute"
+current_ticket: null
+current_task: null
+current_loop: null
+status: running
+last_completed_step: execution_dispatch_1_complete_11_tickets_in_review
+next_action: "Wire preflight/transaction/postflight into update.js#run() (append-only with SP-002 — function-signature-preserving). Optionally: full multi-hop replay matrix; live integration test with SP-002 once provider-smoke ships."
+active_files: []
+modified_files:
+  - "scripts/checks/warpos-capsule-resolvable.js"
+  - "scripts/checks/warpos-version-quorum.js"
+  - "scripts/checks/warpos-install-baseline.js"
+  - "scripts/checks/warpos-migration-presence.js"
+  - ".claude/commands/check/warpos-capsule-resolvable.md"
+  - ".claude/commands/check/warpos-version-quorum.md"
+  - ".claude/commands/check/warpos-install-baseline.md"
+  - ".claude/commands/check/warpos-migration-presence.md"
+  - "scripts/warpos/preflight.js"
+  - "scripts/warpos/transaction.js"
+  - "scripts/warpos/postflight.js"
+  - "scripts/warpos/lib/update-events.js"
+  - "scripts/warpos/test-transaction-smoke.js"
+  - "scripts/warpos/test-cross-version-replay.js"
+  - ".claude/commands/warp/update.md"
+  - ".claude/paths.json"
+  - ".gitignore"
+checks_last_run: "2026-05-13T21:40:00.000Z"
+checks_passing:
+  - "test-transaction-smoke (17/17 assertions)"
+  - "test-cross-version-replay (7/7 assertions)"
+  - "preflight composer smoke (3/3 modes)"
+  - "postflight composer smoke (5 checks executed)"
+  - "registerExternalCheck primitive smoke (degraded path verified)"
+checks_failing: []
+blockers: []
+approvals_needed: []
+external_services_needed: []
+issues_opened: []
+tickets_updated:
+  - T-20260513-051
+  - T-20260513-052
+  - T-20260513-053
+  - T-20260513-054
+  - T-20260513-055
+  - T-20260513-056
+  - T-20260513-057
+  - T-20260513-058
+  - T-20260513-059
+  - T-20260513-060
+  - T-20260513-061
+ralph_checkpoint: null
+resume_command: "/sprint:execute"
+resume_notes: "All 11 SP-005 tickets promoted to in_review. The preflight/transaction/postflight tri-pillar is shipped as standalone composable modules that update.js can wire in via append-only edits (function-signature-preserving). registerExternalCheck primitive is ready for SP-002 — invocation example documented in T-058. R-30..R-34 red-team mitigations baked into transaction.js (atomic+hashed snapshot, active.lock guard, re-run fast preflight at begin, override flags via preflight composer, transactional --rollback). Test fixtures + smoke benches verified end-to-end. New paths.X keys: warposPreflight, warposTransaction, warposPostflight, warposTransactionsDir, warposUpdateEventsLib. .gitignore extended for .warpos/transactions/ + runtime/qa-warp-update/."
+safe_to_continue: true
+stop_reason: null

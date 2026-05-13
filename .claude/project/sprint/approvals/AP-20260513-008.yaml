@@ -1,0 +1,20 @@
+schema: warpos/sprint/approval/v1
+id: AP-20260513-008
+sprint: SP-20260513-005
+level: execution_approval_required
+required_for: "Touching scripts/warpos/release-gates.js to surface the new check:warpos-* gate scripts (capsule-resolvable, version-quorum, install-baseline, migration-presence) as release-time gates AS WELL AS preflight-time. release-gates.js is the gate runner /warp:release invokes — modifying it affects every future canonical release. Class B (workflow-contract change). Conditional: only required if release-gates.js needs to know about the NEW gate skills (e.g. to enforce 'capsule must be resolvable from a synthetic clean install before release-build commits'). If the implementation can ship without touching release-gates.js (i.e. preflight runs the gates standalone from update.js), this approval is WAIVED and the constraint moves to a deferred follow-up sprint."
+linked_ticket: T-20260513-052
+linked_external_service: null
+linked_release: null
+linked_decision: null
+state: approved
+requested_by: alpha
+decided_by: user
+decided_at: "2026-05-13T22:30:00.000Z"
+reason: "User explicit approval 2026-05-13: 'I APPROVE ALL. APPROVED.' — release-gates.js extension authorized if implementation requires it."
+evidence:
+  - "PC-20260513-0006 approval_boundaries: 'Touching release-gates.js — affects release flow used by /warp:release'."
+  - "Plan Contract requirement_areas includes 'release-gates.js extensions'."
+  - "Lane boundary: release-gates.js is currently owned by the release flow; SP-005 only needs to read it to verify coverage of mined failure modes. If extension is required, this approval gates the change. If not, mark as waived during execute."
+created_at: "2026-05-13T20:55:00.000Z"
+updated_at: "2026-05-13T20:55:00.000Z"

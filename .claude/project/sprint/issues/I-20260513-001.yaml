@@ -1,0 +1,23 @@
+schema: warpos/sprint/issue/v1
+id: I-20260513-001
+title: product-bootstrap unit tests mutate live paths.json
+status: open
+severity: low
+source: agent_observation
+discovered_at: "2026-05-13T20:50:42.328Z"
+discovered_during: "SP-20260513-001:design"
+related_feature: null
+related_ticket: null
+related_sprint: SP-20260513-001
+related_external_service: null
+steps_to_reproduce: []
+expected: Tests should not mutate live .claude/paths.json
+actual: "scripts/product/bootstrap.js#registerPaths writes briefsCurrent into the real paths.json during tests; cleanup deletes output but cannot revert paths.json. Future fix: --paths-json override flag."
+suspected_cause: ""
+fix_attempts: []
+files_touched: []
+current_recommendation: ""
+resolution: ""
+resolution_date: null
+promoted_to_ticket: null
+issues_md_block: "issues.md#i-20260513-001"

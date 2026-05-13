@@ -1,0 +1,33 @@
+schema: warpos/sprint/sprint-progress/v1
+sprint: SP-20260513-003
+updated_at: "2026-05-13T20:24:56.994Z"
+current_phase: design
+current_command: "/sprint:design"
+current_ticket: null
+current_task: null
+current_loop: null
+status: running
+last_completed_step: design_scaffolded_and_tickets_minted
+next_action: "Resolve AP-20260513-006 (CLAUDE.md+ranker Class B approval), then /sprint:execute on first ready_for_execution ticket."
+active_files: []
+modified_files: []
+checks_last_run: null
+checks_passing: []
+checks_failing: []
+blockers: []
+approvals_needed: []
+external_services_needed: []
+issues_opened: []
+tickets_updated:
+  - T-20260513-044
+  - T-20260513-045
+  - T-20260513-046
+  - T-20260513-047
+  - T-20260513-048
+  - T-20260513-049
+  - T-20260513-050
+ralph_checkpoint: null
+resume_command: "/sprint:execute"
+resume_notes: "Design phase complete (scale=m, solo mode). Reasoning episode RT-002 written (Mechanism D — Hybrid: CLAUDE.md rule + smart-context.js skill ranker + adherence telemetry). 7 tickets minted under SP-20260513-003 and promoted to designed: T-044 (S-1 reasoning, satisfied at design-time), T-045 (S-2 CLAUDE.md rule, gated by AP-006), T-046 (S-3 lexicon), T-047 (S-4 smart-context ranker, gated by AP-006), T-048 (S-5 catalog generator), T-049 (S-6 adherence telemetry), T-050 (S-7 skill audit). Approval AP-20260513-006 minted pending — bundles three Plan Contract approval_boundaries (CLAUDE.md change, smart-context cost, dispatch-behavior mutation). No external services. Sprint ready for execute once approval lands."
+safe_to_continue: true
+stop_reason: null

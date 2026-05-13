@@ -1,0 +1,53 @@
+schema: warpos/sprint/ticket/v1
+id: T-20260513-050
+title: "S-7: Skill description audit — flag ambiguous / missing for ranker quality"
+type: qa
+status: in_review
+sprint: SP-20260513-003
+created_at: "2026-05-13T20:23:44.766Z"
+updated_at: "2026-05-13T21:08:11.940Z"
+owner: null
+owner_agent: null
+risk_level: low
+approval_required: false
+approval_state: not_required
+source_request: "Get agents to use skills under .claude/commands organically, without the user having to prompt manually each time. Use /reasoning:run to examine the best approach."
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260513-0004.yaml"
+linked_requirements:
+  - R-7
+linked_high_level_story: H-1
+linked_granular_story: S-7
+linked_prd: ".claude/project/sprint/requirements/SP-20260513-003/prd.md"
+linked_copy: []
+linked_inputs: []
+linked_trace: []
+linked_acceptance_criteria:
+  - AC-7.1
+  - AC-7.2
+  - AC-7.3
+linked_issues: []
+linked_decisions: []
+linked_external_services: []
+linked_files: []
+linked_tests: []
+linked_commits: []
+linked_prs: []
+linked_release: null
+description: "Audit script walks .claude/commands/**/*.md and flags any skill with: no description, description ≥2 sentences without a leading one-liner, no tags, or description that does not match actual skill behavior. Output to runtime/notes/skill-description-audit.md with quality verdict (ok|flag-tag-missing|flag-description-missing|flag-description-ambiguous). Critical flags fixed inline this sprint; tag-missing deferred if low-leverage. Script re-runnable for drift detection. Ranker quality bound by metadata quality — this is a prerequisite for measurable adherence."
+user_value: ""
+business_value: ""
+acceptance_criteria: []
+non_goals: []
+implementation_notes: |
+  Starting execution — audit pass on skill metadata.
+  Implementing scripts/skill-description-audit.js — deterministic re-runnable audit.
+qa_notes: ""
+redteam_notes: ""
+trace_notes: ""
+blocked_by: []
+blocks: []
+fix_attempts: []
+ralph_progress: null
+completion_evidence:
+  - "Audit report written to runtime/notes/skill-description-audit.md. Initial run flagged 18 criticals; all fixed inline (description expansions + STUB/DEPRECATED reordering to satisfy stop-leader heuristic). Final audit: scanned=129 ok=18 tag-only=111 critical=0 (AC-7.1/7.2/7.3). Script re-runnable and deterministic; tag-only entries deferred per ticket scope."
+reopen_history: []

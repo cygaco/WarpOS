@@ -1,0 +1,38 @@
+schema: warpos/sprint/sprint-progress/v1
+sprint: SP-20260513-002
+updated_at: "2026-05-13T21:04:38.605Z"
+current_phase: execute
+current_command: "/sprint:execute"
+current_ticket: null
+current_task: null
+current_loop: null
+status: running
+last_completed_step: all_tickets_in_review
+next_action: "/sprint:release --sprint SP-20260513-002"
+active_files: []
+modified_files:
+  - ".claude/project/sprint/requirements/SP-20260513-002/release-plan.md"
+  - ".claude/project/sprint/sprints/SP-20260513-002/current.yaml"
+  - ".claude/project/sprint/approvals/AP-20260513-004.yaml"
+checks_last_run: null
+checks_passing: []
+checks_failing: []
+blockers: []
+approvals_needed:
+  - AP-20260513-004
+external_services_needed: []
+issues_opened: []
+tickets_updated:
+  - T-20260513-019
+  - T-20260513-020
+  - T-20260513-021
+  - T-20260513-022
+  - T-20260513-023
+  - T-20260513-024
+  - T-20260513-025
+  - T-20260513-026
+ralph_checkpoint: null
+resume_command: "/sprint:release --sprint SP-20260513-002"
+resume_notes: "Provider-smoke + catalog + RCA + auto-fix dispatcher + wiring shipped. registerExternalCheck wire-up via SP-005's postflight.js."
+safe_to_continue: true
+stop_reason: null

@@ -1,0 +1,33 @@
+schema: warpos/sprint/external-service-dependency/v1
+id: ESD-20260513-001
+sprint: SP-20260513-001
+related_ticket: null
+service_name: pandoc
+service_category: other
+purpose: "DOCX rendering via pandoc shellout when present on PATH. Optional binary — MD + HTML outputs always work; DOCX produced only if pandoc is detected. No service signup, no billing, no credentials. Operator-installable per OS."
+required_for: []
+required_phase: execute
+status: deferred
+signup_required: false
+billing_required: false
+credentials_required: false
+oauth_required: false
+domain_dns_required: false
+compliance_review_required: false
+human_owner: null
+terminal_implementable_after_setup: true
+can_mock: true
+mock_strategy: "Pandoc is optional. The /product:bootstrap skill ships with MD + HTML as primary outputs; DOCX is produced only when pandoc is detected on PATH. Absent pandoc → COPY C-5 emitted as install hint, MD+HTML still written, run succeeds. No service signup, no billing, no credentials. β acceptance: deferred at execute-gate level; pandoc-availability becomes a release-time release-plan check, not a hard precondition."
+sandbox_available: true
+production_required: false
+approval_required: false
+approval_state: not_required
+approval_ref: null
+required_env_vars: []
+human_setup_steps: []
+terminal_setup_steps: []
+risks: []
+blockers: []
+notes: ""
+created_at: "2026-05-13T07:23:58.728Z"
+updated_at: "2026-05-13T07:26:57.381Z"

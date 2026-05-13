@@ -1,6 +1,7 @@
 ---
-description: Temporarily disable a hook
+description: Temporarily disable a hook by moving it from settings.json into a `_disabled_hooks` section, with a one-step path to re-enable later.
 user-invocable: true
+tags: [hooks, disable]
 ---
 
 # /hooks:disable — Disable a Hook

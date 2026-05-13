@@ -1,0 +1,62 @@
+schema: warpos/sprint/ticket/v1
+id: T-20260513-039
+title: "Abandoned — ticket.js sprint-tag mismatch artifact (SP-003 design subagent)"
+type: chore
+status: abandoned
+sprint: SP-20260513-001
+created_at: "2026-05-13T20:20:33.154Z"
+updated_at: "2026-05-13T20:25:56.377Z"
+owner: null
+owner_agent: null
+risk_level: low
+approval_required: false
+approval_state: not_required
+source_request: "Internal: SP-20260513-003 /sprint:design subagent invoked ticket.js without --sprint flag. ticket.js#cmdCreate read paths.sprintCurrent (registry primary = SP-001), so this id landed in SP-001's bucket. Marked abandoned to preserve the reference; replaced by a correctly-tagged ticket in SP-003."
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260513-0002.yaml"
+linked_requirements: []
+linked_high_level_story: null
+linked_granular_story: null
+linked_prd: null
+linked_copy: []
+linked_inputs: []
+linked_trace: []
+linked_acceptance_criteria: []
+linked_issues: []
+linked_decisions: []
+linked_external_services: []
+linked_files: []
+linked_tests: []
+linked_commits: []
+linked_prs: []
+linked_release: null
+description: |
+  Placeholder. The SP-20260513-003 /sprint:design subagent created this ticket via
+  `ticket.js create` without passing --sprint. The script's loadCurrent() reads
+  paths.sprintCurrent (the registry primary, currently SP-001), so the created ticket
+  was tagged for SP-001 even though all linked artifacts pointed to SP-003. The
+  subagent could not edit SP-001's current.yaml to remove the dangling reference
+  (auto-mode classifier correctly blocked scope escalation), so this ticket is
+  preserved as `abandoned` and the real SP-003 work moved to a new id minted with
+  --sprint SP-20260513-003.
+  
+  Action for SP-001 owner: prune this id from current-sprint.yaml#tickets.proposed
+  on next sprint hygiene pass.
+  
+  Class: refactor & rename hygiene class (ticket.js bypasses parseSprintArg side
+  effect for cmdCreate's plan_contract / source_request capture — only `sprint`
+  gets the override). Suggested fix: pass `current` through parseSprintArg in
+  cmdCreate.
+user_value: ""
+business_value: ""
+acceptance_criteria: []
+non_goals: []
+implementation_notes: ""
+qa_notes: ""
+redteam_notes: ""
+trace_notes: ""
+blocked_by: []
+blocks: []
+fix_attempts: []
+ralph_progress: null
+completion_evidence: []
+reopen_history: []

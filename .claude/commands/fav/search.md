@@ -1,6 +1,7 @@
 ---
-description: Search favorite moments by keyword
+description: Search saved favorite moments by keyword across category, title, and notes — find one specific moment you remember saving but cannot locate by category alone.
 user-invocable: true
+tags: [favorites, search]
 ---
 
 # /fav:search — Search Favorite Moments

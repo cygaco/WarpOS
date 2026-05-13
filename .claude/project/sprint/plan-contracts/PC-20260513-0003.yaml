@@ -1,0 +1,159 @@
+schema: warpos/sprint/plan-contract/v1
+id: PC-20260513-0003
+created_at: "2026-05-13T06:30:17.269Z"
+updated_at: "2026-05-13T06:30:17.269Z"
+sprint: SP-20260513-002
+source_request: "Smoke test that runs after /warp:install and /warp:update to verify models/providers work, with root-cause analysis and auto-fix when a provider is broken."
+source_request_verbatim: "If we don't already have it, a quick smoke test on warpos install and update to verify that all the models/providers work in a project, and if they don't, to do root cause analysis and fix it."
+request_type: feature_modify
+interpreted_intent: "Wire the existing provider-health primitive into /warp:install and /warp:update lifecycles as a smoke gate; on red/yellow status, run an RCA that maps the failure status to a known root cause and applies an auto-fix when safe, else prints explicit remediation."
+user_or_business_outcome: "After install or update the operator knows immediately whether every required provider works; failures are diagnosed (not just reported) and fixed when possible without manual troubleshooting."
+affected_surfaces:
+  - surface: scripts/warpos/provider-health-check.js
+    evidence_level: verified_from_repo
+    notes: Existing CLI. Already classifies green/yellow/red and prints one-line suggestions.
+  - surface: scripts/hooks/lib/provider-health.js
+    evidence_level: inferred_from_repo
+    notes: Underlying probe library used by provider-health-check.js.
+  - surface: scripts/warpos/update.js
+    evidence_level: verified_from_repo
+    notes: "Apply phase + post-update-checks. Already supports postUpdateChecks declared in release.json."
+  - surface: ".claude/commands/warp/setup.md"
+    evidence_level: verified_from_repo
+    notes: Install bootstrap. Already calls provider-health on the happy path.
+  - surface: ".claude/commands/warp/update.md"
+    evidence_level: verified_from_repo
+    notes: Update procedure docs.
+  - surface: ".claude/agents/00-alex/.system/policy/provider-fallback.json"
+    evidence_level: verified_from_repo
+    notes: Fallback routing. Candidate home for failure-mode catalog or its sibling.
+  - surface: "scripts/warpos/provider-smoke.js (NEW or extension of provider-health-check.js)"
+    evidence_level: assumed_from_request
+    notes: "Orchestrator that runs health + RCA + safe auto-fix."
+  - surface: "framework/releases/*/release.json#postUpdateChecks"
+    evidence_level: verified_from_repo
+    notes: Where post-update smoke would be declared per capsule.
+current_behavior:
+  evidence_level: verified_from_repo
+  notes: "provider-health-check.js exists and is invoked by /warp:health and /warp:setup. It classifies green/yellow/red with one-line suggestions but does NOT run RCA or auto-fix. /warp:update has postUpdateChecks support per release.json but provider-smoke is not currently declared as one. There is no single failure-mode catalog mapping status codes to root causes + safe-fix flags."
+desired_behavior: "Smoke test runs as a terminal step of /warp:install and /warp:update (and is invokable standalone). For each red/yellow status, the framework computes an RCA: which file, env var, CLI, or registry caused it. If the cause is fixable safely (e.g., regenerate registry cache, fix env profile), apply the fix. If not safe (e.g., user must install gemini CLI), print explicit one-line remediation and exit non-zero on red."
+scope:
+  size: m
+  risk_level: medium
+  complexity_drivers:
+    - Wiring into update.js post-update-checks without breaking release-gate fixtures
+    - "Mapping provider-health status codes to root causes accurately (Windows cmd.exe stdin bug, codex, gemini quota, claude-code path drift)"
+    - "Determining 'safe to auto-fix' boundary (must not overwrite operator-customized auth)"
+    - "Cross-platform — Windows-specific failure modes (per CLAUDE.md bug class on transport-level fixes)"
+    - "RCA cycle detection so a fix doesn't trigger another failure → another fix loop"
+scope_variants:
+  minimal_safe:
+    summary: "Wire existing provider-health-check.js to run as final step of /warp:install and /warp:update with --json output to a runtime log. No RCA, no auto-fix. Surface green/yellow/red and exit non-zero on red."
+    tradeoffs:
+      - Tiny code change
+      - "Misses the RCA + fix ask"
+      - "Doesn't address the user's troubleshooting fear directly"
+  recommended:
+    summary: "Above + a failure-mode catalog mapping the top 5 known statuses to root causes and a `safe_to_autofix` flag. Auto-fix dispatcher runs only safe fixes; the rest print explicit remediation. Smoke runs in both install and update; failures stop the lifecycle (or rollback if Plan 5 ships transactional wrap)."
+    tradeoffs:
+      - Honors the spec
+      - "Requires a real failure-mode catalog (must be maintained)"
+      - Auto-fix could mask drift if poorly bounded
+  expanded:
+    summary: "Above + full self-healing layer. Every known failure mode mapped. Risky fixes prompt via AskUserQuestion. Recurring failures auto-log via /issues:log. Smoke results logged to events.jsonl with trend analysis surfaced by /check:patterns."
+    tradeoffs:
+      - Best operator experience
+      - Largest QA budget
+      - More code paths to maintain
+assumptions:
+  safe:
+    - "provider-health-check.js is the right primitive (it already exists and is widely used)."
+    - Green/yellow/red taxonomy is correct.
+    - "Failure modes are bounded and discoverable from existing events + handoff history."
+  unsafe:
+    - "Number of real-world failure modes today (need to mine events.jsonl + handoffs)."
+    - Whether auto-fix is acceptable by default vs needs user confirmation.
+    - "Whether /warp:install is canonical bootstrap (some flows say /warp:setup)."
+  needs_user_or_beta_review:
+    - "Auto-fix policy (silent vs prompted vs prompted-only-for-risky)."
+    - "Whether codex-stdin Windows bug class is in scope (cross-references LRN-2026-04-30 binding-gap learning per CLAUDE.md)."
+    - Whether smoke should block install on yellow or only on red.
+open_questions:
+  blocking: []
+  non_blocking:
+    - "Where does the failure-mode catalog live (provider-fallback.json sibling, new failure-modes.json, or inline in provider-health)?"
+    - "Should /warp:smoke be a new skill or just an extension of /warp:health?"
+    - "Add new failure modes proactively or wait for evidence?"
+non_goals:
+  - "Installing provider CLIs for the operator (we tell them how)"
+  - Cross-provider feature parity
+  - "Continuous monitoring (this is a smoke test, not a watchdog)"
+  - "Auto-changing operator's claude/openai/gemini auth method"
+requirement_areas:
+  - update.js postUpdateChecks wiring
+  - setup.md install wiring
+  - "failure-mode catalog (data file)"
+  - RCA module
+  - "auto-fix dispatcher (safe-only by default)"
+  - "events logging + learnings"
+high_level_story_candidates:
+  - "As an operator running /warp:install, the install fails loudly if any required provider doesn't work."
+  - "As an operator running /warp:update, the update is gated on a provider smoke pass."
+  - "As an operator hitting a red status, I get an RCA + one-line fix instead of a generic suggestion."
+granular_story_candidates:
+  - "/warp:install final step calls provider-smoke; non-zero exit on red required-provider failure."
+  - "/warp:update post-update-checks include provider-smoke (declared in release.json#postUpdateChecks)."
+  - "RCA module loads failure-mode catalog and maps each non-green status to a {root_cause, safe_to_autofix, fix_recipe, remediation}."
+  - "Auto-fix dispatcher executes only entries where safe_to_autofix=true."
+  - "Smoke results logged to events.jsonl with type=provider-smoke."
+workstream_candidates:
+  - "Wire provider-health-check into install + update lifecycle"
+  - "RCA module + failure-mode catalog"
+  - Auto-fix dispatcher
+  - Fixtures / tests for each failure mode
+  - "Docs (warp:update.md procedure + troubleshooting section)"
+preliminary_ticket_candidates:
+  allowed: false
+  candidates: []
+  notes: "Tickets minted during /sprint:design after failure-mode mining establishes the real catalog scope."
+external_service_dependencies:
+  status: none_expected
+  required: []
+  possible: []
+  notes: "All providers already integrated; this test exercises existing connections, doesn't add new ones."
+approval_boundaries:
+  - "Modifying release-gate fixtures / postUpdateChecks — affects release flow"
+  - "Auto-fix could overwrite operator-customized auth — needs explicit guardrails"
+design_required: true
+execution_allowed_without_design: false
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+lane:
+  type: default
+  value: null
+  isolation_notes: ""
+beta_review:
+  required: true
+  likely_founder_rejection_risks:
+    - "Auto-fix that silently mutates operator's auth config."
+    - Over-aggressive gating that blocks legitimate updates on transient yellows.
+  overbuild_risks:
+    - "Building a full self-healing system in MVP — start with diagnose + safe-only auto-fix."
+  missing_context_risks:
+    - "Not enough failure-mode evidence to seed the catalog — must mine events first."
+plan_quality:
+  status: pass
+  confidence: high
+  evidence_gaps:
+    - "Real failure-mode catalog needs evidence mining during /sprint:design."
+  fail_reasons: []
+next_recommended_command: "/sprint:design --sprint <this-sprint-id>"
+resume_instructions: "Plan Contract written. Run /sprint:design --sprint <this-sprint-id> to produce PRD + COPY + TRACE + acceptance criteria. First design step: mine .claude/project/events/events.jsonl + recent handoffs for provider-health failure signatures to seed the failure-mode catalog."
+tracker_paths:
+  current_sprint: ".claude/project/sprint/current-sprint.yaml"
+  sprint_progress: ".claude/project/sprint/sprint-progress.yaml"
+  plan_contract: ".claude/project/sprint/plan-contracts/PC-20260513-0003.yaml"
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260513-0003.report.md"
+created_by: alpha
+updated_by: alpha

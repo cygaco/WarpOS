@@ -466,6 +466,21 @@
       "type": "string",
       "const": ".claude/agents/00-alex/.system/policy/sprint-routing.json",
       "description": "json (framework) — paths.sprintRouting"
+    },
+    "briefs": {
+      "type": "string",
+      "const": "_docs/briefs",
+      "description": "dir (project) — paths.briefs"
+    },
+    "briefsCurrent": {
+      "type": "string",
+      "const": "_docs/briefs",
+      "description": "dir (runtime) — paths.briefsCurrent"
+    },
+    "skillCatalog": {
+      "type": "string",
+      "const": ".claude/runtime/skill-catalog.json",
+      "description": "json (generated) — paths.skillCatalog"
     }
   }
 }

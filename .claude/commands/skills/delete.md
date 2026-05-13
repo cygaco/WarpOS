@@ -1,6 +1,7 @@
 ---
 name: skill:delete
-description: Remove a skill (with backup)
+description: Remove a skill from .claude/commands with a backup, so it can be restored if the deletion turns out to be premature.
+tags: [skills, delete, backup]
 ---
 
 # /skill:delete — Delete a Skill

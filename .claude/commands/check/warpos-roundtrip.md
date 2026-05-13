@@ -1,5 +1,6 @@
 ---
-description: STUB — verify product↔canonical↔product round-trip preserves bytes
+description: Verify that promoting changes from product to canonical and back to product preserves bytes (no silent transformation through the WarpOS promote/install pipeline) — stub implementation pending refinement.
+tags: [check, warpos, promote, stub]
 ---
 
 # /check:warpos-roundtrip — STUB

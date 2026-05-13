@@ -1,0 +1,66 @@
+schema: warpos/sprint/ticket/v1
+id: T-20260513-037
+title: Write skill doc .claude/commands/sprint/retrospective.md
+type: feature
+status: in_review
+sprint: SP-20260513-004
+created_at: "2026-05-13T20:20:19.587Z"
+updated_at: "2026-05-13T23:18:00.000Z"
+owner: null
+owner_agent: null
+risk_level: low
+approval_required: false
+approval_state: not_required
+source_request: "Add a /sprint:retrospective skill that runs at the end of a sprint to produce a structured retrospective."
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260513-0005.yaml"
+linked_requirements:
+  - R-3
+linked_high_level_story: H-1
+linked_granular_story: S-3
+linked_prd: ".claude/project/sprint/requirements/SP-20260513-004/prd.md"
+linked_copy:
+  - C-2
+  - C-4
+  - C-5
+  - C-6
+linked_inputs:
+  - IN-1
+  - IN-2
+  - IN-3
+  - IN-4
+  - IN-5
+  - IN-8
+linked_trace: []
+linked_acceptance_criteria:
+  - AC-3.1
+  - AC-3.2
+linked_issues: []
+linked_decisions: []
+linked_external_services: []
+linked_files:
+  - ".claude/commands/sprint/retrospective.md"
+linked_tests:
+  - "AC-3.1: --sprint, --no-synth, --force, --review-only all in Inputs table"
+  - "AC-3.2: frontmatter has description + user-invocable: true (parses as YAML frontmatter for /help indexing)"
+linked_commits: []
+linked_prs: []
+linked_release: null
+description: "Author the user-invocable skill doc at .claude/commands/sprint/retrospective.md. Mirror release.md structure: frontmatter (description + user-invocable: true), When-to-use, Inputs (--sprint, --no-synth, --force, --review-only, --no-plan-contract, --retry-synth), Procedure (numbered steps: collect → synthesize → review → write → registry-flip → checkpoint → surface), Outputs table, Recovery, Approval gates (none — retro reversible), Routing (per paths.sprintRouting#policies.release), Reference."
+user_value: ""
+business_value: ""
+acceptance_criteria: []
+non_goals: []
+implementation_notes: ""
+qa_notes: ""
+redteam_notes: ""
+trace_notes: ""
+blocked_by: []
+blocks: []
+fix_attempts: []
+ralph_progress: null
+completion_evidence:
+  - "Frontmatter: description + user-invocable: true (satisfies AC-3.2)"
+  - "Sections match release.md structure: When-to-use, Inputs, Procedure (numbered), Outputs, Recovery, Approval gates, Routing, Reference"
+  - "Inputs table covers --sprint, --no-synth, --force, --review-only, --no-plan-contract, --retry-synth, --signed-off-by (covers IN-1..8)"
+  - "Procedure documents the 7 steps: confirm closed → collect → synthesize → review → write → sign-off → surface (matches PRD R-3)"
+reopen_history: []

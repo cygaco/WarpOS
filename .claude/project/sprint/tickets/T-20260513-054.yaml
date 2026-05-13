@@ -1,0 +1,65 @@
+schema: warpos/sprint/ticket/v1
+id: T-20260513-054
+title: "NEW gates: version-quorum + install-baseline + migration-presence"
+type: feature
+status: in_review
+sprint: SP-20260513-005
+created_at: "2026-05-13T20:27:25.515Z"
+updated_at: "2026-05-13T21:15:00.000Z"
+owner: alpha
+owner_agent: alpha
+risk_level: medium
+approval_required: false
+approval_state: not_required
+source_request: "Harden /warp:update — operator reports fear and tons of troubleshooting on every version bump. Add preflight + postflight + rollback so updates either succeed cleanly or stop without damage."
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260513-0006.yaml"
+linked_requirements:
+  - R-2
+  - R-4
+  - R-10
+linked_high_level_story: H-1
+linked_granular_story: S-4
+linked_prd: ".claude/project/sprint/requirements/SP-20260513-005/prd.md"
+linked_copy:
+  - C-1
+  - C-3
+  - C-4
+linked_inputs:
+  - IN-4
+linked_trace:
+  - TR-1
+linked_acceptance_criteria:
+  - AC-S-4.1
+  - AC-S-4.2
+  - AC-S-4.3
+linked_issues: []
+linked_decisions: []
+linked_external_services: []
+linked_files:
+  - "scripts/checks/warpos-version-quorum.js"
+  - "scripts/checks/warpos-install-baseline.js"
+  - "scripts/checks/warpos-migration-presence.js"
+  - ".claude/commands/check/warpos-version-quorum.md"
+  - ".claude/commands/check/warpos-install-baseline.md"
+  - ".claude/commands/check/warpos-migration-presence.md"
+linked_tests: []
+linked_commits: []
+linked_prs: []
+linked_release: null
+description: "Three new check:warpos-* skills bundled. version-quorum cross-checks 4 version sources. install-baseline refuses update when framework-installed.json missing. migration-presence verifies capsule's migrations[] files exist. Catches failure-mining F-3, F-4, F-5."
+user_value: ""
+business_value: ""
+acceptance_criteria: []
+non_goals: []
+implementation_notes: ""
+qa_notes: ""
+redteam_notes: ""
+trace_notes: ""
+blocked_by: []
+blocks: []
+fix_attempts: []
+ralph_progress: null
+completion_evidence:
+  - kind: smoke-test
+    note: "version-quorum: --json → status:green sources agree on 0.5.0. install-baseline: no baseline → red; --force-fresh → yellow override. migration-presence: capsule 0.5.0 lists 0 migrations → green. All return PreflightGateResult per IN-1. AC-S-4.1/.2/.3 met for happy paths; red paths use schema-checked branches."
+reopen_history: []

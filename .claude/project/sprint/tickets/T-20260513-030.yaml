@@ -1,0 +1,54 @@
+schema: warpos/sprint/ticket/v1
+id: T-20260513-030
+title: HTML writer with style parity goal
+type: feature
+status: in_review
+sprint: SP-20260513-001
+created_at: "2026-05-13T08:05:55.524Z"
+updated_at: "2026-05-13T20:49:15.799Z"
+owner: null
+owner_agent: null
+risk_level: medium
+approval_required: false
+approval_state: not_required
+source_request: "Skill that bootstraps a thorough product brief (problem, JTBDs, value chain, competitive, wedge, vision, MVP) from a short guided discussion; outputs MD/DOCX/HTML. Inspired by _docs/ai-web-brief-v4. Confirm skill name before build."
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260513-0002.yaml"
+linked_requirements:
+  - R-5
+linked_high_level_story: "H-1;H-3"
+linked_granular_story: S-4
+linked_prd: ".claude/project/sprint/requirements/SP-20260513-001/prd.md"
+linked_copy:
+  - C-4
+linked_inputs:
+  - IN-1
+linked_trace:
+  - TR-3
+linked_acceptance_criteria:
+  - AC-S-4.1
+  - AC-S-4.2
+  - AC-S-4.3
+linked_issues: []
+linked_decisions: []
+linked_external_services: []
+linked_files: []
+linked_tests: []
+linked_commits: []
+linked_prs: []
+linked_release: null
+description: "Single-file HTML writer using framework/templates/product-bootstrap/brief.html.tmpl. Family-resemblance with ai-web-brief-v4.html (β directive). HTML-escape per RT-4."
+user_value: ""
+business_value: ""
+acceptance_criteria: []
+non_goals: []
+implementation_notes: "Design complete — linked R-5, S-4, AC-S-4.1..3, C-4, IN-1, TR-3."
+qa_notes: ""
+redteam_notes: ""
+trace_notes: ""
+blocked_by: []
+blocks: []
+fix_attempts: []
+ralph_progress: null
+completion_evidence:
+  - "HTML writer in scripts/product/bootstrap.js#writeHtml uses framework/templates/product-bootstrap/brief.html.tmpl. Single-file HTML, DM Serif/DM Mono/Instrument Sans fonts (family resemblance with _docs/ai-web-brief-v4.html). HTML-escape per RT-4 verified by unit test. AC-S-4.1/4.2/4.3 covered."
+reopen_history: []

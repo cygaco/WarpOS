@@ -1,0 +1,85 @@
+schema: "warpos/sprint/sprint-retrospective/v1"
+sprint_id: "SP-20260512-001"
+plan_contract_id: "PC-20260512-0001"
+synthesis_mode: "skeleton"
+summary: "<TO FILL>"
+outcomes_shipped:
+  - outcome: "<TO FILL>"
+    evidence: []
+    planned: true
+outcomes_missed:
+  - outcome: "<TO FILL>"
+    reason: "<TO FILL>"
+    disposition: unknown
+plan_quality_actual:
+  predicted_status: needs_design
+  actual_status: "<TO FILL>"
+  predicted_confidence: high
+  evidence_gaps_predicted:
+    - "Exact migration strategy for SP-20260512-001 (in-place vs new-init-and-archive) — needs /sprint:design to settle."
+    - "Whether sprint-routing.json should grow concurrency block in minimal_safe or only in recommended — design call."
+    - "Whether /sprint:status is in-scope for this sprint or a follow-up — depends on chosen variant."
+  evidence_gaps_actual: []
+  notes: "<TO FILL>"
+scope_variant_actual:
+  planned_variant: recommended
+  actual_variant: unknown
+  adhered: false
+  drift_notes: "<TO FILL>"
+surprises: []
+friction_points:
+  - friction: "<TO FILL>"
+    category: other
+    evidence: []
+    severity: low
+action_items:
+  - action: "<TO FILL>"
+    owner: alpha
+    due_by: "<TO FILL>"
+    linked_friction: ""
+tickets_completed:
+  - T-20260512-001
+  - T-20260512-002
+  - T-20260512-003
+  - T-20260512-004
+  - T-20260512-005
+  - T-20260512-006
+  - T-20260512-007
+  - T-20260512-008
+  - T-20260512-009
+  - T-20260512-010
+  - T-20260512-011
+  - T-20260512-012
+  - T-20260512-013
+  - T-20260512-014
+  - T-20260512-015
+  - T-20260512-016
+  - T-20260512-017
+  - T-20260512-018
+tickets_deferred: []
+tickets_abandoned: []
+tickets_reopened: []
+issues_encountered: []
+beta_decisions_reviewed: []
+key_tradeoffs:
+  - "Recommended variant over minimal_safe: takes on operational burden (worktree lanes, warm-up dispatch) for true parallel execution; minimal_safe would have unlocked only 'open at once' parallelism."
+  - "Deferred-coordinator decision: no central queue. Each sprint runs its own Ralph loop; conflict-check is advisory at plan + blocking at execute (override via --allow-overlap)."
+  - "Worktree default: lane.type=worktree as default_isolation in sprint-routing.json, even though it costs a manual `git worktree add` step. Reason: prevents the first-dispatch-leak bug from corrupting the lane's HEAD."
+learning_candidates: []
+release_record_ref: "RL-20260513-001"
+synthesis_metadata:
+  model_class: ""
+  provider: ""
+  model_id: ""
+  duration_ms: 0
+  output_chars: 0
+  fallback_reason: null
+signed_off_by: "alpha"
+signed_off_at: "2026-05-13T20:51:59.727Z"
+retro_metadata:
+  synthesized_at: "2026-05-13T20:51:59.727Z"
+  writer_version: "1.0.0"
+  history_record: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\history\\SP-20260512-001\\sprint-history.yaml"
+  force_overwrite: true
+created_at: "2026-05-13T20:51:59.727Z"
+updated_at: "2026-05-13T20:51:59.727Z"

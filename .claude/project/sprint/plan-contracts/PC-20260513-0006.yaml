@@ -1,0 +1,180 @@
+schema: warpos/sprint/plan-contract/v1
+id: PC-20260513-0006
+created_at: "2026-05-13T06:30:17.493Z"
+updated_at: "2026-05-13T06:30:17.493Z"
+sprint: SP-20260513-005
+source_request: "Harden /warp:update — operator reports fear and tons of troubleshooting on every version bump. Add preflight + postflight + rollback so updates either succeed cleanly or stop without damage."
+source_request_verbatim: I am scared to update other projects to newer versions because there is always issues and tons of troubleshooting. Harden updating.
+request_type: architecture_change
+interpreted_intent: "Reduce the failure rate (and emotional cost) of /warp:update when applied to downstream projects. Identify recurring failure modes from session + event history, add preflight gates that prevent unsafe applies, wrap the apply phase transactionally with rollback on any failure, and verify the install postflight before declaring success."
+user_or_business_outcome: "Operator runs /warp:update on a downstream project and trusts the outcome: either the update completes cleanly with evidence (manifest honesty, path resolution, providers, structure parity), or it stops before damaging anything and tells the operator exactly what to fix."
+affected_surfaces:
+  - surface: scripts/warpos/update.js
+    evidence_level: verified_from_repo
+    notes: "~300+ LOC. Already rewritten in 0.1.2+ to fix sourceTreeRoot, migrations, postUpdateChecks, MERGE_SAFE, and add transaction stub. This sprint extends transaction discipline and adds gating."
+  - surface: scripts/warpos/migrations-loader.js
+    evidence_level: verified_from_repo
+    notes: "Migration runner — verifies coverage."
+  - surface: scripts/warpos/release-gates.js
+    evidence_level: verified_from_repo
+    notes: Gates run during release-build. Candidate to extend with update-time gates.
+  - surface: scripts/warpos/release-canonical.js
+    evidence_level: verified_from_repo
+    notes: "Canonical release driver — referenced by /warp:release."
+  - surface: scripts/warpos/release-build.js
+    evidence_level: verified_from_repo
+    notes: Capsule builder.
+  - surface: ".claude/commands/warp/update.md"
+    evidence_level: verified_from_repo
+    notes: "Skill body — procedure update needed."
+  - surface: ".claude/commands/warp/sync.md"
+    evidence_level: verified_from_repo
+    notes: Deprecated alias.
+  - surface: "framework/releases/*/release.json + framework/releases/*/migrations/"
+    evidence_level: verified_from_repo
+    notes: "Capsule contracts — postUpdateChecks declarations."
+  - surface: ".claude/framework-installed.json"
+    evidence_level: verified_from_repo
+    notes: "Install state file — manifest-honesty target."
+  - surface: "runtime/qa-*/"
+    evidence_level: verified_from_repo
+    notes: Existing runtime evidence dirs.
+  - surface: ".claude/project/events/events.jsonl"
+    evidence_level: verified_from_repo
+    notes: "Source for failure-mode mining (recurring update issues)."
+  - surface: ".claude/runtime/handoffs/"
+    evidence_level: verified_from_repo
+    notes: Source for operator-narrated update pain.
+current_behavior:
+  evidence_level: verified_from_repo
+  notes: "update.js has been substantially rewritten across 0.1.2 → 0.5.0 (fixing sourceTreeRoot, migrations, postUpdateChecks, MERGE_SAFE, adding a transaction record). Multiple /check:warpos-* skills exist (manifest-honesty, applied-migrations, staleness, structure-parity, tracked-transients, path-resolution, roundtrip stub, promote-coverage stub, promote-scope, migration-coverage stub). Operator still reports recurring troubleshooting — implies the gates exist as skills but aren't composed into the update lifecycle, OR they don't catch the actual failure modes hit in practice."
+desired_behavior: "/warp:update runs three phases: (1) preflight — compose /check:warpos-* gates and refuse to apply if any block; (2) transactional apply — snapshot files that will be touched, apply, validate, commit-or-rollback; (3) postflight — run /warp:health + provider-smoke (if Plan 2 ships) + path-resolution + manifest-honesty + applied-migrations. Failures roll back. Success prints structured evidence."
+scope:
+  size: l
+  risk_level: high
+  complexity_drivers:
+    - "Multi-repo (canonical ↔ downstream)"
+    - "Multi-version replay (capsule chain 0.1 → 0.5+)"
+    - "Stateful — transactions, migrations, partial-apply, rollback"
+    - "Bug-class hygiene per CLAUDE.md (ref-checker on deletes, ALL-occurrence grep on renames, lib-only fixes don't protect — needs raw-pattern guards + dispatch-contract rules)"
+    - "User trust is the metric — hard to measure objectively without telemetry"
+scope_variants:
+  minimal_safe:
+    summary: "Add a preflight phase to update.js that composes every existing /check:warpos-* gate. Block apply if any gate is red. No apply-time changes, no rollback work."
+    tradeoffs:
+      - Catches the failures that current gates know about
+      - "Doesn't fix the 'apply broke halfway' class"
+      - Quick to ship and high-signal
+  recommended:
+    summary: "Above + a transaction wrapper around apply (snapshot files-to-be-touched + transaction id, apply, validate, commit-or-rollback) + a postflight verifier (composes /warp:health + provider-smoke if Plan 2 ships + path-resolution + manifest-honesty). Failures stop with rollback. Postflight failures are reported, can opt to rollback or accept-with-warnings."
+    tradeoffs:
+      - Honors the request directly
+      - "Largest engineering surface — transactions are tricky"
+      - Greatly improves operator trust
+  expanded:
+    summary: "Above + a migration-replay test bench (every capsule applies cleanly to a synthetic clean install AND common drift states), a /warp:update --dry-run --verbose-rca mode that surfaces every failure mode pre-emptively, a recurring-failure dashboard hooked to events.jsonl, integration with /issues:log when a class of failure repeats."
+    tradeoffs:
+      - Highest reliability
+      - Significant maintenance burden
+      - "Some of this overlaps with already-stub'd checks (/check:warpos-roundtrip is currently STUB)"
+assumptions:
+  safe:
+    - "Existing /check:warpos-* skills are valuable building blocks (already shipped)."
+    - "Transaction wrapper goes around the file-copy + migration steps in update.js apply()."
+    - "Failure-mode evidence is available in events.jsonl + handoffs (operator has been narrating pain in session)."
+  unsafe:
+    - "How many real failure modes exist — must mine events + handoffs during design."
+    - "Whether the user's fear is specific recent failures or accumulated friction."
+    - "Whether rollback breaks downstream merges / branches (need to handle git-aware rollback)."
+  needs_user_or_beta_review:
+    - "Success metric — what does 'hardened enough' look like (zero red updates in a week? operator self-reports lower fear?)"
+    - "Whether dry-run-by-default is acceptable (could be friction)."
+    - "Whether to gate on clean working tree (could block legitimate updates)."
+open_questions:
+  blocking: []
+  non_blocking:
+    - "Mine session events for recurring failure signatures FIRST during design (recommended)."
+    - "Is rollback real (git-revert + file restore) or advisory (write a `.rollback-needed` marker)?"
+    - "Cross-version skipping — should we support 0.1 → 0.5 direct or require step-through?"
+    - "What evidence package does a successful postflight emit?"
+non_goals:
+  - "Rewriting update.js from scratch (it was just rewritten in 0.5.0)"
+  - Building a UI for updates
+  - Auto-applying without operator consent
+  - "Removing /warp:update --dry-run behavior"
+requirement_areas:
+  - "Preflight gate composer (calls every /check:warpos-* skill)"
+  - "Transaction wrapper + rollback"
+  - Postflight verifier
+  - "Failure-mode catalog (overlaps with Plan 2's provider catalog)"
+  - "/warp:update.md procedure update + troubleshooting section"
+  - release-gates.js extensions
+  - "Failure-mode mining (research deliverable, design-time)"
+high_level_story_candidates:
+  - "As an operator, /warp:update runs every relevant check before touching files."
+  - "As an operator, when /warp:update fails mid-apply, it rolls back cleanly."
+  - "As an operator, after /warp:update succeeds, I get evidence (paths, manifest, providers, health) that the install is sane."
+  - "As Alex, recurring update failures get logged and surface as candidates for prevention."
+granular_story_candidates:
+  - "update.js gains a preflight phase composing /check:warpos-manifest-honesty, /check:warpos-applied-migrations, /check:warpos-staleness, /check:warpos-path-resolution, /check:warpos-structure-parity, /check:warpos-tracked-transients."
+  - "update.js writes a pre-apply snapshot of all files it intends to touch + a transaction id."
+  - "On any apply error, update.js restores from snapshot and exits non-zero with the transaction id."
+  - "After apply, update.js runs /warp:health + provider-smoke (if available) and surfaces structured evidence."
+  - Update events log to .claude/project/events for trend analysis.
+workstream_candidates:
+  - "Failure-mode mining (read past handoffs + events for actual signatures — design-time research)"
+  - Preflight composition
+  - "Transaction + rollback"
+  - "Postflight verifier (integrates with Plan 2's provider-smoke if both ship)"
+  - "release-gates.js coverage audit (do gates cover the mined failure modes?)"
+  - "Docs (/warp:update.md procedure + troubleshooting section)"
+preliminary_ticket_candidates:
+  allowed: false
+  candidates: []
+  notes: "Tickets minted in /sprint:design after failure-mode mining establishes the real catalog. Pre-design ticketing risks locking in fixes for problems that aren't the actual recurring ones."
+external_service_dependencies:
+  status: none_expected
+  required: []
+  possible: []
+  notes: Pure framework work.
+approval_boundaries:
+  - "Architectural change to the release/update flow — Class B/C"
+  - "Adding gates that could block legitimate updates — false-positive risk"
+  - "Rollback behavior — must itself be reversible"
+  - "Touching release-gates.js — affects release flow used by /warp:release"
+design_required: true
+execution_allowed_without_design: false
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+lane:
+  type: default
+  value: null
+  isolation_notes: ""
+beta_review:
+  required: true
+  likely_founder_rejection_risks:
+    - "Gates that block legitimate updates on transient yellows (operator gets a worse experience, not a better one)."
+    - "Rollback that loses operator changes (snapshot must include uncommitted work)."
+    - "Building features for failure modes that aren't the actual recurring ones."
+  overbuild_risks:
+    - "Implementing the migration-replay test bench in MVP (that's expanded scope)."
+    - "Adding telemetry + recurring-failure dashboard before basic preflight works."
+  missing_context_risks:
+    - "No mined catalog of the actual recurring failure modes — must mine session events + handoffs during design."
+plan_quality:
+  status: pass
+  confidence: medium
+  evidence_gaps:
+    - "Specific recent failure modes the operator has hit — should mine handoffs and events during design."
+    - "Existing release-gates.js coverage map — does it overlap with the new preflight composer or replace it?"
+  fail_reasons: []
+next_recommended_command: "/sprint:design --sprint <this-sprint-id>"
+resume_instructions: "Plan Contract written. First design action: mine .claude/runtime/handoffs/ + .claude/project/events/events.jsonl for /warp:update failure signatures over the past 30 days. Use that catalog to scope preflight + postflight gates. Then run /sprint:design --sprint <this-sprint-id>."
+tracker_paths:
+  current_sprint: ".claude/project/sprint/current-sprint.yaml"
+  sprint_progress: ".claude/project/sprint/sprint-progress.yaml"
+  plan_contract: ".claude/project/sprint/plan-contracts/PC-20260513-0006.yaml"
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260513-0006.report.md"
+created_by: alpha
+updated_by: alpha

@@ -44,6 +44,11 @@
       "diff_review": true,
       "rationale": "Final go/no-go judgment + release-notes synthesis."
     },
+    "retrospective": {
+      "model_class": "strong_reasoning",
+      "diff_review": true,
+      "rationale": "Synthesizes a post-sprint retrospective from tracker artifacts. Strong reasoning so the model can connect Plan Contract predictions to actual outcomes; diff_review catches hallucinated wins/misses by surfacing a second-vendor read before sign-off. Fail-open: synthesis failure auto-falls-back to skeleton retro (COPY C-7)."
+    },
     "docs_sync": {
       "model_class": "economical_writer",
       "rationale": "Docs/spec updates after code changes are mostly transcription — economical writer is fine."

@@ -1,0 +1,57 @@
+schema: warpos/sprint/ticket/v1
+id: T-20260513-038
+title: "Author retro.yaml.tmpl + retro.md.tmpl templates"
+type: chore
+status: in_review
+sprint: SP-20260513-004
+created_at: "2026-05-13T20:20:32.543Z"
+updated_at: "2026-05-13T22:45:00.000Z"
+owner: null
+owner_agent: null
+risk_level: low
+approval_required: false
+approval_state: not_required
+source_request: "Add a /sprint:retrospective skill that runs at the end of a sprint to produce a structured retrospective."
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260513-0005.yaml"
+linked_requirements:
+  - R-4
+linked_high_level_story: H-2
+linked_granular_story: S-4
+linked_prd: ".claude/project/sprint/requirements/SP-20260513-004/prd.md"
+linked_copy:
+  - C-1
+linked_inputs: []
+linked_trace: []
+linked_acceptance_criteria:
+  - AC-4.1
+  - AC-4.2
+linked_issues: []
+linked_decisions: []
+linked_external_services: []
+linked_files:
+  - "framework/templates/sprint/retrospective/retro.yaml.tmpl"
+  - "framework/templates/sprint/retrospective/retro.md.tmpl"
+linked_tests:
+  - "AC-4.1: {{token}} placeholders match fs.js#render regex /\\{\\{\\s*([a-zA-Z0-9_]+)\\s*\\}\\}/"
+  - "AC-4.2: MD section order matches COPY C-1 (Summary → Outcomes → Plan Quality → Scope Variant → Surprises → Friction → Action Items → Tickets Completed → Deferred/Abandoned → Issues → Beta Decisions → Key Tradeoffs → Learning Candidates → Sign-off)"
+linked_commits: []
+linked_prs: []
+linked_release: null
+description: "Write framework/templates/sprint/retrospective/retro.yaml.tmpl and retro.md.tmpl. Use {{token}} syntax matching existing fs.js#render helper (see other templates under framework/templates/sprint/). YAML seeds every required schema field with placeholder; MD renders human-readable retro with section headings exactly matching COPY C-1 order."
+user_value: ""
+business_value: ""
+acceptance_criteria: []
+non_goals: []
+implementation_notes: ""
+qa_notes: ""
+redteam_notes: ""
+trace_notes: ""
+blocked_by: []
+blocks: []
+fix_attempts: []
+ralph_progress: null
+completion_evidence:
+  - "AC-4.1: both .tmpl files exist with {{token}} placeholders matching fs.js#render syntax"
+  - "AC-4.2: MD section order verified against COPY C-1 (14 headings, exact order)"
+  - "Synthesized array sections rendered to YAML/MD strings by retrospective.js (see T-036)"
+reopen_history: []

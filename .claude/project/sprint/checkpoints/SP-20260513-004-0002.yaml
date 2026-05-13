@@ -1,0 +1,35 @@
+schema: warpos/sprint/sprint-progress/v1
+sprint: SP-20260513-004
+updated_at: "2026-05-13T20:23:10.675Z"
+current_phase: design
+current_command: "/sprint:design"
+current_ticket: null
+current_task: null
+current_loop: null
+status: running
+last_completed_step: design_scaffolded_and_tickets_minted
+next_action: "Resolve schema approval AP-20260513-005, then /sprint:execute"
+active_files: []
+modified_files: []
+checks_last_run: null
+checks_passing: []
+checks_failing: []
+blockers: []
+approvals_needed:
+  - AP-20260513-005
+external_services_needed: []
+issues_opened: []
+tickets_updated:
+  - T-20260513-035
+  - T-20260513-036
+  - T-20260513-037
+  - T-20260513-038
+  - T-20260513-040
+  - T-20260513-041
+  - T-20260513-042
+  - T-20260513-043
+ralph_checkpoint: null
+resume_command: "/sprint:execute"
+resume_notes: "Design complete at scale=s. 8 tickets minted (T-035..T-038, T-040..T-043). Schema choice: sibling sprint-retrospective.schema.json. Approval AP-20260513-005 pending on T-20260513-035."
+safe_to_continue: true
+stop_reason: null

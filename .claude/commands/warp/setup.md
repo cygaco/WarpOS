@@ -220,3 +220,38 @@ Every step has an is-done signal. Steps only run when their signal is missing. S
 - Breaking change in schema? Re-run → Step D rebuilds settings.json
 
 Users never have to think about "which step am I at" — the skill figures it out.
+
+## Provider smoke — terminal step (SP-20260513-002)
+
+After Step E succeeds (or after a re-run reports "fully set up"), invoke the provider smoke as the last operator-visible step:
+
+```
+node scripts/warpos/provider-smoke.js --providers claude,openai,gemini
+```
+
+This wraps the existing `paths.providerFallbackPolicy`-backed health
+check with RCA (`scripts/warpos/lib/provider-rca.js`, ticket
+`T-20260513-022`) and a safe-only auto-fix dispatcher
+(`scripts/warpos/lib/provider-autofix.js`, ticket `T-20260513-023`).
+
+**Exit-code semantics** (PRD R-7):
+- `0` — all green, OR yellow without `--exit-on-yellow` (yellow is non-blocking; an unauthenticated codex CLI is not a setup blocker if the operator hasn't onboarded yet).
+- `2` — at least one required provider returned a red status. Setup leaves disk in a usable state but exits non-zero so the operator knows providers are NOT verified yet.
+- `1` — internal error (corrupt failure-mode catalog, invalid argv).
+
+**On RED:** print the C-5 block (from
+`paths.sprintRequirements/SP-20260513-002/copy.md`) — tells the operator
+the cause is fixable and the install is on disk. They can re-run the
+smoke after fixing the cause without re-running the full setup.
+
+**No auto-rollback on red.** Rollback is out of scope here (owned by
+SP-20260513-005); the smoke is a verification step, not a transaction
+boundary. The generic fallback for an operator who wants to revert is
+`git reset --hard pre-warpos-<version>` per the install backup.
+
+**Yellow is non-blocking by default.** If the operator wants stricter
+gating, pass `--exit-on-yellow` (e.g. for a fresh provisioned dev box
+where missing CLIs SHOULD be installed before onboarding).
+
+Linked acceptance criteria: `AC-6.1` (green path exits 0) and `AC-6.2`
+(red exit non-zero, install stays on disk).

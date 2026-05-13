@@ -101,7 +101,10 @@ const PATHS = {
   "sprintTemplates": path.join(PROJECT, "framework", "templates", "sprint"),
   "sprintSchemas": path.join(PROJECT, "schemas", "sprint"),
   "sprintReference": path.join(PROJECT, ".claude", "project", "reference", "sprint-workflow.md"),
-  "sprintRouting": path.join(PROJECT, ".claude", "agents", "00-alex", ".system", "policy", "sprint-routing.json")
+  "sprintRouting": path.join(PROJECT, ".claude", "agents", "00-alex", ".system", "policy", "sprint-routing.json"),
+  "briefs": path.join(PROJECT, "_docs", "briefs"),
+  "briefsCurrent": path.join(PROJECT, "_docs", "briefs"),
+  "skillCatalog": path.join(PROJECT, ".claude", "runtime", "skill-catalog.json")
 };
 
 module.exports = { PROJECT, PATHS };

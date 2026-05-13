@@ -1,0 +1,22 @@
+schema: warpos/sprint/approval/v1
+id: AP-20260513-004
+sprint: SP-20260513-002
+level: release_approval_required
+required_for: "Editing every framework/releases/*/release.json#postUpdateChecks to declare provider-smoke as a terminal post-update gate. Affects every future /warp:update apply across all WarpOS-installed product repos."
+linked_ticket: T-20260513-020
+linked_external_service: null
+linked_release: null
+linked_decision: null
+state: approved
+requested_by: alpha
+decided_by: user
+decided_at: "2026-05-13T22:30:00.000Z"
+reason: "User explicit approval 2026-05-13: 'I APPROVE ALL. APPROVED.'"
+evidence:
+  - "PRD R-1 mandates provider-smoke is declared in every framework/releases/*/release.json#postUpdateChecks (forward) so /warp:update runs it as a terminal post-update check."
+  - "Plan Contract PC-20260513-0003 approval_boundaries[0]: 'Modifying release-gate fixtures / postUpdateChecks — affects release flow'."
+  - "RT-4 in redteam-plan.md guards against malicious capsule postUpdateChecks (static literal strings only; no shell interpolation)."
+  - "Release-plan Scenario A/B/C exercises the new postUpdateCheck end-to-end before ship."
+  - "Auto-fix risk (Plan Contract approval_boundaries[1]) is design-resolved by safe_to_autofix=false policy on auth-mutating recipes (RT-2 + AC-5.2); no separate approval record minted because the guardrail is encoded in the catalog schema, not a runtime decision."
+created_at: "2026-05-13T15:30:00.000Z"
+updated_at: "2026-05-13T15:30:00.000Z"

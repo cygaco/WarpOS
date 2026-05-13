@@ -40,3 +40,19 @@ _(none)_
   Escalate via `/fix:deep`.
 - Cross-link rule: promoted-to-ticket issues carry a `→ T-…` reference
   to the ticket file.
+
+### [SP-20260513-001] I-20260513-001 — product-bootstrap unit tests mutate live paths.json
+
+- **Status:** open
+- **Severity:** low
+- **Discovered:** 2026-05-13T20:50:42.328Z during SP-20260513-001:design
+- **Sprint:** SP-20260513-001
+- **Ticket:** —
+
+**Expected:** Tests should not mutate live .claude/paths.json
+**Actual:** scripts/product/bootstrap.js#registerPaths writes briefsCurrent into the real paths.json during tests; cleanup deletes output but cannot revert paths.json. Future fix: --paths-json override flag.
+
+
+
+YAML: `.claude/project/sprint/issues/I-20260513-001.yaml`
+

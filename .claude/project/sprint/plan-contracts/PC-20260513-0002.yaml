@@ -1,0 +1,162 @@
+schema: warpos/sprint/plan-contract/v1
+id: PC-20260513-0002
+created_at: "2026-05-13T06:30:17.195Z"
+updated_at: "2026-05-13T06:35:00.000Z"
+sprint: SP-20260513-001
+source_request: "Skill that bootstraps a thorough product brief (problem, JTBDs, value chain, competitive, wedge, vision, MVP) from a short guided discussion; outputs MD/DOCX/HTML. Inspired by _docs/ai-web-brief-v4. Confirm skill name before build."
+source_request_verbatim: "A feature to 'bootstrap' a product from an idea, creating a thorough product brief. This is intended to be the first command run in a new project. The brief should capture the following concepts at minimum: problem solved, JTBDs, value chain analysis, competitive analysis, wedge, vision, wedge to full vision, and mvp. In the creation of the brief, there should be a brief discussion with the user. Use `ai-web-brief-v4` under _docs as inspiration. The final output should result in md, docx, and html versions of the brief. This process should be initiated by a skill. Confirm the skill name with me before building."
+request_type: feature_add
+interpreted_intent: "Add a new user-invocable skill that walks an operator through a short discussion to produce a thorough product brief covering at minimum: problem solved, JTBDs, value chain analysis, competitive analysis, wedge, vision, wedge-to-full-vision, and MVP. Skill emits MD/DOCX/HTML to a project-local docs path. Intended as the first command run in a new project. Skill name is unknown — user explicitly requested confirmation before any build step."
+user_or_business_outcome: "A founder/operator running a fresh project gets a thorough, multi-format product brief in one sitting without having to re-derive structure each time."
+affected_surfaces:
+  - surface: ".claude/commands/product/bootstrap.md (NEW skill file)"
+    evidence_level: assumed_from_request
+    notes: "Skill confirmed as /product:bootstrap (user, 2026-05-13)."
+  - surface: "scripts/product/bootstrap.js (NEW generator)"
+    evidence_level: assumed_from_request
+    notes: "Writer that fans out to MD/HTML/DOCX. Lives under scripts/product/ to match the /product: namespace."
+  - surface: "framework/templates/product-bootstrap/*.tmpl (NEW MD/HTML/DOCX templates)"
+    evidence_level: assumed_from_request
+    notes: Section structure modeled on ai-web-brief-v4.
+  - surface: "_docs/briefs/<slug>/<slug>.brief.{md,html,docx} (NEW output)"
+    evidence_level: assumed_from_request
+    notes: Per-slug subdir under _docs/briefs/. Final convention confirmed at design time.
+  - surface: ".claude/paths.json"
+    evidence_level: inferred_from_repo
+    notes: "Likely add paths.briefs or similar key — registry rule per CLAUDE.md."
+  - surface: "_docs/ai-web-brief-v4.{md,html}"
+    evidence_level: verified_from_repo
+    notes: "Reference brief. Section taxonomy + tone source."
+current_behavior:
+  evidence_level: verified_from_repo
+  notes: "No bootstrap-brief skill exists. Closest analogue is /sprint:plan (request-level), and the reference brief lives at _docs/ai-web-brief-v4.{md,html}. No DOCX rendering pipeline in repo yet."
+desired_behavior: "Operator runs the new skill once near project start. Skill conducts a bounded discussion (≤8 AskUserQuestion turns), drafts every required section, and writes MD/HTML/DOCX outputs. Re-runs version the prior brief rather than silently overwriting."
+scope:
+  size: m
+  risk_level: medium
+  complexity_drivers:
+    - "DOCX generation on Windows (pandoc shellout vs `docx` npm both have caveats)"
+    - HTML rendering parity with ai-web-brief-v4 styling
+    - AskUserQuestion budgeting so the discussion stays short
+    - "Section coverage QC — must capture every listed concept"
+    - "Output naming policy + paths.json registry update"
+scope_variants:
+  minimal_safe:
+    summary: "MD-only output. Fixed 6-question discussion. No DOCX/HTML. Skill name confirmed first, single namespace."
+    tradeoffs:
+      - Fastest ship
+      - Misses the multi-format ask
+      - Punts on DOCX backend choice
+  recommended:
+    summary: "MD + HTML output via templates. Adaptive 4–8 question discussion bounded by AskUserQuestion budget. DOCX via pandoc shellout if pandoc is on PATH, else a clear 'install pandoc to enable DOCX' message that still produces MD + HTML."
+    tradeoffs:
+      - Honors the spec without adding a heavy npm dep
+      - "DOCX availability depends on operator's pandoc install"
+      - HTML template needs design pass to look anywhere near ai-web-brief-v4
+  expanded:
+    summary: "All three formats native (HTML via templates, DOCX via `docx` npm OR pandoc with fallback). Refinement loop with the user (review/redraft per section). Brief version history per project. Sibling helpers (/brief:rebuild, /brief:section)."
+    tradeoffs:
+      - Largest surface
+      - Multiple new deps
+      - "Best operator experience but most QA + design budget"
+assumptions:
+  safe:
+    - "_docs/ai-web-brief-v4.{md,html} is the canonical reference and template inspiration (user said so)."
+    - Skill is user-invocable.
+    - "Outputs live under _docs/ (the repo's docs root)."
+    - AskUserQuestion is the right primitive for the discussion.
+  unsafe:
+    - Whether DOCX must be native vs pandoc-shellout is acceptable.
+    - "Whether discussion is one skill or splits into discovery + draft phases."
+    - "Re-run policy (overwrite vs versioned vs prompt)."
+  needs_user_or_beta_review:
+    - Output filename pattern.
+    - "Whether all three formats must ship day 1 or recommended (MD+HTML, DOCX-via-pandoc) is acceptable."
+    - "Whether ai-web-brief-v4's extended sections (Bear/Bull, Quick Notes, References) are required or optional."
+open_questions:
+  blocking: []
+  non_blocking:
+    - "Section set: only the listed minimum (problem, JTBDs, value chain, competitive, wedge, vision, MVP), or the full ai-web-brief-v4 set? (design-time decision)"
+    - "DOCX backend: pandoc shellout vs `docx` npm vs both with fallback? (design-time decision)"
+    - "Output dir convention (_docs/briefs/<slug>/ vs _docs/<slug>.brief.*)?"
+    - "Should re-runs version older briefs?"
+    - "Should there be an LLM polish pass after the discussion?"
+non_goals:
+  - "Replacing /sprint:plan or /sprint:design"
+  - "Full strategic deliverable suite (pitch deck, financial model, etc.)"
+  - Auto-publishing to Notion / Google Drive / external systems
+  - Multi-language briefs
+requirement_areas:
+  - skill definition
+  - generator / writer script
+  - "templates (MD, HTML, DOCX)"
+  - "discussion protocol (AskUserQuestion budget + section coverage)"
+  - output path policy
+  - paths.json updates
+high_level_story_candidates:
+  - "As a founder starting a new project, I run one command and walk away with a thorough brief."
+  - "As a strategist, I can re-run the skill to update an existing brief without losing the old version."
+  - "As a teammate, I can read the brief in MD (review), HTML (share), DOCX (edit)."
+granular_story_candidates:
+  - "Skill asks 4–8 high-leverage questions covering all required sections."
+  - "Skill drafts each section, then synthesizes wedge → full vision arc."
+  - "Skill writes MD to _docs/briefs/<slug>/<slug>.brief.md (or chosen convention)."
+  - "Skill renders HTML via template (or pandoc) to <slug>.brief.html."
+  - "Skill renders DOCX via chosen backend to <slug>.brief.docx."
+  - Skill registers paths.json keys for the brief location.
+workstream_candidates:
+  - "Skill scaffolding (skill md + paths)"
+  - "Discussion flow (AskUserQuestion budget + section coverage matrix)"
+  - "Generator (MD/HTML/DOCX writers)"
+  - "Templates (seeded by ai-web-brief-v4 sections)"
+  - Integration with project init / onboarding
+preliminary_ticket_candidates:
+  allowed: false
+  candidates: []
+  notes: "Tickets minted in /sprint:design AFTER user confirms skill name. Build is gated on that confirmation."
+external_service_dependencies:
+  status: possible
+  required: []
+  possible:
+    - "pandoc (local binary dependency if chosen for DOCX backend)"
+    - "docx npm package (no service signup, but new dep)"
+  notes: "No external API. If DOCX backend is pandoc, that's a binary on PATH, not an external service."
+approval_boundaries:
+  - "Creating new /product: namespace under .claude/commands/ (touches commands index + paths)"
+  - "Adding a new npm dependency if `docx` package is chosen"
+design_required: true
+execution_allowed_without_design: false
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+lane:
+  type: default
+  value: null
+  isolation_notes: ""
+beta_review:
+  required: true
+  likely_founder_rejection_risks:
+    - "Brief sections that don't match the listed minimum."
+    - Failing silently on DOCX on Windows.
+  overbuild_risks:
+    - "Multiple-format pipeline + refinement loop + history versioning in one shot."
+    - Inventing a brief framework richer than the user asked for.
+  missing_context_risks:
+    - Not enough samples of intended use to validate question set.
+    - "Unclear which projects will run this — affects output dir + slug convention."
+plan_quality:
+  status: pass
+  confidence: high
+  evidence_gaps:
+    - "Pandoc availability on the user's Windows machine (verify at design time)."
+    - "Whether ai-web-brief-v4 sections beyond the listed minimum are required (design-time decision)."
+  fail_reasons: []
+next_recommended_command: "/sprint:design --sprint SP-20260513-001"
+resume_instructions: "Skill name confirmed as /product:bootstrap (2026-05-13). Plan Contract unblocked. Run /sprint:design --sprint SP-20260513-001 to scaffold requirements + decide section set + DOCX backend at design time."
+tracker_paths:
+  current_sprint: ".claude/project/sprint/current-sprint.yaml"
+  sprint_progress: ".claude/project/sprint/sprint-progress.yaml"
+  plan_contract: ".claude/project/sprint/plan-contracts/PC-20260513-0002.yaml"
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260513-0002.report.md"
+created_by: alpha
+updated_by: alpha

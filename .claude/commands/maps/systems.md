@@ -1,5 +1,6 @@
 ---
-description: Systems manifest graph — dependencies, status, categories
+description: Render the systems manifest as a dependency graph — visualize which systems depend on which, their status, and their categories so you can audit coverage and drift at a glance.
+tags: [maps, systems, graph]
 ---
 
 # /maps:systems — Systems Dependency Map

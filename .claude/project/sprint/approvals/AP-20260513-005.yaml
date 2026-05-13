@@ -1,0 +1,21 @@
+schema: warpos/sprint/approval/v1
+id: AP-20260513-005
+sprint: SP-20260513-004
+level: execution_approval_required
+required_for: "Introduce new sibling schema schemas/sprint/sprint-retrospective.schema.json + add retrospected to status enum in schemas/sprint/active-sprints.schema.json. Both are workflow-contract changes (Class B) — first ships a new artifact type the framework will treat as authoritative; second extends a registry status enum every sprint helper reads."
+linked_ticket: T-20260513-035
+linked_external_service: null
+linked_release: null
+linked_decision: null
+state: approved
+requested_by: alpha
+decided_by: user
+decided_at: "2026-05-13T22:30:00.000Z"
+reason: "User explicit approval 2026-05-13: 'I APPROVE ALL. APPROVED.'"
+evidence:
+  - "Plan Contract PC-20260513-0005 approval_boundaries[0]: 'New schema in schemas/sprint/ — touches workflow contract (Class B)'."
+  - "PRD .claude/project/sprint/requirements/SP-20260513-004/prd.md Design Decision #1: sibling sprint-retrospective.schema.json chosen over extending sprint-history.schema.json. Rationale: history is a frozen registry artifact (closed sprints), retro is a per-sprint analytical artifact; sibling keeps each schema focused and lets retro fields evolve without churning history records."
+  - "PRD Design Decision #3 + R-5: status enum gets new value retrospected, an additive change to schemas/sprint/active-sprints.schema.json#definitions.registryEntry.status."
+  - "Approval scope is the SCHEMA introduction (T-20260513-035) + the enum extension (folded into T-20260513-040 status-transition ticket). Implementation tickets T-036/037/038/041/042/043 are not approval-gated — they consume the schema/enum without re-deciding the contract."
+created_at: "2026-05-13T16:00:00.000Z"
+updated_at: "2026-05-13T16:00:00.000Z"

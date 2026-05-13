@@ -70,7 +70,17 @@ Product / Project
                 Linked External Services (ESD-…)
                 Linked Releases (RL-…)
                 Ralph Progress
+      Release Record (RL-…)
+        Retrospective  ← terminal phase
+          Outcomes shipped vs planned
+          Plan quality predictions vs reality
+          Friction points + action items
+          Learning candidates
 ```
+
+The retrospective is the **terminal phase** of a sprint. It runs only
+after `/sprint:release` has archived the sprint and the registry
+status is `closed` (or `abandoned`).
 
 Tickets sit at the bottom. They are NEVER a substitute for
 requirements. `/sprint:design` is the only command that mints tickets
@@ -80,11 +90,12 @@ for non-trivial work.
 
 | Command | Purpose | Layer |
 |---|---|---|
-| `/sprint:plan`    | Brief intent → Plan Contract | front door |
-| `/sprint:design`  | Plan Contract → PRD/STORIES/COPY/INPUTS/TRACE/AC/QA/release + tickets | design |
-| `/sprint:execute` | Tickets → Ralph loops + checks + issues + checkpoints | execution |
-| `/sprint:release` | Sprint → release record, approval, deploy mark, retrospective | release |
-| `/sprint:status`  | List every live sprint (v0.2) | read-only |
+| `/sprint:plan`           | Brief intent → Plan Contract | front door |
+| `/sprint:design`         | Plan Contract → PRD/STORIES/COPY/INPUTS/TRACE/AC/QA/release + tickets | design |
+| `/sprint:execute`        | Tickets → Ralph loops + checks + issues + checkpoints | execution |
+| `/sprint:release`        | Sprint → release record, approval, deploy mark, retrospective | release |
+| `/sprint:retrospective`  | Closed sprint → structured retro (outcomes, friction, action items) + status flip to `retrospected` | post-release |
+| `/sprint:status`         | List every live sprint (v0.2) | read-only |
 
 There is no `/sprint:resume` skill. Resume behavior is in each
 command's "Recovery" section and is driven entirely by per-sprint
@@ -156,7 +167,7 @@ issues.md                              paths.sprintIssuesLedger (repo root)
 
 ## Schemas
 
-10 JSON schemas under `paths.sprintSchemas` (`schemas/sprint/`):
+12 JSON schemas under `paths.sprintSchemas` (`schemas/sprint/`):
 
 - `plan-contract.schema.json`
 - `current-sprint.schema.json`
@@ -168,6 +179,8 @@ issues.md                              paths.sprintIssuesLedger (repo root)
 - `release.schema.json`
 - `sprint-history.schema.json`
 - `ralph-progress.schema.json`
+- `active-sprints.schema.json` (v0.2 — registry)
+- `sprint-retrospective.schema.json` (v0.2 — per-sprint retro, sibling to `sprint-history`)
 
 Validate with `node scripts/sprint/validate.js [<file.yaml>]`.
 
@@ -187,11 +200,78 @@ scripts/sprint/
   external-service.js   create/update/list/show/gate
   execute.js            Ralph loop start/phase/stop/show
   release.js            prepare/check/approve/deploy/rollback/report/show/list
+  retrospective.js      /sprint:retrospective writer — reads tracker → writes retro.yaml + retro.md
   checkpoint.js         sprint-progress writer + frozen checkpoint
   routing.js            sprint-routing.json loader
+  prompts/              prompt bodies (retrospective-synthesis.txt, etc.)
 ```
 
 All read `paths.json` via the shared `scripts/hooks/lib/paths.js`.
+
+## Retrospective phase
+
+`/sprint:retrospective` runs **after** `/sprint:release` and only on
+sprints whose registry status is `closed` or `abandoned`. It reads the
+sprint's Plan Contract, tickets (by bucket), issues, decisions,
+checkpoints, and release record, then writes:
+
+- `paths.sprintHistory/<SP-id>/retro.yaml` — structured retro
+  validated against `sprint-retrospective.schema.json`.
+- `paths.sprintHistory/<SP-id>/retro.md` — human-readable retro from
+  `framework/templates/sprint/retrospective/retro.md.tmpl`.
+
+### Status transition: `closed` → `retrospected`
+
+`/sprint:retrospective` flips the matching `sprints[].status` entry in
+`paths.sprintActiveRegistry` from `closed` to `retrospected`. The
+`retrospected` value is the 13th member of the
+`schemas/sprint/active-sprints.schema.json#definitions.registryEntry.status`
+enum (added in T-20260513-040 per PRD SP-20260513-004 Design Decision
+#3). The flip is idempotent — re-running on an already-`retrospected`
+sprint with `--force` rewrites the retro files and refreshes
+`updated_at`, but does not double-emit registry mutations.
+
+### Hard gates
+
+- Sprint not in `closed` or `abandoned` → exit `3` with COPY `C-2`.
+  TRACE event `retro_status_transition_blocked` is emitted.
+- Retro already exists, `--force` absent → exit `4` with COPY `C-5`.
+- No Plan Contract found and `--no-plan-contract` not passed → exit
+  `2` with COPY `C-3`.
+
+### Synthesis
+
+Default path invokes the LLM via
+`paths.sprintRouting#policies.retrospective` (`strong_reasoning` +
+`diff_review: true`). The prompt at
+`scripts/sprint/prompts/retrospective-synthesis.txt` mandates
+evidence-only synthesis (every claim cites a ticket/issue/decision
+id), marks unknown fields with the literal `<unknown — no evidence in
+tracker>`, and wraps tracker artifacts in delimiter blocks for
+prompt-injection defense.
+
+`--no-synth` skips the LLM and writes a skeleton retro with `<TO
+FILL>` placeholders that still validates against the schema.
+Synthesis failure auto-falls-back to skeleton mode (fail-open per COPY
+`C-7`); operator can re-attempt via `--retry-synth`.
+
+### Deferred scope
+
+`/sprint:retrospective` MVP is post-release only. Two scope items are
+deferred to expanded scope (see PRD SP-20260513-004):
+
+- **Mid-sprint check-ins** — partial retros while a sprint is still
+  executing.
+- **Cross-sprint trend analysis** — `/check:patterns` will read TR-1,
+  TR-2, TR-3 events across multiple retros to surface recurring
+  friction themes, average synthesis duration, fallback rate, and
+  per-sprint action-item counts.
+
+### Reference
+
+See PRD `.claude/project/sprint/requirements/SP-20260513-004/prd.md`
+for the full design rationale, and `.claude/commands/sprint/retrospective.md`
+for the operator-facing skill doc.
 
 ## TRACE meaning
 

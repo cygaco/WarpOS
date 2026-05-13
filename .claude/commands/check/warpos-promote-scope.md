@@ -1,5 +1,6 @@
 ---
-description: Verify scripts/warpos/promote.js FRAMEWORK_PREFIXES covers every framework-owned dir
+description: Verify scripts/warpos/promote.js FRAMEWORK_PREFIXES list covers every framework-owned top-level directory, so structural changes propagate cleanly to canonical WarpOS.
+tags: [check, warpos, promote]
 ---
 
 # /check:warpos-promote-scope

@@ -1,0 +1,153 @@
+schema: warpos/sprint/plan-contract/v1
+id: PC-20260513-0005
+created_at: "2026-05-13T06:30:17.418Z"
+updated_at: "2026-05-13T06:30:17.418Z"
+sprint: SP-20260513-004
+source_request: "Add a /sprint:retrospective skill that runs at the end of a sprint to produce a structured retrospective."
+source_request_verbatim: "A sprint:retrospective skill."
+request_type: feature_add
+interpreted_intent: "Add a /sprint:retrospective skill that produces a post-sprint reflection — what shipped, what didn't, why, what to change next sprint — and integrates with the rest of the sprint workflow (plan / design / execute / release)."
+user_or_business_outcome: "After a sprint closes, the operator can run /sprint:retrospective and get a structured retro that surfaces wins, misses, friction, and action items, written durably to the sprint's history record. Retros accumulate so trends across sprints become visible."
+affected_surfaces:
+  - surface: ".claude/commands/sprint/retrospective.md (NEW)"
+    evidence_level: assumed_from_request
+    notes: New skill file alongside plan/design/execute/release.
+  - surface: "scripts/sprint/retrospective.js (NEW)"
+    evidence_level: assumed_from_request
+    notes: "Mirror of scripts/sprint/plan.js — reads tracker artifacts, writes retro YAML + MD."
+  - surface: schemas/sprint/sprint-history.schema.json
+    evidence_level: verified_from_repo
+    notes: "Existing schema for history records. Candidate to extend with retro fields, or sibling new schema."
+  - surface: "schemas/sprint/retrospective.schema.json (NEW, if sibling)"
+    evidence_level: assumed_from_request
+    notes: If retro becomes its own artifact rather than extending sprint-history.
+  - surface: "framework/templates/sprint/retrospective/*.tmpl (NEW)"
+    evidence_level: assumed_from_request
+    notes: "Templates for retro.yaml + retro.md."
+  - surface: paths.sprintHistory
+    evidence_level: verified_from_repo
+    notes: "Output destination: paths.sprintHistory/<sprint-id>/retro.{yaml,md}."
+  - surface: ".claude/project/reference/sprint-workflow.md"
+    evidence_level: verified_from_repo
+    notes: "Workflow doc — add the retrospective phase."
+  - surface: ".claude/project/sprint/active-sprints.yaml"
+    evidence_level: verified_from_repo
+    notes: "Status transition: closed → retrospected (or removed from active set)."
+current_behavior:
+  evidence_level: verified_from_repo
+  notes: "Sprint workflow has /sprint:plan, /sprint:design, /sprint:execute, /sprint:release, /sprint:status. No /sprint:retrospective. sprint-history.schema.json exists but isn't currently populated by any skill — release is the terminal phase."
+desired_behavior: "/sprint:retrospective reads the closed sprint's Plan Contract, design docs, tickets (by bucket), issues, decisions, checkpoints, and release record. Synthesizes a retro covering: outcomes shipped vs planned, plan-quality predictions vs reality, scope-variant adherence, surprises, friction points, action items for next sprint. Writes retro.yaml + retro.md under paths.sprintHistory/<sprint-id>/. Updates active-sprints.yaml#sprints[].status from `closed` to `retrospected`."
+scope:
+  size: s
+  risk_level: low
+  complexity_drivers:
+    - "Synthesis quality (LLM-driven; needs a model class call)"
+    - "Pulling from many tracker files (Plan Contract + tickets + issues + checkpoints + decisions + release)"
+    - "Optional: comparison against plan_quality predictions"
+scope_variants:
+  minimal_safe:
+    summary: "Skill reads tracker artifacts and emits a structured retro.yaml + retro.md skeleton with placeholders. Operator fills sections manually. No LLM synthesis."
+    tradeoffs:
+      - Ships fastest
+      - Requires manual work per retro
+      - No automation leverage
+  recommended:
+    summary: "Above + automated synthesis (strong-reasoning model or Haiku, per paths.sprintRouting) that drafts each section. Operator reviews and amends. Status transitions handled. Active-sprints registry updated."
+    tradeoffs:
+      - "Honors the workflow's spirit (durable artifact, low operator burden)"
+      - "Adds an LLM call per retro (cost is small)"
+      - "Needs a synthesis prompt that won't hallucinate"
+  expanded:
+    summary: "Above + cross-sprint trend analysis (recurring issue types, average plan_quality.confidence, scope-variant adherence rates). Learnings extracted automatically via /learn:integrate hook. Retros become first-class strategy input."
+    tradeoffs:
+      - Highest leverage
+      - Touches learnings system
+      - Adds maintenance surface
+assumptions:
+  safe:
+    - "Retro is the formal close of a sprint (after release)."
+    - "sprint-history is the right home for retros — either as schema extension or sibling artifact."
+    - Existing tracker artifacts contain enough state to synthesize a useful retro.
+  unsafe:
+    - Whether retro is gate-after-release or can run mid-sprint as a check-in.
+    - "Schema design — extend sprint-history vs new sibling schema."
+    - LLM-by-default vs template-only with optional LLM.
+  needs_user_or_beta_review:
+    - "Whether retro modifies active-sprints.yaml#status."
+    - Whether action items can mint tickets in a NEW sprint automatically.
+    - "Whether retros feed /learn:integrate or stay isolated."
+open_questions:
+  blocking: []
+  non_blocking:
+    - "Schema design (own schema vs extension to sprint-history)"
+    - LLM call optional vs default
+    - "Mid-sprint check-in support (partial retro)"
+    - "How to handle abandoned sprints (status: abandoned) — do they get retros?"
+non_goals:
+  - "Replacing learning extraction (/learn:deep, /sleep:deep)"
+  - Automatic action-item execution
+  - "External reporting (Notion, Slack)"
+  - Per-ticket retros
+requirement_areas:
+  - Skill definition
+  - "Retrospective script + schema"
+  - "Templates (retro.yaml.tmpl, retro.md.tmpl)"
+  - Sprint workflow doc update
+  - active-sprints.yaml status transitions
+high_level_story_candidates:
+  - "As an operator at the end of a sprint, I run /sprint:retrospective and get a synthesized retro."
+  - "As a strategist, retros accumulate so I can spot trends across sprints."
+  - "As Alex, learnings from retros feed into operational improvements."
+granular_story_candidates:
+  - "Skill collects Plan Contract, tickets (by bucket), issues, checkpoints, decisions, release record."
+  - "Skill writes retro.yaml + retro.md under paths.sprintHistory/<sprint-id>/."
+  - "Skill updates active-sprints.yaml#sprints[].status from `closed` to `retrospected`."
+  - Skill emits a one-line summary to the operator.
+  - "Skill (recommended scope) generates per-section synthesis via LLM."
+workstream_candidates:
+  - "Schema + script"
+  - "Skill file + procedure"
+  - "Synthesis prompt (if LLM-backed)"
+  - "Workflow integration (when does it run, gating, status transitions)"
+preliminary_ticket_candidates:
+  allowed: false
+  candidates: []
+  notes: "Tickets minted in /sprint:design after schema choice is made (extend sprint-history vs sibling)."
+external_service_dependencies:
+  status: none_expected
+  required: []
+  possible: []
+  notes: "Pure framework work — uses existing model routing per paths.sprintRouting."
+approval_boundaries:
+  - "New schema in schemas/sprint/ — touches workflow contract (Class B)"
+design_required: true
+execution_allowed_without_design: false
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+lane:
+  type: default
+  value: null
+  isolation_notes: ""
+beta_review:
+  required: false
+  likely_founder_rejection_risks:
+    - "Retro that re-derives info the operator already has (low-value summary)."
+    - LLM that hallucinates wins / misses not supported by tracker data.
+  overbuild_risks:
+    - "Cross-sprint trend analysis in MVP — that's expanded scope."
+  missing_context_risks: []
+plan_quality:
+  status: pass
+  confidence: high
+  evidence_gaps: []
+  fail_reasons: []
+next_recommended_command: "/sprint:design --sprint <this-sprint-id>"
+resume_instructions: "Plan Contract written. Run /sprint:design --sprint <this-sprint-id> to produce PRD + COPY + acceptance criteria. First design decision: extend sprint-history schema vs sibling retrospective schema."
+tracker_paths:
+  current_sprint: ".claude/project/sprint/current-sprint.yaml"
+  sprint_progress: ".claude/project/sprint/sprint-progress.yaml"
+  plan_contract: ".claude/project/sprint/plan-contracts/PC-20260513-0005.yaml"
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260513-0005.report.md"
+created_by: alpha
+updated_by: alpha

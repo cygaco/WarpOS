@@ -1,6 +1,7 @@
 ---
-description: Copy hooks to WarpOS repo
+description: Copy validated hooks from this product repo into the canonical WarpOS clone so they can ride the next /warp:release. Convenience wrapper around /warp:promote scoped to scripts/hooks/.
 user-invocable: true
+tags: [hooks, warpos, sync]
 ---
 
 # /hooks:sync — Sync Hooks to WarpOS

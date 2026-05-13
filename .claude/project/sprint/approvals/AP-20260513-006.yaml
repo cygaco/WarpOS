@@ -1,0 +1,22 @@
+schema: warpos/sprint/approval/v1
+id: AP-20260513-006
+sprint: SP-20260513-003
+level: execution_approval_required
+required_for: "Append a new ## Skill Use section to CLAUDE.md instructing agents to prefer existing skills (under .claude/commands) when intent matches a skill's purpose, and to treat SUGGESTED SKILLS: additionalContext as high-salience suggestions. CLAUDE.md changes affect every session and every agent (Alpha + Beta + Gamma + Delta + builder/reviewer subagents) — Class B per CLAUDE.md#Autonomy. Co-gates the smart-context.js skill-ranker (S-4, T-20260513-047) because the ranker output is wasted without the rule, and the rule is unmoored without the ranker — both ship together under this approval."
+linked_ticket: T-20260513-045
+linked_external_service: null
+linked_release: null
+linked_decision: null
+state: approved
+requested_by: alpha
+decided_by: user
+decided_at: "2026-05-13T22:30:00.000Z"
+reason: "User explicit approval 2026-05-13: 'I APPROVE ALL. APPROVED.'"
+evidence:
+  - "Plan Contract PC-20260513-0004#approval_boundaries explicitly lists 'CLAUDE.md changes affect every session — Class B (architecture-ish)' as gate 1, 'Smart-context cost increase — measure before approving' as gate 2, and 'Anything that mutates dispatch behavior across all agents' as gate 3. This approval bundles all three because they ship as one mechanism (Hybrid per RT-002)."
+  - "Reasoning trace RT-002 (.claude/project/memory/traces.jsonl) — Multi-Candidate Comparative Analysis: Mechanism D (Hybrid) chosen over A/B/C with score 20/25 vs runner-up 17/25. Durable record at .claude/project/sprint/sprints/SP-20260513-003/reasoning-organic-skill-use.md."
+  - "Tickets gated: T-20260513-045 (S-2 CLAUDE.md rule), T-20260513-047 (S-4 smart-context ranker) — both have approval_required=true. T-20260513-046/048/049/050 (lexicon, catalog, telemetry, audit) are non-gated implementation tickets."
+  - "Release plan (.claude/project/sprint/requirements/SP-20260513-003/release-plan.md) requires pre-ship baseline measurement BEFORE the ranker is enabled. Approval is conditional on shipping S-6 (telemetry) first with ranker off, capturing 24-48h baseline, then enabling ranker — this sequencing is part of the approval scope, not separate."
+  - "Cost ceiling: ranker reuses existing Haiku call (no new round-trip); MAX_TOKENS caps at 1000 (currently 600); catalog ≤5K input tokens; estimated <$0.001 incremental cost per prompt. Rollback Level 1: SKILL_RANKER_ENABLED=0 in <1min."
+created_at: "2026-05-13T20:25:00.000Z"
+updated_at: "2026-05-13T20:25:00.000Z"
