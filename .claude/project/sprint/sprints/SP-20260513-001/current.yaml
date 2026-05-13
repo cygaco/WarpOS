@@ -1,12 +1,12 @@
 schema: warpos/sprint/current-sprint/v1
 id: SP-20260513-001
-title: "bootstrap-product-brief skill — guided brief in MD/DOCX/HTML"
+title: "bootstrap-product-brief skill â€” guided brief in MD/DOCX/HTML"
 objective: "Ship a first-command skill that produces a thorough product brief in three formats from a short guided discussion, inspired by ai-web-brief-v4."
 status: releasing
 created_at: "2026-05-13T06:27:46.887Z"
 updated_at: "2026-05-13T22:22:37.686Z"
 source_request: "Skill that bootstraps a thorough product brief (problem, JTBDs, value chain, competitive, wedge, vision, MVP) from a short guided discussion; outputs MD/DOCX/HTML. Inspired by _docs/ai-web-brief-v4. Confirm skill name before build."
-interpreted_intent: "Add a new user-invocable skill that walks an operator through a short discussion to produce a thorough product brief covering at minimum: problem solved, JTBDs, value chain analysis, competitive analysis, wedge, vision, wedge-to-full-vision, and MVP. Skill emits MD/DOCX/HTML to a project-local docs path. Intended as the first command run in a new project. Skill name is unknown — user explicitly requested confirmation before any build step."
+interpreted_intent: "Add a new user-invocable skill that walks an operator through a short discussion to produce a thorough product brief covering at minimum: problem solved, JTBDs, value chain analysis, competitive analysis, wedge, vision, wedge-to-full-vision, and MVP. Skill emits MD/DOCX/HTML to a project-local docs path. Intended as the first command run in a new project. Skill name is unknown â€” user explicitly requested confirmation before any build step."
 plan_contract: ".claude/project/sprint/plan-contracts/PC-20260513-0002.yaml"
 risk_level: medium
 approval_state: none_required
@@ -80,7 +80,6 @@ tickets:
     - T-20260513-059
     - T-20260513-060
     - T-20260513-061
-    - T-20260513-062
   released: []
   deferred: []
   abandoned:

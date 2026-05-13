@@ -1,11 +1,11 @@
 schema: warpos/sprint/current-sprint/v1
 id: SP-20260513-005
-title: "Harden /warp:update — preflight + transactional apply + postflight verify"
+title: "Harden /warp:update â€” preflight + transactional apply + postflight verify"
 objective: "Make /warp:update reliable enough that operators can update downstream projects without fear: preflight gates, transactional apply with rollback, postflight verification."
 status: releasing
 created_at: "2026-05-13T06:27:46.887Z"
 updated_at: "2026-05-13T21:28:12.204Z"
-source_request: "Harden /warp:update — operator reports fear and tons of troubleshooting on every version bump. Add preflight + postflight + rollback so updates either succeed cleanly or stop without damage."
+source_request: "Harden /warp:update â€” operator reports fear and tons of troubleshooting on every version bump. Add preflight + postflight + rollback so updates either succeed cleanly or stop without damage."
 interpreted_intent: "Reduce the failure rate (and emotional cost) of /warp:update when applied to downstream projects. Identify recurring failure modes from session + event history, add preflight gates that prevent unsafe applies, wrap the apply phase transactionally with rollback on any failure, and verify the install postflight before declaring success."
 plan_contract: ".claude/project/sprint/plan-contracts/PC-20260513-0006.yaml"
 risk_level: high
@@ -46,7 +46,8 @@ tickets:
     - T-20260513-061
   qa_failed: []
   redteam_failed: []
-  done: []
+  done:
+    - T-20260513-062
   released: []
   deferred: []
   abandoned: []

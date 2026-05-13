@@ -199,6 +199,35 @@ function splitList(s) {
     .filter(Boolean);
 }
 
+// Bucket-bleed guard: if the caller omits --sprint while multiple sprints
+// are active (not closed/abandoned/retrospected), refuse to mint the ticket.
+// The fallback-to-primary behavior is silent and lands tickets in the wrong
+// bucket (origin of T-039, T-062). When ambiguous, force the caller to be
+// explicit. When unambiguous (≤1 active), the silent default is fine.
+const CLOSED_SPRINT_STATUSES = ["closed", "abandoned", "retrospected"];
+
+function activeSprintEntries() {
+  try {
+    const reg = readYamlMaybe(SPRINT.activeRegistry);
+    if (!reg || !Array.isArray(reg.sprints)) return [];
+    return reg.sprints.filter(
+      (s) => s && !CLOSED_SPRINT_STATUSES.includes(s.status),
+    );
+  } catch {
+    return [];
+  }
+}
+
+function callerProvidedSprintFlag(argv) {
+  for (let i = 2; i < argv.length; i++) {
+    if (argv[i] === "--sprint") return true;
+    if (typeof argv[i] === "string" && argv[i].startsWith("--sprint=")) {
+      return true;
+    }
+  }
+  return false;
+}
+
 function cmdCreate(argv) {
   const f = parseFlags(argv, 3);
   if (!f.title || !f.type) {
@@ -210,6 +239,17 @@ function cmdCreate(argv) {
       `invalid type ${f.type} (valid: ${VALID_TYPES.join(", ")})\n`,
     );
     return 2;
+  }
+  // Bucket-bleed guard: refuse silent fallback when multiple sprints active.
+  if (!callerProvidedSprintFlag(argv)) {
+    const active = activeSprintEntries();
+    if (active.length > 1) {
+      const ids = active.map((s) => s.id).join(", ");
+      process.stderr.write(
+        `ticket.js create requires --sprint <SP-id> when multiple active sprints exist (currently ${active.length} active). Available sprints: ${ids}. Specify --sprint to disambiguate.\n`,
+      );
+      return 2;
+    }
   }
   const current = loadCurrent();
   if (!current) {
@@ -272,7 +312,9 @@ function cmdCreate(argv) {
   moveStatus(current, id, null, ticket.status);
   current.updated_at = now;
   writeYaml(SPRINT.current, current);
-  process.stdout.write(`created ${id} (${ticket.status}) — ${ticket.title}\n`);
+  process.stdout.write(
+    `created ${id} (${ticket.status}) [sprint: ${ticket.sprint}] — ${ticket.title}\n`,
+  );
   return 0;
 }
 
