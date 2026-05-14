@@ -1,0 +1,11 @@
+{
+  "version": "0.8.0",
+  "generatedAt": "2026-05-14T21:59:00.195Z",
+  "commit": "bb0fd51dcc2c5155820b27e4bf036c4bba1ac637",
+  "entries": {
+    "changelog.md": "b2339ead65cc9ac9b8ef81a49b6585f03608bc89fffd688fbec2af14b096e04c",
+    "framework-manifest.json": "766f9d8949a900fd7490b3f819ca6ee8976e34ba356fbde58a7e58f2e7811998",
+    "release.json": "63a9d168fdb353dd251cd0518d2619ebe8b5098c29d925f9ea292c22ded0380c",
+    "upgrade-notes.md": "de20940c944430c07da805685450fc9cafa963107b7b73a6e4b75e65c3325b9c"
+  }
+}
