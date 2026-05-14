@@ -1,0 +1,12 @@
+{
+  "version": "0.7.1",
+  "generatedAt": "2026-05-14T11:02:26.609Z",
+  "commit": "46b61bb116f18159be58832e7641135446387826",
+  "entries": {
+    "changelog.md": "607342a83a744c2f81df99b0247d07a117fb36c12b733f4189467e804194e6fa",
+    "framework-manifest.json": "eac4d97a95c3965023176918fd69bed3ee30bca0202dc7e5469199fc9e731e65",
+    "release.json": "60a5475e54019bef1d2393776b98908b41234badef6b85bbf9df35c0dab09b7b",
+    "upgrade-notes.md": "a77180d02d71e0ca2515ceb66cf3495de737602ad0f02e0e746ca7d5c48f26c6",
+    "../../../migrations/0.7.0-to-0.7.1/001-add-experimental-agent-teams-env.js": "f95d216e624f49074f836a401ad7f9aa457c12e2ebe17cddf310d6619936c6ac"
+  }
+}
