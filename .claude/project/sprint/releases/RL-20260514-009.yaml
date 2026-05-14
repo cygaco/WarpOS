@@ -3,7 +3,7 @@ id: RL-20260514-009
 sprint: SP-20260514-002
 title: Enforce sprint routing policy
 version: warpos-sprint-routing-enforcement-v1
-status: ready_to_deploy
+status: deployed
 checklist:
   tickets_done_or_deferred: true
   blocking_issues_resolved: true
@@ -36,8 +36,8 @@ linked_issues: []
 linked_external_services: []
 deployment_environment: canonical-warpos
 deployment_target: canonical-warpos
-deployed_at: null
-deployed_by: null
+deployed_at: "2026-05-14T21:59:33.690Z"
+deployed_by: alpha
 rollback_at: null
 rollback_reason: null
 retrospective_ref: null
@@ -47,4 +47,4 @@ learning_candidates:
   - "auto_override path emits decision-ledger row per execution call; in a long sprint that's chatty. Consider per-sprint aggregation in coverage reports."
   - "qa_passed false at release: formal test suite per qa-plan.md is a follow-up sprint; smoke validation only this sprint. Documented in non-goals."
 created_at: "2026-05-14T21:26:02.025Z"
-updated_at: "2026-05-14T21:41:27.173Z"
+updated_at: "2026-05-14T21:59:33.690Z"

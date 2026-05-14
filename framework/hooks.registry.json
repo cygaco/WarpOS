@@ -161,6 +161,17 @@
       "testFixtures": ["fixtures/hooks/default/edit-text.json"]
     },
     {
+      "id": "sprint-routing-guard",
+      "script": "scripts/hooks/sprint-routing-guard.js",
+      "owner": "framework",
+      "enabled": true,
+      "failMode": "fail-open",
+      "fixturesRequired": true,
+      "purpose": "Enforce paths.sprintRouting on Edit|Write to sprint artifacts (SP-20260514-002). Fail-open: missing policy, closed sprints, and non-sprint paths exit 0. Honors enforcement.mode = warn|block from policy file.",
+      "registrations": [{ "event": "PreToolUse", "matcher": "Edit|Write" }],
+      "testFixtures": ["fixtures/hooks/default/edit-text.json"]
+    },
+    {
       "id": "step-registry-guard",
       "script": "scripts/hooks/step-registry-guard.js",
       "owner": "framework",
