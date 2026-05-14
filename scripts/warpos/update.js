@@ -55,6 +55,32 @@ function sha256File(filePath) {
     .digest("hex");
 }
 
+// Companion hash with CRLF -> LF normalization. Used by the classifier to
+// tolerate Windows autocrlf=true smudging the working tree after the
+// capsule's framework-manifest.json was computed against LF bytes.
+// Text files (md, js, json, ts, yaml, etc.) are content-equivalent under
+// line-ending changes; without this fallback, every text asset in a
+// freshly-checked-out Windows consumer classifies MERGE_CONFLICT.
+function sha256FileLfNormalized(filePath) {
+  if (!fs.existsSync(filePath)) return null;
+  const buf = fs.readFileSync(filePath);
+  const out = Buffer.alloc(buf.length);
+  let j = 0;
+  for (let i = 0; i < buf.length; i++) {
+    if (buf[i] === 0x0d && i + 1 < buf.length && buf[i + 1] === 0x0a) continue;
+    out[j++] = buf[i];
+  }
+  return crypto.createHash("sha256").update(out.slice(0, j)).digest("hex");
+}
+
+// True iff `hashLong` (full or any length) starts with `hashShort`.
+// Tolerates the capsule's intentional 12-char truncation in
+// framework-manifest.json#assets[].sha256.
+function hashMatches(hashLong, hashShort) {
+  if (!hashLong || !hashShort) return false;
+  return hashLong.startsWith(hashShort);
+}
+
 function readJSON(file, fallback) {
   if (!fs.existsSync(file)) return fallback;
   try {
@@ -241,13 +267,43 @@ function classify(installed, capsule, targetRoot) {
     } else if (localExists && !installedRecord) {
       category = "LOCAL_ONLY";
       reason = "Local file exists outside framework; will not be touched.";
-    } else if (localSha === targetSha) {
+    } else if (hashMatches(localSha, targetSha)) {
+      // targetSha from capsule manifest is intentionally truncated to 12 chars
+      // by generate-framework-manifest.js; localSha is full 64. Prefix match.
       category = "UPDATE_SAFE";
       reason = "Already at target version (sha matches).";
-    } else if (installedRecord && installedRecord.installedHash === localSha) {
+    } else if (
+      targetSha &&
+      hashMatches(sha256FileLfNormalized(localPath), targetSha)
+    ) {
+      // Windows autocrlf=true smudges working tree CRLF after the capsule
+      // manifest was hashed against LF. Text-file content is equivalent;
+      // classify as UPDATE_SAFE and let apply rewrite from canonical source.
+      category = "UPDATE_SAFE";
+      reason =
+        "Already at target version (sha matches under LF normalization).";
+    } else if (
+      installedRecord &&
+      hashMatches(localSha, installedRecord.installedHash)
+    ) {
+      // installedHash may be truncated 12-char (if propagated from a.sha256
+      // by older apply runs) or full 64-char (if computed locally). Prefix
+      // match handles both.
       category = "UPDATE_SAFE";
       reason =
         "Local matches the version originally installed → upstream change is safe to apply.";
+    } else if (
+      installedRecord &&
+      installedRecord.installedHash &&
+      hashMatches(
+        sha256FileLfNormalized(localPath),
+        installedRecord.installedHash,
+      )
+    ) {
+      // Same LF/CRLF tolerance applied to the installed-snapshot branch.
+      category = "UPDATE_SAFE";
+      reason =
+        "Local matches installed snapshot under LF normalization → upstream change is safe to apply.";
     } else {
       // Local has been customized
       const mergeStrategy =
@@ -291,7 +347,11 @@ function classify(installed, capsule, targetRoot) {
       if (!localExists) {
         category = "DELETE_SAFE";
         reason = "Already gone locally.";
-      } else if (rec.installedHash && localSha !== rec.installedHash) {
+      } else if (
+        rec.installedHash &&
+        localSha &&
+        !localSha.startsWith(rec.installedHash)
+      ) {
         category = "DELETE_CONFLICT";
         reason =
           "Removed in target but local differs from installed snapshot — preserve.";
@@ -487,7 +547,10 @@ function buildInstalledSnapshot(
         dest: a.dest,
         owner: a.owner || "framework",
         mergeStrategy: a.mergeStrategy,
-        installedHash: a.sha256 || localHash,
+        // Prefer the locally-computed full 64-char hash so future classify
+        // runs can do high-fidelity comparison. Fall back to capsule's
+        // truncated 12-char only if the local file is missing.
+        installedHash: localHash || a.sha256,
         currentHashAtInstall: localHash,
         introducedIn: a.introducedIn || version,
       });

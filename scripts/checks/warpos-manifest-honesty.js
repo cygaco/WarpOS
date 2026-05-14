@@ -45,12 +45,29 @@ for (const a of assets) {
       .digest("hex")
       .slice(0, a.installedHash.length);
     if (sha !== a.installedHash) {
-      issues.push({
-        kind: "drift",
-        file: a.dest,
-        expected: a.installedHash,
-        actual: sha,
-      });
+      // LF-normalization fallback: Windows autocrlf=true smudges CRLF into
+      // working tree after capsule manifests hashed LF bytes. Text files
+      // remain content-equivalent.
+      const lfBuf = Buffer.alloc(buf.length);
+      let j = 0;
+      for (let i = 0; i < buf.length; i++) {
+        if (buf[i] === 0x0d && i + 1 < buf.length && buf[i + 1] === 0x0a)
+          continue;
+        lfBuf[j++] = buf[i];
+      }
+      const shaLf = crypto
+        .createHash("sha256")
+        .update(lfBuf.slice(0, j))
+        .digest("hex")
+        .slice(0, a.installedHash.length);
+      if (shaLf !== a.installedHash) {
+        issues.push({
+          kind: "drift",
+          file: a.dest,
+          expected: a.installedHash,
+          actual: sha,
+        });
+      }
     }
   }
   checked++;
