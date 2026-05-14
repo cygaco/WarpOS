@@ -82,4 +82,4 @@
 | Validation | Schema check at load: `schema` key, `version` key (integer), `entries` object keyed by status; each entry has `root_cause` (string), `fix_recipe` (string or null), `safe_to_autofix` (bool), `remediation` (string), `fallback_allowed` (bool). |
 | Failure mode | Corrupt JSON / schema drift → orchestrator exits 1, lifecycle aborts with `catalog_load_error`. This is intentional — without a catalog the framework cannot reason about failures. |
 
-**Notes:** Catalog ships under `paths.policyDir` for symmetry with `provider-fallback.json`. Both are loaded by smoke; cross-validation that every status in `provider-health.js` has an entry runs as a unit test (S-3 AC).
+**Notes:** Catalog ships under `paths.policy` for symmetry with `provider-fallback.json`. Both are loaded by smoke; cross-validation that every status in `provider-health.js` has an entry runs as a unit test (S-3 AC).

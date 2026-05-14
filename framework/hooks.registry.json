@@ -628,6 +628,44 @@
       "registrations": [{ "event": "PreToolUse", "matcher": "Edit|Write" }],
       "blocks": ["requirement markdown with malformed format"],
       "testFixtures": ["fixtures/hooks/default/post-edit.json"]
+    },
+    {
+      "id": "authorization-gate",
+      "script": "scripts/hooks/authorization-gate.js",
+      "owner": "framework",
+      "enabled": true,
+      "failMode": "fail-open",
+      "fixturesRequired": true,
+      "purpose": "Short-circuit downstream PreToolUse guards when an active /turbo authorization covers the tool call.",
+      "registrations": [
+        { "event": "PreToolUse", "matcher": "Bash" },
+        { "event": "PreToolUse", "matcher": "Edit|Write" }
+      ],
+      "testFixtures": ["fixtures/hooks/default/bash-safe.json"]
+    },
+    {
+      "id": "skill-invocation-tracker",
+      "script": "scripts/hooks/skill-invocation-tracker.js",
+      "owner": "framework",
+      "enabled": true,
+      "failMode": "fail-open",
+      "fixturesRequired": true,
+      "purpose": "Emit skill-suggested-vs-invoked telemetry on PreToolUse SlashCommand|Skill (SP-20260513-003).",
+      "registrations": [
+        { "event": "PreToolUse", "matcher": "SlashCommand|Skill" }
+      ],
+      "testFixtures": ["fixtures/hooks/default/bash-safe.json"]
+    },
+    {
+      "id": "skill-catalog-regen",
+      "script": "scripts/hooks/skill-catalog-regen.js",
+      "owner": "framework",
+      "enabled": true,
+      "failMode": "fail-open",
+      "fixturesRequired": true,
+      "purpose": "Regenerate paths.skillCatalog after edits under paths.commands (SP-20260513-003 AC-5.4).",
+      "registrations": [{ "event": "PostToolUse", "matcher": "Edit|Write" }],
+      "testFixtures": ["fixtures/hooks/default/post-edit.json"]
     }
   ]
 }

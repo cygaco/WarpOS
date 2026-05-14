@@ -481,6 +481,31 @@
       "type": "string",
       "const": ".claude/runtime/skill-catalog.json",
       "description": "json (generated) — paths.skillCatalog"
+    },
+    "providerSmokeSkill": {
+      "type": "string",
+      "const": "scripts/warpos/provider-smoke.js",
+      "description": "js (framework) — paths.providerSmokeSkill"
+    },
+    "providerFailureModes": {
+      "type": "string",
+      "const": ".claude/agents/00-alex/.system/policy/provider-failure-modes.json",
+      "description": "json (framework) — paths.providerFailureModes"
+    },
+    "providerRcaLib": {
+      "type": "string",
+      "const": "scripts/warpos/lib/provider-rca.js",
+      "description": "js (framework) — paths.providerRcaLib"
+    },
+    "providerAutofixLib": {
+      "type": "string",
+      "const": "scripts/warpos/lib/provider-autofix.js",
+      "description": "js (framework) — paths.providerAutofixLib"
+    },
+    "reasoningFrameworks": {
+      "type": "string",
+      "const": ".claude/project/reference/reasoning-frameworks.md",
+      "description": "md (framework) — paths.reasoningFrameworks"
     }
   }
 }

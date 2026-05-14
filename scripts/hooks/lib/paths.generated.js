@@ -104,7 +104,12 @@ const PATHS = {
   "sprintRouting": path.join(PROJECT, ".claude", "agents", "00-alex", ".system", "policy", "sprint-routing.json"),
   "briefs": path.join(PROJECT, "_docs", "briefs"),
   "briefsCurrent": path.join(PROJECT, "_docs", "briefs"),
-  "skillCatalog": path.join(PROJECT, ".claude", "runtime", "skill-catalog.json")
+  "skillCatalog": path.join(PROJECT, ".claude", "runtime", "skill-catalog.json"),
+  "providerSmokeSkill": path.join(PROJECT, "scripts", "warpos", "provider-smoke.js"),
+  "providerFailureModes": path.join(PROJECT, ".claude", "agents", "00-alex", ".system", "policy", "provider-failure-modes.json"),
+  "providerRcaLib": path.join(PROJECT, "scripts", "warpos", "lib", "provider-rca.js"),
+  "providerAutofixLib": path.join(PROJECT, "scripts", "warpos", "lib", "provider-autofix.js"),
+  "reasoningFrameworks": path.join(PROJECT, ".claude", "project", "reference", "reasoning-frameworks.md")
 };
 
 module.exports = { PROJECT, PATHS };

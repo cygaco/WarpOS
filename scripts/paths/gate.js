@@ -216,6 +216,7 @@ function walk(dir, accept) {
     "build",
     "coverage",
     ".worktrees",
+    "worktrees",
   ]);
   (function rec(d) {
     let entries;

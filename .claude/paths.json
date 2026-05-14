@@ -70,15 +70,6 @@
   "warposFlagLedger": "warpos-to-update.md",
   "warposPromotedArchive": "warpos-promoted-archive.md",
   "warposPromoteReports": ".warpos/promote-reports",
-  "warposPreflight": "scripts/warpos/preflight.js",
-  "warposTransaction": "scripts/warpos/transaction.js",
-  "warposPostflight": "scripts/warpos/postflight.js",
-  "warposTransactionsDir": ".warpos/transactions",
-  "warposUpdateEventsLib": "scripts/warpos/lib/update-events.js",
-  "providerSmokeSkill": "scripts/warpos/provider-smoke.js",
-  "providerFailureModes": ".claude/agents/00-alex/.system/policy/provider-failure-modes.json",
-  "providerRcaLib": "scripts/warpos/lib/provider-rca.js",
-  "providerAutofixLib": "scripts/warpos/lib/provider-autofix.js",
   "sprintRoot": ".claude/project/sprint",
   "sprintCurrent": ".claude/project/sprint/current-sprint.yaml",
   "sprintProgress": ".claude/project/sprint/sprint-progress.yaml",
@@ -102,5 +93,10 @@
   "sprintRouting": ".claude/agents/00-alex/.system/policy/sprint-routing.json",
   "briefs": "_docs/briefs",
   "briefsCurrent": "_docs/briefs",
-  "skillCatalog": ".claude/runtime/skill-catalog.json"
+  "skillCatalog": ".claude/runtime/skill-catalog.json",
+  "providerSmokeSkill": "scripts/warpos/provider-smoke.js",
+  "providerFailureModes": ".claude/agents/00-alex/.system/policy/provider-failure-modes.json",
+  "providerRcaLib": "scripts/warpos/lib/provider-rca.js",
+  "providerAutofixLib": "scripts/warpos/lib/provider-autofix.js",
+  "reasoningFrameworks": ".claude/project/reference/reasoning-frameworks.md"
 }

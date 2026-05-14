@@ -70,7 +70,7 @@
 
 ## Seven failure-mode personas applied to the smoke surface
 
-Per `paths.qaPersonas`. Each persona is a thinking lens applied to provider-smoke specifically:
+Drawn from the seven failure-mode personas used by `/qa:audit` and `/qa:check`. Each persona is a thinking lens applied to provider-smoke specifically:
 
 1. **The Liar** — does smoke ever return GREEN when a provider is actually broken? Test: codex CLI present but `codex --version` hangs → does smoke fall through to GREEN, or does the existing `safeExec` timeout fire? Expected: classified as `provider_timeout` → red.
 2. **The Bypasser** — can an operator skip smoke at install/update? Test: `--skip-smoke` flag NOT exposed in MVP. The capsule-declared `postUpdateChecks` runs unconditionally. Confirm no env var (`WARPOS_SKIP_SMOKE`?) silently bypasses; if it must exist for CI, log it as a TR-1 event with `bypassed: true`.

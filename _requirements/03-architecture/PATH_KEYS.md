@@ -57,9 +57,14 @@ Markdown convention: reference paths as `paths.X` in prose. Code: `const { PATHS
 | `patterns` | `patterns` | dir | framework | no | 0.0.0 |  |
 | `plans` | `.claude/runtime/plans` | dir | runtime | yes | 0.0.0 |  |
 | `policy` | `.claude/agents/00-alex/.system/policy` | dir | project | yes | 0.0.0 |  |
+| `providerAutofixLib` | `scripts/warpos/lib/provider-autofix.js` | js | framework | no | 0.5.1 |  |
+| `providerFailureModes` | `.claude/agents/00-alex/.system/policy/provider-failure-modes.json` | json | framework | no | 0.5.1 | Provider failure-mode catalog (SP-20260513-002). 10 entries, |
 | `providerFallbackPolicy` | `.claude/agents/00-alex/.system/policy/provider-fallback.json` | json | framework | no | 0.3.0 |  |
+| `providerRcaLib` | `scripts/warpos/lib/provider-rca.js` | js | framework | no | 0.5.1 |  |
+| `providerSmokeSkill` | `scripts/warpos/provider-smoke.js` | js | framework | no | 0.5.1 | Provider smoke driver (SP-20260513-002). Run direct or via p |
 | `providerTmp` | `.claude/runtime/.provider-tmp` | dir | runtime | yes | 0.3.0 |  |
 | `providerTrace` | `.claude/project/decisions/provider-trace.jsonl` | jsonl | runtime | yes | 0.1.0 |  |
+| `reasoningFrameworks` | `.claude/project/reference/reasoning-frameworks.md` | md | framework | no | 0.5.1 | Classification table, framework router, fix-quality levels ( |
 | `recurringIssuesFile` | `.claude/project/memory/recurring-issues.jsonl` | jsonl | runtime | yes | 0.0.0 |  |
 | `reference` | `.claude/project/reference` | dir | framework | no | 0.0.0 |  |
 | `requirements` | `_requirements` | dir | project | yes | 0.0.0 |  |
