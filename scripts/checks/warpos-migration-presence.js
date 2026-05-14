@@ -116,9 +116,9 @@ for (const m of migrations) {
     missing.push({ entry: m, reason: "entry has no resolvable file path" });
     continue;
   }
-  // Resolve under source tree. Migrations live under `<source>/migrations/`
-  // by convention; treat absolute-looking entries as relative-from-source.
-  const abs = path.isAbsolute(rel) ? rel : path.join(SOURCE_ROOT, rel);
+  // Migration paths in release.json are capsule-relative (matches
+  // release-build.js: `path.resolve(capsuleDir, m.file)`).
+  const abs = path.isAbsolute(rel) ? rel : path.resolve(capsuleDir, rel);
   checked.push({ entry: rel, abs });
   if (!fs.existsSync(abs)) {
     missing.push({ entry: rel, abs, reason: "file not found in source tree" });

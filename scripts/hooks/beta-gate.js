@@ -239,11 +239,21 @@ function main() {
       }
 
       // Block — Alex β should be consulted first
+      // L-2026-05-14-event-beta-gate-blank-target: when AskUserQuestion's
+      // `questions` array is empty or missing, the prior `question` join was
+      // "" → blank target → 80% of blocks (16/20 in 3d) lost their audit
+      // signal. Fall back to a summary of the tool_input so retrospective
+      // forensics can attribute the "why".
+      const target =
+        (question && question.slice(0, 80)) ||
+        (event.tool_input
+          ? `[no question text — tool_input keys: ${Object.keys(event.tool_input).join(",")}]`
+          : "[no tool_input]");
       logEvent(
         "block",
         "system",
         "beta-gate-blocked",
-        question.slice(0, 80),
+        target,
         "Alex β not consulted",
       );
       const result = {

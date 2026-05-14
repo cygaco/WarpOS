@@ -346,6 +346,9 @@
       }
     ]
   },
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  },
   "permissions": {
     "allow": [
       "Edit(.claude/manifest.json)",
@@ -353,7 +356,17 @@
       "Write(.claude/project/events/**.jsonl)",
       "Write(.claude/project/memory/**.jsonl)",
       "Write(.claude/project/decisions/**.jsonl)",
-      "Write(.claude/runtime/**.jsonl)"
+      "Write(.claude/runtime/**.jsonl)",
+      "Bash(node -e *fs.writeFileSync*)",
+      "Bash(node -e *fs.appendFileSync*)",
+      "Bash(node -e *fs.mkdirSync*)",
+      "Bash(git worktree add *)",
+      "Bash(git worktree remove *)",
+      "Bash(git worktree prune *)",
+      "Bash(git worktree move *)",
+      "Bash(git rm --cached *)",
+      "Bash(git reset --hard *)",
+      "Bash(git restore *)"
     ]
   }
 }

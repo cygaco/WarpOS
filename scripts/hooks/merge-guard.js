@@ -413,9 +413,28 @@ process.stdin.on("end", () => {
         cmd,
       )
     ) {
-      block(
-        "node -e with fs write blocked: use Edit/Write tools, or put the logic in a `scripts/*.js` file and run `node scripts/<name>.js`. Hooks enforce ownership on Edit/Write but allow standalone scripts.",
-      );
+      // L-2026-05-14-event-merge-guard-node-e-recurring: this rule fired
+      // 45× in 3 days (single session). The reflex to use `node -e ... fs.*`
+      // for one-shot writes keeps winning. Updated message is prescriptive
+      // — tells you the exact replacement path for the two dominant cases.
+      const isJsonl = /\.(jsonl|ndjson)['"]\s*[,)]/.test(cmd);
+      const isAppend = /appendFileSync/.test(cmd);
+      const isWrite = /writeFileSync/.test(cmd);
+      let hint;
+      if (isJsonl && isAppend) {
+        hint =
+          "JSONL append: Read the file, find a unique anchor on the last line, then use Edit to append a `\\n` + new entry. " +
+          "Or write a one-shot scripts/append-<name>.js calling `require('./scripts/hooks/lib/logger').logLearning(...)` (or similar canonical helper).";
+      } else if (isWrite) {
+        hint =
+          "Full-file write: use the Write tool (it overwrites). " +
+          "For partial JSON updates, prefer Read + Edit. For larger transforms, put logic in scripts/<name>.js and run `node scripts/<name>.js`.";
+      } else {
+        hint =
+          "Use Edit/Write tools, or move the logic into scripts/<name>.js and run `node scripts/<name>.js`. " +
+          "Hooks enforce ownership on Edit/Write but allow standalone scripts.";
+      }
+      block(`node -e with fs write blocked: ${hint}`);
     }
 
     // 5. rm on src/ or _docs/ — block destructive deletes.

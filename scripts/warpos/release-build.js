@@ -26,7 +26,7 @@ const FRAMEWORK_MANIFEST = path.join(
 );
 
 function sha256File(filePath) {
-  return cHash.rawHash(filePath);
+  return cHash.contentHash(filePath);
 }
 
 function gitHead() {

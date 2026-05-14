@@ -129,6 +129,21 @@ This rule exists because asking the user for routine technical choices is the bo
 
 ---
 
+## Two-gate authority — Beta vs the Claude Code classifier
+
+Beta authorizes within the **WarpOS policy frame** (Class A/B/C, the rubric, this document). The Claude Code **auto-mode classifier** authorizes within the **harness safety frame** (prompt-derived intent vs proposed action). These are independent gates. Both must clear.
+
+When the classifier blocks an action and cites intent mismatch with the user's original prompt ("user only asked to look it up", "user did not authorize publishing", etc.):
+
+1. **Beta DECIDE does NOT override.** A WarpOS policy verdict is not a harness override. The classifier outranks Beta on harness-safety questions.
+2. **Do not retry with Beta blessing alone.** Retrying the same Edit/Bash with a new "Beta said yes" prelude is bypass-by-rationalization; the classifier will block again and you will burn turns.
+3. **Surface to the user with one short plain-text sentence** describing the action and asking for go-ahead. Do NOT use AskUserQuestion (beta-gate intercepts it). The user types yes/no; the classifier re-evaluates with that confirmation in scope.
+4. **The shape echoes the autonomy table.** Push-to-remote and ≥$5 spend already "ask first" — that's an in-repo policy alignment with a harness-safety expectation. Treat classifier blocks as the same shape: confirm, don't override.
+
+Source: L-2026-05-14-classifier-not-bypassable-by-beta (validated this session — Beta returned Class A DECIDE on the env-flag edit; classifier blocked twice anyway citing "user only asked to look it up"; the unblock was a plain-text "do it" from the user).
+
+---
+
 ## References
 
 - **User value grounding:** `_requirements/00-canonical/PRODUCT_MODEL.md`, `CORE_BRIEF.md`, `USER_COHORTS.md`, `GOLDEN_PATHS.md`

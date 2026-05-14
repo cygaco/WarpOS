@@ -148,9 +148,92 @@ function yamlDump(value, indent = 0) {
   return lines.join("\n");
 }
 
+// L-2026-05-14-event-sprint-schema-missing: sprint scripts run as standalone
+// CLIs from Bash; their fs.writeFileSync calls bypass the Edit/Write tool
+// hooks, so sprint-tracker-guard's auto-inject never fires on them. Result:
+// 134 schema-missing warns vs 18 auto-inject successes in 3d (7:1 ratio).
+// Fix: inject the schema header at the canonical writer, mirroring the
+// guard's path-to-kind mapping. Every sprint write through writeYaml now
+// guarantees the schema field — no hook dependency.
+// Keep this list in sync with scripts/hooks/sprint-tracker-guard.js
+// (SCHEMA_KIND_RULES). The guard remains the enforcement floor (catches
+// non-writeYaml writes), but writeYaml is now the prevention layer.
+const SPRINT_SCHEMA_KIND_RULES = [
+  { re: /[/\\]sprint[/\\]active-sprints\.yaml$/, kind: "active-sprints" },
+  {
+    re: /[/\\]sprint[/\\]sprints[/\\]SP-\d{8}-\d{3}[/\\]current\.yaml$/,
+    kind: "current-sprint",
+  },
+  {
+    re: /[/\\]sprint[/\\]sprints[/\\]SP-\d{8}-\d{3}[/\\]progress\.yaml$/,
+    kind: "sprint-progress",
+  },
+  {
+    re: /[/\\]sprint[/\\]sprints[/\\]SP-\d{8}-\d{3}[/\\]retrospective\.yaml$/,
+    kind: "sprint-retrospective",
+  },
+  { re: /[/\\]sprint[/\\]current-sprint\.yaml$/, kind: "current-sprint" },
+  { re: /[/\\]sprint[/\\]sprint-progress\.yaml$/, kind: "sprint-progress" },
+  {
+    re: /[/\\]sprint[/\\]approvals[/\\]AP-\d{8}-\d{3}\.yaml$/,
+    kind: "approval",
+  },
+  { re: /[/\\]sprint[/\\]tickets[/\\]T-\d{8}-\d{3}\.yaml$/, kind: "ticket" },
+  {
+    re: /[/\\]sprint[/\\]releases[/\\]RL-\d{8}-\d{3}\.yaml$/,
+    kind: "release",
+  },
+  { re: /[/\\]sprint[/\\]issues[/\\]I-\d{8}-\d{3}\.yaml$/, kind: "issue" },
+  {
+    re: /[/\\]sprint[/\\]plan-contracts[/\\]PC-\d{8}-\d{4}\.yaml$/,
+    kind: "plan-contract",
+  },
+  {
+    re: /[/\\]sprint[/\\]external-services[/\\]ESD-\d{8}-\d{3}\.yaml$/,
+    kind: "external-service-dependency",
+  },
+  {
+    re: /[/\\]sprint[/\\]checkpoints[/\\]SP-\d{8}-\d{3}-\d{4}\.yaml$/,
+    kind: "sprint-progress",
+  },
+  {
+    re: /[/\\]sprint[/\\]ralph[/\\]SP-\d{8}-\d{3}[/\\].*\.yaml$/,
+    kind: "ralph-progress",
+  },
+  {
+    re: /[/\\]sprint[/\\]history[/\\]SP-\d{8}-\d{3}[/\\]sprint-history\.yaml$/,
+    kind: "sprint-history",
+  },
+];
+
+function inferSprintSchemaKind(filePath) {
+  for (const r of SPRINT_SCHEMA_KIND_RULES) {
+    if (r.re.test(filePath)) return r.kind;
+  }
+  return null;
+}
+
 function writeYaml(file, value) {
   ensureDir(path.dirname(file));
-  const body = yamlDump(value, 0) + "\n";
+  // Schema injection at the canonical writer. If the file path matches a
+  // known sprint pattern AND the value doesn't already declare a schema,
+  // inject it as the first key. Non-sprint paths and already-schema'd
+  // values pass through unchanged.
+  let out = value;
+  if (
+    out &&
+    typeof out === "object" &&
+    !Array.isArray(out) &&
+    !out.schema &&
+    !out.$schema
+  ) {
+    const kind = inferSprintSchemaKind(file);
+    if (kind) {
+      // Object spread preserves key order; schema lands first.
+      out = { schema: `warpos/sprint/${kind}/v1`, ...out };
+    }
+  }
+  const body = yamlDump(out, 0) + "\n";
   fs.writeFileSync(file, body, "utf8");
   return { wrote: true, reason: "ok" };
 }
@@ -403,4 +486,5 @@ module.exports = {
   writeYaml,
   readYamlMaybe,
   yamlDump,
+  inferSprintSchemaKind,
 };

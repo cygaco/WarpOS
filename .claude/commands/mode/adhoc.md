@@ -62,29 +62,59 @@ Classification:
 When in doubt, recreate. The cost of an extra spawn is far less than the
 cost of dispatching a feature into a half-dead team.
 
-### Step 2: Create agent team
+### Step 2: Create team and spawn teammates
 
-Create a team and spawn two teammates with specific names:
+**Prerequisite:** `.claude/settings.json` must set `env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = "1"`.
+If absent, /warp:health Section 3.5 flags it. Without the flag, `TeamCreate` and
+`SendMessage` are not loaded — enable, restart Claude Code, re-run /mode:adhoc.
+
+**Concrete tool calls — execute these directly, do not wrap them in prompt-style language:**
+
+2.1 `TeamCreate(team_name: "<project>-adhoc", description: "...", agent_type: "alpha")`
+- Convention: prefix with project slug (`warpos-adhoc`, `jobhunter-adhoc`, etc.) to
+  avoid global-namespace collisions with sibling-project `adhoc` teams in `~/.claude/teams/`.
+- If `TeamCreate` errors "team already exists" and you want a clean slate,
+  `TeamDelete` first (only succeeds when current members are idle).
+
+2.2 Spawn β as an in-process teammate. **Critical:** `team_name` and `name` are
+required extra params on the Agent tool — they ARE accepted by the harness when
+teams are enabled, even though the tool's documented schema in the prompt does
+NOT list them. Pass them anyway. Validated 2026-05-14 (RT-006 +
+L-2026-05-14-test-the-call-before-declaring-impossible).
 
 ```
-Create an agent team for adhoc feature development. Spawn two teammates:
-- Name: "Beta (β)", agent type: beta
-- Name: "Gamma (γ)", agent type: gamma
-
-Every teammate spawn prompt MUST include this directive verbatim:
-
-  STARTUP DIRECTIVE — Do not claim tasks on startup. Acknowledge readiness
-  with a single line, then wait for explicit assignment from Alpha.
-  Pending tasks remain owned by Alpha until assigned.
+Agent(
+  subagent_type: "beta",
+  team_name: "<project>-adhoc",
+  name: "Beta (β)",
+  run_in_background: true,
+  prompt: "STARTUP DIRECTIVE — Acknowledge readiness via SendMessage to \"team-lead\", then go idle. Do NOT claim tasks.\n\nYou are Alex β. Joining team <project>-adhoc as \"Beta (β)\".\nLoad: .claude/agents/00-alex/beta.md, .claude/agents/00-alex/.system/policy/decision-policy.md, .claude/project/stage/current-stage.md\nSendMessage(to: \"team-lead\", summary: \"Beta online\", message: \"β online — ready for consultation.\")\nGo idle."
+)
 ```
 
-The startup directive is the only repo-accessible lever for the
-auto-claim suppression rule from Phase 0 — `claim_on_startup: false`
-lives in the harness, not in this file. Prompt enforcement is what we
-have. Document the limitation honestly.
+Success response:
+```
+Spawned successfully.
+agent_id: Beta (β)@<project>-adhoc
+name: Beta (β)
+team_name: <project>-adhoc
+```
+The harness writes a `member` entry with `backendType: "in-process"` to
+`~/.claude/teams/<project>-adhoc/config.json`.
 
-**Layer 1 (this team):** Alpha (lead) + Beta (judgment) + Gamma (orchestrator)
-**Layer 2 (Gamma's subagents):** Builder, Evaluator, Security, Compliance, QA, Fix Agent, Auditor — spawned by Gamma as needed
+2.3 Spawn γ the same way with `subagent_type: "gamma"`, `name: "Gamma (γ)"`,
+and a parallel STARTUP DIRECTIVE prompt referencing
+`.claude/agents/00-alex/gamma.md` + `.claude/agents/01-adhoc/.system/protocol.md`.
+
+**Run 2.2 and 2.3 in parallel** (single message, multiple Agent tool calls) —
+they're independent.
+
+**STARTUP DIRECTIVE rationale:** the only repo-accessible lever to prevent
+teammates from auto-claiming pending tasks. `claim_on_startup: false` is not a
+harness setting today; prompt enforcement is what we have.
+
+**Layer 1 (this team):** Alpha (lead) + Beta (judgment) + Gamma (orchestrator) — members of the team in `~/.claude/teams/<project>-adhoc/config.json`, addressable by name via SendMessage.
+**Layer 2 (Gamma's subagents):** Builder, Evaluator, Security, Compliance, QA, Fix Agent, Auditor — spawned by Gamma as ephemeral subagents per feature; NOT team members, they exit on return.
 
 ### Step 3: Set mode context
 

@@ -48,6 +48,14 @@ Read `.claude/settings.json` and verify hooks are registered for:
 For each missing lifecycle event: YELLOW — "Some automation won't work."
 If no hooks at all: RED — "Hooks are the backbone. Re-run the installer."
 
+### 3.5 Experimental agent-teams flag
+Read `.claude/settings.json` and verify `settings.env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS === "1"`.
+
+Why this matters: `/mode:adhoc` documents persistent β/γ teammates created via Claude Code's `TeamCreate`/`SendMessage` primitives. Those primitives only load when this env flag is set. Without it, the harness shows no team panel and `/mode:adhoc` falls back to one-shot Agent dispatches that don't persist (a confusing UX gap — see RT-005, L-2026-05-14-verify-claude-code-primitives-before-declaring-absent).
+
+If missing: YELLOW — "Add `\"env\": { \"CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS\": \"1\" }` to .claude/settings.json, then restart Claude Code. After restart, /mode:adhoc creates a real persistent team."
+If set to anything other than `"1"`: RED — "Flag present but value is wrong. Set to the string `\"1\"`."
+
 ### 4. Agent System
 Check `.claude/agents/` has:
 - `00-alex/alpha.md` — orchestrator

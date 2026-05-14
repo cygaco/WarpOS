@@ -467,3 +467,60 @@ Skip:
 ---
 
 *Applied to judgement-model.md via /beta:integrate on 2026-05-13.*
+
+---
+
+# Alex β Mining Recommendations — 2026-05-14
+
+Staged from `/beta:mine` 2026-05-14. Applied to judgement-model.md via `/beta:integrate` 2026-05-14.
+
+## New Patterns Discovered
+
+### P-001 → applied as P-023 — "Infer absence from local introspection" recurring anti-pattern
+**Evidence:** RT-001 / RT-005 / RT-006 — 3 occurrences in 36h; RT-006 fired within 25 min of logging the prevention-learning.
+**Three surfaces, one root:** ToolSearch keyword absence ≠ tool absence; tool schema param absence ≠ harness param absence; doc-only fix on misleading skill body ≠ behavioral fix.
+**Confidence:** high — applied.
+
+### P-002 → applied as P-024 — User mockery as escalation signal
+**Evidence:** "<verbatim operator prompt withheld — profane>", "<verbatim operator prompt withheld>", "Dude, just get us out of this nightmare loop" — 3 mockery events 2026-05-14, each preceded a major Alpha course-correction.
+**Confidence:** high — applied.
+
+### P-003 — `/reasoning:run` as user-invoked loop-break
+**Confidence:** medium (n=2, but high effect size). NOT applied as separate pattern — folded into P-024 application note ("Force Alpha into /reasoning:run Deep mode if not already there").
+
+### P-004 → applied as P-025 — Long autonomous skill-chain pattern
+**Evidence:** ~15 skill invocations in single session after one "do everything" directive.
+**Confidence:** high — applied.
+
+### P-005 → applied as P-026 — Beta DECIDE ≠ classifier override
+**Evidence:** Classifier blocked env-flag edit twice; Beta DECIDE 0.85 did not override.
+**Confidence:** high — applied (Beta-persona side); already codified in decision-policy.md §Two-gate authority by `/learn:integrate` 2026-05-14.
+
+## Confidence Adjustments Applied
+
+| Topic | New row | Reason |
+|---|---|---|
+| Harness primitive availability | DIRECTIVE (not DECIDE) | 3 wrong answers in 36h |
+| Classifier-blocked retries | ESCALATE (not DECIDE) | Beta DECIDE doesn't override classifier |
+| Turbo-active Class B | 0.90 (HIGH) | User traded review-overhead for throughput |
+| Premise reaffirmation after mockery | DIRECTIVE: invert | 3-for-3 hit rate 2026-05-14 |
+
+## Anti-Patterns Applied
+
+- A-010 — Inferring "X doesn't exist" from local introspection alone
+- A-011 — Doc-only fix on skill-driven behavioral bugs
+- A-012 — Retrying classifier-blocked actions with Beta blessing
+- A-013 — Confirming Alpha's premise after user mockery
+
+## Persona Gaps (deferred for user review)
+
+- G-6 — Mockery-detection lever not in `paths.decisionPolicy`
+- G-7 — `/warp:migrate` standalone skill missing
+
+## Decision Policy Gaps
+
+- Two-gate authority (Beta vs classifier) — codified in decision-policy.md §Two-gate authority during the same session via `/learn:integrate`. No further action needed.
+
+---
+
+*Applied to judgement-model.md via /beta:integrate on 2026-05-14.*

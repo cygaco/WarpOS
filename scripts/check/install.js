@@ -108,6 +108,24 @@ function main() {
       if (!fs.existsSync(dir)) return false;
       return fs.readdirSync(dir).some((f) => f.endsWith(".md"));
     }),
+    check("settings.json sets CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1", () => {
+      const f = path.join(REPO_ROOT, ".claude", "settings.json");
+      if (!fs.existsSync(f))
+        return { ok: false, detail: "settings.json missing" };
+      let s;
+      try {
+        s = JSON.parse(fs.readFileSync(f, "utf8"));
+      } catch (e) {
+        return { ok: false, detail: `unparseable: ${e.message}` };
+      }
+      const v = s && s.env && s.env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS;
+      if (v === "1" || v === 1 || v === true) return true;
+      return {
+        ok: false,
+        detail:
+          'missing — /mode:adhoc persistent teams (TeamCreate/SendMessage) require this. Add settings.env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS="1" then restart Claude Code.',
+      };
+    }),
   ];
 
   const failed = checks.filter((c) => !c.ok);

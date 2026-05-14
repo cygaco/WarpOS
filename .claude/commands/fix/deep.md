@@ -40,6 +40,19 @@ Collect all available signals:
 - Check `git log --oneline -20` for recent changes that might be related
 - If a file is mentioned, read it. If a stack trace exists, read the top frame.
 
+### 1.1a Verify-Before-Declaring-Absent (HARD RULE)
+
+If diagnosis hinges on a Claude Code harness primitive, tool param, slash command, env flag, or feature being **absent** — **STOP before Phase 2**. Local introspection (ToolSearch, tool-schema description in the prompt, deferred-tools listing) is INCOMPLETE evidence. Claude Code gates experimental primitives behind env flags; tool schemas can be runtime-extended; ToolSearch keyword index can miss known-real tools.
+
+Required confirmation steps (any ONE clears the gate):
+1. **WebSearch** `code.claude.com/docs` for the primitive name and read the doc page.
+2. **Dispatch the `claude-code-guide` subagent** with a targeted question about the primitive — it has WebFetch/WebSearch access and is the authoritative in-repo lookup.
+3. **Test the call.** If a tool exists, attempting the call with the parameters per the docs is the cheapest disambiguator. The failed call returns a useful error; the successful call ends the investigation. Cost is one tool turn.
+
+If you cannot clear the gate, do NOT proceed with a fix that assumes absence. File the question to the user instead — being wrong about absence has burned credibility 3× in the same week (RT-001, RT-005, RT-006). The Agent tool's spawn output is ground truth: if it advertises `Use SendMessage with to: <agentId>`, that primitive exists.
+
+Sources: L-2026-05-14-verify-claude-code-primitives-before-declaring-absent, L-2026-05-14-test-the-call-before-declaring-impossible.
+
 ### 1.2 Classify Error Type
 
 Based on gathered evidence, classify into one of:
@@ -185,6 +198,23 @@ Also check:
    - If a test covers the affected code, run it
    - Describe manual verification steps if needed
 4. If verification fails: try the next-ranked solution from Phase 3
+
+### 4.x Skill-Body Touch Check (HARD RULE for skill-driven bugs)
+
+If the diagnosed root cause is "skill body misled Alpha or the user" (or any variant where a `.claude/commands/**/*.md` file drives the wrong behavior), the diff for the fix MUST include a change inside the skill's `## Procedure` section (or equivalent body). Edits limited to:
+- `## Built-in primitive limits` / appendix sections
+- `## Notes` / footnotes
+- Sibling reference docs (`_docs/**`, `.claude/project/reference/**`)
+- The future-flag ledger (`warpos-to-update.md`)
+
+…do NOT close the loop. Alpha and the user both read the procedural body first; appendices are skipped on default flow. A doc-only fix re-triggers the bug next session.
+
+Detection (do this before marking the trace `quality_score >= 2`):
+1. List the files touched by the fix diff.
+2. For any `.claude/commands/**/*.md` in the list, grep for `## Procedure` and verify the diff includes a hunk inside it.
+3. If no skill body was touched but the root cause was skill-driven, the fix is incomplete — return to Phase 3 and re-pick.
+
+Source: L-2026-05-14-doc-only-fix-antipattern (validated 2026-05-14 — RT-004 was an appendix-only fix that re-triggered the bug 24 hours later).
 
 **Output**: Files changed + verification result.
 
