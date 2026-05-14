@@ -31,6 +31,10 @@
         "hooks": [
           {
             "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/authorization-gate.js\""
+          },
+          {
+            "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/merge-guard.js\""
           },
           {
@@ -58,6 +62,10 @@
       },
       {
         "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/authorization-gate.js\""
+          },
           {
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/memory-guard.js\""
@@ -336,6 +344,16 @@
         ],
         "matcher": ""
       }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Edit(.claude/manifest.json)",
+      "Write(.claude/manifest.json)",
+      "Write(.claude/project/events/**.jsonl)",
+      "Write(.claude/project/memory/**.jsonl)",
+      "Write(.claude/project/decisions/**.jsonl)",
+      "Write(.claude/runtime/**.jsonl)"
     ]
   }
 }
