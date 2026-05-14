@@ -1,0 +1,30 @@
+schema: warpos/sprint/ralph-progress/v1
+sprint: SP-20260514-001
+ticket: T-20260514-076
+current_loop: 1
+phase: stopped
+started_at: "2026-05-14T09:15:29.130Z"
+updated_at: "2026-05-14T09:23:22.882Z"
+status: stopped_clean
+completed_tasks:
+  - "plan: Implemented co-cohesively with other T-072..077 in batch edit pass"
+  - "test: AC-9.1 (content-hash-mismatch kind=lf_only|real_drift) verified via classifier instrumentation. AC-9.2 (operator-override-used emitted per accepted override) verified in preflight runPreflight loop. AC-9.3 (ownership-transitioned emitted) verified in classifier framework_template branch."
+remaining_tasks:
+  - Add emitContentHashMismatch
+  - emitOperatorOverrideUsed
+  - emitOwnershipTransitioned to update-events.js
+  - "Wire into update.js classifier + preflight.js"
+blockers: []
+failed_attempts: []
+last_checks:
+  ran_at: "2026-05-14T09:23:11.290Z"
+  passing:
+    - update-events.js exports emitContentHashMismatch/emitOperatorOverrideUsed/emitOwnershipTransitioned
+    - "all wired into preflight.js + update.js classifier"
+  failing: []
+next_action: "All AC verified via replay-bench + direct functional checks."
+external_dependency_status: []
+stop_reason: stopped_clean
+resume_instructions: "Read this file. Resume at the phase listed. If status is stopped_*, investigate the stop_reason first."
+checkpoint_pointers:
+  - "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\ralph\\SP-20260514-001\\T-20260514-076.yaml"

@@ -1,0 +1,26 @@
+schema: warpos/sprint/ralph-progress/v1
+sprint: SP-20260514-001
+ticket: T-20260514-067
+current_loop: 1
+phase: stopped
+started_at: "2026-05-14T09:05:38.169Z"
+updated_at: "2026-05-14T09:06:02.174Z"
+status: stopped_clean
+completed_tasks:
+  - "plan: Co-implemented inline with T-063 in same skill-body edit pass"
+  - "test: AC-5.1 verified: 'Also invoked by /mode:<solo|adhoc|oneshot> when --turbo is passed' paragraph present near top of turbo.md"
+remaining_tasks:
+  - Add sibling composition note to /turbo.md
+blockers: []
+failed_attempts: []
+last_checks:
+  ran_at: "2026-05-14T09:05:49.777Z"
+  passing:
+    - "grep:turbo.md contains 'Also invoked by /mode:<solo|adhoc|oneshot>' line"
+  failing: []
+next_action: "All AC verified; co-implemented with T-063."
+external_dependency_status: []
+stop_reason: stopped_clean
+resume_instructions: "Read this file. Resume at the phase listed. If status is stopped_*, investigate the stop_reason first."
+checkpoint_pointers:
+  - "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\ralph\\SP-20260514-001\\T-20260514-067.yaml"

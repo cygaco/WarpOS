@@ -173,23 +173,72 @@ function runGate(gate, opts, targetRoot, sourceTreeRoot) {
   return result;
 }
 
-// ── Override interpretation (R-34) ──────────────────────────────
+// ── Override interpretation (R-34 + SP-20260514-001 R-2 / T-072) ─
+
+// Known gate names without the `warpos-` prefix. T-072 unified --operator-
+// override <gate> accepts these. Validated on parse so a typo can't silently
+// match the wrong gate (redteam: override flag confusion attack).
+const KNOWN_GATE_NAMES = new Set([
+  "install-baseline",
+  "capsule-resolvable",
+  "version-quorum",
+  "manifest-honesty",
+  "staleness",
+  "path-resolution",
+  "structure-parity",
+  "applied-migrations",
+  "migration-presence",
+  "tracked-transients",
+]);
+
+function shortGateName(fullName) {
+  return String(fullName || "").replace(/^warpos-/, "");
+}
 
 function applyOverride(gate, result, opts) {
+  // Path 1: new unified --operator-override <gate> + --override-reason <text>.
+  // Works for any gate (gate.overrideFlag may be null).
+  if (
+    opts.operatorOverrides &&
+    opts.operatorOverrides.has(shortGateName(gate.name)) &&
+    (result.status === "red" || result.status === "yellow")
+  ) {
+    return {
+      result: {
+        ...result,
+        status: "yellow",
+        reason: `${result.reason} (--operator-override ${shortGateName(gate.name)} accepted; reason: ${opts.overrideReason})`,
+      },
+      overrideUsed: true,
+      overrideKind: "operator-override",
+    };
+  }
+  // Path 2: legacy narrow override flags. Kept for back-compat; no event
+  // emission. Emits a deprecation note in the gate reason.
   if (!gate.overrideFlag) return { result, overrideUsed: false };
   if (result.status !== "red" && result.status !== "yellow")
     return { result, overrideUsed: false };
   if (!opts[gate.overrideFlag]) return { result, overrideUsed: false };
-  // Override accepted: re-interpret red/yellow as green for blocking purposes,
-  // but keep the reason as evidence (preserves observability).
   return {
     result: {
       ...result,
       status: "yellow",
-      reason: `${result.reason} (override ${gate.overrideFlag} accepted)`,
+      reason: `${result.reason} (override ${gate.overrideFlag} accepted; legacy flag — prefer --operator-override ${shortGateName(gate.name)})`,
     },
     overrideUsed: true,
+    overrideKind: "legacy-flag",
   };
+}
+
+// Validate + sanitize --override-reason. Rejects empty/whitespace-only;
+// enforces >= 8 chars / <= 500 chars (per INPUTS IN-2). Returns the cleaned
+// string or null on failure.
+function validateOverrideReason(raw) {
+  if (typeof raw !== "string") return null;
+  const trimmed = raw.trim();
+  if (trimmed.length < 8) return null;
+  if (trimmed.length > 500) return null;
+  return trimmed;
 }
 
 // ── Composer ────────────────────────────────────────────────────
@@ -220,7 +269,11 @@ function runPreflight(opts) {
 
   for (const gate of GATES) {
     const raw = runGate(gate, opts, targetRoot, sourceTreeRoot);
-    const { result, overrideUsed } = applyOverride(gate, raw, opts);
+    const { result, overrideUsed, overrideKind } = applyOverride(
+      gate,
+      raw,
+      opts,
+    );
     gateResults.push({ ...result, overrideUsed });
     events.emitPreflightGate(targetRoot, {
       txId: opts.txId || null,
@@ -232,6 +285,17 @@ function runPreflight(opts) {
       evidence: result.evidence,
       overrideUsed,
     });
+    // T-072: dedicated audit event when --operator-override is used (legacy
+    // narrow flags do not emit the new event, preserving back-compat).
+    if (overrideUsed && overrideKind === "operator-override") {
+      events.emitOperatorOverrideUsed(targetRoot, {
+        txId: opts.txId || null,
+        gate: shortGateName(result.name),
+        reason: opts.overrideReason || "",
+        operator: opts.operator || null,
+        gateStatusBefore: raw.status,
+      });
+    }
     // Fail-fast: stop on first red (unless allRed diagnostic mode).
     if (result.status === "red" && !opts.allRed) {
       break;
@@ -303,15 +367,55 @@ module.exports = {
   runPreflight,
   formatReport,
   GATES,
+  KNOWN_GATE_NAMES,
+  validateOverrideReason,
 };
 
 // Allow node scripts/warpos/preflight.js --target <p> --to <v> [...flags...]
+//
+// T-072 unified override flag:
+//   --operator-override <gate-name>     (repeatable; one per gate to override)
+//   --override-reason "<text>"          (required when --operator-override is
+//                                        present; >= 8, <= 500 chars after trim)
+//
+// Legacy narrow flags remain for back-compat: --allow-stale, --force-fresh,
+// --allow-version-drift, --skip-preflight (handled in update.js, not here).
 if (require.main === module) {
   const args = process.argv.slice(2);
   const get = (flag) => {
     const i = args.indexOf(flag);
     return i === -1 ? null : args[i + 1];
   };
+  // Collect all --operator-override <gate> occurrences (repeatable).
+  const operatorOverrides = new Set();
+  for (let i = 0; i < args.length; i++) {
+    if (args[i] === "--operator-override" && i + 1 < args.length) {
+      operatorOverrides.add(args[i + 1]);
+    }
+  }
+  // Validate every operator-override gate name is known.
+  for (const g of operatorOverrides) {
+    if (!KNOWN_GATE_NAMES.has(g)) {
+      process.stderr.write(
+        `unknown gate "${g}" for --operator-override. Valid: ${[...KNOWN_GATE_NAMES].sort().join(", ")}\n`,
+      );
+      process.exit(2);
+    }
+  }
+  // Validate --override-reason (required when --operator-override present;
+  // AC-5.3 + AC-5.4 — empty/whitespace rejected; JSONL injection is prevented
+  // structurally because writeEnvelope uses JSON.stringify).
+  const rawReason = get("--override-reason");
+  let overrideReason = null;
+  if (operatorOverrides.size > 0) {
+    overrideReason = validateOverrideReason(rawReason);
+    if (!overrideReason) {
+      process.stderr.write(
+        '--operator-override requires --override-reason "<text>" (8-500 chars after trim). No override applied.\n',
+      );
+      process.exit(2);
+    }
+  }
   const opts = {
     targetRoot: path.resolve(
       get("--target") || process.env.CLAUDE_PROJECT_DIR || process.cwd(),
@@ -325,12 +429,20 @@ if (require.main === module) {
     forceFresh: args.includes("--force-fresh"),
     allowVersionDrift: args.includes("--allow-version-drift"),
     allRed: args.includes("--all-red") || args.includes("--diagnostic"),
+    operatorOverrides,
+    overrideReason,
+    operator: get("--operator") || null,
   };
   const report = runPreflight(opts);
   if (args.includes("--json")) {
     process.stdout.write(JSON.stringify(report, null, 2) + "\n");
   } else {
     process.stdout.write(formatReport(report) + "\n");
+    if (operatorOverrides.size > 0) {
+      process.stdout.write(
+        `Operator override accepted for gate(s): ${[...operatorOverrides].join(", ")}. Reason: ${overrideReason}. Audit event(s) written to paths.eventsFile.\n`,
+      );
+    }
   }
   process.exit(report.ok ? 0 : 1);
 }

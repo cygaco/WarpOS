@@ -1,0 +1,31 @@
+schema: warpos/sprint/sprint-progress/v1
+sprint: SP-20260513-006
+updated_at: "2026-05-14T09:26:57.052Z"
+current_phase: execute
+current_command: "/sprint:execute"
+current_ticket: null
+current_task: null
+current_loop: null
+status: completed
+last_completed_step: all_5_tickets_done_execution_report_written
+next_action: "Run /sprint:release --sprint SP-20260513-006 (docs-only sprint; reversible; no version bump)."
+active_files: []
+modified_files: []
+checks_last_run: null
+checks_passing: []
+checks_failing: []
+blockers: []
+approvals_needed: []
+external_services_needed: []
+issues_opened: []
+tickets_updated:
+  - T-20260514-063
+  - T-20260514-064
+  - T-20260514-065
+  - T-20260514-066
+  - T-20260514-067
+ralph_checkpoint: null
+resume_command: "/sprint:release --sprint SP-20260513-006"
+resume_notes: "5/5 tickets done. Execution report at sprints/SP-20260513-006/execution-report.md. Sprint status: in_review."
+safe_to_continue: true
+stop_reason: null

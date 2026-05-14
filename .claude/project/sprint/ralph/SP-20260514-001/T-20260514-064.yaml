@@ -1,0 +1,29 @@
+schema: warpos/sprint/ralph-progress/v1
+sprint: SP-20260514-001
+ticket: T-20260514-064
+current_loop: 1
+phase: stopped
+started_at: "2026-05-14T09:05:29.939Z"
+updated_at: "2026-05-14T09:06:01.624Z"
+status: stopped_clean
+completed_tasks:
+  - "plan: Co-implemented inline with T-063 in same skill-body edit pass"
+  - "test: AC-2.1/2.2/2.3 verified: defaults documented per mode; no irreversible scopes; oneshot TTL=4h, others 60m"
+remaining_tasks:
+  - Document per-mode defaults in skill bodies
+  - Log Class-B decision to ledger
+blockers: []
+failed_attempts: []
+last_checks:
+  ran_at: "2026-05-14T09:05:49.592Z"
+  passing:
+    - "decision_ledger:DEC entry logged via lib/logger"
+    - "defaults: solo=manifest-edit,write-jsonl@60m, adhoc=manifest-edit,write-jsonl,node-e-fs,worktree-ops@60m, oneshot=...@4h"
+    - "no push-to-main, no destructive-git"
+  failing: []
+next_action: "All AC verified; co-implemented with T-063."
+external_dependency_status: []
+stop_reason: stopped_clean
+resume_instructions: "Read this file. Resume at the phase listed. If status is stopped_*, investigate the stop_reason first."
+checkpoint_pointers:
+  - "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\ralph\\SP-20260514-001\\T-20260514-064.yaml"

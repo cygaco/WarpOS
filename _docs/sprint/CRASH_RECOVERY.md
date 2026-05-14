@@ -181,7 +181,44 @@ When writing a sprint command, the checkpoint discipline is:
 - Updates `paths.sprintProgress` (the live file).
 - Writes a frozen copy under `paths.sprintCheckpoints/<sprint>-<n>.yaml`.
 
+## /warp:update recovery (SP-20260514-001)
+
+When `/warp:update` is interrupted mid-pipeline:
+
+1. Read the transaction id from the last `warpos.update.transaction.start`
+   event in `paths.eventsFile`. The transaction wrapper writes a frozen
+   snapshot keyed by that id.
+2. Run `node scripts/warpos/preflight.js --target <path> --to <v>` to see
+   which gates are red after the partial apply.
+3. If a specific gate is red but the underlying state is acceptable to
+   the operator, use `--operator-override <gate-name> --override-reason
+   "<text>"` to proceed. Every override emits a
+   `warpos.update.operator-override-used` event (audit trail).
+4. If the transaction was rolled back, `framework-installed.json` is
+   restored from snapshot — no further action needed.
+5. If the partial apply left mixed state, run the opt-in recovery tools:
+   - `node scripts/warpos/lf-normalize-target.js <path>` — normalize
+     line endings (rarely needed after T-20260514-068 since the hash
+     pipeline now collapses CRLF/LF semantically).
+   - `node scripts/warpos/prune-installed-assets.js <path>` — drop
+     stale entries from `framework-installed.json`.
+
+### New event kinds (T-20260514-076)
+
+`scripts/warpos/lib/update-events.js` emits these on top of TR-1..TR-6:
+
+- `warpos.update.content-hash-mismatch` — `kind: lf_only` is informational;
+  `kind: real_drift` accompanies a MERGE_CONFLICT (real content divergence).
+- `warpos.update.operator-override-used` — audit trail for every
+  `--operator-override` invocation. Captures gate, reason, operator, ts,
+  txId.
+- `warpos.update.ownership-transitioned` — classifier promotes a
+  `framework_template` path to `project_owned` on consumer non-whitespace
+  edit. Decision-ledger 2026-05-14 documents the auto-trigger rule.
+
 ## See also
 
 - `paths.sprintReference` — full reference doc.
 - `_docs/sprint/RALPH_LOOP.md` — Ralph loop crash semantics.
+- `_docs/sprint/UPDATE_PIPELINE.md` — three-phase `/warp:update` map +
+  hash semantics + ownership state machine.

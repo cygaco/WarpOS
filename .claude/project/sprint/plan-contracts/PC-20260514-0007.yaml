@@ -1,0 +1,159 @@
+schema: warpos/sprint/plan-contract/v1
+id: PC-20260514-0007
+created_at: "2026-05-14T00:13:35.385Z"
+updated_at: "2026-05-14T00:14:16.368Z"
+sprint: SP-20260513-006
+source_request: "Make /turbo invocable as an argument when entering mode skills (/mode:solo, /mode:adhoc, /mode:oneshot) — one command pre-authorizes the typical batch actions for the mode at the same time it transitions modes."
+source_request_verbatim: "Make turbo.md an argument for modes (solo, adhoc, and oneshot)."
+request_type: feature_modify
+interpreted_intent: "Compose /turbo with each /mode:X skill so the operator can enter a mode AND pre-authorize batch actions in a single command (e.g. /mode:adhoc --turbo). The turbo argument optionally accepts the same scope/ttl/reason knobs /turbo already has. Mode skill bodies invoke scripts/turbo/apply.js when the flag is present; behaviour without the flag is unchanged."
+user_or_business_outcome: "Operator enters a mode and is immediately ready to drive a batch — no second command needed to remove permission-prompt cadence for routine actions. The cross-skill composition is honest (turbo remains its own skill), and the safety floor inside apply.js + authorization-gate.js is unchanged."
+affected_surfaces:
+  - surface: ".claude/commands/mode/solo.md"
+    evidence_level: verified_from_repo
+    notes: "Short 3-step skill body. Needs an Inputs section + --turbo arg + invocation of scripts/turbo/apply.js after mode-set CLI succeeds."
+  - surface: ".claude/commands/mode/adhoc.md"
+    evidence_level: verified_from_repo
+    notes: "Most complex of the three — team spawn, marker, transitions. Same --turbo arg surface, plus the per-mode default-scope question."
+  - surface: ".claude/commands/mode/oneshot.md"
+    evidence_level: verified_from_repo
+    notes: "Hands off to Delta. Delta runs many routine actions that benefit from turbo, but Alpha doctrine doesn't apply during oneshot — so turbo TTL relative to a multi-hour Delta run needs explicit policy."
+  - surface: ".claude/commands/turbo.md"
+    evidence_level: verified_from_repo
+    notes: "Sibling skill. Likely needs a Reference note ('also invoked by /mode:X when --turbo is passed') but no behavioural change."
+  - surface: scripts/turbo/apply.js
+    evidence_level: verified_from_repo
+    notes: "Apply CLI. Already supports --scope, --ttl, --reason, --off, --status. Probably no code change — mode skills just call it. Open question: should it surface 'started by /mode:X' provenance in --status?"
+  - surface: scripts/mode-set.js
+    evidence_level: verified_from_repo
+    notes: "Mode marker writer. No mandatory change — mode skills can invoke turbo as a sibling step. Open question (expanded scope only): record turbo state alongside the marker for crash recovery."
+  - surface: scripts/hooks/authorization-gate.js
+    evidence_level: verified_from_repo
+    notes: "PreToolUse hook. Reads runtime/authorization.json regardless of caller — no change expected."
+current_behavior:
+  evidence_level: verified_from_repo
+  notes: "Three separate skills. Operator runs /mode:adhoc, then /turbo as two consecutive commands. Each is a distinct keyboard cadence. Turbo state lives in .claude/runtime/authorization.json + a permissions.allow merge in .claude/settings.json, both managed by scripts/turbo/apply.js."
+desired_behavior: "/mode:<solo|adhoc|oneshot> [--turbo [--scope <csv>|all] [--ttl <duration>] [--reason \"<text>\"]] enters the mode AND applies a turbo authorization in one command. Without --turbo, mode skills behave exactly as today (no regression). With --turbo and no further args, each mode supplies a sensible default scope appropriate to its workload. The standalone /turbo skill (apply, --off, --status) remains the canonical interface for ad-hoc adjustments after mode entry."
+scope:
+  size: s
+  risk_level: low
+  complexity_drivers:
+    - Three skill bodies to keep in lockstep
+    - "Per-mode default-scope selection is a design call, not just plumbing"
+    - "Oneshot hands off to Delta — turbo TTL vs a multi-hour Delta run needs explicit policy"
+    - "First time a mode skill calls turbo internally — sets precedent for future cross-skill composition"
+scope_variants:
+  minimal_safe:
+    summary: "Document the cross-invocation pattern only — add a 'Combine with /turbo' note to each mode skill that tells operators to run /turbo as a second command. No CLI arg added. Zero engineering risk, but the operator still types two commands."
+    tradeoffs:
+      - "Doesn't deliver the UX shortcut the operator asked for"
+      - Cheapest possible
+      - "Documents the composition pattern, useful for other future cross-skill flows"
+  recommended:
+    summary: "Add --turbo (+ pass-through --scope/--ttl/--reason) to all three mode skills. Skill bodies invoke scripts/turbo/apply.js after the mode-set CLI succeeds. Each mode declares a default scope set (solo=conservative, adhoc=builder-friendly, oneshot=delta-friendly with longer TTL). Document the per-mode defaults in each skill body. No changes to apply.js or mode-set.js — composition lives in skill bodies."
+    tradeoffs:
+      - Delivers the requested UX
+      - "Default-scope choice per mode is opinionated — needs a brief design pass with evidence from past /turbo invocations"
+      - "If --turbo fails mid-flow, mode is already set — partial-state recovery story needed"
+  expanded:
+    summary: "Recommended + (a) record turbo state in the mode marker (mode-set.js writes a 'turbo: { scopes, expires_at, started_by }' sub-object); (b) auto-clear turbo on mode exit (mode transitions trigger turbo --off if the same mode started it); (c) per-mode turbo defaults live in a small JSON registry so they're declarative not buried in prose; (d) /turbo --status surfaces 'started by /mode:X' provenance."
+    tradeoffs:
+      - Tightest UX coherence
+      - "Real engineering surface — mode-set schema bump, turbo schema bump, lifecycle plumbing"
+      - "Risk of cross-skill coupling that's hard to untangle later"
+assumptions:
+  safe:
+    - "scripts/turbo/apply.js already supports the scope/ttl/reason knobs we need — no new CLI flags required for the recommended scope."
+    - "Each mode skill currently invokes a node CLI (scripts/mode-set.js), so adding a second CLI invocation is in-pattern."
+    - "Operators want explicit --turbo opt-in; defaulting on would surprise them and re-introduce safety-floor concerns."
+  unsafe:
+    - "The 'right' default scope set for each mode (solo / adhoc / oneshot) — needs a quick design pass informed by historical /turbo usage."
+    - "Whether oneshot's turbo authorization should live as long as Delta runs (could be hours) or fall back to the 60m default."
+    - Whether to auto-clear turbo on mode transition. Auto-clear is tidy but may surprise an operator who started turbo for a multi-mode batch.
+  needs_user_or_beta_review:
+    - "Per-mode default scope sets — Beta should sanity-check that the defaults match the safety floor and the operator's batching pattern."
+    - "Whether to bump the mode marker schema to record turbo provenance, or keep turbo state independent (recommended-scope answer: independent)."
+open_questions:
+  blocking: []
+  non_blocking:
+    - "Exact CLI shape: --turbo flag with optional --scope passthrough, or positional 'turbo' subcommand (e.g. /mode:adhoc turbo)?"
+    - "Default scope sets per mode — who picks, and on what evidence (events.jsonl mining recommended)?"
+    - "TTL behaviour on mode transition: does turbo carry over, reset to the new mode's default, or clear?"
+    - "Should /turbo --status surface 'started by /mode:adhoc' (provenance) — is that worth adding to the recommended scope?"
+    - "Should --turbo on /mode:oneshot extend default TTL to match a typical Delta run (e.g. 4h)?"
+non_goals:
+  - Refactoring scripts/turbo/apply.js or scripts/mode-set.js
+  - "Replacing /turbo as a standalone skill — operators still need /turbo for ad-hoc batches outside mode transitions"
+  - Adding new scopes to the turbo scope vocabulary
+  - Removing the safety floor or any safety check in apply.js or authorization-gate.js
+  - Making --turbo on by default in any mode
+requirement_areas:
+  - "Per-mode default-scope policy (solo / adhoc / oneshot)"
+  - "Skill-body CLI conventions (how to document --turbo + pass-through args)"
+  - "Partial-state recovery (mode-set succeeded, turbo apply failed)"
+  - "Documentation cross-references — /turbo skill and each /mode:X skill point at each other"
+high_level_story_candidates:
+  - "As an operator, I can enter a mode and pre-authorize batch actions in one command."
+  - "As an operator, the default scope set for each mode matches the workload that mode typically drives."
+  - "As an operator, if --turbo fails after the mode is set, I get a clear recovery instruction."
+  - "As an operator, /turbo --status tells me whether turbo was started ad-hoc or by a mode skill."
+granular_story_candidates:
+  - "Add an Inputs section to /mode:solo, /mode:adhoc, /mode:oneshot documenting --turbo [--scope <csv>|all] [--ttl <duration>] [--reason \"<text>\"]."
+  - Pick a default scope set per mode and document it in the skill body.
+  - "Skill-body procedure: after mode-set CLI succeeds, if --turbo present, invoke scripts/turbo/apply.js with merged args."
+  - "Skill-body recovery section: 'mode-set ok, turbo failed → mode is active without turbo; re-run /turbo manually'."
+  - "Sibling note in /turbo body: 'this skill is also invoked by /mode:X when --turbo is passed'."
+workstream_candidates:
+  - "Default-scope policy per mode (design pass with events mining)"
+  - Three skill bodies updated in lockstep
+  - Documentation cross-references
+  - Smoke test that --turbo passes through without breaking mode invocation
+preliminary_ticket_candidates:
+  allowed: false
+  candidates: []
+  notes: "Ticket minting deferred to /sprint:design. The per-mode default-scope choice is a Class-B design call that should be made deliberately before ticketing, ideally informed by mining historical /turbo invocations from events.jsonl."
+external_service_dependencies:
+  status: none_expected
+  required: []
+  possible: []
+  notes: Pure repo-local skill composition. No external services.
+approval_boundaries:
+  - "Safety floor in scripts/turbo/apply.js remains the source of truth — this work must not bypass it (mode skills MUST NOT default to scope=all on solo/adhoc)."
+  - "Per-mode default scope sets are a Class-B technical decision per paths.decisionPolicy — propose, log to decision ledger, decide."
+  - "Composition pattern (mode skill calls sibling skill's apply.js) sets a precedent — worth flagging to Beta before committing."
+design_required: true
+execution_allowed_without_design: false
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+lane:
+  type: default
+  value: null
+  isolation_notes: ""
+beta_review:
+  required: true
+  likely_founder_rejection_risks:
+    - "Per-mode default scopes that include 'push-to-main' or other safety-floor-adjacent scopes — operator wants a shortcut, not a new way to push to main."
+    - Auto-clear of turbo on mode transition surprising an operator who explicitly started turbo for a multi-mode batch.
+  overbuild_risks:
+    - "Building the schema bump + provenance tracking + auto-clear lifecycle (expanded scope) when the operator only asked for the arg form factor."
+    - Adding a declarative per-mode default-scope JSON registry before the defaults have stabilized.
+  missing_context_risks:
+    - "How operators actually use /turbo today — what scopes do they pick most often per mode? Mining events.jsonl audit type=turbo would inform the defaults."
+    - "Whether oneshot has historically benefited from turbo. Delta runs many routine actions; if it's already permission-prompt-tolerant, turbo-on-oneshot is lower-value than turbo-on-adhoc."
+plan_quality:
+  status: needs_design
+  confidence: high
+  evidence_gaps:
+    - "Historical /turbo scope/ttl distribution per mode — design should mine events.jsonl audit type=turbo to pick informed defaults."
+    - "Whether each mode skill should add a 'turbo provenance' field to /turbo --status output."
+  fail_reasons: []
+next_recommended_command: "/sprint:design --sprint SP-20260513-006"
+resume_instructions: "Plan Contract written for SP-20260513-006. Next: run /sprint:design --sprint SP-20260513-006. Design pass should (1) mine .claude/project/events/events.jsonl for audit type=turbo to see the actual scope/ttl distribution per mode invocation, (2) pick a default scope set per mode informed by that data, (3) settle the partial-state recovery story when mode-set succeeds but turbo apply fails, (4) decide on auto-clear-on-mode-exit. Tickets minted in design."
+tracker_paths:
+  current_sprint: ".claude/project/sprint/current-sprint.yaml"
+  sprint_progress: ".claude/project/sprint/sprint-progress.yaml"
+  plan_contract: ".claude/project/sprint/plan-contracts/PC-20260514-0007.yaml"
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260514-0007.report.md"
+created_by: alpha
+updated_by: alpha

@@ -1,0 +1,53 @@
+schema: warpos/sprint/ticket/v1
+id: T-20260514-068
+title: Implement scripts/warpos/lib/content-hash.js
+type: feature
+status: done
+sprint: SP-20260514-001
+created_at: "2026-05-14T04:23:35.295Z"
+updated_at: "2026-05-14T09:07:37.412Z"
+owner: null
+owner_agent: alpha
+risk_level: medium
+approval_required: false
+approval_state: not_required
+source_request: "Harden the WarpOS update pipeline against the systemic Windows brittleness exposed in the 2026-05-13 multi-hour update session. Implement the architectural fixes prescribed by the GPT-5.5 review at .warpos/codex-consult-prompt.md: (1) centralize hash logic into scripts/warpos/lib/content-hash.js, (2) un-truncate capsule sha256 (full 64-char) with back-compat for 0.6.x prefixes, (3) consolidate the 4 narrow preflight overrides + --skip-preflight into a single --operator-override <gate-name> --override-reason <text> with audit logging, (4) separate the release pipeline from the apply pipeline (shared code limited to manifest schema + content-hash), (5) stop shipping migrations/ as installed assets, (6) introduce framework_template → project_owned ownership transition so consumer content in former-template paths survives framework version changes."
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260514-0008.yaml"
+linked_requirements:
+  - R-1
+linked_high_level_story: H-1
+linked_granular_story: S-1
+linked_prd: ".claude/project/sprint/requirements/SP-20260514-001/prd.md"
+linked_copy: []
+linked_inputs: []
+linked_trace: []
+linked_acceptance_criteria:
+  - AC-1.1
+  - AC-1.2
+  - AC-1.3
+linked_issues: []
+linked_decisions: []
+linked_external_services: []
+linked_files:
+  - scripts/warpos/lib/content-hash.js
+linked_tests: []
+linked_commits: []
+linked_prs: []
+linked_release: null
+description: "New module exporting contentHash(buf|path) LF-normalized for text, rawHash(buf|path) raw for binary, hashMatches(long, short) prefix-tolerant, isTextAsset(dest) extension allowlist. ~80 LOC. Includes --selftest entry point for smoke validation."
+user_value: ""
+business_value: ""
+acceptance_criteria: []
+non_goals: []
+implementation_notes: "Hook reformatted file after Write; final state on disk is canonical."
+qa_notes: ""
+redteam_notes: ""
+trace_notes: ""
+blocked_by: []
+blocks: []
+fix_attempts: []
+ralph_progress: null
+completion_evidence:
+  - "node scripts/warpos/lib/content-hash.js --selftest → 22 ok, 0 fail (covers AC-1.1, AC-1.2, AC-1.3)"
+  - "Selftest 22/22; ready as foundation for T-069/070/071"
+reopen_history: []

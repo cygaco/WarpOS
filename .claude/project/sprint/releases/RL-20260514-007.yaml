@@ -1,0 +1,48 @@
+schema: warpos/sprint/release/v1
+id: RL-20260514-007
+sprint: SP-20260513-006
+title: Turbo as mode argument
+version: framework-doc-update-2026-05-14
+status: deployed
+checklist:
+  tickets_done_or_deferred: true
+  blocking_issues_resolved: true
+  requirements_satisfied: true
+  copy_satisfied: true
+  inputs_satisfied: true
+  trace_satisfied: true
+  acceptance_criteria_satisfied: true
+  qa_passed: true
+  redteam_passed: true
+  external_services_ready: true
+  credentials_present: true
+  release_notes_written: true
+  docs_updated: true
+  analytics_updated: true
+  migration_plan: true
+  rollback_plan: true
+  approval_recorded: true
+  post_release_monitoring_plan: true
+approval_ref: AP-20260514-014
+changelog_path: ".claude/project/sprint/releases/RL-20260514-007.changelog.md"
+release_report_path: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\releases\\RL-20260514-007.report.md"
+linked_tickets:
+  - T-20260514-063
+  - T-20260514-064
+  - T-20260514-065
+  - T-20260514-066
+  - T-20260514-067
+linked_issues: []
+linked_external_services: []
+deployment_environment: internal
+deployment_target: internal
+deployed_at: "2026-05-14T09:38:36.130Z"
+deployed_by: alpha
+rollback_at: null
+rollback_reason: null
+retrospective_ref: null
+learning_candidates:
+  - "Cross-skill composition: first instance of a mode skill invoking a sibling skill's apply.js. If a second instance lands, graduate the pattern to _docs/sprint/CROSS_SKILL_COMPOSITION.md."
+  - "Identical-section-across-sibling-skills: sprint-design template could expose a 'shared section' primitive so future cross-skill arg additions don't drift in wording."
+created_at: "2026-05-14T09:34:04.615Z"
+updated_at: "2026-05-14T09:38:36.130Z"

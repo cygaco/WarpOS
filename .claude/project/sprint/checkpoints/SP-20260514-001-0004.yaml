@@ -1,0 +1,27 @@
+schema: warpos/sprint/sprint-progress/v1
+sprint: SP-20260514-001
+updated_at: "2026-05-14T09:06:29.392Z"
+current_phase: execute
+current_command: "/sprint:execute"
+current_ticket: null
+current_task: null
+current_loop: null
+status: running
+last_completed_step: T-068_content_hash_module_done_and_in_review
+next_action: "T-068 (content-hash.js) in_review with --selftest 22/22. 9 dependent tickets remain. Promote T-069 (replace inline sha256 callers) next as it unlocks most of the rest."
+active_files: []
+modified_files: []
+checks_last_run: null
+checks_passing: []
+checks_failing: []
+blockers: []
+approvals_needed: []
+external_services_needed: []
+issues_opened: []
+tickets_updated:
+  - T-20260514-068
+ralph_checkpoint: null
+resume_command: "/sprint:execute --ticket T-20260514-069"
+resume_notes: "T-068 done. Dependent tickets: T-069/070/071/075/076/077 (blocked_by T-068 cleared once promoted to done). Independent (no blockers): T-072 (operator-override), T-073 (ownership transition — needs decision-ledger entry first), T-074 (stop emitting migrations) which then unblocks T-075."
+safe_to_continue: true
+stop_reason: null

@@ -1,0 +1,56 @@
+schema: warpos/sprint/ticket/v1
+id: T-20260514-073
+title: "Add framework_template owner + transition rule"
+type: feature
+status: done
+sprint: SP-20260514-001
+created_at: "2026-05-14T04:24:19.980Z"
+updated_at: "2026-05-14T09:24:01.832Z"
+owner: null
+owner_agent: alpha
+risk_level: high
+approval_required: false
+approval_state: not_required
+source_request: "Harden the WarpOS update pipeline against the systemic Windows brittleness exposed in the 2026-05-13 multi-hour update session. Implement the architectural fixes prescribed by the GPT-5.5 review at .warpos/codex-consult-prompt.md: (1) centralize hash logic into scripts/warpos/lib/content-hash.js, (2) un-truncate capsule sha256 (full 64-char) with back-compat for 0.6.x prefixes, (3) consolidate the 4 narrow preflight overrides + --skip-preflight into a single --operator-override <gate-name> --override-reason <text> with audit logging, (4) separate the release pipeline from the apply pipeline (shared code limited to manifest schema + content-hash), (5) stop shipping migrations/ as installed assets, (6) introduce framework_template → project_owned ownership transition so consumer content in former-template paths survives framework version changes."
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260514-0008.yaml"
+linked_requirements:
+  - R-3
+linked_high_level_story: H-3
+linked_granular_story: S-6
+linked_prd: ".claude/project/sprint/requirements/SP-20260514-001/prd.md"
+linked_copy:
+  - C-6
+linked_inputs:
+  - IN-3
+linked_trace:
+  - TR-3
+linked_acceptance_criteria:
+  - AC-6.1
+  - AC-6.2
+  - AC-6.3
+linked_issues: []
+linked_decisions: []
+linked_external_services: []
+linked_files:
+  - scripts/warpos/update.js
+linked_tests: []
+linked_commits: []
+linked_prs: []
+linked_release: null
+description: framework/paths.registry.json schema accepts framework_template owner value. update.js classifier transitions framework_template path to project_owned when consumer has made non-whitespace edit vs capsule version. framework_owned paths NEVER transition.
+user_value: ""
+business_value: ""
+acceptance_criteria: []
+non_goals: []
+implementation_notes: ""
+qa_notes: ""
+redteam_notes: ""
+trace_notes: ""
+blocked_by: []
+blocks: []
+fix_attempts: []
+ralph_progress: null
+completion_evidence:
+  - ownership-transitioned event wired via update-events.emitOwnershipTransitioned
+  - "Promoted in_review→done after replay-bench 9/9 PASS + direct functional checks"
+reopen_history: []

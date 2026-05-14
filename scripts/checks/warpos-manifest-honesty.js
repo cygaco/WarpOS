@@ -8,7 +8,9 @@
 //  'broken install'? Should hash drift on owner=project files be ignored entirely?"
 const fs = require("fs");
 const path = require("path");
-const crypto = require("crypto");
+// SP-20260514-001 R-1 — single content-hash surface (handles LF/CRLF and
+// prefix-tolerance). T-20260514-068 owns the module.
+const cHash = require("../warpos/lib/content-hash");
 
 const ROOT = process.env.CLAUDE_PROJECT_DIR || process.cwd();
 const JSON_OUT = process.argv.includes("--json");
@@ -38,34 +40,20 @@ for (const a of assets) {
     continue;
   }
   if (a.installedHash) {
-    const buf = fs.readFileSync(dest);
-    const sha = crypto
-      .createHash("sha256")
-      .update(buf)
-      .digest("hex")
-      .slice(0, a.installedHash.length);
-    if (sha !== a.installedHash) {
-      // LF-normalization fallback: Windows autocrlf=true smudges CRLF into
-      // working tree after capsule manifests hashed LF bytes. Text files
-      // remain content-equivalent.
-      const lfBuf = Buffer.alloc(buf.length);
-      let j = 0;
-      for (let i = 0; i < buf.length; i++) {
-        if (buf[i] === 0x0d && i + 1 < buf.length && buf[i + 1] === 0x0a)
-          continue;
-        lfBuf[j++] = buf[i];
-      }
-      const shaLf = crypto
-        .createHash("sha256")
-        .update(lfBuf.slice(0, j))
-        .digest("hex")
-        .slice(0, a.installedHash.length);
-      if (shaLf !== a.installedHash) {
+    // contentHash returns LF-normalized sha256 for text assets and raw
+    // sha256 for binary, based on the destination extension. rawHash gives
+    // us the byte-equality variant for the raw fallback path. hashMatches
+    // is prefix-tolerant (handles 0.6.x 12-char truncated installedHash
+    // during the un-truncation transition).
+    const localContent = cHash.contentHash(dest);
+    if (!cHash.hashMatches(localContent, a.installedHash)) {
+      const localRaw = cHash.rawHash(dest);
+      if (!cHash.hashMatches(localRaw, a.installedHash)) {
         issues.push({
           kind: "drift",
           file: a.dest,
           expected: a.installedHash,
-          actual: sha,
+          actual: localContent,
         });
       }
     }

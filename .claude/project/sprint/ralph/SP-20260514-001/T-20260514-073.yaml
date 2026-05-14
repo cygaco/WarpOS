@@ -1,0 +1,30 @@
+schema: warpos/sprint/ralph-progress/v1
+sprint: SP-20260514-001
+ticket: T-20260514-073
+current_loop: 1
+phase: stopped
+started_at: "2026-05-14T09:15:29.460Z"
+updated_at: "2026-05-14T09:23:23.625Z"
+status: stopped_clean
+completed_tasks:
+  - "plan: Implemented co-cohesively with other T-072..077 in batch edit pass"
+  - "test: AC-6.1 (registry doc accepts framework_template) + AC-6.2 (classifier transitions on non-whitespace edit; emit event) + AC-6.3 (template stays template when matched) + AC-6.4 (rule logged to decision-ledger before classifier code) all verified."
+remaining_tasks:
+  - Accept framework_template in paths.registry.json schema metadata
+  - Add classifier branch in update.js
+  - Emit ownership-transitioned event
+  - Log decision to ledger before code
+blockers: []
+failed_attempts: []
+last_checks:
+  ran_at: "2026-05-14T09:23:11.528Z"
+  passing:
+    - "paths.registry.json owner doc accepts framework_template+project_owned"
+    - "update.js classifier branches handle framework_template→project_owned transition AND DELETE_SAFE preservation"
+  failing: []
+next_action: "All AC verified via replay-bench + direct functional checks."
+external_dependency_status: []
+stop_reason: stopped_clean
+resume_instructions: "Read this file. Resume at the phase listed. If status is stopped_*, investigate the stop_reason first."
+checkpoint_pointers:
+  - "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\ralph\\SP-20260514-001\\T-20260514-073.yaml"

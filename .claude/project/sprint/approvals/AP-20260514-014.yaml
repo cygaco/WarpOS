@@ -1,0 +1,22 @@
+schema: warpos/sprint/approval/v1
+id: AP-20260514-014
+sprint: SP-20260513-006
+level: release_approval_required
+required_for: "internal release of RL-20260514-007 (Turbo as mode argument — docs-only, reversible)"
+linked_ticket: null
+linked_external_service: null
+linked_release: RL-20260514-007
+linked_decision: null
+state: approved
+requested_by: alpha
+decided_by: user
+decided_at: "2026-05-14T10:20:00.000Z"
+reason: "User invoked '/sprint:release both sprints' explicitly authorizing the release flow. Sprint is docs-only across 4 skill body files; no version bump; reversible by single git revert. Beta DECIDE Class A confidence 0.92 (EVT-s-sp-20260513-006-beta-002). 17/18 release checks green pre-approval (approval is the 18th)."
+evidence:
+  - "Beta pre-flight DECIDE (Class A, 0.92): EVT-s-sp-20260513-006-beta-002"
+  - "release.js check: 16 of 18 booleans true after curated fill (only approval_recorded pending)"
+  - "Execution report: .claude/project/sprint/sprints/SP-20260513-006/execution-report.md"
+  - "Changelog: .claude/project/sprint/releases/RL-20260514-007.changelog.md"
+  - "User authorization: '/sprint:release both sprints' invocation 2026-05-14"
+created_at: "2026-05-14T10:20:00.000Z"
+updated_at: "2026-05-14T10:20:00.000Z"

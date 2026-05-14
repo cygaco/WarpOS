@@ -1,0 +1,31 @@
+schema: warpos/sprint/sprint-progress/v1
+sprint: SP-20260513-006
+updated_at: "2026-05-14T04:29:42.766Z"
+current_phase: design
+current_command: "/sprint:design"
+current_ticket: null
+current_task: null
+current_loop: null
+status: running
+last_completed_step: beta_review_decided_and_addenda_applied
+next_action: "Run /sprint:execute for ticket T-20260514-063 (first designed ticket)."
+active_files: []
+modified_files: []
+checks_last_run: null
+checks_passing: []
+checks_failing: []
+blockers: []
+approvals_needed: []
+external_services_needed: []
+issues_opened: []
+tickets_updated:
+  - T-20260514-063
+  - T-20260514-064
+  - T-20260514-065
+  - T-20260514-066
+  - T-20260514-067
+ralph_checkpoint: null
+resume_command: "/sprint:execute"
+resume_notes: "Design complete + Beta DECIDE. Addenda applied: non-goal for /turbo --status provenance, AC-4.3 + C-3 update for turbo-already-active recovery. 5 tickets minted, all designed status."
+safe_to_continue: true
+stop_reason: null

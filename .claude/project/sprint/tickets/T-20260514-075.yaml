@@ -1,0 +1,54 @@
+schema: warpos/sprint/ticket/v1
+id: T-20260514-075
+title: applied-migrations gate becomes capsule-aware
+type: feature
+status: done
+sprint: SP-20260514-001
+created_at: "2026-05-14T04:24:37.841Z"
+updated_at: "2026-05-14T09:24:01.957Z"
+owner: null
+owner_agent: alpha
+risk_level: medium
+approval_required: false
+approval_state: not_required
+source_request: "Harden the WarpOS update pipeline against the systemic Windows brittleness exposed in the 2026-05-13 multi-hour update session. Implement the architectural fixes prescribed by the GPT-5.5 review at .warpos/codex-consult-prompt.md: (1) centralize hash logic into scripts/warpos/lib/content-hash.js, (2) un-truncate capsule sha256 (full 64-char) with back-compat for 0.6.x prefixes, (3) consolidate the 4 narrow preflight overrides + --skip-preflight into a single --operator-override <gate-name> --override-reason <text> with audit logging, (4) separate the release pipeline from the apply pipeline (shared code limited to manifest schema + content-hash), (5) stop shipping migrations/ as installed assets, (6) introduce framework_template → project_owned ownership transition so consumer content in former-template paths survives framework version changes."
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260514-0008.yaml"
+linked_requirements:
+  - R-4
+linked_high_level_story: H-1
+linked_granular_story: S-8
+linked_prd: ".claude/project/sprint/requirements/SP-20260514-001/prd.md"
+linked_copy:
+  - C-5
+linked_inputs: []
+linked_trace: []
+linked_acceptance_criteria:
+  - AC-8.1
+  - AC-8.2
+linked_issues: []
+linked_decisions: []
+linked_external_services: []
+linked_files:
+  - scripts/checks/warpos-applied-migrations.js
+linked_tests: []
+linked_commits: []
+linked_prs: []
+linked_release: null
+description: "scripts/checks/warpos-applied-migrations.js fails closed only when migration dir exists AND target <= installed AND migration NOT in capsule release.json#migrations[]. Stops infinite copy/flag/delete/re-copy loop."
+user_value: ""
+business_value: ""
+acceptance_criteria: []
+non_goals: []
+implementation_notes: ""
+qa_notes: ""
+redteam_notes: ""
+trace_notes: ""
+blocked_by:
+  - T-20260514-074
+blocks: []
+fix_attempts: []
+ralph_progress: null
+completion_evidence:
+  - COPY C-5 wording landed in fail message
+  - "Promoted in_review→done after replay-bench 9/9 PASS + direct functional checks"
+reopen_history: []

@@ -13,6 +13,16 @@ Enter adhoc team mode. Creates an agent team with Alpha (lead) + Beta (judgment)
 - Any development work that benefits from a build/gauntlet cycle
 - The default mode — if unsure, use adhoc
 
+## Inputs
+
+`/mode:adhoc [--turbo [--scope <csv>|all] [--ttl <duration>] [--reason "<text>"]]`
+
+Without `--turbo`, the skill behaves as before. With `--turbo` and no further args, the per-mode default scope is applied (see Default turbo scope below). The standalone `/turbo` skill remains the canonical interface for ad-hoc adjustments after mode entry.
+
+### Default turbo scope
+
+`manifest-edit,write-jsonl,node-e-fs,worktree-ops` — config edits, jsonl audit writes, `node -e` file writes (LRN-9 anti-pattern reopened for batch work), and worktree operations for builder dispatch. No `push-to-main`, no `destructive-git`. TTL = 60m. Sibling skill: [`/turbo`](../turbo.md).
+
 ## Procedure
 
 ### Step 1: Verify team readiness
@@ -110,6 +120,24 @@ date -u +%FT%TZ > .claude/runtime/.team-marker
 `scripts/hooks/session-start.js` checks this marker on cold start. When
 it is older than 24 hours, session-start emits a warning suggesting the
 operator re-run `/mode:adhoc` to refresh classification.
+
+### Step 7 (only when `--turbo` is passed): Apply turbo authorization
+
+After all prior steps succeed, if the operator passed `--turbo`, invoke `scripts/turbo/apply.js` with the per-mode default scope merged with operator-supplied `--scope` / `--ttl` / `--reason`. Operator-supplied args win on every overlapping field.
+
+```bash
+node scripts/turbo/apply.js \
+  --scope manifest-edit,write-jsonl,node-e-fs,worktree-ops \
+  --ttl 60m \
+  --reason "entered via /mode:adhoc --turbo"
+```
+
+If the operator passed their own `--scope`/`--ttl`/`--reason`, use those values instead of the defaults above.
+
+## Recovery
+
+- If `mode-set` succeeded but `turbo apply` failed: mode is active without turbo. Re-run `/turbo` manually with the same args (or different ones).
+- If turbo was already active when you ran `/mode:adhoc --turbo`: `scripts/turbo/apply.js` overwrites the prior scope/TTL with the new one (no merge). Run `/turbo --status` first if you need to preserve what's already there.
 
 ## Built-in primitive limits (honest disclosure)
 

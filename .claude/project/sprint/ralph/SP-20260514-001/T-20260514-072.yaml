@@ -1,0 +1,33 @@
+schema: warpos/sprint/ralph-progress/v1
+sprint: SP-20260514-001
+ticket: T-20260514-072
+current_loop: 1
+phase: stopped
+started_at: "2026-05-14T09:15:29.212Z"
+updated_at: "2026-05-14T09:23:23.062Z"
+status: stopped_clean
+completed_tasks:
+  - "plan: Implemented co-cohesively with other T-072..077 in batch edit pass"
+  - "test: AC-5.1/5.2/5.3/5.4 verified. AC-5.4 (JSONL injection) is structural — writeEnvelope uses JSON.stringify so newlines/quotes/CR auto-escape."
+remaining_tasks:
+  - "Add --operator-override <gate> + --override-reason <text> to preflight.js"
+  - Validate gate name
+  - Reject empty reason
+  - Emit operator-override-used event
+  - Keep back-compat for 4 narrow flags
+blockers: []
+failed_attempts: []
+last_checks:
+  ran_at: "2026-05-14T09:23:11.350Z"
+  passing:
+    - "replay-bench:AC-5.1 unknown gate exit 2"
+    - AC-5.3 missing reason exit 2
+    - AC-5.3 short reason exit 2
+    - all PASS
+  failing: []
+next_action: "All AC verified via replay-bench + direct functional checks."
+external_dependency_status: []
+stop_reason: stopped_clean
+resume_instructions: "Read this file. Resume at the phase listed. If status is stopped_*, investigate the stop_reason first."
+checkpoint_pointers:
+  - "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\ralph\\SP-20260514-001\\T-20260514-072.yaml"

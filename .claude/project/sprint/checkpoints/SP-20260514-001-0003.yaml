@@ -1,0 +1,36 @@
+schema: warpos/sprint/sprint-progress/v1
+sprint: SP-20260514-001
+updated_at: "2026-05-14T04:29:46.294Z"
+current_phase: design
+current_command: "/sprint:design"
+current_ticket: null
+current_task: null
+current_loop: null
+status: running
+last_completed_step: beta_review_escalate_resolved_by_alpha_per_no_pause_directive
+next_action: "Run /sprint:execute starting with T-20260514-068 (content-hash module, head of dependency chain). Founder may redirect ownership-transition trigger decision before T-073 starts."
+active_files: []
+modified_files: []
+checks_last_run: null
+checks_passing: []
+checks_failing: []
+blockers: []
+approvals_needed: []
+external_services_needed: []
+issues_opened: []
+tickets_updated:
+  - T-20260514-068
+  - T-20260514-069
+  - T-20260514-070
+  - T-20260514-071
+  - T-20260514-072
+  - T-20260514-073
+  - T-20260514-074
+  - T-20260514-075
+  - T-20260514-076
+  - T-20260514-077
+ralph_checkpoint: null
+resume_command: "/sprint:execute"
+resume_notes: "Design complete. Beta ESCALATE on (1) ownership-transition trigger + (2) install.ps1 audit. Alpha resolutions: (1) auto-on-non-whitespace-edit per Beta rec (logged to decisions ledger during T-073 execution); (2) install.ps1:143 uses Get-FileHash full 64-char, no patch needed. AC-5.4 added for JSONL injection on --override-reason. AC-6.4 added pinning the ownership-transition rule decision to T-073 prelude."
+safe_to_continue: true
+stop_reason: null

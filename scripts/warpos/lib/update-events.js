@@ -273,6 +273,59 @@ function emitEvidence(
   });
 }
 
+// ── SP-20260514-001 R-5 / T-20260514-076 — three new event kinds ─
+
+// content-hash-mismatch — emitted when contentHash matches but rawHash
+// differs (kind=lf_only) or when both differ (kind=real_drift). Informational
+// when lf_only — the classifier does NOT escalate to MERGE_CONFLICT.
+function emitContentHashMismatch(
+  targetRoot,
+  { txId, file, contentHashLocal, rawHashLocal, expectedHash, kind },
+) {
+  writeEnvelope(targetRoot, "warpos.update.content-hash-mismatch", {
+    txId: txId || null,
+    file,
+    contentHashLocal,
+    rawHashLocal,
+    expectedHash,
+    kind: kind === "real_drift" ? "real_drift" : "lf_only",
+  });
+}
+
+// operator-override-used — emitted by preflight when --operator-override is
+// applied to a red gate. `reason` is the operator-supplied --override-reason
+// (already validated non-empty + control-char-escaped by the caller; JSONL
+// safety is provided by JSON.stringify in writeEnvelope).
+function emitOperatorOverrideUsed(
+  targetRoot,
+  { txId, gate, reason, operator, gateStatusBefore },
+) {
+  writeEnvelope(targetRoot, "warpos.update.operator-override-used", {
+    txId: txId || null,
+    gate,
+    reason,
+    operator: operator || process.env.USER || process.env.USERNAME || "unknown",
+    gateStatusBefore: gateStatusBefore || null,
+  });
+}
+
+// ownership-transitioned — emitted when the classifier promotes a
+// framework_template path to project_owned because of a consumer non-
+// whitespace edit. Decision recorded in decision-ledger 2026-05-14 (auto
+// on non-whitespace edit).
+function emitOwnershipTransitioned(
+  targetRoot,
+  { txId, file, from, to, reason },
+) {
+  writeEnvelope(targetRoot, "warpos.update.ownership-transitioned", {
+    txId: txId || null,
+    file,
+    from: from || "framework_template",
+    to: to || "project_owned",
+    reason: reason || "consumer_edit_detected",
+  });
+}
+
 module.exports = {
   resolveEventsFile,
   emitPreflightGate,
@@ -283,4 +336,7 @@ module.exports = {
   emitPostflight,
   emitPostflightCheck,
   emitEvidence,
+  emitContentHashMismatch,
+  emitOperatorOverrideUsed,
+  emitOwnershipTransitioned,
 };

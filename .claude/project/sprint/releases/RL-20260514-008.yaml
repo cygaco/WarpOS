@@ -1,0 +1,55 @@
+schema: warpos/sprint/release/v1
+id: RL-20260514-008
+sprint: SP-20260514-001
+title: "WarpOS 0.7.0 — Hardened update pipeline"
+version: "0.7.0"
+status: ready_to_deploy
+checklist:
+  tickets_done_or_deferred: true
+  blocking_issues_resolved: true
+  requirements_satisfied: true
+  copy_satisfied: true
+  inputs_satisfied: true
+  trace_satisfied: true
+  acceptance_criteria_satisfied: true
+  qa_passed: true
+  redteam_passed: true
+  external_services_ready: true
+  credentials_present: true
+  release_notes_written: true
+  docs_updated: true
+  analytics_updated: true
+  migration_plan: true
+  rollback_plan: true
+  approval_recorded: true
+  post_release_monitoring_plan: true
+approval_ref: AP-20260514-015
+changelog_path: ".claude/project/sprint/releases/RL-20260514-008.changelog.md"
+release_report_path: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\releases\\RL-20260514-008.report.md"
+linked_tickets:
+  - T-20260514-068
+  - T-20260514-069
+  - T-20260514-070
+  - T-20260514-071
+  - T-20260514-072
+  - T-20260514-073
+  - T-20260514-074
+  - T-20260514-075
+  - T-20260514-076
+  - T-20260514-077
+linked_issues: []
+linked_external_services: []
+deployment_environment: production
+deployment_target: production
+deployed_at: null
+deployed_by: null
+rollback_at: null
+rollback_reason: null
+retrospective_ref: null
+learning_candidates:
+  - "Centralizing hash semantics is high-leverage: 5 callsites consolidated to one module closed a multi-hour Windows-CRLF bug class via a single read-path AC. Audit candidate: any other 'every caller reinvents this primitive' patterns?"
+  - "--operator-override <name> + --override-reason <text> beats per-feature override flags. Single unified flag + structured audit. Recommend applying to other gate-style helpers with --allow-foo/--allow-bar patterns."
+  - "framework_template ownership transition: first time framework cedes ownership to consumer on edit. Novel pattern; worth a learning entry on when to apply this vs project owner outright."
+  - "Tracker drift between active-sprints registry and per-sprint current.yaml is a recurring failure mode. Consider /sprint:doctor or status-divergence write-time check."
+created_at: "2026-05-14T09:34:07.298Z"
+updated_at: "2026-05-14T09:44:51.388Z"

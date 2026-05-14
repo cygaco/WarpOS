@@ -1,0 +1,28 @@
+schema: warpos/sprint/ralph-progress/v1
+sprint: SP-20260514-001
+ticket: T-20260514-068
+current_loop: 1
+phase: stopped
+started_at: "2026-05-14T09:00:58.593Z"
+updated_at: "2026-05-14T09:05:06.993Z"
+status: stopped_clean
+completed_tasks:
+  - "plan: Wrote scripts/warpos/lib/content-hash.js with contentHash/rawHash/hashMatches/isTextAsset + --selftest CLI"
+  - "test: AC-1.1 (CRLF/LF text hash equality) + AC-1.2 (binary raw preservation) + AC-1.3 (prefix-tolerant hashMatches with 12-char floor + non-hex rejection) all verified via --selftest. Module surface matches granular story S-1."
+remaining_tasks:
+  - Write content-hash.js with contentHash/rawHash/hashMatches/isTextAsset
+  - Add --selftest CLI
+  - "Verify CRLF/LF text equality + binary raw preservation + prefix matching"
+blockers: []
+failed_attempts: []
+last_checks:
+  ran_at: "2026-05-14T09:04:47.136Z"
+  passing:
+    - "content-hash:--selftest:22/22 (all AC-1.1/1.2/1.3 green)"
+  failing: []
+next_action: "All AC verified; ready for in_review promotion. content-hash.js is the foundation for T-069/070/071/075/076/077."
+external_dependency_status: []
+stop_reason: stopped_clean
+resume_instructions: "Read this file. Resume at the phase listed. If status is stopped_*, investigate the stop_reason first."
+checkpoint_pointers:
+  - "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\ralph\\SP-20260514-001\\T-20260514-068.yaml"

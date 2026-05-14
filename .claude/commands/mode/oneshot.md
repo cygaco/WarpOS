@@ -12,6 +12,16 @@ Initiate a oneshot build. Delta (δ) takes over as the standalone orchestrator. 
 - Building an entire app or major subsystem from scratch
 - Multi-phase runs that need state machine, cycles, points, and auditor analysis
 
+## Inputs
+
+`/mode:oneshot [--turbo [--scope <csv>|all] [--ttl <duration>] [--reason "<text>"]]`
+
+Without `--turbo`, the skill behaves as before. With `--turbo` and no further args, the per-mode default scope is applied (see Default turbo scope below). The standalone `/turbo` skill remains the canonical interface for ad-hoc adjustments after mode entry.
+
+### Default turbo scope
+
+`manifest-edit,write-jsonl,node-e-fs,worktree-ops` — same scope set as `/mode:adhoc --turbo`, but with TTL = 4h to match a typical Delta run. No `push-to-main`, no `destructive-git`. Sibling skill: [`/turbo`](../turbo.md).
+
 ## Procedure
 
 ### Step 1: Pre-flight checks
@@ -63,3 +73,21 @@ From this point forward, you ARE Delta. Alpha's doctrine (reasoning engine, sess
 Run the oneshot build following `.claude/agents/02-oneshot/.system/protocol.md`.
 
 When complete or halted, output the DELTA_RESULT as defined in delta.md.
+
+### Step 5 (only when `--turbo` is passed, before handing off to Delta): Apply turbo authorization
+
+If the operator passed `--turbo` on `/mode:oneshot`, invoke `scripts/turbo/apply.js` BEFORE handing off to Delta. The longer TTL (4h) is intentional — it matches a typical Delta run. Operator-supplied `--scope` / `--ttl` / `--reason` override the defaults below on every overlapping field.
+
+```bash
+node scripts/turbo/apply.js \
+  --scope manifest-edit,write-jsonl,node-e-fs,worktree-ops \
+  --ttl 4h \
+  --reason "entered via /mode:oneshot --turbo (Delta run authorization)"
+```
+
+If the operator passed their own `--scope`/`--ttl`/`--reason`, use those values instead. The authorization is independent of Delta's lifecycle — Delta does NOT auto-extend or auto-clear it.
+
+## Recovery
+
+- If `mode-set` succeeded but `turbo apply` failed: mode is active without turbo. Re-run `/turbo` manually with the same args (or different ones) BEFORE Delta hands off, or accept the keyboard cadence for Delta's run.
+- If turbo was already active when you ran `/mode:oneshot --turbo`: `scripts/turbo/apply.js` overwrites the prior scope/TTL with the new one (no merge). Run `/turbo --status` first if you need to preserve what's already there.

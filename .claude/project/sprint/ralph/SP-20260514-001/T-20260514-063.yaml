@@ -1,0 +1,29 @@
+schema: warpos/sprint/ralph-progress/v1
+sprint: SP-20260514-001
+ticket: T-20260514-063
+current_loop: 1
+phase: stopped
+started_at: "2026-05-14T09:01:05.223Z"
+updated_at: "2026-05-14T09:05:11.762Z"
+status: stopped_clean
+completed_tasks:
+  - "plan: Added identical ## Inputs section (with Default turbo scope subsection per T-064 decision) to mode/solo.md, mode/adhoc.md, mode/oneshot.md"
+  - "test: AC-1.1 (## Inputs section identical across all 3) + AC-1.2 (no-turbo path unchanged — original procedure untouched) + AC-1.3 (3 files match grep) verified."
+remaining_tasks:
+  - "Add ## Inputs section to mode/solo.md"
+  - "Add ## Inputs section to mode/adhoc.md"
+  - "Add ## Inputs section to mode/oneshot.md"
+  - Verify identical wording
+blockers: []
+failed_attempts: []
+last_checks:
+  ran_at: "2026-05-14T09:04:54.263Z"
+  passing:
+    - "grep --turbo .claude/commands/mode/: 3 files matched (solo/adhoc/oneshot)"
+  failing: []
+next_action: "AC-1.1/1.2/1.3 verified. The Inputs section also pulls in C-2 (default scope) and is the surface T-065 (procedure) + T-066 (recovery) extend."
+external_dependency_status: []
+stop_reason: stopped_clean
+resume_instructions: "Read this file. Resume at the phase listed. If status is stopped_*, investigate the stop_reason first."
+checkpoint_pointers:
+  - "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\ralph\\SP-20260514-001\\T-20260514-063.yaml"

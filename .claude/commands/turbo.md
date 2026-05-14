@@ -10,6 +10,8 @@ to remove the "yes push", "yes manifest", "yes destructive-git" keyboard cadence
 in batch work sessions, while preserving a hard safety floor that nothing can
 bypass.
 
+Also invoked by `/mode:<solo|adhoc|oneshot>` when `--turbo` is passed; see those skill bodies for per-mode default scopes.
+
 The skill is a thin wrapper around `scripts/turbo/apply.js`. The apply script
 snapshots `.claude/settings.json`, additively merges curated `permissions.allow`
 entries by scope, writes a runtime state file with a TTL, and prints status.

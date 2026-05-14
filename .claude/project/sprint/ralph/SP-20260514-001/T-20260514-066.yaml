@@ -1,0 +1,27 @@
+schema: warpos/sprint/ralph-progress/v1
+sprint: SP-20260514-001
+ticket: T-20260514-066
+current_loop: 1
+phase: stopped
+started_at: "2026-05-14T09:05:35.457Z"
+updated_at: "2026-05-14T09:06:01.990Z"
+status: stopped_clean
+completed_tasks:
+  - "plan: Co-implemented inline with T-063 in same skill-body edit pass"
+  - "test: AC-4.1/4.2/4.3 verified: ## Recovery section present in all 3 skills with both mode-set-ok-turbo-fail bullet AND turbo-already-active bullet (Beta-suggested)"
+remaining_tasks:
+  - "Add ## Recovery section to each mode skill body"
+blockers: []
+failed_attempts: []
+last_checks:
+  ran_at: "2026-05-14T09:05:49.706Z"
+  passing:
+    - "grep:## Recovery section present in all 3 mode skill bodies with both bullets (mode-set ok/turbo fail"
+    - "turbo-already-active overwrite)"
+  failing: []
+next_action: "All AC verified; co-implemented with T-063."
+external_dependency_status: []
+stop_reason: stopped_clean
+resume_instructions: "Read this file. Resume at the phase listed. If status is stopped_*, investigate the stop_reason first."
+checkpoint_pointers:
+  - "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\ralph\\SP-20260514-001\\T-20260514-066.yaml"

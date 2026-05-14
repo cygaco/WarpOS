@@ -1,0 +1,29 @@
+schema: warpos/sprint/ralph-progress/v1
+sprint: SP-20260514-001
+ticket: T-20260514-070
+current_loop: 1
+phase: stopped
+started_at: "2026-05-14T09:09:00.622Z"
+updated_at: "2026-05-14T09:11:59.652Z"
+status: stopped_clean
+completed_tasks:
+  - "plan: Refactor applied across update.js, release-build.js, manifest-honesty.js, generate-framework-manifest.js, snapshot-installed.js"
+  - "test: AC-3.1 verified via regen (length=[64] across 555 assets). AC-3.2 verified via test-hash-back-compat.js (555/555 prefix-tolerant matches)."
+remaining_tasks:
+  - "Drop .slice(0,12) in generate-framework-manifest.js"
+  - "Update doc comment 12-char->64-char"
+  - Regenerate framework-manifest.json
+blockers: []
+failed_attempts: []
+last_checks:
+  ran_at: "2026-05-14T09:11:52.514Z"
+  passing:
+    - "framework-manifest.json:sha256 length distinct=[64] across 555 assets"
+    - "example=7ba2ce1425a2..."
+  failing: []
+next_action: "AC verified; chain ready for next batch (T-072 operator-override, T-073 ownership transition, T-074 stop migrations as assets)"
+external_dependency_status: []
+stop_reason: stopped_clean
+resume_instructions: "Read this file. Resume at the phase listed. If status is stopped_*, investigate the stop_reason first."
+checkpoint_pointers:
+  - "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\ralph\\SP-20260514-001\\T-20260514-070.yaml"

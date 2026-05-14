@@ -1,0 +1,30 @@
+schema: warpos/sprint/ralph-progress/v1
+sprint: SP-20260514-001
+ticket: T-20260514-074
+current_loop: 1
+phase: stopped
+started_at: "2026-05-14T09:15:29.291Z"
+updated_at: "2026-05-14T09:23:23.258Z"
+status: stopped_clean
+completed_tasks:
+  - "plan: Implemented co-cohesively with other T-072..077 in batch edit pass"
+  - "test: AC-7.1 verified (manifest contains 0 migration paths). AC-7.2 verified (release.json#migrations[] remains the migration reference; loader unchanged)."
+remaining_tasks:
+  - Add framework/migrations/ exclusion to generate-framework-manifest.js
+  - Regenerate manifest
+  - "Verify migrations no longer in assets[]"
+blockers: []
+failed_attempts: []
+last_checks:
+  ran_at: "2026-05-14T09:23:11.410Z"
+  passing:
+    - "manifest regen:548 assets (was 556)"
+    - "migration kind=0 (was 8)"
+    - framework/migrations exclusion landed
+  failing: []
+next_action: "All AC verified via replay-bench + direct functional checks."
+external_dependency_status: []
+stop_reason: stopped_clean
+resume_instructions: "Read this file. Resume at the phase listed. If status is stopped_*, investigate the stop_reason first."
+checkpoint_pointers:
+  - "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\ralph\\SP-20260514-001\\T-20260514-074.yaml"

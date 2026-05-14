@@ -1,0 +1,32 @@
+schema: warpos/sprint/ralph-progress/v1
+sprint: SP-20260514-001
+ticket: T-20260514-069
+current_loop: 1
+phase: stopped
+started_at: "2026-05-14T09:08:58.080Z"
+updated_at: "2026-05-14T09:11:59.474Z"
+status: stopped_clean
+completed_tasks:
+  - "plan: Refactor applied across update.js, release-build.js, manifest-honesty.js, generate-framework-manifest.js, snapshot-installed.js"
+  - "test: AC-2.1 (no inline createHash/sha256File in production callsites outside lib/content-hash.js; remaining matches are content-hash module + tests/fixtures/one-shot helpers) + AC-2.2 (manifest-honesty still passes byte-for-byte after refactor) verified."
+remaining_tasks:
+  - Refactor update.js to use content-hash module
+  - Refactor release-build.js to use rawHash
+  - "Refactor manifest-honesty.js to use contentHash+hashMatches"
+  - Refactor snapshot-installed.js to use contentHash
+blockers: []
+failed_attempts: []
+last_checks:
+  ran_at: "2026-05-14T09:11:52.450Z"
+  passing:
+    - "content-hash:--selftest:22/22"
+    - "manifest-honesty:555/555 framework assets verified"
+    - "regen manifest:555 assets"
+    - "regen installed:555 assets"
+  failing: []
+next_action: "AC verified; chain ready for next batch (T-072 operator-override, T-073 ownership transition, T-074 stop migrations as assets)"
+external_dependency_status: []
+stop_reason: stopped_clean
+resume_instructions: "Read this file. Resume at the phase listed. If status is stopped_*, investigate the stop_reason first."
+checkpoint_pointers:
+  - "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\ralph\\SP-20260514-001\\T-20260514-069.yaml"

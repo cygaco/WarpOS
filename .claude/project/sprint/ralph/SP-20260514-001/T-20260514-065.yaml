@@ -1,0 +1,26 @@
+schema: warpos/sprint/ralph-progress/v1
+sprint: SP-20260514-001
+ticket: T-20260514-065
+current_loop: 1
+phase: stopped
+started_at: "2026-05-14T09:05:33.096Z"
+updated_at: "2026-05-14T09:06:01.804Z"
+status: stopped_clean
+completed_tasks:
+  - "plan: Co-implemented inline with T-063 in same skill-body edit pass"
+  - "test: AC-3.1/3.2 verified: each mode skill explicitly invokes turbo/apply.js with default scope merged; operator args documented as overriding"
+remaining_tasks:
+  - Add Step N invoke-turbo-apply to each mode skill procedure
+blockers: []
+failed_attempts: []
+last_checks:
+  ran_at: "2026-05-14T09:05:49.652Z"
+  passing:
+    - "grep:Step N invoke-turbo-apply present in all 3 mode skill bodies (solo Step 4, adhoc Step 7, oneshot Step 5)"
+  failing: []
+next_action: "All AC verified; co-implemented with T-063."
+external_dependency_status: []
+stop_reason: stopped_clean
+resume_instructions: "Read this file. Resume at the phase listed. If status is stopped_*, investigate the stop_reason first."
+checkpoint_pointers:
+  - "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\ralph\\SP-20260514-001\\T-20260514-065.yaml"
