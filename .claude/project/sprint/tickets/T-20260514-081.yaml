@@ -1,0 +1,49 @@
+schema: warpos/sprint/ticket/v1
+id: T-20260514-081
+title: Add Routing enforcement section to 5 sprint skill md files
+type: docs
+status: done
+sprint: SP-20260514-002
+created_at: "2026-05-14T21:09:49.747Z"
+updated_at: "2026-05-14T21:23:48.047Z"
+owner: null
+owner_agent: alpha
+risk_level: low
+approval_required: false
+approval_state: not_required
+source_request: "Make the sprint routing policy (paths.sprintRouting) actually enforced — reviewers, gauntlets, diff_review, and model_class declarations must be honored at runtime, not just documented in the policy file."
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260514-0009.yaml"
+linked_requirements:
+  - R-12
+linked_high_level_story: H-1
+linked_granular_story: S-13
+linked_prd: ".claude/project/sprint/requirements/SP-20260514-002/prd.md"
+linked_copy: []
+linked_inputs: []
+linked_trace: []
+linked_acceptance_criteria:
+  - AC-13.1
+linked_issues: []
+linked_decisions: []
+linked_external_services: []
+linked_files: []
+linked_tests: []
+linked_commits: []
+linked_prs: []
+linked_release: null
+description: "Add a ## Routing enforcement section to .claude/commands/sprint/{plan,design,execute,release,retrospective}.md. Each section names (a) the routing.js record call that the skill makes, (b) the gate (if any), (c) paths.sprintRouting reference, (d) the soft-rollout default. Update existing ## Routing sections rather than appending if present. Depends on T-B (so the sections reflect the actually-implemented calls)."
+user_value: ""
+business_value: ""
+acceptance_criteria: []
+non_goals: []
+implementation_notes: ""
+qa_notes: ""
+redteam_notes: ""
+trace_notes: ""
+blocked_by: []
+blocks: []
+fix_attempts: []
+ralph_progress: null
+completion_evidence:
+  - "plan.md;design.md;execute.md;release.md;retrospective.md all contain ## Routing enforcement section"
+reopen_history: []

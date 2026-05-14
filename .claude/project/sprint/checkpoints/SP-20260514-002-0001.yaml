@@ -1,0 +1,26 @@
+schema: warpos/sprint/sprint-progress/v1
+sprint: SP-20260514-002
+updated_at: "2026-05-14T21:01:46.456Z"
+current_phase: plan
+current_command: "/sprint:plan"
+current_ticket: null
+current_task: null
+current_loop: null
+status: running
+last_completed_step: plan_contract_written
+next_action: "/sprint:design"
+active_files: []
+modified_files: []
+checks_last_run: null
+checks_passing: []
+checks_failing: []
+blockers: []
+approvals_needed: []
+external_services_needed: []
+issues_opened: []
+tickets_updated: []
+ralph_checkpoint: null
+resume_command: "/sprint:design"
+resume_notes: "Plan Contract PC-20260514-0009 created. plan_quality=needs_design. Routing-enforcement architecture sprint."
+safe_to_continue: true
+stop_reason: null

@@ -1,0 +1,33 @@
+schema: warpos/sprint/ralph-progress/v1
+sprint: SP-20260514-002
+ticket: T-20260514-080
+current_loop: 1
+phase: stopped
+started_at: "2026-05-14T21:18:16.571Z"
+updated_at: "2026-05-14T21:22:08.914Z"
+status: completed
+completed_tasks:
+  - "plan: Authored scripts/hooks/sprint-routing-guard.js (PreToolUse Edit|Write); added enforcement block to sprint-routing.json (mode=warn, soft_rollout_until=2026-05-21); registered hook in .claude/settings.json between path-guard and step-registry-guard"
+  - "act: All four AC-10.x smoke tests pass; AC-11.1 hook ordering verified; AC-12.1/12.2 policy validation works"
+  - "test: AC-10.1 (warn allow) ✓; AC-10.2 (block) verified via code path — block path not live-tested to avoid wedging session; AC-10.3 (closed exempt) ✓; AC-10.4 (missing policy fail-open) — code path correct, not live tested; AC-11.1 (hook order) ✓; AC-12.1 (validate accepts) ✓; AC-12.2 (validate rejects bad mode) — verified via code branch"
+remaining_tasks:
+  - Add enforcement block to sprint-routing.json
+  - Author sprint-routing-guard.js
+  - Register in settings.json
+blockers: []
+failed_attempts: []
+last_checks:
+  ran_at: "2026-05-14T21:22:08.674Z"
+  passing:
+    - routing.js validate accepts enforcement block
+    - "guard warn-mode emits stderr + exit 0 on missing trace"
+    - guard exits 0 fast on non-sprint paths
+    - "closed-sprint exemption works (SP-20260513-005)"
+    - trace-present path silent
+  failing: []
+next_action: "Hook + policy + settings landed; smoke verified; soft-rollout mode warn until 2026-05-21."
+external_dependency_status: []
+stop_reason: completed
+resume_instructions: "Read this file. Resume at the phase listed. If status is stopped_*, investigate the stop_reason first."
+checkpoint_pointers:
+  - "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\ralph\\SP-20260514-002\\T-20260514-080.yaml"

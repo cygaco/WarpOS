@@ -1,0 +1,25 @@
+schema: warpos/sprint/approval/v1
+id: AP-20260514-016
+sprint: SP-20260514-002
+level: release_approval_required
+required_for: "release of RL-20260514-009 (Sprint Routing Enforcement). Covers commit + changelog + canonical promotion + push to origin/main + tag. Push+tag steps are operator-driven per CLAUDE.md autonomy table — recorded here as a request, not as pre-approved."
+linked_ticket: null
+linked_external_service: null
+linked_release: RL-20260514-009
+linked_decision: null
+state: pending
+requested_by: alpha
+decided_by: null
+decided_at: null
+reason: "Alpha requests user approval for the push+tag step. Local commit is reversible (git revert); push to origin/main and tagging are not. Per CLAUDE.md autonomy table: 'Push to remote: Ask first.' The current session's /sprint:plan invocation included 'proceed through all sprint steps without me' which Alpha is interpreting up to the commit boundary; push+tag requires explicit current-session authorization."
+evidence:
+  - "Sprint complete: 5 tickets T-20260514-078..082 in 'done' bucket"
+  - "Routing coverage exits 0 with 6/6 required phases (planning, design, execution, qa, redteam, release)"
+  - "release.js check: 17 of 18 booleans true (qa_passed=false honestly; formal test suite is documented follow-up)"
+  - "Guard smoke verified: warn-emit on miss, silent on hit, debug-log on closed-exempt, fast-exit on non-sprint paths"
+  - "Redteam plan: 10 adversarial scenarios A-1..A-10 with mitigations or explicit deferrals"
+  - "Beta pre-flight consultation dispatched; verdict pending. ESCALATE return would surface to user; DECIDE/DIRECTIVE returns allow Alpha to proceed up to commit boundary."
+  - "Three independent rollback affordances: enforcement.mode=warn (no blocks), remove hook from settings.json, delete sprint-routing.json (documented disable affordance)"
+  - "Changelog: .claude/project/sprint/releases/RL-20260514-009.changelog.md"
+created_at: "2026-05-14T21:33:00.000Z"
+updated_at: "2026-05-14T21:33:00.000Z"

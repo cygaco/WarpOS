@@ -122,6 +122,29 @@ function cmdPrepare(argv) {
   current.crash_recovery.resume_command = "/sprint:release";
   current.crash_recovery.resume_summary = `Release ${id} in preparing state. Run /sprint:release with --id ${id}.`;
   writeYaml(SPRINT.current, current);
+  // SP-20260514-002 R-8: record routing trace for the release phase at the
+  // moment the release record YAML is drafted, BEFORE the coverage gate in
+  // cmdCheck runs. Without this the chicken-and-egg (gate checks for
+  // release-phase trace that release.js itself produces) would block.
+  try {
+    const { recordTrace } = require("./routing");
+    const result = recordTrace({
+      phase: "release",
+      artifact_id: id,
+      artifact_path: releasePath(id),
+      sprint: current.id,
+      model: process.env.WARPOS_RECORDING_MODEL || "claude:claude-opus-4-7",
+      recorded_by: "/sprint:release",
+      allow_single_vendor: true,
+      auto_override: true,
+      notes: "auto-recorded by release.js cmdPrepare",
+    });
+    if (!result.ok) {
+      process.stderr.write(`routing-trace: ${result.message}\n`);
+    }
+  } catch (err) {
+    process.stderr.write(`routing-trace: skipped (${err.message})\n`);
+  }
   process.stdout.write(`release prepared: ${id}\n`);
   return 0;
 }
@@ -139,6 +162,50 @@ function cmdCheck(argv) {
     return 1;
   }
   const current = loadCurrent();
+  // SP-20260514-002 R-8: routing coverage gate. Refuse check when required
+  // phases lack traces, unless --allow-routing-gap is passed (logged to
+  // decision-ledger).
+  try {
+    const { coverageReport } = require("./routing");
+    const cov = coverageReport(release.sprint || (current && current.id));
+    if (cov && cov.missing && cov.missing.length > 0) {
+      if (f["allow-routing-gap"]) {
+        // Override path: log to decision ledger and proceed.
+        try {
+          const dlp = path.join(
+            SPRINT.PROJECT,
+            ".claude",
+            "project",
+            "decisions",
+            "decision-ledger.jsonl",
+          );
+          require("fs").mkdirSync(path.dirname(dlp), { recursive: true });
+          require("fs").appendFileSync(
+            dlp,
+            JSON.stringify({
+              ts: nowIso(),
+              kind: "release_routing_gap_override",
+              sprint: release.sprint,
+              release: release.id,
+              missing_phases: cov.missing,
+              reason: f["routing-gap-reason"] || "manual_allow_routing_gap",
+            }) + "\n",
+          );
+        } catch {
+          /* ledger write best-effort */
+        }
+      } else {
+        process.stderr.write(
+          `/sprint:release: refused — sprint ${release.sprint} missing required routing traces: ${cov.missing.join(", ")}.\n` +
+            `fix: record the missing traces or downgrade sprint-routing.json#enforcement.mode to "warn" if rollout is incomplete.\n` +
+            `override: pass --allow-routing-gap (logs to decision-ledger).\n`,
+        );
+        return 1;
+      }
+    }
+  } catch (err) {
+    process.stderr.write(`routing-coverage: skipped (${err.message})\n`);
+  }
   // Derive a few checks from current-sprint state.
   if (current) {
     const t = current.tickets || {};

@@ -1,0 +1,62 @@
+schema: warpos/sprint/ticket/v1
+id: T-20260514-079
+title: Wire 5 sprint scripts to call routing.js record at artifact-finalize
+type: integration
+status: done
+sprint: SP-20260514-002
+created_at: "2026-05-14T21:09:39.748Z"
+updated_at: "2026-05-14T21:18:07.545Z"
+owner: null
+owner_agent: alpha
+risk_level: medium
+approval_required: false
+approval_state: not_required
+source_request: "Make the sprint routing policy (paths.sprintRouting) actually enforced — reviewers, gauntlets, diff_review, and model_class declarations must be honored at runtime, not just documented in the policy file."
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260514-0009.yaml"
+linked_requirements:
+  - R-5
+  - R-6
+  - R-7
+  - R-8
+  - R-9
+linked_high_level_story: H-1
+linked_granular_story: S-5
+linked_prd: ".claude/project/sprint/requirements/SP-20260514-002/prd.md"
+linked_copy: []
+linked_inputs: []
+linked_trace:
+  - TR-1
+  - TR-6
+linked_acceptance_criteria:
+  - AC-5.1
+  - AC-5.2
+  - AC-6.1
+  - AC-7.1
+  - AC-7.2
+  - AC-8.1
+  - AC-8.2
+  - AC-9.1
+linked_issues: []
+linked_decisions: []
+linked_external_services: []
+linked_files: []
+linked_tests: []
+linked_commits: []
+linked_prs: []
+linked_release: null
+description: "Wire plan.js to record phase=planning after writePlanContract. Wire design.js to record phase=design after bundle write. Wire execute.js to record phase=execution per ticket + phase=qa and phase=redteam per gauntlet pass. Wire release.js to call routing.js coverage as a gate (exit non-zero on required-phase gaps; --allow-routing-gap escape hatch logs to decision-ledger). Wire retrospective.js to record phase=retrospective after retro.yaml. All five integrations must NOT regress single-vendor users — exit 0 when record returns evidence=single_vendor_session. Depends on T-A."
+user_value: ""
+business_value: ""
+acceptance_criteria: []
+non_goals: []
+implementation_notes: ""
+qa_notes: ""
+redteam_notes: ""
+trace_notes: ""
+blocked_by: []
+blocks: []
+fix_attempts: []
+ralph_progress: null
+completion_evidence:
+  - "scripts/sprint/plan.js recordTrace;scripts/sprint/design.js recordTrace;scripts/sprint/execute.js recordTrace on completed;scripts/sprint/release.js cmdCheck coverage gate;scripts/sprint/retrospective.js recordTrace"
+reopen_history: []

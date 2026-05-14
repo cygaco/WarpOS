@@ -1,0 +1,35 @@
+schema: warpos/sprint/ralph-progress/v1
+sprint: SP-20260514-002
+ticket: T-20260514-081
+current_loop: 1
+phase: stopped
+started_at: "2026-05-14T21:22:22.894Z"
+updated_at: "2026-05-14T21:23:47.984Z"
+status: completed
+completed_tasks:
+  - "plan: Added Routing enforcement section to all 5 sprint skill md files: plan, design, execute, release, retrospective"
+  - "act: All 5 confirmed"
+  - "test: AC-13.1 satisfied — each section names (a) the routing.js record call, (b) the gate or hook, (c) paths.sprintRouting, (d) soft-rollout default"
+remaining_tasks:
+  - plan.md
+  - design.md
+  - execute.md
+  - release.md
+  - retrospective.md
+blockers: []
+failed_attempts: []
+last_checks:
+  ran_at: "2026-05-14T21:23:47.745Z"
+  passing:
+    - grep finds Routing enforcement in plan.md
+    - design.md
+    - execute.md
+    - release.md
+    - retrospective.md
+  failing: []
+next_action: Skill body docs landed
+external_dependency_status: []
+stop_reason: completed
+resume_instructions: "Read this file. Resume at the phase listed. If status is stopped_*, investigate the stop_reason first."
+checkpoint_pointers:
+  - "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\ralph\\SP-20260514-002\\T-20260514-081.yaml"

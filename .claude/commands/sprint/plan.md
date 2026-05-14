@@ -267,6 +267,16 @@ If a diff-model review is available, the Plan Contract MUST be read by
 a second model from a different vendor before `plan_quality.status` is
 finalized. If unavailable, log to `paths.decisionLedger` and proceed.
 
+## Routing enforcement
+
+Routing is enforced — not aspirational (SP-20260514-002).
+
+- `scripts/sprint/plan.js` auto-calls `routing.recordTrace({phase: "planning", artifact_id: <pcId>, ...})` after `writePlanContract`. The recording is **fail-open**: a missing policy file, a misconfigured class, or any other error MUST NOT block plan formation.
+- The trace lands in `paths.sprintDecisions/routing-trace.jsonl` (schema `warpos/sprint/routing-trace/v1`).
+- When `paths.sprintRouting#policies.planning.diff_review = true` and no second-vendor reviewer is configured, the trace is recorded with `evidence: single_vendor_session` and a row is appended to `paths.decisionLedger`. Single-vendor users are NOT blocked.
+- `scripts/hooks/sprint-routing-guard.js` runs on PreToolUse Edit|Write and (in `block` mode) refuses writes to sprint artifact paths missing a trace row. Default policy `enforcement.mode` is `warn` during soft rollout (until the date in `sprint-routing.json#enforcement.soft_rollout_until`). Flip to `block` after smoke validation.
+- To record manually: `node scripts/sprint/routing.js record --phase planning --artifact <PC-id> --sprint <SP-id> --model <provider:model> [--diff-reviewer <provider:model> | --allow-single-vendor]`.
+
 ## Reference
 
 Full sprint workflow doc: `paths.sprintReference`.

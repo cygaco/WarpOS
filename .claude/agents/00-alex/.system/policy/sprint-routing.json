@@ -8,6 +8,13 @@
     "default_isolation": "worktree",
     "rationale": "Number of sprints that may execute concurrently before /sprint:execute halts new ones. v0.2 ships advisory-only — no hard cap yet. default_lane is the lane type assigned when /sprint:plan omits one. default_isolation is the recommended isolation type for non-default lanes (worktree reuses the builder/oneshot primitive)."
   },
+  "enforcement": {
+    "mode": "warn",
+    "rolled_out_at": "2026-05-14T21:00:00Z",
+    "soft_rollout_until": "2026-05-21T21:00:00Z",
+    "rationale": "SP-20260514-002 soft-rollout — sprint-routing-guard hook emits warnings instead of blocking until 2026-05-21. After that, /warp:health raises a yellow advisory if mode is still 'warn'. Flip to 'block' once smoke confidence is high.",
+    "valid_modes": ["warn", "block"]
+  },
   "policies": {
     "planning": {
       "model_class": "strongest_reasoning",

@@ -901,6 +901,26 @@ function main() {
       (retro.action_items || []).length,
     ),
   );
+  // SP-20260514-002 R-9: record routing trace for the retrospective phase.
+  try {
+    const { recordTrace } = require("./routing");
+    const result = recordTrace({
+      phase: "retrospective",
+      artifact_id: `retro:${sprintId}`,
+      artifact_path: retroYamlPath(sprintId),
+      sprint: sprintId,
+      model: process.env.WARPOS_RECORDING_MODEL || "claude:claude-opus-4-7",
+      recorded_by: "/sprint:retrospective",
+      allow_single_vendor: true,
+      auto_override: true,
+      notes: `synthesis_mode=${retro.synthesis_mode}`,
+    });
+    if (!result.ok) {
+      process.stderr.write(`routing-trace: ${result.message}\n`);
+    }
+  } catch (err) {
+    process.stderr.write(`routing-trace: skipped (${err.message})\n`);
+  }
   return 0;
 }
 

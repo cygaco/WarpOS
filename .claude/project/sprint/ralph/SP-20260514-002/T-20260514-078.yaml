@@ -1,0 +1,36 @@
+schema: warpos/sprint/ralph-progress/v1
+sprint: SP-20260514-002
+ticket: T-20260514-078
+current_loop: 1
+phase: stopped
+started_at: "2026-05-14T21:10:32.832Z"
+updated_at: "2026-05-14T21:13:32.334Z"
+status: completed
+completed_tasks:
+  - "plan: Authored schemas/sprint/routing-trace.schema.json and rewrote scripts/sprint/routing.js with record/check/coverage + enforcement defaults"
+  - "act: All smoke tests pass"
+  - "test: AC-1.1/1.2/1.3/1.4 satisfied; AC-2.1/2.2 satisfied; AC-3.1/3.2/3.3 partially smoke-tested (full test in T-E); AC-4.1/4.2 satisfied via inline validator"
+remaining_tasks:
+  - Add trace schema
+  - Add record subcommand
+  - Add check subcommand
+  - Add coverage subcommand
+  - Validate via routing.js validate
+blockers: []
+failed_attempts: []
+last_checks:
+  ran_at: "2026-05-14T21:13:29.716Z"
+  passing:
+    - routing.js validate
+    - routing.js phase planning
+    - record happy-path
+    - record class-mismatch rejection
+    - check hit/miss
+    - coverage 1/6 partial
+  failing: []
+next_action: "routing.js record/check/coverage + trace schema landed; smoke validated end-to-end. Schema  warpos/sprint/routing-trace/v1."
+external_dependency_status: []
+stop_reason: completed
+resume_instructions: "Read this file. Resume at the phase listed. If status is stopped_*, investigate the stop_reason first."
+checkpoint_pointers:
+  - "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\ralph\\SP-20260514-002\\T-20260514-078.yaml"

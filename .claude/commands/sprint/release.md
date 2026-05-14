@@ -265,6 +265,15 @@ Per `paths.sprintRouting`:
 - `release.model_class` = `strongest_reasoning`
 - `release.diff_review` = `true`
 
+## Routing enforcement
+
+Routing is enforced — not aspirational (SP-20260514-002).
+
+- `scripts/sprint/release.js check` calls `routing.coverageReport(<sprint-id>)` early in the release flow. When required phases (planning, design, execution, qa, redteam, release) lack a trace row, the check exits non-zero with COPY C-10. Operator override: `--allow-routing-gap` (logged to `paths.decisionLedger`).
+- A `phase: release` trace is recorded when the release artifact is finalized. When running the release flow by hand: `node scripts/sprint/routing.js record --phase release --artifact <RL-id> --sprint <SP-id> --model <provider:model> [--diff-reviewer <provider:model>|--allow-single-vendor]`.
+- `scripts/hooks/sprint-routing-guard.js` watches writes to `paths.sprintReleases/<RL-id>.yaml`. In `block` mode the hook refuses release-record writes that lack a trace; default `enforcement.mode` is `warn` during soft rollout.
+- Coverage summary: `node scripts/sprint/routing.js coverage --sprint <SP-id>` (also `--format json` for machine consumption).
+
 ## Relationship to existing modes
 
 `/sprint:release` is mode-aware:

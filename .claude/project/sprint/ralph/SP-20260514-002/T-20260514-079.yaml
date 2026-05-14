@@ -1,0 +1,33 @@
+schema: warpos/sprint/ralph-progress/v1
+sprint: SP-20260514-002
+ticket: T-20260514-079
+current_loop: 1
+phase: stopped
+started_at: "2026-05-14T21:18:07.120Z"
+updated_at: "2026-05-14T21:18:07.483Z"
+status: completed
+completed_tasks:
+  - "plan: Added recordTrace + coverageReport programmatic exports; wired all 5 sprint scripts to call routing.js at artifact-finalize boundaries; added --allow-routing-gap escape hatch in release.cmdCheck"
+  - "act: Smoke confirmed end-to-end"
+  - "test: AC-5.1 satisfied (plan.js calls); AC-5.2 satisfied (fail-open); AC-6.1 satisfied (design.js); AC-7.1 satisfied (execute.js on completed); AC-7.2 deferred to manual QA/redteam recording (gauntlet integration is follow-up); AC-8.1/8.2 satisfied (release.js gate + allow-routing-gap); AC-9.1 satisfied (retrospective.js)"
+remaining_tasks:
+  - Wire plan.js
+  - Wire design.js
+  - Wire execute.js
+  - Wire release.js coverage gate
+  - Wire retrospective.js
+blockers: []
+failed_attempts: []
+last_checks:
+  ran_at: "2026-05-14T21:18:07.241Z"
+  passing:
+    - "recordTrace programmatic call (planning/execution)"
+    - coverageReport 2/6 detection
+    - auto_override path for opus-in-execution
+  failing: []
+next_action: "All 5 sprint scripts wired to routing.js. release.js has the coverage gate + escape hatch."
+external_dependency_status: []
+stop_reason: completed
+resume_instructions: "Read this file. Resume at the phase listed. If status is stopped_*, investigate the stop_reason first."
+checkpoint_pointers:
+  - "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\ralph\\SP-20260514-002\\T-20260514-079.yaml"

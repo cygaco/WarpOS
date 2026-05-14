@@ -387,6 +387,28 @@ function main() {
   process.stdout.write(
     `current-sprint: ${SPRINT.current} (sprint=${current.id})\n`,
   );
+  // SP-20260514-002 R-5: record routing trace for the planning phase.
+  // Fail-open: a recording failure must NEVER block /sprint:plan. The hook
+  // surfaces drift separately; here we just emit the trace.
+  try {
+    const { recordTrace } = require("./routing");
+    const result = recordTrace({
+      phase: "planning",
+      artifact_id: pcId,
+      artifact_path: pcPath,
+      sprint: current.id,
+      model: process.env.WARPOS_RECORDING_MODEL || "claude:claude-opus-4-7",
+      recorded_by: "/sprint:plan",
+      allow_single_vendor: true,
+      auto_override: true,
+      notes: "auto-recorded by plan.js after writePlanContract",
+    });
+    if (!result.ok) {
+      process.stderr.write(`routing-trace: ${result.message}\n`);
+    }
+  } catch (err) {
+    process.stderr.write(`routing-trace: skipped (${err.message})\n`);
+  }
   // T-20260512-013 conflict-check at plan-time: warn-only, never blocks.
   try {
     const { checkSprint, formatReport } = require("./conflict-check");

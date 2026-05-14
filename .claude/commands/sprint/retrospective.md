@@ -213,6 +213,15 @@ If a diff-model review is available, the retro YAML MUST be read by a
 second model from a different vendor before the operator signs off. If
 unavailable, log to `paths.decisionLedger` and proceed.
 
+## Routing enforcement
+
+Routing is enforced — not aspirational (SP-20260514-002).
+
+- `scripts/sprint/retrospective.js` auto-calls `routing.recordTrace({phase: "retrospective", artifact_id: "retro:<SP-id>", ...})` after `retro.yaml` is written. Fail-open.
+- `scripts/hooks/sprint-routing-guard.js` watches `paths.sprintHistory/<SP-id>/retro.yaml`. In `block` mode it refuses writes when no retro trace exists; default `enforcement.mode` is `warn` during soft rollout.
+- Manual record: `node scripts/sprint/routing.js record --phase retrospective --artifact retro:<SP-id> --sprint <SP-id> --model <provider:model> --allow-single-vendor`.
+- A retro phase trace is required for a sprint whose registry status flipped to `retrospected` (added to the required set by `routing.classifyRequired(<SP-id>)`).
+
 ## Relationship to existing modes
 
 `/sprint:retrospective` is **mode-aware, not mode-dependent**:

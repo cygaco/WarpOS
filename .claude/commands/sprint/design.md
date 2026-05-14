@@ -219,6 +219,15 @@ Per `paths.sprintRouting`:
 - `design.model_class` = `strong_reasoning`
 - `design.diff_review` = `true`
 
+## Routing enforcement
+
+Routing is enforced — not aspirational (SP-20260514-002).
+
+- `scripts/sprint/design.js` auto-calls `routing.recordTrace({phase: "design", artifact_id: "design:<SP-id>", ...})` after rendering the requirements bundle. Fail-open.
+- `scripts/hooks/sprint-routing-guard.js` watches `Edit|Write` to `paths.sprintRequirements/<SP-id>/*.md`. In `block` mode it refuses writes when no design-phase trace exists. Default `enforcement.mode` is `warn` during soft rollout.
+- Manual record (e.g. you hand-edited templates outside `design.js`): `node scripts/sprint/routing.js record --phase design --artifact design:<SP-id> --sprint <SP-id> --model <provider:model> --allow-single-vendor`.
+- Trace location: `paths.sprintDecisions/routing-trace.jsonl`. Coverage check: `node scripts/sprint/routing.js coverage --sprint <SP-id>`.
+
 ## Reference
 
 See `paths.sprintReference` and `_docs/sprint/OVERVIEW.md`.

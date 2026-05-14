@@ -385,6 +385,30 @@ function cmdStop(argv) {
     `Ralph ${f.ticket} stopped (${f.reason}). ${f.notes || ""}`.trim();
   current.updated_at = nowIso();
   writeYaml(SPRINT.current, current);
+  // SP-20260514-002 R-7: on `completed`, record execution phase trace.
+  // QA and Redteam traces are recorded by their respective gauntlet flows
+  // (or manually via routing.js record). Fail-open.
+  if (f.reason === "completed") {
+    try {
+      const { recordTrace } = require("./routing");
+      const result = recordTrace({
+        phase: "execution",
+        artifact_id: f.ticket,
+        ticket_id: f.ticket,
+        sprint: current.id,
+        model: process.env.WARPOS_RECORDING_MODEL || "claude:claude-opus-4-7",
+        recorded_by: "/sprint:execute",
+        allow_single_vendor: true,
+        auto_override: true,
+        notes: "auto-recorded on ralph completion",
+      });
+      if (!result.ok) {
+        process.stderr.write(`routing-trace: ${result.message}\n`);
+      }
+    } catch (err) {
+      process.stderr.write(`routing-trace: skipped (${err.message})\n`);
+    }
+  }
   process.stdout.write(`ralph ${f.ticket} stopped (${f.reason})\n`);
   return 0;
 }

@@ -1,0 +1,180 @@
+schema: warpos/sprint/plan-contract/v1
+id: PC-20260514-0009
+created_at: "2026-05-14T21:01:36.405Z"
+updated_at: "2026-05-14T21:01:36.405Z"
+sprint: SP-20260514-002
+source_request: "Make the sprint routing policy (paths.sprintRouting) actually enforced — reviewers, gauntlets, diff_review, and model_class declarations must be honored at runtime, not just documented in the policy file."
+source_request_verbatim: |
+  The routing policy for reviewers, gauntlets, etc in sprints is aspirational, not enforced. Fix that.
+  
+  THen proceed through all sprint steps without me!
+request_type: architecture_change
+interpreted_intent: "Today paths.sprintRouting declares per-phase model_class (planning, plan_contract_review, design, qa, redteam, release, retrospective, external_service_setup, …) and which phases require diff_review across two vendor rows. scripts/sprint/routing.js loads/validates the policy. But /sprint:plan, /sprint:design, /sprint:execute, /sprint:release never call routing.js, never record which model drafted an artifact, and never verify diff_review was satisfied. The skill bodies do not reference routing either. Goal: make routing observable + checkable + blocking at the artifact boundary so the policy stops being decorative."
+user_or_business_outcome: "Every sprint artifact (Plan Contract, design pack, executed tickets, qa/redteam reports, release record, retrospective) carries a durable routing-trace row recording which model_class actually drafted it and (where required) which second-vendor model diff-reviewed it. Sprint commands cannot finalize an artifact without that trace. Violations fail with a fix-up message at write-time instead of being discovered later in retro."
+affected_surfaces:
+  - surface: ".claude/agents/00-alex/.system/policy/sprint-routing.json"
+    evidence_level: verified_from_repo
+    notes: "Policy is well-structured (8 phases, 7 model_classes, diff_review_rule, no_override_floor). Schema bump may be needed if we add enforcement metadata; additive keys allowed per file's own notes."
+  - surface: scripts/sprint/routing.js
+    evidence_level: verified_from_repo
+    notes: "Loader exposes loadPolicy/cmdValidate/concurrency. Needs new `record` and `check` subcommands plus a coverage report helper consumed by release.js."
+  - surface: scripts/sprint/plan.js
+    evidence_level: verified_from_repo
+    notes: "Zero references to routing today. Must write an initial trace row tagged phase=planning when the Plan Contract is created."
+  - surface: scripts/sprint/design.js
+    evidence_level: verified_from_repo
+    notes: "Zero references to routing. Must record phase=design (and phase=plan_contract_review when applicable) trace rows."
+  - surface: scripts/sprint/execute.js
+    evidence_level: verified_from_repo
+    notes: "Zero references. Per-ticket Ralph loop must record phase=execution and gauntlet phases qa/redteam."
+  - surface: scripts/sprint/release.js
+    evidence_level: verified_from_repo
+    notes: "Zero references. Must call `routing.js coverage` and refuse release when any required phase lacks a trace."
+  - surface: scripts/sprint/retrospective.js
+    evidence_level: verified_from_repo
+    notes: "Mentions routing in docstring only; no actual recording. Must emit phase=retrospective row."
+  - surface: scripts/hooks/sprint-routing-guard.js
+    evidence_level: unknown
+    notes: "Does not exist yet. New PreToolUse Edit|Write hook that blocks writes to sprint artifact paths (Plan Contract YAML, design pack files, retro.yaml, release record) when no matching trace row exists."
+  - surface: ".claude/settings.json"
+    evidence_level: verified_from_repo
+    notes: "PreToolUse Edit|Write matcher must include the new hook between memory-guard and step-registry-guard."
+  - surface: ".claude/project/sprint/decisions/routing-trace.jsonl"
+    evidence_level: unknown
+    notes: "New append-only provenance log under paths.sprintDecisions. Schema: {sprint_id, phase, artifact_id, artifact_path, model_class, provider, model, diff_reviewer_provider, diff_reviewer_model, recorded_at, recorded_by, evidence}."
+  - surface: ".claude/commands/sprint:{plan,design,execute,release,retrospective}.md"
+    evidence_level: verified_from_repo
+    notes: "Skill bodies have no `## Routing enforcement` section. Must add a contract-style section pointing operators at the record/check CLI and explaining the diff_review fallback."
+  - surface: schemas/sprint/routing-trace.schema.json
+    evidence_level: unknown
+    notes: "New schema for trace row validation, consumed by routing.js and the guard hook."
+current_behavior:
+  evidence_level: verified_from_repo
+  notes: "Greps confirm: of scripts/sprint/{plan,design,execute,release,retrospective}.js, only retrospective.js references routing — and only as a docstring sentence; no runtime read. None of the sprint skill md files (sprint:plan, sprint:design, sprint:execute, sprint:release, sprint:retrospective) reference `routing`, `model_class`, or `diff_review`. routing.js validate exits 0 even though no command honors the policy. `paths.sprintRouting` is loaded by zero downstream consumers."
+desired_behavior: "Per-phase routing-trace rows are written every time a sprint artifact is finalized. The CLI `node scripts/sprint/routing.js record …` validates that the recorded model belongs to the declared class. A guard hook blocks Edit/Write on sprint artifact paths until the matching trace row exists. `routing.js check --phase X --artifact Y` is the canonical pre-finalize verifier; `routing.js coverage --sprint <SP-id>` summarizes per-phase coverage and is called by /sprint:release as a gate. When diff_review is required and a second vendor is unavailable, `routing.js record` logs to paths.decisionLedger and emits an `evidence: \"single_vendor_session\"` trace row so the policy's fallback_interaction rule is preserved."
+scope:
+  size: m
+  risk_level: medium
+  complexity_drivers:
+    - Touches all five sprint scripts plus a new hook
+    - "PreToolUse hook surface — must not regress existing Edit/Write flow"
+    - Diff-review enforcement requires honest single-vendor fallback so users without a 2nd API key are not blocked
+    - "Old closed sprints have no trace; cannot retroactively enforce — design must explicitly exempt historical artifacts"
+scope_variants:
+  minimal_safe:
+    summary: "CLI-only enforcement. Add routing.js `record`/`check`/`coverage` subcommands. Update sprint skill bodies with a `## Routing enforcement` section pointing operators at the CLI. /sprint:release calls `routing.js coverage` and fails when required phases lack traces. No hook; depends on skill-body discipline + release gate to surface drift."
+    tradeoffs:
+      - "Pro: zero new hook, minimal blast radius, easy rollback"
+      - "Pro: release gate catches end-of-sprint drift"
+      - "Con: mid-sprint artifacts can still be written without traces; the policy is enforced at release, not at write-time"
+      - "Con: relies on Alpha following the skill body — same failure mode that produced the aspirational state"
+  recommended:
+    summary: "minimal_safe + a new `sprint-routing-guard.js` PreToolUse Edit|Write hook that fires when paths inside `paths.sprintRoot` matching artifact globs (Plan Contract YAML, design pack files, retro.yaml, release record YAML, ticket finalized states) are written, demanding a matching trace row in routing-trace.jsonl. Hook is fail-open with explicit `--soft-rollout` flag for the first week so the team can opt-in per artifact while we trust the rail. plan.js/design.js/execute.js/release.js/retrospective.js each gain a thin call to `routing.js record` at the moment they write their artifact. New schemas/sprint/routing-trace.schema.json codifies the trace row."
+    tradeoffs:
+      - "Pro: enforcement at write-time — drift cannot land"
+      - "Pro: traces are durable and audit-friendly"
+      - "Con: adds a hook to PreToolUse; +~5-15ms latency on Edit/Write to sprint paths"
+      - "Con: requires a careful rollout because the hook can wedge a sprint mid-flight if the recording flow has a bug — soft-rollout flag mitigates"
+  expanded:
+    summary: "recommended + retroactive coverage scanner that runs in /warp:health and reports historical sprints with missing traces. Adds a `routing-trace-bridge` so Beta consultations (via SendMessage) auto-record a phase=plan_contract_review trace when β returns a verdict. Adds cost-class telemetry to traces (counts per model_class per sprint) so we can compare planned vs actual mix. Adds `node scripts/sprint/routing.js diff-review --phase X --artifact Y` that wraps an actual second-vendor dispatch via runProvider for the cases where diff_review is mandatory."
+    tradeoffs:
+      - "Pro: closes every observability gap"
+      - "Pro: makes future routing decisions data-driven"
+      - "Con: ~3× the surface area of recommended; risk of feature creep in a single sprint"
+      - "Con: actual diff-review dispatch via runProvider is a meaningful new contract; safer in a follow-up sprint"
+assumptions:
+  safe:
+    - "Trace rows can be append-only JSONL under paths.sprintDecisions — same pattern as existing decision-ledger files."
+    - "Adding additive keys to sprint-routing.json does not require a schema version bump (file's own notes section confirms this)."
+    - "PreToolUse Edit|Write is the correct hook surface — settings.json already runs ten guards there; adding one more is conventional."
+    - Skill bodies can reference paths.sprintDecisions and paths.sprintRouting symbolically and the hook can resolve them from the registry at runtime.
+    - "The new hook should fail-open (warn but not block) when paths.sprintRouting is missing — preserves the documented downstream-disable behavior in the policy's notes section."
+  unsafe:
+    - "Historical sprints (SP-20260512-001 through SP-20260514-001) MUST NOT be required to have traces — backfill is not in scope and the guard hook MUST exempt sprints with status closed/retrospected."
+    - "Some users run single-vendor sessions (only Claude, no OpenAI/Gemini). Diff-review enforcement MUST fall back to single_vendor evidence + decision-ledger note, NEVER hard-block."
+    - "The team-guard hook today restricts agent dispatch — the new sprint-routing-guard must not collide with it; we verify by grep before adding."
+    - "Existing in-flight sprint SP-20260514-001 (status: closed) has no traces — design must confirm closed sprints are exempt from coverage checks."
+  needs_user_or_beta_review:
+    - "Should the guard hook block on missing trace or soft-warn during the first rollout? Recommended scope says soft-rollout flag for first week."
+    - "Should plan_contract_review be auto-recorded by Beta consultations, or remain a manual step?"
+open_questions:
+  blocking: []
+  non_blocking:
+    - "Does retrospective.js need a routing-trace summary section?"
+    - "Should /warp:health gain a sprint-routing-coverage probe?"
+    - "Should the trace schema capture token counts for cost telemetry, or defer to a follow-up sprint?"
+non_goals:
+  - "Implement real second-vendor diff-review dispatch from sprint scripts (still goes via runProvider; this sprint only records the result)."
+  - "Change which models appear in model_classes — that's a separate policy edit."
+  - Backfill routing traces for closed sprints.
+  - "Add cost telemetry to trace rows (expanded scope, deferred)."
+  - Replace the sprint-routing.json policy file with a different schema.
+requirement_areas:
+  - sprint-workflow
+  - policy-enforcement
+  - hooks
+  - cli
+  - decision-ledger
+high_level_story_candidates:
+  - "As Alpha, I record a routing-trace row per sprint artifact so provenance is durable and auditable."
+  - "As Alpha, the system blocks finalization of sprint artifacts when the routing-trace is missing, so drift fails fast at write-time, not at retro."
+  - "As an operator, /sprint:release surfaces a coverage summary so I know each phase honored the declared model_class and (where required) was diff-reviewed."
+  - "As an operator in a single-vendor session, my sprint is not hard-blocked by missing diff-review — the trace records single_vendor evidence and we proceed honestly."
+granular_story_candidates:
+  - "Add `record` subcommand to scripts/sprint/routing.js with schema validation against routing-trace.schema.json."
+  - "Add `check --phase X --artifact Y --sprint Z` subcommand that exits 1 when no matching trace row exists."
+  - "Add `coverage --sprint Z` subcommand that emits a per-phase JSON summary + machine-readable exit code."
+  - "Define schemas/sprint/routing-trace.schema.json (trace row structure)."
+  - "Wire plan.js to call routing.js record after the Plan Contract is written (phase=planning)."
+  - "Wire design.js to record phase=design + phase=plan_contract_review (if Beta approval ran)."
+  - "Wire execute.js to record phase=execution per ticket and gauntlet phases qa/redteam."
+  - "Wire release.js to call coverage gate; refuse release when required phases lack traces."
+  - "Wire retrospective.js to record phase=retrospective at synthesis time."
+  - Author scripts/hooks/sprint-routing-guard.js with soft-rollout flag.
+  - "Update .claude/settings.json PreToolUse Edit|Write matcher to include the new hook (before step-registry-guard so its block message wins)."
+  - "Add `## Routing enforcement` section to each sprint skill md file."
+  - "Smoke test: run /sprint:plan in this very sprint and confirm the trace row lands."
+workstream_candidates:
+  - "CLI: routing.js record/check/coverage subcommands + schema"
+  - "Hook: sprint-routing-guard.js + settings.json registration"
+  - "Script integration: plan/design/execute/release/retrospective record calls"
+  - "Skill body updates: 5 sprint skills get routing section"
+  - "Docs: paths.sprintReference + paths.decisionPolicy updates"
+preliminary_ticket_candidates:
+  allowed: false
+  notes: "Multi-touchpoint architecture change with a new hook surface; tickets must be designed via /sprint:design before execution. Per policy, design_required = true."
+external_service_dependencies:
+  status: none_expected
+approval_boundaries:
+  - "Adds an entry to .claude/settings.json PreToolUse Edit|Write hook chain — operator-visible behavior change but reversible by removing the entry."
+design_required: true
+execution_allowed_without_design: false
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+lane:
+  type: default
+  value: null
+  isolation_notes: ""
+beta_review:
+  required: true
+  likely_founder_rejection_risks:
+    - "Adding a hook that hard-blocks Edit/Write to sprint paths could wedge an active sprint if the recording flow has a bug — soft-rollout flag must be the default for the first week."
+  overbuild_risks:
+    - Cost-class telemetry / Beta auto-recording bridge / actual second-vendor diff-review dispatch all live in expanded scope. Recommended scope must resist scope creep into those.
+  missing_context_risks:
+    - "Single-vendor session fallback must be explicit and tested — easy to miss and would silently break users without a 2nd API key."
+plan_quality:
+  status: needs_design
+  confidence: high
+  evidence_gaps: []
+  fail_reasons: []
+next_recommended_command: "/sprint:design"
+resume_instructions: "If this Plan Contract is the active one (referenced by paths.sprintCurrent.plan_contract) and you crashed mid-design, re-run /sprint:design — it is idempotent and will regenerate the design pack from this Plan Contract. To re-plan from scratch (e.g. scope shift), re-run /sprint:plan — that mints a fresh Plan Contract id and updates the sprint pointer; the old contract remains on disk for history."
+tracker_paths:
+  current_sprint: ".claude/project/sprint/current-sprint.yaml"
+  sprint_progress: ".claude/project/sprint/sprint-progress.yaml"
+  plan_contract: ".claude/project/sprint/plan-contracts/PC-20260514-0009.yaml"
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260514-0009.report.md"
+created_by: alpha
+updated_by: alpha
