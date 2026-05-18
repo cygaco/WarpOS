@@ -1,0 +1,140 @@
+schema: warpos/sprint/current-sprint/v1
+id: SP-20260518-001
+title: "/sprint:full — autonomous sprint orchestrator chaining plan→design→execute→release-prep→retro"
+objective: "Single-invocation execution of the full sprint pipeline (plan→design→execute→release-prep→retro) without per-command operator input, gated by a bounded autonomy preset that cannot bypass hard-ceiling CLAUDE.md autonomy table invariants."
+status: designing
+created_at: "2026-05-18T17:06:36.916Z"
+updated_at: "2026-05-18T17:23:04.440Z"
+source_request: "A sprint:full command that goes through all sprint phases automatically, without a human needed to initiate each sprint command or to give approvals."
+interpreted_intent: "Add a meta-orchestrator skill `/sprint:full` that takes a single plain-language request, chains the existing sprint phases (plan → design → execute → release-prep → retrospective) without per-command operator input, and pre-authorizes the in-flight approval gates within a clearly bounded autonomy preset. Hard ceilings from CLAUDE.md autonomy table (push to remote, paid services, production deploy, destructive migrations, secret handling) remain non-bypassable regardless of preset. The skill is composition over duplication: it shells out to scripts/sprint/{plan,design,ticket,external-service,execute,release,retrospective}.js rather than reimplementing their logic. The goal is to remove the multi-prompt keyboard cadence the operator currently has to perform when running a small/medium sprint end-to-end, while preserving every existing safety property (crash-safe checkpoints, beta consultation, ralph 3-attempt rule, routing trace coverage)."
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260518-0010.yaml"
+risk_level: medium
+approval_state: none_required
+current_phase: design
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+lane:
+  type: default
+  value: null
+  isolation_notes: "Default lane is fine for this sprint (orchestrator code lives in scripts/sprint/ and .claude/commands/sprint/ which is single-owner). Worktree lane is over-engineering for this feature."
+external_services:
+  identified: []
+  blocked: []
+  ready: []
+  mocked: []
+  deferred: []
+tickets:
+  proposed: []
+  planned: []
+  designed: []
+  ready_for_execution:
+    - T-20260518-083
+    - T-20260518-084
+    - T-20260518-085
+    - T-20260518-086
+    - T-20260518-087
+    - T-20260518-088
+    - T-20260518-089
+    - T-20260518-090
+    - T-20260518-091
+    - T-20260518-092
+    - T-20260518-093
+    - T-20260518-094
+    - T-20260518-095
+    - T-20260518-096
+    - T-20260518-097
+    - T-20260518-098
+    - T-20260518-099
+    - T-20260518-100
+    - T-20260518-101
+    - T-20260518-102
+  in_progress: []
+  blocked: []
+  waiting_on_human: []
+  waiting_on_external_service: []
+  in_review: []
+  qa_failed: []
+  redteam_failed: []
+  done: []
+  released: []
+  deferred: []
+  abandoned: []
+  reopened: []
+  superseded: []
+requirements:
+  prd: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260518-001\\prd.md"
+  high_level_stories: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260518-001\\high-level-stories.md"
+  granular_stories: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260518-001\\granular-stories.md"
+  copy: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260518-001\\copy.md"
+  inputs: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260518-001\\inputs.md"
+  trace: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260518-001\\trace.md"
+  acceptance_criteria: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260518-001\\acceptance-criteria.md"
+  qa_plan: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260518-001\\qa-plan.md"
+  redteam_plan: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260518-001\\redteam-plan.md"
+  release_plan: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260518-001\\release-plan.md"
+checks:
+  lint:
+    status: not_run
+    last_run: null
+    evidence: ""
+  typecheck:
+    status: not_run
+    last_run: null
+    evidence: ""
+  tests:
+    status: not_run
+    last_run: null
+    evidence: ""
+  build:
+    status: not_run
+    last_run: null
+    evidence: ""
+  qa:
+    status: not_run
+    last_run: null
+    evidence: ""
+  redteam:
+    status: not_run
+    last_run: null
+    evidence: ""
+approvals:
+  plan:
+    required: false
+    state: not_required
+    ref: null
+  design:
+    required: false
+    state: not_required
+    ref: null
+  execution:
+    required: false
+    state: not_required
+    ref: null
+  release:
+    required: false
+    state: not_required
+    ref: null
+  external_services:
+    required: false
+    state: not_required
+    ref: null
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260518-0010.report.md"
+  design: null
+  execution: null
+  release: null
+ralph:
+  active: false
+  current_ticket: null
+  current_loop: null
+  status: idle
+  last_checkpoint: null
+  next_action: null
+crash_recovery:
+  last_checkpoint: ".claude/project/sprint/sprint-progress.yaml"
+  resume_command: "/sprint:design"
+  resume_summary: "Sprint SP-20260518-001 design scaffolded (scale=m). Next: mint tickets from granular-stories, then run /sprint:execute."
+  active_files: []
+  dirty_state: false
+  blockers: []
+  safe_to_continue: true
