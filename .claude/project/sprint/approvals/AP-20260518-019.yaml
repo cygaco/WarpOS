@@ -1,0 +1,22 @@
+schema: warpos/sprint/approval/v1
+id: AP-20260518-019
+sprint: SP-20260518-001
+level: design_approval_required
+required_for: "auto_defer_on_repeated_failure — operator must confirm 'defer + move on' is preferred over 'halt + ask' when a ticket hits the 3-attempt rule. This changes operator-visible feedback loop semantics. Proposed default for moderate + aggressive presets: auto-defer (log + continue to next ready_for_execution ticket). conservative preset: halt instead. Operator can re-investigate deferred tickets post-run via scripts/sprint/issue.js promote."
+linked_ticket: T-20260518-088
+linked_external_service: null
+linked_release: null
+linked_decision: null
+state: approved
+requested_by: alpha
+decided_by: user
+decided_at: "2026-05-18T17:45:00.000Z"
+reason: "Operator approved via /sprint:design surface confirmation: 'approve all 4 + commit + execute'. moderate/aggressive auto-defer; conservative halts. Matches execute.js 3-attempt rule."
+evidence:
+  - "Plan Contract PC-20260518-0010#approval_boundaries item 5"
+  - "PRD R-2 — Autonomy preset stop_condition_policy"
+  - "Granular story S-6 — Phase 3: execute with stop-condition policy mapping"
+  - "COPY C-6 — Repeated-failure deferral message"
+  - "Existing execute.js 3-attempt rule (scripts/sprint/execute.js)"
+created_at: "2026-05-18T17:30:00.000Z"
+updated_at: "2026-05-18T17:45:00.000Z"

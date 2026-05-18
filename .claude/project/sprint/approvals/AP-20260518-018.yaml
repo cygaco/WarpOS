@@ -1,0 +1,22 @@
+schema: warpos/sprint/approval/v1
+id: AP-20260518-018
+sprint: SP-20260518-001
+level: design_approval_required
+required_for: "cost_estimate_threshold_default — operator must approve the default cost-estimate halt threshold for /sprint:full. Per CLAUDE.md autonomy table, API spend >= $5 requires explicit operator approval. Proposed: default cost_estimate_threshold_usd = 5.0 across all presets. Mechanism: coarse phase-count × phase-typical-spend counter. Soft halt; operator resumes with --cost-acknowledged which raises threshold to 2x for that run only (non-persistent)."
+linked_ticket: T-20260518-096
+linked_external_service: null
+linked_release: null
+linked_decision: null
+state: approved
+requested_by: alpha
+decided_by: user
+decided_at: "2026-05-18T17:45:00.000Z"
+reason: "Operator approved via /sprint:design surface confirmation: 'approve all 4 + commit + execute'. $5 default matches CLAUDE.md autonomy table. --cost-acknowledged 2x lift accepted."
+evidence:
+  - "Plan Contract PC-20260518-0010#approval_boundaries item 2"
+  - "PRD R-6 — Cost-estimate halt gate"
+  - "Granular story S-14 — Cost-estimate halt gate implementation"
+  - "CLAUDE.md#Autonomy: 'API calls >= $5 total: Ask first'"
+  - "INPUTS IN-9 — --cost-acknowledged flag (resume behavior)"
+created_at: "2026-05-18T17:30:00.000Z"
+updated_at: "2026-05-18T17:45:00.000Z"

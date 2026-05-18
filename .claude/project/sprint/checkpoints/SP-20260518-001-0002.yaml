@@ -1,0 +1,46 @@
+schema: warpos/sprint/sprint-progress/v1
+sprint: SP-20260518-001
+updated_at: "2026-05-18T17:24:33.559Z"
+current_phase: design
+current_command: "/sprint:design"
+current_ticket: null
+current_task: null
+current_loop: null
+status: running
+last_completed_step: design_scaffolded_bundle_hand_edited_20_tickets_minted_4_approvals_pending
+next_action: "Operator decides 4 pending design approvals (AP-20260518-017..020), then runs /sprint:execute --sprint SP-20260518-001 on the first ready_for_execution ticket (T-20260518-083, orchestrator entry point)."
+active_files: []
+modified_files: []
+checks_last_run: null
+checks_passing: []
+checks_failing: []
+blockers: []
+approvals_needed: []
+external_services_needed: []
+issues_opened: []
+tickets_updated:
+  - T-20260518-083
+  - T-20260518-084
+  - T-20260518-085
+  - T-20260518-086
+  - T-20260518-087
+  - T-20260518-088
+  - T-20260518-089
+  - T-20260518-090
+  - T-20260518-091
+  - T-20260518-092
+  - T-20260518-093
+  - T-20260518-094
+  - T-20260518-095
+  - T-20260518-096
+  - T-20260518-097
+  - T-20260518-098
+  - T-20260518-099
+  - T-20260518-100
+  - T-20260518-101
+  - T-20260518-102
+ralph_checkpoint: null
+resume_command: "/sprint:execute --sprint SP-20260518-001"
+resume_notes: "Design complete at scale=m. 20 tickets ready_for_execution (T-083..T-102). 4 design approvals pending operator decision: auto-approval schema (AP-017), cost ceiling default (AP-018), auto-defer behavior (AP-019), branch protection (AP-020). Approvals block /sprint:execute for the dependent tickets."
+safe_to_continue: true
+stop_reason: null

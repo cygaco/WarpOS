@@ -1,0 +1,22 @@
+schema: warpos/sprint/approval/v1
+id: AP-20260518-020
+sprint: SP-20260518-001
+level: design_approval_required
+required_for: "branch_protection_refuse_on_main — operator must confirm /sprint:full should refuse to start when current branch is main/master. Proposed: hard refusal by default; override only with --allow-main flag AND --autonomy aggressive preset. Rationale: orchestrator commits locally throughout the run; committing to main can leak partial work to a sensitive branch. COPY C-11 names the override path."
+linked_ticket: T-20260518-102
+linked_external_service: null
+linked_release: null
+linked_decision: null
+state: approved
+requested_by: alpha
+decided_by: user
+decided_at: "2026-05-18T17:45:00.000Z"
+reason: "Operator approved via /sprint:design surface confirmation: 'approve all 4 + commit + execute'. Refuse by default; override needs --allow-main + --autonomy aggressive."
+evidence:
+  - "Plan Contract PC-20260518-0010#approval_boundaries item 6"
+  - "PRD R-11 — Branch protection"
+  - "Granular story S-20 — Branch protection guard"
+  - "COPY C-11 — Branch-protection halt message"
+  - "INPUTS IN-8 — --allow-main flag validation"
+created_at: "2026-05-18T17:30:00.000Z"
+updated_at: "2026-05-18T17:45:00.000Z"

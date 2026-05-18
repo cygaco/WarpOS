@@ -1,0 +1,52 @@
+schema: warpos/sprint/ticket/v1
+id: T-20260518-090
+title: "Phase 5: retrospective invocation with skeleton fallback"
+type: feature
+status: ready_for_execution
+sprint: SP-20260518-001
+created_at: "2026-05-18T17:21:39.775Z"
+updated_at: "2026-05-18T17:23:03.683Z"
+owner: null
+owner_agent: null
+risk_level: low
+approval_required: false
+approval_state: not_required
+source_request: "A sprint:full command that goes through all sprint phases automatically, without a human needed to initiate each sprint command or to give approvals."
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260518-0010.yaml"
+linked_requirements:
+  - R-1
+linked_high_level_story: H-1
+linked_granular_story: S-8
+linked_prd: ".claude/project/sprint/requirements/SP-20260518-001/prd.md"
+linked_copy:
+  - C-1
+  - C-12
+linked_inputs: []
+linked_trace:
+  - TR-2
+  - TR-3
+linked_acceptance_criteria:
+  - AC-8.1
+linked_issues: []
+linked_decisions: []
+linked_external_services: []
+linked_files: []
+linked_tests: []
+linked_commits: []
+linked_prs: []
+linked_release: null
+description: Shell out to retrospective.js with --signed-off-by alpha. Honor fail-open skeleton fallback.
+user_value: ""
+business_value: ""
+acceptance_criteria: []
+non_goals: []
+implementation_notes: ""
+qa_notes: ""
+redteam_notes: ""
+trace_notes: ""
+blocked_by: []
+blocks: []
+fix_attempts: []
+ralph_progress: null
+completion_evidence: []
+reopen_history: []

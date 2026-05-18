@@ -1,0 +1,57 @@
+schema: warpos/sprint/ticket/v1
+id: T-20260518-091
+title: Halt-report writer with structured schema
+type: feature
+status: ready_for_execution
+sprint: SP-20260518-001
+created_at: "2026-05-18T17:21:39.837Z"
+updated_at: "2026-05-18T17:23:03.744Z"
+owner: null
+owner_agent: null
+risk_level: medium
+approval_required: false
+approval_state: not_required
+source_request: "A sprint:full command that goes through all sprint phases automatically, without a human needed to initiate each sprint command or to give approvals."
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260518-0010.yaml"
+linked_requirements:
+  - R-4
+linked_high_level_story: H-4
+linked_granular_story: S-9
+linked_prd: ".claude/project/sprint/requirements/SP-20260518-001/prd.md"
+linked_copy:
+  - C-2
+  - C-3
+  - C-4
+  - C-5
+  - C-7
+  - C-11
+  - C-14
+linked_inputs: []
+linked_trace:
+  - TR-4
+linked_acceptance_criteria:
+  - AC-9.1
+  - AC-9.2
+linked_issues: []
+linked_decisions: []
+linked_external_services: []
+linked_files: []
+linked_tests: []
+linked_commits: []
+linked_prs: []
+linked_release: null
+description: "Write paths.sprintFullReports/<SP-id>/halt-<ISO>.md on any halt. Emit sprint_full_halt event referencing the report path."
+user_value: ""
+business_value: ""
+acceptance_criteria: []
+non_goals: []
+implementation_notes: ""
+qa_notes: ""
+redteam_notes: ""
+trace_notes: ""
+blocked_by: []
+blocks: []
+fix_attempts: []
+ralph_progress: null
+completion_evidence: []
+reopen_history: []
