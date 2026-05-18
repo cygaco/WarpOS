@@ -1,0 +1,41 @@
+schema: warpos/sprint/release/v1
+id: RL-20260518-011
+sprint: SP-20260518-007
+title: "Sprint Goal Verification — regression corpus, AC linkage, ship-gate, /check:ac-coverage"
+version: "0.9.0-sp007"
+status: preparing
+checklist:
+  tickets_done_or_deferred: true
+  blocking_issues_resolved: false
+  requirements_satisfied: true
+  copy_satisfied: true
+  inputs_satisfied: true
+  trace_satisfied: true
+  acceptance_criteria_satisfied: true
+  qa_passed: true
+  redteam_passed: true
+  external_services_ready: true
+  credentials_present: false
+  release_notes_written: false
+  docs_updated: false
+  analytics_updated: false
+  migration_plan: false
+  rollback_plan: false
+  approval_recorded: false
+  post_release_monitoring_plan: false
+approval_ref: null
+changelog_path: null
+release_report_path: null
+linked_tickets: []
+linked_issues: []
+linked_external_services: []
+deployment_environment: internal-canary
+deployment_target: internal-canary
+deployed_at: null
+deployed_by: null
+rollback_at: null
+rollback_reason: null
+retrospective_ref: null
+learning_candidates: []
+created_at: "2026-05-18T23:06:36.146Z"
+updated_at: "2026-05-18T23:08:07.954Z"

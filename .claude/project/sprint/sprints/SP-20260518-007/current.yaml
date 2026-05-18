@@ -2,15 +2,15 @@ schema: warpos/sprint/current-sprint/v1
 id: SP-20260518-007
 title: "Sprint Goal Verification — regression corpus, AC linkage, ship-gate, /check:ac-coverage"
 objective: "Every sprint produces at least one regression fixture that would have failed before the sprint started and passes after; the ship-gate enforces it."
-status: designing
+status: releasing
 created_at: "2026-05-18T21:10:38.462Z"
-updated_at: "2026-05-18T21:44:21.778Z"
+updated_at: "2026-05-18T23:06:36.146Z"
 source_request: "Add Sprint Goal Verification — every sprint ships a regression fixture under tests/regression/<sprint-id>/, ACs link verified_by: <test-file>::<test-name>, /sprint:release ship-gate runs cited tests, /check:ac-coverage skill audits linkage. Also wire scripts/sprint/test-plan-honors-registry-primary.js into /linters:run."
 interpreted_intent: "Today's QA plans verify ACs with English checkboxes; there's no executable link between the user's original bug and a fixture that asserts the fix. Sprint A closes that gap. Every sprint must produce at least one test that would have failed before the sprint started and passes after. To enforce that, this sprint (a) adds a goal_verification block to the Plan Contract and propagates it through current-sprint, (b) defines a new regression-fixture schema and a per-sprint corpus under tests/regression/<SP-id>/, (c) introduces an AC linkage convention (verified_by: <test-file>::<test-name>), (d) makes /sprint:design refuse to advance without a fixture (or an explicit not_applicable justification for research/docs/refactor sprints), (e) makes /sprint:release ship-gate run all cited tests, (f) ships a read-only /check:ac-coverage audit skill, (g) wires the existing scripts/sprint/test-plan-honors-registry-primary.js regression test into /linters:run so the plan.js drift bug from 2026-05-18 cannot silently recur. Closed/retrospected sprints are exempt — no backfill, no retroactive enforcement."
 plan_contract: ".claude/project/sprint/plan-contracts/PC-20260518-0011.yaml"
 risk_level: medium
 approval_state: none_required
-current_phase: design
+current_phase: release
 recommended_mode: adhoc
 mode_invocation_required_by_user: true
 lane:
@@ -27,17 +27,7 @@ tickets:
   proposed: []
   planned: []
   designed: []
-  ready_for_execution:
-    - T-20260518-103
-    - T-20260518-104
-    - T-20260518-105
-    - T-20260518-106
-    - T-20260518-107
-    - T-20260518-108
-    - T-20260518-109
-    - T-20260518-110
-    - T-20260518-111
-    - T-20260518-112
+  ready_for_execution: []
   in_progress: []
   blocked: []
   waiting_on_human: []
@@ -45,7 +35,17 @@ tickets:
   in_review: []
   qa_failed: []
   redteam_failed: []
-  done: []
+  done:
+    - T-20260518-105
+    - T-20260518-103
+    - T-20260518-104
+    - T-20260518-106
+    - T-20260518-107
+    - T-20260518-110
+    - T-20260518-108
+    - T-20260518-109
+    - T-20260518-111
+    - T-20260518-112
   released: []
   deferred: []
   abandoned: []
@@ -74,21 +74,21 @@ checks:
     last_run: null
     evidence: ""
   tests:
-    status: not_run
-    last_run: null
-    evidence: ""
+    status: passing
+    last_run: "2026-05-18T23:00:00Z"
+    evidence: "23 dogfood test cases pass across 6 fixture files under tests/regression/SP-20260518-007/"
   build:
-    status: not_run
-    last_run: null
-    evidence: ""
+    status: passing
+    last_run: "2026-05-18T23:00:00Z"
+    evidence: "No build step (framework). Module load smoke tests via node -e require() succeed for all touched scripts."
   qa:
-    status: not_run
-    last_run: null
-    evidence: ""
+    status: passing
+    last_run: "2026-05-18T23:00:00Z"
+    evidence: "Per-AC dogfood tests + /linters:run discovery (sprint-test-plan-honors-registry-primary now on lint board, RT-008 prevention follow-up landed). sprint-full smoke 39/39 restored after fixing latent paths-registry drift."
   redteam:
-    status: not_run
-    last_run: null
-    evidence: ""
+    status: passing
+    last_run: "2026-05-18T23:00:00Z"
+    evidence: "Beta design-review (EVT-sprint-A-design-1779139747143) flagged ENOENT-as-fail bypass class, addressed via AC-2.3.5 + release.js implementation. release-gate-executor.test.js verifies the three-branch (pass|fail|inconclusive) discrimination."
 approvals:
   plan:
     required: false
@@ -114,7 +114,7 @@ reports:
   plan: ".claude/project/sprint/plan-contracts/PC-20260518-0011.report.md"
   design: null
   execution: null
-  release: null
+  release: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\releases\\RL-20260518-011.yaml"
 ralph:
   active: false
   current_ticket: null
@@ -124,8 +124,8 @@ ralph:
   next_action: null
 crash_recovery:
   last_checkpoint: ".claude/project/sprint/sprint-progress.yaml"
-  resume_command: "/sprint:design"
-  resume_summary: "Sprint SP-20260518-007 design scaffolded (scale=m). Next: mint tickets from granular-stories, then run /sprint:execute."
+  resume_command: "/sprint:release"
+  resume_summary: "Release RL-20260518-011 in preparing state. Run /sprint:release with --id RL-20260518-011."
   active_files: []
   dirty_state: false
   blockers: []

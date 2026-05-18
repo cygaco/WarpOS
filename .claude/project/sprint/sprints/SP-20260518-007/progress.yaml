@@ -1,14 +1,14 @@
 schema: warpos/sprint/sprint-progress/v1
 sprint: SP-20260518-007
-updated_at: "2026-05-18T21:29:28.236Z"
-current_phase: design
-current_command: "/sprint:design"
+updated_at: "2026-05-18T23:08:30.776Z"
+current_phase: release
+current_command: "/sprint:release"
 current_ticket: null
 current_task: null
 current_loop: null
 status: running
-last_completed_step: design_scaffolded_and_tickets_minted
-next_action: "Plan Sprint B (/sprint:plan); Sprint A is past the design gate."
+last_completed_step: release_prepared_and_checks_passing
+next_action: "Operator: fill human-curated checklist items (release notes, docs, etc.), record approval, run release.js deploy out-of-band, then /sprint:retrospective."
 active_files: []
 modified_files: []
 checks_last_run: null
@@ -32,7 +32,7 @@ tickets_updated:
   - T-20260518-113
   - T-20260518-114
 ralph_checkpoint: null
-resume_command: "/sprint:plan"
-resume_notes: "Sprint A design complete. 12 tickets minted, 10 ready_for_execution (T-103/104/105/106/107/108/109/110/111/112), 2 superseded (T-113/114 merged into T-111 per Beta directive). Beta design-review logged EVT-sprint-A-design-1779139747143 with one new AC (AC-2.3.5: ENOENT-on-cited-test must bucket fail not inconclusive). Sprint B planning is now unblocked."
+resume_command: "/sprint:release"
+resume_notes: "RL-20260518-011 status=preparing. 9/17 checklist items ticked. Routing traces recorded (execution, qa, redteam). qa+redteam status=passing in current.yaml. Remaining: human-curated items (notes, docs, approval, monitoring). Sprint B execution unblocked and starting now per Beta directive."
 safe_to_continue: true
 stop_reason: null
