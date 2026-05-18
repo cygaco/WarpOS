@@ -1,0 +1,91 @@
+schema: "warpos/sprint/sprint-retrospective/v1"
+sprint_id: "SP-20260518-001"
+plan_contract_id: "PC-20260518-0010"
+synthesis_mode: "skeleton"
+summary: "<TO FILL>"
+outcomes_shipped:
+  - outcome: "<TO FILL>"
+    evidence: []
+    planned: true
+outcomes_missed:
+  - outcome: "<TO FILL>"
+    reason: "<TO FILL>"
+    disposition: unknown
+plan_quality_actual:
+  predicted_status: needs_design
+  actual_status: "<TO FILL>"
+  predicted_confidence: high
+  evidence_gaps_predicted:
+    - "Exact pre-authorized approval-level enumeration per preset is not specified — needs design-phase decision documented in PRD"
+    - "Cost-estimate threshold value ($5 is the CLAUDE.md ask-first line, but how does orchestrator estimate?) — needs design-phase mechanism (token count? phase count? phase-time estimate?)"
+    - "Beta consultation phase context format — needs design-phase template"
+    - "Halt-report structure — needs design-phase schema"
+    - "Integration test scenario specifics — 4 halt scenarios listed but exact fixtures/mocks not defined"
+  evidence_gaps_actual: []
+  notes: "<TO FILL>"
+scope_variant_actual:
+  planned_variant: recommended
+  actual_variant: unknown
+  adhered: false
+  drift_notes: "<TO FILL>"
+surprises: []
+friction_points:
+  - friction: "<TO FILL>"
+    category: other
+    evidence: []
+    severity: low
+action_items:
+  - action: "<TO FILL>"
+    owner: alpha
+    due_by: "<TO FILL>"
+    linked_friction: ""
+tickets_completed:
+  - T-20260518-083
+  - T-20260518-084
+  - T-20260518-085
+  - T-20260518-086
+  - T-20260518-087
+  - T-20260518-088
+  - T-20260518-089
+  - T-20260518-090
+  - T-20260518-091
+  - T-20260518-092
+  - T-20260518-093
+  - T-20260518-094
+  - T-20260518-095
+  - T-20260518-096
+  - T-20260518-097
+  - T-20260518-098
+  - T-20260518-099
+  - T-20260518-100
+  - T-20260518-101
+  - T-20260518-102
+tickets_deferred: []
+tickets_abandoned: []
+tickets_reopened: []
+issues_encountered: []
+beta_decisions_reviewed: []
+key_tradeoffs:
+  - "Composition over reimplementation: orchestrator shells out to existing per-phase helpers rather than reimplementing their logic. Lower blast radius, faster ship, lower test surface; cost is that bugs in helpers propagate up — but helpers are already test-covered."
+  - "Phase 3 (execute) hands Ralph loops to skill body in v0.1 rather than orchestrator-driven 9-stop-reason mapping. Pragmatic: skill body has the LLM reasoning needed to interpret stop_reasons in context; cleaner contract for v0.2 enhancement when execute.js gains a non-interactive driver."
+  - "Hard ceilings hardcoded in code rather than configurable. Forced choice: secure-by-default vs configurable. Chose secure-by-default; redteam threat A-2 verifies escalation attempts get rejected at preset-load."
+  - "Three discrete presets vs continuous policy DSL. Discrete is comprehensible at-a-glance; DSL would have been infinitely flexible but operator-hostile. Chose comprehensibility."
+  - "Cost-estimate is coarse (phase × per-phase-typical-spend) rather than telemetry-based. Telemetry-based is more accurate but requires real run data to calibrate; coarse default unblocks shipping. Calibration is a v0.2 telemetry-driven enhancement."
+learning_candidates: []
+release_record_ref: "RL-20260518-010"
+synthesis_metadata:
+  model_class: ""
+  provider: ""
+  model_id: ""
+  duration_ms: 0
+  output_chars: 0
+  fallback_reason: null
+signed_off_by: "alpha"
+signed_off_at: "2026-05-18T20:04:45.388Z"
+retro_metadata:
+  synthesized_at: "2026-05-18T20:04:45.388Z"
+  writer_version: "1.0.0"
+  history_record: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\history\\SP-20260518-001\\sprint-history.yaml"
+  force_overwrite: false
+created_at: "2026-05-18T20:04:45.388Z"
+updated_at: "2026-05-18T20:04:45.388Z"

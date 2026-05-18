@@ -102,7 +102,7 @@ sprints:
     updated_at: "2026-05-14T21:59:47.870Z"
   - id: SP-20260518-001
     title: "/sprint:full — autonomous sprint orchestrator chaining plan→design→execute→release-prep→retro"
-    status: planning
+    status: retrospected
     lane:
       type: default
       value: null
@@ -110,6 +110,6 @@ sprints:
     layout: per_sprint_subdir
     pointer: ".claude/project/sprint/sprints/SP-20260518-001"
     created_at: "2026-05-18T17:03:07.054Z"
-    updated_at: "2026-05-18T17:03:07.054Z"
+    updated_at: "2026-05-18T20:04:45.397Z"
 created_at: "2026-05-12T22:57:35.667Z"
-updated_at: "2026-05-18T17:03:07.054Z"
+updated_at: "2026-05-18T20:04:45.397Z"

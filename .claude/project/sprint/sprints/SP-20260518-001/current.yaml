@@ -2,15 +2,15 @@ schema: warpos/sprint/current-sprint/v1
 id: SP-20260518-001
 title: "/sprint:full — autonomous sprint orchestrator chaining plan→design→execute→release-prep→retro"
 objective: "Single-invocation execution of the full sprint pipeline (plan→design→execute→release-prep→retro) without per-command operator input, gated by a bounded autonomy preset that cannot bypass hard-ceiling CLAUDE.md autonomy table invariants."
-status: designing
+status: releasing
 created_at: "2026-05-18T17:06:36.916Z"
-updated_at: "2026-05-18T19:22:26.901Z"
+updated_at: "2026-05-18T19:58:19.953Z"
 source_request: "A sprint:full command that goes through all sprint phases automatically, without a human needed to initiate each sprint command or to give approvals."
 interpreted_intent: "Add a meta-orchestrator skill `/sprint:full` that takes a single plain-language request, chains the existing sprint phases (plan → design → execute → release-prep → retrospective) without per-command operator input, and pre-authorizes the in-flight approval gates within a clearly bounded autonomy preset. Hard ceilings from CLAUDE.md autonomy table (push to remote, paid services, production deploy, destructive migrations, secret handling) remain non-bypassable regardless of preset. The skill is composition over duplication: it shells out to scripts/sprint/{plan,design,ticket,external-service,execute,release,retrospective}.js rather than reimplementing their logic. The goal is to remove the multi-prompt keyboard cadence the operator currently has to perform when running a small/medium sprint end-to-end, while preserving every existing safety property (crash-safe checkpoints, beta consultation, ralph 3-attempt rule, routing trace coverage)."
 plan_contract: ".claude/project/sprint/plan-contracts/PC-20260518-0010.yaml"
 risk_level: medium
 approval_state: none_required
-current_phase: design
+current_phase: release
 recommended_mode: adhoc
 mode_invocation_required_by_user: true
 lane:
@@ -122,7 +122,7 @@ reports:
   plan: ".claude/project/sprint/plan-contracts/PC-20260518-0010.report.md"
   design: null
   execution: null
-  release: null
+  release: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\releases\\RL-20260518-010.yaml"
 ralph:
   active: false
   current_ticket: null
@@ -132,8 +132,8 @@ ralph:
   next_action: null
 crash_recovery:
   last_checkpoint: ".claude/project/sprint/sprint-progress.yaml"
-  resume_command: "/sprint:design"
-  resume_summary: "Sprint SP-20260518-001 design scaffolded (scale=m). Next: mint tickets from granular-stories, then run /sprint:execute."
+  resume_command: "/sprint:release"
+  resume_summary: "Release RL-20260518-010 in preparing state. Run /sprint:release with --id RL-20260518-010."
   active_files: []
   dirty_state: false
   blockers: []

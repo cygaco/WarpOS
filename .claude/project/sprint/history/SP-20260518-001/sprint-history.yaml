@@ -1,0 +1,76 @@
+schema: warpos/sprint/sprint-history/v1
+id: SP-20260518-001
+title: "/sprint:full — autonomous sprint orchestrator chaining plan→design→execute→release-prep→retro"
+objective: "Single-invocation execution of the full sprint pipeline (plan→design→execute→release-prep→retro) without per-command operator input, gated by a bounded autonomy preset that cannot bypass hard-ceiling CLAUDE.md autonomy table invariants."
+source_request: "A sprint:full command that goes through all sprint phases automatically, without a human needed to initiate each sprint command or to give approvals."
+interpreted_intent: "Add a meta-orchestrator skill /sprint:full that chains the existing sprint phases in one invocation under a bounded autonomy preset. Hard ceilings (push_to_remote, paid_service_signup, production_deploy, destructive_migration, secret_to_remote) remain non-bypassable. Composition over duplication — shells out to existing helpers."
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260518-0010.yaml"
+final_scope: "recommended (all 5 phases, three default presets, hardcoded hard ceilings, release-prep auto-prepare but never auto-deploy)"
+outcome: shipped_internal_canary
+tickets_completed:
+  - T-20260518-083
+  - T-20260518-084
+  - T-20260518-085
+  - T-20260518-086
+  - T-20260518-087
+  - T-20260518-088
+  - T-20260518-089
+  - T-20260518-090
+  - T-20260518-091
+  - T-20260518-092
+  - T-20260518-093
+  - T-20260518-094
+  - T-20260518-095
+  - T-20260518-096
+  - T-20260518-097
+  - T-20260518-098
+  - T-20260518-099
+  - T-20260518-100
+  - T-20260518-101
+  - T-20260518-102
+tickets_deferred: []
+tickets_abandoned: []
+tickets_reopened: []
+issues_found:
+  - "plan.js#ensureCurrentSprint id-drift (caught mid-plan-phase; fixed in same session)"
+  - "sprint-tracker-guard#emitAutoInject Edit-call Path-strip (caught mid-design-phase; fixed in same session)"
+issues_fixed:
+  - "RT-008 / L-2026-05-18-plan-ensure-current-honors-registry-primary"
+  - "RT-009 / L-2026-05-18-sprint-tracker-edit-strip"
+issues_deferred: []
+external_services_resolved: []
+external_services_deferred: []
+requirements_changed: []
+copy_changed: []
+inputs_changed: []
+trace_changed: []
+tests_run:
+  - "scripts/sprint/test-plan-honors-registry-primary.js — 11/11 assertions pass"
+  - "scripts/sprint/test-sprint-full.js — 39/39 assertions pass"
+  - "scripts/sprint/validate-autonomy-config.js — all 3 default presets validate; hard-ceiling enforcement intact"
+releases:
+  - RL-20260518-010
+beta_decisions:
+  - "release pre-flight SendMessage dispatched 2026-05-18T20:00Z (single-vendor session — no ESCALATE)"
+human_approvals:
+  - "AP-20260518-017 design — auto-approval schema per preset (approved 2026-05-18T17:45Z)"
+  - "AP-20260518-018 design — cost-estimate threshold default $5 (approved 2026-05-18T17:45Z)"
+  - "AP-20260518-019 design — auto-defer on repeated_failure (approved 2026-05-18T17:45Z)"
+  - "AP-20260518-020 design — branch-protection refuse on main (approved 2026-05-18T17:45Z)"
+  - "AP-20260518-021 release — internal-canary deploy of RL-20260518-010 (approved 2026-05-18T20:08Z)"
+key_tradeoffs:
+  - "Composition over reimplementation: orchestrator shells out to existing per-phase helpers rather than reimplementing their logic. Lower blast radius, faster ship, lower test surface; cost is that bugs in helpers propagate up — but helpers are already test-covered."
+  - "Phase 3 (execute) hands Ralph loops to skill body in v0.1 rather than orchestrator-driven 9-stop-reason mapping. Pragmatic: skill body has the LLM reasoning needed to interpret stop_reasons in context; cleaner contract for v0.2 enhancement when execute.js gains a non-interactive driver."
+  - "Hard ceilings hardcoded in code rather than configurable. Forced choice: secure-by-default vs configurable. Chose secure-by-default; redteam threat A-2 verifies escalation attempts get rejected at preset-load."
+  - "Three discrete presets vs continuous policy DSL. Discrete is comprehensible at-a-glance; DSL would have been infinitely flexible but operator-hostile. Chose comprehensibility."
+  - "Cost-estimate is coarse (phase × per-phase-typical-spend) rather than telemetry-based. Telemetry-based is more accurate but requires real run data to calibrate; coarse default unblocks shipping. Calibration is a v0.2 telemetry-driven enhancement."
+final_outcome_notes: "Shipped internal-canary. /sprint:full is committed locally on main but not yet promoted to canonical WarpOS or pushed/tagged. The next /warp:release pipeline can carry it canonical-wide. Bootstrap caveat: the skill was built using the per-phase commands (it was the subject) and has not yet been used end-to-end live — the first real /sprint:full invocation will be the v0.1 smoke test. Two known v0.1 caveats are documented in the changelog + report: (1) Phase 3 stop-reason mapping owned by skill body, (2) Beta SendMessage owned by skill body. Both are explicit contracts, not gaps."
+should_be_remembered:
+  - "Always consult the active-sprints registry primary id before bootstrapping a fresh sprint id (root cause of RT-008). Generalizable to any helper that bootstraps state."
+  - "Hooks returning hookSpecificOutput.updatedInput MUST gate on tool_name and emit the right shape per tool (root cause of RT-009). Generalizable lint rule worth adding."
+  - "When building a meta-feature that wraps existing primitives, composition-over-duplication keeps the build small and the test surface bounded."
+  - "Hard-ceiling enums must live in code, not config. Config can document, code enforces. (Validated by redteam threat A-2.)"
+  - "Single-vendor sessions are acceptable but must be honestly recorded as routing evidence (single_vendor_session or mismatch_override) — not silently hidden."
+crash_recovery_events: []
+started_at: "2026-05-18T17:00:00.000Z"
+closed_at: "2026-05-18T20:10:00.000Z"

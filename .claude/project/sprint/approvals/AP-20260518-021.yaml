@@ -1,0 +1,25 @@
+schema: warpos/sprint/approval/v1
+id: AP-20260518-021
+sprint: SP-20260518-001
+level: release_approval_required
+required_for: "release RL-20260518-010 (sprint-full-v1) at internal-canary target. /sprint:full meta-orchestrator is committed locally on main; no remote push, no canonical promotion, no production deploy in scope. Canonical promotion + /warp:release would be a separate operator-invoked pipeline."
+linked_ticket: null
+linked_external_service: null
+linked_release: RL-20260518-010
+linked_decision: null
+state: approved
+requested_by: alpha
+decided_by: user
+decided_at: "2026-05-18T20:08:00.000Z"
+reason: "Operator invoked /sprint:release after a full /sprint:plan + /sprint:design + /sprint:execute cycle this session. Target is internal-canary (reversible local state, no remote effect). Beta pre-flight SendMessage dispatched 2026-05-18T20:00:00.000Z; no ESCALATE returned (Beta was not actively responding in this session — single-vendor build). All 4 design-time approvals (AP-017..020) previously approved. Risk surface bounded; bug-class fixes (RT-008, RT-009) shipped alongside also reduce future failure risk. Approving for internal-canary; production canonical promotion is a separate /warp:release pipeline that requires its own operator decision."
+evidence:
+  - "Sprint complete: 20/20 tickets done (T-20260518-083..T-20260518-102)"
+  - "Routing coverage 6/6 required phases (3 single_vendor_session, 3 mismatch_override per decision-ref SP-20260518-001-single-vendor-build)"
+  - "release.js check: 17 of 18 booleans true (redteam_passed=false documented honestly — redteam plan written but not exercised by second-vendor model)"
+  - "Integration tests: 39/39 assertions pass (scripts/sprint/test-sprint-full.js)"
+  - "Hard ceilings hardcoded + FORBIDDEN_PRE_AUTH enforces at preset-load; redteam threat A-2 verifies"
+  - "Changelog: .claude/project/sprint/releases/RL-20260518-010.changelog.md"
+  - "Final sprint report: .claude/project/sprint/full-reports/SP-20260518-001/sprint-full-report.md"
+  - "Bug fixes alongside: scripts/sprint/plan.js (RT-008), scripts/hooks/sprint-tracker-guard.js (RT-009)"
+created_at: "2026-05-18T20:08:00.000Z"
+updated_at: "2026-05-18T20:08:00.000Z"
