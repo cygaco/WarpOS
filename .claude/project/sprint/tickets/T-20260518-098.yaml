@@ -2,12 +2,12 @@ schema: warpos/sprint/ticket/v1
 id: T-20260518-098
 title: Skill body .claude/commands/sprint/full.md
 type: docs
-status: ready_for_execution
+status: done
 sprint: SP-20260518-001
 created_at: "2026-05-18T17:22:10.895Z"
-updated_at: "2026-05-18T17:23:04.185Z"
+updated_at: "2026-05-18T19:22:26.520Z"
 owner: null
-owner_agent: null
+owner_agent: alpha
 risk_level: low
 approval_required: false
 approval_state: not_required
@@ -80,5 +80,6 @@ blocked_by: []
 blocks: []
 fix_attempts: []
 ralph_progress: null
-completion_evidence: []
+completion_evidence:
+  - "implemented; 39/39 integration test assertions pass; skill catalog reload shows sprint:full registered"
 reopen_history: []

@@ -2,12 +2,12 @@ schema: warpos/sprint/ticket/v1
 id: T-20260518-085
 title: "Phase 2a: design scaffold invocation"
 type: feature
-status: ready_for_execution
+status: done
 sprint: SP-20260518-001
 created_at: "2026-05-18T17:21:20.291Z"
-updated_at: "2026-05-18T17:23:03.371Z"
+updated_at: "2026-05-18T19:18:27.726Z"
 owner: null
-owner_agent: null
+owner_agent: alpha
 risk_level: low
 approval_required: false
 approval_state: not_required
@@ -49,5 +49,6 @@ blocked_by: []
 blocks: []
 fix_attempts: []
 ralph_progress: null
-completion_evidence: []
+completion_evidence:
+  - "scripts/sprint/full.js implemented; smoke-test loadPreset+makeCostCounter+checkBranchProtection exits 0"
 reopen_history: []

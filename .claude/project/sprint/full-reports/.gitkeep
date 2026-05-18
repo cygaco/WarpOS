@@ -1,0 +1,3 @@
+# Placeholder so paths.sprintFullReports resolves to an existing directory.
+# /sprint:full writes halt reports and final reports here as
+# halt-<ISO>.md and sprint-full-report.md.

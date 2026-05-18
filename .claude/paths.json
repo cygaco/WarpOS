@@ -91,6 +91,8 @@
   "sprintSchemas": "schemas/sprint",
   "sprintReference": ".claude/project/reference/sprint-workflow.md",
   "sprintRouting": ".claude/agents/00-alex/.system/policy/sprint-routing.json",
+  "sprintFullAutonomy": ".claude/agents/00-alex/.system/policy/sprint-full-autonomy.json",
+  "sprintFullReports": ".claude/project/sprint/full-reports",
   "briefs": "_docs/briefs",
   "briefsCurrent": "_docs/briefs",
   "skillCatalog": ".claude/runtime/skill-catalog.json",

@@ -9,16 +9,41 @@ lanes; see `LANES.md`.
 
 ## The shape
 
+Two equally valid front doors:
+
 ```
+                           ── manual per-phase ──
 /sprint:plan      → Plan Contract        (the bridge between intent and design)
 /sprint:design    → Requirements + Tickets (PRD, stories, COPY, INPUTS, TRACE, AC, QA, redteam, release plan)
 /sprint:execute   → Ralph loops          (governed plan/act/test/review/record/checkpoint per ticket)
 /sprint:release   → Release record       (final checks, approval, deploy mark, retrospective)
-/sprint:status    → Live sprint list     (v0.2 — read-only view of every active sprint)
+/sprint:retrospective → Post-sprint retro (outcomes, friction, action items)
+/sprint:status    → Live sprint list     (read-only view of every active sprint)
+
+                           ── autonomous front door (SP-20260518-001) ──
+/sprint:full      → Single invocation, all 5 phases, bounded autonomy preset
+                    (conservative | moderate | aggressive)
+                    Cannot bypass CLAUDE.md hard ceilings — push to remote,
+                    paid services, production deploy, destructive migrations,
+                    secrets-to-remote remain operator-only.
 ```
 
 All commands accept `--sprint <SP-id>` to target a specific sprint;
 omitted → registry primary; unknown id → exit non-zero with COPY C-10.
+
+### When to use which front door
+
+| Situation | Front door |
+|---|---|
+| Small/medium sprint, low keyboard tolerance | `/sprint:full --autonomy moderate` |
+| Sprint touches production or paid services | Per-phase commands (manual approval at each gate) |
+| You're testing the sprint pipeline itself | Per-phase commands (granular checkpoints) |
+| Routine docs/refactor/research sprint | `/sprint:full --autonomy moderate` |
+| First time on a new product surface | Per-phase commands (read what the helpers do) |
+| You want to ship to staging without per-step approval | `/sprint:full --autonomy aggressive` |
+| You want production deploy auto-anything | Not supported. Hard ceiling. Always manual. |
+
+See `_docs/sprint/AUTONOMY.md` for `/sprint:full` preset semantics.
 
 ## Why it exists
 

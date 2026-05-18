@@ -1,8 +1,31 @@
 # Sprint Workflow v0.2 — Reference
 
 Canonical agent-loaded reference for the `/sprint:*` commands. Cite
-from `paths.sprintReference`. The five commands live under
+from `paths.sprintReference`. The per-phase commands live under
 `.claude/commands/sprint/` and the helpers under `scripts/sprint/`.
+
+## Front doors
+
+Two equally valid entry points (introduced 2026-05-18 via SP-20260518-001):
+
+- **Per-phase commands** — `/sprint:plan` → `/sprint:design` →
+  `/sprint:execute` → `/sprint:release` → `/sprint:retrospective`.
+  Operator drives every gate. Use for production work, novel
+  surfaces, or when you want granular control.
+- **Autonomous front door** — `/sprint:full "<request>"` chains all
+  five phases in one invocation under a **bounded autonomy preset**
+  (`conservative` / `moderate` / `aggressive`). Pre-authorizes
+  approvals only within the preset. Cannot bypass hard ceilings:
+  `push_to_remote`, `paid_service_signup`, `production_deploy`,
+  `destructive_migration`, `secret_to_remote`. See
+  `_docs/sprint/AUTONOMY.md` for preset semantics and the halt
+  taxonomy.
+
+The autonomous front door is a thin orchestrator (`scripts/sprint/full.js`)
+that shells out to the per-phase helpers — same checkpoints, same
+routing traces, same Beta consultation cadence. Pick the front door
+that matches your risk tolerance for this sprint; everything
+underneath is identical.
 
 ## Lanes & parallel sprints (v0.2)
 

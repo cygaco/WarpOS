@@ -2,12 +2,12 @@ schema: warpos/sprint/ticket/v1
 id: T-20260518-096
 title: Cost-estimate halt gate with --cost-acknowledged resume
 type: feature
-status: ready_for_execution
+status: done
 sprint: SP-20260518-001
 created_at: "2026-05-18T17:22:10.770Z"
-updated_at: "2026-05-18T17:23:04.062Z"
+updated_at: "2026-05-18T19:18:41.280Z"
 owner: null
-owner_agent: null
+owner_agent: alpha
 risk_level: medium
 approval_required: false
 approval_state: not_required
@@ -48,5 +48,6 @@ blocked_by: []
 blocks: []
 fix_attempts: []
 ralph_progress: null
-completion_evidence: []
+completion_evidence:
+  - "implemented inside scripts/sprint/full.js: writeHaltReport/writeFinalReport/makeCostCounter/maybeConsultBeta/checkBranchProtection"
 reopen_history: []
