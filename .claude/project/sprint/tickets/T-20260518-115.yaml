@@ -2,10 +2,10 @@ schema: warpos/sprint/ticket/v1
 id: T-20260518-115
 title: "format.js binary-resolution spawn (execFileSync + prettier.cjs)"
 type: bug
-status: ready_for_execution
+status: done
 sprint: SP-20260518-008
 created_at: "2026-05-18T21:38:04.306Z"
-updated_at: "2026-05-18T21:39:22.781Z"
+updated_at: "2026-05-18T23:12:45.475Z"
 owner: null
 owner_agent: null
 risk_level: medium

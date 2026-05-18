@@ -30,3 +30,19 @@ When modifying infrastructure (CLAUDE.md, hooks, skills, agents): the `systems-s
 ## Systems Manifest
 
 `.claude/project/memory/systems.jsonl` is the structured truth about every system (28 entries). Each entry has: id, status, files, dependencies, test command, diagnostic steps. Update it after creating or modifying systems.
+
+## Background tasks and Windows process hygiene (SP-20260518-008)
+
+The harness exposes two ways to keep work alive across tool calls:
+
+- **`Bash run_in_background: true`** — fire-and-forget shell command. The shell exits when its work finishes; if the parent session exits first, the child is orphaned (most painful on Windows where child cleanup is unreliable).
+- **`Monitor` tool** — long-running observer keyed to a check expression. Sends a single notification when the condition fires. Lifecycle is tied to the harness, not a shell.
+
+**When to use which:**
+- Use **`Monitor`** when you want to be notified on a specific condition (CI finished, file appeared, port opened). It's the right tool for "wait until done."
+- Use **`Bash run_in_background`** when you have genuinely independent work to do in parallel AND you have a plan for cleanup. Avoid in the Ralph test phase — orphan risk when the loop unwinds unexpectedly.
+
+**Windows process hygiene:**
+- Per-edit hooks that shell out (Prettier, ESLint, etc.) can leak Node processes when timeouts fire. `cmd.exe` wrappers don't honor SIGTERM, so the child survives past the parent's timeout. Sprint B's fix in `scripts/hooks/format.js` captures the child PID and runs `taskkill /F /T /PID <pid>` on Windows (`SIGKILL` on POSIX) to clean up the tree.
+- Run `/check:node-procs` to see every alive Node process at a glance (PID, start-time, working-set KB, command). Read-only diagnostic — no kill flow in v1.
+- If a session leaks tens of Node processes, the framework-level cause is a hook timeout path that doesn't clean its child. Don't reach for `taskkill /FI "IMAGENAME eq node.exe"` and call it a day — find the leaky hook and fix it upstream.

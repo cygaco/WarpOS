@@ -273,6 +273,10 @@ Routing is enforced — not aspirational (SP-20260514-002).
 The sprint tracker is the source of truth for what's done, regardless
 of mode. Team tasks are NEVER used as the durable record.
 
+## Background-task pitfall in the Ralph test phase (SP-20260518-008)
+
+Do NOT use `Bash run_in_background: true` inside the Ralph test phase — if the loop exits unexpectedly (timeout, halt, crash), the child process is orphaned, and on Windows it survives past the parent (cmd.exe wrappers don't honor SIGTERM). Run tests in the foreground with an explicit timeout, or use the `Monitor` tool for "wait until condition X" semantics. See `paths.reference/operational-loop.md#background-tasks-and-windows-process-hygiene-sp-20260518-008` and `/check:node-procs` for a session-side snapshot of leaked Node processes.
+
 ## Sprint Goal Verification linkage convention (SP-20260518-007)
 
 When a ticket implements an AC that's part of an opted-in sprint

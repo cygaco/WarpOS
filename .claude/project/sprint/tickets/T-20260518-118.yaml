@@ -2,10 +2,10 @@ schema: warpos/sprint/ticket/v1
 id: T-20260518-118
 title: ".claude/settings.json registration for lint-hook-output.js"
 type: chore
-status: ready_for_execution
+status: done
 sprint: SP-20260518-008
 created_at: "2026-05-18T21:38:19.331Z"
-updated_at: "2026-05-18T21:39:22.993Z"
+updated_at: "2026-05-18T23:12:45.659Z"
 owner: null
 owner_agent: null
 risk_level: low
