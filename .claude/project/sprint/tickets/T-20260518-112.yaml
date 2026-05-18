@@ -2,10 +2,10 @@ schema: warpos/sprint/ticket/v1
 id: T-20260518-112
 title: "Retrospective annotation (read-only verification-status section)"
 type: feature
-status: ready_for_execution
+status: done
 sprint: SP-20260518-007
 created_at: "2026-05-18T21:24:35.251Z"
-updated_at: "2026-05-18T21:29:17.194Z"
+updated_at: "2026-05-18T23:00:40.366Z"
 owner: null
 owner_agent: null
 risk_level: low
@@ -37,7 +37,7 @@ user_value: ""
 business_value: ""
 acceptance_criteria: []
 non_goals: []
-implementation_notes: ""
+implementation_notes: "retrospective.js renderGoalVerificationStatus() helper appended; wires into retro template data as goal_verification_status_md. retro.md.tmpl gains new 'Goal Verification Status' heading. Read-only: no scoring, no blocking. Reuses check-ac-coverage.js#checkSprint for the audit pass. 1 dogfood test passes."
 qa_notes: ""
 redteam_notes: ""
 trace_notes: ""

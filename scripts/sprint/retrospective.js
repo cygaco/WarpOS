@@ -520,6 +520,7 @@ function renderMd(retro, sprintTitle) {
       (l) =>
         `${l.learning}${l.evidence && l.evidence.length ? ` _(evidence: ${l.evidence.join(", ")})_` : ""}`,
     ),
+    goal_verification_status_md: renderGoalVerificationStatus(retro.sprint_id),
     history_record_path:
       (retro.retro_metadata && retro.retro_metadata.history_record) ||
       "(no sprint-history.yaml)",
@@ -528,6 +529,39 @@ function renderMd(retro, sprintTitle) {
       meta.model_id || (retro.synthesis_mode === "skeleton" ? "n/a" : "—"),
   };
   return render(tmpl, data);
+}
+
+// ── SP-20260518-007 R-10 — read-only goal-verification retro annotation ──
+function renderGoalVerificationStatus(sprintId) {
+  try {
+    const { checkSprint } = require("./check-ac-coverage");
+    const report = checkSprint(sprintId);
+    if (!report) return "_(no audit available)_";
+    if (report.error) return `_(audit error: ${report.error})_`;
+    if (!report.gate_applicable) {
+      return `_(Plan Contract has no goal_verification block — gate not applicable; informational only)_`;
+    }
+    const lines = [];
+    lines.push(
+      `- **Executable:** ${report.executable}`,
+      `- **Not applicable:** ${report.not_applicable}`,
+      `- **Missing:** ${report.missing}`,
+      `- **Total ACs:** ${report.total_acs}`,
+    );
+    if (report.missing > 0) {
+      lines.push(``, `**Missing ACs:**`);
+      for (const d of report.details || []) {
+        if (d.state === "missing") {
+          lines.push(
+            `- \`${d.ac}\` (line ${d.line}; ${d.evidence || "no verified_by line"})`,
+          );
+        }
+      }
+    }
+    return lines.join("\n");
+  } catch (err) {
+    return `_(audit skipped: ${err.message})_`;
+  }
 }
 
 // ── Validation ─────────────────────────────────────────────────
