@@ -172,6 +172,44 @@ function validateFile(file) {
   }
   const errs = [];
   validate(parsed, schemas[parsed.schema], schemas[parsed.schema], "$", errs);
+  // Conditional rules (SP-20260518-007): goal_verification + regression-fixture
+  // require justification when reproduction=not_applicable, and empty
+  // justification is treated as missing.
+  if (
+    parsed.schema === "warpos/sprint/plan-contract/v1" &&
+    parsed.goal_verification
+  ) {
+    const gv = parsed.goal_verification;
+    if (gv.reproduction === "not_applicable") {
+      const j =
+        typeof gv.justification === "string" ? gv.justification.trim() : "";
+      if (!j) {
+        errs.push(
+          `$.goal_verification.justification: REQUIRED non-empty string when reproduction=not_applicable (empty/whitespace treated as missing — SP-20260518-007 Beta directive).`,
+        );
+      }
+    }
+    if (gv.reproduction === "executable") {
+      if (!Array.isArray(gv.cited_tests) || gv.cited_tests.length === 0) {
+        errs.push(
+          `$.goal_verification.cited_tests: REQUIRED non-empty array when reproduction=executable.`,
+        );
+      }
+    }
+  }
+  if (parsed.schema === "warpos/sprint/regression-fixture/v1") {
+    if (parsed.reproduction_kind === "not_applicable") {
+      const j =
+        typeof parsed.justification === "string"
+          ? parsed.justification.trim()
+          : "";
+      if (!j) {
+        errs.push(
+          `$.justification: REQUIRED non-empty string when reproduction_kind=not_applicable.`,
+        );
+      }
+    }
+  }
   if (errs.length) {
     process.stderr.write(`${file}: ${errs.length} validation error(s)\n`);
     for (const e of errs) process.stderr.write(`  ${e}\n`);

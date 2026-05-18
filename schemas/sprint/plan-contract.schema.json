@@ -246,6 +246,49 @@
         "fail_reasons": { "type": "array", "items": { "type": "string" } }
       }
     },
+    "goal_verification": {
+      "type": "object",
+      "description": "Executable-goal contract for the sprint. Optional and additive (introduced 2026-05-18 by SP-20260518-007). When present, /sprint:design refuses to advance unless every AC is verified_by-linked OR reproduction is not_applicable with a non-empty justification; /sprint:release ship-gate runs every cited test.",
+      "required": ["origin_evidence", "bug_classes_closed", "reproduction"],
+      "additionalProperties": false,
+      "properties": {
+        "origin_evidence": {
+          "type": "string",
+          "description": "Free-text description of the originally-reported failure. Opaque text — NEVER LLM-summarized by the helpers."
+        },
+        "bug_classes_closed": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "One or more named bug classes the sprint claims to close. Future retros can grep these to detect regressions across sprints."
+        },
+        "reproduction": {
+          "type": "string",
+          "enum": ["executable", "not_applicable"],
+          "description": "executable: ship-gate runs cited tests. not_applicable: research/docs/refactor sprint; requires non-empty justification."
+        },
+        "justification": {
+          "type": "string",
+          "description": "REQUIRED when reproduction=not_applicable. Non-empty string. Empty string is treated as missing — validate.js rejects it."
+        },
+        "cited_tests": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["file", "test_name"],
+            "additionalProperties": false,
+            "properties": {
+              "file": { "type": "string" },
+              "test_name": { "type": "string" }
+            }
+          },
+          "description": "REQUIRED when reproduction=executable. Each cited test points at a file under paths.sprintRegressionCorpus/<SP-id>/."
+        },
+        "fixture_path": {
+          "type": ["string", "null"],
+          "description": "Optional pointer to a paths.sprintRegressionCorpus/<SP-id>/<RF-id>.yaml fixture record. Null when ACs are self-cited inline."
+        }
+      }
+    },
     "next_recommended_command": { "type": "string" },
     "resume_instructions": { "type": "string" },
     "tracker_paths": {

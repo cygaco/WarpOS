@@ -2,12 +2,12 @@ schema: warpos/sprint/ticket/v1
 id: T-20260518-103
 title: "Plan Contract goal_verification block (schema + plan.js capture)"
 type: feature
-status: ready_for_execution
+status: done
 sprint: SP-20260518-007
 created_at: "2026-05-18T21:23:43.492Z"
-updated_at: "2026-05-18T21:29:16.504Z"
+updated_at: "2026-05-18T22:09:10.858Z"
 owner: null
-owner_agent: null
+owner_agent: alpha
 risk_level: medium
 approval_required: false
 approval_state: not_required
@@ -39,7 +39,7 @@ user_value: ""
 business_value: ""
 acceptance_criteria: []
 non_goals: []
-implementation_notes: ""
+implementation_notes: "goal_verification block added to plan-contract.schema.json as additive optional. validate.js conditional rule: empty justification with reproduction=not_applicable rejected; cited_tests required when reproduction=executable. Dogfood test passes."
 qa_notes: ""
 redteam_notes: ""
 trace_notes: ""

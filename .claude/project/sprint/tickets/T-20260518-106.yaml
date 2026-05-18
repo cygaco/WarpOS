@@ -2,12 +2,12 @@ schema: warpos/sprint/ticket/v1
 id: T-20260518-106
 title: "AC verified_by linkage convention (template + parser-friendly format)"
 type: docs
-status: ready_for_execution
+status: done
 sprint: SP-20260518-007
 created_at: "2026-05-18T21:24:00.929Z"
-updated_at: "2026-05-18T21:29:16.728Z"
+updated_at: "2026-05-18T22:09:10.998Z"
 owner: null
-owner_agent: null
+owner_agent: alpha
 risk_level: low
 approval_required: false
 approval_state: not_required
@@ -37,7 +37,7 @@ user_value: ""
 business_value: ""
 acceptance_criteria: []
 non_goals: []
-implementation_notes: ""
+implementation_notes: "AC template updated with verified_by: <test-file>::<test-name> and not_applicable forms documented. Sprint A's own AC bundle dogfoods both forms."
 qa_notes: ""
 redteam_notes: ""
 trace_notes: ""
