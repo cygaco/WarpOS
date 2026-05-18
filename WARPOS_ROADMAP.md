@@ -6,6 +6,15 @@ Post-MVP work. Items grouped by phase.
 
 ## 🔧 Known issues / 0.1.5 backlog
 
+### Session recovery improvements (DEFERRED-2026-05-18)
+
+Parked during the sprint-effectiveness review on 2026-05-18. The current
+crash-recovery contract in `paths.sprintReference` (per-command
+`resume_command` + frozen checkpoints) covers sprint flow, but ambient
+session resumption — picking up cleanly after `/clear`, harness restart,
+or a context compaction — is not yet first-class. Revisit when there is
+a concrete failure case to anchor the design.
+
 ### release-build provenance: post-update check refers to script absent after update (REPORTED-2026-05-02)
 
 A consumer running `/warp:update --to 0.1.4` reported `engine ok:false`
