@@ -42,7 +42,23 @@ function discover() {
       }
     }
   }
-  // 3. package.json scripts named lint:*
+  // 3. scripts/sprint/test-*.js (Sprint A R-8 / SP-20260518-007)
+  // Sprint regression tests that should run on every lint pass to catch
+  // bug-class recurrences at lint-time. The per-sprint corpus under
+  // paths.sprintRegressionCorpus (tests/regression/<SP-id>/) is EXCLUDED
+  // here — those fixtures run via /sprint:release ship-gate only.
+  if (fs.existsSync("scripts/sprint")) {
+    for (const f of fs.readdirSync("scripts/sprint")) {
+      if (f.startsWith("test-") && f.endsWith(".js")) {
+        const stem = f.replace(/\.js$/, "");
+        linters.push({
+          name: `sprint-${stem}`,
+          cmd: `node scripts/sprint/${f}`,
+        });
+      }
+    }
+  }
+  // 4. package.json scripts named lint:*
   if (fs.existsSync("package.json")) {
     try {
       const pkg = JSON.parse(fs.readFileSync("package.json", "utf8"));

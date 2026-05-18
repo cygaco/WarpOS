@@ -240,7 +240,100 @@ function scaffold(args) {
   } catch (err) {
     process.stderr.write(`routing-trace: skipped (${err.message})\n`);
   }
+  // SP-20260518-007 R-5: Sprint Goal Verification fixture gate. Fully gated
+  // on plan.goal_verification presence (backward-compat for pre-Sprint-A
+  // Plan Contracts) — when absent, gate is a no-op.
+  const gateResult = runFixtureGate(current, plan, outDir);
+  if (!gateResult.ok) {
+    process.stderr.write(`${gateResult.message}\n`);
+    return 1;
+  }
   return 0;
+}
+
+// SP-20260518-007 R-5 — design-time fixture gate.
+// Returns { ok: boolean, message?: string }.
+function runFixtureGate(current, plan, outDir) {
+  const gv = plan && plan.goal_verification;
+  if (!gv) {
+    // Fully gated on goal_verification presence — backward-compat for
+    // pre-Sprint-A Plan Contracts. AC-2.2.1.
+    return { ok: true };
+  }
+  if (gv.reproduction === "not_applicable") {
+    const j =
+      typeof gv.justification === "string" ? gv.justification.trim() : "";
+    if (!j) {
+      return {
+        ok: false,
+        message:
+          `sprint:design refused — sprint ${current.id} has ` +
+          `goal_verification.reproduction = not_applicable but justification ` +
+          `is empty (empty/whitespace = same as missing, SP-20260518-007 Beta directive).`,
+      };
+    }
+    // AC-2.2.3 — honored when justification is non-empty.
+    return { ok: true };
+  }
+  if (gv.reproduction !== "executable") {
+    return {
+      ok: false,
+      message:
+        `sprint:design refused — sprint ${current.id} has ` +
+        `goal_verification.reproduction = ${gv.reproduction} which is not a recognized enum value.`,
+    };
+  }
+  // reproduction=executable: scan acceptance-criteria.md and require every
+  // AC line to be followed by a real `verified_by:` line.
+  const acPath = path.join(outDir, "acceptance-criteria.md");
+  if (!fs.existsSync(acPath)) {
+    return {
+      ok: false,
+      message: `sprint:design refused — sprint ${current.id} acceptance-criteria.md not found at ${acPath}.`,
+    };
+  }
+  const ac = fs.readFileSync(acPath, "utf8");
+  const lines = ac.split(/\r?\n/);
+  const acRegex = /\bAC-\d+(?:\.\d+)+\b/;
+  const placeholderRegex = /\{\{|<test-file>|<test-name>/;
+  const missing = [];
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const m = line.match(acRegex);
+    if (!m) continue;
+    // Look at the next few non-empty lines for a verified_by:
+    let foundLink = false;
+    let foundPlaceholder = false;
+    for (let j = i + 1; j < Math.min(i + 6, lines.length); j++) {
+      const cand = lines[j];
+      if (/^\s*$/.test(cand)) continue;
+      if (acRegex.test(cand)) break; // next AC starts; no link found
+      if (/verified_by\s*:/i.test(cand)) {
+        foundLink = true;
+        if (placeholderRegex.test(cand)) foundPlaceholder = true;
+        break;
+      }
+    }
+    if (!foundLink || foundPlaceholder) {
+      missing.push(
+        `${m[0]} (line ${i + 1}${foundPlaceholder ? "; placeholder verified_by" : ""})`,
+      );
+    }
+  }
+  if (missing.length) {
+    return {
+      ok: false,
+      message:
+        `sprint:design refused — sprint ${current.id} has ` +
+        `goal_verification.reproduction = executable but the following ACs ` +
+        `lack a real verified_by: linkage:\n  - ` +
+        missing.join("\n  - ") +
+        `\nAdd verified_by: <test-file>::<test-name> (or verified_by: ` +
+        `not_applicable — <justification>) to each AC, then re-run /sprint:design. ` +
+        `No state was changed by this refusal.`,
+    };
+  }
+  return { ok: true };
 }
 
 function main() {
