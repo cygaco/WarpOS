@@ -703,6 +703,14 @@
       "introducedIn": "0.4.0",
       "docsToken": "paths.sprintReleases"
     },
+    "sprintRegressionCorpus": {
+      "path": "tests/regression",
+      "kind": "dir",
+      "owner": "project",
+      "mutable": true,
+      "introducedIn": "0.9.0",
+      "docsToken": "paths.sprintRegressionCorpus"
+    },
     "sprintApprovals": {
       "path": ".claude/project/sprint/approvals",
       "kind": "dir",

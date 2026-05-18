@@ -422,6 +422,11 @@
       "const": ".claude/project/sprint/releases",
       "description": "dir (runtime) — paths.sprintReleases"
     },
+    "sprintRegressionCorpus": {
+      "type": "string",
+      "const": "tests/regression",
+      "description": "dir (project) — paths.sprintRegressionCorpus"
+    },
     "sprintApprovals": {
       "type": "string",
       "const": ".claude/project/sprint/approvals",

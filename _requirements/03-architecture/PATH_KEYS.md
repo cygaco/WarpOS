@@ -91,6 +91,7 @@ Markdown convention: reference paths as `paths.X` in prose. Code: `const { PATHS
 | `sprintProgress` | `.claude/project/sprint/sprint-progress.yaml` | yaml | runtime | yes | 0.4.0 |  |
 | `sprintRalph` | `.claude/project/sprint/ralph` | dir | runtime | yes | 0.4.0 |  |
 | `sprintReference` | `.claude/project/reference/sprint-workflow.md` | md | framework | no | 0.4.0 |  |
+| `sprintRegressionCorpus` | `tests/regression` | dir | project | yes | 0.9.0 |  |
 | `sprintReleases` | `.claude/project/sprint/releases` | dir | runtime | yes | 0.4.0 |  |
 | `sprintRequirements` | `.claude/project/sprint/requirements` | dir | runtime | yes | 0.4.0 | Sprint-scope requirement bundles (PRD/STORIES/COPY/INPUTS/TR |
 | `sprintRoot` | `.claude/project/sprint` | dir | runtime | yes | 0.4.0 | Sprint Workflow v0.1 — downstream live tracker root. Created |
