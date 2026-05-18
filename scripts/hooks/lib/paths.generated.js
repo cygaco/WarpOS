@@ -94,6 +94,8 @@ const PATHS = {
   "sprintExternalServices": path.join(PROJECT, ".claude", "project", "sprint", "external-services"),
   "sprintReleases": path.join(PROJECT, ".claude", "project", "sprint", "releases"),
   "sprintRegressionCorpus": path.join(PROJECT, "tests", "regression"),
+  "sprintFullAutonomy": path.join(PROJECT, ".claude", "agents", "00-alex", ".system", "policy", "sprint-full-autonomy.json"),
+  "sprintFullReports": path.join(PROJECT, ".claude", "project", "sprint", "full-reports"),
   "sprintApprovals": path.join(PROJECT, ".claude", "project", "sprint", "approvals"),
   "sprintDecisions": path.join(PROJECT, ".claude", "project", "sprint", "decisions"),
   "sprintRalph": path.join(PROJECT, ".claude", "project", "sprint", "ralph"),

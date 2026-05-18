@@ -83,6 +83,8 @@
   "sprintExternalServices": ".claude/project/sprint/external-services",
   "sprintReleases": ".claude/project/sprint/releases",
   "sprintRegressionCorpus": "tests/regression",
+  "sprintFullAutonomy": ".claude/agents/00-alex/.system/policy/sprint-full-autonomy.json",
+  "sprintFullReports": ".claude/project/sprint/full-reports",
   "sprintApprovals": ".claude/project/sprint/approvals",
   "sprintDecisions": ".claude/project/sprint/decisions",
   "sprintRalph": ".claude/project/sprint/ralph",

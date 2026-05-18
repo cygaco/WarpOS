@@ -711,6 +711,22 @@
       "introducedIn": "0.9.0",
       "docsToken": "paths.sprintRegressionCorpus"
     },
+    "sprintFullAutonomy": {
+      "path": ".claude/agents/00-alex/.system/policy/sprint-full-autonomy.json",
+      "kind": "json",
+      "owner": "framework",
+      "mutable": true,
+      "introducedIn": "0.8.0",
+      "docsToken": "paths.sprintFullAutonomy"
+    },
+    "sprintFullReports": {
+      "path": ".claude/project/sprint/full-reports",
+      "kind": "dir",
+      "owner": "runtime",
+      "mutable": true,
+      "introducedIn": "0.8.0",
+      "docsToken": "paths.sprintFullReports"
+    },
     "sprintApprovals": {
       "path": ".claude/project/sprint/approvals",
       "kind": "dir",

@@ -84,6 +84,8 @@ Markdown convention: reference paths as `paths.X` in prose. Code: `const { PATHS
 | `sprintCurrent` | `.claude/project/sprint/current-sprint.yaml` | yaml | runtime | yes | 0.4.0 |  |
 | `sprintDecisions` | `.claude/project/sprint/decisions` | dir | runtime | yes | 0.4.0 | Sprint-scope decisions. Distinct from paths.decisions (proje |
 | `sprintExternalServices` | `.claude/project/sprint/external-services` | dir | runtime | yes | 0.4.0 |  |
+| `sprintFullAutonomy` | `.claude/agents/00-alex/.system/policy/sprint-full-autonomy.json` | json | framework | yes | 0.8.0 |  |
+| `sprintFullReports` | `.claude/project/sprint/full-reports` | dir | runtime | yes | 0.8.0 |  |
 | `sprintHistory` | `.claude/project/sprint/history` | dir | runtime | yes | 0.4.0 |  |
 | `sprintIssues` | `.claude/project/sprint/issues` | dir | runtime | yes | 0.4.0 | Structured per-issue yaml. Per-project bug inbox issues.md ( |
 | `sprintIssuesLedger` | `issues.md` | md | project | yes | 0.4.0 | Human-readable per-project bug inbox at repo root. Distinct  |

@@ -427,6 +427,16 @@
       "const": "tests/regression",
       "description": "dir (project) — paths.sprintRegressionCorpus"
     },
+    "sprintFullAutonomy": {
+      "type": "string",
+      "const": ".claude/agents/00-alex/.system/policy/sprint-full-autonomy.json",
+      "description": "json (framework) — paths.sprintFullAutonomy"
+    },
+    "sprintFullReports": {
+      "type": "string",
+      "const": ".claude/project/sprint/full-reports",
+      "description": "dir (runtime) — paths.sprintFullReports"
+    },
     "sprintApprovals": {
       "type": "string",
       "const": ".claude/project/sprint/approvals",
