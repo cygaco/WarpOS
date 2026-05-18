@@ -2,12 +2,12 @@ schema: warpos/sprint/ticket/v1
 id: T-20260518-108
 title: "/sprint:release cited-test executor (release.js + skill body)"
 type: feature
-status: ready_for_execution
+status: done
 sprint: SP-20260518-007
 created_at: "2026-05-18T21:24:16.885Z"
-updated_at: "2026-05-18T21:29:16.881Z"
+updated_at: "2026-05-18T22:14:39.968Z"
 owner: null
-owner_agent: null
+owner_agent: alpha
 risk_level: high
 approval_required: false
 approval_state: not_required
@@ -46,7 +46,7 @@ user_value: ""
 business_value: ""
 acceptance_criteria: []
 non_goals: []
-implementation_notes: ""
+implementation_notes: "release.js cited-test executor implemented. Three branches: pass (parseable ok line + exit 0), fail (parseable FAIL line OR ENOENT per Beta directive 2026-05-18 AC-2.3.5), inconclusive (non-zero exit + unparseable). Inconclusive may be unblocked by decision-ledger override (kind=release_override_inconclusive_test, matches sprint+test). NO --allow-coverage-gap flag in v1 per Beta Q2. acceptance_criteria_satisfied=true iff zero fails AND zero unresolved inconclusive. Fully gated on plan.goal_verification (pre-Sprint-A contracts retain operator-discipline boolean). 6 dogfood test cases pass."
 qa_notes: ""
 redteam_notes: ""
 trace_notes: ""

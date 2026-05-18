@@ -236,9 +236,20 @@ function cmdCheck(argv) {
       current.requirements?.inputs == null ? true : true;
     release.checklist.trace_satisfied =
       current.requirements?.trace == null ? true : true;
-    release.checklist.acceptance_criteria_satisfied = Boolean(
-      current.requirements?.acceptance_criteria,
-    );
+    // SP-20260518-007 R-6: cited-test executor. Fully gated on
+    // plan.goal_verification — pre-Sprint-A contracts retain the
+    // operator-discipline boolean. When the contract carries
+    // goal_verification, enumerate cited tests + execute each + aggregate.
+    const acSatRes = computeAcceptanceCriteriaSatisfied(release, current);
+    release.checklist.acceptance_criteria_satisfied =
+      acSatRes.acceptance_criteria_satisfied;
+    if (acSatRes.cited_test_results) {
+      release.cited_test_results = acSatRes.cited_test_results;
+    }
+    if (acSatRes.notes) {
+      release.notes =
+        (release.notes ? release.notes + "\n" : "") + acSatRes.notes;
+    }
     const ext = current.external_services || {};
     const notReady = (ext.identified || []).concat(ext.blocked || []);
     release.checklist.external_services_ready = notReady.length === 0;
@@ -450,6 +461,218 @@ function cmdList() {
   return 0;
 }
 
+// ── SP-20260518-007 R-6 — cited-test ship-gate executor ────────────
+// Reads the Plan Contract for goal_verification. When absent or
+// reproduction=not_applicable, falls back to the operator-discipline
+// boolean (pre-Sprint-A behavior). When reproduction=executable:
+//   1. Parses verified_by: lines from the sprint's acceptance-criteria.md
+//   2. For each cited test:
+//      - if path missing on disk (ENOENT) → status: fail (Beta directive
+//        2026-05-18: closes rename/delete bypass class, AC-2.3.5)
+//      - if `node <file>` exits non-zero with parseable per-case output → fail
+//      - if exit code non-zero or output unparseable → inconclusive
+//      - if exit 0 + per-case output present → pass
+//   3. Inconclusive may be unblocked by a decision-ledger override row
+//      (kind=release_override_inconclusive_test, matches sprint+test).
+//   4. acceptance_criteria_satisfied = (zero fails) && (zero unresolved
+//      inconclusive). No --allow-coverage-gap flag in v1 (Beta directive).
+function computeAcceptanceCriteriaSatisfied(release, current) {
+  const out = { acceptance_criteria_satisfied: false };
+  if (
+    !current ||
+    !current.requirements ||
+    !current.requirements.acceptance_criteria
+  ) {
+    out.acceptance_criteria_satisfied = false;
+    out.notes = "no acceptance-criteria.md linked from current sprint";
+    return out;
+  }
+  const plan = current.plan_contract
+    ? readYamlMaybe(path.resolve(SPRINT.PROJECT, current.plan_contract))
+    : null;
+  const gv = plan && plan.goal_verification;
+  if (!gv || gv.reproduction !== "executable") {
+    // Backward-compat: operator-discipline boolean.
+    out.acceptance_criteria_satisfied = Boolean(
+      current.requirements.acceptance_criteria,
+    );
+    return out;
+  }
+  const acPath = path.resolve(
+    SPRINT.PROJECT,
+    current.requirements.acceptance_criteria,
+  );
+  if (!fs.existsSync(acPath)) {
+    out.acceptance_criteria_satisfied = false;
+    out.notes = `acceptance-criteria.md not on disk at ${acPath}`;
+    return out;
+  }
+  const ac = fs.readFileSync(acPath, "utf8");
+  const cited = parseCitedTests(ac);
+  if (cited.length === 0) {
+    out.acceptance_criteria_satisfied = false;
+    out.notes =
+      "acceptance-criteria.md present but no verified_by: lines found; ship-gate refuses";
+    return out;
+  }
+  process.stdout.write(
+    `release:check — cited-test executor running ${cited.length} tests for sprint ${current.id}...\n`,
+  );
+  const overrides = readInconclusiveOverrides(current.id);
+  const results = [];
+  for (const c of cited) {
+    const r = runOneCitedTest(c);
+    if (r.status === "inconclusive") {
+      const o = overrides.find(
+        (x) =>
+          x.test_file === c.file &&
+          x.test_name === c.test_name &&
+          x.sprint_id === current.id,
+      );
+      if (o)
+        r.override = { reason: o.reason || "", operator: o.operator || "" };
+    }
+    results.push({ ...c, ...r });
+    const tag = r.status.padEnd(12);
+    process.stdout.write(
+      `  [${tag}] ${c.file}::${c.test_name}  (${r.elapsed_ms}ms)\n`,
+    );
+  }
+  out.cited_test_results = results;
+  const failed = results.filter((r) => r.status === "fail");
+  const inconclusiveUnresolved = results.filter(
+    (r) => r.status === "inconclusive" && !r.override,
+  );
+  if (failed.length === 0 && inconclusiveUnresolved.length === 0) {
+    out.acceptance_criteria_satisfied = true;
+  } else {
+    out.acceptance_criteria_satisfied = false;
+    if (failed.length > 0) {
+      out.notes = `${failed.length} cited test(s) failed; ship-gate fail-closed.`;
+    }
+    if (inconclusiveUnresolved.length > 0) {
+      const msg =
+        `${inconclusiveUnresolved.length} cited test(s) returned unparseable output (inconclusive). ` +
+        `To proceed, record an operator override in paths.decisionLedger with kind=release_override_inconclusive_test ` +
+        `(fields: ts, sprint_id, test_file, test_name, reason, operator), then re-run release:check. ` +
+        `No --allow-coverage-gap flag in v1 — the override IS the audit trail.`;
+      out.notes = (out.notes ? out.notes + "\n" : "") + msg;
+    }
+  }
+  return out;
+}
+
+function parseCitedTests(acMarkdown) {
+  const cited = [];
+  const lines = acMarkdown.split(/\r?\n/);
+  const re = /verified_by\s*:\s*([^\s][^\r\n]*?)::([^\s][^\r\n]*?)\s*$/;
+  for (const line of lines) {
+    const m = line.match(re);
+    if (!m) continue;
+    const file = m[1].trim();
+    const test_name = m[2].trim();
+    if (
+      /not_applicable/i.test(file) ||
+      /\{\{|<test-file>|<test-name>/.test(line)
+    ) {
+      continue;
+    }
+    cited.push({ file, test_name });
+  }
+  return cited;
+}
+
+function runOneCitedTest(c) {
+  const { spawnSync } = require("child_process");
+  const absPath = path.resolve(SPRINT.PROJECT, c.file);
+  const start = Date.now();
+  if (!fs.existsSync(absPath)) {
+    // AC-2.3.5 / Beta directive 2026-05-18: ENOENT → fail (NOT inconclusive).
+    return {
+      status: "fail",
+      exit_code: -1,
+      elapsed_ms: Date.now() - start,
+      reason: "ENOENT",
+      detail: `cited test path missing on disk: ${c.file}`,
+    };
+  }
+  const r = spawnSync(process.execPath, [absPath], {
+    encoding: "utf8",
+    timeout: 60_000,
+    cwd: SPRINT.PROJECT,
+  });
+  const elapsed_ms = Date.now() - start;
+  const out = (r.stdout || "") + "\n" + (r.stderr || "");
+  // Per-case convention: lines like `  ok    <name>` / `  FAIL  <name>`.
+  const okRe = new RegExp(
+    "^\\s*ok\\s+" + escapeRegex(c.test_name) + "\\s*$",
+    "m",
+  );
+  const failRe = new RegExp(
+    "^\\s*FAIL\\s+" + escapeRegex(c.test_name) + "\\s*$",
+    "m",
+  );
+  const okMatch = okRe.test(out);
+  const failMatch = failRe.test(out);
+  if (failMatch) {
+    return { status: "fail", exit_code: r.status, elapsed_ms };
+  }
+  if (okMatch && r.status === 0) {
+    return { status: "pass", exit_code: r.status, elapsed_ms };
+  }
+  if (r.status !== 0 && !okMatch && !failMatch) {
+    return {
+      status: "inconclusive",
+      exit_code: r.status,
+      elapsed_ms,
+      reason: "unparseable_output_non_zero_exit",
+    };
+  }
+  return {
+    status: "inconclusive",
+    exit_code: r.status,
+    elapsed_ms,
+    reason: "test_name_not_found_in_output",
+  };
+}
+
+function escapeRegex(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function readInconclusiveOverrides(sprintId) {
+  const dlp = path.join(
+    SPRINT.PROJECT,
+    ".claude",
+    "project",
+    "decisions",
+    "decision-ledger.jsonl",
+  );
+  if (!fs.existsSync(dlp)) return [];
+  try {
+    const lines = fs.readFileSync(dlp, "utf8").split(/\r?\n/);
+    const rows = [];
+    for (const l of lines) {
+      if (!l.trim()) continue;
+      try {
+        const o = JSON.parse(l);
+        if (
+          o &&
+          o.kind === "release_override_inconclusive_test" &&
+          o.sprint_id === sprintId
+        ) {
+          rows.push(o);
+        }
+      } catch {
+        /* skip malformed row */
+      }
+    }
+    return rows;
+  } catch {
+    return [];
+  }
+}
+
 function main() {
   const sa = SPRINT.parseSprintArg(process.argv);
   if (sa.error) return 1;
@@ -483,4 +706,12 @@ if (require.main === module) {
   process.exit(main());
 }
 
-module.exports = { main };
+module.exports = {
+  main,
+  // SP-20260518-007 R-6 exports — enable focused unit tests under
+  // tests/regression/SP-20260518-007/.
+  computeAcceptanceCriteriaSatisfied,
+  parseCitedTests,
+  runOneCitedTest,
+  readInconclusiveOverrides,
+};
