@@ -71,13 +71,34 @@ function loadPayload(file) {
 function ensureCurrentSprint() {
   let current = readYamlMaybe(SPRINT.current);
   if (current && current.id) return current;
-  // Bootstrap: create a fresh sprint id if not initialized.
-  const sid = nextSprintId(SPRINT.history);
+  // Bootstrap: honor the active-sprints registry primary id BEFORE minting a
+  // fresh id. add-sprint.js writes the registry entry + mkdirs the sprint dir
+  // but does NOT create current.yaml; readYamlMaybe(SPRINT.current) therefore
+  // returns null on the first /sprint:plan run after add-sprint. Falling
+  // through to nextSprintId(SPRINT.history) at that point would silently
+  // ignore the pinned primary and mint a brand-new SP id — diverging the
+  // Plan Contract's `sprint:` field from the registry. The registry is the
+  // source of truth; respect it. (Bug repro: 2026-05-18, plan-contract
+  // PC-20260518-0010 was minted with sprint=SP-20260518-006 while the
+  // registry primary was SP-20260518-001 and --sprint SP-20260518-001 was
+  // explicitly passed.)
+  const activeId = typeof SPRINT.active === "function" ? SPRINT.active() : null;
+  const activeEntry =
+    activeId && typeof SPRINT.entry === "function"
+      ? SPRINT.entry(activeId)
+      : null;
+  const sid = activeId || nextSprintId(SPRINT.history);
   const now = nowIso();
+  const initialTitle = (activeEntry && activeEntry.title) || "Unnamed sprint";
+  const initialLane = (activeEntry && activeEntry.lane) || {
+    type: "default",
+    value: null,
+    isolation_notes: "",
+  };
   current = {
     schema: "warpos/sprint/current-sprint/v1",
     id: sid,
-    title: "Unnamed sprint",
+    title: initialTitle,
     objective: "(set by /sprint:plan)",
     status: "planning",
     created_at: now,
@@ -90,7 +111,7 @@ function ensureCurrentSprint() {
     current_phase: "plan",
     recommended_mode: "no_recommendation",
     mode_invocation_required_by_user: true,
-    lane: { type: "default", value: null, isolation_notes: "" },
+    lane: initialLane,
     external_services: {
       identified: [],
       blocked: [],
@@ -338,12 +359,28 @@ function updateCurrent(current, planContract, payload) {
       : "planning";
   current.recommended_mode = planContract.recommended_mode;
   current.risk_level = planContract.scope.risk_level;
-  // Inherit lane from the Plan Contract.
-  current.lane = planContract.lane || {
-    type: "default",
-    value: null,
-    isolation_notes: "",
-  };
+  // Inherit lane: precedence = explicit Plan Contract lane > existing
+  // current.lane (from registry entry via ensureCurrentSprint) > default.
+  // Treats `{ type: "default", value: null, ... }` from the Plan Contract as
+  // "not explicitly set" so it doesn't silently clobber a registry-pinned
+  // lane. (Part of the RT-008 fix — without this guard, the registry lane
+  // bootstrap in ensureCurrentSprint() would be erased seconds later.)
+  const pcLane = planContract.lane;
+  const pcLaneIsExplicit =
+    pcLane && !(pcLane.type === "default" && pcLane.value == null);
+  const existingLaneIsExplicit =
+    current.lane &&
+    !(current.lane.type === "default" && current.lane.value == null);
+  if (pcLaneIsExplicit) {
+    current.lane = pcLane;
+  } else if (!existingLaneIsExplicit) {
+    current.lane = pcLane || {
+      type: "default",
+      value: null,
+      isolation_notes: "",
+    };
+  }
+  // else: keep current.lane as-is (registry-bootstrapped, non-default).
   current.title =
     payload.sprint_title ||
     current.title ||
@@ -381,6 +418,18 @@ function main() {
   const payload = loadPayload(args.payload);
   if (!payload) return 1;
   const current = ensureCurrentSprint();
+  // Defensive sanity check: if the operator passed --sprint <id>, the resolved
+  // current.id MUST equal that id. A mismatch means ensureCurrentSprint fell
+  // through to id-minting despite the registry having an active primary —
+  // exactly the bug fixed under L-2026-05-18 / RT-008. Warn loudly so future
+  // drift surfaces in stderr instead of silently writing a wrong Plan Contract.
+  if (sa.id && current.id !== sa.id) {
+    process.stderr.write(
+      `WARN: --sprint ${sa.id} but ensureCurrentSprint resolved id=${current.id}. ` +
+        `Plan Contract will be written against ${current.id}, not ${sa.id}. ` +
+        `Investigate: active-sprints.yaml#primary, $WARPOS_SPRINT_ID, and per-sprint current.yaml.\n`,
+    );
+  }
   const { pcId, pcPath, planContract } = writePlanContract(payload, current);
   updateCurrent(current, planContract, payload);
   process.stdout.write(`plan-contract: ${pcPath}\n`);

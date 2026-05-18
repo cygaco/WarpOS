@@ -397,6 +397,11 @@ function main() {
   }
   const target = extractTarget(event);
   if (!target.file_path) process.exit(0);
+  // Tool name needed below to gate auto-inject shape (Write replaces whole
+  // file; Edit replaces a snippet). Mis-shaped updatedInput strips required
+  // tool params and surfaces as "Path must be a string, received undefined"
+  // from the Edit handler. Source: RT-009 / L-2026-05-18-sprint-tracker-edit-strip.
+  const toolName = event.tool_name || "";
 
   const sp = loadSprintPaths();
   if (!isUnderSprintRoot(target.file_path, sp.root)) process.exit(0);
@@ -428,15 +433,25 @@ function main() {
     // the schema header and let the write proceed with mutated content.
     // This collapses the 126×/day "missing schema header" block class into
     // a silent fix-forward. Source: /check:patterns 2026-05-13.
+    //
+    // GUARD (RT-009, 2026-05-18): auto-inject is ONLY safe for Write tool
+    // calls. For Edit, target.content is a partial snippet (new_string),
+    // not full file content — injecting a header before a snippet would
+    // corrupt the file. Also, emitting hookSpecificOutput.updatedInput
+    // with a Write-shaped object ({content}) on an Edit call strips
+    // file_path/old_string/new_string and triggers "Path must be a string,
+    // received undefined" from the Edit handler. Fall through to warn-only
+    // for Edits.
     const kind = inferSchemaKind(target.file_path);
-    if (kind) {
+    if (kind && toolName === "Write") {
       emitAutoInject(target.file_path, kind, target.content);
       // emitAutoInject exits the process
     }
-    // Unknown path with no schema: keep prior warn-only behavior so we
-    // never accidentally break a write to a sprint file we don't recognize.
+    // Unknown path with no schema, or Edit on a known sprint-kind file:
+    // keep prior warn-only behavior so we never accidentally break a
+    // write to a sprint file we don't recognize.
     emitWarn(
-      `${target.file_path}: no schema: field detected and path doesn't match any known sprint-kind rule. ` +
+      `${target.file_path}: no schema: field detected${kind ? ` (would auto-inject warpos/sprint/${kind}/v1 on Write — Edit is warn-only)` : " and path doesn't match any known sprint-kind rule"}. ` +
         "Sprint tracker yaml MUST declare its schema. Allowing (warn-only). " +
         "If this is a new sprint artifact type, add a SCHEMA_KIND_RULES entry to sprint-tracker-guard.js.",
     );

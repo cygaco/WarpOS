@@ -190,6 +190,11 @@ function LEGACY_FALLBACK_PATHS() {
  * @returns {string} Relative path with forward slashes (e.g., "scripts/hooks/edit-watcher.js")
  */
 function relPath(filePath) {
+  // Defensive: callers that forget the upstream `if (!filePath) exit(0)`
+  // guard would otherwise crash with "Path must be a string, received
+  // undefined" from path.resolve. Returning "" lets callers' downstream
+  // string ops (startsWith/match/etc.) no-op cleanly. Source: RT-009.
+  if (filePath == null || typeof filePath !== "string") return "";
   const abs = path.resolve(filePath);
   const proj = path.resolve(PROJECT);
   if (abs.startsWith(proj)) {
