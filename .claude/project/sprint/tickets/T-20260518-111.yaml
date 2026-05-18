@@ -2,10 +2,10 @@ schema: warpos/sprint/ticket/v1
 id: T-20260518-111
 title: "Docs + config bundle: sprint-workflow.md section + sprint-full-autonomy preset note + four sprint skill bodies"
 type: docs
-status: ready_for_execution
+status: done
 sprint: SP-20260518-007
 created_at: "2026-05-18T21:24:32.424Z"
-updated_at: "2026-05-18T21:29:17.106Z"
+updated_at: "2026-05-18T22:58:42.115Z"
 owner: null
 owner_agent: null
 risk_level: low
@@ -39,7 +39,7 @@ user_value: ""
 business_value: ""
 acceptance_criteria: []
 non_goals: []
-implementation_notes: ""
+implementation_notes: "Docs+config bundle landed (Beta-merged S-5.1+S-5.3+S-6.1). 6 file edits: sprint-workflow.md (new Sprint Goal Verification section), sprint-full-autonomy.json moderate preset description (fixture-gate note), plan.md/design.md/release.md/execute.md (inline convention paragraphs). 3 dogfood tests pass."
 qa_notes: ""
 redteam_notes: ""
 trace_notes: ""

@@ -109,6 +109,117 @@ Tickets sit at the bottom. They are NEVER a substitute for
 requirements. `/sprint:design` is the only command that mints tickets
 for non-trivial work.
 
+## Sprint Goal Verification (SP-20260518-007)
+
+Every sprint can opt into an **executable-goal contract** via the
+optional `goal_verification` block on its Plan Contract. When opted
+in, the framework enforces a load-bearing rule: *every sprint
+produces at least one test that would have failed before the sprint
+started and passes after.*
+
+### `goal_verification` block (Plan Contract)
+
+Additive optional field on `plan-contract.schema.json` (introduced
+2026-05-18). Shape:
+
+```yaml
+goal_verification:
+  origin_evidence: "<free-text description of the failure>"
+  bug_classes_closed: ["<class-a>", "<class-b>"]
+  reproduction: executable | not_applicable
+  justification: "<required & non-empty when reproduction=not_applicable>"
+  cited_tests:
+    - { file: "tests/regression/<SP-id>/foo.test.js", test_name: "test_one" }
+  fixture_path: null  # or paths.sprintRegressionCorpus/<SP-id>/<RF-id>.yaml
+```
+
+Empty `justification` is treated as missing — `validate.js` rejects
+the contract (Beta directive 2026-05-18).
+
+### AC `verified_by:` linkage convention
+
+In `acceptance-criteria.md`, each AC must carry a `verified_by:` line
+when the Plan Contract has `goal_verification`. Two accepted forms:
+
+- `verified_by: <test-file>::<test-name>` (executable — the
+  ship-gate runs this exact test)
+- `verified_by: not_applicable — <non-empty justification>` (skipped;
+  legal only when the contract's `reproduction = not_applicable`)
+
+The template at `framework/templates/sprint/requirements/acceptance-criteria.md.tmpl`
+documents both forms. Placeholder lines containing `{{` or
+`<test-file>` count as **missing** for gate purposes.
+
+### Per-sprint regression corpus
+
+Per `paths.sprintRegressionCorpus` (=`tests/regression`), each
+opted-in sprint authors its fixtures under
+`tests/regression/<SP-id>/`. The convention is bespoke `node` scripts
+emitting `  ok    <name>` / `  FAIL  <name>` per case (same format as
+`scripts/sprint/test-plan-honors-registry-primary.js`). The corpus is
+**excluded** from `/linters:run` discovery — fixtures execute via the
+ship-gate only.
+
+### `/sprint:design` fixture gate
+
+When `goal_verification.reproduction = executable`,
+`scripts/sprint/design.js` runs a post-scaffold gate: it scans
+`acceptance-criteria.md` and refuses to exit cleanly if any AC lacks
+a real `verified_by:` line. Refusal is loud (stderr lists the missing
+ACs) and non-state-changing — operator fixes the linkage and re-runs.
+
+When `reproduction = not_applicable` and justification is non-empty,
+the gate is honored without scanning ACs. When the Plan Contract has
+no `goal_verification` field at all, the gate is a no-op (fully
+backward-compat with pre-Sprint-A contracts).
+
+### `/sprint:release` cited-test ship-gate
+
+`scripts/sprint/release.js check` enumerates the cited tests from
+`acceptance-criteria.md` + any fixture records, executes each, and
+classifies into three branches:
+
+1. **pass** — exit 0 + parseable `  ok    <name>` line for the cited
+   `<test-name>`.
+2. **fail** — parseable `  FAIL  <name>` line OR **ENOENT on the cited
+   file path** (Beta-flagged stop-the-bus: closes the rename/delete
+   bypass class — a missing test path NEVER falls through to inconclusive).
+3. **inconclusive** — non-zero exit with no recognizable per-case
+   markers; blocks the release until an operator records an override.
+
+The operator override is a `decision-ledger.jsonl` row of
+`kind=release_override_inconclusive_test`, matched by
+`(sprint_id, test_file, test_name)`. There is **no
+`--allow-coverage-gap` CLI flag in v1** — the override IS the audit
+trail (Beta Q2 directive, observe real bypass patterns first).
+
+`acceptance_criteria_satisfied` flips to `true` only when zero
+fails AND zero unresolved inconclusive. Pre-Sprint-A Plan Contracts
+retain the old operator-discipline boolean.
+
+### `/check:ac-coverage` audit skill
+
+Read-only diagnostic that scans every active sprint's AC markdown and
+reports per-AC linkage state (`executable` / `not_applicable` /
+`missing`). Prose default; `--json` for machine output. Exit 0 when
+clean or gate not applicable; 1 when any gate-applicable sprint has
+`missing > 0`. Runs ad-hoc — not in `/check:all` default set in v1.
+
+### Retrospective annotation
+
+`scripts/sprint/retrospective.js` surfaces a per-AC linkage summary
+in the retro report (executable / not_applicable / missing counts).
+Read-only annotation; no scoring, no blocking.
+
+### Backward compatibility
+
+The entire feature is **gated on `plan_contract.goal_verification`
+presence.** Pre-Sprint-A sprints (10+ retro'd entries as of 2026-05-18)
+are exempt — no backfill, no enforcement. The gate, executor, and
+audit all skip when the field is absent. Downstream projects updating
+via `/warp:update` inherit the schema additive but their existing
+sprints continue to ship unchanged.
+
 ## Commands
 
 | Command | Purpose | Layer |

@@ -228,6 +228,21 @@ Routing is enforced — not aspirational (SP-20260514-002).
 - Manual record (e.g. you hand-edited templates outside `design.js`): `node scripts/sprint/routing.js record --phase design --artifact design:<SP-id> --sprint <SP-id> --model <provider:model> --allow-single-vendor`.
 - Trace location: `paths.sprintDecisions/routing-trace.jsonl`. Coverage check: `node scripts/sprint/routing.js coverage --sprint <SP-id>`.
 
+## Sprint Goal Verification fixture gate (SP-20260518-007)
+
+When the Plan Contract carries `goal_verification.reproduction =
+executable`, `scripts/sprint/design.js` runs a post-scaffold gate
+after writing the templates: it scans the rendered
+`acceptance-criteria.md` and refuses to exit cleanly when any AC
+lacks a real `verified_by: <test-file>::<test-name>` (or
+`verified_by: not_applicable — <justification>`) line. Placeholders
+containing `{{` or `<test-file>` count as missing. Refusal is loud
+(stderr lists the offending ACs) and non-state-changing; fix the
+linkage and re-run. When `goal_verification` is absent or
+`reproduction = not_applicable` with a non-empty justification, the
+gate is a no-op (backward-compat with pre-Sprint-A contracts). See
+`paths.sprintReference#sprint-goal-verification-sp-20260518-007`.
+
 ## Reference
 
 See `paths.sprintReference` and `_docs/sprint/OVERVIEW.md`.

@@ -273,6 +273,19 @@ Routing is enforced — not aspirational (SP-20260514-002).
 The sprint tracker is the source of truth for what's done, regardless
 of mode. Team tasks are NEVER used as the durable record.
 
+## Sprint Goal Verification linkage convention (SP-20260518-007)
+
+When a ticket implements an AC that's part of an opted-in sprint
+(Plan Contract carries `goal_verification.reproduction = executable`),
+the ticket author MUST emit a real `verified_by: <test-file>::<test-name>`
+line in `acceptance-criteria.md` and author the cited test under
+`paths.sprintRegressionCorpus/<SP-id>/`. The test follows the bespoke
+node-script convention (`  ok    <name>` / `  FAIL  <name>` per case;
+exit 0 on all-pass). The design-time gate refuses to advance the
+sprint when this linkage is missing; the release-time ship-gate runs
+every cited test. See
+`paths.sprintReference#sprint-goal-verification-sp-20260518-007`.
+
 ## Reference
 
 See `paths.sprintReference`, `_docs/sprint/RALPH_LOOP.md`,

@@ -277,6 +277,19 @@ Routing is enforced — not aspirational (SP-20260514-002).
 - `scripts/hooks/sprint-routing-guard.js` runs on PreToolUse Edit|Write and (in `block` mode) refuses writes to sprint artifact paths missing a trace row. Default policy `enforcement.mode` is `warn` during soft rollout (until the date in `sprint-routing.json#enforcement.soft_rollout_until`). Flip to `block` after smoke validation.
 - To record manually: `node scripts/sprint/routing.js record --phase planning --artifact <PC-id> --sprint <SP-id> --model <provider:model> [--diff-reviewer <provider:model> | --allow-single-vendor]`.
 
+## Sprint Goal Verification (SP-20260518-007)
+
+The Plan Contract carries an optional `goal_verification` block when
+the sprint wants to opt into the executable-goal convention. When
+present, it records: `origin_evidence`, `bug_classes_closed`,
+`reproduction (executable|not_applicable)`, `justification`,
+`cited_tests[]`, `fixture_path`. Adding this block at plan-time means
+later phases enforce real `verified_by:` linkage at design exit and
+run the cited tests at release. Omit the field for legacy/exempt
+sprints — the gate is fully gated on its presence. See
+`paths.sprintReference#sprint-goal-verification-sp-20260518-007` for
+the full convention.
+
 ## Reference
 
 Full sprint workflow doc: `paths.sprintReference`.

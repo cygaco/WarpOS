@@ -295,5 +295,30 @@ explicitly.
 
 ## Reference
 
+## Sprint Goal Verification cited-test executor (SP-20260518-007)
+
+`scripts/sprint/release.js check` runs the cited-test ship-gate when
+the Plan Contract carries `goal_verification.reproduction =
+executable`. The executor reads every `verified_by: <file>::<name>`
+line from `acceptance-criteria.md`, runs each cited test, and
+classifies into three branches:
+
+- **pass** — exit 0 + parseable `  ok    <name>` line for the cited test.
+- **fail** — parseable `  FAIL  <name>` line **OR ENOENT on the cited
+  test path** (Beta directive 2026-05-18: closes rename/delete bypass class).
+- **inconclusive** — non-zero exit + no recognizable per-case markers.
+  Blocks the release until an operator records an override in
+  `paths.decisionLedger` with `kind=release_override_inconclusive_test`
+  matched by `(sprint_id, test_file, test_name)`. There is **no
+  `--allow-coverage-gap` CLI flag in v1** — the ledger row IS the
+  audit trail.
+
+`acceptance_criteria_satisfied` flips to `true` only when zero
+fails AND zero unresolved inconclusive. Pre-Sprint-A Plan Contracts
+(no `goal_verification`) retain the operator-discipline boolean. See
+`paths.sprintReference#sprint-goal-verification-sp-20260518-007`.
+
+## Reference
+
 See `paths.sprintReference`, `_docs/sprint/OVERVIEW.md`,
 `_docs/sprint/CRASH_RECOVERY.md`.
