@@ -1,0 +1,183 @@
+schema: warpos/sprint/plan-contract/v1
+id: PC-20260518-0012
+created_at: "2026-05-18T21:32:56.167Z"
+updated_at: "2026-05-18T21:32:56.167Z"
+sprint: SP-20260518-008
+source_request: "Hook & process hygiene: fix format.js prettier spawn pattern (binary resolution + Windows timeout cleanup), add scripts/hooks/lint-hook-output.js PreToolUse payload-shape validator, ship /check:node-procs diagnostic, document run_in_background pitfalls in operational-loop.md and /sprint:execute."
+source_request_verbatim: "Hook & process hygiene: fix format.js prettier spawning via binary resolution + Windows timeout cleanup, add scripts/hooks/lint-hook-output.js for PreToolUse payload-shape validation, new /check:node-procs diagnostic skill, document background-task pitfalls in operational-loop.md and /sprint:execute."
+request_type: bug_fix
+interpreted_intent: "Two related hygiene problems converged in the prior session. (1) scripts/hooks/format.js calls execSync('npx prettier --write ...') per Edit/Write — 2 Node cold-starts per file edit. On Windows, child cleanup is unreliable on timeout. A downstream project's session leaked enough Node processes to bog the machine. (2) The /sprint:full retro flagged that PreToolUse hooks don't validate their `updatedInput` payload shape per tool — different shape for Write vs Edit (and MultiEdit, when used) — and a payload-shape bug was the root of a real regression. Sprint B fixes the format.js spawn pattern (replace `npx prettier` with require.resolve('prettier/bin/prettier.cjs') + execFileSync(process.execPath, [bin, ...]); add ETIMEDOUT catch + taskkill /F /T /PID on Windows), adds a lint-hook-output.js PreToolUse hook that catches payload-shape mismatches at write-time, ships a /check:node-procs diagnostic skill (read-only, lists Node procs by start-time + working-set), and documents the run_in_background orphan pitfall in operational-loop.md + /sprint:execute.md."
+user_or_business_outcome: "Developer machines stop accumulating leaked Node processes during sprint runs. Hook-payload regressions surface at write-time, not weeks later via behavior drift. Operators get a one-command diagnostic to inspect Node-process state without having to remember tasklist/ps incantations. Documentation closes the run_in_background-in-Ralph footgun that bit a downstream project this week."
+affected_surfaces:
+  - surface: scripts/hooks/format.js
+    evidence_level: verified_from_repo
+    notes: "Read 2026-05-18. 32 lines. Line 21: `execSync('npx prettier --write \"${filePath}\"')` with timeout: 10_000 (10s). Catch-all `try/catch (err)` swallows all errors including ETIMEDOUT silently. Hook is registered as PostToolUse on Edit|Write (settings.json:232). Two Node cold-starts per edit: one for `npx`, one for `prettier`."
+  - surface: "scripts/hooks/lint-hook-output.js (new)"
+    evidence_level: verified_from_repo
+    notes: "Glob 2026-05-18 confirms absent. New PreToolUse hook that validates the `updatedInput` payload shape per tool (Edit vs Write differ in field names; both nest under tool_input but with different required keys)."
+  - surface: ".claude/settings.json"
+    evidence_level: verified_from_repo
+    notes: "Read 2026-05-18. PreToolUse Edit|Write matcher (lines 63-123) has 13 hooks: memory-guard, secret-guard, foundation-guard, ownership-guard, store-validator, path-guard, sprint-routing-guard, step-registry-guard, extension-edit-guard, dependency-admission-guard, self-mod-governance, sprint-tracker-guard, requirement-format-guard, authorization-gate. The matcher is `Edit|Write` — MultiEdit is NOT in the matcher pattern (DUMP.md's mention of MultiEdit was inferred, not verified). Design must decide whether lint-hook-output should also extend the matcher pattern to include MultiEdit."
+  - surface: ".claude/commands/check/node-procs.md (new skill body)"
+    evidence_level: verified_from_repo
+    notes: "Glob 2026-05-18 confirms absent. New /check:* skill body. Sibling to 26 existing /check skills (path-resolution, references, patterns, system, etc.). Read-only diagnostic."
+  - surface: "scripts/check/node-procs.js (new helper)"
+    evidence_level: verified_from_repo
+    notes: "Glob 2026-05-18 confirms absent. New helper script — lists Node procs by start-time + working-set. Cross-platform note: Windows uses `tasklist /FO CSV`, Unix uses `ps -e -o pid,etime,rss,command`."
+  - surface: ".claude/project/reference/operational-loop.md"
+    evidence_level: verified_from_repo
+    notes: "Exists, 32 lines (wc -l 2026-05-18). Will gain a new section 'Background tasks and Windows process hygiene' — orphan pitfall, run_in_background semantics, when to use Monitor vs Bash run_in_background, when NOT to."
+  - surface: ".claude/commands/sprint/execute.md"
+    evidence_level: inferred_from_repo
+    notes: "Not directly read this turn. Existing skill body — Sprint B adds a one-line warning against `run_in_background` in the Ralph test phase (the in-loop test runner can orphan child processes; use direct execution + timeout)."
+  - surface: "Build inheritance: /sprint:full + /sprint:execute downstream"
+    evidence_level: verified_from_repo
+    notes: "/sprint:full v1 shipped under SP-20260518-001 and shells out to per-phase helpers. Sprint B is a hooks/diagnostic sprint — no per-phase helper changes — so /sprint:full inherits the fixes transparently (the format.js fix runs in any session) without preset doc updates."
+current_behavior:
+  evidence_level: verified_from_repo
+  notes: "Every Edit/Write triggers PostToolUse format.js which spawns `npx prettier --write <file>`. On Unix this is fast-ish; on Windows the npx → prettier chain is two cold Node starts and `execSync` with timeout 10000ms has no explicit child-process kill on timeout — Node sends SIGTERM (not honored by cmd.exe wrappers). Errors are swallowed by the catch-all. There is no PreToolUse hook that validates the Edit/Write `updatedInput` payload shape — hooks read `event.tool_input?.file_path || event.tool_input?.content?.file_path` defensively, but a payload-shape regression (e.g., upstream Claude Code renaming a key) only surfaces when a hook acts on undefined and a downstream effect breaks."
+desired_behavior: "format.js: replace `execSync('npx prettier ...')` with `execFileSync(process.execPath, [require.resolve('prettier/bin/prettier.cjs'), '--write', filePath])` (one Node cold-start, no shell, no `npx` indirection). Add explicit ETIMEDOUT catch; on Windows, run `taskkill /F /T /PID <pid>` to kill the child tree (the existing code has no captured PID). On non-Windows, send SIGKILL to the child PID. lint-hook-output.js: new PreToolUse hook on Edit|Write that asserts the payload-shape contract per tool — emits a one-line stderr warning + exit 0 (warn-only initially, like sprint-routing-guard's soft-rollout) when shape doesn't match expected. /check:node-procs: read-only skill prints Node procs sorted by start-time, columns: PID, started, working-set, command (truncated to 120 chars). operational-loop.md: new section explaining run_in_background semantics, orphan risk, when to use Monitor vs Bash run_in_background. /sprint:execute.md: one-line warning against `run_in_background` in Ralph test phase."
+scope:
+  size: s
+  risk_level: low
+  complexity_drivers:
+    - "Hook code path is per-edit — any regression in format.js is visible immediately, but blast radius is bounded by existing fail-open semantics (the catch-all `catch (err) { process.exit(0) }` continues to work)."
+    - "New PreToolUse hook (lint-hook-output.js) must not collide with the existing 13-hook chain in .claude/settings.json#PreToolUse#Edit|Write. Ordering matters — should slot near the top (warn-only) so it surfaces drift before other hooks act on malformed payloads."
+    - "New skill is read-only diagnostic — no execution risk."
+    - "Windows-specific cleanup (`taskkill /F /T /PID`) needs platform guard (`process.platform === 'win32'`). PID capture requires switching from `execSync` to `spawn` or capturing `child.pid` via `execFile` async pattern — design choice."
+    - "Cross-platform process listing in /check:node-procs requires a small abstraction. The Windows `tasklist` + Unix `ps` output formats differ enough that parsing is non-trivial; the simplest approach is platform-specific spawn + minimal parsing."
+scope_variants:
+  minimal_safe:
+    summary: "Only format.js fix (binary resolution + ETIMEDOUT catch + taskkill on Windows) and the operational-loop.md doc update. Defer lint-hook-output.js + /check:node-procs to a follow-up."
+    tradeoffs:
+      - "Pro: smallest blast radius — only touches one hook + one doc."
+      - "Pro: ships the proven-leak fix immediately."
+      - "Con: doesn't catch payload-shape regressions (the second motivation for Sprint B)."
+      - "Con: operators still have no canned diagnostic for Node leak debugging."
+  recommended:
+    summary: "minimal_safe + scripts/hooks/lint-hook-output.js (warn-only PreToolUse validator) + /check:node-procs skill + scripts/check/node-procs.js helper + /sprint:execute.md run_in_background warning. All scope from DUMP.md Sprint B block."
+    tradeoffs:
+      - "Pro: closes both motivating concerns in one sprint."
+      - "Pro: warn-only PreToolUse hook lets us observe drift before blocking."
+      - "Con: medium blast radius — 4 net-new files + 2 modified hooks + 1 settings.json edit."
+      - "Con: lint-hook-output.js must coexist with 13 existing PreToolUse hooks — ordering decisions for design."
+  expanded:
+    summary: "recommended + replace format.js per-edit prettier with deferred SessionEnd-batched formatting + automatic Node-process watchdog that warns when count exceeds threshold (e.g., > 30 Node procs alive)."
+    tradeoffs:
+      - "Pro: SessionEnd batching reduces Node spawns from O(edits) to O(1) per session."
+      - "Pro: watchdog catches leak regressions automatically."
+      - "Con: SessionEnd batching changes timing — formatting is no longer guaranteed before any human reads the file. Surprising."
+      - "Con: watchdog adds another long-running scheduled task which has its own orphan-risk."
+      - "Con: scope balloon — Sprint B is meant to be `s` (small), and this pushes to `m`."
+assumptions:
+  safe:
+    - "`prettier` is reliably reachable via `require.resolve('prettier/bin/prettier.cjs')` from the WarpOS framework dependency tree. (Confirm at design via `node -e \"console.log(require.resolve('prettier/bin/prettier.cjs'))\"`.)"
+    - "Existing hook fail-open semantics preserve compatibility — even with the new binary-resolution path, the catch-all `try/catch (err) { process.exit(0); }` keeps the hook non-blocking on any failure."
+    - "/check:node-procs is diagnostic-only — it can never wedge a session or modify state."
+    - "Windows uses `tasklist /FO CSV /FI \"IMAGENAME eq node.exe\"` and Unix uses `ps -e -o pid,etime,rss,command -p $(pgrep node)` — both well-documented system tools."
+    - "Sprint A is past /sprint:design before Sprint B's planning lands (verified — Sprint A design was completed earlier this session; 10 tickets ready_for_execution + 2 superseded). Edit-surface overlap with Sprint A is therefore safe."
+    - "lint-hook-output.js can be added warn-only first (no exit 1) so a payload-shape edge case doesn't block work — mirrors sprint-routing-guard's soft-rollout pattern."
+  unsafe:
+    - "Windows `taskkill /F /T /PID` requires the child PID. The existing `execSync` API does NOT expose the child PID; design must switch to `spawnSync` or `execFile` async + ref. Risk: if PID capture is omitted, the Windows fix is a no-op and the original leak persists."
+    - "PreToolUse hook ordering — `lint-hook-output.js` should slot near the top of the Edit|Write chain (so it warns BEFORE other hooks read malformed input), but not above security-relevant hooks (memory-guard, secret-guard, foundation-guard). Wrong ordering could mask drift OR delay critical guards. Design decision."
+    - "MultiEdit matcher coverage — DUMP.md mentions `Write/Edit/MultiEdit` payload shapes, but the existing .claude/settings.json#PreToolUse matcher is `Edit|Write` only. Either (a) extend the matcher to include MultiEdit, or (b) declare MultiEdit out-of-scope for v1 (since the existing 13-hook chain doesn't cover it either). Design decides."
+    - "format.js is PostToolUse — replacing the spawn pattern is non-blocking for the user, but if the new binary-resolve path is slower in cold-start (e.g., require.resolve scans node_modules), per-edit latency could increase noticeably. Need a quick A/B at design."
+    - "`/check:node-procs` parsing of `tasklist` output on Windows is brittle — locale-dependent (different languages produce different column headers). Mitigation: use the CSV format flag and parse columnar."
+  needs_user_or_beta_review:
+    - "Should /check:node-procs ever offer a `--kill-orphans` flag in v1? Recommendation: no — kill-flow belongs in a separate ops skill, not a diagnostic. Beta to confirm."
+    - "Should lint-hook-output.js extend the PreToolUse matcher to MultiEdit, or treat MultiEdit as out-of-scope for v1 (matching the existing chain coverage)? Beta to weigh in."
+    - "Should the format.js fix bump retries on ETIMEDOUT, or just kill+log+continue? Recommendation: kill+log+continue (we're a PostToolUse formatter; retries would compound latency). Beta to confirm."
+open_questions:
+  blocking: []
+  non_blocking:
+    - "Where exactly in the 13-hook PreToolUse Edit|Write chain should lint-hook-output.js slot? Recommendation: between path-guard (item 6) and sprint-routing-guard (item 7) — after security hooks, before workflow guards. Design decides."
+    - "Whether to mark lint-hook-output.js as warn-only forever (matches sprint-routing-guard's enforcement.mode: warn default), or have a soft-rollout date after which it goes to block. Recommendation: warn-only forever — payload-shape changes are usually framework upgrades; we want a heads-up, not a wedge."
+    - "Whether /check:node-procs should auto-include itself in /check:all. Recommendation: no — diagnostic only, not health."
+    - "Whether the Sprint B work needs a smoke test under SP-20260518-007's new ship-gate (Sprint A introduces). Decision: not yet — Sprint A's release lands the gate; Sprint B will be the first sprint AFTER Sprint A that gets to use the gate naturally."
+non_goals:
+  - "Switching formatters (biome, dprint, etc.) — separate decision."
+  - "MCP server cleanup discipline — downstream concern, not framework."
+  - "mcp-remote bridge management — Claude Desktop concern."
+  - "Auto-killer Node-process watchdog (expanded scope only; defer)."
+  - "Refactoring all hooks to use a shared invocation library — separate refactor."
+  - "Adding /check:node-procs to /check:all default set — separate, lower-risk add later."
+  - "Changing format.js from PostToolUse to PreToolUse — out of scope (changes timing semantics)."
+  - "SessionEnd-batched formatting — expanded variant; deferred."
+  - "Backfilling lint-hook-output.js's validation contract to MultiEdit if MultiEdit is declared out-of-scope at design."
+requirement_areas:
+  - "format.js binary resolution + ETIMEDOUT capture + Windows taskkill"
+  - "lint-hook-output.js PreToolUse payload-shape validator (warn-only)"
+  - ".claude/settings.json hook chain ordering for lint-hook-output.js"
+  - "/check:node-procs skill (.claude/commands/check/node-procs.md)"
+  - "scripts/check/node-procs.js helper (cross-platform process listing)"
+  - "operational-loop.md 'Background tasks and Windows process hygiene' section"
+  - "/sprint:execute.md run_in_background warning (one-line)"
+high_level_story_candidates:
+  - "H-1: As a Windows developer, hook-time prettier runs do not leak Node processes — the formatter cleans up on timeout and uses a single Node cold-start, not two."
+  - "H-2: As a framework operator, a future payload-shape change in Claude Code's hook contract surfaces as a warning at the next Edit/Write, not as silent behavior drift weeks later."
+  - "H-3: As an operator debugging RAM pressure, I can run /check:node-procs to see exactly which Node processes are alive, when they started, and what they were running."
+  - "H-4: As a Ralph-loop reader, the operational-loop reference doc tells me explicitly when run_in_background is safe and when it orphans children."
+granular_story_candidates:
+  - "S-1.1: format.js uses execFileSync(process.execPath, [require.resolve('prettier/bin/prettier.cjs'), '--write', filePath]) instead of `npx prettier`."
+  - "S-1.2: format.js captures the child PID, catches ETIMEDOUT, and on Windows runs taskkill /F /T /PID; on Unix sends SIGKILL."
+  - "S-2.1: scripts/hooks/lint-hook-output.js validates per-tool payload shape (Edit, Write, optionally MultiEdit) on PreToolUse and emits warn-only stderr on mismatch."
+  - "S-2.2: .claude/settings.json registers lint-hook-output.js in the PreToolUse Edit|Write chain at the agreed slot."
+  - "S-3.1: scripts/check/node-procs.js lists Node procs (cross-platform) with PID, start-time, working-set, command."
+  - "S-3.2: .claude/commands/check/node-procs.md skill body documents the skill (prose default, --json optional)."
+  - "S-4.1: .claude/project/reference/operational-loop.md gains a 'Background tasks and Windows process hygiene' section."
+  - "S-4.2: .claude/commands/sprint/execute.md adds a one-line warning against run_in_background in Ralph test phase."
+workstream_candidates:
+  - "WS-B1: format.js spawn-pattern fix (binary resolution + ETIMEDOUT cleanup)."
+  - "WS-B2: lint-hook-output.js PreToolUse validator (warn-only, with settings.json registration)."
+  - "WS-B3: /check:node-procs skill + helper (cross-platform diagnostic)."
+  - "WS-B4: Documentation (operational-loop.md section + execute.md warning line)."
+preliminary_ticket_candidates:
+  allowed: false
+  candidates: []
+  notes: "Tickets are minted during /sprint:design. Sprint B is scope.size=s but design_required=true (not documentation_scale=xs)."
+external_service_dependencies:
+  status: none_expected
+  required: []
+  possible: []
+  notes: "Sprint B is internal — hooks, helpers, skill body, doc edits. No third-party services."
+approval_boundaries:
+  - "Production deploy of release — required for any /sprint:release production target per CLAUDE.md §Autonomy."
+  - "Sprint B does NOT trip Class B per the decision policy (no contract changes, bounded scope, low risk). Beta review is NOT required at plan-time; consult Beta only on the three needs_user_or_beta_review items during design."
+design_required: true
+execution_allowed_without_design: false
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+lane:
+  type: default
+  value: null
+  isolation_notes: "Sprint A and Sprint B share /sprint:execute.md as an edit surface. Sprint B's S-4.2 (the one-line run_in_background warning) writes to /sprint:execute.md, which Sprint A's S-6.1 also touches (consolidated into T-20260518-111). Mitigation: per Beta directive 2026-05-18 design-review (agent a6eadba65750a3d06), Sprint B planning was gated on Sprint A reaching /sprint:design — confirmed at this Plan Contract write (Sprint A is past design; 10 tickets ready_for_execution). Execution-time collision is still possible if Sprint A and Sprint B run /sprint:execute concurrently; serialize execution OR have Sprint B's S-4.2 land AFTER Sprint A's T-20260518-111."
+beta_review:
+  required: false
+  likely_founder_rejection_risks:
+    - "Adding a 14th PreToolUse hook to the Edit|Write chain — operators may push back if the chain feels overbuilt; mitigation is the warn-only soft-rollout that doesn't add latency-perceptible work."
+    - "/check:node-procs accumulating feature scope (`--kill-orphans` flag, `--watch` mode) before observing real usage."
+  overbuild_risks:
+    - "Implementing the lint-hook-output.js contract for every tool variant Claude Code might emit (MultiEdit, MultiEdit-with-replace_all, etc.) in v1 — should ship the two known shapes (Edit, Write) and watch for the next, not pre-handle."
+    - "Cross-platform process-listing parsers that handle every Windows locale — ship the en-US CSV path and an explicit `unsupported_locale` exit code; don't try to be exhaustive."
+  missing_context_risks:
+    - "Sprint A's release ship-gate (introduced by SP-20260518-007 / T-20260518-108) lands BEFORE Sprint B's release. If Sprint B is the first sprint that exercises Sprint A's new gate, AC dogfooding tests for Sprint B's changes will need to exist under tests/regression/SP-20260518-008/ at /sprint:design exit. Confirm in design that this is feasible OR that Sprint A ships AFTER Sprint B (sequencing matters for the dogfood)."
+    - "format.js spawn-pattern change affects PostToolUse latency on every Edit/Write — even a 50ms regression per edit compounds; consider a quick benchmark at design."
+    - "The downstream-project session leak that motivated Sprint B is a Windows phenomenon. Mac/Linux operators may not see the leak at all — the fix still applies (cleaner spawn pattern is a win everywhere) but field telemetry will mostly come from Windows users."
+plan_quality:
+  status: needs_design
+  confidence: high
+  evidence_gaps:
+    - "PreToolUse hook ordering for lint-hook-output.js not finalized — design picks the slot."
+    - MultiEdit matcher coverage decision deferred to design.
+    - "Exact field-shape contracts for Edit vs Write `updatedInput` payloads — sampled from existing format.js's defensive read (`event.tool_input?.file_path || event.tool_input?.content?.file_path`) but a canonical contract reference (Claude Code docs / source) wasn't loaded this turn."
+  fail_reasons: []
+next_recommended_command: "/sprint:design"
+resume_instructions: "Sprint B Plan Contract is on disk. Next: /sprint:design (documentation_scale=s likely appropriate given scope.size=s). Sprint A (SP-20260518-007) is past design — Sprint B's planning was unblocked by that. If Sprint A and Sprint B both reach /sprint:execute, serialize by completing Sprint A's T-20260518-111 (the docs+config bundle) BEFORE Sprint B's S-4.2 (the /sprint:execute.md warning line). If interrupted, read .claude/project/sprint/sprint-progress.yaml#resume_command."
+tracker_paths:
+  current_sprint: ".claude/project/sprint/current-sprint.yaml"
+  sprint_progress: ".claude/project/sprint/sprint-progress.yaml"
+  plan_contract: ".claude/project/sprint/plan-contracts/PC-20260518-0012.yaml"
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260518-0012.report.md"
+created_by: alpha
+updated_by: alpha

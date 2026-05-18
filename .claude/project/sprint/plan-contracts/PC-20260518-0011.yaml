@@ -1,0 +1,223 @@
+schema: warpos/sprint/plan-contract/v1
+id: PC-20260518-0011
+created_at: "2026-05-18T21:10:38.466Z"
+updated_at: "2026-05-18T21:14:00.000Z"
+sprint: SP-20260518-007
+source_request: "Add Sprint Goal Verification — every sprint ships a regression fixture under tests/regression/<sprint-id>/, ACs link verified_by: <test-file>::<test-name>, /sprint:release ship-gate runs cited tests, /check:ac-coverage skill audits linkage. Also wire scripts/sprint/test-plan-honors-registry-primary.js into /linters:run."
+source_request_verbatim: "Add Sprint Goal Verification — every sprint ships a regression fixture under tests/regression/<sprint-id>/, AC entries link verified_by: <test-file>::<test-name>, /sprint:release ship-gate runs all cited tests, new /check:ac-coverage skill audits linkage on demand. Also wire scripts/sprint/test-plan-honors-registry-primary.js into /linters:run."
+request_type: architecture_change
+interpreted_intent: "Today's QA plans verify ACs with English checkboxes; there's no executable link between the user's original bug and a fixture that asserts the fix. Sprint A closes that gap. Every sprint must produce at least one test that would have failed before the sprint started and passes after. To enforce that, this sprint (a) adds a goal_verification block to the Plan Contract and propagates it through current-sprint, (b) defines a new regression-fixture schema and a per-sprint corpus under tests/regression/<SP-id>/, (c) introduces an AC linkage convention (verified_by: <test-file>::<test-name>), (d) makes /sprint:design refuse to advance without a fixture (or an explicit not_applicable justification for research/docs/refactor sprints), (e) makes /sprint:release ship-gate run all cited tests, (f) ships a read-only /check:ac-coverage audit skill, (g) wires the existing scripts/sprint/test-plan-honors-registry-primary.js regression test into /linters:run so the plan.js drift bug from 2026-05-18 cannot silently recur. Closed/retrospected sprints are exempt — no backfill, no retroactive enforcement."
+user_or_business_outcome: "Every shipped sprint carries durable, executable proof that the originally-reported failure is gone and would still be detected if it regressed. Sprint quality stops depending on operator memory and the English-checkbox AC discipline; it becomes a property the tracker enforces. Cross-sprint regressions caught by /linters:run (or the next sprint's ship-gate) instead of by user reports weeks later."
+affected_surfaces:
+  - surface: schemas/sprint/plan-contract.schema.json
+    evidence_level: verified_from_repo
+    notes: "Read 2026-05-18. Schema has 35+ required fields; no goal_verification block today. Additive field — no schema-version bump per sprint-routing.json precedent."
+  - surface: schemas/sprint/current-sprint.schema.json
+    evidence_level: verified_from_repo
+    notes: "Read 2026-05-18. Per-sprint live state schema. Will propagate goal_verification (or a pointer to it) so /sprint:design + /sprint:release can read it without re-loading the Plan Contract."
+  - surface: "schemas/sprint/regression-fixture.schema.json (new)"
+    evidence_level: verified_from_repo
+    notes: "Glob 2026-05-18 confirms this file does not exist. Design will define the fixture record shape — fields likely: schema, sprint_id, origin (bug_id|ticket_id|user_report), bug_classes_closed[], cited_tests[{file, test_name}], reproduction_kind (executable|not_applicable), justification."
+  - surface: scripts/sprint/plan.js
+    evidence_level: verified_from_repo
+    notes: "Read 2026-05-18. Already accepts arbitrary payload fields and is dumb-plumbing — extending to capture goal_verification (origin_evidence, bug_classes_closed) is mechanically simple. The script's auto-record routing trace + conflict-check sections are unaffected."
+  - surface: scripts/sprint/design.js
+    evidence_level: verified_from_repo
+    notes: "Exists (glob 2026-05-18). Design will add a gate: refuse to advance to designed state unless a fixture record exists under tests/regression/<SP-id>/, or goal_verification.reproduction is set to not_applicable with a written justification."
+  - surface: scripts/sprint/release.js
+    evidence_level: verified_from_repo
+    notes: "Exists (glob 2026-05-18). The ship-gate currently checks acceptance_criteria_satisfied as a boolean (verified via release.md skill body read). Sprint A extends the check to actually run the cited tests and record per-test status."
+  - surface: scripts/sprint/retrospective.js
+    evidence_level: verified_from_repo
+    notes: "Exists (glob 2026-05-18). Retro will surface verification status (which ACs had executable fixtures, which were not_applicable, which were missing) — read-only annotation."
+  - surface: "scripts/sprint/check-ac-coverage.js (new)"
+    evidence_level: verified_from_repo
+    notes: "Glob 2026-05-18 confirms absent. New helper that scans the AC markdown for verified_by: links and reports coverage per sprint. Read-only; safe to run anytime."
+  - surface: ".claude/commands/check/ac-coverage.md (new)"
+    evidence_level: verified_from_repo
+    notes: "Glob 2026-05-18 confirms absent. New /check:* skill body, sibling to /check:references, /check:patterns, /check:coherence (26 existing /check skills observed). Read-only diagnostic."
+  - surface: ".claude/commands/sprint/plan.md"
+    evidence_level: verified_from_repo
+    notes: "Currently active skill body (read into context this turn). Sprint A updates Step 4/8 prose to mention goal_verification capture and the new plan-quality criterion."
+  - surface: ".claude/commands/sprint/design.md"
+    evidence_level: inferred_from_repo
+    notes: "Not directly read this turn, but referenced by handoff and parallel to plan.md. Will add a step describing fixture authorship + the refusal-on-missing-fixture gate."
+  - surface: ".claude/commands/sprint/release.md"
+    evidence_level: verified_from_repo
+    notes: "Read 2026-05-18 (Step 2 release check enumerates acceptance_criteria_satisfied). Sprint A adds a new ship-gate sub-step: run cited tests + fail closed on any failure."
+  - surface: ".claude/commands/sprint/execute.md"
+    evidence_level: inferred_from_repo
+    notes: "Not directly read this turn. Will note the AC linkage convention (verified_by: …) so ticket authors emit it during execution."
+  - surface: ".claude/paths.json"
+    evidence_level: verified_from_repo
+    notes: "Read 2026-05-18. v4 path registry; no sprintRegressionCorpus key today. Sprint A adds sprintRegressionCorpus = tests/regression."
+  - surface: ".claude/project/reference/sprint-workflow.md (paths.sprintReference)"
+    evidence_level: verified_from_repo
+    notes: "Read 2026-05-18 (first 100 lines). v0.2 reference. Sprint A inserts a new section documenting goal_verification + AC linkage convention + ship-gate behavior + the /check:ac-coverage skill."
+  - surface: scripts/sprint/test-plan-honors-registry-primary.js
+    evidence_level: verified_from_repo
+    notes: "Read 2026-05-18 — already exists; bespoke node script with passed/failed counters (not under a test runner). Verifies the L-2026-05-18/RT-008 plan.js drift bug. Currently runnable only by direct `node scripts/sprint/test-plan-honors-registry-primary.js`."
+  - surface: scripts/linters/run.js
+    evidence_level: verified_from_repo
+    notes: "Read fully 2026-05-18. Auto-discovers: (1) scripts/path-lint.js, (2) scripts/lint-*.js, (3) package.json#scripts.lint*. There is NO root package.json (verified via Glob — only fixtures/install-empty-next-app/package.json exists). To wire test-plan-honors-registry-primary.js, design must either (a) add a thin scripts/lint-sprint-plan-honors-registry.js shim, or (b) extend the discoverer to pick up scripts/sprint/test-*.js. Design decision."
+  - surface: "tests/regression/ (new directory)"
+    evidence_level: verified_from_repo
+    notes: "Glob 2026-05-18 confirms no files. Sprint A creates the convention; per-sprint subdirs (tests/regression/<SP-id>/) hold the executable fixture(s). The corpus must be excluded from /linters:run's blanket test discovery — fixtures run via the ship-gate, not on every linter pass (decision for design)."
+current_behavior:
+  evidence_level: verified_from_repo
+  notes: "Today AC markdown is the only acceptance artifact (template at framework/templates/sprint/requirements/acceptance-criteria.md.tmpl uses AC-N.M numbering with prose Given/When/Then). No verified_by linkage. /sprint:release Step 2 checks acceptance_criteria_satisfied as a boolean — operator discipline, not execution. /sprint:release ship-gate does not execute any sprint-specific tests; routing/coverage checks happen but are independent of AC-level fixtures. /linters:run discovers scripts/lint-*.js and package.json#lint* — test-plan-honors-registry-primary.js (placed under scripts/sprint/) is not currently auto-discovered."
+desired_behavior: "Every Plan Contract for an active sprint carries a goal_verification block recording: the originally-reported failure (origin_evidence), the bug_classes_closed, and a contract that a regression fixture under tests/regression/<SP-id>/ will exist by /sprint:design exit. Each AC in acceptance-criteria.md links verified_by: <test-file>::<test-name>. /sprint:design refuses to advance unless every AC is linked (or marked not_applicable with justification). /sprint:release ship-gate enumerates cited tests, runs each, and fails closed on any failure. /check:ac-coverage reports linkage + execution status on demand. scripts/sprint/test-plan-honors-registry-primary.js runs as part of /linters:run, catching the plan.js drift bug class at lint-time."
+scope:
+  size: m
+  risk_level: medium
+  complexity_drivers:
+    - "Touches three schemas (plan-contract additive field, current-sprint propagation, new regression-fixture schema)."
+    - "Modifies four sprint helpers (plan.js, design.js, release.js, retrospective.js) plus four skill bodies (sprint/plan.md, design.md, release.md, execute.md)."
+    - "Adds a new top-level paths.sprintRegressionCorpus key in .claude/paths.json (must be the SINGLE source of truth — no literal duplication per CLAUDE.md Paths rule)."
+    - "Introduces a new /check:* skill (ac-coverage) and a new helper script (check-ac-coverage.js)."
+    - "Affects ALL future sprints — must be opt-in for closed/retrospected sprints (10+ retro'd sprints already on disk; no backfill)."
+    - "Ship-gate gains a hard execution dependency — sprint cannot release if any cited test fails. Bypass discipline (--allow-coverage-gap or similar) needs design."
+    - "Wiring test-plan-honors-registry-primary.js into /linters:run requires either a scripts/lint-* shim OR extending scripts/linters/run.js discoverer (no root package.json; the package.json#lint* discovery path is dead in this repo)."
+scope_variants:
+  minimal_safe:
+    summary: "Schema fields + corpus directory convention only. No ship-gate enforcement, no /check:ac-coverage skill, no design-time refusal. Skill bodies document the convention but /sprint:release behavior is unchanged. test-plan-honors-registry-primary.js still wired into /linters:run (the prevention follow-up is independently valuable). Operator discipline carries the rest."
+    tradeoffs:
+      - "Pro: bounded surface area, no risk to existing /sprint:release flow."
+      - "Pro: lets the convention bake in for one sprint before enforcement."
+      - "Con: the load-bearing rule ('every sprint produces a test that would have failed before') stays aspirational — same class of gap we have today."
+      - "Con: no audit signal — operators can ship without fixtures and never get told."
+  recommended:
+    summary: "minimal_safe + /sprint:design refusal on missing fixture + /sprint:release ship-gate runs cited tests + /check:ac-coverage skill + scripts/sprint/test-plan-honors-registry-primary.js wired into /linters:run. goal_verification.reproduction allows not_applicable for research/docs/refactor sprints when paired with a written justification. No backfill for closed sprints."
+    tradeoffs:
+      - "Pro: the load-bearing rule becomes enforceable — ship-gate fails closed if cited tests fail."
+      - "Pro: read-only audit (/check:ac-coverage) gives a yellow signal before /sprint:release, not after."
+      - "Con: medium blast radius — design.js + release.js + four skill bodies change in one sprint."
+      - "Con: need a clean bypass story for legitimate not_applicable cases (research/docs)."
+  expanded:
+    summary: "recommended + retroactive coverage scanner that audits closed sprints (read-only, never blocks) + per-AC test discovery via test-file annotations (`// @verifies AC-N.M`) + integration with /warp:health to raise yellow advisory on aggregate coverage drops."
+    tradeoffs:
+      - "Pro: cross-sprint insight — does the corpus grow over time?"
+      - "Pro: test-file annotations make linkage discoverable from either direction (AC → test, test → AC)."
+      - "Con: scope balloons into observability territory — /warp:health is a separate workstream."
+      - "Con: retroactive scanner has to handle 10+ closed sprints' worth of historical AC files with no convention — high noise floor."
+assumptions:
+  safe:
+    - "tests/regression/ is a fresh directory — no current path; verified absent via Glob 2026-05-18."
+    - "Additive schema fields don't require a schema-version bump — precedent: sprint-routing.json and current-sprint.schema.json#lane were added the same way under SP-20260512-001."
+    - "The convention <test-file>::<test-name> is more stable than <test-file>:<line> — line numbers churn on every edit; test names are deliberately named."
+    - "Closed/retrospected sprints (SP-20260512-001 through SP-20260518-001, 10 entries) are exempt — the ship-gate only applies when the Plan Contract carries a goal_verification block."
+    - "Beta consultation is in scope — this changes every future sprint's contract; per CLAUDE.md §Autonomy Class B/C this is at minimum Class B."
+  unsafe:
+    - "Wiring test-plan-honors-registry-primary.js into /linters:run via the scripts/lint-*.js auto-discovery path requires either renaming/shim'ing or extending the discoverer — there is NO root package.json so the package.json#lint:* path is unavailable in this repo (verified via Glob 2026-05-18). Design must pick one."
+    - "The cited-test format `<file>::<test-name>` assumes the test exposes individual named cases. The existing test-plan-honors-registry-primary.js uses bespoke `passed/failed` counters with stdout strings (`ok    <name>` / `FAIL  <name>`) — there is no canonical test runner. The /sprint:release ship-gate test executor needs to parse this output format OR mandate a thin runner contract (e.g., exit code 0 = pass, structured per-case lines) — design decision."
+    - "Excluding tests/regression/<SP-id>/ from /linters:run is essential — fixtures execute via the ship-gate, not on every linter pass. If we wire the corpus into the auto-discoverer naively, every linter pass becomes a full corpus run. Design must scope discovery."
+    - "The new paths.sprintRegressionCorpus key must propagate through scripts/hooks/lib/paths.js (which the path-guard hook also reads) — a partial rollout where only .claude/paths.json knows the key creates a stale-literal class of bug (LRN-2026-04-29 stale-anthropic-checks)."
+    - "/sprint:full (just shipped in SP-20260518-001) dispatches the same per-phase helpers — any behavioral change in design.js or release.js inherits to /sprint:full's autonomous runs. Must validate /sprint:full v1 still works after the design-time refusal lands."
+  needs_user_or_beta_review:
+    - "[RESOLVED 2026-05-18 by Beta, conf 0.87] not_applicable reproduction_kind: yes — allow with non-empty justification REQUIRED; empty justification = same as missing (design refuses)."
+    - "[RESOLVED 2026-05-18 by Beta, conf 0.82] Ship-gate unparseable-output default: INCONCLUSIVE; operator override logged to decision-ledger; NO --allow-coverage-gap flag in v1 (observe real bypass patterns first)."
+    - "[RESOLVED 2026-05-18 by Beta, conf 0.84] /sprint:full preset semantics: explicit bump REQUIRED — add note to moderate preset about design.js fixture gate; do not silently inherit (same bug class as RT-008)."
+    - "[OPEN, non-blocking] Should /check:ac-coverage be added to the default set run by /check:all? Low-risk additive; defer to design or post-design."
+open_questions:
+  blocking: []
+  non_blocking:
+    - "Wiring mechanism for scripts/sprint/test-plan-honors-registry-primary.js into /linters:run — `scripts/lint-sprint-plan-honors-registry.js` shim vs. extending scripts/linters/run.js discoverer to pick up scripts/sprint/test-*.js. Design decides."
+    - "Whether goal_verification lives as a sibling field on plan-contract.schema.json or as a $ref to a separate goal-verification.schema.json. Design decides."
+    - "Whether the per-sprint fixture directory tests/regression/<SP-id>/ should be created automatically by /sprint:design or asserted on entry to /sprint:execute. Design decides."
+    - "Whether /check:ac-coverage emits machine-readable JSON in addition to its prose report (matches /linters:run --json convention). Design decides."
+    - "Backfill policy for sprints in flight at the moment Sprint A ships (SP-20260518-001 is retrospected, so n/a today — but if another sprint is mid-flight at execution time, do we (a) exempt by start-date or (b) require goal_verification on the next /sprint:design entry into that sprint). Beta should weigh in during design."
+non_goals:
+  - "Canaries / scripts/canary/ / /canary:add skill — separate workstream, deferred per DUMP.md."
+  - "Golden-path harness convention — separate workstream, deferred per DUMP.md."
+  - "Backfilling goal_verification for closed sprints — explicit DUMP.md instruction; closed sprints stay opt-out."
+  - "Cross-vendor diff_review dependency for the ship-gate — diff_review is currently decorative (12 routing-trace rows, 0 second-vendor fetches per DUMP.md); do not couple Sprint A to it."
+  - "Adoption of a test runner (node:test / vitest / playwright) — bespoke node scripts are the existing convention; Sprint A operates within that convention."
+  - "Adding goal_verification to retros older than 2026-05-18 — historical retros stay frozen."
+  - "Hooking /check:ac-coverage into /check:all as a default — separate, lower-risk add that can land later."
+  - "Test name normalization across the repo's existing bespoke scripts — fixture authors learn the convention by example; no global rewrite."
+requirement_areas:
+  - "goal_verification schema design (additive plan-contract field + new regression-fixture.schema.json)"
+  - "tests/regression/<SP-id>/ corpus convention + path registration"
+  - "AC linkage convention (verified_by: <test-file>::<test-name>) in acceptance-criteria.md template + skill body docs"
+  - "/sprint:design fixture-required gate (refusal + not_applicable bypass + justification)"
+  - "/sprint:release ship-gate cited-test executor (run + fail-closed semantics + bypass discipline)"
+  - "/check:ac-coverage audit skill (read-only, prose + JSON output)"
+  - "/linters:run wiring for scripts/sprint/test-plan-honors-registry-primary.js (shim or discoverer extension)"
+  - "paths.sprintRegressionCorpus key in .claude/paths.json + scripts/hooks/lib/paths.js"
+  - "sprint-workflow.md reference doc updates (new section)"
+  - "Retrospective surfacing of verification status (read-only annotation, no scoring)"
+high_level_story_candidates:
+  - "H-1: As a sprint operator, every sprint I plan records an executable goal so I can prove later that the originally-reported failure is gone."
+  - "H-2: As a release approver, the ship-gate refuses to advance if any cited regression test is failing or missing."
+  - "H-3: As a maintainer auditing sprint hygiene, I can run /check:ac-coverage at any time and see exactly which ACs are linked, missing, or not_applicable across active sprints."
+  - "H-4: As a future-me looking at the lint board, the plan.js drift bug class from 2026-05-18 cannot recur silently — /linters:run catches it."
+granular_story_candidates:
+  - "S-1.1: Plan Contract carries a goal_verification block (origin_evidence, bug_classes_closed, reproduction: executable|not_applicable, justification?)."
+  - "S-1.2: regression-fixture.schema.json defines the per-fixture record (schema, sprint_id, origin, cited_tests, reproduction_kind, justification)."
+  - "S-1.3: tests/regression/<SP-id>/ corpus is a documented convention; paths.sprintRegressionCorpus is the canonical pointer."
+  - "S-2.1: AC entries in acceptance-criteria.md carry verified_by: <test-file>::<test-name> annotations."
+  - "S-2.2: /sprint:design refuses to advance if any AC lacks verified_by (or not_applicable + justification)."
+  - "S-2.3: /sprint:release ship-gate runs each cited test; aggregates pass/fail; fails closed on any failure."
+  - "S-3.1: /check:ac-coverage scans active sprints, reports coverage per AC and per sprint, prose + JSON."
+  - "S-4.1: scripts/sprint/test-plan-honors-registry-primary.js is reachable from /linters:run (shim OR discoverer extension)."
+workstream_candidates:
+  - "WS-A1: Schemas + path registration (plan-contract additive, current-sprint propagation, regression-fixture new, paths.sprintRegressionCorpus)."
+  - "WS-A2: /sprint:plan capture (plan.js + sprint/plan.md skill body updates so goal_verification is recorded at plan-time)."
+  - "WS-A3: /sprint:design fixture gate (design.js refusal logic + sprint/design.md skill body)."
+  - "WS-A4: /sprint:release ship-gate cited-test executor (release.js + sprint/release.md skill body + run/parse/fail-closed semantics)."
+  - "WS-A5: /check:ac-coverage skill + helper (.claude/commands/check/ac-coverage.md + scripts/sprint/check-ac-coverage.js)."
+  - "WS-A6: /linters:run wiring for test-plan-honors-registry-primary.js (shim OR scripts/linters/run.js discoverer extension)."
+  - "WS-A7: sprint-workflow.md reference doc + retro annotation."
+preliminary_ticket_candidates:
+  allowed: false
+  candidates: []
+  notes: "Tickets are minted during /sprint:design — this Plan Contract is scope.size=m and design_required=true, not documentation_scale=xs. The workstream_candidates above are the seeds for ticket minting."
+external_service_dependencies:
+  status: none_expected
+  required: []
+  possible: []
+  notes: "Sprint A is wholly internal — schemas, helpers, skill bodies, a path key, and a doc section. No third-party services. No signup, billing, or OAuth involved."
+approval_boundaries:
+  - "Production deploy of release — required for any /sprint:release production target per existing CLAUDE.md Autonomy table. Internal-canary releases also require explicit user approval (per the SP-20260518-001 precedent)."
+  - "Beta review required per CLAUDE.md §Autonomy Class B — Sprint A changes every future sprint's contract."
+design_required: true
+execution_allowed_without_design: false
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+lane:
+  type: default
+  value: null
+  isolation_notes: "Sprint A and Sprint B share the /sprint:execute skill body edit surface; per DUMP.md the serialization plan is to keep both in the default lane and run them back-to-back, with Sprint B gated on Sprint A reaching /sprint:design before planning begins."
+beta_review:
+  required: true
+  likely_founder_rejection_risks:
+    - "Over-strict default for not_applicable — if Beta forces every research/docs sprint to author a fake fixture, operators will route around the system."
+    - "Ship-gate hard-fail on unparseable test output — if Beta picks 'strict' and the bespoke test scripts have inconsistent output formats, every release becomes a hand-curated bypass."
+  overbuild_risks:
+    - "Building a full test-runner contract before observing how the cited-test convention actually settles in real fixtures — risk of designing for hypothetical edge cases."
+    - "Extending /check:ac-coverage to retroactive scanning of closed sprints in v1 — the expanded scope-variant lures here."
+    - Adding goal_verification to the retro auto-annotation in v1 when read-only surfacing is enough.
+  missing_context_risks:
+    - "/sprint:full was just shipped (SP-20260518-001, 39/39 tests). Sprint A modifies design.js + release.js — Beta should weigh in on whether /sprint:full's autonomy presets need a corresponding update so the design-time fixture refusal doesn't trip 'moderate' preset users."
+    - "diff_review is decorative per DUMP.md — design must not couple the new ship-gate to a diff_review fetch that never happens. Beta to confirm."
+    - "The framework-vs-downstream boundary — Sprint A modifies framework-level schemas and skill bodies. Downstream projects (which have their own sprint state) will inherit on /warp:update. Beta to confirm the change is opt-in for downstreams via /warp:promote-flags semantics rather than auto-applied."
+    - "[Beta-flagged 2026-05-18] scripts/hooks/lib/paths.js must mirror the new sprintRegressionCorpus key — path-guard hook and ship-gate will diverge if only .claude/paths.json knows the key (stale-literal bug class, LRN-2026-04-29). Design must read lib/paths.js directly and add the key there too before WS-A1 is declared complete."
+    - "[Beta-flagged 2026-05-18] Downstream project inheritance is NOT opt-in by default — skill bodies and schema changes propagate via /warp:update. Design must gate the design.js refusal behind plan_contract.goal_verification presence so existing downstream sprints (which won't have the field on their next /sprint:design call) do not break post-update."
+    - "[Beta-flagged 2026-05-18] Sprint B edit-surface collision — both Sprint A and Sprint B touch /sprint:execute.md. Per resume_instructions, Sprint B planning is gated on Sprint A reaching /sprint:design — but the gate must be verified at Sprint B plan-time, not assumed. If Sprint B starts its plan early, the default-lane edits will collide."
+plan_quality:
+  status: needs_design
+  confidence: high
+  evidence_gaps:
+    - "Output format of bespoke node test scripts not formally surveyed across all scripts/sprint/test-*.js — only test-plan-honors-registry-primary.js read this turn."
+    - "scripts/hooks/lib/paths.js not directly inspected; assumption that it mirrors .claude/paths.json keys is inferred, not verified."
+  fail_reasons: []
+next_recommended_command: "/sprint:design"
+resume_instructions: "Sprint A Plan Contract is on disk. Next: invoke /sprint:design to mint a PRD, granular stories, ACs, and tickets. Beta review is REQUIRED before design exits (beta_review.required=true). If interrupted, read .claude/project/sprint/sprint-progress.yaml#resume_command. DO NOT start /sprint:plan for Sprint B until Sprint A is at least through /sprint:design — shared edit surface per DUMP.md."
+tracker_paths:
+  current_sprint: ".claude/project/sprint/current-sprint.yaml"
+  sprint_progress: ".claude/project/sprint/sprint-progress.yaml"
+  plan_contract: ".claude/project/sprint/plan-contracts/PC-20260518-0011.yaml"
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260518-0011.report.md"
+created_by: alpha
+updated_by: alpha

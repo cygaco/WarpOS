@@ -1,0 +1,132 @@
+schema: warpos/sprint/current-sprint/v1
+id: SP-20260518-007
+title: "Sprint Goal Verification — regression corpus, AC linkage, ship-gate, /check:ac-coverage"
+objective: "Every sprint produces at least one regression fixture that would have failed before the sprint started and passes after; the ship-gate enforces it."
+status: designing
+created_at: "2026-05-18T21:10:38.462Z"
+updated_at: "2026-05-18T21:44:21.778Z"
+source_request: "Add Sprint Goal Verification — every sprint ships a regression fixture under tests/regression/<sprint-id>/, ACs link verified_by: <test-file>::<test-name>, /sprint:release ship-gate runs cited tests, /check:ac-coverage skill audits linkage. Also wire scripts/sprint/test-plan-honors-registry-primary.js into /linters:run."
+interpreted_intent: "Today's QA plans verify ACs with English checkboxes; there's no executable link between the user's original bug and a fixture that asserts the fix. Sprint A closes that gap. Every sprint must produce at least one test that would have failed before the sprint started and passes after. To enforce that, this sprint (a) adds a goal_verification block to the Plan Contract and propagates it through current-sprint, (b) defines a new regression-fixture schema and a per-sprint corpus under tests/regression/<SP-id>/, (c) introduces an AC linkage convention (verified_by: <test-file>::<test-name>), (d) makes /sprint:design refuse to advance without a fixture (or an explicit not_applicable justification for research/docs/refactor sprints), (e) makes /sprint:release ship-gate run all cited tests, (f) ships a read-only /check:ac-coverage audit skill, (g) wires the existing scripts/sprint/test-plan-honors-registry-primary.js regression test into /linters:run so the plan.js drift bug from 2026-05-18 cannot silently recur. Closed/retrospected sprints are exempt — no backfill, no retroactive enforcement."
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260518-0011.yaml"
+risk_level: medium
+approval_state: none_required
+current_phase: design
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+lane:
+  type: default
+  value: null
+  isolation_notes: "Sprint A and Sprint B share the /sprint:execute skill body edit surface; per DUMP.md the serialization plan is to keep both in the default lane and run them back-to-back, with Sprint B gated on Sprint A reaching /sprint:design before planning begins."
+external_services:
+  identified: []
+  blocked: []
+  ready: []
+  mocked: []
+  deferred: []
+tickets:
+  proposed: []
+  planned: []
+  designed: []
+  ready_for_execution:
+    - T-20260518-103
+    - T-20260518-104
+    - T-20260518-105
+    - T-20260518-106
+    - T-20260518-107
+    - T-20260518-108
+    - T-20260518-109
+    - T-20260518-110
+    - T-20260518-111
+    - T-20260518-112
+  in_progress: []
+  blocked: []
+  waiting_on_human: []
+  waiting_on_external_service: []
+  in_review: []
+  qa_failed: []
+  redteam_failed: []
+  done: []
+  released: []
+  deferred: []
+  abandoned: []
+  reopened: []
+  superseded:
+    - T-20260518-113
+    - T-20260518-114
+requirements:
+  prd: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260518-007\\prd.md"
+  high_level_stories: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260518-007\\high-level-stories.md"
+  granular_stories: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260518-007\\granular-stories.md"
+  copy: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260518-007\\copy.md"
+  inputs: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260518-007\\inputs.md"
+  trace: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260518-007\\trace.md"
+  acceptance_criteria: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260518-007\\acceptance-criteria.md"
+  qa_plan: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260518-007\\qa-plan.md"
+  redteam_plan: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260518-007\\redteam-plan.md"
+  release_plan: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260518-007\\release-plan.md"
+checks:
+  lint:
+    status: not_run
+    last_run: null
+    evidence: ""
+  typecheck:
+    status: not_run
+    last_run: null
+    evidence: ""
+  tests:
+    status: not_run
+    last_run: null
+    evidence: ""
+  build:
+    status: not_run
+    last_run: null
+    evidence: ""
+  qa:
+    status: not_run
+    last_run: null
+    evidence: ""
+  redteam:
+    status: not_run
+    last_run: null
+    evidence: ""
+approvals:
+  plan:
+    required: false
+    state: not_required
+    ref: null
+  design:
+    required: false
+    state: not_required
+    ref: null
+  execution:
+    required: false
+    state: not_required
+    ref: null
+  release:
+    required: false
+    state: not_required
+    ref: null
+  external_services:
+    required: false
+    state: not_required
+    ref: null
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260518-0011.report.md"
+  design: null
+  execution: null
+  release: null
+ralph:
+  active: false
+  current_ticket: null
+  current_loop: null
+  status: idle
+  last_checkpoint: null
+  next_action: null
+crash_recovery:
+  last_checkpoint: ".claude/project/sprint/sprint-progress.yaml"
+  resume_command: "/sprint:design"
+  resume_summary: "Sprint SP-20260518-007 design scaffolded (scale=m). Next: mint tickets from granular-stories, then run /sprint:execute."
+  active_files: []
+  dirty_state: false
+  blockers: []
+  safe_to_continue: true
