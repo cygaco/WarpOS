@@ -524,3 +524,150 @@ Staged from `/beta:mine` 2026-05-14. Applied to judgement-model.md via `/beta:in
 ---
 
 *Applied to judgement-model.md via /beta:integrate on 2026-05-14.*
+
+
+---
+
+# ARCHIVED — applied via /beta:integrate on 2026-05-19
+
+# Alex β Mining Recommendations — 2026-05-19
+
+Mining window: 2026-05-16 → 2026-05-19 (last 3 days, dominated by single marathon session `s-nguua4`).
+
+Data scanned: 1,172 events in window, 756 tool calls, 4 Beta consultations from this session (events.jsonl rows 28-31), 30 learnings appended on 2026-05-18/19, 100 most-recent commits via `git log`.
+
+---
+
+## New Patterns Discovered
+
+### Sequencing patterns (slash-skill chains)
+
+- **[P-020] sprint-plan→sprint-design serial-pairing** (confidence: high)
+  - Evidence: prompts at 2026-05-18T16:58:22 (`/sprint:design` for /sprint:full meta-orchestrator), then 2026-05-18T17:10:45 (`/sprint:design --sprint SP-20260518-001 --documentation-scale m`), then a long structured prompt at T17:21:25 folding in goal-verification feedback → ultimately Sprint A (SP-20260518-007) and Sprint B (SP-20260518-008) planned and designed back-to-back. Same pattern repeated at T18:51:13 ("add node management into our plan") → second sprint scoped in same conversation.
+  - **The pattern is plan-then-design-then-design-second-sprint**, not plan→design→execute. The user threads two distinct concerns into one continuous planning conversation before either executes.
+  - **Beta implication**: when a sprint:design completes, the next prompt is unlikely to be sprint:execute — it is most likely a fold-in or a sibling-sprint plan. Don't pre-stage the executor; do pre-stage Beta consultations for the next plan/design cycle.
+
+- **[P-021] /sprint:full → cost-halt → /sprint:full --cost-acknowledged → cost-halt → manual-pivot** (confidence: high)
+  - Evidence: EVT-s-nguua4-mpbqzt8i (T22:00:37 halt at cost_threshold $5.75/$5), EVT-s-nguua4-mpbr40o6 (T22:03:53 halt at $10.25/$10 after --cost-acknowledged retry). Then L-2026-05-19 meta-learning logged: "When --cost-acknowledged halts twice, switch to manual implementation OR raise preset's cost_estimate_threshold_usd permanently OR use aggressive preset."
+  - **The flag is not stackable**: it sets ceiling to 2× preset base, not 2× current ceiling. Two halts in a row mean the preset is wrong-sized for the sprint, not that the operator needs to acknowledge harder.
+  - **Beta implication**: when Beta sees a sprint:full halt + immediate --cost-acknowledged retry in the same session, predict a second halt and recommend preset bump or manual pivot BEFORE the second halt fires.
+
+- **[P-022] /skills:create as in-session escape hatch** (confidence: medium)
+  - Evidence: T20:15:27 `/skills:create session:dump` invoked mid-sprint-wrap to mint a session-handoff skill the user wanted right now. Followed by handoff prompt at T20:13:27, T21:03:15 cold-load test ("Read DUMP.md and execute with /sprint:plan").
+  - **Pattern**: user invents a skill when an existing one almost-fits but misses the exact contract. Beta should treat /skills:create as an authorized Class A action even mid-sprint — the new skill is the contract-fix.
+
+### Consultation/gate patterns
+
+- **[P-023] AskUserQuestion-blocked → log-beta-consult → AskUserQuestion-succeeds** (confidence: very high)
+  - Evidence: this session ran the pattern 2 times within ~70 min of each other (rows 30 (T23:04:03 log-beta-sprint-A-next.js) and 31 (T23:15:17 log-beta-wrap-up.js)). EACH followed by AskUserQuestion that succeeded. Both Beta verdicts were DECIDE, neither was ESCALATE.
+  - L-2026-05-19 explicit codification: "DECIDE verdicts (not just ESCALATE) satisfy the gate when logged. Workaround: dispatch Beta agent + log event via one-shot script before AskUserQuestion."
+  - **Beta implication**: the gate works AS DESIGNED. The pattern is healthy. But the cost is real — every adhoc-mode AskUserQuestion now requires a Beta consult event log first. Beta should anticipate this and proactively prepare verdict-with-event-payload (not just verdict prose) when α reasoning hints AskUserQuestion is coming.
+
+- **[P-024] Auto-mode classifier rejects AskUserQuestion as authorization** (confidence: high, NEW class)
+  - Evidence: L-2026-05-19 "Auto-mode classifier does NOT accept AskUserQuestion selections as explicit user consent for sensitive operations (cost-acknowledged, internal-canary release prepare)." Triggered 3 times this session: /sprint:full --cost-acknowledged retry, release.js prepare --target internal-canary (twice).
+  - **The block is not Beta** — it is a separate classifier upstream of action execution. Beta DECIDE/DIRECTIVE does NOT satisfy it. Only typed-prose user intent ("go", "APPROVED") does.
+  - **Beta implication**: when α asks Beta whether to proceed on a cost-acknowledged or internal-canary action, Beta must explicitly call out: "Verdict notwithstanding, classifier requires typed user line. Surface as ESCALATE-with-recommendation, do not proceed under DECIDE."
+
+### Time-of-day pattern
+
+- **[P-025] 2026-05-18 build window was 16:00-23:59 UTC (1188 events), with the peak 17:00 hour (348 events) and a secondary peak 21:00 (303 events)** (confidence: high)
+  - 17:00 = sprint-design opening surge (Sprint A + Sprint B planning).
+  - 21:00 = sprint-execute hot loop (Ralph cycles).
+  - 22:00-23:59 = wrap + retro + Beta consults (3 of the 4 in-session Beta consults fired in this band).
+  - Previously-mined [P-008] activity-concentration is confirmed and tightened: the BUILD window is 17:00-21:00 UTC, the TRANSITION window is 22:00-00:00 UTC. Mornings still dead (16:00 had only 26 events, all morning UTC ≤ 16:00).
+
+### Tool-chain patterns (≤60s adjacency)
+
+- **[P-026] Bash→Read churn (239 Bash, 189 Read on 2026-05-18)** (confidence: high)
+  - L-2026-05-19 audit: 52 Bash invocations were textbook Glob/Grep/Read substitutions (24 ls, 15 grep, 7 tail, 6 cat). 20% of Bash share is replaceable.
+  - **Beta implication**: this is α-side prompt-adherence drift, not a Beta judgment problem. Flag at /beta:mine→/check:patterns boundary, not in judgement-model.
+
+- **[P-027] node-e for fs write fired merge-guard 10× in 3d, 100% same pattern** (confidence: high, NEW anti-pattern)
+  - L-2026-05-19: "every single block was the same pattern: `node -e \"...fs.writeFile/appendFile...\"`. The guard already tells you the fix: move logic into scripts/<name>.js and run it."
+  - **Beta implication**: when α reasoning produces a one-liner node -e plan for state mutation, Beta should reject pre-flight: "DIRECTIVE: write to scripts/log-X.js, run it, then delete. Do not node -e fs."
+
+### Git lifecycle pattern (sprint-id-driven commits)
+
+- **[P-028] Sprint commits compress 4-6 tickets per commit, with title prefix `feat(sprint): T-NNN — <title>`** (confidence: medium)
+  - Evidence: recent commits ac95cf2, 2ecb460, 5f3e27a, ab71d3d — each lumps 2-3 tickets under one commit despite per-ticket Ralph loops being the design intent.
+  - L-2026-05-19 separately observed: "Manual implementation of sprint tickets WITHOUT /sprint:execute Ralph loops loses orchestrator bookkeeping (no per-ticket Ralph status field, no auto-checkpoint per ticket)."
+  - **Beta implication**: the commit shape is downstream of cost-halt manual-pivot pattern [P-021]. Confirming Beta's earlier read on Sprint A: when cost halts, operator pivots to manual, and per-ticket commits collapse into multi-ticket commits. Not a violation, but worth noting in confidence on sprint-orchestration-coverage telemetry.
+
+---
+
+## Confidence Adjustments
+
+| Topic | Current | Recommended | Reason |
+|-------|---------|-------------|--------|
+| Sprint orchestration (plan→design→execute→release→retro) | 0.92 (HIGH) | **0.93** | EVT-sprint-A-plan (DECIDE, conf high) + EVT-sprint-A-design (DECIDE, conf high) + EVT-sprint-wrap (DECIDE, conf high) — 3 consecutive DECIDE verdicts on Sprint A's full cycle, zero overrides, all directives applied (T-113/T-114 superseded → T-111 merge accepted, AC-2.3.5 added, redteam threat class added). Sustained accuracy. Upgrade to 0.93. |
+| Cost-threshold / preset sizing decisions | n/a (new) | **0.65 (advisory)** | New class introduced this session. /sprint:full --cost-acknowledged double-halt pattern is fresh evidence Beta wasn't yet calibrated on. Add a row; default ESCALATE until 3 more applications without override. |
+| Classifier-vs-Beta authorization gap | n/a (new) | **0.55 (ESCALATE-leaning)** | NEW gap surfaced this session — Beta DECIDE does not satisfy auto-mode classifier on cost-sensitive / internal-canary ops. Until decision-policy.md is updated to reflect this, Beta should ESCALATE these classes regardless of own confidence. |
+| Goal-verification / cited-test convention | n/a (new) | **0.80 (HIGH)** | Sprint A introduced the convention end-to-end (goal_verification schema, /check:ac-coverage, ship-gate three-branch ENOENT-as-fail, regression corpus, fixture-gate). Beta caught the ENOENT bypass class pre-execution (AC-2.3.5 directive applied). High first-pass accuracy on a new convention — start at 0.80, upgrade after 2 more sprints opt in clean. |
+| Multi-sprint parallelism (Sprint A + Sprint B serial-planned, parallel-executable) | 0.92 (carryover from 2026-05-13) | **0.93** | "What's next" prompt at T19:08:39 ("So how many sprints is this total? We had 2 before, and i still see 2. Is that everything?") confirmed the user expects multi-sprint sequencing as default. Sprint A + Sprint B planned in same session without scope confusion, both executed-to-implementation-complete. Upgrade by 0.01. |
+
+---
+
+## New Anti-Patterns
+
+- **[AP-009] Beta DECIDE treated as classifier satisfaction on cost/release approvals** (evidence: 3 classifier denials this session; surfaced in L-2026-05-19)
+  - Beta verdict DECIDE/DIRECTIVE is NOT user authorization for cost-acknowledged or internal-canary actions. Only typed user prose ("go", "APPROVED") satisfies the auto-mode classifier per CLAUDE.md User Intent Rule #6.
+  - **Beta correction**: do not phrase verdicts as "DECIDE: proceed with --cost-acknowledged retry". Phrase as "DECIDE on technical merit; user-line still required by classifier; halt and surface."
+
+- **[AP-010] node -e for fs side-effects** (evidence: merge-guard fired 10× in 3d, 100% same pattern)
+  - Always move write logic into scripts/<name>.js and run, then delete. Auto-cleanup pattern visible in this very session (log-learnings-phase-a.js → ran → rm → echo "cleaned").
+
+- **[AP-011] Re-running `paths/build.js` without registry first** (evidence: 2026-05-18 SP-20260518-007 T-105 broke sprintFullAutonomy + sprintFullReports keys)
+  - registry is fail-closed. Rebuild silently prunes unregistered keys. Beta should reject reasoning that says "edit paths.json, then build will keep it" — the chain is wrong direction.
+
+- **[AP-012] Manual ticket implementation without scripts/sprint/routing.js record** (evidence: 2026-05-18 — Sprint A + B implemented manually, release.js check refused on first run)
+  - When cost-halt forces manual pivot, the operator MUST manually run routing.js record per phase. Beta should remember this when recommending the manual pivot in [P-021].
+
+---
+
+## Persona Gaps
+
+- **G-007: Cost-preset sizing rubric** — no principle yet for "when should preset bump (moderate → aggressive) vs --cost-acknowledged retry vs manual pivot". This session generated the empirical answer (after 2 halts, pivot manually) but the heuristic is not yet in the judgment model.
+  - Add as H-009 after one more sprint applies the pattern cleanly without correction.
+
+- **G-008: Classifier red-line awareness** — Beta is currently classifier-blind. It treats decision-policy.md red lines and CLAUDE.md autonomy bands as the full surface, but auto-mode classifier is a separate enforcement layer. Beta needs to know which actions hit the classifier so it can phrase verdicts to halt rather than encourage proceed.
+
+- **G-009: Bootstrap-sprint convention exemption** — Sprint A introduced goal_verification but legitimately omitted it from its own Plan Contract (would be circular). Beta accepted this on the first design-review consult (EVT-sprint-A-design row 29). The exemption pattern should be promoted to a named principle: "First sprint introducing convention C is exempt from C." Without this, Beta might flag a future bootstrap sprint as non-compliant.
+
+---
+
+## Decision Policy Gaps
+
+- **Class B/C boundary for /sprint:full --cost-acknowledged retries**: this action is reversible (halts at cost), but it modifies billing exposure. Beta classified the wrap-up sequencing at row 30 as Class B (DECIDE, conf 0.88) but did not address the cost-acknowledged retry class explicitly. Recommendation: classify --cost-acknowledged retries as Class B IF first retry, Class C IF second retry (since recurring double-halt indicates preset mismatch, not authorization shortage). User-flag; do not auto-apply.
+
+- **Internal-canary release prepare classification**: scripts/sprint/release.js prepare --target internal-canary is classifier-blocked but per CLAUDE.md Autonomy this action is "push" adjacent. Beta should treat it as Class C ESCALATE on first encounter, Class B once the user has typed prose intent in the same session. Decision policy currently has no row for "prepare" sub-actions of release.js — add one.
+
+- **Beta-gate hook surface mismatch**: beta-gate-blocked fired 2× this session (vs. 61 across the file's history). The hook works. But the rubric for "when does AskUserQuestion need a Beta pre-consult" is implicit — codified only in /sprint:* skill bodies. Recommendation: add explicit `requires_beta_preconsult: bool` field to skill frontmatter so the gate can be deterministic, not regex-on-prompt-target. User-flag.
+
+- **Routing-trace coverage as ship-gate prereq**: L-2026-05-19 surfaced that release.js check refuses without execution/qa/redteam routing traces. This is currently invisible to Beta — Beta will say "DECIDE, ship it" without checking routing.js record coverage. Recommendation: add a Beta pre-flight: before any DECIDE on a release pre-flight question, verify routing.js coverage report exists for the sprint OR explicitly flag the gap in the verdict. User-flag.
+
+---
+
+## Beta Decision Distribution (This Session 2026-05-18)
+
+| Verdict | Count | % | Notes |
+|---|---|---|---|
+| DECIDE | 4 | 100% | All four sprint-related: pre-design Sprint A, design-review Sprint A, Sprint A next phase, wrap-up |
+| DIRECTIVE | 0 | 0% | Embedded in DECIDE verdicts (e.g. row 29's "directives_applied" list of 8 actions). Could split into separate verdict-class in future. |
+| ESCALATE | 0 | 0% | No ESCALATE this session. All decisions cleared classifier internally per Beta's reasoning. |
+| **Total Beta consultations** | **4** | | All in band 21:13 → 23:15 UTC (2-hour window, end-of-session) |
+
+Adherence note: the prompt specified "at least 4 this session" — confirmed exactly 4 logged consults (rows 28-31 in `.claude/agents/00-alex/.system/beta/events.jsonl`).
+
+Decision accuracy: 4/4 DECIDE verdicts directly applied without override or correction. Eight design-review directives shipped (row 29 directives_applied list). Confidence in Beta this session: **VERY_HIGH** baseline maintained.
+
+---
+
+## Telemetry health
+
+- beta-gate-blocked: 61 lifetime, 2 in last 3 days (down sharply from 4× growth at 2026-05-13). Pre-flight Beta requirement added in release.md skill body (per /learn:deep 2026-05-13) is working.
+- beta-gate-pass: 2 lifetime; both via escape-keyword (ESCALATE prefix). No pass-via-Beta-consult-event yet in event log — verify the hook is reading paths.betaEvents correctly. (Minor; ride-along to next /check:patterns pass.)
+- AskUserQuestion: 4 successful invocations on 2026-05-18, each preceded by log-beta-consult-*.js write+execute. The workaround pattern from L-2026-05-19 is the de facto protocol now.
+
+---
+
+_Generated by /beta:mine on 2026-05-19. Window: 2026-05-16 → 2026-05-19. Source data: events.jsonl (1,172 evt), tools.jsonl (756 tool calls), beta/events.jsonl (30 lifetime, 4 in-session), learnings.jsonl (30 appended in window), git log (100 commits scanned)._

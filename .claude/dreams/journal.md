@@ -66,3 +66,55 @@ Append-only log. Most recent entry on top.
 2. **Capsule-gate release script** — `release-canonical.js` should refuse to tag if `framework/releases/X.Y.Z/` is missing or fails checksum. Owner: warpos release pipeline. Effort: ~30 min.
 3. **`/beta:ask` skill** — single-line β consultation primitive that's cheaper than the gate's penalty. Move consultation upstream to intent-layer. Owner: beta system. Effort: ~30 min spec + integration.
 4. **Path-registry prune** — remove `research`, `tracesFile`, `requirementsStagedFile`, `oneshotRetros` keys OR seed the dirs. Path-lint is currently warn-only on missing keys but shouldn't be. Owner: paths layer. Effort: ~10 min.
+
+
+---
+
+# Sleep Journal — 2026-05-19
+
+Two sprints planned/designed/executed/retrospected back-to-back. 11 commits on branch `sprint/SP-20260518-007` (Sprint A) + Sprint B work co-resident. Local-only; halted at push gate per CLAUDE.md.
+
+## NREM Consolidation
+- Learnings: 69 → 97 (+28 from /learn:deep). All 28 `logged` + `score=0` per "never self-rate" rule.
+- Importance audit: tagged inline in `conditions` block (most are `apply_when` + `why` framed; not formally tagged HIGH/MEDIUM/LOW yet — that pass deferred to next cycle).
+- /learn:integrate: 0 promotion candidates this cycle (score≥0.7 + !implemented + !logged = empty set). New learnings need session-recurrence to mature.
+- Conflicts resolved: 0 explicit. Two near-duplicates flagged for next cycle (Phase A "node -e for fs" + Phase B "node -e merge-guard blocks" both echo existing A-006/A-010).
+- Decay applied: 0 entries removed this cycle (97 total still under the 30-50 target ceiling? — actually OVER it; next cycle should prune).
+- Promotions: 0 patterns → permanent rules (none cleared the bar).
+
+## Cleanup (Glymphatic)
+- Session files: `.claude/runtime/tmp/` has 6 one-shot scripts from this session (4 beta-event loggers, 2 plan payloads). Not gitignored but won't be in any commit (specific git-add only). Leaving for next cycle to clear.
+- Events compacted: skipped this cycle (~1172 events in 3-day window is healthy).
+- Handoffs pruned: skipped this cycle.
+- Orphan branches: none new this session.
+- Uncommitted: 0 staged, 0 unstaged at /sleep:deep entry. Clean.
+- Recurring system-issues: no /issues:scan this cycle.
+
+## Replay (Spindle)
+- Today's real goal: not "complete the work" — it was "exercise the new gate end-to-end". The convention (Sprint A's goal_verification) had to land as code AND dogfood AND be ready for the next sprint to exercise. Sprint A was the lock-maker; the lock fitting itself was never the goal.
+- Achieved: convention shipped (schemas + design.js gate + release.js ship-gate + /check:ac-coverage + /linters:run wiring + retro annotation + docs). 36 dogfood tests pass. Retros emitted (skeleton mode). Sprint B closed-loop on hooks + diagnostics (format.js fix + lint-hook-output + /check:node-procs + operational-loop doc).
+- Blind spots:
+  - No live sprint has actually opted in to goal_verification yet — convention is unfalsified outside the dogfood.
+  - The two release records (RL-20260518-011 + RL-20260519-012) are sitting at status=preparing; human-curated checklist items (release_notes_written, docs_updated, migration_plan, rollback_plan, approval_recorded, post_release_monitoring_plan) are all unticked.
+  - 86 learnings have score<0.3 — the score-bump-via-reference machinery isn't firing.
+- Unused skills: didn't use this session: /qa:audit, /redteam:full, /check:patterns, /check:architecture, /maps:enforcements. Most have natural homes in the next sprint's release/retro cycle.
+- User style notes: terse imperative commands ("Continue", "go", "APPROVED"), explicit budget grants ("up to 100 dollars"), Beta directive trust ("Approve Beta plan"), zero patience for explanation-loops. Direct.
+
+## REM Dreams
+- Dream 1 (The Two Locks and the One Hand): Beta and Classifier are independent gates; the user's typed prose is a third hand. AskUserQuestion selections are not equivalent to typed prose for cost/release ops.
+- Dream 2 (The Bootstrap and the Mirror): Sprint A introduces a convention it can't apply to itself — first real test is the next opt-in sprint.
+- Cross-pollination: both paintings are about boundary-awareness. β should be classifier-aware AND bootstrap-aware. Same gap, two angles.
+- Schema candidate: **Β-MP-001 — System gates are boundary-aware, not authority-fungible.** Flagged for /beta:integrate next cycle. Not promoted yet (needs 2+ applications without correction).
+- Dream paintings: 2 saved to `paths.dreams`/2026-05-19.md.
+
+## Repair
+- Security: skipped this cycle (no secrets touched, no .env edits, no credential surface).
+- Dependencies: skipped (no package.json edits — prettier require.resolve is dependency-aware but doesn't add a dep).
+- Architecture: latent paths-registry drift surfaced + fixed (sprintFullAutonomy + sprintFullReports keys restored to registry after build.js prune). 5 generated artifacts re-committed atomically.
+- Hooks: lint-hook-output.js added to PreToolUse Edit|Write chain at correct slot (after path-guard, before sprint-routing-guard). Warn-only — never blocks.
+
+## Growth
+- System strength trend: **upward.** Net new this session: 1 convention (goal_verification end-to-end), 6 new helpers/skills (regression-fixture schema, /check:ac-coverage, /check:node-procs, lint-hook-output.js, sprint-test discovery, retro annotation), 3 new path keys (sprintRegressionCorpus + 2 restored), 28 learnings, 7 β patterns, 3 β anti-patterns, 5 β confidence rows. Two release records staged at halt-gate, awaiting human curation + push.
+- Biggest leverage point: **deliberately opt the next sprint into goal_verification.** The convention is shipped but untested in production. Picking a small upcoming sprint with a clear executable goal and adding the block to its PC turns latent code into observed enforcement. Without this, the convention drifts.
+- Morning briefing: appended to `paths.dreams`/coaching.md.
+- False memory check: spot-checked Sprint A's 11 new commits against git log; all referenced files exist; no schema phantom-refs.

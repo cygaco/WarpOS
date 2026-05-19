@@ -37,3 +37,58 @@ Append-only. Each section is one sleep cycle's coaching for the *next* session s
 - **Compaction loses verbatim prompts.** If the user asks "what was the last thing I sent?" the answer must come from a verbatim store, not a summary. Worth verifying `session:checkpoint` and `session:handoff` preserve last N raw prompts.
 - **`node -e` with `fs` writes will be blocked** by merge-guard. Use Edit/Write tools, not inline scripts. (Per L-9.)
 - **`cd <projectDir> && git …` prefix is redundant** in this harness — cwd is already correct. Strip the prefix before issuing git commands.
+
+
+---
+
+## Morning Briefing — 2026-05-20
+
+You ended the last session with two sprints **implementation-complete but pre-release**, on a single branch `sprint/SP-20260518-007`. 11 commits, local-only. The push gate is the only thing standing between this work and main.
+
+### What's waiting
+
+1. **Two release records at `preparing` status.** RL-20260518-011 (Sprint A) and RL-20260519-012 (Sprint B). Auto-checks pass; human-curated items still unticked:
+   - release_notes_written
+   - docs_updated
+   - migration_plan (`none_required` is a valid value)
+   - rollback_plan (`none_required` is a valid value for additive sprints)
+   - approval_recorded (mint an AP-id, edit it to `approved` state)
+   - post_release_monitoring_plan (point at `paths.eventsFile` filters for the new event types)
+2. **Branch is local-only.** `/commit:both` was queued for after `/sleep:deep`. The user's chain expects: `/commit:both` then "prepare the latest release" (likely `/warp:release` — full canonical WarpOS pipeline).
+3. **Retros emitted as skeletons.** Both retro.yaml files exist at `paths.sprintHistory/SP-2026051{8,9}-00{7,8}/retro.yaml`. Operator can `--retry-synth` later for LLM-synthesized retros.
+
+### What to do first
+
+**Run `/commit:both`** — it queued behind sleep. Then the user wants "prepare the latest release", which most likely means `/warp:release` (drives canonical WarpOS release from this product repo: promote, bump, regen capsule, run gates, commit, tag, push).
+
+Beta has standing precedent (EVT-s-sp-20260514-001-beta-002): release record may proceed; push/tag is the red line. The user typed `APPROVED` once this session for Sprint A's internal-canary release prepare; that approval scope was bounded — push needs a fresh typed line.
+
+### The convention's birth certificate
+
+Sprint A shipped `goal_verification` end-to-end but no live sprint has exercised it. The dream (Painting 2) flagged this: until a real next sprint opts in, the convention is unfalsified. **Suggested next sprint after this push**: pick a small bug-fix or feature with a clear executable goal and DELIBERATELY include `goal_verification: { reproduction: executable, … }` in its Plan Contract. Watch the design-time gate fire. Watch the release-time ship-gate run the cited test. That run is the convention's birth certificate.
+
+### Watch for
+
+- **Two-gate authority pattern** (Β-MP-001 candidate). β returns DECIDE; classifier blocks anyway on cost/release ops. Don't retry under β blessing — type a plain line, or let the work stop.
+- **paths/build.js without registry edit first** = silent prune. Always edit `framework/paths.registry.json` BEFORE running `scripts/paths/build.js`. Verified once this session (T-105 + restore commit). Β anti-pattern A-015.
+- **Manual ticket implementation needs manual routing.js record per phase.** If you bypass `/sprint:execute` again (cost-halt pivot, scope-too-large), remember to record execution/qa/redteam traces before `/sprint:release check`. Β anti-pattern A-016.
+
+### What's already implemented (don't re-implement)
+
+- goal_verification block on plan-contract.schema.json (additive, optional)
+- regression-fixture.schema.json (`warpos/sprint/regression-fixture/v1`)
+- paths.sprintRegressionCorpus → `tests/regression`
+- design.js fixture gate (gated on goal_verification presence)
+- release.js cited-test executor (three branches: pass/fail/inconclusive; ENOENT → fail)
+- /check:ac-coverage skill + helper
+- /linters:run sprint-test-*.js discovery (test-plan-honors-registry-primary now on lint board)
+- retrospective.js Goal Verification Status annotation
+- format.js execFileSync + ETIMEDOUT cleanup (Windows: taskkill; POSIX: SIGKILL)
+- scripts/hooks/lint-hook-output.js (warn-only PreToolUse validator)
+- /check:node-procs skill + helper
+- operational-loop.md "Background tasks and Windows process hygiene" section
+- execute.md run_in_background warning line
+- sprint-workflow.md "Sprint Goal Verification" section
+- sprint-full-autonomy.json moderate preset description bump
+
+Refer to `paths.sprintReference#sprint-goal-verification-sp-20260518-007` when in doubt.
