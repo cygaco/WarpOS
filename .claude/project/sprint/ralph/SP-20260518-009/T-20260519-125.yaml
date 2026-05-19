@@ -1,0 +1,31 @@
+schema: warpos/sprint/ralph-progress/v1
+sprint: SP-20260518-009
+ticket: T-20260519-125
+current_loop: 1
+phase: stopped
+started_at: "2026-05-19T02:52:28.148Z"
+updated_at: "2026-05-19T02:53:02.750Z"
+status: completed
+completed_tasks:
+  - "plan: Rewriting phase0-verify.js lines 90-99: collapse two checks into one that asserts ROADMAP.md exists AND is in promote.js exclusion list."
+  - "act: Running node scripts/phase0-verify.js to confirm exit 0."
+  - "test: AC-3.1 (only ROADMAP.md literal), AC-3.2 (existence check rewritten to ROADMAP.md exists), AC-3.3 (phase0-verify exits 0) all satisfied. 7/7 tests pass, 9/9 checks pass."
+  - "review: phase0-verify.js now asserts post-consolidation invariant. Existence check rewritten (not removed). Commit message must record this choice."
+remaining_tasks:
+  - rewrite phase0-verify check 92-99
+  - run node scripts/phase0-verify.js
+blockers: []
+failed_attempts: []
+last_checks:
+  ran_at: "2026-05-19T02:53:02.490Z"
+  passing:
+    - ac-3.1-literal-check
+    - ac-3.2-existence-check
+    - ac-3.3-phase0-verify-exit-zero
+  failing: []
+next_action: All 3 ACs satisfied.
+external_dependency_status: []
+stop_reason: completed
+resume_instructions: "Read this file. Resume at the phase listed. If status is stopped_*, investigate the stop_reason first."
+checkpoint_pointers:
+  - "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\ralph\\SP-20260518-009\\T-20260519-125.yaml"

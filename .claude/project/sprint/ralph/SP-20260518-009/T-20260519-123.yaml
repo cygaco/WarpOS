@@ -1,0 +1,34 @@
+schema: warpos/sprint/ralph-progress/v1
+sprint: SP-20260518-009
+ticket: T-20260519-123
+current_loop: 1
+phase: stopped
+started_at: "2026-05-19T02:48:52.994Z"
+updated_at: "2026-05-19T02:51:08.856Z"
+status: completed
+completed_tasks:
+  - "plan: Performing git rm ROADMAP.md + git mv WARPOS_ROADMAP.md ROADMAP.md, then adding dual-identity header comment."
+  - "act: Verifying AC-1.1 (file presence), AC-1.2 (content), AC-1.3 (header), AC-1.4 (commit will be split at release time)."
+  - "test: ACs 1.1-1.3 satisfied. AC-1.4 (rename detection in commit) deferred to release-time commit split (two commits: rm scaffold; rename backlog). Working tree state is correct."
+  - "review: T-20260519-123 implementation complete. Files: ROADMAP.md (new content + header), WARPOS_ROADMAP.md (deleted). No regressions expected."
+remaining_tasks:
+  - git rm ROADMAP.md
+  - git mv WARPOS_ROADMAP.md ROADMAP.md
+  - "strip obsolete header+footer"
+  - add dual-identity header comment
+  - verify AC-1.1-1.4
+blockers: []
+failed_attempts: []
+last_checks:
+  ran_at: "2026-05-19T02:50:40.074Z"
+  passing:
+    - ac-1.1-file-presence
+    - ac-1.2-content-spot-check
+    - ac-1.3-header
+  failing: []
+next_action: "All ACs satisfied; AC-1.4 deferred to commit-time split decision."
+external_dependency_status: []
+stop_reason: completed
+resume_instructions: "Read this file. Resume at the phase listed. If status is stopped_*, investigate the stop_reason first."
+checkpoint_pointers:
+  - "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\ralph\\SP-20260518-009\\T-20260519-123.yaml"

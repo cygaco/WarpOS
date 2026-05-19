@@ -1,5 +1,5 @@
 schema: warpos/sprint/active-sprints/v1
-primary: SP-20260518-008
+primary: SP-20260518-009
 sprints:
   - id: SP-20260512-001
     title: Multi-sprint parallelism for Sprint Workflow
@@ -133,5 +133,16 @@ sprints:
     pointer: ".claude/project/sprint/sprints/SP-20260518-008"
     created_at: "2026-05-18T21:30:40.942Z"
     updated_at: "2026-05-19T02:01:51.007Z"
+  - id: SP-20260518-009
+    title: "Consolidate ROADMAP.md and WARPOS_ROADMAP.md into single canonical ROADMAP.md (scaffold still shipped from generator)"
+    status: planning
+    lane:
+      type: default
+      value: null
+      isolation_notes: ""
+    layout: per_sprint_subdir
+    pointer: ".claude/project/sprint/sprints/SP-20260518-009"
+    created_at: "2026-05-19T02:32:56.764Z"
+    updated_at: "2026-05-19T02:32:56.764Z"
 created_at: "2026-05-12T22:57:35.667Z"
-updated_at: "2026-05-19T02:01:51.007Z"
+updated_at: "2026-05-19T02:32:56.764Z"

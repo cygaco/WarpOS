@@ -1,0 +1,149 @@
+schema: warpos/sprint/plan-contract/v1
+id: PC-20260519-0013
+created_at: "2026-05-19T02:35:31.108Z"
+updated_at: "2026-05-19T02:35:31.108Z"
+sprint: SP-20260518-009
+source_request: "Consolidate WARPOS_ROADMAP.md and ROADMAP.md into a single canonical ROADMAP.md (the framework backlog), keeping the consumer-facing scaffold shipped only via scripts/warpos/generate-roadmap-scaffold.js. Update live-code references in promote.js, paths/gate.js, path-lint.js, and phase0-verify.js. Leave historical references in _docs/phase0/* and framework/releases/*/ frozen."
+source_request_verbatim: do it
+request_type: refactor
+interpreted_intent: "Collapse the two-file roadmap convention (ROADMAP.md scaffold + WARPOS_ROADMAP.md framework backlog) into a single canonical ROADMAP.md that holds the framework backlog. The consumer-facing scaffold continues to be generated programmatically by scripts/warpos/generate-roadmap-scaffold.js, which already writes its scaffold as an inline JS string (no source-file dependency)."
+user_or_business_outcome: "One canonical roadmap file at repo root, no parallel naming convention to remember, no risk of the two files drifting. Downstream consumers are unaffected because promote.js already excludes ROADMAP.md from canonical→product propagation and the scaffold generator is the actual source of the consumer-shipped skeleton."
+affected_surfaces:
+  - surface: "WARPOS_ROADMAP.md (repo root)"
+    evidence_level: verified_from_repo
+    notes: "Real framework backlog (516 lines). Content moves to ROADMAP.md and this file is deleted."
+  - surface: "ROADMAP.md (repo root)"
+    evidence_level: verified_from_repo
+    notes: "Currently a 40-line scaffold-style file. After consolidation, holds the framework backlog. Header comment + footer cross-link to WARPOS_ROADMAP.md are removed."
+  - surface: "scripts/warpos/promote.js (FRAMEWORK_PREFIXES exclusion list, lines 107-112)"
+    evidence_level: verified_from_repo
+    notes: "Currently excludes BOTH 'ROADMAP.md' and 'WARPOS_ROADMAP.md' from canonical→product propagation. Remove the WARPOS_ROADMAP.md entry; keep ROADMAP.md exclusion (still needed so consumers' product ROADMAP.md is never overwritten)."
+  - surface: "scripts/paths/gate.js (line 300)"
+    evidence_level: verified_from_repo
+    notes: "Lists 'WARPOS_ROADMAP.md' in an allowlist (Phase 0 workstream H comment). Remove the line."
+  - surface: "scripts/path-lint.js (line 286)"
+    evidence_level: verified_from_repo
+    notes: "Lists 'WARPOS_ROADMAP.md' in an allowlist. Remove the line."
+  - surface: "scripts/phase0-verify.js (lines 92-99)"
+    evidence_level: verified_from_repo
+    notes: "Has two checks: (a) promote.js contains BOTH '\"ROADMAP.md\"' AND '\"WARPOS_ROADMAP.md\"' literals; (b) WARPOS_ROADMAP.md file exists. After consolidation, (a) must become just '\"ROADMAP.md\"' literal check, and (b) is removed (or replaced with a check that ROADMAP.md exists)."
+  - surface: scripts/warpos/generate-roadmap-scaffold.js
+    evidence_level: verified_from_repo
+    notes: Scaffold-as-JS-string generator. UNCHANGED in this sprint. It already writes a scaffold that is distinct from the framework backlog. Confirm it still functions after consolidation.
+  - surface: "Historical references in _docs/phase0/* and framework/releases/0.4.0/changelog.md"
+    evidence_level: verified_from_repo
+    notes: "FROZEN — these are historical phase reports and release notes. Do NOT modify. They document the prior two-file convention as a historical fact."
+  - surface: DUMP.md at repo root
+    evidence_level: verified_from_repo
+    notes: "Session handoff file. Mentions WARPOS_ROADMAP. Transient — not part of frozen history. Can be left as-is or regenerated on next session:dump."
+current_behavior:
+  evidence_level: verified_from_repo
+  notes: "Two files at canonical repo root: ROADMAP.md (scaffold, ~40 lines, decoration only) and WARPOS_ROADMAP.md (real framework backlog, ~516 lines). promote.js excludes both from consumer propagation. Consumers receive the scaffold only via the generate-roadmap-scaffold.js script which uses an inline JS string and never reads canonical's ROADMAP.md. Net effect today: canonical's ROADMAP.md is unused by consumers and exists only to remind canonical-repo readers about the convention."
+desired_behavior: "Canonical repo root has exactly one ROADMAP.md, containing the framework backlog (current contents of WARPOS_ROADMAP.md). WARPOS_ROADMAP.md no longer exists. Consumer install/update behavior is unchanged: scaffold is still produced by generate-roadmap-scaffold.js. Live-code references to WARPOS_ROADMAP.md are removed; historical references are frozen."
+scope:
+  size: s
+  risk_level: low
+  complexity_drivers:
+    - "File rename overwriting an existing file at the destination — needs git mv after git rm to preserve history cleanly."
+    - "phase0-verify.js check rewrite is not a one-line edit — needs care to preserve the invariant intent (ROADMAP.md is excluded from propagation)."
+    - "Twelve files reference WARPOS_ROADMAP — must explicitly classify each as live (update) vs historical (freeze)."
+scope_variants:
+  minimal_safe:
+    summary: "Rename WARPOS_ROADMAP.md → ROADMAP.md (overwriting current scaffold). Update only the 4 live-code references (promote.js, paths/gate.js, path-lint.js, phase0-verify.js). Leave all _docs/phase0/* and framework/releases/* references frozen. Strip the header/footer cross-links to WARPOS_ROADMAP.md inside the new ROADMAP.md."
+    tradeoffs:
+      - "Smallest diff, lowest risk."
+      - "No new header comment explaining 'this file means framework-backlog-in-canonical, scaffold-in-consumer' — relies on the generator script being self-explanatory."
+  recommended:
+    summary: "Minimal_safe PLUS add a short HTML comment at the top of the new ROADMAP.md clarifying: 'In canonical WarpOS this file is the framework backlog. Downstream consumers receive a clean scaffold generated by scripts/warpos/generate-roadmap-scaffold.js — promote.js excludes this file from propagation.' Also smoke-test that promote.js still works (dry-run) and that phase0-verify.js exits clean after the check rewrite."
+    tradeoffs:
+      - "Adds ~5 lines of header prose."
+      - Slightly more verification work but catches phase0-verify breakage at design-time instead of release-time.
+  expanded:
+    summary: "Recommended PLUS: (a) audit + regenerate the scaffold template inside generate-roadmap-scaffold.js to mirror the new canonical convention; (b) add a /check:roadmap-honesty skill that verifies a consumer's ROADMAP.md isn't accidentally framework-style; (c) ship a v0.x migration script for consumers who may have an older shipped ROADMAP.md from before promote.js excluded it."
+    tradeoffs:
+      - "(b) and (c) are speculative — no evidence any consumer is in the broken state today."
+      - "Adds a skill, a migration, and a check. Probably worth deferring unless a consumer reports drift."
+assumptions:
+  safe:
+    - "promote.js currently excludes ROADMAP.md from canonical→product propagation (verified at line 111)."
+    - "scripts/warpos/generate-roadmap-scaffold.js encodes the consumer scaffold as an inline JS string and never reads canonical's ROADMAP.md (verified at lines 35-63)."
+    - "No live framework code reads WARPOS_ROADMAP.md's contents — references are only allowlist entries or existence checks (verified across all 12 ref-bearing files)."
+    - "Historical references in _docs/phase0/* and framework/releases/0.4.0/changelog.md are stable documentation of a past convention and do not need updating."
+  unsafe:
+    - "phase0-verify.js may be wired into a release-gate or check pipeline. If so, the gate config needs to know about the new check shape (or the check needs to be replaced with one that still passes for the consolidated state)."
+    - "There may be a downstream consumer of WarpOS whose own /warp:update flow expects WARPOS_ROADMAP.md to exist as a sentinel of canonical-vs-consumer status. Low probability but unverified."
+  needs_user_or_beta_review:
+    - "Whether to leave a stub WARPOS_ROADMAP.md (containing 'moved to ROADMAP.md') for one release as a forwarding marker, or do a hard cut. Recommendation: hard cut — the file was never shipped to consumers, so forwarding has no audience."
+open_questions:
+  blocking: []
+  non_blocking:
+    - "Should the new ROADMAP.md keep the historical entries (v0.1.1, v0.1.2, … v0.2.0 changelog blocks) or split them out into framework/CHANGELOG.md? The current WARPOS_ROADMAP.md mixes roadmap (planning) with changelog (shipped). Not blocking this sprint, but a future cleanup target."
+    - "Should /warp:setup or install.js invoke generate-roadmap-scaffold.js automatically on fresh consumer installs? Currently the generator exists but it's unclear whether anything calls it during install. Not blocking — out of scope for this sprint."
+non_goals:
+  - "Splitting roadmap from changelog (separate sprint)."
+  - Refactoring the scaffold-generator script.
+  - "Updating historical references in _docs/phase0/* or framework/releases/0.4.0/changelog.md."
+  - Shipping a consumer migration script for older installs.
+  - "Adding a new /check:* skill for roadmap honesty."
+  - "Touching DUMP.md (transient file, regenerated by /session:dump)."
+requirement_areas:
+  - framework-docs
+  - "build-pipeline (promote.js, gate.js, lint, verify)"
+high_level_story_candidates:
+  - "As the framework owner, I want a single ROADMAP.md at canonical root so I don't maintain two parallel roadmap files."
+  - "As a downstream consumer, I want my ROADMAP.md to remain my product roadmap and never receive framework backlog content via /warp:update."
+granular_story_candidates:
+  - "Rename WARPOS_ROADMAP.md → ROADMAP.md (overwriting current scaffold). git rm old ROADMAP.md first, then git mv WARPOS_ROADMAP.md ROADMAP.md."
+  - Strip the in-file header HTML comment and footer cross-link inside the new ROADMAP.md.
+  - "Add a short HTML comment at the top of the new ROADMAP.md explaining the dual identity (canonical = framework backlog; consumer = scaffold from generator)."
+  - "Update scripts/warpos/promote.js FRAMEWORK_PREFIXES exclusion list: remove 'WARPOS_ROADMAP.md' line; keep 'ROADMAP.md' line."
+  - "Update scripts/paths/gate.js: remove the 'WARPOS_ROADMAP.md' allowlist entry on line 300."
+  - "Update scripts/path-lint.js: remove the 'WARPOS_ROADMAP.md' allowlist entry on line 286."
+  - "Update scripts/phase0-verify.js: (a) reduce the promote.js literal check to only '\"ROADMAP.md\"'; (b) remove or replace the 'WARPOS_ROADMAP.md exists' check."
+  - Run phase0-verify.js after the changes and confirm it exits clean.
+  - Run scripts/warpos/promote.js --dry-run from canonical and confirm ROADMAP.md is still excluded.
+  - "Run /check:references (or grep) to confirm no live code path references WARPOS_ROADMAP anymore."
+workstream_candidates:
+  - "A. File rename + content move (1 file deleted, 1 file overwritten)."
+  - "B. Live-code reference cleanup (4 files edited)."
+  - "C. Verification (phase0-verify run, promote dry-run, ref grep)."
+  - "D. In-file documentation update (header comment) inside the new ROADMAP.md."
+preliminary_ticket_candidates:
+  allowed: false
+  candidates: []
+  notes: "Tickets are minted by /sprint:design. Scope is small enough that 3-4 tickets cover it: T-rename, T-refs, T-verify, T-doc-header. /sprint:design will decide the final split."
+external_service_dependencies:
+  status: none_expected
+  required: []
+  possible: []
+  notes: "Pure file rename + script refs. No external services involved."
+approval_boundaries: []
+design_required: true
+execution_allowed_without_design: false
+recommended_mode: solo
+mode_invocation_required_by_user: true
+lane:
+  type: default
+  value: null
+  isolation_notes: ""
+beta_review:
+  required: false
+  likely_founder_rejection_risks: []
+  overbuild_risks:
+    - "Adding a new /check:* skill or migration script (expanded variant) when no consumer has reported the broken state."
+  missing_context_risks: []
+plan_quality:
+  status: pass
+  confidence: high
+  evidence_gaps: []
+  fail_reasons: []
+next_recommended_command: "/sprint:design"
+resume_instructions: "Sprint SP-20260518-009 has a Plan Contract under .claude/project/sprint/plan-contracts/. Run /sprint:design next. If interrupted, read .claude/project/sprint/sprint-progress.yaml#resume_command."
+tracker_paths:
+  current_sprint: ".claude/project/sprint/current-sprint.yaml"
+  sprint_progress: ".claude/project/sprint/sprint-progress.yaml"
+  plan_contract: ".claude/project/sprint/plan-contracts/PC-20260519-0013.yaml"
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260519-0013.report.md"
+created_by: alpha
+updated_by: alpha

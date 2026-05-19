@@ -88,14 +88,12 @@ const checks = [
     ok: fileContains(".claude/paths.json", "warposFlagLedger"),
   },
   {
-    name: "promote.js excludes ROADMAP files",
-    ok:
-      fileContains("scripts/warpos/promote.js", '"ROADMAP.md"') &&
-      fileContains("scripts/warpos/promote.js", '"WARPOS_ROADMAP.md"'),
+    name: "promote.js excludes ROADMAP.md from propagation",
+    ok: fileContains("scripts/warpos/promote.js", '"ROADMAP.md"'),
   },
   {
-    name: "WARPOS_ROADMAP.md exists",
-    ok: fs.existsSync(path.join(projectDir, "WARPOS_ROADMAP.md")),
+    name: "ROADMAP.md exists at repo root (canonical framework backlog)",
+    ok: fs.existsSync(path.join(projectDir, "ROADMAP.md")),
   },
 ];
 

@@ -282,8 +282,7 @@ const SKIP_SUBSTRINGS = [
   "SYSTEMS-REFERENCE.md", // doc being migrated
   "warpos-system-updates", // historical migration doc
   "warpos-roadmap.md", // roadmap docs (legacy reference)
-  "ROADMAP.md", // product roadmap scaffold
-  "WARPOS_ROADMAP.md", // canonical-only framework backlog (Phase 0 workstream H)
+  "ROADMAP.md", // canonical framework backlog (consumer scaffold is generated, not propagated)
   ".claude/.session-checkpoint.json", // periodic snapshot of past prompts
   ".claude/.last-checkpoint", // periodic snapshot
   ".claude/.agent-result-hashes.json", // tool call hashes

@@ -1,5 +1,15 @@
 # WarpOS Roadmap
 
+<!-- Dual identity:
+     - In canonical WarpOS (this repo), ROADMAP.md is the framework backlog.
+     - In downstream consumer projects, ROADMAP.md is the consumer's product
+       roadmap. Consumers receive a clean scaffold from
+       `scripts/warpos/generate-roadmap-scaffold.js` (which encodes the
+       scaffold as an inline JS string, independent of this file).
+     - `scripts/warpos/promote.js` excludes ROADMAP.md from canonical→product
+       propagation, so a consumer's roadmap is never overwritten by framework
+       backlog content. -->
+
 Post-MVP work. Items grouped by phase.
 
 ---

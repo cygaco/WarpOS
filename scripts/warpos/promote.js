@@ -104,12 +104,12 @@ const EXCLUDE_PREFIXES = [
   ".warpos/", // per-install transactional state
   ".env",
   "node_modules/",
-  // Phase 0 workstream H: roadmaps are NEVER propagated. Product repos own
-  // ROADMAP.md outright. Canonical WarpOS keeps its framework backlog in
-  // WARPOS_ROADMAP.md, which also stays out of the propagation set so a
-  // product repo never inherits framework planning content.
+  // Roadmaps are NEVER propagated. Product repos own ROADMAP.md outright.
+  // Canonical WarpOS uses ROADMAP.md for the framework backlog; consumers
+  // receive a clean scaffold via scripts/warpos/generate-roadmap-scaffold.js
+  // (which encodes the scaffold inline, independent of canonical's ROADMAP.md).
+  // (Origin: Phase 0 workstream H, consolidated under SP-20260518-009.)
   "ROADMAP.md",
-  "WARPOS_ROADMAP.md",
 ];
 
 // Project-specific manifest fields/files we can ship to WarpOS as TEMPLATES,
