@@ -1,0 +1,41 @@
+schema: warpos/sprint/release/v1
+id: RL-20260519-012
+sprint: SP-20260518-008
+title: "Hook & Process Hygiene — format.js spawn fix, lint-hook-output PreToolUse validator, /check:node-procs diagnostic"
+version: "0.9.0-sp008"
+status: preparing
+checklist:
+  tickets_done_or_deferred: true
+  blocking_issues_resolved: false
+  requirements_satisfied: true
+  copy_satisfied: true
+  inputs_satisfied: true
+  trace_satisfied: true
+  acceptance_criteria_satisfied: true
+  qa_passed: true
+  redteam_passed: true
+  external_services_ready: true
+  credentials_present: false
+  release_notes_written: false
+  docs_updated: false
+  analytics_updated: false
+  migration_plan: false
+  rollback_plan: false
+  approval_recorded: false
+  post_release_monitoring_plan: false
+approval_ref: null
+changelog_path: null
+release_report_path: null
+linked_tickets: []
+linked_issues: []
+linked_external_services: []
+deployment_environment: internal-canary
+deployment_target: internal-canary
+deployed_at: null
+deployed_by: null
+rollback_at: null
+rollback_reason: null
+retrospective_ref: null
+learning_candidates: []
+created_at: "2026-05-19T01:58:56.356Z"
+updated_at: "2026-05-19T01:59:43.068Z"

@@ -1,0 +1,73 @@
+schema: "warpos/sprint/sprint-retrospective/v1"
+sprint_id: "SP-20260518-007"
+plan_contract_id: "PC-20260518-0011"
+synthesis_mode: "skeleton"
+summary: "<TO FILL>"
+outcomes_shipped:
+  - outcome: "<TO FILL>"
+    evidence: []
+    planned: true
+outcomes_missed:
+  - outcome: "<TO FILL>"
+    reason: "<TO FILL>"
+    disposition: unknown
+plan_quality_actual:
+  predicted_status: needs_design
+  actual_status: "<TO FILL>"
+  predicted_confidence: high
+  evidence_gaps_predicted:
+    - "Output format of bespoke node test scripts not formally surveyed across all scripts/sprint/test-*.js — only test-plan-honors-registry-primary.js read this turn."
+    - "scripts/hooks/lib/paths.js not directly inspected; assumption that it mirrors .claude/paths.json keys is inferred, not verified."
+  evidence_gaps_actual: []
+  notes: "<TO FILL>"
+scope_variant_actual:
+  planned_variant: recommended
+  actual_variant: unknown
+  adhered: false
+  drift_notes: "<TO FILL>"
+surprises: []
+friction_points:
+  - friction: "<TO FILL>"
+    category: other
+    evidence: []
+    severity: low
+action_items:
+  - action: "<TO FILL>"
+    owner: alpha
+    due_by: "<TO FILL>"
+    linked_friction: ""
+tickets_completed:
+  - T-20260518-103
+  - T-20260518-104
+  - T-20260518-105
+  - T-20260518-106
+  - T-20260518-107
+  - T-20260518-108
+  - T-20260518-109
+  - T-20260518-110
+  - T-20260518-111
+  - T-20260518-112
+tickets_deferred: []
+tickets_abandoned: []
+tickets_reopened: []
+issues_encountered: []
+beta_decisions_reviewed: []
+key_tradeoffs: []
+learning_candidates: []
+release_record_ref: "RL-20260518-011"
+synthesis_metadata:
+  model_class: ""
+  provider: ""
+  model_id: ""
+  duration_ms: 0
+  output_chars: 0
+  fallback_reason: null
+signed_off_by: "alpha"
+signed_off_at: "2026-05-19T02:01:42.439Z"
+retro_metadata:
+  synthesized_at: "2026-05-19T02:01:42.439Z"
+  writer_version: "1.0.0"
+  history_record: ""
+  force_overwrite: false
+created_at: "2026-05-19T02:01:42.439Z"
+updated_at: "2026-05-19T02:01:42.439Z"
