@@ -2,7 +2,7 @@ schema: warpos/sprint/current-sprint/v1
 id: SP-20260518-009
 title: "Consolidate ROADMAP.md and WARPOS_ROADMAP.md into single canonical ROADMAP.md (scaffold still shipped from generator)"
 objective: "(set by /sprint:plan)"
-status: releasing
+status: closed
 created_at: "2026-05-19T02:35:31.102Z"
 updated_at: "2026-05-19T02:58:37.798Z"
 source_request: "Consolidate WARPOS_ROADMAP.md and ROADMAP.md into a single canonical ROADMAP.md (the framework backlog), keeping the consumer-facing scaffold shipped only via scripts/warpos/generate-roadmap-scaffold.js. Update live-code references in promote.js, paths/gate.js, path-lint.js, and phase0-verify.js. Leave historical references in _docs/phase0/* and framework/releases/*/ frozen."
