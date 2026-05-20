@@ -56,6 +56,10 @@
           {
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/authorization-gate.js\""
+          },
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/version-bump-guard.js\""
           }
         ],
         "matcher": "Bash"
@@ -88,10 +92,6 @@
           },
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/lint-hook-output.js\""
-          },
-          {
-            "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/sprint-routing-guard.js\""
           },
           {
@@ -121,6 +121,10 @@
           {
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/authorization-gate.js\""
+          },
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/lint-hook-output.js\""
           }
         ],
         "matcher": "Edit|Write"

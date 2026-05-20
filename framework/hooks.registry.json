@@ -688,6 +688,28 @@
       "purpose": "Regenerate paths.skillCatalog after edits under paths.commands (SP-20260513-003 AC-5.4).",
       "registrations": [{ "event": "PostToolUse", "matcher": "Edit|Write" }],
       "testFixtures": ["fixtures/hooks/default/post-edit.json"]
+    },
+    {
+      "id": "lint-hook-output",
+      "script": "scripts/hooks/lint-hook-output.js",
+      "owner": "framework",
+      "enabled": true,
+      "failMode": "fail-open",
+      "fixturesRequired": true,
+      "purpose": "PreToolUse payload-shape validator for Edit|Write (SP-20260518-008 R-3). Warn-only — surfaces early when Claude Code renames a field.",
+      "registrations": [{ "event": "PreToolUse", "matcher": "Edit|Write" }],
+      "testFixtures": ["fixtures/hooks/default/pre-edit.json"]
+    },
+    {
+      "id": "version-bump-guard",
+      "script": "scripts/hooks/version-bump-guard.js",
+      "owner": "framework",
+      "enabled": true,
+      "failMode": "fail-open",
+      "fixturesRequired": true,
+      "purpose": "Refuse git commits that stage framework-prefix files while framework/releases/<version>/ already exists (capsule already minted for current version). Forces a version bump before more framework changes can ship. Closes the 2026-05-20 capsule-staleness gap.",
+      "registrations": [{ "event": "PreToolUse", "matcher": "Bash" }],
+      "testFixtures": ["fixtures/hooks/default/bash-git-commit.json"]
     }
   ]
 }
