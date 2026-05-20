@@ -10,7 +10,7 @@ Initiate a oneshot build. Delta (δ) takes over as the standalone orchestrator. 
 
 - Full skeleton builds from stubs
 - Building an entire app or major subsystem from scratch
-- Multi-phase runs that need state machine, cycles, points, and auditor analysis
+- Multi-phase runs that need state machine, cycles, points, and learner (cross-cycle pattern) analysis
 
 ## Inputs
 
@@ -54,7 +54,7 @@ Acknowledge the mode switch:
 MODE: oneshot
 Team: none — Delta runs standalone
 Orchestrator: Delta (δ) — full skeleton builds
-Build cycle: state machine with phases, cycles, heartbeat, points, auditor
+Build cycle: state machine with phases, cycles, heartbeat, points, learner
 Alpha/Beta: NOT ACTIVE during oneshot
 ```
 

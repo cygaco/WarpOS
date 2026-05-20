@@ -32,7 +32,7 @@ Pick ONE at a time. Modes are **project-wide and persistent** — whatever you s
 | Mode | Who's in the room | When to use |
 |---|---|---|
 | **solo** | You + Alex α | System tweaking, quick edits, exploratory reading, skill management. Default most of the day. |
-| **adhoc** | α + β (judgment) + γ (builder orchestrator) | Building **one feature** with oversight. Gamma dispatches builder → evaluator → compliance → qa → redteam gauntlet. |
+| **adhoc** | α + β (judgment) + γ (builder orchestrator) | Building **one feature** with oversight. Gamma dispatches builder → reviewer → req-reviewer → compliance → qa → redteam gauntlet. |
 | **oneshot** | δ (standalone) | **End-to-end rebuild of an entire codebase from requirements.** Run when the existing code has drifted badly from its specs or a feature came out muddled. Delta runs a state machine with cycles, fix loops, points, rebuilds feature-by-feature in dependency order. No α/β involved. |
 
 **Starting solo:** just type. You're Alex's pair.

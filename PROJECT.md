@@ -17,7 +17,12 @@ You install it into a project, open Claude Code, and you stop talking to a singl
 | Gamma | γ | Adhoc build orchestrator (single features) | When a real feature build kicks off in `/mode:adhoc` |
 | Delta | δ | Oneshot build orchestrator (full skeleton runs) | Standalone in `/mode:oneshot` — Delta IS the session |
 
-Plus build agents per mode: Builder, Evaluator, Compliance, Auditor, QA (13 failure-mode personas), Red Team (11 security personas), Fixer. Full router in [AGENTS.md](AGENTS.md).
+Plus build agents:
+
+- **Both modes:** Builder, Reviewer (7-check spec+code), Req-Reviewer (requirements traceability), Compliance, Fixer, QA (13 failure-mode personas), Red Team (11 security personas)
+- **Oneshot only:** Learner (cross-cycle pattern analysis), Stub-Scaffold, Test-Runner, Visual-Review
+
+Full router in [AGENTS.md](AGENTS.md).
 
 ## Build modes
 

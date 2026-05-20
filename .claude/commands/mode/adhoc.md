@@ -124,8 +124,8 @@ Acknowledge the mode switch:
 MODE: adhoc
 Team: α (lead) + β (teammate) + γ (teammate)
 Layer 1: Agent team — shared task list, direct messaging
-Layer 2: Gamma spawns builder/evaluator/security subagents as needed
-Build cycle: dispatch → gauntlet (eval + security + compliance + QA) → fix → report
+Layer 2: Gamma spawns builder/reviewer/security subagents as needed
+Build cycle: dispatch → gauntlet (reviewer + req-reviewer + security + compliance + QA) → fix → report
 ```
 
 ### Step 4: Update heartbeat (if store exists)

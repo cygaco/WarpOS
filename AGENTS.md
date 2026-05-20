@@ -18,13 +18,17 @@
 
 | Agent | Role | Adhoc | Oneshot |
 |-------|------|-------|---------|
-| **Builder** | Code writer (scoped) | [adhoc](.claude/agents/01-adhoc/builder/) | [oneshot](.claude/agents/02-oneshot/builder/) |
-| **Evaluator** | Code reviewer (pass/fail) | [adhoc](.claude/agents/01-adhoc/evaluator/) | [oneshot](.claude/agents/02-oneshot/evaluator/) |
-| **Compliance** | Process auditor (cross-provider) | [adhoc](.claude/agents/01-adhoc/compliance/) | [oneshot](.claude/agents/02-oneshot/compliance/) |
-| **Auditor** | Pattern analyst, environment evolver | — | [oneshot](.claude/agents/02-oneshot/auditor/) |
-| **QA** | Failure scanner (self-orchestrating) | [adhoc](.claude/agents/01-adhoc/qa/) | [oneshot](.claude/agents/02-oneshot/qa/) |
-| **Red Team** | Security + vuln scanner (self-orchestrating) | [adhoc](.claude/agents/01-adhoc/redteam/) | [oneshot](.claude/agents/02-oneshot/redteam/) |
-| **Fixer** | Bug fixer (scoped) | [adhoc](.claude/agents/01-adhoc/fixer/) | [oneshot](.claude/agents/02-oneshot/fixer/) |
+| **Builder** | Code writer (scoped, isolated worktree) | [adhoc](.claude/agents/01-adhoc/builder/) | [oneshot](.claude/agents/02-oneshot/builder/) |
+| **Reviewer** | 7-check protocol — spec/design (1-6) + code quality (7) | [adhoc](.claude/agents/01-adhoc/reviewer/) | [oneshot](.claude/agents/02-oneshot/reviewer/) |
+| **Req-Reviewer** | Requirements ↔ code ↔ test traceability | [adhoc](.claude/agents/01-adhoc/req-reviewer/) | [oneshot](.claude/agents/02-oneshot/req-reviewer/) |
+| **Compliance** | Process integrity (branch theft, phantom completion, hygiene) | [adhoc](.claude/agents/01-adhoc/compliance/) | [oneshot](.claude/agents/02-oneshot/compliance/) |
+| **QA** | Failure scanner (13 personas, self-orchestrating) | [adhoc](.claude/agents/01-adhoc/qa/) | [oneshot](.claude/agents/02-oneshot/qa/) |
+| **Red Team** | Security scanner (11 personas, self-orchestrating) | [adhoc](.claude/agents/01-adhoc/redteam/) | [oneshot](.claude/agents/02-oneshot/redteam/) |
+| **Fixer** | Bug fixer (scoped, from structured Fix Brief) | [adhoc](.claude/agents/01-adhoc/fixer/) | [oneshot](.claude/agents/02-oneshot/fixer/) |
+| **Learner** | Cross-cycle pattern analysis, environment evolution | — | [oneshot](.claude/agents/02-oneshot/learner/) |
+| **Stub-Scaffold** | Regenerates skeleton stub files from current spec | — | [oneshot](.claude/agents/02-oneshot/stub-scaffold/) |
+| **Test-Runner** | Headless Playwright E2E test runner | — | [oneshot](.claude/agents/02-oneshot/test-runner/) |
+| **Visual-Review** | Visual UI review via Playwright MCP browser | — | [oneshot](.claude/agents/02-oneshot/visual-review/) |
 
 ## Build Modes
 

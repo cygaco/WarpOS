@@ -270,7 +270,7 @@ WarpOS/
 | Alex Gamma (γ) | Builder | Adhoc feature builds, dispatches sub-agents |
 | Alex Delta (δ) | Runner | Oneshot full skeleton builds |
 
-Plus build agents for each mode: Builder, Evaluator, Compliance, Auditor, QA (with 13 failure-mode personas), Red Team (with 11 security personas), and Fixer. ~50 agent files total under `.claude/agents/`.
+Plus build agents: Builder, Reviewer (7-check spec+code review), Req-Reviewer (requirements traceability), Compliance, Fixer, QA (13 failure-mode personas), Red Team (11 security personas). Oneshot adds Learner (cross-cycle pattern analysis), Stub-Scaffold, Test-Runner, Visual-Review. ~30 agent spec files under `.claude/agents/`.
 
 ## Requirements System
 
