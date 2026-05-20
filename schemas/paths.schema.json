@@ -277,6 +277,21 @@
       "const": ".claude/project/memory/recurring-issues.jsonl",
       "description": "jsonl (runtime) — paths.recurringIssuesFile"
     },
+    "enforcementDebt": {
+      "type": "string",
+      "const": ".claude/project/memory/enforcement-debt.jsonl",
+      "description": "jsonl (runtime) — paths.enforcementDebt"
+    },
+    "roadmap": {
+      "type": "string",
+      "const": "ROADMAP.md",
+      "description": "md (project) — paths.roadmap"
+    },
+    "releases": {
+      "type": "string",
+      "const": "RELEASES.md",
+      "description": "md (project) — paths.releases"
+    },
     "specGraph": {
       "type": "string",
       "const": ".claude/project/maps/SPEC_GRAPH.json",

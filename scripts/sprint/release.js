@@ -145,6 +145,28 @@ function cmdPrepare(argv) {
   } catch (err) {
     process.stderr.write(`routing-trace: skipped (${err.message})\n`);
   }
+  // SP-20260519-001 R-2: append release row to RELEASES.md ledger.
+  // Fail-open per ledger.js contract — never blocks /sprint:release.
+  try {
+    const ledger = require("./ledger");
+    const lr = ledger.appendReleaseRow({
+      id,
+      sprint: current.id,
+      status: "prepared",
+      target: release.deployment_target || "internal-canary",
+      changelogPath: release.changelog_path || null,
+      notes: release.title || "",
+    });
+    if (lr.written) {
+      process.stdout.write(
+        `releases: RELEASES.md row added ${id} (status=prepared)\n`,
+      );
+    } else if (lr.reason !== "already-present") {
+      process.stderr.write(`releases: skipped (${lr.reason})\n`);
+    }
+  } catch (err) {
+    process.stderr.write(`releases: skipped (${err.message})\n`);
+  }
   process.stdout.write(`release prepared: ${id}\n`);
   return 0;
 }
@@ -322,6 +344,25 @@ function cmdDeploy(argv) {
   release.status = "deployed";
   release.updated_at = now;
   writeYaml(rp, release);
+  // SP-20260519-001 R-2: update release row status in RELEASES.md ledger.
+  // Fail-open — never blocks deploy.
+  try {
+    const ledger = require("./ledger");
+    const lr = ledger.updateReleaseRow({
+      id: release.id,
+      status: "deployed",
+      deployedAt: now,
+    });
+    if (lr.written) {
+      process.stdout.write(
+        `releases: RELEASES.md row updated ${release.id} (status=deployed)\n`,
+      );
+    } else if (lr.reason !== "already-present") {
+      process.stderr.write(`releases: skipped (${lr.reason})\n`);
+    }
+  } catch (err) {
+    process.stderr.write(`releases: skipped (${err.message})\n`);
+  }
   process.stdout.write(
     `release ${release.id} marked deployed (target=${release.deployment_target})\n`,
   );

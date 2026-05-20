@@ -1,0 +1,32 @@
+schema: warpos/sprint/ralph-progress/v1
+sprint: SP-20260519-001
+ticket: T-20260519-130
+current_loop: 1
+phase: stopped
+started_at: "2026-05-19T07:52:07.933Z"
+updated_at: "2026-05-19T07:54:20.340Z"
+status: completed
+completed_tasks:
+  - "plan: Built scripts/sprint/ledger.js with 4 append + 2 update functions, validators, anchor-marker detection, idempotency, fail-open wrapper, atomic write, telemetry to logger.js, --self-test entrypoint"
+  - "test: AC-4.1 satisfied (4 fns exported with documented shapes). AC-4.2 satisfied (idempotency proven via self-test #2). AC-4.3 satisfied (fail-open contract proven via self-test #7 + wrapper). Atomic write (write-temp-rename) addresses concurrent-writer redteam threat."
+remaining_tasks:
+  - Read logger.js convention
+  - Design ledger.js module shape
+  - "Implement append+update functions with idempotency+fail-open+atomic write"
+  - Implement anchor-marker detection
+  - Add --self-test entrypoint
+  - Write regression test
+  - "Run self-test against ROADMAP.md+RELEASES.md tempdir copies"
+blockers: []
+failed_attempts: []
+last_checks:
+  ran_at: "2026-05-19T07:54:20.079Z"
+  passing:
+    - "node scripts/sprint/ledger.js --self-test 7/7 passed (happy/idempotency/update/anchor-opt-out/validation-id/validation-downstream/fail-open-missing-file)"
+  failing: []
+next_action: "ledger.js core module shipped + self-test green. Ready for callers."
+external_dependency_status: []
+stop_reason: completed
+resume_instructions: "Read this file. Resume at the phase listed. If status is stopped_*, investigate the stop_reason first."
+checkpoint_pointers:
+  - "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\ralph\\SP-20260519-001\\T-20260519-130.yaml"

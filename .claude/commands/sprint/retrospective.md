@@ -18,6 +18,8 @@ not deploy, send, or contact anything external. Synthesis fails open:
 if the LLM call fails, the skill writes a `<TO FILL>` skeleton retro
 instead and exits `0`.
 
+> Ledger contract — this skill updates the `ROADMAP.md` sprint row to status=retrospected via `scripts/sprint/ledger.js` after the registry transition. See `paths.sprintReference#ledger-discipline` for what qualifies and the fail-open contract.
+
 ## When to use
 
 - A sprint has finished `/sprint:release` and its registry status is

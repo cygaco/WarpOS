@@ -13,6 +13,8 @@ ticketing, hidden assumptions, and accidental execution.
 (except for explicitly tiny low-risk work). It does not invoke or
 switch modes. It does not start a build.
 
+> Ledger contract — this skill writes a `ROADMAP.md` sprint row via `scripts/sprint/ledger.js`. See `paths.sprintReference#ledger-discipline` for what qualifies and the fail-open contract.
+
 ## When to use
 
 - A user gives you a brief plain-language request and you need a

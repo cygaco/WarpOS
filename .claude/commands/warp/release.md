@@ -7,6 +7,8 @@ user-invocable: true
 
 The product-side wrapper around `scripts/warpos/release-canonical.js`. Drives every step of a WarpOS release of the canonical clone WITHOUT switching the caller's cwd. Default = dry-run; `--apply` executes.
 
+> Ledger contract — the version-bump stage writes a `RELEASES.md` Versions row in the canonical clone via `scripts/sprint/ledger.js` (loaded from canonical, projectRoot override). See `paths.sprintReference#ledger-discipline` for what qualifies and the fail-open contract.
+
 ## Background
 
 Pre-0.1.3 the only path to a release was: edit version.json in canonical → cd `../WarpOS` → regen manifest → build capsule → run gates → commit → push → ff-merge to main. Every step required cd-ing into the canonical clone. This skill replaces that with a single product-rooted command. All canonical-side ops happen via `spawnSync({cwd: canonical})` and `git -C <canonical> ...`.

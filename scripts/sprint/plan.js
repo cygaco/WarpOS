@@ -436,6 +436,24 @@ function main() {
   process.stdout.write(
     `current-sprint: ${SPRINT.current} (sprint=${current.id})\n`,
   );
+  // SP-20260519-001 R-2: append sprint row to ROADMAP.md ledger.
+  // Fail-open per ledger.js contract — never blocks /sprint:plan.
+  try {
+    const ledger = require("./ledger");
+    const lr = ledger.appendSprintRow({
+      id: current.id,
+      title: current.title || payload.source_request || "(untitled)",
+      status: "planning",
+      startedAt: current.created_at || new Date().toISOString(),
+    });
+    if (lr.written) {
+      process.stdout.write(`roadmap: ROADMAP.md row added for ${current.id}\n`);
+    } else if (lr.reason !== "already-present") {
+      process.stderr.write(`roadmap: skipped (${lr.reason})\n`);
+    }
+  } catch (err) {
+    process.stderr.write(`roadmap: skipped (${err.message})\n`);
+  }
   // SP-20260514-002 R-5: record routing trace for the planning phase.
   // Fail-open: a recording failure must NEVER block /sprint:plan. The hook
   // surfaces drift separately; here we just emit the trace.

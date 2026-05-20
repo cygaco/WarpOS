@@ -466,6 +466,33 @@
       "introducedIn": "0.0.0",
       "docsToken": "paths.recurringIssuesFile"
     },
+    "enforcementDebt": {
+      "path": ".claude/project/memory/enforcement-debt.jsonl",
+      "kind": "jsonl",
+      "owner": "runtime",
+      "mutable": true,
+      "introducedIn": "0.8.0",
+      "docsToken": "paths.enforcementDebt",
+      "_note": "Append-only ledger of policies that exist without a named enforcer. Logged via /enforcement:log; surfaced at /enforcement:list and /check:all."
+    },
+    "roadmap": {
+      "path": "ROADMAP.md",
+      "kind": "md",
+      "owner": "project",
+      "mutable": true,
+      "introducedIn": "0.0.0",
+      "docsToken": "paths.roadmap",
+      "_note": "Repo-root sprint+phase ledger. Auto-managed by scripts/sprint/ledger.js (sprint rows) and manually edited (phase backlogs)."
+    },
+    "releases": {
+      "path": "RELEASES.md",
+      "kind": "md",
+      "owner": "project",
+      "mutable": true,
+      "introducedIn": "0.7.2",
+      "docsToken": "paths.releases",
+      "_note": "Repo-root engineering release ledger. Auto-managed by scripts/sprint/ledger.js."
+    },
     "specGraph": {
       "path": ".claude/project/maps/SPEC_GRAPH.json",
       "kind": "json",

@@ -1,0 +1,55 @@
+schema: warpos/sprint/ticket/v1
+id: T-20260519-128
+title: "Create RELEASES.md with Versions + Sprints sections"
+type: docs
+status: in_review
+sprint: SP-20260519-001
+created_at: "2026-05-19T07:39:51.639Z"
+updated_at: "2026-05-19T07:50:51.268Z"
+owner: null
+owner_agent: alpha
+risk_level: low
+approval_required: false
+approval_state: not_required
+source_request: "Record every sprint in ROADMAP.md and every release in RELEASES.md (with release notes). Use /reasoning:run to define what counts as a release."
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260519-0015.yaml"
+linked_requirements:
+  - R-1
+linked_high_level_story: H-2
+linked_granular_story: S-2
+linked_prd: ".claude/project/sprint/requirements/SP-20260519-001/prd.md"
+linked_copy:
+  - C-2
+  - C-3
+linked_inputs:
+  - IN-2
+  - IN-3
+linked_trace:
+  - TR-2
+linked_acceptance_criteria:
+  - AC-2.1
+  - AC-2.2
+linked_issues: []
+linked_decisions: []
+linked_external_services: []
+linked_files: []
+linked_tests: []
+linked_commits: []
+linked_prs: []
+linked_release: null
+description: "Create RELEASES.md at repo root with H1, intro paragraph, Versions H2 + column header + <!-- ledger:versions --> anchor, Sprints H2 + column header + <!-- ledger:releases --> anchor. Both sections empty at this ticket; backfill (T-9) and writer-script wiring (T-7/T-8) populate them. Add RELEASES.md to scripts/warpos/promote.js exclusion list (mirror existing ROADMAP.md exclusion)."
+user_value: ""
+business_value: ""
+acceptance_criteria: []
+non_goals: []
+implementation_notes: ""
+qa_notes: ""
+redteam_notes: ""
+trace_notes: ""
+blocked_by: []
+blocks: []
+fix_attempts: []
+ralph_progress: null
+completion_evidence:
+  - "RELEASES.md created at repo root with Versions+Sprints sections; scripts/warpos/promote.js#EXCLUSIONS now contains both ROADMAP.md and RELEASES.md"
+reopen_history: []

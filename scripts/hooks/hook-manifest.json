@@ -3,6 +3,21 @@
   "generatedFrom": "framework/hooks.registry.json",
   "updatedAt": "2026-05-14T21:57:20.399Z",
   "hooks": {
+    "ledger-presence-guard.js": {
+      "script": "scripts/hooks/ledger-presence-guard.js",
+      "events": [
+        {
+          "hookEvent": "PostToolUse",
+          "matcher": "Bash"
+        }
+      ],
+      "failMode": "fail-open",
+      "blocks": [],
+      "testFixtures": [],
+      "owner": "framework",
+      "fixturesRequired": false,
+      "enabled": true
+    },
     "session-start.js": {
       "script": "scripts/hooks/session-start.js",
       "events": [

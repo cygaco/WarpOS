@@ -1,0 +1,30 @@
+schema: warpos/sprint/ralph-progress/v1
+sprint: SP-20260519-001
+ticket: T-20260519-127
+current_loop: 1
+phase: stopped
+started_at: "2026-05-19T07:49:16.590Z"
+updated_at: "2026-05-19T07:49:56.737Z"
+status: completed
+completed_tasks:
+  - "plan: Inserted Sprints H2 with column header + anchor marker above first Phase H2 in ROADMAP.md"
+  - "test: AC-1.1 (section above Phase backlog with columns Sprint|Title|Status|Started|Closed|Release): satisfied (empty table — backfill T-138 populates). AC-1.2 (status enum validation): deferred to T-130 (ledger.js validates on write); markdown-only ticket cannot enforce."
+remaining_tasks:
+  - Read current ROADMAP.md head
+  - "Insert Sprints H2 with column header + anchor marker above the first Phase H2"
+  - Verify file structure unchanged below Sprints section
+blockers: []
+failed_attempts: []
+last_checks:
+  ran_at: "2026-05-19T07:49:48.894Z"
+  passing:
+    - "manual:ROADMAP head structure ok"
+    - "manual:anchor marker present"
+    - "manual:Phase backlog untouched below new section"
+  failing: []
+next_action: "ROADMAP.md Sprints section + anchor marker inserted. Empty table; T-130 ledger.js + T-138 backfill populate."
+external_dependency_status: []
+stop_reason: completed
+resume_instructions: "Read this file. Resume at the phase listed. If status is stopped_*, investigate the stop_reason first."
+checkpoint_pointers:
+  - "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\ralph\\SP-20260519-001\\T-20260519-127.yaml"

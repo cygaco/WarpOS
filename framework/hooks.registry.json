@@ -172,6 +172,17 @@
       "testFixtures": ["fixtures/hooks/default/edit-text.json"]
     },
     {
+      "id": "ledger-presence-guard",
+      "script": "scripts/hooks/ledger-presence-guard.js",
+      "owner": "framework",
+      "enabled": true,
+      "failMode": "fail-open",
+      "fixturesRequired": false,
+      "purpose": "PostToolUse Bash matcher (SP-20260519-001). Warns when sprint/release-class commands ran but ROADMAP.md/RELEASES.md ledger row was not written. Reads .claude/agents/00-alex/.system/policy/ledger-presence.json (delete-to-disable). Secondary check: louder warn when target file lacks the anchor marker (redteam-flagged silent-opt-out). Soft-rollout warn-only through 2026-06-02.",
+      "registrations": [{ "event": "PostToolUse", "matcher": "Bash" }],
+      "testFixtures": []
+    },
+    {
       "id": "step-registry-guard",
       "script": "scripts/hooks/step-registry-guard.js",
       "owner": "framework",

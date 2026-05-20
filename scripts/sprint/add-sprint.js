@@ -49,4 +49,24 @@ reg.updated_at = now;
 
 writeYaml(regPath, reg);
 fs.mkdirSync(path.join(repo, pointer), { recursive: true });
+
+// SP-20260519-001 R-2: append sprint row to ROADMAP.md ledger.
+// Fail-open: never blocks add-sprint.
+try {
+  const ledger = require("./ledger");
+  const lr = ledger.appendSprintRow({
+    id,
+    title,
+    status: "planning",
+    startedAt: now,
+  });
+  if (lr.written) {
+    process.stdout.write(`roadmap: ROADMAP.md row added for ${id}\n`);
+  } else if (lr.reason !== "already-present") {
+    process.stderr.write(`roadmap: skipped (${lr.reason})\n`);
+  }
+} catch (err) {
+  process.stderr.write(`roadmap: skipped (${err.message})\n`);
+}
+
 process.stdout.write(`added ${id} as primary\n`);

@@ -1,0 +1,30 @@
+schema: warpos/sprint/ralph-progress/v1
+sprint: SP-20260519-001
+ticket: T-20260519-129
+current_loop: 1
+phase: stopped
+started_at: "2026-05-19T07:50:54.518Z"
+updated_at: "2026-05-19T07:51:25.399Z"
+status: completed
+completed_tasks:
+  - "plan: Added Ledger discipline H2 to sprint-workflow.md (between Phase-0 primitive limits and See also). Includes RT-011 verbatim table, boundary condition, named enforcer block per CLAUDE.md Policy & Enforcement Hygiene"
+  - "test: AC-3.1 satisfied — section present with verbatim table + boundary string + enforcer references"
+remaining_tasks:
+  - Locate paths.sprintReference target file
+  - "Add H2 Ledger discipline section with RT-011 verbatim table + boundary condition"
+  - "Reference T-130 ledger.js + T-136 warn hook as named enforcers per CLAUDE.md Policy & Enforcement Hygiene"
+blockers: []
+failed_attempts: []
+last_checks:
+  ran_at: "2026-05-19T07:51:25.124Z"
+  passing:
+    - "grep 'Ledger discipline' returns 1 hit"
+    - "grep 'qualifies iff it produced a durable artifact' returns 1 hit"
+    - See also section still ends the file
+  failing: []
+next_action: Ledger discipline section codified
+external_dependency_status: []
+stop_reason: completed
+resume_instructions: "Read this file. Resume at the phase listed. If status is stopped_*, investigate the stop_reason first."
+checkpoint_pointers:
+  - "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\ralph\\SP-20260519-001\\T-20260519-129.yaml"

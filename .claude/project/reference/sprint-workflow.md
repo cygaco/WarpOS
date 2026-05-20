@@ -539,6 +539,30 @@ primitives cannot be fully fixed in-repo. Sprint v0.1 mitigations:
 
 See `_docs/phase0/adhoc-primitive-limits.md` for the inventory.
 
+## Ledger discipline
+
+Every release-class event lands in one of two repo-root ledgers — `ROADMAP.md` (sprints) and `RELEASES.md` (versions + releases). The boundary condition is single: **an event qualifies iff it produced a durable artifact under `framework/releases/X.Y.Z/` OR `.claude/project/sprint/releases/RL-*`.**
+
+### What qualifies (RT-011 policy)
+
+| Event | Tier | Lives in |
+|---|---|---|
+| `version.json` bump (capsule under `framework/releases/X.Y.Z/`) | MUST | `RELEASES.md#versions` |
+| `RL-*` at status=deployed OR prepared-at-internal-canary | MUST | `RELEASES.md#sprints` |
+| Bare git tag with capsule but outside `/warp:release` | MAY (flagged "tagged outside pipeline") | `RELEASES.md#versions` |
+| Hotfix to `main` without an `RL-*` | MUST NOT | git log only |
+| Docs-only commits | MUST NOT | git log only |
+
+### Named enforcer (per CLAUDE.md#Policy-and-Enforcement-Hygiene)
+
+- **Writer:** `scripts/sprint/ledger.js` — single shared module called by `plan.js`, `add-sprint.js`, `retrospective.js`, `release.js`, and the `/warp:release` driver. Fail-open: stderr `[ledger] failed: ...` on error, never blocks the host script. Atomic write-temp-then-rename to survive concurrent writers (multi-sprint parallelism).
+- **Guard:** `scripts/hooks/ledger-presence-guard.js` — PreToolUse Bash matcher that watches the four release-class commands and warns when the corresponding ledger row was not detected. Soft-rollout `enforcement.mode = warn` until 2026-06-02, then flip to `block` after smoke validation. Policy at `policies/ledger-presence.json`. Precedent: SP-20260514-002 routing-trace.
+- **Backfill:** `scripts/sprint/backfill-ledgers.js` — reads `active-sprints.yaml`, `releases/RL-*.yaml`, `version.json#previousVersions`, `framework/releases/X.Y.Z/release.json`. Dry-run default; `--apply` writes. Idempotent.
+
+Anchor markers in each ledger file (`<!-- ledger:sprints -->`, `<!-- ledger:versions -->`, `<!-- ledger:releases -->`) tell the writer where to insert/update rows. Removing the marker is the documented opt-out (writer logs `opted-out` and skips, NOT warns).
+
+Sprint origin: SP-20260519-001, reasoning trace RT-011.
+
 ## See also
 
 - `_docs/sprint/OVERVIEW.md`

@@ -1,0 +1,38 @@
+schema: warpos/sprint/sprint-progress/v1
+sprint: SP-20260519-001
+updated_at: "2026-05-19T08:07:35.694Z"
+current_phase: execute
+current_command: "/sprint:execute"
+current_ticket: null
+current_task: null
+current_loop: null
+status: running
+last_completed_step: design_scaffolded_and_tickets_minted
+next_action: "/sprint:release"
+active_files: []
+modified_files: []
+checks_last_run: null
+checks_passing: []
+checks_failing: []
+blockers: []
+approvals_needed: []
+external_services_needed: []
+issues_opened: []
+tickets_updated:
+  - T-20260519-127
+  - T-20260519-128
+  - T-20260519-129
+  - T-20260519-130
+  - T-20260519-131
+  - T-20260519-132
+  - T-20260519-133
+  - T-20260519-134
+  - T-20260519-135
+  - T-20260519-136
+  - T-20260519-137
+  - T-20260519-138
+ralph_checkpoint: null
+resume_command: "/sprint:release"
+resume_notes: "All 12 tickets in_review (T-20260519-127..138). Ledger populated. Hook registered. Self-test + backfill round-trip green. Ready for /sprint:release."
+safe_to_continue: true
+stop_reason: null

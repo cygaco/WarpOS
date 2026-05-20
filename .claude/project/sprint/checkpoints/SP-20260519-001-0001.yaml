@@ -1,0 +1,26 @@
+schema: warpos/sprint/sprint-progress/v1
+sprint: SP-20260519-001
+updated_at: "2026-05-19T06:54:33.289Z"
+current_phase: plan
+current_command: "/sprint:plan"
+current_ticket: null
+current_task: null
+current_loop: null
+status: running
+last_completed_step: plan_contract_written
+next_action: "/sprint:design --documentation-scale m"
+active_files: []
+modified_files: []
+checks_last_run: null
+checks_passing: []
+checks_failing: []
+blockers: []
+approvals_needed: []
+external_services_needed: []
+issues_opened: []
+tickets_updated: []
+ralph_checkpoint: null
+resume_command: "/sprint:design --documentation-scale m"
+resume_notes: "Plan Contract PC-20260519-0015 created. plan_quality=needs_design. RT-011 reasoning trace carries the 'what counts as a release' policy and must be referenced by design pass."
+safe_to_continue: true
+stop_reason: null

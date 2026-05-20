@@ -110,6 +110,11 @@ const EXCLUDE_PREFIXES = [
   // (which encodes the scaffold inline, independent of canonical's ROADMAP.md).
   // (Origin: Phase 0 workstream H, consolidated under SP-20260518-009.)
   "ROADMAP.md",
+  // RELEASES.md follows the same boundary: canonical-WarpOS owns the engineering
+  // release ledger here; consumer projects own their own product release ledger.
+  // No scaffold ships downstream in this sprint — deferred until a consumer asks.
+  // (Origin: SP-20260519-001 ledger-discipline.)
+  "RELEASES.md",
 ];
 
 // Project-specific manifest fields/files we can ship to WarpOS as TEMPLATES,

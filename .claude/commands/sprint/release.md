@@ -13,6 +13,8 @@ retrospective + learning capture.
 NEVER performs a production deployment automatically — the user
 invokes the deploy and `/sprint:release deploy` only marks it.
 
+> Ledger contract — this skill writes a `RELEASES.md` sprint row via `scripts/sprint/ledger.js` on prepare AND deploy. See `paths.sprintReference#ledger-discipline` for what qualifies and the fail-open contract.
+
 ## When to use
 
 - All sprint tickets are `done`, `released`, `deferred`, or

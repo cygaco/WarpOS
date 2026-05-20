@@ -888,6 +888,28 @@ function main() {
   // Registry transition (R-5, AC-5.1..3).
   const flip = flipStatusToRetrospected(sprintId);
 
+  // SP-20260519-001 R-2: update sprint row status in ROADMAP.md ledger.
+  // Fail-open: never blocks retrospective.
+  try {
+    const ledger = require("./ledger");
+    const closedAt =
+      retro.signed_off_at || retro.completed_at || new Date().toISOString();
+    const lr = ledger.updateSprintRow({
+      id: sprintId,
+      status: "retrospected",
+      closedAt,
+    });
+    if (lr.written) {
+      process.stdout.write(
+        `roadmap: ROADMAP.md row updated ${sprintId} → retrospected\n`,
+      );
+    } else if (lr.reason !== "already-present") {
+      process.stderr.write(`roadmap: skipped (${lr.reason})\n`);
+    }
+  } catch (err) {
+    process.stderr.write(`roadmap: skipped (${err.message})\n`);
+  }
+
   // TR-3 retro_signed_off.
   emitEvent("retro_signed_off", {
     sprint_id: sprintId,

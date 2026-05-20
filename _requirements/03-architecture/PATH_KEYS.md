@@ -31,6 +31,7 @@ Markdown convention: reference paths as `paths.X` in prose. Code: `const { PATHS
 | `dispatchLocks` | `.claude/runtime/dispatch-locks` | dir | runtime | yes | 0.3.0 |  |
 | `docsRoot` | `_docs` | dir | project | yes | 0.2.0 | Track B 2026-05-03 renamed docs -> _docs. Now contains only  |
 | `dreams` | `.claude/dreams` | dir | runtime | yes | 0.0.0 |  |
+| `enforcementDebt` | `.claude/project/memory/enforcement-debt.jsonl` | jsonl | runtime | yes | 0.8.0 | Append-only ledger of policies that exist without a named en |
 | `events` | `.claude/project/events` | dir | runtime | yes | 0.0.0 |  |
 | `eventsFile` | `.claude/project/events/events.jsonl` | jsonl | runtime | yes | 0.0.0 |  |
 | `favorites` | `.claude/content/favorites` | dir | runtime | yes | 0.0.0 |  |
@@ -67,11 +68,13 @@ Markdown convention: reference paths as `paths.X` in prose. Code: `const { PATHS
 | `reasoningFrameworks` | `.claude/project/reference/reasoning-frameworks.md` | md | framework | no | 0.5.1 | Classification table, framework router, fix-quality levels ( |
 | `recurringIssuesFile` | `.claude/project/memory/recurring-issues.jsonl` | jsonl | runtime | yes | 0.0.0 |  |
 | `reference` | `.claude/project/reference` | dir | framework | no | 0.0.0 |  |
+| `releases` | `RELEASES.md` | md | project | yes | 0.7.2 | Repo-root engineering release ledger. Auto-managed by script |
 | `requirements` | `_requirements` | dir | project | yes | 0.0.0 |  |
 | `requirementsFile` | `.claude/project/events/requirements.jsonl` | jsonl | runtime | yes | 0.0.0 |  |
 | `requirementsRoot` | `_requirements` | dir | project | yes | 0.1.0 | Track B 2026-05-03 renamed requirements -> _requirements for |
 | `requirementsStagedFile` | `.claude/project/events/requirements-staged.jsonl` | jsonl | runtime | yes | 0.0.0 |  |
 | `research` | `_docs/research` | dir | project | yes | 0.0.0 |  |
+| `roadmap` | `ROADMAP.md` | md | project | yes | 0.0.0 | Repo-root sprint+phase ledger. Auto-managed by scripts/sprin |
 | `runtime` | `.claude/runtime` | dir | runtime | yes | 0.0.0 |  |
 | `settings` | `.claude/settings.json` | json | project | yes | 0.0.0 |  |
 | `skillCatalog` | `.claude/runtime/skill-catalog.json` | json | generated | yes | 0.5.1 | Generated compact index of every user-invocable slash comman |

@@ -316,6 +316,42 @@ function stageBumpVersion(opts, canonical, current, next) {
     );
   }
   writeJson(file, after);
+  // SP-20260519-001 R-2: append version row to canonical RELEASES.md ledger.
+  // Fail-open: never blocks the release. Loads ledger.js from canonical so
+  // its writers stay self-hosted there.
+  try {
+    const ledgerPath = path.join(canonical, "scripts", "sprint", "ledger.js");
+    if (fs.existsSync(ledgerPath)) {
+      // Use a child-process boundary so we don't carry stale module state
+      // across runs against different canonical roots.
+      const summary = (opts.summary && String(opts.summary).trim()) ||
+        `Patch bump to ${next}. Fill in via release notes.`;
+      const capsulePath = `framework/releases/${next}/release.json`;
+      const ledger = require(ledgerPath);
+      const lr = ledger.appendVersionRow(
+        {
+          version: next,
+          releasedAt: after.releasedAt,
+          summary,
+          capsulePath,
+        },
+        { projectRoot: canonical },
+      );
+      if (lr.written) {
+        process.stdout.write(
+          `releases: RELEASES.md row added version ${next} (canonical)\n`,
+        );
+      } else if (lr.reason !== "already-present") {
+        process.stderr.write(`releases: skipped (${lr.reason})\n`);
+      }
+    } else {
+      process.stderr.write(
+        `releases: skipped (ledger.js absent in canonical at ${ledgerPath})\n`,
+      );
+    }
+  } catch (err) {
+    process.stderr.write(`releases: skipped (${err.message})\n`);
+  }
   return receipt(
     3,
     true,
