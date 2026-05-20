@@ -3,7 +3,7 @@
   "name": "warpos",
   "version": "0.8.0",
   "description": "WarpOS — autonomous AI operating system for software engineering. Registry-driven hooks, transactional updates, honest release gates, generic promotion.",
-  "releasedAt": "2026-05-14",
+  "releasedAt": "2026-05-19",
   "minUpgradeableFrom": "0.1.2",
   "channel": "main",
   "frameworkManifestSchema": "warpos/framework-manifest/v2",

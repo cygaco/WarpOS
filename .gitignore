@@ -30,6 +30,9 @@ Thumbs.db
 .claude/logs/
 .claude/worktrees/
 
+# Session handoff dump (regenerable via /session:dump — do NOT commit)
+DUMP.md
+
 # WarpOS transaction snapshots (SP-20260513-005 — per-update, per-machine)
 .warpos/transactions/
 runtime/qa-warp-update/

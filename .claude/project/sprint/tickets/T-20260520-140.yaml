@@ -1,0 +1,55 @@
+schema: warpos/sprint/ticket/v1
+id: T-20260520-140
+title: "Update README.md version + skill/hook counts + audit catalog table"
+type: docs
+status: done
+sprint: SP-20260519-002
+created_at: "2026-05-20T01:13:30.474Z"
+updated_at: "2026-05-20T01:44:45.031Z"
+owner: null
+owner_agent: alpha
+risk_level: low
+approval_required: false
+approval_state: not_required
+source_request: "Much of the GitHub repo is stale — PROJECT.md still describes Jobzooka, README claims v0.2.0 (actual is v0.8.0), WarpOS.md describes a Next.js studio stack rather than WarpOS itself, plus several working artifacts (DUMP.md, warpos-to-update.md, issues.md, near-empty DICTIONARY.md) clutter the repo root. Polish the public-facing surface so the repo is credible as a portfolio artifact to send with a job application. Doc-only sprint — do not refactor underlying code."
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260520-0016.yaml"
+linked_requirements:
+  - R-2
+linked_high_level_story: H-2
+linked_granular_story: S-2
+linked_prd: ".claude/project/sprint/requirements/SP-20260519-002/prd.md"
+linked_copy:
+  - C-2
+linked_inputs:
+  - IN-2
+linked_trace:
+  - TR-2
+linked_acceptance_criteria:
+  - AC-2.1
+  - AC-2.2
+  - AC-2.3
+  - AC-2.4
+  - AC-2.5
+linked_issues: []
+linked_decisions: []
+linked_external_services: []
+linked_files: []
+linked_tests: []
+linked_commits: []
+linked_prs: []
+linked_release: null
+description: "Bring README headline numbers in sync with the actual repo: version 0.2.0 -> 0.8.0; 95 skills -> ~140 (actual 139 .md files under .claude/commands/); 52 hooks -> 57 hooks (54 enabled per framework/hooks.registry.json). Audit the skill catalog details block — either prune deleted skills + add new ones, or replace with a one-line pointer to /skills:list. Add a 'Last verified: YYYY-MM-DD' footer so future drift is visible. Do not turn this into a marketing rewrite — keep existing voice."
+user_value: ""
+business_value: ""
+acceptance_criteria: []
+non_goals: []
+implementation_notes: "Version 0.2.0->0.8.0 (matches version.json) per AC-2.1. Skill count 95->~140 (actual 139) per AC-2.2. Hook count 52->57 per AC-2.3. Skill catalog gets a 'partial snapshot, run /skills:list for live' disclaimer + pointer to sprint/check-warpos skills per AC-2.4. Last verified 2026-05-19 footer added per AC-2.5. Agent count 56->~50 updated for consistency."
+qa_notes: ""
+redteam_notes: ""
+trace_notes: ""
+blocked_by: []
+blocks: []
+fix_attempts: []
+ralph_progress: null
+completion_evidence: []
+reopen_history: []

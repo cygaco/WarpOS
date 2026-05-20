@@ -1,0 +1,241 @@
+schema: warpos/sprint/plan-contract/v1
+id: PC-20260520-0016
+created_at: "2026-05-20T01:06:40.210Z"
+updated_at: "2026-05-20T01:06:40.210Z"
+sprint: SP-20260519-002
+source_request: "Much of the GitHub repo is stale — PROJECT.md still describes Jobzooka, README claims v0.2.0 (actual is v0.8.0), WarpOS.md describes a Next.js studio stack rather than WarpOS itself, plus several working artifacts (DUMP.md, warpos-to-update.md, issues.md, near-empty DICTIONARY.md) clutter the repo root. Polish the public-facing surface so the repo is credible as a portfolio artifact to send with a job application. Doc-only sprint — do not refactor underlying code."
+source_request_verbatim: |
+  Polish the public-facing GitHub repo (cygaco/WarpOS) for a job-application audience. The goal is that a recruiter or hiring manager landing on the repo gets a coherent, current, credible picture of WarpOS in under 2 minutes — no broken framing, no leftover working artifacts, no version lies.
+  
+  ## Audience and success criteria
+  
+  - Audience: technical hiring managers / senior engineers reviewing this as a portfolio artifact alongside a job application. They will read the README, glance at PROJECT.md, maybe click into ROADMAP.md or USER_GUIDE.md. They will NOT install or run anything.
+  - Success: every top-level .md the recruiter might open is current, on-message ('WarpOS is an AI operating system for Claude Code'), and free of contradictions. Version numbers match. No file looks abandoned mid-edit. No leftover working files at repo root.
+  - Anti-goal: do not turn this into a marketing rewrite. Keep the existing voice. Fix what's broken or stale; do not embellish.
+  
+  ## In-scope (must-fix for job-app readiness)
+  
+  1. PROJECT.md is entirely about Jobzooka (the source product WarpOS was extracted from). Says 'Jobzooka — Project Context', describes Next.js 16 + React 19, lists src/lib/ files, Bright Data, Stripe, Chrome extension, etc. None of this is WarpOS. Decide: rewrite as a real WarpOS PROJECT.md (Alex agent system, build modes, paths registry, sprint workflow, paths.json convention), OR delete it and update AGENTS.md/CLAUDE.md references that point at it.
+  
+  2. README.md version drift. Says 'Version: 0.2.0' — actual is 0.8.0 (version.json). The '95 skills' and '52 hooks' counts need verification against current state (.claude/commands/ and scripts/hooks/hook-manifest.json or framework/hooks.registry.json). Skill list table is large and probably partially stale.
+  
+  3. WarpOS.md is misleading. Describes a 'studio' framing — six layers including 'Frontend: Next.js 16 + React 19', 'Database: Supabase', 'Payments: Stripe'. This is the *consumer products* stack, not WarpOS itself. A recruiter reading this thinks WarpOS is a Next.js scaffold. Decide: delete (README.md already does the WarpOS-overview job), rewrite as a focused 'design philosophy' doc, or rename to make its purpose explicit.
+  
+  4. AGENTS.md has live links to PROJECT.md — fix or remove once #1 is decided. Otherwise structurally fine.
+  
+  ## In-scope (cleanup — remove or relocate working artifacts from repo root)
+  
+  5. DUMP.md — 17KB session handoff. Useful internally but at repo root it looks like a leftover working file. Move to .claude/project/ or delete.
+  
+  6. warpos-to-update.md — 'WarpOS Update Flags' tracker with one entry from 2026-05-14. Either rename to something purposeful, move under .claude/project/, or delete.
+  
+  7. issues.md — Placeholder ledger with one low-severity issue from May 13. Either delete (active sprint workflow already tracks issues under .claude/project/sprint/issues/) or move out of root.
+  
+  8. DICTIONARY.md — One entry ('Forcing function'). Either flesh out (4–6 real entries from sprint vocabulary: Sprint, Plan Contract, Routing Policy, Beta consultation, Ledger discipline, Capsule) or delete.
+  
+  ## In-scope (polish — only if cheap)
+  
+  9. RELEASES.md — 'Released' date column is empty for every version. The data exists in framework/releases/X.Y.Z/release.json — backfill the column from those files via a small script extension to scripts/sprint/ledger.js, or accept as-is.
+  
+  10. USER_GUIDE.md — Last touched May 3 (16 days stale); structure is fine but probably has drift against current skills/modes. A targeted re-read (not a rewrite) to fix any blatantly wrong references. Low-cost ticket only — do not rewrite.
+  
+  11. version.json `releasedAt` says 2026-05-14 but 0.8.0 was actually deployed 2026-05-19 per RELEASES.md. Fix the field; consider why the release flow didn't update it (out of scope for this sprint — log to recurring issues).
+  
+  ## Out of scope (do NOT pull in)
+  
+  - ROADMAP.md is current as of yesterday's sprint — leave it alone except a possible 2–3 line 'Current focus' note at the top for the recruiter audience.
+  - Do not refactor the underlying skills/hooks/agents. Documentation pass only.
+  - Do not add screenshots, demo videos, or marketing assets.
+  - Do not change CLAUDE.md (it's the framework identity doc; it's also shipped to consumers).
+  - Do not write a LICENSE file (the README says 'Private. Shared by invitation.' That's deliberate).
+  
+  ## Recommended sprint shape
+  
+  Single sprint, ~6–8 tickets, mostly doc work. Most tickets can run in parallel (different files, no logical dependencies). Suggested ticket grouping:
+  
+  - T1: PROJECT.md decision + rewrite-or-delete (with AGENTS.md/CLAUDE.md link cleanup)
+  - T2: README.md version + counts refresh + skill-list audit
+  - T3: WarpOS.md decision (delete/rewrite/rename)
+  - T4: Working-artifact cleanup (DUMP.md, warpos-to-update.md, issues.md, DICTIONARY.md) — single ticket, four files
+  - T5: RELEASES.md backfill (script extension) — optional
+  - T6: USER_GUIDE.md drift sweep — optional
+  - T7: version.json field fix + recurring-issue log
+  
+  Acceptance criterion for the sprint: `git ls-tree -r HEAD --name-only | grep -E '^[^/]+\.md$'` lists only files a recruiter should reasonably open, and each one renders coherently against the actual current state of the codebase.
+  
+  Proceed through plan → design → tickets, then pause for my approval before execute.
+request_type: docs
+interpreted_intent: "Polish the public-facing surface of the cygaco/WarpOS GitHub repo so a hiring manager opening any top-level .md gets a coherent, current, on-message picture of what WarpOS is. Concretely: fix PROJECT.md (stale Jobzooka content), reconcile README.md version + skill/hook counts with reality (0.8.0, 139 skills, 57 hooks), resolve WarpOS.md's misleading studio-stack framing, and clean leftover working files (DUMP.md, warpos-to-update.md, issues.md, near-empty DICTIONARY.md) out of the repo root. Doc-only sprint — no underlying code changes."
+user_or_business_outcome: "When a recruiter or hiring manager opens https://github.com/cygaco/WarpOS during a job application review, they see a coherent, credible portfolio artifact. No file describes a different product. No file claims wrong version numbers. No file looks abandoned mid-edit. The README, PROJECT.md, AGENTS.md, USER_GUIDE.md, and ROADMAP.md all reinforce the same picture: 'WarpOS is an AI operating system for Claude Code.'"
+affected_surfaces:
+  - surface: "PROJECT.md (repo root)"
+    evidence_level: verified_from_repo
+    notes: "Entirely describes Jobzooka — Next.js 16 + React 19 + TypeScript, src/lib/ files, Bright Data, Stripe, Chrome extension. Zero WarpOS content. Linked from AGENTS.md and CLAUDE.md."
+  - surface: "README.md (repo root)"
+    evidence_level: verified_from_repo
+    notes: "Claims 'Version: 0.2.0' — actual version.json is 0.8.0. Claims '95 skills' — actual count under .claude/commands/ is 139 .md files. Claims '52 automated hooks' — actual framework/hooks.registry.json has 57 hooks (54 enabled). Large skill catalog table is likely partially stale."
+  - surface: "WarpOS.md (repo root)"
+    evidence_level: verified_from_repo
+    notes: "Describes a 'WARP — The Machine That Builds Products' studio framing with six layers including Next.js + React + Supabase + Stripe. This is the consumer-products stack, not WarpOS itself. Misleads a recruiter into thinking WarpOS is a Next.js scaffold. Last updated 2026-05-03."
+  - surface: "AGENTS.md (repo root)"
+    evidence_level: verified_from_repo
+    notes: "Structurally fine but has hard links to PROJECT.md ('Project-specific context') that will break or mislead once PROJECT.md is fixed/removed."
+  - surface: "DUMP.md (repo root)"
+    evidence_level: verified_from_repo
+    notes: "17KB session handoff doc. Useful internally but at repo root it reads as a leftover working file."
+  - surface: "warpos-to-update.md (repo root)"
+    evidence_level: verified_from_repo
+    notes: "WarpOS Update Flags tracker. Currently registered as paths.warposFlagLedger — moving requires a paths.json edit + grep for callers (/warp:flag, /warp:promote-flags)."
+  - surface: "issues.md (repo root)"
+    evidence_level: verified_from_repo
+    notes: Lightweight human-readable issue ledger. Currently registered as paths.sprintIssuesLedger and written-to by scripts/sprint/issue.js. Removal requires deciding fate of the machine-readable yaml ledger under .claude/project/sprint/issues/.
+  - surface: "DICTIONARY.md (repo root)"
+    evidence_level: verified_from_repo
+    notes: "Single entry ('Forcing function'). Looks abandoned mid-creation. Either flesh out with 4–6 real entries or delete."
+  - surface: "RELEASES.md (repo root)"
+    evidence_level: verified_from_repo
+    notes: "Auto-managed by scripts/sprint/ledger.js. 'Released' date column is empty for every version row. Date data exists in framework/releases/X.Y.Z/release.json."
+  - surface: "USER_GUIDE.md (repo root)"
+    evidence_level: inferred_from_repo
+    notes: "Last touched 2026-05-03. Structure looks fine; spot-check needed for drift against current skills/modes."
+  - surface: "version.json (repo root)"
+    evidence_level: verified_from_repo
+    notes: "releasedAt: '2026-05-14' but per RELEASES.md and recent sprints, 0.8.0 actually deployed 2026-05-19. Field is auto-managed by scripts/warpos/release-canonical.js but evidently did not update this field on 0.8.0 cut."
+  - surface: "ROADMAP.md (repo root)"
+    evidence_level: verified_from_repo
+    notes: "Current as of yesterday's sprint. Out of scope except an optional 2–3 line 'Current focus' callout at the top to orient a recruiter."
+current_behavior:
+  evidence_level: verified_from_repo
+  notes: "Top-level .md surface is incoherent for a public audience: PROJECT.md describes the wrong product entirely, README claims wrong version + counts, WarpOS.md misframes the project as a Next.js studio, multiple files look like in-progress working artifacts. The repo IS technically credible (8 minor releases, 14 sprints, real architecture) but the front door doesn't convey it."
+desired_behavior: "Every top-level .md file is current, on-message, and free of contradictions. A recruiter reading any of them gets the same picture: WarpOS is an AI operating system for Claude Code that provides a multi-agent team (Alex α/β/γ/δ), a registry of skills/hooks/agents, an enforced sprint workflow, and learning/memory infrastructure. The repo root contains no working artifacts that look abandoned."
+scope:
+  size: m
+  risk_level: low
+  complexity_drivers:
+    - "Two design decisions: PROJECT.md fate (rewrite vs delete) and WarpOS.md fate (delete vs rewrite vs rename)"
+    - "Three files have indirect dependencies (warpos-to-update.md is paths.warposFlagLedger; issues.md is paths.sprintIssuesLedger; PROJECT.md is linked from AGENTS.md and CLAUDE.md) — moves/deletions require coordinated edits"
+    - "README.md skill catalog is large; auditing 139 skills against the table is the longest single-file ticket"
+scope_variants:
+  minimal_safe:
+    summary: "Fix the three highest-impact lies only: rewrite PROJECT.md to describe WarpOS (not Jobzooka), update README.md version + counts, delete WarpOS.md. Leave working artifacts in place. ~3 tickets, half a session."
+    tradeoffs:
+      - "Recruiter still sees DUMP.md, warpos-to-update.md, issues.md, DICTIONARY.md as repo-root clutter"
+      - USER_GUIDE.md and RELEASES.md drift untouched
+      - "Faster but the repo still feels 'in development' rather than 'shipped'"
+  recommended:
+    summary: "Fix the three highest-impact lies AND clean up working artifacts (DUMP.md → delete or move, warpos-to-update.md/issues.md → either move or document why they live at root, DICTIONARY.md → flesh out or delete). Skip RELEASES.md backfill and USER_GUIDE.md sweep unless cheap. ~5–6 tickets, one focused session."
+    tradeoffs:
+      - "RELEASES.md still has empty 'Released' column — minor but visible"
+      - "USER_GUIDE.md may have stale references — acceptable since the README/PROJECT/AGENTS triad is what a recruiter actually opens"
+      - Highest signal-to-noise for the audience
+  expanded:
+    summary: "Recommended + RELEASES.md ledger.js extension to backfill Released dates + USER_GUIDE.md targeted drift sweep + version.json releasedAt fix + recurring-issue log for why release-canonical.js skipped the field on 0.8.0. ~7–8 tickets, longer session."
+    tradeoffs:
+      - "Touches scripts/sprint/ledger.js, which is shared with downstream consumers — requires testing the date backfill on existing release.json files"
+      - "Diminishing returns past the recommended cut — a recruiter is unlikely to open RELEASES.md or USER_GUIDE.md before forming an opinion"
+      - "Risk of scope creep into 'fix every meta-issue we noticed while polishing'"
+assumptions:
+  safe:
+    - "PROJECT.md content is genuinely about Jobzooka and was never adapted for WarpOS (verified by reading the file in full)"
+    - "WarpOS.md was extracted from a private 'studio'-framing doc and is not currently load-bearing in any skill or hook (no grep hits in commands/ or hooks/ — needs final verification at design time)"
+    - "DUMP.md is a /session:dump output, not consumed by any automation (it's a recent ad-hoc file, last touched 2026-05-18)"
+    - "DICTIONARY.md has no incoming references (single entry, recent)"
+    - "Doc edits are reversible — no migration risk"
+  unsafe:
+    - "warpos-to-update.md is paths.warposFlagLedger — moving/deleting requires updating paths.json AND grepping every script that reads it (/warp:flag, /warp:promote-flags). Cannot be a pure-doc edit."
+    - "issues.md is paths.sprintIssuesLedger and is actively written by scripts/sprint/issue.js — moving requires script edit + paths.json update + downstream consumer consideration (this is a framework-shared path)"
+    - "PROJECT.md is referenced by both AGENTS.md AND CLAUDE.md (which is shipped to every downstream WarpOS install) — deletion vs rewrite has cross-repo blast radius"
+    - "RELEASES.md and ROADMAP.md are auto-managed by scripts/sprint/ledger.js — manual edits may be overwritten on next /sprint or /warp:release"
+    - "README skill counts (95 → 139) and hook counts (52 → 57) may rise again before the sprint closes — date the README or use ranges to avoid immediate re-staling"
+  needs_user_or_beta_review:
+    - "PROJECT.md fate: rewrite as a real WarpOS PROJECT.md OR delete + reframe AGENTS.md/CLAUDE.md? Recommendation: rewrite (it's referenced from the shipped CLAUDE.md scaffold; downstream consumers expect to fill in their own PROJECT.md, so the canonical repo should demonstrate the shape)."
+    - "WarpOS.md fate: delete OR rewrite as a focused 'philosophy/origin' doc OR rename? Recommendation: delete. README.md already covers the overview; WarpOS.md only adds a contradictory studio framing."
+    - "Working-artifact cleanup target locations: should DUMP.md/warpos-to-update.md/issues.md MOVE under .claude/project/ (preserving their content + paths.json bindings) or just DELETE? Recommendation: delete DUMP.md + DICTIONARY.md; KEEP warpos-to-update.md and issues.md at root because they're paths.json-bound and renaming has blast radius — but document at the top of each what they are."
+open_questions:
+  blocking: []
+  non_blocking:
+    - "Should we add a short 'About the author' / contact link to the README for the job-application audience, or keep the README purely about the system?"
+    - "Should ROADMAP.md get a 'Current focus' callout at the top to orient a recruiter (3-line max), or stay engineering-internal?"
+    - "Should we date the README ('Last verified: 2026-05-19') so future readers know how fresh the numbers are?"
+non_goals:
+  - "Do NOT refactor any underlying skill, hook, agent, or script — documentation pass only"
+  - "Do NOT add screenshots, demo videos, or marketing visuals"
+  - "Do NOT modify CLAUDE.md — it's the framework identity doc, shipped to every downstream WarpOS install"
+  - "Do NOT write a LICENSE file — the README's 'Private. Shared by invitation.' is deliberate"
+  - "Do NOT rewrite ROADMAP.md — it was consolidated yesterday and is current; at most add a 'Current focus' callout"
+  - "Do NOT turn the README into marketing copy — keep the existing voice, fix what's broken"
+requirement_areas:
+  - repo-root documentation surface
+  - version/count traceability between docs and code
+  - "paths.json-bound file lifecycle (move vs delete safety)"
+  - "cross-repo doc parity (downstream WarpOS installs expect certain files)"
+high_level_story_candidates:
+  - "As a hiring manager opening cygaco/WarpOS, I can read PROJECT.md and understand WarpOS in under 60 seconds (not Jobzooka)"
+  - "As a hiring manager opening README.md, I see accurate version and capability counts that match the actual repo state"
+  - "As a hiring manager scanning the repo root, I see no files that look like leftover working artifacts"
+  - "As a recruiter clicking around for 2 minutes, every top-level .md reinforces the same picture of what WarpOS is"
+granular_story_candidates:
+  - "Rewrite PROJECT.md to describe WarpOS (Alex agents, build modes, paths registry, sprint workflow, paths.json convention)"
+  - "Update README.md version from 0.2.0 to 0.8.0 (or derive dynamically from version.json)"
+  - "Update README.md skill count from 95 to actual count (139) and hook count from 52 to actual count (57)"
+  - "Audit README.md skill catalog table against .claude/commands/ — remove deleted skills, add new ones, or replace with a script-generated table"
+  - "Resolve WarpOS.md (delete / rewrite / rename per design decision)"
+  - Update AGENTS.md links to reflect PROJECT.md outcome
+  - "Cleanup pass: DUMP.md (delete or move), DICTIONARY.md (flesh out or delete), warpos-to-update.md + issues.md (header callouts explaining why they're at root)"
+  - "Optional: RELEASES.md ledger.js extension to backfill 'Released' dates from framework/releases/*/release.json"
+  - "Optional: USER_GUIDE.md targeted drift sweep — fix any blatant references that no longer match current skills/modes"
+  - "Fix version.json releasedAt to 2026-05-19 + log recurring issue: 'release-canonical.js skipped releasedAt update on 0.8.0 cut'"
+workstream_candidates:
+  - "must-fix doc rewrites (PROJECT.md, README.md, WarpOS.md, AGENTS.md links)"
+  - "repo-root cleanup (4 working artifacts)"
+  - "auto-managed ledger polish (RELEASES.md dates, version.json field)"
+  - "drift sweep (USER_GUIDE.md only if cheap)"
+preliminary_ticket_candidates:
+  allowed: false
+  candidates: []
+  notes: "Tickets are minted during /sprint:design. The two design decisions (PROJECT.md fate, WarpOS.md fate) materially shape ticket scope — premature ticketing would lock in an answer before the design phase weighs the tradeoffs."
+external_service_dependencies:
+  status: none_expected
+  required: []
+  possible: []
+  notes: "Pure-documentation sprint. No service signups, billing, credentials, or OAuth. GitHub push is the only 'external' interaction and it already exists."
+approval_boundaries:
+  - boundary: "User approval before /sprint:execute"
+    reason: "User explicitly asked: 'Proceed through plan → design → tickets, then pause for my approval before execute.'"
+    trigger_phase: execution
+design_required: true
+execution_allowed_without_design: false
+recommended_mode: solo
+mode_invocation_required_by_user: true
+lane:
+  type: default
+  value: null
+  isolation_notes: ""
+beta_review:
+  required: false
+  likely_founder_rejection_risks:
+    - Over-marketing the README and losing the existing technical voice
+    - Deleting WarpOS.md if it turns out to be load-bearing in a sleep-cycle or onboarding flow the audit missed
+  overbuild_risks:
+    - "Scope creep into 'fix every meta-issue noticed while polishing' (RELEASES.md script extension is the most likely creep)"
+    - Adding screenshots/demos/marketing content beyond the existing voice
+  missing_context_risks:
+    - PROJECT.md may have downstream consumer expectations the framework-shared analysis missed
+    - warpos-to-update.md and issues.md path-bindings could have additional callers not surfaced by a single grep
+plan_quality:
+  status: pass
+  confidence: high
+  evidence_gaps:
+    - "WarpOS.md inbound-reference grep not yet run (will be confirmed at design-time before deletion)"
+    - "Skill catalog drift audit (95→139) not yet itemized — design phase decides whether to script-generate the table or hand-audit"
+  fail_reasons: []
+next_recommended_command: "/sprint:design"
+resume_instructions: "Sprint SP-20260519-002 has a complete Plan Contract. Next: run /sprint:design to mint tickets, finalize the two design decisions (PROJECT.md fate + WarpOS.md fate), and produce PRD/stories. After design, pause for user approval before /sprint:execute. If interrupted, read .claude/project/sprint/sprints/SP-20260519-002/progress.yaml#resume_command."
+tracker_paths:
+  current_sprint: ".claude/project/sprint/current-sprint.yaml"
+  sprint_progress: ".claude/project/sprint/sprint-progress.yaml"
+  plan_contract: ".claude/project/sprint/plan-contracts/PC-20260520-0016.yaml"
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260520-0016.report.md"
+created_by: alpha
+updated_by: alpha

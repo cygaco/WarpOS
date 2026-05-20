@@ -75,7 +75,8 @@ Every builder output is reviewed by a 4-agent parallel gauntlet:
 1. **CLAUDE.md** — framework config, identity pointer
 2. **AGENTS.md** (this file) — router to all agent docs
 3. **PROJECT.md** — project-specific context
-4. **alpha.md / beta.md / gamma.md** — individual agent identities
+4. **alpha.md / beta.md / gamma.md / delta.md** — individual agent identities
 5. **.system.md** — detailed operational spec
 6. **{mode}/protocol.md** — mode-specific orchestration
-7. **project-config.json** — project-specific data
+7. **.claude/manifest.json** — project metadata, features, agent providers
+8. **.claude/paths.json** — centralized path registry

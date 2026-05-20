@@ -1,5 +1,7 @@
 # Issues — WarpOS
 
+> **What this is.** This file is `paths.sprintIssuesLedger` — a lightweight human-readable issue ledger kept in sync with per-issue YAML files under `.claude/project/sprint/issues/` by `scripts/sprint/issue.js`. Lives at repo root because the `paths.json` binding points here.
+
 Human-readable issue ledger. The machine-readable companion is the
 per-issue YAML files under `.claude/project/sprint/issues/`. Both are
 kept in sync by `scripts/sprint/issue.js`.

@@ -3,7 +3,11 @@
 An AI operating system for Claude Code. It gives you a team of AI agents that plan, build, review, and learn — so you can focus on what matters.
 
 **Platform:** Windows only (for now)
-**Version:** 0.2.0
+**Version:** 0.8.0
+**Skills:** ~140 slash commands
+**Hooks:** 57 automated hooks (54 enabled by default)
+
+_Last verified: 2026-05-19_
 
 ## What Is This?
 
@@ -15,7 +19,7 @@ Instead of one assistant, you get:
 - **A builder** that writes code in isolated branches so your main code stays clean
 - **Reviewers** that automatically check every build for bugs, security issues, and spec compliance
 
-Plus **95 skills** (commands you can run like `/fix:fast` or `/research:deep`), **52 automated hooks** (things that happen automatically, like secret scanning and code formatting), and a **learning system** that remembers what works across sessions.
+Plus **~140 skills** (commands you can run like `/fix:fast` or `/research:deep`), **57 automated hooks** (things that happen automatically, like secret scanning and code formatting), and a **learning system** that remembers what works across sessions.
 
 ## Quick Start
 
@@ -121,7 +125,9 @@ WarpOS/
 ## All Skills
 
 <details>
-<summary>Click to see all 95 skills</summary>
+<summary>Click to see the skill catalog</summary>
+
+> **Partial snapshot.** The catalog below is curated and may lag the live registry. The authoritative count and listing live under `.claude/commands/` after install — run `/skills:list` for the current state. Sprint workflow skills (`/sprint:plan`, `/sprint:design`, `/sprint:execute`, `/sprint:release`, `/sprint:retrospective`) and per-system check skills (`/check:warpos-*`) ship alongside the categories below.
 
 ### Build & Fix
 - `/fix:fast` — Quick fix (direct investigation)
@@ -264,7 +270,7 @@ WarpOS/
 | Alex Gamma (γ) | Builder | Adhoc feature builds, dispatches sub-agents |
 | Alex Delta (δ) | Runner | Oneshot full skeleton builds |
 
-Plus build agents for each mode: Builder, Evaluator, Compliance, Auditor, QA (with 13 failure-mode personas), Red Team (with 11 security personas), and Fix Agent. 56 agent files total.
+Plus build agents for each mode: Builder, Evaluator, Compliance, Auditor, QA (with 13 failure-mode personas), Red Team (with 11 security personas), and Fixer. ~50 agent files total under `.claude/agents/`.
 
 ## Requirements System
 

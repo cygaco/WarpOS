@@ -1,0 +1,53 @@
+# WarpOS Releases
+
+The engineering release ledger for WarpOS. See [`paths.sprintReference#ledger-discipline`](.claude/project/reference/sprint-workflow.md#ledger-discipline) for what qualifies.
+
+Two sections — the Versions section reads cleanly in isolation for downstream consumer maintainers running `/warp:update --to X.Y.Z`; the Sprints section is engineering inventory.
+
+## Versions
+
+Every `version.json` bump that produced a capsule under `framework/releases/X.Y.Z/`. Summaries are written for downstream consumer maintainers — no engineering-internal artifact ids (`SP-`, `RL-`, `T-`).
+
+| Version | Released | Capsule | Summary |
+|---|---|---|---|
+| `0.1.0` |  | [0.1.0/release.json](framework/releases/0.1.0/release.json) | Release 0.1.0. |
+| `0.1.1` |  | [0.1.1/release.json](framework/releases/0.1.1/release.json) | Release 0.1.1. |
+| `0.1.2` |  | [0.1.2/release.json](framework/releases/0.1.2/release.json) | Release 0.1.2. |
+| `0.1.3` |  | (missing — known gap) | Historical release 0.1.3. |
+| `0.1.4` |  | [0.1.4/release.json](framework/releases/0.1.4/release.json) | Release 0.1.4. |
+| `0.2.0` |  | [0.2.0/release.json](framework/releases/0.2.0/release.json) | Release 0.2.0. |
+| `0.2.1` |  | [0.2.1/release.json](framework/releases/0.2.1/release.json) | Release 0.2.1. |
+| `0.2.2` |  | [0.2.2/release.json](framework/releases/0.2.2/release.json) | Release 0.2.2. |
+| `0.3.0` |  | (missing — known gap) | Historical release 0.3.0. |
+| `0.4.0` |  | [0.4.0/release.json](framework/releases/0.4.0/release.json) | Sprint Workflow v0.1 — four-command product workflow layer above existing modes |
+| `0.4.1` |  | [0.4.1/release.json](framework/releases/0.4.1/release.json) | Update-path UX fix |
+| `0.4.2` |  | [0.4.2/release.json](framework/releases/0.4.2/release.json) | Critical install bug fixes for 0.4.0/0.4.1 |
+| `0.4.3` |  | [0.4.3/release.json](framework/releases/0.4.3/release.json) | Manifest-regen fix |
+| `0.4.4` |  | [0.4.4/release.json](framework/releases/0.4.4/release.json) | Critical dispatch-stdin fix |
+| `0.5.0` |  | [0.5.0/release.json](framework/releases/0.5.0/release.json) | Release 0.5.0. |
+| `0.6.0` |  | [0.6.0/release.json](framework/releases/0.6.0/release.json) | Release 0.6.0. |
+| `0.6.1` |  | [0.6.1/release.json](framework/releases/0.6.1/release.json) | Release 0.6.1. |
+| `0.7.0` |  | [0.7.0/release.json](framework/releases/0.7.0/release.json) | Release 0.7.0. |
+| `0.7.1` |  | [0.7.1/release.json](framework/releases/0.7.1/release.json) | Release 0.7.1. |
+| `0.7.2` |  | [0.7.2/release.json](framework/releases/0.7.2/release.json) | Release 0.7.2. |
+| `0.8.0` |  | [0.8.0/release.json](framework/releases/0.8.0/release.json) | Release 0.8.0. |
+<!-- ledger:versions — auto-managed by scripts/sprint/ledger.js. Manual edits valid; may be overwritten on next /warp:release. -->
+
+## Sprints
+
+Every `RL-*` at status=prepared OR =deployed. Each row links to the full `RL-*.yaml` and `.changelog.md` under `.claude/project/sprint/releases/`. Engineering-facing — sprint ids and learning candidates are expected here.
+
+| Release | Sprint | Status | Target | Deployed | Notes |
+|---|---|---|---|---|---|
+| [RL-20260513-001](.claude/project/sprint/releases/RL-20260513-001.yaml) | [SP-20260512-001](.claude/project/sprint/sprints/SP-20260512-001/) | deployed | internal-canary | 2026-05-13T04:55:44.364Z | Multi-sprint parallelism (Sprint Workflow v0.2) [changelog](_docs/sprint/CHANGELOG_v0.2.md) |
+| [RL-20260513-002](.claude/project/sprint/releases/RL-20260513-002.yaml) | [SP-20260513-001](.claude/project/sprint/sprints/SP-20260513-001/) | deployed | internal-canary | 2026-05-13T21:55:43.922Z | /product:bootstrap skill — guided product brief in MD/HTML/DOCX [changelog](_docs/sprint/CHANGELOG_0.5.1.md) |
+| [RL-20260513-003](.claude/project/sprint/releases/RL-20260513-003.yaml) | [SP-20260513-002](.claude/project/sprint/sprints/SP-20260513-002/) | deployed | internal-canary | 2026-05-13T21:55:22.704Z | WarpOS provider smoke + RCA + safe-only auto-fix [changelog](_docs/sprint/CHANGELOG_0.5.1.md) |
+| [RL-20260513-004](.claude/project/sprint/releases/RL-20260513-004.yaml) | [SP-20260513-003](.claude/project/sprint/sprints/SP-20260513-003/) | deployed | internal-canary | 2026-05-13T21:55:20.375Z | Organic skill use — Hybrid (CLAUDE.md rule + smart-context ranker + telemetry) [changelog](_docs/sprint/CHANGELOG_0.5.1.md) |
+| [RL-20260513-005](.claude/project/sprint/releases/RL-20260513-005.yaml) | [SP-20260513-004](.claude/project/sprint/sprints/SP-20260513-004/) | deployed | internal-canary | 2026-05-13T21:56:05.449Z | /sprint:retrospective skill — close-of-sprint reflection [changelog](_docs/sprint/CHANGELOG_0.5.1.md) |
+| [RL-20260513-006](.claude/project/sprint/releases/RL-20260513-006.yaml) | [SP-20260513-005](.claude/project/sprint/sprints/SP-20260513-005/) | deployed | internal-canary | 2026-05-13T21:56:19.894Z | Hardened /warp:update — preflight + transactional apply + postflight [changelog](_docs/sprint/CHANGELOG_0.5.1.md) |
+| [RL-20260514-007](.claude/project/sprint/releases/RL-20260514-007.yaml) | [SP-20260513-006](.claude/project/sprint/sprints/SP-20260513-006/) | deployed | internal | 2026-05-14T09:38:36.130Z | Turbo as mode argument [changelog](.claude/project/sprint/releases/RL-20260514-007.changelog.md) |
+| [RL-20260514-008](.claude/project/sprint/releases/RL-20260514-008.yaml) | [SP-20260514-001](.claude/project/sprint/sprints/SP-20260514-001/) | deployed | production | 2026-05-14T09:48:59.624Z | WarpOS 0.7.0 — Hardened update pipeline [changelog](.claude/project/sprint/releases/RL-20260514-008.changelog.md) |
+| [RL-20260514-009](.claude/project/sprint/releases/RL-20260514-009.yaml) | [SP-20260514-002](.claude/project/sprint/sprints/SP-20260514-002/) | deployed | canonical-warpos | 2026-05-14T21:59:33.690Z | Enforce sprint routing policy [changelog](.claude/project/sprint/releases/RL-20260514-009.changelog.md) |
+| [RL-20260518-010](.claude/project/sprint/releases/RL-20260518-010.yaml) | [SP-20260518-001](.claude/project/sprint/sprints/SP-20260518-001/) | deployed | internal-canary | 2026-05-18T20:03:16.568Z | /sprint:full — autonomous sprint orchestrator [changelog](.claude/project/sprint/releases/RL-20260518-010.changelog.md) |
+| [RL-20260519-013](.claude/project/sprint/releases/RL-20260519-013.yaml) | [SP-20260518-009](.claude/project/sprint/sprints/SP-20260518-009/) | deployed | internal-canary | 2026-05-19T03:10:20.680Z | Consolidate ROADMAP.md and WARPOS_ROADMAP.md into single canonical ROADMAP.md [changelog](.claude/project/sprint/requirements/SP-20260518-009/changelog.md) |
+<!-- ledger:releases — auto-managed by scripts/sprint/ledger.js. -->

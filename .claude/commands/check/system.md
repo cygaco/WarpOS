@@ -41,7 +41,7 @@ These are the canonical WarpOS system categories. Scan each, produce a list, com
 ### 1. Identity & doctrine
 - `CLAUDE.md` — Alex identity rules
 - `AGENTS.md` — agent system router
-- `WarpOS.md` / `PROJECT.md` — project-level identity
+- `PROJECT.md` — project-level identity
 - `README.md`, `USER_GUIDE.md` — user-facing
 - Scan: top-level `.md` files with `identity` or `doctrine` keywords in frontmatter.
 

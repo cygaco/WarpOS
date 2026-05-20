@@ -1,5 +1,7 @@
 # WarpOS Update Flags
 
+> **What this is.** This file is `paths.warposFlagLedger` — an auto-managed ledger of framework-level improvements discovered while using WarpOS in a consumer project. Lives at repo root because the `paths.json` binding points here; do not move without updating `paths.json` and grepping for callers (`/warp:flag`, `/warp:promote-flags`).
+
 <!-- managed by /warp:flag and /warp:promote-flags. Add entries via /warp:flag. -->
 
 Each entry below is a framework-level improvement discovered while using

@@ -10,7 +10,32 @@
        propagation, so a consumer's roadmap is never overwritten by framework
        backlog content. -->
 
-Post-MVP work. Items grouped by phase.
+Post-MVP work. Items grouped by phase. Sprint history above the Phase backlog.
+
+---
+
+## Sprints
+
+Every sprint that has been planned, executed, released, or retrospected — one row per `SP-id`. Sorted reverse chronological. Backed by `.claude/project/sprint/active-sprints.yaml` and per-sprint subdir under `.claude/project/sprint/sprints/<SP-id>/`. See `paths.sprintReference#ledger-discipline` for what writes here.
+
+| Sprint | Title | Status | Started | Closed | Release |
+|---|---|---|---|---|---|
+| [SP-20260519-002](.claude/project/sprint/sprints/SP-20260519-002/) | Polish public-facing repo surface for job-application audience | planning | 2026-05-20T01:04:20.281Z |  |  |
+| [SP-20260512-001](.claude/project/sprint/sprints/SP-20260512-001/) | Multi-sprint parallelism for Sprint Workflow | retrospected | 2026-05-12T22:06:32.222Z | 2026-05-13T20:51:59.736Z |  |
+| [SP-20260513-001](.claude/project/sprint/sprints/SP-20260513-001/) | /product:bootstrap skill — guided product brief in MD/HTML/DOCX | retrospected | 2026-05-13T06:27:46.887Z | 2026-05-13T22:44:51.964Z |  |
+| [SP-20260513-002](.claude/project/sprint/sprints/SP-20260513-002/) | WarpOS install/update provider smoke test + RCA | retrospected | 2026-05-13T06:27:46.887Z | 2026-05-13T22:46:02.308Z |  |
+| [SP-20260513-003](.claude/project/sprint/sprints/SP-20260513-003/) | Organic skill use by agents — research + mechanism | retrospected | 2026-05-13T06:27:46.887Z | 2026-05-13T22:47:16.070Z |  |
+| [SP-20260513-004](.claude/project/sprint/sprints/SP-20260513-004/) | /sprint:retrospective skill — close-of-sprint reflection | retrospected | 2026-05-13T06:27:46.887Z | 2026-05-13T22:00:13.075Z |  |
+| [SP-20260513-005](.claude/project/sprint/sprints/SP-20260513-005/) | Harden /warp:update — preflight + transactional apply + postflight verify | retrospected | 2026-05-13T06:27:46.887Z | 2026-05-13T22:49:26.947Z |  |
+| [SP-20260513-006](.claude/project/sprint/sprints/SP-20260513-006/) | Turbo as mode argument — compose /turbo into /mode:{solo,adhoc,oneshot} | closed | 2026-05-14T00:13:27.723Z | 2026-05-14T09:38:36.130Z |  |
+| [SP-20260514-001](.claude/project/sprint/sprints/SP-20260514-001/) | Harden WarpOS update pipeline — content-hash + sha256 un-truncation + operator-override + release/apply separation | closed | 2026-05-14T03:58:38.838Z | 2026-05-14T09:48:59.624Z |  |
+| [SP-20260514-002](.claude/project/sprint/sprints/SP-20260514-002/) | Enforce sprint routing policy — reviewers, gauntlets, diff_review are aspirational, not enforced | retrospected | 2026-05-14T21:00:14.671Z | 2026-05-14T21:59:47.870Z |  |
+| [SP-20260518-001](.claude/project/sprint/sprints/SP-20260518-001/) | /sprint:full — autonomous sprint orchestrator chaining plan→design→execute→release-prep→retro | retrospected | 2026-05-18T17:03:07.054Z | 2026-05-18T20:04:45.397Z |  |
+| [SP-20260518-007](.claude/project/sprint/sprints/SP-20260518-007/) | Sprint Goal Verification — regression corpus, AC linkage, ship-gate, /check:ac-coverage | retrospected | 2026-05-18T21:10:30.163Z | 2026-05-19T02:01:42.457Z |  |
+| [SP-20260518-008](.claude/project/sprint/sprints/SP-20260518-008/) | Hook & Process Hygiene — format.js prettier spawn fix, lint-hook-output PreToolUse validation, /check:node-procs diagnostic | retrospected | 2026-05-18T21:30:40.942Z | 2026-05-19T02:01:51.007Z |  |
+| [SP-20260518-009](.claude/project/sprint/sprints/SP-20260518-009/) | Consolidate ROADMAP.md and WARPOS_ROADMAP.md into single canonical ROADMAP.md (scaffold still shipped from generator) | closed | 2026-05-19T02:32:56.764Z | 2026-05-19T03:10:20.680Z |  |
+| [SP-20260519-001](.claude/project/sprint/sprints/SP-20260519-001/) | ROADMAP + RELEASES ledger discipline — repo-root sprint+release ledgers with skill+hook enforcement | planning | 2026-05-19T06:54:10.028Z |  |  |
+<!-- ledger:sprints — auto-managed by scripts/sprint/ledger.js. Manual edits are valid but may be overwritten on next /sprint:* invocation. -->
 
 ---
 
@@ -164,6 +189,29 @@ canonical's `_requirements/03-architecture/` (PRODUCTION_BASELINE,
 ACCESSIBILITY_BASELINE, ANALYTICS, DISASTER_RECOVERY,
 RELEASE_READINESS, DEPRECATION_POLICY) plus 3 generic contracts
 (USER, SESSION, ROUTING). Listed here for traceability.
+
+### Forcing function: parallel npm-package distribution shape (DISCUSSED-2026-05-19)
+
+Stand up `@warpos/cli` as a parallel distribution path alongside the current canonical-clone + capsule model. Goal is **not adoption** — it's a forcing function (see DICTIONARY.md § Forcing function): building it makes "which of our current sprints would be wasted under the npm shape?" an unavoidable question.
+
+What it would replace if adopted:
+
+- `/warp:update` → `npm update @warpos/cli`
+- `/warp:release` → `npm version && npm publish`
+- `/warp:promote` → disappears (frame: edit canonical repo, npm publish, downstream `npm update`)
+- Capsules + framework-installed.json + ghost-file detection → npm handles atomically
+
+Integration with Claude Code, three candidate paths (ranked cleanest to fallback):
+
+1. **Plugin system.** Claude Code's Skill tool already references `plugin:skill` namespacing — if the plugin loader is mature enough, WarpOS becomes a plugin distributed via npm; the harness loads skills/hooks/agents automatically.
+2. **Symlinks.** `npx warpos init` symlinks `.claude/commands/` to `node_modules/@warpos/cli/commands/`. Cross-platform fragile on Windows (needs developer mode enabled).
+3. **Managed-mirror.** `npx warpos sync` copies files into `.claude/commands/`, `.claude/agents/`, `scripts/hooks/`, gitignored. Looks like today to Claude Code; npm under the hood. Works without any harness changes.
+
+Decision criterion when revisiting: enumerate the current Phase 1/Phase 2 sprints and ask "which of these would have been unnecessary under the npm shape?" If the answer is "most of the recent meta-work" (release ledger, capsule presence, framework-manifest honesty, ghost cleanup, promote/release dance) — npm has real signal. If "few" — canonical-clone is correct, keep going.
+
+Source: 2026-05-19 `/product:think` session (trace RT-011 in `paths.tracesFile`), DICTIONARY.md § Forcing function.
+
+Status: parked as forcing-function research. Not on the active sprint queue.
 
 ---
 
