@@ -1,0 +1,124 @@
+schema: warpos/sprint/current-sprint/v1
+id: SP-20260522-001
+title: "Framework Boundary &amp; Identity — _warpos/ zone, MANIFEST.json, full purge of /warp:promote suite"
+objective: "(set by /sprint:plan)"
+status: designing
+created_at: "2026-05-22T05:30:25.992Z"
+updated_at: "2026-05-22T05:43:12.056Z"
+source_request: "Sprint 1 of the ROADMAP — Framework Boundary & Identity. Adopt the managed-config-layer architecture: canonical WarpOS contains only framework source; installed products treat _warpos/ as the framework source-of-truth zone and .claude/ as the compiled runtime interface. Full purge of the upstream-discovery surface (/warp:promote, /warp:promote-flags, /warp:flag, warpos-to-update.md and supporting scripts/paths/keys). Introduce _warpos/MANIFEST.json as the ownership source-of-truth. Generated-view discipline for tool-mandated paths (.claude/commands, .claude/agents, .claude/settings.json). Three-layer settings.json compiler. Canonical scrub: move WarpOS-as-product specs to a new PRIVATE workspace. Five structural gates: canonical pre-commit guard, /check:framework-purity, installer ownership manifest, /warp:update --status, /check:framework-views-fresh. Migration plan for existing installed products. Defer Pattern C′."
+interpreted_intent: "Restructure WarpOS as a managed-configuration-layer over the host project's .claude/ interface. Declare ownership via _warpos/MANIFEST.json (per-path owner ∈ {framework|generated|project|runtime}); sync is one-way canonical→product; upstream channel (/warp:promote suite + warpos-to-update.md ledger) is fully purged. Tool-mandated paths (.claude/commands, .claude/agents, .claude/settings.json) become COMPILED VIEWS regenerated deterministically from _warpos/ sources, with CI gates refusing stale views and canonical pre-commit gates refusing leakage of product-specific content. Existing installs migrate via a one-time migration script. Pattern C′ deferred."
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260522-0022.yaml"
+risk_level: high
+approval_state: none_required
+current_phase: design
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+lane:
+  type: branch
+  value: sprint/SP-20260522-001
+  isolation_notes: "Sprint branch already created. /sprint:full commits locally throughout the run; push gated by user approval. Branch is the isolation layer; no separate worktree needed."
+external_services:
+  identified:
+    - "GitHub (cygaco/WarpOS) — push of the purge commit to delete warpos-to-update.md from public history (normal commit, no force-push). User-gated per CLAUDE.md autonomy table."
+    - "GitHub — creation of a new PRIVATE repo for WarpOS-as-product workspace. Maintainer action, out-of-band. Framework verifies the canonical scrub but does not create the private repo."
+  blocked: []
+  ready: []
+  mocked: []
+  deferred: []
+tickets:
+  proposed: []
+  planned: []
+  designed: []
+  ready_for_execution: []
+  in_progress:
+    - T-20260522-180
+  blocked: []
+  waiting_on_human: []
+  waiting_on_external_service: []
+  in_review: []
+  qa_failed: []
+  redteam_failed: []
+  done: []
+  released: []
+  deferred:
+    - T-20260522-181
+  abandoned: []
+  reopened: []
+  superseded: []
+requirements:
+  prd: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260522-001\\prd.md"
+  high_level_stories: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260522-001\\high-level-stories.md"
+  granular_stories: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260522-001\\granular-stories.md"
+  copy: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260522-001\\copy.md"
+  inputs: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260522-001\\inputs.md"
+  trace: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260522-001\\trace.md"
+  acceptance_criteria: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260522-001\\acceptance-criteria.md"
+  qa_plan: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260522-001\\qa-plan.md"
+  redteam_plan: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260522-001\\redteam-plan.md"
+  release_plan: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260522-001\\release-plan.md"
+checks:
+  lint:
+    status: not_run
+    last_run: null
+    evidence: ""
+  typecheck:
+    status: not_run
+    last_run: null
+    evidence: ""
+  tests:
+    status: not_run
+    last_run: null
+    evidence: ""
+  build:
+    status: not_run
+    last_run: null
+    evidence: ""
+  qa:
+    status: not_run
+    last_run: null
+    evidence: ""
+  redteam:
+    status: not_run
+    last_run: null
+    evidence: ""
+approvals:
+  plan:
+    required: false
+    state: not_required
+    ref: null
+  design:
+    required: false
+    state: not_required
+    ref: null
+  execution:
+    required: false
+    state: not_required
+    ref: null
+  release:
+    required: false
+    state: not_required
+    ref: null
+  external_services:
+    required: false
+    state: not_required
+    ref: null
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260522-0022.report.md"
+  design: null
+  execution: null
+  release: null
+ralph:
+  active: false
+  current_ticket: null
+  current_loop: null
+  status: idle
+  last_checkpoint: null
+  next_action: null
+crash_recovery:
+  last_checkpoint: ".claude/project/sprint/sprint-progress.yaml"
+  resume_command: "/sprint:full --sprint SP-20260522-001 --resume"
+  resume_summary: "Sprint SP-20260522-001 design phase complete. Requirements templates scaffolded at .claude/project/sprint/requirements/SP-20260522-001/. Skill body (Alpha) must mint tickets via scripts/sprint/ticket.js before /sprint:full --resume can advance Phase 3."
+  active_files: []
+  dirty_state: false
+  blockers: []
+  safe_to_continue: true

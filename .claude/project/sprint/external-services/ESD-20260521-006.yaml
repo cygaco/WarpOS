@@ -1,0 +1,59 @@
+schema: warpos/sprint/external-service-dependency/v1
+id: ESD-20260521-006
+sprint: SP-20260521-001
+related_ticket: null
+service_name: "Windows Terminal (wt.exe)"
+service_category: other
+purpose: "Operator-side terminal multiplexer used by /portfolio:open --spawn (S-14) to launch a new tab/window pinned to a product's repo_path with `claude` or `pwsh` running inside. Strictly opt-by-detection: when `wt.exe` is on PATH, spawn invokes `wt -w 0 nt -d <repo_path> pwsh -NoExit -Command claude`; when absent, falls back to `start pwsh -NoExit -WorkingDirectory <repo_path>`; when neither, exits 2 with `spawn_failed: no compatible terminal found`. No service signup, no credentials, no remote calls — pure local CLI invocation."
+required_for:
+  - "/portfolio:open --spawn happy path (S-14 AC-14.1)"
+  - Multi-product parallel workflow described in H-2
+required_phase: execute
+status: deferred
+signup_required: false
+billing_required: false
+credentials_required: false
+oauth_required: false
+domain_dns_required: false
+compliance_review_required: false
+human_owner: cygaco
+terminal_implementable_after_setup: true
+can_mock: true
+mock_strategy: "Mock via process.spawn stub that records argv + cwd, never actually launches a window. Three test scenarios: (a) wt present → assert argv shape matches `wt -w 0 nt -d <repo_path> pwsh -NoExit -Command claude` exactly; (b) wt absent but pwsh present → assert fallback `start` invocation; (c) both absent → assert exit 2 with `spawn_failed`. Cross-platform guard: process.platform stub to 'darwin' asserts exit 2 with `not_implemented_on_platform: darwin` and zero spawn calls (S-15 AC-15.2)."
+sandbox_available: true
+production_required: false
+approval_required: false
+approval_state: not_required
+approval_ref: null
+required_env_vars: []
+human_setup_steps:
+  - step: "Confirm Windows Terminal is installed (Win+R → `wt` should open a window). Modern Windows 11 ships it by default; older Windows installs may need Microsoft Store install."
+    owner: cygaco
+    status: done
+    evidence_required: "`wt --version` exits 0 — operator's platform is Windows 11 Pro 10.0.26200 per session env, default-installed."
+  - step: "No auth, no config — wt inherits user profile + PATH."
+    owner: cygaco
+    status: done
+    evidence_required: N/A
+terminal_setup_steps:
+  - step: "Detection: open.js runs `where.exe wt` (or `which wt` on POSIX, but this skill is Windows-first); ENOENT branches to pwsh fallback"
+    command_or_file: scripts/portfolio/open.js
+    status: not_started
+  - step: "Argv-array invocation: `spawn('wt', ['-w', '0', 'nt', '-d', repoPath, 'pwsh', '-NoExit', '-Command', 'claude'], { detached: true, shell: false })`. Detached + unref so WarpOS terminal returns immediately (S-14 AC-14.4)."
+    command_or_file: scripts/portfolio/open.js
+    status: not_started
+  - step: "Pre-spawn check: realpath(repo_path) exists AND is contained within configured portfolioHome (redteam T-1.4 symlink-loop, T-3.5 symlink-retarget). Refuse spawn on mismatch unless --allow-symlink passed."
+    command_or_file: scripts/portfolio/open.js
+    status: not_started
+  - step: "Platform guard: process.platform must be 'win32'; on darwin/linux exit 2 with `not_implemented_on_platform: <platform>` BEFORE any spawn attempt (S-15 AC-15.2)"
+    command_or_file: scripts/portfolio/open.js
+    status: not_started
+risks:
+  - "wt argv schema differs between Windows Terminal versions (the `-w` window-id flag was added in 1.x). Mitigation: detection step runs `wt --version` and logs the version; release-plan.md monitoring item flags drift."
+  - "Operator launches `/portfolio:open dreamteams --spawn` from inside an already-running wt session and gets duplicate tabs piling up. Mitigation: `-w 0` targets the existing window's tab list rather than spawning a new window each time (acceptable behavior; documented in skill body)."
+  - "pwsh-fallback launches a session WITHOUT claude running — operator gets a bare PowerShell. Mitigation: stderr emits 'no Claude session — run `claude` manually' notice (S-14 AC-14.2)."
+  - "Detached spawn leaks a child process if WarpOS crashes mid-launch. Mitigation: detached + unref is intentional — child is meant to outlive parent. Reviewed and accepted."
+blockers: []
+notes: "ESD tracked as `needs_configuration` (operator's Windows 11 env per session env-block has wt installed by default; counts as already-configured but the ESD records the contract). Sprint's MVP for /portfolio:open is the attach path (S-13 — print repo_path), which works on every platform. The --spawn path is the Windows-first enhancement covered in S-14 + S-15. Cross-platform fallback (macOS/Linux) is explicit non-goal this sprint — see ESD-20260521-007 for the platform-fallback record."
+created_at: "2026-05-21T20:40:00.000Z"
+updated_at: "2026-05-21T21:25:59.887Z"

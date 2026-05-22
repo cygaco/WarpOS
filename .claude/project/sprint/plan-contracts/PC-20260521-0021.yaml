@@ -1,0 +1,262 @@
+schema: warpos/sprint/plan-contract/v1
+id: PC-20260521-0021
+created_at: "2026-05-21T20:50:39.080Z"
+updated_at: "2026-05-21T20:50:39.080Z"
+sprint: SP-20260521-001
+source_request: "Make WarpOS the command console for a portfolio of products. Each product lives in its own private GitHub repo with team collaborators, side-by-side with WarpOS on disk. WarpOS exposes a single unified /portfolio:* skill family (collapses the existing /product:* into /portfolio:*) so the user has ONE namespace for everything product-related — bootstrap, clone, ponder, import, list, open, new, register, status, dispatch, sync. The user can also 'port' into any product in a separate terminal (via /portfolio:open <slug> --spawn) and run multiple products in parallel, each in its own Claude Code session, while WarpOS remains the home-base terminal."
+source_request_verbatim: |
+  Look at this companycam project, look at this dream teams project, and create a way for these product to basically exist 'inside' warpos, but not be publicly available on our github, but still backed up and version controlled. basically, i want warpos to be the command console from which I build all of my products. btw, dreamteam and the others still need to be accessible to my team, so perhaps side-by-side repos would be good? like dreamteam github repo is private with collaborators, but still 'manageable' by warpos, and my teams own systems
+  
+  first, spin up /mode:adhoc --turbo
+  
+  [SUBSEQUENT DIRECTIVES IN-CONVERSATION:]
+  - 'Ok, can we reconcile this with the `product` skill suite'
+  - 'So, `product` is gone then?' [Alpha clarified: no, /product:* stays]
+  - 'this is kinda awkward flow. can this all be condensed under *portfolio' [namespace unification directive]
+  - 'Update the sprint plan. And can I like ''port'' myself into a product/repository in a terminal, different one in another, etc? And run them in parallel?' [multi-terminal / parallel-product directive]
+request_type: architecture_change
+interpreted_intent: "Two architectural decisions on top of the original portfolio-console ask: (1) UNIFY the existing /product:* (bootstrap, clone, ponder, import) and the proposed /products:* into a single /portfolio:* namespace — rename in place, ship deprecated /product:* aliases for 1-2 releases; (2) FIRST-CLASS multi-terminal parallelism — /portfolio:open <slug> --spawn opens a fresh terminal window with Claude Code running in the target product, so the user can keep WarpOS as the home base while each active product runs in its own session. Parallel sessions are inherently safe because each product has its own .claude/ (per FRAMEWORK_VS_DOWNSTREAM.md). Combined: one unified namespace, one home-base terminal, N parallel product terminals on demand."
+user_or_business_outcome: "User has ONE namespace (/portfolio:*) for every product-related action — no /product vs /products confusion, no awkward seam skill. User can sit in their WarpOS home-base terminal and type /portfolio:status to see the whole portfolio, /portfolio:open dreamteams --spawn to launch a fresh Claude Code session in dreamteams in a new window (then keep working in WarpOS), and /portfolio:bootstrap newthing to interview, brief, scaffold, and register a brand-new private product in one shot. Multiple products run in parallel — each terminal is its own Claude session, each repo its own state, zero collision."
+affected_surfaces:
+  - surface: ".claude/paths.json (new keys: portfolioRegistry, portfolioHome, briefsRoot, clonesRoot)"
+    evidence_level: verified_from_repo
+    notes: "Today paths.clones and paths.clonesCurrent exist; portfolio keys are net-new. briefsRoot exists today as paths.briefs from /product:bootstrap."
+  - surface: "~/.warpos/portfolio.json (new HOME-dir registry, renamed from earlier products.json draft)"
+    evidence_level: assumed_from_request
+    notes: OS-agnostic registry location. Matches gh/nvm/cargo precedent per Beta DEC-sp-20260521-001-002.
+  - surface: ".claude/commands/portfolio/ (new skill family — 10 skills)"
+    evidence_level: verified_from_repo
+    notes: "Net-new directory. Holds bootstrap, clone, ponder, import (moved from /product:*) PLUS list, open, new, register, status, dispatch, sync."
+  - surface: ".claude/commands/product/ (existing — bootstrap, clone, ponder, import)"
+    evidence_level: verified_from_repo
+    notes: "Rename target. Each skill becomes a thin deprecation alias pointing at the /portfolio:* equivalent for 1-2 releases, then deleted."
+  - surface: "scripts/portfolio/ (new script dir)"
+    evidence_level: verified_from_repo
+    notes: "Holds registry.js, spawn.js, dispatch.js, status.js, from-brief.js, new.js. Existing scripts/product/{bootstrap,clone}.js move here."
+  - surface: "scripts/product/ (existing — bootstrap.js, clone.js)"
+    evidence_level: verified_from_repo
+    notes: Migrated to scripts/portfolio/ at rename. Aliases in scripts/product/ remain as thin re-exports for one release.
+  - surface: ".gitignore (canonical WarpOS) — add _docs/briefs/, _docs/clones/"
+    evidence_level: verified_from_repo
+    notes: Per Beta DEC-sp-20260521-001-001. Both folders verified untracked.
+  - surface: "framework/templates/portfolio/ (new — product-repo scaffold templates)"
+    evidence_level: inferred_from_repo
+    notes: "Follows framework/templates/sprint/init/ + framework/templates/product-bootstrap/ pattern."
+  - surface: "_docs/briefs/dreamteams/ (migration source — never committed)"
+    evidence_level: verified_from_repo
+    notes: "git ls-files empty. Safe to move via /portfolio:adopt or /portfolio:new --from-brief."
+  - surface: "_docs/clones/companycam/ (migration source — never committed)"
+    evidence_level: verified_from_repo
+    notes: git ls-files empty. Safe to move.
+  - surface: "framework/paths.registry.json (declares new path keys to downstream consumers)"
+    evidence_level: verified_from_repo
+    notes: "Propagated to consumers via /warp:update."
+  - surface: "USER_GUIDE.md (add 'Working a portfolio' + 'Multi-terminal parallel products' sections)"
+    evidence_level: verified_from_repo
+    notes: "New section explaining the home-base + per-product-terminal pattern."
+  - surface: "/warp:tour (update to mention /portfolio:* family)"
+    evidence_level: verified_from_repo
+    notes: ""
+  - surface: "Active sprints SP-20260520-001 + SP-20260520-002 titles (cosmetic update from /product:clone, /product:import to /portfolio:clone, /portfolio:import)"
+    evidence_level: verified_from_repo
+    notes: Both still in planning. ROADMAP rows auto-maintained by scripts/sprint/ledger.js.
+  - surface: "scripts/portfolio/spawn.js (new terminal launcher)"
+    evidence_level: assumed_from_request
+    notes: "Detects Windows Terminal (wt), falls back to start cmd / start powershell on Windows; iTerm / gnome-terminal / xterm on macOS / Linux. Spawns a fresh Claude Code session in the target product dir."
+  - surface: "decision-ledger.jsonl (logs the namespace unification + multi-terminal directives)"
+    evidence_level: verified_from_repo
+    notes: "Already has 4 Beta decisions for this sprint. Adding 2 more (unification + spawn pattern) as Alpha-decided Class B."
+current_behavior:
+  evidence_level: verified_from_repo
+  notes: "WarpOS canonical at 0.8.2 (public on cygaco/WarpOS). 8+ sibling dirs exist on disk (aiweb, jobhunter-app, JobHunter, Dashboard, Nexus, Keyword Intelligence, a2a-inspector). /product:* family has 4 skills (bootstrap, clone, ponder, import) operating on CWD. No portfolio registry, no portfolio skills, no multi-terminal launcher. Each product's .claude/ is per-repo (FRAMEWORK_VS_DOWNSTREAM.md verifies this), so the parallelism substrate already exists — we just don't have a UX for accessing it. _docs/briefs/dreamteams/ + _docs/clones/companycam/ untracked."
+desired_behavior: "WarpOS canonical exposes a unified /portfolio:* skill family (10 skills under one namespace) backed by a HOME-dir registry (~/.warpos/portfolio.json). The user runs every product-related action under /portfolio:* — no /product vs /products confusion. From the home-base WarpOS terminal: /portfolio:list shows everything; /portfolio:bootstrap <slug> interviews + briefs + scaffolds + registers in one shot; /portfolio:open <slug> --spawn launches a new Claude Code session in a new terminal window for that product; multiple products run in parallel, each in its own terminal, each Claude Code session bound to one repo for life. /product:* keeps working for 1-2 releases as deprecation aliases printing a one-line 'use /portfolio:* instead' banner. Briefs/clones are gitignored in canonical; the existing dreamteams + companycam migrate via /portfolio:adopt (or equivalent) as the dogfooded first runs."
+scope:
+  size: l
+  risk_level: medium
+  complexity_drivers:
+    - "Cross-repo state: portfolio registry must stay consistent with on-disk reality and each product's framework-installed.json."
+    - "Privacy boundary: artifacts classified as framework (stays in canonical) vs product (moves to sibling)."
+    - "Two existing in-flight products (dreamteams brief + companycam clone) seed the dogfooded first migration."
+    - "Namespace unification: rename 4 existing skills, ship deprecation aliases, update SP-20260520-001 + SP-20260520-002 titles, USER_GUIDE, /warp:tour, and any references in framework templates."
+    - "Multi-terminal launcher: OS-detection across Windows Terminal, cmd, powershell, iTerm, gnome-terminal, xterm with a graceful fallback chain."
+    - Skill suite is 10 skills under a brand-new namespace plus the alias scaffolding.
+scope_variants:
+  minimal_safe:
+    summary: "Registry + 3 skills under /portfolio:* only. Add ~/.warpos/portfolio.json, paths.portfolioRegistry, gitignore _docs/briefs/ + _docs/clones/. Ship /portfolio:list, /portfolio:register, /portfolio:open. DO NOT rename /product:* yet — defer the unification. User creates private repos manually; the skill records what's where. Migrate dreamteams + companycam by hand."
+    tradeoffs:
+      - "Pro: ~1-2 days, fully reversible, zero net-new external service use."
+      - "Pro: Establishes the registry primitive that every later /portfolio:* skill builds on."
+      - "Con: User still has to cd manually — the 'command console' framing is half-delivered."
+      - "Con: Defers the namespace-unification directive, so /product:* and a partial /portfolio:* coexist confusingly during the gap."
+      - "Con: No --spawn launcher; multi-terminal pattern is user-driven manual flow."
+  recommended:
+    summary: "Unified /portfolio:* (10 skills) + multi-terminal launcher. Minimal_safe PLUS: rename /product:{bootstrap,clone,ponder,import} → /portfolio:* with deprecated aliases, ship /portfolio:new (scaffolds sibling repo, runs /warp:setup, SURFACES `gh repo create` for user to run — never executes per Beta DEC-003), /portfolio:adopt (consume an existing brief/clone), /portfolio:status (portfolio dashboard), /portfolio:dispatch <slug> <skill> (run any skill against a sibling without cd-ing), /portfolio:sync (warp:update across the portfolio), /portfolio:open <slug> --spawn (new terminal window with Claude Code running in that product). Migration of dreamteams + companycam via /portfolio:adopt as the dogfooded first runs. Update SP-20260520-001 + SP-20260520-002 titles cosmetically."
+    tradeoffs:
+      - "Pro: Delivers WarpOS-as-command-console + parallel-products in one coherent ship."
+      - "Pro: One namespace eliminates the /product vs /products UX trap permanently."
+      - "Pro: --spawn launcher unlocks the home-base + N-terminal pattern."
+      - "Pro: /portfolio:adopt with dreamteams + companycam validates the design end-to-end on the first run."
+      - "Pro: Composes with existing /warp:* — /portfolio:sync is just a portfolio-aware /warp:update."
+      - "Con: ~1-2 weeks of work; 10 new skills + scripts + templates + paths + alias scaffolding + USER_GUIDE."
+      - "Con: --spawn introduces OS-detection complexity. Windows-first; macOS/Linux fallbacks need testing."
+      - "Con: Cross-repo dispatch semantics still need careful design — running a skill 'against' a sibling means spawning a subprocess with CLAUDE_PROJECT_DIR set to the target. Mid-session retarget is a hard non-goal."
+  expanded:
+    summary: "Recommended PLUS: cross-product memory (~/.warpos/portfolio/memory/ — shared learnings ranked across the portfolio), /sprint:portfolio dashboard of every active sprint across every product, per-product agent overrides, encrypted runtime-state backup (events.jsonl, learnings.jsonl, traces.jsonl) to a private cloud target, team-collaborator metadata in the registry. Aimed at the 10+ products + 3+ collaborators state."
+    tradeoffs:
+      - "Pro: Multi-tenant developer platform; team-shareable."
+      - "Pro: Cross-product memory is the only path to learning patterns across products (e.g. 'this builder mistake happens across 4 of your products')."
+      - "Con: 4-8 weeks, much speculative until there are 5+ products + 2+ collaborators using recommended first."
+      - "Con: Encrypted-backup target = real new external-service dependency (S3 / Backblaze / encrypted git LFS) + secret management."
+      - "Con: Team-collaborator metadata complicates privacy classification."
+assumptions:
+  safe:
+    - "Both existing briefs (_docs/briefs/dreamteams, _docs/clones/companycam) are untracked — moves are reversible."
+    - "gh CLI is installed and authenticated (already a runtime dep elsewhere in WarpOS)."
+    - "User runs Windows + Git Bash + PowerShell + Windows Terminal as primary; --spawn defaults to wt -d <path> claude."
+    - "Sibling-repo layout (Projects/<product>) is the existing convention."
+    - "Each product's .claude/ is already isolated per FRAMEWORK_VS_DOWNSTREAM.md — parallel sessions across products are inherently state-safe."
+    - "Adhoc + turbo is the right mode; user explicitly entered it."
+    - "Beta's 4 directives (DEC-sp-20260521-001-001..004) stand: gitignore-only privacy fix, HOME-dir registry, surface-don't-execute `gh repo create`, scope variant B."
+  unsafe:
+    - "Assumes /portfolio:dispatch should spawn a subprocess (with CLAUDE_PROJECT_DIR set) rather than mid-session retarget — mid-session retarget is a hard non-goal."
+    - "Assumes Windows Terminal (wt) is the default --spawn shell. If absent, fall back to `start cmd /k ...` and surface a hint to install wt."
+    - "Assumes the deprecated /product:* aliases should print a one-line deprecation banner AND continue to function for 1-2 releases. Alternative: hard-fail with a redirect message. Defaulting to non-fatal banner."
+    - "Assumes the dreamteams brief stays a free-floating brief during migration (no GitHub repo created yet) until the user runs the surfaced `gh repo create` line."
+    - "Assumes the team-collaborator model is GitHub-only. Registry schema includes a remote.type field from day one in case the user later wants GitLab/Bitbucket — but only github is implemented."
+  needs_user_or_beta_review:
+    - "Whether dreamteams should bootstrap as a brand-new repo or be a private fork/sibling of vrwithkr/dream-team-kit (cited in the brief as a collaboration candidate)."
+    - "Whether /portfolio:adopt should preserve the brief at <product>/_docs/briefs/<slug>/ inside the product repo, or move it to a top-level <product>/BRIEF.md."
+    - "Whether deprecated /product:* aliases should print the banner once-per-session or every invocation."
+    - "Whether the registry should ALSO sync to a private 'warpos-portfolio' GitHub repo for backup/team-share. Beta DEC-002 says no for now; revisit in expanded scope."
+    - "Whether /portfolio:open without --spawn (the no-window-mode) just prints `cd <path>` for the user to paste, or attempts to write a per-shell command."
+    - "Confirming that the dreamteams MVP itself stays out of THIS sprint — this sprint ships the infra only."
+open_questions:
+  blocking: []
+  non_blocking:
+    - "Should the registry use a flat JSON file or SQLite once there are 10+ products?"
+    - "Should each registered product get its own routing trace lane in paths.sprintDecisions, or share canonical's?"
+    - "Should /portfolio:dispatch carry the current mode (solo/adhoc/oneshot) into the target product, or does the target have its own mode marker?"
+    - "Should /portfolio:sync run /warp:update sequentially across products, or fan out in parallel (latter risks gh rate limits)?"
+    - "Should /portfolio:status surface dirty-state warnings as 'block' (red), 'warn' (yellow), or just 'note'?"
+    - "Should the --spawn launcher's failure mode print the manual command and exit non-zero, or fall back to non-spawned /portfolio:open behavior?"
+non_goals:
+  - "Public WarpOS does NOT learn about specific private products. Registry stays HOME-dir only; nothing leaks into canonical's git history."
+  - "NOT building a hosted dashboard or web UI — /portfolio:status is CLI."
+  - "NOT introducing a new external service dependency beyond gh CLI, git, node."
+  - "NOT building dreamteams or any product feature in this sprint — infra layer ONLY."
+  - "NOT changing the WarpOS canonical release pipeline. /warp:release continues to work; /portfolio:sync wraps /warp:update without replacing it."
+  - "NOT formalizing team-collaborator management (auth, permissions, roles) — that's expanded."
+  - "NOT migrating other existing sibling repos (aiweb, jobhunter-app, etc.) automatically. They opt in via /portfolio:register."
+  - "NOT retargeting CLAUDE_PROJECT_DIR mid-session inside a single Claude Code instance. Hooks, mode markers, paths.json all bind at startup; mid-flight retarget breaks them. One Claude session = one repo for life."
+  - "NOT executing `gh repo create` ourselves under any flag. /portfolio:new SURFACES the command and halts. Per Beta DEC-003 + autonomy red line."
+  - "NOT deleting /product:* skills immediately — they stay 1-2 releases as deprecated aliases printing a banner."
+requirement_areas:
+  - "namespace-unification: rename /product:{bootstrap,clone,ponder,import} → /portfolio:*; ship deprecated aliases; update USER_GUIDE, /warp:tour, in-flight sprint titles"
+  - "paths-and-registry: paths.json keys, registry schema at schemas/portfolio/registry.schema.json, registry persistence (atomic write)"
+  - "skills-portfolio-family: 10 skills under /portfolio:* (bootstrap, clone, ponder, import, list, open, register, new, adopt, status, dispatch, sync)"
+  - "scaffolding-and-templates: framework/templates/portfolio/ — repo scaffold, default .claude/, default README, default .gitignore"
+  - "privacy-boundary: gitignore canonical _docs/briefs/ + _docs/clones/; classify framework vs product per artifact"
+  - "migration-first-runs: dreamteams + companycam as the dogfooded first /portfolio:adopt runs"
+  - "cross-repo-dispatch: /portfolio:dispatch spawns a subprocess with CLAUDE_PROJECT_DIR set to the target — never retargets mid-session"
+  - "multi-terminal-launcher: /portfolio:open <slug> --spawn opens a new Claude Code session in a new terminal window — wt detection + Windows fallbacks + macOS/Linux paths"
+  - "remote-creation-policy: /portfolio:new SURFACES `gh repo create` and halts. Never executes per Beta DEC-003."
+  - "docs-and-tour: USER_GUIDE additions (portfolio workflow + multi-terminal pattern), /warp:tour update, RELEASES entry"
+high_level_story_candidates:
+  - "As a builder, I want one /portfolio:* namespace for every product-related action so I never have to remember /product vs /products."
+  - "As a builder, I want to keep my WarpOS terminal as my home base and open each active product in its own terminal window so I can work on multiple products in parallel without state collisions."
+  - "As a builder, I want to scaffold a new private product with one command so my dreamteams or competitor-clone work starts on a fresh, properly-installed substrate."
+  - "As a builder, I want to dispatch a WarpOS skill against any product from inside WarpOS so I don't context-switch by cd-ing."
+  - "As a builder, I want existing brief/clone work to migrate cleanly into its own private repo so the canonical WarpOS public history stays free of product strategy."
+  - "As a team-lead, I want my products backed up via private GitHub repos that my collaborators can clone so we can build together."
+  - "As an operator, I want WarpOS to print the `gh repo create` line for me to run rather than execute it itself so external-facing actions stay under my explicit control."
+  - "As an operator, I want canonical WarpOS to never accidentally leak product briefs into its public history so privacy is structural, not vigilance-based."
+granular_story_candidates:
+  - "Add paths.portfolioRegistry, paths.portfolioHome, paths.briefsRoot, paths.clonesRoot to framework/paths.registry.json + propagate to canonical .claude/paths.json."
+  - "Define registry schema (warpos/portfolio-registry/v1) at schemas/portfolio/registry.schema.json with fields: products[].slug, .repo_path, .github_url, .warpos_version, .last_synced, .role, .remote_type (github|gitlab|bitbucket — only github implemented)."
+  - "Implement scripts/portfolio/registry.js — read, write (atomic), list, find-by-slug, validate."
+  - "Implement /portfolio:list — pretty-print the registry with status indicators."
+  - "Implement /portfolio:register <slug> <path> [<github-url>] — idempotent registry append."
+  - "Implement /portfolio:open <slug> [--spawn] — without --spawn, prints absolute path + cd hint. With --spawn, runs scripts/portfolio/spawn.js."
+  - "Implement scripts/portfolio/spawn.js — detect Windows Terminal (`where wt`), fall back to `start cmd /k 'cd /d <path> && claude'` on Windows. macOS: detect iTerm or use `open -a Terminal`. Linux: detect gnome-terminal/xterm."
+  - "Implement /portfolio:new <slug> [--from-brief <existing-slug>] — scaffold sibling repo using framework/templates/portfolio/, run /warp:setup, optionally consume an existing brief, SURFACE `gh repo create <slug> --private --source=. --remote=origin --push` and halt."
+  - "Implement /portfolio:adopt <slug> — consume an existing _docs/briefs/<slug> or _docs/clones/<slug> via /portfolio:new --from-brief."
+  - "Implement /portfolio:status — for each registered product, surface WarpOS version, last commit, dirty state, current sprint, GitHub remote status."
+  - "Implement /portfolio:dispatch <slug> <skill> [args] — locate the product, spawn a subprocess with CLAUDE_PROJECT_DIR set, invoke the skill via the project's `claude` binary."
+  - "Implement /portfolio:sync — sequential /warp:update across every registered product."
+  - "Rename .claude/commands/product/{bootstrap,clone,ponder,import}.md → .claude/commands/portfolio/. Ship deprecation aliases at the old paths that print 'use /portfolio:<name> instead' once-per-session and forward to the new skill."
+  - "Migrate scripts/product/{bootstrap,clone}.js → scripts/portfolio/, leaving thin re-exports in scripts/product/ for one release."
+  - Add _docs/briefs/ and _docs/clones/ to canonical .gitignore.
+  - "Write framework/templates/portfolio/{README.md.tmpl,.gitignore.tmpl,.claude/paths.json.tmpl} as the default scaffold."
+  - "Migrate _docs/briefs/dreamteams/ → new private repo (via /portfolio:adopt dreamteams)."
+  - "Migrate _docs/clones/companycam/ → new private repo (via /portfolio:adopt companycam)."
+  - "Update USER_GUIDE.md with a 'Working a portfolio' section AND a 'Multi-terminal parallel products' section."
+  - "Update /warp:tour to mention the /portfolio:* family."
+  - "Update SP-20260520-001 + SP-20260520-002 titles cosmetically (/product:clone → /portfolio:clone, /product:import → /portfolio:import)."
+  - "Smoke-test the dispatch contract: register a sibling, /portfolio:dispatch <slug> /check:requirements, confirm the skill runs against the sibling, not canonical."
+  - "Smoke-test the spawn launcher: /portfolio:open dreamteams --spawn from a WarpOS terminal opens a fresh Windows Terminal tab/window with claude running in the dreamteams repo."
+workstream_candidates:
+  - "WS-A — Registry primitives (paths keys + schema + registry.js + /portfolio:list, :register, :open without --spawn)"
+  - "WS-B — Namespace unification (rename /product:* → /portfolio:* + deprecated aliases + script migration + USER_GUIDE + /warp:tour + cosmetic sprint-title updates)"
+  - "WS-C — Scaffolding + adopt (framework/templates/portfolio/ + /portfolio:new + /portfolio:adopt + migration of dreamteams + companycam)"
+  - "WS-D — Dispatch + Status + Sync (cross-repo dispatch contract + /portfolio:dispatch + /portfolio:status + /portfolio:sync)"
+  - "WS-E — Multi-terminal launcher (scripts/portfolio/spawn.js + /portfolio:open --spawn + OS-detection + USER_GUIDE multi-terminal section)"
+  - "WS-F — Privacy + Docs polish (canonical .gitignore additions + USER_GUIDE portfolio chapter + RELEASES entry + non-goal documentation)"
+preliminary_ticket_candidates:
+  allowed: false
+  candidates: []
+  notes: "Sprint is size=l, risk=medium, scope=architecture_change — design_required true. Ticket minting deferred to /sprint:design."
+external_service_dependencies:
+  status: possible
+  required: []
+  possible:
+    - "gh CLI — used by user (not by /portfolio:new) when running the surfaced `gh repo create --private` command. Requires authenticated."
+    - "Windows Terminal (`wt`) — used by /portfolio:open --spawn when available; fallback to start cmd/powershell otherwise."
+    - "iTerm or Terminal.app — macOS --spawn target."
+    - "gnome-terminal or xterm — Linux --spawn target."
+  notes: "No NEW external services. Only existing CLIs (gh, wt, claude) are invoked, and gh is only invoked by the user, not by /portfolio:new itself."
+approval_boundaries:
+  - "git push origin main on canonical WarpOS public repo — standard 'Ask first' per CLAUDE.md."
+  - "Renaming /product:* skill files in canonical — affects in-flight sprints SP-20260520-001 (/product:clone) and SP-20260520-002 (/product:import), both still in planning. Cosmetic title updates are non-blocking, but operator should confirm before commit."
+  - "Deleting deprecated /product:* aliases after the 1-2 release deprecation window — future release-time decision, not this sprint."
+  - "Adding new paths.* keys to canonical .claude/paths.json + framework/paths.registry.json — schema-level, propagates to consumers via /warp:update."
+  - "Adjusting canonical .gitignore — operator-visible, not destructive."
+  - "Moving _docs/briefs/dreamteams/ and _docs/clones/companycam/ out of canonical — confirmed untracked, but operator should confirm before the move runs."
+design_required: true
+execution_allowed_without_design: false
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+lane:
+  type: default
+  value: null
+  isolation_notes: "Single working tree on canonical WarpOS. Sprint does NOT touch sibling repos until the migration runs at end of execute (which uses /portfolio:adopt running against dreamteams + companycam, but those are still on this machine's disk as untracked dirs, not separate repos yet)."
+beta_review:
+  required: true
+  likely_founder_rejection_risks:
+    - "Recommended variant is now ~1-2 weeks of work for 10 skills + alias scaffolding + multi-terminal launcher — user may push to compress or to expand into the dreamteams build itself."
+    - "User may want the deprecated /product:* aliases to disappear immediately rather than persist 1-2 releases."
+    - "User may want --spawn to be the default (no flag needed) for /portfolio:open, since they explicitly asked for the multi-terminal pattern."
+  overbuild_risks:
+    - "Eleven /portfolio:* skills is a large initial family. /portfolio:dispatch and /portfolio:sync could be deferred to v2 if execute capacity is tight."
+    - "framework/templates/portfolio/ scaffold could conflict with /warp:setup's existing default scaffolding behavior — risk of two sources of truth for the same templates."
+    - "Cross-platform --spawn (Windows + macOS + Linux) is overbuild if the user is Windows-only — scope to wt-first, ship a stub for macOS/Linux."
+  missing_context_risks:
+    - "Beta DEC-001..004 stand from prior consult. Namespace unification + multi-terminal --spawn are net-new Alpha decisions not yet Beta-blessed; consult Beta in /sprint:design."
+    - "Cross-repo dispatch semantics under /portfolio:dispatch — spawning a subprocess with CLAUDE_PROJECT_DIR set works, but interaction with parent's mode marker + turbo authorization needs design-time spec."
+    - "vrwithkr/dream-team-kit collaboration angle is still open per dreamteams brief — affects whether /portfolio:adopt dreamteams spins a brand-new repo or forks an existing collaborator repo."
+plan_quality:
+  status: needs_design
+  confidence: high
+  evidence_gaps:
+    - "Namespace unification (rename /product:* → /portfolio:*) is Alpha-decided per autonomy table; needs Beta consultation at design time to confirm the deprecation-alias approach + the 1-2 release window."
+    - "Multi-terminal --spawn launcher is Alpha-decided; needs design-time spec for cross-platform behavior and failure modes."
+  fail_reasons: []
+next_recommended_command: "/sprint:design"
+resume_instructions: "If session crashes: read paths.sprintProgress, confirm Plan Contract id (this revision: PC-?, see ledger). The four Beta directives DEC-sp-20260521-001-001..004 stand from prior consult — stored in paths.betaEvents and paths.decisionLedger. Two NEW Alpha-decided Class B calls are captured here for Beta to bless at /sprint:design: (a) namespace unification with deprecated aliases, (b) cross-platform --spawn launcher. Resume with /sprint:design."
+tracker_paths:
+  current_sprint: ".claude/project/sprint/current-sprint.yaml"
+  sprint_progress: ".claude/project/sprint/sprint-progress.yaml"
+  plan_contract: ".claude/project/sprint/plan-contracts/PC-20260521-0021.yaml"
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260521-0021.report.md"
+created_by: alpha
+updated_by: alpha

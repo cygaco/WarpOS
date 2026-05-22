@@ -1,0 +1,21 @@
+schema: warpos/sprint/approval/v1
+id: AP-20260521-023
+sprint: SP-20260520-002
+level: release_approval_required
+required_for: internal release of RL-20260521-014 (/product:import skill)
+linked_release: RL-20260521-014
+state: approved
+requested_by: alpha
+decided_by: cygaco
+decided_at: "2026-05-21T17:50:00.000Z"
+reason: "User typed 'approved' in plain text after Alpha surfaced a two-option choice on session resume (refresh adhoc team vs. direct approval). User chose direct approval, authorizing /sprint:release for both SP-20260520-002 and SP-20260520-001 to proceed without re-running through the beta-gate AskUserQuestion path."
+evidence:
+  - "Beta DECIDE Class B conf 0.85 on fresh consult (agent_id a75a4e0fe8375ca93) — proceed with both releases using --allow-routing-gap + decisionLedger entry"
+  - "Prior beta DECIDE re-confirmed at 06:00:44Z (EVT-sprint-release-product-skills-reconfirm-1779379244000)"
+  - "Smoke 11/11 pass on SP-20260520-002 — skill, generator, templates, introspection, parse mode, telemetry, parity check, output+paths"
+  - "End-to-end round-trip verified: import → fake answers → bootstrap renders full 8-section brief.md"
+  - "All 6 TRACE events fire (import_started, context_introspected, questionnaire_emitted, parse_started, parse_completed, parse_failed_section_mismatch)"
+  - "paths.imports + paths.importsCurrent registered idempotently"
+  - "Internal target — no production deploy, no public push, no external service activation"
+created_at: "2026-05-21T17:50:00.000Z"
+updated_at: "2026-05-21T17:50:00.000Z"

@@ -346,6 +346,29 @@ function writeFinalReport(state) {
     state.timeline.length > 0 && state.startedAt
       ? (Date.now() - new Date(state.startedAt).getTime()) / 1000
       : 0;
+
+  // Ticket counts come from the per-sprint current.yaml (the source of truth),
+  // not state.tickets. Phase 3's resume-aware path no longer fans out tickets
+  // through the in-memory orchestrator state, so state.tickets.* stays empty
+  // even when current.yaml has real done/deferred/abandoned entries.
+  const currentPath = path.join(
+    REPO_ROOT,
+    ".claude",
+    "project",
+    "sprint",
+    "sprints",
+    state.sprintId,
+    "current.yaml",
+  );
+  const current = readYamlMaybe(currentPath) || {};
+  const lane = (k) =>
+    (current.tickets && Array.isArray(current.tickets[k])
+      ? current.tickets[k]
+      : []);
+  const doneTickets = lane("done");
+  const deferredTickets = lane("deferred");
+  const abandonedTickets = lane("abandoned");
+  const releasedTickets = lane("released");
   let body = `# /sprint:full report — ${state.sprintId}
 
 **Title:** ${state.sprintTitle || "(unknown)"}
@@ -377,9 +400,10 @@ ${
 
 ## Tickets
 
-- Done: ${state.tickets.done.length}
-- Deferred: ${state.tickets.deferred.length}
-- Abandoned: ${state.tickets.abandoned.length}
+- Done: ${doneTickets.length}${doneTickets.length ? ` (${doneTickets.join(", ")})` : ""}
+- Released: ${releasedTickets.length}${releasedTickets.length ? ` (${releasedTickets.join(", ")})` : ""}
+- Deferred: ${deferredTickets.length}${deferredTickets.length ? ` (${deferredTickets.join(", ")})` : ""}
+- Abandoned: ${abandonedTickets.length}${abandonedTickets.length ? ` (${abandonedTickets.join(", ")})` : ""}
 
 ## Beta consultations
 
@@ -405,9 +429,10 @@ ${
   emit("sprint_full_done", {
     sprint_id: state.sprintId,
     total_duration_ms: dur * 1000,
-    tickets_done: state.tickets.done.length,
-    tickets_deferred: state.tickets.deferred.length,
-    tickets_abandoned: state.tickets.abandoned.length,
+    tickets_done: doneTickets.length,
+    tickets_released: releasedTickets.length,
+    tickets_deferred: deferredTickets.length,
+    tickets_abandoned: abandonedTickets.length,
     beta_consultations: state.betaConsultations.length,
     auto_approvals_total: state.autoApprovals.length,
     cumulative_cost_estimate: state.cost.cumulative,
@@ -620,6 +645,50 @@ function deriveDocScale(state) {
 
 function phase2Design(state) {
   state.currentPhase = "design";
+
+  // On --resume, if tickets are already minted from a prior run, skip
+  // the rescaffold + tickets_pending halt and advance to Phase 3.
+  // Otherwise resume can never get past Phase 2 once tickets exist.
+  if (state.resuming) {
+    const currentPath = path.join(
+      REPO_ROOT,
+      ".claude",
+      "project",
+      "sprint",
+      "sprints",
+      state.sprintId,
+      "current.yaml",
+    );
+    const cur = readYamlMaybe(currentPath) || {};
+    const buckets = cur.tickets || {};
+    const tixCount =
+      (buckets.ready_for_execution || []).length +
+      (buckets.in_progress || []).length +
+      (buckets.done || []).length +
+      (buckets.deferred || []).length +
+      (buckets.proposed || []).length +
+      (buckets.planned || []).length +
+      (buckets.designed || []).length;
+    if (tixCount > 0) {
+      state.timeline.push({
+        idx: 2,
+        phase: "design",
+        duration_ms: 0,
+        exit_code: 0,
+        notes: `resume: ${tixCount} ticket(s) already minted — skipping rescaffold + halt`,
+      });
+      emit("sprint_full_phase_completed", {
+        sprint_id: state.sprintId,
+        phase: "design",
+        duration_ms: 0,
+        helper_exit_code: 0,
+        auto_approvals_recorded: 0,
+        notes: "skipped on resume (tickets exist)",
+      });
+      return { ok: true, skipped: true };
+    }
+  }
+
   emit("sprint_full_phase_started", {
     sprint_id: state.sprintId,
     phase: "design",
@@ -643,12 +712,6 @@ function phase2Design(state) {
       message: `scripts/sprint/design.js exited ${res.code}.\nstderr: ${res.stderr}`,
     };
   }
-  // Hand-edit + ticket minting is the skill body's responsibility
-  // (Alpha's reasoning over the rendered templates). The orchestrator
-  // does NOT auto-fill placeholders — it would produce garbage.
-  // For v0.1, the orchestrator stops after the scaffold and surfaces
-  // a halt for the skill body to take over. Future v0.2 may invoke
-  // a sub-agent.
   const dur = Date.now() - startTs;
   state.timeline.push({
     idx: 2,
@@ -666,9 +729,9 @@ function phase2Design(state) {
   });
   checkpoint(
     state,
-    "running",
-    "Phase 3: execute (Ralph loops per ticket)",
-    `Design scaffolded at scale=${scale}`,
+    "halted",
+    `Skill body: review design scaffold, fill placeholders, mint tickets via ticket.js, then /sprint:full --sprint ${state.sprintId} --resume`,
+    `Design scaffolded at scale=${scale}; awaiting ticket minting`,
   );
   if (state.cost.exceeded()) {
     return {
@@ -677,7 +740,21 @@ function phase2Design(state) {
       message: `Cumulative cost estimate $${state.cost.cumulative.toFixed(2)} exceeds threshold $${state.cost.threshold.toFixed(2)}.`,
     };
   }
-  return { ok: true };
+  // Advancing without minted ready_for_execution tickets produces a hollow
+  // sprint record (0 work done, Phase 3 no-ops, Phase 4 mints a ghost RL).
+  return {
+    ok: false,
+    halt_reason: "tickets_pending",
+    message:
+      `Phase 2 (design) scaffolded requirements at scale=${scale}. ` +
+      `The skill body must now: (1) review and fill the rendered templates in ` +
+      `.claude/project/sprint/requirements/${state.sprintId}/, ` +
+      `(2) mint tickets via \`node scripts/sprint/ticket.js create --sprint ${state.sprintId} --title "<title>" --type <type> --risk <level>\` ` +
+      `for each story, setting status=ready_for_execution. ` +
+      `Then resume: \`/sprint:full --sprint ${state.sprintId} --resume\`.`,
+    next_human_action: `Review design scaffold, fill placeholders, mint tickets, then run: /sprint:full --sprint ${state.sprintId} --resume`,
+    resume_command: `/sprint:full --sprint ${state.sprintId} --resume`,
+  };
 }
 
 // ── Phase 3: execute ─────────────────────────────────────────────────
@@ -722,13 +799,50 @@ function phase3Execute(state) {
     (current.tickets && current.tickets.ready_for_execution) ||
     []
   ).slice();
-  if (ready.length === 0) {
+  const done = ((current.tickets && current.tickets.done) || []).slice();
+  const deferred = (
+    (current.tickets && current.tickets.deferred) ||
+    []
+  ).slice();
+  const inProgress = (
+    (current.tickets && current.tickets.in_progress) ||
+    []
+  ).slice();
+  const allTicketsAccountedFor =
+    ready.length === 0 &&
+    inProgress.length === 0 &&
+    (done.length > 0 || deferred.length > 0);
+  if (ready.length === 0 && !allTicketsAccountedFor) {
+    // Honest halt. Previously this branch silently returned ok:true, which
+    // let Phase 4 (release-prep) mint a release record and Phase 5 (retro)
+    // produce a hollow retrospective for a sprint where 0 tickets were
+    // ever minted or executed. See task: "Fix /sprint:full hollow-completion
+    // bug" / SP-20260522-001 ghost run / RL-20260522-017.
+    state.timeline.push({
+      idx: 3,
+      phase: "execute",
+      duration_ms: 0,
+      exit_code: 1,
+      notes:
+        "0 ready_for_execution tickets and 0 done — halting (skill body must mint tickets via /sprint:design)",
+    });
+    return {
+      ok: false,
+      halt_reason: "no_tickets_ready",
+      message:
+        `Phase 3 (execute) found 0 tickets in ready_for_execution AND 0 in done/deferred for sprint ${state.sprintId}. ` +
+        `This means /sprint:design scaffolded the requirement templates but the skill body (Alpha) did not mint tickets. ` +
+        `Action: (a) hand-edit .claude/project/sprint/requirements/${state.sprintId}/{prd,acceptance-criteria,granular-stories,...}.md to reflect real scope, then (b) mint tickets via \`node scripts/sprint/ticket.js create --sprint ${state.sprintId} --title "<title>" ...\` setting status=ready_for_execution. Resume with \`/sprint:full --sprint ${state.sprintId} --resume\`.`,
+    };
+  }
+  if (ready.length === 0 && allTicketsAccountedFor) {
+    // Resume case: tickets are already done/deferred from a prior run.
     state.timeline.push({
       idx: 3,
       phase: "execute",
       duration_ms: 0,
       exit_code: 0,
-      notes: "no ready_for_execution tickets — execute phase no-op",
+      notes: `resume: ${done.length} done, ${deferred.length} deferred — advancing`,
     });
     return { ok: true };
   }
@@ -800,6 +914,39 @@ function phase4ReleasePrep(state) {
     ts: nowIso(),
   });
   const startTs = Date.now();
+
+  // Refuse to mint a release record when zero tickets ever reached `done`.
+  // Otherwise the orchestrator produces a hollow RL- record + retrospective
+  // for a sprint that did no work. See SP-20260522-001 ghost run.
+  const currentPath = path.join(
+    REPO_ROOT,
+    ".claude",
+    "project",
+    "sprint",
+    "sprints",
+    state.sprintId,
+    "current.yaml",
+  );
+  const currentForCheck = readYamlMaybe(currentPath) || {};
+  const ticketsDone = (
+    (currentForCheck.tickets && currentForCheck.tickets.done) ||
+    []
+  ).slice();
+  const ticketsDeferred = (
+    (currentForCheck.tickets && currentForCheck.tickets.deferred) ||
+    []
+  ).slice();
+  if (ticketsDone.length === 0 && ticketsDeferred.length === 0) {
+    return {
+      ok: false,
+      halt_reason: "no_tickets_done",
+      message:
+        `Phase 4 (release-prep) refuses to mint a release record for sprint ${state.sprintId}: 0 tickets in 'done' and 0 in 'deferred'. ` +
+        `A release for zero completed work is not a release. ` +
+        `Action: complete at least one ticket (mark it 'done' via \`node scripts/sprint/ticket.js update --sprint ${state.sprintId} --id <T-id> --status done\`), or formally abandon the sprint via /sprint:retrospective with no release. ` +
+        `Resume with \`/sprint:full --sprint ${state.sprintId} --resume\`.`,
+    };
+  }
 
   // release-prep is gated by preset. moderate halts here for human
   // approval; aggressive proceeds only for non-production targets.
@@ -1047,4 +1194,7 @@ module.exports = {
   checkBranchProtection,
   writeHaltReport,
   writeFinalReport,
+  phase2Design,
+  phase3Execute,
+  phase4ReleasePrep,
 };

@@ -1,0 +1,106 @@
+schema: warpos/sprint/ticket/v1
+id: T-20260521-009
+title: "/portfolio:new + /portfolio:adopt + /portfolio:from-brief skills + scaffold templates"
+type: feature
+status: abandoned
+sprint: SP-20260521-001
+created_at: "2026-05-21T00:00:00.000Z"
+updated_at: "2026-05-21T21:12:06.688Z"
+owner: null
+owner_agent: alpha
+risk_level: medium
+approval_required: false
+approval_state: not_required
+source_request: "WarpOS as portfolio command console — scaffold + adopt + from-brief skills"
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260521-0021.yaml"
+linked_requirements:
+  - R-8
+  - R-9
+  - R-10
+  - R-20
+linked_high_level_story: H-3
+linked_granular_story: S-16
+linked_prd: ".claude/project/sprint/requirements/SP-20260521-001/prd.md"
+linked_copy:
+  - C-2
+  - C-7
+  - C-11
+linked_inputs:
+  - IN-1
+  - IN-2
+  - IN-3
+linked_trace:
+  - TR-1
+linked_acceptance_criteria:
+  - AC-16.1
+  - AC-16.2
+  - AC-16.3
+  - AC-17.1
+  - AC-17.2
+  - AC-17.3
+  - AC-17.4
+  - AC-18.1
+  - AC-18.2
+  - AC-18.3
+linked_issues: []
+linked_decisions:
+  - DEC-sp-20260521-001-003
+  - DEC-sp-20260521-001-004
+linked_external_services: []
+linked_files:
+  - ".claude/commands/portfolio/new.md"
+  - ".claude/commands/portfolio/adopt.md"
+  - ".claude/commands/portfolio/from-brief.md"
+  - scripts/portfolio/new.js
+  - scripts/portfolio/adopt.js
+  - framework/templates/portfolio-bootstrap/README.md.tmpl
+  - framework/templates/portfolio-bootstrap/.gitignore.tmpl
+  - framework/templates/portfolio-bootstrap/.claude/paths.json.tmpl
+linked_tests: []
+linked_commits: []
+linked_prs: []
+linked_release: null
+description: |
+  /portfolio:new <slug> [--from-brief <existing-slug>]:
+  - Validate slug (IN-1), resolve sibling path as path.resolve(warposRoot, '..', slug) (IN-2).
+  - Exit 2 if target dir already exists with .git (not a fresh scaffold target).
+  - git init <sibling-path>.
+  - Copy templates from framework/templates/portfolio-bootstrap/ into new dir (R-20).
+  - Run /warp:setup against sibling — must succeed (AC-16.2).
+  - Call registry.js save() to register new slug.
+  - Print C-2: gh repo create <slug> --private --source=<abs-path> --remote=origin --push
+    as a copyable command block. "Skip this if the product will stay local-only for now."
+    NEVER execute this command (DEC-003 / R-10).
+  - Print C-11 registration success.
+  - Emits TR-1 portfolio.registered with source_skill: "portfolio:new".
+  
+  /portfolio:adopt <slug> <existing-path>:
+  - Resolve and validate path exists (IN-2).
+  - Check WarpOS installed at path (.claude/framework-installed.json exists).
+    If not found, prompt C-7 "WarpOS is not installed at <path>. Install now? (y/n)".
+  - If WarpOS detected: register with registry.js, print C-11.
+  - Emits TR-1 portfolio.registered with source_skill: "portfolio:adopt".
+  
+  /portfolio:from-brief <slug>:
+  - Thin wrapper: locates brief at paths.briefsRoot/<slug>/, calls /portfolio:new --from-brief <slug>,
+    moves brief files into new repo (not copy). Reports files_moved_count.
+user_value: ""
+business_value: ""
+acceptance_criteria: []
+non_goals:
+  - Never execute gh repo create under any flag or condition
+  - "No remote repo creation, no git push"
+implementation_notes: |
+  C-2 exact command: gh repo create <slug> --private --source=<abs-path> --remote=origin --push.
+  AC-17.4: private-by-default is structural (the surfaced command includes --private; no --public flag exposed).
+  Templates in framework/templates/portfolio-bootstrap/ (renamed from product-bootstrap per R-20).
+qa_notes: ""
+redteam_notes: ""
+trace_notes: ""
+blocked_by:
+  - T-20260521-002
+blocks: []
+fix_attempts: []
+ralph_progress: null
+completion_evidence: []
+reopen_history: []

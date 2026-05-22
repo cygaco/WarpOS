@@ -1,0 +1,46 @@
+schema: warpos/sprint/external-service-dependency/v1
+id: ESD-20260521-007
+sprint: SP-20260521-001
+related_ticket: null
+service_name: Platform fallbacks (macOS Terminal, iTerm2, GNOME Terminal, kitty, alacritty)
+service_category: other
+purpose: "Tracking record for the non-Windows terminal-spawn surfaces deliberately deferred this sprint. /portfolio:open --spawn (S-14) is Windows-first; S-15 specifies that running --spawn on non-Windows exits 2 with `not_implemented_on_platform: <platform>` and documents a manual fallback in the skill body. This ESD captures the design space so a future sprint can pick it up without re-deriving the matrix."
+required_for: []
+required_phase: any
+status: deferred
+signup_required: false
+billing_required: false
+credentials_required: false
+oauth_required: false
+domain_dns_required: false
+compliance_review_required: false
+human_owner: cygaco
+terminal_implementable_after_setup: true
+can_mock: true
+mock_strategy: "Future sprint will mock per-platform: `osascript` for macOS Terminal/iTerm2 (AppleScript invocation), `gnome-terminal --working-directory` for GNOME, `kitty @ launch --cwd` for kitty, `alacritty --working-directory` for alacritty. Smoke would assert argv shape per platform and exit-code semantics on missing-binary."
+sandbox_available: true
+production_required: false
+approval_required: false
+approval_state: not_required
+approval_ref: null
+required_env_vars: []
+human_setup_steps:
+  - step: "Operator on non-Windows machine uses manual fallback: `cd $(/portfolio:open <slug>)` (S-15 documented contract)"
+    owner: cygaco
+    status: done
+    evidence_required: "S-15 AC-15.1: skill body contains explicit 'Windows-first' callout with the manual fallback for other OSes."
+  - step: "Document the platform matrix for the future sprint (macOS: Terminal.app or iTerm2; Linux: GNOME Terminal, kitty, alacritty, foot; each needs detection + argv-array spawn)"
+    owner: cygaco
+    status: not_started
+    evidence_required: "Future sprint's design doc references this ESD as starting point"
+terminal_setup_steps:
+  - step: "Platform guard already implemented per S-15 AC-15.2 — non-Windows --spawn exits 2 cleanly. No regression to introduce."
+    command_or_file: "scripts/portfolio/open.js"
+    status: not_started
+risks:
+  - "Future sprint that lifts the deferral introduces a much larger threat surface (osascript on macOS is shell-interpreted unless argv-quoted carefully — argument injection class returns). Mitigation: future sprint reads redteam-plan.md T-4 and applies the same argv-array + slug-regex discipline to every per-platform spawn path."
+  - "Operator switches to a Mac mid-portfolio and is surprised that --spawn breaks. Mitigation: this is what S-15 AC-15.2's clear exit-2 message exists for — `not_implemented_on_platform: darwin` is self-documenting."
+blockers: []
+notes: "Deferred deliberately. The DreamTeams brief positions WarpOS as multi-runtime portable, but the operator's primary machine is Windows 11 (per env). Multi-platform terminal-spawn is a feature for the day a non-Windows machine joins the portfolio loop, not a day-one MVP requirement. This ESD exists so the future sprint that picks it up has the design matrix already enumerated."
+created_at: "2026-05-21T20:40:00.000Z"
+updated_at: "2026-05-21T20:40:00.000Z"

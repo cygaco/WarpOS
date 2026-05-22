@@ -1,0 +1,43 @@
+schema: warpos/sprint/sprint-progress/v1
+sprint: SP-20260521-001
+updated_at: "2026-05-21T21:14:57.368Z"
+current_phase: design
+current_command: "/sprint:design"
+current_ticket: null
+current_task: null
+current_loop: null
+status: complete
+last_completed_step: beta_design_review_resolved_and_applied
+next_action: "/sprint:execute T-20260521-168 (first ready ticket)"
+active_files: []
+modified_files: []
+checks_last_run: null
+checks_passing: []
+checks_failing: []
+blockers: []
+approvals_needed:
+  - AP-20260521-025
+  - AP-20260521-026
+external_services_needed:
+  - ESD-20260521-005
+  - ESD-20260521-006
+  - ESD-20260521-007
+issues_opened: []
+tickets_updated:
+  - T-20260521-168
+  - T-20260521-169
+  - T-20260521-170
+  - T-20260521-171
+  - T-20260521-172
+  - T-20260521-173
+  - T-20260521-174
+  - T-20260521-175
+  - T-20260521-176
+  - T-20260521-177
+  - T-20260521-178
+  - T-20260521-179
+ralph_checkpoint: null
+resume_command: "/sprint:execute"
+resume_notes: "Design phase complete. 12 tickets (T-168..179) at status=designed. Beta design-review (DEC-007) applied 4 bundle adjustments: T-177 blocked_by T-176; ESD-009 enumerates 6 terminal binaries; AP-025 grep_sweep_clean attestation; T-173 Promise.all directive; T-178 approval_state=approved. AP-025 still gates T-176 (rename). 12 duplicate tickets (T-001..012) abandoned."
+safe_to_continue: true
+stop_reason: null

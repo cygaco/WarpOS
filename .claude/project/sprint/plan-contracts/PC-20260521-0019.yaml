@@ -1,0 +1,203 @@
+schema: warpos/sprint/plan-contract/v1
+id: PC-20260521-0019
+created_at: "2026-05-21T20:31:25.046Z"
+updated_at: "2026-05-21T20:31:25.046Z"
+sprint: SP-20260521-001
+source_request: "Onboard DreamTeams as a first-class WarpOS portfolio product using the recommended scope (Variant 2 — side-by-side repos with a portfolio manifest). DreamTeams is the open team-spec standard + validator + /dream-team compiler for AI-native vibe-coders; WarpOS supplies the validation primitives (reviewer, qa, redteam, compliance, security, req-reviewer, stub-scaffold) as the operational basis for DreamTeams' Validation Layer. The portfolio model needs an index, a per-product manifest entry that tracks framework version, and /portfolio:* skills that read it."
+source_request_verbatim: "Build Plan Contract payload + write — Assemble plan-contract JSON matching schema, write via scripts/sprint/plan.js, update checkpoint. (Context: tasks #8 absorbed the dreamteams brief end-to-end; task #9 defined three scope variants — minimal_safe (index only), recommended (side-by-side repos with manifest), expanded (full workspace orchestrator with skill suite).)"
+request_type: architecture_change
+interpreted_intent: "Establish the WarpOS portfolio model so DreamTeams (and future products) live as sibling repos that consume WarpOS as an installed framework via the existing framework-installed.json + scripts/warpos/update.js pipeline. Add a portfolio manifest (.claude/portfolio/manifest.yaml) that tracks each product's framework version, active lanes, validator-required flag, and last release. Ship /portfolio:list, /portfolio:sync, /portfolio:status skills as the read/write surface. Do NOT pull DreamTeams source into WarpOS yet — that's the expanded variant, which we explicitly defer pending the DreamTeams MVP week-7 r/vibecoding survey (validates the multi-runtime portability thesis before workspace-level coupling)."
+user_or_business_outcome: "WarpOS can stage DreamTeams (and future products) without inventing new coordination infrastructure. The validation primitives that WarpOS already ships (the seven adhoc agents) become the canonical Quality Gate primitives that DreamTeams references in dreamteams/team-spec/v1. Portfolio-wide visibility (which product is on which framework version, which products run validator-required) is achievable from one command in WarpOS without each product re-vendoring tooling."
+affected_surfaces:
+  - surface: ".claude/portfolio/manifest.yaml (new — portfolio registry)"
+    evidence_level: assumed_from_request
+    notes: "Per-product entry: {slug, repo_path, framework_version, lanes_active, validator_required, last_release}."
+  - surface: ".claude/portfolio/index.json (new — minimal pointer registry, lifted from Variant 1 fallback)"
+    evidence_level: assumed_from_request
+    notes: "Subset of manifest, machine-readable, consumed by skills that don't need the full yaml."
+  - surface: ".claude/commands/portfolio/list.md, sync.md, status.md (new skill suite)"
+    evidence_level: assumed_from_request
+    notes: "/portfolio:list reads manifest; /portfolio:sync runs scripts/warpos/update.js across listed product repos in parallel (per user feedback: parallelize when the primitive exists); /portfolio:status aggregates each product's RELEASES.md + checkpoint."
+  - surface: ".claude/paths.json (extend with paths.portfolioManifest, paths.portfolioIndex)"
+    evidence_level: verified_from_repo
+    notes: "Path-registry rule from CLAUDE.md — never hardcode literal paths in skills/hooks."
+  - surface: "scripts/portfolio/list.js, sync.js, status.js (new helpers)"
+    evidence_level: assumed_from_request
+    notes: "Mirror scripts/warpos/* architecture. /portfolio:sync wraps scripts/warpos/update.js across products."
+  - surface: ".claude/framework-manifest.json (extend with portfolio asset class)"
+    evidence_level: verified_from_repo
+    notes: "Manifest already lists 64 agents, 139 skills across asset classes; portfolio is a new class. Confirm via design whether portfolio entries are propagatable assets or canonical-only metadata."
+  - surface: "scripts/warpos/update.js (read-only — design must confirm cross-repo invocation contract)"
+    evidence_level: verified_from_repo
+    notes: "Existing transactional apply pipeline. /portfolio:sync invokes per-product but does not modify update.js itself in this sprint."
+  - surface: "DreamTeams repo (out-of-scope for this sprint — consumed only)"
+    evidence_level: assumed_from_request
+    notes: "Per the brief, DreamTeams ships dreamteams/team-spec/v1 MIT-public from its own repo. Portfolio manifest tracks its version; no source ingestion."
+current_behavior:
+  evidence_level: verified_from_repo
+  notes: "WarpOS ships as a single canonical repo with no portfolio concept. Products built ON WarpOS (DreamTeams is the first) currently exist only as briefs under _docs/briefs/<slug>/. There is no manifest tracking which products consume the framework, no /portfolio:* skills, and no path-registry entries for portfolio state. scripts/warpos/update.js + framework-installed.json work per-product-repo but are unaware of sibling products."
+desired_behavior: "After this sprint ships: (a) DreamTeams is listed in .claude/portfolio/manifest.yaml with its repo path, current framework version, validator-required=true, and last release reference; (b) /portfolio:list emits a one-line-per-product summary; (c) /portfolio:sync iterates the manifest in parallel and dispatches scripts/warpos/update.js into each product worktree (no-op if already current); (d) /portfolio:status aggregates RELEASES.md + .session-checkpoint.json across listed products; (e) paths.portfolioManifest and paths.portfolioIndex are registered. Variant 3 (workspace orchestrator) and the Gap-Finder / Code-Stealer agent are explicit non-goals for this sprint."
+scope:
+  size: m
+  risk_level: medium
+  complexity_drivers:
+    - "Cross-repo invocation contract — /portfolio:sync runs scripts/warpos/update.js in sibling repos; design must confirm boundary (subprocess vs. spawned worktree) and credential/permission model"
+    - "Manifest schema must support evolution toward Variant 3 without breaking change (lanes_active, validator_required, framework_version are forward-compatible)"
+    - "Path-registry contract (paths.portfolioManifest) must be wired into all new hooks/skills at write-time per CLAUDE.md Paths SSOT rule"
+    - "DreamTeams thesis (multi-runtime portability, 63% non-developer claim) survives only the week-7 r/vibecoding survey — portfolio model must not assume thesis holds; recommended scope is the hedge"
+    - "Parallelize-by-default user preference applies to /portfolio:sync — must use parallel subprocess fan-out when manifest has ≥2 products"
+scope_variants:
+  minimal_safe:
+    summary: "Index only. .claude/portfolio/index.json with {slug, repo_url, runtime, stage, last_seen} per product, plus /portfolio:list skill that reads it. Zero cross-repo writes, zero hooks reaching across boundaries. WarpOS stays tooling-focused; each product is fully independent."
+    tradeoffs:
+      - "No cross-product reuse — validation primitives must be re-vendored per repo"
+      - "No portfolio-level dashboard ('which products are healthy?')"
+      - DreamTeams spec lives in its own repo with no WarpOS-enforced linkage
+      - "Fastest to ship; near-zero rot risk; forecloses ecosystem ambitions"
+  recommended:
+    summary: "Side-by-side repos with manifest. WarpOS is the substrate (framework). Products are sibling repos consuming WarpOS via existing scripts/warpos/update.js + framework-installed.json. .claude/portfolio/manifest.yaml tracks framework_version per product. /portfolio:list, /portfolio:sync (parallel update across product repos), /portfolio:status (aggregates RELEASES.md + checkpoints). Validation-primitive agents distribute via framework install — DreamTeams team-spec/v1 references them as Quality Gate primitives. Owns: framework versioning, validation-primitive distribution, portfolio-wide release cadence. Does not own: product code, product-specific agents, product business logic."
+    tradeoffs:
+      - "Matches existing substrate — promote.js, framework-installed.json, manifest-v2 pattern — minimal invention"
+      - "Brief explicitly maps to this: 'WarpOS validation primitives become the operational basis for the Validation Layer in the spec'"
+      - "Each product still has its own .claude/ tree (storage duplication)"
+      - "Cross-product agent calls require explicit MCP/HTTP boundary, no shared in-process state"
+      - "Telemetry aggregation is pull-based, not push"
+      - Leaves Variant 3 reachable as a later consolidation without throwing work away
+  expanded:
+    summary: "Full workspace orchestrator with skill suite. WarpOS becomes a monorepo workspace hosting all products as packages (products/<slug>/). One .claude/, one paths registry, one event log; cross-product agents call in-process. WarpOS Alpha orchestrates across product boundaries. New skill suite: /portfolio:bootstrap, /portfolio:promote-feature, /portfolio:harvest-pattern, /portfolio:gap-find (Gap-Finder agent from DreamTeams v0.2 vision lives here naturally). Cross-product telemetry → single events.jsonl, single learnings store. Single release cadence covers all products."
+    tradeoffs:
+      - "Strongest leverage; highest blast-radius for accidents (one bad hook breaks all products)"
+      - Only path that lets the same Alpha session bounce between products without context switching
+      - "Highest complexity — workspace tooling, per-product permission isolation, larger merge surface"
+      - "Slower to migrate to (existing dreamteams/dream-team-kit work would need to move in)"
+      - "Couples release cadence — slow product blocks fast product unless we add per-product release lanes"
+      - Over-commits before DreamTeams MVP week-7 survey validates multi-runtime portability thesis
+assumptions:
+  safe:
+    - "scripts/warpos/update.js + framework-installed.json pipeline is stable and re-usable across multiple sibling product repos (pipeline already shipped 0.8.2)"
+    - "Path-registry pattern (paths.json) extends cleanly to portfolio.* keys without hook breakage"
+    - "Manifest schema for portfolio entries can mirror existing active-sprints.yaml shape (id, status, pointer, created_at, updated_at)"
+    - "DreamTeams is the only portfolio entry at sprint close; design does not need to plan multi-product migration"
+    - "/portfolio:sync can dispatch scripts/warpos/update.js as a subprocess per product without inventing new transport"
+  unsafe:
+    - "DreamTeams will actually be built; brief is finalized but no repo exists yet — manifest may stay single-entry indefinitely"
+    - "Multi-runtime portability thesis (Claude + Codex + Cursor + Aider) holds; if r/vibecoding week-7 survey fails, portfolio model still works but DreamTeams scope may collapse"
+    - "Sibling-repo discovery (where do product repos live on disk?) is solvable via a simple absolute-path field; no auto-discovery needed"
+    - "Cross-repo permission model (WarpOS subprocesses writing to sibling repo) works without per-repo credential configuration"
+  needs_user_or_beta_review:
+    - "Where do sibling product repos live on the operator's disk? Assumed C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\<product-slug> but design must confirm"
+    - "Should /portfolio:sync require explicit per-product opt-in (--include <slug>) or default to all-listed-with-skip-on-error?"
+    - "Should portfolio state be canonical-only (lives in WarpOS, not propagated to product repos) or co-managed (each product knows it's part of a portfolio)?"
+    - "Is the Gap-Finder / Code-Stealer agent (DreamTeams v0.2 vision) eventually a WarpOS agent or a DreamTeams-only agent? Affects whether portfolio model evolves toward Variant 3."
+open_questions:
+  blocking:
+    - "Confirm portfolio manifest shape: yaml (matches sprint registry pattern) or json (matches framework-installed)? Design picks one and locks it."
+    - "Confirm whether /portfolio:sync should be force-parallel (per user feedback parallelize_multi_sprint) or operator-toggleable (--serial flag for debug). Recommend force-parallel with --serial escape hatch."
+  non_blocking:
+    - "Should the portfolio manifest support a 'kind' field (product / library / spec) so future entries like dreamteams/team-spec/v1 itself (as a published artifact) can be tracked alongside product repos?"
+    - "Should /portfolio:status surface validator-required violations (a product with validator_required=true that hasn't run validation in N days)?"
+    - "Where in the WarpOS release pipeline (scripts/warpos/release-canonical.js) should portfolio events fire? Each product's framework bump should be reflected in the manifest automatically."
+    - "Does the dream-team-kit precedent (vrwithkr/dream-team-kit) warrant its own portfolio entry as a 'reference implementation' kind, distinct from a product?"
+non_goals:
+  - "Do NOT ingest DreamTeams source into WarpOS as products/dreamteams/ — that's Variant 3, explicit non-goal"
+  - "Do NOT build the Gap-Finder / Code-Stealer agent (DreamTeams v0.2 vision)"
+  - "Do NOT modify scripts/warpos/update.js — /portfolio:sync only invokes it"
+  - "Do NOT auto-discover sibling repos — manifest entries are explicit"
+  - "Do NOT introduce new dependency on a workspace tool (npm/pnpm workspaces, turborepo, nx) — recommended variant is workspace-tool-free"
+  - "Do NOT design for multi-machine portfolio (cross-machine sync) — single-operator-machine only"
+  - "Do NOT change DreamTeams brief or scope — DreamTeams ships on its own MVP timeline; portfolio model just gives it a home"
+requirement_areas:
+  - "Portfolio manifest schema (.claude/portfolio/manifest.yaml + schemas/portfolio/manifest.schema.json)"
+  - "Portfolio index (.claude/portfolio/index.json — minimal pointer subset)"
+  - "/portfolio:list skill spec (.claude/commands/portfolio/list.md)"
+  - "/portfolio:sync skill spec — parallel dispatch of scripts/warpos/update.js across product repos"
+  - "/portfolio:status skill spec — aggregate RELEASES.md + .session-checkpoint.json across products"
+  - "Path registry extensions (paths.portfolioManifest, paths.portfolioIndex, paths.portfolioCommands)"
+  - "Helpers (scripts/portfolio/list.js, sync.js, status.js)"
+  - "Telemetry events (portfolio_listed, portfolio_synced, portfolio_status_emitted)"
+  - "Initial seed: DreamTeams manifest entry with placeholder repo_path"
+  - "Documentation: PROJECT.md updated to describe portfolio model; CLAUDE.md updated if portfolio rules need top-level capture"
+high_level_story_candidates:
+  - "As an operator running multiple AI-native products under WarpOS, I want a single source of truth listing each product, its framework version, and its validation posture."
+  - "As an operator, I want to bump the WarpOS framework across all listed product repos with one command instead of cd-ing into each repo."
+  - "As an operator, I want a portfolio-wide status view that tells me which products are behind on framework version or haven't shipped a release recently."
+  - "As DreamTeams (the product), I want WarpOS validation primitives discoverable as a stable contract so my team-spec/v1 can reference them by canonical name."
+  - "As the framework maintainer, I want portfolio entries to evolve toward a workspace model later without breaking the current side-by-side contract."
+granular_story_candidates:
+  - "Define .claude/portfolio/manifest.yaml schema; lift shape from active-sprints.yaml"
+  - "Define .claude/portfolio/index.json schema (minimal pointer subset of manifest)"
+  - "Register paths.portfolioManifest, paths.portfolioIndex, paths.portfolioCommands in .claude/paths.json"
+  - "Implement scripts/portfolio/list.js — read manifest, format one-line-per-product summary"
+  - "Implement scripts/portfolio/sync.js — parallel subprocess fan-out, one scripts/warpos/update.js per listed product, aggregate results"
+  - "Implement scripts/portfolio/status.js — read each product's RELEASES.md + .session-checkpoint.json, emit aggregate"
+  - Write .claude/commands/portfolio/list.md skill spec
+  - "Write .claude/commands/portfolio/sync.md skill spec (parallel-by-default, --serial escape hatch)"
+  - Write .claude/commands/portfolio/status.md skill spec
+  - "Add telemetry events portfolio_listed, portfolio_synced, portfolio_status_emitted to logger taxonomy"
+  - "Seed manifest with DreamTeams entry (placeholder repo_path, framework_version=0.8.2, validator_required=true, last_release=null)"
+  - Update PROJECT.md with portfolio model section
+  - Add portfolio asset class to .claude/framework-manifest.json if portfolio files are framework-owned
+  - "Write smoke test: round-trip /portfolio:list → manual edit manifest → /portfolio:list reflects change"
+workstream_candidates:
+  - "Schema + paths registration"
+  - "Skill suite (list, sync, status)"
+  - "Helper scripts (scripts/portfolio/*.js)"
+  - "Telemetry + event taxonomy"
+  - "Seed data + DreamTeams placeholder entry"
+  - "Documentation (PROJECT.md, possibly CLAUDE.md)"
+preliminary_ticket_candidates:
+  allowed: false
+  candidates: []
+  notes: "architecture_change with size=m and one blocking open question (manifest yaml vs json). Tickets minted in /sprint:design after blockers resolve."
+external_service_dependencies:
+  status: none_expected
+  required: []
+  possible: []
+  notes: "Pure local file generation + subprocess dispatch to sibling repos on the same machine. No external services."
+approval_boundaries:
+  - "Adding new top-level directory .claude/portfolio/ — review"
+  - "Extending paths.json with new keys — covered by existing path-registry rule, no separate approval"
+  - "Introducing new skill namespace /portfolio:* — review (skill namespace is a public surface)"
+  - "Modifying .claude/framework-manifest.json asset class list — review (manifest is a schema-versioned contract)"
+design_required: true
+execution_allowed_without_design: false
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+lane:
+  type: default
+  value: null
+  isolation_notes: "Additive across .claude/portfolio/, .claude/commands/portfolio/, scripts/portfolio/. No conflict with existing sprints; no modification of scripts/warpos/update.js."
+beta_review:
+  required: true
+  likely_founder_rejection_risks:
+    - "Portfolio model over-engineered for a one-product (DreamTeams) reality"
+    - "Manifest schema locks in too early — DreamTeams may want fields not anticipated here"
+    - "/portfolio:sync's cross-repo invocation introduces a new permission boundary user hasn't thought about"
+    - "Scope is bigger than 'just an index' — operator may want minimal_safe to validate appetite first"
+  overbuild_risks:
+    - "Building /portfolio:status before there is portfolio-wide signal worth aggregating"
+    - Inventing a portfolio asset class in framework-manifest.json before a single product has consumed it
+    - Writing schemas/portfolio/manifest.schema.json before knowing what fields actually matter
+    - "Coupling portfolio model to DreamTeams' validation-layer-as-vocabulary bet before DreamTeams ships"
+  missing_context_risks:
+    - Whether the operator has already chosen a sibling-repo location convention
+    - "Whether dream-team-kit (vrwithkr/dream-team-kit) is the first portfolio entry or a separate concern"
+    - "Whether the portfolio model is a personal-OS feature or a public-API surface (affects what gets published)"
+plan_quality:
+  status: needs_design
+  confidence: medium
+  evidence_gaps:
+    - "No prior portfolio precedent in WarpOS — design must reason from active-sprints.yaml shape, not from a portfolio shape"
+    - "Cross-repo subprocess invocation contract for scripts/warpos/update.js has not been exercised — design must validate or scope-cut"
+    - "DreamTeams repo doesn't exist yet — seed entry will be placeholder; round-trip test runs against a stub"
+  fail_reasons: []
+next_recommended_command: "/sprint:design --sprint SP-20260521-001"
+resume_instructions: "Sprint SP-20260521-001 (DreamTeams portfolio onboarding — recommended scope) has Plan Contract. Run /sprint:design --sprint SP-20260521-001 to mint tickets, AC, COPY, INPUTS, TRACE. Resolve blocking open questions (manifest yaml vs json; sync parallel-by-default default policy) during design. If interrupted, read .claude/project/sprint/sprints/SP-20260521-001/progress.yaml#resume_command."
+tracker_paths:
+  current_sprint: ".claude/project/sprint/current-sprint.yaml"
+  sprint_progress: ".claude/project/sprint/sprint-progress.yaml"
+  plan_contract: ".claude/project/sprint/plan-contracts/PC-20260521-0019.yaml"
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260521-0019.report.md"
+created_by: gamma
+updated_by: gamma

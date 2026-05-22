@@ -1,0 +1,20 @@
+schema: warpos/sprint/approval/v1
+id: AP-20260521-024
+sprint: SP-20260520-001
+level: release_approval_required
+required_for: internal release of RL-20260521-015 (/product:clone skill)
+linked_release: RL-20260521-015
+state: approved
+requested_by: alpha
+decided_by: cygaco
+decided_at: "2026-05-21T17:51:00.000Z"
+reason: "User typed 'approved' in plain text after Alpha surfaced a two-option choice on session resume (refresh adhoc team vs. direct approval). Single approval covers both SP-20260520-002 and SP-20260520-001 — operator authorized /sprint:release to proceed in series without re-running through the beta-gate AskUserQuestion path."
+evidence:
+  - "Beta DECIDE Class B conf 0.85 on fresh consult (agent_id a75a4e0fe8375ca93) — proceed with both releases using --allow-routing-gap + decisionLedger entry"
+  - "Prior beta DECIDE re-confirmed at 06:00:44Z (EVT-sprint-release-product-skills-reconfirm-1779379244000)"
+  - "Smoke 12/12 pass on SP-20260520-001 — skill, generator, templates, SSRF guards, cache, discovery, output emission, telemetry, paths registration, partial-deliverable"
+  - "8/14 tickets in_review→done at release prep; 6/14 (T-147, T-151..T-155) marked deferred — runtime-only LLM/network passes that execute when operator invokes the skill"
+  - "paths.clones + paths.clonesCurrent registered idempotently"
+  - "Internal target — no production deploy, no public push, no external service activation"
+created_at: "2026-05-21T17:51:00.000Z"
+updated_at: "2026-05-21T17:51:00.000Z"

@@ -1,0 +1,41 @@
+schema: warpos/sprint/release/v1
+id: RL-20260522-017
+sprint: SP-20260522-001
+title: Sprint SP-20260522-001
+version: SP-20260522-001-staging
+status: aborted
+checklist:
+  tickets_done_or_deferred: false
+  blocking_issues_resolved: false
+  requirements_satisfied: false
+  copy_satisfied: false
+  inputs_satisfied: false
+  trace_satisfied: false
+  acceptance_criteria_satisfied: false
+  qa_passed: false
+  redteam_passed: false
+  external_services_ready: false
+  credentials_present: false
+  release_notes_written: false
+  docs_updated: false
+  analytics_updated: false
+  migration_plan: false
+  rollback_plan: false
+  approval_recorded: false
+  post_release_monitoring_plan: false
+approval_ref: null
+changelog_path: null
+release_report_path: null
+linked_tickets: []
+linked_issues: []
+linked_external_services: []
+deployment_environment: staging
+deployment_target: staging
+deployed_at: null
+deployed_by: null
+rollback_at: "2026-05-22T05:35:00.000Z"
+rollback_reason: "Hollow run: /sprint:full orchestrator bug — Phase 3 (execute) silently no-op'd with 0 tickets ready_for_execution, so Phase 4 minted this release record for zero completed work. Audit trail preserved by aborting (not deleting). Bug fixed in scripts/sprint/full.js (no_tickets_ready + no_tickets_done halts added). See task 'Fix /sprint:full hollow-completion bug' and SP-20260522-001 plan-contract PC-20260522-0022."
+retrospective_ref: null
+learning_candidates: []
+created_at: "2026-05-22T05:30:26.337Z"
+updated_at: "2026-05-22T05:30:26.337Z"

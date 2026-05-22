@@ -56,6 +56,34 @@ function loadPlanContract(current) {
   return readYamlMaybe(resolved);
 }
 
+function buildGranularStoriesBody(candidates, outcome) {
+  if (!candidates || candidates.length === 0) {
+    return `## S-1 — (fill from plan contract)\n\n**As** the user\n**I want** (fill)\n**So that** ${outcome}\n\nAcceptance criteria:\n- AC-1: (set by design step)\n\nLinked: \`H-1\`, \`R-1\`.\nCOPY: see \`copy.md\`.\nINPUTS: see \`inputs.md\`.\nTRACE: see \`trace.md\`.\n`;
+  }
+  return candidates
+    .map((candidate, idx) => {
+      const n = idx + 1;
+      const title = typeof candidate === "string" ? candidate : String(candidate);
+      return [
+        `## S-${n} — ${title}`,
+        ``,
+        `**As** the user`,
+        `**I want** ${title}`,
+        `**So that** ${outcome}`,
+        ``,
+        `Acceptance criteria:`,
+        `- AC-1: (set by design step)`,
+        ``,
+        `Linked: \`H-1\`, \`R-${n}\`.`,
+        `COPY: see \`copy.md\`.`,
+        `INPUTS: see \`inputs.md\`.`,
+        `TRACE: see \`trace.md\`.`,
+        ``,
+      ].join("\n");
+    })
+    .join("\n");
+}
+
 function scaffold(args) {
   const current = readYamlMaybe(SPRINT.current);
   if (!current) {
@@ -109,17 +137,10 @@ function scaffold(args) {
     hl_story_2_persona: "the user",
     hl_story_2_want: plan.high_level_story_candidates[1] || "—",
     hl_story_2_outcome: plan.user_or_business_outcome || "—",
-    story_1_title: plan.granular_story_candidates[0] || "—",
-    story_1_persona: "the user",
-    story_1_want: plan.granular_story_candidates[0] || "—",
-    story_1_outcome: plan.user_or_business_outcome || "—",
-    story_1_ac_1: "(set by design step)",
-    story_1_ac_2: "(set by design step)",
-    story_2_title: plan.granular_story_candidates[1] || "—",
-    story_2_persona: "the user",
-    story_2_want: plan.granular_story_candidates[1] || "—",
-    story_2_outcome: plan.user_or_business_outcome || "—",
-    story_2_ac_1: "(set by design step)",
+    granular_stories_body: buildGranularStoriesBody(
+      plan.granular_story_candidates || [],
+      plan.user_or_business_outcome || "—",
+    ),
   };
 
   const targets = [
@@ -347,4 +368,4 @@ if (require.main === module) {
   process.exit(main());
 }
 
-module.exports = { main, scaffold };
+module.exports = { main, scaffold, buildGranularStoriesBody };

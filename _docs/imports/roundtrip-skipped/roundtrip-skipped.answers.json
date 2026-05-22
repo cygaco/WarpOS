@@ -1,0 +1,42 @@
+{
+  "problem": {
+    "content": "A problem.",
+    "status": "drafted",
+    "source_turns": []
+  },
+  "jtbds": {
+    "content": "- Job one.\n- Job two.",
+    "status": "drafted",
+    "source_turns": []
+  },
+  "value_chain": {
+    "content": "Chain.",
+    "status": "drafted",
+    "source_turns": []
+  },
+  "competitive": {
+    "content": "Alts.",
+    "status": "drafted",
+    "source_turns": []
+  },
+  "wedge": {
+    "content": "",
+    "status": "skipped_declined",
+    "source_turns": []
+  },
+  "vision": {
+    "content": "A vision.",
+    "status": "drafted",
+    "source_turns": []
+  },
+  "wedge_to_vision": {
+    "content": "- step",
+    "status": "drafted",
+    "source_turns": []
+  },
+  "mvp": {
+    "content": "The MVP.",
+    "status": "drafted",
+    "source_turns": []
+  }
+}

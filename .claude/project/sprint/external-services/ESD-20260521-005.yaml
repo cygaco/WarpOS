@@ -1,0 +1,68 @@
+schema: warpos/sprint/external-service-dependency/v1
+id: ESD-20260521-005
+sprint: SP-20260521-001
+related_ticket: null
+service_name: "gh CLI (GitHub command-line tool)"
+service_category: other
+purpose: "Operator-executed CLI used by /portfolio:bootstrap (S-18) to create a private GitHub repo after local scaffold. Strictly opt-by-detection: when `gh` is on PATH AND authenticated, bootstrap runs `gh repo create <slug> --private --source . --remote origin --push` after the initial commit; when absent, scaffold completes locally and stderr emits a one-line notice telling the operator how to add the remote manually. No service signup performed by WarpOS — operator installs and authenticates gh themselves. Argv is array-only (spawn shell:false), slug regex-validated before gh sees it, repo private by default — see redteam-plan.md T-4."
+required_for:
+  - "/portfolio:bootstrap end-to-end private-repo creation path"
+  - "S-18 acceptance criteria AC-18.1 (gh available branch)"
+required_phase: execute
+status: deferred
+signup_required: false
+billing_required: false
+credentials_required: true
+oauth_required: false
+domain_dns_required: false
+compliance_review_required: false
+human_owner: cygaco
+terminal_implementable_after_setup: true
+can_mock: true
+mock_strategy: "PATH-stub `gh` to a no-op script for unit tests; assert bootstrap takes the 'no-gh fallback' branch (S-18 AC-18.2) and emits the expected stderr notice. For the gh-available branch, mock via a stub `gh` binary on a test PATH that records its argv and exits 0 — assertions verify slug position, --private presence, no shell metacharacters surfaced."
+sandbox_available: true
+production_required: false
+approval_required: false
+approval_state: not_required
+approval_ref: null
+required_env_vars:
+  - name: GH_TOKEN
+    description: "Optional. gh CLI uses its own credential store by default (gh auth login). GH_TOKEN may be set when running CI-style invocations. WarpOS NEVER reads or logs this value."
+    required_for: "gh-available branch when operator has not run `gh auth login`"
+    secret: true
+  - name: GITHUB_TOKEN
+    description: "Alternate env-var name gh respects. Same handling — never read or logged by WarpOS."
+    required_for: "gh-available branch when operator has not run `gh auth login`"
+    secret: true
+human_setup_steps:
+  - step: "Install gh CLI from https://cli.github.com/ if not already present"
+    owner: cygaco
+    status: not_started
+    evidence_required: "`gh --version` exits 0"
+  - step: "Run `gh auth login` once to authenticate against GitHub account (or set GH_TOKEN env var)"
+    owner: cygaco
+    status: not_started
+    evidence_required: "`gh auth status` reports logged-in account"
+  - step: "Decide whether private-by-default contract (S-18 AC-18.3) holds — operator can override by editing /portfolio:bootstrap helper to pass --public, but default is private"
+    owner: cygaco
+    status: done
+    evidence_required: Decision locked in S-18 AC-18.3 and release-plan.md deprecation-window contract
+terminal_setup_steps:
+  - step: "Detection: bootstrap helper runs `gh --version` with shell:false; non-zero exit OR ENOENT branches to no-gh fallback"
+    command_or_file: scripts/portfolio/bootstrap.js
+    status: not_started
+  - step: "Argv-array invocation: `spawn('gh', ['repo', 'create', slug, '--private', '--source', '.', '--remote', 'origin', '--push'], { cwd: realpath(scaffoldDir), shell: false })`"
+    command_or_file: scripts/portfolio/bootstrap.js
+    status: not_started
+  - step: "Slug regex validation BEFORE argv build — reject slugs matching /^-/ or not matching ^[a-z][a-z0-9-]{1,40}$ (covers redteam T-4.3 argument-injection)"
+    command_or_file: "scripts/portfolio/lib/registry.js (validate) + scripts/portfolio/bootstrap.js (re-check at invocation site)"
+    status: not_started
+risks:
+  - "Operator installs gh but never runs `gh auth login` → bootstrap takes gh-available branch then fails mid-invocation. Mitigation: detection step runs `gh auth status` before deciding the branch, not just `gh --version`."
+  - "gh CLI changes its argv shape across major versions. Mitigation: release-plan.md monitoring-after-release item logs expected gh version range; if `gh repo create` argv changes, the helper adapts in a follow-up sprint."
+  - "Operator has gh but is logged into wrong GitHub account — scaffolded repo lands in the wrong org. Mitigation: bootstrap stdout prints `gh auth status` output before creating the repo, giving the operator one last cancel-window."
+  - "Argument injection via slug (redteam T-4.3). Mitigation: schema regex + argv-array spawn, asserted by smoke test."
+blockers: []
+notes: "ESD intentionally tracked as `needs_configuration` (operator must install + auth gh CLI to unlock the gh-available branch); the sprint's MVP for /portfolio:bootstrap is the brief+scaffold flow and the no-gh fallback (S-18 AC-18.2) IS a tested path. Sprint can ship without the operator having gh installed. Future sprint may promote gh to a `required` dependency once portfolio churn is high enough that manual `gh repo create` becomes friction — but that promotion is a breaking-change deprecation cycle per release-plan.md."
+created_at: "2026-05-21T20:40:00.000Z"
+updated_at: "2026-05-21T21:25:59.818Z"

@@ -161,7 +161,12 @@ const ASSET_DIRS = [
   { src: ".claude/project/maps", kind: "maps_baseline" },
   { src: "scripts/hooks", kind: "hook" }, // refined to hook_lib by path below
   { src: "scripts/tools", kind: "tool" },
-  { src: "requirements", kind: "requirement" },
+  // NOTE: '_requirements/' is INTENTIONALLY NOT shipped from canonical to product
+  // installs. It is product-owned content under owner='project' / merge='keep_local'.
+  // The old `{ src: 'requirements', kind: 'requirement' }` entry pointed at a
+  // directory that no longer exists (renamed to '_requirements/') AND would have
+  // leaked the maintainer's product specs into every install if it had matched.
+  // See /warp:flag F-20260521 — manifest-install-gap for context.
   { src: "patterns", kind: "pattern" },
   { src: "fixtures/hooks", kind: "fixture" },
   { src: "fixtures/install-empty-next-app", kind: "fixture" },
@@ -192,6 +197,30 @@ const ASSET_DIRS = [
   // first-class kinds.
   { src: "scripts/sprint", kind: "sprint_engine" },
   { src: "scripts/dispatch", kind: "dispatch_engine" },
+  // 0.8.2 fix-forward (2026-05-21): 15 scripts subdirs shipped slash commands
+  // that referenced backing scripts under these dirs, but the dirs were never
+  // classified — so /warp:setup installed the .md skills with no backing logic.
+  // dreamteam's sprint surfaced this by failing /mode:adhoc --turbo (missing
+  // scripts/turbo/apply.js) and /portfolio:* (missing scripts/portfolio/).
+  // The 17 dirs on disk are split as follows:
+  //   SHIP (15): the dirs below
+  //   EXCLUDE (2): scripts/one-off/ + scripts/products/ — framework-dev artifacts
+  //                (e.g. append-beta-event-007.js, _log-alpha-followup-decisions.js)
+  { src: "scripts/check", kind: "check_runner_tool" },
+  { src: "scripts/docs", kind: "docs_tool" },
+  { src: "scripts/events", kind: "events_tool" },
+  { src: "scripts/fix-deep", kind: "fix_deep_tool" },
+  { src: "scripts/learn", kind: "learn_tool" },
+  { src: "scripts/lib", kind: "script_lib" },
+  { src: "scripts/linters", kind: "linter_tool" },
+  { src: "scripts/manifest", kind: "manifest_tool" },
+  { src: "scripts/maps", kind: "maps_tool" },
+  { src: "scripts/portfolio", kind: "portfolio_tool" },
+  { src: "scripts/product", kind: "product_tool" },
+  { src: "scripts/research", kind: "research_tool" },
+  { src: "scripts/schemas", kind: "schema_tool" },
+  { src: "scripts/system", kind: "system_tool" },
+  { src: "scripts/turbo", kind: "turbo_tool" },
   { src: "schemas", kind: "schema" },
   { src: "migrations", kind: "migration" },
   { src: "framework/releases", kind: "release_capsule" },
@@ -204,6 +233,9 @@ const TOP_LEVEL_SCRIPTS = [
   { src: "scripts/dispatch-agent.js", kind: "top_script" },
   { src: "scripts/generate-maps.js", kind: "top_script" },
   { src: "scripts/generate-framework-manifest.js", kind: "top_script" },
+  // 0.8.2 fix-forward (2026-05-21): mode-set.js backs /mode:* skills (adhoc/oneshot/solo).
+  // dreamteam couldn't run /mode:adhoc --turbo because this file wasn't classified.
+  { src: "scripts/mode-set.js", kind: "top_script" },
   // warp-setup.js is NOT shipped to target projects — it's the installer itself.
   //   Clients invoke it from ../WarpOS/, not from their own scripts/.
 ];

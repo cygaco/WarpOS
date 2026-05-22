@@ -1,0 +1,62 @@
+schema: warpos/sprint/ticket/v1
+id: T-20260521-178
+title: "Gitignore briefs/clones + dogfood-migrate dreamteams + companycam"
+type: feature
+status: deferred
+sprint: SP-20260521-001
+created_at: "2026-05-21T21:06:32.092Z"
+updated_at: "2026-05-21T21:27:50.748Z"
+owner: null
+owner_agent: beta
+risk_level: medium
+approval_required: true
+approval_state: approved
+linked_approvals:
+  - AP-20260521-026
+source_request: "Make WarpOS the command console for a portfolio of products. Each product lives in its own private GitHub repo with team collaborators, side-by-side with WarpOS on disk. WarpOS exposes a single unified /portfolio:* skill family (collapses the existing /product:* into /portfolio:*) so the user has ONE namespace for everything product-related — bootstrap, clone, ponder, import, list, open, new, register, status, dispatch, sync. The user can also 'port' into any product in a separate terminal (via /portfolio:open <slug> --spawn) and run multiple products in parallel, each in its own Claude Code session, while WarpOS remains the home-base terminal."
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260521-0021.yaml"
+linked_requirements:
+  - R-7
+  - R-9
+linked_high_level_story: H-4
+linked_granular_story: S-11
+linked_prd: ".claude/project/sprint/requirements/SP-20260521-001/prd.md"
+linked_copy:
+  - C-15
+linked_inputs:
+  - IN-3
+linked_trace:
+  - TR-14
+linked_acceptance_criteria:
+  - AC-11.1
+  - AC-11.2
+  - AC-11.3
+linked_issues: []
+linked_decisions: []
+linked_external_services: []
+linked_files:
+  - .gitignore
+linked_tests: []
+linked_commits: []
+linked_prs: []
+linked_release: null
+description: "Add _docs/briefs/ and _docs/clones/ to canonical .gitignore. Run /portfolio:adopt dreamteams against existing _docs/briefs/dreamteams/. Run /portfolio:adopt companycam against existing _docs/clones/companycam/. These are the dogfooded first runs. Each emits a status report."
+user_value: ""
+business_value: ""
+acceptance_criteria: []
+non_goals: []
+implementation_notes: |
+  AP-026 is approved (linked_approval). T-178 may proceed without further user gating once T-176/T-177 land. AP-025 grep-sweep gate does NOT block this ticket — AP-025 gates the rename ticket T-176 only.
+  DEC-008 USER OVERRIDE applied 21:18Z: dogfood migration creates real private GitHub repos for dreamteams + companycam automatically via /portfolio:adopt. No more 'next: paste this command' step. AP-026 covers this user authorization.
+qa_notes: ""
+redteam_notes: ""
+trace_notes: ""
+blocked_by: []
+blocks: []
+fix_attempts: []
+ralph_progress: null
+completion_evidence:
+  - "AC-11.1 DONE: .gitignore now includes _docs/briefs/ and _docs/clones/ with C-15 comment"
+  - "AC-11.2 PENDING: requires shell execution of `node scripts/portfolio/adopt.js dreamteams` and `node scripts/portfolio/adopt.js companycam`"
+  - "AC-11.3 PENDING: registry entries created by adopt.js invocations above"
+reopen_history: []

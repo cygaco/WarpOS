@@ -1,0 +1,26 @@
+schema: warpos/sprint/sprint-progress/v1
+sprint: SP-20260520-002
+updated_at: "2026-05-21T02:59:40.934Z"
+current_phase: plan
+current_command: "/sprint:plan"
+current_ticket: null
+current_task: null
+current_loop: null
+status: running
+last_completed_step: plan_contract_written
+next_action: "/sprint:design --sprint SP-20260520-002"
+active_files: []
+modified_files: []
+checks_last_run: null
+checks_passing: []
+checks_failing: []
+blockers: []
+approvals_needed: []
+external_services_needed: []
+issues_opened: []
+tickets_updated: []
+ralph_checkpoint: null
+resume_command: "/sprint:design --sprint SP-20260520-002"
+resume_notes: "Plan Contract PC-20260521-0018 created. plan_quality=needs_design (size=m, risk=low). Skill name confirmed as /product:import (renamed from /product:convert mid-prompt). One blocking question on round-trip schema."
+safe_to_continue: true
+stop_reason: null

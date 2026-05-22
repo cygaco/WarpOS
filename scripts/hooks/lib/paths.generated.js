@@ -110,12 +110,23 @@ const PATHS = {
   "sprintRouting": path.join(PROJECT, ".claude", "agents", "00-alex", ".system", "policy", "sprint-routing.json"),
   "briefs": path.join(PROJECT, "_docs", "briefs"),
   "briefsCurrent": path.join(PROJECT, "_docs", "briefs"),
+  "clones": path.join(PROJECT, "_docs", "clones"),
+  "clonesCurrent": path.join(PROJECT, "_docs", "clones"),
+  "imports": path.join(PROJECT, "_docs", "imports"),
+  "importsCurrent": path.join(PROJECT, "_docs", "imports"),
+  "portfolioCommands": path.join(PROJECT, ".claude", "commands", "portfolio"),
+  "portfolioScripts": path.join(PROJECT, "scripts", "portfolio"),
+  "portfolioTemplates": path.join(PROJECT, "framework", "templates", "portfolio"),
   "skillCatalog": path.join(PROJECT, ".claude", "runtime", "skill-catalog.json"),
   "providerSmokeSkill": path.join(PROJECT, "scripts", "warpos", "provider-smoke.js"),
   "providerFailureModes": path.join(PROJECT, ".claude", "agents", "00-alex", ".system", "policy", "provider-failure-modes.json"),
   "providerRcaLib": path.join(PROJECT, "scripts", "warpos", "lib", "provider-rca.js"),
   "providerAutofixLib": path.join(PROJECT, "scripts", "warpos", "lib", "provider-autofix.js"),
-  "reasoningFrameworks": path.join(PROJECT, ".claude", "project", "reference", "reasoning-frameworks.md")
+  "reasoningFrameworks": path.join(PROJECT, ".claude", "project", "reference", "reasoning-frameworks.md"),
+  "portfolioHome": path.join(PROJECT, ".claude", "portfolio"),
+  "portfolioRegistry": path.join(PROJECT, ".claude", "portfolio", "registry.yaml"),
+  "briefsRoot": path.join(PROJECT, "_docs", "briefs"),
+  "clonesRoot": path.join(PROJECT, "_docs", "clones")
 };
 
 module.exports = { PROJECT, PATHS };

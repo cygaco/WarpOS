@@ -1,0 +1,26 @@
+schema: warpos/sprint/sprint-progress/v1
+sprint: SP-20260521-001
+updated_at: "2026-05-21T20:51:08.459Z"
+current_phase: plan
+current_command: "/sprint:plan"
+current_ticket: null
+current_task: null
+current_loop: null
+status: running
+last_completed_step: plan_contract_revised_v2
+next_action: "/sprint:design"
+active_files: []
+modified_files: []
+checks_last_run: null
+checks_passing: []
+checks_failing: []
+blockers: []
+approvals_needed: []
+external_services_needed: []
+issues_opened: []
+tickets_updated: []
+ralph_checkpoint: null
+resume_command: "/sprint:design"
+resume_notes: "Plan Contract PC-20260521-0021 supersedes PC-20260521-0020. Two new Alpha-decided Class B directives logged: DEC-005 (unify /product:* + /products:* into /portfolio:*, ship deprecation aliases), DEC-006 (multi-terminal --spawn launcher, wt-first, never retarget CLAUDE_PROJECT_DIR mid-session). Beta DEC-001..004 still stand. /sprint:design must consult Beta on DEC-005 + DEC-006 before ticket minting."
+safe_to_continue: true
+stop_reason: null

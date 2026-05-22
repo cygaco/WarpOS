@@ -1,0 +1,222 @@
+schema: warpos/sprint/plan-contract/v1
+id: PC-20260521-0018
+created_at: "2026-05-21T02:59:08.141Z"
+updated_at: "2026-05-21T02:59:08.141Z"
+sprint: SP-20260520-002
+source_request: "Plan a new skill /product:import (renamed mid-prompt from product:convert) that, given the current project context, generates a comprehensive paste-friendly questionnaire for ANOTHER session running in another project — Claude Code, Codex, Claude (web app), ChatGPT (web app), or Gemini (web app) — so that session can answer detailed questions about the product being built there. Answers come back to feed /product:bootstrap. Positioned as a pre-step to /product:bootstrap. Workflow: run /product:import in target project → paste questionnaire elsewhere → bring answers back → /product:bootstrap with answers. Goal: convert a product that is trapped in a non-Claude-Code project (older repo, ChatGPT thread, scattered notes) into a proper Claude Code project with enough context that /product:bootstrap can create real requirements for features that already exist."
+source_request_verbatim: |
+  # Extending the `product` skill suite
+  
+  ## Product Cloning
+  
+  /sprint:plan --turbo a `product:clone` skill that intakes information about a product, explores the product, and creates high-level requirements that can be used to clone it.
+  
+  ### Information Sources
+  
+  Possible information sources are:
+  1. Videos about the product
+  2. Website for the product
+  3. Reviews and adjacent information for the product
+  4. Other types of sources along these lines
+  
+  ### Product Exploration Requirements
+  
+  Ensure that the following are included in your product exploration:
+  1. If watching a video about a product, and you do not have a name for it, find the name and search the web about it (including its own website)
+  2. If browsing a product's website, discover links to crawl and find them.
+  3. Attempt to find reviews.
+  
+  ### Deliverables
+  
+  The skill should deliver:
+  1. JTBDs of their Product
+  2. Feature list, with complexity to build and how 'core' a feature is to their Product
+  3. What their users say about it
+  4. Gaps in their Product
+  5. Opportunities we can capitalize on
+  
+  ### Goal
+  
+  The goal of this skill is to enable me to rapidly deploy clones or competing products to companies that I want to kill.
+  
+  ## Product Mining
+  
+  /sprint:plan --turbo a skill that basically spits out questions for another claude session in another project to answer about the product being built.
+  
+  Make sure it works for claude code, codex, claude (just normal app), chatgpt (just normal app), etc
+  
+  It should basically be a pre-step to the product:bootstrap skill
+  
+  It should be called `product:convert`
+  
+  ### Goal
+  
+  Convert a product from being trapped in a simpler type of project to a claude code project, with enough context to run `product:bootstrap` and create requirements for existing features.
+  
+  [follow-up message from user: Actually instead of 'product:convert' make it 'product:import']
+request_type: feature_add
+interpreted_intent: "Create a new skill /product:import in .claude/commands/product/ that, run in the target project, inspects local context (PROJECT.md, README, package.json, last N commits) and emits a single paste-friendly Markdown questionnaire artifact at _docs/imports/<slug>/<slug>.questionnaire.md. The questionnaire is structured to be paste-compatible across five target surfaces: Claude Code, Codex, Claude web app, ChatGPT web app, Gemini web app. Sections mirror /product:bootstrap's section set so answers can be brought back and consumed by /product:bootstrap --answers-file. User renamed the skill from /product:convert to /product:import mid-prompt — final name is import."
+user_or_business_outcome: "Operator can rescue a product 'trapped' in a simpler project (older repo, ChatGPT thread, scattered notes) and convert it into a proper Claude Code project with enough context that /product:bootstrap can create real requirements for features that already exist. Removes the manual interview burden when the source-of-truth lives in another session or tool."
+affected_surfaces:
+  - surface: ".claude/commands/product/import.md (new skill spec)"
+    evidence_level: assumed_from_request
+  - surface: ".claude/commands/product/bootstrap.md (existing — output contract must align so handoff works)"
+    evidence_level: verified_from_repo
+    notes: "bootstrap supports --answers-file <path> JSON map keyed by section id. import's output must round-trip into this format."
+  - surface: ".claude/commands/product/ponder.md (existing — style/frontmatter reference)"
+    evidence_level: verified_from_repo
+  - surface: "scripts/product/import.js (new generator)"
+    evidence_level: assumed_from_request
+    notes: Mirrors scripts/product/bootstrap.js architecture.
+  - surface: "framework/templates/product-import/ (new templates dir)"
+    evidence_level: inferred_from_repo
+    notes: framework/templates/product-bootstrap/ precedent.
+  - surface: "_docs/imports/<slug>/ (new output dir)"
+    evidence_level: assumed_from_request
+  - surface: ".claude/paths.json (add paths.imports, paths.importsCurrent)"
+    evidence_level: inferred_from_repo
+    notes: Bootstrap precedent for first-emit paths registration.
+  - surface: "scripts/product/bootstrap.js --answers-file <path> JSON contract (existing)"
+    evidence_level: verified_from_repo
+    notes: "Import's paste-back parser must produce this JSON map. The format is observable in scripts/product/bootstrap.js."
+current_behavior:
+  evidence_level: verified_from_repo
+  notes: "/product:bootstrap exists and runs an interactive 4-8-question conversation, writes _docs/briefs/<slug>/<slug>.brief.{md,html,docx}. It accepts --answers-file <path> with JSON keyed by section id. There is no skill that generates a paste-friendly questionnaire for another session. An operator wanting to use bootstrap with an answer file currently has to construct the JSON manually."
+desired_behavior: "Operator runs `/product:import` in the project where they want the brief to land. The skill: (a) inspects the project (any existing PROJECT.md, README, package.json, last ~10 commits) bounded read-only for hints; (b) emits a single Markdown questionnaire at _docs/imports/<slug>/<slug>.questionnaire.md containing project-context preamble, one section per /product:bootstrap section (problem, JTBD, value chain, ...), paste-friendly question prompts, and an explicit response-format instruction for the answering session; (c) renders identically enough across Claude Code, Codex, Claude web, ChatGPT web, and Gemini web that it works in all five. Operator pastes into another session, gets answers back, runs `/product:bootstrap --answers-file _docs/imports/<slug>/<slug>.answers.json` (or a paste-back-and-parse helper) to convert answers into a brief."
+scope:
+  size: m
+  risk_level: low
+  complexity_drivers:
+    - Output must be paste-friendly across 5 different AI surfaces with different markdown rendering and prompt conventions
+    - "Answers must round-trip back into /product:bootstrap --answers-file format without manual JSON construction"
+    - "Project introspection (read PROJECT.md, README, package.json, recent commits) needs bounded scope — no full audit"
+    - "Section parity with /product:bootstrap section set (minimal=8, extended=12) — has to track if bootstrap changes"
+scope_variants:
+  minimal_safe:
+    summary: "Single questionnaire MD output, no project introspection (operator passes name only). No answer-parsing helper — operator manually constructs answers.json or pastes section-by-section."
+    tradeoffs:
+      - "Operator has to do parsing work — friction"
+      - "No introspection — questionnaire is more generic"
+      - Easiest to ship
+  recommended:
+    summary: "Project introspection: read PROJECT.md, README.md, top-level package.json, last 10 commits — extract hints into preamble. Emit questionnaire MD with embedded paste-back format hint. Companion answers-parse helper: when operator pastes answers back, /product:bootstrap --answers-file is auto-callable. Aligned with /product:bootstrap minimal section set (8 sections)."
+    tradeoffs:
+      - "Introspection adds ~10s to run time"
+      - "Answer parser is the riskiest piece — heuristic markdown parser may misalign sections"
+      - Matches stated workflow fully
+  expanded:
+    summary: "Recommended + per-surface presets (--for claude-code/codex/chatgpt/gemini) with subtly tailored prompt phrasing. Per-section response-format examples. Optional --section-set extended (12 sections) matching bootstrap's extended set. Round-trip validation: import → answer → bootstrap → verify all sections drafted."
+    tradeoffs:
+      - "Per-surface prose adds maintenance — when bootstrap changes section set, both ends drift"
+      - Validation loop is a separate workstream
+      - Worth it only if operator runs imports often across surfaces
+assumptions:
+  safe:
+    - "Skill follows .claude/commands/product/ style (ponder.md and bootstrap.md as references)"
+    - Generator at scripts/product/import.js mirrors scripts/product/bootstrap.js architecture
+    - "Output at _docs/imports/<slug>/ registers as paths.imports / paths.importsCurrent (bootstrap precedent)"
+    - "Bootstrap's --answers-file JSON format is stable enough to target"
+    - "Project introspection is read-only and bounded (≤5 files, no recursive scans)"
+  unsafe:
+    - "All 5 target surfaces (Claude Code, Codex, Claude web, ChatGPT, Gemini) render the same markdown questionnaire correctly without surface-specific tweaks"
+    - Operator can reliably paste responses back without re-formatting
+    - "Answers fit /product:bootstrap section set 1:1 — no impedance mismatch"
+    - Heuristic markdown answer-parser is reliable enough to skip manual JSON construction
+  needs_user_or_beta_review:
+    - "Final skill name confirmed as /product:import (user renamed mid-prompt from /product:convert)"
+    - "Should the skill have a paste-back-parse companion (/product:import-parse?) or rely on the operator constructing answers.json?"
+    - "Should questionnaire include /product:ponder-style observations as a 'context primer' for the other session?"
+open_questions:
+  blocking:
+    - "Confirm output schema target: round-tripped to /product:bootstrap --answers-file JSON exactly, OR markdown that bootstrap learns to ingest natively."
+  non_blocking:
+    - "Per-target-surface preset prompts, or one universal questionnaire?"
+    - "How does the questionnaire convey 'context about the operator's source project' — preamble, embedded snippets, or full project dump?"
+    - "Does the operator paste output by hand, or do we ship a `pbcopy` / `clip.exe` step in the skill?"
+    - "Should the questionnaire emit JSON-schema metadata so a downstream parser can validate before /product:bootstrap consumes?"
+non_goals:
+  - "Do NOT auto-paste into another session — operator-mediated only"
+  - "Do NOT replace /product:bootstrap; /product:import is strictly a pre-step"
+  - "Do NOT introspect deeply (no AST parsing, no git-history dive beyond last 10 commits)"
+  - "Do NOT modify .claude/commands/product/bootstrap.md behavior; alignment flows one way (import → bootstrap)"
+  - "Do NOT design for multi-source merging (one import per invocation)"
+requirement_areas:
+  - "Skill spec (.claude/commands/product/import.md)"
+  - "Generator (scripts/product/import.js)"
+  - "Questionnaire template (framework/templates/product-import/)"
+  - "Project-context introspection (read PROJECT.md, README, package.json, last N commits)"
+  - Paste-friendly output for 5 target surfaces
+  - "Round-trip contract with /product:bootstrap --answers-file"
+  - "Optional answer-parser helper (markdown → answers.json)"
+  - "Paths registration (paths.imports, paths.importsCurrent)"
+  - "Trace events (import_started, context_introspected, questionnaire_emitted)"
+high_level_story_candidates:
+  - "As an operator with a product trapped in another tool/repo, I want one skill that emits a paste-friendly questionnaire I can hand to another AI session so it tells me what we're building."
+  - "As an operator, I want the questionnaire to mirror /product:bootstrap section structure so the answers can be ingested directly."
+  - "As an operator, I want the skill to read my project enough to add hints (project name, stack guesses) to the questionnaire preamble without me re-typing."
+  - "As an operator, I want the answers paste-flow to convert cleanly to /product:bootstrap --answers-file JSON, even when the answering session uses slightly different formatting."
+granular_story_candidates:
+  - "/product:import CLI: --slug, --section-set minimal|extended, --output-dir, --no-introspect"
+  - "Project introspection pass: read PROJECT.md, README.md, package.json, last 10 commits — extract name/stack/age hints"
+  - "Questionnaire template: section preamble + per-section question + per-section response-format hint"
+  - "Universal phrasing: write questions in tool-agnostic English (no slash commands, no IDE-specific affordances)"
+  - "Render: MD output at _docs/imports/<slug>/<slug>.questionnaire.md"
+  - "Paths registration: first emit adds paths.imports and paths.importsCurrent to .claude/paths.json"
+  - "Trace events: import_started, context_introspected, questionnaire_emitted"
+  - "Companion: /product:import-parse OR --parse <pasted-answers-file> mode that maps answers to /product:bootstrap --answers-file JSON"
+workstream_candidates:
+  - "Skill spec + generator"
+  - Project introspection
+  - "Questionnaire template + universal phrasing"
+  - "Round-trip contract to /product:bootstrap"
+  - Telemetry
+  - Optional answer-parser
+preliminary_ticket_candidates:
+  allowed: false
+  candidates: []
+  notes: "feature_add scope=m with one explicit unblock-by-design point (paste-back-parse mechanism). Tickets are minted in /sprint:design."
+external_service_dependencies:
+  status: none_expected
+  required: []
+  possible: []
+  notes: "Pure local file generation + read-only project introspection. No external services."
+approval_boundaries: []
+design_required: true
+execution_allowed_without_design: false
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+lane:
+  type: default
+  value: null
+  isolation_notes: "Additive — no impact on existing skills."
+beta_review:
+  required: true
+  likely_founder_rejection_risks:
+    - Questionnaire is too long for a normal-session attention span
+    - Operator has to do too much manual parsing on paste-back
+    - "Doesn't actually mesh with /product:bootstrap section set"
+  overbuild_risks:
+    - Per-surface presets when one universal prompt would do
+    - AST-level project introspection when 4-5 files is enough
+    - Answer-validation pipeline before v1 ships
+  missing_context_risks:
+    - Whether the operator uses ChatGPT/Gemini regularly enough that the questionnaire needs to be tested against them
+    - "Whether the other-session-agent should be told it's part of an import flow, or just answer questions naturally"
+plan_quality:
+  status: needs_design
+  confidence: medium
+  evidence_gaps:
+    - "No verified rendering test of identical markdown across all 5 target surfaces — assumed compatible, design must validate"
+    - "/product:bootstrap --answers-file JSON schema isn't documented separately — must extract from bootstrap.js during design"
+    - Heuristic markdown answer-parser viability not validated
+  fail_reasons: []
+next_recommended_command: "/sprint:design --sprint SP-20260520-002"
+resume_instructions: "Sprint SP-20260520-002 (product:import) has a Plan Contract. Run /sprint:design --sprint SP-20260520-002 to mint tickets, AC, COPY, INPUTS, TRACE. If interrupted, read .claude/project/sprint/sprints/SP-20260520-002/progress.yaml#resume_command."
+tracker_paths:
+  current_sprint: ".claude/project/sprint/current-sprint.yaml"
+  sprint_progress: ".claude/project/sprint/sprint-progress.yaml"
+  plan_contract: ".claude/project/sprint/plan-contracts/PC-20260521-0018.yaml"
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260521-0018.report.md"
+created_by: alpha
+updated_by: alpha

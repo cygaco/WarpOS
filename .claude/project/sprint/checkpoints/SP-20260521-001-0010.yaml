@@ -1,0 +1,43 @@
+schema: warpos/sprint/sprint-progress/v1
+sprint: SP-20260521-001
+updated_at: "2026-05-21T21:35:10.549Z"
+current_phase: execute
+current_command: "/sprint:execute"
+current_ticket: T-20260521-170
+current_task: null
+current_loop: null
+status: running
+last_completed_step: beta_design_review_resolved_and_applied
+next_action: "Wait for Gamma to fan-out 5 builders for T-171..T-175; integrate returns"
+active_files: []
+modified_files: []
+checks_last_run: null
+checks_passing: []
+checks_failing: []
+blockers: []
+approvals_needed:
+  - AP-20260521-025
+  - AP-20260521-026
+external_services_needed:
+  - ESD-20260521-005
+  - ESD-20260521-006
+  - ESD-20260521-007
+issues_opened: []
+tickets_updated:
+  - T-20260521-168
+  - T-20260521-169
+  - T-20260521-170
+  - T-20260521-171
+  - T-20260521-172
+  - T-20260521-173
+  - T-20260521-174
+  - T-20260521-175
+  - T-20260521-176
+  - T-20260521-177
+  - T-20260521-178
+  - T-20260521-179
+ralph_checkpoint: null
+resume_command: "/sprint:execute --ticket T-20260521-176"
+resume_notes: "Gamma dispatched 5 parallel builders at 21:34Z. T-168, T-169, T-170 done. T-171..T-175 in-flight via Gamma fan-out. Alpha holds T-176 (rename, AP-025 gate), T-178 (dogfood, AP-026 approved), T-179 (docs) for direct execution after fan-out lands."
+safe_to_continue: true
+stop_reason: null

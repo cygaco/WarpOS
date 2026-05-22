@@ -1,0 +1,26 @@
+schema: warpos/sprint/sprint-progress/v1
+sprint: SP-20260521-001
+updated_at: "2026-05-21T20:35:27.113Z"
+current_phase: plan
+current_command: "/sprint:plan"
+current_ticket: null
+current_task: null
+current_loop: null
+status: running
+last_completed_step: beta_decisions_resolved
+next_action: "/sprint:design"
+active_files: []
+modified_files: []
+checks_last_run: null
+checks_passing: []
+checks_failing: []
+blockers: []
+approvals_needed: []
+external_services_needed: []
+issues_opened: []
+tickets_updated: []
+ralph_checkpoint: null
+resume_command: "/sprint:design"
+resume_notes: "Plan Contract PC-20260521-0020 + Beta's 4 decisions logged. Decision 1 (privacy): gitignore only, no scrub. Decision 2 (registry): ~/.warpos/products.json HOME-dir. Decision 3 (gh repo create): SURFACE only, no --create-remote flag — STRICTER than PC draft. Decision 4 (scope): variant B, OPEN_ADR true. /sprint:design must adopt Decision 3's surface-only pattern (drop --create-remote)."
+safe_to_continue: true
+stop_reason: null

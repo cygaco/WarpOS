@@ -1,19 +1,28 @@
-# WarpOS Update Flags
+# WarpOS Update Flags — DEPRECATED in canonical WarpOS only
 
-> **What this is.** This file is `paths.warposFlagLedger` — an auto-managed ledger of framework-level improvements discovered while using WarpOS in a consumer project. Lives at repo root because the `paths.json` binding points here; do not move without updating `paths.json` and grepping for callers (`/warp:flag`, `/warp:promote-flags`).
+> **Scope: this deprecation applies to canonical WarpOS only.** In consumer
+> products (dreamteam, future products), this file and the `/warp:flag` /
+> `/warp:promote-flags` skills remain first-class — they are the official
+> downstream→upstream discovery channel.
+>
+> **Inside canonical WarpOS (this repo):** add discoveries directly to
+> `ROADMAP.md` under the relevant subsection with inline lifecycle tags
+> (`[open]`, `[in-progress]`, `[fixed-local]`, `[promote-ready]`,
+> `[promoted]`, `[duplicate]`, `[blocked]`, `[deferred]`). Use
+> `/roadmap:add`. The canonical repo doesn't need a "promote me upstream"
+> channel — discoveries here are already the source of truth.
+>
+> **Inside consumer products:** keep using `/warp:flag <type> <title>` to
+> log framework issues you spot while building. `/warp:promote-flags`
+> drains those entries into canonical WarpOS where they become ROADMAP
+> entries with `[fixed-local]`, `[promote-ready]`, or `[promoted]` tags.
+>
+> See `ROADMAP.md § Deprecated Trackers` for the canonical-side migration
+> rationale and the four migrated entries.
 
-<!-- managed by /warp:flag and /warp:promote-flags. Add entries via /warp:flag. -->
-
-Each entry below is a framework-level improvement discovered while using
-WarpOS. Drain upstream with `/warp:promote-flags` (the engine reads this
-file, marks `Status: promoted` with a canonical SHA when applied, and
-writes a promotion report under `.warpos/promote-reports/`).
-
-## 2026-05-14
-
-### agent — Claude Code primitive gap: persistent team UI + TeamCreate --force-replace
-
-- Date: 2026-05-14
-- Source: RT-004 / L-2026-05-14-adhoc-skill-body-honesty
-- Status: duplicate
-- Description: Claude Code does not expose a TeamCreate primitive or a persistent team UI panel. /mode:adhoc was rewritten 2026-05-14 to be honest that beta and gamma are per-call Agent subagents (no sidebar teammates). When Anthropic ships (a) a team-management primitive that creates visible persistent teammates, and (b) TeamCreate --force-replace for refresh semantics, revert /mode:adhoc Steps 1.75 and 2 from honest-disclosure mode to actual team creation. Also drop the 'What this skill does NOT do' intro block. See _docs/phase0/adhoc-primitive-limits.md 'Future primitive asks' for the full upstream wishlist. Severity: feature-gap, not a bug.
+<!-- migrated entries (2026-05-21):
+  - 2026-05-14 agent-primitive-gap (duplicate) → ROADMAP § Install & Release Integrity > [blocked] Persistent team UI
+  - 2026-05-21 research:deep .env fallback → ROADMAP § Install & Release Integrity > [open] research:deep env-file fallback
+  - 2026-05-21 manifest generator gap (fixed-local) → ROADMAP § Install & Release Integrity > [fixed-local][promote-ready] Manifest generator missed 15 scripts/ subdirs
+  - 2026-05-21 _requirements/00-canonical leak (open) → ROADMAP § Privacy / Promotion Safety > [open] _requirements/00-canonical contains real product specs
+-->

@@ -6,11 +6,21 @@
        roadmap. Consumers receive a clean scaffold from
        `scripts/warpos/generate-roadmap-scaffold.js` (which encodes the
        scaffold as an inline JS string, independent of this file).
-     - `scripts/warpos/promote.js` excludes ROADMAP.md from canonical→product
-       propagation, so a consumer's roadmap is never overwritten by framework
-       backlog content. -->
+     - Sync is ONE-WAY (canonical → product) via /warp:setup + /warp:update.
+       Products never push back to canonical. The consumer's ROADMAP.md is
+       owned by the consumer; canonical ROADMAP.md is never propagated. -->
 
-Post-MVP work. Items grouped by phase. Sprint history above the Phase backlog.
+## Strategy
+
+WarpOS exists to help the maintainer ship real products faster while extracting reusable open-source automation as a byproduct. The near-term roadmap prioritizes **trust and distribution integrity**: never leak product data, never ship broken installs, and reduce friction across portfolio repos. Work that does not unblock product shipping or public framework reliability stays parked.
+
+**Architectural framing (2026-05-22).** WarpOS is a **managed configuration layer over the host project's `.claude/` interface**, not a content blob. The framework's source-of-truth lives at `_warpos/` in every installed product; `.claude/` is the *compiled runtime interface* Claude Code consumes. Ownership is declared by `_warpos/MANIFEST.json`, not by path prefix. Sync is **one-way**: canonical WarpOS → products via `/warp:setup` + `/warp:update`. Products never push back — there is no upstream channel of any kind (no `/warp:promote`, no `/warp:flag`, no `warpos-to-update.md` ledger). Discoveries flow into canonical exclusively through the maintainer's own judgment: read the products you maintain, act in canonical directly via `/roadmap:add`. *(Origin: 2026-05-22 codex consults on identity simplification + tool-mandated paths.)*
+
+**Cadence rule.** After two consecutive WarpOS infrastructure sprints, the next sprint must ship product value in a real portfolio product (Jobzooka, DreamTeam, future). Any framework work must name the product blocker it removes; framework work without a named product blocker goes to Later. *(Origin: 2026-05-21 codex product-lead review — 8 framework sprints / 0 product-delivery sprints in the prior 10 days was the warning sign that prompted the rule.)*
+
+**Reading the backlog.** Sections are ordered by urgency, not by phase: **Now** = current sprint window (boundary + identity and install integrity are the trust-blockers; everything else waits); **Next** = ready when Now empties; **Later** = parked with named conditions for revival; **Archive Index** = research notes + postmortems that informed decisions but are not active backlog. The legacy `Phase 1/2/3/4` structure was retired 2026-05-21 — historical items either shipped (preserved in version-history sections) or were absorbed into Now / Next / Later.
+
+**Lifecycle tags** on backlog entries: `[open]`, `[in-progress]`, `[fixed-local]`, `[shipped]`, `[duplicate]`, `[blocked]`, `[deferred]`, `[parked]`. *(2026-05-22: `[promote-ready]` and `[promoted]` retired alongside `/warp:promote` deletion — fixes now move directly from `[fixed-local]` to `[shipped]` via canonical release, not via product→canonical promote.)*
 
 ---
 
@@ -20,6 +30,12 @@ Every sprint that has been planned, executed, released, or retrospected — one 
 
 | Sprint | Title | Status | Started | Closed | Release |
 |---|---|---|---|---|---|
+| [SP-20260522-003](.claude/project/sprint/sprints/SP-20260522-003/) | Maintainer &amp; Product Workflow — .vscode/tasks.json from portfolio registry, /portfolio:open --spawn VS Code preference, aiweb product-delivery ticket (cadence rule) | planning | 2026-05-22T05:46:59.393Z |  |  |
+| [SP-20260522-002](.claude/project/sprint/sprints/SP-20260522-002/) | Install &amp; Release Integrity — manifest coverage, dry-run + rollback, idempotent install, framework-views-fresh + framework-purity gates | planning | 2026-05-22T05:43:50.057Z |  |  |
+| [SP-20260522-001](.claude/project/sprint/sprints/SP-20260522-001/) | Framework Boundary &amp; Identity — _warpos/ zone, MANIFEST.json, full purge of /warp:promote suite | planning | 2026-05-22T05:27:29.796Z |  |  |
+| [SP-20260521-001](.claude/project/sprint/sprints/SP-20260521-001/) | DreamTeams portfolio onboarding — recommended scope (side-by-side repos with manifest) | retrospected | 2026-05-21T20:29:19.656Z | 2026-05-21T22:07:06.127Z |  |
+| [SP-20260520-002](.claude/project/sprint/sprints/SP-20260520-002/) | /product:import — generate a Claude/Codex/ChatGPT/Gemini-portable questionnaire to mine product context from another session, then feed /product:bootstrap | planning | 2026-05-21T02:51:01.927Z |  |  |
+| [SP-20260520-001](.claude/project/sprint/sprints/SP-20260520-001/) | /product:clone — explore a competitor product across video/web/reviews and emit cloneable requirements (JTBDs, scored features, voc, gaps, opportunities) | planning | 2026-05-21T02:50:56.013Z |  |  |
 | [SP-20260519-002](.claude/project/sprint/sprints/SP-20260519-002/) | Polish public-facing repo surface for job-application audience | planning | 2026-05-20T01:04:20.281Z |  |  |
 | [SP-20260512-001](.claude/project/sprint/sprints/SP-20260512-001/) | Multi-sprint parallelism for Sprint Workflow | retrospected | 2026-05-12T22:06:32.222Z | 2026-05-13T20:51:59.736Z |  |
 | [SP-20260513-001](.claude/project/sprint/sprints/SP-20260513-001/) | /product:bootstrap skill — guided product brief in MD/HTML/DOCX | retrospected | 2026-05-13T06:27:46.887Z | 2026-05-13T22:44:51.964Z |  |
@@ -39,179 +55,310 @@ Every sprint that has been planned, executed, released, or retrospected — one 
 
 ---
 
-## 🔧 Known issues / 0.1.5 backlog
+## Now: Framework Boundary & Identity
 
-### Session recovery improvements (DEFERRED-2026-05-18)
+Sprint-1 target. Reason: WarpOS today has no enforced shape that distinguishes "framework files" from "product files" inside a single checkout, and `/warp:promote` enables a bidirectional sync that has already leaked maintainer product data (Jobzooka-titled files) into the publicly-pushed canonical clone. The fix is structural, not procedural: delete bidirectional sync, adopt a managed-config-layer architecture, declare ownership in a manifest, and physically separate the maintainer's product-thinking from canonical. *(Origin: 2026-05-22 codex consults on identity simplification + tool-mandated paths; supersedes the prior `.framework/` co-located-mirror plan.)*
 
-Parked during the sprint-effectiveness review on 2026-05-18. The current
-crash-recovery contract in `paths.sprintReference` (per-command
-`resume_command` + frozen checkpoints) covers sprint flow, but ambient
-session resumption — picking up cleanly after `/clear`, harness restart,
-or a context compaction — is not yet first-class. Revisit when there is
-a concrete failure case to anchor the design.
+**The new model in one sentence.** Canonical WarpOS contains only framework source. Installed products treat `_warpos/` as the framework source-of-truth zone and `.claude/` as the compiled runtime interface; `_warpos/MANIFEST.json` declares per-path ownership. Sync is one-way (canonical → product) with **no upstream channel of any kind** — `/warp:promote`, `/warp:promote-flags`, `/warp:flag`, and `warpos-to-update.md` are all being purged. Discoveries reach canonical exclusively through the maintainer reading the products they maintain and writing into canonical ROADMAP via `/roadmap:add`.
 
-### release-build provenance: post-update check refers to script absent after update (REPORTED-2026-05-02)
+**[open] Full purge of the upstream-discovery surface — `/warp:promote`, `/warp:promote-flags`, `/warp:flag`, `warpos-to-update.md`.** All four are relics of the pre-canonical era when WarpOS was developed *inside* a product workspace and product→canonical propagation was the only path back. With WarpOS now in its own canonical clone, there is no upstream channel — discoveries flow into canonical through the maintainer's own judgment (read the products, act in canonical directly via `/roadmap:add`). Strip the surface from EVERYWHERE: canonical repo, GitHub, all installed products (purge propagates via `/warp:update` once the manifest drops the paths).
+>
+> **A. Skills to delete (canonical `.claude/commands/warp/`):**
+> - `promote.md`
+> - `promote-flags.md`
+> - `flag.md`
+>
+> **B. Scripts to delete (canonical `scripts/`):**
+> - `scripts/warpos/promote.js`
+> - Anything else under `scripts/warpos/` that exists solely to support promote (audit `release-canonical.js` — keep the framework-snapshot stages, drop any promote calls; inline what's needed for canonical-side `/warp:release`).
+>
+> **C. Root files to delete:**
+> - `warpos-to-update.md` (the deprecated-but-still-tracked flag ledger)
+> - `warpos-promoted-archive.md` (if present — never propagated)
+> - `.warpos-sync.json`, `.warpos-sync-commit-msg.txt` (promote-era sync stamps written by `promote.js`)
+> - `.warpos/promote-reports/` directory (per-run promote output, runtime-only but exists on disk)
+>
+> **D. Path registry cleanup:**
+> - Remove keys from `framework/paths.registry.json`: `warposFlagLedger`, `warposPromotedArchive`, `warposPromoteReports`.
+> - Regenerate downstream artifacts: `.claude/paths.json`, `scripts/hooks/lib/paths.generated.js`, `schemas/paths.schema.json`, the `lintRules` block in the registry. Drop any `path-lint` warn/critical entries that pointed at these keys.
+> - Drop the corresponding rows from `_requirements/03-architecture/PATH_KEYS.md` (or remove the doc entirely if `_requirements/03-architecture/` itself is being lifted into `_warpos/reference/` per the canonical scrub).
+>
+> **E. Reference sweep (audit + clean — grep for `warp:promote`, `warp:flag`, `warp:promote-flags`, `warpos-to-update.md`, `warposFlagLedger`, `warposPromote*`, `FRAMEWORK_PREFIXES`, `EXCLUDE_PREFIXES`, `TEMPLATE_REVIEW_PATHS`):**
+> - Root docs: `CLAUDE.md`, `AGENTS.md`, `PROJECT.md`, `README.md`, `USER_GUIDE.md`, `DICTIONARY.md`, `RELEASES.md`.
+> - All remaining `.claude/commands/**/*.md` (skill docs that reference these slash commands in passing).
+> - All `scripts/hooks/**/*.js` (any hook that lints or guards promote-era patterns).
+> - All `.claude/agents/**/*.md` (agent specs mentioning promote/flag).
+> - All `.claude/project/reference/**/*.md` (cross-reference docs).
+> - All hook docs under `scripts/hooks/` README-style or commentary.
+> - `.gitignore` — drop entries that exist only because of promote-era artifacts (`.warpos/promote-reports/`, etc.).
+>
+> **F. Products (Jobzooka, DreamTeam, future) — purge via `/warp:update`:**
+> - The manifest-driven `/warp:update` removes any installed path no longer present in canonical's `_warpos/MANIFEST.json`. Once canonical drops `flag.md`, `promote.md`, `promote-flags.md`, the next product update deletes them automatically. Same for `warposFlagLedger`/`warposPromote*` keys in the regenerated `.claude/paths.json`.
+> - **`warpos-to-update.md` in products is treated as user data, not framework data.** Some products may have local notes in this file. `/warp:update` does NOT silently delete it. On the first update post-purge, print a one-time deprecation notice: "`warpos-to-update.md` is deprecated. The framework no longer reads or writes this file. Move any content you want to keep into your own notes; delete the file when ready." On subsequent updates, leave it alone if still present.
+>
+> **G. GitHub (canonical):**
+> - Delete `warpos-to-update.md` in a normal commit (no history rewrite — the file's content is the deprecation header plus some migrated entries that already moved into ROADMAP.md).
+> - Push. After the commit lands, the file is gone from `main` and from any further `/warp:setup` of canonical into a new product checkout.
+> - No filter-repo / no force-push. The historical commits where promote/flag existed stay in history (they're not secrets, just relics).
+>
+> **H. Pre-commit / canonical guard (closing the door):**
+> - `/check:framework-purity` (already on the Install & Release Integrity backlog) refuses any future commit that reintroduces files named `promote.js`, `flag.md`, `promote-flags.md`, `warpos-to-update.md`, or that adds skill/doc bodies referencing those slash commands. Deletion is also a contract.
+>
+> **Acceptance criteria for the purge sprint:**
+> - `grep -rn "warp:promote\|warp:flag\|warpos-to-update" .` in canonical returns zero hits outside `ROADMAP.md` (Archive Index reference) and the version-history sections.
+> - `find . -name "warpos-to-update.md" -o -name "promote.js" -o -name "promote.md" -o -name "promote-flags.md" -o -name "flag.md"` in canonical returns zero hits.
+> - First-install of post-purge canonical into a fresh product writes zero promote/flag files.
+> - `/warp:update` of an existing product (Jobzooka) removes the promote/flag files automatically.
 
-A consumer running `/warp:update --to 0.1.4` reported `engine ok:false`
-because `release.json#postUpdateChecks` references
-`scripts/hooks/build.js`, which the consumer's project did not have
-after the apply ran (or had but the check resolved to a wrong path).
+**[open] `_warpos/` source-of-truth zone + `MANIFEST.json` ownership.** Installed products gain one new top-level directory: `_warpos/`. It holds the framework's source-of-truth and the manifest. Tool-mandated paths (`.claude/commands/`, `.claude/agents/`, `.claude/settings.json`) become compiled views generated from `_warpos/` at install/update time.
+>
+> **End state — installed product layout:**
+> ```
+> Jobzooka/
+>   src/, package.json                 ← product code
+>   _requirements/                     ← PRODUCT-owned content (filled CORE_BRIEF, etc.)
+>   _docs/                             ← PRODUCT-owned docs
+>   _warpos/                           ← FRAMEWORK source-of-truth
+>     MANIFEST.json                    (per-path owner/source/sha256/class)
+>     commands/                        (source of skills)
+>     agents/                          (source of agent specs)
+>     hooks/                           (hook JS code, referenced by path)
+>     schemas/
+>     templates/                       (master templates for _requirements/, _docs/)
+>     settings/defaults.json           (framework default settings layer)
+>     reference/                       (framework reference docs)
+>     BASELINE/                        (frozen install-time copies for 3-way diff)
+>       _requirements/
+>       _docs/
+>   .claude/                           ← COMPILED RUNTIME INTERFACE
+>     settings.json                    (GENERATED from defaults + local.json — never edit)
+>     settings.local.json              (per-project override layer — edit THIS)
+>     commands/                        (regenerated views of _warpos/commands/)
+>     agents/                          (regenerated views, except project+runtime files below)
+>       00-alex/
+>         .system/
+>           policy/decision-policy.md  (project-owned per MANIFEST; seeded once, never overwritten)
+>           beta/events.jsonl          (runtime-owned per MANIFEST; never touched on update)
+> ```
+>
+> **End state — canonical WarpOS layout (this repo, post-scrub):**
+> ```
+> WarpOS/
+>   framework/                         (framework source — commands, hooks, agents, templates, schemas, reference, settings)
+>   scripts/                           (release/build tooling — not shipped to products as framework)
+>   tests/
+>   CLAUDE.md  AGENTS.md  ROADMAP.md  RELEASES.md  README.md
+>   ❌ NO _requirements/ at root
+>   ❌ NO _docs/ at root
+> ```
+> If a contributor adds a file to canonical's `_requirements/`, the canonical pre-commit guard refuses the commit. Different shape = different role; you can `ls` and know in one second whether a repo is canonical or installed.
+>
+> **`_warpos/MANIFEST.json` schema (sketch):**
+> ```json
+> {
+>   "paths": {
+>     ".claude/commands/fix/fast.md": {
+>       "owner": "framework", "managed": true,
+>       "source": "_warpos/commands/fix/fast.md", "sha256": "abc..."
+>     },
+>     ".claude/agents/00-alex/.system/policy/decision-policy.md": {
+>       "owner": "project", "managed": false,
+>       "seeded_from": "_warpos/templates/policy/decision-policy.md"
+>     },
+>     ".claude/agents/00-alex/.system/beta/events.jsonl": {
+>       "owner": "runtime"
+>     },
+>     ".claude/settings.json": {
+>       "owner": "generated",
+>       "compiled_from": ["_warpos/settings/defaults.json", ".claude/settings.local.json"]
+>     },
+>     "_requirements/00-canonical/CORE_BRIEF.md": {
+>       "owner": "project", "managed": false,
+>       "seeded_from": "_warpos/BASELINE/_requirements/00-canonical/CORE_BRIEF.md",
+>       "class": "fillable"
+>     }
+>   }
+> }
+> ```
+> Ownership classes — `framework` (managed copy, byte-identical to source), `generated` (compiled from layered inputs), `project` (seeded once, then user-owned), `runtime` (written by hooks/sessions, never touched on update).
 
-The 0.1.4 capsule's manifest snapshot DOES list
-`scripts/hooks/build.js` (verified in canonical), so the bug is on the
-update or release-build side, not in the manifest:
+**[open] Generated-view discipline for tool-mandated paths.** Claude Code reads from `.claude/commands/`, `.claude/agents/`, `.claude/settings.json` — paths WarpOS cannot relocate. Approach: source-of-truth in `_warpos/`, **byte-identical generated copies** at the tool-mandated paths, both committed to git.
+> - **Git policy:** commit both `_warpos/commands/foo.md` AND `.claude/commands/foo.md`. PRs show the actual runtime surface; reviewers can diff what Claude Code will read.
+> - **CI gate `/check:framework-views-fresh`:** regenerates from `_warpos/` and fails the build if `.claude/commands/` or `.claude/agents/` is stale.
+> - **Documented:** "human edits to `.claude/commands/` and `.claude/agents/` are overwritten by `/warp:update`" — predictable, surfaced in skill docs.
+> - **Hooks need no view.** `scripts/hooks/*.js` becomes `_warpos/hooks/*.js`; `.claude/settings.json` references hooks by path. No duplication needed because hooks are invoked-by-path, not read-as-content.
 
-Hypotheses to investigate in 0.1.5:
+**[open] Three-layer `settings.json` compiler.** `.claude/settings.json` is the file Claude Code reads, but its defaults are framework-shipped and its overrides are per-project. Compile deterministically at install/update time:
+> 1. Read `_warpos/settings/defaults.json` (framework defaults for this WarpOS version).
+> 2. Read `.claude/settings.local.json` (project overrides — user edits THIS).
+> 3. Produce `.claude/settings.json` (generated effective state — do not edit).
+> 4. Preserve unknown user-override keys only in the override file, never by editing generated output.
+> 5. **Fail loudly** on conflicts where two layers define incompatible hook commands or permissions; do not silently pick a winner.
 
-1. **Old update.js on consumer** — pre-0.1.2 update.js used a brittle
-   `../..` resolution from the capsule dir that landed at `warpos/`
-   instead of the repo root. Any consumer still running pre-0.1.2
-   update.js will fail to copy source files even though the manifest
-   lists them. Fix: surface a one-shot bootstrap to upgrade update.js
-   itself before running the rest of the apply, OR ship a fallback in
-   the capsule that uses absolute source paths.
-2. **Post-update check status mapping** — current update.js classifies
-   missing scripts as `degraded` (non-blocking). If the consumer's
-   update.js classifies them as `failed`, the engine returns
-   `ok:false` even though the actual update succeeded. Fix: either
-   normalize the status taxonomy across versions, or ship a
-   compatibility shim in release.json.
-3. **Capsule-vs-source provenance gap** — the capsule snapshots the
-   manifest but NOT the actual source files. Consumers must have a
-   matching source tree (canonical clone) at the right commit. Fix:
-   either ship the source files inside the capsule, or have the
-   release.json pin the canonical commit hash so update.js can verify
-   the source tree matches.
+**[open] Canonical scrub: move WarpOS-as-product specs to a private workspace.** Public canonical WarpOS (`github.com/cygaco/WarpOS`) is framework source ONLY. The maintainer's clone today doubles as a Jobzooka/DreamTeam product workspace — that's how `_requirements/03-architecture/API_SURFACE.md` titled "Jobzooka — API Surface" ended up in the publicly-pushed repo. Required moves:
+> 1. Create new **private** repo for "WarpOS-as-product" — the maintainer's own filled product brief about WarpOS-the-tool. Same structure as Jobzooka/DreamTeam (uses `/warp:setup` to install the framework into itself).
+> 2. Move from canonical → new private workspace: `_requirements/00-canonical/*` (filled product content), `_requirements/03-architecture/*` (anything titled "Jobzooka — *" or product-specific), `_docs/research/*` (product research), `_docs/briefs/*`, `_docs/clones/*`, `_docs/imports/*`, anything else with client slugs or product-instance content.
+> 3. What canonical KEEPS at `_requirements/` and `_docs/`: **nothing.** Those directories don't exist at root after scrub. Their roles split into `_warpos/templates/` (master seeds shipped to products) and `_warpos/reference/` (framework reference docs).
+> 4. Maintainer workflow changes: framework dev in canonical; product-thinking about WarpOS-the-tool in private workspace. Same separation Jobzooka and DreamTeam already have.
 
-Same family of issue as the **0.1.1 capsule-checksum drift** seen
-during the 0.1.2 cut: capsule artifacts get out of sync with their
-source-of-truth between when the manifest is snapshotted and when
-checksums are computed.
+**[open] Five structural gates (manifest-driven).** All five gates consult `_warpos/MANIFEST.json` as ownership source-of-truth; path prefix alone is insufficient.
+> 1. **Canonical pre-commit guard** — refuses any `git add` to `_requirements/` or `_docs/` in canonical. Hard block. Refuses any reintroduction of `scripts/warpos/promote.js` or `FRAMEWORK_PREFIXES`/`EXCLUDE_PREFIXES` patterns.
+> 2. **Canonical CI poison scanner (`/check:framework-purity`)** — rejects commits/PRs containing client slugs (`Jobzooka`, `DreamTeam`, future products), maintainer abs paths, product spec titles. Last line of defense against human-typed leaks.
+> 3. **Installer ownership manifest** — every file `/warp:setup` writes is listed in the new install's `_warpos/MANIFEST.json` with explicit owner. Install fails if it would write a path outside the manifest.
+> 4. **Update drift check (`/warp:update --status`)** — `.claude/` generated views match `_warpos/` sources (sha256 from manifest); `_warpos/BASELINE/` matches the seed-manifest from canonical; project-owned files flagged for review only when their seed has changed.
+> 5. **Generated-views freshness CI gate (`/check:framework-views-fresh`)** — regenerates `.claude/commands/` and `.claude/agents/` from `_warpos/`; fails if the on-disk copies don't match. Catches "edited generated view, forgot to update source."
 
-### release-build manifest-staleness: must regen manifest before snapshotting
+**[open] Migration plan (existing installed products).** Jobzooka, DreamTeam, and the maintainer's current canonical-as-workspace need a one-time migration:
+> 1. Create `_warpos/` directory at product root.
+> 2. Move framework-owned content into `_warpos/`: copy `scripts/hooks/` → `_warpos/hooks/`; treat `.claude/commands/` and `.claude/agents/` as committed generated views (don't move, regenerate).
+> 3. Generate initial `_warpos/MANIFEST.json` from current install state.
+> 4. Migrate any pre-existing `_requirements/.framework/` content (if Pattern C′ had been partially rolled out) → `_warpos/BASELINE/_requirements/`.
+> 5. Update `.claude/settings.json` references: hooks now at `_warpos/hooks/foo.js`, not `scripts/hooks/foo.js`.
+> 6. Run `/check:framework-views-fresh` and `/check:framework-purity` to verify the migration.
 
-Today `scripts/warpos/release-build.js` copies the live
-`.claude/framework-manifest.json` into the capsule. If the manifest
-isn't regenerated immediately before, the capsule snapshot lags
-reality. `release-canonical.js` stage 4 covers this for the
-product-driven flow, but a direct `node scripts/warpos/release-build.js
-<v>` invocation does not. Fix: have `release-build.js` itself run
-`generate-framework-manifest.js --check` and refuse if stale.
+**[deferred] Pattern C′ (`_requirements/.framework/` hidden mirror).** Earlier proposed approach using a hidden `.framework/` sibling inside `_requirements/`. Superseded by the `_warpos/`-zone design above. The 3 file classes (`fillable`/`reference`/`guide`) and the staleness-classification UX (`STALE`/`DRIFT`/`LOCAL-DRIFT`/`CURRENT`/`MISSING`) are reused inside `_warpos/BASELINE/`, but the storage moves from the hidden sibling to the visible `_warpos/` zone. Codex (2026-05-22 simplification consult) verdict: "`.framework/` inside `_requirements/` is too clever; preserves the ambiguity at the exact place you're trying to remove it." Frozen here for traceability; do not implement.
 
-### Runtime-leak gitignore gap
+---
 
-Files like `.claude/.session-checkpoint.json`,
-`.claude/.session-start-commit`, `.claude/project/builds/` regularly
-sneak into commits because the `.gitignore` runtime block doesn't
-cover them. Fix: extend the runtime block in
-`scripts/warp-setup.js#GITIGNORE` and ship the expanded block as part
-of a future install/update.
+## Now: Install & Release Integrity
 
-### `.claude/manifest.json` missing — `/agents:test --all`, `/manifest:show`, `/manifest:validate`, canonical-dispatch-smoke all broken (DISCOVERED-2026-05-11)
+Sprint-2 target. Reason: dreamteam's first sprint hit a manifest gap that broke `/mode:adhoc --turbo` despite `framework-installed.json` claiming a complete install. The pattern recurs — installs claim completeness, manifest snapshots get stale, capsules drift from source. **Make WarpOS installs boring.** *(Codex stay-simple consult 2026-05-21: per-product install reliability is the bottleneck, not control-plane architecture. Central-mode is a second-order optimization — see Later: Platform Bets.)*
 
-`paths.manifest` resolves to `.claude/manifest.json` and the following
-all hardcode that path: `scripts/agents/cli.js` (`test --all` mode),
-`scripts/manifest/cli.js`, `scripts/dispatch/manifest-patch.js`,
-`scripts/delta-canonical-dispatch-smoke.js`. None of them tolerate
-absence; they exit 1 with `manifest.json missing or unreadable`. Only
-`.claude/framework-manifest.json` (a release-capsule artifact) exists
-on disk.
+**[fixed-local] Manifest generator missed 15 `scripts/` subdirs + `mode-set.js`.** Root cause: `scripts/generate-framework-manifest.js#ASSET_DIRS` enumerated only 18 of 35 `scripts/` subdirs. The 15 missing back installed skills: `check/`, `docs/`, `events/`, `fix-deep/`, `learn/`, `lib/`, `linters/`, `manifest/`, `maps/`, `portfolio/`, `product/`, `research/`, `schemas/`, `system/`, `turbo/`. Plus `scripts/mode-set.js` missing from `TOP_LEVEL_SCRIPTS`. Plus dead `{ src: "requirements", kind: "requirement" }` entry pointing at a directory renamed long ago to `_requirements/`. Symptom: dreamteam `/mode:adhoc --turbo` failed despite `framework-installed.json` claiming complete install. Fix shipped 2026-05-21 in `scripts/generate-framework-manifest.js`; manifest regenerated 604 → 670 assets. dreamteam manually patched same-day. The two intentionally-excluded dirs (`one-off/`, `products/`) are framework-dev artifacts and should NOT ship. **Ship with next release** (promote-ready tag retired alongside `/warp:promote`).
 
-Live dispatch survives because `getProviderForRole` in
-`scripts/hooks/lib/providers.js` falls back to
-`DEFAULT_AGENT_PROVIDERS` when the manifest read fails — verified by
-moketest 2026-05-11 (reviewer/compliance/qa/learner via codex,
-redteam transport via gemini, all green). But every audit/inspection
-CLI is dead.
+**[open] Manifest-coverage regression check.** Add `/check:warpos-manifest-coverage` that diffs on-disk `_warpos/**` against `_warpos/MANIFEST.json#paths` entries; flags any file in `_warpos/` (or any generated `.claude/` view) not enumerated. Catches the next "added new framework content but forgot to register" before downstream installs silently break. Subsumes the older `ASSET_DIRS`-coverage idea — the new manifest IS the registry.
 
-Fix options:
-1. Generate a minimal `.claude/manifest.json` at install-time
-   (`scripts/warp-setup.js`) seeded from `DEFAULT_AGENT_PROVIDERS` so
-   the file always exists in installed projects.
-2. Have the four call sites tolerate absence and fall back to the
-   same defaults the dispatcher uses, then warn (not error).
-3. Repoint `paths.manifest` at `framework-manifest.json` — rejected,
-   different schema and ownership.
+**[open] `release-build.js` refuses stale manifest.** Have `release-build.js` itself run `generate-framework-manifest.js --check` before snapshotting into a capsule; refuse if stale. Closes the "capsule artifacts get out of sync with source-of-truth" bug family originally seen during the 0.1.2 cut. `release-canonical.js` stage 4 covers the product-driven flow but direct `node scripts/warpos/release-build.js <v>` does not.
 
-Option 1 + option 2 in combination is the cleanest: file present on
-fresh installs, but CLIs degrade gracefully if it's ever deleted.
+**[open] `.claude/manifest.json` always-present at install + graceful absence in callers.** `paths.manifest` resolves to `.claude/manifest.json`; four CLIs hardcode it (`scripts/agents/cli.js test --all`, `scripts/manifest/cli.js`, `scripts/dispatch/manifest-patch.js`, `scripts/delta-canonical-dispatch-smoke.js`) and exit 1 with `manifest.json missing or unreadable`. Live dispatch survives via `DEFAULT_AGENT_PROVIDERS` fallback in `providers.js`, but audit CLIs are dead. Fix: (1) generate minimal manifest at install-time seeded from `DEFAULT_AGENT_PROVIDERS`; (2) tolerate absence in the four callers, warn + fall through to defaults. *(DISCOVERED-2026-05-11)*
 
-### `scripts/dispatch/catalog.js` lists gemini models that don't exist in Google's v1beta API (DISCOVERED-2026-05-11)
+**[open] `release-build` post-update check provenance.** Resolve the 0.1.4-era bug class: capsule `release.json#postUpdateChecks` references files the consumer's `update.js` doesn't actually copy. Three hypotheses to triage (old update.js with brittle `../..` resolution / status-mapping mismatch `degraded` vs `failed` / capsule-vs-source provenance gap where capsule snapshots manifest but not source). Pick one, ship a fix, regression test. *(REPORTED-2026-05-02)*
 
-Catalog entries `gemini-3.1-flash` (line ~110) and
-`gemini-3.1-flash-lite` (line ~117) return HTTP 404
-`ModelNotFoundError: models/gemini-3.1-flash is not found for API
-version v1beta` when invoked via gemini-cli 0.41.2. Only
-`gemini-3.1-pro-preview` and `gemini-2.5-flash` actually resolve on
-v1beta. If any code selects one of the missing models (env override
-`GEMINI_MODEL=gemini-3.1-flash`, fallback path, future config), the
-dispatch returns 404 in production.
+**[open] Runtime-leak `.gitignore` gap.** Files like `.claude/.session-checkpoint.json`, `.claude/.session-start-commit`, `.claude/project/builds/` regularly sneak into commits because the runtime block in `scripts/warp-setup.js#GITIGNORE` doesn't cover them. Extend the block and ship as part of an install/update.
 
-Fix: remove the two ghost entries from `catalog.js` and from the
-mirror doc `_requirements/09-integrations/PROVIDER/03-google-gemini.md`.
-Add a catalog-validation check (`/check:warpos-*` family) that
-periodically pings each declared model with a 1-token prompt and
-flags 404s.
+**[open] Idempotent install with per-file status reporting.** *(Codex stay-simple must-have.)* Running `/warp:setup` twice produces no destructive changes and reports per-file: `unchanged / repaired / added / conflict`. Today the installer reports counts but not per-file state — a user can't tell which files were touched without `git diff`.
 
-### Redteam pro-preview daily quota is fragile — consider gemini-2.5-flash as default (DISCOVERED-2026-05-11)
+**[open] Update dry-run + diff.** *(Codex stay-simple must-have.)* `/warp:update --dry-run` shows exactly what will change before applying: framework files, project-local files, user-owned files, conflicts. Today `--dry-run` is parsed but doesn't gate writes in all paths (already partial — see also Skill Reliability `--dry-run` follow-ups).
 
-`gemini-3.1-pro-preview` (current redteam default in
-`.claude/agents/01-adhoc/redteam/orchestrator.md` frontmatter) hits
-`TerminalQuotaError: You have exhausted your daily quota on this
-model` after one or two real redteam scans on a typical account.
-This was the proximate cause of the 2026-05-11 moketest redteam
-failure; switching to `gemini-2.5-flash` for the same prompt
-returned PONG with no quota issue.
+**[open] Versioned migrations + user-override tracking in `_warpos/MANIFEST.json`.** *(Codex stay-simple must-have.)* Record installed WarpOS version, schema version, migration history, **and per-file dirty/local-override flags**. The current `framework-installed.json` partially covers version + installedAt + counts but lacks override tracking — a file modified by the user gets silently overwritten on next update because we don't know it was customized. New manifest unifies this with ownership declarations: each path entry carries `owner`, `managed`, `installedSha`, `currentSha`, `userModified` so `/warp:update` can refuse to overwrite drift without explicit confirmation.
 
-Tradeoff: pro-preview is the strongest reasoning gemini model
-(always-on thinking, larger context), 2.5-flash is faster + cheaper +
-more available. The dispatch-guide claims model diversity is
-mandatory for redteam (different adversarial training corpus than
-Claude/GPT). Either tier preserves diversity since both are Google.
+**[open] `_warpos/MANIFEST.json` generator + validator.** New `scripts/warpos/manifest/build.js` walks the framework source tree, computes sha256 per path, classifies ownership (framework/generated/project/runtime), and writes `_warpos/MANIFEST.json`. New `scripts/warpos/manifest/validate.js` verifies every on-disk path is enumerated and every manifest entry resolves. Both run in `/check:warpos-manifest-coverage` and as pre-commit gates in canonical.
 
-Fix options:
-1. Switch redteam default to `gemini-2.5-flash`; expose pro-preview
-   as an explicit opt-in via a flag or env var.
-2. Add a quota-aware fallback in `dispatch-agent.js` that catches
-   TerminalQuotaError and retries on 2.5-flash before returning
-   `fallback: true`.
-3. Leave the default; treat quota exhaustion as expected and let the
-   existing `fallback: true` mechanism route to Claude.
+**[open] Generated-views regenerator.** New `scripts/warpos/views/regenerate.js` reads `_warpos/MANIFEST.json` and rebuilds `.claude/commands/` and `.claude/agents/` (managed entries only) as byte-identical copies from their `_warpos/` sources. Idempotent; safe to run in CI. Invoked by `/warp:setup`, `/warp:update`, and the `/check:framework-views-fresh` gate.
 
-Option 2 keeps the strongest model as the happy path while ensuring
-redteam never silently degrades to Claude (which loses the
-cross-provider diversity guarantee).
+**[open] Three-layer `settings.json` compiler.** New `scripts/warpos/settings/compile.js` produces `.claude/settings.json` deterministically from `_warpos/settings/defaults.json` + `.claude/settings.local.json`. Fails loudly on conflicting hook commands or contradictory permissions. Preserves unknown user-override keys in the override file. Replaces the implicit "settings.json is a hand-edited per-project file" model with a deterministic two-input compile.
 
-### `production_baseline` and `contract_versioning` gates relaxed via templates (RESOLVED IN 0.1.4)
+**[open] `/check:framework-views-fresh` CI gate.** Runs the regenerator into a temp dir and diffs against the committed `.claude/commands/` and `.claude/agents/` views. Fails the build if anything is stale. Pre-commit hook variant runs the same check on staged paths only.
 
-Resolved in 0.1.4 by adding generic framework templates directly to
-canonical's `_requirements/03-architecture/` (PRODUCTION_BASELINE,
-ACCESSIBILITY_BASELINE, ANALYTICS, DISASTER_RECOVERY,
-RELEASE_READINESS, DEPRECATION_POLICY) plus 3 generic contracts
-(USER, SESSION, ROUTING). Listed here for traceability.
+**[open] `/check:framework-purity` canonical gate.** Runs in canonical WarpOS pre-commit + CI. Rejects commits that add files to `_requirements/` or `_docs/` at canonical root (those directories should not exist there post-scrub). Scans diff for known client slugs (`Jobzooka`, `DreamTeam`, future products), maintainer abs paths, product-spec titles. Refuses commit on hit. Replaces the dropped `/check:warpos-privacy-leak` skill (that one was promote-side; the new one is canonical-side, where the leak surface now lives).
 
-### Forcing function: parallel npm-package distribution shape (DISCUSSED-2026-05-19)
+**[open] Rollback snapshot for `/warp:update`.** *(Codex stay-simple must-have.)* Update creates a restorable snapshot of touched framework files (not git-only — assume users have messy repos with unstaged work). `/warp:rollback <update-id>` reverts framework files to pre-update state without touching user files.
 
-Stand up `@warpos/cli` as a parallel distribution path alongside the current canonical-clone + capsule model. Goal is **not adoption** — it's a forcing function (see DICTIONARY.md § Forcing function): building it makes "which of our current sprints would be wasted under the npm shape?" an unavoidable question.
+**[open] Install fixture CI matrix.** *(Codex stay-simple must-have.)* Install and update are tested against: clean repo, existing repo with prior WarpOS install, dirty repo with uncommitted changes, old-version repo upgrading multiple versions, repo with intentional user overrides. Today install is tested manually after each release; failures surface in product repos days later.
 
-What it would replace if adopted:
+---
 
-- `/warp:update` → `npm update @warpos/cli`
-- `/warp:release` → `npm version && npm publish`
-- `/warp:promote` → disappears (frame: edit canonical repo, npm publish, downstream `npm update`)
-- Capsules + framework-installed.json + ghost-file detection → npm handles atomically
+## Next: Maintainer & Product Workflow
 
-Integration with Claude Code, three candidate paths (ranked cleanest to fallback):
+Sprint-3 target. Reason: with privacy + install integrity solid, throughput is the next constraint — the maintainer iterating WarpOS while running product sprints in parallel without context-switching pain. **Per cadence rule, Sprint 3 must also ship at least one product-side delivery in a portfolio product.**
 
-1. **Plugin system.** Claude Code's Skill tool already references `plugin:skill` namespacing — if the plugin loader is mature enough, WarpOS becomes a plugin distributed via npm; the harness loads skills/hooks/agents automatically.
-2. **Symlinks.** `npx warpos init` symlinks `.claude/commands/` to `node_modules/@warpos/cli/commands/`. Cross-platform fragile on Windows (needs developer mode enabled).
-3. **Managed-mirror.** `npx warpos sync` copies files into `.claude/commands/`, `.claude/agents/`, `scripts/hooks/`, gitignored. Looks like today to Claude Code; npm under the hood. Works without any harness changes.
+**[open] Generate `.vscode/tasks.json` from portfolio registry.** New `scripts/portfolio/generate-vscode-tasks.js` reads `~/.warpos/portfolio.json`, writes one task per product:
 
-Decision criterion when revisiting: enumerate the current Phase 1/Phase 2 sprints and ask "which of these would have been unnecessary under the npm shape?" If the answer is "most of the recent meta-work" (release ledger, capsule presence, framework-manifest honesty, ghost cleanup, promote/release dance) — npm has real signal. If "few" — canonical-clone is correct, keep going.
+```json
+{ "label": "Claude: <slug>", "type": "shell", "command": "claude",
+  "options": { "cwd": "<repo_path>" },
+  "presentation": { "panel": "new", "reveal": "always", "focus": true } }
+```
 
-Source: 2026-05-19 `/product:think` session (trace RT-011 in `paths.tracesFile`), DICTIONARY.md § Forcing function.
+Hook into `/portfolio:register`, `/portfolio:new`, `/portfolio:adopt` so tasks regenerate after registry mutations. New `/portfolio:tasks` skill for manual regeneration. Result: `Ctrl+Shift+P` → "Run Task" → "Claude: dreamteam" opens an integrated VS Code terminal pane cd'd to the product, with `claude` running — 3 keystrokes per new product session. Single VS Code window stays anchored to WarpOS source while N panes scope to N products.
 
-Status: parked as forcing-function research. Not on the active sprint queue.
+**[open] `/portfolio:open --spawn` prefer `code -n <path>` inside VS Code.** When `TERM_PROGRAM=vscode`, prefer `code -n <path>` over `wt` in `scripts/portfolio/spawn.js#PLATFORM_BINARIES.win32`. ~10 min fix; small win until the tasks.json workflow takes over.
+
+**[open] Product-delivery sprint (cadence rule).** Per Strategy cadence rule, Sprint 3 must include at least one product-shipping ticket. Candidates: DreamTeam Phase 1 (rebrand sprint scoped in SP-20260521-001) or Jobzooka next-priority feature. Choose at sprint planning based on which is most blocking. **Refuse to start Sprint 3 without naming a product-delivery ticket.**
+
+**[deferred] VS Code extension `warpos-vscode`.** Sidebar listing portfolio products with status (warpos version, dirty count, last sync, current sprint), click-to-open-terminal pane, file watcher on `portfolio.json` to auto-refresh, optional URI handler `vscode://warpos/openTerminal?slug=X`. ~2-4 hours. Polish layer on top of `.vscode/tasks.json` — defer until the tasks workflow proves itself.
+
+---
+
+## Next: Skill Reliability
+
+Slot for cleaning up skills with known papercuts. Pull into a sprint only when the cadence rule allows another framework sprint.
+
+**[open] `/research:deep` env-file fallback.** Phase 0 prereq check and all 3 engine bash blocks load API keys only from `.env.local`; projects that use `.env` get false-negative "key missing" errors. Fix: load `.env.local` first, fall back to `.env`. Affected: `.claude/commands/research/deep.md`.
+
+**[open] `/research:deep` end-to-end validation OR deprecation.** 728-line skill, untested at this scale, model versions stale. Either validate end-to-end OR deprecate in favor of `/research:simple`.
+
+**[open] `/research:simple` synthesis phase.** Merge per-provider reports into a single `SYNTHESIS.md` deliverable.
+
+**[open] Gemini catalog hygiene.** Remove ghost models `gemini-3.1-flash` and `gemini-3.1-flash-lite` from `scripts/dispatch/catalog.js` (HTTP 404 against v1beta API) and the mirror doc `_requirements/09-integrations/PROVIDER/03-google-gemini.md`. Add a catalog-validation check that periodically pings declared models with a 1-token prompt and flags 404s. *(DISCOVERED-2026-05-11)*
+
+**[open] Redteam default to `gemini-2.5-flash`** with pro-preview as opt-in. `gemini-3.1-pro-preview` hits `TerminalQuotaError` after 1-2 real redteam scans on typical accounts. Either (a) swap default + opt-in flag for pro-preview, OR (b) catch `TerminalQuotaError` in `dispatch-agent.js` and retry on 2.5-flash before falling back to Claude. Diversity preserved either way (both Google). *(DISCOVERED-2026-05-11)*
+
+**[open] `/ui:review` genericize.** Remove hardcoded product names; parameterize design-system path.
+
+**[open] `/retro:context` + `/retro:code` → `/retro:full` modes.** Merge into one skill with mode args.
+
+**[open] `/fav:list` + `/fav:search` → `/fav`.** Merge into one skill with args.
+
+**[open] `/paths:validate` skill.** Verify every key resolves on disk; flag hardcoded paths; suggest consolidations. (`/paths:add` already shipped per skill catalog.)
+
+**[open] Migrate ~80 prose path literals to `paths.*` references.** Skills/agents/docs that mention paths as prose (e.g., "Write to `.claude/project/memory/learnings.jsonl`") → reference `paths.learningsFile` semantically. Long tail; chip away.
+
+**[open] Events retention policy.** `events.jsonl` crosses ~6MB in real-world usage. Compress / roll above threshold. `sleep:deep` handles manually today.
+
+**[open] `--branch` default for installer.** Create `warp/install-<timestamp>` branch, run install there. Refuse install on `main` by default; require `--branch <name>` or explicit `--yes-install-on-main`. Pre-install state snapshot (`git status`, branch, uncommitted count) written into the backup dir.
+
+**[open] Same-name agent collision detection at install.** Scan target `.claude/agents/` for basenames matching WarpOS agent roles (`builder`, `reviewer`, `fixer`, `qa`, `redteam`, `compliance`, `alpha`, `beta`, `gamma`, `delta`); prompt user on collision: keep / rename to `<name>-custom.md` / replace.
+
+**[open] team-guard tiered allowlist.** Alpha can spawn research agents (Explore, Plan, general-purpose); build-chain agents (builder, reviewer, fixer, compliance, redteam, qa, learner) Gamma-only. Currently permissive.
+
+**[open] Spec-propagation closer.** Walk dependent spec nodes via SPEC_GRAPH on `/check:requirements drift`; surface downstream specs that MUST update; fail gauntlet until propagation attested. Design separately before implementation.
+
+**[in-progress] Tracker hygiene — superseded by full purge.** Earlier plan was to deprecate `warpos-to-update.md` in canonical and keep it in products as a local `/warp:flag` ledger. 2026-05-22 decision: full purge instead — `warpos-to-update.md`, `/warp:flag`, `/warp:promote`, `/warp:promote-flags` are all being deleted from canonical and from products. See **Now: Framework Boundary & Identity → "Full purge of the upstream-discovery surface"** for the comprehensive deletion plan. Only remaining hygiene work here: `/roadmap:add` matures into the canonical-side discovery surface (write directly to the relevant ROADMAP subsection with lifecycle tags).
+
+---
+
+## Later: Platform Bets
+
+Items parked until specific conditions change. Listed for orientation, not as a queue. Each entry names its revival trigger.
+
+**[parked] Central-WarpOS multi-product architecture (opt-in only).** User decision 2026-05-21: park until pull-forward trigger fires. *Trigger to pull forward* (codex stay-simple consult 2026-05-21): (1) updating WarpOS across products regularly costs more than 30-60 min/week, OR (2) bugs are repeatedly caused by version drift between product installs, OR (3) maintainer needs cross-product orchestration / reporting / shared memory, OR (4) new-product setup remains painful AFTER install/update reliability work (Sprint 2) ships. Until then, the per-product install model is correct. Codex's design verdict: viable-with-major-caveats; ship as opt-in only, never default. Prerequisite chain (replaces the prior promote-era prerequisites): the `_warpos/`-zone migration must be complete in canonical and at least 2 portfolio products, the `_warpos/MANIFEST.json` schema must be stable across one minor release, and install/update reliability must be measurably boring. Hidden cost curve per codex: per-product cheap at 1-3 products, noticeable at 5, hurts at 8-12 if WarpOS changes weekly, ops problem at 15-20. Real multiplier: `active products × framework change frequency × install drift × debugging ambiguity` — stabilize WarpOS and 20 installs are fine. Captured as frozen RFC at `_docs/research/2026-05-21-central-warpos-rfc.md`; no sprint cycles until trigger fires.
+
+**[parked] npm distribution as forcing function.** Stand up `@warpos/cli` as a parallel distribution path. Building it makes "which current sprints would be wasted under the npm shape?" unavoidable. Three integration paths (cleanest → fallback): Claude Code plugin system, symlinks (Windows-fragile), managed-mirror copy. *Trigger to pull forward:* enumerate current sprints and ask "which would be unnecessary under the npm shape?" — if "most of the meta-work" (release ledger, capsule presence, manifest honesty, ghost cleanup, the now-removed promote dance), npm has signal; if "few", canonical-clone is correct. Full essay archived at `_docs/research/2026-05-19-npm-forcing-function.md`. *(DISCUSSED-2026-05-19.)*
+
+**[blocked] Persistent team UI + TeamCreate --force-replace (upstream Anthropic).** Claude Code does not expose a TeamCreate primitive or persistent team UI panel. `/mode:adhoc` was rewritten 2026-05-14 for honest per-call dispatch. *Trigger to pull forward:* Anthropic ships (a) team-management primitive that creates visible persistent teammates AND (b) `TeamCreate --force-replace` for refresh semantics. See `_docs/phase0/adhoc-primitive-limits.md` § "Future primitive asks". Severity: feature-gap, not a bug.
+
+**[parked] Session recovery improvements.** Crash-recovery contract covers sprint flow but not ambient session resumption (post-`/clear`, harness restart, context compaction). *Trigger to pull forward:* a concrete failure case to anchor the design. *(DEFERRED-2026-05-18.)*
+
+**[parked] Treat WarpOS as a product-in-WarpOS (deep dogfooding gate).** Write PRDs for installer, session-lifecycle, paths-resolution, hook-pipeline. Spec the Alex agent team as a feature with stories. Run `/preflight:run` + `/qa:audit` + `/redteam:full` on WarpOS itself. *Trigger to pull forward:* product cadence is healthier per Strategy cadence rule. Defer until then; otherwise this is the framework eating itself. **Note:** distinct from the "WarpOS-as-product boundary" sprint task in Now: Framework Boundary & Identity — that's about creating a *private workspace* to hold maintainer product-thinking outside canonical, this is about *spec-ing the framework itself* as a product. Boundary first; deep dogfooding much later.
+
+**[parked] Observability + UX polish.** `agent-dashboard.js` as a real browser UI (currently CLI), skill usage counter for pruning, `/warp:tour` v2 interactive walkthrough, `USER_GUIDE.md` split into tutorial + reference. *Trigger to pull forward:* maintainer hits real friction with current observability, OR onboards a second user.
+
+**[parked] Token usage optimization.** Per-agent token tracking, per-provider cost dashboard, prompt compression for cross-provider, prompt cache for system-identity portion, tiered fallback `gpt-5.4 → mini → claude`, per-agent model env-var override. *Trigger to pull forward:* monthly provider spend exceeds a threshold the maintainer cares about, OR cost-sensitive consumer asks for it.
+
+---
+
+## Archive Index
+
+Discoveries, postmortems, and research notes that informed roadmap decisions but are not active backlog. Pointers, not content.
+
+- **`/product:clone` companycam.com run — 16 methodology gaps.** First end-to-end run 2026-05-21. Full postmortem at `_docs/research/2026-05-21-product-clone-companycam-postmortem.md`. The 3 highest-leverage fixes (Capterra pagination, App Store/Play Store reviews, raise internal-URL cap to 12) graduate into Next: Skill Reliability when prioritized.
+- **npm-package distribution forcing-function essay.** Archived at `_docs/research/2026-05-19-npm-forcing-function.md`. Decision criterion preserved inline in Later: Platform Bets entry above.
+- **Central-WarpOS architecture (frozen RFC).** `_docs/research/2026-05-21-central-warpos-rfc.md` — captures the 2026-05-21 codex consult design. No sprint cycles until the Later: Platform Bets trigger fires.
+- **Adhoc primitive limits.** `_docs/phase0/adhoc-primitive-limits.md` § "Future primitive asks" — tracks upstream Anthropic dependencies (persistent team UI, etc).
+- **Codex consults from 2026-05-21.** Inputs to the structure-and-park decisions reflected throughout this doc.
+    - Multi-product architecture: `.claude/runtime/consult-codex-centralized-warpos.js`
+    - Multi-user / privacy (10 leak vectors): `.claude/runtime/consult-codex-multiuser-privacy.js`
+    - Roadmap consolidation: `.claude/runtime/consult-codex-roadmap-consolidation.js`
+    - Product-lead review: `.claude/runtime/consult-codex-roadmap-product-lead.js`
+    - Stay-simple sanity check: `.claude/runtime/consult-codex-stay-simple.js`
+- **Codex consults from 2026-05-22 (drove the Now: Framework Boundary & Identity rewrite).**
+    - WarpOS identity simplification (`_warpos/`-zone vs Pattern C′): `.claude/runtime/consult-codex-warpos-identity-simplification.js`
+    - Tool-mandated paths (generated views + manifest): `.claude/runtime/consult-codex-warpos-tool-mandated-paths.js`
+    - Earlier sibling consults that converged on the design: `consult-codex-requirements-colocated.js`, `consult-codex-requirements-framework-folder.js`, `consult-codex-requirements-template-versioning.js`
+- **Promote-era / flag-era artifacts preserved for traceability.** `/warp:promote`, `/warp:promote-flags`, `/warp:flag`, and `warpos-to-update.md` are being fully purged in Sprint-1 (Now: Framework Boundary & Identity → "Full purge of the upstream-discovery surface"). The dual `FRAMEWORK_PREFIXES`/`EXCLUDE_PREFIXES` model, the 10-vector pre-promote checklist, `/check:warpos-privacy-leak` design, the privacy fixture-test design, and the per-product local-ledger model are NOT being implemented because the underlying surface they defended/supported no longer exists. Sync is one-way (canonical → products); upstream discovery is the maintainer reading products and writing into canonical ROADMAP via `/roadmap:add`. Reasoning trace at `paths.tracesFile` entry `RT-2026-05-22-warpos-identity-zones`.
+- **`production_baseline` + `contract_versioning` gates** — resolved in 0.1.4 by adding generic framework templates to `_requirements/03-architecture/`. Preserved here for traceability.
+- **Requirements system templates audit (2026-04-18).** Followed-up by the 0.2.0 rename pass — see Shipped sections below.
 
 ---
 
@@ -322,243 +469,3 @@ The install-hardening batch. Every item below was a ROADMAP entry from 2026-04-1
 - [x] **History scrub via git-filter-repo** — 68 commits rewritten; zero references to private product/repo names in any commit.
 - [x] **Redteam audit (4 parallel scans)** — 0 credentials, 0 PII, 0 tracked-but-ignored. IP hygiene scrub landed in 20+ files.
 - [x] **smart-context Haiku timeout + payload caps** — was 8000ms on unbounded context; now 15000ms + per-source caps (60 learnings, 20 traces, 20 decisions).
-
----
-
-## Phase 1 — Ship-week hardening (2026-04-17 target)
-
-### Path System (Command 1 from session 2026-04-16)
-The paths.json registry is the single source of truth for dir/file locations. Current state: 37 keys. Goal: every `.claude/*`, `scripts/hooks/*`, and shared file referenced by skills/hooks/agents resolves via `paths.json`, never hardcoded.
-
-- [x] Expand `paths.json` from 20 → 37 keys (add eventsFile, learningsFile, tracesFile, systemsFile, judgmentModel, judgmentRecommendations, betaEvents, lexicon, pathsLib, loggerLib, betaSourceData, toolsFile, requirementsFile, requirementsStagedFile, hookLib, patterns, requirements)
-- [x] Update `lib/paths.js` fallback to match
-- [x] Update `warp-setup.js` to emit the expanded paths.json at install time
-- [x] Install `path-guard.js` hook — warns (optionally blocks with `PATH_GUARD_STRICT=1`) when stale paths are written to skills/agents/hooks
-- [ ] **Follow-up:** migrate the remaining ~80 skill references that write paths as prose literals (e.g. "Write to `.claude/project/memory/learnings.jsonl`") to reference `PATHS.learningsFile` semantically
-- [ ] **Follow-up:** `/paths:validate` skill — verify every key resolves on disk + flag hardcoded paths + suggest consolidations
-- [ ] **Follow-up:** `/paths:add` skill — interactive helper to add a new path key (updates paths.json + lib/paths.js fallback + warp-setup.js in one go)
-
-### Events & Logging
-Current: `logger.js` abstracts appends to `events.jsonl`; `memory-guard.js` blocks direct writes. Smart-context reads events for context injection.
-
-- [x] memory-guard fixed to not block `2>&1` fd redirects (false positive blocked read commands)
-- [ ] **Follow-up:** dedicated `/events:tail`, `/events:query` skills (currently done via ad-hoc node oneliners)
-- [ ] **Follow-up:** events retention policy — events.jsonl crosses ~6MB in real-world usage. Compress / roll when above threshold (sleep:deep handles this manually today)
-- [ ] **Follow-up:** structured query language for events.jsonl (current: grep + filter)
-
-### Installer — Created vs Assumed model
-Current: 13-step install. 8 items are CREATED (paths, manifest, store, memory, settings, dirs), 5 items are ASSUMED (agents, skills, hooks, reference, CLAUDE.md copied verbatim).
-
-- [x] `warp-setup.js` generates paths.json v3 with all keys (CREATED)
-- [x] Registers the 31 real hooks (not phantom ones)
-- [x] WarpOS repo no longer ships a committed `paths.json` — clients get one built by the installer
-- [ ] **Phase 1 ship blocker:** `.gitignore` mutation — append WarpOS runtime exclusion block to target's `.gitignore` to prevent session-data leaks
-- [ ] **Interview phase** — warp-setup asks 5–10 questions before acting:
-  - project name (override basename detection)
-  - one-line pitch
-  - primary user
-  - main branch (detected via `git symbolic-ref refs/remotes/origin/HEAD`, confirm)
-  - WarpOS repo URL (default `cygaco/WarpOS`, support forks)
-  - ANTHROPIC_API_KEY location
-  - Result written to `manifest.git.mainBranch`, `manifest.warpos.source`, `manifest.project.*`
-- [ ] **Tool-detected hook bundles** — check for prettier/tsc/eslint/python/etc. present, only register hooks whose tooling exists. Surface skipped hooks with "install X then run `/hooks:enable <name>`"
-- [ ] **Requirements pre-fill** — `/warp:init` runs after install, interviews the user, writes filled `CORE_BRIEF.md`, `PRODUCT_MODEL.md`, `GLOSSARY.md`, `USER_COHORTS.md` (not skeleton + guidance comments)
-- [ ] **Parameterize `/warp:*` repo URLs** — `/warp:sync`, `/warp:check`, `/warp:init` read `manifest.warpos.source`, not hardcoded
-- [ ] **Parameterize project name** — all skills/docs that mention project name read from `manifest.project.name`
-- [ ] **Install-test harness** — `warp-setup.js --dry-run` on a fresh tmp dir, verify every claim in the setup output
-- [ ] **`/warp:update` skill** — pull latest WarpOS, compare, apply diff (analog to `/warp:sync`)
-- [ ] **`/warp:uninstall` skill** — clean removal
-
-### Gaps from the Created vs Assumed audit
-
-Items that are currently NEITHER created NOR assumed (just missing):
-- `.gitignore` runtime exclusions — **leak risk**
-- Main branch name — assumed "main" everywhere
-- Project name — used basename, no override
-- Git remote URL — hardcoded in `/warp:sync`
-- `.env.example` template
-- Environment flavor selection (minimal / full / security-heavy bundles)
-
-### Gitignore audit (2026-04-17 — flagged by user)
-
-Current `.gitignore` excludes `.claude/project/events/` and `.claude/project/memory/` — this protects privacy but **events and learnings are not backed up anywhere**. If a dev laptop dies, reasoning traces and event history are lost. Consider:
-
-- A redacted subset that *is* committable (e.g. a weekly digest)
-- Opt-in encrypted backup to a gitignored-by-default side-branch
-- Confirm every directory that is ignored is genuinely session-ephemeral — audit line-by-line
-- Write a `/warp:backup` skill that pushes events/memory to a private mirror repo (opt-in)
-
-Priority: medium — not blocking launch, but a data-loss risk that compounds over time.
-
----
-
-## Phase 2 — Skills & systems
-
-### Cross-provider agent diversity (high priority)
-
-**Problem:** all review and security agents currently run on Claude (same model that generates the code under review). Same-model review is blind to shared failure modes. Per Alex β decision 2026-04-16: "having the same model review its own work is not good."
-
-**Solution:** route review-layer agents through OpenAI CLI (`codex`), security orchestration through Gemini CLI. Uses the existing `store.compliance` CLI-bridge pattern, generalized.
-
-Target model mapping:
-
-| Agent | Provider | Model | Rationale |
-|---|---|---|---|
-| alpha, beta, gamma, delta | Claude | sonnet (or inherit) | Orchestration, judgment continuity — keep Claude |
-| builder (×2), fixer (×2) | Claude | sonnet | Code generation — Claude is tuned here |
-| **evaluator (×2)** | **OpenAI** | **gpt-5.4** | Deep review with different lens; 1M context fits spec+code+fixtures |
-| **compliance (×2)** | **OpenAI** | **gpt-5.4** | Adversarial integrity — flagship, not mini |
-| **auditor (oneshot)** | **OpenAI** | **gpt-5.4-mini** | Cross-cycle pattern synthesis; many small inputs |
-| **qa (×2)** | **OpenAI** | **gpt-5.4-mini** | 13 failure-mode personas × volume |
-| **redteam (×2)** | **Gemini** | **gemini-3.1-pro-preview** | 11 attack-chain personas — different adversarial training corpus |
-
-Implementation:
-- [x] Extend `manifest.providers` with `claude`, `openai`, `gemini` entries (cli, default_model, fallback)
-- [x] Add `manifest.agentProviders` mapping role → provider
-- [x] New lib module: `scripts/hooks/lib/providers.js` — wraps `execSync` calls to `codex` / `gemini` CLIs
-- [x] Update γ/δ dispatch to read `agentProviders[<role>]` and route accordingly (via `scripts/dispatch-agent.js`)
-- [x] `/check:environment` verifies `codex` and `gemini` CLIs present if configured (E25-E26 checks)
-- [x] Fallback: CLI missing → use `fallback` model (always Claude) — `provider_fallback: claude` in agent frontmatter
-- [x] Per-agent prompts stay in the .md files (agent gets the same prompt regardless of provider)
-- [x] Response parsing adapter — `parseProviderJson` normalizes GPT/Gemini output to match Claude sub-agent JSON shape
-
-**SHIPPED 2026-04-17.** Strict model assertion added (commit f7f5885) so silent downgrades fail loudly. `actualModel` from CLI stats vs declared `model` detected via `modelsMatch()`.
-
-### Token usage optimization (deferred per user directive)
-
-Not a ship blocker. Once cross-provider is live:
-- [ ] Track per-agent token usage in events log — category `provider-call`
-- [ ] Per-provider cost dashboard (estimate from token counts)
-- [ ] Prompt compression for GPT/Gemini — the Claude-tuned prompts are often verbose; condense for cross-provider
-- [ ] Cache the "system/identity" portion of review prompts where provider supports it (OpenAI prompt caching, Gemini context caching)
-- [ ] Tiered fallback: gpt-5.4 → gpt-5.4-mini → claude if primary times out or rate-limits
-- [ ] Per-agent model override via env var (`WARPOS_EVALUATOR_MODEL=gpt-5.4-mini`) for cost-sensitive users
-
-### Missing skills identified in audit
-- [x] `/check:system` — systems audit (scans for every system, diffs manifest)  **SHIPPED**
-- [x] `/discover:systems` — multi-angle discovery (6 lenses, surfaces emergent/ghost systems)  **SHIPPED 2026-04-17** (beyond scope of original ask)
-- [ ] `/check:privacy` — pre-publish scan for personal data (names, session artifacts, learnings, credentials)
-- [ ] `/check:install` — verify a fresh install is complete end-to-end
-- [ ] `/check:hooks` — hook test harness via synthetic payloads (extends `/hooks:test`)
-- [ ] `/warp:doctor` — single-command full diagnostic (runs `health` + `check:*` suite)
-- [ ] `/warp:update` — see Installer section above
-- [x] `/warp:uninstall` — clean removal with restore from `.warpos-backup/` **SHIPPED 2026-04-18**
-- [ ] `/agents:list` + `/agents:test` — first-class observability for the agent system
-- [ ] `/paths:validate` + `/paths:add` — see Path System above
-- [ ] `/linters:run` — unified lint runner (linters are a system per feedback)
-- [ ] `/manifest:show`, `/manifest:validate`, `/manifest:migrate`
-- [ ] `/docs:catalog` — enumerate reference docs with status
-
-### Existing skill follow-ups
-- [ ] `/research:deep` — 728 lines, likely untested, model versions stale. Either validate end-to-end OR deprecate in favor of `/research:simple`
-- [ ] `/research:simple` — add synthesis phase (merge reports → SYNTHESIS.md)
-- [x] `/sleep:deep` — REM Phase 4 painting step made MANDATORY with self-check gate (2026-04-17). Vague phase 1c/1e thresholds still deferred.
-- [ ] `/ui:review` — genericize (no hardcoded product names); add parameterized design-system path support
-- [ ] `/retro:code`, `/retro:full` — remove stale "retro directory" manifest.json references; either hard-code `.claude/project/retros/` or make optional
-- [ ] `/warp:sync` — add fallback if `../WarpOS/version.json` doesn't exist (git tags / commit hash)
-- [ ] `/warp:init` — parameterize GitHub URL (hardcodes `cygaco/WarpOS.git`)
-
-### Mode persistence clarity (2026-04-18)
-- [ ] Mode (solo / adhoc / oneshot) is project-wide and persistent — switching in any terminal switches it for ALL terminals on that project. User guide now documents this. Behavior is already correct in code but was not documented — also surface this in `/mode:*` skill output on entry (e.g. "Adhoc mode active for project X — all your open terminals now share this mode").
-- [x] USER_GUIDE.md §2 updated to clarify: modes are project-wide, not per-terminal; even in adhoc with just α + user, α probes β on non-trivial decisions.
-- [x] USER_GUIDE.md §5.6 Preflight explained ELI5 with 7-pass breakdown; clarified it's ONLY for oneshot.
-- [x] USER_GUIDE.md §4 cross-terminal coordination language now explicit: write for an Alex that wasn't there.
-
-### Installer + setup UX (2026-04-18)
-- [x] Renamed `/warp:init` → `/warp:setup` — covers clone + install + CLAUDE.md merge + restart + verify
-- [x] `warp-setup.js` backs up pre-install files to `.warpos-backup/<timestamp>/` (CLAUDE.md, AGENTS.md, .gitignore, .claude/, scripts/hooks/)
-- [x] `warp-setup.js` writes `WARPOS_NEXT_STEPS.md` at project root — users reference it in the fresh Claude Code session after restart
-- [x] Installer "NEXT STEPS" output now tells users to close + reopen Claude Code before anything else
-- [x] `/warp:uninstall` skill created — clean removal with restore from backup
-- [x] CLAUDE.md auto-append when user has existing content (2026-04-18)
-- [x] AGENTS.md auto-append same pattern as CLAUDE.md (2026-04-18 — prior behavior kept client's and skipped WarpOS's, breaking γ dispatch)
-- [ ] **Follow-up:** wire `/warp:setup` CLAUDE.md merge step into the installer itself (currently split between script + skill; consider unified)
-- [ ] **Follow-up:** dry-run mode (`--dry-run`) currently parses the flag but doesn't actually skip writes — needs real implementation
-- [ ] **Follow-up:** `warp-setup.js` should emit `manifest.warpos.installed: true` on success (currently unset) so `/warp:setup` Step 1 check works
-
-### Install safety — branch isolation + conflict resolution (2026-04-18)
-
-Raised by user after the first real-project install. Current installer runs directly on whatever branch the user is on (usually `main`) — a bad install could contaminate their shippable branch. We back up files but not git state.
-
-- [ ] **`--branch` default:** installer creates `warp/install-<timestamp>` branch, checks out, runs install there. Prints "Install is on branch X. Review with `git diff main`, merge with `git checkout main && git merge X`, discard with `git branch -D X`." Add `--direct` flag to opt-out.
-- [ ] **Refuse install on `main` by default** — require either `--branch <name>` or explicit `--yes-install-on-main`.
-- [ ] **Wire `--dry-run` to actually skip writes** — currently the flag is parsed but never gates the writes. Print every file it WOULD touch, then exit clean.
-- [ ] **Pre-install state snapshot** — `git status`, current branch name, uncommitted file count written into `.warpos-backup/<ts>/install-context.json` so uninstall can report "you had N uncommitted changes at install time".
-- [ ] **Same-name agent collision detection** — scan target `.claude/agents/` for basenames that match WarpOS agent roles (`builder`, `evaluator`, `fixer`, `qa`, `redteam`, `compliance`, `auditor`, `alpha`, `beta`, `gamma`, `delta`). If any match at any depth, prompt user: (a) keep yours / (b) rename yours to `<name>-custom.md` / (c) replace with WarpOS's. Unresolved collisions silently break the gauntlet.
-- [ ] **Ghost-file cleanup on re-install** — installer leaves orphan files from prior WarpOS versions (e.g., `warp/init.md` after rename to `warp/setup.md`). Installer should write a ship-manifest of every file it owns, and on re-install offer to delete ghosts (files in ship-manifest from prior version but not current).
-- [ ] **Customer-agent namespace convention** — document that WarpOS owns `.claude/agents/00-*/`, `01-*/`, `02-*/` and clients should put custom agents under `.claude/agents/99-custom/`. Installer checks + refuses to write into `99-*` slots.
-- [ ] **Post-install integrity check** — run `/warp:health --strict` at end of install; if any red, roll back to `.warpos-backup/<ts>/` automatically with user confirmation.
-
-### Requirements system — shipped but not being installed (2026-04-18, FIXED)
-
-**Correction to earlier entry.** WarpOS source actually DOES have 30 requirement template files across 10 numbered subdirs (`00-canonical/`, `01-design-system/`, `02-copy-system/`, `03-requirement-standards/`, `04-architecture/`, `05-features/`, `06-operations/`, `07-security/`, `08-testing/`, `09-automation/`) plus `_example-onboarding` feature skeleton. The files exist. The installer just wasn't copying them. FIXED in this session — installer now copies `_requirements/`, `patterns/`, and `.claude/project/maps/` baseline. Historical note on what was missing: Users get a broken promise: "ask Alex to help fill in your requirements templates" → there are no templates.
-
-What jobhunter-app (the source project) has under `_docs/` that WarpOS should ship as `_requirements/`:
-
-- `_requirements/00-canonical/` — project-level truth docs
-  - `CORE_BRIEF.md` (the product in one page)
-  - `PRODUCT_MODEL.md` (data model + state machine)
-  - `GLOSSARY.md` (terms)
-  - `USER_COHORTS.md` (target users)
-- `_requirements/01-design-system/` — UI rules
-  - `COMPONENT_LIBRARY.md` (registered components)
-  - `COLOR_SEMANTICS.md` (design tokens)
-  - `ANIMATION_MOTION.md`, `FEEDBACK_PATTERNS.md`, `RESPONSIVE.md`
-- `_requirements/02-copy-system/` — microcopy, tone, variants
-- `_requirements/_standards/` — `PRD_TEMPLATE.md`, `STORIES_TEMPLATE.md`, `INPUTS_TEMPLATE.md`, `HL-STORIES_TEMPLATE.md`, field spec standards
-- `_requirements/03-architecture/` — architecture decision records template + examples
-- `_requirements/04-features/` — per-feature dir structure (PRD + STORIES + INPUTS + COPY)
-  - Ship empty dir with one **example feature** folder showing the shape, not client content
-- `_requirements/.decisions/` — ADR template
-
-Action items:
-- [ ] **Extract templates from jobhunter:** copy the canonical structure, strip all consumer-product-specific content, reduce to fillable skeletons with guidance comments. Place in WarpOS repo at `_requirements/`.
-- [ ] **Installer copies `_requirements/` to target** if target has no `_requirements/` dir — same copy-if-missing pattern as `.claude/`. Never overwrite if target has one.
-- [ ] **One example feature** — ship `_requirements/04-features/example-feature/` with PRD + STORIES + INPUTS demonstrating the schema. Users delete or rename when they create their first real feature.
-- [ ] **`/check:requirements` dry-run on fresh install** — should report "0 features defined, ready for first `/skills:create` or `Help me write a product brief`" cleanly instead of erroring on missing dirs.
-- [ ] **Update `warp-setup.js` skeleton check** to stop referencing `_requirements/01-design-system` path existence as a `ui-lint` enablement signal before the templates actually ship (currently generates a misleading warning on every install).
-- [ ] **Update `systems.jsonl` seed** — `requirements-templates` entry currently seeded with `count: 0`; once templates ship, bump to real count and add `files: [...]` listing the templates.
-
-Priority: **high for v0.2.0** — the framework's value prop ("ask Alex to help write specs") is broken without templates. Current installs look complete but the `_requirements/` dir is silently missing.
-
-### Guard strengthening (2026-04-18)
-
-Surfaced when I force-pushed to scrub history and my own merge-guard blocked `--force` but not `+refspec` syntax.
-
-- [ ] **merge-guard: catch all force-push forms** — current regex only catches `--force` and `-f`. Git also supports `+refs/heads/X:refs/heads/X` (plus-prefix refspec) to force-update a branch. Extend regex to: `(--force|-f\b|\s\+\S+:\S+|\s\+[a-zA-Z])` when matched against a `git push` command.
-- [ ] **team-guard: tiered agent allowlist for adhoc mode** (β RT-010). Alpha can spawn research agents (Explore, Plan, general-purpose). Build-chain agents (builder, evaluator, fixer, compliance, redteam, auditor, qa) are Gamma-only. Currently team-guard is permissive.
-
-### Namespace reorganization
-- [ ] Merge `/retro:context` + `/retro:code` into `/retro:full` as modes (not separate skills)
-- [ ] Merge `/fav:list` + `/fav:search` into `/fav` with args
-- [ ] Consider moving `/hooks:friction` analysis into `/check:patterns propose`
-
-### Spec-propagation closer (Batch G, deferred from 2026-04-17 /check:all remediation)
-- [ ] Close the loop between `/check:requirements drift` detection and actual spec updates. Current state: drift markers stage into `requirements-staged.jsonl`, reviewer manually triages. Missing: a propagation-closer that (a) walks dependent spec nodes via SPEC_GRAPH, (b) surfaces which downstream files MUST be updated when a root spec changes, (c) fails the gauntlet until propagation is attested. Design separately before implementation. β DECIDE 2026-04-17: defer to Phase 2, design as its own skill.
-
----
-
-## Phase 3 — Product-as-product
-
-Treat WarpOS itself as a product-in-WarpOS with its own `_requirements/04-features/`:
-- [ ] Write PRDs for installer, session-lifecycle, paths-resolution, hook-pipeline
-- [ ] Spec the Alex agent team as a feature with stories
-- [ ] Run `/preflight:run` against WarpOS itself before every push
-- [ ] Run `/qa:audit` and `/redteam:full` on WarpOS — catch the hook bugs, privacy leaks, stale refs we currently hunt manually
-
----
-
-## Phase 4 — Observability & UX
-
-- [ ] `agent-dashboard.js` turned into a real browser UI (currently CLI-style)
-- [ ] Skills get a usage counter (how often each is invoked) — informs pruning
-- [ ] `/warp:tour` version 2 — interactive walkthrough, not one-shot explainer
-- [ ] `USER_GUIDE.md` → split into tutorial + reference
-
----
-
-## Notes
-
-- During co-development against a private consumer project, every WarpOS change should also ship to that project (or vice versa). Use `/hooks:sync` pattern (extended to skills too).
-- Privacy audit required before every public push. `/check:privacy` should be the gate.
-- Main branch must stay shippable at all times. Exploratory work happens on feature branches. (This is §2 of `USER_GUIDE.md` — the #1 newbie trap.)

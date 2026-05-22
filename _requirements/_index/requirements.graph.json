@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "generatedAt": "2026-05-19T03:25:54.922Z",
+  "generatedFromCommit": "918432058b1a0e1d104a99efb2433ad1f25df512",
+  "schemaUrl": "warpos/requirements-graph/v1",
+  "counts": {
+    "features": 0,
+    "requirements": 0,
+    "mappedFiles": 0
+  },
+  "features": {},
+  "requirements": {},
+  "files": {},
+  "contracts": {}
+}

@@ -1,0 +1,68 @@
+schema: warpos/sprint/ticket/v1
+id: T-20260521-004
+title: "/portfolio:list skill + list helper script"
+type: feature
+status: abandoned
+sprint: SP-20260521-001
+created_at: "2026-05-21T00:00:00.000Z"
+updated_at: "2026-05-21T21:12:06.308Z"
+owner: null
+owner_agent: alpha
+risk_level: low
+approval_required: false
+approval_state: not_required
+source_request: "WarpOS as portfolio command console — /portfolio:list"
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260521-0021.yaml"
+linked_requirements:
+  - R-11
+linked_high_level_story: H-6
+linked_granular_story: S-5
+linked_prd: ".claude/project/sprint/requirements/SP-20260521-001/prd.md"
+linked_copy:
+  - C-6
+linked_inputs:
+  - IN-6
+linked_trace:
+  - TR-7
+linked_acceptance_criteria:
+  - AC-5.1
+  - AC-5.2
+  - AC-5.3
+  - AC-6.1
+  - AC-6.2
+  - AC-6.3
+linked_issues: []
+linked_decisions: []
+linked_external_services: []
+linked_files:
+  - ".claude/commands/portfolio/list.md"
+  - scripts/portfolio/list.js
+linked_tests: []
+linked_commits: []
+linked_prs: []
+linked_release: null
+description: |
+  Implement /portfolio:list skill (.claude/commands/portfolio/list.md) and backing script
+  scripts/portfolio/list.js.
+  Output: ASCII table with columns: slug | path | on_disk | warpos_installed | github_repo.
+  on_disk: check fs.existsSync(repo_path) — yes/no.
+  warpos_installed: read <repo_path>/.claude/framework-installed.json installedVersion, or "?" if absent.
+  github_url: show domain+path or "-" if null.
+  Empty registry: print C-6 hint (bullet list of /portfolio:new, /portfolio:adopt, /portfolio:from-brief).
+  Emits TR-7 portfolio.registry_read event.
+user_value: ""
+business_value: ""
+acceptance_criteria: []
+non_goals:
+  - "No git status or remote connectivity checks (that is /portfolio:status)"
+implementation_notes: C-6 empty-registry hint must include all 3 next-step skills.
+qa_notes: ""
+redteam_notes: ""
+trace_notes: ""
+blocked_by:
+  - T-20260521-002
+blocks: []
+fix_attempts: []
+ralph_progress: null
+completion_evidence: []
+reopen_history: []

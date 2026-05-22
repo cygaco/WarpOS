@@ -102,6 +102,32 @@ The orchestrator drives all 5 phases. Each phase writes a checkpoint
 via `scripts/sprint/checkpoint.js` and emits `sprint_full_phase_*`
 events to `paths.eventsFile`.
 
+### Step 2b — Skill body design-phase handoff (Phase 2 halt)
+
+After Phase 2 scaffolds the requirements templates, the orchestrator
+**always halts** with `halt_reason: tickets_pending`. This is by
+design — the orchestrator cannot auto-fill placeholders or infer
+ticket scope from rendered templates.
+
+**Required operator action before resuming:**
+
+1. Review and fill `.claude/project/sprint/requirements/<SP-id>/`
+   (prd.md, acceptance-criteria.md, granular-stories.md, etc.).
+2. Mint tickets via:
+   ```bash
+   node scripts/sprint/ticket.js create \
+     --sprint <SP-id> \
+     --title "<title>" \
+     --type <type> \
+     --risk <level>
+   ```
+   Each ticket that should execute must reach status `ready_for_execution`.
+3. Resume: `/sprint:full --sprint <SP-id> --resume`
+
+The orchestrator's Phase 3 will refuse to advance (halt: `no_tickets_ready`)
+if it finds zero `ready_for_execution` tickets AND zero `done`/`deferred`
+tickets — this is the second guard against hollow runs.
+
 ### Step 3 — Skill body Ralph-loop handoff (Phase 3 execute)
 
 When the orchestrator reaches Phase 3, it iterates
@@ -228,6 +254,15 @@ Report:
 Any halt is recoverable. Read the halt report; it names the resume
 command and the human action needed. Most common:
 
+- `tickets_pending` — Phase 2 design scaffold complete. Fill requirement
+  templates, mint `ready_for_execution` tickets via `ticket.js create`,
+  then resume.
+- `no_tickets_ready` — Phase 3 found 0 tickets in `ready_for_execution`
+  and 0 in `done`/`deferred`. Ticket minting was skipped. See
+  `tickets_pending` above.
+- `no_tickets_done` — Phase 4 refuses to mint a release record when 0
+  tickets are in `done` or `deferred`. Complete at least one ticket
+  before releasing.
 - `approval_beyond_preset` — record the approval (or re-run aggressive),
   then resume.
 - `beta_escalate` — address Beta's concern, then resume.

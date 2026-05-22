@@ -1,0 +1,23 @@
+schema: warpos/sprint/approval/v1
+id: AP-20260521-026
+sprint: SP-20260521-001
+level: plan_approval_required
+required_for: "DreamTeams / CompanyCam adoption confirmed — Plan Contract PC-20260521-0019's seed entry uses `dreamteams` as the first portfolio slug, with implicit understanding that future entries (CompanyCam clone work currently captured at _docs/clones/companycam/ per session promptLog) will join via /portfolio:register or /portfolio:bootstrap. Operator has explicitly committed: (a) the DreamTeams brief (5 drafts, latest 2026-05-21T20:20:22Z under _docs/briefs/dreamteams/), and (b) ran /product:clone https://companycam.com/ in this session per .claude/.session-checkpoint.json promptLog at 19:38:46Z. This approval ratifies that adoption is real and the portfolio sprint is not premature."
+linked_ticket: null
+linked_release: null
+linked_decision: null
+state: approved
+requested_by: gamma
+decided_by: cygaco
+decided_at: "2026-05-21T20:40:00.000Z"
+reason: "Operator commitment evidenced by: (a) five completed drafts of the DreamTeams brief over a single 2.5-hour session (18:09Z draft 1 → 20:20Z draft 5), each revision sharpening the validation-layer-as-moat positioning — this is sustained intent, not exploratory drift; (b) operator-typed `/product:clone https://companycam.com/` in plain prompt at 19:38:46Z (session-checkpoint promptLog), demonstrating the second-product is real and CompanyCam clone work has begun; (c) Plan Contract PC-20260521-0019 already names dreamteams as the seed slug with placeholder repo_path C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\dreamteams — operator has not contested the path, accepting the convention. Adoption is confirmed at the level required to justify the portfolio sprint's existence; the sprint is not building infrastructure for hypothetical products. Approval is `approved` (not `pending`) because no further operator input is needed before /sprint:design or /sprint:execute can proceed — the registry seed will be added with dreamteams; CompanyCam clone becomes a /portfolio:register call once that product's brief settles."
+evidence:
+  - "_docs/briefs/dreamteams/dreamteams.brief.md — draft 5, finalized 2026-05-21T20:20:22Z"
+  - "_docs/briefs/dreamteams/history/ — drafts 1-4 preserved, evidence of sustained iteration"
+  - ".claude/.session-checkpoint.json promptLog entry at 2026-05-21T19:38:46Z: `/product:clone https://companycam.com/`"
+  - "_docs/research/dreamteams-staffing-layer/ — deep-research artifacts (claude-report, gemini-report, SYNTHESIS, BRIEF) backing the brief"
+  - "PC-20260521-0019 sprint=SP-20260521-001 user_or_business_outcome explicitly names DreamTeams as the first portfolio product"
+  - "S-4 in granular-stories.md seeds .claude/portfolio/registry.yaml with the dreamteams entry; operator has not requested changes to the slug or placeholder path"
+  - "Operator's prior approval AP-20260521-024 (closed /product:clone skill release) confirms operator is actively building product-skill infrastructure — portfolio is the next natural step"
+created_at: "2026-05-21T20:40:00.000Z"
+updated_at: "2026-05-21T20:40:00.000Z"

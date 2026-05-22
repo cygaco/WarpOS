@@ -1,0 +1,60 @@
+schema: warpos/sprint/ticket/v1
+id: T-20260521-179
+title: "Docs + cosmetic sprint-title updates + RELEASES entry"
+type: docs
+status: done
+sprint: SP-20260521-001
+created_at: "2026-05-21T21:06:32.183Z"
+updated_at: "2026-05-21T21:27:50.818Z"
+owner: null
+owner_agent: null
+risk_level: low
+approval_required: false
+approval_state: not_required
+source_request: "Make WarpOS the command console for a portfolio of products. Each product lives in its own private GitHub repo with team collaborators, side-by-side with WarpOS on disk. WarpOS exposes a single unified /portfolio:* skill family (collapses the existing /product:* into /portfolio:*) so the user has ONE namespace for everything product-related — bootstrap, clone, ponder, import, list, open, new, register, status, dispatch, sync. The user can also 'port' into any product in a separate terminal (via /portfolio:open <slug> --spawn) and run multiple products in parallel, each in its own Claude Code session, while WarpOS remains the home-base terminal."
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260521-0021.yaml"
+linked_requirements:
+  - R-12
+linked_high_level_story: H-1
+linked_granular_story: S-12
+linked_prd: ".claude/project/sprint/requirements/SP-20260521-001/prd.md"
+linked_copy: []
+linked_inputs: []
+linked_trace: []
+linked_acceptance_criteria:
+  - AC-12.1
+  - AC-12.2
+  - AC-12.3
+  - AC-12.4
+linked_issues: []
+linked_decisions: []
+linked_external_services: []
+linked_files:
+  - USER_GUIDE.md
+  - .claude/commands/warp/tour.md
+  - .claude/project/sprint/sprints/SP-20260520-001/current.yaml
+  - .claude/project/sprint/sprints/SP-20260520-002/current.yaml
+  - RELEASES.md
+linked_tests: []
+linked_commits: []
+linked_prs: []
+linked_release: null
+description: "Add two USER_GUIDE.md sections (Working a portfolio + Multi-terminal parallel products). Update /warp:tour to mention /portfolio:*. Cosmetic title updates: SP-20260520-001 (/product:clone -> /portfolio:clone), SP-20260520-002 (/product:import -> /portfolio:import). Append RELEASES.md sprint entry."
+user_value: ""
+business_value: ""
+acceptance_criteria: []
+non_goals: []
+implementation_notes: "DEC-008 USER OVERRIDE applied 21:18Z affects USER_GUIDE.md 'Working a portfolio' section: document that /portfolio:new + /portfolio:adopt now AUTO-create private GitHub repos (no longer a surface-only manual step)."
+qa_notes: ""
+redteam_notes: ""
+trace_notes: ""
+blocked_by: []
+blocks: []
+fix_attempts: []
+ralph_progress: null
+completion_evidence:
+  - "AC-12.1 DONE: USER_GUIDE.md §4.5 'Working a portfolio' + §4.6 'Multi-terminal parallel products' sections present (added in prior session context)"
+  - "AC-12.2 DONE: /warp:tour Step 4 updated to include /portfolio:list + full portfolio:* suite description"
+  - "AC-12.3 DONE: SP-20260520-001 title updated /product:clone → /portfolio:clone; SP-20260520-002 title updated /product:import → /portfolio:import"
+  - "AC-12.4 DONE: RELEASES.md Sprints table row appended for SP-20260521-001 (RL-20260521-016)"
+reopen_history: []

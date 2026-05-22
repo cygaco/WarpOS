@@ -56,6 +56,7 @@ Right now you're in solo mode. Try `/mode:adhoc` when you're ready to build your
 - `/session:handoff` — Save everything about this session so the next one picks up where we left off.
 - `/sleep:quick` — Let me consolidate what I've learned (takes about 2 minutes).
 - `/research:simple` — Need to research something? I'll query multiple AI models and synthesize the results.
+- `/portfolio:list` — Manage a portfolio of products from this WarpOS home base. The `/portfolio:*` suite (`list`, `status`, `open`, `new`, `adopt`, `register`, `dispatch`, `sync`, `bootstrap`, `clone`, `import`, `ponder`) is your one namespace for everything product-related. Each product lives in its own private GitHub repo side-by-side with WarpOS on disk; `/portfolio:open <slug> --spawn` opens a fresh Claude session inside it without leaving WarpOS."
 
 Type `/` in the chat to see all available commands."
 

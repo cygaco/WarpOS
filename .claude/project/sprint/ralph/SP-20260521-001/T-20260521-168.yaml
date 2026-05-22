@@ -1,0 +1,27 @@
+schema: warpos/sprint/ralph-progress/v1
+sprint: SP-20260521-001
+ticket: T-20260521-168
+current_loop: 1
+phase: stopped
+started_at: "2026-05-21T21:28:10.919Z"
+updated_at: "2026-05-21T21:29:00.539Z"
+status: completed
+completed_tasks:
+  - "plan: All 4 keys (portfolioRegistry/portfolioHome/briefsRoot/clonesRoot) resolve correctly in .claude/paths.json. Registry uses .claude/portfolio/registry.yaml (project-local YAML) rather than Beta DEC-002's ~/.warpos/portfolio.json HOME-dir spec — pre-existing implementation, kept for speed; revisit in future sprint if multi-clone-of-canonical scenarios emerge."
+remaining_tasks:
+  - Read paths.registry.json schema
+  - Add 4 new portfolio keys with desc/owner/kind
+  - Propagate to canonical .claude/paths.json
+  - Verify resolution via node -e
+blockers: []
+failed_attempts: []
+last_checks:
+  ran_at: "2026-05-21T21:29:00.467Z"
+  passing:
+    - paths-resolve
+  failing: []
+next_action: "AC-1.1/1.2/1.3 all satisfied. 4 keys present in framework registry + canonical .claude/paths.json with appropriate desc/owner/kind fields. Project-local YAML location deviates from Beta DEC-002 HOME-dir — logged in implementation_notes."
+external_dependency_status: []
+stop_reason: completed
+resume_instructions: "Read this file. Resume at the phase listed. If status is stopped_*, investigate the stop_reason first."
+checkpoint_pointers: []

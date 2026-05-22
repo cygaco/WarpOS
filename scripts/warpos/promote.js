@@ -98,12 +98,31 @@ const EXCLUDE_PREFIXES = [
   "_requirements/_index/", // generated requirements graph
   "_requirements/_shared/", // project-specific test fixtures + helpers
   "_requirements/09-integrations/brightdata/", // project-specific integration
+  // 2026-05-21 Track Privacy/Promotion-Safety (ROADMAP § Privacy / Promotion Safety):
+  // _requirements/00-canonical/ contains the maintainer's actual product specs
+  // (CORE_BRIEF.md, PRODUCT_MODEL.md, USER_COHORTS.md filled with real content,
+  // not framework templates). Without this exclusion, `/warp:promote` would leak
+  // private product data into the canonical clone visible to every WarpOS user.
+  // See codex multi-user/privacy consult 2026-05-21 vector #4.
+  "_requirements/00-canonical/",
   "_docs/research/", // project research artifacts
   "_docs/user-communication/", // project copy/comms
   "_docs/karpathy-auto-research/", // per-run autoresearch logs
+  "_docs/briefs/", // per-product brief drafts (HTML + MD), maintainer-owned
+  "_docs/clones/", // per-competitor clone reports
+  "_docs/imports/", // /portfolio:import questionnaires
+  "_docs/phase0/", // pre-release research notes
+  "_docs/sprint/", // per-sprint working docs
   ".warpos/", // per-install transactional state
   ".env",
   "node_modules/",
+  // 2026-05-21 — warpos-to-update.md is being deprecated in favor of ROADMAP.md
+  // (see ROADMAP § Deprecated Trackers). Not currently matched by FRAMEWORK_PREFIXES
+  // but excluded explicitly as belt-and-suspenders against any future widening.
+  "warpos-to-update.md",
+  // Hidden sync artifacts used by /warp:promote itself — must not propagate.
+  ".warpos-sync.json",
+  ".warpos-sync-commit-msg.txt",
   // Roadmaps are NEVER propagated. Product repos own ROADMAP.md outright.
   // Canonical WarpOS uses ROADMAP.md for the framework backlog; consumers
   // receive a clean scaffold via scripts/warpos/generate-roadmap-scaffold.js

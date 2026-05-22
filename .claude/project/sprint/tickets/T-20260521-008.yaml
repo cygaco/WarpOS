@@ -1,0 +1,102 @@
+schema: warpos/sprint/ticket/v1
+id: T-20260521-008
+title: "/portfolio:open — attach mode + --spawn multi-terminal launcher"
+type: feature
+status: abandoned
+sprint: SP-20260521-001
+created_at: "2026-05-21T00:00:00.000Z"
+updated_at: "2026-05-21T21:12:06.612Z"
+owner: null
+owner_agent: alpha
+risk_level: medium
+approval_required: false
+approval_state: not_required
+source_request: "WarpOS as portfolio command console — multi-terminal launcher"
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260521-0021.yaml"
+linked_requirements:
+  - R-15
+  - R-16
+  - R-17
+  - R-18
+linked_high_level_story: H-2
+linked_granular_story: S-13
+linked_prd: ".claude/project/sprint/requirements/SP-20260521-001/prd.md"
+linked_copy:
+  - C-3
+  - C-4
+  - C-5
+linked_inputs:
+  - IN-4
+  - IN-5
+linked_trace:
+  - TR-2
+  - TR-3
+linked_acceptance_criteria:
+  - AC-13.1
+  - AC-13.2
+  - AC-13.3
+  - AC-14.1
+  - AC-14.2
+  - AC-14.3
+  - AC-14.4
+  - AC-15.1
+  - AC-15.2
+linked_issues: []
+linked_decisions:
+  - DEC-sp-20260521-001-006
+  - DEC-sp-20260521-001-006-addendum
+linked_external_services: []
+linked_files:
+  - ".claude/commands/portfolio/open.md"
+  - scripts/portfolio/spawn.js
+linked_tests: []
+linked_commits: []
+linked_prs: []
+linked_release: null
+description: |
+  Implement /portfolio:open <slug> [--spawn] skill and scripts/portfolio/spawn.js.
+  
+  Attach mode (no --spawn):
+  - Print C-5: absolute path + cd <abs-path> && claude hint + hint to use --spawn.
+  - Emits TR-2 portfolio.open_attempted with spawn_requested: false.
+  
+  Same-CWD guard (R-18, DEC-006 addendum):
+  - If slug.repo_path == process.cwd(), print C-3 warning, exit 0.
+  - Guard fires BEFORE any spawn attempt.
+  
+  --spawn mode platform dispatch (R-16):
+    Windows: wt -w 0 nt -d <repo_path> pwsh -NoExit -Command "claude"  [exact per AC-14.1]
+             fallback: start powershell -NoExit -Command "cd '<repo_path>'; claude"
+             fallback: start cmd /k "cd /d <repo_path> && claude"
+    macOS:   open -a iTerm <repo_path>, fallback: open -a Terminal <repo_path>
+    Linux:   gnome-terminal --working-directory=<repo_path>, fallback: xterm -e "cd <repo_path> && claude"
+  
+  Terminal resolution: which/where at invocation time (IN-5). Never cache result.
+  
+  PATH fallback (R-17, DEC-006 addendum):
+  - If NO terminal binary found on PATH, print C-4 (copyable cd <abs-path> && claude command
+    + supported-terminals list). Exit 0 — graceful degradation, NOT an error (AC-14.4).
+  
+  Non-Windows --spawn: exit 2 with not_implemented_on_platform: <platform> per AC-15.2.
+  
+  Emits TR-2 portfolio.open_attempted + TR-3 portfolio.spawn_result on every invocation.
+user_value: ""
+business_value: ""
+acceptance_criteria: []
+non_goals:
+  - Never retarget CLAUDE_PROJECT_DIR mid-session in current Claude Code instance
+  - No silent failure on missing terminal binary
+implementation_notes: |
+  AC-14.1 exact wt invocation: wt -w 0 nt -d <repo_path> pwsh -NoExit -Command "claude".
+  AC-15.2: exit 2 on non-Windows --spawn with not_implemented_on_platform field.
+  C-4 fallback must include list of supported terminals (wt, powershell, cmd, iTerm, gnome-terminal, xterm).
+qa_notes: ""
+redteam_notes: ""
+trace_notes: ""
+blocked_by:
+  - T-20260521-002
+blocks: []
+fix_attempts: []
+ralph_progress: null
+completion_evidence: []
+reopen_history: []

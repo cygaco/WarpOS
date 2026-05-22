@@ -1,0 +1,38 @@
+schema: warpos/sprint/sprint-progress/v1
+sprint: SP-20260521-001
+updated_at: "2026-05-21T21:08:29.790Z"
+current_phase: design
+current_command: "/sprint:design"
+current_ticket: null
+current_task: null
+current_loop: null
+status: running
+last_completed_step: design_scaffolded_and_tickets_minted
+next_action: "/sprint:execute on first ready_for_execution ticket (T-20260521-168)"
+active_files: []
+modified_files: []
+checks_last_run: null
+checks_passing: []
+checks_failing: []
+blockers: []
+approvals_needed: []
+external_services_needed: []
+issues_opened: []
+tickets_updated:
+  - T-20260521-168
+  - T-20260521-169
+  - T-20260521-170
+  - T-20260521-171
+  - T-20260521-172
+  - T-20260521-173
+  - T-20260521-174
+  - T-20260521-175
+  - T-20260521-176
+  - T-20260521-177
+  - T-20260521-178
+  - T-20260521-179
+ralph_checkpoint: null
+resume_command: "/sprint:execute"
+resume_notes: "Design complete at scale=l. 12 tickets minted (T-168..179) across 6 workstreams. 32 ACs all verified_by: not_applicable (goal_verification absent — architecture sprint). 2 ESDs (gh + terminal binaries, both optional). 2 pending approvals (AP-025 rename, AP-026 dogfood migration). Beta design-review sent at 20:55Z; awaiting."
+safe_to_continue: true
+stop_reason: null

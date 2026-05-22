@@ -1,0 +1,208 @@
+schema: warpos/sprint/plan-contract/v1
+id: PC-20260521-0020
+created_at: "2026-05-21T20:33:10.747Z"
+updated_at: "2026-05-21T20:33:10.747Z"
+sprint: SP-20260521-001
+source_request: "Treat WarpOS as the command console for a portfolio of products (CompanyCam, DreamTeams, etc.). Each product lives in its own private GitHub repo with team collaborators, version-controlled and backed up, side-by-side with WarpOS on disk. WarpOS can address, dispatch into, and manage each — but the products themselves stay off the public WarpOS GitHub."
+source_request_verbatim: |
+  Look at this companycam project, look at this dream teams project, and create a way for these product to basically exist 'inside' warpos, but not be publicly available on our github, but still backed up and version controlled. basically, i want warpos to be the command console from which I build all of my products. btw, dreamteam and the others still need to be accessible to my team, so perhaps side-by-side repos would be good? like dreamteam github repo is private with collaborators, but still 'manageable' by warpos, and my teams own systems
+  
+  first, spin up /mode:adhoc --turbo
+request_type: architecture_change
+interpreted_intent: "Formalize the polyrepo workspace pattern that already exists on disk into a first-class WarpOS capability: a portfolio registry of products (each its own private repo), a /products:* skill family that can list, register, scaffold, dispatch-into, and report status across the whole portfolio, plus a privacy boundary that keeps product-specific artifacts (briefs, clones, runtime state) out of canonical WarpOS public history. Two specific in-flight artifacts must migrate: _docs/briefs/dreamteams/ (real product to build) and _docs/clones/companycam/ (competitive intel) — neither has been committed/pushed yet, so the migration is purely forward-looking."
+user_or_business_outcome: "Single command console from which the user (and their team collaborators) build, ship, and operate every product. The user types /products:open dreamteams and is dropped into that product's working tree with WarpOS skills available; types /products:status and sees every product's WarpOS version, last commit, open sprint, and CI state at a glance; types /products:new <slug> --from-brief dreamteams and gets a fresh private sibling repo scaffolded from the existing brief. Products stay private to GitHub but git-backed-up; WarpOS stays public framework."
+affected_surfaces:
+  - surface: ".claude/paths.json (new keys: productsRegistry, productsHome, briefsRoot, clonesRoot)"
+    evidence_level: verified_from_repo
+    notes: "Today paths.clones and paths.clonesCurrent exist; products keys are net-new."
+  - surface: "~/.warpos/products.json (new HOME-dir registry)"
+    evidence_level: assumed_from_request
+    notes: OS-agnostic registry location. Does not exist yet.
+  - surface: ".claude/commands/products/ (new skill family — list, open, register, new, status, dispatch, from-brief, sync)"
+    evidence_level: verified_from_repo
+    notes: ".claude/commands/products/ does not exist; .claude/commands/product/ (singular) exists for bootstrap/clone/ponder/import."
+  - surface: "scripts/products/ (new script dir)"
+    evidence_level: verified_from_repo
+    notes: Sibling to scripts/product/ which holds bootstrap.js and clone.js.
+  - surface: ".gitignore (canonical WarpOS) — add _docs/briefs/, _docs/clones/"
+    evidence_level: verified_from_repo
+    notes: "Today these paths are NOT ignored; both folders exist as untracked."
+  - surface: "framework/templates/products/ (new — product-repo scaffold templates)"
+    evidence_level: inferred_from_repo
+    notes: Pattern follows existing framework/templates/sprint/init/.
+  - surface: "_docs/briefs/dreamteams/ (migration source — never committed)"
+    evidence_level: verified_from_repo
+    notes: "git status: untracked. Safe to move."
+  - surface: "_docs/clones/companycam/ (migration source — never committed)"
+    evidence_level: verified_from_repo
+    notes: "git status: untracked. Safe to move."
+  - surface: "framework/paths.registry.json (declares new path keys to downstream consumers)"
+    evidence_level: verified_from_repo
+    notes: "Lives in canonical, propagated to consumers via /warp:update."
+  - surface: ".claude/manifest.json (per-project manifest — may need productsRegistry pointer)"
+    evidence_level: inferred_from_repo
+    notes: "Manifest already carries warpos.source; could carry portfolio.role: framework|product."
+current_behavior:
+  evidence_level: verified_from_repo
+  notes: "WarpOS canonical is at version 0.8.2 (public on cygaco/WarpOS). 8+ sibling project dirs already exist on disk under C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\: aiweb, jobhunter-app, jobhunter-app-test-system, JobHunter, Dashboard, Nexus, Keyword Intelligence, a2a-inspector. /warp:promote, /warp:update, /warp:release, /warp:check already perform cross-repo work but assume a bilateral product↔canonical relationship — no portfolio awareness. No products registry, no /products:* skill family, no privacy boundary preventing product briefs from being committed to canonical WarpOS public history. _docs/briefs/dreamteams/ and _docs/clones/companycam/ are uncommitted-and-untracked today; they would leak on the next blanket commit unless gitignored."
+desired_behavior: "WarpOS canonical exposes a /products:* skill family backed by a HOME-dir registry (~/.warpos/products.json) that lists every product the user manages, its on-disk path, its GitHub remote, its WarpOS version, and its current sprint state. The user can list, open, scaffold, dispatch-into, and report on the portfolio from inside WarpOS. Product-specific artifacts (briefs, clones, runtime state, sprint trackers) are gitignored in canonical WarpOS and live instead under each product's private sibling repo. /products:new <slug> scaffolds a new private sibling (gh repo create --private gated behind --create-remote; off by default). Existing /warp:* skills continue to work but learn to read the portfolio registry instead of walking the parent directory. Migration: dreamteams + companycam briefs move from _docs/briefs/clones inside canonical into their own private sibling repos."
+scope:
+  size: l
+  risk_level: medium
+  complexity_drivers:
+    - "Cross-repo state: registry must stay consistent with on-disk reality and with each product's framework-installed.json."
+    - "Privacy boundary: every artifact currently in canonical must be classified as framework (stays) vs product (moves)."
+    - "Two existing in-flight products (dreamteams brief + companycam clone) require a careful first migration that becomes the convention."
+    - "GitHub remote operations (gh repo create --private) sit on the autonomy boundary — needs an opt-in flag, not default-on."
+    - "Skill suite is net-new (~7-8 skills) plus 3-5 new path keys plus a registry schema."
+scope_variants:
+  minimal_safe:
+    summary: "Registry-only. Add ~/.warpos/products.json, paths.productsRegistry/productsHome, gitignore _docs/briefs/ and _docs/clones/ in canonical. Ship 3 skills: /products:list, /products:register, /products:open. User creates the private GitHub repos manually; the skill just records what's where on disk. Migrate dreamteams + companycam briefs by hand into freshly-created private sibling repos. No automation around scaffolding, dispatch, or status reporting."
+    tradeoffs:
+      - "Pro: ~1-2 days of work, zero net-new external service usage, fully reversible."
+      - "Pro: Establishes the registry primitive that every future portfolio feature builds on."
+      - "Con: User still has to cd into each product manually to run skills there — the 'command console' framing is half-delivered."
+      - "Con: No scaffolding means each new product is a manual setup (git init, gh repo create, /warp:setup, etc.)."
+  recommended:
+    summary: "Workspace orchestrator. Minimal_safe PLUS: /products:new <slug> (scaffolds sibling repo, runs /warp:setup; optional --create-remote calls gh repo create --private), /products:from-brief <slug> (migrates an existing _docs/briefs/<slug> or _docs/clones/<slug> into a new sibling), /products:status (portfolio dashboard: WarpOS version, last commit, sprint state, open PRs), /products:dispatch <slug> <skill> (run any skill against a sibling product's working tree without cd-ing), /products:sync (pull every product to latest WarpOS in one pass). The command-console framing is delivered. Migration of dreamteams + companycam goes through /products:from-brief as the dogfooded first use."
+    tradeoffs:
+      - "Pro: Delivers the 'WarpOS as command console' value prop in full."
+      - "Pro: /products:from-brief turns the existing dreamteams/companycam migration into the first reference run, validating the design end-to-end."
+      - "Pro: Composes with existing /warp:* — /products:sync is just a portfolio-aware /warp:update."
+      - "Con: ~1-2 weeks of work; 7-8 new skills + scripts + templates + paths additions."
+      - "Con: /products:new --create-remote touches GitHub remote (gh repo create) — needs opt-in flag and clear failure modes if gh CLI absent / not authenticated."
+      - "Con: Dispatch semantics need care — running a skill 'against' a sibling means changing CLAUDE_PROJECT_DIR and re-resolving paths, which is a non-trivial pattern."
+  expanded:
+    summary: "Portfolio operating system. Recommended PLUS: cross-product memory (~/.warpos/portfolio/memory/ — shared learnings ranked across the portfolio), /sprint:portfolio (single dashboard of every active sprint across every product), per-product agent overrides (each product can pin/customize agents while inheriting canonical defaults), encrypted backup of per-product runtime state (events.jsonl, learnings.jsonl, traces.jsonl) to a private cloud target, team-collaborator metadata (registry tracks GitHub access, surfaces in /products:status). Aimed at the moment where there are 10+ products and a team of 3+ collaborators."
+    tradeoffs:
+      - "Pro: Becomes a real multi-tenant developer platform; team-shareable."
+      - "Pro: Cross-product memory is the only path to learning patterns across products (e.g. 'this builder mistake happens across 4 of your products')."
+      - "Con: 4-8 weeks of work, much of which is speculative until there are actually 5+ products + 2+ collaborators using the recommended scope first."
+      - "Con: Encrypted-backup target introduces a real external-service dependency (S3 / Backblaze / encrypted git LFS) and secret-management surface."
+      - "Con: Team-collaborator metadata leaks into the registry — privacy classification gets more complicated."
+assumptions:
+  safe:
+    - "Both existing briefs (_docs/briefs/dreamteams, _docs/clones/companycam) are untracked and never pushed; they can be moved or gitignored without history rewrite. Verified via `git ls-files` returning empty."
+    - "The user has gh CLI installed and authenticated (gh is used by the existing /warp:release flow)."
+    - "The user runs Windows + Git Bash + PowerShell; pathing uses paths.json + lib/paths.js, never hardcoded Unix literals."
+    - "Sibling-repo layout (Projects/<product>) is the existing convention — no need to invent a workspace root directory."
+    - "Adhoc + turbo is the appropriate mode; the user explicitly requested it and the work is multi-skill, multi-script, with Beta consultations expected."
+  unsafe:
+    - "Assumes the team-collaborator model is GitHub-only. If the user later wants GitLab / Bitbucket / self-hosted, the registry schema needs a remote.type field from day one (recommend including it)."
+    - "Assumes /products:dispatch should change CLAUDE_PROJECT_DIR and re-resolve paths.json against the target. Alternative is spawning a subprocess per dispatch, which is slower but more isolated. Picks one without user input."
+    - "Assumes the user wants briefs to LIVE in product repos (not just be backed up there). Could instead live in a separate per-product 'planning' repo. Defaulting to in-product-repo for simplicity."
+    - "Assumes per-product runtime state (events, memory, traces) stays inside the product repo. Could centralize to ~/.warpos/portfolio/ instead. Defaulting to in-product since that's how WarpOS already works."
+  needs_user_or_beta_review:
+    - "Whether dreamteams should bootstrap as a brand-new repo or live as a private fork/sibling of vrwithkr/dream-team-kit (cited in the brief as a collaborator candidate)."
+    - "Whether _docs/briefs/ and _docs/clones/ should be gitignored in canonical OR explicitly carved out for cases where a brief IS intended to be public (e.g. an OSS product's brief). Recommend gitignore-by-default + an opt-in marker file for OSS briefs."
+    - "Whether /products:new should ALWAYS gate gh repo create behind --create-remote OR turbo-scope allows it. Beta-consulted: defaulting to gated regardless of turbo."
+    - "Whether the registry should ALSO sync to a private 'warpos-portfolio' GitHub repo (backup + team-share + cross-machine). Recommended as opt-in V2; not in minimal_safe or recommended scope."
+    - "Per the dreamteams brief, this work is upstream of an eventual dreamteams MVP — confirm that landing portfolio infrastructure first (rather than starting the dreamteams build) is the correct sequencing."
+open_questions:
+  blocking: []
+  non_blocking:
+    - "Should the registry use a flat JSON file or SQLite for query speed once there are 10+ products?"
+    - "Should each registered product get its own routing trace lane in paths.sprintDecisions, or share canonical's?"
+    - "How does /products:dispatch interact with mode markers — does dispatch carry the current mode (solo/adhoc/oneshot) into the target product, or does the target product have its own mode marker?"
+    - "Should /products:sync run /warp:update sequentially across products, or fan out in parallel (latter risks gh remote rate limits)?"
+non_goals:
+  - "Public WarpOS does NOT learn about specific private products. Registry stays HOME-dir only; nothing leaks into canonical's git history."
+  - "Not building a hosted dashboard or web UI — /products:status is a CLI dashboard."
+  - "Not introducing a new external service dependency beyond what's already used (gh CLI, git, node). No S3, no Linear, no Notion sync."
+  - "Not building dreamteams or any product feature in this sprint — this sprint is the infrastructure layer ONLY."
+  - "Not changing the WarpOS canonical release pipeline. /warp:release continues to work; /products:sync wraps /warp:update without replacing it."
+  - "Not formalizing team-collaborator management (auth, permissions, roles). That's expanded scope."
+  - "Not migrating any of the OTHER existing sibling repos (aiweb, jobhunter-app, etc.) into the registry automatically. They opt in via /products:register."
+requirement_areas:
+  - "paths-and-registry: paths.json keys, registry schema, registry persistence"
+  - "skills-products-family: /products:list, :open, :register, :new, :status, :dispatch, :from-brief, :sync"
+  - "scaffolding-and-templates: framework/templates/products/ — repo scaffold, default .claude/, default README, default .gitignore"
+  - "privacy-boundary: gitignore canonical _docs/briefs/ + _docs/clones/, classify which artifacts are framework vs product"
+  - "migration-first-runs: dreamteams + companycam as the dogfooded first /products:from-brief runs"
+  - "cross-repo-dispatch: how /products:dispatch resolves CLAUDE_PROJECT_DIR, paths.json, and hook environments for a target sibling"
+  - "remote-creation-policy: gh repo create gated behind --create-remote; failure modes when gh absent or unauthenticated"
+  - "docs-and-tour: USER_GUIDE updates, /warp:tour update, RELEASES entry"
+high_level_story_candidates:
+  - "As a builder, I want to see every product I'm working on so I can pick what to open without remembering paths."
+  - "As a builder, I want to scaffold a new private product with one command so my dreamteams or companycam-clone work starts on a fresh, properly-installed substrate."
+  - "As a builder, I want to dispatch a WarpOS skill against any product from inside WarpOS so I don't context-switch by cd-ing."
+  - "As a builder, I want existing brief/clone work to migrate cleanly into its own private repo so the canonical WarpOS public history stays free of product strategy."
+  - "As a team-lead, I want my products to be backed up via private GitHub repos that my collaborators can clone so we can build together."
+  - "As an operator, I want canonical WarpOS to never accidentally leak product briefs into its public history so privacy is structural, not vigilance-based."
+granular_story_candidates:
+  - "Add paths.productsRegistry, paths.productsHome, paths.briefsRoot, paths.clonesRoot to framework/paths.registry.json and propagate to canonical .claude/paths.json."
+  - "Define a registry schema (warpos/products-registry/v1) at schemas/products/registry.schema.json with fields: products[].slug, .repo_path, .github_url, .warpos_version, .last_synced, .role."
+  - "Implement scripts/products/registry.js — read, write, atomic-save, list, find-by-slug, validate."
+  - "Implement /products:list — pretty-print the registry with status indicators."
+  - "Implement /products:register <slug> <path> [<github-url>] — append an entry to the registry; idempotent."
+  - "Implement /products:open <slug> — print absolute path + reminder to cd / open Claude Code there."
+  - "Implement /products:new <slug> [--create-remote] [--from-brief <slug>] — scaffold a new sibling repo using framework/templates/products/, run /warp:setup, optionally `gh repo create --private`."
+  - "Implement /products:from-brief <slug> — copy an existing _docs/briefs/<slug> or _docs/clones/<slug> into a freshly-created sibling repo via /products:new."
+  - "Implement /products:status — for each registered product, surface WarpOS version, last commit, dirty state, current sprint, GitHub remote status."
+  - "Implement /products:dispatch <slug> <skill> [args] — locate the product, set CLAUDE_PROJECT_DIR, invoke the skill via subprocess."
+  - "Implement /products:sync — run /warp:update across every product in the registry, sequentially."
+  - Add _docs/briefs/ and _docs/clones/ to canonical .gitignore.
+  - "Write framework/templates/products/README.md.tmpl, .gitignore.tmpl, .claude/paths.json.tmpl as the default scaffold."
+  - "Migrate _docs/briefs/dreamteams/ → new private repo dreamteams (via /products:from-brief)."
+  - "Migrate _docs/clones/companycam/ → new private repo companycam-clone (via /products:from-brief)."
+  - "Update USER_GUIDE.md with a 'Working across a portfolio' section."
+  - "Update /warp:tour to mention the products family."
+  - "Smoke-test the dispatch contract: register a sibling, /products:dispatch <slug> /check:requirements, confirm the skill runs against the sibling, not canonical."
+workstream_candidates:
+  - "WS-A — Registry primitives (paths + schema + registry.js + /products:list, :register, :open)"
+  - "WS-B — Scaffolding (framework/templates/products/ + /products:new + /products:from-brief + migration of dreamteams/companycam)"
+  - "WS-C — Dispatch + Status (cross-repo dispatch contract + /products:dispatch + /products:status + /products:sync)"
+  - "WS-D — Privacy + Docs (canonical .gitignore additions + USER_GUIDE + /warp:tour + RELEASES entry)"
+preliminary_ticket_candidates:
+  allowed: false
+  candidates: []
+  notes: "Sprint is size=l, risk=medium, scope=architecture_change — design_required is true. Ticket minting deferred to /sprint:design."
+external_service_dependencies:
+  status: possible
+  required: []
+  possible:
+    - "gh CLI (already a runtime dep elsewhere in WarpOS) — used by /products:new --create-remote for `gh repo create --private`. Requires the user to be authenticated; failure mode is well-defined."
+    - "GitHub API (via gh CLI) — same; only invoked when --create-remote is passed."
+  notes: "No new services. Only existing gh authentication is exercised, and only behind an opt-in flag."
+approval_boundaries:
+  - "git push origin main on the canonical WarpOS public repo — standard 'Ask first' per CLAUDE.md."
+  - "gh repo create --private on the user's GitHub — gated behind --create-remote flag AND explicit user approval per /products:new invocation. Not auto-fired by turbo scope."
+  - "Moving _docs/briefs/dreamteams/ and _docs/clones/companycam/ out of canonical — destructive in the sense that the files leave canonical's working tree. Confirmed they're untracked, so no history-level loss, but operator should confirm before the move runs."
+  - "Adding new paths.* keys to canonical .claude/paths.json and framework/paths.registry.json — schema-level change that propagates to consumers via /warp:update; not blocking but Beta-flagged."
+  - "Adjusting canonical .gitignore — alters which untracked files are visible in `git status`. Operator-visible, not destructive."
+design_required: true
+execution_allowed_without_design: false
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+lane:
+  type: default
+  value: null
+  isolation_notes: "Single working tree. Sprint touches canonical only — no per-ticket worktree needed."
+beta_review:
+  required: true
+  likely_founder_rejection_risks:
+    - "Recommended variant is ~1-2 weeks; user may push to compress or to expand into the dreamteams build itself."
+    - User may want briefs to stay live in canonical with explicit gitignore rules per-brief rather than blanket gitignore.
+  overbuild_risks:
+    - "Eight skills in /products:* is a large family for a brand-new namespace. /products:dispatch and /products:sync could be deferred to a v2."
+    - "framework/templates/products/ scaffold could conflict with /warp:setup's existing default scaffolding behavior — risk of two sources of truth."
+  missing_context_risks:
+    - "Beta's reply to the four-question consult had not arrived at the time of plan finalization; Alpha decided Class A/B per autonomy table. If Beta returns DIRECTIVE or ESCALATE on any of the four, /sprint:design must absorb the directive before ticket minting."
+    - "Existing sibling repos (aiweb, jobhunter-app, etc.) may already have informal portfolio conventions that this work should align with rather than override."
+    - "vrwithkr/dream-team-kit is referenced in the brief as a collaboration candidate. If a dream-team-kit collaboration spins up before this sprint executes, the dreamteams migration target changes shape."
+plan_quality:
+  status: needs_design
+  confidence: high
+  evidence_gaps:
+    - "Beta consultation pending — sent at 20:27Z, no reply at plan-write time. Alpha decided per autonomy table; design should re-confirm with Beta before ticket minting."
+  fail_reasons: []
+next_recommended_command: "/sprint:design"
+resume_instructions: "If session crashes: read paths.sprintProgress, confirm Plan Contract PC-id, resume with `/sprint:design`. Pending Beta consult is in .claude/agents/00-alex/.system/beta/events.jsonl — search for 'Portfolio-model consultation'. If Beta reply has arrived and contradicts Alpha's autonomy-table decisions, surface to user before continuing to /sprint:design."
+tracker_paths:
+  current_sprint: ".claude/project/sprint/current-sprint.yaml"
+  sprint_progress: ".claude/project/sprint/sprint-progress.yaml"
+  plan_contract: ".claude/project/sprint/plan-contracts/PC-20260521-0020.yaml"
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260521-0020.report.md"
+created_by: alpha
+updated_by: alpha

@@ -844,6 +844,69 @@
       "introducedIn": "0.5.1",
       "docsToken": "paths.briefsCurrent"
     },
+    "clones": {
+      "path": "_docs/clones",
+      "kind": "dir",
+      "owner": "project",
+      "mutable": true,
+      "introducedIn": "0.8.3",
+      "docsToken": "paths.clones",
+      "_note": "Clone-output root for /portfolio:clone (alias of clonesRoot; bare-name registry key kept so docs-tokens lint resolves paths.clones in SP-20260520-001 requirements). Sprint SP-20260520-001."
+    },
+    "clonesCurrent": {
+      "path": "_docs/clones",
+      "kind": "dir",
+      "owner": "runtime",
+      "mutable": true,
+      "introducedIn": "0.8.3",
+      "docsToken": "paths.clonesCurrent",
+      "_note": "Same directory as clones; runtime-write companion. Mirrors briefs/briefsCurrent pattern."
+    },
+    "imports": {
+      "path": "_docs/imports",
+      "kind": "dir",
+      "owner": "project",
+      "mutable": true,
+      "introducedIn": "0.8.3",
+      "docsToken": "paths.imports",
+      "_note": "Import-questionnaire root for /portfolio:import (formerly /product:import). Sprint SP-20260520-002 referenced this key in requirements before the registry entry landed; adding now closes the docs-tokens lint gap."
+    },
+    "importsCurrent": {
+      "path": "_docs/imports",
+      "kind": "dir",
+      "owner": "runtime",
+      "mutable": true,
+      "introducedIn": "0.8.3",
+      "docsToken": "paths.importsCurrent",
+      "_note": "Same directory as imports; runtime-write companion."
+    },
+    "portfolioCommands": {
+      "path": ".claude/commands/portfolio",
+      "kind": "dir",
+      "owner": "framework",
+      "mutable": false,
+      "introducedIn": "0.8.3",
+      "docsToken": "paths.portfolioCommands",
+      "_note": "Portfolio skill suite (/portfolio:* — bootstrap, clone, import, ponder, list, register, new, adopt, sync, status, open, dispatch, alias). Documented in RL-20260521-016 changelog; registry entry landed retroactively to close the docs-tokens lint gap."
+    },
+    "portfolioScripts": {
+      "path": "scripts/portfolio",
+      "kind": "dir",
+      "owner": "framework",
+      "mutable": false,
+      "introducedIn": "0.8.3",
+      "docsToken": "paths.portfolioScripts",
+      "_note": "Portfolio skill backing scripts (bootstrap.js, clone.js, dispatch.js, adopt.js, alias.js, etc). Documented in RL-20260521-016 changelog; registry entry landed retroactively."
+    },
+    "portfolioTemplates": {
+      "path": "framework/templates/portfolio",
+      "kind": "dir",
+      "owner": "framework",
+      "mutable": false,
+      "introducedIn": "0.8.3",
+      "docsToken": "paths.portfolioTemplates",
+      "_note": "Portfolio skill templates (README.md.tmpl etc). Documented in RL-20260521-016 changelog; registry entry landed retroactively."
+    },
     "skillCatalog": {
       "path": ".claude/runtime/skill-catalog.json",
       "kind": "json",
@@ -895,6 +958,44 @@
       "introducedIn": "0.5.1",
       "docsToken": "paths.reasoningFrameworks",
       "_note": "Classification table, framework router, fix-quality levels (0-4), meta-reasoning protocol. Referenced by CLAUDE.md ## Reasoning."
+    },
+    "portfolioHome": {
+      "path": ".claude/portfolio",
+      "kind": "dir",
+      "owner": "project",
+      "mutable": true,
+      "introducedIn": "0.9.0",
+      "docsToken": "paths.portfolioHome",
+      "_note": "Portfolio root directory holding the registry (paths.portfolioRegistry) and any future per-product subdirs. Owned by `project` because operator may add per-product overlays. Sprint SP-20260521-001 / S-1."
+    },
+    "portfolioRegistry": {
+      "path": ".claude/portfolio/registry.yaml",
+      "kind": "yaml",
+      "owner": "project",
+      "mutable": true,
+      "introducedIn": "0.9.0",
+      "docsToken": "paths.portfolioRegistry",
+      "_note": "Canonical product registry (warpos/portfolio-registry/v1). One entry per portfolio product. Consumed by every /portfolio:* skill via scripts/portfolio/registry.js. Sprint SP-20260521-001 / S-1 + S-2."
+    },
+    "briefsRoot": {
+      "path": "_docs/briefs",
+      "kind": "dir",
+      "owner": "project",
+      "mutable": true,
+      "introducedIn": "0.9.0",
+      "aliases": ["briefs"],
+      "docsToken": "paths.briefsRoot",
+      "_note": "Brief-output root for /portfolio:bootstrap (formerly /product:bootstrap; alias remains until v0.10). Same directory as the pre-existing `briefs` key — kept as alias for back-compat. Sprint SP-20260521-001 / S-1."
+    },
+    "clonesRoot": {
+      "path": "_docs/clones",
+      "kind": "dir",
+      "owner": "project",
+      "mutable": true,
+      "introducedIn": "0.9.0",
+      "aliases": ["clones"],
+      "docsToken": "paths.clonesRoot",
+      "_note": "Clone-output root for /portfolio:clone (formerly /product:clone; alias remains until v0.10). Mirrors briefsRoot pattern. Aliases the existing `clones` key already used by .claude/paths.json. Sprint SP-20260521-001 / S-1."
     }
   },
   "lintRules": {

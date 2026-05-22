@@ -36,3 +36,15 @@ DUMP.md
 # WarpOS transaction snapshots (SP-20260513-005 — per-update, per-machine)
 .warpos/transactions/
 runtime/qa-warp-update/
+
+# Portfolio briefs + clones — local-only until adopted into private sibling repos
+# Use /portfolio:adopt <slug> to promote into a versioned private repo.
+# See C-15 (copy.md SP-20260521-001).
+_docs/briefs/
+_docs/clones/
+
+# Runtime artifacts that should never be committed (T-20260522-184; mirrors
+# warp-setup.js#runtimeBlock for canonical's own checkout)
+.claude/.session-checkpoint.json
+.claude/.session-start-commit
+.claude/project/builds/

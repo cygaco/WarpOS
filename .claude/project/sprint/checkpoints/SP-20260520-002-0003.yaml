@@ -1,0 +1,34 @@
+schema: warpos/sprint/sprint-progress/v1
+sprint: SP-20260520-002
+updated_at: "2026-05-21T05:00:59.657Z"
+current_phase: execute
+current_command: "/sprint:execute"
+current_ticket: null
+current_task: null
+current_loop: null
+status: running
+last_completed_step: design_scaffolded_and_tickets_minted
+next_action: "/sprint:release --sprint SP-20260520-002 (after operator does manual paste-test of questionnaire in ≥3 of 5 target surfaces per AC-4.2)"
+active_files: []
+modified_files: []
+checks_last_run: null
+checks_passing: []
+checks_failing: []
+blockers: []
+approvals_needed: []
+external_services_needed: []
+issues_opened: []
+tickets_updated:
+  - T-20260521-160
+  - T-20260521-161
+  - T-20260521-162
+  - T-20260521-163
+  - T-20260521-164
+  - T-20260521-165
+  - T-20260521-166
+  - T-20260521-167
+ralph_checkpoint: null
+resume_command: "/sprint:release --sprint SP-20260520-002"
+resume_notes: "Execute phase complete. 8/8 tickets in_review (skill, generator, templates, introspection, parse mode, telemetry, parity check, output+paths). Round-trip verified: import → fake answers → bootstrap renders full 8-section brief.md. All 6 TRACE events fire. paths.imports + paths.importsCurrent registered. Smoke 11/11 pass. One residual: AC-4.2 manual paste-test in ≥3 live AI surfaces — operator-side validation explicitly deferred to release ticket. Beta consultation still pending."
+safe_to_continue: true
+stop_reason: null

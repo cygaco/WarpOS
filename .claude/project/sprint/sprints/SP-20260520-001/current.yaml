@@ -1,0 +1,139 @@
+schema: warpos/sprint/current-sprint/v1
+id: SP-20260520-001
+title: "/portfolio:clone — explore a competitor product across video/web/reviews and emit cloneable requirements (JTBDs, scored features, voc, gaps, opportunities)"
+objective: "(set by /sprint:plan)"
+status: designing
+created_at: "2026-05-21T02:59:02.750Z"
+updated_at: "2026-05-21T17:50:40.217Z"
+source_request: "Plan a new skill /product:clone that intakes information about a competitor's product (video URL, product website, product name) and emits cloneable competitive analysis under _docs/clones/<slug>/ — JTBDs of their product, scored feature list (build-complexity S/M/L/XL + how-core 1-5), voice-of-customer with quote+source attribution, gaps in their product, and capitalize-able opportunities. Sources to support: videos about the product, the product's own website (one-level link discovery), reviews and adjacent material (G2, ProductHunt, Reddit, HN, Twitter, blogs). Exploration rules: when only a video is given without a name, identify the name and web-search to enrich; when a URL is given, discover and crawl one level deep; try 2-3 review sources. Goal: enable rapid deployment of clones/competing products against companies the operator wants to kill — output detailed enough to feed directly into /product:bootstrap or /sprint:plan."
+interpreted_intent: "Create a new skill /product:clone under .claude/commands/product/ that ingests intake about a competitor's product (URL, video, name) and emits a competitive-clone deliverable set under _docs/clones/<slug>/ — JTBDs, scored feature list (build-complexity S/M/L/XL + how-core 1-5), voice-of-customer with quote attribution, gaps, opportunities. Skill mirrors /product:bootstrap's generator architecture (skill spec + scripts/product/clone.js + framework/templates/product-clone/ + paths registration). Output is detailed enough to feed directly into /product:bootstrap or /sprint:plan for a competing build."
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260521-0017.yaml"
+risk_level: medium
+approval_state: none_required
+current_phase: design
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+lane:
+  type: default
+  value: null
+  isolation_notes: "No isolation needed — skill + generator + templates + paths.json edits are all additive."
+external_services:
+  identified: []
+  blocked: []
+  ready:
+    - ESD-20260521-002
+    - ESD-20260521-003
+  mocked: []
+  deferred:
+    - ESD-20260521-004
+    - "yt-dlp or equivalent video-transcript CLI for --video input (deferred: video input is a future feature, not exercised by smoke tests)"
+    - "MCP transcript service if video provided (deferred: same as above)"
+tickets:
+  proposed: []
+  planned: []
+  designed: []
+  ready_for_execution: []
+  in_progress: []
+  blocked: []
+  waiting_on_human: []
+  waiting_on_external_service: []
+  in_review: []
+  qa_failed: []
+  redteam_failed: []
+  done:
+    - T-20260521-146
+    - T-20260521-148
+    - T-20260521-149
+    - T-20260521-150
+    - T-20260521-156
+    - T-20260521-157
+    - T-20260521-158
+    - T-20260521-159
+  released: []
+  deferred:
+    - T-20260521-147
+    - T-20260521-151
+    - T-20260521-152
+    - T-20260521-153
+    - T-20260521-154
+    - T-20260521-155
+  abandoned: []
+  reopened: []
+  superseded: []
+requirements:
+  prd: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260520-001\\prd.md"
+  high_level_stories: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260520-001\\high-level-stories.md"
+  granular_stories: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260520-001\\granular-stories.md"
+  copy: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260520-001\\copy.md"
+  inputs: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260520-001\\inputs.md"
+  trace: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260520-001\\trace.md"
+  acceptance_criteria: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260520-001\\acceptance-criteria.md"
+  qa_plan: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260520-001\\qa-plan.md"
+  redteam_plan: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260520-001\\redteam-plan.md"
+  release_plan: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260520-001\\release-plan.md"
+checks:
+  lint:
+    status: not_run
+    last_run: null
+    evidence: ""
+  typecheck:
+    status: not_run
+    last_run: null
+    evidence: ""
+  tests:
+    status: not_run
+    last_run: null
+    evidence: ""
+  build:
+    status: not_run
+    last_run: null
+    evidence: ""
+  qa:
+    status: not_run
+    last_run: null
+    evidence: ""
+  redteam:
+    status: not_run
+    last_run: null
+    evidence: ""
+approvals:
+  plan:
+    required: false
+    state: not_required
+    ref: null
+  design:
+    required: false
+    state: not_required
+    ref: null
+  execution:
+    required: false
+    state: not_required
+    ref: null
+  release:
+    required: false
+    state: not_required
+    ref: null
+  external_services:
+    required: false
+    state: not_required
+    ref: null
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260521-0017.report.md"
+  design: null
+  execution: null
+  release: null
+ralph:
+  active: false
+  current_ticket: null
+  current_loop: null
+  status: idle
+  last_checkpoint: null
+  next_action: null
+crash_recovery:
+  last_checkpoint: ".claude/project/sprint/sprint-progress.yaml"
+  resume_command: "/sprint:design"
+  resume_summary: "Sprint SP-20260520-001 design scaffolded (scale=m). Next: mint tickets from granular-stories, then run /sprint:execute."
+  active_files: []
+  dirty_state: false
+  blockers: []
+  safe_to_continue: true

@@ -1,0 +1,81 @@
+schema: warpos/sprint/ticket/v1
+id: T-20260521-002
+title: "Build registry read/write library — scripts/portfolio/lib/registry.js"
+type: feature
+status: abandoned
+sprint: SP-20260521-001
+created_at: "2026-05-21T00:00:00.000Z"
+updated_at: "2026-05-21T21:12:06.157Z"
+owner: null
+owner_agent: alpha
+risk_level: low
+approval_required: false
+approval_state: not_required
+source_request: "WarpOS as portfolio command console — portfolio registry read/write"
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260521-0021.yaml"
+linked_requirements:
+  - R-1
+  - R-2
+linked_high_level_story: H-1
+linked_granular_story: S-3
+linked_prd: ".claude/project/sprint/requirements/SP-20260521-001/prd.md"
+linked_copy:
+  - C-6
+linked_inputs:
+  - IN-6
+linked_trace:
+  - TR-7
+linked_acceptance_criteria:
+  - AC-3.1
+  - AC-3.2
+  - AC-3.3
+  - AC-3.4
+linked_issues: []
+linked_decisions:
+  - DEC-sp-20260521-001-001
+  - DEC-sp-20260521-001-002
+linked_external_services: []
+linked_files:
+  - scripts/portfolio/lib/registry.js
+linked_tests: []
+linked_commits: []
+linked_prs: []
+linked_release: null
+description: |
+  Implement scripts/portfolio/lib/registry.js exposing:
+  - load(): reads ~/.warpos/portfolio.json, returns empty-document shape
+    { schema: "warpos/portfolio-registry/v1", products: {} } if file missing (NOT an error).
+    If corrupt JSON, throws with message "Portfolio registry is corrupt at <path>. Fix manually or delete to reset."
+  - save(data): atomic write — write to .portfolio.json.tmp then rename to portfolio.json.
+    Creates ~/.warpos/ dir with fs.mkdirSync(dir, { recursive: true }).
+  - list(): returns array of product entries from registry.
+  - findBySlug(slug): returns entry or null.
+  - validate(entry): validates against registry.schema.json, returns { valid: boolean, errors: [] }.
+  Uses os.homedir() for HOME expansion at runtime (never cache).
+  Emits TR-7 portfolio.registry_read event on every load().
+user_value: ""
+business_value: ""
+acceptance_criteria: []
+non_goals:
+  - "No caching — always read from disk"
+  - "SIGKILL mid-write safety guaranteed by atomic write (AC-3.3)"
+implementation_notes: "Missing registry = empty shape (AC-3.1). Corrupt registry = exit 1 (IN-6)."
+qa_notes: ""
+redteam_notes: ""
+trace_notes: ""
+blocked_by:
+  - T-20260521-001
+blocks:
+  - T-20260521-003
+  - T-20260521-004
+  - T-20260521-005
+  - T-20260521-006
+  - T-20260521-007
+  - T-20260521-008
+  - T-20260521-009
+  - T-20260521-010
+  - T-20260521-011
+fix_attempts: []
+ralph_progress: null
+completion_evidence: []
+reopen_history: []

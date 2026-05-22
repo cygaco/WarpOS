@@ -9,7 +9,12 @@
     {
       "id": "jtbds",
       "title": "Jobs to be Done",
-      "prompt": "What jobs is the user trying to get done when they hit this problem? List the two or three most load-bearing."
+      "prompt": "What functional jobs is the user trying to get done when they hit this problem? List the two or three most load-bearing. Functional only — the emotional side gets its own section."
+    },
+    {
+      "id": "emotional_promise",
+      "title": "Emotional Promise",
+      "prompt": "Beyond the functional job, what's the emotional promise? What does the product let the user offload (research, decisions, guilt, expertise gap), and what does it let them keep (taste, creative flow, sense of authorship)? One paragraph or a two-column 'they hand over / they keep' list."
     },
     {
       "id": "value_chain",

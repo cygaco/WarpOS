@@ -10,6 +10,7 @@ Every `version.json` bump that produced a capsule under `framework/releases/X.Y.
 
 | Version | Released | Capsule | Summary |
 |---|---|---|---|
+| `0.8.2` | 2026-05-20 | [0.8.2/release.json](framework/releases/0.8.2/release.json) | Patch bump to 0.8.2. Fill in via release notes. |
 | `0.8.1` | 2026-05-20 | [0.8.1/release.json](framework/releases/0.8.1/release.json) | Patch bump to 0.8.1. Fill in via release notes. |
 | `0.1.0` |  | [0.1.0/release.json](framework/releases/0.1.0/release.json) | Release 0.1.0. |
 | `0.1.1` |  | [0.1.1/release.json](framework/releases/0.1.1/release.json) | Release 0.1.1. |
@@ -40,6 +41,12 @@ Every `RL-*` at status=prepared OR =deployed. Each row links to the full `RL-*.y
 
 | Release | Sprint | Status | Target | Deployed | Notes |
 |---|---|---|---|---|---|
+| [RL-20260522-019](.claude/project/sprint/releases/RL-20260522-019.yaml) | [SP-20260522-003](.claude/project/sprint/sprints/SP-20260522-003/) | prepared | staging |  | Maintainer &amp; Product Workflow — .vscode/tasks.json from portfolio registry, /portfolio:open --spawn VS Code preference, aiweb product-delivery ticket (cadence rule) |
+| [RL-20260522-018](.claude/project/sprint/releases/RL-20260522-018.yaml) | [SP-20260522-003](.claude/project/sprint/sprints/SP-20260522-003/) | prepared | staging |  | Install &amp; Release Integrity — manifest coverage, dry-run + rollback, idempotent install, framework-views-fresh + framework-purity gates |
+| [RL-20260522-017](.claude/project/sprint/releases/RL-20260522-017.yaml) | [SP-20260522-001](.claude/project/sprint/sprints/SP-20260522-001/) | prepared | staging |  | Sprint SP-20260522-001 |
+| [RL-20260521-016](.claude/project/sprint/releases/RL-20260521-016.yaml) | [SP-20260521-001](.claude/project/sprint/sprints/SP-20260521-001/) | deployed | internal | 2026-05-21T22:06:41.666Z | /portfolio:* portfolio console — collapse /product:* into /portfolio:* with 12 verbs (bootstrap, clone, ponder, import, list, status, open, new, adopt, register, dispatch, sync) + paths.portfolioRegistry + multi-terminal --spawn launcher + parallel /portfolio:status dashboard + sequential /portfolio:sync + DEC-008 auto private gh repo create |
+| [RL-20260521-015](.claude/project/sprint/releases/RL-20260521-015.yaml) | [SP-20260520-001](.claude/project/sprint/sprints/SP-20260520-001/) | deployed | internal | 2026-05-21T17:54:40.486Z | /product:clone — competitor-product intel skill (JTBDs, features, voice-of-customer, gaps, opportunities) |
+| [RL-20260521-014](.claude/project/sprint/releases/RL-20260521-014.yaml) | [SP-20260520-002](.claude/project/sprint/sprints/SP-20260520-002/) | deployed | internal | 2026-05-21T17:50:08.196Z | /product:import — paste-friendly questionnaire generator for cross-AI product import |
 | [RL-20260513-001](.claude/project/sprint/releases/RL-20260513-001.yaml) | [SP-20260512-001](.claude/project/sprint/sprints/SP-20260512-001/) | deployed | internal-canary | 2026-05-13T04:55:44.364Z | Multi-sprint parallelism (Sprint Workflow v0.2) [changelog](_docs/sprint/CHANGELOG_v0.2.md) |
 | [RL-20260513-002](.claude/project/sprint/releases/RL-20260513-002.yaml) | [SP-20260513-001](.claude/project/sprint/sprints/SP-20260513-001/) | deployed | internal-canary | 2026-05-13T21:55:43.922Z | /product:bootstrap skill — guided product brief in MD/HTML/DOCX [changelog](_docs/sprint/CHANGELOG_0.5.1.md) |
 | [RL-20260513-003](.claude/project/sprint/releases/RL-20260513-003.yaml) | [SP-20260513-002](.claude/project/sprint/sprints/SP-20260513-002/) | deployed | internal-canary | 2026-05-13T21:55:22.704Z | WarpOS provider smoke + RCA + safe-only auto-fix [changelog](_docs/sprint/CHANGELOG_0.5.1.md) |

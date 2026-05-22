@@ -1,0 +1,78 @@
+schema: warpos/sprint/ticket/v1
+id: T-20260521-010
+title: "/portfolio:dispatch — cross-repo skill dispatch with metacharacter guard"
+type: feature
+status: abandoned
+sprint: SP-20260521-001
+created_at: "2026-05-21T00:00:00.000Z"
+updated_at: "2026-05-21T21:12:06.764Z"
+owner: null
+owner_agent: alpha
+risk_level: medium
+approval_required: false
+approval_state: not_required
+source_request: "WarpOS as portfolio command console — cross-product skill dispatch"
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260521-0021.yaml"
+linked_requirements:
+  - R-13
+linked_high_level_story: H-5
+linked_granular_story: S-7
+linked_prd: ".claude/project/sprint/requirements/SP-20260521-001/prd.md"
+linked_copy:
+  - C-9
+linked_inputs:
+  - IN-7
+linked_trace:
+  - TR-4
+linked_acceptance_criteria:
+  - AC-7.1
+  - AC-7.2
+  - AC-7.3
+linked_issues: []
+linked_decisions: []
+linked_external_services: []
+linked_files:
+  - ".claude/commands/portfolio/dispatch.md"
+  - scripts/portfolio/dispatch.js
+linked_tests: []
+linked_commits: []
+linked_prs: []
+linked_release: null
+description: |
+  Implement /portfolio:dispatch <slug> <skill> [args...] skill and scripts/portfolio/dispatch.js.
+  
+  Validation:
+  - slug: must be registered in registry (exit 2 "No product registered as '<slug>'").
+  - skill: must match IN-7 regex ^[a-z0-9:_-]+$. Exit 2 "Invalid skill name '<value>'..." on fail.
+  - Metacharacter guard: block & ; | ` $ > < ( ) in skill argument and ALL args. Exit 2 on hit.
+  
+  Interactive skills warning (C-9):
+  - Before spawning subprocess, print C-9 interactive warning + prompt y/n.
+  - Skip warning only if --no-confirm flag is passed.
+  
+  Execution:
+  - Subprocess: cd <product-path> && claude --print "/<skill> <args>"
+  - Capture stdout/stderr and stream to WarpOS terminal.
+  - Surface exit code verbatim.
+  
+  Hard non-goal: NEVER set CLAUDE_PROJECT_DIR in the current Claude Code instance.
+  Always a new subprocess.
+  
+  Emits TR-4 portfolio.dispatch_run: { slug, skill, interactive_warned, confirmed }.
+user_value: ""
+business_value: ""
+acceptance_criteria: []
+non_goals:
+  - No CLAUDE_PROJECT_DIR retarget in current session
+  - "No parallel dispatch (single slug at a time)"
+implementation_notes: "Metacharacter set: & ; | ` $ > < ( ) — all blocked before any shell invocation."
+qa_notes: ""
+redteam_notes: ""
+trace_notes: ""
+blocked_by:
+  - T-20260521-002
+blocks: []
+fix_attempts: []
+ralph_progress: null
+completion_evidence: []
+reopen_history: []

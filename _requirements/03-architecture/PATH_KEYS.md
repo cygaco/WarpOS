@@ -19,6 +19,10 @@ Markdown convention: reference paths as `paths.X` in prose. Code: `const { PATHS
 | `betaSystem` | `.claude/agents/00-alex/.system/beta` | dir | framework | yes | 0.0.0 |  |
 | `briefs` | `_docs/briefs` | dir | project | yes | 0.5.1 |  |
 | `briefsCurrent` | `_docs/briefs` | dir | runtime | yes | 0.5.1 |  |
+| `briefsRoot` | `_docs/briefs` | dir | project | yes | 0.9.0 | Brief-output root for /portfolio:bootstrap (formerly /produc |
+| `clones` | `_docs/clones` | dir | project | yes | 0.8.3 | Clone-output root for /portfolio:clone (alias of clonesRoot; |
+| `clonesCurrent` | `_docs/clones` | dir | runtime | yes | 0.8.3 | Same directory as clones; runtime-write companion. Mirrors b |
+| `clonesRoot` | `_docs/clones` | dir | project | yes | 0.9.0 | Clone-output root for /portfolio:clone (formerly /product:cl |
 | `commands` | `.claude/commands` | dir | framework | no | 0.0.0 |  |
 | `content` | `.claude/content` | dir | runtime | yes | 0.0.0 |  |
 | `currentStage` | `.claude/agents/00-alex/.system/policy/current-stage.md` | md | project | yes | 0.0.0 |  |
@@ -40,6 +44,8 @@ Markdown convention: reference paths as `paths.X` in prose. Code: `const { PATHS
 | `handoffs` | `.claude/runtime/handoffs` | dir | runtime | yes | 0.0.0 |  |
 | `hookLib` | `scripts/hooks/lib` | dir | framework | no | 0.0.0 |  |
 | `hooks` | `scripts/hooks` | dir | framework | no | 0.0.0 |  |
+| `imports` | `_docs/imports` | dir | project | yes | 0.8.3 | Import-questionnaire root for /portfolio:import (formerly /p |
+| `importsCurrent` | `_docs/imports` | dir | runtime | yes | 0.8.3 | Same directory as imports; runtime-write companion. |
 | `integrationsRoot` | `_requirements/09-integrations` | dir | project | yes | 0.2.0 |  |
 | `judgmentModel` | `.claude/agents/00-alex/.system/beta/judgement-model.md` | md | framework | yes | 0.0.0 |  |
 | `judgmentRecommendations` | `.claude/agents/00-alex/.system/beta/judgement-model-recommendations.md` | md | runtime | yes | 0.0.0 |  |
@@ -58,6 +64,11 @@ Markdown convention: reference paths as `paths.X` in prose. Code: `const { PATHS
 | `patterns` | `patterns` | dir | framework | no | 0.0.0 |  |
 | `plans` | `.claude/runtime/plans` | dir | runtime | yes | 0.0.0 |  |
 | `policy` | `.claude/agents/00-alex/.system/policy` | dir | project | yes | 0.0.0 |  |
+| `portfolioCommands` | `.claude/commands/portfolio` | dir | framework | no | 0.8.3 | Portfolio skill suite (/portfolio:* — bootstrap, clone, impo |
+| `portfolioHome` | `.claude/portfolio` | dir | project | yes | 0.9.0 | Portfolio root directory holding the registry (paths.portfol |
+| `portfolioRegistry` | `.claude/portfolio/registry.yaml` | yaml | project | yes | 0.9.0 | Canonical product registry (warpos/portfolio-registry/v1). O |
+| `portfolioScripts` | `scripts/portfolio` | dir | framework | no | 0.8.3 | Portfolio skill backing scripts (bootstrap.js, clone.js, dis |
+| `portfolioTemplates` | `framework/templates/portfolio` | dir | framework | no | 0.8.3 | Portfolio skill templates (README.md.tmpl etc). Documented i |
 | `providerAutofixLib` | `scripts/warpos/lib/provider-autofix.js` | js | framework | no | 0.5.1 |  |
 | `providerFailureModes` | `.claude/agents/00-alex/.system/policy/provider-failure-modes.json` | json | framework | no | 0.5.1 | Provider failure-mode catalog (SP-20260513-002). 10 entries, |
 | `providerFallbackPolicy` | `.claude/agents/00-alex/.system/policy/provider-fallback.json` | json | framework | no | 0.3.0 |  |

@@ -99,10 +99,21 @@
   "sprintRouting": ".claude/agents/00-alex/.system/policy/sprint-routing.json",
   "briefs": "_docs/briefs",
   "briefsCurrent": "_docs/briefs",
+  "clones": "_docs/clones",
+  "clonesCurrent": "_docs/clones",
+  "imports": "_docs/imports",
+  "importsCurrent": "_docs/imports",
+  "portfolioCommands": ".claude/commands/portfolio",
+  "portfolioScripts": "scripts/portfolio",
+  "portfolioTemplates": "framework/templates/portfolio",
   "skillCatalog": ".claude/runtime/skill-catalog.json",
   "providerSmokeSkill": "scripts/warpos/provider-smoke.js",
   "providerFailureModes": ".claude/agents/00-alex/.system/policy/provider-failure-modes.json",
   "providerRcaLib": "scripts/warpos/lib/provider-rca.js",
   "providerAutofixLib": "scripts/warpos/lib/provider-autofix.js",
-  "reasoningFrameworks": ".claude/project/reference/reasoning-frameworks.md"
+  "reasoningFrameworks": ".claude/project/reference/reasoning-frameworks.md",
+  "portfolioHome": ".claude/portfolio",
+  "portfolioRegistry": ".claude/portfolio/registry.yaml",
+  "briefsRoot": "_docs/briefs",
+  "clonesRoot": "_docs/clones"
 }

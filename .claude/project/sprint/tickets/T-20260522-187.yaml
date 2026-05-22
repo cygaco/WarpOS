@@ -1,0 +1,46 @@
+schema: warpos/sprint/ticket/v1
+id: T-20260522-187
+title: "aiweb cadence-rule ticket — add JSON-LD structured-data block to aiweb landing pages for AI-assistant discoverability (operator may swap for a different aiweb feature at design)"
+type: feature
+status: deferred
+sprint: SP-20260522-003
+created_at: "2026-05-22T05:49:28.567Z"
+updated_at: "2026-05-22T06:07:48.248Z"
+owner: null
+owner_agent: null
+risk_level: low
+approval_required: false
+approval_state: not_required
+source_request: "Sprint 3 of the ROADMAP — Maintainer & Product Workflow. Generate .vscode/tasks.json from portfolio registry so the maintainer can spawn per-product terminal panes with 3 keystrokes; fix /portfolio:open --spawn to prefer `code -n <path>` when running inside VS Code (TERM_PROGRAM=vscode). PER STRATEGY CADENCE RULE: Sprint 3 MUST include at least one product-delivery ticket. User instructed (verbatim): 'And we can use a product delivery ticket from aiweb, I am doing several now, just make one up.' Invent a plausible aiweb deliverable that exercises the new portfolio-tasks workflow."
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260522-0024.yaml"
+linked_requirements: []
+linked_high_level_story: null
+linked_granular_story: null
+linked_prd: null
+linked_copy: []
+linked_inputs: []
+linked_trace: []
+linked_acceptance_criteria: []
+linked_issues: []
+linked_decisions: []
+linked_external_services: []
+linked_files: []
+linked_tests: []
+linked_commits: []
+linked_prs: []
+linked_release: null
+description: ""
+user_value: ""
+business_value: ""
+acceptance_criteria: []
+non_goals: []
+implementation_notes: "Defer pending operator pick of the actual aiweb feature. Cadence rule honored in spirit (sprint has at least one product-or-product-adjacent deliverable via T-186 spawn.js which targets the maintainer's workflow with portfolio products), but a true aiweb product-side feature needs operator scoping."
+qa_notes: ""
+redteam_notes: ""
+trace_notes: ""
+blocked_by: []
+blocks: []
+fix_attempts: []
+ralph_progress: null
+completion_evidence: []
+reopen_history: []

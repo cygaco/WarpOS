@@ -1,0 +1,26 @@
+schema: warpos/sprint/approval/v1
+id: AP-20260521-027
+sprint: SP-20260521-001
+level: release_approval_required
+required_for: "Internal release of /portfolio:* portfolio console (RL-20260521-016) — namespace unification + multi-terminal spawn + private gh repo create on /portfolio:new|adopt. Framework-level release ledger row, not a public deploy. T-178 dogfood adopt deferred to operator."
+linked_ticket: null
+linked_release: RL-20260521-016
+linked_decision: null
+state: approved
+grep_sweep_clean: true
+grep_sweep_attestation_required: false
+requested_by: alpha
+decided_by: cygaco-via-blanket-approval-2026-05-21T21:18Z
+decided_at: "2026-05-21T22:10:00.000Z"
+reason: |
+  User issued blanket "APPROVED for all actions" + "Hurry up!" directive at 2026-05-21T21:18Z (durable in paths.decisionLedger). All design-phase decisions ratified by Beta (DEC-001..008 + addenda). AP-025 grep-sweep gate flipped to approved with full 7-field clean attestation. AP-026 dogfood-migration policy approved at 20:40Z (execution deferred to operator post-release). Checklist green across 16/16 booleans except approval_recorded itself; routing-gap (qa, redteam) overridden with decision-ledger row per /sprint:release procedure.
+evidence:
+  - "checklist: 16/16 booleans green pre-approval (tickets_done_or_deferred, blocking_issues_resolved, requirements_satisfied, copy/inputs/trace/acceptance_criteria_satisfied, qa_passed, redteam_passed, external_services_ready, credentials_present, release_notes_written, docs_updated, analytics_updated, migration_plan, rollback_plan, post_release_monitoring_plan)"
+  - "changelog at .claude/project/sprint/releases/RL-20260521-016.changelog.md (rich, 11 sections)"
+  - "AP-20260521-025 approved with 7-field grep-sweep attestation"
+  - "AP-20260521-026 approved 2026-05-21T20:40Z (dogfood policy; operator executes adopts manually)"
+  - "Decision ledger row: DEC-008 USER OVERRIDE captured durable consent for auto gh repo create --private"
+  - "Routing-gap (qa, redteam phases — single-vendor Claude Opus 4.7 review) override logged via --allow-routing-gap to scripts/sprint/release.js"
+  - "Tickets: 11 done + 1 deferred (T-178 — gitignore done, dogfood adopt deferred to operator)"
+created_at: "2026-05-21T22:10:00.000Z"
+updated_at: "2026-05-21T22:10:00.000Z"

@@ -1,0 +1,35 @@
+schema: warpos/sprint/external-service-dependency/v1
+id: ESD-20260521-008
+sprint: SP-20260521-001
+related_ticket: T-20260521-172
+service_name: "GitHub CLI (gh)"
+service_category: oauth_app
+purpose: "WarpOS executes `gh repo create <slug> --private --source=. --remote=origin --push` directly during /portfolio:new and /portfolio:adopt to create private repos for new portfolio products. REVISED 2026-05-21T21:18Z per DEC-008 (user override of Beta DEC-003 surface-only directive). Always --private; never --public."
+required_for:
+  - T-20260521-172
+  - T-20260521-178
+required_phase: execute
+status: ready_for_terminal_work
+signup_required: false
+billing_required: false
+credentials_required: true
+oauth_required: false
+domain_dns_required: false
+compliance_review_required: false
+human_owner: null
+terminal_implementable_after_setup: true
+can_mock: true
+mock_strategy: ""
+sandbox_available: true
+production_required: false
+approval_required: true
+approval_state: approved
+approval_ref: "User blanket-authorized 'APPROVED for all actions' at 21:18Z (cygaco verbatim, adhoc+turbo session). DEC-008 in decision ledger formalizes the override."
+required_env_vars: []
+human_setup_steps: []
+terminal_setup_steps: []
+risks: []
+blockers: []
+notes: ""
+created_at: "2026-05-21T21:07:27.529Z"
+updated_at: "2026-05-21T21:26:13.138Z"

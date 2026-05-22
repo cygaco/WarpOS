@@ -1,0 +1,43 @@
+schema: warpos/sprint/sprint-progress/v1
+sprint: SP-20260521-001
+updated_at: "2026-05-21T22:07:18.035Z"
+current_phase: release
+current_command: "/sprint:release"
+current_ticket: T-20260521-179
+current_task: null
+current_loop: null
+status: complete
+last_completed_step: release_deployed_or_rolled_back
+next_action: "Sprint closed + retrospected. Operator may run dogfood adopts (T-178 deferred): node scripts/portfolio/adopt.js dreamteams && node scripts/portfolio/adopt.js companycam. Or /sprint:plan for the next sprint."
+active_files: []
+modified_files: []
+checks_last_run: null
+checks_passing: []
+checks_failing: []
+blockers: []
+approvals_needed:
+  - AP-20260521-025
+  - AP-20260521-026
+external_services_needed:
+  - ESD-20260521-005
+  - ESD-20260521-006
+  - ESD-20260521-007
+issues_opened: []
+tickets_updated:
+  - T-20260521-168
+  - T-20260521-169
+  - T-20260521-170
+  - T-20260521-171
+  - T-20260521-172
+  - T-20260521-173
+  - T-20260521-174
+  - T-20260521-175
+  - T-20260521-176
+  - T-20260521-177
+  - T-20260521-178
+  - T-20260521-179
+ralph_checkpoint: null
+resume_command: "/sprint:plan"
+resume_notes: "RL-20260521-016 deployed at internal target. AP-20260521-027 (release approval) bound via cygaco blanket-approval. 11/12 tickets done, T-178 deferred. Sprint retrospected (skeleton mode); review retro.md to amend."
+safe_to_continue: true
+stop_reason: null

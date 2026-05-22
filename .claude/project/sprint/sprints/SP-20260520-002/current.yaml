@@ -1,0 +1,131 @@
+schema: warpos/sprint/current-sprint/v1
+id: SP-20260520-002
+title: "/portfolio:import — generate a Claude/Codex/ChatGPT/Gemini-portable questionnaire to mine product context from another session, then feed /portfolio:bootstrap"
+objective: "(set by /sprint:plan)"
+status: releasing
+created_at: "2026-05-21T02:59:08.137Z"
+updated_at: "2026-05-21T17:50:32.662Z"
+source_request: "Plan a new skill /product:import (renamed mid-prompt from product:convert) that, given the current project context, generates a comprehensive paste-friendly questionnaire for ANOTHER session running in another project — Claude Code, Codex, Claude (web app), ChatGPT (web app), or Gemini (web app) — so that session can answer detailed questions about the product being built there. Answers come back to feed /product:bootstrap. Positioned as a pre-step to /product:bootstrap. Workflow: run /product:import in target project → paste questionnaire elsewhere → bring answers back → /product:bootstrap with answers. Goal: convert a product that is trapped in a non-Claude-Code project (older repo, ChatGPT thread, scattered notes) into a proper Claude Code project with enough context that /product:bootstrap can create real requirements for features that already exist."
+interpreted_intent: "Create a new skill /product:import in .claude/commands/product/ that, run in the target project, inspects local context (PROJECT.md, README, package.json, last N commits) and emits a single paste-friendly Markdown questionnaire artifact at _docs/imports/<slug>/<slug>.questionnaire.md. The questionnaire is structured to be paste-compatible across five target surfaces: Claude Code, Codex, Claude web app, ChatGPT web app, Gemini web app. Sections mirror /product:bootstrap's section set so answers can be brought back and consumed by /product:bootstrap --answers-file. User renamed the skill from /product:convert to /product:import mid-prompt — final name is import."
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260521-0018.yaml"
+risk_level: low
+approval_state: none_required
+current_phase: release
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+lane:
+  type: default
+  value: null
+  isolation_notes: "Additive — no impact on existing skills."
+external_services:
+  identified: []
+  blocked: []
+  ready:
+    - ESD-20260521-002
+    - ESD-20260521-003
+  mocked: []
+  deferred:
+    - ESD-20260521-004
+tickets:
+  proposed: []
+  planned: []
+  designed: []
+  ready_for_execution: []
+  in_progress: []
+  blocked: []
+  waiting_on_human: []
+  waiting_on_external_service: []
+  in_review: []
+  qa_failed: []
+  redteam_failed: []
+  done:
+    - T-20260521-160
+    - T-20260521-161
+    - T-20260521-162
+    - T-20260521-163
+    - T-20260521-164
+    - T-20260521-165
+    - T-20260521-166
+    - T-20260521-167
+  released: []
+  deferred: []
+  abandoned: []
+  reopened: []
+  superseded: []
+requirements:
+  prd: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260520-002\\prd.md"
+  high_level_stories: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260520-002\\high-level-stories.md"
+  granular_stories: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260520-002\\granular-stories.md"
+  copy: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260520-002\\copy.md"
+  inputs: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260520-002\\inputs.md"
+  trace: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260520-002\\trace.md"
+  acceptance_criteria: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260520-002\\acceptance-criteria.md"
+  qa_plan: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260520-002\\qa-plan.md"
+  redteam_plan: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260520-002\\redteam-plan.md"
+  release_plan: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260520-002\\release-plan.md"
+checks:
+  lint:
+    status: not_run
+    last_run: null
+    evidence: ""
+  typecheck:
+    status: not_run
+    last_run: null
+    evidence: ""
+  tests:
+    status: not_run
+    last_run: null
+    evidence: ""
+  build:
+    status: not_run
+    last_run: null
+    evidence: ""
+  qa:
+    status: not_run
+    last_run: null
+    evidence: ""
+  redteam:
+    status: not_run
+    last_run: null
+    evidence: ""
+approvals:
+  plan:
+    required: false
+    state: not_required
+    ref: null
+  design:
+    required: false
+    state: not_required
+    ref: null
+  execution:
+    required: false
+    state: not_required
+    ref: null
+  release:
+    required: false
+    state: not_required
+    ref: null
+  external_services:
+    required: false
+    state: not_required
+    ref: null
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260521-0018.report.md"
+  design: null
+  execution: null
+  release: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\releases\\RL-20260521-015.yaml"
+ralph:
+  active: false
+  current_ticket: null
+  current_loop: null
+  status: idle
+  last_checkpoint: null
+  next_action: null
+crash_recovery:
+  last_checkpoint: ".claude/project/sprint/sprint-progress.yaml"
+  resume_command: "/sprint:release"
+  resume_summary: "Release RL-20260521-015 in preparing state. Run /sprint:release with --id RL-20260521-015."
+  active_files: []
+  dirty_state: false
+  blockers: []
+  safe_to_continue: true

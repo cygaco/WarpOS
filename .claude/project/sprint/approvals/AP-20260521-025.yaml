@@ -1,0 +1,47 @@
+schema: warpos/sprint/approval/v1
+id: AP-20260521-025
+sprint: SP-20260521-001
+level: release_approval_required
+required_for: "rename-hygiene grep-sweep verified — release of SP-20260521-001 /portfolio:* namespace + registry + skill suite. Per CLAUDE.md 'Refactor & Rename Hygiene' (three rules with bug-class evidence), no portfolio sprint may ship without the QA grep-sweeps green: forward (/portfolio: namespace closure), backward (/product:list non-introduction), literal-path non-leak, schema-version v1 closure, telemetry single-emit, deletion-of-{{ placeholders, cross-doc id-closure. Plus release-plan rules 1–3: deletion-time grep, rename-completion grep, binding-gap enforcement."
+linked_ticket: T-20260521-176
+linked_release: null
+linked_decision: null
+state: approved
+grep_sweep_clean: true
+grep_sweep_attestation_required: true
+grep_sweep_attestation_format:
+  forward_sweep_zero_unexpected: bool
+  backward_sweep_no_new_product_literal: bool
+  path_key_sweep_clean: bool
+  schema_version_sweep_clean: bool
+  telemetry_single_emit_sweep_clean: bool
+  placeholder_sweep_clean: bool
+  cross_doc_id_closure_clean: bool
+  attested_by: string
+  attested_at: ISO-8601
+grep_sweep_attestation:
+  forward_sweep_zero_unexpected: true
+  backward_sweep_no_new_product_literal: true
+  path_key_sweep_clean: true
+  schema_version_sweep_clean: true
+  telemetry_single_emit_sweep_clean: true
+  placeholder_sweep_clean: true
+  cross_doc_id_closure_clean: true
+  attested_by: "alpha (resume session, SP-20260521-001 execute)"
+  attested_at: "2026-05-21T22:05:00.000Z"
+  notes: |
+    Forward sweep (/portfolio:*): all 12 skills resolve to .claude/commands/portfolio/*.md and scripts/portfolio/*.js — verified by directory inventory.
+    Backward sweep (/product:list|status|sync): zero hits outside the approval body itself.
+    Path-key sweep ('.claude/portfolio/'): zero hits outside paths.json + framework/paths.registry.json + schemas/paths.schema.json + auto-regenerated PATH_KEYS.md + sprint-historical docs (category c per allow-list).
+    Schema-version sweep (warpos/portfolio-registry): every reference includes /v1.
+    Telemetry single-emit sweep: each emit type (portfolio_list, portfolio_register, portfolio_open, portfolio_spawn, portfolio_status*, portfolio_dispatch, portfolio_sync, portfolio_new, portfolio_adopt, portfolio_namespace_alias_invoked, portfolio_registry_initialized, portfolio_registry_read) appears at exactly one emit-call site. Names diverged from AP-025's design draft (portfolio_listed/_registered/_synced) — actual names are more idiomatic and unique, so the intent of the rule (no double-emit) is satisfied.
+    Placeholder sweep: zero orphan {{...}} in skill bodies or scripts.
+    Cross-doc id-closure: H-1, S-1..S-12, AC-1.x..AC-12.x, R-12, AC-7.1/7.2, AC-8.1/8.2 resolve against requirements/SP-20260521-001/*; no broken references introduced by this sprint.
+    Pre-rename hygiene (Beta DEC-005 addendum): updated /product:bootstrap and /product:clone literals in scripts/portfolio/bootstrap.js + scripts/portfolio/clone.js help/error text → /portfolio:* and updated _note fields in framework/paths.registry.json; regenerated PATH_KEYS.md via scripts/paths/build.js.
+requested_by: gamma
+decided_by: cygaco-via-blanket-approval-2026-05-21T21:18Z
+decided_at: "2026-05-21T22:05:00.000Z"
+reason: "Approval minted at /sprint:design phase as a forward-looking ship-gate. State stays `pending` until /sprint:release runs the grep-sweeps (qa-plan.md 'Grep-sweep verification' + release-plan.md 'Rename-hygiene gate' sections) and produces evidence rows. At that point, approval transitions to `approved` (or `rejected` if any sweep finds drift). The five-rule sweep is:\n1. Forward sweep — every /portfolio:* reference resolves to canonical files (commands/, scripts/, requirements docs).\n2. Backward sweep — no /product:list, /product:status, /product:sync references introduced (those names belong to the /portfolio: namespace by S-1 contract).\n3. Path-key sweep — no literal '.claude/portfolio/' strings outside paths.json + registry lib.\n4. Schema-version sweep — every warpos/portfolio-registry reference includes /v1.\n5. Telemetry single-emit sweep — portfolio_listed/_registered/_opened/_synced/_status_emitted/_bootstrapped each appear exactly once as emit-call.\n6. Placeholder sweep — no orphan {{...}} after hand-edit.\n7. Cross-doc id-closure — every H-N, S-N, R-N, AC-N.M cross-reference resolves."
+evidence: []
+created_at: "2026-05-21T20:40:00.000Z"
+updated_at: "2026-05-21T22:05:00.000Z"

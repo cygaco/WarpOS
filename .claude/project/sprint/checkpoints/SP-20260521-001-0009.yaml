@@ -1,0 +1,43 @@
+schema: warpos/sprint/sprint-progress/v1
+sprint: SP-20260521-001
+updated_at: "2026-05-21T21:30:26.848Z"
+current_phase: execute
+current_command: "/sprint:execute"
+current_ticket: T-20260521-170
+current_task: null
+current_loop: null
+status: stopped
+last_completed_step: beta_design_review_resolved_and_applied
+next_action: "Execute remaining T-171..T-179 in a dedicated builder-dispatched session — gamma can fan out subagents for the 9 remaining tickets."
+active_files: []
+modified_files: []
+checks_last_run: null
+checks_passing: []
+checks_failing: []
+blockers: []
+approvals_needed:
+  - AP-20260521-025
+  - AP-20260521-026
+external_services_needed:
+  - ESD-20260521-005
+  - ESD-20260521-006
+  - ESD-20260521-007
+issues_opened: []
+tickets_updated:
+  - T-20260521-168
+  - T-20260521-169
+  - T-20260521-170
+  - T-20260521-171
+  - T-20260521-172
+  - T-20260521-173
+  - T-20260521-174
+  - T-20260521-175
+  - T-20260521-176
+  - T-20260521-177
+  - T-20260521-178
+  - T-20260521-179
+ralph_checkpoint: null
+resume_command: "/sprint:execute --ticket T-20260521-171"
+resume_notes: "STOPPED — context-budget. 3 of 12 tickets complete (T-168, T-169, T-170 all at in_review). 9 tickets remain: T-171 spawn (medium), T-172 new/adopt/templates (medium, gh auto-create per DEC-008), T-173 status, T-174 dispatch, T-175 sync, T-176 namespace rename (gated by AP-025 grep-sweep), T-177 script migration (blocked_by T-176), T-178 dogfood migration (AP-026 approved), T-179 docs. Recommend dispatching gamma to fan out builders in parallel for T-171..T-175 while you re-tackle T-176 manually (it's a high-blast-radius rename)."
+safe_to_continue: true
+stop_reason: null

@@ -1,0 +1,52 @@
+schema: warpos/sprint/ticket/v1
+id: T-20260521-175
+title: "/portfolio:sync (portfolio-wide /warp:update)"
+type: feature
+status: done
+sprint: SP-20260521-001
+created_at: "2026-05-21T21:06:31.814Z"
+updated_at: "2026-05-21T21:43:29.749Z"
+owner: null
+owner_agent: null
+risk_level: low
+approval_required: false
+approval_state: not_required
+source_request: "Make WarpOS the command console for a portfolio of products. Each product lives in its own private GitHub repo with team collaborators, side-by-side with WarpOS on disk. WarpOS exposes a single unified /portfolio:* skill family (collapses the existing /product:* into /portfolio:*) so the user has ONE namespace for everything product-related — bootstrap, clone, ponder, import, list, open, new, register, status, dispatch, sync. The user can also 'port' into any product in a separate terminal (via /portfolio:open <slug> --spawn) and run multiple products in parallel, each in its own Claude Code session, while WarpOS remains the home-base terminal."
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260521-0021.yaml"
+linked_requirements:
+  - R-3
+linked_high_level_story: H-1
+linked_granular_story: S-8
+linked_prd: ".claude/project/sprint/requirements/SP-20260521-001/prd.md"
+linked_copy:
+  - C-13
+linked_inputs: []
+linked_trace:
+  - TR-11
+linked_acceptance_criteria:
+  - AC-8.1
+  - AC-8.2
+linked_issues: []
+linked_decisions: []
+linked_external_services: []
+linked_files: []
+linked_tests: []
+linked_commits: []
+linked_prs: []
+linked_release: null
+description: "Sequential /warp:update across every registered product. Aggregate status into final summary. No fail-fast — capture failures and continue. Sequential avoids gh rate-limit risk."
+user_value: ""
+business_value: ""
+acceptance_criteria: []
+non_goals: []
+implementation_notes: ""
+qa_notes: ""
+redteam_notes: ""
+trace_notes: ""
+blocked_by: []
+blocks: []
+fix_attempts: []
+ralph_progress: null
+completion_evidence:
+  - "Gamma fan-out 21:42Z: scripts + smoke harnesses + ACs all verified. 83/83 smoke pass."
+reopen_history: []

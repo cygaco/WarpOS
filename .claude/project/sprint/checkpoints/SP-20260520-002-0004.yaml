@@ -1,0 +1,34 @@
+schema: warpos/sprint/sprint-progress/v1
+sprint: SP-20260520-002
+updated_at: "2026-05-21T17:50:24.574Z"
+current_phase: release
+current_command: "/sprint:release"
+current_ticket: null
+current_task: null
+current_loop: null
+status: completed
+last_completed_step: release_deployed
+next_action: "Proceed to /sprint:release for SP-20260520-001 (queued). Operator paste-test (AC-4.2) deferred to first real invocation of /product:import."
+active_files: []
+modified_files: []
+checks_last_run: null
+checks_passing: []
+checks_failing: []
+blockers: []
+approvals_needed: []
+external_services_needed: []
+issues_opened: []
+tickets_updated:
+  - T-20260521-160
+  - T-20260521-161
+  - T-20260521-162
+  - T-20260521-163
+  - T-20260521-164
+  - T-20260521-165
+  - T-20260521-166
+  - T-20260521-167
+ralph_checkpoint: null
+resume_command: "/sprint:release --sprint SP-20260520-001"
+resume_notes: "Sprint SP-20260520-002 closed; release RL-20260521-014 status=deployed target=internal."
+safe_to_continue: true
+stop_reason: null

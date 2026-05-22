@@ -1,0 +1,68 @@
+schema: warpos/sprint/ticket/v1
+id: T-20260521-007
+title: "/portfolio:sync skill — parallel git fetch across all registered products"
+type: feature
+status: abandoned
+sprint: SP-20260521-001
+created_at: "2026-05-21T00:00:00.000Z"
+updated_at: "2026-05-21T21:12:06.538Z"
+owner: null
+owner_agent: alpha
+risk_level: low
+approval_required: false
+approval_state: not_required
+source_request: "WarpOS as portfolio command console — /portfolio:sync"
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260521-0021.yaml"
+linked_requirements:
+  - R-14
+linked_high_level_story: H-1
+linked_granular_story: S-12
+linked_prd: ".claude/project/sprint/requirements/SP-20260521-001/prd.md"
+linked_copy:
+  - C-10
+linked_inputs:
+  - IN-6
+linked_trace:
+  - TR-5
+linked_acceptance_criteria:
+  - AC-12.1
+  - AC-12.2
+  - AC-12.3
+  - AC-12.4
+  - AC-12.5
+linked_issues: []
+linked_decisions: []
+linked_external_services: []
+linked_files:
+  - ".claude/commands/portfolio/sync.md"
+  - scripts/portfolio/sync.js
+linked_tests: []
+linked_commits: []
+linked_prs: []
+linked_release: null
+description: |
+  Implement /portfolio:sync skill and scripts/portfolio/sync.js.
+  Operation: git fetch --prune in all registered products in parallel (Promise.all — AC-12.1).
+  10s timeout per product (AC-12.2). On timeout, mark result as "timed_out" in summary.
+  Fetch-only — NO git merge or git pull under any circumstances (R-14).
+  Output: summary table after all fetches complete. Columns: slug | result (fetched / up-to-date / timed_out / error).
+  Print C-10 copy: "Fetch-only — no merges were performed." after table.
+  Emits TR-5 portfolio.sync_completed event with: product_count, fetched, up_to_date, timed_out, errored counts.
+  Skip products where github_url is null (no remote to fetch from) — show "-" in result column.
+user_value: ""
+business_value: ""
+acceptance_criteria: []
+non_goals:
+  - "No merge, no pull, no push"
+  - "No WarpOS framework update (that is /warp:update)"
+implementation_notes: "Promise.all mandatory. Never git merge. If no github_url, skip row gracefully."
+qa_notes: ""
+redteam_notes: ""
+trace_notes: ""
+blocked_by:
+  - T-20260521-002
+blocks: []
+fix_attempts: []
+ralph_progress: null
+completion_evidence: []
+reopen_history: []

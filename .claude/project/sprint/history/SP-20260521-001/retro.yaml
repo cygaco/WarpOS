@@ -1,0 +1,87 @@
+schema: "warpos/sprint/sprint-retrospective/v1"
+sprint_id: "SP-20260521-001"
+plan_contract_id: "PC-20260521-0021"
+synthesis_mode: "skeleton"
+summary: "<TO FILL>"
+outcomes_shipped:
+  - outcome: "<TO FILL>"
+    evidence: []
+    planned: true
+outcomes_missed:
+  - outcome: "<TO FILL>"
+    reason: "<TO FILL>"
+    disposition: unknown
+plan_quality_actual:
+  predicted_status: needs_design
+  actual_status: "<TO FILL>"
+  predicted_confidence: high
+  evidence_gaps_predicted:
+    - "Namespace unification (rename /product:* → /portfolio:*) is Alpha-decided per autonomy table; needs Beta consultation at design time to confirm the deprecation-alias approach + the 1-2 release window."
+    - "Multi-terminal --spawn launcher is Alpha-decided; needs design-time spec for cross-platform behavior and failure modes."
+  evidence_gaps_actual: []
+  notes: "<TO FILL>"
+scope_variant_actual:
+  planned_variant: recommended
+  actual_variant: unknown
+  adhered: false
+  drift_notes: "<TO FILL>"
+surprises: []
+friction_points:
+  - friction: "<TO FILL>"
+    category: other
+    evidence: []
+    severity: low
+action_items:
+  - action: "<TO FILL>"
+    owner: alpha
+    due_by: "<TO FILL>"
+    linked_friction: ""
+tickets_completed:
+  - T-20260521-168
+  - T-20260521-169
+  - T-20260521-170
+  - T-20260521-171
+  - T-20260521-172
+  - T-20260521-173
+  - T-20260521-174
+  - T-20260521-175
+  - T-20260521-176
+  - T-20260521-177
+  - T-20260521-179
+tickets_deferred:
+  - T-20260521-178
+tickets_abandoned:
+  - T-20260521-001
+  - T-20260521-002
+  - T-20260521-003
+  - T-20260521-004
+  - T-20260521-005
+  - T-20260521-006
+  - T-20260521-007
+  - T-20260521-008
+  - T-20260521-009
+  - T-20260521-010
+  - T-20260521-011
+  - T-20260521-012
+tickets_reopened: []
+issues_encountered: []
+beta_decisions_reviewed: []
+key_tradeoffs: []
+learning_candidates: []
+release_record_ref: "RL-20260521-016"
+synthesis_metadata:
+  model_class: ""
+  provider: ""
+  model_id: ""
+  duration_ms: 0
+  output_chars: 0
+  fallback_reason: null
+signed_off_by: "alpha"
+signed_off_at: "2026-05-21T22:07:06.127Z"
+retro_metadata:
+  synthesized_at: "2026-05-21T22:07:06.127Z"
+  writer_version: "1.0.0"
+  history_record: ""
+  force_overwrite: false
+created_at: "2026-05-21T22:07:06.127Z"
+updated_at: "2026-05-21T22:07:06.127Z"

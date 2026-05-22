@@ -507,6 +507,41 @@
       "const": "_docs/briefs",
       "description": "dir (runtime) — paths.briefsCurrent"
     },
+    "clones": {
+      "type": "string",
+      "const": "_docs/clones",
+      "description": "dir (project) — paths.clones"
+    },
+    "clonesCurrent": {
+      "type": "string",
+      "const": "_docs/clones",
+      "description": "dir (runtime) — paths.clonesCurrent"
+    },
+    "imports": {
+      "type": "string",
+      "const": "_docs/imports",
+      "description": "dir (project) — paths.imports"
+    },
+    "importsCurrent": {
+      "type": "string",
+      "const": "_docs/imports",
+      "description": "dir (runtime) — paths.importsCurrent"
+    },
+    "portfolioCommands": {
+      "type": "string",
+      "const": ".claude/commands/portfolio",
+      "description": "dir (framework) — paths.portfolioCommands"
+    },
+    "portfolioScripts": {
+      "type": "string",
+      "const": "scripts/portfolio",
+      "description": "dir (framework) — paths.portfolioScripts"
+    },
+    "portfolioTemplates": {
+      "type": "string",
+      "const": "framework/templates/portfolio",
+      "description": "dir (framework) — paths.portfolioTemplates"
+    },
     "skillCatalog": {
       "type": "string",
       "const": ".claude/runtime/skill-catalog.json",
@@ -536,6 +571,26 @@
       "type": "string",
       "const": ".claude/project/reference/reasoning-frameworks.md",
       "description": "md (framework) — paths.reasoningFrameworks"
+    },
+    "portfolioHome": {
+      "type": "string",
+      "const": ".claude/portfolio",
+      "description": "dir (project) — paths.portfolioHome"
+    },
+    "portfolioRegistry": {
+      "type": "string",
+      "const": ".claude/portfolio/registry.yaml",
+      "description": "yaml (project) — paths.portfolioRegistry"
+    },
+    "briefsRoot": {
+      "type": "string",
+      "const": "_docs/briefs",
+      "description": "dir (project) — paths.briefsRoot"
+    },
+    "clonesRoot": {
+      "type": "string",
+      "const": "_docs/clones",
+      "description": "dir (project) — paths.clonesRoot"
     }
   }
 }
