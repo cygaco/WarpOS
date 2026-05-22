@@ -257,18 +257,6 @@
       "key": "providerFallbackPolicy"
     },
     {
-      "match": "warpos-to-update\\.md",
-      "key": "warposFlagLedger"
-    },
-    {
-      "match": "warpos-promoted-archive\\.md",
-      "key": "warposPromotedArchive"
-    },
-    {
-      "match": "\\.warpos/promote-reports",
-      "key": "warposPromoteReports"
-    },
-    {
       "match": "\\.claude/project/sprint/current-sprint\\.yaml",
       "key": "sprintCurrent"
     },

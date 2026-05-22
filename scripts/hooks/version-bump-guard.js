@@ -18,9 +18,9 @@
  *   1. Tool is Bash AND command contains `git commit` (heuristic — see
  *      DETECT_GIT_COMMIT below for the exact pattern).
  *   2. Gather staged file paths via `git diff --cached --name-only`.
- *   3. Filter to FRAMEWORK_PREFIXES (mirrored from
- *      scripts/warpos/promote.js — kept in sync via fixture test). Skip
- *      EXCLUDE_PREFIXES.
+ *   3. Filter to FRAMEWORK_PREFIXES (originally mirrored from the now-
+ *      retired scripts/warpos/promote.js; since SP-20260522-001 the list
+ *      is canonical here. EXCLUDE_PREFIXES skipped.
  *   4. If 0 framework-prefix files staged → exit 0.
  *   5. Read version.json#version. Check if framework/releases/<version>/
  *      directory exists.
@@ -57,8 +57,9 @@ const { execSync } = require("child_process");
 
 const DETECT_GIT_COMMIT = /\bgit(\s+-[A-Za-z][^\s]*)*\s+commit\b/;
 
-// Mirror of scripts/warpos/promote.js#FRAMEWORK_PREFIXES. Kept in sync via
-// scripts/sprint/test-version-bump-guard.js (fixture compares both arrays).
+// FRAMEWORK_PREFIXES — canonical here since SP-20260522-001 retired the
+// scripts/warpos/promote.js mirror source. Edit this list when framework-
+// owned top-level dirs change.
 const FRAMEWORK_PREFIXES = [
   ".claude/agents/",
   ".claude/commands/",

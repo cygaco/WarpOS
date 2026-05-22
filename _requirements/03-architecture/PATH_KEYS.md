@@ -120,9 +120,6 @@ Markdown convention: reference paths as `paths.X` in prose. Code: `const { PATHS
 | `systemsFile` | `.claude/project/memory/systems.jsonl` | jsonl | runtime | yes | 0.0.0 |  |
 | `toolsFile` | `.claude/project/events/tools.jsonl` | jsonl | runtime | yes | 0.0.0 |  |
 | `tracesFile` | `.claude/project/memory/traces.jsonl` | jsonl | runtime | yes | 0.0.0 |  |
-| `warposFlagLedger` | `warpos-to-update.md` | md | project | yes | 0.3.0 |  |
-| `warposPromotedArchive` | `warpos-promoted-archive.md` | md | project | yes | 0.3.0 |  |
-| `warposPromoteReports` | `.warpos/promote-reports` | dir | runtime | yes | 0.3.0 |  |
 
 ## Owner classification
 

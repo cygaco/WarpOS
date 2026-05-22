@@ -362,21 +362,6 @@
       "const": ".claude/agents/00-alex/.system/policy/provider-fallback.json",
       "description": "json (framework) — paths.providerFallbackPolicy"
     },
-    "warposFlagLedger": {
-      "type": "string",
-      "const": "warpos-to-update.md",
-      "description": "md (project) — paths.warposFlagLedger"
-    },
-    "warposPromotedArchive": {
-      "type": "string",
-      "const": "warpos-promoted-archive.md",
-      "description": "md (project) — paths.warposPromotedArchive"
-    },
-    "warposPromoteReports": {
-      "type": "string",
-      "const": ".warpos/promote-reports",
-      "description": "dir (runtime) — paths.warposPromoteReports"
-    },
     "sprintRoot": {
       "type": "string",
       "const": ".claude/project/sprint",

@@ -23,7 +23,7 @@ Eleven workstreams (A-K) shipped as source at commit `b3a5ab0`:
   zero-byte deaths to `paths.dispatchDeathsFile`. Dead-PID prune at
   session-start and via `scripts/dispatch/prune-dead-locks.js`.
 - **`/warp:flag` + `/warp:promote-flags`** ledger drain workflow with
-  `paths.warposPromotedArchive` and `paths.warposPromoteReports`.
+  the `warposPromotedArchive` and `warposPromoteReports` keys (both surfaces retired in SP-20260522-001).
 - **Provider-health classifier** (11 states) consumed by `/warp:health`
   and `/warp:setup`. Gemini `--skip-trust` opt-in; smart-context warns
   once per session when `GEMINI_API_KEY` clashes with oauth-personal CLI

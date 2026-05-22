@@ -11,7 +11,10 @@
  *
  * Stages (default = dry-run; --apply executes):
  *   0  Locate canonical clone
- *   1  Promote framework changes (product → canonical)        [--no-promote skips]
+ *   1  [RETIRED] Was product→canonical promote; surface purged in
+ *      SP-20260522-001. Stage retained as no-op so downstream stage
+ *      indices (and --resume-from values) remain stable. `--no-promote`
+ *      still parses but is now redundant.
  *   2  Compute new version (patch | minor | <explicit>)
  *   3  Bump <canonical>/version.json
  *   4  Regen <canonical>/.claude/framework-manifest.json
@@ -183,67 +186,22 @@ function stageLocate(opts) {
   );
 }
 
-// ── stage 1: promote ──────────────────────────────────────
+// ── stage 1: promote (RETIRED) ────────────────────────────
+// The product→canonical promote surface was purged in SP-20260522-001
+// (full upstream-discovery purge). This stage is preserved as a no-op
+// solely so downstream stage indices and --resume-from values stay
+// stable for any operator muscle memory or in-flight docs. Delete
+// the stage entirely (and shift indices down) in a future cleanup
+// sprint when the cost of preserving the vestigial number is higher
+// than the cost of renumbering.
 function stagePromote(opts, canonical) {
-  if (opts.noPromote) {
-    return receipt(
-      1,
-      true,
-      "Promote skipped (--no-promote)",
-      canonical,
-      "n/a",
-      { skipped: true },
-    );
-  }
-  const args = ["scripts/warpos/promote.js", "--to", canonical];
-  if (opts.apply) args.push("--apply");
-  else args.push("--dry-run");
-  args.push("--json");
-  const r = nodeIn(PRODUCT_ROOT, args[0], args.slice(1));
-  let parsed = null;
-  try {
-    parsed = JSON.parse(r.stdout);
-  } catch {
-    /* non-json output */
-  }
-  if (!r.ok) {
-    return receipt(
-      1,
-      false,
-      "Promote failed (engine error)",
-      canonical,
-      "Inspect promote.js stderr; fix root cause; re-run with --resume-from 1",
-      { stderr: r.stderr.slice(0, 500), parsed },
-    );
-  }
-  if (
-    parsed &&
-    parsed.report &&
-    parsed.report.classCounts &&
-    parsed.report.classCounts.C > 0
-  ) {
-    return receipt(
-      1,
-      false,
-      `Promote refused: ${parsed.report.classCounts.C} Class C item(s) need human resolution`,
-      canonical,
-      "Resolve TEMPLATE_REVIEW or SECRET_BLOCK items in source, then --resume-from 1",
-      { promote: parsed },
-    );
-  }
-  const counts =
-    (parsed && parsed.apply && parsed.apply.counts) ||
-    (parsed && parsed.report && parsed.report.counts) ||
-    {};
   return receipt(
     1,
     true,
-    opts.apply
-      ? `Promote applied: ${counts.copied || 0} added, ${counts.updated || 0} updated, ${counts.migrations_copied || 0} migrations`
-      : `Promote dry-run plan ready (${parsed && parsed.total != null ? parsed.total : 0} decisions)`,
+    "Promote stage retired — canonical→product is now the only sync direction (SP-20260522-001); no-op",
     canonical,
-    "Last promote-applied state can be inspected at <canonical>/.warpos-sync.json",
-    { promote: parsed },
+    "n/a — no work performed",
+    { skipped: true, retired: true },
   );
 }
 

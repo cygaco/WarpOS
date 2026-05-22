@@ -79,7 +79,7 @@ Linked: `H-3`, `R-4`.
 Per-file disposition:
 - **`DUMP.md` (17KB session handoff)** — DELETE. It's regenerable via `/session:dump` and should not be committed; add `DUMP.md` to `.gitignore` if not already there.
 - **`DICTIONARY.md` (1 entry)** — FLESH OUT to 5+ entries from current sprint vocabulary (Sprint, Plan Contract, Routing policy, Beta consultation, Ledger discipline, Capsule, Forcing function). Keeps the file but makes it look intentional.
-- **`warpos-to-update.md`** — KEEP at root (it's `paths.warposFlagLedger`, bound to `/warp:flag` and `/warp:promote-flags`) but ADD a header callout explaining "This file is auto-managed by /warp:flag; see paths.warposFlagLedger." So a reader doesn't take it for an abandoned draft.
+- **`warpos-to-update.md`** — KEEP at root (it's `the warposFlagLedger surface (retired in SP-20260522-001)`, bound to `/warp:flag` and `/warp:promote-flags`) but ADD a header callout explaining "This file is auto-managed by /warp:flag; see the warposFlagLedger surface (retired in SP-20260522-001)." So a reader doesn't take it for an abandoned draft.
 - **`issues.md`** — KEEP at root (it's `paths.sprintIssuesLedger`, written by `scripts/sprint/issue.js`) but ADD a header callout explaining its role.
 
 Linked: `H-4`, `R-5`.

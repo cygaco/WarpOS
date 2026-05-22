@@ -605,30 +605,6 @@
       "introducedIn": "0.3.0",
       "docsToken": "paths.providerFallbackPolicy"
     },
-    "warposFlagLedger": {
-      "path": "warpos-to-update.md",
-      "kind": "md",
-      "owner": "project",
-      "mutable": true,
-      "introducedIn": "0.3.0",
-      "docsToken": "paths.warposFlagLedger"
-    },
-    "warposPromotedArchive": {
-      "path": "warpos-promoted-archive.md",
-      "kind": "md",
-      "owner": "project",
-      "mutable": true,
-      "introducedIn": "0.3.0",
-      "docsToken": "paths.warposPromotedArchive"
-    },
-    "warposPromoteReports": {
-      "path": ".warpos/promote-reports",
-      "kind": "dir",
-      "owner": "runtime",
-      "mutable": true,
-      "introducedIn": "0.3.0",
-      "docsToken": "paths.warposPromoteReports"
-    },
     "sprintRoot": {
       "path": ".claude/project/sprint",
       "kind": "dir",
@@ -1172,9 +1148,6 @@
       "dispatchCompletionsFile",
       "providerTmp",
       "providerFallbackPolicy",
-      "warposFlagLedger",
-      "warposPromotedArchive",
-      "warposPromoteReports",
       "sprintCurrent",
       "sprintProgress",
       "sprintIssuesLedger",

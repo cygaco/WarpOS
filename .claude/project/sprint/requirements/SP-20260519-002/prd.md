@@ -62,7 +62,7 @@ These two were flagged in the Plan Contract as `needs_user_or_beta_review`. Reso
 | `AGENTS.md` | verified_from_repo | confirm links resolve after R-1 |
 | `DUMP.md` | verified_from_repo | delete (it's a regenerable handoff) |
 | `DICTIONARY.md` | verified_from_repo | flesh out with sprint vocab (5 entries) |
-| `warpos-to-update.md` | verified_from_repo | keep at root + add header callout (paths.warposFlagLedger binding) |
+| `warpos-to-update.md` | verified_from_repo | keep at root + add header callout (the warposFlagLedger surface (retired in SP-20260522-001) binding) |
 | `issues.md` | verified_from_repo | keep at root + add header callout (paths.sprintIssuesLedger binding) |
 | `RELEASES.md` | verified_from_repo | out of scope (recommended scope variant excludes ledger.js extension) |
 | `USER_GUIDE.md` | inferred_from_repo | targeted drift sweep, optional |

@@ -20,7 +20,6 @@ const TESTS = [
   "test-dispatch-route-guard.js",
   "test-dispatch-telemetry.js",
   "test-provider-health.js",
-  "test-warp-flag.js",
   "test-manifest-guard-product.js",
   "test-dispatch-agent-resolution.js",
   "test-requirement-format-guard.js",
@@ -82,14 +81,6 @@ const checks = [
   {
     name: "paths.json carries agentDispatchGuide",
     ok: fileContains(".claude/paths.json", "agentDispatchGuide"),
-  },
-  {
-    name: "paths.json carries warposFlagLedger",
-    ok: fileContains(".claude/paths.json", "warposFlagLedger"),
-  },
-  {
-    name: "promote.js excludes ROADMAP.md from propagation",
-    ok: fileContains("scripts/warpos/promote.js", '"ROADMAP.md"'),
   },
   {
     name: "ROADMAP.md exists at repo root (canonical framework backlog)",

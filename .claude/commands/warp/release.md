@@ -78,7 +78,7 @@ Stages that mutate state (3-10 in apply mode) write to canonical. Stage 9 pushes
 ## See also
 
 - `scripts/warpos/release-canonical.js` — the orchestrator engine
-- `scripts/warpos/promote.js` — Stage 1 (also usable standalone via `/warp:promote`)
+- Stage 1 (promote) — RETIRED in SP-20260522-001; stage now no-ops to preserve `--resume-from` numbering. Canonical-only sync; no product→canonical channel.
 - `scripts/warpos/release-build.js` — Stage 6 (canonical-side, invoked via spawnSync)
 - `scripts/warpos/release-gates.js` — Stage 7 (canonical-side)
 - `scripts/warpos/update.js` — the inbound counterpart for product → 0.1.x install

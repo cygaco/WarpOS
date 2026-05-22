@@ -19,7 +19,7 @@
 ## Per-sprint additions
 
 - **T-1: Verify `scripts/warpos/promote.js` exclusion of `RELEASES.md` IS a deny-by-default check** — grep the FRAMEWORK_PREFIXES list. If the exclusion is an explicit allowlist instead of a denylist, adding `RELEASES.md` as a literal exclusion may be a no-op against a future new top-level dir. Document the exclusion mechanism in the sprint retro.
-- **T-2: Read `paths.warposPromoteReports` for any prior promotion that touched `ROADMAP.md`** — confirms the existing exclusion has held historically; if not, the new `RELEASES.md` exclusion is at risk too.
+- **T-2: Read `the warposPromoteReports surface (retired in SP-20260522-001)` for any prior promotion that touched `ROADMAP.md`** — confirms the existing exclusion has held historically; if not, the new `RELEASES.md` exclusion is at risk too.
 
 ## Stop-the-bus signals
 

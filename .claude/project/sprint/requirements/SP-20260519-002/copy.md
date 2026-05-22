@@ -58,7 +58,7 @@
 
 > # WarpOS Update Flags
 >
-> > **What this is.** This file is `paths.warposFlagLedger` — an auto-managed ledger of framework improvements discovered while using WarpOS in a consumer project. Drained upstream by `/warp:promote-flags`. Lives at repo root because the `paths.json` binding points here. Do not move without updating `paths.json` and grepping for callers.
+> > **What this is.** This file is `the warposFlagLedger surface (retired in SP-20260522-001)` — an auto-managed ledger of framework improvements discovered while using WarpOS in a consumer project. Drained upstream by `/warp:promote-flags`. Lives at repo root because the `paths.json` binding points here. Do not move without updating `paths.json` and grepping for callers.
 
 **Text (guide, not literal) — `issues.md`:**
 
