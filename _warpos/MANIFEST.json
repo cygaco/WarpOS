@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-05-22T22:51:56.722Z",
+  "generatedAt": "2026-05-22T23:08:12.534Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.8.2",
   "migrations": [],
@@ -2592,6 +2592,20 @@
       "sha256": "286ba645013ac1593d1ae1353de1d064448e74fad4ffab88ff38d373aa1288f6",
       "installedSha": "286ba645013ac1593d1ae1353de1d064448e74fad4ffab88ff38d373aa1288f6"
     },
+    "scripts/warpos/settings/compile.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/warpos/settings/compile.js",
+      "sha256": "8f57954c2aa23c4d0fae65d89a8c20aeeb9f1ff5f016f9168110c642d130a4b0",
+      "installedSha": "8f57954c2aa23c4d0fae65d89a8c20aeeb9f1ff5f016f9168110c642d130a4b0"
+    },
+    "scripts/warpos/settings/test-compile.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/warpos/settings/test-compile.js",
+      "sha256": "5afcf241fddf4628da59dc1dbc972d18dfcad06cc8d6fe012317a0f9366be443",
+      "installedSha": "5afcf241fddf4628da59dc1dbc972d18dfcad06cc8d6fe012317a0f9366be443"
+    },
     "scripts/warpos/manifest/build.js": {
       "owner": "framework",
       "managed": true,
@@ -4103,6 +4117,13 @@
       "source": "scripts/checks/design-system.js",
       "sha256": "f7d08a5169e76c9bec7ffe5c355ffca49180a4d880c9a21214a16a7780fb9292",
       "installedSha": "f7d08a5169e76c9bec7ffe5c355ffca49180a4d880c9a21214a16a7780fb9292"
+    },
+    "scripts/checks/framework-purity.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/framework-purity.js",
+      "sha256": "6bc19bf26128341e8d21732b72f4431ae74bc3dc3e76b610ba73d0463b0b4a96",
+      "installedSha": "6bc19bf26128341e8d21732b72f4431ae74bc3dc3e76b610ba73d0463b0b4a96"
     },
     "scripts/checks/path-usage.js": {
       "owner": "framework",
@@ -6590,6 +6611,10 @@
       "managed": false
     },
     ".claude/project/sprint/tickets/T-20260522-189.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/tickets/T-20260522-190.yaml": {
       "owner": "runtime",
       "managed": false
     },
@@ -10266,6 +10291,22 @@
       "kind": "md",
       "sha256": "eed21b3e9e06da107719cdf4f15d46b64ab583e4f694f1a3578762e0c2b3f026",
       "installedSha": "eed21b3e9e06da107719cdf4f15d46b64ab583e4f694f1a3578762e0c2b3f026"
+    },
+    ".claude/commands/check/framework-purity.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/commands/check/framework-purity.md",
+      "kind": "md",
+      "sha256": "832e7ce03e8bdda749677f7fa5ba98ad06330574132e4a7b317c96d331a75527",
+      "installedSha": "832e7ce03e8bdda749677f7fa5ba98ad06330574132e4a7b317c96d331a75527"
+    },
+    ".claude/commands/check/framework-views-fresh.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/commands/check/framework-views-fresh.md",
+      "kind": "md",
+      "sha256": "2c578f28d389ea0af6fa211f8ae39870a23e3dccdf2f05269fdb27464882939b",
+      "installedSha": "2c578f28d389ea0af6fa211f8ae39870a23e3dccdf2f05269fdb27464882939b"
     },
     ".claude/commands/check/install.md": {
       "owner": "framework",
