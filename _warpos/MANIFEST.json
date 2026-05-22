@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-05-22T22:47:27.505Z",
+  "generatedAt": "2026-05-22T22:51:56.722Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.8.2",
   "migrations": [],
@@ -2578,12 +2578,26 @@
       "sha256": "851c9c568fd1902ecda42c995cb65c1069d86f86c0b87d9fd4057f6d6890f955",
       "installedSha": "851c9c568fd1902ecda42c995cb65c1069d86f86c0b87d9fd4057f6d6890f955"
     },
+    "scripts/warpos/views/regenerate.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/warpos/views/regenerate.js",
+      "sha256": "ba1572c360dee8cb98cc7dd909c3f174e1e8057e2c958fadba13455fd2f92bd3",
+      "installedSha": "ba1572c360dee8cb98cc7dd909c3f174e1e8057e2c958fadba13455fd2f92bd3"
+    },
+    "scripts/warpos/views/test-regenerate.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/warpos/views/test-regenerate.js",
+      "sha256": "286ba645013ac1593d1ae1353de1d064448e74fad4ffab88ff38d373aa1288f6",
+      "installedSha": "286ba645013ac1593d1ae1353de1d064448e74fad4ffab88ff38d373aa1288f6"
+    },
     "scripts/warpos/manifest/build.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/warpos/manifest/build.js",
-      "sha256": "97b4ed58e7e58a3f4103a138eaa5c2bc222348ad83b5d8b3619b2f8fbcbbd137",
-      "installedSha": "97b4ed58e7e58a3f4103a138eaa5c2bc222348ad83b5d8b3619b2f8fbcbbd137"
+      "sha256": "47eac13375126913017943b5de6a15f57fc2a3cca069964e023b5dde9d633c04",
+      "installedSha": "47eac13375126913017943b5de6a15f57fc2a3cca069964e023b5dde9d633c04"
     },
     "scripts/warpos/manifest/test-build.js": {
       "owner": "framework",
@@ -6575,6 +6589,10 @@
       "owner": "runtime",
       "managed": false
     },
+    ".claude/project/sprint/tickets/T-20260522-189.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
     ".claude/project/sprint/sprints/_no-active-sprint/reasoning-auto-approval.md": {
       "owner": "runtime",
       "managed": false
@@ -8942,7 +8960,7 @@
     ".claude/project/reference/agent-dispatch-guide.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/project/reference/agent-dispatch-guide.md",
+      "source": ".claude/project/reference/agent-dispatch-guide.md",
       "kind": "md",
       "sha256": "63ae7406af216c314ceb377c1e922c172bd558bc1ef120b06b1aff7787b6ce9a",
       "installedSha": "63ae7406af216c314ceb377c1e922c172bd558bc1ef120b06b1aff7787b6ce9a"
@@ -8950,7 +8968,7 @@
     ".claude/project/reference/cross-provider-dispatch.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/project/reference/cross-provider-dispatch.md",
+      "source": ".claude/project/reference/cross-provider-dispatch.md",
       "kind": "md",
       "sha256": "afe0fcc574135481725a638645c271cc6a07914ed3bcf22323d089cdeaa89ad7",
       "installedSha": "afe0fcc574135481725a638645c271cc6a07914ed3bcf22323d089cdeaa89ad7"
@@ -8958,7 +8976,7 @@
     ".claude/project/reference/echo-trap-monitoring.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/project/reference/echo-trap-monitoring.md",
+      "source": ".claude/project/reference/echo-trap-monitoring.md",
       "kind": "md",
       "sha256": "8e2f9f841971274a294d40953b0118d783580349883258e056ec4a09ab2072c3",
       "installedSha": "8e2f9f841971274a294d40953b0118d783580349883258e056ec4a09ab2072c3"
@@ -8966,7 +8984,7 @@
     ".claude/project/reference/evolution.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/project/reference/evolution.md",
+      "source": ".claude/project/reference/evolution.md",
       "kind": "md",
       "sha256": "69c950d848e6c7fcaf42bf53b48d517f4631ea788e565ce90a7d3e9700d4721a",
       "installedSha": "69c950d848e6c7fcaf42bf53b48d517f4631ea788e565ce90a7d3e9700d4721a"
@@ -8974,7 +8992,7 @@
     ".claude/project/reference/installer-file-lifecycle.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/project/reference/installer-file-lifecycle.md",
+      "source": ".claude/project/reference/installer-file-lifecycle.md",
       "kind": "md",
       "sha256": "e1638c496f50bffe8e524b7d2c255395469e31700608a7270246aeed9d55c4ca",
       "installedSha": "e1638c496f50bffe8e524b7d2c255395469e31700608a7270246aeed9d55c4ca"
@@ -8982,7 +9000,7 @@
     ".claude/project/reference/karpathy-autoresearch.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/project/reference/karpathy-autoresearch.md",
+      "source": ".claude/project/reference/karpathy-autoresearch.md",
       "kind": "md",
       "sha256": "b4d309690f140dc2d6a4bc8d7cea0638d1a31e5aaa43f26ecce9e9e410ae7742",
       "installedSha": "b4d309690f140dc2d6a4bc8d7cea0638d1a31e5aaa43f26ecce9e9e410ae7742"
@@ -8990,7 +9008,7 @@
     ".claude/project/reference/learning-lifecycle.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/project/reference/learning-lifecycle.md",
+      "source": ".claude/project/reference/learning-lifecycle.md",
       "kind": "md",
       "sha256": "9b4aca0ab9fb29047e43fd1ad5ae1b49f55c44886e7a3f3c011840ad75d554f7",
       "installedSha": "9b4aca0ab9fb29047e43fd1ad5ae1b49f55c44886e7a3f3c011840ad75d554f7"
@@ -8998,7 +9016,7 @@
     ".claude/project/reference/operational-loop.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/project/reference/operational-loop.md",
+      "source": ".claude/project/reference/operational-loop.md",
       "kind": "md",
       "sha256": "2097b64e0a8503321e1eeb934cb0ebfdadb3faf770bc399530845dc2bc107d09",
       "installedSha": "2097b64e0a8503321e1eeb934cb0ebfdadb3faf770bc399530845dc2bc107d09"
@@ -9006,7 +9024,7 @@
     ".claude/project/reference/private-to-public-history.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/project/reference/private-to-public-history.md",
+      "source": ".claude/project/reference/private-to-public-history.md",
       "kind": "md",
       "sha256": "edd24a91e4071d22ba2602d709f6ebd708697d7973b1ff5b88a43ee62006b4dc",
       "installedSha": "edd24a91e4071d22ba2602d709f6ebd708697d7973b1ff5b88a43ee62006b4dc"
@@ -9014,7 +9032,7 @@
     ".claude/project/reference/reasoning-frameworks.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/project/reference/reasoning-frameworks.md",
+      "source": ".claude/project/reference/reasoning-frameworks.md",
       "kind": "md",
       "sha256": "f53dd25163bc2fb28346add7e8c14550b3bed789dd1744a085e38e2fd54a4aac",
       "installedSha": "f53dd25163bc2fb28346add7e8c14550b3bed789dd1744a085e38e2fd54a4aac"
@@ -9022,7 +9040,7 @@
     ".claude/project/reference/recurring-issues-design.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/project/reference/recurring-issues-design.md",
+      "source": ".claude/project/reference/recurring-issues-design.md",
       "kind": "md",
       "sha256": "fee94e0988d85df6ec0a9b64676764b76d2e9c3cf52d60be6bcd18f252c22b84",
       "installedSha": "fee94e0988d85df6ec0a9b64676764b76d2e9c3cf52d60be6bcd18f252c22b84"
@@ -9030,7 +9048,7 @@
     ".claude/project/reference/skill-map.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/project/reference/skill-map.md",
+      "source": ".claude/project/reference/skill-map.md",
       "kind": "md",
       "sha256": "2536028be0bc2094de4adf0087fbeef89eb8a8959b879fcf07dc42fd1b19c9df",
       "installedSha": "2536028be0bc2094de4adf0087fbeef89eb8a8959b879fcf07dc42fd1b19c9df"
@@ -9038,7 +9056,7 @@
     ".claude/project/reference/sprint-workflow.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/project/reference/sprint-workflow.md",
+      "source": ".claude/project/reference/sprint-workflow.md",
       "kind": "md",
       "sha256": "46549e78870ebbc52e0e2cd76e6aea93467f7a57e9d62f886d6e2c538ac09c01",
       "installedSha": "46549e78870ebbc52e0e2cd76e6aea93467f7a57e9d62f886d6e2c538ac09c01"
@@ -9046,7 +9064,7 @@
     ".claude/project/reference/SYSTEMS-REFERENCE.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/project/reference/SYSTEMS-REFERENCE.md",
+      "source": ".claude/project/reference/SYSTEMS-REFERENCE.md",
       "kind": "md",
       "sha256": "2b656cc0c65f5d83550a5274fbb0af32fc2b0616cb20f398ea0f26103d16afde",
       "installedSha": "2b656cc0c65f5d83550a5274fbb0af32fc2b0616cb20f398ea0f26103d16afde"
@@ -9054,7 +9072,7 @@
     ".claude/project/reference/SYSTEMS.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/project/reference/SYSTEMS.md",
+      "source": ".claude/project/reference/SYSTEMS.md",
       "kind": "md",
       "sha256": "19c1d457889afc4584fd2cc5fc30315733fc517dc5adae1b71bbb9d3fcb90685",
       "installedSha": "19c1d457889afc4584fd2cc5fc30315733fc517dc5adae1b71bbb9d3fcb90685"
@@ -9062,7 +9080,7 @@
     ".claude/project/reference/warpos-class-wiring.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/project/reference/warpos-class-wiring.md",
+      "source": ".claude/project/reference/warpos-class-wiring.md",
       "kind": "md",
       "sha256": "f86f922ea3b15ec9e17367d4e2ac6d49dcc3d0bb534ca37015e3c22fc253e5b7",
       "installedSha": "f86f922ea3b15ec9e17367d4e2ac6d49dcc3d0bb534ca37015e3c22fc253e5b7"
@@ -9070,7 +9088,7 @@
     ".claude/project/reference/warpos-launch-roadmap.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/project/reference/warpos-launch-roadmap.md",
+      "source": ".claude/project/reference/warpos-launch-roadmap.md",
       "kind": "md",
       "sha256": "3950b144b6a1bf5c3d70102a97f7d3937c6efd33b2d1dc727d73101fbad309ab",
       "installedSha": "3950b144b6a1bf5c3d70102a97f7d3937c6efd33b2d1dc727d73101fbad309ab"
@@ -9078,7 +9096,7 @@
     ".claude/project/reference/warpos-roadmap.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/project/reference/warpos-roadmap.md",
+      "source": ".claude/project/reference/warpos-roadmap.md",
       "kind": "md",
       "sha256": "5cfaf9a0615c506ef5c8bb4aaf9e471ab2a1acb9296c3a159ddcb0d0781611b9",
       "installedSha": "5cfaf9a0615c506ef5c8bb4aaf9e471ab2a1acb9296c3a159ddcb0d0781611b9"
@@ -9086,7 +9104,7 @@
     ".claude/project/reference/warpos-system-updates-2026-04-15.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/project/reference/warpos-system-updates-2026-04-15.md",
+      "source": ".claude/project/reference/warpos-system-updates-2026-04-15.md",
       "kind": "md",
       "sha256": "3244fbc64ec64c1673261092ecfa3d3c99cb6781ae13eda455cf0962a69af617",
       "installedSha": "3244fbc64ec64c1673261092ecfa3d3c99cb6781ae13eda455cf0962a69af617"
@@ -9268,7 +9286,7 @@
     ".claude/commands/turbo.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/turbo.md",
+      "source": ".claude/commands/turbo.md",
       "kind": "md",
       "sha256": "0d9f147daa1bb25756404ed3abe8287d3008983f43f2b7420fee0309c2419355",
       "installedSha": "0d9f147daa1bb25756404ed3abe8287d3008983f43f2b7420fee0309c2419355"
@@ -9276,7 +9294,7 @@
     ".claude/commands/warp/check.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/warp/check.md",
+      "source": ".claude/commands/warp/check.md",
       "kind": "md",
       "sha256": "28f3a3db1c809213711c0f727a9fdc396bad4b336f54bb261641fedf9eb38e21",
       "installedSha": "28f3a3db1c809213711c0f727a9fdc396bad4b336f54bb261641fedf9eb38e21"
@@ -9284,7 +9302,7 @@
     ".claude/commands/warp/deprecate.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/warp/deprecate.md",
+      "source": ".claude/commands/warp/deprecate.md",
       "kind": "md",
       "sha256": "beab8df394fd62869e5fa99fa456ecc0e045c26207366a94de82b4fb70351712",
       "installedSha": "beab8df394fd62869e5fa99fa456ecc0e045c26207366a94de82b4fb70351712"
@@ -9292,7 +9310,7 @@
     ".claude/commands/warp/doctor.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/warp/doctor.md",
+      "source": ".claude/commands/warp/doctor.md",
       "kind": "md",
       "sha256": "d02a9af248d28659c794813abf8e1cb7456c30df202b59bb2c35420303fee07e",
       "installedSha": "d02a9af248d28659c794813abf8e1cb7456c30df202b59bb2c35420303fee07e"
@@ -9300,7 +9318,7 @@
     ".claude/commands/warp/health.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/warp/health.md",
+      "source": ".claude/commands/warp/health.md",
       "kind": "md",
       "sha256": "46434e020a5e9bc0889596db3b5e3307e0e665b6c63b38d1de6baff93cf8069d",
       "installedSha": "46434e020a5e9bc0889596db3b5e3307e0e665b6c63b38d1de6baff93cf8069d"
@@ -9308,7 +9326,7 @@
     ".claude/commands/warp/release.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/warp/release.md",
+      "source": ".claude/commands/warp/release.md",
       "kind": "md",
       "sha256": "eb34d2da72c37d071dda7a1338015a4b79360308721661d920df297be0e254e7",
       "installedSha": "eb34d2da72c37d071dda7a1338015a4b79360308721661d920df297be0e254e7"
@@ -9316,7 +9334,7 @@
     ".claude/commands/warp/setup.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/warp/setup.md",
+      "source": ".claude/commands/warp/setup.md",
       "kind": "md",
       "sha256": "8c045891b09da6140f2a1411aa11c5d1c4210dd588414e216925e40323bdf1df",
       "installedSha": "8c045891b09da6140f2a1411aa11c5d1c4210dd588414e216925e40323bdf1df"
@@ -9324,7 +9342,7 @@
     ".claude/commands/warp/sync.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/warp/sync.md",
+      "source": ".claude/commands/warp/sync.md",
       "kind": "md",
       "sha256": "adec3ab25fc8fd23a68e0b42cd4865165fb5c07a31fac633b88cd8ea52df2675",
       "installedSha": "adec3ab25fc8fd23a68e0b42cd4865165fb5c07a31fac633b88cd8ea52df2675"
@@ -9332,7 +9350,7 @@
     ".claude/commands/warp/tour.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/warp/tour.md",
+      "source": ".claude/commands/warp/tour.md",
       "kind": "md",
       "sha256": "fe6e97d7df9787d300ca4f1612620651aff83cb045562ddfea83e6855316f6c4",
       "installedSha": "fe6e97d7df9787d300ca4f1612620651aff83cb045562ddfea83e6855316f6c4"
@@ -9340,7 +9358,7 @@
     ".claude/commands/warp/uninstall.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/warp/uninstall.md",
+      "source": ".claude/commands/warp/uninstall.md",
       "kind": "md",
       "sha256": "820cc5e2f0a74fcfb6fa12ef52170e45aec0efc52aea3cba6ccf7e3e887252ec",
       "installedSha": "820cc5e2f0a74fcfb6fa12ef52170e45aec0efc52aea3cba6ccf7e3e887252ec"
@@ -9348,7 +9366,7 @@
     ".claude/commands/warp/update.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/warp/update.md",
+      "source": ".claude/commands/warp/update.md",
       "kind": "md",
       "sha256": "21e522efd9ce1fb668d138c2a1e7f1e966ea16bdfea52765c9a5a5939f9840c7",
       "installedSha": "21e522efd9ce1fb668d138c2a1e7f1e966ea16bdfea52765c9a5a5939f9840c7"
@@ -9356,7 +9374,7 @@
     ".claude/commands/ui/review.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/ui/review.md",
+      "source": ".claude/commands/ui/review.md",
       "kind": "md",
       "sha256": "b5e2f66b1cd8e0d2db12ec9f7ecf5971176eaa4e28ebc855d794fdec5aa8c082",
       "installedSha": "b5e2f66b1cd8e0d2db12ec9f7ecf5971176eaa4e28ebc855d794fdec5aa8c082"
@@ -9364,7 +9382,7 @@
     ".claude/commands/sprint/design.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/sprint/design.md",
+      "source": ".claude/commands/sprint/design.md",
       "kind": "md",
       "sha256": "b5312c341ea574837cbe5905646d2ae5d1247864109c217f0c0b7846b8ccd86c",
       "installedSha": "b5312c341ea574837cbe5905646d2ae5d1247864109c217f0c0b7846b8ccd86c"
@@ -9372,7 +9390,7 @@
     ".claude/commands/sprint/execute.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/sprint/execute.md",
+      "source": ".claude/commands/sprint/execute.md",
       "kind": "md",
       "sha256": "c752d6358e18606c7176b9f957eb6f867aea404ba8a33ed08c967e08c0e03683",
       "installedSha": "c752d6358e18606c7176b9f957eb6f867aea404ba8a33ed08c967e08c0e03683"
@@ -9380,7 +9398,7 @@
     ".claude/commands/sprint/full.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/sprint/full.md",
+      "source": ".claude/commands/sprint/full.md",
       "kind": "md",
       "sha256": "b24d4bc7e52b52e5cb5962671b41a045fa3961f7c71682b2f37ed82a2f2a051e",
       "installedSha": "b24d4bc7e52b52e5cb5962671b41a045fa3961f7c71682b2f37ed82a2f2a051e"
@@ -9388,7 +9406,7 @@
     ".claude/commands/sprint/plan.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/sprint/plan.md",
+      "source": ".claude/commands/sprint/plan.md",
       "kind": "md",
       "sha256": "0dcb15414a18451fa63b0fab71b8ff418fa43490061e11597f55b13cf06e9f15",
       "installedSha": "0dcb15414a18451fa63b0fab71b8ff418fa43490061e11597f55b13cf06e9f15"
@@ -9396,7 +9414,7 @@
     ".claude/commands/sprint/release.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/sprint/release.md",
+      "source": ".claude/commands/sprint/release.md",
       "kind": "md",
       "sha256": "2194f87ff9fbae1499450d9d6f85518c347d8f8884b6424dc6f2d6f79d356033",
       "installedSha": "2194f87ff9fbae1499450d9d6f85518c347d8f8884b6424dc6f2d6f79d356033"
@@ -9404,7 +9422,7 @@
     ".claude/commands/sprint/retrospective.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/sprint/retrospective.md",
+      "source": ".claude/commands/sprint/retrospective.md",
       "kind": "md",
       "sha256": "31121cdefe6a417f0eee73638e0bcbfe07ccd18d1b34bd648fc2a365921ec824",
       "installedSha": "31121cdefe6a417f0eee73638e0bcbfe07ccd18d1b34bd648fc2a365921ec824"
@@ -9412,7 +9430,7 @@
     ".claude/commands/sprint/status.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/sprint/status.md",
+      "source": ".claude/commands/sprint/status.md",
       "kind": "md",
       "sha256": "bbe29fd501a09c24a285dde375f17997d01ba1fac8415e4167422f56d98b514d",
       "installedSha": "bbe29fd501a09c24a285dde375f17997d01ba1fac8415e4167422f56d98b514d"
@@ -9420,7 +9438,7 @@
     ".claude/commands/sleep/deep.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/sleep/deep.md",
+      "source": ".claude/commands/sleep/deep.md",
       "kind": "md",
       "sha256": "767a65d200264af7df11b01f2ef7ffa141cf24374bb05eb4dd223344f5a04f79",
       "installedSha": "767a65d200264af7df11b01f2ef7ffa141cf24374bb05eb4dd223344f5a04f79"
@@ -9428,7 +9446,7 @@
     ".claude/commands/sleep/quick.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/sleep/quick.md",
+      "source": ".claude/commands/sleep/quick.md",
       "kind": "md",
       "sha256": "a37c1b336ecb52a785c0d29706a13c7f207ad488af35c9ed31c0e480f2d2ab33",
       "installedSha": "a37c1b336ecb52a785c0d29706a13c7f207ad488af35c9ed31c0e480f2d2ab33"
@@ -9436,7 +9454,7 @@
     ".claude/commands/skills/cleanup.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/skills/cleanup.md",
+      "source": ".claude/commands/skills/cleanup.md",
       "kind": "md",
       "sha256": "5f9e7d362eca27e9abc07d9a72ce52068403e4e6cff1d87f32adeab10a36f596",
       "installedSha": "5f9e7d362eca27e9abc07d9a72ce52068403e4e6cff1d87f32adeab10a36f596"
@@ -9444,7 +9462,7 @@
     ".claude/commands/skills/create.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/skills/create.md",
+      "source": ".claude/commands/skills/create.md",
       "kind": "md",
       "sha256": "377a0172a64d57c0e8a18bbfa76fa9c71fbdf1e6d9a95aa6ce22107a8d820862",
       "installedSha": "377a0172a64d57c0e8a18bbfa76fa9c71fbdf1e6d9a95aa6ce22107a8d820862"
@@ -9452,7 +9470,7 @@
     ".claude/commands/skills/delete.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/skills/delete.md",
+      "source": ".claude/commands/skills/delete.md",
       "kind": "md",
       "sha256": "638bebc049424677d2059319c4e31b3189915cc114070de2e58e6764fb57ca9b",
       "installedSha": "638bebc049424677d2059319c4e31b3189915cc114070de2e58e6764fb57ca9b"
@@ -9460,7 +9478,7 @@
     ".claude/commands/skills/edit.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/skills/edit.md",
+      "source": ".claude/commands/skills/edit.md",
       "kind": "md",
       "sha256": "849917a7529dc61e91a060793af030dad63ef8a663791c1e66c7d2ca91e20f8d",
       "installedSha": "849917a7529dc61e91a060793af030dad63ef8a663791c1e66c7d2ca91e20f8d"
@@ -9468,7 +9486,7 @@
     ".claude/commands/session/checkpoint.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/session/checkpoint.md",
+      "source": ".claude/commands/session/checkpoint.md",
       "kind": "md",
       "sha256": "091807b655d27da0341b77256526be4fcffc22d87d97667bd4ada73c6b5f4b7a",
       "installedSha": "091807b655d27da0341b77256526be4fcffc22d87d97667bd4ada73c6b5f4b7a"
@@ -9476,7 +9494,7 @@
     ".claude/commands/session/dump.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/session/dump.md",
+      "source": ".claude/commands/session/dump.md",
       "kind": "md",
       "sha256": "6df25b0a5cd171892eb4b33aff93bae2d6ec3a5b3895749fcfe20d8f63b6aa30",
       "installedSha": "6df25b0a5cd171892eb4b33aff93bae2d6ec3a5b3895749fcfe20d8f63b6aa30"
@@ -9484,7 +9502,7 @@
     ".claude/commands/session/handoff.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/session/handoff.md",
+      "source": ".claude/commands/session/handoff.md",
       "kind": "md",
       "sha256": "78ac57dc9b1ef397be6e9ba3189a20c0a3cae486542ec35b6e91bc5c19b5e447",
       "installedSha": "78ac57dc9b1ef397be6e9ba3189a20c0a3cae486542ec35b6e91bc5c19b5e447"
@@ -9492,7 +9510,7 @@
     ".claude/commands/session/history.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/session/history.md",
+      "source": ".claude/commands/session/history.md",
       "kind": "md",
       "sha256": "8376c0bbf4ae29d22e421e3d9c5fdef6e92c2c3f378e882c1d35f9691e7aa5dc",
       "installedSha": "8376c0bbf4ae29d22e421e3d9c5fdef6e92c2c3f378e882c1d35f9691e7aa5dc"
@@ -9500,7 +9518,7 @@
     ".claude/commands/session/read.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/session/read.md",
+      "source": ".claude/commands/session/read.md",
       "kind": "md",
       "sha256": "fab3e332ed712d37746ffc96f0586f9bba71ac97a137927b1ff81d1bb7a55b93",
       "installedSha": "fab3e332ed712d37746ffc96f0586f9bba71ac97a137927b1ff81d1bb7a55b93"
@@ -9508,7 +9526,7 @@
     ".claude/commands/session/recap.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/session/recap.md",
+      "source": ".claude/commands/session/recap.md",
       "kind": "md",
       "sha256": "b3641d0e9e4f871cfb255fbec43b25289dae09a7e3e27709754c095472de2fcd",
       "installedSha": "b3641d0e9e4f871cfb255fbec43b25289dae09a7e3e27709754c095472de2fcd"
@@ -9516,7 +9534,7 @@
     ".claude/commands/session/resume.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/session/resume.md",
+      "source": ".claude/commands/session/resume.md",
       "kind": "md",
       "sha256": "4793621bbed70d5345242fe804634e07048bcc708fcee47e7e53ad4577876043",
       "installedSha": "4793621bbed70d5345242fe804634e07048bcc708fcee47e7e53ad4577876043"
@@ -9524,7 +9542,7 @@
     ".claude/commands/session/takenotes.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/session/takenotes.md",
+      "source": ".claude/commands/session/takenotes.md",
       "kind": "md",
       "sha256": "d21990e85a5b65f4cd8988321ad19518c32dc483bd9d229eff9027b7f8c6d7d2",
       "installedSha": "d21990e85a5b65f4cd8988321ad19518c32dc483bd9d229eff9027b7f8c6d7d2"
@@ -9532,7 +9550,7 @@
     ".claude/commands/session/write.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/session/write.md",
+      "source": ".claude/commands/session/write.md",
       "kind": "md",
       "sha256": "44238153dc5bb7ef6e869a4954c0272a7d67f6389a6d5d9a6e4d4a964d70082a",
       "installedSha": "44238153dc5bb7ef6e869a4954c0272a7d67f6389a6d5d9a6e4d4a964d70082a"
@@ -9540,7 +9558,7 @@
     ".claude/commands/roadmap/add.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/roadmap/add.md",
+      "source": ".claude/commands/roadmap/add.md",
       "kind": "md",
       "sha256": "139b7c57211cc1a88d694599843030ba3220a9384806356efe008630bba05445",
       "installedSha": "139b7c57211cc1a88d694599843030ba3220a9384806356efe008630bba05445"
@@ -9548,7 +9566,7 @@
     ".claude/commands/roadmap/cleanup.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/roadmap/cleanup.md",
+      "source": ".claude/commands/roadmap/cleanup.md",
       "kind": "md",
       "sha256": "fd90aef930b20cd2e5ff9d7c3f329cf81e16b6de4589c9480fae684acba966e4",
       "installedSha": "fd90aef930b20cd2e5ff9d7c3f329cf81e16b6de4589c9480fae684acba966e4"
@@ -9556,7 +9574,7 @@
     ".claude/commands/research/deep.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/research/deep.md",
+      "source": ".claude/commands/research/deep.md",
       "kind": "md",
       "sha256": "01d1c7735a846d5d7c254fa022237ee16fdac110c03dea89fd54993052a85fb0",
       "installedSha": "01d1c7735a846d5d7c254fa022237ee16fdac110c03dea89fd54993052a85fb0"
@@ -9564,7 +9582,7 @@
     ".claude/commands/research/simple.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/research/simple.md",
+      "source": ".claude/commands/research/simple.md",
       "kind": "md",
       "sha256": "c9b43b59471a8d7ccaf9e2f5e6c0d4d983d2583be3d01f792097a5be686c27e0",
       "installedSha": "c9b43b59471a8d7ccaf9e2f5e6c0d4d983d2583be3d01f792097a5be686c27e0"
@@ -9572,7 +9590,7 @@
     ".claude/commands/redteam/full.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/redteam/full.md",
+      "source": ".claude/commands/redteam/full.md",
       "kind": "md",
       "sha256": "041029d42d83ad8b9767b78c18634acf63e163ed7ed61f573896f14671b2f2aa",
       "installedSha": "041029d42d83ad8b9767b78c18634acf63e163ed7ed61f573896f14671b2f2aa"
@@ -9580,7 +9598,7 @@
     ".claude/commands/redteam/scan.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/redteam/scan.md",
+      "source": ".claude/commands/redteam/scan.md",
       "kind": "md",
       "sha256": "f7e69e7714cbba0db0a9ba1068b62a0540495e387c4d7d8130b6b06ef1cd6771",
       "installedSha": "f7e69e7714cbba0db0a9ba1068b62a0540495e387c4d7d8130b6b06ef1cd6771"
@@ -9588,7 +9606,7 @@
     ".claude/commands/reasoning/log.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/reasoning/log.md",
+      "source": ".claude/commands/reasoning/log.md",
       "kind": "md",
       "sha256": "8b7a707b81b1ef52b8637f7abf9dbdc2b80e4a68ce49534c6e12848efe0c8cc7",
       "installedSha": "8b7a707b81b1ef52b8637f7abf9dbdc2b80e4a68ce49534c6e12848efe0c8cc7"
@@ -9596,7 +9614,7 @@
     ".claude/commands/reasoning/run.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/reasoning/run.md",
+      "source": ".claude/commands/reasoning/run.md",
       "kind": "md",
       "sha256": "e508436d21c2d811b33068ca4ffbf599080a17022893fd3f9a4e8737e8f2ccdc",
       "installedSha": "e508436d21c2d811b33068ca4ffbf599080a17022893fd3f9a4e8737e8f2ccdc"
@@ -9604,7 +9622,7 @@
     ".claude/commands/reasoning/score.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/reasoning/score.md",
+      "source": ".claude/commands/reasoning/score.md",
       "kind": "md",
       "sha256": "0e8e09cf7e2fddfce2b9810c1bf841d3ac2fb84231850648ec42d0907ebf36a2",
       "installedSha": "0e8e09cf7e2fddfce2b9810c1bf841d3ac2fb84231850648ec42d0907ebf36a2"
@@ -9612,7 +9630,7 @@
     ".claude/commands/qa/audit.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/qa/audit.md",
+      "source": ".claude/commands/qa/audit.md",
       "kind": "md",
       "sha256": "126800713dea9031bc6c6c85d77f79009e0ab6c38a742d79c797668ad6c84273",
       "installedSha": "126800713dea9031bc6c6c85d77f79009e0ab6c38a742d79c797668ad6c84273"
@@ -9620,7 +9638,7 @@
     ".claude/commands/qa/check.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/qa/check.md",
+      "source": ".claude/commands/qa/check.md",
       "kind": "md",
       "sha256": "e0db9f45dc6a2b3858d0d6185f46514d5cdda5b43152f6bf8106f959c314f350",
       "installedSha": "e0db9f45dc6a2b3858d0d6185f46514d5cdda5b43152f6bf8106f959c314f350"
@@ -9628,7 +9646,7 @@
     ".claude/commands/product/bootstrap.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/product/bootstrap.md",
+      "source": ".claude/commands/product/bootstrap.md",
       "kind": "md",
       "sha256": "b5a916370046a080dad29a06f2adb1358226354c16722a9160c29ab21360c1c4",
       "installedSha": "b5a916370046a080dad29a06f2adb1358226354c16722a9160c29ab21360c1c4"
@@ -9636,7 +9654,7 @@
     ".claude/commands/product/clone.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/product/clone.md",
+      "source": ".claude/commands/product/clone.md",
       "kind": "md",
       "sha256": "fa3f8d909823b9f157eec2705ee229245a77f881dd1b3741fde416697ae815ba",
       "installedSha": "fa3f8d909823b9f157eec2705ee229245a77f881dd1b3741fde416697ae815ba"
@@ -9644,7 +9662,7 @@
     ".claude/commands/product/import.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/product/import.md",
+      "source": ".claude/commands/product/import.md",
       "kind": "md",
       "sha256": "da942e0b3378aaedc077e0bfa28c3fbd99c9e094eccfed882c27592844561d76",
       "installedSha": "da942e0b3378aaedc077e0bfa28c3fbd99c9e094eccfed882c27592844561d76"
@@ -9652,7 +9670,7 @@
     ".claude/commands/product/ponder.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/product/ponder.md",
+      "source": ".claude/commands/product/ponder.md",
       "kind": "md",
       "sha256": "68ff67344f4ba43dc5573a5ba30c8387f16eee9f73b2ba20e0e4475a8f8a9d27",
       "installedSha": "68ff67344f4ba43dc5573a5ba30c8387f16eee9f73b2ba20e0e4475a8f8a9d27"
@@ -9660,7 +9678,7 @@
     ".claude/commands/portfolio/adopt.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/portfolio/adopt.md",
+      "source": ".claude/commands/portfolio/adopt.md",
       "kind": "md",
       "sha256": "8d2d7c2b52bde7c494893ebb273a1489c4c37108fba343326bcd770aeabe195b",
       "installedSha": "8d2d7c2b52bde7c494893ebb273a1489c4c37108fba343326bcd770aeabe195b"
@@ -9668,7 +9686,7 @@
     ".claude/commands/portfolio/bootstrap.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/portfolio/bootstrap.md",
+      "source": ".claude/commands/portfolio/bootstrap.md",
       "kind": "md",
       "sha256": "bce9d5bfda0a4bb3ded7abc8b183df1b67c2c4514a9d6d35fea4aff8c7b9934b",
       "installedSha": "bce9d5bfda0a4bb3ded7abc8b183df1b67c2c4514a9d6d35fea4aff8c7b9934b"
@@ -9676,7 +9694,7 @@
     ".claude/commands/portfolio/clone.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/portfolio/clone.md",
+      "source": ".claude/commands/portfolio/clone.md",
       "kind": "md",
       "sha256": "903345c39536d64402032f6ecefa12029b641f0dd24b261132beb45d5e4f9bbc",
       "installedSha": "903345c39536d64402032f6ecefa12029b641f0dd24b261132beb45d5e4f9bbc"
@@ -9684,7 +9702,7 @@
     ".claude/commands/portfolio/dispatch.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/portfolio/dispatch.md",
+      "source": ".claude/commands/portfolio/dispatch.md",
       "kind": "md",
       "sha256": "a384d95b76bf29c7355632cf02c3674eb8d76a52abb5e0a0bc7ab59299857068",
       "installedSha": "a384d95b76bf29c7355632cf02c3674eb8d76a52abb5e0a0bc7ab59299857068"
@@ -9692,7 +9710,7 @@
     ".claude/commands/portfolio/import.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/portfolio/import.md",
+      "source": ".claude/commands/portfolio/import.md",
       "kind": "md",
       "sha256": "2645e8000ebca154bcc87cd9f83df95d563400710e303a0cf398bd7dd1fbfb28",
       "installedSha": "2645e8000ebca154bcc87cd9f83df95d563400710e303a0cf398bd7dd1fbfb28"
@@ -9700,7 +9718,7 @@
     ".claude/commands/portfolio/list.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/portfolio/list.md",
+      "source": ".claude/commands/portfolio/list.md",
       "kind": "md",
       "sha256": "9cd3ee2aecb8b1e22c2fb98933714d70a36b1d7e760dffb79c2a6b6f9d31255a",
       "installedSha": "9cd3ee2aecb8b1e22c2fb98933714d70a36b1d7e760dffb79c2a6b6f9d31255a"
@@ -9708,7 +9726,7 @@
     ".claude/commands/portfolio/new.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/portfolio/new.md",
+      "source": ".claude/commands/portfolio/new.md",
       "kind": "md",
       "sha256": "f6a9d097138eabc058e48eb2319f9c299b739a891fcf2b630c5e2ac18ffda186",
       "installedSha": "f6a9d097138eabc058e48eb2319f9c299b739a891fcf2b630c5e2ac18ffda186"
@@ -9716,7 +9734,7 @@
     ".claude/commands/portfolio/open.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/portfolio/open.md",
+      "source": ".claude/commands/portfolio/open.md",
       "kind": "md",
       "sha256": "546f71aeb3ea763bce105fa3cdee5b8f283b99e624d3cbf4afcd41cdc325df47",
       "installedSha": "546f71aeb3ea763bce105fa3cdee5b8f283b99e624d3cbf4afcd41cdc325df47"
@@ -9724,7 +9742,7 @@
     ".claude/commands/portfolio/ponder.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/portfolio/ponder.md",
+      "source": ".claude/commands/portfolio/ponder.md",
       "kind": "md",
       "sha256": "64c6b2d943d05c8938a9a13460acfa96bf8d698f6b32ecb4cd0bfec6b8971932",
       "installedSha": "64c6b2d943d05c8938a9a13460acfa96bf8d698f6b32ecb4cd0bfec6b8971932"
@@ -9732,7 +9750,7 @@
     ".claude/commands/portfolio/register.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/portfolio/register.md",
+      "source": ".claude/commands/portfolio/register.md",
       "kind": "md",
       "sha256": "be5125edaab41e53bc50832038ef69831ffe8871cccd83d4a9b8b18ccab080d6",
       "installedSha": "be5125edaab41e53bc50832038ef69831ffe8871cccd83d4a9b8b18ccab080d6"
@@ -9740,7 +9758,7 @@
     ".claude/commands/portfolio/status.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/portfolio/status.md",
+      "source": ".claude/commands/portfolio/status.md",
       "kind": "md",
       "sha256": "9b6a883ef2a0e5a2b829dc7f53d5800df3a34ef756aee2c7382d9614a7fffdf7",
       "installedSha": "9b6a883ef2a0e5a2b829dc7f53d5800df3a34ef756aee2c7382d9614a7fffdf7"
@@ -9748,7 +9766,7 @@
     ".claude/commands/portfolio/sync.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/portfolio/sync.md",
+      "source": ".claude/commands/portfolio/sync.md",
       "kind": "md",
       "sha256": "2689628d88e4950924f99cd86746bbd8f80cee55b2265ad98f03819552d5bd3d",
       "installedSha": "2689628d88e4950924f99cd86746bbd8f80cee55b2265ad98f03819552d5bd3d"
@@ -9756,7 +9774,7 @@
     ".claude/commands/paths/add.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/paths/add.md",
+      "source": ".claude/commands/paths/add.md",
       "kind": "md",
       "sha256": "b6df1ffd74d1dfcdb669bb6cb3a700f3e464dee68c65c572ccfb8656c8a1272b",
       "installedSha": "b6df1ffd74d1dfcdb669bb6cb3a700f3e464dee68c65c572ccfb8656c8a1272b"
@@ -9764,7 +9782,7 @@
     ".claude/commands/paths/convert.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/paths/convert.md",
+      "source": ".claude/commands/paths/convert.md",
       "kind": "md",
       "sha256": "8bad1b64596abdd350da92b44ade7c647d92584c65f19c13ac605a4211eed7c9",
       "installedSha": "8bad1b64596abdd350da92b44ade7c647d92584c65f19c13ac605a4211eed7c9"
@@ -9772,7 +9790,7 @@
     ".claude/commands/paths/coverage.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/paths/coverage.md",
+      "source": ".claude/commands/paths/coverage.md",
       "kind": "md",
       "sha256": "ebfef37846980c7629a967282bbc87b928f44cf75f474933e484ce427edd41ab",
       "installedSha": "ebfef37846980c7629a967282bbc87b928f44cf75f474933e484ce427edd41ab"
@@ -9780,7 +9798,7 @@
     ".claude/commands/paths/doctor.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/paths/doctor.md",
+      "source": ".claude/commands/paths/doctor.md",
       "kind": "md",
       "sha256": "14c68de7f97f2519b5a20ddc0aa4015683db64f34fc4c89e2888d07fbb2ace9d",
       "installedSha": "14c68de7f97f2519b5a20ddc0aa4015683db64f34fc4c89e2888d07fbb2ace9d"
@@ -9788,7 +9806,7 @@
     ".claude/commands/paths/explain.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/paths/explain.md",
+      "source": ".claude/commands/paths/explain.md",
       "kind": "md",
       "sha256": "0cef72f141e64fe5f211f4474be4fd57ca1f45d5f694409a944417df2545bf3d",
       "installedSha": "0cef72f141e64fe5f211f4474be4fd57ca1f45d5f694409a944417df2545bf3d"
@@ -9796,7 +9814,7 @@
     ".claude/commands/paths/rename.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/paths/rename.md",
+      "source": ".claude/commands/paths/rename.md",
       "kind": "md",
       "sha256": "1cc6aafbf839ceeca270d9841fac934f229b8dc358ec9669a96eddb70baff469",
       "installedSha": "1cc6aafbf839ceeca270d9841fac934f229b8dc358ec9669a96eddb70baff469"
@@ -9804,7 +9822,7 @@
     ".claude/commands/oneshot/improve.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/oneshot/improve.md",
+      "source": ".claude/commands/oneshot/improve.md",
       "kind": "md",
       "sha256": "20fe5e0e5891e10deedeefa8aa66660e703a47189bdf90719bca13d981b38e81",
       "installedSha": "20fe5e0e5891e10deedeefa8aa66660e703a47189bdf90719bca13d981b38e81"
@@ -9812,7 +9830,7 @@
     ".claude/commands/oneshot/preflight.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/oneshot/preflight.md",
+      "source": ".claude/commands/oneshot/preflight.md",
       "kind": "md",
       "sha256": "1fcbdddf56b7f7ecd787e8d4b2ceb13dd009ad15a6be74df41b6133b7ea583b6",
       "installedSha": "1fcbdddf56b7f7ecd787e8d4b2ceb13dd009ad15a6be74df41b6133b7ea583b6"
@@ -9820,7 +9838,7 @@
     ".claude/commands/oneshot/retro.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/oneshot/retro.md",
+      "source": ".claude/commands/oneshot/retro.md",
       "kind": "md",
       "sha256": "52129b2095e901591a6c3d74767ecffb891f749e09e9a18de255b473c00baf5e",
       "installedSha": "52129b2095e901591a6c3d74767ecffb891f749e09e9a18de255b473c00baf5e"
@@ -9828,7 +9846,7 @@
     ".claude/commands/oneshot/start.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/oneshot/start.md",
+      "source": ".claude/commands/oneshot/start.md",
       "kind": "md",
       "sha256": "17dce571fddde3dda63fa6236cef4eeb9d71770d39a5d2dfcf87747507cba43d",
       "installedSha": "17dce571fddde3dda63fa6236cef4eeb9d71770d39a5d2dfcf87747507cba43d"
@@ -9836,7 +9854,7 @@
     ".claude/commands/mode/adhoc.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/mode/adhoc.md",
+      "source": ".claude/commands/mode/adhoc.md",
       "kind": "md",
       "sha256": "2efac33de96c0736df3a96070f013044396b2e53bf883522f3510a8f621efbaa",
       "installedSha": "2efac33de96c0736df3a96070f013044396b2e53bf883522f3510a8f621efbaa"
@@ -9844,7 +9862,7 @@
     ".claude/commands/mode/oneshot.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/mode/oneshot.md",
+      "source": ".claude/commands/mode/oneshot.md",
       "kind": "md",
       "sha256": "a15733f374a80b92062eafcb7851973fb8a61c422f4e72ecd59c8a86c21cac83",
       "installedSha": "a15733f374a80b92062eafcb7851973fb8a61c422f4e72ecd59c8a86c21cac83"
@@ -9852,7 +9870,7 @@
     ".claude/commands/mode/solo.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/mode/solo.md",
+      "source": ".claude/commands/mode/solo.md",
       "kind": "md",
       "sha256": "4ecc259b14559f4d1ad8809c7c9a48285c6451736a63c6a9216a9d69b86ff9ed",
       "installedSha": "4ecc259b14559f4d1ad8809c7c9a48285c6451736a63c6a9216a9d69b86ff9ed"
@@ -9860,7 +9878,7 @@
     ".claude/commands/maps/all.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/maps/all.md",
+      "source": ".claude/commands/maps/all.md",
       "kind": "md",
       "sha256": "9b9ebdc0fa429bb02c48a04edaf494f455991fed5b96dcb62fcf77628c811899",
       "installedSha": "9b9ebdc0fa429bb02c48a04edaf494f455991fed5b96dcb62fcf77628c811899"
@@ -9868,7 +9886,7 @@
     ".claude/commands/maps/architecture.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/maps/architecture.md",
+      "source": ".claude/commands/maps/architecture.md",
       "kind": "md",
       "sha256": "d11bcda0397774f817f1b24ec5481b0f8a3899072c701818796082ded4e72210",
       "installedSha": "d11bcda0397774f817f1b24ec5481b0f8a3899072c701818796082ded4e72210"
@@ -9876,7 +9894,7 @@
     ".claude/commands/maps/enforcements.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/maps/enforcements.md",
+      "source": ".claude/commands/maps/enforcements.md",
       "kind": "md",
       "sha256": "cee77e3d2afeff91ae7d260e37e8cc6bdcccd708e643e8088ef38725ad3f639c",
       "installedSha": "cee77e3d2afeff91ae7d260e37e8cc6bdcccd708e643e8088ef38725ad3f639c"
@@ -9884,7 +9902,7 @@
     ".claude/commands/maps/hooks.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/maps/hooks.md",
+      "source": ".claude/commands/maps/hooks.md",
       "kind": "md",
       "sha256": "db815035f8644b0bfde6cfa842a35ac0caf5e8ef4c1139f5758b566adbc97878",
       "installedSha": "db815035f8644b0bfde6cfa842a35ac0caf5e8ef4c1139f5758b566adbc97878"
@@ -9892,7 +9910,7 @@
     ".claude/commands/maps/memory.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/maps/memory.md",
+      "source": ".claude/commands/maps/memory.md",
       "kind": "md",
       "sha256": "0641cd9b1ddcaf1006f53bdd26b4f6f090ac358e80c5affdc68be15cc2467afb",
       "installedSha": "0641cd9b1ddcaf1006f53bdd26b4f6f090ac358e80c5affdc68be15cc2467afb"
@@ -9900,7 +9918,7 @@
     ".claude/commands/maps/skills.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/maps/skills.md",
+      "source": ".claude/commands/maps/skills.md",
       "kind": "md",
       "sha256": "77ee8ca738d17f839e39800b0bc042c134cbbd6a3d1cb29d490f31d984c880fb",
       "installedSha": "77ee8ca738d17f839e39800b0bc042c134cbbd6a3d1cb29d490f31d984c880fb"
@@ -9908,7 +9926,7 @@
     ".claude/commands/maps/steps.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/maps/steps.md",
+      "source": ".claude/commands/maps/steps.md",
       "kind": "md",
       "sha256": "9495f70ae5aaeb7dcbe463a7ce2a1b7afc309f306eca853b4ed8362f2a035225",
       "installedSha": "9495f70ae5aaeb7dcbe463a7ce2a1b7afc309f306eca853b4ed8362f2a035225"
@@ -9916,7 +9934,7 @@
     ".claude/commands/maps/systems.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/maps/systems.md",
+      "source": ".claude/commands/maps/systems.md",
       "kind": "md",
       "sha256": "0b282fcf31922973ca90de76fe7cb07e6f1f433e235805c98de3ffd3303f54bc",
       "installedSha": "0b282fcf31922973ca90de76fe7cb07e6f1f433e235805c98de3ffd3303f54bc"
@@ -9924,7 +9942,7 @@
     ".claude/commands/maps/tools.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/maps/tools.md",
+      "source": ".claude/commands/maps/tools.md",
       "kind": "md",
       "sha256": "e54a42d7b74a98b2517100432f935070626359ac47b0130b68d57c6ade2cf82b",
       "installedSha": "e54a42d7b74a98b2517100432f935070626359ac47b0130b68d57c6ade2cf82b"
@@ -9932,7 +9950,7 @@
     ".claude/commands/manifest/migrate.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/manifest/migrate.md",
+      "source": ".claude/commands/manifest/migrate.md",
       "kind": "md",
       "sha256": "168b031cf2fa0850d0e181f185ba765b9a4c7a8012bae6b375baccf19a60a544",
       "installedSha": "168b031cf2fa0850d0e181f185ba765b9a4c7a8012bae6b375baccf19a60a544"
@@ -9940,7 +9958,7 @@
     ".claude/commands/manifest/show.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/manifest/show.md",
+      "source": ".claude/commands/manifest/show.md",
       "kind": "md",
       "sha256": "ad2175445535918f309e3efeba6a1507fb38d2c69e118cf3ac1594ec295a6b86",
       "installedSha": "ad2175445535918f309e3efeba6a1507fb38d2c69e118cf3ac1594ec295a6b86"
@@ -9948,7 +9966,7 @@
     ".claude/commands/manifest/validate.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/manifest/validate.md",
+      "source": ".claude/commands/manifest/validate.md",
       "kind": "md",
       "sha256": "1426f55e3140468ab9b07150e4789163f4a9647849e610b4da9177781c2a5654",
       "installedSha": "1426f55e3140468ab9b07150e4789163f4a9647849e610b4da9177781c2a5654"
@@ -9956,7 +9974,7 @@
     ".claude/commands/linters/run.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/linters/run.md",
+      "source": ".claude/commands/linters/run.md",
       "kind": "md",
       "sha256": "40bbff112906b70f61208d01c4bd080fd54e5429813f2d51fd2db0693936125b",
       "installedSha": "40bbff112906b70f61208d01c4bd080fd54e5429813f2d51fd2db0693936125b"
@@ -9964,7 +9982,7 @@
     ".claude/commands/learn/deep.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/learn/deep.md",
+      "source": ".claude/commands/learn/deep.md",
       "kind": "md",
       "sha256": "2e355d47735e4d6bcad826665c09fee070c0e04bad3c2be98860a8ba2e331073",
       "installedSha": "2e355d47735e4d6bcad826665c09fee070c0e04bad3c2be98860a8ba2e331073"
@@ -9972,7 +9990,7 @@
     ".claude/commands/learn/ingest.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/learn/ingest.md",
+      "source": ".claude/commands/learn/ingest.md",
       "kind": "md",
       "sha256": "7c6834ea688d41efbfe0a9a6017e6a229b15703cefa726eee5f76d2e3f88a0b8",
       "installedSha": "7c6834ea688d41efbfe0a9a6017e6a229b15703cefa726eee5f76d2e3f88a0b8"
@@ -9980,7 +9998,7 @@
     ".claude/commands/learn/integrate.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/learn/integrate.md",
+      "source": ".claude/commands/learn/integrate.md",
       "kind": "md",
       "sha256": "5ba9bfb0fe4727961f6af67032890dc0ce9cc82e2334e0996ebf0474f165c793",
       "installedSha": "5ba9bfb0fe4727961f6af67032890dc0ce9cc82e2334e0996ebf0474f165c793"
@@ -9988,7 +10006,7 @@
     ".claude/commands/karpathy/integrate.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/karpathy/integrate.md",
+      "source": ".claude/commands/karpathy/integrate.md",
       "kind": "md",
       "sha256": "56c144f830bd3043c4e16b53f7fdf36b4b388db7cd144c5269030106044f08f6",
       "installedSha": "56c144f830bd3043c4e16b53f7fdf36b4b388db7cd144c5269030106044f08f6"
@@ -9996,7 +10014,7 @@
     ".claude/commands/karpathy/run.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/karpathy/run.md",
+      "source": ".claude/commands/karpathy/run.md",
       "kind": "md",
       "sha256": "991de6d1c8eae4192646ebab056cb76237f3e7669c3ae3710de386ef32df224c",
       "installedSha": "991de6d1c8eae4192646ebab056cb76237f3e7669c3ae3710de386ef32df224c"
@@ -10004,7 +10022,7 @@
     ".claude/commands/karpathy/status.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/karpathy/status.md",
+      "source": ".claude/commands/karpathy/status.md",
       "kind": "md",
       "sha256": "2747a274a3bf1a2ec21a06f29cd606615e9a3880e4c8949754e59bd1ca47575b",
       "installedSha": "2747a274a3bf1a2ec21a06f29cd606615e9a3880e4c8949754e59bd1ca47575b"
@@ -10012,7 +10030,7 @@
     ".claude/commands/issues/list.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/issues/list.md",
+      "source": ".claude/commands/issues/list.md",
       "kind": "md",
       "sha256": "6a37ad444a946b51121cdaa24878df98162d929bbdcb9810f5aaf77fa590b31a",
       "installedSha": "6a37ad444a946b51121cdaa24878df98162d929bbdcb9810f5aaf77fa590b31a"
@@ -10020,7 +10038,7 @@
     ".claude/commands/issues/log.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/issues/log.md",
+      "source": ".claude/commands/issues/log.md",
       "kind": "md",
       "sha256": "d20af7e3ecff29c21318efedf9a65b8549cbbaf7653961d65a3d04b71aefc73b",
       "installedSha": "d20af7e3ecff29c21318efedf9a65b8549cbbaf7653961d65a3d04b71aefc73b"
@@ -10028,7 +10046,7 @@
     ".claude/commands/issues/resolve.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/issues/resolve.md",
+      "source": ".claude/commands/issues/resolve.md",
       "kind": "md",
       "sha256": "efaf60dfb46a91624c7a3c3c86213af6885d7d6594c98a2d842a5872dd96970a",
       "installedSha": "efaf60dfb46a91624c7a3c3c86213af6885d7d6594c98a2d842a5872dd96970a"
@@ -10036,7 +10054,7 @@
     ".claude/commands/issues/scan.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/issues/scan.md",
+      "source": ".claude/commands/issues/scan.md",
       "kind": "md",
       "sha256": "771e462761eb815d43badd23e2d7d31a31a5e696fc42b8d00bb18e447e6f2291",
       "installedSha": "771e462761eb815d43badd23e2d7d31a31a5e696fc42b8d00bb18e447e6f2291"
@@ -10044,7 +10062,7 @@
     ".claude/commands/hooks/add.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/hooks/add.md",
+      "source": ".claude/commands/hooks/add.md",
       "kind": "md",
       "sha256": "16d46d71f15451e4588c6cd924ff6b2a78b5d0120bd275f5302412101d3a6e8c",
       "installedSha": "16d46d71f15451e4588c6cd924ff6b2a78b5d0120bd275f5302412101d3a6e8c"
@@ -10052,7 +10070,7 @@
     ".claude/commands/hooks/disable.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/hooks/disable.md",
+      "source": ".claude/commands/hooks/disable.md",
       "kind": "md",
       "sha256": "f8bd48f0c7d689b2901cf94a8dd83aedc062a349607d714ca1939f7593412618",
       "installedSha": "f8bd48f0c7d689b2901cf94a8dd83aedc062a349607d714ca1939f7593412618"
@@ -10060,7 +10078,7 @@
     ".claude/commands/hooks/friction.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/hooks/friction.md",
+      "source": ".claude/commands/hooks/friction.md",
       "kind": "md",
       "sha256": "5f4ef31376f1b17a16b6fb6df1c006bd1bf0543ea4c380f4540fdc967401d8d2",
       "installedSha": "5f4ef31376f1b17a16b6fb6df1c006bd1bf0543ea4c380f4540fdc967401d8d2"
@@ -10068,7 +10086,7 @@
     ".claude/commands/hooks/test.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/hooks/test.md",
+      "source": ".claude/commands/hooks/test.md",
       "kind": "md",
       "sha256": "547766ff75d56ef57994f6bffd47c27058d49ea4e342670d803a8a4623c8df79",
       "installedSha": "547766ff75d56ef57994f6bffd47c27058d49ea4e342670d803a8a4623c8df79"
@@ -10076,7 +10094,7 @@
     ".claude/commands/fix/deep.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/fix/deep.md",
+      "source": ".claude/commands/fix/deep.md",
       "kind": "md",
       "sha256": "109b078d2afd0294f701d8b9fa3f4d604fe22aee91dffd5e2b8eb7f3076559d7",
       "installedSha": "109b078d2afd0294f701d8b9fa3f4d604fe22aee91dffd5e2b8eb7f3076559d7"
@@ -10084,7 +10102,7 @@
     ".claude/commands/fix/fast.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/fix/fast.md",
+      "source": ".claude/commands/fix/fast.md",
       "kind": "md",
       "sha256": "ccfa9c726657e50a2e9c3ccc20e8ec9fc8a39cd739348c1b85be7d77a79f6caf",
       "installedSha": "ccfa9c726657e50a2e9c3ccc20e8ec9fc8a39cd739348c1b85be7d77a79f6caf"
@@ -10092,7 +10110,7 @@
     ".claude/commands/fav/list.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/fav/list.md",
+      "source": ".claude/commands/fav/list.md",
       "kind": "md",
       "sha256": "54d9bb25d303050c3414a981d37081ea4a34f24400d7202d1f1857ccb6bcefd7",
       "installedSha": "54d9bb25d303050c3414a981d37081ea4a34f24400d7202d1f1857ccb6bcefd7"
@@ -10100,7 +10118,7 @@
     ".claude/commands/fav/search.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/fav/search.md",
+      "source": ".claude/commands/fav/search.md",
       "kind": "md",
       "sha256": "b98dfe90f3d2a01ab0a7ab51facf52e5e2f944cfe6972eefc30e741b9bf00133",
       "installedSha": "b98dfe90f3d2a01ab0a7ab51facf52e5e2f944cfe6972eefc30e741b9bf00133"
@@ -10108,7 +10126,7 @@
     ".claude/commands/events/query.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/events/query.md",
+      "source": ".claude/commands/events/query.md",
       "kind": "md",
       "sha256": "006055171f65931a682aad474d7574450c419f9b8e3f03586c3b7df405e94213",
       "installedSha": "006055171f65931a682aad474d7574450c419f9b8e3f03586c3b7df405e94213"
@@ -10116,7 +10134,7 @@
     ".claude/commands/events/tail.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/events/tail.md",
+      "source": ".claude/commands/events/tail.md",
       "kind": "md",
       "sha256": "969859807072d66e670c5d30640c1cf11ea7edba395cf30270d38214b8481fb5",
       "installedSha": "969859807072d66e670c5d30640c1cf11ea7edba395cf30270d38214b8481fb5"
@@ -10124,7 +10142,7 @@
     ".claude/commands/enforcement/list.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/enforcement/list.md",
+      "source": ".claude/commands/enforcement/list.md",
       "kind": "md",
       "sha256": "2c3d59b3d397357b888a70a27789f50bc388d493b4f196f54cc05a94ed099b9b",
       "installedSha": "2c3d59b3d397357b888a70a27789f50bc388d493b4f196f54cc05a94ed099b9b"
@@ -10132,7 +10150,7 @@
     ".claude/commands/enforcement/log.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/enforcement/log.md",
+      "source": ".claude/commands/enforcement/log.md",
       "kind": "md",
       "sha256": "1256c2b52b2bf749fea6c526e932ed246608afd342f9702893c945b129ce7ed2",
       "installedSha": "1256c2b52b2bf749fea6c526e932ed246608afd342f9702893c945b129ce7ed2"
@@ -10140,7 +10158,7 @@
     ".claude/commands/docs/catalog.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/docs/catalog.md",
+      "source": ".claude/commands/docs/catalog.md",
       "kind": "md",
       "sha256": "0fe758d7d6a7a7bf25fa6e6414624b0b0bbacc13d56187faf27063b9e74baeaf",
       "installedSha": "0fe758d7d6a7a7bf25fa6e6414624b0b0bbacc13d56187faf27063b9e74baeaf"
@@ -10148,7 +10166,7 @@
     ".claude/commands/discover/orphaned.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/discover/orphaned.md",
+      "source": ".claude/commands/discover/orphaned.md",
       "kind": "md",
       "sha256": "0caa29fa706d0e9f10429d25e64be63b7ac0a3295c9f6fecee26aaa4de1f45d8",
       "installedSha": "0caa29fa706d0e9f10429d25e64be63b7ac0a3295c9f6fecee26aaa4de1f45d8"
@@ -10156,7 +10174,7 @@
     ".claude/commands/discover/systems.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/discover/systems.md",
+      "source": ".claude/commands/discover/systems.md",
       "kind": "md",
       "sha256": "25b5a32f577c17f93efa82b73ceec229e532de5fbb42c5043e48dfc70deb9375",
       "installedSha": "25b5a32f577c17f93efa82b73ceec229e532de5fbb42c5043e48dfc70deb9375"
@@ -10164,7 +10182,7 @@
     ".claude/commands/content/contra.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/content/contra.md",
+      "source": ".claude/commands/content/contra.md",
       "kind": "md",
       "sha256": "3c38838bb7e32e352918cf5c57a3b1c7ebfd6e1b516f81710d7fd5f4b6bb6eaf",
       "installedSha": "3c38838bb7e32e352918cf5c57a3b1c7ebfd6e1b516f81710d7fd5f4b6bb6eaf"
@@ -10172,7 +10190,7 @@
     ".claude/commands/content/linkedin.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/content/linkedin.md",
+      "source": ".claude/commands/content/linkedin.md",
       "kind": "md",
       "sha256": "c9c1a23cc67fe855ee1ee6c2777c9146b62e8d254172e412cc10c0ea40929f84",
       "installedSha": "c9c1a23cc67fe855ee1ee6c2777c9146b62e8d254172e412cc10c0ea40929f84"
@@ -10180,7 +10198,7 @@
     ".claude/commands/commit/both.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/commit/both.md",
+      "source": ".claude/commands/commit/both.md",
       "kind": "md",
       "sha256": "2aade0e8afb87434bb17046d6b25674d688de1f17522ef395dd18f0301908895",
       "installedSha": "2aade0e8afb87434bb17046d6b25674d688de1f17522ef395dd18f0301908895"
@@ -10188,7 +10206,7 @@
     ".claude/commands/commit/local.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/commit/local.md",
+      "source": ".claude/commands/commit/local.md",
       "kind": "md",
       "sha256": "e68826f37fa6e0767086945ccb469752196facbb9e68979fec38572ec55eb0f3",
       "installedSha": "e68826f37fa6e0767086945ccb469752196facbb9e68979fec38572ec55eb0f3"
@@ -10196,7 +10214,7 @@
     ".claude/commands/commit/remote.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/commit/remote.md",
+      "source": ".claude/commands/commit/remote.md",
       "kind": "md",
       "sha256": "dcab300abdd1f9e13b628b3e9794a4bdc47e3ac1934466cd41a7e4cc591ca2ea",
       "installedSha": "dcab300abdd1f9e13b628b3e9794a4bdc47e3ac1934466cd41a7e4cc591ca2ea"
@@ -10204,7 +10222,7 @@
     ".claude/commands/check/ac-coverage.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/check/ac-coverage.md",
+      "source": ".claude/commands/check/ac-coverage.md",
       "kind": "md",
       "sha256": "6d9ab097738465ee0be6f9fff676c6f6227e1d9b0994ea5267c899fb6d56dbfe",
       "installedSha": "6d9ab097738465ee0be6f9fff676c6f6227e1d9b0994ea5267c899fb6d56dbfe"
@@ -10212,7 +10230,7 @@
     ".claude/commands/check/all.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/check/all.md",
+      "source": ".claude/commands/check/all.md",
       "kind": "md",
       "sha256": "d5b5890036242d29caec0d0e39790d72132959e1688ca7e4ec531ed9d5f21df7",
       "installedSha": "d5b5890036242d29caec0d0e39790d72132959e1688ca7e4ec531ed9d5f21df7"
@@ -10220,7 +10238,7 @@
     ".claude/commands/check/architecture.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/check/architecture.md",
+      "source": ".claude/commands/check/architecture.md",
       "kind": "md",
       "sha256": "185a9d0b61072f884198968e445abcfa424e6385a8b25594b3a904cad327f00c",
       "installedSha": "185a9d0b61072f884198968e445abcfa424e6385a8b25594b3a904cad327f00c"
@@ -10228,7 +10246,7 @@
     ".claude/commands/check/coherence.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/check/coherence.md",
+      "source": ".claude/commands/check/coherence.md",
       "kind": "md",
       "sha256": "70df9d17219af01f771d1cd1fcf331bf1012ee2eddd6ca255fff3b3d639465cf",
       "installedSha": "70df9d17219af01f771d1cd1fcf331bf1012ee2eddd6ca255fff3b3d639465cf"
@@ -10236,7 +10254,7 @@
     ".claude/commands/check/design-system.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/check/design-system.md",
+      "source": ".claude/commands/check/design-system.md",
       "kind": "md",
       "sha256": "227af00f2992d21761dda12ccd52f119cae17ca6a6b859a34864fb2e5c634417",
       "installedSha": "227af00f2992d21761dda12ccd52f119cae17ca6a6b859a34864fb2e5c634417"
@@ -10244,7 +10262,7 @@
     ".claude/commands/check/environment.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/check/environment.md",
+      "source": ".claude/commands/check/environment.md",
       "kind": "md",
       "sha256": "eed21b3e9e06da107719cdf4f15d46b64ab583e4f694f1a3578762e0c2b3f026",
       "installedSha": "eed21b3e9e06da107719cdf4f15d46b64ab583e4f694f1a3578762e0c2b3f026"
@@ -10252,7 +10270,7 @@
     ".claude/commands/check/install.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/check/install.md",
+      "source": ".claude/commands/check/install.md",
       "kind": "md",
       "sha256": "132b3780866ce6ac8c87db6b12ed3ea5b148951b3b2ba44807a21671ac67c980",
       "installedSha": "132b3780866ce6ac8c87db6b12ed3ea5b148951b3b2ba44807a21671ac67c980"
@@ -10260,7 +10278,7 @@
     ".claude/commands/check/node-procs.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/check/node-procs.md",
+      "source": ".claude/commands/check/node-procs.md",
       "kind": "md",
       "sha256": "695e565936e47fc63adf3cf9ad066b0059aa242d944d32201a07188157db8025",
       "installedSha": "695e565936e47fc63adf3cf9ad066b0059aa242d944d32201a07188157db8025"
@@ -10268,7 +10286,7 @@
     ".claude/commands/check/patterns.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/check/patterns.md",
+      "source": ".claude/commands/check/patterns.md",
       "kind": "md",
       "sha256": "4a441bd67c57b4d3e5b4fbee0ee5cec696883bbea036aeb6395ccafed61c0ac9",
       "installedSha": "4a441bd67c57b4d3e5b4fbee0ee5cec696883bbea036aeb6395ccafed61c0ac9"
@@ -10276,7 +10294,7 @@
     ".claude/commands/check/privacy.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/check/privacy.md",
+      "source": ".claude/commands/check/privacy.md",
       "kind": "md",
       "sha256": "5fc6cee7c5ab89745ea971d2db26ac5d6f9c792a076fb388ef6e34350fed1126",
       "installedSha": "5fc6cee7c5ab89745ea971d2db26ac5d6f9c792a076fb388ef6e34350fed1126"
@@ -10284,7 +10302,7 @@
     ".claude/commands/check/references.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/check/references.md",
+      "source": ".claude/commands/check/references.md",
       "kind": "md",
       "sha256": "48ed82bf7574c92c75be2138fa36b2c210da35ca319c6ca0e1aed91d8e41a91c",
       "installedSha": "48ed82bf7574c92c75be2138fa36b2c210da35ca319c6ca0e1aed91d8e41a91c"
@@ -10292,7 +10310,7 @@
     ".claude/commands/check/requirements.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/check/requirements.md",
+      "source": ".claude/commands/check/requirements.md",
       "kind": "md",
       "sha256": "70e924f7f7db2e6955e0517d443c33a61fc66d225c89c7f5653ccffe22c97b1c",
       "installedSha": "70e924f7f7db2e6955e0517d443c33a61fc66d225c89c7f5653ccffe22c97b1c"
@@ -10300,7 +10318,7 @@
     ".claude/commands/check/system.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/check/system.md",
+      "source": ".claude/commands/check/system.md",
       "kind": "md",
       "sha256": "ba6b6dec4a009db521e977fb6a90189df91b8e0366bac9dd7881d78f0ffbcb18",
       "installedSha": "ba6b6dec4a009db521e977fb6a90189df91b8e0366bac9dd7881d78f0ffbcb18"
@@ -10308,7 +10326,7 @@
     ".claude/commands/check/timeline.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/check/timeline.md",
+      "source": ".claude/commands/check/timeline.md",
       "kind": "md",
       "sha256": "c3589d40fabe9f36fc5373321c852d185dfa36fe323c47eae928ec1377d3043f",
       "installedSha": "c3589d40fabe9f36fc5373321c852d185dfa36fe323c47eae928ec1377d3043f"
@@ -10316,7 +10334,7 @@
     ".claude/commands/check/warpos-applied-migrations.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/check/warpos-applied-migrations.md",
+      "source": ".claude/commands/check/warpos-applied-migrations.md",
       "kind": "md",
       "sha256": "7c7cebd2a9092f77b5d30779d6df2ad513de387e5288dda9d800422b1f7443c5",
       "installedSha": "7c7cebd2a9092f77b5d30779d6df2ad513de387e5288dda9d800422b1f7443c5"
@@ -10324,7 +10342,7 @@
     ".claude/commands/check/warpos-capsule-resolvable.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/check/warpos-capsule-resolvable.md",
+      "source": ".claude/commands/check/warpos-capsule-resolvable.md",
       "kind": "md",
       "sha256": "335e83c1522c29a9367cca996cc4cd495cba38da3b66eb23435b98eeb49e497e",
       "installedSha": "335e83c1522c29a9367cca996cc4cd495cba38da3b66eb23435b98eeb49e497e"
@@ -10332,7 +10350,7 @@
     ".claude/commands/check/warpos-install-baseline.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/check/warpos-install-baseline.md",
+      "source": ".claude/commands/check/warpos-install-baseline.md",
       "kind": "md",
       "sha256": "d6aa84e62f983ee9e74d166f1a3b05e49443c88b4b556b056bccbc39415dbc39",
       "installedSha": "d6aa84e62f983ee9e74d166f1a3b05e49443c88b4b556b056bccbc39415dbc39"
@@ -10340,7 +10358,7 @@
     ".claude/commands/check/warpos-manifest-honesty.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/check/warpos-manifest-honesty.md",
+      "source": ".claude/commands/check/warpos-manifest-honesty.md",
       "kind": "md",
       "sha256": "cd570ac7a49ee84f2d33287dc9889fb8b3b4579e4114a5d70936a792271727d9",
       "installedSha": "cd570ac7a49ee84f2d33287dc9889fb8b3b4579e4114a5d70936a792271727d9"
@@ -10348,7 +10366,7 @@
     ".claude/commands/check/warpos-migration-coverage.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/check/warpos-migration-coverage.md",
+      "source": ".claude/commands/check/warpos-migration-coverage.md",
       "kind": "md",
       "sha256": "9376ee8c44ae61876dae72de5695965cf88bd2ff45ba19a5ab84b406e45ea87a",
       "installedSha": "9376ee8c44ae61876dae72de5695965cf88bd2ff45ba19a5ab84b406e45ea87a"
@@ -10356,7 +10374,7 @@
     ".claude/commands/check/warpos-migration-presence.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/check/warpos-migration-presence.md",
+      "source": ".claude/commands/check/warpos-migration-presence.md",
       "kind": "md",
       "sha256": "c6a9be3536db68dc20d97550e6db1358483e9f6546d239f1e399e6855c91f3b8",
       "installedSha": "c6a9be3536db68dc20d97550e6db1358483e9f6546d239f1e399e6855c91f3b8"
@@ -10364,7 +10382,7 @@
     ".claude/commands/check/warpos-path-resolution.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/check/warpos-path-resolution.md",
+      "source": ".claude/commands/check/warpos-path-resolution.md",
       "kind": "md",
       "sha256": "a741aac9b1395c578e8ac1287102b32f6621c18fcbc1a18249e0e737dcf63108",
       "installedSha": "a741aac9b1395c578e8ac1287102b32f6621c18fcbc1a18249e0e737dcf63108"
@@ -10372,7 +10390,7 @@
     ".claude/commands/check/warpos-staleness.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/check/warpos-staleness.md",
+      "source": ".claude/commands/check/warpos-staleness.md",
       "kind": "md",
       "sha256": "97fc15df85328f1e132871aba24184c4bad7d9e3da4ffabf60b65a27eb60bb6c",
       "installedSha": "97fc15df85328f1e132871aba24184c4bad7d9e3da4ffabf60b65a27eb60bb6c"
@@ -10380,7 +10398,7 @@
     ".claude/commands/check/warpos-structure-parity.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/check/warpos-structure-parity.md",
+      "source": ".claude/commands/check/warpos-structure-parity.md",
       "kind": "md",
       "sha256": "e5510ba985ba027dae04dc5f76d2a4bd13c54037a6b5d8ee2fdb3f26041bdcf6",
       "installedSha": "e5510ba985ba027dae04dc5f76d2a4bd13c54037a6b5d8ee2fdb3f26041bdcf6"
@@ -10388,7 +10406,7 @@
     ".claude/commands/check/warpos-tracked-transients.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/check/warpos-tracked-transients.md",
+      "source": ".claude/commands/check/warpos-tracked-transients.md",
       "kind": "md",
       "sha256": "ab26e27afeb7b29ad242286371433ebc1249f9577063522aaff103aa3f748a3c",
       "installedSha": "ab26e27afeb7b29ad242286371433ebc1249f9577063522aaff103aa3f748a3c"
@@ -10396,7 +10414,7 @@
     ".claude/commands/check/warpos-version-quorum.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/check/warpos-version-quorum.md",
+      "source": ".claude/commands/check/warpos-version-quorum.md",
       "kind": "md",
       "sha256": "8018364401df65c97e0fb94a5be3389142dad0185632dadf64891ed140eccd9b",
       "installedSha": "8018364401df65c97e0fb94a5be3389142dad0185632dadf64891ed140eccd9b"
@@ -10404,7 +10422,7 @@
     ".claude/commands/beta/integrate.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/beta/integrate.md",
+      "source": ".claude/commands/beta/integrate.md",
       "kind": "md",
       "sha256": "96f5b802a507ed412ffb3c76eef54a5f9e0b605a1c30b346e4b9982ba45de9c9",
       "installedSha": "96f5b802a507ed412ffb3c76eef54a5f9e0b605a1c30b346e4b9982ba45de9c9"
@@ -10412,7 +10430,7 @@
     ".claude/commands/beta/mine.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/beta/mine.md",
+      "source": ".claude/commands/beta/mine.md",
       "kind": "md",
       "sha256": "7499d0c5c51f769d6ecf98ef72091cb3ad869a94ab2cd7d1c8d14f472ef7d53b",
       "installedSha": "7499d0c5c51f769d6ecf98ef72091cb3ad869a94ab2cd7d1c8d14f472ef7d53b"
@@ -10420,7 +10438,7 @@
     ".claude/commands/agents/list.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/agents/list.md",
+      "source": ".claude/commands/agents/list.md",
       "kind": "md",
       "sha256": "96c37af48ff1d0556dc4c3074c04d2288eb039fd0fbdb8af839b5b832634ff96",
       "installedSha": "96c37af48ff1d0556dc4c3074c04d2288eb039fd0fbdb8af839b5b832634ff96"
@@ -10428,7 +10446,7 @@
     ".claude/commands/agents/test.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/commands/agents/test.md",
+      "source": ".claude/commands/agents/test.md",
       "kind": "md",
       "sha256": "625473e236622d6975108093ac7918f978cea08d59100a12d3eec0cc4b277c68",
       "installedSha": "625473e236622d6975108093ac7918f978cea08d59100a12d3eec0cc4b277c68"
@@ -10436,7 +10454,7 @@
     ".claude/agents/.system.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/agents/.system.md",
+      "source": ".claude/agents/.system.md",
       "kind": "md",
       "sha256": "bbdcfbd08b92e5e6ffa99752a092d6d63a051c2da7cb212c6ecd5bba8a3f50fa",
       "installedSha": "bbdcfbd08b92e5e6ffa99752a092d6d63a051c2da7cb212c6ecd5bba8a3f50fa"
@@ -10444,7 +10462,7 @@
     ".claude/agents/02-oneshot/visual-review/visual-review.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/agents/02-oneshot/visual-review/visual-review.md",
+      "source": ".claude/agents/02-oneshot/visual-review/visual-review.md",
       "kind": "md",
       "sha256": "415bb30bd3070aea289c283d057855dca7ea4201e31fc07fa9548c02835e39f0",
       "installedSha": "415bb30bd3070aea289c283d057855dca7ea4201e31fc07fa9548c02835e39f0"
@@ -10452,7 +10470,7 @@
     ".claude/agents/02-oneshot/test-runner/test-runner.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/agents/02-oneshot/test-runner/test-runner.md",
+      "source": ".claude/agents/02-oneshot/test-runner/test-runner.md",
       "kind": "md",
       "sha256": "80731bdedbd9d602661fc85973cdcd29bc77d30bb983957d1ba01bcd61d6134e",
       "installedSha": "80731bdedbd9d602661fc85973cdcd29bc77d30bb983957d1ba01bcd61d6134e"
@@ -10460,7 +10478,7 @@
     ".claude/agents/02-oneshot/stub-scaffold/stub-scaffold.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/agents/02-oneshot/stub-scaffold/stub-scaffold.md",
+      "source": ".claude/agents/02-oneshot/stub-scaffold/stub-scaffold.md",
       "kind": "md",
       "sha256": "ab1be47f09a0b55c709fff461903f728bb8e9cc0e88a91fd4a1949f0f9387469",
       "installedSha": "ab1be47f09a0b55c709fff461903f728bb8e9cc0e88a91fd4a1949f0f9387469"
@@ -10468,7 +10486,7 @@
     ".claude/agents/02-oneshot/reviewer/reviewer.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/agents/02-oneshot/reviewer/reviewer.md",
+      "source": ".claude/agents/02-oneshot/reviewer/reviewer.md",
       "kind": "md",
       "sha256": "3629fe4d9ffec200016ac228b427d43fba6425aaa724ec00aa12ab171486866c",
       "installedSha": "3629fe4d9ffec200016ac228b427d43fba6425aaa724ec00aa12ab171486866c"
@@ -10476,7 +10494,7 @@
     ".claude/agents/02-oneshot/req-reviewer/req-reviewer.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/agents/02-oneshot/req-reviewer/req-reviewer.md",
+      "source": ".claude/agents/02-oneshot/req-reviewer/req-reviewer.md",
       "kind": "md",
       "sha256": "34aab5ffbb6c31e957105762488b83433afee6f84669085819fd518696d7e1f0",
       "installedSha": "34aab5ffbb6c31e957105762488b83433afee6f84669085819fd518696d7e1f0"
@@ -10484,7 +10502,7 @@
     ".claude/agents/02-oneshot/redteam/analyze.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/agents/02-oneshot/redteam/analyze.md",
+      "source": ".claude/agents/02-oneshot/redteam/analyze.md",
       "kind": "md",
       "sha256": "4f6bf46125901bdde5f3bc828ecae5b6a555b174cb16e64bd10be46b695e224f",
       "installedSha": "4f6bf46125901bdde5f3bc828ecae5b6a555b174cb16e64bd10be46b695e224f"
@@ -10492,7 +10510,7 @@
     ".claude/agents/02-oneshot/redteam/orchestrator.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/agents/02-oneshot/redteam/orchestrator.md",
+      "source": ".claude/agents/02-oneshot/redteam/orchestrator.md",
       "kind": "md",
       "sha256": "aacd2758e439d701b71ccc762e732d309cb5debe7cd162166a92923524d6b477",
       "installedSha": "aacd2758e439d701b71ccc762e732d309cb5debe7cd162166a92923524d6b477"
@@ -10500,7 +10518,7 @@
     ".claude/agents/02-oneshot/redteam/scan.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/agents/02-oneshot/redteam/scan.md",
+      "source": ".claude/agents/02-oneshot/redteam/scan.md",
       "kind": "md",
       "sha256": "c31733faf55a9e1f4a6bd9e271b19e3d1e898e39c750899395f2e9de40a56057",
       "installedSha": "c31733faf55a9e1f4a6bd9e271b19e3d1e898e39c750899395f2e9de40a56057"
@@ -10508,7 +10526,7 @@
     ".claude/agents/02-oneshot/qa/analyze.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/agents/02-oneshot/qa/analyze.md",
+      "source": ".claude/agents/02-oneshot/qa/analyze.md",
       "kind": "md",
       "sha256": "2273ae19b3196d60f1d0788c16ca780dcae6e3a9820a8ff85ba614c30abb9044",
       "installedSha": "2273ae19b3196d60f1d0788c16ca780dcae6e3a9820a8ff85ba614c30abb9044"
@@ -10516,7 +10534,7 @@
     ".claude/agents/02-oneshot/qa/orchestrator.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/agents/02-oneshot/qa/orchestrator.md",
+      "source": ".claude/agents/02-oneshot/qa/orchestrator.md",
       "kind": "md",
       "sha256": "82bab878d17e1e1707c98325a2d0f21c968457be7f5b40b8e5ea43253882a855",
       "installedSha": "82bab878d17e1e1707c98325a2d0f21c968457be7f5b40b8e5ea43253882a855"
@@ -10524,7 +10542,7 @@
     ".claude/agents/02-oneshot/qa/scan.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/agents/02-oneshot/qa/scan.md",
+      "source": ".claude/agents/02-oneshot/qa/scan.md",
       "kind": "md",
       "sha256": "f2f25e87095aa08bde5e5337f8bfcb943a7291f0fad65a3e72c824552650c578",
       "installedSha": "f2f25e87095aa08bde5e5337f8bfcb943a7291f0fad65a3e72c824552650c578"
@@ -10532,7 +10550,7 @@
     ".claude/agents/02-oneshot/learner/learner.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/agents/02-oneshot/learner/learner.md",
+      "source": ".claude/agents/02-oneshot/learner/learner.md",
       "kind": "md",
       "sha256": "c3531c55212e3428ebaa82b8d2566434367df153f426c6644d3c66afbd057c54",
       "installedSha": "c3531c55212e3428ebaa82b8d2566434367df153f426c6644d3c66afbd057c54"
@@ -10540,7 +10558,7 @@
     ".claude/agents/02-oneshot/fixer/fixer.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/agents/02-oneshot/fixer/fixer.md",
+      "source": ".claude/agents/02-oneshot/fixer/fixer.md",
       "kind": "md",
       "sha256": "f0aaf5db5a56cb69660da7cbb6be7e513322c54dee00514094fcea28e75d0aac",
       "installedSha": "f0aaf5db5a56cb69660da7cbb6be7e513322c54dee00514094fcea28e75d0aac"
@@ -10548,7 +10566,7 @@
     ".claude/agents/02-oneshot/compliance/compliance.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/agents/02-oneshot/compliance/compliance.md",
+      "source": ".claude/agents/02-oneshot/compliance/compliance.md",
       "kind": "md",
       "sha256": "9ed11571fb73f23bc0536ca50cb35d28f6ded310a0c46eea2837b5b6290fa5fa",
       "installedSha": "9ed11571fb73f23bc0536ca50cb35d28f6ded310a0c46eea2837b5b6290fa5fa"
@@ -10556,7 +10574,7 @@
     ".claude/agents/02-oneshot/compliance/spec.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/agents/02-oneshot/compliance/spec.md",
+      "source": ".claude/agents/02-oneshot/compliance/spec.md",
       "kind": "md",
       "sha256": "39dff04a9c6b3896983097d16b645ba9558a0961d7277a463a663d54039e5a32",
       "installedSha": "39dff04a9c6b3896983097d16b645ba9558a0961d7277a463a663d54039e5a32"
@@ -10564,7 +10582,7 @@
     ".claude/agents/02-oneshot/builder/builder.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/agents/02-oneshot/builder/builder.md",
+      "source": ".claude/agents/02-oneshot/builder/builder.md",
       "kind": "md",
       "sha256": "4ebd4fad15024a957400c6fe557b1148fe24bc355a68053c0839e9100920ede6",
       "installedSha": "4ebd4fad15024a957400c6fe557b1148fe24bc355a68053c0839e9100920ede6"
@@ -10572,7 +10590,7 @@
     ".claude/agents/02-oneshot/.system/ENV-SETUP.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/agents/02-oneshot/.system/ENV-SETUP.md",
+      "source": ".claude/agents/02-oneshot/.system/ENV-SETUP.md",
       "kind": "md",
       "sha256": "7a0d92e1afdfa49da1691cf59f29cae6635f6395b435acf12ffb633c43a58af7",
       "installedSha": "7a0d92e1afdfa49da1691cf59f29cae6635f6395b435acf12ffb633c43a58af7"
@@ -10580,7 +10598,7 @@
     ".claude/agents/02-oneshot/.system/integration-map.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/agents/02-oneshot/.system/integration-map.md",
+      "source": ".claude/agents/02-oneshot/.system/integration-map.md",
       "kind": "md",
       "sha256": "766efe48aa300958019911bbee7514e0104547d218a5caf47bb9fcd33bb9260a",
       "installedSha": "766efe48aa300958019911bbee7514e0104547d218a5caf47bb9fcd33bb9260a"
@@ -10588,7 +10606,7 @@
     ".claude/agents/02-oneshot/.system/LAUNCH-CHECKLIST.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/agents/02-oneshot/.system/LAUNCH-CHECKLIST.md",
+      "source": ".claude/agents/02-oneshot/.system/LAUNCH-CHECKLIST.md",
       "kind": "md",
       "sha256": "91908a8ff1f06b4acd0ecc522027b15cd79de493455aa43f8205d1fabede0c4a",
       "installedSha": "91908a8ff1f06b4acd0ecc522027b15cd79de493455aa43f8205d1fabede0c4a"
@@ -10596,7 +10614,7 @@
     ".claude/agents/02-oneshot/.system/protocol.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/agents/02-oneshot/.system/protocol.md",
+      "source": ".claude/agents/02-oneshot/.system/protocol.md",
       "kind": "md",
       "sha256": "4348b5c51680bc54ef6a235f5ffa86b10c32dbcf5385e349e38314d2cdf585b1",
       "installedSha": "4348b5c51680bc54ef6a235f5ffa86b10c32dbcf5385e349e38314d2cdf585b1"
@@ -10604,7 +10622,7 @@
     ".claude/agents/02-oneshot/.system/skeleton-checklist.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/agents/02-oneshot/.system/skeleton-checklist.md",
+      "source": ".claude/agents/02-oneshot/.system/skeleton-checklist.md",
       "kind": "md",
       "sha256": "59c884929b2857770ee6b38605565a9594d41c29fc3dd3a23fd278712e3e5f66",
       "installedSha": "59c884929b2857770ee6b38605565a9594d41c29fc3dd3a23fd278712e3e5f66"
@@ -10612,7 +10630,7 @@
     ".claude/agents/01-adhoc/reviewer/reviewer.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/agents/01-adhoc/reviewer/reviewer.md",
+      "source": ".claude/agents/01-adhoc/reviewer/reviewer.md",
       "kind": "md",
       "sha256": "f4bdd94eb2afa997d561d674a1407a964aaf82ce74695a5bb2ffc3d19bce51fb",
       "installedSha": "f4bdd94eb2afa997d561d674a1407a964aaf82ce74695a5bb2ffc3d19bce51fb"
@@ -10620,7 +10638,7 @@
     ".claude/agents/01-adhoc/req-reviewer/req-reviewer.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/agents/01-adhoc/req-reviewer/req-reviewer.md",
+      "source": ".claude/agents/01-adhoc/req-reviewer/req-reviewer.md",
       "kind": "md",
       "sha256": "9c488ab5872a8df782afe3564fbfe578b387be41628d8ff2bffbc745285eac58",
       "installedSha": "9c488ab5872a8df782afe3564fbfe578b387be41628d8ff2bffbc745285eac58"
@@ -10628,7 +10646,7 @@
     ".claude/agents/01-adhoc/redteam/analyze.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/agents/01-adhoc/redteam/analyze.md",
+      "source": ".claude/agents/01-adhoc/redteam/analyze.md",
       "kind": "md",
       "sha256": "4f6bf46125901bdde5f3bc828ecae5b6a555b174cb16e64bd10be46b695e224f",
       "installedSha": "4f6bf46125901bdde5f3bc828ecae5b6a555b174cb16e64bd10be46b695e224f"
@@ -10636,7 +10654,7 @@
     ".claude/agents/01-adhoc/redteam/orchestrator.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/agents/01-adhoc/redteam/orchestrator.md",
+      "source": ".claude/agents/01-adhoc/redteam/orchestrator.md",
       "kind": "md",
       "sha256": "297a0e2c05e0e387b5bbd35cb693bf54b10514cb05a3e76b9dab5d3f05f3fb55",
       "installedSha": "297a0e2c05e0e387b5bbd35cb693bf54b10514cb05a3e76b9dab5d3f05f3fb55"
@@ -10644,7 +10662,7 @@
     ".claude/agents/01-adhoc/redteam/scan.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/agents/01-adhoc/redteam/scan.md",
+      "source": ".claude/agents/01-adhoc/redteam/scan.md",
       "kind": "md",
       "sha256": "c31733faf55a9e1f4a6bd9e271b19e3d1e898e39c750899395f2e9de40a56057",
       "installedSha": "c31733faf55a9e1f4a6bd9e271b19e3d1e898e39c750899395f2e9de40a56057"
@@ -10652,7 +10670,7 @@
     ".claude/agents/01-adhoc/qa/analyze.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/agents/01-adhoc/qa/analyze.md",
+      "source": ".claude/agents/01-adhoc/qa/analyze.md",
       "kind": "md",
       "sha256": "9d053496d6beaac6e5b262c511c474e4fa419da5e34dddf5ef6fd6afda4f6881",
       "installedSha": "9d053496d6beaac6e5b262c511c474e4fa419da5e34dddf5ef6fd6afda4f6881"
@@ -10660,7 +10678,7 @@
     ".claude/agents/01-adhoc/qa/orchestrator.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/agents/01-adhoc/qa/orchestrator.md",
+      "source": ".claude/agents/01-adhoc/qa/orchestrator.md",
       "kind": "md",
       "sha256": "46aa8345c8cb839d1113ed7fe325d47567d3c20c23644543475dcdd4e552b0b6",
       "installedSha": "46aa8345c8cb839d1113ed7fe325d47567d3c20c23644543475dcdd4e552b0b6"
@@ -10668,7 +10686,7 @@
     ".claude/agents/01-adhoc/qa/scan.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/agents/01-adhoc/qa/scan.md",
+      "source": ".claude/agents/01-adhoc/qa/scan.md",
       "kind": "md",
       "sha256": "763d75b5cded4405c31e31417cbf57e7511187c72e0f8c5b2e35ff0a11c258c7",
       "installedSha": "763d75b5cded4405c31e31417cbf57e7511187c72e0f8c5b2e35ff0a11c258c7"
@@ -10676,7 +10694,7 @@
     ".claude/agents/01-adhoc/fixer/fixer.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/agents/01-adhoc/fixer/fixer.md",
+      "source": ".claude/agents/01-adhoc/fixer/fixer.md",
       "kind": "md",
       "sha256": "126503ee47431f2b00d8cfe47946ddf36ced1ac9effcdbada45e2fe29f9461c3",
       "installedSha": "126503ee47431f2b00d8cfe47946ddf36ced1ac9effcdbada45e2fe29f9461c3"
@@ -10684,7 +10702,7 @@
     ".claude/agents/01-adhoc/compliance/compliance.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/agents/01-adhoc/compliance/compliance.md",
+      "source": ".claude/agents/01-adhoc/compliance/compliance.md",
       "kind": "md",
       "sha256": "c950f15f305d3882236b47fa3fe9f88df91468937d115f5d71b05c6dfa8e38c8",
       "installedSha": "c950f15f305d3882236b47fa3fe9f88df91468937d115f5d71b05c6dfa8e38c8"
@@ -10692,7 +10710,7 @@
     ".claude/agents/01-adhoc/builder/builder.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/agents/01-adhoc/builder/builder.md",
+      "source": ".claude/agents/01-adhoc/builder/builder.md",
       "kind": "md",
       "sha256": "387d68be8d5eec1720b6f1dcffb932b4c3cc5373a29cf2d1eb53195f6f6ece2b",
       "installedSha": "387d68be8d5eec1720b6f1dcffb932b4c3cc5373a29cf2d1eb53195f6f6ece2b"
@@ -10700,7 +10718,7 @@
     ".claude/agents/01-adhoc/.system/protocol.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/agents/01-adhoc/.system/protocol.md",
+      "source": ".claude/agents/01-adhoc/.system/protocol.md",
       "kind": "md",
       "sha256": "41eefc952700b301ad9572f8a5905b66ef78bc81df43b9272e2dc097502ab9c9",
       "installedSha": "41eefc952700b301ad9572f8a5905b66ef78bc81df43b9272e2dc097502ab9c9"
@@ -10708,7 +10726,7 @@
     ".claude/agents/00-alex/alpha.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/agents/00-alex/alpha.md",
+      "source": ".claude/agents/00-alex/alpha.md",
       "kind": "md",
       "sha256": "9cd6c6c3ec3248717d0a11f1f582c4ccb421adf20312216c7d31112779a4c021",
       "installedSha": "9cd6c6c3ec3248717d0a11f1f582c4ccb421adf20312216c7d31112779a4c021"
@@ -10716,7 +10734,7 @@
     ".claude/agents/00-alex/beta.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/agents/00-alex/beta.md",
+      "source": ".claude/agents/00-alex/beta.md",
       "kind": "md",
       "sha256": "dad52b2546b2fa61df7cb5c9d4a41c5805e5b68933ad9d03267ad16a5ff3de9b",
       "installedSha": "dad52b2546b2fa61df7cb5c9d4a41c5805e5b68933ad9d03267ad16a5ff3de9b"
@@ -10724,7 +10742,7 @@
     ".claude/agents/00-alex/delta.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/agents/00-alex/delta.md",
+      "source": ".claude/agents/00-alex/delta.md",
       "kind": "md",
       "sha256": "5cd2282c6faaf4c704958072ddf17fae7c1ed597d2642964a8206f6c4bb00459",
       "installedSha": "5cd2282c6faaf4c704958072ddf17fae7c1ed597d2642964a8206f6c4bb00459"
@@ -10732,7 +10750,7 @@
     ".claude/agents/00-alex/gamma.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/agents/00-alex/gamma.md",
+      "source": ".claude/agents/00-alex/gamma.md",
       "kind": "md",
       "sha256": "ccfde25987fc0ffd9698c702ba6e4d82df0cdefd91ee7f31c64db3a3cad39855",
       "installedSha": "ccfde25987fc0ffd9698c702ba6e4d82df0cdefd91ee7f31c64db3a3cad39855"
@@ -10745,7 +10763,7 @@
     ".claude/agents/00-alex/.system/lexicon.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/agents/00-alex/.system/lexicon.md",
+      "source": ".claude/agents/00-alex/.system/lexicon.md",
       "kind": "md",
       "sha256": "1f1b03157b7b1f96f4fbb57b05a82bf2a723b35b7aad2cc0882458f42973f879",
       "installedSha": "1f1b03157b7b1f96f4fbb57b05a82bf2a723b35b7aad2cc0882458f42973f879"
@@ -10753,7 +10771,7 @@
     ".claude/agents/00-alex/.system/skill-frontmatter.schema.json": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/agents/00-alex/.system/skill-frontmatter.schema.json",
+      "source": ".claude/agents/00-alex/.system/skill-frontmatter.schema.json",
       "kind": "json",
       "sha256": "78c75643731e725dfc328010cce8d920aa147e4ecf91cd73d5908dd3c5e8a5c7",
       "installedSha": "78c75643731e725dfc328010cce8d920aa147e4ecf91cd73d5908dd3c5e8a5c7"
@@ -10761,7 +10779,7 @@
     ".claude/agents/00-alex/.system/policy/current-stage.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/agents/00-alex/.system/policy/current-stage.md",
+      "source": ".claude/agents/00-alex/.system/policy/current-stage.md",
       "kind": "md",
       "sha256": "d65a4220f2c990aed3c0300c005269cf6718fe34a0e2dd83b03c8148455beadc",
       "installedSha": "d65a4220f2c990aed3c0300c005269cf6718fe34a0e2dd83b03c8148455beadc"
@@ -10775,7 +10793,7 @@
     ".claude/agents/00-alex/.system/policy/ledger-presence.json": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/agents/00-alex/.system/policy/ledger-presence.json",
+      "source": ".claude/agents/00-alex/.system/policy/ledger-presence.json",
       "kind": "json",
       "sha256": "382ab3fdd79fd71e781e3bea457670bd8a756db0c87fb4d5e7c3172af886587d",
       "installedSha": "382ab3fdd79fd71e781e3bea457670bd8a756db0c87fb4d5e7c3172af886587d"
@@ -10783,7 +10801,7 @@
     ".claude/agents/00-alex/.system/policy/provider-failure-modes.json": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/agents/00-alex/.system/policy/provider-failure-modes.json",
+      "source": ".claude/agents/00-alex/.system/policy/provider-failure-modes.json",
       "kind": "json",
       "sha256": "267a36de06cda35c2d29fa53f2e21d92b4c6f65395250e7f9fc3be35e5f27cfa",
       "installedSha": "267a36de06cda35c2d29fa53f2e21d92b4c6f65395250e7f9fc3be35e5f27cfa"
@@ -10791,7 +10809,7 @@
     ".claude/agents/00-alex/.system/policy/provider-fallback.json": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/agents/00-alex/.system/policy/provider-fallback.json",
+      "source": ".claude/agents/00-alex/.system/policy/provider-fallback.json",
       "kind": "json",
       "sha256": "4afeb5cbc4a00fa66a6cc82b55d3036dc4e0a71e80f41400dd63337c7eb6afa1",
       "installedSha": "4afeb5cbc4a00fa66a6cc82b55d3036dc4e0a71e80f41400dd63337c7eb6afa1"
@@ -10799,7 +10817,7 @@
     ".claude/agents/00-alex/.system/policy/sprint-full-autonomy.json": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/agents/00-alex/.system/policy/sprint-full-autonomy.json",
+      "source": ".claude/agents/00-alex/.system/policy/sprint-full-autonomy.json",
       "kind": "json",
       "sha256": "845ca281b7c532deaa0d2418f3ee0b702fa41bf40b9e92fb0aa529df906810e7",
       "installedSha": "845ca281b7c532deaa0d2418f3ee0b702fa41bf40b9e92fb0aa529df906810e7"
@@ -10807,7 +10825,7 @@
     ".claude/agents/00-alex/.system/policy/sprint-routing.json": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/agents/00-alex/.system/policy/sprint-routing.json",
+      "source": ".claude/agents/00-alex/.system/policy/sprint-routing.json",
       "kind": "json",
       "sha256": "3cfc2a78360a640fdb7ef4597f7a55e19aad67c2bce1829d1022ff51886dbdf7",
       "installedSha": "3cfc2a78360a640fdb7ef4597f7a55e19aad67c2bce1829d1022ff51886dbdf7"
@@ -10815,7 +10833,7 @@
     ".claude/agents/00-alex/.system/policy/validation-backlog-policy.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/agents/00-alex/.system/policy/validation-backlog-policy.md",
+      "source": ".claude/agents/00-alex/.system/policy/validation-backlog-policy.md",
       "kind": "md",
       "sha256": "ed9d4d58ae256b03361dab45a7154e220da5c103d5bc3591518d4682fdbd3087",
       "installedSha": "ed9d4d58ae256b03361dab45a7154e220da5c103d5bc3591518d4682fdbd3087"
@@ -10823,7 +10841,7 @@
     ".claude/agents/00-alex/.system/policy/version-bump-guard.json": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/agents/00-alex/.system/policy/version-bump-guard.json",
+      "source": ".claude/agents/00-alex/.system/policy/version-bump-guard.json",
       "kind": "json",
       "sha256": "a0ccaae343b32a97d99f1063a732ea1e62cf1945451b4faa779fb8d1c283e666",
       "installedSha": "a0ccaae343b32a97d99f1063a732ea1e62cf1945451b4faa779fb8d1c283e666"
@@ -10831,7 +10849,7 @@
     ".claude/agents/00-alex/.system/policy/adr/0000-template.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/agents/00-alex/.system/policy/adr/0000-template.md",
+      "source": ".claude/agents/00-alex/.system/policy/adr/0000-template.md",
       "kind": "md",
       "sha256": "34e4d4aebb19ec2ec007e7003b0da04aa5b940e34d1ca97ce61d69a2d6c614c8",
       "installedSha": "34e4d4aebb19ec2ec007e7003b0da04aa5b940e34d1ca97ce61d69a2d6c614c8"
@@ -10839,7 +10857,7 @@
     ".claude/agents/00-alex/.system/policy/adr/0001-warp-promote-location.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/agents/00-alex/.system/policy/adr/0001-warp-promote-location.md",
+      "source": ".claude/agents/00-alex/.system/policy/adr/0001-warp-promote-location.md",
       "kind": "md",
       "sha256": "32b0d5445adf33b9e6d1a1d2c519afdc9c90bcadc9f00feb6de46bc0fb1b6d28",
       "installedSha": "32b0d5445adf33b9e6d1a1d2c519afdc9c90bcadc9f00feb6de46bc0fb1b6d28"
@@ -10847,7 +10865,7 @@
     ".claude/agents/00-alex/.system/policy/adr/0002-multi-sprint-parallel-lanes.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/agents/00-alex/.system/policy/adr/0002-multi-sprint-parallel-lanes.md",
+      "source": ".claude/agents/00-alex/.system/policy/adr/0002-multi-sprint-parallel-lanes.md",
       "kind": "md",
       "sha256": "47ecfc36ce09cf8f4af1eba50a84b1601cdeeef065dafc5172f72105a8a3bbaf",
       "installedSha": "47ecfc36ce09cf8f4af1eba50a84b1601cdeeef065dafc5172f72105a8a3bbaf"
@@ -10855,7 +10873,7 @@
     ".claude/agents/00-alex/.system/policy/adr/INDEX.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/agents/00-alex/.system/policy/adr/INDEX.md",
+      "source": ".claude/agents/00-alex/.system/policy/adr/INDEX.md",
       "kind": "md",
       "sha256": "a074ffca3a27c5f0fe2cfec0a10bf9501148b330aed8ba458f14595117fec521",
       "installedSha": "a074ffca3a27c5f0fe2cfec0a10bf9501148b330aed8ba458f14595117fec521"
@@ -10868,7 +10886,7 @@
     ".claude/agents/00-alex/.system/beta/beta-source-data.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/agents/00-alex/.system/beta/beta-source-data.md",
+      "source": ".claude/agents/00-alex/.system/beta/beta-source-data.md",
       "kind": "md",
       "sha256": "0ae9c868c8edb0933cef6bb88214b3080c13cdb126368d7243c990f62db3f60f",
       "installedSha": "0ae9c868c8edb0933cef6bb88214b3080c13cdb126368d7243c990f62db3f60f"
@@ -10881,7 +10899,7 @@
     ".claude/agents/00-alex/.system/beta/judgement-model-recommendations-archive.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/agents/00-alex/.system/beta/judgement-model-recommendations-archive.md",
+      "source": ".claude/agents/00-alex/.system/beta/judgement-model-recommendations-archive.md",
       "kind": "md",
       "sha256": "6ff5b2705aaaf8a18000ef78d6608824def67b9f5716d68860c2e466cfc91d10",
       "installedSha": "6ff5b2705aaaf8a18000ef78d6608824def67b9f5716d68860c2e466cfc91d10"
@@ -10889,7 +10907,7 @@
     ".claude/agents/00-alex/.system/beta/judgement-model-recommendations.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/agents/00-alex/.system/beta/judgement-model-recommendations.md",
+      "source": ".claude/agents/00-alex/.system/beta/judgement-model-recommendations.md",
       "kind": "md",
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "installedSha": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
@@ -10897,7 +10915,7 @@
     ".claude/agents/00-alex/.system/beta/judgement-model.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/agents/00-alex/.system/beta/judgement-model.md",
+      "source": ".claude/agents/00-alex/.system/beta/judgement-model.md",
       "kind": "md",
       "sha256": "fd765d21046ef36fca70516b2d2b4ea0e2c2da63f5991f9b3bbb271367e41703",
       "installedSha": "fd765d21046ef36fca70516b2d2b4ea0e2c2da63f5991f9b3bbb271367e41703"
@@ -10910,7 +10928,7 @@
     ".claude/agents/.system/frontmatter-guide.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/agents/.system/frontmatter-guide.md",
+      "source": ".claude/agents/.system/frontmatter-guide.md",
       "kind": "md",
       "sha256": "38bc186ac5b82f43f13265959a8afaaaea02d7c2a7fa84698f2a325952cba45d",
       "installedSha": "38bc186ac5b82f43f13265959a8afaaaea02d7c2a7fa84698f2a325952cba45d"
@@ -10918,7 +10936,7 @@
     ".claude/agents/.system/guides/agent-dispatch-guide.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/agents/.system/guides/agent-dispatch-guide.md",
+      "source": ".claude/agents/.system/guides/agent-dispatch-guide.md",
       "kind": "md",
       "sha256": "d8a7b2ff077ff9abea49f8e7315cb5035f34e574054e2b35bc07f95f8ca10f56",
       "installedSha": "d8a7b2ff077ff9abea49f8e7315cb5035f34e574054e2b35bc07f95f8ca10f56"
@@ -10926,7 +10944,7 @@
     ".claude/agents/.system/guides/oneshot-token-guide.md": {
       "owner": "framework",
       "managed": true,
-      "source": "framework/agents/.system/guides/oneshot-token-guide.md",
+      "source": ".claude/agents/.system/guides/oneshot-token-guide.md",
       "kind": "md",
       "sha256": "f0c6c1cbd0fb5ca8b7bb07517a48c2250ac8da15ef0f396de88f50b788da7737",
       "installedSha": "f0c6c1cbd0fb5ca8b7bb07517a48c2250ac8da15ef0f396de88f50b788da7737"

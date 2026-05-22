@@ -4,7 +4,7 @@ title: "Framework Boundary &amp; Identity — _warpos/ zone, MANIFEST.json, full
 objective: "(set by /sprint:plan)"
 status: designing
 created_at: "2026-05-22T05:30:25.992Z"
-updated_at: "2026-05-22T22:47:44.794Z"
+updated_at: "2026-05-22T22:51:56.869Z"
 source_request: "Sprint 1 of the ROADMAP — Framework Boundary & Identity. Adopt the managed-config-layer architecture: canonical WarpOS contains only framework source; installed products treat _warpos/ as the framework source-of-truth zone and .claude/ as the compiled runtime interface. Full purge of the upstream-discovery surface (/warp:promote, /warp:promote-flags, /warp:flag, warpos-to-update.md and supporting scripts/paths/keys). Introduce _warpos/MANIFEST.json as the ownership source-of-truth. Generated-view discipline for tool-mandated paths (.claude/commands, .claude/agents, .claude/settings.json). Three-layer settings.json compiler. Canonical scrub: move WarpOS-as-product specs to a new PRIVATE workspace. Five structural gates: canonical pre-commit guard, /check:framework-purity, installer ownership manifest, /warp:update --status, /check:framework-views-fresh. Migration plan for existing installed products. Defer Pattern C′."
 interpreted_intent: "Restructure WarpOS as a managed-configuration-layer over the host project's .claude/ interface. Declare ownership via _warpos/MANIFEST.json (per-path owner ∈ {framework|generated|project|runtime}); sync is one-way canonical→product; upstream channel (/warp:promote suite + warpos-to-update.md ledger) is fully purged. Tool-mandated paths (.claude/commands, .claude/agents, .claude/settings.json) become COMPILED VIEWS regenerated deterministically from _warpos/ sources, with CI gates refusing stale views and canonical pre-commit gates refusing leakage of product-specific content. Existing installs migrate via a one-time migration script. Pattern C′ deferred."
 plan_contract: ".claude/project/sprint/plan-contracts/PC-20260522-0022.yaml"
@@ -41,6 +41,7 @@ tickets:
     - T-20260522-180
     - T-20260522-188
     - T-20260522-189
+    - T-20260522-190
   released: []
   deferred:
     - T-20260522-181

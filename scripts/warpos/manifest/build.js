@@ -287,6 +287,14 @@ function buildRules(sourcePrefix) {
     },
 
     // FRAMEWORK — generated view (.claude/commands/, .claude/agents/) mirroring source
+    //
+    // Source-pointer semantics:
+    //   - In CANONICAL (sourcePrefix=framework): the file at `.claude/commands/foo.md`
+    //     IS the source (canonical has no separate `framework/commands/` mirror yet).
+    //     Source pointer is self-referential; the regenerator no-ops.
+    //   - In PRODUCT (sourcePrefix=_warpos): the source lives at
+    //     `_warpos/commands/foo.md` (populated by /warp:setup from canonical).
+    //     Regenerator copies source → .claude/commands/foo.md.
     {
       name: "framework-claude-command",
       match: (rel) =>
@@ -294,7 +302,10 @@ function buildRules(sourcePrefix) {
       entry: (rel) => ({
         owner: "framework",
         managed: true,
-        source: `${sourcePrefix}/${rel.replace(/^\.claude\//, "")}`,
+        source:
+          sourcePrefix === "framework"
+            ? rel
+            : `${sourcePrefix}/${rel.replace(/^\.claude\//, "")}`,
         kind: "md",
       }),
     },
@@ -307,7 +318,10 @@ function buildRules(sourcePrefix) {
       entry: (rel) => ({
         owner: "framework",
         managed: true,
-        source: `${sourcePrefix}/${rel.replace(/^\.claude\//, "")}`,
+        source:
+          sourcePrefix === "framework"
+            ? rel
+            : `${sourcePrefix}/${rel.replace(/^\.claude\//, "")}`,
         kind: "md",
       }),
     },
@@ -402,7 +416,10 @@ function buildRules(sourcePrefix) {
       entry: (rel) => ({
         owner: "framework",
         managed: true,
-        source: `${sourcePrefix}/${rel.replace(/^\.claude\//, "")}`,
+        source:
+          sourcePrefix === "framework"
+            ? rel
+            : `${sourcePrefix}/${rel.replace(/^\.claude\//, "")}`,
         kind: rel.endsWith(".md") ? "md" : undefined,
       }),
     },
@@ -415,7 +432,10 @@ function buildRules(sourcePrefix) {
       entry: (rel) => ({
         owner: "framework",
         managed: true,
-        source: `${sourcePrefix}/${rel.replace(/^\.claude\//, "")}`,
+        source:
+          sourcePrefix === "framework"
+            ? rel
+            : `${sourcePrefix}/${rel.replace(/^\.claude\//, "")}`,
         kind: "json",
       }),
     },
