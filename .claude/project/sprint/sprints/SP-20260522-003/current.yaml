@@ -2,15 +2,15 @@ schema: warpos/sprint/current-sprint/v1
 id: SP-20260522-003
 title: "Maintainer &amp; Product Workflow — .vscode/tasks.json from portfolio registry, /portfolio:open --spawn VS Code preference, aiweb product-delivery ticket (cadence rule)"
 objective: "(set by /sprint:plan)"
-status: releasing
+status: closed
 created_at: "2026-05-22T05:48:51.433Z"
-updated_at: "2026-05-22T06:07:48.474Z"
+updated_at: "2026-05-22T23:14:29.092Z"
 source_request: "Sprint 3 of the ROADMAP — Maintainer & Product Workflow. Generate .vscode/tasks.json from portfolio registry so the maintainer can spawn per-product terminal panes with 3 keystrokes; fix /portfolio:open --spawn to prefer `code -n <path>` when running inside VS Code (TERM_PROGRAM=vscode). PER STRATEGY CADENCE RULE: Sprint 3 MUST include at least one product-delivery ticket. User instructed (verbatim): 'And we can use a product delivery ticket from aiweb, I am doing several now, just make one up.' Invent a plausible aiweb deliverable that exercises the new portfolio-tasks workflow."
 interpreted_intent: "Reduce the maintainer's friction running multiple portfolio products in parallel. (1) Generate .vscode/tasks.json from ~/.warpos/portfolio.json so each product gets a labelled task that opens an integrated VS Code terminal scoped to that repo. Hook portfolio mutations (/portfolio:register, /portfolio:new, /portfolio:adopt) to regenerate, and add /portfolio:tasks for manual refresh. (2) Tiny VS Code preference in /portfolio:open --spawn: when TERM_PROGRAM=vscode, prefer `code -n <path>` over `wt` so the new window stays inside VS Code's workspace. (3) Product-delivery ticket against aiweb per the cadence rule — exercises the new tasks.json workflow against a real product."
 plan_contract: ".claude/project/sprint/plan-contracts/PC-20260522-0024.yaml"
 risk_level: medium
 approval_state: none_required
-current_phase: release
+current_phase: retrospective
 recommended_mode: adhoc
 mode_invocation_required_by_user: true
 lane:
@@ -106,7 +106,7 @@ reports:
   plan: ".claude/project/sprint/plan-contracts/PC-20260522-0024.report.md"
   design: null
   execution: null
-  release: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\releases\\RL-20260522-019.yaml"
+  release: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\releases\\RL-20260522-022.yaml"
 ralph:
   active: false
   current_ticket: null
@@ -117,7 +117,7 @@ ralph:
 crash_recovery:
   last_checkpoint: ".claude/project/sprint/sprint-progress.yaml"
   resume_command: "/sprint:release"
-  resume_summary: "Release RL-20260522-019 in preparing state. Run /sprint:release with --id RL-20260522-019."
+  resume_summary: "Release RL-20260522-022 in preparing state. Run /sprint:release with --id RL-20260522-022."
   active_files: []
   dirty_state: false
   blockers: []

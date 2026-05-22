@@ -2,15 +2,15 @@ schema: warpos/sprint/current-sprint/v1
 id: SP-20260522-002
 title: "Install &amp; Release Integrity — manifest coverage, dry-run + rollback, idempotent install, framework-views-fresh + framework-purity gates"
 objective: "(set by /sprint:plan)"
-status: designing
+status: closed
 created_at: "2026-05-22T05:46:05.552Z"
-updated_at: "2026-05-22T05:51:56.342Z"
+updated_at: "2026-05-22T23:14:11.960Z"
 source_request: "Sprint 2 of the ROADMAP — Install & Release Integrity. Make WarpOS installs boring. Builds on Sprint 1's _warpos/MANIFEST.json by adding the manifest-coverage check, the release-build refusal of stale manifests, .claude/manifest.json always-present + graceful absence in callers, the post-update check provenance fix, the runtime-leak .gitignore gap, idempotent install with per-file status, /warp:update --dry-run + diff, versioned migrations + user-override tracking, the _warpos/MANIFEST.json generator + validator, the generated-views regenerator, the three-layer settings.json compiler, /check:framework-views-fresh + /check:framework-purity gates, rollback snapshot for /warp:update, and the install fixture CI matrix."
 interpreted_intent: "Harden the WarpOS install + update + release pipeline so installs become boring (predictable, dry-runnable, rollbackable, regression-tested). Implement the _warpos/MANIFEST.json generator/validator/regenerator from Sprint 1's schema; add coverage + freshness gates that refuse stale or drifted state; surface install/update changes per-file (dry-run + diff + rollback); track user-overrides so updates don't silently overwrite local work; ship the three-layer settings.json compiler; add an install-fixture CI matrix that exercises clean repo / existing install / dirty repo / multi-version-upgrade / user-override scenarios."
 plan_contract: ".claude/project/sprint/plan-contracts/PC-20260522-0023.yaml"
 risk_level: high
 approval_state: none_required
-current_phase: design
+current_phase: retrospective
 recommended_mode: adhoc
 mode_invocation_required_by_user: true
 lane:
@@ -38,9 +38,9 @@ tickets:
   redteam_failed: []
   done:
     - T-20260522-184
+    - T-20260522-182
   released: []
   deferred:
-    - T-20260522-182
     - T-20260522-183
   abandoned: []
   reopened: []

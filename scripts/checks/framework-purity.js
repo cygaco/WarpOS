@@ -115,6 +115,23 @@ const ALLOW_CLIENT_SLUG_PATHS = [
   /^_index\//, // any product index
 ];
 
+// File patterns where PROMOTE_RELIC is allowed — historical docs +
+// migration notes legitimately reference the purged identifiers to
+// document the retirement.
+const ALLOW_PROMOTE_RELIC_PATHS = [
+  /^scripts\/checks\/framework-purity\.js$/, // self-reference
+  /^\.claude\/commands\/check\/framework-purity\.md$/, // skill body
+  /^scripts\/hooks\/framework-purity-guard\.js$/, // hook
+  /^ROADMAP\.md$/, // documents the retirement plan
+  /^RELEASES\.md$/, // shipped release history
+  /^\.claude\/project\/sprint\//, // historical sprint planning
+  /^\.claude\/dreams\//, // operator journal
+  /^framework\/releases\/.+\/changelog\.md$/,
+  /^_warpos\/MANIFEST\.json$/,
+  /^scripts\/hooks\/version-bump-guard\.js$/, // FRAMEWORK_PREFIXES mirror comment
+  /^scripts\/phase0-verify\.js$/, // historical test names
+];
+
 // File patterns where ABS_PATH is allowed — runtime/session state
 // legitimately records absolute paths from the maintainer's machine
 // (these files are gitignored; if they appear in a diff it's because
@@ -165,8 +182,9 @@ function scanContent(rel, content, findings) {
     }
   }
   // Promote relics in CONTENT (skill bodies / scripts referencing the
-  // purged surface). Exempt this checker itself.
-  if (rel !== "scripts/checks/framework-purity.js") {
+  // purged surface). Allow-list covers historical/documentation
+  // surfaces that legitimately mention the retired identifiers.
+  if (!isAllowed(rel, ALLOW_PROMOTE_RELIC_PATHS)) {
     for (const re of PROMOTE_RELIC_REGEX) {
       if (re.test(content)) {
         findings.promote_relic.push({
