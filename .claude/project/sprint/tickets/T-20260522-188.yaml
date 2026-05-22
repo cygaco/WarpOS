@@ -1,0 +1,46 @@
+schema: warpos/sprint/ticket/v1
+id: T-20260522-188
+title: "_warpos/MANIFEST.json schema v1 + generator + first-cut manifest for canonical"
+type: feature
+status: done
+sprint: SP-20260522-001
+created_at: "2026-05-22T22:28:17.070Z"
+updated_at: "2026-05-22T22:28:17.328Z"
+owner: null
+owner_agent: null
+risk_level: medium
+approval_required: false
+approval_state: not_required
+source_request: "Sprint 1 of the ROADMAP — Framework Boundary & Identity. Adopt the managed-config-layer architecture: canonical WarpOS contains only framework source; installed products treat _warpos/ as the framework source-of-truth zone and .claude/ as the compiled runtime interface. Full purge of the upstream-discovery surface (/warp:promote, /warp:promote-flags, /warp:flag, warpos-to-update.md and supporting scripts/paths/keys). Introduce _warpos/MANIFEST.json as the ownership source-of-truth. Generated-view discipline for tool-mandated paths (.claude/commands, .claude/agents, .claude/settings.json). Three-layer settings.json compiler. Canonical scrub: move WarpOS-as-product specs to a new PRIVATE workspace. Five structural gates: canonical pre-commit guard, /check:framework-purity, installer ownership manifest, /warp:update --status, /check:framework-views-fresh. Migration plan for existing installed products. Defer Pattern C′."
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260522-0022.yaml"
+linked_requirements: []
+linked_high_level_story: null
+linked_granular_story: null
+linked_prd: null
+linked_copy: []
+linked_inputs: []
+linked_trace: []
+linked_acceptance_criteria: []
+linked_issues: []
+linked_decisions: []
+linked_external_services: []
+linked_files: []
+linked_tests: []
+linked_commits: []
+linked_prs: []
+linked_release: null
+description: ""
+user_value: ""
+business_value: ""
+acceptance_criteria: []
+non_goals: []
+implementation_notes: "Schema authored at schemas/warpos-manifest.schema.json (v1; ownership classes framework/generated/project/runtime; conditional-required fields via JSON Schema if/then). Generator at scripts/warpos/manifest/build.js (25 classification rules; CLI flags --root/--out/--source-prefix/--dry-run/--json/--allow-unclassified; SHA-256 per framework entry; refuses unclassified by default). Tests at scripts/warpos/manifest/test-build.js (19/19 pass; covers schema parse, runs ok against repo, structural invariants per ownership class, sha256 determinism). First-cut manifest emitted to _warpos/MANIFEST.json (1914 paths across 25 rules; 0 unclassified)."
+qa_notes: ""
+redteam_notes: ""
+trace_notes: ""
+blocked_by: []
+blocks: []
+fix_attempts: []
+ralph_progress: null
+completion_evidence: []
+reopen_history: []
