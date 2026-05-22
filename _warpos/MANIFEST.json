@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-05-22T22:27:58.054Z",
+  "generatedAt": "2026-05-22T22:47:27.505Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.8.2",
   "migrations": [],
@@ -2591,6 +2591,20 @@
       "source": "scripts/warpos/manifest/test-build.js",
       "sha256": "4f7eab8b37431b3ee38ba41dae4b70c8dd02fc27ff8b865545a59b9ec0ce237e",
       "installedSha": "4f7eab8b37431b3ee38ba41dae4b70c8dd02fc27ff8b865545a59b9ec0ce237e"
+    },
+    "scripts/warpos/manifest/test-validate.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/warpos/manifest/test-validate.js",
+      "sha256": "725738e14770cd069e4f666bb983cea67f1d2bbf58b86de5ddcac36d079327af",
+      "installedSha": "725738e14770cd069e4f666bb983cea67f1d2bbf58b86de5ddcac36d079327af"
+    },
+    "scripts/warpos/manifest/validate.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/warpos/manifest/validate.js",
+      "sha256": "f28ac01b270c5b0c75800bb766cef002612393c6f45967f4a1613a5a29559702",
+      "installedSha": "f28ac01b270c5b0c75800bb766cef002612393c6f45967f4a1613a5a29559702"
     },
     "scripts/warpos/lib/content-hash.js": {
       "owner": "framework",
@@ -6554,6 +6568,10 @@
       "managed": false
     },
     ".claude/project/sprint/tickets/T-20260522-187.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/tickets/T-20260522-188.yaml": {
       "owner": "runtime",
       "managed": false
     },
