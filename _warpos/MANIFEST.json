@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-05-22T23:08:12.534Z",
+  "generatedAt": "2026-05-22T23:10:29.567Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.8.2",
   "migrations": [],
@@ -3551,6 +3551,13 @@
       "sha256": "0ed45f23ab60d0b27678c3889af0a0684cbbca7ee2445f2c8ebcac663dc4684b",
       "installedSha": "0ed45f23ab60d0b27678c3889af0a0684cbbca7ee2445f2c8ebcac663dc4684b"
     },
+    "scripts/hooks/framework-purity-guard.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/hooks/framework-purity-guard.js",
+      "sha256": "d8e00da53151bc29f892bfe2860187b232f5cbae50ffc688d39562027167169a",
+      "installedSha": "d8e00da53151bc29f892bfe2860187b232f5cbae50ffc688d39562027167169a"
+    },
     "scripts/hooks/gate-check.js": {
       "owner": "framework",
       "managed": true,
@@ -3569,8 +3576,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/hook-manifest.json",
-      "sha256": "86a1eed1b27ed3ddf74c913675e140e08bea004ec7affe1d1f3fa5dd6bee97b4",
-      "installedSha": "86a1eed1b27ed3ddf74c913675e140e08bea004ec7affe1d1f3fa5dd6bee97b4"
+      "sha256": "d052638b7ae19564afc1f94de5ad517f2811131d36c4f479fd3d3f00a6c67b96",
+      "installedSha": "d052638b7ae19564afc1f94de5ad517f2811131d36c4f479fd3d3f00a6c67b96"
     },
     "scripts/hooks/learning-validator.js": {
       "owner": "framework",
@@ -4535,8 +4542,8 @@
       "owner": "framework",
       "managed": true,
       "source": "framework/hooks.registry.json",
-      "sha256": "98bb28e42dc5cb907a1bddec2dd45bff1399c26b37fcba9d7ae56f81ccd76633",
-      "installedSha": "98bb28e42dc5cb907a1bddec2dd45bff1399c26b37fcba9d7ae56f81ccd76633"
+      "sha256": "b98dfd082e8ba99e31f691d8040a9450cfc696ed9ba1f2a2b0c506c1de51b8a0",
+      "installedSha": "b98dfd082e8ba99e31f691d8040a9450cfc696ed9ba1f2a2b0c506c1de51b8a0"
     },
     "framework/paths.registry.json": {
       "owner": "framework",
@@ -6615,6 +6622,10 @@
       "managed": false
     },
     ".claude/project/sprint/tickets/T-20260522-190.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/tickets/T-20260522-191.yaml": {
       "owner": "runtime",
       "managed": false
     },
@@ -10395,6 +10406,14 @@
       "kind": "md",
       "sha256": "d6aa84e62f983ee9e74d166f1a3b05e49443c88b4b556b056bccbc39415dbc39",
       "installedSha": "d6aa84e62f983ee9e74d166f1a3b05e49443c88b4b556b056bccbc39415dbc39"
+    },
+    ".claude/commands/check/warpos-manifest-coverage.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/commands/check/warpos-manifest-coverage.md",
+      "kind": "md",
+      "sha256": "35fa9ba0022db2586c19ba1ada300e12c1fd91fc3cfc517225672ff2fbea6008",
+      "installedSha": "35fa9ba0022db2586c19ba1ada300e12c1fd91fc3cfc517225672ff2fbea6008"
     },
     ".claude/commands/check/warpos-manifest-honesty.md": {
       "owner": "framework",

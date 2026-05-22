@@ -89,6 +89,17 @@
       "testFixtures": ["fixtures/hooks/default/bash-safe.json"]
     },
     {
+      "id": "framework-purity-guard",
+      "script": "scripts/hooks/framework-purity-guard.js",
+      "owner": "framework",
+      "enabled": true,
+      "failMode": "fail-closed",
+      "fixturesRequired": false,
+      "purpose": "Block `git commit` in canonical when product-content leaks (client slugs, abs paths, promote-relic reintroduction) are detected. SP-20260522-001.",
+      "registrations": [{ "event": "PreToolUse", "matcher": "Bash" }],
+      "testFixtures": ["fixtures/hooks/default/bash-git-commit.json"]
+    },
+    {
       "id": "path-registry-guard",
       "script": "scripts/hooks/path-registry-guard.js",
       "owner": "framework",
