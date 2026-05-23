@@ -1,14 +1,14 @@
 schema: warpos/sprint/sprint-progress/v1
 sprint: SP-20260524-001
-updated_at: "2026-05-23T06:49:04.593Z"
-current_phase: plan
-current_command: "/sprint:plan"
+updated_at: "2026-05-23T07:08:44.092Z"
+current_phase: release-prep
+current_command: "/sprint:full"
 current_ticket: null
 current_task: null
 current_loop: null
-status: running
-last_completed_step: plan_contract_written
-next_action: "/sprint:design --sprint SP-20260524-001"
+status: halted
+last_completed_step: sprint_full_release-prep_halted
+next_action: "Phase 4 (release-prep) refuses to mint a release record for sprint SP-20260524-001: 0 tickets in 'done' and 0 in 'deferred'. A release for zero completed work is not a release. Action: complete at least one ticket (mark it 'done' via `node scripts/sprint/ticket.js update --sprint SP-20260524-001 --id <T-id> --status done`), or formally abandon the sprint via /sprint:retrospective with no release. Resume with `/sprint:full --sprint SP-20260524-001 --resume`."
 active_files: []
 modified_files: []
 checks_last_run: null
@@ -20,7 +20,7 @@ external_services_needed: []
 issues_opened: []
 tickets_updated: []
 ralph_checkpoint: null
-resume_command: "/sprint:design --sprint SP-20260524-001"
-resume_notes: "Plan Contract PC-20260523-0034 created. plan_quality=pass. Sprint scope: install fixture CI matrix (5 scenarios). Recommended scope_variant=recommended."
+resume_command: "/sprint:full --sprint SP-20260524-001 --resume"
+resume_notes: "halt_reason=no_tickets_done"
 safe_to_continue: true
 stop_reason: null

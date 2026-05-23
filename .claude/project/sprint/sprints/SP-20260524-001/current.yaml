@@ -4,13 +4,13 @@ title: "Install fixture CI matrix — 5-scenario regression test suite for /warp
 objective: "(set by /sprint:plan)"
 status: designing
 created_at: "2026-05-23T06:48:53.386Z"
-updated_at: "2026-05-23T06:48:53.393Z"
+updated_at: "2026-05-23T07:24:45.473Z"
 source_request: "Install fixture CI matrix — build a 5-scenario regression test suite for /warp:setup + /warp:update covering: (1) clean install on a fresh project, (2) /warp:update against an existing install, (3) /warp:update preserving dirty-uncommitted operator changes, (4) multi-version-upgrade across migration boundaries, (5) /warp:update preserving user-customized framework files. Wire the matrix into the existing test runner so install-pipeline changes regress automatically. Highest-leverage pick from the install reliability batch because it protects every other install-reliability item from regression — both the items already shipped (rollback snapshot, dry-run gating, settings compiler, manifest generator/validator) and the items still pending (per-file status reporting, migrations + userModified, release-build.js stale-manifest refusal, .claude/manifest.json always-present cleanup)."
 interpreted_intent: "Author scripts/warpos/test-install-matrix.js: a fixture-based runner that spins up 5 ephemeral fixture projects (in .warpos/test-fixtures/install-matrix/ or os.tmpdir(), gitignored), runs the appropriate /warp:setup or /warp:update flow per scenario, asserts the expected post-state (files present/matching defaults, transaction snapshot exists, settings.json --check clean, manifest honest, operator overrides preserved, etc.), cleans up after each scenario, and emits a structured pass/fail report. Wired into the existing canonical test gauntlet (likely via npm script + addition to /check:all or framework manifest gates). Each scenario is independent and parallelizable."
 plan_contract: ".claude/project/sprint/plan-contracts/PC-20260523-0034.yaml"
 risk_level: medium
 approval_state: none_required
-current_phase: plan
+current_phase: design
 recommended_mode: adhoc
 mode_invocation_required_by_user: true
 lane:
@@ -35,23 +35,29 @@ tickets:
   in_review: []
   qa_failed: []
   redteam_failed: []
-  done: []
+  done:
+    - T-20260523-204
+    - T-20260523-205
+    - T-20260523-206
+    - T-20260523-207
+    - T-20260523-208
+    - T-20260523-209
   released: []
   deferred: []
   abandoned: []
   reopened: []
   superseded: []
 requirements:
-  prd: null
-  high_level_stories: null
-  granular_stories: null
-  copy: null
-  inputs: null
-  trace: null
-  acceptance_criteria: null
-  qa_plan: null
-  redteam_plan: null
-  release_plan: null
+  prd: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260524-001\\prd.md"
+  high_level_stories: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260524-001\\high-level-stories.md"
+  granular_stories: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260524-001\\granular-stories.md"
+  copy: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260524-001\\copy.md"
+  inputs: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260524-001\\inputs.md"
+  trace: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260524-001\\trace.md"
+  acceptance_criteria: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260524-001\\acceptance-criteria.md"
+  qa_plan: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260524-001\\qa-plan.md"
+  redteam_plan: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260524-001\\redteam-plan.md"
+  release_plan: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260524-001\\release-plan.md"
 checks:
   lint:
     status: not_run
@@ -112,8 +118,8 @@ ralph:
   next_action: null
 crash_recovery:
   last_checkpoint: ".claude/project/sprint/sprint-progress.yaml"
-  resume_command: "/sprint:design --sprint SP-20260524-001"
-  resume_summary: "Plan Contract PC-20260523-0034 created. Next: /sprint:design --sprint SP-20260524-001."
+  resume_command: "/sprint:design"
+  resume_summary: "Sprint SP-20260524-001 design scaffolded (scale=m). Next: mint tickets from granular-stories, then run /sprint:execute."
   active_files: []
   dirty_state: false
   blockers: []

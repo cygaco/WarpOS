@@ -972,6 +972,15 @@
       "aliases": ["clones"],
       "docsToken": "paths.clonesRoot",
       "_note": "Clone-output root for /portfolio:clone (formerly /product:clone; alias remains until v0.10). Mirrors briefsRoot pattern. Aliases the existing `clones` key already used by .claude/paths.json. Sprint SP-20260521-001 / S-1."
+    },
+    "testInstallMatrix": {
+      "path": "scripts/warpos/test-install-matrix.js",
+      "kind": "file",
+      "owner": "framework",
+      "mutable": false,
+      "introducedIn": "0.9.0",
+      "docsToken": "paths.testInstallMatrix",
+      "_note": "Install fixture CI matrix runner — 5-scenario regression suite for /warp:setup + /warp:update. Sprint SP-20260524-001."
     }
   },
   "lintRules": {

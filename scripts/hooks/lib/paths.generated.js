@@ -123,7 +123,8 @@ const PATHS = {
   "portfolioHome": path.join(PROJECT, ".claude", "portfolio"),
   "portfolioRegistry": path.join(PROJECT, ".claude", "portfolio", "registry.yaml"),
   "briefsRoot": path.join(PROJECT, "_docs", "briefs"),
-  "clonesRoot": path.join(PROJECT, "_docs", "clones")
+  "clonesRoot": path.join(PROJECT, "_docs", "clones"),
+  "testInstallMatrix": path.join(PROJECT, "scripts", "warpos", "test-install-matrix.js")
 };
 
 module.exports = { PROJECT, PATHS };

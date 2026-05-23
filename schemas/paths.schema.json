@@ -576,6 +576,11 @@
       "type": "string",
       "const": "_docs/clones",
       "description": "dir (project) — paths.clonesRoot"
+    },
+    "testInstallMatrix": {
+      "type": "string",
+      "const": "scripts/warpos/test-install-matrix.js",
+      "description": "file (framework) — paths.testInstallMatrix"
     }
   }
 }

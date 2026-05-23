@@ -118,6 +118,7 @@ Markdown convention: reference paths as `paths.X` in prose. Code: `const { PATHS
 | `sprintTickets` | `.claude/project/sprint/tickets` | dir | runtime | yes | 0.4.0 |  |
 | `store` | `.claude/agents/store.json` | json | runtime | yes | 0.0.0 |  |
 | `systemsFile` | `.claude/project/memory/systems.jsonl` | jsonl | runtime | yes | 0.0.0 |  |
+| `testInstallMatrix` | `scripts/warpos/test-install-matrix.js` | file | framework | no | 0.9.0 | Install fixture CI matrix runner — 5-scenario regression sui |
 | `toolsFile` | `.claude/project/events/tools.jsonl` | jsonl | runtime | yes | 0.0.0 |  |
 | `tracesFile` | `.claude/project/memory/traces.jsonl` | jsonl | runtime | yes | 0.0.0 |  |
 

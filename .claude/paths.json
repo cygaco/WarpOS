@@ -112,5 +112,6 @@
   "portfolioHome": ".claude/portfolio",
   "portfolioRegistry": ".claude/portfolio/registry.yaml",
   "briefsRoot": "_docs/briefs",
-  "clonesRoot": "_docs/clones"
+  "clonesRoot": "_docs/clones",
+  "testInstallMatrix": "scripts/warpos/test-install-matrix.js"
 }
