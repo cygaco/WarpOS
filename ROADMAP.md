@@ -26,57 +26,184 @@ WarpOS exists to help the maintainer ship real products faster while extracting 
 
 ## 🏛 Milestones
 
-Major thematic checkpoints in WarpOS history. Each milestone names *what shifted in the engineering reality* of the framework at that point — not every patch, but the moments where a class of problem became newly solvable, or a class of bug became newly impossible. Reverse chronological.
+Director-of-product framing: the roadmap is a rhythm — **n sprints → milestone hit → n sprints → milestone hit**. Each milestone names *what shifts in the engineering reality* of the framework; the sprints listed beneath it are the units of work that close it. Pulling a milestone forward means planning its sprints (via `/sprint:plan` / `/sprint:full`), shipping them, then closing the milestone when its definition-of-done holds.
 
-### 🟢 0.9.0 — Install Pipeline Reliability Checkpoint *(2026-05-23)*
+**Upcoming** sequence (top = next, intended order — opportunistic milestones can pull forward when cadence allows):
+
+```
+Maintainer scrub  →  Post-scrub gate hardening                                  →  🏁 0.10.0  Framework Boundary Closure
+Orchestrator → Beta bridge  →  Beta-honesty enforcement skill                   →  🏁 0.11.0  Sprint Workflow Honesty
+DreamTeam capsule  →  Installer branch-safety  →  Collision detect  →  Matrix  →  🏁 0.12.0  Multi-Product Distribution Maturity
+/research:* consolidation  →  Provider catalog  →  Skill merges  →  Events     →  🏁 0.13.0  Skill Catalog Polish
+```
+
+**Later** holds trigger-gated bets with no current commitment. **Shipped** is reverse-chronological history with per-sprint receipts.
+
+### Upcoming
+
+#### 🟡 0.10.0 — Framework Boundary Closure *(target: next 2 sprints)*
+
+`Maintainer canonical scrub  →  Post-scrub gate hardening  →  🏁 0.10.0`
+
+**The shift to achieve:** framework/product boundary moves from "documented" to "enforced at write-time." WarpOS-as-product content stops co-existing with canonical framework source.
+
+Before this milestone, `_requirements/00-canonical/*` and product-titled architecture docs live at canonical root; `ROOT_LEAK_PENDING_SCRUB=true` keeps `framework-purity-guard` from rejecting them. After: those specs live in a private `warpos-as-product` repo; the flag flips false; the gate hard-refuses any reintroduction.
+
+Sprints feeding this:
+- **Maintainer canonical scrub orchestration** — `/portfolio:new --slug warpos-as-product` + move `_requirements/00-canonical/*` + product-titled `_requirements/03-architecture/*` + `_docs/research|briefs|clones|imports/*` into the new repo. Operator-driven; framework cannot self-execute (see Pickup Queue § "Sprint 10+ candidates").
+- **Post-scrub gate hardening** — flip `ROOT_LEAK_PENDING_SCRUB=false` in `framework-purity.js`, regenerate manifest, run `/check:framework-purity --full` clean, verify post-scrub install of canonical into a fresh product writes no product-titled paths.
+
+**Definition of done:** (1) private `warpos-as-product` repo exists with relocated specs + first ROADMAP entry. (2) `grep -rn "00-canonical\|jobzooka\|dreamteam\|aiweb\|companycam" .` in canonical returns hits only in ROADMAP archive references and version-history. (3) `framework-purity-guard` rejects a synthetic `_requirements/00-canonical/foo.md` write attempt on canonical. (4) Fresh `/warp:setup` of canonical into a new product writes zero product-titled paths.
+
+**Engineering reality unlocked:** the framework can publish externally without a "did we leak anything this release?" audit step. The manifest-driven architecture (0.8.x) becomes load-bearing instead of aspirational.
+
+#### 🟡 0.11.0 — Sprint Workflow Honesty *(target: opportunistic, pull when cadence allows)*
+
+`Orchestrator → Beta bridge  →  Beta-honesty enforcement skill  →  🏁 0.11.0`
+
+**The shift to achieve:** the sprint orchestrator's "consulted Beta, got DECIDE" log lines stop being placeholders and become real round-trips. The autonomy ladder rungs become load-bearing.
+
+Before this milestone, `/sprint:full` emits `DECIDE` events without actually `SendMessage`-ing Beta — the subprocess can't easily reach in-process teammates. `_docs/sprint/AUTONOMY.md`'s Beta cadence is aspirational. After: either the orchestrator runs as an in-process flow that can `SendMessage`, or it halts at each Beta boundary with operator-driven consult; AUTONOMY.md cadence is enforced and observable.
+
+Sprints feeding this:
+- **Orchestrator → Beta bridge** — choose between (a) dispatch-from-subprocess pattern that lets `spawnSync`-d node reach in-process teammates, or (b) halt-at-each-Beta-boundary with operator-driven consult between phases. Design + ship.
+- **Beta-honesty enforcement skill** — `/check:sprint-beta-honesty` scans recent sprint full-reports for placeholder DECIDE events vs real Beta `SendMessage` round-trips; promotes AUTONOMY.md from aspirational → enforced; closes the enforcement-debt entry.
+
+**Definition of done:** (1) zero placeholder DECIDE events in any sprint full-report from the last 5 sprints. (2) `_docs/sprint/AUTONOMY.md` "Beta consultation cadence" line removes the "aspirational" disclaimer. (3) enforcement-debt entry for this policy is closed in `paths.enforcementDebt`.
+
+**Engineering reality unlocked:** operator can trust the orchestrator's claims about what was consulted. The "every policy needs a named enforcer" rule (CLAUDE.md § Policy & Enforcement Hygiene) holds for sprint autonomy.
+
+#### 🟡 0.12.0 — Multi-Product Distribution Maturity *(target: ~3 sprints after 0.10 ships)*
+
+`DreamTeam capsule fix  →  Installer branch-safety  →  Collision detection  →  Matrix cross-version  →  🏁 0.12.0`
+
+**The shift to achieve:** portfolio products stay current across N≥3 products with low maintainer touch; new-product onboarding is one command + name; install never silently overwrites user customizations.
+
+Before this milestone, DreamTeam is missing `/sprint:full` orchestrator infrastructure (`paths.sprintFullAutonomy`, `paths.sprintSchemas`, full-reports/checkpoints/plan-contracts/approvals/releases/history/routing dirs); `/warp:setup` runs on `main` by default with no branch guard; same-name agent collisions are silent; the install matrix exercises only dry-run for cross-version upgrades. After: capsules ship complete orchestrator infra; installer creates `warp/install-<timestamp>` branch by default; same-name collisions prompt for resolution; matrix exercises `--apply` against historical-source-tree fixtures.
+
+Sprints feeding this:
+- **DreamTeam orchestrator capsule fix** — include `paths.sprintFullAutonomy` + `paths.sprintSchemas` + autonomy bundle + schemas dir in next capsule; verify install path; backfill into existing DreamTeam install.
+- **Installer branch-safety** — `--branch` default for installer (`warp/install-<timestamp>` branch by default; refuse on `main` without `--yes-install-on-main`; pre-install state snapshot in backup dir).
+- **Same-name agent collision detection** — scan target `.claude/agents/` for basenames matching WarpOS roles at install; prompt user keep / rename-to-`<name>-custom.md` / replace.
+- **Install matrix cross-version coverage** — extend the 5-scenario matrix with historical-source-tree fixtures via git worktree checkouts; remove the "cross-version --apply intentionally not exercised" carve-out from SP-20260524-001.
+
+**Definition of done:** (1) `/portfolio:sync` lands clean across ≥3 products in one invocation. (2) Fresh-product `/warp:setup` on `main` requires explicit `--yes-install-on-main` or creates a branch automatically. (3) Synthetic same-name collision (e.g., user has `.claude/agents/builder.md`) prompts for resolution instead of silently overwriting. (4) Install matrix exercises cross-version `--apply` against ≥2 historical-source-tree fixtures.
+
+**Engineering reality unlocked:** maintainer can add a 4th, 5th, Nth portfolio product without each one becoming a custodial burden. New consumers (eventually: non-maintainer users) can install onto existing repos without losing customizations.
+
+#### 🟡 0.13.0 — Skill Catalog Polish *(target: opportunistic, cadence-rule permitting)*
+
+`/research:* consolidation  →  Provider catalog hygiene  →  Skill merges + genericize  →  Events retention  →  🏁 0.13.0`
+
+**The shift to achieve:** zero known papercuts in the skill catalog; every shipped skill is either end-to-end-verified or honestly marked deprecated.
+
+Before this milestone: `/research:deep` is a 728-line untested skill with stale model versions; Gemini catalog has 2 ghost models that fail HTTP 404; `/ui:review` hardcodes product names; `/retro:context` + `/retro:code` and `/fav:list` + `/fav:search` are split when they want to be one skill with modes; `events.jsonl` crosses ~6MB without auto-roll. After: each is either fixed, merged, or deprecated.
+
+Sprints feeding this:
+- **`/research:*` consolidation** — validate `/research:deep` end-to-end OR deprecate in favor of `/research:simple`; add synthesis phase to `/research:simple`.
+- **Provider catalog hygiene** — remove ghost Gemini models (`gemini-3.1-flash`, `-flash-lite`); add catalog-validation check that pings declared models and flags 404s; redteam default → `gemini-2.5-flash` with pro-preview opt-in.
+- **Skill merges + genericize** — `/retro:context` + `/retro:code` → `/retro:full`; `/fav:list` + `/fav:search` → `/fav`; `/ui:review` parameterized (remove hardcoded product names; configurable design-system path).
+- **Events retention policy** — compress / roll `events.jsonl` above threshold (~10MB); `sleep:deep` manual flow retires for this concern.
+
+**Definition of done:** (1) `/skills:cleanup` reports zero known-broken skills. (2) `events.jsonl` auto-rolls without manual `sleep:deep` intervention. (3) Gemini catalog `/check:warpos-staleness` for providers exits 0 across declared models. (4) `/ui:review` runs cleanly on a fresh portfolio product with no source edits.
+
+**Engineering reality unlocked:** the skill catalog stops being a place where you have to know which skills "actually work" vs which are aspirational.
+
+### Later (trigger-gated)
+
+Architectural shifts parked behind explicit revival triggers. No sprint cycles until the trigger fires. Listed here so they don't get forgotten — full design notes in **Later: Platform Bets** further down.
+
+#### 🔵 Central-WarpOS multi-product architecture
+**Trigger:** updates cost >30 min/week across the portfolio, OR cross-product orchestration / reporting / shared memory becomes a recurring need, OR new-product setup is still painful after 0.12 ships. Frozen RFC at `_docs/research/2026-05-21-central-warpos-rfc.md`; codex verdict was viable-with-major-caveats, ship as opt-in only.
+
+#### 🔵 npm distribution as forcing function
+**Trigger:** enumerate active sprints and ask "which would be unnecessary under the npm shape?" — if the answer is "most of the meta-work" (ledger discipline, capsule presence, manifest honesty, ghost cleanup), npm has signal. Full essay at `_docs/research/2026-05-19-npm-forcing-function.md`.
+
+#### 🔵 WarpOS-as-product deep dogfooding
+**Trigger:** product cadence is consistently healthy (cadence-rule violations stay at 0 for 4+ consecutive sprint windows). Distinct from 0.10.0 boundary closure — that creates the *private workspace* for product-thinking; this *spec-treats the framework itself as a product* with PRDs, stories, `/preflight:run`, `/qa:audit`, `/redteam:full` self-audit. Boundary first; dogfooding much later.
+
+### Shipped
+
+#### 🟢 0.9.0 — Install Pipeline Reliability Checkpoint *(2026-05-23)*
+
+`SP-20260524-001  →  -002  →  -003  →  -004  →  🏁 0.9.0`
 
 **The shift:** install/update went from "trust it, hope it works" to "instrumented + recoverable + regression-tested."
 
 Before this milestone, every framework change risked silently breaking the install pipeline downstream. After: the pipeline has a 5-scenario CI matrix (catches breakage in 18s, meta-test mode proves the matrix itself works), atomic snapshot rollback (filesystem-based, handles dirty repos), per-file status reporting (`added`/`repaired`/`unchanged`/`conflict`), idempotency (identical content → no copy), versioned migrations (skip already-applied on retry), userModified tracking (monotonic across updates), release-build refuses stale manifests (closes the ghost-files class at release-time), and four manifest-callers handle absence gracefully with actionable errors. Settings.json compiles from a layered `defaults + settings.local` model on canonical.
 
-Sprints: SP-20260524-001 (CI matrix) · SP-20260524-002 (T-183 + manifest cleanup) · SP-20260524-003 (per-file status) · SP-20260524-004 (versioned migrations + userModified).
+**Sprints shipped:**
+- **SP-20260524-001** — Install fixture CI matrix (5 scenarios: clean / existing-install / dirty-uncommitted / multi-version-upgrade / user-overrides; 18s end-to-end; 4 meta-test injections caught).
+- **SP-20260524-002** — Release-build refuses stale manifest (closes T-183) + `.claude/manifest.json` always-present at install + graceful absence in 4 hardcoded callers.
+- **SP-20260524-003** — Per-file install status reporting (`added`/`repaired`/`unchanged`/`conflict`) + idempotency (identical content → no copy).
+- **SP-20260524-004** — Versioned migrations (skip already-applied on retry) + userModified tracking (monotonic across updates).
 
 **Engineering reality unlocked:** future framework changes can land with confidence; the matrix is the safety net.
 
-### 🟢 0.8.x — Manifest-Driven Architecture *(2026-05-20 → 2026-05-23)*
+#### 🟢 0.8.x — Manifest-Driven Architecture *(2026-05-20 → 2026-05-23)*
+
+`SP-20260522-001 → -002 → -003 → -004 → -005  →  SP-20260523-001 → -002 → -003  →  🏁 0.8.x`
 
 **The shift:** `.claude/` stopped being a content blob and became the compiled runtime interface of a manifest-declared framework.
 
 Before: ownership of every framework file was ambient/implicit; downstream products couldn't tell what they could safely edit vs what would be overwritten on update. After: `_warpos/MANIFEST.json` declares per-path ownership (framework | project | generated), with schema v1 + generator + validator + regenerator + 3-layer settings compiler + structural pre-commit gates. The `/warp:update --status` validator and installer-side manifest-coverage hook close the install→update loop. Migration bootstrap (`scripts/warpos/manifest/bootstrap.js`) seeds the manifest from existing installs.
 
-Sprints: SP-20260522-001/002/003 (architectural core) · SP-20260522-004/005 (migration bootstrap + `--status`) · SP-20260523-001/002/003 (status-lag fix + settings defaults migration + installer manifest hook).
+**Sprints shipped:**
+- **SP-20260522-001** — Framework boundary purge: `/warp:promote`, `/warp:flag`, `warpos-to-update.md` deleted; `_warpos/MANIFEST.json` schema v1 + generator + validator + regenerator + 3-layer settings compiler + structural pre-commit guard.
+- **SP-20260522-002** — Install & release integrity: runtime-leak `.gitignore`, manifest-coverage skill wraps `validate.js --strict`.
+- **SP-20260522-003** — Maintainer workflow: `/portfolio:open --spawn` prefers `code -n <path>` inside VS Code (Gamma γ-4 ship).
+- **SP-20260522-004** — Migration bootstrap: `scripts/warpos/manifest/bootstrap.js` converts existing installs to `_warpos/` architecture (47 tests).
+- **SP-20260522-005** — `/warp:update --status` wires manifest validator: per-class findings table, JSON mode, canonical-fallback (19 tests).
+- **SP-20260523-001** — Status-lag fix: `flipActiveSprintsStatusForRetro` helper closes the `/sprint:full` Phase-5-skips-retro bug (15 tests).
+- **SP-20260523-002** — Settings defaults migration: `_warpos/settings/defaults.json` populated from canonical; `warp-setup.js` + `update.js` invoke `compile.js` post-write (20 tests).
+- **SP-20260523-003** — Installer ownership manifest hook: `warp-setup.js` MANIFEST COVERAGE section regenerates + validates, `--strict-manifest` for CI gates (15 tests).
 
 **Engineering reality unlocked:** ownership is no longer an oral tradition. Framework purity gates can refuse product-content leaks at write-time.
 
-### 🟢 0.7.x — Hardened Update Pipeline *(2026-05-14)*
+#### 🟢 0.7.x — Hardened Update Pipeline *(2026-05-14)*
+
+`SP-20260514-001  →  🏁 0.7.x`
 
 **The shift:** /warp:update gained transactional discipline at the release-build layer.
 
 Single content-hash surface (LF-normalized for text, raw for binary), sha256 untruncation across capsule boundaries (closes the 0.6.x prefix-only false-positive class), operator-override gates for yellow-vs-red preflight, release/apply separation. The "release build refuses to ship if framework-manifest disagrees with source" hardening starts here; closes in 0.9.0 with T-183.
 
-Sprint: SP-20260514-001 (hardened update pipeline).
+**Sprints shipped:**
+- **SP-20260514-001** — Hardened update pipeline: content-hash + sha256 un-truncation + operator-override + release/apply separation.
 
 **Engineering reality unlocked:** capsules built from canonical no longer carry truncated-hash false positives downstream.
 
-### 🟢 0.5.x — Transactional /warp:update + Multi-Sprint Parallelism *(2026-05-13)*
+#### 🟢 0.5.x — Transactional /warp:update + Multi-Sprint Parallelism *(2026-05-13)*
+
+`SP-20260512-001  →  SP-20260513-001 → -002 → -003 → -004 → -005  →  🏁 0.5.x`
 
 **The shift:** `/warp:update` apply got an atomic snapshot/lock/rollback envelope, and sprint workflow learned to run multiple sprints concurrently.
 
 `scripts/warpos/transaction.js` introduces the R-30..R-34 mitigations: undoRollback so rollback itself is transactional (R-30); atomic snapshot.json with hash verification (R-31); active.lock prevents concurrent transactions (R-32); fast preflight subset re-runs at begin (R-33); override flags pass through (R-34). Multi-sprint parallelism (SP-20260512-001) lets the sprint workflow handle ≥2 sprints in flight without trampling. /sprint:retrospective skill ships. Hybrid skill-suggestion mechanism (CLAUDE.md rule + smart-context ranker + telemetry).
 
-Sprints: SP-20260512-001 (multi-sprint parallelism) · SP-20260513-001..005 (bootstrap, provider smoke, organic skills, retrospective, hardened update).
+**Sprints shipped:**
+- **SP-20260512-001** — Multi-sprint parallelism for sprint workflow.
+- **SP-20260513-001** — `/product:bootstrap` skill (MD/HTML/DOCX brief).
+- **SP-20260513-002** — WarpOS install/update provider smoke test + RCA.
+- **SP-20260513-003** — Organic skill use by agents (research + mechanism).
+- **SP-20260513-004** — `/sprint:retrospective` close-of-sprint reflection skill.
+- **SP-20260513-005** — Harden `/warp:update`: preflight + transactional apply + postflight verify.
 
 **Engineering reality unlocked:** interrupted /warp:update apply leaves recoverable breadcrumbs instead of partial state. Multiple sprints can ship in parallel without artifact collisions.
 
-### 🟢 0.4.0 — Sprint Workflow v0.1 *(2026-04-21 → 2026-05-02)*
+#### 🟢 0.4.0 — Sprint Workflow v0.1 *(2026-04-21 → 2026-05-02)*
+
+`(pre-sprint-id era)  →  🏁 0.4.0`
 
 **The shift:** product work became a first-class, ledger-tracked operation distinct from raw agent dispatch.
 
 Four-command sprint workflow (`/sprint:plan`, `/sprint:design`, `/sprint:execute`, `/sprint:release`) introduced as a structured layer above the raw mode system (solo/adhoc/oneshot). Plan Contracts, requirements bundles, tickets, approvals, releases — all schema-validated, evidence-labeled, crash-recoverable. Several patch releases (0.4.1/2/3/4) chase install bugs that surfaced once the sprint workflow exposed the install pipeline to more traffic.
 
-**Engineering reality unlocked:** "what shipped, when, why, by whom" became answerable from on-disk artifacts instead of conversation history.
+**Engineering reality unlocked:** "what shipped, when, why, by whom" became answerable from on-disk artifacts instead of conversation history. The sprint-id era begins here — every milestone after this point has a sprint receipt.
 
-### 🟢 0.1.0 — Genesis *(April 2026)*
+#### 🟢 0.1.0 — Genesis *(April 2026)*
+
+`(genesis)  →  🏁 0.1.0`
 
 **The shift:** WarpOS exists.
 
