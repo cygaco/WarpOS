@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-05-23T05:52:43.395Z",
+  "generatedAt": "2026-05-23T05:53:49.001Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.8.2",
   "migrations": [],
@@ -12,8 +12,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "471cd142e4b790076b5e0c43f846145177a7b3b6f95006ec6ef8066548833582",
-      "installedSha": "471cd142e4b790076b5e0c43f846145177a7b3b6f95006ec6ef8066548833582"
+      "sha256": "85ea02c6b19c5faa6fa772fb86489e5dcdb1a8189d386baef69734f8fedabff5",
+      "installedSha": "85ea02c6b19c5faa6fa772fb86489e5dcdb1a8189d386baef69734f8fedabff5"
     },
     "AGENTS.md": {
       "owner": "framework",
