@@ -41,6 +41,9 @@ Every `RL-*` at status=prepared OR =deployed. Each row links to the full `RL-*.y
 
 | Release | Sprint | Status | Target | Deployed | Notes |
 |---|---|---|---|---|---|
+| [RL-20260523-027](.claude/project/sprint/releases/RL-20260523-027.yaml) | [SP-20260523-003](.claude/project/sprint/sprints/SP-20260523-003/) | prepared | staging |  | Installer ownership manifest hook into /warp:setup — refuse writes to paths not in _warpos/MANIFEST.json |
+| [RL-20260523-026](.claude/project/sprint/releases/RL-20260523-026.yaml) | [SP-20260523-002](.claude/project/sprint/sprints/SP-20260523-002/) | prepared | staging |  | Three-layer settings compiler — _warpos/settings/defaults.json source migration + wire compile.js into /warp:setup + /warp:update |
+| [RL-20260523-025](.claude/project/sprint/releases/RL-20260523-025.yaml) | [SP-20260523-001](.claude/project/sprint/sprints/SP-20260523-001/) | prepared | staging |  | Fix current.yaml#status + active-sprints.yaml status lag after /sprint:full Phase 5 |
 | [RL-20260523-024](.claude/project/sprint/releases/RL-20260523-024.yaml) | [SP-20260522-005](.claude/project/sprint/sprints/SP-20260522-005/) | prepared | staging |  | /warp:update --status wires manifest validator into per-file table |
 | [RL-20260523-023](.claude/project/sprint/releases/RL-20260523-023.yaml) | [SP-20260522-004](.claude/project/sprint/sprints/SP-20260522-004/) | prepared | staging |  | Migration bootstrap script — convert existing WarpOS installs to _warpos/ architecture |
 | [RL-20260522-022](.claude/project/sprint/releases/RL-20260522-022.yaml) | [SP-20260522-003](.claude/project/sprint/sprints/SP-20260522-003/) | prepared | staging |  | Maintainer &amp; Product Workflow — .vscode/tasks.json from portfolio registry, /portfolio:open --spawn VS Code preference, aiweb product-delivery ticket (cadence rule) |

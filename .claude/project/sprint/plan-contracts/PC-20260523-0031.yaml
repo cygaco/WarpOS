@@ -1,0 +1,140 @@
+schema: warpos/sprint/plan-contract/v1
+id: PC-20260523-0031
+created_at: "2026-05-23T03:59:33.285Z"
+updated_at: "2026-05-23T03:59:33.285Z"
+sprint: SP-20260523-002
+source_request: "Fix the status lag bug where active-sprints.yaml and current.yaml stay at status=planning/designing/releasing even after /sprint:full Phase 5 (retrospective) completes. Caught it during SP-004 + SP-005 — had to manually patch active-sprints.yaml after each sprint finished."
+source_request_verbatim: "current.yaml#status lag after /sprint:full Phase 5 — sprint stays at status: designing/releasing even after the full pipeline runs through retrospective. Probably the retrospective.js fall-through (skeleton exit 3) is the missed update site. Sprint 6 polish from ROADMAP.md Pickup Queue."
+request_type: bug_fix
+interpreted_intent: "When /sprint:full runs all 5 phases to completion, both current.yaml (per-sprint state) and active-sprints.yaml#sprints[id].status (registry) should advance to 'retrospected'. Today they remain stuck at an earlier phase. Likely root cause: retrospective.js falls through with exit 3 (skeleton mode) without updating either file. Fix: in retrospective.js (or sprint/full.js Phase 5 wrapper), after retrospective completes (success OR skeleton-skip), explicitly call status updaters for current.yaml AND active-sprints.yaml. Add a test that runs /sprint:full end-to-end against a fixture and asserts both files reach 'retrospected'."
+user_or_business_outcome: "Sprint registry stays honest with actual completion state — operator can run /sprint:status and trust the output. The active-sprints.yaml registry is what other skills (/sprint:status, downstream tooling) read; manual patches today are a footgun."
+affected_surfaces:
+  - surface: "scripts/sprint/retrospective.js (modify — ensure exits update status before returning)"
+    evidence_level: inferred_from_repo
+  - surface: "scripts/sprint/full.js (modify — Phase 5 wrapper should ensure status update happens regardless of retrospective exit)"
+    evidence_level: verified_from_repo
+  - surface: ".claude/project/sprint/active-sprints.yaml (read/write — the registry)"
+    evidence_level: verified_from_repo
+  - surface: ".claude/project/sprint/sprints/<SP-id>/current.yaml (read/write — per-sprint state)"
+    evidence_level: verified_from_repo
+  - surface: "scripts/sprint/test-sprint-full.js (modify — add end-to-end status assertion)"
+    evidence_level: inferred_from_repo
+current_behavior:
+  evidence_level: verified_from_repo
+  notes: "After /sprint:full SP-20260522-004 reached 'done' through all 5 phases this session, active-sprints.yaml still showed SP-004 with status=planning. Same for SP-005. Manual patch via Edit tool was the workaround. The sprint-full-report.md correctly shows completion; the registry doesn't."
+desired_behavior: "After /sprint:full final phase completes (including skeleton-exit-3 retrospective skip), both active-sprints.yaml#sprints[id].status AND .claude/project/sprint/sprints/<SP-id>/current.yaml#status are updated to 'retrospected'. Test fixture runs full pipeline against a tmp dir and asserts both files post-completion."
+scope:
+  size: s
+  risk_level: low
+  complexity_drivers:
+    - "Two write sites to keep in sync (current.yaml + active-sprints.yaml)"
+    - "retrospective.js exit-3 skeleton case must still trigger the update (it's the most common path)"
+    - test-sprint-full.js fixture setup may need extension
+scope_variants:
+  minimal_safe:
+    summary: "In sprint/full.js Phase 5 wrapper (post-retrospective.js invocation), unconditionally call existing status-update helpers for both files. Add one end-to-end test."
+    tradeoffs:
+      - "Ships in <1 hour"
+      - "Doesn't fix the underlying retrospective.js bug — wrapper compensates"
+  recommended:
+    summary: "Minimal-safe + fix retrospective.js to update status itself (the right architectural place). Wrapper is still a safety net. Two updaters touched, defense in depth."
+    tradeoffs:
+      - Slightly more code
+      - Cleaner separation of concerns
+  expanded:
+    summary: "Recommended + add a /check skill (or existing /check:all entry) that surfaces sprints where current.yaml status disagrees with full-reports/<SP-id>/sprint-full-report.md."
+    tradeoffs:
+      - Self-healing telemetry
+      - Out of scope for this sprint
+assumptions:
+  safe:
+    - "active-sprints.yaml schema is stable (warpos/sprint/active-sprints/v1)"
+    - "current.yaml schema is stable (warpos/sprint/current/v1 or similar)"
+    - Existing scripts/sprint/ helpers expose a status-update API
+  unsafe:
+    - "Multiple write paths to active-sprints.yaml (add-sprint.js, plan.js, full.js, ticket.js) may not all converge — fix may need to be in a single helper"
+  needs_user_or_beta_review: []
+open_questions:
+  blocking: []
+  non_blocking: []
+non_goals:
+  - Do NOT redesign the status state machine
+  - "Do NOT touch the orchestrator's Phase 1-4 status transitions (only Phase 5 completion is broken)"
+requirement_areas:
+  - "Status update helper (find or create)"
+  - Phase 5 wrapper in full.js
+  - retrospective.js exit-3 path
+  - End-to-end test
+high_level_story_candidates:
+  - "As an operator running /sprint:full to completion, my registry truthfully reflects sprint state without manual patching."
+granular_story_candidates:
+  - "Locate the status-update helper (or add one) for current.yaml + active-sprints.yaml"
+  - Update retrospective.js to call the helper on success
+  - Update sprint/full.js Phase 5 wrapper to call the helper even when retrospective.js exits 3
+  - "Add scripts/sprint/test-sprint-full.js (or test-status-update.js) assertion: full pipeline → both files show 'retrospected'"
+workstream_candidates:
+  - name: "Status update helper + wiring"
+    owner_role: builder
+  - name: Test
+    owner_role: builder
+preliminary_ticket_candidates:
+  - title: "Status update helper + wire into retrospective.js + sprint/full.js Phase 5 wrapper"
+    risk: low
+    approx_size: s
+  - title: "End-to-end test: full pipeline updates current.yaml + active-sprints.yaml status to 'retrospected'"
+    risk: low
+    approx_size: s
+external_service_dependencies:
+  required: []
+  possible: []
+approval_boundaries:
+  paid_service: false
+  production_deploy: false
+  destructive_migration: false
+  secrets_handling: false
+  sensitive_user_data: false
+  push_to_remote: false
+  notes: Local file writes only.
+design_required: true
+execution_allowed_without_design: false
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+lane:
+  type: default
+  value: null
+  isolation_notes: ""
+beta_review:
+  required: true
+  status: pending
+  consulted_at: null
+  outcome: null
+  notes: "Class B small surface, post-sprint registry write."
+plan_quality:
+  status: pass
+  criteria_met:
+    - Original request preserved verbatim
+    - Outcome stated separately
+    - Surfaces with evidence
+    - Behavior labeled
+    - Assumptions separated
+    - Non-goals stated
+    - "ESDs checked (none)"
+    - Approval boundaries stated
+    - Design required
+    - Mode recommended
+    - No tickets minted
+    - Next command stated
+    - Resume noted
+    - Tracker updated
+    - Crash recovery noted
+  blockers: []
+next_recommended_command: "/sprint:design --sprint SP-20260523-001"
+resume_instructions: "/sprint:full --sprint SP-20260523-001 --resume --autonomy aggressive --mode adhoc"
+tracker_paths:
+  current_sprint: ".claude/project/sprint/current-sprint.yaml"
+  sprint_progress: ".claude/project/sprint/sprint-progress.yaml"
+  plan_contract: ".claude/project/sprint/plan-contracts/PC-20260523-0031.yaml"
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260523-0031.report.md"
+created_by: alpha
+updated_by: alpha

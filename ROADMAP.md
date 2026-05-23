@@ -77,6 +77,9 @@ Every sprint that has been planned, executed, released, or retrospected — one 
 
 | Sprint | Title | Status | Started | Closed | Release |
 |---|---|---|---|---|---|
+| [SP-20260523-003](.claude/project/sprint/sprints/SP-20260523-003/) | Installer ownership manifest hook into /warp:setup — refuse writes to paths not in _warpos/MANIFEST.json | retrospected | 2026-05-23T04:03:22.211Z | 2026-05-23T04:06:14.733Z |  |
+| [SP-20260523-002](.claude/project/sprint/sprints/SP-20260523-002/) | Three-layer settings compiler — _warpos/settings/defaults.json source migration + wire compile.js into /warp:setup + /warp:update | retrospected | 2026-05-23T03:59:17.677Z | 2026-05-23T04:03:07.817Z |  |
+| [SP-20260523-001](.claude/project/sprint/sprints/SP-20260523-001/) | Fix current.yaml#status + active-sprints.yaml status lag after /sprint:full Phase 5 | retrospected | 2026-05-23T03:54:05.825Z | 2026-05-23T03:58:52.236Z |  |
 | [SP-20260522-005](.claude/project/sprint/sprints/SP-20260522-005/) | /warp:update --status wires manifest validator into per-file table | planning | 2026-05-23T03:34:44.633Z |  |  |
 | [SP-20260522-004](.claude/project/sprint/sprints/SP-20260522-004/) | Migration bootstrap script — convert existing WarpOS installs to _warpos/ architecture | planning | 2026-05-23T03:24:38.488Z |  |  |
 | [SP-20260522-003](.claude/project/sprint/sprints/SP-20260522-003/) | Maintainer &amp; Product Workflow — .vscode/tasks.json from portfolio registry, /portfolio:open --spawn VS Code preference, aiweb product-delivery ticket (cadence rule) | retrospected | 2026-05-22T05:46:59.393Z | 2026-05-22T23:14:30.000Z |  |

@@ -1,5 +1,5 @@
 schema: warpos/sprint/active-sprints/v1
-primary: SP-20260522-005
+primary: SP-20260523-003
 sprints:
   - id: SP-20260512-001
     title: Multi-sprint parallelism for Sprint Workflow
@@ -254,5 +254,38 @@ sprints:
     pointer: ".claude/project/sprint/sprints/SP-20260522-005"
     created_at: "2026-05-23T03:34:44.633Z"
     updated_at: "2026-05-23T03:34:44.633Z"
+  - id: SP-20260523-001
+    title: "Fix current.yaml#status + active-sprints.yaml status lag after /sprint:full Phase 5"
+    status: retrospected
+    lane:
+      type: default
+      value: null
+      isolation_notes: ""
+    layout: per_sprint_subdir
+    pointer: ".claude/project/sprint/sprints/SP-20260523-001"
+    created_at: "2026-05-23T03:54:05.825Z"
+    updated_at: "2026-05-23T03:58:52.248Z"
+  - id: SP-20260523-002
+    title: "Three-layer settings compiler — _warpos/settings/defaults.json source migration + wire compile.js into /warp:setup + /warp:update"
+    status: retrospected
+    lane:
+      type: default
+      value: null
+      isolation_notes: ""
+    layout: per_sprint_subdir
+    pointer: ".claude/project/sprint/sprints/SP-20260523-002"
+    created_at: "2026-05-23T03:59:17.677Z"
+    updated_at: "2026-05-23T04:03:07.828Z"
+  - id: SP-20260523-003
+    title: "Installer ownership manifest hook into /warp:setup — refuse writes to paths not in _warpos/MANIFEST.json"
+    status: retrospected
+    lane:
+      type: default
+      value: null
+      isolation_notes: ""
+    layout: per_sprint_subdir
+    pointer: ".claude/project/sprint/sprints/SP-20260523-003"
+    created_at: "2026-05-23T04:03:22.211Z"
+    updated_at: "2026-05-23T04:06:14.745Z"
 created_at: "2026-05-12T22:57:35.667Z"
-updated_at: "2026-05-23T03:34:44.633Z"
+updated_at: "2026-05-23T04:06:14.745Z"

@@ -84,6 +84,9 @@ const WARPOS = path.resolve(__dirname, "..");
 const YES = flags.has("--yes") || flags.has("-y"); // skip interview, use defaults
 const DRY_RUN = flags.has("--dry-run");
 const SKIP_BACKUP = flags.has("--skip-backup");
+// SP-20260523-003: post-install manifest-coverage hook flags.
+const SKIP_MANIFEST_CHECK = flags.has("--skip-manifest-check");
+const STRICT_MANIFEST = flags.has("--strict-manifest");
 
 if (!fs.existsSync(TARGET)) {
   console.error(`Target directory does not exist: ${TARGET}`);
@@ -1196,6 +1199,41 @@ if (missing.length > 0) {
 
 fs.writeFileSync(settingsFile, JSON.stringify(settings, null, 2) + "\n");
 
+// SP-20260523-002: If the target has the three-layer source-of-truth
+// (`_warpos/settings/defaults.json`), regenerate the effective
+// `.claude/settings.json` from the layered sources via compile.js. This
+// is the new model — `_warpos/settings/defaults.json` (framework defaults)
+// + `.claude/settings.local.json` (operator overrides) → compiled
+// `.claude/settings.json`. Older installs without defaults.json keep the
+// inlined-write above; the defaults.json check makes this backward
+// compatible. Fail-open: never block install on a compile error.
+const settingsDefaultsFile = path.join(TARGET, "_warpos/settings/defaults.json");
+if (fs.existsSync(settingsDefaultsFile)) {
+  const compileScript = path.join(WARPOS, "scripts/warpos/settings/compile.js");
+  if (fs.existsSync(compileScript)) {
+    const settingsLocalFile = path.join(TARGET, ".claude/settings.local.json");
+    const compileArgs = [
+      compileScript,
+      "--defaults", settingsDefaultsFile,
+      "--out", settingsFile,
+    ];
+    if (fs.existsSync(settingsLocalFile)) {
+      compileArgs.push("--local", settingsLocalFile);
+    }
+    try {
+      const { spawnSync } = require("child_process");
+      const cr = spawnSync(process.execPath, compileArgs, { encoding: "utf8" });
+      if (cr.status === 0) {
+        log("ok", `Compiled .claude/settings.json from _warpos/settings/defaults.json + settings.local.json`);
+      } else {
+        log("warn", `compile.js exited ${cr.status} — kept inlined settings.json. stderr: ${(cr.stderr || "").slice(0, 200)}`);
+      }
+    } catch (err) {
+      log("warn", `compile.js spawn failed: ${err.message} — kept inlined settings.json`);
+    }
+  }
+}
+
 // ── 9. Copy CLAUDE.md if not present ────────────────────
 console.log(`\n${HEADER}  FRAMEWORK DOCS${RESET}`);
 
@@ -1467,6 +1505,80 @@ try {
   }
 } catch {
   /* non-critical */
+}
+
+// SP-20260523-003: Post-install manifest-coverage hook.
+// After all writes, regenerate _warpos/MANIFEST.json + validate against
+// on-disk state. Surfaces any files we wrote that aren't covered by the
+// manifest (which would silently break future updates). Fail-open by
+// default; --strict-manifest converts findings to non-zero exit.
+if (!SKIP_MANIFEST_CHECK) {
+  console.log(`\n${HEADER}  MANIFEST COVERAGE${RESET}`);
+  const warposZone = path.join(TARGET, "_warpos");
+  if (!fs.existsSync(warposZone)) {
+    log("info", "_warpos/ not present in target — skipping manifest coverage (legacy install layout)");
+  } else {
+    const buildScript = path.join(WARPOS, "scripts/warpos/manifest/build.js");
+    const validateScript = path.join(WARPOS, "scripts/warpos/manifest/validate.js");
+    let coverageExitCode = 0;
+    let coverageSummary = null;
+    try {
+      const { spawnSync } = require("child_process");
+      // (1) regenerate manifest in target.
+      const buildRes = spawnSync(
+        process.execPath,
+        [buildScript, "--root", TARGET, "--source-prefix", "_warpos"],
+        { encoding: "utf8" },
+      );
+      if (buildRes.status !== 0) {
+        log("warn", `manifest build.js exited ${buildRes.status} — coverage check skipped. stderr: ${(buildRes.stderr || "").slice(0, 200)}`);
+      } else {
+        // (2) validate.
+        const valRes = spawnSync(
+          process.execPath,
+          [validateScript, "--root", TARGET, "--json"],
+          { encoding: "utf8" },
+        );
+        try {
+          const parsed = JSON.parse(valRes.stdout);
+          coverageSummary = parsed;
+          const f = parsed.findings || {};
+          const totals = {
+            missing: (f.missing || []).length,
+            drift: (f.drift || []).length,
+            unmanifested: (f.unmanifested || []).length,
+            user_modified: (f.user_modified || []).length,
+            schema_violation: (f.schema_violation || []).length,
+          };
+          const total = Object.values(totals).reduce((a, b) => a + b, 0);
+          const oc = parsed.ownerCounts || {};
+          log("ok", `manifest: ${parsed.pathCount || "?"} paths; framework=${oc.framework || 0} generated=${oc.generated || 0} project=${oc.project || 0} runtime=${oc.runtime || 0}`);
+          if (total === 0) {
+            log("ok", "manifest coverage: CLEAN (no findings)");
+          } else {
+            log("warn", `manifest coverage: ${total} finding(s) — missing=${totals.missing} drift=${totals.drift} unmanifested=${totals.unmanifested} user_modified=${totals.user_modified} schema_violation=${totals.schema_violation}`);
+            if (totals.unmanifested > 0) {
+              log("warn", `  unmanifested (first 5): ${(f.unmanifested || []).slice(0, 5).join(", ")}`);
+            }
+            if (STRICT_MANIFEST) {
+              coverageExitCode = 1;
+              log("error", "--strict-manifest set — refusing install completion with findings");
+            } else {
+              log("info", "Run with --strict-manifest to refuse install on findings. Or re-run /warp:setup --skip-manifest-check to silence.");
+            }
+          }
+        } catch (e) {
+          log("warn", `manifest validate.js output not parseable JSON: ${e.message}`);
+        }
+      }
+    } catch (err) {
+      log("warn", `manifest coverage check failed (${err.message}) — install continues`);
+    }
+    if (coverageExitCode !== 0) {
+      console.log(`\n${HEADER}  INSTALL REFUSED (strict manifest)${RESET}`);
+      process.exit(coverageExitCode);
+    }
+  }
 }
 
 // Bright, attention-grabbing restart banner. Users MISS single-line notices.

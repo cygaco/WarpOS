@@ -1047,6 +1047,39 @@ async function run(opts) {
     targetRoot,
   );
 
+  // SP-20260523-002: If the target now has the three-layer source-of-truth
+  // (`_warpos/settings/defaults.json` — typically copied in during this
+  // very apply pass via the framework manifest), regenerate the effective
+  // `.claude/settings.json` from layered sources. Older targets without
+  // defaults.json keep whatever update.js wrote directly. Fail-open.
+  try {
+    const settingsDefaultsFile = path.join(targetRoot, "_warpos/settings/defaults.json");
+    if (fs.existsSync(settingsDefaultsFile)) {
+      const compileScript = path.join(__dirname, "settings", "compile.js");
+      if (fs.existsSync(compileScript)) {
+        const settingsLocalFile = path.join(targetRoot, ".claude/settings.local.json");
+        const settingsOutFile = path.join(targetRoot, ".claude/settings.json");
+        const compileArgs = [
+          compileScript,
+          "--defaults", settingsDefaultsFile,
+          "--out", settingsOutFile,
+        ];
+        if (fs.existsSync(settingsLocalFile)) {
+          compileArgs.push("--local", settingsLocalFile);
+        }
+        const { spawnSync } = require("child_process");
+        const cr = spawnSync(process.execPath, compileArgs, { encoding: "utf8" });
+        if (cr.status !== 0) {
+          console.warn(
+            `warp:update: compile.js exited ${cr.status} — settings.json may be stale. stderr: ${(cr.stderr || "").slice(0, 200)}`,
+          );
+        }
+      }
+    }
+  } catch (err) {
+    console.warn(`warp:update: compile.js spawn failed (${err.message}) — settings.json may be stale.`);
+  }
+
   // Write updated installed snapshot before commit so the manifest is
   // visible to postflight (manifest-honesty would otherwise see stale state).
   const newInstalled = buildInstalledSnapshot(

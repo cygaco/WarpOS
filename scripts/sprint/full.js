@@ -1010,6 +1010,36 @@ function phase4ReleasePrep(state) {
 
 // ── Phase 5: retrospective ────────────────────────────────────────────
 
+/**
+ * SP-20260523-001 helper. Flip active-sprints.yaml#sprints[id].status to
+ * `closed` if it's not already in {`closed`, `abandoned`, `retrospected`}.
+ * Mirrors release.js#cmdDeploy's auto-flip pattern (line 369-393).
+ *
+ * Idempotent + fail-open: never blocks Phase 5 if the registry can't be
+ * updated. The retrospective will report its own status-gate-blocked
+ * error if the flip didn't take.
+ */
+function flipActiveSprintsStatusForRetro(sprintId) {
+  try {
+    const reg = readYamlMaybe(SPRINT.activeRegistry);
+    if (!reg || !Array.isArray(reg.sprints)) return { changed: false, reason: "no_registry" };
+    const entry = reg.sprints.find((s) => s.id === sprintId);
+    if (!entry) return { changed: false, reason: "not_in_registry" };
+    if (["closed", "abandoned", "retrospected"].includes(entry.status)) {
+      return { changed: false, reason: "already_terminal", from: entry.status };
+    }
+    const prev = entry.status;
+    const now = nowIso();
+    entry.status = "closed";
+    entry.updated_at = now;
+    reg.updated_at = now;
+    writeYaml(SPRINT.activeRegistry, reg);
+    return { changed: true, from: prev, to: "closed", reason: "ok" };
+  } catch (err) {
+    return { changed: false, reason: `error: ${err.message}` };
+  }
+}
+
 function phase5Retro(state) {
   state.currentPhase = "retro";
   emit("sprint_full_phase_started", {
@@ -1019,6 +1049,17 @@ function phase5Retro(state) {
     cumulative_cost_estimate: state.cost.cumulative,
     ts: nowIso(),
   });
+  // SP-20260523-001 fix: retrospective.js' status gate (line 771-782) refuses
+  // any status not in {closed, abandoned, retrospected}. /sprint:full's
+  // Phase 4 calls `release.js prepare`, which mints a release record but
+  // does NOT flip the active-sprints status (only `release.js deploy` does
+  // that, and Phase 4 never calls deploy). Without this, retrospective
+  // exits 3, flipStatusToRetrospected never runs, and active-sprints.yaml
+  // stays stuck at `planning`/`releasing` — caught manually during SP-004
+  // and SP-005 today. Auto-flip the registry status to `closed` here so
+  // Phase 5 can complete and the retrospective updates it to `retrospected`.
+  // Idempotent + fail-open per release.js#cmdDeploy precedent.
+  flipActiveSprintsStatusForRetro(state.sprintId);
   const startTs = Date.now();
   const res = runHelper("scripts/sprint/retrospective.js", [
     "--sprint",
@@ -1197,4 +1238,5 @@ module.exports = {
   phase2Design,
   phase3Execute,
   phase4ReleasePrep,
+  flipActiveSprintsStatusForRetro,
 };
