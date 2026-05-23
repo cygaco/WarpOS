@@ -21,9 +21,39 @@ function detectEol(raw) {
 }
 
 function readManifest() {
-  const raw = fs.readFileSync(MANIFEST_PATH, "utf8");
+  if (!fs.existsSync(MANIFEST_PATH)) {
+    const err = new Error(
+      `.claude/manifest.json not found at ${MANIFEST_PATH}\n` +
+        `  fix: run \`/warp:setup\` to create it from project scan\n` +
+        `  manifest-patch.js operates on an existing manifest — it does not create one`,
+    );
+    err.code = "MANIFEST_MISSING";
+    throw err;
+  }
+  let raw;
+  try {
+    raw = fs.readFileSync(MANIFEST_PATH, "utf8");
+  } catch (e) {
+    const err = new Error(
+      `.claude/manifest.json unreadable (${MANIFEST_PATH}): ${e.message}\n` +
+        `  fix: check file permissions or restore from .claude/.warpos-backup/`,
+    );
+    err.code = "MANIFEST_UNREADABLE";
+    throw err;
+  }
+  let data;
+  try {
+    data = JSON.parse(raw);
+  } catch (e) {
+    const err = new Error(
+      `.claude/manifest.json is not valid JSON (${MANIFEST_PATH}): ${e.message}\n` +
+        `  fix: restore from .claude/.warpos-backup/ or re-run /warp:setup`,
+    );
+    err.code = "MANIFEST_INVALID";
+    throw err;
+  }
   return {
-    data: JSON.parse(raw),
+    data,
     raw,
     indent: detectIndent(raw),
     eol: detectEol(raw),

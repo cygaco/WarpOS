@@ -130,10 +130,23 @@ const providers = {
 };
 
 function loadManifest() {
+  if (!fs.existsSync(MANIFEST)) {
+    log(
+      RED,
+      `[smoke] .claude/manifest.json not found at ${MANIFEST}\n` +
+        `        fix: run \`/warp:setup\` to create it (auto-generated at install)\n` +
+        `        smoke needs manifest.agentProviders to know which providers to test`,
+    );
+    process.exit(1);
+  }
   try {
     return JSON.parse(fs.readFileSync(MANIFEST, "utf8"));
   } catch (e) {
-    log(RED, `[smoke] cannot read manifest: ${e.message}`);
+    log(
+      RED,
+      `[smoke] cannot read .claude/manifest.json: ${e.message}\n` +
+        `        fix: check permissions or restore from .claude/.warpos-backup/`,
+    );
     process.exit(1);
   }
 }

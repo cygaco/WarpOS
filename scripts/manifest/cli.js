@@ -38,13 +38,20 @@ function readManifest() {
   const raw = PATHS.manifest || ".claude/manifest.json";
   const file = path.isAbsolute(raw) ? raw : path.join(REPO_ROOT, raw);
   if (!fs.existsSync(file)) {
-    process.stderr.write(`manifest not found: ${file}\n`);
+    process.stderr.write(
+      `manifest not found: ${file}\n` +
+        `  fix: run \`/warp:setup\` (creates .claude/manifest.json from project scan)\n` +
+        `  or:  copy framework/templates/manifest.template.json (if framework template exists)\n`,
+    );
     process.exit(1);
   }
   try {
     return { file, data: JSON.parse(fs.readFileSync(file, "utf8")) };
   } catch (e) {
-    process.stderr.write(`manifest is not valid JSON: ${e.message}\n`);
+    process.stderr.write(
+      `manifest is not valid JSON (${file}): ${e.message}\n` +
+        `  fix: restore from .claude/.warpos-backup/ or re-run /warp:setup\n`,
+    );
     process.exit(1);
   }
 }

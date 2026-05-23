@@ -10,7 +10,7 @@
 
 const fs = require("fs");
 const path = require("path");
-const { execSync } = require("child_process");
+const { execSync, spawnSync } = require("child_process");
 const { printHumanReport } = require("./report-format");
 // SP-20260514-001 R-1 / T-20260514-069 — capsule artifact checksums use
 // rawHash (binary-safe). Capsule contents (manifest, migrations) are
@@ -57,6 +57,14 @@ function buildCapsule(version, opts) {
 
   // 1. Snapshot framework-manifest.json into capsule (unless already present
   //    and we're in --check mode).
+  //
+  // SP-20260524-002 / T-183 — Refuse to snapshot a stale manifest. Run
+  // generate-framework-manifest.js --check before copying. A stale manifest
+  // captured into the capsule would lie about what shipped, downstream
+  // /warp:update would fail to copy phantom files (the post-warp:promote
+  // ghost-files class), and the only signal would be deep-buried in apply
+  // failures days later. Bypass with --skip-manifest-check for emergency
+  // re-builds when you've already verified manifest health by other means.
   const manifestSnap = path.join(capsuleDir, "framework-manifest.json");
   if (!checkOnly) {
     if (!fs.existsSync(FRAMEWORK_MANIFEST)) {
@@ -64,6 +72,27 @@ function buildCapsule(version, opts) {
         `framework-manifest.json missing — run scripts/generate-framework-manifest.js first`,
       );
       process.exit(2);
+    }
+    if (!opts || !opts.skipManifestCheck) {
+      const checkRes = spawnSync(
+        process.execPath,
+        [path.join(REPO_ROOT, "scripts", "generate-framework-manifest.js"), "--check"],
+        { cwd: REPO_ROOT, encoding: "utf8" },
+      );
+      if (checkRes.status !== 0) {
+        console.error(
+          "release-build refuses to snapshot a stale framework-manifest.json:",
+        );
+        const detail = (checkRes.stderr || checkRes.stdout || "").trim();
+        if (detail) console.error("  " + detail.split("\n").join("\n  "));
+        console.error(
+          "Remediation: run `node scripts/generate-framework-manifest.js` then re-run release-build.",
+        );
+        console.error(
+          "Bypass (emergencies only): re-run with --skip-manifest-check.",
+        );
+        process.exit(2);
+      }
     }
     fs.copyFileSync(FRAMEWORK_MANIFEST, manifestSnap);
   } else if (!fs.existsSync(manifestSnap)) {
@@ -203,13 +232,14 @@ if (require.main === module) {
   const args = process.argv.slice(2);
   const version = args.find((a) => /^\d+\.\d+\.\d+/.test(a));
   const checkOnly = args.includes("--check");
+  const skipManifestCheck = args.includes("--skip-manifest-check");
   if (!version) {
     console.error(
-      "Usage: node scripts/warpos/release-build.js <version> [--check]",
+      "Usage: node scripts/warpos/release-build.js <version> [--check] [--skip-manifest-check]",
     );
     process.exit(2);
   }
-  buildCapsule(version, { check: checkOnly });
+  buildCapsule(version, { check: checkOnly, skipManifestCheck });
 }
 
 module.exports = { buildCapsule };

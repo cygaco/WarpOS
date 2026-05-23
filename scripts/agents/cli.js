@@ -161,8 +161,12 @@ function testCmd(args) {
     let manifest = {};
     try {
       manifest = JSON.parse(fs.readFileSync(".claude/manifest.json", "utf8"));
-    } catch {
-      process.stderr.write("manifest.json missing or unreadable\n");
+    } catch (e) {
+      process.stderr.write(
+        `.claude/manifest.json missing or unreadable: ${e.message}\n` +
+          `  fix: run \`/warp:setup\` to create it (auto-generated at install)\n` +
+          `  --all needs manifest.agentProviders to iterate roles\n`,
+      );
       return 1;
     }
     const roles = Object.entries(manifest.agentProviders || {})
