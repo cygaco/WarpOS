@@ -511,6 +511,7 @@ function applyUpdateDecisions(
   const counts = {
     added: 0,
     updated: 0,
+    unchanged: 0,
     deleted: 0,
     deletes_skipped: 0,
     merge_conflicts_held: 0,
@@ -519,6 +520,22 @@ function applyUpdateDecisions(
     backups: 0,
   };
   const errors = [];
+  // SP-20260524-003 — per-file status reporting.
+  //
+  // Each entry: { dest, status, category, [reason] }. Status is the
+  // operator-facing label:
+  //   added       — new file, ADD_SAFE path executed
+  //   repaired    — existing file overwritten with upstream content (real diff)
+  //   unchanged   — existing file already matched upstream byte-for-byte
+  //   conflict    — MERGE_CONFLICT held; operator must resolve
+  //   deleted     — DELETE_SAFE confirmed and removed
+  //   delete_skipped — DELETE_SAFE not confirmed; left in place
+  //   local_only  — file outside framework ownership; untouched
+  //   local_customized — operator-customized; keep_local strategy
+  //   delete_conflict — was installed but locally missing; needs review
+  //   skipped     — fallthrough (unknown category)
+  //   error       — apply hit an error on this file (see errors[])
+  const perFile = [];
 
   const sourceAssets = flattenSourceAssets(capsuleManifest);
 
@@ -536,6 +553,7 @@ function applyUpdateDecisions(
               dest: d.dest,
               error: "asset not in source manifest",
             });
+            perFile.push({ dest: d.dest, status: "error", category: d.category, error: "asset not in source manifest" });
             break;
           }
           const srcAbs = path.join(sourceTreeRoot, asset.src);
@@ -545,27 +563,50 @@ function applyUpdateDecisions(
               dest: d.dest,
               error: `source missing: ${asset.src}`,
             });
+            perFile.push({ dest: d.dest, status: "error", category: d.category, error: `source missing: ${asset.src}` });
+            break;
+          }
+          // Detect "already at target" — local + source byte-identical →
+          // no write needed; report as `unchanged`.
+          if (
+            d.category === "UPDATE_SAFE" &&
+            fs.existsSync(dstAbs) &&
+            cHash.contentHash(srcAbs) === cHash.contentHash(dstAbs)
+          ) {
+            counts.unchanged += 1;
+            perFile.push({ dest: d.dest, status: "unchanged", category: d.category });
             break;
           }
           // Backup before overwrite (only if a local file actually exists).
-          if (fs.existsSync(dstAbs)) {
+          const existedBefore = fs.existsSync(dstAbs);
+          if (existedBefore) {
             backupFile(targetRoot, txDir, d.dest);
             counts.backups += 1;
           }
           ensureDir(path.dirname(dstAbs));
           fs.copyFileSync(srcAbs, dstAbs);
-          if (d.category === "ADD_SAFE") counts.added += 1;
-          else counts.updated += 1;
+          if (d.category === "ADD_SAFE") {
+            counts.added += 1;
+            perFile.push({ dest: d.dest, status: "added", category: d.category });
+          } else {
+            counts.updated += 1;
+            // existedBefore ≈ true for UPDATE_SAFE; if a file vanished between
+            // classify and apply, ADD-style copy is still a `repaired` semantic
+            // (the operator state moved from "absent" to "matches upstream").
+            perFile.push({ dest: d.dest, status: "repaired", category: d.category });
+          }
           break;
         }
         case "MERGE_CONFLICT": {
           // Held — surface in report, do not write.
           counts.merge_conflicts_held += 1;
+          perFile.push({ dest: d.dest, status: "conflict", category: d.category, reason: d.reason || "" });
           break;
         }
         case "DELETE_SAFE": {
           if (!opts.confirmDeletes) {
             counts.deletes_skipped += 1;
+            perFile.push({ dest: d.dest, status: "delete_skipped", category: d.category });
             break;
           }
           if (fs.existsSync(dstAbs)) {
@@ -573,23 +614,39 @@ function applyUpdateDecisions(
             counts.backups += 1;
             fs.unlinkSync(dstAbs);
             counts.deleted += 1;
+            perFile.push({ dest: d.dest, status: "deleted", category: d.category });
+          } else {
+            // Was supposed to be deleted but already gone — treat as no-op.
+            counts.skipped_no_op += 1;
+            perFile.push({ dest: d.dest, status: "unchanged", category: d.category });
           }
           break;
         }
+        case "DELETE_CONFLICT": {
+          counts.skipped_no_op += 1;
+          perFile.push({ dest: d.dest, status: "delete_conflict", category: d.category, reason: d.reason || "" });
+          break;
+        }
         case "LOCAL_ONLY":
+          counts.skipped_no_op += 1;
+          perFile.push({ dest: d.dest, status: "local_only", category: d.category });
+          break;
         case "LOCAL_CUSTOMIZED":
           counts.skipped_no_op += 1;
+          perFile.push({ dest: d.dest, status: "local_customized", category: d.category, reason: d.reason || "" });
           break;
         default:
           counts.skipped_no_op += 1;
+          perFile.push({ dest: d.dest, status: "skipped", category: d.category });
       }
     } catch (e) {
       counts.errors += 1;
       errors.push({ dest: d.dest, category: d.category, error: e.message });
+      perFile.push({ dest: d.dest, status: "error", category: d.category, error: e.message });
     }
   }
 
-  return { ok: counts.errors === 0, counts, errors };
+  return { ok: counts.errors === 0, counts, errors, perFile };
 }
 
 function buildInstalledSnapshot(
@@ -1603,8 +1660,27 @@ if (require.main === module) {
       if (isApply) {
         console.log("");
         console.log(
-          `Apply: added=${ac.added} updated=${ac.updated} merge_conflicts_held=${ac.merge_conflicts_held} deleted=${ac.deleted} (skipped=${ac.deletes_skipped}) backups=${ac.backups} no-op=${ac.skipped_no_op} errors=${ac.errors}`,
+          `Apply: added=${ac.added} repaired=${ac.updated} unchanged=${ac.unchanged || 0} conflict=${ac.merge_conflicts_held} deleted=${ac.deleted} (skipped=${ac.deletes_skipped}) backups=${ac.backups} no-op=${ac.skipped_no_op} errors=${ac.errors}`,
         );
+        // SP-20260524-003 — per-file status. Print top 20 non-unchanged entries
+        // by default; --verbose-files prints all. Truncation honest.
+        const perFile = r.apply.perFile || [];
+        const verboseFiles = process.argv.includes("--verbose-files");
+        const interesting = perFile.filter((p) => p.status !== "unchanged");
+        const shown = verboseFiles ? perFile : interesting.slice(0, 20);
+        if (shown.length > 0) {
+          console.log("");
+          console.log("Per-file:");
+          for (const p of shown) {
+            const tag = p.status.toUpperCase().padEnd(16);
+            console.log(`  ${tag} ${p.dest}${p.error ? "  [" + p.error + "]" : ""}`);
+          }
+          if (!verboseFiles && interesting.length > 20) {
+            console.log(`  ... ${interesting.length - 20} more interesting entries (re-run with --verbose-files for full list, including ${ac.unchanged || 0} unchanged)`);
+          } else if (!verboseFiles && (ac.unchanged || 0) > 0) {
+            console.log(`  (${ac.unchanged} unchanged entries omitted; --verbose-files to include)`);
+          }
+        }
         if (r.migrations) {
           console.log(
             `Migrations: ran=${r.migrations.ran} failed=${r.migrations.failed} status=${r.migrations.status}`,

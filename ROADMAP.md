@@ -90,6 +90,7 @@ Every sprint that has been planned, executed, released, or retrospected — one 
 
 | Sprint | Title | Status | Started | Closed | Release |
 |---|---|---|---|---|---|
+| [SP-20260524-003](.claude/project/sprint/sprints/SP-20260524-003/) | Per-file install status reporting (added/repaired/unchanged/conflict) | planning | 2026-05-23T07:38:33.950Z |  |  |
 | [SP-20260524-002](.claude/project/sprint/sprints/SP-20260524-002/) | Install reliability combo: release-build stale-manifest refusal + .claude/manifest.json always-present + 4-caller cleanup | planning | 2026-05-23T07:33:39.013Z |  |  |
 | [SP-20260524-001](.claude/project/sprint/sprints/SP-20260524-001/) | Install fixture CI matrix — 5-scenario regression test suite for /warp:setup + /warp:update | retrospected | 2026-05-23T06:47:18.575Z | 2026-05-23T07:25:37.568Z |  |
 | [SP-20260523-003](.claude/project/sprint/sprints/SP-20260523-003/) | Installer ownership manifest hook into /warp:setup — refuse writes to paths not in _warpos/MANIFEST.json | retrospected | 2026-05-23T04:03:22.211Z | 2026-05-23T04:06:14.733Z |  |
