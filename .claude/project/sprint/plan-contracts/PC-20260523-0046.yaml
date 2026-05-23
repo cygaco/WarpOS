@@ -1,0 +1,131 @@
+schema: warpos/sprint/plan-contract/v1
+id: PC-20260523-0046
+created_at: "2026-05-23T08:48:19.754Z"
+updated_at: "2026-05-23T08:48:19.754Z"
+sprint: SP-20260525-012
+source_request: "Events retention policy — milestone 0.13.0 sprint 4. Compress / roll events.jsonl above threshold (~10MB); sleep:deep manual flow retires for this concern."
+source_request_verbatim: "events.jsonl crosses ~6MB in real-world usage. sleep:deep handles compaction manually today. Automate: rotate above threshold (e.g. 10MB), compress old segment to .gz, keep last N rotations."
+request_type: feature_add
+interpreted_intent: "paths.eventsFile (events.jsonl) is append-only and grows monotonically. At 6MB it's already large; future growth degrades read performance for /events:tail + /events:query + smart-context's append. Add a rotation policy: when events.jsonl > 10MB, rotate to events.jsonl.<ISO>.gz; keep last 5 rotations; clean older. Triggered on append from logger.js OR via periodic check skill."
+user_or_business_outcome: "events.jsonl stays bounded in size. /events:tail / /events:query / smart-context loaders stay fast. Operator stops needing to manually compact via /sleep:deep."
+affected_surfaces:
+  - surface: scripts/lib/logger.js
+    evidence_level: verified_from_repo
+    notes: "Add rotation check before append: if file > threshold, rotate; then append."
+  - surface: ".claude/project/events/ (or wherever paths.eventsFile resolves)"
+    evidence_level: verified_from_repo
+    notes: "Rotation creates .gz siblings; cleanup walks the dir."
+  - surface: ".claude/paths.json — eventsArchive (NEW)"
+    evidence_level: asserted_inferred
+    notes: "New path key for rotated archive dir, OR archives live alongside events.jsonl in the same dir."
+  - surface: "scripts/lib/test-logger-rotation.js (NEW)"
+    evidence_level: unknown
+    notes: "Test: write events past threshold, verify rotation, verify N-keep cleanup."
+  - surface: ".claude/commands/events/* skills"
+    evidence_level: verified_from_repo
+    notes: "Verify /events:tail and /events:query handle the case where current events.jsonl is small + recent events are in rotated .gz files."
+current_behavior:
+  evidence_level: verified_from_repo
+  notes: "events.jsonl grows unboundedly. /sleep:deep manually compacts via aggregation. No automatic rotation."
+desired_behavior: "(1) logger.js checks file size on append; rotates above threshold. (2) Rotated files are gzipped + timestamped. (3) Last N=5 rotations kept; older deleted. (4) /events:tail + /events:query include rotated archives in their scan (or have a --no-archives flag for current-only). (5) Tests cover rotation + cleanup. (6) Local commit. Push operator-scoped."
+scope:
+  size: s
+  risk_level: low
+  complexity_drivers:
+    - "Rotation must be atomic — no events lost during the swap"
+    - "Concurrent writers from multiple Claude sessions are possible — file locking or rotation token needed"
+scope_variants:
+  minimal_safe:
+    summary: "Rotation only (no gzip, no cleanup) — when > threshold, rename to events.jsonl.<ISO>, start fresh."
+    tradeoffs:
+      - "Pro: simplest"
+      - "Con: disk usage grows monotonically over time"
+  recommended:
+    summary: "minimal_safe + gzip rotation + N-keep cleanup + /events:* skills handle archive scanning + atomic-swap safety for concurrent writers."
+    tradeoffs:
+      - "Pro: complete retention policy"
+      - "Con: archive scanning in /events:* is added surface"
+  expanded:
+    summary: "recommended + structured archive index (events.archive-index.json) so /events:query can target specific time ranges without decompressing every archive + retention policy config in .claude/paths.json or settings.local.json."
+    tradeoffs:
+      - "Pro: fast historical queries"
+      - "Con: index maintenance is more code"
+assumptions:
+  safe:
+    - "10MB is a reasonable rotation threshold for 6MB current usage"
+    - "gzip is available in node (zlib built-in)"
+  unsafe:
+    - "Concurrent writers — must use atomic rename (write rotated file, then rename current to .archived, then create fresh)"
+  needs_user_or_beta_review:
+    - "Threshold value (10MB? 5MB? operator-configurable?)"
+    - "N-keep count (5? 10?)"
+    - "Archive scan behavior in /events:* (always include? --archives flag?)"
+open_questions:
+  blocking: []
+  non_blocking:
+    - "Should rotation timestamp be UTC ISO or local? UTC for portability."
+non_goals:
+  - Cross-machine event aggregation
+  - Long-term archival to external storage
+requirement_areas:
+  - logging
+  - retention
+  - performance
+high_level_story_candidates:
+  - "As the framework, events.jsonl stays bounded — no manual /sleep:deep compaction needed."
+  - "As an operator running /events:query, my historical queries scan rotated archives too."
+  - "As the maintainer, disk usage from events stays predictable."
+granular_story_candidates:
+  - "Add rotation check to logger.js — before append, stat file size; if > threshold, rotate."
+  - "Implement atomic rotation: write current to events.jsonl.<ISO>.gz, then truncate current."
+  - "Implement N-keep cleanup — walk archive dir, sort by timestamp, delete past N."
+  - "Update /events:tail to optionally include archives (--with-archives flag)."
+  - "Update /events:query to scan archives by default (--current-only to skip)."
+  - "Add tests: write 11MB of events, verify rotation, verify 6th rotation evicts 1st."
+  - "Add concurrent-writer test: two processes appending while rotation happens, verify no event loss."
+workstream_candidates:
+  - "Code: logger rotation"
+  - "Code: cleanup + atomic-swap"
+  - "Integration: /events:* archive support"
+  - "Tests: rotation + concurrent-writer"
+preliminary_ticket_candidates:
+  allowed: false
+  notes: "Design confirms threshold + N-keep + atomic-swap approach + archive-scan policy."
+external_service_dependencies:
+  status: none_expected
+approval_boundaries:
+  - "Modifies logging behavior — operator-visible (file path changes via rotation)"
+  - "Adds new path key — additive"
+  - "Push to remote — operator-scoped"
+design_required: true
+execution_allowed_without_design: false
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+lane:
+  type: default
+  value: null
+  isolation_notes: ""
+beta_review:
+  required: true
+  likely_founder_rejection_risks:
+    - "Atomic rotation under concurrent writers is the failure mode — design must specify exact swap sequence"
+  overbuild_risks:
+    - "Archive index is expanded; defer"
+  missing_context_risks:
+    - "Concurrent-writer model — how many Claude sessions write simultaneously in practice?"
+plan_quality:
+  status: needs_design
+  confidence: high
+  evidence_gaps:
+    - Concurrent-writer count in practice
+  fail_reasons: []
+next_recommended_command: "/sprint:design"
+resume_instructions: "Re-run /sprint:design (idempotent) or /sprint:plan to re-plan."
+tracker_paths:
+  current_sprint: ".claude/project/sprint/current-sprint.yaml"
+  sprint_progress: ".claude/project/sprint/sprint-progress.yaml"
+  plan_contract: ".claude/project/sprint/plan-contracts/PC-20260523-0046.yaml"
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260523-0046.report.md"
+created_by: alpha
+updated_by: alpha

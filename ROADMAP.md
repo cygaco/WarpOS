@@ -299,6 +299,19 @@ Every sprint that has been planned, executed, released, or retrospected — one 
 
 | Sprint | Title | Status | Started | Closed | Release |
 |---|---|---|---|---|---|
+| [SP-20260525-017](.claude/project/sprint/sprints/SP-20260525-017/) | Wire existing /roadmap:* through DoPM (milestone 0.14.0 sprint 4) | planning | 2026-05-23T08:52:01.116Z |  |  |
+| [SP-20260525-016](.claude/project/sprint/sprints/SP-20260525-016/) | /roadmap:create skill — fresh-roadmap bootstrap using DoPM (milestone 0.14.0 sprint 3) | planning | 2026-05-23T08:48:35.685Z |  |  |
+| [SP-20260525-015](.claude/project/sprint/sprints/SP-20260525-015/) | Director of Product Management agent spec (milestone 0.14.0 sprint 2) | planning | 2026-05-23T08:48:35.617Z |  |  |
+| [SP-20260525-014](.claude/project/sprint/sprints/SP-20260525-014/) | Skill-scoped temporary agent injection mechanism (milestone 0.14.0 sprint 1) | planning | 2026-05-23T08:48:35.546Z |  |  |
+| [SP-20260525-011](.claude/project/sprint/sprints/SP-20260525-011/) | Provider catalog hygiene — remove ghost Gemini models + add catalog-validation check + redteam default flip (milestone 0.13.0 sprint 2) | planning | 2026-05-23T08:48:19.167Z |  |  |
+| [SP-20260525-013](.claude/project/sprint/sprints/SP-20260525-013/) | Events retention policy — auto-roll events.jsonl above threshold (milestone 0.13.0 sprint 4) | planning | 2026-05-23T08:45:29.972Z |  |  |
+| [SP-20260525-012](.claude/project/sprint/sprints/SP-20260525-012/) | Skill merges + genericize — /retro:full, /fav, /ui:review parameterized (milestone 0.13.0 sprint 3) | planning | 2026-05-23T08:45:29.892Z |  |  |
+| [SP-20260525-010](.claude/project/sprint/sprints/SP-20260525-010/) | /research:* consolidation — validate or deprecate /research:deep + add synthesis phase to /research:simple (milestone 0.13.0 sprint 1) | planning | 2026-05-23T08:45:29.743Z |  |  |
+| [SP-20260525-009](.claude/project/sprint/sprints/SP-20260525-009/) | Skill-engine coherence check — /check:skill-engines + release-build gate (milestone 0.12.0 sprint 5) | planning | 2026-05-23T08:41:19.791Z |  |  |
+| [SP-20260525-008](.claude/project/sprint/sprints/SP-20260525-008/) | Install matrix cross-version --apply coverage (milestone 0.12.0 sprint 4) | planning | 2026-05-23T08:41:19.725Z |  |  |
+| [SP-20260525-007](.claude/project/sprint/sprints/SP-20260525-007/) | Same-name agent collision detection at install (milestone 0.12.0 sprint 3) | planning | 2026-05-23T08:41:19.651Z |  |  |
+| [SP-20260525-006](.claude/project/sprint/sprints/SP-20260525-006/) | Installer branch-safety — warp/install-timestamp branch default (milestone 0.12.0 sprint 2) | planning | 2026-05-23T08:41:19.590Z |  |  |
+| [SP-20260525-005](.claude/project/sprint/sprints/SP-20260525-005/) | DreamTeam orchestrator capsule fix — include sprintFullAutonomy + sprintSchemas in next capsule (milestone 0.12.0 sprint 1) | planning | 2026-05-23T08:41:19.513Z |  |  |
 | [SP-20260525-004](.claude/project/sprint/sprints/SP-20260525-004/) | Beta-honesty enforcement skill — /check:sprint-beta-honesty + AUTONOMY.md enforced (milestone 0.11.0 sprint 2) | planning | 2026-05-23T08:35:28.330Z |  |  |
 | [SP-20260525-003](.claude/project/sprint/sprints/SP-20260525-003/) | Orchestrator-Beta bridge — choose dispatch-from-subprocess or halt-at-Beta-boundary (milestone 0.11.0 sprint 1) | planning | 2026-05-23T08:31:03.533Z |  |  |
 | [SP-20260525-002](.claude/project/sprint/sprints/SP-20260525-002/) | Post-scrub gate hardening — flip ROOT_LEAK_PENDING_SCRUB=false (milestone 0.10.0 sprint 2) | planning | 2026-05-23T08:29:29.626Z |  |  |

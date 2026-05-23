@@ -1,5 +1,5 @@
 schema: warpos/sprint/active-sprints/v1
-primary: SP-20260525-004
+primary: SP-20260525-017
 sprints:
   - id: SP-20260512-001
     title: Multi-sprint parallelism for Sprint Workflow
@@ -375,5 +375,148 @@ sprints:
     pointer: ".claude/project/sprint/sprints/SP-20260525-004"
     created_at: "2026-05-23T08:35:28.330Z"
     updated_at: "2026-05-23T08:35:28.330Z"
+  - id: SP-20260525-005
+    title: "DreamTeam orchestrator capsule fix — include sprintFullAutonomy + sprintSchemas in next capsule (milestone 0.12.0 sprint 1)"
+    status: planning
+    lane:
+      type: default
+      value: null
+      isolation_notes: ""
+    layout: per_sprint_subdir
+    pointer: ".claude/project/sprint/sprints/SP-20260525-005"
+    created_at: "2026-05-23T08:41:19.513Z"
+    updated_at: "2026-05-23T08:41:19.513Z"
+  - id: SP-20260525-006
+    title: "Installer branch-safety — warp/install-timestamp branch default (milestone 0.12.0 sprint 2)"
+    status: planning
+    lane:
+      type: default
+      value: null
+      isolation_notes: ""
+    layout: per_sprint_subdir
+    pointer: ".claude/project/sprint/sprints/SP-20260525-006"
+    created_at: "2026-05-23T08:41:19.590Z"
+    updated_at: "2026-05-23T08:41:19.590Z"
+  - id: SP-20260525-007
+    title: "Same-name agent collision detection at install (milestone 0.12.0 sprint 3)"
+    status: planning
+    lane:
+      type: default
+      value: null
+      isolation_notes: ""
+    layout: per_sprint_subdir
+    pointer: ".claude/project/sprint/sprints/SP-20260525-007"
+    created_at: "2026-05-23T08:41:19.651Z"
+    updated_at: "2026-05-23T08:41:19.651Z"
+  - id: SP-20260525-008
+    title: "Install matrix cross-version --apply coverage (milestone 0.12.0 sprint 4)"
+    status: planning
+    lane:
+      type: default
+      value: null
+      isolation_notes: ""
+    layout: per_sprint_subdir
+    pointer: ".claude/project/sprint/sprints/SP-20260525-008"
+    created_at: "2026-05-23T08:41:19.725Z"
+    updated_at: "2026-05-23T08:41:19.725Z"
+  - id: SP-20260525-009
+    title: "Skill-engine coherence check — /check:skill-engines + release-build gate (milestone 0.12.0 sprint 5)"
+    status: planning
+    lane:
+      type: default
+      value: null
+      isolation_notes: ""
+    layout: per_sprint_subdir
+    pointer: ".claude/project/sprint/sprints/SP-20260525-009"
+    created_at: "2026-05-23T08:41:19.791Z"
+    updated_at: "2026-05-23T08:41:19.791Z"
+  - id: SP-20260525-010
+    title: "/research:* consolidation — validate or deprecate /research:deep + add synthesis phase to /research:simple (milestone 0.13.0 sprint 1)"
+    status: planning
+    lane:
+      type: default
+      value: null
+      isolation_notes: ""
+    layout: per_sprint_subdir
+    pointer: ".claude/project/sprint/sprints/SP-20260525-010"
+    created_at: "2026-05-23T08:45:29.743Z"
+    updated_at: "2026-05-23T08:45:29.743Z"
+  - id: SP-20260525-011
+    title: "Provider catalog hygiene — remove ghost Gemini models + add catalog-validation check + redteam default flip (milestone 0.13.0 sprint 2)"
+    status: planning
+    lane:
+      type: default
+      value: null
+      isolation_notes: ""
+    layout: per_sprint_subdir
+    pointer: ".claude/project/sprint/sprints/SP-20260525-011"
+    created_at: "2026-05-23T08:45:29.819Z"
+    updated_at: "2026-05-23T08:45:29.819Z"
+  - id: SP-20260525-012
+    title: "Skill merges + genericize — /retro:full, /fav, /ui:review parameterized (milestone 0.13.0 sprint 3)"
+    status: planning
+    lane:
+      type: default
+      value: null
+      isolation_notes: ""
+    layout: per_sprint_subdir
+    pointer: ".claude/project/sprint/sprints/SP-20260525-012"
+    created_at: "2026-05-23T08:45:29.892Z"
+    updated_at: "2026-05-23T08:45:29.892Z"
+  - id: SP-20260525-013
+    title: "Events retention policy — auto-roll events.jsonl above threshold (milestone 0.13.0 sprint 4)"
+    status: planning
+    lane:
+      type: default
+      value: null
+      isolation_notes: ""
+    layout: per_sprint_subdir
+    pointer: ".claude/project/sprint/sprints/SP-20260525-013"
+    created_at: "2026-05-23T08:45:29.972Z"
+    updated_at: "2026-05-23T08:45:29.972Z"
+  - id: SP-20260525-014
+    title: "Skill-scoped temporary agent injection mechanism (milestone 0.14.0 sprint 1)"
+    status: planning
+    lane:
+      type: default
+      value: null
+      isolation_notes: ""
+    layout: per_sprint_subdir
+    pointer: ".claude/project/sprint/sprints/SP-20260525-014"
+    created_at: "2026-05-23T08:48:35.546Z"
+    updated_at: "2026-05-23T08:48:35.546Z"
+  - id: SP-20260525-015
+    title: "Director of Product Management agent spec (milestone 0.14.0 sprint 2)"
+    status: planning
+    lane:
+      type: default
+      value: null
+      isolation_notes: ""
+    layout: per_sprint_subdir
+    pointer: ".claude/project/sprint/sprints/SP-20260525-015"
+    created_at: "2026-05-23T08:48:35.617Z"
+    updated_at: "2026-05-23T08:48:35.617Z"
+  - id: SP-20260525-016
+    title: "/roadmap:create skill — fresh-roadmap bootstrap using DoPM (milestone 0.14.0 sprint 3)"
+    status: planning
+    lane:
+      type: default
+      value: null
+      isolation_notes: ""
+    layout: per_sprint_subdir
+    pointer: ".claude/project/sprint/sprints/SP-20260525-016"
+    created_at: "2026-05-23T08:48:35.685Z"
+    updated_at: "2026-05-23T08:48:35.685Z"
+  - id: SP-20260525-017
+    title: "Wire existing /roadmap:* through DoPM (milestone 0.14.0 sprint 4)"
+    status: planning
+    lane:
+      type: default
+      value: null
+      isolation_notes: ""
+    layout: per_sprint_subdir
+    pointer: ".claude/project/sprint/sprints/SP-20260525-017"
+    created_at: "2026-05-23T08:48:35.766Z"
+    updated_at: "2026-05-23T08:48:35.766Z"
 created_at: "2026-05-12T22:57:35.667Z"
-updated_at: "2026-05-23T08:35:28.330Z"
+updated_at: "2026-05-23T08:48:35.766Z"

@@ -1,0 +1,134 @@
+schema: warpos/sprint/plan-contract/v1
+id: PC-20260523-0040
+created_at: "2026-05-23T08:45:17.065Z"
+updated_at: "2026-05-23T08:45:17.065Z"
+sprint: SP-20260525-006
+source_request: "Skill-engine coherence check — milestone 0.12.0 sprint 5. New /check:skill-engines skill that parses every .claude/commands/**/*.md for scripts/... references and verifies the referenced engine script exists. Wire into release-build (refuse capsules where any skill doc references a missing script) AND /warp:setup postflight (catch drift after install)."
+source_request_verbatim: "Operator finding in 0.7.x consumer install: scripts/turbo/apply.js doesn't exist but the /turbo skill doc IS installed — skill claims to work but can't. Fix-for-future bug class: ship a check that validates skill→engine dependency edges at release time AND at install postflight."
+request_type: feature_add
+interpreted_intent: "Skills under .claude/commands/ reference engine scripts via prose (e.g. 'Run `node scripts/turbo/apply.js`'). When the engine script is missing — either because canonical never shipped it, or because a capsule mid-build dropped it — the skill is silently broken. Add a scan/validate: parse skill docs for `scripts/...` references; cross-check that each referenced path exists in canonical. Wire into release-build as a fail-loud gate AND into /warp:setup postflight to catch consumer-side drift. Same shape as the path-manifest-coverage gap that 0.8.x solved."
+user_or_business_outcome: "Operator never encounters a skill that says 'I work' but errors with `Cannot find module`. /check:skill-engines exits 0 on clean canonical; release-build refuses capsules with broken edges; /warp:setup postflight surfaces drift with actionable remediation."
+affected_surfaces:
+  - surface: ".claude/commands/check/skill-engines.md (NEW)"
+    evidence_level: unknown
+    notes: "Skill body — describes scan algorithm + output format."
+  - surface: "scripts/checks/skill-engines.js (NEW)"
+    evidence_level: unknown
+    notes: "Scan logic — walks .claude/commands/**/*.md, extracts `scripts/...` references via regex, checks each path exists."
+  - surface: scripts/warpos/release-build.js
+    evidence_level: verified_from_repo
+    notes: "Add /check:skill-engines invocation before capsule snapshot; refuse on findings."
+  - surface: scripts/warp-setup.js
+    evidence_level: verified_from_repo
+    notes: "Add postflight /check:skill-engines call; warn (not refuse) on findings, with remediation suggestion."
+  - surface: "scripts/checks/test-skill-engines.js (NEW)"
+    evidence_level: unknown
+    notes: "Fixtures: clean skill, skill with missing script ref, skill with relative path ref, skill with multiple refs."
+current_behavior:
+  evidence_level: verified_from_repo
+  notes: "No skill→engine dependency check exists. Operator finding: /turbo skill installed at 0.7.x without scripts/turbo/apply.js. Manifest coverage check ensures paths declared in MANIFEST exist on disk but does NOT validate inter-file references."
+desired_behavior: "(1) /check:skill-engines exists and exits 0 on clean canonical. (2) release-build refuses a capsule where any skill doc references a missing engine. (3) /warp:setup postflight runs the check and surfaces findings with remediation hints. (4) Tests cover clean, missing-ref, relative-path, multi-ref. (5) Local commit. Push operator-scoped."
+scope:
+  size: s
+  risk_level: low
+  complexity_drivers:
+    - "Regex for scripts/... references must handle various reference styles (backtick, plain, with .js suffix, etc)"
+    - "False positives (e.g. references to scripts under a different root) must be avoided"
+scope_variants:
+  minimal_safe:
+    summary: "Skill + scan script + 1 happy-path test. No release-build wiring; manual invocation only."
+    tradeoffs:
+      - "Pro: minimal"
+      - "Con: doesn't close the bug class at release time"
+  recommended:
+    summary: "minimal_safe + release-build integration (refuse on findings) + /warp:setup postflight (warn) + 4 fixture cases + structured findings output (human + JSON)."
+    tradeoffs:
+      - "Pro: closes bug class end-to-end"
+      - "Con: ~2× minimal; postflight integration touches install pipeline"
+  expanded:
+    summary: "recommended + extend to also check skill references to .claude/agents/ + skill references to other skills + transitive dependency graph + visualization (graphviz output)."
+    tradeoffs:
+      - "Pro: full skill ecosystem coherence"
+      - "Con: ~3× surface; visualization is nice-to-have"
+assumptions:
+  safe:
+    - "Skill docs follow a stable reference convention (scripts/<path>.js in backticks or plain text)"
+    - Engine scripts live under scripts/ at canonical root
+  unsafe:
+    - "Some skills may reference scripts/ via templated variables — regex must handle false positives gracefully (allow-list pattern or warn-only on templated refs)"
+  needs_user_or_beta_review:
+    - "Should release-build refusal be fatal or warning by default? Recommend fatal for unambiguous missing refs, warning for templated/uncertain refs."
+open_questions:
+  blocking: []
+  non_blocking:
+    - "Should the check also validate that referenced scripts are actually executable (e.g., have shebang or are .js files)?"
+non_goals:
+  - Auto-fixing missing engines
+  - "Validating script CORRECTNESS (only existence)"
+  - "Extending to non-skill markdown (docs, READMEs)"
+requirement_areas:
+  - check-skills
+  - release-pipeline
+  - install-pipeline
+  - skill-ecosystem-coherence
+high_level_story_candidates:
+  - "As an operator, every shipped skill works because its engine script exists."
+  - "As the maintainer, release-build refuses to ship a broken capsule."
+  - "As a consumer, /warp:setup tells me if my install ended up with broken skill→engine edges."
+granular_story_candidates:
+  - "Create .claude/commands/check/skill-engines.md skill with frontmatter + body."
+  - "Create scripts/checks/skill-engines.js — walks .claude/commands/**/*.md, extracts scripts/... refs via regex."
+  - "Define findings structure: { skill_path, line, reference, status: missing|present|templated, remediation }."
+  - "Implement output modes: human (table) + --json."
+  - "Wire into scripts/warpos/release-build.js — call before snapshot, exit 2 on missing refs (non-templated)."
+  - "Wire into scripts/warp-setup.js — postflight call, warn on findings with remediation hint."
+  - Create scripts/checks/test-skill-engines.js with 4 fixture cases.
+  - "Document in /check namespace + USER_GUIDE."
+workstream_candidates:
+  - "Code: skill + scan + test"
+  - "Wiring: release-build refusal + warp-setup postflight"
+  - "Docs: skill body + USER_GUIDE update"
+preliminary_ticket_candidates:
+  allowed: false
+  notes: "Design pass confirms regex pattern + templated-ref handling + refusal policy."
+external_service_dependencies:
+  status: none_expected
+approval_boundaries:
+  - "Adds new skill — additive"
+  - "Modifies release-build refusal behavior — operator-visible"
+  - "Modifies /warp:setup postflight — additive warnings"
+  - "Push to remote — operator-scoped"
+design_required: true
+execution_allowed_without_design: false
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+lane:
+  type: default
+  value: null
+  isolation_notes: ""
+beta_review:
+  required: true
+  likely_founder_rejection_risks:
+    - "Regex false positives could spam findings — templated/uncertain handling must be careful"
+    - Release-build refusal must have a clear bypass for legitimate cases
+  overbuild_risks:
+    - "Graphviz visualization is expanded; defer"
+    - "Transitive dependency graph is nice-to-have; defer"
+  missing_context_risks:
+    - Need to confirm regex pattern catches all WarpOS skill reference styles
+plan_quality:
+  status: needs_design
+  confidence: high
+  evidence_gaps:
+    - "Regex pattern + templated-ref policy"
+  fail_reasons: []
+next_recommended_command: "/sprint:design"
+resume_instructions: "Re-run /sprint:design (idempotent) or /sprint:plan to re-plan."
+tracker_paths:
+  current_sprint: ".claude/project/sprint/current-sprint.yaml"
+  sprint_progress: ".claude/project/sprint/sprint-progress.yaml"
+  plan_contract: ".claude/project/sprint/plan-contracts/PC-20260523-0040.yaml"
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260523-0040.report.md"
+created_by: alpha
+updated_by: alpha
