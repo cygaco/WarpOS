@@ -135,10 +135,30 @@ async function planAll(from, to, ctx) {
 }
 
 async function applyAll(from, to, ctx) {
+  // SP-20260524-004 — versioned migrations.
+  //
+  // ctx.alreadyApplied — optional Set<string> of migration ids that have
+  // already been applied against this install (from
+  // framework-installed.json#migrationsApplied). Migrations in the set are
+  // skipped without re-execution and noted in the log as `skipped_already_applied`.
+  // The caller is responsible for persisting the new ids into the snapshot
+  // after a successful run.
+  const alreadyApplied =
+    (ctx && ctx.alreadyApplied instanceof Set) ? ctx.alreadyApplied : new Set();
   const files = listMigrations(from, to);
   const log = [];
   for (const f of files) {
     const mig = await loadMigration(f);
+    if (alreadyApplied.has(mig.id)) {
+      log.push({
+        migration: mig.id,
+        file: path.relative(REPO_ROOT, f).replace(/\\/g, "/"),
+        durationMs: 0,
+        result: { ok: true, skipped: true, reason: "already_applied" },
+        skipped: true,
+      });
+      continue;
+    }
     const start = Date.now();
     let result = { ok: true };
     if (typeof mig.apply === "function") {

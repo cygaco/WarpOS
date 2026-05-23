@@ -655,6 +655,8 @@ function buildInstalledSnapshot(
   applyResult,
   prior,
   targetRoot,
+  migrationsResult,
+  decisions,
 ) {
   const root = targetRoot || REPO_ROOT;
   const assets = [];
@@ -678,6 +680,40 @@ function buildInstalledSnapshot(
       });
     }
   }
+  // SP-20260524-004 — versioned migrations.
+  //
+  // Compose migrationsApplied: prior list (or []) + newlyApplied from this
+  // run, deduped + sorted for stable diff. Migrations that ran but failed
+  // are NOT recorded — re-running update will retry them.
+  const priorApplied = (prior && Array.isArray(prior.migrationsApplied))
+    ? prior.migrationsApplied
+    : [];
+  const newApplied = (migrationsResult && Array.isArray(migrationsResult.newlyApplied))
+    ? migrationsResult.newlyApplied
+    : [];
+  const migrationsApplied = Array.from(new Set([...priorApplied, ...newApplied])).sort();
+
+  // SP-20260524-004 — userModified tracking.
+  //
+  // Capture paths the classifier flagged as operator-modified: MERGE_CONFLICT
+  // (real local edit) + LOCAL_CUSTOMIZED (keep_local strategy). LOCAL_ONLY is
+  // operator-only territory and explicitly NOT tracked as a framework-managed
+  // user-modification — framework simply doesn't own those paths.
+  //
+  // Preserves prior userModified entries: once a file is marked, only an
+  // explicit "operator reset" path (future sprint — possibly via a
+  // /warp:reset-customization CLI) removes it. This makes the field
+  // monotonic across update runs.
+  const priorUserModified = (prior && Array.isArray(prior.userModified))
+    ? prior.userModified
+    : [];
+  const newlyUserModified = Array.isArray(decisions)
+    ? decisions
+        .filter((d) => d.category === "MERGE_CONFLICT" || d.category === "LOCAL_CUSTOMIZED")
+        .map((d) => d.dest)
+    : [];
+  const userModified = Array.from(new Set([...priorUserModified, ...newlyUserModified])).sort();
+
   return {
     $schema: "warpos/framework-installed/v2",
     installedVersion: version,
@@ -699,6 +735,8 @@ function buildInstalledSnapshot(
       ".claude/agents/store.json",
     ],
     applyCounts: applyResult.counts,
+    migrationsApplied,
+    userModified,
   };
 }
 
@@ -708,26 +746,40 @@ function buildInstalledSnapshot(
 // migrations-loader.js#applyAll(from, to, ctx). ctx is set so migrations
 // know which target tree to mutate. If a migration throws, we mark it
 // failed and stop (subsequent migrations are listed but not run).
-async function runMigrations(fromVersion, toVersion, targetRoot) {
+async function runMigrations(fromVersion, toVersion, targetRoot, alreadyApplied) {
   const files = migrationsLoader.listMigrations(fromVersion, toVersion);
   if (files.length === 0) {
     return {
       ran: 0,
       failed: 0,
+      skipped_already_applied: 0,
       log: [],
       status: "skipped",
       reason: `no migrations directory migrations/${fromVersion}-to-${toVersion}/ exists`,
     };
   }
   try {
+    // SP-20260524-004 — pass alreadyApplied set so versioned migrations skip
+    // ids that already ran against this install (typically resuming after a
+    // mid-chain failure, or running update across a chain that overlaps with
+    // a prior interrupted run).
     const log = await migrationsLoader.applyAll(fromVersion, toVersion, {
       targetRoot,
+      alreadyApplied: alreadyApplied instanceof Set ? alreadyApplied : new Set(),
     });
-    const ran = log.length;
+    const skipped = log.filter((e) => e.skipped).length;
+    const ran = log.length - skipped;
     const failed = log.filter((e) => e.result && e.result.ok === false).length;
+    // New migrations applied successfully this run (ids only). Caller persists
+    // these into framework-installed.json#migrationsApplied.
+    const newlyApplied = log
+      .filter((e) => !e.skipped && e.result && e.result.ok)
+      .map((e) => e.migration);
     return {
       ran,
       failed,
+      skipped_already_applied: skipped,
+      newlyApplied,
       log,
       status: failed === 0 ? "passed" : "failed",
     };
@@ -735,6 +787,8 @@ async function runMigrations(fromVersion, toVersion, targetRoot) {
     return {
       ran: 0,
       failed: 1,
+      skipped_already_applied: 0,
+      newlyApplied: [],
       log: [{ error: e.message }],
       status: "failed",
     };
@@ -1049,7 +1103,14 @@ async function run(opts) {
 
     // Run migrations as part of the wrapped phase — a failed migration must
     // also roll back the file copies.
-    migrationsResult = await runMigrations(fromVersion, target, targetRoot);
+    // SP-20260524-004 — pass the set of migration ids previously applied
+    // against this install so versioned migrations can skip them. Source of
+    // truth is framework-installed.json#migrationsApplied; an empty/absent
+    // field falls through to "nothing applied" (correct legacy behavior).
+    const priorApplied = (installed && Array.isArray(installed.migrationsApplied))
+      ? new Set(installed.migrationsApplied)
+      : new Set();
+    migrationsResult = await runMigrations(fromVersion, target, targetRoot, priorApplied);
     if (migrationsResult.status === "failed") {
       throw new Error(
         `migration phase failed: ${migrationsResult.failed} migration(s) failed during ${fromVersion}->${target}`,
@@ -1139,12 +1200,17 @@ async function run(opts) {
 
   // Write updated installed snapshot before commit so the manifest is
   // visible to postflight (manifest-honesty would otherwise see stale state).
+  // SP-20260524-004 — also pass migrationsResult + decisions so the snapshot
+  // captures migrationsApplied[] (versioned migrations) + userModified[]
+  // (operator-modified file tracking).
   const newInstalled = buildInstalledSnapshot(
     target,
     capsule,
     applyResult,
     installed,
     targetRoot,
+    migrationsResult,
+    decisions,
   );
   fs.writeFileSync(installedFile, JSON.stringify(newInstalled, null, 2) + "\n");
 
