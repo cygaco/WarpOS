@@ -1,14 +1,14 @@
 schema: warpos/sprint/sprint-progress/v1
 sprint: SP-20260524-001
-updated_at: "2026-05-23T07:25:37.715Z"
-current_phase: retro
-current_command: "/sprint:full"
+updated_at: "2026-05-23T07:25:37.644Z"
+current_phase: retrospective
+current_command: "/sprint:retrospective"
 current_ticket: null
 current_task: null
 current_loop: null
 status: completed
-last_completed_step: sprint_full_retro_completed
-next_action: Sprint pipeline complete
+last_completed_step: retro_written
+next_action: review retro.md and amend synthesized sections
 active_files: []
 modified_files: []
 checks_last_run: null
@@ -20,7 +20,7 @@ external_services_needed: []
 issues_opened: []
 tickets_updated: []
 ralph_checkpoint: null
-resume_command: "/sprint:full --sprint SP-20260524-001 --resume"
-resume_notes: "Outcome=done"
+resume_command: "/sprint:retrospective --sprint SP-20260524-001 --review-only"
+resume_notes: "Retro written for SP-20260524-001. Status flipped: closed -> retrospected."
 safe_to_continue: true
 stop_reason: null

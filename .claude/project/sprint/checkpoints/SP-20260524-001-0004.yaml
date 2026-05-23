@@ -1,14 +1,14 @@
 schema: warpos/sprint/sprint-progress/v1
 sprint: SP-20260524-001
-updated_at: "2026-05-23T07:25:37.715Z"
-current_phase: retro
+updated_at: "2026-05-23T07:06:48.242Z"
+current_phase: execute
 current_command: "/sprint:full"
 current_ticket: null
 current_task: null
 current_loop: null
-status: completed
-last_completed_step: sprint_full_retro_completed
-next_action: Sprint pipeline complete
+status: halted
+last_completed_step: sprint_full_execute_halted
+next_action: "Cumulative cost estimate $5.25 exceeds threshold $5.00."
 active_files: []
 modified_files: []
 checks_last_run: null
@@ -21,6 +21,6 @@ issues_opened: []
 tickets_updated: []
 ralph_checkpoint: null
 resume_command: "/sprint:full --sprint SP-20260524-001 --resume"
-resume_notes: "Outcome=done"
+resume_notes: "halt_reason=cost_threshold"
 safe_to_continue: true
 stop_reason: null

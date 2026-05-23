@@ -41,6 +41,7 @@ Every `RL-*` at status=prepared OR =deployed. Each row links to the full `RL-*.y
 
 | Release | Sprint | Status | Target | Deployed | Notes |
 |---|---|---|---|---|---|
+| [RL-20260523-028](.claude/project/sprint/releases/RL-20260523-028.yaml) | [SP-20260524-001](.claude/project/sprint/sprints/SP-20260524-001/) | prepared | staging |  | Install fixture CI matrix — 5-scenario regression test suite for /warp:setup + /warp:update |
 | [RL-20260523-027](.claude/project/sprint/releases/RL-20260523-027.yaml) | [SP-20260523-003](.claude/project/sprint/sprints/SP-20260523-003/) | prepared | staging |  | Installer ownership manifest hook into /warp:setup — refuse writes to paths not in _warpos/MANIFEST.json |
 | [RL-20260523-026](.claude/project/sprint/releases/RL-20260523-026.yaml) | [SP-20260523-002](.claude/project/sprint/sprints/SP-20260523-002/) | prepared | staging |  | Three-layer settings compiler — _warpos/settings/defaults.json source migration + wire compile.js into /warp:setup + /warp:update |
 | [RL-20260523-025](.claude/project/sprint/releases/RL-20260523-025.yaml) | [SP-20260523-001](.claude/project/sprint/sprints/SP-20260523-001/) | prepared | staging |  | Fix current.yaml#status + active-sprints.yaml status lag after /sprint:full Phase 5 |
