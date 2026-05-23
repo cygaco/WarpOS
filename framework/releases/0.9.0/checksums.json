@@ -1,0 +1,10 @@
+{
+  "version": "0.9.0",
+  "generatedAt": "2026-05-23T07:48:26.463Z",
+  "commit": "8422761a81f6faa603543adeeaaebbe4898b30e2",
+  "entries": {
+    "changelog.md": "bd7e9ba2e016e912055bb8694fd252b6db01199832177dc4d61f156cca038c22",
+    "framework-manifest.json": "c2f024eff60fa3bdfe997aa425762bfd0ad8921828a987a006994e76b327f7c9",
+    "release.json": "787e3d605b4fc064a45899c95c66b48e95487025758d309e64fce7b66ef4fd63"
+  }
+}
