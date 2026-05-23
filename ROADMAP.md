@@ -24,6 +24,68 @@ WarpOS exists to help the maintainer ship real products faster while extracting 
 
 ---
 
+## 🏛 Milestones
+
+Major thematic checkpoints in WarpOS history. Each milestone names *what shifted in the engineering reality* of the framework at that point — not every patch, but the moments where a class of problem became newly solvable, or a class of bug became newly impossible. Reverse chronological.
+
+### 🟢 0.9.0 — Install Pipeline Reliability Checkpoint *(2026-05-23)*
+
+**The shift:** install/update went from "trust it, hope it works" to "instrumented + recoverable + regression-tested."
+
+Before this milestone, every framework change risked silently breaking the install pipeline downstream. After: the pipeline has a 5-scenario CI matrix (catches breakage in 18s, meta-test mode proves the matrix itself works), atomic snapshot rollback (filesystem-based, handles dirty repos), per-file status reporting (`added`/`repaired`/`unchanged`/`conflict`), idempotency (identical content → no copy), versioned migrations (skip already-applied on retry), userModified tracking (monotonic across updates), release-build refuses stale manifests (closes the ghost-files class at release-time), and four manifest-callers handle absence gracefully with actionable errors. Settings.json compiles from a layered `defaults + settings.local` model on canonical.
+
+Sprints: SP-20260524-001 (CI matrix) · SP-20260524-002 (T-183 + manifest cleanup) · SP-20260524-003 (per-file status) · SP-20260524-004 (versioned migrations + userModified).
+
+**Engineering reality unlocked:** future framework changes can land with confidence; the matrix is the safety net.
+
+### 🟢 0.8.x — Manifest-Driven Architecture *(2026-05-20 → 2026-05-23)*
+
+**The shift:** `.claude/` stopped being a content blob and became the compiled runtime interface of a manifest-declared framework.
+
+Before: ownership of every framework file was ambient/implicit; downstream products couldn't tell what they could safely edit vs what would be overwritten on update. After: `_warpos/MANIFEST.json` declares per-path ownership (framework | project | generated), with schema v1 + generator + validator + regenerator + 3-layer settings compiler + structural pre-commit gates. The `/warp:update --status` validator and installer-side manifest-coverage hook close the install→update loop. Migration bootstrap (`scripts/warpos/manifest/bootstrap.js`) seeds the manifest from existing installs.
+
+Sprints: SP-20260522-001/002/003 (architectural core) · SP-20260522-004/005 (migration bootstrap + `--status`) · SP-20260523-001/002/003 (status-lag fix + settings defaults migration + installer manifest hook).
+
+**Engineering reality unlocked:** ownership is no longer an oral tradition. Framework purity gates can refuse product-content leaks at write-time.
+
+### 🟢 0.7.x — Hardened Update Pipeline *(2026-05-14)*
+
+**The shift:** /warp:update gained transactional discipline at the release-build layer.
+
+Single content-hash surface (LF-normalized for text, raw for binary), sha256 untruncation across capsule boundaries (closes the 0.6.x prefix-only false-positive class), operator-override gates for yellow-vs-red preflight, release/apply separation. The "release build refuses to ship if framework-manifest disagrees with source" hardening starts here; closes in 0.9.0 with T-183.
+
+Sprint: SP-20260514-001 (hardened update pipeline).
+
+**Engineering reality unlocked:** capsules built from canonical no longer carry truncated-hash false positives downstream.
+
+### 🟢 0.5.x — Transactional /warp:update + Multi-Sprint Parallelism *(2026-05-13)*
+
+**The shift:** `/warp:update` apply got an atomic snapshot/lock/rollback envelope, and sprint workflow learned to run multiple sprints concurrently.
+
+`scripts/warpos/transaction.js` introduces the R-30..R-34 mitigations: undoRollback so rollback itself is transactional (R-30); atomic snapshot.json with hash verification (R-31); active.lock prevents concurrent transactions (R-32); fast preflight subset re-runs at begin (R-33); override flags pass through (R-34). Multi-sprint parallelism (SP-20260512-001) lets the sprint workflow handle ≥2 sprints in flight without trampling. /sprint:retrospective skill ships. Hybrid skill-suggestion mechanism (CLAUDE.md rule + smart-context ranker + telemetry).
+
+Sprints: SP-20260512-001 (multi-sprint parallelism) · SP-20260513-001..005 (bootstrap, provider smoke, organic skills, retrospective, hardened update).
+
+**Engineering reality unlocked:** interrupted /warp:update apply leaves recoverable breadcrumbs instead of partial state. Multiple sprints can ship in parallel without artifact collisions.
+
+### 🟢 0.4.0 — Sprint Workflow v0.1 *(2026-04-21 → 2026-05-02)*
+
+**The shift:** product work became a first-class, ledger-tracked operation distinct from raw agent dispatch.
+
+Four-command sprint workflow (`/sprint:plan`, `/sprint:design`, `/sprint:execute`, `/sprint:release`) introduced as a structured layer above the raw mode system (solo/adhoc/oneshot). Plan Contracts, requirements bundles, tickets, approvals, releases — all schema-validated, evidence-labeled, crash-recoverable. Several patch releases (0.4.1/2/3/4) chase install bugs that surfaced once the sprint workflow exposed the install pipeline to more traffic.
+
+**Engineering reality unlocked:** "what shipped, when, why, by whom" became answerable from on-disk artifacts instead of conversation history.
+
+### 🟢 0.1.0 — Genesis *(April 2026)*
+
+**The shift:** WarpOS exists.
+
+Registry-driven hooks, transactional update foundation (pre-R-30/R-31 era — bare `--apply` semantics), three-mode dispatch (solo, adhoc, oneshot), agent system with Alex α/β/γ/δ identities, paths registry as single source of truth, memory stores (events / learnings / traces / systems / maps), the first cut of `_requirements/` + `_docs/`.
+
+**Engineering reality unlocked:** a Claude Code project gains an opinionated, persistent, self-aware operating system instead of an ad-hoc bag of skills.
+
+---
+
 ## 🎯 Sprint Pickup Queue (next session)
 
 **Session of 2026-05-22/23 closed eight framework sprints + verified one product sprint already-shipped.** Sprint Pickup Queue is fresh. Per-sprint breakdown in the two "Shipped in" blocks below: SP-20260522-001/002/003 (architectural core: schema v1 + generator + validator + regenerator + settings compiler + structural gates + canonical pre-commit), SP-20260522-004/005 (migration bootstrap + `/warp:update --status`), and SP-20260523-001/002/003 (status-lag fix + settings defaults migration + installer manifest hook). DreamTeam SP-20260522-001..010 were verified already-shipped in a prior session (10 commits on `vlad` branch, 91/91 tests passing). 50 new tests added across the SP-20260523 batch, all green. Manifest 2081 paths, validate --strict clean.
