@@ -1,0 +1,123 @@
+schema: warpos/sprint/current-sprint/v1
+id: SP-20260523-002
+title: "Three-layer settings compiler — _warpos/settings/defaults.json source migration + wire compile.js into /warp:setup + /warp:update"
+objective: "(set by /sprint:plan)"
+status: releasing
+created_at: "2026-05-23T03:59:33.281Z"
+updated_at: "2026-05-23T04:03:07.642Z"
+source_request: "Fix the status lag bug where active-sprints.yaml and current.yaml stay at status=planning/designing/releasing even after /sprint:full Phase 5 (retrospective) completes. Caught it during SP-004 + SP-005 — had to manually patch active-sprints.yaml after each sprint finished."
+interpreted_intent: "When /sprint:full runs all 5 phases to completion, both current.yaml (per-sprint state) and active-sprints.yaml#sprints[id].status (registry) should advance to 'retrospected'. Today they remain stuck at an earlier phase. Likely root cause: retrospective.js falls through with exit 3 (skeleton mode) without updating either file. Fix: in retrospective.js (or sprint/full.js Phase 5 wrapper), after retrospective completes (success OR skeleton-skip), explicitly call status updaters for current.yaml AND active-sprints.yaml. Add a test that runs /sprint:full end-to-end against a fixture and asserts both files reach 'retrospected'."
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260523-0031.yaml"
+risk_level: low
+approval_state: none_required
+current_phase: release
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+lane:
+  type: default
+  value: null
+  isolation_notes: ""
+external_services:
+  identified: []
+  blocked: []
+  ready: []
+  mocked: []
+  deferred: []
+tickets:
+  proposed: []
+  planned: []
+  designed: []
+  ready_for_execution: []
+  in_progress: []
+  blocked: []
+  waiting_on_human: []
+  waiting_on_external_service: []
+  in_review: []
+  qa_failed: []
+  redteam_failed: []
+  done:
+    - T-20260523-199
+    - T-20260523-200
+    - T-20260523-201
+  released: []
+  deferred: []
+  abandoned: []
+  reopened: []
+  superseded: []
+requirements:
+  prd: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260523-002\\prd.md"
+  high_level_stories: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260523-002\\high-level-stories.md"
+  granular_stories: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260523-002\\granular-stories.md"
+  copy: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260523-002\\copy.md"
+  inputs: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260523-002\\inputs.md"
+  trace: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260523-002\\trace.md"
+  acceptance_criteria: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260523-002\\acceptance-criteria.md"
+  qa_plan: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260523-002\\qa-plan.md"
+  redteam_plan: null
+  release_plan: null
+checks:
+  lint:
+    status: not_run
+    last_run: null
+    evidence: ""
+  typecheck:
+    status: not_run
+    last_run: null
+    evidence: ""
+  tests:
+    status: not_run
+    last_run: null
+    evidence: ""
+  build:
+    status: not_run
+    last_run: null
+    evidence: ""
+  qa:
+    status: not_run
+    last_run: null
+    evidence: ""
+  redteam:
+    status: not_run
+    last_run: null
+    evidence: ""
+approvals:
+  plan:
+    required: false
+    state: not_required
+    ref: null
+  design:
+    required: false
+    state: not_required
+    ref: null
+  execution:
+    required: false
+    state: not_required
+    ref: null
+  release:
+    required: false
+    state: not_required
+    ref: null
+  external_services:
+    required: false
+    state: not_required
+    ref: null
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260523-0031.report.md"
+  design: null
+  execution: null
+  release: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\releases\\RL-20260523-026.yaml"
+ralph:
+  active: false
+  current_ticket: null
+  current_loop: null
+  status: idle
+  last_checkpoint: null
+  next_action: null
+crash_recovery:
+  last_checkpoint: ".claude/project/sprint/sprint-progress.yaml"
+  resume_command: "/sprint:release"
+  resume_summary: "Release RL-20260523-026 in preparing state. Run /sprint:release with --id RL-20260523-026."
+  active_files: []
+  dirty_state: false
+  blockers: []
+  safe_to_continue: true

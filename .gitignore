@@ -35,6 +35,11 @@ DUMP.md
 
 # WarpOS transaction snapshots (SP-20260513-005 — per-update, per-machine)
 .warpos/transactions/
+# Plan-payload scratch input to /sprint:plan + /sprint:full orchestrator.
+# Durable record lives at paths.sprintPlanContracts/PC-*.yaml; these scratch
+# files often carry product slugs from the brief and would trip the
+# framework-purity guard if committed.
+.warpos/plan-payload-*.json
 runtime/qa-warp-update/
 
 # Portfolio briefs + clones — local-only until adopted into private sibling repos
