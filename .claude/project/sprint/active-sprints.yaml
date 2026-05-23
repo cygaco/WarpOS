@@ -1,5 +1,5 @@
 schema: warpos/sprint/active-sprints/v1
-primary: SP-20260523-003
+primary: SP-20260524-001
 sprints:
   - id: SP-20260512-001
     title: Multi-sprint parallelism for Sprint Workflow
@@ -287,5 +287,16 @@ sprints:
     pointer: ".claude/project/sprint/sprints/SP-20260523-003"
     created_at: "2026-05-23T04:03:22.211Z"
     updated_at: "2026-05-23T04:06:14.745Z"
+  - id: SP-20260524-001
+    title: "Install fixture CI matrix — 5-scenario regression test suite for /warp:setup + /warp:update"
+    status: planning
+    lane:
+      type: default
+      value: null
+      isolation_notes: ""
+    layout: per_sprint_subdir
+    pointer: ".claude/project/sprint/sprints/SP-20260524-001"
+    created_at: "2026-05-23T06:47:18.575Z"
+    updated_at: "2026-05-23T06:47:18.575Z"
 created_at: "2026-05-12T22:57:35.667Z"
-updated_at: "2026-05-23T04:06:14.745Z"
+updated_at: "2026-05-23T06:47:18.575Z"

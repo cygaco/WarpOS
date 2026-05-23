@@ -1,0 +1,169 @@
+schema: warpos/sprint/plan-contract/v1
+id: PC-20260523-0034
+created_at: "2026-05-23T06:48:53.390Z"
+updated_at: "2026-05-23T06:48:53.390Z"
+sprint: SP-20260524-001
+source_request: "Install fixture CI matrix — build a 5-scenario regression test suite for /warp:setup + /warp:update covering: (1) clean install on a fresh project, (2) /warp:update against an existing install, (3) /warp:update preserving dirty-uncommitted operator changes, (4) multi-version-upgrade across migration boundaries, (5) /warp:update preserving user-customized framework files. Wire the matrix into the existing test runner so install-pipeline changes regress automatically. Highest-leverage pick from the install reliability batch because it protects every other install-reliability item from regression — both the items already shipped (rollback snapshot, dry-run gating, settings compiler, manifest generator/validator) and the items still pending (per-file status reporting, migrations + userModified, release-build.js stale-manifest refusal, .claude/manifest.json always-present cleanup)."
+source_request_verbatim: |
+  A
+  
+  (References option A from the install-reliability scope menu presented earlier in the session: 'Install fixture CI matrix (5 scenarios: clean / existing-install / dirty-uncommitted / multi-version-upgrade / user-overrides) — highest leverage long-term because it tests/protects all the other items shipped or pending. Self-contained sprint, 5 well-scoped scenarios.')
+request_type: feature_add
+interpreted_intent: "Author scripts/warpos/test-install-matrix.js: a fixture-based runner that spins up 5 ephemeral fixture projects (in .warpos/test-fixtures/install-matrix/ or os.tmpdir(), gitignored), runs the appropriate /warp:setup or /warp:update flow per scenario, asserts the expected post-state (files present/matching defaults, transaction snapshot exists, settings.json --check clean, manifest honest, operator overrides preserved, etc.), cleans up after each scenario, and emits a structured pass/fail report. Wired into the existing canonical test gauntlet (likely via npm script + addition to /check:all or framework manifest gates). Each scenario is independent and parallelizable."
+user_or_business_outcome: "Future install-reliability work — per-file status reporting (added/repaired/unchanged/conflict), versioned migrations with userModified tracking, release-build.js refusing stale manifests, .claude/manifest.json always-present + 4 hardcoded-caller cleanup — can land with confidence because the matrix catches regressions in <60 seconds. Maintainer stops having to mentally simulate 5 install scenarios for every framework-side change. Downstream products updating via capsule trust the install pipeline more."
+affected_surfaces:
+  - surface: "scripts/warpos/test-install-matrix.js (new — fixture-matrix runner)"
+    evidence_level: assumed_from_request
+  - surface: "scripts/warpos/test-fixtures/install-matrix/ (new — scenario definitions, expected-state assertions)"
+    evidence_level: assumed_from_request
+  - surface: ".warpos/test-fixtures/install-matrix/ (new — ephemeral fixture roots, gitignored)"
+    evidence_level: inferred_from_repo
+    notes: ".warpos/ is already gitignored per .gitignore convention used by existing tests (test-compile-fixtures, transactions/, etc.)"
+  - surface: "scripts/warpos/update.js (read — System Under Test, not modified)"
+    evidence_level: verified_from_repo
+  - surface: "scripts/warpos/transaction.js (read — exercised by tests for snapshot/rollback assertions)"
+    evidence_level: verified_from_repo
+  - surface: "scripts/warp-setup.js (read — exercised by clean-install scenario)"
+    evidence_level: inferred_from_repo
+  - surface: "scripts/warpos/settings/compile.js (read — exercised by tests for settings.json --check clean)"
+    evidence_level: verified_from_repo
+  - surface: "scripts/warpos/manifest/validate.js (read — exercised for manifest honesty assertion)"
+    evidence_level: verified_from_repo
+  - surface: "framework/releases/<X.Y.Z>/release.json (read — multi-version-upgrade scenario consumes existing capsules OR synthesizes tiny test capsules)"
+    evidence_level: verified_from_repo
+  - surface: "package.json or test runner config (modify — wire new test into npm script + gauntlet entries)"
+    evidence_level: assumed_from_request
+  - surface: ".claude/paths.json (modify — add paths.testInstallMatrix key, optional)"
+    evidence_level: assumed_from_request
+  - surface: "ROADMAP.md (update on ship — mark scenario A done)"
+    evidence_level: verified_from_repo
+current_behavior:
+  evidence_level: verified_from_repo
+  notes: "scripts/warpos/ has 3 narrow tests of the install pipeline: test-cross-version-replay.js (cross-version capsule replay), test-transaction-smoke.js (transaction begin/commit/rollback shape), test-rollback-cli-smoke.js (--rollback CLI). No end-to-end fixture matrix that exercises /warp:setup + /warp:update against representative real-world install scenarios. Regressions in install/update flow currently only surface when an operator runs the real install against a real product — too late."
+desired_behavior: "Running `node scripts/warpos/test-install-matrix.js` (or via npm/gauntlet) spins up 5 ephemeral fixture projects, runs the appropriate install/update path per scenario, asserts the expected post-state, cleans up, and reports pass/fail with structured per-scenario output. JSON-report mode for CI consumption. Exit 0 on full pass, non-zero with per-scenario failure detail otherwise. Total runtime target <60s for the full matrix; parallelize per-scenario when safe."
+scope:
+  size: m
+  risk_level: medium
+  complexity_drivers:
+    - "5 scenarios × N assertions each — scenario authoring is the bulk of the work"
+    - "Multi-version-upgrade requires having ≥2 real capsules OR synthesizing minimal test capsules (which itself is a non-trivial helper)"
+    - "Fixture lifecycle (create, isolate, cleanup) must be airtight — bad cleanup leaves test detritus that breaks subsequent runs"
+    - "Meta-testing: must verify the matrix actually catches intentional regressions, not just always passes"
+scope_variants:
+  minimal_safe:
+    summary: "3 scenarios only — clean install, existing-install upgrade, dirty-uncommitted preservation. No multi-version-upgrade (skip the synthesize-capsules complexity). No CI wire-in (manual invocation only). Single sequential runner, no parallelization. Ships fastest."
+    tradeoffs:
+      - "Misses multi-version-upgrade — the most error-prone real-world scenario"
+      - "Misses user-overrides preservation — tests the operator-modified file path"
+      - No CI wire-in means easy to forget to run before shipping install changes
+      - "But: validates the fixture-matrix pattern itself with 3 representative scenarios"
+  recommended:
+    summary: "All 5 scenarios. JSON report mode + human report mode. Wired into the existing test gauntlet (npm test + /check:all entry). paths.testInstallMatrix key registered. Meta-tests verify the matrix detects 2-3 intentional regressions (planted bug fixtures). Parallel-safe per-scenario execution. Cleanup-on-error to avoid orphan fixtures."
+    tradeoffs:
+      - More ship time than minimal_safe
+      - Full safety net for every install-reliability item shipping after this sprint
+      - "Multi-version-upgrade scenario adds the synthesize-capsules helper as a side-deliverable that's useful for future tests too"
+  expanded:
+    summary: "Recommended + property-based fuzz mode (random file sets across scenarios to surface combinatorial bugs) + GitHub Actions workflow wiring + scenario-coverage reporting (which install-flow code paths are exercised vs unreached)."
+    tradeoffs:
+      - "Property-fuzz tooling is a separate skill; brings its own flake/maintenance cost"
+      - "GitHub Actions wiring requires repo-public release first (or a private actions runner) — not strictly canonical-side work"
+      - "Coverage reporting needs nyc/c8 integration — adds dependencies"
+assumptions:
+  safe:
+    - ".warpos/ is gitignored (confirmed in repo) — fixtures land there safely without polluting the working tree"
+    - "scripts/warpos/update.js + transaction.js + snapshot-installed.js are stable per SP-20260513-005 retro and the 3 existing smoke tests"
+    - scripts/warpos/settings/compile.js is stable per 51/51 tests passing this session
+    - "scripts/warpos/manifest/validate.js is stable per Sprint 1 (SP-20260522-001) retrospective (18+ tests passing)"
+    - "spawnSync + os.tmpdir() pattern is portable (already used by test-defaults-migration.js)"
+    - "The 5 scenarios named in ROADMAP cover the operational risk surface — derived from prior incident history"
+  unsafe:
+    - "Multi-version-upgrade scenario assumes ≥2 real capsules exist on disk OR a synthesize-capsules helper can be authored. Need to verify framework/releases/ contents during design"
+    - "Total matrix runtime target <60s assumes scenarios can run in parallel without lock contention on .warpos/. If active.lock check forces serialization, runtime could balloon"
+    - "Cleanup-on-test-crash relies on process.on('exit') handlers; on hard SIGKILL, orphan fixtures may persist — not catastrophic (gitignored) but messy"
+  needs_user_or_beta_review:
+    - "Fixture root location: .warpos/test-fixtures/install-matrix/ (repo-local, easier to inspect after failures) vs os.tmpdir() (OS-managed cleanup, more portable). Default lean: .warpos/ for inspectability"
+open_questions:
+  blocking: []
+  non_blocking:
+    - "Wire-in target: npm test, /check:all, framework-manifest gauntlet, or all three?"
+    - "Synthesize minimal test capsules vs use existing framework/releases/ capsules for multi-version-upgrade?"
+    - "Meta-test approach: snapshot expected-pass + run with planted regression to confirm matrix catches it, OR formal mutation testing?"
+    - "Per-scenario timeout default — 30s? 60s? Per-scenario or matrix-wide?"
+non_goals:
+  - "Do NOT modify scripts/warpos/update.js, transaction.js, snapshot-installed.js, settings/compile.js, manifest/build.js, manifest/validate.js — these are the SUT, not the test"
+  - "Do NOT add new install flows or new behavior to the install pipeline — test-only sprint"
+  - "Do NOT test downstream-product-specific scenarios — downstream products are responsible for their own install testing"
+  - "Do NOT touch Dreamteam or other portfolio products (operator constraint)"
+  - "Do NOT build full property-based fuzz mode (that's expanded variant)"
+requirement_areas:
+  - "Test runner (scripts/warpos/test-install-matrix.js) — fixture lifecycle + per-scenario dispatch + report aggregation"
+  - "Scenario definitions — 5 scenarios with seed state + post-state assertions"
+  - "Ephemeral fixture infrastructure — create/isolate/cleanup primitives reusable across scenarios"
+  - "Multi-version-upgrade support — capsule sourcing or synthesis helper"
+  - "JSON + human report modes"
+  - "CI wire-in (npm script + gauntlet entry)"
+  - "Meta-tests — verify matrix detects planted regressions"
+high_level_story_candidates:
+  - "As a maintainer landing install-reliability changes, I run a single command and know within 60s whether my change broke any of 5 representative install scenarios."
+  - "As a CI gate, the matrix runs on every commit touching scripts/warpos/* or scripts/warp-setup.js, fails the build on regression with structured per-scenario failure detail."
+  - "As a future install-reliability sprint (per-file status reporting, migrations + userModified, etc.), I land my change knowing the matrix protects against regressions in the 5 baseline scenarios."
+granular_story_candidates:
+  - "Scaffold scripts/warpos/test-install-matrix.js with fixture lifecycle (create, run, assert, cleanup) primitives"
+  - "Define scenario 1 (clean install): create empty fixture project, run /warp:setup, assert all framework files present + manifest honest + settings.json --check clean"
+  - "Define scenario 2 (existing-install upgrade): seed fixture with prior-version install, run /warp:update --to <newer>, assert post-state matches new version"
+  - "Define scenario 3 (dirty-uncommitted preservation): seed fixture with install + operator edit to a framework file, run /warp:update, assert operator edit preserved (or properly conflicted)"
+  - "Define scenario 4 (multi-version-upgrade): seed fixture with install at version N, run /warp:update --to N+3, assert all intermediate migrations ran in order"
+  - "Define scenario 5 (user-overrides preservation): seed fixture with install + operator settings.local.json overrides + permissions overrides, run /warp:update, assert overrides survive"
+  - Synthesize test-capsules helper OR document which framework/releases/ versions to chain for scenario 4
+  - "JSON report mode for CI (--json flag emitting structured per-scenario result)"
+  - "Wire-in: npm script (npm run test:install-matrix) + gauntlet entry"
+  - "Meta-tests: plant a regression (e.g., delete a hook from defaults.json mid-install) and confirm matrix catches it"
+workstream_candidates:
+  - "Runner + fixture primitives"
+  - "Scenario authoring (5 scenarios)"
+  - Multi-version capsule synthesis or sourcing
+  - "Reporting + JSON mode"
+  - "CI wire-in + path key"
+  - Meta-tests
+preliminary_ticket_candidates:
+  allowed: false
+  notes: "Sprint-scale (size=m, multiple workstreams). Tickets minted by /sprint:design after the design phase expands scenarios + assertions into testable units."
+  candidates: []
+external_service_dependencies:
+  status: none_expected
+  required: []
+  possible: []
+  notes: "Test infrastructure only — no external service signups, billing, or credentials needed. Optionally GitHub Actions for CI wire-in but that's expanded variant and not strictly canonical-side."
+approval_boundaries: []
+design_required: true
+execution_allowed_without_design: false
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+lane:
+  type: default
+  value: null
+  isolation_notes: ""
+beta_review:
+  required: true
+  likely_founder_rejection_risks:
+    - "Risk: matrix becomes flaky and gets disabled by default — sized via meta-tests + cleanup-on-error"
+    - "Risk: matrix runtime drifts past 60s and friction kills adoption — sized via per-scenario timeout + parallel execution"
+  overbuild_risks:
+    - "Building property-based fuzz mode (expanded variant) before the basic 5 scenarios prove themselves"
+    - "Over-abstracting fixture primitives — should be straightforward, not a framework"
+  missing_context_risks:
+    - "Multi-version-upgrade scenario depends on capsule availability — design phase must resolve sourcing"
+plan_quality:
+  status: pass
+  confidence: high
+next_recommended_command: "/sprint:design --sprint SP-20260524-001"
+resume_instructions: "If session crashes during /sprint:plan, re-run /sprint:plan with the same args — the new Plan Contract gets a fresh PC id and supersedes. After this contract lands, next step is /sprint:design --sprint SP-20260524-001 to expand scenarios into requirements + stories + tickets. Then /sprint:execute or /sprint:full to ship."
+tracker_paths:
+  current_sprint: ".claude/project/sprint/current-sprint.yaml"
+  sprint_progress: ".claude/project/sprint/sprint-progress.yaml"
+  plan_contract: ".claude/project/sprint/plan-contracts/PC-20260523-0034.yaml"
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260523-0034.report.md"
+created_by: alpha
+updated_by: alpha

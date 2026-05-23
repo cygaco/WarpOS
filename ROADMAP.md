@@ -36,8 +36,9 @@ Highest-leverage picks, each self-contained:
 
 - **[open] Maintainer canonical scrub orchestration.** *Operator-scoped — framework cannot self-execute.* Create new PRIVATE GitHub repo for WarpOS-as-product specs, move `_requirements/00-canonical/*`, product-titled `_requirements/03-architecture/*`, `_docs/research|briefs|clones|imports/*` into it. Once done, flip `ROOT_LEAK_PENDING_SCRUB=false` in `framework-purity.js` and the gate starts blocking `_requirements/`/`_docs/` at canonical root entirely. A `/portfolio:new --slug warpos-as-product` + documented checklist scaffolds the start.
 - **[open] Install & release reliability batch (splits into 2-3 sprints).** Remaining sub-items from the "Install & Release Integrity" backlog that didn't ship in SP-20260522-002/005 or SP-20260523-002/003:
-  - Rollback snapshot for `/warp:update` — restorable snapshot of touched framework files (not git-only — handles dirty repos)
-  - `/warp:update --dry-run + diff` gating writes in all paths (currently `--dry-run` is parsed but doesn't gate every write site)
+  - **[shipped — SP-20260513-005]** Rollback snapshot for `/warp:update`. *(Verified 2026-05-24: `scripts/warpos/transaction.js` writes pre-apply backups in `.warpos/transactions/<txId>/backup/`, filesystem-based — handles dirty repos. R-31 atomic snapshot hash, R-32 active.lock, R-33 fast preflight re-run on begin, R-34 override pass-through. Auto-rollback on apply failure at `update.js:1005`. Manual `/warp:update --rollback <txId>` CLI at `update.js:1214+`.)*
+  - **[shipped — SP-20260513-005]** `/warp:update --dry-run` gating. *(Verified 2026-05-24: `update.js:741-847` — dryRun gate returns early at line 824 before any apply / preflight / transaction begin. Everything above 824 is reads-only — classify, summarize, planClass. Everything below is transactional.)*
+  - **[next sprint candidate]** `/warp:update --dry-run + diff` enhancement — file-level diffs in preview, not just counts/samples. Polish on top of existing dry-run.
   - Install fixture CI matrix (5 scenarios: clean / existing-install / dirty-uncommitted / multi-version-upgrade / user-overrides)
   - Idempotent install with per-file status reporting (`added` / `repaired` / `unchanged` / `conflict`)
   - Versioned migrations + user-override tracking wired into MANIFEST `userModified` field
@@ -89,6 +90,7 @@ Every sprint that has been planned, executed, released, or retrospected — one 
 
 | Sprint | Title | Status | Started | Closed | Release |
 |---|---|---|---|---|---|
+| [SP-20260524-001](.claude/project/sprint/sprints/SP-20260524-001/) | Install fixture CI matrix — 5-scenario regression test suite for /warp:setup + /warp:update | planning | 2026-05-23T06:47:18.575Z |  |  |
 | [SP-20260523-003](.claude/project/sprint/sprints/SP-20260523-003/) | Installer ownership manifest hook into /warp:setup — refuse writes to paths not in _warpos/MANIFEST.json | retrospected | 2026-05-23T04:03:22.211Z | 2026-05-23T04:06:14.733Z |  |
 | [SP-20260523-002](.claude/project/sprint/sprints/SP-20260523-002/) | Three-layer settings compiler — _warpos/settings/defaults.json source migration + wire compile.js into /warp:setup + /warp:update | retrospected | 2026-05-23T03:59:17.677Z | 2026-05-23T04:03:07.817Z |  |
 | [SP-20260523-001](.claude/project/sprint/sprints/SP-20260523-001/) | Fix current.yaml#status + active-sprints.yaml status lag after /sprint:full Phase 5 | retrospected | 2026-05-23T03:54:05.825Z | 2026-05-23T03:58:52.236Z |  |
