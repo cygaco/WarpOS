@@ -1,0 +1,175 @@
+schema: warpos/sprint/plan-contract/v1
+id: PC-20260523-0037
+created_at: "2026-05-23T08:35:00.855Z"
+updated_at: "2026-05-23T08:35:00.855Z"
+sprint: SP-20260525-003
+source_request: "Orchestrator→Beta bridge — sprint 1 of milestone 0.11.0 Sprint Workflow Honesty. Choose and ship one of two designs: (a) dispatch-from-subprocess pattern that lets spawnSync-d node reach in-process Beta teammates, or (b) halt-at-each-Beta-boundary pattern where the orchestrator pauses at each Phase boundary and resumes after operator-driven Beta consult."
+source_request_verbatim: "Orchestrator→Beta bridge — sprint 1 of milestone 0.11.0 Sprint Workflow Honesty. /sprint:full currently emits placeholder DECIDE events without actual SendMessage round-trip to Beta — the subprocess can't easily reach in-process teammates. Design + ship one of: (a) dispatch-from-subprocess pattern (orchestrator runs as spawnSync-d node, gains a bridge to in-process teammates), or (b) halt-at-each-Beta-boundary (orchestrator halts at each Phase boundary, operator runs Beta consult interactively, then resumes). Either way, _docs/sprint/AUTONOMY.md cadence becomes enforced. Autonomy: aggressive. Mode: adhoc."
+request_type: architecture_change
+interpreted_intent: "`scripts/sprint/full.js` currently writes `sprint_full_beta_consult` events with placeholder verdicts (DECIDE) without actually invoking Beta via SendMessage. The subprocess can't reach in-process teammates because the Agent/SendMessage tool surface lives in the Claude Code runtime, not in node-spawned subprocesses. Two architectures resolve this: (a) build a subprocess-to-runtime bridge (file-drop-and-poll, named pipe, HTTP localhost) so the orchestrator's subprocess can drop a consult-request and the runtime picks it up + dispatches Beta + drops the verdict back, OR (b) restructure /sprint:full so it halts the subprocess at each Beta boundary, exits with a checkpoint, and the operator (or Alpha in the foreground) drives the Beta consult interactively before resuming. Design pass chooses (a) or (b) based on operator UX + crash-recovery + simplicity tradeoffs."
+user_or_business_outcome: "Every `sprint_full_beta_consult` event in `events.jsonl` reflects an actual SendMessage round-trip to Beta with a real verdict (DECIDE | DIRECTIVE | ESCALATE) and real reasoning. The operator can `grep events.jsonl | jq` to audit β-consultation cadence and see it matches `_docs/sprint/AUTONOMY.md`'s declared policy. ESCALATE verdicts halt the sprint reliably. The autonomy ladder rungs become load-bearing instead of decorative."
+affected_surfaces:
+  - surface: scripts/sprint/full.js
+    evidence_level: verified_from_repo
+    notes: "Contains current placeholder beta-consult emission. Either rewrite to call bridge (option a) or restructure to halt at boundaries (option b). Halt mechanism + checkpoint format already exists per existing tickets_pending halt pattern."
+  - surface: "scripts/dispatch/send-message.js (or equivalent bridge surface)"
+    evidence_level: unknown
+    notes: "Option (a) requires a subprocess→runtime channel. Investigate during design: does any existing script already bridge subprocess work to in-process tools? If so, reuse; otherwise design from scratch."
+  - surface: ".claude/agents/00-alex/beta.md"
+    evidence_level: verified_from_repo
+    notes: "Beta's agent spec — receiving end of consultations. May need a documented input contract for sprint-phase-boundary consults (already exists per CLAUDE.md § β consultation protocol but verify completeness)."
+  - surface: _docs/sprint/AUTONOMY.md
+    evidence_level: verified_from_repo
+    notes: "Currently declares cadence as aspirational. After this sprint: remove `aspirational` disclaimer (or move to historical note). Add: 'enforced by /sprint:full via [chosen pattern]; verify via paths.eventsFile | jq 'kind=sprint_full_beta_consult'`."
+  - surface: scripts/sprint/checkpoint.js
+    evidence_level: verified_from_repo
+    notes: "Option (b) requires checkpoint format to capture mid-phase Beta-pending state. Today checkpoints support phase-boundary halts (tickets_pending) — extend for beta-pending."
+  - surface: scripts/sprint/test-sprint-full.js
+    evidence_level: verified_from_repo
+    notes: "Add tests: (1) consult-request format validates; (2) ESCALATE verdict triggers hard halt; (3) DIRECTIVE verdict updates downstream behavior; (4) DECIDE verdict continues unchanged; (5) bridge timeout (option a) or resume contract (option b) tested."
+  - surface: "paths.eventsFile (events.jsonl)"
+    evidence_level: verified_from_repo
+    notes: "Event consumer-side. New event subtype `sprint_full_beta_consult` schema: { sprint_id, phase_boundary, verdict, beta_message, alpha_request, latency_ms, model }. Today only an empty placeholder."
+current_behavior:
+  evidence_level: verified_from_repo
+  notes: "Per ROADMAP.md milestone 0.11.0 entry + 'Sprints feeding this' bullet 1: '`/sprint:full` emits DECIDE events without actually SendMessage-ing Beta — the subprocess can't easily reach in-process teammates.' Per existing 'open' note in roadmap section 'Shipped in SP-20260522-001/002/003': 'orchestrator emits the event without actually SendMessage-ing Beta. Honest halt approach pending a dispatch-from-subprocess design'. Honest halts (Phase 2 tickets_pending, Phase 3 no_tickets_ready, Phase 4 no_tickets_done) ARE implemented and tested. The gap is specifically the Beta SendMessage round-trip."
+desired_behavior: "After sprint completion: (1) chosen pattern (a or b) is implemented end-to-end in /sprint:full; (2) Every Phase-boundary Beta-consult produces a real `sprint_full_beta_consult` event with non-placeholder verdict + beta_message + latency_ms; (3) ESCALATE verdict triggers `sprint_full_halt` with `halt_reason: beta_escalate`; (4) DIRECTIVE verdict applies the directive to downstream phase behavior (e.g., 'skip Phase 3, halt for operator review'); (5) DECIDE verdict continues unchanged; (6) `_docs/sprint/AUTONOMY.md` Beta cadence line removes 'aspirational' disclaimer; (7) `scripts/sprint/test-sprint-full.js` includes a Beta-consult contract test that exercises all 3 verdict paths."
+scope:
+  size: l
+  risk_level: medium-high
+  complexity_drivers:
+    - "Architectural choice between two valid patterns (a) bridge vs (b) halt — design has real tradeoff"
+    - "Option (a) introduces a new IPC surface — must handle timeouts, crashes, security"
+    - "Option (b) changes the resumption contract — checkpoint format extends, operator UX changes"
+    - "Testing requires either Beta dispatch mock or actual β invocation (slow + costs API budget)"
+    - "Backward-compatibility: existing sprint full-reports have placeholder events — should we backfill or just start fresh?"
+scope_variants:
+  minimal_safe:
+    summary: "Option (b) halt-at-each-Beta-boundary. /sprint:full halts at each Phase boundary with `halt_reason: beta_consult_pending`, writes checkpoint with `pending_consult: { phase, alpha_request_payload }`. Operator runs `/sprint:full --sprint <id> --beta-verdict DECIDE|DIRECTIVE|ESCALATE --beta-message '<text>'` to provide the verdict and resume. Implementation: extend CLI args, extend checkpoint schema, extend halt-report COPY. No bridge IPC complexity."
+    tradeoffs:
+      - "Pro: minimal architectural change — reuses halt + resume primitives"
+      - "Pro: zero IPC surface; no crash/timeout/security concerns"
+      - "Pro: operator stays in the loop on every Beta consult (acceptable for current sprint volume)"
+      - "Con: more operator keystrokes per sprint (~4 extra halts/resumes per sprint)"
+      - "Con: 'autonomous orchestrator' becomes 'semi-autonomous with operator-driven Beta consults'"
+  recommended:
+    summary: "Option (a) dispatch-from-subprocess via simple file-drop polling. Orchestrator drops `consult-request-<phase>.json` in `paths.betaInbox/`, polls `paths.betaInbox/consult-verdict-<phase>.json` with timeout (default 5min). Runtime (smart-context or a new poller-hook) picks up requests, dispatches Beta via Agent, writes verdict. No long-running listener; file-drop is cron-able + tracked via existing event sinks. Includes timeout halt with `halt_reason: beta_consult_timeout` and clear remediation."
+    tradeoffs:
+      - "Pro: orchestrator stays autonomous — no operator interruption per Beta consult"
+      - "Pro: file-drop pattern is observable + crash-safe (lost verdict file = retry)"
+      - "Pro: bridge surface is small — JSON files, no network or named pipes"
+      - "Con: runtime-side poller hook is new infrastructure — needs design + test"
+      - "Con: cross-process state coordination has classic race-condition pitfalls (mitigated by single-writer + atomic rename)"
+  expanded:
+    summary: "recommended + persistent runtime poller that watches `paths.betaInbox/` continuously (PostToolUse hook + background) + Beta-consult batching (multiple consult-requests dispatch in parallel) + verdict caching (skip Beta if previous consult on same phase + same hashed input verdicts DECIDE within last N minutes) + telemetry dashboard (per-sprint Beta consult latency histogram)."
+    tradeoffs:
+      - "Pro: optimizes the autonomous path — Beta consults are fast + cached"
+      - "Pro: caching reduces β API spend"
+      - "Con: ~3× the surface area; background poller risks zombie processes"
+      - "Con: caching introduces correctness risk — stale verdict on changed input"
+assumptions:
+  safe:
+    - "Existing halt + resume primitives in /sprint:full are reliable — beta_consult_pending is a new halt_reason but uses the same machinery"
+    - "`paths.eventsFile` is the right place for `sprint_full_beta_consult` events — already declared in CLAUDE.md § Memory + Prompt Pipeline"
+    - "Beta's input contract (`.claude/agents/00-alex/beta.md`) accepts arbitrary sprint-context payloads"
+    - "Operator is willing to absorb 4 extra halts per sprint (option b) OR willing to trust autonomous bridge (option a) — design phase picks based on operator preference"
+  unsafe:
+    - "Option (a)'s runtime-side poller is new — investigate whether smart-context or another existing hook can host it without becoming a perpetual-running process"
+    - Beta dispatch via Agent tool from a subprocess context may have permission / authentication / quota constraints not yet tested
+    - "ESCALATE verdict must reliably halt — test must prove this; an unhandled ESCALATE that continues silently would defeat the milestone"
+  needs_user_or_beta_review:
+    - "Choose between option (a) and option (b) — operator decision. Recommend (b) minimal_safe for first ship, (a) recommended if operator UX is the bigger concern"
+    - "Confirm Beta consult cadence: at all 4 Phase boundaries OR only at the 2 most consequential (post-plan, post-execute)?"
+    - "Backward compat: leave existing placeholder events in history OR scrub via migration?"
+open_questions:
+  blocking:
+    - "Pick option (a) bridge or option (b) halt-at-boundary — affects entire design"
+  non_blocking:
+    - "Should Beta consults be sync (block until verdict) or async (continue with default DECIDE if no verdict within N seconds)?"
+    - "How are Beta consult costs tracked — per-sprint budget, per-session budget, no tracking?"
+    - "Should the verdict format be more structured (typed reasoning fields) or stay free-form text?"
+non_goals:
+  - "Implementing the Beta-honesty enforcement skill (`/check:sprint-beta-honesty`) — that's SP-20260525-004 (sprint 2 of 0.11.0)"
+  - "Building Beta-consult batching, caching, or dashboard (expanded scope, deferred)"
+  - "Migrating historical placeholder events in `events.jsonl` (deferred; leave as is for traceability)"
+  - "Adding new Beta personas or roles — Beta's existing role + agent spec is the consultation surface"
+  - "Changing the AUTONOMY.md cadence policy itself — only enforcement mechanism changes"
+  - "Pushing to remote — operator-scoped"
+requirement_areas:
+  - sprint-workflow
+  - agent-dispatch
+  - ipc
+  - policy-enforcement
+  - test-coverage
+high_level_story_candidates:
+  - "As Alpha (running /sprint:full), I consult Beta at each Phase boundary and receive a real verdict that shapes downstream behavior."
+  - "As the operator, I see in `events.jsonl` that every Beta consult is real (non-placeholder verdict + message + latency) — the cadence I see in AUTONOMY.md matches reality."
+  - "As Beta, when I ESCALATE, the sprint halts reliably and reports my concern clearly to the operator."
+  - "As the operator, ESCALATE is the recovery contract — read the halt report, address Beta's concern, then resume."
+granular_story_candidates:
+  - "Design phase: write a brief ADR comparing options (a) bridge vs (b) halt-at-boundary; operator picks based on UX + complexity preference"
+  - "If option (b): extend /sprint:full CLI to accept --beta-verdict + --beta-message + --pending-phase; halt at each boundary with consult-pending checkpoint"
+  - "If option (a): design file-drop schema (consult-request-<phase>.json + consult-verdict-<phase>.json); add runtime-side poller (smart-context extension OR new hook)"
+  - "Implement chosen option in /sprint:full Phase 1-5 boundaries"
+  - "Schema: define `sprint_full_beta_consult` event subtype in events schema; ensure verdict + message + latency_ms + model captured"
+  - "Test (paid_skip): mock Beta dispatch in test suite; exercise DECIDE / DIRECTIVE / ESCALATE paths; verify ESCALATE triggers halt"
+  - "Test (live, optional): one end-to-end run with real Beta — log the events as evidence"
+  - "Update `_docs/sprint/AUTONOMY.md`: remove 'aspirational' disclaimer; add 'enforced by [pattern]'"
+  - "Update `_docs/sprint/CRASH_RECOVERY.md` if option (b): new halt_reason + resume contract"
+  - "Close enforcement-debt entry for this policy via `/enforcement:list` review (the 'Beta consultation cadence' debt entry should be markable as resolved)"
+workstream_candidates:
+  - "Design: ADR for option (a) vs (b)"
+  - "Code: orchestrator wiring for chosen option"
+  - "Schema: event subtype + checkpoint extension"
+  - "Tests: mock + (optional) live Beta"
+  - "Docs: AUTONOMY.md + CRASH_RECOVERY.md updates"
+  - "Hygiene: enforcement-debt closure"
+preliminary_ticket_candidates:
+  allowed: false
+  notes: "Architecturally significant — requires explicit ADR comparing options. Design phase must run before tickets are minted."
+external_service_dependencies:
+  status: none_expected
+approval_boundaries:
+  - "Modifies /sprint:full orchestrator behavior — operator-visible UX change; reversible by rolling back"
+  - "Option (a) adds a new runtime hook OR poller — operator-visible behavior change; reversible by disabling"
+  - "Option (b) adds new CLI args + halt_reason — additive, no removal"
+  - "Updates AUTONOMY.md (policy doc) — operator-visible; reversible by edit"
+  - "Beta consults consume β API quota — operator preauthorizes by invoking /sprint:full"
+  - "Push to remote — NEVER auto; operator pushes after review"
+design_required: true
+execution_allowed_without_design: false
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+lane:
+  type: default
+  value: null
+  isolation_notes: ""
+beta_review:
+  required: true
+  likely_founder_rejection_risks:
+    - "Option (a) bridge adds long-lived runtime infrastructure — operator may prefer simpler option (b) halt pattern for first ship"
+    - "Beta consult latency budget — if Beta takes 30+ seconds per consult, 4 consults per sprint adds 2+ minutes to autonomous runs"
+    - "ESCALATE verdict's exact halt UX must be operator-friendly — design phase must show halt-report content"
+  overbuild_risks:
+    - "Caching + batching + dashboard live in expanded scope — recommended scope must resist scope creep"
+    - "Persistent background poller is a step toward complexity — file-drop with on-demand pickup is simpler"
+  missing_context_risks:
+    - "Need to verify Beta's agent spec accepts the specific consult payload structure proposed"
+    - "Need to verify SendMessage tool can be invoked from a runtime hook (not just by Alpha in foreground)"
+plan_quality:
+  status: needs_design
+  confidence: medium
+  evidence_gaps:
+    - "Whether SendMessage works from runtime-side hooks vs only from Alpha's foreground tool calls"
+    - "Existing IPC primitives in the WarpOS codebase (file-drop poller, named pipe, HTTP localhost) that might be reusable for option (a)"
+  fail_reasons: []
+next_recommended_command: "/sprint:design"
+resume_instructions: "If this Plan Contract is the active one and you crashed mid-design, re-run /sprint:design. To re-plan from scratch, re-run /sprint:plan."
+tracker_paths:
+  current_sprint: ".claude/project/sprint/current-sprint.yaml"
+  sprint_progress: ".claude/project/sprint/sprint-progress.yaml"
+  plan_contract: ".claude/project/sprint/plan-contracts/PC-20260523-0037.yaml"
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260523-0037.report.md"
+created_by: alpha
+updated_by: alpha

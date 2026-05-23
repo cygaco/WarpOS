@@ -1,0 +1,160 @@
+schema: warpos/sprint/plan-contract/v1
+id: PC-20260523-0038
+created_at: "2026-05-23T08:36:37.285Z"
+updated_at: "2026-05-23T08:36:37.285Z"
+sprint: SP-20260525-004
+source_request: "Beta-honesty enforcement skill — sprint 2 of milestone 0.11.0 Sprint Workflow Honesty. Ship `/check:sprint-beta-honesty` skill that scans recent sprint full-reports for placeholder DECIDE events vs real Beta SendMessage round-trips; promotes _docs/sprint/AUTONOMY.md from aspirational → enforced; closes the enforcement-debt entry for Beta consultation cadence."
+source_request_verbatim: "Beta-honesty enforcement skill — sprint 2 of milestone 0.11.0 Sprint Workflow Honesty. After SP-20260525-003 (orchestrator-Beta bridge) ships real Beta round-trips, this sprint adds a check skill that proves it stays honest. /check:sprint-beta-honesty scans paths.sprintFullReports/* + events.jsonl for placeholder vs real Beta consult events. Promotes _docs/sprint/AUTONOMY.md from aspirational → enforced. Closes the enforcement-debt entry for 'Beta consultation cadence'. Pure canonical-internal — touches .claude/commands/check/sprint-beta-honesty.md, scripts/checks/, events schema, AUTONOMY.md, enforcement-debt registry only. No cross-project work. Autonomy: aggressive. Mode: adhoc."
+request_type: feature_add
+interpreted_intent: "Sprint 1 of 0.11.0 (SP-20260525-003) makes Beta consults real. Sprint 2 makes the enforcement DURABLE by adding a check skill that any operator or CI run can invoke to confirm Beta consultation cadence is being honored. Per CLAUDE.md § Policy & Enforcement Hygiene: 'Every policy needs a named enforcer' — this sprint creates that named enforcer for the Beta consultation cadence policy declared in _docs/sprint/AUTONOMY.md. The skill scans recent sprint full-reports + events.jsonl for: (a) presence of sprint_full_beta_consult events at expected Phase boundaries, (b) non-placeholder verdicts (DECIDE | DIRECTIVE | ESCALATE with real beta_message + latency_ms), (c) ESCALATE handling (sprint halted with halt_reason=beta_escalate when ESCALATE returned). Skill exits 1 on findings; exits 0 on clean state. Closes the corresponding enforcement-debt entry."
+user_or_business_outcome: "Operator can run `/check:sprint-beta-honesty` and trust the output: green means Beta cadence in AUTONOMY.md matches reality across recent sprints; red means specific sprints have placeholder consults or missing escalations. Available for CI integration as a gate on future sprint workflow changes. The enforcement-debt entry closes; milestone 0.11.0 ships. The 'aspirational' disclaimer comes off AUTONOMY.md permanently."
+affected_surfaces:
+  - surface: ".claude/commands/check/sprint-beta-honesty.md"
+    evidence_level: unknown
+    notes: "NEW skill file. Frontmatter declares purpose + scope + invocation. Body describes scan algorithm + output format (table of sprint-id × phase × consult-status)."
+  - surface: "scripts/checks/sprint-beta-honesty.js (or sibling)"
+    evidence_level: unknown
+    notes: "NEW script. Reads paths.sprintFullReports/* + events.jsonl (filtered to kind=sprint_full_beta_consult). Validates per-sprint per-phase: event present? verdict non-placeholder? latency_ms > 0? beta_message non-empty? ESCALATE verdicts followed by halt event?"
+  - surface: scripts/checks/test-sprint-beta-honesty.js
+    evidence_level: unknown
+    notes: "NEW test. Fixtures: (a) clean sprint with real consults, (b) sprint with placeholder DECIDE, (c) sprint with ESCALATE not followed by halt, (d) sprint missing expected consult event."
+  - surface: _docs/sprint/AUTONOMY.md
+    evidence_level: verified_from_repo
+    notes: "After /check:sprint-beta-honesty exists + green across last 5 sprints: remove 'aspirational' disclaimer from Beta consultation cadence section. Add 'enforced by /check:sprint-beta-honesty; runs on N latest sprints'."
+  - surface: "paths.enforcementDebt (.claude/project/enforcement/recurring-debt.jsonl or similar)"
+    evidence_level: verified_from_repo
+    notes: "Find existing entry for 'Beta consultation cadence' (created by /enforcement:log per CLAUDE.md). Update status to resolved; reference /check:sprint-beta-honesty as the enforcer."
+  - surface: "scripts/hooks/format.js OR similar (optional CI integration)"
+    evidence_level: asserted_inferred
+    notes: "OPTIONAL: register /check:sprint-beta-honesty in a periodic check or pre-release hook. Out of scope for this sprint per design simplicity."
+current_behavior:
+  evidence_level: verified_from_repo
+  notes: "No skill currently audits Beta consultation honesty. Per CLAUDE.md § Policy & Enforcement Hygiene + roadmap milestone 0.11.0 entry: 'Beta consultation cadence in _docs/sprint/AUTONOMY.md is aspirational until [SP-20260525-003 ships]'. The enforcement-debt entry exists (per /enforcement:log discipline) and is open. AUTONOMY.md currently carries the 'aspirational' disclaimer."
+desired_behavior: "After sprint completion: (1) `/check:sprint-beta-honesty` skill exists and is invocable; (2) Skill scans last N sprints (configurable, default 5) and per-phase verifies real Beta consult events present; (3) Skill outputs structured findings table (sprint × phase × verdict × evidence); (4) Skill exits 0 on clean state, 1 on any finding; (5) `_docs/sprint/AUTONOMY.md` removes 'aspirational' disclaimer from Beta cadence section; (6) Enforcement-debt entry for Beta consultation cadence is closed via /enforcement:resolve (or sibling); (7) Tests cover all finding classes (placeholder verdict, missing event, ESCALATE-without-halt); (8) Local commit on sprint branch captures all changes. Push remains operator-scoped."
+scope:
+  size: s
+  risk_level: low
+  complexity_drivers:
+    - "Depends on SP-20260525-003 (orchestrator-Beta bridge) shipping first — without real consults to scan, the skill has no input data"
+    - "Event schema for sprint_full_beta_consult must be stable (defined in SP-003) — this sprint consumes it"
+    - "Test fixtures need synthetic events.jsonl + sprint full-reports — design phase enumerates fixture structure"
+scope_variants:
+  minimal_safe:
+    summary: "Skill + script + 1 happy-path test + AUTONOMY.md update + enforcement-debt closure. No CI integration. No multi-sprint comparison views — single-sprint scan only."
+    tradeoffs:
+      - "Pro: smallest possible surface to close milestone 0.11.0"
+      - "Pro: zero new infrastructure beyond the skill itself"
+      - "Con: doesn't catch regressions across sprints — only validates the most recent run"
+  recommended:
+    summary: "minimal_safe + scan last N sprints (default 5) + all 3 finding classes tested (placeholder verdict, missing event, ESCALATE-without-halt) + structured findings table output (human + JSON modes) + remediation hints per finding type."
+    tradeoffs:
+      - "Pro: comprehensive enforcement — catches drift over time, not just last run"
+      - "Pro: JSON mode enables future CI gate without re-implementation"
+      - "Pro: structured table is operator-friendly"
+      - "Con: ~2× the surface area of minimal_safe — still small for the milestone-closing value"
+  expanded:
+    summary: "recommended + CI integration (pre-release hook calls /check:sprint-beta-honesty) + Beta-consult latency trend chart (text-based) + alerting threshold (e.g., > 5min latency flagged) + per-Beta-verdict-type analytics."
+    tradeoffs:
+      - "Pro: closes every observability gap — gate + trend + alerting"
+      - "Con: ~3× the surface; latency trend + analytics are nice-to-have, not milestone-closing"
+      - "Con: CI gate setup intersects with broader CI work (out of WarpOS scope today)"
+assumptions:
+  safe:
+    - "SP-20260525-003 will ship first, defining the `sprint_full_beta_consult` event schema this skill consumes"
+    - "paths.sprintFullReports/* directory structure is stable; reports include phase-by-phase consult event references"
+    - "paths.eventsFile (events.jsonl) is the canonical event log for this consultation type"
+    - "Skill body framework (Markdown + frontmatter contract) supports a check-class skill — confirmed via existing /check:* skills"
+  unsafe:
+    - "If SP-003 is not yet shipped, this skill has nothing to validate — sequencing is critical"
+    - "Historical sprints (SP-20260514-001 through SP-20260524-004) have placeholder events — skill must EXEMPT historical sprints OR clearly mark them as legacy in findings (NOT block)"
+    - "Event schema may evolve in SP-003's design phase — this sprint's design must capture the schema as it lands"
+  needs_user_or_beta_review:
+    - "Confirm default scan window (last 5 sprints? all sprints since SP-003 shipped? last 30 days?)"
+    - "Confirm exempt-list policy for historical sprints (date cutoff? explicit allow-list? marker in current.yaml?)"
+    - "Confirm output format preferences (human table + JSON, or just JSON?)"
+open_questions:
+  blocking:
+    - "Confirm SP-20260525-003 (orchestrator-Beta bridge) is shipped before this sprint executes — Phase 3 must check before scanning"
+  non_blocking:
+    - "Should the skill also detect consult-event-but-no-corresponding-Phase-boundary-checkpoint? (drift in the opposite direction — sprint thought it consulted but checkpoint says otherwise)"
+    - "Should the skill emit `sprint_beta_honesty_check` events for its own observability?"
+non_goals:
+  - "Implementing the Beta-bridge mechanism itself — that's SP-20260525-003"
+  - "Real-time monitoring or alerting — this is an on-demand check skill"
+  - "Cross-project (cross-WarpOS-product) validation — pure canonical scope"
+  - "Modifying Beta's agent spec — only consuming consult events"
+  - "Pushing to remote — operator-scoped"
+requirement_areas:
+  - policy-enforcement
+  - check-skills
+  - events-consumption
+  - test-coverage
+high_level_story_candidates:
+  - "As the operator, I run `/check:sprint-beta-honesty` and see a clear table of recent sprints showing Beta cadence honored (or violated, with specifics)."
+  - "As the framework, /sprint:full's Beta cadence is now enforced — drift is detectable by anyone running the skill."
+  - "As a future contributor, I can trust that AUTONOMY.md's Beta consultation cadence reflects reality (no aspirational disclaimer)."
+  - "As the operator, I see the enforcement-debt for Beta consultation cadence closed in /enforcement:list."
+granular_story_candidates:
+  - "Pre-flight: verify SP-20260525-003 is shipped — events.jsonl contains real (non-placeholder) sprint_full_beta_consult events from at least one recent sprint"
+  - "Create `.claude/commands/check/sprint-beta-honesty.md` skill file with frontmatter + body + scan algorithm description"
+  - "Create `scripts/checks/sprint-beta-honesty.js` — reads paths.sprintFullReports/* + events.jsonl, computes findings, emits findings table"
+  - "Define exempt-list policy for historical sprints (date cutoff approach recommended — sprints before SP-20260525-003 ship date are legacy)"
+  - "Add structured findings: { sprint_id, phase, expected_consult, actual_event, verdict, evidence, finding_type }"
+  - "Implement output modes: human (table) + --json (machine-readable)"
+  - "Create `scripts/checks/test-sprint-beta-honesty.js` with 4 fixture scenarios (clean, placeholder, missing, escalate-without-halt)"
+  - "Update `_docs/sprint/AUTONOMY.md`: remove 'aspirational' disclaimer from Beta cadence section; add 'Enforced by /check:sprint-beta-honesty'"
+  - "Close enforcement-debt entry: invoke /enforcement:resolve (or equivalent) referencing this sprint + the new skill as the enforcer"
+  - Local commit on sprint branch capturing all changes
+  - "HALT before git push — operator-scoped"
+workstream_candidates:
+  - "Code: skill body + check script + tests"
+  - "Docs: AUTONOMY.md update"
+  - "Hygiene: enforcement-debt closure"
+  - "Validation: run /check:sprint-beta-honesty against current canonical state"
+preliminary_ticket_candidates:
+  allowed: false
+  notes: "Small but milestone-closing. Design phase confirms event schema lock (post-SP-003) + finding-class enumeration + exempt-list policy."
+external_service_dependencies:
+  status: none_expected
+approval_boundaries:
+  - "Adds a new skill (`/check:sprint-beta-honesty`) — additive, reversible by skill removal"
+  - "Adds new check script + tests — local-only, no risk"
+  - "Modifies AUTONOMY.md (policy doc) — reversible by edit"
+  - "Closes enforcement-debt entry — reversible by re-opening"
+  - "Push to remote — NEVER auto; operator-scoped"
+design_required: true
+execution_allowed_without_design: false
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+lane:
+  type: default
+  value: null
+  isolation_notes: "Depends on SP-20260525-003 (orchestrator-Beta bridge) shipping first"
+beta_review:
+  required: true
+  likely_founder_rejection_risks:
+    - "Historical sprints have placeholder events; if exempt-list policy isn't right, the check will spam findings for sprints that pre-date the enforcement mechanism"
+    - "AUTONOMY.md disclaimer removal must wait until the check is green across N consecutive sprints — premature removal would re-introduce the aspirational gap"
+  overbuild_risks:
+    - "Latency trend charts + analytics belong in expanded scope (deferred)"
+    - "CI integration is out of scope (separate concern from skill creation)"
+  missing_context_risks:
+    - "Need to verify the event schema SP-003 settles on — design phase must wait for SP-003's design to finalize the schema"
+    - "Need to confirm /enforcement:resolve (or equivalent) exists for closing debt entries; if not, may need a manual entry close"
+plan_quality:
+  status: needs_design
+  confidence: high
+  evidence_gaps:
+    - "Exact event schema produced by SP-003 (depends on SP-003's design phase outcome)"
+    - "Existing enforcement-debt entry format — needs grep against paths.enforcementDebt to confirm structure"
+  fail_reasons: []
+next_recommended_command: "/sprint:design"
+resume_instructions: "If this Plan Contract is the active one and you crashed mid-design, re-run /sprint:design. To re-plan from scratch, re-run /sprint:plan."
+tracker_paths:
+  current_sprint: ".claude/project/sprint/current-sprint.yaml"
+  sprint_progress: ".claude/project/sprint/sprint-progress.yaml"
+  plan_contract: ".claude/project/sprint/plan-contracts/PC-20260523-0038.yaml"
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260523-0038.report.md"
+created_by: alpha
+updated_by: alpha

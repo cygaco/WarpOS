@@ -1,5 +1,5 @@
 schema: warpos/sprint/active-sprints/v1
-primary: SP-20260524-004
+primary: SP-20260525-004
 sprints:
   - id: SP-20260512-001
     title: Multi-sprint parallelism for Sprint Workflow
@@ -331,5 +331,49 @@ sprints:
     pointer: ".claude/project/sprint/sprints/SP-20260524-004"
     created_at: "2026-05-23T07:42:02.215Z"
     updated_at: "2026-05-23T07:42:02.215Z"
+  - id: SP-20260525-001
+    title: "Maintainer canonical scrub orchestration (milestone 0.10.0 sprint 1)"
+    status: planning
+    lane:
+      type: default
+      value: null
+      isolation_notes: ""
+    layout: per_sprint_subdir
+    pointer: ".claude/project/sprint/sprints/SP-20260525-001"
+    created_at: "2026-05-23T08:24:22.273Z"
+    updated_at: "2026-05-23T08:24:22.273Z"
+  - id: SP-20260525-002
+    title: "Post-scrub gate hardening — flip ROOT_LEAK_PENDING_SCRUB=false (milestone 0.10.0 sprint 2)"
+    status: planning
+    lane:
+      type: default
+      value: null
+      isolation_notes: ""
+    layout: per_sprint_subdir
+    pointer: ".claude/project/sprint/sprints/SP-20260525-002"
+    created_at: "2026-05-23T08:29:29.626Z"
+    updated_at: "2026-05-23T08:29:29.626Z"
+  - id: SP-20260525-003
+    title: "Orchestrator-Beta bridge — choose dispatch-from-subprocess or halt-at-Beta-boundary (milestone 0.11.0 sprint 1)"
+    status: planning
+    lane:
+      type: default
+      value: null
+      isolation_notes: ""
+    layout: per_sprint_subdir
+    pointer: ".claude/project/sprint/sprints/SP-20260525-003"
+    created_at: "2026-05-23T08:31:03.533Z"
+    updated_at: "2026-05-23T08:31:03.533Z"
+  - id: SP-20260525-004
+    title: "Beta-honesty enforcement skill — /check:sprint-beta-honesty + AUTONOMY.md enforced (milestone 0.11.0 sprint 2)"
+    status: planning
+    lane:
+      type: default
+      value: null
+      isolation_notes: ""
+    layout: per_sprint_subdir
+    pointer: ".claude/project/sprint/sprints/SP-20260525-004"
+    created_at: "2026-05-23T08:35:28.330Z"
+    updated_at: "2026-05-23T08:35:28.330Z"
 created_at: "2026-05-12T22:57:35.667Z"
-updated_at: "2026-05-23T07:42:02.215Z"
+updated_at: "2026-05-23T08:35:28.330Z"

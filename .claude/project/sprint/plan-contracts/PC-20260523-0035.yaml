@@ -1,0 +1,186 @@
+schema: warpos/sprint/plan-contract/v1
+id: PC-20260523-0035
+created_at: "2026-05-23T08:26:30.453Z"
+updated_at: "2026-05-23T08:26:30.453Z"
+sprint: SP-20260525-001
+source_request: "Maintainer canonical scrub orchestration — sprint 1 of milestone 0.10.0 Framework Boundary Closure. Move WarpOS-as-product specs out of canonical and into a new PRIVATE sibling repo `warpos-as-product`."
+source_request_verbatim: "Maintainer canonical scrub orchestration — first sprint of milestone 0.10.0 Framework Boundary Closure. Goal: move WarpOS-as-product specs (`_requirements/00-canonical/*`, product-titled entries in `_requirements/03-architecture/*`, `_docs/research|briefs|clones|imports/*`) out of canonical and into a new PRIVATE sibling repo `warpos-as-product`. Use `/portfolio:new --slug warpos-as-product` to scaffold. Operator-scoped pieces: confirming slug, confirming which specs are product-vs-framework (use `framework-purity.js` allow-lists + `_warpos/MANIFEST.json` ownership classes as the source of truth — `framework` owner stays, `project` owner moves). After scrub completes, the post-scrub gate hardening sprint (sprint 2 of this milestone) flips `ROOT_LEAK_PENDING_SCRUB=false`. Autonomy: aggressive. Mode: adhoc. Escalate to operator when: irreversible repo-creation step, GitHub remote push, decision on borderline framework-vs-product specs that lack clear ownership marker."
+request_type: architecture_change
+interpreted_intent: "Today, canonical WarpOS contains spec content that describes WarpOS *as a product* (CORE_BRIEF, USER_COHORTS, GOLDEN_PATHS, PRODUCT_MODEL, EVOLUTION, FAILURE_STATES under `_requirements/00-canonical/`), plus product-titled architecture docs and research/brief/clone/import docs under `_docs/`. These leak the maintainer's product-thinking into the publicly-pushed canonical clone. The framework-purity gate already detects this class via `root_leak` detector but is gated by `ROOT_LEAK_PENDING_SCRUB=true` — meaning the gate observes the leak and tolerates it pending this sprint. This sprint physically removes the leak: scaffold a private `warpos-as-product` sibling repo via `/portfolio:new`, move the leaking specs into it, regenerate `_warpos/MANIFEST.json`, and confirm purity gate inventory shows zero `root_leak` findings. The sibling sprint (post-scrub gate hardening) flips the flag to false; that's NOT in scope here."
+user_or_business_outcome: "After this sprint, `_requirements/00-canonical/*` and product-titled `_requirements/03-architecture/*` no longer exist in canonical WarpOS. The maintainer's product-thinking lives in a private sibling repo `warpos-as-product` (registered in the portfolio). Canonical WarpOS publishes externally with no product-data leak — passes `grep -rn '00-canonical\\|jobzooka\\|dreamteam\\|aiweb\\|companycam' .` cleanly (modulo ROADMAP archive references + version-history sections). The 0.10.0 milestone is one sprint away from done (sprint 2 flips the gate flag)."
+affected_surfaces:
+  - surface: _requirements/00-canonical/
+    evidence_level: verified_from_repo
+    notes: "12 files: GLOSSARY_TEMPLATE.md, STEPS.json, CORE_BRIEF.md, USER_COHORTS.md, GLOSSARY.md, GOLDEN_PATHS.md, PRODUCT_MODEL.md, EVOLUTION.md, FAILURE_STATES.md, FIELD_REGISTRY.json, PRECEDENCE.json, WATCHED_DIRS.json. All describe WarpOS-as-a-product; all should move to warpos-as-product repo."
+  - surface: _requirements/03-architecture/
+    evidence_level: asserted_inferred
+    notes: "Mixed content: some entries are generic framework templates (PRODUCTION_BASELINE, ACCESSIBILITY_BASELINE, etc per v0.1.4 release notes) — those STAY; some may be product-titled — those MOVE. Design phase must enumerate and classify each entry. Borderline cases escalate to operator."
+  - surface: _docs/research/
+    evidence_level: verified_from_repo
+    notes: "Contains research notes referenced in ROADMAP archive: 2026-05-21-central-warpos-rfc.md, 2026-05-19-npm-forcing-function.md, 2026-05-21-product-clone-companycam-postmortem.md. Per Strategy section, _docs/research/ is product carve-out — should move to warpos-as-product."
+  - surface: "_docs/briefs/, _docs/clones/, _docs/imports/"
+    evidence_level: asserted_inferred
+    notes: "User briefs/clones/imports — explicitly product-thinking artifacts. Design phase must enumerate; all should move."
+  - surface: scripts/checks/framework-purity.js
+    evidence_level: verified_from_repo
+    notes: "Source of truth for what counts as a 'product leak' via root_leak detector + ROOT_LEAK_PENDING_SCRUB flag. NOT modified in this sprint — flag flip is sprint 2."
+  - surface: _warpos/MANIFEST.json
+    evidence_level: verified_from_repo
+    notes: "Will regenerate after move; expect path count to drop by ~12-20 files. Ownership classes (framework | project | generated) inform borderline decisions."
+  - surface: "warpos-as-product/ (NEW PRIVATE SIBLING REPO)"
+    evidence_level: unknown
+    notes: "Will be scaffolded by `/portfolio:new --slug warpos-as-product`. Destination for moved content. PRIVATE GitHub repo creation requires `gh repo create --private` invocation — operator escalation point per request."
+  - surface: "~/.warpos/portfolio.json"
+    evidence_level: verified_from_repo
+    notes: "Registry of portfolio products. /portfolio:new will register warpos-as-product here automatically."
+  - surface: "ROADMAP.md (canonical)"
+    evidence_level: verified_from_repo
+    notes: "0.10.0 milestone entry already exists. After sprint completes, the milestone DoD acceptance criteria 1-4 should be checked; carry-forward to 0.10.0 retro section after sprint 2 ships."
+current_behavior:
+  evidence_level: verified_from_repo
+  notes: "12 files in _requirements/00-canonical/. _docs/research/, _docs/briefs/, _docs/clones/, _docs/imports/ exist with product-specific content. framework-purity.js root_leak detector observes these but ROOT_LEAK_PENDING_SCRUB=true tolerates them. No `warpos-as-product` portfolio entry exists yet. `grep -rn 'jobzooka\\|dreamteam\\|aiweb\\|companycam' .` in canonical returns hits in ROADMAP + research files; some of these references are legitimate (ROADMAP archive history) and some leak product thinking (research notes)."
+desired_behavior: "After sprint completion: (1) `warpos-as-product` is a new private sibling repo registered in ~/.warpos/portfolio.json; (2) `_requirements/00-canonical/*` removed from canonical (relocated to warpos-as-product); (3) Product-titled entries in `_requirements/03-architecture/*` enumerated, classified, and the product-titled ones relocated (framework-generic templates stay); (4) `_docs/research/`, `_docs/briefs/`, `_docs/clones/`, `_docs/imports/` relocated; (5) `_warpos/MANIFEST.json` regenerated and clean; (6) `/check:framework-purity --full` reports zero root_leak findings on canonical; (7) Local commit on `sprint/SP-20260525-001` branch captures the canonical-side deletion; warpos-as-product repo has its own initial commit with the moved content; (8) GitHub remote push of canonical's new commit AND warpos-as-product repo creation/push remain OPERATOR-SCOPED (orchestrator does NOT push per hard ceiling)."
+scope:
+  size: m
+  risk_level: medium
+  complexity_drivers:
+    - "Spans two repos (canonical + new warpos-as-product) — sibling-repo coordination"
+    - Borderline framework-vs-product classification needs operator judgment for ambiguous entries
+    - "/portfolio:new dispatch creates and registers a new repo — touches ~/.warpos/portfolio.json + filesystem siblings"
+    - "Private GitHub repo creation (`gh repo create --private`) requires operator authentication context"
+    - "File moves should preserve git blame where possible (git mv, not delete+add)"
+scope_variants:
+  minimal_safe:
+    summary: "Manual mode: enumerate the move list, scaffold warpos-as-product via /portfolio:new, then HALT and require operator to perform the moves + commit + push manually. Orchestrator only produces the move plan + scaffolds the destination repo."
+    tradeoffs:
+      - "Pro: zero risk of orchestrator making wrong move-classification decisions"
+      - "Pro: operator retains full control over git history hygiene"
+      - "Con: most of the labor lands on the operator; sprint provides plan + scaffold only"
+      - "Con: borderline classification still requires operator review — minimal_safe doesn't eliminate that decision burden"
+  recommended:
+    summary: "Orchestrator scaffolds warpos-as-product via /portfolio:new, enumerates the move list using framework-purity.js allow-lists + _warpos/MANIFEST.json ownership classes, escalates only borderline cases to operator (with each borderline shown explicitly with provenance), executes `git mv` for unambiguous entries, regenerates _warpos/MANIFEST.json, runs `/check:framework-purity --full` to validate clean state. Local commit on canonical sprint branch + initial commit on warpos-as-product. PUSH remains operator-scoped (hard ceiling)."
+    tradeoffs:
+      - "Pro: orchestrator does the unambiguous bulk; operator decides only borderline cases"
+      - "Pro: git mv preserves blame; canonical purity validated automatically before commit"
+      - "Con: requires careful enumeration logic — false negatives leave leaks, false positives delete framework content"
+      - "Con: depends on /portfolio:new being functional (verify before kickoff)"
+  expanded:
+    summary: "recommended + retroactive git history scrub via `git filter-repo` to remove product-titled content from CANONICAL's history (not just current commits) + automated warpos-as-product initial commit with first ROADMAP entry seeded from the relocated content + portfolio:status registration verification + smoke test that `/warp:setup` on a fresh test directory writes ZERO product-titled paths."
+    tradeoffs:
+      - "Pro: closes every observable boundary leak including historical commits"
+      - "Pro: smoke test confirms downstream installs are clean"
+      - "Con: git filter-repo rewrites canonical history — irreversible without backup branch; operator may want the relics in history for traceability (the public repo already has those commits)"
+      - "Con: ~2× the surface area; some operations are operator-scoped anyway (push); risk of feature creep"
+assumptions:
+  safe:
+    - "`/portfolio:new --slug warpos-as-product` is functional and creates a sibling directory + registers in portfolio.json + scaffolds basic structure."
+    - "`git mv` preserves blame across the move (within canonical; cross-repo move loses blame by definition)."
+    - "`scripts/warpos/manifest/build.js` regenerates MANIFEST.json idempotently after file deletions."
+    - "`/check:framework-purity --full` exits 0 when zero findings remain."
+    - "Sprint branch `sprint/SP-20260525-001` is the right place to commit canonical-side deletions."
+    - "Borderline cases will be presented to operator with context (path, current owner per MANIFEST, current allow-list status) rather than guessed."
+  unsafe:
+    - "Some _docs/research/ files may be referenced from ROADMAP archive sections — moving them breaks ROADMAP links. Design must check this and either update ROADMAP refs OR keep referenced research locally as 'pointer-only' files."
+    - "_requirements/03-architecture/ contains BOTH framework-generic templates (stay) AND product-titled content (move). Enumeration must be explicit; cannot bulk-move."
+    - "GitHub private-repo creation via `gh repo create --private` requires authenticated gh CLI — verify before attempting."
+    - "Push to remote is a hard ceiling — orchestrator MUST NOT push canonical OR warpos-as-product. Operator handles both pushes after review."
+    - "If borderline classification differs between framework-purity.js allow-lists and MANIFEST.json ownership — operator decides; orchestrator does NOT pick a side autonomously."
+  needs_user_or_beta_review:
+    - "Confirm slug `warpos-as-product` (vs `warpos-product`, `warpos-as-a-product`, etc) before /portfolio:new runs."
+    - "Confirm whether _docs/research/ files referenced from ROADMAP archive sections should be moved (and ROADMAP links updated) OR remain as local pointer stubs."
+    - "Confirm git history scrub scope — keep relics in history (recommended) OR filter-repo to fully erase (expanded scope only)."
+open_questions:
+  blocking:
+    - "What is the precise list of product-titled entries in `_requirements/03-architecture/`? Must enumerate explicitly during design — cannot bulk-classify."
+  non_blocking:
+    - "Does the new warpos-as-product repo need its own roadmap seeded with the first milestone immediately, or is that a follow-up sprint?"
+    - "Should the warpos-as-product repo be registered with a specific JTBD / product brief now, or wait for /portfolio:bootstrap to be run on it separately?"
+non_goals:
+  - "Flipping `ROOT_LEAK_PENDING_SCRUB=false` — that's sprint 2 of milestone 0.10.0."
+  - "Pushing canonical to GitHub (operator decides when)."
+  - "Pushing warpos-as-product to GitHub (operator decides when; requires gh CLI auth context)."
+  - "Rewriting canonical git history via filter-repo (expanded scope only, deferred)."
+  - "Bootstrapping a product brief for warpos-as-product (separate /portfolio:bootstrap invocation)."
+  - "Changing the framework-purity.js detector logic (sprint 2 changes the flag default, not the logic)."
+  - "Updating ROADMAP archive references (separate follow-up if pointer-only retention isn't chosen)."
+requirement_areas:
+  - framework-boundary
+  - portfolio
+  - filesystem-orchestration
+  - git-hygiene
+  - manifest-coverage
+high_level_story_candidates:
+  - "As the maintainer, I want WarpOS-as-product specs to live in their own private sibling repo so canonical WarpOS publishes externally with zero product-data leak."
+  - "As the maintainer, I want borderline framework-vs-product classification decisions surfaced explicitly so I don't lose framework content to over-zealous moves."
+  - "As the framework, I want `_warpos/MANIFEST.json` regenerated clean after the scrub so the 0.10.0 milestone's DoD acceptance criterion 2 can be checked."
+  - "As the maintainer, I want the orchestrator to NEVER push canonical or warpos-as-product to GitHub autonomously so I retain final review authority on both pushes."
+granular_story_candidates:
+  - "Verify `/portfolio:new` is functional and `gh` CLI is authenticated before kickoff."
+  - "Run `/portfolio:new --slug warpos-as-product` to scaffold sibling repo + register in portfolio.json + create PRIVATE GitHub repo (escalate if gh CLI auth missing)."
+  - "Enumerate `_requirements/00-canonical/*` (12 files known) — bulk-move via `git mv` into warpos-as-product/_requirements/00-canonical/."
+  - "Enumerate `_requirements/03-architecture/*` — classify each entry as framework-generic-template (stay) or product-titled (move). Borderline cases escalate to operator."
+  - "Enumerate `_docs/research/`, `_docs/briefs/`, `_docs/clones/`, `_docs/imports/` — bulk-move into warpos-as-product/_docs/."
+  - "Check ROADMAP archive references to moved _docs/research/ files; either update refs OR retain as pointer-only stubs (operator chooses)."
+  - "Regenerate `_warpos/MANIFEST.json` via `scripts/warpos/manifest/build.js` and verify path count drops by expected ~20-30 files."
+  - "Run `/check:framework-purity --full` and confirm zero root_leak findings on canonical."
+  - "Local commit on `sprint/SP-20260525-001` branch capturing the canonical-side deletions."
+  - "Local commit on warpos-as-product main branch capturing the initial moved content + scaffolded README/ROADMAP/.gitignore."
+  - "HALT before any `git push` — operator-scoped escalation point."
+workstream_candidates:
+  - "Pre-flight: verify /portfolio:new + gh CLI auth"
+  - "Scaffold: /portfolio:new --slug warpos-as-product"
+  - "Enumeration + classification: produce move list with explicit framework-vs-product calls"
+  - "File moves: git mv into warpos-as-product"
+  - "Validation: regenerate MANIFEST, run framework-purity --full"
+  - "Commit (local-only): canonical sprint branch + warpos-as-product main"
+  - "Escalation: GitHub push left to operator"
+preliminary_ticket_candidates:
+  allowed: false
+  notes: "Multi-repo orchestration with borderline classification decisions. Tickets must be designed via /sprint:design first. design_required = true."
+external_service_dependencies:
+  status: operator_action_required
+  services:
+    - name: "GitHub (private repo creation)"
+      interaction: "`gh repo create --private warpos-as-product` invoked from `/portfolio:new` — requires authenticated `gh` CLI in operator's shell context. If gh auth is missing, /portfolio:new escalates and operator runs `gh auth login` first."
+      blocking: true
+approval_boundaries:
+  - "Creates a new private GitHub repo (`gh repo create --private warpos-as-product`) — operator pre-authorizes by running /sprint:full; the repo is private (not publicly visible) and reversible (operator can delete via `gh repo delete` if wrong)."
+  - "Modifies ~/.warpos/portfolio.json to register new sibling — reversible via `/portfolio:register --remove warpos-as-product`."
+  - "Performs `git mv` across many files on canonical sprint branch — reversible via `git checkout main -- <paths>` or branch deletion since changes are not pushed."
+  - "Push to GitHub remote — NEVER auto; hard ceiling. Operator pushes manually after review."
+design_required: true
+execution_allowed_without_design: false
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+lane:
+  type: default
+  value: null
+  isolation_notes: ""
+beta_review:
+  required: true
+  likely_founder_rejection_risks:
+    - "Moving files cross-repo loses git blame in the destination — operator may want to preserve provenance via a manifest of move-pairs as separate commit message in warpos-as-product."
+    - "Borderline classification decisions in _requirements/03-architecture/ MUST escalate explicitly — silent classification is the recurring framework-vs-product class of error this milestone closes."
+  overbuild_risks:
+    - "git filter-repo for canonical history rewrite is expanded scope; recommended scope keeps relics in history (they're in the public repo already; rewriting would be cosmetic)."
+    - "Seeding warpos-as-product's roadmap with a full first milestone is out of scope — that's a follow-up /roadmap:create invocation (or manual setup)."
+  missing_context_risks:
+    - "If gh CLI is not authenticated in operator's shell, /portfolio:new will fail at the `gh repo create` step. Pre-flight verification of `gh auth status` reduces mid-sprint surprise."
+    - "Sibling-repo path resolution (~/Desktop/Claude/Projects/warpos-as-product vs sibling-to-WarpOS) — confirm /portfolio:new's path convention before kickoff."
+plan_quality:
+  status: needs_design
+  confidence: high
+  evidence_gaps:
+    - "Exact list of product-titled entries in _requirements/03-architecture/ — enumerate during design."
+    - "Whether ROADMAP archive sections reference specific _docs/research/ files by path — grep during design."
+  fail_reasons: []
+next_recommended_command: "/sprint:design"
+resume_instructions: "If this Plan Contract is the active one (referenced by paths.sprintCurrent.plan_contract) and you crashed mid-design, re-run /sprint:design — it is idempotent and will regenerate the design pack from this Plan Contract. To re-plan from scratch (e.g. scope shift), re-run /sprint:plan — that mints a fresh Plan Contract id and updates the sprint pointer; the old contract remains on disk for history."
+tracker_paths:
+  current_sprint: ".claude/project/sprint/current-sprint.yaml"
+  sprint_progress: ".claude/project/sprint/sprint-progress.yaml"
+  plan_contract: ".claude/project/sprint/plan-contracts/PC-20260523-0035.yaml"
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260523-0035.report.md"
+created_by: alpha
+updated_by: alpha

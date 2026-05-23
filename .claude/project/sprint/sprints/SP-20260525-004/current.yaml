@@ -1,0 +1,120 @@
+schema: warpos/sprint/current-sprint/v1
+id: SP-20260525-004
+title: "Beta-honesty enforcement skill — /check:sprint-beta-honesty + AUTONOMY.md enforced (milestone 0.11.0 sprint 2)"
+objective: "(set by /sprint:plan)"
+status: designing
+created_at: "2026-05-23T08:36:37.280Z"
+updated_at: "2026-05-23T08:36:37.559Z"
+source_request: "Beta-honesty enforcement skill — sprint 2 of milestone 0.11.0 Sprint Workflow Honesty. Ship `/check:sprint-beta-honesty` skill that scans recent sprint full-reports for placeholder DECIDE events vs real Beta SendMessage round-trips; promotes _docs/sprint/AUTONOMY.md from aspirational → enforced; closes the enforcement-debt entry for Beta consultation cadence."
+interpreted_intent: "Sprint 1 of 0.11.0 (SP-20260525-003) makes Beta consults real. Sprint 2 makes the enforcement DURABLE by adding a check skill that any operator or CI run can invoke to confirm Beta consultation cadence is being honored. Per CLAUDE.md § Policy & Enforcement Hygiene: 'Every policy needs a named enforcer' — this sprint creates that named enforcer for the Beta consultation cadence policy declared in _docs/sprint/AUTONOMY.md. The skill scans recent sprint full-reports + events.jsonl for: (a) presence of sprint_full_beta_consult events at expected Phase boundaries, (b) non-placeholder verdicts (DECIDE | DIRECTIVE | ESCALATE with real beta_message + latency_ms), (c) ESCALATE handling (sprint halted with halt_reason=beta_escalate when ESCALATE returned). Skill exits 1 on findings; exits 0 on clean state. Closes the corresponding enforcement-debt entry."
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260523-0038.yaml"
+risk_level: low
+approval_state: none_required
+current_phase: design
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+lane:
+  type: default
+  value: null
+  isolation_notes: "Depends on SP-20260525-003 (orchestrator-Beta bridge) shipping first"
+external_services:
+  identified: []
+  blocked: []
+  ready: []
+  mocked: []
+  deferred: []
+tickets:
+  proposed: []
+  planned: []
+  designed: []
+  ready_for_execution: []
+  in_progress: []
+  blocked: []
+  waiting_on_human: []
+  waiting_on_external_service: []
+  in_review: []
+  qa_failed: []
+  redteam_failed: []
+  done: []
+  released: []
+  deferred: []
+  abandoned: []
+  reopened: []
+  superseded: []
+requirements:
+  prd: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260525-004\\prd.md"
+  high_level_stories: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260525-004\\high-level-stories.md"
+  granular_stories: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260525-004\\granular-stories.md"
+  copy: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260525-004\\copy.md"
+  inputs: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260525-004\\inputs.md"
+  trace: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260525-004\\trace.md"
+  acceptance_criteria: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260525-004\\acceptance-criteria.md"
+  qa_plan: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260525-004\\qa-plan.md"
+  redteam_plan: null
+  release_plan: null
+checks:
+  lint:
+    status: not_run
+    last_run: null
+    evidence: ""
+  typecheck:
+    status: not_run
+    last_run: null
+    evidence: ""
+  tests:
+    status: not_run
+    last_run: null
+    evidence: ""
+  build:
+    status: not_run
+    last_run: null
+    evidence: ""
+  qa:
+    status: not_run
+    last_run: null
+    evidence: ""
+  redteam:
+    status: not_run
+    last_run: null
+    evidence: ""
+approvals:
+  plan:
+    required: false
+    state: not_required
+    ref: null
+  design:
+    required: false
+    state: not_required
+    ref: null
+  execution:
+    required: false
+    state: not_required
+    ref: null
+  release:
+    required: false
+    state: not_required
+    ref: null
+  external_services:
+    required: false
+    state: not_required
+    ref: null
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260523-0038.report.md"
+  design: null
+  execution: null
+  release: null
+ralph:
+  active: false
+  current_ticket: null
+  current_loop: null
+  status: idle
+  last_checkpoint: null
+  next_action: null
+crash_recovery:
+  last_checkpoint: ".claude/project/sprint/sprint-progress.yaml"
+  resume_command: "/sprint:design"
+  resume_summary: "Sprint SP-20260525-004 design scaffolded (scale=s). Next: mint tickets from granular-stories, then run /sprint:execute."
+  active_files: []
+  dirty_state: false
+  blockers: []
+  safe_to_continue: true

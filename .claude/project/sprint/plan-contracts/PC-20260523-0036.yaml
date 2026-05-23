@@ -1,0 +1,153 @@
+schema: warpos/sprint/plan-contract/v1
+id: PC-20260523-0036
+created_at: "2026-05-23T08:30:55.782Z"
+updated_at: "2026-05-23T08:30:55.782Z"
+sprint: SP-20260525-002
+source_request: "Post-scrub gate hardening — sprint 2 of milestone 0.10.0 Framework Boundary Closure. Flip `ROOT_LEAK_PENDING_SCRUB=false` in `scripts/checks/framework-purity.js` so the root_leak detector hard-refuses any future reintroduction of product-titled paths at canonical root."
+source_request_verbatim: "Post-scrub gate hardening — sprint 2 of milestone 0.10.0 Framework Boundary Closure. Depends on SP-20260525-001 (maintainer canonical scrub) shipping first. Flip ROOT_LEAK_PENDING_SCRUB=false in scripts/checks/framework-purity.js, regenerate _warpos/MANIFEST.json, run /check:framework-purity --full clean. Verify the gate now refuses a synthetic _requirements/00-canonical/foo.md write attempt on canonical. Verify post-scrub install of canonical into a fresh product writes no product-titled paths. Closes milestone 0.10.0. Autonomy: aggressive. Mode: adhoc."
+request_type: architecture_change
+interpreted_intent: "Sprint 1 of milestone 0.10.0 (SP-20260525-001) physically removes WarpOS-as-product content from canonical. This sprint closes the door by flipping the `ROOT_LEAK_PENDING_SCRUB=true` flag to `false` in `scripts/checks/framework-purity.js`. Flag-flip is a one-line change; the higher-value work is the regression net around it: a synthetic write-attempt fixture proves the gate hard-refuses reintroduction, a fresh-install smoke-test proves no product-titled paths leak to consumers, and a test that runs the purity check on a clean canonical exits 0. After this sprint, the manifest-driven architecture (milestone 0.8.x) becomes load-bearing — the boundary stops being aspirational and starts being a write-time enforcement."
+user_or_business_outcome: "Milestone 0.10.0 Framework Boundary Closure is shipped. Canonical WarpOS publishes externally with a structural guarantee (not just an audit step) that no product-data can leak. Any future attempt to reintroduce product-titled content at canonical root fails at write-time with a clear error message. Fresh `/warp:setup` of canonical into a new product writes zero product-titled paths."
+affected_surfaces:
+  - surface: scripts/checks/framework-purity.js
+    evidence_level: verified_from_repo
+    notes: "Contains `ROOT_LEAK_PENDING_SCRUB` constant currently set to true. One-line flip to false. Confirm root_leak detector then exits 1 on _requirements/00-canonical/* and product-titled _requirements/03-architecture/* paths. Allow-lists for runtime files (e.g. ALLOW_CLIENT_SLUG_PATHS) remain untouched."
+  - surface: _warpos/MANIFEST.json
+    evidence_level: verified_from_repo
+    notes: "Regenerate after flag flip to confirm zero `root_leak` findings (assumes SP-001 scrub completed). Path count should match post-scrub state."
+  - surface: scripts/checks/test-framework-purity.js
+    evidence_level: asserted_inferred
+    notes: "Existing test file (likely) — add: (1) synthetic _requirements/00-canonical/foo.md write-attempt fixture, expect exit 1; (2) clean canonical fixture, expect exit 0; (3) post-scrub canonical state, expect exit 0."
+  - surface: "scripts/warp-setup.js + scripts/warpos/update.js"
+    evidence_level: verified_from_repo
+    notes: "Both invoke `/check:framework-purity` indirectly via the framework-purity-guard PreToolUse hook. No direct changes needed. Smoke test via install fixture matrix scenarios that exercise post-scrub canonical."
+  - surface: "ROADMAP.md — milestone 0.10.0 entry"
+    evidence_level: verified_from_repo
+    notes: "Move 0.10.0 from Upcoming → Shipped section after sprint completes (DoD acceptance criteria 1-4 verified)."
+current_behavior:
+  evidence_level: verified_from_repo
+  notes: "`scripts/checks/framework-purity.js` ships with `ROOT_LEAK_PENDING_SCRUB=true` — the root_leak detector OBSERVES the leak but exits 0 to allow shipping during the SP-001 scrub window. After flip: detector exits 1 on the same input. Existing allow-lists (ALLOW_CLIENT_SLUG_PATHS, ALLOW_ABS_PATH_PATHS, ALLOW_PROMOTE_RELIC_PATHS) handle legitimate exceptions (runtime files, ROADMAP archive references)."
+desired_behavior: "After sprint completion: (1) `ROOT_LEAK_PENDING_SCRUB=false` in `scripts/checks/framework-purity.js`; (2) `/check:framework-purity --full` exits 0 on clean canonical (post-scrub state); (3) Synthetic test that writes `_requirements/00-canonical/foo.md` to canonical fails the framework-purity-guard hook with a clear message; (4) Install fixture matrix scenario 1 (clean install) and scenario 5 (user-overrides) both pass against post-scrub canonical with zero product-titled paths in the install output; (5) ROADMAP.md milestone 0.10.0 moved to Shipped section; (6) Local commit on sprint branch captures the flag flip + new tests + ROADMAP update. PUSH remains operator-scoped."
+scope:
+  size: s
+  risk_level: low
+  complexity_drivers:
+    - "Depends on SP-20260525-001 (canonical scrub) shipping first — otherwise the flag flip causes purity check to exit 1 on existing canonical state"
+    - "Synthetic write-attempt test fixture must not actually leave the file behind (cleanup discipline)"
+    - Install matrix update may need a new scenario or extension to existing scenarios
+scope_variants:
+  minimal_safe:
+    summary: "Flag flip only. Add one regression test (clean canonical → purity check exits 0). Skip the synthetic write-attempt fixture and install matrix extension."
+    tradeoffs:
+      - "Pro: minimal blast radius; one-line code change + one test"
+      - "Pro: closes the milestone fastest"
+      - "Con: regression net is thin — future code change that breaks the gate's refusal path won't be caught by tests"
+  recommended:
+    summary: "Flag flip + synthetic write-attempt fixture (proves gate hard-refuses reintroduction) + clean-canonical regression test (proves gate exits 0 on post-scrub state) + ROADMAP move (0.10.0 Upcoming → Shipped). Skip install matrix extension as a follow-up."
+    tradeoffs:
+      - "Pro: comprehensive regression net — proves both halves of the contract (refuses bad, accepts good)"
+      - "Pro: closes milestone with documented Shipped entry"
+      - "Con: ~3× the surface area of minimal_safe; still small for the milestone-closing value"
+  expanded:
+    summary: "recommended + install matrix new scenario `post-scrub-clean` that verifies fresh /warp:setup against post-scrub canonical writes zero product-titled paths + a CI gate that runs purity check on every PR to canonical."
+    tradeoffs:
+      - "Pro: closes every observability gap — install pipeline AND purity gate AND PR review all enforce"
+      - "Con: ~2× the surface area; install matrix extension intersects with milestone 0.12.0 (matrix cross-version coverage) — better as a 0.12.0 ticket"
+      - "Con: CI gate setup requires GitHub Actions config — out of scope for a framework-internal sprint"
+assumptions:
+  safe:
+    - "SP-20260525-001 (canonical scrub) will ship before this sprint executes — verify via `/check:framework-purity --diff` showing zero pending leaks before flag flip"
+    - "`scripts/checks/framework-purity.js` exposes `ROOT_LEAK_PENDING_SCRUB` as a top-level constant, easy to flip via Edit"
+    - "Existing framework-purity-guard PreToolUse hook automatically picks up the new behavior — no settings.json changes needed"
+    - "Synthetic write-attempt test can use a temp directory + git stash to avoid persisting the test fixture"
+  unsafe:
+    - "If SP-20260525-001 hasn't shipped, this sprint's flag flip will cause every commit to canonical to fail purity check until the scrub completes — sequencing matters"
+    - "Some legitimate framework files might match the root_leak detector's patterns and need to be added to ALLOW_ROOT_LEAK_PATHS — discover during design"
+    - "ROADMAP.md update to move 0.10.0 to Shipped is a meaningful structural change; verify with /roadmap:cleanup that the move is clean"
+  needs_user_or_beta_review:
+    - "Should this sprint wait explicitly for SP-001 to be merged/pushed before kickoff, or can it run on a follow-up branch and rebase later?"
+    - "Should the new synthetic test be part of `test-framework-purity.js` or a separate `test-root-leak-refusal.js`?"
+open_questions:
+  blocking:
+    - "Confirm SP-20260525-001 (canonical scrub) is shipped before this sprint executes — Phase 3 must check git log / framework-purity --diff state first"
+  non_blocking:
+    - "Should `ROOT_LEAK_PENDING_SCRUB` be removed entirely after flip, or kept as a documented constant (set to false) for future toggleability?"
+    - "Should the install matrix extension move to SP-20260525-001's scope (since they're the same milestone) or stay in 0.12.0?"
+non_goals:
+  - "Performing the canonical scrub itself — that's SP-20260525-001"
+  - "Changing the root_leak detector logic — only flipping the safety flag"
+  - "Extending the install matrix with new scenarios — deferred to milestone 0.12.0"
+  - "Adding GitHub Actions CI gate — out of scope for framework-internal sprint"
+  - "Modifying allow-lists (ALLOW_CLIENT_SLUG_PATHS etc) — those handle legitimate exceptions and stay as-is"
+  - "Pushing the canonical commit to GitHub — operator-scoped"
+requirement_areas:
+  - framework-purity
+  - hooks
+  - test-coverage
+  - roadmap-housekeeping
+high_level_story_candidates:
+  - "As the framework, I refuse to commit any file path matching the root_leak pattern, so product-data can never leak back into canonical."
+  - "As the maintainer, I see the 0.10.0 milestone close cleanly in ROADMAP.md after the flag flip + tests pass."
+  - "As the framework, my regression suite proves both halves of the purity contract (refuses leaks, accepts clean state)."
+granular_story_candidates:
+  - "Pre-flight: verify SP-20260525-001 is shipped — `/check:framework-purity --diff` exits 0; otherwise halt with `human_setup_required`"
+  - "Edit `scripts/checks/framework-purity.js` — flip `ROOT_LEAK_PENDING_SCRUB` constant from `true` to `false`"
+  - "Add synthetic write-attempt test fixture in `scripts/checks/test-framework-purity.js` (or sibling) — write `_requirements/00-canonical/foo.md` in a temp dir, expect purity check exit 1, cleanup"
+  - "Add clean-canonical regression test — run purity check on post-scrub canonical state, expect exit 0"
+  - "Run `/check:framework-purity --full` against current canonical; expect exit 0; capture output as evidence"
+  - "Update ROADMAP.md: move milestone 0.10.0 entry from Upcoming section to Shipped section with date stamp + per-sprint receipts (SP-20260525-001 + SP-20260525-002)"
+  - "Regenerate `_warpos/MANIFEST.json` after ROADMAP edit (manifest changes when ROADMAP changes)"
+  - "Local commit on `sprint/SP-20260525-002` branch capturing all changes"
+  - "HALT before git push — operator-scoped"
+workstream_candidates:
+  - "Pre-flight: verify SP-001 shipped"
+  - "Code: flag flip + regression tests"
+  - "Validation: run purity check + smoke tests"
+  - "Documentation: ROADMAP milestone move"
+  - "Manifest: regenerate"
+preliminary_ticket_candidates:
+  allowed: false
+  notes: "Small but milestone-closing; design pass confirms test fixture approach + ROADMAP move template + sequencing with SP-001."
+external_service_dependencies:
+  status: none_expected
+approval_boundaries:
+  - "Modifies `scripts/checks/framework-purity.js` (framework gate behavior) — reversible by re-flipping flag"
+  - "Adds test fixtures — local-only, no risk"
+  - "Modifies ROADMAP.md (milestone status change) — reversible"
+  - "Push to remote — NEVER auto; hard ceiling; operator pushes manually after review"
+design_required: true
+execution_allowed_without_design: false
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+lane:
+  type: default
+  value: null
+  isolation_notes: Depends on SP-20260525-001 shipping first
+beta_review:
+  required: true
+  likely_founder_rejection_risks:
+    - "If the flag flip happens before SP-001 ships, every subsequent commit to canonical breaks purity check — sequencing must be explicit"
+    - "Synthetic write-attempt test must clean up after itself; a left-behind fixture would create a perpetual purity failure"
+  overbuild_risks:
+    - "Install matrix extension is expanded scope; should defer to 0.12.0 milestone where matrix work is the central focus"
+    - "CI gate via GitHub Actions is out of scope; framework-purity-guard PreToolUse hook is the in-repo enforcer"
+  missing_context_risks:
+    - "Some legitimate framework files might match root_leak detector pattern — design must run a pre-flip dry-run to confirm zero unexpected hits"
+    - "ROADMAP.md move convention — verify existing pattern (per `add-sprint.js` writes rows; manual edit for milestone status moves)"
+plan_quality:
+  status: needs_design
+  confidence: high
+  evidence_gaps:
+    - "Exact pattern shape of root_leak detector — verify during design that ALLOW_ROOT_LEAK_PATHS exists or if a new allow-list is needed for any legitimate exceptions"
+    - "Confirm test fixture cleanup approach (temp dir vs git stash vs in-memory mock)"
+  fail_reasons: []
+next_recommended_command: "/sprint:design"
+resume_instructions: "If this Plan Contract is the active one (referenced by paths.sprintCurrent.plan_contract) and you crashed mid-design, re-run /sprint:design — it is idempotent. To re-plan from scratch (e.g. scope shift), re-run /sprint:plan — that mints a fresh Plan Contract id and updates the sprint pointer."
+tracker_paths:
+  current_sprint: ".claude/project/sprint/current-sprint.yaml"
+  sprint_progress: ".claude/project/sprint/sprint-progress.yaml"
+  plan_contract: ".claude/project/sprint/plan-contracts/PC-20260523-0036.yaml"
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260523-0036.report.md"
+created_by: alpha
+updated_by: alpha
