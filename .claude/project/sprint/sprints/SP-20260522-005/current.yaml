@@ -1,0 +1,122 @@
+schema: warpos/sprint/current-sprint/v1
+id: SP-20260522-005
+title: "/warp:update --status wires manifest validator into per-file table"
+objective: "(set by /sprint:plan)"
+status: releasing
+created_at: "2026-05-23T03:40:04.802Z"
+updated_at: "2026-05-23T03:40:27.597Z"
+source_request: "Wire /warp:update --status into scripts/warpos/update.js. The validator (scripts/warpos/manifest/validate.js --json) is shipped — add --status flag that spawns it and renders the JSON as a per-file table grouped by finding class."
+interpreted_intent: "scripts/warpos/manifest/validate.js --json already emits a structured payload with findings (missing/drift/unmanifested/user_modified/schema_violation) and ownerCounts. Sprint 6 wires this into scripts/warpos/update.js as an early-branch --status flag (like --rollback), so maintainers can run /warp:update --status against any install and get a human-readable diagnostic table — or pipe through --json for CI consumption. Exit 0 when clean, exit 1 when any finding present."
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260523-0028.yaml"
+risk_level: low
+approval_state: none_required
+current_phase: release
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+lane:
+  type: default
+  value: null
+  isolation_notes: ""
+external_services:
+  identified: []
+  blocked: []
+  ready: []
+  mocked: []
+  deferred: []
+tickets:
+  proposed: []
+  planned: []
+  designed: []
+  ready_for_execution: []
+  in_progress: []
+  blocked: []
+  waiting_on_human: []
+  waiting_on_external_service: []
+  in_review: []
+  qa_failed: []
+  redteam_failed: []
+  done:
+    - T-20260523-195
+    - T-20260523-196
+  released: []
+  deferred: []
+  abandoned: []
+  reopened: []
+  superseded: []
+requirements:
+  prd: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260522-005\\prd.md"
+  high_level_stories: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260522-005\\high-level-stories.md"
+  granular_stories: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260522-005\\granular-stories.md"
+  copy: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260522-005\\copy.md"
+  inputs: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260522-005\\inputs.md"
+  trace: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260522-005\\trace.md"
+  acceptance_criteria: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260522-005\\acceptance-criteria.md"
+  qa_plan: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260522-005\\qa-plan.md"
+  redteam_plan: null
+  release_plan: null
+checks:
+  lint:
+    status: not_run
+    last_run: null
+    evidence: ""
+  typecheck:
+    status: not_run
+    last_run: null
+    evidence: ""
+  tests:
+    status: not_run
+    last_run: null
+    evidence: ""
+  build:
+    status: not_run
+    last_run: null
+    evidence: ""
+  qa:
+    status: not_run
+    last_run: null
+    evidence: ""
+  redteam:
+    status: not_run
+    last_run: null
+    evidence: ""
+approvals:
+  plan:
+    required: false
+    state: not_required
+    ref: null
+  design:
+    required: false
+    state: not_required
+    ref: null
+  execution:
+    required: false
+    state: not_required
+    ref: null
+  release:
+    required: false
+    state: not_required
+    ref: null
+  external_services:
+    required: false
+    state: not_required
+    ref: null
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260523-0028.report.md"
+  design: null
+  execution: null
+  release: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\releases\\RL-20260523-024.yaml"
+ralph:
+  active: false
+  current_ticket: null
+  current_loop: null
+  status: idle
+  last_checkpoint: null
+  next_action: null
+crash_recovery:
+  last_checkpoint: ".claude/project/sprint/sprint-progress.yaml"
+  resume_command: "/sprint:release"
+  resume_summary: "Release RL-20260523-024 in preparing state. Run /sprint:release with --id RL-20260523-024."
+  active_files: []
+  dirty_state: false
+  blockers: []
+  safe_to_continue: true

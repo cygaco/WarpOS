@@ -1,0 +1,122 @@
+schema: warpos/sprint/current-sprint/v1
+id: SP-20260522-004
+title: "Migration bootstrap script — convert existing WarpOS installs to _warpos/ architecture"
+objective: "(set by /sprint:plan)"
+status: releasing
+created_at: "2026-05-23T03:27:10.018Z"
+updated_at: "2026-05-23T03:34:33.217Z"
+source_request: "Implement scripts/warpos/manifest/bootstrap.js — the migration bootstrap script that converts an existing WarpOS install (Jobzooka, DreamTeam, canonical-as-workspace) to the new _warpos/ architecture. Sprint 1 architecture-core's last mechanical piece; named in ROADMAP.md Pickup Queue as Sprint 5 candidate."
+interpreted_intent: "Sprint-1's architecture-core landed schema v1 + generator + validator + regenerator + settings compiler + structural gates against canonical itself, but installed products (Jobzooka, DreamTeam) still have no _warpos/ zone. A one-shot bootstrap script materializes that zone in an existing install: creates _warpos/, copies framework-owned content (hooks, templates, schemas, reference, settings/defaults) into it, generates the initial MANIFEST.json via build.js, rewrites .claude/settings.json hook paths to point at _warpos/hooks/*.js, then runs validator.js --strict for a clean-state attestation. Canonical-vs-product detection branches behavior (canonical sources self-reference; product sources point at _warpos/). Safe-copy semantics refuse to overwrite without --force."
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260523-0026.yaml"
+risk_level: medium
+approval_state: none_required
+current_phase: release
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+lane:
+  type: default
+  value: null
+  isolation_notes: ""
+external_services:
+  identified: []
+  blocked: []
+  ready: []
+  mocked: []
+  deferred: []
+tickets:
+  proposed: []
+  planned: []
+  designed: []
+  ready_for_execution: []
+  in_progress: []
+  blocked: []
+  waiting_on_human: []
+  waiting_on_external_service: []
+  in_review: []
+  qa_failed: []
+  redteam_failed: []
+  done:
+    - T-20260523-193
+    - T-20260523-194
+  released: []
+  deferred: []
+  abandoned: []
+  reopened: []
+  superseded: []
+requirements:
+  prd: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260522-004\\prd.md"
+  high_level_stories: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260522-004\\high-level-stories.md"
+  granular_stories: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260522-004\\granular-stories.md"
+  copy: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260522-004\\copy.md"
+  inputs: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260522-004\\inputs.md"
+  trace: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260522-004\\trace.md"
+  acceptance_criteria: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260522-004\\acceptance-criteria.md"
+  qa_plan: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260522-004\\qa-plan.md"
+  redteam_plan: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260522-004\\redteam-plan.md"
+  release_plan: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260522-004\\release-plan.md"
+checks:
+  lint:
+    status: not_run
+    last_run: null
+    evidence: ""
+  typecheck:
+    status: not_run
+    last_run: null
+    evidence: ""
+  tests:
+    status: not_run
+    last_run: null
+    evidence: ""
+  build:
+    status: not_run
+    last_run: null
+    evidence: ""
+  qa:
+    status: not_run
+    last_run: null
+    evidence: ""
+  redteam:
+    status: not_run
+    last_run: null
+    evidence: ""
+approvals:
+  plan:
+    required: false
+    state: not_required
+    ref: null
+  design:
+    required: false
+    state: not_required
+    ref: null
+  execution:
+    required: false
+    state: not_required
+    ref: null
+  release:
+    required: false
+    state: not_required
+    ref: null
+  external_services:
+    required: false
+    state: not_required
+    ref: null
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260523-0026.report.md"
+  design: null
+  execution: null
+  release: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\releases\\RL-20260523-023.yaml"
+ralph:
+  active: false
+  current_ticket: null
+  current_loop: null
+  status: idle
+  last_checkpoint: null
+  next_action: null
+crash_recovery:
+  last_checkpoint: ".claude/project/sprint/sprint-progress.yaml"
+  resume_command: "/sprint:release"
+  resume_summary: "Release RL-20260523-023 in preparing state. Run /sprint:release with --id RL-20260523-023."
+  active_files: []
+  dirty_state: false
+  blockers: []
+  safe_to_continue: true

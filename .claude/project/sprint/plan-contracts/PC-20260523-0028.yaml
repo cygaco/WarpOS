@@ -1,0 +1,142 @@
+schema: warpos/sprint/plan-contract/v1
+id: PC-20260523-0028
+created_at: "2026-05-23T03:40:10.856Z"
+updated_at: "2026-05-23T03:40:10.856Z"
+sprint: SP-20260522-005
+source_request: "Wire /warp:update --status into scripts/warpos/update.js. The validator (scripts/warpos/manifest/validate.js --json) is shipped — add --status flag that spawns it and renders the JSON as a per-file table grouped by finding class."
+source_request_verbatim: "/warp:update --status wires the validator. Validator (validate.js --json) is ready to consume; need to add --status to scripts/warpos/update.js and surface the JSON output as a per-file table. Sprint 6 polish from ROADMAP.md Pickup Queue."
+request_type: feature_add
+interpreted_intent: "scripts/warpos/manifest/validate.js --json already emits a structured payload with findings (missing/drift/unmanifested/user_modified/schema_violation) and ownerCounts. Sprint 6 wires this into scripts/warpos/update.js as an early-branch --status flag (like --rollback), so maintainers can run /warp:update --status against any install and get a human-readable diagnostic table — or pipe through --json for CI consumption. Exit 0 when clean, exit 1 when any finding present."
+user_or_business_outcome: "Maintainers gain a single command to audit any WarpOS install's manifest honesty against its on-disk state — for Jobzooka, DreamTeam, or canonical itself. CI can wire this in as a release gate. Today the audit requires manually running validate.js with the right --root flag; the new wrapper is one canonical entry point."
+affected_surfaces:
+  - surface: "scripts/warpos/update.js (modify — add runStatusCli + --status early branch + exports)"
+    evidence_level: verified_from_repo
+  - surface: "scripts/warpos/manifest/validate.js (read — invoked as subprocess)"
+    evidence_level: verified_from_repo
+  - surface: "scripts/warpos/test-status-cli.js (new — smoke tests)"
+    evidence_level: assumed_from_request
+current_behavior:
+  evidence_level: verified_from_repo
+  notes: "scripts/warpos/update.js has --to (apply/dry-run) and --rollback early branches. No --status. Validators must be invoked directly via node scripts/warpos/manifest/validate.js --root <dir> --json."
+desired_behavior: "node scripts/warpos/update.js --status [--target <dir>] [--json] [--strict] spawns validate.js --json under the hood. Human output: header (manifest path, root, pathCount, ownerCounts), then table per finding class (DRIFT / MISSING / UNMANIFESTED / USER_MODIFIED / SCHEMA_VIOLATION) with each item's path. JSON output: validator JSON augmented with mode=status. Exit 0 when total findings == 0, exit 1 otherwise. --target defaults to REPO_ROOT. --strict passes through to validate.js."
+scope:
+  size: s
+  risk_level: low
+  complexity_drivers:
+    - "Subprocess spawn of validate.js with stdout capture + JSON parse"
+    - "Fallback when target lacks scripts/warpos/manifest/validate.js (use canonical's)"
+    - "Exit-code semantics: --status exits 1 on any finding (not just strict findings) so CI can wire it in"
+scope_variants:
+  minimal_safe:
+    summary: "Just the --status flag + table rendering + smoke tests. No additional UI polish."
+    tradeoffs:
+      - Ships in a few hours
+      - "No /warp:status slash command wrapper"
+  recommended:
+    summary: "Minimal-safe + clean exit-code semantics (0 clean, 1 any finding) + canonical-fallback when target lacks validate.js + test fixtures covering clean/drifted/missing-validate cases."
+    tradeoffs:
+      - Same ship time
+      - Clear contract for CI
+  expanded:
+    summary: "Recommended + new /warp:status skill wrapper + diff against last known-good manifest (history table)"
+    tradeoffs:
+      - Skill wrapper is straightforward
+      - Diff-against-history needs storage and is out of scope for this sprint
+assumptions:
+  safe:
+    - "validate.js --json emits stable schema (ownerCounts, findings.{missing,drift,unmanifested,user_modified,schema_violation})"
+    - "update.js arg parser is the right place for --status (matches --rollback pattern)"
+    - "Sprint runs on a sprint/SP-20260522-005 branch (orchestrator refuses main)"
+  unsafe:
+    - "Targets that lack validate.js are rare in practice (only fresh installs without warpos infrastructure) — but fallback handles it"
+  needs_user_or_beta_review: []
+open_questions:
+  blocking: []
+  non_blocking: []
+non_goals:
+  - "Do NOT add a new --apply mode to --status (read-only diagnostic only)"
+  - "Do NOT modify validate.js itself (Sprint already shipped its --json contract)"
+  - "Do NOT add diff-against-last-known-good in this sprint (expanded scope)"
+requirement_areas:
+  - "--status early branch in update.js"
+  - "runStatusCli() helper"
+  - Per-class findings table renderer
+  - Smoke tests
+high_level_story_candidates:
+  - "As a maintainer auditing a product install, I run node scripts/warpos/update.js --status --target /path/to/dreamteam and see a per-class findings table (drift / missing / unmanifested / user_modified / schema_violation)."
+  - "As a CI gate, I run /warp:update --status --json --target $REPO and parse the output for non-zero exit + findings counts."
+granular_story_candidates:
+  - Add --status early branch to scripts/warpos/update.js arg parser
+  - "Implement runStatusCli() that spawns validate.js --json and parses output"
+  - "Render per-class findings table (human mode)"
+  - "Pass-through JSON augmented with mode=status (JSON mode)"
+  - "Exit 0 when zero findings; exit 1 otherwise"
+  - Fall back to canonical validate.js when target lacks it
+  - Add scripts/warpos/test-status-cli.js with clean/drifted/missing-validate fixtures
+  - Update CLI Usage message to mention --status
+workstream_candidates:
+  - name: Wire --status into update.js
+    owner_role: builder
+  - name: Tests
+    owner_role: builder
+preliminary_ticket_candidates:
+  - title: "scripts/warpos/update.js --status early branch + runStatusCli + per-file table"
+    risk: low
+    approx_size: s
+  - title: scripts/warpos/test-status-cli.js smoke tests
+    risk: low
+    approx_size: s
+external_service_dependencies:
+  required: []
+  possible: []
+approval_boundaries:
+  paid_service: false
+  production_deploy: false
+  destructive_migration: false
+  secrets_handling: false
+  sensitive_user_data: false
+  push_to_remote: false
+  notes: "Read-only diagnostic CLI; no destructive operations."
+design_required: true
+execution_allowed_without_design: false
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+lane:
+  type: default
+  value: null
+  isolation_notes: ""
+beta_review:
+  required: true
+  status: pending
+  consulted_at: null
+  outcome: null
+  notes: "Class B (small surface area). Beta consults at the 4 phase boundaries per /sprint:full cadence."
+plan_quality:
+  status: pass
+  criteria_met:
+    - Original request preserved verbatim
+    - Outcome stated separately from proposed implementation
+    - Affected surfaces identified with evidence levels
+    - Current behavior claims labeled with evidence levels
+    - Safe and unsafe assumptions separated
+    - Non-goals stated
+    - "External service dependencies checked (none)"
+    - Approval boundaries stated
+    - "Design requirement decided (yes)"
+    - "Execution mode recommended (adhoc)"
+    - No executable tickets minted yet
+    - Next command stated
+    - Resume instructions written
+    - Tracker updated durably
+    - Crash recovery state recorded
+  blockers: []
+next_recommended_command: "/sprint:design --sprint SP-20260522-005"
+resume_instructions: "/sprint:full --sprint SP-20260522-005 --resume --autonomy aggressive --mode adhoc"
+tracker_paths:
+  current_sprint: ".claude/project/sprint/current-sprint.yaml"
+  sprint_progress: ".claude/project/sprint/sprint-progress.yaml"
+  plan_contract: ".claude/project/sprint/plan-contracts/PC-20260523-0028.yaml"
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260523-0028.report.md"
+created_by: alpha
+updated_by: alpha

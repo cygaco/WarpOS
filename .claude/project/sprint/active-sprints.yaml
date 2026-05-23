@@ -1,5 +1,5 @@
 schema: warpos/sprint/active-sprints/v1
-primary: SP-20260522-003
+primary: SP-20260522-005
 sprints:
   - id: SP-20260512-001
     title: Multi-sprint parallelism for Sprint Workflow
@@ -232,5 +232,27 @@ sprints:
     pointer: ".claude/project/sprint/sprints/SP-20260522-003"
     created_at: "2026-05-22T05:46:59.393Z"
     updated_at: "2026-05-22T05:46:59.393Z"
+  - id: SP-20260522-004
+    title: "Migration bootstrap script — convert existing WarpOS installs to _warpos/ architecture"
+    status: retrospected
+    lane:
+      type: default
+      value: null
+      isolation_notes: ""
+    layout: per_sprint_subdir
+    pointer: ".claude/project/sprint/sprints/SP-20260522-004"
+    created_at: "2026-05-23T03:24:38.488Z"
+    updated_at: "2026-05-23T03:24:38.488Z"
+  - id: SP-20260522-005
+    title: "/warp:update --status wires manifest validator into per-file table"
+    status: retrospected
+    lane:
+      type: default
+      value: null
+      isolation_notes: ""
+    layout: per_sprint_subdir
+    pointer: ".claude/project/sprint/sprints/SP-20260522-005"
+    created_at: "2026-05-23T03:34:44.633Z"
+    updated_at: "2026-05-23T03:34:44.633Z"
 created_at: "2026-05-12T22:57:35.667Z"
-updated_at: "2026-05-22T05:46:59.393Z"
+updated_at: "2026-05-23T03:34:44.633Z"

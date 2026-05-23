@@ -41,6 +41,8 @@ Every `RL-*` at status=prepared OR =deployed. Each row links to the full `RL-*.y
 
 | Release | Sprint | Status | Target | Deployed | Notes |
 |---|---|---|---|---|---|
+| [RL-20260523-024](.claude/project/sprint/releases/RL-20260523-024.yaml) | [SP-20260522-005](.claude/project/sprint/sprints/SP-20260522-005/) | prepared | staging |  | /warp:update --status wires manifest validator into per-file table |
+| [RL-20260523-023](.claude/project/sprint/releases/RL-20260523-023.yaml) | [SP-20260522-004](.claude/project/sprint/sprints/SP-20260522-004/) | prepared | staging |  | Migration bootstrap script — convert existing WarpOS installs to _warpos/ architecture |
 | [RL-20260522-022](.claude/project/sprint/releases/RL-20260522-022.yaml) | [SP-20260522-003](.claude/project/sprint/sprints/SP-20260522-003/) | prepared | staging |  | Maintainer &amp; Product Workflow — .vscode/tasks.json from portfolio registry, /portfolio:open --spawn VS Code preference, aiweb product-delivery ticket (cadence rule) |
 | [RL-20260522-021](.claude/project/sprint/releases/RL-20260522-021.yaml) | [SP-20260522-003](.claude/project/sprint/sprints/SP-20260522-003/) | prepared | staging |  | Install &amp; Release Integrity — manifest coverage, dry-run + rollback, idempotent install, framework-views-fresh + framework-purity gates |
 | [RL-20260522-020](.claude/project/sprint/releases/RL-20260522-020.yaml) | [SP-20260522-003](.claude/project/sprint/sprints/SP-20260522-003/) | prepared | staging |  | Framework Boundary &amp; Identity — _warpos/ zone, MANIFEST.json, full purge of /warp:promote suite |

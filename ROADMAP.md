@@ -77,6 +77,8 @@ Every sprint that has been planned, executed, released, or retrospected — one 
 
 | Sprint | Title | Status | Started | Closed | Release |
 |---|---|---|---|---|---|
+| [SP-20260522-005](.claude/project/sprint/sprints/SP-20260522-005/) | /warp:update --status wires manifest validator into per-file table | planning | 2026-05-23T03:34:44.633Z |  |  |
+| [SP-20260522-004](.claude/project/sprint/sprints/SP-20260522-004/) | Migration bootstrap script — convert existing WarpOS installs to _warpos/ architecture | planning | 2026-05-23T03:24:38.488Z |  |  |
 | [SP-20260522-003](.claude/project/sprint/sprints/SP-20260522-003/) | Maintainer &amp; Product Workflow — .vscode/tasks.json from portfolio registry, /portfolio:open --spawn VS Code preference, aiweb product-delivery ticket (cadence rule) | retrospected | 2026-05-22T05:46:59.393Z | 2026-05-22T23:14:30.000Z |  |
 | [SP-20260522-002](.claude/project/sprint/sprints/SP-20260522-002/) | Install &amp; Release Integrity — manifest coverage, dry-run + rollback, idempotent install, framework-views-fresh + framework-purity gates | retrospected | 2026-05-22T05:43:50.057Z | 2026-05-22T23:14:25.000Z |  |
 | [SP-20260522-001](.claude/project/sprint/sprints/SP-20260522-001/) | Framework Boundary &amp; Identity — _warpos/ zone, MANIFEST.json, full purge of /warp:promote suite | retrospected | 2026-05-22T05:27:29.796Z | 2026-05-22T23:14:20.000Z |  |
@@ -99,6 +101,30 @@ Every sprint that has been planned, executed, released, or retrospected — one 
 | [SP-20260518-009](.claude/project/sprint/sprints/SP-20260518-009/) | Consolidate ROADMAP.md and WARPOS_ROADMAP.md into single canonical ROADMAP.md (scaffold still shipped from generator) | closed | 2026-05-19T02:32:56.764Z | 2026-05-19T03:10:20.680Z |  |
 | [SP-20260519-001](.claude/project/sprint/sprints/SP-20260519-001/) | ROADMAP + RELEASES ledger discipline — repo-root sprint+release ledgers with skill+hook enforcement | planning | 2026-05-19T06:54:10.028Z |  |  |
 <!-- ledger:sprints — auto-managed by scripts/sprint/ledger.js. Manual edits are valid but may be overwritten on next /sprint:* invocation. -->
+
+---
+
+## ✅ Shipped in SP-20260522-004/005 (2026-05-23)
+
+Two framework sprints closed via `/sprint:full` in adhoc + aggressive mode. Plus the cadence-rule product sprint (DreamTeam) was verified already-shipped from a prior session.
+
+**Sprint 4 — DreamTeam SP-20260522-001..010 (cadence-rule product sprint, verified already-shipped):**
+
+- **[shipped — verified by background dreamteam dispatch]** DreamTeam's full 10-sprint series (Model + Routing through Docs + Outreach) was implemented in a prior session — commit `8bc1e51` (Model + Routing Tables) + 9 sibling commits land all 10 sprints on the `vlad` branch. `npm test` shows 91/91 passing in `app/app/lib/recommend.test.ts` with the full 8-roles × 4-tiers = 32-cell routing matrix covered with explicit assertions (`recommend.test.ts:54-352`). Cadence rule satisfied. Side finding to surface: dreamteam's `/sprint:full` orchestrator is broken in that repo (missing `paths.sprintFullAutonomy` + `paths.sprintSchemas` keys in `.claude/paths.json`); orchestration infra wasn't installed/promoted into dreamteam during the v0.8.2 push — worth a follow-up to wire those path keys + create the autonomy bundle + schemas dir.
+
+**Sprint 5 — Migration bootstrap script (1 done):**
+
+- **[shipped — SP-20260522-004/T-20260523-193+T-20260523-194]** `scripts/warpos/manifest/bootstrap.js` (~350 lines, no npm deps) — converts a pre-`_warpos/` install (Jobzooka, DreamTeam, canonical-as-workspace) into the new architecture. Mode detection branches on `_warpos/MANIFEST.json` + `framework/` (canonical) vs `_warpos/` absent + `.claude/` present + (`scripts/hooks/` OR `framework-installed.json`) (product). Source canonical-clone discovery: `--source` flag > `framework-installed.json#source` > sibling-clone heuristic (`../WarpOS`, `../warpos`, `../Warpos`). Safe-copy: never overwrites without `--force`; missing files always copied. Settings.json hook-path rewriter substitutes `scripts/hooks/` → `_warpos/hooks/` while preserving permissions/env/matchers/etc. Subprocess invocations of `build.js` (initial MANIFEST.json gen) + optional `regenerate.js` (views) + `validate.js --strict` (clean-state attestation). Exit codes: 0 ok / 1 refused / 2 cli / 3 no-source / 4 copy-fail / 5 manifest-fail / 6 validate-fail. `--dry-run` and `--json` modes. Sibling `scripts/warpos/manifest/test-bootstrap.js`: 47/47 tests pass (canonical refuse, unknown refuse, product happy path, `--force` overwrite, `--dry-run` writes nothing, `--json` emits parseable JSON, `--source` flag honored, sibling-clone discovery, source-discovery failure, settings rewriter idempotency + non-path field preservation, `--skip-views`/`--skip-validate`, `detectMode` pure function tests). Sprint 1 architecture-core's last mechanical piece. *(Plan Contract: PC-20260523-0026.)*
+
+**Sprint 6 — `/warp:update --status` wires manifest validator (1 done):**
+
+- **[shipped — SP-20260522-005/T-20260523-195+T-20260523-196]** `scripts/warpos/update.js` gained `runStatusCli()` + `--status` early branch alongside `--rollback`. Spawns `scripts/warpos/manifest/validate.js --json` as subprocess; renders per-class findings table (`DRIFT` / `MISSING` / `UNMANIFESTED` / `USER_MODIFIED` / `SCHEMA_VIOLATION`) with each item's path. Header shows manifest path + root + pathCount + ownerCounts. `--json` mode passes through validator JSON augmented with `mode: "status"`. `--target` flag overrides the audit root. `--strict` passes through to validate.js. `--status` exits 0 when total findings == 0, exits 1 otherwise (CI-friendly: any finding wakes up the gate, not just strict-class). Canonical-fallback: if target lacks `scripts/warpos/manifest/validate.js`, falls back to invoking the canonical install's copy. Usage message updated. `runStatusCli` exported. Sibling `scripts/warpos/test-status-cli.js`: 19/19 tests pass (clean fixture human + JSON, drifted fixture human + JSON, `--target` flag, `--strict`, canonical-fallback when target lacks validate.js, ownerCounts surfaced, findings table renders). *(Plan Contract: PC-20260523-0027.)*
+
+**Bonus hygiene (this session, orthogonal to the two sprints):**
+
+- **[shipped]** `_warpos/MANIFEST.json` regenerated 1939 → 1997 paths (includes new bootstrap.js + test-bootstrap.js + test-status-cli.js + sprint artifact entries). `validate.js --strict` reports 0 findings.
+- **[shipped]** `.claude/project/sprint/active-sprints.yaml` manually patched: SP-20260522-004 + SP-20260522-005 status updated from `planning` → `retrospected` to reflect actual sprint completion (this is the documented "current.yaml#status lag" bug — orchestrator doesn't update active-sprints registry on phase 5; manual fix until that bug is addressed).
+- **[open — discovered this session]** DreamTeam product repo lacks `/sprint:full` orchestration infrastructure — `.claude/paths.json` missing `sprintFullAutonomy` + `sprintSchemas` keys; `paths.sprintFullAutonomy` config not installed; full-reports/checkpoints/plan-contracts/approvals/releases/history/routing dirs absent. Likely a `/warp:update` capsule didn't include the SP-005-era orchestrator. Workaround: dreamteam sprints execute inline. Fix: include orchestrator infra in next capsule.
 
 ---
 

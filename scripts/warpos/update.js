@@ -1333,6 +1333,135 @@ function runRollbackCli(txId, opts) {
   process.exit(fullSuccess ? 0 : 1);
 }
 
+/**
+ * /warp:update --status — manifest validator wired as a per-file table.
+ *
+ * SP-20260522-005 / T-20260523-195. Read-only diagnostic: spawns
+ * scripts/warpos/manifest/validate.js --json, renders the findings as a
+ * table grouped by class (drift / missing / unmanifested / user_modified
+ * / schema_violation), reports ownerCounts, and exits 0 when clean / 1
+ * when any finding present (mirrors validate --strict semantics for
+ * scripting).
+ *
+ * Flags honored: --target <dir> (default: REPO_ROOT), --json (pass through
+ * validator JSON), --strict (override: even soft user_modified findings
+ * → exit 1).
+ */
+function runStatusCli(opts) {
+  const targetRoot = opts.target ? path.resolve(opts.target) : REPO_ROOT;
+  const validateScript = path.join(
+    targetRoot,
+    "scripts",
+    "warpos",
+    "manifest",
+    "validate.js",
+  );
+  if (!fs.existsSync(validateScript)) {
+    // Fall back to canonical script if target install lacks it.
+    const fallback = path.join(
+      __dirname,
+      "manifest",
+      "validate.js",
+    );
+    if (!fs.existsSync(fallback)) {
+      const msg = `--status: validate.js not found at ${validateScript} or ${fallback}`;
+      if (opts.json) {
+        console.log(JSON.stringify({ ok: false, mode: "status", error: msg }, null, 2));
+      } else {
+        console.error(msg);
+      }
+      process.exit(2);
+    }
+  }
+  const script = fs.existsSync(validateScript) ? validateScript : path.join(__dirname, "manifest", "validate.js");
+  const validateArgs = ["--root", targetRoot, "--json"];
+  if (opts.strict) validateArgs.push("--strict");
+  const res = require("child_process").spawnSync(
+    process.execPath,
+    [script, ...validateArgs],
+    { encoding: "utf8" },
+  );
+  if (res.error) {
+    const msg = `--status: failed to spawn validate.js: ${res.error.message}`;
+    if (opts.json) {
+      console.log(JSON.stringify({ ok: false, mode: "status", error: msg }, null, 2));
+    } else {
+      console.error(msg);
+    }
+    process.exit(2);
+  }
+  let parsed;
+  try {
+    parsed = JSON.parse(res.stdout);
+  } catch (e) {
+    const msg = `--status: validate.js did not emit parseable JSON: ${e.message}\nstdout: ${res.stdout}\nstderr: ${res.stderr}`;
+    if (opts.json) {
+      console.log(JSON.stringify({ ok: false, mode: "status", error: msg }, null, 2));
+    } else {
+      console.error(msg);
+    }
+    process.exit(2);
+  }
+  // --status exits 1 if ANY findings present (not just strict-class findings).
+  // The --strict flag changes the validator's per-finding severity, not the
+  // top-level exit policy. /warp:update --status is a maintainer diagnostic:
+  // "anything to look at?" → non-zero answer wakes up CI.
+  const findingsForExit = parsed.findings || {};
+  const totalFindingsForExit = Object.values(findingsForExit).reduce(
+    (n, arr) => n + (Array.isArray(arr) ? arr.length : 0),
+    0,
+  );
+  if (opts.json) {
+    // Pass through validator JSON augmented with mode tag.
+    console.log(JSON.stringify({ mode: "status", ...parsed }, null, 2));
+    process.exit(totalFindingsForExit === 0 ? 0 : 1);
+  }
+  // Human-readable per-file table.
+  console.log(`/warp:update --status — manifest validator`);
+  console.log(`  manifest: ${parsed.manifestPath || "(not found)"}`);
+  console.log(`  root:     ${parsed.root || targetRoot}`);
+  if (typeof parsed.pathCount === "number") {
+    console.log(`  paths:    ${parsed.pathCount} total`);
+  }
+  if (parsed.ownerCounts) {
+    const oc = parsed.ownerCounts;
+    console.log(
+      `  owners:   framework=${oc.framework || 0} generated=${oc.generated || 0} project=${oc.project || 0} runtime=${oc.runtime || 0}` +
+        (oc.other ? ` other=${oc.other}` : ""),
+    );
+  }
+  console.log("");
+  const findings = parsed.findings || {};
+  const classes = ["missing", "drift", "schema_violation", "user_modified", "unmanifested"];
+  let totalFindings = 0;
+  for (const cls of classes) {
+    const items = findings[cls] || [];
+    if (items.length === 0) continue;
+    totalFindings += items.length;
+    console.log(`${cls.toUpperCase().padEnd(18)} (${items.length})`);
+    for (const item of items.slice(0, 40)) {
+      // Items may be strings (paths) or objects with path/detail.
+      if (typeof item === "string") {
+        console.log(`  ${item}`);
+      } else if (item && typeof item === "object") {
+        const p = item.path || item.file || JSON.stringify(item);
+        const d = item.detail || item.reason || "";
+        console.log(`  ${p}${d ? ` — ${d}` : ""}`);
+      }
+    }
+    if (items.length > 40) {
+      console.log(`  …and ${items.length - 40} more`);
+    }
+    console.log("");
+  }
+  if (totalFindings === 0) {
+    console.log(`CLEAN — manifest matches on-disk state.`);
+    process.exit(0);
+  }
+  console.log(`${totalFindings} finding(s). Re-run with --json for the full payload.`);
+  process.exit(1);
+}
+
 if (require.main === module) {
   const args = process.argv.slice(2);
   const get = (flag) => {
@@ -1348,6 +1477,18 @@ if (require.main === module) {
     }
     return null;
   };
+  // ── Early branch: --status ──
+  // Read-only validator wrapper. Renders manifest validate.js --json as a
+  // per-file table. Honours --target / --json / --strict. Never falls
+  // through to the update flow.
+  if (args.includes("--status")) {
+    runStatusCli({
+      target: get("--target"),
+      json: args.includes("--json"),
+      strict: args.includes("--strict"),
+    });
+    return;
+  }
   // ── Early branch: --rollback <txId> ──
   // Runs the manual rollback handler, never falls through to the normal
   // update flow. Honours --target and --json; ignores --to/--apply/etc.
@@ -1395,7 +1536,7 @@ if (require.main === module) {
   };
   if (!opts.to) {
     console.error(
-      "Usage: node scripts/warpos/update.js --to <version> [--source <warpos-repo>] [--target <install-path>] [--dry-run | --apply] [--confirm-deletes] [--force-fresh] [--allow-stale] [--allow-version-drift] [--no-transaction] [--skip-postflight] [--strict-postflight]\n       node scripts/warpos/update.js --rollback <txId> [--target <install-path>] [--json]",
+      "Usage: node scripts/warpos/update.js --to <version> [--source <warpos-repo>] [--target <install-path>] [--dry-run | --apply] [--confirm-deletes] [--force-fresh] [--allow-stale] [--allow-version-drift] [--no-transaction] [--skip-postflight] [--strict-postflight]\n       node scripts/warpos/update.js --rollback <txId> [--target <install-path>] [--json]\n       node scripts/warpos/update.js --status [--target <install-path>] [--json] [--strict]",
     );
     process.exit(2);
   }
@@ -1540,4 +1681,5 @@ module.exports = {
   findRepoRootFromCapsule,
   discoverCanonical,
   loadCapsule,
+  runStatusCli,
 };

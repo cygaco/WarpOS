@@ -1,0 +1,197 @@
+schema: warpos/sprint/plan-contract/v1
+id: PC-20260523-0025
+created_at: "2026-05-23T03:27:10.023Z"
+updated_at: "2026-05-23T03:27:10.023Z"
+sprint: SP-20260522-004
+source_request: "Implement scripts/warpos/manifest/bootstrap.js — the migration bootstrap script that converts an existing WarpOS install (Jobzooka, DreamTeam, canonical-as-workspace) to the new _warpos/ architecture. Sprint 1 architecture-core's last mechanical piece; named in ROADMAP.md Pickup Queue as Sprint 5 candidate."
+source_request_verbatim: "Implement scripts/warpos/manifest/bootstrap.js — migration script that converts an existing WarpOS install (Jobzooka, DreamTeam, canonical-as-workspace) to the new _warpos/ architecture. Creates _warpos/ zone at product root, copies framework-owned content in (scripts/hooks → _warpos/hooks, templates, schemas, reference, settings/defaults), generates initial _warpos/MANIFEST.json via build.js, updates .claude/settings.json hook references to point at _warpos/hooks/, runs validator.js --strict to confirm clean migration. Canonical-vs-product detection (canonical = self-references, product = _warpos source-of-truth). Safe-copy semantics (no overwrites without explicit flag). Sprint 5 candidate from ROADMAP.md Pickup Queue (lines 45, 138, 297-303). Output: scripts/warpos/manifest/bootstrap.js + comprehensive tests + integration with /warp:setup discovery."
+request_type: feature_add
+interpreted_intent: "Sprint-1's architecture-core landed schema v1 + generator + validator + regenerator + settings compiler + structural gates against canonical itself, but installed products (Jobzooka, DreamTeam) still have no _warpos/ zone. A one-shot bootstrap script materializes that zone in an existing install: creates _warpos/, copies framework-owned content (hooks, templates, schemas, reference, settings/defaults) into it, generates the initial MANIFEST.json via build.js, rewrites .claude/settings.json hook paths to point at _warpos/hooks/*.js, then runs validator.js --strict for a clean-state attestation. Canonical-vs-product detection branches behavior (canonical sources self-reference; product sources point at _warpos/). Safe-copy semantics refuse to overwrite without --force."
+user_or_business_outcome: "Rolling _warpos/ out to real products (Jobzooka, DreamTeam) becomes a single command instead of a multi-day manual migration. The new ownership/regeneration/validation system gets exercised under real load — which surfaces edge cases that canonical-only testing can't. Sprint 5 candidates after this (install/release reliability batch, Sprint 6 polish) all build on the assumption that _warpos/ exists in products."
+affected_surfaces:
+  - surface: "scripts/warpos/manifest/bootstrap.js (new)"
+    evidence_level: assumed_from_request
+  - surface: "scripts/warpos/manifest/test-bootstrap.js (new — unit tests)"
+    evidence_level: assumed_from_request
+  - surface: "scripts/warpos/manifest/build.js (read — invoked by bootstrap to generate initial MANIFEST.json)"
+    evidence_level: verified_from_repo
+  - surface: "scripts/warpos/manifest/validate.js (read — invoked by bootstrap with --strict for clean-state attestation)"
+    evidence_level: verified_from_repo
+  - surface: "scripts/warpos/views/regenerate.js (read — bootstrap may invoke to materialize generated .claude/commands and .claude/agents views post-copy)"
+    evidence_level: verified_from_repo
+  - surface: ".claude/settings.json (modify — rewrite hook command paths from scripts/hooks/*.js to _warpos/hooks/*.js)"
+    evidence_level: verified_from_repo
+  - surface: "_warpos/ zone (create — destination for framework-owned content in product mode)"
+    evidence_level: verified_from_repo
+    notes: "Currently only MANIFEST.json exists at _warpos/ root in canonical; product installs have no _warpos/ at all."
+  - surface: "scripts/warp-setup.js (modify — call bootstrap.js when install detects an upgrade path from pre-_warpos to _warpos schema)"
+    evidence_level: inferred_from_repo
+    notes: "Discovery integration is the optional polish layer; bootstrap stands alone as a standalone CLI first."
+  - surface: "framework-installed.json (read — used to detect existing install version and schema)"
+    evidence_level: verified_from_repo
+current_behavior:
+  evidence_level: verified_from_repo
+  notes: "scripts/warpos/manifest/ has build.js, validate.js, test-build.js, test-validate.js. scripts/warpos/views/ has regenerate.js, test-regenerate.js. Canonical _warpos/ contains only MANIFEST.json (1939 paths, 0 unmanifested). DreamTeam product repo has zero _warpos/ directory. No bootstrap.js exists. There is no automated path from a v0.8.x install (scripts/hooks/, no _warpos/) to a v0.9+ install (_warpos/ zone with framework-owned content). A maintainer wanting to migrate Jobzooka or DreamTeam would have to hand-create _warpos/, copy content in, regenerate MANIFEST, rewrite settings.json hook refs — all error-prone."
+desired_behavior: "node scripts/warpos/manifest/bootstrap.js [--root <dir>] [--source <canonical-clone>] [--force] [--dry-run] [--json] performs the migration end-to-end: (1) detect canonical-vs-product mode from the target's framework-installed.json or absence thereof; (2) refuse if _warpos/ already exists without --force; (3) copy framework-owned content from the source canonical (scripts/hooks → _warpos/hooks, templates, schemas, reference, settings/defaults) into the target's _warpos/; (4) invoke build.js to generate initial _warpos/MANIFEST.json with canonical-vs-product sourcePrefix; (5) rewrite .claude/settings.json hooks block — every command path that starts with scripts/hooks/ becomes _warpos/hooks/; (6) optionally invoke views/regenerate.js to materialize .claude/commands and .claude/agents from _warpos/; (7) run validate.js --strict and report clean-state attestation; (8) emit a bootstrap report. --dry-run prints the plan without writing."
+scope:
+  size: m
+  risk_level: medium
+  complexity_drivers:
+    - "Canonical-vs-product detection (heuristics: framework-installed.json presence, _warpos/ absence, scripts/hooks/ presence)"
+    - "Safe-copy semantics with --force discipline (no overwrites without explicit flag, but new files always copied)"
+    - "Settings.json hook-path rewrite without breaking other hook config fields (allow lists, deny lists, env)"
+    - "Idempotency — running bootstrap twice on the same install must be a no-op (or refuse cleanly)"
+    - "Source canonical-clone discovery — bootstrap needs to know where to copy FROM. Options: --source flag, sibling-clone heuristic, framework-installed.json#source field"
+scope_variants:
+  minimal_safe:
+    summary: "Ship bootstrap.js as a standalone CLI with --root, --source, --force, --dry-run flags. Manual invocation only. No /warp:setup integration. Test against canonical-as-workspace (no destructive change) + dry-run against DreamTeam. Source-canonical-clone defaults to sibling-clone heuristic; --source overrides."
+    tradeoffs:
+      - "Ships fast (~1 day)"
+      - Maintainer invokes manually for each product migration
+      - Migrations are predictable and auditable
+      - "/warp:setup integration deferred"
+  recommended:
+    summary: "Minimal-safe + auto-detection in /warp:setup. When /warp:setup runs on an existing install that lacks _warpos/, it offers (with --apply flag) to invoke bootstrap. Plus a comprehensive test suite covering: canonical mode (refuse — already has _warpos), product mode (clean migration), product mode with --force, dry-run output shape, settings.json rewrite correctness, hook-path edge cases (env vars, conditional matchers)."
+    tradeoffs:
+      - "Sprint duration ~1.5 days"
+      - "Auto-detection in /warp:setup is the right UX but adds one integration point"
+      - "Test surface ~15-20 test cases"
+  expanded:
+    summary: "Recommended + actual migration of one real product (DreamTeam) as part of sprint acceptance. Plus a /warp:bootstrap dedicated skill wrapper. Plus rollback support (bootstrap-snapshot directory restored by /warp:rollback)."
+    tradeoffs:
+      - "Real-product migration touches DreamTeam repo (cross-repo commit)"
+      - "Rollback is its own sub-feature — could blow up scope"
+      - "Best deferred to a Sprint 6+ slot if Sprint 5 stays focused"
+assumptions:
+  safe:
+    - "Sprint runs on a sprint/SP-20260522-004 branch (orchestrator refuses main without --allow-main)"
+    - "build.js, validate.js, regenerate.js are stable per Sprint 1 retrospective (63 tests passing)"
+    - "Canonical _warpos/ structure (commands/, agents/, hooks/, schemas/, templates/, settings/defaults.json, reference/) is the migration target shape (per ROADMAP lines 199-228)"
+    - framework-installed.json captures the prior install snapshot used for upgrade-path detection
+  unsafe:
+    - "Source-canonical-clone discovery: sibling-clone heuristic may fail when the canonical clone is at an unexpected path"
+    - "Settings.json hook-path rewrite assumes hooks block follows the well-known schema (paths in command strings) — exotic hook configs could break"
+    - "Existing user-customized hooks in scripts/hooks/ would be left behind by the copy (treated as user-owned per ownership model — but bootstrap should at least warn)"
+    - "Canonical _warpos/ source migration (settings/defaults.json doesn't yet exist per ROADMAP Sprint 6 backlog) — bootstrap may copy from a partial source"
+  needs_user_or_beta_review:
+    - "Should bootstrap migrate canonical to canonical mode too (regenerate self-references), or only product mode? Probably product-only — canonical already has _warpos/."
+    - "If the target has uncommitted changes, should bootstrap refuse, snapshot-then-proceed, or proceed silently?"
+    - "DreamTeam currently has no _warpos/ — should bootstrap.js be the recommended migration path for the DreamTeam team or a maintainer-only tool?"
+open_questions:
+  blocking: []
+  non_blocking:
+    - "Rollback support — defer to a separate sprint or include?"
+    - "/warp:bootstrap skill wrapper or just the CLI?"
+    - "Should bootstrap touch _requirements/ and _docs/ at all (product-owned content) or leave entirely alone?"
+    - "If canonical source has changes uncommitted, should bootstrap refuse to copy from a dirty source?"
+non_goals:
+  - "Do NOT migrate _requirements/ or _docs/ — those are project-owned content per the ownership model"
+  - "Do NOT auto-execute against multiple products in one invocation — single target per run"
+  - "Do NOT push or commit to the target — bootstrap only modifies the working tree; operator commits"
+  - "Do NOT delete legacy scripts/hooks/ in the target — leave for operator cleanup (manifest will mark them user-owned or unmanifested)"
+  - "Do NOT build the /warp:bootstrap skill if minimal_safe is the chosen scope variant"
+  - "Do NOT add rollback support in this sprint (expanded scope only)"
+  - "Do NOT integrate with central-WarpOS architecture (parked in Later: Platform Bets)"
+requirement_areas:
+  - "Bootstrap CLI (scripts/warpos/manifest/bootstrap.js)"
+  - Canonical-vs-product detection helpers
+  - "Safe-copy + force-overwrite semantics"
+  - Settings.json hook-path rewriter
+  - "Bootstrap report + JSON emission"
+  - "Unit + integration tests"
+  - "/warp:setup discovery hook (recommended variant only)"
+high_level_story_candidates:
+  - "As a maintainer migrating Jobzooka, I run `node scripts/warpos/manifest/bootstrap.js --root <jobzooka>` and get a clean _warpos/ zone with a fresh MANIFEST.json, rewritten settings.json hook paths, and a green validate.js --strict attestation."
+  - "As a maintainer running /warp:setup on a pre-_warpos install, I'm prompted to bootstrap automatically (with --apply or --dry-run) rather than discover the gap days later."
+  - "As a maintainer running bootstrap twice on the same install, the second run refuses cleanly (or is a no-op with --force) — never silent-clobber."
+  - "As a CI gate, I can run bootstrap --dry-run --json to verify a planned migration before merge."
+granular_story_candidates:
+  - "Detect canonical-vs-product mode from framework-installed.json + _warpos/ presence"
+  - Refuse without --force when _warpos/ exists
+  - "Copy framework-owned content from source canonical's framework/ into target _warpos/ (preserving structure)"
+  - Generate initial _warpos/MANIFEST.json via build.js with correct sourcePrefix
+  - "Rewrite .claude/settings.json hooks block — substitute scripts/hooks/ → _warpos/hooks/ in command strings"
+  - Validate post-state with validate.js --strict and surface findings
+  - "Emit bootstrap report (BOOTSTRAP_REPORT.md or stdout) + --json for machine-readable output"
+  - Dry-run mode shows the full plan without writing
+  - "Idempotency test: running bootstrap twice on a clean install must refuse (or no-op)"
+  - "/warp:setup discovery: call bootstrap when install detects upgrade path (recommended scope only)"
+  - "Source-canonical-clone discovery: --source explicit, sibling-clone heuristic, framework-installed.json#source field fallback"
+workstream_candidates:
+  - name: Bootstrap CLI core
+    owner_role: builder
+  - name: "Tests (unit + integration)"
+    owner_role: builder
+  - name: Settings.json rewriter
+    owner_role: builder
+  - name: "/warp:setup integration (recommended scope only)"
+    owner_role: builder
+  - name: "Review against spec + code quality"
+    owner_role: reviewer
+preliminary_ticket_candidates:
+  - title: "scripts/warpos/manifest/bootstrap.js CLI + core logic"
+    risk: medium
+    approx_size: m
+  - title: "Settings.json hook-path rewriter (own module + unit tests)"
+    risk: medium
+    approx_size: s
+  - title: "Bootstrap test suite (canonical / product / force / dry-run / idempotency)"
+    risk: low
+    approx_size: m
+  - title: "/warp:setup discovery hook for bootstrap (recommended scope only)"
+    risk: low
+    approx_size: s
+external_service_dependencies:
+  required: []
+  possible: []
+approval_boundaries:
+  paid_service: false
+  production_deploy: false
+  destructive_migration: false
+  secrets_handling: false
+  sensitive_user_data: false
+  push_to_remote: false
+  notes: "All work is local file writes in canonical WarpOS. Bootstrap operates on the working tree but never commits or pushes. No paid services, no production deploys, no destructive migrations of user data."
+design_required: true
+execution_allowed_without_design: false
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+lane:
+  type: default
+  value: null
+  isolation_notes: ""
+beta_review:
+  required: true
+  status: pending
+  consulted_at: null
+  outcome: null
+  notes: "Class B technical decision (architecture surface that touches install/upgrade path). Beta consults at the 4 phase boundaries per /sprint:full cadence."
+plan_quality:
+  status: pass
+  criteria_met:
+    - Original request preserved verbatim
+    - Outcome stated separately from proposed implementation
+    - Affected surfaces identified with evidence levels
+    - Current behavior claims labeled with evidence levels
+    - Safe and unsafe assumptions separated
+    - Non-goals stated
+    - "External service dependencies checked (none)"
+    - Approval boundaries stated
+    - "Design requirement decided (yes)"
+    - "Execution mode recommended (adhoc)"
+    - No executable tickets minted yet
+    - Next command stated
+    - Resume instructions written
+    - Tracker updated durably
+    - Crash recovery state recorded
+  blockers: []
+next_recommended_command: "/sprint:design --sprint SP-20260522-004"
+resume_instructions: "If the session crashes mid-plan, /sprint:plan re-run produces a fresh Plan Contract (the old one stays on disk for history). To advance to design phase: /sprint:design --sprint SP-20260522-004. To run the full pipeline autonomously: /sprint:full --sprint SP-20260522-004 --resume --autonomy aggressive --mode adhoc."
+tracker_paths:
+  current_sprint: ".claude/project/sprint/current-sprint.yaml"
+  sprint_progress: ".claude/project/sprint/sprint-progress.yaml"
+  plan_contract: ".claude/project/sprint/plan-contracts/PC-20260523-0025.yaml"
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260523-0025.report.md"
+created_by: alpha
+updated_by: alpha
