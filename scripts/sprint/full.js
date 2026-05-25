@@ -100,6 +100,9 @@ function parseArgs(argv) {
     allowMain: false,
     costAcknowledged: false,
     help: false,
+    betaVerdict: null,
+    betaMessage: null,
+    pendingPhase: null,
   };
   for (let i = 2; i < argv.length; i++) {
     const a = argv[i];
@@ -112,6 +115,9 @@ function parseArgs(argv) {
     else if (a === "--resume") out.resume = true;
     else if (a === "--allow-main") out.allowMain = true;
     else if (a === "--cost-acknowledged") out.costAcknowledged = true;
+    else if (a === "--beta-verdict") out.betaVerdict = argv[++i];
+    else if (a === "--beta-message") out.betaMessage = argv[++i];
+    else if (a === "--pending-phase") out.pendingPhase = argv[++i];
     else if (!a.startsWith("--") && out.request === null) out.request = a;
   }
   return out;
@@ -133,6 +139,9 @@ Flags:
   --resume                      resume an in-progress run; requires --sprint
   --allow-main                  override branch-protection (requires aggressive)
   --cost-acknowledged           raise cost threshold 2x for this run only
+  --beta-verdict <v>            DECIDE | DIRECTIVE | ESCALATE — verdict from Beta consultation
+  --beta-message "<text>"       message accompanying the Beta verdict
+  --pending-phase <boundary>    phase boundary the verdict applies to (e.g. before_plan)
   --help, -h                    show this message
 
 Hard ceilings (never bypassable by any preset):
@@ -411,7 +420,11 @@ ${
   state.betaConsultations.length === 0
     ? "(none — solo mode or skipped)"
     : state.betaConsultations
-        .map((c) => `- ${c.phase_boundary}: ${c.verdict} (${c.ts})`)
+        .map(
+          (c) =>
+            `- ${c.phase_boundary}: ${c.verdict}` +
+            `${c.beta_message ? ` — ${c.beta_message}` : ""} (${c.ts})`,
+        )
         .join("\n")
 }
 
@@ -467,26 +480,137 @@ function checkpoint(state, status, nextAction, resumeNotes) {
   ]);
 }
 
-// ── Phase boundary Beta consultation (adhoc mode only, stub) ──────────
+// ── Beta verdict validator ────────────────────────────────────────────
 
-function maybeConsultBeta(state, boundary) {
+const BETA_VERDICTS = Object.freeze(["DECIDE", "DIRECTIVE", "ESCALATE"]);
+
+function validateBetaVerdict(v) {
+  return BETA_VERDICTS.includes(v);
+}
+
+// ── Phase boundary Beta consultation (adhoc mode only) ────────────────
+//
+// ADR option (b): halt-at-each-Beta-boundary.
+// A spawnSync-d node subprocess cannot reach the in-process SendMessage/
+// Agent surface. Instead, the orchestrator halts here and lets the
+// foreground (Alpha) drive the real consult, then resumes with the verdict
+// passed via --beta-verdict / --pending-phase on the CLI.
+//
+// Call site MUST pass `args` (the parsed CLI args object) so this function
+// can inspect a supplied verdict. It MAY mutate args.betaVerdict to null
+// after consuming it — one-consult-per-resume semantics.
+
+function maybeConsultBeta(state, boundary, args) {
+  // Solo mode: skip Beta entirely — no halts, no events, no consult records.
   if (state.mode !== "adhoc") return { ok: true, verdict: null };
-  // Beta consultation is dispatched via SendMessage by the skill body
-  // (Alpha's responsibility, not the orchestrator's). Here we log
-  // the intent; the actual SendMessage call is interactive.
-  emit("sprint_full_beta_consultation", {
-    sprint_id: state.sprintId,
+
+  // Determine whether a verdict has been supplied that applies to THIS boundary:
+  //   - args.betaVerdict must be present (non-null)
+  //   - AND args.pendingPhase is null (apply to first boundary encountered)
+  //     OR args.pendingPhase equals this boundary (targeted resume)
+  const hasVerdict =
+    args && args.betaVerdict !== null && args.betaVerdict !== undefined;
+  const verdictAppliesHere =
+    hasVerdict &&
+    (args.pendingPhase === null ||
+      args.pendingPhase === undefined ||
+      args.pendingPhase === boundary);
+
+  if (!verdictAppliesHere) {
+    // No verdict supplied for this boundary — halt and let the foreground
+    // (Alpha) perform the real Beta consultation, then resume with the result.
+    const resumeCmd =
+      `/sprint:full --sprint ${state.sprintId} --resume` +
+      ` --pending-phase ${boundary}` +
+      ` --beta-verdict <DECIDE|DIRECTIVE|ESCALATE>` +
+      ` --beta-message "<response from Beta>"`;
+    return {
+      ok: false,
+      halt_reason: "beta_consult_pending",
+      boundary,
+      message:
+        `Beta consultation required at phase boundary '${boundary}'. ` +
+        `Consult Beta (Alex β) about the upcoming phase, then resume: ${resumeCmd}`,
+      resume_command: resumeCmd,
+      next_human_action:
+        `Consult Beta (Alex β) about '${boundary}', obtain a verdict ` +
+        `(DECIDE | DIRECTIVE | ESCALATE), then resume with the verdict.`,
+    };
+  }
+
+  // Verdict supplied and applies here — record the REAL consult.
+  const verdict = args.betaVerdict;
+  const betaMessage = args.betaMessage || "";
+  const ts = nowIso();
+  const latencyMs = 0; // no live round-trip in this subprocess; elapsed is ~0
+  const model = process.env.WARPOS_BETA_MODEL || "claude-opus-4-7";
+
+  emit("sprint_full_beta_consult", {
+    verdict,
+    beta_message: betaMessage,
+    latency_ms: latencyMs,
+    model,
     phase_boundary: boundary,
-    verdict: "DECIDE", // placeholder — skill body fills in via SendMessage
     topic_tags: ["sprint_full_phase_boundary"],
-    ts: nowIso(),
+    sprint_id: state.sprintId,
+    ts,
   });
+
   state.betaConsultations.push({
     phase_boundary: boundary,
-    verdict: "DECIDE",
-    ts: nowIso(),
+    verdict,
+    beta_message: betaMessage,
+    latency_ms: latencyMs,
+    model,
+    ts,
   });
-  return { ok: true, verdict: "DECIDE" };
+
+  // Consume the verdict so subsequent boundaries in this process run do NOT
+  // reuse it — one-consult-per-resume semantics. Each additional Beta boundary
+  // will halt with beta_consult_pending and require its own resume invocation.
+  args.betaVerdict = null;
+  args.betaMessage = null;
+  if (args.pendingPhase === boundary) args.pendingPhase = null;
+
+  // Act on verdict.
+  if (verdict === "DECIDE") {
+    return { ok: true, verdict: "DECIDE" };
+  }
+
+  if (verdict === "DIRECTIVE") {
+    // Record the directive. Hook point: state.betaDirectives is surfaced in
+    // the final report's "Beta consultations" section and is available for
+    // future phase logic to inspect (e.g. phase adjustments, scope changes).
+    // Full downstream behavior wiring is out of scope for this ticket, but
+    // the recording contract is established here.
+    if (!state.betaDirectives) state.betaDirectives = [];
+    state.betaDirectives.push({ boundary, message: betaMessage, ts });
+    return { ok: true, verdict: "DIRECTIVE", directive: betaMessage };
+  }
+
+  if (verdict === "ESCALATE") {
+    // ESCALATE is a hard halt regardless of preset — operator must resolve.
+    return {
+      ok: false,
+      halt_reason: "beta_escalate",
+      boundary,
+      beta_verdict: "ESCALATE",
+      message:
+        `Beta ESCALATE at phase boundary '${boundary}': ${betaMessage}. ` +
+        `Resolve the escalation with Alpha (${boundary} phase cannot proceed until ` +
+        `Beta clears it), then resume with a DECIDE or DIRECTIVE verdict.`,
+      resume_command:
+        `/sprint:full --sprint ${state.sprintId} --resume` +
+        ` --pending-phase ${boundary}` +
+        ` --beta-verdict <DECIDE|DIRECTIVE>` +
+        ` --beta-message "<resolution>"`,
+      next_human_action:
+        `Resolve Beta escalation for '${boundary}', then resume with DECIDE or DIRECTIVE.`,
+    };
+  }
+
+  // Fallback — should never reach here after upstream validateBetaVerdict.
+  return { ok: true, verdict: null };
 }
 
 // ── Phase 1: plan ─────────────────────────────────────────────────────
@@ -1109,6 +1233,12 @@ function main() {
     process.stderr.write("--allow-main requires --autonomy aggressive.\n");
     return 2;
   }
+  if (args.betaVerdict !== null && !validateBetaVerdict(args.betaVerdict)) {
+    process.stderr.write(
+      `--beta-verdict must be one of DECIDE, DIRECTIVE, ESCALATE. Got: ${args.betaVerdict}\n`,
+    );
+    return 2;
+  }
 
   const presetResult = loadPreset(args.autonomy);
   if (!presetResult.ok) {
@@ -1150,6 +1280,7 @@ function main() {
     timeline: [],
     autoApprovals: [],
     betaConsultations: [],
+    betaDirectives: [],
     halts: [],
     tickets: { done: [], deferred: [], abandoned: [] },
     outcome: null,
@@ -1188,9 +1319,31 @@ function main() {
     () => phase5Retro(state),
   ];
 
-  for (const fn of phaseFns) {
-    maybeConsultBeta(state, `before_${state.currentPhase || "next"}`);
-    const result = fn();
+  for (let i = 0; i < phaseFns.length; i++) {
+    // Derive boundary from the UPCOMING phase (the one about to run at index i),
+    // not from state.currentPhase which names the last completed phase.
+    const consult = maybeConsultBeta(state, `before_${PHASES[i]}`, args);
+    if (!consult.ok) {
+      state.halts.push({
+        phase: state.currentPhase,
+        halt_reason: consult.halt_reason,
+        resume_command:
+          consult.resume_command || `/sprint:full --sprint ${sprintId} --resume`,
+      });
+      state.outcome = `halted:${consult.halt_reason}`;
+      const haltPath = writeHaltReport(state, consult);
+      process.stderr.write(
+        `/sprint:full halted (${consult.halt_reason}). See ${haltPath}\n`,
+      );
+      checkpoint(
+        state,
+        "halted",
+        consult.message || "halt",
+        `halt_reason=${consult.halt_reason}`,
+      );
+      return 1;
+    }
+    const result = phaseFns[i]();
     if (!result.ok) {
       state.halts.push({
         phase: state.currentPhase,
@@ -1239,4 +1392,7 @@ module.exports = {
   phase3Execute,
   phase4ReleasePrep,
   flipActiveSprintsStatusForRetro,
+  maybeConsultBeta,
+  validateBetaVerdict,
+  BETA_VERDICTS,
 };

@@ -32,6 +32,7 @@ const os = require("os");
 const path = require("path");
 
 const full = require("./full");
+const SPRINT = require("./paths");
 
 let passes = 0;
 let failures = 0;
@@ -296,6 +297,7 @@ function makeMinimalState(overrides = {}) {
       timeline: [],
       autoApprovals: [],
       betaConsultations: [],
+      betaDirectives: [],
       halts: [],
       tickets: { done: [], deferred: [], abandoned: [] },
       outcome: null,
@@ -367,8 +369,12 @@ function testFinalReportReadsCurrentYaml() {
 
   const yamlLib = require("./fs");
   const sprintId = `SP-TEST-finalreport-${Date.now()}`;
+  // Use SPRINT.PROJECT (the canonical repo root) so the path matches
+  // what writeFinalReport and readYamlMaybe resolve via REPO_ROOT.
+  // In a worktree, process.cwd() !== SPRINT.PROJECT, so using process.cwd()
+  // causes a path mismatch and the yaml is never found.
   const sprintsRoot = path.join(
-    process.cwd(),
+    SPRINT.PROJECT,
     ".claude",
     "project",
     "sprint",
@@ -376,7 +382,7 @@ function testFinalReportReadsCurrentYaml() {
     sprintId,
   );
   const reportsRoot = path.join(
-    process.cwd(),
+    SPRINT.PROJECT,
     ".claude",
     "project",
     "sprint",
@@ -460,6 +466,203 @@ function testFinalReportReadsCurrentYaml() {
   }
 }
 
+// ── J. Beta-consult contract ─────────────────────────────────────────
+// Tests maybeConsultBeta in-process via synthetic args — NO live API call.
+// All tests use makeMinimalState({ mode: "adhoc" }) for adhoc cases.
+
+function testBetaConsultContract() {
+  out.push("J. Beta-consult contract");
+
+  // J-1: Solo mode — returns {ok:true, verdict:null}, no consult pushed.
+  {
+    const state = makeMinimalState({ mode: "solo" });
+    const r = full.maybeConsultBeta(state, "before_plan", {});
+    ok("J solo: returns ok:true", r.ok === true, JSON.stringify(r));
+    ok("J solo: verdict is null", r.verdict === null, JSON.stringify(r));
+    ok(
+      "J solo: no consult pushed to betaConsultations",
+      state.betaConsultations.length === 0,
+    );
+  }
+
+  // J-2: Adhoc + no verdict supplied → halt_reason beta_consult_pending with boundary named.
+  {
+    const state = makeMinimalState({ mode: "adhoc" });
+    const r = full.maybeConsultBeta(state, "before_plan", {
+      betaVerdict: null,
+      betaMessage: null,
+      pendingPhase: null,
+    });
+    ok("J adhoc+no-verdict: ok===false", r.ok === false, JSON.stringify(r));
+    ok(
+      "J adhoc+no-verdict: halt_reason===beta_consult_pending",
+      r.halt_reason === "beta_consult_pending",
+      r.halt_reason,
+    );
+    ok(
+      "J adhoc+no-verdict: boundary named in result",
+      r.boundary === "before_plan",
+      r.boundary,
+    );
+  }
+
+  // J-3: Adhoc + --beta-verdict DECIDE for matching boundary →
+  //       ok:true, verdict=DECIDE, consult pushed with correct fields (not placeholder).
+  {
+    const state = makeMinimalState({ mode: "adhoc", sprintId: "SP-J3" });
+    const args = {
+      betaVerdict: "DECIDE",
+      betaMessage: "looks good",
+      pendingPhase: "before_plan",
+    };
+    const r = full.maybeConsultBeta(state, "before_plan", args);
+    ok("J DECIDE: ok===true", r.ok === true, JSON.stringify(r));
+    ok("J DECIDE: verdict===DECIDE", r.verdict === "DECIDE", r.verdict);
+    ok(
+      "J DECIDE: consult pushed to betaConsultations",
+      state.betaConsultations.length === 1,
+      state.betaConsultations.length,
+    );
+    const c = state.betaConsultations[0];
+    ok(
+      "J DECIDE: consult.verdict===DECIDE (not hardcoded placeholder)",
+      c && c.verdict === "DECIDE",
+      c && c.verdict,
+    );
+    ok(
+      "J DECIDE: consult has beta_message key",
+      c && "beta_message" in c,
+      JSON.stringify(c),
+    );
+    ok(
+      "J DECIDE: consult has latency_ms key",
+      c && "latency_ms" in c,
+      JSON.stringify(c),
+    );
+    // Verdict consumed — subsequent boundaries should not reuse it.
+    ok(
+      "J DECIDE: verdict consumed (args.betaVerdict cleared)",
+      args.betaVerdict === null,
+      args.betaVerdict,
+    );
+  }
+
+  // J-4: Adhoc + DIRECTIVE → ok:true, directive recorded on state.betaDirectives.
+  {
+    const state = makeMinimalState({ mode: "adhoc", sprintId: "SP-J4" });
+    const args = {
+      betaVerdict: "DIRECTIVE",
+      betaMessage: "focus only on auth scope",
+      pendingPhase: null,
+    };
+    const r = full.maybeConsultBeta(state, "before_design", args);
+    ok("J DIRECTIVE: ok===true", r.ok === true, JSON.stringify(r));
+    ok(
+      "J DIRECTIVE: betaDirectives has 1 entry",
+      state.betaDirectives.length === 1,
+      state.betaDirectives.length,
+    );
+    ok(
+      "J DIRECTIVE: directive message matches",
+      state.betaDirectives[0] &&
+        state.betaDirectives[0].message === "focus only on auth scope",
+      state.betaDirectives[0] && state.betaDirectives[0].message,
+    );
+  }
+
+  // J-5: Adhoc + ESCALATE → ok:false, halt_reason===beta_escalate.
+  {
+    const state = makeMinimalState({ mode: "adhoc", sprintId: "SP-J5" });
+    const args = {
+      betaVerdict: "ESCALATE",
+      betaMessage: "too risky without review",
+      pendingPhase: "before_execute",
+    };
+    const r = full.maybeConsultBeta(state, "before_execute", args);
+    ok("J ESCALATE: ok===false", r.ok === false, JSON.stringify(r));
+    ok(
+      "J ESCALATE: halt_reason===beta_escalate",
+      r.halt_reason === "beta_escalate",
+      r.halt_reason,
+    );
+  }
+
+  // J-6: CLI parse — all three new flags captured.
+  {
+    const args = full.parseArgs([
+      "node",
+      "full.js",
+      "--resume",
+      "--sprint",
+      "SP-JTEST",
+      "--beta-verdict",
+      "DECIDE",
+      "--beta-message",
+      "ok",
+      "--pending-phase",
+      "before_plan",
+    ]);
+    ok(
+      "J CLI: --beta-verdict captured",
+      args.betaVerdict === "DECIDE",
+      args.betaVerdict,
+    );
+    ok(
+      "J CLI: --beta-message captured",
+      args.betaMessage === "ok",
+      args.betaMessage,
+    );
+    ok(
+      "J CLI: --pending-phase captured",
+      args.pendingPhase === "before_plan",
+      args.pendingPhase,
+    );
+  }
+
+  // J-7: Source-string regression — file contains new subtype,
+  //       does NOT contain standalone old token sprint_full_beta_consultation.
+  {
+    const src = fs.readFileSync(
+      path.join(__dirname, "full.js"),
+      "utf8",
+    );
+    ok(
+      "J source: contains sprint_full_beta_consult",
+      src.includes("sprint_full_beta_consult"),
+      "(not found)",
+    );
+    ok(
+      "J source: does NOT contain sprint_full_beta_consultation (old token)",
+      !src.includes("sprint_full_beta_consultation"),
+      "(old token still present — half-rename guard tripped)",
+    );
+  }
+
+  // J-8: Real non-placeholder round-trip — pass DIRECTIVE + distinctive message,
+  //       assert both are recorded (proves it is NOT the hardcoded DECIDE placeholder).
+  {
+    const state = makeMinimalState({ mode: "adhoc", sprintId: "SP-J8" });
+    const distinctiveMsg = "distinctive-msg-t211-beta-contract";
+    full.maybeConsultBeta(state, "before_retro", {
+      betaVerdict: "DIRECTIVE",
+      betaMessage: distinctiveMsg,
+      pendingPhase: "before_retro",
+    });
+    ok(
+      "J round-trip: recorded verdict is DIRECTIVE (not placeholder DECIDE)",
+      state.betaConsultations.length === 1 &&
+        state.betaConsultations[0].verdict === "DIRECTIVE",
+      state.betaConsultations[0] && state.betaConsultations[0].verdict,
+    );
+    ok(
+      "J round-trip: recorded beta_message matches supplied distinctive message",
+      state.betaConsultations.length === 1 &&
+        state.betaConsultations[0].beta_message === distinctiveMsg,
+      state.betaConsultations[0] && state.betaConsultations[0].beta_message,
+    );
+  }
+}
+
 // ── Run ──────────────────────────────────────────────────────────────
 
 function main() {
@@ -473,6 +676,7 @@ function main() {
   testPhaseOrdering();
   testHollowCompletionGuards();
   testFinalReportReadsCurrentYaml();
+  testBetaConsultContract();
 
   out.push("");
   out.push(`Results: ${passes} passed, ${failures} failed.`);
