@@ -1168,6 +1168,8 @@ async function run(opts) {
   // fresh install. scaffoldProduct is idempotent (skip-if-present; never
   // clobbers operator paths.json values) + fail-open. Runs BEFORE the
   // post-update checks so structure-parity sees the freshly-scaffolded dirs.
+  const scaffoldLog = (...a) =>
+    console.log(`warp:update: scaffold — ${a.filter(Boolean).join(" ")}`);
   try {
     const scaffoldCore = require("./scaffold-core");
     if (scaffoldCore && typeof scaffoldCore.scaffoldProduct === "function") {
@@ -1175,12 +1177,34 @@ async function run(opts) {
         target: targetRoot,
         warposRoot: sourceTreeRoot,
         // scaffold-core's log signature is (status, message); accept any arity.
-        log: (...a) => console.log(`warp:update: scaffold — ${a.filter(Boolean).join(" ")}`),
+        log: scaffoldLog,
       });
     }
   } catch (err) {
     console.warn(
       `warp:update: scaffold-core skipped (${err.message}) — structure skeleton/ROADMAP/PROJECT may be incomplete.`,
+    );
+  }
+
+  // SP-20260525-024: also refresh the _warpos/ framework SOURCE mirror on update,
+  // not just fresh install. populateWarposMirror is content-addressed + idempotent
+  // and is explicitly "the migration path for existing products" (scaffold-core.js)
+  // — without it, consumers on the old root-copy model never gain _warpos/, and
+  // regenerate.js stays inert there. Fail-open; separate try so a mirror error
+  // can't undo the scaffold above.
+  try {
+    const scaffoldCore = require("./scaffold-core");
+    if (scaffoldCore && typeof scaffoldCore.populateWarposMirror === "function") {
+      scaffoldCore.populateWarposMirror({
+        target: targetRoot,
+        warposRoot: sourceTreeRoot,
+        shipManifest: capsule.manifest,
+        log: scaffoldLog,
+      });
+    }
+  } catch (err) {
+    console.warn(
+      `warp:update: _warpos/ mirror skipped (${err.message}) — regenerate.js may stay inert downstream.`,
     );
   }
 
