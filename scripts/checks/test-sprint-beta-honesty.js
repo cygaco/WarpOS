@@ -725,6 +725,145 @@ console.log("\n(n) CLI EXIT CODES — subprocess tests:");
   }
 }
 
+// ── (m2) validateIsoDate ROUND-TRIP ───────────────────────────────────────────
+//
+// FIX A: V8 silently rolls over impossible dates (e.g. 2026-02-30 → 2026-03-02)
+// without returning NaN. The round-trip check (parse → re-format → compare) catches
+// these. All five assertions from the fix brief are verified here.
+
+console.log("\n(m2) validateIsoDate ROUND-TRIP — overflow/invalid calendar dates rejected:");
+{
+  ok(
+    "SINCE-RT-OVERFLOW: '2026-02-30' → false (Feb 30 rolls over, round-trip catches it)",
+    !validateIsoDate("2026-02-30"),
+  );
+  ok(
+    "SINCE-RT-OVERFLOW: '2026-13-01' → false (month 13 invalid — also in (m))",
+    !validateIsoDate("2026-13-01"),
+  );
+  ok(
+    "SINCE-RT-OVERFLOW: '2026-00-10' → false (month 00 invalid)",
+    !validateIsoDate("2026-00-10"),
+  );
+  ok(
+    "SINCE-RT-VALID: '2026-05-25' → true (round-trip consistent)",
+    validateIsoDate("2026-05-25"),
+  );
+  ok(
+    "SINCE-RT-VALID: '2024-02-29' → true (real leap day in 2024)",
+    validateIsoDate("2024-02-29"),
+  );
+}
+
+// ── (n2) --since MISSING VALUE ────────────────────────────────────────────────
+//
+// FIX A(2): a trailing --since with no following value (undefined) or with
+// a flag as value (starts with --) must write to stderr and exit 2.
+
+console.log("\n(n2) --since MISSING VALUE — no value or flag-as-value → exit 2:");
+{
+  const ENGINE = path.join(__dirname, "sprint-beta-honesty.js");
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "wos-sbh-since-"));
+  const tmpEvents = path.join(tmpDir, "events.jsonl");
+  fs.writeFileSync(tmpEvents, "");
+  try {
+    // --since with no following arg
+    const r1 = cp.spawnSync(process.execPath, [ENGINE, "--since"], {
+      encoding: "utf8",
+      env: {
+        ...process.env,
+        WARPOS_EVENTS_FILE: tmpEvents,
+        WARPOS_SPRINT_DATES_JSON: "{}",
+        WARPOS_FULLREPORTS_DIR: tmpDir,
+      },
+    });
+    ok(
+      "CLI-SINCE-MISSING: --since (no value) → exit 2",
+      r1.status === 2,
+      `got status=${r1.status} stderr=${r1.stderr}`,
+    );
+
+    // --since followed by another flag (flag treated as value)
+    const r2 = cp.spawnSync(process.execPath, [ENGINE, "--since", "--json"], {
+      encoding: "utf8",
+      env: {
+        ...process.env,
+        WARPOS_EVENTS_FILE: tmpEvents,
+        WARPOS_SPRINT_DATES_JSON: "{}",
+        WARPOS_FULLREPORTS_DIR: tmpDir,
+      },
+    });
+    ok(
+      "CLI-SINCE-FLAG: --since --json (flag as value) → exit 2",
+      r2.status === 2,
+      `got status=${r2.status} stderr=${r2.stderr}`,
+    );
+  } finally {
+    try { fs.rmSync(tmpDir, { recursive: true }); } catch { /* ignore */ }
+  }
+}
+
+// ── (n3) --since OVERFLOW DATE via CLI ───────────────────────────────────────
+//
+// FIX A: validateIsoDate round-trip now rejects overflow dates, so
+// --since 2026-02-30 must also exit 2 end-to-end via the CLI.
+
+console.log("\n(n3) --since OVERFLOW DATE via CLI — 2026-02-30 → exit 2:");
+{
+  const ENGINE = path.join(__dirname, "sprint-beta-honesty.js");
+  const r = cp.spawnSync(
+    process.execPath,
+    [ENGINE, "--since", "2026-02-30"],
+    { encoding: "utf8" },
+  );
+  ok(
+    "CLI-SINCE-OVERFLOW: --since 2026-02-30 → exit 2 (round-trip rejects V8 rollover date)",
+    r.status === 2,
+    `got status=${r.status} stderr=${r.stderr}`,
+  );
+}
+
+// ── (k2) PROTO-SAFE DATES ─────────────────────────────────────────────────────
+//
+// FIX B: with a plain {} sprintDates, sprintDates["constructor"] resolves to
+// Object.prototype.constructor (a truthy function) — without the Object.hasOwn guard
+// this sprint would bypass the undated fail-safe and feed a garbage value into the
+// cutoff comparison. The guard must treat it as undated → exempt.
+
+console.log("\n(k2) PROTO-SAFE DATES — sprint_id 'constructor' treated as undated (not dated via proto):");
+{
+  const events = [
+    makeRec("sprint_full_phase_started", {
+      sprint_id: "constructor",
+      phase: "design",
+    }),
+  ];
+  // Plain {} — "constructor" is inherited from Object.prototype, NOT an own property.
+  const sprintDates = {};
+  let threw = false;
+  let r;
+  try {
+    r = computeFindings(events, sprintDates);
+  } catch (e) {
+    threw = true;
+  }
+  ok(
+    "PROTO-DATE-SAFE: does not throw with sprint_id='constructor'",
+    !threw,
+    "threw exception",
+  );
+  ok(
+    "PROTO-DATE-SAFE: 'constructor' sprint is exempted as undated (not treated as dated via prototype)",
+    r && r.undatedExempt > 0,
+    `got undatedExempt=${r && r.undatedExempt} findings=${JSON.stringify(r && r.findings)}`,
+  );
+  ok(
+    "PROTO-DATE-SAFE: no findings produced (undated → exempt, no false-positive date-based finding)",
+    r && r.findings.length === 0,
+    `got findings: ${JSON.stringify(r && r.findings)}`,
+  );
+}
+
 // ── Results ───────────────────────────────────────────────────────────────────
 
 console.log(`\nResults: ${passes} passed, ${failures} failed.`);

@@ -96,11 +96,18 @@ function extractYamlDate(text) {
 /**
  * Returns true iff val is a real ISO date string (YYYY-MM-DD with valid calendar date).
  * Used to fail-closed on bogus --since values. Exported for tests.
+ *
+ * Round-trip check: V8 silently rolls over impossible calendar dates rather than
+ * returning NaN (e.g. "2026-02-30" → Date for 2026-03-02). We parse the string as
+ * a UTC Date, re-format it back to YYYY-MM-DD (UTC), and require equality with the
+ * input. If they differ, the input contained an overflow/rollover date → invalid.
  */
 function validateIsoDate(val) {
   if (typeof val !== "string") return false;
   if (!/^\d{4}-\d{2}-\d{2}$/.test(val)) return false;
-  return !isNaN(Date.parse(val));
+  const d = new Date(val + "T00:00:00Z");
+  if (isNaN(d.getTime())) return false;
+  return d.toISOString().slice(0, 10) === val;
 }
 
 // ── Load sprint start dates from filesystem ───────────────────────────────────
@@ -398,8 +405,13 @@ function computeFindings(events, sprintDates = {}, cutoff = SP003_SHIP_DATE, rep
 
   for (const sprintId of Object.keys(sprintData)) {
     const sd = sprintData[sprintId];
-    // Determine sprint start date for cutoff comparison
-    const sprintDate = sprintDates[sprintId];
+    // Determine sprint start date for cutoff comparison.
+    // FIX B: use Object.hasOwn to guard against prototype-inherited properties.
+    // A sprint_id equal to "constructor" / "toString" / "valueOf" etc. would resolve
+    // a truthy inherited function on a plain {} object, bypassing the undated fail-safe
+    // and feeding a garbage value into the cutoff comparison. Own-property check ensures
+    // only explicitly set dates are used.
+    const sprintDate = Object.hasOwn(sprintDates, sprintId) ? sprintDates[sprintId] : undefined;
     if (!sprintDate) {
       // Cannot determine date — exempt (fail-safe: don't false-flag unknown sprints)
       undatedExempt++;
@@ -534,8 +546,16 @@ if (require.main === module) {
   // A bad --since like "bogus" makes every sprint compare as "before cutoff"
   // (since "2026-..." < "bogus" lexicographically), silently exempting all sprints
   // and disabling the audit. Reject non-ISO-dates up front with exit 2 (usage error).
-  if (sinceIdx !== -1 && process.argv[sinceIdx + 1]) {
+  // Also reject a trailing --since with no following value (undefined) or a following
+  // flag (starts with "--") — both indicate the user forgot to provide the date.
+  if (sinceIdx !== -1) {
     const sinceVal = process.argv[sinceIdx + 1];
+    if (!sinceVal || sinceVal.startsWith("--")) {
+      process.stderr.write(
+        `ERROR [sprint-beta-honesty] --since requires a value (YYYY-MM-DD); none provided\n`,
+      );
+      process.exit(2);
+    }
     if (!validateIsoDate(sinceVal)) {
       process.stderr.write(
         `ERROR [sprint-beta-honesty] invalid --since value: "${sinceVal}" — must be a valid ISO date YYYY-MM-DD\n`,
