@@ -1,0 +1,128 @@
+schema: warpos/sprint/current-sprint/v1
+id: SP-20260525-023
+title: "Spinup orchestrator — wire bootstrap:spinup pipeline end-to-end (0.15.0 sprint 3 of 3)"
+objective: "Run /sprint:plan to set this."
+status: designing
+created_at: "2026-05-25T20:32:41.452Z"
+updated_at: "2026-05-25T20:48:09.630Z"
+source_request: "Wire bootstrap:spinup's full orchestration pipeline (0.15.0 sprint 3 of 3): make the five phases that today are documented hooks in .claude/commands/bootstrap/spinup.md actually execute end-to-end — /check:install pre-flight gate, intent (guided brief OR --clone via scripts/portfolio/clone.js), canon (reuse B's scripts/canon/generate.js, already wired in T6), roadmap (roadmap:create grounded in canonical, MVP-core-loop first), and on-screen (execute the first sprint until the core loop SERVES, gated by verify-before-claim)."
+interpreted_intent: "Turn bootstrap:spinup from a documented skeleton (Phases 1-4 are prose hooks, Phase 4 on-screen explicitly deferred to this sprint) into an executable one-command on-ramp. The orchestration LOGIC is built in canonical (the spinup.md skill body + any supporting scripts under scripts/bootstrap/ or scripts/canon/) but EXECUTES product-side (spinup runs inside a product repo). Concretely: (0) a /check:install pre-flight gate that refuses to proceed on a gappy install (incl. the WG-4 sprint-subsystem probe); (1) intent phase that runs the guided brief by default or derives intent from a competitor via the existing scripts/portfolio/clone.js when --clone is passed (reuse, do not reimplement); (2) canon phase that invokes scripts/canon/generate.js (B's engine, already wired in T6) on the Phase-1 intent; (3) roadmap phase that invokes roadmap:create grounded in the freshly-generated _requirements/00-canonical/* (preferred) with MVP-core-loop-first sprint ordering; (4) on-screen phase that takes Milestone-1's first sprint and executes it until the core loop SERVES, gated by verify-before-claim (build clean + dev server returns HTTP 200 + entry module transforms without error — 'it builds' != 'it serves'). --phase <name> re-runs a single phase; --resume continues from the last completed phase."
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260525-0056.yaml"
+risk_level: high
+approval_state: none_required
+current_phase: design
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+external_services:
+  identified:
+    - "research:* via the canon phase's bounded research bridge (only if a fixture run exercises live research; default --research off for canonical tests)"
+  blocked: []
+  ready: []
+  mocked: []
+  deferred: []
+tickets:
+  proposed: []
+  planned: []
+  designed: []
+  ready_for_execution: []
+  in_progress: []
+  blocked: []
+  waiting_on_human: []
+  waiting_on_external_service: []
+  in_review: []
+  qa_failed: []
+  redteam_failed: []
+  done:
+    - T-20260525-236
+    - T-20260525-237
+    - T-20260525-238
+    - T-20260525-239
+    - T-20260525-240
+    - T-20260525-241
+    - T-20260525-242
+  released: []
+  deferred: []
+  abandoned: []
+  reopened: []
+  superseded: []
+requirements:
+  prd: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260525-023\\prd.md"
+  high_level_stories: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260525-023\\high-level-stories.md"
+  granular_stories: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260525-023\\granular-stories.md"
+  copy: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260525-023\\copy.md"
+  inputs: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260525-023\\inputs.md"
+  trace: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260525-023\\trace.md"
+  acceptance_criteria: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260525-023\\acceptance-criteria.md"
+  qa_plan: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260525-023\\qa-plan.md"
+  redteam_plan: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260525-023\\redteam-plan.md"
+  release_plan: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260525-023\\release-plan.md"
+checks:
+  lint:
+    status: not_run
+    last_run: null
+    evidence: ""
+  typecheck:
+    status: not_run
+    last_run: null
+    evidence: ""
+  tests:
+    status: not_run
+    last_run: null
+    evidence: ""
+  build:
+    status: not_run
+    last_run: null
+    evidence: ""
+  qa:
+    status: not_run
+    last_run: null
+    evidence: ""
+  redteam:
+    status: not_run
+    last_run: null
+    evidence: ""
+approvals:
+  plan:
+    required: false
+    state: not_required
+    ref: null
+  design:
+    required: false
+    state: not_required
+    ref: null
+  execution:
+    required: false
+    state: not_required
+    ref: null
+  release:
+    required: false
+    state: not_required
+    ref: null
+  external_services:
+    required: false
+    state: not_required
+    ref: null
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260525-0056.report.md"
+  design: null
+  execution: null
+  release: null
+ralph:
+  active: false
+  current_ticket: null
+  current_loop: null
+  status: idle
+  last_checkpoint: null
+  next_action: null
+crash_recovery:
+  last_checkpoint: ".claude/project/sprint/sprint-progress.yaml"
+  resume_command: "/sprint:design"
+  resume_summary: "Sprint SP-20260525-023 design scaffolded (scale=m). Next: mint tickets from granular-stories, then run /sprint:execute."
+  active_files: []
+  dirty_state: false
+  blockers: []
+  safe_to_continue: true
+lane:
+  type: default
+  value: null
+  isolation_notes: ""

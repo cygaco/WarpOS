@@ -105,13 +105,45 @@ Invoke `roadmap:create` to produce `ROADMAP.md` — grounded in the canonical do
 (preferred) or the brief/clone — with milestones + sprints, **MVP-core-loop
 first**: Milestone 1's first sprint is getting the core loop on screen.
 
-### Phase 4 — On screen *(full orchestration ships in SP-20260525-023)*
+### Phase 4 — On screen
 Execute that first sprint until the core loop **serves**, gated by
 verify-before-claim: build clean + dev server returns HTTP 200 + entry module
 transforms without error. "It builds" ≠ "it serves" — prove both; a live `node`
 process or an existing worktree is not evidence. Local-first, no-backend,
-installable-PWA bias (overridable). *(Full execute-loop orchestration lands in
-SP-20260525-023; this skeleton documents the contract.)*
+installable-PWA bias (overridable). The gate is implemented as
+`onscreen.verifyServe()` in `scripts/bootstrap/phases/onscreen.js` (SP-023): it
+returns `pass:false` unless build is clean AND HTTP 200 AND the entry transforms
+— a clean build with a non-200 server FAILS. The actual first-sprint execution is
+product-side (LLM-orchestrated); the driver returns `needs_orchestration` and the
+skill body drives it, then gates completion with `verifyServe`.
+
+## Execution — the orchestrator driver (SP-20260525-023)
+The phases above execute via `scripts/bootstrap/spinup-orchestrate.js` (a real
+driver, mirroring `scripts/canon/generate.js`, so `--phase`/`--resume` state is
+durable and the chain is CI-testable):
+
+```bash
+node scripts/bootstrap/spinup-orchestrate.js \
+  [--product "<name>"] [--intent <file.md>] [--clone <target>] \
+  [--phase preflight|intent|canon|roadmap|onscreen] [--resume] \
+  [--research off|simple|deep]
+```
+
+- **Always runs `preflight` first** (a hard gate — refuses a gappy install via
+  `/check:install`, exit ≠ 0 → stop). Deterministic phases (`preflight`, `canon`,
+  `--clone` intent) run in-process by reusing the existing engines
+  (`scripts/check/install.js`, `scripts/canon/generate.js`, `scripts/portfolio/clone.js`).
+- **LLM-orchestrated steps** — the guided brief, `roadmap:create`'s canon-grounded
+  synthesis, and the real first-sprint execution — cannot run from a node process.
+  Those phases exit **3 (`needs_orchestration`)** with an `orchestration_prompt`;
+  the skill body (Alpha) fulfills it (runs the brief / `roadmap:create` /
+  the sprint), then re-invokes with `--resume`. This mirrors B's canon research
+  bridge and respects the dispatch-route-guard.
+- Phase-state persists to `.warpos/spinup-state.json`; `--resume` continues after
+  the last completed phase, `--phase <name>` re-runs exactly one.
+- Fixture e2e: `node scripts/bootstrap/test-spinup-orchestrate.js` proves the
+  chain (intent→canon→roadmap, `--research off`) + the verify gate WITHOUT
+  standing up a real product (canonical proves the chain; real serve is product-side).
 
 ## Pre-flight — install completeness
 Before Phase 1, run `/check:install` (incl. the sprint-subsystem probe). Refuse
