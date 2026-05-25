@@ -233,7 +233,14 @@ if (Test-Path $GeneratorPath) {
 $ScaffoldCore = Join-Path $Target "scripts/warpos/scaffold-core.js"
 if (Test-Path $ScaffoldCore) {
     Write-Step "Stage 2.5/3 - running shared product-scaffold core"
-    & node $ScaffoldCore $Target
+    # --warpos-root $Source (canonical repo where install.ps1 lives): the
+    # scaffold's _warpos/ source mirror (populate-source.js) sources framework
+    # files — incl. _warpos/settings/defaults.json — from <warpos-root>. Without
+    # this flag the in-product copy of scaffold-core.js would default warposRoot
+    # to the fresh product (no _warpos/ yet), so defaults.json wouldn't land and
+    # the layered settings compile would never fire. Threading $Source makes the
+    # mirror source from canonical, exactly like the warp-setup path.
+    & node $ScaffoldCore $Target --warpos-root "$Source"
     if ($LASTEXITCODE -ne 0) {
         Write-Warn "scaffold-core.js exited $LASTEXITCODE - product scaffold may be incomplete (paths.json/zones/ROADMAP/PROJECT.md/maps/_warpos). Re-run /warp:setup from inside the project to complete it."
     } else {

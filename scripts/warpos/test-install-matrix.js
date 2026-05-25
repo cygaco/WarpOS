@@ -375,6 +375,7 @@ const PARITY_SCOPE_FILES = ["ROADMAP.md", "PROJECT.md"];
 const PARITY_ALLOWLIST = [
   /^\.git(\/|$)/, // git metadata
   /^\.claude\/framework-installed\.json$/, // carries install-id, timestamps, target, per-asset hashes
+  /^\.claude\/framework-manifest\.json$/, // capsule/install.ps1 manifest: install.ps1 Stage 2 regenerates it against the target; the warp-setup source-clone scaffold doesn't produce it. Legitimately path-specific — same class as framework-installed.json.
   /^\.claude\/runtime(\/|$)/, // runtime state (events, caches) — written at run, not install
   /^\.claude\/project\/events(\/|$)/, // event logs
   /^\.claude\/project\/memory(\/|$)/, // memory stores

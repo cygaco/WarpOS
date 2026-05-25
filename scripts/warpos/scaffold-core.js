@@ -419,33 +419,555 @@ function regenerateWarposManifest({ target, warposRoot, log }) {
   return { ok: true, skipped: false, status: 0, stderr: "" };
 }
 
+/**
+ * writeProductManifest — `.claude/manifest.json` (extracted from warp-setup.js
+ * step 6, SP-20260525-019 / T-220).
+ *
+ * WHY EXTRACTED: warp-setup wrote manifest.json inline; the install.ps1/CLI path
+ * did not, so an install.ps1 consumer shipped NO manifest.json (caught by the
+ * install-matrix both-path parity gate, which listed it in `onlyInSetup`). Both
+ * paths now call THIS one function (β: extract-don't-fork).
+ *
+ * Interview-driven: warp-setup passes its collected `interview` answers; the
+ * non-interactive CLI/install.ps1 path passes `{}` and the `interview.X ||
+ * basename`-style fallbacks below produce a valid manifest. (scenario 1 also runs
+ * non-interactive `--yes`, so the warp-setup and CLI defaults coincide.)
+ *
+ * Idempotent / skip-if-present: never clobber an existing manifest.json.
+ *
+ * @param {object}   opts
+ * @param {string}   opts.target       product root (was TARGET)
+ * @param {object}  [opts.interview]   interview answers (projectName, pitch, mainBranch, warposSource)
+ * @param {string}  [opts.stack]       detected stack ("node"|"python"|…); default "unknown"
+ * @param {string}  [opts.framework]   detected framework; default "unknown"
+ * @param {function} opts.log          reporter, signature log(status, msg, detail?)
+ * @returns {{ installedDelta: number }}
+ */
+function writeProductManifest({ target, interview = {}, stack = "unknown", framework = "unknown", log }) {
+  const TARGET = target;
+  let installed = 0;
+
+  const manifestFile = path.join(TARGET, ".claude/manifest.json");
+  if (!fs.existsSync(manifestFile)) {
+    const projectName = interview.projectName || path.basename(TARGET);
+    const manifest = {
+      $schema: "warpos/manifest/v1",
+      project: {
+        name: projectName,
+        slug: projectName.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+        description: interview.pitch || "",
+        techStack: [stack],
+        framework: framework,
+      },
+      git: {
+        mainBranch: interview.mainBranch,
+      },
+      warpos: {
+        version: "0.1.0",
+        installed: true,
+        source: interview.warposSource,
+        features: ["agents", "hooks", "skills", "memory", "maps", "events"],
+      },
+      agents: {
+        team: {
+          name: "alex",
+          identity: "Alex",
+          members: {
+            alpha: { symbol: "α", role: "orchestrator" },
+            beta: { symbol: "β", role: "judgment" },
+            gamma: { symbol: "γ", role: "adhoc builder" },
+            delta: { symbol: "δ", role: "oneshot builder" },
+          },
+        },
+        modes: ["adhoc", "oneshot", "solo"],
+        build: [
+          "builder",
+          "evaluator",
+          "compliance",
+          "auditor",
+          "qa",
+          "redteam",
+          "fixer",
+        ],
+      },
+      source_dirs: stack === "node" ? ["src/"] : [],
+      build: { features: [], phases: [] },
+      // Cross-provider agent diversity — review-layer on GPT, security on Gemini,
+      // orchestration/code on Claude. See scripts/hooks/lib/providers.js.
+      providers: {
+        claude: {
+          cli: "claude",
+          default_model: "sonnet",
+          invocation: "native",
+        },
+        openai: {
+          cli: "codex",
+          default_model: "gpt-5.4",
+          fallback: "claude",
+          // `codex exec --full-auto -m <model> -` (dash reads prompt from stdin; --full-auto = non-TTY approval)
+          syntax: "codex exec --full-auto -m {model} -",
+        },
+        gemini: {
+          cli: "gemini",
+          default_model: "gemini-3.1-pro-preview",
+          fallback: "claude",
+          // `gemini -m <model> -p <instruction> -o text` (context via stdin)
+          syntax: "gemini -m {model} -p",
+        },
+      },
+      agentProviders: {
+        alpha: "claude",
+        beta: "claude",
+        gamma: "claude",
+        delta: "claude",
+        builder: "claude",
+        fixer: "claude",
+        evaluator: "openai",
+        compliance: "openai",
+        auditor: "openai",
+        qa: "openai",
+        redteam: "gemini",
+      },
+      buildCommands: {},
+      fileOwnership: { foundation: [] },
+    };
+
+    // Auto-detect build commands (self-contained: re-detect package.json here so
+    // the CLI path doesn't need a separate hasPackageJson param).
+    if (fs.existsSync(path.join(TARGET, "package.json"))) {
+      try {
+        const pkg = JSON.parse(
+          fs.readFileSync(path.join(TARGET, "package.json"), "utf8"),
+        );
+        const scripts = pkg.scripts || {};
+        if (scripts.build) manifest.buildCommands.build = "npm run build";
+        if (scripts.test) manifest.buildCommands.test = "npm run test";
+        if (scripts.lint) manifest.buildCommands.lint = "npm run lint";
+      } catch {
+        /* skip */
+      }
+    }
+
+    fs.writeFileSync(manifestFile, JSON.stringify(manifest, null, 2) + "\n");
+    log("ok", `Created manifest.json for "${projectName}"`);
+    installed++;
+  }
+
+  return { installedDelta: installed };
+}
+
+/**
+ * writeAgentStore — `.claude/agents/store.json` (extracted from warp-setup.js
+ * step 7, SP-20260525-019 / T-220). Static object; build-system state.
+ *
+ * WHY EXTRACTED: same as writeProductManifest — the install.ps1/CLI path didn't
+ * produce store.json, so it showed up in the parity gate's `onlyInSetup`. Both
+ * paths now call this one function. Idempotent / skip-if-present.
+ *
+ * @param {object}   opts
+ * @param {string}   opts.target   product root (was TARGET)
+ * @param {function} opts.log      reporter, signature log(status, msg, detail?)
+ * @returns {{ installedDelta: number }}
+ */
+function writeAgentStore({ target, log }) {
+  const TARGET = target;
+  let installed = 0;
+
+  const storeFile = path.join(TARGET, ".claude/agents/store.json");
+  if (!fs.existsSync(storeFile)) {
+    const store = {
+      features: {},
+      tasks: [],
+      bugDataset: [],
+      conflictDataset: [],
+      cycle: 0,
+      circuitBreaker: "closed",
+      consecutiveFailures: 0,
+      totalFailures: 0,
+      lastCooldownMs: 0,
+      evolution: [],
+      heartbeat: {
+        cycle: 0,
+        phase: 0,
+        feature: "",
+        agent: "",
+        status: "idle",
+        cycleStep: null,
+        workstream: null,
+        timestamp: new Date().toISOString(),
+      },
+      compliance: {
+        command: "codex",
+        fallback: "claude",
+        model: "gpt-5.4",
+        syntax: "codex exec --model gpt-5.4",
+        note: "Deprecated — use manifest.providers + manifest.agentProviders instead. Kept for backwards compat.",
+      },
+      snapshots: { features: {}, interfaces: {}, datasets: {} },
+      knownStubs: [],
+      points: { configs: {} },
+      runLog: { runId: null, startedAt: null, entries: [], finalStatus: null },
+      sharedFiles: {},
+    };
+    // store.json lives under .claude/agents/ — ensure the dir exists (the CLI
+    // path may reach here before any agent asset has created it).
+    fs.mkdirSync(path.dirname(storeFile), { recursive: true });
+    fs.writeFileSync(storeFile, JSON.stringify(store, null, 2) + "\n");
+    log("ok", "Created store.json (build system state)");
+    installed++;
+  }
+
+  return { installedDelta: installed };
+}
+
+/**
+ * writeProductSettings — `.claude/settings.json` (extracted from warp-setup.js
+ * step 8 "CONFIGURING HOOKS", SP-20260525-019 / T-220).
+ *
+ * WHY EXTRACTED: warp-setup merged settings.json inline (env + permissions + the
+ * full hook registration map); the install.ps1/CLI path did not, so a consumer
+ * install shipped NO settings.json — meaning NO hooks fired. It also showed up in
+ * the parity gate's `onlyInSetup`. Both paths now call this one function (β:
+ * extract-don't-fork).
+ *
+ * TWO-PHASE settings model (preserved verbatim):
+ *   1. BASE WRITE — read any existing settings.json, additively merge WarpOS env
+ *      vars, permissions, and the hook registrations (dedup-on-command so re-runs
+ *      are idempotent), write it back.
+ *   2. LAYERED COMPILE — if `_warpos/settings/defaults.json` exists, recompile the
+ *      effective settings.json from the layered sources (defaults + settings.local)
+ *      via scripts/warpos/settings/compile.js. Older installs without defaults.json
+ *      keep the base write. Fail-open.
+ *
+ * The two phases are exposed as ONE call but the compile only fires when
+ * defaults.json is present, so the CALLER controls net behavior via ORDERING:
+ *   - warp-setup calls this at its original site (BEFORE the _warpos/ mirror), so
+ *     on a fresh install defaults.json doesn't exist yet → compile is SKIPPED →
+ *     warp-setup ships the inlined base write, exactly as before (behavior-preserving).
+ *   - the CLI calls this AFTER populateWarposMirror (which created defaults.json) →
+ *     compile fires → settings.json is compiled from defaults. Either way settings.json
+ *     EXISTS with the WarpOS hooks (defaults.json carries the same hook events as the
+ *     inlined write), satisfying the path-set parity gate.
+ *
+ * Idempotent throughout: the base merge dedups by command string; compile.js is
+ * deterministic.
+ *
+ * @param {object}   opts
+ * @param {string}   opts.target       product root (was TARGET)
+ * @param {string}   opts.warposRoot   clone holding scripts/warpos/settings/compile.js (was WARPOS)
+ * @param {object}  [opts.hookTools]   { prettier, tsc, eslint } for the missing-tools notice (optional)
+ * @param {function} opts.log          reporter, signature log(status, msg, detail?)
+ * @param {string}  [opts.HEADER]      ANSI header escape (for the section banner)
+ * @param {string}  [opts.RESET]       ANSI reset escape
+ * @returns {{ installedDelta: number }}
+ */
+function writeProductSettings({ target, warposRoot, hookTools = {}, log, HEADER = "", RESET = "" }) {
+  const TARGET = target;
+  const WARPOS = warposRoot;
+  let installed = 0;
+
+  // ── 8. Merge settings.json ──────────────────────────────
+  console.log(`\n${HEADER}  CONFIGURING HOOKS${RESET}`);
+
+  const settingsFile = path.join(TARGET, ".claude/settings.json");
+  // settings.json lives under .claude/ — ensure the dir exists (the CLI path may
+  // reach here before any .claude asset has created it).
+  fs.mkdirSync(path.dirname(settingsFile), { recursive: true });
+  let settings = {};
+  if (fs.existsSync(settingsFile)) {
+    try {
+      settings = JSON.parse(fs.readFileSync(settingsFile, "utf8"));
+    } catch {
+      settings = {};
+    }
+  }
+
+  // Add env vars if not present
+  if (!settings.env) settings.env = {};
+  if (!settings.env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS) {
+    settings.env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = "1";
+  }
+
+  // Add permissions if not present (additive)
+  if (!settings.permissions) settings.permissions = {};
+  if (!settings.permissions.allow) settings.permissions.allow = [];
+  const requiredPerms = [
+    "Bash(npm run *)",
+    "Bash(node *)",
+    "Bash(git *)",
+    "Bash(ls *)",
+    "Bash(pwd)",
+    "Bash(which *)",
+    "Bash(cat *)",
+    "Bash(head *)",
+    "Read",
+    "Edit",
+    "Write",
+    "Glob",
+    "Grep",
+    "Agent",
+  ];
+  for (const perm of requiredPerms) {
+    if (!settings.permissions.allow.includes(perm)) {
+      settings.permissions.allow.push(perm);
+    }
+  }
+
+  // Add hook registrations if not present
+  if (!settings.hooks) settings.hooks = {};
+
+  // Hook-entry helper: Claude Code schema requires every hook to have type:"command".
+  // Also: event keys must be single event names (Stop, SessionEnd, StopFailure as
+  // three separate keys — NOT "Stop|SessionEnd|StopFailure" as one key).
+  const cmd = (script) => ({
+    type: "command",
+    command: `node "$CLAUDE_PROJECT_DIR/scripts/hooks/${script}"`,
+  });
+
+  const sessionStopEntry = [
+    {
+      matcher: "",
+      hooks: [cmd("session-stop.js")],
+    },
+  ];
+
+  const hookConfig = {
+    SessionStart: [
+      {
+        matcher: "",
+        hooks: [cmd("session-start.js")],
+      },
+    ],
+    UserPromptSubmit: [
+      {
+        matcher: "",
+        hooks: [cmd("smart-context.js"), cmd("prompt-logger.js")],
+      },
+    ],
+    PreToolUse: [
+      {
+        matcher: "Bash",
+        hooks: [
+          cmd("merge-guard.js"),
+          cmd("memory-guard.js"),
+          cmd("framework-manifest-guard.js"),
+        ],
+      },
+      {
+        matcher: "Edit|Write",
+        hooks: [
+          cmd("secret-guard.js"),
+          cmd("foundation-guard.js"),
+          cmd("ownership-guard.js"),
+          cmd("memory-guard.js"),
+          cmd("store-validator.js"),
+          cmd("path-guard.js"),
+        ],
+      },
+      {
+        matcher: "Agent",
+        hooks: [cmd("team-guard.js")],
+      },
+    ],
+    PostToolUse: [
+      {
+        matcher: "",
+        hooks: [cmd("session-tracker.js")],
+      },
+      {
+        matcher: "Edit|Write",
+        hooks: [
+          // All quality hooks registered unconditionally. Each hook self-skips
+          // (exits 0) when its underlying tool (prettier / tsc / eslint) is
+          // absent — see the hook source. This keeps install simple and lets
+          // users add tooling later without re-registering.
+          cmd("format.js"),
+          cmd("typecheck.js"),
+          cmd("lint.js"),
+          cmd("edit-watcher.js"),
+          cmd("systems-sync.js"),
+          cmd("save-session-lint.js"),
+          cmd("learning-validator.js"),
+          cmd("ui-lint.js"),
+          cmd("path-guard.js"),
+        ],
+      },
+    ],
+    PostCompact: [
+      {
+        matcher: "",
+        hooks: [cmd("compact-saver.js")],
+      },
+    ],
+    // Session lifecycle: session-stop.js registered on all three end-of-session events.
+    // Claude Code schema requires separate keys per event, not a pipe-joined key.
+    Stop: sessionStopEntry,
+    SessionEnd: sessionStopEntry,
+    StopFailure: sessionStopEntry,
+  };
+
+  // Merge WarpOS hooks with any user-existing hooks, per event.
+  // Each event's value is an array of { matcher, hooks: [...] } blocks.
+  // We want: (a) preserve every user block, (b) add our blocks, (c) dedupe our
+  // own entries so re-running the installer is idempotent.
+  function warposScriptPath(entry) {
+    // Stable identity for a WarpOS hook entry — the command string.
+    return typeof entry === "object" && entry?.command ? entry.command : null;
+  }
+
+  function mergeEventHooks(existing, incoming) {
+    // existing: array of blocks already in user's settings.hooks[event]
+    // incoming: array of blocks WarpOS wants to register
+    const result = Array.isArray(existing) ? [...existing] : [];
+
+    for (const block of incoming) {
+      // Does the user already have a block with the same matcher?
+      const match = result.find(
+        (b) => (b.matcher || "") === (block.matcher || ""),
+      );
+      if (match) {
+        // Merge our hook entries INTO the existing matcher's hooks list, deduping
+        // by command string. User's other hooks for this matcher stay intact.
+        match.hooks = match.hooks || [];
+        const existingCmds = new Set(match.hooks.map(warposScriptPath));
+        for (const entry of block.hooks) {
+          if (!existingCmds.has(warposScriptPath(entry))) {
+            match.hooks.push(entry);
+          }
+        }
+      } else {
+        // No matching block — append our full block alongside user's.
+        result.push(block);
+      }
+    }
+    return result;
+  }
+
+  for (const [event, incomingBlocks] of Object.entries(hookConfig)) {
+    const before = JSON.stringify(settings.hooks[event] || []);
+    settings.hooks[event] = mergeEventHooks(
+      settings.hooks[event],
+      incomingBlocks,
+    );
+    const after = JSON.stringify(settings.hooks[event]);
+    if (before === after) {
+      log("ok", `${event}: WarpOS hooks already registered (no-op, idempotent)`);
+    } else if (before === "[]") {
+      log("ok", `Registered WarpOS hooks for ${event}`);
+      installed++;
+    } else {
+      log(
+        "ok",
+        `Merged WarpOS hooks into existing ${event} (user hooks preserved)`,
+      );
+      installed++;
+    }
+  }
+
+  // Report which tools are missing (hooks self-skip silently — this is just info)
+  const missing = [];
+  if (!hookTools.prettier) missing.push("prettier");
+  if (!hookTools.tsc) missing.push("tsc (TypeScript)");
+  if (!hookTools.eslint) missing.push("eslint");
+  if (!fs.existsSync(path.join(TARGET, "_requirements/01-design-system")))
+    missing.push("design-system docs (for ui-lint)");
+  if (missing.length > 0) {
+    log(
+      "info",
+      `All hooks wired. Tool(s) missing: ${missing.join(", ")} — related hooks self-skip until installed; no action needed.`,
+    );
+  }
+
+  fs.writeFileSync(settingsFile, JSON.stringify(settings, null, 2) + "\n");
+
+  // SP-20260523-002: If the target has the three-layer source-of-truth
+  // (`_warpos/settings/defaults.json`), regenerate the effective
+  // `.claude/settings.json` from the layered sources via compile.js. This
+  // is the new model — `_warpos/settings/defaults.json` (framework defaults)
+  // + `.claude/settings.local.json` (operator overrides) → compiled
+  // `.claude/settings.json`. Older installs without defaults.json keep the
+  // inlined-write above; the defaults.json check makes this backward
+  // compatible. Fail-open: never block install on a compile error.
+  const settingsDefaultsFile = path.join(TARGET, "_warpos/settings/defaults.json");
+  if (fs.existsSync(settingsDefaultsFile)) {
+    const compileScript = path.join(WARPOS, "scripts/warpos/settings/compile.js");
+    if (fs.existsSync(compileScript)) {
+      const settingsLocalFile = path.join(TARGET, ".claude/settings.local.json");
+      const compileArgs = [
+        compileScript,
+        "--defaults", settingsDefaultsFile,
+        "--out", settingsFile,
+      ];
+      if (fs.existsSync(settingsLocalFile)) {
+        compileArgs.push("--local", settingsLocalFile);
+      }
+      try {
+        const cr = spawnSync(process.execPath, compileArgs, { encoding: "utf8" });
+        if (cr.status === 0) {
+          log("ok", `Compiled .claude/settings.json from _warpos/settings/defaults.json + settings.local.json`);
+        } else {
+          log("warn", `compile.js exited ${cr.status} — kept inlined settings.json. stderr: ${(cr.stderr || "").slice(0, 200)}`);
+        }
+      } catch (err) {
+        log("warn", `compile.js spawn failed: ${err.message} — kept inlined settings.json`);
+      }
+    }
+  }
+
+  return { installedDelta: installed };
+}
+
 module.exports = {
   scaffoldProduct,
   populateWarposMirror,
   regenerateWarposManifest,
+  writeProductManifest,
+  writeAgentStore,
+  writeProductSettings,
 };
 
 // ── CLI entry (SP-20260525-019 / T-220) ────────────────────
-// `node scripts/warpos/scaffold-core.js <target>` runs the FULL product
-// scaffold (both entry points) against <target>. This is the SHARED core that
-// install.ps1 shells out to AFTER its file-copy + manifest-regen — a real
-// shell-out to this script file (β A-006: extract-don't-fork + cross-platform
-// shell-out), so a PowerShell install ends up identical to the warp-setup path
-// (registry-driven paths.json, _requirements/_docs zones, ROADMAP, PROJECT.md,
-// maps nudge, and the _warpos/ source mirror).
+// `node scripts/warpos/scaffold-core.js <target> [--warpos-root <path>]` runs
+// the FULL product scaffold (every entry point) against <target>. This is the
+// SHARED core that install.ps1 shells out to AFTER its file-copy + manifest-regen
+// — a real shell-out to this script file (β A-006: extract-don't-fork +
+// cross-platform shell-out), so a PowerShell install ends up identical to the
+// warp-setup path (manifest.json, store.json, settings.json, registry-driven
+// paths.json, _requirements/_docs zones, ROADMAP, PROJECT.md, maps nudge, and the
+// _warpos/ source mirror).
 //
-// warposRoot resolution: when install.ps1 invokes the COPY of this file inside
-// the product (`<target>/scripts/warpos/scaffold-core.js`), __dirname/../.. IS
-// the product root — and the product is also the source clone for the mirror
-// (install.ps1 already copied framework/paths.registry.json,
-// scripts/warpos/generate-roadmap-scaffold.js, and views/populate-source.js in
-// Stage 1). So target === warposRoot in that case, which is exactly what we
-// want: the scaffold reads the registry/scripts the product just received.
+// warposRoot resolution (the mirror-source question):
+//   - DEFAULT (no flag): warposRoot = path.resolve(__dirname,"..","..") — the
+//     clone this script file lives in. Used by the install-matrix node-mode path,
+//     which runs the CANONICAL scaffold-core.js (so warposRoot = canonical), and
+//     as a backward-compatible fallback.
+//   - install.ps1 NOW PASSES `--warpos-root $Source` (the canonical repo where
+//     install.ps1 lives). This matters: populate-source.js sources the framework
+//     files for the _warpos/ mirror — including `_warpos/settings/defaults.json` —
+//     from `warposRoot/...`. If install.ps1 let warposRoot default to the IN-PRODUCT
+//     copy (`<target>/scripts/warpos/scaffold-core.js`'s __dirname/../.. = the
+//     product itself), the mirror would self-source from the fresh product, which
+//     has no `_warpos/` yet, so defaults.json would NOT land. Threading
+//     `--warpos-root $Source` makes the mirror source from canonical, exactly like
+//     warp-setup (whose WARPOS is the canonical clone, separate from the target).
 if (require.main === module) {
-  const targetArg = process.argv[2];
+  // Parse argv: first positional = target; optional `--warpos-root <path>`.
+  const argv = process.argv.slice(2);
+  let targetArg = null;
+  let warposRootArg = null;
+  for (let i = 0; i < argv.length; i++) {
+    const a = argv[i];
+    if (a === "--warpos-root") {
+      warposRootArg = argv[++i];
+    } else if (a.startsWith("--warpos-root=")) {
+      warposRootArg = a.slice("--warpos-root=".length);
+    } else if (!targetArg && !a.startsWith("--")) {
+      targetArg = a;
+    }
+  }
   if (!targetArg) {
     process.stderr.write(
-      "usage: node scripts/warpos/scaffold-core.js <target-dir>\n",
+      "usage: node scripts/warpos/scaffold-core.js <target-dir> [--warpos-root <canonical-clone>]\n",
     );
     process.exit(2);
   }
@@ -454,10 +976,13 @@ if (require.main === module) {
     process.stderr.write(`target directory does not exist: ${target}\n`);
     process.exit(2);
   }
-  // The script lives at <root>/scripts/warpos/scaffold-core.js, so the clone
-  // root is two levels up. For an install.ps1 self-invocation this equals
-  // `target`; resolving from __dirname keeps it correct even if the two differ.
-  const warposRoot = path.resolve(__dirname, "..", "..");
+  // warposRoot: use --warpos-root when passed (install.ps1 passes $Source =
+  // canonical), else default to two levels up from this file (matrix node-mode /
+  // back-compat). When the flag is absent and this is an install.ps1
+  // self-invocation of the in-product copy, target === warposRoot.
+  const warposRoot = warposRootArg
+    ? path.resolve(warposRootArg)
+    : path.resolve(__dirname, "..", "..");
 
   // Console-backed reporter matching warp-setup's log(status, msg, detail?)
   // signature. Plain ASCII tags — this runs under whatever shell install.ps1
@@ -468,6 +993,32 @@ if (require.main === module) {
     if (detail) process.stdout.write(`       ${detail}\n`);
   };
 
+  // Stack/framework detection for manifest.json (mirrors warp-setup's scan).
+  // The CLI/install.ps1 path is NON-INTERACTIVE: no interview, so manifest
+  // fallbacks (interview.X || basename) apply. Detect the stack the same way
+  // warp-setup does so the two paths produce the same manifest defaults.
+  let stack = "unknown";
+  let framework = "unknown";
+  if (fs.existsSync(path.join(target, "package.json"))) {
+    try {
+      const pkg = JSON.parse(fs.readFileSync(path.join(target, "package.json"), "utf8"));
+      const deps = { ...pkg.dependencies, ...pkg.devDependencies };
+      if (deps.next) { stack = "node"; framework = "next.js"; }
+      else if (deps.react) { stack = "node"; framework = "react"; }
+      else if (deps.express) { stack = "node"; framework = "express"; }
+      else if (deps.vue) { stack = "node"; framework = "vue"; }
+      else { stack = "node"; framework = "node.js"; }
+    } catch {
+      stack = "node";
+    }
+  } else if (fs.existsSync(path.join(target, "requirements.txt"))) {
+    stack = "python"; framework = "python";
+  } else if (fs.existsSync(path.join(target, "go.mod"))) {
+    stack = "go"; framework = "go";
+  } else if (fs.existsSync(path.join(target, "Cargo.toml"))) {
+    stack = "rust"; framework = "rust";
+  }
+
   log("info", `scaffold-core: target=${target}`);
   log("info", `scaffold-core: warposRoot=${warposRoot}`);
 
@@ -476,8 +1027,22 @@ if (require.main === module) {
     // EARLY bundle (A+B+C+D+E): paths.json + skeleton + ROADMAP + PROJECT.md + maps nudge.
     total += scaffoldProduct({ target, warposRoot, log }).installedDelta;
 
+    // manifest.json + store.json (warp-setup steps 6 + 7). Non-interactive:
+    // interview={} so fallbacks apply. These complete the install-path parity
+    // (both showed up in the parity gate's `onlyInSetup`).
+    total += writeProductManifest({ target, interview: {}, stack, framework, log }).installedDelta;
+    total += writeAgentStore({ target, log }).installedDelta;
+
+    // BASE settings write (warp-setup step 8). Runs BEFORE the _warpos/ mirror so
+    // settings.json EXISTS even if the mirror fails. The layered compile inside
+    // writeProductSettings is SKIPPED here (defaults.json doesn't exist yet — the
+    // mirror below creates it); we run a SECOND writeProductSettings AFTER the
+    // mirror to fire the compile. hookTools omitted (CLI doesn't probe formatter
+    // tooling — the missing-tools notice is informational only).
+    total += writeProductSettings({ target, warposRoot, log }).installedDelta;
+
     // LATE block: _warpos/ source mirror. populate-source needs the ship
-    // manifest; read the product's freshly-regenerated copy. Skip the mirror
+    // manifest; read the canonical clone's copy (warposRoot). Skip the mirror
     // (with a clear notice) if it's absent rather than crash — fail-open, the
     // way warp-setup treats this block.
     const manifestPath = path.join(
@@ -504,6 +1069,14 @@ if (require.main === module) {
       // and regenerate.js stays inert — the install.ps1-path gap the parity
       // matrix caught. Fail-open; the helper logs its own outcome.
       regenerateWarposManifest({ target, warposRoot, log });
+
+      // LAYERED settings compile: now that the mirror has created
+      // `_warpos/settings/defaults.json`, re-run writeProductSettings so its
+      // compile branch fires and settings.json is compiled from the layered
+      // sources — the SAME compile.js warp-setup uses. The base merge above is
+      // idempotent, so this second call only adds the compile. (ORDER, per the
+      // ticket: layered-compile AFTER populateWarposMirror.)
+      total += writeProductSettings({ target, warposRoot, log }).installedDelta;
     } else {
       log(
         "warn",
