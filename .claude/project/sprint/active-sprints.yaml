@@ -531,7 +531,7 @@ sprints:
     updated_at: "2026-05-25T05:11:06.621Z"
   - id: SP-20260525-019
     title: "Install completeness: unify install.ps1 + warp-setup paths, scaffold PROJECT.md + product maps"
-    status: planning
+    status: retrospected
     lane:
       type: default
       value: null
@@ -539,6 +539,6 @@ sprints:
     layout: per_sprint_subdir
     pointer: ".claude/project/sprint/sprints/SP-20260525-019"
     created_at: "2026-05-25T06:23:57.176Z"
-    updated_at: "2026-05-25T06:23:57.176Z"
+    updated_at: "2026-05-25T07:27:24.293Z"
 created_at: "2026-05-12T22:57:35.667Z"
-updated_at: "2026-05-25T06:23:57.176Z"
+updated_at: "2026-05-25T07:27:24.293Z"

@@ -1,0 +1,138 @@
+schema: warpos/sprint/plan-contract/v1
+id: PC-20260525-0053
+created_at: "2026-05-25T06:26:37.515Z"
+updated_at: "2026-05-25T06:26:37.515Z"
+sprint: SP-20260525-019
+source_request: "Install completeness — fix all install gaps so every install path produces a complete, sprint-capable product: unify install.ps1 + warp-setup.js onto one scaffold core, scaffold PROJECT.md, and generate product-appropriate maps."
+source_request_verbatim: "/sprint:full fix all the gaps — (1) install.ps1 (consumer installer) and scripts/warp-setup.js (portfolio:new scaffold path) diverged; install.ps1 does NONE of the SP-018/#3 scaffolding (_warpos/ mirror, _requirements/_docs zones, ROADMAP, registry-driven paths, sprint infra). Reconcile onto one shared core. (2) PROJECT.md never scaffolded by any path though CLAUDE.md references it. (3) Product maps are the canonical baseline, not product-generated. Acceptance: fresh install via EITHER path passes /check:install + /check:warpos-structure-parity + regenerate --check, has PROJECT.md + product maps; install matrix gains an install.ps1-path scenario; no regression. Out of scope: capsule/release format."
+request_type: architecture_change
+interpreted_intent: "There are two divergent install paths. warp-setup.js (used by /portfolio:new) now does the full SP-018/#3 scaffolding; install.ps1 (the capsule/consumer installer) only copies files + regenerates the manifest, so a consumer install is hollow. Unify both onto one shared scaffold core so any install produces an identical complete, sprint-capable product; additionally scaffold PROJECT.md (referenced by CLAUDE.md but never created) and generate product-appropriate maps instead of shipping the canonical baseline."
+user_or_business_outcome: "Any WarpOS install — consumer (install.ps1) or portfolio scaffold (warp-setup.js) — yields a complete, sprint-capable product with no silent gaps, a PROJECT.md to fill, and product maps. Stops the recurring 'fresh install is hollow' bug class at its structural root (two installers drifting apart)."
+affected_surfaces:
+  - surface: scripts/warp-setup.js
+    evidence_level: verified_from_repo
+    notes: "Extract its scaffold logic (registry paths.json, _warpos/ mirror, zones, ROADMAP, sprint infra) into a shared module."
+  - surface: install.ps1
+    evidence_level: verified_from_repo
+    notes: "Make it invoke the shared scaffold core (likely shell out to a node scaffold step) so it stops being a copy-only installer."
+  - surface: "scripts/warpos/ (new shared scaffold module)"
+    evidence_level: inferred_from_repo
+    notes: "New module both install paths call — single source of scaffold truth."
+  - surface: "framework/templates/portfolio/ + PROJECT.md template"
+    evidence_level: inferred_from_repo
+    notes: "Add a PROJECT.md scaffold template; wire it into the shared core."
+  - surface: "scripts/regen-maps.js + maps generation"
+    evidence_level: verified_from_repo
+    notes: "Generate product maps at install (or wire the /maps:all step) instead of shipping canonical baseline."
+  - surface: scripts/warpos/test-install-matrix.js
+    evidence_level: verified_from_repo
+    notes: "Add an install.ps1-path scenario + assert PROJECT.md + product maps + parity across both paths."
+current_behavior:
+  evidence_level: verified_from_repo
+  notes: "install.ps1 (244 lines) copies files + regenerates framework-manifest.json; it does NOT call warp-setup.js nor do any SP-018/#3 scaffolding. warp-setup.js does the full scaffold. PROJECT.md is scaffolded by neither (grep = 0 generators). Fresh installs ship the 23 canonical maps as a baseline, not product-generated maps."
+desired_behavior: "One shared scaffold core produces the complete install (registry paths.json incl. sprint keys, _warpos/ source-mirror, _requirements/_docs zones, ROADMAP, sprint infra, PROJECT.md, product maps). Both install.ps1 and warp-setup.js invoke it. A fresh install via EITHER path passes /check:install + /check:warpos-structure-parity + regenerate.js --check, has PROJECT.md and product maps. The install matrix gains an install.ps1-path scenario and asserts all of it; the existing 6 scenarios do not regress."
+scope:
+  size: l
+  risk_level: high
+  complexity_drivers:
+    - "Load-bearing install model — a defect breaks every future install (both consumer + portfolio paths)"
+    - "Two languages: install.ps1 (PowerShell) must invoke a node scaffold core cleanly + cross-platform"
+    - "Extracting warp-setup's scaffold into a shared module without regressing its 6-scenario matrix"
+scope_variants:
+  minimal_safe:
+    summary: "Extract the scaffold core + have install.ps1 call it; defer PROJECT.md + product-maps."
+    tradeoffs:
+      - "Pro: closes the big divergence gap"
+      - "Con: PROJECT.md + maps still missing"
+  recommended:
+    summary: "Shared scaffold core (both paths) + PROJECT.md scaffold + product-maps generation + matrix install.ps1 scenario. Closes all 3 gaps."
+    tradeoffs:
+      - "Pro: every install path complete"
+      - "Con: larger surface; careful cross-platform + matrix work"
+  expanded:
+    summary: "recommended + a /check:install-parity check that diffs an install.ps1 install vs a warp-setup install and fails on drift."
+    tradeoffs:
+      - "Pro: drift can never recur silently"
+      - "Con: new check infra"
+assumptions:
+  safe:
+    - "warp-setup.js's scaffold logic (registry build, zones, _warpos, ROADMAP) is correct + matrix-verified and can be extracted intact"
+    - install.ps1 can shell out to node for the scaffold step
+  unsafe:
+    - "PowerShell→node invocation must be cross-platform-safe and not assume cwd"
+  needs_user_or_beta_review:
+    - "Whether install.ps1 should call warp-setup.js directly OR both call a new shared module (design decision)"
+    - "Whether product maps are generated at install or deferred to a first-run /maps:all"
+open_questions:
+  blocking: []
+  non_blocking:
+    - "PROJECT.md: blank template vs pre-filled from manifest scan?"
+    - "Generate maps at install (slower) vs print a 'run /maps:all' nudge?"
+non_goals:
+  - Re-architecting the capsule/release format
+  - "Backfilling existing products (companycam/dreamteam) — that's an operator re-setup, not this sprint"
+  - "Changing what the framework SHIPS (only how installs are produced)"
+requirement_areas:
+  - installer
+  - install-parity
+  - scaffold-core
+  - project-scaffold
+  - maps
+high_level_story_candidates:
+  - "As a consumer installing via install.ps1, I get the same complete install as a portfolio scaffold (zones, _warpos, ROADMAP, sprint infra)."
+  - "As an operator, a fresh product has a PROJECT.md to fill in."
+  - "As an operator, a fresh product has product maps, not WarpOS's own."
+granular_story_candidates:
+  - Extract warp-setup.js scaffold logic into a shared scripts/warpos/scaffold-core module.
+  - "warp-setup.js calls the shared core (no behavior change; matrix stays 6/6)."
+  - "install.ps1 invokes the shared core (node) so consumer installs are complete."
+  - "Add a PROJECT.md scaffold template + wire into the core (skip-if-present)."
+  - "Generate product maps at install (regen-maps) or wire the /maps:all step."
+  - "Install matrix: add install.ps1-path scenario + assert PROJECT.md + product maps + both-path parity."
+workstream_candidates:
+  - "Code: extract shared scaffold core"
+  - "Code: install.ps1 → core"
+  - "Code: PROJECT.md + maps"
+  - "Tests: matrix install.ps1 scenario + parity assertions"
+preliminary_ticket_candidates:
+  allowed: false
+  notes: "Design confirms the shared-core boundary + the install.ps1→node invocation contract + maps-at-install vs deferred."
+external_service_dependencies:
+  status: none_expected
+approval_boundaries:
+  - "Modifies the consumer installer (install.ps1) — affects every external install; matrix is the regression guard"
+  - "Push to remote — operator-scoped (orchestrator commits locally only)"
+design_required: true
+execution_allowed_without_design: false
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+lane:
+  type: default
+  value: null
+  isolation_notes: ""
+beta_review:
+  required: true
+  likely_founder_rejection_risks:
+    - Over-engineering the shared core when install.ps1 calling warp-setup.js directly might suffice
+  overbuild_risks:
+    - "A new parity-check is the expanded variant — defer unless cheap"
+  missing_context_risks:
+    - "The install.ps1→node cross-platform invocation contract"
+plan_quality:
+  status: needs_design
+  confidence: high
+  evidence_gaps:
+    - shared-core boundary
+    - "install.ps1→node invocation contract"
+    - maps-at-install vs deferred
+  fail_reasons: []
+next_recommended_command: "/sprint:design"
+resume_instructions: "Re-run /sprint:design (idempotent) or /sprint:plan to re-plan."
+tracker_paths:
+  current_sprint: ".claude/project/sprint/current-sprint.yaml"
+  sprint_progress: ".claude/project/sprint/sprint-progress.yaml"
+  plan_contract: ".claude/project/sprint/plan-contracts/PC-20260525-0053.yaml"
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260525-0053.report.md"
+created_by: alpha
+updated_by: alpha
