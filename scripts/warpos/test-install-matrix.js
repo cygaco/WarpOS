@@ -429,6 +429,36 @@ function scenario1_clean_install(scenario, fixtureDir, opts) {
       sp.code === 0,
       `code=${sp.code} ${(sp.stdout || sp.stderr || "").slice(0, 120)}`,
     );
+
+    // SP-20260525-003 (_warpos/-zone migration gate): warp-setup now populates
+    // the product's `_warpos/` source tree so `.claude/` is a regeneration of
+    // it (scripts/warpos/views/regenerate.js). These end-state assertions are
+    // design-agnostic — they hold regardless of the exact `_warpos/` layout —
+    // and are EXPECTED TO FAIL until the warp-setup core change lands.
+    const warposDir = path.join(fixtureDir, "_warpos");
+    const warposIsDir = fs.existsSync(warposDir) && fs.statSync(warposDir).isDirectory();
+    assert(
+      "_warpos/ exists and is a non-empty directory",
+      warposIsDir && fs.readdirSync(warposDir).length > 0,
+      `exists=${fs.existsSync(warposDir)} isDir=${warposIsDir} entries=${warposIsDir ? fs.readdirSync(warposDir).length : "n/a"}`,
+    );
+    assert(
+      "_warpos/MANIFEST.json exists",
+      fs.existsSync(path.join(warposDir, "MANIFEST.json")),
+      "expected _warpos/MANIFEST.json",
+    );
+    // .claude/ must be reproducible from _warpos/ — regenerate --check exits 0
+    // when no view is stale. --root makes the check CWD-independent.
+    const regen = runNode(
+      "scripts/warpos/views/regenerate.js",
+      ["--check", "--root", fixtureDir],
+      { timeout: 60_000 },
+    );
+    assert(
+      "regenerate.js --check clean (.claude/ reproducible from _warpos/)",
+      regen.code === 0,
+      `code=${regen.code} ${(regen.stdout || regen.stderr || "").slice(0, 200)}`,
+    );
   }
 
   r.durationMs = Date.now() - t0;
@@ -450,6 +480,38 @@ function scenario2_existing_install_upgrade(scenario, fixtureDir, opts) {
     r.durationMs = Date.now() - t0;
     return r;
   }
+
+  // SP-20260525-003 (_warpos/-zone migration gate, existing-product path):
+  // re-running setup against an already-installed product must keep `_warpos/`
+  // present and leave `.claude/` reproducible from it — i.e. the migration is
+  // idempotent and re-setup is a no-regression operation. seedInstall above is
+  // the first setup; this is a second setup over the existing install.
+  const warposDir = path.join(fixtureDir, "_warpos");
+  const reSetup = runNode("scripts/warp-setup.js", [fixtureDir, "--yes"], {
+    timeout: 120_000,
+  });
+  assert(
+    "re-running warp-setup over existing install exits 0",
+    reSetup.code === 0,
+    `code=${reSetup.code} stderr=${(reSetup.stderr || "").slice(0, 200)}`,
+  );
+  assert(
+    "_warpos/ still present after re-setup (idempotent migration)",
+    fs.existsSync(warposDir) &&
+      fs.statSync(warposDir).isDirectory() &&
+      fs.readdirSync(warposDir).length > 0,
+    `exists=${fs.existsSync(warposDir)}`,
+  );
+  const regenRe = runNode(
+    "scripts/warpos/views/regenerate.js",
+    ["--check", "--root", fixtureDir],
+    { timeout: 60_000 },
+  );
+  assert(
+    "regenerate.js --check still clean after re-setup (no regression)",
+    regenRe.code === 0,
+    `code=${regenRe.code} ${(regenRe.stdout || regenRe.stderr || "").slice(0, 200)}`,
+  );
 
   const cur = currentVersion();
   const versions = listCapsuleVersions();
