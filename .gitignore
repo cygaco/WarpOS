@@ -61,3 +61,8 @@ _docs/clones/
 # failed scenarios are moved to .warpos/test-fixtures/install-matrix/_failed/.
 # All ephemeral — should never be committed.
 .warpos/test-fixtures/
+
+# Ad-hoc throwaway WarpOS installs from manual install-gap testing (git-init'd
+# temp dirs, e.g. .warpos/_gh3/). Ephemeral — never commit. (Prefer
+# .warpos/test-fixtures/ for new throwaways; this covers stray manual ones.)
+.warpos/_gh*/
