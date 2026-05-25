@@ -452,9 +452,23 @@ function runProvider(role, prompt, opts = {}) {
     // silently breaking every diff-model review in adhoc + sprint flows.
     // Wrap promptContent in Buffer.from() so the stdin path matches the
     // stdout/stderr buffer treatment.
+    // WG-15: dispatched gauntlet agents run `git diff` to review the change;
+    // on a checkout owned by a different user than the sandbox runner, git
+    // refuses with "dubious ownership" and the review tooling falls back or
+    // fails. Inject safe.directory='*' via GIT_CONFIG_* env (process-scoped on
+    // the child — NOT a global git-config mutation) so the agent's git just
+    // works. Appends after any GIT_CONFIG_* entries the parent already set.
+    const gitCfgIdx = parseInt(process.env.GIT_CONFIG_COUNT, 10) || 0;
+    const childEnv = {
+      ...process.env,
+      GIT_CONFIG_COUNT: String(gitCfgIdx + 1),
+      [`GIT_CONFIG_KEY_${gitCfgIdx}`]: "safe.directory",
+      [`GIT_CONFIG_VALUE_${gitCfgIdx}`]: "*",
+    };
     const { spawnSync } = require("child_process");
     const spawned = spawnSync(cmd, {
       cwd: PROJECT,
+      env: childEnv,
       timeout: timeoutMs,
       input: Buffer.from(promptContent, "utf8"),
       maxBuffer: 32 * 1024 * 1024, // 32MB for long review outputs

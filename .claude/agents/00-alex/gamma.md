@@ -113,6 +113,38 @@ CLI dispatches are **blocking**. Run them sequentially. Capture parsed JSON from
 - Provider call times out → fallback to Claude
 - Both fail → return error to Alpha, do not continue the gauntlet
 
+## Verify before report (anti-phantom) — WG-6
+
+A dispatch that *appears* to run but produces nothing is worse than a hard
+failure: it masks a no-op and lets you narrate false progress, then run the
+gauntlet against an **empty worktree** and report a "successful" feature with
+zero code (phantom completion). Two structural rules close this:
+
+1. **Never launch build-chain workers as a detached background process +
+   sentinel-poll.** CLI dispatches are **blocking/synchronous** (see Dispatch
+   Method): `RESULT=$(node scripts/dispatch-agent.js <role> <prompt-file>)`
+   blocks until the worker exits and captures its exit code + stdout. A
+   background launch from this orchestrator's Bash can fail to spawn (or be
+   reaped when the turn ends) while the poll loop times out — and you would
+   then narrate "builder scaffolding now" off a timed-out poll and a 0-byte
+   sentinel. Do not do this.
+
+2. **Verify the artifacts before reporting ANY build progress.** After a
+   builder/fixer dispatch, and BEFORE advancing to the gauntlet or reporting
+   to Alpha, confirm BOTH:
+   - **non-empty worker output** — the dispatch result `output` is > 0 bytes
+     and exit was 0 (a 0-byte / non-ok result = dispatch failure, not "done");
+   - **real worktree change** — new or modified files, or new commits:
+     ```bash
+     git -C "<worktree>" status --porcelain | head -1   # non-empty ⇒ changed
+     git -C "<worktree>" rev-list --count main..HEAD     # >0 ⇒ new commits
+     ```
+   If either check is empty, treat the dispatch as a **DISPATCH FAILURE**:
+   do NOT run the gauntlet, do NOT report success. Return the failure to Alpha
+   with the evidence (empty output / clean worktree). The compliance reviewer's
+   phantom-completion check is a post-hoc backstop — this is the pre-gauntlet
+   liveness gate that stops the lie before it propagates.
+
 ## Scope
 
 You handle **one feature per invocation**, as specified in your prompt from Alex α.
