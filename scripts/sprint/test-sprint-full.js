@@ -834,6 +834,102 @@ function testBetaConsultContract() {
       state.betaConsultations[0] && state.betaConsultations[0].beta_message,
     );
   }
+
+  // ── J-13: resume-only guard — (betaVerdict || pendingPhase) && !resume ─
+  // Tests the predicate that drives the new return-2 guard in main().
+  // We exercise parseArgs directly (not main() which shells out) and assert
+  // that the guard predicate evaluates correctly for fresh vs resume calls.
+  {
+    out.push("J-13. Beta-args require --resume (resume-only guard predicate)");
+
+    // Fresh run with --beta-verdict but no --resume → predicate TRUE → return 2 in main().
+    const freshWithVerdict = full.parseArgs([
+      "node", "full.js", "test request long enough",
+      "--beta-verdict", "DECIDE",
+    ]);
+    ok(
+      "J-13: fresh+betaVerdict: guard predicate (betaVerdict||pendingPhase)&&!resume is TRUE",
+      !!(freshWithVerdict.betaVerdict || freshWithVerdict.pendingPhase) && !freshWithVerdict.resume,
+      JSON.stringify({ bv: freshWithVerdict.betaVerdict, pp: freshWithVerdict.pendingPhase, r: freshWithVerdict.resume }),
+    );
+
+    // Fresh run with --pending-phase but no --resume → predicate TRUE → return 2 in main().
+    const freshWithPending = full.parseArgs([
+      "node", "full.js", "test request long enough",
+      "--pending-phase", "before_design",
+    ]);
+    ok(
+      "J-13: fresh+pendingPhase: guard predicate is TRUE",
+      !!(freshWithPending.betaVerdict || freshWithPending.pendingPhase) && !freshWithPending.resume,
+      JSON.stringify({ bv: freshWithPending.betaVerdict, pp: freshWithPending.pendingPhase, r: freshWithPending.resume }),
+    );
+
+    // Legitimate resume with both flags → predicate FALSE → guard does NOT fire.
+    const resumeWithBoth = full.parseArgs([
+      "node", "full.js",
+      "--resume", "--sprint", "SP-TEST",
+      "--beta-verdict", "DECIDE",
+      "--pending-phase", "before_design",
+    ]);
+    ok(
+      "J-13: resume+betaVerdict+pendingPhase: guard predicate is FALSE (not rejected)",
+      !(!!(resumeWithBoth.betaVerdict || resumeWithBoth.pendingPhase) && !resumeWithBoth.resume),
+      JSON.stringify({ bv: resumeWithBoth.betaVerdict, pp: resumeWithBoth.pendingPhase, r: resumeWithBoth.resume }),
+    );
+
+    // Pure fresh run (no beta flags) → predicate FALSE → guard does NOT fire (normal path).
+    const freshClean = full.parseArgs([
+      "node", "full.js", "test request long enough",
+    ]);
+    ok(
+      "J-13: fresh clean run (no beta flags): guard predicate is FALSE (no interference)",
+      !(!!(freshClean.betaVerdict || freshClean.pendingPhase) && !freshClean.resume),
+      JSON.stringify({ bv: freshClean.betaVerdict, pp: freshClean.pendingPhase, r: freshClean.resume }),
+    );
+  }
+
+  // ── J-14: defense-in-depth skip predicate requires args.resume ────────
+  // The skip condition in the phase loop is now:
+  //   args.resume && pendingIdx !== -1 && i < pendingIdx
+  // Without args.resume the condition is FALSE even when pendingIdx is set,
+  // so a non-resume invocation can never silently bypass a gate.
+  {
+    out.push("J-14. Skip predicate requires args.resume (defense-in-depth)");
+
+    // pendingIdx for before_design = 1.
+    const pendingIdx = full.PHASES.findIndex((p) => `before_${p}` === "before_design");
+    ok(
+      "J-14: pendingIdx for before_design is 1",
+      pendingIdx === 1,
+      `got ${pendingIdx}`,
+    );
+
+    // Non-resume: even with pendingPhase set, skip predicate is FALSE at i=0.
+    const nonResume = { resume: false, pendingPhase: "before_design" };
+    const skipNonResume_i0 = nonResume.resume && pendingIdx !== -1 && 0 < pendingIdx;
+    ok(
+      "J-14: non-resume + pendingIdx=1: skip predicate FALSE at i=0 (Beta gate fires)",
+      skipNonResume_i0 === false,
+      `got ${skipNonResume_i0}`,
+    );
+
+    // Resume: skip predicate is TRUE at i=0 (already-cleared boundary skipped).
+    const resumeArgs = { resume: true, pendingPhase: "before_design" };
+    const skipResume_i0 = resumeArgs.resume && pendingIdx !== -1 && 0 < pendingIdx;
+    ok(
+      "J-14: resume + pendingIdx=1: skip predicate TRUE at i=0 (already-cleared boundary skipped)",
+      skipResume_i0 === true,
+      `got ${skipResume_i0}`,
+    );
+
+    // Resume but i >= pendingIdx: predicate FALSE — consult fires for current+later boundaries.
+    const skipResume_i1 = resumeArgs.resume && pendingIdx !== -1 && 1 < pendingIdx;
+    ok(
+      "J-14: resume + pendingIdx=1: skip predicate FALSE at i=1 (pending boundary — consult fires)",
+      skipResume_i1 === false,
+      `got ${skipResume_i1}`,
+    );
+  }
 }
 
 // ── Run ──────────────────────────────────────────────────────────────

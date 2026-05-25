@@ -1262,6 +1262,16 @@ function main() {
     );
     return 2;
   }
+  // RESUME-ONLY GUARD: --beta-verdict / --pending-phase are resume-only inputs.
+  // Honoring them on a fresh run would silently skip Beta gates that were never
+  // consulted — the skip branch would bypass N-1 gates with only the last one
+  // recorded. Reject immediately so the skip branch is unreachable on fresh runs.
+  if ((args.betaVerdict || args.pendingPhase) && !args.resume) {
+    process.stderr.write(
+      "--beta-verdict / --pending-phase are resume-only. Re-run with --resume (and --sprint <id>).\n",
+    );
+    return 2;
+  }
   // FIX 1+2: compute pendingIdx from --pending-phase so the phase loop can
   // skip already-cleared Beta boundaries on resume. Validate the value
   // immediately so operators get a clear error on typos (not a silent re-halt).
@@ -1367,7 +1377,7 @@ function main() {
     //   Boundaries AT the pending index: consume the supplied verdict here.
     //   Boundaries AFTER: no verdict left → halt with beta_consult_pending
     //   (operator supplies one verdict per resume invocation).
-    if (pendingIdx !== -1 && i < pendingIdx) {
+    if (args.resume && pendingIdx !== -1 && i < pendingIdx) {
       // Already cleared — run the phase fn (which will self-skip on resume).
     } else {
       const consult = maybeConsultBeta(state, boundary, args);
