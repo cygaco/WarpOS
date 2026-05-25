@@ -31,6 +31,7 @@ Director-of-product framing: the roadmap is a rhythm — **n sprints → milesto
 **Upcoming** sequence (top = next, intended order — opportunistic milestones can pull forward when cadence allows):
 
 ```
+Suite reconciliation  →  Canon engine  →  Spinup orchestrator                    →  🏁 0.15.0  Unified Product On-Ramp  (immediate, operator-directed)
 Maintainer scrub  →  Post-scrub gate hardening                                  →  🏁 0.10.0  Framework Boundary Closure
 DreamTeam capsule  →  Installer branch-safety  →  Collision detect  →  Matrix  →  🏁 0.12.0  Multi-Product Distribution Maturity
 /research:* consolidation  →  Provider catalog  →  Skill merges  →  Events     →  🏁 0.13.0  Skill Catalog Polish
@@ -40,6 +41,23 @@ Skill-scoped agent injection  →  DoPM persona  →  /roadmap:create  →  Wire
 **Later** holds trigger-gated bets with no current commitment. **Shipped** is reverse-chronological history with per-sprint receipts.
 
 ### Upcoming
+
+#### 🟡 0.15.0 — Unified Product On-Ramp *(target: immediate — operator-directed 2026-05-25)*
+
+`Suite reconciliation  →  Canon engine  →  Spinup orchestrator  →  🏁 0.15.0`
+
+**The shift to achieve:** going from 'just WarpOS' to a runnable product is **one command**, from either side. Two suites with a single source of truth — `portfolio:*` (from WarpOS) + `bootstrap:*` (in-project) — both reach the same on-ramp; `product:*` no longer exists.
+
+Before this milestone, product-creation skills are scattered across `portfolio:*` + deprecated `product:*` aliases; there is no in-project `bootstrap:` suite; no command takes a fresh project from idea → canonical docs → roadmap → something on screen; cloning is a standalone intel skill rather than an on-ramp entry. After: `spinup` (= `bootstrap:spinup`, wrapped by `portfolio:spinup <slug>`) is the single idea→screen command, with `--clone` as an alternate entry; `product:*` deleted; canonical-doc generation ships as spinup's `canon` phase.
+
+Sprints feeding this (**sequential — dependency chain**, β-confirmed conf 0.91):
+- **SP-20260525-021 — Suite reconciliation** — create the `bootstrap:` namespace; fold the brief + clone into `spinup` as modes (`--clone`); delete `product:*`, `import`, standalone `clone`, standalone `bootstrap`(brief); fold `adopt` into `portfolio:new`; rename `portfolio:dispatch → portfolio:run`; wire `portfolio:*` thin dispatch-wrappers. Reuses `scripts/portfolio/clone.js`; carries the WG-11 source-class discovery into `spinup --clone`. *(Executes 0.13.0 Skill Catalog Polish for these two suites.)*
+- **SP-20260525-022 — Canon engine** — full `_requirements/00-canonical/*` generator (7 narrative MD: CORE_BRIEF/USER_COHORTS/GOLDEN_PATHS/PRODUCT_MODEL/EVOLUTION/FAILURE_STATES/GLOSSARY + 4 structured JSON: FIELD_REGISTRY/PRECEDENCE/STEPS/WATCHED_DIRS) with **capped** `research:*` gap-filling (defined output schema, not open-ended); hooked as spinup's `canon` phase. *(Pulls the 0.14.0 Managerial Agent Layer canon core forward.)*
+- **SP-20260525-023 — Spinup orchestrator** — compose `intent (brief | --clone competitor-intel) → canon → roadmap:create → execute-first-sprint-on-screen`, with `--clone` / `--phase` / verify-before-claim + an install-completeness gate (`/check:install`, incl. the WG-4 sprint probe). *(Advances 0.12.0 one-command onboarding.)*
+
+**Definition of done:** (1) `bootstrap:spinup` and `portfolio:spinup <slug>` both take a fresh project from idea → canonical docs + roadmap-with-sprints → core loop on screen (verified serving). (2) `--clone` produces the clone doc AND runs the same on-ramp. (3) `product:*` no longer exists; `/skills:cleanup` + a repo grep confirm no stale references to deleted/renamed skills. (4) Fresh `/portfolio:new` and a manual WarpOS install both reach a gap-free state (`/check:install` clean) before spinup proceeds.
+
+**Engineering reality unlocked:** new-product creation collapses from a multi-skill scavenger hunt into one command from either side (WarpOS or in-project). The framework's own "idea → product" path becomes dogfoodable end-to-end — which is the real test the companycam/dreamteam registers were proxies for.
 
 #### 🟡 0.10.0 — Framework Boundary Closure *(target: next 2 sprints)*
 
