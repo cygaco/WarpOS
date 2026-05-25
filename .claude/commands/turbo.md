@@ -1,9 +1,15 @@
 ---
-description: Pre-authorize a session batch of high-impact actions via permissions.allow entries. Removes the keyboard cadence for repeat approvals.
+description: "[alias → /session:turbo] Pre-authorize a session batch of high-impact actions via permissions.allow entries. Removes the keyboard cadence for repeat approvals."
 user-invocable: true
 ---
 
 # /turbo
+
+> **Canonical name is now `/session:turbo`** (relocated 2026-05-25 into the
+> `session:` namespace, where it gained a `--speed` cadence bundle). This root
+> `/turbo` stays as a working alias so `/mode:<solo|adhoc|oneshot> --turbo` and
+> muscle memory keep working — same engine (`scripts/turbo/apply.js`), same scopes
+> + safety floor. For the speed-cadence levers, see `/session:turbo`.
 
 Pre-authorize a batch of high-impact actions for a bounded time window. Designed
 to remove the "yes push", "yes manifest", "yes destructive-git" keyboard cadence
