@@ -153,8 +153,8 @@ function buildRules(sourcePrefix) {
         rel.startsWith(".claude/project/decisions/") ||
         rel.startsWith(".claude/project/maps/") ||
         rel.startsWith(".claude/project/sprint/") ||
-        rel.startsWith(".claude/logs/") ||
-        rel.startsWith(".claude/handoffs/") ||
+        rel.startsWith(".claude/logs/") || // manifest classifier matches this prefix by design; path-literal-allowed
+        rel.startsWith(".claude/handoffs/") || // manifest classifier matches this prefix by design; path-literal-allowed
         rel === ".claude/handoff.md",
       entry: () => ({ owner: "runtime", managed: false }),
     },
