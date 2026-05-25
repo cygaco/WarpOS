@@ -12,7 +12,7 @@
     "tool": 2,
     "pattern": 6,
     "fixture": 23,
-    "warpos_script": 44,
+    "warpos_script": 45,
     "check_tool": 19,
     "agent_tool": 3,
     "decision_tool": 1,
@@ -51,7 +51,7 @@
     "installer_script": 1,
     "framework_doc": 2
   },
-  "total": 687,
+  "total": 688,
   "assets": {
     "agent": [
       {
@@ -2557,7 +2557,7 @@
         "src": ".claude/commands/warp/setup.md",
         "dest": ".claude/commands/warp/setup.md",
         "kind": "skill",
-        "sha256": "a11eb0dea2e4e7e984cb6c8881f65726c4476b2980779d35bfc61ebd7fea35f2",
+        "sha256": "35d2b8465ea365d65cda2330c06178060affd732bb05394684b492a014a720de",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
@@ -4589,7 +4589,7 @@
         "src": "scripts/warpos/manifest/build.js",
         "dest": "scripts/warpos/manifest/build.js",
         "kind": "warpos_script",
-        "sha256": "caeb61890314a822b5a0adf6892f9167cd9892118641375796453845294a1270",
+        "sha256": "fc9ffa5eaa5134c53800b1c5cc530fe3343eb48f7606df17a051450fc64da50d",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -4801,6 +4801,18 @@
         "replaces": null
       },
       {
+        "id": "warpos_script.scaffold-core.js",
+        "src": "scripts/warpos/scaffold-core.js",
+        "dest": "scripts/warpos/scaffold-core.js",
+        "kind": "warpos_script",
+        "sha256": "ed7aa64865707bb5545bef6f4336513ef5a16f70847bbe766bfd27f9bc756b1e",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
         "id": "warpos_script.settings.compile.js",
         "src": "scripts/warpos/settings/compile.js",
         "dest": "scripts/warpos/settings/compile.js",
@@ -4877,7 +4889,7 @@
         "src": "scripts/warpos/test-install-matrix.js",
         "dest": "scripts/warpos/test-install-matrix.js",
         "kind": "warpos_script",
-        "sha256": "0f0bc3b090aafdbf423e50cf5b53e879b62ccb20cf8546ea44439bf0031ea3d8",
+        "sha256": "0d3bff6b367fc06332ac495e53132bbb6e4c143ca492d774a984e6676ad90986",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -8357,7 +8369,7 @@
         "src": "install.ps1",
         "dest": "install.ps1",
         "kind": "installer_script",
-        "sha256": "99174be27e5a8a540b1b4b73b272bd74be59410a8e6507cb3b96e147de5a5997",
+        "sha256": "f2de9ce842034d161cfa5984bd432ba3b4e7c2eae6ccee156daf93a91e38995a",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",

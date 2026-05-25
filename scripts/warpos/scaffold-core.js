@@ -179,6 +179,103 @@ function scaffoldProduct({ target, warposRoot, log }) {
     /* non-fatal */
   }
 
+  // ── 5d. PROJECT.md scaffold (SP-20260525-019 / T-221) ──────
+  // CLAUDE.md references [PROJECT.md](PROJECT.md) for product-specific context,
+  // but WarpOS does NOT ship PROJECT.md as a framework asset (the canonical
+  // PROJECT.md is WarpOS-about-WarpOS — copying it would leak framework content
+  // into the product). So that link dangled on every install. Write a minimal,
+  // GENERIC template here so both install paths (warp-setup + install.ps1, which
+  // share this core) close the dangling reference. The operator fills the
+  // placeholder sections in. Idempotent / skip-if-present: never clobber an
+  // operator's PROJECT.md or WarpOS's own (this core also runs in canonical).
+  const projectMdFile = path.join(TARGET, "PROJECT.md");
+  if (!fs.existsSync(projectMdFile)) {
+    const projectMd = [
+      `# ${path.basename(TARGET)} — Project Context`,
+      "",
+      "> Product-specific context for this project. For the framework instructions an",
+      "> agent operates under, see [CLAUDE.md](CLAUDE.md). For the agent system router,",
+      "> see [AGENTS.md](AGENTS.md). WarpOS will never overwrite this file — it's yours.",
+      "",
+      "## Product",
+      "",
+      "_What is this product? One or two sentences: what it does and who it's for._",
+      "",
+      "## Stack",
+      "",
+      "_Languages, frameworks, key dependencies, hosting / deployment target._",
+      "",
+      "## Goals",
+      "",
+      "_What does success look like? Near-term objectives and the bar for \"done\"._",
+      "",
+      "## JTBD",
+      "",
+      "_Jobs To Be Done — the concrete jobs a user hires this product to do._",
+      "",
+    ].join("\n");
+    fs.writeFileSync(projectMdFile, projectMd + "\n");
+    log("ok", "Created PROJECT.md template (fill in Product/Stack/Goals/JTBD)");
+    installed++;
+  } else {
+    log("ok", "PROJECT.md already present — leaving it alone");
+  }
+
+  // ── 5e. Product maps nudge (SP-20260525-019 / T-222) ───────
+  // SAFE OPTION (chosen): write a nudge, do NOT generate maps inline. Reasons:
+  //  1. scripts/regen-maps.js hardcodes PROJECT = resolve(__dirname, "..") — it
+  //     ALWAYS targets the WarpOS clone it lives in, with no target/CWD param.
+  //     It cannot cheaply or safely target the product (the T-222 bar for inline
+  //     generation).
+  //  2. The framework-manifest ships ~24 canonical maps assets
+  //     (.claude/project/maps/skills.jsonl, hooks.jsonl, architecture.md, …) that
+  //     the installer copies in. Those describe WARPOS'S OWN inventory. Without a
+  //     marker the product silently presents WarpOS's canonical maps as its own —
+  //     exactly the failure T-222 calls out.
+  // So we drop a README into the maps dir (paths.maps → .claude/project/maps/)
+  // flagging the shipped maps as canonical-WarpOS placeholders and pointing the
+  // operator at /maps:all to regenerate them for THIS product. Idempotent /
+  // skip-if-present. No new paths.json key needed — paths.maps already keys the
+  // dir; this is a fixed-name file inside it.
+  try {
+    const mapsDir = path.join(TARGET, ".claude", "project", "maps");
+    fs.mkdirSync(mapsDir, { recursive: true });
+    const mapsReadme = path.join(mapsDir, "README.md");
+    if (!fs.existsSync(mapsReadme)) {
+      const readme = [
+        "# Project Maps",
+        "",
+        "> **These maps are not yours yet.** A fresh WarpOS install ships the",
+        "> framework's OWN canonical relationship maps (skills, hooks, tools, memory,",
+        "> systems, enforcements, architecture) as placeholders in this directory.",
+        "> They describe WarpOS itself — not this product.",
+        "",
+        "## Generate maps for THIS product",
+        "",
+        "Open the project in Claude Code and run:",
+        "",
+        "```",
+        "/maps:all",
+        "```",
+        "",
+        "That regenerates every map by walking THIS project's `.claude/` and source",
+        "tree (no LLM synthesis — deterministic file walks), replacing the shipped",
+        "WarpOS placeholders with your real inventory.",
+        "",
+        "Until you do, treat any pre-existing `*.jsonl` / `*.md` / `inventory-*.json`",
+        "in this directory as framework defaults, not project truth.",
+        "",
+      ].join("\n");
+      fs.writeFileSync(mapsReadme, readme + "\n");
+      log("ok", "Wrote maps/README.md nudge (run /maps:all to generate product maps)");
+      installed++;
+    } else {
+      log("ok", "maps/README.md already present — leaving it alone");
+    }
+  } catch {
+    /* non-fatal — maps nudge is informational */
+  }
+
   return { installedDelta: installed };
 }
 
@@ -276,3 +373,90 @@ module.exports = {
   scaffoldProduct,
   populateWarposMirror,
 };
+
+// ── CLI entry (SP-20260525-019 / T-220) ────────────────────
+// `node scripts/warpos/scaffold-core.js <target>` runs the FULL product
+// scaffold (both entry points) against <target>. This is the SHARED core that
+// install.ps1 shells out to AFTER its file-copy + manifest-regen — a real
+// shell-out to this script file (β A-006: extract-don't-fork + cross-platform
+// shell-out), so a PowerShell install ends up identical to the warp-setup path
+// (registry-driven paths.json, _requirements/_docs zones, ROADMAP, PROJECT.md,
+// maps nudge, and the _warpos/ source mirror).
+//
+// warposRoot resolution: when install.ps1 invokes the COPY of this file inside
+// the product (`<target>/scripts/warpos/scaffold-core.js`), __dirname/../.. IS
+// the product root — and the product is also the source clone for the mirror
+// (install.ps1 already copied framework/paths.registry.json,
+// scripts/warpos/generate-roadmap-scaffold.js, and views/populate-source.js in
+// Stage 1). So target === warposRoot in that case, which is exactly what we
+// want: the scaffold reads the registry/scripts the product just received.
+if (require.main === module) {
+  const targetArg = process.argv[2];
+  if (!targetArg) {
+    process.stderr.write(
+      "usage: node scripts/warpos/scaffold-core.js <target-dir>\n",
+    );
+    process.exit(2);
+  }
+  const target = path.resolve(targetArg);
+  if (!fs.existsSync(target)) {
+    process.stderr.write(`target directory does not exist: ${target}\n`);
+    process.exit(2);
+  }
+  // The script lives at <root>/scripts/warpos/scaffold-core.js, so the clone
+  // root is two levels up. For an install.ps1 self-invocation this equals
+  // `target`; resolving from __dirname keeps it correct even if the two differ.
+  const warposRoot = path.resolve(__dirname, "..", "..");
+
+  // Console-backed reporter matching warp-setup's log(status, msg, detail?)
+  // signature. Plain ASCII tags — this runs under whatever shell install.ps1
+  // is using, and not all terminals render the colored glyphs cleanly.
+  const TAG = { ok: "[ ok ]", warn: "[warn]", fail: "[fail]", info: "[info]" };
+  const log = (status, msg, detail) => {
+    process.stdout.write(`${TAG[status] || "[info]"} ${msg}\n`);
+    if (detail) process.stdout.write(`       ${detail}\n`);
+  };
+
+  log("info", `scaffold-core: target=${target}`);
+  log("info", `scaffold-core: warposRoot=${warposRoot}`);
+
+  let total = 0;
+  try {
+    // EARLY bundle (A+B+C+D+E): paths.json + skeleton + ROADMAP + PROJECT.md + maps nudge.
+    total += scaffoldProduct({ target, warposRoot, log }).installedDelta;
+
+    // LATE block: _warpos/ source mirror. populate-source needs the ship
+    // manifest; read the product's freshly-regenerated copy. Skip the mirror
+    // (with a clear notice) if it's absent rather than crash — fail-open, the
+    // way warp-setup treats this block.
+    const manifestPath = path.join(
+      warposRoot,
+      ".claude",
+      "framework-manifest.json",
+    );
+    let shipManifest = null;
+    try {
+      shipManifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+    } catch {
+      /* manifest missing/unreadable — handled below */
+    }
+    if (shipManifest) {
+      total += populateWarposMirror({
+        target,
+        warposRoot,
+        shipManifest,
+        log,
+      }).installedDelta;
+    } else {
+      log(
+        "warn",
+        `_warpos/ mirror skipped — no readable framework-manifest at ${manifestPath}. Re-run /warp:setup or regenerate the manifest, then re-run this script.`,
+      );
+    }
+    log("ok", `scaffold-core complete (${total} item(s) scaffolded)`);
+    process.exit(0);
+  } catch (err) {
+    process.stderr.write(`scaffold-core failed: ${err && err.message ? err.message : err}\n`);
+    process.exit(1);
+  }
+}

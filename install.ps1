@@ -220,6 +220,29 @@ if (Test-Path $GeneratorPath) {
     Write-Step "Stage 2/3 - framework-manifest.json copied from canonical (no generator on target yet)"
 }
 
+# Stage 2.5 - run the SHARED product-scaffold core (SP-20260525-019 / T-220).
+# β A-006 (extract-don't-fork + cross-platform shell-out): instead of
+# re-implementing the paths.json/_requirements/_docs/ROADMAP/PROJECT.md/maps/
+# _warpos-mirror scaffolding in PowerShell, shell out to the SAME Node module
+# that warp-setup.js calls (scripts/warpos/scaffold-core.js). This runs AFTER
+# the file-copy (Stage 1) and manifest-regen (Stage 2) so the script + its
+# dependencies (framework/paths.registry.json, generate-roadmap-scaffold.js,
+# views/populate-source.js) are present in $Target, and the manifest it reads
+# for the _warpos/ mirror reflects the target. Result: an install.ps1 consumer
+# install ends up COMPLETE and identical to the warp-setup path.
+$ScaffoldCore = Join-Path $Target "scripts/warpos/scaffold-core.js"
+if (Test-Path $ScaffoldCore) {
+    Write-Step "Stage 2.5/3 - running shared product-scaffold core"
+    & node $ScaffoldCore $Target
+    if ($LASTEXITCODE -ne 0) {
+        Write-Warn "scaffold-core.js exited $LASTEXITCODE - product scaffold may be incomplete (paths.json/zones/ROADMAP/PROJECT.md/maps/_warpos). Re-run /warp:setup from inside the project to complete it."
+    } else {
+        Write-Step "Stage 2.5/3 - product scaffold complete (paths.json, _requirements/_docs zones, ROADMAP, PROJECT.md, maps nudge, _warpos/ mirror)"
+    }
+} else {
+    Write-Warn "scaffold-core.js not found at $ScaffoldCore - skipping product scaffold. The manifest may predate it; regenerate the framework manifest and re-run, or run /warp:setup from inside the project."
+}
+
 # Stage 3 - post-install hint
 Write-Step "Stage 3/3 - install complete"
 Write-Step "Next step: open the project in Claude Code; run /warp:health or /warp:doctor to verify."
