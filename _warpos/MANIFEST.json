@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-05-25T20:47:35.517Z",
+  "generatedAt": "2026-05-25T21:02:36.783Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.9.0",
   "migrations": [],
@@ -81,8 +81,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "de5bebb8494a1feefe3c00c13c2212eebe4de9b05c54fb32c39ce04802a1fbf5",
-      "installedSha": "de5bebb8494a1feefe3c00c13c2212eebe4de9b05c54fb32c39ce04802a1fbf5"
+      "sha256": "930e6970d4015911e931430de6751ce5e85ae9e76ccfe3abf9ca335a8fe1dc13",
+      "installedSha": "930e6970d4015911e931430de6751ce5e85ae9e76ccfe3abf9ca335a8fe1dc13"
     },
     "USER_GUIDE.md": {
       "owner": "framework",
@@ -158,6 +158,12 @@
       "owner": "project",
       "managed": false,
       "seeded_from": "framework/templates/_requirements/_standards/STORIES-COMMON.md",
+      "class": "fillable"
+    },
+    "_requirements/_shared/README.md": {
+      "owner": "project",
+      "managed": false,
+      "seeded_from": "framework/templates/_requirements/_shared/README.md",
       "class": "fillable"
     },
     "_requirements/_index/requirements.graph.json": {
@@ -2463,6 +2469,13 @@
       "sha256": "4eb836b6e944d99f374c2274463cd389efdf09687a60931e44a49fdf22f06cf1",
       "installedSha": "4eb836b6e944d99f374c2274463cd389efdf09687a60931e44a49fdf22f06cf1"
     },
+    "scripts/warpos/test-update-scaffold.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/warpos/test-update-scaffold.js",
+      "sha256": "0d985acfc3aca1005fab927021fd9c8656deed85f53667738307a4d533ceb3b5",
+      "installedSha": "0d985acfc3aca1005fab927021fd9c8656deed85f53667738307a4d533ceb3b5"
+    },
     "scripts/warpos/transaction.js": {
       "owner": "framework",
       "managed": true,
@@ -2474,8 +2487,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/warpos/update.js",
-      "sha256": "5fe806d9d6e1b1e379364c4c213dbb40f898b868148e4b2e86c3c209ed2ef379",
-      "installedSha": "5fe806d9d6e1b1e379364c4c213dbb40f898b868148e4b2e86c3c209ed2ef379"
+      "sha256": "bd19e5cdc205f580978db58163caf8f7b8532ca2af1347a5160136f632c14088",
+      "installedSha": "bd19e5cdc205f580978db58163caf8f7b8532ca2af1347a5160136f632c14088"
     },
     "scripts/warpos/worktree-audit.js": {
       "owner": "framework",
@@ -12089,8 +12102,8 @@
       "managed": true,
       "source": ".claude/commands/turbo.md",
       "kind": "md",
-      "sha256": "0d9f147daa1bb25756404ed3abe8287d3008983f43f2b7420fee0309c2419355",
-      "installedSha": "0d9f147daa1bb25756404ed3abe8287d3008983f43f2b7420fee0309c2419355"
+      "sha256": "aa4118638dcf52242acde0f0f75585980240e48e637e3a31659e1ac81487b46f",
+      "installedSha": "aa4118638dcf52242acde0f0f75585980240e48e637e3a31659e1ac81487b46f"
     },
     ".claude/commands/warp/check.md": {
       "owner": "framework",
@@ -12355,6 +12368,14 @@
       "kind": "md",
       "sha256": "d21990e85a5b65f4cd8988321ad19518c32dc483bd9d229eff9027b7f8c6d7d2",
       "installedSha": "d21990e85a5b65f4cd8988321ad19518c32dc483bd9d229eff9027b7f8c6d7d2"
+    },
+    ".claude/commands/session/turbo.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/commands/session/turbo.md",
+      "kind": "md",
+      "sha256": "326cf7e653fb82c68c71953881ec13a612fad6657821d0674e5edf4a8887646f",
+      "installedSha": "326cf7e653fb82c68c71953881ec13a612fad6657821d0674e5edf4a8887646f"
     },
     ".claude/commands/session/write.md": {
       "owner": "framework",

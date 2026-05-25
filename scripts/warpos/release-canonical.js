@@ -417,6 +417,11 @@ function buildSkeletonReleaseJson(canonical, version) {
       "node scripts/paths/gate.js",
       "node scripts/hooks/build.js --check",
       "node scripts/hooks/test.js",
+      // SP-20260525-024: structure-parity guards the downstream content-gap fix —
+      // update.js now scaffolds the _requirements/* skeleton + _docs + ROADMAP +
+      // PROJECT, so a consumer post-update MUST have every REQUIRED_DIR. Catches
+      // a regression where the scaffold step is dropped or the skeleton drifts.
+      "node scripts/checks/warpos-structure-parity.js",
       "node scripts/warpos/provider-smoke.js --providers claude,openai,gemini",
     ],
     checksumsFile: "checksums.json",

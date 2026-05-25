@@ -1157,6 +1157,33 @@ async function run(opts) {
   }
   const applyDurationMs = Date.now() - applyStartedAt;
 
+  // SP-20260525-024 (downstream content-gap fix; OPEN_ADR — changes update
+  // semantics): /warp:update must also scaffold the structure-parity skeleton
+  // (_requirements/* zones, _docs/), ROADMAP.md, PROJECT.md, and the paths.json
+  // registry backfill that fresh-install creates. These are DELIBERATELY absent
+  // from the framework manifest (the capsule ships engine assets only;
+  // _requirements/_docs are excluded to avoid leaking WarpOS's own product
+  // canon — generate-framework-manifest.js:164). Without this, consumers never
+  // receive the skeleton/ROADMAP/PROJECT on update — they only got them on a
+  // fresh install. scaffoldProduct is idempotent (skip-if-present; never
+  // clobbers operator paths.json values) + fail-open. Runs BEFORE the
+  // post-update checks so structure-parity sees the freshly-scaffolded dirs.
+  try {
+    const scaffoldCore = require("./scaffold-core");
+    if (scaffoldCore && typeof scaffoldCore.scaffoldProduct === "function") {
+      scaffoldCore.scaffoldProduct({
+        target: targetRoot,
+        warposRoot: sourceTreeRoot,
+        // scaffold-core's log signature is (status, message); accept any arity.
+        log: (...a) => console.log(`warp:update: scaffold — ${a.filter(Boolean).join(" ")}`),
+      });
+    }
+  } catch (err) {
+    console.warn(
+      `warp:update: scaffold-core skipped (${err.message}) — structure skeleton/ROADMAP/PROJECT may be incomplete.`,
+    );
+  }
+
   // Run per-capsule post-update checks (release.json#postUpdateChecks).
   // These coexist with SP-005 postflight: capsule-declared checks fire
   // first, then the framework-side postflight composer below.
