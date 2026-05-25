@@ -126,6 +126,60 @@ function main() {
           'missing — /mode:adhoc persistent teams (TeamCreate/SendMessage) require this. Add settings.env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS="1" then restart Claude Code.',
       };
     }),
+    // WG-4: sprint-subsystem readiness. WG-1/2/3/10 all survived /warp:setup and
+    // provider smoke because nothing instantiated the sprint pipeline — its
+    // install-completeness had no enforcer. These three assert it is wired so a
+    // fresh install fails loudly HERE instead of mid-/sprint:full.
+    check("sprint-full path keys registered", () => {
+      const f = path.join(REPO_ROOT, ".claude", "paths.json");
+      if (!fs.existsSync(f)) return { ok: false, detail: "paths.json missing" };
+      let p;
+      try {
+        p = JSON.parse(fs.readFileSync(f, "utf8"));
+      } catch (e) {
+        return { ok: false, detail: `paths.json unparseable: ${e.message}` };
+      }
+      const need = [
+        "sprintFullAutonomy",
+        "sprintFullReports",
+        "sprintReleases",
+        "sprintSchemas",
+      ];
+      const missing = need.filter((k) => !p[k]);
+      if (missing.length)
+        return {
+          ok: false,
+          detail: `missing: ${missing.join(", ")} — run node scripts/paths/build.js`,
+        };
+      return true;
+    }),
+    check("sprint autonomy config valid", () => {
+      try {
+        require("child_process").execSync(
+          "node scripts/sprint/validate-autonomy-config.js",
+          { cwd: REPO_ROOT, stdio: "pipe", timeout: 30000 },
+        );
+        return true;
+      } catch (e) {
+        return {
+          ok: false,
+          detail:
+            "validate-autonomy-config.js exited non-zero — run it directly to see why",
+        };
+      }
+    }),
+    check("sprint templates present (init + requirements)", () => {
+      const base = path.join(REPO_ROOT, "framework", "templates", "sprint");
+      const missing = ["init", "requirements"].filter(
+        (d) => !fs.existsSync(path.join(base, d)),
+      );
+      if (missing.length)
+        return {
+          ok: false,
+          detail: `framework/templates/sprint/{${missing.join(",")}} missing — design phase would write a hollow bundle (WG-10). Run /warp:update.`,
+        };
+      return true;
+    }),
   ];
 
   const failed = checks.filter((c) => !c.ok);

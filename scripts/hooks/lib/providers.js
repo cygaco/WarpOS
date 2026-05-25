@@ -174,6 +174,12 @@ const DEFAULT_AGENT_PROVIDERS = {
   qa: "openai",
   // Security — Gemini for different adversarial training corpus, thinking always-on
   redteam: "gemini",
+  // W-4: ad-hoc cross-provider consults (brainstorm, second opinion, research).
+  // Non-Claude, NO strict output schema — dispatch-agent.js skips envelope
+  // validation for these so freeform replies don't trip the review-envelope
+  // validator (false "invalid verdict null") or distort review-role telemetry.
+  advisor: "openai",
+  consult: "openai",
 };
 
 /**

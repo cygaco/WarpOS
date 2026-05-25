@@ -423,10 +423,15 @@ try {
   if (roleModel) result.specModel = roleModel;
   const parsed = parseProviderJson(result.output);
   if (parsed) result.parsed = parsed;
-  const envelopeValidation = validateAgentOutput(
-    role,
-    parsed || result.output || "",
-  );
+  // W-4: advisor/consult roles are freeform (brainstorm, second opinion,
+  // research) — they carry no review envelope. Skip strict validation so a
+  // freeform reply isn't logged as an invalid ComplianceResult ("invalid
+  // verdict null"), which previously polluted review-role telemetry whenever an
+  // ad-hoc consult borrowed the compliance role.
+  const FREEFORM_ROLES = new Set(["advisor", "consult"]);
+  const envelopeValidation = FREEFORM_ROLES.has(role)
+    ? { ok: true, errors: [], normalized: null, freeform: true }
+    : validateAgentOutput(role, parsed || result.output || "");
   result.envelopeValidation = {
     ok: envelopeValidation.ok,
     errors: envelopeValidation.errors || [],

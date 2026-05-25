@@ -237,6 +237,24 @@ When all 5 phases complete:
   estimate, auto-approvals).
 - Final checkpoint with `status: completed`.
 
+### Step 8b — Roadmap trace (ALWAYS) — WG-16
+
+`/sprint:full` ALWAYS records the sprint to `ROADMAP.md`, so work that wasn't a
+pre-planned roadmap item is still tracked:
+
+1. **Sprints-table row** — `scripts/sprint/ledger.js` appends the row at sprint
+   mint (`add-sprint.js`); the completion step **verifies/repairs** it so the
+   row is guaranteed present at completion (not merely assumed at mint). This
+   half is **enforced** by the ledger (idempotent, anchor-gated
+   `<!-- ledger:sprints -->`).
+2. **Shipped narrative** — the completion step appends a one-line Shipped entry
+   under the matching milestone, or under an **"Ad-hoc / unplanned"** subsection
+   for off-roadmap work. This half is **skill-body discipline** (no hook verifies
+   it) → enforcement-debt, closed by `/check:roadmap-trace` (asserts every
+   `done`/`retrospected` sprint has both a Shipped entry AND a ledger row; wired
+   into `/check:all`).
+3. **No `ROADMAP.md`?** — warn and proceed. Best-effort; never blocks the sprint.
+
 ### Step 9 — Surface to operator
 
 Report:
