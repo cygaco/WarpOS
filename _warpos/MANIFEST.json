@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-05-25T23:03:02.565Z",
+  "generatedAt": "2026-05-25T23:20:51.233Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.10.0",
   "migrations": [],
@@ -4300,15 +4300,15 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/bootstrap/lastmile/orchestrate.js",
-      "sha256": "d4b7c8ca876b0c02e654b71559df675b5924487d10cf937e687b649f6925908f",
-      "installedSha": "d4b7c8ca876b0c02e654b71559df675b5924487d10cf937e687b649f6925908f"
+      "sha256": "911f52dadedf41a84d3a8dcb5913a95ead54c872ce8aaeb216eb42637f5a101f",
+      "installedSha": "911f52dadedf41a84d3a8dcb5913a95ead54c872ce8aaeb216eb42637f5a101f"
     },
     "scripts/bootstrap/lastmile/test-orchestrate.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/bootstrap/lastmile/test-orchestrate.js",
-      "sha256": "c6c431efa9c905044ab4de9782e1827ee1dce333d042ee8c86d4194d7c8463f3",
-      "installedSha": "c6c431efa9c905044ab4de9782e1827ee1dce333d042ee8c86d4194d7c8463f3"
+      "sha256": "adfecb43496651ecde567933db64a6e3d7b7492fa195f1c26c85dc3151299ffe",
+      "installedSha": "adfecb43496651ecde567933db64a6e3d7b7492fa195f1c26c85dc3151299ffe"
     },
     "scripts/bootstrap/lastmile/phases/audit.js": {
       "owner": "framework",

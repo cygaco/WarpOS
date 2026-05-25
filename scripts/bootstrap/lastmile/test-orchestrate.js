@@ -245,19 +245,27 @@ function testGateRegistry() {
 
 // ---------------------------------------------------------- scored-gap text per fixture (F2)
 function testScoredGaps() {
-  process.stdout.write("\nUNIT — scored gaps name the fixture's defect (F2)\n");
+  process.stdout.write("\nUNIT — scored gaps name each fixture's defect (F2 — all 7)\n");
   const run = (name) => {
     const d = materialize(CASES.find((c) => c.name === name));
     const s = scoreReadiness(detectRepoState(d));
     fs.rmSync(d, { recursive: true, force: true });
     return s;
   };
-  const stripe = run("stripe-no-webhook-verify");
-  if (stripe.gaps.some((g) => /webhook/i.test(g.gap))) ok("stripe-no-webhook → scored gap names the webhook gap");
-  else fail("stripe scored gap", JSON.stringify(stripe.gaps));
-  const funnel = run("no-funnel");
-  if (funnel.gaps.some((g) => g.dim === "funnel")) ok("no-funnel → scored gap in the funnel dimension");
-  else fail("funnel scored gap", JSON.stringify(funnel.gaps));
+  const checks = [
+    ["no-auth", (s) => s.gaps.some((g) => g.dim === "security" && /auth/i.test(g.gap))],
+    ["auth-no-payments", (s) => s.gaps.some((g) => g.dim === "monetization")],
+    ["stripe-no-webhook-verify", (s) => s.gaps.some((g) => /webhook/i.test(g.gap))],
+    ["db-no-deletion-path", (s) => s.gaps.some((g) => g.dim === "privacy" && /deletion/i.test(g.gap))],
+    ["no-funnel", (s) => s.gaps.some((g) => g.dim === "funnel")],
+    ["mobile-appstore", (s) => s.gaps.some((g) => g.dim === "monetization")],
+    ["sensitive-data-redflag", (s) => s.sensitiveEscalation && s.gaps.some((g) => /sensitive/i.test(g.gap))],
+  ];
+  for (const [name, pred] of checks) {
+    const s = run(name);
+    if (pred(s)) ok(`${name} → scored gap names the defect`);
+    else fail(`${name} scored gap`, JSON.stringify(s.gaps));
+  }
 }
 
 // ---------------------------------------------------------- gate coverage (GATE-COV)
@@ -286,6 +294,45 @@ function testGateCoverage() {
   else fail("HARD STOP step", JSON.stringify(secSteps.slice(0, 1)));
 }
 
+// ---------------------------------------------------------- arg validation (LM-NEW-2)
+function testArgsHardening() {
+  process.stdout.write("\nUNIT — arg validation before side effects (LM-NEW-2)\n");
+  const P = (extra) => driver.parseArgs(["node", "orchestrate.js", ...extra]);
+  if (P(["--dryrun"]).error) ok("parseArgs rejects an unknown flag (--dryrun typo)");
+  else fail("unknown flag", "should error");
+  if (P(["--state", "--json"]).error) ok("parseArgs rejects a flag-looking value (--state --json)");
+  else fail("missing value", "should error");
+  if (P(["--repo-root"]).error) ok("parseArgs rejects a value flag with no value");
+  else fail("no value", "should error");
+  const good = P(["--phase", "audit", "--resume", "--json"]);
+  if (!good.error && good.phase === "audit" && good.resume && good.json) ok("parseArgs accepts a valid mix");
+  else fail("valid mix", JSON.stringify(good));
+}
+
+// ---------------------------------------------------------- resume guard (LM-NEW-1)
+function testResumeGuard() {
+  process.stdout.write("\nUNIT — resolveResume never fires with --phase (LM-NEW-1)\n");
+  const st = { completed: ["preflight"], awaiting: "inject", phases: {} };
+  const changed = driver.resolveResume({ resume: true, phase: "audit" }, st);
+  if (!changed && st.awaiting === "inject" && !st.completed.includes("inject"))
+    ok("--resume + --phase does NOT consume the awaiting orchestration marker");
+  else fail("resume guard", JSON.stringify({ changed, st }));
+}
+
+// ---------------------------------------------------------- corrupt state (LM-NEW-3)
+function testCorruptState() {
+  process.stdout.write("\nUNIT — corrupt state quarantined, not silently reset (LM-NEW-3)\n");
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "lastmile-corrupt-"));
+  const sf = path.join(tmp, "s.json");
+  fs.writeFileSync(sf, "{ not valid json", "utf8");
+  const st = driver.loadState({ state: sf });
+  const quarantined = fs.readdirSync(tmp).some((f) => f.includes(".corrupt-"));
+  if (st._corrupt === true && quarantined && st.completed.length === 0)
+    ok("loadState quarantines corrupt state + flags _corrupt + returns fresh");
+  else fail("corrupt state", JSON.stringify({ corrupt: st._corrupt, files: fs.readdirSync(tmp) }));
+  fs.rmSync(tmp, { recursive: true, force: true });
+}
+
 (async () => {
   testDriver();
   await testPreflight();
@@ -296,6 +343,9 @@ function testGateCoverage() {
   testGateRegistry();
   testGateCoverage();
   testResume();
+  testResumeGuard();
+  testArgsHardening();
+  testCorruptState();
   await testChain();
   process.stdout.write(`\nlastmile-orchestrate test: ${passed} passed, ${failed} failed\n`);
   process.exit(failed === 0 ? 0 : 1);

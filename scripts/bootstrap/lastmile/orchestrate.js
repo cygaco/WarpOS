@@ -62,6 +62,20 @@ const MODULES = [
   "analytics",
 ];
 
+const VALUE_FLAGS = {
+  "--profile": "profile",
+  "--phase": "phase",
+  "--module": "module",
+  "--out": "out",
+  "--research": "research",
+  "--state": "state",
+  "--repo-root": "repoRoot",
+};
+const BOOL_FLAGS = { "--resume": "resume", "--json": "json", "--dry-run": "dryRun" };
+
+// Strict parse: reject unknown flags + value-flags with a missing/flag-looking
+// value (LM-NEW-2 — silent mis-parse let `--dryrun` typos and `--state --json`
+// swallow args). Sets out.error; the caller returns exit 2 BEFORE any side effect.
 function parseArgs(argv) {
   const out = {
     profile: null,
@@ -74,19 +88,25 @@ function parseArgs(argv) {
     repoRoot: process.cwd(),
     json: false,
     dryRun: false,
+    error: null,
   };
   for (let i = 2; i < argv.length; i++) {
     const a = argv[i];
-    if (a === "--profile") out.profile = argv[++i];
-    else if (a === "--phase") out.phase = argv[++i];
-    else if (a === "--module") out.module = argv[++i];
-    else if (a === "--resume") out.resume = true;
-    else if (a === "--out") out.out = argv[++i];
-    else if (a === "--research") out.research = argv[++i];
-    else if (a === "--state") out.state = argv[++i];
-    else if (a === "--repo-root") out.repoRoot = path.resolve(argv[++i]);
-    else if (a === "--json") out.json = true;
-    else if (a === "--dry-run") out.dryRun = true;
+    if (Object.prototype.hasOwnProperty.call(VALUE_FLAGS, a)) {
+      const v = argv[i + 1];
+      if (v === undefined || v.startsWith("--")) {
+        out.error = `flag ${a} requires a value`;
+        return out;
+      }
+      const key = VALUE_FLAGS[a];
+      out[key] = key === "repoRoot" ? path.resolve(v) : v;
+      i++;
+    } else if (Object.prototype.hasOwnProperty.call(BOOL_FLAGS, a)) {
+      out[BOOL_FLAGS[a]] = true;
+    } else {
+      out.error = `unknown argument: ${a}`;
+      return out;
+    }
   }
   return out;
 }
@@ -97,21 +117,35 @@ function stateFile(args) {
   return args.state || path.join(args.repoRoot, ".warpos", "lastmile-state.json");
 }
 
-function loadState(args) {
-  const f = stateFile(args);
-  if (fs.existsSync(f)) {
-    try {
-      return JSON.parse(fs.readFileSync(f, "utf8"));
-    } catch {
-      /* fall through to fresh */
-    }
-  }
+function freshState() {
   return {
     schema: "warpos/bootstrap/lastmile-state/v1",
     completed: [],
     phases: {},
     awaiting: null,
   };
+}
+
+function loadState(args) {
+  const f = stateFile(args);
+  if (fs.existsSync(f)) {
+    try {
+      return JSON.parse(fs.readFileSync(f, "utf8"));
+    } catch {
+      // fail-safe (LM-NEW-3): quarantine the corrupt file rather than silently
+      // starting fresh — a silent reset on --resume would lose orchestration
+      // progress. Flag _corrupt so main() can warn + refuse --resume.
+      try {
+        fs.renameSync(f, `${f}.corrupt-${Date.now()}`);
+      } catch {
+        /* best effort */
+      }
+      const s = freshState();
+      s._corrupt = true;
+      return s;
+    }
+  }
+  return freshState();
 }
 
 function saveState(args, state) {
@@ -152,7 +186,9 @@ function planPhases(args, state) {
 // forever (N1 fix — needs_orchestration phases don't self-complete like spinup's
 // artifact-driven phases do). Returns true if state changed.
 function resolveResume(args, state) {
-  if (args.resume && state.awaiting) {
+  // gate on !args.phase (LM-NEW-1): only a PURE --resume consumes the pending
+  // orchestration marker — a targeted --phase run (even a typo'd one) must not.
+  if (args.resume && !args.phase && state.awaiting) {
     if (!state.completed.includes(state.awaiting)) state.completed.push(state.awaiting);
     state.awaiting = null;
     return true;
@@ -177,7 +213,13 @@ function buildCtx(args) {
 
 async function main() {
   const args = parseArgs(process.argv);
-  if (args.research && !["off", "deep"].includes(args.research)) {
+  // ── Validate ALL args BEFORE any state load/mutation. LM-NEW-1: a bad arg must
+  //    never corrupt durable state by running resolveResume+saveState first. ──
+  if (args.error) {
+    process.stderr.write(`${args.error}\n`);
+    return 2;
+  }
+  if (!["off", "deep"].includes(args.research)) {
     process.stderr.write(`bad --research "${args.research}" (off|deep)\n`);
     return 2;
   }
@@ -189,7 +231,23 @@ async function main() {
     process.stderr.write(`bad --module "${args.module}" (${MODULES.join("|")})\n`);
     return 2;
   }
+  if (args.phase && !PHASES.includes(args.phase)) {
+    process.stderr.write(`unknown phase "${args.phase}" (${PHASES.join("|")})\n`);
+    return 2;
+  }
   const state = loadState(args);
+  if (state._corrupt) {
+    process.stderr.write(
+      "lastmile: state file was corrupt — quarantined to *.corrupt-* and starting fresh.\n",
+    );
+    if (args.resume) {
+      process.stderr.write(
+        "refusing --resume on recovered state (would lose progress) — re-run without --resume.\n",
+      );
+      return 2;
+    }
+    delete state._corrupt;
+  }
   if (resolveResume(args, state)) saveState(args, state);
   const plan = planPhases(args, state);
   if (plan.error) {
