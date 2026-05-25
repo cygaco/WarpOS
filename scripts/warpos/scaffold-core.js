@@ -316,7 +316,7 @@ function populateWarposMirror({ target, warposRoot, shipManifest, log, HEADER = 
   //
   // Idempotent / content-addressed: a re-run only rewrites mirror files that are
   // missing or differ from canonical — this is the migration path for existing
-  // products (e.g. companycam). DRY-RUN already returned above, so no guard
+  // products. DRY-RUN already returned above, so no guard
   // needed here. Fail-open: never block install on a mirror error.
   {
     console.log(`\n${HEADER}  FRAMEWORK SOURCE MIRROR (_warpos/)${RESET}`);
@@ -369,9 +369,60 @@ function populateWarposMirror({ target, warposRoot, shipManifest, log, HEADER = 
   return { installedDelta: installed };
 }
 
+/**
+ * regenerateWarposManifest — the MANIFEST COVERAGE build step (extracted from
+ * warp-setup.js, SP-20260525-019 / T-220).
+ *
+ * Regenerates `_warpos/MANIFEST.json` (the dest→{owner,source} map that
+ * scripts/warpos/views/regenerate.js reads) by running the manifest builder with
+ * `--source-prefix _warpos`, so framework-view entries carry `source` pointers
+ * into `_warpos/`. Without this, populateWarposMirror copies the mirror SOURCE
+ * files but the mirror has no MANIFEST.json and regenerate.js stays inert.
+ *
+ * WHY EXTRACTED: warp-setup.js ran this inline (its "MANIFEST COVERAGE" block);
+ * the install.ps1/CLI path didn't, so a consumer install shipped a _warpos/ with
+ * no MANIFEST.json (caught by the install matrix's installps1_path + both-path
+ * parity gate). Both paths now call THIS one function (β: extract-don't-fork).
+ * warp-setup keeps its own validate + --strict-manifest install-refusal policy
+ * wrapped AROUND this build step; the CLI just needs the regeneration.
+ *
+ * Must run AFTER populateWarposMirror (the mirror source must exist first).
+ * Fail-open: never crash the install on a manifest-build error.
+ *
+ * @param {object}   opts
+ * @param {string}   opts.target      product root
+ * @param {string}   opts.warposRoot  clone holding scripts/warpos/manifest/build.js
+ * @param {function} opts.log         reporter, signature log(status, msg, detail?)
+ * @returns {{ ok: boolean, skipped: boolean, status: (number|null), stderr: string }}
+ */
+function regenerateWarposManifest({ target, warposRoot, log }) {
+  const warposZone = path.join(target, "_warpos");
+  if (!fs.existsSync(warposZone)) {
+    log("info", "_warpos/ not present — skipping manifest regeneration (legacy install layout)");
+    return { ok: false, skipped: true, status: null, stderr: "" };
+  }
+  const buildScript = path.join(warposRoot, "scripts/warpos/manifest/build.js");
+  if (!fs.existsSync(buildScript)) {
+    log("warn", `manifest build.js not found at ${buildScript} — _warpos/MANIFEST.json not regenerated`);
+    return { ok: false, skipped: true, status: null, stderr: "" };
+  }
+  const res = spawnSync(
+    process.execPath,
+    [buildScript, "--root", target, "--source-prefix", "_warpos"],
+    { encoding: "utf8" },
+  );
+  if (res.status !== 0) {
+    log("warn", `manifest build.js exited ${res.status} — _warpos/MANIFEST.json may be missing/stale. stderr: ${(res.stderr || "").trim().slice(0, 200)}`);
+    return { ok: false, skipped: false, status: res.status, stderr: res.stderr || "" };
+  }
+  log("ok", "_warpos/MANIFEST.json regenerated (--source-prefix _warpos)");
+  return { ok: true, skipped: false, status: 0, stderr: "" };
+}
+
 module.exports = {
   scaffoldProduct,
   populateWarposMirror,
+  regenerateWarposManifest,
 };
 
 // ── CLI entry (SP-20260525-019 / T-220) ────────────────────
@@ -447,6 +498,12 @@ if (require.main === module) {
         shipManifest,
         log,
       }).installedDelta;
+      // MANIFEST COVERAGE: regenerate _warpos/MANIFEST.json so regenerate.js has
+      // its dest→{owner,source} map (the same step warp-setup runs after the
+      // mirror). Without this the mirror has source files but no MANIFEST.json
+      // and regenerate.js stays inert — the install.ps1-path gap the parity
+      // matrix caught. Fail-open; the helper logs its own outcome.
+      regenerateWarposManifest({ target, warposRoot, log });
     } else {
       log(
         "warn",

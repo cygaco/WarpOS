@@ -29,6 +29,7 @@ const readline = require("readline");
 const {
   scaffoldProduct,
   populateWarposMirror,
+  regenerateWarposManifest,
 } = require("./warpos/scaffold-core");
 
 const OK = "\x1b[32m  ✓  \x1b[0m";
@@ -1424,20 +1425,19 @@ if (!SKIP_MANIFEST_CHECK) {
   if (!fs.existsSync(warposZone)) {
     log("info", "_warpos/ not present in target — skipping manifest coverage (legacy install layout)");
   } else {
-    const buildScript = path.join(WARPOS, "scripts/warpos/manifest/build.js");
     const validateScript = path.join(WARPOS, "scripts/warpos/manifest/validate.js");
     let coverageExitCode = 0;
     let coverageSummary = null;
     try {
       const { spawnSync } = require("child_process");
-      // (1) regenerate manifest in target.
-      const buildRes = spawnSync(
-        process.execPath,
-        [buildScript, "--root", TARGET, "--source-prefix", "_warpos"],
-        { encoding: "utf8" },
-      );
-      if (buildRes.status !== 0) {
-        log("warn", `manifest build.js exited ${buildRes.status} — coverage check skipped. stderr: ${(buildRes.stderr || "").slice(0, 200)}`);
+      // (1) regenerate _warpos/MANIFEST.json via the SHARED scaffold core
+      // (scaffold-core.js#regenerateWarposManifest) — the SAME build the
+      // install.ps1 / CLI path runs, so both installers produce an identical
+      // mirror manifest (β: extract-don't-fork). The validate + --strict-manifest
+      // install-refusal policy below stays warp-setup-specific.
+      const buildRes = regenerateWarposManifest({ target: TARGET, warposRoot: WARPOS, log });
+      if (!buildRes.ok) {
+        // helper already logged the skip/build-failure reason — skip the validate pass.
       } else {
         // (2) validate.
         const valRes = spawnSync(
