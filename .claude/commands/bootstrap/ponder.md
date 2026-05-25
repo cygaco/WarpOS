@@ -2,7 +2,7 @@
 description: Exploratory pondering of a project — surface tensions, patterns, JTBD drift, and one forcing question
 ---
 
-# /portfolio:ponder — Sit With the Project
+# /bootstrap:ponder — Sit With the Project
 
 Exploratory pondering of the current project. Not a bug fix, not a feature plan, not a sprint. The output is observations + one forcing question — the kind of question that, once answered, reorders the rest of the backlog. Invoke when you want me to genuinely sit with project state instead of executing on it.
 
@@ -71,7 +71,7 @@ When run, follow `/reasoning:run` Deep Mode:
 5. **Zoom out, then zoom in.** Meta-question, then concrete next move.
 6. **Decide.** Answer / confidence / what changed / remaining uncertainty.
 
-Append a trace to `paths.tracesFile` as `RT-NNN` with `source: "portfolio:ponder"`. Required: `id`, `ts`, `framework_selected`, `framework_rationale`, `problem` (the meta-question), `root_cause`, `fix` (may be "no action, surface to user"), `quality_score: null`, `open_question` (matches Phase 4 output).
+Append a trace to `paths.tracesFile` as `RT-NNN` with `source: "bootstrap:ponder"`. Required: `id`, `ts`, `framework_selected`, `framework_rationale`, `problem` (the meta-question), `root_cause`, `fix` (may be "no action, surface to user"), `quality_score: null`, `open_question` (matches Phase 4 output).
 
 ## Phase 4: Forcing question
 
@@ -101,8 +101,8 @@ If the natural ponder surfaced a policy/convention that lacks a named enforcer (
 
 ## Related
 
-- `/reasoning:run` — for a *specific* problem. `/portfolio:ponder` is broader, meta-direction.
-- `/discover:systems`, `/check:all` — surface *state*. `/portfolio:ponder` surfaces *direction*.
-- `/sleep:deep` — REM-phase speculative reasoning. `/portfolio:ponder` is awake, deliberate, single-pass.
-- `/portfolio:bootstrap` — companion entry-point: bootstrap a product brief from a guided discussion (run *before* pondering on a fresh project).
+- `/reasoning:run` — for a *specific* problem. `/bootstrap:ponder` is broader, meta-direction.
+- `/discover:systems`, `/check:all` — surface *state*. `/bootstrap:ponder` surfaces *direction*.
+- `/sleep:deep` — REM-phase speculative reasoning. `/bootstrap:ponder` is awake, deliberate, single-pass.
+- `bootstrap:spinup` — companion entry-point: bootstrap a product brief from a guided discussion (run *before* pondering on a fresh project).
 - `/enforcement:log` — log any aspirational policy that surfaced.

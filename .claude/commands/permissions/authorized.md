@@ -47,7 +47,7 @@ Everything else is fair game — this skill is meant to authorize *pretty much a
 
 | Case | Grants (`permissions.allow`) | Why it's blocked by default |
 |---|---|---|
-| `portfolio-scaffold` | `Bash(node scripts/portfolio/new.js *)` · `Bash(node scripts/portfolio/adopt.js *)` · `Bash(gh repo create *)` | `/portfolio:new` / `/portfolio:adopt` scaffold a **private** sibling repo and `gh repo create … --push`. The auto-mode classifier flags the push to a brand-new repo as data-exfiltration. Repos are always `--private` (DEC-008). |
+| `portfolio-scaffold` | `Bash(node scripts/portfolio/new.js *)` · `Bash(node scripts/portfolio/adopt.js *)` · `Bash(gh repo create *)` | `/portfolio:new --from-brief` scaffolds a **private** sibling repo and `gh repo create … --push`. The auto-mode classifier flags the push to a brand-new repo as data-exfiltration. Repos are always `--private` (DEC-008). |
 
 > Add a row here whenever a new blocked case is authorized. Keep the `Grants` column to the **narrowest** pattern that unblocks the case.
 
