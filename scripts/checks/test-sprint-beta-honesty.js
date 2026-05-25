@@ -21,8 +21,15 @@
 
 "use strict";
 
+const fs = require("fs");
+const path = require("path");
+const os = require("os");
+const cp = require("child_process");
+
 const {
   computeFindings,
+  loadFullReportsData,
+  validateIsoDate,
   EXPECTED_BOUNDARIES,
   SP003_SHIP_DATE,
   PHASE_TO_BOUNDARY,
@@ -451,6 +458,271 @@ console.log("\n(h) CUSTOM CUTOFF — sprint after base cutoff but before custom 
     `got ${r.findings.length}`,
   );
   ok("CUSTOM-CUTOFF: 0 applicable", r.applicable === 0, `got ${r.applicable}`);
+}
+
+// ── (i) FULL-REPORTS CORROBORATION ────────────────────────────────────────────
+
+console.log("\n(i) FULL-REPORTS CORROBORATION — halt-report shows design phase, no consult event:");
+{
+  // FIX 1: a post-cutoff sprint whose full-report shows the design phase was entered,
+  // but events.jsonl has no sprint_full_beta_consult for before_design → missing_consult.
+  // This is the false-clean FIX 1 closes: without full-reports, an audit with empty events
+  // would silently report "0 findings" even though /sprint:full ran and skipped the consult.
+  const sprintId = "SP-TEST-FR-MISS-001";
+  const reportsData = {
+    [sprintId]: {
+      phasesReached: new Set(["design"]),
+      consultedBoundaries: new Set(),
+    },
+  };
+  const sprintDates = { [sprintId]: POST_CUTOFF_DATE };
+  const r = computeFindings([], sprintDates, SP003_SHIP_DATE, reportsData);
+
+  ok(
+    "FR-CORR-MISS: has missing_consult finding (false-clean closed)",
+    r.findings.some((f) => f.finding_type === "missing_consult"),
+    `findings: ${JSON.stringify(r.findings)}`,
+  );
+  ok(
+    "FR-CORR-MISS: expected_consult is before_design",
+    r.findings.some((f) => f.expected_consult === "before_design"),
+    `expected_consults: ${r.findings.map((f) => f.expected_consult).join(",")}`,
+  );
+  ok(
+    "FR-CORR-MISS: 1 applicable sprint (discovered via full-reports only)",
+    r.applicable === 1,
+    `got ${r.applicable}`,
+  );
+}
+
+console.log("\n(i2) FULL-REPORTS CLEAN — final-report has Beta consultations confirming consult:");
+{
+  // If the final report's ## Beta consultations section lists before_design,
+  // that counts as evidence of a consult → no missing_consult finding.
+  const sprintId = "SP-TEST-FR-CLEAN-001";
+  const reportsData = {
+    [sprintId]: {
+      phasesReached: new Set(["design"]),
+      consultedBoundaries: new Set(["before_design"]), // final report confirmed it
+    },
+  };
+  const sprintDates = { [sprintId]: POST_CUTOFF_DATE };
+  const r = computeFindings([], sprintDates, SP003_SHIP_DATE, reportsData);
+
+  ok(
+    "FR-CORR-CLEAN: no missing_consult (final report confirms consult)",
+    !r.findings.some((f) => f.finding_type === "missing_consult"),
+    `findings: ${JSON.stringify(r.findings)}`,
+  );
+}
+
+// ── (i3) MISSING FULL-REPORTS DIR — null reportsData + no applicable events ───
+
+console.log("\n(i3) MISSING FULL-REPORTS DIR — null reportsData + no event-applicable sprints:");
+{
+  // null reportsData AND no applicable events → graceful-empty (applicable=0, no crash)
+  const r = computeFindings([], {}, SP003_SHIP_DATE, null);
+
+  ok(
+    "FR-MISSING-DIR: 0 findings",
+    r.findings.length === 0,
+    `got ${r.findings.length}`,
+  );
+  ok(
+    "FR-MISSING-DIR: 0 applicable",
+    r.applicable === 0,
+    `got ${r.applicable}`,
+  );
+}
+
+// ── (j) EXACT CUTOFF DATE ─────────────────────────────────────────────────────
+
+console.log("\n(j) EXACT CUTOFF DATE — sprint dated exactly SP003_SHIP_DATE is CHECKED:");
+{
+  // Lexicographic: "2026-05-25" < "2026-05-25" is false → NOT exempt → applicable
+  const sprintId = "SP-TEST-EXACT-CUTOFF-001";
+  const events = [
+    makePhaseStartedRec(sprintId, "design"), // boundary reached, no consult
+  ];
+  const sprintDates = { [sprintId]: SP003_SHIP_DATE }; // exactly on the cutoff
+  const r = computeFindings(events, sprintDates);
+
+  ok(
+    "EXACT-CUTOFF: sprint at cutoff is applicable (not exempt)",
+    r.applicable === 1,
+    `got ${r.applicable}`,
+  );
+  ok(
+    "EXACT-CUTOFF: missing_consult fires for at-cutoff sprint",
+    r.findings.some((f) => f.finding_type === "missing_consult"),
+    `findings: ${JSON.stringify(r.findings)}`,
+  );
+}
+
+// ── (k) PROTO-POLLUTION ───────────────────────────────────────────────────────
+
+console.log("\n(k) PROTO-POLLUTION — sprint_id '__proto__' does NOT crash computeFindings:");
+{
+  // On a plain {} bucket map, sprint_id="__proto__" resolves truthy → bucket never created
+  // → sd.consults.push(...) crashes on undefined. Object.create(null) prevents this.
+  const poisonRec = makeRec("sprint_full_phase_started", {
+    sprint_id: "__proto__",
+    phase: "design",
+  });
+  const sprintDates = { "__proto__": POST_CUTOFF_DATE };
+  let threw = false;
+  let r;
+  try {
+    r = computeFindings([poisonRec], sprintDates);
+  } catch (e) {
+    threw = true;
+  }
+  ok(
+    "PROTO-POLLUTION: does not throw",
+    !threw,
+    "threw exception",
+  );
+  ok(
+    "PROTO-POLLUTION: returns a result object with findings array",
+    r && typeof r === "object" && Array.isArray(r.findings),
+    `got ${JSON.stringify(r)}`,
+  );
+}
+
+// ── (l) WHITESPACE PLACEHOLDER ───────────────────────────────────────────────
+
+console.log("\n(l) WHITESPACE PLACEHOLDER — beta_message='   ' (whitespace only) flagged:");
+{
+  const sprintId = "SP-TEST-WS-MSG-001";
+  const events = [
+    makeConsultRec(sprintId, "before_design", { beta_message: "   " }),
+    makePhaseStartedRec(sprintId, "design"),
+  ];
+  const sprintDates = { [sprintId]: POST_CUTOFF_DATE };
+  const r = computeFindings(events, sprintDates);
+
+  ok(
+    "WS-PH-MSG: whitespace-only beta_message → placeholder_verdict",
+    r.findings.some((f) => f.finding_type === "placeholder_verdict"),
+    `findings: ${JSON.stringify(r.findings)}`,
+  );
+  ok(
+    "WS-PH-MSG: evidence mentions beta_message",
+    r.findings.some(
+      (f) => f.finding_type === "placeholder_verdict" && f.evidence && f.evidence.includes("beta_message"),
+    ),
+    `evidence: ${r.findings.map((f) => f.evidence).join("|")}`,
+  );
+}
+
+console.log("\n(l2) WHITESPACE PLACEHOLDER — model=' ' (whitespace only) flagged:");
+{
+  const sprintId = "SP-TEST-WS-MODEL-001";
+  const events = [
+    makeConsultRec(sprintId, "before_execute", { model: " " }),
+    makePhaseStartedRec(sprintId, "execute"),
+  ];
+  const sprintDates = { [sprintId]: POST_CUTOFF_DATE };
+  const r = computeFindings(events, sprintDates);
+
+  ok(
+    "WS-PH-MODEL: whitespace-only model → placeholder_verdict",
+    r.findings.some((f) => f.finding_type === "placeholder_verdict"),
+    `findings: ${JSON.stringify(r.findings)}`,
+  );
+}
+
+// ── (m) --SINCE VALIDATION ────────────────────────────────────────────────────
+
+console.log("\n(m) --SINCE VALIDATION — validateIsoDate predicate:");
+{
+  ok("SINCE-VALID: '2026-05-25' → true", validateIsoDate("2026-05-25"));
+  ok("SINCE-VALID: '2026-01-01' → true", validateIsoDate("2026-01-01"));
+  ok("SINCE-VALID: '2000-12-31' → true", validateIsoDate("2000-12-31"));
+  ok("SINCE-INVALID: 'bogus' → false", !validateIsoDate("bogus"));
+  ok("SINCE-INVALID: '2026-13-01' → false (invalid month)", !validateIsoDate("2026-13-01"));
+  ok("SINCE-INVALID: '' → false", !validateIsoDate(""));
+  ok("SINCE-INVALID: 'not-a-date' → false", !validateIsoDate("not-a-date"));
+  ok("SINCE-INVALID: '20260525' → false (no dashes)", !validateIsoDate("20260525"));
+}
+
+// ── (n) CLI EXIT CODES — subprocess tests ────────────────────────────────────
+
+console.log("\n(n) CLI EXIT CODES — subprocess tests:");
+{
+  const ENGINE = path.join(__dirname, "sprint-beta-honesty.js");
+
+  // Test 1: --since bogus → exit 2 (FIX 2 validation)
+  {
+    const r = cp.spawnSync(process.execPath, [ENGINE, "--since", "bogus"], { encoding: "utf8" });
+    ok(
+      "CLI-EXIT: --since bogus → exit 2",
+      r.status === 2,
+      `got status=${r.status} stderr=${r.stderr}`,
+    );
+  }
+
+  // Test 2: empty events + empty sprint-dates + empty full-reports dir → exit 0 (graceful-empty)
+  {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "wos-sbh-"));
+    const tmpEvents = path.join(tmpDir, "events.jsonl");
+    fs.writeFileSync(tmpEvents, "");
+
+    const r = cp.spawnSync(process.execPath, [ENGINE], {
+      encoding: "utf8",
+      env: {
+        ...process.env,
+        WARPOS_EVENTS_FILE: tmpEvents,
+        WARPOS_SPRINT_DATES_JSON: "{}",
+        WARPOS_FULLREPORTS_DIR: tmpDir, // tmpDir is empty (contains only events.jsonl file)
+      },
+    });
+    ok(
+      "CLI-EXIT: empty events → exit 0 (graceful-empty)",
+      r.status === 0,
+      `got status=${r.status} stdout=${r.stdout} stderr=${r.stderr}`,
+    );
+
+    try { fs.rmSync(tmpDir, { recursive: true }); } catch { /* ignore */ }
+  }
+
+  // Test 3: phase_started event with no consult → exit 1 (missing_consult finding)
+  // Uses WARPOS_SPRINT_DATES_JSON to inject a post-cutoff date for the sprint.
+  {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "wos-sbh-"));
+    const tmpEvents = path.join(tmpDir, "events.jsonl");
+    const event = {
+      id: "EVT-cli-test-001",
+      ts: BASE_TS,
+      cat: "audit",
+      actor: "alpha",
+      session: "s-cli-test",
+      data: {
+        kind: "sprint_full_phase_started",
+        sprint_id: "SP-CLI-FINDING-001",
+        phase: "design",
+      },
+    };
+    fs.writeFileSync(tmpEvents, JSON.stringify(event) + "\n");
+
+    const r = cp.spawnSync(process.execPath, [ENGINE], {
+      encoding: "utf8",
+      env: {
+        ...process.env,
+        WARPOS_EVENTS_FILE: tmpEvents,
+        // Sprint date 2026-05-26 >= cutoff 2026-05-25 → applicable
+        WARPOS_SPRINT_DATES_JSON: JSON.stringify({ "SP-CLI-FINDING-001": POST_CUTOFF_DATE }),
+        WARPOS_FULLREPORTS_DIR: tmpDir, // no report files → no corroboration
+      },
+    });
+    ok(
+      "CLI-EXIT: phase_started with no consult → exit 1 (finding)",
+      r.status === 1,
+      `got status=${r.status} stdout=${r.stdout} stderr=${r.stderr}`,
+    );
+
+    try { fs.rmSync(tmpDir, { recursive: true }); } catch { /* ignore */ }
+  }
 }
 
 // ── Results ───────────────────────────────────────────────────────────────────

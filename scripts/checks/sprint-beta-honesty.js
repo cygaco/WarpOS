@@ -91,6 +91,18 @@ function extractYamlDate(text) {
   return m ? m[1] : null;
 }
 
+// ── ISO date validator ─────────────────────────────────────────────────────────
+
+/**
+ * Returns true iff val is a real ISO date string (YYYY-MM-DD with valid calendar date).
+ * Used to fail-closed on bogus --since values. Exported for tests.
+ */
+function validateIsoDate(val) {
+  if (typeof val !== "string") return false;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(val)) return false;
+  return !isNaN(Date.parse(val));
+}
+
 // ── Load sprint start dates from filesystem ───────────────────────────────────
 
 function loadSprintDates() {
@@ -138,23 +150,170 @@ function loadSprintDates() {
   return dates;
 }
 
+// ── Parse a single report file (halt-*.md or sprint-full-report.md) ───────────
+
+/**
+ * Parses report markdown content and mutates the data object:
+ *   data.phasesReached        — Set of phase names from **Phase:** lines
+ *   data.consultedBoundaries  — Set of boundary names from ## Beta consultations section
+ *
+ * Tolerates absent/malformed reports (just returns without adding anything).
+ */
+function parseReportContent(content, data) {
+  if (!content || typeof content !== "string") return;
+
+  // Extract **Phase:** <phase> lines (halt-report header format)
+  for (const m of content.matchAll(/^\*\*Phase:\*\*\s+(\S+)/gm)) {
+    const phase = m[1].trim();
+    if (PHASE_TO_BOUNDARY[phase]) {
+      data.phasesReached.add(phase);
+    }
+  }
+
+  // Extract "## Beta consultations" section (final report only)
+  // Lines look like: "- before_design: DECIDE (2026-05-22T...)"
+  const betaIdx = content.indexOf("## Beta consultations");
+  if (betaIdx !== -1) {
+    const afterHeader = content.indexOf("\n", betaIdx) + 1;
+    const nextSection = content.indexOf("\n##", afterHeader);
+    const sectionContent = nextSection === -1
+      ? content.slice(afterHeader)
+      : content.slice(afterHeader, nextSection);
+
+    for (const lm of sectionContent.matchAll(/^-\s+(before_[\w-]+)\s*:/gm)) {
+      const boundary = lm[1].trim();
+      if (EXPECTED_BOUNDARIES.includes(boundary)) {
+        data.consultedBoundaries.add(boundary);
+      }
+    }
+  }
+}
+
+// ── Load full-reports data from filesystem ────────────────────────────────────
+
+/**
+ * Reads PATHS.sprintFullReports (or overrideDir) and returns a map of:
+ *   { [sprintId]: { phasesReached: Set<string>, consultedBoundaries: Set<string> } }
+ *
+ * All sprints are returned regardless of cutoff — computeFindings applies the cutoff filter.
+ * Missing or unreadable dir → returns empty map (graceful, never throws).
+ *
+ * @param {string} [overrideDir]  Override the full-reports directory path.
+ *   Also settable via WARPOS_FULLREPORTS_DIR env var in the CLI entry point.
+ */
+function loadFullReportsData(overrideDir) {
+  // Use null-prototype object to avoid prototype-pollution on sprint IDs
+  const result = Object.create(null);
+  const reportsDir = overrideDir || PATHS.sprintFullReports;
+  if (!reportsDir) return result;
+  if (!fs.existsSync(reportsDir)) return result; // graceful-empty: missing dir is fine
+
+  let entries = [];
+  try {
+    entries = fs.readdirSync(reportsDir);
+  } catch {
+    return result;
+  }
+
+  for (const entry of entries) {
+    try {
+      const sprintDir = path.join(reportsDir, entry);
+      let stat;
+      try { stat = fs.statSync(sprintDir); } catch { continue; }
+      if (!stat.isDirectory()) continue;
+
+      const sprintEntry = { phasesReached: new Set(), consultedBoundaries: new Set() };
+
+      let files = [];
+      try { files = fs.readdirSync(sprintDir); } catch { /* skip */ }
+
+      for (const file of files) {
+        if (!file.endsWith(".md")) continue;
+        try {
+          const content = fs.readFileSync(path.join(sprintDir, file), "utf8");
+          parseReportContent(content, sprintEntry);
+        } catch { /* skip unreadable files */ }
+      }
+
+      result[entry] = sprintEntry;
+    } catch { /* skip bad entries */ }
+  }
+
+  return result;
+}
+
+// ── Table formatter for human FAIL output ─────────────────────────────────────
+
+/**
+ * Format an array of findings as a compact aligned table.
+ * Columns: SPRINT | PHASE | VERDICT | FINDING_TYPE | EVIDENCE
+ * Evidence is truncated to 50 chars. Returns a multi-line string.
+ */
+function formatFindingsTable(findings) {
+  if (findings.length === 0) return "";
+
+  const EVIDENCE_MAX = 50;
+  let w0 = 6;   // SPRINT
+  let w1 = 5;   // PHASE
+  let w2 = 7;   // VERDICT
+  let w3 = 12;  // FINDING_TYPE
+
+  for (const f of findings) {
+    w0 = Math.min(28, Math.max(w0, (f.sprint_id || "").length));
+    w1 = Math.min(14, Math.max(w1, (f.phase || "-").length));
+    w2 = Math.min(12, Math.max(w2, (f.verdict || "-").length));
+    w3 = Math.min(22, Math.max(w3, (f.finding_type || "").length));
+  }
+
+  const pad = (s, w) => String(s == null ? "-" : s).slice(0, w).padEnd(w);
+  const trunc = (s, w) => {
+    const str = String(s == null ? "" : s);
+    return str.length > w ? str.slice(0, w - 1) + "…" : str.padEnd(w);
+  };
+
+  const header = [
+    pad("SPRINT", w0), pad("PHASE", w1), pad("VERDICT", w2),
+    pad("FINDING_TYPE", w3), "EVIDENCE",
+  ].join("  ");
+  const separator = [
+    "-".repeat(w0), "-".repeat(w1), "-".repeat(w2),
+    "-".repeat(w3), "-".repeat(EVIDENCE_MAX),
+  ].join("  ");
+
+  const rows = findings.map((f) => [
+    pad(f.sprint_id, w0),
+    pad(f.phase, w1),
+    pad(f.verdict, w2),
+    pad(f.finding_type, w3),
+    trunc(f.evidence, EVIDENCE_MAX),
+  ].join("  "));
+
+  return [header, separator, ...rows].join("\n");
+}
+
 // ── Core compute function (exported for test harness) ─────────────────────────
 
 /**
  * Compute findings from an array of event records.
  *
- * @param {object[]} events     Parsed event records (as read from events.jsonl)
+ * @param {object[]} events      Parsed event records (as read from events.jsonl)
  * @param {Object}   sprintDates  Map of sprint_id → "YYYY-MM-DD" start date
- * @param {string}   cutoff     ISO date string — sprints before this are exempt
+ * @param {string}   cutoff      ISO date string — sprints before this are exempt
+ * @param {Object|null} reportsData  Optional corroborating data from PATHS.sprintFullReports.
+ *   Shape: { [sprintId]: { phasesReached: Set<string>, consultedBoundaries: Set<string> } }
+ *   Produced by loadFullReportsData(). If null/undefined, full-reports corroboration is skipped
+ *   (backward-compatible — existing callers that pass 2 or 3 args are unaffected).
  * @returns {{ findings, applicable, checked, undatedExempt, malformedLines }}
  */
-function computeFindings(events, sprintDates = {}, cutoff = SP003_SHIP_DATE) {
+function computeFindings(events, sprintDates = {}, cutoff = SP003_SHIP_DATE, reportsData = null) {
   const findings = [];
   let malformedLines = 0;
 
-  // Bucket events by sprint_id
-  // Shape: { [sprintId]: { consults, legacyConsults, halts, phaseStarted } }
-  const sprintData = {};
+  // Bucket events by sprint_id.
+  // FIX 3: use Object.create(null) — a sprint_id equal to "__proto__", "constructor", or
+  // "toString" would resolve truthy on a plain {} and skip bucket creation, then crash on
+  // sd.consults.push(...) with "Cannot read properties of undefined". Null-prototype avoids this.
+  const sprintData = Object.create(null);
 
   for (const rec of events) {
     if (!rec || typeof rec !== "object") {
@@ -170,10 +329,11 @@ function computeFindings(events, sprintDates = {}, cutoff = SP003_SHIP_DATE) {
 
     if (!sprintData[sprintId]) {
       sprintData[sprintId] = {
-        consults: [],      // sprint_full_beta_consult (real, post-SP-003)
+        consults: [],       // sprint_full_beta_consult (real, post-SP-003)
         legacyConsults: [], // sprint_full_beta_consultation (pre-SP-003 placeholder kind)
-        halts: [],         // sprint_full_halt
-        phaseStarted: new Set(), // phase names that were started
+        halts: [],          // sprint_full_halt
+        phaseStarted: new Set(), // phase names that were started (from events)
+        _reportConsultedBoundaries: new Set(), // boundaries confirmed by full-reports
       };
     }
     const sd = sprintData[sprintId];
@@ -190,11 +350,54 @@ function computeFindings(events, sprintDates = {}, cutoff = SP003_SHIP_DATE) {
     }
   }
 
+  // FIX 1: Augment sprintData with full-reports corroboration.
+  //
+  // For each sprint in reportsData:
+  //  • Create a skeleton bucket if the sprint has no events (sprint known only via full-reports).
+  //    Its presence in full-reports is evidence that /sprint:full ran for it.
+  //  • Merge phasesReached from halt/final reports into phaseStarted (additional evidence that
+  //    a boundary was cleared). If that boundary has no consult event → missing_consult finding.
+  //  • Store consultedBoundaries from the final report's "## Beta consultations" section into
+  //    _reportConsultedBoundaries. If the final report confirms a consult happened, we don't
+  //    flag it as missing even if the event is absent (reduce false-positives, not false-negatives).
+  //
+  // The cutoff filter is applied below in the main loop — no pre-filtering here.
+  if (reportsData && typeof reportsData === "object") {
+    for (const sprintId of Object.keys(reportsData)) {
+      const rd = reportsData[sprintId];
+      if (!rd) continue;
+
+      if (!sprintData[sprintId]) {
+        // Sprint found only in full-reports — skeleton bucket
+        sprintData[sprintId] = {
+          consults: [],
+          legacyConsults: [],
+          halts: [],
+          phaseStarted: new Set(),
+          _reportConsultedBoundaries: new Set(),
+        };
+      }
+      const sd = sprintData[sprintId];
+
+      if (rd.phasesReached) {
+        for (const phase of rd.phasesReached) {
+          sd.phaseStarted.add(phase);
+        }
+      }
+      if (rd.consultedBoundaries) {
+        for (const b of rd.consultedBoundaries) {
+          sd._reportConsultedBoundaries.add(b);
+        }
+      }
+    }
+  }
+
   const applicableSprintIds = [];
   let undatedExempt = 0;
   let checked = 0;
 
-  for (const [sprintId, sd] of Object.entries(sprintData)) {
+  for (const sprintId of Object.keys(sprintData)) {
+    const sd = sprintData[sprintId];
     // Determine sprint start date for cutoff comparison
     const sprintDate = sprintDates[sprintId];
     if (!sprintDate) {
@@ -226,15 +429,18 @@ function computeFindings(events, sprintDates = {}, cutoff = SP003_SHIP_DATE) {
       });
     }
 
-    // (b) Real kind but missing/empty required fields
+    // (b) Real kind but missing/empty required fields.
+    // FIX 4: treat whitespace-only strings as empty — a beta_message of " " is a fake consult.
     for (const ev of sd.consults) {
       const missing = [];
-      if (!ev.beta_message && ev.beta_message !== 0)
+      // beta_message: flag if absent, empty string, or whitespace-only
+      if (!ev.beta_message || !String(ev.beta_message).trim())
         missing.push("beta_message");
       // latency_ms = 0 is valid (CLI resume has no live round-trip); only flag undefined/null
       if (ev.latency_ms === undefined || ev.latency_ms === null)
         missing.push("latency_ms");
-      if (!ev.model && ev.model !== 0)
+      // model: flag if absent, empty string, or whitespace-only
+      if (!ev.model || !String(ev.model).trim())
         missing.push("model");
 
       if (missing.length > 0) {
@@ -252,15 +458,19 @@ function computeFindings(events, sprintDates = {}, cutoff = SP003_SHIP_DATE) {
 
     // ── Finding type 2: missing_consult ───────────────────────────────────
     //
-    // Evidence: sprint_full_phase_started(phase=X) where PHASE_TO_BOUNDARY[X] is defined.
-    // If phase X started, boundary before_X was cleared — a consult MUST have been recorded.
+    // Evidence that a boundary was cleared comes from TWO sources (union):
+    //   1. sprint_full_phase_started events (primary)
+    //   2. **Phase:** lines in halt/final reports via reportsData (FIX 1 corroboration)
     //
-    // consultedBoundaries includes both real AND legacy consults to avoid double-flagging:
-    // if a legacy consult covers a boundary, that's a placeholder_verdict (not missing_consult).
+    // consultedBoundaries also unions THREE sources:
+    //   1. Real consult events (sprint_full_beta_consult)
+    //   2. Legacy consult events (sprint_full_beta_consultation) — avoids double-flagging
+    //   3. Final-report "## Beta consultations" confirmations — reduces false-positives
     const consultedBoundaries = new Set(
       [
         ...sd.consults.map((c) => c.phase_boundary),
         ...sd.legacyConsults.map((c) => c.phase_boundary),
+        ...[...sd._reportConsultedBoundaries],
       ].filter(Boolean),
     );
 
@@ -320,11 +530,31 @@ function computeFindings(events, sprintDates = {}, cutoff = SP003_SHIP_DATE) {
 // ── CLI entry point ───────────────────────────────────────────────────────────
 
 if (require.main === module) {
+  // FIX 2: Validate --since — fail-closed on bogus values.
+  // A bad --since like "bogus" makes every sprint compare as "before cutoff"
+  // (since "2026-..." < "bogus" lexicographically), silently exempting all sprints
+  // and disabling the audit. Reject non-ISO-dates up front with exit 2 (usage error).
+  if (sinceIdx !== -1 && process.argv[sinceIdx + 1]) {
+    const sinceVal = process.argv[sinceIdx + 1];
+    if (!validateIsoDate(sinceVal)) {
+      process.stderr.write(
+        `ERROR [sprint-beta-honesty] invalid --since value: "${sinceVal}" — must be a valid ISO date YYYY-MM-DD\n`,
+      );
+      process.exit(2);
+    }
+  }
+
+  // Env overrides for testing (production uses PATHS defaults).
+  //   WARPOS_EVENTS_FILE       — override path to events.jsonl
+  //   WARPOS_SPRINT_DATES_JSON — override sprint dates as a JSON string {"SP-xxx":"YYYY-MM-DD",...}
+  //   WARPOS_FULLREPORTS_DIR   — override path to the full-reports directory
+
   // 1. Read and parse events.jsonl (missing file → graceful empty)
   let rawEvents = [];
   let malformedCount = 0;
+  const eventsPath = process.env.WARPOS_EVENTS_FILE || PATHS.eventsFile;
   try {
-    const raw = fs.readFileSync(PATHS.eventsFile, "utf8");
+    const raw = fs.readFileSync(eventsPath, "utf8");
     for (const line of raw.split(/\r?\n/)) {
       if (!line.trim()) continue;
       try {
@@ -338,13 +568,25 @@ if (require.main === module) {
   }
 
   // 2. Load sprint start dates
-  const sprintDates = loadSprintDates();
+  let sprintDates;
+  if (process.env.WARPOS_SPRINT_DATES_JSON) {
+    try {
+      sprintDates = JSON.parse(process.env.WARPOS_SPRINT_DATES_JSON);
+    } catch {
+      sprintDates = {};
+    }
+  } else {
+    sprintDates = loadSprintDates();
+  }
 
-  // 3. Compute findings
-  const result = computeFindings(rawEvents, sprintDates, CUTOFF);
+  // 3. Load full-reports corroboration data (FIX 1)
+  const reportsData = loadFullReportsData(process.env.WARPOS_FULLREPORTS_DIR || undefined);
+
+  // 4. Compute findings
+  const result = computeFindings(rawEvents, sprintDates, CUTOFF, reportsData);
   result.malformedLines = (result.malformedLines || 0) + malformedCount;
 
-  // 4. Graceful empty — no applicable post-cutoff sprints with activity
+  // 5. Graceful empty — no applicable post-cutoff sprints with activity
   if (result.applicable === 0) {
     if (JSON_OUT) {
       console.log(
@@ -364,37 +606,34 @@ if (require.main === module) {
     process.exit(0);
   }
 
-  // 5. Emit results
+  // 6. Emit results
   const ok = result.findings.length === 0;
   if (JSON_OUT) {
-    console.log(
-      JSON.stringify({
-        ok,
-        applicable: result.applicable,
-        checked: result.checked,
-        findings: result.findings.slice(0, 30),
-        totalFindings: result.findings.length,
-        cutoff: CUTOFF,
-        undatedExempt: result.undatedExempt,
-        malformedLines: result.malformedLines,
-      }),
-    );
+    const jsonOut = {
+      ok,
+      applicable: result.applicable,
+      checked: result.checked,
+      findings: result.findings.slice(0, 30),
+      totalFindings: result.findings.length,
+      cutoff: CUTOFF,
+      undatedExempt: result.undatedExempt,
+      malformedLines: result.malformedLines,
+    };
+    if (result.findings.length > 30) jsonOut.truncated = true;
+    console.log(JSON.stringify(jsonOut));
   } else {
     if (ok) {
       console.log(
         `OK   [sprint-beta-honesty] ${result.checked} sprint(s) checked, 0 findings`,
       );
     } else {
-      console.error(
-        `FAIL [sprint-beta-honesty] ${result.findings.length} finding(s) (${result.checked} sprint(s) checked, cutoff ${CUTOFF}):`,
+      // FIX 5: compact aligned table for human-readable FAIL output
+      process.stderr.write(
+        `FAIL [sprint-beta-honesty] ${result.findings.length} finding(s) (${result.checked} sprint(s) checked, cutoff ${CUTOFF}):\n\n`,
       );
-      for (const f of result.findings.slice(0, 10)) {
-        console.error(
-          `  - [${f.finding_type}] sprint=${f.sprint_id} boundary=${f.expected_consult || f.phase} evidence=${f.evidence}`,
-        );
-      }
+      process.stderr.write(formatFindingsTable(result.findings.slice(0, 10)) + "\n");
       if (result.findings.length > 10) {
-        console.error(`  ... and ${result.findings.length - 10} more`);
+        process.stderr.write(`\n  ... and ${result.findings.length - 10} more\n`);
       }
     }
   }
@@ -405,6 +644,8 @@ if (require.main === module) {
 
 module.exports = {
   computeFindings,
+  loadFullReportsData,
+  validateIsoDate,
   CUTOFF,
   SP003_SHIP_DATE,
   EXPECTED_BOUNDARIES,
