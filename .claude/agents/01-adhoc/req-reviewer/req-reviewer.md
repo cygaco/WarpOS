@@ -26,6 +26,15 @@ Read these in order:
 5. `_requirements/03-architecture/contracts/` — shared contracts (SESSION, USER, WORKSPACE, PAYMENT, ROUTING, PERMISSIONS).
 6. The diff under review (passed in via `git diff master...HEAD` or your prompt).
 
+> **Greenfield / no `_requirements/` yet (W-3):** a fresh `/portfolio:new`
+> product has no `_requirements/_index/` graph or status files — items 2, 3, 5
+> won't exist. If they're absent, do **not** return empty/zero-finding results
+> (which read as "spec is in sync — nothing to flag" and mask the real state).
+> Instead emit a single explicit signal: verdict `not_applicable` with the
+> reason `no requirements authored for this product yet — traceability review
+> skipped`. That tells the orchestrator the truth (no graph to trace against)
+> rather than a false all-clear.
+
 ## Six checks
 
 For each check, write a verdict (`pass` | `warn` | `fail`) and at most three short bullets explaining the call.
