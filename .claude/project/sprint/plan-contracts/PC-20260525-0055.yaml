@@ -1,0 +1,146 @@
+schema: warpos/sprint/plan-contract/v1
+id: PC-20260525-0055
+created_at: "2026-05-25T19:47:25.473Z"
+updated_at: "2026-05-25T19:47:25.473Z"
+sprint: SP-20260525-022
+source_request: "Build the canon engine: a generator that turns a product's intent (brief or clone doc) into the full _requirements/00-canonical/* set — 7 narrative docs + 4 structured JSON — filling input gaps via CAPPED research (a defined output schema, named fields, not open-ended discovery). Wire it as bootstrap:spinup's canon phase. Pulls 0.14.0 (Managerial Agent Layer canon core) forward."
+source_request_verbatim: "Build the full canon generator now. Assume there will be gaps in the input the user gives you, you may have to perform research. (0.15.0 sprint 2 of 3. β: monolithic scale=L, cap the research phase with a defined output schema — named fields, not open-ended.)"
+request_type: feature_add
+interpreted_intent: "Create a canon-generation engine (scripts/bootstrap/canon.js or scripts/canon/) that takes the Phase-1 intent from bootstrap:spinup (the brief from the guided discussion, or the clone doc from --clone) and produces the complete _requirements/00-canonical/* for a PRODUCT: 7 narrative MD (CORE_BRIEF, USER_COHORTS, GOLDEN_PATHS, PRODUCT_MODEL, EVOLUTION, FAILURE_STATES, GLOSSARY) + 4 structured JSON (FIELD_REGISTRY, PRECEDENCE, STEPS, WATCHED_DIRS). Where the operator's intent is thin, fill gaps via research:* — but CAPPED by a defined research-output schema that enumerates the SPECIFIC named fields research may populate per doc (e.g. market signals, competitor set, cohort evidence), so research is bounded and verifiable, not open-ended discovery. Ship canon doc templates (framework/templates/canonical/*) the engine renders. Wire bootstrap:spinup's canon phase (--phase canon) to invoke the engine. Runs product-side (generates the product's own canonical docs), so no framework-purity concern in canonical — here we build the engine + generic templates only."
+user_or_business_outcome: "A fresh product goes from intent → grounded canonical documentation automatically, even with thin operator input (research fills bounded gaps). This is the missing capability behind JTBD-3 ('just WarpOS' → canonical docs + roadmap) and the core of the 0.14.0 Managerial Agent Layer, available now as spinup's canon phase."
+affected_surfaces:
+  - surface: "scripts/canon/generate.js (NEW canon engine)"
+    evidence_level: inferred_from_repo
+    notes: "Core generator: intent -> render 7 MD + 4 JSON from templates, fill from intent, invoke capped research for named gaps, validate output against schemas/canon/*."
+  - surface: "framework/templates/canonical/* (NEW templates)"
+    evidence_level: inferred_from_repo
+    notes: "Generic templates for the 7 narrative docs + 4 JSON, mirroring the structure of canonical _requirements/00-canonical/* (CORE_BRIEF.md, etc.). Generic/framework — no product content."
+  - surface: "schemas/canon/research-fields.schema.json (NEW — the research cap)"
+    evidence_level: inferred_from_repo
+    notes: "β Q4 cap: enumerates the SPECIFIC named research fields the engine may fill per canonical doc. Research output validated against this — bounded, not open-ended discovery."
+  - surface: "schemas/canon/* (output validation)"
+    evidence_level: verified_from_repo
+    notes: "Validate generated FIELD_REGISTRY/PRECEDENCE/STEPS/WATCHED_DIRS against existing structured schemas; narrative docs against a section-presence check."
+  - surface: ".claude/commands/bootstrap/spinup.md (canon phase wiring)"
+    evidence_level: verified_from_repo
+    notes: "Phase 2 (canon) currently a documented hook; wire it to invoke scripts/canon/generate.js. --phase canon re-runs just this phase."
+  - surface: "research:* integration (capped)"
+    evidence_level: verified_from_repo
+    notes: "Use research:simple/deep to fill ONLY the schema-named fields; pass a bounded query set derived from the gaps, not free discovery. Cap call count + fields."
+current_behavior:
+  evidence_level: verified_from_repo
+  notes: "No generator exists for _requirements/00-canonical/*. The canonical docs in this repo are WarpOS's own (root-leak pending 0.10.0 scrub). bootstrap:spinup's canon phase is a documented hook with no engine. roadmap:create already prefers 00-canonical when present but nothing produces it for a fresh product."
+desired_behavior: "scripts/canon/generate.js takes an intent (brief/clone) + writes a complete, schema-valid _requirements/00-canonical/* for a product, filling thin spots via schema-capped research. framework/templates/canonical/* exist. bootstrap:spinup --phase canon invokes it end-to-end on a fixture intent and produces all 11 artifacts that pass validation. Research is bounded by schemas/canon/research-fields.schema.json (named fields only)."
+scope:
+  size: l
+  risk_level: medium_high
+  complexity_drivers:
+    - "11 artifacts (7 narrative + 4 structured JSON) with cross-references (FIELD_REGISTRY references CORE_BRIEF entities; STEPS references GOLDEN_PATHS flows) — tight inter-doc dependency (β: keep monolithic, do not split MD/JSON)"
+    - "Research integration must be CAPPED + verifiable (named-field schema) so the engine is deterministic-bounded, not open-ended — the β Q4 constraint"
+    - "Generates product content but is BUILT in canonical — keep the engine + templates generic (no product slugs) to stay framework-pure"
+scope_variants:
+  minimal_safe:
+    summary: "Engine + templates for the 7 narrative MD only; defer the 4 JSON + research to a follow-up."
+    tradeoffs:
+      - "Pro: smaller"
+      - "Con: incomplete canon (JSON artifacts are load-bearing for STEPS/maps); research gap unaddressed"
+  recommended:
+    summary: "Full monolithic engine: 7 MD + 4 JSON + capped research (schema-bounded) + spinup canon-phase wiring + a fixture-intent end-to-end test. β's call."
+    tradeoffs:
+      - "Pro: complete canon capability; unblocks spinup (C)"
+      - "Con: large; research integration is the risk surface"
+  expanded:
+    summary: "recommended + the full Director-of-PM persona consulting on canon synthesis."
+    tradeoffs:
+      - "Pro: richer canon"
+      - "Con: that's the deeper 0.14.0 managerial-agent layer — out of scope here"
+assumptions:
+  safe:
+    - "The 11 canonical artifact shapes are stable (existing _requirements/00-canonical/* + schemas define them)"
+    - "research:simple/deep can be invoked with a bounded query set"
+    - "the engine runs product-side via spinup, so generating product-titled canon is correct THERE (not a canonical purity issue)"
+  unsafe:
+    - "Research output quality/latency with a capped schema — must degrade gracefully when research returns thin or fails"
+  needs_user_or_beta_review:
+    - "The exact research-field schema (which named fields per doc research may fill) — the cap's contents"
+    - "Whether the engine writes a DRAFT canon (operator reviews) vs final"
+open_questions:
+  blocking: []
+  non_blocking:
+    - "Engine location: scripts/canon/ vs scripts/bootstrap/canon.js?"
+    - "Research backend: research:simple (faster) default vs research:deep opt-in for canon?"
+non_goals:
+  - "Generating canonical docs for any real product in THIS sprint (build the engine + templates + a fixture test only)"
+  - "The full Director-of-PM persona / managerial-agent layer (deeper 0.14.0)"
+  - "bootstrap:spinup's full intent->canon->roadmap->on-screen orchestration (that is SP-20260525-023 / Sprint C)"
+  - "The 0.10.0 canonical scrub (separate, operator-gated)"
+requirement_areas:
+  - canon-engine
+  - canonical-templates
+  - research-cap-schema
+  - research-integration
+  - spinup-canon-phase
+  - output-validation
+high_level_story_candidates:
+  - "As a fresh product, my intent (brief or clone) becomes a complete, schema-valid _requirements/00-canonical/* set."
+  - "As an operator with thin input, the engine researches ONLY bounded named gaps to fill the canon — no runaway discovery."
+  - "As bootstrap:spinup, my canon phase invokes the engine and produces all 11 artifacts."
+granular_story_candidates:
+  - "Author framework/templates/canonical/* — 7 narrative MD templates + 4 structured JSON templates (generic, no product content)."
+  - "Define schemas/canon/research-fields.schema.json — the named research fields per doc (the cap)."
+  - "Build scripts/canon/generate.js — intent -> render templates + fill from intent -> emit 11 artifacts."
+  - "Integrate capped research — fill ONLY schema-named gaps via research:*, validate research output against the cap schema, degrade gracefully on thin/failed research."
+  - "Validate output — narrative docs pass section-presence; JSON artifacts pass their schemas; cross-references resolve."
+  - "Wire bootstrap:spinup canon phase (--phase canon) to invoke the engine."
+  - "Fixture end-to-end test — a sample intent produces all 11 valid artifacts (the verify-before-claim for this engine)."
+workstream_candidates:
+  - "Templates: 7 MD + 4 JSON canonical templates"
+  - "Schema: research-field cap"
+  - "Engine: generate.js (render + fill + validate)"
+  - "Research: capped integration"
+  - "Wiring: spinup canon phase"
+  - "Tests: fixture-intent end-to-end"
+preliminary_ticket_candidates:
+  allowed: true
+  notes: "Design confirms the engine location, the research-field cap contents, and the JSON cross-reference strategy. Then mint ~6-7 tickets from the granular stories: T1 templates, T2 research-cap schema, T3 engine core (render+fill), T4 capped research integration, T5 output validation + cross-refs, T6 spinup canon-phase wiring, T7 fixture end-to-end test."
+external_service_dependencies:
+  status: expected
+  notes: "research:* uses OpenAI/Gemini research APIs (operator-approved spend). The cap schema bounds the call surface."
+approval_boundaries:
+  - "Incurs research-API spend (operator-approved >$5; cost_threshold halt -> resume --cost-acknowledged)"
+  - "Push to remote — operator-scoped (orchestrator commits locally only)"
+design_required: true
+execution_allowed_without_design: false
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+lane:
+  type: default
+  value: null
+  isolation_notes: ""
+beta_review:
+  required: true
+  likely_founder_rejection_risks:
+    - "Open-ended research that balloons cost/latency — the cap schema is the mitigation; verify it's real, not aspirational"
+  overbuild_risks:
+    - "Pulling the full DoPM persona in (expanded variant) — defer"
+    - Generating canon for a real product now instead of a fixture test
+  missing_context_risks:
+    - The exact named-field research cap contents
+plan_quality:
+  status: needs_design
+  confidence: high
+  evidence_gaps:
+    - research-field cap contents
+    - engine location
+    - JSON cross-reference strategy
+  fail_reasons: []
+next_recommended_command: "/sprint:design"
+resume_instructions: "Re-run /sprint:design (idempotent) or /sprint:plan to re-plan."
+tracker_paths:
+  current_sprint: ".claude/project/sprint/current-sprint.yaml"
+  sprint_progress: ".claude/project/sprint/sprint-progress.yaml"
+  plan_contract: ".claude/project/sprint/plan-contracts/PC-20260525-0055.yaml"
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260525-0055.report.md"
+created_by: alpha
+updated_by: alpha

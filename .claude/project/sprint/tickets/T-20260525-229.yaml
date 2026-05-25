@@ -1,0 +1,46 @@
+schema: warpos/sprint/ticket/v1
+id: T-20260525-229
+title: "Canonical templates — framework/templates/canonical/* (7 narrative MD + 4 structured JSON), generic"
+type: feature
+status: done
+sprint: SP-20260525-022
+created_at: "2026-05-25T19:48:23.437Z"
+updated_at: "2026-05-25T19:52:29.062Z"
+owner: null
+owner_agent: null
+risk_level: low
+approval_required: false
+approval_state: not_required
+source_request: "Build the canon engine: a generator that turns a product's intent (brief or clone doc) into the full _requirements/00-canonical/* set — 7 narrative docs + 4 structured JSON — filling input gaps via CAPPED research (a defined output schema, named fields, not open-ended discovery). Wire it as bootstrap:spinup's canon phase. Pulls 0.14.0 (Managerial Agent Layer canon core) forward."
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260525-0055.yaml"
+linked_requirements: []
+linked_high_level_story: null
+linked_granular_story: null
+linked_prd: null
+linked_copy: []
+linked_inputs: []
+linked_trace: []
+linked_acceptance_criteria: []
+linked_issues: []
+linked_decisions: []
+linked_external_services: []
+linked_files: []
+linked_tests: []
+linked_commits: []
+linked_prs: []
+linked_release: null
+description: ""
+user_value: ""
+business_value: ""
+acceptance_criteria: []
+non_goals: []
+implementation_notes: "framework/templates/canonical/* authored: 7 narrative MD + 4 JSON templates (generic skeletons, no product content; PRECEDENCE+WATCHED_DIRS framework-fixed, others placeholder-driven)"
+qa_notes: ""
+redteam_notes: ""
+trace_notes: ""
+blocked_by: []
+blocks: []
+fix_attempts: []
+ralph_progress: null
+completion_evidence: []
+reopen_history: []

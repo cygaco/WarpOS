@@ -318,6 +318,7 @@ Every sprint that has been planned, executed, released, or retrospected — one 
 
 | Sprint | Title | Status | Started | Closed | Release |
 |---|---|---|---|---|---|
+| [SP-20260525-022](.claude/project/sprint/sprints/SP-20260525-022/) | Canon engine — _requirements/00-canonical/* generator with capped research (0.15.0 sprint 2) | planning | 2026-05-25T19:44:23.893Z |  |  |
 | [SP-20260525-021](.claude/project/sprint/sprints/SP-20260525-021/) | Suite reconciliation — portfolio/bootstrap/product (0.15.0 sprint 1) | planning | 2026-05-25T19:15:02.411Z |  |  |
 | [SP-20260525-020](.claude/project/sprint/sprints/SP-20260525-020/) | Dispatch & Pipeline Reliability (WG-6/10/12/13 + W-2/WG-15) | planning | 2026-05-25T17:27:02.315Z |  |  |
 | [SP-20260525-019](.claude/project/sprint/sprints/SP-20260525-019/) | Install completeness: unify install.ps1 + warp-setup paths, scaffold PROJECT.md + product maps | retrospected | 2026-05-25T06:23:57.176Z | 2026-05-25T07:27:24.278Z |  |

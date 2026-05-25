@@ -1,0 +1,127 @@
+schema: warpos/sprint/current-sprint/v1
+id: SP-20260525-022
+title: "Canon engine — _requirements/00-canonical/* generator with capped research (0.15.0 sprint 2)"
+objective: "Run /sprint:plan to set this."
+status: designing
+created_at: "2026-05-25T19:44:23.893Z"
+updated_at: "2026-05-25T19:54:47.532Z"
+source_request: "Build the canon engine: a generator that turns a product's intent (brief or clone doc) into the full _requirements/00-canonical/* set — 7 narrative docs + 4 structured JSON — filling input gaps via CAPPED research (a defined output schema, named fields, not open-ended discovery). Wire it as bootstrap:spinup's canon phase. Pulls 0.14.0 (Managerial Agent Layer canon core) forward."
+interpreted_intent: "Create a canon-generation engine (scripts/bootstrap/canon.js or scripts/canon/) that takes the Phase-1 intent from bootstrap:spinup (the brief from the guided discussion, or the clone doc from --clone) and produces the complete _requirements/00-canonical/* for a PRODUCT: 7 narrative MD (CORE_BRIEF, USER_COHORTS, GOLDEN_PATHS, PRODUCT_MODEL, EVOLUTION, FAILURE_STATES, GLOSSARY) + 4 structured JSON (FIELD_REGISTRY, PRECEDENCE, STEPS, WATCHED_DIRS). Where the operator's intent is thin, fill gaps via research:* — but CAPPED by a defined research-output schema that enumerates the SPECIFIC named fields research may populate per doc (e.g. market signals, competitor set, cohort evidence), so research is bounded and verifiable, not open-ended discovery. Ship canon doc templates (framework/templates/canonical/*) the engine renders. Wire bootstrap:spinup's canon phase (--phase canon) to invoke the engine. Runs product-side (generates the product's own canonical docs), so no framework-purity concern in canonical — here we build the engine + generic templates only."
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260525-0055.yaml"
+risk_level: medium_high
+approval_state: none_required
+current_phase: design
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+external_services:
+  identified: []
+  blocked: []
+  ready: []
+  mocked: []
+  deferred: []
+tickets:
+  proposed: []
+  planned: []
+  designed: []
+  ready_for_execution:
+    - T-20260525-232
+    - T-20260525-233
+    - T-20260525-234
+    - T-20260525-235
+  in_progress: []
+  blocked: []
+  waiting_on_human: []
+  waiting_on_external_service: []
+  in_review: []
+  qa_failed: []
+  redteam_failed: []
+  done:
+    - T-20260525-229
+    - T-20260525-230
+    - T-20260525-231
+  released: []
+  deferred: []
+  abandoned: []
+  reopened: []
+  superseded: []
+requirements:
+  prd: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260525-022\\prd.md"
+  high_level_stories: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260525-022\\high-level-stories.md"
+  granular_stories: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260525-022\\granular-stories.md"
+  copy: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260525-022\\copy.md"
+  inputs: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260525-022\\inputs.md"
+  trace: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260525-022\\trace.md"
+  acceptance_criteria: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260525-022\\acceptance-criteria.md"
+  qa_plan: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260525-022\\qa-plan.md"
+  redteam_plan: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260525-022\\redteam-plan.md"
+  release_plan: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260525-022\\release-plan.md"
+checks:
+  lint:
+    status: not_run
+    last_run: null
+    evidence: ""
+  typecheck:
+    status: not_run
+    last_run: null
+    evidence: ""
+  tests:
+    status: not_run
+    last_run: null
+    evidence: ""
+  build:
+    status: not_run
+    last_run: null
+    evidence: ""
+  qa:
+    status: not_run
+    last_run: null
+    evidence: ""
+  redteam:
+    status: not_run
+    last_run: null
+    evidence: ""
+approvals:
+  plan:
+    required: false
+    state: not_required
+    ref: null
+  design:
+    required: false
+    state: not_required
+    ref: null
+  execution:
+    required: false
+    state: not_required
+    ref: null
+  release:
+    required: false
+    state: not_required
+    ref: null
+  external_services:
+    required: false
+    state: not_required
+    ref: null
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260525-0055.report.md"
+  design: null
+  execution: null
+  release: null
+ralph:
+  active: false
+  current_ticket: null
+  current_loop: null
+  status: idle
+  last_checkpoint: null
+  next_action: null
+crash_recovery:
+  last_checkpoint: ".claude/project/sprint/sprint-progress.yaml"
+  resume_command: "/sprint:design"
+  resume_summary: "Sprint SP-20260525-022 design scaffolded (scale=m). Next: mint tickets from granular-stories, then run /sprint:execute."
+  active_files: []
+  dirty_state: false
+  blockers: []
+  safe_to_continue: true
+lane:
+  type: default
+  value: null
+  isolation_notes: ""
