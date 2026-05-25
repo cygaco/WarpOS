@@ -128,6 +128,18 @@ function testAdapters() {
   }
   if (!bad) ok("all 8 adapters conform to the contract");
 
+  // F1 negative: an adapter whose plan() omits tests/risks must be rejected
+  const badAdapter = {
+    name: "x", title: "X",
+    detect: () => ({ status: "absent", evidence: [] }),
+    recommend: () => ({ choice: "y", alternatives: [] }),
+    plan: () => ({ summary: "s", steps: [], envVars: [], gates: [], template: "launch-plan" }),
+  };
+  const neg = validateAdapter(badAdapter);
+  if (!neg.ok && neg.errors.some((e) => /tests/.test(e)) && neg.errors.some((e) => /risks/.test(e)))
+    ok("validateAdapter rejects an adapter missing plan().tests/risks (F1 negative)");
+  else fail("F1 negative", JSON.stringify(neg));
+
   // behavioral: payments flags unverified webhook on the stripe fixture
   const stripeDir = materialize(CASES.find((c) => c.name === "stripe-no-webhook-verify"));
   const ps = require("./modules/payments").detect(detectRepoState(stripeDir));
@@ -164,10 +176,17 @@ async function testChain() {
   const ri = await inject.run(mkctx({ repoRoot: repo }));
   if (ri.status === "needs_orchestration" && ri.orchestration_prompt) ok("inject: needs_orchestration with a concrete prompt");
   else fail("inject phase", JSON.stringify(ri).slice(0, 160));
+  const ip = ri.orchestration_prompt || "";
+  if (/\/sprint:plan/.test(ip) && /verified_by/.test(ip) && /\/roadmap:add/.test(ip))
+    ok("inject prompt cites /sprint:plan + verified_by + /roadmap:add (sprint-ready, not advice)");
+  else fail("inject prompt content (REQ-3)", ip.slice(0, 140));
 
   const re = await execute.run(mkctx({ repoRoot: repo }));
   if (re.status === "needs_orchestration") ok("execute: needs_orchestration");
   else fail("execute phase", JSON.stringify(re).slice(0, 160));
+  const ep = re.orchestration_prompt || "";
+  if (/\/sprint:execute/.test(ep)) ok("execute prompt cites /sprint:execute");
+  else fail("execute prompt content (REQ-3)", ep.slice(0, 140));
 
   // real artifact write (non-dry-run) into the fixture repo
   const ra2 = await audit.run(mkctx({ repoRoot: repo, dryRun: false }));
@@ -241,6 +260,32 @@ function testScoredGaps() {
   else fail("funnel scored gap", JSON.stringify(funnel.gaps));
 }
 
+// ---------------------------------------------------------- gate coverage (GATE-COV)
+function testGateCoverage() {
+  process.stdout.write("\nUNIT — every approval gate is test-locked (GATE-COV)\n");
+  const { sampleState } = require("./lib/adapter-contract");
+  const base = sampleState();
+  const sensitive = Object.assign(sampleState(), { sensitive: { signals: ["health"], escalate: true } });
+  const mobile = Object.assign(sampleState(), { platform: "mobile" });
+  const G = (n, st, prof) => require(`./modules/${n}`).plan(st, prof || "web-saas").gates || [];
+  const checks = [
+    ["prod-db-migration", G("database", base)],
+    ["stripe-live", G("payments", base)],
+    ["email-real-users", G("crm", base)],
+    ["domain-dns", G("deployment", base)],
+    ["app-store-submit", G("deployment", mobile, "mobile-app")],
+    ["publish-legal-docs", G("security", base)],
+    ["collect-sensitive-data", G("security", sensitive)],
+  ];
+  for (const [gate, gates] of checks) {
+    if (gates.includes(gate)) ok(`gate "${gate}" surfaces on its triggering state`);
+    else fail(`gate ${gate}`, `not surfaced; got ${JSON.stringify(gates)}`);
+  }
+  const secSteps = require("./modules/security").plan(sensitive, "web-saas").steps;
+  if (secSteps.some((s) => /HARD STOP/i.test(s))) ok("security.plan() emits the HARD STOP step on sensitive data");
+  else fail("HARD STOP step", JSON.stringify(secSteps.slice(0, 1)));
+}
+
 (async () => {
   testDriver();
   await testPreflight();
@@ -249,6 +294,7 @@ function testScoredGaps() {
   testScoredGaps();
   testAdapters();
   testGateRegistry();
+  testGateCoverage();
   testResume();
   await testChain();
   process.stdout.write(`\nlastmile-orchestrate test: ${passed} passed, ${failed} failed\n`);

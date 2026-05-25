@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-05-25T22:40:12.310Z",
+  "generatedAt": "2026-05-25T22:45:00.525Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.10.0",
   "migrations": [],
@@ -4307,8 +4307,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/bootstrap/lastmile/test-orchestrate.js",
-      "sha256": "e3730691e33c0a32430446cbf7e363516db2fd5ab9a28565ddaf7c40d3a1341e",
-      "installedSha": "e3730691e33c0a32430446cbf7e363516db2fd5ab9a28565ddaf7c40d3a1341e"
+      "sha256": "c6c431efa9c905044ab4de9782e1827ee1dce333d042ee8c86d4194d7c8463f3",
+      "installedSha": "c6c431efa9c905044ab4de9782e1827ee1dce333d042ee8c86d4194d7c8463f3"
     },
     "scripts/bootstrap/lastmile/phases/audit.js": {
       "owner": "framework",
@@ -4412,8 +4412,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/bootstrap/lastmile/lib/adapter-contract.js",
-      "sha256": "0a2523d062ca1c654de747140faf8870bf5cd4693f9ca3c2bca9b18de0912573",
-      "installedSha": "0a2523d062ca1c654de747140faf8870bf5cd4693f9ca3c2bca9b18de0912573"
+      "sha256": "2e3ebea5ffb1081dacd137aa9b6e5198881aa44e7d484d7cf4f3a7b64b93be06",
+      "installedSha": "2e3ebea5ffb1081dacd137aa9b6e5198881aa44e7d484d7cf4f3a7b64b93be06"
     },
     "scripts/bootstrap/lastmile/lib/approval-gates.js": {
       "owner": "framework",

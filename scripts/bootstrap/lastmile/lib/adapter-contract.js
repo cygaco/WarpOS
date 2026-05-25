@@ -27,6 +27,8 @@
  * product-side artifact is the phase's job, not the adapter's.
  */
 
+const { GATE_IDS } = require("./approval-gates");
+
 const REQUIRED_FNS = ["detect", "recommend", "plan"];
 const REQUIRED_META = ["name", "title"];
 const DETECT_STATUSES = ["present", "partial", "absent"];
@@ -91,6 +93,10 @@ function validateAdapter(mod) {
     if (p && !Array.isArray(p.steps)) errors.push("plan().steps must be an array");
     if (p && !Array.isArray(p.envVars)) errors.push("plan().envVars must be an array");
     if (p && !Array.isArray(p.gates)) errors.push("plan().gates must be an array");
+    else if (p) {
+      for (const g of p.gates)
+        if (!GATE_IDS.includes(g)) errors.push("plan().gates has unregistered gate id: " + g);
+    }
     if (p && !Array.isArray(p.tests)) errors.push("plan().tests must be an array");
     if (p && !Array.isArray(p.risks)) errors.push("plan().risks must be an array");
     if (p && typeof p.template !== "string") errors.push("plan().template must be a string (template basename)");
