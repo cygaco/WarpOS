@@ -2,10 +2,10 @@ schema: warpos/sprint/ticket/v1
 id: T-20260525-232
 title: "Capped research integration — fill only schema-named gaps via research:*, validate output, degrade gracefully"
 type: integration
-status: ready_for_execution
+status: done
 sprint: SP-20260525-022
 created_at: "2026-05-25T19:48:23.622Z"
-updated_at: "2026-05-25T19:48:24.120Z"
+updated_at: "2026-05-25T20:17:16.308Z"
 owner: null
 owner_agent: null
 risk_level: medium
@@ -34,7 +34,7 @@ user_value: ""
 business_value: ""
 acceptance_criteria: []
 non_goals: []
-implementation_notes: ""
+implementation_notes: "scripts/canon/research.js: loadCapSchema + buildResearchQuerySet (bounded by max_queries, excludes out-of-cap docs) + validateFindings (rejects out-of-schema doc/field/root, empty-sources=THIN never merged) + mergeFindings (cited block). Wired into generate.js --research-in. Verified: 8 candidates->6 capped, BOGUS field+NOT_A_DOC+root key discarded, empty sources->THIN warning."
 qa_notes: ""
 redteam_notes: ""
 trace_notes: ""

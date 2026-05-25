@@ -4,7 +4,7 @@ title: "Canon engine — _requirements/00-canonical/* generator with capped rese
 objective: "Run /sprint:plan to set this."
 status: designing
 created_at: "2026-05-25T19:44:23.893Z"
-updated_at: "2026-05-25T19:54:47.532Z"
+updated_at: "2026-05-25T20:17:25.126Z"
 source_request: "Build the canon engine: a generator that turns a product's intent (brief or clone doc) into the full _requirements/00-canonical/* set — 7 narrative docs + 4 structured JSON — filling input gaps via CAPPED research (a defined output schema, named fields, not open-ended discovery). Wire it as bootstrap:spinup's canon phase. Pulls 0.14.0 (Managerial Agent Layer canon core) forward."
 interpreted_intent: "Create a canon-generation engine (scripts/bootstrap/canon.js or scripts/canon/) that takes the Phase-1 intent from bootstrap:spinup (the brief from the guided discussion, or the clone doc from --clone) and produces the complete _requirements/00-canonical/* for a PRODUCT: 7 narrative MD (CORE_BRIEF, USER_COHORTS, GOLDEN_PATHS, PRODUCT_MODEL, EVOLUTION, FAILURE_STATES, GLOSSARY) + 4 structured JSON (FIELD_REGISTRY, PRECEDENCE, STEPS, WATCHED_DIRS). Where the operator's intent is thin, fill gaps via research:* — but CAPPED by a defined research-output schema that enumerates the SPECIFIC named fields research may populate per doc (e.g. market signals, competitor set, cohort evidence), so research is bounded and verifiable, not open-ended discovery. Ship canon doc templates (framework/templates/canonical/*) the engine renders. Wire bootstrap:spinup's canon phase (--phase canon) to invoke the engine. Runs product-side (generates the product's own canonical docs), so no framework-purity concern in canonical — here we build the engine + generic templates only."
 plan_contract: ".claude/project/sprint/plan-contracts/PC-20260525-0055.yaml"
@@ -23,11 +23,7 @@ tickets:
   proposed: []
   planned: []
   designed: []
-  ready_for_execution:
-    - T-20260525-232
-    - T-20260525-233
-    - T-20260525-234
-    - T-20260525-235
+  ready_for_execution: []
   in_progress: []
   blocked: []
   waiting_on_human: []
@@ -39,6 +35,10 @@ tickets:
     - T-20260525-229
     - T-20260525-230
     - T-20260525-231
+    - T-20260525-232
+    - T-20260525-233
+    - T-20260525-234
+    - T-20260525-235
   released: []
   deferred: []
   abandoned: []

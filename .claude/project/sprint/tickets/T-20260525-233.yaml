@@ -2,10 +2,10 @@ schema: warpos/sprint/ticket/v1
 id: T-20260525-233
 title: "Output validation — narrative section-presence + JSON schema validation + cross-reference resolution"
 type: feature
-status: ready_for_execution
+status: done
 sprint: SP-20260525-022
 created_at: "2026-05-25T19:48:23.693Z"
-updated_at: "2026-05-25T19:48:24.209Z"
+updated_at: "2026-05-25T20:17:16.375Z"
 owner: null
 owner_agent: null
 risk_level: low
@@ -34,7 +34,7 @@ user_value: ""
 business_value: ""
 acceptance_criteria: []
 non_goals: []
-implementation_notes: ""
+implementation_notes: "scripts/canon/validate.js: template-driven section-presence (missing=ERROR), 4 JSON parse+required-key, cross-refs (product_name across 7 H1s, STEPS phase refs, FIELD_REGISTRY appears_in), thin={{token}}=WARNING. Wired into generate.js: ERROR->exit1+no write, thin->exit0. Verified: missing section + product mismatch -> ERROR; thin fixture passes."
 qa_notes: ""
 redteam_notes: ""
 trace_notes: ""

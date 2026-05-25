@@ -52,14 +52,53 @@ spinup [--clone <target>]
   The clone doc is written to `_docs/clones/<slug>/` **and kept**, then feeds
   Phase 2 as the grounding input.
 
-### Phase 2 — Canon *(engine ships in SP-20260525-022)*
+### Phase 2 — Canon
 Generate the full `_requirements/00-canonical/*` from the Phase-1 intent: the 7
 narrative docs (CORE_BRIEF, USER_COHORTS, GOLDEN_PATHS, PRODUCT_MODEL, EVOLUTION,
 FAILURE_STATES, GLOSSARY) + 4 structured files (FIELD_REGISTRY, PRECEDENCE,
-STEPS, WATCHED_DIRS). Gaps in the operator's input are filled by **capped**
-`research:*` (a defined output schema — named fields, not open-ended discovery).
-*(This phase calls the canon engine built in SP-20260525-022; until then it is
-the documented hook in this skeleton.)*
+STEPS, WATCHED_DIRS). The engine is `scripts/canon/generate.js` (SP-20260525-022).
+
+**1. Run the engine** against the Phase-1 intent (the guided brief, or the
+`--clone` doc under `_docs/clones/<slug>/`). It renders the 11 artifacts from
+`framework/templates/canonical/*`, fills fields from the intent, validates
+output, and writes to `_requirements/00-canonical/` (the product's own canonical
+zone — generating product-titled canon there is correct, not a purity concern):
+
+```bash
+node scripts/canon/generate.js --intent <intent-file.md> --product "<Product Name>" --research off
+```
+
+The engine **always emits structurally-valid output** and exits 0 with WARNINGS
+for thin fields (fields the intent didn't cover); a non-zero exit means a real
+structural error (missing section, invalid JSON, product-name mismatch) — fix the
+intent or template, don't paper over it. Thin output is honest scaffold the
+product fills in over time.
+
+**2. Capped research (opt-in — real `research:*` spend).** To fill thin docs with
+cited category signal, re-run with `--research simple` (or `deep`). The fill is
+**bounded** by `schemas/canon/research-fields.schema.json` — named fields per doc,
+never open-ended discovery. The engine and the orchestrator split the work:
+
+  - **Engine builds the cap.** With `--research simple` and no `--research-in`, the
+    engine writes a bounded query set to `_requirements/00-canonical/.canon-research-request.json`
+    (≤ `research_cap.max_queries`, only the schema's `x-fields` for thin docs).
+  - **Orchestrator invokes.** Run `research:simple` against those bounded questions
+    (this is the API spend — >$5 needs operator OK per `## Autonomy`). Assemble the
+    answers into a findings file matching the cap schema shape:
+    `{ "per_doc": { "<DOC>": { "findings": { "<x-field>": "…" }, "sources": ["…"] } } }`.
+    **Every finding MUST carry `sources[]`** — a finding with empty sources is THIN
+    and will be dropped with a warning (β directive: never a silent pass).
+  - **Engine validates + merges.** Re-invoke with the findings; the engine rejects
+    any out-of-schema doc/field and appends a cited "Research Signals
+    (non-canonical)" block to each filled doc:
+
+    ```bash
+    node scripts/canon/generate.js --intent <intent-file.md> --product "<Product Name>" \
+      --research simple --research-in _requirements/00-canonical/.canon-research-findings.json
+    ```
+
+Default to `--research off` for a no-spend first pass; only run the research
+bridge when the operator wants the cited category fill.
 
 ### Phase 3 — Roadmap
 Invoke `roadmap:create` to produce `ROADMAP.md` — grounded in the canonical docs

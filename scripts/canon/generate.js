@@ -25,6 +25,8 @@
 
 const fs = require("fs");
 const path = require("path");
+const research = require("./research");
+const { validateArtifacts } = require("./validate");
 
 const REPO_ROOT = path.resolve(__dirname, "..", "..");
 const TMPL_DIR = path.join(REPO_ROOT, "framework", "templates", "canonical");
@@ -46,6 +48,7 @@ function parseArgs(argv) {
     product: null,
     out: "_requirements/00-canonical",
     research: "off",
+    researchIn: null,
     dryRun: false,
     json: false,
   };
@@ -55,6 +58,7 @@ function parseArgs(argv) {
     else if (a === "--product") out.product = argv[++i];
     else if (a === "--out") out.out = argv[++i];
     else if (a === "--research") out.research = argv[++i];
+    else if (a === "--research-in") out.researchIn = argv[++i];
     else if (a === "--dry-run") out.dryRun = true;
     else if (a === "--json") out.json = true;
   }
@@ -121,17 +125,23 @@ function buildFieldMap(product, sections) {
   };
 }
 
-// T4 hook (capped research). For T3 core this is a no-op pass-through unless
-// --research is simple|deep; T4 implements the bounded fill against
-// schemas/canon/research-fields.schema.json. Returns { data, researched, thin }.
-function fillThinViaResearch(data, thinFields, opts) {
-  if (opts.research === "off" || thinFields.length === 0)
-    return { data, researched: [], thin: thinFields };
-  // T4: build a bounded query set from the cap schema's per-doc x-fields for the
-  // thin docs, invoke research:<backend>, validate the response against the cap
-  // schema, merge only named fields, treat empty-sources findings as THIN.
-  // (Implemented in T-20260525-232.)
-  return { data, researched: [], thin: thinFields };
+// Extract the {{token}} names referenced by a template.
+function templateTokens(tmpl) {
+  const toks = new Set();
+  tmpl.replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (_m, k) => (toks.add(k), _m));
+  return [...toks];
+}
+
+// A doc is THIN (a research candidate) when every one of its template tokens —
+// except the always-filled ones — is empty in the field map. Template-driven so
+// it can't rot when a template gains/loses a field.
+const ALWAYS_FILLED = new Set(["product_name", "evolution_status_note"]);
+function isThinDoc(tmpl, data) {
+  const toks = templateTokens(tmpl).filter((t) => !ALWAYS_FILLED.has(t));
+  if (toks.length === 0) return false;
+  return toks.every(
+    (t) => data[t] === undefined || data[t] === null || data[t] === "",
+  );
 }
 
 // Detect which template placeholders remain unfilled after the field map.
@@ -165,18 +175,18 @@ function main() {
     return 1;
   }
   const sections = parseIntentSections(fs.readFileSync(intentPath, "utf8"));
-  let data = buildFieldMap(args.product, sections);
+  const data = buildFieldMap(args.product, sections);
 
-  // Gather thin fields across all narrative templates, then (T4) research-fill.
+  // Load templates; gather thin fields + thin DOCS (research candidates).
   const tmpls = {};
-  let allThin = new Set();
+  const allThin = new Set();
+  const thinDocs = [];
   for (const name of NARRATIVE) {
     const t = fs.readFileSync(path.join(TMPL_DIR, `${name}.md.tmpl`), "utf8");
     tmpls[`${name}.md`] = t;
     detectThin(t, data).forEach((f) => allThin.add(f));
+    if (isThinDoc(t, data)) thinDocs.push(name);
   }
-  const research = fillThinViaResearch(data, [...allThin], args);
-  data = research.data;
 
   // Structured JSON: render the .json.tmpl, default the still-placeholder
   // product-specific tokens to empty containers so output is valid JSON.
@@ -196,47 +206,110 @@ function main() {
     );
   }
 
-  // Render narrative.
+  // Render narrative + carry over structured.
   const artifacts = {};
   for (const name of NARRATIVE) artifacts[`${name}.md`] = render(tmpls[`${name}.md`], data);
   for (const name of STRUCTURED) artifacts[`${name}.json`] = tmpls[`${name}.json`];
 
-  // T5 hook: validate(artifacts) — section presence (MD), JSON.parse + schema
-  // (JSON), cross-refs, and THIN findings as WARNINGS not silent pass.
-  // (Implemented in T-20260525-233.)
+  // T4: capped research. The engine owns the CAP (bounded query set from the
+  // schema's x-fields for thin docs) + validation + cited merge; the LIVE
+  // invocation is the orchestrator's job (bootstrap:spinup canon phase). When
+  // --research-in is supplied we validate + merge it; otherwise we emit the
+  // bounded request the orchestrator must run research:* against.
+  const researchOut = {
+    backend: args.research,
+    request: null,
+    merged: [],
+    skipped_thin: [],
+    rejected: [],
+    warnings: [],
+  };
+  if (args.research !== "off" && thinDocs.length) {
+    const capInfo = research.loadCapSchema();
+    const querySet = research.buildResearchQuerySet(thinDocs, capInfo, args.product);
+    researchOut.request = querySet;
+    if (args.researchIn) {
+      const findings = JSON.parse(
+        fs.readFileSync(path.resolve(REPO_ROOT, args.researchIn), "utf8"),
+      );
+      const v = research.validateFindings(findings, capInfo);
+      if (v.errors.length) {
+        process.stderr.write(
+          `research findings invalid:\n  ${v.errors.join("\n  ")}\n`,
+        );
+        return 1;
+      }
+      const m = research.mergeFindings(artifacts, v.valid);
+      researchOut.merged = m.merged;
+      researchOut.skipped_thin = v.thinDocs;
+      researchOut.rejected = v.rejected;
+      researchOut.warnings = v.warnings;
+    }
+  }
+
+  // T5: validate the rendered artifacts. ERRORS = structural bug (exit 1);
+  // THIN inputs = warnings (exit 0). β: thin is a warning, never a silent pass.
+  const validation = validateArtifacts(artifacts, {
+    tmplDir: TMPL_DIR,
+    narrative: NARRATIVE,
+    structured: STRUCTURED,
+  });
 
   const outDir = path.resolve(REPO_ROOT, args.out);
   const written = [];
+  // When research was requested but not yet supplied, drop the bounded request
+  // so the orchestrator can run it and re-invoke with --research-in.
+  let requestFile = null;
   if (!args.dryRun) {
     fs.mkdirSync(outDir, { recursive: true });
-    for (const [fname, body] of Object.entries(artifacts)) {
-      fs.writeFileSync(path.join(outDir, fname), body, "utf8");
-      written.push(fname);
+    if (researchOut.request && !args.researchIn) {
+      requestFile = path.join(outDir, ".canon-research-request.json");
+      fs.writeFileSync(requestFile, JSON.stringify(researchOut.request, null, 2) + "\n", "utf8");
+    }
+    if (validation.ok) {
+      for (const [fname, body] of Object.entries(artifacts)) {
+        fs.writeFileSync(path.join(outDir, fname), body, "utf8");
+        written.push(fname);
+      }
     }
   }
 
   const result = {
-    ok: true,
+    ok: validation.ok,
     product: args.product,
     out: args.out,
     artifacts: Object.keys(artifacts),
     thin_fields: [...allThin],
-    research: args.research,
+    thin_docs: thinDocs,
+    research: researchOut,
+    validation: { ok: validation.ok, errors: validation.errors, warnings: validation.warnings, thin: validation.thin },
     dry_run: args.dryRun,
     written,
   };
   if (args.json) process.stdout.write(JSON.stringify(result, null, 2) + "\n");
   else {
-    process.stdout.write(
-      `canon: ${args.dryRun ? "dry-run" : "wrote " + written.length} artifacts (${NARRATIVE.length} MD + ${STRUCTURED.length} JSON) for "${args.product}"\n`,
-    );
+    if (!validation.ok) {
+      process.stdout.write(
+        `canon: VALIDATION FAILED for "${args.product}" — ${validation.errors.length} error(s), no artifacts written:\n  ${validation.errors.join("\n  ")}\n`,
+      );
+    } else {
+      process.stdout.write(
+        `canon: ${args.dryRun ? "dry-run" : "wrote " + written.length} artifacts (${NARRATIVE.length} MD + ${STRUCTURED.length} JSON) for "${args.product}"\n`,
+      );
+    }
+    if (researchOut.merged.length)
+      process.stdout.write(`  research: merged cited findings into ${researchOut.merged.join(", ")}\n`);
+    if (requestFile)
+      process.stdout.write(`  research: requested — ${researchOut.request.queries.length} bounded ${researchOut.request.backend} queries written to ${path.relative(REPO_ROOT, requestFile)}; run research:* and re-invoke with --research-in\n`);
+    for (const w of researchOut.warnings) process.stdout.write(`  WARNING: ${w}\n`);
+    for (const w of validation.warnings) process.stdout.write(`  WARNING: ${w}\n`);
     if (allThin.size)
       process.stdout.write(
         `  WARNING: ${allThin.size} thin field(s) (no intent source): ${[...allThin].join(", ")}${args.research === "off" ? " — re-run with --research simple to fill" : ""}\n`,
       );
   }
-  return 0;
+  return validation.ok ? 0 : 1;
 }
 
 if (require.main === module) process.exit(main());
-module.exports = { parseIntentSections, buildFieldMap, render, detectThin, NARRATIVE, STRUCTURED };
+module.exports = { main, parseArgs, parseIntentSections, buildFieldMap, render, detectThin, templateTokens, isThinDoc, NARRATIVE, STRUCTURED };

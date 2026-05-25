@@ -521,6 +521,7 @@ const WALK_SKIP_DIRS = new Set([
   ".git",
   ".warpos",
   ".warpos-backup",
+  "WarpOS-Update", // gitignored operator scratch (parallels .warpos); not framework
   ".vscode",
   ".idea",
   "runtime",
