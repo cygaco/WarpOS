@@ -269,6 +269,8 @@ Side findings to address, each <1 hour:
 - **[open] team-guard tiered allowlist.** Alpha can spawn research agents (Explore, Plan, general-purpose); build-chain agents (builder, reviewer, fixer, compliance, redteam, qa, learner) Gamma-only. Currently permissive.
 - **[open] `--branch` default for installer.** Create `warp/install-<timestamp>` branch, run install there. Refuse install on `main` by default; require `--branch <name>` or explicit `--yes-install-on-main`.
 - **[open] Same-name agent collision detection at install.** Scan target `.claude/agents/` for basenames matching WarpOS agent roles; prompt user on collision: keep / rename / replace.
+- **[open] Harden `/sprint:full` Beta-consult — reject placeholder verdicts at runtime.** *(Surfaced 2026-05-25 by SP-20260525-004's `/check:sprint-beta-honesty` first live run: SP-20260525-018 logged a `DECIDE` with empty `beta_message`; SP-20260525-019 skipped the retro consult.)* SP-003 made consults real + halt-at-boundary; make them **un-fakeable** — `full.js#maybeConsultBeta` should refuse an empty/whitespace `beta_message` and refuse to advance past a Beta boundary without a real verdict+message. Turns placeholder consults from detectable-after-the-fact into impossible-at-runtime. *(Milestone 0.11.0 follow-up.)*
+- **[open] Wire `/check:sprint-beta-honesty` into a gate.** Currently on-demand only. Wire into `release-build.js` (refuse to ship if recent post-cutoff sprints have honesty findings) and/or a pre-push / CI check, so the Beta cadence is continuously enforced rather than spot-checked. Closes the 0.11.0 honesty loop end-to-end (mechanism → audit → gate). *(Milestone 0.11.0 follow-up.)*
 
 ### Sprint backlog (parked / pull-forward-able)
 
