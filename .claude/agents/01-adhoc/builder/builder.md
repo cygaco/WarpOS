@@ -34,6 +34,14 @@ Your cwd MUST be inside a `.worktrees/wt-*` path. If it resolves to the main pro
 7. Design tokens: `_requirements/01-design-system/COLOR_SEMANTICS.md` (color usage rules)
 8. If building UI: `_requirements/01-design-system/FEEDBACK_PATTERNS.md` and `_requirements/01-design-system/UX_PRINCIPLES.md`
 
+> **Greenfield repos (WG-5):** items 2, 3, 6–8 above assume a project that has
+> authored `_requirements/04-features/<slug>/` specs and a `_requirements/01-design-system/`.
+> A fresh `/portfolio:new` product has **neither**. If those paths don't exist,
+> they don't apply — the **dispatching orchestrator's inlined brief in this
+> prompt is the authoritative spec** (it will contain the stack lock, acceptance
+> criteria, out-of-scope, and DoD inline). Do not treat the absent scaffold
+> paths as missing inputs or a reason to halt; build from the inlined brief.
+
 ### Rules
 - Do NOT modify foundation files. If you need a type or constant added, note it in your output.
 - Do NOT add features beyond what the spec describes.

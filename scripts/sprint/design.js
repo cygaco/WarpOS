@@ -102,6 +102,23 @@ function scaffold(args) {
   const outDir = path.join(SPRINT.requirements, current.id);
   ensureDir(outDir);
 
+  // WG-10: fail loudly when the requirements templates are absent (a fresh or
+  // partial install whose framework/templates/sprint/requirements/ was never
+  // shipped). Previously the per-template loop below just warned and continued,
+  // writing NOTHING while the phase still reported "scaffolded" — a silent
+  // no-op that left the design phase hollow (the headline /sprint:full
+  // fresh-install failure). Refuse with an actionable message instead.
+  const tmplRoot = path.join(SPRINT.templates, "requirements");
+  if (!fs.existsSync(tmplRoot)) {
+    process.stderr.write(
+      `sprint requirements templates missing at ${tmplRoot} — the design ` +
+        `phase cannot scaffold a requirements bundle (no PRD / acceptance ` +
+        `criteria / stories). Run /warp:update to restore ` +
+        `framework/templates/sprint/requirements/, then re-run /sprint:design.\n`,
+    );
+    return 1;
+  }
+
   const data = {
     sprint_id: current.id,
     sprint_title: current.title,
@@ -168,17 +185,21 @@ function scaffold(args) {
   }
 
   let wrote = 0,
-    skipped = 0;
+    skipped = 0,
+    missing = 0,
+    expected = 0;
   for (const [tmplName, outName] of targets) {
     if (skip.has(outName)) {
       process.stdout.write(`  skip-by-scale ${outName}\n`);
       continue;
     }
+    expected++;
     const tmpl = readText(
       path.join(SPRINT.templates, "requirements", tmplName),
     );
     if (!tmpl) {
       process.stderr.write(`missing template: ${tmplName}\n`);
+      missing++;
       continue;
     }
     const rendered = render(tmpl, data);
@@ -188,6 +209,18 @@ function scaffold(args) {
     if (res.wrote) wrote++;
     else skipped++;
     process.stdout.write(`  ${res.wrote ? "wrote" : "skip "} ${outName}\n`);
+  }
+
+  // WG-10 (partial-install guard): if every in-scope template was missing —
+  // nothing written, nothing already on disk — the bundle is hollow. Fail
+  // loudly rather than reporting a successful scaffold of zero documents.
+  if (expected > 0 && missing === expected && wrote === 0 && skipped === 0) {
+    process.stderr.write(
+      `design phase wrote 0 of ${expected} requirement documents — all ` +
+        `templates missing under ${path.join(SPRINT.templates, "requirements")}. ` +
+        `Run /warp:update to restore the sprint templates, then re-run.\n`,
+    );
+    return 1;
   }
 
   // Update current-sprint.requirements.

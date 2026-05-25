@@ -300,6 +300,7 @@ Every sprint that has been planned, executed, released, or retrospected — one 
 
 | Sprint | Title | Status | Started | Closed | Release |
 |---|---|---|---|---|---|
+| [SP-20260525-020](.claude/project/sprint/sprints/SP-20260525-020/) | Dispatch & Pipeline Reliability (WG-6/10/12/13 + W-2/WG-15) | planning | 2026-05-25T17:27:02.315Z |  |  |
 | [SP-20260525-019](.claude/project/sprint/sprints/SP-20260525-019/) | Install completeness: unify install.ps1 + warp-setup paths, scaffold PROJECT.md + product maps | retrospected | 2026-05-25T06:23:57.176Z | 2026-05-25T07:27:24.278Z |  |
 | [SP-20260525-018](.claude/project/sprint/sprints/SP-20260525-018/) | WarpOS installer completeness: complete + sprint-capable fresh installs | retrospected | 2026-05-25T04:14:53.702Z | 2026-05-25T05:11:06.607Z |  |
 | [SP-20260525-017](.claude/project/sprint/sprints/SP-20260525-017/) | Wire existing /roadmap:* through DoPM (milestone 0.14.0 sprint 4) | planning | 2026-05-23T08:52:01.116Z |  |  |
