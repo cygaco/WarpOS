@@ -1,0 +1,150 @@
+"use strict";
+/**
+ * scripts/bootstrap/lastmile/fixtures.js — the 7 holdout cases for bootstrap:lastmile,
+ * defined as CODE (not committed fake repos). Each case is a minimal set of file
+ * contents; the e2e materializes it into a temp dir, runs detectRepoState() against
+ * it, and asserts the audit catches the named gap.
+ *
+ * Why code, not committed dirs: a fake `package.json` on disk trips
+ * dependency-admission-guard (it can't tell fixture deps from real admissions).
+ * Materializing at test runtime via fs.writeFileSync is not hook-intercepted and
+ * keeps the committed tree honest. Mirrors spinup's mkdtemp-based e2e.
+ *
+ * `expect` is a list of { path, equals } assertions against the detected state
+ * (dot-path into the detectRepoState() result).
+ */
+
+const fs = require("fs");
+const os = require("os");
+const path = require("path");
+
+const CASES = [
+  {
+    name: "no-auth",
+    why: "prototype with persistence but no auth",
+    files: {
+      "package.json": JSON.stringify({
+        name: "fx-no-auth",
+        dependencies: { next: "15.0.0", react: "19.0.0", "@supabase/supabase-js": "2.45.0" },
+      }),
+    },
+    expect: [
+      { path: "persistence.provider", equals: "supabase" },
+      { path: "auth.provider", equals: null },
+    ],
+  },
+  {
+    name: "auth-no-payments",
+    why: "auth present, no payment provider",
+    files: {
+      "package.json": JSON.stringify({
+        name: "fx-auth-no-payments",
+        dependencies: { next: "15.0.0", react: "19.0.0", "@clerk/nextjs": "5.7.0" },
+      }),
+    },
+    expect: [
+      { path: "auth.provider", equals: "clerk" },
+      { path: "payments.provider", equals: null },
+    ],
+  },
+  {
+    name: "stripe-no-webhook-verify",
+    why: "Stripe present but webhook signature NOT verified (forgeable events)",
+    files: {
+      "package.json": JSON.stringify({
+        name: "fx-stripe-no-webhook",
+        dependencies: { next: "15.0.0", react: "19.0.0", stripe: "17.0.0" },
+      }),
+      "app/api/webhook/route.ts":
+        'import Stripe from "stripe";\n' +
+        'const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");\n' +
+        "export async function POST(req) {\n" +
+        "  // NO signature verification here — the forgeable-events gap.\n" +
+        "  const event = await req.json();\n" +
+        "  return new Response('ok');\n" +
+        "}\n",
+    },
+    expect: [
+      { path: "payments.provider", equals: "stripe" },
+      { path: "payments.webhookVerified", equals: false },
+    ],
+  },
+  {
+    name: "db-no-deletion-path",
+    why: "database present, no account deletion/export path",
+    files: {
+      "package.json": JSON.stringify({
+        name: "fx-db-no-deletion",
+        dependencies: { next: "15.0.0", react: "19.0.0", "@prisma/client": "5.20.0" },
+        devDependencies: { prisma: "5.20.0" },
+      }),
+      "prisma/schema.prisma":
+        "model User {\n  id    String @id @default(cuid())\n  email String @unique\n}\n",
+    },
+    expect: [
+      { path: "persistence.provider", equals: "prisma" },
+      { path: "account.deletionPath", equals: false },
+    ],
+  },
+  {
+    name: "no-funnel",
+    why: "API-only backend, no landing/pricing/conversion funnel",
+    files: {
+      "package.json": JSON.stringify({
+        name: "fx-no-funnel",
+        dependencies: { express: "4.21.0" },
+      }),
+      "server.js": "const express = require('express'); const app = express();\n",
+    },
+    expect: [
+      { path: "funnel.hasLanding", equals: false },
+      { path: "funnel.hasPricing", equals: false },
+    ],
+  },
+  {
+    name: "mobile-appstore",
+    why: "mobile app needing app-store readiness",
+    files: {
+      "package.json": JSON.stringify({
+        name: "fx-mobile",
+        dependencies: { expo: "52.0.0", react: "18.3.1", "react-native": "0.76.0" },
+      }),
+    },
+    expect: [
+      { path: "framework", equals: "expo" },
+      { path: "platform", equals: "mobile" },
+    ],
+  },
+  {
+    name: "sensitive-data-redflag",
+    why: "sensitive (health) data → MUST trigger escalation",
+    files: {
+      "package.json": JSON.stringify({
+        name: "fx-sensitive",
+        dependencies: { next: "15.0.0", react: "19.0.0" },
+      }),
+      "lib/records.ts":
+        "// Handles HIPAA-regulated PHI: patient medical record + diagnosis.\n" +
+        "export interface PatientRecord { patientId: string; diagnosis: string; medicalRecordNumber: string; }\n",
+    },
+    expect: [{ path: "sensitive.escalate", equals: true }],
+  },
+];
+
+function getByPath(obj, dotPath) {
+  return dotPath.split(".").reduce((o, k) => (o == null ? o : o[k]), obj);
+}
+
+/** Materialize a case into a fresh temp dir; returns the dir path. */
+function materialize(caseObj, baseDir) {
+  const dir =
+    baseDir || fs.mkdtempSync(path.join(os.tmpdir(), `lastmile-fx-${caseObj.name}-`));
+  for (const [rel, content] of Object.entries(caseObj.files)) {
+    const full = path.join(dir, rel);
+    fs.mkdirSync(path.dirname(full), { recursive: true });
+    fs.writeFileSync(full, content, "utf8");
+  }
+  return dir;
+}
+
+module.exports = { CASES, materialize, getByPath };

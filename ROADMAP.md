@@ -163,6 +163,15 @@ Architectural shifts parked behind explicit revival triggers. No sprint cycles u
 
 ### Shipped
 
+#### 🟢 Product Last-Mile Foundry — `bootstrap:lastmile` *(built + merged 2026-05-25; folds into a future release)*
+
+`bootstrap:spinup (idea → on screen)  →  bootstrap:lastmile (prototype → monetizable launch)`
+
+**The shift:** the on-ramp gained its second half. `bootstrap:lastmile` takes a working prototype to a monetizable, launch-ready product — a readiness audit (0–100 across 9 dimensions: product/technical/security/privacy/monetization/funnel/deployment/analytics/support), practical vibe-coder default stacks, **human-approval gates** on every risky production action (live Stripe, prod migration, DNS, app-store, real emails, sensitive data, final legal docs), a sensitive-data **HARD-STOP escalation**, and roadmap/sprint **injection** so the work ships rather than gets advised. **Product blocker removed (cadence rule):** vibe-coded prototypes had no repeatable, safe path from "it runs" to "it takes money."
+
+Per-sprint receipt:
+- **SP-20260525-025 — Product Last-Mile Foundry** — `bootstrap:lastmile` skill + `scripts/bootstrap/lastmile/` engine (orchestrate driver + detect/score/profiles/approval-gates/adapter-contract/render libs + 8 module adapters + 6 phases) + 8 artifact templates (`framework/templates/lastmile/`) + 4 reference playbooks (`paths.reference`/lastmile/) + 7 holdout fixtures + a 25-assertion e2e (green). Framework/product boundary held: the skill ships in canonical; the gap-report/launch-plan/etc. it produces are **runtime outputs** written into the consumer product, never committed in canonical. Engine sprint — parallel-authored + green-e2e + ff-merge close (RI-001); β-consulted (D1 spend ESCALATE, D2/D3 DECIDE). Version release (capsule + bump) pending.
+
 #### 🟢 0.15.0 — Unified Product On-Ramp *(2026-05-25)*
 
 `SP-20260525-021  →  -022  →  -023  →  🏁 0.15.0`
@@ -352,6 +361,7 @@ Every sprint that has been planned, executed, released, or retrospected — one 
 
 | Sprint | Title | Status | Started | Closed | Release |
 |---|---|---|---|---|---|
+| SP-20260525-025 | Product Last-Mile Foundry — `bootstrap:lastmile` skill (engine sprint; parallel-authored, green-e2e, ff-merge close per RI-001; version release pending) | done | 2026-05-25T22:00:00.000Z | 2026-05-25T22:00:00.000Z | adhoc-built (not minted via /sprint:plan); receipts in Shipped § |
 | [SP-20260525-023](.claude/project/sprint/sprints/SP-20260525-023/) | Spinup orchestrator — wire bootstrap:spinup pipeline end-to-end (0.15.0 sprint 3 of 3) | planning | 2026-05-25T20:32:41.452Z |  |  |
 | [SP-20260525-022](.claude/project/sprint/sprints/SP-20260525-022/) | Canon engine — _requirements/00-canonical/* generator with capped research (0.15.0 sprint 2) | planning | 2026-05-25T19:44:23.893Z |  |  |
 | [SP-20260525-021](.claude/project/sprint/sprints/SP-20260525-021/) | Suite reconciliation — portfolio/bootstrap/product (0.15.0 sprint 1) | planning | 2026-05-25T19:15:02.411Z |  |  |

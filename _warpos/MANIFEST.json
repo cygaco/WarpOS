@@ -2,9 +2,9 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-05-25T21:30:35.478Z",
+  "generatedAt": "2026-05-25T22:20:17.320Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
-  "warposVersion": "0.9.0",
+  "warposVersion": "0.10.0",
   "migrations": [],
   "paths": {
     ".gitignore": {
@@ -73,16 +73,16 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "bbafe5df2a04c97663b73bef1960f0ed74d9e8ecd1c9782570333be8ffd3417c",
-      "installedSha": "bbafe5df2a04c97663b73bef1960f0ed74d9e8ecd1c9782570333be8ffd3417c"
+      "sha256": "d776242c24accf038592ded7e3b662ea09bfb0c95cdfe20538d629b1810ccd78",
+      "installedSha": "d776242c24accf038592ded7e3b662ea09bfb0c95cdfe20538d629b1810ccd78"
     },
     "ROADMAP.md": {
       "owner": "framework",
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "930e6970d4015911e931430de6751ce5e85ae9e76ccfe3abf9ca335a8fe1dc13",
-      "installedSha": "930e6970d4015911e931430de6751ce5e85ae9e76ccfe3abf9ca335a8fe1dc13"
+      "sha256": "cce813fa008534bc8e9c7b2b90afa15a0126a74ca18ca0b04839389f79830fa6",
+      "installedSha": "cce813fa008534bc8e9c7b2b90afa15a0126a74ca18ca0b04839389f79830fa6"
     },
     "USER_GUIDE.md": {
       "owner": "framework",
@@ -97,8 +97,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "f939aaadb2cec9bd150c29397c70f240f9d32507968b9078c46441a804f67186",
-      "installedSha": "f939aaadb2cec9bd150c29397c70f240f9d32507968b9078c46441a804f67186"
+      "sha256": "6686a8b34c3eed26260808478ed2b3cbd1b691936f4d1bdcfb6208c7c959c92f",
+      "installedSha": "6686a8b34c3eed26260808478ed2b3cbd1b691936f4d1bdcfb6208c7c959c92f"
     },
     "_warpos/MANIFEST.json": {
       "owner": "generated",
@@ -4289,6 +4289,167 @@
       "sha256": "aabf2cc7706fd5923ec411507d2f458b1b61ebc4890849382a3104d5bd94434e",
       "installedSha": "aabf2cc7706fd5923ec411507d2f458b1b61ebc4890849382a3104d5bd94434e"
     },
+    "scripts/bootstrap/lastmile/fixtures.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/bootstrap/lastmile/fixtures.js",
+      "sha256": "d1009e8f37938ab09f32426adfee46429a7a2f345f79e93bf7064d8d5014bb03",
+      "installedSha": "d1009e8f37938ab09f32426adfee46429a7a2f345f79e93bf7064d8d5014bb03"
+    },
+    "scripts/bootstrap/lastmile/orchestrate.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/bootstrap/lastmile/orchestrate.js",
+      "sha256": "c10b279721378d53f88af712f46cd6c90e987c138a30e51957e5f7c7db9b54c6",
+      "installedSha": "c10b279721378d53f88af712f46cd6c90e987c138a30e51957e5f7c7db9b54c6"
+    },
+    "scripts/bootstrap/lastmile/test-orchestrate.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/bootstrap/lastmile/test-orchestrate.js",
+      "sha256": "8aae5f8accd7728f0d0fa6282ba915b9541e14c361f134452fec6183f26ff4ca",
+      "installedSha": "8aae5f8accd7728f0d0fa6282ba915b9541e14c361f134452fec6183f26ff4ca"
+    },
+    "scripts/bootstrap/lastmile/phases/audit.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/bootstrap/lastmile/phases/audit.js",
+      "sha256": "ed36134c56c208991cc480b1513fe544b35a405581ab0d06422ed2c0c31882b2",
+      "installedSha": "ed36134c56c208991cc480b1513fe544b35a405581ab0d06422ed2c0c31882b2"
+    },
+    "scripts/bootstrap/lastmile/phases/execute.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/bootstrap/lastmile/phases/execute.js",
+      "sha256": "b994b549f4500321088c036f01072d7b9f055456473b8957b1b637fe55d1526c",
+      "installedSha": "b994b549f4500321088c036f01072d7b9f055456473b8957b1b637fe55d1526c"
+    },
+    "scripts/bootstrap/lastmile/phases/handoff.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/bootstrap/lastmile/phases/handoff.js",
+      "sha256": "f5e31f532b64c40a78faf6a8bd66fb719833daa8b3a2334d878015cee9a330a2",
+      "installedSha": "f5e31f532b64c40a78faf6a8bd66fb719833daa8b3a2334d878015cee9a330a2"
+    },
+    "scripts/bootstrap/lastmile/phases/inject.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/bootstrap/lastmile/phases/inject.js",
+      "sha256": "bcd0e3f0fc564ecf349b36864f3c063ab6a253b779ab91caf03bf2b15c8e074e",
+      "installedSha": "bcd0e3f0fc564ecf349b36864f3c063ab6a253b779ab91caf03bf2b15c8e074e"
+    },
+    "scripts/bootstrap/lastmile/phases/plan.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/bootstrap/lastmile/phases/plan.js",
+      "sha256": "79648f4b313a1f27cdd67ea33a975c9e07221bb2cb2470d0ab93b8f6d6de36f7",
+      "installedSha": "79648f4b313a1f27cdd67ea33a975c9e07221bb2cb2470d0ab93b8f6d6de36f7"
+    },
+    "scripts/bootstrap/lastmile/phases/preflight.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/bootstrap/lastmile/phases/preflight.js",
+      "sha256": "e553ea62270613243b3e7196476ee363d588d0bdabce56cf6094a4f0e75953c7",
+      "installedSha": "e553ea62270613243b3e7196476ee363d588d0bdabce56cf6094a4f0e75953c7"
+    },
+    "scripts/bootstrap/lastmile/modules/analytics.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/bootstrap/lastmile/modules/analytics.js",
+      "sha256": "9e5f1980eb6c4c9f7f6831346e2d0a0e2cef52da9da08047ddae502c00223967",
+      "installedSha": "9e5f1980eb6c4c9f7f6831346e2d0a0e2cef52da9da08047ddae502c00223967"
+    },
+    "scripts/bootstrap/lastmile/modules/auth.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/bootstrap/lastmile/modules/auth.js",
+      "sha256": "4d46bcccebd3bf31ecaaae9611614e6a4380c61bab3605620f4945a599a3755b",
+      "installedSha": "4d46bcccebd3bf31ecaaae9611614e6a4380c61bab3605620f4945a599a3755b"
+    },
+    "scripts/bootstrap/lastmile/modules/crm.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/bootstrap/lastmile/modules/crm.js",
+      "sha256": "ad001d4b9748b3c75d55abb48f5c5192e49356e44142b44fd3d5591fa01917ec",
+      "installedSha": "ad001d4b9748b3c75d55abb48f5c5192e49356e44142b44fd3d5591fa01917ec"
+    },
+    "scripts/bootstrap/lastmile/modules/database.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/bootstrap/lastmile/modules/database.js",
+      "sha256": "ed6a19964a21ccf97b15084bd371754e4fda083a572af3714c4f73a473f8c58f",
+      "installedSha": "ed6a19964a21ccf97b15084bd371754e4fda083a572af3714c4f73a473f8c58f"
+    },
+    "scripts/bootstrap/lastmile/modules/deployment.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/bootstrap/lastmile/modules/deployment.js",
+      "sha256": "b243cb58cef6d5d77fc07ab7fe33cad66cd989586d12fee427162ad903037ac5",
+      "installedSha": "b243cb58cef6d5d77fc07ab7fe33cad66cd989586d12fee427162ad903037ac5"
+    },
+    "scripts/bootstrap/lastmile/modules/payments.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/bootstrap/lastmile/modules/payments.js",
+      "sha256": "1b09f89a8bfcfc7a12a9a3a70197d4e4f9aeb4884572f93a17cae954f3dfc537",
+      "installedSha": "1b09f89a8bfcfc7a12a9a3a70197d4e4f9aeb4884572f93a17cae954f3dfc537"
+    },
+    "scripts/bootstrap/lastmile/modules/security.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/bootstrap/lastmile/modules/security.js",
+      "sha256": "90bd399363ede20d5bfad10c650f84e51b0b5400850afb073a15265b15802809",
+      "installedSha": "90bd399363ede20d5bfad10c650f84e51b0b5400850afb073a15265b15802809"
+    },
+    "scripts/bootstrap/lastmile/modules/website.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/bootstrap/lastmile/modules/website.js",
+      "sha256": "30bcdb34229280db3eabe2d70254a991b1d2c299c7df278da110bb3a3d048b2f",
+      "installedSha": "30bcdb34229280db3eabe2d70254a991b1d2c299c7df278da110bb3a3d048b2f"
+    },
+    "scripts/bootstrap/lastmile/lib/adapter-contract.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/bootstrap/lastmile/lib/adapter-contract.js",
+      "sha256": "ef697a744fc874a83c9b7404539b5dac6c68f1108424f4afaecc90572942408f",
+      "installedSha": "ef697a744fc874a83c9b7404539b5dac6c68f1108424f4afaecc90572942408f"
+    },
+    "scripts/bootstrap/lastmile/lib/approval-gates.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/bootstrap/lastmile/lib/approval-gates.js",
+      "sha256": "cee28331f6437217d75ea240612a1ed289402feb045db1d0a363b662e074eeaf",
+      "installedSha": "cee28331f6437217d75ea240612a1ed289402feb045db1d0a363b662e074eeaf"
+    },
+    "scripts/bootstrap/lastmile/lib/detect.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/bootstrap/lastmile/lib/detect.js",
+      "sha256": "70ba18a3fd65332e978c5084cabf6edb6ffb7b35bc5338ec21fd6943edf5f38c",
+      "installedSha": "70ba18a3fd65332e978c5084cabf6edb6ffb7b35bc5338ec21fd6943edf5f38c"
+    },
+    "scripts/bootstrap/lastmile/lib/profiles.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/bootstrap/lastmile/lib/profiles.js",
+      "sha256": "8ba8b2f73ec8fe96ccd9be5ee9fdce46daa00522b4e98c9700f61a39198d03ff",
+      "installedSha": "8ba8b2f73ec8fe96ccd9be5ee9fdce46daa00522b4e98c9700f61a39198d03ff"
+    },
+    "scripts/bootstrap/lastmile/lib/render.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/bootstrap/lastmile/lib/render.js",
+      "sha256": "02ba9a7103910b75203d5275269f66cab1c5781fc9133b4d51688ed44d1dcebb",
+      "installedSha": "02ba9a7103910b75203d5275269f66cab1c5781fc9133b4d51688ed44d1dcebb"
+    },
+    "scripts/bootstrap/lastmile/lib/score.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/bootstrap/lastmile/lib/score.js",
+      "sha256": "db431cf3642fd4b01b0bb35c8a7d33102b3b7377276c4125215fd70a0cb10e56",
+      "installedSha": "db431cf3642fd4b01b0bb35c8a7d33102b3b7377276c4125215fd70a0cb10e56"
+    },
     "scripts/agents/cli.js": {
       "owner": "framework",
       "managed": true,
@@ -4876,6 +5037,62 @@
       "source": "framework/templates/portfolio/.claude/paths.json.tmpl",
       "sha256": "18ae6d52b187db5a73e64fed0d2137b5070e160459b88496e276b7b5ee960aa4",
       "installedSha": "18ae6d52b187db5a73e64fed0d2137b5070e160459b88496e276b7b5ee960aa4"
+    },
+    "framework/templates/lastmile/analytics-event-plan.tmpl.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "framework/templates/lastmile/analytics-event-plan.tmpl.md",
+      "sha256": "4a0ce949f7c68e1282ae6815b6bd9ee89daa187cd53ddc848d778951e2da82f2",
+      "installedSha": "4a0ce949f7c68e1282ae6815b6bd9ee89daa187cd53ddc848d778951e2da82f2"
+    },
+    "framework/templates/lastmile/conversion-funnel.tmpl.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "framework/templates/lastmile/conversion-funnel.tmpl.md",
+      "sha256": "a40b02bbcd802038efbacb3dc13450b2405d2ef4a08e9686fa3758019b2a8a16",
+      "installedSha": "a40b02bbcd802038efbacb3dc13450b2405d2ef4a08e9686fa3758019b2a8a16"
+    },
+    "framework/templates/lastmile/gap-report.tmpl.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "framework/templates/lastmile/gap-report.tmpl.md",
+      "sha256": "1c0ebd8221c69be4e1422ffee0186d3e7d934c6121d9e74a0a6012b40f8c4e32",
+      "installedSha": "1c0ebd8221c69be4e1422ffee0186d3e7d934c6121d9e74a0a6012b40f8c4e32"
+    },
+    "framework/templates/lastmile/last-mile-handoff.tmpl.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "framework/templates/lastmile/last-mile-handoff.tmpl.md",
+      "sha256": "d3ebf90e98ba3ba34836a60c21e8fb4b415348045755b30bbb0daa1c876dfd70",
+      "installedSha": "d3ebf90e98ba3ba34836a60c21e8fb4b415348045755b30bbb0daa1c876dfd70"
+    },
+    "framework/templates/lastmile/launch-plan.tmpl.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "framework/templates/lastmile/launch-plan.tmpl.md",
+      "sha256": "62086471b4e51301b0343d8dd7041d49cb86c194867ef0066f1d10fbe52b301a",
+      "installedSha": "62086471b4e51301b0343d8dd7041d49cb86c194867ef0066f1d10fbe52b301a"
+    },
+    "framework/templates/lastmile/monetization-plan.tmpl.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "framework/templates/lastmile/monetization-plan.tmpl.md",
+      "sha256": "00a81f9e51720b88dea23682c80823245e255a55a0264c989e83393506f9b3b5",
+      "installedSha": "00a81f9e51720b88dea23682c80823245e255a55a0264c989e83393506f9b3b5"
+    },
+    "framework/templates/lastmile/platform-deployment-plan.tmpl.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "framework/templates/lastmile/platform-deployment-plan.tmpl.md",
+      "sha256": "4b5b6944eca4b2daf977dfa49944a53da4779745953e57ef8ff68867ac7f4d94",
+      "installedSha": "4b5b6944eca4b2daf977dfa49944a53da4779745953e57ef8ff68867ac7f4d94"
+    },
+    "framework/templates/lastmile/security-privacy-checklist.tmpl.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "framework/templates/lastmile/security-privacy-checklist.tmpl.md",
+      "sha256": "9a8a886d3cadc6e6c04dbdaaf11a14847c4012539bf41921c99e4db5df669eb0",
+      "installedSha": "9a8a886d3cadc6e6c04dbdaaf11a14847c4012539bf41921c99e4db5df669eb0"
     },
     "framework/templates/canonical/CORE_BRIEF.md.tmpl": {
       "owner": "framework",
@@ -5584,6 +5801,41 @@
       "sha256": "5102ee4c5c52462fb32cf90378e86bcbfd4d8f7e9c644bf08e8ce7bf25091bfc",
       "installedSha": "5102ee4c5c52462fb32cf90378e86bcbfd4d8f7e9c644bf08e8ce7bf25091bfc"
     },
+    "framework/releases/0.10.0/changelog.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "framework/releases/0.10.0/changelog.md",
+      "sha256": "d612069ad3d047d13cf73f6d955db1775b1a1bf73a09e7196702a85b4f445982",
+      "installedSha": "d612069ad3d047d13cf73f6d955db1775b1a1bf73a09e7196702a85b4f445982"
+    },
+    "framework/releases/0.10.0/checksums.json": {
+      "owner": "framework",
+      "managed": true,
+      "source": "framework/releases/0.10.0/checksums.json",
+      "sha256": "6b46b2776cebad5d4cf3e299b918d01d3411bf3cbc8604ba2cb98a6620e851eb",
+      "installedSha": "6b46b2776cebad5d4cf3e299b918d01d3411bf3cbc8604ba2cb98a6620e851eb"
+    },
+    "framework/releases/0.10.0/framework-manifest.json": {
+      "owner": "framework",
+      "managed": true,
+      "source": "framework/releases/0.10.0/framework-manifest.json",
+      "sha256": "e038f66c85c60a9c42b9b0ca116d183d17a0734993db06c005a63fe9de0d7628",
+      "installedSha": "e038f66c85c60a9c42b9b0ca116d183d17a0734993db06c005a63fe9de0d7628"
+    },
+    "framework/releases/0.10.0/release.json": {
+      "owner": "framework",
+      "managed": true,
+      "source": "framework/releases/0.10.0/release.json",
+      "sha256": "f2d0bd9eaa8da284d120cab90d5e2eaac1f9fe3635afb0c335e4c41b774f9b99",
+      "installedSha": "f2d0bd9eaa8da284d120cab90d5e2eaac1f9fe3635afb0c335e4c41b774f9b99"
+    },
+    "framework/releases/0.10.0/upgrade-notes.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "framework/releases/0.10.0/upgrade-notes.md",
+      "sha256": "89d5829197a52ec749f467c9125ba0a35bdd7a2a2a12ecd3da967889d97efea1",
+      "installedSha": "89d5829197a52ec749f467c9125ba0a35bdd7a2a2a12ecd3da967889d97efea1"
+    },
     "framework/releases/0.1.4/changelog.md": {
       "owner": "framework",
       "managed": true,
@@ -5894,10 +6146,6 @@
       "managed": false
     },
     ".claude/.session-checkpoint.json": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/.session-start-commit": {
       "owner": "runtime",
       "managed": false
     },
@@ -11924,6 +12172,38 @@
       "sha256": "3244fbc64ec64c1673261092ecfa3d3c99cb6781ae13eda455cf0962a69af617",
       "installedSha": "3244fbc64ec64c1673261092ecfa3d3c99cb6781ae13eda455cf0962a69af617"
     },
+    ".claude/project/reference/lastmile/conversion-funnel-playbook.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/project/reference/lastmile/conversion-funnel-playbook.md",
+      "kind": "md",
+      "sha256": "84296da9ad478c97e408739f7e556b6e6466ce082552e456d6afab4b38e1c28c",
+      "installedSha": "84296da9ad478c97e408739f7e556b6e6466ce082552e456d6afab4b38e1c28c"
+    },
+    ".claude/project/reference/lastmile/default-stacks.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/project/reference/lastmile/default-stacks.md",
+      "kind": "md",
+      "sha256": "148dda39fb39e38f052f5414cec223b1f91d49597a318cccd44b30035fd273f8",
+      "installedSha": "148dda39fb39e38f052f5414cec223b1f91d49597a318cccd44b30035fd273f8"
+    },
+    ".claude/project/reference/lastmile/monetization-patterns.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/project/reference/lastmile/monetization-patterns.md",
+      "kind": "md",
+      "sha256": "318590ae437d4703d408048a8ccf999fb899cbf3e20b074c4a85d479308e78e4",
+      "installedSha": "318590ae437d4703d408048a8ccf999fb899cbf3e20b074c4a85d479308e78e4"
+    },
+    ".claude/project/reference/lastmile/security-privacy-baseline.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/project/reference/lastmile/security-privacy-baseline.md",
+      "kind": "md",
+      "sha256": "849965ccaa9b72cf0e717f7d1df386becbf0b9dba76dfd0691cac0c4403219bb",
+      "installedSha": "849965ccaa9b72cf0e717f7d1df386becbf0b9dba76dfd0691cac0c4403219bb"
+    },
     ".claude/project/memory/enforcement-debt.jsonl": {
       "owner": "runtime",
       "managed": false
@@ -13255,6 +13535,14 @@
       "kind": "md",
       "sha256": "8018364401df65c97e0fb94a5be3389142dad0185632dadf64891ed140eccd9b",
       "installedSha": "8018364401df65c97e0fb94a5be3389142dad0185632dadf64891ed140eccd9b"
+    },
+    ".claude/commands/bootstrap/lastmile.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/commands/bootstrap/lastmile.md",
+      "kind": "md",
+      "sha256": "49f79b9000e2557d18ae1783fca5ef785435d5f1569a4600eccd192c1525da9d",
+      "installedSha": "49f79b9000e2557d18ae1783fca5ef785435d5f1569a4600eccd192c1525da9d"
     },
     ".claude/commands/bootstrap/ponder.md": {
       "owner": "framework",

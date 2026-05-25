@@ -1,0 +1,195 @@
+#!/usr/bin/env node
+/* eslint-disable no-console */
+"use strict";
+/**
+ * test-orchestrate.js — fixture e2e + unit test for bootstrap:lastmile.
+ *
+ * Proves (canonical, no real product stood up):
+ *   - driver: planPhases (default/--phase/--resume) + phase-state round-trip
+ *   - preflight: pass (runCheck 0)->done; refuse (1)->failed
+ *   - detect: all 7 holdout fixtures match their expected gaps
+ *   - score: 9 dimensions + composite; sensitive caps privacy/security
+ *   - adapters: all 8 conform to the contract + key behavioral assertions
+ *   - chain: preflight -> audit(done,data) -> plan(done,artifacts) -> inject(needs_orchestration)
+ *   - artifacts: a real (non-dry-run) audit writes gap-report.md to disk
+ *   - handoff: done + headline data
+ *
+ * Exit 0 = all pass, 1 = any failure.
+ */
+
+const fs = require("fs");
+const path = require("path");
+const os = require("os");
+
+const driver = require("./orchestrate");
+const { detectRepoState } = require("./lib/detect");
+const { scoreReadiness } = require("./lib/score");
+const { validateAdapter } = require("./lib/adapter-contract");
+const { CASES, materialize, getByPath } = require("./fixtures");
+
+const preflight = require("./phases/preflight");
+const audit = require("./phases/audit");
+const plan = require("./phases/plan");
+const inject = require("./phases/inject");
+const execute = require("./phases/execute");
+const handoff = require("./phases/handoff");
+
+const MODULE_NAMES = ["database", "auth", "payments", "crm", "website", "deployment", "security", "analytics"];
+
+let passed = 0;
+let failed = 0;
+function ok(n) { passed++; process.stdout.write(`  ok    ${n}\n`); }
+function fail(n, d) { failed++; process.stdout.write(`  FAIL  ${n}\n`); if (d) process.stdout.write(`        ${d}\n`); }
+function mkctx(over) {
+  return Object.assign(
+    { repoRoot: process.cwd(), profile: null, module: null, outDir: "_docs/last-mile", research: "off", dryRun: true, args: {}, log: () => {} },
+    over,
+  );
+}
+
+// ---------------------------------------------------------- driver
+function testDriver() {
+  process.stdout.write("\nUNIT — driver (orchestrate.js)\n");
+  const fresh = { completed: [], phases: {} };
+  const all = driver.planPhases({ phase: null, resume: false }, fresh);
+  if (JSON.stringify(all.phases) === JSON.stringify(driver.PHASES)) ok("default plans all 6 phases in order");
+  else fail("default plan", JSON.stringify(all));
+
+  const single = driver.planPhases({ phase: "audit", resume: false }, fresh);
+  if (single.phases[0] === "preflight" && single.phases.includes("audit") && single.phases.length === 2)
+    ok("--phase audit runs [preflight, audit] (gate first)");
+  else fail("--phase plan", JSON.stringify(single));
+
+  const resumed = driver.planPhases({ phase: null, resume: true }, { completed: ["preflight", "audit"], phases: {} });
+  if (!resumed.phases.includes("audit") && resumed.phases.includes("plan") && resumed.phases.includes("handoff"))
+    ok("--resume continues after last completed phase");
+  else fail("--resume plan", JSON.stringify(resumed));
+
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "lastmile-state-"));
+  const args = { state: path.join(tmp, "s.json"), dryRun: false, repoRoot: tmp };
+  const st = driver.loadState(args);
+  st.completed.push("preflight");
+  driver.saveState(args, st);
+  if (driver.loadState(args).completed.includes("preflight")) ok("phase-state persists + reloads (--resume durability)");
+  else fail("state round-trip");
+  fs.rmSync(tmp, { recursive: true, force: true });
+}
+
+// ---------------------------------------------------------- preflight
+async function testPreflight() {
+  process.stdout.write("\nUNIT — preflight gate\n");
+  const r1 = await preflight.run(mkctx({ args: { _runCheck: () => ({ code: 0 }) } }));
+  if (r1.ok && r1.status === "done") ok("preflight passes complete install");
+  else fail("preflight pass", JSON.stringify(r1));
+  const r2 = await preflight.run(mkctx({ args: { _runCheck: () => ({ code: 1 }) } }));
+  if (!r2.ok && r2.status === "failed") ok("preflight REFUSES gappy install");
+  else fail("preflight refuse", JSON.stringify(r2));
+}
+
+// ---------------------------------------------------------- detect (7 holdout fixtures)
+function testFixtures() {
+  process.stdout.write("\nE2E — detect on 7 holdout fixtures\n");
+  for (const c of CASES) {
+    const dir = materialize(c);
+    const st = detectRepoState(dir);
+    let allPass = true;
+    const misses = [];
+    for (const e of c.expect) {
+      const v = getByPath(st, e.path);
+      if (v !== e.equals) { allPass = false; misses.push(`${e.path}=${JSON.stringify(v)}≠${JSON.stringify(e.equals)}`); }
+    }
+    if (allPass) ok(`fixture ${c.name} — gap detected (${c.why})`);
+    else fail(`fixture ${c.name}`, misses.join(", "));
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+// ---------------------------------------------------------- score
+function testScore() {
+  process.stdout.write("\nUNIT — score\n");
+  const sensitive = CASES.find((c) => c.name === "sensitive-data-redflag");
+  const dir = materialize(sensitive);
+  const s = scoreReadiness(detectRepoState(dir));
+  if (Object.keys(s.dimensions).length === 9 && typeof s.composite === "number") ok("score: 9 dimensions + numeric composite");
+  else fail("score shape", JSON.stringify(s.dimensions));
+  if (s.sensitiveEscalation && s.dimensions.privacy <= 40 && s.dimensions.security <= 40)
+    ok("score: sensitive data caps privacy + security ≤40 + sets escalation");
+  else fail("score sensitive cap", `privacy=${s.dimensions.privacy} security=${s.dimensions.security} esc=${s.sensitiveEscalation}`);
+  fs.rmSync(dir, { recursive: true, force: true });
+}
+
+// ---------------------------------------------------------- adapters
+function testAdapters() {
+  process.stdout.write("\nUNIT — adapter contract + behavior\n");
+  let bad = 0;
+  for (const n of MODULE_NAMES) {
+    const r = validateAdapter(require(`./modules/${n}`));
+    if (!r.ok) { bad++; fail(`adapter ${n} contract`, r.errors.join("; ")); }
+  }
+  if (!bad) ok("all 8 adapters conform to the contract");
+
+  // behavioral: payments flags unverified webhook on the stripe fixture
+  const stripeDir = materialize(CASES.find((c) => c.name === "stripe-no-webhook-verify"));
+  const ps = require("./modules/payments").detect(detectRepoState(stripeDir));
+  if (ps.present && ps.webhookVerified === false && ps.status === "partial")
+    ok("payments adapter: flags Stripe-without-verified-webhook as partial");
+  else fail("payments behavior", JSON.stringify(ps));
+  fs.rmSync(stripeDir, { recursive: true, force: true });
+
+  // behavioral: security escalates on sensitive fixture
+  const sensDir = materialize(CASES.find((c) => c.name === "sensitive-data-redflag"));
+  const sec = require("./modules/security").detect(detectRepoState(sensDir));
+  if (sec.escalate && sec.status === "absent") ok("security adapter: escalates + status absent on sensitive data");
+  else fail("security behavior", JSON.stringify(sec));
+  fs.rmSync(sensDir, { recursive: true, force: true });
+}
+
+// ---------------------------------------------------------- chain + artifacts
+async function testChain() {
+  process.stdout.write("\nE2E — chain audit -> plan -> inject (+ real artifact write)\n");
+  const repo = materialize(CASES.find((c) => c.name === "auth-no-payments"));
+
+  const ra = await audit.run(mkctx({ repoRoot: repo, dryRun: true }));
+  if (ra.ok && ra.status === "done" && typeof ra.data.composite === "number" && ra.data.detections.length === 8)
+    ok("audit: returns score + 8 module detections");
+  else fail("audit phase", JSON.stringify(ra).slice(0, 200));
+
+  const rp = await plan.run(mkctx({ repoRoot: repo, dryRun: true }));
+  if (rp.ok && rp.status === "done" && Array.isArray(rp.data.gates) && rp.data.modules.length === 8)
+    ok("plan: returns gates + 8 module plans");
+  else fail("plan phase", JSON.stringify(rp).slice(0, 200));
+  if (rp.data.gates.includes("stripe-live")) ok("plan: surfaces the stripe-live approval gate");
+  else fail("plan gates", JSON.stringify(rp.data.gates));
+
+  const ri = await inject.run(mkctx({ repoRoot: repo }));
+  if (ri.status === "needs_orchestration" && ri.orchestration_prompt) ok("inject: needs_orchestration with a concrete prompt");
+  else fail("inject phase", JSON.stringify(ri).slice(0, 160));
+
+  const re = await execute.run(mkctx({ repoRoot: repo }));
+  if (re.status === "needs_orchestration") ok("execute: needs_orchestration");
+  else fail("execute phase", JSON.stringify(re).slice(0, 160));
+
+  // real artifact write (non-dry-run) into the fixture repo
+  const ra2 = await audit.run(mkctx({ repoRoot: repo, dryRun: false }));
+  const gapPath = path.join(repo, "_docs", "last-mile", "gap-report.md");
+  if (ra2.data.gapReport && fs.existsSync(gapPath)) ok("audit: writes gap-report.md product-side (non-dry-run)");
+  else fail("audit artifact", gapPath);
+
+  const rh = await handoff.run(mkctx({ repoRoot: repo, dryRun: false }));
+  const hoPath = path.join(repo, "last-mile-handoff.md");
+  if (rh.ok && fs.existsSync(hoPath)) ok("handoff: writes last-mile-handoff.md at product root");
+  else fail("handoff artifact", hoPath);
+
+  fs.rmSync(repo, { recursive: true, force: true });
+}
+
+(async () => {
+  testDriver();
+  await testPreflight();
+  testFixtures();
+  testScore();
+  testAdapters();
+  await testChain();
+  process.stdout.write(`\nlastmile-orchestrate test: ${passed} passed, ${failed} failed\n`);
+  process.exit(failed === 0 ? 0 : 1);
+})();
