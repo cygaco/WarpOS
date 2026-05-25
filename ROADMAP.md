@@ -851,8 +851,7 @@ The install-hardening batch. Every item below was a ROADMAP entry from 2026-04-1
 - [x] **CLAUDE.md auto-merge** — if target has existing `CLAUDE.md`, installer appends Alex identity with `---` separator; backup kept.
 - [x] **AGENTS.md auto-merge** — same pattern; prior behavior silently kept user's AGENTS.md without Alex system, breaking γ dispatch.
 - [x] **Restart banner handles both paths** — "already have Claude Code open? close + reopen. not open yet? just open" — replaces the old "YOU MUST RESTART NOW" that confused first-time users.
-- [x] **`WARPOS_NEXT_STEPS.md` written at project root** — user references it in the fresh session.
-- [x] **`/warp:init` → `/warp:setup`** — resumable state-machine skill; 5 signals checked, only missing steps run. Safe to re-run. `/warp:uninstall` shipped.
+- [x] **`/warp:init` → `/warp:setup`** — resumable state-machine skill; 4 signals checked, only missing steps run. Safe to re-run. `/warp:uninstall` shipped.
 - [x] **Pre-install backup** — `.warpos-backup/<ts>/` captures CLAUDE.md, AGENTS.md, .gitignore, .claude/, scripts/hooks/ before any write.
 
 ### Hook correctness

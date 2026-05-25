@@ -5,13 +5,13 @@ user-invocable: true
 
 # /warp:setup — Full WarpOS Setup
 
-The one-command onboarding. You run `/warp:setup`, the skill does everything for you — clone, install, merge Alex into your CLAUDE.md, write next-steps, verify. Re-running is safe: the skill checks what's already in place and picks up from the first missing step.
+The one-command onboarding. You run `/warp:setup`, the skill does everything for you — clone, install, merge Alex into your CLAUDE.md, verify. Re-running is safe: the skill checks what's already in place and picks up from the first missing step.
 
 Formerly `/warp:init`. Renamed because it does the whole setup.
 
 ## How it works
 
-The skill checks 5 signals in your project, in this order, and runs whatever step is missing:
+The skill checks 4 signals in your project, in this order, and runs whatever step is missing:
 
 | Signal | Check | If missing, run |
 |---|---|---|
@@ -19,7 +19,6 @@ The skill checks 5 signals in your project, in this order, and runs whatever ste
 | **2. Framework files installed** | `.claude/manifest.json` has `warpos.installed: true` | Step B — run installer |
 | **3. Alex identity in CLAUDE.md** | `CLAUDE.md` contains the string `"You are **Alex α**"` | Step C — merge CLAUDE.md |
 | **4. Hooks schema valid** | `.claude/settings.json` has `"type": "command"` on every hook entry | Step D — rerun installer to rebuild settings |
-| **5. Next-steps written** | `WARPOS_NEXT_STEPS.md` exists at project root OR user has already completed first-run verification | Step E — write guide |
 
 If everything passes, the skill reports "WarpOS is fully set up" and suggests `/warp:health`.
 
@@ -33,7 +32,6 @@ Read these files (silently, report only what's missing):
 2. `.claude/manifest.json` → parse → does `warpos.installed === true`?
 3. `CLAUDE.md` → grep for `Alex α` → present?
 4. `.claude/settings.json` → parse → do hook entries have `type: "command"`?
-5. `WARPOS_NEXT_STEPS.md` → exists?
 
 Tell the user exactly what state their project is in, before doing anything:
 
@@ -43,7 +41,6 @@ Tell the user exactly what state their project is in, before doing anything:
 > - Framework files: ✓ installed (version <v>) | ✗ not installed
 > - Alex identity in CLAUDE.md: ✓ merged | ✗ missing
 > - Hook schema: ✓ valid | ✗ needs refresh
-> - Next-steps guide: ✓ written | ✗ missing
 >
 > I'll run <N> step(s) to complete your setup. Here's what I'll do:
 > [list the remaining steps]
@@ -144,10 +141,6 @@ node ../WarpOS/scripts/warp-setup.js . --skip-backup
 
 (The `--skip-backup` flag is fine — we already have a backup from the prior install.)
 
-### Step E — Write next-steps guide
-
-Only if `WARPOS_NEXT_STEPS.md` is missing. Write it with the content from `warp-setup.js` (the installer normally writes this; only needed if somehow missing).
-
 ### Phase 2 — Tell user to restart Claude Code
 
 **This is the critical moment.** All file-based setup is now complete, but Claude Code won't recognize the new hooks until it reloads `settings.json` — which only happens at launch.
@@ -160,7 +153,7 @@ Tell the user, VERBATIM:
 >
 > When you reopen, your first prompt will be intercepted by `smart-context.js` (the prompt enrichment hook), logged by `prompt-logger.js`, and your Edits/Writes will go through the guard chain. That's when WarpOS is actually alive in this project.
 >
-> I've written `WARPOS_NEXT_STEPS.md` at the root of this project — read it in your next session. It has the verification commands and first-use tips. I'll also auto-run `/warp:health` the moment you prompt me next session.
+> I'll auto-run `/warp:health` the moment you prompt me next session — it has the verification commands and first-use tips.
 
 ### Phase 2.5 — Dispatch + provider sanity (Phase 0)
 
