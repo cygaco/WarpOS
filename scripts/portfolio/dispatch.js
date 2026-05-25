@@ -1,7 +1,7 @@
 "use strict";
 
 /**
- * scripts/portfolio/dispatch.js — /portfolio:dispatch (T-20260521-174).
+ * scripts/portfolio/dispatch.js — /portfolio:run (engine; skill renamed) (T-20260521-174).
  *
  * Cross-repo skill dispatch. Resolves <slug> from registry, spawns a fresh
  * `claude -p` subprocess with CLAUDE_PROJECT_DIR set to the target's
@@ -233,7 +233,7 @@ async function main() {
 
 if (require.main === module) {
   main().catch((err) => {
-    process.stderr.write("portfolio:dispatch crashed: " + (err.message || err) + "\n");
+    process.stderr.write("portfolio:run crashed: " + (err.message || err) + "\n");
     process.exit(2);
   });
 }

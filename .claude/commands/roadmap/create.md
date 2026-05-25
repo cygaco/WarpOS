@@ -82,7 +82,7 @@ don't ask. State which source set was used in the run summary.
   milestone-0.14.0 managerial-agent shape; this ships the detection + both
   source readers, with the DoPM lens deepening as 0.14.0 lands.
 - Sibling skills: `/portfolio:spinup` (Milestone 1's first sprint),
-  `/portfolio:clone` (produces the fallback brief), `/roadmap:add` /
+  `bootstrap:spinup --clone` (produces the fallback brief), `/roadmap:add` /
   `/roadmap:cleanup` (operate on the result).
 
 ## Reference

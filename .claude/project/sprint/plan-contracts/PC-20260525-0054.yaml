@@ -1,0 +1,145 @@
+schema: warpos/sprint/plan-contract/v1
+id: PC-20260525-0054
+created_at: "2026-05-25T19:18:45.938Z"
+updated_at: "2026-05-25T19:18:45.938Z"
+sprint: SP-20260525-021
+source_request: "Reconcile the product/portfolio/cloning skill suites: portfolio:* = manage projects from within WarpOS, bootstrap:* = the same work from inside an installed project, product:* deleted. Skills have clear/memorable names. Cloning becomes an alternate entry-point (spinup --clone), not a standalone skill."
+source_request_verbatim: "Reconcile the product, portfolio, and cloning suites. JTBDs: (1) clear+memorable skill names; (2) portfolio: from WarpOS, bootstrap: in installed projects; (3) 'just WarpOS' -> canonical docs + roadmap-with-sprints; (4) cloning as an alternate entry-point. Constraints: portfolio: is the from-WarpOS suite, bootstrap: is the in-project suite, product:* gone at the end. Decisions locked with operator: portfolio:* are thin dispatch-wrappers over the real in-project bootstrap:* impls; fold brief + clone into spinup as modes (--clone); delete product:* + import + standalone clone + standalone bootstrap(brief); fold adopt into portfolio:new; rename portfolio:dispatch -> portfolio:run; keep ponder as bootstrap:ponder. (This sprint = the reconciliation only; canon engine + spinup orchestrator are SP-022/023.)"
+request_type: refactor
+interpreted_intent: "Restructure two skill namespaces into a single-source-of-truth model: bootstrap:* hold the real in-project implementations; portfolio:* keep the manager skills (new/list/status/sync/open/register/run) plus thin wrappers that dispatch bootstrap:* into a chosen product via the existing portfolio:dispatch primitive. Cloning + the product brief stop being standalone skills and become modes of spinup (--clone / default). product:* deprecated aliases are removed entirely. Renames: dispatch->run; adopt folds into new --from-brief. No behavior is lost: the clone ENGINE (scripts/portfolio/clone.js) and the WG-11 source-class discovery are preserved and reused by spinup --clone."
+user_or_business_outcome: "One coherent, memorable command surface for creating/managing products: from WarpOS (portfolio:*) or from inside a project (bootstrap:*), both reaching the same on-ramp. Fewer skills to learn; product:* confusion gone; cloning reads as an entry mode, not a separate tool. Sets up SP-022 (canon) + SP-023 (spinup orchestrator)."
+affected_surfaces:
+  - surface: ".claude/commands/bootstrap/ (NEW namespace)"
+    evidence_level: verified_from_repo
+    notes: "Create. Holds bootstrap:spinup (skeleton + --clone mode hook) and bootstrap:ponder (moved from portfolio:ponder)."
+  - surface: ".claude/commands/portfolio/spinup.md"
+    evidence_level: verified_from_repo
+    notes: "Becomes a thin wrapper that dispatches /bootstrap:spinup into <slug>; the real impl moves to bootstrap:spinup. Fold in the brief (from portfolio:bootstrap) + clone (--clone) as modes."
+  - surface: ".claude/commands/portfolio/{bootstrap,clone,import,ponder}.md"
+    evidence_level: verified_from_repo
+    notes: "bootstrap(brief)->folded into spinup (delete); clone->folded into spinup --clone (delete standalone; engine kept); import->delete; ponder->move to bootstrap:ponder."
+  - surface: ".claude/commands/portfolio/dispatch.md -> run.md"
+    evidence_level: verified_from_repo
+    notes: "Rename skill dispatch->run; update frontmatter + body + the scripts/portfolio/dispatch.js reference (keep engine filename or rename consistently)."
+  - surface: ".claude/commands/portfolio/{adopt.md, new.md}"
+    evidence_level: verified_from_repo
+    notes: "Fold adopt into new --from-brief (new already calls adopt at scaffold); delete standalone adopt; ensure new --from-brief covers the adopt operation."
+  - surface: ".claude/commands/product/ (4 deprecated aliases)"
+    evidence_level: verified_from_repo
+    notes: "Delete the entire product/ dir (bootstrap/clone/import/ponder aliases)."
+  - surface: "scripts/portfolio/clone.js (clone engine)"
+    evidence_level: verified_from_repo
+    notes: "KEEP — reused by spinup --clone. Carry the WG-11 source-class discovery (landing/devdocs/appimg) into spinup --clone's procedure."
+  - surface: cross-repo references to renamed/deleted skills
+    evidence_level: inferred_from_repo
+    notes: "Grep-sweep .md/.json/.js for portfolio:clone, portfolio:bootstrap, portfolio:dispatch, portfolio:import, portfolio:adopt, product:* and update/remove (rename-hygiene; the SP-022/023 builds run inside this namespace)."
+current_behavior:
+  evidence_level: verified_from_repo
+  notes: "portfolio/ holds 13 skills mixing manager (new/list/status/sync/open/register/adopt/dispatch) + content (bootstrap/clone/import/ponder/spinup). product/ holds 4 deprecated aliases. No bootstrap: namespace. portfolio:dispatch already runs any skill against a sibling via subprocess+CLAUDE_PROJECT_DIR (the wrapper mechanism). clone + brief are standalone content skills."
+desired_behavior: "bootstrap:spinup (+ --clone) and bootstrap:ponder exist as the real in-project skills. portfolio:* = new, list, status, sync, open, register, run (was dispatch), spinup (thin wrapper). product:*, portfolio:import, standalone clone, standalone bootstrap(brief), standalone adopt are gone. A repo-wide grep for the old names returns no stale references. /check:install + /skills:cleanup pass. The clone engine + WG-11 source-classes are preserved in spinup --clone."
+scope:
+  size: m
+  risk_level: medium
+  complexity_drivers:
+    - "Rename/delete hygiene — a missed reference to an old skill name fails deep inside SP-022/023's gauntlet, not at this sprint's boundary (CLAUDE.md Refactor & Rename Hygiene bug class)"
+    - "Folding two standalone skills (brief, clone) into spinup modes without losing the clone engine or WG-11 source-class work"
+    - "Wrapper directionality: portfolio:* wrappers must dispatch bootstrap:* without retargeting the current session (portfolio:dispatch/run invariant)"
+scope_variants:
+  minimal_safe:
+    summary: "Create bootstrap: namespace + move ponder + delete product:* + rename dispatch->run; defer the spinup fold + wrapper wiring."
+    tradeoffs:
+      - "Pro: smallest blast radius"
+      - "Con: spinup fold (the headline) not done; blocks SP-023"
+  recommended:
+    summary: "Full reconciliation per the locked design: bootstrap: namespace, fold brief+clone into spinup, delete product:*/import/standalone-clone, adopt->new, dispatch->run, portfolio:* wrappers, grep-sweep clean."
+    tradeoffs:
+      - "Pro: complete single-source-of-truth surface; unblocks SP-022/023"
+      - "Con: rename hygiene must be exhaustive"
+  expanded:
+    summary: "recommended + a /check:skill-namespaces enforcer that fails on references to deleted/renamed skills."
+    tradeoffs:
+      - "Pro: stale-ref drift can never recur silently"
+      - "Con: new check infra — defer to 0.13.0 catalog polish unless cheap"
+assumptions:
+  safe:
+    - "portfolio:dispatch's subprocess+CLAUDE_PROJECT_DIR mechanism is the correct wrapper primitive (verified)"
+    - scripts/portfolio/clone.js engine is reusable intact by spinup --clone
+    - "the operator's 5 design answers are final"
+  unsafe:
+    - "A skill rename may have references outside .claude/commands (in scripts, hooks, docs, agent specs)"
+  needs_user_or_beta_review:
+    - "Whether portfolio: needs explicit thin wrappers for clone/ponder or relies on generic portfolio:run (spinup wrapper is required regardless)"
+open_questions:
+  blocking: []
+  non_blocking:
+    - "Keep scripts/portfolio/dispatch.js filename or rename to run.js for consistency?"
+non_goals:
+  - "The canon engine (SP-022) and the spinup orchestrator pipeline (SP-023) — this sprint only reconciles the suite surface + skeletons"
+  - "Generating any _requirements/00-canonical/* content (that's SP-022)"
+  - "Backfilling installed products (companycam/dreamteam) with the new suite"
+requirement_areas:
+  - skill-namespace
+  - dispatch-wrappers
+  - skill-deletes
+  - skill-renames
+  - spinup-skeleton
+  - rename-hygiene
+high_level_story_candidates:
+  - "As an operator in WarpOS, portfolio:spinup <slug> dispatches the on-ramp into a chosen product."
+  - "As an operator inside a project, bootstrap:spinup runs the on-ramp in place."
+  - "As an operator, product:* no longer exists and there are no stale references to it."
+  - "As an operator, cloning is spinup --clone, not a separate command."
+granular_story_candidates:
+  - "Create .claude/commands/bootstrap/ with bootstrap:spinup (skeleton: phases + --clone hook) and bootstrap:ponder (moved)."
+  - "Fold portfolio:bootstrap (brief Q&A) into spinup's default intent mode; delete the standalone."
+  - "Fold portfolio:clone into spinup --clone (reuse scripts/portfolio/clone.js + WG-11 discovery); delete the standalone."
+  - "Add portfolio: thin wrappers (spinup at minimum) that dispatch /bootstrap:<skill> <slug>."
+  - "Rename portfolio:dispatch -> portfolio:run (skill + body + engine reference)."
+  - "Fold adopt into portfolio:new --from-brief; delete standalone adopt."
+  - "Delete .claude/commands/product/ (4 aliases) and portfolio:import."
+  - "Grep-sweep the repo for old names (portfolio:clone/bootstrap/dispatch/import/adopt, product:*) and update/remove every reference."
+workstream_candidates:
+  - "Skills: bootstrap: namespace + spinup skeleton + ponder move"
+  - "Skills: portfolio: wrappers + dispatch->run rename"
+  - "Deletes: product:* + import + standalone clone/brief/adopt"
+  - "Hygiene: repo-wide stale-reference grep-sweep + /check:install"
+preliminary_ticket_candidates:
+  allowed: true
+  notes: "Design is operator-locked; tickets can be minted from the granular stories above. Group as: (T1) bootstrap: namespace + ponder, (T2) spinup skeleton folding brief+clone modes, (T3) portfolio: wrappers + dispatch->run, (T4) deletes + adopt->new, (T5) grep-sweep hygiene + /check:install."
+external_service_dependencies:
+  status: none_expected
+approval_boundaries:
+  - "Deletes skill files (product:*, import, standalone clone/brief/adopt) — recoverable via git; /skills:delete backs up"
+  - "Push to remote — operator-scoped (orchestrator commits locally only)"
+design_required: true
+execution_allowed_without_design: false
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+lane:
+  type: default
+  value: null
+  isolation_notes: ""
+beta_review:
+  required: true
+  likely_founder_rejection_risks:
+    - "Over-wrapping: creating portfolio: wrappers for every bootstrap: skill when only spinup needs one + generic portfolio:run covers the rest"
+  overbuild_risks:
+    - "The /check:skill-namespaces enforcer (expanded variant) — defer unless cheap"
+  missing_context_risks:
+    - References to renamed/deleted skills outside .claude/commands/
+plan_quality:
+  status: needs_design
+  confidence: high
+  evidence_gaps:
+    - complete list of cross-repo references to the renamed/deleted skills
+  fail_reasons: []
+next_recommended_command: "/sprint:design"
+resume_instructions: "Re-run /sprint:design (idempotent) or /sprint:plan to re-plan."
+tracker_paths:
+  current_sprint: ".claude/project/sprint/current-sprint.yaml"
+  sprint_progress: ".claude/project/sprint/sprint-progress.yaml"
+  plan_contract: ".claude/project/sprint/plan-contracts/PC-20260525-0054.yaml"
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260525-0054.report.md"
+created_by: alpha
+updated_by: alpha

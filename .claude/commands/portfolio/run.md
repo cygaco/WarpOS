@@ -1,10 +1,10 @@
 ---
-description: Dispatch a skill against another portfolio product in a fresh Claude subprocess — never retargets the current session.
+description: Run a skill against another portfolio product in a fresh Claude subprocess — never retargets the current session.
 ---
 
-# /portfolio:dispatch — Cross-Repo Skill Dispatch
+# /portfolio:run — Run a skill against another product (cross-repo dispatch)
 
-`/portfolio:dispatch <slug> /<namespace>:<skill> [args...]` — Run any skill against a registered product's working tree without leaving WarpOS. Spawns a fresh Claude subprocess with `CLAUDE_PROJECT_DIR` set to the target's `repo_path`. The current WarpOS Claude session is never retargeted.
+`/portfolio:run <slug> /<namespace>:<skill> [args...]` — Run any skill against a registered product's working tree without leaving WarpOS. Spawns a fresh Claude subprocess with `CLAUDE_PROJECT_DIR` set to the target's `repo_path`. The current WarpOS Claude session is never retargeted.
 
 ## Input
 
@@ -19,7 +19,7 @@ description: Dispatch a skill against another portfolio product in a fresh Claud
 C-12 banner before spawn:
 
 ```
-dispatching /portfolio:list against dreamteams (/Users/alex/repos/dreamteams)...
+dispatching /portfolio:list against myapp (../myapp)...
 ```
 
 Target subprocess stdout/stderr is piped to the caller's terminal. Exit code is propagated.

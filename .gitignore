@@ -66,3 +66,6 @@ _docs/clones/
 # temp dirs, e.g. .warpos/_gh3/). Ephemeral — never commit. (Prefer
 # .warpos/test-fixtures/ for new throwaways; this covers stray manual ones.)
 .warpos/_gh*/
+
+# Operator scratch — downstream gap registers (gap-fix landed; kept for reference, not framework content)
+WarpOS-Update/

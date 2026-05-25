@@ -26,7 +26,7 @@ const slug = args.filter((a, i) => {
 
 // ── validation ─────────────────────────────────────────────
 if (!slug) {
-  console.error("Usage: /portfolio:adopt <slug>");
+  console.error("Usage (engine for /portfolio:new --from-brief): node adopt.js <slug>");
   process.exit(2);
 }
 if (!SLUG_RE.test(slug)) {
@@ -48,14 +48,14 @@ if (!briefPath) {
     `Brief not found for '${slug}'.\n` +
     `  Tried: ${path.join(briefsRoot, slug)}\n` +
     `         ${path.join(clonesRoot, slug)}\n` +
-    `Run /portfolio:bootstrap ${slug} first, or /portfolio:new ${slug} to scaffold without a brief.`
+    `Run /bootstrap:spinup ${slug} first, or /portfolio:new ${slug} to scaffold without a brief.`
   );
   process.exit(2);
 }
 
 const briefFiles = fs.readdirSync(briefPath);
 if (briefFiles.length === 0) {
-  console.error(`Brief directory '${briefPath}' is empty. Run /portfolio:bootstrap ${slug} first.`);
+  console.error(`Brief directory '${briefPath}' is empty. Run /bootstrap:spinup ${slug} first.`);
   process.exit(2);
 }
 

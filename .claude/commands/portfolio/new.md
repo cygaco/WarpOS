@@ -16,7 +16,7 @@ Creates a fresh product repo as a sibling directory to WarpOS on disk, installs 
 ```
 
 - `<slug>` — lowercase, hyphenated, 1–64 chars (`^[a-z0-9][a-z0-9-]{0,63}$`).
-- `--from-brief <slug>` — move brief files from `_docs/briefs/<slug>/` or `_docs/clones/<slug>/` into the new repo (runs `/portfolio:adopt` after scaffolding); they're committed with the scaffold.
+- `--from-brief <slug>` — move brief files from `_docs/briefs/<slug>/` or `_docs/clones/<slug>/` into the new repo (folds in the former adopt step via the adopt engine); they're committed with the scaffold.
 - `--github` — **opt-in.** Also create a private GitHub repo (`gh repo create … --private --push`, DEC-008) and push. Operator-run only (prefix the command with `!`, or be in a permissive permission mode) — the agent is blocked from this in plain auto mode.
 
 ## What it does
@@ -26,7 +26,7 @@ Creates a fresh product repo as a sibling directory to WarpOS on disk, installs 
 3. Creates the directory, runs `git init`, copies scaffold templates from `framework/templates/portfolio/`, makes an initial commit.
 4. Runs `/warp:setup` inside the new directory.
 5. Registers the slug via `scripts/portfolio/register.js`.
-6. If `--from-brief` given, moves the brief files in (`/portfolio:adopt`).
+6. If `--from-brief` given, moves the brief files in (the folded-in adopt step).
 7. Commits the full scaffold (warp install + brief) so the repo opens clean and ready.
 8. **Default:** prints local-only next-steps (open it manually + how to create a remote). **With `--github`:** pre-checks `gh repo view`, then `gh repo create <slug> --private --source=. --remote=origin --push`, and persists `github_url` to the registry.
 9. Emits `portfolio_new` trace event (TR-7), recording the `github` flag.
@@ -61,6 +61,5 @@ Run: `node scripts/portfolio/new.js <slug> [--from-brief <brief-slug>] [--github
 ## Related
 
 - `/portfolio:open` — open a product in its own session (`--spawn` for a new window)
-- `/portfolio:adopt` — move an existing brief into a new sibling repo
 - `/portfolio:list` — see all registered products
 - `/portfolio:register` — register an already-existing dir without scaffolding
