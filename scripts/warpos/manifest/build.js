@@ -178,19 +178,6 @@ function buildRules(sourcePrefix) {
         _note: "Build-mode state — created/mutated by warp-setup.js + dispatch. Not a framework view.",
       }),
     },
-    {
-      // Transient install artifact written by warp-setup.js. Self-describes as
-      // "safe to delete after your first successful session." Product-only.
-      name: "runtime-next-steps",
-      match: (rel) => rel === "WARPOS_NEXT_STEPS.md",
-      entry: () => ({
-        owner: "runtime",
-        managed: false,
-        kind: "md",
-        _note: "Post-install guidance — written by warp-setup.js; safe to delete after first session.",
-      }),
-    },
-
     // PROJECT — decision policy + filled requirement templates
     {
       name: "project-decision-policy",
