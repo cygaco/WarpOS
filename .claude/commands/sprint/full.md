@@ -165,21 +165,31 @@ re-runs with `--autonomy aggressive` (still bounded by hard ceilings
 
 ### Step 5 — Beta consultation cadence (adhoc mode)
 
-In `adhoc` mode, Alpha dispatches SendMessage to Alex β at the 4
-phase boundaries:
+In `adhoc` mode, the orchestrator does **not** consult Beta inline.
+Instead, at each of the 4 phase boundaries it **halts** with
+`halt_reason: beta_consult_pending` and exits 1:
 
 - before Phase 2 (post-plan)
 - before Phase 3 (post-design)
 - before Phase 4 (post-execute)
 - before Phase 5 (post-release-prep)
 
-Each consultation MUST include `data.topic_tags` containing
-`sprint_full_phase_boundary` so the beta-gate hook recognizes it.
-Beta returns `DECIDE | DIRECTIVE | ESCALATE`. ESCALATE is a **hard
-halt regardless of preset** — write the halt report with
-`halt_reason: beta_escalate`.
+The skill body (Alpha in the foreground) then performs the real Beta
+(Alex β) consult via SendMessage. Each consult MUST include
+`data.topic_tags` containing `sprint_full_phase_boundary` so the
+beta-gate hook recognizes it. Beta returns `DECIDE | DIRECTIVE |
+ESCALATE`. After obtaining the verdict, Alpha resumes with:
 
-Solo mode skips Beta entirely.
+```bash
+node scripts/sprint/full.js --sprint <SP-id> --resume \
+  --pending-phase <boundary> \
+  --beta-verdict <DECIDE|DIRECTIVE|ESCALATE> \
+  --beta-message "<Beta's response>"
+```
+
+ESCALATE is a **hard halt regardless of preset** — the orchestrator
+records the verdict and writes a halt report with
+`halt_reason: beta_escalate`. Solo mode skips Beta entirely.
 
 ### Step 6 — Halt handling
 
@@ -199,7 +209,8 @@ On any halt:
 
 ```bash
 node scripts/sprint/full.js --sprint <SP-id> --resume \
-  [--cost-acknowledged] [--autonomy <new-preset>]
+  [--cost-acknowledged] [--autonomy <new-preset>] \
+  [--pending-phase <boundary> --beta-verdict <DECIDE|DIRECTIVE|ESCALATE> --beta-message "<...>"]
 ```
 
 Reads `paths.sprintProgress`, identifies the last completed phase,
@@ -209,6 +220,11 @@ phase mid-state — per-phase helpers own intra-phase resume.
 `--cost-acknowledged` is only meaningful when resuming after a
 `cost_threshold` halt: it raises the threshold to 2× for the
 remainder of this run only (NOT persisted to preset config).
+
+`--pending-phase` / `--beta-verdict` / `--beta-message` resume a
+`beta_consult_pending` halt with the real Beta verdict. These three
+args are **resume-only** — supplying them on a fresh run is rejected
+(exit 2).
 
 ### Step 8 — Completion
 
@@ -265,6 +281,9 @@ command and the human action needed. Most common:
   before releasing.
 - `approval_beyond_preset` — record the approval (or re-run aggressive),
   then resume.
+- `beta_consult_pending` — adhoc mode reached a Beta phase boundary;
+  consult Beta (Alex β), then resume with --beta-verdict / --beta-message /
+  --pending-phase.
 - `beta_escalate` — address Beta's concern, then resume.
 - `cost_threshold` — resume with `--cost-acknowledged` (2× for this
   run only) or raise the threshold permanently in the autonomy preset.

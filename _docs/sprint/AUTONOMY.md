@@ -82,6 +82,7 @@ halts:
 | `plan_quality_fail` | Plan Contract returned `needs_user_clarification` or `blocked` | Read the PC's `open_questions.blocking`, answer them, re-plan |
 | `esd_signup` | An ESD requires signup/billing/credentials | Complete external setup, mark ESD `ready_for_terminal_work`, resume |
 | `approval_beyond_preset` | A ticket needs approval at a level outside preset | Record the approval OR re-run with broader preset (still hard-ceiling-bound) |
+| `beta_consult_pending` | Adhoc mode: reached a Beta phase boundary with no supplied verdict | Consult Beta (Alex β), then resume with --beta-verdict <DECIDE\|DIRECTIVE\|ESCALATE> --beta-message "<...>" --pending-phase <boundary> |
 | `beta_escalate` | Beta returned ESCALATE at a phase boundary | Address Beta's concern, resume |
 | `cost_threshold` | Cumulative cost estimate > preset threshold | Resume with `--cost-acknowledged` (2× for this run only) OR raise preset's threshold |
 | `repeated_failure_threshold` | > N% of tickets deferred via 3-attempt rule | Investigate root cause, fix, re-run |
@@ -179,13 +180,18 @@ Every `/sprint:full` run leaves:
 - `sprint_full_started` event (preset, mode, branch, request hash)
 - `sprint_full_phase_started` + `_phase_completed` per phase
 - `sprint_full_auto_approval` for every auto-recorded approval
-- `sprint_full_beta_consultation` for every Beta exchange
+- `sprint_full_beta_consult` for every Beta exchange, carrying the verdict
 - `sprint_full_halt` if any halt fires
 - `sprint_full_ceiling_breach_attempt` if a hard ceiling was tested
   (should always be zero)
 - `sprint_full_done` on success
 
 Filter with: `grep '"kind":"sprint_full_' .claude/project/events/events.jsonl`.
+
+Beta consultation at phase boundaries is **enforced**, not aspirational: in
+adhoc mode `/sprint:full` halts at each boundary (`beta_consult_pending`) until
+a real Beta verdict is supplied on resume. ESCALATE cannot be silently
+downgraded to a placeholder DECIDE. (SP-20260525-003.)
 
 ## See also
 

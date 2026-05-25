@@ -96,6 +96,32 @@ write). Then either:
 - Roll back: copy a frozen checkpoint over `sprint-progress.yaml` and
   re-run `resume_command` from there.
 
+### Resuming a `beta_consult_pending` halt (adhoc /sprint:full)
+
+In adhoc mode, `/sprint:full` halts at each phase boundary so the operator can
+perform the real Beta (Alex β) consult. The halt report names the boundary
+(e.g. `before_design`, `before_execute`).
+
+**Resume contract** — after consulting Beta via SendMessage, resume with:
+
+```bash
+node scripts/sprint/full.js --sprint <SP-id> --resume \
+  --pending-phase <boundary> \
+  --beta-verdict <DECIDE|DIRECTIVE|ESCALATE> \
+  --beta-message "<Beta's response>"
+```
+
+Notes:
+- `--beta-verdict`, `--beta-message`, and `--pending-phase` are **resume-only**:
+  supplying them on a fresh run is rejected (exit 2).
+- One verdict per resume invocation. Later phase boundaries will halt again
+  with `beta_consult_pending` and require their own resume.
+- If Beta returns ESCALATE, the orchestrator records the verdict and then
+  escalates to a `beta_escalate` hard halt — operator must resolve before the
+  phase can proceed.
+
+The halt taxonomy (all `halt_reason` values) lives in `_docs/sprint/AUTONOMY.md`.
+
 ### 5. If the sprint is in Ralph execution
 
 Read `paths.sprintRalph/<sprint>/<ticket>.yaml`:
