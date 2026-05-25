@@ -183,12 +183,73 @@ async function testChain() {
   fs.rmSync(repo, { recursive: true, force: true });
 }
 
+// ---------------------------------------------------------- resume after orchestration (N1)
+function testResume() {
+  process.stdout.write("\nUNIT — resume after needs_orchestration (N1 regression)\n");
+  const st = { completed: ["preflight", "audit", "plan"], awaiting: "inject", phases: {} };
+  driver.resolveResume({ resume: true }, st);
+  if (st.completed.includes("inject") && st.awaiting == null) ok("resolveResume marks fulfilled inject completed + clears awaiting");
+  else fail("resolveResume inject", JSON.stringify(st));
+  const p = driver.planPhases({ phase: null, resume: true }, st);
+  if (p.phases.includes("execute") && p.phases.includes("handoff") && !p.phases.includes("inject"))
+    ok("resume advances past inject → execute/handoff (no re-halt loop)");
+  else fail("resume plan after inject", JSON.stringify(p.phases));
+  const st2 = { completed: ["preflight", "audit", "plan", "inject"], awaiting: "execute", phases: {} };
+  driver.resolveResume({ resume: true }, st2);
+  const p2 = driver.planPhases({ phase: null, resume: true }, st2);
+  if (p2.phases.includes("handoff") && !p2.phases.includes("execute"))
+    ok("resume advances past execute → handoff (pipeline completes)");
+  else fail("resume plan after execute", JSON.stringify(p2.phases));
+}
+
+// ---------------------------------------------------------- gate registry (N3)
+function testGateRegistry() {
+  process.stdout.write("\nUNIT — module gates ⊆ approval-gate registry (N3)\n");
+  const { GATE_IDS } = require("./lib/approval-gates");
+  const { sampleState } = require("./lib/adapter-contract");
+  const states = [
+    sampleState(),
+    Object.assign(sampleState(), { platform: "mobile" }),
+    Object.assign(sampleState(), { sensitive: { signals: ["health"], escalate: true } }),
+  ];
+  let bad = 0;
+  for (const n of MODULE_NAMES) {
+    const mod = require(`./modules/${n}`);
+    for (const st of states) {
+      for (const g of mod.plan(st, "web-saas").gates || []) {
+        if (!GATE_IDS.includes(g)) { bad++; fail(`module ${n} gate "${g}"`, "not in approval-gate registry"); }
+      }
+    }
+  }
+  if (!bad) ok("all module plan().gates are valid registry ids (sample/mobile/sensitive states)");
+}
+
+// ---------------------------------------------------------- scored-gap text per fixture (F2)
+function testScoredGaps() {
+  process.stdout.write("\nUNIT — scored gaps name the fixture's defect (F2)\n");
+  const run = (name) => {
+    const d = materialize(CASES.find((c) => c.name === name));
+    const s = scoreReadiness(detectRepoState(d));
+    fs.rmSync(d, { recursive: true, force: true });
+    return s;
+  };
+  const stripe = run("stripe-no-webhook-verify");
+  if (stripe.gaps.some((g) => /webhook/i.test(g.gap))) ok("stripe-no-webhook → scored gap names the webhook gap");
+  else fail("stripe scored gap", JSON.stringify(stripe.gaps));
+  const funnel = run("no-funnel");
+  if (funnel.gaps.some((g) => g.dim === "funnel")) ok("no-funnel → scored gap in the funnel dimension");
+  else fail("funnel scored gap", JSON.stringify(funnel.gaps));
+}
+
 (async () => {
   testDriver();
   await testPreflight();
   testFixtures();
   testScore();
+  testScoredGaps();
   testAdapters();
+  testGateRegistry();
+  testResume();
   await testChain();
   process.stdout.write(`\nlastmile-orchestrate test: ${passed} passed, ${failed} failed\n`);
   process.exit(failed === 0 ? 0 : 1);

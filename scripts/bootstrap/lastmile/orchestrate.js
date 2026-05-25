@@ -110,6 +110,7 @@ function loadState(args) {
     schema: "warpos/bootstrap/lastmile-state/v1",
     completed: [],
     phases: {},
+    awaiting: null,
   };
 }
 
@@ -145,6 +146,20 @@ function planPhases(args, state) {
   return { phases: PHASES.slice() };
 }
 
+// On --resume after a needs_orchestration halt, the operator has fulfilled the
+// orchestration prompt out-of-band (minted sprints / dispatched them). Mark that
+// phase completed so planPhases advances PAST it instead of re-halting on it
+// forever (N1 fix — needs_orchestration phases don't self-complete like spinup's
+// artifact-driven phases do). Returns true if state changed.
+function resolveResume(args, state) {
+  if (args.resume && state.awaiting) {
+    if (!state.completed.includes(state.awaiting)) state.completed.push(state.awaiting);
+    state.awaiting = null;
+    return true;
+  }
+  return false;
+}
+
 function buildCtx(args) {
   return {
     repoRoot: args.repoRoot,
@@ -175,6 +190,7 @@ async function main() {
     return 2;
   }
   const state = loadState(args);
+  if (resolveResume(args, state)) saveState(args, state);
   const plan = planPhases(args, state);
   if (plan.error) {
     process.stderr.write(plan.error + "\n");
@@ -200,6 +216,10 @@ async function main() {
     ran.push({ phase: name, ...res });
 
     if (res.status === "needs_orchestration") {
+      // persist the awaiting marker so a later --resume advances past this phase
+      // once the operator has fulfilled the orchestration prompt (N1 fix).
+      state.awaiting = name;
+      saveState(args, state);
       if (args.json)
         process.stdout.write(JSON.stringify({ ok: false, phase: name, ...res, ran }, null, 2) + "\n");
       else {
@@ -245,6 +265,7 @@ if (require.main === module) {
 module.exports = {
   parseArgs,
   planPhases,
+  resolveResume,
   loadState,
   saveState,
   stateFile,

@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-05-25T22:20:17.320Z",
+  "generatedAt": "2026-05-25T22:40:12.310Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.10.0",
   "migrations": [],
@@ -81,8 +81,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "cce813fa008534bc8e9c7b2b90afa15a0126a74ca18ca0b04839389f79830fa6",
-      "installedSha": "cce813fa008534bc8e9c7b2b90afa15a0126a74ca18ca0b04839389f79830fa6"
+      "sha256": "95d6d4a85aa05dd7ca02cf9092b1128078add68a8dda431032e0ef1d09ade032",
+      "installedSha": "95d6d4a85aa05dd7ca02cf9092b1128078add68a8dda431032e0ef1d09ade032"
     },
     "USER_GUIDE.md": {
       "owner": "framework",
@@ -4300,15 +4300,15 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/bootstrap/lastmile/orchestrate.js",
-      "sha256": "c10b279721378d53f88af712f46cd6c90e987c138a30e51957e5f7c7db9b54c6",
-      "installedSha": "c10b279721378d53f88af712f46cd6c90e987c138a30e51957e5f7c7db9b54c6"
+      "sha256": "d4b7c8ca876b0c02e654b71559df675b5924487d10cf937e687b649f6925908f",
+      "installedSha": "d4b7c8ca876b0c02e654b71559df675b5924487d10cf937e687b649f6925908f"
     },
     "scripts/bootstrap/lastmile/test-orchestrate.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/bootstrap/lastmile/test-orchestrate.js",
-      "sha256": "8aae5f8accd7728f0d0fa6282ba915b9541e14c361f134452fec6183f26ff4ca",
-      "installedSha": "8aae5f8accd7728f0d0fa6282ba915b9541e14c361f134452fec6183f26ff4ca"
+      "sha256": "e3730691e33c0a32430446cbf7e363516db2fd5ab9a28565ddaf7c40d3a1341e",
+      "installedSha": "e3730691e33c0a32430446cbf7e363516db2fd5ab9a28565ddaf7c40d3a1341e"
     },
     "scripts/bootstrap/lastmile/phases/audit.js": {
       "owner": "framework",
@@ -4412,8 +4412,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/bootstrap/lastmile/lib/adapter-contract.js",
-      "sha256": "ef697a744fc874a83c9b7404539b5dac6c68f1108424f4afaecc90572942408f",
-      "installedSha": "ef697a744fc874a83c9b7404539b5dac6c68f1108424f4afaecc90572942408f"
+      "sha256": "0a2523d062ca1c654de747140faf8870bf5cd4693f9ca3c2bca9b18de0912573",
+      "installedSha": "0a2523d062ca1c654de747140faf8870bf5cd4693f9ca3c2bca9b18de0912573"
     },
     "scripts/bootstrap/lastmile/lib/approval-gates.js": {
       "owner": "framework",
@@ -12172,6 +12172,14 @@
       "sha256": "3244fbc64ec64c1673261092ecfa3d3c99cb6781ae13eda455cf0962a69af617",
       "installedSha": "3244fbc64ec64c1673261092ecfa3d3c99cb6781ae13eda455cf0962a69af617"
     },
+    ".claude/project/reference/lastmile/acceptance-criteria.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/project/reference/lastmile/acceptance-criteria.md",
+      "kind": "md",
+      "sha256": "b1bc2d77ecab17963f0c913cb7660d8e80badcc53ff7a6731b8d349c6fffaa0b",
+      "installedSha": "b1bc2d77ecab17963f0c913cb7660d8e80badcc53ff7a6731b8d349c6fffaa0b"
+    },
     ".claude/project/reference/lastmile/conversion-funnel-playbook.md": {
       "owner": "framework",
       "managed": true,
@@ -13541,8 +13549,8 @@
       "managed": true,
       "source": ".claude/commands/bootstrap/lastmile.md",
       "kind": "md",
-      "sha256": "49f79b9000e2557d18ae1783fca5ef785435d5f1569a4600eccd192c1525da9d",
-      "installedSha": "49f79b9000e2557d18ae1783fca5ef785435d5f1569a4600eccd192c1525da9d"
+      "sha256": "078b0a50bbe7a7f2591900790f9ff5a4c3376bb6c2ad473691fe920351cdcf8f",
+      "installedSha": "078b0a50bbe7a7f2591900790f9ff5a4c3376bb6c2ad473691fe920351cdcf8f"
     },
     ".claude/commands/bootstrap/ponder.md": {
       "owner": "framework",

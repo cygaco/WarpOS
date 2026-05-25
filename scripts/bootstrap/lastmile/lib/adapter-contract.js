@@ -91,6 +91,8 @@ function validateAdapter(mod) {
     if (p && !Array.isArray(p.steps)) errors.push("plan().steps must be an array");
     if (p && !Array.isArray(p.envVars)) errors.push("plan().envVars must be an array");
     if (p && !Array.isArray(p.gates)) errors.push("plan().gates must be an array");
+    if (p && !Array.isArray(p.tests)) errors.push("plan().tests must be an array");
+    if (p && !Array.isArray(p.risks)) errors.push("plan().risks must be an array");
     if (p && typeof p.template !== "string") errors.push("plan().template must be a string (template basename)");
   } catch (e) {
     errors.push(`plan() threw: ${e.message}`);

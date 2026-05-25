@@ -5,7 +5,7 @@
   "counts": {
     "agent": 64,
     "skill": 150,
-    "reference": 23,
+    "reference": 24,
     "maps_baseline": 24,
     "hook": 66,
     "hook_lib": 13,
@@ -52,7 +52,7 @@
     "installer_script": 1,
     "framework_doc": 2
   },
-  "total": 758,
+  "total": 759,
   "assets": {
     "agent": [
       {
@@ -878,7 +878,7 @@
         "src": ".claude/commands/bootstrap/lastmile.md",
         "dest": ".claude/commands/bootstrap/lastmile.md",
         "kind": "skill",
-        "sha256": "49f79b9000e2557d18ae1783fca5ef785435d5f1569a4600eccd192c1525da9d",
+        "sha256": "078b0a50bbe7a7f2591900790f9ff5a4c3376bb6c2ad473691fe920351cdcf8f",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
@@ -2693,6 +2693,18 @@
         "dest": ".claude/project/reference/karpathy-autoresearch.md",
         "kind": "reference",
         "sha256": "b4d309690f140dc2d6a4bc8d7cea0638d1a31e5aaa43f26ecce9e9e410ae7742",
+        "owner": "framework",
+        "mergeStrategy": "three_way_markdown",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "reference.lastmile.acceptance-criteria.md",
+        "src": ".claude/project/reference/lastmile/acceptance-criteria.md",
+        "dest": ".claude/project/reference/lastmile/acceptance-criteria.md",
+        "kind": "reference",
+        "sha256": "b1bc2d77ecab17963f0c913cb7660d8e80badcc53ff7a6731b8d349c6fffaa0b",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",

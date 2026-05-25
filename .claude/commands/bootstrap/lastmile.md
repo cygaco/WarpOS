@@ -107,9 +107,9 @@ unless justified** by a named, evidence-backed need.
 | `desktop-app` | existing stack + Stripe/license keys + auto-update + signed builds |
 | `ai-tool` | Next.js + Supabase + Clerk/Supabase Auth + Stripe (usage/credit-based) + PostHog + Resend |
 | `marketplace` | Next.js + Postgres + Stripe Connect + Clerk/Supabase Auth + Vercel + PostHog |
-| `content/community` | Next.js + Supabase + Auth + Stripe (subscription) + email lifecycle |
-| `internal→external` | harden existing stack; add auth boundary, billing, public funnel, analytics |
-| `unknown / infer` | infer from repo; if truly unknown, default to the **Simpler MVP** stack: Supabase (db+auth) + Stripe Checkout + Vercel |
+| `content-community` | Next.js + Supabase + Auth + Stripe (subscription) + email lifecycle |
+| `internal-external` | harden existing stack; add auth boundary, billing, public funnel, analytics |
+| `unknown` | infer from repo (or omit `--profile` to auto-infer); if truly unknown, default to the **Simpler MVP** stack: Supabase (db+auth) + Stripe Checkout + Vercel |
 
 ### Modules (adapters)
 
@@ -210,7 +210,7 @@ uses v1 — no spend, no blocking.
 ```bash
 node scripts/bootstrap/lastmile/orchestrate.js \
   [--profile <name>] [--phase preflight|audit|plan|inject|execute|handoff] \
-  [--module <name>] [--resume] [--research off|deep] \
+  [--module <name>] [--resume] [--research off|deep] [--out <docs-dir>] \
   [--repo-root <dir>] [--state <file>] [--json] [--dry-run]
 ```
 
@@ -221,8 +221,10 @@ node scripts/bootstrap/lastmile/orchestrate.js \
 
 ## Holdout fixtures (completeness, fixture-backed)
 
-`scripts/bootstrap/lastmile/fixtures/` — minimal fake repos the e2e audits, each
-asserting the audit catches the gap:
+The 7 holdout cases live in `scripts/bootstrap/lastmile/fixtures.js`, defined as
+code and materialized to temp dirs at test time (a committed fake `package.json`
+would trip `dependency-admission-guard`). The e2e audits each, asserting the
+audit catches the gap:
 
 - `no-auth` — prototype with no auth
 - `auth-no-payments` — auth present, no payments
