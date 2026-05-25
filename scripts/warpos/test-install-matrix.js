@@ -13,6 +13,9 @@
  *   3 — dirty_uncommitted_preserved   seeded install + operator edit → update
  *   4 — multi_version_upgrade         seeded install at N → update --to N+k
  *   5 — user_overrides_preserved      seeded install + settings.local → update
+ *   6 — adopt_path                    clone brief adopted → _docs/clones/<slug>/
+ *   7 — installps1_path               install.ps1-equiv path → COMPLETE + parity
+ *                                     DIFF vs warp-setup (SP-20260525-019 gate)
  *
  * Acceptance criteria covered: AC-1.1, AC-1.2, AC-2.1, AC-3.1, AC-4.1, AC-5.1,
  * AC-5.2, AC-6.1, AC-7.1, AC-7.2, AC-8.1, AC-8.2, AC-9.1, AC-9.2, AC-10.1,
@@ -86,6 +89,8 @@ Scenarios (run all if --scenarios is omitted):
   3   dirty_uncommitted_preserved   seeded install + operator edit → update
   4   multi_version_upgrade         seeded install at N → update --to N+k
   5   user_overrides_preserved      seeded install + settings.local → update
+  6   adopt_path                    clone brief adopted → lands under _docs/clones/
+  7   installps1_path               install.ps1-equiv path → COMPLETE + parity-diff vs warp-setup
 
 Flags:
   --scenarios <list>           comma-separated scenario ids (e.g. 1,3,5)
@@ -112,6 +117,7 @@ const SCENARIOS = [
   { id: "4", slug: "multi_version_upgrade" },
   { id: "5", slug: "user_overrides_preserved" },
   { id: "6", slug: "adopt_path" },
+  { id: "7", slug: "installps1_path" },
 ];
 
 function resolveScenarios(spec) {
@@ -207,6 +213,231 @@ function runNode(scriptRel, args, opts = {}) {
     stderr: r.stderr || "",
     signal: r.signal,
   };
+}
+
+// ── install.ps1-equivalent path (T-20260525-223) ─────────────────────
+//
+// SP-20260525-019 gates the install-path UNIFICATION: a parallel ticket
+// makes install.ps1 invoke the shared scaffold core
+// (scripts/warpos/scaffold-core.js, runnable as
+// `node scripts/warpos/scaffold-core.js <target>`) so install.ps1 produces a
+// COMPLETE install — same end-state as the /warp:setup path — instead of the
+// bare framework-asset copy it does today.
+//
+// PowerShell generally can't be driven from this Node test env (no pwsh on
+// CI; WindowsPowerShell 5.1's -NonInteractive + Read-Host prompt on an
+// existing-install detection makes a clean headless run unreliable). So the
+// default strategy is to exercise the SAME CODE PATH install.ps1 uses:
+//
+//   1. base framework copy  — replicate install.ps1 Stage 1: copy every
+//      framework-manifest.json asset src→dest into the fixture, then write a
+//      minimal framework-installed.json (Stage 2). This is exactly what
+//      install.ps1 lays down before the scaffold step.
+//   2. shared scaffold core — `node scripts/warpos/scaffold-core.js <fixture>`
+//      (the entrypoint install.ps1 will call). This is the step that turns a
+//      bare asset copy into a COMPLETE, sprint-capable product.
+//
+// If a usable PowerShell IS available we PREFER invoking install.ps1 directly
+// (closer to the real operator path) and fall back to the node path on any
+// failure. Either way the assertions below check the COMPLETE end-state.
+
+function findPowershell() {
+  // Prefer pwsh (cross-platform PS 7+); fall back to Windows PowerShell 5.1.
+  for (const exe of ["pwsh", "powershell"]) {
+    const probe = spawnSync(exe, ["-NoProfile", "-Command", "$PSVersionTable.PSVersion.Major"], {
+      encoding: "utf8",
+      timeout: 15_000,
+    });
+    if (probe.status === 0 && /\d/.test(probe.stdout || "")) return exe;
+  }
+  return null;
+}
+
+/**
+ * Replicate install.ps1 Stage 1 + Stage 2 in Node: copy every
+ * framework-manifest.json asset (src → dest) into the fixture, then write a
+ * minimal .claude/framework-installed.json snapshot. Returns { copied,
+ * skipped }. Path-traversal safe: dests are manifest-controlled and validated
+ * to stay under the fixture.
+ */
+function copyManifestAssets(fixtureDir) {
+  const manifestPath = path.join(REPO_ROOT, ".claude", "framework-manifest.json");
+  const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+  let copied = 0;
+  let skipped = 0;
+  const resolvedFixture = path.resolve(fixtureDir);
+  for (const kind of Object.keys(manifest.assets || {})) {
+    for (const asset of manifest.assets[kind]) {
+      const srcPath = path.resolve(REPO_ROOT, asset.src);
+      const destPath = path.resolve(fixtureDir, asset.dest);
+      // Guard: never write outside the fixture even if the manifest is wrong.
+      if (!(destPath === resolvedFixture || destPath.startsWith(resolvedFixture + path.sep))) {
+        skipped++;
+        continue;
+      }
+      if (!fs.existsSync(srcPath)) {
+        skipped++;
+        continue;
+      }
+      fs.mkdirSync(path.dirname(destPath), { recursive: true });
+      fs.copyFileSync(srcPath, destPath);
+      copied++;
+    }
+  }
+  // Stage 2-equivalent: minimal install snapshot so the fixture looks like a
+  // post-install.ps1 tree (regenerate.js / structure-parity don't need the
+  // full per-asset hash list for the structural assertions below).
+  const installRecord = {
+    $schema: "warpos/framework-installed/v2",
+    installedVersion: currentVersion() || "0.0.0",
+    installedAt: new Date().toISOString(),
+    source: REPO_ROOT,
+    target: path.resolve(fixtureDir),
+    installed_files: [],
+  };
+  const installedPath = path.join(fixtureDir, ".claude", "framework-installed.json");
+  fs.mkdirSync(path.dirname(installedPath), { recursive: true });
+  fs.writeFileSync(installedPath, JSON.stringify(installRecord, null, 2) + "\n");
+  return { copied, skipped };
+}
+
+/**
+ * Install into `fixtureDir` via the install.ps1-equivalent path. Returns
+ * { mode: "powershell"|"node", code, stdout, stderr, scaffold }.
+ *
+ * mode "powershell": install.ps1 was invoked directly (it now calls the
+ *   scaffold core internally once the parallel ticket lands).
+ * mode "node": base manifest-asset copy + `node scaffold-core.js <fixture>`.
+ */
+function installPs1EquivalentPath(fixtureDir) {
+  const ps = findPowershell();
+  if (ps) {
+    const installPs1 = path.join(REPO_ROOT, "install.ps1");
+    const r = spawnSync(
+      ps,
+      ["-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-File", installPs1, "-Target", fixtureDir, "-SkipPrompt"],
+      { encoding: "utf8", timeout: 180_000, env: { ...process.env } },
+    );
+    // Only accept the PS path if it actually produced an install snapshot;
+    // otherwise fall through to the deterministic node path.
+    const installedOk = fs.existsSync(path.join(fixtureDir, ".claude", "framework-installed.json"));
+    if (r.status === 0 && installedOk) {
+      return {
+        mode: "powershell",
+        code: r.status,
+        stdout: r.stdout || "",
+        stderr: r.stderr || "",
+        scaffold: null,
+      };
+    }
+    // PS present but unusable here — reset and use the node-equivalent path.
+    try {
+      fs.rmSync(path.join(fixtureDir, ".claude"), { recursive: true, force: true });
+    } catch {
+      /* best-effort */
+    }
+  }
+  // Node-equivalent path: base framework copy + shared scaffold core.
+  copyManifestAssets(fixtureDir);
+  // Run the CANONICAL scaffold-core.js (REPO_ROOT) against the fixture — this
+  // is exactly the entrypoint install.ps1 will call: `node
+  // scripts/warpos/scaffold-core.js <target>`. EXPECTED to fail until the
+  // parallel ticket adds the script.
+  const scaffold = runNode("scripts/warpos/scaffold-core.js", [fixtureDir], { timeout: 180_000 });
+  return {
+    mode: "node",
+    code: scaffold.code,
+    stdout: scaffold.stdout,
+    stderr: scaffold.stderr,
+    scaffold,
+  };
+}
+
+// ── Tree file-list + parity diff (β before_design constraint) ────────
+//
+// β ruled parity must be a DIFF, not "both trees independently pass
+// structure-parity". Two trees can each satisfy structure-parity yet still
+// diverge from EACH OTHER. So we build a sorted relative-path file list of
+// each tree (scoped to the zones the install owns) and diff the SETS. Any
+// structural divergence fails — modulo a documented allowlist of legitimate
+// per-install variance (timestamps live INSIDE files so they don't affect the
+// path set; install-id / .git / runtime / transaction dirs do).
+
+// Zones compared for parity. A path is in-scope iff it sits under one of these
+// prefixes (dir prefixes need the trailing sep; ROADMAP.md / PROJECT.md are
+// exact files).
+const PARITY_SCOPE_DIRS = [".claude", "_warpos", "_requirements", "_docs"];
+const PARITY_SCOPE_FILES = ["ROADMAP.md", "PROJECT.md"];
+
+// Allowlist: relative paths (POSIX sep) matching any of these regexes are
+// EXCLUDED from the parity diff. These are legitimately per-install or
+// runtime-only and would otherwise produce false divergence.
+const PARITY_ALLOWLIST = [
+  /^\.git(\/|$)/, // git metadata
+  /^\.claude\/framework-installed\.json$/, // carries install-id, timestamps, target, per-asset hashes
+  /^\.claude\/runtime(\/|$)/, // runtime state (events, caches) — written at run, not install
+  /^\.claude\/project\/events(\/|$)/, // event logs
+  /^\.claude\/project\/memory(\/|$)/, // memory stores
+  /^\.warpos(\/|$)/, // transactions / test-fixture scratch / install-id
+  /(^|\/)node_modules(\/|$)/, // deps, never part of an install tree
+  /(^|\/)\.DS_Store$/, // macOS noise
+];
+
+function isParityAllowlisted(rel) {
+  return PARITY_ALLOWLIST.some((re) => re.test(rel));
+}
+
+function inParityScope(rel) {
+  if (PARITY_SCOPE_FILES.includes(rel)) return true;
+  return PARITY_SCOPE_DIRS.some((d) => rel === d || rel.startsWith(d + "/"));
+}
+
+/**
+ * Build a sorted list of in-scope, non-allowlisted relative file paths under
+ * `rootDir` (POSIX separators). Files only (dirs are implied by their files).
+ */
+function treeFileList(rootDir) {
+  const out = [];
+  function walk(absDir, relDir) {
+    let entries;
+    try {
+      entries = fs.readdirSync(absDir, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const ent of entries) {
+      const relPath = relDir ? `${relDir}/${ent.name}` : ent.name;
+      // Prune whole subtrees that are out of scope or allowlisted early.
+      if (ent.isDirectory()) {
+        const probe = relPath + "/";
+        // Descend only if some scope prefix could still match underneath.
+        const couldBeInScope =
+          PARITY_SCOPE_DIRS.some((d) => d === relPath || d.startsWith(relPath + "/") || relPath.startsWith(d + "/")) ||
+          PARITY_SCOPE_FILES.some((f) => f.startsWith(relPath + "/"));
+        if (!couldBeInScope) continue;
+        if (isParityAllowlisted(probe)) continue;
+        walk(path.join(absDir, ent.name), relPath);
+      } else if (ent.isFile()) {
+        if (inParityScope(relPath) && !isParityAllowlisted(relPath)) {
+          out.push(relPath);
+        }
+      }
+    }
+  }
+  walk(rootDir, "");
+  out.sort();
+  return out;
+}
+
+/**
+ * Diff two tree file lists. Returns { equal, onlyInA, onlyInB }.
+ */
+function parityDiff(listA, listB) {
+  const setA = new Set(listA);
+  const setB = new Set(listB);
+  const onlyInA = listA.filter((p) => !setB.has(p));
+  const onlyInB = listB.filter((p) => !setA.has(p));
+  return { equal: onlyInA.length === 0 && onlyInB.length === 0, onlyInA, onlyInB };
 }
 
 // ── Assertion harness ────────────────────────────────────────────────
@@ -414,6 +645,30 @@ function scenario1_clean_install(scenario, fixtureDir, opts) {
     ]) {
       assert(`scaffolded: ${z} exists`, fs.existsSync(path.join(fixtureDir, z)), `expected ${z}`);
     }
+
+    // SP-20260525-019 (T-20260525-223): the scaffold core now drops a PROJECT.md
+    // and runs a maps step. PROJECT.md is the unambiguous new artifact, so we
+    // HARD-assert it. The maps step's output (.claude/project/maps/*) ships as a
+    // framework asset regardless, so its presence is NOT a reliable signal the
+    // step ran — we record a SOFT marker (never fails) per the ticket guidance.
+    // EXPECTED to FAIL on PROJECT.md until the scaffoldProduct change lands.
+    assert(
+      "scaffolded: PROJECT.md exists",
+      fs.existsSync(path.join(fixtureDir, "PROJECT.md")),
+      "expected PROJECT.md at fixture root",
+    );
+    const mapsDir = path.join(fixtureDir, ".claude", "project", "maps");
+    let mapsMarker = false;
+    try {
+      mapsMarker = fs.existsSync(mapsDir) && fs.readdirSync(mapsDir).length > 0;
+    } catch {
+      /* fail-open — soft marker only */
+    }
+    r.assertions.push({
+      name: `soft: maps step marker (.claude/project/maps populated = ${mapsMarker})`,
+      status: "pass",
+    });
+
     const pjPath = path.join(fixtureDir, ".claude", "paths.json");
     if (fs.existsSync(pjPath)) {
       const pj = JSON.parse(fs.readFileSync(pjPath, "utf8"));
@@ -988,6 +1243,132 @@ function scenario6_adopt_path(scenario, fixtureDir, opts) {
   return r;
 }
 
+// scenario7_installps1_path — SP-20260525-019 (T-20260525-223) install-path
+// unification GATE.
+//
+// Asserts the install.ps1-equivalent path (base framework copy + shared
+// scaffold core) produces a COMPLETE install — the same structural end-state
+// as /warp:setup — and that the two installers produce path-identical trees
+// (the β parity-DIFF constraint).
+//
+// These assertions are EXPECTED TO FAIL until the parallel ticket lands
+// (a) scripts/warpos/scaffold-core.js and (b) install.ps1 invoking it. That
+// failure IS the gate.
+function scenario7_installps1_path(scenario, fixtureDir, opts) {
+  const r = { id: scenario.id, name: scenario.slug, status: "pass", assertions: [], durationMs: 0 };
+  const assert = mkAssert(r);
+  const t0 = Date.now();
+
+  // ── Part A: install.ps1-equivalent path yields a COMPLETE install ──
+  const inst = installPs1EquivalentPath(fixtureDir);
+  r.assertions.push({
+    name: `install.ps1-equivalent path mode = ${inst.mode}`,
+    status: "pass",
+  });
+  assert(
+    "install.ps1-equivalent path (base copy + scaffold-core.js) exits 0",
+    inst.code === 0,
+    `mode=${inst.mode} code=${inst.code} stderr=${(inst.stderr || "").slice(0, 200)}`,
+  );
+
+  // COMPLETE-install structural assertions (mirror the /warp:setup end-state).
+  for (const p of [
+    "_warpos",
+    "_warpos/MANIFEST.json",
+    "_requirements/00-canonical",
+    "_docs",
+    "ROADMAP.md",
+    "PROJECT.md",
+  ]) {
+    assert(
+      `installps1: ${p} present`,
+      fs.existsSync(path.join(fixtureDir, p)),
+      `expected ${p} after install.ps1-equivalent path`,
+    );
+  }
+  // _warpos/ must be a non-empty directory (a complete source mirror).
+  const w = path.join(fixtureDir, "_warpos");
+  assert(
+    "installps1: _warpos/ is a non-empty directory",
+    fs.existsSync(w) && fs.statSync(w).isDirectory() && fs.readdirSync(w).length > 0,
+    `exists=${fs.existsSync(w)}`,
+  );
+  // paths.json present with the sprint-orchestrator key.
+  const pjPath = path.join(fixtureDir, ".claude", "paths.json");
+  assert("installps1: .claude/paths.json present", fs.existsSync(pjPath), "expected paths.json");
+  if (fs.existsSync(pjPath)) {
+    let pj = {};
+    try {
+      pj = JSON.parse(fs.readFileSync(pjPath, "utf8"));
+    } catch {
+      /* leave empty → assertion fails with detail */
+    }
+    assert(
+      "installps1: paths.json has sprintFullAutonomy",
+      typeof pj.sprintFullAutonomy === "string" && pj.sprintFullAutonomy.length > 0,
+      `sprintFullAutonomy=${pj.sprintFullAutonomy}`,
+    );
+  }
+  // .claude/ reproducible from _warpos/ — regenerate --check exits 0.
+  const regen = runNode(
+    "scripts/warpos/views/regenerate.js",
+    ["--check", "--root", fixtureDir],
+    { timeout: 60_000 },
+  );
+  assert(
+    "installps1: regenerate.js --check clean (.claude/ reproducible from _warpos/)",
+    regen.code === 0,
+    `code=${regen.code} ${(regen.stdout || regen.stderr || "").slice(0, 200)}`,
+  );
+
+  // ── Part B: both_path_parity — DIFF the two installer trees ──────
+  // Install a SECOND fixture via the /warp:setup path on identical inputs,
+  // build a sorted relative-path file list of each tree, and DIFF them. Any
+  // structural divergence (modulo PARITY_ALLOWLIST) FAILS. This is a true
+  // diff — NOT "both independently pass structure-parity" (β constraint).
+  const parityRoot = path.dirname(fixtureDir);
+  const setupFixture = createFixture(parityRoot, "installps1_path-parity-setup");
+  let parity = null;
+  try {
+    const setup = runNode("scripts/warp-setup.js", [setupFixture, "--yes"], { timeout: 180_000 });
+    assert(
+      "both_path_parity: /warp:setup reference install exits 0",
+      setup.code === 0,
+      `code=${setup.code} stderr=${(setup.stderr || "").slice(0, 200)}`,
+    );
+
+    const setupList = treeFileList(setupFixture);
+    const ps1List = treeFileList(fixtureDir);
+    parity = parityDiff(setupList, ps1List);
+
+    // Both lists must be non-trivial — a parity of two empty trees is vacuous.
+    assert(
+      "both_path_parity: both trees are non-empty in-scope file sets",
+      setupList.length > 0 && ps1List.length > 0,
+      `setup=${setupList.length} ps1=${ps1List.length}`,
+    );
+    assert(
+      "both_path_parity: install.ps1-equivalent tree == /warp:setup tree (sorted relative paths, modulo allowlist)",
+      parity.equal,
+      `onlyInSetup(${parity.onlyInA.length})=${parity.onlyInA.slice(0, 8).join(", ")} | onlyInPs1(${parity.onlyInB.length})=${parity.onlyInB.slice(0, 8).join(", ")}`,
+    );
+  } finally {
+    cleanupFixture(setupFixture);
+  }
+
+  // Telemetry: record the parity divergence size for visibility while the gate
+  // is red (pre-merge). Non-failing — the assertion above is the gate.
+  if (parity) {
+    r.assertions.push({
+      name: `both_path_parity divergence: ${parity.onlyInA.length + parity.onlyInB.length} path(s) (allowlist: .git, framework-installed.json, runtime/, events/, memory/, .warpos/, node_modules)`,
+      status: "pass",
+    });
+  }
+
+  r.durationMs = Date.now() - t0;
+  return r;
+}
+
 // ── Main run loop ────────────────────────────────────────────────────
 
 const SCENARIO_FNS = {
@@ -997,6 +1378,7 @@ const SCENARIO_FNS = {
   4: scenario4_multi_version_upgrade,
   5: scenario5_user_overrides_preserved,
   6: scenario6_adopt_path,
+  7: scenario7_installps1_path,
 };
 
 function emitEvent(kind, payload) {
@@ -1200,4 +1582,12 @@ module.exports = {
   REGRESSION_NAMES,
   // Exported for unit-testability:
   SCENARIOS,
+  // install.ps1-equivalent path + parity-diff helpers (T-20260525-223):
+  treeFileList,
+  parityDiff,
+  copyManifestAssets,
+  installPs1EquivalentPath,
+  PARITY_ALLOWLIST,
+  PARITY_SCOPE_DIRS,
+  PARITY_SCOPE_FILES,
 };
