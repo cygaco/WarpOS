@@ -191,7 +191,12 @@ Filter with: `grep '"kind":"sprint_full_' .claude/project/events/events.jsonl`.
 Beta consultation at phase boundaries is **enforced**, not aspirational: in
 adhoc mode `/sprint:full` halts at each boundary (`beta_consult_pending`) until
 a real Beta verdict is supplied on resume. ESCALATE cannot be silently
-downgraded to a placeholder DECIDE. (SP-20260525-003.)
+downgraded to a placeholder DECIDE. (SP-20260525-003.) Durable audit coverage
+is provided by `/check:sprint-beta-honesty`, which verifies that recent
+post-cutoff sprints carried real (non-placeholder) Beta consults at expected
+boundaries and that every ESCALATE produced a `beta_escalate` halt; it exits
+non-zero on findings — run it ad-hoc or wire it into CI to confirm cadence
+integrity. (SP-20260525-004.)
 
 ## See also
 
@@ -201,3 +206,4 @@ downgraded to a placeholder DECIDE. (SP-20260525-003.)
 - Default presets: `paths.sprintFullAutonomy`
 - Sprint workflow: `paths.sprintReference`
 - CLAUDE.md autonomy table: `CLAUDE.md#Autonomy`
+- Beta-cadence audit: `/check:sprint-beta-honesty` (`scripts/checks/sprint-beta-honesty.js`)
