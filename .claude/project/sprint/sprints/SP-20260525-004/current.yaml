@@ -2,15 +2,15 @@ schema: warpos/sprint/current-sprint/v1
 id: SP-20260525-004
 title: "Beta-honesty enforcement skill — /check:sprint-beta-honesty + AUTONOMY.md enforced (milestone 0.11.0 sprint 2)"
 objective: "(set by /sprint:plan)"
-status: designing
+status: retrospected
 created_at: "2026-05-23T08:36:37.280Z"
-updated_at: "2026-05-25T02:58:35.799Z"
+updated_at: "2026-05-25T08:18:16.889Z"
 source_request: "Beta-honesty enforcement skill — sprint 2 of milestone 0.11.0 Sprint Workflow Honesty. Ship `/check:sprint-beta-honesty` skill that scans recent sprint full-reports for placeholder DECIDE events vs real Beta SendMessage round-trips; promotes _docs/sprint/AUTONOMY.md from aspirational → enforced; closes the enforcement-debt entry for Beta consultation cadence."
 interpreted_intent: "Sprint 1 of 0.11.0 (SP-20260525-003) makes Beta consults real. Sprint 2 makes the enforcement DURABLE by adding a check skill that any operator or CI run can invoke to confirm Beta consultation cadence is being honored. Per CLAUDE.md § Policy & Enforcement Hygiene: 'Every policy needs a named enforcer' — this sprint creates that named enforcer for the Beta consultation cadence policy declared in _docs/sprint/AUTONOMY.md. The skill scans recent sprint full-reports + events.jsonl for: (a) presence of sprint_full_beta_consult events at expected Phase boundaries, (b) non-placeholder verdicts (DECIDE | DIRECTIVE | ESCALATE with real beta_message + latency_ms), (c) ESCALATE handling (sprint halted with halt_reason=beta_escalate when ESCALATE returned). Skill exits 1 on findings; exits 0 on clean state. Closes the corresponding enforcement-debt entry."
 plan_contract: ".claude/project/sprint/plan-contracts/PC-20260523-0038.yaml"
 risk_level: low
 approval_state: none_required
-current_phase: design
+current_phase: retrospective
 recommended_mode: adhoc
 mode_invocation_required_by_user: true
 lane:
@@ -27,9 +27,7 @@ tickets:
   proposed: []
   planned: []
   designed: []
-  ready_for_execution:
-    - T-20260525-214
-    - T-20260525-215
+  ready_for_execution: []
   in_progress: []
   blocked: []
   waiting_on_human: []
@@ -37,7 +35,9 @@ tickets:
   in_review: []
   qa_failed: []
   redteam_failed: []
-  done: []
+  done:
+    - T-20260525-214
+    - T-20260525-215
   released: []
   deferred: []
   abandoned: []

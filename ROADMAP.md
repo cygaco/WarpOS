@@ -32,7 +32,6 @@ Director-of-product framing: the roadmap is a rhythm — **n sprints → milesto
 
 ```
 Maintainer scrub  →  Post-scrub gate hardening                                  →  🏁 0.10.0  Framework Boundary Closure
-Orchestrator → Beta bridge  →  Beta-honesty enforcement skill                   →  🏁 0.11.0  Sprint Workflow Honesty
 DreamTeam capsule  →  Installer branch-safety  →  Collision detect  →  Matrix  →  🏁 0.12.0  Multi-Product Distribution Maturity
 /research:* consolidation  →  Provider catalog  →  Skill merges  →  Events     →  🏁 0.13.0  Skill Catalog Polish
 Skill-scoped agent injection  →  DoPM persona  →  /roadmap:create  →  Wire /roadmap:*  →  🏁 0.14.0  Managerial Agent Layer
@@ -57,22 +56,6 @@ Sprints feeding this:
 **Definition of done:** (1) private `warpos-as-product` repo exists with relocated specs + first ROADMAP entry. (2) `grep -rn "00-canonical\|jobzooka\|dreamteam\|aiweb\|companycam" .` in canonical returns hits only in ROADMAP archive references and version-history. (3) `framework-purity-guard` rejects a synthetic `_requirements/00-canonical/foo.md` write attempt on canonical. (4) Fresh `/warp:setup` of canonical into a new product writes zero product-titled paths.
 
 **Engineering reality unlocked:** the framework can publish externally without a "did we leak anything this release?" audit step. The manifest-driven architecture (0.8.x) becomes load-bearing instead of aspirational.
-
-#### 🟡 0.11.0 — Sprint Workflow Honesty *(target: opportunistic, pull when cadence allows)*
-
-`Orchestrator → Beta bridge  →  Beta-honesty enforcement skill  →  🏁 0.11.0`
-
-**The shift to achieve:** the sprint orchestrator's "consulted Beta, got DECIDE" log lines stop being placeholders and become real round-trips. The autonomy ladder rungs become load-bearing.
-
-Before this milestone, `/sprint:full` emits `DECIDE` events without actually `SendMessage`-ing Beta — the subprocess can't easily reach in-process teammates. `_docs/sprint/AUTONOMY.md`'s Beta cadence is aspirational. After: either the orchestrator runs as an in-process flow that can `SendMessage`, or it halts at each Beta boundary with operator-driven consult; AUTONOMY.md cadence is enforced and observable.
-
-Sprints feeding this:
-- **Orchestrator → Beta bridge** — choose between (a) dispatch-from-subprocess pattern that lets `spawnSync`-d node reach in-process teammates, or (b) halt-at-each-Beta-boundary with operator-driven consult between phases. Design + ship.
-- **Beta-honesty enforcement skill** — `/check:sprint-beta-honesty` scans recent sprint full-reports for placeholder DECIDE events vs real Beta `SendMessage` round-trips; promotes AUTONOMY.md from aspirational → enforced; closes the enforcement-debt entry.
-
-**Definition of done:** (1) zero placeholder DECIDE events in any sprint full-report from the last 5 sprints. (2) `_docs/sprint/AUTONOMY.md` "Beta consultation cadence" line removes the "aspirational" disclaimer. (3) enforcement-debt entry for this policy is closed in `paths.enforcementDebt`.
-
-**Engineering reality unlocked:** operator can trust the orchestrator's claims about what was consulted. The "every policy needs a named enforcer" rule (CLAUDE.md § Policy & Enforcement Hygiene) holds for sprint autonomy.
 
 #### 🟡 0.12.0 — Multi-Product Distribution Maturity *(target: ~3 sprints after 0.10 ships)*
 
@@ -143,6 +126,22 @@ Architectural shifts parked behind explicit revival triggers. No sprint cycles u
 **Trigger:** product cadence is consistently healthy (cadence-rule violations stay at 0 for 4+ consecutive sprint windows). Distinct from 0.10.0 boundary closure — that creates the *private workspace* for product-thinking; this *spec-treats the framework itself as a product* with PRDs, stories, `/preflight:run`, `/qa:audit`, `/redteam:full` self-audit. Boundary first; dogfooding much later.
 
 ### Shipped
+
+#### 🟢 0.11.0 — Sprint Workflow Honesty *(2026-05-25)*
+
+`SP-20260525-003  →  -004  →  🏁 0.11.0`
+
+**The shift:** the sprint orchestrator's "consulted Beta, got DECIDE" log lines stopped being placeholders and became real round-trips. The autonomy-ladder rungs became load-bearing.
+
+Before this milestone, `/sprint:full` emitted `DECIDE` events without actually consulting Beta — the `spawnSync`-d subprocess couldn't reach in-process teammates — and `_docs/sprint/AUTONOMY.md`'s Beta cadence was aspirational. After: the orchestrator halts at each Beta boundary, persists a `beta_consult_pending` checkpoint, resumes after a real Alpha-driven consult (verdict-guarded + message-sanitized), and `/check:sprint-beta-honesty` audits recent full-reports for placeholder-vs-real consults — promoting AUTONOMY.md's cadence from aspirational to enforced.
+
+**Sprints shipped:**
+- **SP-20260525-003** — Orchestrator→Beta bridge: real Beta consults via halt-at-boundary (`full.js#maybeConsultBeta` + `validateBetaVerdict` + `BETA_VERDICTS`), `beta_consult_pending` resume contract, ADR documenting the subprocess-bridge-vs-halt decision (chose halt-at-boundary for simplicity + crash-recovery + operator visibility).
+- **SP-20260525-004** — Beta-honesty enforcement skill: `/check:sprint-beta-honesty` (doc + engine + 4 fixtures) scans full-reports + events for placeholder-vs-real consults with a date-cutoff legacy exemption; `AUTONOMY.md` names it as the Beta-cadence enforcer. The skill found real violations on its first live run (SP-018 empty `beta_message`, SP-019 skipped retro consult).
+
+**Open follow-ups** *(surfaced by the enforcer's own first live run — SP-018 placeholder verdict, SP-019 missing consult — documented in `e243ffd` and tracked in the Sprint Pickup Queue, still open):* make Beta verdicts un-fakeable at runtime (reject empty `beta_message`) + wire `/check:sprint-beta-honesty` into a release/CI gate. The milestone shipped its core shift (real consults + named enforcer); these would harden it to a closed mechanism → audit → gate loop.
+
+**Engineering reality unlocked:** the operator can trust the orchestrator's claims about what was consulted. The "every policy needs a named enforcer" rule (CLAUDE.md § Policy & Enforcement Hygiene) now holds for sprint autonomy.
 
 #### 🟢 0.9.0 — Install Pipeline Reliability Checkpoint *(2026-05-23)*
 
@@ -253,7 +252,7 @@ Highest-leverage picks, each self-contained:
   - **[shipped — SP-20260524-004]** Versioned migrations + user-override tracking. *(`framework-installed.json` gains `migrationsApplied: string[]` (versioned migrations skip already-applied ids — closes the "mid-chain failure re-runs successful migrations on retry" bug class) + `userModified: string[]` (operator-modified files tracked monotonically from classifier MERGE_CONFLICT/LOCAL_CUSTOMIZED decisions). `migrations-loader.js#applyAll` accepts `ctx.alreadyApplied` set. Install matrix 5/5 still passes.)*
   - **[shipped — SP-20260524-002]** `release-build.js` refuses stale manifest (closes T-183). *(`scripts/warpos/release-build.js` now runs `generate-framework-manifest.js --check` before snapshotting. Stale manifest → exit 2 with remediation message. Bypass with `--skip-manifest-check` for emergency rebuilds when manifest health verified out-of-band.)*
   - **[shipped — SP-20260524-002]** `.claude/manifest.json` always-present at install + graceful absence in 4 hardcoded callers. *(warp-setup.js confirmed to create manifest at install. All 4 callers — `scripts/agents/cli.js test --all`, `scripts/manifest/cli.js`, `scripts/dispatch/manifest-patch.js`, `scripts/delta-canonical-dispatch-smoke.js` — now emit actionable error messages naming `/warp:setup` as the fix when manifest is missing. `manifest-patch.js#readManifest` upgraded to throw typed errors (MANIFEST_MISSING / MANIFEST_UNREADABLE / MANIFEST_INVALID) so callers can react instead of crashing on raw `ENOENT`.)*
-- **[open] `/sprint:full` Beta consultation honesty.** Orchestrator emits placeholder `DECIDE` events without actual `SendMessage` round-trip. Needs design work: either dispatch-from-subprocess pattern (orchestrator runs as `spawnSync`-d node; can't easily reach in-process teammates), or halt-at-each-Beta-boundary with operator-driven consult between phases. Beta cadence in `_docs/sprint/AUTONOMY.md` is aspirational until then.
+- **[shipped — SP-20260525-003 + SP-20260525-004 → milestone 0.11.0]** `/sprint:full` Beta consultation honesty. Orchestrator now runs real consults via halt-at-Beta-boundary (`full.js#maybeConsultBeta` + verdict guard + `beta_consult_pending` resume contract); `/check:sprint-beta-honesty` audits placeholder-vs-real consults; `_docs/sprint/AUTONOMY.md` names the enforcer. Two hardening follow-ups remain open in the Sprint 11+ list below (runtime un-fakeable verdicts + gate wiring).
 
 ### Loose ends from the 2026-05-23 batch
 
@@ -316,8 +315,8 @@ Every sprint that has been planned, executed, released, or retrospected — one 
 | [SP-20260525-007](.claude/project/sprint/sprints/SP-20260525-007/) | Same-name agent collision detection at install (milestone 0.12.0 sprint 3) | planning | 2026-05-23T08:41:19.651Z |  |  |
 | [SP-20260525-006](.claude/project/sprint/sprints/SP-20260525-006/) | Installer branch-safety — warp/install-timestamp branch default (milestone 0.12.0 sprint 2) | planning | 2026-05-23T08:41:19.590Z |  |  |
 | [SP-20260525-005](.claude/project/sprint/sprints/SP-20260525-005/) | DreamTeam orchestrator capsule fix — include sprintFullAutonomy + sprintSchemas in next capsule (milestone 0.12.0 sprint 1) | planning | 2026-05-23T08:41:19.513Z |  |  |
-| [SP-20260525-004](.claude/project/sprint/sprints/SP-20260525-004/) | Beta-honesty enforcement skill — /check:sprint-beta-honesty + AUTONOMY.md enforced (milestone 0.11.0 sprint 2) | planning | 2026-05-23T08:35:28.330Z |  |  |
-| [SP-20260525-003](.claude/project/sprint/sprints/SP-20260525-003/) | Orchestrator-Beta bridge — choose dispatch-from-subprocess or halt-at-Beta-boundary (milestone 0.11.0 sprint 1) | planning | 2026-05-23T08:31:03.533Z |  |  |
+| [SP-20260525-004](.claude/project/sprint/sprints/SP-20260525-004/) | Beta-honesty enforcement skill — /check:sprint-beta-honesty + AUTONOMY.md enforced (milestone 0.11.0 sprint 2) | retrospected | 2026-05-23T08:35:28.330Z | 2026-05-25T08:18:16.889Z |  |
+| [SP-20260525-003](.claude/project/sprint/sprints/SP-20260525-003/) | Orchestrator-Beta bridge — choose dispatch-from-subprocess or halt-at-Beta-boundary (milestone 0.11.0 sprint 1) | retrospected | 2026-05-23T08:31:03.533Z | 2026-05-25T08:18:08.207Z |  |
 | [SP-20260525-002](.claude/project/sprint/sprints/SP-20260525-002/) | Post-scrub gate hardening — flip ROOT_LEAK_PENDING_SCRUB=false (milestone 0.10.0 sprint 2) | planning | 2026-05-23T08:29:29.626Z |  |  |
 | [SP-20260525-001](.claude/project/sprint/sprints/SP-20260525-001/) | Maintainer canonical scrub orchestration (milestone 0.10.0 sprint 1) | planning | 2026-05-23T08:24:22.273Z |  |  |
 | [SP-20260524-004](.claude/project/sprint/sprints/SP-20260524-004/) | Versioned migrations + user-override tracking in MANIFEST | planning | 2026-05-23T07:42:02.215Z |  |  |

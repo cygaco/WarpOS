@@ -1,0 +1,83 @@
+schema: "warpos/sprint/sprint-retrospective/v1"
+sprint_id: "SP-20260525-003"
+plan_contract_id: "PC-20260523-0037"
+synthesis_mode: "llm"
+summary: "Sprint 1 of milestone 0.11.0 (Sprint Workflow Honesty). The /sprint:full orchestrator was emitting placeholder DECIDE events without actually consulting Beta, because the spawnSync'd subprocess cannot reach in-process SendMessage teammates. This sprint chose and shipped design (b): halt-at-Beta-boundary. full.js now halts at each Phase Beta boundary, persists a beta_consult_pending checkpoint, and resumes after a real Alpha-driven Beta consult, guarded by validateBetaVerdict and message sanitization. Real consults replace placeholders; the autonomy ladder rung becomes load-bearing."
+outcomes_shipped:
+  - outcome: "Real Beta consults in /sprint:full via halt-at-boundary (maybeConsultBeta + validateBetaVerdict + BETA_VERDICTS)"
+    evidence:
+      - "835110f"
+      - b45b18b
+    planned: true
+  - outcome: "Resume contract: beta_consult_pending checkpoint; --resume correctly gates past the first Beta boundary"
+    evidence:
+      - b6e3408
+      - a5512f9
+    planned: true
+  - outcome: "ADR documenting the (a) subprocess-bridge vs (b) halt-at-boundary decision + provider routing trace"
+    evidence:
+      - dcf6efd
+    planned: true
+outcomes_missed:
+  - outcome: "Runtime rejection of placeholder/empty Beta verdicts (un-fakeable consults)"
+    reason: "Scoped as detect-after-the-fact for sprint 1; runtime refusal deferred to a 0.11.0 follow-up (T-213) and shipped in e243ffd"
+    disposition: deferred
+plan_quality_actual:
+  predicted_status: good
+  actual_status: held
+  predicted_confidence: medium-high
+  evidence_gaps_predicted: []
+  evidence_gaps_actual: []
+  notes: "The two-design framing (subprocess bridge vs halt-at-boundary) held; halt-at-boundary won on simplicity + crash-recovery + operator-UX. No scope surprises."
+scope_variant_actual:
+  planned_variant: recommended
+  actual_variant: recommended
+  adhered: true
+  drift_notes: "Shipped the recommended design (b) end-to-end; deferred only the runtime-unfakeable hardening to a named follow-up."
+surprises: []
+friction_points:
+  - friction: "spawnSync'd orchestrator subprocess cannot reach in-process SendMessage teammates — the root cause that made placeholder DECIDE events possible"
+    category: infrastructure
+    evidence:
+      - "835110f"
+    severity: medium
+action_items:
+  - action: "Make Beta consults un-fakeable at runtime (reject empty/whitespace beta_message; refuse to advance past a Beta boundary without a real verdict)"
+    owner: alpha
+    due_by: "0.11.0 follow-up (shipped e243ffd)"
+    linked_friction: placeholder DECIDE events
+tickets_completed:
+  - T-20260525-210
+  - T-20260525-211
+  - T-20260525-212
+tickets_deferred:
+  - T-20260525-213
+tickets_abandoned: []
+tickets_reopened: []
+issues_encountered: []
+beta_decisions_reviewed: []
+key_tradeoffs:
+  - "Chose halt-at-Beta-boundary (design b) over a subprocess->runtime bridge (design a): simpler, crash-recoverable, operator-visible — at the cost of pausing the autonomous run at each Beta boundary instead of a fully unattended round-trip."
+learning_candidates:
+  - learning: "An orchestrator that runs as a spawned subprocess cannot consult in-process teammates; honest agent consultation requires either a transport bridge or a halt-and-resume boundary."
+    evidence:
+      - "835110f"
+      - dcf6efd
+    promote_via: deferred
+release_record_ref: null
+synthesis_metadata:
+  model_class: reasoning
+  provider: claude
+  model_id: claude-opus-4-7
+  duration_ms: 0
+  output_chars: 0
+  fallback_reason: null
+signed_off_by: "alpha"
+signed_off_at: "2026-05-25T08:18:08.207Z"
+retro_metadata:
+  synthesized_at: "2026-05-25T08:18:08.207Z"
+  writer_version: "1.0.0"
+  history_record: ""
+  force_overwrite: false
+created_at: "2026-05-25T08:18:08.207Z"
+updated_at: "2026-05-25T08:18:08.207Z"
