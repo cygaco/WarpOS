@@ -409,7 +409,12 @@ process.stdin.on("end", () => {
     // it as a file; the PostToolUse formatter will keep it tidy.
     if (
       /node\s+-e\s/.test(cmd) &&
-      /fs\.(writeFileSync|appendFileSync|write|createWriteStream)|require\s*\(\s*['"]fs['"]\s*\)/.test(
+      // W-5: match fs WRITE methods only. Previously a bare `require('fs')`
+      // (or any `fs.write*`) tripped this guard even for read-only one-liners
+      // (fs.readFileSync / readdirSync), forcing a script file for a pure read.
+      // Narrowed to the write families (write/append/mkdir/rm/unlink/rename/
+      // cp/truncate/createWriteStream) so read-only `node -e` passes through.
+      /fs\.(writeFile|writeFileSync|appendFile|appendFileSync|mkdir|mkdirSync|rm|rmSync|rmdir|rmdirSync|unlink|unlinkSync|rename|renameSync|cp|cpSync|copyFile|copyFileSync|truncate|truncateSync|createWriteStream)\b/.test(
         cmd,
       )
     ) {

@@ -52,6 +52,23 @@ function loadJson(p) {
 
 function main() {
   const args = parseArgs(process.argv);
+  // WG-1: fail soft with an actionable message when a required sprint path key
+  // is missing from the registry (a stale/partial paths.json — e.g. a merge
+  // that didn't regenerate the generated artifact). Previously this surfaced
+  // as an opaque `path.join(undefined)` ERR_INVALID_ARG_TYPE deeper down.
+  const requiredKeys = args.file
+    ? ["sprintSchemas"]
+    : ["sprintFullAutonomy", "sprintSchemas"];
+  const missingKeys = requiredKeys.filter((k) => !PATHS[k]);
+  if (missingKeys.length > 0) {
+    process.stderr.write(
+      `autonomy path key(s) not registered in .claude/paths.json: ` +
+        `${missingKeys.join(", ")}. The sprint-full subsystem cannot resolve ` +
+        `its config. Run \`node scripts/paths/build.js\` to regenerate the ` +
+        `registry, then re-run /warp:health.\n`,
+    );
+    return 1;
+  }
   const cfgPath = args.file
     ? path.resolve(args.file)
     : path.join(REPO_ROOT, PATHS.sprintFullAutonomy);
