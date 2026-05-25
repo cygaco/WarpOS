@@ -20,6 +20,7 @@
 const fs = require("fs");
 const path = require("path");
 const os = require("os");
+const { spawnSync } = require("child_process");
 
 const driver = require("./orchestrate");
 const { detectRepoState } = require("./lib/detect");
@@ -333,6 +334,27 @@ function testCorruptState() {
   fs.rmSync(tmp, { recursive: true, force: true });
 }
 
+// ------------------------------------------------ main() arg-order, end-to-end (LM-NEW-1 integration)
+// LM-NEW-1 was an ORDER bug in main(); the unit guards cover the pieces, this locks
+// the wiring: a bad --phase + --resume must exit 2 and leave durable state untouched.
+function testMainArgOrder() {
+  process.stdout.write("\nE2E — main() validates --phase BEFORE any state write (LM-NEW-1 integration)\n");
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "lastmile-argorder-"));
+  const sf = path.join(tmp, "s.json");
+  const seeded = { schema: "warpos/bootstrap/lastmile-state/v1", completed: ["preflight", "audit", "plan"], awaiting: "inject", phases: {} };
+  fs.writeFileSync(sf, JSON.stringify(seeded), "utf8");
+  const r = spawnSync(
+    process.execPath,
+    [path.join(__dirname, "orchestrate.js"), "--resume", "--phase", "injcet", "--state", sf, "--repo-root", tmp],
+    { encoding: "utf8" },
+  );
+  const after = JSON.parse(fs.readFileSync(sf, "utf8"));
+  if (r.status === 2 && after.awaiting === "inject" && !after.completed.includes("inject"))
+    ok("bad --phase + --resume exits 2 with durable state UNTOUCHED (marker not consumed)");
+  else fail("main arg-order", `exit=${r.status} awaiting=${after.awaiting} completed=${JSON.stringify(after.completed)}`);
+  fs.rmSync(tmp, { recursive: true, force: true });
+}
+
 (async () => {
   testDriver();
   await testPreflight();
@@ -346,6 +368,7 @@ function testCorruptState() {
   testResumeGuard();
   testArgsHardening();
   testCorruptState();
+  testMainArgOrder();
   await testChain();
   process.stdout.write(`\nlastmile-orchestrate test: ${passed} passed, ${failed} failed\n`);
   process.exit(failed === 0 ? 0 : 1);

@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-05-25T23:20:51.233Z",
+  "generatedAt": "2026-05-25T23:25:33.467Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.10.0",
   "migrations": [],
@@ -4307,8 +4307,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/bootstrap/lastmile/test-orchestrate.js",
-      "sha256": "adfecb43496651ecde567933db64a6e3d7b7492fa195f1c26c85dc3151299ffe",
-      "installedSha": "adfecb43496651ecde567933db64a6e3d7b7492fa195f1c26c85dc3151299ffe"
+      "sha256": "05511c63967de6e1e18cf44cbe8c34a197a62d045b9fe66bd336a101b794c4c5",
+      "installedSha": "05511c63967de6e1e18cf44cbe8c34a197a62d045b9fe66bd336a101b794c4c5"
     },
     "scripts/bootstrap/lastmile/phases/audit.js": {
       "owner": "framework",
