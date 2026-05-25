@@ -1,7 +1,7 @@
 {
   "$schema": "warpos/hook-manifest/v1",
   "generatedFrom": "framework/hooks.registry.json",
-  "updatedAt": "2026-05-22T23:09:44.309Z",
+  "updatedAt": "2026-05-25T21:28:35.797Z",
   "hooks": {
     "session-start.js": {
       "script": "scripts/hooks/session-start.js",
@@ -974,6 +974,23 @@
     },
     "skill-catalog-regen.js": {
       "script": "scripts/hooks/skill-catalog-regen.js",
+      "events": [
+        {
+          "hookEvent": "PostToolUse",
+          "matcher": "Edit|Write"
+        }
+      ],
+      "failMode": "fail-open",
+      "blocks": [],
+      "testFixtures": [
+        "fixtures/hooks/default/post-edit.json"
+      ],
+      "owner": "framework",
+      "fixturesRequired": true,
+      "enabled": true
+    },
+    "memory-enforcement-guard.js": {
+      "script": "scripts/hooks/memory-enforcement-guard.js",
       "events": [
         {
           "hookEvent": "PostToolUse",

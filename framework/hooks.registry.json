@@ -701,6 +701,17 @@
       "testFixtures": ["fixtures/hooks/default/post-edit.json"]
     },
     {
+      "id": "memory-enforcement-guard",
+      "script": "scripts/hooks/memory-enforcement-guard.js",
+      "owner": "framework",
+      "enabled": true,
+      "failMode": "fail-open",
+      "fixturesRequired": true,
+      "purpose": "Remind to pair a new auto-memory entry with an enforcer (operator rule 2026-05-25). PostToolUse additionalContext + stderr; always exits 0, never blocks.",
+      "registrations": [{ "event": "PostToolUse", "matcher": "Edit|Write" }],
+      "testFixtures": ["fixtures/hooks/default/post-edit.json"]
+    },
+    {
       "id": "lint-hook-output",
       "script": "scripts/hooks/lint-hook-output.js",
       "owner": "framework",

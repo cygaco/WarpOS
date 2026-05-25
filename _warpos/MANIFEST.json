@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-05-25T21:14:49.541Z",
+  "generatedAt": "2026-05-25T21:30:35.478Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.9.0",
   "migrations": [],
@@ -1472,8 +1472,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/generate-framework-manifest.js",
-      "sha256": "04148eeda651d912149b6aaa73d61c4dd04dbb631656f76cb1423025b02bd56a",
-      "installedSha": "04148eeda651d912149b6aaa73d61c4dd04dbb631656f76cb1423025b02bd56a"
+      "sha256": "4cd097fa11f8ff0e97a753933d61495cdaf9ed2c7f8faedf5e5c4ac5f0238545",
+      "installedSha": "4cd097fa11f8ff0e97a753933d61495cdaf9ed2c7f8faedf5e5c4ac5f0238545"
     },
     "scripts/generate-maps.js": {
       "owner": "framework",
@@ -2487,8 +2487,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/warpos/update.js",
-      "sha256": "bd19e5cdc205f580978db58163caf8f7b8532ca2af1347a5160136f632c14088",
-      "installedSha": "bd19e5cdc205f580978db58163caf8f7b8532ca2af1347a5160136f632c14088"
+      "sha256": "6dd7c4f4b20ad78002c7861d0be12437796b30f33f574c4f36fc164e9213b6b7",
+      "installedSha": "6dd7c4f4b20ad78002c7861d0be12437796b30f33f574c4f36fc164e9213b6b7"
     },
     "scripts/warpos/worktree-audit.js": {
       "owner": "framework",
@@ -3481,8 +3481,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/hook-manifest.json",
-      "sha256": "60a08cdf38a87d8c95c610397e3af7491c72add85fa40f2854f01968443b2914",
-      "installedSha": "60a08cdf38a87d8c95c610397e3af7491c72add85fa40f2854f01968443b2914"
+      "sha256": "b1afa8a96d36f1dbee00808636a97c0b7e242a0b8e3eb4f85739aa9b8dc00fff",
+      "installedSha": "b1afa8a96d36f1dbee00808636a97c0b7e242a0b8e3eb4f85739aa9b8dc00fff"
     },
     "scripts/hooks/learning-validator.js": {
       "owner": "framework",
@@ -4573,8 +4573,8 @@
       "owner": "framework",
       "managed": true,
       "source": "framework/hooks.registry.json",
-      "sha256": "e29e44754eaa444865231d6d3f171d1290e63dc5e334ba3769d55568b3f2b3ef",
-      "installedSha": "e29e44754eaa444865231d6d3f171d1290e63dc5e334ba3769d55568b3f2b3ef"
+      "sha256": "a79e0740620f987d57b4f8db27c28783057e29815ef1ed9834ff0c21c980f663",
+      "installedSha": "a79e0740620f987d57b4f8db27c28783057e29815ef1ed9834ff0c21c980f663"
     },
     "framework/paths.registry.json": {
       "owner": "framework",
@@ -5894,6 +5894,10 @@
       "managed": false
     },
     ".claude/.session-checkpoint.json": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/.session-start-commit": {
       "owner": "runtime",
       "managed": false
     },
@@ -12065,6 +12069,10 @@
       "managed": false
     },
     ".claude/project/builds/builder-unknown-31f35dc303/transaction.json": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/builds/builder-fixture-57d0677ea6/transaction.json": {
       "owner": "runtime",
       "managed": false
     },
