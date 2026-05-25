@@ -299,6 +299,7 @@ Every sprint that has been planned, executed, released, or retrospected — one 
 
 | Sprint | Title | Status | Started | Closed | Release |
 |---|---|---|---|---|---|
+| [SP-20260525-018](.claude/project/sprint/sprints/SP-20260525-018/) | WarpOS installer completeness: complete + sprint-capable fresh installs | retrospected | 2026-05-25T04:14:53.702Z | 2026-05-25T05:11:06.607Z |  |
 | [SP-20260525-017](.claude/project/sprint/sprints/SP-20260525-017/) | Wire existing /roadmap:* through DoPM (milestone 0.14.0 sprint 4) | planning | 2026-05-23T08:52:01.116Z |  |  |
 | [SP-20260525-016](.claude/project/sprint/sprints/SP-20260525-016/) | /roadmap:create skill — fresh-roadmap bootstrap using DoPM (milestone 0.14.0 sprint 3) | planning | 2026-05-23T08:48:35.685Z |  |  |
 | [SP-20260525-015](.claude/project/sprint/sprints/SP-20260525-015/) | Director of Product Management agent spec (milestone 0.14.0 sprint 2) | planning | 2026-05-23T08:48:35.617Z |  |  |

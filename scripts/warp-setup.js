@@ -18,7 +18,7 @@
  * 6. Reports health status
  */
 
-const { execSync } = require("child_process");
+const { execSync, spawnSync } = require("child_process");
 const fs = require("fs");
 const path = require("path");
 const readline = require("readline");
@@ -573,52 +573,117 @@ installed += installedThisRun;
 // WarpOS does not ship a paths.json — the installer builds it here so every client
 // project gets its own. To move a location, edit this object (and lib/paths.js fallback).
 const pathsFile = path.join(TARGET, ".claude/paths.json");
-if (!fs.existsSync(pathsFile)) {
+// SP-20260525-018: source the product paths.json from the SINGLE registry
+// (framework/paths.registry.json) instead of a hardcoded map, so every
+// product gets ALL keys — sprint-orchestrator infra (sprintFullAutonomy,
+// sprintSchemas, …) and the _requirements zones — and stays in sync as the
+// registry grows. A-015-safe: keys live in the registry, never raw-inserted.
+// Idempotent: fresh install writes the full map; re-run backfills only
+// MISSING keys (operator values are never overwritten).
+const registryFile = path.join(TARGET, "framework", "paths.registry.json");
+let _registry = null;
+try {
+  _registry = JSON.parse(fs.readFileSync(registryFile, "utf8"));
+} catch {
+  /* registry not installed (older capsule) — fall back below */
+}
+const _regEntries = _registry ? _registry.paths || _registry : null;
+if (_regEntries) {
+  const flat = { version: 3 };
+  for (const [key, entry] of Object.entries(_regEntries)) {
+    if (entry && typeof entry === "object" && typeof entry.path === "string") {
+      flat[key] = entry.path;
+    }
+  }
+  if (!fs.existsSync(pathsFile)) {
+    fs.writeFileSync(pathsFile, JSON.stringify(flat, null, 2) + "\n");
+    log("ok", `Created paths.json from registry (${Object.keys(flat).length} keys)`);
+    installed++;
+  } else {
+    // Idempotent backfill — add only keys the existing file is missing.
+    const existing = JSON.parse(fs.readFileSync(pathsFile, "utf8"));
+    let added = 0;
+    for (const [k, v] of Object.entries(flat)) {
+      if (!(k in existing)) {
+        existing[k] = v;
+        added++;
+      }
+    }
+    if (added > 0) {
+      fs.writeFileSync(pathsFile, JSON.stringify(existing, null, 2) + "\n");
+      log("ok", `Backfilled paths.json (+${added} missing keys incl. sprint infra)`);
+    } else {
+      log("ok", "paths.json already complete");
+    }
+  }
+  // Scaffold every runtime dir the registry declares (kind=dir) so the sprint
+  // orchestrator + zones exist on disk. Idempotent.
+  for (const entry of Object.values(_regEntries)) {
+    if (entry && typeof entry === "object" && entry.kind === "dir" && typeof entry.path === "string") {
+      try {
+        fs.mkdirSync(path.join(TARGET, entry.path), { recursive: true });
+      } catch {
+        /* best-effort */
+      }
+    }
+  }
+} else if (!fs.existsSync(pathsFile)) {
+  // Fallback when the registry is absent (pre-0.8 capsule): minimal map.
   const paths = {
     version: 3,
     events: ".claude/project/events",
     memory: ".claude/project/memory",
-    maps: ".claude/project/maps",
     reference: ".claude/project/reference",
     runtime: ".claude/runtime",
-    logs: ".claude/runtime/logs",
-    handoffs: ".claude/runtime/handoffs",
-    handoffLatest: ".claude/runtime/handoff.md",
-    plans: ".claude/runtime/plans",
     agents: ".claude/agents",
-    agentSystem: ".claude/agents/00-alex/.system",
-    betaSystem: ".claude/agents/00-alex/.system/beta",
     commands: ".claude/commands",
-    content: ".claude/content",
-    dreams: ".claude/dreams",
-    favorites: ".claude/content/favorites",
-    hooks: "scripts/hooks",
-    hookLib: "scripts/hooks/lib",
-    patterns: "patterns",
-    requirements: "requirements",
     manifest: ".claude/manifest.json",
     settings: ".claude/settings.json",
-    store: ".claude/agents/store.json",
     eventsFile: ".claude/project/events/events.jsonl",
-    toolsFile: ".claude/project/events/tools.jsonl",
-    requirementsFile: ".claude/project/events/requirements.jsonl",
-    requirementsStagedFile: ".claude/project/events/requirements-staged.jsonl",
     learningsFile: ".claude/project/memory/learnings.jsonl",
-    tracesFile: ".claude/project/memory/traces.jsonl",
-    systemsFile: ".claude/project/memory/systems.jsonl",
-    specGraph: ".claude/project/maps/SPEC_GRAPH.json",
-    judgmentModel: ".claude/agents/00-alex/.system/beta/judgement-model.md",
-    judgmentRecommendations:
-      ".claude/agents/00-alex/.system/beta/judgement-model-recommendations.md",
-    betaSourceData: ".claude/agents/00-alex/.system/beta/beta-source-data.md",
-    betaEvents: ".claude/agents/00-alex/.system/beta/events.jsonl",
-    lexicon: ".claude/agents/00-alex/.system/lexicon.md",
-    pathsLib: "scripts/hooks/lib/paths.js",
-    loggerLib: "scripts/hooks/lib/logger.js",
   };
   fs.writeFileSync(pathsFile, JSON.stringify(paths, null, 2) + "\n");
-  log("ok", "Created paths.json");
+  log("warn", "Created minimal paths.json (registry not found)");
   installed++;
+}
+
+// ── 5b. Structure-parity skeleton + _docs zones (SP-20260525-018) ──
+// Guarantee every dir /check:warpos-structure-parity declares, plus the
+// _docs brief/clone homes, exist. Idempotent; .gitkeep so git tracks them.
+const SKELETON_DIRS = [
+  "_requirements/_audits", "_requirements/_index", "_requirements/_shared",
+  "_requirements/_standards", "_requirements/00-canonical",
+  "_requirements/01-design-system", "_requirements/02-copy-system",
+  "_requirements/03-architecture", "_requirements/04-features",
+  "_requirements/05-operations", "_requirements/06-security",
+  "_requirements/07-testing", "_requirements/08-automation",
+  "_docs", "_docs/briefs", "_docs/clones",
+];
+let _skeletonNew = 0;
+for (const d of SKELETON_DIRS) {
+  const abs = path.join(TARGET, d);
+  try {
+    if (!fs.existsSync(abs)) _skeletonNew++;
+    fs.mkdirSync(abs, { recursive: true });
+    const keep = path.join(abs, ".gitkeep");
+    if (!fs.existsSync(keep)) fs.writeFileSync(keep, "");
+  } catch {
+    /* best-effort */
+  }
+}
+log("ok", `Skeleton zones ensured (_requirements/*, _docs/; ${_skeletonNew} created this run)`);
+
+// ── 5c. ROADMAP scaffold (SP-20260525-018) ─────────────────
+// Idempotent — generate-roadmap-scaffold.js no-ops when ROADMAP.md exists.
+try {
+  const rmGen = path.join(WARPOS, "scripts", "warpos", "generate-roadmap-scaffold.js");
+  if (fs.existsSync(rmGen)) {
+    const r = spawnSync("node", [rmGen, TARGET], { encoding: "utf8" });
+    if (r.status === 0) log("ok", "ROADMAP.md scaffold ensured");
+    else log("warn", `ROADMAP scaffold skipped: ${(r.stderr || "").trim().slice(0, 80)}`);
+  }
+} catch {
+  /* non-fatal */
 }
 
 // ── 6. Create manifest.json ─────────────────────────────

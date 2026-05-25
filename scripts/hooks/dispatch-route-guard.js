@@ -159,6 +159,36 @@ function findForbidden(rawCmd) {
   return null;
 }
 
+/**
+ * Non-blocking advisory: a `claude -p … --agent <role>` invocation whose prompt
+ * is inlined as a command-substitution argv (`"$(cat file)"` / backtick-cat)
+ * rather than piped via stdin (`< file`). The inlined form works for small
+ * prompts but blows the OS arg-length limit ("Argument list too long", exit
+ * 126) for the large diff-bearing reviewer/redteam fallback prompts the
+ * orchestrators build (observed twice at 41KB+ in SP-20260525-004). This is
+ * NOT forbidden — small prompts are fine — so we WARN, not block, and surface
+ * the stdin form. Returns null when no advisory applies.
+ */
+function findAdvisory(rawCmd) {
+  const cmd = rawCmd.replace(/\r?\n/g, " ").trim();
+  if (!cmd) return null;
+  // Only relevant to the documented claude --agent fallback path.
+  if (!isClaudeAgentInvocation(cmd)) return null;
+  // Already piping via a stdin redirect somewhere in the command → safe form.
+  if (/<\s*\S/.test(cmd)) return null;
+  // Prompt supplied via command substitution that inlines a file's contents:
+  //   "$(cat file)"  |  $(cat file)  |  `cat file`  (cat/type/Get-Content)
+  const inlinesFileSub =
+    /\$\(\s*(?:cat|type|Get-Content)\b[^)]*\)/i.test(cmd) ||
+    /`\s*(?:cat|type|Get-Content)\b[^`]*`/i.test(cmd);
+  if (!inlinesFileSub) return null;
+  return {
+    advisory: "claude -p --agent with $(cat <file>) argv",
+    detail:
+      "large agent prompts (diff-bearing reviewer/redteam fallbacks) overflow the OS arg-length limit when inlined as an argv via $(cat …) — they die with 'Argument list too long' (exit 126). Pipe the prompt via stdin instead: `claude -p --model <m> --agent <role> < <prompt-file>`. Small prompts are unaffected; this is a warning, not a block.",
+  };
+}
+
 // --- Hook plumbing --------------------------------------------------------
 
 let input = "";
@@ -174,7 +204,28 @@ process.stdin.on("end", () => {
     if (probeBypass(cmd)) process.exit(0);
 
     const hit = findForbidden(cmd);
-    if (!hit) process.exit(0);
+    if (!hit) {
+      // Non-blocking advisory: inlined-argv prompt that will overflow arg-length
+      // for large fallback prompts. Surface the stdin form; do not block.
+      const adv = findAdvisory(cmd);
+      if (adv) {
+        try {
+          const { logEvent } = require("./lib/logger");
+          logEvent("warn", "system", "dispatch-route-guard", "", adv.advisory);
+        } catch {
+          /* logger optional */
+        }
+        process.stdout.write(
+          JSON.stringify({
+            hookSpecificOutput: {
+              hookEventName: "PreToolUse",
+              additionalContext: `[dispatch-route-guard] ${adv.detail}`,
+            },
+          }),
+        );
+      }
+      process.exit(0);
+    }
 
     const guidePathHint = path.posix.join(
       ".claude",
@@ -206,4 +257,4 @@ process.stdin.on("end", () => {
   }
 });
 
-module.exports = { findForbidden };
+module.exports = { findForbidden, findAdvisory };

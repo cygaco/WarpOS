@@ -69,6 +69,50 @@ for (const [cmd, expectedPattern] of FORBIDDEN) {
   }
 }
 
+// Advisory (non-blocking) detection: inlined $(cat file) argv on the
+// claude --agent fallback path should WARN (overflows arg-length for large
+// prompts) but NEVER block. The stdin form and small inline bodies must NOT warn.
+const ADVISORY_EXPECTED = [
+  'claude -p --model sonnet --agent reviewer "$(cat /tmp/prompt.txt)"',
+  "claude -p --agent redteam \"$(cat .claude/runtime/gamma-redteam.txt)\"",
+  "claude -p --model sonnet --agent qa `cat prompt.txt`",
+];
+const ADVISORY_SILENT = [
+  // stdin redirect — the recommended form
+  "claude -p --model sonnet --agent reviewer < /tmp/prompt.txt",
+  "claude -p --agent redteam < .claude/runtime/gamma-redteam.txt",
+  // small inline body, no command substitution — fine as argv
+  "claude -p --model sonnet --agent reviewer prompt-body",
+  "claude -p --agent qa some-prompt",
+  // not a claude --agent invocation
+  "node scripts/dispatch-agent.js reviewer /tmp/prompt.txt",
+  "cat foo.txt",
+];
+
+for (const cmd of ADVISORY_EXPECTED) {
+  const adv = guard.findAdvisory(cmd);
+  const blk = guard.findForbidden(cmd);
+  if (!adv) {
+    failed++;
+    failures.push(`ADVISORY missed: ${JSON.stringify(cmd)}`);
+  } else if (blk) {
+    failed++;
+    failures.push(`ADVISORY case wrongly BLOCKED: ${JSON.stringify(cmd)}`);
+  } else {
+    passed++;
+  }
+}
+
+for (const cmd of ADVISORY_SILENT) {
+  const adv = guard.findAdvisory(cmd);
+  if (adv) {
+    failed++;
+    failures.push(`ADVISORY false-positive: ${JSON.stringify(cmd)} → ${adv.advisory}`);
+  } else {
+    passed++;
+  }
+}
+
 if (failed > 0) {
   console.error(`FAIL — ${failed} of ${passed + failed} cases failed:`);
   for (const f of failures) console.error("  -", f);
@@ -76,6 +120,6 @@ if (failed > 0) {
 }
 
 console.log(
-  `OK — ${passed} cases passed (${SAFE.length} safe, ${FORBIDDEN.length} forbidden)`,
+  `OK — ${passed} cases passed (${SAFE.length} safe, ${FORBIDDEN.length} forbidden, ${ADVISORY_EXPECTED.length} advisory, ${ADVISORY_SILENT.length} advisory-silent)`,
 );
 process.exit(0);

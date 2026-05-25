@@ -111,6 +111,7 @@ const SCENARIOS = [
   { id: "3", slug: "dirty_uncommitted_preserved" },
   { id: "4", slug: "multi_version_upgrade" },
   { id: "5", slug: "user_overrides_preserved" },
+  { id: "6", slug: "adopt_path" },
 ];
 
 function resolveScenarios(spec) {
@@ -398,6 +399,36 @@ function scenario1_clean_install(scenario, fixtureDir, opts) {
         `hooks=${JSON.stringify(settings.hooks).slice(0, 100)}`,
       );
     }
+
+    // SP-20260525-018 (T-216 / AC-1.1, AC-2.1, AC-3.1, AC-3.2): the installer
+    // now scaffolds a complete, sprint-capable product. Assert the new zones,
+    // the sprint-orchestrator paths keys, and structure-parity on a fresh install.
+    for (const z of [
+      "ROADMAP.md",
+      ".claude/project/sprint",
+      ".claude/project/sprint/full-reports",
+      "_requirements/00-canonical",
+      "_requirements/04-features",
+      "_docs/briefs",
+      "_docs/clones",
+    ]) {
+      assert(`scaffolded: ${z} exists`, fs.existsSync(path.join(fixtureDir, z)), `expected ${z}`);
+    }
+    const pjPath = path.join(fixtureDir, ".claude", "paths.json");
+    if (fs.existsSync(pjPath)) {
+      const pj = JSON.parse(fs.readFileSync(pjPath, "utf8"));
+      for (const k of ["sprintFullAutonomy", "sprintSchemas", "requirementsRoot"]) {
+        assert(`paths.json has ${k}`, typeof pj[k] === "string" && pj[k].length > 0, `missing ${k}`);
+      }
+    }
+    const sp = runNode("scripts/checks/warpos-structure-parity.js", [], {
+      env: { CLAUDE_PROJECT_DIR: fixtureDir },
+    });
+    assert(
+      "structure-parity passes on fresh install",
+      sp.code === 0,
+      `code=${sp.code} ${(sp.stdout || sp.stderr || "").slice(0, 120)}`,
+    );
   }
 
   r.durationMs = Date.now() - t0;
@@ -844,6 +875,57 @@ function applyInjectionAfterInstall(fixtureDir, name) {
   reg.apply(fixtureDir);
 }
 
+// scenario6_adopt_path — SP-20260525-018 (T-217/AC-4 + T-218/AC-5.1 adopt mode).
+// Seeds a temp clone brief in canonical, adopts it into the fixture with
+// --skip-new, and asserts the brief lands under _docs/clones/<slug>/ (NOT the
+// repo root). adopt MOVES the source, so a clean run consumes it; the finally
+// block removes any residue if adopt fails mid-move.
+function scenario6_adopt_path(scenario, fixtureDir, opts) {
+  const r = { id: scenario.id, name: scenario.slug, status: "pass", assertions: [], durationMs: 0 };
+  const assert = mkAssert(r);
+  const t0 = Date.now();
+
+  const probeSlug = "matrix-adopt-probe";
+  const srcBriefDir = path.join(REPO_ROOT, "_docs", "clones", probeSlug);
+  try {
+    fs.mkdirSync(path.join(srcBriefDir, "_raw"), { recursive: true });
+    fs.writeFileSync(path.join(srcBriefDir, `${probeSlug}.clone.md`), "# probe brief\n");
+    fs.writeFileSync(path.join(srcBriefDir, "_raw", "page.html"), "<html></html>\n");
+
+    const adopt = runNode(
+      "scripts/portfolio/adopt.js",
+      [probeSlug, "--target-path", fixtureDir, "--skip-new"],
+      { timeout: 30_000 },
+    );
+    assert("adopt exits 0", adopt.code === 0, `code=${adopt.code} stderr=${(adopt.stderr || "").slice(0, 200)}`);
+
+    assert(
+      "adopted brief lands under _docs/clones/<slug>/",
+      fs.existsSync(path.join(fixtureDir, "_docs", "clones", probeSlug, `${probeSlug}.clone.md`)),
+      "expected _docs/clones/<slug>/<slug>.clone.md",
+    );
+    assert(
+      "adopted subdir (_raw) preserved under _docs/clones/<slug>/",
+      fs.existsSync(path.join(fixtureDir, "_docs", "clones", probeSlug, "_raw", "page.html")),
+      "expected _docs/clones/<slug>/_raw/page.html",
+    );
+    assert(
+      "brief NOT dropped at repo root (T-217 regression guard)",
+      !fs.existsSync(path.join(fixtureDir, `${probeSlug}.clone.md`)),
+      "brief should not be at repo root",
+    );
+  } finally {
+    try {
+      fs.rmSync(srcBriefDir, { recursive: true, force: true });
+    } catch {
+      /* best-effort cleanup */
+    }
+  }
+
+  r.durationMs = Date.now() - t0;
+  return r;
+}
+
 // ── Main run loop ────────────────────────────────────────────────────
 
 const SCENARIO_FNS = {
@@ -852,6 +934,7 @@ const SCENARIO_FNS = {
   3: scenario3_dirty_uncommitted_preserved,
   4: scenario4_multi_version_upgrade,
   5: scenario5_user_overrides_preserved,
+  6: scenario6_adopt_path,
 };
 
 function emitEvent(kind, payload) {

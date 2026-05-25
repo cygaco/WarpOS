@@ -1,0 +1,134 @@
+schema: warpos/sprint/plan-contract/v1
+id: PC-20260525-0052
+created_at: "2026-05-25T04:18:24.205Z"
+updated_at: "2026-05-25T04:25:30.000Z"
+sprint: SP-20260525-018
+source_request: "WarpOS installer completeness: make warp-setup.js produce complete, sprint-capable fresh product installs — ROADMAP scaffold, sprint-orchestrator infra, _requirements/* + _docs/ skeletons, and adopt-brief placement under _docs/."
+source_request_verbatim: "WarpOS installer completeness: warp-setup.js must produce complete, sprint-capable fresh product installs. (1) generate ROADMAP.md via generate-roadmap-scaffold.js during setup; (2) scaffold sprint-orchestrator infra at install (.claude/project/sprint/ dirs + sprintFullAutonomy/sprintSchemas keys in installed paths.json); (3) scaffold _requirements/* + _docs/ skeleton zones; (4) /portfolio:adopt lands moved briefs under _docs/ not the repo root. Acceptance: fresh install passes /check:install + /check:warpos-structure-parity and is sprint-capable. Out of scope: the _warpos/ source-mirror migration."
+request_type: feature_modify
+interpreted_intent: "warp-setup.js installs the .claude/ runtime + copies engine dirs to the repo root, but never scaffolds ROADMAP.md, the sprint-orchestrator runtime infra, or the _requirements/* + _docs/ skeleton zones — so a fresh product (verified on companycam 0.9.0) is not sprint-capable and fails /check:warpos-structure-parity. Make the installer produce a complete, sprint-capable install IDEMPOTENTLY (check-before-write, no regression on existing/upgrade-path installs)."
+user_or_business_outcome: "A freshly scaffolded product (via /portfolio:new) is immediately complete and sprint-capable: it has a ROADMAP, the sprint-orchestrator infra to run /sprint:full, the _requirements/* + _docs/ skeletons to hold specs/briefs, and adopted briefs land under _docs/. Passes /check:install + /check:warpos-structure-parity out of the box."
+affected_surfaces:
+  - surface: "scripts/warp-setup.js"
+    evidence_level: verified_from_repo
+    notes: "Idempotent scaffolding: run generate-roadmap-scaffold.js; create .claude/project/sprint/ runtime dirs; ensure sprintFullAutonomy/sprintSchemas keys in installed paths.json; create _requirements/* + _docs/ skeletons. Check-before-write throughout."
+  - surface: "scripts/portfolio/adopt.js"
+    evidence_level: verified_from_repo
+    notes: "Land moved brief under _docs/clones/<slug>/ (or _docs/briefs/<slug>/) instead of the repo root."
+  - surface: "scripts/warpos/generate-roadmap-scaffold.js"
+    evidence_level: verified_from_repo
+    notes: "Invoked by warp-setup; confirm it writes ROADMAP.md idempotently (skip if present)."
+  - surface: ".claude/paths.json (installed)"
+    evidence_level: inferred_from_repo
+    notes: "sprintFullAutonomy + sprintSchemas keys must be present in installed products' paths.json without breaking the compile/merge model."
+  - surface: "scripts/warpos/test-install-matrix.js"
+    evidence_level: verified_from_repo
+    notes: "Extend the 5-scenario matrix to assert new zones/infra are scaffolded on clean install AND that existing/upgrade installs are not regressed (idempotency guard)."
+current_behavior:
+  evidence_level: verified_from_repo
+  notes: "companycam 0.9.0 install: .claude/ + framework/scripts/schemas present at root, but NO ROADMAP.md, NO .claude/project/sprint/ dir, paths.json lacks sprintFullAutonomy/sprintSchemas, and no _requirements/_docs zones. /check:warpos-structure-parity would flag the missing _requirements/*."
+desired_behavior: "warp-setup.js idempotently scaffolds, for fresh AND re-run installs: (1) ROADMAP.md via generate-roadmap-scaffold.js; (2) .claude/project/sprint/ runtime dirs + sprintFullAutonomy/sprintSchemas keys in installed paths.json; (3) the _requirements/* skeleton (matching /check:warpos-structure-parity) + a _docs/ skeleton (_docs/briefs/, _docs/clones/); (4) /portfolio:adopt lands briefs under _docs/. ACCEPTANCE GATE: a fresh install passes /check:install + /check:warpos-structure-parity and is sprint-capable; existing installs are not regressed. Local commit; push operator-scoped."
+scope:
+  size: m
+  risk_level: medium
+  complexity_drivers:
+    - "Idempotency: every addition must check-before-write to avoid regressing existing/upgrade-path installs (highest-risk failure mode; install-matrix guards it)"
+    - "Installed paths.json is generated/merged — key insertion must respect the compile model so a recompile does not clobber it"
+    - "The exact sprint-orchestrator infra surface (which dirs/keys) must match what /sprint:full actually needs"
+scope_variants:
+  minimal_safe:
+    summary: "Scaffold ROADMAP + _requirements/_docs skeletons only; defer sprint-orchestrator infra."
+    tradeoffs:
+      - "Pro: smallest surface, closes the structure-parity gap"
+      - "Con: fresh installs still cannot run /sprint:full"
+  recommended:
+    summary: "All four (ROADMAP scaffold + sprint infra + _requirements/_docs skeletons + adopt placement), idempotent, with install-matrix assertions. Fresh installs are sprint-capable."
+    tradeoffs:
+      - "Pro: install is complete + sprint-capable; companycam fixable via re-setup"
+      - "Con: larger surface; needs careful idempotency + matrix coverage"
+  expanded:
+    summary: "recommended + the _warpos/ source-of-truth mirror migration."
+    tradeoffs:
+      - "Pro: full _warpos/-zone architecture realized"
+      - "Con: heavy, separate roadmapped migration — explicitly OUT OF SCOPE this sprint"
+assumptions:
+  safe:
+    - "scripts/warpos/generate-roadmap-scaffold.js exists and writes a consumer ROADMAP scaffold"
+    - "warp-setup.js is the install entry point and is intended to be safe to re-run"
+    - "/check:warpos-structure-parity declares the _requirements/* skeleton dirs we must match"
+  unsafe:
+    - "Installed paths.json may be generated/merged — naive key insertion could be clobbered by a recompile; needs the correct insertion point"
+  needs_user_or_beta_review:
+    - "Exact sprint-orchestrator infra surface (which paths keys + which dirs) a fresh install needs to run /sprint:full"
+open_questions:
+  blocking: []
+  non_blocking:
+    - "Should _requirements/* skeleton dirs carry .gitkeep so git tracks them, or are bare dirs enough for structure-parity?"
+    - "adopt briefs to _docs/clones/ (clone briefs) vs _docs/briefs/ (bootstrap briefs): route by source dir?"
+non_goals:
+  - "The _warpos/ source-of-truth mirror migration (heavy; tracked separately as the _warpos/-zone migration) — HARD non-goal; no ticket may drift toward it"
+  - "Backfilling the existing companycam repo directly from this WarpOS session (companycam is fixed by re-running /warp:setup in its own session)"
+  - "Changing the framework-at-root install model (separate from the _warpos/ migration)"
+requirement_areas:
+  - installer
+  - sprint-infra
+  - structure-parity
+  - portfolio-adopt
+high_level_story_candidates:
+  - "As an operator scaffolding a new product, the install includes a ROADMAP.md so I can plan immediately."
+  - "As an operator, a fresh product can run /sprint:full because the sprint-orchestrator infra (dirs + paths keys) is installed."
+  - "As an operator, a fresh product passes /check:install + /check:warpos-structure-parity with no missing _requirements/_docs zones."
+  - "As an operator, /portfolio:adopt files briefs under _docs/ instead of cluttering the repo root."
+granular_story_candidates:
+  - "warp-setup.js runs generate-roadmap-scaffold.js (skip if ROADMAP.md already present)."
+  - "warp-setup.js creates .claude/project/sprint/ runtime dirs + ensures sprintFullAutonomy/sprintSchemas keys in installed paths.json (idempotent)."
+  - "warp-setup.js scaffolds the _requirements/* skeleton (per structure-parity) + _docs/ (briefs/, clones/) — skip-if-present."
+  - "adopt.js lands the moved brief under _docs/clones/<slug>/ (clone) or _docs/briefs/<slug>/ (brief)."
+  - "Extend test-install-matrix.js: assert zones+infra scaffolded on clean install AND not regressed on existing/upgrade installs."
+  - "Verify a fresh install passes /check:install + /check:warpos-structure-parity (acceptance gate)."
+workstream_candidates:
+  - "Code: warp-setup.js scaffolding (idempotent)"
+  - "Code: adopt.js brief placement"
+  - "Tests: install-matrix assertions (clean + upgrade idempotency)"
+  - "Verify: /check:install + /check:warpos-structure-parity acceptance"
+preliminary_ticket_candidates:
+  allowed: false
+  notes: "Design confirms the exact sprint-infra surface (paths keys + dirs), the _requirements skeleton list, and the paths.json insertion point that survives recompile."
+external_service_dependencies:
+  status: none_expected
+approval_boundaries:
+  - "Modifies the installer — affects every future product install; install-matrix is the regression guard"
+  - "Push to remote — operator-scoped (orchestrator commits locally only)"
+design_required: true
+execution_allowed_without_design: false
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+lane:
+  type: default
+  value: null
+  isolation_notes: ""
+beta_review:
+  required: true
+  likely_founder_rejection_risks:
+    - "Over-scaffolding empty dirs the product does not need"
+  overbuild_risks:
+    - "Drifting toward the _warpos/ mirror (explicit non-goal)"
+  missing_context_risks:
+    - "Exact sprint-orchestrator infra surface a fresh install needs to run /sprint:full"
+plan_quality:
+  status: needs_design
+  confidence: high
+  evidence_gaps:
+    - "Exact sprint-infra surface (paths keys + dirs)"
+    - "paths.json insertion point that survives recompile"
+  fail_reasons: []
+next_recommended_command: "/sprint:design"
+resume_instructions: "Re-run /sprint:design (idempotent) or /sprint:plan to re-plan."
+tracker_paths:
+  current_sprint: ".claude/project/sprint/current-sprint.yaml"
+  sprint_progress: ".claude/project/sprint/sprint-progress.yaml"
+  plan_contract: ".claude/project/sprint/plan-contracts/PC-20260525-0052.yaml"
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260525-0052.report.md"
+created_by: alpha
+updated_by: alpha

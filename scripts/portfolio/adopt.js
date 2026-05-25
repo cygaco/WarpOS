@@ -78,12 +78,20 @@ if (!repoPath || !fs.existsSync(repoPath)) {
   process.exit(4);
 }
 
-// ── move brief files ───────────────────────────────────────
+// ── move brief files under _docs/<clones|briefs>/<slug>/ ────
+// SP-20260525-018 (T-217): land adopted briefs under _docs/ instead of the
+// repo root, so the product tree stays clean. Clone briefs → _docs/clones/,
+// bootstrap briefs → _docs/briefs/, keyed by which source dir held them.
+const briefKind = path.resolve(briefPath).startsWith(path.resolve(clonesRoot))
+  ? "clones"
+  : "briefs";
+const destBase = path.join(repoPath, "_docs", briefKind, slug);
+fs.mkdirSync(destBase, { recursive: true });
 let filesMoved = 0;
 const entries = fs.readdirSync(briefPath, { withFileTypes: true });
 for (const entry of entries) {
   const src = path.join(briefPath, entry.name);
-  const dest = path.join(repoPath, entry.name);
+  const dest = path.join(destBase, entry.name);
   if (entry.isDirectory()) {
     _moveDir(src, dest);
   } else {
