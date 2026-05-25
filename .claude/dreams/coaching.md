@@ -137,7 +137,7 @@ Refer to `paths.dreams`/2026-05-21.md for the dream paintings + deep reads that 
 1. **Dogfood the migration before doing anything else.** SP-20260521-001 shipped the portfolio framework but never validated it against real briefs. The two dogfood adopts (`dreamteams`, `companycam`) are the cheapest possible smoke test, AND they unblock T-178's deferred ACs.
    ```powershell
    # Pre-flight: clean up the half-scaffolded dir from yesterday's mid-execution attempt
-   rm -rf "C:\Users\Vladislav Zhirnov\Desktop\Claude\Projects\dreamteams"
+   rm -rf "../dreamteams"   # sibling path (relativized — was an absolute maintainer path)
 
    # Then both adopts (each auto-creates a private GH repo per DEC-008)
    node scripts/portfolio/adopt.js dreamteams
@@ -177,3 +177,17 @@ Refer to `paths.dreams`/2026-05-21.md for the dream paintings + deep reads that 
 - 1 open recurring issue: `RI-20260520-001` (release-canonical.js releasedAt skip) — unchanged.
 - 185 uncommitted files. Coherent but big.
 - Half-scaffolded `..\dreamteams\` dir at sibling path — operator cleanup item (see step 1 above).
+
+---
+
+## Morning briefing — 2026-05-25 (post installer-completeness sprint)
+
+Last session shipped a lot. Where to pick up:
+
+1. **companycam is live but pre-fix.** It was scaffolded *before* SP-20260525-018 landed, so it lacks ROADMAP / sprint-infra / `_requirements`/`_docs`. Backfill it by running `/warp:setup` **inside companycam's own session** (the installer is now idempotent + complete). Then it's sprint-capable.
+2. **Commit the post-sprint work.** The learn:integrate guard (`full.js`) + 13 new learnings + sleep artifacts are pending one final commit + push to main.
+3. **Learnings consolidation is overdue** — 139 entries vs the 30–50 target. A focused prune restores signal-to-noise; don't let it grow further.
+4. **Two orchestrator papercuts logged, not fixed:** (a) `/sprint:full` halt report mislabels the boundary as `before_plan` on a no-verdict `--resume`; (b) the beta-resume cadence is halt-heavy (5 consults for one sprint). Both milestone-0.11.0 polish candidates.
+5. **The big rock remains the `_warpos/`-zone migration** (framework source mirror in products). This sprint scaffolded the zones but deferred the mirror — still the largest install-architecture gap.
+
+Gentle note: the friction this session (3 classifier denials, 1 wrong-sprint plan) all traced to *boundaries that didn't announce themselves clearly*. The reflex that worked: when a wall blocks you 3×, stop pushing — build the path that doesn't cross it (local-only scaffold). Carry that.

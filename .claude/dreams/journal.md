@@ -253,3 +253,36 @@ Two sprints planned/designed/executed/retrospected back-to-back. 11 commits on b
   3. Either kick off a `/sprint:plan` inside one of the new sibling repos (DreamTeams brief work), OR loop back to WarpOS for `/warp:promote` of the portfolio framework.
 - Morning briefing: appended to `paths.dreams`/coaching.md.
 - False memory check: verified `scripts/portfolio/new.js` contains `_seedGitIdentity()` and `_ghRepoCreate()`; verified `.claude/commands/portfolio/dispatch.md` exists; verified `framework/templates/portfolio/.gitignore.tmpl` + `framework/templates/portfolio/.claude/paths.json.tmpl` exist; verified `.claude/project/sprint/releases/RL-20260521-016.yaml` is `status: deployed`; verified `~/.warpos/portfolio.json` does **not** yet exist on disk (correctly — no adopt has succeeded). All in-text references resolve.
+
+---
+
+# Sleep Journal — 2026-05-25
+
+*Cycle after the companycam-creation + installer-completeness (SP-20260525-018) session.*
+
+## NREM Consolidation
+- Learnings: 139 total (13 new this session: 8 conversation + 5 event-pattern via /learn:deep agents A/B; retros skipped — no oneshot runs). **OVER the 30–50 target — a dedicated prune/consolidation pass is overdue (flagged for next cycle; NOT mass-pruned tonight to avoid removing valid entries under time pressure).**
+- Promotion: the stale-payload learning → `implemented` (score 0.7), enforced by `full.js#phase1Plan` sprint-mismatch guard (via /learn:integrate).
+- Bumped: classifier-not-bypassable-by-beta (+0.1) — re-confirmed live (3 classifier denials this session).
+
+## Cleanup (Glymphatic)
+- Temp scripts (`log-learnings-phase-a/b.js`) created + deleted by the learn agents.
+- Git: main synced with origin post-sprint; learn:integrate + sleep changes pending one final commit.
+- Recurring issues: 1 open (RI-20260520-001 release-canonical releasedAt — unchanged, unrelated). Deps: `npm audit` blocked (no package-lock.json) — noted, not a blocker.
+
+## Replay (Spindle)
+- Real goal: get product installs to a complete, sprint-capable state (companycam exposed the gap) — achieved at the SOURCE (warp-setup), not patched per-product.
+- Blind spots: (a) 139-learning bloat; (b) /sprint:full beta-resume UX (halt report mislabels boundary as `before_plan` on no-verdict resume — logged, unfixed); (c) warp-setup's hardcoded paths.json drifted from the registry (now registry-driven).
+
+## REM Dreams
+- 2 paintings → `.claude/dreams/2026-05-25.md`: "the gate that approval cannot open" (permission floors) + "the hall of thirty-one doors" (stale-payload).
+- Schema extracted: **silence at a boundary is the defect; a loud refusal is a feature** — guards should err toward loud-deny, never quiet-wrong-default.
+
+## Repair
+- Security: session touched installer/sprint/orchestrator code only — no secrets, no `src/`. Clean.
+- Hooks: NEW `memory-enforcement-guard.js` wired (defaults.json + compiled) + dogfood-verified (fired on every learnings write this session). `full.js#phase1Plan` guard added + syntax-OK.
+
+## Growth
+- System strength: STRONGER — 2 new enforcers (memory-enforcement hook + stale-payload guard), installer now produces complete installs, install matrix 5→6 scenarios.
+- Biggest leverage point: the **`_warpos/`-zone migration** (still the largest install-architecture gap; this sprint scaffolded the `_requirements/_docs`/sprint-infra zones but explicitly deferred the source-mirror).
+- False-memory check: verified `full.js#phase1Plan` guard exists; warp-setup registry-build block exists; `memory-enforcement-guard.js` in settings.json; 6/6 matrix green. References resolve.

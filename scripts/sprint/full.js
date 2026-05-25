@@ -703,6 +703,28 @@ function phase1Plan(state, args) {
     };
   }
 
+  // Stale-payload guard (SP-20260525-018, learn:integrate). The payload is
+  // chosen by mtime — which silently grabs a DIFFERENT sprint's stale payload
+  // when the skill body skipped Step 1.1 for THIS sprint. Observed 2026-05-25:
+  // 31 stale payloads on disk → Phase 1 planned the wrong sprint. Refuse on a
+  // sprint mismatch so a wrong-sprint plan can never be designed silently.
+  try {
+    const pl = JSON.parse(fs.readFileSync(payloadFile, "utf8"));
+    if (pl && pl.sprint && pl.sprint !== state.sprintId) {
+      return {
+        ok: false,
+        halt_reason: "plan_payload_sprint_mismatch",
+        message:
+          `Most-recent plan-payload (${path.basename(payloadFile)}) targets sprint '${pl.sprint}', ` +
+          `not '${state.sprintId}'. The skill body likely skipped Step 1.1 (write ` +
+          `.warpos/plan-payload-<slug>.json for THIS sprint) — Phase 1 would plan the WRONG sprint. ` +
+          `Write the correct payload for ${state.sprintId}, then resume.`,
+      };
+    }
+  } catch {
+    /* payload unreadable — scripts/sprint/plan.js will surface the parse error */
+  }
+
   const res = runHelper("scripts/sprint/plan.js", [
     "--sprint",
     state.sprintId,
