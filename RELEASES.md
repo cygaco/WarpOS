@@ -42,6 +42,7 @@ Every `RL-*` at status=prepared OR =deployed. Each row links to the full `RL-*.y
 
 | Release | Sprint | Status | Target | Deployed | Notes |
 |---|---|---|---|---|---|
+| [RL-20260525-031](.claude/project/sprint/releases/RL-20260525-031.yaml) | [SP-20260525-019](.claude/project/sprint/sprints/SP-20260525-019/) | prepared | staging |  | Install completeness: unify install.ps1 + warp-setup paths, scaffold PROJECT.md + product maps |
 | [RL-20260525-030](.claude/project/sprint/releases/RL-20260525-030.yaml) | [SP-20260525-018](.claude/project/sprint/sprints/SP-20260525-018/) | prepared | staging |  | WarpOS installer completeness: complete + sprint-capable fresh installs |
 | [RL-20260525-029](.claude/project/sprint/releases/RL-20260525-029.yaml) | [SP-20260525-018](.claude/project/sprint/sprints/SP-20260525-018/) | prepared | staging |  | WarpOS installer completeness: complete + sprint-capable fresh installs |
 | [RL-20260523-028](.claude/project/sprint/releases/RL-20260523-028.yaml) | [SP-20260524-001](.claude/project/sprint/sprints/SP-20260524-001/) | prepared | staging |  | Install fixture CI matrix — 5-scenario regression test suite for /warp:setup + /warp:update |
