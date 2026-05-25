@@ -4,7 +4,7 @@ title: "Orchestrator-Beta bridge — choose dispatch-from-subprocess or halt-at-
 objective: "(set by /sprint:plan)"
 status: designing
 created_at: "2026-05-23T08:35:00.849Z"
-updated_at: "2026-05-23T08:35:01.088Z"
+updated_at: "2026-05-25T01:50:59.084Z"
 source_request: "Orchestrator→Beta bridge — sprint 1 of milestone 0.11.0 Sprint Workflow Honesty. Choose and ship one of two designs: (a) dispatch-from-subprocess pattern that lets spawnSync-d node reach in-process Beta teammates, or (b) halt-at-each-Beta-boundary pattern where the orchestrator pauses at each Phase boundary and resumes after operator-driven Beta consult."
 interpreted_intent: "`scripts/sprint/full.js` currently writes `sprint_full_beta_consult` events with placeholder verdicts (DECIDE) without actually invoking Beta via SendMessage. The subprocess can't reach in-process teammates because the Agent/SendMessage tool surface lives in the Claude Code runtime, not in node-spawned subprocesses. Two architectures resolve this: (a) build a subprocess-to-runtime bridge (file-drop-and-poll, named pipe, HTTP localhost) so the orchestrator's subprocess can drop a consult-request and the runtime picks it up + dispatches Beta + drops the verdict back, OR (b) restructure /sprint:full so it halts the subprocess at each Beta boundary, exits with a checkpoint, and the operator (or Alpha in the foreground) drives the Beta consult interactively before resuming. Design pass chooses (a) or (b) based on operator UX + crash-recovery + simplicity tradeoffs."
 plan_contract: ".claude/project/sprint/plan-contracts/PC-20260523-0037.yaml"
@@ -35,9 +35,13 @@ tickets:
   in_review: []
   qa_failed: []
   redteam_failed: []
-  done: []
+  done:
+    - T-20260525-210
+    - T-20260525-211
+    - T-20260525-212
   released: []
-  deferred: []
+  deferred:
+    - T-20260525-213
   abandoned: []
   reopened: []
   superseded: []
