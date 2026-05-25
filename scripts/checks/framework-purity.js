@@ -104,6 +104,7 @@ const ALLOW_CLIENT_SLUG_PATHS = [
   /^\.claude\/dreams\//, // operator's private journal
   /^\.claude\/project\/decisions\//, // historical decisions
   /^\.claude\/project\/learnings\//, // historical learnings
+  /^\.claude\/agents\/.*events\.jsonl$/, // runtime agent event logs (owner=runtime, not shipped to consumers — historical beta/agent consult audit)
   /^framework\/releases\/.+\/changelog\.md$/, // shipped release notes
   /^_docs\/(briefs|clones|imports|research)\//, // brief/clone outputs
   /^_warpos\/MANIFEST\.json$/, // current manifest snapshot
