@@ -200,7 +200,7 @@ const ASSET_DIRS = [
   // 0.8.2 fix-forward (2026-05-21): 15 scripts subdirs shipped slash commands
   // that referenced backing scripts under these dirs, but the dirs were never
   // classified — so /warp:setup installed the .md skills with no backing logic.
-  // dreamteam's sprint surfaced this by failing /mode:adhoc --turbo (missing
+  // A consumer install surfaced this by failing /mode:adhoc --turbo (missing
   // scripts/turbo/apply.js) and /portfolio:* (missing scripts/portfolio/).
   // The 17 dirs on disk are split as follows:
   //   SHIP (15): the dirs below
@@ -225,6 +225,15 @@ const ASSET_DIRS = [
   { src: "migrations", kind: "migration" },
   { src: "framework/releases", kind: "release_capsule" },
   { src: "framework/paths.registry.json", kind: "paths_registry" },
+  // SP-20260525-024 (downstream ship-coverage fix): framework/templates/* are
+  // GENERIC framework templates (canon doc templates the canon engine renders,
+  // product-bootstrap/clone/import, portfolio, sprint *.tmpl) — owner=framework,
+  // no product content (framework-purity-guard enforces). They were NEVER
+  // shipped, so every consumer's /bootstrap:spinup + /sprint:* + /canon hit
+  // missing templates. hooks.registry.json is the hook source-of-truth the hook
+  // build reads; also absent. Both surfaced by the ship-coverage enforcer.
+  { src: "framework/templates", kind: "template" },
+  { src: "framework/hooks.registry.json", kind: "hooks_registry" },
 ];
 
 // Top-level scripts (peers of scripts/hooks/, scripts/tools/).
@@ -234,7 +243,7 @@ const TOP_LEVEL_SCRIPTS = [
   { src: "scripts/generate-maps.js", kind: "top_script" },
   { src: "scripts/generate-framework-manifest.js", kind: "top_script" },
   // 0.8.2 fix-forward (2026-05-21): mode-set.js backs /mode:* skills (adhoc/oneshot/solo).
-  // dreamteam couldn't run /mode:adhoc --turbo because this file wasn't classified.
+  // a consumer install couldn't run /mode:adhoc --turbo because this file wasn't classified.
   { src: "scripts/mode-set.js", kind: "top_script" },
   // warp-setup.js is NOT shipped to target projects — it's the installer itself.
   //   Clients invoke it from ../WarpOS/, not from their own scripts/.

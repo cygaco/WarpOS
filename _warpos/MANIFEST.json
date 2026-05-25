@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-05-25T21:02:36.783Z",
+  "generatedAt": "2026-05-25T21:14:49.541Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.9.0",
   "migrations": [],
@@ -1472,8 +1472,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/generate-framework-manifest.js",
-      "sha256": "497100ad77dd1318cbcff2e69f07bb3acf5afe279ea5c8d2a28211809a0d9482",
-      "installedSha": "497100ad77dd1318cbcff2e69f07bb3acf5afe279ea5c8d2a28211809a0d9482"
+      "sha256": "04148eeda651d912149b6aaa73d61c4dd04dbb631656f76cb1423025b02bd56a",
+      "installedSha": "04148eeda651d912149b6aaa73d61c4dd04dbb631656f76cb1423025b02bd56a"
     },
     "scripts/generate-maps.js": {
       "owner": "framework",
@@ -2382,15 +2382,15 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/warpos/release-canonical.js",
-      "sha256": "783c10250eb6cafa05b2b3e0687567af6d737e42163fe96a4b54f7c8227c8b6f",
-      "installedSha": "783c10250eb6cafa05b2b3e0687567af6d737e42163fe96a4b54f7c8227c8b6f"
+      "sha256": "4a99ccaff447be4b9380eb09d7e0c55dd124da72feb07863f4644a483bca0359",
+      "installedSha": "4a99ccaff447be4b9380eb09d7e0c55dd124da72feb07863f4644a483bca0359"
     },
     "scripts/warpos/release-gates.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/warpos/release-gates.js",
-      "sha256": "0fbed306073d61921f1e73acac094b310ccf82698d9169839991c3d0f685d8ab",
-      "installedSha": "0fbed306073d61921f1e73acac094b310ccf82698d9169839991c3d0f685d8ab"
+      "sha256": "69a185e050ce33da9a0070cb7fdd3f6712f1db48f939bf2da0984e139c4f6f82",
+      "installedSha": "69a185e050ce33da9a0070cb7fdd3f6712f1db48f939bf2da0984e139c4f6f82"
     },
     "scripts/warpos/replay-bench.js": {
       "owner": "framework",
@@ -4134,6 +4134,13 @@
       "source": "scripts/checks/warpos-roundtrip.js",
       "sha256": "5960970a8ae7a57666d740592aa0e661b6ebfb34a4f67fba80b5efa18cfdd9cc",
       "installedSha": "5960970a8ae7a57666d740592aa0e661b6ebfb34a4f67fba80b5efa18cfdd9cc"
+    },
+    "scripts/checks/warpos-ship-coverage.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/warpos-ship-coverage.js",
+      "sha256": "369dcff797b405cf1441de529fbf25c500f9dc46ed7d3dade3abc68dc562465f",
+      "installedSha": "369dcff797b405cf1441de529fbf25c500f9dc46ed7d3dade3abc68dc562465f"
     },
     "scripts/checks/warpos-staleness.js": {
       "owner": "framework",

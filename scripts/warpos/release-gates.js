@@ -85,6 +85,30 @@ const GATES = [
     };
   }),
 
+  // 2b. Ship coverage (SP-20260525-024) — the framework_manifest gate above is
+  // TAUTOLOGICAL (it only checks the manifest matches its own generator). This
+  // gate closes the "downstream always missing something" class: it asserts the
+  // SHIPPING manifest (framework-manifest.json) covers every owner=framework path
+  // the OWNERSHIP manifest (_warpos/MANIFEST.json) declares under the
+  // consumer-essential roots. RED = a framework/schemas/patterns/command/agent
+  // path ships to nobody (how framework/templates/* slipped — 0 of 53 shipped).
+  gate("ship_coverage", () => {
+    const r = runScript("scripts/checks/warpos-ship-coverage.js", []);
+    if (r.status === 0)
+      return {
+        ok: true,
+        severity: "green",
+        message: "Ship coverage: every consumer-essential framework path ships.",
+      };
+    return {
+      ok: false,
+      severity: "red",
+      message:
+        "Ship coverage FAILED — framework-owned essential-root path(s) ship to nobody. Add to ASSET_DIRS or allowlist.",
+      details: (r.stdout || r.stderr || "").split("\n").filter((l) => l.includes(" - ")).slice(0, 10),
+    };
+  }),
+
   // 3. Reference Integrity
   // 0.1.2 honesty fix: this gate cannot run automatically (it needs a running
   // Claude Code agent to invoke /check:references). Pre-0.1.2 it returned
