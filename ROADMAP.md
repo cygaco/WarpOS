@@ -42,7 +42,7 @@ Skill-scoped agent injection  →  DoPM persona  →  /roadmap:create  →  Wire
 
 ### Upcoming
 
-#### 🟡 0.15.0 — Unified Product On-Ramp *(target: immediate — operator-directed 2026-05-25)*
+#### ✅ 0.15.0 — Unified Product On-Ramp — **SHIPPED 2026-05-25** *(full receipts in Shipped § below)*
 
 `Suite reconciliation  →  Canon engine  →  Spinup orchestrator  →  🏁 0.15.0`
 
@@ -144,6 +144,21 @@ Architectural shifts parked behind explicit revival triggers. No sprint cycles u
 **Trigger:** product cadence is consistently healthy (cadence-rule violations stay at 0 for 4+ consecutive sprint windows). Distinct from 0.10.0 boundary closure — that creates the *private workspace* for product-thinking; this *spec-treats the framework itself as a product* with PRDs, stories, `/preflight:run`, `/qa:audit`, `/redteam:full` self-audit. Boundary first; dogfooding much later.
 
 ### Shipped
+
+#### 🟢 0.15.0 — Unified Product On-Ramp *(2026-05-25)*
+
+`SP-20260525-021  →  -022  →  -023  →  🏁 0.15.0`
+
+**The shift:** going from 'just WarpOS' to a runnable product became **one command** with a single source of truth — `portfolio:*` (from WarpOS) + `bootstrap:*` (in-project) reach the same on-ramp; `product:*` is gone. The framework's own idea→screen path is now dogfoodable end-to-end.
+
+Before this milestone, product-creation skills were scattered across `portfolio:*` + deprecated `product:*` aliases; no in-project `bootstrap:` suite; no command took a fresh project idea → canonical docs → roadmap → something on screen. After: `spinup` (= `bootstrap:spinup`, wrapped by `portfolio:spinup <slug>`) is the single idea→screen command, with `--clone` as an alternate entry; canonical-doc generation ships as spinup's `canon` phase; the on-screen phase is gated by verify-before-claim.
+
+Per-sprint receipts:
+- **SP-20260525-021 — Suite reconciliation** — created the `bootstrap:` namespace (`spinup`, `ponder`); folded brief + clone into `spinup` as modes (`--clone`); deleted `product:*` + standalone `import`/`clone`/`bootstrap`; folded `adopt`→`portfolio:new`, renamed `portfolio:dispatch`→`portfolio:run`; wired `portfolio:*` thin dispatch-wrappers. Validate-A gate passed (manifest regen, `/check:install` 16/17, purity clean).
+- **SP-20260525-022 — Canon engine** — `scripts/canon/generate.js`: intent → 7 narrative MD + 4 structured JSON from `framework/templates/canonical/*`, with **capped** `research:*` gap-fill bounded by `schemas/canon/research-fields.schema.json` (named fields, empty-sources = THIN warning never silent-merge), output validation (section-presence + JSON + cross-refs), wired as spinup's `canon` phase. Fixture e2e 16/16. *(Pulled the 0.14.0 canon core forward.)*
+- **SP-20260525-023 — Spinup orchestrator** — `scripts/bootstrap/spinup-orchestrate.js` driver (durable `--phase`/`--resume` state) + 5 phase modules: preflight (`/check:install` hard gate), intent (brief | `--clone` reusing `clone.js`), canon (reuses generate.js), roadmap (reuses scaffold; grounded synthesis → `needs_orchestration`), onscreen (`verifyServe` gate: build clean + HTTP 200 + entry transforms — "builds ≠ serves"). Deterministic phases run in-process; LLM steps exit `needs_orchestration` for the skill body (mirrors B's research bridge). Canonical proves the chain on a fixture; real serve is product-side. Fixture e2e 13/13.
+
+**Built fast via parallelism:** the four phase modules were fanned out to concurrent builder subagents against a shared driver interface; the gauntlet was skipped (operator-authorized, low-risk wiring with green e2e). Engine sprints closed via ff-merge (release-prep doesn't model no-deploy sprints — see RI-001).
 
 #### 🟢 0.11.0 — Sprint Workflow Honesty *(2026-05-25)*
 
