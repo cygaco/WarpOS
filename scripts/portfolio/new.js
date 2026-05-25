@@ -19,6 +19,11 @@ const WARPOS_ROOT = path.resolve(__dirname, "../..");
 const args = process.argv.slice(2);
 const fromBriefIdx = args.indexOf("--from-brief");
 const fromBrief = fromBriefIdx !== -1 ? args[fromBriefIdx + 1] : null;
+// GitHub remote creation is OPT-IN. Default = local-only scaffold (the
+// operator opens the product in its own session and creates/pushes the
+// remote when they want). This keeps new-product creation fully within
+// agent autonomy — no push means no data-exfiltration permission gate.
+const wantGithub = args.includes("--github");
 // First positional arg (not a flag, and not the value-slot of --from-brief) is the slug.
 const slug = args.filter((a, i) => {
   if (a.startsWith("--")) return false;
@@ -139,22 +144,7 @@ if (!valid) {
 doc.products[slug] = entry;
 save(doc);
 
-// ── GitHub repo create (DEC-008 — always --private) ─────────
-let githubUrl = null;
-const ghResult = _ghRepoCreate(slug, repoPath);
-if (ghResult.url) {
-  githubUrl = ghResult.url;
-  // persist github_url back to registry
-  const doc2 = load();
-  if (doc2.products[slug]) {
-    doc2.products[slug].github_url = githubUrl;
-    doc2.products[slug].remote_type = "github";
-    doc2.products[slug].last_synced = new Date().toISOString();
-    save(doc2);
-  }
-}
-
-// ── --from-brief ───────────────────────────────────────────
+// ── --from-brief (move brief into the new repo) ─────────────
 if (fromBrief) {
   const adoptScript = path.resolve(__dirname, "adopt.js");
   const adopt = spawnSync(
@@ -165,13 +155,47 @@ if (fromBrief) {
   if (adopt.stderr) process.stderr.write(adopt.stderr);
 }
 
+// ── commit the full scaffold (warp install + brief) so the repo
+//    opens clean and ready ──────────────────────────────────
+spawnSync("git", ["add", "-A"], { cwd: repoPath, encoding: "utf8" });
+spawnSync(
+  "git",
+  ["commit", "-m", "chore(scaffold): warpos install" + (fromBrief ? " + brief" : "")],
+  { cwd: repoPath, encoding: "utf8" }
+);
+// Non-fatal: a "nothing to commit" exit just means warp:setup produced no
+// tracked changes beyond the initial commit. Local repo is ready regardless.
+
+// ── GitHub remote: OPT-IN only (--github) ───────────────────
+// Default path is local-only. With --github (operator-run via `!` or a
+// permissive permission mode, since the agent is gated from pushing to a
+// brand-new remote), create the private repo (DEC-008) and push.
+let githubUrl = null;
+if (wantGithub) {
+  const ghResult = _ghRepoCreate(slug, repoPath);
+  if (ghResult.url) {
+    githubUrl = ghResult.url;
+    // persist github_url back to registry
+    const doc2 = load();
+    if (doc2.products[slug]) {
+      doc2.products[slug].github_url = githubUrl;
+      doc2.products[slug].remote_type = "github";
+      doc2.products[slug].last_synced = new Date().toISOString();
+      save(doc2);
+    }
+  }
+} else {
+  _printLocalOnlyNextSteps(slug, repoPath);
+}
+
 // ── telemetry (TR-7) ───────────────────────────────────────
 _emit("portfolio_new", {
   slug,
   repo_path_offset: _pathOffset(repoPath),
   from_brief: fromBrief || null,
   warp_setup_status: "ok",
-  gh_repo_create_surfaced: true,
+  github: wantGithub,
+  gh_repo_create_surfaced: wantGithub,
 });
 
 // ── helpers ───────────────────────────────────────────────
@@ -295,6 +319,16 @@ function _defaultBranch(cwd) {
   } catch {
     return "main";
   }
+}
+
+function _printLocalOnlyNextSteps(slugVal, repoPathVal) {
+  console.log(`\nLocal repo ready — WarpOS installed, committed, no remote:`);
+  console.log(`  ${repoPathVal}`);
+  console.log(`Next — open it in its own session and work there:`);
+  console.log(`  /portfolio:open ${slugVal} --spawn`);
+  console.log(`Create a private GitHub remote when you want one (run from inside the repo):`);
+  console.log(`  gh repo create ${slugVal} --private --source=. --remote=origin --push`);
+  console.log(`Or re-run /portfolio:new with --github to do that automatically (operator-run — the agent is gated from pushing to a brand-new remote in auto mode).`);
 }
 
 function _readInstalledVersion(repoPathVal) {

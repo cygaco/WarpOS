@@ -290,6 +290,10 @@
           {
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/skill-catalog-regen.js\""
+          },
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/memory-enforcement-guard.js\""
           }
         ],
         "matcher": "Edit|Write"
