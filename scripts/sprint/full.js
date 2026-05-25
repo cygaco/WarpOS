@@ -488,6 +488,12 @@ function validateBetaVerdict(v) {
   return BETA_VERDICTS.includes(v);
 }
 
+// ── Beta message sanitizer ────────────────────────────────────────────
+// Strips CR/LF to prevent injection of fake markdown sections or fence
+// delimiters when betaMessage is interpolated into reports or messages.
+// Capped at 500 chars — operator free text is advisory, not load-bearing.
+const sanitizeBetaMessage = (m) => (m || "").replace(/[\r\n]+/g, " ").slice(0, 500);
+
 // ── Phase boundary Beta consultation (adhoc mode only) ────────────────
 //
 // ADR option (b): halt-at-each-Beta-boundary.
@@ -540,7 +546,20 @@ function maybeConsultBeta(state, boundary, args) {
 
   // Verdict supplied and applies here — record the REAL consult.
   const verdict = args.betaVerdict;
-  const betaMessage = args.betaMessage || "";
+  // FIX 3: guard against an invalid verdict even when the caller bypasses
+  // main()'s upstream validation — maybeConsultBeta is exported and may be
+  // called programmatically. Return halt-shaped so the caller can handle it
+  // without poisoning state.betaConsultations.
+  if (!validateBetaVerdict(verdict)) {
+    return {
+      ok: false,
+      halt_reason: "invalid_beta_verdict",
+      boundary,
+      message: `Unrecognized Beta verdict '${verdict}'. Must be DECIDE | DIRECTIVE | ESCALATE.`,
+    };
+  }
+  // FIX 4: sanitize operator free text before any interpolation or storage.
+  const betaMessage = sanitizeBetaMessage(args.betaMessage);
   const ts = nowIso();
   const latencyMs = 0; // no live round-trip in this subprocess; elapsed is ~0
   const model = process.env.WARPOS_BETA_MODEL || "claude-opus-4-7";
@@ -554,6 +573,7 @@ function maybeConsultBeta(state, boundary, args) {
     topic_tags: ["sprint_full_phase_boundary"],
     sprint_id: state.sprintId,
     ts,
+    via_cli_resume: !!(args && args.resume), // RT-1: audit marker for /check:sprint-beta-honesty
   });
 
   state.betaConsultations.push({
@@ -609,8 +629,11 @@ function maybeConsultBeta(state, boundary, args) {
     };
   }
 
-  // Fallback — should never reach here after upstream validateBetaVerdict.
-  return { ok: true, verdict: null };
+  // Unreachable — validateBetaVerdict guard above covers all three valid values.
+  // Return a halt rather than silently ok:true so any future code-path that
+  // slips past the guard fails loudly instead of hiding a bad verdict.
+  /* c8 ignore next */
+  return { ok: false, halt_reason: "invalid_beta_verdict", boundary, message: `Unexpected verdict state for '${verdict}'.` };
 }
 
 // ── Phase 1: plan ─────────────────────────────────────────────────────
@@ -1239,6 +1262,19 @@ function main() {
     );
     return 2;
   }
+  // FIX 1+2: compute pendingIdx from --pending-phase so the phase loop can
+  // skip already-cleared Beta boundaries on resume. Validate the value
+  // immediately so operators get a clear error on typos (not a silent re-halt).
+  const pendingIdx = args.pendingPhase
+    ? PHASES.findIndex((p) => `before_${p}` === args.pendingPhase)
+    : -1;
+  if (args.pendingPhase && pendingIdx === -1) {
+    process.stderr.write(
+      `--pending-phase '${args.pendingPhase}' is not a valid phase boundary. ` +
+      `Valid: ${PHASES.map((p) => `before_${p}`).join(", ")}.\n`,
+    );
+    return 2;
+  }
 
   const presetResult = loadPreset(args.autonomy);
   if (!presetResult.ok) {
@@ -1322,26 +1358,39 @@ function main() {
   for (let i = 0; i < phaseFns.length; i++) {
     // Derive boundary from the UPCOMING phase (the one about to run at index i),
     // not from state.currentPhase which names the last completed phase.
-    const consult = maybeConsultBeta(state, `before_${PHASES[i]}`, args);
-    if (!consult.ok) {
-      state.halts.push({
-        phase: state.currentPhase,
-        halt_reason: consult.halt_reason,
-        resume_command:
-          consult.resume_command || `/sprint:full --sprint ${sprintId} --resume`,
-      });
-      state.outcome = `halted:${consult.halt_reason}`;
-      const haltPath = writeHaltReport(state, consult);
-      process.stderr.write(
-        `/sprint:full halted (${consult.halt_reason}). See ${haltPath}\n`,
-      );
-      checkpoint(
-        state,
-        "halted",
-        consult.message || "halt",
-        `halt_reason=${consult.halt_reason}`,
-      );
-      return 1;
+    const boundary = `before_${PHASES[i]}`;
+    // FIX 1 — Resume-boundary skip semantics:
+    //   Boundaries STRICTLY BEFORE the pending one (i < pendingIdx) were already
+    //   consulted-and-cleared in earlier resume invocations on previous process
+    //   runs. Skip the consult entirely — no re-halt, no event, no duplication.
+    //   The phase fns are resume-aware and will short-circuit already-done work.
+    //   Boundaries AT the pending index: consume the supplied verdict here.
+    //   Boundaries AFTER: no verdict left → halt with beta_consult_pending
+    //   (operator supplies one verdict per resume invocation).
+    if (pendingIdx !== -1 && i < pendingIdx) {
+      // Already cleared — run the phase fn (which will self-skip on resume).
+    } else {
+      const consult = maybeConsultBeta(state, boundary, args);
+      if (!consult.ok) {
+        state.halts.push({
+          phase: state.currentPhase,
+          halt_reason: consult.halt_reason,
+          resume_command:
+            consult.resume_command || `/sprint:full --sprint ${sprintId} --resume`,
+        });
+        state.outcome = `halted:${consult.halt_reason}`;
+        const haltPath = writeHaltReport(state, consult);
+        process.stderr.write(
+          `/sprint:full halted (${consult.halt_reason}). See ${haltPath}\n`,
+        );
+        checkpoint(
+          state,
+          "halted",
+          consult.message || "halt",
+          `halt_reason=${consult.halt_reason}`,
+        );
+        return 1;
+      }
     }
     const result = phaseFns[i]();
     if (!result.ok) {

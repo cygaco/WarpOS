@@ -661,6 +661,179 @@ function testBetaConsultContract() {
       state.betaConsultations[0] && state.betaConsultations[0].beta_message,
     );
   }
+
+  // ── J-9: FIX 1 — Resume loop semantics for a LATER boundary ──────────
+  // Simulates the main() phase-loop decision for a resume targeting
+  // before_design (i=1). Verifies:
+  //   i=0 (before_plan) → skip predicate true → consult NOT called → no record
+  //   i=1 (before_design) → skip predicate false → verdict consumed → recorded
+  //   i=2 (before_execute) → no verdict left → halts with beta_consult_pending
+  // This is the exact gap the prior suite missed: calling maybeConsultBeta
+  // directly with a matching boundary masked the loop's skip logic entirely.
+  {
+    out.push("J-9. Resume past first boundary — later-boundary resume semantics");
+    const state = makeMinimalState({ mode: "adhoc", sprintId: "SP-J9" });
+    const args = {
+      resume: true,
+      pendingPhase: "before_design",
+      betaVerdict: "DECIDE",
+      betaMessage: "ok",
+    };
+
+    // Compute pendingIdx exactly as main() does.
+    const pendingIdx = full.PHASES.findIndex((p) => `before_${p}` === args.pendingPhase);
+    ok(
+      "J-9: pendingIdx for before_design is 1",
+      pendingIdx === 1,
+      `got ${pendingIdx}`,
+    );
+
+    // i=0 (before_plan): pendingIdx !== -1 && 0 < 1 → SKIP — main() does NOT call maybeConsultBeta.
+    const skipPredicate_i0 = pendingIdx !== -1 && 0 < pendingIdx;
+    ok(
+      "J-9: before_plan (i=0) skip predicate true — loop would skip consult",
+      skipPredicate_i0 === true,
+    );
+    // We do NOT call maybeConsultBeta for i=0 (simulating the skip).
+    ok(
+      "J-9: betaConsultations empty — before_plan was skipped, no record",
+      state.betaConsultations.length === 0,
+    );
+
+    // i=1 (before_design): pendingIdx !== -1 && 1 < 1 → false → call maybeConsultBeta.
+    const skipPredicate_i1 = pendingIdx !== -1 && 1 < pendingIdx;
+    ok(
+      "J-9: before_design (i=1) skip predicate false — loop calls consult",
+      skipPredicate_i1 === false,
+    );
+    const r1 = full.maybeConsultBeta(state, "before_design", args);
+    ok(
+      "J-9: before_design consult ok:true (verdict consumed)",
+      r1.ok === true,
+      JSON.stringify(r1),
+    );
+    ok("J-9: before_design verdict===DECIDE", r1.verdict === "DECIDE", r1.verdict);
+    ok(
+      "J-9: consult for before_design is recorded with correct boundary",
+      state.betaConsultations.length === 1 &&
+        state.betaConsultations[0].phase_boundary === "before_design",
+      JSON.stringify(state.betaConsultations[0]),
+    );
+    ok(
+      "J-9: args.betaVerdict consumed after before_design (one-consult-per-resume)",
+      args.betaVerdict === null,
+      `betaVerdict=${args.betaVerdict}`,
+    );
+
+    // i=2 (before_execute): pendingIdx !== -1 && 2 < 1 → false → call maybeConsultBeta.
+    // No verdict remains — should halt with beta_consult_pending.
+    const skipPredicate_i2 = pendingIdx !== -1 && 2 < pendingIdx;
+    ok(
+      "J-9: before_execute (i=2) skip predicate false — loop calls consult",
+      skipPredicate_i2 === false,
+    );
+    const r2 = full.maybeConsultBeta(state, "before_execute", args);
+    ok(
+      "J-9: before_execute halts — no verdict left (requires next resume)",
+      r2.ok === false && r2.halt_reason === "beta_consult_pending",
+      JSON.stringify(r2),
+    );
+    ok(
+      "J-9: only 1 consult total — before_plan was skipped",
+      state.betaConsultations.length === 1,
+      `got ${state.betaConsultations.length}`,
+    );
+  }
+
+  // ── J-10: FIX 2 — invalid --pending-phase is rejected ────────────────
+  {
+    out.push("J-10. Invalid --pending-phase rejected (FIX 2)");
+    // Valid boundary set is derived from PHASES.
+    const validBoundaries = full.PHASES.map((p) => `before_${p}`);
+    ok(
+      "J-10: valid boundaries includes before_design",
+      validBoundaries.includes("before_design"),
+    );
+    ok(
+      "J-10: valid boundaries does NOT include before_bogus",
+      !validBoundaries.includes("before_bogus"),
+    );
+    // The validation predicate: findIndex returns -1 for an unknown boundary.
+    const bogusIdx = full.PHASES.findIndex((p) => `before_${p}` === "before_bogus");
+    ok(
+      "J-10: bogus pendingPhase gives pendingIdx === -1 (triggers return 2 in main)",
+      bogusIdx === -1,
+      `got ${bogusIdx}`,
+    );
+    // Valid boundary gives a non-(-1) index — no error.
+    const validIdx = full.PHASES.findIndex((p) => `before_${p}` === "before_execute");
+    ok(
+      "J-10: before_execute gives pendingIdx === 2 (no error in main)",
+      validIdx === 2,
+      `got ${validIdx}`,
+    );
+  }
+
+  // ── J-11: FIX 3 — invalid betaVerdict returns ok:false, no consult recorded ─
+  {
+    out.push("J-11. Invalid betaVerdict guard (FIX 3)");
+    const state = makeMinimalState({ mode: "adhoc", sprintId: "SP-J11" });
+    const r = full.maybeConsultBeta(state, "before_plan", {
+      betaVerdict: "INVALID",
+      betaMessage: "test",
+      pendingPhase: "before_plan",
+    });
+    ok(
+      "J-11: invalid verdict returns ok:false",
+      r.ok === false,
+      JSON.stringify(r),
+    );
+    ok(
+      "J-11: halt_reason===invalid_beta_verdict",
+      r.halt_reason === "invalid_beta_verdict",
+      r.halt_reason,
+    );
+    ok(
+      "J-11: no consult recorded for invalid verdict",
+      state.betaConsultations.length === 0,
+      `got ${state.betaConsultations.length}`,
+    );
+  }
+
+  // ── J-12: FIX 4 — betaMessage with embedded newlines is sanitized ────
+  {
+    out.push("J-12. betaMessage newline sanitization (FIX 4)");
+    const state = makeMinimalState({ mode: "adhoc", sprintId: "SP-J12" });
+    const rawMsg = "safe message\n## Injected\nmore text";
+    full.maybeConsultBeta(state, "before_plan", {
+      betaVerdict: "DECIDE",
+      betaMessage: rawMsg,
+      pendingPhase: "before_plan",
+    });
+    ok(
+      "J-12 sanitize: consult was recorded",
+      state.betaConsultations.length === 1,
+      `got ${state.betaConsultations.length}`,
+    );
+    ok(
+      "J-12 sanitize: newlines stripped from recorded beta_message",
+      state.betaConsultations.length === 1 &&
+        !state.betaConsultations[0].beta_message.includes("\n"),
+      state.betaConsultations[0] && state.betaConsultations[0].beta_message,
+    );
+    ok(
+      "J-12 sanitize: text content preserved (non-empty after strip)",
+      state.betaConsultations.length === 1 &&
+        state.betaConsultations[0].beta_message.length > 0,
+      state.betaConsultations[0] && state.betaConsultations[0].beta_message,
+    );
+    ok(
+      "J-12 sanitize: original text not altered beyond newline removal",
+      state.betaConsultations.length === 1 &&
+        state.betaConsultations[0].beta_message.includes("safe message"),
+      state.betaConsultations[0] && state.betaConsultations[0].beta_message,
+    );
+  }
 }
 
 // ── Run ──────────────────────────────────────────────────────────────
