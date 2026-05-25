@@ -131,18 +131,28 @@ The crawl logic doesn't care about the topic. It cares about: find links, classi
 **Detection:** URL contains `youtube.com/watch`, `youtu.be/`, or `youtube.com/shorts`
 **Method (try in order):**
 
-1. **yt-dlp transcript extraction** (best quality):
+1. **yt-dlp transcript extraction** (best quality — preferred path). Ensure the
+   tool is present and **auto-install it if missing** (yt-dlp is a free CLI; a
+   "best-quality" method that isn't provisioned silently degrades the ingest):
    ```bash
-   yt-dlp --write-auto-sub --sub-lang en --skip-download --output "%(id)s" "URL"
+   # check + auto-install if absent (python -m pip is more reliable than bare `pip`)
+   python -m yt_dlp --version >/dev/null 2>&1 || python -m pip install --quiet --disable-pip-version-check yt-dlp
+   # extract auto + manual subs as .vtt; pass MULTIPLE URLs to batch in one call:
+   python -m yt_dlp --write-auto-sub --write-sub --sub-lang en --sub-format vtt \
+     --skip-download --no-warnings -o "<outdir>/%(id)s.%(ext)s" "URL" ["URL2" ...]
    ```
-   Then read the generated `.vtt` or `.srt` file. Clean up VTT formatting (remove timestamps, deduplicate lines).
+   Then read each generated `<id>.en.vtt` and clean VTT formatting (below).
+   **Long videos:** fan the transcripts out to parallel sub-agents to distill
+   (return summaries) rather than reading multi-hundred-KB transcripts into the
+   main context. Extract to a gitignored scratch dir (e.g. under `.warpos/`).
+   If yt-dlp truly can't be installed (no network / no pip), fall through to (2).
 
 2. **WebFetch on transcript service:**
    Try fetching from a transcript extraction service or the YouTube page itself and parsing the captions.
 
 3. **Manual fallback:**
    Tell the user: "I couldn't get the transcript automatically. Options:
-   - Install yt-dlp: `pip install yt-dlp`
+   - Install yt-dlp: `python -m pip install yt-dlp`
    - Paste the transcript manually
    - Share the video title so I can WebSearch for a summary"
 

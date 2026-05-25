@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-05-25T22:45:00.525Z",
+  "generatedAt": "2026-05-25T23:03:02.565Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.10.0",
   "migrations": [],
@@ -12185,8 +12185,8 @@
       "managed": true,
       "source": ".claude/project/reference/lastmile/conversion-funnel-playbook.md",
       "kind": "md",
-      "sha256": "84296da9ad478c97e408739f7e556b6e6466ce082552e456d6afab4b38e1c28c",
-      "installedSha": "84296da9ad478c97e408739f7e556b6e6466ce082552e456d6afab4b38e1c28c"
+      "sha256": "c3c131488bd756f0213b34d367d9d8c16027b809528c99b5d0de45f8f70a7089",
+      "installedSha": "c3c131488bd756f0213b34d367d9d8c16027b809528c99b5d0de45f8f70a7089"
     },
     ".claude/project/reference/lastmile/default-stacks.md": {
       "owner": "framework",
@@ -12203,6 +12203,14 @@
       "kind": "md",
       "sha256": "318590ae437d4703d408048a8ccf999fb899cbf3e20b074c4a85d479308e78e4",
       "installedSha": "318590ae437d4703d408048a8ccf999fb899cbf3e20b074c4a85d479308e78e4"
+    },
+    ".claude/project/reference/lastmile/research-signal-2026.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/project/reference/lastmile/research-signal-2026.md",
+      "kind": "md",
+      "sha256": "c1c87a936c3b32abd06d5305165bfe1b189efac6d826e7e41648648b40aa1dd4",
+      "installedSha": "c1c87a936c3b32abd06d5305165bfe1b189efac6d826e7e41648648b40aa1dd4"
     },
     ".claude/project/reference/lastmile/security-privacy-baseline.md": {
       "owner": "framework",
@@ -13077,8 +13085,8 @@
       "managed": true,
       "source": ".claude/commands/learn/ingest.md",
       "kind": "md",
-      "sha256": "7c6834ea688d41efbfe0a9a6017e6a229b15703cefa726eee5f76d2e3f88a0b8",
-      "installedSha": "7c6834ea688d41efbfe0a9a6017e6a229b15703cefa726eee5f76d2e3f88a0b8"
+      "sha256": "b877d4b43fcc048872374fe76ed0533cd04d0b3915aa3d3b34bfa46882b04d96",
+      "installedSha": "b877d4b43fcc048872374fe76ed0533cd04d0b3915aa3d3b34bfa46882b04d96"
     },
     ".claude/commands/learn/integrate.md": {
       "owner": "framework",

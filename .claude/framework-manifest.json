@@ -5,7 +5,7 @@
   "counts": {
     "agent": 64,
     "skill": 150,
-    "reference": 24,
+    "reference": 25,
     "maps_baseline": 24,
     "hook": 66,
     "hook_lib": 13,
@@ -52,7 +52,7 @@
     "installer_script": 1,
     "framework_doc": 2
   },
-  "total": 759,
+  "total": 760,
   "assets": {
     "agent": [
       {
@@ -1610,7 +1610,7 @@
         "src": ".claude/commands/learn/ingest.md",
         "dest": ".claude/commands/learn/ingest.md",
         "kind": "skill",
-        "sha256": "4514a933a74944cdf7d36ed8938c2b045400efdf016cd8d7805bbec1438ac7aa",
+        "sha256": "660c1eadb21a16178dce58f58628913ad757159d8ae57ff41cc9c30801d86b92",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
@@ -2716,7 +2716,7 @@
         "src": ".claude/project/reference/lastmile/conversion-funnel-playbook.md",
         "dest": ".claude/project/reference/lastmile/conversion-funnel-playbook.md",
         "kind": "reference",
-        "sha256": "84296da9ad478c97e408739f7e556b6e6466ce082552e456d6afab4b38e1c28c",
+        "sha256": "c3c131488bd756f0213b34d367d9d8c16027b809528c99b5d0de45f8f70a7089",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
@@ -2741,6 +2741,18 @@
         "dest": ".claude/project/reference/lastmile/monetization-patterns.md",
         "kind": "reference",
         "sha256": "318590ae437d4703d408048a8ccf999fb899cbf3e20b074c4a85d479308e78e4",
+        "owner": "framework",
+        "mergeStrategy": "three_way_markdown",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "reference.lastmile.research-signal-2026.md",
+        "src": ".claude/project/reference/lastmile/research-signal-2026.md",
+        "dest": ".claude/project/reference/lastmile/research-signal-2026.md",
+        "kind": "reference",
+        "sha256": "c1c87a936c3b32abd06d5305165bfe1b189efac6d826e7e41648648b40aa1dd4",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",

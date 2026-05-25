@@ -168,4 +168,4 @@ Run this before any "launch-ready" claim. Each box is a gate, not a nice-to-have
 
 ## 7. Refresh
 
-These are baked-in v1 defaults. Conversion benchmarks, copy fashions, and analytics tooling move fast — re-derive against current data with `/research:deep` and update this file rather than letting it rot. Cross-reference: the security and consent requirements that gate analytics and data-collection CTAs live in security-privacy-baseline.md in this same directory (`paths.reference`/lastmile/).
+These are baked-in v1 defaults. Conversion benchmarks, copy fashions, and analytics tooling move fast — re-derive against current data with `/research:deep` and update this file rather than letting it rot. Cross-reference: the security and consent requirements that gate analytics and data-collection CTAs live in security-privacy-baseline.md in this same directory (`paths.reference`/lastmile/). The **2026 web-research sweep + 6-video distillation** (benchmarks, copy primitives, Stripe/webhook pitfalls, stack tradeoffs, privacy baseline — with sources) are encoded in **`research-signal-2026.md`** (same directory).
