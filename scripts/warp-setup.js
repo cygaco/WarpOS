@@ -1446,6 +1446,72 @@ try {
   log("warn", `Could not write framework-installed.json: ${e.message}`);
 }
 
+// ── 8.9. Populate _warpos/ framework SOURCE mirror (SP-20260525-003) ──
+// THE MODEL (regenerate.js docstring + Strategy line 17): a product holds
+// framework SOURCE at `_warpos/` (a mirror); `.claude/` is the COMPILED VIEW
+// regenerated from it. Before this, /warp:setup copied framework files only to
+// the root + `.claude/` and created NO `_warpos/`, so scripts/warpos/views/
+// regenerate.js had no source mirror and was inert in products.
+//
+// We mirror the framework view-source (commands, agents, project/reference,
+// agent .system policy json) from the CANONICAL clone (WARPOS) into the
+// product's `_warpos/`, then the MANIFEST COVERAGE block below regenerates
+// _warpos/MANIFEST.json with `--source-prefix _warpos` so framework-view
+// entries carry `source` pointers into `_warpos/` (`.claude/commands/foo.md`
+// → `_warpos/commands/foo.md`). regenerate.js then does real work.
+//
+// Idempotent / content-addressed: a re-run only rewrites mirror files that are
+// missing or differ from canonical — this is the migration path for existing
+// products (e.g. companycam). DRY-RUN already returned above, so no guard
+// needed here. Fail-open: never block install on a mirror error.
+{
+  console.log(`\n${HEADER}  FRAMEWORK SOURCE MIRROR (_warpos/)${RESET}`);
+  const populateScript = path.join(
+    WARPOS,
+    "scripts",
+    "warpos",
+    "views",
+    "populate-source.js",
+  );
+  try {
+    const { populateSource } = require(populateScript);
+    const pr = populateSource({
+      targetRoot: TARGET,
+      warposRoot: WARPOS,
+      shipManifest,
+    });
+    if (!pr.ok && pr.code === 2) {
+      log("warn", `_warpos/ mirror skipped: ${pr.error}`);
+    } else {
+      log(
+        "ok",
+        `_warpos/ source mirror: ${pr.copied.length} copied, ${pr.unchanged.length} unchanged (${pr.mirroredCount} view files mirrored)`,
+      );
+      installed += pr.copied.length;
+      if (pr.missingSource.length > 0) {
+        log(
+          "warn",
+          `_warpos/ mirror: ${pr.missingSource.length} source(s) declared by manifest but missing in clone (first 3): ${pr.missingSource
+            .slice(0, 3)
+            .map((m) => m.src)
+            .join(", ")}`,
+        );
+      }
+      if (pr.failed.length > 0) {
+        log(
+          "warn",
+          `_warpos/ mirror: ${pr.failed.length} copy failure(s) (first 3): ${pr.failed
+            .slice(0, 3)
+            .map((f) => `${f.mirror} (${f.reason})`)
+            .join("; ")}`,
+        );
+      }
+    }
+  } catch (err) {
+    log("warn", `_warpos/ mirror failed (${err.message}) — install continues; regenerate.js stays inert until re-run`);
+  }
+}
+
 // ── Summary ─────────────────────────────────────────────
 // ── Provider CLI check (informational) ──────────────────
 const codexPresent = cmdExists("codex");

@@ -163,6 +163,33 @@ function buildRules(sourcePrefix) {
       match: (rel) => rel.startsWith(".warpos/"),
       entry: () => ({ owner: "runtime", managed: false }),
     },
+    {
+      // Build-system state created by warp-setup.js (NOT shipped via the
+      // framework-manifest). Explicitly a carve-out from owner=framework per
+      // this file's header. Mutable; never regenerated. Present in every
+      // installed product, absent in canonical — so without this rule a
+      // product manifest build fails with store.json unclassified.
+      name: "runtime-build-store",
+      match: (rel) => rel === ".claude/agents/store.json",
+      entry: () => ({
+        owner: "runtime",
+        managed: false,
+        kind: "json",
+        _note: "Build-mode state — created/mutated by warp-setup.js + dispatch. Not a framework view.",
+      }),
+    },
+    {
+      // Transient install artifact written by warp-setup.js. Self-describes as
+      // "safe to delete after your first successful session." Product-only.
+      name: "runtime-next-steps",
+      match: (rel) => rel === "WARPOS_NEXT_STEPS.md",
+      entry: () => ({
+        owner: "runtime",
+        managed: false,
+        kind: "md",
+        _note: "Post-install guidance — written by warp-setup.js; safe to delete after first session.",
+      }),
+    },
 
     // PROJECT — decision policy + filled requirement templates
     {
@@ -330,6 +357,22 @@ function buildRules(sourcePrefix) {
     {
       name: "framework-source",
       match: (rel) => rel.startsWith(`${sourcePrefix}/`),
+      entry: (rel) => ({
+        owner: "framework",
+        managed: true,
+        source: rel,
+      }),
+    },
+    {
+      // The canonical `framework/` directory (releases, paths.registry.json,
+      // migrations) ships into every product verbatim via the framework-
+      // manifest. It is framework source-of-truth INDEPENDENT of --source-
+      // prefix: in canonical sourcePrefix=framework so the rule above already
+      // catches it, but in a product (sourcePrefix=_warpos) the rule above
+      // matches `_warpos/` instead, leaving `framework/` unclassified. This
+      // rule classifies it as self-referential framework source in both cases.
+      name: "framework-canonical-dir",
+      match: (rel) => rel.startsWith("framework/"),
       entry: (rel) => ({
         owner: "framework",
         managed: true,
