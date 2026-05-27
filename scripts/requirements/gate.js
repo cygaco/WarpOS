@@ -36,6 +36,29 @@ function gitStagedFiles() {
   }
 }
 
+function isCanonicalRepo() {
+  // Canonical WarpOS dev repo: the framework itself, which has no PRODUCT
+  // requirements (its _requirements/ are templates, scrub-pending). A fresh,
+  // empty requirements graph is the EXPECTED state there — not a merge blocker.
+  // Same repo-role-awareness as framework-purity-guard's consumer skip.
+  try {
+    const mfp = path.resolve(__dirname, "..", "..", ".claude", "manifest.json");
+    if (fs.existsSync(mfp)) {
+      const m = JSON.parse(fs.readFileSync(mfp, "utf8"));
+      if (m && m.warpos && m.warpos.source === "self") return true;
+      if (m && m.project && m.project.slug === "warpos") return true;
+    }
+    const vjp = path.resolve(__dirname, "..", "..", "version.json");
+    if (fs.existsSync(vjp)) {
+      const v = JSON.parse(fs.readFileSync(vjp, "utf8"));
+      if (v && v.name === "warpos") return true;
+    }
+  } catch {
+    /* fall through — treat as non-canonical (safer: keeps the gate strict) */
+  }
+  return false;
+}
+
 function checkGraphPresent() {
   if (!fs.existsSync(GRAPH_FILE)) {
     return {
@@ -54,6 +77,14 @@ function checkGraphPresent() {
     };
   }
   if (!g.counts || g.counts.requirements === 0) {
+    if (isCanonicalRepo()) {
+      return {
+        ok: true,
+        severity: "green",
+        message:
+          "Canonical framework repo — no product requirements to measure (empty graph is expected, not a merge blocker).",
+      };
+    }
     return {
       ok: false,
       severity: "red",
