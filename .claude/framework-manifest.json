@@ -3,10 +3,10 @@
   "version": "0.10.0",
   "generated_by": "scripts/generate-framework-manifest.js",
   "counts": {
-    "agent": 64,
+    "agent": 60,
     "skill": 155,
     "reference": 25,
-    "maps_baseline": 24,
+    "maps_baseline": 23,
     "hook": 66,
     "hook_lib": 13,
     "tool": 2,
@@ -52,7 +52,7 @@
     "installer_script": 1,
     "framework_doc": 2
   },
-  "total": 768,
+  "total": 763,
   "assets": {
     "agent": [
       {
@@ -104,35 +104,11 @@
         "replaces": null
       },
       {
-        "id": "agent.00-alex..system.alpha.events.jsonl",
-        "src": ".claude/agents/00-alex/.system/alpha/events.jsonl",
-        "dest": ".claude/agents/00-alex/.system/alpha/events.jsonl",
-        "kind": "agent",
-        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "owner": "framework",
-        "mergeStrategy": "three_way_markdown",
-        "introducedIn": "0.0.0",
-        "removedIn": null,
-        "replaces": null
-      },
-      {
         "id": "agent.00-alex..system.beta.beta-source-data.md",
         "src": ".claude/agents/00-alex/.system/beta/beta-source-data.md",
         "dest": ".claude/agents/00-alex/.system/beta/beta-source-data.md",
         "kind": "agent",
         "sha256": "0ae9c868c8edb0933cef6bb88214b3080c13cdb126368d7243c990f62db3f60f",
-        "owner": "framework",
-        "mergeStrategy": "three_way_markdown",
-        "introducedIn": "0.0.0",
-        "removedIn": null,
-        "replaces": null
-      },
-      {
-        "id": "agent.00-alex..system.beta.events.jsonl",
-        "src": ".claude/agents/00-alex/.system/beta/events.jsonl",
-        "dest": ".claude/agents/00-alex/.system/beta/events.jsonl",
-        "kind": "agent",
-        "sha256": "ab289260e35903c13a7368621fc24e74ee64af45ca5f52eb72d7f4c3aa3a8df8",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
@@ -156,7 +132,7 @@
         "src": ".claude/agents/00-alex/.system/beta/judgement-model-recommendations.md",
         "dest": ".claude/agents/00-alex/.system/beta/judgement-model-recommendations.md",
         "kind": "agent",
-        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "sha256": "77a2b9db385020fdd0d60b54e1f14154da61968858504ae47dadae2630ea8fc8",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
@@ -169,30 +145,6 @@
         "dest": ".claude/agents/00-alex/.system/beta/judgement-model.md",
         "kind": "agent",
         "sha256": "4800d1bdf84c2df95dafe047073823b1c483a1cdead1e89ec601f96b7bbfffaa",
-        "owner": "framework",
-        "mergeStrategy": "three_way_markdown",
-        "introducedIn": "0.0.0",
-        "removedIn": null,
-        "replaces": null
-      },
-      {
-        "id": "agent.00-alex..system.events.jsonl",
-        "src": ".claude/agents/00-alex/.system/events.jsonl",
-        "dest": ".claude/agents/00-alex/.system/events.jsonl",
-        "kind": "agent",
-        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "owner": "framework",
-        "mergeStrategy": "three_way_markdown",
-        "introducedIn": "0.0.0",
-        "removedIn": null,
-        "replaces": null
-      },
-      {
-        "id": "agent.00-alex..system.gamma.events.jsonl",
-        "src": ".claude/agents/00-alex/.system/gamma/events.jsonl",
-        "dest": ".claude/agents/00-alex/.system/gamma/events.jsonl",
-        "kind": "agent",
-        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
@@ -3254,18 +3206,6 @@
         "replaces": null
       },
       {
-        "id": "maps_baseline.tools.jsonl",
-        "src": ".claude/project/maps/tools.jsonl",
-        "dest": ".claude/project/maps/tools.jsonl",
-        "kind": "maps_baseline",
-        "sha256": "6accde26156cfb6ea0137b763c7e469dce2b9fa8039c98aa91d94abf1a2a6178",
-        "owner": "generated",
-        "mergeStrategy": "regenerate",
-        "introducedIn": "0.0.0",
-        "removedIn": null,
-        "replaces": null
-      },
-      {
         "id": "maps_baseline.tools.md",
         "src": ".claude/project/maps/tools.md",
         "dest": ".claude/project/maps/tools.md",
@@ -5228,7 +5168,7 @@
         "src": "scripts/checks/framework-purity.js",
         "dest": "scripts/checks/framework-purity.js",
         "kind": "check_tool",
-        "sha256": "3081a8447fc6b7e994677a226c514ceb3d9722127382c048952adfbd03557cbe",
+        "sha256": "66e9cc147c36125447f907c643bf04b6f7a622a6435d9a05fd55409b3463eee3",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -5658,7 +5598,7 @@
         "src": "scripts/requirements/gate.js",
         "dest": "scripts/requirements/gate.js",
         "kind": "requirements_engine",
-        "sha256": "7c48f31b0c564537452e0b623a0c676b86c2ab01da53797ee982461b139a07cb",
+        "sha256": "d1d7df886e2d0120f39791e81d072428d883102e3a59c0a6dba11d65b3b9a84a",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -9268,7 +9208,7 @@
         "src": "scripts/generate-framework-manifest.js",
         "dest": "scripts/generate-framework-manifest.js",
         "kind": "top_script",
-        "sha256": "447ebe546430b8d267fefc1e51a9a908eabb00044c23c2068c114e5b55fc8246",
+        "sha256": "7f1a16e115f294ab41ef65f3a8882388db3561a2aab9eac07dff6d0163f4f34b",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",

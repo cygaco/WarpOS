@@ -33,7 +33,10 @@ Thumbs.db
 # Session handoff dump (regenerable via /session:dump — do NOT commit)
 DUMP.md
 
-# WarpOS transaction snapshots (SP-20260513-005 — per-update, per-machine)
+# WarpOS runtime/transaction/consult scratch — all per-machine transient (G5.7).
+# Broad ignore so consult outputs, fixtures, ping prompts, etc. are never tracked.
+.warpos/
+# (specific historical entries retained below; the broad rule above already covers them)
 .warpos/transactions/
 # Plan-payload scratch input to /sprint:plan + /sprint:full orchestrator.
 # Durable record lives at paths.sprintPlanContracts/PC-*.yaml; these scratch

@@ -94,6 +94,13 @@ function isExcluded(relPath) {
   ) {
     return true;
   }
+  // Runtime append-only logs must NEVER ship in the capsule (W-8 class): per-agent
+  // event logs (`.system/**/events.jsonl`), `maps/tools.jsonl`, skill-usage — owner=runtime
+  // telemetry that got swept into the agents/maps directory walk and mislabeled
+  // framework/generated. Drop by filename pattern regardless of where the walk found it.
+  if (/(^|\/)(events|tools|skill-usage)\.jsonl$/.test(relPath)) {
+    return true;
+  }
   return EXCLUDE_RELATIVE_PREFIXES.some(
     (p) => relPath === p || relPath.startsWith(p),
   );

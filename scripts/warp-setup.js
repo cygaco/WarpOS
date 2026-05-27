@@ -799,6 +799,7 @@ const runtimeBlock = [
   GITIGNORE_START,
   ".claude/runtime/",
   ".claude/content/",
+  ".warpos/",
   ".claude/project/events/",
   ".claude/project/memory/",
   ".claude/project/builds/",
