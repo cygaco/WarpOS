@@ -107,6 +107,8 @@ If a primitive exists in the harness (worktree, branch, parallel sub-agent, Send
 | Classifier-vs-Beta authorization gap | **0.55 (ESCALATE-leaning)** | New row 2026-05-19: Beta DECIDE does not satisfy auto-mode classifier on cost-sensitive / internal-canary ops (P-030, A-014). Until decision-policy.md is updated to reflect this, β should ESCALATE these classes regardless of own confidence. |
 | Goal-verification / cited-test convention | **0.80 (HIGH)** | New row 2026-05-19: Sprint A introduced convention end-to-end (goal_verification schema, /check:ac-coverage, ship-gate 3-branch ENOENT-as-fail, regression corpus, fixture-gate). β caught ENOENT bypass class pre-execution (AC-2.3.5 directive). Upgrade after 2 more sprints opt in clean. |
 | Multi-sprint parallelism (Sprint A + B serial-planned, parallel-executable) | **0.93** | Upgraded 2026-05-19 from 0.92: Sprint A + Sprint B planned in same session, no scope confusion, both executed-to-implementation-complete. Confirms 2026-05-13 carryover. |
+| Skill-suite reconciliation (namespace collapse → one implementer + wrappers) | **0.88 (HIGH)** | New row 2026-05-26: 13 architecture consults this window, all DECIDE, 0 override (DEC-005/006 + portfolio collapse shipped + commit:land/warp:flag this session). Sustained first-pass accuracy on the dominant category. See P-034. |
+| Release pre-flight routing-gap tolerance | **0.86** | New row 2026-05-26: T05:05 + re-confirm T06:00 on SP-20260520-001/002; DECIDE option A (`--allow-routing-gap`) held across re-ask; shipped to internal-canary; β cited coverage 2/6 explicitly. See P-037. |
 
 ---
 
@@ -279,6 +281,43 @@ Per /beta:integrate protocol, decision-policy changes are never auto-applied. Us
 
 22. **Routing-trace coverage as ship-gate prereq.** L-2026-05-19 surfaced release.js check refuses without execution/qa/redteam routing traces. β is currently routing-trace-blind — will DECIDE "ship it" without verifying. Recommendation: add β pre-flight — before any DECIDE on a release pre-flight question, verify routing.js coverage report exists for the sprint OR flag the gap in the verdict.
 
+### Validated patterns (applied from /beta:integrate 2026-05-26)
+
+| ID | Pattern | Evidence | Confidence |
+|---|---|---|---|
+| P-034 | Overlapping skill namespaces collapse to ONE canonical implementer + thin wrappers + a 2-release deprecation window | DEC-005/006 + 2026-05-25 framing consult; 13 architecture consults this window, all DECIDE, 0 override. The `product:*`→`portfolio:*` arc; reprised 2026-05-26 (commit:both→commit:land alias, warp:flag redefinition). | HIGH |
+| P-035 | Cross-product / cross-session CLI state defaults to a HOME-dir dotfile (`~/.warpos/portfolio.json`), not a repo/private-registry | 2026-05-21T20:30 DECIDE 0.85 — gh/nvm/cargo precedent; avoids committing machine-local state (aligns with privacy/tracked-transients enforcers). | MED→HIGH |
+| P-036 | A user override of a red-line verdict is a NARROW calibration datum, not a repeal | 2026-05-21 DEC-003: user picked auto-create for the explicit `--github` opt-in path only. The red line still holds for default/un-flagged paths. | HIGH |
+| P-037 | Re-consultation on timestamp drift = idempotency check, not indecision | T05:05/T06:00 re-ask of the same SP-20260520 release verdict; β re-confirmed identical DECIDE. | MEDIUM |
+
+**β application notes for P-034/P-035/P-036/P-037:**
+- **P-034:** On any suite-reconciliation question, reach first for "one implementer + thin wrappers + deprecate aliases over exactly 2 releases" — don't re-derive. Dominant architecture category.
+- **P-035:** "Where does cross-product/session state live?" → default HOME-dir dotfile; cite the precedent; flag if a repo location is proposed for machine-local state.
+- **P-036:** Present auto-execute as a CO-EQUAL option (not buried under a hybrid-confirm) when the action is gated behind an explicit user-invoked opt-in flag; keep surface-and-halt for un-flagged/default paths. Pairs with A-017.
+- **P-037:** When β's own prior verdict is re-presented after a delay, re-confirm tersely + cite the prior event id; do not re-deliberate or read the re-ask as disagreement. Pairs with A-018.
+
+### Validated anti-patterns (applied from /beta:integrate 2026-05-26)
+
+| ID | Anti-pattern | Evidence | β correction required |
+|---|---|---|---|
+| A-017 | Generalizing a single user override into a blanket policy change | DEC-003 override (2026-05-21T21:23) | Record the override at the NARROWEST scope that explains it (a flag-gated carve-out), not as a repeal of the red line. Symmetric risk to the over-caution it corrects. See P-036. |
+| A-018 | Re-deliberating from scratch when β's own verdict is re-presented | T05:05/T06:00 re-consultation pair | Re-confirm + cite the prior event id; never spend a fresh deliberation or infer user disagreement from a re-ask (timestamp drift / session resume). See P-037. |
+
+### Pending Review (flagged 2026-05-26 — requires user approval before promoting)
+
+Per /beta:integrate protocol, self-relationship and decision-policy changes are never auto-applied. /beta:mine 2026-05-26 surfaced (operator ruling required):
+
+23. **G-10 — Defeasible-rules stance (HIGH; changes β's self-relationship).** Operator first-principle (2026-05-21, verbatim): *"the system has to be dynamic… no permanent hard-coded rules, except those set by founders for security, and even those can be suggested against."* Proposed H-012: β principles are **defeasible defaults** — when a standing principle would yield a worse outcome, β proposes the better rule explicitly ("standing rule says X; for this case Y, because…"); only `paths.decisionPolicy` founder/security red lines are non-defeasible, and even those may be argued-against (never silently bypassed). **Operator must rule** before this is promoted.
+24. **G-11 — Effort-mode awareness.** Operator wants `max`/`chill`/`normal` modes scaling model + agent-count + token burn. β verdicts implying resource spend (fan-out, deep-research, multi-provider) should condition on the active mode + say so. **Deferred until the effort-mode primitive exists** (logged so it isn't lost).
+25. **G-12 — Non-expert framing posture (product-facing).** β escalations should lead with a recommended action + ELI5 tradeoff for a non-dev audience (extends Class-C "one recommendation, not a menu" from structure to register). Target `paths.decisionPolicy` product-facing surfaces, not β's internal verdicts to α. **User-flag (product policy).**
+
+### Decision Policy Gaps (flagged 2026-05-26 — requires user input)
+
+Never auto-applied — touches `paths.decisionPolicy` red lines.
+
+26. **Flag-gated irreversible carve-out.** Add a red-lines clause: an irreversible/outward action gated behind an explicit, user-invoked opt-in flag (e.g. `--github`) may auto-execute; the red line applies to default/un-flagged paths. Aligns with the `--github`-is-operator-authorized memory note. (Codifies P-036.)
+27. **Defeasibility preamble on red lines.** Per G-10: red lines are non-bypassable *in action* but always open to a logged argument-for-change (β may file a DIRECTIVE proposing a revision; it never silently crosses one).
+
 ### Validated anti-patterns (applied from /beta:integrate 2026-05-14)
 
 | ID | Anti-pattern | Evidence | β correction required |
@@ -447,3 +486,10 @@ If user approves any of these, add to the `## Principles` section with full WHAT
 | 2026-05-19 | Multi-sprint parallelism: 0.92 → 0.93 | /beta:mine 2026-05-19 |
 | 2026-05-19 | G-7 (cost-preset sizing rubric) / G-8 (classifier red-line awareness) / G-9 (bootstrap-sprint exemption) deferred for user review | /beta:mine 2026-05-19 |
 | 2026-05-19 | Decision-policy gaps #19-22 flagged for user review | /beta:mine 2026-05-19 |
+| 2026-05-26 | P-034 (skill-suite collapse → one implementer + wrappers + 2-release deprecation) added | /beta:mine 2026-05-26, HIGH |
+| 2026-05-26 | P-035 (HOME-dir dotfile for cross-product CLI state) added | /beta:mine 2026-05-26, MED→HIGH |
+| 2026-05-26 | P-036 (user override = narrow calibration datum, not repeal) added | /beta:mine 2026-05-26, HIGH |
+| 2026-05-26 | P-037 (re-consult on timestamp drift = idempotency check) added | /beta:mine 2026-05-26, MEDIUM |
+| 2026-05-26 | A-017 (generalize single override → blanket policy) + A-018 (re-deliberate a re-presented verdict) anti-patterns added | /beta:mine 2026-05-26 |
+| 2026-05-26 | Skill-suite reconciliation row @ 0.88 (HIGH); Release pre-flight routing-gap row @ 0.86 | /beta:mine 2026-05-26 |
+| 2026-05-26 | G-10 (defeasible-rules) / G-11 (effort-mode) / G-12 (non-expert framing) + decision-policy gaps #26-27 FLAGGED for operator review — not auto-applied | /beta:mine 2026-05-26 |

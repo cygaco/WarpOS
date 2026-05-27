@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "0.10.0",
-  "installedCommit": "6bc6fcbadd13c60a18b7d5c1643e39485f3061f9",
-  "installedAt": "2026-05-27T01:16:51.841Z",
+  "installedCommit": "be49c1d188507189abe3338e60da932435a75e15",
+  "installedAt": "2026-05-27T01:26:52.636Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v4",
@@ -64,8 +64,8 @@
       "dest": ".claude/agents/00-alex/.system/beta/judgement-model-recommendations-archive.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "169bee58a0308b793cede8cd87d466ecdfda37f84ce26c84002d4a858360243d",
-      "currentHashAtInstall": "169bee58a0308b793cede8cd87d466ecdfda37f84ce26c84002d4a858360243d",
+      "installedHash": "5fbb0edbf159b1e2dd6e2196f432855115077da05162ce1784454d2a17eb362b",
+      "currentHashAtInstall": "5fbb0edbf159b1e2dd6e2196f432855115077da05162ce1784454d2a17eb362b",
       "introducedIn": "0.0.0"
     },
     {
@@ -74,8 +74,8 @@
       "dest": ".claude/agents/00-alex/.system/beta/judgement-model-recommendations.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "77a2b9db385020fdd0d60b54e1f14154da61968858504ae47dadae2630ea8fc8",
-      "currentHashAtInstall": "77a2b9db385020fdd0d60b54e1f14154da61968858504ae47dadae2630ea8fc8",
+      "installedHash": "94d51efa5bfde3f5b513c3977e795c8d434ab2c759443a9fd8350713ec54c118",
+      "currentHashAtInstall": "94d51efa5bfde3f5b513c3977e795c8d434ab2c759443a9fd8350713ec54c118",
       "introducedIn": "0.0.0"
     },
     {
@@ -84,8 +84,8 @@
       "dest": ".claude/agents/00-alex/.system/beta/judgement-model.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "4800d1bdf84c2df95dafe047073823b1c483a1cdead1e89ec601f96b7bbfffaa",
-      "currentHashAtInstall": "4800d1bdf84c2df95dafe047073823b1c483a1cdead1e89ec601f96b7bbfffaa",
+      "installedHash": "f92c3e290d8cd87ee97a0415bcb01367a62c4e7be691e5d96c1576f7295d792e",
+      "currentHashAtInstall": "f92c3e290d8cd87ee97a0415bcb01367a62c4e7be691e5d96c1576f7295d792e",
       "introducedIn": "0.0.0"
     },
     {

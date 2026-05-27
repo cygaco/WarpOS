@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-05-27T01:16:51.215Z",
+  "generatedAt": "2026-05-27T01:26:52.025Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.10.0",
   "migrations": [],
@@ -14126,24 +14126,24 @@
       "managed": true,
       "source": ".claude/agents/00-alex/.system/beta/judgement-model-recommendations-archive.md",
       "kind": "md",
-      "sha256": "6ff5b2705aaaf8a18000ef78d6608824def67b9f5716d68860c2e466cfc91d10",
-      "installedSha": "6ff5b2705aaaf8a18000ef78d6608824def67b9f5716d68860c2e466cfc91d10"
+      "sha256": "083be5f8708d69bb1faf4f0b59f09c2556ebb1f866a21a479ca500c0b84de179",
+      "installedSha": "083be5f8708d69bb1faf4f0b59f09c2556ebb1f866a21a479ca500c0b84de179"
     },
     ".claude/agents/00-alex/.system/beta/judgement-model-recommendations.md": {
       "owner": "framework",
       "managed": true,
       "source": ".claude/agents/00-alex/.system/beta/judgement-model-recommendations.md",
       "kind": "md",
-      "sha256": "77a2b9db385020fdd0d60b54e1f14154da61968858504ae47dadae2630ea8fc8",
-      "installedSha": "77a2b9db385020fdd0d60b54e1f14154da61968858504ae47dadae2630ea8fc8"
+      "sha256": "94d51efa5bfde3f5b513c3977e795c8d434ab2c759443a9fd8350713ec54c118",
+      "installedSha": "94d51efa5bfde3f5b513c3977e795c8d434ab2c759443a9fd8350713ec54c118"
     },
     ".claude/agents/00-alex/.system/beta/judgement-model.md": {
       "owner": "framework",
       "managed": true,
       "source": ".claude/agents/00-alex/.system/beta/judgement-model.md",
       "kind": "md",
-      "sha256": "fd765d21046ef36fca70516b2d2b4ea0e2c2da63f5991f9b3bbb271367e41703",
-      "installedSha": "fd765d21046ef36fca70516b2d2b4ea0e2c2da63f5991f9b3bbb271367e41703"
+      "sha256": "cd16d7bd64e2e21049bcc376039c671c22d295dcbaa3dbc874559c457651c31a",
+      "installedSha": "cd16d7bd64e2e21049bcc376039c671c22d295dcbaa3dbc874559c457651c31a"
     },
     ".claude/agents/00-alex/.system/alpha/events.jsonl": {
       "owner": "runtime",
