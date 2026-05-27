@@ -155,6 +155,16 @@ if (fromBrief) {
   if (adopt.stderr) process.stderr.write(adopt.stderr);
 }
 
+// ── brief discoverability (G4.6) ────────────────────────────
+// Surface the founding brief so the operator (and a later /bootstrap:spinup in
+// the product's own session) can find it without spelunking. adopt.js lands the
+// brief under <repo>/_docs/{briefs|clones}/<brief-slug>/; PROJECT.md is the first
+// doc anyone opens, so drop a pointer there AND echo it on completion. No-op when
+// --from-brief wasn't used (nothing to point at).
+if (fromBrief) {
+  _pointToFoundingBrief(repoPath, fromBrief);
+}
+
 // ── commit the full scaffold (warp install + brief) so the repo
 //    opens clean and ready ──────────────────────────────────
 spawnSync("git", ["add", "-A"], { cwd: repoPath, encoding: "utf8" });
@@ -329,6 +339,84 @@ function _printLocalOnlyNextSteps(slugVal, repoPathVal) {
   console.log(`Create a private GitHub remote when you want one (run from inside the repo):`);
   console.log(`  gh repo create ${slugVal} --private --source=. --remote=origin --push`);
   console.log(`Or re-run /portfolio:new with --github to do that automatically (operator-run — the agent is gated from pushing to a brand-new remote in auto mode).`);
+}
+
+// Resolve the repo-relative brief/clone roots from the paths registry so the
+// pointer tracks paths.briefsRoot / paths.clonesRoot rather than hardcoding
+// "_docs/briefs". Falls back to the documented defaults if the registry can't
+// be read (older clone). Returns { briefs, clones } repo-relative POSIX paths.
+function _briefRootsRel() {
+  const fallback = { briefs: "_docs/briefs", clones: "_docs/clones" };
+  try {
+    const reg = JSON.parse(
+      fs.readFileSync(path.join(WARPOS_ROOT, "framework", "paths.registry.json"), "utf8")
+    );
+    const entries = reg.paths || reg;
+    const briefs = entries.briefsRoot && entries.briefsRoot.path;
+    const clones = entries.clonesRoot && entries.clonesRoot.path;
+    return {
+      briefs: briefs || fallback.briefs,
+      clones: clones || fallback.clones,
+    };
+  } catch {
+    return fallback;
+  }
+}
+
+// Append a "Founding brief" pointer to the new repo's PROJECT.md (created by the
+// scaffold core during /warp:setup) and echo it on completion. Idempotent: skips
+// if PROJECT.md already references the brief. adopt.js routes the brief into
+// _docs/briefs/<slug>/ or _docs/clones/<slug>/ depending on its source dir, so we
+// probe both. (G4.6)
+function _pointToFoundingBrief(repoPathVal, briefSlug) {
+  const roots = _briefRootsRel();
+  // adopt.js keys the dest dir by the brief slug passed to --from-brief.
+  const candidates = [
+    { rel: path.posix.join(roots.briefs, briefSlug), kind: "brief" },
+    { rel: path.posix.join(roots.clones, briefSlug), kind: "clone" },
+  ];
+  let found = null;
+  for (const c of candidates) {
+    const absDir = path.join(repoPathVal, c.rel);
+    if (!fs.existsSync(absDir)) continue;
+    // Prefer the canonical <slug>.<kind>.md file; fall back to any *.md in the dir.
+    let docName = null;
+    try {
+      const files = fs.readdirSync(absDir);
+      docName =
+        files.find((f) => f === `${briefSlug}.${c.kind}.md`) ||
+        files.find((f) => f.endsWith(".md")) ||
+        null;
+    } catch {
+      /* unreadable — skip */
+    }
+    const docRel = docName ? path.posix.join(c.rel, docName) : c.rel;
+    found = { docRel, kind: c.kind };
+    break;
+  }
+  if (!found) return; // brief didn't land where adopt puts it — nothing to point at
+
+  const projectMd = path.join(repoPathVal, "PROJECT.md");
+  const pointerLine = `> **Founding ${found.kind}:** [\`${found.docRel}\`](${found.docRel}) — the brief this product was scaffolded from.`;
+  try {
+    let body = fs.existsSync(projectMd) ? fs.readFileSync(projectMd, "utf8") : "";
+    // Idempotent: only append if the brief path isn't already referenced.
+    if (!body.includes(found.docRel)) {
+      // Insert the pointer just under the first H1 if there is one, else append.
+      const lines = body.split("\n");
+      const h1Idx = lines.findIndex((l) => /^#\s+/.test(l));
+      if (h1Idx !== -1) {
+        lines.splice(h1Idx + 1, 0, "", pointerLine);
+        body = lines.join("\n");
+      } else {
+        body = (body ? body.replace(/\n*$/, "\n\n") : "") + pointerLine + "\n";
+      }
+      fs.writeFileSync(projectMd, body, "utf8");
+    }
+  } catch {
+    /* non-fatal — the completion echo below still surfaces the brief */
+  }
+  console.log(`Founding ${found.kind} → ${found.docRel} (also linked from PROJECT.md)`);
 }
 
 function _readInstalledVersion(repoPathVal) {

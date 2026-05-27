@@ -494,6 +494,70 @@ function validateBetaVerdict(v) {
 // Capped at 500 chars — operator free text is advisory, not load-bearing.
 const sanitizeBetaMessage = (m) => (m || "").replace(/[\r\n]+/g, " ").slice(0, 500);
 
+// ── Beta-boundary persistence (FIX G2.10) ─────────────────────────────
+//
+// Each adhoc /sprint:full resume cycle halts at the next Beta phase boundary
+// and exits; the operator supplies a verdict and resumes. Without persistence,
+// a plain `--resume` (no --pending-phase) restarts the consult loop at
+// before_plan every time — so a ~5-boundary sprint needed the operator to
+// re-thread --pending-phase on each resume to advance. We persist the set of
+// boundaries that have ALREADY been consulted-and-cleared into an orchestrator-
+// owned sidecar so a bare `--resume` advances straight to the first uncrossed
+// boundary.
+//
+// Why a sidecar and not progress.yaml: the sprint-progress schema is
+// additionalProperties:false and does not declare a cleared-boundaries field,
+// so writing into progress.yaml would produce schema-invalid trackers. The
+// sidecar lives under paths.sprintFullReports/<sprintId>/ — a directory wholly
+// owned by this orchestrator, not governed by any sprint-tracker schema.
+//
+// Fail-open throughout: a read/write error degrades to the prior behavior
+// (operator threads --pending-phase manually) rather than crashing the run.
+
+function betaBoundariesPath(sprintId) {
+  return path.join(
+    REPO_ROOT,
+    PATHS.sprintFullReports,
+    sprintId,
+    "beta-boundaries.json",
+  );
+}
+
+function readClearedBetaBoundaries(sprintId) {
+  try {
+    const fp = betaBoundariesPath(sprintId);
+    if (!fs.existsSync(fp)) return [];
+    const parsed = JSON.parse(fs.readFileSync(fp, "utf8"));
+    const arr = parsed && Array.isArray(parsed.cleared) ? parsed.cleared : [];
+    // Only honor recognized boundaries — a stale/garbled entry can't skip a gate.
+    return arr.filter((b) => PHASES.some((p) => `before_${p}` === b));
+  } catch {
+    return [];
+  }
+}
+
+function recordClearedBetaBoundary(sprintId, boundary) {
+  try {
+    const cleared = readClearedBetaBoundaries(sprintId);
+    if (cleared.includes(boundary)) return; // idempotent
+    cleared.push(boundary);
+    const fp = betaBoundariesPath(sprintId);
+    ensureDir(path.dirname(fp));
+    fs.writeFileSync(
+      fp,
+      JSON.stringify(
+        { schema: "warpos/sprint-full/beta-boundaries/v1", sprint: sprintId, cleared, updated_at: nowIso() },
+        null,
+        2,
+      ) + "\n",
+      "utf8",
+    );
+  } catch {
+    // Fail-open: persistence is an optimization, not a correctness invariant.
+    // Worst case the operator threads --pending-phase manually as before.
+  }
+}
+
 // ── Phase boundary Beta consultation (adhoc mode only) ────────────────
 //
 // ADR option (b): halt-at-each-Beta-boundary.
@@ -1073,6 +1137,40 @@ function phase3Execute(state) {
 
 // ── Phase 4: release-prep ────────────────────────────────────────────
 
+/**
+ * FIX (G2.8) resume-idempotency helper. Scan paths.sprintReleases for an
+ * existing release record minted for `sprintId` at the given non-production
+ * `target`. Returns the release id (e.g. RL-20260526-001) of the first match,
+ * or null when none exists. Idempotent + fail-open: any read/parse error
+ * returns null so phase4 falls through to a fresh prepare (never duplicates
+ * silently, never throws).
+ *
+ * A "match" is a record whose `sprint` equals sprintId and whose target
+ * (deployment_target OR deployment_environment — release.js writes both) is
+ * the same non-production target phase4 prepares. Production records are never
+ * matched here (target is always non-production in phase4), so this can never
+ * mask a production release.
+ */
+function findExistingStagingRelease(sprintId, target) {
+  try {
+    const releasesDir = path.join(REPO_ROOT, PATHS.sprintReleases);
+    if (!fs.existsSync(releasesDir)) return null;
+    const files = fs
+      .readdirSync(releasesDir)
+      .filter((f) => /^RL-\d{8}-\d{3,4}\.yaml$/.test(f));
+    for (const f of files) {
+      const rel = readYamlMaybe(path.join(releasesDir, f));
+      if (!rel || rel.sprint !== sprintId) continue;
+      const recTarget = rel.deployment_target || rel.deployment_environment;
+      if (recTarget === "production") continue; // never match production
+      if (recTarget === target) return rel.id || path.basename(f, ".yaml");
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 function phase4ReleasePrep(state) {
   state.currentPhase = "release-prep";
   emit("sprint_full_phase_started", {
@@ -1117,13 +1215,27 @@ function phase4ReleasePrep(state) {
     };
   }
 
-  // release-prep is gated by preset. moderate halts here for human
-  // approval; aggressive proceeds only for non-production targets.
+  // release-prep is gated by preset. moderate now pre-authorizes a non-
+  // production (staging) release RECORD; aggressive additionally pre-authorizes
+  // execution. Production release approval and any deploy/push stay HARD-
+  // blocked regardless of preset (loadPreset rejects production targets;
+  // FORBIDDEN_PRE_AUTH guards production_release_approval).
   const levels = state.preset.pre_authorized_approval_levels || [];
   const includesReleaseApproval = levels.includes("release_approval_required");
   const targets = state.preset.release_approval_targets || [];
   const target = "staging"; // default for autonomous prep; real deploy is operator's
-  const canAutoApprove = includesReleaseApproval && targets.includes(target);
+  // FIX (G2.11): a non-production local/staging release RECORD is reversible
+  // and has no external effect (release.js prepare never deploys). It is auto-
+  // approved iff the preset pre-authorizes release_approval_required AND lists
+  // this target in release_approval_targets, AND the target is non-production.
+  // moderate's config now grants this for staging; conservative still has an
+  // empty target list, so it continues to halt. The explicit production guard
+  // is defense-in-depth: production is never a valid value here (schema enum is
+  // staging|internal-canary|dev; loadPreset rejects production targets), so a
+  // production release record can never auto-approve through this branch.
+  const isNonProductionTarget = target !== "production";
+  const canAutoApprove =
+    includesReleaseApproval && targets.includes(target) && isNonProductionTarget;
   if (!canAutoApprove) {
     return {
       ok: false,
@@ -1132,7 +1244,49 @@ function phase4ReleasePrep(state) {
     };
   }
 
-  // Aggressive + staging path: prepare + check. Skip deploy (hard ceiling).
+  // FIX (G2.8): resume-idempotency. phase4 is reached again on every --resume;
+  // calling release.js prepare each time mints a fresh RL- record, duplicating
+  // the release on disk + in RELEASES.md. Symmetric with phases 1-3's resume
+  // skips: scan paths.sprintReleases for an existing record for THIS sprint at
+  // a non-production target and, if found, skip prepare and advance.
+  const existingRelease = findExistingStagingRelease(state.sprintId, target);
+  if (existingRelease) {
+    emit("sprint_full_release_prep_resume_skip", {
+      sprint_id: state.sprintId,
+      release_id: existingRelease,
+      target,
+      ts: nowIso(),
+    });
+    const dur = Date.now() - startTs;
+    state.timeline.push({
+      idx: 4,
+      phase: "release-prep",
+      duration_ms: dur,
+      exit_code: 0,
+      auto_approvals_recorded: 0,
+      notes: `resume: release record ${existingRelease} already prepared (target=${target}) — skipping`,
+    });
+    emit("sprint_full_phase_completed", {
+      sprint_id: state.sprintId,
+      phase: "release-prep",
+      duration_ms: dur,
+      helper_exit_code: 0,
+      auto_approvals_recorded: 0,
+      notes: "skipped on resume (release record exists)",
+    });
+    checkpoint(
+      state,
+      "running",
+      "Phase 5: retrospective",
+      `resume: release record already prepared — skipping (target=${target})`,
+    );
+    process.stdout.write(
+      `resume: release record already prepared (${existingRelease}) — skipping\n`,
+    );
+    return { ok: true, skipped: true };
+  }
+
+  // Non-production prep path: prepare + check. Skip deploy (hard ceiling).
   const prepRes = runHelper("scripts/sprint/release.js", [
     "prepare",
     "--title",
@@ -1378,6 +1532,13 @@ function main() {
     });
   }
 
+  // FIX (G2.10): load the persisted set of Beta boundaries already consulted-
+  // and-cleared on earlier resume cycles. On a bare `--resume` (no
+  // --pending-phase) the loop uses this to advance straight to the first
+  // uncrossed boundary instead of re-halting at before_plan every cycle. Only
+  // consulted on resume — a fresh run ignores it so no gate is ever pre-skipped.
+  const clearedBoundaries = args.resume ? readClearedBetaBoundaries(sprintId) : [];
+
   // Phase pipeline
   const phaseFns = [
     () => phase1Plan(state, args),
@@ -1391,15 +1552,22 @@ function main() {
     // Derive boundary from the UPCOMING phase (the one about to run at index i),
     // not from state.currentPhase which names the last completed phase.
     const boundary = `before_${PHASES[i]}`;
-    // FIX 1 — Resume-boundary skip semantics:
-    //   Boundaries STRICTLY BEFORE the pending one (i < pendingIdx) were already
-    //   consulted-and-cleared in earlier resume invocations on previous process
-    //   runs. Skip the consult entirely — no re-halt, no event, no duplication.
-    //   The phase fns are resume-aware and will short-circuit already-done work.
-    //   Boundaries AT the pending index: consume the supplied verdict here.
-    //   Boundaries AFTER: no verdict left → halt with beta_consult_pending
-    //   (operator supplies one verdict per resume invocation).
-    if (args.resume && pendingIdx !== -1 && i < pendingIdx) {
+    // Resume-boundary skip semantics:
+    //   A boundary is skipped (no re-halt, no event, no duplication) when, on a
+    //   resume, EITHER:
+    //     (a) it was persisted as already-cleared on an earlier resume cycle
+    //         (FIX G2.10 — lets a bare `--resume` advance to the next uncrossed
+    //         boundary without re-threading --pending-phase each time), OR
+    //     (b) it is strictly before an explicitly-threaded --pending-phase
+    //         (i < pendingIdx — back-compat with the one-verdict-per-resume
+    //         CLI flow).
+    //   The phase fns are resume-aware and self-skip already-done work.
+    //   Otherwise the consult runs: a supplied verdict is consumed here; with
+    //   none left it halts with beta_consult_pending (one verdict per resume).
+    const alreadyCleared =
+      args.resume && clearedBoundaries.includes(boundary);
+    const beforePending = args.resume && pendingIdx !== -1 && i < pendingIdx;
+    if (alreadyCleared || beforePending) {
       // Already cleared — run the phase fn (which will self-skip on resume).
     } else {
       const consult = maybeConsultBeta(state, boundary, args);
@@ -1422,6 +1590,13 @@ function main() {
           `halt_reason=${consult.halt_reason}`,
         );
         return 1;
+      }
+      // A non-null verdict means this boundary was genuinely consulted-and-
+      // cleared in THIS process (solo mode returns verdict:null and has no
+      // boundaries to track). Persist it so the next bare `--resume` skips it.
+      if (consult.verdict) {
+        recordClearedBetaBoundary(sprintId, boundary);
+        clearedBoundaries.push(boundary);
       }
     }
     const result = phaseFns[i]();
@@ -1472,8 +1647,12 @@ module.exports = {
   phase2Design,
   phase3Execute,
   phase4ReleasePrep,
+  findExistingStagingRelease,
   flipActiveSprintsStatusForRetro,
   maybeConsultBeta,
   validateBetaVerdict,
   BETA_VERDICTS,
+  readClearedBetaBoundaries,
+  recordClearedBetaBoundary,
+  betaBoundariesPath,
 };

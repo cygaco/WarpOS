@@ -19,6 +19,7 @@ const cHash = require("./lib/content-hash");
 const ROOT = path.resolve(__dirname, "..", "..");
 const MANIFEST_FILE = path.join(ROOT, ".claude", "framework-manifest.json");
 const OUT_FILE = path.join(ROOT, ".claude", "framework-installed.json");
+const INSTALLED_FILE = OUT_FILE; // alias: framework-installed.json is both in/out
 
 function readJson(file) {
   return JSON.parse(fs.readFileSync(file, "utf8"));
@@ -85,11 +86,100 @@ function buildSnapshot() {
   };
 }
 
+/**
+ * G5.2 — consumer-side re-baseline.
+ *
+ * A consumer install has `.claude/framework-installed.json` (written by the
+ * installer) but typically does NOT have `.claude/framework-manifest.json`
+ * (the full asset manifest is a dev-repo artifact; consumers receive the
+ * capsule + installed snapshot, not the source manifest). Without the
+ * manifest, buildSnapshot() can't run and the old code exit(2)'d — leaving a
+ * consumer with legitimate framework drift unable to re-baseline so that
+ * /warp:update's preflight (manifest-honesty gate) would pass.
+ *
+ * This re-hashes every asset already listed in framework-installed.json
+ * against the current on-disk bytes, using the SAME content-hash semantics
+ * the honesty check uses (contentHash{text:true} for text assets by
+ * extension, rawHash otherwise — see sha256File above), and rewrites
+ * installedHash + currentHashAtInstall in place. Assets whose file is missing
+ * on disk are left untouched (their absence is a real finding the honesty
+ * check should still surface). Returns a summary for the CLI.
+ */
+function rebaselineFromInstalled() {
+  const installed = readJson(INSTALLED_FILE);
+  const assets = Array.isArray(installed.assets) ? installed.assets : [];
+  let rehashed = 0;
+  let missing = 0;
+  let unchanged = 0;
+  for (const a of assets) {
+    const rel = a.dest || a.src;
+    if (!rel) continue;
+    const abs = path.join(ROOT, rel);
+    if (!fs.existsSync(abs) || !fs.statSync(abs).isFile()) {
+      missing++;
+      continue;
+    }
+    const hash = sha256File(abs, rel);
+    if (a.installedHash === hash) {
+      unchanged++;
+    } else {
+      rehashed++;
+    }
+    a.installedHash = hash;
+    a.currentHashAtInstall = hash;
+  }
+  // Record that this snapshot was reconciled against local drift, so the
+  // provenance is auditable (distinct from a clean install snapshot).
+  installed.rebaselinedAt = new Date().toISOString();
+  installed.rebaselineSource = "local-disk (--reconcile-baseline)";
+  return { installed, rehashed, missing, unchanged, total: assets.length };
+}
+
 function main() {
   const check = process.argv.includes("--check");
   if (!fs.existsSync(MANIFEST_FILE)) {
+    // Consumer fallback (G5.2): no source manifest, but an installed snapshot
+    // exists → re-hash assets in place against disk instead of failing.
+    if (fs.existsSync(INSTALLED_FILE)) {
+      if (check) {
+        // --check is a "is the snapshot fresh?" probe. Without a manifest we
+        // can't compare asset COUNT to source; report ok if the file parses
+        // and carries the expected schema. Re-baseline is the write path.
+        try {
+          const existing = readJson(INSTALLED_FILE);
+          const ok =
+            existing.$schema === "warpos/framework-installed/v2" &&
+            Array.isArray(existing.assets);
+          if (!ok) {
+            console.error(
+              "snapshot-installed: installed snapshot malformed (no manifest to validate against)",
+            );
+            process.exit(1);
+          }
+          console.log(
+            `snapshot-installed: ok (consumer; ${existing.assets.length} assets; no manifest — cannot verify staleness)`,
+          );
+          process.exit(0);
+        } catch (e) {
+          console.error(
+            `snapshot-installed: failed to read installed snapshot: ${e.message}`,
+          );
+          process.exit(1);
+        }
+      }
+      const r = rebaselineFromInstalled();
+      fs.writeFileSync(
+        INSTALLED_FILE,
+        JSON.stringify(r.installed, null, 2) + "\n",
+        "utf8",
+      );
+      console.log(
+        `snapshot-installed: re-baselined consumer snapshot in place (${r.rehashed} hash(es) updated, ${r.unchanged} unchanged, ${r.missing} missing on disk, ${r.total} total). No framework-manifest.json — used framework-installed.json#assets[].`,
+      );
+      process.exit(0);
+    }
     console.error(
-      "snapshot-installed: missing .claude/framework-manifest.json",
+      "snapshot-installed: missing .claude/framework-manifest.json (and no .claude/framework-installed.json to re-baseline from)",
     );
     process.exit(2);
   }

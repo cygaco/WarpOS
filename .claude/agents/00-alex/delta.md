@@ -51,6 +51,7 @@ Each cycle follows:
    - **Tech-introduction check.** If `files_modified` includes `package.json` or `package-lock.json`, parse the diff for new dependencies. For each new dep, log a `NEW_DEP_CANDIDATE` runLog entry citing the 4-condition rule from `paths.decisionPolicy`. Flag as Class B; require ADR before proceeding to next phase.
 4. Snapshot files (SHA256 per file)
 5. Parallel gauntlet: reviewer + compliance + qa + redteam (WAIT for all)
+5a. **Gauntlet telemetry gate (WG-19)** — before trusting verdicts, confirm each lane actually dispatched: `node scripts/dispatch/gauntlet-verify.js --roles reviewer,compliance,qa,redteam --since <cycle-gauntlet-start-ISO> --until <now-ISO>`. Absence of an `ok:true` record in `paths.dispatchCompletionsFile` = the lane silently died (`no-record`), NOT a pass — never trust orchestrator prose over the completion log. Any required role `no-record` ⇒ halt the cycle with reason `GAUNTLET_LANE_NO_DISPATCH_RECORD` (same posture as the empty-merge guard, step 3a). redteam `fell-back` to claude is acceptable.
 6. If any fail: unified fix brief → fix agent (max 3 attempts) → targeted re-review
 7. Calculate points, XP, ranks, achievements
 8. Run learner analysis — learner output now includes `class: A|B|C` per proposed change. Class A auto-applies (within 3-per-cycle limit). Class B writes an ADR file to `paths.policy/adr/NNNN-slug.md`. Class C halts the cycle with structured escalation brief.

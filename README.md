@@ -96,7 +96,7 @@ Then read **[USER_GUIDE.md](USER_GUIDE.md)** — the daily-rhythm guide. Modes, 
 | `/fix:deep` | Deep fix with framework selection, 5 solutions, root cause analysis |
 | `/oneshot:retro` | Full retrospective: context + git log + code diffs, 9 categories |
 | `/session:handoff` | Generate rich handoff doc for the next session |
-| `/commit:both` | Stage, commit, and push with smart message |
+| `/commit:land` | Commit, push the branch, then merge into the default branch |
 
 ## Structure
 
@@ -134,7 +134,7 @@ WarpOS/
 - `/fix:deep` — Deep fix (framework selection, root cause, prevention)
 - `/commit:local` — Stage + commit locally
 - `/commit:remote` — Push to remote
-- `/commit:both` — Commit + push
+- `/commit:land` — Commit + push branch + merge to default branch
 
 ### Quality & Checks
 - `/qa:audit` — Full codebase QA audit (failure-mode personas)

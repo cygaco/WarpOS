@@ -282,6 +282,47 @@ process.stdin.on("end", () => {
         );
       }
 
+      // W-1: Generated-artifact Freshness Gate. A branch merge can land a
+      // changed framework/paths.registry.json (or hooks.registry.json) WITHOUT
+      // the regenerated artifacts (.claude/paths.json, paths.generated.js,
+      // settings.json hooks block), so the sprint pipeline + hooks silently read
+      // a stale paths.json post-merge. Both build.js scripts expose `--check`
+      // (exit 1 when any artifact is stale vs its registry). Run them BEFORE the
+      // merge; block if either reports stale. Skipped silently when a build
+      // script is absent (older install layout). Fast — pure file hashing, no
+      // network.
+      for (const rel of [
+        ["scripts", "paths", "build.js"],
+        ["scripts", "hooks", "build.js"],
+      ]) {
+        const buildScript = path.join(PROJECT, ...rel);
+        if (!require("fs").existsSync(buildScript)) continue;
+        const fresh = spawnSync(process.execPath, [buildScript, "--check"], {
+          cwd: PROJECT,
+          encoding: "utf8",
+        });
+        // exit 0 = fresh; exit 1 = stale (the documented signal). Any other
+        // exit (crash) → fail-closed, same posture as the requirements gate.
+        if (fresh.status === 1) {
+          const tail = (fresh.stdout || fresh.stderr || "")
+            .split("\n")
+            .slice(-10)
+            .join("\n");
+          const buildCmd = rel.join("/");
+          block(
+            `merge-guard: generated artifacts stale before merge (${buildCmd} --check failed).\n${tail}\n\nThis merge would leave generated paths/hook artifacts out of sync with their registry — the sprint pipeline + hooks read the stale copy. Fix: node ${buildCmd}  (then commit the regenerated artifacts), and re-run the merge.`,
+          );
+        } else if (fresh.status !== 0 && fresh.status !== null) {
+          const errTail =
+            (fresh.stderr || "").split("\n").slice(-8).join("\n") ||
+            (fresh.stdout || "").split("\n").slice(-8).join("\n");
+          const sig = fresh.signal ? ` signal=${fresh.signal}` : "";
+          block(
+            `merge-guard: freshness gate crashed before merge (${rel.join("/")} --check exit=${fresh.status}${sig}).\n${errTail}\n\nFix: run it directly to see why — do not bypass without a known-good reason.`,
+          );
+        }
+      }
+
       // Phase 3F: Requirements Freshness Gate — refuses merge when the spec
       // has drifted from code. Class C RCOs and missing graph fail closed.
       // Engine lives in scripts/requirements/. Skipped silently if engine

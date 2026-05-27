@@ -117,6 +117,14 @@ returns `pass:false` unless build is clean AND HTTP 200 AND the entry transforms
 product-side (LLM-orchestrated); the driver returns `needs_orchestration` and the
 skill body drives it, then gates completion with `verifyServe`.
 
+> **Visual confirmation is opt-in and needs Playwright.** The objective serve gate
+> above (build clean + HTTP 200 + entry transforms) is the only auto-verifiable
+> check. A *visual* "does it look right" pass via the `visual-review` agent requires
+> the Playwright MCP server connected (`mcp__playwright__browser_*`); when it is
+> absent, `visual-review` correctly BAILS rather than fabricating — treat that as
+> "not run," not a failure, and never claim a visual pass that didn't execute. Run
+> the visual pass in a session where the MCP is connected, or document its absence.
+
 ## Execution — the orchestrator driver (SP-20260525-023)
 The phases above execute via `scripts/bootstrap/spinup-orchestrate.js` (a real
 driver, mirroring `scripts/canon/generate.js`, so `--phase`/`--resume` state is

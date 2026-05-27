@@ -62,6 +62,66 @@ function planClone(repoRoot, cloneTarget) {
   return { slug, cliFlag, isUrl, outputDirRel, docRel };
 }
 
+// Resolve the repo-relative brief root (paths.briefsRoot) from the in-repo paths
+// registry so reuse tracks the registry rather than a hardcoded "_docs/briefs".
+// Falls back to the documented default if the registry can't be read.
+function briefsRootRel(repoRoot) {
+  const fallback = "_docs/briefs";
+  try {
+    const reg = JSON.parse(
+      fs.readFileSync(path.join(repoRoot, "framework", "paths.registry.json"), "utf8"),
+    );
+    const entries = reg.paths || reg;
+    return (entries.briefsRoot && entries.briefsRoot.path) || fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+// Derive the brief slug from --product the same way clone.js does, so reuse
+// matches what /portfolio:new --from-brief and prior spinups write. Returns null
+// when no product name is available (caller then falls through to orchestration).
+function deriveProductSlug(repoRoot, product) {
+  if (!product) return null;
+  try {
+    const engine = loadCloneEngine(repoRoot);
+    return engine.deriveSlug({ slug: null, name: String(product), urlObj: null }) || null;
+  } catch {
+    // Engine unavailable — minimal inline slugify mirroring deriveSlug's shape.
+    return (
+      String(product)
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "") || null
+    );
+  }
+}
+
+// G4.6: locate an existing founding brief for this product under paths.briefsRoot.
+// Returns the repo-relative POSIX path to <slug>.brief.md (or the first *.md in
+// the slug dir) when present, else null.
+function findExistingBrief(ctx) {
+  const { repoRoot, product } = ctx;
+  const slug = deriveProductSlug(repoRoot, product);
+  if (!slug) return null;
+  const rootRel = briefsRootRel(repoRoot);
+  const dirRel = path.posix.join(rootRel, slug);
+  const dirAbs = path.join(repoRoot, dirRel);
+  if (!fs.existsSync(dirAbs)) return null;
+  let docName = null;
+  try {
+    const files = fs.readdirSync(dirAbs);
+    docName =
+      files.find((f) => f === `${slug}.brief.md`) ||
+      files.find((f) => f.endsWith(".md")) ||
+      null;
+  } catch {
+    return null;
+  }
+  if (!docName) return null;
+  return path.posix.join(dirRel, docName);
+}
+
 async function run(ctx) {
   const { repoRoot, cloneTarget, intentFile, dryRun, log } = ctx;
 
@@ -137,6 +197,28 @@ async function run(ctx) {
   // The brief is a discussion; a node process can't run it. If the skill body
   // already produced one (--intent <file> that exists), accept it; otherwise
   // ask the orchestrator (Alpha/spinup.md) to run the brief and re-invoke.
+
+  // G4.6 brief-reuse: before asking for a (re-)interrogation, look for a brief
+  // this product already has under paths.briefsRoot (e.g. one /portfolio:new
+  // --from-brief adopted, or a prior spinup wrote). If <slug>.brief.md exists,
+  // reuse it as the intent and skip the guided discussion entirely. The slug is
+  // derived from --product the same way clone.js derives slugs, so the lookup
+  // matches what other portfolio tooling writes. Only consult this when the
+  // operator didn't pin an explicit --intent path (that takes precedence below).
+  if (!intentFile) {
+    const reused = findExistingBrief(ctx);
+    if (reused) {
+      if (dryRun) log(`[dry-run] would reuse existing brief at ${reused}`);
+      else log(`reusing existing product brief at ${reused} (skipping guided brief)`);
+      return {
+        ok: true,
+        status: "done",
+        message: `existing brief reused → ${reused}`,
+        data: { intentFile: reused, mode: "brief-reuse" },
+      };
+    }
+  }
+
   if (intentFile) {
     const abs = path.isAbsolute(intentFile) ? intentFile : path.join(repoRoot, intentFile);
     if (fs.existsSync(abs)) {

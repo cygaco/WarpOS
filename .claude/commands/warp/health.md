@@ -56,6 +56,11 @@ Why this matters: `/mode:adhoc` documents persistent β/γ teammates created via
 If missing: YELLOW — "Add `\"env\": { \"CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS\": \"1\" }` to .claude/settings.json, then restart Claude Code. After restart, /mode:adhoc creates a real persistent team."
 If set to anything other than `"1"`: RED — "Flag present but value is wrong. Set to the string `\"1\"`."
 
+### 3.6 Adhoc team hygiene
+Run `node scripts/checks/adhoc-team-hygiene.js`. Flags any `~/.claude/teams/*` whose members carry a `-N` de-dup suffix (`Beta (β)-2`) or reference a stale `leadSessionId` — the W-21 cross-session accretion bug.
+
+If flagged: YELLOW — "Reconcile via `SendMessage {type:\"shutdown_request\"}` to each stale member (NEVER edit `config.json` — that orphans a live in-process agent), then re-spawn. See `/mode:adhoc` Step 1.75 (reconcile-before-spawn)."
+
 ### 4. Agent System
 Check `.claude/agents/` has:
 - `00-alex/alpha.md` — orchestrator

@@ -1,34 +1,14 @@
 ---
-description: Commit locally then push to remote — full commit + push flow
+description: "[deprecated alias → /commit:land] Commit locally then push — superseded by /commit:land, which also merges the branch into the default branch."
 ---
 
-# /commit:both — Commit and Push
+# /commit:both — deprecated alias
 
-Runs `/commit:local` then `/commit:remote` in sequence.
+`/commit:both` has been **renamed to [`/commit:land`](land.md)**, which does everything
+`/commit:both` did (commit + push the working branch) **and** completes the merge into the
+repo's default integration branch.
 
-## Input
+Run **`/commit:land`** instead — it is the canonical name. This alias forwards there and
+will be removed at `warpos@1.0.0`.
 
-`$ARGUMENTS` — Optional commit message hint. Passed to the local commit step.
-
-## Procedure
-
-### Step 1: Commit locally
-
-Follow the full `/commit:local` procedure:
-- Assess state, stage files, draft message, commit
-- If nothing to commit, check if there are unpushed commits — if so, skip to Step 2
-- If nothing to commit AND nothing to push, report "Nothing to do" and stop
-
-### Step 2: Push to remote
-
-Follow the full `/commit:remote` procedure:
-- Pre-push checks, show what will be pushed, then push immediately
-- The user already confirmed by invoking `/commit:both` — no second confirmation needed
-- Still show what was pushed in the report
-
-### Step 3: Report
-
-```
-Committed: `<hash>` <message>
-Pushed: <N> commits to origin/<branch>
-```
+(Matches the `/warp:sync` → `/warp:update` deprecation-alias precedent.)

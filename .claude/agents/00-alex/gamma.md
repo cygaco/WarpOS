@@ -151,6 +151,27 @@ You handle **one feature per invocation**, as specified in your prompt from Alex
 
 Example: `"Build feature: auth"` → dispatch builder for auth, run gauntlet, fix if needed, report.
 
+## Verify the gauntlet ran (telemetry, not narration)
+
+Before aggregating `gate_checks` or reporting GAMMA_RESULT, confirm each gauntlet
+role **actually dispatched** — never report a lane as run/passed from your own
+prose. A foreground dispatch writes an `ok:true` record to
+`paths.dispatchCompletionsFile` (`.claude/runtime/dispatch-completions.jsonl`); a
+silently-dead (auto-backgrounded) dispatch writes **nothing** — absence of a
+record IS the death signal (WG-19). Run the telemetry gate over the gauntlet's
+wall-clock window:
+
+```bash
+node scripts/dispatch/gauntlet-verify.js --roles reviewer,compliance,qa,redteam \
+  --since "<gauntlet-start-ISO>" --until "<now-ISO>"
+```
+
+It returns per role `ran` | `fell-back` | `failed` | `no-record`. **Any required
+role = `no-record` ⇒ the gauntlet is INCOMPLETE, not passed**: mark it `no-record`
+in `gate_checks`, set `status: "fail"` with
+`halt_reason: "gauntlet_lane_no_dispatch_record"`, and report to α. (redteam
+`fell-back` to claude is acceptable; `no-record` is not.)
+
 ## Post-feature test pilot
 
 After the four-reviewer gauntlet (reviewer + compliance + qa + redteam) passes

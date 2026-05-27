@@ -16,6 +16,13 @@
  *     [--exit-on-yellow]    default: false (PRD R-7 -- yellow exits 0)
  *     [--no-autofix]        default: false (T-023 will honour)
  *     [--target <root>]     default: cwd
+ *     [--per-role]          default: false (G1.6 — resolve each build-chain
+ *                           role's provider+model the way real dispatch does
+ *                           and ping the non-Claude ones; a role whose model
+ *                           is unavailable on the account turns the verdict
+ *                           red, killing the false-green)
+ *     [--no-ping]           default: false (with --per-role: resolve
+ *                           provider+model per role but skip the live dispatch)
  *
  * Exit codes (PRD R-7):
  *   0 -- all green.
@@ -57,6 +64,13 @@ const { probeAll, probeProvider } = require(
 const { log } = require(
   path.join(__dirname, "..", "hooks", "lib", "logger.js"),
 );
+// G1.6 per-role smoke: resolve provider+model exactly as real dispatch does
+// (getProviderForRole + the role spec's provider_model) and dispatch a tiny
+// ping through runProvider. Routing through runProvider — NOT a raw `codex
+// exec` / `gemini -p` — keeps this on the single safe dispatch path and away
+// from the LRN-2026-04-17/-04-30 binding-gap bug class (RT-5 / AC-8.1). These
+// requires are lazy inside perRoleProbe() so the default presence-only smoke
+// (the hot path for /warp:setup) pays zero extra require cost.
 // T-022: pure-function RCA module. Stays at module scope so caller cost is one
 // require, not one per invocation. No I/O in the module itself.
 const { rcaFor } = require(path.join(__dirname, "lib", "provider-rca.js"));
@@ -292,6 +306,227 @@ function loadFailureModeCatalog() {
   };
 }
 
+// Per-role smoke (G1.6) ---------------------------------------
+//
+// Provider-level probing answers "is the codex/gemini CLI present + authed?".
+// It does NOT answer "can the model THIS role is pinned to actually be served
+// on this account?". A role pinned to gpt-5.5 on an account that only has
+// gpt-5.4 passes the provider probe (codex is present) yet fails the moment a
+// real reviewer dispatch runs — a false green. G1.6 closes that by resolving
+// each build-chain role's provider+model via the SAME path real dispatch uses
+// (getProviderForRole + the role spec's provider_model, read through
+// dispatch-agent.js#getRoleModel) and dispatching a tiny ping through
+// runProvider, which carries the strict model-availability + silent-downgrade
+// assertions. A role whose model is unreachable comes back not-ok and turns
+// the verdict red.
+
+// Build-chain roles, in the order γ/δ dispatch them. Claude-routed roles
+// (builder/fixer) are resolved + reported but NOT pinged — Claude is the
+// harness and always reachable, matching provider-health.js's claude=ok rule.
+// The cross-provider review/security roles are the ones that can false-green,
+// so those get the live ping.
+const PER_ROLE_BUILD_CHAIN = [
+  "builder",
+  "fixer",
+  "reviewer",
+  "compliance",
+  "qa",
+  "redteam",
+  "learner",
+];
+
+function loadPingPrompt(targetRoot) {
+  // Reuse .warpos/ping-prompt.txt when present (shared with /agents:test) so
+  // the ping wording stays consistent across tools; otherwise a 1-token ask.
+  try {
+    const p = path.join(targetRoot, ".warpos", "ping-prompt.txt");
+    if (fs.existsSync(p)) {
+      const body = fs.readFileSync(p, "utf8").trim();
+      if (body) return body;
+    }
+  } catch {
+    /* fall through to default */
+  }
+  return "Reply with exactly: OK. One line, nothing else.";
+}
+
+/**
+ * Resolve + (for non-Claude roles) ping each build-chain role through the real
+ * dispatch resolution path. Best-effort and bounded — never throws.
+ *
+ * @param {string[]} roles  - canonical role names to check
+ * @param {object}   opts
+ * @param {number}   opts.timeoutMs - per-ping wall clock (default 60s; pings are tiny)
+ * @param {boolean}  opts.noPing    - resolve provider+model but skip live dispatch
+ * @param {string}   opts.targetRoot - project root (for ping-prompt.txt lookup)
+ * @returns {Array<{role, provider, model, modelSource, status, reachable, reportedModel, reason, elapsed_ms}>}
+ */
+function perRoleProbe(roles, opts = {}) {
+  const timeoutMs = opts.timeoutMs || 60_000;
+  const noPing = !!opts.noPing;
+  const targetRoot = opts.targetRoot || process.cwd();
+
+  // Lazy require — keep the default presence-only smoke require-cheap.
+  let getProviderForRole, runProvider, getRoleModel;
+  try {
+    const providers = require(
+      path.join(__dirname, "..", "hooks", "lib", "providers.js"),
+    );
+    getProviderForRole = providers.getProviderForRole;
+    runProvider = providers.runProvider;
+  } catch (e) {
+    // Without the providers lib we can't resolve roles at all — surface one
+    // unresolved row per role rather than crashing the whole smoke.
+    return roles.map((role) => ({
+      role,
+      provider: null,
+      model: null,
+      modelSource: "unresolved",
+      status: "unresolved",
+      reachable: false,
+      reportedModel: null,
+      reason: "providers.js unavailable: " + (e && e.message ? e.message : e),
+      elapsed_ms: 0,
+    }));
+  }
+  try {
+    // dispatch-agent.js exports getRoleModel when require()'d as a module
+    // (it short-circuits the CLI flow for non-main requires).
+    ({ getRoleModel } = require(path.join(__dirname, "..", "dispatch-agent.js")));
+  } catch {
+    getRoleModel = null;
+  }
+
+  const pingPrompt = noPing ? null : loadPingPrompt(targetRoot);
+
+  return roles.map((role) => {
+    let provider = null;
+    try {
+      provider = getProviderForRole(role);
+    } catch {
+      provider = null;
+    }
+    // Resolve the model the SAME way dispatch-agent.js does: the role spec's
+    // frontmatter provider_model wins; else the provider default fills in
+    // downstream inside runProvider.
+    let specModel = null;
+    if (getRoleModel) {
+      try {
+        specModel = getRoleModel(role);
+      } catch {
+        specModel = null;
+      }
+    }
+
+    const base = {
+      role,
+      provider,
+      model: specModel || null,
+      modelSource: specModel ? "spec" : "provider-default",
+      reportedModel: null,
+      elapsed_ms: 0,
+    };
+
+    if (!provider) {
+      return {
+        ...base,
+        status: "unresolved",
+        reachable: false,
+        reason: "could not resolve provider for role",
+      };
+    }
+
+    // Claude roles: harness is always available; don't spend a token.
+    if (provider === "claude") {
+      return {
+        ...base,
+        status: "ok",
+        reachable: true,
+        reason: "claude is the harness; always reachable (not pinged)",
+      };
+    }
+
+    if (noPing) {
+      return {
+        ...base,
+        status: "resolved",
+        reachable: null,
+        reason: "resolved provider+model; ping skipped (--no-ping)",
+      };
+    }
+
+    // Live ping through runProvider — strict mode ON (default) so a missing
+    // model or silent downgrade fails the role instead of passing quietly.
+    const t0 = Date.now();
+    let res;
+    try {
+      res = runProvider(
+        role,
+        pingPrompt,
+        specModel ? { model: specModel, timeoutMs } : { timeoutMs },
+      );
+    } catch (e) {
+      return {
+        ...base,
+        status: "error",
+        reachable: false,
+        reason: "runProvider threw: " + (e && e.message ? e.message : e),
+        elapsed_ms: Date.now() - t0,
+      };
+    }
+    const elapsed_ms = Date.now() - t0;
+    const reportedModel = res.actualModel || res.model || specModel || null;
+
+    if (res.ok) {
+      return {
+        ...base,
+        model: res.model || specModel || null,
+        reportedModel,
+        status: "ok",
+        reachable: true,
+        reason: "ping ok",
+        elapsed_ms,
+      };
+    }
+
+    // Not ok. Distinguish the false-green killers (model unavailable / silent
+    // downgrade) from generic fallbacks for an actionable reason string.
+    let status = "unreachable";
+    if (res.strictFailure) status = "model_unavailable";
+    else if (res.fallback) status = "fellback";
+    return {
+      ...base,
+      model: res.model || specModel || null,
+      reportedModel,
+      status,
+      reachable: false,
+      reason: String(res.error || "ping failed").slice(0, 300),
+      elapsed_ms,
+    };
+  });
+}
+
+// A per-role result is GREEN when reachable, YELLOW when it merely fell back to
+// claude (ran, but lost diff-model coverage), RED otherwise (model unavailable,
+// unresolved, unreachable, error). Claude roles and --no-ping "resolved" rows
+// are treated as green/non-fatal so the per-role sweep never red-lights a
+// resolution-only run.
+function classifyPerRole(rows) {
+  const isRed = (r) =>
+    ["model_unavailable", "unreachable", "error", "unresolved"].includes(
+      r.status,
+    );
+  const isYellow = (r) => r.status === "fellback";
+  if (rows.some(isRed)) return "red";
+  if (rows.some(isYellow)) return "yellow";
+  return "green";
+}
+
+function mergeVerdict(a, b) {
+  const rank = { green: 0, yellow: 1, red: 2 };
+  return rank[b] > rank[a] ? b : a;
+}
+
 // Human output (COPY C-1) -------------------------------------
 
 function iconFor(status) {
@@ -306,7 +541,41 @@ function iconFor(status) {
   return "xx";
 }
 
-function renderHuman(verdict, results, rca) {
+function iconForPerRole(status) {
+  if (status === "ok") return "ok";
+  if (status === "resolved") return "..";
+  if (status === "fellback") return "!!";
+  return "xx"; // model_unavailable / unreachable / error / unresolved
+}
+
+function renderPerRole(perRoleResults) {
+  if (!Array.isArray(perRoleResults) || perRoleResults.length === 0) return [];
+  const out = [];
+  out.push("");
+  out.push("Per-role reachability (dispatch resolution path):");
+  out.push(SEP);
+  for (const r of perRoleResults) {
+    const ic = iconForPerRole(r.status);
+    const role = String(r.role || "?").padEnd(11);
+    const prov = String(r.provider || "?").padEnd(7);
+    const model = String(r.model || r.reportedModel || "(default)").padEnd(24);
+    let suffix = r.reason || r.status || "";
+    // Surface a silent-downgrade mismatch explicitly when we have both sides.
+    if (
+      r.reportedModel &&
+      r.model &&
+      r.reportedModel.toLowerCase() !== String(r.model).toLowerCase()
+    ) {
+      suffix = `requested ${r.model}, served ${r.reportedModel} — ${suffix}`;
+    }
+    out.push(
+      ("  " + ic + "  " + role + " " + prov + " " + model + " " + suffix).trimEnd(),
+    );
+  }
+  return out;
+}
+
+function renderHuman(verdict, results, rca, perRoleResults) {
   const out = [];
   const header =
     verdict === "green"
@@ -348,6 +617,8 @@ function renderHuman(verdict, results, rca) {
     }
     out.push(("  " + ic + "  " + prov + " " + stat + " " + suffix).trimEnd());
   }
+  // G1.6: per-role reachability block, when the sweep ran.
+  for (const line of renderPerRole(perRoleResults)) out.push(line);
   if (verdict === "green") {
     out.push("All required providers ready.");
   } else if (verdict === "yellow") {
@@ -372,6 +643,11 @@ function run(rawArgv) {
   const exitOnYellow = !!args["exit-on-yellow"];
   const noAutofix = !!args["no-autofix"]; // honoured by T-023 dispatcher
   const target = validateTarget(args.target);
+  // G1.6: opt-in per-role reachability sweep. Default OFF so /warp:setup's
+  // hot-path presence smoke stays fast + token-free. --no-ping resolves
+  // provider+model per role without spending a dispatch (cheap drift check).
+  const perRole = !!args["per-role"];
+  const noPing = !!args["no-ping"];
 
   const catalog = loadFailureModeCatalog();
 
@@ -480,6 +756,34 @@ function run(rawArgv) {
     }
   }
 
+  // G1.6: per-role reachability sweep (opt-in). Resolve every build-chain
+  // role's provider+model the way real dispatch does and ping the non-Claude
+  // ones. A role whose pinned model is unavailable on the account comes back
+  // red here even though its provider's CLI probe was green — killing the
+  // false green. Only roles whose resolved provider is in the requested
+  // `providers` set are swept, so `--providers openai` limits the sweep to
+  // openai-routed roles. Folded into the overall verdict + exit code.
+  let perRoleResults = null;
+  if (perRole) {
+    const allRows = perRoleProbe(PER_ROLE_BUILD_CHAIN, {
+      noPing,
+      targetRoot: target,
+    });
+    // Keep only roles whose resolved provider is in the requested provider set
+    // (claude is always kept — it's the harness baseline).
+    perRoleResults = allRows.filter(
+      (r) => r.provider === "claude" || providers.includes(r.provider),
+    );
+    const perRoleVerdict = classifyPerRole(perRoleResults);
+    const merged = mergeVerdict(verdict, perRoleVerdict);
+    if (merged !== verdict) {
+      verdict = merged;
+      if (verdict === "red") exitCode = 2;
+      else if (verdict === "yellow") exitCode = exitOnYellow ? 2 : 0;
+      else exitCode = 0;
+    }
+  }
+
   // duration_ms is computed AFTER autofix because the re-probe is part of
   // the smoke run from the operator's perspective.
   const duration_ms = Date.now() - t0;
@@ -499,6 +803,19 @@ function run(rawArgv) {
       no_autofix: noAutofix,
       probe_mode: probeMode,
       target: target,
+      // G1.6: per-role sweep summary (omitted when --per-role not passed).
+      per_role: perRoleResults
+        ? {
+            ran: true,
+            no_ping: noPing,
+            roles: perRoleResults.map((r) => ({
+              role: r.role,
+              provider: r.provider,
+              model: r.model,
+              status: r.status,
+            })),
+          }
+        : { ran: false },
     });
   } catch (e) {
     /* never crash on logging */
@@ -515,9 +832,12 @@ function run(rawArgv) {
       catalog_version: catalog.version,
       invoked_from: "standalone",
     };
+    // G1.6: additive optional key — only present when --per-role ran, so the
+    // default JSON envelope (warpos/provider-smoke/v1) is byte-unchanged.
+    if (perRoleResults) payload.per_role = perRoleResults;
     process.stdout.write(JSON.stringify(payload) + "\n");
   } else {
-    process.stdout.write(renderHuman(verdict, results, rca));
+    process.stdout.write(renderHuman(verdict, results, rca, perRoleResults));
   }
 
   return {
@@ -527,6 +847,7 @@ function run(rawArgv) {
     rca: rca,
     autofixes: autofixes,
     catalog: catalog,
+    perRole: perRoleResults,
   };
 }
 
@@ -542,6 +863,11 @@ module.exports = {
   loadFailureModeCatalog: loadFailureModeCatalog,
   renderHuman: renderHuman,
   run: run,
+  // G1.6 per-role smoke surface (exported for unit tests).
+  PER_ROLE_BUILD_CHAIN: PER_ROLE_BUILD_CHAIN,
+  perRoleProbe: perRoleProbe,
+  classifyPerRole: classifyPerRole,
+  mergeVerdict: mergeVerdict,
 };
 
 // CLI entrypoint ----------------------------------------------

@@ -42,6 +42,29 @@ and Delta's bash dispatch snippets. Both the canonical wrapper AND
 launched from inside `dispatch-agent.js`; outside that, `claude -p
 --agent` is allowed because `claude` is the harness CLI.
 
+## Role → provider routing
+
+Canonical role→provider map. **Source of truth: `DEFAULT_AGENT_PROVIDERS` in
+`scripts/hooks/lib/providers.js`** (mirrored by `DEFAULT_PROVIDER_PER_ROLE` in
+`scripts/dispatch/catalog.js`); `manifest.agentProviders` overrides per project.
+`scripts/checks/dispatch-routing-parity.js` asserts this table and both code maps
+agree — keep them in sync.
+
+| Role(s) | Provider | Why |
+|---------|----------|-----|
+| alpha, beta, gamma, delta | claude | orchestration / judgment |
+| builder, fixer, stub-scaffold | claude | code authoring |
+| reviewer | openai | gpt-5.5 xhigh — different lens on Claude's output |
+| compliance | openai | gpt-5.5 xhigh — cross-provider audit |
+| qa | openai | independent failure-mode pass |
+| learner | openai | cross-run synthesis |
+| redteam | gemini | different adversarial corpus, thinking-on |
+| advisor | openai | freeform cross-provider consult — NO strict output schema |
+| consult | openai | freeform cross-provider consult — NO strict output schema |
+
+Claude is the **fallback** for any non-Claude role on failure (`required-fallback.js`),
+not the default for the review layer — cross-provider diversity is the point.
+
 ## Forbidden patterns
 
 Blocked by `scripts/hooks/dispatch-route-guard.js` (PreToolUse, Bash matcher):

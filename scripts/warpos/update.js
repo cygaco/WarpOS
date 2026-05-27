@@ -846,6 +846,94 @@ function runPostUpdateChecks(checks, targetRoot) {
   return out;
 }
 
+// ── Generated-artifact regeneration (G5.10a) ─────────────
+//
+// owner=generated assets (.claude/paths.json, settings.json, the hook wiring,
+// path-lint rules, schemas, PATH_KEYS.md, etc.) classify as GENERATED_REBUILD.
+// The apply loop copies the canonical *snapshot* of these files — but that
+// snapshot is the source repo's generated output at release-build time, which
+// can be stale against the target's just-applied generator INPUTS
+// (framework/paths.registry.json, _warpos/ hook sources). The post-update
+// checks (paths/build.js --check, etc.) then fail on "stale paths.json".
+//
+// The fix: after the file copies land, RUN the generators in the target so the
+// generated artifacts are derived from the target's own (freshly-updated)
+// sources. Only runs when at least one GENERATED_REBUILD decision is present
+// (no generated assets touched → nothing to regenerate). Each generator is
+// best-effort: a missing script (older target) or non-zero exit is recorded
+// but does not fail the update — the post-update --check gate is the
+// authority on whether the result is acceptable. Returns a per-generator log.
+function runGenerators(targetRoot, decisions) {
+  const hasGenerated =
+    Array.isArray(decisions) &&
+    decisions.some((d) => d.category === "GENERATED_REBUILD");
+  if (!hasGenerated) {
+    return { ran: false, reason: "no GENERATED_REBUILD decisions", log: [] };
+  }
+  // Ordered: paths first (settings/hooks may reference path keys), then hooks.
+  const generators = [
+    "scripts/paths/build.js",
+    "scripts/hooks/build.js",
+  ];
+  const log = [];
+  for (const rel of generators) {
+    const abs = path.join(targetRoot, rel);
+    if (!fs.existsSync(abs)) {
+      log.push({ generator: rel, status: "skipped", reason: "not present in target" });
+      continue;
+    }
+    const r = spawnSync(process.execPath, [abs], {
+      cwd: targetRoot,
+      encoding: "utf8",
+      timeout: 120_000,
+    });
+    log.push({
+      generator: rel,
+      status: r.status === 0 ? "ran" : "failed",
+      exitCode: r.status,
+      stderr: (r.stderr || "").slice(0, 200),
+    });
+  }
+  return { ran: true, log };
+}
+
+// ── Auto-create dirs for newly-introduced path keys (G5.10c) ─
+//
+// A release that introduces a new directory-kind path key (e.g. a new
+// runtime/state dir) must have that dir present afterward, or the
+// path-resolution post-check / first feature use trips on a missing path. The
+// fresh installer creates these; update did not. After apply (paths.json is
+// freshly regenerated), read the target's paths.registry.json and mkdir every
+// kind=dir key whose introducedIn === the version we just applied. Scoped to
+// NEWLY-introduced keys so we never fabricate dirs the operator deleted on
+// purpose from older releases (those are runtime/generated and lazily
+// recreated by their owners). Best-effort; returns the created list.
+function createNewlyIntroducedDirs(targetRoot, toVersion) {
+  const regFile = path.join(targetRoot, "framework", "paths.registry.json");
+  if (!fs.existsSync(regFile)) return { created: [], reason: "no registry" };
+  let reg;
+  try {
+    reg = JSON.parse(fs.readFileSync(regFile, "utf8"));
+  } catch {
+    return { created: [], reason: "registry unparseable" };
+  }
+  const created = [];
+  for (const [key, entry] of Object.entries((reg && reg.paths) || {})) {
+    if (!entry || entry.removedIn) continue;
+    if (entry.kind !== "dir") continue;
+    if (entry.introducedIn !== toVersion) continue;
+    const abs = path.join(targetRoot, entry.path);
+    if (fs.existsSync(abs)) continue;
+    try {
+      fs.mkdirSync(abs, { recursive: true });
+      created.push(key);
+    } catch {
+      /* best-effort */
+    }
+  }
+  return { created };
+}
+
 async function run(opts) {
   const target = opts.to;
   const apply = !!opts.apply;
@@ -886,7 +974,7 @@ async function run(opts) {
     "framework-manifest.json",
   );
 
-  const installed = readJSON(installedFile, null);
+  let installed = readJSON(installedFile, null);
   const currentManifest = readJSON(frameworkManifestFile, { version: "0.0.0" });
   const fromVersion =
     (installed && installed.installedVersion) ||
@@ -894,6 +982,48 @@ async function run(opts) {
     "0.0.0";
 
   if (!target) throw new Error("Missing --to <version>");
+
+  // ── G5.2 consumer re-baseline (apply-only; before classify + preflight) ──
+  //
+  // --reconcile-baseline (alias --accept-local-drift): a consumer with
+  // legitimate local framework edits is otherwise blocked by (a) the
+  // manifest-honesty preflight gate (installedHash ≠ on-disk hash) and (b) a
+  // wall of MERGE_CONFLICT classifications. This re-hashes the target's
+  // framework-installed.json#assets[] against current disk bytes IN PLACE,
+  // accepting local state as the new baseline. Runs the TARGET's own
+  // snapshot-installed.js (self-targets via __dirname/../..), falling back to
+  // the source copy for the self-update case. We re-read `installed` after, so
+  // classify() and the snapshot below all see the reconciled baseline.
+  //
+  // Mutates disk → apply-mode only. Fail-closed: if the operator asked to
+  // reconcile and it errors, refuse to proceed (a silent skip would leave a
+  // stale baseline and defeat the intent). No-op in dry-run.
+  if (opts.reconcileBaseline && apply) {
+    const targetSnap = path.join(
+      targetRoot,
+      "scripts",
+      "warpos",
+      "snapshot-installed.js",
+    );
+    const snapScript = fs.existsSync(targetSnap)
+      ? targetSnap
+      : path.join(__dirname, "snapshot-installed.js");
+    const sr = spawnSync(process.execPath, [snapScript], {
+      cwd: targetRoot,
+      encoding: "utf8",
+      timeout: 120_000,
+    });
+    if (sr.status !== 0) {
+      throw new Error(
+        `RECONCILE-BASELINE FAILED (exit ${sr.status}): ${(sr.stderr || sr.stdout || "").slice(0, 400)}`,
+      );
+    }
+    process.stderr.write(
+      `[update] reconcile-baseline: ${(sr.stdout || "").trim()}\n`,
+    );
+    // Re-read so downstream classify/snapshot see the reconciled hashes.
+    installed = readJSON(installedFile, installed);
+  }
 
   const capsule = loadCapsule(sourceRoot, target);
   if (capsule.release.version !== target) {
@@ -978,6 +1108,10 @@ async function run(opts) {
   // --force-fresh which is its own gate-1 override.
   let preflightReport = null;
   if (!opts.skipPreflight) {
+    // Fail-fast by default (stops at the first red — cheapest happy path).
+    // --diagnostic / --all-red runs every gate up front so the operator sees
+    // the complete picture in one pass without a block first.
+    const diagnostic = !!opts.allRed || !!opts.diagnostic;
     preflightReport = preflightModule.runPreflight({
       targetRoot,
       sourceTreeRoot,
@@ -986,20 +1120,52 @@ async function run(opts) {
       allowStale: !!opts.allowStale,
       forceFresh: !!opts.forceFresh,
       allowVersionDrift: !!opts.allowVersionDrift,
-      allRed: false,
+      allRed: diagnostic,
     });
     if (!preflightReport.ok) {
-      const firstRed = preflightReport.gates.find((g) => g.status === "red");
-      const remediation =
-        firstRed && firstRed.remediation
-          ? `\n  Remediation:\n  ${firstRed.remediation.split("\n").join("\n  ")}`
-          : "";
+      // G5.11 — enumerate EVERY red gate with its remediation, not just the
+      // first. If the initial pass was fail-fast (stopped at the first red),
+      // re-run once in allRed mode so the operator-facing block lists all
+      // blockers + fixes in a single message. Fail-fast remains the default
+      // execution behavior; only the message is made complete.
+      let fullReport = preflightReport;
+      if (!diagnostic) {
+        try {
+          fullReport = preflightModule.runPreflight({
+            targetRoot,
+            sourceTreeRoot,
+            toVersion: target,
+            sourceRoot,
+            allowStale: !!opts.allowStale,
+            forceFresh: !!opts.forceFresh,
+            allowVersionDrift: !!opts.allowVersionDrift,
+            allRed: true,
+          });
+        } catch {
+          // If the diagnostic re-run throws, fall back to the fail-fast report.
+          fullReport = preflightReport;
+        }
+      }
+      const reds = fullReport.gates.filter((g) => g.status === "red");
+      const lines = reds.map((g, i) => {
+        const rem = g.remediation
+          ? `\n      Remediation: ${g.remediation.split("\n").join("\n      ")}`
+          : "\n      Remediation: (none provided by gate)";
+        return `  ${i + 1}. ${g.name} — ${g.reason || "(no reason)"}${rem}`;
+      });
+      const error =
+        `PREFLIGHT BLOCKED: ${reds.length} red gate(s) must be resolved before --apply:\n` +
+        lines.join("\n") +
+        `\n\n  Tip: re-run with --diagnostic (alias --all-red) to evaluate every gate in one pass. ` +
+        `Per-gate overrides: --operator-override <gate> --override-reason "<text>".`;
       return {
         ok: false,
         mode: "apply",
-        error: `PREFLIGHT BLOCKED: ${preflightReport.redCount} red gate(s). First red: ${firstRed ? firstRed.name : "<unknown>"} — ${firstRed ? firstRed.reason : ""}${remediation}`,
+        error,
         report,
-        preflight: preflightReport,
+        // Return the COMPLETE report (every gate evaluated) so JSON consumers
+        // and the postflight summary see all reds, not just the first.
+        preflight: fullReport,
       };
     }
   }
@@ -1157,6 +1323,35 @@ async function run(opts) {
   }
   const applyDurationMs = Date.now() - applyStartedAt;
 
+  // ── G5.10a Regenerate owner=generated artifacts ─────────
+  //
+  // Run the generators against the target so .claude/paths.json, settings.json,
+  // the hook wiring, lint rules, schemas, and PATH_KEYS.md are derived from the
+  // target's freshly-applied SOURCES — not the source repo's stale snapshot
+  // that the copy loop just laid down. Without this, postUpdateChecks fail on
+  // "stale paths.json/settings.json". Best-effort; the --check gate is the
+  // authority. Runs after apply, before scaffold + post-update checks.
+  const generatorsResult = runGenerators(targetRoot, decisions);
+  if (generatorsResult.ran) {
+    for (const g of generatorsResult.log) {
+      if (g.status === "failed") {
+        console.warn(
+          `warp:update: generator ${g.generator} exited ${g.exitCode} — generated artifacts may be stale. stderr: ${g.stderr}`,
+        );
+      }
+    }
+  }
+
+  // G5.10c — materialize any directory introduced by THIS release so the
+  // path-resolution post-check and first feature use don't trip on it.
+  // Diagnostics go to stderr so --json stdout stays parseable.
+  const newDirsResult = createNewlyIntroducedDirs(targetRoot, target);
+  if (newDirsResult.created.length > 0) {
+    process.stderr.write(
+      `warp:update: created ${newDirsResult.created.length} newly-introduced dir(s): ${newDirsResult.created.join(", ")}\n`,
+    );
+  }
+
   // SP-20260525-024 (downstream content-gap fix; OPEN_ADR — changes update
   // semantics): /warp:update must also scaffold the structure-parity skeleton
   // (_requirements/* zones, _docs/), ROADMAP.md, PROJECT.md, and the paths.json
@@ -1168,8 +1363,10 @@ async function run(opts) {
   // fresh install. scaffoldProduct is idempotent (skip-if-present; never
   // clobbers operator paths.json values) + fail-open. Runs BEFORE the
   // post-update checks so structure-parity sees the freshly-scaffolded dirs.
+  // Diagnostics to stderr so --json stdout stays parseable (the run result is
+  // the only thing on stdout in --json mode).
   const scaffoldLog = (...a) =>
-    console.log(`warp:update: scaffold — ${a.filter(Boolean).join(" ")}`);
+    process.stderr.write(`warp:update: scaffold — ${a.filter(Boolean).join(" ")}\n`);
   try {
     const scaffoldCore = require("./scaffold-core");
     if (scaffoldCore && typeof scaffoldCore.scaffoldProduct === "function") {
@@ -1364,19 +1561,42 @@ async function run(opts) {
     postflightReport &&
     postflightReport.redCount > 0;
 
+  const postCheckFailed = postUpdateResults.some((c) => c.status === "failed");
+
   // Update overall ok with migration + post-check results
   const allOk =
     applyResult.ok &&
     migrationsResult.status !== "failed" &&
-    !postUpdateResults.some((c) => c.status === "failed") &&
+    !postCheckFailed &&
     !strictBlock;
+
+  // G5.10b — honest outcome labeling. We are PAST commit here: the transaction
+  // committed, framework-installed.json was updated, the files are on disk. If
+  // ok is false at this point it is NOT a rollback — apply + migrations
+  // succeeded and only a POST-update check (capsule postUpdateChecks or, under
+  // --strict-postflight, a postflight red) failed. Distinguish that from a
+  // real failure so the CLI doesn't print "Update failed." (which implies a
+  // rollback that did NOT happen). The auto-rollback paths above return their
+  // own "APPLY ROLLED BACK" errors and never reach here.
+  const committedButPostCheckFailed = !allOk; // (apply/migration already ok)
+  const outcome = allOk
+    ? "committed"
+    : "committed-with-postcheck-warnings";
 
   return {
     ok: allOk,
+    // `committed` is true whenever we reached this return — the files landed
+    // and the install version moved, regardless of post-check verdict. Callers
+    // use it to phrase messaging honestly.
+    committed: true,
+    outcome,
+    committedWithWarnings: committedButPostCheckFailed,
     mode: "apply",
     report,
     preflight: preflightReport,
     apply: applyResult,
+    generators: generatorsResult,
+    newDirs: newDirsResult,
     migrations: migrationsResult,
     postUpdateChecks: postUpdateResults,
     postflight: postflightReport,
@@ -1740,10 +1960,21 @@ if (require.main === module) {
     noTransaction: args.includes("--no-transaction"),
     skipPostflight: args.includes("--skip-postflight"),
     strictPostflight: args.includes("--strict-postflight"),
+    // G5.2 — re-hash the target's installed baseline against current disk
+    // before preflight, so a consumer with legitimate framework drift can
+    // update. --accept-local-drift is the operator-intent alias.
+    reconcileBaseline:
+      args.includes("--reconcile-baseline") ||
+      args.includes("--accept-local-drift"),
+    // G5.11 — evaluate every preflight gate in one pass (no fail-fast stop)
+    // so a block message lists all reds up front. --all-red is the alias used
+    // by preflight.js's own CLI.
+    diagnostic: args.includes("--diagnostic"),
+    allRed: args.includes("--all-red"),
   };
   if (!opts.to) {
     console.error(
-      "Usage: node scripts/warpos/update.js --to <version> [--source <warpos-repo>] [--target <install-path>] [--dry-run | --apply] [--confirm-deletes] [--force-fresh] [--allow-stale] [--allow-version-drift] [--no-transaction] [--skip-postflight] [--strict-postflight]\n       node scripts/warpos/update.js --rollback <txId> [--target <install-path>] [--json]\n       node scripts/warpos/update.js --status [--target <install-path>] [--json] [--strict]",
+      "Usage: node scripts/warpos/update.js --to <version> [--source <warpos-repo>] [--target <install-path>] [--dry-run | --apply] [--confirm-deletes] [--force-fresh] [--allow-stale] [--allow-version-drift] [--reconcile-baseline|--accept-local-drift] [--diagnostic|--all-red] [--no-transaction] [--skip-postflight] [--strict-postflight]\n       node scripts/warpos/update.js --rollback <txId> [--target <install-path>] [--json]\n       node scripts/warpos/update.js --status [--target <install-path>] [--json] [--strict]",
     );
     process.exit(2);
   }
@@ -1753,10 +1984,24 @@ if (require.main === module) {
         console.log(JSON.stringify(r, null, 2));
         return;
       }
-      if (!r.ok) {
+      // G5.10b — honest failure vs. committed-with-warnings.
+      //
+      // A true failure (preflight block, Class C escalation, apply/migration
+      // rollback) carries r.error AND r.committed is falsy → print the error
+      // and exit. A result that COMMITTED but had a post-update check fail
+      // (r.committed === true, r.ok === false) is NOT a rollback: the files
+      // landed and the version moved. Print the normal summary with a clear
+      // "committed with post-check warnings" banner and exit 1 at the end —
+      // never the misleading bare "Update failed."
+      if (!r.ok && !r.committed) {
         console.error(r.error || "Update failed.");
         if (r.report) console.error(JSON.stringify(r.report, null, 2));
         process.exit(1);
+      }
+      if (!r.ok && r.committed) {
+        console.warn(
+          `WARNING: update COMMITTED (${r.report.fromVersion} → ${r.report.toVersion}) but one or more post-update checks failed. The files were applied and the installed version was updated — this is NOT a rollback. Review the failed checks below; re-run them after fixing, or roll back explicitly with: node scripts/warpos/update.js --rollback ${r.transaction}`,
+        );
       }
       console.log(
         `Update plan ${r.report.fromVersion} → ${r.report.toVersion} (${r.mode})`,
@@ -1890,9 +2135,15 @@ if (require.main === module) {
         recommendedNextAction: isApply
           ? r.ok
             ? "node scripts/warpos/release-gates.js (or /warp:doctor)"
-            : `Inspect ${r.transactionDir}/ and consider rollback.`
+            : r.committed
+              ? `Re-run the failed post-update check(s) after fixing; the update is applied. Roll back only if needed: node scripts/warpos/update.js --rollback ${r.transaction}`
+              : `Inspect ${r.transactionDir}/ and consider rollback.`
           : "Review the plan; pass --apply to execute, or /warp:doctor to verify pre-flight.",
       });
+      // G5.10b — a committed-with-postcheck-warnings result still exits
+      // non-zero (the post-check verdict matters for CI/scripting) but only
+      // after the honest summary above, never via the bare "Update failed."
+      if (!r.ok) process.exit(1);
     })
     .catch((e) => {
       console.error(`update: ${e.message}`);

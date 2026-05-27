@@ -24,12 +24,13 @@
     },
     "moderate": {
       "preset_name": "moderate",
-      "description": "Default preset. Auto-defers tickets that hit the 3-attempt rule (matches execute.js behavior). Pre-authorizes design-time approvals only. Halts on execution/release/production/paid/Beta-ESCALATE. Cost gate at $5. Refuses on main. Note (SP-20260518-007): when the sprint's Plan Contract carries goal_verification.reproduction=executable, scripts/sprint/design.js refuses to advance until every AC in acceptance-criteria.md has a real `verified_by: <file>::<name>` linkage. A moderate-preset /sprint:full run on such a sprint will halt at Phase 2 (design) if the linkage is missing — author the fixtures (or set reproduction=not_applicable with a non-empty justification) before resuming. Backward-compat: pre-Sprint-A Plan Contracts with no goal_verification field are unaffected.",
+      "description": "Default preset. Auto-defers tickets that hit the 3-attempt rule (matches execute.js behavior). Pre-authorizes design-time approvals AND the non-production (staging) release-RECORD step only (release.js prepare — reversible, no deploy, no push). Halts on execution approval, production release, paid services, Beta-ESCALATE. Production release approval and any deploy/push remain HARD-blocked regardless of this preset (the orchestrator's hardcoded FORBIDDEN_PRE_AUTH enum + schema enum forbid production targets). Cost gate at $5. Refuses on main. Note (SP-20260518-007): when the sprint's Plan Contract carries goal_verification.reproduction=executable, scripts/sprint/design.js refuses to advance until every AC in acceptance-criteria.md has a real `verified_by: <file>::<name>` linkage. A moderate-preset /sprint:full run on such a sprint will halt at Phase 2 (design) if the linkage is missing — author the fixtures (or set reproduction=not_applicable with a non-empty justification) before resuming. Backward-compat: pre-Sprint-A Plan Contracts with no goal_verification field are unaffected.",
       "pre_authorized_approval_levels": [
         "no_approval_needed",
-        "design_approval_required"
+        "design_approval_required",
+        "release_approval_required"
       ],
-      "release_approval_targets": [],
+      "release_approval_targets": ["staging"],
       "stop_condition_policy": {
         "approval_required": "halt",
         "human_setup_required": "halt",

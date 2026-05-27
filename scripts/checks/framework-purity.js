@@ -77,7 +77,9 @@ const PROMOTE_RELIC_FILES = [
   "scripts/warpos/manifest/promote.js",
   ".claude/commands/warp/promote.md",
   ".claude/commands/warp/promote-flags.md",
-  ".claude/commands/warp/flag.md",
+  // warp/flag.md is intentionally NOT a relic: redefined 2026-05-26 as the WARPOS.md
+  // gap-register PRODUCER (canonical reads it via /warp:reconcile; it does not push
+  // code upstream, so it does not reopen the promote surface SP-20260522-001 closed).
   "warpos-to-update.md",
   ".warpos-sync.json",
   ".warpos-sync-commit-msg.txt",
@@ -88,7 +90,7 @@ const PROMOTE_RELIC_REGEX = [
   /\bwarposFlagLedger\b/,
   /\bwarposPromotedArchive\b/,
   /\bwarposPromoteReports\b/,
-  /\b\/warp:flag\b/, // exact slash-command refs
+  // /warp:flag freed 2026-05-26 — now the gap-register producer, not the purged promote relic
   /\b\/warp:promote\b/, // (release.md exception handled per-file)
   /\b\/warp:promote-flags\b/,
 ];

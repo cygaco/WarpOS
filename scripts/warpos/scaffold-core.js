@@ -276,6 +276,38 @@ function scaffoldProduct({ target, warposRoot, log }) {
     /* non-fatal — maps nudge is informational */
   }
 
+  // ── 5f. .claude/runtime/ ESM/CJS insulation (G4.2 / WG-9 class) ────
+  // WarpOS framework scripts are CommonJS (require()). Hand-written `.js`
+  // helpers under `.claude/runtime/` (session scratch, ad-hoc one-offs) inherit
+  // the PRODUCT root's module type — so if the product's root package.json
+  // declares "type":"module", those helpers load as ESM and break with
+  // "require is not defined in ES module scope". Drop a {"type":"commonjs"}
+  // package.json INSIDE .claude/runtime/ so that subtree resolves as CommonJS
+  // regardless of the product root's module type. (Mirrors the scripts/
+  // package.json insulation /check:install now enforces — same bug class, the
+  // runtime side.)
+  //
+  // .claude/runtime/ is gitignored (see .gitignore: ".claude/runtime/"), so the
+  // file is correctly created at SCAFFOLD time, not shipped as a tracked
+  // framework asset. Idempotent / skip-if-present. Fail-open.
+  try {
+    const runtimeDir = path.join(TARGET, ".claude", "runtime");
+    fs.mkdirSync(runtimeDir, { recursive: true });
+    const runtimePkg = path.join(runtimeDir, "package.json");
+    if (!fs.existsSync(runtimePkg)) {
+      fs.writeFileSync(
+        runtimePkg,
+        JSON.stringify({ type: "commonjs" }, null, 2) + "\n",
+      );
+      log("ok", 'Wrote .claude/runtime/package.json ({"type":"commonjs"} — insulates runtime .js helpers from ESM product roots)');
+      installed++;
+    } else {
+      log("ok", ".claude/runtime/package.json already present — leaving it alone");
+    }
+  } catch {
+    /* non-fatal — runtime insulation is best-effort */
+  }
+
   return { installedDelta: installed };
 }
 

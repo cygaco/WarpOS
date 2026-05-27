@@ -180,6 +180,54 @@ function main() {
         };
       return true;
     }),
+    // WG-9 / W-005: ESM/CJS collision. WarpOS framework scripts are CommonJS
+    // (require()). If the PRODUCT root package.json declares "type":"module",
+    // Node treats every .js under it as ESM — so `node "$CLAUDE_PROJECT_DIR/
+    // scripts/hooks/foo.js"` throws "require is not defined in ES module scope"
+    // and EVERY hook silently dies (the failure is swallowed by the hook
+    // runner). The fix is a scripts/package.json that re-declares
+    // {"type":"commonjs"} for that subtree. This check makes the collision
+    // fail loudly HERE instead of as silent hook breakage downstream.
+    check('no ESM/CJS collision (root "type":"module" vs CJS scripts)', () => {
+      const rootPkgPath = path.join(REPO_ROOT, "package.json");
+      if (!fs.existsSync(rootPkgPath)) return true; // no root pkg → Node defaults to CJS
+      let rootPkg;
+      try {
+        rootPkg = JSON.parse(fs.readFileSync(rootPkgPath, "utf8"));
+      } catch (e) {
+        return { ok: false, detail: `package.json unparseable: ${e.message}` };
+      }
+      if (rootPkg.type !== "module") return true; // CJS or unset → no collision
+      // Root is ESM. A scripts/package.json with {"type":"commonjs"} insulates
+      // the require()-based framework scripts. If present, no collision.
+      const scriptsPkgPath = path.join(REPO_ROOT, "scripts", "package.json");
+      if (fs.existsSync(scriptsPkgPath)) {
+        try {
+          const sp = JSON.parse(fs.readFileSync(scriptsPkgPath, "utf8"));
+          if (sp.type === "commonjs") return true;
+        } catch {
+          /* fall through to fail — an unparseable scripts/package.json
+             doesn't insulate the subtree */
+        }
+      }
+      // Only flag if framework scripts actually use require() (they do, but
+      // confirm so a hypothetical all-ESM scripts tree isn't false-flagged).
+      let usesRequire = false;
+      const probe = path.join(REPO_ROOT, "scripts", "hooks", "merge-guard.js");
+      try {
+        usesRequire = /\brequire\s*\(/.test(fs.readFileSync(probe, "utf8"));
+      } catch {
+        usesRequire = true; // probe missing — assume CJS framework
+      }
+      if (!usesRequire) return true;
+      return {
+        ok: false,
+        detail:
+          'root package.json has "type":"module" but framework scripts are CommonJS (require()). ' +
+          'Every hook will die with "require is not defined in ES module scope" — silently. ' +
+          'Fix: add scripts/package.json with {"type":"commonjs"} to insulate the framework subtree.',
+      };
+    }),
   ];
 
   const failed = checks.filter((c) => !c.ok);

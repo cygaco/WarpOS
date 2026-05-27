@@ -50,6 +50,86 @@ function isProtectedFile(str) {
   return PROTECTED_FILES.some((f) => str.includes(f));
 }
 
+// Strip the parts of a Bash command where a protected filename can appear as
+// PROSE rather than as a write target: heredoc bodies and commit-message args.
+// A `git commit -m "restored events.jsonl"` or a heredoc body mentioning a
+// protected file must not be read as a write to that file. Source: G3.2.
+function stripNonTargetText(cmd) {
+  let s = cmd;
+  // Shell comments: a `#` that starts a word (preceded by start/whitespace)
+  // runs to end of line. A protected filename inside a trailing comment is
+  // prose, never a write target. (Approximate: ignores `#` inside quotes, which
+  // is acceptable here — we only need to stop false positives.)
+  s = s.replace(/(^|\s)#[^\n]*/g, "$1");
+  // Heredoc bodies: <<EOF ... EOF and <<'EOF' ... EOF and <<-EOF ... EOF.
+  // Capture the (quoted-or-bare) tag, then drop everything up to a line that
+  // is exactly that tag (optionally indented for <<-).
+  s = s.replace(
+    /<<-?\s*(['"]?)([A-Za-z_][A-Za-z0-9_]*)\1[\s\S]*?^\s*\2\s*$/gm,
+    " ",
+  );
+  // Same heredocs when the command arrives as a single line with literal \n.
+  s = s.replace(
+    /<<-?\s*(['"]?)([A-Za-z_][A-Za-z0-9_]*)\1[\s\S]*?\\n\s*\2(?=\\n|$|\s)/g,
+    " ",
+  );
+  // Commit-message arguments: -m "..."/'...' and --message=... — the body is
+  // prose, not a path. Drop the quoted value (or the bare token after =).
+  s = s.replace(/(^|\s)(-m|--message)(\s+|=)(".*?"|'.*?'|\S+)/g, "$1");
+  // -F/--file <msgfile>: the message FILE is read, not written. Drop the arg so
+  // a message file named to mention a protected path isn't treated as a target.
+  s = s.replace(/(^|\s)(-F|--file)(\s+|=)(".*?"|'.*?'|\S+)/g, "$1");
+  return s;
+}
+
+// Extract the REAL write targets from a (already message/heredoc-stripped)
+// command: redirect targets (`>`/`>>`/`tee`), and cp/mv/rm operands. Returns a
+// single string we can substring-test for protected filenames — but only over
+// tokens that are genuinely write destinations, never the whole command.
+function writeTargetsText(strippedCmd) {
+  const targets = [];
+  // 1. Redirect targets: `>file`, `> file`, `>>file` (but not fd dups `>&2`,
+  //    and not the `2>`/`1>` fd prefix — the path is what follows `>`).
+  const redir = /(?<!=)>>?\s*([^\s>&|;]+)/g;
+  let m;
+  while ((m = redir.exec(strippedCmd)) !== null) {
+    targets.push(m[1]);
+  }
+  // 2. tee targets: `tee file`, `tee -a file ...` (every non-flag operand).
+  const tee = /\btee\b((?:\s+(?:-\S+|[^\s|;&]+))*)/g;
+  while ((m = tee.exec(strippedCmd)) !== null) {
+    for (const tok of m[1].split(/\s+/).filter(Boolean)) {
+      if (!tok.startsWith("-")) targets.push(tok);
+    }
+  }
+  // 3. cp/mv/rm operands. For cp/mv the destination is the last operand; for rm
+  //    every non-flag operand is a delete target. Collect all operands — a
+  //    protected file appearing as ANY operand of these is a real mutation.
+  const fileops = /\b(cp|mv|rm)\b((?:\s+(?:-\S+|[^\s|;&]+))*)/g;
+  while ((m = fileops.exec(strippedCmd)) !== null) {
+    for (const tok of m[2].split(/\s+/).filter(Boolean)) {
+      if (!tok.startsWith("-")) targets.push(tok);
+    }
+  }
+  return targets.join(" ");
+}
+
+// `truncate [-s N] file...` operands — the file(s) it truncates. Kept separate
+// from writeTargetsText because truncate's operands aren't redirect/cp/mv/rm.
+function truncateTargets(strippedCmd) {
+  const out = [];
+  const re = /\btruncate\b((?:\s+(?:-\S+|[^\s|;&]+))*)/g;
+  let m;
+  while ((m = re.exec(strippedCmd)) !== null) {
+    for (const tok of m[1].split(/\s+/).filter(Boolean)) {
+      // skip flags and the `-s N` size value
+      if (tok.startsWith("-")) continue;
+      out.push(tok);
+    }
+  }
+  return out.join(" ");
+}
+
 let input = "";
 process.stdin.on("data", (chunk) => (input += chunk));
 process.stdin.on("end", () => {
@@ -136,13 +216,25 @@ process.stdin.on("end", () => {
         process.exit(0);
       }
 
-      // Strip fd-to-fd redirects (e.g., 2>&1, 1>&2) and 2>/dev/null —
-      // these are not file overwrites and must not trigger the guard.
-      const cmdForRedirectCheck = cmd
+      // Drop prose where a protected filename can appear harmlessly (heredoc
+      // bodies, -m/-F commit-message args), then strip fd-to-fd redirects
+      // (2>&1, 1>&2) and 2>/dev/null — none of these are file overwrites and
+      // must not trigger the guard. G3.2: a commit MESSAGE that merely mentions
+      // events.jsonl must not be read as a write to it.
+      const cmdNoProse = stripNonTargetText(cmd);
+      const cmdForRedirectCheck = cmdNoProse
         .replace(/\d?>&\d+/g, "")
         .replace(/\d?>\s*\/dev\/(null|stderr|stdout)/g, "");
 
-      // Allow append redirects (>>) — these are safe for append-only files
+      // Build the set of REAL write targets (redirect/tee/cp/mv/rm operands).
+      // Every block below tests against THIS, never the whole command — so a
+      // protected filename in a comment, message, or heredoc body is ignored.
+      const targets = writeTargetsText(cmdForRedirectCheck);
+      const targetsProtected = (f) => targets.includes(f);
+
+      // Allow append redirects (>>) — append is the legitimate path for these
+      // append-only files (logger.js / appendFileSync). Only `>` overwrite is a
+      // truncation. If the only redirect is an append, let it through.
       if (
         />>/.test(cmdForRedirectCheck) &&
         !/(?<![>])>\s*[^>]/.test(cmdForRedirectCheck.replace(/>>/g, ""))
@@ -150,19 +242,18 @@ process.stdin.on("end", () => {
         process.exit(0);
       }
 
-      // Block truncation/overwrite patterns
-      // 1. Redirect overwrite: > file or >file (to an actual file, not a fd)
+      // Block truncation/overwrite patterns. Each checks a REAL write target.
+      // 1. Redirect OVERWRITE: `> file` (not `>>`, not a fd dup) to a protected
+      //    file. The append `>>` form was already allowed above.
       if (
         /(?<!=)>\s*[^>&]/.test(cmdForRedirectCheck) &&
         !/>>/.test(cmdForRedirectCheck.split(">")[0] + ">")
       ) {
-        // Check if the redirect targets a protected file
         for (const f of PROTECTED_FILES) {
-          // Only block if the file appears AFTER a `>` — i.e. it's actually a redirect target
-          const redirectTarget = /(?<!=)(?<!>)>\s*(\S+)/.exec(
+          const overwriteTarget = /(?<!=)(?<!>)>\s*([^\s>&|;]+)/.exec(
             cmdForRedirectCheck,
           );
-          if (redirectTarget && redirectTarget[1].includes(f)) {
+          if (overwriteTarget && overwriteTarget[1].includes(f)) {
             block(
               `Overwrite redirect to ${f} blocked. Use logger.js for events or appendFileSync for memory files.`,
             );
@@ -170,10 +261,15 @@ process.stdin.on("end", () => {
         }
       }
 
-      // 2. writeFileSync targeting protected files
-      if (/writeFileSync/.test(cmd)) {
+      // 2. writeFileSync targeting a protected file (the path is the call's
+      //    first arg, not anywhere in the command).
+      if (/writeFileSync/.test(cmdNoProse)) {
         for (const f of PROTECTED_FILES) {
-          if (cmd.includes(f)) {
+          const wfsArg = new RegExp(
+            "writeFileSync\\s*\\(\\s*[`'\"][^`'\"]*" +
+              f.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
+          );
+          if (wfsArg.test(cmdNoProse)) {
             block(
               `writeFileSync on ${f} blocked. These files are append-only. Use logger.js or appendFileSync.`,
             );
@@ -181,31 +277,36 @@ process.stdin.on("end", () => {
         }
       }
 
-      // 3. truncate command
-      if (/\btruncate\b/.test(cmd)) {
+      // 3. truncate — the protected file must be an actual operand.
+      if (/\btruncate\b/.test(cmdNoProse)) {
         for (const f of PROTECTED_FILES) {
-          if (cmd.includes(f)) {
+          if (targetsProtected(f) || truncateTargets(cmdNoProse).includes(f)) {
             block(`truncate on ${f} blocked. These files are append-only.`);
           }
         }
       }
 
-      // 4. rm on protected files
-      if (/\brm\b/.test(cmd)) {
+      // 4. rm — the protected file must be an actual rm operand, not text in a
+      //    comment or message (G3.2 false-positive class).
+      if (/\brm\b/.test(cmdNoProse)) {
         for (const f of PROTECTED_FILES) {
-          if (cmd.includes(f)) {
+          if (targetsProtected(f)) {
             block(`rm on ${f} blocked. These files are append-only.`);
           }
         }
       }
 
-      // 5. echo/printf overwrite (echo "" > file) — exclude >> (append) and fd redirects like 2>&1
+      // 5. echo/printf OVERWRITE (echo "" > file) — exclude >> (append) and fd
+      //    redirects. Only fires when a protected file is the redirect TARGET.
       if (
-        /\b(echo|printf)\b/.test(cmd) &&
+        /\b(echo|printf)\b/.test(cmdNoProse) &&
         /(?<!=)(?<!>)>\s*[^>&]/.test(cmdForRedirectCheck)
       ) {
         for (const f of PROTECTED_FILES) {
-          if (cmd.includes(f)) {
+          const overwriteTarget = /(?<!=)(?<!>)>\s*([^\s>&|;]+)/.exec(
+            cmdForRedirectCheck,
+          );
+          if (overwriteTarget && overwriteTarget[1].includes(f)) {
             block(
               `echo/printf redirect to ${f} blocked. These files are append-only.`,
             );

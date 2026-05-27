@@ -109,7 +109,7 @@ Before deleting a file referenced across the project: `grep` for the basename ac
 | `/sprint:plan` | Front door for the sprint workflow |
 | `/fix:fast` / `/fix:deep` | Quick / framework-driven debugging |
 | `/session:handoff` | Generate rich handoff for the next session |
-| `/commit:both` | Stage + commit + push with smart message |
+| `/commit:land` | Commit + push branch + merge into the default branch |
 | `/sleep:deep` | End-of-day consolidation cycle |
 
 ### Verifying drift
@@ -127,7 +127,7 @@ Before deleting a file referenced across the project: `grep` for the basename ac
 - Never kill or overwrite backup branches
 - Main branch stays shippable at all times
 - Branches for features/fixes/experiments — `main` is never the work tree
-- Push to remote requires explicit approval (`/commit:both` confirms before pushing)
+- Push to remote requires explicit approval (`/commit:land` confirms before pushing + merging)
 - Never skip hooks (`--no-verify`) — fix the underlying issue
 - Force push only after destructive-action approval
 

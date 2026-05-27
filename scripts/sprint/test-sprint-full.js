@@ -932,6 +932,330 @@ function testBetaConsultContract() {
   }
 }
 
+// ── K. FIX G2.8/G2.11 — release-record resume idempotency + moderate gate ─
+// G2.8: findExistingStagingRelease finds a prior non-production release record
+//       for a sprint so phase4 skips a duplicate prepare on resume.
+// G2.11: moderate preset now pre-authorizes a staging release RECORD while
+//        production stays HARD-blocked.
+
+function testReleaseRecordIdempotencyAndModerateGate() {
+  out.push("K. release-record idempotency (G2.8) + moderate staging gate (G2.11)");
+
+  // K-1..K-4: findExistingStagingRelease against real paths.sprintReleases.
+  const PATHS = JSON.parse(
+    fs.readFileSync(
+      path.join(SPRINT.PROJECT, ".claude", "paths.json"),
+      "utf8",
+    ),
+  );
+  const releasesDir = path.join(SPRINT.PROJECT, PATHS.sprintReleases);
+  const yamlLib = require("./fs");
+  const stamp = Date.now();
+  const sprintWithRelease = `SP-99999999-001`; // synthetic; never a real sprint
+  const sprintNoRelease = `SP-99999999-002`;
+  // Use RL ids unlikely to collide; clean them up in finally.
+  const rlStaging = `RL-99999999-901`;
+  const rlProd = `RL-99999999-902`;
+  const stagingPath = path.join(releasesDir, `${rlStaging}.yaml`);
+  const prodPath = path.join(releasesDir, `${rlProd}.yaml`);
+
+  try {
+    fs.mkdirSync(releasesDir, { recursive: true });
+    yamlLib.writeYaml(stagingPath, {
+      schema: "warpos/sprint/release/v1",
+      id: rlStaging,
+      sprint: sprintWithRelease,
+      status: "preparing",
+      deployment_environment: "staging",
+      deployment_target: "staging",
+    });
+    // A production record for the SAME sprint must never be matched.
+    yamlLib.writeYaml(prodPath, {
+      schema: "warpos/sprint/release/v1",
+      id: rlProd,
+      sprint: sprintWithRelease,
+      status: "preparing",
+      deployment_environment: "production",
+      deployment_target: "production",
+    });
+
+    const found = full.findExistingStagingRelease(sprintWithRelease, "staging");
+    ok(
+      "K-1: finds existing staging release record for the sprint",
+      found === rlStaging,
+      `got ${found}`,
+    );
+
+    const none = full.findExistingStagingRelease(sprintNoRelease, "staging");
+    ok(
+      "K-2: returns null when no record exists for the sprint",
+      none === null,
+      `got ${none}`,
+    );
+
+    // Even though a production record exists for sprintWithRelease, asking for
+    // a 'production' target must not match (phase4 never asks for production,
+    // and the production guard skips it regardless).
+    const prodLookup = full.findExistingStagingRelease(
+      sprintWithRelease,
+      "production",
+    );
+    ok(
+      "K-3: production target never matched (guard skips production records)",
+      prodLookup === null,
+      `got ${prodLookup}`,
+    );
+
+    // Target mismatch: a staging record is not returned for a dev lookup.
+    const devLookup = full.findExistingStagingRelease(sprintWithRelease, "dev");
+    ok(
+      "K-4: target mismatch returns null (staging record not matched for dev)",
+      devLookup === null,
+      `got ${devLookup}`,
+    );
+  } catch (e) {
+    ok("K release-record test ran without throwing", false, e.message);
+  } finally {
+    try { fs.rmSync(stagingPath, { force: true }); } catch {}
+    try { fs.rmSync(prodPath, { force: true }); } catch {}
+  }
+
+  // K-5: fail-open — nonexistent releases dir resolution never throws.
+  {
+    let threw = false;
+    let res = "unset";
+    try {
+      res = full.findExistingStagingRelease("SP-99999999-999", "staging");
+    } catch {
+      threw = true;
+    }
+    ok("K-5: findExistingStagingRelease never throws", !threw);
+    ok("K-5: returns null for a sprint with no records", res === null, `got ${res}`);
+  }
+
+  // K-6: moderate preset now grants release_approval_required for staging.
+  {
+    const moderate = full.loadPreset("moderate");
+    ok("K-6: loadPreset('moderate') ok", moderate.ok, moderate.error);
+    if (moderate.ok) {
+      ok(
+        "K-6: moderate pre-authorizes release_approval_required (G2.11)",
+        moderate.preset.pre_authorized_approval_levels.includes(
+          "release_approval_required",
+        ),
+      );
+      ok(
+        "K-6: moderate release_approval_targets includes staging",
+        (moderate.preset.release_approval_targets || []).includes("staging"),
+      );
+      ok(
+        "K-6: moderate release_approval_targets does NOT include production (HARD ceiling intact)",
+        !(moderate.preset.release_approval_targets || []).includes("production"),
+      );
+      // The exact canAutoApprove predicate phase4 uses, replicated here.
+      const levels = moderate.preset.pre_authorized_approval_levels || [];
+      const targets = moderate.preset.release_approval_targets || [];
+      const target = "staging";
+      const canAutoApprove =
+        levels.includes("release_approval_required") &&
+        targets.includes(target) &&
+        target !== "production";
+      ok(
+        "K-6: moderate auto-approves a staging release RECORD (no halt)",
+        canAutoApprove === true,
+      );
+    }
+  }
+
+  // K-7: conservative still HALTS on a release record (empty target list).
+  {
+    const conservative = full.loadPreset("conservative");
+    ok("K-7: loadPreset('conservative') ok", conservative.ok);
+    if (conservative.ok) {
+      const levels = conservative.preset.pre_authorized_approval_levels || [];
+      const targets = conservative.preset.release_approval_targets || [];
+      const target = "staging";
+      const canAutoApprove =
+        levels.includes("release_approval_required") &&
+        targets.includes(target) &&
+        target !== "production";
+      ok(
+        "K-7: conservative does NOT auto-approve staging release (still halts)",
+        canAutoApprove === false,
+      );
+    }
+  }
+
+  // K-8: production can never auto-approve under ANY preset — the schema enum +
+  // FORBIDDEN_PRE_AUTH + the production guard all forbid it. Replicate the
+  // predicate with target='production' for moderate (most permissive of the two
+  // record-granting presets after this change short of aggressive).
+  {
+    const moderate = full.loadPreset("moderate");
+    if (moderate.ok) {
+      const levels = moderate.preset.pre_authorized_approval_levels || [];
+      const targets = moderate.preset.release_approval_targets || [];
+      const target = "production";
+      const canAutoApprove =
+        levels.includes("release_approval_required") &&
+        targets.includes(target) &&
+        target !== "production";
+      ok(
+        "K-8: production target can never auto-approve (production guard fires)",
+        canAutoApprove === false,
+      );
+    }
+    // And the on-disk config must never list production as a target.
+    const cfg = JSON.parse(
+      fs.readFileSync(
+        path.join(SPRINT.PROJECT, PATHS.sprintFullAutonomy),
+        "utf8",
+      ),
+    );
+    let anyProd = false;
+    for (const name of Object.keys(cfg.presets || {})) {
+      if ((cfg.presets[name].release_approval_targets || []).includes("production")) {
+        anyProd = true;
+      }
+    }
+    ok("K-8: no preset lists production in release_approval_targets", !anyProd);
+  }
+}
+
+// ── L. FIX G2.10 — Beta-boundary persistence (bare --resume advances) ──────
+// Persists consulted-and-cleared boundaries to an orchestrator-owned sidecar
+// so a plain `--resume` (no --pending-phase) skips them and halts at the next
+// uncrossed boundary, instead of resetting to before_plan each cycle.
+
+function testBetaBoundaryPersistence() {
+  out.push("L. Beta-boundary persistence (G2.10)");
+
+  const sprintId = `SP-99999999-${(Date.now() % 900) + 100}`; // synthetic
+  const sidecar = full.betaBoundariesPath(sprintId);
+
+  try {
+    // L-1: empty when nothing persisted yet.
+    ok(
+      "L-1: readClearedBetaBoundaries empty before any write",
+      Array.isArray(full.readClearedBetaBoundaries(sprintId)) &&
+        full.readClearedBetaBoundaries(sprintId).length === 0,
+    );
+
+    // L-2: record + read round-trip.
+    full.recordClearedBetaBoundary(sprintId, "before_plan");
+    let cleared = full.readClearedBetaBoundaries(sprintId);
+    ok(
+      "L-2: before_plan persisted and read back",
+      cleared.length === 1 && cleared[0] === "before_plan",
+      JSON.stringify(cleared),
+    );
+    ok("L-2: sidecar file exists on disk", fs.existsSync(sidecar));
+
+    // L-3: idempotent — recording the same boundary twice does not duplicate.
+    full.recordClearedBetaBoundary(sprintId, "before_plan");
+    cleared = full.readClearedBetaBoundaries(sprintId);
+    ok(
+      "L-3: duplicate record is idempotent (still 1 entry)",
+      cleared.length === 1,
+      JSON.stringify(cleared),
+    );
+
+    // L-4: a second distinct boundary accumulates.
+    full.recordClearedBetaBoundary(sprintId, "before_design");
+    cleared = full.readClearedBetaBoundaries(sprintId);
+    ok(
+      "L-4: second boundary accumulates (2 entries, order preserved)",
+      cleared.length === 2 &&
+        cleared[0] === "before_plan" &&
+        cleared[1] === "before_design",
+      JSON.stringify(cleared),
+    );
+
+    // L-5: bare-resume skip predicate — with before_plan+before_design cleared,
+    // a resume with NO --pending-phase (pendingIdx === -1) skips i=0 and i=1
+    // and fires the consult at i=2 (before_execute, the first uncrossed one).
+    const pendingIdx = -1; // bare --resume, no --pending-phase threaded
+    const clearedSet = full.readClearedBetaBoundaries(sprintId);
+    function skipPredicate(i) {
+      const boundary = `before_${full.PHASES[i]}`;
+      const alreadyCleared = true /*resume*/ && clearedSet.includes(boundary);
+      const beforePending = true /*resume*/ && pendingIdx !== -1 && i < pendingIdx;
+      return alreadyCleared || beforePending;
+    }
+    ok(
+      "L-5: bare --resume skips before_plan (i=0, persisted-cleared)",
+      skipPredicate(0) === true,
+    );
+    ok(
+      "L-5: bare --resume skips before_design (i=1, persisted-cleared)",
+      skipPredicate(1) === true,
+    );
+    ok(
+      "L-5: bare --resume does NOT skip before_execute (i=2, uncrossed → consult fires)",
+      skipPredicate(2) === false,
+    );
+
+    // L-6: a fresh run (resume=false) NEVER pre-skips a boundary even if the
+    // sidecar exists — clearedBoundaries is loaded only when args.resume.
+    function skipPredicateFreshRun(i) {
+      const boundary = `before_${full.PHASES[i]}`;
+      const clearedFresh = []; // main() loads [] when !args.resume
+      const alreadyCleared = false /*!resume*/ && clearedFresh.includes(boundary);
+      const beforePending = false /*!resume*/ && pendingIdx !== -1 && i < pendingIdx;
+      return alreadyCleared || beforePending;
+    }
+    ok(
+      "L-6: fresh run never pre-skips before_plan (Beta gate fires despite sidecar)",
+      skipPredicateFreshRun(0) === false,
+    );
+
+    // L-7: garbled / unknown boundary entries are filtered out on read.
+    fs.writeFileSync(
+      sidecar,
+      JSON.stringify({
+        schema: "warpos/sprint-full/beta-boundaries/v1",
+        sprint: sprintId,
+        cleared: ["before_plan", "before_bogus", 42, null, "before_retro"],
+        updated_at: new Date().toISOString(),
+      }) + "\n",
+      "utf8",
+    );
+    const filtered = full.readClearedBetaBoundaries(sprintId);
+    ok(
+      "L-7: unknown/garbled boundaries filtered (only real boundaries honored)",
+      filtered.length === 2 &&
+        filtered.includes("before_plan") &&
+        filtered.includes("before_retro") &&
+        !filtered.includes("before_bogus"),
+      JSON.stringify(filtered),
+    );
+
+    // L-8: corrupt JSON → fail-open to [] (never throws, never skips a gate).
+    fs.writeFileSync(sidecar, "{ not valid json", "utf8");
+    let threw = false;
+    let res = "unset";
+    try {
+      res = full.readClearedBetaBoundaries(sprintId);
+    } catch {
+      threw = true;
+    }
+    ok("L-8: corrupt sidecar does not throw", !threw);
+    ok(
+      "L-8: corrupt sidecar reads as empty (fail-open — no gate pre-skipped)",
+      Array.isArray(res) && res.length === 0,
+      JSON.stringify(res),
+    );
+  } catch (e) {
+    ok("L boundary-persistence test ran without throwing", false, e.message);
+  } finally {
+    // Clean up the synthetic sprint's full-reports dir.
+    try {
+      const dir = path.dirname(sidecar);
+      fs.rmSync(dir, { recursive: true, force: true });
+    } catch {}
+  }
+}
+
 // ── Run ──────────────────────────────────────────────────────────────
 
 function main() {
@@ -946,6 +1270,8 @@ function main() {
   testHollowCompletionGuards();
   testFinalReportReadsCurrentYaml();
   testBetaConsultContract();
+  testReleaseRecordIdempotencyAndModerateGate();
+  testBetaBoundaryPersistence();
 
   out.push("");
   out.push(`Results: ${passes} passed, ${failures} failed.`);

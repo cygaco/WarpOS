@@ -21,7 +21,9 @@ Without `--turbo`, the skill behaves as before. With `--turbo` and no further ar
 
 ### Default turbo scope
 
-`manifest-edit,write-jsonl,node-e-fs,worktree-ops` — config edits, jsonl audit writes, `node -e` file writes (LRN-9 anti-pattern reopened for batch work), and worktree operations for builder dispatch. No `push-to-main`, no `destructive-git`. TTL = 60m. Sibling skill: [`/turbo`](../turbo.md).
+`manifest-edit,write-jsonl,worktree-ops` — config edits, jsonl audit writes, and worktree operations for builder dispatch. No `push-to-main`, no `destructive-git`. TTL = 60m. Sibling skill: [`/turbo`](../turbo.md).
+
+> **`node-e-fs` is deliberately excluded from the default.** The auto-mode classifier hard-denies a turbo scope that auto-approves arbitrary `node -e` execution (Auto-Mode Bypass), so a default containing it fails on first use. Pass it explicitly only in a non-auto-mode session; the durable `settings.allow` already grants the common `node -e` fs writes. (`scripts/turbo/apply.js` also drops it under auto-mode.)
 
 ## Procedure
 
@@ -61,6 +63,17 @@ Classification:
 
 When in doubt, recreate. The cost of an extra spawn is far less than the
 cost of dispatching a feature into a half-dead team.
+
+**Reconcile before spawning (avoid `-N` accretion).** Before creating teammates,
+run the read-only probe `node scripts/checks/adhoc-team-hygiene.js` to detect an
+existing team whose members carry a `-N` suffix (`Beta (β)-2`) or a stale
+`leadSessionId` — the cross-session accretion bug (W-21). If found:
+`SendMessage {type:"shutdown_request"}` each stale / dead-session same-name member
+**before** spawning the new generation, so the harness never mints a `-N` suffix.
+Reuse any member that is live in the current session instead of re-spawning.
+**Cleanup = `shutdown_request`, NEVER edit `config.json`** — deleting a member
+entry orphans a still-running in-process agent (it stays addressable and
+reappears). This probe is also wired into `/warp:health`.
 
 ### Step 2: Create team and spawn teammates
 
@@ -157,7 +170,7 @@ After all prior steps succeed, if the operator passed `--turbo`, invoke `scripts
 
 ```bash
 node scripts/turbo/apply.js \
-  --scope manifest-edit,write-jsonl,node-e-fs,worktree-ops \
+  --scope manifest-edit,write-jsonl,worktree-ops \
   --ttl 60m \
   --reason "entered via /mode:adhoc --turbo"
 ```

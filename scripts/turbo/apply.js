@@ -29,7 +29,10 @@
  *   write-jsonl       Write to any *.jsonl (events, decisions, memory tails)
  *   worktree-ops      git worktree add/remove/prune/move
  *
- * Default scope (when --scope is omitted): manifest-edit,write-jsonl,node-e-fs
+ * Default scope (when --scope is omitted): manifest-edit,write-jsonl,worktree-ops
+ *   (node-e-fs is NOT default — the Claude Code auto-mode classifier hard-denies
+ *    "arbitrary code" Bash, so a default --turbo apply that granted it would fail
+ *    on first use. node-e-fs remains an explicit opt-in token: --scope ...,node-e-fs)
  *
  * Safety floor (NEVER authorized, even with --scope all):
  *   - git push --force to main
@@ -134,7 +137,14 @@ const SCOPE_PERMISSIONS = {
   ],
 };
 
-const DEFAULT_SCOPES = ["manifest-edit", "write-jsonl", "node-e-fs"];
+// node-e-fs is intentionally excluded from the default: the Claude Code
+// auto-mode classifier hard-denies "arbitrary code" Bash, so a default apply
+// that granted it would fail on first use. It stays an explicit opt-in token.
+const DEFAULT_SCOPES = ["manifest-edit", "write-jsonl", "worktree-ops"];
+// Scopes whose Bash patterns the auto-mode classifier hard-denies as
+// "arbitrary code" — skipped (with a logged note) when running under auto-mode,
+// even if explicitly requested, rather than failing the whole apply.
+const AUTO_MODE_DENIED_SCOPES = new Set(["node-e-fs"]);
 const DEFAULT_TTL_MIN = 60;
 
 // ── CLI parse ──────────────────────────────────────────────
@@ -166,26 +176,49 @@ function parseTtlMinutes(s) {
 }
 
 // ── Scope normalization + safety-floor enforcement ─────────
-function normalizeScopes(input) {
-  if (!input) return DEFAULT_SCOPES.slice();
-  if (input === "all") return Array.from(KNOWN_SCOPES);
-  const raw = input
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean);
-  const accepted = [];
-  for (const s of raw) {
-    if (KNOWN_SCOPES.has(s)) {
-      accepted.push(s);
-    } else {
+// opts.autoMode: when true, scopes the auto-mode classifier hard-denies
+// (AUTO_MODE_DENIED_SCOPES) are dropped with a logged note rather than left in
+// to fail the apply on first use — even if explicitly requested or via `all`.
+function normalizeScopes(input, opts = {}) {
+  let accepted;
+  if (!input) {
+    accepted = DEFAULT_SCOPES.slice();
+  } else if (input === "all") {
+    accepted = Array.from(KNOWN_SCOPES);
+  } else {
+    const raw = input
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+    accepted = [];
+    for (const s of raw) {
+      if (KNOWN_SCOPES.has(s)) {
+        accepted.push(s);
+      } else {
+        process.stderr.write(
+          `[turbo] WARN: dropped unknown scope "${s}" (vocab: ${Array.from(
+            KNOWN_SCOPES,
+          ).join(", ")})\n`,
+        );
+      }
+    }
+  }
+  accepted = Array.from(new Set(accepted));
+
+  if (opts.autoMode) {
+    const denied = accepted.filter((s) => AUTO_MODE_DENIED_SCOPES.has(s));
+    if (denied.length) {
+      accepted = accepted.filter((s) => !AUTO_MODE_DENIED_SCOPES.has(s));
       process.stderr.write(
-        `[turbo] WARN: dropped unknown scope "${s}" (vocab: ${Array.from(
-          KNOWN_SCOPES,
-        ).join(", ")})\n`,
+        `[turbo] NOTE: dropped auto-mode-denied scope(s) "${denied.join(
+          ", ",
+        )}" — the Claude Code classifier hard-denies arbitrary-code Bash, so ` +
+          `granting it would fail on first use. Re-run without auto-mode (or set\n` +
+          `WARPOS_AUTO_MODE=0) to opt in.\n`,
       );
     }
   }
-  return Array.from(new Set(accepted));
+  return accepted;
 }
 
 // Safety floor — even with --scope all, these are NEVER bypassable. The
@@ -411,7 +444,13 @@ function main() {
   }
 
   // mode === "apply"
-  const scopes = normalizeScopes(args.scopes);
+  // Auto-mode signal: the harness sets WARPOS_AUTO_MODE=1 in unattended runs.
+  // When set, classifier-hard-denied scopes (node-e-fs) are dropped with a note
+  // instead of failing the apply. Absent/0 = honor explicit opt-in as before.
+  const autoMode = /^(1|true|yes)$/i.test(
+    String(process.env.WARPOS_AUTO_MODE || ""),
+  );
+  const scopes = normalizeScopes(args.scopes, { autoMode });
   if (scopes.length === 0) {
     process.stderr.write(
       "[turbo] ERROR: no valid scopes provided. Vocab: " +
@@ -478,6 +517,7 @@ module.exports = {
   KNOWN_SCOPES,
   SCOPE_PERMISSIONS,
   DEFAULT_SCOPES,
+  AUTO_MODE_DENIED_SCOPES,
   DEFAULT_TTL_MIN,
   SAFETY_FLOOR,
   parseArgs,
