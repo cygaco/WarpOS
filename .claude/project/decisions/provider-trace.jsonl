@@ -38,3 +38,7 @@
 {"ts":"2026-05-25T04:08:40.112Z","role":"reviewer","expectedProvider":"openai","actualProvider":"openai","model":"gpt-5.5","fellBack":false,"fallbackReason":null,"promptBytes":3337,"ok":true}
 {"ts":"2026-05-25T04:11:41.554Z","role":"compliance","expectedProvider":"openai","actualProvider":"openai","model":"gpt-5.5","fellBack":false,"fallbackReason":null,"promptBytes":3087,"ok":true}
 {"ts":"2026-05-25T17:35:29.070Z","role":"qa","expectedProvider":"openai","actualProvider":"openai","model":"gpt-5.5","fellBack":false,"fallbackReason":null,"promptBytes":70,"ok":true}
+{"ts":"2026-05-25T22:32:04.738Z","role":"reviewer","expectedProvider":"openai","actualProvider":"openai","model":"gpt-5.5","fellBack":false,"fallbackReason":null,"promptBytes":122037,"ok":true}
+{"ts":"2026-05-25T23:14:35.119Z","role":"reviewer","expectedProvider":"openai","actualProvider":"openai","model":"gpt-5.5","fellBack":false,"fallbackReason":null,"promptBytes":129726,"ok":true}
+{"ts":"2026-05-26T18:21:29.246Z","role":"consult","expectedProvider":"openai","actualProvider":"openai","model":"gpt-5.5","fellBack":false,"fallbackReason":null,"promptBytes":6139,"ok":true}
+{"ts":"2026-05-27T00:11:22.630Z","role":"advisor","expectedProvider":"openai","actualProvider":"openai","model":"gpt-5.5","fellBack":false,"fallbackReason":null,"promptBytes":4558,"ok":true}
