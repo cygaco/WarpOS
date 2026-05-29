@@ -20,7 +20,7 @@
 const fs = require("fs");
 const path = require("path");
 const { execSync, spawnSync } = require("child_process");
-const { isCanonical } = require("../testsuite/role");
+const { isCanonical, roleStatus } = require("../testsuite/role");
 
 const REPO_ROOT = path.resolve(__dirname, "..", "..");
 
@@ -560,11 +560,27 @@ const GATES = [
   // Honesty note: pre-existing open regressions in canonical correctly turn this
   // RED — the suite reflects reality and is not suppressed here.
   gate("regression_seed", () => {
-    if (!isCanonical()) {
+    const rs = roleStatus();
+    if (!rs.canonical) {
+      // qa W5: distinguish a genuine product repo (manifest readable, role
+      // absent/product → legitimately opt-in, skip-as-green) from a manifest
+      // that EXISTS but is unparseable — that is almost certainly a canonical
+      // checkout with a corrupt/locked manifest, and silently skipping
+      // enforcement would be a false green at release time. Surface the latter
+      // as MANUAL so the release runner flags it for a human rather than
+      // pretending the suite passed.
+      if (rs.manifestExists && !rs.manifestReadable) {
+        return {
+          ok: true,
+          severity: "manual",
+          message:
+            ".claude/manifest.json exists but is unreadable — cannot resolve repoRole. Regression-seed enforcement was NOT run; verify the manifest before release (a corrupt manifest in a canonical checkout must not silently skip the suite).",
+        };
+      }
       return {
         ok: true,
         severity: "green",
-        message: "Regression-seed enforcement is opt-in for product repos — skipped.",
+        message: `Regression-seed enforcement is opt-in for product repos (repoRole=${rs.role || "product"}) — skipped.`,
       };
     }
     const r = runScript("scripts/testsuite/enforce.js");

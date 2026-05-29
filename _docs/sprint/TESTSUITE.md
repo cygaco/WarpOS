@@ -39,14 +39,20 @@ Role is resolved by `scripts/testsuite/role.js` (interim stub — see caveat bel
 `scripts/testsuite/enforce.js` spawns `run.js --json`, then:
 
 - **Product repo** → prints an opt-in no-op line, exits 0.
-- **Canonical/framework** → exits **1** if any covered class regressed (mirrors `run.js`'s own `regressions` filter), else exits 0 with a one-line green summary.
-- `--strict` → additionally exits **1** on any **incoherent** registry row (`status !== "gap"` but `detector.run === null` — claims coverage with nothing to run).
-- `--json` → emits `{enforced, role, regressions, incoherent[], exit}`.
-- Exit **2** = `run.js` produced no parseable output (runner error — *not* a clean pass).
+- **Canonical/framework** → exits **1** if any covered class shows a **NEW** regression (mirrors `run.js`'s own `regressions` filter, minus known-baseline reds — see below), else exits 0 with a one-line green summary.
+- `--strict` → additionally exits **1** on any **incoherent** registry row (`status !== "gap"` but no runnable `detector.run` array — claims coverage with nothing to run) **and** on any **stale baseline marker** (see below).
+- `--json` → emits `{enforced, role, regressions, baselineReds[], staleBaseline[], incoherent[], exit, childStatus}`.
+- Exit **2** = runner error — *never* a clean pass. This covers: `run.js` produced no parseable output; `run.js` exited with a status other than 0/1 (e.g. 2 = registry load error) even if it emitted JSON; or the verdict is structurally malformed (no `results[]` array, or `summary.regressions > 0` with an empty `results[]`). An enforcer that turns a runner error into a green is the worst failure mode; these guards keep it fail-closed.
 
-Wired into `scripts/warpos/release-gates.js` as the `regression_seed` gate (gate 15, canonical-only): enforce.js status 0 → green, 1 → RED (covered class regressed), 2 → RED (runner errored). In product repos the gate skips-as-green so product releases are never blocked by a framework-only suite.
+### Known-baseline reds (tracked debt, not blocking)
 
-> **Honesty, not suppression.** When canonical has open regressions, the gate goes RED and stays RED. The suite reflects reality; do not hack `run.js` or the registry to hide an open regression. Fix the class or document it as `gap` / `n/a` / `manual`.
+A registry class may carry `"baseline": "red"` — a *known, accepted, pre-existing* failure (e.g. older sprints that predate a policy). The enforcer **reports** these but does **not** block release on them; it blocks only on **new** reds (a class that should be green going red). This implements the "don't increase the pre-existing reds" contract.
+
+> **Stale-marker guard (anti-false-green).** A `baseline:"red"` marker is *audited debt, not a permanent mute*. When a baseline-marked class is **no longer failing**, its marker is **stale** — leaving it in place would silently suppress any *future* regression of that class. `enforce.js` surfaces every stale marker (a warning in default mode; **blocking under `--strict`**). When a class's debt is paid, **remove its `baseline` marker** in the same change, so the class becomes release-blocking again. Clearing the debt and keeping the marker is the failure this guard prevents.
+
+Wired into `scripts/warpos/release-gates.js` as the `regression_seed` gate (the last gate, canonical-only): enforce.js status 0 → green, 1 → RED (new covered-class regression), 2 → RED (runner errored). In product repos the gate skips-as-green so product releases are never blocked by a framework-only suite — **except** when `.claude/manifest.json` exists but is unreadable (a likely-canonical checkout with a corrupt manifest), which the gate surfaces as **MANUAL** rather than a silent green, so a human verifies the manifest before release.
+
+> **Honesty, not suppression.** When canonical has *new* open regressions, the gate goes RED and stays RED. The suite reflects reality; do not hack `run.js` or the registry to hide an open regression, and do not park a live regression behind a `baseline` marker. Fix the class, or document it as `gap` / `n/a` / `manual` — and only baseline-mark genuinely pre-existing, owned debt.
 
 ## Result / status semantics
 

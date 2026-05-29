@@ -12,13 +12,20 @@
  *   - canonical/framework → mandatory. Any regression in a covered class fails.
  *
  *   node scripts/testsuite/enforce.js            # human report
- *   node scripts/testsuite/enforce.js --strict   # also fail on incoherent registry rows
+ *   node scripts/testsuite/enforce.js --strict   # also fail on incoherent rows + stale baselines
  *   node scripts/testsuite/enforce.js --json      # machine-readable verdict
  *
+ * Known-baseline reds: a registry class with `baseline: "red"` is accepted
+ * pre-existing debt — reported but NOT release-blocking; only NEW reds block.
+ * A baseline marker on a class that is no longer failing is STALE (it would mute
+ * a future regression) and is flagged — blocking under --strict.
+ *
  * Exit codes:
- *   0 — clean (canonical green, or product no-op)
- *   1 — regression in a covered class (or, with --strict, an incoherent row)
- *   2 — run.js produced no parseable output (runner error — NOT a clean pass)
+ *   0 — clean (canonical: no NEW regression; or product no-op)
+ *   1 — NEW regression in a covered class; or (--strict) an incoherent row or stale baseline
+ *   2 — runner error, NEVER a clean pass: run.js produced no parseable output,
+ *       OR exited with a status other than 0/1, OR returned a structurally
+ *       malformed verdict (no results[]; or summary.regressions>0 with empty results[]).
  */
 const fs = require("fs");
 const path = require("path");
