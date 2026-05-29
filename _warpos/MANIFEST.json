@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-05-29T18:46:58.139Z",
+  "generatedAt": "2026-05-29T21:38:33.002Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.10.0",
   "migrations": [],
@@ -2768,8 +2768,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/sprint/full.js",
-      "sha256": "014d544081afb12aebe7bfa1fd8cf9df525446e43f4102317c79b05ea747ac7d",
-      "installedSha": "014d544081afb12aebe7bfa1fd8cf9df525446e43f4102317c79b05ea747ac7d"
+      "sha256": "ec854a3aa167c68f58ef2c2fbb269fd227a9ec812697a683709d84b45cc0af4a",
+      "installedSha": "ec854a3aa167c68f58ef2c2fbb269fd227a9ec812697a683709d84b45cc0af4a"
     },
     "scripts/sprint/ids.js": {
       "owner": "framework",
@@ -2824,8 +2824,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/sprint/release.js",
-      "sha256": "55caef9316b4ac6263f73dd22acae045aae6b65170291023fe870d4e32eb2028",
-      "installedSha": "55caef9316b4ac6263f73dd22acae045aae6b65170291023fe870d4e32eb2028"
+      "sha256": "760fc355ebbb5b07459f0f69ea296fc09281f05dc60b0112de85ed1e393e89c7",
+      "installedSha": "760fc355ebbb5b07459f0f69ea296fc09281f05dc60b0112de85ed1e393e89c7"
     },
     "scripts/sprint/retrospective.js": {
       "owner": "framework",
@@ -2854,6 +2854,13 @@
       "source": "scripts/sprint/test-plan-honors-registry-primary.js",
       "sha256": "0bd1e4e5d571b17ede6766a8cc34a311641f146524650a041e96d483cc263b59",
       "installedSha": "0bd1e4e5d571b17ede6766a8cc34a311641f146524650a041e96d483cc263b59"
+    },
+    "scripts/sprint/test-regression-seed-gate.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/sprint/test-regression-seed-gate.js",
+      "sha256": "ada2c40182df1d879eda24aaafb270b490fbe018583ee0ae264590db7507ff08",
+      "installedSha": "ada2c40182df1d879eda24aaafb270b490fbe018583ee0ae264590db7507ff08"
     },
     "scripts/sprint/test-sprint-full.js": {
       "owner": "framework",

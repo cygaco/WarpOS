@@ -60,6 +60,92 @@ function loadCurrent() {
   return readYamlMaybe(SPRINT.current);
 }
 
+// Best-effort telemetry for the sprint-close regression-seed gate. Fail-open:
+// an unobservable gate is worse than a silent one, but the gate must never crash
+// release prep because the logger is unavailable.
+function emitGate(kind, data) {
+  try {
+    const { log } = require("../hooks/lib/logger");
+    log("audit", { kind, ...data }, { actor: "alpha", source: "/sprint:release" });
+  } catch {
+    /* events are nice-to-have, not load-bearing */
+  }
+}
+
+// ── Sprint-close regression-seed gate (0.17.0 per-sprint enforcer) ─────
+// The named enforcer for the per-sprint test-suite convention
+// (_docs/sprint/TESTSUITE.md), applied at SPRINT CLOSE. Before this, the
+// regression-seed enforcer ran ONLY at /warp:release
+// (scripts/warpos/release-gates.js) — so a sprint could close (mint a release
+// record) carrying a NEW regression in a covered class (the BC-15
+// aspirational-vs-enforced gap captured in commit 5870a0c).
+//
+// This lives in release.js cmdPrepare because that is the single chokepoint
+// BOTH sprint-close paths pass through: /sprint:full phase 4 calls
+// `release.js prepare`, and standalone /sprint:release calls it directly. A gate
+// only in the full.js orchestrator would be bypassed by closing a sprint via
+// /sprint:release (the CLAUDE.md "lib-only fix bypassed by callers" class).
+//
+// Role-aware via enforce.run(): product repos no-op (exit 0, consumer-only
+// detectors are n/a in canonical); canonical/framework is mandatory.
+//
+// Fails CLOSED (CLAUDE.md gate-honesty): a NEW regression (enforcer exit 1) OR a
+// runner error (exit 2, e.g. the suite crashed/timed out) BOTH block — a broken
+// suite is never a clean pass. Returns sentinel exit code 3 so /sprint:full
+// phase 4 can surface a dedicated `regression_seed_failed` halt.
+// `runEnforcer` is injectable for focused tests of the verdict→exit-code
+// mapping; production calls pass nothing and the real enforcer is used.
+function regressionSeedGate(runEnforcer) {
+  const run = runEnforcer || ((opts) => require("../testsuite/enforce").run(opts));
+  let verdict;
+  try {
+    verdict = run({ strict: false });
+  } catch (err) {
+    emitGate("sprint_release_regression_gate", { result: "runner_error", error: err.message });
+    process.stderr.write(
+      `regression-seed gate: enforcer failed to run (${err.message}) — failing closed; a sprint cannot close on a broken suite.\n`,
+    );
+    return 3;
+  }
+  if (verdict.exit === 2) {
+    emitGate("sprint_release_regression_gate", { result: "runner_error", error: verdict.error || null });
+    process.stderr.write(
+      `regression-seed gate: runner error — ${verdict.error || "enforce.js could not produce a verdict"}. ` +
+        `Failing closed (a broken suite is not a clean pass).\n`,
+    );
+    return 3;
+  }
+  if (verdict.exit === 1) {
+    const offending = (verdict.offending || [])
+      .map((o) => `  ${o.id}  ${o.name}  (exit ${o.exit})`)
+      .join("\n");
+    emitGate("sprint_release_regression_gate", {
+      result: "blocked",
+      regressions: verdict.regressions,
+      offending: (verdict.offending || []).map((o) => o.id),
+    });
+    process.stderr.write(
+      `regression-seed gate: ${verdict.regressions} NEW regression(s) in covered classes — sprint cannot close.\n` +
+        (offending ? offending + "\n" : "") +
+        `Fix so \`node scripts/testsuite/enforce.js\` is green, or mark pre-existing debt baseline:"red" ` +
+        `in _requirements/07-testing/recurring-bug-classes.json.\n`,
+    );
+    return 3;
+  }
+  // exit 0 — canonical clean, or product-repo opt-in no-op.
+  emitGate("sprint_release_regression_gate", {
+    result: verdict.enforced ? "clean" : "opt-in-noop",
+    role: verdict.role,
+  });
+  if (verdict.enforced) {
+    const s = verdict.summary || {};
+    process.stdout.write(
+      `regression-seed gate: clean (${s.passing != null ? s.passing : "?"}/${s.runnable != null ? s.runnable : "?"} runnable green, 0 NEW regressions).\n`,
+    );
+  }
+  return 0;
+}
+
 function cmdPrepare(argv) {
   const f = parseFlags(argv, 3);
   const current = loadCurrent();
@@ -67,6 +153,11 @@ function cmdPrepare(argv) {
     process.stderr.write("no current-sprint.yaml\n");
     return 1;
   }
+  // Sprint-close enforcer: the regression-seed suite must be green before this
+  // sprint can mint a release record. Blocks (exit 3) on a NEW regression or a
+  // runner error; no-ops in product repos. See regressionSeedGate() above.
+  const gateExit = regressionSeedGate();
+  if (gateExit !== 0) return gateExit;
   ensureDir(SPRINT.releases);
   const id = newReleaseId(SPRINT.releases);
   const now = nowIso();
@@ -755,4 +846,8 @@ module.exports = {
   parseCitedTests,
   runOneCitedTest,
   readInconclusiveOverrides,
+  // Sprint-close regression-seed gate (0.17.0 per-sprint enforcer) — exported
+  // for focused tests of the verdict→exit-code mapping.
+  regressionSeedGate,
+  cmdPrepare,
 };

@@ -26,7 +26,7 @@
     "preflight_tool": 1,
     "requirements_engine": 12,
     "paths_engine": 4,
-    "sprint_engine": 31,
+    "sprint_engine": 32,
     "dispatch_engine": 15,
     "check_runner_tool": 4,
     "docs_tool": 1,
@@ -52,7 +52,7 @@
     "installer_script": 1,
     "framework_doc": 2
   },
-  "total": 773,
+  "total": 774,
   "assets": {
     "agent": [
       {
@@ -5986,7 +5986,7 @@
         "src": "scripts/sprint/full.js",
         "dest": "scripts/sprint/full.js",
         "kind": "sprint_engine",
-        "sha256": "587fbf87da5f080f97139ccabb30d743c30f8c45712194530c51053342d25b0f",
+        "sha256": "76047a353485cbb05c8ee5869b35390312af313ed91162ca7c9ad733721c7595",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -6094,7 +6094,7 @@
         "src": "scripts/sprint/release.js",
         "dest": "scripts/sprint/release.js",
         "kind": "sprint_engine",
-        "sha256": "9a9ddff3ecdaacdde947cac27c5e27b07ef3e8aad90cc0469becf03ce80b893f",
+        "sha256": "b6cafda7260d588a6cd90aa8c0a47b567c16fe3c2db06b433c8838f7b368d3cb",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -6143,6 +6143,18 @@
         "dest": "scripts/sprint/test-plan-honors-registry-primary.js",
         "kind": "sprint_engine",
         "sha256": "2279899e6be3da960a5d69eaa89669571d6bbf1a8d14ec08e898a97118bf73d2",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "sprint_engine.test-regression-seed-gate.js",
+        "src": "scripts/sprint/test-regression-seed-gate.js",
+        "dest": "scripts/sprint/test-regression-seed-gate.js",
+        "kind": "sprint_engine",
+        "sha256": "ada2c40182df1d879eda24aaafb270b490fbe018583ee0ae264590db7507ff08",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
