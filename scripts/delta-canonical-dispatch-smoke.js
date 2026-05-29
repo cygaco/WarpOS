@@ -86,13 +86,13 @@ const providers = {
   claude: {
     cmd: "claude",
     test() {
-      // Verify (1) opus-4-7 model is reachable, (2) `--effort max` flag is
+      // Verify (1) opus-4-8 model is reachable, (2) `--effort max` flag is
       // accepted (this is what builder dispatch uses). If the account doesn't
-      // support opus-4-7 or the effort flag, smoke fails fast in Check I
+      // support opus-4-8 or the effort flag, smoke fails fast in Check I
       // before Delta dispatches any builder.
       return withTempPrompt(TEST_PROMPT, (tmp) => {
         const r = runShell(
-          `claude -p --model claude-opus-4-7 --effort max "$(cat "${tmp}")"`,
+          `claude -p --model claude-opus-4-8 --effort max "$(cat "${tmp}")"`,
         );
         return { ...r, ok: r.exit === 0 && /OK/i.test(r.stdout) };
       });

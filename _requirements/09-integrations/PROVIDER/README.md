@@ -8,7 +8,7 @@ Every per-provider doc lists its source URLs at the top so we can re-fetch and u
 
 | Doc | Provider | CLI tool | Default flagship | Default mini |
 |---|---|---|---|---|
-| [01-anthropic.md](./01-anthropic.md) | Anthropic | `claude` | `claude-opus-4-7` | `claude-sonnet-4-6` |
+| [01-anthropic.md](./01-anthropic.md) | Anthropic | `claude` | `claude-opus-4-8` | `claude-sonnet-4-6` |
 | [02-openai.md](./02-openai.md) | OpenAI | `codex` | `gpt-5.5` | `gpt-5.4-mini` |
 | [03-google-gemini.md](./03-google-gemini.md) | Google | `gemini` | `gemini-3.1-pro-preview` | `gemini-3.1-flash` |
 
@@ -28,7 +28,7 @@ Mapping lives in `.claude/manifest.json` (`agentProviders` block) and defaults i
 
 - **No `gemini-2.5-pro`** — see user memory `feedback_no_gemini_25pro.md`. Surfaced as disabled in the CLI.
 - **Fallback required when provider ≠ anthropic** — without a fallback, dispatch fails if codex/gemini CLI is missing on the machine. The CLI rejects saves that violate this rule.
-- **Effort levels are not portable across providers** — `xhigh` exists on Anthropic Opus 4.7 + all current OpenAI models; `max` is Anthropic-only; Gemini has no explicit effort flag. The CLI cascades model→effort accordingly.
+- **Effort levels are not portable across providers** — `xhigh` exists on Anthropic Opus 4.8 + all current OpenAI models; `max` is Anthropic-only; Gemini has no explicit effort flag. The CLI cascades model→effort accordingly.
 
 ## Resolution chain
 

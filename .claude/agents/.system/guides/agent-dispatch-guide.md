@@ -181,7 +181,7 @@ Same applies to feature-name matching in dispatch hooks.
 
 ## When `thinking` is enabled
 
-For Claude 4.x adaptive-thinking models (opus-4-7, sonnet-4-6 with effort), `tool_choice` must be `auto` or `none`. `any` and specific-tool requests return HTTP 400. This affects multi-agent dispatchers — if you're constraining tools, do it at the agent-spec level (`disallowedTools`), not via API params.
+For Claude 4.x adaptive-thinking models (opus-4-8, sonnet-4-6 with effort), `tool_choice` must be `auto` or `none`. `any` and specific-tool requests return HTTP 400. This affects multi-agent dispatchers — if you're constraining tools, do it at the agent-spec level (`disallowedTools`), not via API params.
 
 ---
 

@@ -43,8 +43,8 @@ each phase. The routing policy at `paths.sprintRouting`
 
 | Class | Default providers (highest preference first) |
 |---|---|
-| strongest_reasoning   | `claude:claude-opus-4-7`, `openai:gpt-5.5` |
-| strong_reasoning      | `claude:claude-opus-4-7`, `gemini:gemini-3.1-pro-preview` |
+| strongest_reasoning   | `claude:claude-opus-4-8`, `openai:gpt-5.5` |
+| strong_reasoning      | `claude:claude-opus-4-8`, `gemini:gemini-3.1-pro-preview` |
 | strong_reviewer       | `openai:gpt-5.5`, `claude:claude-sonnet-4-6` |
 | independent_reviewer  | `gemini:gemini-3.1-pro-preview`, `openai:gpt-5.5` |
 | economical_coder      | `claude:claude-sonnet-4-6`, `openai:gpt-5.4-mini` |

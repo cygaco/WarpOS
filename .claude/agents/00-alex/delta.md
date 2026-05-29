@@ -2,7 +2,7 @@
 name: delta
 description: "Alex Delta — standalone oneshot build orchestrator. Runs full skeleton builds autonomously with state machine, cycles, heartbeat, points, and learner analysis. Delta IS the session — not spawned by Alpha."
 tools: Agent, Bash, Read, Grep, Glob, Edit, Write
-model: claude-opus-4-7
+model: claude-opus-4-8
 maxTurns: 200
 memory: project
 color: orange
@@ -121,7 +121,7 @@ rm -f "$PROMPT_FILE"
 
 | Role | Provider | Model | Reasoning |
 |---|---|---|---|
-| `builder` | claude | claude-opus-4-7 | `--effort max` (forced; adaptive thinking, no depth cap) |
+| `builder` | claude | claude-opus-4-8 | `--effort max` (forced; adaptive thinking, no depth cap) |
 | `fixer` | claude | claude-sonnet-4-6 | `--effort max` (forced) |
 | `reviewer` | openai | gpt-5.5 (`OPENAI_FLAGSHIP_MODEL`) | `-c model_reasoning_effort=xhigh` |
 | `compliance` | openai | gpt-5.5 (`OPENAI_FLAGSHIP_MODEL`) | xhigh |

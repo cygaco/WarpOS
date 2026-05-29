@@ -560,7 +560,7 @@ ${c.bold("examples:")}
   node scripts/dispatch.js gui                              # opens browser at random port
   node scripts/dispatch.js edit reviewer
   node scripts/dispatch.js set reviewer openai gpt-5.5 xhigh claude
-  node scripts/dispatch.js set builder claude claude-opus-4-7 max
+  node scripts/dispatch.js set builder claude claude-opus-4-8 max
   node scripts/dispatch.js backups
   node scripts/dispatch.js revert 2026-04-28T20-51-10-123Z
 

@@ -110,9 +110,9 @@ Allowed values:
 |---|---|
 | `inherit` | Use the parent session's model. Reasonable default when this agent is dispatched as a Claude subagent. |
 | `sonnet` | Alias → `claude-sonnet-4-6` |
-| `opus` | Alias → `claude-opus-4-7` |
+| `opus` | Alias → `claude-opus-4-8` |
 | `haiku` | Alias → `claude-haiku-4-5` |
-| `claude-opus-4-7` | Explicit ID |
+| `claude-opus-4-8` | Explicit ID |
 | `claude-sonnet-4-6` | Explicit ID |
 | `claude-haiku-4-5-20251001` | Explicit ID with snapshot |
 
@@ -162,7 +162,7 @@ Reasoning depth for the provider. Valid values vary:
 
 | Provider | Valid values | Default in providers.js |
 |---|---|---|
-| `claude` | `low` \| `medium` \| `high` \| `xhigh` (Opus 4.7 only) \| `max` | `max` for builder/fixer; null elsewhere |
+| `claude` | `low` \| `medium` \| `high` \| `xhigh` (Opus 4.8 only) \| `max` | `max` for builder/fixer; null elsewhere |
 | `openai` | `low` \| `medium` \| `high` \| `xhigh` | `xhigh` (reviewer/compliance/learner); `medium` (qa) |
 | `gemini` | (no-op — thinking always-on for pro tier) | `high` (documented; flag is empty) |
 
@@ -252,7 +252,7 @@ The CLI rejects saves that:
 1. Set `provider: openai` without a valid `provider_model` from `gpt-5.5 | gpt-5.4 | gpt-5.4-mini`.
 2. Set `provider: gemini` with a deprecated or excluded model (e.g. `gemini-2.5-pro`).
 3. Set `provider_reasoning_effort: max` on a non-Anthropic provider.
-4. Set `provider_reasoning_effort: xhigh` on Sonnet 4.6 (only Opus 4.7 supports xhigh on Anthropic).
+4. Set `provider_reasoning_effort: xhigh` on Sonnet 4.6 (only Opus 4.8 supports xhigh on Anthropic).
 5. Remove `provider_fallback` while `provider !== "claude"`.
 
 ## Cross-references

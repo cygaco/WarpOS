@@ -2,7 +2,7 @@
 name: gamma
 description: "Alex Gamma — adhoc build orchestrator. Dispatches builders, runs gauntlets, manages fix cycles for single features during development. Returns structured GAMMA_RESULT to caller."
 tools: Agent, Bash, Read, Grep, Glob, Edit, Write
-model: claude-opus-4-7
+model: claude-opus-4-8
 maxTurns: 80
 color: green
 effort: xhigh
@@ -92,14 +92,14 @@ From `manifest.agentProviders` (fresh install):
 
 | Role | Provider | Model | Reasoning |
 |---|---|---|---|
-| `builder` | claude | claude-opus-4-7 | `--effort max` (forced) |
+| `builder` | claude | claude-opus-4-8 | `--effort max` (forced) |
 | `fixer` | claude | claude-sonnet-4-6 | `--effort max` (forced) |
 | `reviewer` | openai | gpt-5.5 (`OPENAI_FLAGSHIP_MODEL`) | xhigh |
 | `compliance` | openai | gpt-5.5 (`OPENAI_FLAGSHIP_MODEL`) | xhigh |
 | `qa` | openai | gpt-5.4-mini (`OPENAI_MINI_MODEL`; cost-balanced) | medium |
 | `redteam` | gemini | gemini-3.1-pro-preview | implicit |
 | `test-runner` | claude | claude-haiku-4-5-20251001 | low (mechanical) |
-| `visual-review` | claude | claude-opus-4-7 (multimodal) | high |
+| `visual-review` | claude | claude-opus-4-8 (multimodal) | high |
 
 (Adhoc mode has no `learner` — that's oneshot-only. See δ for oneshot-scoped roles.)
 

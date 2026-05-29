@@ -5,7 +5,7 @@
 - https://platform.claude.com/docs/en/build-with-claude/effort
 - https://platform.claude.com/docs/en/build-with-claude/extended-thinking
 - https://platform.claude.com/docs/en/build-with-claude/adaptive-thinking
-- https://www.anthropic.com/news/claude-opus-4-7
+- https://www.anthropic.com/news/claude-opus-4-8
 - https://platform.claude.com/docs/en/api/models/list (programmatic capability lookup)
 
 Last verified: 2026-04-29.
@@ -14,7 +14,7 @@ Last verified: 2026-04-29.
 
 | Model ID | API alias | Context | Max output | Effort levels | Pricing in/out per MTok |
 |---|---|---|---|---|---|
-| `claude-opus-4-7` | `claude-opus-4-7` | 1M | 128k | low \| medium \| high \| xhigh \| max | $5 / $25 |
+| `claude-opus-4-8` | `claude-opus-4-8` | 1M | 128k | low \| medium \| high \| xhigh \| max | $5 / $25 |
 | `claude-sonnet-4-6` | `claude-sonnet-4-6` | 1M | 64k | low \| medium \| high \| max | $3 / $15 |
 | `claude-haiku-4-5-20251001` | `claude-haiku-4-5` | 200k | 64k | (no `effort` param) | $1 / $5 |
 
@@ -24,7 +24,7 @@ Last verified: 2026-04-29.
 
 | Model | Mode | Notes |
 |---|---|---|
-| Opus 4.7 | Adaptive only | Manual `thinking: { budget_tokens: N }` is **rejected** with HTTP 400. Use `effort` instead. |
+| Opus 4.8 | Adaptive only | Manual `thinking: { budget_tokens: N }` is **rejected** with HTTP 400. Use `effort` instead. |
 | Sonnet 4.6 | Adaptive (recommended) + manual (deprecated) | `budget_tokens` still accepted but will be removed. |
 | Haiku 4.5 | Extended thinking | No `effort` param. |
 | Mythos Preview | Adaptive default + manual supported | Invitation-only research preview for defensive cybersecurity (Project Glasswing). |
@@ -32,10 +32,10 @@ Last verified: 2026-04-29.
 ### API parameter shapes
 
 ```jsonc
-// Adaptive thinking (Opus 4.7+, Opus 4.6, Sonnet 4.6, Mythos)
+// Adaptive thinking (Opus 4.8+, Opus 4.6, Sonnet 4.6, Mythos)
 {
   "thinking": { "type": "adaptive" },
-  "effort": "high"   // low | medium | high | xhigh (Opus 4.7 only) | max
+  "effort": "high"   // low | medium | high | xhigh (Opus 4.8 only) | max
 }
 
 // Manual extended thinking (Sonnet 4.6 deprecated, Haiku 4.5, legacy 4.5/4.1/4)
@@ -67,7 +67,7 @@ Pass `thinking` blocks back **unchanged** in continuation turns when threading t
 ### Interleaved thinking
 
 Claude can reason between tool calls (a "thinking" block between each tool round-trip):
-- Opus 4.7, Opus 4.6, Sonnet 4.6, Mythos: **automatic with adaptive** (no beta header)
+- Opus 4.8, Opus 4.6, Sonnet 4.6, Mythos: **automatic with adaptive** (no beta header)
 - Older Claude 4 (Opus 4.5, 4.1, 4 / Sonnet 4.5, 4): requires beta header `interleaved-thinking-2025-05-14`
 - With interleaved: `budget_tokens` may exceed `max_tokens` (limited only by context window).
 
@@ -76,7 +76,7 @@ Claude can reason between tool calls (a "thinking" block between each tool round
 ```jsonc
 // API
 {
-  "model": "claude-opus-4-7",
+  "model": "claude-opus-4-8",
   "max_tokens": 4096,
   "messages": [...],
   "output_config": { "effort": "max" }
@@ -90,12 +90,12 @@ claude --effort xhigh -p ...
 
 ### Effort level matrix
 
-| Level | Opus 4.7 | Sonnet 4.6 | Haiku 4.5 | When to use |
+| Level | Opus 4.8 | Sonnet 4.6 | Haiku 4.5 | When to use |
 |---|---|---|---|---|
 | `low` | ✓ | ✓ | — | Simple tasks, classification, short scoped work |
 | `medium` | ✓ | ✓ | — | Recommended Sonnet default; cost-sensitive Opus |
 | `high` | ✓ (default) | ✓ (default) | — | Complex reasoning; equivalent to omitting param |
-| `xhigh` | ✓ | — | — | **Recommended Opus 4.7 starting point** for coding/agentic |
+| `xhigh` | ✓ | — | — | **Recommended Opus 4.8 starting point** for coding/agentic |
 | `max` | ✓ | ✓ | — | Frontier problems; reserve for measurable headroom over xhigh |
 
 `effort` affects ALL output tokens — text, tool calls, and thinking. Lower effort means fewer tool calls.
@@ -104,7 +104,7 @@ claude --effort xhigh -p ...
 
 **Sonnet 4.6:** explicitly set `medium` for most agentic work; `low` for high-volume / latency-sensitive; `high` only when intelligence is critical; `max` for frontier work.
 
-**Opus 4.7:** start at `xhigh` for coding/agentic; step down to `medium` for cost; step up to `max` only when evals show measurable headroom. Set large `max_tokens` (start 64k) when running `xhigh` or `max`.
+**Opus 4.8:** start at `xhigh` for coding/agentic; step down to `medium` for cost; step up to `max` only when evals show measurable headroom. Set large `max_tokens` (start 64k) when running `xhigh` or `max`.
 
 ## Legacy / deprecated models
 
@@ -115,18 +115,18 @@ claude --effort xhigh -p ...
 | `claude-opus-4-1-20250805` | Legacy, supported | |
 | `claude-sonnet-4-5-20250929` | Legacy, supported | |
 | `claude-sonnet-4-20250514` | **Deprecated** | Retiring 2026-06-15. Migrate to Sonnet 4.6 |
-| `claude-opus-4-20250514` | **Deprecated** | Retiring 2026-06-15. Migrate to Opus 4.7 |
+| `claude-opus-4-20250514` | **Deprecated** | Retiring 2026-06-15. Migrate to Opus 4.8 |
 
 ## Other settings (informational — most not exposed by the `claude` CLI)
 
 | Setting | Where | Notes |
 |---|---|---|
 | `priority_tier` | API service tiers | All current models support priority tier. Not surfaced in our CLI. |
-| Batch API | Messages Batch API | Independent endpoint; supports up to 300k output tokens with `output-300k-2026-03-24` beta header on Opus 4.7, Opus 4.6, Sonnet 4.6. |
+| Batch API | Messages Batch API | Independent endpoint; supports up to 300k output tokens with `output-300k-2026-03-24` beta header on Opus 4.8, Opus 4.6, Sonnet 4.6. |
 | Prompt caching with thinking | API | Opus 4.5+ and Sonnet 4.6+ keep thinking blocks across turns. System prompts stay cached even when `thinking` params change; message blocks invalidate on `budget_tokens` or `type` change. Use 1-hour cache for long thinking sessions. |
-| Bedrock / Vertex IDs | AWS / GCP | Each Claude model has separate IDs (e.g. `anthropic.claude-opus-4-7` on Bedrock, `claude-opus-4-7` on Vertex). Bedrock since Sonnet 4.5 also has global vs regional endpoints. Not used by our local `claude` CLI. |
+| Bedrock / Vertex IDs | AWS / GCP | Each Claude model has separate IDs (e.g. `anthropic.claude-opus-4-8` on Bedrock, `claude-opus-4-8` on Vertex). Bedrock since Sonnet 4.5 also has global vs regional endpoints. Not used by our local `claude` CLI. |
 | Models API | `/v1/models` | Programmatic capability lookup. Returns `max_input_tokens`, `max_tokens`, `capabilities`. |
-| Reliable knowledge cutoff | All models | Distinct from training cutoff: knowledge is most reliable up to Opus 4.7 = Jan 2026, Sonnet 4.6 = Aug 2025, Haiku 4.5 = Feb 2025. |
+| Reliable knowledge cutoff | All models | Distinct from training cutoff: knowledge is most reliable up to Opus 4.8 = Jan 2026, Sonnet 4.6 = Aug 2025, Haiku 4.5 = Feb 2025. |
 
 ## CLI reference (claude)
 
@@ -144,5 +144,5 @@ The `claude` CLI **does not** currently expose: `display`, `budget_tokens`, beta
 
 ## Project decisions
 
-- **builders, fixers:** `claude-opus-4-7` with `effort: max` (per user 2026-04-26 directive)
-- **gamma:** `claude-opus-4-7` with `effort: max` (per user 2026-04-28 directive)
+- **builders, fixers:** `claude-opus-4-8` with `effort: max` (per user 2026-04-26 directive)
+- **gamma:** `claude-opus-4-8` with `effort: max` (per user 2026-04-28 directive)

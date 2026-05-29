@@ -253,7 +253,7 @@ Routing is enforced — not aspirational (SP-20260514-002).
 - QA and Redteam phases are recorded by their gauntlet entry points (Gamma's dispatch); when running them by hand, record manually:
   - `node scripts/sprint/routing.js record --phase qa --artifact <T-id> --sprint <SP-id> --model <provider:model> [--diff-reviewer <provider:model>|--allow-single-vendor] --ticket <T-id>`
   - `node scripts/sprint/routing.js record --phase redteam --artifact <T-id> --sprint <SP-id> --model <provider:model> [--diff-reviewer <provider:model>|--allow-single-vendor] --ticket <T-id>`
-- When the recording model (e.g. `claude:claude-opus-4-7`) is not in the phase's declared class (e.g. `economical_coder`), `auto_override: true` downgrades the row to `evidence: mismatch_override` with an auto decision-ledger ref — honest about the gap rather than blocking.
+- When the recording model (e.g. `claude:claude-opus-4-8`) is not in the phase's declared class (e.g. `economical_coder`), `auto_override: true` downgrades the row to `evidence: mismatch_override` with an auto decision-ledger ref — honest about the gap rather than blocking.
 - `/sprint:release` calls `routing.coverageReport(<SP-id>)` and refuses release when required phases (planning, design, execution, qa, redteam, release) lack traces; `--allow-routing-gap` is the documented override.
 - Trace: `paths.sprintDecisions/routing-trace.jsonl`. Coverage: `node scripts/sprint/routing.js coverage --sprint <SP-id>`.
 

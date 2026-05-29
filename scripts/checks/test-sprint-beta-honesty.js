@@ -83,7 +83,7 @@ function makeConsultRec(sprintId, boundary, opts = {}) {
         ? opts.beta_message
         : "Beta says proceed with moderate scrutiny.",
     latency_ms: opts.latency_ms !== undefined ? opts.latency_ms : 0,
-    model: opts.model !== undefined ? opts.model : "claude-opus-4-7",
+    model: opts.model !== undefined ? opts.model : "claude-opus-4-8",
     ts: opts.ts || BASE_TS,
     via_cli_resume: true,
   });

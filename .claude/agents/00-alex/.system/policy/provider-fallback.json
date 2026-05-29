@@ -5,7 +5,7 @@
   "policies": {
     "redteam": {
       "primary": "gemini:gemini-3.1-pro-preview",
-      "fallback": "claude:claude-opus-4-7",
+      "fallback": "claude:claude-opus-4-8",
       "rationale": "redteam runs adversarial-corpus reasoning; gemini-pro-preview is the strong primary, claude-opus is the most capable fallback that won't degrade depth on long attack chains."
     },
     "reviewer": {

@@ -626,7 +626,7 @@ function maybeConsultBeta(state, boundary, args) {
   const betaMessage = sanitizeBetaMessage(args.betaMessage);
   const ts = nowIso();
   const latencyMs = 0; // no live round-trip in this subprocess; elapsed is ~0
-  const model = process.env.WARPOS_BETA_MODEL || "claude-opus-4-7";
+  const model = process.env.WARPOS_BETA_MODEL || "claude-opus-4-8";
 
   emit("sprint_full_beta_consult", {
     verdict,

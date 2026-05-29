@@ -138,7 +138,7 @@ function handle(event) {
   }
 
   // Miss. Emit warn or block.
-  const fixCmd = `node scripts/sprint/routing.js record --phase ${cls.phase} --artifact ${cls.artifact_id} --sprint ${cls.sprint} --model claude:claude-opus-4-7 --allow-single-vendor`;
+  const fixCmd = `node scripts/sprint/routing.js record --phase ${cls.phase} --artifact ${cls.artifact_id} --sprint ${cls.sprint} --model claude:claude-opus-4-8 --allow-single-vendor`;
   if (enforcement.mode === "warn") {
     const softRolloutNote = enforcement.soft_rollout_until
       ? ` soft rollout until ${enforcement.soft_rollout_until}.`

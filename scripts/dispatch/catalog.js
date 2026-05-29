@@ -17,16 +17,16 @@ const ANTHROPIC = {
   cliEffortFlagTemplate: "--effort {effort}",
   syntaxTemplate: "claude -p {reasoning} --agent {role}",
   requiresFallback: false,
-  defaultModel: "claude-opus-4-7",
+  defaultModel: "claude-opus-4-8",
   models: [
     {
-      id: "claude-opus-4-7",
-      label: "Claude Opus 4.7",
+      id: "claude-opus-4-8",
+      label: "Claude Opus 4.8",
       effortLevels: ["low", "medium", "high", "xhigh", "max"],
       contextTokens: 1_000_000,
       maxOutputTokens: 128_000,
       pricing: { inPerMTok: 5, outPerMTok: 25 },
-      aliases: ["opus", "claude-opus-4-7"],
+      aliases: ["opus", "claude-opus-4-8"],
     },
     {
       id: "claude-sonnet-4-6",

@@ -965,7 +965,7 @@ function main() {
       artifact_id: `retro:${sprintId}`,
       artifact_path: retroYamlPath(sprintId),
       sprint: sprintId,
-      model: process.env.WARPOS_RECORDING_MODEL || "claude:claude-opus-4-7",
+      model: process.env.WARPOS_RECORDING_MODEL || "claude:claude-opus-4-8",
       recorded_by: "/sprint:retrospective",
       allow_single_vendor: true,
       auto_override: true,

@@ -133,7 +133,7 @@ function cmdPrepare(argv) {
       artifact_id: id,
       artifact_path: releasePath(id),
       sprint: current.id,
-      model: process.env.WARPOS_RECORDING_MODEL || "claude:claude-opus-4-7",
+      model: process.env.WARPOS_RECORDING_MODEL || "claude:claude-opus-4-8",
       recorded_by: "/sprint:release",
       allow_single_vendor: true,
       auto_override: true,
