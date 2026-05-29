@@ -32,6 +32,8 @@ Director-of-product framing: the roadmap is a rhythm — **n sprints → milesto
 
 ```
 Pattern realignment  →  Ship-coverage hardening  →  Install-matrix parity        →  🏁 0.16.0  Content-Delivery Integrity  (immediate, operator-directed)
+Test-suite system  →  _planning seed-zone  →  WarpOS↔product diff  →  Hook system overhaul  →  🏁 0.17.0  Per-Sprint Exhaustive Test-Suite System  (operator-directed)
+Release channel model  →  Stable-promotion gate  →  --channel + pinning                          →  🏁 0.18.0  Stable / LTS Release Channel  (stability theme)
 Suite reconciliation  →  Canon engine  →  Spinup orchestrator                    →  🏁 0.15.0  Unified Product On-Ramp  (shipped)
 Maintainer scrub  →  Post-scrub gate hardening                                  →  🏁 0.10.0  Framework Boundary Closure
 DreamTeam capsule  →  Installer branch-safety  →  Collision detect  →  Matrix  →  🏁 0.12.0  Multi-Product Distribution Maturity
@@ -91,6 +93,95 @@ Deferred per-gap items from the reconciliation (symptom-level, lower leverage):
 - **[open] G5.5** — product-overlay paths registry (`.claude/paths.local.json` deep-merge) so product path keys survive framework updates.
 - **[open] G1.6** — deep per-role provider smoke (the `--per-role` ping shipped; redteam/gemini trust still degrades — needs quota-aware fallback wired by default).
 - **[open] G5.7** — broad `.warpos/` gitignore in the managed block (tracked-transients flags it; the ignore is still piecemeal).
+
+#### 🟡 0.17.0 — Per-Sprint Exhaustive Test-Suite System *(operator-directed; binds the `_planning` / diff / hook-perf batch — motivated by framework instability)*
+
+`Test-suite system foundation  →  _planning seed-zone (+ suite)  →  WarpOS↔product diff (+ suite)  →  Hook system overhaul (+ suite)  →  🏁 0.17.0`
+
+**Why now:** the framework is **unstable** — green gates pass without exhaustive behavioral coverage, recurring bug classes keep resurfacing, and "done" has meant "the author wrote some tests." This milestone makes coverage a *system*, not a habit.
+
+**The shift to achieve:** exhaustive testing stops being per-sprint discretion and becomes a **permanent system**. Every WarpOS (canonical) sprint ships an extensive test suite for its changes — sized as real work, gated by a named enforcer, and seeded with a baseline regression set covering **every recurring bug class** mined from learnings + events + recurring-issues. The **product layer opts in but is never forced** — consumer installs keep their freedom.
+
+Before this milestone, each sprint's tests are written at the author's discretion; coverage varies; "green" can pass without exhaustive coverage (the contractless-productization root cause — a sprint self-reports done with thin tests, and the same bug classes recur). After: a standing test-suite system defines what "exhaustive" means per change-type, a per-sprint convention that every canonical sprint produces/extends its suite, a sprint-close / release-gate enforcer that refuses to close a canonical sprint lacking its suite, a **repo-role-aware switch** (built on the open shared-repo-role-resolver item) making it mandatory in canonical / optional in consumers, and a **baseline regression seed** of the known recurring bug classes that every build re-runs.
+
+Sprints feeding this (**system first, then the batch flows through it**):
+- **Test-suite system foundation** — the harness + per-sprint convention + named enforcer (sprint-close / `release-gates`, repo-role-aware) + product-layer opt-out + the **recurring-bug-class regression seed** (see the seed subsection below). Registered in the systems manifest (`paths.systemsFile`), documented in `_docs/sprint/` + `AUTONOMY.md` so it binds every future sprint, wired into `/sprint:full` close. Generalizes `gauntlet-verify.js` toward typed success semantics (green = the suite ran AND covered the change), not a vibe.
+- **`_planning/` seed-zone + exhaustive suite** — the `_planning/` work (detailed candidate in *Sprint 11+*) + a full-sprint-sized suite: seed-on-install, survive-update, auto-load, role behavior, manifest coverage, purity-gate interaction.
+- **WarpOS↔product diff + exhaustive suite** — the diff capability (*Sprint 11+* candidate) + exhaustive suite across version/staleness/file-drift/manifest-gap/missing-extra-skill cases, in both repo roles.
+- **Hook system overhaul + exhaustive suite** — implement all four UPDATE.md fixes (dispatcher consolidation #1 + quality-gates→pre-commit #2 + smart-context caching #3 + beta-gate/framework-purity tuning #4) with before/after perf numbers AND a regression suite proving **no guard lost its catch**.
+
+**Definition of done:** (1) the test-suite system exists as a documented, manifest-registered WarpOS system with a **named enforcer** (per CLAUDE.md § Policy & Enforcement Hygiene — no policy without an enforcer); (2) the enforcer refuses to close a canonical sprint without its suite, and is a no-op / opt-in in a consumer repo — proven by `test-install-matrix.js` exercising **both roles**; (3) the baseline regression seed covers every recurring bug class in the seed subsection below, all green; (4) each feature sprint ships its exhaustive suite, hook-overhaul with before/after numbers; (5) the per-sprint convention is documented so it binds every future sprint, not just this batch.
+
+**Engineering reality unlocked:** "green" becomes trustable for every framework change — the instability driving this milestone (recurring bug classes, thin-test false-greens) is structurally foreclosed at the sprint level, while the product layer keeps the freedom that makes WarpOS usable by vibe-coders. The test-suite system is the permanent mechanism the one-off `gauntlet` / `e2e` / `install-matrix` patterns were each reaching for.
+
+#### 🔬 Mandatory regression seed — recurring bug classes *(feeds 0.17.0)*
+
+The baseline every WarpOS build re-runs. Mined 2026-05-28 from the dreams journal, 30+ sprint retros, events + beta-events, `recurring-issues-design.md`, and the hygiene sections of CLAUDE.md / MEMORY.md / MIGRATION.md / UPDATE.md. Each entry is a class that has **recurred** — the test-suite system must hold a named regression test for every one. *(The JSONL learning/trace/recurring-issues stores registered in `paths.json` **do not exist on disk** — that absence is class #22, and it means consolidation/scan have been silently no-opping.)*
+
+**Distribution / release integrity**
+1. **Hollow ladder rung** — `version.json` bump + tag but no `framework/releases/X.Y.Z/` capsule; downstream `/warp:update --to X` falls. *(journal "Ladder with Hollow Rungs"; L-1/L-2)*
+2. **Manifest coverage/honesty drift** — framework-owned path ships to 0 consumers; ownership vs shipping manifest diverge; hash drift in `framework-installed.json`. *(0.16.0 root; SP-20260522-001)*
+3. **Version quorum disagreement** — `version.json` / `framework-manifest.json` / `framework-installed.json` / `install.ps1` disagree. *(check:warpos-version-quorum)*
+4. **Missing / unresolvable migration** — capsule `release.json#migrations[]` names a migration absent from source, or capsule unresolvable from any root. *(check:warpos-migration-presence / -capsule-resolvable)*
+5. **Stale-manifest release** — `release-build.js` ships a manifest that disagrees with source (T-183). *(SP-20260524-002)*
+
+**Cross-platform / shell / transport**
+6. **UTF-8 BOM on machine-local JSON** — PowerShell writes a BOM, Node `JSON.parse` rejects it (portfolio registry "corrupt"). *(MIGRATION.md §1; lint-json-bom)*
+7. **Bash-ism in `execSync` → cmd.exe** — e.g. `git log --format=%h\ %ar` → ambiguous-arg on Windows. *(MIGRATION.md §4)*
+8. **Windows stdin / argv limits** — `cat … | codex|gemini|claude` 0-bytes on cmd.exe; `claude -p "$(cat big)"` argv overflow (exit 126). *(LRN-2026-04-17 / -04-30; MEMORY stdin-not-argv)*
+9. **Route bypass of a lib-only fix** — transport fix in a helper, raw callers go around it and re-hit the bug. *(CLAUDE.md §Refactor; LRN-2026-04-30 binding-gap)*
+10. **`node -e fs.write` blocked by memory-guard** — recurring 31× block signature. *(recurring-issues-design.md; RI-004)*
+
+**Refactor / reference hygiene**
+11. **Incomplete rename / stale literal** — identifier renamed (`anthropic`→`claude`) but occurrences missed → silent fallthrough to defaults. *(CLAUDE.md §Refactor; LRN-2026-04-29)*
+12. **Orphaned references after deletion** — deleting a referenced file without a basename grep → broken refs in docs / SPEC_GRAPH. *(CLAUDE.md §Refactor; L-2026-04-22)*
+13. **Dangling path-registry key** — a `paths.json` key resolves to a non-existent path (`research`, `tracesFile`, `requirementsStagedFile`, `oneshotRetros`). *(journal Repair — 4 keys)*
+14. **Phantom / hallucinated reference** — a schema or commit references a file that doesn't exist. *(journal false-memory check)*
+
+**Policy enforcement / success semantics**
+15. **Unenforced policy (aspirational rung)** — a rule with no detector: routing, release-ledger, β consult, retro presence, capsule presence. *(CLAUDE.md §Policy; SP-20260514-002 / SP-20260519-001)*
+16. **Fail-open false-green** — a diagnostic CLI with `process.exit(0)` regardless of verdict used as a gate; fail-open fallback masquerading as success; tools that fail *silently*. *(SP-20260513-002 provider-health-check; journal "frustration spikes when tools fail silently")*
+17. **Placeholder / fake telemetry** — `/sprint:full` logs a `DECIDE` with empty `beta_message`; β-gate fires *after* the omission (17 walks past the doorbell). *(SP-20260525-018/019; journal "Empty Chair")*
+
+**Hook system**
+18. **Hook self-sabotage / over-eager block / latency** — a hook silently disables itself via side-effect I/O (RT-013); β-gate hard-blocks with no β spawned (dead-end); framework-purity blocks a *pre-existing* unrelated leak; 35 node-procs per edit. *(UPDATE.md §1; RT-013)*
+
+**Sprint orchestrator**
+19. **State-machine / idempotency / parallelism bug** — `release.js` doesn't flip `releasing→closed` (blocks retro); Phase-5-skips-retro; skeleton-placeholder retros; shared `sprint-progress.yaml` race across parallel sprints; `ticket.js` mints without `--sprint` (bucket bleed); release-prep not resume-idempotent → duplicate release-ledger; resume = manual flag-maze. *(SP-20260513-001/004/005; downstream /sprint:full F9/F10)*
+20. **CWD / worktree path resolution** — CWD-resolving tracker scripts silently target the wrong repo when run from a worktree. *(SP-20260513-004)*
+
+**Memory / context**
+21. **Compaction prompt-loss** — context lost across compaction. *(L-8)*
+22. **Missing memory stores** — learnings / traces / recurring-issues JSONLs registered in `paths.json` but absent on disk → consolidation/scan silently no-op. *(this sweep, 2026-05-28)*
+
+**Provider / dispatch**
+23. **Provider auth / routing drift** — Gemini OAuth vs `GEMINI_API_KEY` mismatch; routing tables disagree across `providers.js` / `catalog.js` / dispatch guide; provider trust degrades with no quota-aware fallback. *(SP-20260513-002; check:dispatch-routing-parity; G1.6)*
+
+**Downstream / migration**
+24. **Verify-canonical-not-downstream** — a gap register reflects the *installed* version, not canonical@current (~half already fixed). *(MEMORY; ED-008)*
+25. **Cross-machine breakage** — dangling absolute `repo_path`s; git identity unset; stale registry metadata. *(MIGRATION.md §2/§3/§5)*
+26. **Spec → code → test drift** — staged requirement drift never written; spec-propagation not closed; AC-coverage gaps. *(journal; Sprint 11+ spec-propagation closer)*
+
+*Maintenance: when a new bug class recurs (≥2 occurrences, or an `/issues:log` entry), it's appended here AND gets a regression test in the same sprint — the seed grows with the framework. This list is the human-readable mirror of the (to-be-created) `recurring-issues.jsonl`; reviving that store is class #22's fix.*
+
+#### 🟡 0.18.0 — Stable / LTS Release Channel *(stability theme — depends on 0.17.0's regression seed to define "stable")*
+
+`Release channel model (edge/latest/stable·lts)  →  Stable-promotion gate  →  --channel + pinning  →  🏁 0.18.0`
+
+**Why now:** the operator's driving complaint is **instability** — downstream products track a single rolling "latest" and inherit hollow-rung releases (capsule gaps) and regressions. There's no "known-good" channel to pin to.
+
+**The shift to achieve:** WarpOS stops being one rolling `latest`. Releases flow through channels — **edge → latest → stable → lts** — and a release only earns the **stable/lts** label by passing the full 0.17.0 regression seed + an artifact-first downstream contract test + a soak window. Products **pin to a channel**; `/warp:update --channel stable` keeps them on hardened releases only.
+
+Before this milestone, every canonical release is "latest" and `/warp:update` pulls whatever's newest — including the hollow-rung and regressed releases that drive the instability. After: stable/lts is a curated, higher-bar channel carrying a guarantee (regression seed green, soak-tested, downstream-contract-verified, migrations present + resolvable, version quorum agrees); products choose their risk tolerance.
+
+Sprints feeding this:
+- **Release channel model** — `version.json` / capsule gains a `channel` (`edge`|`latest`|`stable`|`lts`); `release-build.js` tags the channel; `/warp:check` + `/warp:update` become channel-aware; lts releases carry a longer support + migration-coverage guarantee.
+- **Stable-promotion gate** — a release cannot be labeled `stable`/`lts` unless: the full 0.17.0 regression seed is green, the **artifact-first contract test** passes (install the sealed capsule into a disposable out-of-tree repo → `setup` → `check:install` → a real sprint → `update` → verify guard behavior under BOTH repo roles), all migrations present + resolvable, version quorum agrees, and a soak window elapsed with no downstream-flagged regressions. *(This is the "artifact-first, contract-tested release gate" root-cause item, scoped to the promotion boundary.)*
+- **Channel-aware update + pinning** — `/warp:update --channel stable|lts`; products record their channel in `framework-installed.json`; `/portfolio:sync` respects per-product channel; downgrade-protection (never silently move a product off lts).
+
+**Definition of done:** (1) a release carries a channel label; (2) the stable-promotion gate **refuses** to label a release stable/lts unless the regression seed + contract test + migration/quorum checks are green and the soak window elapsed; (3) `/warp:update --channel stable` installs only stable releases, and portfolio products default to stable; (4) a synthetic attempt to promote a hollow-rung release (missing capsule) to stable is refused by the gate.
+
+**Engineering reality unlocked:** the operator — and eventually external users — can choose **stability over freshness**. "Is this release safe to put on my product?" becomes a channel label backed by the regression seed, not a hope. The hollow-ladder-rung class (capsule gaps reaching downstream) is foreclosed at the channel boundary.
 
 #### 🟡 0.10.0 — Framework Boundary Closure *(target: next 2 sprints)*
 
@@ -346,6 +437,9 @@ Side findings to address, each <1 hour:
 - **[open] Harden `/sprint:full` Beta-consult — reject placeholder verdicts at runtime.** *(Surfaced 2026-05-25 by SP-20260525-004's `/check:sprint-beta-honesty` first live run: SP-20260525-018 logged a `DECIDE` with empty `beta_message`; SP-20260525-019 skipped the retro consult.)* SP-003 made consults real + halt-at-boundary; make them **un-fakeable** — `full.js#maybeConsultBeta` should refuse an empty/whitespace `beta_message` and refuse to advance past a Beta boundary without a real verdict+message. Turns placeholder consults from detectable-after-the-fact into impossible-at-runtime. *(Milestone 0.11.0 follow-up.)*
 - **[open] Wire `/check:sprint-beta-honesty` into a gate.** Currently on-demand only. Wire into `release-build.js` (refuse to ship if recent post-cutoff sprints have honesty findings) and/or a pre-push / CI check, so the Beta cadence is continuously enforced rather than spot-checked. Closes the 0.11.0 honesty loop end-to-end (mechanism → audit → gate). *(Milestone 0.11.0 follow-up.)*
 - **[open] `--turbo` cadence wiring for `/sprint:full`.** *(Surfaced 2026-05-25 — durable form of the RT-speed-analysis findings.)* `/session:turbo` shipped (perm pre-auth + speed-cadence levers doc at `.claude/commands/session/turbo.md`), but the matching `/sprint:full` `turbo` autonomy **preset** is not wired. Two parts: **(a)** mint the preset (`beta_cadence=batched`, `skip_gauntlet_max_risk`, `parallel_builds_default`, `engine_sprint_fast_close`) with explicit operator approval in the AP-20260518-017..020 family — it widens autonomy, so it's correctly gated by the auto-mode classifier and must not self-authorize; **(b)** wire `scripts/sprint/full.js` to honor the batched-Beta cadence (one upfront plan-consult instead of 4 per-boundary halts) + skip-gauntlet-when-low-risk. Until then, the speed levers exist as a doc but the orchestrator still halts per-boundary.
+- **[open] `_planning/` folder — shipped home for durable session context + generated plans.** A top-level `_planning/` dir that **ships to consumers** as part of the scaffold (every install gets one). Two roles: **(a) always-known context** — the durable facts a project/session should always have loaded (operating context, active decisions, constraints), distinct from `_requirements/00-canonical/*` product spec; and **(b) generated plans, including sprints** — plan contracts, sprint plans, and other plans the project produces over time. Design questions to settle when pulled: declare it a **seed-zone** in `_warpos/MANIFEST.json` (owner=`project`, `seeded_from` a framework baseline template — the same seed-with-provenance pattern as 0.16.0's `_requirements`/`_docs` seeding, not a bare `.gitkeep`); whether a SessionStart / `smart-context` hook auto-loads `_planning/` so "always-known" is literally always in context (overlaps MEMORY.md + PROJECT.md — dedupe, don't duplicate); and its relationship to the existing `sprints/` dir (absorb it, or sit alongside as the higher-level planning home). Loose root notes (`MIGRATION.md`, `UPDATE.md`) are the first tenants. *(Surfaced 2026-05-28; intent clarified by operator — ships to consumers, holds always-know context + generated sprints. Feeds 0.17.0 — ships with its exhaustive suite.)*
+- **[open] Compare-and-contrast / diff WarpOS ↔ a product repo (e.g. masterconsole).** A capability (skill — `/portfolio:diff <slug>` or `/warp:diff`) that diffs canonical framework against an installed product: installed-framework version + staleness, which framework-owned files diverge from canonical (hash/content), manifest-coverage gaps, and missing/extra skills + agents + hooks. Generalizes the per-product `framework-installed.json` staleness check into a full **divergence report** so the maintainer sees exactly what masterconsole carries that canonical doesn't, and vice-versa. Builds on `/portfolio:status` + `/warp:check` + `/check:warpos-*`. Read-only / canonical-side per [[feedback_warpos_only_no_cross_project]] — reports on the product, never edits it. *(Feeds 0.17.0 — ships with its exhaustive suite.)*
+- **[open] Cross-machine migration-script automation.** Turn MIGRATION.md's five `[migration-script]` findings into a real `/warp:migrate-machine` (or `scripts/warpos/migrate-machine.js`): strip/avoid UTF-8 BOM on all machine-local JSON (the root-cause breakage — `~/.warpos/*.json`, `~/.claude/settings*.json`), rewrite absolute `repo_path`s in `portfolio.json` when username/layout changes, set git identity globally up front, null `last_synced` to force a metadata refresh, and finish with the post-migration smoke checklist. *(Surfaced 2026-05-28 fresh-machine migration; full findings in MIGRATION.md. Feeds 0.17.0 — bug classes #6/#7/#25 in the regression seed.)*
 
 ### Sprint backlog (parked / pull-forward-able)
 
