@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-05-29T08:38:50.593Z",
+  "generatedAt": "2026-05-29T08:54:40.118Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.10.0",
   "migrations": [],
@@ -2397,8 +2397,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/warpos/release-gates.js",
-      "sha256": "74895aeebf813673c812d4e48bd7e3e418d4e1071778235c692469a0de7f4849",
-      "installedSha": "74895aeebf813673c812d4e48bd7e3e418d4e1071778235c692469a0de7f4849"
+      "sha256": "ff3cfe63e884e72a0847546ab5409b3c8c53678879a7a16dbdec6a47c1915c79",
+      "installedSha": "ff3cfe63e884e72a0847546ab5409b3c8c53678879a7a16dbdec6a47c1915c79"
     },
     "scripts/warpos/replay-bench.js": {
       "owner": "framework",
@@ -2593,8 +2593,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/warpos/manifest/validate.js",
-      "sha256": "d92a9f68ea88c5446f3aad2516759b7674db1917cbb25a694f45041c40e8f206",
-      "installedSha": "d92a9f68ea88c5446f3aad2516759b7674db1917cbb25a694f45041c40e8f206"
+      "sha256": "d026fcfffd11a96aa5334775714ca87124c006d92328d271b7cc995dadc0b6cf",
+      "installedSha": "d026fcfffd11a96aa5334775714ca87124c006d92328d271b7cc995dadc0b6cf"
     },
     "scripts/warpos/lib/content-hash.js": {
       "owner": "framework",
@@ -2663,8 +2663,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/testsuite/enforce.js",
-      "sha256": "e51342c1e8f2c800bc17f2e714061557188bdde8975ceeb04b467e3afec985db",
-      "installedSha": "e51342c1e8f2c800bc17f2e714061557188bdde8975ceeb04b467e3afec985db"
+      "sha256": "5cdb749d5338a37c2ed389a30434cb8fee5dfb2b195947acbda80364725268c2",
+      "installedSha": "5cdb749d5338a37c2ed389a30434cb8fee5dfb2b195947acbda80364725268c2"
     },
     "scripts/testsuite/role.js": {
       "owner": "framework",
@@ -6210,6 +6210,10 @@
       "managed": false
     },
     ".claude/.session-checkpoint.json": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/.session-start-commit": {
       "owner": "runtime",
       "managed": false
     },

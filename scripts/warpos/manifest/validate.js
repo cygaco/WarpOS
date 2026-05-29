@@ -215,7 +215,11 @@ function validate(opts) {
     else ownerCounts.other++;
     const exists = onDisk.has(rel);
     if (!exists) {
-      findings.missing.push({ path: rel, owner: cls });
+      // owner=runtime files are transient by definition — their absence is expected,
+      // NOT a missing-framework-file finding. Without this, the gitignored
+      // .claude/.session-* markers flap the validate gate (and via BC-02, the
+      // regression_seed gate) as they appear/disappear across a session.
+      if (cls !== "runtime") findings.missing.push({ path: rel, owner: cls });
       continue;
     }
     const full = path.join(root, rel);
