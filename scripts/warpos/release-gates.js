@@ -20,6 +20,7 @@
 const fs = require("fs");
 const path = require("path");
 const { execSync, spawnSync } = require("child_process");
+const { isCanonical } = require("../testsuite/role");
 
 const REPO_ROOT = path.resolve(__dirname, "..", "..");
 
@@ -544,6 +545,49 @@ const GATES = [
       severity: "red",
       message: "Path usage audit found unused flagged keys.",
       details: (r.stdout || r.stderr || "").split(/\r?\n/).slice(-8),
+    };
+  }),
+
+  // 15. Regression Seed (0.17.0 Per-Sprint Exhaustive Test-Suite System)
+  // The named enforcer for the per-sprint test-suite convention
+  // (_docs/sprint/TESTSUITE.md): the regression-seed suite (the 26 recurring
+  // bug classes in _requirements/07-testing/recurring-bug-classes.json, made
+  // runnable by scripts/testsuite/run.js) must stay green per sprint. This gate
+  // runs scripts/testsuite/enforce.js, which itself is role-aware:
+  //   - product repos     → opt-in; enforce.js no-ops (consumer-only detectors
+  //                         would falsely fail), so we skip-as-green here too.
+  //   - canonical/framework → mandatory; a regression in a covered class is RED.
+  // Honesty note: pre-existing open regressions in canonical correctly turn this
+  // RED — the suite reflects reality and is not suppressed here.
+  gate("regression_seed", () => {
+    if (!isCanonical()) {
+      return {
+        ok: true,
+        severity: "green",
+        message: "Regression-seed enforcement is opt-in for product repos — skipped.",
+      };
+    }
+    const r = runScript("scripts/testsuite/enforce.js");
+    if (r.status === 0) {
+      return {
+        ok: true,
+        severity: "green",
+        message: "Regression-seed suite: no regressions in covered classes.",
+      };
+    }
+    if (r.status === 1) {
+      return {
+        ok: false,
+        severity: "red",
+        message: "Regression-seed suite: a covered bug class regressed — block release.",
+        details: (r.stdout || r.stderr || "").split(/\r?\n/).filter(Boolean).slice(-6),
+      };
+    }
+    return {
+      ok: false,
+      severity: "red",
+      message: "Regression-seed runner errored (run.js produced no parseable verdict).",
+      details: (r.stderr || r.stdout || "").split(/\r?\n/).filter(Boolean).slice(-6),
     };
   }),
 ];

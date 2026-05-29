@@ -1,5 +1,6 @@
 {
   "$schema": "warpos/manifest/v1",
+  "repoRole": "canonical",
   "project": {
     "name": "WarpOS",
     "slug": "warpos",

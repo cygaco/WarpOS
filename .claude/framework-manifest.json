@@ -3,7 +3,7 @@
   "version": "0.10.0",
   "generated_by": "scripts/generate-framework-manifest.js",
   "counts": {
-    "agent": 60,
+    "agent": 61,
     "skill": 160,
     "reference": 25,
     "maps_baseline": 23,
@@ -52,7 +52,7 @@
     "installer_script": 1,
     "framework_doc": 2
   },
-  "total": 770,
+  "total": 771,
   "assets": {
     "agent": [
       {
@@ -769,6 +769,18 @@
         "dest": ".claude/agents/02-oneshot/visual-review/visual-review.md",
         "kind": "agent",
         "sha256": "39298bbf588f48e5ecdf52d8f766da676243e76747fca841b933b0b5e1789061",
+        "owner": "framework",
+        "mergeStrategy": "three_way_markdown",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "agent.03-managers.director-of-product.md",
+        "src": ".claude/agents/03-managers/director-of-product.md",
+        "dest": ".claude/agents/03-managers/director-of-product.md",
+        "kind": "agent",
+        "sha256": "08f1a976ed8202aa3406cd028eca2f165fa7325b6cdbbc47aa159b273ae3a8c2",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
@@ -4902,7 +4914,7 @@
         "src": "scripts/warpos/release-gates.js",
         "dest": "scripts/warpos/release-gates.js",
         "kind": "warpos_script",
-        "sha256": "f572c4c2ac2a3cc1eeaa91c359aa3d908316e6c73f54ea7262b36f85f7ea121e",
+        "sha256": "d3cd7befcdcc593afb010fa6083456dc5837e596d722a7d0ed17687aab846657",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",

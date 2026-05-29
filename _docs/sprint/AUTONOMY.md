@@ -207,3 +207,4 @@ integrity. (SP-20260525-004.)
 - Sprint workflow: `paths.sprintReference`
 - CLAUDE.md autonomy table: `CLAUDE.md#Autonomy`
 - Beta-cadence audit: `/scan:sprint-beta-honesty` (`scripts/checks/sprint-beta-honesty.js`)
+- Test-suite convention + enforcer: `_docs/sprint/TESTSUITE.md` (regression-seed green per sprint; enforced by the `regression_seed` release gate)
