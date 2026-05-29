@@ -29,6 +29,23 @@ const ROOT = path.resolve(__dirname, "..", "..");
 const RUN = path.join(__dirname, "run.js");
 const REG = path.join(ROOT, "_requirements", "07-testing", "recurring-bug-classes.json");
 
+// Build the exit-2 error verdict (runner error — never a clean pass). Centralized
+// so every fail-open guard returns an identical, auditable shape.
+function errorVerdict(role, message, r, childStatus) {
+  return {
+    enforced: true,
+    role,
+    regressions: 0,
+    baselineReds: [],
+    staleBaseline: [],
+    incoherent: [],
+    exit: 2,
+    childStatus,
+    error: message,
+    stderrTail: ((r && (r.stderr || r.stdout)) || "").split(/\r?\n/).filter(Boolean).slice(-6),
+  };
+}
+
 // Mirror run.js's own `regressions` filter: a covered/expected-to-pass class
 // whose detector ran and failed. (expect "pass", or unscoped runnable detector.)
 function isRegression(r) {
@@ -91,39 +108,67 @@ function run(opts) {
   }
 
   const r = spawnSync(process.execPath, [RUN, "--json"], { cwd: ROOT, encoding: "utf8", timeout: 120000 });
+  const childStatus = typeof r.status === "number" ? r.status : null;
+
+  // Anti-fail-open #1 (spawn/parse): a runner that didn't produce parseable
+  // JSON is an ERROR, never a clean pass. (Covers spawn failure, timeout, crash.)
   let parsed;
   try {
     parsed = JSON.parse((r.stdout || "").trim());
   } catch {
-    return {
-      enforced: true,
-      role,
-      regressions: 0,
-      incoherent: [],
-      exit: 2,
-      error: `run.js produced no parseable JSON (status=${r.status}, error=${r.error ? r.error.code : "none"}).`,
-      stderrTail: (r.stderr || r.stdout || "").split(/\r?\n/).filter(Boolean).slice(-6),
-    };
+    return errorVerdict(role, `run.js produced no parseable JSON (status=${childStatus}, error=${r.error ? r.error.code : "none"}).`, r, childStatus);
   }
 
-  const summary = parsed.summary || {};
-  const results = Array.isArray(parsed.results) ? parsed.results : [];
+  // Anti-fail-open #2 (exit-code coherence — qa E2): run.js exits 0 (clean) or 1
+  // (regression). Any other status (e.g. 2 = registry load error) is a runner
+  // error even if it managed to emit parseable JSON — do NOT convert it to a pass.
+  if (r.error || (childStatus !== 0 && childStatus !== 1)) {
+    return errorVerdict(role, `run.js exited with an error status (status=${childStatus}, error=${r.error ? r.error.code : "none"}) — runner error, not a clean pass.`, r, childStatus);
+  }
+
+  // Anti-fail-open #3 (malformed verdict schema — qa W3): a parseable but
+  // structurally invalid payload (no results array, or summary claims
+  // regressions while results is empty/missing) is incoherent — treat as error,
+  // never silently empty-and-green.
+  const summary = parsed.summary && typeof parsed.summary === "object" ? parsed.summary : {};
+  if (!Array.isArray(parsed.results)) {
+    return errorVerdict(role, `run.js verdict has no results[] array — malformed runner output.`, r, childStatus);
+  }
+  const results = parsed.results;
+  const summaryRegressions = typeof summary.regressions === "number" ? summary.regressions : null;
+  if (summaryRegressions != null && summaryRegressions > 0 && results.length === 0) {
+    return errorVerdict(role, `run.js summary claims ${summaryRegressions} regression(s) but results[] is empty — incoherent runner output.`, r, childStatus);
+  }
+
   const baseline = baselineRedIds();
   const allOffending = results.filter(isRegression);
   // Block only on NEW reds; known-baseline reds are tracked debt, not blocking.
   const offending = allOffending.filter((o) => !baseline.has(o.id));
   const baselineReds = allOffending.filter((o) => baseline.has(o.id)).map((o) => o.id);
+
+  // Anti-fail-open #4 (stale baseline marker — qa E1): a class carrying
+  // baseline:"red" that is NOT currently failing has paid its debt — the marker
+  // is stale and now silently suppresses any FUTURE regression of that class.
+  // Surface every stale marker. In --strict it is blocking (force marker removal
+  // when the debt clears); otherwise it is reported as a warning. Without this,
+  // a fixed-then-reintroduced class exits 0 forever.
+  const offendingIds = new Set(allOffending.map((o) => o.id));
+  const staleBaseline = [...baseline].filter((id) => !offendingIds.has(id));
+
   const regressions = offending.length;
   const incoherent = strict ? incoherentClasses() : [];
 
-  const exit = regressions > 0 || (strict && incoherent.length > 0) ? 1 : 0;
+  const exit =
+    regressions > 0 || (strict && (incoherent.length > 0 || staleBaseline.length > 0)) ? 1 : 0;
   return {
     enforced: true,
     role,
     regressions,
     baselineReds,
+    staleBaseline,
     incoherent: incoherent.map((c) => c.id),
     exit,
+    childStatus,
     summary,
     offending,
     incoherentDetail: incoherent,
@@ -140,13 +185,13 @@ if (require.main === module) {
   if (v.exit === 2) {
     process.stderr.write(`enforce: ${v.error}\n`);
     for (const l of v.stderrTail || []) process.stderr.write(`  ${l}\n`);
-    if (json) process.stdout.write(JSON.stringify({ enforced: v.enforced, role: v.role, regressions: v.regressions, incoherent: v.incoherent, exit: v.exit }) + "\n");
+    if (json) process.stdout.write(JSON.stringify({ enforced: v.enforced, role: v.role, regressions: v.regressions, incoherent: v.incoherent, exit: v.exit, childStatus: v.childStatus, error: v.error }) + "\n");
     process.exit(2);
   }
 
   if (json) {
     process.stdout.write(
-      JSON.stringify({ enforced: v.enforced, role: v.role, regressions: v.regressions, baselineReds: v.baselineReds, incoherent: v.incoherent, exit: v.exit }) + "\n",
+      JSON.stringify({ enforced: v.enforced, role: v.role, regressions: v.regressions, baselineReds: v.baselineReds, staleBaseline: v.staleBaseline, incoherent: v.incoherent, exit: v.exit, childStatus: v.childStatus }) + "\n",
     );
     process.exit(v.exit);
   }
@@ -166,6 +211,12 @@ if (require.main === module) {
   }
   if (v.baselineReds && v.baselineReds.length) {
     process.stdout.write(`known-baseline reds (tracked debt, NOT release-blocking): ${v.baselineReds.join(", ")}\n`);
+  }
+  if (v.staleBaseline && v.staleBaseline.length) {
+    const verb = v.strict ? "BLOCKING in --strict" : "warning";
+    process.stdout.write(
+      `STALE baseline marker(s) — class no longer failing, remove baseline:"red" so future regressions block again (${verb}): ${v.staleBaseline.join(", ")}\n`,
+    );
   }
   if (v.exit === 0) {
     process.stdout.write(

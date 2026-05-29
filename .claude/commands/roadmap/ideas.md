@@ -1,0 +1,66 @@
+---
+description: Predict candidate roadmap entries across four evidence lenses (3 each = 12 ideas) — whole-roadmap, last-3-shipped, last-3-active, vision/canonical. Read-only; proposes only, pairs with /roadmap:add. Consults the Director of Product for a real product lens.
+---
+
+# /roadmap:ideas — predictive roadmap-entry generator
+
+Surfaces **12 candidate roadmap entries** across four evidence lenses (3 per lens), each grounded in real project artifacts and tagged with the evidence it came from. **Read-only** — it proposes; you pick and commit with `/roadmap:add`. The synthesis runs through the **Director of Product** persona so the ideas carry a product lens (majority userbase, golden paths, tangential connections), not generic guessing.
+
+## Input
+
+`$ARGUMENTS` — optional:
+- *(none)* — all four lenses, 3 ideas each.
+- `--lens <whole|shipped|active|vision>` — only that lens.
+- `--n <k>` — k ideas per lens (default 3).
+
+## Evidence the skill reads (ground every idea — never invent)
+
+1. `ROADMAP.md` — Strategy block, 🏛 Milestones (Upcoming + Later + Shipped), Sprint 11+ candidates, Sprint backlog.
+2. Canonical intent (if present) — `_requirements/00-canonical/*` (CORE_BRIEF, USER_COHORTS, GOLDEN_PATHS, PRODUCT_MODEL, EVOLUTION, FAILURE_STATES).
+3. Recent activity — `git log` (last ~15), `paths.eventsFile` tail, `PROJECT.md`.
+
+## The four lenses
+
+| Lens | Source | Question it answers |
+|---|---|---|
+| **whole** | the entire roadmap | What's structurally missing or a natural extension across the whole backlog? |
+| **shipped** | the last 3 completed/🟢 Shipped items | What's the momentum follow-on — what does each recent ship make newly possible or newly necessary? |
+| **active** | the last 3 entries on the roadmap (most-recently-added) | What does the current active thread imply next? |
+| **vision** | the Strategy block + canonical docs | What does the stated vision call for that isn't on the roadmap yet? |
+
+## Procedure
+
+1. Read the evidence above. Identify: the last 3 Shipped milestones, the last 3 added entries (active thread), the Strategy/vision, and the whole-backlog shape.
+2. **Consult the Director of Product** (`subagent_type: director-of-product`, or — once 0.14.0 skill-scoped injection lands — via the `temporary-agent` directive). Hand it the evidence + the four lenses; ask for 3 candidate entries per lens, each applying Principle #1 (Lean Product Development) and naming any tangential connection drawn.
+3. Format each idea as a ready-to-paste roadmap candidate: a one-line title + 2-3 line body + the lens + the evidence it's grounded in + (if relevant) which milestone it feeds.
+4. **Propose only.** Do not write to `ROADMAP.md`. End by reminding the operator: `commit a pick with /roadmap:add "<idea>"`.
+
+## Output shape
+
+```
+ROADMAP IDEAS — 4 lenses × 3
+
+LENS: whole-roadmap
+  1. <title> — <2-3 line rationale>  [evidence: …]  [feeds: <milestone?>]
+  2. …
+LENS: last-3-shipped  (<the 3 milestones>)
+  …
+LENS: last-3-active  (<the 3 entries>)
+  …
+LENS: vision/canonical
+  …
+
+Pick one → /roadmap:add "<idea>"
+```
+
+## Anti-patterns
+
+- **Don't invent evidence.** If canonical docs are absent, say so and lean on ROADMAP + git history; don't fabricate a vision.
+- **Don't write the roadmap.** This proposes; `/roadmap:add` commits.
+- **Don't return generic SaaS advice.** Every idea must cite the project artifact it's grounded in. That's the whole point of consulting the Director over the real evidence.
+
+## Related
+
+- `/roadmap:next` — the 1-idea sibling (Director's single top pick).
+- `/roadmap:add` — commit a chosen idea.
+- `director-of-product` agent — the product-lens engine this skill consults.

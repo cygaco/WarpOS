@@ -4,7 +4,7 @@
   "generated_by": "scripts/generate-framework-manifest.js",
   "counts": {
     "agent": 61,
-    "skill": 160,
+    "skill": 162,
     "reference": 25,
     "maps_baseline": 23,
     "hook": 66,
@@ -52,7 +52,7 @@
     "installer_script": 1,
     "framework_doc": 2
   },
-  "total": 771,
+  "total": 773,
   "assets": {
     "agent": [
       {
@@ -1839,6 +1839,30 @@
         "dest": ".claude/commands/roadmap/create.md",
         "kind": "skill",
         "sha256": "7a71e0255ab310399ba4a4b82f443e717c5311d27516c56e5d119f4939d98c1f",
+        "owner": "framework",
+        "mergeStrategy": "three_way_markdown",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "skill.roadmap.ideas.md",
+        "src": ".claude/commands/roadmap/ideas.md",
+        "dest": ".claude/commands/roadmap/ideas.md",
+        "kind": "skill",
+        "sha256": "4843206f4a709d0d868e94ca6081c7a719ab623f1edcaa66322c3b8322e2d366",
+        "owner": "framework",
+        "mergeStrategy": "three_way_markdown",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "skill.roadmap.next.md",
+        "src": ".claude/commands/roadmap/next.md",
+        "dest": ".claude/commands/roadmap/next.md",
+        "kind": "skill",
+        "sha256": "f765bc3e969d4cf8a47cf51b0f82c076459a725bec32af367c939c5688811b21",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",

@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-05-29T08:36:42.024Z",
+  "generatedAt": "2026-05-29T08:38:50.593Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.10.0",
   "migrations": [],
@@ -81,8 +81,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "fba0726e6862f0e0cfb7b4d7678e378098206ef656470db920ffda709e221b3a",
-      "installedSha": "fba0726e6862f0e0cfb7b4d7678e378098206ef656470db920ffda709e221b3a"
+      "sha256": "ed720c8152fb5fb5eaff5a516dd75e0ca172947fce9bdb0fcae73feb21fec2d1",
+      "installedSha": "ed720c8152fb5fb5eaff5a516dd75e0ca172947fce9bdb0fcae73feb21fec2d1"
     },
     "USER_GUIDE.md": {
       "owner": "framework",
@@ -2663,15 +2663,15 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/testsuite/enforce.js",
-      "sha256": "5568a9b8adc393c5bcb0464c34ada4ab69dfc623b2b82dac4adc24443f50e1c6",
-      "installedSha": "5568a9b8adc393c5bcb0464c34ada4ab69dfc623b2b82dac4adc24443f50e1c6"
+      "sha256": "e51342c1e8f2c800bc17f2e714061557188bdde8975ceeb04b467e3afec985db",
+      "installedSha": "e51342c1e8f2c800bc17f2e714061557188bdde8975ceeb04b467e3afec985db"
     },
     "scripts/testsuite/role.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/testsuite/role.js",
-      "sha256": "004f7541ea7a5ff6922408c23c0957b596a0e6927f6de5e5ba629ab882ebdef6",
-      "installedSha": "004f7541ea7a5ff6922408c23c0957b596a0e6927f6de5e5ba629ab882ebdef6"
+      "sha256": "0dd7df4720de331ae25def2e34a3134e70f7bf42acb56ba3594a527cdc223588",
+      "installedSha": "0dd7df4720de331ae25def2e34a3134e70f7bf42acb56ba3594a527cdc223588"
     },
     "scripts/testsuite/run.js": {
       "owner": "framework",
@@ -7336,7 +7336,23 @@
       "owner": "runtime",
       "managed": false
     },
+    ".claude/project/sprint/tickets/T-20260529-254.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/tickets/T-20260529-255.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
     ".claude/project/sprint/sprints/_no-active-sprint/reasoning-auto-approval.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/sprints/SP-20260528-004/current.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/sprints/SP-20260528-004/progress.yaml": {
       "owner": "runtime",
       "managed": false
     },
@@ -13267,6 +13283,22 @@
       "kind": "md",
       "sha256": "67b98b37a34604e853553019253c8066085cc1c99805c805d397bbe4e87cff20",
       "installedSha": "67b98b37a34604e853553019253c8066085cc1c99805c805d397bbe4e87cff20"
+    },
+    ".claude/commands/roadmap/ideas.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/commands/roadmap/ideas.md",
+      "kind": "md",
+      "sha256": "4843206f4a709d0d868e94ca6081c7a719ab623f1edcaa66322c3b8322e2d366",
+      "installedSha": "4843206f4a709d0d868e94ca6081c7a719ab623f1edcaa66322c3b8322e2d366"
+    },
+    ".claude/commands/roadmap/next.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/commands/roadmap/next.md",
+      "kind": "md",
+      "sha256": "f765bc3e969d4cf8a47cf51b0f82c076459a725bec32af367c939c5688811b21",
+      "installedSha": "f765bc3e969d4cf8a47cf51b0f82c076459a725bec32af367c939c5688811b21"
     },
     ".claude/commands/research/deep.md": {
       "owner": "framework",

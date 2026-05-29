@@ -55,8 +55,33 @@ function roleLabel() {
   return readRole() || "product";
 }
 
-if (require.main === module) {
-  process.stdout.write(JSON.stringify({ canonical: isCanonical(), role: roleLabel() }) + "\n");
+// Role-resolution STATUS for callers that must distinguish a genuine product
+// repo (no manifest, or manifest with no repoRole) from a manifest that exists
+// but could not be parsed (a likely-canonical checkout with a corrupt/locked
+// manifest). isCanonical() deliberately fails safe to product; a release gate,
+// however, should not silently skip enforcement just because the manifest was
+// momentarily unreadable — it can use `manifestReadable`/`role` to surface that
+// as needs-attention rather than green. (qa W5.)
+//   { manifestExists, manifestReadable, role: <string|null>, canonical: <bool> }
+function roleStatus() {
+  const exists = fs.existsSync(MANIFEST);
+  let readable = false;
+  let role = null;
+  if (exists) {
+    try {
+      const m = JSON.parse(fs.readFileSync(MANIFEST, "utf8").replace(/^﻿/, ""));
+      readable = true;
+      if (m && typeof m.repoRole === "string") role = m.repoRole;
+      else if (m && m.warpos && typeof m.warpos.repoRole === "string") role = m.warpos.repoRole;
+    } catch {
+      readable = false;
+    }
+  }
+  return { manifestExists: exists, manifestReadable: readable, role, canonical: CANONICAL_ROLES.has(role) };
 }
 
-module.exports = { isCanonical, roleLabel };
+if (require.main === module) {
+  process.stdout.write(JSON.stringify({ canonical: isCanonical(), role: roleLabel(), status: roleStatus() }) + "\n");
+}
+
+module.exports = { isCanonical, roleLabel, roleStatus };
