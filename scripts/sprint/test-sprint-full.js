@@ -930,6 +930,112 @@ function testBetaConsultContract() {
       `got ${skipResume_i1}`,
     );
   }
+
+  // ── J-15: #437 — empty/whitespace beta_message refused at runtime ─────
+  // A valid verdict with no rationale is a placeholder consult; the gate must
+  // halt (beta_message_required), NOT record it, and NOT consume the verdict —
+  // so the operator can resume with a real message.
+  {
+    out.push("J-15. Empty beta_message refused at runtime (#437)");
+
+    // J-15a: DECIDE + empty string → halt, no consult, verdict NOT consumed.
+    {
+      const state = makeMinimalState({ mode: "adhoc", sprintId: "SP-J15a" });
+      const args = { betaVerdict: "DECIDE", betaMessage: "", pendingPhase: "before_plan" };
+      const r = full.maybeConsultBeta(state, "before_plan", args);
+      ok("J-15a: empty DECIDE → ok:false", r.ok === false, JSON.stringify(r));
+      ok(
+        "J-15a: halt_reason===beta_message_required",
+        r.halt_reason === "beta_message_required",
+        r.halt_reason,
+      );
+      ok(
+        "J-15a: no consult recorded for placeholder",
+        state.betaConsultations.length === 0,
+        `got ${state.betaConsultations.length}`,
+      );
+      ok(
+        "J-15a: verdict NOT consumed (operator can resume with a message)",
+        args.betaVerdict === "DECIDE",
+        `betaVerdict=${args.betaVerdict}`,
+      );
+      ok(
+        "J-15a: resume_command re-supplies the same verdict",
+        typeof r.resume_command === "string" && r.resume_command.includes("--beta-verdict DECIDE"),
+        r.resume_command,
+      );
+    }
+
+    // J-15b: DECIDE + whitespace-only → also halts (whitespace is empty).
+    {
+      const state = makeMinimalState({ mode: "adhoc", sprintId: "SP-J15b" });
+      const r = full.maybeConsultBeta(state, "before_plan", {
+        betaVerdict: "DECIDE",
+        betaMessage: "   \t  ",
+        pendingPhase: "before_plan",
+      });
+      ok(
+        "J-15b: whitespace-only DECIDE → beta_message_required",
+        r.ok === false && r.halt_reason === "beta_message_required",
+        JSON.stringify(r),
+      );
+      ok(
+        "J-15b: no consult recorded",
+        state.betaConsultations.length === 0,
+        `got ${state.betaConsultations.length}`,
+      );
+    }
+
+    // J-15c: DIRECTIVE + empty → halts too (rule applies to all verdicts).
+    {
+      const state = makeMinimalState({ mode: "adhoc", sprintId: "SP-J15c" });
+      const r = full.maybeConsultBeta(state, "before_design", {
+        betaVerdict: "DIRECTIVE",
+        betaMessage: null,
+        pendingPhase: "before_design",
+      });
+      ok(
+        "J-15c: empty DIRECTIVE → beta_message_required",
+        r.ok === false && r.halt_reason === "beta_message_required",
+        JSON.stringify(r),
+      );
+      ok(
+        "J-15c: no directive recorded",
+        !state.betaDirectives || state.betaDirectives.length === 0,
+        JSON.stringify(state.betaDirectives),
+      );
+    }
+
+    // J-15d: a NON-empty message still passes (no regression of the happy path).
+    {
+      const state = makeMinimalState({ mode: "adhoc", sprintId: "SP-J15d" });
+      const r = full.maybeConsultBeta(state, "before_plan", {
+        betaVerdict: "DECIDE",
+        betaMessage: "scope is reasonable, proceed",
+        pendingPhase: "before_plan",
+      });
+      ok(
+        "J-15d: non-empty DECIDE still ok:true (happy path intact)",
+        r.ok === true && state.betaConsultations.length === 1,
+        JSON.stringify(r),
+      );
+    }
+
+    // J-15e: source guard — full.js carries the runtime refusal.
+    {
+      const src = fs.readFileSync(path.join(__dirname, "full.js"), "utf8");
+      ok(
+        "J-15e: full.js contains beta_message_required halt",
+        src.includes("beta_message_required"),
+        "(not found)",
+      );
+      ok(
+        "J-15e: full.js guards on !betaMessage.trim()",
+        /!betaMessage\.trim\(\)/.test(src),
+        "(trim guard not found)",
+      );
+    }
+  }
 }
 
 // ── K. FIX G2.8/G2.11 — release-record resume idempotency + moderate gate ─

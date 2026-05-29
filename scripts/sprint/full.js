@@ -624,6 +624,34 @@ function maybeConsultBeta(state, boundary, args) {
   }
   // FIX 4: sanitize operator free text before any interpolation or storage.
   const betaMessage = sanitizeBetaMessage(args.betaMessage);
+  // #437 (0.11.0 honesty): refuse an empty/whitespace beta_message at runtime.
+  // A verdict with no rationale is a placeholder consult — the exact pattern
+  // /scan:sprint-beta-honesty caught after the fact (SP-20260525-018 logged a
+  // DECIDE with an empty beta_message). Halting here BEFORE the consult is
+  // recorded (emit + state.betaConsultations + verdict consumption all happen
+  // below) turns it from detectable-after-the-fact into impossible-at-runtime:
+  // no boundary can be crossed without a real verdict AND a real message. The
+  // verdict is NOT consumed, so the operator simply resumes with a rationale.
+  if (!betaMessage.trim()) {
+    const resumeCmd =
+      `/sprint:full --sprint ${state.sprintId} --resume` +
+      ` --pending-phase ${boundary}` +
+      ` --beta-verdict ${verdict}` +
+      ` --beta-message "<Beta's actual rationale>"`;
+    return {
+      ok: false,
+      halt_reason: "beta_message_required",
+      boundary,
+      beta_verdict: verdict,
+      message:
+        `Beta verdict '${verdict}' at phase boundary '${boundary}' was supplied with an empty beta_message. ` +
+        `A consult without a rationale is a placeholder consult — refused at runtime (0.11.0 honesty, #437). ` +
+        `Re-consult Beta (Alex β) and resume with the real one-line rationale: ${resumeCmd}`,
+      resume_command: resumeCmd,
+      next_human_action:
+        `Obtain Beta's actual rationale for the '${verdict}' verdict at '${boundary}', then resume with a non-empty --beta-message.`,
+    };
+  }
   const ts = nowIso();
   const latencyMs = 0; // no live round-trip in this subprocess; elapsed is ~0
   const model = process.env.WARPOS_BETA_MODEL || "claude-opus-4-8";
