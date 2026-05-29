@@ -6,7 +6,7 @@ const { execSync } = require("child_process");
 const { load } = require("./registry");
 
 // ── Column widths ──────────────────────────────────────────
-const COL = { slug: 18, path: 48, warp: 7, commit: 17, dirty: 7, sprint: 20 };
+const COL = { slug: 18, path: 48, warp: 7, commit: 19, dirty: 7, sprint: 20 };
 
 function pad(str, len) {
   return String(str || "").padEnd(len).slice(0, len);
@@ -33,7 +33,10 @@ function warpVersion(repoPath) {
 }
 
 function lastCommit(repoPath) {
-  const out = run("git log -1 --format=%h\\ %ar", repoPath);
+  // Quote the format string: an escaped space (%h\ %ar) is a bash-ism that
+  // breaks under Windows cmd.exe (execSync's shell), where git sees "%ar" as a
+  // separate ambiguous revision arg and errors out. Quotes work on both.
+  const out = run('git log -1 --format="%h %ar"', repoPath);
   return out || "----";
 }
 

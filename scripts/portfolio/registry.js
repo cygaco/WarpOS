@@ -57,7 +57,9 @@ function load() {
   }
 
   try {
-    doc = JSON.parse(raw);
+    // Strip a leading UTF-8 BOM — PowerShell's default Out-File/Set-Content
+    // encoding prepends one, which JSON.parse rejects. Tolerate it on read.
+    doc = JSON.parse(raw.replace(/^﻿/, ""));
   } catch {
     throw Object.assign(
       new Error(
