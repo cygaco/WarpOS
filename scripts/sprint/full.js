@@ -637,7 +637,7 @@ function maybeConsultBeta(state, boundary, args) {
     topic_tags: ["sprint_full_phase_boundary"],
     sprint_id: state.sprintId,
     ts,
-    via_cli_resume: !!(args && args.resume), // RT-1: audit marker for /check:sprint-beta-honesty
+    via_cli_resume: !!(args && args.resume), // RT-1: audit marker for /scan:sprint-beta-honesty
   });
 
   state.betaConsultations.push({

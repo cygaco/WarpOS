@@ -6,7 +6,7 @@
 //   3. Adhoc + release question + recent release-Beta event → allow.
 //   4. Adhoc + ESCALATE: prefix → allow (existing escape hatch).
 //   5. Adhoc + non-release question → existing block (unchanged).
-// Source: /check:patterns 2026-05-13 (15x/day bypass).
+// Source: /scan:patterns 2026-05-13 (15x/day bypass).
 
 "use strict";
 

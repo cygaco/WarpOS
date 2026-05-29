@@ -5,9 +5,9 @@ user-invocable: true
 
 # /discover:systems — Multi-Angle System Discovery
 
-Complements `/check:system` (which inventories what's DECLARED in `paths.systemsFile`) by looking at the project from **6 different angles**. What the project says exists ≠ what actually exists ≠ what's actually used. Finding the gaps between those three is how we surface undeclared systems, ghost systems (declared but dead), and emergent systems (real but never named).
+Complements `/scan:system` (which inventories what's DECLARED in `paths.systemsFile`) by looking at the project from **6 different angles**. What the project says exists ≠ what actually exists ≠ what's actually used. Finding the gaps between those three is how we surface undeclared systems, ghost systems (declared but dead), and emergent systems (real but never named).
 
-`/check:system` = "is the manifest accurate?"
+`/scan:system` = "is the manifest accurate?"
 `/discover:systems` = "what does this project actually contain, regardless of what the manifest claims?"
 
 ---
@@ -187,9 +187,9 @@ Because one angle lies. The declared inventory lies when someone forgets to upda
 
 ## Relation to other skills
 
-- `/check:system` — inventories Angle 1 only (declarative). This skill supersets it.
+- `/scan:system` — inventories Angle 1 only (declarative). This skill supersets it.
 - `/maps:systems` — builds the dependency graph this skill's Angle 4 also uses; reuse the cache if fresh.
-- `/check:references` — Angle 4 overlap, but `/check:references` is looking for BROKEN refs; this skill uses refs to discover systems.
+- `/scan:references` — Angle 4 overlap, but `/scan:references` is looking for BROKEN refs; this skill uses refs to discover systems.
 - `/oneshot:preflight` — runs a subset (Angles 1, 2, 5) as part of pre-run verification.
 - `/learn:integrate` — when this skill promotes an Emergent to the manifest, log a `learn` event; the next `/learn:integrate` run may want to validate.
 
@@ -200,4 +200,4 @@ Because one angle lies. The declared inventory lies when someone forgets to upda
 - **Before a quarterly health check** — "what do we actually own?"
 - **After a big rename or restructure** — catch what got orphaned
 - **Before writing a new system** — avoid duplicating something that already exists under a different name
-- **When `/check:system` says "inventory clean" but things feel off** — the manifest may be clean because it's simply wrong about what exists
+- **When `/scan:system` says "inventory clean" but things feel off** — the manifest may be clean because it's simply wrong about what exists

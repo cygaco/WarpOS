@@ -105,7 +105,7 @@ If a primitive exists in the harness (worktree, branch, parallel sub-agent, Send
 | Sprint orchestration (plan→design→execute→release→retro) | **0.93** | Upgraded 2026-05-19 from 0.92: 3 consecutive DECIDE verdicts on Sprint A's full cycle (EVT-sprint-A-plan, EVT-sprint-A-design, EVT-sprint-wrap), zero overrides, all 8 design directives shipped (T-113/T-114 superseded → T-111 merge, AC-2.3.5 ENOENT redteam class added). Sustained accuracy. |
 | Cost-threshold / preset sizing decisions | **0.65 (advisory)** | New row 2026-05-19: /sprint:full --cost-acknowledged double-halt pattern is fresh evidence β wasn't yet calibrated on. Default ESCALATE-leaning DECIDE until 3 more applications without override. See P-028. |
 | Classifier-vs-Beta authorization gap | **0.55 (ESCALATE-leaning)** | New row 2026-05-19: Beta DECIDE does not satisfy auto-mode classifier on cost-sensitive / internal-canary ops (P-030, A-014). Until decision-policy.md is updated to reflect this, β should ESCALATE these classes regardless of own confidence. |
-| Goal-verification / cited-test convention | **0.80 (HIGH)** | New row 2026-05-19: Sprint A introduced convention end-to-end (goal_verification schema, /check:ac-coverage, ship-gate 3-branch ENOENT-as-fail, regression corpus, fixture-gate). β caught ENOENT bypass class pre-execution (AC-2.3.5 directive). Upgrade after 2 more sprints opt in clean. |
+| Goal-verification / cited-test convention | **0.80 (HIGH)** | New row 2026-05-19: Sprint A introduced convention end-to-end (goal_verification schema, /scan:ac-coverage, ship-gate 3-branch ENOENT-as-fail, regression corpus, fixture-gate). β caught ENOENT bypass class pre-execution (AC-2.3.5 directive). Upgrade after 2 more sprints opt in clean. |
 | Multi-sprint parallelism (Sprint A + B serial-planned, parallel-executable) | **0.93** | Upgraded 2026-05-19 from 0.92: Sprint A + Sprint B planned in same session, no scope confusion, both executed-to-implementation-complete. Confirms 2026-05-13 carryover. |
 | Skill-suite reconciliation (namespace collapse → one implementer + wrappers) | **0.88 (HIGH)** | New row 2026-05-26: 13 architecture consults this window, all DECIDE, 0 override (DEC-005/006 + portfolio collapse shipped + commit:land/warp:flag this session). Sustained first-pass accuracy on the dominant category. See P-034. |
 | Release pre-flight routing-gap tolerance | **0.86** | New row 2026-05-26: T05:05 + re-confirm T06:00 on SP-20260520-001/002; DECIDE option A (`--allow-routing-gap`) held across re-ask; shipped to internal-canary; β cited coverage 2/6 explicitly. See P-037. |
@@ -166,7 +166,7 @@ If a primitive exists in the harness (worktree, branch, parallel sub-agent, Send
 | ID | Pattern | Evidence | Confidence |
 |---|---|---|---|
 | P-015 | Memory-cost-as-tiebreaker overrides Alpha's "don't combine" | EVT-modlzh13 → EVT-modm3acz (commit fd5cb32); user override "less skill names to remember" on /preflight/* + /retro/* + /run:sync consolidation | HIGH |
-| P-016 | Skill-create-then-immediately-use cycle (within 30 min) | /session:recap created modfe0vm, invoked modfsj0t (11 min later) + modftrjw + modlqgc2; /issues:scan created modglckz → invoked modiawut | HIGH |
+| P-016 | Skill-create-then-immediately-use cycle (within 30 min) | /session:recap created modfe0vm, invoked modfsj0t (11 min later) + modftrjw + modlqgc2; /scan:issues created modglckz → invoked modiawut | HIGH |
 | P-017 | Frustration-fix-loop tightening — propose enforcement at "still" mention #2 | "still resume parse", "still bugs with search vectors", "0 results" → RT-014, RT-015, BD diagnostic logging in <2hr; reinforces P-007 ladder | HIGH |
 
 **β application notes for P-015/P-016/P-017:**
@@ -248,7 +248,7 @@ These persona gaps were identified by /beta:mine 2026-04-25 and flagged here per
 - **P-029:** Gate works AS DESIGNED. Cost is real — every adhoc-mode AskUserQuestion now requires a Beta consult event log first. Proactively prepare verdict-with-event-payload when α reasoning hints AskUserQuestion is coming.
 - **P-030:** When α asks β about a cost-acknowledged or internal-canary action, β MUST explicitly call out: "Verdict notwithstanding, classifier requires typed user line. Surface as halt-and-recommend, do NOT proceed under DECIDE." Refines P-026/A-012.
 - **P-031:** Reads wall-clock UTC hour from event ts. If invoked 17:00-21:00, expect rapid build cycles; if 22:00-00:00 expect transition/wrap. Use as priors when sizing autonomy, NOT as escalation triggers.
-- **P-032:** α-side prompt-adherence drift; flag at /beta:mine→/check:patterns boundary. Not in judgement-model proper.
+- **P-032:** α-side prompt-adherence drift; flag at /beta:mine→/scan:patterns boundary. Not in judgement-model proper.
 - **P-033:** Downstream of [P-028] manual-pivot — accept this commit shape when manual pivot was the route; the per-ticket Ralph status field absence is a known tradeoff.
 
 ### Validated anti-patterns (applied from /beta:integrate 2026-05-19)
@@ -369,7 +369,7 @@ Per /beta:integrate protocol, decision-policy changes are never auto-applied. Us
 | ID | Anti-pattern | Evidence | β correction required |
 |---|---|---|---|
 | A-001 | Early revert pressure on test/experimental work | EVT-launch-20260416-beta-004 (user rejected skill revert, said "test branches are fine") | Never propose reverting test/experimental work unless explicitly broken or unsafe. If a build is merely "not requested," ask if it's useful for future testing before reverting. |
-| A-002 | Planning-paralysis: routing routine audits as decisions | User correction: "I prefer autonomy for routine work; route only real decisions to me" | For routine infrastructure audits (check:all, maps:all, discover:systems), execute and summarize. Only escalate if findings are conflicted, irreversible, or affect user-facing behavior. |
+| A-002 | Planning-paralysis: routing routine audits as decisions | User correction: "I prefer autonomy for routine work; route only real decisions to me" | For routine infrastructure audits (scan:full, maps:all, discover:systems), execute and summarize. Only escalate if findings are conflicted, irreversible, or affect user-facing behavior. |
 
 ### Validated anti-patterns (applied from /beta:integrate 2026-04-22)
 

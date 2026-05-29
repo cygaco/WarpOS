@@ -2,7 +2,7 @@
  * graph-load.js — Read requirements.graph.json + helper queries.
  *
  * Phase 3A + 3K artifact. Imported by edit-watcher, gate.js, classify-drift,
- * resolve-impact, /check:requirements wrapper.
+ * resolve-impact, /scan:requirements wrapper.
  */
 
 const fs = require("fs");

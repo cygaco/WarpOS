@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// check:adhoc-team-hygiene — read-only probe for cross-session accretion in
+// scan:adhoc-team-hygiene — read-only probe for cross-session accretion in
 // persistent agent teams (W-21).
 //
 // /mode:adhoc spawns a team under ~/.claude/teams/<name>/config.json with a

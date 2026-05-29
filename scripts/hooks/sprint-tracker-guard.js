@@ -432,7 +432,7 @@ function main() {
     // Auto-inject path: if the path matches a known sprint kind, prepend
     // the schema header and let the write proceed with mutated content.
     // This collapses the 126×/day "missing schema header" block class into
-    // a silent fix-forward. Source: /check:patterns 2026-05-13.
+    // a silent fix-forward. Source: /scan:patterns 2026-05-13.
     //
     // GUARD (RT-009, 2026-05-18): auto-inject is ONLY safe for Write tool
     // calls. For Edit, target.content is a partial snippet (new_string),

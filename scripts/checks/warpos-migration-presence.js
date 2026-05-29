@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * check:warpos-migration-presence — preflight gate (F-5 mitigation).
+ * scan:warpos-migration-presence — preflight gate (F-5 mitigation).
  *
  * For the capsule under `--to <version>`, walks
  * `framework/releases/<v>/release.json#migrations[]` and verifies every
@@ -77,7 +77,7 @@ if (!fs.existsSync(releaseFile)) {
   emit({
     status: "red",
     reason: `capsule ${VERSION} not at ${path.relative(SOURCE_ROOT, capsuleDir).replace(/\\/g, "/")}/release.json`,
-    remediation: `Run /check:warpos-capsule-resolvable --to ${VERSION} to locate the capsule, then pass --source <path>.`,
+    remediation: `Run /scan:warpos-capsule-resolvable --to ${VERSION} to locate the capsule, then pass --source <path>.`,
     evidence: { releaseFile },
   });
 }

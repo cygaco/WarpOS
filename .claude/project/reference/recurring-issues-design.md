@@ -100,8 +100,8 @@ The auditor agent already runs after oneshot phases and analyzes patterns across
 
 Layer A + a slimmer version of B:
 
-1. **A in place** — `/issues:log`, `/issues:list`, `/issues:resolve`, `/issues:scan` (✅ done)
-2. **B-lite** — `/issues:scan` exists as its own skill and pattern-mines events.jsonl on demand. No new hook needed; the scan IS the passive layer, just lazily evaluated.
+1. **A in place** — `/issues:log`, `/issues:list`, `/issues:resolve`, `/scan:issues` (✅ done)
+2. **B-lite** — `/scan:issues` exists as its own skill and pattern-mines events.jsonl on demand. No new hook needed; the scan IS the passive layer, just lazily evaluated.
 3. **Touchpoints wired (✅ done):**
    - `/retro:full` Phase D2 invokes `scan` + `list`, surfaces ≥3× candidates as `/issues:log` proposals in the merged Phase F output under a `RECURRING SYSTEM ISSUES:` section.
    - `/sleep:deep` Phase 2 step 7 invokes `list` + `scan`, suggests `/issues:resolve` for entries whose permanent fix landed in the last cycle, and demotes-to-monitoring for entries with `last_seen` >30d.

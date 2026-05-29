@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// check:warpos-manifest-honesty — verify framework-installed.json reflects disk state.
+// scan:warpos-manifest-honesty — verify framework-installed.json reflects disk state.
 // Every listed asset exists; every hash matches; no asset on disk is unlisted.
 //
 // Prompt for /reasoning:run refinement:

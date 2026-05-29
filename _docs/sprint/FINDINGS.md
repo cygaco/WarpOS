@@ -13,7 +13,7 @@ level docs (not downstream live tracker state).
 
 | Workstream | Evidence | Result |
 |---|---|---|
-| A — promotion workflow (`/warp:flag`, `/warp:promote-flags`, archive) | `.claude/commands/warp/{flag,promote-flags}.md`, `paths.warposFlagLedger`, `paths.warposPromotedArchive`, `paths.warposPromoteReports` | present |
+| A — promotion workflow (`/warp:flag`, `/warp:promote-flags`, archive) | `.claude/commands/warp/{flag,promote-flags}.md`, the (retired) flag-ledger path, the (retired) promoted-archive + promote-reports paths | present |
 | B — dispatch safety (route guard, lock telemetry) | `scripts/hooks/dispatch-route-guard.js`, `scripts/dispatch/prune-dead-locks.js`, `paths.dispatchLocks`, `paths.dispatchDeathsFile`, `paths.dispatchCompletionsFile` | present |
 | C — provider health classifier (11 states) | `scripts/hooks/lib/provider-health.js`, `scripts/test-provider-health.js`, consumed by `/warp:health` + `/warp:setup` | present |
 | D — install hygiene + provider-tmp | `paths.providerTmp` (`.claude/runtime/.provider-tmp`) | present |
@@ -85,7 +85,7 @@ none of its work undoes a Phase 0 capability.
 - Structured ledger: `paths.recurringIssuesFile`
   (`.claude/project/memory/recurring-issues.jsonl`).
 - Helper: `scripts/recurring-issues-helper.js`.
-- Skills: `/issues:log`, `/issues:list`, `/issues:resolve`, `/issues:scan`.
+- Skills: `/issues:log`, `/issues:list`, `/issues:resolve`, `/scan:issues`.
 - Scope: SYSTEM-level recurring issues. Product/feature bugs go through
   `/fix:deep` and live in PRD/feature directories.
 - `issues.md` at repo root: NOT present currently. The prompt requires

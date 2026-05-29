@@ -102,7 +102,7 @@ class). Alpha authors the skill/agent/doc/manifest changes directly (canonical s
 consult **β** for Class-B/C calls. Keep file ownership disjoint to parallelize safely.
 
 ### Phase 7 — Verify & gauntlet
-Run the `/check` suite (`/check:all`) + a reviewer/qa gauntlet on risky changes.
+Run the `/check` suite (`/scan:full`) + a reviewer/qa gauntlet on risky changes.
 **Verify from telemetry, not narration**: a gauntlet role counts as run only with an
 `ok:true` record in `dispatch-completions.jsonl` (`scripts/dispatch/gauntlet-verify.js`).
 Regenerate every derived artifact touched (views, paths, hooks, both manifests) and
@@ -125,4 +125,4 @@ dispositions, and the follow-up commands. If the fixes warrant a release, point 
 - The verify pass (Phase 3) is the difference between this skill and a naive "do everything
   the registers say." Skipping it re-incurs ED-008.
 - Sibling: [`/warp:flag`](flag.md) — the downstream producer this skill consumes.
-- Pairs with `/check:warpos-staleness` (which installs are behind) and `/portfolio:status`.
+- Pairs with `/scan:warpos-staleness` (which installs are behind) and `/portfolio:status`.

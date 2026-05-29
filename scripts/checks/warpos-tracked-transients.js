@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// check:warpos-tracked-transients — accidentally-tracked transient state.
+// scan:warpos-tracked-transients — accidentally-tracked transient state.
 // Catches the regression that opened the 2026-05-03 cleanup.
 // Exit 0 = green; 1 = tracked transients found.
 const { spawnSync } = require("child_process");

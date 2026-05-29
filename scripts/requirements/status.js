@@ -111,7 +111,7 @@ function clearStale(requirementIds, rcoId) {
 }
 
 /**
- * Recompute coverage.json from graph + status. Run during /check:requirements.
+ * Recompute coverage.json from graph + status. Run during /scan:requirements.
  */
 function rebuildCoverage() {
   const g = loadGraph();

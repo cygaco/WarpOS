@@ -160,7 +160,7 @@ See `schemas/sprint/ticket.schema.json`. Highlights:
   command the operator runs to mint a linked ticket.
 - `paths.recurringIssuesFile` (SYSTEM-recurring issues jsonl) is
   unchanged and continues to be owned by `/issues:log`,
-  `/issues:list`, `/issues:resolve`, `/issues:scan`.
+  `/issues:list`, `/issues:resolve`, `/scan:issues`.
 
 `/sprint:execute` discovers issues during Ralph loops and records them
 via `issue.js create`. Issues can be promoted to tickets when they

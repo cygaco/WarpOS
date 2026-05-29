@@ -75,7 +75,7 @@ npm i -g @google/gemini-cli
 gemini auth login                   # or: $env:GEMINI_API_KEY = "..."
 ```
 
-Verify with `/check:environment` after install.
+Verify with `/scan:environment` after install.
 
 ### Verify
 
@@ -127,7 +127,7 @@ WarpOS/
 <details>
 <summary>Click to see the skill catalog</summary>
 
-> **Partial snapshot.** The catalog below is curated and may lag the live registry. The authoritative count and listing live under `.claude/commands/` after install — run `/skills:list` for the current state. Sprint workflow skills (`/sprint:plan`, `/sprint:design`, `/sprint:execute`, `/sprint:release`, `/sprint:retrospective`) and per-system check skills (`/check:warpos-*`) ship alongside the categories below.
+> **Partial snapshot.** The catalog below is curated and may lag the live registry. The authoritative count and listing live under `.claude/commands/` after install — run `/skills:list` for the current state. Sprint workflow skills (`/sprint:plan`, `/sprint:design`, `/sprint:execute`, `/sprint:release`, `/sprint:retrospective`) and per-system check skills (`/scan:warpos-*`) ship alongside the categories below.
 
 ### Build & Fix
 - `/fix:fast` — Quick fix (direct investigation)
@@ -139,18 +139,18 @@ WarpOS/
 ### Quality & Checks
 - `/qa:audit` — Full codebase QA audit (failure-mode personas)
 - `/qa:check` — Passive QA scan on recent changes
-- `/check:all` — Run every check in parallel — unified report
-- `/check:architecture` — Architecture integrity check
-- `/check:coherence` — System coherence graph (15 drift types)
-- `/check:design-system` — Design-system compliance scan
-- `/check:environment` — Environment readiness audit
-- `/check:install` — Verify a fresh WarpOS install
-- `/check:patterns` — Cross-run intelligence and automation proposals
-- `/check:privacy` — Pre-publish scan for personal data
-- `/check:references` — Cross-file reference integrity
-- `/check:requirements` — Spec consistency and drift detection
-- `/check:system` — System inventory vs manifest
-- `/check:timeline` — Reconstruct a build timeline
+- `/scan:full` — Run every check in parallel — unified report
+- `/scan:architecture` — Architecture integrity check
+- `/scan:coherence` — System coherence graph (15 drift types)
+- `/scan:design-system` — Design-system compliance scan
+- `/scan:environment` — Environment readiness audit
+- `/scan:install` — Verify a fresh WarpOS install
+- `/scan:patterns` — Cross-run intelligence and automation proposals
+- `/scan:privacy` — Pre-publish scan for personal data
+- `/scan:references` — Cross-file reference integrity
+- `/scan:requirements` — Spec consistency and drift detection
+- `/scan:system` — System inventory vs manifest
+- `/scan:timeline` — Reconstruct a build timeline
 
 ### Red Team & Security
 - `/redteam:full` — Full red team audit (11 personas)
@@ -223,7 +223,7 @@ WarpOS/
 - `/issues:list` — List recurring system issues
 - `/issues:log` — Record a new instance of a recurring issue
 - `/issues:resolve` — Mark a recurring issue resolved
-- `/issues:scan` — Pattern-mine events for repeat audit-block signatures
+- `/scan:issues` — Pattern-mine events for repeat audit-block signatures
 
 ### Paths Registry
 - `/paths:add` — Add a paths registry key

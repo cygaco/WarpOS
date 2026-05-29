@@ -250,9 +250,9 @@ pre-planned roadmap item is still tracked:
 2. **Shipped narrative** — the completion step appends a one-line Shipped entry
    under the matching milestone, or under an **"Ad-hoc / unplanned"** subsection
    for off-roadmap work. This half is **skill-body discipline** (no hook verifies
-   it) → enforcement-debt, closed by `/check:roadmap-trace` (asserts every
+   it) → enforcement-debt, closed by `/scan:roadmap-trace` (asserts every
    `done`/`retrospected` sprint has both a Shipped entry AND a ledger row; wired
-   into `/check:all`).
+   into `/scan:full`).
 3. **No `ROADMAP.md`?** — warn and proceed. Best-effort; never blocks the sprint.
 
 ### Step 9 — Surface to operator

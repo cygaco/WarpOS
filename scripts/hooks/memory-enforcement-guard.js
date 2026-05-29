@@ -55,7 +55,7 @@ process.stdin.on("end", () => {
       `Memory is UNRELIABLE — background context that can be missed and reflects only what was true when written. ` +
       `Per operator rule (2026-05-25): pair this with an ACTUAL enforcer that makes a violation self-detecting — ` +
       `a hook, a /check:* skill, a test, a release gate, a schema, or a script that exits non-zero. ` +
-      `If you truly cannot enforce it now, log the gap with /enforcement:log so it surfaces at /enforcement:list and /check:all. ` +
+      `If you truly cannot enforce it now, log the gap with /enforcement:log so it surfaces at /enforcement:list and /scan:full. ` +
       `Ask: "what makes a violation of this memory self-detecting?" — do not rely on the entry alone.`;
 
     // Model-visible reminder (additionalContext) + user-visible (stderr).

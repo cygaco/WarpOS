@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// check:sprint-beta-honesty — audit Beta consultation honesty across /sprint:full runs.
+// scan:sprint-beta-honesty — audit Beta consultation honesty across /sprint:full runs.
 //
 // Detects three finding types:
 //   missing_consult       — a phase boundary was reached but no consult event recorded
@@ -9,7 +9,7 @@
 // Date-cutoff: sprints before SP003_SHIP_DATE are LEGACY and exempt.
 // Graceful empty: no applicable sprints → exit 0 with informational message.
 //
-// See .claude/commands/check/sprint-beta-honesty.md for full spec.
+// See .claude/commands/scan/sprint-beta-honesty.md for full spec.
 
 "use strict";
 

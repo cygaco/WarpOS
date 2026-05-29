@@ -12,7 +12,7 @@
  *   node scripts/skill-adherence-report.js --since 1d   # last 24 hours
  *   node scripts/skill-adherence-report.js --json       # raw JSON
  *
- * Designed for consumption by /check:patterns and post-ship monitoring.
+ * Designed for consumption by /scan:patterns and post-ship monitoring.
  */
 
 "use strict";

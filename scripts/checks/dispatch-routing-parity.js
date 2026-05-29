@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// check:dispatch-routing-parity — assert the role→provider routing tables agree
+// scan:dispatch-routing-parity — assert the role→provider routing tables agree
 // across every source that encodes them. Closes the doc-vs-code drift class:
 // when one table says `qa → openai` and another (or the doc) says something
 // else, a dispatch silently routes to the wrong model and the diff-model review

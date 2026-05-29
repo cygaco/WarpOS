@@ -135,7 +135,7 @@ process.stdin.on("end", () => {
         `[response-size-guard] ${tier.toUpperCase()}: ${subagentType} returned ${kb}KB ` +
           `(threshold ${tier === "concern" ? "32KB" : "8KB"}). ` +
           `Build-chain agents should return ~2KB JSON envelopes — this is a ` +
-          `prompt-template smell. Run /check:patterns or check learner output.\n`,
+          `prompt-template smell. Run /scan:patterns or check learner output.\n`,
       );
     }
 

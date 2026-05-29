@@ -102,7 +102,7 @@ If the natural ponder surfaced a policy/convention that lacks a named enforcer (
 ## Related
 
 - `/reasoning:run` — for a *specific* problem. `/bootstrap:ponder` is broader, meta-direction.
-- `/discover:systems`, `/check:all` — surface *state*. `/bootstrap:ponder` surfaces *direction*.
+- `/discover:systems`, `/scan:full` — surface *state*. `/bootstrap:ponder` surfaces *direction*.
 - `/sleep:deep` — REM-phase speculative reasoning. `/bootstrap:ponder` is awake, deliberate, single-pass.
 - `bootstrap:spinup` — companion entry-point: bootstrap a product brief from a guided discussion (run *before* pondering on a fresh project).
 - `/enforcement:log` — log any aspirational policy that surfaced.

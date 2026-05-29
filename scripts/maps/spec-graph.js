@@ -7,7 +7,7 @@
  *
  * Why this exists:
  *   paths.specGraph is referenced from the systems manifest and the maps
- *   pipeline but had no generator. /check:all flagged the missing file.
+ *   pipeline but had no generator. /scan:full flagged the missing file.
  *
  * Sources scanned:
  *   - paths.specsRoot/**\/*.md and *.json — canonical product features.

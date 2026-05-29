@@ -8,7 +8,7 @@
  * Root cause it closes: WarpOS has TWO manifests.
  *   - _warpos/MANIFEST.json (SP-20260522-001) — the AUTHORITATIVE per-path
  *     OWNERSHIP declaration (owner=framework|generated|project|runtime). Built by
- *     scripts/warpos/manifest/build.js. Validated by /check:warpos-manifest-coverage.
+ *     scripts/warpos/manifest/build.js. Validated by /scan:warpos-manifest-coverage.
  *   - .claude/framework-manifest.json — what /warp:setup AND /warp:update actually
  *     SHIP (assets[]). Built by scripts/generate-framework-manifest.js (ASSET_DIRS).
  * Nothing asserted the second covers the first. So a framework-owned path absent

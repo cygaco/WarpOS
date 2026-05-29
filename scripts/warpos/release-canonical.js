@@ -355,7 +355,7 @@ function stageRegenManifest(opts, canonical) {
 // Auto-detect migrations in migrations/<prior>-to-<version>/ so the release.json#migrations[]
 // list isn't silently empty when migration files exist on disk. Previously this field defaulted
 // to [] regardless of disk content — meaning a migration committed without manual release.json
-// edit silently never ran. /check:warpos-migration-presence guards the inverse (listed but
+// edit silently never ran. /scan:warpos-migration-presence guards the inverse (listed but
 // missing), but had no guard for the present-but-unlisted case.
 function detectMigrationsForRelease(canonical, version) {
   const v = readJson(path.join(canonical, "version.json"));

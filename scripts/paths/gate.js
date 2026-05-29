@@ -4,7 +4,7 @@
  * scripts/paths/gate.js — path coherence gate.
  *
  * Phase 2A per BACKLOG §2. The single "is path identity coherent?" check
- * wired into framework-manifest-guard, merge-guard, /check:references,
+ * wired into framework-manifest-guard, merge-guard, /scan:references,
  * /preflight:run, /warp:release, and CI.
  *
  * Runs (in order, fail-fast):
@@ -26,7 +26,7 @@
  * Wiring (read by callers, not the script itself):
  *   - PreToolUse Bash hook framework-manifest-guard delegates here
  *   - merge-guard PostToolUse logs gate failure
- *   - /check:references prepends the gate
+ *   - /scan:references prepends the gate
  *   - /preflight:run includes the gate as Pass 7.10
  *   - /warp:release blocks publish on failure
  *   - .github/workflows/test.yml runs in CI

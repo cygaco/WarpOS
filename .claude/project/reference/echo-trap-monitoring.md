@@ -15,7 +15,7 @@ The hard cost is tokens; the soft cost is that humans stop trusting the orchestr
 
 ## Signals
 
-Each signal has a deterministic detector that can run cheaply against `paths.eventsFile` and `paths.tracesFile`. The thresholds below are **starting** values — tune via `/check:patterns` as evidence accumulates.
+Each signal has a deterministic detector that can run cheaply against `paths.eventsFile` and `paths.tracesFile`. The thresholds below are **starting** values — tune via `/scan:patterns` as evidence accumulates.
 
 ### 1. Tool-call echo
 
@@ -45,7 +45,7 @@ A hook block firing the same `block_reason` **5+ times in 7 days** without any c
 
 | Where | What |
 |---|---|
-| `/check:patterns` (`diagnose` mode) | Steps 1-2 already cluster signals. Add step "Echo-trap audit" that runs detectors 1-6 and reports any active traps. |
+| `/scan:patterns` (`diagnose` mode) | Steps 1-2 already cluster signals. Add step "Echo-trap audit" that runs detectors 1-6 and reports any active traps. |
 | `scripts/hooks/response-size-guard.js` | Already logs `response_size` events. Future extension: also emit `echo_trap` events when detector 1 or 2 fires on the just-completed Agent dispatch. |
 | `scripts/check-guard-promotion.js` | Already runs detector 6 (block recurrence) for warn-only guards. Reused. |
 | `/oneshot:retro` | Detector 4 (reasoning ping-pong) belongs here, since retros already pull traces. |
@@ -68,7 +68,7 @@ This is a **trapdoor**, not a guard. Echo traps must surface eventually; if a se
 
 ## See also
 
-- `/check:patterns` — runs the detectors listed here
+- `/scan:patterns` — runs the detectors listed here
 - `paths.reference/reasoning-frameworks.md` — quality scoring rubric
 - LRN-2026-04-18 — origin of trajectory-entropy concept (LLM-as-judge bias paper insights)
 - `paths.maps/enforcements.jsonl` — current coverage map for related guards

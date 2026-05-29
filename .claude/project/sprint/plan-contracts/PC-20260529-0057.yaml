@@ -1,0 +1,152 @@
+schema: warpos/sprint/plan-contract/v1
+id: PC-20260529-0057
+created_at: "2026-05-29T06:14:15.749Z"
+updated_at: "2026-05-29T06:14:15.749Z"
+sprint: SP-20260528-001
+source_request: "Rename the check: skill namespace to scan: (incl. issues:scan -> scan:issues), and turn check:all into scan:full = a full system scan that runs every scan."
+source_request_verbatim: "Make it /scan:issues and change the check: namespace to scan: and then make a scan:full that does all scans 'a full system scan'. if 'check:all' or something similar exists, extend that when you rename it. /sprint:full for this. then, start busting out the roadmap, and i want that test suite first"
+request_type: refactor
+interpreted_intent: "Migrate the entire check:* skill namespace to scan:* across canonical WarpOS, fold issues:scan into the new namespace as scan:issues, and promote the existing check:all aggregator to scan:full extended to run EVERY scan as one full-system-scan unified report. Treat as a cross-cutting literal rename governed by CLAUDE.md Refactor & Rename Hygiene (grep every occurrence of the old literal; a missed caller is the whole bug class)."
+user_or_business_outcome: "A single coherent scan: namespace with scan:full as the one-command full system scan; stable foundation + naming clarity before the 0.17.0 test-suite system is built on top of it. Reduces the instability the operator is feeling by making 'run all checks' a first-class, discoverable command."
+affected_surfaces:
+  - surface: "_warpos/commands/check/* (source-of-truth skill defs)"
+    evidence_level: verified_from_repo
+    notes: "Rename dir -> _warpos/commands/scan/; move issues/scan.md -> scan/issues.md."
+  - surface: ".claude/commands/check/* (compiled views)"
+    evidence_level: verified_from_repo
+    notes: "Regenerated from _warpos/; must end byte-identical and pass scan:framework-views-fresh."
+  - surface: "_warpos/MANIFEST.json + generated framework-manifest.json"
+    evidence_level: inferred_from_repo
+    notes: "Path enumeration changes when files move; regenerate + validate."
+  - surface: "scripts/ callers (warp-setup.js, preflight.js, release-gates, sprint full.js/release, check:all aggregator engine)"
+    evidence_level: inferred_from_repo
+    notes: "Direct invokers of check:* / check:all."
+  - surface: "agent specs (.claude/agents + _warpos/agents)"
+    evidence_level: assumed_from_request
+    notes: "May reference check:* in dispatch/verification contracts."
+  - surface: "hooks (scripts/hooks/*)"
+    evidence_level: assumed_from_request
+    notes: framework-views-fresh / purity / manifest-coverage may key on names.
+  - surface: "docs: ROADMAP/README/USER_GUIDE/AGENTS/DICTIONARY, _docs/, _requirements/, SPEC_GRAPH"
+    evidence_level: inferred_from_repo
+    notes: "Prose + spec references to /check:*."
+  - surface: paths.json
+    evidence_level: assumed_from_request
+    notes: Any path key referencing a check skill/dir.
+current_behavior:
+  evidence_level: verified_from_repo
+  notes: "~32 check:* skills under _warpos/commands/check + compiled .claude/commands/check; check:all is a parallel runner producing a unified report; issues:scan lives in the issues: namespace. No scan: namespace exists."
+desired_behavior: "All check:* skills available as scan:* with identical behavior; issues:scan available as scan:issues; check:all promoted to scan:full extended to run every scan (all scan:* + scan:issues) as one full-system-scan report; deprecation alias shims resolve old high-traffic names during transition; zero stale check:/issues:scan literals remain except in history/changelog/ROADMAP-archive."
+scope:
+  size: l
+  risk_level: high
+  complexity_drivers:
+    - "framework-wide literal rename touching ~32 skills + all callers"
+    - "source-of-truth in _warpos/ with compiled .claude/ views (regen + byte-identical gate)"
+    - "self-referential: renames the very guards (framework-purity, framework-views-fresh, manifest-coverage) that gate the commit"
+    - "manifest + framework-manifest regeneration on file moves"
+    - back-compat deprecation alias shims for high-traffic skills
+scope_variants:
+  minimal_safe:
+    summary: "Hard-rename source + regen views/manifest + update direct script/hook callers + grep-clean. scan:full is a thin rename of check:all. No alias shims."
+    tradeoffs:
+      - "Any external muscle-memory / downstream docs referencing check: break immediately"
+      - No transition runway
+  recommended:
+    summary: "Hard-rename + full caller sweep (scripts/agents/hooks/docs/manifest) + regen + grep-clean gate + deprecation alias shims for high-traffic skills (scan:full<-check:all, scan:install, scan:framework-purity, scan:framework-views-fresh) + scan:full EXTENDED to run every scan with one unified report."
+    tradeoffs:
+      - "Alias shim maintenance surface (small)"
+      - Two names valid during deprecation window
+  expanded:
+    summary: "Recommended + a generic alias-resolution layer so EVERY old check:* forwards, + a write-time guard flagging new check: literals, + coordinated downstream-product update."
+    tradeoffs:
+      - Larger blast radius
+      - Downstream coordination cost
+      - "Risk of overbuilding an alias layer when hard-rename + targeted shims suffice"
+assumptions:
+  safe:
+    - "Rename is purely lexical; no skill behavior changes except scan:full gaining full-scan coverage."
+    - _warpos/commands is the source-of-truth and .claude/commands is regenerated from it.
+    - "Engine/tooling sprint: no deploy artifact; closes via ff-merge per RI-001."
+  unsafe:
+    - "That every check: caller is greppable by the literal alone (some may be templated/constructed strings — design discovery must check)."
+  needs_user_or_beta_review:
+    - "Alias scope: which skills get deprecation shims vs hard-rename only (recommended picks 4 high-traffic; Beta to confirm)."
+    - "Whether downstream products (masterconsole et al.) need coordinated update or aliases suffice (cross-project per warpos-only rule)."
+open_questions:
+  blocking: []
+  non_blocking:
+    - "Should scan:issues stay paired with the other issues:* skills conceptually, or is moving only the scan verb correct? (operator said scan:issues explicitly)"
+    - "Does scan:full's unified report format need to match the old check:all format exactly, or improve it?"
+non_goals:
+  - "Renaming the issues:list/log/resolve skills (only issues:scan moves)."
+  - "Changing any scan's actual logic beyond scan:full's coverage extension."
+  - "Pushing to remote or deploying (hard ceilings)."
+  - "Building the 0.17.0 test-suite system (next sprint)."
+requirement_areas:
+  - "Skill namespace rename (source + views)"
+  - "scan:full aggregator + unified full-system-scan report"
+  - Deprecation alias shims
+  - "Manifest + view regeneration"
+  - "Caller sweep + grep-clean enforcement"
+high_level_story_candidates:
+  - "As a maintainer, I invoke scan:* instead of check:* and get identical behavior."
+  - "As a maintainer, I run scan:full and get one full-system-scan report covering every scan."
+  - "As an existing caller/doc, old high-traffic check: names still resolve via deprecation aliases during the transition window."
+granular_story_candidates:
+  - "Rename _warpos/commands/check/ -> scan/ and move issues/scan.md -> scan/issues.md."
+  - "Rewrite each skill's frontmatter name + self-references from check:/issues:scan to scan:."
+  - "Regenerate .claude/commands views; pass scan:framework-views-fresh (byte-identical)."
+  - "Promote check:all engine to scan:full and extend it to run every scan:* + scan:issues into one report."
+  - "Sweep every caller (scripts/agents/hooks/docs/paths.json/manifest) replacing old literals."
+  - Add deprecation alias shims for the 4 high-traffic skills.
+  - "Regenerate _warpos/MANIFEST.json + framework-manifest.json; validate."
+  - "Add/confirm a grep-clean assertion: zero stale check:/issues:scan literals outside history."
+  - "Run /skills:cleanup -> zero broken references; verify scan:install resolves on a fresh-install path."
+workstream_candidates:
+  - "Source rename + view/manifest regeneration"
+  - "scan:full aggregator + unified report"
+  - Caller sweep across scripts/agents/hooks/docs
+  - Deprecation aliases
+  - "Verification: grep-clean + scan:full green + scan:framework-views-fresh"
+preliminary_ticket_candidates:
+  allowed: false
+  candidates: []
+  notes: "L/high sprint — tickets minted in design (Phase 2 halt), not pre-authorized."
+external_service_dependencies:
+  status: none_expected
+approval_boundaries:
+  - "No push, no deploy (hard ceilings). Local commit only; engine sprint closes via ff-merge per RI-001."
+design_required: true
+execution_allowed_without_design: false
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+lane:
+  type: default
+  value: null
+  isolation_notes: "Single working tree — the rename is one coherent cross-file change set; worktree isolation would fragment the regen+manifest+views step that must stay atomic."
+beta_review:
+  required: true
+  likely_founder_rejection_risks:
+    - Operator may prefer hard-rename with NO alias shims at all.
+    - "Alias scope chosen (4 high-traffic) may be larger or smaller than desired."
+  overbuild_risks:
+    - "Building the expanded generic alias-resolution layer when hard-rename + targeted shims suffice."
+  missing_context_risks:
+    - "Downstream products reference check: — unclear if coordinated update is needed or aliases suffice (cross-project boundary)."
+plan_quality:
+  status: needs_design
+  confidence: high
+  evidence_gaps:
+    - "Exact count + location of every check:/issues:scan caller — design discovery will grep the full tree."
+    - "Whether any caller constructs the skill name dynamically (non-literal) and would evade a literal sweep."
+next_recommended_command: "/sprint:design"
+resume_instructions: "Sprint SP-20260528-001 has Plan Contract PC-20260529-0057. Run the next_recommended_command. If interrupted, read .claude/project/sprint/sprint-progress.yaml#resume_command."
+tracker_paths:
+  current_sprint: ".claude/project/sprint/current-sprint.yaml"
+  sprint_progress: ".claude/project/sprint/sprint-progress.yaml"
+  plan_contract: ".claude/project/sprint/plan-contracts/PC-20260529-0057.yaml"
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260529-0057.report.md"
+created_by: alpha
+updated_by: alpha

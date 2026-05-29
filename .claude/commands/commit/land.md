@@ -32,7 +32,7 @@ Follow `/commit:remote`: pre-push checks, show what will be pushed, push `$BRANC
 1. `git checkout $DEFAULT` then `git pull --ff-only origin $DEFAULT` to sync.
 2. Merge `$BRANCH`: prefer fast-forward; if a FF isn't possible, `git merge --no-ff $BRANCH` with a clear merge message.
 3. **Conflicts → STOP.** If the merge conflicts, do NOT force or auto-resolve: report the conflicted files, leave the repo on `$DEFAULT` mid-merge, and hand back to the operator.
-4. Before pushing the default branch, ensure the gate is green — the commit hooks already ran in Step 1; if the repo has a `/check:all` (or equivalent) gate and this is a substantial change, run it. **Never push a broken default branch.**
+4. Before pushing the default branch, ensure the gate is green — the commit hooks already ran in Step 1; if the repo has a `/scan:full` (or equivalent) gate and this is a substantial change, run it. **Never push a broken default branch.**
 5. `git push origin $DEFAULT`.
 6. Return to `$BRANCH` (`git checkout $BRANCH`) so the session continues where it was — unless the operator asked to stay on `$DEFAULT`.
 

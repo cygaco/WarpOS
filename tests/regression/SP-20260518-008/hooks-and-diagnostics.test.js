@@ -279,7 +279,7 @@ function test_node_procs_json_output_parses() {
 }
 
 function test_node_procs_skill_body_conventions() {
-  const body = read(".claude/commands/check/node-procs.md");
+  const body = read(".claude/commands/scan/node-procs.md");
   if (!/user-invocable:\s*true/.test(body)) {
     return fail(
       "test_node_procs_skill_body_conventions",

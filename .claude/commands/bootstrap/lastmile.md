@@ -41,7 +41,7 @@ to overbuild.
 
 ```
 lastmile
-  → 0. preflight   /check:install gate + detect repo state (deterministic)
+  → 0. preflight   /scan:install gate + detect repo state (deterministic)
   → 1. audit       Product Readiness Audit → Last-Mile Gap Report + Launch-Readiness Score (0–100)
   → 2. plan        choose profile defaults → per-module plans → Launch Plan (shortest SAFE path; "do not overbuild")
   → 3. inject      mint last-mile epics/stories/AC/QA + launch checklist → ROADMAP + sprint system  (needs_orchestration)
@@ -61,7 +61,7 @@ dispatch-route-guard.
 
 ## Phase 0 — Preflight
 
-Run `/check:install` (incl. the sprint-subsystem probe). Refuse a gappy install —
+Run `/scan:install` (incl. the sprint-subsystem probe). Refuse a gappy install —
 last-mile work injects sprints, so the sprint subsystem must be present. Then
 **detect repo state** (`scripts/bootstrap/lastmile/lib/detect.js`): framework
 (Next/Expo/Electron/plain), persistence (Prisma/Drizzle/Supabase/Firebase/SQLite),
@@ -162,7 +162,7 @@ into the existing WarpOS sprint system:
 - Mint **last-mile epics + stories + acceptance criteria** (each AC carries a
   `verified_by:` line per the SP-20260518-007 convention) + **QA plan** + **launch checklist**.
 - Add ROADMAP entries via `/roadmap:add` convention (Sprints ledger row + a
-  milestone the work feeds; respects `/check:roadmap-trace`).
+  milestone the work feeds; respects `/scan:roadmap-trace`).
 - Use `/sprint:plan` → `/sprint:design` for each module's implementation sprint.
 - Use **diff-model review** (`/redteam:full`, `/research:*`, or the configured
   reviewers) for product strategy, monetization, security, launch-readiness, and
@@ -214,7 +214,7 @@ node scripts/bootstrap/lastmile/orchestrate.js \
   [--repo-root <dir>] [--state <file>] [--json] [--dry-run]
 ```
 
-- Always runs `preflight` first (hard gate — refuses a gappy install via `/check:install`).
+- Always runs `preflight` first (hard gate — refuses a gappy install via `/scan:install`).
 - Deterministic phases run in-process; LLM steps exit **3 (`needs_orchestration`)** with an `orchestration_prompt` for the skill body to fulfill, then `--resume`.
 - Phase-state persists to `.warpos/lastmile-state.json`.
 - Fixture e2e: `node scripts/bootstrap/lastmile/test-orchestrate.js` proves the chain + the readiness detectors + the holdout cases WITHOUT standing up a real product (canonical proves the chain; real launch is product-side).

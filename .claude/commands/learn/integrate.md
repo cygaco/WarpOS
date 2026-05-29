@@ -67,7 +67,7 @@ Execute integrations in order: safe → medium → risky.
 **For each applied integration:**
 
 1. Make the code/doc change via Edit or Write.
-2. Record the integration target identifier (e.g., `hook:memory-guard`, `rule:CLAUDE.md§Paths`, `skill:check:environment`, `reference:reasoning-frameworks.md`).
+2. Record the integration target identifier (e.g., `hook:memory-guard`, `rule:CLAUDE.md§Paths`, `skill:scan:environment`, `reference:reasoning-frameworks.md`).
 3. Log an integration event:
    ```js
    const { log } = require("./scripts/hooks/lib/logger");
@@ -79,7 +79,7 @@ Execute integrations in order: safe → medium → risky.
 For each successfully integrated learning, update the entry in `paths.learningsFile`:
 
 - Set `status: "implemented"`
-- Add `implemented_by: "<target>"` (e.g., `"hook:path-guard"`, `"rule:CLAUDE.md§Paths SSoT"`, `"skill:check:all"`)
+- Add `implemented_by: "<target>"` (e.g., `"hook:path-guard"`, `"rule:CLAUDE.md§Paths SSoT"`, `"skill:scan:full"`)
 - Add `implemented_at: "<ISO date>"`
 - Bump `score` by +0.1 (cap at 1.0)
 
@@ -108,7 +108,7 @@ STATUS MIGRATION:
   logged → discarded: 0    (never integrate from "logged" — insufficient evidence)
 
 NEXT:
-  Run `/check:all` to verify new enforcement doesn't regress existing behavior.
+  Run `/scan:full` to verify new enforcement doesn't regress existing behavior.
   Run `/learn:deep --events-only --since 1d` after a day of use to see if integrations fired.
 ```
 

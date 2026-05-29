@@ -17,7 +17,7 @@ Nothing merges into `main` from this skill. Use `/karpathy:integrate <run-id>` f
 
 `$ARGUMENTS` — a natural-language description of what to optimize. Examples:
 - `make alpha spawn the right agents and use gauntlets properly`
-- `improve the /check:all skill so it runs under 60s`
+- `improve the /scan:full skill so it runs under 60s`
 - `tune gamma's fix-dispatch to reduce wasted builder spawns`
 
 If empty, read prior context. If still ambiguous, say so in Phase A's plan (don't ask the user).

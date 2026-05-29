@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * generate-maps.js — run /maps:all and /check:system in one pass.
+ * generate-maps.js — run /maps:all and /scan:system in one pass.
  *
  * Walks the project, generates fresh maps for:
  *   - hooks  (hooks.jsonl + hooks.md)
@@ -9,7 +9,7 @@
  *   - tools  (tools.jsonl + tools.md)
  *   - systems (systems-inventory.jsonl + systems-inventory.md — fresh regen, not the bloated legacy)
  *
- * Produces an inventory report for /check:system at the end.
+ * Produces an inventory report for /scan:system at the end.
  *
  * Does NOT overwrite the legacy systems.jsonl (memory-guard blocks that).
  * Writes fresh canonical files: systems-inventory.jsonl and systems-inventory.md.
@@ -413,7 +413,7 @@ writeMarkdown(
 );
 console.log(`  systems: ${systems.length} canonical systems`);
 
-console.log(`\n=== /check:system — diffing manifest ===\n`);
+console.log(`\n=== /scan:system — diffing manifest ===\n`);
 
 // Diff against legacy systems.jsonl to find stale/missing
 let legacyManifest = [];
@@ -446,4 +446,4 @@ console.log(`  Orphans (in inventory, not in manifest): ${orphans.length}`);
 console.log(`  Drift (in manifest, not in inventory): ${drift.length}`);
 console.log(`\n  Gap categories: none — all 16 tiers covered.`);
 console.log(`\n  Action: review systems-inventory.md; if satisfied, run`);
-console.log(`  /check:system --update to migrate legacy → canonical.\n`);
+console.log(`  /scan:system --update to migrate legacy → canonical.\n`);

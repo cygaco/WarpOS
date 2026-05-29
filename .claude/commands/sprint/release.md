@@ -53,7 +53,7 @@ Only when β returns ESCALATE do you surface to the user — and you must use
 the `ESCALATE:` prefix on the AskUserQuestion text so the beta-gate hook
 allows it through.
 
-This step closes the 15×/day bypass class found in /check:patterns
+This step closes the 15×/day bypass class found in /scan:patterns
 2026-05-13: release-time questions were going direct-to-user without Beta
 consultation, violating CLAUDE.md §"β consultation protocol". The
 beta-gate hook now blocks (rather than warns) when a release-context

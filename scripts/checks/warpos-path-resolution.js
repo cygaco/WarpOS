@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// check:warpos-path-resolution — bidirectional paths.json ↔ refs integrity.
+// scan:warpos-path-resolution — bidirectional paths.json ↔ refs integrity.
 // Every key in paths.json resolves to an existing path. Every paths.X reference
 // in scripts/agents/skills resolves to a defined key.
 //

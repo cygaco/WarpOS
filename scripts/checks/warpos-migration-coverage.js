@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// check:warpos-migration-coverage — STUB.
+// scan:warpos-migration-coverage — STUB.
 // For every breaking change between adjacent canonical versions, is there a
 // migration script? Walk framework/releases/X/changelog.md, extract breaking-change
 // markers, verify a migration exists at migrations/{prev}-to-{X}/.

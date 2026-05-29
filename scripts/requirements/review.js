@@ -1,8 +1,8 @@
 /**
- * review.js — backing engine for /check:requirements.
+ * review.js — backing engine for /scan:requirements.
  *
  * Phase 3K artifact. The slash command becomes a thin wrapper that prints this
- * module's output. Existing /check:requirements consumers should call this.
+ * module's output. Existing /scan:requirements consumers should call this.
  */
 
 const fs = require("fs");

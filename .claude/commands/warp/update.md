@@ -77,7 +77,7 @@ The engine updates `.claude/framework-installed.json` with the new `installedVer
 
 Before any classify or write, the engine composes 10 gates in fail-fast order. The composer returns one structured aggregate report (per `IN-1`) and emits one `warpos.update.preflight` event per gate plus an aggregate summary event.
 
-| # | Gate (`check:warpos-*`) | Mitigates | Override flag |
+| # | Gate (`scan:warpos-*`) | Mitigates | Override flag |
 |---|---|---|---|
 | 1 | `install-baseline` (NEW) | F-4 missing baseline | `--force-fresh` |
 | 2 | `capsule-resolvable` (NEW) | F-1 capsule missing | `--source <path>` |
@@ -252,7 +252,7 @@ Indexed to `failure-mining.md` signatures F-1..F-9.
 
 **Diagnosis:** `version.json`, `framework-manifest.json`, `framework-installed.json`, and/or the `install.ps1` header constant disagree.
 
-**Remediation:** **Trust order is `version.json` wins** (CLAUDE.md learning 2026-05-13). Inspect each disagreeing file; if `framework-manifest.json` is stale, `git checkout HEAD -- .claude/framework-manifest.json`, then re-run `/check:warpos-manifest-honesty`. No automatic reconciliation — operator must resolve.
+**Remediation:** **Trust order is `version.json` wins** (CLAUDE.md learning 2026-05-13). Inspect each disagreeing file; if `framework-manifest.json` is stale, `git checkout HEAD -- .claude/framework-manifest.json`, then re-run `/scan:warpos-manifest-honesty`. No automatic reconciliation — operator must resolve.
 
 ### F-4 — `framework-installed.json` missing or ignored by `.gitignore`
 

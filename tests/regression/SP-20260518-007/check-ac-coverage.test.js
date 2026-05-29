@@ -174,7 +174,7 @@ function test_check_ac_coverage_skill_body_conventions() {
   if (/--kill-orphans/.test(body)) {
     return fail(
       "test_check_ac_coverage_skill_body_conventions",
-      "should NOT mention --kill-orphans (that flag is for /check:node-procs which also rejects it in v1; ac-coverage is unrelated). Verify cross-contamination.",
+      "should NOT mention --kill-orphans (that flag is for /scan:node-procs which also rejects it in v1; ac-coverage is unrelated). Verify cross-contamination.",
     );
   }
   ok("test_check_ac_coverage_skill_body_conventions");

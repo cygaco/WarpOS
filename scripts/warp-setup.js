@@ -626,7 +626,7 @@ installed += installedThisRun;
 
 // ── 8. Create memory stores ─────────────────────────────
 // events + learnings + traces start empty. systems gets seeded with the
-// 16 canonical WarpOS system tiers so `/check:system` has a baseline to
+// 16 canonical WarpOS system tiers so `/scan:system` has a baseline to
 // diff against from day one. The scanner rewrites this file when it runs.
 const memoryFiles = [
   ".claude/project/events/events.jsonl",
@@ -1197,8 +1197,8 @@ console.log(`    \x1b[1m/warp:health\x1b[0m          verify every subsystem`);
 console.log(
   `    \x1b[1m/maps:all\x1b[0m             generate relationship maps (powers smart-context enrichment)`,
 );
-console.log(`    \x1b[1m/check:system\x1b[0m         manifest vs disk`);
-console.log(`    \x1b[1m/check:environment\x1b[0m    provider CLIs + auth`);
+console.log(`    \x1b[1m/scan:system\x1b[0m         manifest vs disk`);
+console.log(`    \x1b[1m/scan:environment\x1b[0m    provider CLIs + auth`);
 console.log(`    \x1b[1m/discover:systems\x1b[0m     6-angle system inventory`);
 console.log(`    \x1b[1m/warp:tour\x1b[0m            guided walkthrough`);
 console.log(

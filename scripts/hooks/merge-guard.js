@@ -190,7 +190,7 @@ process.stdin.on("end", () => {
     // Pre-allowlist auto-strip: redundant `cd <projectDir> && <tail>` prefix.
     // Must fire here because the allowlist exits early for "cd ... && ...".
     // CLAUDE.md anti-pattern: never prepend `cd <current-directory>`;
-    // tools operate on cwd. Source: /check:patterns 2026-05-13 (16x/day fires,
+    // tools operate on cwd. Source: /scan:patterns 2026-05-13 (16x/day fires,
     // 0 behavior change as advisory). Now mutates tool_input.command via
     // hookSpecificOutput.updatedInput and exits — the stripped command then
     // re-enters PreToolUse where the rest of merge-guard's rules apply.

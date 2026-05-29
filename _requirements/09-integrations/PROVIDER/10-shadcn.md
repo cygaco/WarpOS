@@ -34,7 +34,7 @@ npx shadcn@latest add button input dialog
 
 | Field | Value | Why |
 |---|---|---|
-| `style` | `default` | Rounded, soft — matches existing jobzooka aesthetic |
+| `style` | `default` | Rounded, soft — matches the existing product aesthetic |
 | `baseColor` | `slate` | Neutral; we override via tokens from DESIGN_TOKENS.md |
 | `cssVariables` | `true` | All theme tokens go through CSS vars, easier to swap themes |
 | `tailwind.config` | n/a (Tailwind v4 uses CSS-first config) | v4 doesn't use `tailwind.config.ts` for theme |
@@ -96,5 +96,5 @@ Some components published before v4 GA may need light adjustment — re-run `npx
 |---|---|
 | Tailwind v4 incompatibility | Re-run `npx shadcn@latest add <name>` to refresh |
 | `cn()` miss → conflicting Tailwind classes | tailwind-merge resolves at runtime; no build error |
-| Theme token drift | `/check:design-system` flags hex literals + raw color utilities |
+| Theme token drift | `/scan:design-system` flags hex literals + raw color utilities |
 | Shadcn API change | Components are local — we own them. Cherry-pick upstream changes manually. |

@@ -78,7 +78,7 @@ Implementation:
 - [x] Add `manifest.agentProviders` mapping role → provider
 - [x] `scripts/hooks/lib/providers.js` — wraps `execSync` calls to `codex` / `gemini`
 - [x] γ/δ dispatch reads `agentProviders[<role>]` via `scripts/dispatch-agent.js`
-- [x] `/check:environment` verifies `codex` and `gemini` CLIs
+- [x] `/scan:environment` verifies `codex` and `gemini` CLIs
 - [x] Fallback: CLI missing → fallback signal returned; orchestrator uses Claude
 - [x] Per-agent prompts in .md
 - [x] Response parsing adapter — `parseProviderJson`, `validateAgentOutput` in dispatch-agent.js
@@ -96,10 +96,10 @@ Not a ship blocker. Once cross-provider is live:
 - [ ] Per-agent model override via env var (`WARPOS_EVALUATOR_MODEL=gpt-5.4-mini`) for cost-sensitive users
 
 ### Missing skills identified in audit
-- [x] `/check:system` — `commands/check/system.md`
-- [x] `/check:privacy` — `commands/check/privacy.md` (78bce2c, Phase A4)
-- [x] `/check:install` — `commands/check/install.md` (78bce2c, Phase A4)
-- [x] `/check:hooks` — covered by `/hooks:test`
+- [x] `/scan:system` — `commands/scan/system.md`
+- [x] `/scan:privacy` — `commands/scan/privacy.md` (78bce2c, Phase A4)
+- [x] `/scan:install` — `commands/scan/install.md` (78bce2c, Phase A4)
+- [x] `/scan:hooks` — covered by `/hooks:test`
 - [x] `/warp:doctor` — `commands/warp/doctor.md`
 - [x] `/warp:update` — see Installer section above
 - [x] `/warp:uninstall` — `commands/warp/uninstall.md`
@@ -113,7 +113,7 @@ Not a ship blocker. Once cross-provider is live:
 - [ ] `/research:deep` — 728 lines, likely untested, model versions stale. Either validate end-to-end OR deprecate in favor of `/research:simple`
 - [ ] `/research:simple` — add synthesis phase (merge reports → SYNTHESIS.md)
 - [ ] `/sleep:deep` — operationalize vague phases (1c dedup algorithm, 1e pattern threshold, 4 REM dream templates)
-- [ ] `/ui:review` — genericized (no longer hardcodes "Jobzooka"); add parameterized design-system path support
+- [ ] `/ui:review` — genericized (no longer hardcodes a product name); add parameterized design-system path support
 - [ ] `/retro:code`, `/retro:full` — remove stale "retro directory" manifest.json references; either hard-code `.claude/project/retros/` or make optional
 - [ ] `/warp:sync` — add fallback if `../WarpOS/version.json` doesn't exist (git tags / commit hash)
 - [ ] `/warp:init` — parameterize GitHub URL (hardcodes `cygaco/WarpOS.git`)
@@ -121,7 +121,7 @@ Not a ship blocker. Once cross-provider is live:
 ### Namespace reorganization
 - [ ] Merge `/retro:context` + `/retro:code` into `/retro:full` as modes (not separate skills)
 - [ ] Merge `/fav:list` + `/fav:search` into `/fav` with args
-- [ ] Consider moving `/hooks:friction` analysis into `/check:patterns propose`
+- [ ] Consider moving `/hooks:friction` analysis into `/scan:patterns propose`
 
 ---
 
@@ -147,5 +147,5 @@ Treat WarpOS itself as a product-in-WarpOS with its own `_requirements/04-featur
 ## Notes
 
 - All changes must ship to both `jobhunter-app` and `WarpOS` during co-development. Use `/hooks:sync` pattern (extended to skills too).
-- Privacy audit required before every public push. `/check:privacy` should be the gate.
+- Privacy audit required before every public push. `/scan:privacy` should be the gate.
 - Main branch must stay shippable at all times. Exploratory work happens on feature branches. (This is §2 of `USER_GUIDE.md` — the #1 newbie trap.)

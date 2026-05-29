@@ -1,174 +1,83 @@
 # Hooks Map
 
-Generated: 2026-05-13T22:37:04.323Z
+Generated: 2026-05-29T06:52:32.513Z
 
-**57** hook scripts (52 registered, 5 orphan), **13** lib modules, **60** wiring entries.
-
-## Wiring (event → matcher → hook)
-
-### PostCompact
-
-- `(no matcher)` → `compact-saver.js`
-
-### PostToolUse
-
-- `Bash` → `merge-guard.js`
-- `Edit|Write` → `memory-guard.js`
-- `Edit|Write` → `store-validator.js`
-- `Edit|Write` → `path-guard.js`
-- `Edit|Write` → `edit-watcher.js`
-- `Edit|Write` → `event-contract.js`
-- `Edit|Write` → `format.js`
-- `Edit|Write` → `lint.js`
-- `Edit|Write` → `typecheck.js`
-- `Edit|Write` → `systems-sync.js`
-- `Edit|Write` → `save-session-lint.js`
-- `Edit|Write` → `template-fillability.js`
-- `Edit|Write` → `learning-validator.js`
-- `Edit|Write` → `ui-lint.js`
-- `Edit|Write` → `step-hardcode-suggester.js`
-- `Edit|Write` → `region-marker-guard.js`
-- `Edit|Write` → `spec-test-staleness.js`
-- `Edit|Write` → `skill-catalog-regen.js`
-- `Agent` → `build-transaction-boundary.js`
-- `Agent` → `response-size-guard.js`
-- `(no matcher)` → `session-tracker.js`
-
-### PreToolUse
-
-- `Bash` → `merge-guard.js`
-- `Bash` → `memory-guard.js`
-- `Bash` → `framework-manifest-guard.js`
-- `Bash` → `path-registry-guard.js`
-- `Bash` → `dispatch-route-guard.js`
-- `Bash` → `sprint-approval-guard.js`
-- `Edit|Write` → `memory-guard.js`
-- `Edit|Write` → `secret-guard.js`
-- `Edit|Write` → `foundation-guard.js`
-- `Edit|Write` → `ownership-guard.js`
-- `Edit|Write` → `store-validator.js`
-- `Edit|Write` → `path-guard.js`
-- `Edit|Write` → `step-registry-guard.js`
-- `Edit|Write` → `extension-edit-guard.js`
-- `Edit|Write` → `dependency-admission-guard.js`
-- `Edit|Write` → `self-mod-governance.js`
-- `Edit|Write` → `sprint-tracker-guard.js`
-- `Edit|Write` → `requirement-format-guard.js`
-- `Agent` → `build-transaction-boundary.js`
-- `Agent` → `scope-contract-guard.js`
-- `Agent` → `team-guard.js`
-- `Agent` → `worktree-preflight.js`
-- `Agent` → `gate-check.js`
-- `Agent` → `gauntlet-gate.js`
-- `Agent` → `cycle-enforcer.js`
-- `Agent` → `prompt-validator.js`
-- `Read|Grep|Glob` → `boss-boundary.js`
-- `mcp__claude_ai_Excalidraw__*` → `excalidraw-guard.js`
-- `AskUserQuestion` → `beta-gate.js`
-- `SlashCommand|Skill` → `skill-invocation-tracker.js`
-
-### SessionEnd
-
-- `(no matcher)` → `session-stop.js`
-
-### SessionStart
-
-- `(no matcher)` → `session-start.js`
-
-### Stop
-
-- `(no matcher)` → `retro-presence-check.js`
-- `(no matcher)` → `session-stop.js`
-
-### StopFailure
-
-- `(no matcher)` → `session-stop.js`
-
-### UserPromptSubmit
-
-- `(no matcher)` → `smart-context.js`
-- `(no matcher)` → `prompt-logger.js`
-
-### git-pre-commit
-
-- `(off-registry)` → `pre-commit-steps-check.js`
-
-## All hook scripts
-
-| Hook | Registered | Size | Modified |
-|---|---|---|---|
-| beta-gate.js | yes | 8537 | 2026-05-13T22:25:25.822Z |
-| boss-boundary.js | yes | 3095 | 2026-05-03T19:46:50.932Z |
-| build-transaction-boundary.js | yes | 3760 | 2026-05-01T04:37:06.323Z |
-| build.js | no | 6730 | 2026-05-03T19:46:50.715Z |
-| compact-saver.js | yes | 1268 | 2026-04-17T21:30:23.988Z |
-| create-worktree-from-head.js | no | 4393 | 2026-04-17T21:30:23.990Z |
-| cycle-enforcer.js | yes | 7254 | 2026-04-17T21:30:23.990Z |
-| dependency-admission-guard.js | yes | 1300 | 2026-05-01T04:37:06.324Z |
-| dispatch-route-guard.js | yes | 7405 | 2026-05-11T20:59:36.128Z |
-| edit-watcher.js | yes | 29693 | 2026-05-03T19:46:50.933Z |
-| event-contract.js | yes | 4048 | 2026-04-29T18:57:10.033Z |
-| excalidraw-guard.js | yes | 951 | 2026-04-17T21:30:23.992Z |
-| extension-edit-guard.js | yes | 4484 | 2026-05-02T02:38:18.834Z |
-| format.js | yes | 996 | 2026-04-17T21:30:23.992Z |
-| foundation-guard.js | yes | 2720 | 2026-04-17T21:30:23.994Z |
-| framework-manifest-guard.js | yes | 10668 | 2026-05-11T21:12:13.012Z |
-| gate-check.js | yes | 5053 | 2026-04-29T05:47:38.734Z |
-| gauntlet-gate.js | yes | 8310 | 2026-04-29T05:49:41.894Z |
-| learning-validator.js | yes | 6622 | 2026-04-17T21:30:23.994Z |
-| lint.js | yes | 2777 | 2026-04-17T21:30:23.994Z |
-| memory-guard.js | yes | 8726 | 2026-04-17T21:30:24.000Z |
-| merge-guard.js | yes | 19290 | 2026-05-13T22:26:48.457Z |
-| ownership-guard.js | yes | 3699 | 2026-04-29T05:47:40.874Z |
-| path-guard.js | yes | 8938 | 2026-05-03T19:46:50.935Z |
-| path-registry-guard.js | yes | 5451 | 2026-05-03T19:46:50.936Z |
-| pre-commit-steps-check.js | yes | 8850 | 2026-05-03T19:46:50.936Z |
-| prompt-logger.js | yes | 1900 | 2026-04-17T21:30:24.000Z |
-| prompt-validator.js | yes | 6076 | 2026-04-29T07:16:03.307Z |
-| ref-checker.js | no | 13704 | 2026-05-03T19:46:50.937Z |
-| region-marker-guard.js | yes | 6302 | 2026-05-03T19:46:50.937Z |
-| requirement-format-guard.js | yes | 7236 | 2026-05-11T21:18:39.855Z |
-| response-size-guard.js | yes | 4716 | 2026-04-29T05:47:23.501Z |
-| retro-presence-check.js | yes | 2815 | 2026-04-29T23:37:50.114Z |
-| save-session-lint.js | yes | 2577 | 2026-04-17T21:30:24.000Z |
-| scope-contract-guard.js | yes | 1758 | 2026-05-01T04:37:06.323Z |
-| secret-guard.js | yes | 2883 | 2026-04-17T21:30:24.004Z |
-| self-mod-governance.js | yes | 923 | 2026-05-01T04:37:06.324Z |
-| session-start.js | yes | 17700 | 2026-05-11T21:20:29.460Z |
-| session-stop.js | yes | 19140 | 2026-05-02T02:38:18.843Z |
-| session-tracker.js | yes | 9491 | 2026-04-29T05:46:39.849Z |
-| skill-catalog-regen.js | yes | 2181 | 2026-05-13T20:41:01.715Z |
-| skill-counter.js | no | 3369 | 2026-05-02T17:31:41.040Z |
-| skill-invocation-tracker.js | yes | 6872 | 2026-05-13T20:43:09.541Z |
-| smart-context.js | yes | 33997 | 2026-05-13T21:07:06.507Z |
-| spec-test-staleness.js | yes | 5627 | 2026-05-03T19:46:50.939Z |
-| sprint-approval-guard.js | yes | 6158 | 2026-05-11T22:39:29.893Z |
-| sprint-tracker-guard.js | yes | 14811 | 2026-05-13T22:22:53.843Z |
-| step-hardcode-suggester.js | yes | 7337 | 2026-05-03T19:46:50.939Z |
-| step-registry-guard.js | yes | 12054 | 2026-05-03T19:46:50.940Z |
-| store-validator.js | yes | 16480 | 2026-04-29T05:49:13.765Z |
-| systems-sync.js | yes | 7854 | 2026-04-17T21:30:24.006Z |
-| team-guard.js | yes | 6657 | 2026-04-29T05:47:01.574Z |
-| template-fillability.js | yes | 2939 | 2026-04-29T23:35:48.482Z |
-| test.js | no | 12132 | 2026-05-03T19:46:50.740Z |
-| typecheck.js | yes | 1743 | 2026-04-17T21:30:24.008Z |
-| ui-lint.js | yes | 3396 | 2026-04-17T21:30:24.008Z |
-| worktree-preflight.js | yes | 5343 | 2026-04-17T21:30:24.008Z |
-
-## Lib modules
-
-| Module | Size | Modified |
-|---|---|---|
-| banner.js | 4462 | 2026-04-22T05:49:15.963Z |
-| concurrency-lock.js | 10962 | 2026-05-11T21:02:33.887Z |
-| context-sources.js | 8286 | 2026-05-03T19:46:50.934Z |
-| gate-schema.js | 3894 | 2026-04-29T05:48:00.921Z |
-| logger.js | 15612 | 2026-05-12T23:11:21.600Z |
-| mode.js | 2540 | 2026-04-29T18:58:58.761Z |
-| paths.generated.js | 8028 | 2026-05-13T21:01:17.228Z |
-| paths.js | 6081 | 2026-05-03T19:46:50.725Z |
-| project-config.js | 4488 | 2026-04-29T05:50:17.120Z |
-| provider-health.js | 10306 | 2026-05-11T21:08:20.670Z |
-| providers.js | 23843 | 2026-05-12T06:58:28.992Z |
-| role-aliases.js | 1904 | 2026-04-29T05:43:47.546Z |
-| skill-telemetry.js | 5275 | 2026-05-13T20:42:22.196Z |
+| id | name | path | registered | size | modified |
+|---|---|---|---|---|---|
+| hook:authorization-gate | authorization-gate.js | scripts/hooks/authorization-gate.js | true | 8797 | 2026-05-29T00:28:55.493Z |
+| hook:beta-gate | beta-gate.js | scripts/hooks/beta-gate.js | true | 9369 | 2026-05-29T06:33:20.345Z |
+| hook:boss-boundary | boss-boundary.js | scripts/hooks/boss-boundary.js | true | 3195 | 2026-05-29T00:28:55.493Z |
+| hook:build-transaction-boundary | build-transaction-boundary.js | scripts/hooks/build-transaction-boundary.js | true | 3874 | 2026-05-29T00:28:55.494Z |
+| hook:build | build.js | scripts/hooks/build.js | false | 6730 | 2026-05-29T00:28:55.494Z |
+| hook:compact-saver | compact-saver.js | scripts/hooks/compact-saver.js | true | 1268 | 2026-05-29T00:28:55.494Z |
+| hook:create-worktree-from-head | create-worktree-from-head.js | scripts/hooks/create-worktree-from-head.js | false | 4393 | 2026-05-29T00:28:55.494Z |
+| hook:cycle-enforcer | cycle-enforcer.js | scripts/hooks/cycle-enforcer.js | true | 7254 | 2026-05-29T00:28:55.496Z |
+| hook:dependency-admission-guard | dependency-admission-guard.js | scripts/hooks/dependency-admission-guard.js | true | 1337 | 2026-05-29T00:28:55.496Z |
+| hook:dispatch-route-guard | dispatch-route-guard.js | scripts/hooks/dispatch-route-guard.js | true | 10100 | 2026-05-29T00:28:55.496Z |
+| hook:edit-watcher | edit-watcher.js | scripts/hooks/edit-watcher.js | true | 30592 | 2026-05-29T00:28:55.497Z |
+| hook:event-contract | event-contract.js | scripts/hooks/event-contract.js | true | 4169 | 2026-05-29T00:28:55.497Z |
+| hook:excalidraw-guard | excalidraw-guard.js | scripts/hooks/excalidraw-guard.js | true | 951 | 2026-05-29T00:28:55.497Z |
+| hook:extension-edit-guard | extension-edit-guard.js | scripts/hooks/extension-edit-guard.js | true | 4484 | 2026-05-29T00:28:55.498Z |
+| hook:format | format.js | scripts/hooks/format.js | true | 2471 | 2026-05-29T00:28:55.498Z |
+| hook:foundation-guard | foundation-guard.js | scripts/hooks/foundation-guard.js | true | 2720 | 2026-05-29T00:28:55.498Z |
+| hook:framework-manifest-guard | framework-manifest-guard.js | scripts/hooks/framework-manifest-guard.js | true | 10993 | 2026-05-29T00:28:55.499Z |
+| hook:framework-purity-guard | framework-purity-guard.js | scripts/hooks/framework-purity-guard.js | true | 5337 | 2026-05-29T00:28:55.499Z |
+| hook:gate-check | gate-check.js | scripts/hooks/gate-check.js | true | 5231 | 2026-05-29T00:28:55.499Z |
+| hook:gauntlet-gate | gauntlet-gate.js | scripts/hooks/gauntlet-gate.js | true | 8539 | 2026-05-29T00:28:55.500Z |
+| hook:learning-validator | learning-validator.js | scripts/hooks/learning-validator.js | true | 6622 | 2026-05-29T00:28:55.500Z |
+| hook:ledger-presence-guard | ledger-presence-guard.js | scripts/hooks/ledger-presence-guard.js | true | 7196 | 2026-05-29T00:28:55.501Z |
+| hook:lint-hook-output | lint-hook-output.js | scripts/hooks/lint-hook-output.js | true | 2018 | 2026-05-29T00:28:55.506Z |
+| hook:lint | lint.js | scripts/hooks/lint.js | true | 2777 | 2026-05-29T00:28:55.506Z |
+| hook:memory-enforcement-guard | memory-enforcement-guard.js | scripts/hooks/memory-enforcement-guard.js | true | 3418 | 2026-05-29T06:33:20.361Z |
+| hook:memory-guard | memory-guard.js | scripts/hooks/memory-guard.js | true | 13941 | 2026-05-29T00:28:55.507Z |
+| hook:merge-guard | merge-guard.js | scripts/hooks/merge-guard.js | true | 23854 | 2026-05-29T06:33:20.361Z |
+| hook:ownership-guard | ownership-guard.js | scripts/hooks/ownership-guard.js | true | 3833 | 2026-05-29T00:28:55.507Z |
+| hook:path-guard | path-guard.js | scripts/hooks/path-guard.js | true | 9185 | 2026-05-29T00:28:55.508Z |
+| hook:path-registry-guard | path-registry-guard.js | scripts/hooks/path-registry-guard.js | true | 5602 | 2026-05-29T00:28:55.508Z |
+| hook:pre-commit-steps-check | pre-commit-steps-check.js | scripts/hooks/pre-commit-steps-check.js | false | 8850 | 2026-05-29T00:28:55.508Z |
+| hook:prompt-logger | prompt-logger.js | scripts/hooks/prompt-logger.js | true | 1900 | 2026-05-29T00:28:55.509Z |
+| hook:prompt-validator | prompt-validator.js | scripts/hooks/prompt-validator.js | true | 6259 | 2026-05-29T00:28:55.509Z |
+| hook:ref-checker | ref-checker.js | scripts/hooks/ref-checker.js | false | 13704 | 2026-05-29T00:28:55.510Z |
+| hook:region-marker-guard | region-marker-guard.js | scripts/hooks/region-marker-guard.js | true | 6302 | 2026-05-29T00:28:55.510Z |
+| hook:requirement-format-guard | requirement-format-guard.js | scripts/hooks/requirement-format-guard.js | true | 7470 | 2026-05-29T00:28:55.510Z |
+| hook:response-size-guard | response-size-guard.js | scripts/hooks/response-size-guard.js | true | 4862 | 2026-05-29T06:33:20.361Z |
+| hook:retro-presence-check | retro-presence-check.js | scripts/hooks/retro-presence-check.js | true | 2898 | 2026-05-29T00:28:55.510Z |
+| hook:save-session-lint | save-session-lint.js | scripts/hooks/save-session-lint.js | true | 2577 | 2026-05-29T00:28:55.511Z |
+| hook:scope-contract-guard | scope-contract-guard.js | scripts/hooks/scope-contract-guard.js | true | 1809 | 2026-05-29T00:28:55.511Z |
+| hook:secret-guard | secret-guard.js | scripts/hooks/secret-guard.js | true | 2883 | 2026-05-29T00:28:55.511Z |
+| hook:self-mod-governance | self-mod-governance.js | scripts/hooks/self-mod-governance.js | true | 953 | 2026-05-29T00:28:55.511Z |
+| hook:session-start | session-start.js | scripts/hooks/session-start.js | true | 18182 | 2026-05-29T00:28:55.512Z |
+| hook:session-stop | session-stop.js | scripts/hooks/session-stop.js | true | 19138 | 2026-05-29T06:33:20.361Z |
+| hook:session-tracker | session-tracker.js | scripts/hooks/session-tracker.js | true | 9800 | 2026-05-29T00:28:55.513Z |
+| hook:skill-catalog-regen | skill-catalog-regen.js | scripts/hooks/skill-catalog-regen.js | true | 2263 | 2026-05-29T00:28:55.513Z |
+| hook:skill-counter | skill-counter.js | scripts/hooks/skill-counter.js | false | 3493 | 2026-05-29T00:28:55.513Z |
+| hook:skill-invocation-tracker | skill-invocation-tracker.js | scripts/hooks/skill-invocation-tracker.js | true | 7079 | 2026-05-29T00:28:55.513Z |
+| hook:smart-context | smart-context.js | scripts/hooks/smart-context.js | true | 34914 | 2026-05-29T00:28:55.514Z |
+| hook:spec-test-staleness | spec-test-staleness.js | scripts/hooks/spec-test-staleness.js | true | 5627 | 2026-05-29T00:28:55.514Z |
+| hook:sprint-approval-guard | sprint-approval-guard.js | scripts/hooks/sprint-approval-guard.js | true | 6366 | 2026-05-29T00:28:55.514Z |
+| hook:sprint-routing-guard | sprint-routing-guard.js | scripts/hooks/sprint-routing-guard.js | true | 9911 | 2026-05-29T01:59:00.702Z |
+| hook:sprint-tracker-guard | sprint-tracker-guard.js | scripts/hooks/sprint-tracker-guard.js | true | 16371 | 2026-05-29T06:33:20.361Z |
+| hook:step-hardcode-suggester | step-hardcode-suggester.js | scripts/hooks/step-hardcode-suggester.js | true | 7337 | 2026-05-29T00:28:55.516Z |
+| hook:step-registry-guard | step-registry-guard.js | scripts/hooks/step-registry-guard.js | true | 12429 | 2026-05-29T00:28:55.516Z |
+| hook:store-validator | store-validator.js | scripts/hooks/store-validator.js | true | 16977 | 2026-05-29T00:28:55.516Z |
+| hook:systems-sync | systems-sync.js | scripts/hooks/systems-sync.js | true | 7854 | 2026-05-29T00:28:55.517Z |
+| hook:team-guard | team-guard.js | scripts/hooks/team-guard.js | true | 6838 | 2026-05-29T00:28:55.517Z |
+| hook:template-fillability | template-fillability.js | scripts/hooks/template-fillability.js | true | 3018 | 2026-05-29T00:28:55.517Z |
+| hook:test | test.js | scripts/hooks/test.js | false | 12132 | 2026-05-29T00:28:55.518Z |
+| hook:typecheck | typecheck.js | scripts/hooks/typecheck.js | true | 1743 | 2026-05-29T00:28:55.518Z |
+| hook:ui-lint | ui-lint.js | scripts/hooks/ui-lint.js | true | 3396 | 2026-05-29T00:28:55.518Z |
+| hook:version-bump-guard | version-bump-guard.js | scripts/hooks/version-bump-guard.js | true | 7919 | 2026-05-29T00:28:55.518Z |
+| hook:worktree-preflight | worktree-preflight.js | scripts/hooks/worktree-preflight.js | true | 5343 | 2026-05-29T00:28:55.519Z |
+| hooklib:banner | banner.js | scripts/hooks/lib/banner.js |  | 4462 | 2026-05-29T00:28:55.501Z |
+| hooklib:concurrency-lock | concurrency-lock.js | scripts/hooks/lib/concurrency-lock.js |  | 11327 | 2026-05-29T00:28:55.501Z |
+| hooklib:context-sources | context-sources.js | scripts/hooks/lib/context-sources.js |  | 8552 | 2026-05-29T00:28:55.502Z |
+| hooklib:gate-schema | gate-schema.js | scripts/hooks/lib/gate-schema.js |  | 4017 | 2026-05-29T00:28:55.502Z |
+| hooklib:logger | logger.js | scripts/hooks/lib/logger.js |  | 16086 | 2026-05-29T00:28:55.503Z |
+| hooklib:mode | mode.js | scripts/hooks/lib/mode.js |  | 2621 | 2026-05-29T00:28:55.503Z |
+| hooklib:paths.generated | paths.generated.js | scripts/hooks/lib/paths.generated.js |  | 9725 | 2026-05-29T00:28:55.504Z |
+| hooklib:paths | paths.js | scripts/hooks/lib/paths.js |  | 6646 | 2026-05-29T00:28:55.504Z |
+| hooklib:project-config | project-config.js | scripts/hooks/lib/project-config.js |  | 4657 | 2026-05-29T00:28:55.504Z |
+| hooklib:provider-health | provider-health.js | scripts/hooks/lib/provider-health.js |  | 10620 | 2026-05-29T00:28:55.505Z |
+| hooklib:providers | providers.js | scripts/hooks/lib/providers.js |  | 25587 | 2026-05-29T00:28:55.505Z |
+| hooklib:role-aliases | role-aliases.js | scripts/hooks/lib/role-aliases.js |  | 1964 | 2026-05-29T00:28:55.505Z |
+| hooklib:skill-telemetry | skill-telemetry.js | scripts/hooks/lib/skill-telemetry.js |  | 5437 | 2026-05-29T00:28:55.506Z |

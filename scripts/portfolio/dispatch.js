@@ -55,7 +55,7 @@ function validateInputs(opts) {
   if (!SKILL_RE.test(opts.skill)) {
     return {
       ok: false,
-      msg: `invalid skill name '${opts.skill}'. Must match ^/[a-z][a-z0-9_-]*(:[a-z][a-z0-9_-]*)?$ (e.g. /portfolio:list or /check:requirements).`,
+      msg: `invalid skill name '${opts.skill}'. Must match ^/[a-z][a-z0-9_-]*(:[a-z][a-z0-9_-]*)?$ (e.g. /portfolio:list or /scan:requirements).`,
     };
   }
   for (const arg of opts.skillArgs) {

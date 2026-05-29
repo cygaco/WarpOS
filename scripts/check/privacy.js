@@ -65,7 +65,7 @@ const SKIP_DIRS = new Set([
 const SKIP_FILES = [
   // Skill body itself enumerates the patterns by design — false-positive site
   "scripts/check/privacy.js",
-  ".claude/commands/check/privacy.md",
+  ".claude/commands/scan/privacy.md",
   "tests/transcripts/check-privacy.md",
 ];
 

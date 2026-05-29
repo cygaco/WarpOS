@@ -153,7 +153,7 @@ Review Alex β's performance since last sleep:
    - If count > 0: display summary table grouped by feature (feature, count, highest drift_type)
    - If overwrites exist: flag as warning — "N spec overwrites pending review"
    - If count > 10: suggest grouping by feature for efficiency
-   - Prompt: "Run `/check:requirements review` to process, or they'll carry to next session"
+   - Prompt: "Run `/scan:requirements review` to process, or they'll carry to next session"
    - Log deferred entries to cross-session inbox so next session sees them
 
 7. **Recurring system-issues review**

@@ -32,10 +32,10 @@ Phase 4F entry point. Aggregates every check that exists across the system into 
 In parallel where possible:
 
 1. **`/warp:health`** — install integrity, ownership, missing files.
-2. **`/check:references`** — broken cross-file links.
-3. **`/check:requirements`** + `node scripts/requirements/gate.js` — spec drift.
+2. **`/scan:references`** — broken cross-file links.
+3. **`/scan:requirements`** + `node scripts/requirements/gate.js` — spec drift.
 4. **`/paths:lint --strict`** — path coherence.
-5. **`/check:architecture`** — agent system + cross-layer seams.
+5. **`/scan:architecture`** — agent system + cross-layer seams.
 6. **`/hooks:test --all`** — every hook against its fixtures (Phase 5G; doctor surfaces the gap if the hook lacks fixtures).
 7. **`scripts/schemas/validate.js`** — every config validates against its `$schema`.
 8. **`scripts/warpos/release-build.js <current-version> --check`** — current capsule integrity.
@@ -68,7 +68,7 @@ When called as `/warp:doctor --gates-only`, runs only the 10 release gates:
 
 1. Path Coherence — `node scripts/paths/gate.js`
 2. Framework Manifest — `node scripts/generate-framework-manifest.js --check`
-3. Reference Integrity — `/check:references --json`
+3. Reference Integrity — `/scan:references --json`
 4. Hook Registration — `/hooks:test --registered`
 5. Hook Fixture Tests — `/hooks:test --all` (skipped if 5G hasn't shipped fixtures yet; surfaced as YEL not RED until then)
 6. Fresh Install Fixture — `node scripts/test-fresh-install.js` (skipped if `fixtures/install-empty-next-app/` missing — Phase 4G)
@@ -87,4 +87,4 @@ The output for each red finding includes a fix hint. For framework-level fixes (
 
 - `/warp:health` — the lightweight check, designed to run frequently.
 - `/warp:release` — uses `/warp:doctor --gates-only` as its first step.
-- `/check:all` — runs the project-level checks; `/warp:doctor` is the framework-level superset.
+- `/scan:full` — runs the project-level checks; `/warp:doctor` is the framework-level superset.

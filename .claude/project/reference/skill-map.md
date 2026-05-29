@@ -124,8 +124,8 @@ Reference: `.claude/reference/reasoning-frameworks.md`
 
 | Skill | Calls | Reads | Writes |
 |-------|-------|-------|--------|
-| :preflight | /check:requirements, /check:architecture, /check:environment, stub-scaffold sub-agent | manifest.json, store.json, PRDs | branch, store.json, .claude/runtime/run.json |
-| :retro | /check:requirements drift, /check:patterns diagnose, recurring-issues-helper | events.jsonl, learnings.jsonl, retros/ | BUGS.md, HYGIENE.md, LEARNINGS.md, RETRO.md |
+| :preflight | /scan:requirements, /scan:architecture, /scan:environment, stub-scaffold sub-agent | manifest.json, store.json, PRDs | branch, store.json, .claude/runtime/run.json |
+| :retro | /scan:requirements drift, /scan:patterns diagnose, recurring-issues-helper | events.jsonl, learnings.jsonl, retros/ | BUGS.md, HYGIENE.md, LEARNINGS.md, RETRO.md |
 | :improve | — | check skill files | check skill files (modifies them) |
 | :start | /mode:oneshot, /oneshot:preflight | mode.json | hands off to Delta |
 

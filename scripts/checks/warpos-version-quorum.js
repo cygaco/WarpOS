@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * check:warpos-version-quorum — preflight gate (F-3 mitigation).
+ * scan:warpos-version-quorum — preflight gate (F-3 mitigation).
  *
  * Verifies the four sources of "current installed version" agree:
  *
@@ -141,7 +141,7 @@ emit({
     ...disagreements.map((d) => `  - ${d.source}: ${d.version}`),
     `If .claude/framework-manifest.json is stale:`,
     `  git checkout HEAD -- .claude/framework-manifest.json`,
-    `Then re-run /check:warpos-manifest-honesty to confirm.`,
+    `Then re-run /scan:warpos-manifest-honesty to confirm.`,
     `Override: none — refuse to update with disagreeing version sources.`,
   ].join("\n"),
   evidence: {

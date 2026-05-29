@@ -138,7 +138,7 @@ node scripts/bootstrap/spinup-orchestrate.js \
 ```
 
 - **Always runs `preflight` first** (a hard gate — refuses a gappy install via
-  `/check:install`, exit ≠ 0 → stop). Deterministic phases (`preflight`, `canon`,
+  `/scan:install`, exit ≠ 0 → stop). Deterministic phases (`preflight`, `canon`,
   `--clone` intent) run in-process by reusing the existing engines
   (`scripts/check/install.js`, `scripts/canon/generate.js`, `scripts/portfolio/clone.js`).
 - **LLM-orchestrated steps** — the guided brief, `roadmap:create`'s canon-grounded
@@ -154,7 +154,7 @@ node scripts/bootstrap/spinup-orchestrate.js \
   standing up a real product (canonical proves the chain; real serve is product-side).
 
 ## Pre-flight — install completeness
-Before Phase 1, run `/check:install` (incl. the sprint-subsystem probe). Refuse
+Before Phase 1, run `/scan:install` (incl. the sprint-subsystem probe). Refuse
 to proceed on a gappy install — a fresh `/portfolio:new` scaffold or a manual
 `/warp:setup` must reach a complete, sprint-capable state first. This is the
 guarantee behind "full WarpOS install, without gaps."

@@ -141,7 +141,7 @@ function scaffoldProduct({ target, warposRoot, log }) {
   }
 
   // ── 5b. Structure-parity skeleton + _docs zones (SP-20260525-018) ──
-  // Guarantee every dir /check:warpos-structure-parity declares, plus the
+  // Guarantee every dir /scan:warpos-structure-parity declares, plus the
   // _docs brief/clone homes, exist. Idempotent; .gitkeep so git tracks them.
   const SKELETON_DIRS = [
     "_requirements/_audits", "_requirements/_index", "_requirements/_shared",
@@ -284,7 +284,7 @@ function scaffoldProduct({ target, warposRoot, log }) {
   // "require is not defined in ES module scope". Drop a {"type":"commonjs"}
   // package.json INSIDE .claude/runtime/ so that subtree resolves as CommonJS
   // regardless of the product root's module type. (Mirrors the scripts/
-  // package.json insulation /check:install now enforces — same bug class, the
+  // package.json insulation /scan:install now enforces — same bug class, the
   // runtime side.)
   //
   // .claude/runtime/ is gitignored (see .gitignore: ".claude/runtime/"), so the

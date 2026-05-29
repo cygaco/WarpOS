@@ -111,7 +111,7 @@ Items in the staged-drift queue, learning queue, or memory that are awaiting val
 - `paths.policy/adr/` — ADRs with frontmatter `status: draft` or `status: proposed`
 
 **Signal:** validation queues that grow without draining indicate the validation step is missing or skipped.
-**Action:** dispatch the appropriate validator (`/check:requirements --propagate`, `/learn:integrate`) or schedule one.
+**Action:** dispatch the appropriate validator (`/scan:requirements --propagate`, `/learn:integrate`) or schedule one.
 
 ### Lens 8 — Cross-session inbox dangling threads
 
@@ -231,7 +231,7 @@ This is the **same architecture pattern** as build-chain reviewer dispatches (se
 ## Relation to other skills
 
 - `/discover:systems` — what exists vs declared. This skill: what's promised vs delivered.
-- `/check:patterns` — recurring issues across runs. Overlaps with Lens 2; reuse the cache if fresh.
+- `/scan:patterns` — recurring issues across runs. Overlaps with Lens 2; reuse the cache if fresh.
 - `/issues:list` — recurring system issues. Lens 7 sometimes re-surfaces these; cross-reference.
 - `/learn:integrate` — drains the learning queue (Lens 7 partial). Consider running it AFTER `/discover:orphaned` to clear validation backlog.
 - `/session:resume` — loads the last handoff. This skill goes deeper into what the handoff didn't capture.

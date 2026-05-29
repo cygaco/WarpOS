@@ -111,7 +111,7 @@ const GATES = [
 
   // 3. Reference Integrity
   // 0.1.2 honesty fix: this gate cannot run automatically (it needs a running
-  // Claude Code agent to invoke /check:references). Pre-0.1.2 it returned
+  // Claude Code agent to invoke /scan:references). Pre-0.1.2 it returned
   // severity=green unconditionally — a lie that release-gates inherited.
   // Now it returns severity=manual: not blocking, but also not pretending to
   // pass. The runner counts manual the same as skipped for the overall PASS
@@ -121,7 +121,7 @@ const GATES = [
       ok: true,
       severity: "manual",
       message:
-        "Reference integrity check requires the /check:references slash skill (no headless equivalent yet) — run manually before /warp:release. Tracked separately, not auto-passed.",
+        "Reference integrity check requires the /scan:references slash skill (no headless equivalent yet) — run manually before /warp:release. Tracked separately, not auto-passed.",
     };
   }),
 

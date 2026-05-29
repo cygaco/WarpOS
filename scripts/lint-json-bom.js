@@ -10,7 +10,7 @@
  * see MIGRATION.md §1 and registry.js load() BOM-tolerance.
  *
  * Enforcer for: "no WarpOS-tracked JSON carries a BOM." Auto-discovered by
- * scripts/linters/run.js (lint-*.js) → runs under /linters:run and /check:all.
+ * scripts/linters/run.js (lint-*.js) → runs under /linters:run and /scan:full.
  *
  * Exit 0 = clean. Exit 1 = at least one tracked .json has a BOM.
  * Usage: node scripts/lint-json-bom.js

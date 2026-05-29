@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * check:warpos-capsule-resolvable — preflight gate (F-1 mitigation).
+ * scan:warpos-capsule-resolvable — preflight gate (F-1 mitigation).
  *
  * Verifies the capsule for `--to <version>` is resolvable from the target
  * project, walking the same lookup paths /warp:update#discoverCanonical

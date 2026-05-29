@@ -4,7 +4,7 @@
  * Output: _requirements/_index/requirements.graph.json
  *         _requirements/04-features/<feature>/TRACE.md (per-feature, human-readable)
  *
- * Phase 3A + 3K artifact. Read from /check:requirements and edit-watcher.
+ * Phase 3A + 3K artifact. Read from /scan:requirements and edit-watcher.
  *
  * Usage:
  *   node scripts/requirements/build-graph.js          # write graph + traces

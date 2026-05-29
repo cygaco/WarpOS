@@ -4,7 +4,7 @@
 /**
  * scripts/sprint/check-ac-coverage.js
  *
- * Read-only audit skill (/check:ac-coverage). Scans active sprints + their
+ * Read-only audit skill (/scan:ac-coverage). Scans active sprints + their
  * acceptance-criteria.md files and reports per-AC linkage state:
  *   - executable: has a real `verified_by: <file>::<name>` line
  *   - not_applicable: has `verified_by: not_applicable — <justification>`

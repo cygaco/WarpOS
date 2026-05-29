@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// check:warpos-promote-coverage — STUB.
+// scan:warpos-promote-coverage — STUB.
 // For every commit on the product repo touching FRAMEWORK_PREFIXES paths in the
 // last 30 days, verify the change was either (a) promoted via /warp:promote,
 // (b) marked do-not-promote, or (c) flagged as drift.

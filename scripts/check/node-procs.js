@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /* eslint-disable no-console */
 //
-// SP-20260518-008 R-5: /check:node-procs read-only diagnostic helper.
+// SP-20260518-008 R-5: /scan:node-procs read-only diagnostic helper.
 //
 // Lists every Node process on the host with: PID, start-time, working-set KB,
 // command (truncated 120 chars). Sorted by start-time ascending. Diagnostic

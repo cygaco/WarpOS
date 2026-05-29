@@ -80,7 +80,7 @@ Per the codex multi-user/privacy consult, central-mode is **inherently sharp** b
 3. **`.gitignore` per-client state additions** at top-level.
 4. **Canonical CI leak scanner** — reject diffs containing known client slugs, abs paths, private remotes, known local-state dirs.
 5. **Privacy fixture test** — seed fake client data, run promote/package/release, assert zero leakage.
-6. **`/check:warpos-privacy-leak` skill** — runs codex's 10-vector checklist pre-promote, refuses on any high-confidence hit.
+6. **`/scan:warpos-privacy-leak` skill** — runs codex's 10-vector checklist pre-promote, refuses on any high-confidence hit.
 
 These all live in `ROADMAP.md § Now: Privacy & Promotion Safety` independently — they're worth shipping for the per-product model too. Central-mode just makes them load-bearing instead of belt-and-suspenders.
 

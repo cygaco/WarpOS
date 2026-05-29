@@ -27,7 +27,7 @@
  *   default              Read-write. Copies source → path when content differs.
  *   --check              Read-only. Reports what WOULD change. Exits 1 if
  *                        any view is stale. This is the mode wired into
- *                        the upcoming `/check:framework-views-fresh` gate.
+ *                        the upcoming `/scan:framework-views-fresh` gate.
  *
  * Usage:
  *   node scripts/warpos/views/regenerate.js \

@@ -27,7 +27,7 @@ instead and exits `0`.
 - You want a durable analytical record of what shipped, what didn't,
   why, and what to change next sprint.
 - Cross-sprint trend analysis (recurring friction, plan-quality drift)
-  needs retro YAMLs as its input — `/check:patterns` will read them
+  needs retro YAMLs as its input — `/scan:patterns` will read them
   later (deferred to expanded scope).
 
 `/sprint:retrospective` does **not** run mid-sprint, per-ticket, or as
@@ -247,7 +247,7 @@ Routing is enforced — not aspirational (SP-20260514-002).
 - `/sprint:retrospective` does **not** support mid-sprint check-ins
   (deferred to expanded scope).
 - `/sprint:retrospective` does **not** perform cross-sprint trend
-  analysis itself (deferred to `/check:patterns`).
+  analysis itself (deferred to `/scan:patterns`).
 
 ## Reference
 

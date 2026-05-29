@@ -473,7 +473,7 @@
       "mutable": true,
       "introducedIn": "0.8.0",
       "docsToken": "paths.enforcementDebt",
-      "_note": "Append-only ledger of policies that exist without a named enforcer. Logged via /enforcement:log; surfaced at /enforcement:list and /check:all."
+      "_note": "Append-only ledger of policies that exist without a named enforcer. Logged via /enforcement:log; surfaced at /enforcement:list and /scan:full."
     },
     "roadmap": {
       "path": "ROADMAP.md",

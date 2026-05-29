@@ -3,9 +3,9 @@
  *
  * Composes 5 checks after a successful apply:
  *
- *   1. manifest-honesty       (existing check:warpos-manifest-honesty)
- *   2. path-resolution        (existing check:warpos-path-resolution)
- *   3. applied-migrations     (existing check:warpos-applied-migrations)
+ *   1. manifest-honesty       (existing scan:warpos-manifest-honesty)
+ *   2. path-resolution        (existing scan:warpos-path-resolution)
+ *   3. applied-migrations     (existing scan:warpos-applied-migrations)
  *   4. provider-smoke         (external check via T-058 primitive, SP-002)
  *   5. /warp:health rollup    (scripts/check/warpos-health.js if present)
  *

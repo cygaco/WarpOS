@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * check:warpos-install-baseline — preflight gate (F-4 mitigation).
+ * scan:warpos-install-baseline — preflight gate (F-4 mitigation).
  *
  * Verifies a WarpOS install baseline exists in the target project before
  * /warp:update may proceed. Without `--force-fresh`, the gate refuses

@@ -3,7 +3,7 @@
 // synthetic Write payloads across the known sprint path patterns and asserts
 // the hook emits hookSpecificOutput.updatedInput with the correct schema
 // header, or warns/passes as appropriate. Replaces the old BLOCK behavior
-// for the missing-schema case. Source: /check:patterns 2026-05-13 (126x/day).
+// for the missing-schema case. Source: /scan:patterns 2026-05-13 (126x/day).
 
 "use strict";
 

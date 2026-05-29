@@ -23,7 +23,7 @@ WarpOS-generated applications are not considered production-ready until every ar
 
 ## Gate Behavior
 
-`scripts/checks/production-baseline.js` verifies that this baseline and its companion docs exist and include the required areas. `/check:architecture` and `/oneshot:preflight` should treat a missing area as a production-readiness failure.
+`scripts/checks/production-baseline.js` verifies that this baseline and its companion docs exist and include the required areas. `/scan:architecture` and `/oneshot:preflight` should treat a missing area as a production-readiness failure.
 
 ## Exception Rule
 

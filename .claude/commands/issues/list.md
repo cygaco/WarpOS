@@ -27,7 +27,7 @@ Render the script output directly. Don't summarize — the list IS the summary.
 
 - **/issues:log** — record a new instance (creates entry or increments existing by title overlap)
 - **/issues:resolve** — mark an issue resolved with a permanent fix
-- **/issues:scan** — pattern-mine events.jsonl for repeat audit-block signatures (surfaces UNCURATED candidates, doesn't write)
+- **/scan:issues** — pattern-mine events.jsonl for repeat audit-block signatures (surfaces UNCURATED candidates, doesn't write)
 - `/learn:deep` — learning extraction from events.jsonl + conversation + retros (semantic memory layer above this)
 - `paths.tracesFile` — reasoning episodes (RT-NNN), single-instance traces
 

@@ -1,4 +1,4 @@
-# Jobzooka — Evolution Tracker
+# Product — Evolution Tracker
 
 System capabilities achieved and roadmap for what comes next. Ordered by dependency, not chronology.
 
@@ -51,7 +51,7 @@ System capabilities achieved and roadmap for what comes next. Ordered by depende
 - [x] Spec change event sourcing (category: spec)
 - [x] STALE marker tracking across spec files
 - [x] Unpropagated change detection
-- [x] /check:requirements with drift mode
+- [x] /scan:requirements with drift mode
 
 ### Self-Modification
 - [x] Modification logging (category: modification)

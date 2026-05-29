@@ -1,28 +1,23 @@
 ---
-description: Refuse product-content leaks in canonical — scans for client slugs, maintainer abs paths, root-level _requirements/_docs/ (gated until scrub), and promote-relic reintroduction.
+description: "[deprecated alias → /scan:framework-purity] Refuse product-content leaks in canonical. Superseded by /scan:framework-purity in the check:→scan: namespace rename (SP-20260528-001)."
+user-invocable: true
+tags: [deprecated, alias, scan, warpos]
 ---
 
-# /check:framework-purity
+# /check:framework-purity — DEPRECATED, use /scan:framework-purity
 
-The canonical-side last line of defense against accidentally leaking product-specific content into the public framework repo. Replaces the dropped `/check:warpos-privacy-leak` skill (which was promote-side; the leak surface moved canonical-side after SP-20260522-001 retired the promote suite).
+Thin alias forwarding to **`/scan:framework-purity`**. The `check:` namespace was renamed to `scan:` in SP-20260528-001.
 
-```bash
-node scripts/checks/framework-purity.js --diff     # pre-commit / CI default
-node scripts/checks/framework-purity.js --full     # full repo audit
-node scripts/checks/framework-purity.js --json     # programmatic consumption
+## Implementation
+
+Reads `$ARGUMENTS` and dispatches:
+
+```
+/scan:framework-purity $ARGUMENTS
 ```
 
-Detectors:
+Behavior is identical — only the canonical name changed.
 
-| Detector | What it catches |
-|---|---|
-| `root_leak` | Files under `_requirements/` or `_docs/` at canonical root (gated by `ROOT_LEAK_PENDING_SCRUB` while the maintainer scrub is in flight). |
-| `client_slug` | `Jobzooka`, `DreamTeam`, `dreamteam`, `aiweb`, `companycam`, etc. in tracked file content. Allow-list covers historical sprint planning, dream journal, brief/clone outputs, release changelogs, ROADMAP, portfolio scripts. |
-| `abs_path` | Maintainer-home absolute paths (`C:\Users\Vladislav\…`, `/home/<user>/Desktop/…`). |
-| `promote_relic` | Reintroduction of any purged path (`promote.js`, `flag.js`, etc.) or token (`warposFlagLedger`, `/warp:promote`). |
+## Removal
 
-Modes:
-- `--diff` (default) — scans `git diff --cached` + `git diff`. Wired into the canonical pre-commit guard.
-- `--full` — walks the entire repo. Inventory mode for taking stock of pre-scrub debt.
-
-Exit codes: `0` clean · `1` violations · `2` CLI/git error.
+Scheduled for removal at `warpos@1.0.0`. Update any docs/scripts/skill references that still call `/check:framework-purity` → `/scan:framework-purity`.

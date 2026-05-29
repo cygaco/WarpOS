@@ -116,11 +116,11 @@ Before deleting a file referenced across the project: `grep` for the basename ac
 
 | Skill | Scope |
 |-------|-------|
-| `/check:architecture` | Layer connectivity |
-| `/check:references` | Broken cross-file links |
-| `/check:requirements` | Spec consistency + drift |
-| `/check:system` | System inventory vs manifest |
-| `/check:patterns` | Cross-run intelligence — what keeps recurring |
+| `/scan:architecture` | Layer connectivity |
+| `/scan:references` | Broken cross-file links |
+| `/scan:requirements` | Spec consistency + drift |
+| `/scan:system` | System inventory vs manifest |
+| `/scan:patterns` | Cross-run intelligence — what keeps recurring |
 
 ## Git rules
 
@@ -135,7 +135,7 @@ See `CLAUDE.md#Autonomy` for the full decision-rights table.
 
 ## Compliance
 
-- Repo is public; privacy gate (`/check:privacy`) runs before every public push
+- Repo is public; privacy gate (`/scan:privacy`) runs before every public push
 - API keys server-side only — never committed
 - Cross-provider diversity for review agents is mandatory (configured in `manifest.json`)
 - Session-local memory (`.claude/project/memory/`, `.claude/runtime/`) is gitignored

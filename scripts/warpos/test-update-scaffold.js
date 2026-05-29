@@ -11,7 +11,7 @@
  * ONLY, never updates.
  *
  * Asserts scaffoldProduct, against a target that already has .claude/ (the state
- * after update.js's apply phase), creates every /check:warpos-structure-parity
+ * after update.js's apply phase), creates every /scan:warpos-structure-parity
  * REQUIRED_DIR plus ROADMAP.md + PROJECT.md + .claude/paths.json, and is
  * idempotent on re-run. This is the enforcer the structure-parity contract
  * lacked on the update path.
@@ -26,7 +26,7 @@ const path = require("path");
 const REPO = path.resolve(__dirname, "..", "..");
 const sc = require("./scaffold-core");
 
-// Mirror /check:warpos-structure-parity REQUIRED_DIRS (the contract update must satisfy).
+// Mirror /scan:warpos-structure-parity REQUIRED_DIRS (the contract update must satisfy).
 const REQUIRED_DIRS = [
   "_requirements/_audits", "_requirements/_index", "_requirements/_shared",
   "_requirements/_standards", "_requirements/00-canonical",

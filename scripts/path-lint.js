@@ -39,7 +39,7 @@
  *   - Node modules, .git, .next, build artifacts
  *   - The paths.json registry itself (source of truth)
  *   - This script (scripts/path-lint.js)
- *   - The rename catalog in /check:references (lives there intentionally)
+ *   - The rename catalog in /scan:references (lives there intentionally)
  */
 
 const fs = require("fs");

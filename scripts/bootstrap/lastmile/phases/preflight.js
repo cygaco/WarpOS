@@ -21,7 +21,7 @@ module.exports = {
   defaultRunCheck,
   async run(ctx) {
     const runCheck = (ctx.args && ctx.args._runCheck) || defaultRunCheck;
-    ctx.log("running /check:install (incl. sprint-subsystem probe)...");
+    ctx.log("running /scan:install (incl. sprint-subsystem probe)...");
     const res = runCheck(ctx.repoRoot);
     if (res.code === 0) {
       return { ok: true, status: "done", message: "install complete", data: { exit: 0 } };
@@ -30,7 +30,7 @@ module.exports = {
       ok: false,
       status: "failed",
       message:
-        "install incomplete or not a WarpOS repo (/check:install exit " +
+        "install incomplete or not a WarpOS repo (/scan:install exit " +
         res.code +
         ") — refusing to proceed. Run /warp:setup (or fix the gaps) first.",
       data: { exit: res.code },

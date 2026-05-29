@@ -5,6 +5,6 @@ enums, shared acceptance-criteria snippets, shared glossary fragments). Kept
 separate so a fragment changes in one place and every referencing doc inherits
 it.
 
-This directory is part of the structure-parity skeleton (`/check:warpos-structure-parity`
+This directory is part of the structure-parity skeleton (`/scan:warpos-structure-parity`
 REQUIRED_DIRS) and is scaffolded into every product by `scripts/warpos/scaffold-core.js`
 on both fresh install and `/warp:update`.

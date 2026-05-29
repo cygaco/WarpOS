@@ -197,13 +197,13 @@ trail (Beta Q2 directive, observe real bypass patterns first).
 fails AND zero unresolved inconclusive. Pre-Sprint-A Plan Contracts
 retain the old operator-discipline boolean.
 
-### `/check:ac-coverage` audit skill
+### `/scan:ac-coverage` audit skill
 
 Read-only diagnostic that scans every active sprint's AC markdown and
 reports per-AC linkage state (`executable` / `not_applicable` /
 `missing`). Prose default; `--json` for machine output. Exit 0 when
 clean or gate not applicable; 1 when any gate-applicable sprint has
-`missing > 0`. Runs ad-hoc — not in `/check:all` default set in v1.
+`missing > 0`. Runs ad-hoc — not in `/scan:full` default set in v1.
 
 ### Retrospective annotation
 
@@ -396,7 +396,7 @@ deferred to expanded scope (see PRD SP-20260513-004):
 
 - **Mid-sprint check-ins** — partial retros while a sprint is still
   executing.
-- **Cross-sprint trend analysis** — `/check:patterns` will read TR-1,
+- **Cross-sprint trend analysis** — `/scan:patterns` will read TR-1,
   TR-2, TR-3 events across multiple retros to surface recurring
   friction themes, average synthesis duration, fallback rate, and
   per-sprint action-item counts.
@@ -524,7 +524,7 @@ through `scripts/dispatch-agent.js` / `runProvider`, which honors
 
 Distinct from `paths.recurringIssuesFile` (SYSTEM-level recurring
 issues in jsonl), which remains owned by `/issues:log`,
-`/issues:list`, `/issues:resolve`, `/issues:scan`.
+`/issues:list`, `/issues:resolve`, `/scan:issues`.
 
 ## Built-in primitive limits (carried forward from Phase 0)
 

@@ -85,7 +85,7 @@ The gate reports:
 - Median age of open RCOs by class.
 - Percentage auto-expired versus human-resolved over the last 7 days.
 
-Metrics are surfaced through `/check:requirements`.
+Metrics are surfaced through `/scan:requirements`.
 
 Targets:
 

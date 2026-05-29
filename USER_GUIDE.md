@@ -12,7 +12,7 @@ If you've just installed, start at §1. If you want the mode summary, skip to §
 2. Open Claude Code in your project
 3. Type `/warp:tour` — guided introduction
 4. Type `/warp:health` — verifies every system; reports green/yellow/red
-5. Type `/check:environment` — flags missing provider CLIs (codex, gemini)
+5. Type `/scan:environment` — flags missing provider CLIs (codex, gemini)
 6. Type `/mode:solo` — stay solo for your first hour
 7. Fix anything red before doing real work
 
@@ -153,8 +153,8 @@ Setup pattern:
 | Terminal | What it's running | Purpose |
 |---|---|---|
 | 1 | WarpOS, `/mode:solo` | Home base. `/portfolio:status`, decide what to work on, dispatch into products. |
-| 2 | Product A (e.g. dreamteams), `/mode:adhoc` | Build features for product A. |
-| 3 | Product B (e.g. companycam), `/mode:adhoc` | Build features for product B in parallel. |
+| 2 | Product A (e.g. your product), `/mode:adhoc` | Build features for product A. |
+| 3 | Product B (e.g. another product), `/mode:adhoc` | Build features for product B in parallel. |
 | 4 | WarpOS, solo | `/portfolio:sync`, `/skills:create`, tooling work. |
 
 The active-CWD guard fires when you `/portfolio:open <slug> --spawn` against a product whose `repo_path` already equals `process.cwd()` — opening it would just duplicate the session you're in. Pass `--force` to spawn anyway, or stay put.
@@ -205,7 +205,7 @@ Six command families cover 90% of daily work.
 | Skill | Purpose |
 |---|---|
 | `/sleep:quick` | Light nap (~5 min). NREM-style consolidation + glymphatic cleanup. Dedupes learnings, compresses old events, refreshes memory indexes. |
-| `/sleep:deep` | Full 6-phase cycle (~15–30 min). NREM → cleanup → replay → REM dreaming → repair → growth. Surfaces unexpected connections, proposes improvements, runs `/check:all --fast` as part of growth phase. |
+| `/sleep:deep` | Full 6-phase cycle (~15–30 min). NREM → cleanup → replay → REM dreaming → repair → growth. Surfaces unexpected connections, proposes improvements, runs `/scan:full --fast` as part of growth phase. |
 
 **When to run:**
 - `/sleep:quick` — end of each productive stretch, or when `/warp:health` flags memory bloat
@@ -248,13 +248,13 @@ No copy-paste between windows. Every terminal independently sees the timeline.
 
 | Skill | Scope |
 |---|---|
-| `/check:architecture` | Do the layers connect? Agents, docs, foundation, seams. |
-| `/check:environment` | Can we build + run? Tools, hooks, paths, provider CLIs. |
-| `/check:patterns` | What patterns keep recurring across runs? Cross-run intelligence. |
-| `/check:references` | Broken links, orphans, stale SPEC_GRAPH edges. |
-| `/check:requirements` | Spec consistency + drift (static + review modes; folded in the old `/reqs:review`). |
-| `/check:system` | System inventory — scan disk vs manifest, flag drift. |
-| **`/check:all`** | **Runs all six in parallel, produces one unified report with ship/block/caution verdict.** Pre-ship gate. |
+| `/scan:architecture` | Do the layers connect? Agents, docs, foundation, seams. |
+| `/scan:environment` | Can we build + run? Tools, hooks, paths, provider CLIs. |
+| `/scan:patterns` | What patterns keep recurring across runs? Cross-run intelligence. |
+| `/scan:references` | Broken links, orphans, stale SPEC_GRAPH edges. |
+| `/scan:requirements` | Spec consistency + drift (static + review modes; folded in the old `/reqs:review`). |
+| `/scan:system` | System inventory — scan disk vs manifest, flag drift. |
+| **`/scan:full`** | **Runs all six in parallel, produces one unified report with ship/block/caution verdict.** Pre-ship gate. |
 
 **Preflight** — the **pre-run** workflow that prepares everything Delta needs **for `/mode:oneshot`**.
 
@@ -305,7 +305,7 @@ Once a day, do a full `/sleep:deep` on a break. It's where patterns become hooks
 | Event log | `paths.eventsFile` | Every tool call, prompt, hook fire | Source of truth. Mine with `/learn:deep --events-only`. |
 | Learnings | `paths.learningsFile` | `/learn:*`, `/sleep:*` | Long-term patterns, injected into every prompt. |
 | Reasoning traces | `paths.tracesFile` | `/reasoning:log`, `/reasoning:run`, `/fix:deep` | Dataset of your problem-solving. |
-| Systems manifest | `paths.systemsFile` | `systems-sync.js`, `/check:system` | Living inventory of what exists. |
+| Systems manifest | `paths.systemsFile` | `systems-sync.js`, `/scan:system` | Living inventory of what exists. |
 | Session logs | `paths.logs/s-<sid>/` | Every prompt (smart-context) | Per-session traces. |
 | Handoffs | `paths.handoffs/` + `paths.handoffLatest` | Session stop | Resume after `/clear`. |
 | Beta decisions | `paths.betaEvents` | Every Beta DECIDE/DIRECTIVE/ESCALATE | Beta's judgment history. |
@@ -326,7 +326,7 @@ Never edit these by hand — `memory-guard` will block. Read them with the skill
 | Agent hanging | Check `paths.logs/s-*` for last entries, restart the terminal |
 | Maps out of date | `/maps:all --refresh` |
 | Event log is massive | `/sleep:deep` compresses old entries |
-| Review agent failed (codex/gemini) | `/check:environment` — did you install the provider CLI? |
+| Review agent failed (codex/gemini) | `/scan:environment` — did you install the provider CLI? |
 
 ---
 

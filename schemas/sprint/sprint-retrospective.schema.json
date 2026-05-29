@@ -263,7 +263,7 @@
     },
     "synthesis_metadata": {
       "type": "object",
-      "description": "Bookkeeping for the synthesis call itself — model class used, duration, fallback reasons. Read by future /check:patterns cross-sprint trend analysis.",
+      "description": "Bookkeeping for the synthesis call itself — model class used, duration, fallback reasons. Read by future /scan:patterns cross-sprint trend analysis.",
       "additionalProperties": false,
       "properties": {
         "model_class": { "type": "string" },

@@ -191,7 +191,7 @@ Pattern: Research outputs (docs, payloads, task graphs) seed Karpathy runs; Karp
 **Integration status:** APPLIED 2026-04-20 as P-007 in judgement-model.md Mining Patterns.
 
 ### P-004: Skill Dispatch Sequences Cluster by Mode (Confidence: MEDIUM)
-**Evidence:** /discover:systems → /check:all → /maps:all explicitly requested in sequence order on 2026-04-18. User noted "perform sequentially not parallel". Later /session:read + /session:write observed. Distinction: /check:*, /maps:*, /discover:* are infrastructure reads (no mutation). /session:read is soft-state read; /session:write is explicit checkpoint. No skill chains observed outside check/maps/discover/session families.
+**Evidence:** /discover:systems → /scan:full → /maps:all explicitly requested in sequence order on 2026-04-18. User noted "perform sequentially not parallel". Later /session:read + /session:write observed. Distinction: /check:*, /maps:*, /discover:* are infrastructure reads (no mutation). /session:read is soft-state read; /session:write is explicit checkpoint. No skill chains observed outside check/maps/discover/session families.
 **Implication:** β should batch infrastructure audits (/check + /maps + /discover) as a decision unit and ask once rather than three times. For session ops, /session:read is lightweight enough to auto-trigger; /session:write is user-gated and should not be offered lightly.
 **Integration status:** DEFERRED (MEDIUM confidence) — revalidate in next cycle.
 
@@ -215,7 +215,7 @@ User rejected a skill revert proposal when it was non-critical pressure-test out
 
 ### A-002: Planning-Paralysis Traps
 Evidence: User corrected "ask before executing" with explicit "I prefer autonomy for routine work; route only real decisions to me." Pattern: β was routing too many sequential checks as decisions instead of executing batches.
-**Suggested β response:** For routine infrastructure audits (check:all, maps:all, discover:systems), execute and summarize. Only escalate if findings are conflicted, irreversible, or affect user-facing behavior.
+**Suggested β response:** For routine infrastructure audits (scan:full, maps:all, discover:systems), execute and summarize. Only escalate if findings are conflicted, irreversible, or affect user-facing behavior.
 **Integration status:** APPLIED 2026-04-20 as A-002 in judgement-model.md anti-patterns table.
 
 ## Persona gaps
@@ -234,7 +234,7 @@ No new persona gaps discovered. β's existing decision taxonomy (priority, archi
 
 ## New Patterns Discovered
 
-- [P-009] type: prompt-sequence — **Halt-debrief-propagate-maintenance cycle** when a run fails mid-flight. On failure the user consistently fires a 4-stage chain: (1) halt-and-debrief via `/session:takenotes` with inline `/btw` Q&A, (2) extract notes → infra fixes on current branch (`/preflight:setup` skill creation, `scripts/oneshot-store-file-sync.js`), (3) propagate to WarpOS (`scripts/warpos-sync-run09.js` + cross-repo commits), (4) maintenance gauntlet (`/learn:combined → /beta:mine → /beta:integrate → /discover:systems → /check:all → /sleep:deep → /preflight:setup`). Observed end-to-end this session: prompts 97-100 → tools 1-64 → prompt 100. (evidence: EVT-s-nfacq4-mo9gz110, EVT-s-nfacq4-mo9j572n, EVT-s-nfacq4-mo9kqyuk; LRN 32-40 all dated 2026-04-22) confidence: HIGH
+- [P-009] type: prompt-sequence — **Halt-debrief-propagate-maintenance cycle** when a run fails mid-flight. On failure the user consistently fires a 4-stage chain: (1) halt-and-debrief via `/session:takenotes` with inline `/btw` Q&A, (2) extract notes → infra fixes on current branch (`/preflight:setup` skill creation, `scripts/oneshot-store-file-sync.js`), (3) propagate to WarpOS (`scripts/warpos-sync-run09.js` + cross-repo commits), (4) maintenance gauntlet (`/learn:combined → /beta:mine → /beta:integrate → /discover:systems → /scan:full → /sleep:deep → /preflight:setup`). Observed end-to-end this session: prompts 97-100 → tools 1-64 → prompt 100. (evidence: EVT-s-nfacq4-mo9gz110, EVT-s-nfacq4-mo9j572n, EVT-s-nfacq4-mo9kqyuk; LRN 32-40 all dated 2026-04-22) confidence: HIGH
 
 - [P-010] type: skill-chain — **Sequential-not-parallel preference on maintenance gauntlets** repeated twice across the week (prompts EVT-mo4wakob "perform sequentially not parallel" and EVT-mo9kqyuk "run these in order, sequentially, not in parallel"). Overrides and refines P-004 MEDIUM from prior mining: user does NOT want parallel for read-heavy audits that feed each other's inputs. Rule: when skills form a pipeline where downstream reads depend on upstream writes (learn→mine→integrate→discover→check→sleep→setup), run sequentially. Parallel only if commutative. (evidence: EVT-s-nfacq4-mo4wakob-1 [2026-04-18], EVT-s-nfacq4-mo9kqyuk-1 [2026-04-22]) confidence: HIGH
 
@@ -288,7 +288,7 @@ Session: s-nfacq4 (cont.), 2026-04-24..25. ~70 user prompts, 7 commits pushed, 1
 
 - **[P-015] Memory-cost-as-tiebreaker overrides Alpha's "don't combine"** (HIGH). When Alpha advised against consolidating /preflight/* + /retro/* + /run:sync, user overrode with explicit reasoning: "less skill names to remember." Evidence: EVT-modlzh13 → EVT-modm3acz (commit fd5cb32). β should recognize cognitive-load arguments as a first-class tiebreaker in skill-namespace decisions, not a soft preference.
 
-- **[P-016] Skill-create-then-immediately-use cycle** (HIGH). /session:recap was created at modfe0vm, invoked at modfsj0t (11 min later) and modftrjw, modlqgc2. Same cycle for /issues:scan (modglckz → modiawut). β should expect new skills to be exercised within 30 min of creation; "wait and see" framing is wrong. Confidence high (3 same-session instances).
+- **[P-016] Skill-create-then-immediately-use cycle** (HIGH). /session:recap was created at modfe0vm, invoked at modfsj0t (11 min later) and modftrjw, modlqgc2. Same cycle for /scan:issues (modglckz → modiawut). β should expect new skills to be exercised within 30 min of creation; "wait and see" framing is wrong. Confidence high (3 same-session instances).
 
 - **[P-017] Frustration-fix-loop tightening** (HIGH). "still resume parse", "still bugs with search vectors", "0 results" surfaced same issue across 3 prompts → triggered RT-014, RT-015, BD diagnostic logging in <2hr. Reinforces P-007 ladder; β should propose enforcement at "still" mention #2, not wait for #3.
 
@@ -580,7 +580,7 @@ Data scanned: 1,172 events in window, 756 tool calls, 4 Beta consultations from 
 
 - **[P-026] Bash→Read churn (239 Bash, 189 Read on 2026-05-18)** (confidence: high)
   - L-2026-05-19 audit: 52 Bash invocations were textbook Glob/Grep/Read substitutions (24 ls, 15 grep, 7 tail, 6 cat). 20% of Bash share is replaceable.
-  - **Beta implication**: this is α-side prompt-adherence drift, not a Beta judgment problem. Flag at /beta:mine→/check:patterns boundary, not in judgement-model.
+  - **Beta implication**: this is α-side prompt-adherence drift, not a Beta judgment problem. Flag at /beta:mine→/scan:patterns boundary, not in judgement-model.
 
 - **[P-027] node-e for fs write fired merge-guard 10× in 3d, 100% same pattern** (confidence: high, NEW anti-pattern)
   - L-2026-05-19: "every single block was the same pattern: `node -e \"...fs.writeFile/appendFile...\"`. The guard already tells you the fix: move logic into scripts/<name>.js and run it."
@@ -602,7 +602,7 @@ Data scanned: 1,172 events in window, 756 tool calls, 4 Beta consultations from 
 | Sprint orchestration (plan→design→execute→release→retro) | 0.92 (HIGH) | **0.93** | EVT-sprint-A-plan (DECIDE, conf high) + EVT-sprint-A-design (DECIDE, conf high) + EVT-sprint-wrap (DECIDE, conf high) — 3 consecutive DECIDE verdicts on Sprint A's full cycle, zero overrides, all directives applied (T-113/T-114 superseded → T-111 merge accepted, AC-2.3.5 added, redteam threat class added). Sustained accuracy. Upgrade to 0.93. |
 | Cost-threshold / preset sizing decisions | n/a (new) | **0.65 (advisory)** | New class introduced this session. /sprint:full --cost-acknowledged double-halt pattern is fresh evidence Beta wasn't yet calibrated on. Add a row; default ESCALATE until 3 more applications without override. |
 | Classifier-vs-Beta authorization gap | n/a (new) | **0.55 (ESCALATE-leaning)** | NEW gap surfaced this session — Beta DECIDE does not satisfy auto-mode classifier on cost-sensitive / internal-canary ops. Until decision-policy.md is updated to reflect this, Beta should ESCALATE these classes regardless of own confidence. |
-| Goal-verification / cited-test convention | n/a (new) | **0.80 (HIGH)** | Sprint A introduced the convention end-to-end (goal_verification schema, /check:ac-coverage, ship-gate three-branch ENOENT-as-fail, regression corpus, fixture-gate). Beta caught the ENOENT bypass class pre-execution (AC-2.3.5 directive applied). High first-pass accuracy on a new convention — start at 0.80, upgrade after 2 more sprints opt in clean. |
+| Goal-verification / cited-test convention | n/a (new) | **0.80 (HIGH)** | Sprint A introduced the convention end-to-end (goal_verification schema, /scan:ac-coverage, ship-gate three-branch ENOENT-as-fail, regression corpus, fixture-gate). Beta caught the ENOENT bypass class pre-execution (AC-2.3.5 directive applied). High first-pass accuracy on a new convention — start at 0.80, upgrade after 2 more sprints opt in clean. |
 | Multi-sprint parallelism (Sprint A + Sprint B serial-planned, parallel-executable) | 0.92 (carryover from 2026-05-13) | **0.93** | "What's next" prompt at T19:08:39 ("So how many sprints is this total? We had 2 before, and i still see 2. Is that everything?") confirmed the user expects multi-sprint sequencing as default. Sprint A + Sprint B planned in same session without scope confusion, both executed-to-implementation-complete. Upgrade by 0.01. |
 
 ---
@@ -665,7 +665,7 @@ Decision accuracy: 4/4 DECIDE verdicts directly applied without override or corr
 ## Telemetry health
 
 - beta-gate-blocked: 61 lifetime, 2 in last 3 days (down sharply from 4× growth at 2026-05-13). Pre-flight Beta requirement added in release.md skill body (per /learn:deep 2026-05-13) is working.
-- beta-gate-pass: 2 lifetime; both via escape-keyword (ESCALATE prefix). No pass-via-Beta-consult-event yet in event log — verify the hook is reading paths.betaEvents correctly. (Minor; ride-along to next /check:patterns pass.)
+- beta-gate-pass: 2 lifetime; both via escape-keyword (ESCALATE prefix). No pass-via-Beta-consult-event yet in event log — verify the hook is reading paths.betaEvents correctly. (Minor; ride-along to next /scan:patterns pass.)
 - AskUserQuestion: 4 successful invocations on 2026-05-18, each preceded by log-beta-consult-*.js write+execute. The workaround pattern from L-2026-05-19 is the de facto protocol now.
 
 ---
@@ -770,7 +770,7 @@ ID convention this cycle: proposed IDs are **model-aligned** (continue from the 
 
 ---
 
-## Recurrence / Telemetry Signals (for /check:patterns, not the judgment model)
+## Recurrence / Telemetry Signals (for /scan:patterns, not the judgment model)
 
 These are α/process signals, not β-judgment signals — flagged here for the patterns boundary, not for integration into `judgement-model.md`:
 
@@ -795,7 +795,7 @@ Review this file, then let `/beta:integrate` (or `/sleep:deep` Phase 4) apply th
 - **Auto-applicable** (β-model mechanics, evidence-backed, no governance change): P-034, P-035, P-036, P-037, A-017, A-018, and the four confidence adjustments.
 - **User-flag before applying** (change β's self-relationship, red lines, or product-facing policy): **P-038 + G-10** (defeasible-rules stance), **G-11** (effort-mode awareness — also blocked on the primitive being built), **G-12** (non-expert framing), and both **Decision Policy Gaps** (flag-gated carve-out + defeasibility preamble — these touch `paths.decisionPolicy` red lines and must not auto-apply).
 
-Telemetry/process signals (no-retro ED-003, beta-gate ED-001, β-adoption-in-canonical) route to `/check:patterns`, not to `judgement-model.md`.
+Telemetry/process signals (no-retro ED-003, beta-gate ED-001, β-adoption-in-canonical) route to `/scan:patterns`, not to `judgement-model.md`.
 
 ---
 

@@ -1,0 +1,125 @@
+schema: warpos/sprint/current-sprint/v1
+id: SP-20260528-001
+title: "Rename check: namespace to scan: + scan:full system scan"
+objective: "Run /sprint:plan to set this."
+status: releasing
+created_at: "2026-05-29T06:07:27.963Z"
+updated_at: "2026-05-29T06:44:11.281Z"
+source_request: "Rename the check: skill namespace to scan: (incl. issues:scan -> scan:issues), and turn check:all into scan:full = a full system scan that runs every scan."
+interpreted_intent: "Migrate the entire check:* skill namespace to scan:* across canonical WarpOS, fold issues:scan into the new namespace as scan:issues, and promote the existing check:all aggregator to scan:full extended to run EVERY scan as one full-system-scan unified report. Treat as a cross-cutting literal rename governed by CLAUDE.md Refactor & Rename Hygiene (grep every occurrence of the old literal; a missed caller is the whole bug class)."
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260529-0057.yaml"
+risk_level: high
+approval_state: none_required
+current_phase: release
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+external_services:
+  identified: []
+  blocked: []
+  ready: []
+  mocked: []
+  deferred: []
+tickets:
+  proposed: []
+  planned: []
+  designed: []
+  ready_for_execution: []
+  in_progress: []
+  blocked: []
+  waiting_on_human: []
+  waiting_on_external_service: []
+  in_review: []
+  qa_failed: []
+  redteam_failed: []
+  done:
+    - T-20260529-243
+    - T-20260529-245
+    - T-20260529-244
+    - T-20260529-246
+    - T-20260529-247
+  released: []
+  deferred: []
+  abandoned: []
+  reopened: []
+  superseded: []
+requirements:
+  prd: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260528-001\\prd.md"
+  high_level_stories: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260528-001\\high-level-stories.md"
+  granular_stories: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260528-001\\granular-stories.md"
+  copy: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260528-001\\copy.md"
+  inputs: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260528-001\\inputs.md"
+  trace: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260528-001\\trace.md"
+  acceptance_criteria: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260528-001\\acceptance-criteria.md"
+  qa_plan: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260528-001\\qa-plan.md"
+  redteam_plan: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260528-001\\redteam-plan.md"
+  release_plan: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260528-001\\release-plan.md"
+checks:
+  lint:
+    status: not_run
+    last_run: null
+    evidence: ""
+  typecheck:
+    status: not_run
+    last_run: null
+    evidence: ""
+  tests:
+    status: not_run
+    last_run: null
+    evidence: ""
+  build:
+    status: not_run
+    last_run: null
+    evidence: ""
+  qa:
+    status: not_run
+    last_run: null
+    evidence: ""
+  redteam:
+    status: not_run
+    last_run: null
+    evidence: ""
+approvals:
+  plan:
+    required: false
+    state: not_required
+    ref: null
+  design:
+    required: false
+    state: not_required
+    ref: null
+  execution:
+    required: false
+    state: not_required
+    ref: null
+  release:
+    required: false
+    state: not_required
+    ref: null
+  external_services:
+    required: false
+    state: not_required
+    ref: null
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260529-0057.report.md"
+  design: null
+  execution: null
+  release: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\releases\\RL-20260529-032.yaml"
+ralph:
+  active: false
+  current_ticket: null
+  current_loop: null
+  status: idle
+  last_checkpoint: null
+  next_action: null
+crash_recovery:
+  last_checkpoint: ".claude/project/sprint/sprint-progress.yaml"
+  resume_command: "/sprint:release"
+  resume_summary: "Release RL-20260529-032 in preparing state. Run /sprint:release with --id RL-20260529-032."
+  active_files: []
+  dirty_state: false
+  blockers: []
+  safe_to_continue: true
+lane:
+  type: default
+  value: null
+  isolation_notes: "Single working tree — the rename is one coherent cross-file change set; worktree isolation would fragment the regen+manifest+views step that must stay atomic."

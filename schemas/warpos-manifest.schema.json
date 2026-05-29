@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "warpos/manifest/v1",
   "title": "WarpOS Manifest — per-path ownership declaration",
-  "description": "Authored under SP-20260522-001. Lives at `_warpos/MANIFEST.json` in installed products and declares per-path ownership for every framework-influenced path. Replaces the implicit ownership scheme that the now-retired /warp:promote suite carried. Built by scripts/warpos/manifest/build.js; consumed by /warp:update (refuses to overwrite project-owned files), /warp:rollback (snapshot scope), /check:warpos-manifest-coverage (diff on-disk vs manifest), /check:framework-views-fresh (generated views match source), the regenerator (.claude/commands + .claude/agents rebuilt byte-identical from _warpos/), and the three-layer settings.json compiler.",
+  "description": "Authored under SP-20260522-001. Lives at `_warpos/MANIFEST.json` in installed products and declares per-path ownership for every framework-influenced path. Replaces the implicit ownership scheme that the now-retired /warp:promote suite carried. Built by scripts/warpos/manifest/build.js; consumed by /warp:update (refuses to overwrite project-owned files), /warp:rollback (snapshot scope), /scan:warpos-manifest-coverage (diff on-disk vs manifest), /scan:framework-views-fresh (generated views match source), the regenerator (.claude/commands + .claude/agents rebuilt byte-identical from _warpos/), and the three-layer settings.json compiler.",
   "type": "object",
   "required": ["$schema", "version", "generatedAt", "generatedBy", "warposVersion", "paths"],
   "additionalProperties": false,
@@ -20,7 +20,7 @@
     "generatedAt": {
       "type": "string",
       "format": "date-time",
-      "description": "ISO-8601 timestamp the manifest was emitted. Compared against on-disk file mtimes by /check:warpos-manifest-honesty."
+      "description": "ISO-8601 timestamp the manifest was emitted. Compared against on-disk file mtimes by /scan:warpos-manifest-honesty."
     },
     "generatedBy": {
       "type": "string",
@@ -41,7 +41,7 @@
     },
     "paths": {
       "type": "object",
-      "description": "Map of project-relative path → ownership declaration. Every framework-influenced path that exists on disk after /warp:setup MUST be enumerated; missing entries are caught by /check:warpos-manifest-coverage.",
+      "description": "Map of project-relative path → ownership declaration. Every framework-influenced path that exists on disk after /warp:setup MUST be enumerated; missing entries are caught by /scan:warpos-manifest-coverage.",
       "additionalProperties": {
         "$ref": "#/definitions/pathEntry"
       }
@@ -89,7 +89,7 @@
         "sha256": {
           "type": "string",
           "pattern": "^[a-f0-9]{64}$",
-          "description": "SHA-256 of the file content at manifest generation time. For owner=framework: should match the source file's sha256. Drift between sha256 and on-disk content is detected by /check:warpos-manifest-honesty."
+          "description": "SHA-256 of the file content at manifest generation time. For owner=framework: should match the source file's sha256. Drift between sha256 and on-disk content is detected by /scan:warpos-manifest-honesty."
         },
         "installedSha": {
           "type": "string",

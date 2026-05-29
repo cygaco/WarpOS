@@ -3,7 +3,7 @@
  * scripts/checks/framework-purity.js — refuse canonical-tree drift that
  * would leak product-specific content into the public framework repo.
  *
- * SP-20260522-001 / T-180-followup. Replaces the dropped /check:warpos-
+ * SP-20260522-001 / T-180-followup. Replaces the dropped /scan:warpos-
  * privacy-leak skill (which guarded the now-purged promote surface). The
  * leak surface today is direct hand-edits to canonical, and that's what
  * this gate refuses.

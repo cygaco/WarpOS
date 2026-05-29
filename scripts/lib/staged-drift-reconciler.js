@@ -5,7 +5,7 @@
 //
 // This reconciler joins envelopes with status_updates by id and returns the
 // resolved state per drift entry. Used by:
-//   - /check:requirements review (load step) — to see only truly-pending
+//   - /scan:requirements review (load step) — to see only truly-pending
 //   - scripts/hooks/session-stop.js — for the end-of-session advisory
 //   - scripts/analyze-staged-drift.js — diagnostic tool
 //

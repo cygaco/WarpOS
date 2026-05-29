@@ -19,7 +19,7 @@ module.exports = {
     const prompt = [
       "Inject last-mile work into the roadmap/sprint system:",
       "1) For each gap area, mint a sprint via /sprint:plan (one coherent unit per module) with acceptance criteria carrying verified_by, a QA plan, and a launch checklist.",
-      "2) Add ROADMAP entries via /roadmap:add (Sprints ledger row + the milestone they feed; respect /check:roadmap-trace).",
+      "2) Add ROADMAP entries via /roadmap:add (Sprints ledger row + the milestone they feed; respect /scan:roadmap-trace).",
       "3) Gaps to convert into sprints:",
       ...topGaps.map((g) => `   - ${g}`),
       score.sensitiveEscalation

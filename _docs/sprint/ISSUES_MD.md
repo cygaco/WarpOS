@@ -21,7 +21,7 @@ machine-readable companion.
 - It is NOT the SYSTEM-level recurring-issues store. That remains at
   `paths.recurringIssuesFile` (`.claude/project/memory/recurring-issues.jsonl`)
   and is owned by `/issues:log`, `/issues:list`, `/issues:resolve`,
-  `/issues:scan`.
+  `/scan:issues`.
 - It is NOT a Jira clone.
 - It is NOT the source of truth — the YAML files are.
 

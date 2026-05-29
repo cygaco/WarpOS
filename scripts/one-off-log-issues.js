@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// One-off: log the 3 uncurated >=3x scan candidates from /issues:scan.
+// One-off: log the 3 uncurated >=3x scan candidates from /scan:issues.
 // Self-contained because merge-guard greps the bash command string for
 // blocked patterns and false-positives on literal substrings inside
 // arguments (e.g. "git checkout agent/" passed as context text).

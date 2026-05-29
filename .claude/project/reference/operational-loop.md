@@ -44,5 +44,5 @@ The harness exposes two ways to keep work alive across tool calls:
 
 **Windows process hygiene:**
 - Per-edit hooks that shell out (Prettier, ESLint, etc.) can leak Node processes when timeouts fire. `cmd.exe` wrappers don't honor SIGTERM, so the child survives past the parent's timeout. Sprint B's fix in `scripts/hooks/format.js` captures the child PID and runs `taskkill /F /T /PID <pid>` on Windows (`SIGKILL` on POSIX) to clean up the tree.
-- Run `/check:node-procs` to see every alive Node process at a glance (PID, start-time, working-set KB, command). Read-only diagnostic — no kill flow in v1.
+- Run `/scan:node-procs` to see every alive Node process at a glance (PID, start-time, working-set KB, command). Read-only diagnostic — no kill flow in v1.
 - If a session leaks tens of Node processes, the framework-level cause is a hook timeout path that doesn't clean its child. Don't reach for `taskkill /FI "IMAGENAME eq node.exe"` and call it a day — find the leaky hook and fix it upstream.

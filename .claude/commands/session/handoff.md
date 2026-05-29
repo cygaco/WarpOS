@@ -85,12 +85,12 @@ Run in parallel:
 
 [If none: omit this section entirely]
 
-Run `/check:requirements review` to process these before ending the session.
+Run `/scan:requirements review` to process these before ending the session.
 
 ## Warnings
 
 [Don't-touch items, known broken state, pending work]
-[If pending requirement overwrites exist, add: "**N spec overwrites pending review** — code behavior has diverged from specs. Run `/check:requirements review`."]
+[If pending requirement overwrites exist, add: "**N spec overwrites pending review** — code behavior has diverged from specs. Run `/scan:requirements review`."]
 
 ## Key Context
 

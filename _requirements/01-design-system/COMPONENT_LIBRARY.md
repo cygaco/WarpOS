@@ -1,4 +1,4 @@
-# Jobzooka — Component Library
+# Component Library
 
 Shared UI primitives used across the application. This documents current state, variants, and known issues.
 
@@ -228,7 +228,7 @@ When deselected, BOTH variants show the same empty bordered box — no symbol, n
 
 ### Anti-pattern
 
-**Do NOT use iOS-style toggle switches** (44×24px pill with sliding circle). These regressed during agent builds and are not part of the Jobzooka design system. All boolean lists use the card row pattern above.
+**Do NOT use iOS-style toggle switches** (44×24px pill with sliding circle). These regressed during agent builds and are not part of the the product design system. All boolean lists use the card row pattern above.
 
 ---
 
@@ -297,7 +297,7 @@ We're adopting shadcn/ui (built on Radix primitives) for accessibility and consi
 
 ### Phase A — Pilot (DONE)
 
-shadcn init complete with style `new-york`, base color `neutral`, Tailwind v4. CSS vars in `globals.css` alias shadcn-named tokens (`--primary`, `--background`, `--foreground`, etc.) to existing Jobzooka brand vars — no visual change to the app.
+shadcn init complete with style `new-york`, base color `neutral`, Tailwind v4. CSS vars in `globals.css` alias shadcn-named tokens (`--primary`, `--background`, `--foreground`, etc.) to existing the product brand vars — no visual change to the app.
 
 **Installed primitives:**
 
@@ -322,7 +322,7 @@ Migration strategy: rewrite each bespoke file to wrap the shadcn primitive while
 | Bespoke | Status | Action | shadcn target |
 |---|---|---|---|
 | Btn | **DONE** | wraps shadcn `Button`; preserves 6-variant prop API byte-identically (`primary`→`default`, `secondary`→`outline`, `ghost`→`ghost`, `danger`→`destructive`, `icon`→`ghost`+square, `chip`→`outline`+pill+`aria-pressed`); 3-size prop (`sm`/`md`/`lg`) via inline-style overrides (shadcn Tailwind heights ignored); `loading` spinner (CSS-keyframe, renders before children); `selected` chip toggle; hover managed via `useState` mouseEnter/Leave (shadcn hover: classes don't apply over inline-style background); no hex literals — all colors via CSS custom properties; 92 call sites across 17 files unchanged | button.tsx |
-| Card | **DONE** | wraps `Card` from `cardprim.tsx` (inline shadcn Card primitives — `npx shadcn add card` skipped to avoid Windows case-insensitive FS collision with `Card.tsx`); inline style overrides Tailwind defaults with Jobzooka tokens (`--surface`, `--border`, `--radius-lg`, `--shadow`); `padding` prop maps sm/md/lg → 12px/20px/32px; `onClick` adds `cursor: pointer`; API (`children`, `className`, `padding`, `onClick`, `style`) unchanged; 24 call sites untouched | cardprim.tsx |
+| Card | **DONE** | wraps `Card` from `cardprim.tsx` (inline shadcn Card primitives — `npx shadcn add card` skipped to avoid Windows case-insensitive FS collision with `Card.tsx`); inline style overrides Tailwind defaults with the product tokens (`--surface`, `--border`, `--radius-lg`, `--shadow`); `padding` prop maps sm/md/lg → 12px/20px/32px; `onClick` adds `cursor: pointer`; API (`children`, `className`, `padding`, `onClick`, `style`) unchanged; 24 call sites untouched | cardprim.tsx |
 | Spin | Keep custom | inline as Loader-2 from lucide | (no primitive) |
 | CopyBtn | **DONE** | wraps `Button variant="outline" size="sm"`; clipboard logic inlined (no custom hook); `execCommand` fallback preserved; copied-state colors via CSS-vars (`--success-light`, `--success`, `--success-border`); API (`text`, `label`, `className`, `style`) unchanged | button.tsx |
 | Inp | **DONE** | wraps `Input`; preserves label, error msg, char-count hint, focus border, required `*`, `maxLength`, disabled state, full `InputHTMLAttributes` pass-through | input.tsx |
@@ -344,14 +344,14 @@ Migration strategy: rewrite each bespoke file to wrap the shadcn primitive while
 - Use `npx shadcn@latest add <name>` to install the shadcn primitive first
 - Rewrite the bespoke file to render the shadcn primitive while keeping exported function names and prop interfaces stable
 - Run Playwright MCP visual-diff before/after (see `_requirements/09-integrations/PROVIDER/06-playwright.md`)
-- Use `/check:design-system` to catch hex literals or raw HTML primitives that snuck in
+- Use `/scan:design-system` to catch hex literals or raw HTML primitives that snuck in
 - Update this table once a component flips to "DONE"
 
 ### Tokens
 
-shadcn aliases map to Jobzooka brand tokens in `src/app/globals.css`:
+shadcn aliases map to the product brand tokens in `src/app/globals.css`:
 
-| shadcn var | Jobzooka source |
+| shadcn var | the product source |
 |---|---|
 | `--background` | `--bg` |
 | `--foreground` | `--text` |

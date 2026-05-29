@@ -6,7 +6,7 @@ Architecture Decision Records — settled decisions Beta consults to find preced
 
 ## Where settled decisions live
 
-**Pre-2026-04-29 settled decisions** are documented in `_requirements/03-architecture/`. Those files ARE this project's ADR archive — they capture what was chosen and why for the Jobzooka core stack and architecture, just not in numbered ADR format. When checking precedent, search there first:
+**Pre-2026-04-29 settled decisions** are documented in `_requirements/03-architecture/`. Those files ARE this project's ADR archive — they capture what was chosen and why for the product's core stack and architecture, just not in numbered ADR format. When checking precedent, search there first:
 
 - `_requirements/03-architecture/STACK.md` — framework, language, hosting, styling, state, AI provider, job-data source
 - `_requirements/03-architecture/AUTH_SCHEMAS.md` — JWT + OAuth (Google/LinkedIn) + email/password
@@ -44,7 +44,7 @@ When Beta returns DECIDE on a Class B decision with `OPEN_ADR: true`, Alpha drop
 
 | ADR | Title | Date | Status | Supersedes |
 |---|---|---|---|---|
-| [0001](0001-warp-promote-location.md) | Build /warp:promote in Jobzooka First | 2026-05-01 | accepted | - |
+| [0001](0001-warp-promote-location.md) | Build /warp:promote in the Product Repo First | 2026-05-01 | accepted | - |
 | [0002](0002-multi-sprint-parallel-lanes.md) | Multi-sprint parallelism via per-sprint state + lanes | 2026-05-12 | accepted | - |
 
-When ADRs accrete, add a row here pointing at each file. Keep the table in sync with the filesystem; `/check:references` will catch drift.
+When ADRs accrete, add a row here pointing at each file. Keep the table in sync with the filesystem; `/scan:references` will catch drift.

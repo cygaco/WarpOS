@@ -72,7 +72,7 @@ git diff {baseline}..HEAD -- 'src/' | head -500
 
 ### Phase C2: Requirement Propagation Check
 
-Delegate to `/check:requirements drift`. This queries the event log for spec and code events, cross-references per feature, checks hierarchy propagation.
+Delegate to `/scan:requirements drift`. This queries the event log for spec and code events, cross-references per feature, checks hierarchy propagation.
 
 Add findings under REQUIREMENTS PROPAGATION:
 
@@ -87,7 +87,7 @@ If no events exist, falls back to `git diff --name-only`.
 
 ### Phase D: Cross-Run Analysis
 
-Delegate to `/check:patterns diagnose`. This spawns an Explore agent to read all prior retro docs and returns:
+Delegate to `/scan:patterns diagnose`. This spawns an Explore agent to read all prior retro docs and returns:
 
 1. Repeat problem areas (grouped by root cause, with run counts and status)
 2. Rule effectiveness scorecard (EFFECTIVE / NEEDS ENFORCEMENT / UNTESTED / DEPRECATED)

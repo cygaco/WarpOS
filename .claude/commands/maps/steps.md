@@ -70,6 +70,6 @@ Together, these three layers close the loop: one edit to STEPS.json, guarded edi
 ## Related
 
 - `/maps:all` — registry of all maps; may delegate to this skill
-- `/check:references` — validates cross-file references; respects the auto-generated markers
+- `/scan:references` — validates cross-file references; respects the auto-generated markers
 - `scripts/generate-maps.js` — sibling regenerator for hooks/skills/memory/tools/systems maps (not steps)
 - `scripts/generate-steps-maps.js` — the actual implementation invoked by this skill

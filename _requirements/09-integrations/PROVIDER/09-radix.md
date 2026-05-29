@@ -16,7 +16,7 @@ Last verified: 2026-04-28.
 
 ## Primitives in active use (post Phase A)
 
-| Primitive | Source package | Where used in jobzooka |
+| Primitive | Source package | Where used in the product |
 |---|---|---|
 | `Dialog` | `@radix-ui/react-dialog` (via shadcn) | `src/components/PrivacyModal.tsx`, future settings/confirmation modals |
 | `Popover` | `@radix-ui/react-popover` (via shadcn) | Auto-fill confidence badges, date-picker dropdowns |
@@ -39,7 +39,7 @@ Currently no direct imports needed.
 
 - **All UI primitives go through `src/components/ui/`.** Don't import `@radix-ui/*` from feature components — go through the shadcn / project wrapper.
 - **Composition over wrapping.** When extending a primitive, compose with `asChild` slot pattern instead of wrapping in a `<div>` that breaks ARIA.
-- **Style with tokens.** Color / spacing / radius come from CSS vars in `globals.css`, derived from `_requirements/03-architecture/DESIGN_TOKENS.md`. Don't hardcode hex — `/check:design-system` will catch it.
+- **Style with tokens.** Color / spacing / radius come from CSS vars in `globals.css`, derived from `_requirements/03-architecture/DESIGN_TOKENS.md`. Don't hardcode hex — `/scan:design-system` will catch it.
 
 ## Known issues / quirks
 
@@ -52,5 +52,5 @@ Currently no direct imports needed.
 | Failure | Behavior |
 |---|---|
 | Missing primitive (shadcn doesn't ship) | Add `@radix-ui/react-<x>`, build wrapper in `src/components/ui/`, document here |
-| ARIA regression | Caught by `/check:design-system` + Playwright MCP `browser_snapshot` accessibility tree assertions |
+| ARIA regression | Caught by `/scan:design-system` + Playwright MCP `browser_snapshot` accessibility tree assertions |
 | Bundle size | Radix is tree-shakable per-primitive; total impact for our usage <50kb gzip |

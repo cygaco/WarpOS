@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// check:warpos-roundtrip — STUB.
+// scan:warpos-roundtrip — STUB.
 // Verify product → canonical (/warp:promote) → product (/warp:update) is byte-stable
 // for files in FRAMEWORK_PREFIXES. Refine via /reasoning:run with this prompt:
 //
@@ -8,7 +8,7 @@
 //  test, or CI fixture? What's the failure-mode taxonomy (line-ending drift,
 //  YAML reordering, JSON whitespace, BOM, schema-coercion)?"
 //
-// Pre-stub behaviour: succeed with TODO note so /check:all stays green.
+// Pre-stub behaviour: succeed with TODO note so /scan:full stays green.
 const JSON_OUT = process.argv.includes("--json");
 const out = {
   ok: true,

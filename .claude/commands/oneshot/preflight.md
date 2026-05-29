@@ -145,9 +145,9 @@ For each pass, collect findings as a JSON array. After all requested passes comp
 
 ### Pass 1-2: Spec Consistency & Coverage
 
-Delegate to `/check:requirements static`.
+Delegate to `/scan:requirements static`.
 
-This runs all spec checks: consistency (S1-S8), coverage (S9-S17), and quality (S18-S23). See `.claude/commands/check/requirements.md` for the full check list.
+This runs all spec checks: consistency (S1-S8), coverage (S9-S17), and quality (S18-S23). See `.claude/commands/scan/requirements.md` for the full check list.
 
 **Phase 3 addendum (Freshness Gate):** in addition to the static checks, run:
 
@@ -160,11 +160,11 @@ The first verifies `_requirements/_index/requirements.graph.json` is current wit
 
 ### Pass 3: Agent Buildability
 
-Delegate to `/check:architecture internal` — runs buildability checks A1-A12 only.
+Delegate to `/scan:architecture internal` — runs buildability checks A1-A12 only.
 
 ### Pass 4: Environment Readiness
 
-Delegate to `/check:environment ready` — runs environment checks E1-E14.
+Delegate to `/scan:environment ready` — runs environment checks E1-E14.
 
 ### Pass 5: Run Transition
 
@@ -203,9 +203,9 @@ JSON array of `{check, severity, message, evidence?}` items.
 
 ### Pass 6: Agent Architecture Completeness
 
-Delegate to `/check:architecture internal` — runs architecture completeness checks A13-A26 (including the agentic flow audit).
+Delegate to `/scan:architecture internal` — runs architecture completeness checks A13-A26 (including the agentic flow audit).
 
-Note: When running all passes, Pass 3 delegates for A1-A12, and Pass 6 delegates for A13-A26. The `check:architecture` skill handles both sets. If running just Pass 6, specify that only A13-A26 checks should run.
+Note: When running all passes, Pass 3 delegates for A1-A12, and Pass 6 delegates for A13-A26. The `scan:architecture` skill handles both sets. If running just Pass 6, specify that only A13-A26 checks should run.
 
 ### Pass 7: Skeleton State Verification
 
@@ -234,7 +234,7 @@ You are a skeleton state auditor. Verify that ALL feature-owned files are proper
 
 ### Pass 8: Cross-Layer Seams
 
-Delegate to `/check:architecture seams` — runs the S-series checks that verify cross-layer integrity:
+Delegate to `/scan:architecture seams` — runs the S-series checks that verify cross-layer integrity:
 
 - **S1** Specs → foundation types (every type/field reference in PRD/INPUTS/STORIES exists in `src/lib/types.ts`) — STRENGTHENED 2026-04-25; closes "spec evolved beyond foundation types" gap class. Severity: ERROR.
 - **S2-S6** Stories ↔ prompts/validation/architecture coherence.

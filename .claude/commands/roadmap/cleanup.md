@@ -94,5 +94,5 @@ If detection surfaces ambiguity (item could plausibly be "completed" or "still i
 
 - `/roadmap:add` — append new entries (paired skill; consumes section hints)
 - `/discover:orphaned` — find work that fell through cracks (complementary; works on NEXT.md / TODOs / branches, not ROADMAP)
-- `/check:references` — surfaces dead-path issues at code level
+- `/scan:references` — surfaces dead-path issues at code level
 - `/sprint:retrospective` — sprints retrospected here are the canonical "completed" signal for detector A

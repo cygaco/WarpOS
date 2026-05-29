@@ -39,7 +39,7 @@ const ESCAPE_KEYWORDS = [
 const SPEND_PATTERN = /\$\d+/;
 
 // Release-context keywords. When a question matches AND there's no recent
-// Beta consultation, we BLOCK (not warn). Source: /check:patterns 2026-05-13
+// Beta consultation, we BLOCK (not warn). Source: /scan:patterns 2026-05-13
 // (15x/day release-time bypass) + CLAUDE.md §"β consultation protocol".
 // Note: "deploy" was removed from ESCAPE_KEYWORDS above so it now triggers
 // the release-context gate instead of bypassing Beta entirely.
@@ -201,7 +201,7 @@ function main() {
 
       // Release-context gate. If the question is release-flavored AND there
       // is no recent Beta consultation matching that context, BLOCK with
-      // release-specific guidance. Source: /check:patterns 2026-05-13
+      // release-specific guidance. Source: /scan:patterns 2026-05-13
       // (15x/day release-time bypass). The release.md skill now requires
       // a Step-0 SendMessage to Beta before reaching this hook.
       if (isReleaseContext(question)) {

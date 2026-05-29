@@ -188,7 +188,7 @@ const ENRICH = {
     description:
       "WarpOS installer surface — scripts/warp-setup.js, install.ps1, version.json.",
     depends_on: [],
-    test: "Run /check:install on a fresh clone.",
+    test: "Run /scan:install on a fresh clone.",
     health: "All three installer entry-points exist and version.json parses.",
   },
   linters: {

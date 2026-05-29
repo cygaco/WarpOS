@@ -476,13 +476,13 @@ process.stdin.on("end", () => {
         lines.push("## Pending Spec Drift");
         lines.push("");
         lines.push(
-          `**${r.pending.length} drift entr${r.pending.length === 1 ? "y" : "ies"} pending review.** Run \`/check:requirements review\` before next session to flush.`,
+          `**${r.pending.length} drift entr${r.pending.length === 1 ? "y" : "ies"} pending review.** Run \`/scan:requirements review\` before next session to flush.`,
         );
         const features = Object.keys(r.byFeature).join(", ");
         if (features) lines.push(`Features: ${features}`);
         lines.push("");
         process.stderr.write(
-          `\x1b[33m[session-stop] ${r.pending.length} pending drift entr${r.pending.length === 1 ? "y" : "ies"} (features: ${features || "?"}). Run /check:requirements review.\x1b[0m\n`,
+          `\x1b[33m[session-stop] ${r.pending.length} pending drift entr${r.pending.length === 1 ? "y" : "ies"} (features: ${features || "?"}). Run /scan:requirements review.\x1b[0m\n`,
         );
         logEvent(
           "warn",

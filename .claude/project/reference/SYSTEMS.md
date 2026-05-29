@@ -2,7 +2,7 @@
 
 The authoritative list of systems. Each system has state, rules, a lifecycle, and interactions with other systems. This doc + `paths.systemsFile` (`.claude/project/memory/systems.jsonl`) are the two sources of truth.
 
-Maintained by `/check:system` (enumerate + diff) and `/maps:systems` (render).
+Maintained by `/scan:system` (enumerate + diff) and `/maps:systems` (render).
 
 Last updated: 2026-04-16.
 
@@ -177,4 +177,4 @@ Last updated: 2026-04-16.
 - Tier 15: 2
 - Tier 16: 2
 
-Each tier should have at least one entry in `paths.systemsFile`. `/check:system` reports gaps.
+Each tier should have at least one entry in `paths.systemsFile`. `/scan:system` reports gaps.

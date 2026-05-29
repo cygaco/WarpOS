@@ -19,7 +19,7 @@
  *   node scripts/schemas/validate.js --strict     # exit 1 on any finding
  *
  * Wired into:
- *   /check:environment   — fails on unsupported schema version
+ *   /scan:environment   — fails on unsupported schema version
  *   /preflight:run       — Pass (TBD): schema check before build
  */
 

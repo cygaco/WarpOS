@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/* check:warpos-structure-parity — installed framework has the structural
+/* scan:warpos-structure-parity — installed framework has the structural
  * skeleton (underscore-meta dirs) declared by canonical.
  *
  * Catches the gap that opened the 2026-05-03 cleanup: canonical had

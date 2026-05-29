@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Smoke-test for merge-guard cd-prefix AUTO-STRIP behavior.
 // Previously advisory (warn, no mutation). After 2026-05-13 escalation
-// (/check:patterns: 16x/day fires with 0 behavior change), this rule
+// (/scan:patterns: 16x/day fires with 0 behavior change), this rule
 // now emits hookSpecificOutput.updatedInput.command with the prefix
 // removed, AND continues NOT to block. Verify:
 //   - the auto-strip JSON is emitted for redundant `cd <PROJECT> && ...`

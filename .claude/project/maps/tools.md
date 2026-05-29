@@ -1,186 +1,410 @@
 # Tools Map
 
-Generated: 2026-05-13T22:37:04.323Z
+Generated: 2026-05-29T06:52:32.513Z
 
-Scripts: **165** | npm scripts: **0** | External CLIs: **3**
-
-## Utility scripts (scripts/*.js)
-
-| Name | Size | Modified |
-|---|---|---|
-| agent-dashboard.js | 49514 | 2026-04-22T05:49:15.934Z |
-| analyze-run12-deep.js | 4452 | 2026-04-29T05:13:26.862Z |
-| analyze-run12.js | 5612 | 2026-05-03T19:46:50.924Z |
-| analyze-staged-drift.js | 1143 | 2026-05-02T02:38:18.831Z |
-| append-learning.js | 336 | 2026-04-24T04:43:17.630Z |
-| append-run12-learnings.js | 2407 | 2026-04-29T05:13:59.810Z |
-| append-trace-rt013.js | 2276 | 2026-04-24T06:53:58.116Z |
-| append-trace.js | 723 | 2026-04-24T04:42:40.229Z |
-| assess-session.js | 17872 | 2026-04-22T05:49:15.935Z |
-| branch-diff.js | 4110 | 2026-04-22T05:49:15.936Z |
-| celebrate.js | 3352 | 2026-04-22T05:49:15.937Z |
-| check-guard-promotion.js | 7942 | 2026-04-22T05:49:15.938Z |
-| check-prd-anchors.js | 4392 | 2026-05-03T19:39:34.492Z |
-| check-test-staleness.js | 4670 | 2026-05-03T19:46:50.925Z |
-| delta-aggregate-reviews.js | 4542 | 2026-04-29T05:52:32.757Z |
-| delta-build-fix-brief.js | 6324 | 2026-04-29T06:21:14.975Z |
-| delta-build-fixer-prompt-from-worktree.js | 2365 | 2026-04-26T07:15:41.466Z |
-| delta-build-fixer-prompt.js | 1780 | 2026-04-26T07:12:36.298Z |
-| delta-build-prompt.js | 7079 | 2026-05-03T19:46:50.927Z |
-| delta-build-reviewer-prompt.js | 10377 | 2026-05-03T19:46:50.927Z |
-| delta-canonical-dispatch-smoke.js | 7623 | 2026-04-29T05:17:45.618Z |
-| delta-cleanup-stale-fix-worktrees.js | 1604 | 2026-04-25T21:20:12.213Z |
-| delta-clear-halt.js | 624 | 2026-04-23T23:58:10.278Z |
-| delta-dispatch-builder.js | 8809 | 2026-05-03T19:46:50.928Z |
-| delta-dispatch-fixer.js | 7335 | 2026-04-26T06:49:33.592Z |
-| delta-final-gauntlet.js | 2294 | 2026-04-29T05:52:40.017Z |
-| delta-gate-check.js | 2003 | 2026-04-29T05:52:46.896Z |
-| delta-gauntlet-watcher.js | 1722 | 2026-04-29T06:20:35.179Z |
-| delta-heartbeat.js | 1209 | 2026-04-23T23:47:22.260Z |
-| delta-log-integrations.js | 2213 | 2026-04-29T05:19:34.937Z |
-| delta-mark-built.js | 7493 | 2026-04-30T07:24:19.386Z |
-| delta-mark-done.js | 846 | 2026-04-24T00:36:48.201Z |
-| delta-pre-clean-worktrees.js | 3855 | 2026-04-29T05:18:15.012Z |
-| delta-queue-foundation.js | 1013 | 2026-04-24T00:04:52.579Z |
-| delta-render-tracker.js | 4806 | 2026-04-25T20:58:14.487Z |
-| delta-show-findings.js | 1011 | 2026-04-28T22:13:17.375Z |
-| delta-store-review.js | 1672 | 2026-04-25T21:04:44.815Z |
-| delta-update-heartbeat.js | 720 | 2026-04-26T05:25:42.662Z |
-| dismiss-drift-entry.js | 647 | 2026-04-30T02:33:59.374Z |
-| dispatch-agent.js | 15036 | 2026-05-11T21:17:46.500Z |
-| dispatch.js | 20217 | 2026-05-03T19:46:50.930Z |
-| drift-apply-decisions.js | 2075 | 2026-04-28T20:11:53.398Z |
-| drift-build-decisions-jsonl.js | 2675 | 2026-04-28T20:12:01.650Z |
-| drift-build-decisions.js | 2577 | 2026-04-28T20:11:13.843Z |
-| drift-dump-pending.js | 1582 | 2026-04-28T20:07:37.113Z |
-| drift-inspect.js | 2371 | 2026-04-28T20:08:05.266Z |
-| drift-load-pending.js | 4153 | 2026-04-28T20:06:21.256Z |
-| drift-shape.js | 2656 | 2026-04-28T20:10:32.087Z |
-| drift-verify-summarize.js | 1632 | 2026-04-28T20:09:36.361Z |
-| drift-verify.js | 5846 | 2026-04-28T20:09:19.153Z |
-| drift-write-decisions.js | 1743 | 2026-04-28T20:07:44.594Z |
-| fix-deep-trace-run09-cleanup.js | 3702 | 2026-04-22T05:49:15.940Z |
-| generate-framework-manifest.js | 15962 | 2026-05-12T02:24:23.866Z |
-| generate-maps.js | 13185 | 2026-04-17T21:30:23.986Z |
-| generate-skill-catalog.js | 9322 | 2026-05-13T20:40:24.650Z |
-| generate-steps-maps.js | 8579 | 2026-05-03T19:46:50.931Z |
-| generate-test-fixtures.js | 6266 | 2026-05-03T19:46:50.932Z |
-| jobzooka-file-sync-v9.js | 1889 | 2026-05-01T00:35:31.635Z |
-| learn-conversation-2026-04-24.js | 5692 | 2026-04-24T21:54:39.235Z |
-| learn-events-analyze.js | 8716 | 2026-04-22T05:49:16.012Z |
-| learn-events-write.js | 6200 | 2026-04-22T05:49:16.014Z |
-| learn-integrate-candidates.js | 2383 | 2026-04-29T21:08:49.184Z |
-| lint-hl-stories.js | 11372 | 2026-05-03T19:46:50.744Z |
-| lint-prds.js | 22711 | 2026-05-03T19:46:50.745Z |
-| lint-staleness.js | 2076 | 2026-05-03T19:46:50.943Z |
-| lint-stories.js | 18280 | 2026-05-03T19:46:50.747Z |
-| materialize-decisions.js | 4313 | 2026-05-03T19:46:50.943Z |
-| migrate-page-tsx-step-refs.js | 2607 | 2026-04-29T18:55:21.401Z |
-| mode-set.js | 5205 | 2026-04-30T20:45:25.885Z |
-| one-off-add-backend-to-store.js | 3627 | 2026-05-03T19:46:50.944Z |
-| one-off-classify-stubs.js | 2718 | 2026-04-25T03:29:56.417Z |
-| one-off-events-mine.js | 2524 | 2026-04-25T01:08:20.384Z |
-| one-off-gut-stubs.js | 13525 | 2026-04-26T21:43:24.407Z |
-| one-off-handoff-delta.js | 986 | 2026-04-25T18:35:43.579Z |
-| one-off-learn-attest.js | 2688 | 2026-04-25T01:13:08.488Z |
-| one-off-learn-survey.js | 1781 | 2026-04-25T01:12:23.217Z |
-| one-off-log-dispatch-issues.js | 2385 | 2026-04-24T23:00:09.168Z |
-| one-off-log-issues.js | 2589 | 2026-05-03T19:46:50.944Z |
-| one-off-log-rt015.js | 2761 | 2026-04-25T01:00:03.484Z |
-| one-off-pass78-diff.js | 2692 | 2026-05-03T19:46:50.945Z |
-| one-off-restore-from-test9.js | 614 | 2026-04-25T03:36:48.578Z |
-| one-off-retro-session-learnings.js | 4622 | 2026-04-25T01:02:42.933Z |
-| one-off-sleep-2026-04-25.js | 5650 | 2026-04-25T01:40:31.840Z |
-| one-off-start-checks.js | 8478 | 2026-05-02T02:38:18.860Z |
-| one-off-stub-coverage-check.js | 4834 | 2026-04-25T03:02:17.938Z |
-| one-off-update-known-stubs.js | 560 | 2026-04-25T03:31:26.746Z |
-| oneshot-halt.js | 4476 | 2026-04-22T05:49:16.022Z |
-| oneshot-heartbeat.js | 1161 | 2026-04-22T05:49:16.023Z |
-| oneshot-phase-complete.js | 1878 | 2026-04-22T05:49:16.024Z |
-| oneshot-store-file-sync.js | 4911 | 2026-05-03T19:46:50.946Z |
-| oneshot-store-reset.js | 3060 | 2026-04-25T18:05:21.651Z |
-| patch-store-backend-skipped.js | 1153 | 2026-04-26T05:28:15.343Z |
-| path-lint.js | 14577 | 2026-05-11T21:15:06.830Z |
-| phase0-verify.js | 3593 | 2026-05-11T21:20:51.073Z |
-| points.js | 4170 | 2026-04-22T05:49:16.028Z |
-| preflight-7-8-sync.js | 5333 | 2026-05-03T19:46:50.948Z |
-| preflight-fix-undefined-types.js | 3275 | 2026-04-26T21:45:34.499Z |
-| preflight-foundation-list.js | 378 | 2026-04-26T07:04:05.017Z |
-| preflight-post-7-8-reconcile.js | 6056 | 2026-04-26T21:34:22.750Z |
-| preflight-restore-ambient-stubs.js | 2652 | 2026-04-26T21:36:37.771Z |
-| preflight-restore-pre-gut.js | 1920 | 2026-04-26T21:42:36.746Z |
-| preflight-strip-dead-imports.js | 4419 | 2026-04-26T21:44:36.876Z |
-| preflight-survey.js | 2093 | 2026-04-26T07:03:38.163Z |
-| preflight-update-known-stubs.js | 1509 | 2026-04-26T21:35:07.573Z |
-| qa-health.js | 14927 | 2026-05-03T19:46:50.948Z |
-| read-store-state.js | 319 | 2026-04-26T07:25:07.486Z |
-| record-gate-check.js | 1916 | 2026-04-26T06:35:12.437Z |
-| recurring-issues-helper.js | 9224 | 2026-04-24T21:55:13.666Z |
-| regen-maps.js | 47568 | 2026-05-13T22:31:16.988Z |
-| research-append-learnings.js | 7439 | 2026-04-24T04:27:55.948Z |
-| research-build-payload.js | 5061 | 2026-04-24T03:52:21.615Z |
-| reset-cycle-step.js | 505 | 2026-04-26T06:36:12.456Z |
-| seed-admin.js | 4022 | 2026-04-28T21:53:05.226Z |
-| session-recap.js | 11351 | 2026-04-24T21:37:27.490Z |
-| set-alpha-store-review-complete.js | 497 | 2026-05-02T02:38:18.883Z |
-| set-cycle-step-review-complete.js | 384 | 2026-04-26T06:57:04.983Z |
-| set-feature-status.js | 845 | 2026-04-26T05:47:57.391Z |
-| set-heartbeat-market-research-builder.js | 708 | 2026-04-26T06:59:44.633Z |
-| skill-adherence-report.js | 4676 | 2026-05-13T20:44:28.353Z |
-| skill-description-audit.js | 7429 | 2026-05-13T20:45:39.245Z |
-| sleep-20260422-analyze.js | 4196 | 2026-04-22T05:49:16.031Z |
-| sleep-20260422-consolidate.js | 4289 | 2026-04-22T05:49:16.032Z |
-| sleep-20260422-log-events.js | 538 | 2026-04-22T05:49:16.033Z |
-| sleep-20260422-prune.js | 2910 | 2026-04-22T05:49:16.033Z |
-| snapshot.js | 4430 | 2026-04-22T05:49:16.034Z |
-| strip-planning-only.js | 1484 | 2026-05-03T19:46:50.778Z |
-| stub-audit-coverage.js | 1197 | 2026-04-28T20:40:13.355Z |
-| stub-audit-run-11.js | 1435 | 2026-04-28T20:33:26.558Z |
-| sync-run-number.js | 3054 | 2026-04-25T00:47:50.602Z |
-| systems-append-run09.js | 2389 | 2026-04-22T05:49:16.037Z |
-| test-beta-gate-release.js | 6407 | 2026-05-13T22:26:01.204Z |
-| test-concurrency-lock.js | 3129 | 2026-04-29T05:07:22.633Z |
-| test-dispatch-agent-resolution.js | 2609 | 2026-05-11T21:18:03.243Z |
-| test-dispatch-route-guard.js | 2353 | 2026-05-11T21:00:11.952Z |
-| test-dispatch-telemetry.js | 3750 | 2026-05-11T21:04:53.299Z |
-| test-manifest-guard-product.js | 5363 | 2026-05-11T21:13:48.820Z |
-| test-merge-guard-cd-prefix.js | 4454 | 2026-05-13T22:28:01.534Z |
-| test-merge-guard-rm.js | 2302 | 2026-05-03T19:46:50.952Z |
-| test-provider-health.js | 3258 | 2026-05-11T21:10:37.854Z |
-| test-providers-stdin-fix.js | 2160 | 2026-05-12T06:59:37.659Z |
-| test-requirement-format-guard.js | 4756 | 2026-05-11T21:18:55.311Z |
-| test-response-size-guard.js | 2469 | 2026-04-24T21:49:35.355Z |
-| test-sprint-hooks.js | 55673 | 2026-05-12T23:22:23.158Z |
-| test-sprint-migration.js | 20071 | 2026-05-13T00:13:45.173Z |
-| test-sprint-tracker-autoinject.js | 6473 | 2026-05-13T22:24:03.413Z |
-| test-sprint.js | 16392 | 2026-05-11T22:12:07.871Z |
-| test-staged-drift-reconciler.js | 4458 | 2026-05-03T19:46:50.952Z |
-| test-team-guard.js | 4559 | 2026-04-24T07:14:53.913Z |
-| test-update-discovery.js | 6620 | 2026-05-12T00:18:43.621Z |
-| test-warp-flag.js | 5102 | 2026-05-11T21:07:36.420Z |
-| truth-compiler.js | 18808 | 2026-05-03T19:46:50.953Z |
-| update-heartbeat.js | 743 | 2026-04-26T05:32:54.580Z |
-| update-market-research-gauntlet.js | 1630 | 2026-04-26T07:03:13.469Z |
-| update-market-research-merged.js | 972 | 2026-04-26T06:48:09.842Z |
-| update-onboarding-done.js | 2695 | 2026-04-26T06:54:25.461Z |
-| validate-gates.js | 7165 | 2026-04-26T05:28:42.275Z |
-| verify-drift-detector.js | 833 | 2026-05-03T19:46:50.785Z |
-| verify-ui.js | 5832 | 2026-04-24T06:43:36.495Z |
-| warp-setup.js | 49184 | 2026-05-03T19:46:50.954Z |
-| warpos-sync-run09.js | 4731 | 2026-04-29T06:25:44.881Z |
-| write-market-research-fix-1-brief.js | 6620 | 2026-04-26T07:02:53.773Z |
-| write-mr-fix1-brief.js | 7402 | 2026-04-26T07:16:50.396Z |
-| write-onboarding-fix-1-brief.js | 3941 | 2026-04-26T06:13:31.480Z |
-| write-onboarding-fix-2-brief.js | 4875 | 2026-04-26T06:26:47.583Z |
-| write-onboarding-fix-3-brief.js | 4802 | 2026-04-26T06:42:42.104Z |
-
-## npm scripts (package.json)
-
-| Name | Command |
-|---|---|
-
-## External CLIs
-
-- **gemini** — install: `npm i -g @google/gemini-cli`; required env: GEMINI_API_KEY
-- **codex** — install: `npm i -g @openai/codex`; required env: OPENAI_API_KEY
-- **claude** — install: `(Claude Code itself)`; required env: ANTHROPIC_API_KEY
+| id | name | type | path | size |
+|---|---|---|---|---|
+| tool:agent-dashboard | agent-dashboard.js | script | scripts/agent-dashboard.js | 49514 |
+| tool:cli | cli.js | script | scripts/agents/cli.js | 6017 |
+| tool:output-validator | output-validator.js | script | scripts/agents/output-validator.js | 2779 |
+| tool:provider-trace | provider-trace.js | script | scripts/agents/provider-trace.js | 2731 |
+| tool:analyze-run12-deep | analyze-run12-deep.js | script | scripts/analyze-run12-deep.js | 4623 |
+| tool:analyze-run12 | analyze-run12.js | script | scripts/analyze-run12.js | 5806 |
+| tool:analyze-staged-drift | analyze-staged-drift.js | script | scripts/analyze-staged-drift.js | 1143 |
+| tool:append-learning | append-learning.js | script | scripts/append-learning.js | 346 |
+| tool:append-run12-learnings | append-run12-learnings.js | script | scripts/append-run12-learnings.js | 2490 |
+| tool:append-trace-rt013 | append-trace-rt013.js | script | scripts/append-trace-rt013.js | 2325 |
+| tool:append-trace | append-trace.js | script | scripts/append-trace.js | 747 |
+| tool:assess-session | assess-session.js | script | scripts/assess-session.js | 17872 |
+| tool:fixtures | fixtures.js | script | scripts/bootstrap/lastmile/fixtures.js | 5240 |
+| tool:adapter-contract | adapter-contract.js | script | scripts/bootstrap/lastmile/lib/adapter-contract.js | 4711 |
+| tool:approval-gates | approval-gates.js | script | scripts/bootstrap/lastmile/lib/approval-gates.js | 2503 |
+| tool:detect | detect.js | script | scripts/bootstrap/lastmile/lib/detect.js | 12879 |
+| tool:profiles | profiles.js | script | scripts/bootstrap/lastmile/lib/profiles.js | 4848 |
+| tool:render | render.js | script | scripts/bootstrap/lastmile/lib/render.js | 2369 |
+| tool:score | score.js | script | scripts/bootstrap/lastmile/lib/score.js | 5773 |
+| tool:analytics | analytics.js | script | scripts/bootstrap/lastmile/modules/analytics.js | 3278 |
+| tool:auth | auth.js | script | scripts/bootstrap/lastmile/modules/auth.js | 3596 |
+| tool:crm | crm.js | script | scripts/bootstrap/lastmile/modules/crm.js | 2808 |
+| tool:database | database.js | script | scripts/bootstrap/lastmile/modules/database.js | 3431 |
+| tool:deployment | deployment.js | script | scripts/bootstrap/lastmile/modules/deployment.js | 3439 |
+| tool:payments | payments.js | script | scripts/bootstrap/lastmile/modules/payments.js | 3932 |
+| tool:security | security.js | script | scripts/bootstrap/lastmile/modules/security.js | 4394 |
+| tool:website | website.js | script | scripts/bootstrap/lastmile/modules/website.js | 2899 |
+| tool:orchestrate | orchestrate.js | script | scripts/bootstrap/lastmile/orchestrate.js | 11377 |
+| tool:audit | audit.js | script | scripts/bootstrap/lastmile/phases/audit.js | 3373 |
+| tool:execute | execute.js | script | scripts/bootstrap/lastmile/phases/execute.js | 1798 |
+| tool:handoff | handoff.js | script | scripts/bootstrap/lastmile/phases/handoff.js | 2561 |
+| tool:inject | inject.js | script | scripts/bootstrap/lastmile/phases/inject.js | 1699 |
+| tool:plan | plan.js | script | scripts/bootstrap/lastmile/phases/plan.js | 4173 |
+| tool:preflight | preflight.js | script | scripts/bootstrap/lastmile/phases/preflight.js | 1502 |
+| tool:test-orchestrate | test-orchestrate.js | script | scripts/bootstrap/lastmile/test-orchestrate.js | 19700 |
+| tool:canon | canon.js | script | scripts/bootstrap/phases/canon.js | 5711 |
+| tool:intent | intent.js | script | scripts/bootstrap/phases/intent.js | 10171 |
+| tool:onscreen | onscreen.js | script | scripts/bootstrap/phases/onscreen.js | 9336 |
+| tool:preflight | preflight.js | script | scripts/bootstrap/phases/preflight.js | 1710 |
+| tool:roadmap | roadmap.js | script | scripts/bootstrap/phases/roadmap.js | 7666 |
+| tool:spinup-orchestrate | spinup-orchestrate.js | script | scripts/bootstrap/spinup-orchestrate.js | 8100 |
+| tool:test-spinup-orchestrate | test-spinup-orchestrate.js | script | scripts/bootstrap/test-spinup-orchestrate.js | 7315 |
+| tool:branch-diff | branch-diff.js | script | scripts/branch-diff.js | 4110 |
+| tool:check | check.js | script | scripts/budgets/check.js | 1048 |
+| tool:generate | generate.js | script | scripts/canon/generate.js | 12177 |
+| tool:research | research.js | script | scripts/canon/research.js | 9561 |
+| tool:test-generate | test-generate.js | script | scripts/canon/test-generate.js | 9063 |
+| tool:validate | validate.js | script | scripts/canon/validate.js | 7681 |
+| tool:celebrate | celebrate.js | script | scripts/celebrate.js | 3352 |
+| tool:install | install.js | script | scripts/check/install.js | 9865 |
+| tool:node-procs | node-procs.js | script | scripts/check/node-procs.js | 4739 |
+| tool:privacy | privacy.js | script | scripts/check/privacy.js | 5786 |
+| tool:roadmap-trace | roadmap-trace.js | script | scripts/check/roadmap-trace.js | 3571 |
+| tool:check-guard-promotion | check-guard-promotion.js | script | scripts/check-guard-promotion.js | 7942 |
+| tool:check-prd-anchors | check-prd-anchors.js | script | scripts/check-prd-anchors.js | 4527 |
+| tool:check-test-staleness | check-test-staleness.js | script | scripts/check-test-staleness.js | 4670 |
+| tool:adhoc-team-hygiene | adhoc-team-hygiene.js | script | scripts/checks/adhoc-team-hygiene.js | 6240 |
+| tool:contract-versioning | contract-versioning.js | script | scripts/checks/contract-versioning.js | 4700 |
+| tool:design-system | design-system.js | script | scripts/checks/design-system.js | 4187 |
+| tool:dispatch-routing-parity | dispatch-routing-parity.js | script | scripts/checks/dispatch-routing-parity.js | 10416 |
+| tool:framework-purity | framework-purity.js | script | scripts/checks/framework-purity.js | 15333 |
+| tool:path-usage | path-usage.js | script | scripts/checks/path-usage.js | 2897 |
+| tool:production-baseline | production-baseline.js | script | scripts/checks/production-baseline.js | 2981 |
+| tool:sprint-beta-honesty | sprint-beta-honesty.js | script | scripts/checks/sprint-beta-honesty.js | 26550 |
+| tool:test-sprint-beta-honesty | test-sprint-beta-honesty.js | script | scripts/checks/test-sprint-beta-honesty.js | 32412 |
+| tool:warpos-applied-migrations | warpos-applied-migrations.js | script | scripts/checks/warpos-applied-migrations.js | 5547 |
+| tool:warpos-capsule-resolvable | warpos-capsule-resolvable.js | script | scripts/checks/warpos-capsule-resolvable.js | 7327 |
+| tool:warpos-install-baseline | warpos-install-baseline.js | script | scripts/checks/warpos-install-baseline.js | 4134 |
+| tool:warpos-manifest-honesty | warpos-manifest-honesty.js | script | scripts/checks/warpos-manifest-honesty.js | 3128 |
+| tool:warpos-migration-coverage | warpos-migration-coverage.js | script | scripts/checks/warpos-migration-coverage.js | 1071 |
+| tool:warpos-migration-presence | warpos-migration-presence.js | script | scripts/checks/warpos-migration-presence.js | 4953 |
+| tool:warpos-path-resolution | warpos-path-resolution.js | script | scripts/checks/warpos-path-resolution.js | 5056 |
+| tool:warpos-promote-coverage | warpos-promote-coverage.js | script | scripts/checks/warpos-promote-coverage.js | 992 |
+| tool:warpos-roundtrip | warpos-roundtrip.js | script | scripts/checks/warpos-roundtrip.js | 943 |
+| tool:warpos-ship-coverage | warpos-ship-coverage.js | script | scripts/checks/warpos-ship-coverage.js | 8088 |
+| tool:warpos-staleness | warpos-staleness.js | script | scripts/checks/warpos-staleness.js | 3994 |
+| tool:warpos-structure-parity | warpos-structure-parity.js | script | scripts/checks/warpos-structure-parity.js | 2163 |
+| tool:warpos-tracked-transients | warpos-tracked-transients.js | script | scripts/checks/warpos-tracked-transients.js | 5452 |
+| tool:warpos-version-quorum | warpos-version-quorum.js | script | scripts/checks/warpos-version-quorum.js | 5122 |
+| tool:ledger | ledger.js | script | scripts/decisions/ledger.js | 4596 |
+| tool:delta-aggregate-reviews | delta-aggregate-reviews.js | script | scripts/delta-aggregate-reviews.js | 4703 |
+| tool:delta-build-fix-brief | delta-build-fix-brief.js | script | scripts/delta-build-fix-brief.js | 6525 |
+| tool:delta-build-fixer-prompt-from-worktree | delta-build-fixer-prompt-from-worktree.js | script | scripts/delta-build-fixer-prompt-from-worktree.js | 2439 |
+| tool:delta-build-fixer-prompt | delta-build-fixer-prompt.js | script | scripts/delta-build-fixer-prompt.js | 1841 |
+| tool:delta-build-prompt | delta-build-prompt.js | script | scripts/delta-build-prompt.js | 7275 |
+| tool:delta-build-reviewer-prompt | delta-build-reviewer-prompt.js | script | scripts/delta-build-reviewer-prompt.js | 10626 |
+| tool:delta-canonical-dispatch-smoke | delta-canonical-dispatch-smoke.js | script | scripts/delta-canonical-dispatch-smoke.js | 8322 |
+| tool:delta-cleanup-stale-fix-worktrees | delta-cleanup-stale-fix-worktrees.js | script | scripts/delta-cleanup-stale-fix-worktrees.js | 1663 |
+| tool:delta-clear-halt | delta-clear-halt.js | script | scripts/delta-clear-halt.js | 648 |
+| tool:delta-dispatch-builder | delta-dispatch-builder.js | script | scripts/delta-dispatch-builder.js | 9055 |
+| tool:delta-dispatch-fixer | delta-dispatch-fixer.js | script | scripts/delta-dispatch-fixer.js | 7559 |
+| tool:delta-final-gauntlet | delta-final-gauntlet.js | script | scripts/delta-final-gauntlet.js | 2378 |
+| tool:delta-gate-check | delta-gate-check.js | script | scripts/delta-gate-check.js | 2065 |
+| tool:delta-gauntlet-watcher | delta-gauntlet-watcher.js | script | scripts/delta-gauntlet-watcher.js | 1793 |
+| tool:delta-heartbeat | delta-heartbeat.js | script | scripts/delta-heartbeat.js | 1256 |
+| tool:delta-log-integrations | delta-log-integrations.js | script | scripts/delta-log-integrations.js | 2278 |
+| tool:delta-mark-built | delta-mark-built.js | script | scripts/delta-mark-built.js | 7736 |
+| tool:delta-mark-done | delta-mark-done.js | script | scripts/delta-mark-done.js | 875 |
+| tool:delta-pre-clean-worktrees | delta-pre-clean-worktrees.js | script | scripts/delta-pre-clean-worktrees.js | 3982 |
+| tool:delta-queue-foundation | delta-queue-foundation.js | script | scripts/delta-queue-foundation.js | 1051 |
+| tool:delta-render-tracker | delta-render-tracker.js | script | scripts/delta-render-tracker.js | 4964 |
+| tool:delta-show-findings | delta-show-findings.js | script | scripts/delta-show-findings.js | 1050 |
+| tool:delta-store-review | delta-store-review.js | script | scripts/delta-store-review.js | 1731 |
+| tool:delta-update-heartbeat | delta-update-heartbeat.js | script | scripts/delta-update-heartbeat.js | 747 |
+| tool:admission | admission.js | script | scripts/deps/admission.js | 3032 |
+| tool:dismiss-drift-entry | dismiss-drift-entry.js | script | scripts/dismiss-drift-entry.js | 674 |
+| tool:active-run | active-run.js | script | scripts/dispatch/active-run.js | 2640 |
+| tool:backup | backup.js | script | scripts/dispatch/backup.js | 3119 |
+| tool:bump-model | bump-model.js | script | scripts/dispatch/bump-model.js | 6596 |
+| tool:catalog | catalog.js | script | scripts/dispatch/catalog.js | 7014 |
+| tool:cli-preview | cli-preview.js | script | scripts/dispatch/cli-preview.js | 2170 |
+| tool:diff | diff.js | script | scripts/dispatch/diff.js | 2647 |
+| tool:frontmatter | frontmatter.js | script | scripts/dispatch/frontmatter.js | 3733 |
+| tool:gauntlet-verify | gauntlet-verify.js | script | scripts/dispatch/gauntlet-verify.js | 15703 |
+| tool:gui | gui.js | script | scripts/dispatch/gui.js | 35770 |
+| tool:manifest-patch | manifest-patch.js | script | scripts/dispatch/manifest-patch.js | 2282 |
+| tool:prune-dead-locks | prune-dead-locks.js | script | scripts/dispatch/prune-dead-locks.js | 1835 |
+| tool:required-fallback | required-fallback.js | script | scripts/dispatch/required-fallback.js | 1108 |
+| tool:role-files | role-files.js | script | scripts/dispatch/role-files.js | 1416 |
+| tool:save | save.js | script | scripts/dispatch/save.js | 5514 |
+| tool:state | state.js | script | scripts/dispatch/state.js | 6439 |
+| tool:dispatch-agent | dispatch-agent.js | script | scripts/dispatch-agent.js | 16046 |
+| tool:dispatch | dispatch.js | script | scripts/dispatch.js | 20838 |
+| tool:catalog | catalog.js | script | scripts/docs/catalog.js | 3116 |
+| tool:drift-apply-decisions | drift-apply-decisions.js | script | scripts/drift-apply-decisions.js | 2149 |
+| tool:drift-build-decisions-jsonl | drift-build-decisions-jsonl.js | script | scripts/drift-build-decisions-jsonl.js | 2767 |
+| tool:drift-build-decisions | drift-build-decisions.js | script | scripts/drift-build-decisions.js | 2672 |
+| tool:drift-dump-pending | drift-dump-pending.js | script | scripts/drift-dump-pending.js | 1647 |
+| tool:drift-inspect | drift-inspect.js | script | scripts/drift-inspect.js | 2471 |
+| tool:drift-load-pending | drift-load-pending.js | script | scripts/drift-load-pending.js | 4317 |
+| tool:drift-shape | drift-shape.js | script | scripts/drift-shape.js | 2761 |
+| tool:drift-verify-summarize | drift-verify-summarize.js | script | scripts/drift-verify-summarize.js | 1692 |
+| tool:drift-verify | drift-verify.js | script | scripts/drift-verify.js | 6060 |
+| tool:drift-write-decisions | drift-write-decisions.js | script | scripts/drift-write-decisions.js | 1807 |
+| tool:cli | cli.js | script | scripts/events/cli.js | 4555 |
+| tool:append-learning-l2026-05-13-team | append-learning-l2026-05-13-team.js | script | scripts/fix-deep/append-learning-l2026-05-13-team.js | 944 |
+| tool:append-trace-rt001 | append-trace-rt001.js | script | scripts/fix-deep/append-trace-rt001.js | 2086 |
+| tool:fix-deep-trace-run09-cleanup | fix-deep-trace-run09-cleanup.js | script | scripts/fix-deep-trace-run09-cleanup.js | 3702 |
+| tool:generate-framework-manifest | generate-framework-manifest.js | script | scripts/generate-framework-manifest.js | 20818 |
+| tool:generate-maps | generate-maps.js | script | scripts/generate-maps.js | 13181 |
+| tool:generate-skill-catalog | generate-skill-catalog.js | script | scripts/generate-skill-catalog.js | 9612 |
+| tool:generate-steps-maps | generate-steps-maps.js | script | scripts/generate-steps-maps.js | 8579 |
+| tool:generate-test-fixtures | generate-test-fixtures.js | script | scripts/generate-test-fixtures.js | 6266 |
+| tool:install-git-hooks | install-git-hooks.sh | script | scripts/install-git-hooks.sh | 1830 |
+| tool:append-events-7d-learnings | append-events-7d-learnings.js | script | scripts/learn/append-events-7d-learnings.js | 5464 |
+| tool:mine-events-7d | mine-events-7d.js | script | scripts/learn/mine-events-7d.js | 5468 |
+| tool:probe-shapes | probe-shapes.js | script | scripts/learn/probe-shapes.js | 2069 |
+| tool:probe-spec-and-audit | probe-spec-and-audit.js | script | scripts/learn/probe-spec-and-audit.js | 1791 |
+| tool:learn-conversation-2026-04-24 | learn-conversation-2026-04-24.js | script | scripts/learn-conversation-2026-04-24.js | 5829 |
+| tool:learn-events-analyze | learn-events-analyze.js | script | scripts/learn-events-analyze.js | 8716 |
+| tool:learn-events-write | learn-events-write.js | script | scripts/learn-events-write.js | 6200 |
+| tool:learn-integrate-candidates | learn-integrate-candidates.js | script | scripts/learn-integrate-candidates.js | 2467 |
+| tool:staged-drift-reconciler | staged-drift-reconciler.js | script | scripts/lib/staged-drift-reconciler.js | 5682 |
+| tool:lint-hl-stories | lint-hl-stories.js | script | scripts/lint-hl-stories.js | 11372 |
+| tool:lint-json-bom | lint-json-bom.js | script | scripts/lint-json-bom.js | 2554 |
+| tool:lint-prds | lint-prds.js | script | scripts/lint-prds.js | 22711 |
+| tool:lint-staleness | lint-staleness.js | script | scripts/lint-staleness.js | 2085 |
+| tool:lint-stories | lint-stories.js | script | scripts/lint-stories.js | 18280 |
+| tool:run | run.js | script | scripts/linters/run.js | 4670 |
+| tool:cli | cli.js | script | scripts/manifest/cli.js | 10036 |
+| tool:bootstrap-systems | bootstrap-systems.js | script | scripts/maps/bootstrap-systems.js | 10693 |
+| tool:spec-graph | spec-graph.js | script | scripts/maps/spec-graph.js | 15554 |
+| tool:materialize-decisions | materialize-decisions.js | script | scripts/materialize-decisions.js | 4313 |
+| tool:provenance | provenance.js | script | scripts/memory/provenance.js | 2706 |
+| tool:migrate-page-tsx-step-refs | migrate-page-tsx-step-refs.js | script | scripts/migrate-page-tsx-step-refs.js | 2678 |
+| tool:mode-set | mode-set.js | script | scripts/mode-set.js | 5370 |
+| tool:append-beta-event-007 | append-beta-event-007.js | script | scripts/one-off/append-beta-event-007.js | 2428 |
+| tool:append-releases-row-SP-20260521-001 | append-releases-row-SP-20260521-001.js | script | scripts/one-off/append-releases-row-SP-20260521-001.js | 1399 |
+| tool:codemod-track-b2-b3 | codemod-track-b2-b3.js | script | scripts/one-off/codemod-track-b2-b3.js | 3916 |
+| tool:codemod-track-b5 | codemod-track-b5.js | script | scripts/one-off/codemod-track-b5.js | 7103 |
+| tool:emit-tr13 | emit-tr13.js | script | scripts/one-off/emit-tr13.js | 539 |
+| tool:integrate-show | integrate-show.js | script | scripts/one-off/integrate-show.js | 625 |
+| tool:integrate-survey | integrate-survey.js | script | scripts/one-off/integrate-survey.js | 1201 |
+| tool:smoke-dispatch | smoke-dispatch.js | script | scripts/one-off/smoke-dispatch.js | 6309 |
+| tool:smoke-spawn | smoke-spawn.js | script | scripts/one-off/smoke-spawn.js | 12268 |
+| tool:smoke-status | smoke-status.js | script | scripts/one-off/smoke-status.js | 6989 |
+| tool:smoke-sync | smoke-sync.js | script | scripts/one-off/smoke-sync.js | 6467 |
+| tool:update-systems-from-discover | update-systems-from-discover.js | script | scripts/one-off/update-systems-from-discover.js | 4967 |
+| tool:validate-run12-maps | validate-run12-maps.js | script | scripts/one-off/validate-run12-maps.js | 751 |
+| tool:one-off-add-backend-to-store | one-off-add-backend-to-store.js | script | scripts/one-off-add-backend-to-store.js | 3719 |
+| tool:one-off-classify-stubs | one-off-classify-stubs.js | script | scripts/one-off-classify-stubs.js | 2799 |
+| tool:one-off-events-mine | one-off-events-mine.js | script | scripts/one-off-events-mine.js | 2606 |
+| tool:one-off-gut-stubs | one-off-gut-stubs.js | script | scripts/one-off-gut-stubs.js | 13937 |
+| tool:one-off-handoff-delta | one-off-handoff-delta.js | script | scripts/one-off-handoff-delta.js | 1007 |
+| tool:one-off-learn-attest | one-off-learn-attest.js | script | scripts/one-off-learn-attest.js | 2774 |
+| tool:one-off-learn-survey | one-off-learn-survey.js | script | scripts/one-off-learn-survey.js | 1837 |
+| tool:one-off-log-dispatch-issues | one-off-log-dispatch-issues.js | script | scripts/one-off-log-dispatch-issues.js | 2426 |
+| tool:one-off-log-issues | one-off-log-issues.js | script | scripts/one-off-log-issues.js | 2640 |
+| tool:one-off-log-rt015 | one-off-log-rt015.js | script | scripts/one-off-log-rt015.js | 2804 |
+| tool:one-off-pass78-diff | one-off-pass78-diff.js | script | scripts/one-off-pass78-diff.js | 2785 |
+| tool:one-off-restore-from-test9 | one-off-restore-from-test9.js | script | scripts/one-off-restore-from-test9.js | 637 |
+| tool:one-off-retro-session-learnings | one-off-retro-session-learnings.js | script | scripts/one-off-retro-session-learnings.js | 4719 |
+| tool:one-off-sleep-2026-04-25 | one-off-sleep-2026-04-25.js | script | scripts/one-off-sleep-2026-04-25.js | 5731 |
+| tool:one-off-start-checks | one-off-start-checks.js | script | scripts/one-off-start-checks.js | 8478 |
+| tool:one-off-stub-coverage-check | one-off-stub-coverage-check.js | script | scripts/one-off-stub-coverage-check.js | 4979 |
+| tool:one-off-update-known-stubs | one-off-update-known-stubs.js | script | scripts/one-off-update-known-stubs.js | 573 |
+| tool:oneshot-halt | oneshot-halt.js | script | scripts/oneshot-halt.js | 4476 |
+| tool:oneshot-heartbeat | oneshot-heartbeat.js | script | scripts/oneshot-heartbeat.js | 1161 |
+| tool:oneshot-phase-complete | oneshot-phase-complete.js | script | scripts/oneshot-phase-complete.js | 1878 |
+| tool:oneshot-store-file-sync | oneshot-store-file-sync.js | script | scripts/oneshot-store-file-sync.js | 4924 |
+| tool:oneshot-store-reset | oneshot-store-reset.js | script | scripts/oneshot-store-reset.js | 3166 |
+| tool:patch-store-backend-skipped | patch-store-backend-skipped.js | script | scripts/patch-store-backend-skipped.js | 1187 |
+| tool:path-lint | path-lint.js | script | scripts/path-lint.js | 14987 |
+| tool:build | build.js | script | scripts/paths/build.js | 8922 |
+| tool:cli | cli.js | script | scripts/paths/cli.js | 2163 |
+| tool:gate | gate.js | script | scripts/paths/gate.js | 16563 |
+| tool:registry | registry.js | script | scripts/paths/lib/registry.js | 2120 |
+| tool:phase0-verify | phase0-verify.js | script | scripts/phase0-verify.js | 3393 |
+| tool:points | points.js | script | scripts/points.js | 4170 |
+| tool:adopt | adopt.js | script | scripts/portfolio/adopt.js | 6017 |
+| tool:bootstrap | bootstrap.js | script | scripts/portfolio/bootstrap.js | 37415 |
+| tool:bump-models | bump-models.js | script | scripts/portfolio/bump-models.js | 7338 |
+| tool:clone | clone.js | script | scripts/portfolio/clone.js | 48478 |
+| tool:dispatch | dispatch.js | script | scripts/portfolio/dispatch.js | 9310 |
+| tool:list | list.js | script | scripts/portfolio/list.js | 3709 |
+| tool:new | new.js | script | scripts/portfolio/new.js | 18757 |
+| tool:open | open.js | script | scripts/portfolio/open.js | 2322 |
+| tool:register | register.js | script | scripts/portfolio/register.js | 3856 |
+| tool:registry | registry.js | script | scripts/portfolio/registry.js | 6655 |
+| tool:spawn | spawn.js | script | scripts/portfolio/spawn.js | 13877 |
+| tool:status | status.js | script | scripts/portfolio/status.js | 9871 |
+| tool:sync | sync.js | script | scripts/portfolio/sync.js | 9211 |
+| tool:process-fixes | process-fixes.js | script | scripts/preflight/process-fixes.js | 2153 |
+| tool:preflight-7-8-sync | preflight-7-8-sync.js | script | scripts/preflight-7-8-sync.js | 5498 |
+| tool:preflight-fix-undefined-types | preflight-fix-undefined-types.js | script | scripts/preflight-fix-undefined-types.js | 3379 |
+| tool:preflight-foundation-list | preflight-foundation-list.js | script | scripts/preflight-foundation-list.js | 388 |
+| tool:preflight-post-7-8-reconcile | preflight-post-7-8-reconcile.js | script | scripts/preflight-post-7-8-reconcile.js | 6249 |
+| tool:preflight-restore-ambient-stubs | preflight-restore-ambient-stubs.js | script | scripts/preflight-restore-ambient-stubs.js | 2740 |
+| tool:preflight-restore-pre-gut | preflight-restore-pre-gut.js | script | scripts/preflight-restore-pre-gut.js | 1988 |
+| tool:preflight-strip-dead-imports | preflight-strip-dead-imports.js | script | scripts/preflight-strip-dead-imports.js | 4557 |
+| tool:preflight-survey | preflight-survey.js | script | scripts/preflight-survey.js | 2163 |
+| tool:preflight-update-known-stubs | preflight-update-known-stubs.js | script | scripts/preflight-update-known-stubs.js | 1553 |
+| tool:_log-alpha-followup-decisions | _log-alpha-followup-decisions.js | script | scripts/products/_log-alpha-followup-decisions.js | 2895 |
+| tool:_log-beta-blessing | _log-beta-blessing.js | script | scripts/products/_log-beta-blessing.js | 4895 |
+| tool:_log-beta-decisions | _log-beta-decisions.js | script | scripts/products/_log-beta-decisions.js | 7117 |
+| tool:_log-beta-design-review | _log-beta-design-review.js | script | scripts/products/_log-beta-design-review.js | 3016 |
+| tool:_log-dec003-override | _log-dec003-override.js | script | scripts/products/_log-dec003-override.js | 4152 |
+| tool:qa-health | qa-health.js | script | scripts/qa-health.js | 14927 |
+| tool:read-store-state | read-store-state.js | script | scripts/read-store-state.js | 325 |
+| tool:record-gate-check | record-gate-check.js | script | scripts/record-gate-check.js | 1975 |
+| tool:recurring-issues-helper | recurring-issues-helper.js | script | scripts/recurring-issues-helper.js | 9523 |
+| tool:regen-maps | regen-maps.js | script | scripts/regen-maps.js | 49103 |
+| tool:apply-rco | apply-rco.js | script | scripts/requirements/apply-rco.js | 7091 |
+| tool:classify-drift | classify-drift.js | script | scripts/requirements/classify-drift.js | 4870 |
+| tool:config | config.js | script | scripts/requirements/config.js | 3590 |
+| tool:gate | gate.js | script | scripts/requirements/gate.js | 11789 |
+| tool:graph-build | graph-build.js | script | scripts/requirements/graph-build.js | 18207 |
+| tool:graph-load | graph-load.js | script | scripts/requirements/graph-load.js | 3072 |
+| tool:initial-cleanup | initial-cleanup.js | script | scripts/requirements/initial-cleanup.js | 1752 |
+| tool:resolve-impact | resolve-impact.js | script | scripts/requirements/resolve-impact.js | 3826 |
+| tool:review | review.js | script | scripts/requirements/review.js | 3748 |
+| tool:stage-rco | stage-rco.js | script | scripts/requirements/stage-rco.js | 8024 |
+| tool:status | status.js | script | scripts/requirements/status.js | 7996 |
+| tool:test-gate | test-gate.js | script | scripts/requirements/test-gate.js | 5882 |
+| tool:gemini-deep-research | gemini-deep-research.js | script | scripts/research/gemini-deep-research.js | 5190 |
+| tool:openai-assemble | openai-assemble.js | script | scripts/research/openai-assemble.js | 736 |
+| tool:openai-build-phase | openai-build-phase.js | script | scripts/research/openai-build-phase.js | 1819 |
+| tool:openai-deep-research | openai-deep-research.js | script | scripts/research/openai-deep-research.js | 7015 |
+| tool:openai-extract | openai-extract.js | script | scripts/research/openai-extract.js | 1105 |
+| tool:research-append-learnings | research-append-learnings.js | script | scripts/research-append-learnings.js | 7549 |
+| tool:research-build-payload | research-build-payload.js | script | scripts/research-build-payload.js | 5228 |
+| tool:reset-cycle-step | reset-cycle-step.js | script | scripts/reset-cycle-step.js | 521 |
+| tool:run-compliance | run-compliance.sh | script | scripts/run-compliance.sh | 2839 |
+| tool:governance | governance.js | script | scripts/runtime/governance.js | 2776 |
+| tool:validate | validate.js | script | scripts/schemas/validate.js | 4692 |
+| tool:permissions | permissions.js | script | scripts/security/permissions.js | 1700 |
+| tool:seed-admin | seed-admin.js | script | scripts/seed-admin.js | 4022 |
+| tool:governance | governance.js | script | scripts/self-mod/governance.js | 1111 |
+| tool:session-recap | session-recap.js | script | scripts/session-recap.js | 11713 |
+| tool:set-alpha-store-review-complete | set-alpha-store-review-complete.js | script | scripts/set-alpha-store-review-complete.js | 497 |
+| tool:set-cycle-step-review-complete | set-cycle-step-review-complete.js | script | scripts/set-cycle-step-review-complete.js | 395 |
+| tool:set-feature-status | set-feature-status.js | script | scripts/set-feature-status.js | 871 |
+| tool:set-heartbeat-market-research-builder | set-heartbeat-market-research-builder.js | script | scripts/set-heartbeat-market-research-builder.js | 733 |
+| tool:skill-adherence-report | skill-adherence-report.js | script | scripts/skill-adherence-report.js | 4815 |
+| tool:skill-description-audit | skill-description-audit.js | script | scripts/skill-description-audit.js | 7653 |
+| tool:sleep-20260422-analyze | sleep-20260422-analyze.js | script | scripts/sleep-20260422-analyze.js | 4196 |
+| tool:sleep-20260422-consolidate | sleep-20260422-consolidate.js | script | scripts/sleep-20260422-consolidate.js | 4289 |
+| tool:sleep-20260422-log-events | sleep-20260422-log-events.js | script | scripts/sleep-20260422-log-events.js | 538 |
+| tool:sleep-20260422-prune | sleep-20260422-prune.js | script | scripts/sleep-20260422-prune.js | 2910 |
+| tool:snapshot | snapshot.js | script | scripts/snapshot.js | 4430 |
+| tool:add-sprint | add-sprint.js | script | scripts/sprint/add-sprint.js | 5998 |
+| tool:append-decision | append-decision.js | script | scripts/sprint/append-decision.js | 1806 |
+| tool:backfill-ledgers | backfill-ledgers.js | script | scripts/sprint/backfill-ledgers.js | 14123 |
+| tool:backfill-schemas | backfill-schemas.js | script | scripts/sprint/backfill-schemas.js | 2885 |
+| tool:check-ac-coverage | check-ac-coverage.js | script | scripts/sprint/check-ac-coverage.js | 7865 |
+| tool:checkpoint | checkpoint.js | script | scripts/sprint/checkpoint.js | 5263 |
+| tool:conflict-check | conflict-check.js | script | scripts/sprint/conflict-check.js | 7095 |
+| tool:design | design.js | script | scripts/sprint/design.js | 14884 |
+| tool:execute | execute.js | script | scripts/sprint/execute.js | 14970 |
+| tool:external-service | external-service.js | script | scripts/sprint/external-service.js | 9901 |
+| tool:fs | fs.js | script | scripts/sprint/fs.js | 14832 |
+| tool:full | full.js | script | scripts/sprint/full.js | 62168 |
+| tool:ids | ids.js | script | scripts/sprint/ids.js | 2703 |
+| tool:init | init.js | script | scripts/sprint/init.js | 8115 |
+| tool:issue | issue.js | script | scripts/sprint/issue.js | 9239 |
+| tool:ledger | ledger.js | script | scripts/sprint/ledger.js | 24140 |
+| tool:migrate-v0.2 | migrate-v0.2.js | script | scripts/sprint/migrate-v0.2.js | 23326 |
+| tool:paths | paths.js | script | scripts/sprint/paths.js | 11650 |
+| tool:plan | plan.js | script | scripts/sprint/plan.js | 18493 |
+| tool:release | release.js | script | scripts/sprint/release.js | 25622 |
+| tool:retrospective | retrospective.js | script | scripts/sprint/retrospective.js | 34840 |
+| tool:routing | routing.js | script | scripts/sprint/routing.js | 29779 |
+| tool:status | status.js | script | scripts/sprint/status.js | 6066 |
+| tool:test-plan-honors-registry-primary | test-plan-honors-registry-primary.js | script | scripts/sprint/test-plan-honors-registry-primary.js | 11704 |
+| tool:test-sprint-full | test-sprint-full.js | script | scripts/sprint/test-sprint-full.js | 48278 |
+| tool:test-status-lag-fix | test-status-lag-fix.js | script | scripts/sprint/test-status-lag-fix.js | 5711 |
+| tool:test-ticket-bucket-bleed | test-ticket-bucket-bleed.js | script | scripts/sprint/test-ticket-bucket-bleed.js | 7791 |
+| tool:ticket | ticket.js | script | scripts/sprint/ticket.js | 14206 |
+| tool:validate-autonomy-config | validate-autonomy-config.js | script | scripts/sprint/validate-autonomy-config.js | 5530 |
+| tool:validate | validate.js | script | scripts/sprint/validate.js | 7774 |
+| tool:strip-planning-only | strip-planning-only.js | script | scripts/strip-planning-only.js | 1484 |
+| tool:stub-audit-coverage | stub-audit-coverage.js | script | scripts/stub-audit-coverage.js | 1237 |
+| tool:stub-audit-run-11 | stub-audit-run-11.js | script | scripts/stub-audit-run-11.js | 1483 |
+| tool:sync-run-number | sync-run-number.js | script | scripts/sync-run-number.js | 3157 |
+| tool:coherence | coherence.js | script | scripts/system/coherence.js | 9244 |
+| tool:systems-append-run09 | systems-append-run09.js | script | scripts/systems-append-run09.js | 2389 |
+| tool:test-beta-gate-release | test-beta-gate-release.js | script | scripts/test-beta-gate-release.js | 6604 |
+| tool:test-concurrency-lock | test-concurrency-lock.js | script | scripts/test-concurrency-lock.js | 3246 |
+| tool:test-dispatch-agent-resolution | test-dispatch-agent-resolution.js | script | scripts/test-dispatch-agent-resolution.js | 2703 |
+| tool:test-dispatch-route-guard | test-dispatch-route-guard.js | script | scripts/test-dispatch-route-guard.js | 4084 |
+| tool:test-dispatch-telemetry | test-dispatch-telemetry.js | script | scripts/test-dispatch-telemetry.js | 3887 |
+| tool:test-manifest-guard-product | test-manifest-guard-product.js | script | scripts/test-manifest-guard-product.js | 5540 |
+| tool:test-memory-guard-targets | test-memory-guard-targets.js | script | scripts/test-memory-guard-targets.js | 4245 |
+| tool:test-merge-guard-cd-prefix | test-merge-guard-cd-prefix.js | script | scripts/test-merge-guard-cd-prefix.js | 4583 |
+| tool:test-merge-guard-rm | test-merge-guard-rm.js | script | scripts/test-merge-guard-rm.js | 2302 |
+| tool:test-provider-health | test-provider-health.js | script | scripts/test-provider-health.js | 3371 |
+| tool:test-providers-stdin-fix | test-providers-stdin-fix.js | script | scripts/test-providers-stdin-fix.js | 2237 |
+| tool:test-requirement-format-guard | test-requirement-format-guard.js | script | scripts/test-requirement-format-guard.js | 4913 |
+| tool:test-response-size-guard | test-response-size-guard.js | script | scripts/test-response-size-guard.js | 2567 |
+| tool:test-sprint-hooks | test-sprint-hooks.js | script | scripts/test-sprint-hooks.js | 57570 |
+| tool:test-sprint-migration | test-sprint-migration.js | script | scripts/test-sprint-migration.js | 20743 |
+| tool:test-sprint-tracker-autoinject | test-sprint-tracker-autoinject.js | script | scripts/test-sprint-tracker-autoinject.js | 6674 |
+| tool:test-sprint | test-sprint.js | script | scripts/test-sprint.js | 16894 |
+| tool:test-staged-drift-reconciler | test-staged-drift-reconciler.js | script | scripts/test-staged-drift-reconciler.js | 4628 |
+| tool:test-team-guard | test-team-guard.js | script | scripts/test-team-guard.js | 4742 |
+| tool:test-update-discovery | test-update-discovery.js | script | scripts/test-update-discovery.js | 6849 |
+| tool:check | check.js | script | scripts/timeline/check.js | 2090 |
+| tool:emit-attestation-events | emit-attestation-events.js | script | scripts/tools/emit-attestation-events.js | 3658 |
+| tool:emit-integrate-events | emit-integrate-events.js | script | scripts/tools/emit-integrate-events.js | 1936 |
+| tool:truth-compiler | truth-compiler.js | script | scripts/truth-compiler.js | 18808 |
+| tool:apply | apply.js | script | scripts/turbo/apply.js | 17991 |
+| tool:install-hook | install-hook.js | script | scripts/turbo/install-hook.js | 5365 |
+| tool:update-heartbeat | update-heartbeat.js | script | scripts/update-heartbeat.js | 768 |
+| tool:update-market-research-gauntlet | update-market-research-gauntlet.js | script | scripts/update-market-research-gauntlet.js | 1703 |
+| tool:update-market-research-merged | update-market-research-merged.js | script | scripts/update-market-research-merged.js | 1003 |
+| tool:update-onboarding-done | update-onboarding-done.js | script | scripts/update-onboarding-done.js | 2784 |
+| tool:validate-gates | validate-gates.js | script | scripts/validate-gates.js | 7427 |
+| tool:verify-drift-detector | verify-drift-detector.js | script | scripts/verify-drift-detector.js | 833 |
+| tool:verify-ui | verify-ui.js | script | scripts/verify-ui.js | 6018 |
+| tool:warp-setup | warp-setup.js | script | scripts/warp-setup.js | 42640 |
+| tool:codemod-docs-to-requirements | codemod-docs-to-requirements.js | script | scripts/warpos/codemod-docs-to-requirements.js | 4846 |
+| tool:deprecate | deprecate.js | script | scripts/warpos/deprecate.js | 2486 |
+| tool:generate-roadmap-scaffold | generate-roadmap-scaffold.js | script | scripts/warpos/generate-roadmap-scaffold.js | 1815 |
+| tool:lf-normalize-target | lf-normalize-target.js | script | scripts/warpos/lf-normalize-target.js | 3110 |
+| tool:content-hash | content-hash.js | script | scripts/warpos/lib/content-hash.js | 7011 |
+| tool:provider-autofix | provider-autofix.js | script | scripts/warpos/lib/provider-autofix.js | 12876 |
+| tool:provider-rca | provider-rca.js | script | scripts/warpos/lib/provider-rca.js | 4759 |
+| tool:update-events | update-events.js | script | scripts/warpos/lib/update-events.js | 9444 |
+| tool:list-decisions | list-decisions.js | script | scripts/warpos/list-decisions.js | 4727 |
+| tool:bootstrap | bootstrap.js | script | scripts/warpos/manifest/bootstrap.js | 22228 |
+| tool:build | build.js | script | scripts/warpos/manifest/build.js | 24228 |
+| tool:test-bootstrap | test-bootstrap.js | script | scripts/warpos/manifest/test-bootstrap.js | 16853 |
+| tool:test-build | test-build.js | script | scripts/warpos/manifest/test-build.js | 5435 |
+| tool:test-installer-hook | test-installer-hook.js | script | scripts/warpos/manifest/test-installer-hook.js | 5943 |
+| tool:test-validate | test-validate.js | script | scripts/warpos/manifest/test-validate.js | 6314 |
+| tool:validate | validate.js | script | scripts/warpos/manifest/validate.js | 13695 |
+| tool:migrations-loader | migrations-loader.js | script | scripts/warpos/migrations-loader.js | 6597 |
+| tool:postflight | postflight.js | script | scripts/warpos/postflight.js | 13616 |
+| tool:preflight | preflight.js | script | scripts/warpos/preflight.js | 16259 |
+| tool:provider-health-check | provider-health-check.js | script | scripts/warpos/provider-health-check.js | 3068 |
+| tool:provider-smoke | provider-smoke.js | script | scripts/warpos/provider-smoke.js | 31176 |
+| tool:prune-installed-assets | prune-installed-assets.js | script | scripts/warpos/prune-installed-assets.js | 2112 |
+| tool:release-build | release-build.js | script | scripts/warpos/release-build.js | 9510 |
+| tool:release-canonical | release-canonical.js | script | scripts/warpos/release-canonical.js | 32184 |
+| tool:release-gates | release-gates.js | script | scripts/warpos/release-gates.js | 20792 |
+| tool:replay-bench | replay-bench.js | script | scripts/warpos/replay-bench.js | 5162 |
+| tool:report-format | report-format.js | script | scripts/warpos/report-format.js | 1213 |
+| tool:safety | safety.js | script | scripts/warpos/safety.js | 1292 |
+| tool:scaffold-core | scaffold-core.js | script | scripts/warpos/scaffold-core.js | 48962 |
+| tool:compile | compile.js | script | scripts/warpos/settings/compile.js | 16288 |
+| tool:test-compile | test-compile.js | script | scripts/warpos/settings/test-compile.js | 8702 |
+| tool:test-defaults-migration | test-defaults-migration.js | script | scripts/warpos/settings/test-defaults-migration.js | 6976 |
+| tool:snapshot-installed | snapshot-installed.js | script | scripts/warpos/snapshot-installed.js | 8096 |
+| tool:test-cross-version-replay | test-cross-version-replay.js | script | scripts/warpos/test-cross-version-replay.js | 7291 |
+| tool:test-hash-back-compat | test-hash-back-compat.js | script | scripts/warpos/test-hash-back-compat.js | 1714 |
+| tool:test-install-matrix | test-install-matrix.js | script | scripts/warpos/test-install-matrix.js | 62558 |
+| tool:test-rollback-cli-smoke | test-rollback-cli-smoke.js | script | scripts/warpos/test-rollback-cli-smoke.js | 7064 |
+| tool:test-status-cli | test-status-cli.js | script | scripts/warpos/test-status-cli.js | 9537 |
+| tool:test-transaction-smoke | test-transaction-smoke.js | script | scripts/warpos/test-transaction-smoke.js | 5827 |
+| tool:test-update-scaffold | test-update-scaffold.js | script | scripts/warpos/test-update-scaffold.js | 3287 |
+| tool:transaction | transaction.js | script | scripts/warpos/transaction.js | 17728 |
+| tool:update | update.js | script | scripts/warpos/update.js | 86082 |
+| tool:populate-source | populate-source.js | script | scripts/warpos/views/populate-source.js | 11831 |
+| tool:regenerate | regenerate.js | script | scripts/warpos/views/regenerate.js | 10732 |
+| tool:test-regenerate | test-regenerate.js | script | scripts/warpos/views/test-regenerate.js | 8224 |
+| tool:worktree-audit | worktree-audit.js | script | scripts/warpos/worktree-audit.js | 8914 |
+| tool:warpos-sync-run09 | warpos-sync-run09.js | script | scripts/warpos-sync-run09.js | 4872 |
+| tool:write-market-research-fix-1-brief | write-market-research-fix-1-brief.js | script | scripts/write-market-research-fix-1-brief.js | 6741 |
+| tool:write-mr-fix1-brief | write-mr-fix1-brief.js | script | scripts/write-mr-fix1-brief.js | 7544 |
+| tool:write-onboarding-fix-1-brief | write-onboarding-fix-1-brief.js | script | scripts/write-onboarding-fix-1-brief.js | 4014 |
+| tool:write-onboarding-fix-2-brief | write-onboarding-fix-2-brief.js | script | scripts/write-onboarding-fix-2-brief.js | 4957 |
+| tool:write-onboarding-fix-3-brief | write-onboarding-fix-3-brief.js | script | scripts/write-onboarding-fix-3-brief.js | 4883 |
+| tool:warp-setup | warp-setup.js | installer | scripts/warp-setup.js | 42640 |
+| tool:install-ps1 | install.ps1 | installer | install.ps1 | 13934 |

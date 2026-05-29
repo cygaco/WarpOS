@@ -4,12 +4,12 @@
  * store from each feature's PRD Section 13 (Implementation Map).
  *
  * Phase 4.2 genericization (2026-04-30): the original v9 hardcoded
- * jobzooka-specific paths (src/app/api/auth/reset/route.ts → auth feature,
+ * the product-specific paths (src/app/api/auth/reset/route.ts → auth feature,
  * src/lib/rockets.ts → foundation). Per §4.2 of BACKLOG, that script
  * was project-specific and not safe to ship to WarpOS. This generic version
  * derives scopes from the PRDs themselves — no per-project file paths in
  * the script. Project-specific one-off patches now live at
- * `scripts/jobzooka-file-sync-v9.js`.
+ * `scripts/the prior project-specific one-off`.
  *
  * Algorithm:
  *   1. For each feature in `_requirements/04-features/<feature>/`:

@@ -603,7 +603,7 @@
       "enabled": false,
       "failMode": "fail-open",
       "fixturesRequired": false,
-      "purpose": "Cross-file reference integrity check (invoked by /check:references slash skill).",
+      "purpose": "Cross-file reference integrity check (invoked by /scan:references slash skill).",
       "registrations": [],
       "testFixtures": []
     },

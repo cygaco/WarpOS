@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/* check:warpos-applied-migrations — already-applied migration scripts present.
+/* scan:warpos-applied-migrations — already-applied migration scripts present.
  *
  * Migration scripts under migrations/X-to-Y/ are framework-side artifacts;
  * they should ONLY exist in the canonical repo (where authors maintain them)

@@ -125,7 +125,7 @@ function walkSkills(dir, rel = "") {
 // ── Build a catalog entry ───────────────────────────────
 
 function slugFromRel(relPath) {
-  // ".claude/commands/check/patterns.md" → "check:patterns"
+  // ".claude/commands/scan/patterns.md" → "scan:patterns"
   // (relPath is already relative to COMMANDS_DIR)
   return relPath.replace(/\.md$/i, "").replace(/\//g, ":");
 }

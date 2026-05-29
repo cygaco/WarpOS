@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/* check:warpos-staleness — installed-version vs canonical-version drift.
+/* scan:warpos-staleness — installed-version vs canonical-version drift.
  *
  * Reads .claude/framework-installed.json (this project) and the canonical
  * WarpOS repo's version.json (path resolved from framework-installed.json
