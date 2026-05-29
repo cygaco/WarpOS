@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-05-29T21:46:59.111Z",
+  "generatedAt": "2026-05-29T21:56:30.361Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.10.0",
   "migrations": [],
@@ -81,8 +81,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "77d53befacf16c21ad28f3bd076f5d86415b4de44fdb4b599a57645891bb0941",
-      "installedSha": "77d53befacf16c21ad28f3bd076f5d86415b4de44fdb4b599a57645891bb0941"
+      "sha256": "743b6e252a793cc514e397201ed6e6832f2fe46f921b569f280f3e56d0b74bab",
+      "installedSha": "743b6e252a793cc514e397201ed6e6832f2fe46f921b569f280f3e56d0b74bab"
     },
     "USER_GUIDE.md": {
       "owner": "framework",
@@ -2383,8 +2383,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/warpos/release-build.js",
-      "sha256": "e2c034c8d9ea09d7653f10ac1b7ac6a6eca455d7ccb6cf9801a2db4faaa29307",
-      "installedSha": "e2c034c8d9ea09d7653f10ac1b7ac6a6eca455d7ccb6cf9801a2db4faaa29307"
+      "sha256": "d0578ab0c99316bb81b7277ecc684a29bb1501b39d809e478819af8145b62314",
+      "installedSha": "d0578ab0c99316bb81b7277ecc684a29bb1501b39d809e478819af8145b62314"
     },
     "scripts/warpos/release-canonical.js": {
       "owner": "framework",
@@ -2455,6 +2455,13 @@
       "source": "scripts/warpos/test-install-matrix.js",
       "sha256": "e115342172ddd1851f6c8d9f374f17ca46290434def308a124e903e98485fefe",
       "installedSha": "e115342172ddd1851f6c8d9f374f17ca46290434def308a124e903e98485fefe"
+    },
+    "scripts/warpos/test-release-build-beta-honesty-gate.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/warpos/test-release-build-beta-honesty-gate.js",
+      "sha256": "aa21c259dd69769b9b1375ac476a3007710de55efb3747b65dfd350db15336eb",
+      "installedSha": "aa21c259dd69769b9b1375ac476a3007710de55efb3747b65dfd350db15336eb"
     },
     "scripts/warpos/test-rollback-cli-smoke.js": {
       "owner": "framework",
@@ -3335,8 +3342,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/linters/run.js",
-      "sha256": "25b6e9dc0c2511979e7094aa17e065ddf16107ee49d8744047d7068871a70161",
-      "installedSha": "25b6e9dc0c2511979e7094aa17e065ddf16107ee49d8744047d7068871a70161"
+      "sha256": "cb735e89c92864527c40b8d4d3b4cbfe64eb54a5cbf8f479b6fdd09180630661",
+      "installedSha": "cb735e89c92864527c40b8d4d3b4cbfe64eb54a5cbf8f479b6fdd09180630661"
     },
     "scripts/lib/staged-drift-reconciler.js": {
       "owner": "framework",

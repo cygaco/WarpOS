@@ -12,7 +12,7 @@
     "tool": 2,
     "pattern": 6,
     "fixture": 23,
-    "warpos_script": 46,
+    "warpos_script": 47,
     "check_tool": 24,
     "agent_tool": 3,
     "decision_tool": 1,
@@ -52,7 +52,7 @@
     "installer_script": 1,
     "framework_doc": 2
   },
-  "total": 774,
+  "total": 775,
   "assets": {
     "agent": [
       {
@@ -4914,7 +4914,7 @@
         "src": "scripts/warpos/release-build.js",
         "dest": "scripts/warpos/release-build.js",
         "kind": "warpos_script",
-        "sha256": "dc12c2bfeef2a7a84d67a2db0922618e7cfec94862ab53962dd9e33e9a01d537",
+        "sha256": "b72c4bbc58a8a2ebffb2937c3a35e8d12863f80477b3c7980334099f6b7ec917",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -5071,6 +5071,18 @@
         "dest": "scripts/warpos/test-install-matrix.js",
         "kind": "warpos_script",
         "sha256": "59466ddb2e639b07ad252027a7b9198485e0d4641e4f4a1a0bdb68a61c48abc7",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "warpos_script.test-release-build-beta-honesty-gate.js",
+        "src": "scripts/warpos/test-release-build-beta-honesty-gate.js",
+        "dest": "scripts/warpos/test-release-build-beta-honesty-gate.js",
+        "kind": "warpos_script",
+        "sha256": "aa21c259dd69769b9b1375ac476a3007710de55efb3747b65dfd350db15336eb",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -6590,7 +6602,7 @@
         "src": "scripts/linters/run.js",
         "dest": "scripts/linters/run.js",
         "kind": "linter_tool",
-        "sha256": "ec42c5f4639db7b631eaff8a609bd6bb77349c72c76db17589f599d117908c36",
+        "sha256": "becd15061d637f2fc382761ce888a291f212c22b611c7cc4d701b955c3fdb389",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",

@@ -40,6 +40,74 @@ function gitHead() {
   }
 }
 
+// Continuous-enforcement baseline for the release-build Beta-honesty gate.
+// Sprints that closed BEFORE this date predate the gate (they ran before Beta
+// consults were continuously enforced — e.g. inline/manual execution that left
+// `missing_consult` findings that can never be retroactively fixed). They are
+// ACKNOWLEDGED HISTORICAL DEBT — still surfaced by the on-demand
+// /scan:sprint-beta-honesty audit, but NOT release-blocking. Sprints on/after
+// this date MUST have honest consults or the build is refused.
+//
+// This mirrors the regression enforcer's baseline philosophy (only NEW reds
+// block; pre-existing tracked debt does not) and the checker's own hardcoded
+// SP003_SHIP_DATE cutoff. Advancing the baseline = acknowledging a new tranche
+// of debt; it should only move forward when the prior window is genuinely clean
+// or its findings are formally accepted.
+const BETA_HONESTY_GATE_BASELINE = "2026-05-29";
+
+// SP-20260528-001 / #438 — Beta-consultation honesty gate for release builds.
+// Runs scripts/checks/sprint-beta-honesty.js --json --since <baseline> and
+// decides whether the build is blocked. Extracted + runner-injectable so the
+// wiring is unit-testable without standing up a full capsule fixture.
+// Returns { blocked, message }.
+//
+// Fails CLOSED: exit 1 (findings) AND any other non-zero/crash status
+// (status null, exit 2) block — never ship on an unverifiable honesty signal.
+// The audit is date-cutoff-aware and graceful-empty, so a repo with no
+// applicable post-baseline /sprint:full runs returns blocked:false (a no-op for
+// product repos and pre-gate canonical history). Skipped entirely under
+// opts.skipBetaHonestyCheck (--skip-beta-honesty-check, emergencies only).
+function betaHonestyGate(opts, runChecker) {
+  if (opts && opts.skipBetaHonestyCheck) return { blocked: false, message: null };
+  const run =
+    runChecker ||
+    (() =>
+      spawnSync(
+        process.execPath,
+        [
+          path.join(REPO_ROOT, "scripts", "checks", "sprint-beta-honesty.js"),
+          "--json",
+          "--since",
+          BETA_HONESTY_GATE_BASELINE,
+        ],
+        { cwd: REPO_ROOT, encoding: "utf8" },
+      ));
+  const res = run() || {};
+  if (res.status === 0) return { blocked: false, message: null };
+
+  let detail = (res.stdout || "").trim();
+  try {
+    const parsed = JSON.parse(detail);
+    if (parsed && Array.isArray(parsed.findings)) {
+      detail =
+        `${parsed.totalFindings} finding(s) across ${parsed.checked} sprint(s) (cutoff ${parsed.cutoff}):\n` +
+        parsed.findings
+          .slice(0, 10)
+          .map((f) => `${f.sprint_id}  ${f.finding_type}  ${f.phase || "-"}  ${f.evidence || ""}`)
+          .join("\n");
+    }
+  } catch {
+    // Not JSON (crash / usage error) — fall back to raw streams (still blocks).
+    detail = (res.stderr || res.stdout || `exit ${res.status}`).trim();
+  }
+  const message =
+    "release-build refuses to build: Beta-consultation honesty findings in recent sprints:\n" +
+    (detail ? "  " + detail.split("\n").join("\n  ") + "\n" : "") +
+    "Remediation: resolve the findings (run `node scripts/checks/sprint-beta-honesty.js`), then re-run release-build.\n" +
+    "Bypass (emergencies only): re-run with --skip-beta-honesty-check.";
+  return { blocked: true, message };
+}
+
 function buildCapsule(version, opts) {
   const checkOnly = opts && opts.check;
   const capsuleDir = path.join(RELEASES_DIR, version);
@@ -95,6 +163,17 @@ function buildCapsule(version, opts) {
       }
     }
     fs.copyFileSync(FRAMEWORK_MANIFEST, manifestSnap);
+
+    // SP-20260528-001 / #438 — Refuse to build a capsule when recent
+    // post-cutoff sprints carry Beta-consultation honesty findings. The
+    // /scan:sprint-beta-honesty audit was on-demand only; wiring it here makes
+    // the 0.11.0 Beta cadence continuously enforced at release time
+    // (mechanism → audit → gate), not spot-checked. See betaHonestyGate().
+    const honesty = betaHonestyGate(opts);
+    if (honesty.blocked) {
+      console.error(honesty.message);
+      process.exit(2);
+    }
   } else if (!fs.existsSync(manifestSnap)) {
     console.error(
       `Capsule ${version} missing framework-manifest.json snapshot`,
@@ -233,13 +312,14 @@ if (require.main === module) {
   const version = args.find((a) => /^\d+\.\d+\.\d+/.test(a));
   const checkOnly = args.includes("--check");
   const skipManifestCheck = args.includes("--skip-manifest-check");
+  const skipBetaHonestyCheck = args.includes("--skip-beta-honesty-check");
   if (!version) {
     console.error(
-      "Usage: node scripts/warpos/release-build.js <version> [--check] [--skip-manifest-check]",
+      "Usage: node scripts/warpos/release-build.js <version> [--check] [--skip-manifest-check] [--skip-beta-honesty-check]",
     );
     process.exit(2);
   }
-  buildCapsule(version, { check: checkOnly, skipManifestCheck });
+  buildCapsule(version, { check: checkOnly, skipManifestCheck, skipBetaHonestyCheck });
 }
 
-module.exports = { buildCapsule };
+module.exports = { buildCapsule, betaHonestyGate };
