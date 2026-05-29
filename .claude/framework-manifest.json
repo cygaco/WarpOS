@@ -4,7 +4,7 @@
   "generated_by": "scripts/generate-framework-manifest.js",
   "counts": {
     "agent": 61,
-    "skill": 162,
+    "skill": 163,
     "reference": 25,
     "maps_baseline": 23,
     "hook": 66,
@@ -12,7 +12,7 @@
     "tool": 2,
     "pattern": 6,
     "fixture": 23,
-    "warpos_script": 47,
+    "warpos_script": 49,
     "check_tool": 24,
     "agent_tool": 3,
     "decision_tool": 1,
@@ -52,7 +52,7 @@
     "installer_script": 1,
     "framework_doc": 2
   },
-  "total": 775,
+  "total": 778,
   "assets": {
     "agent": [
       {
@@ -2602,6 +2602,18 @@
         "replaces": null
       },
       {
+        "id": "skill.warp.diff.md",
+        "src": ".claude/commands/warp/diff.md",
+        "dest": ".claude/commands/warp/diff.md",
+        "kind": "skill",
+        "sha256": "a3eadc91681d66cb658c514a6a099fc6e9b4ae310a0fe87b8e2694e1b21add18",
+        "owner": "framework",
+        "mergeStrategy": "three_way_markdown",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
         "id": "skill.warp.doctor.md",
         "src": ".claude/commands/warp/doctor.md",
         "dest": ".claude/commands/warp/doctor.md",
@@ -4670,6 +4682,18 @@
         "replaces": null
       },
       {
+        "id": "warpos_script.diff.js",
+        "src": "scripts/warpos/diff.js",
+        "dest": "scripts/warpos/diff.js",
+        "kind": "warpos_script",
+        "sha256": "05cd487cf4d5648d70072c93088c2c40ae8b8772bbc13568383f1e236985098b",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
         "id": "warpos_script.generate-roadmap-scaffold.js",
         "src": "scripts/warpos/generate-roadmap-scaffold.js",
         "dest": "scripts/warpos/generate-roadmap-scaffold.js",
@@ -5047,6 +5071,18 @@
         "dest": "scripts/warpos/test-cross-version-replay.js",
         "kind": "warpos_script",
         "sha256": "4243a60fe6e82a248e553e41f2401076cd6d09365b200fb7db93f4001fd8eb23",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "warpos_script.test-diff.js",
+        "src": "scripts/warpos/test-diff.js",
+        "dest": "scripts/warpos/test-diff.js",
+        "kind": "warpos_script",
+        "sha256": "61b08379e99b7ddd95a95e3274501a49506ea1292a7be108650a6144c0c6b6c7",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",

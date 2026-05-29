@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-05-29T21:56:30.361Z",
+  "generatedAt": "2026-05-29T22:01:42.345Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.10.0",
   "migrations": [],
@@ -2316,6 +2316,13 @@
       "sha256": "5d4c08a0679514f2400eee7f920b78ac4be016147daef22d4d54d4ad1a978ee1",
       "installedSha": "5d4c08a0679514f2400eee7f920b78ac4be016147daef22d4d54d4ad1a978ee1"
     },
+    "scripts/warpos/diff.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/warpos/diff.js",
+      "sha256": "05cd487cf4d5648d70072c93088c2c40ae8b8772bbc13568383f1e236985098b",
+      "installedSha": "05cd487cf4d5648d70072c93088c2c40ae8b8772bbc13568383f1e236985098b"
+    },
     "scripts/warpos/generate-roadmap-scaffold.js": {
       "owner": "framework",
       "managed": true,
@@ -2441,6 +2448,13 @@
       "source": "scripts/warpos/test-cross-version-replay.js",
       "sha256": "05edfef8b75c34e318000c3279a68cf3c38db0cc63d50eb06e0e73f76fa68d88",
       "installedSha": "05edfef8b75c34e318000c3279a68cf3c38db0cc63d50eb06e0e73f76fa68d88"
+    },
+    "scripts/warpos/test-diff.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/warpos/test-diff.js",
+      "sha256": "61b08379e99b7ddd95a95e3274501a49506ea1292a7be108650a6144c0c6b6c7",
+      "installedSha": "61b08379e99b7ddd95a95e3274501a49506ea1292a7be108650a6144c0c6b6c7"
     },
     "scripts/warpos/test-hash-back-compat.js": {
       "owner": "framework",
@@ -12721,6 +12735,14 @@
       "kind": "md",
       "sha256": "fc85d605afd513b3b2778d3d6f7856f9152f7e942caad1a27ea8e34952419153",
       "installedSha": "fc85d605afd513b3b2778d3d6f7856f9152f7e942caad1a27ea8e34952419153"
+    },
+    ".claude/commands/warp/diff.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/commands/warp/diff.md",
+      "kind": "md",
+      "sha256": "a3eadc91681d66cb658c514a6a099fc6e9b4ae310a0fe87b8e2694e1b21add18",
+      "installedSha": "a3eadc91681d66cb658c514a6a099fc6e9b4ae310a0fe87b8e2694e1b21add18"
     },
     ".claude/commands/warp/doctor.md": {
       "owner": "framework",
