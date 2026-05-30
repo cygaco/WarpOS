@@ -308,6 +308,30 @@ function scaffoldProduct({ target, warposRoot, log }) {
     /* non-fatal — runtime insulation is best-effort */
   }
 
+  // ── 5g. scripts/ ESM/CJS insulation (WG-9/W-005 class, gap B1) ────────
+  // The scripts/ subtree is all CommonJS. scripts/package.json={"type":"commonjs"}
+  // is now a SHIPPED framework asset (generate-framework-manifest TOP_LEVEL_FRAMEWORK_FILES,
+  // 2026-05-30), so the installer copies it. This block is belt-and-suspenders:
+  // if the copy path ever misses it, scaffold writes it so a product whose root
+  // declares "type":"module" never has its framework scripts/hooks break as ESM.
+  // Idempotent / skip-if-present. Fail-open. /scan:install enforces presence.
+  try {
+    const scriptsDir = path.join(TARGET, "scripts");
+    if (fs.existsSync(scriptsDir)) {
+      const scriptsPkg = path.join(scriptsDir, "package.json");
+      if (!fs.existsSync(scriptsPkg)) {
+        fs.writeFileSync(
+          scriptsPkg,
+          JSON.stringify({ type: "commonjs" }, null, 2) + "\n",
+        );
+        log("ok", 'Wrote scripts/package.json ({"type":"commonjs"} — insulates framework scripts+hooks from ESM product roots)');
+        installed++;
+      }
+    }
+  } catch {
+    /* non-fatal — scripts insulation is best-effort */
+  }
+
   return { installedDelta: installed };
 }
 

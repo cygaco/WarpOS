@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-05-30T09:56:48.006Z",
+  "generatedAt": "2026-05-30T10:10:58.370Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.10.0",
   "migrations": [],
@@ -20,8 +20,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "62e7eb8b369afb30411d30c1f5e69e8e46eadeb2aa5dc315a9db17601384d5ea",
-      "installedSha": "62e7eb8b369afb30411d30c1f5e69e8e46eadeb2aa5dc315a9db17601384d5ea"
+      "sha256": "b44ee4cde405cf8096d5b06ee43893459da204301bfed3b68f99acf2e086d873",
+      "installedSha": "b44ee4cde405cf8096d5b06ee43893459da204301bfed3b68f99acf2e086d873"
     },
     "AGENTS.md": {
       "owner": "framework",
@@ -97,8 +97,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "594304c82330cfca782a90b55c8c242a665cc6635a05e60eb5b5688043944ec5",
-      "installedSha": "594304c82330cfca782a90b55c8c242a665cc6635a05e60eb5b5688043944ec5"
+      "sha256": "e72d47597b0a06081b68f4da6c723aba5f3c62c567ea55f4e1dcbc4c88e9ba02",
+      "installedSha": "e72d47597b0a06081b68f4da6c723aba5f3c62c567ea55f4e1dcbc4c88e9ba02"
     },
     "USER_GUIDE.md": {
       "owner": "framework",
@@ -1489,8 +1489,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/generate-framework-manifest.js",
-      "sha256": "7f1a16e115f294ab41ef65f3a8882388db3561a2aab9eac07dff6d0163f4f34b",
-      "installedSha": "7f1a16e115f294ab41ef65f3a8882388db3561a2aab9eac07dff6d0163f4f34b"
+      "sha256": "ec6fcf4c18b1870baa767d32d1d7e12d04c809bc5dea0a81426707889aaaf702",
+      "installedSha": "ec6fcf4c18b1870baa767d32d1d7e12d04c809bc5dea0a81426707889aaaf702"
     },
     "scripts/generate-maps.js": {
       "owner": "framework",
@@ -2280,8 +2280,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/warp-setup.js",
-      "sha256": "5731949c14385aa7ea1d8aabe4598964d7f98c7dfb9f6127f30f9d48915a6c98",
-      "installedSha": "5731949c14385aa7ea1d8aabe4598964d7f98c7dfb9f6127f30f9d48915a6c98"
+      "sha256": "1a81e0ebb6cff99e44be5cf4055b12d829d8008fb77ff6019b74bd51ecea6e0b",
+      "installedSha": "1a81e0ebb6cff99e44be5cf4055b12d829d8008fb77ff6019b74bd51ecea6e0b"
     },
     "scripts/warpos-sync-run09.js": {
       "owner": "framework",
@@ -2462,8 +2462,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/warpos/scaffold-core.js",
-      "sha256": "39e2d013c93b4991fb9f9a53d7af1a0cef805c7b5c86e49c426047d3b14422a8",
-      "installedSha": "39e2d013c93b4991fb9f9a53d7af1a0cef805c7b5c86e49c426047d3b14422a8"
+      "sha256": "7f61a5e25361d8b2f725bef1abe11bc65bb74ba8a70e7f4df6dc53d81aed2571",
+      "installedSha": "7f61a5e25361d8b2f725bef1abe11bc65bb74ba8a70e7f4df6dc53d81aed2571"
     },
     "scripts/warpos/snapshot-installed.js": {
       "owner": "framework",

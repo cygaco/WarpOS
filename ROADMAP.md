@@ -24,6 +24,34 @@ WarpOS exists to help the maintainer ship real products faster while extracting 
 
 ---
 
+## 🔭 Downstream WARPOS.md Reconcile — verified-open (2026-05-30) — TOP PRIORITY
+
+`/warp:reconcile` run over all 4 product registers (dreamteam W-1..W-22+, companycam WG-1..WG-17+, masterconsole WI-2026-05-29-01..13, almanac W-001..W-007). **Verify-canonical-first** (ED-008): ~80% of the ~55 flagged gaps were **already fixed** in canonical@current (sprint path-keys/null-crash/templates/resume-idempotency, all 4 guard-awareness gaps, γ phantom-dispatch, partial-capsule, scaffold-version, git-dubious-ownership, stale-role-names; skills /roadmap:create + /bootstrap:spinup + sprint:full Step-8b all EXIST). The Phase-1 dispatch work this session fixed the gemini-auth/codex-flag/2nd-GPT-security cluster (WG-13, WI-02/05/08). Below = the genuinely-open remainder, triaged.
+
+### ✅ Fixed this session (2026-05-30)
+- **Dispatch cluster** (WG-13, WI-02/05/08, WG-15): gemini key/trust/model + codex `--sandbox` + 2nd GPT security pass + `--provider` override + `scripts/test-dispatch-config.js` enforcer. (commits af5f668, c40e065)
+- **B1** — `scripts/package.json` ({"type":"commonjs"}) now SHIPPED (manifest generator `TOP_LEVEL_FRAMEWORK_FILES` + scaffold-core insurance). Closes the `type:module`-breaks-CommonJS class downstream (WG-9/W-005/W-007, hit by 3 products).
+- **E3** — `scripts/bootstrap/` + `scripts/canon/` added to ASSET_DIRS → bootstrap:spinup + canon skills no longer ship as DEAD skills (missing backing scripts). (almanac W-003, companycam W-015)
+- **E5** — `provider-trace.jsonl` runtime telemetry untracked + added to managed `.gitignore` (canonical + product). (mc WI-06)
+
+### 🔧 0.18.1 — Install/Release/Dispatch Reliability sprint (#30 torture-level — operator-directed)
+A bounded reliability sprint folding the verified-open mid-leverage gaps. Torture target = a clean-room consumer simulation that dogfoods the fresh-install + release-apply + dispatch-readiness path the way downstream hits it (the lens ED-008 keeps proving canonical never exercises).
+- **A1/A3** — wire the REAL per-provider×per-role dispatch-readiness preflight (`provider-smoke.js --per-role`, already built but **orphaned**) into `/warp:health` + SessionStart + `/agents:test`; kill the presence-only false-green path (`provider-health-check --summary`). Surface a loud per-link verdict (CLI/model/effort/perms/auth). *(mc WI-04/WI-13; ROADMAP G1.6)*
+- **E1** — release-build runtime-exclusion gate: `release-build.js` is a dumb snapshotter — it still ships `owner=runtime` append-only logs (beta/events.jsonl ×5 in the 0.10.0 capsule). Add an owner=runtime/tracked-transients gate at build (the generator excludes them; the build path does not). *(dreamteam W-8)*
+- **E3-gate** — skill↔script completeness gate: release-build parses every shipped skill `.md` for `scripts/…` refs and fails if any aren't manifest assets (the structural fix behind E3 + WG-15). *(companycam)*
+- **C5** — sprint cost threshold ($5 hardcoded, `--cost-acknowledged`→$10) should scale with the session autonomy budget. *(mc WI-13 secondary)*
+- **F2** — redteam→Claude security fallback is silently "acceptable"; make it a LOUD ack-required signal for go-live security sign-off (GAMMA_RESULT field + operator surface). *(mc WI-08)*
+- **A2** — `CODEX_BIN`/`GEMINI_BIN` binary-path override in catalog.js + providers.js `cliAvailable()`, so a mid-session-installed CLI isn't silently invisible (→ Claude fallback). *(mc WI-02)*
+- **B3** — extend `/scan:install` ESM-collision probe to the `.claude/runtime/` side (currently only guards `scripts/`). *(almanac W-007)*
+
+### 🗺 Roadmap (bounded-larger, own items)
+- **E6** — product-overlay path registry (`paths.local.json` deep-merged by `scripts/paths/build.js`, or an `owner:project` section `/warp:update` never overwrites) so product-specific path keys survive framework updates without MERGE_CONFLICT + honesty-drift every update. *(dreamteam W-9)*
+- **H4** — port `/roadmap:improve` + `/roadmap:ship` (almanac-built, multi-agent Workflow skills) into canonical. One-way sync means consumer-built skills never propagate up; these are generic + owed. *(almanac)*
+- **G1** — add the **product-layer vs dev-tooling-layer** distinction to `DICTIONARY.md` glossary (CLAUDE.md §Identity already has it; glossary does not). *(dreamteam W-16)*
+- **G2** — add the invocation-authority-vs-mode clarification to `gamma.md` (the `/sprint:full` skill itself is already correct: adhoc-default, rejects oneshot). *(mc WI-12)*
+
+---
+
 ## 🏛 Milestones
 
 Director-of-product framing: the roadmap is a rhythm — **n sprints → milestone hit → n sprints → milestone hit**. Each milestone names *what shifts in the engineering reality* of the framework; the sprints listed beneath it are the units of work that close it. Pulling a milestone forward means planning its sprints (via `/sprint:plan` / `/sprint:full`), shipping them, then closing the milestone when its definition-of-done holds.

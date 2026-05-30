@@ -803,6 +803,10 @@ const runtimeBlock = [
   ".claude/project/events/",
   ".claude/project/memory/",
   ".claude/project/builds/",
+  // 2026-05-30 reconcile (mc WI-06, gap E5): runtime dispatch telemetry must not
+  // be tracked. provider-trace.jsonl lives under decisions/ (which holds tracked
+  // decision records) so ignore the specific file, not the dir.
+  ".claude/project/decisions/provider-trace.jsonl",
   ".claude/agents/*/.workspace/",
   ".claude/agents/**/events.jsonl",
   ".claude/.session-id",

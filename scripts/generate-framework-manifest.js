@@ -228,6 +228,12 @@ const ASSET_DIRS = [
   { src: "scripts/schemas", kind: "schema_tool" },
   { src: "scripts/system", kind: "system_tool" },
   { src: "scripts/turbo", kind: "turbo_tool" },
+  // 2026-05-30 reconcile (gap E3, multiple downstream registers): bootstrap:spinup
+  // + canon skills shipped their .md but NOT their backing scripts (spinup-orchestrate.js,
+  // phases/onscreen.js, canon/generate.js) — so every consumer got DEAD skills. These
+  // two dirs were never classified. Shipping them closes the skill↔script gap.
+  { src: "scripts/bootstrap", kind: "bootstrap_tool" },
+  { src: "scripts/canon", kind: "canon_tool" },
   { src: "schemas", kind: "schema" },
   { src: "migrations", kind: "migration" },
   { src: "framework/releases", kind: "release_capsule" },
@@ -261,6 +267,13 @@ const TOP_LEVEL_FRAMEWORK_FILES = [
   { src: "version.json", kind: "version_file" },
   { src: "install.ps1", kind: "installer_script" },
   { src: ".github/workflows/test.yml", kind: "ci_workflow" },
+  // 2026-05-30 reconcile (gap B1): `scripts/package.json` = {"type":"commonjs"}
+  // insulates every framework script + hook from a product root that declares
+  // "type":"module" (WG-9/W-005 class — hit across downstream products). It existed
+  // in canonical but was NEVER shipped — the generator only walks scripts/<subdir>
+  // + .js TOP_LEVEL_SCRIPTS, so a scripts-root non-.js file had no path to inclusion.
+  // Enumerating it here ships + honesty-tracks the insulation for every product.
+  { src: "scripts/package.json", kind: "module_scope" },
 ];
 
 // Root-level docs installed into the target project root (not into .claude/).

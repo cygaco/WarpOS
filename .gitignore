@@ -18,6 +18,7 @@ Thumbs.db
 
 # WarpOS Runtime (session-specific, DO NOT commit)
 .claude/project/events/
+.claude/project/decisions/provider-trace.jsonl
 .claude/project/memory/
 .claude/runtime/
 .claude/content/
