@@ -47,7 +47,7 @@ Modes = *how a run executes* (Solo / Adhoc / Oneshot); the org = *the cast*. The
 | "Integrated but unused" UI frameworks | **Component-library scaffold wiring** (Wave 0 / S0B) |
 | Split builder FE/BE | **Engineering domain** |
 | /etc skill | **Authoring+eval harness** (Wave 0 / S0B) |
-| Higgsfield "use it from here" | **Embed via MCP/CLI** (Wave 0 / S0B — optional; movable to Wave 2/3) |
+| Higgsfield "use it from here" | **Embed via MCP/CLI — COMMITTED (operator 2026-05-30), Wave 2 (S2.2 creative step); MUST land before the pilot finishes** |
 | Integrate into bootstrap/portfolio/lastmile | **Pilot wires the pipeline into lastmile/spinup/portfolio** (Wave 3) |
 | Higgsfield-as-platform blueprint | **W-Platform — deferred (post-pilot)** |
 
@@ -68,7 +68,7 @@ Modes = *how a run executes* (Solo / Adhoc / Oneshot); the org = *the cast*. The
 |---|---|---|
 | **S0.3** Component-library scaffold wiring | actually install/scaffold Next+Tailwind+Radix+shadcn+Lucide in `portfolio:new` + `bootstrap:spinup` + builder contract (kills "vibe-coded") — its **acceptance contract waits on `design_brief`/`build_spec`** from S0.2 | `scripts/portfolio/*`, `scripts/bootstrap/*`, `framework/templates/*` |
 | **S0.4** `/etc` authoring+eval harness | prompt/skill authoring + eval (procedures/rubrics/examples/counterexamples/decision-records) **against provisional contract v0.1 — must not invent its own authoring format**; GPT‑5.5 consult wired | `.claude/commands/etc/*`, dispatch |
-| **S0.5** Higgsfield embed *(optional in Wave 0; not chassis)* | wire Higgsfield MCP/CLI as the creative-production tool — **may slip to Wave 2/3** unless the pilot needs video/image generation | mcp config, integration notes |
+| **S0.5 → RELOCATED to Wave 2 (S2.2)** | Higgsfield is **COMMITTED, not optional** (operator 2026-05-30; §10c resolved): wire Higgsfield MCP/CLI as the creative image/video production step inside the `growth:` pack — **must land before the Wave 3 pilot finishes** (pilot exit criteria exercises it) | mcp config, integration notes |
 | **S0.6** Untrusted-content firewall | hook + `/scan:*` that treats all externally-ingested content (web/research/provider/MCP outputs, audience sources) as **data**, REJECTS embedded action-directives (publish/export/install/run/mirror), and never lets fetched content drive tool calls — the research/ingest/creative steps are live injection surfaces. Forward-looking design, not an incident response | `scripts/hooks/*`, new scan skill |
 
 **Wave 1 — Modes generalization** (depends on Wave 0 contracts):
@@ -88,7 +88,7 @@ Modes = *how a run executes* (Solo / Adhoc / Oneshot); the org = *the cast*. The
 **Wave 3 — The pilot (prove it end-to-end)**:
 | Sprint | Goal |
 |---|---|
-| **S3.1** Cross-domain oneshot pilot | one pilot product, full loop research→message→design→build→creative→iterate → ONE converting artifact; wire pipeline into `bootstrap:lastmile` + `spinup` + `portfolio`; feed pilot defects back into the contracts before scaling. **Exit criteria (not just "artifacts exist"):** the system produces one artifact AND passes contract validation + routing validation + visual/mobile QA (where relevant) + evidence/no-invented-data checks + resonance/conversion-quality evals, AND records contract defects to revise v0.1. |
+| **S3.1** Cross-domain oneshot pilot | one pilot product, full loop research→message→design→build→creative→iterate → ONE converting artifact; wire pipeline into `bootstrap:lastmile` + `spinup` + `portfolio`; feed pilot defects back into the contracts before scaling. **Exit criteria (not just "artifacts exist"):** the system produces one artifact AND passes contract validation + routing validation + visual/mobile QA (where relevant) + evidence/no-invented-data checks + resonance/conversion-quality evals, **AND the creative loop exercises the Higgsfield image/video integration (a real generated asset in the converting artifact)**, AND records contract defects to revise v0.1. |
 
 **Deferred (post-pilot, NOT committed here):** W-Platform (`warpos` external CLI + first-party MCP server — Master Console as platform); breadth/position expansion.
 
@@ -129,7 +129,7 @@ v1.1 written; **GPT‑5.5 final review folded in** (see §10), then high-level s
 
 ### (c) JUDGMENT CALLS FLAGGED for the operator
 - **Design authority shape.** GPT: restore a named design authority — *either* a human-style **Design Lead** role *or* a **design-quality gauntlet**. v1 (operator-blessed) explicitly removed the standalone Design Lead. **GPT's rec:** a real owner either way; I defaulted to the **gauntlet** (compatible with "no person"). Operator: keep gauntlet, or reinstate a Design Lead?
-- **Higgsfield placement.** GPT: Higgsfield is **not foundational** — make it optional in Wave 0 or move to Wave 2/3 unless the pilot needs video/image gen. **GPT's rec:** demote/move. I marked S0.5 optional but left it in Wave 0B. Operator: move to Wave 2/3 outright?
+- **Higgsfield placement. → RESOLVED 2026-05-30 (operator directive):** Higgsfield is **COMMITTED — not optional — and MUST be implemented before the pilot finishes.** Placement: **Wave 2 (S2.2 creative step)**; **S0.5 relocated** out of Wave 0B; the **Wave 3 pilot exit criteria exercise it** (a real generated asset). GPT's "not foundational / move to Wave 2" rec is honored on *placement*; the operator overrode the *"optional"* framing → committed.
 - **Integration phase placement & whether to add roles.** GPT: put the Gamma integration phase in **Wave 1 or Wave 2**. **GPT's rec:** name it now (done as S1.3); decide later if dedicated Foundation/Integration *roles* are warranted. Operator: S1.3 (Wave 1) vs folding into Wave 2?
 - **Org breadth before the pilot.** GPT (over-build): the full org vocabulary — 3 directors, leads, specialists, gauntlets, domain repartition — may be more than the pilot needs. **GPT's rec:** build the *minimum* org to run the pilot unambiguously, expand after. Operator: trim Wave 2 to pilot-minimum, or keep full v1 org?
 
@@ -139,3 +139,54 @@ v1.1 written; **GPT‑5.5 final review folded in** (see §10), then high-level s
 
 ### (e) BIGGEST landmine for the new session
 **Ambiguity at handoff, not concept.** The new session must NOT be allowed to infer: the Wave 0 internal order (contracts/org-map first, enforcement against those contracts second), the exact authoritative edit surfaces (`.claude/`, `scripts/`, `_requirements/`, `framework/templates/`; regen both manifests last), the exact role-registry files touched when adding/splitting roles, and the hard rule **do not create an agent before its input/output artifacts and validating scans exist.** The `/session:dump` must make every one of these explicit.
+
+## 11. Session refinements — 2026-05-30 (β-decided, pre-execution review)
+Org-design questions resolved by **β (Class B)** during pre-execution review. **These refine S0.1 / S2.1 scope; apply at execution.** Logged to betaEvents: `EVT-org-reqauthoring-beta-001`, `EVT-org-roadmap-principles-beta-001`.
+
+**R1 — Requirement-authoring owner (β DECIDE, conf 0.87).** **Product Lead** owns requirement authoring (build_spec / PRD) — NOT a new role, NOT the Product Designer (altitude: requirements = product-scoping decision = Lead tier; Designer = doer/craft tier). The *activity* already has machinery: `/sprint:design` authors PRD/stories/acceptance/TRACE; `req-reviewer` (adhoc + oneshot) verifies behavior↔requirement↔code↔test traceability — **no new *artifact family*** (but S2.1 must still add the Product-Lead-as-enforcer binding into oneshot build_spec validation — enforcer-first, not zero-effort). **Encode as a Product Lead deliverable in S2.1.** Oneshot: Product-Lead-as-enforcer validates the build_spec contract (reject-not-lint, fail-closed) + `req-reviewer` gate.
+
+**R2 — Roadmap ownership = altitude split (β DECIDE, conf 0.86).** Per-product backlog ranking + within-sprint sequencing → **Product Lead** (when built, S2.1). Strategic / cross-product / lifecycle-phase-shift calls → **Director of PM**. Fallback until the Lead agent exists (incl. WarpOS's own framework roadmap): Director = current behavior, **no regression**. "Lead-based" ≠ less product judgment — the Lead *inherits* the Director's principles (see R4) and applies them at execution altitude.
+
+**R3 — Roadmap-skill tuning.**
+- *Ungated quick-win (Class A, do anytime / S0.1-first):* fix the stale inline principle list in `roadmap/prioritize.md` (~line 7) — reference the DoP spec by pointer, don't enumerate. Already rotted: lists 7/10 principles + includes the QA-earmarked one. **This `prioritize.md` pointer fix is the ONLY edit allowed before S0.2** — not permission to start S0.1 machinery before the S0.2 contract shapes exist.
+- *Gated on S2.1:* make `prioritize` / `ideas` / `next` / `create` **role-aware** (single-product → Product Lead; cross-product/strategic → Director). Until S2.1, keep `subagent_type: director-of-product` as the sole dispatch — no regression, no debt.
+
+**R4 — Principle ownership = inheritance model (β DECIDE, conf 0.86; OPEN_ADR false).** Chain: **shared base → Director (domain principles) → Lead (inherits + execution principles) → specialist (inherits + craft principles).** "Ownership" = where a principle is *rooted*; inheritance propagates it down. Distribution:
+- **Shared base (build in S0.1):** Clarity-is-King · Map-the-User-Journey · evidence-over-invention.
+- **Director of PM:** Lean PD · Lifecycle-Aware · Build-over-Buy · Focus · Pivot · Audience-is-King.
+- **Product Lead** (inherits Director's): FTUE/NUX · Cold-vs-Warm-Start.
+- **Product Designer** (inherits Lead's): build-for-audience-incl-limitations · KISS · clear-iconography.
+- **QA Lead:** Product-Priority-over-Severity (natural home) + its 6 QA principles.
+- **Research/Insight Lead:** Audience-is-King (deepest / emotional-layers form) · no-invented-data / confidence-scored / no-PII.
+- **Marketing** (clone the programmable-principles pattern): Dir-Mktg = copy>creative · clarity>cleverness · message-first; Growth Lead = EQ / SCALE-TEST-SKIP · money-loves-speed · LTV:CAC≥3; Copy Lead = Agora/E5 "argument not copy" · hooks-are-90% · owns Chief-coherence; Web/Conversion Designer = clarity + conversion-hierarchy.
+
+**Three cleanups — log as S0.1 pre-work (do NOT build the shared base outside S0.1 — drift vector):**
+1. Remove **DoP Principle #7** (Product-Priority-over-Severity) — QA owns it (DoQA #1); the DoP spec already earmarks the move. **Sequencing constraint (β): assign stable principle IDs (slugs) BEFORE removing #7** — `director-of-qa.md:57` cross-references "Director of Product's Principle #7" by ordinal; removing it first breaks that reference silently (refactor-hygiene bug class).
+2. Promote **Map-the-User-Journey** to the shared base (it IS the duplicate across DoP #10 / DoQA #7); **add Clarity-is-King as a NEW shared-base principle** — *not* an existing DoP/DoQA named principle (don't hunt for a duplicate; sourced from the plan's "clarity is king" + the convergence insight). *[GPT-5.5 re-review caught the false-duplicate wording.]*
+3. **FTUE/NUX + Cold-vs-Warm-Start → Product Lead tier at S2.1**, but **keep them on the DoP spec with an inheritance annotation until the Lead agent exists** — deleting now with no Lead carrier = a principles gap.
+
+*OPEN_ADR false: these are convention assignments; the inheritance mechanism is itself the S0.1 build (its ADR rides with S0.1). A second ADR now would be premature documentation.*
+
+**R5 — Higgsfield COMMITTED (operator directive 2026-05-30; resolves §10c).** Higgsfield is **no longer optional** — it MUST be implemented before the pilot finishes. Placement: **Wave 2 (S2.2 creative step)** inside the `growth:` pack (image/video production); **S0.5 relocated** out of Wave 0B. The **Wave 3 pilot exit criteria now require the creative loop to exercise the Higgsfield integration** (a real generated asset in the converting artifact). Direct operator authority — not a β decision.
+
+### 11.A — GPT-5.5 re-review deltas (2026-05-30; folded; β-ratified `EVT-org-gpt-rereview-beta-001`)
+GPT-5.5 re-reviewed the updated DUMP → **CONDITIONAL-GO** on both handoff + R1–R4. All deltas folded; β confirmed Class A except two judgment items (both β DECIDE, conf 0.88). Raw review: `_planning/dump-review-gpt55-out.json`.
+
+**Doc-bug corrections (applied above + in DUMP):**
+- §1 **Higgsfield contradiction** removed — it is **Wave 2** (default #2), not a 0B item.
+- **Pre-S0.2 edit list** = ONLY the `prioritize.md` pointer fix; no S0.1 machinery before S0.2 contracts.
+- **Escape-hatch** reworded — trust repo for *paths / current implementation*, the plan for *intended target*.
+- **R1** "zero enforcement debt" → "no new artifact family; S2.1 still adds the PL-enforcer binding."
+- **R4** — only Map-the-User-Journey is the DoP#10/DoQA#7 duplicate; **Clarity-is-King is a NEW shared-base principle, not a duplicate.**
+
+**S0.1 acceptance requirements added (the inheritance *enforcer* — β(B) DECIDE; OPEN_ADR stays false):**
+- Build the inheritance **mechanism**, not just the convention: a `manager-principles-base` carrier + schema fields `owned_principles` / `inherits_from` / `inherited_principles` (β-verified: none exist today) **+ a scan that REJECTS duplicate-owned and missing-inherited principles** (the named enforcer — "every policy needs an enforcer").
+- **Stable principle IDs (slugs), not ordinals; slug BEFORE removing DoP #7** (sequencing constraint, above).
+- **S0.1 order:** carrier + schema + scan FIRST → then move/promote principles. Keep the base **MINIMAL** (file + schema + scan; no over-abstraction before contracts exist — GPT over-build guard).
+- Promote **`claims-boundary` / source-grounded-claims** to a shared manager principle (it crosses Product / Marketing / Research / Compliance).
+
+**S2.1 additions:**
+- **Intra-Product conflict routing (β(A) DECIDE, conf 0.88):** Product Lead owns backlog/product sequencing; QA Lead owns QA/fix-priority under product-priority-over-severity; unresolved → **Director of PM**. **β enters ONLY for ship-gate or cross-domain conflicts** — not every intra-Product disagreement (keeps β from becoming an intra-domain appeal court). Default for when both Lead agents exist.
+- **QA Lead rename:** keep a `director-of-qa` dispatch **alias** until all registry/skill refs migrate (role-registry-parity, §1.5).
+- **Marketing dedup pass** vs the shared base — root clarity once; Marketing roles add domain applications (message-first · proof · hooks · conversion-hierarchy), not a third "clarity."
+- **`roadmap/add.md` stays role-neutral** (mechanical appender, no `subagent_type` dispatch) — excluded from the role-aware set; role-aware = `prioritize` / `ideas` / `next` / `create`.
