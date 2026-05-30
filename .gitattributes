@@ -1,0 +1,19 @@
+# Force LF for all text files on checkout, on every machine.
+#
+# WarpOS manifests (_warpos/MANIFEST.json, .claude/framework-manifest.json) and
+# the regression-seed enforcer (BC-02 drift, BC-05 staleness) RAW-HASH
+# working-tree bytes. A mixed or CRLF working tree (Windows git core.autocrlf=true)
+# corrupts those hashes and false-REDs the enforcer — which, as of 0.17.0, blocks
+# sprint-close and release. Forcing LF for text makes the working tree match the
+# LF-hashed manifest on every checkout. See RI-001.
+* text=auto eol=lf
+
+# Known binaries — never normalize (defense-in-depth; text=auto already detects).
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.woff binary
+*.woff2 binary

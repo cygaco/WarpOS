@@ -397,6 +397,7 @@ function buildRules(sourcePrefix) {
         rel === "ROADMAP.md" ||
         rel === "RELEASES.md" ||
         rel === ".gitignore" ||
+        rel === ".gitattributes" ||
         rel === "version.json",
       entry: () => ({
         owner: "framework",
