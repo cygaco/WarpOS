@@ -339,6 +339,25 @@ function buildRules(sourcePrefix) {
         kind: "md",
       }),
     },
+    {
+      // Manager-principles machine-readable data (registry.json) under
+      // .claude/agents/03-managers/_principles/ — framework source. The
+      // framework-claude-agent rule above only matches .md, so the registry's
+      // .json would otherwise be unclassified (S0.1). base.md is already caught
+      // by the .md rule above (first-match-wins); this catches the .json.
+      name: "framework-manager-principles",
+      match: (rel) =>
+        rel.startsWith(".claude/agents/03-managers/_principles/"),
+      entry: (rel) => ({
+        owner: "framework",
+        managed: true,
+        source:
+          sourcePrefix === "framework"
+            ? rel
+            : `${sourcePrefix}/${rel.replace(/^\.claude\//, "")}`,
+        kind: rel.endsWith(".json") ? "json" : "md",
+      }),
+    },
 
     // FRAMEWORK — source tree itself
     {

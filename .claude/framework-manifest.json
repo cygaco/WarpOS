@@ -3,7 +3,7 @@
   "version": "0.11.1",
   "generated_by": "scripts/generate-framework-manifest.js",
   "counts": {
-    "agent": 62,
+    "agent": 65,
     "skill": 168,
     "reference": 28,
     "maps_baseline": 23,
@@ -13,7 +13,7 @@
     "pattern": 6,
     "fixture": 23,
     "warpos_script": 52,
-    "check_tool": 25,
+    "check_tool": 26,
     "agent_tool": 3,
     "decision_tool": 1,
     "runtime_tool": 1,
@@ -55,7 +55,7 @@
     "module_scope": 1,
     "framework_doc": 2
   },
-  "total": 846,
+  "total": 850,
   "assets": {
     "agent": [
       {
@@ -203,11 +203,23 @@
         "replaces": null
       },
       {
+        "id": "agent.00-alex..system.policy.adr.0003-manager-principles-inheritance.md",
+        "src": ".claude/agents/00-alex/.system/policy/adr/0003-manager-principles-inheritance.md",
+        "dest": ".claude/agents/00-alex/.system/policy/adr/0003-manager-principles-inheritance.md",
+        "kind": "agent",
+        "sha256": "1147da1e3077a39e00c772bd596c5cf11d7629d93011b609adcf6e39b05b837b",
+        "owner": "framework",
+        "mergeStrategy": "three_way_markdown",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
         "id": "agent.00-alex..system.policy.adr.INDEX.md",
         "src": ".claude/agents/00-alex/.system/policy/adr/INDEX.md",
         "dest": ".claude/agents/00-alex/.system/policy/adr/INDEX.md",
         "kind": "agent",
-        "sha256": "0dd5bc05feb7cc631c3da7fbdba1fe0d54ebde5b690f18f9e24f2c726a1ef1b0",
+        "sha256": "8c8200babe4e76704d385ee7c1196e3c4b7608c1cc2b7f3ee9ff4c5cf3700913",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
@@ -779,11 +791,35 @@
         "replaces": null
       },
       {
+        "id": "agent.03-managers._principles.base.md",
+        "src": ".claude/agents/03-managers/_principles/base.md",
+        "dest": ".claude/agents/03-managers/_principles/base.md",
+        "kind": "agent",
+        "sha256": "92bf909dbaab80151009c618280a929775a8768e144bd0856af7847d1969f3ce",
+        "owner": "framework",
+        "mergeStrategy": "three_way_markdown",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "agent.03-managers._principles.registry.json",
+        "src": ".claude/agents/03-managers/_principles/registry.json",
+        "dest": ".claude/agents/03-managers/_principles/registry.json",
+        "kind": "agent",
+        "sha256": "9e2594245fdaf580549b498b8fff2d1ffe4ee95f4d99ae0b608d85a272e9eaca",
+        "owner": "framework",
+        "mergeStrategy": "three_way_markdown",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
         "id": "agent.03-managers.director-of-product.md",
         "src": ".claude/agents/03-managers/director-of-product.md",
         "dest": ".claude/agents/03-managers/director-of-product.md",
         "kind": "agent",
-        "sha256": "a699377853357101a2973d9ac4db814635d3a967283d8e66ab398eabd2a0c044",
+        "sha256": "61907798494fe96081899043ccdb35ce286da541e0eebb9d1f4da354ed2f1dd8",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
@@ -795,7 +831,7 @@
         "src": ".claude/agents/03-managers/director-of-qa.md",
         "dest": ".claude/agents/03-managers/director-of-qa.md",
         "kind": "agent",
-        "sha256": "470908113b0903bf305602eeaed4083256b223f361a2eb57d228402173965213",
+        "sha256": "ace4859bda3471ed3e075a270b06e7c5db45d4635ad7c47aad65f76f985b97aa",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
@@ -4917,7 +4953,7 @@
         "src": "scripts/warpos/manifest/build.js",
         "dest": "scripts/warpos/manifest/build.js",
         "kind": "warpos_script",
-        "sha256": "dae800b7a94b4d38b6d38d5e35e40a354bb233a950e9a8ad037512c5a1410469",
+        "sha256": "709f5ce17de99b2368732c4f8552efbc5bc3dc449ae412201dac98b443c80654",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -5460,6 +5496,18 @@
         "dest": "scripts/checks/framework-purity.js",
         "kind": "check_tool",
         "sha256": "e0399d4e9a8cad0b0f069b43ef79083f3bd146217bf4ef0f6ccbfdf2701765b0",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "check_tool.manager-principles-scan.js",
+        "src": "scripts/checks/manager-principles-scan.js",
+        "dest": "scripts/checks/manager-principles-scan.js",
+        "kind": "check_tool",
+        "sha256": "de14f67270269c60e23ac19bab6addf160edb7be53770a420968795a1c2d36cc",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",

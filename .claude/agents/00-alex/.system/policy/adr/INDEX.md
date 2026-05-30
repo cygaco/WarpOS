@@ -46,5 +46,6 @@ When Beta returns DECIDE on a Class B decision with `OPEN_ADR: true`, Alpha drop
 |---|---|---|---|---|
 | [0001](0001-warp-promote-location.md) | Build /warp:promote in the Product Repo First | 2026-05-01 | accepted | - |
 | [0002](0002-multi-sprint-parallel-lanes.md) | Multi-sprint parallelism via per-sprint state + lanes | 2026-05-12 | accepted | - |
+| [0003](0003-manager-principles-inheritance.md) | Manager-principles inheritance via slug registry + reject-scan | 2026-05-30 | accepted | - |
 
 When ADRs accrete, add a row here pointing at each file. Keep the table in sync with the filesystem; `/scan:references` will catch drift.

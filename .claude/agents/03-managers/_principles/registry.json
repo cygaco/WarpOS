@@ -1,0 +1,77 @@
+{
+  "$schema": "warpos/manager-principles/v0.1",
+  "_doc": "Machine-readable manager-principles ownership + inheritance (S0.1, SP-20260530-001). The single source of truth for /scan:manager-principles. Principles are identified by STABLE SLUGS, never ordinals — referring to a principle as 'DoP #7' breaks silently when the list reorders (refactor-hygiene bug class). Model: shared base -> Director -> Lead -> specialist; 'rooted_in' = where a principle is owned, inheritance propagates it down. β EVT-org-roadmap-principles-beta-001 (R4) + FINAL-PLAN §11.A.",
+  "version": "v0.1",
+  "base": {
+    "carrier": "manager-principles-base",
+    "doc": ".claude/agents/03-managers/_principles/base.md",
+    "principles": [
+      "clarity-is-king",
+      "map-user-journey",
+      "evidence-over-invention",
+      "claims-boundary"
+    ]
+  },
+  "agents": {
+    "director-of-product": {
+      "spec": ".claude/agents/03-managers/director-of-product.md",
+      "inherits_from": "manager-principles-base",
+      "owned_principles": [
+        "lean-product-development",
+        "lifecycle-aware-judgment",
+        "build-over-buy",
+        "audience-is-king",
+        "focus",
+        "pivot",
+        "ftue-nux",
+        "cold-vs-warm-start"
+      ],
+      "inherited_principles": [
+        "clarity-is-king",
+        "map-user-journey",
+        "evidence-over-invention",
+        "claims-boundary"
+      ]
+    },
+    "director-of-qa": {
+      "spec": ".claude/agents/03-managers/director-of-qa.md",
+      "inherits_from": "manager-principles-base",
+      "owned_principles": [
+        "product-priority-over-severity",
+        "golden-first",
+        "size-testing-scope-depth",
+        "gate-ordered-phases",
+        "test-real-world",
+        "acceptance-subjective"
+      ],
+      "inherited_principles": [
+        "clarity-is-king",
+        "map-user-journey",
+        "evidence-over-invention",
+        "claims-boundary"
+      ]
+    }
+  },
+  "principles": {
+    "clarity-is-king": { "name": "Clarity is King", "rooted_in": "manager-principles-base", "summary": "Clear beats clever / witty; message-first. The convergence insight (product 'clarity is king' = Mark Builds Brands 'clarity > cleverness'). A NEW shared-base principle, not a former DoP/DoQA named principle." },
+    "map-user-journey": { "name": "Map the User Journey", "rooted_in": "manager-principles-base", "summary": "Evaluate every decision in the entry->goal->next-step flow, not in isolation; the worst bugs live in the seams between features. Promoted to base — it was the duplicate across DoP #10 and DoQA #7." },
+    "evidence-over-invention": { "name": "Evidence over Invention", "rooted_in": "manager-principles-base", "summary": "Ground every call in the real project + real data; if the evidence isn't there, say what you'd need rather than inventing it. Source-attributed, confidence-scored, no fabricated audience psychographics." },
+    "claims-boundary": { "name": "Claims Boundary / Source-Grounded Claims", "rooted_in": "manager-principles-base", "summary": "Marketing owns the market promise (message_brief); Product owns the product-verifiable claim (offer_brief); they must not blur, and security/compliance review stays independent. Crosses Product/Marketing/Research/Compliance — a shared base principle (GPT re-review §11.A)." },
+
+    "lean-product-development": { "name": "Lean Product Development", "rooted_in": "director-of-product" },
+    "lifecycle-aware-judgment": { "name": "Lifecycle-Aware Judgment", "rooted_in": "director-of-product" },
+    "build-over-buy": { "name": "Build over Buy", "rooted_in": "director-of-product" },
+    "audience-is-king": { "name": "Audience is King", "rooted_in": "director-of-product", "note": "Research/Insight Lead inherits the deepest/emotional-layers form when that agent exists (S2.1)." },
+    "focus": { "name": "Focus", "rooted_in": "director-of-product" },
+    "pivot": { "name": "Don't Be Afraid to Pivot", "rooted_in": "director-of-product" },
+    "ftue-nux": { "name": "First-Time Experience is Sacred (FTUE/NUX)", "rooted_in": "director-of-product", "moves_to": "product-lead", "note": "Execution-tier principle: moves to the Product Lead at S2.1. Kept rooted on DoP with this annotation until the Lead agent exists — deleting now with no carrier = a principles gap (R4)." },
+    "cold-vs-warm-start": { "name": "Cold Start vs Warm Start", "rooted_in": "director-of-product", "moves_to": "product-lead", "note": "Execution-tier principle: moves to the Product Lead at S2.1. Kept on DoP with annotation until the Lead agent exists (R4)." },
+
+    "product-priority-over-severity": { "name": "Product Priority over Severity", "rooted_in": "director-of-qa", "note": "QA's natural home (DoQA #1). Formerly ALSO carried on DoP as its #7 (removed in S0.1); the DoQA cross-reference now uses this slug, not the DoP ordinal." },
+    "golden-first": { "name": "Golden First (by path and by user)", "rooted_in": "director-of-qa" },
+    "size-testing-scope-depth": { "name": "Size Testing by Scope × Depth, Deliberately", "rooted_in": "director-of-qa" },
+    "gate-ordered-phases": { "name": "Gate in Ordered Phases; a Blocker Stops the Line", "rooted_in": "director-of-qa" },
+    "test-real-world": { "name": "Test the Real World, Not the Happy Demo", "rooted_in": "director-of-qa" },
+    "acceptance-subjective": { "name": "Acceptance Is Subjective Too", "rooted_in": "director-of-qa" }
+  }
+}
