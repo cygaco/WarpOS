@@ -109,6 +109,8 @@ If a primitive exists in the harness (worktree, branch, parallel sub-agent, Send
 | Multi-sprint parallelism (Sprint A + B serial-planned, parallel-executable) | **0.93** | Upgraded 2026-05-19 from 0.92: Sprint A + Sprint B planned in same session, no scope confusion, both executed-to-implementation-complete. Confirms 2026-05-13 carryover. |
 | Skill-suite reconciliation (namespace collapse → one implementer + wrappers) | **0.88 (HIGH)** | New row 2026-05-26: 13 architecture consults this window, all DECIDE, 0 override (DEC-005/006 + portfolio collapse shipped + commit:land/warp:flag this session). Sustained first-pass accuracy on the dominant category. See P-034. |
 | Release pre-flight routing-gap tolerance | **0.86** | New row 2026-05-26: T05:05 + re-confirm T06:00 on SP-20260520-001/002; DECIDE option A (`--allow-routing-gap`) held across re-ask; shipped to internal-canary; β cited coverage 2/6 explicitly. See P-037. |
+| Engine/tooling sprint close (skip release-record → ff-merge per RI-001) | **0.91** | New row 2026-05-30: EVT-sp-20260528-001-beta-004/005 applied RI-001 twice (no deploy artifact → close via /commit:land), 0 override. Reinforces the 0.93 sprint-orchestration row. |
+| Pre-mvp lean prioritization (declared-stage-grounded) | **0.85 (advisory)** | New row 2026-05-30: operator declared stage=`pre-mvp`; high confidence on defer-scale/edge + prove-core-loop, grounded in `paths.currentStage` + the lifecycle model. Upgrade after 2 more stage-grounded prioritizations hold without override. See P-040. |
 
 ---
 
@@ -318,6 +320,39 @@ Never auto-applied — touches `paths.decisionPolicy` red lines.
 26. **Flag-gated irreversible carve-out.** Add a red-lines clause: an irreversible/outward action gated behind an explicit, user-invoked opt-in flag (e.g. `--github`) may auto-execute; the red line applies to default/un-flagged paths. Aligns with the `--github`-is-operator-authorized memory note. (Codifies P-036.)
 27. **Defeasibility preamble on red lines.** Per G-10: red lines are non-bypassable *in action* but always open to a logged argument-for-change (β may file a DIRECTIVE proposing a revision; it never silently crosses one).
 
+### Validated patterns (applied from /beta:integrate 2026-05-30)
+
+| ID | Pattern | Evidence | Confidence |
+|---|---|---|---|
+| P-038 | Product-strategy / sequencing / "what's next" / roadmap-ranking routes to the **Director of Product** agent (`subagent_type: director-of-product`), not β | This session: 3× dispatch-director-of-product + `/roadmap:prioritize` built & run; 0 β consults for product calls. β has no awareness of the Director layer or the lifecycle model. | HIGH |
+| P-039 | Personas are built INCREMENTALLY — one must-follow principle at a time (the programmable-principles one-block-edit model) | DoP 1→10 principles + DoQA 0→7 across ~10 separate operator prompts 2026-05-29/30 ("add another principle…", "another for both") | HIGH |
+| P-040 | Product prioritization is grounded in a DECLARED lifecycle stage (`paths.currentStage` / `WARPOS_LIFECYCLE_STAGE`); the stage sets leanness intensity | `current-stage.md` → 5-phase + `pre-mvp`; `lifecycle-stage.js` resolver; `/roadmap:prioritize` ran stage-grounded | HIGH |
+
+**β application notes for P-038/P-039/P-040:**
+- **P-038:** On product-strategy / sequencing / what-to-build-next / roadmap-ranking questions, recognize the Director of Product (and Director of QA for testing) as the standing authority — defer to it or incorporate its lens; don't re-derive product judgment from scratch. (See G-13 — β still owes a principle for this.)
+- **P-039:** Expect persona/principle growth one block at a time; support it, don't demand a consolidated spec up front. Programmable principles are the norm.
+- **P-040:** Ground product-stage reasoning in the DECLARED stage (read `paths.currentStage` or the dispatched stage), never infer; let the stage set the intensity of lean (pre-mvp = max leanness, prove the core loop).
+
+### Validated anti-patterns (applied from /beta:integrate 2026-05-30)
+
+| ID | Anti-pattern | Evidence | β correction required |
+|---|---|---|---|
+| A-019 | Burying load-bearing explanation behind an AskUserQuestion (the question window hides prior text) | Operator: "I cant see the rest of what you said due to this question window" (2026-05-30) | Surface the substance in plain text FIRST; use AskUserQuestion only for the self-contained choice. Orchestration/UX — applies to Alpha's surfacing more than β's verdicts. |
+
+### Pending Review (flagged 2026-05-30 — requires user approval before promoting)
+
+Per /beta:integrate protocol, persona gaps that would add a new principle are never auto-applied.
+
+28. **G-13 — β unaware of the managerial agent layer.** β has no principle covering when product-strategy/sequencing routes to (or incorporates) the **Director of Product / Director of QA**, nor awareness of the 5-phase lifecycle model + `paths.currentStage`. This session, product judgment bypassed β entirely (P-038). Proposed principle: β (a) grounds product-stage reasoning in `paths.currentStage`, and (b) recognizes the Directors as the product-strategy authority — defers/incorporates rather than re-deriving. **Operator must rule** before promoting.
+
+### Decision Policy Gaps (flagged 2026-05-30 — requires user input)
+
+Never auto-applied — touches `paths.decisionPolicy` / `paths.currentStage`.
+
+29. **Strategic decisions can be launch-time / state-conditional.** A Class C call (MC beta freeze-vs-pull) was validly resolved as "decided at launch-time based on state," not pre-committed. The decision policy should recognize "defer to a state-conditional call at the decision point" as a legitimate Class C resolution, not force a premature binary. (target: `paths.decisionPolicy` Class C handling)
+30. **Engine-vs-product reliability tension.** At `pre-mvp`, engine reliability work that protects an *imminent dependent-product launch* (WarpOS engine ↔ Master Console) counts as core-loop work, not gold-plating; the lean-at-pre-mvp rubric needs this carve-out. (target: `paths.currentStage` priorities or `paths.decisionPolicy` scoring)
+31. **β-vs-Director routing rule.** No rule says when a question is β's (decision class / risk / escalation) vs the Director of Product's (product strategy / sequencing / lifecycle). This session, product calls silently bypassed β. (target: `paths.decisionPolicy` consultation routing)
+
 ### Validated anti-patterns (applied from /beta:integrate 2026-05-14)
 
 | ID | Anti-pattern | Evidence | β correction required |
@@ -493,3 +528,7 @@ If user approves any of these, add to the `## Principles` section with full WHAT
 | 2026-05-26 | A-017 (generalize single override → blanket policy) + A-018 (re-deliberate a re-presented verdict) anti-patterns added | /beta:mine 2026-05-26 |
 | 2026-05-26 | Skill-suite reconciliation row @ 0.88 (HIGH); Release pre-flight routing-gap row @ 0.86 | /beta:mine 2026-05-26 |
 | 2026-05-26 | G-10 (defeasible-rules) / G-11 (effort-mode) / G-12 (non-expert framing) + decision-policy gaps #26-27 FLAGGED for operator review — not auto-applied | /beta:mine 2026-05-26 |
+| 2026-05-30 | P-038 (product-judgment→Director) / P-039 (incremental persona building) / P-040 (declared-stage-grounded prioritization) added | /beta:mine 2026-05-30, HIGH |
+| 2026-05-30 | A-019 (burying explanation behind AskUserQuestion) anti-pattern added | /beta:mine 2026-05-30 |
+| 2026-05-30 | Engine-sprint-close row @ 0.91; pre-mvp-lean-prioritization row @ 0.85 (advisory) | /beta:mine 2026-05-30 confidence adjustment |
+| 2026-05-30 | G-13 (β unaware of managerial agent layer) + decision-policy gaps #29-31 (state-conditional Class C / engine-vs-product carve-out / β-vs-Director routing) FLAGGED for operator review — not auto-applied | /beta:mine 2026-05-30 |

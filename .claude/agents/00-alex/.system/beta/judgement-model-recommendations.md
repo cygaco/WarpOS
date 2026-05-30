@@ -2,8 +2,8 @@
 
 _No pending recommendations._
 
-Last cycle: **2026-05-26** (window 2026-05-19 → 2026-05-26) — applied via `/beta:integrate`:
-- **Applied to `judgement-model.md`:** P-034 (skill-suite collapse → one implementer + wrappers), P-035 (HOME-dir dotfile for cross-product state), P-036 (override = narrow calibration datum), P-037 (re-consult = idempotency check), A-017, A-018, + confidence rows (skill-suite 0.88, release-preflight 0.86).
-- **FLAGGED for operator review — NOT applied** (see `judgement-model.md` § Pending Review / Decision Policy Gaps 2026-05-26): **G-10** defeasible-rules stance (β self-relationship), **G-11** effort-mode awareness, **G-12** non-expert framing, decision-policy gaps **#26** (flag-gated irreversible carve-out) + **#27** (defeasibility preamble).
+Last cycle: **2026-05-30** (window 2026-05-29 → 2026-05-30, session `s-q7gbsn`) — applied via `/beta:integrate`:
+- **Applied to `judgement-model.md`:** P-038 (product-judgment routes to the Director of Product, not β), P-039 (personas built incrementally, one principle at a time), P-040 (prioritization grounded in a declared lifecycle stage), A-019 (don't bury explanation behind AskUserQuestion), + confidence rows (engine-sprint-close 0.91, pre-mvp-lean-prioritization 0.85 advisory).
+- **FLAGGED for operator review — NOT applied** (see `judgement-model.md` § Pending Review / Decision Policy Gaps 2026-05-30): **G-13** (β unaware of the managerial agent layer — needs a new principle), decision-policy gaps **#29** (state-conditional Class C resolution), **#30** (engine-vs-product reliability carve-out at pre-mvp), **#31** (β-vs-Director consultation routing rule).
 
 Full prior content archived in `judgement-model-recommendations-archive.md`. Run `/beta:mine` to generate the next cycle.
