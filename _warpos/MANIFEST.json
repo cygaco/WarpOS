@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-05-30T23:14:47.380Z",
+  "generatedAt": "2026-05-30T23:27:05.232Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.11.1",
   "migrations": [],
@@ -258,6 +258,12 @@
       "owner": "project",
       "managed": false,
       "seeded_from": "framework/templates/_requirements/_audits/AUDIT_TEMPLATE.md",
+      "class": "fillable"
+    },
+    "_requirements/10-contracts/ARTIFACT-CONTRACTS.md": {
+      "owner": "project",
+      "managed": false,
+      "seeded_from": "framework/templates/_requirements/10-contracts/ARTIFACT-CONTRACTS.md",
       "class": "fillable"
     },
     "_requirements/09-integrations/PROVIDER/01-anthropic.md": {
@@ -3953,8 +3959,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/lib/paths.generated.js",
-      "sha256": "3973ad8cc252f977e7c150d41c4afe5209428ef7dcbbc6bf72fba853261076ba",
-      "installedSha": "3973ad8cc252f977e7c150d41c4afe5209428ef7dcbbc6bf72fba853261076ba"
+      "sha256": "56da7e7ae7c9f5a1744e853abd7863b83378e3b4e383b01a8f3df5377039e472",
+      "installedSha": "56da7e7ae7c9f5a1744e853abd7863b83378e3b4e383b01a8f3df5377039e472"
     },
     "scripts/hooks/lib/paths.js": {
       "owner": "framework",
@@ -4144,6 +4150,62 @@
       "source": "scripts/decisions/ledger.js",
       "sha256": "9ffeb54b9a9b8b57b87f00a035faeeea9a976be1d548ff0e8dc71e6033f65fae",
       "installedSha": "9ffeb54b9a9b8b57b87f00a035faeeea9a976be1d548ff0e8dc71e6033f65fae"
+    },
+    "scripts/contracts/test-validate-artifact.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/contracts/test-validate-artifact.js",
+      "sha256": "09ae540b2e10664d7a5e812c50dfc05bcf9d07dffc53043c08d4504f44581b97",
+      "installedSha": "09ae540b2e10664d7a5e812c50dfc05bcf9d07dffc53043c08d4504f44581b97"
+    },
+    "scripts/contracts/validate-artifact.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/contracts/validate-artifact.js",
+      "sha256": "c6055f8143077c43737a70afefa6aff42dadbfd4b800f38b202b458560796335",
+      "installedSha": "c6055f8143077c43737a70afefa6aff42dadbfd4b800f38b202b458560796335"
+    },
+    "scripts/contracts/fixtures/valid/clean-chain.json": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/contracts/fixtures/valid/clean-chain.json",
+      "sha256": "d879a53c971c3a157422a600f5b199d9b41e83bf722e91ef2e34538161137d8d",
+      "installedSha": "d879a53c971c3a157422a600f5b199d9b41e83bf722e91ef2e34538161137d8d"
+    },
+    "scripts/contracts/fixtures/valid/decision-record.json": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/contracts/fixtures/valid/decision-record.json",
+      "sha256": "cea6f04f0118477f9c512ac156bcb81647f612925518048bd788571c0f4639ac",
+      "installedSha": "cea6f04f0118477f9c512ac156bcb81647f612925518048bd788571c0f4639ac"
+    },
+    "scripts/contracts/fixtures/invalid/dangling-ref.json": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/contracts/fixtures/invalid/dangling-ref.json",
+      "sha256": "8cca449fe90ce9e9e4c0c73d0224835e2015e8a6c29141f2e793fc870e3b1a98",
+      "installedSha": "8cca449fe90ce9e9e4c0c73d0224835e2015e8a6c29141f2e793fc870e3b1a98"
+    },
+    "scripts/contracts/fixtures/invalid/missing-required-decision-record.json": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/contracts/fixtures/invalid/missing-required-decision-record.json",
+      "sha256": "6c16c0ec20a6d9f6a2caa50f21f65648a988a94a41a4ad75e139d76c9d045de3",
+      "installedSha": "6c16c0ec20a6d9f6a2caa50f21f65648a988a94a41a4ad75e139d76c9d045de3"
+    },
+    "scripts/contracts/fixtures/invalid/precedence-conflict.json": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/contracts/fixtures/invalid/precedence-conflict.json",
+      "sha256": "ee3d1b5ab316be5ae0ef0db79334e67e1fbe06151a5eda5a83dbf766296a1106",
+      "installedSha": "ee3d1b5ab316be5ae0ef0db79334e67e1fbe06151a5eda5a83dbf766296a1106"
+    },
+    "scripts/contracts/fixtures/invalid/unknown-type.json": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/contracts/fixtures/invalid/unknown-type.json",
+      "sha256": "ae8fcba27b78064f1fab48aadbbf0fa9665ad240aa33970bb99b1b8e6536e750",
+      "installedSha": "ae8fcba27b78064f1fab48aadbbf0fa9665ad240aa33970bb99b1b8e6536e750"
     },
     "scripts/checks/adhoc-team-hygiene.js": {
       "owner": "framework",
@@ -4632,8 +4694,8 @@
       "owner": "framework",
       "managed": true,
       "source": "schemas/paths.schema.json",
-      "sha256": "46bb3f9aa4570f47b1b72fc132e630378dfb2193473aba8ced0d735f4e5e804e",
-      "installedSha": "46bb3f9aa4570f47b1b72fc132e630378dfb2193473aba8ced0d735f4e5e804e"
+      "sha256": "014bd49061df3dd128f80fb251d405c592ff9b57dfb148530fb8ed38c42a92fc",
+      "installedSha": "014bd49061df3dd128f80fb251d405c592ff9b57dfb148530fb8ed38c42a92fc"
     },
     "schemas/provider-failure-modes.schema.json": {
       "owner": "framework",
@@ -4768,6 +4830,62 @@
       "sha256": "10d972bb2d8970aea51c77516f1ba1ff3fe82fadc42559904756a2da8071ae0d",
       "installedSha": "10d972bb2d8970aea51c77516f1ba1ff3fe82fadc42559904756a2da8071ae0d"
     },
+    "schemas/contracts/audience_dossier.schema.json": {
+      "owner": "framework",
+      "managed": true,
+      "source": "schemas/contracts/audience_dossier.schema.json",
+      "sha256": "2392d60418d36c94ee9996bbf2bfe6a9868554fb97d4bc622fe7e688e219717b",
+      "installedSha": "2392d60418d36c94ee9996bbf2bfe6a9868554fb97d4bc622fe7e688e219717b"
+    },
+    "schemas/contracts/build_spec.schema.json": {
+      "owner": "framework",
+      "managed": true,
+      "source": "schemas/contracts/build_spec.schema.json",
+      "sha256": "313a625a9889b4bb310533c4abca9b54e40408ecd693ac6f36c03b1db01e38a8",
+      "installedSha": "313a625a9889b4bb310533c4abca9b54e40408ecd693ac6f36c03b1db01e38a8"
+    },
+    "schemas/contracts/conversion_brief.schema.json": {
+      "owner": "framework",
+      "managed": true,
+      "source": "schemas/contracts/conversion_brief.schema.json",
+      "sha256": "be74f98a09dd3e0df11fa1898713d218433a4c5c3ac3b33d4fde9d4b781a0f6a",
+      "installedSha": "be74f98a09dd3e0df11fa1898713d218433a4c5c3ac3b33d4fde9d4b781a0f6a"
+    },
+    "schemas/contracts/converting_artifact.schema.json": {
+      "owner": "framework",
+      "managed": true,
+      "source": "schemas/contracts/converting_artifact.schema.json",
+      "sha256": "217f845ebc5749dd14a84afa0442299e564dde0a9d2c7b59a9a62ece238e389a",
+      "installedSha": "217f845ebc5749dd14a84afa0442299e564dde0a9d2c7b59a9a62ece238e389a"
+    },
+    "schemas/contracts/decision_record.schema.json": {
+      "owner": "framework",
+      "managed": true,
+      "source": "schemas/contracts/decision_record.schema.json",
+      "sha256": "5e7151ddb03be5a5e3cdad16fc8f1d75d83face7ac5a957293a7c00d3dbeb31b",
+      "installedSha": "5e7151ddb03be5a5e3cdad16fc8f1d75d83face7ac5a957293a7c00d3dbeb31b"
+    },
+    "schemas/contracts/design_brief.schema.json": {
+      "owner": "framework",
+      "managed": true,
+      "source": "schemas/contracts/design_brief.schema.json",
+      "sha256": "4e1d978bc35ead486693df52cf41773954078cb9f4fdcd3f59c043261b780ba3",
+      "installedSha": "4e1d978bc35ead486693df52cf41773954078cb9f4fdcd3f59c043261b780ba3"
+    },
+    "schemas/contracts/message_brief.schema.json": {
+      "owner": "framework",
+      "managed": true,
+      "source": "schemas/contracts/message_brief.schema.json",
+      "sha256": "268c282940a182f1275fc76219912566fe25ea1b5d436799adf01ac2ba91246f",
+      "installedSha": "268c282940a182f1275fc76219912566fe25ea1b5d436799adf01ac2ba91246f"
+    },
+    "schemas/contracts/offer_brief.schema.json": {
+      "owner": "framework",
+      "managed": true,
+      "source": "schemas/contracts/offer_brief.schema.json",
+      "sha256": "a05f2d425ae8e0ed20524eccc39bbfd2b59538b07acd94b525e693bf3fc5d93f",
+      "installedSha": "a05f2d425ae8e0ed20524eccc39bbfd2b59538b07acd94b525e693bf3fc5d93f"
+    },
     "schemas/canon/research-fields.schema.json": {
       "owner": "framework",
       "managed": true,
@@ -4891,8 +5009,8 @@
       "owner": "framework",
       "managed": true,
       "source": "framework/paths.registry.json",
-      "sha256": "faa7eb65a1d866127e4f5cec9582e179d7b92f5b3d0a8bbf725f4e866227f09e",
-      "installedSha": "faa7eb65a1d866127e4f5cec9582e179d7b92f5b3d0a8bbf725f4e866227f09e"
+      "sha256": "e849fd3ef4b87d0ee86c5924e05f1a855960d8a25f53b93908f780cfc04be95a",
+      "installedSha": "e849fd3ef4b87d0ee86c5924e05f1a855960d8a25f53b93908f780cfc04be95a"
     },
     "framework/templates/sprint/README.md": {
       "owner": "framework",
@@ -10956,6 +11074,10 @@
       "owner": "runtime",
       "managed": false
     },
+    ".claude/project/sprint/full-reports/SP-20260530-001/halt-2026-05-30T23-16-22-886Z.md": {
+      "owner": "runtime",
+      "managed": false
+    },
     ".claude/project/sprint/full-reports/SP-20260528-001/beta-boundaries.json": {
       "owner": "runtime",
       "managed": false
@@ -12485,6 +12607,10 @@
       "managed": false
     },
     ".claude/project/sprint/checkpoints/SP-20260530-001-0007.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/checkpoints/SP-20260530-001-0008.yaml": {
       "owner": "runtime",
       "managed": false
     },

@@ -1,0 +1,144 @@
+schema: warpos/sprint/plan-contract/v1
+id: PC-20260530-0058
+created_at: "2026-05-30T22:52:34.615Z"
+updated_at: "2026-05-30T22:52:34.615Z"
+sprint: SP-20260530-001
+source_request: "Wave 0A / S0.2 — Artifact-contract schema v0.1 (the message_brief spine: audience_dossier -> message_brief -> offer_brief/conversion_brief -> design_brief -> build_spec -> ad/advertorial/landing) with owner+consumers+required-fields+PRECEDENCE per artifact; plus a decision-record schema and a fail-closed contract VALIDATOR skeleton. Foundation that S0.1's routing enforcer and tests target."
+source_request_verbatim: "Read the handoff and dump.md, then execute. ... use /sprint:full to execute the plan, running parallel sprints where safe. [Program source of truth: _planning/FINAL-PLAN.md v1.1 §6 (S0.2 row) + DUMP.md §5; this is the FIRST sprint, Wave 0A lead.]"
+request_type: architecture_change
+interpreted_intent: "Establish the durable artifact/eval SPINE before any org vocabulary: define a machine-readable contract schema v0.1 for the seven-artifact production chain, with each artifact declaring its owner, consumers, required fields, and a PRECEDENCE rank so per-domain gauntlets can't deadlock. message_brief is the central artifact every other derives from. Add a decision-record schema (the audit trail for who decided what, the oneshot stand-in for alpha/beta). Ship a validator SKELETON that REJECTS non-conforming artifacts (fail-closed), not a linter. This is the interface S0.1 (org map + routing enforcer + failing tests) is written against, so the shapes must be concrete and stable. Governed by enforcer-first + artifact-before-agent iron rules: NO agents are created in this sprint."
+user_or_business_outcome: "WarpOS gains the contract spine that turns 'product studio' from vocabulary into an enforceable system: every downstream wave (org, modes, domain agents, pilot) builds against these shapes instead of re-inventing them. The durable value of the whole update is this artifact/eval spine; the org is in service of it (GPT-5.5 over-build guard). Concretely de-risks the program's biggest landmine — ambiguity at handoff — by making the interfaces explicit and validated from day one."
+affected_surfaces:
+  - surface: "_requirements/ (new artifact-contract spec docs + decision-record spec)"
+    evidence_level: inferred_from_repo
+    notes: "Human-readable contract definitions: per-artifact owner/consumers/required-fields/precedence; the canonical description the schemas encode."
+  - surface: "schemas/ (new JSON Schemas for each artifact + the chain + decision-record)"
+    evidence_level: inferred_from_repo
+    notes: "Machine-readable v0.1 schemas; mirror the existing schemas/ layout (draft-07, $id warpos/...)."
+  - surface: "scripts/ (contract validator skeleton)"
+    evidence_level: inferred_from_repo
+    notes: "A node validator that loads an artifact + its schema and REJECTS (exit 1, fail-closed) on missing required fields / precedence violation / unknown artifact type. Skeleton = wired + rejecting, not yet feature-complete per-field semantics."
+  - surface: "_warpos/MANIFEST.json + generated framework-manifest.json"
+    evidence_level: inferred_from_repo
+    notes: "New files under scripts/_requirements/schemas need enumerating; regen + validate both manifests last."
+  - surface: "paths.json (keys for the new contract specs/schemas/validator)"
+    evidence_level: assumed_from_request
+    notes: "Reference new artifacts via paths.* keys, not literals (paths SoT rule)."
+current_behavior:
+  evidence_level: verified_from_repo
+  notes: "WarpOS has NO artifact-contract system. It produces code + sprint artifacts only (PRD/stories/tickets/manifests). There is no machine-readable notion of message_brief / audience_dossier / design_brief etc., no per-artifact owner/consumer/precedence, no decision-record schema, and no validator that can reject a malformed studio artifact. The product-studio chain exists only as prose in _planning/."
+desired_behavior: "A versioned contract schema v0.1 in which: (1) each of the 7 chain artifacts (audience_dossier, message_brief, offer_brief, conversion_brief, design_brief, build_spec, ad_advertorial_landing) has a schema declaring owner-domain, consumers, required fields, and an integer PRECEDENCE rank; (2) message_brief is the declared spine (every downstream artifact references the message_brief it derives from); (3) a decision-record schema captures {decision, owner, rationale, precedence-basis, confidence, arbitration-needed flag}; (4) a validator skeleton loads any artifact instance, resolves its schema, and exits non-zero with a clear reason on any violation (missing required field, unknown type, precedence conflict, dangling message_brief reference) — fail-closed, never lint-and-pass. The shapes are concrete enough that S0.1 can write failing tests + a routing enforcer against them without guessing."
+scope:
+  size: m
+  risk_level: medium
+  complexity_drivers:
+    - "Foundational interface: every later wave depends on these shapes, so churn here is expensive (get precedence + required-fields right)."
+    - "Must declare PRECEDENCE semantics that prevent per-domain gauntlet deadlock (a real design decision, not boilerplate)."
+    - "Validator must be genuinely fail-closed (reject), which is the enforcer-first invariant in miniature."
+    - "Self-referential chain (message_brief is referenced by downstream artifacts) needs a reference-integrity check."
+    - "Two manifests must re-enumerate the new files; schema family/version label coherence (scan:version-coherence class)."
+scope_variants:
+  minimal_safe:
+    summary: "Schemas for the 7 artifacts + decision-record + a validator that rejects on missing-required-field and unknown-type only. Precedence stored but not yet enforced by the validator."
+    tradeoffs:
+      - "Precedence-conflict + dangling-reference defects slip past v0.1 validation"
+      - S0.1 may need to add the precedence check itself
+  recommended:
+    summary: "7 artifact schemas + chain schema + decision-record schema, each with owner/consumers/required-fields/precedence; validator skeleton that rejects on missing-required, unknown-type, precedence-conflict, AND dangling message_brief reference; one human-readable contract spec doc; paths keys + both-manifest regen; a smoke fixture set (one valid + one invalid instance per artifact) the validator is proven against."
+    tradeoffs:
+      - Slightly more up-front design on precedence semantics
+      - "Fixture maintenance surface (small, and it doubles as the S0.1 test corpus)"
+  expanded:
+    summary: "Recommended + a generic schema-registry/resolver, cross-artifact field-inheritance, and a /scan:* contract-coverage skill now."
+    tradeoffs:
+      - "Over-builds before contracts are proven by the pilot (GPT over-build guard)"
+      - Registry abstraction premature when 7 artifacts resolve fine by id
+assumptions:
+  safe:
+    - "schemas/ uses JSON Schema draft-07 with warpos/<family>/<version> $id (mirror existing schemas)."
+    - "Engine/tooling sprint: no deploy artifact; closes via LOCAL ff-merge per RI-001 (beta pre-cleared, no push)."
+    - "No agents/roles are created here (artifact + scans precede agents — iron rule)."
+    - "The 7-artifact chain + names come verbatim from FINAL-PLAN/DUMP and are stable for v0.1."
+  unsafe:
+    - "That v0.1 required-field sets are final — they are explicitly v0.1 and the pilot (S3.1) is expected to revise them; design must mark them revisable, not frozen."
+    - "That precedence can be a single global integer vs. a per-consumer ordering — design must decide and justify."
+  needs_user_or_beta_review:
+    - "PRECEDENCE model (global rank vs. pairwise) — affects how gauntlets resolve conflicts; beta to confirm at design boundary."
+    - Whether decision-record schema should reuse/extend the existing betaEvents / decision-ledger shape rather than introduce a third record type.
+open_questions:
+  blocking: []
+  non_blocking:
+    - "Should offer_brief and conversion_brief be one schema with a variant field or two schemas? (plan lists them as a slashed pair)."
+    - "Does ad/advertorial/landing collapse to one 'converting_artifact' schema with a type enum, or three? v0.1 leans one-with-enum."
+non_goals:
+  - "Creating ANY agent/role (Product Lead, Directors, etc. — that is Wave 2; artifacts+scans first)."
+  - "Wave 0B work (component-lib scaffold, /etc harness, untrusted-content firewall)."
+  - "Per-field business semantics beyond what makes the validator reject structurally (deep field-level validation is post-pilot)."
+  - "Pushing to remote or deploying (hard ceilings)."
+  - "Wiring the contracts into bootstrap/portfolio/lastmile (that is the Wave 3 pilot)."
+requirement_areas:
+  - "Artifact-contract schema set (7 chain artifacts + chain wiring)"
+  - Decision-record schema
+  - "Precedence model + reference-integrity (message_brief spine)"
+  - Fail-closed contract validator skeleton
+  - "Fixtures (valid/invalid per artifact) + manifest/paths integration"
+high_level_story_candidates:
+  - "As a downstream wave (S0.1/modes/domains), I can read a machine-readable schema for each studio artifact, so I build against a stable shape instead of prose."
+  - "As the system, I can reject a malformed studio artifact at the boundary (fail-closed), so bad artifacts never propagate down the chain."
+  - "As an auditor, I can read a decision-record for any contract-precedence call, so oneshot runs have the alpha/beta audit trail encoded."
+granular_story_candidates:
+  - "Author the human-readable artifact-contract spec (_requirements/) listing each artifact's owner/consumers/required-fields/precedence."
+  - "Write JSON Schema v0.1 for each of the 7 chain artifacts with $id warpos/contracts/<artifact>/v0.1."
+  - "Write the chain schema that wires derivation (each downstream artifact references its source message_brief) + the integer precedence ranks."
+  - "Write the decision-record schema (decision/owner/rationale/precedence-basis/confidence/arbitration_needed)."
+  - "Build the validator skeleton: resolve artifact type -> schema, validate, exit 1 with reason on missing-required / unknown-type / precedence-conflict / dangling-reference."
+  - "Create valid + invalid fixtures per artifact; prove the validator passes the valid and REJECTS each invalid."
+  - "Add paths.* keys for the specs/schemas/validator; regen BOTH manifests; validate coherence."
+  - "Document the v0.1 'revisable, not frozen' status + the precedence model decision-record."
+workstream_candidates:
+  - "Contract spec + schemas authoring"
+  - "Validator skeleton (fail-closed)"
+  - "Fixtures + proof of rejection"
+  - "Paths + manifest integration + coherence verification"
+preliminary_ticket_candidates:
+  allowed: false
+  candidates: []
+  notes: "m/medium engine sprint — tickets minted in design (Phase 2 halt) against the requirement templates, not pre-authorized."
+external_service_dependencies:
+  status: none_expected
+approval_boundaries:
+  - "No push, no deploy (hard ceilings). Local commit only; engine sprint closes via ff-merge per RI-001."
+  - "Beta pre-cleared the sprint start (EVT-program-preclearance-beta-001); the S0.1 enforcer-scan logic is a named hard β-halt but that is the NEXT sprint, not this one."
+design_required: true
+execution_allowed_without_design: false
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+lane:
+  type: default
+  value: null
+  isolation_notes: "Single working tree — schemas + validator + fixtures + manifest regen are one coherent atomic change set; worktree fragmentation would split the regen step."
+beta_review:
+  required: true
+  likely_founder_rejection_risks:
+    - "Operator may want fewer/more artifacts in v0.1, or offer/conversion merged."
+    - "Precedence model (global int vs pairwise) may not match operator's mental model of conflict resolution."
+  overbuild_risks:
+    - "Building the expanded schema-registry/resolver before the pilot proves the contracts (GPT over-build guard)."
+  missing_context_risks:
+    - Whether decision-record should extend the existing betaEvents/decision-ledger shape rather than be a third record type.
+plan_quality:
+  status: needs_design
+  confidence: high
+  evidence_gaps:
+    - "Exact existing schemas/ conventions ($id pattern, validation harness) — design discovery reads schemas/ + an existing validator."
+    - Whether a generic JSON-Schema validation lib is already vendored or validation is hand-rolled in scripts/.
+next_recommended_command: "/sprint:design"
+resume_instructions: "Sprint SP-20260530-001 has Plan Contract PC-20260530-0058. Run the next_recommended_command. If interrupted, read .claude/project/sprint/sprint-progress.yaml#resume_command."
+tracker_paths:
+  current_sprint: ".claude/project/sprint/current-sprint.yaml"
+  sprint_progress: ".claude/project/sprint/sprint-progress.yaml"
+  plan_contract: ".claude/project/sprint/plan-contracts/PC-20260530-0058.yaml"
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260530-0058.report.md"
+created_by: alpha
+updated_by: alpha

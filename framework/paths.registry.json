@@ -981,6 +981,51 @@
       "introducedIn": "0.9.0",
       "docsToken": "paths.testInstallMatrix",
       "_note": "Install fixture CI matrix runner — 5-scenario regression suite for /warp:setup + /warp:update. Sprint SP-20260524-001."
+    },
+    "contractsSchemas": {
+      "path": "schemas/contracts",
+      "kind": "dir",
+      "owner": "framework",
+      "mutable": true,
+      "introducedIn": "0.12.0",
+      "docsToken": "paths.contractsSchemas",
+      "_note": "Product-studio artifact-contract schemas v0.1 (warpos/contracts/<artifact>/v0.1): the message_brief spine + 7-artifact chain + decision_record. Sprint SP-20260530-001 (S0.2)."
+    },
+    "contractsValidator": {
+      "path": "scripts/contracts/validate-artifact.js",
+      "kind": "file",
+      "owner": "framework",
+      "mutable": true,
+      "introducedIn": "0.12.0",
+      "docsToken": "paths.contractsValidator",
+      "_note": "Fail-closed validator for the artifact contracts — rejects unknown-type/missing-required/precedence-conflict/dangling-message_brief-ref. Sprint SP-20260530-001 (S0.2)."
+    },
+    "contractsValidatorTest": {
+      "path": "scripts/contracts/test-validate-artifact.js",
+      "kind": "file",
+      "owner": "framework",
+      "mutable": true,
+      "introducedIn": "0.12.0",
+      "docsToken": "paths.contractsValidatorTest",
+      "_note": "Validator self-test (proves pass-valid / reject-invalid); the fixture corpus doubles as S0.1's test corpus. Sprint SP-20260530-001 (S0.2)."
+    },
+    "contractsFixtures": {
+      "path": "scripts/contracts/fixtures",
+      "kind": "dir",
+      "owner": "framework",
+      "mutable": true,
+      "introducedIn": "0.12.0",
+      "docsToken": "paths.contractsFixtures",
+      "_note": "Valid + invalid artifact fixtures proving the validator's fail-closed behaviour. Sprint SP-20260530-001 (S0.2)."
+    },
+    "contractsSpec": {
+      "path": "_requirements/10-contracts/ARTIFACT-CONTRACTS.md",
+      "kind": "file",
+      "owner": "framework",
+      "mutable": true,
+      "introducedIn": "0.12.0",
+      "docsToken": "paths.contractsSpec",
+      "_note": "Human-readable artifact-contract spec v0.1 (the chain, the spine, precedence model, decision-record, validator). Sprint SP-20260530-001 (S0.2)."
     }
   },
   "lintRules": {

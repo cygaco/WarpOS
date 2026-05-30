@@ -1,0 +1,46 @@
+schema: warpos/sprint/ticket/v1
+id: T-20260530-258
+title: "Contract integration: paths.* keys for specs/schemas/validator + regen BOTH manifests + verify validate --strict / coherence / path-lint green"
+type: integration
+status: done
+sprint: SP-20260530-001
+created_at: "2026-05-30T22:56:31.412Z"
+updated_at: "2026-05-30T23:28:01.771Z"
+owner: alpha
+owner_agent: alpha
+risk_level: low
+approval_required: false
+approval_state: not_required
+source_request: "Wave 0A / S0.2 — Artifact-contract schema v0.1 (the message_brief spine: audience_dossier -> message_brief -> offer_brief/conversion_brief -> design_brief -> build_spec -> ad/advertorial/landing) with owner+consumers+required-fields+PRECEDENCE per artifact; plus a decision-record schema and a fail-closed contract VALIDATOR skeleton. Foundation that S0.1's routing enforcer and tests target."
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260530-0058.yaml"
+linked_requirements: []
+linked_high_level_story: null
+linked_granular_story: null
+linked_prd: null
+linked_copy: []
+linked_inputs: []
+linked_trace: []
+linked_acceptance_criteria: []
+linked_issues: []
+linked_decisions: []
+linked_external_services: []
+linked_files: []
+linked_tests: []
+linked_commits: []
+linked_prs: []
+linked_release: null
+description: ""
+user_value: ""
+business_value: ""
+acceptance_criteria: []
+non_goals: []
+implementation_notes: "Built + verified: schemas/validator/fixtures/spec; self-test 7/7; validate --strict clean; enforce 0 new regressions."
+qa_notes: ""
+redteam_notes: ""
+trace_notes: ""
+blocked_by: []
+blocks: []
+fix_attempts: []
+ralph_progress: null
+completion_evidence: []
+reopen_history: []

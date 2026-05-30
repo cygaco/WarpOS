@@ -581,6 +581,31 @@
       "type": "string",
       "const": "scripts/warpos/test-install-matrix.js",
       "description": "file (framework) — paths.testInstallMatrix"
+    },
+    "contractsSchemas": {
+      "type": "string",
+      "const": "schemas/contracts",
+      "description": "dir (framework) — paths.contractsSchemas"
+    },
+    "contractsValidator": {
+      "type": "string",
+      "const": "scripts/contracts/validate-artifact.js",
+      "description": "file (framework) — paths.contractsValidator"
+    },
+    "contractsValidatorTest": {
+      "type": "string",
+      "const": "scripts/contracts/test-validate-artifact.js",
+      "description": "file (framework) — paths.contractsValidatorTest"
+    },
+    "contractsFixtures": {
+      "type": "string",
+      "const": "scripts/contracts/fixtures",
+      "description": "dir (framework) — paths.contractsFixtures"
+    },
+    "contractsSpec": {
+      "type": "string",
+      "const": "_requirements/10-contracts/ARTIFACT-CONTRACTS.md",
+      "description": "file (framework) — paths.contractsSpec"
     }
   }
 }

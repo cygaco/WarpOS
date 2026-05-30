@@ -124,7 +124,12 @@ const PATHS = {
   "portfolioRegistry": path.join(PROJECT, ".claude", "portfolio", "registry.yaml"),
   "briefsRoot": path.join(PROJECT, "_docs", "briefs"),
   "clonesRoot": path.join(PROJECT, "_docs", "clones"),
-  "testInstallMatrix": path.join(PROJECT, "scripts", "warpos", "test-install-matrix.js")
+  "testInstallMatrix": path.join(PROJECT, "scripts", "warpos", "test-install-matrix.js"),
+  "contractsSchemas": path.join(PROJECT, "schemas", "contracts"),
+  "contractsValidator": path.join(PROJECT, "scripts", "contracts", "validate-artifact.js"),
+  "contractsValidatorTest": path.join(PROJECT, "scripts", "contracts", "test-validate-artifact.js"),
+  "contractsFixtures": path.join(PROJECT, "scripts", "contracts", "fixtures"),
+  "contractsSpec": path.join(PROJECT, "_requirements", "10-contracts", "ARTIFACT-CONTRACTS.md")
 };
 
 module.exports = { PROJECT, PATHS };

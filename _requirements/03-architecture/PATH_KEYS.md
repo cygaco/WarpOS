@@ -25,6 +25,11 @@ Markdown convention: reference paths as `paths.X` in prose. Code: `const { PATHS
 | `clonesRoot` | `_docs/clones` | dir | project | yes | 0.9.0 | Clone-output root for /portfolio:clone (formerly /product:cl |
 | `commands` | `.claude/commands` | dir | framework | no | 0.0.0 |  |
 | `content` | `.claude/content` | dir | runtime | yes | 0.0.0 |  |
+| `contractsFixtures` | `scripts/contracts/fixtures` | dir | framework | yes | 0.12.0 | Valid + invalid artifact fixtures proving the validator's fa |
+| `contractsSchemas` | `schemas/contracts` | dir | framework | yes | 0.12.0 | Product-studio artifact-contract schemas v0.1 (warpos/contra |
+| `contractsSpec` | `_requirements/10-contracts/ARTIFACT-CONTRACTS.md` | file | framework | yes | 0.12.0 | Human-readable artifact-contract spec v0.1 (the chain, the s |
+| `contractsValidator` | `scripts/contracts/validate-artifact.js` | file | framework | yes | 0.12.0 | Fail-closed validator for the artifact contracts — rejects u |
+| `contractsValidatorTest` | `scripts/contracts/test-validate-artifact.js` | file | framework | yes | 0.12.0 | Validator self-test (proves pass-valid / reject-invalid); th |
 | `currentStage` | `.claude/agents/00-alex/.system/policy/current-stage.md` | md | project | yes | 0.0.0 |  |
 | `decisionLedger` | `.claude/project/decisions/decision-ledger.jsonl` | jsonl | runtime | yes | 0.1.0 |  |
 | `decisionPolicy` | `.claude/agents/00-alex/.system/policy/decision-policy.md` | md | project | yes | 0.0.0 |  |
