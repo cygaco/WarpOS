@@ -4,7 +4,7 @@
   "generated_by": "scripts/generate-framework-manifest.js",
   "counts": {
     "agent": 62,
-    "skill": 164,
+    "skill": 165,
     "reference": 28,
     "maps_baseline": 23,
     "hook": 66,
@@ -52,7 +52,7 @@
     "installer_script": 1,
     "framework_doc": 2
   },
-  "total": 784,
+  "total": 785,
   "assets": {
     "agent": [
       {
@@ -1887,6 +1887,18 @@
         "dest": ".claude/commands/roadmap/next.md",
         "kind": "skill",
         "sha256": "f765bc3e969d4cf8a47cf51b0f82c076459a725bec32af367c939c5688811b21",
+        "owner": "framework",
+        "mergeStrategy": "three_way_markdown",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "skill.roadmap.prioritize.md",
+        "src": ".claude/commands/roadmap/prioritize.md",
+        "dest": ".claude/commands/roadmap/prioritize.md",
+        "kind": "skill",
+        "sha256": "7e398ef4ebbdb057914d00c9732aa45b5e35dc0ec3acc66f5dffc0344f40c603",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
