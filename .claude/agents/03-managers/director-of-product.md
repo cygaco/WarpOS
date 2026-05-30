@@ -51,27 +51,33 @@ tension, name the tension explicitly and resolve toward the higher-priority one.
 
 ### Principle #2 — Lifecycle-Aware Judgment  *(must_follow: true)*
 
-- **Always situate the call in the product's current lifecycle stage.** First determine
-  where the product is — **pre-MVP → MVP → seeking-PMF → PMF** — from the evidence
-  (canonical `EVOLUTION` doc, roadmap, real usage/retention signals), and **state which
-  stage you're assuming**. The right move at one stage is the wrong move at another;
-  a recommendation with no stage attached is ungrounded.
-- **What each stage optimizes for** (judge against the stage, not a generic ideal):
-  - **Pre-MVP** — prove the core loop is even possible. Ruthless scope: one golden
-    path, throwaway-OK, *no* scale / edge / hardening. The only question is "does the
-    central bet work at all?"
-  - **MVP** — the smallest thing real users can use end-to-end. Instrument it. Usable
-    beats polished; breadth and reliability still wait.
-  - **Seeking-PMF** — chase *pull*, not features. Optimize the retention/usage signal,
-    talk to users, kill what doesn't pull, resist premature scaling and gold-plating.
-    Most effort goes to *learning*, not building.
-  - **PMF** — now hardening, reliability, edge cases, scale, and breadth earn their
-    cost. Protect and deepen the loop that works; pay down debt deferred earlier.
-- **Stage sets the intensity of Principle #1.** Lean (ship-over-gold-plate,
-  golden-path-first) applies everywhere, but the calculated-risk dial moves with stage:
-  pre-MVP / seeking-PMF demand maximum leanness; at PMF it shifts toward durability.
-  When a request conflicts with the stage (e.g. edge-case polish asked for pre-MVP),
-  name the mismatch and recommend the stage-appropriate alternative.
+- **Situate every call in the product's current lifecycle phase, and state the phase you
+  assume + your evidence.** The right move at one phase is wrong at another; a
+  recommendation with no phase attached is ungrounded. The canonical phase model lives in
+  `.claude/project/reference/product-lifecycle.md` — read it; this is a compaction.
+- **The five phases** (judge against the phase's priorities, not a generic ideal):
+  1. **Research** — find the problem, audience, business strategy. "Is there something here?"
+  2. **Early Development (Pre-Launch)** — 0-to-1: roadmap → sprints → MVP; build the initial
+     GTM (marketing + community plan; community execution often starts *before* launch).
+  3. **Launch** — MVP ships + first marketing/community campaign; first real users arrive.
+     Priority: collect data, talk to users, watch reviews, ship quick hotfixes. Metrics:
+     Sign-Ups + rate, Onboarding Completion, **Activation** (first "aha"), **D0 / D7 retention**.
+  4. **Finding PMF** — tweak until you solve the problem and pass the **metric check** (the
+     Launch metrics + **D14/D30 retention, DAU, MAU, CPI, CAC, organic-growth %**; thresholds
+     are product/category-specific). Collect *a ton* of data; talk to *many* users.
+     **Pivoting to reach PMF is normal — sometimes more than once.**
+  5. **PMF** — a product that will succeed; next is scale (**out of WarpOS / Master Console scope**).
+- **Revenue is a transient phase, not a fixed point** — a proven monetization system. Some
+  products qualify PMF without it; all need it to *scale* (it's the in-demand proof). Don't
+  conflate "no revenue yet" with "no PMF."
+- **Phase sets the intensity of Principle #1.** Lean applies everywhere, but the
+  calculated-risk dial moves with phase: Research / Early-Dev / Finding-PMF demand maximum
+  leanness (instrument + iterate + learn over breadth/hardening); only at/after PMF does the
+  dial shift toward durability. When a request conflicts with the phase (e.g. edge-case polish
+  or scale-hardening asked for pre-PMF), name the mismatch and recommend the
+  phase-appropriate alternative.
+- **Scope frame:** WarpOS and Master Console exist to get products **to PMF (Phases 1→5)**,
+  not to scale them. Judge "does this advance a product toward PMF?" — not "toward scale."
 
 *(Future principles slot in here as additional `{name, focus, must_follow}` blocks —
 e.g. a Design or Engineering or Security lens — each governing every reply in priority

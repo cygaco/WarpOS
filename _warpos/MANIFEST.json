@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-05-30T04:03:15.662Z",
+  "generatedAt": "2026-05-30T05:15:08.661Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.10.0",
   "migrations": [],
@@ -44,8 +44,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "c30d2d30cbc6da0a3449591c61e06bd97e40631546eb7b509bc4c89abd388eb9",
-      "installedSha": "c30d2d30cbc6da0a3449591c61e06bd97e40631546eb7b509bc4c89abd388eb9"
+      "sha256": "b95dcca7beb9c180a8cb92d233ecbee55b52fcc2b8a59ff134fee9754e540ae6",
+      "installedSha": "b95dcca7beb9c180a8cb92d233ecbee55b52fcc2b8a59ff134fee9754e540ae6"
     },
     "install.ps1": {
       "owner": "framework",
@@ -12428,6 +12428,14 @@
       "sha256": "edd24a91e4071d22ba2602d709f6ebd708697d7973b1ff5b88a43ee62006b4dc",
       "installedSha": "edd24a91e4071d22ba2602d709f6ebd708697d7973b1ff5b88a43ee62006b4dc"
     },
+    ".claude/project/reference/product-lifecycle.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/project/reference/product-lifecycle.md",
+      "kind": "md",
+      "sha256": "fa31f33edc22b2ed094d6c04a7133d0e69b79ec62f7de37d5ecc51be31893cdc",
+      "installedSha": "fa31f33edc22b2ed094d6c04a7133d0e69b79ec62f7de37d5ecc51be31893cdc"
+    },
     ".claude/project/reference/reasoning-frameworks.md": {
       "owner": "framework",
       "managed": true,
@@ -14041,8 +14049,8 @@
       "managed": true,
       "source": ".claude/agents/03-managers/director-of-product.md",
       "kind": "md",
-      "sha256": "5b72303d18a3c4493d3e4bb8082fcbe114f6df92b04864c3aa46967d4566bff5",
-      "installedSha": "5b72303d18a3c4493d3e4bb8082fcbe114f6df92b04864c3aa46967d4566bff5"
+      "sha256": "2b34efbf06c549a5a585209effc4129b68cd61c90ac693aa884830f878543ddb",
+      "installedSha": "2b34efbf06c549a5a585209effc4129b68cd61c90ac693aa884830f878543ddb"
     },
     ".claude/agents/02-oneshot/visual-review/visual-review.md": {
       "owner": "framework",
