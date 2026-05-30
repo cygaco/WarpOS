@@ -265,7 +265,30 @@ if (require.main !== module) {
   return;
 }
 
-const [, , role, promptArg] = process.argv;
+const [, , role, promptArg, ...restArgs] = process.argv;
+
+// Optional overrides — used by the SECOND GPT security pass and manual reruns:
+//   --provider <claude|openai|gemini>   force a provider regardless of manifest
+//   --model <id>                         force a model
+// e.g. node scripts/dispatch-agent.js redteam prompt.txt --provider openai --model gpt-5.5
+function parseFlag(name) {
+  const i = restArgs.indexOf(name);
+  return i >= 0 && restArgs[i + 1] ? restArgs[i + 1] : null;
+}
+const PROVIDER_ALIAS = {
+  anthropic: "claude",
+  claude: "claude",
+  openai: "openai",
+  gpt: "openai",
+  gemini: "gemini",
+  google: "gemini",
+};
+const rawProviderOverride = parseFlag("--provider");
+const providerOverride = rawProviderOverride
+  ? PROVIDER_ALIAS[rawProviderOverride.toLowerCase()] ||
+    rawProviderOverride.toLowerCase()
+  : null;
+const modelOverride = parseFlag("--model");
 
 if (!role || !promptArg) {
   console.error(
@@ -300,7 +323,7 @@ if (!prompt.trim()) {
   process.exit(2);
 }
 
-const provider = getProviderForRole(role);
+const provider = providerOverride || getProviderForRole(role);
 const promptBytes = Buffer.byteLength(prompt, "utf8");
 
 // Phase 0 workstream C: stamp telemetry identity for this dispatch.
@@ -413,10 +436,21 @@ if (!slot) {
 let result;
 try {
   // Honor the agent's frontmatter-declared provider_model (e.g. qa → gpt-5.4-mini,
-  // evaluator → gpt-5.4, redteam → gemini-3.1-pro-preview) instead of falling back
-  // to the provider default for every role.
+  // reviewer → gpt-5.5, redteam → gemini-2.5-flash) instead of the provider
+  // default. BUT when --provider overrides the native provider, the spec's model
+  // belongs to the WRONG provider — ignore it and use --model (or let runProvider
+  // pick the override provider's default).
   const roleModel = getRoleModel(role);
-  result = runProvider(role, prompt, roleModel ? { model: roleModel } : {});
+  const runOpts = {};
+  if (providerOverride) {
+    runOpts.provider = providerOverride;
+    if (modelOverride) runOpts.model = modelOverride;
+  } else if (modelOverride) {
+    runOpts.model = modelOverride;
+  } else if (roleModel) {
+    runOpts.model = roleModel;
+  }
+  result = runProvider(role, prompt, runOpts);
 
   // Add role + structured output to result
   result.role = role;

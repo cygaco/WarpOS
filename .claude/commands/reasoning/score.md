@@ -141,7 +141,7 @@ Build a structured prompt containing:
 ### 2. Call Gemini for Independent Assessment
 
 ```bash
-gemini -m gemini-3.1-pro-preview -p "You are an independent quality evaluator. Score this fix on a 0-4 scale:
+gemini -m gemini-2.5-flash -p "You are an independent quality evaluator. Score this fix on a 0-4 scale:
 0=Failed, 1=Surface (symptom gone, cause unknown), 2=Context-limited (root cause found, narrow test),
 3=Robust (root cause + verified + no regression + multi-condition), 4=Generalizable (Level 3 + prevention rule).
 
@@ -160,7 +160,7 @@ Reply with ONLY: score (0-4), one-sentence rationale." -o text
 ### 4. Record in Trace
 
 Update the trace entry with:
-- `validator_model`: `"gemini-3.1-pro-preview"`
+- `validator_model`: `"gemini-2.5-flash"`
 - `cross_validation`: `{ "gemini_score": N, "agreement": true|false, "gemini_rationale": "..." }`
 
 ### Graceful Degradation

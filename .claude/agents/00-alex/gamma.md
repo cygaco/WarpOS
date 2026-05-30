@@ -69,7 +69,7 @@ if [ "$PROVIDER" = "claude" ]; then
   RESULT=$(claude -p --model sonnet --agent <role> "$(cat "$PROMPT_FILE")")
 else
   # Cross-provider (OpenAI / Gemini) — inlining REQUIRED (step 1 above)
-  # scripts/dispatch-agent.js handles codex exec --full-auto -m MODEL - or gemini -m MODEL -p
+  # scripts/dispatch-agent.js handles codex exec --sandbox workspace-write -m MODEL - or gemini -m MODEL -p
   RESULT=$(node "$CLAUDE_PROJECT_DIR/scripts/dispatch-agent.js" <role> "$PROMPT_FILE")
   # If exit 1 (provider CLI unavailable), fall back to Claude
   if [ $? -ne 0 ]; then
@@ -97,7 +97,8 @@ From `manifest.agentProviders` (fresh install):
 | `reviewer` | openai | gpt-5.5 (`OPENAI_FLAGSHIP_MODEL`) | xhigh |
 | `compliance` | openai | gpt-5.5 (`OPENAI_FLAGSHIP_MODEL`) | xhigh |
 | `qa` | openai | gpt-5.4-mini (`OPENAI_MINI_MODEL`; cost-balanced) | medium |
-| `redteam` | gemini | gemini-3.1-pro-preview | implicit |
+| `redteam` | gemini | gemini-2.5-flash (pro-preview opt-in via `GEMINI_MODEL`) | implicit |
+| `redteam` (2nd pass) | openai | gpt-5.5 (`--provider openai`) | xhigh |
 | `test-runner` | claude | claude-haiku-4-5-20251001 | low (mechanical) |
 | `visual-review` | claude | claude-opus-4-8 (multimodal) | high |
 

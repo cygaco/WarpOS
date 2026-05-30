@@ -146,7 +146,7 @@ Other Alex sessions that ended with open questions or incomplete handoffs.
    - Write to `.claude/runtime/dispatch/discover-orphaned-prompt.txt`
    - Invoke:
      ```bash
-     OPENAI_FLAGSHIP_MODEL=gpt-5.5 codex exec --full-auto \
+     OPENAI_FLAGSHIP_MODEL=gpt-5.5 codex exec --sandbox workspace-write \
        -c model_reasoning_effort=xhigh \
        -m gpt-5.5 \
        - < .claude/runtime/dispatch/discover-orphaned-prompt.txt \

@@ -107,7 +107,7 @@ const providers = {
       // 0.117 rejects gpt-5.5). Smoke must match real dispatch path —
       // run-12 BUG-076 caught with no -m flag; smoke passed but real
       // dispatch with -m gpt-5.5 failed mid-run. HYGIENE Rule 67.
-      const model = process.env.OPENAI_FLAGSHIP_MODEL || "gpt-5.4";
+      const model = process.env.OPENAI_FLAGSHIP_MODEL || "gpt-5.5";
       const r = runShell(
         `codex exec -c model_reasoning_effort=xhigh -m ${model} --skip-git-repo-check`,
         TEST_PROMPT,
@@ -120,9 +120,9 @@ const providers = {
     test() {
       // gemini reads stdin and APPENDS --prompt to it (per `gemini --help`).
       // Use the SAME -m model that dispatch-agent.js will use at runtime
-      // (read from GEMINI_MODEL env, default gemini-3.1-pro-preview).
+      // (read from GEMINI_MODEL env, default gemini-2.5-flash).
       // HYGIENE Rule 67.
-      const model = process.env.GEMINI_MODEL || "gemini-3.1-pro-preview";
+      const model = process.env.GEMINI_MODEL || "gemini-2.5-flash";
       const r = runShell(`gemini -m ${model} --prompt ""`, TEST_PROMPT);
       return { ...r, ok: r.exit === 0 && /OK/i.test(r.stdout) };
     },

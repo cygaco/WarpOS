@@ -141,7 +141,7 @@ provider_model: gpt-5.5      # or gpt-5.4, gpt-5.4-mini
 
 # Gemini
 provider: gemini
-provider_model: gemini-3.1-pro-preview
+provider_model: gemini-2.5-flash   # gemini-3-pro-preview opt-in (quota-fragile)
 ```
 
 ### `provider_fallback` (string, conditional)
@@ -238,7 +238,7 @@ tools: Read, Grep, Glob, Bash, Agent
 disallowedTools: Edit, Write
 model: sonnet
 provider: gemini
-provider_model: gemini-3.1-pro-preview
+provider_model: gemini-2.5-flash
 provider_fallback: claude
 maxTurns: 60
 color: red

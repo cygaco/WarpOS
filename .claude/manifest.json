@@ -62,11 +62,11 @@
       "cli": "codex",
       "default_model": "gpt-5.5",
       "fallback": "claude",
-      "syntax": "codex exec --full-auto {reasoning} -m {model} -"
+      "syntax": "codex exec --sandbox workspace-write {reasoning} -m {model} -"
     },
     "gemini": {
       "cli": "gemini",
-      "default_model": "gemini-3.1-pro-preview",
+      "default_model": "gemini-2.5-flash",
       "fallback": "claude",
       "syntax": "gemini {reasoning} -m {model} -p"
     }
@@ -83,7 +83,7 @@
     "compliance": "openai",
     "learner": "openai",
     "qa": "openai",
-    "redteam": "openai"
+    "redteam": "gemini"
   },
   "buildCommands": {},
   "fileOwnership": { "foundation": [] }

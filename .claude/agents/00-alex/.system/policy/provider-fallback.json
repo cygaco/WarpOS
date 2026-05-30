@@ -4,9 +4,10 @@
   "comment": "Phase 0 workstream E scaffold. Documented but not yet enforced — runProvider's existing fallback signals (fallback:true on quota/timeout/cli-missing) drive routing today. Once /warp:promote-flags drains the dispatch backlog, lift this into runProvider so the chain is honoured automatically.",
   "policies": {
     "redteam": {
-      "primary": "gemini:gemini-3.1-pro-preview",
+      "primary": "gemini:gemini-2.5-flash",
       "fallback": "claude:claude-opus-4-8",
-      "rationale": "redteam runs adversarial-corpus reasoning; gemini-pro-preview is the strong primary, claude-opus is the most capable fallback that won't degrade depth on long attack chains."
+      "second_pass": "openai:gpt-5.5",
+      "rationale": "redteam runs adversarial-corpus reasoning; gemini-2.5-flash is the reliable primary (gemini-3-pro-preview quota-fails after 1-2 scans, ROADMAP 2026-05-11), claude-opus is the most capable fallback that won't degrade depth on long attack chains. A SECOND security pass ALWAYS runs on openai:gpt-5.5 (dispatch-agent --provider openai) so security covers two model families and survives a total gemini outage."
     },
     "reviewer": {
       "primary": "openai:gpt-5.5",

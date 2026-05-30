@@ -35,16 +35,18 @@ Delta (orchestrator)
   │     │       > output.json 2>&1
   │     │
   │     ├── OPENAI route (reviewer, compliance, qa, learner):
-  │     │     OPENAI_FLAGSHIP_MODEL=gpt-5.4 \
   │     │     node scripts/dispatch-agent.js reviewer prompt.txt > output.json
   │     │       └── providers.js execSync:
-  │     │             codex exec --full-auto -c model_reasoning_effort=xhigh -m gpt-5.4 -
+  │     │             codex exec --sandbox workspace-write -c model_reasoning_effort=xhigh -m gpt-5.5 -
   │     │             (prompt piped via stdin; cwd = project root)
+  │     │             NB: `--full-auto` is DEPRECATED (Codex ≥0.135); exec is
+  │     │             non-interactive so `--ask-for-approval` is NOT a valid flag.
   │     │
   │     └── GEMINI route (redteam):
   │           node scripts/dispatch-agent.js redteam prompt.txt > output.json
-  │             └── providers.js execSync:
-  │                   gemini -m gemini-3.1-pro-preview -p "Process the instructions on stdin and produce the requested output." -o json
+  │             └── providers.js execSync (auto-injects GEMINI_API_KEY from
+  │                 ~/.gemini/.env + GEMINI_CLI_TRUST_WORKSPACE=true for headless):
+  │                   gemini -m gemini-2.5-flash -p "Process the instructions on stdin and produce the requested output." -o json
   │
   └── 3. Wait for notification → read JSON envelope
         ├── Read ONLY: wc -c output.json first; if real, parse the inner JSON
@@ -64,13 +66,32 @@ Delta (orchestrator)
 |---|---|---|---|
 | `builder` | claude | `sonnet-4-6` | max |
 | `fixer` | claude | `sonnet-4-6` | high |
-| `reviewer` | openai | `gpt-5.5` (or `gpt-5.4` until Codex CLI ≥ 0.118) | xhigh |
+| `reviewer` | openai | `gpt-5.5` | xhigh |
 | `compliance` | openai | same | xhigh |
 | `learner` | openai | `gpt-5.4-mini` | high |
 | `qa` | openai | `gpt-5.4-mini` | medium |
-| `redteam` | gemini | `gemini-3.1-pro-preview` | implicit (always-on for pro tier) |
+| `redteam` | gemini | `gemini-2.5-flash` (pro-preview opt-in via `GEMINI_MODEL`) | implicit |
+| `redteam` (2nd pass) | openai | `gpt-5.5` (`--provider openai`) | xhigh |
 
 **Cross-provider diversity is mandatory.** Same-model self-review is blind to shared failure modes. Every gauntlet must include at least one non-Anthropic reviewer.
+
+**Security runs TWICE (verified 2026-05-30).** redteam dispatches to gemini (primary, corpus-diverse) AND a second pass to openai/gpt-5.5 via the `--provider openai` override on `dispatch-agent.js`. This (a) gives two-model-family security coverage, and (b) guarantees security still runs if gemini is unavailable — the GPT pass is independent of the gemini path. Invoke the second pass with:
+
+```bash
+node scripts/dispatch-agent.js redteam <prompt-file> --provider openai --model gpt-5.5
+```
+
+`--provider <claude|openai|gemini>` and `--model <id>` override the manifest role→provider mapping for any role. When `--provider` differs from the role's native provider, the role's spec `provider_model` is ignored (it belongs to the wrong provider) and `--model` (or the override provider's default) is used.
+
+### Headless provider setup (verified working 2026-05-30)
+
+| Provider | Auth | Headless gotchas (all auto-handled by `providers.js`) |
+|---|---|---|
+| **claude** | native harness | none — always available |
+| **codex / openai** | ChatGPT login (`codex login`) **or** `OPENAI_API_KEY` | `--full-auto` is DEPRECATED (≥0.135) → use `--sandbox workspace-write`. `codex exec` is non-interactive; `--ask-for-approval` is interactive-only and `exec` **rejects** it. `gpt-5.5` works on 0.135 (the old `OPENAI_FLAGSHIP_MODEL=gpt-5.4` "until 0.118" workaround is obsolete). |
+| **gemini** | `GEMINI_API_KEY` in `~/.gemini/.env` (global) | Under `spawnSync` the CLI does **not** auto-load `~/.gemini/.env` → `providers.js` reads it and injects `GEMINI_API_KEY` into the child env. Headless also needs `GEMINI_CLI_TRUST_WORKSPACE=true` (set automatically) or it dies with "not a trusted directory". Default model `gemini-2.5-flash` (the old `gemini-3.1-pro-preview` was a **ghost** 404 id; the real pro-preview quota-fails after 1-2 scans). |
+
+Two silent dispatch-killers were fixed here: gemini auth code 41 (key not loaded) and gemini "untrusted directory". Both now resolve with **zero external env setup** — the key in `~/.gemini/.env` is enough.
 
 ---
 
@@ -217,6 +238,6 @@ Slots are file-locks at `.claude/runtime/dispatch-locks/<provider>/`. Stale lock
 | `runProvider` 120s timeout fails on xhigh + 175KB prompts | bumped to 900s in providers.js |
 | Gemini `--version` cold-start spikes >5s on Windows | `cliAvailable` timeout bumped to 30s |
 | Builder default opus-4-7 is overkill for skeleton work | `delta-dispatch-builder.js` default switched to sonnet-4-6 |
-| Codex 0.117 rejects gpt-5.5 | env override `OPENAI_FLAGSHIP_MODEL=gpt-5.4` until CLI upgrade |
+| Codex 0.117 rejects gpt-5.5 | OBSOLETE — Codex 0.135 accepts `gpt-5.5`; the `OPENAI_FLAGSHIP_MODEL=gpt-5.4` workaround was removed 2026-05-30 |
 | Wide `git checkout -- .` reverts orchestrator's own tooling edits | only checkout specific paths; commit tooling changes immediately |
 | Gemini fails ≥15 concurrent dispatches in redteam gauntlet | per-provider slot cap at dispatch layer (default 3 for gemini); fallback to claude on slot timeout |

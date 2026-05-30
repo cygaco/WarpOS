@@ -45,6 +45,31 @@ function loadStore() {
 }
 
 /**
+ * Load GEMINI_API_KEY from the gemini CLI's own .env locations. Verified
+ * 2026-05-30: under spawnSync the gemini CLI does NOT auto-load ~/.gemini/.env,
+ * so dispatch must read it and inject into the child env. Checks the global
+ * (~/.gemini/.env) then the project-local (<project>/.gemini/.env). Value is
+ * never logged. Returns null when no key file is present.
+ */
+function loadGeminiApiKey() {
+  const os = require("os");
+  const candidates = [
+    path.join(os.homedir(), ".gemini", ".env"),
+    path.join(PROJECT || ".", ".gemini", ".env"),
+  ];
+  for (const f of candidates) {
+    try {
+      const txt = fs.readFileSync(f, "utf8");
+      const m = txt.match(/^\s*GEMINI_API_KEY\s*=\s*(.+?)\s*$/m);
+      if (m) return m[1].trim().replace(/^["']|["']$/g, "");
+    } catch {
+      /* try next candidate */
+    }
+  }
+  return null;
+}
+
+/**
  * Provider defaults if manifest.providers is missing.
  * Keys match the CLI tool name.
  */
@@ -54,7 +79,12 @@ function loadStore() {
 // (qa, learner) where cost matters more than peak reasoning.
 const OPENAI_FLAGSHIP = process.env.OPENAI_FLAGSHIP_MODEL || "gpt-5.5"; // reviewer, compliance
 const OPENAI_MINI = process.env.OPENAI_MINI_MODEL || "gpt-5.4-mini"; // qa, learner (no gpt-5.5-mini exists yet)
-const GEMINI_DEFAULT = process.env.GEMINI_MODEL || "gemini-3.1-pro-preview";
+// Reliable default = gemini-2.5-flash (real id, generous quota, corpus-diverse
+// from GPT/Claude). The old `gemini-3.1-pro-preview` was a GHOST id (404 on
+// v1beta) AND the real pro-preview tier hits TerminalQuotaError after 1-2 real
+// redteam scans (ROADMAP DISCOVERED-2026-05-11). Opt into Gemini 3 Pro via
+// GEMINI_MODEL=gemini-3-pro-preview when you need peak attack-chain reasoning.
+const GEMINI_DEFAULT = process.env.GEMINI_MODEL || "gemini-2.5-flash";
 
 // Reasoning effort per role. Forces deeper deliberation across all dispatch
 // roles. Per recent learning: "LLM-as-judge is systematically biased and
@@ -135,13 +165,13 @@ const DEFAULT_PROVIDERS = {
     fallback: "claude",
     // Per https://developers.openai.com/codex/cli/reference :
     //   `codex exec` with `-` reads prompt from stdin.
-    //   `--full-auto` enables workspace-write sandbox + on-request approvals (needed in non-TTY runs).
+    //   `--full-auto` is DEPRECATED (Codex ≥0.135) → `--sandbox workspace-write` for headless runs (exec is non-interactive; `--ask-for-approval` is interactive-only).
     //   `-m <model>` or `--model <model>` selects the model.
     //   `-c model_reasoning_effort=<level>` overrides reasoning depth (low|medium|high).
     //   `-o <file>` writes last-message response for reliable capture.
     // `{reasoning}` is replaced with `-c model_reasoning_effort=<level>` if a
     // role-specific level is set; otherwise empty.
-    syntax: `codex exec --full-auto {reasoning} -m {model} -`,
+    syntax: `codex exec --sandbox workspace-write --ask-for-approval never {reasoning} -m {model} -`,
   },
   gemini: {
     cli: "gemini",
@@ -355,7 +385,12 @@ function runProvider(role, prompt, opts = {}) {
   // also timed out at 120s. 15 min is the new ceiling for review-class workloads.
   const timeoutMs = opts.timeoutMs || 900_000;
   const strict = opts.strict !== false; // default ON — fail on silent downgrade
-  const providerName = getProviderForRole(role);
+  // opts.provider forces a provider regardless of the role→provider manifest
+  // mapping — used for a SECOND security pass on GPT:
+  //   runProvider('redteam', prompt, { provider: 'openai', model: 'gpt-5.5' })
+  // so security covers TWO model families (gemini + gpt). Falls back to the
+  // manifest mapping when not set. Caller is responsible for normalization.
+  const providerName = opts.provider || getProviderForRole(role);
 
   // Claude path — caller should dispatch via Agent tool, not this bridge
   if (providerName === "claude") {
@@ -424,9 +459,13 @@ function runProvider(role, prompt, opts = {}) {
     let cmd;
     if (providerName === "openai") {
       // codex exec reads stdin when passed `-` as the prompt.
-      // --full-auto = workspace-write sandbox + on-request approval (needed in non-TTY).
+      // `--full-auto` is DEPRECATED in Codex ≥0.135 (deprecation warning leaks
+      // into the JSON envelope, corrupting parseProviderJson). `codex exec` is
+      // inherently non-interactive, so the headless replacement is just
+      // `--sandbox workspace-write` — `--ask-for-approval` is interactive-only
+      // and `exec` rejects it as an unexpected argument.
       // Reasoning flag (e.g. `-c model_reasoning_effort=high`) injected if role-mapped.
-      cmd = `${cfg.cli} exec --full-auto ${reasoningFlag} -m ${model} -`;
+      cmd = `${cfg.cli} exec --sandbox workspace-write ${reasoningFlag} -m ${model} -`;
     } else if (providerName === "gemini") {
       // gemini CLI: context on stdin, instruction via -p, `-o json` returns a
       // JSON envelope with { response, stats.models } so we can verify which
@@ -471,6 +510,24 @@ function runProvider(role, prompt, opts = {}) {
       [`GIT_CONFIG_KEY_${gitCfgIdx}`]: "safe.directory",
       [`GIT_CONFIG_VALUE_${gitCfgIdx}`]: "*",
     };
+
+    // Gemini headless requirements (verified 2026-05-30 — both were silent
+    // dispatch-killers: auth code 41, then "not a trusted directory"):
+    //  1. AUTH — the CLI does NOT auto-load ~/.gemini/.env under spawnSync, so
+    //     inject GEMINI_API_KEY (from ~/.gemini/.env or <project>/.gemini/.env)
+    //     when it's absent from the inherited env. Value is never logged.
+    //  2. TRUST — non-interactive runs need GEMINI_CLI_TRUST_WORKSPACE=true (the
+    //     headless equivalent of "trust this folder"; the older --skip-trust flag
+    //     path is superseded by this env var, per
+    //     geminicli.com/docs/cli/trusted-folders/#headless-and-automated-environments).
+    if (providerName === "gemini") {
+      childEnv.GEMINI_CLI_TRUST_WORKSPACE =
+        childEnv.GEMINI_CLI_TRUST_WORKSPACE || "true";
+      if (!childEnv.GEMINI_API_KEY) {
+        const geminiKey = loadGeminiApiKey();
+        if (geminiKey) childEnv.GEMINI_API_KEY = geminiKey;
+      }
+    }
     const { spawnSync } = require("child_process");
     const spawned = spawnSync(cmd, {
       cwd: PROJECT,

@@ -127,7 +127,8 @@ rm -f "$PROMPT_FILE"
 | `compliance` | openai | gpt-5.5 (`OPENAI_FLAGSHIP_MODEL`) | xhigh |
 | `learner` | openai | gpt-5.5 (`OPENAI_FLAGSHIP_MODEL`) | xhigh |
 | `qa` | openai | gpt-5.4-mini (`OPENAI_MINI_MODEL`; cost-balanced) | medium |
-| `redteam` | gemini | gemini-3.1-pro-preview | implicit (always-on thinking on pro tier) |
+| `redteam` | gemini | gemini-2.5-flash (pro-preview opt-in via `GEMINI_MODEL`) | implicit |
+| `redteam` (2nd pass) | openai | gpt-5.5 (`--provider openai`) | xhigh |
 
 Why: same-model review is blind to shared failure modes. GPT reviews Claude's output with a different lens; Gemini's adversarial corpus makes it stronger on security.
 

@@ -51,7 +51,7 @@ The agent prompt should include the full research brief and instruct it to write
 
 Use Bash to run:
 ```bash
-timeout 300 codex exec --full-auto -m o3 -C "$CLAUDE_PROJECT_DIR" \
+timeout 300 codex exec --sandbox workspace-write -m o3 -C "$CLAUDE_PROJECT_DIR" \
   "Research the following topic thoroughly and write your findings to $OUTDIR/chatgpt-report.md. Include sections: Overview, Key Approaches, Trade-offs, Implementation Advice, Pitfalls, Examples, Sources. Topic: {research prompt}"
 ```
 

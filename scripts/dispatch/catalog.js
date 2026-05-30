@@ -55,7 +55,13 @@ const OPENAI = {
   label: "OpenAI",
   cli: "codex",
   cliEffortFlagTemplate: "-c model_reasoning_effort={effort}",
-  syntaxTemplate: "codex exec --full-auto {reasoning} -m {model} -",
+  // `--full-auto` is DEPRECATED in Codex CLI ≥0.135 (prints a warning that leaks
+  // into the JSON envelope). `codex exec` is inherently non-interactive, and
+  // `--ask-for-approval` is interactive-only — NOT a valid exec flag. The headless
+  // replacement is just `--sandbox workspace-write` (parity with old --full-auto's
+  // write scope; our codex roles are read-only analysis anyway).
+  // Ref: developers.openai.com/codex/cli/reference
+  syntaxTemplate: "codex exec --sandbox workspace-write {reasoning} -m {model} -",
   requiresFallback: true,
   defaultModel: "gpt-5.5",
   models: [
@@ -89,6 +95,19 @@ const OPENAI = {
 // ── Gemini ─────────────────────────────────────────────────────
 // gemini-2.5-pro deliberately excluded per project policy
 // (see _requirements/09-integrations/PROVIDER/03-google-gemini.md)
+//
+// MODEL IDS CORRECTED 2026-05-30: the previous `gemini-3.1-*` ids were GHOSTS
+// (no such models exist). Official current ids per Google's Gemini CLI docs
+// (geminicli.com/docs/reference + github.com/google-gemini/gemini-cli):
+//   - `gemini-3-pro-preview`  (Gemini 3 Pro, the docs' own --model example)
+//   - `gemini-flash-latest`   (documented rolling alias for current flash)
+//   - `gemini-2.5-flash`      (concrete pinned flash)
+// Auth: GEMINI_API_KEY in ~/.gemini/.env (global) — verified working 2026-05-30.
+// `-p`/`--prompt` is being soft-deprecated upstream in favor of a positional
+// prompt, but still works in 0.44.x; revisit when the CLI hard-removes it.
+// DEFAULT = gemini-2.5-flash (real id + generous quota). gemini-3-pro-preview
+// quota-fails after 1-2 real redteam scans (ROADMAP DISCOVERED-2026-05-11), so
+// it's opt-in via GEMINI_MODEL, not the default.
 const GEMINI = {
   id: "gemini",
   label: "Google Gemini",
@@ -96,26 +115,19 @@ const GEMINI = {
   cliEffortFlagTemplate: "",
   syntaxTemplate: "gemini -m {model} -p",
   requiresFallback: true,
-  defaultModel: "gemini-3.1-pro-preview",
+  defaultModel: "gemini-2.5-flash",
   models: [
     {
-      id: "gemini-3.1-pro-preview",
-      label: "Gemini 3.1 Pro (preview, thinking always-on)",
+      id: "gemini-3-pro-preview",
+      label: "Gemini 3 Pro (preview, thinking always-on)",
       effortLevels: [],
       contextTokens: 1_000_000,
       maxOutputTokens: 64_000,
       thinkingAlwaysOn: true,
     },
     {
-      id: "gemini-3.1-flash",
-      label: "Gemini 3.1 Flash",
-      effortLevels: [],
-      contextTokens: 1_000_000,
-      maxOutputTokens: 64_000,
-    },
-    {
-      id: "gemini-3.1-flash-lite",
-      label: "Gemini 3.1 Flash-Lite",
+      id: "gemini-flash-latest",
+      label: "Gemini Flash (latest alias)",
       effortLevels: [],
       contextTokens: 1_000_000,
       maxOutputTokens: 64_000,

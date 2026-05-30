@@ -553,16 +553,20 @@ function writeProductManifest({ target, interview = {}, stack = "unknown", frame
         },
         openai: {
           cli: "codex",
-          default_model: "gpt-5.4",
+          default_model: "gpt-5.5",
           fallback: "claude",
-          // `codex exec --full-auto -m <model> -` (dash reads prompt from stdin; --full-auto = non-TTY approval)
-          syntax: "codex exec --full-auto -m {model} -",
+          // `codex exec --sandbox workspace-write -m <model> -` (dash reads prompt
+          // from stdin; `--full-auto` was DEPRECATED in Codex ≥0.135, and exec is
+          // non-interactive so `--ask-for-approval` is not a valid exec flag).
+          syntax: "codex exec --sandbox workspace-write -m {model} -",
         },
         gemini: {
           cli: "gemini",
-          default_model: "gemini-3.1-pro-preview",
+          default_model: "gemini-2.5-flash",
           fallback: "claude",
-          // `gemini -m <model> -p <instruction> -o text` (context via stdin)
+          // `gemini -m <model> -p <instruction>` (context via stdin). gemini-2.5-flash
+          // is the reliable default (real id + generous quota); opt into Gemini 3 Pro
+          // via GEMINI_MODEL=gemini-3-pro-preview. Auth: GEMINI_API_KEY in ~/.gemini/.env
           syntax: "gemini -m {model} -p",
         },
       },

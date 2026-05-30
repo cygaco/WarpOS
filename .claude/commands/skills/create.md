@@ -111,7 +111,7 @@ description: <what this subcommand does>
 - **PARALLEL** phases: all steps launch in one message, results collected after all complete
 - Phases reference prior phase output by name (e.g., "Read the reports from Phase 2")
 - For CLI tools (codex, gemini, claude), use the validated patterns:
-  - Codex: `timeout 300 codex exec --full-auto -m o3 -C "$CLAUDE_PROJECT_DIR" "prompt"`
+  - Codex: `timeout 300 codex exec --sandbox workspace-write -m o3 -C "$CLAUDE_PROJECT_DIR" "prompt"`
   - Gemini: `echo "context" | gemini -p "instruction" -o text 2>/dev/null > output.md` — `-p` flag is REQUIRED for headless mode. Without it, piped stdin hangs.
   - Claude: `claude --bare -p --dangerously-skip-permissions --model sonnet "prompt"`
   - All need `timeout` wrapper. Stdout redirect (`> file.md`) is more reliable than asking the AI to write files.
