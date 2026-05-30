@@ -1013,7 +1013,7 @@
         "src": ".claude/commands/discover/orphaned.md",
         "dest": ".claude/commands/discover/orphaned.md",
         "kind": "skill",
-        "sha256": "40ee39811668ca0e9340be053686104f2d1229f033dc9290fca941c827137439",
+        "sha256": "1ea55bd40160b1942041b4c6fd47d300c75cfc5744884ce0b7b05a4069bc26c8",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",

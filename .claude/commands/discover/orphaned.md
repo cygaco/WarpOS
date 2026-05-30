@@ -30,8 +30,9 @@ Each lens is a different *source* of "this hasn't been finished." They overlap d
 What the project explicitly says is unfinished.
 
 **Sources:**
-- `NEXT.md` at project root (sections "Open issues", "Pending decision", "Medium priority", "Low priority", "Open questions")
-- `user-data-production-plan.md` (or any other `*-plan.md` at root)
+- `ROADMAP.md` at project root — **the primary Lens-1 source in canonical WarpOS**: sections "Now", "Next", "Known issues", "Downstream Reconcile", any `## ⚠️ ALERTS`, and every `[open]`/`[deferred]`/`[blocked]`-tagged item. (2026-05-30 improvement: canonical has no `NEXT.md`, so the original Lens-1 source was dead here — ROADMAP.md is the real explicit-deferred backlog.)
+- `NEXT.md` at project root, if present (product repos use it; sections "Open issues", "Pending decision", "Medium/Low priority", "Open questions") — absent in canonical.
+- any root `*-plan.md`
 - `paths.handoffs/*.md` (last 3 by mtime)
 
 **Signal:** if the prior session wrote it down, it's already triaged — but did it get done?
@@ -141,18 +142,19 @@ Other Alex sessions that ended with open questions or incomplete handoffs.
 
    Each lens produces a list of `{lens, item, evidence, age_days, suggested_action}` rows.
 
-3. **Dispatch heavy synthesis to GPT 5.5** (token-saving step):
+3. **Dispatch heavy synthesis to GPT-5.5 via the canonical bridge** (token-saving step):
    - Concatenate all lens outputs into one prompt (~50–150KB)
    - Write to `.claude/runtime/dispatch/discover-orphaned-prompt.txt`
-   - Invoke:
+   - Invoke through `dispatch-agent.js` (2026-05-30 improvement — **NOT** raw `codex exec`,
+     which `dispatch-route-guard` blocks and which bypasses the Windows-stdin +
+     concurrency-lock layer; LRN-2026-04-17 / LRN-2026-04-30):
      ```bash
-     OPENAI_FLAGSHIP_MODEL=gpt-5.5 codex exec --sandbox workspace-write \
-       -c model_reasoning_effort=xhigh \
-       -m gpt-5.5 \
-       - < .claude/runtime/dispatch/discover-orphaned-prompt.txt \
+     node scripts/dispatch-agent.js advisor .claude/runtime/dispatch/discover-orphaned-prompt.txt \
        > .claude/runtime/dispatch/discover-orphaned-output.json 2>&1
      ```
-   - Codex CLI 0.125+ supports `gpt-5.5`. If on 0.117 or older, fall back to `gpt-5.4` (override `OPENAI_FLAGSHIP_MODEL=gpt-5.4`).
+     `advisor` is the freeform cross-provider consult role (openai/gpt-5.5, no strict
+     envelope — so the synthesis isn't validated as a review envelope). To pin the model
+     explicitly: append `--provider openai --model gpt-5.5`.
    - The model deduplicates cross-lens overlaps, classifies into buckets (see below), and proposes one concrete action per item.
    - The orchestrator (Claude) reads only the parsed JSON envelope — typically 2–10KB — keeping context lean.
 
