@@ -51,11 +51,15 @@ real users. Lean, throwaway-OK, no scale/edge/hardening for its own sake.
 - Complex abstractions for hypothetical future scale; performance work with no real complaint.
 - Feature breadth — depth on the core loop beats surface breadth.
 
-> **Engine-vs-product nuance (WarpOS-specific):** WarpOS is the *engine* under Master
-> Console. Even at `pre-mvp`, work that keeps the engine reliable *enough to not break the
-> imminent Master Console launch* (the artifact-first contract slice) is core-loop work,
-> not gold-plating — because the "user" of the engine artifact is the launching product.
-> The Director reconciles this tension explicitly.
+> **Engine-vs-product reliability carve-out (WarpOS-specific; operator-ruled 2026-05-30, DP-gap #30):**
+> WarpOS is the *engine* under Master Console. Even at `pre-mvp`, work that keeps the engine
+> reliable *enough to not break the imminent Master Console launch* (the artifact-first
+> contract slice + the install/release/dispatch path products actually hit) is **core-loop
+> work, not gold-plating** — because the "user" of the engine artifact is the launching
+> product. This overrides the default "don't gold-plate reliability at pre-mvp" priority
+> #4 for engine-reliability-that-protects-a-dependent-launch. The Director reconciles the
+> tension; β does not score such work down as premature hardening. The operator affirmed
+> this and directed a **torture-level reliability sprint** (ROADMAP §0.18.1 / #30).
 
 ---
 

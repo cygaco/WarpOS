@@ -50,6 +50,14 @@ A bounded reliability sprint folding the verified-open mid-leverage gaps. Tortur
 - **G1** — add the **product-layer vs dev-tooling-layer** distinction to `DICTIONARY.md` glossary (CLAUDE.md §Identity already has it; glossary does not). *(dreamteam W-16)*
 - **G2** — add the invocation-authority-vs-mode clarification to `gamma.md` (the `/sprint:full` skill itself is already correct: adhoc-default, rejects oneshot). *(mc WI-12)*
 
+### 🧭 Decision-Policy gap-clearance session (operator-directed 2026-05-30)
+DP-gaps **#29/#30/#31 are RESOLVED** this session (applied to `paths.decisionPolicy` §Class C state-conditional + §Consultation-routing β-vs-Director, and `paths.currentStage` engine-reliability carve-out; see judgement-model.md changelog). The operator directed a follow-up session to **bust the remaining open DP gaps** flagged by prior `/beta:mine` runs but never ruled on:
+- **#26** flag-gated irreversible carve-out · **#27** defeasibility preamble *(flagged 2026-05-26)*
+- **#19–22** *(flagged 2026-05-19 — re-surface the exact items from the recommendations archive)*
+- **#11–13** *(older — re-surface from archive)*
+- **G-13 standalone β principle** — restate the managerial-layer awareness as an explicit β principle (substance already covered by #31 routing; this is the formal principle).
+Each is a `paths.decisionPolicy` / `paths.currentStage` touch → never auto-applied; the session re-surfaces each gap's exact text from `judgement-model-recommendations-archive.md`, gets an operator ruling, and applies or discards. Pairs with `/beta:mine` → operator-review → `/beta:integrate`.
+
 ---
 
 ## 🏛 Milestones

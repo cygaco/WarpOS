@@ -345,13 +345,15 @@ Per /beta:integrate protocol, persona gaps that would add a new principle are ne
 
 28. **G-13 — β unaware of the managerial agent layer.** β has no principle covering when product-strategy/sequencing routes to (or incorporates) the **Director of Product / Director of QA**, nor awareness of the 5-phase lifecycle model + `paths.currentStage`. This session, product judgment bypassed β entirely (P-038). Proposed principle: β (a) grounds product-stage reasoning in `paths.currentStage`, and (b) recognizes the Directors as the product-strategy authority — defers/incorporates rather than re-deriving. **Operator must rule** before promoting.
 
-### Decision Policy Gaps (flagged 2026-05-30 — requires user input)
+### Decision Policy Gaps — ✅ RESOLVED 2026-05-30 (operator-ruled)
 
-Never auto-applied — touches `paths.decisionPolicy` / `paths.currentStage`.
+All three applied to canon this session. (G-13 above is substantially addressed by #31.)
 
-29. **Strategic decisions can be launch-time / state-conditional.** A Class C call (MC beta freeze-vs-pull) was validly resolved as "decided at launch-time based on state," not pre-committed. The decision policy should recognize "defer to a state-conditional call at the decision point" as a legitimate Class C resolution, not force a premature binary. (target: `paths.decisionPolicy` Class C handling)
-30. **Engine-vs-product reliability tension.** At `pre-mvp`, engine reliability work that protects an *imminent dependent-product launch* (WarpOS engine ↔ Master Console) counts as core-loop work, not gold-plating; the lean-at-pre-mvp rubric needs this carve-out. (target: `paths.currentStage` priorities or `paths.decisionPolicy` scoring)
-31. **β-vs-Director routing rule.** No rule says when a question is β's (decision class / risk / escalation) vs the Director of Product's (product strategy / sequencing / lifecycle). This session, product calls silently bypassed β. (target: `paths.decisionPolicy` consultation routing)
+29. ✅ **Strategic decisions can be launch-time / state-conditional.** → APPLIED to `paths.decisionPolicy` § Class C ("State-conditional resolution"): deferring a Class C call to a named decision point with a named driving state is now a legitimate resolution (not a premature binary, not a punt).
+30. ✅ **Engine-vs-product reliability carve-out.** → APPLIED to `paths.currentStage` (Engine-vs-product reliability carve-out): at `pre-mvp`, engine reliability protecting an imminent dependent-product launch is core-loop work, overriding the default anti-gold-plating priority; β does not score it down. Operator also directed the torture-level reliability sprint (ROADMAP §0.18.1).
+31. ✅ **β-vs-Director routing rule.** → APPLIED to `paths.decisionPolicy` § Consultation routing — β vs the Directors: compose-don't-compete (Director recommends product substance → β classifies + gates; neither silently bypassed; β's gate wins the safety axis, Director wins the substance axis). Operator delegated the rule choice.
+
+> **G-13** (β unaware of the managerial agent layer, line above) is now substantially addressed by the #31 routing rule (β is gated into product calls and defers product-strategy substance to the Directors, grounding stage reasoning in `paths.currentStage`). A standalone β *principle* restating this is deferred to the DP-gap clearance session (ROADMAP).
 
 ### Validated anti-patterns (applied from /beta:integrate 2026-05-14)
 
@@ -532,3 +534,4 @@ If user approves any of these, add to the `## Principles` section with full WHAT
 | 2026-05-30 | A-019 (burying explanation behind AskUserQuestion) anti-pattern added | /beta:mine 2026-05-30 |
 | 2026-05-30 | Engine-sprint-close row @ 0.91; pre-mvp-lean-prioritization row @ 0.85 (advisory) | /beta:mine 2026-05-30 confidence adjustment |
 | 2026-05-30 | G-13 (β unaware of managerial agent layer) + decision-policy gaps #29-31 (state-conditional Class C / engine-vs-product carve-out / β-vs-Director routing) FLAGGED for operator review — not auto-applied | /beta:mine 2026-05-30 |
+| 2026-05-30 | DP-gaps #29/#30/#31 ✅ RESOLVED (operator-ruled): applied to decision-policy §Class C + §Consultation routing, current-stage carve-out. G-13 substantially addressed by #31. Older gaps (#26/#27, #19-22, #11-13) routed to a roadmapped DP-clearance session | operator turbo run 2026-05-30 |

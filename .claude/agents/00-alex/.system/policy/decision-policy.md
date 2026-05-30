@@ -59,6 +59,16 @@ Examples:
 - Data deletion and retention policy
 - Anything that could materially damage user trust if wrong
 
+**State-conditional resolution (operator-ruled 2026-05-30, DP-gap #29).** A legitimate
+Class C resolution is to **defer the call to the decision point and make it
+state-conditional** — "decided at launch-time based on the state then" — rather than
+pre-committing to a premature binary now. β returns this (with one recommended answer)
+when the right choice genuinely depends on state that does not exist yet (e.g. the MC
+freeze-vs-pull call: decided at launch-time on WarpOS's state then, not pre-committed).
+Requirement: name **the state that will drive it** and **the decision point** at which
+it resolves. This is a real resolution, not a punt — do not force an early binary just
+to "close" the question.
+
 ---
 
 ## Escalation red lines (Class C triggers)
@@ -141,6 +151,27 @@ When the classifier blocks an action and cites intent mismatch with the user's o
 4. **The shape echoes the autonomy table.** Push-to-remote and ≥$5 spend already "ask first" — that's an in-repo policy alignment with a harness-safety expectation. Treat classifier blocks as the same shape: confirm, don't override.
 
 Source: L-2026-05-14-classifier-not-bypassable-by-beta (validated this session — Beta returned Class A DECIDE on the env-flag edit; classifier blocked twice anyway citing "user only asked to look it up"; the unblock was a plain-text "do it" from the user).
+
+---
+
+## Consultation routing — β vs the Directors (operator-ruled 2026-05-30, DP-gap #31)
+
+Product-strategy questions were silently bypassing β. They are not β's *or* the Directors' alone — they **compose**. Route by axis, not by whoever is convenient:
+
+| The call is about… | Owner | Role |
+|---|---|---|
+| Decision **class** (A/B/C), risk, escalation red lines, the scoring rubric, autonomy-table calls, the final DECIDE / DIRECTIVE / ESCALATE verdict | **β** | the **gate** — always consulted when a call has any decision-class / risk / escalation / irreversibility dimension |
+| Product **strategy**, roadmap **sequencing**, lifecycle-stage reasoning, prioritization, build-vs-buy, focus / pivot, audience | **Director of Product** | the product-**substance** authority — consulted for "what to build and in what order" |
+| Test **focus**, product-priority-over-severity, robustness scope | **Director of QA** | the quality-**substance** authority |
+
+**The rule (compose, don't compete):**
+1. A call with a **product-strategy** dimension routes to the **Director(s) first** for the substantive recommendation — never silently decided by Alpha alone.
+2. A call with a **decision-class / risk / escalation** dimension routes through **β** for classification + the gate verdict — never silently bypassed.
+3. **Most strategic calls have both** → the Director **recommends the substance**, β **classifies + gates** it. They run in sequence (Director → β), not as rivals.
+4. **On conflict:** β's gate wins on the **safety/risk axis** (it can downgrade a Director recommendation that crosses a red line); the Director wins on the **product-substance axis** (β does not re-derive strategy). Surface to the operator only when the conflict crosses a **Class C** red line.
+5. **Litmus:** if you're about to make a product-sequencing/prioritization call without the Director, OR clear a risk/escalation call without β — stop; you've bypassed an owner.
+
+Source: DP-gap #31 (β-vs-Director routing) + P-038 (product judgment bypassed β this session); flagged /beta:mine 2026-05-30, operator delegated the rule choice ("I'll trust you to pick the right routing rule").
 
 ---
 

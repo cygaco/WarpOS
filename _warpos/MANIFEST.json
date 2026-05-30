@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-05-30T10:10:58.370Z",
+  "generatedAt": "2026-05-30T10:15:13.617Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.10.0",
   "migrations": [],
@@ -97,8 +97,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "e72d47597b0a06081b68f4da6c723aba5f3c62c567ea55f4e1dcbc4c88e9ba02",
-      "installedSha": "e72d47597b0a06081b68f4da6c723aba5f3c62c567ea55f4e1dcbc4c88e9ba02"
+      "sha256": "a14e9c6fe9ea82bc794e0cfab60cf4832db6d0c3881be68129908b07b456d401",
+      "installedSha": "a14e9c6fe9ea82bc794e0cfab60cf4832db6d0c3881be68129908b07b456d401"
     },
     "USER_GUIDE.md": {
       "owner": "framework",
@@ -14447,8 +14447,8 @@
       "managed": true,
       "source": ".claude/agents/00-alex/.system/policy/current-stage.md",
       "kind": "md",
-      "sha256": "f6fa21766be3c955e0cbd274559de0bda7e88f7573e028bb14c46b075629869d",
-      "installedSha": "f6fa21766be3c955e0cbd274559de0bda7e88f7573e028bb14c46b075629869d"
+      "sha256": "c2fca96b1c3acfa3fb1e46ec529d14e703b123cec1374240081ef60dc1465ccc",
+      "installedSha": "c2fca96b1c3acfa3fb1e46ec529d14e703b123cec1374240081ef60dc1465ccc"
     },
     ".claude/agents/00-alex/.system/policy/decision-policy.md": {
       "owner": "project",
@@ -14583,8 +14583,8 @@
       "managed": true,
       "source": ".claude/agents/00-alex/.system/beta/judgement-model.md",
       "kind": "md",
-      "sha256": "7d9e5eb064d56b7028f8b771facc7f9e89a0777c56e5c582eaeeda3ef8837bf8",
-      "installedSha": "7d9e5eb064d56b7028f8b771facc7f9e89a0777c56e5c582eaeeda3ef8837bf8"
+      "sha256": "0f4c15c642f5ca7b306602329f603fe4f1fd80053050ec870a0253f180374fb5",
+      "installedSha": "0f4c15c642f5ca7b306602329f603fe4f1fd80053050ec870a0253f180374fb5"
     },
     ".claude/agents/00-alex/.system/alpha/events.jsonl": {
       "owner": "runtime",
