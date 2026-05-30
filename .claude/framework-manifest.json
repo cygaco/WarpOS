@@ -4,7 +4,7 @@
   "generated_by": "scripts/generate-framework-manifest.js",
   "counts": {
     "agent": 62,
-    "skill": 165,
+    "skill": 166,
     "reference": 28,
     "maps_baseline": 23,
     "hook": 66,
@@ -55,7 +55,7 @@
     "module_scope": 1,
     "framework_doc": 2
   },
-  "total": 822,
+  "total": 823,
   "assets": {
     "agent": [
       {
@@ -2021,7 +2021,7 @@
         "src": ".claude/commands/scan/full.md",
         "dest": ".claude/commands/scan/full.md",
         "kind": "skill",
-        "sha256": "e5c42fc19b2b40cfb31676300418370cddff82968891ab51c555b8ec7956bf78",
+        "sha256": "ea56dabf2b546f0870a50798448efdef45871be1cd20c3026b6d2c0ee6be52af",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
@@ -2262,6 +2262,18 @@
         "dest": ".claude/commands/scan/warpos-path-resolution.md",
         "kind": "skill",
         "sha256": "630ff7cd7fad225a26390cbbba1a2246fdebc184f99b049749cf70fa47cc9f7f",
+        "owner": "framework",
+        "mergeStrategy": "three_way_markdown",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "skill.scan.warpos-ship-coverage.md",
+        "src": ".claude/commands/scan/warpos-ship-coverage.md",
+        "dest": ".claude/commands/scan/warpos-ship-coverage.md",
+        "kind": "skill",
+        "sha256": "7b200051d5f3e627db604fe68699e35b60b4056e3110a4ce462431c5e3411ad8",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
@@ -6605,7 +6617,7 @@
         "src": "scripts/check/roadmap-trace.js",
         "dest": "scripts/check/roadmap-trace.js",
         "kind": "check_runner_tool",
-        "sha256": "4cfce58ef6c9dfa094cfd2b945624c240bd5b8179523f5912c8579459c1a38ba",
+        "sha256": "42ad7777f354f0245bfd257f6865e3ebd2a465ada39e0e1bb11e8b09e8844a3b",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -9947,7 +9959,7 @@
         "src": "scripts/path-lint.js",
         "dest": "scripts/path-lint.js",
         "kind": "top_script",
-        "sha256": "978cb7e552033f551520e394d3c4ea7ac695b7f3497ad5fd20ee2e0ff00fbfa9",
+        "sha256": "978e0064347fa662c960213ca048da68be257ec2abdabb966eb7f4b9bc2ca214",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",

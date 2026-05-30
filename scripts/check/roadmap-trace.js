@@ -52,27 +52,30 @@ const roadmap = fs.readFileSync(roadmapPath, "utf8");
 // to the next same-or-higher-level heading. Narrative presence is checked
 // inside this region so it's distinct from a bare ledger-table row.
 function shippedRegion(md) {
+  // Collect EVERY region under a heading containing "shipped" — not just the
+  // first. (2026-05-30 fix: the old single-region version anchored on the first
+  // ".*shipped" heading, which is the 0.15.0 milestone's inline "SHIPPED <date>"
+  // at level ####, so it stopped before the canonical "## ✅ Shipped in SP-…"
+  // narrative sections lower in the doc → false "shipped_narrative=false" for
+  // sprints whose narratives DO exist there.) Heading lines are included so a
+  // section heading that names sprint IDs (e.g. "Shipped in SP-X/Y") counts.
   const lines = md.split(/\r?\n/);
-  let start = -1;
-  let level = 0;
+  const regions = [];
   for (let i = 0; i < lines.length; i++) {
     const m = /^(#{1,6})\s+.*shipped/i.exec(lines[i]);
-    if (m) {
-      start = i + 1;
-      level = m[1].length;
-      break;
+    if (!m) continue;
+    const level = m[1].length;
+    let end = lines.length;
+    for (let j = i + 1; j < lines.length; j++) {
+      const mm = /^(#{1,6})\s+/.exec(lines[j]);
+      if (mm && mm[1].length <= level) {
+        end = j;
+        break;
+      }
     }
+    regions.push(lines.slice(i, end).join("\n"));
   }
-  if (start === -1) return "";
-  let end = lines.length;
-  for (let i = start; i < lines.length; i++) {
-    const m = /^(#{1,6})\s+/.exec(lines[i]);
-    if (m && m[1].length <= level) {
-      end = i;
-      break;
-    }
-  }
-  return lines.slice(start, end).join("\n");
+  return regions.join("\n");
 }
 
 const shipped = shippedRegion(roadmap);

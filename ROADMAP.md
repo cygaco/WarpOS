@@ -604,6 +604,21 @@ Every sprint that has been planned, executed, released, or retrospected — one 
 
 ---
 
+## ✅ Shipped — pre-enforcer narrative backfill (2026-05-30)
+
+`scan:roadmap-trace` (the WG-16 enforcer) shipped after these sprints closed, and a 2026-05-30 full-system-scan also fixed its region-scoping bug (it had only read the first "shipped" heading). These 8 retrospected sprints carry ledger rows but never got a Shipped narrative; backfilled here from the Sprints ledger so the enforcer is honest going forward:
+
+- **SP-20260514-002** — Enforce sprint-routing policy (reviewers, gauntlets, dispatch) — routing intent honored per model-class; sprint-routing-guard soft-rollout.
+- **SP-20260518-001** — `/sprint:full` — autonomous sprint orchestrator chaining plan→design→execute→release-prep→retro under an autonomy preset.
+- **SP-20260518-007** — Sprint Goal Verification — regression corpus + acceptance-criteria linkage (`scan:ac-coverage`).
+- **SP-20260518-008** — Hook & Process Hygiene — `format.js` prettier-spawn fix + guard cleanups.
+- **SP-20260521-001** — DreamTeam portfolio onboarding — recommended install scope for the first sibling product.
+- **SP-20260525-018** — WarpOS installer completeness — fresh install is complete + sprint-capable.
+- **SP-20260525-019** — Install completeness — unify `install.ps1` + `warp-setup.js` path handling.
+- **SP-20260528-001** — Rename `check:`→`scan:` namespace + `/scan:full` unified system scan (this branch).
+
+---
+
 ## ✅ Shipped in SP-20260523-001/002/003 (2026-05-23)
 
 Three framework sprints closed via `/sprint:full` in adhoc + aggressive mode. End-to-end validation that the new status-lag helper works: all three sprints reached `retrospected` automatically with zero manual patching after Sprint 7 shipped.

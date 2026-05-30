@@ -274,7 +274,7 @@ const SKIP_SUBSTRINGS = [
   ".claude/paths.json",
   "scripts/path-lint.js",
   "scripts/hooks/path-guard.js", // holds the patterns by design
-  "/check/references.md", // rename catalog lives here
+  "/scan/references.md", // rename catalog lives here (was /check/references.md before the check:→scan: rename; 2026-05-30 fix — the rename missed this exempt → 8 false criticals)
   ".claude/dreams/",
   ".claude/agents/02-oneshot/.system/retros/", // historical retros
   ".claude/agents/.system/dispatch-backups/", // dispatch snapshots
