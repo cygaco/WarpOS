@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-05-30T05:15:08.661Z",
+  "generatedAt": "2026-05-30T05:36:52.429Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.10.0",
   "migrations": [],
@@ -12436,6 +12436,14 @@
       "sha256": "fa31f33edc22b2ed094d6c04a7133d0e69b79ec62f7de37d5ecc51be31893cdc",
       "installedSha": "fa31f33edc22b2ed094d6c04a7133d0e69b79ec62f7de37d5ecc51be31893cdc"
     },
+    ".claude/project/reference/product-robustness.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/project/reference/product-robustness.md",
+      "kind": "md",
+      "sha256": "537ab82270241687fdb1c2dfbf4d25e642a218ad89434e7efb5926821a33b7c6",
+      "installedSha": "537ab82270241687fdb1c2dfbf4d25e642a218ad89434e7efb5926821a33b7c6"
+    },
     ".claude/project/reference/reasoning-frameworks.md": {
       "owner": "framework",
       "managed": true,
@@ -14049,8 +14057,8 @@
       "managed": true,
       "source": ".claude/agents/03-managers/director-of-product.md",
       "kind": "md",
-      "sha256": "2b34efbf06c549a5a585209effc4129b68cd61c90ac693aa884830f878543ddb",
-      "installedSha": "2b34efbf06c549a5a585209effc4129b68cd61c90ac693aa884830f878543ddb"
+      "sha256": "a54464a4e50069fb0dc368872f97c741ac1bbfed3697ddd072b4885f55580ae8",
+      "installedSha": "a54464a4e50069fb0dc368872f97c741ac1bbfed3697ddd072b4885f55580ae8"
     },
     ".claude/agents/02-oneshot/visual-review/visual-review.md": {
       "owner": "framework",
