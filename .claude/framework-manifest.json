@@ -780,7 +780,7 @@
         "src": ".claude/agents/03-managers/director-of-product.md",
         "dest": ".claude/agents/03-managers/director-of-product.md",
         "kind": "agent",
-        "sha256": "08f1a976ed8202aa3406cd028eca2f165fa7325b6cdbbc47aa159b273ae3a8c2",
+        "sha256": "5b72303d18a3c4493d3e4bb8082fcbe114f6df92b04864c3aa46967d4566bff5",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
