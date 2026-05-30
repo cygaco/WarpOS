@@ -97,24 +97,9 @@ function sha256OfFile(file) {
   return h.digest("hex");
 }
 
-const WALK_SKIP_DIRS = new Set([
-  "node_modules",
-  ".git",
-  ".warpos",
-  ".warpos-backup",
-  ".vscode",
-  ".idea",
-  "runtime",
-  "worktrees",
-]);
-
-const WALK_SKIP_FILES = new Set([
-  ".env",
-  ".env.local",
-  "DUMP.md",
-  ".DS_Store",
-  "Thumbs.db",
-]);
+// Skip sets are shared with build.js via ./walk-skip so the validator and the
+// builder can never disagree about what is not-shipped (BC-02 drift class).
+const { WALK_SKIP_DIRS, WALK_SKIP_FILES } = require("./walk-skip");
 
 function* walk(rootAbs) {
   const stack = [rootAbs];

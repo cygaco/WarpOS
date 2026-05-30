@@ -4,7 +4,7 @@ description: Director-of-Product-driven roadmap prioritization — runs /roadmap
 
 # /roadmap:prioritize — Order the Roadmap (Director of Product)
 
-Turn a sprawling roadmap into a ranked **do-next** order. Runs `/roadmap:cleanup` first (so you prioritize a clean, current list), then hands the roadmap to the **Director of Product** agent — the persona carrying the must-follow product principles (Lean · Lifecycle-aware · Build-over-Buy · Audience-is-King · Focus · Pivot · Product-Priority) — to produce the ranking, and applies it to `ROADMAP.md` without losing content.
+Turn a sprawling roadmap into a ranked **do-next** order. Runs `/roadmap:cleanup` first (so you prioritize a clean, current list), then hands the roadmap to the **Director of Product** agent — the persona carrying the must-follow product principles defined in its spec (`.claude/agents/03-managers/director-of-product.md` — referenced by pointer, not re-enumerated here, so this skill never drifts as principles are added, reordered, or reassigned) — to produce the ranking, and applies it to `ROADMAP.md` without losing content.
 
 ## Input
 

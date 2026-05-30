@@ -518,25 +518,9 @@ function classify(rel, rules) {
 
 // ── Filesystem walk ──────────────────────────────────────────────────
 
-const WALK_SKIP_DIRS = new Set([
-  "node_modules",
-  ".git",
-  ".warpos",
-  ".warpos-backup",
-  "WarpOS-Update", // gitignored operator scratch (parallels .warpos); not framework
-  ".vscode",
-  ".idea",
-  "runtime",
-  "worktrees", // .claude/worktrees/ — agent scratch clones; not framework
-]);
-
-const WALK_SKIP_FILES = new Set([
-  ".env",
-  ".env.local",
-  "DUMP.md",
-  ".DS_Store",
-  "Thumbs.db",
-]);
+// Skip sets are shared with validate.js via ./walk-skip so the builder and the
+// validator can never disagree about what is not-shipped (BC-02 drift class).
+const { WALK_SKIP_DIRS, WALK_SKIP_FILES } = require("./walk-skip");
 
 function* walk(rootAbs) {
   const stack = [rootAbs];
