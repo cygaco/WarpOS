@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-05-30T05:36:52.429Z",
+  "generatedAt": "2026-05-30T05:52:24.734Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.10.0",
   "migrations": [],
@@ -12420,6 +12420,14 @@
       "sha256": "206755d6d30098bac18964f69ca85c785193d2678894d0e85b1f3fa792cd5de5",
       "installedSha": "206755d6d30098bac18964f69ca85c785193d2678894d0e85b1f3fa792cd5de5"
     },
+    ".claude/project/reference/playbook.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/project/reference/playbook.md",
+      "kind": "md",
+      "sha256": "2131e885b631476887fb7d6ddba8de2517ec1d9eb4b4e8c1b2e8516472dd9e83",
+      "installedSha": "2131e885b631476887fb7d6ddba8de2517ec1d9eb4b4e8c1b2e8516472dd9e83"
+    },
     ".claude/project/reference/private-to-public-history.md": {
       "owner": "framework",
       "managed": true,
@@ -13500,6 +13508,14 @@
       "sha256": "2689628d88e4950924f99cd86746bbd8f80cee55b2265ad98f03819552d5bd3d",
       "installedSha": "2689628d88e4950924f99cd86746bbd8f80cee55b2265ad98f03819552d5bd3d"
     },
+    ".claude/commands/playbook/add.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/commands/playbook/add.md",
+      "kind": "md",
+      "sha256": "5db3ee609fbd5e9f9438c01e2f93e14197641b7c3dd5fa470698c34d0a206679",
+      "installedSha": "5db3ee609fbd5e9f9438c01e2f93e14197641b7c3dd5fa470698c34d0a206679"
+    },
     ".claude/commands/permissions/authorized.md": {
       "owner": "framework",
       "managed": true,
@@ -14057,8 +14073,16 @@
       "managed": true,
       "source": ".claude/agents/03-managers/director-of-product.md",
       "kind": "md",
-      "sha256": "a54464a4e50069fb0dc368872f97c741ac1bbfed3697ddd072b4885f55580ae8",
-      "installedSha": "a54464a4e50069fb0dc368872f97c741ac1bbfed3697ddd072b4885f55580ae8"
+      "sha256": "1b480458ffd6e85f6b2f2e4bc02ddc0e5d1e61fb143c5bb04241f3d3a48aa730",
+      "installedSha": "1b480458ffd6e85f6b2f2e4bc02ddc0e5d1e61fb143c5bb04241f3d3a48aa730"
+    },
+    ".claude/agents/03-managers/director-of-qa.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/03-managers/director-of-qa.md",
+      "kind": "md",
+      "sha256": "2145bac30e2cc85f2d3207c7f5cd6074a1e57cfb8e27ff36a966ae01318e9581",
+      "installedSha": "2145bac30e2cc85f2d3207c7f5cd6074a1e57cfb8e27ff36a966ae01318e9581"
     },
     ".claude/agents/02-oneshot/visual-review/visual-review.md": {
       "owner": "framework",

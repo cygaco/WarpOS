@@ -3,9 +3,9 @@
   "version": "0.10.0",
   "generated_by": "scripts/generate-framework-manifest.js",
   "counts": {
-    "agent": 61,
-    "skill": 163,
-    "reference": 27,
+    "agent": 62,
+    "skill": 164,
+    "reference": 28,
     "maps_baseline": 23,
     "hook": 66,
     "hook_lib": 13,
@@ -52,7 +52,7 @@
     "installer_script": 1,
     "framework_doc": 2
   },
-  "total": 780,
+  "total": 783,
   "assets": {
     "agent": [
       {
@@ -780,7 +780,19 @@
         "src": ".claude/agents/03-managers/director-of-product.md",
         "dest": ".claude/agents/03-managers/director-of-product.md",
         "kind": "agent",
-        "sha256": "a54464a4e50069fb0dc368872f97c741ac1bbfed3697ddd072b4885f55580ae8",
+        "sha256": "1b480458ffd6e85f6b2f2e4bc02ddc0e5d1e61fb143c5bb04241f3d3a48aa730",
+        "owner": "framework",
+        "mergeStrategy": "three_way_markdown",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "agent.03-managers.director-of-qa.md",
+        "src": ".claude/agents/03-managers/director-of-qa.md",
+        "dest": ".claude/agents/03-managers/director-of-qa.md",
+        "kind": "agent",
+        "sha256": "2145bac30e2cc85f2d3207c7f5cd6074a1e57cfb8e27ff36a966ae01318e9581",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
@@ -1599,6 +1611,18 @@
         "dest": ".claude/commands/permissions/authorized.md",
         "kind": "skill",
         "sha256": "a3a440c4106e181b688bac1cd1fc2a57bb0172cdd85c085df5c2f3929b45d69c",
+        "owner": "framework",
+        "mergeStrategy": "three_way_markdown",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "skill.playbook.add.md",
+        "src": ".claude/commands/playbook/add.md",
+        "dest": ".claude/commands/playbook/add.md",
+        "kind": "skill",
+        "sha256": "5db3ee609fbd5e9f9438c01e2f93e14197641b7c3dd5fa470698c34d0a206679",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
@@ -2909,6 +2933,18 @@
         "dest": ".claude/project/reference/operational-loop.md",
         "kind": "reference",
         "sha256": "206755d6d30098bac18964f69ca85c785193d2678894d0e85b1f3fa792cd5de5",
+        "owner": "framework",
+        "mergeStrategy": "three_way_markdown",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "reference.playbook.md",
+        "src": ".claude/project/reference/playbook.md",
+        "dest": ".claude/project/reference/playbook.md",
+        "kind": "reference",
+        "sha256": "2131e885b631476887fb7d6ddba8de2517ec1d9eb4b4e8c1b2e8516472dd9e83",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
