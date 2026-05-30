@@ -103,6 +103,7 @@ function parseArgs(argv) {
     betaVerdict: null,
     betaMessage: null,
     pendingPhase: null,
+    costGate: null,
   };
   for (let i = 2; i < argv.length; i++) {
     const a = argv[i];
@@ -118,6 +119,7 @@ function parseArgs(argv) {
     else if (a === "--beta-verdict") out.betaVerdict = argv[++i];
     else if (a === "--beta-message") out.betaMessage = argv[++i];
     else if (a === "--pending-phase") out.pendingPhase = argv[++i];
+    else if (a === "--cost-gate") out.costGate = argv[++i];
     else if (!a.startsWith("--") && out.request === null) out.request = a;
   }
   return out;
@@ -139,6 +141,8 @@ Flags:
   --resume                      resume an in-progress run; requires --sprint
   --allow-main                  override branch-protection (requires aggressive)
   --cost-acknowledged           raise cost threshold 2x for this run only
+  --cost-gate <on|off>          override the cost-estimate halt for this run
+                                (persistent toggle: scripts/sprint/cost-gate.js)
   --beta-verdict <v>            DECIDE | DIRECTIVE | ESCALATE — verdict from Beta consultation
   --beta-message "<text>"       message accompanying the Beta verdict
   --pending-phase <boundary>    phase boundary the verdict applies to (e.g. before_plan)
@@ -266,12 +270,13 @@ function checkBranchProtection(args, preset, sprintId) {
 
 // ── Cost-estimate counter ─────────────────────────────────────────────
 
-function makeCostCounter(thresholdUsd, costAcknowledged) {
+function makeCostCounter(thresholdUsd, costAcknowledged, gateEnabled = true) {
   const effective = costAcknowledged ? thresholdUsd * 2 : thresholdUsd;
   return {
     cumulative: 0,
     threshold: effective,
     bumpedByAck: costAcknowledged,
+    gateEnabled,
     add(phase, ticketCount = 1) {
       const per = PHASE_TYPICAL_SPEND_USD[phase] || 0;
       const inc = phase === "execute" ? per * ticketCount : per;
@@ -279,6 +284,10 @@ function makeCostCounter(thresholdUsd, costAcknowledged) {
       return inc;
     },
     exceeded() {
+      // Gate OFF (toggled via scripts/sprint/cost-gate.js or --cost-gate off):
+      // the heuristic never halts. Hard ceilings + the real >$5 operator rule
+      // are enforced elsewhere and are unaffected by this toggle.
+      if (!this.gateEnabled) return false;
       return this.cumulative > this.threshold;
     },
   };
@@ -1526,10 +1535,25 @@ function main() {
     return 2;
   }
 
+  // Cost gate: per-run --cost-gate on|off overrides the persistent toggle
+  // (scripts/sprint/cost-gate.js -> .claude/runtime/sprint-cost-gate.json).
+  const costGateEnabled =
+    args.costGate === "off"
+      ? false
+      : args.costGate === "on"
+        ? true
+        : require("./cost-gate").isCostGateEnabled();
   const cost = makeCostCounter(
     preset.cost_estimate_threshold_usd,
     args.costAcknowledged,
+    costGateEnabled,
   );
+  if (!costGateEnabled) {
+    process.stdout.write(
+      "[sprint:full] cost-gate OFF — heuristic cost halts disabled for this run " +
+        "(hard ceilings + the real >$5 operator rule are unaffected).\n",
+    );
+  }
   const state = {
     sprintId,
     sprintTitle: null,

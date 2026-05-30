@@ -542,6 +542,7 @@ Every sprint that has been planned, executed, released, or retrospected — one 
 
 | Sprint | Title | Status | Started | Closed | Release |
 |---|---|---|---|---|---|
+| [SP-20260530-001](.claude/project/sprint/sprints/SP-20260530-001/) | S0.2 Artifact contracts + decision-record schema (message_brief spine) | planning | 2026-05-30T22:49:57.662Z |  |  |
 | [SP-20260528-004](.claude/project/sprint/sprints/SP-20260528-004/) | roadmap:ideas + roadmap:next — predictive roadmap skills (consume Director of Product) | planning | 2026-05-29T08:37:40.659Z |  |  |
 | [SP-20260528-003](.claude/project/sprint/sprints/SP-20260528-003/) | Director of Product agent — programmable principles | planning | 2026-05-29T07:59:13.865Z |  |  |
 | [SP-20260528-002](.claude/project/sprint/sprints/SP-20260528-002/) | 0.17.0 Test-Suite System foundation — regression seed runnable + enforced | planning | 2026-05-29T07:59:13.793Z |  |  |

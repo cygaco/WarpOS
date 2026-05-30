@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-05-30T22:42:52.115Z",
+  "generatedAt": "2026-05-30T23:14:47.380Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.11.1",
   "migrations": [],
@@ -97,8 +97,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "182943926ede376d45b434777c13656557c50deb4afee65bb68fcbd7faa0d4f5",
-      "installedSha": "182943926ede376d45b434777c13656557c50deb4afee65bb68fcbd7faa0d4f5"
+      "sha256": "4c78ba87b22f230a385052ad7a3b7a2add709d8648394031c84ae01fe955fc20",
+      "installedSha": "4c78ba87b22f230a385052ad7a3b7a2add709d8648394031c84ae01fe955fc20"
     },
     "USER_GUIDE.md": {
       "owner": "framework",
@@ -2801,6 +2801,13 @@
       "sha256": "98ef66eadb686027885bcae349e5c2adb8b44571f77eedf6e29b1d10a0c18b94",
       "installedSha": "98ef66eadb686027885bcae349e5c2adb8b44571f77eedf6e29b1d10a0c18b94"
     },
+    "scripts/sprint/cost-gate.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/sprint/cost-gate.js",
+      "sha256": "0e61bb4fc3b8f75c856ec9cd843e8fb0762af11e534aa2b1b78c696e65bdab66",
+      "installedSha": "0e61bb4fc3b8f75c856ec9cd843e8fb0762af11e534aa2b1b78c696e65bdab66"
+    },
     "scripts/sprint/design.js": {
       "owner": "framework",
       "managed": true,
@@ -2833,8 +2840,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/sprint/full.js",
-      "sha256": "bd4a12588ccd29fd096b98eebdbe89ef592abd39627ba0c5eeea21dd60146249",
-      "installedSha": "bd4a12588ccd29fd096b98eebdbe89ef592abd39627ba0c5eeea21dd60146249"
+      "sha256": "52b19ebed5ceaa83e7bb8fedb903f92aee64dc0fe5249cc7c8fee9152be4e553",
+      "installedSha": "52b19ebed5ceaa83e7bb8fedb903f92aee64dc0fe5249cc7c8fee9152be4e553"
     },
     "scripts/sprint/ids.js": {
       "owner": "framework",
@@ -7493,7 +7500,27 @@
       "owner": "runtime",
       "managed": false
     },
+    ".claude/project/sprint/tickets/T-20260530-256.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/tickets/T-20260530-257.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/tickets/T-20260530-258.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
     ".claude/project/sprint/sprints/_no-active-sprint/reasoning-auto-approval.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/sprints/SP-20260530-001/current.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/sprints/SP-20260530-001/progress.yaml": {
       "owner": "runtime",
       "managed": false
     },
@@ -7962,6 +7989,46 @@
       "managed": false
     },
     ".claude/project/sprint/sprints/SP-20260512-001/progress.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/SP-20260530-001/acceptance-criteria.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/SP-20260530-001/copy.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/SP-20260530-001/granular-stories.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/SP-20260530-001/high-level-stories.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/SP-20260530-001/inputs.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/SP-20260530-001/prd.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/SP-20260530-001/qa-plan.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/SP-20260530-001/redteam-plan.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/SP-20260530-001/release-plan.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/SP-20260530-001/trace.md": {
       "owner": "runtime",
       "managed": false
     },
@@ -10669,6 +10736,14 @@
       "owner": "runtime",
       "managed": false
     },
+    ".claude/project/sprint/plan-contracts/PC-20260530-0058.report.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/plan-contracts/PC-20260530-0058.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
     ".claude/project/sprint/issues/I-20260513-001.yaml": {
       "owner": "runtime",
       "managed": false
@@ -10854,6 +10929,30 @@
       "managed": false
     },
     ".claude/project/sprint/full-reports/.gitkeep": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/full-reports/SP-20260530-001/beta-boundaries.json": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/full-reports/SP-20260530-001/halt-2026-05-30T22-50-15-957Z.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/full-reports/SP-20260530-001/halt-2026-05-30T22-52-34-762Z.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/full-reports/SP-20260530-001/halt-2026-05-30T22-53-36-120Z.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/full-reports/SP-20260530-001/halt-2026-05-30T22-56-45-740Z.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/full-reports/SP-20260530-001/halt-2026-05-30T22-57-04-608Z.md": {
       "owner": "runtime",
       "managed": false
     },
@@ -12361,6 +12460,34 @@
       "owner": "runtime",
       "managed": false
     },
+    ".claude/project/sprint/checkpoints/SP-20260530-001-0001.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/checkpoints/SP-20260530-001-0002.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/checkpoints/SP-20260530-001-0003.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/checkpoints/SP-20260530-001-0004.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/checkpoints/SP-20260530-001-0005.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/checkpoints/SP-20260530-001-0006.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/checkpoints/SP-20260530-001-0007.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
     ".claude/project/sprint/approvals/AP-20260512-001.yaml": {
       "owner": "runtime",
       "managed": false
@@ -12992,6 +13119,14 @@
       "kind": "md",
       "sha256": "93f8bfa35493f9ddb50cc8350e89fcc22d7be472a3240023ef2c0dab0af4ce8b",
       "installedSha": "93f8bfa35493f9ddb50cc8350e89fcc22d7be472a3240023ef2c0dab0af4ce8b"
+    },
+    ".claude/commands/sprint/cost-gate.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/commands/sprint/cost-gate.md",
+      "kind": "md",
+      "sha256": "ea83164ee5748ff8c2f27102b0a1f54d3f3bc051339176ff3b5e8fe7e7d47b07",
+      "installedSha": "ea83164ee5748ff8c2f27102b0a1f54d3f3bc051339176ff3b5e8fe7e7d47b07"
     },
     ".claude/commands/sprint/design.md": {
       "owner": "framework",

@@ -4,7 +4,7 @@
   "generated_by": "scripts/generate-framework-manifest.js",
   "counts": {
     "agent": 62,
-    "skill": 167,
+    "skill": 168,
     "reference": 28,
     "maps_baseline": 23,
     "hook": 66,
@@ -26,7 +26,7 @@
     "preflight_tool": 1,
     "requirements_engine": 12,
     "paths_engine": 4,
-    "sprint_engine": 32,
+    "sprint_engine": 33,
     "dispatch_engine": 15,
     "check_runner_tool": 4,
     "docs_tool": 1,
@@ -55,7 +55,7 @@
     "module_scope": 1,
     "framework_doc": 2
   },
-  "total": 836,
+  "total": 838,
   "assets": {
     "agent": [
       {
@@ -2526,6 +2526,18 @@
         "dest": ".claude/commands/sleep/quick.md",
         "kind": "skill",
         "sha256": "685e103f8aee8d41cee68169ed56a984f0b982b5fd223de2b87cda9f8b629f3f",
+        "owner": "framework",
+        "mergeStrategy": "three_way_markdown",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "skill.sprint.cost-gate.md",
+        "src": ".claude/commands/sprint/cost-gate.md",
+        "dest": ".claude/commands/sprint/cost-gate.md",
+        "kind": "skill",
+        "sha256": "ea83164ee5748ff8c2f27102b0a1f54d3f3bc051339176ff3b5e8fe7e7d47b07",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
@@ -6129,6 +6141,18 @@
         "replaces": null
       },
       {
+        "id": "sprint_engine.cost-gate.js",
+        "src": "scripts/sprint/cost-gate.js",
+        "dest": "scripts/sprint/cost-gate.js",
+        "kind": "sprint_engine",
+        "sha256": "0e61bb4fc3b8f75c856ec9cd843e8fb0762af11e534aa2b1b78c696e65bdab66",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
         "id": "sprint_engine.design.js",
         "src": "scripts/sprint/design.js",
         "dest": "scripts/sprint/design.js",
@@ -6181,7 +6205,7 @@
         "src": "scripts/sprint/full.js",
         "dest": "scripts/sprint/full.js",
         "kind": "sprint_engine",
-        "sha256": "bd4a12588ccd29fd096b98eebdbe89ef592abd39627ba0c5eeea21dd60146249",
+        "sha256": "52b19ebed5ceaa83e7bb8fedb903f92aee64dc0fe5249cc7c8fee9152be4e553",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
