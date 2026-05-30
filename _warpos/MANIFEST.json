@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-05-30T08:07:40.274Z",
+  "generatedAt": "2026-05-30T09:16:40.827Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.10.0",
   "migrations": [],
@@ -53,6 +53,14 @@
       "source": null,
       "sha256": "5ac3a88db7ac361d03d630ecd48c20772c2e3bd8cbabc2746b69f05cad22368c",
       "installedSha": "5ac3a88db7ac361d03d630ecd48c20772c2e3bd8cbabc2746b69f05cad22368c"
+    },
+    "INTERESTING.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": null,
+      "_note": "Root document — source path same as destination (canonical-side).",
+      "sha256": "1bc89cc9024e53768d69ec1dedf9f41f4eaa64b6e0cb2789232b00290256e180",
+      "installedSha": "1bc89cc9024e53768d69ec1dedf9f41f4eaa64b6e0cb2789232b00290256e180"
     },
     "issues.md": {
       "owner": "runtime",
@@ -2601,8 +2609,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/warpos/manifest/build.js",
-      "sha256": "468e2a35de2770a4b1e03f2a677c6f464f6c6d909155f5a7830045d04a338569",
-      "installedSha": "468e2a35de2770a4b1e03f2a677c6f464f6c6d909155f5a7830045d04a338569"
+      "sha256": "731426031337fea21e4295e43508cd10395767c6f6fa493f4579010f81135ec6",
+      "installedSha": "731426031337fea21e4295e43508cd10395767c6f6fa493f4579010f81135ec6"
     },
     "scripts/warpos/manifest/test-bootstrap.js": {
       "owner": "framework",
