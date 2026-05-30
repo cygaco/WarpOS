@@ -999,7 +999,7 @@ try {
   const snapshot = {
     $schema: "warpos/framework-installed/v2",
     manifest_version: shipManifest.version,
-    manifest_schema: shipManifest.$schema || "warpos/framework-manifest/v1",
+    manifest_schema: shipManifest.$schema || "warpos/framework-manifest/v2",
     installedVersion: shipManifest.version,
     installedCommit,
     installedAt: new Date().toISOString(),

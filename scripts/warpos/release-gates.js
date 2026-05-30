@@ -110,6 +110,27 @@ const GATES = [
     };
   }),
 
+  // 2c. Version coherence (2026-05-30) — catches the drift NO gate caught before:
+  // product version lagging across manifests (the 0.10.0→0.11.0 lag, because
+  // version-quorum only checks 4 sources, not manifest.warpos.version or install.ps1)
+  // AND schema-label divergence (paths v4-label-on-v5-content; stale framework-manifest
+  // v1 fallback). RED blocks the release — the release engine now keeps these current.
+  gate("version_coherence", () => {
+    const r = runScript("scripts/checks/version-coherence.js", []);
+    if (r.status === 0)
+      return {
+        ok: true,
+        severity: "green",
+        message: "Version + schema labels all agree.",
+      };
+    return {
+      ok: false,
+      severity: "red",
+      message: "Version coherence FAILED — version/schema-label drift detected.",
+      details: (r.stdout || r.stderr || "").split("\n").filter((l) => /RED \[/.test(l)).slice(0, 10),
+    };
+  }),
+
   // 3. Reference Integrity
   // 0.1.2 honesty fix: this gate cannot run automatically (it needs a running
   // Claude Code agent to invoke /scan:references). Pre-0.1.2 it returned

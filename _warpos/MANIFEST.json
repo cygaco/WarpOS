@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-05-30T15:02:50.117Z",
+  "generatedAt": "2026-05-30T15:20:09.548Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.11.0",
   "migrations": [],
@@ -51,8 +51,8 @@
       "owner": "framework",
       "managed": true,
       "source": null,
-      "sha256": "18813140adebc75d073c726da5a1fd28b1ab3b69779d5749d6e2b91f274f06b7",
-      "installedSha": "18813140adebc75d073c726da5a1fd28b1ab3b69779d5749d6e2b91f274f06b7"
+      "sha256": "34f4adcc3a91e6c921541acdfd784b458addfb4c15819f346a8c177134b90eef",
+      "installedSha": "34f4adcc3a91e6c921541acdfd784b458addfb4c15819f346a8c177134b90eef"
     },
     "INTERESTING.md": {
       "owner": "framework",
@@ -2280,8 +2280,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/warp-setup.js",
-      "sha256": "1a81e0ebb6cff99e44be5cf4055b12d829d8008fb77ff6019b74bd51ecea6e0b",
-      "installedSha": "1a81e0ebb6cff99e44be5cf4055b12d829d8008fb77ff6019b74bd51ecea6e0b"
+      "sha256": "7386b8749928be730f86b6b9cf4f4e6c376e65a9325ba88e0fcca0076e936d23",
+      "installedSha": "7386b8749928be730f86b6b9cf4f4e6c376e65a9325ba88e0fcca0076e936d23"
     },
     "scripts/warpos-sync-run09.js": {
       "owner": "framework",
@@ -2427,15 +2427,15 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/warpos/release-canonical.js",
-      "sha256": "cba8b951433d1973f410af463225fcc4b72bc9ad231e86fa39c1d8cecdef322c",
-      "installedSha": "cba8b951433d1973f410af463225fcc4b72bc9ad231e86fa39c1d8cecdef322c"
+      "sha256": "11c4282166b972ef121244c5b5dabdfa60a85a920f82c65366e4ff182a1a8a01",
+      "installedSha": "11c4282166b972ef121244c5b5dabdfa60a85a920f82c65366e4ff182a1a8a01"
     },
     "scripts/warpos/release-gates.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/warpos/release-gates.js",
-      "sha256": "bbe6c22f28f8d595f91bdd052dc32c09ddc4197b2eb7b799ecb9d870cf0ce42b",
-      "installedSha": "bbe6c22f28f8d595f91bdd052dc32c09ddc4197b2eb7b799ecb9d870cf0ce42b"
+      "sha256": "367a3f8e33f6733ddadb5107b5156c1f7eb9a09eb6c7cb641dcaba814e69c941",
+      "installedSha": "367a3f8e33f6733ddadb5107b5156c1f7eb9a09eb6c7cb641dcaba814e69c941"
     },
     "scripts/warpos/replay-bench.js": {
       "owner": "framework",
@@ -2469,8 +2469,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/warpos/snapshot-installed.js",
-      "sha256": "551835deb69842b6b18ba9db8d1cff100391442c2e6deb5592d877ba0e1d042a",
-      "installedSha": "551835deb69842b6b18ba9db8d1cff100391442c2e6deb5592d877ba0e1d042a"
+      "sha256": "9a5958e91275c89c756cbf60be73519d3798cba80611a89ab9515ef4e7afed71",
+      "installedSha": "9a5958e91275c89c756cbf60be73519d3798cba80611a89ab9515ef4e7afed71"
     },
     "scripts/warpos/test-cross-version-replay.js": {
       "owner": "framework",
@@ -4201,6 +4201,13 @@
       "sha256": "5ab2b6f20dbd33aadd3264d4f916d1eab49ee4336ba6faaa7b5a4c4dcf446126",
       "installedSha": "5ab2b6f20dbd33aadd3264d4f916d1eab49ee4336ba6faaa7b5a4c4dcf446126"
     },
+    "scripts/checks/version-coherence.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/version-coherence.js",
+      "sha256": "8999a8fae1db6b408e2568e4735b43d5bb8a9ec79fd82d35411a4dd91c577b8d",
+      "installedSha": "8999a8fae1db6b408e2568e4735b43d5bb8a9ec79fd82d35411a4dd91c577b8d"
+    },
     "scripts/checks/warpos-applied-migrations.js": {
       "owner": "framework",
       "managed": true,
@@ -4611,8 +4618,8 @@
       "owner": "framework",
       "managed": true,
       "source": "schemas/paths.schema.json",
-      "sha256": "6e6d7870c0263ae0337f0cc71ed9f087751f60bdd7f6a2f1467f1b49f85a5552",
-      "installedSha": "6e6d7870c0263ae0337f0cc71ed9f087751f60bdd7f6a2f1467f1b49f85a5552"
+      "sha256": "46bb3f9aa4570f47b1b72fc132e630378dfb2193473aba8ced0d735f4e5e804e",
+      "installedSha": "46bb3f9aa4570f47b1b72fc132e630378dfb2193473aba8ced0d735f4e5e804e"
     },
     "schemas/provider-failure-modes.schema.json": {
       "owner": "framework",
@@ -4870,8 +4877,8 @@
       "owner": "framework",
       "managed": true,
       "source": "framework/paths.registry.json",
-      "sha256": "79c9e99866f2b34829e4e606d8c361ab5e8011d07304c023bf4eb665c338a34b",
-      "installedSha": "79c9e99866f2b34829e4e606d8c361ab5e8011d07304c023bf4eb665c338a34b"
+      "sha256": "faa7eb65a1d866127e4f5cec9582e179d7b92f5b3d0a8bbf725f4e866227f09e",
+      "installedSha": "faa7eb65a1d866127e4f5cec9582e179d7b92f5b3d0a8bbf725f4e866227f09e"
     },
     "framework/templates/sprint/README.md": {
       "owner": "framework",
@@ -6310,6 +6317,10 @@
       "managed": false
     },
     ".claude/.session-checkpoint.json": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/.session-start-commit": {
       "owner": "runtime",
       "managed": false
     },
@@ -13201,8 +13212,8 @@
       "managed": true,
       "source": ".claude/commands/scan/full.md",
       "kind": "md",
-      "sha256": "ea56dabf2b546f0870a50798448efdef45871be1cd20c3026b6d2c0ee6be52af",
-      "installedSha": "ea56dabf2b546f0870a50798448efdef45871be1cd20c3026b6d2c0ee6be52af"
+      "sha256": "9a1096762151260bd43ef13c0188872fc3bd50b449ddd2951accfe7c0dadbed1",
+      "installedSha": "9a1096762151260bd43ef13c0188872fc3bd50b449ddd2951accfe7c0dadbed1"
     },
     ".claude/commands/scan/install.md": {
       "owner": "framework",
@@ -13299,6 +13310,14 @@
       "kind": "md",
       "sha256": "642d8c2f7a382560000a68780f140f46276fa268c6e062ea4851f65e71205f42",
       "installedSha": "642d8c2f7a382560000a68780f140f46276fa268c6e062ea4851f65e71205f42"
+    },
+    ".claude/commands/scan/version-coherence.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/commands/scan/version-coherence.md",
+      "kind": "md",
+      "sha256": "82509d21fda096855fa0583f7713f21874432c6407df9779efc8362ebc75ab36",
+      "installedSha": "82509d21fda096855fa0583f7713f21874432c6407df9779efc8362ebc75ab36"
     },
     ".claude/commands/scan/warpos-applied-migrations.md": {
       "owner": "framework",

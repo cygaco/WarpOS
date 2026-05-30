@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "warpos/paths/v4",
+  "$id": "warpos/paths/v5",
   "title": "WarpOS paths.json",
   "type": "object",
   "required": [
@@ -11,11 +11,11 @@
   "properties": {
     "$schema": {
       "type": "string",
-      "const": "warpos/paths/v4"
+      "const": "warpos/paths/v5"
     },
     "version": {
       "type": "integer",
-      "const": 4
+      "const": 5
     },
     "events": {
       "type": "string",

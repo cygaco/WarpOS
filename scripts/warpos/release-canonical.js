@@ -274,6 +274,33 @@ function stageBumpVersion(opts, canonical, current, next) {
     );
   }
   writeJson(file, after);
+  // 2026-05-30: the bump must ALSO touch the version-bearing fields that neither
+  // version-quorum nor the manifest regen covers — else they lag (the 0.10.0→0.11.0
+  // bug: .claude/manifest.json#warpos.version + install.ps1's WARPOS_VERSION fallback
+  // stayed behind). version-coherence (release-gate) now blocks on this, so the engine
+  // must keep them current. Fail-open — never blocks the release.
+  try {
+    const mfFile = path.join(canonical, ".claude", "manifest.json");
+    if (fs.existsSync(mfFile)) {
+      const mf = readJson(mfFile);
+      if (mf.warpos && mf.warpos.version && mf.warpos.version !== next) {
+        mf.warpos.version = next;
+        writeJson(mfFile, mf);
+      }
+    }
+  } catch (e) {
+    process.stderr.write(`bump: .claude/manifest.json#warpos.version skip (${e.message})\n`);
+  }
+  try {
+    const psFile = path.join(canonical, "install.ps1");
+    if (fs.existsSync(psFile)) {
+      const ps = fs.readFileSync(psFile, "utf8");
+      const re = /(\$Script:WARPOS_VERSION\s*=\s*")[^"]+(")/;
+      if (re.test(ps)) fs.writeFileSync(psFile, ps.replace(re, `$1${next}$2`));
+    }
+  } catch (e) {
+    process.stderr.write(`bump: install.ps1 WARPOS_VERSION skip (${e.message})\n`);
+  }
   // SP-20260519-001 R-2: append version row to canonical RELEASES.md ledger.
   // Fail-open: never blocks the release. Loads ledger.js from canonical so
   // its writers stay self-hosted there.

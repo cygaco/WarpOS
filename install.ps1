@@ -2,7 +2,7 @@
 #
 # Phase 4 prereq (2026-04-30). Designed from scratch - no prior install.ps1
 # was preserved. Mirrors the contract documented in:
-#   - paths.json $schema "warpos/paths/v4"
+#   - paths.json $schema "warpos/paths/v5"
 #   - framework-manifest.json $schema "warpos/framework-manifest/v2"
 #   - version.json $schema "warpos/version/v1"
 #   - sprint workflow $schema "warpos/sprint/*/v1"  (Sprint v0.1, 0.4.0)
@@ -164,7 +164,7 @@ $installRecord = [ordered]@{
     installedAt         = (Get-Date -Format "o")
     source              = $Source
     target              = $Target
-    pathRegistryVersion = "v4"
+    pathRegistryVersion = ($VersionFile.pathRegistrySchema -split '/')[-1]
     manifestSchema      = "warpos/framework-manifest/v2"
     assets              = $InstalledAssets
     generated           = @(

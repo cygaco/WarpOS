@@ -1,6 +1,6 @@
 {
   "$schema": "warpos/paths-registry/v1",
-  "version": 4,
+  "version": 5,
   "_doc": "Path identity registry. Source of truth for project-relative paths. Consumed by scripts/paths/build.js, which derives: (1) .claude/paths.json (flat key→string used by hooks at runtime), (2) scripts/hooks/lib/paths.generated.js (fallback when paths.json missing), (3) scripts/path-lint.rules.generated.json (regex arrays for path-lint critical+warn), (4) schemas/paths.schema.json (validator), (5) requirements/03-architecture/PATH_KEYS.md (human reference). To rename a path: edit here, run scripts/paths/build.js, commit all generated artifacts together.",
   "_field_meaning": {
     "path": "Project-relative path from repo root, forward slashes",

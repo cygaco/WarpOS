@@ -1,6 +1,6 @@
 {
-  "$schema": "warpos/paths/v4",
-  "version": 4,
+  "$schema": "warpos/paths/v5",
+  "version": 5,
   "events": ".claude/project/events",
   "decisions": ".claude/project/decisions",
   "memory": ".claude/project/memory",

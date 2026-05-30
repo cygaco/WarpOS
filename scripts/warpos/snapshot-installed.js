@@ -79,7 +79,20 @@ function buildSnapshot() {
     installedAt: new Date().toISOString(),
     source: "self",
     target: ".",
-    pathRegistryVersion: "v4",
+    // Derive from the actual paths.json being snapshotted (build.js stamps it
+    // from framework/paths.registry.json#version) — never hardcode, or it drifts
+    // from the schema like the v4-while-content-is-v5 bug (fixed 2026-05-30).
+    pathRegistryVersion: (() => {
+      try {
+        return (
+          (readJson(path.join(ROOT, ".claude", "paths.json"))["$schema"] || "")
+            .split("/")
+            .pop() || "v5"
+        );
+      } catch {
+        return "v5";
+      }
+    })(),
     manifestSchema: manifest.$schema || "warpos/framework-manifest/v2",
     assets: installedAssets,
     generated: (manifest.generated_files || []).map((f) => f.dest),
