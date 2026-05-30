@@ -1,6 +1,6 @@
 # Skills Map
 
-Generated: 2026-05-29T06:52:32.513Z
+Generated: 2026-05-30T15:42:10.614Z
 
 | id | namespace | name | description |
 |---|---|---|---|
@@ -72,6 +72,7 @@ Generated: 2026-05-29T06:52:32.513Z
 | skill:paths:explain | paths | explain | Explain one paths registry key — show its resolved on-disk path, owner, kind, deprecation status, and human-readable docs so callers understand what it points to. |
 | skill:paths:rename | paths | rename | Guided flow for renaming a paths registry key. |
 | skill:permissions:authorized | permissions | authorized | Operator authorization — durably allow a blocked action by adding a scoped permissions.allow rule from a growing catalog of cases, then recompiles settings so it takes effect this session. |
+| skill:playbook:add | playbook | add | Append a play to the Playbook (.claude/project/reference/playbook.md) — a named, example-anchored operating principle. Picks the right section, formats to match, appends without disturbing other plays. |
 | skill:portfolio:list | portfolio | list | List all registered portfolio products — slug, path, WarpOS version, last commit, dirty count, current sprint. |
 | skill:portfolio:new | portfolio | new | Scaffold a new product repo (sibling to WarpOS) with the framework installed and committed, then register it — local-only by default. Open it in its own session and create the GitHub remote yourself, or pass --github to also create+push a private repo. |
 | skill:portfolio:open | portfolio | open | Open a registered portfolio product — print its path and a cd hint, or spawn a new terminal window with --spawn. |
@@ -92,6 +93,9 @@ Generated: 2026-05-29T06:52:32.513Z
 | skill:roadmap:add | roadmap | add | Append a new entry to ROADMAP.md — picks section, formats consistently, preserves existing content |
 | skill:roadmap:cleanup | roadmap | cleanup | Audit ROADMAP.md — detect completed items, stale entries, duplicates, hidden urgencies; propose a cleanup plan |
 | skill:roadmap:create | roadmap | create | Bootstrap a product ROADMAP.md from the inputs a project actually has — prefers _requirements/00-canonical/* + a Director-of-PM lens when present, falls back to the competitor clone brief + PROJECT.md. Evidence-bound, MVP-core-loop first. |
+| skill:roadmap:ideas | roadmap | ideas | Predict candidate roadmap entries across four evidence lenses (3 each = 12 ideas) — whole-roadmap, last-3-shipped, last-3-active, vision/canonical. Read-only; proposes only, pairs with /roadmap:add. Consults the Director of Product for a real product lens. |
+| skill:roadmap:next | roadmap | next | The 1-idea alternative to /roadmap:ideas — the single highest-leverage next roadmap entry (the Director of Products top pick) with a one-paragraph rationale. For just tell me the one thing. |
+| skill:roadmap:prioritize | roadmap | prioritize | Director-of-Product-driven roadmap prioritization — runs /roadmap:cleanup first, then consults the Director of Product to rank the open roadmap into a clear do-next order, and applies the ordering content-preservingly. |
 | skill:scan:ac-coverage | scan | ac-coverage | Read-only audit of acceptance-criteria.md verified_by:- linkage across active sprints. |
 | skill:scan:adhoc-team-hygiene | scan | adhoc-team-hygiene | Read-only probe for adhoc-team accretion — flags teams whose members carry a -N de-dup suffix or a stale leadSessionId (the W-21 cross-session duplicate-teammate bug). |
 | skill:scan:architecture | scan | architecture | Architecture integrity — do the layers connect? agent system, cross-layer seams, documentation health |
@@ -108,11 +112,13 @@ Generated: 2026-05-29T06:52:32.513Z
 | skill:scan:patterns | scan | patterns | Cross-run intelligence and automation proposals — diagnose recurring patterns or propose prevention |
 | skill:scan:privacy | scan | privacy | Pre-publish scan for personal data — credentials, emails, homedir paths, runtime files tracked by git. |
 | skill:scan:references | scan | references | Cross-file reference integrity — broken links, orphans, stale SPEC_GRAPH edges |
+| skill:scan:regressions | scan | regressions | Run the regression-seed suite — the 26 recurring bug classes from the 0.17.0 spec, made runnable. Reports per-class pass/fail/gap + catch-rate. Role-aware (consumer-only checks are n/a in canonical). |
 | skill:scan:requirements | scan | requirements | Specification consistency, coverage, and drift — static audit, change-driven propagation check, or pending-drift review |
 | skill:scan:roadmap-trace | scan | roadmap-trace | Assert every done/retrospected/released sprint has BOTH a Sprints-table ledger row AND a Shipped narrative entry in ROADMAP.md — closes the WG-16 narrative enforcement-debt left by /sprint:full Step 8b. |
 | skill:scan:sprint-beta-honesty | scan | sprint-beta-honesty | Audits Beta consultation honesty across post-cutoff /sprint:full runs (missing consults, placeholder verdicts, ESCALATE-without-halt) |
 | skill:scan:system | scan | system | System inventory — enumerate every active WarpOS system, diff against manifest, report drift and gaps |
 | skill:scan:timeline | scan | timeline | Reconstruct a build timeline from transaction, event, and provider logs. |
+| skill:scan:version-coherence | scan | version-coherence | Verify version + schema-label coherence — product version agrees across ALL manifests (incl. the ones version-quorum misses) and every schema family carries a single consistent version label. Catches the 0.10.0→0.11.0 lag + paths-v4-on-v5-content drift classes. |
 | skill:scan:warpos-applied-migrations | scan | warpos-applied-migrations | Detect already-applied WarpOS migration scripts left on disk in consumer projects |
 | skill:scan:warpos-capsule-resolvable | scan | warpos-capsule-resolvable | Verify the capsule for /warp:update --to <v> is resolvable from REPO_ROOT, sibling clones, manifest.warpos.source, or framework-installed.json#source. |
 | skill:scan:warpos-install-baseline | scan | warpos-install-baseline | Verify a WarpOS install baseline exists (.claude/framework-installed.json present, installedVersion ≠ 0.0.0) before /warp:update may proceed. |
@@ -121,6 +127,7 @@ Generated: 2026-05-29T06:52:32.513Z
 | skill:scan:warpos-migration-coverage | scan | warpos-migration-coverage | Verify every breaking change in a WarpOS release ships with a corresponding migration script under framework/migrations — stub implementation pending refinement. |
 | skill:scan:warpos-migration-presence | scan | warpos-migration-presence | Verify every migration listed in capsule release.json#migrations[] exists in the source tree before /warp:update may apply. |
 | skill:scan:warpos-path-resolution | scan | warpos-path-resolution | Verify every paths.json key points to an existing path (skip generated/ephemeral keys) |
+| skill:scan:warpos-ship-coverage | scan | warpos-ship-coverage | Verify every framework-owned path under the consumer-essential roots is actually shipped (enumerated in framework-manifest.json) — catches framework code that ships to nobody (the B1/E3 downstream-broken class). |
 | skill:scan:warpos-staleness | scan | warpos-staleness | Detect drift between the installed WarpOS version on disk and the latest canonical version, flagging installs that have been stale for more than seven days. |
 | skill:scan:warpos-structure-parity | scan | warpos-structure-parity | Verify installed framework has the structural skeleton dirs canonical declares |
 | skill:scan:warpos-tracked-transients | scan | warpos-tracked-transients | Catch transient state accidentally committed (.warpos/, qa-*.png, runtime/qa-*/, etc.) |
@@ -152,6 +159,7 @@ Generated: 2026-05-29T06:52:32.513Z
 | skill:ui:review | ui | review | Design system compliance audit — read-only check of components against the projects design-system docs |
 | skill:warp:check | warp | check | Compare your WarpOS installation against the latest version — find stale, new, and missing items |
 | skill:warp:deprecate | warp | deprecate | Create a guarded WarpOS deprecation proposal for an agent, skill, hook, path, requirement, pattern, or generated file. |
+| skill:warp:diff | warp | diff | Diff canonical WarpOS against an installed product — version/staleness, framework-file drift (stale vs locally-modified), coverage gaps, and skills/agents/hooks delta. Read-only; reports on the product, never edits it. |
 | skill:warp:doctor | warp | doctor | Unified WarpOS diagnostic — runs every health check in one place. Like /warp:health but full-coverage. |
 | skill:warp:flag | warp | flag | Flag a WarpOS framework/tooling gap from a downstream product — append a structured, canonical-consumable entry to this repos WARPOS.md so /warp:reconcile can verify and fix it upstream. |
 | skill:warp:health | warp | health | Verify WarpOS installation — checks every system, reports green/yellow/red with plain-English fixes |

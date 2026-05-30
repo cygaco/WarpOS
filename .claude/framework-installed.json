@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "0.11.1",
-  "installedCommit": "d6d1c5ec421e57231fa3d266af5c4944c60f56b2",
-  "installedAt": "2026-05-30T15:27:02.290Z",
+  "installedCommit": "1460aa5c67ea73744b9d3f781fbce330d3f5d768",
+  "installedAt": "2026-05-30T15:44:49.175Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -2624,8 +2624,8 @@
       "dest": ".claude/project/maps/hooks.jsonl",
       "owner": "generated",
       "mergeStrategy": "regenerate",
-      "installedHash": "c8199600603105f4f4cf79e0cce90369872fb684c57c3ee76aa7a6a567652a94",
-      "currentHashAtInstall": "c8199600603105f4f4cf79e0cce90369872fb684c57c3ee76aa7a6a567652a94",
+      "installedHash": "6fa91a937913e136016c75ca7548a03e3fe06b7e2e2dd71341f29441b338359e",
+      "currentHashAtInstall": "6fa91a937913e136016c75ca7548a03e3fe06b7e2e2dd71341f29441b338359e",
       "introducedIn": "0.0.0"
     },
     {
@@ -2634,8 +2634,8 @@
       "dest": ".claude/project/maps/hooks.md",
       "owner": "generated",
       "mergeStrategy": "regenerate",
-      "installedHash": "db4553abdf9fb56414205a90ed25ba9c68c412d3dbf79bc7966667298f427547",
-      "currentHashAtInstall": "db4553abdf9fb56414205a90ed25ba9c68c412d3dbf79bc7966667298f427547",
+      "installedHash": "e05df549cba1b49ead183c9ed11dc4789ef3833e2a5e10c1dadd70dd2a6bd1cd",
+      "currentHashAtInstall": "e05df549cba1b49ead183c9ed11dc4789ef3833e2a5e10c1dadd70dd2a6bd1cd",
       "introducedIn": "0.0.0"
     },
     {
@@ -2724,8 +2724,8 @@
       "dest": ".claude/project/maps/memory.jsonl",
       "owner": "generated",
       "mergeStrategy": "regenerate",
-      "installedHash": "c29f97f111657c933871b20037238e9aecee880914659d49ea6642738fcd5af2",
-      "currentHashAtInstall": "c29f97f111657c933871b20037238e9aecee880914659d49ea6642738fcd5af2",
+      "installedHash": "81047f6f8fd48f391239395d855a8057d43fbb51543ca352c0793f97824cf2b6",
+      "currentHashAtInstall": "81047f6f8fd48f391239395d855a8057d43fbb51543ca352c0793f97824cf2b6",
       "introducedIn": "0.0.0"
     },
     {
@@ -2734,8 +2734,8 @@
       "dest": ".claude/project/maps/memory.md",
       "owner": "generated",
       "mergeStrategy": "regenerate",
-      "installedHash": "dec2cac0886691c2b058dc9dffff6305932d0de4eb26d3fbe5ed88a99db4aa7e",
-      "currentHashAtInstall": "dec2cac0886691c2b058dc9dffff6305932d0de4eb26d3fbe5ed88a99db4aa7e",
+      "installedHash": "334508e41395b2674346290e29b1640f59a9a64b66e12dfcf795b8ae3946c930",
+      "currentHashAtInstall": "334508e41395b2674346290e29b1640f59a9a64b66e12dfcf795b8ae3946c930",
       "introducedIn": "0.0.0"
     },
     {
@@ -2744,8 +2744,8 @@
       "dest": ".claude/project/maps/skills.jsonl",
       "owner": "generated",
       "mergeStrategy": "regenerate",
-      "installedHash": "93da545fd1380a9e0bebca1467cd2d7fd6cf341c668c5b27bfda83ba5e2d6268",
-      "currentHashAtInstall": "93da545fd1380a9e0bebca1467cd2d7fd6cf341c668c5b27bfda83ba5e2d6268",
+      "installedHash": "9b97492c4ac20405493d0ba8f1ab7f80a288dc4abfdc7927ee24e3afefd31e9b",
+      "currentHashAtInstall": "9b97492c4ac20405493d0ba8f1ab7f80a288dc4abfdc7927ee24e3afefd31e9b",
       "introducedIn": "0.0.0"
     },
     {
@@ -2754,8 +2754,8 @@
       "dest": ".claude/project/maps/skills.md",
       "owner": "generated",
       "mergeStrategy": "regenerate",
-      "installedHash": "574d1d3a2c1316e766ea0ac4e3983ea1c1b4184098861e53dcf58b9b17317681",
-      "currentHashAtInstall": "574d1d3a2c1316e766ea0ac4e3983ea1c1b4184098861e53dcf58b9b17317681",
+      "installedHash": "27b63309545627633558fca09120887d746a669642948bceb9de6c269f820fc3",
+      "currentHashAtInstall": "27b63309545627633558fca09120887d746a669642948bceb9de6c269f820fc3",
       "introducedIn": "0.0.0"
     },
     {
@@ -2774,8 +2774,8 @@
       "dest": ".claude/project/maps/systems-inventory.jsonl",
       "owner": "generated",
       "mergeStrategy": "regenerate",
-      "installedHash": "957b6192beac1ca1cbbf299dad31d5252048556cd04c243d4c85d50326febf6f",
-      "currentHashAtInstall": "957b6192beac1ca1cbbf299dad31d5252048556cd04c243d4c85d50326febf6f",
+      "installedHash": "64b972a152c51b4cc8d67d836bfd3221f93fa78a7dc37cda08593145949d1b6e",
+      "currentHashAtInstall": "64b972a152c51b4cc8d67d836bfd3221f93fa78a7dc37cda08593145949d1b6e",
       "introducedIn": "0.0.0"
     },
     {
@@ -2784,8 +2784,8 @@
       "dest": ".claude/project/maps/systems-inventory.md",
       "owner": "generated",
       "mergeStrategy": "regenerate",
-      "installedHash": "cb39043ae5835be79d1bc6b4119c1ab72282f4709d7518523dd27b29a9b882f3",
-      "currentHashAtInstall": "cb39043ae5835be79d1bc6b4119c1ab72282f4709d7518523dd27b29a9b882f3",
+      "installedHash": "657bd1d1aba9ffe089554edf51b0e6d42e4db84e4d73ba1e84e011210bee7af4",
+      "currentHashAtInstall": "657bd1d1aba9ffe089554edf51b0e6d42e4db84e4d73ba1e84e011210bee7af4",
       "introducedIn": "0.0.0"
     },
     {
@@ -2804,8 +2804,8 @@
       "dest": ".claude/project/maps/tools.md",
       "owner": "generated",
       "mergeStrategy": "regenerate",
-      "installedHash": "aa495921fbd49a9e76e7a73656caa65805ff5b0d51436faf676d5c7114bc0549",
-      "currentHashAtInstall": "aa495921fbd49a9e76e7a73656caa65805ff5b0d51436faf676d5c7114bc0549",
+      "installedHash": "15f41ac9ad3c4e26addb26600871181b34dc32fb20607b87b4ffdf8e16312532",
+      "currentHashAtInstall": "15f41ac9ad3c4e26addb26600871181b34dc32fb20607b87b4ffdf8e16312532",
       "introducedIn": "0.0.0"
     },
     {
@@ -6684,8 +6684,8 @@
       "dest": "framework/releases/0.11.1/changelog.md",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "a860359e20c243e5de3aea11fd436106e0a8e5900ad00d71d1360de5d75e87d7",
-      "currentHashAtInstall": "a860359e20c243e5de3aea11fd436106e0a8e5900ad00d71d1360de5d75e87d7",
+      "installedHash": "c1b356efa40922509adbeefdd3de622372a712046486cabd2203435ddea4d58a",
+      "currentHashAtInstall": "c1b356efa40922509adbeefdd3de622372a712046486cabd2203435ddea4d58a",
       "introducedIn": "0.0.0"
     },
     {
@@ -6694,8 +6694,8 @@
       "dest": "framework/releases/0.11.1/checksums.json",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "aa5b2a92bfa44d593daa44021bddca4d4f65dfdfd8e132a411349eed55797c90",
-      "currentHashAtInstall": "aa5b2a92bfa44d593daa44021bddca4d4f65dfdfd8e132a411349eed55797c90",
+      "installedHash": "d190cdd743bda9d874bc65f102eefd6d7d09fea548f291af966bc6e4affee908",
+      "currentHashAtInstall": "d190cdd743bda9d874bc65f102eefd6d7d09fea548f291af966bc6e4affee908",
       "introducedIn": "0.0.0"
     },
     {
@@ -6704,8 +6704,8 @@
       "dest": "framework/releases/0.11.1/framework-manifest.json",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "27a5f24af1079ca9d115c3af2b4144c60e4847c7b3f596d82d9f8544e8379f55",
-      "currentHashAtInstall": "27a5f24af1079ca9d115c3af2b4144c60e4847c7b3f596d82d9f8544e8379f55",
+      "installedHash": "ccd26e00e19a941d29865ca2ee2fc24b0a8c4ec3cec0519dcc482d0df1ee8619",
+      "currentHashAtInstall": "ccd26e00e19a941d29865ca2ee2fc24b0a8c4ec3cec0519dcc482d0df1ee8619",
       "introducedIn": "0.0.0"
     },
     {
@@ -6724,8 +6724,8 @@
       "dest": "framework/releases/0.11.1/upgrade-notes.md",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "84875465bf6dd90552543166b89c29757428101b486dfdd65ac24f9363b7fcb4",
-      "currentHashAtInstall": "84875465bf6dd90552543166b89c29757428101b486dfdd65ac24f9363b7fcb4",
+      "installedHash": "885c69216749db9d074161c933c12ccaca8a6901ff8e9ce56e0f54999fb31b4e",
+      "currentHashAtInstall": "885c69216749db9d074161c933c12ccaca8a6901ff8e9ce56e0f54999fb31b4e",
       "introducedIn": "0.0.0"
     },
     {

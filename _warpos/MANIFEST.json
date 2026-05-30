@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-05-30T15:27:02.408Z",
+  "generatedAt": "2026-05-30T15:44:49.306Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.11.1",
   "migrations": [],
@@ -5941,22 +5941,22 @@
       "owner": "framework",
       "managed": true,
       "source": "framework/releases/0.11.1/changelog.md",
-      "sha256": "a860359e20c243e5de3aea11fd436106e0a8e5900ad00d71d1360de5d75e87d7",
-      "installedSha": "a860359e20c243e5de3aea11fd436106e0a8e5900ad00d71d1360de5d75e87d7"
+      "sha256": "c1b356efa40922509adbeefdd3de622372a712046486cabd2203435ddea4d58a",
+      "installedSha": "c1b356efa40922509adbeefdd3de622372a712046486cabd2203435ddea4d58a"
     },
     "framework/releases/0.11.1/checksums.json": {
       "owner": "framework",
       "managed": true,
       "source": "framework/releases/0.11.1/checksums.json",
-      "sha256": "aa5b2a92bfa44d593daa44021bddca4d4f65dfdfd8e132a411349eed55797c90",
-      "installedSha": "aa5b2a92bfa44d593daa44021bddca4d4f65dfdfd8e132a411349eed55797c90"
+      "sha256": "d190cdd743bda9d874bc65f102eefd6d7d09fea548f291af966bc6e4affee908",
+      "installedSha": "d190cdd743bda9d874bc65f102eefd6d7d09fea548f291af966bc6e4affee908"
     },
     "framework/releases/0.11.1/framework-manifest.json": {
       "owner": "framework",
       "managed": true,
       "source": "framework/releases/0.11.1/framework-manifest.json",
-      "sha256": "27a5f24af1079ca9d115c3af2b4144c60e4847c7b3f596d82d9f8544e8379f55",
-      "installedSha": "27a5f24af1079ca9d115c3af2b4144c60e4847c7b3f596d82d9f8544e8379f55"
+      "sha256": "ccd26e00e19a941d29865ca2ee2fc24b0a8c4ec3cec0519dcc482d0df1ee8619",
+      "installedSha": "ccd26e00e19a941d29865ca2ee2fc24b0a8c4ec3cec0519dcc482d0df1ee8619"
     },
     "framework/releases/0.11.1/release.json": {
       "owner": "framework",
@@ -5969,8 +5969,8 @@
       "owner": "framework",
       "managed": true,
       "source": "framework/releases/0.11.1/upgrade-notes.md",
-      "sha256": "84875465bf6dd90552543166b89c29757428101b486dfdd65ac24f9363b7fcb4",
-      "installedSha": "84875465bf6dd90552543166b89c29757428101b486dfdd65ac24f9363b7fcb4"
+      "sha256": "885c69216749db9d074161c933c12ccaca8a6901ff8e9ce56e0f54999fb31b4e",
+      "installedSha": "885c69216749db9d074161c933c12ccaca8a6901ff8e9ce56e0f54999fb31b4e"
     },
     "framework/releases/0.11.0/changelog.md": {
       "owner": "framework",
@@ -6352,10 +6352,6 @@
       "managed": false
     },
     ".claude/.session-checkpoint.json": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/.session-start-commit": {
       "owner": "runtime",
       "managed": false
     },
