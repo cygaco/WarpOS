@@ -135,7 +135,7 @@
         "src": ".claude/agents/00-alex/.system/beta/judgement-model-recommendations.md",
         "dest": ".claude/agents/00-alex/.system/beta/judgement-model-recommendations.md",
         "kind": "agent",
-        "sha256": "86ca37b26968806e97039e80f035d7d1319bce09618ca8502c0206b0f3ed4e2e",
+        "sha256": "39b56822241b1a5eef5faf13dc2e7db0bb492b4051d2014e09e3b03aa74b5315",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
