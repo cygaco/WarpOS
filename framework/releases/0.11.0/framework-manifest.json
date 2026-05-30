@@ -45,7 +45,7 @@
     "bootstrap_tool": 30,
     "canon_tool": 5,
     "schema": 22,
-    "release_capsule": 120,
+    "release_capsule": 118,
     "paths_registry": 1,
     "template": 61,
     "hooks_registry": 1,
@@ -55,7 +55,7 @@
     "module_scope": 1,
     "framework_doc": 2
   },
-  "total": 828,
+  "total": 826,
   "assets": {
     "agent": [
       {
@@ -8068,30 +8068,6 @@
         "dest": "framework/releases/0.11.0/changelog.md",
         "kind": "release_capsule",
         "sha256": "88a818bfb263af5063fca2b49dca98c6706b294f45b41ebdee0bcd33c47822f5",
-        "owner": "framework",
-        "mergeStrategy": "replace_if_unmodified",
-        "introducedIn": "0.0.0",
-        "removedIn": null,
-        "replaces": null
-      },
-      {
-        "id": "release_capsule.0.11.0.checksums.json",
-        "src": "framework/releases/0.11.0/checksums.json",
-        "dest": "framework/releases/0.11.0/checksums.json",
-        "kind": "release_capsule",
-        "sha256": "cb27d0a834c58fde8c91652edea6a3cd32f2ac701498e78932d961a2dbdafefd",
-        "owner": "framework",
-        "mergeStrategy": "replace_if_unmodified",
-        "introducedIn": "0.0.0",
-        "removedIn": null,
-        "replaces": null
-      },
-      {
-        "id": "release_capsule.0.11.0.framework-manifest.json",
-        "src": "framework/releases/0.11.0/framework-manifest.json",
-        "dest": "framework/releases/0.11.0/framework-manifest.json",
-        "kind": "release_capsule",
-        "sha256": "d8bf87ddcd49d5af37f41ca803e6aa32270b9ebb0bad7077d551339a706cf1ef",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
