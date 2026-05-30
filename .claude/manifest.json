@@ -83,7 +83,7 @@
     "compliance": "openai",
     "learner": "openai",
     "qa": "openai",
-    "redteam": "gemini"
+    "redteam": "openai"
   },
   "buildCommands": {},
   "fileOwnership": { "foundation": [] }
