@@ -7,7 +7,7 @@
   "minUpgradeableFrom": "0.1.2",
   "channel": "main",
   "frameworkManifestSchema": "warpos/framework-manifest/v2",
-  "pathRegistrySchema": "warpos/paths/v4",
+  "pathRegistrySchema": "warpos/paths/v5",
   "hooksRegistrySchema": "warpos/hooks-registry/v1",
   "decisionPolicySchema": "warpos/decision-policy/v1",
   "sprintWorkflowSchema": "warpos/sprint/*/v1",
