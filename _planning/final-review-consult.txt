@@ -1,0 +1,40 @@
+You are a principal AI-systems architect doing a FINAL review of a plan before it executes. You already reviewed an EARLIER draft of this WarpOS system-update architecture; you recommended: build artifact-contracts + a routing-enforcer + the component-scaffold BEFORE expanding agents; make /etc an authoring+eval harness (not a chain-of-thought warehouse); FE/BE split may need foundation/integration roles; segment-level + source-attributed + confidence-scored audience schema (no PII); and run ONE pilot end-to-end before scaling. We took that feedback. This is the FINAL plan.
+
+FIRST, read these files in the workspace (you have read access):
+- _planning/FINAL-PLAN.md  (the plan — read fully)
+- _planning/ORG.md  (org structure)
+- _planning/MODES-RECONCILE.md  (how the org maps onto solo/adhoc/oneshot modes)
+- _planning/ingest/SYNTHESIS.md  (the Mark Builds Brands growth-engine corpus + WarpOS mapping)
+- _planning/consult-gpt55-summary.md  (your earlier review, for continuity)
+If file reads fail, use the CONDENSED PLAN below.
+
+== CONDENSED PLAN ==
+Reframe: WarpOS (autonomous engineering team) -> autonomous PRODUCT STUDIO. Adds Design, Marketing/Growth, Audience-Research functions + an org + generalized modes. Convergence: the operator's original "our sites are vibe-coded; clarity is king" design complaint and the marketing creator Mark Builds Brands' "clarity > cleverness, message-first" are ONE discipline: research -> message -> creative -> iterate (of which converting design is the output). Unit of work shifts feature -> launch.
+
+Org (3 PEER Directors; convention: Director = domain apex, Lead = sub-owner, specialist = doer):
+- Director of Product Management: Product Lead (-> Product Designer, app UI/UX), QA Lead (product-driven; directs the QA scanner), Research/Insight Lead (deep audience layer).
+- Director of Marketing: Growth Lead (media-buyer; EQ scoring; SCALE/TEST/SKIP), Copy Lead (Agora/E5 "argument not copy" voice; owns the "Chief" coherence review), Web/Conversion Designer (landing pages that convert).
+- Director of Engineering: Frontend Builder, Backend Builder (+Foundation/Integration if needed), code-QC gauntlet (Reviewer/Compliance/Red-Team/Fixer).
+- β = cross-domain referee + risk + final ship gate (not a domain owner). Shared manager-principles base (clarity is king + de-duplicated director principles). Design consistency held by the component library / design system (no standalone Design Lead). QA Lead lives UNDER Product (product-driven QA).
+
+Modes: generalize "build modes" -> "work modes". Solo unchanged. Adhoc = org's live home (β gates; the domain Director/Lead judges LIVE; γ dispatches the domain's doers through that domain's gauntlet). Oneshot = autonomous full-pipeline launch (the pilot). KEY: directors are live-consulted in adhoc but ENCODED AS CONTRACTS + ENFORCED GAUNTLET CHECKS in oneshot (no α/β there) -> in autonomous mode a manager only exists as an enforcer. Work: generalize γ/δ to domain-aware dispatch; per-domain gauntlets; REPARTITION agents by domain (today 01-adhoc/ + 02-oneshot/ duplicate each role); extend role registry/team-guard.
+
+Growth engine reuses existing WarpOS primitives: research:deep (3-engine parallel research), karpathy:run (the iterate-on-a-metric loop), cross-provider dispatch (OpenAI-research + Claude-write — which is exactly Mark's two-model split), the content render path (copy->HTML->PNG), and Higgsfield embedded via its MCP/CLI for image/video. Parallel subagents = the "give me 20 variations" replacement for his manual Claude-Cowork flow.
+
+Sequencing (PROVE not position; ENFORCER-first):
+- Wave 0 Chassis (parallel): S0.1 manager base + org map + routing ENFORCER (hook + scan + failing tests); S0.2 artifact contracts (audience_dossier, message_brief, offer_brief, design_brief, ad/advertorial_spec, build_spec); S0.3 component-library scaffold wiring into portfolio:new + bootstrap:spinup + builder; S0.4 /etc authoring+eval harness; S0.5 Higgsfield embed.
+- Wave 1 Modes generalization: S1.1 work-modes chassis (domain-aware γ/δ + per-domain gauntlets + repartition + registry); S1.2 per-mode director participation (live in adhoc / enforcers in oneshot).
+- Wave 2 Domain agents (parallel): S2.1 Product (Dir PM, Product Lead, Product Designer, QA Lead, Research/Insight Lead + audience mining); S2.2 Marketing (Dir Mktg, Growth/Copy Leads, Web designer + growth: skill-pack); S2.3 Engineering (Dir Eng; split builder -> frontend-builder + backend-builder).
+- Wave 3 Pilot: S3.1 ONE pilot product, full loop research->message->design->build->creative->iterate -> one converting artifact; wire into bootstrap:lastmile + spinup + portfolio; feed pilot defects back into contracts before scaling.
+- Deferred (post-pilot): W-Platform = warpos external CLI + first-party WarpOS MCP server (Master Console as platform); breadth/position expansion.
+
+Execution happens in a NEW session driven from a /session:dump handoff (this session only produces the plan + handoff).
+
+== GIVE ME (final review — specific, decisive, ranked) ==
+1. Go/no-go on the sequencing. Is Wave 0->1->2->3 right? Any sprint mis-ordered, missing a hard dependency, or wrongly parallelized? Should anything in Wave 0 split or merge?
+2. Did we correctly absorb your earlier feedback, or under-apply any of it?
+3. The org+modes reconciliation (directors-as-enforcers-in-oneshot; repartition-agents-by-domain; per-domain gauntlets) — sound? Failure modes?
+4. Biggest landmines for a NEW session executing this blind from a handoff doc. What must the handoff make impossible to get wrong?
+5. Top 5 concrete changes to make BEFORE execution, ranked.
+6. One thing we're over-building, one thing we're under-building.
+Prefer concrete edits over praise.
