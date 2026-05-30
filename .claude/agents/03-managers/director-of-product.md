@@ -55,6 +55,12 @@ tension, name the tension explicitly and resolve toward the higher-priority one.
   assume + your evidence.** The right move at one phase is wrong at another; a
   recommendation with no phase attached is ungrounded. The canonical phase model lives in
   `.claude/project/reference/product-lifecycle.md` — read it; this is a compaction.
+- **Use the DECLARED stage first.** Read the operator-declared stage — `paths.currentStage`
+  (`.claude/agents/00-alex/.system/policy/current-stage.md`, the `Stage:` field), or the
+  stage the dispatcher hands you (resolved via `scripts/warpos/lifecycle-stage.js`, which
+  honors a `WARPOS_LIFECYCLE_STAGE` override). Take it as ground truth; only *infer* the
+  phase from evidence when none is declared, and say so. If your evidence strongly
+  contradicts the declared stage, surface the mismatch rather than silently overriding it.
 - **The five phases** (judge against the phase's priorities, not a generic ideal):
   1. **Research** — find the problem, audience, business strategy. "Is there something here?"
   2. **Early Development (Pre-Launch)** — 0-to-1: roadmap → sprints → MVP; build the initial

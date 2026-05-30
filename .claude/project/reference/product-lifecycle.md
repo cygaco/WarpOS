@@ -33,6 +33,13 @@ A **proven monetization system**. Some companies treat it as a **PMF qualifier**
 ## Pivot
 Hitting PMF often requires **pivoting** — sometimes **multiple times**. A pivot resets the product (and possibly the phase) but not the institutional memory; the lifecycle is not strictly monotonic. Lifecycle-stage judgment must treat "we may need to pivot" as a live option in Phases 3–4, not a failure.
 
+## Declaring the current stage
+A product's current phase is **declared**, not guessed. Stage tokens map to the phases:
+`research` · `pre-mvp` (= Early Development / Pre-Launch) · `launch` · `finding-pmf` · `pmf`.
+- **Source of truth:** `paths.currentStage` (`.claude/agents/00-alex/.system/policy/current-stage.md`) — the `**Stage:**` field. Edit + commit on a real transition.
+- **Quick override:** the `WARPOS_LIFECYCLE_STAGE` env var (session / CI / `.claude/settings.json#env`).
+- **Resolve anywhere:** `node scripts/warpos/lifecycle-stage.js` (precedence: env → file → `unknown`). Subagents can't read env, so the orchestrator resolves and passes the stage to the Directors on dispatch.
+
 ## How to use this
 - **Director of Product (Principle #2):** situate every recommendation in the product's current phase; state the assumed phase + evidence; judge against *that phase's* priorities/metrics; let phase set the intensity of Principle #1 (Lean). Pre-MVP/Finding-PMF demand maximum leanness; the calculated-risk dial shifts toward durability only at/after PMF.
 - **Roadmap prioritization:** grade items by *what the current phase needs* — Phase 3/4 reward instrumentation, data, and fast iteration over feature breadth or hardening.

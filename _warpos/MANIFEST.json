@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-05-30T06:45:04.330Z",
+  "generatedAt": "2026-05-30T06:50:53.736Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.10.0",
   "migrations": [],
@@ -2344,6 +2344,13 @@
       "source": "scripts/warpos/lf-normalize-target.js",
       "sha256": "c79b4a07a65920fae672ec91e9fab19f0d107d87074021f6cbbfbe190685b851",
       "installedSha": "c79b4a07a65920fae672ec91e9fab19f0d107d87074021f6cbbfbe190685b851"
+    },
+    "scripts/warpos/lifecycle-stage.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/warpos/lifecycle-stage.js",
+      "sha256": "23c35614cefae5cb5a115f070868814b4c39bd8c84ebe2ab69b41e45b3457b3a",
+      "installedSha": "23c35614cefae5cb5a115f070868814b4c39bd8c84ebe2ab69b41e45b3457b3a"
     },
     "scripts/warpos/list-decisions.js": {
       "owner": "framework",
@@ -12448,8 +12455,8 @@
       "managed": true,
       "source": ".claude/project/reference/product-lifecycle.md",
       "kind": "md",
-      "sha256": "fa31f33edc22b2ed094d6c04a7133d0e69b79ec62f7de37d5ecc51be31893cdc",
-      "installedSha": "fa31f33edc22b2ed094d6c04a7133d0e69b79ec62f7de37d5ecc51be31893cdc"
+      "sha256": "588d49e7fd2383f99da74d1a78abe023ca390479a5a2d2b9f24bf895e8e47a4b",
+      "installedSha": "588d49e7fd2383f99da74d1a78abe023ca390479a5a2d2b9f24bf895e8e47a4b"
     },
     ".claude/project/reference/product-robustness.md": {
       "owner": "framework",
@@ -14088,16 +14095,16 @@
       "managed": true,
       "source": ".claude/agents/03-managers/director-of-product.md",
       "kind": "md",
-      "sha256": "d657983db6a6ffbdcb08f62d7d9015e2b51831e766489db902c9c773da70713b",
-      "installedSha": "d657983db6a6ffbdcb08f62d7d9015e2b51831e766489db902c9c773da70713b"
+      "sha256": "164805ba7c53fa57597477dc5699020b5e061863a34ea6b2c66a767c8809c359",
+      "installedSha": "164805ba7c53fa57597477dc5699020b5e061863a34ea6b2c66a767c8809c359"
     },
     ".claude/agents/03-managers/director-of-qa.md": {
       "owner": "framework",
       "managed": true,
       "source": ".claude/agents/03-managers/director-of-qa.md",
       "kind": "md",
-      "sha256": "2145bac30e2cc85f2d3207c7f5cd6074a1e57cfb8e27ff36a966ae01318e9581",
-      "installedSha": "2145bac30e2cc85f2d3207c7f5cd6074a1e57cfb8e27ff36a966ae01318e9581"
+      "sha256": "f103f8e54637896774151bbad2faed3e9b14ea5908ae7c3ae26d046675b89446",
+      "installedSha": "f103f8e54637896774151bbad2faed3e9b14ea5908ae7c3ae26d046675b89446"
     },
     ".claude/agents/02-oneshot/visual-review/visual-review.md": {
       "owner": "framework",
@@ -14421,8 +14428,8 @@
       "managed": true,
       "source": ".claude/agents/00-alex/.system/policy/current-stage.md",
       "kind": "md",
-      "sha256": "d65a4220f2c990aed3c0300c005269cf6718fe34a0e2dd83b03c8148455beadc",
-      "installedSha": "d65a4220f2c990aed3c0300c005269cf6718fe34a0e2dd83b03c8148455beadc"
+      "sha256": "f6fa21766be3c955e0cbd274559de0bda7e88f7573e028bb14c46b075629869d",
+      "installedSha": "f6fa21766be3c955e0cbd274559de0bda7e88f7573e028bb14c46b075629869d"
     },
     ".claude/agents/00-alex/.system/policy/decision-policy.md": {
       "owner": "project",
