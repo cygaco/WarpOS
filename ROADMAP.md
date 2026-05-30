@@ -45,7 +45,7 @@ A bounded reliability sprint folding the verified-open mid-leverage gaps. Tortur
 - **B3** — extend `/scan:install` ESM-collision probe to the `.claude/runtime/` side (currently only guards `scripts/`). *(almanac W-007)*
 
 ### 🗺 Roadmap (bounded-larger, own items)
-- **E6** — product-overlay path registry (`paths.local.json` deep-merged by `scripts/paths/build.js`, or an `owner:project` section `/warp:update` never overwrites) so product-specific path keys survive framework updates without MERGE_CONFLICT + honesty-drift every update. *(dreamteam W-9)*
+- **E6** — product-overlay path registry (`.claude/paths.local.json` deep-merged by `scripts/paths/build.js`, or an `owner:project` section `/warp:update` never overwrites) so product-specific path keys survive framework updates without MERGE_CONFLICT + honesty-drift every update. *(dreamteam W-9)*
 - **H4** — port `/roadmap:improve` + `/roadmap:ship` (almanac-built, multi-agent Workflow skills) into canonical. One-way sync means consumer-built skills never propagate up; these are generic + owed. *(almanac)*
 - **G1** — add the **product-layer vs dev-tooling-layer** distinction to `DICTIONARY.md` glossary (CLAUDE.md §Identity already has it; glossary does not). *(dreamteam W-16)*
 - **G2** — add the invocation-authority-vs-mode clarification to `gamma.md` (the `/sprint:full` skill itself is already correct: adhoc-default, rejects oneshot). *(mc WI-12)*

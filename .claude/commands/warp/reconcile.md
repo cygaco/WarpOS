@@ -111,7 +111,7 @@ confirm fresh.
 ### Phase 8 — Record resolution (canonical-side only)
 Record what was fixed/deferred in canonical: `/issues:log` (or resolve) for recurring-issue
 entries, `/enforcement:log` for the policy gaps, `ROADMAP.md` for deferred work, and a
-`/warp:reconcile` report under `paths.reports` (or the reconcile-report path) listing every
+`/warp:reconcile` report under the reconcile-report path (`.claude/project/reports/`) listing every
 consolidated gap → verdict → disposition. **Do not** write back to any downstream
 `WARPOS.md`.
 

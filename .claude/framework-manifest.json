@@ -2717,7 +2717,7 @@
         "src": ".claude/commands/warp/reconcile.md",
         "dest": ".claude/commands/warp/reconcile.md",
         "kind": "skill",
-        "sha256": "6029f5404ad1bb0f0df0c47b43927300609def69b4a13c536729dc73d759055b",
+        "sha256": "14a39452f1654035b465d85cce099fc4bce672fe774eea43e7cc70a5faa667da",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",

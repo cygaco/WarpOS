@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-05-30T10:30:23.059Z",
+  "generatedAt": "2026-05-30T10:37:05.175Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.10.0",
   "migrations": [],
@@ -97,8 +97,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "efed963a2eecc320de6dc88bbf10671fa84d87309f1b6c6e8c19babb49b7bb09",
-      "installedSha": "efed963a2eecc320de6dc88bbf10671fa84d87309f1b6c6e8c19babb49b7bb09"
+      "sha256": "182943926ede376d45b434777c13656557c50deb4afee65bb68fcbd7faa0d4f5",
+      "installedSha": "182943926ede376d45b434777c13656557c50deb4afee65bb68fcbd7faa0d4f5"
     },
     "USER_GUIDE.md": {
       "owner": "framework",
@@ -6275,6 +6275,10 @@
       "managed": false
     },
     ".claude/.session-checkpoint.json": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/.session-start-commit": {
       "owner": "runtime",
       "managed": false
     },
@@ -12737,10 +12741,6 @@
       "owner": "runtime",
       "managed": false
     },
-    ".claude/project/decisions/provider-trace.jsonl": {
-      "owner": "runtime",
-      "managed": false
-    },
     ".claude/project/builds/builder-fixture-57d0677ea6/transaction.json": {
       "owner": "runtime",
       "managed": false
@@ -12850,8 +12850,8 @@
       "managed": true,
       "source": ".claude/commands/warp/reconcile.md",
       "kind": "md",
-      "sha256": "6029f5404ad1bb0f0df0c47b43927300609def69b4a13c536729dc73d759055b",
-      "installedSha": "6029f5404ad1bb0f0df0c47b43927300609def69b4a13c536729dc73d759055b"
+      "sha256": "14a39452f1654035b465d85cce099fc4bce672fe774eea43e7cc70a5faa667da",
+      "installedSha": "14a39452f1654035b465d85cce099fc4bce672fe774eea43e7cc70a5faa667da"
     },
     ".claude/commands/warp/release.md": {
       "owner": "framework",
