@@ -475,7 +475,26 @@ function regenerateWarposManifest({ target, warposRoot, log }) {
  * @param {function} opts.log          reporter, signature log(status, msg, detail?)
  * @returns {{ installedDelta: number }}
  */
-function writeProductManifest({ target, interview = {}, stack = "unknown", framework = "unknown", log }) {
+// Resolve the WarpOS version being installed. Was hardcoded "0.1.0", which baked a
+// version-quorum mismatch (manifest.warpos.version != version.json) into EVERY fresh
+// install — caught by the artifact-first fresh-install smoke (test-fresh-install-smoke.js).
+// Prefer an explicit override; else read the installing source's version.json — this
+// module ships inside the WarpOS source / capsule, so __dirname/../../version.json is
+// the version actually being installed.
+function resolveWarposVersion(override) {
+  if (override && typeof override === "string") return override;
+  try {
+    const vj = JSON.parse(
+      fs.readFileSync(path.resolve(__dirname, "..", "..", "version.json"), "utf8"),
+    );
+    if (vj && typeof vj.version === "string" && vj.version) return vj.version;
+  } catch {
+    /* fall through to a safe default */
+  }
+  return "0.0.0";
+}
+
+function writeProductManifest({ target, interview = {}, stack = "unknown", framework = "unknown", warposVersion, log }) {
   const TARGET = target;
   let installed = 0;
 
@@ -495,7 +514,7 @@ function writeProductManifest({ target, interview = {}, stack = "unknown", frame
         mainBranch: interview.mainBranch,
       },
       warpos: {
-        version: "0.1.0",
+        version: resolveWarposVersion(warposVersion),
         installed: true,
         source: interview.warposSource,
         features: ["agents", "hooks", "skills", "memory", "maps", "events"],

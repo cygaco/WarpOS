@@ -12,7 +12,7 @@
     "tool": 2,
     "pattern": 6,
     "fixture": 23,
-    "warpos_script": 49,
+    "warpos_script": 50,
     "check_tool": 24,
     "agent_tool": 3,
     "decision_tool": 1,
@@ -52,7 +52,7 @@
     "installer_script": 1,
     "framework_doc": 2
   },
-  "total": 783,
+  "total": 784,
   "assets": {
     "agent": [
       {
@@ -5070,7 +5070,7 @@
         "src": "scripts/warpos/scaffold-core.js",
         "dest": "scripts/warpos/scaffold-core.js",
         "kind": "warpos_script",
-        "sha256": "93f7689f564144b6fd87ea73f4393e03863ffcd8a9a08a121d45f17a1c33cd2a",
+        "sha256": "1940a8a140f407b9a5365eb6a596e8cfb6a80b3090b70694b7dab525999acbd9",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -5143,6 +5143,18 @@
         "dest": "scripts/warpos/test-diff.js",
         "kind": "warpos_script",
         "sha256": "61b08379e99b7ddd95a95e3274501a49506ea1292a7be108650a6144c0c6b6c7",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "warpos_script.test-fresh-install-smoke.js",
+        "src": "scripts/warpos/test-fresh-install-smoke.js",
+        "dest": "scripts/warpos/test-fresh-install-smoke.js",
+        "kind": "warpos_script",
+        "sha256": "b13657d18c259658b9ea18f77001face96c7babb0942c834607a532ee042a9a8",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
