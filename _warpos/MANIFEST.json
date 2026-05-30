@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-05-30T09:53:41.487Z",
+  "generatedAt": "2026-05-30T09:56:48.006Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.10.0",
   "migrations": [],
@@ -2093,6 +2093,13 @@
       "source": "scripts/test-dispatch-agent-resolution.js",
       "sha256": "7fb9401e17b098fdc0ee65fdb202f68eebcd75ceca3b399677562033713e9d86",
       "installedSha": "7fb9401e17b098fdc0ee65fdb202f68eebcd75ceca3b399677562033713e9d86"
+    },
+    "scripts/test-dispatch-config.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/test-dispatch-config.js",
+      "sha256": "8cecfa729decada9886fe31ac2ae0d91dfd476d28d7c6ae080afe603384d351e",
+      "installedSha": "8cecfa729decada9886fe31ac2ae0d91dfd476d28d7c6ae080afe603384d351e"
     },
     "scripts/test-dispatch-route-guard.js": {
       "owner": "framework",
