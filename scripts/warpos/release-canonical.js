@@ -689,11 +689,23 @@ function stageCommit(opts, canonical, next) {
       );
     }
   }
-  // Stage all release-related files.
+  // Stage all release-related files. 2026-05-30 fix: the prior list omitted the
+  // files the bump stage (manifest.warpos.version + install.ps1) and the regen
+  // (framework-installed, _warpos/MANIFEST, RELEASES.md) touch — so the COMMITTED
+  // release was version-incoherent (version.json=new but those files=old) even
+  // though the stage-7 version_coherence gate passed on the working tree. Stage
+  // the full set so the commit matches what the gate verified.
   const add = gitC(canonical, [
     "add",
     "version.json",
     ".claude/framework-manifest.json",
+    ".claude/framework-installed.json",
+    ".claude/manifest.json",
+    ".claude/paths.json",
+    "schemas/paths.schema.json",
+    "_warpos/MANIFEST.json",
+    "install.ps1",
+    "RELEASES.md",
     `framework/releases/${next}`,
   ]);
   if (!add.ok) {

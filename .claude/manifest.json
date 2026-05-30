@@ -5,14 +5,16 @@
     "name": "WarpOS",
     "slug": "warpos",
     "description": "WarpOS canonical — autonomous AI operating system framework (Alex Alpha + multi-provider agent dispatch).",
-    "techStack": ["node"],
+    "techStack": [
+      "node"
+    ],
     "framework": "warpos"
   },
   "git": {
     "mainBranch": "main"
   },
   "warpos": {
-    "version": "0.11.0",
+    "version": "0.11.1",
     "installed": true,
     "source": "self",
     "features": [
@@ -33,13 +35,29 @@
       "name": "alex",
       "identity": "Alex",
       "members": {
-        "alpha": { "symbol": "α", "role": "orchestrator" },
-        "beta": { "symbol": "β", "role": "judgment" },
-        "gamma": { "symbol": "γ", "role": "adhoc builder" },
-        "delta": { "symbol": "δ", "role": "oneshot builder" }
+        "alpha": {
+          "symbol": "α",
+          "role": "orchestrator"
+        },
+        "beta": {
+          "symbol": "β",
+          "role": "judgment"
+        },
+        "gamma": {
+          "symbol": "γ",
+          "role": "adhoc builder"
+        },
+        "delta": {
+          "symbol": "δ",
+          "role": "oneshot builder"
+        }
       }
     },
-    "modes": ["adhoc", "oneshot", "solo"],
+    "modes": [
+      "adhoc",
+      "oneshot",
+      "solo"
+    ],
     "build": [
       "builder",
       "reviewer",
@@ -51,7 +69,10 @@
     ]
   },
   "source_dirs": [],
-  "build": { "features": [], "phases": [] },
+  "build": {
+    "features": [],
+    "phases": []
+  },
   "providers": {
     "claude": {
       "cli": "claude",
@@ -86,5 +107,7 @@
     "redteam": "gemini"
   },
   "buildCommands": {},
-  "fileOwnership": { "foundation": [] }
+  "fileOwnership": {
+    "foundation": []
+  }
 }

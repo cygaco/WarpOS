@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
-  "installedVersion": "0.11.0",
-  "installedCommit": "b5d2e616e9a93c4b5005e8099f4d722ce4e9b6cc",
-  "installedAt": "2026-05-30T15:20:09.438Z",
+  "installedVersion": "0.11.1",
+  "installedCommit": "d6d1c5ec421e57231fa3d266af5c4944c60f56b2",
+  "installedAt": "2026-05-30T15:27:02.290Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -4164,8 +4164,8 @@
       "dest": "scripts/warpos/release-canonical.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "11c4282166b972ef121244c5b5dabdfa60a85a920f82c65366e4ff182a1a8a01",
-      "currentHashAtInstall": "11c4282166b972ef121244c5b5dabdfa60a85a920f82c65366e4ff182a1a8a01",
+      "installedHash": "aff01a6462f4201336d1f2ca6dc41178426165d545bd7abc1aabf00e5910f52a",
+      "currentHashAtInstall": "aff01a6462f4201336d1f2ca6dc41178426165d545bd7abc1aabf00e5910f52a",
       "introducedIn": "0.0.0"
     },
     {
@@ -6679,6 +6679,56 @@
       "introducedIn": "0.0.0"
     },
     {
+      "id": "release_capsule.0.11.1.changelog.md",
+      "kind": "release_capsule",
+      "dest": "framework/releases/0.11.1/changelog.md",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "a860359e20c243e5de3aea11fd436106e0a8e5900ad00d71d1360de5d75e87d7",
+      "currentHashAtInstall": "a860359e20c243e5de3aea11fd436106e0a8e5900ad00d71d1360de5d75e87d7",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "release_capsule.0.11.1.checksums.json",
+      "kind": "release_capsule",
+      "dest": "framework/releases/0.11.1/checksums.json",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "aa5b2a92bfa44d593daa44021bddca4d4f65dfdfd8e132a411349eed55797c90",
+      "currentHashAtInstall": "aa5b2a92bfa44d593daa44021bddca4d4f65dfdfd8e132a411349eed55797c90",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "release_capsule.0.11.1.framework-manifest.json",
+      "kind": "release_capsule",
+      "dest": "framework/releases/0.11.1/framework-manifest.json",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "27a5f24af1079ca9d115c3af2b4144c60e4847c7b3f596d82d9f8544e8379f55",
+      "currentHashAtInstall": "27a5f24af1079ca9d115c3af2b4144c60e4847c7b3f596d82d9f8544e8379f55",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "release_capsule.0.11.1.release.json",
+      "kind": "release_capsule",
+      "dest": "framework/releases/0.11.1/release.json",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "88b1a71d57a9ce2dc38c9c347c3516268aacf5b0c0a89c1de36755b6f76e147e",
+      "currentHashAtInstall": "88b1a71d57a9ce2dc38c9c347c3516268aacf5b0c0a89c1de36755b6f76e147e",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "release_capsule.0.11.1.upgrade-notes.md",
+      "kind": "release_capsule",
+      "dest": "framework/releases/0.11.1/upgrade-notes.md",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "84875465bf6dd90552543166b89c29757428101b486dfdd65ac24f9363b7fcb4",
+      "currentHashAtInstall": "84875465bf6dd90552543166b89c29757428101b486dfdd65ac24f9363b7fcb4",
+      "introducedIn": "0.0.0"
+    },
+    {
       "id": "release_capsule.0.2.0.changelog.md",
       "kind": "release_capsule",
       "dest": "framework/releases/0.2.0/changelog.md",
@@ -8264,8 +8314,8 @@
       "dest": "version.json",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "56eb526bc452410d08ea82429da17cd5db46cff21acdb39460423cf0ebc9bac8",
-      "currentHashAtInstall": "56eb526bc452410d08ea82429da17cd5db46cff21acdb39460423cf0ebc9bac8",
+      "installedHash": "1f5651aeea8b094efecfa469915e9b21cdde60e4cca8af5dc203d90e42ae1901",
+      "currentHashAtInstall": "1f5651aeea8b094efecfa469915e9b21cdde60e4cca8af5dc203d90e42ae1901",
       "introducedIn": "0.0.0"
     },
     {
@@ -8274,8 +8324,8 @@
       "dest": "install.ps1",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "34f4adcc3a91e6c921541acdfd784b458addfb4c15819f346a8c177134b90eef",
-      "currentHashAtInstall": "34f4adcc3a91e6c921541acdfd784b458addfb4c15819f346a8c177134b90eef",
+      "installedHash": "21215f31dd9a0d0203a468c51eb5eef8f9637882330bdde4f3fac1173b9ccf8c",
+      "currentHashAtInstall": "21215f31dd9a0d0203a468c51eb5eef8f9637882330bdde4f3fac1173b9ccf8c",
       "introducedIn": "0.0.0"
     },
     {

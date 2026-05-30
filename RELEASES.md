@@ -10,6 +10,7 @@ Every `version.json` bump that produced a capsule under `framework/releases/X.Y.
 
 | Version | Released | Capsule | Summary |
 |---|---|---|---|
+| `0.11.1` | 2026-05-30 | [0.11.1/release.json](framework/releases/0.11.1/release.json) | Patch bump to 0.11.1. Fill in via release notes. |
 | `0.11.0` | 2026-05-30 | [0.11.0/release.json](framework/releases/0.11.0/release.json) | Patch bump to 0.11.0. Fill in via release notes. |
 | `0.10.0` | 2026-05-25 | [0.10.0/release.json](framework/releases/0.10.0/release.json) | Patch bump to 0.10.0. Fill in via release notes. |
 | `0.9.0` | 2026-05-23 | [0.9.0/release.json](framework/releases/0.9.0/release.json) | **Install pipeline reliability checkpoint.** Full install-reliability batch shipped: 5-scenario CI matrix, per-file status reporting (added/repaired/unchanged/conflict), idempotent applies, versioned migrations (skip already-applied on retry), userModified tracking, release-build refuses stale manifest, `.claude/manifest.json` always-present + 4-caller graceful absence, settings.json layered-compile flip. No breaking changes; pure additive. |
