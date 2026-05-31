@@ -1,8 +1,8 @@
 # Enforcements Map
 
-Generated: 2026-05-13T22:37:04.323Z
+Generated: 2026-05-31T19:28:09.351Z
 
-**55** hooks, **13** lib modules. **0** uncurated (added since last hand-curation on 2026-05-13T22:36:11.552Z).
+**63** hooks, **15** lib modules. **8** uncurated (added since last hand-curation on 2026-05-13T22:37:04.323Z).
 
 ## Coverage
 
@@ -15,6 +15,7 @@ Generated: 2026-05-13T22:37:04.323Z
 
 | id | matcher | phase | mode | registered | uncurated |
 |---|---|---|---|---|---|
+| authorization-gate | ? | ? | ? | yes | yes |
 | beta-gate | AskUserQuestion | PreToolUse | fail-closed | yes |  |
 | boss-boundary | Read|Grep|Glob | PreToolUse | fail-closed | yes |  |
 | build-transaction-boundary | Agent | PreToolUse+PostToolUse | fail-open | yes |  |
@@ -30,10 +31,14 @@ Generated: 2026-05-13T22:37:04.323Z
 | format | Edit|Write | PostToolUse | fail-open | yes |  |
 | foundation-guard | Edit|Write | PreToolUse | fail-closed | yes |  |
 | framework-manifest-guard | Bash (git commit) | PreToolUse | fail-closed | yes |  |
+| framework-purity-guard | ? | ? | ? | yes | yes |
 | gate-check | Agent | PreToolUse | fail-closed | yes |  |
 | gauntlet-gate | Agent | PreToolUse | fail-closed | yes |  |
 | learning-validator | Edit|Write | PostToolUse | advisory | yes |  |
+| ledger-presence-guard | ? | ? | ? | yes | yes |
+| lint-hook-output | ? | ? | ? | yes | yes |
 | lint | Edit|Write | PostToolUse | fail-open | yes |  |
+| memory-enforcement-guard | ? | ? | ? | yes | yes |
 | memory-guard | Bash+Edit|Write | PreToolUse+PostToolUse | fail-closed | yes |  |
 | merge-guard | Bash | PreToolUse+PostToolUse | fail-closed | yes |  |
 | ownership-guard | Edit|Write | PreToolUse | fail-closed | yes |  |
@@ -60,6 +65,7 @@ Generated: 2026-05-13T22:37:04.323Z
 | smart-context | (universal) | UserPromptSubmit | fail-open | yes |  |
 | spec-test-staleness | Edit|Write | PostToolUse | advisory | yes |  |
 | sprint-approval-guard | Bash | PreToolUse | fail-closed | yes |  |
+| sprint-routing-guard | ? | ? | ? | yes | yes |
 | sprint-tracker-guard | Edit|Write | PreToolUse | mixed | yes |  |
 | step-hardcode-suggester | Edit|Write | PostToolUse | advisory | yes |  |
 | step-registry-guard | Edit|Write | PreToolUse | fail-closed | yes |  |
@@ -69,6 +75,8 @@ Generated: 2026-05-13T22:37:04.323Z
 | template-fillability | Edit|Write | PostToolUse | advisory | yes |  |
 | typecheck | Edit|Write | PostToolUse | mixed | yes |  |
 | ui-lint | Edit|Write | PostToolUse | advisory | yes |  |
+| untrusted-content-firewall | ? | ? | ? | yes | yes |
+| version-bump-guard | ? | ? | ? | yes | yes |
 | worktree-preflight | Agent | PreToolUse | fail-closed | yes |  |
 
 ## Lib modules
@@ -76,36 +84,10 @@ Generated: 2026-05-13T22:37:04.323Z
 | id | file | uncurated |
 |---|---|---|
 | banner | scripts/hooks/lib/banner.js |  |
-<!-- end of generated table; hand-curated section follows -->
-
-## Post-escalation re-curation — 2026-05-13
-
-Three hooks were escalated this session. Behavior is upgraded; descriptions below reflect the new semantics. Append-only — do not regenerate (regen will overwrite hand-curated detail).
-
-### `sprint-tracker-guard` (mixed → schema-injection + schema-validation)
-
-- **Was**: BLOCK on sprint yaml writes missing `schema:` header.
-- **Now**: AUTO-INJECT `schema: warpos/sprint/<kind>/v1` for 15 known path patterns (approvals, tickets, releases, issues, plan-contracts, external-services, checkpoints, sprints/<id>/{current,progress,retrospective}, ralph, active-sprints, legacy singletons, history). BLOCK still applies for unknown (unmapped) paths missing schema.
-- **Gates**: added `sprint-schema-injection-gate`, `sprint-schema-validation-gate` alongside the existing `sprint-tracker-gate`.
-- **Why**: 126x/day missing-schema friction (LRN-2026-05-13-sprint-schema-missing). Known paths now inject silently; unmapped paths still require explicit schema declarations so the gate still catches genuinely new file kinds.
-
-### `beta-gate` (fail-closed; gained release-gate)
-
-- **Was**: BLOCK AskUserQuestion in adhoc mode without `ESCALATE:` prefix or escape keyword.
-- **Now**: Same, PLUS BLOCK release-context AskUserQuestion when `paths.betaEvents` has no Beta entry in the last 30 minutes. `deploy` REMOVED from `ESCAPE_KEYWORDS` (it was the most common skip path and let release decisions bypass Beta entirely).
-- **Gates**: added `release-gate` alongside the existing `beta-gate`.
-- **Why**: Enforces the CLAUDE.md Beta-consultation protocol at the release boundary, not just on general adhoc questions.
-
-### `merge-guard` (cd-prefix promoted from warn to auto-strip)
-
-- **Was**: Block `node -e fs.write...` + advisory warn on cd-prefix git tails.
-- **Now**: Same blocks PLUS auto-strip `cd "<project>" && <anything>` and `cd . && <anything>` via PreToolUse Bash transform (`hookSpecificOutput.updatedInput.command`). Coverage widened beyond git tails to ANY trailing command — merge-safe (never re-runs; only rewrites).
-- **Gates**: added `path-gate` (cd-prefix coverage) alongside the existing `merge-gate`.
-- **Why**: 16x/day cd-prefix repeat (LRN-2026-05-13-cd-prefix-repeat) + merge-safe semantics (LRN-2026-05-13-merge-safe-cd-strip). Wiping out a recurring friction class rather than warning about it every time.
-
 | concurrency-lock | scripts/hooks/lib/concurrency-lock.js |  |
 | context-sources | scripts/hooks/lib/context-sources.js |  |
 | gate-schema | scripts/hooks/lib/gate-schema.js |  |
+| injection-patterns | scripts/hooks/lib/injection-patterns.js | yes |
 | logger | scripts/hooks/lib/logger.js |  |
 | mode | scripts/hooks/lib/mode.js |  |
 | paths.generated | scripts/hooks/lib/paths.generated.js |  |
@@ -115,3 +97,4 @@ Three hooks were escalated this session. Behavior is upgraded; descriptions belo
 | providers | scripts/hooks/lib/providers.js |  |
 | role-aliases | scripts/hooks/lib/role-aliases.js |  |
 | skill-telemetry | scripts/hooks/lib/skill-telemetry.js |  |
+| untrusted-content | scripts/hooks/lib/untrusted-content.js | yes |

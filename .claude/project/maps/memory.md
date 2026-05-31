@@ -1,14 +1,14 @@
 # Memory Stores Map
 
-Generated: 2026-05-30T15:42:10.614Z
+Generated: 2026-05-31T19:28:09.351Z
 
-| id | category | path | entryCount | size | modified |
-|---|---|---|---|---|---|
-| events | events | .claude/project/events/events.jsonl | 4869 | 1666879 | 2026-05-30T15:42:08.810Z |
-| tools | events | .claude/project/events/tools.jsonl | 1451 | 457868 | 2026-05-30T15:41:44.189Z |
-| requirements | events | .claude/project/events/requirements.jsonl | 71 | 39038 | 2026-05-30T15:18:59.081Z |
-| requirements-staged | events | .claude/project/events/requirements-staged.jsonl | 0 |  |  |
-| learnings | memory | .claude/project/memory/learnings.jsonl | 21 | 15206 | 2026-05-30T10:29:01.830Z |
-| traces | memory | .claude/project/memory/traces.jsonl | 0 |  |  |
-| systems | memory | .claude/project/memory/systems.jsonl | 11 | 10044 | 2026-05-30T15:18:59.081Z |
-| beta-events | beta | .claude/agents/00-alex/.system/beta/events.jsonl | 53 | 49953 | 2026-05-30T01:25:38.683Z |
+| id | tier | category | path | entryCount | size | modified |
+|---|---|---|---|---|---|---|
+| events | centralized | events | .claude/project/events/events.jsonl | 9637 | 3184510 | 2026-05-31T19:28:07.374Z |
+| requirements | centralized | events | .claude/project/events/requirements.jsonl | 204 | 111116 | 2026-05-31T19:25:48.642Z |
+| tools | centralized | events | .claude/project/events/tools.jsonl | 4154 | 1297906 | 2026-05-31T19:27:46.532Z |
+| enforcement-debt | semantic | memory | .claude/project/memory/enforcement-debt.jsonl | 6 | 5364 | 2026-05-31T16:11:19.708Z |
+| learnings | semantic | memory | .claude/project/memory/learnings.jsonl | 24 | 18169 | 2026-05-31T01:27:03.920Z |
+| recurring-issues | semantic | memory | .claude/project/memory/recurring-issues.jsonl | 1 | 1250 | 2026-05-29T23:14:57.474Z |
+| systems | semantic | memory | .claude/project/memory/systems.jsonl | 35 | 31184 | 2026-05-31T19:25:48.632Z |
+| beta-events | beta | beta | .claude/agents/00-alex/.system/beta/events.jsonl | 78 | 87763 | 2026-05-31T17:55:35.234Z |

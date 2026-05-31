@@ -1,16 +1,34 @@
 {
   "metadata": {
-    "generated": "2026-05-13T22:37:04.323Z",
-    "lastUpdated": "2026-05-13T22:37:04.323Z",
-    "total_hooks": 55,
-    "total_modules": 13,
-    "uncurated": 0,
+    "generated": "2026-05-31T19:28:09.351Z",
+    "lastUpdated": "2026-05-31T19:28:09.351Z",
+    "total_hooks": 63,
+    "total_modules": 15,
+    "uncurated": 8,
     "total_gaps": 84,
     "gaps_closed": 73,
     "gaps_open": 11,
     "regenerated_by": "scripts/regen-maps.js"
   },
   "entries": [
+    {
+      "id": "authorization-gate",
+      "type": "hook",
+      "matcher": "?",
+      "phase": "?",
+      "mode": "?",
+      "file": "scripts/hooks/authorization-gate.js",
+      "file_size": 8520,
+      "file_modified": "2026-05-30T01:25:39.579Z",
+      "registered": true,
+      "gates": [],
+      "blocks": [],
+      "warns": [],
+      "allows": [],
+      "gaps_closed": [],
+      "uncurated": true,
+      "uncurated_note": "added since last hand-curated regen — fields ?, ?, ? need a /maps:enforcements review"
+    },
     {
       "id": "beta-gate",
       "type": "hook",
@@ -20,27 +38,33 @@
       "file": "scripts/hooks/beta-gate.js",
       "registered": true,
       "gates": [
-        "beta-gate"
+        "beta-gate",
+        "release-gate"
       ],
       "blocks": [
-        "AskUserQuestion in adhoc mode without ESCALATE: prefix or escape keyword"
+        "AskUserQuestion in adhoc mode without ESCALATE: prefix or escape keyword",
+        "release-context AskUserQuestion without recent (<30min) Beta consultation in paths.betaEvents"
       ],
       "warns": [],
       "allows": [
         "solo mode",
         "ESCALATE: prefix",
-        "escape keywords (irreversible, push to remote, credential, secret, sign up, purchase, spend >=$5)"
+        "escape keywords (irreversible, push to remote, credential, secret, sign up, purchase, spend >=$5) — note: `deploy` REMOVED from escape keywords post-escalation; it now triggers the release-gate Beta-consult check instead"
       ],
       "gaps_closed": [
-        "GAP-1302"
+        "GAP-1302",
+        "GAP-1303"
       ],
-      "pre_check": "Check session mode. Verify question has ESCALATE or escape keyword.",
+      "pre_check": "Check session mode. Verify question has ESCALATE or escape keyword. For release-context questions (deploy/ship/release/cut tag): check paths.betaEvents for Beta consultation entry within last 30 minutes; block if absent.",
       "post_check": "none",
       "depends_on": [
-        "logger"
+        "logger",
+        "paths",
+        "mode"
       ],
-      "file_size": 8537,
-      "file_modified": "2026-05-13T22:25:25.822Z"
+      "file_size": 9093,
+      "file_modified": "2026-05-30T01:25:39.579Z",
+      "note": "Escalated 2026-05-13: added release-gate. Release-context AskUserQuestion now requires a recent Beta consultation logged to paths.betaEvents (per CLAUDE.md beta-consultation protocol). `deploy` dropped from ESCAPE_KEYWORDS — it was the most common escape path and let release decisions skip Beta entirely."
     },
     {
       "id": "boss-boundary",
@@ -68,7 +92,7 @@
         "project-config"
       ],
       "file_size": 3095,
-      "file_modified": "2026-05-03T19:46:50.932Z"
+      "file_modified": "2026-05-30T01:25:39.579Z"
     },
     {
       "id": "build-transaction-boundary",
@@ -93,7 +117,7 @@
       "post_check": "Finish transaction: record finishedAt, completed/failed status, finalReport with response byte count.",
       "depends_on": [],
       "file_size": 3760,
-      "file_modified": "2026-05-01T04:37:06.323Z",
+      "file_modified": "2026-05-30T01:25:39.580Z",
       "note": "Observer for builder/fixer dispatches; writes per-build transaction.json to .claude/project/builds/<id>/. Never blocks. Provides audit trail + rollback metadata for build-chain agents."
     },
     {
@@ -109,8 +133,8 @@
       "warns": [],
       "allows": [],
       "gaps_closed": [],
-      "file_size": 6730,
-      "file_modified": "2026-05-03T19:46:50.715Z",
+      "file_size": 6528,
+      "file_modified": "2026-05-30T01:25:39.580Z",
       "note": "Build-time CLI: regenerates hook-manifest.json + .claude/settings.json#hooks from framework/hooks.registry.json. Not a runtime hook. Invoke: node scripts/hooks/build.js [--check]. Source of truth for settings.json hook wiring.",
       "kind": "build-tool"
     },
@@ -130,8 +154,8 @@
       "pre_check": "none",
       "post_check": "Save compaction summary to runtime.",
       "depends_on": [],
-      "file_size": 1268,
-      "file_modified": "2026-04-17T21:30:23.988Z"
+      "file_size": 1232,
+      "file_modified": "2026-05-30T01:25:39.581Z"
     },
     {
       "id": "create-worktree-from-head",
@@ -155,8 +179,8 @@
       "pre_check": "none",
       "post_check": "Ensure new worktrees branch from HEAD, preserving current working state.",
       "depends_on": [],
-      "file_size": 4393,
-      "file_modified": "2026-04-17T21:30:23.990Z"
+      "file_size": 4250,
+      "file_modified": "2026-05-30T01:25:39.581Z"
     },
     {
       "id": "cycle-enforcer",
@@ -194,8 +218,8 @@
         "logger",
         "store.json heartbeat.cycleStep"
       ],
-      "file_size": 7254,
-      "file_modified": "2026-04-17T21:30:23.990Z"
+      "file_size": 7071,
+      "file_modified": "2026-05-30T01:25:39.582Z"
     },
     {
       "id": "dependency-admission-guard",
@@ -225,7 +249,7 @@
         "scripts/deps/admission"
       ],
       "file_size": 1300,
-      "file_modified": "2026-05-01T04:37:06.324Z"
+      "file_modified": "2026-05-30T01:25:39.583Z"
     },
     {
       "id": "dispatch-route-guard",
@@ -260,8 +284,8 @@
       "depends_on": [
         "logger"
       ],
-      "file_size": 7405,
-      "file_modified": "2026-05-11T20:59:36.128Z",
+      "file_size": 9840,
+      "file_modified": "2026-05-30T01:25:39.583Z",
       "note": "Prevents binding-gap regressions (LRN-2026-04-17 Windows stdin; LRN-2026-04-30 binding-gap) by forcing all cross-provider CLI prompt calls through the canonical wrapper that carries runProvider+concurrency-lock fixes."
     },
     {
@@ -286,7 +310,7 @@
         "paths"
       ],
       "file_size": 29693,
-      "file_modified": "2026-05-03T19:46:50.933Z"
+      "file_modified": "2026-05-30T01:25:39.583Z"
     },
     {
       "id": "event-contract",
@@ -317,7 +341,7 @@
         "paths"
       ],
       "file_size": 4048,
-      "file_modified": "2026-04-29T18:57:10.033Z",
+      "file_modified": "2026-05-30T01:25:39.585Z",
       "note": "Catches incomplete event renames (retros 03/07 bug class P-07-04). Advisory only; never blocks."
     },
     {
@@ -340,8 +364,8 @@
       "pre_check": "Block unconditionally (terminal can't render diagrams).",
       "post_check": "none",
       "depends_on": [],
-      "file_size": 951,
-      "file_modified": "2026-04-17T21:30:23.992Z"
+      "file_size": 920,
+      "file_modified": "2026-05-30T01:25:39.585Z"
     },
     {
       "id": "extension-edit-guard",
@@ -373,8 +397,8 @@
       "depends_on": [
         "paths"
       ],
-      "file_size": 4484,
-      "file_modified": "2026-05-02T02:38:18.834Z",
+      "file_size": 4361,
+      "file_modified": "2026-05-30T01:25:39.585Z",
       "note": "Implements LRN-2026-04-01/02 (extension lifecycle + manifest security). Advisory only — never blocks."
     },
     {
@@ -396,8 +420,8 @@
       "post_check": "Prettier --write on ts/tsx/js/jsx/json/css. Excludes .md.",
       "depends_on": [],
       "timeout": 10000,
-      "file_size": 996,
-      "file_modified": "2026-04-17T21:30:23.992Z"
+      "file_size": 2397,
+      "file_modified": "2026-05-30T01:25:39.586Z"
     },
     {
       "id": "foundation-guard",
@@ -423,8 +447,8 @@
       "depends_on": [
         "store.json"
       ],
-      "file_size": 2720,
-      "file_modified": "2026-04-17T21:30:23.994Z"
+      "file_size": 2636,
+      "file_modified": "2026-05-30T01:25:39.586Z"
     },
     {
       "id": "framework-manifest-guard",
@@ -452,7 +476,25 @@
       "depends_on": [],
       "note": "Exists in scripts/hooks/ but NOT yet wired into settings.json. Invoked only if manually registered or executed directly.",
       "file_size": 10668,
-      "file_modified": "2026-05-11T21:12:13.012Z"
+      "file_modified": "2026-05-30T01:25:39.586Z"
+    },
+    {
+      "id": "framework-purity-guard",
+      "type": "hook",
+      "matcher": "?",
+      "phase": "?",
+      "mode": "?",
+      "file": "scripts/hooks/framework-purity-guard.js",
+      "file_size": 5160,
+      "file_modified": "2026-05-30T01:25:39.586Z",
+      "registered": true,
+      "gates": [],
+      "blocks": [],
+      "warns": [],
+      "allows": [],
+      "gaps_closed": [],
+      "uncurated": true,
+      "uncurated_note": "added since last hand-curated regen — fields ?, ?, ? need a /maps:enforcements review"
     },
     {
       "id": "gate-check",
@@ -479,7 +521,7 @@
         "store.json"
       ],
       "file_size": 5053,
-      "file_modified": "2026-04-29T05:47:38.734Z"
+      "file_modified": "2026-05-30T01:25:39.586Z"
     },
     {
       "id": "gauntlet-gate",
@@ -519,7 +561,7 @@
         "store.json features"
       ],
       "file_size": 8310,
-      "file_modified": "2026-04-29T05:49:41.894Z"
+      "file_modified": "2026-05-30T01:25:39.587Z"
     },
     {
       "id": "learning-validator",
@@ -548,8 +590,44 @@
         "logger",
         "paths"
       ],
-      "file_size": 6622,
-      "file_modified": "2026-04-17T21:30:23.994Z"
+      "file_size": 6416,
+      "file_modified": "2026-05-30T01:25:39.587Z"
+    },
+    {
+      "id": "ledger-presence-guard",
+      "type": "hook",
+      "matcher": "?",
+      "phase": "?",
+      "mode": "?",
+      "file": "scripts/hooks/ledger-presence-guard.js",
+      "file_size": 6981,
+      "file_modified": "2026-05-30T01:25:39.588Z",
+      "registered": true,
+      "gates": [],
+      "blocks": [],
+      "warns": [],
+      "allows": [],
+      "gaps_closed": [],
+      "uncurated": true,
+      "uncurated_note": "added since last hand-curated regen — fields ?, ?, ? need a /maps:enforcements review"
+    },
+    {
+      "id": "lint-hook-output",
+      "type": "hook",
+      "matcher": "?",
+      "phase": "?",
+      "mode": "?",
+      "file": "scripts/hooks/lint-hook-output.js",
+      "file_size": 1964,
+      "file_modified": "2026-05-30T01:25:39.593Z",
+      "registered": true,
+      "gates": [],
+      "blocks": [],
+      "warns": [],
+      "allows": [],
+      "gaps_closed": [],
+      "uncurated": true,
+      "uncurated_note": "added since last hand-curated regen — fields ?, ?, ? need a /maps:enforcements review"
     },
     {
       "id": "lint",
@@ -572,8 +650,26 @@
       "post_check": "next lint on edited files. Advisory only.",
       "depends_on": [],
       "timeout": 15000,
-      "file_size": 2777,
-      "file_modified": "2026-04-17T21:30:23.994Z"
+      "file_size": 2684,
+      "file_modified": "2026-05-30T01:25:39.594Z"
+    },
+    {
+      "id": "memory-enforcement-guard",
+      "type": "hook",
+      "matcher": "?",
+      "phase": "?",
+      "mode": "?",
+      "file": "scripts/hooks/memory-enforcement-guard.js",
+      "file_size": 3339,
+      "file_modified": "2026-05-30T01:25:39.594Z",
+      "registered": true,
+      "gates": [],
+      "blocks": [],
+      "warns": [],
+      "allows": [],
+      "gaps_closed": [],
+      "uncurated": true,
+      "uncurated_note": "added since last hand-curated regen — fields ?, ?, ? need a /maps:enforcements review"
     },
     {
       "id": "memory-guard",
@@ -608,8 +704,8 @@
         "logger",
         "paths"
       ],
-      "file_size": 8726,
-      "file_modified": "2026-04-17T21:30:24.000Z"
+      "file_size": 13574,
+      "file_modified": "2026-05-30T01:25:39.595Z"
     },
     {
       "id": "merge-guard",
@@ -620,7 +716,8 @@
       "file": "scripts/hooks/merge-guard.js",
       "registered": true,
       "gates": [
-        "merge-gate"
+        "merge-gate",
+        "path-gate"
       ],
       "blocks": [
         "git merge agent/* before review-complete",
@@ -636,7 +733,8 @@
         "read-only commands (allowlist-first)",
         "npm run build/lint/test/dev",
         "codex/gemini CLI",
-        "git merge non-agent branches"
+        "git merge non-agent branches",
+        "cd <project> && <command> prefix is auto-stripped via PreToolUse Bash transform (hookSpecificOutput.updatedInput.command); widened beyond git tails to cover ANY trailing command including `cd . && <cmd>`"
       ],
       "gaps_closed": [
         "GAP-101",
@@ -648,17 +746,19 @@
         "GAP-107",
         "GAP-108",
         "GAP-109",
-        "GAP-1102"
+        "GAP-1102",
+        "GAP-1103"
       ],
-      "pre_check": "Allowlist check, then block pattern matching. For git merge agent/*, verify cycleStep==review-complete.",
+      "pre_check": "Allowlist check, then block pattern matching. For git merge agent/*, verify cycleStep==review-complete. For ANY Bash command starting with `cd \"<project>\" && ...` or `cd . && ...`, transparently rewrite via hookSpecificOutput.updatedInput.command to strip the cd prefix (merge-safe semantics — preserves current working dir).",
       "post_check": "Detect merge success/failure. Log event. Remind npm run build after successful merge.",
       "depends_on": [
         "logger",
         "paths",
         "store.json heartbeat.cycleStep"
       ],
-      "file_size": 19290,
-      "file_modified": "2026-05-13T22:26:48.457Z"
+      "file_size": 23252,
+      "file_modified": "2026-05-30T01:25:39.595Z",
+      "note": "Escalated 2026-05-13: cd-prefix coverage widened from git-only tails to ANY trailing command (`cd <project> && <anything>`, `cd . && <anything>`) and promoted from advisory warn to transparent auto-strip via hookSpecificOutput.updatedInput.command. Addresses 16x/day cd-prefix repeat (LRN-2026-05-13-cd-prefix-repeat) with merge-safe semantics (LRN-2026-05-13-merge-safe-cd-strip). PreToolUse Bash transform; never re-runs the command — only rewrites it."
     },
     {
       "id": "ownership-guard",
@@ -690,7 +790,7 @@
         "store.json"
       ],
       "file_size": 3699,
-      "file_modified": "2026-04-29T05:47:40.874Z"
+      "file_modified": "2026-05-30T01:25:39.596Z"
     },
     {
       "id": "path-guard",
@@ -727,7 +827,7 @@
         "paths"
       ],
       "file_size": 8938,
-      "file_modified": "2026-05-03T19:46:50.935Z"
+      "file_modified": "2026-05-30T01:25:39.596Z"
     },
     {
       "id": "path-registry-guard",
@@ -761,7 +861,7 @@
         "logger"
       ],
       "file_size": 5451,
-      "file_modified": "2026-05-03T19:46:50.936Z",
+      "file_modified": "2026-05-30T01:25:39.597Z",
       "note": "Mirror of framework-manifest-guard for the paths registry. Prevents registry-vs-generated drift."
     },
     {
@@ -793,8 +893,8 @@
       "depends_on": [
         "scripts/generate-steps-maps.js"
       ],
-      "file_size": 8850,
-      "file_modified": "2026-05-03T19:46:50.936Z",
+      "file_size": 8602,
+      "file_modified": "2026-05-30T01:25:39.597Z",
       "note": "Off-registry git pre-commit hook installed by scripts/install-git-hooks.sh. Last mile before bad STEPS.json reaches main. Companion to step-registry-guard (runtime PreToolUse)."
     },
     {
@@ -815,8 +915,8 @@
       "depends_on": [
         "logger"
       ],
-      "file_size": 1900,
-      "file_modified": "2026-04-17T21:30:24.000Z"
+      "file_size": 1843,
+      "file_modified": "2026-05-30T01:25:39.597Z"
     },
     {
       "id": "prompt-validator",
@@ -857,7 +957,7 @@
         "logger"
       ],
       "file_size": 6076,
-      "file_modified": "2026-04-29T07:16:03.307Z"
+      "file_modified": "2026-05-30T01:25:39.598Z"
     },
     {
       "id": "ref-checker",
@@ -885,8 +985,8 @@
         "paths"
       ],
       "note": "Not registered as a lifecycle hook; used by /check:references skill and manual audits.",
-      "file_size": 13704,
-      "file_modified": "2026-05-03T19:46:50.937Z"
+      "file_size": 13283,
+      "file_modified": "2026-05-30T01:25:39.598Z"
     },
     {
       "id": "region-marker-guard",
@@ -922,8 +1022,8 @@
         "paths",
         "logger"
       ],
-      "file_size": 6302,
-      "file_modified": "2026-05-03T19:46:50.937Z",
+      "file_size": 6097,
+      "file_modified": "2026-05-30T01:25:39.598Z",
       "note": "Protects /maps:steps and related regenerators from silent corruption when canonical doc markers are malformed."
     },
     {
@@ -963,7 +1063,7 @@
         "logger"
       ],
       "file_size": 7236,
-      "file_modified": "2026-05-11T21:18:39.855Z",
+      "file_modified": "2026-05-30T01:25:39.599Z",
       "note": "Phase 0 workstream J. Catches requirement-format problems at write-time rather than merge time."
     },
     {
@@ -995,8 +1095,8 @@
       "depends_on": [
         "logger"
       ],
-      "file_size": 4716,
-      "file_modified": "2026-04-29T05:47:23.501Z",
+      "file_size": 4715,
+      "file_modified": "2026-05-30T01:25:39.599Z",
       "note": "Tripwire for run-8 bug class: in-process Agent dispatch returning 100K+ prose overflowed orchestrator context. Real fix is JSON-envelope prompt templates; this hook surfaces prompt-template drift."
     },
     {
@@ -1029,7 +1129,7 @@
         "paths"
       ],
       "file_size": 2815,
-      "file_modified": "2026-04-29T23:37:50.114Z",
+      "file_modified": "2026-05-30T01:25:39.599Z",
       "note": "HYGIENE Rule 64 enforcement. Sources: run-9 cross-session inbox sessions moc2ua2s, mocaecxt, mocd8rff. Flip default to enforce after one clean session passes."
     },
     {
@@ -1054,8 +1154,8 @@
       "depends_on": [
         "paths"
       ],
-      "file_size": 2577,
-      "file_modified": "2026-04-17T21:30:24.000Z"
+      "file_size": 2487,
+      "file_modified": "2026-05-30T01:25:39.600Z"
     },
     {
       "id": "scope-contract-guard",
@@ -1083,7 +1183,7 @@
       "post_check": "none",
       "depends_on": [],
       "file_size": 1758,
-      "file_modified": "2026-05-01T04:37:06.323Z",
+      "file_modified": "2026-05-30T01:25:39.600Z",
       "note": "Companion to ownership-guard. Forces builders/fixers to declare their write scope up front rather than discovering ownership violations at write-time."
     },
     {
@@ -1114,8 +1214,8 @@
       "pre_check": "Regex scan write content for secret patterns.",
       "post_check": "none",
       "depends_on": [],
-      "file_size": 2883,
-      "file_modified": "2026-04-17T21:30:24.004Z"
+      "file_size": 2786,
+      "file_modified": "2026-05-30T01:25:39.600Z"
     },
     {
       "id": "self-mod-governance",
@@ -1142,7 +1242,7 @@
         "scripts/self-mod/governance"
       ],
       "file_size": 923,
-      "file_modified": "2026-05-01T04:37:06.324Z",
+      "file_modified": "2026-05-30T01:25:39.601Z",
       "note": "Advisory reminder for framework surface edits. Real enforcement lives in CI / commit gates; this hook just surfaces what those gates are at edit-time."
     },
     {
@@ -1169,7 +1269,7 @@
         "paths"
       ],
       "file_size": 17700,
-      "file_modified": "2026-05-11T21:20:29.460Z"
+      "file_modified": "2026-05-30T01:25:39.601Z"
     },
     {
       "id": "session-stop",
@@ -1192,8 +1292,8 @@
         "logger",
         "paths"
       ],
-      "file_size": 19140,
-      "file_modified": "2026-05-02T02:38:18.843Z"
+      "file_size": 18562,
+      "file_modified": "2026-05-30T01:25:39.602Z"
     },
     {
       "id": "session-tracker",
@@ -1216,7 +1316,7 @@
         "logger"
       ],
       "file_size": 9491,
-      "file_modified": "2026-04-29T05:46:39.849Z"
+      "file_modified": "2026-05-30T01:25:39.602Z"
     },
     {
       "id": "skill-catalog-regen",
@@ -1241,7 +1341,7 @@
         "scripts/generate-skill-catalog.js"
       ],
       "file_size": 2181,
-      "file_modified": "2026-05-13T20:41:01.715Z",
+      "file_modified": "2026-05-30T01:25:39.602Z",
       "kind": "observer",
       "note": "Observer/regenerator (per AC-5.4 SP-20260513-003). No gating; just keeps skill catalog current within one cycle of any skill edit."
     },
@@ -1264,7 +1364,7 @@
         "paths"
       ],
       "file_size": 3369,
-      "file_modified": "2026-05-02T17:31:41.040Z",
+      "file_modified": "2026-05-30T01:25:39.603Z",
       "kind": "observer",
       "note": "Pure counter — never blocks, writes to dedicated skill-usage.jsonl (not events.jsonl) to avoid telemetry distortion. Disposition: SUPERSEDED by skill-invocation-tracker.js (which captures invocation_path + suggestion correlation). Disabling in settings.json is intentional; left on disk for fallback / historical reference."
     },
@@ -1293,7 +1393,7 @@
         "skill-telemetry"
       ],
       "file_size": 6872,
-      "file_modified": "2026-05-13T20:43:09.541Z",
+      "file_modified": "2026-05-30T01:25:39.603Z",
       "kind": "observer",
       "note": "Pure telemetry observer. Fail-open. Correlates skill suggestions from smart-context.js with actual invocations to measure ranker quality."
     },
@@ -1324,7 +1424,7 @@
       ],
       "timeout": 5000,
       "file_size": 33997,
-      "file_modified": "2026-05-13T21:07:06.507Z"
+      "file_modified": "2026-05-30T01:25:39.603Z"
     },
     {
       "id": "spec-test-staleness",
@@ -1354,8 +1454,8 @@
         "paths",
         "logger"
       ],
-      "file_size": 5627,
-      "file_modified": "2026-05-03T19:46:50.939Z",
+      "file_size": 5448,
+      "file_modified": "2026-05-30T01:25:39.604Z",
       "note": "Informational signal for the learner and orchestrator. Last-pass timestamps are written by the test-runner agent on PASS."
     },
     {
@@ -1391,8 +1491,26 @@
         "logger"
       ],
       "file_size": 6158,
-      "file_modified": "2026-05-11T22:39:29.893Z",
+      "file_modified": "2026-05-30T01:25:39.604Z",
       "note": "Sprint Workflow v0.1 production-gate. Fails OPEN on parse error so unrelated Bash work is never broken."
+    },
+    {
+      "id": "sprint-routing-guard",
+      "type": "hook",
+      "matcher": "?",
+      "phase": "?",
+      "mode": "?",
+      "file": "scripts/hooks/sprint-routing-guard.js",
+      "file_size": 9606,
+      "file_modified": "2026-05-30T01:25:39.604Z",
+      "registered": true,
+      "gates": [],
+      "blocks": [],
+      "warns": [],
+      "allows": [],
+      "gaps_closed": [],
+      "uncurated": true,
+      "uncurated_note": "added since last hand-curated regen — fields ?, ?, ? need a /maps:enforcements review"
     },
     {
       "id": "sprint-tracker-guard",
@@ -1403,29 +1521,30 @@
       "file": "scripts/hooks/sprint-tracker-guard.js",
       "registered": true,
       "gates": [
-        "sprint-tracker-gate"
+        "sprint-tracker-gate",
+        "sprint-schema-injection-gate",
+        "sprint-schema-validation-gate"
       ],
       "blocks": [
         "edits to existing paths.sprintHistory/* yaml (history is append-only)",
-        "yaml under paths.sprintRoot with schema:warpos/sprint/* that fails schema validation against schemas/sprint/<name>.schema.json (type/enum/pattern/required/items violations)"
+        "yaml under paths.sprintRoot with schema:warpos/sprint/* that fails schema validation against schemas/sprint/<name>.schema.json (type/enum/pattern/required/items violations)",
+        "yaml under paths.sprintRoot at an unknown (unmapped) sprint path with missing `schema:` header"
       ],
-      "warns": [
-        "yaml under paths.sprintRoot without a `schema:` field",
-        "yaml declaring a warpos/sprint/* schema id not found in schemas/sprint/",
-        "yaml that fails to parse (allows write; helpers re-validate on read)"
-      ],
+      "warns": [],
       "allows": [
         "files outside paths.sprintRoot",
         "new files under paths.sprintHistory/ (archiving a closed sprint)",
         "Edit with new_string-only (no full content available)",
         "non-yaml files",
         "schemas not under warpos/sprint/",
-        "SPRINT_GUARD=off kill switch"
+        "SPRINT_GUARD=off kill switch",
+        "auto-inject `schema: warpos/sprint/<kind>/v1` for 15 known path patterns (approvals, tickets, releases, issues, plan-contracts, external-services, checkpoints, sprints/<id>/current, sprints/<id>/progress, sprints/<id>/retrospective, ralph, active-sprints, legacy singletons, history)"
       ],
       "gaps_closed": [
-        "GAP-1618"
+        "GAP-1618",
+        "GAP-1622"
       ],
-      "pre_check": "On Edit/Write under paths.sprintRoot: if under paths.sprintHistory and file exists, block (immutability). For .yaml: extract `schema:`; if warpos/sprint/*, load schemas/sprint/<id>.schema.json; mini-yaml-parse content; validate against schema; block on errors.",
+      "pre_check": "On Edit/Write under paths.sprintRoot: if under paths.sprintHistory and file exists, block (immutability). For .yaml: extract `schema:`; if missing, match path against 15 known patterns and AUTO-INJECT `schema: warpos/sprint/<kind>/v1` (else block when path unknown); if warpos/sprint/*, load schemas/sprint/<id>.schema.json; mini-yaml-parse content; validate against schema; block on errors.",
       "post_check": "none",
       "depends_on": [
         "scripts/sprint/fs",
@@ -1433,9 +1552,9 @@
         "paths",
         "logger"
       ],
-      "file_size": 14811,
-      "file_modified": "2026-05-13T22:22:53.843Z",
-      "note": "Sprint Workflow v0.1 post-Phase-1. Prevents tracker corruption + history rewrites. Fails OPEN on internal error so non-sprint edits are never broken."
+      "file_size": 15870,
+      "file_modified": "2026-05-30T01:25:39.605Z",
+      "note": "Sprint Workflow v0.1 post-Phase-1. Escalated 2026-05-13: was BLOCK on missing schema; now AUTO-INJECTS schema for 15 known path patterns and only BLOCKS on unknown paths. Addresses 126x/day missing-schema friction (LRN-2026-05-13-sprint-schema-missing) while preserving validation for unmapped paths. Fails OPEN on internal error so non-sprint edits are never broken."
     },
     {
       "id": "step-hardcode-suggester",
@@ -1469,8 +1588,8 @@
         "paths",
         "logger"
       ],
-      "file_size": 7337,
-      "file_modified": "2026-05-03T19:46:50.939Z",
+      "file_size": 7087,
+      "file_modified": "2026-05-30T01:25:39.605Z",
       "note": "Companion to step-registry-guard (PreToolUse hard-blocker). This Post hook surfaces the precise enum replacement so the agent can act on it."
     },
     {
@@ -1510,7 +1629,7 @@
         "logger"
       ],
       "file_size": 12054,
-      "file_modified": "2026-05-03T19:46:50.940Z",
+      "file_modified": "2026-05-30T01:25:39.606Z",
       "note": "Promoted 2026-04-28 from warn to hard block. Source of truth: _requirements/00-canonical/STEPS.json. Companion PostToolUse hook: step-hardcode-suggester."
     },
     {
@@ -1570,7 +1689,7 @@
       ],
       "cache_file": ".claude/.store-validator-prev.json",
       "file_size": 16480,
-      "file_modified": "2026-04-29T05:49:13.765Z"
+      "file_modified": "2026-05-30T01:25:39.606Z"
     },
     {
       "id": "systems-sync",
@@ -1593,8 +1712,8 @@
         "logger",
         "paths"
       ],
-      "file_size": 7854,
-      "file_modified": "2026-04-17T21:30:24.006Z"
+      "file_size": 7605,
+      "file_modified": "2026-05-30T01:25:39.607Z"
     },
     {
       "id": "team-guard",
@@ -1627,8 +1746,8 @@
         "store.json",
         "logger"
       ],
-      "file_size": 6657,
-      "file_modified": "2026-04-29T05:47:01.574Z"
+      "file_size": 7191,
+      "file_modified": "2026-05-31T03:26:36.373Z"
     },
     {
       "id": "template-fillability",
@@ -1662,7 +1781,7 @@
         "paths"
       ],
       "file_size": 2939,
-      "file_modified": "2026-04-29T23:35:48.482Z",
+      "file_modified": "2026-05-30T01:25:39.607Z",
       "note": "Implements LRN-2026-04-16 (requirement-template fillability). Advisory only — never blocks."
     },
     {
@@ -1678,8 +1797,8 @@
       "warns": [],
       "allows": [],
       "gaps_closed": [],
-      "file_size": 12132,
-      "file_modified": "2026-05-03T19:46:50.740Z",
+      "file_size": 11730,
+      "file_modified": "2026-05-30T01:25:39.608Z",
       "kind": "build-tool",
       "note": "Hook fixture runner / CLI test harness. Expands settings.json registrations into hook manifest, then runs synthetic payloads through each hook deterministically. Not a runtime hook. Invoked by hooks:test skill and CI."
     },
@@ -1706,8 +1825,8 @@
       "post_check": "tsc --noEmit on changed .ts/.tsx. Blocks on type errors, passes on timeout.",
       "depends_on": [],
       "timeout": 15000,
-      "file_size": 1743,
-      "file_modified": "2026-04-17T21:30:24.008Z"
+      "file_size": 1688,
+      "file_modified": "2026-05-30T01:25:39.608Z"
     },
     {
       "id": "ui-lint",
@@ -1730,8 +1849,44 @@
       "pre_check": "none",
       "post_check": "Scan src/*.tsx for design-system violations. Advisory only.",
       "depends_on": [],
-      "file_size": 3396,
-      "file_modified": "2026-04-17T21:30:24.008Z"
+      "file_size": 3311,
+      "file_modified": "2026-05-30T01:25:39.609Z"
+    },
+    {
+      "id": "untrusted-content-firewall",
+      "type": "hook",
+      "matcher": "?",
+      "phase": "?",
+      "mode": "?",
+      "file": "scripts/hooks/untrusted-content-firewall.js",
+      "file_size": 3144,
+      "file_modified": "2026-05-31T00:20:57.240Z",
+      "registered": true,
+      "gates": [],
+      "blocks": [],
+      "warns": [],
+      "allows": [],
+      "gaps_closed": [],
+      "uncurated": true,
+      "uncurated_note": "added since last hand-curated regen — fields ?, ?, ? need a /maps:enforcements review"
+    },
+    {
+      "id": "version-bump-guard",
+      "type": "hook",
+      "matcher": "?",
+      "phase": "?",
+      "mode": "?",
+      "file": "scripts/hooks/version-bump-guard.js",
+      "file_size": 7682,
+      "file_modified": "2026-05-30T01:25:39.609Z",
+      "registered": true,
+      "gates": [],
+      "blocks": [],
+      "warns": [],
+      "allows": [],
+      "gaps_closed": [],
+      "uncurated": true,
+      "uncurated_note": "added since last hand-curated regen — fields ?, ?, ? need a /maps:enforcements review"
     },
     {
       "id": "worktree-preflight",
@@ -1761,8 +1916,8 @@
       "pre_check": "Clean orphan worktrees. Check .worktree-smoke-passed marker.",
       "post_check": "none",
       "depends_on": [],
-      "file_size": 5343,
-      "file_modified": "2026-04-17T21:30:24.008Z"
+      "file_size": 5180,
+      "file_modified": "2026-05-30T01:25:39.610Z"
     },
     {
       "id": "banner",
@@ -1773,8 +1928,8 @@
         "session-start.js"
       ],
       "file": "scripts/hooks/lib/banner.js",
-      "file_size": 4462,
-      "file_modified": "2026-04-22T05:49:15.963Z"
+      "file_size": 4392,
+      "file_modified": "2026-05-30T01:25:39.588Z"
     },
     {
       "id": "concurrency-lock",
@@ -1787,7 +1942,7 @@
       ],
       "file": "scripts/hooks/lib/concurrency-lock.js",
       "file_size": 10962,
-      "file_modified": "2026-05-11T21:02:33.887Z"
+      "file_modified": "2026-05-30T01:25:39.589Z"
     },
     {
       "id": "context-sources",
@@ -1801,7 +1956,7 @@
       ],
       "file": "scripts/hooks/lib/context-sources.js",
       "file_size": 8286,
-      "file_modified": "2026-05-03T19:46:50.934Z"
+      "file_modified": "2026-05-30T01:25:39.589Z"
     },
     {
       "id": "gate-schema",
@@ -1815,7 +1970,15 @@
       ],
       "file": "scripts/hooks/lib/gate-schema.js",
       "file_size": 3894,
-      "file_modified": "2026-04-29T05:48:00.921Z"
+      "file_modified": "2026-05-30T01:25:39.589Z"
+    },
+    {
+      "id": "injection-patterns",
+      "type": "module",
+      "file": "scripts/hooks/lib/injection-patterns.js",
+      "file_size": 2949,
+      "file_modified": "2026-05-31T00:23:04.879Z",
+      "uncurated": true
     },
     {
       "id": "logger",
@@ -1830,7 +1993,7 @@
       ],
       "file": "scripts/hooks/lib/logger.js",
       "file_size": 15612,
-      "file_modified": "2026-05-12T23:11:21.600Z"
+      "file_modified": "2026-05-30T01:25:39.590Z"
     },
     {
       "id": "mode",
@@ -1844,7 +2007,7 @@
       ],
       "file": "scripts/hooks/lib/mode.js",
       "file_size": 2540,
-      "file_modified": "2026-04-29T18:58:58.761Z"
+      "file_modified": "2026-05-30T01:25:39.590Z"
     },
     {
       "id": "paths.generated",
@@ -1857,8 +2020,8 @@
       ],
       "generated_from": "framework/paths.registry.json",
       "file": "scripts/hooks/lib/paths.generated.js",
-      "file_size": 8028,
-      "file_modified": "2026-05-13T21:01:17.228Z"
+      "file_size": 10335,
+      "file_modified": "2026-05-31T01:42:29.732Z"
     },
     {
       "id": "paths",
@@ -1869,8 +2032,8 @@
         "~30 hooks (edit-watcher, memory-guard, path-guard, smart-context, etc.)"
       ],
       "file": "scripts/hooks/lib/paths.js",
-      "file_size": 6081,
-      "file_modified": "2026-05-03T19:46:50.725Z"
+      "file_size": 6437,
+      "file_modified": "2026-05-30T01:25:39.591Z"
     },
     {
       "id": "project-config",
@@ -1883,7 +2046,7 @@
       ],
       "file": "scripts/hooks/lib/project-config.js",
       "file_size": 4488,
-      "file_modified": "2026-04-29T05:50:17.120Z"
+      "file_modified": "2026-05-30T01:25:39.591Z"
     },
     {
       "id": "provider-health",
@@ -1896,7 +2059,7 @@
       ],
       "file": "scripts/hooks/lib/provider-health.js",
       "file_size": 10306,
-      "file_modified": "2026-05-11T21:08:20.670Z"
+      "file_modified": "2026-05-30T01:25:39.592Z"
     },
     {
       "id": "providers",
@@ -1908,8 +2071,8 @@
         "scripts/dispatch-agent.js"
       ],
       "file": "scripts/hooks/lib/providers.js",
-      "file_size": 23843,
-      "file_modified": "2026-05-12T06:58:28.992Z",
+      "file_size": 28076,
+      "file_modified": "2026-05-31T04:02:33.072Z",
       "note": "Source of binding-gap fixes. dispatch-route-guard hook exists to force every caller through this module."
     },
     {
@@ -1925,7 +2088,7 @@
       ],
       "file": "scripts/hooks/lib/role-aliases.js",
       "file_size": 1904,
-      "file_modified": "2026-04-29T05:43:47.546Z"
+      "file_modified": "2026-05-30T01:25:39.592Z"
     },
     {
       "id": "skill-telemetry",
@@ -1938,7 +2101,15 @@
       ],
       "file": "scripts/hooks/lib/skill-telemetry.js",
       "file_size": 5275,
-      "file_modified": "2026-05-13T20:42:22.196Z"
+      "file_modified": "2026-05-30T01:25:39.593Z"
+    },
+    {
+      "id": "untrusted-content",
+      "type": "module",
+      "file": "scripts/hooks/lib/untrusted-content.js",
+      "file_size": 2482,
+      "file_modified": "2026-05-31T00:20:08.687Z",
+      "uncurated": true
     }
   ]
 }

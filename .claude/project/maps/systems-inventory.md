@@ -1,22 +1,22 @@
-# Systems Inventory
+# Systems Inventory (Category Rollup)
 
-Generated: 2026-05-30T15:42:10.614Z
+Generated: 2026-05-31T19:28:09.351Z
 
-| id | name | category | count |
+| id | name | category | metric |
 |---|---|---|---|
-| identity | Alex identity | identity |  |
-| agents | Agent team + build chains | agents | 55 |
-| skills | Skills | capability | 167 |
-| hooks | Hooks | automation | 64 |
-| memory | Memory stores | memory | 8 |
-| maps | Relationship maps | infrastructure |  |
-| paths-registry | Paths registry | infrastructure |  |
-| manifest | Project manifest | infrastructure |  |
-| settings | Hook settings | infrastructure |  |
-| store | Build store | orchestration |  |
-| spec-graph | Spec dependency graph | infrastructure |  |
-| reference-docs | Reference documentation | knowledge | 28 |
-| patterns | Engineering patterns library | knowledge | 6 |
-| requirements-templates | Requirements spec templates | product | 90 |
-| installer | Installer | product |  |
-| linters | Lint suite | quality |  |
+| identity | Alex identity | identity | files=2 |
+| agents | Agent team + build chains | agents | count=74 |
+| skills | Skills | capability | count=186 |
+| hooks | Hooks | automation | count=65 |
+| memory | Memory stores | memory | count=8 |
+| maps | Relationship maps | infrastructure | .claude/project/maps |
+| paths-registry | Paths registry | infrastructure | .claude/paths.json |
+| manifest | Project manifest | infrastructure | .claude/manifest.json |
+| settings | Hook settings | infrastructure | .claude/settings.json |
+| store | Build store | orchestration | .claude/agents/store.json |
+| spec-graph | Spec dependency graph | infrastructure | .claude/project/maps/SPEC_GRAPH.json |
+| reference-docs | Reference documentation | knowledge | count=28 |
+| patterns | Engineering patterns library | knowledge | count=6 |
+| requirements-templates | Requirements spec templates | product | count=0 |
+| installer | Installer | product | files=3 |
+| linters | Lint suite | quality | files=6 |

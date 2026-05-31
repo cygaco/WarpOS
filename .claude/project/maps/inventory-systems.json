@@ -1,315 +1,345 @@
 {
   "metadata": {
-    "generated": "2026-05-13T22:37:04.323Z",
-    "lastUpdated": "2026-05-13T22:37:04.323Z",
-    "total_systems": 18,
-    "categories": 11,
-    "total_files_referenced": 97,
+    "generated": "2026-05-31T19:28:09.351Z",
+    "lastUpdated": "2026-05-31T19:28:09.351Z",
+    "total_systems": 35,
+    "categories": 2,
+    "total_files_referenced": 34,
     "missing_files_on_disk": 1,
     "regenerated_by": "scripts/regen-maps.js"
   },
   "by_status": {
-    "operational": {
-      "count": 15,
+    "active": {
+      "count": 1,
       "ids": [
-        "identity",
-        "agents",
-        "skills",
-        "hooks",
-        "memory",
-        "maps",
-        "paths-registry",
-        "manifest",
-        "settings",
-        "store",
-        "spec-graph",
-        "reference-docs",
-        "patterns",
-        "installer",
-        "linters"
+        "testsuite-per-sprint"
       ]
     },
     "untested": {
-      "count": 3,
+      "count": 34,
       "ids": [
-        "requirements-templates",
-        "skill-warp-update",
-        "skill-sprint-release"
+        "skill-roadmap-ideas",
+        "skill-roadmap-next",
+        "skill-warp-diff",
+        "skill-playbook-add",
+        "skill-roadmap-prioritize",
+        "skill-scan-warpos-ship-coverage",
+        "skill-scan-full",
+        "skill-discover-orphaned",
+        "skill-warp-reconcile",
+        "skill-scan-version-coherence",
+        "skill-sprint-cost-gate",
+        "skill-scan-ingest-firewall",
+        "skill-scan-scaffold-coverage",
+        "skill-portfolio-new",
+        "skill-bootstrap-spinup",
+        "skill-scan-etc-harness",
+        "skill-etc-author",
+        "skill-etc-eval",
+        "skill-scan-role-parity",
+        "skill-growth-product-finder",
+        "skill-growth-angles",
+        "skill-growth-message-brief",
+        "skill-growth-advertorial",
+        "skill-growth-landing-page",
+        "skill-growth-iterate",
+        "skill-growth-ad-images",
+        "skill-growth-ad-video",
+        "skill-roadmap-create",
+        "skill-_report_skill_tmp",
+        "skill-scan-warpos-layer-diff",
+        "skill-scan-scan-coverage",
+        "skill-learn-ingest",
+        "skill-maps-coverage",
+        "skill-maps-all"
       ]
     }
   },
   "by_category": {
-    "identity": {
+    "uncategorized": {
       "count": 1,
       "systems": [
         {
-          "id": "identity",
-          "name": "Alex identity",
-          "status": "operational",
-          "files": [
-            "CLAUDE.md",
-            "AGENTS.md"
-          ]
-        }
-      ]
-    },
-    "agents": {
-      "count": 1,
-      "systems": [
-        {
-          "id": "agents",
-          "name": "Agent team + build chains",
-          "status": "operational",
-          "files": [
-            ".claude/agents/.system.md",
-            ".claude/agents/02-oneshot/visual-review/visual-review.md",
-            ".claude/agents/02-oneshot/test-runner/test-runner.md",
-            ".claude/agents/02-oneshot/stub-scaffold/stub-scaffold.md",
-            ".claude/agents/02-oneshot/reviewer/reviewer.md",
-            ".claude/agents/02-oneshot/req-reviewer/req-reviewer.md",
-            ".claude/agents/02-oneshot/redteam/analyze.md",
-            ".claude/agents/02-oneshot/redteam/orchestrator.md",
-            ".claude/agents/02-oneshot/redteam/scan.md",
-            ".claude/agents/02-oneshot/qa/analyze.md",
-            ".claude/agents/02-oneshot/qa/orchestrator.md",
-            ".claude/agents/02-oneshot/qa/scan.md",
-            ".claude/agents/02-oneshot/learner/learner.md",
-            ".claude/agents/02-oneshot/fixer/fixer.md",
-            ".claude/agents/02-oneshot/compliance/compliance.md",
-            ".claude/agents/02-oneshot/compliance/spec.md",
-            ".claude/agents/02-oneshot/builder/builder.md",
-            ".claude/agents/02-oneshot/.system/ENV-SETUP.md",
-            ".claude/agents/02-oneshot/.system/integration-map.md",
-            ".claude/agents/02-oneshot/.system/LAUNCH-CHECKLIST.md",
-            ".claude/agents/02-oneshot/.system/protocol.md",
-            ".claude/agents/02-oneshot/.system/skeleton-checklist.md",
-            ".claude/agents/01-adhoc/reviewer/reviewer.md",
-            ".claude/agents/01-adhoc/req-reviewer/req-reviewer.md",
-            ".claude/agents/01-adhoc/redteam/analyze.md",
-            ".claude/agents/01-adhoc/redteam/orchestrator.md",
-            ".claude/agents/01-adhoc/redteam/scan.md",
-            ".claude/agents/01-adhoc/qa/analyze.md",
-            ".claude/agents/01-adhoc/qa/orchestrator.md",
-            ".claude/agents/01-adhoc/qa/scan.md",
-            ".claude/agents/01-adhoc/fixer/fixer.md",
-            ".claude/agents/01-adhoc/compliance/compliance.md",
-            ".claude/agents/01-adhoc/builder/builder.md",
-            ".claude/agents/01-adhoc/.system/protocol.md",
-            ".claude/agents/00-alex/alpha.md",
-            ".claude/agents/00-alex/beta.md",
-            ".claude/agents/00-alex/delta.md",
-            ".claude/agents/00-alex/gamma.md",
-            ".claude/agents/00-alex/.system/lexicon.md",
-            ".claude/agents/00-alex/.system/policy/current-stage.md",
-            ".claude/agents/00-alex/.system/policy/decision-policy.md",
-            ".claude/agents/00-alex/.system/policy/validation-backlog-policy.md",
-            ".claude/agents/00-alex/.system/policy/adr/0000-template.md",
-            ".claude/agents/00-alex/.system/policy/adr/0001-warp-promote-location.md",
-            ".claude/agents/00-alex/.system/policy/adr/0002-multi-sprint-parallel-lanes.md",
-            ".claude/agents/00-alex/.system/policy/adr/INDEX.md",
-            ".claude/agents/00-alex/.system/beta/beta-source-data.md",
-            ".claude/agents/00-alex/.system/beta/judgement-model-recommendations-archive.md",
-            ".claude/agents/00-alex/.system/beta/judgement-model-recommendations.md",
-            ".claude/agents/00-alex/.system/beta/judgement-model.md",
-            ".claude/agents/.system/frontmatter-guide.md",
-            ".claude/agents/.system/guides/agent-dispatch-guide.md",
-            ".claude/agents/.system/guides/oneshot-token-guide.md"
-          ]
-        }
-      ]
-    },
-    "capability": {
-      "count": 1,
-      "systems": [
-        {
-          "id": "skills",
-          "name": "Skills",
-          "status": "operational",
+          "id": "testsuite-per-sprint",
+          "name": "Per-Sprint Exhaustive Test-Suite System",
+          "status": "active",
           "files": []
-        }
-      ]
-    },
-    "automation": {
-      "count": 1,
-      "systems": [
-        {
-          "id": "hooks",
-          "name": "Hooks",
-          "status": "operational",
-          "files": []
-        }
-      ]
-    },
-    "memory": {
-      "count": 1,
-      "systems": [
-        {
-          "id": "memory",
-          "name": "Memory stores",
-          "status": "operational",
-          "files": []
-        }
-      ]
-    },
-    "infrastructure": {
-      "count": 5,
-      "systems": [
-        {
-          "id": "manifest",
-          "name": "Project manifest",
-          "status": "operational",
-          "files": [
-            ".claude/manifest.json"
-          ]
-        },
-        {
-          "id": "maps",
-          "name": "Relationship maps",
-          "status": "operational",
-          "files": [
-            ".claude/project/maps"
-          ]
-        },
-        {
-          "id": "paths-registry",
-          "name": "Paths registry",
-          "status": "operational",
-          "files": [
-            ".claude/paths.json"
-          ]
-        },
-        {
-          "id": "settings",
-          "name": "Hook settings",
-          "status": "operational",
-          "files": [
-            ".claude/settings.json"
-          ]
-        },
-        {
-          "id": "spec-graph",
-          "name": "Spec dependency graph",
-          "status": "operational",
-          "files": [
-            ".claude/project/maps/SPEC_GRAPH.json"
-          ]
-        }
-      ]
-    },
-    "orchestration": {
-      "count": 1,
-      "systems": [
-        {
-          "id": "store",
-          "name": "Build store",
-          "status": "operational",
-          "files": [
-            ".claude/agents/store.json"
-          ]
-        }
-      ]
-    },
-    "knowledge": {
-      "count": 2,
-      "systems": [
-        {
-          "id": "patterns",
-          "name": "Engineering patterns library",
-          "status": "operational",
-          "files": [
-            "patterns/ADMISSION.md",
-            "patterns/human-report-shape.md",
-            "patterns/path-registry.md",
-            "patterns/README.md",
-            "patterns/release-capsule.md",
-            "patterns/requirements-drift-gate.md"
-          ]
-        },
-        {
-          "id": "reference-docs",
-          "name": "Reference documentation",
-          "status": "operational",
-          "files": [
-            ".claude/project/reference/agent-dispatch-guide.md",
-            ".claude/project/reference/cross-provider-dispatch.md",
-            ".claude/project/reference/echo-trap-monitoring.md",
-            ".claude/project/reference/evolution.md",
-            ".claude/project/reference/installer-file-lifecycle.md",
-            ".claude/project/reference/karpathy-autoresearch.md",
-            ".claude/project/reference/learning-lifecycle.md",
-            ".claude/project/reference/operational-loop.md",
-            ".claude/project/reference/private-to-public-history.md",
-            ".claude/project/reference/reasoning-frameworks.md",
-            ".claude/project/reference/recurring-issues-design.md",
-            ".claude/project/reference/skill-map.md",
-            ".claude/project/reference/sprint-workflow.md",
-            ".claude/project/reference/SYSTEMS-REFERENCE.md",
-            ".claude/project/reference/SYSTEMS.md",
-            ".claude/project/reference/warpos-class-wiring.md",
-            ".claude/project/reference/warpos-launch-roadmap.md",
-            ".claude/project/reference/warpos-roadmap.md",
-            ".claude/project/reference/warpos-system-updates-2026-04-15.md"
-          ]
-        }
-      ]
-    },
-    "product": {
-      "count": 2,
-      "systems": [
-        {
-          "id": "installer",
-          "name": "Installer",
-          "status": "operational",
-          "files": [
-            "scripts/warp-setup.js",
-            "install.ps1",
-            "version.json"
-          ]
-        },
-        {
-          "id": "requirements-templates",
-          "name": "Requirements spec templates",
-          "status": "untested",
-          "files": [
-            "framework/templates/sprint/README.md"
-          ]
-        }
-      ]
-    },
-    "quality": {
-      "count": 1,
-      "systems": [
-        {
-          "id": "linters",
-          "name": "Lint suite",
-          "status": "operational",
-          "files": [
-            "scripts/lint-hl-stories.js",
-            "scripts/lint-prds.js",
-            "scripts/lint-staleness.js",
-            "scripts/lint-stories.js",
-            "scripts/path-lint.js"
-          ]
         }
       ]
     },
     "cognition": {
-      "count": 2,
+      "count": 34,
       "systems": [
         {
-          "id": "skill-sprint-release",
-          "name": "Prepare and execute a sprint release — final checks, approval, deploy gate, release notes, rollback prep, retrospective trigger.",
+          "id": "skill-_report_skill_tmp",
+          "name": "File an ELI5 report (sprint | milestone | session | checkpoint) into _reports/ — tl;dr first, plain language, watch-outs always",
           "status": "untested",
           "files": [
-            ".claude/commands/sprint/release.md"
+            ".claude/commands/_report_skill_tmp.md"
           ]
         },
         {
-          "id": "skill-warp-update",
-          "name": "warp-update",
+          "id": "skill-bootstrap-spinup",
+          "name": "\"From 'just WarpOS' to something on screen — one in-project command: intent (guided brief, or --clone a competitor) → canonical docs → roadmap with sprints → execute the first sprint until the core loop serves. The idea→screen on-ramp.\"",
           "status": "untested",
           "files": [
-            ".claude/commands/warp/update.md"
+            ".claude/commands/bootstrap/spinup.md"
+          ]
+        },
+        {
+          "id": "skill-discover-orphaned",
+          "name": "Discover orphaned work — find every deferred, forgotten, or abandoned task across NEXT.md, runtime notes, branches, untracked files, TODOs, plans, ADRs, learnings, drift queue. Classifies and proposes concrete next actions.",
+          "status": "untested",
+          "files": [
+            ".claude/commands/discover/orphaned.md"
+          ]
+        },
+        {
+          "id": "skill-etc-author",
+          "name": "Author or refine a skill/prompt in standard format, producing a sibling eval-pack for evaluation",
+          "status": "untested",
+          "files": [
+            ".claude/commands/etc/author.md"
+          ]
+        },
+        {
+          "id": "skill-etc-eval",
+          "name": "Evaluate a skill or prompt artifact against its eval-pack, emitting a validated decision_record",
+          "status": "untested",
+          "files": [
+            ".claude/commands/etc/eval.md"
+          ]
+        },
+        {
+          "id": "skill-growth-ad-images",
+          "name": "Turn an angle into native-ad image prompts (scene-first, no text/logo/product, --ar) and render them. Render step via Higgsfield is a STUB pending β hard-halt + α.",
+          "status": "untested",
+          "files": [
+            ".claude/commands/growth/ad-images.md"
+          ]
+        },
+        {
+          "id": "skill-growth-ad-video",
+          "name": "Turn an angle into a video ad (swipe→script→storyboard→image-to-video). Generation via Higgsfield/Kling/Veo is a STUB pending β hard-halt + α.",
+          "status": "untested",
+          "files": [
+            ".claude/commands/growth/ad-video.md"
+          ]
+        },
+        {
+          "id": "skill-growth-advertorial",
+          "name": "Write a long-form advertorial (pre-sell editorial) from a message brief — research → foundational docs → swipe → write → Chief coherence review.",
+          "status": "untested",
+          "files": [
+            ".claude/commands/growth/advertorial.md"
+          ]
+        },
+        {
+          "id": "skill-growth-angles",
+          "name": "Mine untapped marketing angles from real customer voice (Amazon/Reddit/forums) — ≥3 evidence-backed alternates. Reuses research:deep.",
+          "status": "untested",
+          "files": [
+            ".claude/commands/growth/angles.md"
+          ]
+        },
+        {
+          "id": "skill-growth-iterate",
+          "name": "Iterate a winning creative/message against a conversion/engagement scalar — thin wrapper over karpathy:run + parallel variation fan-out. Data picks winners.",
+          "status": "untested",
+          "files": [
+            ".claude/commands/growth/iterate.md"
+          ]
+        },
+        {
+          "id": "skill-growth-landing-page",
+          "name": "Build a converting landing page from a conversion brief — conversion-hierarchy, scaffold component library, mobile-first. Reuses the content render path + scaffold.",
+          "status": "untested",
+          "files": [
+            ".claude/commands/growth/landing-page.md"
+          ]
+        },
+        {
+          "id": "skill-growth-message-brief",
+          "name": "Distill the single winning message (the spine artifact) from an audience dossier + angles — contrast + depth, market promise inside the claims boundary.",
+          "status": "untested",
+          "files": [
+            ".claude/commands/growth/message-brief.md"
+          ]
+        },
+        {
+          "id": "skill-growth-product-finder",
+          "name": "Find validated high-margin products for paid traffic — EQ-scored (Product×Ads×Funnel×LTV), SCALE/TEST/SKIP, with margin math. Reuses research:deep.",
+          "status": "untested",
+          "files": [
+            ".claude/commands/growth/product-finder.md"
+          ]
+        },
+        {
+          "id": "skill-learn-ingest",
+          "name": "Ingest external knowledge from files, links, or YouTube videos and apply learnings to the system",
+          "status": "untested",
+          "files": [
+            ".claude/commands/learn/ingest.md"
+          ]
+        },
+        {
+          "id": "skill-maps-all",
+          "name": "Registry of all maps — shows every map, its source, last updated, and staleness",
+          "status": "untested",
+          "files": [
+            ".claude/commands/maps/all.md"
+          ]
+        },
+        {
+          "id": "skill-maps-coverage",
+          "name": "Maps-suite self-inventory — asserts every /maps:* skill is registered in /maps:all, no dangling registry refs, no orphan map files, and surfaces stale maps. The /maps analog of /scan:scan-coverage.",
+          "status": "untested",
+          "files": [
+            ".claude/commands/maps/coverage.md"
+          ]
+        },
+        {
+          "id": "skill-playbook-add",
+          "name": "Append a play to the Playbook (.claude/project/reference/playbook.md) — a named, example-anchored operating principle. Picks the right section, formats to match, appends without disturbing other plays.",
+          "status": "untested",
+          "files": [
+            ".claude/commands/playbook/add.md"
+          ]
+        },
+        {
+          "id": "skill-portfolio-new",
+          "name": "Scaffold a new product repo (sibling to WarpOS) with the framework installed and committed, then register it — local-only by default. Open it in its own session and create the GitHub remote yourself, or pass --github to also create+push a private repo.",
+          "status": "untested",
+          "files": [
+            ".claude/commands/portfolio/new.md"
+          ]
+        },
+        {
+          "id": "skill-roadmap-create",
+          "name": "\"Bootstrap a product ROADMAP.md from the inputs a project actually has — prefers _requirements/00-canonical/* + a Director-of-PM lens when present, falls back to the competitor clone brief + PROJECT.md. Evidence-bound, MVP-core-loop first.\"",
+          "status": "untested",
+          "files": [
+            ".claude/commands/roadmap/create.md"
+          ]
+        },
+        {
+          "id": "skill-roadmap-ideas",
+          "name": "Predict candidate roadmap entries across four evidence lenses (3 each = 12 ideas) — whole-roadmap, last-3-shipped, last-3-active, vision/canonical. Read-only; proposes only, pairs with /roadmap:add. Consults the Director of Product for a real product lens.",
+          "status": "untested",
+          "files": [
+            ".claude/commands/roadmap/ideas.md"
+          ]
+        },
+        {
+          "id": "skill-roadmap-next",
+          "name": "The 1-idea alternative to /roadmap:ideas — the single highest-leverage next roadmap entry (the Director of Product's top pick) with a one-paragraph rationale. For \"just tell me the one thing.\"",
+          "status": "untested",
+          "files": [
+            ".claude/commands/roadmap/next.md"
+          ]
+        },
+        {
+          "id": "skill-roadmap-prioritize",
+          "name": "Director-of-Product-driven roadmap prioritization — runs /roadmap:cleanup first, then consults the Director of Product to rank the open roadmap into a clear do-next order, and applies the ordering content-preservingly.",
+          "status": "untested",
+          "files": [
+            ".claude/commands/roadmap/prioritize.md"
+          ]
+        },
+        {
+          "id": "skill-scan-etc-harness",
+          "name": "Audit the /etc authoring+eval harness — fail-closed enforcer that rejects an invented authoring format (root etc.md, non-standard skill frontmatter) and any eval-pack or emitted decision_record that doesn't satisfy its contract (S0.4). The standing backstop to the harness's own test suite.",
+          "status": "untested",
+          "files": [
+            ".claude/commands/scan/etc-harness.md"
+          ]
+        },
+        {
+          "id": "skill-scan-full",
+          "name": "Run every scan in parallel — a full system scan across project health, governance, and WarpOS distribution integrity — merged into one unified report. One command for full system health.",
+          "status": "untested",
+          "files": [
+            ".claude/commands/scan/full.md"
+          ]
+        },
+        {
+          "id": "skill-scan-ingest-firewall",
+          "name": "Audit the ingest stores (_docs/research, _docs/imports, _docs/briefs, _docs/clones) for un-firewalled prompt-injection — the persistent fail-closed backstop to the real-time untrusted-content firewall hook (S0.6). Treats all externally-ingested content as DATA, never instructions.",
+          "status": "untested",
+          "files": [
+            ".claude/commands/scan/ingest-firewall.md"
+          ]
+        },
+        {
+          "id": "skill-scan-role-parity",
+          "name": "The one check that owns role parity across the org map, the dispatch catalog, and team-guard — fail-closed enforcer (S1.1) so repartitioning agents by domain can't silently drift the registry. Built BEFORE the Wave-2 repartition it guards.",
+          "status": "untested",
+          "files": [
+            ".claude/commands/scan/role-parity.md"
+          ]
+        },
+        {
+          "id": "skill-scan-scaffold-coverage",
+          "name": "Verify the WarpOS app scaffold (Next+Tailwind v4+shadcn/ui+Radix+Lucide) is complete and coherent — fail-closed enforcer for S0.3, so every scaffolded product ships a real component library, not vibe-coded raw elements.",
+          "status": "untested",
+          "files": [
+            ".claude/commands/scan/scaffold-coverage.md"
+          ]
+        },
+        {
+          "id": "skill-scan-scan-coverage",
+          "name": "Scan-suite self-inventory — asserts every /scan:* skill is delegated by /scan:full or explicitly excluded (with a reason). Kills the dir↔aggregator drift class (the \"enforcer exists but isn't on the path\" gap full.md hit with ship-coverage).",
+          "status": "untested",
+          "files": [
+            ".claude/commands/scan/scan-coverage.md"
+          ]
+        },
+        {
+          "id": "skill-scan-version-coherence",
+          "name": "Verify version + schema-label coherence — product version agrees across ALL manifests (incl. the ones version-quorum misses) and every schema family carries a single consistent version label. Catches the 0.10.0→0.11.0 lag + paths-v4-on-v5-content drift classes.",
+          "status": "untested",
+          "files": [
+            ".claude/commands/scan/version-coherence.md"
+          ]
+        },
+        {
+          "id": "skill-scan-warpos-layer-diff",
+          "name": "Read-only product-vs-dev-tooling layer diff — lists which framework-owned paths SHIP to consumer products (product layer) vs which stay framework-internal and never ship (dev-tooling layer), with summary counts. Cross-references _warpos/MANIFEST.json (ownership) × .claude/framework-manifest.json (shipped). Informational, never a gate.",
+          "status": "untested",
+          "files": [
+            ".claude/commands/scan/warpos-layer-diff.md"
+          ]
+        },
+        {
+          "id": "skill-scan-warpos-ship-coverage",
+          "name": "Verify every framework-owned path under the consumer-essential roots is actually shipped (enumerated in framework-manifest.json) — catches \"framework code that ships to nobody\" (the B1/E3 downstream-broken class).",
+          "status": "untested",
+          "files": [
+            ".claude/commands/scan/warpos-ship-coverage.md"
+          ]
+        },
+        {
+          "id": "skill-sprint-cost-gate",
+          "name": "Toggle the /sprint:full cost-estimate halt on or off — turn off the heuristic spend gate when an operator spend posture is authorized, turn it back on to restore the guardrail. Controls only the sprint cost halt, never the hard ceilings or the real >$5 rule.",
+          "status": "untested",
+          "files": [
+            ".claude/commands/sprint/cost-gate.md"
+          ]
+        },
+        {
+          "id": "skill-warp-diff",
+          "name": "Diff canonical WarpOS against an installed product — version/staleness, framework-file drift (stale vs locally-modified), coverage gaps, and skills/agents/hooks delta. Read-only; reports on the product, never edits it.",
+          "status": "untested",
+          "files": [
+            ".claude/commands/warp/diff.md"
+          ]
+        },
+        {
+          "id": "skill-warp-reconcile",
+          "name": "Reconcile downstream-flagged WarpOS gaps into canonical — discover every product's WARPOS.md, verify each gap @current, get a cross-provider root-cause lens, triage, drive the fixes, and record resolution canonical-side.",
+          "status": "untested",
+          "files": [
+            ".claude/commands/warp/reconcile.md"
           ]
         }
       ]
@@ -329,19 +359,19 @@
       "id": "agents",
       "name": "Agent team + build chains",
       "category": "agents",
-      "count": 53
+      "count": 74
     },
     {
       "id": "skills",
       "name": "Skills",
       "category": "capability",
-      "count": 129
+      "count": 186
     },
     {
       "id": "hooks",
       "name": "Hooks",
       "category": "automation",
-      "count": 57
+      "count": 65
     },
     {
       "id": "memory",
@@ -389,7 +419,7 @@
       "id": "reference-docs",
       "name": "Reference documentation",
       "category": "knowledge",
-      "count": 19
+      "count": 28
     },
     {
       "id": "patterns",
@@ -419,6 +449,7 @@
       "category": "quality",
       "files": [
         "scripts/lint-hl-stories.js",
+        "scripts/lint-json-bom.js",
         "scripts/lint-prds.js",
         "scripts/lint-staleness.js",
         "scripts/lint-stories.js",

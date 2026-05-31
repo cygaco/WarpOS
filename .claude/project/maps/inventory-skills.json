@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "generated": "2026-05-13T22:37:04.323Z",
-    "lastUpdated": "2026-05-13T22:37:04.323Z",
-    "total_skills": 129,
-    "namespaces": 31,
-    "user_invocable": 60,
+    "generated": "2026-05-31T19:28:09.351Z",
+    "lastUpdated": "2026-05-31T19:28:09.351Z",
+    "total_skills": 184,
+    "namespaces": 39,
+    "user_invocable": 73,
     "regenerated_by": "scripts/regen-maps.js"
   },
   "namespaces": {
@@ -77,9 +77,76 @@
             "references": [],
             "calls": [
               "/beta:integrate",
-              "/check:requirements",
               "/maps:all",
+              "/scan:requirements",
               "/sleep:deep"
+            ]
+          }
+        }
+      ]
+    },
+    "bootstrap": {
+      "namespace": "bootstrap",
+      "count": 3,
+      "skills": [
+        {
+          "id": "bootstrap:lastmile",
+          "name": "lastmile",
+          "description": "\"Prototype → monetizable product. Drives the 'last mile': readiness audit → launch plan → roadmap/sprint injection → guided execution → launch-ready handoff. Picks practical defaults for vibe coders, asks only high-leverage questions, gates risky production actions behind human approval. The spinup sequel — spinup gets you on screen, lastmile gets you paid.\"",
+          "file": ".claude/commands/bootstrap/lastmile.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/learn:ingest",
+              "/learn:integrate",
+              "/qa:audit",
+              "/redteam:full",
+              "/research:deep",
+              "/roadmap:add",
+              "/scan:install",
+              "/scan:roadmap-trace",
+              "/sprint:design",
+              "/sprint:execute",
+              "/sprint:plan"
+            ]
+          }
+        },
+        {
+          "id": "bootstrap:ponder",
+          "name": "ponder",
+          "description": "Exploratory pondering of a project — surface tensions, patterns, JTBD drift, and one forcing question",
+          "file": ".claude/commands/bootstrap/ponder.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/discover:systems",
+              "/enforcement:log",
+              "/reasoning:run",
+              "/scan:full",
+              "/sleep:deep"
+            ]
+          }
+        },
+        {
+          "id": "bootstrap:spinup",
+          "name": "spinup",
+          "description": "\"From 'just WarpOS' to something on screen — one in-project command: intent (guided brief, or --clone a competitor) → canonical docs → roadmap with sprints → execute the first sprint until the core loop serves. The idea→screen on-ramp.\"",
+          "file": ".claude/commands/bootstrap/spinup.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/portfolio:new",
+              "/scan:install",
+              "/warp:setup"
             ]
           }
         }
@@ -87,112 +154,57 @@
     },
     "check": {
       "namespace": "check",
-      "count": 26,
+      "count": 4,
       "skills": [
         {
           "id": "check:all",
           "name": "all",
-          "description": "Run every check in parallel and produce one unified report — architecture, environment, references, requirements, patterns, system. One command for full project health.",
+          "description": "\"[deprecated alias → /scan:full] Run every scan in parallel — a full system scan. Superseded by /scan:full in the check:→scan: namespace rename (SP-20260528-001).\"",
           "file": ".claude/commands/check/all.md",
-          "user_invocable": null,
-          "data_flow": {
-            "reads": [],
-            "writes": [],
-            "references": [],
-            "calls": [
-              "/check:architecture",
-              "/check:environment",
-              "/check:patterns",
-              "/check:references",
-              "/check:requirements",
-              "/check:system",
-              "/maps:all",
-              "/oneshot:preflight",
-              "/sleep:deep",
-              "/warp:doctor",
-              "/warp:health"
-            ]
-          }
-        },
-        {
-          "id": "check:architecture",
-          "name": "architecture",
-          "description": "Architecture integrity — do the layers connect? agent system, cross-layer seams, documentation health",
-          "file": ".claude/commands/check/architecture.md",
-          "user_invocable": null,
-          "data_flow": {
-            "reads": [],
-            "writes": [],
-            "references": [],
-            "calls": [
-              "/check:environment",
-              "/check:references",
-              "/check:requirements",
-              "/maps:all",
-              "/sleep:deep",
-              "/warp:health"
-            ]
-          }
-        },
-        {
-          "id": "check:coherence",
-          "name": "coherence",
-          "description": "Run the WarpOS system coherence graph across 15 drift types.",
-          "file": ".claude/commands/check/coherence.md",
           "user_invocable": true,
           "data_flow": {
             "reads": [],
             "writes": [],
             "references": [],
-            "calls": []
+            "calls": [
+              "/scan:full"
+            ]
           }
         },
         {
-          "id": "check:design-system",
-          "name": "design-system",
-          "description": "Design system compliance check - scans UI code for raw colors, raw primitives, missing design docs, and component-library drift",
-          "file": ".claude/commands/check/design-system.md",
-          "user_invocable": null,
+          "id": "check:framework-purity",
+          "name": "framework-purity",
+          "description": "\"[deprecated alias → /scan:framework-purity] Refuse product-content leaks in canonical. Superseded by /scan:framework-purity in the check:→scan: namespace rename (SP-20260528-001).\"",
+          "file": ".claude/commands/check/framework-purity.md",
+          "user_invocable": true,
           "data_flow": {
             "reads": [],
             "writes": [],
-            "references": [
-              "scripts/hooks/ui-lint.js"
-            ],
-            "calls": []
+            "references": [],
+            "calls": [
+              "/scan:framework-purity"
+            ]
           }
         },
         {
-          "id": "check:environment",
-          "name": "environment",
-          "description": "Environment readiness and tooling quality — fast go/no-go or deep audit",
-          "file": ".claude/commands/check/environment.md",
-          "user_invocable": null,
+          "id": "check:framework-views-fresh",
+          "name": "framework-views-fresh",
+          "description": "\"[deprecated alias → /scan:framework-views-fresh] Verify .claude views are byte-identical regenerations of _warpos sources. Superseded by /scan:framework-views-fresh in the check:→scan: namespace rename (SP-20260528-001).\"",
+          "file": ".claude/commands/check/framework-views-fresh.md",
+          "user_invocable": true,
           "data_flow": {
-            "reads": [
-              ".claude/project/maps/.stale.json"
-            ],
+            "reads": [],
             "writes": [],
-            "references": [
-              "scripts/hooks/prompt-validator.js",
-              "scripts/hooks/smart-context.js"
-            ],
+            "references": [],
             "calls": [
-              "/check:architecture",
-              "/check:references",
-              "/discover:systems",
-              "/hooks:test",
-              "/maps:all",
-              "/maps:enforcements",
-              "/sleep:deep",
-              "/warp:health"
+              "/scan:framework-views-fresh"
             ]
           }
         },
         {
           "id": "check:install",
           "name": "install",
-          "description": "Verify a fresh WarpOS install — manifest, paths, agents, hooks, version, settings.",
+          "description": "\"[deprecated alias → /scan:install] Verify a fresh WarpOS install. Superseded by /scan:install in the check:→scan: namespace rename (SP-20260528-001).\"",
           "file": ".claude/commands/check/install.md",
           "user_invocable": true,
           "data_flow": {
@@ -200,338 +212,20 @@
             "writes": [],
             "references": [],
             "calls": [
-              "/warp:setup"
+              "/scan:install"
             ]
-          }
-        },
-        {
-          "id": "check:patterns",
-          "name": "patterns",
-          "description": "Cross-run intelligence and automation proposals — diagnose recurring patterns or propose prevention",
-          "file": ".claude/commands/check/patterns.md",
-          "user_invocable": null,
-          "data_flow": {
-            "reads": [],
-            "writes": [],
-            "references": [],
-            "calls": [
-              "/fix:deep",
-              "/fix:fast",
-              "/hooks:friction",
-              "/issues:log",
-              "/learn:deep",
-              "/maps:enforcements",
-              "/oneshot:retro",
-              "/sleep:deep"
-            ]
-          }
-        },
-        {
-          "id": "check:privacy",
-          "name": "privacy",
-          "description": "Pre-publish scan for personal data — credentials, emails, homedir paths, runtime files tracked by git.",
-          "file": ".claude/commands/check/privacy.md",
-          "user_invocable": true,
-          "data_flow": {
-            "reads": [
-              ".claude/project/memory/known-names.json"
-            ],
-            "writes": [],
-            "references": [],
-            "calls": []
-          }
-        },
-        {
-          "id": "check:references",
-          "name": "references",
-          "description": "Cross-file reference integrity — broken links, orphans, stale SPEC_GRAPH edges",
-          "file": ".claude/commands/check/references.md",
-          "user_invocable": null,
-          "data_flow": {
-            "reads": [
-              ".claude/project/maps/SPEC_GRAPH.json"
-            ],
-            "writes": [],
-            "references": [
-              "scripts/hooks/ref-checker.js"
-            ],
-            "calls": [
-              "/check:architecture",
-              "/maps:all",
-              "/skills:cleanup",
-              "/sleep:deep"
-            ]
-          }
-        },
-        {
-          "id": "check:requirements",
-          "name": "requirements",
-          "description": "Specification consistency, coverage, and drift — static audit, change-driven propagation check, or pending-drift review",
-          "file": ".claude/commands/check/requirements.md",
-          "user_invocable": null,
-          "data_flow": {
-            "reads": [
-              ".claude/project/events/requirements-staged.jsonl"
-            ],
-            "writes": [],
-            "references": [],
-            "calls": [
-              "/check:architecture",
-              "/check:references",
-              "/learn:deep",
-              "/learn:integrate",
-              "/oneshot:retro",
-              "/reqs:review",
-              "/sleep:deep"
-            ]
-          }
-        },
-        {
-          "id": "check:system",
-          "name": "system",
-          "description": "System inventory — enumerate every active WarpOS system, diff against manifest, report drift and gaps",
-          "file": ".claude/commands/check/system.md",
-          "user_invocable": null,
-          "data_flow": {
-            "reads": [],
-            "writes": [],
-            "references": [],
-            "calls": [
-              "/check:all",
-              "/check:architecture",
-              "/check:references",
-              "/maps:systems",
-              "/sleep:deep",
-              "/warp:health"
-            ]
-          }
-        },
-        {
-          "id": "check:timeline",
-          "name": "timeline",
-          "description": "Reconstruct a build timeline from transaction, event, and provider logs.",
-          "file": ".claude/commands/check/timeline.md",
-          "user_invocable": true,
-          "data_flow": {
-            "reads": [],
-            "writes": [],
-            "references": [],
-            "calls": []
-          }
-        },
-        {
-          "id": "check:warpos-applied-migrations",
-          "name": "warpos-applied-migrations",
-          "description": "Detect already-applied WarpOS migration scripts left on disk in consumer projects",
-          "file": ".claude/commands/check/warpos-applied-migrations.md",
-          "user_invocable": null,
-          "data_flow": {
-            "reads": [],
-            "writes": [],
-            "references": [],
-            "calls": []
-          }
-        },
-        {
-          "id": "check:warpos-capsule-resolvable",
-          "name": "warpos-capsule-resolvable",
-          "description": "Verify the capsule for /warp:update --to <v> is resolvable from REPO_ROOT, sibling clones, manifest.warpos.source, or framework-installed.json#source.",
-          "file": ".claude/commands/check/warpos-capsule-resolvable.md",
-          "user_invocable": null,
-          "data_flow": {
-            "reads": [],
-            "writes": [],
-            "references": [],
-            "calls": [
-              "/warp:update"
-            ]
-          }
-        },
-        {
-          "id": "check:warpos-install-baseline",
-          "name": "warpos-install-baseline",
-          "description": "Verify a WarpOS install baseline exists (.claude/framework-installed.json present, installedVersion ≠ 0.0.0) before /warp:update may proceed.",
-          "file": ".claude/commands/check/warpos-install-baseline.md",
-          "user_invocable": null,
-          "data_flow": {
-            "reads": [],
-            "writes": [],
-            "references": [],
-            "calls": [
-              "/warp:update"
-            ]
-          }
-        },
-        {
-          "id": "check:warpos-manifest-honesty",
-          "name": "warpos-manifest-honesty",
-          "description": "Verify framework-installed.json reflects actual disk state (no missing files, no hash drift)",
-          "file": ".claude/commands/check/warpos-manifest-honesty.md",
-          "user_invocable": null,
-          "data_flow": {
-            "reads": [],
-            "writes": [],
-            "references": [],
-            "calls": [
-              "/reasoning:run"
-            ]
-          }
-        },
-        {
-          "id": "check:warpos-migration-coverage",
-          "name": "warpos-migration-coverage",
-          "description": "Verify every breaking change in a WarpOS release ships with a corresponding migration script under framework/migrations — stub implementation pending refinement.",
-          "file": ".claude/commands/check/warpos-migration-coverage.md",
-          "user_invocable": null,
-          "data_flow": {
-            "reads": [],
-            "writes": [],
-            "references": [],
-            "calls": [
-              "/reasoning:run"
-            ]
-          }
-        },
-        {
-          "id": "check:warpos-migration-presence",
-          "name": "warpos-migration-presence",
-          "description": "Verify every migration listed in capsule release.json#migrations[] exists in the source tree before /warp:update may apply.",
-          "file": ".claude/commands/check/warpos-migration-presence.md",
-          "user_invocable": null,
-          "data_flow": {
-            "reads": [],
-            "writes": [],
-            "references": [],
-            "calls": [
-              "/warp:update"
-            ]
-          }
-        },
-        {
-          "id": "check:warpos-path-resolution",
-          "name": "warpos-path-resolution",
-          "description": "Verify every paths.json key points to an existing path (skip generated/ephemeral keys)",
-          "file": ".claude/commands/check/warpos-path-resolution.md",
-          "user_invocable": null,
-          "data_flow": {
-            "reads": [],
-            "writes": [],
-            "references": [],
-            "calls": [
-              "/reasoning:run"
-            ]
-          }
-        },
-        {
-          "id": "check:warpos-promote-coverage",
-          "name": "warpos-promote-coverage",
-          "description": "Flag commits in the product repo that touched FRAMEWORK_PREFIXES paths but were never promoted to canonical WarpOS via /warp:promote — stub implementation pending refinement.",
-          "file": ".claude/commands/check/warpos-promote-coverage.md",
-          "user_invocable": null,
-          "data_flow": {
-            "reads": [],
-            "writes": [],
-            "references": [],
-            "calls": [
-              "/reasoning:run",
-              "/warp:promote"
-            ]
-          }
-        },
-        {
-          "id": "check:warpos-promote-scope",
-          "name": "warpos-promote-scope",
-          "description": "Verify scripts/warpos/promote.js FRAMEWORK_PREFIXES list covers every framework-owned top-level directory, so structural changes propagate cleanly to canonical WarpOS.",
-          "file": ".claude/commands/check/warpos-promote-scope.md",
-          "user_invocable": null,
-          "data_flow": {
-            "reads": [],
-            "writes": [],
-            "references": [],
-            "calls": []
-          }
-        },
-        {
-          "id": "check:warpos-roundtrip",
-          "name": "warpos-roundtrip",
-          "description": "Verify that promoting changes from product to canonical and back to product preserves bytes (no silent transformation through the WarpOS promote/install pipeline) — stub implementation pending refinement.",
-          "file": ".claude/commands/check/warpos-roundtrip.md",
-          "user_invocable": null,
-          "data_flow": {
-            "reads": [],
-            "writes": [],
-            "references": [],
-            "calls": [
-              "/reasoning:run"
-            ]
-          }
-        },
-        {
-          "id": "check:warpos-staleness",
-          "name": "warpos-staleness",
-          "description": "Detect drift between the installed WarpOS version on disk and the latest canonical version, flagging installs that have been stale for more than seven days.",
-          "file": ".claude/commands/check/warpos-staleness.md",
-          "user_invocable": null,
-          "data_flow": {
-            "reads": [],
-            "writes": [],
-            "references": [],
-            "calls": [
-              "/warp:update"
-            ]
-          }
-        },
-        {
-          "id": "check:warpos-structure-parity",
-          "name": "warpos-structure-parity",
-          "description": "Verify installed framework has the structural skeleton dirs canonical declares",
-          "file": ".claude/commands/check/warpos-structure-parity.md",
-          "user_invocable": null,
-          "data_flow": {
-            "reads": [],
-            "writes": [],
-            "references": [],
-            "calls": [
-              "/warp:update"
-            ]
-          }
-        },
-        {
-          "id": "check:warpos-tracked-transients",
-          "name": "warpos-tracked-transients",
-          "description": "Catch transient state accidentally committed (.warpos/, qa-*.png, runtime/qa-*/, etc.)",
-          "file": ".claude/commands/check/warpos-tracked-transients.md",
-          "user_invocable": null,
-          "data_flow": {
-            "reads": [],
-            "writes": [],
-            "references": [],
-            "calls": []
-          }
-        },
-        {
-          "id": "check:warpos-version-quorum",
-          "name": "warpos-version-quorum",
-          "description": "Verify version.json, .claude/framework-manifest.json, .claude/framework-installed.json, and install.ps1 header agree on the installed version (trust order = version.json wins).",
-          "file": ".claude/commands/check/warpos-version-quorum.md",
-          "user_invocable": null,
-          "data_flow": {
-            "reads": [],
-            "writes": [],
-            "references": [],
-            "calls": []
           }
         }
       ]
     },
     "commit": {
       "namespace": "commit",
-      "count": 3,
+      "count": 4,
       "skills": [
         {
           "id": "commit:both",
           "name": "both",
-          "description": "Commit locally then push to remote — full commit + push flow",
+          "description": "\"[deprecated alias → /commit:land] Commit locally then push — superseded by /commit:land, which also merges the branch into the default branch.\"",
           "file": ".claude/commands/commit/both.md",
           "user_invocable": null,
           "data_flow": {
@@ -539,8 +233,27 @@
             "writes": [],
             "references": [],
             "calls": [
+              "/commit:land",
+              "/warp:sync",
+              "/warp:update"
+            ]
+          }
+        },
+        {
+          "id": "commit:land",
+          "name": "land",
+          "description": "Land the working branch — commit locally, push the branch, then merge it into the repo's default branch and push that too. The full commit→push→merge flow.",
+          "file": ".claude/commands/commit/land.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/commit:both",
               "/commit:local",
-              "/commit:remote"
+              "/commit:remote",
+              "/scan:full"
             ]
           }
         },
@@ -619,12 +332,12 @@
             "writes": [],
             "references": [],
             "calls": [
-              "/check:patterns",
-              "/check:requirements",
               "/discover:systems",
               "/issues:list",
               "/learn:integrate",
               "/oneshot:retro",
+              "/scan:patterns",
+              "/scan:requirements",
               "/session:resume",
               "/session:write"
             ]
@@ -643,11 +356,11 @@
               "scripts/hooks/foo.js"
             ],
             "calls": [
-              "/check:references",
-              "/check:system",
               "/learn:integrate",
               "/maps:systems",
-              "/oneshot:preflight"
+              "/oneshot:preflight",
+              "/scan:references",
+              "/scan:system"
             ]
           }
         }
@@ -663,6 +376,80 @@
           "description": "Enumerate reference docs under _docs/ and paths.reference, with title/size/mtime.",
           "file": ".claude/commands/docs/catalog.md",
           "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        }
+      ]
+    },
+    "enforcement": {
+      "namespace": "enforcement",
+      "count": 2,
+      "skills": [
+        {
+          "id": "enforcement:list",
+          "name": "list",
+          "description": "List open enforcement-debt entries — policies/conventions without an automated enforcer",
+          "file": ".claude/commands/enforcement/list.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [
+              ".claude/project/memory/enforcement-debt.jsonl"
+            ],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/enforcement:log"
+            ]
+          }
+        },
+        {
+          "id": "enforcement:log",
+          "name": "log",
+          "description": "Record a policy/convention that has no automated enforcer — appends to paths.enforcementDebt",
+          "file": ".claude/commands/enforcement/log.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [
+              ".claude/project/memory/enforcement-debt.jsonl"
+            ],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/enforcement:list"
+            ]
+          }
+        }
+      ]
+    },
+    "etc": {
+      "namespace": "etc",
+      "count": 2,
+      "skills": [
+        {
+          "id": "etc:author",
+          "name": "author",
+          "description": "Author or refine a skill/prompt in standard format, producing a sibling eval-pack for evaluation",
+          "file": ".claude/commands/etc/author.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/etc:eval"
+            ]
+          }
+        },
+        {
+          "id": "etc:eval",
+          "name": "eval",
+          "description": "Evaluate a skill or prompt artifact against its eval-pack, emitting a validated decision_record",
+          "file": ".claude/commands/etc/eval.md",
+          "user_invocable": null,
           "data_flow": {
             "reads": [],
             "writes": [],
@@ -776,9 +563,119 @@
         }
       ]
     },
+    "growth": {
+      "namespace": "growth",
+      "count": 8,
+      "skills": [
+        {
+          "id": "growth:ad-images",
+          "name": "ad-images",
+          "description": "Turn an angle into native-ad image prompts (scene-first, no text/logo/product, --ar) and render them via Higgsfield (headless API; gated by higgsfield-spend-gate — <$5 autonomous, ≥$5 escalates).",
+          "file": ".claude/commands/growth/ad-images.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        },
+        {
+          "id": "growth:ad-video",
+          "name": "ad-video",
+          "description": "Turn an angle into a video ad (swipe→script→storyboard→image-to-video) and generate it via Higgsfield (headless API; gated by higgsfield-spend-gate). Video assembly/editing is out of scope.",
+          "file": ".claude/commands/growth/ad-video.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        },
+        {
+          "id": "growth:advertorial",
+          "name": "advertorial",
+          "description": "Write a long-form advertorial (pre-sell editorial) from a message brief — research → foundational docs → swipe → write → Chief coherence review.",
+          "file": ".claude/commands/growth/advertorial.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        },
+        {
+          "id": "growth:angles",
+          "name": "angles",
+          "description": "Mine untapped marketing angles from real customer voice (Amazon/Reddit/forums) — ≥3 evidence-backed alternates. Reuses research:deep.",
+          "file": ".claude/commands/growth/angles.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        },
+        {
+          "id": "growth:iterate",
+          "name": "iterate",
+          "description": "Iterate a winning creative/message against a conversion/engagement scalar — thin wrapper over karpathy:run + parallel variation fan-out. Data picks winners.",
+          "file": ".claude/commands/growth/iterate.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        },
+        {
+          "id": "growth:landing-page",
+          "name": "landing-page",
+          "description": "Build a converting landing page from a conversion brief — conversion-hierarchy, scaffold component library, mobile-first. Reuses the content render path + scaffold.",
+          "file": ".claude/commands/growth/landing-page.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        },
+        {
+          "id": "growth:message-brief",
+          "name": "message-brief",
+          "description": "Distill the single winning message (the spine artifact) from an audience dossier + angles — contrast + depth, market promise inside the claims boundary.",
+          "file": ".claude/commands/growth/message-brief.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        },
+        {
+          "id": "growth:product-finder",
+          "name": "product-finder",
+          "description": "Find validated high-margin products for paid traffic — EQ-scored (Product×Ads×Funnel×LTV), SCALE/TEST/SKIP, with margin math. Reuses research:deep.",
+          "file": ".claude/commands/growth/product-finder.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        }
+      ]
+    },
     "hooks": {
       "namespace": "hooks",
-      "count": 5,
+      "count": 4,
       "skills": [
         {
           "id": "hooks:add",
@@ -822,22 +719,6 @@
           }
         },
         {
-          "id": "hooks:sync",
-          "name": "sync",
-          "description": "Copy validated hooks from this product repo into the canonical WarpOS clone so they can ride the next /warp:release. Convenience wrapper around /warp:promote scoped to scripts/hooks/.",
-          "file": ".claude/commands/hooks/sync.md",
-          "user_invocable": true,
-          "data_flow": {
-            "reads": [],
-            "writes": [],
-            "references": [],
-            "calls": [
-              "/warp:promote",
-              "/warp:release"
-            ]
-          }
-        },
-        {
           "id": "hooks:test",
           "name": "test",
           "description": "Test all hooks with synthetic payloads and measure execution time",
@@ -857,7 +738,7 @@
     },
     "issues": {
       "namespace": "issues",
-      "count": 4,
+      "count": 3,
       "skills": [
         {
           "id": "issues:list",
@@ -873,8 +754,8 @@
               "/fix:deep",
               "/issues:log",
               "/issues:resolve",
-              "/issues:scan",
-              "/learn:deep"
+              "/learn:deep",
+              "/scan:issues"
             ]
           }
         },
@@ -907,25 +788,6 @@
             "calls": [
               "/issues:list",
               "/issues:log"
-            ]
-          }
-        },
-        {
-          "id": "issues:scan",
-          "name": "scan",
-          "description": "Pattern-mine events.jsonl for repeat audit-block signatures — surface candidates for /issues:log",
-          "file": ".claude/commands/issues/scan.md",
-          "user_invocable": true,
-          "data_flow": {
-            "reads": [],
-            "writes": [],
-            "references": [],
-            "calls": [
-              "/issues:list",
-              "/issues:log",
-              "/issues:resolve",
-              "/learn:deep",
-              "/oneshot:retro"
             ]
           }
         }
@@ -966,10 +828,10 @@
               "scripts/hooks/merge-guard.js"
             ],
             "calls": [
-              "/check:all",
               "/karpathy:discard",
               "/karpathy:integrate",
-              "/karpathy:status"
+              "/karpathy:status",
+              "/scan:full"
             ]
           }
         },
@@ -1033,7 +895,8 @@
             "references": [],
             "calls": [
               "/eval:automation",
-              "/learn:self"
+              "/learn:self",
+              "/w:p"
             ]
           }
         },
@@ -1052,9 +915,9 @@
               "scripts/hooks/memory-guard.js"
             ],
             "calls": [
-              "/check:all",
               "/learn:deep",
-              "/learn:ingest"
+              "/learn:ingest",
+              "/scan:full"
             ]
           }
         }
@@ -1126,7 +989,7 @@
     },
     "maps": {
       "namespace": "maps",
-      "count": 9,
+      "count": 10,
       "skills": [
         {
           "id": "maps:all",
@@ -1142,12 +1005,15 @@
             "references": [],
             "calls": [
               "/maps:architecture",
+              "/maps:coverage",
               "/maps:enforcements",
               "/maps:hooks",
               "/maps:memory",
               "/maps:skills",
+              "/maps:steps",
               "/maps:systems",
-              "/maps:tools"
+              "/maps:tools",
+              "/scan:scan-coverage"
             ]
           }
         },
@@ -1165,6 +1031,23 @@
             "writes": [],
             "references": [],
             "calls": []
+          }
+        },
+        {
+          "id": "maps:coverage",
+          "name": "coverage",
+          "description": "Maps-suite self-inventory — asserts every /maps:* skill is registered in /maps:all, no dangling registry refs, no orphan map files, and surfaces stale maps. The /maps analog of /scan:scan-coverage.",
+          "file": ".claude/commands/maps/coverage.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/maps:all",
+              "/scan:full",
+              "/scan:scan-coverage"
+            ]
           }
         },
         {
@@ -1258,8 +1141,8 @@
             "writes": [],
             "references": [],
             "calls": [
-              "/check:references",
-              "/maps:all"
+              "/maps:all",
+              "/scan:references"
             ]
           }
         },
@@ -1320,7 +1203,8 @@
               "scripts/hooks/session-start.js"
             ],
             "calls": [
-              "/sprint:design"
+              "/sprint:design",
+              "/warp:health"
             ]
           }
         },
@@ -1334,7 +1218,9 @@
             "reads": [],
             "writes": [],
             "references": [],
-            "calls": []
+            "calls": [
+              "/mode:adhoc"
+            ]
           }
         },
         {
@@ -1383,16 +1269,16 @@
             "writes": [],
             "references": [],
             "calls": [
-              "/check:architecture",
-              "/check:environment",
-              "/check:requirements",
               "/mode:oneshot",
               "/oneshot:improve",
               "/oneshot:retro",
               "/oneshot:start",
               "/preflight:run",
               "/preflight:setup",
-              "/run:sync"
+              "/run:sync",
+              "/scan:architecture",
+              "/scan:environment",
+              "/scan:requirements"
             ]
           }
         },
@@ -1407,15 +1293,15 @@
             "writes": [],
             "references": [],
             "calls": [
-              "/check:patterns",
-              "/check:requirements",
               "/issues:log",
               "/oneshot:improve",
               "/oneshot:preflight",
               "/oneshot:start",
               "/retro:code",
               "/retro:context",
-              "/retro:full"
+              "/retro:full",
+              "/scan:patterns",
+              "/scan:requirements"
             ]
           }
         },
@@ -1525,23 +1411,169 @@
         }
       ]
     },
-    "product": {
-      "namespace": "product",
+    "permissions": {
+      "namespace": "permissions",
       "count": 1,
       "skills": [
         {
-          "id": "product:bootstrap",
-          "name": "bootstrap",
-          "description": "Bootstrap a thorough product brief from a guided discussion — outputs MD/HTML (always) and DOCX (when pandoc is installed) to _docs/briefs/<slug>/",
-          "file": ".claude/commands/product/bootstrap.md",
+          "id": "permissions:authorized",
+          "name": "authorized",
+          "description": "Operator authorization — durably allow a blocked action by adding a scoped permissions.allow rule from a growing catalog of cases, then recompiles settings so it takes effect this session.",
+          "file": ".claude/commands/permissions/authorized.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/portfolio:new"
+            ]
+          }
+        }
+      ]
+    },
+    "playbook": {
+      "namespace": "playbook",
+      "count": 1,
+      "skills": [
+        {
+          "id": "playbook:add",
+          "name": "add",
+          "description": "Append a play to the Playbook (.claude/project/reference/playbook.md) — a named, example-anchored operating principle. Picks the right section, formats to match, appends without disturbing other plays.",
+          "file": ".claude/commands/playbook/add.md",
           "user_invocable": null,
           "data_flow": {
             "reads": [],
             "writes": [],
             "references": [],
             "calls": [
-              "/oneshot:start",
-              "/sprint:plan"
+              "/roadmap:add"
+            ]
+          }
+        }
+      ]
+    },
+    "portfolio": {
+      "namespace": "portfolio",
+      "count": 8,
+      "skills": [
+        {
+          "id": "portfolio:list",
+          "name": "list",
+          "description": "List all registered portfolio products — slug, path, WarpOS version, last commit, dirty count, current sprint.",
+          "file": ".claude/commands/portfolio/list.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        },
+        {
+          "id": "portfolio:new",
+          "name": "new",
+          "description": "Scaffold a new product repo (sibling to WarpOS) with the framework installed and committed, then register it — local-only by default. Open it in its own session and create the GitHub remote yourself, or pass --github to also create+push a private repo.",
+          "file": ".claude/commands/portfolio/new.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/portfolio:list",
+              "/portfolio:open",
+              "/portfolio:register",
+              "/warp:setup"
+            ]
+          }
+        },
+        {
+          "id": "portfolio:open",
+          "name": "open",
+          "description": "Open a registered portfolio product — print its path and a cd hint, or spawn a new terminal window with --spawn.",
+          "file": ".claude/commands/portfolio/open.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        },
+        {
+          "id": "portfolio:register",
+          "name": "register",
+          "description": "Register an existing local repo as a portfolio product in ~/.warpos/portfolio.json.",
+          "file": ".claude/commands/portfolio/register.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        },
+        {
+          "id": "portfolio:run",
+          "name": "run",
+          "description": "Run a skill against another portfolio product in a fresh Claude subprocess — never retargets the current session.",
+          "file": ".claude/commands/portfolio/run.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/portfolio:list"
+            ]
+          }
+        },
+        {
+          "id": "portfolio:spinup",
+          "name": "spinup",
+          "description": "\"From WarpOS, run the idea→on-screen on-ramp against a registered product: dispatches /bootstrap:spinup into the product's repo. Thin wrapper over bootstrap:spinup (the real implementation).\"",
+          "file": ".claude/commands/portfolio/spinup.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/bootstrap:spinup",
+              "/portfolio:list",
+              "/portfolio:new",
+              "/portfolio:run"
+            ]
+          }
+        },
+        {
+          "id": "portfolio:status",
+          "name": "status",
+          "description": "Portfolio dashboard — per-product WarpOS version, last commit, dirty count, current sprint, GitHub remote (parallel, 5s per-product timeout).",
+          "file": ".claude/commands/portfolio/status.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/portfolio:list"
+            ]
+          }
+        },
+        {
+          "id": "portfolio:sync",
+          "name": "sync",
+          "description": "Run /warp:update across every registered portfolio product sequentially. No fail-fast — failures captured in the final summary.",
+          "file": ".claude/commands/portfolio/sync.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/warp:update"
             ]
           }
         }
@@ -1710,9 +1742,855 @@
         }
       ]
     },
+    "roadmap": {
+      "namespace": "roadmap",
+      "count": 6,
+      "skills": [
+        {
+          "id": "roadmap:add",
+          "name": "add",
+          "description": "Append a new entry to ROADMAP.md — picks section, formats consistently, preserves existing content",
+          "file": ".claude/commands/roadmap/add.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/roadmap:cleanup"
+            ]
+          }
+        },
+        {
+          "id": "roadmap:cleanup",
+          "name": "cleanup",
+          "description": "Audit ROADMAP.md — detect completed items, stale entries, duplicates, hidden urgencies; propose a cleanup plan",
+          "file": ".claude/commands/roadmap/cleanup.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/discover:orphaned",
+              "/reasoning:run",
+              "/roadmap:add",
+              "/scan:references",
+              "/sprint:retrospective"
+            ]
+          }
+        },
+        {
+          "id": "roadmap:create",
+          "name": "create",
+          "description": "\"Bootstrap a product ROADMAP.md from the inputs a project actually has — prefers _requirements/00-canonical/* + a Director-of-PM lens when present, falls back to the competitor clone brief + PROJECT.md. Evidence-bound, MVP-core-loop first.\"",
+          "file": ".claude/commands/roadmap/create.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/portfolio:new",
+              "/portfolio:spinup",
+              "/roadmap:add",
+              "/roadmap:cleanup",
+              "/sprint:full"
+            ]
+          }
+        },
+        {
+          "id": "roadmap:ideas",
+          "name": "ideas",
+          "description": "Predict candidate roadmap entries across four evidence lenses (3 each = 12 ideas) — whole-roadmap, last-3-shipped, last-3-active, vision/canonical. Read-only; proposes only, pairs with /roadmap:add. Role-aware — consults the Product Lead (single-product) or Director of Product (strategic) for a real product lens.",
+          "file": ".claude/commands/roadmap/ideas.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/roadmap:add",
+              "/roadmap:next"
+            ]
+          }
+        },
+        {
+          "id": "roadmap:next",
+          "name": "next",
+          "description": "The 1-idea alternative to /roadmap:ideas — the single highest-leverage next roadmap entry (the role-appropriate product persona's top pick — Product Lead for single-product, Director of Product for strategic) with a one-paragraph rationale. For \"just tell me the one thing.\"",
+          "file": ".claude/commands/roadmap/next.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/roadmap:add",
+              "/roadmap:ideas"
+            ]
+          }
+        },
+        {
+          "id": "roadmap:prioritize",
+          "name": "prioritize",
+          "description": "Role-aware roadmap prioritization — runs /roadmap:cleanup first, then consults the Product Lead (single-product) or Director of Product (strategic) to rank the open roadmap into a clear do-next order, and applies the ordering content-preservingly.",
+          "file": ".claude/commands/roadmap/prioritize.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/roadmap:add",
+              "/roadmap:cleanup",
+              "/roadmap:ideas",
+              "/roadmap:next"
+            ]
+          }
+        }
+      ]
+    },
+    "scan": {
+      "namespace": "scan",
+      "count": 42,
+      "skills": [
+        {
+          "id": "scan:ac-coverage",
+          "name": "ac-coverage",
+          "description": "Read-only audit of acceptance-criteria.md verified_by:- linkage across active sprints.",
+          "file": ".claude/commands/scan/ac-coverage.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/scan:full",
+              "/sprint:release"
+            ]
+          }
+        },
+        {
+          "id": "scan:adhoc-team-hygiene",
+          "name": "adhoc-team-hygiene",
+          "description": "Read-only probe for adhoc-team accretion — flags teams whose members carry a -N de-dup suffix or a stale leadSessionId (the W-21 cross-session duplicate-teammate bug).",
+          "file": ".claude/commands/scan/adhoc-team-hygiene.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/mode:adhoc",
+              "/warp:health"
+            ]
+          }
+        },
+        {
+          "id": "scan:architecture",
+          "name": "architecture",
+          "description": "Architecture integrity — do the layers connect? agent system, cross-layer seams, documentation health",
+          "file": ".claude/commands/scan/architecture.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/maps:all",
+              "/scan:environment",
+              "/scan:references",
+              "/scan:requirements",
+              "/sleep:deep",
+              "/warp:health"
+            ]
+          }
+        },
+        {
+          "id": "scan:coherence",
+          "name": "coherence",
+          "description": "Run the WarpOS system coherence graph across 15 drift types.",
+          "file": ".claude/commands/scan/coherence.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        },
+        {
+          "id": "scan:design-system",
+          "name": "design-system",
+          "description": "Design system compliance check - scans UI code for raw colors, raw primitives, missing design docs, and component-library drift",
+          "file": ".claude/commands/scan/design-system.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [
+              "scripts/hooks/ui-lint.js"
+            ],
+            "calls": []
+          }
+        },
+        {
+          "id": "scan:dispatch-routing-parity",
+          "name": "dispatch-routing-parity",
+          "description": "Assert the role→provider routing tables agree across providers.js, catalog.js, and the dispatch guide — fails if any role is routed inconsistently or a non-Claude role is undocumented.",
+          "file": ".claude/commands/scan/dispatch-routing-parity.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/scan:full"
+            ]
+          }
+        },
+        {
+          "id": "scan:environment",
+          "name": "environment",
+          "description": "Environment readiness and tooling quality — fast go/no-go or deep audit",
+          "file": ".claude/commands/scan/environment.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [
+              ".claude/project/maps/.stale.json"
+            ],
+            "writes": [],
+            "references": [
+              "scripts/hooks/prompt-validator.js",
+              "scripts/hooks/smart-context.js"
+            ],
+            "calls": [
+              "/discover:systems",
+              "/hooks:test",
+              "/maps:all",
+              "/maps:enforcements",
+              "/scan:architecture",
+              "/scan:references",
+              "/sleep:deep",
+              "/warp:health"
+            ]
+          }
+        },
+        {
+          "id": "scan:etc-harness",
+          "name": "etc-harness",
+          "description": "Audit the /etc authoring+eval harness — fail-closed enforcer that rejects an invented authoring format (root etc.md, non-standard skill frontmatter) and any eval-pack or emitted decision_record that doesn't satisfy its contract (S0.4). The standing backstop to the harness's own test suite.",
+          "file": ".claude/commands/scan/etc-harness.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/etc:author",
+              "/etc:eval"
+            ]
+          }
+        },
+        {
+          "id": "scan:framework-purity",
+          "name": "framework-purity",
+          "description": "Refuse product-content leaks in canonical — scans for client slugs, maintainer abs paths, root-level _requirements/_docs/ (gated until scrub), and promote-relic reintroduction.",
+          "file": ".claude/commands/scan/framework-purity.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/scan:warpos-privacy-leak",
+              "/warp:promote"
+            ]
+          }
+        },
+        {
+          "id": "scan:framework-views-fresh",
+          "name": "framework-views-fresh",
+          "description": "Verify .claude/commands and .claude/agents are byte-identical regenerations of their _warpos/ sources — fails if any view is stale.",
+          "file": ".claude/commands/scan/framework-views-fresh.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/scan:framework-purity",
+              "/scan:warpos-manifest-coverage"
+            ]
+          }
+        },
+        {
+          "id": "scan:full",
+          "name": "full",
+          "description": "Run every scan in parallel — a full system scan across project health, governance, and WarpOS distribution integrity — merged into one unified report. One command for full system health.",
+          "file": ".claude/commands/scan/full.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/maps:all",
+              "/oneshot:preflight",
+              "/scan:ac-coverage",
+              "/scan:adhoc-team-hygiene",
+              "/scan:architecture",
+              "/scan:coherence",
+              "/scan:design-system",
+              "/scan:dispatch-routing-parity",
+              "/scan:environment",
+              "/scan:etc-harness",
+              "/scan:framework-purity",
+              "/scan:framework-views-fresh",
+              "/scan:ingest-firewall",
+              "/scan:install",
+              "/scan:issues",
+              "/scan:node-procs",
+              "/scan:patterns",
+              "/scan:privacy",
+              "/scan:references",
+              "/scan:regressions",
+              "/scan:requirements",
+              "/scan:roadmap-trace",
+              "/scan:role-parity",
+              "/scan:scaffold-coverage",
+              "/scan:scan-coverage",
+              "/scan:sprint-beta-honesty",
+              "/scan:system",
+              "/scan:timeline",
+              "/scan:version-coherence",
+              "/scan:warpos-applied-migrations",
+              "/scan:warpos-capsule-resolvable",
+              "/scan:warpos-install-baseline",
+              "/scan:warpos-layer-diff",
+              "/scan:warpos-manifest-coverage",
+              "/scan:warpos-manifest-honesty",
+              "/scan:warpos-migration-coverage",
+              "/scan:warpos-migration-presence",
+              "/scan:warpos-path-resolution",
+              "/scan:warpos-ship-coverage",
+              "/scan:warpos-staleness",
+              "/scan:warpos-structure-parity",
+              "/scan:warpos-tracked-transients",
+              "/scan:warpos-version-quorum",
+              "/sleep:deep",
+              "/warp:doctor",
+              "/warp:health"
+            ]
+          }
+        },
+        {
+          "id": "scan:ingest-firewall",
+          "name": "ingest-firewall",
+          "description": "Audit the ingest stores (_docs/research, _docs/imports, _docs/briefs, _docs/clones) for un-firewalled prompt-injection — the persistent fail-closed backstop to the real-time untrusted-content firewall hook (S0.6). Treats all externally-ingested content as DATA, never instructions.",
+          "file": ".claude/commands/scan/ingest-firewall.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [
+              "scripts/hooks/untrusted-content-firewall.js"
+            ],
+            "calls": []
+          }
+        },
+        {
+          "id": "scan:install",
+          "name": "install",
+          "description": "Verify a fresh WarpOS install — manifest, paths, agents, hooks, version, settings.",
+          "file": ".claude/commands/scan/install.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/warp:setup"
+            ]
+          }
+        },
+        {
+          "id": "scan:issues",
+          "name": "issues",
+          "description": "Pattern-mine events.jsonl for repeat audit-block signatures — surface candidates for /issues:log",
+          "file": ".claude/commands/scan/issues.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/issues:list",
+              "/issues:log",
+              "/issues:resolve",
+              "/learn:deep",
+              "/oneshot:retro"
+            ]
+          }
+        },
+        {
+          "id": "scan:node-procs",
+          "name": "node-procs",
+          "description": "Read-only diagnostic — list Node processes on the host with PID, start-time, working-set KB, and command.",
+          "file": ".claude/commands/scan/node-procs.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [
+              "scripts/hooks/format.js"
+            ],
+            "calls": [
+              "/scan:full"
+            ]
+          }
+        },
+        {
+          "id": "scan:patterns",
+          "name": "patterns",
+          "description": "Cross-run intelligence and automation proposals — diagnose recurring patterns or propose prevention",
+          "file": ".claude/commands/scan/patterns.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/fix:deep",
+              "/fix:fast",
+              "/hooks:friction",
+              "/issues:log",
+              "/learn:deep",
+              "/maps:enforcements",
+              "/oneshot:retro",
+              "/sleep:deep"
+            ]
+          }
+        },
+        {
+          "id": "scan:privacy",
+          "name": "privacy",
+          "description": "Pre-publish scan for personal data — credentials, emails, homedir paths, runtime files tracked by git.",
+          "file": ".claude/commands/scan/privacy.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [
+              ".claude/project/memory/known-names.json"
+            ],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        },
+        {
+          "id": "scan:references",
+          "name": "references",
+          "description": "Cross-file reference integrity — broken links, orphans, stale SPEC_GRAPH edges",
+          "file": ".claude/commands/scan/references.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [
+              ".claude/project/maps/SPEC_GRAPH.json"
+            ],
+            "writes": [],
+            "references": [
+              "scripts/hooks/ref-checker.js"
+            ],
+            "calls": [
+              "/maps:all",
+              "/scan:architecture",
+              "/skills:cleanup",
+              "/sleep:deep"
+            ]
+          }
+        },
+        {
+          "id": "scan:regressions",
+          "name": "regressions",
+          "description": "Run the regression-seed suite — the 26 recurring bug classes from the 0.17.0 spec, made runnable. Reports per-class pass/fail/gap + catch-rate. Role-aware (consumer-only checks are n/a in canonical).",
+          "file": ".claude/commands/scan/regressions.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/issues:log",
+              "/scan:full"
+            ]
+          }
+        },
+        {
+          "id": "scan:requirements",
+          "name": "requirements",
+          "description": "Specification consistency, coverage, and drift — static audit, change-driven propagation check, or pending-drift review",
+          "file": ".claude/commands/scan/requirements.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [
+              ".claude/project/events/requirements-staged.jsonl"
+            ],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/learn:deep",
+              "/learn:integrate",
+              "/oneshot:retro",
+              "/reqs:review",
+              "/scan:architecture",
+              "/scan:references",
+              "/sleep:deep"
+            ]
+          }
+        },
+        {
+          "id": "scan:roadmap-trace",
+          "name": "roadmap-trace",
+          "description": "\"Assert every done/retrospected/released sprint has BOTH a Sprints-table ledger row AND a Shipped narrative entry in ROADMAP.md — closes the WG-16 narrative enforcement-debt left by /sprint:full Step 8b.\"",
+          "file": ".claude/commands/scan/roadmap-trace.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/scan:full",
+              "/sprint:full"
+            ]
+          }
+        },
+        {
+          "id": "scan:role-parity",
+          "name": "role-parity",
+          "description": "The one check that owns role parity across the org map, the dispatch catalog, and team-guard — fail-closed enforcer (S1.1) so repartitioning agents by domain can't silently drift the registry. Built BEFORE the Wave-2 repartition it guards.",
+          "file": ".claude/commands/scan/role-parity.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [
+              "scripts/hooks/team-guard.js"
+            ],
+            "calls": []
+          }
+        },
+        {
+          "id": "scan:scaffold-coverage",
+          "name": "scaffold-coverage",
+          "description": "Verify the WarpOS app scaffold (Next+Tailwind v4+shadcn/ui+Radix+Lucide) is complete and coherent — fail-closed enforcer for S0.3, so every scaffolded product ships a real component library, not vibe-coded raw elements.",
+          "file": ".claude/commands/scan/scaffold-coverage.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/bootstrap:spinup",
+              "/portfolio:new"
+            ]
+          }
+        },
+        {
+          "id": "scan:scan-coverage",
+          "name": "scan-coverage",
+          "description": "Scan-suite self-inventory — asserts every /scan:* skill is delegated by /scan:full or explicitly excluded (with a reason). Kills the dir↔aggregator drift class (the \"enforcer exists but isn't on the path\" gap full.md hit with ship-coverage).",
+          "file": ".claude/commands/scan/scan-coverage.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/scan:full"
+            ]
+          }
+        },
+        {
+          "id": "scan:sprint-beta-honesty",
+          "name": "sprint-beta-honesty",
+          "description": "Audits Beta consultation honesty across post-cutoff /sprint:full runs (missing consults, placeholder verdicts, ESCALATE-without-halt)",
+          "file": ".claude/commands/scan/sprint-beta-honesty.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/sprint:full"
+            ]
+          }
+        },
+        {
+          "id": "scan:system",
+          "name": "system",
+          "description": "System inventory — enumerate every active WarpOS system, diff against manifest, report drift and gaps",
+          "file": ".claude/commands/scan/system.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/maps:systems",
+              "/scan:architecture",
+              "/scan:full",
+              "/scan:references",
+              "/sleep:deep",
+              "/warp:health"
+            ]
+          }
+        },
+        {
+          "id": "scan:timeline",
+          "name": "timeline",
+          "description": "Reconstruct a build timeline from transaction, event, and provider logs.",
+          "file": ".claude/commands/scan/timeline.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        },
+        {
+          "id": "scan:version-coherence",
+          "name": "version-coherence",
+          "description": "Verify version + schema-label coherence — product version agrees across ALL manifests (incl. the ones version-quorum misses) and every schema family carries a single consistent version label. Catches the 0.10.0→0.11.0 lag + paths-v4-on-v5-content drift classes.",
+          "file": ".claude/commands/scan/version-coherence.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/scan:full",
+              "/scan:warpos-version-quorum"
+            ]
+          }
+        },
+        {
+          "id": "scan:warpos-applied-migrations",
+          "name": "warpos-applied-migrations",
+          "description": "Detect already-applied WarpOS migration scripts left on disk in consumer projects",
+          "file": ".claude/commands/scan/warpos-applied-migrations.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        },
+        {
+          "id": "scan:warpos-capsule-resolvable",
+          "name": "warpos-capsule-resolvable",
+          "description": "Verify the capsule for /warp:update --to <v> is resolvable from REPO_ROOT, sibling clones, manifest.warpos.source, or framework-installed.json#source.",
+          "file": ".claude/commands/scan/warpos-capsule-resolvable.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/warp:update"
+            ]
+          }
+        },
+        {
+          "id": "scan:warpos-install-baseline",
+          "name": "warpos-install-baseline",
+          "description": "Verify a WarpOS install baseline exists (.claude/framework-installed.json present, installedVersion ≠ 0.0.0) before /warp:update may proceed.",
+          "file": ".claude/commands/scan/warpos-install-baseline.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/warp:update"
+            ]
+          }
+        },
+        {
+          "id": "scan:warpos-layer-diff",
+          "name": "warpos-layer-diff",
+          "description": "Read-only product-vs-dev-tooling layer diff — lists which framework-owned paths SHIP to consumer products (product layer) vs which stay framework-internal and never ship (dev-tooling layer), with summary counts. Cross-references _warpos/MANIFEST.json (ownership) × .claude/framework-manifest.json (shipped). Informational, never a gate.",
+          "file": ".claude/commands/scan/warpos-layer-diff.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/scan:warpos-ship-coverage",
+              "/warp:setup",
+              "/warp:update"
+            ]
+          }
+        },
+        {
+          "id": "scan:warpos-manifest-coverage",
+          "name": "warpos-manifest-coverage",
+          "description": "Verify every on-disk path is enumerated in _warpos/MANIFEST.json — catches \"added framework content, forgot to register\" before downstream installs silently break.",
+          "file": ".claude/commands/scan/warpos-manifest-coverage.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/scan:framework-purity",
+              "/scan:framework-views-fresh",
+              "/warp:update"
+            ]
+          }
+        },
+        {
+          "id": "scan:warpos-manifest-honesty",
+          "name": "warpos-manifest-honesty",
+          "description": "Verify framework-installed.json reflects actual disk state (no missing files, no hash drift)",
+          "file": ".claude/commands/scan/warpos-manifest-honesty.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/reasoning:run"
+            ]
+          }
+        },
+        {
+          "id": "scan:warpos-migration-coverage",
+          "name": "warpos-migration-coverage",
+          "description": "Verify every breaking change in a WarpOS release ships with a corresponding migration script under framework/migrations — stub implementation pending refinement.",
+          "file": ".claude/commands/scan/warpos-migration-coverage.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/reasoning:run"
+            ]
+          }
+        },
+        {
+          "id": "scan:warpos-migration-presence",
+          "name": "warpos-migration-presence",
+          "description": "Verify every migration listed in capsule release.json#migrations[] exists in the source tree before /warp:update may apply.",
+          "file": ".claude/commands/scan/warpos-migration-presence.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/warp:update"
+            ]
+          }
+        },
+        {
+          "id": "scan:warpos-path-resolution",
+          "name": "warpos-path-resolution",
+          "description": "Verify every paths.json key points to an existing path (skip generated/ephemeral keys)",
+          "file": ".claude/commands/scan/warpos-path-resolution.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/reasoning:run"
+            ]
+          }
+        },
+        {
+          "id": "scan:warpos-ship-coverage",
+          "name": "warpos-ship-coverage",
+          "description": "Verify every framework-owned path under the consumer-essential roots is actually shipped (enumerated in framework-manifest.json) — catches \"framework code that ships to nobody\" (the B1/E3 downstream-broken class).",
+          "file": ".claude/commands/scan/warpos-ship-coverage.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/scan:full",
+              "/scan:warpos-manifest-coverage",
+              "/scan:warpos-manifest-honesty",
+              "/warp:setup"
+            ]
+          }
+        },
+        {
+          "id": "scan:warpos-staleness",
+          "name": "warpos-staleness",
+          "description": "Detect drift between the installed WarpOS version on disk and the latest canonical version, flagging installs that have been stale for more than seven days.",
+          "file": ".claude/commands/scan/warpos-staleness.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/warp:update"
+            ]
+          }
+        },
+        {
+          "id": "scan:warpos-structure-parity",
+          "name": "warpos-structure-parity",
+          "description": "Verify installed framework has the structural skeleton dirs canonical declares",
+          "file": ".claude/commands/scan/warpos-structure-parity.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/warp:update"
+            ]
+          }
+        },
+        {
+          "id": "scan:warpos-tracked-transients",
+          "name": "warpos-tracked-transients",
+          "description": "Catch transient state accidentally committed (.warpos/, qa-*.png, runtime/qa-*/, etc.)",
+          "file": ".claude/commands/scan/warpos-tracked-transients.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        },
+        {
+          "id": "scan:warpos-version-quorum",
+          "name": "warpos-version-quorum",
+          "description": "Verify version.json, .claude/framework-manifest.json, .claude/framework-installed.json, and install.ps1 header agree on the installed version (trust order = version.json wins).",
+          "file": ".claude/commands/scan/warpos-version-quorum.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        }
+      ]
+    },
     "session": {
       "namespace": "session",
-      "count": 8,
+      "count": 10,
       "skills": [
         {
           "id": "session:checkpoint",
@@ -1725,6 +2603,27 @@
             "writes": [],
             "references": [],
             "calls": []
+          }
+        },
+        {
+          "id": "session:dump",
+          "name": "dump",
+          "description": "Write a prescriptive handoff to DUMP.md at project root — context, verbatim payloads, dispatch instructions, anti-instructions. For a fresh session to read once and execute.",
+          "file": ".claude/commands/session/dump.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/session:checkpoint",
+              "/session:handoff",
+              "/session:recap",
+              "/session:resume",
+              "/session:write",
+              "/sprint:plan",
+              "/warp:release"
+            ]
           }
         },
         {
@@ -1741,7 +2640,7 @@
             "writes": [],
             "references": [],
             "calls": [
-              "/check:requirements"
+              "/scan:requirements"
             ]
           }
         },
@@ -1816,6 +2715,24 @@
             "writes": [],
             "references": [],
             "calls": []
+          }
+        },
+        {
+          "id": "session:turbo",
+          "name": "turbo",
+          "description": "Session speed mode — pre-authorize a batch of high-impact actions (permissions.allow) AND switch the build cadence to fast levers (parallel builds, batched Beta, skip-gauntlet-when-low-risk, engine-sprint fast-close). The one command to go fast for a work session.",
+          "file": ".claude/commands/session/turbo.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [
+              "scripts/hooks/authorization-gate.js"
+            ],
+            "calls": [
+              "/issues:list",
+              "/sprint:full"
+            ]
           }
         },
         {
@@ -1949,10 +2866,10 @@
             "calls": [
               "/beta:integrate",
               "/beta:mine",
-              "/check:requirements",
               "/issues:log",
               "/issues:resolve",
               "/reasoning:score",
+              "/scan:requirements",
               "/skills:create",
               "/sleep:quick"
             ]
@@ -1971,7 +2888,7 @@
             "writes": [],
             "references": [],
             "calls": [
-              "/check:requirements",
+              "/scan:requirements",
               "/sleep:deep"
             ]
           }
@@ -1980,8 +2897,24 @@
     },
     "sprint": {
       "namespace": "sprint",
-      "count": 6,
+      "count": 8,
       "skills": [
+        {
+          "id": "sprint:cost-gate",
+          "name": "cost-gate",
+          "description": "Toggle the /sprint:full cost-estimate halt on or off — turn off the heuristic spend gate when an operator spend posture is authorized, turn it back on to restore the guardrail. Controls only the sprint cost halt, never the hard ceilings or the real >$5 rule.",
+          "file": ".claude/commands/sprint/cost-gate.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/session:turbo",
+              "/sprint:full"
+            ]
+          }
+        },
         {
           "id": "sprint:design",
           "name": "design",
@@ -1991,7 +2924,9 @@
           "data_flow": {
             "reads": [],
             "writes": [],
-            "references": [],
+            "references": [
+              "scripts/hooks/sprint-routing-guard.js"
+            ],
             "calls": [
               "/sprint:execute",
               "/sprint:plan"
@@ -2011,7 +2946,30 @@
             "calls": [
               "/fix:deep",
               "/mode:oneshot",
+              "/scan:node-procs",
               "/sprint:release"
+            ]
+          }
+        },
+        {
+          "id": "sprint:full",
+          "name": "full",
+          "description": "Single-invocation execution of the full sprint pipeline (plan→design→execute→release-prep→retro) under a bounded autonomy preset. Cannot bypass CLAUDE.md hard ceilings.",
+          "file": ".claude/commands/sprint/full.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/mode:oneshot",
+              "/scan:full",
+              "/scan:roadmap-trace",
+              "/sprint:design",
+              "/sprint:execute",
+              "/sprint:plan",
+              "/sprint:release",
+              "/sprint:retrospective"
             ]
           }
         },
@@ -2024,7 +2982,9 @@
           "data_flow": {
             "reads": [],
             "writes": [],
-            "references": [],
+            "references": [
+              "scripts/hooks/sprint-routing-guard.js"
+            ],
             "calls": [
               "/sprint:design",
               "/sprint:execute",
@@ -2041,11 +3001,13 @@
           "data_flow": {
             "reads": [],
             "writes": [],
-            "references": [],
+            "references": [
+              "scripts/hooks/sprint-routing-guard.js"
+            ],
             "calls": [
-              "/check:patterns",
               "/karpathy:integrate",
               "/learn:integrate",
+              "/scan:patterns",
               "/sprint:plan"
             ]
           }
@@ -2059,10 +3021,12 @@
           "data_flow": {
             "reads": [],
             "writes": [],
-            "references": [],
+            "references": [
+              "scripts/hooks/sprint-routing-guard.js"
+            ],
             "calls": [
-              "/check:patterns",
               "/learn:integrate",
+              "/scan:patterns",
               "/sprint:release"
             ]
           }
@@ -2107,7 +3071,7 @@
     },
     "warp": {
       "namespace": "warp",
-      "count": 13,
+      "count": 14,
       "skills": [
         {
           "id": "warp:check",
@@ -2138,6 +3102,26 @@
           }
         },
         {
+          "id": "warp:diff",
+          "name": "diff",
+          "description": "Diff canonical WarpOS against an installed product — version/staleness, framework-file drift (stale vs locally-modified), coverage gaps, and skills/agents/hooks delta. Read-only; reports on the product, never edits it.",
+          "file": ".claude/commands/warp/diff.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/portfolio:list",
+              "/portfolio:open",
+              "/portfolio:status",
+              "/scan:warpos-",
+              "/warp:check",
+              "/warp:update"
+            ]
+          }
+        },
+        {
           "id": "warp:doctor",
           "name": "doctor",
           "description": "\"Unified WarpOS diagnostic — runs every health check in one place. Like /warp:health but full-coverage.\"",
@@ -2148,12 +3132,12 @@
             "writes": [],
             "references": [],
             "calls": [
-              "/check:all",
-              "/check:architecture",
-              "/check:references",
-              "/check:requirements",
               "/hooks:test",
               "/paths:lint",
+              "/scan:architecture",
+              "/scan:full",
+              "/scan:references",
+              "/scan:requirements",
               "/warp:health",
               "/warp:release",
               "/warp:update"
@@ -2163,16 +3147,17 @@
         {
           "id": "warp:flag",
           "name": "flag",
-          "description": "\"Append a framework-level update flag to the repo-local warpos-to-update.md ledger. Safe to run in product repos and the canonical WarpOS clone.\"",
+          "description": "Flag a WarpOS framework/tooling gap from a downstream product — append a structured, canonical-consumable entry to this repo's WARPOS.md so /warp:reconcile can verify and fix it upstream.",
           "file": ".claude/commands/warp/flag.md",
-          "user_invocable": true,
+          "user_invocable": null,
           "data_flow": {
             "reads": [],
             "writes": [],
             "references": [],
             "calls": [
-              "/warp:promote",
-              "/warp:promote-flags"
+              "/enforcement:log",
+              "/issues:log",
+              "/warp:reconcile"
             ]
           }
         },
@@ -2191,40 +3176,48 @@
             "writes": [],
             "references": [],
             "calls": [
+              "/mode:adhoc",
               "/warp:init"
             ]
           }
         },
         {
-          "id": "warp:promote",
-          "name": "promote",
-          "description": "\"Promote framework changes from a source product/instance repo into the canonical WarpOS clone. Always dry-run by default.\"",
-          "file": ".claude/commands/warp/promote.md",
+          "id": "warp:md",
+          "name": "md",
+          "description": "\"Tune CLAUDE.md with project-specific context — refresh the auto-generated project block from PROJECT.md, _requirements, manifest, README, and package scripts. Framework sections are never touched.\"",
+          "file": ".claude/commands/warp/md.md",
           "user_invocable": true,
           "data_flow": {
             "reads": [],
             "writes": [],
             "references": [],
             "calls": [
-              "/warp:release",
-              "/warp:update"
+              "/portfolio:spinup",
+              "/roadmap:create"
             ]
           }
         },
         {
-          "id": "warp:promote-flags",
-          "name": "promote-flags",
-          "description": "\"Drain the warpos-to-update.md flag ledger written by /warp:flag — mark entries promoted/blocked/deferred, record canonical SHAs, archive, and produce a promotion report.\"",
-          "file": ".claude/commands/warp/promote-flags.md",
-          "user_invocable": true,
+          "id": "warp:reconcile",
+          "name": "reconcile",
+          "description": "Reconcile downstream-flagged WarpOS gaps into canonical — discover every product's WARPOS.md, verify each gap @current, get a cross-provider root-cause lens, triage, drive the fixes, and record resolution canonical-side.",
+          "file": ".claude/commands/warp/reconcile.md",
+          "user_invocable": null,
           "data_flow": {
             "reads": [],
             "writes": [],
             "references": [],
             "calls": [
+              "/enforcement:log",
+              "/fix:deep",
+              "/issues:log",
+              "/portfolio:status",
+              "/roadmap:add",
+              "/scan:full",
+              "/scan:warpos-staleness",
               "/warp:flag",
-              "/warp:promote",
-              "/warp:release"
+              "/warp:release",
+              "/warp:update"
             ]
           }
         },
@@ -2238,9 +3231,7 @@
             "reads": [],
             "writes": [],
             "references": [],
-            "calls": [
-              "/warp:promote"
-            ]
+            "calls": []
           }
         },
         {
@@ -2296,6 +3287,8 @@
               "/mode:adhoc",
               "/mode:oneshot",
               "/mode:solo",
+              "/portfolio:list",
+              "/portfolio:open",
               "/research:simple",
               "/session:handoff",
               "/session:read",
@@ -2335,7 +3328,7 @@
             "writes": [],
             "references": [],
             "calls": [
-              "/check:warpos-manifest-honesty",
+              "/scan:warpos-manifest-honesty",
               "/warp:doctor",
               "/warp:health",
               "/warp:promote",
@@ -2348,29 +3341,29 @@
   },
   "summary": {
     "by_invocability": {
-      "user_invocable": 60,
-      "system_only": 69
+      "user_invocable": 73,
+      "system_only": 111
     },
     "most_referenced_namespaces": [
       {
-        "namespace": "check",
-        "count": 26
+        "namespace": "scan",
+        "count": 42
       },
       {
         "namespace": "warp",
-        "count": 13
+        "count": 14
       },
       {
         "namespace": "maps",
-        "count": 9
+        "count": 10
       },
       {
         "namespace": "session",
-        "count": 8
+        "count": 10
       },
       {
-        "namespace": "paths",
-        "count": 6
+        "namespace": "growth",
+        "count": 8
       }
     ]
   }
