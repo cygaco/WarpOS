@@ -68,6 +68,11 @@ runtime/etc/decisions/*
 runtime/etc/consults/*
 !runtime/etc/consults/.gitkeep
 
+# Higgsfield render spend-approval token (S2.2). Operator-placed, per-machine,
+# secret-ish — authorizes a oneshot fan-out ≥ $5 (scripts/checks/higgsfield-spend-gate.js).
+# Never committed (same posture as the ~/.higgsfield/.env credential).
+runtime/growth/spend-approval.token
+
 # Install matrix ephemeral fixtures (SP-20260524-001). The runner creates a
 # per-scenario timestamped dir under .warpos/test-fixtures/install-matrix/;
 # failed scenarios are moved to .warpos/test-fixtures/install-matrix/_failed/.

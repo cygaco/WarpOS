@@ -86,6 +86,7 @@ contract the wiring must honor):
 > The enforcer is the named detector for the requirement-authoring policy. Without it, a
 > Product Lead in oneshot is theater (the recurring aspirational-vs-enforced class). I
 > describe it; α wires it (S1.2 integration).
+> Enforced by: `scripts/checks/pl-build-spec-enforcer.js` (owner `product_lead`; wraps `validate-artifact.js`, rejects contract violations + missing-upstream/dangling-spine, emits arbitration on a design_brief conflict or an absent design_brief upstream).
 
 ---
 

@@ -157,6 +157,7 @@ Callable as a subagent (`subagent_type: copy-lead`). Natural consumers: `growth:
 `growth:landing-page` (copy coherence), and the resonance/conversion-quality eval (message
 clarity · proof strength · objection handling). The **Chief-coherence enforcer** (DESIGN in
 this sprint; α wires it) is the machine backstop to this Lead's `chief-coherence` principle.
+> Enforced by: `scripts/checks/chief-coherence-enforcer.js` (owner `copy_lead`; rejects no-chief-review / readability / belief-count+form / decorative-image / power-word / invented-data / claims-boundary; emits arbitration on unverified-synthetic + unbounded-promise).
 
 > **Status:** persona spec authored (S2.2 Marketing domain, SP-20260530-001). Mirrors the
 > `director-of-product` / `director-of-qa` programmable-principles pattern. Reports to the

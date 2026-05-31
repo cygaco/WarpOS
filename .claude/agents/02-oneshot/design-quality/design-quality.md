@@ -32,6 +32,7 @@ You do NOT write code. You do NOT auto-fix. You produce a structured
 > token-compliant but visually broken, a hierarchy that buries the primary action, a
 > mobile view that overflows, an interaction with no accessible affordance. **Reject, don't
 > lint** — a finding at `critical`/`high` is a gate failure, not a suggestion.
+> Both lanes are launched by: `scripts/checks/design-quality-gate.js` (owner `design_quality`; runs lane 1 `design-system.js --strict` + reads this lane's `--judgment` result; REJECTs on either lane's failure, emits arbitration on a missing judgment / `INVESTIGATE`/`requiresHuman` / a design_brief contradiction).
 
 ## Your inputs
 The orchestrator passes:

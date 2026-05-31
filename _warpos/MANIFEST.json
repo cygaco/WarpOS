@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-05-31T04:53:52.396Z",
+  "generatedAt": "2026-05-31T05:19:58.130Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.11.1",
   "migrations": [],
@@ -20,8 +20,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "f8a3720c2dfd549cfa8ebd314b0f93fbef90cb28a66ac76c680ecc7cb0521432",
-      "installedSha": "f8a3720c2dfd549cfa8ebd314b0f93fbef90cb28a66ac76c680ecc7cb0521432"
+      "sha256": "6932eb95943c996508e82cfecfc4c8df3bc33005e934b1124520355044838f28",
+      "installedSha": "6932eb95943c996508e82cfecfc4c8df3bc33005e934b1124520355044838f28"
     },
     "AGENTS.md": {
       "owner": "framework",
@@ -4039,6 +4039,13 @@
       "sha256": "66a4e97fb68a78cd1eec0ab8e9754de5eccdd581384cf1a5f79684384d0f4832",
       "installedSha": "66a4e97fb68a78cd1eec0ab8e9754de5eccdd581384cf1a5f79684384d0f4832"
     },
+    "scripts/growth/higgsfield.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/growth/higgsfield.js",
+      "sha256": "b40d6997cd36577eecfd73baf7fd68ba6b859446f3fee88f88faead7cb1c9106",
+      "installedSha": "b40d6997cd36577eecfd73baf7fd68ba6b859446f3fee88f88faead7cb1c9106"
+    },
     "scripts/fix-deep/append-learning-l2026-05-13-team.js": {
       "owner": "framework",
       "managed": true,
@@ -4284,12 +4291,40 @@
       "sha256": "07057c0fd66ee8430d1508ce825d5f838222b15308226edbfee7fcc7cb91aec3",
       "installedSha": "07057c0fd66ee8430d1508ce825d5f838222b15308226edbfee7fcc7cb91aec3"
     },
+    "scripts/checks/chief-coherence-enforcer.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/chief-coherence-enforcer.js",
+      "sha256": "a8943d123940719185df1e907e006d116bcaed300d9c76776b1201cf95946e39",
+      "installedSha": "a8943d123940719185df1e907e006d116bcaed300d9c76776b1201cf95946e39"
+    },
+    "scripts/checks/chief-coherence-enforcer.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/chief-coherence-enforcer.test.js",
+      "sha256": "2791cad8cefea5559c13cd55c64f290782d84c1be44836db81eafacda6ff4997",
+      "installedSha": "2791cad8cefea5559c13cd55c64f290782d84c1be44836db81eafacda6ff4997"
+    },
     "scripts/checks/contract-versioning.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/contract-versioning.js",
       "sha256": "1aeecdc76f69c9a64d87b24a518dc90c3037aa9d13c6047a7002a9dea0d427e8",
       "installedSha": "1aeecdc76f69c9a64d87b24a518dc90c3037aa9d13c6047a7002a9dea0d427e8"
+    },
+    "scripts/checks/design-quality-gate.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/design-quality-gate.js",
+      "sha256": "88f40676eb26c90ceb7cb6844e478c370cbd8cebcd2ab447ab529b6324cbd24f",
+      "installedSha": "88f40676eb26c90ceb7cb6844e478c370cbd8cebcd2ab447ab529b6324cbd24f"
+    },
+    "scripts/checks/design-quality-gate.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/design-quality-gate.test.js",
+      "sha256": "f85f39bd4f174b85a646dd87dd268e98df3b52e11034f444b2df9ff6a5f9d541",
+      "installedSha": "f85f39bd4f174b85a646dd87dd268e98df3b52e11034f444b2df9ff6a5f9d541"
     },
     "scripts/checks/design-system.allowlist.json": {
       "owner": "framework",
@@ -4333,6 +4368,20 @@
       "sha256": "e0399d4e9a8cad0b0f069b43ef79083f3bd146217bf4ef0f6ccbfdf2701765b0",
       "installedSha": "e0399d4e9a8cad0b0f069b43ef79083f3bd146217bf4ef0f6ccbfdf2701765b0"
     },
+    "scripts/checks/higgsfield-spend-gate.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/higgsfield-spend-gate.js",
+      "sha256": "fc5de6e906d4743051d209592821fd36f7ef4b3479cd8722bf34ecbfeecf8224",
+      "installedSha": "fc5de6e906d4743051d209592821fd36f7ef4b3479cd8722bf34ecbfeecf8224"
+    },
+    "scripts/checks/higgsfield-spend-gate.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/higgsfield-spend-gate.test.js",
+      "sha256": "6ec587763c97ad3c2196f1d57d166c41e39c190fa1ea4505583528e77f9eacc4",
+      "installedSha": "6ec587763c97ad3c2196f1d57d166c41e39c190fa1ea4505583528e77f9eacc4"
+    },
     "scripts/checks/ingest-firewall-scan.js": {
       "owner": "framework",
       "managed": true,
@@ -4354,12 +4403,40 @@
       "sha256": "f74259b5fcab5fce9325483a920f849e28254061ee07aba2854c6ea2337793d7",
       "installedSha": "f74259b5fcab5fce9325483a920f849e28254061ee07aba2854c6ea2337793d7"
     },
+    "scripts/checks/pl-build-spec-enforcer.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/pl-build-spec-enforcer.js",
+      "sha256": "6a2b374ee9d8fcf60db88328dde8d23cedd88e82f8bf94ccc14632bffdb71e16",
+      "installedSha": "6a2b374ee9d8fcf60db88328dde8d23cedd88e82f8bf94ccc14632bffdb71e16"
+    },
+    "scripts/checks/pl-build-spec-enforcer.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/pl-build-spec-enforcer.test.js",
+      "sha256": "ab66f90b6ba6f51c356d384d8164eeeb0a6637dd39cdf8806f23917e4f8c41a3",
+      "installedSha": "ab66f90b6ba6f51c356d384d8164eeeb0a6637dd39cdf8806f23917e4f8c41a3"
+    },
     "scripts/checks/production-baseline.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/production-baseline.js",
       "sha256": "9544bad80c7ff7ad159ecee14ae642fc2a574d7ca0d61d0b18dd02fdd22ae6a1",
       "installedSha": "9544bad80c7ff7ad159ecee14ae642fc2a574d7ca0d61d0b18dd02fdd22ae6a1"
+    },
+    "scripts/checks/resonance-runner.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/resonance-runner.js",
+      "sha256": "eef07e5f97e7217b95b05fa1e7c32afa19c5fa5830559926995a9cd417daa329",
+      "installedSha": "eef07e5f97e7217b95b05fa1e7c32afa19c5fa5830559926995a9cd417daa329"
+    },
+    "scripts/checks/resonance-runner.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/resonance-runner.test.js",
+      "sha256": "edec7e1eaa831bdb8ce73788bebed2b94935eef010969f53143ef413184db990",
+      "installedSha": "edec7e1eaa831bdb8ce73788bebed2b94935eef010969f53143ef413184db990"
     },
     "scripts/checks/role-parity-scan.js": {
       "owner": "framework",
@@ -14584,16 +14661,16 @@
       "managed": true,
       "source": ".claude/commands/growth/ad-images.md",
       "kind": "md",
-      "sha256": "6f1096819ac80ad4fc3e6343e7285d714a801229a33e3b394da53e37baee62eb",
-      "installedSha": "6f1096819ac80ad4fc3e6343e7285d714a801229a33e3b394da53e37baee62eb"
+      "sha256": "8be9e22bab1158fceb85704eb3f23e3f6625a5d3aa23f6a3574057149e06a5cd",
+      "installedSha": "8be9e22bab1158fceb85704eb3f23e3f6625a5d3aa23f6a3574057149e06a5cd"
     },
     ".claude/commands/growth/ad-video.md": {
       "owner": "framework",
       "managed": true,
       "source": ".claude/commands/growth/ad-video.md",
       "kind": "md",
-      "sha256": "8f1ad33a8a74b39ed6c0f7661f7cc214b4595e9aa11781495c7f98de9654091f",
-      "installedSha": "8f1ad33a8a74b39ed6c0f7661f7cc214b4595e9aa11781495c7f98de9654091f"
+      "sha256": "555a3bcd9bfbc36abd73c3dae8f5023d98d6966e2181014a8919919a7bd9e50a",
+      "installedSha": "555a3bcd9bfbc36abd73c3dae8f5023d98d6966e2181014a8919919a7bd9e50a"
     },
     ".claude/commands/growth/advertorial.md": {
       "owner": "framework",
@@ -14896,8 +14973,8 @@
       "managed": true,
       "source": ".claude/agents/03-managers/copy-lead.md",
       "kind": "md",
-      "sha256": "2053d9c45fcdf29b5cbc3267b0a27fd4311fb510c52321d21596b02433a35b19",
-      "installedSha": "2053d9c45fcdf29b5cbc3267b0a27fd4311fb510c52321d21596b02433a35b19"
+      "sha256": "7ee6b9f72d67aa722a01223a365cfec88c4c1d801e57bbd4744f202cb0801579",
+      "installedSha": "7ee6b9f72d67aa722a01223a365cfec88c4c1d801e57bbd4744f202cb0801579"
     },
     ".claude/agents/03-managers/director-of-engineering.md": {
       "owner": "framework",
@@ -14936,8 +15013,8 @@
       "managed": true,
       "source": ".claude/agents/03-managers/growth-lead.md",
       "kind": "md",
-      "sha256": "8c2afbb1090dcda47efd7918c45b39e370716f337a04b63e707cdd6523579976",
-      "installedSha": "8c2afbb1090dcda47efd7918c45b39e370716f337a04b63e707cdd6523579976"
+      "sha256": "0008798afe65a685e2a8bc0e2a3f9274b08dfdfa440545e3ed50623065c77b18",
+      "installedSha": "0008798afe65a685e2a8bc0e2a3f9274b08dfdfa440545e3ed50623065c77b18"
     },
     ".claude/agents/03-managers/product-designer.md": {
       "owner": "framework",
@@ -14952,8 +15029,8 @@
       "managed": true,
       "source": ".claude/agents/03-managers/product-lead.md",
       "kind": "md",
-      "sha256": "c88a5f4b81fd48d5bc27fc0160d792dfcb78d7dd44133a1e1ff9199d617722f6",
-      "installedSha": "c88a5f4b81fd48d5bc27fc0160d792dfcb78d7dd44133a1e1ff9199d617722f6"
+      "sha256": "2f036c90df043f38db9e9ce0fd9eadfac69c6fdd568a452a9b6bdb9d30db8c3c",
+      "installedSha": "2f036c90df043f38db9e9ce0fd9eadfac69c6fdd568a452a9b6bdb9d30db8c3c"
     },
     ".claude/agents/03-managers/research-insight-lead.md": {
       "owner": "framework",
@@ -15128,8 +15205,8 @@
       "managed": true,
       "source": ".claude/agents/02-oneshot/design-quality/design-quality.md",
       "kind": "md",
-      "sha256": "9068e5c2168109549c20c7ed42bf577ce5d461f8abf01091d37eb2bb5c4e2490",
-      "installedSha": "9068e5c2168109549c20c7ed42bf577ce5d461f8abf01091d37eb2bb5c4e2490"
+      "sha256": "c90fbd9b6720b763a1a15317ce3ba352b5b26b986aa8452ef623fdd8dd3ab9ff",
+      "installedSha": "c90fbd9b6720b763a1a15317ce3ba352b5b26b986aa8452ef623fdd8dd3ab9ff"
     },
     ".claude/agents/02-oneshot/compliance/compliance.md": {
       "owner": "framework",
