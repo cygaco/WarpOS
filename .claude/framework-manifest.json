@@ -4,7 +4,7 @@
   "generated_by": "scripts/generate-framework-manifest.js",
   "counts": {
     "agent": 84,
-    "skill": 185,
+    "skill": 186,
     "reference": 28,
     "maps_baseline": 23,
     "hook": 67,
@@ -13,7 +13,7 @@
     "pattern": 6,
     "fixture": 23,
     "warpos_script": 52,
-    "check_tool": 49,
+    "check_tool": 52,
     "agent_tool": 3,
     "decision_tool": 1,
     "runtime_tool": 1,
@@ -56,7 +56,7 @@
     "module_scope": 1,
     "framework_doc": 2
   },
-  "total": 943,
+  "total": 947,
   "assets": {
     "agent": [
       {
@@ -1734,7 +1734,7 @@
         "src": ".claude/commands/maps/all.md",
         "dest": ".claude/commands/maps/all.md",
         "kind": "skill",
-        "sha256": "79202231e5517597ebe972e59e9439df37ae5c9bd6f6e30a5c4d04af5ac48234",
+        "sha256": "d96329227bbfefbef6b5f4e1ef7ed76c76e955d23b391fefc2afd53013d47b65",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
@@ -1747,6 +1747,18 @@
         "dest": ".claude/commands/maps/architecture.md",
         "kind": "skill",
         "sha256": "d563a8b76d0685113121fa78ec46af65f897d1e8a7c7ed2a03d91858e8c5f049",
+        "owner": "framework",
+        "mergeStrategy": "three_way_markdown",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "skill.maps.coverage.md",
+        "src": ".claude/commands/maps/coverage.md",
+        "dest": ".claude/commands/maps/coverage.md",
+        "kind": "skill",
+        "sha256": "7c23e0b6d4dcf4346ec1b76bd95d2592e663eaca807f58d7b0835350335370a2",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
@@ -6109,6 +6121,42 @@
         "dest": "scripts/checks/manager-principles-scan.js",
         "kind": "check_tool",
         "sha256": "de14f67270269c60e23ac19bab6addf160edb7be53770a420968795a1c2d36cc",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "check_tool.maps-coverage.allowlist.json",
+        "src": "scripts/checks/maps-coverage.allowlist.json",
+        "dest": "scripts/checks/maps-coverage.allowlist.json",
+        "kind": "check_tool",
+        "sha256": "f0ff854cdc0191114136c16c40ac0433cc13bb2fee6d888dfffdf86c8ac5ad53",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "check_tool.maps-coverage.js",
+        "src": "scripts/checks/maps-coverage.js",
+        "dest": "scripts/checks/maps-coverage.js",
+        "kind": "check_tool",
+        "sha256": "29963cad22a41eb5b90bf60ce2c4725e86e8fe0599118ee8c036fb54fa6783c2",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "check_tool.maps-coverage.test.js",
+        "src": "scripts/checks/maps-coverage.test.js",
+        "dest": "scripts/checks/maps-coverage.test.js",
+        "kind": "check_tool",
+        "sha256": "f02d3810dd9e5492f735593548cc221290713bc36a1a53e7b95893a0f07f21c4",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",

@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-05-31T19:08:47.036Z",
+  "generatedAt": "2026-05-31T19:26:08.176Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.11.1",
   "migrations": [],
@@ -4458,6 +4458,27 @@
       "source": "scripts/checks/manager-principles-scan.js",
       "sha256": "de14f67270269c60e23ac19bab6addf160edb7be53770a420968795a1c2d36cc",
       "installedSha": "de14f67270269c60e23ac19bab6addf160edb7be53770a420968795a1c2d36cc"
+    },
+    "scripts/checks/maps-coverage.allowlist.json": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/maps-coverage.allowlist.json",
+      "sha256": "f0ff854cdc0191114136c16c40ac0433cc13bb2fee6d888dfffdf86c8ac5ad53",
+      "installedSha": "f0ff854cdc0191114136c16c40ac0433cc13bb2fee6d888dfffdf86c8ac5ad53"
+    },
+    "scripts/checks/maps-coverage.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/maps-coverage.js",
+      "sha256": "29963cad22a41eb5b90bf60ce2c4725e86e8fe0599118ee8c036fb54fa6783c2",
+      "installedSha": "29963cad22a41eb5b90bf60ce2c4725e86e8fe0599118ee8c036fb54fa6783c2"
+    },
+    "scripts/checks/maps-coverage.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/maps-coverage.test.js",
+      "sha256": "f02d3810dd9e5492f735593548cc221290713bc36a1a53e7b95893a0f07f21c4",
+      "installedSha": "f02d3810dd9e5492f735593548cc221290713bc36a1a53e7b95893a0f07f21c4"
     },
     "scripts/checks/path-usage.js": {
       "owner": "framework",
@@ -14951,8 +14972,8 @@
       "managed": true,
       "source": ".claude/commands/maps/all.md",
       "kind": "md",
-      "sha256": "79202231e5517597ebe972e59e9439df37ae5c9bd6f6e30a5c4d04af5ac48234",
-      "installedSha": "79202231e5517597ebe972e59e9439df37ae5c9bd6f6e30a5c4d04af5ac48234"
+      "sha256": "d96329227bbfefbef6b5f4e1ef7ed76c76e955d23b391fefc2afd53013d47b65",
+      "installedSha": "d96329227bbfefbef6b5f4e1ef7ed76c76e955d23b391fefc2afd53013d47b65"
     },
     ".claude/commands/maps/architecture.md": {
       "owner": "framework",
@@ -14961,6 +14982,14 @@
       "kind": "md",
       "sha256": "d563a8b76d0685113121fa78ec46af65f897d1e8a7c7ed2a03d91858e8c5f049",
       "installedSha": "d563a8b76d0685113121fa78ec46af65f897d1e8a7c7ed2a03d91858e8c5f049"
+    },
+    ".claude/commands/maps/coverage.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/commands/maps/coverage.md",
+      "kind": "md",
+      "sha256": "7c23e0b6d4dcf4346ec1b76bd95d2592e663eaca807f58d7b0835350335370a2",
+      "installedSha": "7c23e0b6d4dcf4346ec1b76bd95d2592e663eaca807f58d7b0835350335370a2"
     },
     ".claude/commands/maps/enforcements.md": {
       "owner": "framework",

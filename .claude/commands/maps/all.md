@@ -6,6 +6,8 @@ description: Registry of all maps — shows every map, its source, last updated,
 
 List every map and registry in the system with staleness indicators.
 
+> **Self-inventory:** `/maps:coverage` enforces that this registry, the `/maps:*` skills, and the on-disk map files stay in sync (no unregistered skill, no dangling ref, no orphan map file) — the `/maps` analog of `/scan:scan-coverage`. Run it after adding or removing a map or a `/maps:<x>` skill.
+
 ## Input
 
 `$ARGUMENTS` — optional:
@@ -32,6 +34,7 @@ Check these files for existence and last modified date:
 |-----|-------------|
 | Systems manifest | `/maps:systems` (renders from `systems.jsonl`) |
 | Architecture | `/maps:architecture` |
+| Steps | `/maps:steps` (regenerates step tables in canonical docs from `STEPS.json`) |
 
 **Manual registries** — resolve via `paths.json` keys where available; literal paths are project-specific:
 
