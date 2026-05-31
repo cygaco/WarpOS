@@ -4,7 +4,7 @@
   "generated_by": "scripts/generate-framework-manifest.js",
   "counts": {
     "agent": 84,
-    "skill": 184,
+    "skill": 185,
     "reference": 28,
     "maps_baseline": 23,
     "hook": 67,
@@ -13,7 +13,7 @@
     "pattern": 6,
     "fixture": 23,
     "warpos_script": 52,
-    "check_tool": 46,
+    "check_tool": 49,
     "agent_tool": 3,
     "decision_tool": 1,
     "runtime_tool": 1,
@@ -56,7 +56,7 @@
     "module_scope": 1,
     "framework_doc": 2
   },
-  "total": 933,
+  "total": 937,
   "assets": {
     "agent": [
       {
@@ -2430,7 +2430,7 @@
         "src": ".claude/commands/scan/full.md",
         "dest": ".claude/commands/scan/full.md",
         "kind": "skill",
-        "sha256": "9a1096762151260bd43ef13c0188872fc3bd50b449ddd2951accfe7c0dadbed1",
+        "sha256": "8c5110a47dc19787b05fd1b8bdab1e61e7424324a2127eaea49e8ac6857f7ca5",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
@@ -2575,6 +2575,18 @@
         "dest": ".claude/commands/scan/scaffold-coverage.md",
         "kind": "skill",
         "sha256": "5d347fecdb6c181de26c42529ca15920f0c242ff36db7190b0e8d4035a127127",
+        "owner": "framework",
+        "mergeStrategy": "three_way_markdown",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "skill.scan.scan-coverage.md",
+        "src": ".claude/commands/scan/scan-coverage.md",
+        "dest": ".claude/commands/scan/scan-coverage.md",
+        "kind": "skill",
+        "sha256": "6cb77746c56fa9291ef1c504a5d8bcf7980454676aa31a0dd0517cd9530676a9",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
@@ -6205,6 +6217,42 @@
         "dest": "scripts/checks/scaffold-coverage-scan.js",
         "kind": "check_tool",
         "sha256": "0bfea337ebb06439560a683120a97009398cfb993886de7fc454ce7babfb2889",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "check_tool.scan-coverage.allowlist.json",
+        "src": "scripts/checks/scan-coverage.allowlist.json",
+        "dest": "scripts/checks/scan-coverage.allowlist.json",
+        "kind": "check_tool",
+        "sha256": "d8408e62ba7d4d3afad1a4d3a4a21acb591794522d0fb01c9c024945d3add31d",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "check_tool.scan-coverage.js",
+        "src": "scripts/checks/scan-coverage.js",
+        "dest": "scripts/checks/scan-coverage.js",
+        "kind": "check_tool",
+        "sha256": "cc2a995cae2040fc41d28ec37ff95090721e7d1891ee10c828505eb11e55bd8c",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "check_tool.scan-coverage.test.js",
+        "src": "scripts/checks/scan-coverage.test.js",
+        "dest": "scripts/checks/scan-coverage.test.js",
+        "kind": "check_tool",
+        "sha256": "056bcfb969a574638134198cfc9f40b23e567f9300e80057634232c15228bd26",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",

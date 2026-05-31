@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-05-31T17:56:36.460Z",
+  "generatedAt": "2026-05-31T18:14:31.067Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.11.1",
   "migrations": [],
@@ -97,8 +97,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "3a153fbac12e82b8eba7d748f026c9e06acb6b9ace8f92587e9ff55cd7209087",
-      "installedSha": "3a153fbac12e82b8eba7d748f026c9e06acb6b9ace8f92587e9ff55cd7209087"
+      "sha256": "c9af7f3e6dc05ed1849eebe99cee5d13d54ecf68897e22d341e1ca550c2850bd",
+      "installedSha": "c9af7f3e6dc05ed1849eebe99cee5d13d54ecf68897e22d341e1ca550c2850bd"
     },
     "USER_GUIDE.md": {
       "owner": "framework",
@@ -4480,6 +4480,27 @@
       "sha256": "0bfea337ebb06439560a683120a97009398cfb993886de7fc454ce7babfb2889",
       "installedSha": "0bfea337ebb06439560a683120a97009398cfb993886de7fc454ce7babfb2889"
     },
+    "scripts/checks/scan-coverage.allowlist.json": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/scan-coverage.allowlist.json",
+      "sha256": "d8408e62ba7d4d3afad1a4d3a4a21acb591794522d0fb01c9c024945d3add31d",
+      "installedSha": "d8408e62ba7d4d3afad1a4d3a4a21acb591794522d0fb01c9c024945d3add31d"
+    },
+    "scripts/checks/scan-coverage.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/scan-coverage.js",
+      "sha256": "cc2a995cae2040fc41d28ec37ff95090721e7d1891ee10c828505eb11e55bd8c",
+      "installedSha": "cc2a995cae2040fc41d28ec37ff95090721e7d1891ee10c828505eb11e55bd8c"
+    },
+    "scripts/checks/scan-coverage.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/scan-coverage.test.js",
+      "sha256": "056bcfb969a574638134198cfc9f40b23e567f9300e80057634232c15228bd26",
+      "installedSha": "056bcfb969a574638134198cfc9f40b23e567f9300e80057634232c15228bd26"
+    },
     "scripts/checks/sprint-beta-honesty.js": {
       "owner": "framework",
       "managed": true,
@@ -8080,6 +8101,14 @@
       "managed": false
     },
     ".claude/project/sprint/sprints/_no-active-sprint/reasoning-auto-approval.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/sprints/SP-20260531-004/current.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/sprints/SP-20260531-004/progress.yaml": {
       "owner": "runtime",
       "managed": false
     },
@@ -14300,8 +14329,8 @@
       "managed": true,
       "source": ".claude/commands/scan/full.md",
       "kind": "md",
-      "sha256": "9a1096762151260bd43ef13c0188872fc3bd50b449ddd2951accfe7c0dadbed1",
-      "installedSha": "9a1096762151260bd43ef13c0188872fc3bd50b449ddd2951accfe7c0dadbed1"
+      "sha256": "8c5110a47dc19787b05fd1b8bdab1e61e7424324a2127eaea49e8ac6857f7ca5",
+      "installedSha": "8c5110a47dc19787b05fd1b8bdab1e61e7424324a2127eaea49e8ac6857f7ca5"
     },
     ".claude/commands/scan/ingest-firewall.md": {
       "owner": "framework",
@@ -14398,6 +14427,14 @@
       "kind": "md",
       "sha256": "5d347fecdb6c181de26c42529ca15920f0c242ff36db7190b0e8d4035a127127",
       "installedSha": "5d347fecdb6c181de26c42529ca15920f0c242ff36db7190b0e8d4035a127127"
+    },
+    ".claude/commands/scan/scan-coverage.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/commands/scan/scan-coverage.md",
+      "kind": "md",
+      "sha256": "6cb77746c56fa9291ef1c504a5d8bcf7980454676aa31a0dd0517cd9530676a9",
+      "installedSha": "6cb77746c56fa9291ef1c504a5d8bcf7980454676aa31a0dd0517cd9530676a9"
     },
     ".claude/commands/scan/sprint-beta-honesty.md": {
       "owner": "framework",
