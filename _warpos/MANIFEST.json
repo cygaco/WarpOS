@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-05-31T02:12:38.189Z",
+  "generatedAt": "2026-05-31T03:24:15.015Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.11.1",
   "migrations": [],
@@ -1131,8 +1131,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/delta-aggregate-reviews.js",
-      "sha256": "d432687b3ffee6828ca8bdd59ca7ee4ff40dafb7d21f5faad5bfe501ff18552f",
-      "installedSha": "d432687b3ffee6828ca8bdd59ca7ee4ff40dafb7d21f5faad5bfe501ff18552f"
+      "sha256": "1df875f9412591f441db3ae06165602f0d2de0ab1868ea209ad6a0842c99fdec",
+      "installedSha": "1df875f9412591f441db3ae06165602f0d2de0ab1868ea209ad6a0842c99fdec"
     },
     "scripts/delta-build-fix-brief.js": {
       "owner": "framework",
@@ -1250,8 +1250,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/delta-final-gauntlet.js",
-      "sha256": "ad22c517719d59f47794353eea5a0c9485df53f0e752ab7311477188761373d7",
-      "installedSha": "ad22c517719d59f47794353eea5a0c9485df53f0e752ab7311477188761373d7"
+      "sha256": "2e223d015fe9db9b1704cf37bdf957956d717b1789b3c7cc9595755089d099b5",
+      "installedSha": "2e223d015fe9db9b1704cf37bdf957956d717b1789b3c7cc9595755089d099b5"
     },
     "scripts/delta-fix-onboarding-spec.txt": {
       "owner": "framework",
@@ -1271,8 +1271,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/delta-gauntlet-watcher.js",
-      "sha256": "18bfc770e31caa8f6e9f10fb54be42d2acb616f099ad01bf964123ea3d38f0a1",
-      "installedSha": "18bfc770e31caa8f6e9f10fb54be42d2acb616f099ad01bf964123ea3d38f0a1"
+      "sha256": "2cc8e99dd9de642b12c1958dc980aa3f5c9e404816d7b9b260739aa604513046",
+      "installedSha": "2cc8e99dd9de642b12c1958dc980aa3f5c9e404816d7b9b260739aa604513046"
     },
     "scripts/delta-heartbeat.js": {
       "owner": "framework",
@@ -1404,8 +1404,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/dispatch-agent.js",
-      "sha256": "e77a78e1ef5028fb123756f0abb24930c66624186028beebdb32b7ec58ab96e7",
-      "installedSha": "e77a78e1ef5028fb123756f0abb24930c66624186028beebdb32b7ec58ab96e7"
+      "sha256": "cc67d5b05f188f4e74d9e49345d07e9de34d0efce26b82bbc621581feb013fdc",
+      "installedSha": "cc67d5b05f188f4e74d9e49345d07e9de34d0efce26b82bbc621581feb013fdc"
     },
     "scripts/dispatch.js": {
       "owner": "framework",
@@ -3882,8 +3882,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/team-guard.js",
-      "sha256": "e9473d119e0708b569a303e5251157b5ab8542a76d3404cb0a21b88433a9fcb8",
-      "installedSha": "e9473d119e0708b569a303e5251157b5ab8542a76d3404cb0a21b88433a9fcb8"
+      "sha256": "3e026b4efea6b9cfeb8ec0be1e7ed132e645985379cd5ffdb469925780e43f73",
+      "installedSha": "3e026b4efea6b9cfeb8ec0be1e7ed132e645985379cd5ffdb469925780e43f73"
     },
     "scripts/hooks/template-fillability.js": {
       "owner": "framework",
@@ -4165,6 +4165,13 @@
       "sha256": "222d8c1071739827c5af3151e08fcf54e3585330953ba702154004dbf5f4959d",
       "installedSha": "222d8c1071739827c5af3151e08fcf54e3585330953ba702154004dbf5f4959d"
     },
+    "scripts/dispatch/org-roles.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/dispatch/org-roles.js",
+      "sha256": "f58f0f98daf52d2eb1ea7826cf10dcfa320cbaac7eb4ff41f433a70a1e4180ca",
+      "installedSha": "f58f0f98daf52d2eb1ea7826cf10dcfa320cbaac7eb4ff41f433a70a1e4180ca"
+    },
     "scripts/dispatch/prune-dead-locks.js": {
       "owner": "framework",
       "managed": true,
@@ -4358,8 +4365,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/role-parity-scan.js",
-      "sha256": "b2ac64fe9e7eb5bd1227ca812cb8d2861588d4106a35307c3df28e106a2345cd",
-      "installedSha": "b2ac64fe9e7eb5bd1227ca812cb8d2861588d4106a35307c3df28e106a2345cd"
+      "sha256": "4de603b875e1efcd1de68e5fd6aaa4e8712138b80ea0b05adc4fe2aaa2d47227",
+      "installedSha": "4de603b875e1efcd1de68e5fd6aaa4e8712138b80ea0b05adc4fe2aaa2d47227"
     },
     "scripts/checks/role-parity.test.js": {
       "owner": "framework",
@@ -4799,8 +4806,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/agents/provider-trace.js",
-      "sha256": "e3e88b1dcadd118a343090dd37ee2247088a3db99229a712b4442d4e50e19c76",
-      "installedSha": "e3e88b1dcadd118a343090dd37ee2247088a3db99229a712b4442d4e50e19c76"
+      "sha256": "962492270f068c18373970ff933258a9d97ce9ff36c097752543f9ed1edd1e65",
+      "installedSha": "962492270f068c18373970ff933258a9d97ce9ff36c097752543f9ed1edd1e65"
     },
     "schemas/change-plan.schema.json": {
       "owner": "framework",
@@ -14836,8 +14843,8 @@
       "managed": true,
       "source": ".claude/agents/03-managers/_org/org-map.json",
       "kind": "json",
-      "sha256": "671bd3511b949710aedc976dcdea6983b0b75d0a66b64595219002d60e4276ed",
-      "installedSha": "671bd3511b949710aedc976dcdea6983b0b75d0a66b64595219002d60e4276ed"
+      "sha256": "e2e607018a81151c26c142544a663567c9d1cbc0b0a5d298230e5ed1f9b3bfcf",
+      "installedSha": "e2e607018a81151c26c142544a663567c9d1cbc0b0a5d298230e5ed1f9b3bfcf"
     },
     ".claude/agents/02-oneshot/visual-review/visual-review.md": {
       "owner": "framework",

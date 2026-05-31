@@ -289,6 +289,10 @@ const providerOverride = rawProviderOverride
     rawProviderOverride.toLowerCase()
   : null;
 const modelOverride = parseFlag("--model");
+// --domain <d>: the unit of work's domain (product|marketing|engineering|...),
+// threaded into the dispatch/run records so domain-aware routing + per-domain
+// gauntlet selection have the signal (S1.1 chassis, part 2).
+const domainFlag = parseFlag("--domain");
 
 if (!role || !promptArg) {
   console.error(
@@ -480,6 +484,7 @@ try {
   };
   recordProviderTrace({
     role,
+    domain: domainFlag || null,
     expectedProvider: provider,
     actualProvider: result.provider || provider,
     model: result.model || roleModel || null,
@@ -501,6 +506,7 @@ try {
     dispatch_id: dispatchId,
     pid: process.pid,
     role,
+    domain: domainFlag || null,
     provider,
     model: result.model || roleModel || null,
     started_at: dispatchStartedAt,
@@ -525,6 +531,7 @@ try {
       timestamp: completedAt,
       pid: process.pid,
       role,
+      domain: domainFlag || null,
       provider,
       model: result.model || roleModel || null,
       prompt_bytes: promptBytes,

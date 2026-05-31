@@ -29,7 +29,16 @@ const FEATURES = [
   "linkedin",
   "auto-apply",
 ];
-const ROLES = ["reviewer", "compliance", "qa", "redteam"];
+// Review personas — config-driven from the org map's engineering gauntlet
+// (scripts/dispatch/org-roles.js, S1.1 chassis): reviewGauntletRoles filters
+// remediation roles (fixer). Fail-safe to the known set if the module can't load.
+let ROLES;
+try {
+  ROLES = require("./dispatch/org-roles").reviewGauntletRoles("engineering");
+  if (!Array.isArray(ROLES) || ROLES.length === 0) throw new Error("empty review set");
+} catch {
+  ROLES = ["reviewer", "compliance", "qa", "redteam"];
+}
 
 const ROOT = path.resolve(__dirname, "..");
 const REV_DIR = path.join(ROOT, ".claude", "runtime", "dispatch", "reviewers");

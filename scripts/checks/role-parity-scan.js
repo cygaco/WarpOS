@@ -11,8 +11,12 @@
  * Sources (read live, never hardcoded copies):
  *   - org map         .claude/agents/03-managers/_org/org-map.json (role universe)
  *   - dispatch roles  scripts/dispatch/catalog.js#ROLES            (required)
- *   - team-guard      scripts/hooks/team-guard.js GAMMA_ONLY_TYPES (STATICALLY
- *                     parsed — team-guard runs on require, so we never require it)
+ *   - gamma-only set  scripts/dispatch/org-roles.js gammaOnlyTypes() — the SAME
+ *                     config-driven derivation team-guard now consumes (the org
+ *                     map is the single source of truth), NOT a regex parse of
+ *                     team-guard. PLUS a wiring check that team-guard still
+ *                     delegates its GAMMA_ONLY_TYPES gate to org-roles (so the
+ *                     config-driven gate can't be silently re-hardcoded).
  *
  * REJECTS (exit 1), never lints, when ANY:
  *   1. an org-map domain role marked BUILT (`agent` != null) names an agent that
@@ -177,9 +181,18 @@ function main(argv) {
     const org = readJSON(path.join(ROOT, ".claude/agents/03-managers/_org/org-map.json"));
     const catalog = require(path.join(ROOT, "scripts/dispatch/catalog.js"));
     if (!Array.isArray(catalog.ROLES)) { process.stderr.write("role-parity: catalog.js does not export ROLES\n"); return 2; }
-    const gammaOnly = parseGammaOnlyTypes(fs.readFileSync(path.join(ROOT, "scripts/hooks/team-guard.js"), "utf8"));
-    if (!gammaOnly) { process.stderr.write("role-parity: could not parse GAMMA_ONLY_TYPES from team-guard.js\n"); return 2; }
+    // gammaOnly comes from the SAME config-driven derivation team-guard now
+    // consumes (org-roles, S1.1 chassis) — the org map is the source of truth.
+    const { gammaOnlyTypes } = require(path.join(ROOT, "scripts/dispatch/org-roles.js"));
+    const gammaOnly = gammaOnlyTypes(org);
+    if (!(gammaOnly instanceof Set) || gammaOnly.size === 0) { process.stderr.write("role-parity: org-roles.gammaOnlyTypes() returned empty\n"); return 2; }
     errors = evaluate({ org, ROLES: catalog.ROLES, gammaOnly, agentResolves: makeRealAgentResolver(ROOT) });
+    // Wiring invariant: team-guard MUST delegate its gate to org-roles, else a
+    // hand-edited static GAMMA_ONLY_TYPES could silently drift from the org map.
+    const tgSrc = fs.readFileSync(path.join(ROOT, "scripts/hooks/team-guard.js"), "utf8");
+    if (!/require\(\s*["'][^"']*dispatch\/org-roles["']\s*\)/.test(tgSrc)) {
+      errors.push("team-guard.js no longer delegates its GAMMA_ONLY_TYPES gate to scripts/dispatch/org-roles (config-driven role gate bypassed — re-hardcoded?)");
+    }
   } catch (e) {
     process.stderr.write(`role-parity-scan error: ${e.message}\n`);
     return 2; // fail-closed

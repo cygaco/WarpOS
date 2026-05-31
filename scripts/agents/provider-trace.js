@@ -27,6 +27,7 @@ function record(entry) {
   const line = {
     ts: new Date().toISOString(),
     role: entry.role || "unknown",
+    domain: entry.domain || null,
     expectedProvider: entry.expectedProvider || entry.provider || "unknown",
     actualProvider: entry.actualProvider || entry.provider || "unknown",
     model: entry.model || null,

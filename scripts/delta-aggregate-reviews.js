@@ -35,7 +35,15 @@ const ALL = [
 ];
 const argv = process.argv.slice(2).filter(Boolean);
 const FEATURES = argv.length ? argv : ALL;
-const ROLES = ["reviewer", "compliance", "qa", "redteam"];
+// Review personas — config-driven from the org map's engineering gauntlet
+// (scripts/dispatch/org-roles.js, S1.1 chassis). Fail-safe to the known set.
+let ROLES;
+try {
+  ROLES = require("./dispatch/org-roles").reviewGauntletRoles("engineering");
+  if (!Array.isArray(ROLES) || ROLES.length === 0) throw new Error("empty review set");
+} catch {
+  ROLES = ["reviewer", "compliance", "qa", "redteam"];
+}
 
 function readEnvelope(file) {
   try {

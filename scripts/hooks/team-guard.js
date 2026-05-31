@@ -12,23 +12,25 @@
 const fs = require("fs");
 const path = require("path");
 
-// Build-chain agent types that only Gamma should dispatch
-// Includes both canonical names (reviewer, learner) and legacy aliases
-// (evaluator, auditor) to keep historical/external dispatchers working
-// during the 2026-04-29 rename transition.
-const GAMMA_ONLY_TYPES = new Set([
-  "builder",
-  "fixer",
-  "fix-agent",
-  "reviewer",
-  "evaluator", // legacy alias
-  "compliance",
-  "learner",
-  "auditor", // legacy alias
-  "qa",
-  "redteam",
-  "delta",
-]);
+// Build-chain agent types that only Gamma should dispatch. CONFIG-DRIVEN from
+// the org map via scripts/dispatch/org-roles.js (S1.1 chassis): org-map domain
+// builders[] + gauntlet members + a documented static augment (legacy rename
+// aliases evaluator/auditor/fix-agent + transitional/system roles). Adding a
+// Wave-2 domain builder to org-map.json auto-gates it here — no edit needed.
+// FAIL-SAFE: if org-roles can't load, fall back to the known build-chain set —
+// NEVER an empty gate (empty = permit-all = the exact gate hole this guards).
+let GAMMA_ONLY_TYPES;
+try {
+  GAMMA_ONLY_TYPES = require("../dispatch/org-roles").gammaOnlyTypes();
+  if (!(GAMMA_ONLY_TYPES instanceof Set) || GAMMA_ONLY_TYPES.size === 0)
+    throw new Error("empty gamma-only set");
+} catch {
+  GAMMA_ONLY_TYPES = new Set([
+    "builder", "fixer", "fix-agent", "reviewer", "evaluator", "compliance",
+    "learner", "auditor", "qa", "redteam", "delta",
+    "frontend-builder", "backend-builder",
+  ]);
+}
 
 // Agent names/types that are allowed as teammates (Layer 1)
 const TEAMMATE_NAMES = ["beta", "gamma", "β", "γ"];

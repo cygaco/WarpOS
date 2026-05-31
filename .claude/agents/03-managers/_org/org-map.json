@@ -38,7 +38,7 @@
     }
   },
   "gauntlets": {
-    "code-qc": { "domain": "engineering", "members": ["reviewer", "compliance", "redteam", "fixer"] },
+    "code-qc": { "domain": "engineering", "members": ["reviewer", "compliance", "qa", "redteam", "fixer"], "note": "4 parallel review personas (reviewer·compliance·qa·redteam) + fixer (remediation, runs after review — not a parallel reviewer). org-roles.reviewGauntletRoles('engineering') filters remediation roles; the delta-* oneshot gauntlet launchers run exactly the review personas. qa retires under qa-lead in Wave 2 (S2.1)." },
     "design-quality": {
       "domain": "cross-domain",
       "is_named_design_authority": true,
