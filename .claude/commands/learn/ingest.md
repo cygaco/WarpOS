@@ -20,7 +20,9 @@ Determine the input type and extract content accordingly:
 ### Local File
 **Detection:** Input doesn't start with `http`
 **Method:** Read the file directly with the Read tool
-**Supported:** `.md`, `.txt`, `.pdf`, `.json`, `.js`, `.ts`, `.html`, any text file
+**Supported:** `.md`, `.txt`, `.pdf`, `.json`, `.js`, `.ts`, `.html`, any text file. **Office OOXML** (`.docx`, `.pptx`, `.xlsx`) is a ZIP of XML, not text — extract it first (below); never Read it raw.
+
+**Office OOXML extraction (`.docx` / `.pptx` / `.xlsx`):** the text lives in XML parts inside the zip (`.docx` → `word/document.xml`; `.pptx` → `ppt/slides/slide*.xml`; `.xlsx` → `xl/sharedStrings.xml`). Extract to plain text: open the zip, read the XML part, replace `</w:p>` → newline, strip all `<…>` tags, decode XML entities (`&amp; &lt; &gt; &quot; &#39;`). Reference impl (cross-platform, no extra deps) — the PowerShell `System.IO.Compression.ZipFile` reader used to ingest the "Mark Builds Brands" corpus on 2026-05-31 (output in `_planning/ingest/source/`); a `node` script using any unzip lib, or `unzip -p <file> word/document.xml`, work too. **Caveat — text only:** content embedded as IMAGES/screenshots is NOT captured. If a file is large but extracts little text (e.g. a 200KB `.docx` → a few hundred chars), it's mostly screenshots → flag MEDIUM confidence and note the visual steps need a vision pass or the operator's notes.
 
 ### Web Page
 **Detection:** Starts with `http` and is NOT a YouTube/youtu.be link
@@ -28,6 +30,16 @@ Determine the input type and extract content accordingly:
 **Fallback:** If WebFetch fails (paywall, JS-rendered), try:
 1. WebSearch for the page title + "transcript" or "summary"
 2. Ask user to paste the content manually
+
+### Google Workspace links (Docs / Sheets / Slides) — JS-gated, use the EXPORT endpoint
+**Detection:** host is `docs.google.com` / `drive.google.com` with `/document/`, `/spreadsheets/`, `/presentation/`, or `/file/d/`.
+**Why:** the normal page is JS-rendered — a plain WebFetch returns an empty shell, NOT the document text. (This is the 2026-05-30 failure: a fetch + Scribd-mirror attempt hit the JS wall and the agent fell back to reconstructing structure from web-search snippets → MEDIUM confidence + a re-share request. Don't repeat that.) Google serves the real content from an EXPORT endpoint that needs no JS.
+**Method:** extract the doc id (`/d/<ID>/`) and WebFetch the export URL directly:
+- Docs → `https://docs.google.com/document/d/<ID>/export?format=txt` (use `format=docx` if you need structure/headings, then parse per Local File → Office OOXML)
+- Sheets → `https://docs.google.com/spreadsheets/d/<ID>/export?format=csv`
+- Slides → `https://docs.google.com/presentation/d/<ID>/export?format=txt`
+- Drive file → `https://drive.google.com/uc?export=download&id=<ID>`
+**If the export returns a login/HTML page** (doc is private, not link-shared): ask the operator to **File → Download → `.docx` (or `.txt`)** and point `/learn:ingest` at the downloaded file — the skill now parses `.docx` (see Local File → Office OOXML). Capture which downloaded file maps to which in-file `[HERE]`/upload link. **Never silently degrade to snippet reconstruction** — flag it and use the export/download path.
 
 ### Web Page — Crawl Mode (`--crawl` or auto-detect)
 

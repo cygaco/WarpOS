@@ -1662,7 +1662,7 @@
         "src": ".claude/commands/learn/ingest.md",
         "dest": ".claude/commands/learn/ingest.md",
         "kind": "skill",
-        "sha256": "660c1eadb21a16178dce58f58628913ad757159d8ae57ff41cc9c30801d86b92",
+        "sha256": "05add0a8c580b9e8782c989f0e399ecb248d2849a9e638dc39af32282b5a223d",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",

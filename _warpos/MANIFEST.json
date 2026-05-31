@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-05-31T18:50:25.899Z",
+  "generatedAt": "2026-05-31T19:08:47.036Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.11.1",
   "migrations": [],
@@ -97,8 +97,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "89056f1913d9d57708629f681ba31476d8ddb3a6cff8590c131ce739f3e68d8b",
-      "installedSha": "89056f1913d9d57708629f681ba31476d8ddb3a6cff8590c131ce739f3e68d8b"
+      "sha256": "171b82d071104e2201b7bfabb59065747bf5a074bd2b730b3a993255103eb647",
+      "installedSha": "171b82d071104e2201b7bfabb59065747bf5a074bd2b730b3a993255103eb647"
     },
     "USER_GUIDE.md": {
       "owner": "framework",
@@ -15063,8 +15063,8 @@
       "managed": true,
       "source": ".claude/commands/learn/ingest.md",
       "kind": "md",
-      "sha256": "660c1eadb21a16178dce58f58628913ad757159d8ae57ff41cc9c30801d86b92",
-      "installedSha": "660c1eadb21a16178dce58f58628913ad757159d8ae57ff41cc9c30801d86b92"
+      "sha256": "05add0a8c580b9e8782c989f0e399ecb248d2849a9e638dc39af32282b5a223d",
+      "installedSha": "05add0a8c580b9e8782c989f0e399ecb248d2849a9e638dc39af32282b5a223d"
     },
     ".claude/commands/learn/integrate.md": {
       "owner": "framework",
