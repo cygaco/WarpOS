@@ -689,30 +689,34 @@ function stageCommit(opts, canonical, next) {
       );
     }
   }
-  // Stage all release-related files. 2026-05-30 fix: the prior list omitted the
-  // files the bump stage (manifest.warpos.version + install.ps1) and the regen
-  // (framework-installed, _warpos/MANIFEST, RELEASES.md) touch — so the COMMITTED
-  // release was version-incoherent (version.json=new but those files=old) even
-  // though the stage-7 version_coherence gate passed on the working tree. Stage
-  // the full set so the commit matches what the gate verified.
-  const add = gitC(canonical, [
-    "add",
-    "version.json",
-    ".claude/framework-manifest.json",
-    ".claude/framework-installed.json",
-    ".claude/manifest.json",
-    ".claude/paths.json",
-    "schemas/paths.schema.json",
-    "_warpos/MANIFEST.json",
-    "install.ps1",
-    "RELEASES.md",
-    `framework/releases/${next}`,
-  ]);
+  // Stage exactly what the stage-7 gates verified on the working tree. The
+  // 2026-05-30 fix grew an explicit allowlist (version.json, manifests, paths,
+  // install.ps1, RELEASES.md, capsule), but ANY allowlist silently DROPS gate-fix
+  // edits to files it does not name — e.g. framework/hooks.registry.json,
+  // .claude/settings.json, framework/paths.registry.json, scripts/hooks/*.generated.js,
+  // PATH_KEYS.md — re-introducing the exact false-green it was meant to kill (gates
+  // pass because of fixes that never make it into the commit). Stage ALL tracked
+  // modifications (`git add -u`) so the commit IS the verified tree, plus the new
+  // (untracked) capsule dir. `-u` never sweeps untracked transient scratch
+  // (runtime/notes/*, consult logs), so the release commit stays clean. The
+  // operator's release hygiene is to enter the release with a tree whose only
+  // tracked changes are release-relevant — which the gates already assume.
+  const addTracked = gitC(canonical, ["add", "-u"]);
+  if (!addTracked.ok) {
+    return receipt(
+      8,
+      false,
+      `git add -u failed: ${addTracked.stderr.slice(0, 200)}`,
+      canonical,
+      `git -C ${canonical} reset && --resume-from 8`,
+    );
+  }
+  const add = gitC(canonical, ["add", `framework/releases/${next}`]);
   if (!add.ok) {
     return receipt(
       8,
       false,
-      `git add failed: ${add.stderr.slice(0, 200)}`,
+      `git add (capsule) failed: ${add.stderr.slice(0, 200)}`,
       canonical,
       `git -C ${canonical} reset && --resume-from 8`,
     );

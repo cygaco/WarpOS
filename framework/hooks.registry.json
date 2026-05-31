@@ -732,6 +732,19 @@
       "purpose": "Refuse git commits that stage framework-prefix files while framework/releases/<version>/ already exists (capsule already minted for current version). Forces a version bump before more framework changes can ship. Closes the 2026-05-20 capsule-staleness gap.",
       "registrations": [{ "event": "PreToolUse", "matcher": "Bash" }],
       "testFixtures": ["fixtures/hooks/default/bash-git-commit.json"]
+    },
+    {
+      "id": "untrusted-content-firewall",
+      "script": "scripts/hooks/untrusted-content-firewall.js",
+      "owner": "framework",
+      "enabled": true,
+      "failMode": "fail-open",
+      "fixturesRequired": false,
+      "purpose": "Treat externally-ingested content as DATA, never instructions (S0.6). PostToolUse firewall: blocks ingest-tool results carrying prompt-injection aimed at the agent. Fail-open on hook-payload parse errors (infra, never wedge the session); the fail-closed backstop lives in /scan:ingest-firewall.",
+      "registrations": [
+        { "event": "PostToolUse", "matcher": "WebFetch|WebSearch|mcp__.*|ListMcpResourcesTool|ReadMcpResourceTool" }
+      ],
+      "testFixtures": ["fixtures/hooks/default/post-edit.json"]
     }
   ]
 }

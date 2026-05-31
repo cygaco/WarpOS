@@ -484,6 +484,15 @@
       "docsToken": "paths.enforcementDebt",
       "_note": "Append-only ledger of policies that exist without a named enforcer. Logged via /enforcement:log; surfaced at /enforcement:list and /scan:full."
     },
+    "reportsDir": {
+      "path": "_reports",
+      "kind": "dir",
+      "owner": "runtime",
+      "mutable": true,
+      "introducedIn": "0.12.0",
+      "docsToken": "paths.reportsDir",
+      "_note": "Per-project report OUTPUT (sprint/milestone/session/checkpoint reports via /report); created on use like runtime/ — NOT framework content and never ships (walk-skipped in the manifest). The /report skill + framework/templates/report/ ship and seed it; emitted reports do not. (SP-20260531-001)"
+    },
     "roadmap": {
       "path": "ROADMAP.md",
       "kind": "md",

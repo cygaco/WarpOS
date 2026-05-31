@@ -1,7 +1,7 @@
 {
   "$schema": "warpos/hook-manifest/v1",
   "generatedFrom": "framework/hooks.registry.json",
-  "updatedAt": "2026-05-25T21:28:35.797Z",
+  "updatedAt": "2026-05-31T20:23:47.568Z",
   "hooks": {
     "session-start.js": {
       "script": "scripts/hooks/session-start.js",
@@ -1038,6 +1038,23 @@
       ],
       "owner": "framework",
       "fixturesRequired": true,
+      "enabled": true
+    },
+    "untrusted-content-firewall.js": {
+      "script": "scripts/hooks/untrusted-content-firewall.js",
+      "events": [
+        {
+          "hookEvent": "PostToolUse",
+          "matcher": "WebFetch|WebSearch|mcp__.*|ListMcpResourcesTool|ReadMcpResourceTool"
+        }
+      ],
+      "failMode": "fail-open",
+      "blocks": [],
+      "testFixtures": [
+        "fixtures/hooks/default/post-edit.json"
+      ],
+      "owner": "framework",
+      "fixturesRequired": false,
       "enabled": true
     }
   }

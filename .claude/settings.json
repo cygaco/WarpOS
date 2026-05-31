@@ -225,15 +225,6 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/untrusted-content-firewall.js\""
-          }
-        ],
-        "matcher": "WebFetch|WebSearch|mcp__.*|ListMcpResourcesTool|ReadMcpResourceTool"
-      },
-      {
-        "hooks": [
-          {
-            "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/memory-guard.js\""
           },
           {
@@ -328,6 +319,15 @@
           }
         ],
         "matcher": ""
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/untrusted-content-firewall.js\""
+          }
+        ],
+        "matcher": "WebFetch|WebSearch|mcp__.*|ListMcpResourcesTool|ReadMcpResourceTool"
       }
     ],
     "PostCompact": [

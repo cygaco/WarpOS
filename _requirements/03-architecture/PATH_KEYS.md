@@ -89,6 +89,7 @@ Markdown convention: reference paths as `paths.X` in prose. Code: `const { PATHS
 | `recurringIssuesFile` | `.claude/project/memory/recurring-issues.jsonl` | jsonl | runtime | yes | 0.0.0 |  |
 | `reference` | `.claude/project/reference` | dir | framework | no | 0.0.0 |  |
 | `releases` | `RELEASES.md` | md | project | yes | 0.7.2 | Repo-root engineering release ledger. Auto-managed by script |
+| `reportsDir` | `_reports` | dir | runtime | yes | 0.12.0 | Per-project report OUTPUT (sprint/milestone/session/checkpoi |
 | `requirements` | `_requirements` | dir | project | yes | 0.0.0 |  |
 | `requirementsFile` | `.claude/project/events/requirements.jsonl` | jsonl | runtime | yes | 0.0.0 |  |
 | `requirementsRoot` | `_requirements` | dir | project | yes | 0.1.0 | Track B 2026-05-03 renamed requirements -> _requirements for |

@@ -66,6 +66,7 @@ const PATHS = {
   "systemsFile": path.join(PROJECT, ".claude", "project", "memory", "systems.jsonl"),
   "recurringIssuesFile": path.join(PROJECT, ".claude", "project", "memory", "recurring-issues.jsonl"),
   "enforcementDebt": path.join(PROJECT, ".claude", "project", "memory", "enforcement-debt.jsonl"),
+  "reportsDir": path.join(PROJECT, "_reports"),
   "roadmap": path.join(PROJECT, "ROADMAP.md"),
   "releases": path.join(PROJECT, "RELEASES.md"),
   "specGraph": path.join(PROJECT, ".claude", "project", "maps", "SPEC_GRAPH.json"),

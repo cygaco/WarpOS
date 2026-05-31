@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
-  "installedVersion": "0.11.1",
-  "installedCommit": "1460aa5c67ea73744b9d3f781fbce330d3f5d768",
-  "installedAt": "2026-05-30T15:44:49.175Z",
+  "installedVersion": "0.12.0",
+  "installedCommit": "212da1e7330cb2db5ebdf1315dc13a065bc80cf8",
+  "installedAt": "2026-05-31T21:17:43.959Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -129,13 +129,43 @@
       "introducedIn": "0.0.0"
     },
     {
+      "id": "agent.00-alex..system.policy.adr.0003-manager-principles-inheritance.md",
+      "kind": "agent",
+      "dest": ".claude/agents/00-alex/.system/policy/adr/0003-manager-principles-inheritance.md",
+      "owner": "framework",
+      "mergeStrategy": "three_way_markdown",
+      "installedHash": "1147da1e3077a39e00c772bd596c5cf11d7629d93011b609adcf6e39b05b837b",
+      "currentHashAtInstall": "1147da1e3077a39e00c772bd596c5cf11d7629d93011b609adcf6e39b05b837b",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "agent.00-alex..system.policy.adr.0004-oneshot-arbitration-needed-state.md",
+      "kind": "agent",
+      "dest": ".claude/agents/00-alex/.system/policy/adr/0004-oneshot-arbitration-needed-state.md",
+      "owner": "framework",
+      "mergeStrategy": "three_way_markdown",
+      "installedHash": "7f11de4c15082e5756e23244995cf16a9261d92a8f325c63c7d30d6451f59b48",
+      "currentHashAtInstall": "7f11de4c15082e5756e23244995cf16a9261d92a8f325c63c7d30d6451f59b48",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "agent.00-alex..system.policy.adr.0005-guides-root-ownership.md",
+      "kind": "agent",
+      "dest": ".claude/agents/00-alex/.system/policy/adr/0005-guides-root-ownership.md",
+      "owner": "framework",
+      "mergeStrategy": "three_way_markdown",
+      "installedHash": "26de7922137af8e2c5466a639997561721bc107b016f65629b8688ff3e756d81",
+      "currentHashAtInstall": "26de7922137af8e2c5466a639997561721bc107b016f65629b8688ff3e756d81",
+      "introducedIn": "0.0.0"
+    },
+    {
       "id": "agent.00-alex..system.policy.adr.INDEX.md",
       "kind": "agent",
       "dest": ".claude/agents/00-alex/.system/policy/adr/INDEX.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "0dd5bc05feb7cc631c3da7fbdba1fe0d54ebde5b690f18f9e24f2c726a1ef1b0",
-      "currentHashAtInstall": "0dd5bc05feb7cc631c3da7fbdba1fe0d54ebde5b690f18f9e24f2c726a1ef1b0",
+      "installedHash": "d6f106abe90098f673a4fa0b9bdf23d4289729adbbfd604280ec4a91acecc7df",
+      "currentHashAtInstall": "d6f106abe90098f673a4fa0b9bdf23d4289729adbbfd604280ec4a91acecc7df",
       "introducedIn": "0.0.0"
     },
     {
@@ -274,8 +304,18 @@
       "dest": ".claude/agents/00-alex/gamma.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "8e1956752aa21ec370863d87863d9c918d373e70cf2cd2f3697087dc728c89c1",
-      "currentHashAtInstall": "8e1956752aa21ec370863d87863d9c918d373e70cf2cd2f3697087dc728c89c1",
+      "installedHash": "0b162e7ab826722524c71824324be09a580d393c19b51c4efcbd1d266bfad48c",
+      "currentHashAtInstall": "0b162e7ab826722524c71824324be09a580d393c19b51c4efcbd1d266bfad48c",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "agent.01-adhoc._build-core.build-core.md",
+      "kind": "agent",
+      "dest": ".claude/agents/01-adhoc/_build-core/build-core.md",
+      "owner": "framework",
+      "mergeStrategy": "three_way_markdown",
+      "installedHash": "93f8b2cc9f97a9a330f02f6ea7b295780e07a583e15bf338672657ec4c9c9aa3",
+      "currentHashAtInstall": "93f8b2cc9f97a9a330f02f6ea7b295780e07a583e15bf338672657ec4c9c9aa3",
       "introducedIn": "0.0.0"
     },
     {
@@ -284,8 +324,18 @@
       "dest": ".claude/agents/01-adhoc/.system/protocol.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "ca180c73694432308c193e13f66b0ccac8e0401cbee3fda0ed93095ff959ec07",
-      "currentHashAtInstall": "ca180c73694432308c193e13f66b0ccac8e0401cbee3fda0ed93095ff959ec07",
+      "installedHash": "f5adb3f0b2fb0735b5774170d13f722525acca7c7a9db812888e7a98c44b84f7",
+      "currentHashAtInstall": "f5adb3f0b2fb0735b5774170d13f722525acca7c7a9db812888e7a98c44b84f7",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "agent.01-adhoc.backend-builder.backend-builder.md",
+      "kind": "agent",
+      "dest": ".claude/agents/01-adhoc/backend-builder/backend-builder.md",
+      "owner": "framework",
+      "mergeStrategy": "three_way_markdown",
+      "installedHash": "55ecb371ba8eef3b8ed8cb428efd1dd090b36638caadfb3dd697772e81016dd1",
+      "currentHashAtInstall": "55ecb371ba8eef3b8ed8cb428efd1dd090b36638caadfb3dd697772e81016dd1",
       "introducedIn": "0.0.0"
     },
     {
@@ -294,8 +344,8 @@
       "dest": ".claude/agents/01-adhoc/builder/builder.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "cba8f8a25e636dc9b81d2c44de5349c4fdfe6a82081917a1f063bdd87e24987d",
-      "currentHashAtInstall": "cba8f8a25e636dc9b81d2c44de5349c4fdfe6a82081917a1f063bdd87e24987d",
+      "installedHash": "74b8f358ff7751c43564ae8188b42a60130fa308e90e172056c56733b28359c4",
+      "currentHashAtInstall": "74b8f358ff7751c43564ae8188b42a60130fa308e90e172056c56733b28359c4",
       "introducedIn": "0.0.0"
     },
     {
@@ -316,6 +366,16 @@
       "mergeStrategy": "three_way_markdown",
       "installedHash": "2d758234e7507bd16c943d78948ff51cf52291646c3c793fb5e2d13b3cd2cc8d",
       "currentHashAtInstall": "2d758234e7507bd16c943d78948ff51cf52291646c3c793fb5e2d13b3cd2cc8d",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "agent.01-adhoc.frontend-builder.frontend-builder.md",
+      "kind": "agent",
+      "dest": ".claude/agents/01-adhoc/frontend-builder/frontend-builder.md",
+      "owner": "framework",
+      "mergeStrategy": "three_way_markdown",
+      "installedHash": "8e6dc9d9c1898c73aa402ad4ee332c9c6039e273f30b6768ab0bf9bb52d56562",
+      "currentHashAtInstall": "8e6dc9d9c1898c73aa402ad4ee332c9c6039e273f30b6768ab0bf9bb52d56562",
       "introducedIn": "0.0.0"
     },
     {
@@ -399,6 +459,16 @@
       "introducedIn": "0.0.0"
     },
     {
+      "id": "agent.02-oneshot._build-core.build-core.md",
+      "kind": "agent",
+      "dest": ".claude/agents/02-oneshot/_build-core/build-core.md",
+      "owner": "framework",
+      "mergeStrategy": "three_way_markdown",
+      "installedHash": "58af8177900ac493e0087d923102a303d32549158e5e8883c0c8843bcda26e19",
+      "currentHashAtInstall": "58af8177900ac493e0087d923102a303d32549158e5e8883c0c8843bcda26e19",
+      "introducedIn": "0.0.0"
+    },
+    {
       "id": "agent.02-oneshot..system.ENV-SETUP.md",
       "kind": "agent",
       "dest": ".claude/agents/02-oneshot/.system/ENV-SETUP.md",
@@ -434,8 +504,8 @@
       "dest": ".claude/agents/02-oneshot/.system/protocol.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "3535b6d7ebfcad8766e0634ef1035bb9d53925488a3d936e1877441d70a4854c",
-      "currentHashAtInstall": "3535b6d7ebfcad8766e0634ef1035bb9d53925488a3d936e1877441d70a4854c",
+      "installedHash": "28d294c14ca619916c737db3d49a515db81c70dea0dd41d4ffd3c84d1db58c3a",
+      "currentHashAtInstall": "28d294c14ca619916c737db3d49a515db81c70dea0dd41d4ffd3c84d1db58c3a",
       "introducedIn": "0.0.0"
     },
     {
@@ -449,13 +519,23 @@
       "introducedIn": "0.0.0"
     },
     {
+      "id": "agent.02-oneshot.backend-builder.backend-builder.md",
+      "kind": "agent",
+      "dest": ".claude/agents/02-oneshot/backend-builder/backend-builder.md",
+      "owner": "framework",
+      "mergeStrategy": "three_way_markdown",
+      "installedHash": "6a13c9e96ab1831ef19bd4f1a7bde4d6165a23b2d18b2305af3a81087bc942a1",
+      "currentHashAtInstall": "6a13c9e96ab1831ef19bd4f1a7bde4d6165a23b2d18b2305af3a81087bc942a1",
+      "introducedIn": "0.0.0"
+    },
+    {
       "id": "agent.02-oneshot.builder.builder.md",
       "kind": "agent",
       "dest": ".claude/agents/02-oneshot/builder/builder.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "3c82c9ab7ad29dbcc40cb2abe18a3bd260e074a3e783b94a22d69fa6a6c3b4b2",
-      "currentHashAtInstall": "3c82c9ab7ad29dbcc40cb2abe18a3bd260e074a3e783b94a22d69fa6a6c3b4b2",
+      "installedHash": "8cb9f5367335f44dd0877468b30aaf357e58a5695aecb4bbbe918b00ef2c460c",
+      "currentHashAtInstall": "8cb9f5367335f44dd0877468b30aaf357e58a5695aecb4bbbe918b00ef2c460c",
       "introducedIn": "0.0.0"
     },
     {
@@ -479,6 +559,16 @@
       "introducedIn": "0.0.0"
     },
     {
+      "id": "agent.02-oneshot.design-quality.design-quality.md",
+      "kind": "agent",
+      "dest": ".claude/agents/02-oneshot/design-quality/design-quality.md",
+      "owner": "framework",
+      "mergeStrategy": "three_way_markdown",
+      "installedHash": "c90fbd9b6720b763a1a15317ce3ba352b5b26b986aa8452ef623fdd8dd3ab9ff",
+      "currentHashAtInstall": "c90fbd9b6720b763a1a15317ce3ba352b5b26b986aa8452ef623fdd8dd3ab9ff",
+      "introducedIn": "0.0.0"
+    },
+    {
       "id": "agent.02-oneshot.fixer.fixer.md",
       "kind": "agent",
       "dest": ".claude/agents/02-oneshot/fixer/fixer.md",
@@ -486,6 +576,16 @@
       "mergeStrategy": "three_way_markdown",
       "installedHash": "b53ce819b0ebaed3596a241acad47809d4d2ffd6ee4f6d2d2e399590395e7d97",
       "currentHashAtInstall": "b53ce819b0ebaed3596a241acad47809d4d2ffd6ee4f6d2d2e399590395e7d97",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "agent.02-oneshot.frontend-builder.frontend-builder.md",
+      "kind": "agent",
+      "dest": ".claude/agents/02-oneshot/frontend-builder/frontend-builder.md",
+      "owner": "framework",
+      "mergeStrategy": "three_way_markdown",
+      "installedHash": "8bd78bd220419e2275af8d395887b6d27aeed0f4adabd308db7d61d9acd22cf0",
+      "currentHashAtInstall": "8bd78bd220419e2275af8d395887b6d27aeed0f4adabd308db7d61d9acd22cf0",
       "introducedIn": "0.0.0"
     },
     {
@@ -609,13 +709,83 @@
       "introducedIn": "0.0.0"
     },
     {
+      "id": "agent.03-managers._evals.resonance-conversion-rubric.json",
+      "kind": "agent",
+      "dest": ".claude/agents/03-managers/_evals/resonance-conversion-rubric.json",
+      "owner": "framework",
+      "mergeStrategy": "three_way_markdown",
+      "installedHash": "415a1f9958e4d59f0d7513394c62f79539d9b19fa4d5ff0f65a03b4d5cc0417b",
+      "currentHashAtInstall": "415a1f9958e4d59f0d7513394c62f79539d9b19fa4d5ff0f65a03b4d5cc0417b",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "agent.03-managers._org.org-map.json",
+      "kind": "agent",
+      "dest": ".claude/agents/03-managers/_org/org-map.json",
+      "owner": "framework",
+      "mergeStrategy": "three_way_markdown",
+      "installedHash": "0ee03d41163d8928a91d1a2614a1b785d9678e0b515bbf569aff176354394f1b",
+      "currentHashAtInstall": "0ee03d41163d8928a91d1a2614a1b785d9678e0b515bbf569aff176354394f1b",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "agent.03-managers._principles.base.md",
+      "kind": "agent",
+      "dest": ".claude/agents/03-managers/_principles/base.md",
+      "owner": "framework",
+      "mergeStrategy": "three_way_markdown",
+      "installedHash": "92bf909dbaab80151009c618280a929775a8768e144bd0856af7847d1969f3ce",
+      "currentHashAtInstall": "92bf909dbaab80151009c618280a929775a8768e144bd0856af7847d1969f3ce",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "agent.03-managers._principles.registry.json",
+      "kind": "agent",
+      "dest": ".claude/agents/03-managers/_principles/registry.json",
+      "owner": "framework",
+      "mergeStrategy": "three_way_markdown",
+      "installedHash": "5a621d24cf804a5f69e5226b2982292a29763d06f6a0aaccfc185985f70c3092",
+      "currentHashAtInstall": "5a621d24cf804a5f69e5226b2982292a29763d06f6a0aaccfc185985f70c3092",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "agent.03-managers.copy-lead.md",
+      "kind": "agent",
+      "dest": ".claude/agents/03-managers/copy-lead.md",
+      "owner": "framework",
+      "mergeStrategy": "three_way_markdown",
+      "installedHash": "7ee6b9f72d67aa722a01223a365cfec88c4c1d801e57bbd4744f202cb0801579",
+      "currentHashAtInstall": "7ee6b9f72d67aa722a01223a365cfec88c4c1d801e57bbd4744f202cb0801579",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "agent.03-managers.director-of-engineering.md",
+      "kind": "agent",
+      "dest": ".claude/agents/03-managers/director-of-engineering.md",
+      "owner": "framework",
+      "mergeStrategy": "three_way_markdown",
+      "installedHash": "06549f5f00c28443e54b7c71265a612b4f19bba6f14354478d2da3a305f24e7e",
+      "currentHashAtInstall": "06549f5f00c28443e54b7c71265a612b4f19bba6f14354478d2da3a305f24e7e",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "agent.03-managers.director-of-marketing.md",
+      "kind": "agent",
+      "dest": ".claude/agents/03-managers/director-of-marketing.md",
+      "owner": "framework",
+      "mergeStrategy": "three_way_markdown",
+      "installedHash": "631a7fa9c2b3dfb03af75db939eb9fc95845e847cfaef525b5031761117d2fe0",
+      "currentHashAtInstall": "631a7fa9c2b3dfb03af75db939eb9fc95845e847cfaef525b5031761117d2fe0",
+      "introducedIn": "0.0.0"
+    },
+    {
       "id": "agent.03-managers.director-of-product.md",
       "kind": "agent",
       "dest": ".claude/agents/03-managers/director-of-product.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "a699377853357101a2973d9ac4db814635d3a967283d8e66ab398eabd2a0c044",
-      "currentHashAtInstall": "a699377853357101a2973d9ac4db814635d3a967283d8e66ab398eabd2a0c044",
+      "installedHash": "ec3901da8cd924b36275151674772a292689921edd862920e47d95474a22c1c0",
+      "currentHashAtInstall": "ec3901da8cd924b36275151674772a292689921edd862920e47d95474a22c1c0",
       "introducedIn": "0.0.0"
     },
     {
@@ -624,8 +794,58 @@
       "dest": ".claude/agents/03-managers/director-of-qa.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "470908113b0903bf305602eeaed4083256b223f361a2eb57d228402173965213",
-      "currentHashAtInstall": "470908113b0903bf305602eeaed4083256b223f361a2eb57d228402173965213",
+      "installedHash": "ace4859bda3471ed3e075a270b06e7c5db45d4635ad7c47aad65f76f985b97aa",
+      "currentHashAtInstall": "ace4859bda3471ed3e075a270b06e7c5db45d4635ad7c47aad65f76f985b97aa",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "agent.03-managers.growth-lead.md",
+      "kind": "agent",
+      "dest": ".claude/agents/03-managers/growth-lead.md",
+      "owner": "framework",
+      "mergeStrategy": "three_way_markdown",
+      "installedHash": "0008798afe65a685e2a8bc0e2a3f9274b08dfdfa440545e3ed50623065c77b18",
+      "currentHashAtInstall": "0008798afe65a685e2a8bc0e2a3f9274b08dfdfa440545e3ed50623065c77b18",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "agent.03-managers.product-designer.md",
+      "kind": "agent",
+      "dest": ".claude/agents/03-managers/product-designer.md",
+      "owner": "framework",
+      "mergeStrategy": "three_way_markdown",
+      "installedHash": "77b57bceb6ad635a40ac9cf9ad8445ed58d514b40bc756788e10b103ecaf0d93",
+      "currentHashAtInstall": "77b57bceb6ad635a40ac9cf9ad8445ed58d514b40bc756788e10b103ecaf0d93",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "agent.03-managers.product-lead.md",
+      "kind": "agent",
+      "dest": ".claude/agents/03-managers/product-lead.md",
+      "owner": "framework",
+      "mergeStrategy": "three_way_markdown",
+      "installedHash": "082ce379a9ffe09bf5272053265a3826f56bff31af0fe21b66b89657cfd30927",
+      "currentHashAtInstall": "082ce379a9ffe09bf5272053265a3826f56bff31af0fe21b66b89657cfd30927",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "agent.03-managers.research-insight-lead.md",
+      "kind": "agent",
+      "dest": ".claude/agents/03-managers/research-insight-lead.md",
+      "owner": "framework",
+      "mergeStrategy": "three_way_markdown",
+      "installedHash": "cc28f1be287d0a3836c28d8c0ba0c53122b0e5107752948420ba80f533d50797",
+      "currentHashAtInstall": "cc28f1be287d0a3836c28d8c0ba0c53122b0e5107752948420ba80f533d50797",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "agent.03-managers.web-conversion-designer.md",
+      "kind": "agent",
+      "dest": ".claude/agents/03-managers/web-conversion-designer.md",
+      "owner": "framework",
+      "mergeStrategy": "three_way_markdown",
+      "installedHash": "d9df16b031f5ef712a6e5a0b2a27aae757a016c175264e00de8b2b2706ddc523",
+      "currentHashAtInstall": "d9df16b031f5ef712a6e5a0b2a27aae757a016c175264e00de8b2b2706ddc523",
       "introducedIn": "0.0.0"
     },
     {
@@ -694,8 +914,8 @@
       "dest": ".claude/commands/bootstrap/spinup.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "983d074591f5b37a5836bdbcc48ac197966521383fcbe66d80088900118179e7",
-      "currentHashAtInstall": "983d074591f5b37a5836bdbcc48ac197966521383fcbe66d80088900118179e7",
+      "installedHash": "4a3de8ef0eb78ccf332fbaa760d7b7b62c4ed74d1be86c1a90028c05fa3689f3",
+      "currentHashAtInstall": "4a3de8ef0eb78ccf332fbaa760d7b7b62c4ed74d1be86c1a90028c05fa3689f3",
       "introducedIn": "0.0.0"
     },
     {
@@ -849,6 +1069,26 @@
       "introducedIn": "0.0.0"
     },
     {
+      "id": "skill.etc.author.md",
+      "kind": "skill",
+      "dest": ".claude/commands/etc/author.md",
+      "owner": "framework",
+      "mergeStrategy": "three_way_markdown",
+      "installedHash": "1cb8afbf4a890af1cdd6157dea5844e9459a8b7ed5831ef2fe21ca2362381240",
+      "currentHashAtInstall": "1cb8afbf4a890af1cdd6157dea5844e9459a8b7ed5831ef2fe21ca2362381240",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "skill.etc.eval.md",
+      "kind": "skill",
+      "dest": ".claude/commands/etc/eval.md",
+      "owner": "framework",
+      "mergeStrategy": "three_way_markdown",
+      "installedHash": "bcf2a253df268e21226d58627d95c8d390a56f0ca523dcec228fa7b0a6a69c99",
+      "currentHashAtInstall": "bcf2a253df268e21226d58627d95c8d390a56f0ca523dcec228fa7b0a6a69c99",
+      "introducedIn": "0.0.0"
+    },
+    {
       "id": "skill.events.query.md",
       "kind": "skill",
       "dest": ".claude/commands/events/query.md",
@@ -906,6 +1146,96 @@
       "mergeStrategy": "three_way_markdown",
       "installedHash": "c3f8ea86df7d5abe023999ce3ceb78e879ad7907db04335d333623b52148c71f",
       "currentHashAtInstall": "c3f8ea86df7d5abe023999ce3ceb78e879ad7907db04335d333623b52148c71f",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "skill.growth.ad-images.md",
+      "kind": "skill",
+      "dest": ".claude/commands/growth/ad-images.md",
+      "owner": "framework",
+      "mergeStrategy": "three_way_markdown",
+      "installedHash": "8be9e22bab1158fceb85704eb3f23e3f6625a5d3aa23f6a3574057149e06a5cd",
+      "currentHashAtInstall": "8be9e22bab1158fceb85704eb3f23e3f6625a5d3aa23f6a3574057149e06a5cd",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "skill.growth.ad-video.md",
+      "kind": "skill",
+      "dest": ".claude/commands/growth/ad-video.md",
+      "owner": "framework",
+      "mergeStrategy": "three_way_markdown",
+      "installedHash": "555a3bcd9bfbc36abd73c3dae8f5023d98d6966e2181014a8919919a7bd9e50a",
+      "currentHashAtInstall": "555a3bcd9bfbc36abd73c3dae8f5023d98d6966e2181014a8919919a7bd9e50a",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "skill.growth.advertorial.md",
+      "kind": "skill",
+      "dest": ".claude/commands/growth/advertorial.md",
+      "owner": "framework",
+      "mergeStrategy": "three_way_markdown",
+      "installedHash": "a473123744b7e94b30bfebd8ddbd7dd3af747e8d33aef1c75b9e812cebe9f7e0",
+      "currentHashAtInstall": "a473123744b7e94b30bfebd8ddbd7dd3af747e8d33aef1c75b9e812cebe9f7e0",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "skill.growth.angles.md",
+      "kind": "skill",
+      "dest": ".claude/commands/growth/angles.md",
+      "owner": "framework",
+      "mergeStrategy": "three_way_markdown",
+      "installedHash": "8969dff11986134562963e010f1bbf5d38d1b491b2f9c26db545bb61c48e918b",
+      "currentHashAtInstall": "8969dff11986134562963e010f1bbf5d38d1b491b2f9c26db545bb61c48e918b",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "skill.growth.iterate.md",
+      "kind": "skill",
+      "dest": ".claude/commands/growth/iterate.md",
+      "owner": "framework",
+      "mergeStrategy": "three_way_markdown",
+      "installedHash": "6b2570e8428b7c29e3d01300028dff071d8cd0585e8e34d29d285270a32218d5",
+      "currentHashAtInstall": "6b2570e8428b7c29e3d01300028dff071d8cd0585e8e34d29d285270a32218d5",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "skill.growth.landing-page.md",
+      "kind": "skill",
+      "dest": ".claude/commands/growth/landing-page.md",
+      "owner": "framework",
+      "mergeStrategy": "three_way_markdown",
+      "installedHash": "d0ac6c5e01355d89229c52beebfe68c9c7ea9d7c73eca5dc48d320d969c4f453",
+      "currentHashAtInstall": "d0ac6c5e01355d89229c52beebfe68c9c7ea9d7c73eca5dc48d320d969c4f453",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "skill.growth.message-brief.md",
+      "kind": "skill",
+      "dest": ".claude/commands/growth/message-brief.md",
+      "owner": "framework",
+      "mergeStrategy": "three_way_markdown",
+      "installedHash": "bf441b689ef1db96afc2544b309c6593286da013ac1233cc4d23e120ae6c8580",
+      "currentHashAtInstall": "bf441b689ef1db96afc2544b309c6593286da013ac1233cc4d23e120ae6c8580",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "skill.growth.product-finder.md",
+      "kind": "skill",
+      "dest": ".claude/commands/growth/product-finder.md",
+      "owner": "framework",
+      "mergeStrategy": "three_way_markdown",
+      "installedHash": "2d0e366c260bb7af67a5212fb81dc0cbd7e563b2bef9ae70d7aa55acb229ecd9",
+      "currentHashAtInstall": "2d0e366c260bb7af67a5212fb81dc0cbd7e563b2bef9ae70d7aa55acb229ecd9",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "skill.guides.write.md",
+      "kind": "skill",
+      "dest": ".claude/commands/guides/write.md",
+      "owner": "framework",
+      "mergeStrategy": "three_way_markdown",
+      "installedHash": "8c37598c82014b34c2484e79964f12b62f11797bb91d0a9aec6353c5c39cb581",
+      "currentHashAtInstall": "8c37598c82014b34c2484e79964f12b62f11797bb91d0a9aec6353c5c39cb581",
       "introducedIn": "0.0.0"
     },
     {
@@ -1024,8 +1354,8 @@
       "dest": ".claude/commands/learn/ingest.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "660c1eadb21a16178dce58f58628913ad757159d8ae57ff41cc9c30801d86b92",
-      "currentHashAtInstall": "660c1eadb21a16178dce58f58628913ad757159d8ae57ff41cc9c30801d86b92",
+      "installedHash": "05add0a8c580b9e8782c989f0e399ecb248d2849a9e638dc39af32282b5a223d",
+      "currentHashAtInstall": "05add0a8c580b9e8782c989f0e399ecb248d2849a9e638dc39af32282b5a223d",
       "introducedIn": "0.0.0"
     },
     {
@@ -1084,8 +1414,8 @@
       "dest": ".claude/commands/maps/all.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "79202231e5517597ebe972e59e9439df37ae5c9bd6f6e30a5c4d04af5ac48234",
-      "currentHashAtInstall": "79202231e5517597ebe972e59e9439df37ae5c9bd6f6e30a5c4d04af5ac48234",
+      "installedHash": "d96329227bbfefbef6b5f4e1ef7ed76c76e955d23b391fefc2afd53013d47b65",
+      "currentHashAtInstall": "d96329227bbfefbef6b5f4e1ef7ed76c76e955d23b391fefc2afd53013d47b65",
       "introducedIn": "0.0.0"
     },
     {
@@ -1096,6 +1426,16 @@
       "mergeStrategy": "three_way_markdown",
       "installedHash": "d563a8b76d0685113121fa78ec46af65f897d1e8a7c7ed2a03d91858e8c5f049",
       "currentHashAtInstall": "d563a8b76d0685113121fa78ec46af65f897d1e8a7c7ed2a03d91858e8c5f049",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "skill.maps.coverage.md",
+      "kind": "skill",
+      "dest": ".claude/commands/maps/coverage.md",
+      "owner": "framework",
+      "mergeStrategy": "three_way_markdown",
+      "installedHash": "7c23e0b6d4dcf4346ec1b76bd95d2592e663eaca807f58d7b0835350335370a2",
+      "currentHashAtInstall": "7c23e0b6d4dcf4346ec1b76bd95d2592e663eaca807f58d7b0835350335370a2",
       "introducedIn": "0.0.0"
     },
     {
@@ -1334,8 +1674,8 @@
       "dest": ".claude/commands/portfolio/new.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "f3ab6da9dbdb3b41dc950f595ea1b5359870da517ae0925c757baea2017bfec9",
-      "currentHashAtInstall": "f3ab6da9dbdb3b41dc950f595ea1b5359870da517ae0925c757baea2017bfec9",
+      "installedHash": "34556c22367ce95d42c0c31fa1680508952c1d3c79e03d8b1f0b5ed924c06350",
+      "currentHashAtInstall": "34556c22367ce95d42c0c31fa1680508952c1d3c79e03d8b1f0b5ed924c06350",
       "introducedIn": "0.0.0"
     },
     {
@@ -1469,6 +1809,16 @@
       "introducedIn": "0.0.0"
     },
     {
+      "id": "skill.report.md",
+      "kind": "skill",
+      "dest": ".claude/commands/report.md",
+      "owner": "framework",
+      "mergeStrategy": "three_way_markdown",
+      "installedHash": "13e905cc168535e50c1204180b7224d482ffeac2b6879346803f334e4b5030b0",
+      "currentHashAtInstall": "13e905cc168535e50c1204180b7224d482ffeac2b6879346803f334e4b5030b0",
+      "introducedIn": "0.0.0"
+    },
+    {
       "id": "skill.research.deep.md",
       "kind": "skill",
       "dest": ".claude/commands/research/deep.md",
@@ -1514,8 +1864,8 @@
       "dest": ".claude/commands/roadmap/create.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "7a71e0255ab310399ba4a4b82f443e717c5311d27516c56e5d119f4939d98c1f",
-      "currentHashAtInstall": "7a71e0255ab310399ba4a4b82f443e717c5311d27516c56e5d119f4939d98c1f",
+      "installedHash": "fc906e7b66f1e1de4dd8abedc2bac53d2fa210f7661a4be06060c38c1470b1bb",
+      "currentHashAtInstall": "fc906e7b66f1e1de4dd8abedc2bac53d2fa210f7661a4be06060c38c1470b1bb",
       "introducedIn": "0.0.0"
     },
     {
@@ -1524,8 +1874,8 @@
       "dest": ".claude/commands/roadmap/ideas.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "4843206f4a709d0d868e94ca6081c7a719ab623f1edcaa66322c3b8322e2d366",
-      "currentHashAtInstall": "4843206f4a709d0d868e94ca6081c7a719ab623f1edcaa66322c3b8322e2d366",
+      "installedHash": "461a8ffc43c1f147cea4e608064b133c76935ba79c02b7f7f670927589696dfe",
+      "currentHashAtInstall": "461a8ffc43c1f147cea4e608064b133c76935ba79c02b7f7f670927589696dfe",
       "introducedIn": "0.0.0"
     },
     {
@@ -1534,8 +1884,8 @@
       "dest": ".claude/commands/roadmap/next.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "f765bc3e969d4cf8a47cf51b0f82c076459a725bec32af367c939c5688811b21",
-      "currentHashAtInstall": "f765bc3e969d4cf8a47cf51b0f82c076459a725bec32af367c939c5688811b21",
+      "installedHash": "8612d962b0e03127fc06e324d8a26b20af6b7f331c17cc33fc8adbc374576d97",
+      "currentHashAtInstall": "8612d962b0e03127fc06e324d8a26b20af6b7f331c17cc33fc8adbc374576d97",
       "introducedIn": "0.0.0"
     },
     {
@@ -1544,8 +1894,8 @@
       "dest": ".claude/commands/roadmap/prioritize.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "7e398ef4ebbdb057914d00c9732aa45b5e35dc0ec3acc66f5dffc0344f40c603",
-      "currentHashAtInstall": "7e398ef4ebbdb057914d00c9732aa45b5e35dc0ec3acc66f5dffc0344f40c603",
+      "installedHash": "addf47647d0b42d1ec350f9e332741472d79a869a88d6a5424915362bcc8da5f",
+      "currentHashAtInstall": "addf47647d0b42d1ec350f9e332741472d79a869a88d6a5424915362bcc8da5f",
       "introducedIn": "0.0.0"
     },
     {
@@ -1619,6 +1969,16 @@
       "introducedIn": "0.0.0"
     },
     {
+      "id": "skill.scan.etc-harness.md",
+      "kind": "skill",
+      "dest": ".claude/commands/scan/etc-harness.md",
+      "owner": "framework",
+      "mergeStrategy": "three_way_markdown",
+      "installedHash": "ec84169ada0ea9fa3b07ef92d25385a45a5ddc067e484cc8174a17d268fcd87c",
+      "currentHashAtInstall": "ec84169ada0ea9fa3b07ef92d25385a45a5ddc067e484cc8174a17d268fcd87c",
+      "introducedIn": "0.0.0"
+    },
+    {
       "id": "skill.scan.framework-purity.md",
       "kind": "skill",
       "dest": ".claude/commands/scan/framework-purity.md",
@@ -1644,8 +2004,18 @@
       "dest": ".claude/commands/scan/full.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "9a1096762151260bd43ef13c0188872fc3bd50b449ddd2951accfe7c0dadbed1",
-      "currentHashAtInstall": "9a1096762151260bd43ef13c0188872fc3bd50b449ddd2951accfe7c0dadbed1",
+      "installedHash": "8c5110a47dc19787b05fd1b8bdab1e61e7424324a2127eaea49e8ac6857f7ca5",
+      "currentHashAtInstall": "8c5110a47dc19787b05fd1b8bdab1e61e7424324a2127eaea49e8ac6857f7ca5",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "skill.scan.ingest-firewall.md",
+      "kind": "skill",
+      "dest": ".claude/commands/scan/ingest-firewall.md",
+      "owner": "framework",
+      "mergeStrategy": "three_way_markdown",
+      "installedHash": "0f57761c93ee1beb78a02df8f024f885fb0ec71a4a1611acee30a9d6f132ca39",
+      "currentHashAtInstall": "0f57761c93ee1beb78a02df8f024f885fb0ec71a4a1611acee30a9d6f132ca39",
       "introducedIn": "0.0.0"
     },
     {
@@ -1739,6 +2109,36 @@
       "introducedIn": "0.0.0"
     },
     {
+      "id": "skill.scan.role-parity.md",
+      "kind": "skill",
+      "dest": ".claude/commands/scan/role-parity.md",
+      "owner": "framework",
+      "mergeStrategy": "three_way_markdown",
+      "installedHash": "df779e18c02b2f4c01f518a6ca36ead48dd035b91106bdef313aadd40cab01a4",
+      "currentHashAtInstall": "df779e18c02b2f4c01f518a6ca36ead48dd035b91106bdef313aadd40cab01a4",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "skill.scan.scaffold-coverage.md",
+      "kind": "skill",
+      "dest": ".claude/commands/scan/scaffold-coverage.md",
+      "owner": "framework",
+      "mergeStrategy": "three_way_markdown",
+      "installedHash": "5d347fecdb6c181de26c42529ca15920f0c242ff36db7190b0e8d4035a127127",
+      "currentHashAtInstall": "5d347fecdb6c181de26c42529ca15920f0c242ff36db7190b0e8d4035a127127",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "skill.scan.scan-coverage.md",
+      "kind": "skill",
+      "dest": ".claude/commands/scan/scan-coverage.md",
+      "owner": "framework",
+      "mergeStrategy": "three_way_markdown",
+      "installedHash": "6cb77746c56fa9291ef1c504a5d8bcf7980454676aa31a0dd0517cd9530676a9",
+      "currentHashAtInstall": "6cb77746c56fa9291ef1c504a5d8bcf7980454676aa31a0dd0517cd9530676a9",
+      "introducedIn": "0.0.0"
+    },
+    {
       "id": "skill.scan.sprint-beta-honesty.md",
       "kind": "skill",
       "dest": ".claude/commands/scan/sprint-beta-honesty.md",
@@ -1806,6 +2206,16 @@
       "mergeStrategy": "three_way_markdown",
       "installedHash": "cd334cfd81e84356241a71179fab93619e93b6d4ab5f0dd0d205c79d43b6a872",
       "currentHashAtInstall": "cd334cfd81e84356241a71179fab93619e93b6d4ab5f0dd0d205c79d43b6a872",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "skill.scan.warpos-layer-diff.md",
+      "kind": "skill",
+      "dest": ".claude/commands/scan/warpos-layer-diff.md",
+      "owner": "framework",
+      "mergeStrategy": "three_way_markdown",
+      "installedHash": "6e38098fb6d44c5261b45f56e8d381839eccdb354f227150adf3749bf4bda1fd",
+      "currentHashAtInstall": "6e38098fb6d44c5261b45f56e8d381839eccdb354f227150adf3749bf4bda1fd",
       "introducedIn": "0.0.0"
     },
     {
@@ -2066,6 +2476,16 @@
       "mergeStrategy": "three_way_markdown",
       "installedHash": "685e103f8aee8d41cee68169ed56a984f0b982b5fd223de2b87cda9f8b629f3f",
       "currentHashAtInstall": "685e103f8aee8d41cee68169ed56a984f0b982b5fd223de2b87cda9f8b629f3f",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "skill.sprint.cost-gate.md",
+      "kind": "skill",
+      "dest": ".claude/commands/sprint/cost-gate.md",
+      "owner": "framework",
+      "mergeStrategy": "three_way_markdown",
+      "installedHash": "ea83164ee5748ff8c2f27102b0a1f54d3f3bc051339176ff3b5e8fe7e7d47b07",
+      "currentHashAtInstall": "ea83164ee5748ff8c2f27102b0a1f54d3f3bc051339176ff3b5e8fe7e7d47b07",
       "introducedIn": "0.0.0"
     },
     {
@@ -2594,8 +3014,8 @@
       "dest": ".claude/project/maps/architecture.md",
       "owner": "generated",
       "mergeStrategy": "regenerate",
-      "installedHash": "610729b4ffa029a0aebb0b9b0e21024e1fbffbcd0c4d52e577ff0e0c40aef64d",
-      "currentHashAtInstall": "610729b4ffa029a0aebb0b9b0e21024e1fbffbcd0c4d52e577ff0e0c40aef64d",
+      "installedHash": "5c5fbcbbc0bfa04ba8843fa697011c708bedaf1470dee689439ab640f0568ebd",
+      "currentHashAtInstall": "5c5fbcbbc0bfa04ba8843fa697011c708bedaf1470dee689439ab640f0568ebd",
       "introducedIn": "0.0.0"
     },
     {
@@ -2604,8 +3024,8 @@
       "dest": ".claude/project/maps/enforcements.jsonl",
       "owner": "generated",
       "mergeStrategy": "regenerate",
-      "installedHash": "829f2ca88511b60dc030ec232c91785f6669f523a60b670d2b0e2bdddebe689f",
-      "currentHashAtInstall": "829f2ca88511b60dc030ec232c91785f6669f523a60b670d2b0e2bdddebe689f",
+      "installedHash": "19f278fa233d967eed98a66bfff548c07768036a37d340ac4c2f35c17e813b84",
+      "currentHashAtInstall": "19f278fa233d967eed98a66bfff548c07768036a37d340ac4c2f35c17e813b84",
       "introducedIn": "0.0.0"
     },
     {
@@ -2614,8 +3034,8 @@
       "dest": ".claude/project/maps/enforcements.md",
       "owner": "generated",
       "mergeStrategy": "regenerate",
-      "installedHash": "2cdcd7323ce6ea955fdfa30fd81b00de4a905d48217f7a5095834d3ef91429ac",
-      "currentHashAtInstall": "2cdcd7323ce6ea955fdfa30fd81b00de4a905d48217f7a5095834d3ef91429ac",
+      "installedHash": "c6958b30d6a26e9c7fec857a1252457456cb81bce08273bf075edb8b236973ec",
+      "currentHashAtInstall": "c6958b30d6a26e9c7fec857a1252457456cb81bce08273bf075edb8b236973ec",
       "introducedIn": "0.0.0"
     },
     {
@@ -2624,8 +3044,8 @@
       "dest": ".claude/project/maps/hooks.jsonl",
       "owner": "generated",
       "mergeStrategy": "regenerate",
-      "installedHash": "6fa91a937913e136016c75ca7548a03e3fe06b7e2e2dd71341f29441b338359e",
-      "currentHashAtInstall": "6fa91a937913e136016c75ca7548a03e3fe06b7e2e2dd71341f29441b338359e",
+      "installedHash": "4e082c8954fffa66b6e3e5860e944bccb3023092a0fbdd9eea3a96c4a8615ec1",
+      "currentHashAtInstall": "4e082c8954fffa66b6e3e5860e944bccb3023092a0fbdd9eea3a96c4a8615ec1",
       "introducedIn": "0.0.0"
     },
     {
@@ -2634,8 +3054,8 @@
       "dest": ".claude/project/maps/hooks.md",
       "owner": "generated",
       "mergeStrategy": "regenerate",
-      "installedHash": "e05df549cba1b49ead183c9ed11dc4789ef3833e2a5e10c1dadd70dd2a6bd1cd",
-      "currentHashAtInstall": "e05df549cba1b49ead183c9ed11dc4789ef3833e2a5e10c1dadd70dd2a6bd1cd",
+      "installedHash": "71010fb153e0f8c817679540cf78e4d56dd82f2b1362f2a567e73087229c2c10",
+      "currentHashAtInstall": "71010fb153e0f8c817679540cf78e4d56dd82f2b1362f2a567e73087229c2c10",
       "introducedIn": "0.0.0"
     },
     {
@@ -2644,8 +3064,8 @@
       "dest": ".claude/project/maps/inventory-architecture.json",
       "owner": "generated",
       "mergeStrategy": "regenerate",
-      "installedHash": "e79fcaed44b0d7eaca28c4081298d9f65d6ca30f3d46fb65754e6e157b317c5f",
-      "currentHashAtInstall": "e79fcaed44b0d7eaca28c4081298d9f65d6ca30f3d46fb65754e6e157b317c5f",
+      "installedHash": "7e69eefe98f307756fdc3853b0d25e4efc62918a42ea52d200794f8c2798ad78",
+      "currentHashAtInstall": "7e69eefe98f307756fdc3853b0d25e4efc62918a42ea52d200794f8c2798ad78",
       "introducedIn": "0.0.0"
     },
     {
@@ -2654,8 +3074,8 @@
       "dest": ".claude/project/maps/inventory-enforcements.json",
       "owner": "generated",
       "mergeStrategy": "regenerate",
-      "installedHash": "d5d769321b8ab2c9fdea879ddb8c118479e8be888a2280b1d18e8e5495eb8447",
-      "currentHashAtInstall": "d5d769321b8ab2c9fdea879ddb8c118479e8be888a2280b1d18e8e5495eb8447",
+      "installedHash": "b1478891ba6ce4b290e024f3bb8ed897e954864b4c98b0c75ebc1aae30e36273",
+      "currentHashAtInstall": "b1478891ba6ce4b290e024f3bb8ed897e954864b4c98b0c75ebc1aae30e36273",
       "introducedIn": "0.0.0"
     },
     {
@@ -2664,8 +3084,8 @@
       "dest": ".claude/project/maps/inventory-hooks.json",
       "owner": "generated",
       "mergeStrategy": "regenerate",
-      "installedHash": "cf312231d366bc5d15dc9914c6ed88a654a32a2b17fadb61177f18e72abfadbe",
-      "currentHashAtInstall": "cf312231d366bc5d15dc9914c6ed88a654a32a2b17fadb61177f18e72abfadbe",
+      "installedHash": "3277d218203696257a1c9aefaa880c14a2ebe3746a744b9f476cb72e1b5ae887",
+      "currentHashAtInstall": "3277d218203696257a1c9aefaa880c14a2ebe3746a744b9f476cb72e1b5ae887",
       "introducedIn": "0.0.0"
     },
     {
@@ -2674,8 +3094,8 @@
       "dest": ".claude/project/maps/inventory-memory.json",
       "owner": "generated",
       "mergeStrategy": "regenerate",
-      "installedHash": "3e43e955a9deccdaa46bd771003ed45f9a2513fe3170c12aee7abee8da54df72",
-      "currentHashAtInstall": "3e43e955a9deccdaa46bd771003ed45f9a2513fe3170c12aee7abee8da54df72",
+      "installedHash": "059f56b50012c1d74aeabd521a1d9bf80bb9e9a48b3f57cc54c39e51df7b501c",
+      "currentHashAtInstall": "059f56b50012c1d74aeabd521a1d9bf80bb9e9a48b3f57cc54c39e51df7b501c",
       "introducedIn": "0.0.0"
     },
     {
@@ -2684,8 +3104,8 @@
       "dest": ".claude/project/maps/inventory-skills.json",
       "owner": "generated",
       "mergeStrategy": "regenerate",
-      "installedHash": "eab77dd6611a85b0ac8f7645d75c85a5ed6f9ca06b98968c6453660ba6c175bc",
-      "currentHashAtInstall": "eab77dd6611a85b0ac8f7645d75c85a5ed6f9ca06b98968c6453660ba6c175bc",
+      "installedHash": "db53b35783df0ed5c132a18390117d59124f2915a07e94bb15ec1cc0120b7e04",
+      "currentHashAtInstall": "db53b35783df0ed5c132a18390117d59124f2915a07e94bb15ec1cc0120b7e04",
       "introducedIn": "0.0.0"
     },
     {
@@ -2694,8 +3114,8 @@
       "dest": ".claude/project/maps/inventory-systems.json",
       "owner": "generated",
       "mergeStrategy": "regenerate",
-      "installedHash": "415cbc882b0870cce5dc7b1e42c81f082e899876b3f51f3e3ef71c1d8527f138",
-      "currentHashAtInstall": "415cbc882b0870cce5dc7b1e42c81f082e899876b3f51f3e3ef71c1d8527f138",
+      "installedHash": "9bdb538732a12bb895103d8e9c6786d3c18b1795a98b8109e747063a32800331",
+      "currentHashAtInstall": "9bdb538732a12bb895103d8e9c6786d3c18b1795a98b8109e747063a32800331",
       "introducedIn": "0.0.0"
     },
     {
@@ -2704,8 +3124,8 @@
       "dest": ".claude/project/maps/inventory-tools.json",
       "owner": "generated",
       "mergeStrategy": "regenerate",
-      "installedHash": "ad2ad4854cce4d3ebbbb66cde63695147ac330308fe244cf5bfdc536a531611c",
-      "currentHashAtInstall": "ad2ad4854cce4d3ebbbb66cde63695147ac330308fe244cf5bfdc536a531611c",
+      "installedHash": "942948b1cd23e6aba19211e3925adeda1fc58bab362bdfe36835f258cd74935e",
+      "currentHashAtInstall": "942948b1cd23e6aba19211e3925adeda1fc58bab362bdfe36835f258cd74935e",
       "introducedIn": "0.0.0"
     },
     {
@@ -2714,8 +3134,8 @@
       "dest": ".claude/project/maps/INVENTORY.md",
       "owner": "generated",
       "mergeStrategy": "regenerate",
-      "installedHash": "7cfc0022a38b76dcc0d28b808fe1dab7868a25be755d17a4e67b7fdd30200188",
-      "currentHashAtInstall": "7cfc0022a38b76dcc0d28b808fe1dab7868a25be755d17a4e67b7fdd30200188",
+      "installedHash": "c95b21bd0affa4a724400dba9ef0ee4ca3556f3f116b99d59340fb2fc3c75dc6",
+      "currentHashAtInstall": "c95b21bd0affa4a724400dba9ef0ee4ca3556f3f116b99d59340fb2fc3c75dc6",
       "introducedIn": "0.0.0"
     },
     {
@@ -2724,8 +3144,8 @@
       "dest": ".claude/project/maps/memory.jsonl",
       "owner": "generated",
       "mergeStrategy": "regenerate",
-      "installedHash": "81047f6f8fd48f391239395d855a8057d43fbb51543ca352c0793f97824cf2b6",
-      "currentHashAtInstall": "81047f6f8fd48f391239395d855a8057d43fbb51543ca352c0793f97824cf2b6",
+      "installedHash": "8f575dee2634002080e644676460430d6d8658b892572d89f38ad0039242c8ff",
+      "currentHashAtInstall": "8f575dee2634002080e644676460430d6d8658b892572d89f38ad0039242c8ff",
       "introducedIn": "0.0.0"
     },
     {
@@ -2734,8 +3154,8 @@
       "dest": ".claude/project/maps/memory.md",
       "owner": "generated",
       "mergeStrategy": "regenerate",
-      "installedHash": "334508e41395b2674346290e29b1640f59a9a64b66e12dfcf795b8ae3946c930",
-      "currentHashAtInstall": "334508e41395b2674346290e29b1640f59a9a64b66e12dfcf795b8ae3946c930",
+      "installedHash": "0a32feaa2ea26147c2104038f812decefdf2a5dd27ae653a1e23a60543de37b4",
+      "currentHashAtInstall": "0a32feaa2ea26147c2104038f812decefdf2a5dd27ae653a1e23a60543de37b4",
       "introducedIn": "0.0.0"
     },
     {
@@ -2744,8 +3164,8 @@
       "dest": ".claude/project/maps/skills.jsonl",
       "owner": "generated",
       "mergeStrategy": "regenerate",
-      "installedHash": "9b97492c4ac20405493d0ba8f1ab7f80a288dc4abfdc7927ee24e3afefd31e9b",
-      "currentHashAtInstall": "9b97492c4ac20405493d0ba8f1ab7f80a288dc4abfdc7927ee24e3afefd31e9b",
+      "installedHash": "ea2ef83e365077565f1bc818b2a02e713ae4719a333e040501acc6f658831849",
+      "currentHashAtInstall": "ea2ef83e365077565f1bc818b2a02e713ae4719a333e040501acc6f658831849",
       "introducedIn": "0.0.0"
     },
     {
@@ -2754,8 +3174,8 @@
       "dest": ".claude/project/maps/skills.md",
       "owner": "generated",
       "mergeStrategy": "regenerate",
-      "installedHash": "27b63309545627633558fca09120887d746a669642948bceb9de6c269f820fc3",
-      "currentHashAtInstall": "27b63309545627633558fca09120887d746a669642948bceb9de6c269f820fc3",
+      "installedHash": "5854c8bc6daec9c1a6ea4317ce39b8d1a25e1ff75dc8095113aeb817652b77a9",
+      "currentHashAtInstall": "5854c8bc6daec9c1a6ea4317ce39b8d1a25e1ff75dc8095113aeb817652b77a9",
       "introducedIn": "0.0.0"
     },
     {
@@ -2764,8 +3184,8 @@
       "dest": ".claude/project/maps/SPEC_GRAPH.json",
       "owner": "generated",
       "mergeStrategy": "regenerate",
-      "installedHash": "ac6dd3571a4aaed4792690ac251d312040900696b8e286f1d9b745eb358c045d",
-      "currentHashAtInstall": "ac6dd3571a4aaed4792690ac251d312040900696b8e286f1d9b745eb358c045d",
+      "installedHash": "7b973568f3e2de6264a2e2bdfe558d3a4cd74072f1f0346f0901962d6f8be500",
+      "currentHashAtInstall": "7b973568f3e2de6264a2e2bdfe558d3a4cd74072f1f0346f0901962d6f8be500",
       "introducedIn": "0.0.0"
     },
     {
@@ -2774,8 +3194,8 @@
       "dest": ".claude/project/maps/systems-inventory.jsonl",
       "owner": "generated",
       "mergeStrategy": "regenerate",
-      "installedHash": "64b972a152c51b4cc8d67d836bfd3221f93fa78a7dc37cda08593145949d1b6e",
-      "currentHashAtInstall": "64b972a152c51b4cc8d67d836bfd3221f93fa78a7dc37cda08593145949d1b6e",
+      "installedHash": "3311af5fa5aaa45380457d42cab37e4fecde6ad5e7b9f9e8b44c94586dd970da",
+      "currentHashAtInstall": "3311af5fa5aaa45380457d42cab37e4fecde6ad5e7b9f9e8b44c94586dd970da",
       "introducedIn": "0.0.0"
     },
     {
@@ -2784,8 +3204,8 @@
       "dest": ".claude/project/maps/systems-inventory.md",
       "owner": "generated",
       "mergeStrategy": "regenerate",
-      "installedHash": "657bd1d1aba9ffe089554edf51b0e6d42e4db84e4d73ba1e84e011210bee7af4",
-      "currentHashAtInstall": "657bd1d1aba9ffe089554edf51b0e6d42e4db84e4d73ba1e84e011210bee7af4",
+      "installedHash": "3f2db77617dcf0da3bebc16d6dc6d7e733dc7c1b9705c4cef488e92353b15d57",
+      "currentHashAtInstall": "3f2db77617dcf0da3bebc16d6dc6d7e733dc7c1b9705c4cef488e92353b15d57",
       "introducedIn": "0.0.0"
     },
     {
@@ -2794,8 +3214,8 @@
       "dest": ".claude/project/maps/systems.md",
       "owner": "generated",
       "mergeStrategy": "regenerate",
-      "installedHash": "510eb31f16ad2feb45bcc253bb7fec3315916a2d33a06a3124c3f035680eba93",
-      "currentHashAtInstall": "510eb31f16ad2feb45bcc253bb7fec3315916a2d33a06a3124c3f035680eba93",
+      "installedHash": "d7a840b83110d6e8bba3fb3122d006138b76a935b87f18645a441e82dda7b313",
+      "currentHashAtInstall": "d7a840b83110d6e8bba3fb3122d006138b76a935b87f18645a441e82dda7b313",
       "introducedIn": "0.0.0"
     },
     {
@@ -2804,8 +3224,8 @@
       "dest": ".claude/project/maps/tools.md",
       "owner": "generated",
       "mergeStrategy": "regenerate",
-      "installedHash": "15f41ac9ad3c4e26addb26600871181b34dc32fb20607b87b4ffdf8e16312532",
-      "currentHashAtInstall": "15f41ac9ad3c4e26addb26600871181b34dc32fb20607b87b4ffdf8e16312532",
+      "installedHash": "936c11ad2abaedcea478fdbea129c9404764bdea4dfd51323ad4edca2c893031",
+      "currentHashAtInstall": "936c11ad2abaedcea478fdbea129c9404764bdea4dfd51323ad4edca2c893031",
       "introducedIn": "0.0.0"
     },
     {
@@ -3024,8 +3444,8 @@
       "dest": "scripts/hooks/hook-manifest.json",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "b1afa8a96d36f1dbee00808636a97c0b7e242a0b8e3eb4f85739aa9b8dc00fff",
-      "currentHashAtInstall": "b1afa8a96d36f1dbee00808636a97c0b7e242a0b8e3eb4f85739aa9b8dc00fff",
+      "installedHash": "bdf365ad8621b6310b935155f02df673e5f9459feba58ec45743ae24f4877fe8",
+      "currentHashAtInstall": "bdf365ad8621b6310b935155f02df673e5f9459feba58ec45743ae24f4877fe8",
       "introducedIn": "0.0.0"
     },
     {
@@ -3404,8 +3824,8 @@
       "dest": "scripts/hooks/team-guard.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "e9473d119e0708b569a303e5251157b5ab8542a76d3404cb0a21b88433a9fcb8",
-      "currentHashAtInstall": "e9473d119e0708b569a303e5251157b5ab8542a76d3404cb0a21b88433a9fcb8",
+      "installedHash": "3e026b4efea6b9cfeb8ec0be1e7ed132e645985379cd5ffdb469925780e43f73",
+      "currentHashAtInstall": "3e026b4efea6b9cfeb8ec0be1e7ed132e645985379cd5ffdb469925780e43f73",
       "introducedIn": "0.0.0"
     },
     {
@@ -3446,6 +3866,16 @@
       "mergeStrategy": "replace_if_unmodified",
       "installedHash": "04dd2d2bfc1b87a6bfa7aec5781c11a6df1a1921f24edecd212c1771acfe8b5a",
       "currentHashAtInstall": "04dd2d2bfc1b87a6bfa7aec5781c11a6df1a1921f24edecd212c1771acfe8b5a",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "hook.untrusted-content-firewall.js",
+      "kind": "hook",
+      "dest": "scripts/hooks/untrusted-content-firewall.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "a687e7d76fa681dffecf3adc6bd5e906f0858f572c3307c2314fe7353e88e789",
+      "currentHashAtInstall": "a687e7d76fa681dffecf3adc6bd5e906f0858f572c3307c2314fe7353e88e789",
       "introducedIn": "0.0.0"
     },
     {
@@ -3509,6 +3939,16 @@
       "introducedIn": "0.0.0"
     },
     {
+      "id": "hook_lib.lib.injection-patterns.js",
+      "kind": "hook_lib",
+      "dest": "scripts/hooks/lib/injection-patterns.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "9954b4645547cf59f68da758d53456bd66cb74cace65fed01f65b6dea3cf9baf",
+      "currentHashAtInstall": "9954b4645547cf59f68da758d53456bd66cb74cace65fed01f65b6dea3cf9baf",
+      "introducedIn": "0.0.0"
+    },
+    {
       "id": "hook_lib.lib.logger.js",
       "kind": "hook_lib",
       "dest": "scripts/hooks/lib/logger.js",
@@ -3534,8 +3974,8 @@
       "dest": "scripts/hooks/lib/paths.generated.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "3973ad8cc252f977e7c150d41c4afe5209428ef7dcbbc6bf72fba853261076ba",
-      "currentHashAtInstall": "3973ad8cc252f977e7c150d41c4afe5209428ef7dcbbc6bf72fba853261076ba",
+      "installedHash": "59de40c38d46b34772e16adf9248ff56c2dcd19a6abffa811527408ada183fcd",
+      "currentHashAtInstall": "59de40c38d46b34772e16adf9248ff56c2dcd19a6abffa811527408ada183fcd",
       "introducedIn": "0.0.0"
     },
     {
@@ -3574,8 +4014,8 @@
       "dest": "scripts/hooks/lib/providers.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "8cea44f9214f9d62598fd19bc24113fa498f59baaa60d1519235ecdcc31acd6b",
-      "currentHashAtInstall": "8cea44f9214f9d62598fd19bc24113fa498f59baaa60d1519235ecdcc31acd6b",
+      "installedHash": "14a828549c42baeb782efc1d93952d130a599031bbd0206ac9e3eabe9c616a5e",
+      "currentHashAtInstall": "14a828549c42baeb782efc1d93952d130a599031bbd0206ac9e3eabe9c616a5e",
       "introducedIn": "0.0.0"
     },
     {
@@ -3596,6 +4036,16 @@
       "mergeStrategy": "replace_if_unmodified",
       "installedHash": "1de6d08b91897956fc6d7e9a8947cfe07a9801fca01505f106dedc7d563075fd",
       "currentHashAtInstall": "1de6d08b91897956fc6d7e9a8947cfe07a9801fca01505f106dedc7d563075fd",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "hook_lib.lib.untrusted-content.js",
+      "kind": "hook_lib",
+      "dest": "scripts/hooks/lib/untrusted-content.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "66a4e97fb68a78cd1eec0ab8e9754de5eccdd581384cf1a5f79684384d0f4832",
+      "currentHashAtInstall": "66a4e97fb68a78cd1eec0ab8e9754de5eccdd581384cf1a5f79684384d0f4832",
       "introducedIn": "0.0.0"
     },
     {
@@ -4034,8 +4484,8 @@
       "dest": "scripts/warpos/manifest/build.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "731426031337fea21e4295e43508cd10395767c6f6fa493f4579010f81135ec6",
-      "currentHashAtInstall": "731426031337fea21e4295e43508cd10395767c6f6fa493f4579010f81135ec6",
+      "installedHash": "9c1dd10126c5f465609cb85e58c69f9519481c23e82c2fc7fc6b6344a7ae57a1",
+      "currentHashAtInstall": "9c1dd10126c5f465609cb85e58c69f9519481c23e82c2fc7fc6b6344a7ae57a1",
       "introducedIn": "0.0.0"
     },
     {
@@ -4084,8 +4534,18 @@
       "dest": "scripts/warpos/manifest/validate.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "2b407a65687c2355df59e5147cee8bf7203333f48a37d9ad0a78da42b5e1ca3e",
-      "currentHashAtInstall": "2b407a65687c2355df59e5147cee8bf7203333f48a37d9ad0a78da42b5e1ca3e",
+      "installedHash": "083a73ac06504b25bab66b7cf343b5a8bde9d647164b8f57c4e02cf57568a5ce",
+      "currentHashAtInstall": "083a73ac06504b25bab66b7cf343b5a8bde9d647164b8f57c4e02cf57568a5ce",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "warpos_script.manifest.walk-skip.js",
+      "kind": "warpos_script",
+      "dest": "scripts/warpos/manifest/walk-skip.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "00730c6acb25a39266a87609d6b7d7f00a275565046240a6d98dd40a66964132",
+      "currentHashAtInstall": "00730c6acb25a39266a87609d6b7d7f00a275565046240a6d98dd40a66964132",
       "introducedIn": "0.0.0"
     },
     {
@@ -4164,8 +4624,8 @@
       "dest": "scripts/warpos/release-canonical.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "aff01a6462f4201336d1f2ca6dc41178426165d545bd7abc1aabf00e5910f52a",
-      "currentHashAtInstall": "aff01a6462f4201336d1f2ca6dc41178426165d545bd7abc1aabf00e5910f52a",
+      "installedHash": "db704634319f42f93f5f27bc9b6961d379dd4f23f188b77b3e163045a380b40b",
+      "currentHashAtInstall": "db704634319f42f93f5f27bc9b6961d379dd4f23f188b77b3e163045a380b40b",
       "introducedIn": "0.0.0"
     },
     {
@@ -4429,6 +4889,26 @@
       "introducedIn": "0.0.0"
     },
     {
+      "id": "check_tool.chief-coherence-enforcer.js",
+      "kind": "check_tool",
+      "dest": "scripts/checks/chief-coherence-enforcer.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "a8943d123940719185df1e907e006d116bcaed300d9c76776b1201cf95946e39",
+      "currentHashAtInstall": "a8943d123940719185df1e907e006d116bcaed300d9c76776b1201cf95946e39",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "check_tool.chief-coherence-enforcer.test.js",
+      "kind": "check_tool",
+      "dest": "scripts/checks/chief-coherence-enforcer.test.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "2791cad8cefea5559c13cd55c64f290782d84c1be44836db81eafacda6ff4997",
+      "currentHashAtInstall": "2791cad8cefea5559c13cd55c64f290782d84c1be44836db81eafacda6ff4997",
+      "introducedIn": "0.0.0"
+    },
+    {
       "id": "check_tool.contract-versioning.js",
       "kind": "check_tool",
       "dest": "scripts/checks/contract-versioning.js",
@@ -4436,6 +4916,26 @@
       "mergeStrategy": "replace_if_unmodified",
       "installedHash": "1aeecdc76f69c9a64d87b24a518dc90c3037aa9d13c6047a7002a9dea0d427e8",
       "currentHashAtInstall": "1aeecdc76f69c9a64d87b24a518dc90c3037aa9d13c6047a7002a9dea0d427e8",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "check_tool.design-quality-gate.js",
+      "kind": "check_tool",
+      "dest": "scripts/checks/design-quality-gate.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "88f40676eb26c90ceb7cb6844e478c370cbd8cebcd2ab447ab529b6324cbd24f",
+      "currentHashAtInstall": "88f40676eb26c90ceb7cb6844e478c370cbd8cebcd2ab447ab529b6324cbd24f",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "check_tool.design-quality-gate.test.js",
+      "kind": "check_tool",
+      "dest": "scripts/checks/design-quality-gate.test.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "f85f39bd4f174b85a646dd87dd268e98df3b52e11034f444b2df9ff6a5f9d541",
+      "currentHashAtInstall": "f85f39bd4f174b85a646dd87dd268e98df3b52e11034f444b2df9ff6a5f9d541",
       "introducedIn": "0.0.0"
     },
     {
@@ -4469,6 +4969,26 @@
       "introducedIn": "0.0.0"
     },
     {
+      "id": "check_tool.domain-routing-scan.js",
+      "kind": "check_tool",
+      "dest": "scripts/checks/domain-routing-scan.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "8cff0062fc3664748a472bdca540a0fbd156d716295b57dd964ddf7424cfc00c",
+      "currentHashAtInstall": "8cff0062fc3664748a472bdca540a0fbd156d716295b57dd964ddf7424cfc00c",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "check_tool.etc-harness-scan.js",
+      "kind": "check_tool",
+      "dest": "scripts/checks/etc-harness-scan.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "a28328b5bc7180cb01f8d4f41eb8865fb96af766c7a49000035f8467e3e5afd4",
+      "currentHashAtInstall": "a28328b5bc7180cb01f8d4f41eb8865fb96af766c7a49000035f8467e3e5afd4",
+      "introducedIn": "0.0.0"
+    },
+    {
       "id": "check_tool.framework-purity.js",
       "kind": "check_tool",
       "dest": "scripts/checks/framework-purity.js",
@@ -4476,6 +4996,96 @@
       "mergeStrategy": "replace_if_unmodified",
       "installedHash": "e0399d4e9a8cad0b0f069b43ef79083f3bd146217bf4ef0f6ccbfdf2701765b0",
       "currentHashAtInstall": "e0399d4e9a8cad0b0f069b43ef79083f3bd146217bf4ef0f6ccbfdf2701765b0",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "check_tool.higgsfield-spend-gate.js",
+      "kind": "check_tool",
+      "dest": "scripts/checks/higgsfield-spend-gate.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "fc5de6e906d4743051d209592821fd36f7ef4b3479cd8722bf34ecbfeecf8224",
+      "currentHashAtInstall": "fc5de6e906d4743051d209592821fd36f7ef4b3479cd8722bf34ecbfeecf8224",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "check_tool.higgsfield-spend-gate.test.js",
+      "kind": "check_tool",
+      "dest": "scripts/checks/higgsfield-spend-gate.test.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "6ec587763c97ad3c2196f1d57d166c41e39c190fa1ea4505583528e77f9eacc4",
+      "currentHashAtInstall": "6ec587763c97ad3c2196f1d57d166c41e39c190fa1ea4505583528e77f9eacc4",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "check_tool.ingest-firewall-scan.js",
+      "kind": "check_tool",
+      "dest": "scripts/checks/ingest-firewall-scan.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "7f3e0890f57b0f034482103d4be4476432b30bfc523c25c605ca396ba216366c",
+      "currentHashAtInstall": "7f3e0890f57b0f034482103d4be4476432b30bfc523c25c605ca396ba216366c",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "check_tool.integration-seam-gate.js",
+      "kind": "check_tool",
+      "dest": "scripts/checks/integration-seam-gate.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "18dbe8479a22a82525625f138ad552cfd04b70d59a2c5d49df26693ef3db4d17",
+      "currentHashAtInstall": "18dbe8479a22a82525625f138ad552cfd04b70d59a2c5d49df26693ef3db4d17",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "check_tool.integration-seam-gate.test.js",
+      "kind": "check_tool",
+      "dest": "scripts/checks/integration-seam-gate.test.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "3edfde0174215b22a670b4c808603103b7f9c42b4a5f6ef7738a79d688dd0a95",
+      "currentHashAtInstall": "3edfde0174215b22a670b4c808603103b7f9c42b4a5f6ef7738a79d688dd0a95",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "check_tool.manager-principles-scan.js",
+      "kind": "check_tool",
+      "dest": "scripts/checks/manager-principles-scan.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "de14f67270269c60e23ac19bab6addf160edb7be53770a420968795a1c2d36cc",
+      "currentHashAtInstall": "de14f67270269c60e23ac19bab6addf160edb7be53770a420968795a1c2d36cc",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "check_tool.maps-coverage.allowlist.json",
+      "kind": "check_tool",
+      "dest": "scripts/checks/maps-coverage.allowlist.json",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "f0ff854cdc0191114136c16c40ac0433cc13bb2fee6d888dfffdf86c8ac5ad53",
+      "currentHashAtInstall": "f0ff854cdc0191114136c16c40ac0433cc13bb2fee6d888dfffdf86c8ac5ad53",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "check_tool.maps-coverage.js",
+      "kind": "check_tool",
+      "dest": "scripts/checks/maps-coverage.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "29963cad22a41eb5b90bf60ce2c4725e86e8fe0599118ee8c036fb54fa6783c2",
+      "currentHashAtInstall": "29963cad22a41eb5b90bf60ce2c4725e86e8fe0599118ee8c036fb54fa6783c2",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "check_tool.maps-coverage.test.js",
+      "kind": "check_tool",
+      "dest": "scripts/checks/maps-coverage.test.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "f02d3810dd9e5492f735593548cc221290713bc36a1a53e7b95893a0f07f21c4",
+      "currentHashAtInstall": "f02d3810dd9e5492f735593548cc221290713bc36a1a53e7b95893a0f07f21c4",
       "introducedIn": "0.0.0"
     },
     {
@@ -4489,6 +5099,26 @@
       "introducedIn": "0.0.0"
     },
     {
+      "id": "check_tool.pl-build-spec-enforcer.js",
+      "kind": "check_tool",
+      "dest": "scripts/checks/pl-build-spec-enforcer.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "6a2b374ee9d8fcf60db88328dde8d23cedd88e82f8bf94ccc14632bffdb71e16",
+      "currentHashAtInstall": "6a2b374ee9d8fcf60db88328dde8d23cedd88e82f8bf94ccc14632bffdb71e16",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "check_tool.pl-build-spec-enforcer.test.js",
+      "kind": "check_tool",
+      "dest": "scripts/checks/pl-build-spec-enforcer.test.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "ab66f90b6ba6f51c356d384d8164eeeb0a6637dd39cdf8806f23917e4f8c41a3",
+      "currentHashAtInstall": "ab66f90b6ba6f51c356d384d8164eeeb0a6637dd39cdf8806f23917e4f8c41a3",
+      "introducedIn": "0.0.0"
+    },
+    {
       "id": "check_tool.production-baseline.js",
       "kind": "check_tool",
       "dest": "scripts/checks/production-baseline.js",
@@ -4496,6 +5126,86 @@
       "mergeStrategy": "replace_if_unmodified",
       "installedHash": "9544bad80c7ff7ad159ecee14ae642fc2a574d7ca0d61d0b18dd02fdd22ae6a1",
       "currentHashAtInstall": "9544bad80c7ff7ad159ecee14ae642fc2a574d7ca0d61d0b18dd02fdd22ae6a1",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "check_tool.resonance-runner.js",
+      "kind": "check_tool",
+      "dest": "scripts/checks/resonance-runner.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "eef07e5f97e7217b95b05fa1e7c32afa19c5fa5830559926995a9cd417daa329",
+      "currentHashAtInstall": "eef07e5f97e7217b95b05fa1e7c32afa19c5fa5830559926995a9cd417daa329",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "check_tool.resonance-runner.test.js",
+      "kind": "check_tool",
+      "dest": "scripts/checks/resonance-runner.test.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "edec7e1eaa831bdb8ce73788bebed2b94935eef010969f53143ef413184db990",
+      "currentHashAtInstall": "edec7e1eaa831bdb8ce73788bebed2b94935eef010969f53143ef413184db990",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "check_tool.role-parity-scan.js",
+      "kind": "check_tool",
+      "dest": "scripts/checks/role-parity-scan.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "4de603b875e1efcd1de68e5fd6aaa4e8712138b80ea0b05adc4fe2aaa2d47227",
+      "currentHashAtInstall": "4de603b875e1efcd1de68e5fd6aaa4e8712138b80ea0b05adc4fe2aaa2d47227",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "check_tool.role-parity.test.js",
+      "kind": "check_tool",
+      "dest": "scripts/checks/role-parity.test.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "15a54ef2a537a0f4e19ecc74077ddfa0ed17a0dc37577d7de3b0d07af2e8c83a",
+      "currentHashAtInstall": "15a54ef2a537a0f4e19ecc74077ddfa0ed17a0dc37577d7de3b0d07af2e8c83a",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "check_tool.scaffold-coverage-scan.js",
+      "kind": "check_tool",
+      "dest": "scripts/checks/scaffold-coverage-scan.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "0bfea337ebb06439560a683120a97009398cfb993886de7fc454ce7babfb2889",
+      "currentHashAtInstall": "0bfea337ebb06439560a683120a97009398cfb993886de7fc454ce7babfb2889",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "check_tool.scan-coverage.allowlist.json",
+      "kind": "check_tool",
+      "dest": "scripts/checks/scan-coverage.allowlist.json",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "d8408e62ba7d4d3afad1a4d3a4a21acb591794522d0fb01c9c024945d3add31d",
+      "currentHashAtInstall": "d8408e62ba7d4d3afad1a4d3a4a21acb591794522d0fb01c9c024945d3add31d",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "check_tool.scan-coverage.js",
+      "kind": "check_tool",
+      "dest": "scripts/checks/scan-coverage.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "cc2a995cae2040fc41d28ec37ff95090721e7d1891ee10c828505eb11e55bd8c",
+      "currentHashAtInstall": "cc2a995cae2040fc41d28ec37ff95090721e7d1891ee10c828505eb11e55bd8c",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "check_tool.scan-coverage.test.js",
+      "kind": "check_tool",
+      "dest": "scripts/checks/scan-coverage.test.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "056bcfb969a574638134198cfc9f40b23e567f9300e80057634232c15228bd26",
+      "currentHashAtInstall": "056bcfb969a574638134198cfc9f40b23e567f9300e80057634232c15228bd26",
       "introducedIn": "0.0.0"
     },
     {
@@ -4516,6 +5226,16 @@
       "mergeStrategy": "replace_if_unmodified",
       "installedHash": "5ab2b6f20dbd33aadd3264d4f916d1eab49ee4336ba6faaa7b5a4c4dcf446126",
       "currentHashAtInstall": "5ab2b6f20dbd33aadd3264d4f916d1eab49ee4336ba6faaa7b5a4c4dcf446126",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "check_tool.test-untrusted-content.js",
+      "kind": "check_tool",
+      "dest": "scripts/checks/test-untrusted-content.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "d80b0c259115c0dd7b44321db5afa36770841bb173c2285cedcd7d61dabed730",
+      "currentHashAtInstall": "d80b0c259115c0dd7b44321db5afa36770841bb173c2285cedcd7d61dabed730",
       "introducedIn": "0.0.0"
     },
     {
@@ -4556,6 +5276,16 @@
       "mergeStrategy": "replace_if_unmodified",
       "installedHash": "dc1ebd3275c7808c3cd707a3eb4c169028e3be5a7cbe51369db8c1c93c056071",
       "currentHashAtInstall": "dc1ebd3275c7808c3cd707a3eb4c169028e3be5a7cbe51369db8c1c93c056071",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "check_tool.warpos-layer-diff.js",
+      "kind": "check_tool",
+      "dest": "scripts/checks/warpos-layer-diff.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "747c0a1fecbad4d87efdc6951f9839f6e08ee0fc946c55bce206d6e2630b4e4d",
+      "currentHashAtInstall": "747c0a1fecbad4d87efdc6951f9839f6e08ee0fc946c55bce206d6e2630b4e4d",
       "introducedIn": "0.0.0"
     },
     {
@@ -4624,8 +5354,8 @@
       "dest": "scripts/checks/warpos-ship-coverage.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "92526d5328383d2b0ffeea96f63744b7b88e2defa396c256e4872c56e4bd9e10",
-      "currentHashAtInstall": "92526d5328383d2b0ffeea96f63744b7b88e2defa396c256e4872c56e4bd9e10",
+      "installedHash": "848ee38aab323561789237a7f784355b91984df0a6092dd022157a0675d53d90",
+      "currentHashAtInstall": "848ee38aab323561789237a7f784355b91984df0a6092dd022157a0675d53d90",
       "introducedIn": "0.0.0"
     },
     {
@@ -4694,8 +5424,8 @@
       "dest": "scripts/agents/provider-trace.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "e3e88b1dcadd118a343090dd37ee2247088a3db99229a712b4442d4e50e19c76",
-      "currentHashAtInstall": "e3e88b1dcadd118a343090dd37ee2247088a3db99229a712b4442d4e50e19c76",
+      "installedHash": "962492270f068c18373970ff933258a9d97ce9ff36c097752543f9ed1edd1e65",
+      "currentHashAtInstall": "962492270f068c18373970ff933258a9d97ce9ff36c097752543f9ed1edd1e65",
       "introducedIn": "0.0.0"
     },
     {
@@ -5019,6 +5749,16 @@
       "introducedIn": "0.0.0"
     },
     {
+      "id": "sprint_engine.cost-gate.js",
+      "kind": "sprint_engine",
+      "dest": "scripts/sprint/cost-gate.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "0e61bb4fc3b8f75c856ec9cd843e8fb0762af11e534aa2b1b78c696e65bdab66",
+      "currentHashAtInstall": "0e61bb4fc3b8f75c856ec9cd843e8fb0762af11e534aa2b1b78c696e65bdab66",
+      "introducedIn": "0.0.0"
+    },
+    {
       "id": "sprint_engine.design.js",
       "kind": "sprint_engine",
       "dest": "scripts/sprint/design.js",
@@ -5064,8 +5804,8 @@
       "dest": "scripts/sprint/full.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "bd4a12588ccd29fd096b98eebdbe89ef592abd39627ba0c5eeea21dd60146249",
-      "currentHashAtInstall": "bd4a12588ccd29fd096b98eebdbe89ef592abd39627ba0c5eeea21dd60146249",
+      "installedHash": "52b19ebed5ceaa83e7bb8fedb903f92aee64dc0fe5249cc7c8fee9152be4e553",
+      "currentHashAtInstall": "52b19ebed5ceaa83e7bb8fedb903f92aee64dc0fe5249cc7c8fee9152be4e553",
       "introducedIn": "0.0.0"
     },
     {
@@ -5304,8 +6044,8 @@
       "dest": "scripts/dispatch/catalog.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "e706c53ae019b9acffa6788a8a1e84fc41ffdadf4ca4ca5c687a02010ca2d933",
-      "currentHashAtInstall": "e706c53ae019b9acffa6788a8a1e84fc41ffdadf4ca4ca5c687a02010ca2d933",
+      "installedHash": "00a45f280d87a4021ef3f5c51e9f7a170775485df5cd35b54fa3bcd76bf1dc6f",
+      "currentHashAtInstall": "00a45f280d87a4021ef3f5c51e9f7a170775485df5cd35b54fa3bcd76bf1dc6f",
       "introducedIn": "0.0.0"
     },
     {
@@ -5366,6 +6106,16 @@
       "mergeStrategy": "replace_if_unmodified",
       "installedHash": "222d8c1071739827c5af3151e08fcf54e3585330953ba702154004dbf5f4959d",
       "currentHashAtInstall": "222d8c1071739827c5af3151e08fcf54e3585330953ba702154004dbf5f4959d",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "dispatch_engine.org-roles.js",
+      "kind": "dispatch_engine",
+      "dest": "scripts/dispatch/org-roles.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "f58f0f98daf52d2eb1ea7826cf10dcfa320cbaac7eb4ff41f433a70a1e4180ca",
+      "currentHashAtInstall": "f58f0f98daf52d2eb1ea7826cf10dcfa320cbaac7eb4ff41f433a70a1e4180ca",
       "introducedIn": "0.0.0"
     },
     {
@@ -5654,8 +6404,8 @@
       "dest": "scripts/portfolio/new.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "6fd6e7961a264518d41e8d17247deaf7cd084443def47fec3f378b9f7fd45ff0",
-      "currentHashAtInstall": "6fd6e7961a264518d41e8d17247deaf7cd084443def47fec3f378b9f7fd45ff0",
+      "installedHash": "e2b1c14f529410b4a1783d19079508f5ac68f3c2ecdea37b158f1caf9cfc3d64",
+      "currentHashAtInstall": "e2b1c14f529410b4a1783d19079508f5ac68f3c2ecdea37b158f1caf9cfc3d64",
       "introducedIn": "0.0.0"
     },
     {
@@ -6064,8 +6814,8 @@
       "dest": "scripts/bootstrap/phases/onscreen.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "4eea19c1b4c36c14ae4d43fa852cc9e5a8eb02c3db81ae53d97034c6be4754a8",
-      "currentHashAtInstall": "4eea19c1b4c36c14ae4d43fa852cc9e5a8eb02c3db81ae53d97034c6be4754a8",
+      "installedHash": "c10b87edf38622fc43d7cfab6656e0b24a680fd342d8f3706cd0e5e3f51febcf",
+      "currentHashAtInstall": "c10b87edf38622fc43d7cfab6656e0b24a680fd342d8f3706cd0e5e3f51febcf",
       "introducedIn": "0.0.0"
     },
     {
@@ -6179,13 +6929,113 @@
       "introducedIn": "0.0.0"
     },
     {
+      "id": "schema.contracts.audience_dossier.schema.json",
+      "kind": "schema",
+      "dest": "schemas/contracts/audience_dossier.schema.json",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "2392d60418d36c94ee9996bbf2bfe6a9868554fb97d4bc622fe7e688e219717b",
+      "currentHashAtInstall": "2392d60418d36c94ee9996bbf2bfe6a9868554fb97d4bc622fe7e688e219717b",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "schema.contracts.build_spec.schema.json",
+      "kind": "schema",
+      "dest": "schemas/contracts/build_spec.schema.json",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "313a625a9889b4bb310533c4abca9b54e40408ecd693ac6f36c03b1db01e38a8",
+      "currentHashAtInstall": "313a625a9889b4bb310533c4abca9b54e40408ecd693ac6f36c03b1db01e38a8",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "schema.contracts.conversion_brief.schema.json",
+      "kind": "schema",
+      "dest": "schemas/contracts/conversion_brief.schema.json",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "be74f98a09dd3e0df11fa1898713d218433a4c5c3ac3b33d4fde9d4b781a0f6a",
+      "currentHashAtInstall": "be74f98a09dd3e0df11fa1898713d218433a4c5c3ac3b33d4fde9d4b781a0f6a",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "schema.contracts.converting_artifact.schema.json",
+      "kind": "schema",
+      "dest": "schemas/contracts/converting_artifact.schema.json",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "217f845ebc5749dd14a84afa0442299e564dde0a9d2c7b59a9a62ece238e389a",
+      "currentHashAtInstall": "217f845ebc5749dd14a84afa0442299e564dde0a9d2c7b59a9a62ece238e389a",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "schema.contracts.decision_record.schema.json",
+      "kind": "schema",
+      "dest": "schemas/contracts/decision_record.schema.json",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "5e7151ddb03be5a5e3cdad16fc8f1d75d83face7ac5a957293a7c00d3dbeb31b",
+      "currentHashAtInstall": "5e7151ddb03be5a5e3cdad16fc8f1d75d83face7ac5a957293a7c00d3dbeb31b",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "schema.contracts.design_brief.schema.json",
+      "kind": "schema",
+      "dest": "schemas/contracts/design_brief.schema.json",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "4e1d978bc35ead486693df52cf41773954078cb9f4fdcd3f59c043261b780ba3",
+      "currentHashAtInstall": "4e1d978bc35ead486693df52cf41773954078cb9f4fdcd3f59c043261b780ba3",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "schema.contracts.message_brief.schema.json",
+      "kind": "schema",
+      "dest": "schemas/contracts/message_brief.schema.json",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "268c282940a182f1275fc76219912566fe25ea1b5d436799adf01ac2ba91246f",
+      "currentHashAtInstall": "268c282940a182f1275fc76219912566fe25ea1b5d436799adf01ac2ba91246f",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "schema.contracts.offer_brief.schema.json",
+      "kind": "schema",
+      "dest": "schemas/contracts/offer_brief.schema.json",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "a05f2d425ae8e0ed20524eccc39bbfd2b59538b07acd94b525e693bf3fc5d93f",
+      "currentHashAtInstall": "a05f2d425ae8e0ed20524eccc39bbfd2b59538b07acd94b525e693bf3fc5d93f",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "schema.etc..gitkeep",
+      "kind": "schema",
+      "dest": "schemas/etc/.gitkeep",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "currentHashAtInstall": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "schema.etc.eval-pack.schema.json",
+      "kind": "schema",
+      "dest": "schemas/etc/eval-pack.schema.json",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "bdce378f27473446bb669f8ca8f075ead931dc8c211b38449e4346a4eb290cfa",
+      "currentHashAtInstall": "bdce378f27473446bb669f8ca8f075ead931dc8c211b38449e4346a4eb290cfa",
+      "introducedIn": "0.0.0"
+    },
+    {
       "id": "schema.paths.schema.json",
       "kind": "schema",
       "dest": "schemas/paths.schema.json",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "46bb3f9aa4570f47b1b72fc132e630378dfb2193473aba8ced0d735f4e5e804e",
-      "currentHashAtInstall": "46bb3f9aa4570f47b1b72fc132e630378dfb2193473aba8ced0d735f4e5e804e",
+      "installedHash": "5fb826446263397e27b1dd579e88085551516d5feb037b183a3e9b0951fb7a53",
+      "currentHashAtInstall": "5fb826446263397e27b1dd579e88085551516d5feb037b183a3e9b0951fb7a53",
       "introducedIn": "0.0.0"
     },
     {
@@ -6726,6 +7576,56 @@
       "mergeStrategy": "replace_if_unmodified",
       "installedHash": "885c69216749db9d074161c933c12ccaca8a6901ff8e9ce56e0f54999fb31b4e",
       "currentHashAtInstall": "885c69216749db9d074161c933c12ccaca8a6901ff8e9ce56e0f54999fb31b4e",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "release_capsule.0.12.0.changelog.md",
+      "kind": "release_capsule",
+      "dest": "framework/releases/0.12.0/changelog.md",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "6d188514fa44617575db66cc98348a7b8d2ef5b8acf4e24fc44cdcef38c330f8",
+      "currentHashAtInstall": "6d188514fa44617575db66cc98348a7b8d2ef5b8acf4e24fc44cdcef38c330f8",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "release_capsule.0.12.0.checksums.json",
+      "kind": "release_capsule",
+      "dest": "framework/releases/0.12.0/checksums.json",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "c9b2348a90f8b54cec28c8de9dc54560ed8f6da41c447aef3295dab571cc69e2",
+      "currentHashAtInstall": "c9b2348a90f8b54cec28c8de9dc54560ed8f6da41c447aef3295dab571cc69e2",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "release_capsule.0.12.0.framework-manifest.json",
+      "kind": "release_capsule",
+      "dest": "framework/releases/0.12.0/framework-manifest.json",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "8738658128d5415b36503501826da887dd545a1f438542f7ce97d3739ab89a6d",
+      "currentHashAtInstall": "8738658128d5415b36503501826da887dd545a1f438542f7ce97d3739ab89a6d",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "release_capsule.0.12.0.release.json",
+      "kind": "release_capsule",
+      "dest": "framework/releases/0.12.0/release.json",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "ada96d4c981a3766b36817fd74b3db69906598ba3511c221d948bda41f9b8cd9",
+      "currentHashAtInstall": "ada96d4c981a3766b36817fd74b3db69906598ba3511c221d948bda41f9b8cd9",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "release_capsule.0.12.0.upgrade-notes.md",
+      "kind": "release_capsule",
+      "dest": "framework/releases/0.12.0/upgrade-notes.md",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "959bcfc713f9f2c28dbe5204a25d7b4040b42cb5a6e763a009ba9b0b735ca1c6",
+      "currentHashAtInstall": "959bcfc713f9f2c28dbe5204a25d7b4040b42cb5a6e763a009ba9b0b735ca1c6",
       "introducedIn": "0.0.0"
     },
     {
@@ -7634,8 +8534,208 @@
       "dest": "framework/paths.registry.json",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "faa7eb65a1d866127e4f5cec9582e179d7b92f5b3d0a8bbf725f4e866227f09e",
-      "currentHashAtInstall": "faa7eb65a1d866127e4f5cec9582e179d7b92f5b3d0a8bbf725f4e866227f09e",
+      "installedHash": "9a92eba041f3e50ad49879ebd20c0e20df86db9153ea758326ab3c8a3b3f7f6b",
+      "currentHashAtInstall": "9a92eba041f3e50ad49879ebd20c0e20df86db9153ea758326ab3c8a3b3f7f6b",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "template.app-scaffold..env.local.example.tmpl",
+      "kind": "template",
+      "dest": "framework/templates/app-scaffold/.env.local.example.tmpl",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "c979866ef8451d2239bfaa7f89911ed7bdefe471ffc5e21bbc35f43dcf1ade44",
+      "currentHashAtInstall": "c979866ef8451d2239bfaa7f89911ed7bdefe471ffc5e21bbc35f43dcf1ade44",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "template.app-scaffold.components.json.tmpl",
+      "kind": "template",
+      "dest": "framework/templates/app-scaffold/components.json.tmpl",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "831fdce06c6c25c7f67d23b737f27184bca9e4a0ff5c0a60175a6a58edbe4c7e",
+      "currentHashAtInstall": "831fdce06c6c25c7f67d23b737f27184bca9e4a0ff5c0a60175a6a58edbe4c7e",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "template.app-scaffold.DESIGN_SYSTEM.md.tmpl",
+      "kind": "template",
+      "dest": "framework/templates/app-scaffold/DESIGN_SYSTEM.md.tmpl",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "5edcde5f4b1efe723a58e3bcf25db90a37ebeb050f25f64242cbc9728b832f00",
+      "currentHashAtInstall": "5edcde5f4b1efe723a58e3bcf25db90a37ebeb050f25f64242cbc9728b832f00",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "template.app-scaffold.next.config.ts.tmpl",
+      "kind": "template",
+      "dest": "framework/templates/app-scaffold/next.config.ts.tmpl",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "099e327e5bfb2ce911745f4c2bc6f88c6a71418bd84953fbe39b8c5ec5440398",
+      "currentHashAtInstall": "099e327e5bfb2ce911745f4c2bc6f88c6a71418bd84953fbe39b8c5ec5440398",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "template.app-scaffold.package.json.tmpl",
+      "kind": "template",
+      "dest": "framework/templates/app-scaffold/package.json.tmpl",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "826965cee1b28b575a40513c365eb4facbd64f7818e96e21fa2512b5942b073f",
+      "currentHashAtInstall": "826965cee1b28b575a40513c365eb4facbd64f7818e96e21fa2512b5942b073f",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "template.app-scaffold.playwright.config.ts.tmpl",
+      "kind": "template",
+      "dest": "framework/templates/app-scaffold/playwright.config.ts.tmpl",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "572b9dea6b45f51094c33430ca5008fdec7899833b4a60a2e2882ec0233e02ac",
+      "currentHashAtInstall": "572b9dea6b45f51094c33430ca5008fdec7899833b4a60a2e2882ec0233e02ac",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "template.app-scaffold.postcss.config.mjs.tmpl",
+      "kind": "template",
+      "dest": "framework/templates/app-scaffold/postcss.config.mjs.tmpl",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "dfac7ac2d86d326a0e5adb024e7943c181393ed17a5fcb8f0315b24c7da6ddde",
+      "currentHashAtInstall": "dfac7ac2d86d326a0e5adb024e7943c181393ed17a5fcb8f0315b24c7da6ddde",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "template.app-scaffold.README.scaffold.md.tmpl",
+      "kind": "template",
+      "dest": "framework/templates/app-scaffold/README.scaffold.md.tmpl",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "f982f3e2ba9e890ece2595d42bc4738c5e10d1c0e7409201ddf566e727ac329a",
+      "currentHashAtInstall": "f982f3e2ba9e890ece2595d42bc4738c5e10d1c0e7409201ddf566e727ac329a",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "template.app-scaffold.src.app.globals.css.tmpl",
+      "kind": "template",
+      "dest": "framework/templates/app-scaffold/src/app/globals.css.tmpl",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "852c84b7c5819088718462fa478a68e358c8c68dc2b2f1542fbf329fe17dcb2e",
+      "currentHashAtInstall": "852c84b7c5819088718462fa478a68e358c8c68dc2b2f1542fbf329fe17dcb2e",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "template.app-scaffold.src.app.layout.tsx.tmpl",
+      "kind": "template",
+      "dest": "framework/templates/app-scaffold/src/app/layout.tsx.tmpl",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "7d9687e02b185b38471dabb426f82a33decc2feebdda47aae71c9ca15526b4f0",
+      "currentHashAtInstall": "7d9687e02b185b38471dabb426f82a33decc2feebdda47aae71c9ca15526b4f0",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "template.app-scaffold.src.app.not-found.tsx.tmpl",
+      "kind": "template",
+      "dest": "framework/templates/app-scaffold/src/app/not-found.tsx.tmpl",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "34c8779d388dd114956b2dbdbda31c0113ce47a23ddf918adaaf0332efcefa6c",
+      "currentHashAtInstall": "34c8779d388dd114956b2dbdbda31c0113ce47a23ddf918adaaf0332efcefa6c",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "template.app-scaffold.src.app.page.tsx.tmpl",
+      "kind": "template",
+      "dest": "framework/templates/app-scaffold/src/app/page.tsx.tmpl",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "bf1619394b6c8ea625a8d6967ac5762a35c78ff80911ad5e682dce7da5702cb7",
+      "currentHashAtInstall": "bf1619394b6c8ea625a8d6967ac5762a35c78ff80911ad5e682dce7da5702cb7",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "template.app-scaffold.src.components.ui.button.tsx.tmpl",
+      "kind": "template",
+      "dest": "framework/templates/app-scaffold/src/components/ui/button.tsx.tmpl",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "1d63d13d512b495b460afd048dce95c7055f1be138b1ad443cd19c075163203c",
+      "currentHashAtInstall": "1d63d13d512b495b460afd048dce95c7055f1be138b1ad443cd19c075163203c",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "template.app-scaffold.src.components.ui.card.tsx.tmpl",
+      "kind": "template",
+      "dest": "framework/templates/app-scaffold/src/components/ui/card.tsx.tmpl",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "cf9014d4f299e6ea78d00b99c57162daa4f79363d0bdbbeb276e504bcba2042e",
+      "currentHashAtInstall": "cf9014d4f299e6ea78d00b99c57162daa4f79363d0bdbbeb276e504bcba2042e",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "template.app-scaffold.src.components.ui.dialog.tsx.tmpl",
+      "kind": "template",
+      "dest": "framework/templates/app-scaffold/src/components/ui/dialog.tsx.tmpl",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "a7733203e83f1def0d596110df0dd99d793c57cfba1b9be43db33c6de85d453e",
+      "currentHashAtInstall": "a7733203e83f1def0d596110df0dd99d793c57cfba1b9be43db33c6de85d453e",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "template.app-scaffold.src.components.ui.input.tsx.tmpl",
+      "kind": "template",
+      "dest": "framework/templates/app-scaffold/src/components/ui/input.tsx.tmpl",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "413f88070d7178c60e4fac167404387da8ff59e56866c0241b18d3ea47224b11",
+      "currentHashAtInstall": "413f88070d7178c60e4fac167404387da8ff59e56866c0241b18d3ea47224b11",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "template.app-scaffold.src.components.ui.label.tsx.tmpl",
+      "kind": "template",
+      "dest": "framework/templates/app-scaffold/src/components/ui/label.tsx.tmpl",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "6db25c4599ffe83be108f96b0b531dd491a0acc24f12a0a7c925f50843b54dea",
+      "currentHashAtInstall": "6db25c4599ffe83be108f96b0b531dd491a0acc24f12a0a7c925f50843b54dea",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "template.app-scaffold.src.lib.utils.ts.tmpl",
+      "kind": "template",
+      "dest": "framework/templates/app-scaffold/src/lib/utils.ts.tmpl",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "2354079eadc7b870fb100bb70b7461d340c32b250a0ac81a151d1aff2c1ef6a2",
+      "currentHashAtInstall": "2354079eadc7b870fb100bb70b7461d340c32b250a0ac81a151d1aff2c1ef6a2",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "template.app-scaffold.tests.smoke.spec.ts.tmpl",
+      "kind": "template",
+      "dest": "framework/templates/app-scaffold/tests/smoke.spec.ts.tmpl",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "7d3f18f3eeeee5aef4d03eff75d147a0bd5ff1572dde6fcc0c89539f19eee2d7",
+      "currentHashAtInstall": "7d3f18f3eeeee5aef4d03eff75d147a0bd5ff1572dde6fcc0c89539f19eee2d7",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "template.app-scaffold.tsconfig.json.tmpl",
+      "kind": "template",
+      "dest": "framework/templates/app-scaffold/tsconfig.json.tmpl",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "1b12f56ab16430b64622ff8512cb05b06cf633060dbec6ebad6f9e792a6dc2a0",
+      "currentHashAtInstall": "1b12f56ab16430b64622ff8512cb05b06cf633060dbec6ebad6f9e792a6dc2a0",
       "introducedIn": "0.0.0"
     },
     {
@@ -7949,6 +9049,16 @@
       "introducedIn": "0.0.0"
     },
     {
+      "id": "template.report.REPORT_TEMPLATE.md",
+      "kind": "template",
+      "dest": "framework/templates/report/REPORT_TEMPLATE.md",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "7ccf5965c3ddce26abd099883a8858371162150c07e6dd33187d5bb1228b378c",
+      "currentHashAtInstall": "7ccf5965c3ddce26abd099883a8858371162150c07e6dd33187d5bb1228b378c",
+      "introducedIn": "0.0.0"
+    },
+    {
       "id": "template.sprint.approval.approval.yaml.tmpl",
       "kind": "template",
       "dest": "framework/templates/sprint/approval/approval.yaml.tmpl",
@@ -8254,8 +9364,78 @@
       "dest": "framework/hooks.registry.json",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "1386f3635240465a571830bd44d1dda41df93dc7faf214ebaae6fd06efbcf78c",
-      "currentHashAtInstall": "1386f3635240465a571830bd44d1dda41df93dc7faf214ebaae6fd06efbcf78c",
+      "installedHash": "483aaa85d4c8da89ae90bf2d309e43502977c7f35017a53789ef734f51b41e1c",
+      "currentHashAtInstall": "483aaa85d4c8da89ae90bf2d309e43502977c7f35017a53789ef734f51b41e1c",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "guide.AUTH_GUIDE.md",
+      "kind": "guide",
+      "dest": "_guides/AUTH_GUIDE.md",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "a303ad27bb3ad1482a54a2e0b1de59263986420be94fb74fe65a6499e4d86fe3",
+      "currentHashAtInstall": "a303ad27bb3ad1482a54a2e0b1de59263986420be94fb74fe65a6499e4d86fe3",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "guide.DATABASE_GUIDE.md",
+      "kind": "guide",
+      "dest": "_guides/DATABASE_GUIDE.md",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "f07e83be670e1961cfcf9161db10dd838b367612c3819e44f93b063fcabc5829",
+      "currentHashAtInstall": "f07e83be670e1961cfcf9161db10dd838b367612c3819e44f93b063fcabc5829",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "guide.DEV_SETUP_GUIDE.md",
+      "kind": "guide",
+      "dest": "_guides/DEV_SETUP_GUIDE.md",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "0188e9fcde35f177400689603c5c1a847eddba1cfc9f6ae6c4ea8436cf888dcb",
+      "currentHashAtInstall": "0188e9fcde35f177400689603c5c1a847eddba1cfc9f6ae6c4ea8436cf888dcb",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "guide.EMAIL_GUIDE.md",
+      "kind": "guide",
+      "dest": "_guides/EMAIL_GUIDE.md",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "67ef5e2969bb9ba2091f5c312ca712d10bc446cc059d81fa6f8f0e104c41d766",
+      "currentHashAtInstall": "67ef5e2969bb9ba2091f5c312ca712d10bc446cc059d81fa6f8f0e104c41d766",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "guide.PAYMENTS_GUIDE.md",
+      "kind": "guide",
+      "dest": "_guides/PAYMENTS_GUIDE.md",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "a1d567e7b0febb76594828be1276fa0abde0b4ec4f24c3c0e9de1b3943a3a2a5",
+      "currentHashAtInstall": "a1d567e7b0febb76594828be1276fa0abde0b4ec4f24c3c0e9de1b3943a3a2a5",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "guide.PRIVACY_GDPR_GUIDE.md",
+      "kind": "guide",
+      "dest": "_guides/PRIVACY_GDPR_GUIDE.md",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "cfd3f89f39a38e520b23306360c798a8a5fde828bb66e88deb88523738d81efd",
+      "currentHashAtInstall": "cfd3f89f39a38e520b23306360c798a8a5fde828bb66e88deb88523738d81efd",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "guide.README.md",
+      "kind": "guide",
+      "dest": "_guides/README.md",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "8f58166f91bfdf2e1d3f612a095bcfcd2e3fc0b63316453140521b68099da439",
+      "currentHashAtInstall": "8f58166f91bfdf2e1d3f612a095bcfcd2e3fc0b63316453140521b68099da439",
       "introducedIn": "0.0.0"
     },
     {
@@ -8264,8 +9444,8 @@
       "dest": "scripts/dispatch-agent.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "e77a78e1ef5028fb123756f0abb24930c66624186028beebdb32b7ec58ab96e7",
-      "currentHashAtInstall": "e77a78e1ef5028fb123756f0abb24930c66624186028beebdb32b7ec58ab96e7",
+      "installedHash": "cc67d5b05f188f4e74d9e49345d07e9de34d0efce26b82bbc621581feb013fdc",
+      "currentHashAtInstall": "cc67d5b05f188f4e74d9e49345d07e9de34d0efce26b82bbc621581feb013fdc",
       "introducedIn": "0.0.0"
     },
     {
@@ -8274,8 +9454,8 @@
       "dest": "scripts/generate-framework-manifest.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "ec6fcf4c18b1870baa767d32d1d7e12d04c809bc5dea0a81426707889aaaf702",
-      "currentHashAtInstall": "ec6fcf4c18b1870baa767d32d1d7e12d04c809bc5dea0a81426707889aaaf702",
+      "installedHash": "0b68ee6231ea3bd021cbbcc04e60d0df2fb5625996b49c28fbeefa81863401de",
+      "currentHashAtInstall": "0b68ee6231ea3bd021cbbcc04e60d0df2fb5625996b49c28fbeefa81863401de",
       "introducedIn": "0.0.0"
     },
     {
@@ -8314,8 +9494,8 @@
       "dest": "version.json",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "1f5651aeea8b094efecfa469915e9b21cdde60e4cca8af5dc203d90e42ae1901",
-      "currentHashAtInstall": "1f5651aeea8b094efecfa469915e9b21cdde60e4cca8af5dc203d90e42ae1901",
+      "installedHash": "6ef1283b8feb8552f31f7afd333ed4bd4a8b82d8452c2db6b992d67c17243234",
+      "currentHashAtInstall": "6ef1283b8feb8552f31f7afd333ed4bd4a8b82d8452c2db6b992d67c17243234",
       "introducedIn": "0.0.0"
     },
     {
@@ -8324,8 +9504,8 @@
       "dest": "install.ps1",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "21215f31dd9a0d0203a468c51eb5eef8f9637882330bdde4f3fac1173b9ccf8c",
-      "currentHashAtInstall": "21215f31dd9a0d0203a468c51eb5eef8f9637882330bdde4f3fac1173b9ccf8c",
+      "installedHash": "c250f6b6d7b45fae0aa52d1d18ea23e6682b18842de1689a9f1ed71b67a73cca",
+      "currentHashAtInstall": "c250f6b6d7b45fae0aa52d1d18ea23e6682b18842de1689a9f1ed71b67a73cca",
       "introducedIn": "0.0.0"
     },
     {
