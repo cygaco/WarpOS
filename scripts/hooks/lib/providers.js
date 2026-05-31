@@ -196,6 +196,9 @@ const DEFAULT_AGENT_PROVIDERS = {
   gamma: "claude",
   delta: "claude",
   builder: "claude",
+  "frontend-builder": "claude",
+  "backend-builder": "claude",
+  "design-quality": "claude",
   fixer: "claude",
   // Review layer — GPT-5.5 for different lens on Claude's output, forced high reasoning
   reviewer: "openai",

@@ -12,26 +12,26 @@
     "product": {
       "director": { "role": "director-of-product-management", "agent": "director-of-product" },
       "leads": [
-        { "role": "product-lead", "agent": null, "owns": "requirement authoring (build_spec/PRD via /sprint:design, verified by req-reviewer); per-product backlog ranking + within-sprint sequencing", "specialists": [ { "role": "product-designer", "agent": null } ] },
+        { "role": "product-lead", "agent": "product-lead", "owns": "requirement authoring (build_spec/PRD via /sprint:design, verified by req-reviewer); per-product backlog ranking + within-sprint sequencing", "specialists": [ { "role": "product-designer", "agent": "product-designer" } ] },
         { "role": "qa-lead", "agent": "director-of-qa", "alias": "director-of-qa", "owns": "product-driven QA; QA/fix-priority under product-priority-over-severity; directs the QA failure-mode scanner", "note": "Renamed from Director of QA; reports to Director of Product Mgmt. Keep the director-of-qa dispatch alias until all refs migrate." },
-        { "role": "research-insight-lead", "agent": null, "owns": "deep audience layer + audience-mining pipeline; audience_dossier" }
+        { "role": "research-insight-lead", "agent": "research-insight-lead", "owns": "deep audience layer + audience-mining pipeline; audience_dossier" }
       ],
       "reports_to": "alpha"
     },
     "marketing": {
-      "director": { "role": "director-of-marketing", "agent": null },
+      "director": { "role": "director-of-marketing", "agent": "director-of-marketing" },
       "leads": [
-        { "role": "growth-lead", "agent": null, "owns": "media-buying; EQ scoring; SCALE/TEST/SKIP" },
-        { "role": "copy-lead", "agent": null, "owns": "Agora/E5 voice; owns the 'Chief' coherence review" }
+        { "role": "growth-lead", "agent": "growth-lead", "owns": "media-buying; EQ scoring; SCALE/TEST/SKIP" },
+        { "role": "copy-lead", "agent": "copy-lead", "owns": "Agora/E5 voice; owns the 'Chief' coherence review" }
       ],
-      "specialists": [ { "role": "web-conversion-designer", "agent": null, "owns": "landing pages that convert" } ],
+      "specialists": [ { "role": "web-conversion-designer", "agent": "web-conversion-designer", "owns": "landing pages that convert" } ],
       "reports_to": "alpha"
     },
     "engineering": {
-      "director": { "role": "director-of-engineering", "agent": null },
+      "director": { "role": "director-of-engineering", "agent": "director-of-engineering" },
       "builders": [
-        { "role": "frontend-builder", "agent": null },
-        { "role": "backend-builder", "agent": null }
+        { "role": "frontend-builder", "agent": "frontend-builder" },
+        { "role": "backend-builder", "agent": "backend-builder" }
       ],
       "note": "+Foundation/Integration builder roles only if the pilot shows shared-file pain (S1.3 Gamma integration phase owns shared files first).",
       "reports_to": "alpha"
@@ -42,6 +42,7 @@
     "design-quality": {
       "domain": "cross-domain",
       "is_named_design_authority": true,
+      "members": ["design-quality"],
       "approves": ["design-tokens", "component-usage", "visual-hierarchy", "mobile-responsive", "accessibility", "design-handoff"],
       "note": "The named design authority across app-design (Product) and web-design (Marketing) — a gauntlet, not a person. A component library alone is not an owner."
     }

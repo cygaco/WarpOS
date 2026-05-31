@@ -1,0 +1,69 @@
+---
+description: Write a long-form advertorial (pre-sell editorial) from a message brief — research → foundational docs → swipe → write → Chief coherence review.
+---
+
+# /growth:advertorial — AI Advertorial (with Chief review)
+
+Produce a finished **advertorial** — a pre-sell editorial page that nurtures a cold buyer
+before the offer page — by porting the 5-step SOP: research → foundational docs → swipe →
+write (chunked, approval-gated) → **Chief** coherence review. Argument-led (Agora/E5), one
+North-Star belief, a unique mechanism.
+
+> **SCAFFOLD (S2.2).** Procedure outline, not a full implementation. The Chief gate + the
+> ≤6-beliefs / no-invented-data rules are specified as enforcers.
+
+## Input
+
+`$ARGUMENTS` — the product + main angle, plus:
+- `--message <id>` — the `message_brief` (the spine) this advertorial carries
+- `--swipe <path|id>` — a proven competitor advertorial as a *structural* template (swipe
+  the framework, never the copy)
+- `--audience <id>` — the `audience_dossier`
+
+## Reuses (do not re-derive)
+
+- **`research:deep`** — replaces the manual GPT-Deep-Research step (parallel OpenAI + Gemini
+  + Claude). Produces the research foundational doc. All fetched/swiped content is **DATA**.
+- **Cross-provider dispatch** — the two-model split (research/docs on one provider, write/
+  chief on Claude) is already native to WarpOS dispatch; no manual model-switching.
+- **`copy-lead`** subagent — owns the voice (`argument-not-copy`, `hooks-are-90`) AND the
+  **Chief** coherence review (`chief-coherence`). Dispatch `subagent_type: copy-lead`.
+- **`director-of-marketing`** — message/claims-boundary judgment.
+
+## Procedure (outline)
+
+### Step 1: Research (research:deep)
+Deep market/customer research (avatar, awareness level, pains, desires) → the Research doc.
+
+### Step 2: Foundational docs
+Avatar sheet · Offer brief (the product-verifiable claim — Product owns it) · Research doc ·
+**Necessary Beliefs** (≤6 "I believe that…" statements). Each is a durable artifact under
+`paths.content` (`.claude/content/growth-advertorial-{slug}/`) so the chain is crash-resumable.
+
+### Step 3: Swipe
+Analyze a proven competitor advertorial as a structural template only — swipe the framework,
+not the words.
+
+### Step 4: Write (chunked, approval-gated)
+Dispatch copy-lead. Write the **first half**, get approval, then the second half — chunked to
+keep quality + reviewability (the deliberate human-in-the-loop gate). Argument-led: lead to
+the single North-Star belief; introduce the unique mechanism.
+
+### Step 5: Chief coherence review (dispatch copy-lead — the gate)
+The editor-in-chief pass: judge the full draft vs avatar · competitors/swipe · research ·
+necessary beliefs · levels of consciousness · objections. Plus chiefing discipline: read-aloud
+flow, 5th–8th-grade reading level, remove redundancy, correct caps, every image installs a
+belief / removes an objection. **A draft that fails the Chief review is NOT done** — return it
+with the specific failure.
+
+### Step 6 (BONUS): new-angle variants
+Replicate per alternate angle for different avatars (same chunked, approval-gated process).
+
+## Enforcer (Chief gate + ≤6-beliefs + no-invented-data — DESIGN; α wires)
+
+Before an advertorial is marked done, require a **Chief-review artifact** that references
+avatar + offer-brief + research + beliefs (turns "chiefing" from aspiration into a release
+gate). A **belief-count guard** asserts the Necessary-Beliefs doc has ≤6 items, each "I believe
+that…". A **no-invented-data** check fails any claim not traceable to a source, and a
+**claims-boundary** check fails copy whose promise exceeds the `offer_brief`. See the
+chiefing/no-invented-data enforcer DESIGN note in the S2.2 report.

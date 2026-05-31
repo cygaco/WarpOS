@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-05-31T03:24:15.015Z",
+  "generatedAt": "2026-05-31T03:59:02.159Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.11.1",
   "migrations": [],
@@ -4015,8 +4015,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/lib/providers.js",
-      "sha256": "8cea44f9214f9d62598fd19bc24113fa498f59baaa60d1519235ecdcc31acd6b",
-      "installedSha": "8cea44f9214f9d62598fd19bc24113fa498f59baaa60d1519235ecdcc31acd6b"
+      "sha256": "14a828549c42baeb782efc1d93952d130a599031bbd0206ac9e3eabe9c616a5e",
+      "installedSha": "14a828549c42baeb782efc1d93952d130a599031bbd0206ac9e3eabe9c616a5e"
     },
     "scripts/hooks/lib/role-aliases.js": {
       "owner": "framework",
@@ -4120,8 +4120,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/dispatch/catalog.js",
-      "sha256": "e706c53ae019b9acffa6788a8a1e84fc41ffdadf4ca4ca5c687a02010ca2d933",
-      "installedSha": "e706c53ae019b9acffa6788a8a1e84fc41ffdadf4ca4ca5c687a02010ca2d933"
+      "sha256": "00a45f280d87a4021ef3f5c51e9f7a170775485df5cd35b54fa3bcd76bf1dc6f",
+      "installedSha": "00a45f280d87a4021ef3f5c51e9f7a170775485df5cd35b54fa3bcd76bf1dc6f"
     },
     "scripts/dispatch/cli-preview.js": {
       "owner": "framework",
@@ -14558,6 +14558,70 @@
       "sha256": "49b0a700e29dceb68c7a7a019c364e7cd9bac2e4cade2b57f33fe817680b54e6",
       "installedSha": "49b0a700e29dceb68c7a7a019c364e7cd9bac2e4cade2b57f33fe817680b54e6"
     },
+    ".claude/commands/growth/ad-images.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/commands/growth/ad-images.md",
+      "kind": "md",
+      "sha256": "6f1096819ac80ad4fc3e6343e7285d714a801229a33e3b394da53e37baee62eb",
+      "installedSha": "6f1096819ac80ad4fc3e6343e7285d714a801229a33e3b394da53e37baee62eb"
+    },
+    ".claude/commands/growth/ad-video.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/commands/growth/ad-video.md",
+      "kind": "md",
+      "sha256": "8f1ad33a8a74b39ed6c0f7661f7cc214b4595e9aa11781495c7f98de9654091f",
+      "installedSha": "8f1ad33a8a74b39ed6c0f7661f7cc214b4595e9aa11781495c7f98de9654091f"
+    },
+    ".claude/commands/growth/advertorial.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/commands/growth/advertorial.md",
+      "kind": "md",
+      "sha256": "a473123744b7e94b30bfebd8ddbd7dd3af747e8d33aef1c75b9e812cebe9f7e0",
+      "installedSha": "a473123744b7e94b30bfebd8ddbd7dd3af747e8d33aef1c75b9e812cebe9f7e0"
+    },
+    ".claude/commands/growth/angles.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/commands/growth/angles.md",
+      "kind": "md",
+      "sha256": "8969dff11986134562963e010f1bbf5d38d1b491b2f9c26db545bb61c48e918b",
+      "installedSha": "8969dff11986134562963e010f1bbf5d38d1b491b2f9c26db545bb61c48e918b"
+    },
+    ".claude/commands/growth/iterate.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/commands/growth/iterate.md",
+      "kind": "md",
+      "sha256": "6b2570e8428b7c29e3d01300028dff071d8cd0585e8e34d29d285270a32218d5",
+      "installedSha": "6b2570e8428b7c29e3d01300028dff071d8cd0585e8e34d29d285270a32218d5"
+    },
+    ".claude/commands/growth/landing-page.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/commands/growth/landing-page.md",
+      "kind": "md",
+      "sha256": "d0ac6c5e01355d89229c52beebfe68c9c7ea9d7c73eca5dc48d320d969c4f453",
+      "installedSha": "d0ac6c5e01355d89229c52beebfe68c9c7ea9d7c73eca5dc48d320d969c4f453"
+    },
+    ".claude/commands/growth/message-brief.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/commands/growth/message-brief.md",
+      "kind": "md",
+      "sha256": "bf441b689ef1db96afc2544b309c6593286da013ac1233cc4d23e120ae6c8580",
+      "installedSha": "bf441b689ef1db96afc2544b309c6593286da013ac1233cc4d23e120ae6c8580"
+    },
+    ".claude/commands/growth/product-finder.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/commands/growth/product-finder.md",
+      "kind": "md",
+      "sha256": "2d0e366c260bb7af67a5212fb81dc0cbd7e563b2bef9ae70d7aa55acb229ecd9",
+      "installedSha": "2d0e366c260bb7af67a5212fb81dc0cbd7e563b2bef9ae70d7aa55acb229ecd9"
+    },
     ".claude/commands/fix/deep.md": {
       "owner": "framework",
       "managed": true,
@@ -14806,13 +14870,37 @@
       "sha256": "7ba2ce1425a2de4110b52bc1863e8c45e168c13ced97dc46214755c3b03e3fb7",
       "installedSha": "7ba2ce1425a2de4110b52bc1863e8c45e168c13ced97dc46214755c3b03e3fb7"
     },
+    ".claude/agents/03-managers/copy-lead.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/03-managers/copy-lead.md",
+      "kind": "md",
+      "sha256": "2053d9c45fcdf29b5cbc3267b0a27fd4311fb510c52321d21596b02433a35b19",
+      "installedSha": "2053d9c45fcdf29b5cbc3267b0a27fd4311fb510c52321d21596b02433a35b19"
+    },
+    ".claude/agents/03-managers/director-of-engineering.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/03-managers/director-of-engineering.md",
+      "kind": "md",
+      "sha256": "06549f5f00c28443e54b7c71265a612b4f19bba6f14354478d2da3a305f24e7e",
+      "installedSha": "06549f5f00c28443e54b7c71265a612b4f19bba6f14354478d2da3a305f24e7e"
+    },
+    ".claude/agents/03-managers/director-of-marketing.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/03-managers/director-of-marketing.md",
+      "kind": "md",
+      "sha256": "631a7fa9c2b3dfb03af75db939eb9fc95845e847cfaef525b5031761117d2fe0",
+      "installedSha": "631a7fa9c2b3dfb03af75db939eb9fc95845e847cfaef525b5031761117d2fe0"
+    },
     ".claude/agents/03-managers/director-of-product.md": {
       "owner": "framework",
       "managed": true,
       "source": ".claude/agents/03-managers/director-of-product.md",
       "kind": "md",
-      "sha256": "61907798494fe96081899043ccdb35ce286da541e0eebb9d1f4da354ed2f1dd8",
-      "installedSha": "61907798494fe96081899043ccdb35ce286da541e0eebb9d1f4da354ed2f1dd8"
+      "sha256": "ec3901da8cd924b36275151674772a292689921edd862920e47d95474a22c1c0",
+      "installedSha": "ec3901da8cd924b36275151674772a292689921edd862920e47d95474a22c1c0"
     },
     ".claude/agents/03-managers/director-of-qa.md": {
       "owner": "framework",
@@ -14821,6 +14909,46 @@
       "kind": "md",
       "sha256": "ace4859bda3471ed3e075a270b06e7c5db45d4635ad7c47aad65f76f985b97aa",
       "installedSha": "ace4859bda3471ed3e075a270b06e7c5db45d4635ad7c47aad65f76f985b97aa"
+    },
+    ".claude/agents/03-managers/growth-lead.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/03-managers/growth-lead.md",
+      "kind": "md",
+      "sha256": "8c2afbb1090dcda47efd7918c45b39e370716f337a04b63e707cdd6523579976",
+      "installedSha": "8c2afbb1090dcda47efd7918c45b39e370716f337a04b63e707cdd6523579976"
+    },
+    ".claude/agents/03-managers/product-designer.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/03-managers/product-designer.md",
+      "kind": "md",
+      "sha256": "77b57bceb6ad635a40ac9cf9ad8445ed58d514b40bc756788e10b103ecaf0d93",
+      "installedSha": "77b57bceb6ad635a40ac9cf9ad8445ed58d514b40bc756788e10b103ecaf0d93"
+    },
+    ".claude/agents/03-managers/product-lead.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/03-managers/product-lead.md",
+      "kind": "md",
+      "sha256": "c88a5f4b81fd48d5bc27fc0160d792dfcb78d7dd44133a1e1ff9199d617722f6",
+      "installedSha": "c88a5f4b81fd48d5bc27fc0160d792dfcb78d7dd44133a1e1ff9199d617722f6"
+    },
+    ".claude/agents/03-managers/research-insight-lead.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/03-managers/research-insight-lead.md",
+      "kind": "md",
+      "sha256": "cc28f1be287d0a3836c28d8c0ba0c53122b0e5107752948420ba80f533d50797",
+      "installedSha": "cc28f1be287d0a3836c28d8c0ba0c53122b0e5107752948420ba80f533d50797"
+    },
+    ".claude/agents/03-managers/web-conversion-designer.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/03-managers/web-conversion-designer.md",
+      "kind": "md",
+      "sha256": "d9df16b031f5ef712a6e5a0b2a27aae757a016c175264e00de8b2b2706ddc523",
+      "installedSha": "d9df16b031f5ef712a6e5a0b2a27aae757a016c175264e00de8b2b2706ddc523"
     },
     ".claude/agents/03-managers/_principles/base.md": {
       "owner": "framework",
@@ -14835,16 +14963,32 @@
       "managed": true,
       "source": ".claude/agents/03-managers/_principles/registry.json",
       "kind": "json",
-      "sha256": "9e2594245fdaf580549b498b8fff2d1ffe4ee95f4d99ae0b608d85a272e9eaca",
-      "installedSha": "9e2594245fdaf580549b498b8fff2d1ffe4ee95f4d99ae0b608d85a272e9eaca"
+      "sha256": "5a621d24cf804a5f69e5226b2982292a29763d06f6a0aaccfc185985f70c3092",
+      "installedSha": "5a621d24cf804a5f69e5226b2982292a29763d06f6a0aaccfc185985f70c3092"
     },
     ".claude/agents/03-managers/_org/org-map.json": {
       "owner": "framework",
       "managed": true,
       "source": ".claude/agents/03-managers/_org/org-map.json",
       "kind": "json",
-      "sha256": "e2e607018a81151c26c142544a663567c9d1cbc0b0a5d298230e5ed1f9b3bfcf",
-      "installedSha": "e2e607018a81151c26c142544a663567c9d1cbc0b0a5d298230e5ed1f9b3bfcf"
+      "sha256": "0ee03d41163d8928a91d1a2614a1b785d9678e0b515bbf569aff176354394f1b",
+      "installedSha": "0ee03d41163d8928a91d1a2614a1b785d9678e0b515bbf569aff176354394f1b"
+    },
+    ".claude/agents/03-managers/_evals/resonance-conversion-rubric.json": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/03-managers/_evals/resonance-conversion-rubric.json",
+      "kind": "json",
+      "sha256": "415a1f9958e4d59f0d7513394c62f79539d9b19fa4d5ff0f65a03b4d5cc0417b",
+      "installedSha": "415a1f9958e4d59f0d7513394c62f79539d9b19fa4d5ff0f65a03b4d5cc0417b"
+    },
+    ".claude/agents/02-oneshot/_build-core/build-core.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/02-oneshot/_build-core/build-core.md",
+      "kind": "md",
+      "sha256": "58af8177900ac493e0087d923102a303d32549158e5e8883c0c8843bcda26e19",
+      "installedSha": "58af8177900ac493e0087d923102a303d32549158e5e8883c0c8843bcda26e19"
     },
     ".claude/agents/02-oneshot/visual-review/visual-review.md": {
       "owner": "framework",
@@ -14942,6 +15086,14 @@
       "sha256": "acc510bc3cba654bebc53497d0c10e9b3474f7d4a1714dbbe947451aa1e24dc9",
       "installedSha": "acc510bc3cba654bebc53497d0c10e9b3474f7d4a1714dbbe947451aa1e24dc9"
     },
+    ".claude/agents/02-oneshot/frontend-builder/frontend-builder.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/02-oneshot/frontend-builder/frontend-builder.md",
+      "kind": "md",
+      "sha256": "8bd78bd220419e2275af8d395887b6d27aeed0f4adabd308db7d61d9acd22cf0",
+      "installedSha": "8bd78bd220419e2275af8d395887b6d27aeed0f4adabd308db7d61d9acd22cf0"
+    },
     ".claude/agents/02-oneshot/fixer/fixer.md": {
       "owner": "framework",
       "managed": true,
@@ -14949,6 +15101,14 @@
       "kind": "md",
       "sha256": "b53ce819b0ebaed3596a241acad47809d4d2ffd6ee4f6d2d2e399590395e7d97",
       "installedSha": "b53ce819b0ebaed3596a241acad47809d4d2ffd6ee4f6d2d2e399590395e7d97"
+    },
+    ".claude/agents/02-oneshot/design-quality/design-quality.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/02-oneshot/design-quality/design-quality.md",
+      "kind": "md",
+      "sha256": "9068e5c2168109549c20c7ed42bf577ce5d461f8abf01091d37eb2bb5c4e2490",
+      "installedSha": "9068e5c2168109549c20c7ed42bf577ce5d461f8abf01091d37eb2bb5c4e2490"
     },
     ".claude/agents/02-oneshot/compliance/compliance.md": {
       "owner": "framework",
@@ -14973,6 +15133,14 @@
       "kind": "md",
       "sha256": "8cb9f5367335f44dd0877468b30aaf357e58a5695aecb4bbbe918b00ef2c460c",
       "installedSha": "8cb9f5367335f44dd0877468b30aaf357e58a5695aecb4bbbe918b00ef2c460c"
+    },
+    ".claude/agents/02-oneshot/backend-builder/backend-builder.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/02-oneshot/backend-builder/backend-builder.md",
+      "kind": "md",
+      "sha256": "6a13c9e96ab1831ef19bd4f1a7bde4d6165a23b2d18b2305af3a81087bc942a1",
+      "installedSha": "6a13c9e96ab1831ef19bd4f1a7bde4d6165a23b2d18b2305af3a81087bc942a1"
     },
     ".claude/agents/02-oneshot/.system/ENV-SETUP.md": {
       "owner": "framework",
@@ -15013,6 +15181,14 @@
       "kind": "md",
       "sha256": "f0f5cf33fd8f9ad7954c5f5245bb98df0bbd01a1fdf39d7ecb6255e3a81e0cf9",
       "installedSha": "f0f5cf33fd8f9ad7954c5f5245bb98df0bbd01a1fdf39d7ecb6255e3a81e0cf9"
+    },
+    ".claude/agents/01-adhoc/_build-core/build-core.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/01-adhoc/_build-core/build-core.md",
+      "kind": "md",
+      "sha256": "93f8b2cc9f97a9a330f02f6ea7b295780e07a583e15bf338672657ec4c9c9aa3",
+      "installedSha": "93f8b2cc9f97a9a330f02f6ea7b295780e07a583e15bf338672657ec4c9c9aa3"
     },
     ".claude/agents/01-adhoc/reviewer/reviewer.md": {
       "owner": "framework",
@@ -15078,6 +15254,14 @@
       "sha256": "805fd7c2c2465ec3b998a4783420e1a725029c762ace5c01f3a65a5db09c9d2f",
       "installedSha": "805fd7c2c2465ec3b998a4783420e1a725029c762ace5c01f3a65a5db09c9d2f"
     },
+    ".claude/agents/01-adhoc/frontend-builder/frontend-builder.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/01-adhoc/frontend-builder/frontend-builder.md",
+      "kind": "md",
+      "sha256": "8e6dc9d9c1898c73aa402ad4ee332c9c6039e273f30b6768ab0bf9bb52d56562",
+      "installedSha": "8e6dc9d9c1898c73aa402ad4ee332c9c6039e273f30b6768ab0bf9bb52d56562"
+    },
     ".claude/agents/01-adhoc/fixer/fixer.md": {
       "owner": "framework",
       "managed": true,
@@ -15101,6 +15285,14 @@
       "kind": "md",
       "sha256": "74b8f358ff7751c43564ae8188b42a60130fa308e90e172056c56733b28359c4",
       "installedSha": "74b8f358ff7751c43564ae8188b42a60130fa308e90e172056c56733b28359c4"
+    },
+    ".claude/agents/01-adhoc/backend-builder/backend-builder.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/01-adhoc/backend-builder/backend-builder.md",
+      "kind": "md",
+      "sha256": "55ecb371ba8eef3b8ed8cb428efd1dd090b36638caadfb3dd697772e81016dd1",
+      "installedSha": "55ecb371ba8eef3b8ed8cb428efd1dd090b36638caadfb3dd697772e81016dd1"
     },
     ".claude/agents/01-adhoc/.system/protocol.md": {
       "owner": "framework",
