@@ -4,7 +4,7 @@
   "generated_by": "scripts/generate-framework-manifest.js",
   "counts": {
     "agent": 66,
-    "skill": 173,
+    "skill": 174,
     "reference": 28,
     "maps_baseline": 23,
     "hook": 67,
@@ -13,7 +13,7 @@
     "pattern": 6,
     "fixture": 23,
     "warpos_script": 52,
-    "check_tool": 31,
+    "check_tool": 33,
     "agent_tool": 3,
     "decision_tool": 1,
     "runtime_tool": 1,
@@ -55,7 +55,7 @@
     "module_scope": 1,
     "framework_doc": 2
   },
-  "total": 886,
+  "total": 889,
   "assets": {
     "agent": [
       {
@@ -2226,6 +2226,18 @@
         "dest": ".claude/commands/scan/roadmap-trace.md",
         "kind": "skill",
         "sha256": "9a31a713ed3a65b64d05ad8df42cfa3d4064eca716e4027c47b8b4f9afdc85b7",
+        "owner": "framework",
+        "mergeStrategy": "three_way_markdown",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "skill.scan.role-parity.md",
+        "src": ".claude/commands/scan/role-parity.md",
+        "dest": ".claude/commands/scan/role-parity.md",
+        "kind": "skill",
+        "sha256": "df779e18c02b2f4c01f518a6ca36ead48dd035b91106bdef313aadd40cab01a4",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
@@ -5676,6 +5688,30 @@
         "dest": "scripts/checks/production-baseline.js",
         "kind": "check_tool",
         "sha256": "9544bad80c7ff7ad159ecee14ae642fc2a574d7ca0d61d0b18dd02fdd22ae6a1",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "check_tool.role-parity-scan.js",
+        "src": "scripts/checks/role-parity-scan.js",
+        "dest": "scripts/checks/role-parity-scan.js",
+        "kind": "check_tool",
+        "sha256": "b2ac64fe9e7eb5bd1227ca812cb8d2861588d4106a35307c3df28e106a2345cd",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "check_tool.role-parity.test.js",
+        "src": "scripts/checks/role-parity.test.js",
+        "dest": "scripts/checks/role-parity.test.js",
+        "kind": "check_tool",
+        "sha256": "15a54ef2a537a0f4e19ecc74077ddfa0ed17a0dc37577d7de3b0d07af2e8c83a",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
