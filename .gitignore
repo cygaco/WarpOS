@@ -60,6 +60,14 @@ _docs/clones/
 .claude/.agent-result-hashes.json
 .claude/project/builds/
 
+# /etc harness (S0.4) runtime emissions — never committed. Both live under runtime/
+# (walk-skipped by the manifest) so timestamped per-run files can't drift it. Dirs
+# kept via .gitkeep. Authored eval-packs (.claude/project/etc/eval-packs/) stay tracked.
+runtime/etc/decisions/*
+!runtime/etc/decisions/.gitkeep
+runtime/etc/consults/*
+!runtime/etc/consults/.gitkeep
+
 # Install matrix ephemeral fixtures (SP-20260524-001). The runner creates a
 # per-scenario timestamped dir under .warpos/test-fixtures/install-matrix/;
 # failed scenarios are moved to .warpos/test-fixtures/install-matrix/_failed/.

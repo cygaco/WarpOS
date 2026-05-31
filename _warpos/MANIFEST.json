@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-05-31T01:20:56.302Z",
+  "generatedAt": "2026-05-31T01:42:30.260Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.11.1",
   "migrations": [],
@@ -20,8 +20,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "5f46b4f83446fa827aa0e44a75e08350192b4dcba6d718037ff8b89402334ec4",
-      "installedSha": "5f46b4f83446fa827aa0e44a75e08350192b4dcba6d718037ff8b89402334ec4"
+      "sha256": "f8a3720c2dfd549cfa8ebd314b0f93fbef90cb28a66ac76c680ecc7cb0521432",
+      "installedSha": "f8a3720c2dfd549cfa8ebd314b0f93fbef90cb28a66ac76c680ecc7cb0521432"
     },
     "AGENTS.md": {
       "owner": "framework",
@@ -2622,8 +2622,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/warpos/manifest/build.js",
-      "sha256": "69b500e9d455987b3013a31ab68efee1be5abdf100648da8bf242c18acc8ecae",
-      "installedSha": "69b500e9d455987b3013a31ab68efee1be5abdf100648da8bf242c18acc8ecae"
+      "sha256": "62796bf328411a6cc26402a029e2c05cbdb4505da1dc1241be92d92c0a2f4a4d",
+      "installedSha": "62796bf328411a6cc26402a029e2c05cbdb4505da1dc1241be92d92c0a2f4a4d"
     },
     "scripts/warpos/manifest/test-bootstrap.js": {
       "owner": "framework",
@@ -3987,8 +3987,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/lib/paths.generated.js",
-      "sha256": "98fb92cf6e7917dc92d3f3b5e8505444bce0130cc4844843d735f01b84115b65",
-      "installedSha": "98fb92cf6e7917dc92d3f3b5e8505444bce0130cc4844843d735f01b84115b65"
+      "sha256": "9eb7f561d0bad31aa7a059260c282b319c31f99045b46665973837dee7c4dd44",
+      "installedSha": "9eb7f561d0bad31aa7a059260c282b319c31f99045b46665973837dee7c4dd44"
     },
     "scripts/hooks/lib/paths.js": {
       "owner": "framework",
@@ -4059,6 +4059,34 @@
       "source": "scripts/events/cli.js",
       "sha256": "00cce108a23a3c92ce8b6ad457cbad1d9d8af4b8ec085f2ea573a1fef76f0a99",
       "installedSha": "00cce108a23a3c92ce8b6ad457cbad1d9d8af4b8ec085f2ea573a1fef76f0a99"
+    },
+    "scripts/etc/.gitkeep": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/etc/.gitkeep",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "installedSha": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "scripts/etc/consult.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/etc/consult.js",
+      "sha256": "cf1639c536495785e45f815c0aaae3176d64ca304b26d7d9dece2dddc4d60bdb",
+      "installedSha": "cf1639c536495785e45f815c0aaae3176d64ca304b26d7d9dece2dddc4d60bdb"
+    },
+    "scripts/etc/etc.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/etc/etc.test.js",
+      "sha256": "7f0e61389884749f116c4426615bc4a02b4f0b62007ce6b58a9deaf5ab5f84bf",
+      "installedSha": "7f0e61389884749f116c4426615bc4a02b4f0b62007ce6b58a9deaf5ab5f84bf"
+    },
+    "scripts/etc/eval.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/etc/eval.js",
+      "sha256": "7318d5bc33b8e05b5f0186e1b46700954ddec0c4bc530b3187432f33ed7588c2",
+      "installedSha": "7318d5bc33b8e05b5f0186e1b46700954ddec0c4bc530b3187432f33ed7588c2"
     },
     "scripts/docs/catalog.js": {
       "owner": "framework",
@@ -4283,6 +4311,13 @@
       "source": "scripts/checks/domain-routing-scan.js",
       "sha256": "8cff0062fc3664748a472bdca540a0fbd156d716295b57dd964ddf7424cfc00c",
       "installedSha": "8cff0062fc3664748a472bdca540a0fbd156d716295b57dd964ddf7424cfc00c"
+    },
+    "scripts/checks/etc-harness-scan.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/etc-harness-scan.js",
+      "sha256": "a28328b5bc7180cb01f8d4f41eb8865fb96af766c7a49000035f8467e3e5afd4",
+      "installedSha": "a28328b5bc7180cb01f8d4f41eb8865fb96af766c7a49000035f8467e3e5afd4"
     },
     "scripts/checks/framework-purity.js": {
       "owner": "framework",
@@ -4764,8 +4799,8 @@
       "owner": "framework",
       "managed": true,
       "source": "schemas/paths.schema.json",
-      "sha256": "6a28b728bc66d813207656babd8a8077c796607649758681afb92e9134c30dcb",
-      "installedSha": "6a28b728bc66d813207656babd8a8077c796607649758681afb92e9134c30dcb"
+      "sha256": "8856974d798f678fdd2099844ce801a9f5356d8c623a5443c5b2488625cd687f",
+      "installedSha": "8856974d798f678fdd2099844ce801a9f5356d8c623a5443c5b2488625cd687f"
     },
     "schemas/provider-failure-modes.schema.json": {
       "owner": "framework",
@@ -4899,6 +4934,20 @@
       "source": "schemas/portfolio/registry.schema.json",
       "sha256": "10d972bb2d8970aea51c77516f1ba1ff3fe82fadc42559904756a2da8071ae0d",
       "installedSha": "10d972bb2d8970aea51c77516f1ba1ff3fe82fadc42559904756a2da8071ae0d"
+    },
+    "schemas/etc/.gitkeep": {
+      "owner": "framework",
+      "managed": true,
+      "source": "schemas/etc/.gitkeep",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "installedSha": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "schemas/etc/eval-pack.schema.json": {
+      "owner": "framework",
+      "managed": true,
+      "source": "schemas/etc/eval-pack.schema.json",
+      "sha256": "bdce378f27473446bb669f8ca8f075ead931dc8c211b38449e4346a4eb290cfa",
+      "installedSha": "bdce378f27473446bb669f8ca8f075ead931dc8c211b38449e4346a4eb290cfa"
     },
     "schemas/contracts/audience_dossier.schema.json": {
       "owner": "framework",
@@ -5079,8 +5128,8 @@
       "owner": "framework",
       "managed": true,
       "source": "framework/paths.registry.json",
-      "sha256": "0247d10b2efe5d1f2a050f26497d9a304e0bb2ecfabc66aa8013d69790ea9130",
-      "installedSha": "0247d10b2efe5d1f2a050f26497d9a304e0bb2ecfabc66aa8013d69790ea9130"
+      "sha256": "2920a6322b21c557c424859ca401f54c4f2955ca9412a9a7d710e469464698a2",
+      "installedSha": "2920a6322b21c557c424859ca401f54c4f2955ca9412a9a7d710e469464698a2"
     },
     "framework/templates/sprint/README.md": {
       "owner": "framework",
@@ -13280,6 +13329,14 @@
       "owner": "runtime",
       "managed": false
     },
+    ".claude/project/etc/eval-packs/.gitkeep": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/etc/eval-packs/etc-author.example.json": {
+      "owner": "runtime",
+      "managed": false
+    },
     ".claude/project/decisions/decision-ledger.jsonl": {
       "owner": "runtime",
       "managed": false
@@ -14511,6 +14568,22 @@
       "kind": "md",
       "sha256": "969859807072d66e670c5d30640c1cf11ea7edba395cf30270d38214b8481fb5",
       "installedSha": "969859807072d66e670c5d30640c1cf11ea7edba395cf30270d38214b8481fb5"
+    },
+    ".claude/commands/etc/author.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/commands/etc/author.md",
+      "kind": "md",
+      "sha256": "b68f1e9ea6d293baf6c027752aed80bc6f146475d567a79cd6269f7ebb76c281",
+      "installedSha": "b68f1e9ea6d293baf6c027752aed80bc6f146475d567a79cd6269f7ebb76c281"
+    },
+    ".claude/commands/etc/eval.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/commands/etc/eval.md",
+      "kind": "md",
+      "sha256": "ea7d4bf97cd8eff6dcf3b958437c1fb23da2df26a23902c9eeac5c239dd1c045",
+      "installedSha": "ea7d4bf97cd8eff6dcf3b958437c1fb23da2df26a23902c9eeac5c239dd1c045"
     },
     ".claude/commands/enforcement/list.md": {
       "owner": "framework",

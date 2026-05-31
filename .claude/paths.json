@@ -119,5 +119,8 @@
   "contractsValidator": "scripts/contracts/validate-artifact.js",
   "contractsValidatorTest": "scripts/contracts/test-validate-artifact.js",
   "contractsFixtures": "scripts/contracts/fixtures",
-  "contractsSpec": "_requirements/10-contracts/ARTIFACT-CONTRACTS.md"
+  "contractsSpec": "_requirements/10-contracts/ARTIFACT-CONTRACTS.md",
+  "etcEvalPacks": ".claude/project/etc/eval-packs",
+  "etcDecisions": "runtime/etc/decisions",
+  "etcConsults": "runtime/etc/consults"
 }

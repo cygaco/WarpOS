@@ -611,6 +611,21 @@
       "type": "string",
       "const": "_requirements/10-contracts/ARTIFACT-CONTRACTS.md",
       "description": "file (framework) — paths.contractsSpec"
+    },
+    "etcEvalPacks": {
+      "type": "string",
+      "const": ".claude/project/etc/eval-packs",
+      "description": "dir (project) — paths.etcEvalPacks"
+    },
+    "etcDecisions": {
+      "type": "string",
+      "const": "runtime/etc/decisions",
+      "description": "dir (runtime) — paths.etcDecisions"
+    },
+    "etcConsults": {
+      "type": "string",
+      "const": "runtime/etc/consults",
+      "description": "dir (runtime) — paths.etcConsults"
     }
   }
 }

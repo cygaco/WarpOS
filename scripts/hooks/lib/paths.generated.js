@@ -130,7 +130,10 @@ const PATHS = {
   "contractsValidator": path.join(PROJECT, "scripts", "contracts", "validate-artifact.js"),
   "contractsValidatorTest": path.join(PROJECT, "scripts", "contracts", "test-validate-artifact.js"),
   "contractsFixtures": path.join(PROJECT, "scripts", "contracts", "fixtures"),
-  "contractsSpec": path.join(PROJECT, "_requirements", "10-contracts", "ARTIFACT-CONTRACTS.md")
+  "contractsSpec": path.join(PROJECT, "_requirements", "10-contracts", "ARTIFACT-CONTRACTS.md"),
+  "etcEvalPacks": path.join(PROJECT, ".claude", "project", "etc", "eval-packs"),
+  "etcDecisions": path.join(PROJECT, "runtime", "etc", "decisions"),
+  "etcConsults": path.join(PROJECT, "runtime", "etc", "consults")
 };
 
 module.exports = { PROJECT, PATHS };

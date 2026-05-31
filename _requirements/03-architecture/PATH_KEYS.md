@@ -12,7 +12,7 @@ Markdown convention: reference paths as `paths.X` in prose. Code: `const { PATHS
 | `agentDispatchGuide` | `.claude/project/reference/agent-dispatch-guide.md` | md | framework | no | 0.3.0 |  |
 | `agents` | `.claude/agents` | dir | framework | no | 0.0.0 |  |
 | `agentSystem` | `.claude/agents/00-alex/.system` | dir | framework | no | 0.0.0 |  |
-| `appScaffoldTemplates` | `framework/templates/app-scaffold` | dir | framework | yes | 0.11.1 | S0.3 (product-studio) — pinned Next.js+Tailwind v4+shadcn/ui |
+| `appScaffoldTemplates` | `framework/templates/app-scaffold` | dir | framework | yes | 0.12.0 | S0.3 (product-studio) — pinned Next.js+Tailwind v4+shadcn/ui |
 | `architectureRoot` | `_requirements/03-architecture` | dir | framework | yes | 0.2.0 | Track B 2026-05-03 introduced this key to replace many hardc |
 | `auditsRoot` | `_requirements/_audits` | dir | framework | yes | 0.2.0 |  |
 | `betaEvents` | `.claude/agents/00-alex/.system/beta/events.jsonl` | jsonl | runtime | yes | 0.0.0 |  |
@@ -42,6 +42,9 @@ Markdown convention: reference paths as `paths.X` in prose. Code: `const { PATHS
 | `docsRoot` | `_docs` | dir | project | yes | 0.2.0 | Track B 2026-05-03 renamed docs -> _docs. Now contains only  |
 | `dreams` | `.claude/dreams` | dir | runtime | yes | 0.0.0 |  |
 | `enforcementDebt` | `.claude/project/memory/enforcement-debt.jsonl` | jsonl | runtime | yes | 0.8.0 | Append-only ledger of policies that exist without a named en |
+| `etcConsults` | `runtime/etc/consults` | dir | runtime | yes | 0.12.0 | Raw GPT-5.5 consult transcripts (external DATA — never instr |
+| `etcDecisions` | `runtime/etc/decisions` | dir | runtime | yes | 0.12.0 | decision_record artifacts emitted per /etc:eval run. Under r |
+| `etcEvalPacks` | `.claude/project/etc/eval-packs` | dir | project | yes | 0.12.0 | Eval-packs for the /etc authoring+eval harness. S0.4 (s04-et |
 | `events` | `.claude/project/events` | dir | runtime | yes | 0.0.0 |  |
 | `eventsFile` | `.claude/project/events/events.jsonl` | jsonl | runtime | yes | 0.0.0 |  |
 | `favorites` | `.claude/content/favorites` | dir | runtime | yes | 0.0.0 |  |

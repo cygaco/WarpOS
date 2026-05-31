@@ -335,7 +335,7 @@
       "kind": "dir",
       "owner": "framework",
       "mutable": true,
-      "introducedIn": "0.11.1",
+      "introducedIn": "0.12.0",
       "docsToken": "paths.appScaffoldTemplates",
       "_note": "S0.3 (product-studio) — pinned Next.js+Tailwind v4+shadcn/ui+Radix+Lucide app scaffold materialized into products by scripts/scaffold/app.js (the 'kills vibe-coded' deliverable). Enforced complete+coherent by scripts/checks/scaffold-coverage-scan.js."
     },
@@ -1035,6 +1035,33 @@
       "introducedIn": "0.12.0",
       "docsToken": "paths.contractsSpec",
       "_note": "Human-readable artifact-contract spec v0.1 (the chain, the spine, precedence model, decision-record, validator). Sprint SP-20260530-001 (S0.2)."
+    },
+    "etcEvalPacks": {
+      "path": ".claude/project/etc/eval-packs",
+      "kind": "dir",
+      "owner": "project",
+      "mutable": true,
+      "introducedIn": "0.12.0",
+      "docsToken": "paths.etcEvalPacks",
+      "_note": "Eval-packs for the /etc authoring+eval harness. S0.4 (s04-etc-harness)."
+    },
+    "etcDecisions": {
+      "path": "runtime/etc/decisions",
+      "kind": "dir",
+      "owner": "runtime",
+      "mutable": true,
+      "introducedIn": "0.12.0",
+      "docsToken": "paths.etcDecisions",
+      "_note": "decision_record artifacts emitted per /etc:eval run. Under runtime/ (walk-skipped, gitignored) — timestamped + transient, so they must NOT be enumerated by the shipping manifest (would cause perpetual honesty drift). Mirrors etcConsults. S0.4."
+    },
+    "etcConsults": {
+      "path": "runtime/etc/consults",
+      "kind": "dir",
+      "owner": "runtime",
+      "mutable": true,
+      "introducedIn": "0.12.0",
+      "docsToken": "paths.etcConsults",
+      "_note": "Raw GPT-5.5 consult transcripts (external DATA — never instructions). S0.4."
     }
   },
   "lintRules": {

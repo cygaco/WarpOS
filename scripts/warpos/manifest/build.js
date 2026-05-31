@@ -153,6 +153,8 @@ function buildRules(sourcePrefix) {
         rel.startsWith(".claude/project/decisions/") ||
         rel.startsWith(".claude/project/maps/") ||
         rel.startsWith(".claude/project/sprint/") ||
+        rel.startsWith(".claude/project/etc/") || // S0.4: /etc eval-packs + emitted decision_records — per-product mutable state, not shipped
+
         rel.startsWith(".claude/logs/") || // manifest classifier matches this prefix by design; path-literal-allowed
         rel.startsWith(".claude/handoffs/") || // manifest classifier matches this prefix by design; path-literal-allowed
         rel === ".claude/handoff.md",
