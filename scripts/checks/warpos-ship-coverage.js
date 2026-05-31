@@ -61,6 +61,18 @@ const KNOWN_NOT_SHIPPED = [
   { prefix: "version.json", reason: "shipped as version_file (separate manifest section), not an asset dir" },
 ];
 
+// Ship-boundary (SP-20260531-002, ADR-0005): the fail-closed allow/deny
+// boundary between WarpOS-authored product-facing guides (MUST ship) and operator
+// scratch / per-project output (must NEVER ship). Asserted against the shipped set
+// in main(). Prefix match on the project-relative path.
+const MUST_SHIP_PREFIXES = [
+  { prefix: "_guides/", reason: "product-facing launch guides must ship to consumer products" },
+];
+const MUST_NOT_SHIP_PREFIXES = [
+  { prefix: "_planning/", reason: "operator planning scratch — must never ship to products" },
+  { prefix: "_reports/", reason: "per-project report output — must never ship to products" },
+];
+
 function fail(msg) {
   console.error(`warpos-ship-coverage: ${msg}`);
   process.exit(2);
@@ -143,12 +155,33 @@ function main() {
     else infoGaps.push(p);
   }
 
+  // Ship-boundary assertions (SP-20260531-002, ADR-0005), fail-closed.
+  // _guides/** MUST ship (WarpOS-authored product-facing guides); _planning/** +
+  // _reports/** must NEVER ship (operator scratch / per-project report output).
+  const boundaryViolations = [];
+  for (const d of MUST_NOT_SHIP_PREFIXES) {
+    for (const p of shipped) {
+      if (p === d.prefix || p.startsWith(d.prefix)) {
+        boundaryViolations.push(`must-not-ship-present: ${p} — ${d.reason}`);
+      }
+    }
+  }
+  for (const m of MUST_SHIP_PREFIXES) {
+    const present = [...shipped].some(
+      (p) => p === m.prefix || p.startsWith(m.prefix),
+    );
+    if (!present) {
+      boundaryViolations.push(`must-ship-missing: ${m.prefix} — ${m.reason}`);
+    }
+  }
+
   const result = {
-    ok: hardGaps.length === 0,
+    ok: hardGaps.length === 0 && boundaryViolations.length === 0,
     framework_owned_paths: frameworkOwned,
     shipped_paths: shipped.size,
     allowlisted_rules: KNOWN_NOT_SHIPPED.length,
     hard_gaps: hardGaps,
+    boundary_violations: boundaryViolations,
     info_gaps_count: infoGaps.length,
     info_gaps: infoGaps,
   };
@@ -158,16 +191,27 @@ function main() {
   } else {
     if (result.ok) {
       console.log(
-        `OK   [warpos-ship-coverage] every framework-owned path under the consumer-essential roots ships (${frameworkOwned} framework-owned paths scanned).`,
+        `OK   [warpos-ship-coverage] every framework-owned path under the consumer-essential roots ships (${frameworkOwned} framework-owned paths scanned); ship-boundary intact (_guides ships, _planning/_reports do not).`,
       );
     } else {
-      console.error(
-        `FAIL [warpos-ship-coverage] ${hardGaps.length} essential-root path(s) ship to NOBODY (under framework/|schemas/|patterns/|commands|agents, not shipped, not allowlisted):`,
-      );
-      for (const g of hardGaps) console.error(`  - ${g}`);
-      console.error(
-        `Fix: add the covering dir to ASSET_DIRS in scripts/generate-framework-manifest.js, OR add a reviewed KNOWN_NOT_SHIPPED entry.`,
-      );
+      if (hardGaps.length) {
+        console.error(
+          `FAIL [warpos-ship-coverage] ${hardGaps.length} essential-root path(s) ship to NOBODY (under framework/|schemas/|patterns/|commands|agents, not shipped, not allowlisted):`,
+        );
+        for (const g of hardGaps) console.error(`  - ${g}`);
+        console.error(
+          `Fix: add the covering dir to ASSET_DIRS in scripts/generate-framework-manifest.js, OR add a reviewed KNOWN_NOT_SHIPPED entry.`,
+        );
+      }
+      if (boundaryViolations.length) {
+        console.error(
+          `FAIL [warpos-ship-coverage] ${boundaryViolations.length} ship-boundary violation(s) (SP-20260531-002):`,
+        );
+        for (const b of boundaryViolations) console.error(`  - ${b}`);
+        console.error(
+          `Fix: _guides/** must ship (ASSET_DIRS); _planning/** + _reports/** must never ship (walk-skip + absent from ASSET_DIRS).`,
+        );
+      }
     }
     if (infoGaps.length) {
       console.log(

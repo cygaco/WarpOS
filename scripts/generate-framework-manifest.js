@@ -247,6 +247,11 @@ const ASSET_DIRS = [
   // build reads; also absent. Both surfaced by the ship-coverage enforcer.
   { src: "framework/templates", kind: "template" },
   { src: "framework/hooks.registry.json", kind: "hooks_registry" },
+  // SP-20260531-002 (ADR-0005): `_guides/` ships WarpOS-authored,
+  // product-facing launch guides (e.g. DEV_SETUP_GUIDE.md) to consumer products.
+  // owner=framework + managed=true (build.js framework-guides-dir rule); the
+  // fail-closed ship boundary is asserted by scan:warpos-ship-coverage.
+  { src: "_guides", kind: "guide" },
 ];
 
 // Top-level scripts (peers of scripts/hooks/, scripts/tools/).

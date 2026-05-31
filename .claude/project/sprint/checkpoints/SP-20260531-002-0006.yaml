@@ -1,0 +1,26 @@
+schema: warpos/sprint/sprint-progress/v1
+sprint: SP-20260531-002
+updated_at: "2026-05-31T17:01:02.146Z"
+current_phase: design
+current_command: "/sprint:full"
+current_ticket: null
+current_task: null
+current_loop: null
+status: halted
+last_completed_step: sprint_full_design_halted
+next_action: "Beta consultation required at phase boundary 'before_execute'. Consult Beta (Alex β) about the upcoming phase, then resume: /sprint:full --sprint SP-20260531-002 --resume --pending-phase before_execute --beta-verdict <DECIDE|DIRECTIVE|ESCALATE> --beta-message \"<response from Beta>\""
+active_files: []
+modified_files: []
+checks_last_run: null
+checks_passing: []
+checks_failing: []
+blockers: []
+approvals_needed: []
+external_services_needed: []
+issues_opened: []
+tickets_updated: []
+ralph_checkpoint: null
+resume_command: "/sprint:full --sprint SP-20260531-002 --resume"
+resume_notes: "halt_reason=beta_consult_pending"
+safe_to_continue: true
+stop_reason: null

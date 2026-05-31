@@ -1,5 +1,5 @@
 schema: warpos/sprint/active-sprints/v1
-primary: SP-20260531-001
+primary: SP-20260531-002
 sprints:
   - id: SP-20260512-001
     title: Multi-sprint parallelism for Sprint Workflow
@@ -650,5 +650,16 @@ sprints:
     pointer: ".claude/project/sprint/sprints/SP-20260531-001"
     created_at: "2026-05-31T15:43:42.379Z"
     updated_at: "2026-05-31T15:43:42.379Z"
+  - id: SP-20260531-002
+    title: "_guides product-layer shipping + _planning reorg + ship-boundary enforcer"
+    status: retrospected
+    lane:
+      type: default
+      value: null
+      isolation_notes: ""
+    layout: per_sprint_subdir
+    pointer: ".claude/project/sprint/sprints/SP-20260531-002"
+    created_at: "2026-05-31T16:50:09.724Z"
+    updated_at: "2026-05-31T17:20:41.451Z"
 created_at: "2026-05-12T22:57:35.667Z"
-updated_at: "2026-05-31T15:43:42.379Z"
+updated_at: "2026-05-31T17:20:41.451Z"

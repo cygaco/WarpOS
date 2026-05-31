@@ -1,0 +1,123 @@
+schema: warpos/sprint/plan-contract/v1
+id: PC-20260531-0059
+created_at: "2026-05-31T16:54:27.967Z"
+updated_at: "2026-05-31T16:54:27.967Z"
+sprint: SP-20260531-002
+source_request: "Create a _guides/ folder for product-facing guides (e.g. DEV_SETUP_GUIDE.md) that ships with the WarpOS product/consumer layer; reorganize _planning/; and ensure plan files do NOT ship with the product layer (enforced)."
+source_request_verbatim: "a _guides folder, for items like our DEV_SETUP_GUIDE (ensure these ship with the product layer). Additionally, better organization for the _planning folder (and ensure our actual plan files don't ship with the product layer)."
+request_type: architecture_change
+interpreted_intent: "Establish a clear home (_guides/) for product-facing guides that are part of what WarpOS ships to consumer products, separated cleanly from _planning/ (internal, canonical-only planning that must NOT ship). Make the ship / no-ship boundary fail-closed enforced, not aspirational."
+user_or_business_outcome: "Vibecoders who scaffold/install a WarpOS product receive the launch guides (like DEV_SETUP_GUIDE.md) with them, while WarpOS internal planning docs never leak into product repos. Closes part of the framework/product boundary gap (ED-012; ownership taxonomy SP-20260522-001)."
+affected_surfaces:
+  - surface: "_guides/ (new product-facing guides dir)"
+    evidence_level: assumed_from_request
+    notes: "DEV_SETUP_GUIDE.md is the first inhabitant; currently untracked at repo root."
+  - surface: "_planning/ (internal planning dir)"
+    evidence_level: verified_from_repo
+    notes: "Holds MASTERPLAN/FINAL-PLAN/ingest/sources; tracked; must stay canonical-only and never ship."
+  - surface: "framework-manifest.json + _warpos/MANIFEST.json (ship/ownership manifests)"
+    evidence_level: inferred_from_repo
+    notes: "_guides must be enumerated as shipped; _planning must be excluded."
+  - surface: "scan:framework-purity / scan:warpos-ship-coverage (enforcers)"
+    evidence_level: inferred_from_repo
+    notes: "Add/extend a fail-closed check: plan files never ship, guides always ship."
+current_behavior:
+  evidence_level: verified_from_repo
+  notes: "DEV_SETUP_GUIDE.md sits untracked at repo root; _planning/ is tracked and would ship if not explicitly excluded; no _guides/ dir exists; no enforcer ties guides->ship and plan->no-ship (ED-012 open)."
+desired_behavior: "A _guides/ directory exists and holds product-facing guides (DEV_SETUP_GUIDE.md moved in), registered in the shipping manifest so it reaches scaffolded products; _planning/ is reorganized and explicitly excluded from shipping; a fail-closed enforcer asserts the boundary (plan files never ship, guides always ship) and is wired into scan:full."
+scope:
+  size: m
+  risk_level: medium
+  complexity_drivers:
+    - "touches ownership + shipping manifests (BOTH-manifest regen required)"
+    - fail-closed framework-purity / ship-coverage enforcement
+    - "moving a root file into _guides without breaking references (refactor-hygiene)"
+scope_variants:
+  minimal_safe:
+    summary: "Create _guides/, move DEV_SETUP_GUIDE.md in, register _guides in the shipping manifest, exclude _planning from shipping; no new enforcer yet."
+    tradeoffs:
+      - "fast, low-risk"
+      - "boundary stays convention-only (ED-012 remains open)"
+  recommended:
+    summary: "minimal_safe PLUS a fail-closed scan asserting plan files never ship and _guides always ships; light _planning reorg; BOTH manifests regenerated; ED-012 closed."
+    tradeoffs:
+      - closes the enforcement-debt
+      - one new scan to maintain
+  expanded:
+    summary: "recommended PLUS deep _planning taxonomy (plans/reviews/ingest/sources subfolders) + wiring _guides into the product scaffold + a lastmile reference pointer."
+    tradeoffs:
+      - most complete
+      - "larger surface; partially overlaps the masterplan framework-boundary work"
+assumptions:
+  safe:
+    - DEV_SETUP_GUIDE.md is product-facing and belongs in _guides/
+    - _planning/ is canonical-internal and must never ship to products
+    - "the ship boundary is owned by framework-manifest.json + _warpos/MANIFEST.json + the framework-purity / ship-coverage scans"
+  unsafe:
+    - "that nothing else references DEV_SETUP_GUIDE.md by its root path (must grep ALL refs before moving)"
+  needs_user_or_beta_review:
+    - "whether _guides should be wired into the product scaffold now (expanded) or deferred"
+open_questions:
+  blocking: []
+  non_blocking:
+    - Exact _planning/ subfolder taxonomy
+    - "Fold into the masterplan framework-boundary work vs standalone (Beta: standalone)"
+non_goals:
+  - "Building Sprint B's product-vs-dev-tooling diff panel (separate sprint)"
+  - Pushing to remote / deploying
+  - Changing what the masterplan Wave-0 sprints do
+requirement_areas:
+  - framework/product ship boundary
+  - "directory taxonomy (_guides, _planning)"
+  - "fail-closed enforcement (scan)"
+  - manifest regeneration
+high_level_story_candidates:
+  - "As a vibecoder, when I scaffold/install a WarpOS product, I receive the product-facing guides (_guides/) so I can launch."
+  - "As the WarpOS maintainer, internal planning docs (_planning/) never leak into product repos."
+  - "As the system, a fail-closed scan refuses any release where plan files ship or guides are missing."
+granular_story_candidates:
+  - "Create _guides/ and move DEV_SETUP_GUIDE.md into it (grep + fix all references first)."
+  - "Register _guides/ in the shipping manifest (framework-manifest.json / _warpos/MANIFEST.json)."
+  - Mark _planning/ as canonical-only / excluded from shipping.
+  - "Reorganize _planning/ (plans / reviews / ingest / sources)."
+  - "Add a fail-closed scan asserting plan-files-never-ship + guides-ship; wire into scan:full."
+  - "Regenerate BOTH manifests; verify ship-coverage + framework-purity are green."
+workstream_candidates:
+  - "directory + file moves"
+  - manifest registration
+  - enforcement scan
+  - "manifest regen + verification"
+preliminary_ticket_candidates:
+  allowed: false
+  notes: "documentation_scale=auto for an m / medium architecture_change -> tickets minted in the design phase, not pre-authorized at plan time."
+external_service_dependencies:
+  status: none_expected
+approval_boundaries:
+  - "none beyond hard ceilings; reversible local file moves + manifest regen; no push, no deploy"
+design_required: true
+execution_allowed_without_design: false
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+lane:
+  type: branch
+  value: sprint/SP-20260531-002
+  isolation_notes: "Own branch off main; reversible; no push."
+beta_review:
+  required: true
+  overbuild_risks:
+    - expanded _planning taxonomy could overlap masterplan framework-boundary work
+  missing_context_risks:
+    - other references to DEV_SETUP_GUIDE.md by its root path
+plan_quality:
+  status: pass
+  confidence: high
+next_recommended_command: "/sprint:design"
+resume_instructions: "Sprint SP-20260531-002 has Plan Contract PC-20260531-0059. Run the next_recommended_command. If interrupted, read .claude/project/sprint/sprint-progress.yaml#resume_command."
+tracker_paths:
+  current_sprint: ".claude/project/sprint/current-sprint.yaml"
+  sprint_progress: ".claude/project/sprint/sprint-progress.yaml"
+  plan_contract: ".claude/project/sprint/plan-contracts/PC-20260531-0059.yaml"
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260531-0059.report.md"
+created_by: alpha
+updated_by: alpha

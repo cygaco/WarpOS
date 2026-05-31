@@ -58,7 +58,7 @@ the operator acts on your call; `req-reviewer` verifies the requirements you aut
 
 In **adhoc** mode you are *live-consulted*: α/β are present, you author and reason in the
 loop. In **oneshot** mode there is no α/β — so, per the modes reconciliation
-(`_planning/MODES-RECONCILE.md`: "in autonomous mode a manager only exists as an
+(`_planning/plans/MODES-RECONCILE.md`: "in autonomous mode a manager only exists as an
 enforcer"), the Product Lead exists as a **build_spec enforcer**, not a live advisor.
 
 The binding (the *wiring* is α's integration step — S1.2; this spec only describes the

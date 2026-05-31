@@ -373,6 +373,21 @@ function buildRules(sourcePrefix) {
       }),
     },
     {
+      // SP-20260531-002 (ADR-0005): root-level `_guides/` is
+      // WarpOS-authored, product-facing documentation (e.g. DEV_SETUP_GUIDE.md)
+      // that SHIPS to consumer products and is update-managed by /warp:update.
+      // Framework content despite the root location — a deliberate ownership-model
+      // precedent (root-level owner=framework). The fail-closed ship boundary is
+      // asserted by scan:warpos-ship-coverage (MUST_SHIP _guides/).
+      name: "framework-guides-dir",
+      match: (rel) => rel.startsWith("_guides/"),
+      entry: (rel) => ({
+        owner: "framework",
+        managed: true,
+        source: rel,
+      }),
+    },
+    {
       // The canonical `framework/` directory (releases, paths.registry.json,
       // migrations) ships into every product verbatim via the framework-
       // manifest. It is framework source-of-truth INDEPENDENT of --source-
