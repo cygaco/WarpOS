@@ -17,16 +17,40 @@ Detect what grounding the project actually has and pick the richest available,
 
 1. **Canonical-grounded (preferred):** `paths.requirementsRoot`/`00-canonical/*`
    exists (CORE_BRIEF, USER_COHORTS, GOLDEN_PATHS, PRODUCT_MODEL, EVOLUTION,
-   FAILURE_STATES). Mine those and reason through a **Director-of-PM** lens
-   (sequence by user value × evidence × leverage; name the bet each milestone
-   makes). This is the fuller WarpOS milestone-0.14.0 "Managerial Agent Layer"
-   shape.
+   FAILURE_STATES). Mine those and reason through the **role-routed product persona**
+   (see **Role routing** — the Director of Product by default): sequence by
+   user value × evidence × leverage; name the bet each milestone makes. This is the
+   fuller WarpOS milestone-0.14.0 "Managerial Agent Layer" shape.
 2. **Clone + brief (fallback):** no `00-canonical/*`, but a competitor clone
    brief (`_docs/clones/<slug>/<slug>.clone.md` — JTBDs, scored features,
    gaps `G-*`, opportunities `O-*`) and/or `PROJECT.md` exist. Mine those.
 
 The same command serves a bare fresh product and a fully-specified one — detect,
 don't ask. State which source set was used in the run summary.
+
+## Role routing (deterministic — R2 altitude split)
+
+Bootstrapping a roadmap is the **product-lens reasoning step** — sequencing
+milestones, naming the bet each makes, and phasing by lifecycle. Pick the persona
+by the **altitude of that reasoning** (FINAL-PLAN §11 R2, β
+`EVT-org-roadmap-principles-beta-001`):
+
+- **Default → `subagent_type: director-of-product`.** Roadmap *creation* is inherently
+  strategic: it sets the milestone arc, names lifecycle bets, and sequences by user
+  value × evidence × leverage — a strategic / lifecycle-phase call. This is the
+  "Director-of-PM lens" the canonical-grounded path already invokes, now made an
+  explicit dispatch. The Director is also the standing default for WarpOS's own
+  framework roadmap.
+- **`subagent_type: product-lead`** only when the bootstrap is explicitly scoped to a
+  *single product's* execution-level backlog/sequencing with the strategic arc already
+  fixed (e.g. re-bootstrapping a known product's sprint queue, not setting its
+  milestone bets) — the per-product / within-sprint altitude.
+- **Fallback (R2 — no regression):** if scope is ambiguous, **default to
+  `director-of-product`**. Defaulting up never regresses — the Lead inherits the
+  Director's principles (R4), and the prior behavior of this skill was the Director-of-PM
+  lens, so the Director default *is* the no-regression path.
+
+State the chosen persona (and why) in the run summary.
 
 ## Input
 
@@ -61,18 +85,22 @@ don't ask. State which source set was used in the run summary.
 
 1. **Refuse-or-detect.** If `ROADMAP.md` exists and no `--force`, stop and point
    at `/roadmap:add` / `/roadmap:cleanup`. Else run input-source detection.
-2. **Mine the source set.** Canonical: read `00-canonical/*` + adopt the DoPM
-   lens. Clone/brief: read the clone brief's JTBD/feature/gap/opportunity
-   sections + `PROJECT.md`. Build the evidence index (every claim → citation).
-3. **Sequence.** Milestone 1 = core-loop validation, first sprint =
-   `/portfolio:spinup`. Then order remaining milestones by leverage × evidence.
-   Each milestone names its bet + DoD + the reality it unlocks.
+2. **Mine the source set + consult the role-routed persona.** Resolve the persona
+   via **Role routing** (Director of Product by default; Product Lead only when scoped
+   to a single product's execution backlog with the strategic arc fixed) and state the
+   choice. Canonical: read `00-canonical/*` and reason through that persona's lens.
+   Clone/brief: read the clone brief's JTBD/feature/gap/opportunity sections +
+   `PROJECT.md`. Build the evidence index (every claim → citation).
+3. **Sequence** (through the consulted persona). Milestone 1 = core-loop validation,
+   first sprint = `/portfolio:spinup`. Then order remaining milestones by
+   leverage × evidence. Each milestone names its bet + DoD + the reality it unlocks.
 4. **Render** `ROADMAP.md` in the Invariant-3 structure, including the
    `<!-- ledger:sprints -->` anchor (so future `/sprint:full` runs auto-record
    rows — see WG-16 / Step 8b).
 5. **Verify + report:** confirm every milestone/sprint carries a citation, the
-   ledger anchor is present, Milestone 1's first sprint is a spinup, and which
-   source set was used. Print the milestone sequence.
+   ledger anchor is present, Milestone 1's first sprint is a spinup, which source
+   set was used, and which persona was consulted (Director of Product vs Product
+   Lead) + why. Print the milestone sequence.
 
 ## Notes
 

@@ -3,7 +3,7 @@
   "version": "0.11.1",
   "generated_by": "scripts/generate-framework-manifest.js",
   "counts": {
-    "agent": 82,
+    "agent": 83,
     "skill": 182,
     "reference": 28,
     "maps_baseline": 23,
@@ -55,7 +55,7 @@
     "module_scope": 1,
     "framework_doc": 2
   },
-  "total": 914,
+  "total": 915,
   "assets": {
     "agent": [
       {
@@ -215,11 +215,23 @@
         "replaces": null
       },
       {
+        "id": "agent.00-alex..system.policy.adr.0004-oneshot-arbitration-needed-state.md",
+        "src": ".claude/agents/00-alex/.system/policy/adr/0004-oneshot-arbitration-needed-state.md",
+        "dest": ".claude/agents/00-alex/.system/policy/adr/0004-oneshot-arbitration-needed-state.md",
+        "kind": "agent",
+        "sha256": "7f11de4c15082e5756e23244995cf16a9261d92a8f325c63c7d30d6451f59b48",
+        "owner": "framework",
+        "mergeStrategy": "three_way_markdown",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
         "id": "agent.00-alex..system.policy.adr.INDEX.md",
         "src": ".claude/agents/00-alex/.system/policy/adr/INDEX.md",
         "dest": ".claude/agents/00-alex/.system/policy/adr/INDEX.md",
         "kind": "agent",
-        "sha256": "8c8200babe4e76704d385ee7c1196e3c4b7608c1cc2b7f3ee9ff4c5cf3700913",
+        "sha256": "f78c523d9094c7424e065cac1db7eb1d3ca89db8c9f6d1e5d2b1bd840c246a90",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
@@ -627,7 +639,7 @@
         "src": ".claude/agents/02-oneshot/.system/protocol.md",
         "dest": ".claude/agents/02-oneshot/.system/protocol.md",
         "kind": "agent",
-        "sha256": "3535b6d7ebfcad8766e0634ef1035bb9d53925488a3d936e1877441d70a4854c",
+        "sha256": "9542b0bad242f96773ee694a7724e348eb07ddb8866c3af6a92626738896d0e2",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
@@ -2225,7 +2237,7 @@
         "src": ".claude/commands/roadmap/create.md",
         "dest": ".claude/commands/roadmap/create.md",
         "kind": "skill",
-        "sha256": "7a71e0255ab310399ba4a4b82f443e717c5311d27516c56e5d119f4939d98c1f",
+        "sha256": "fc906e7b66f1e1de4dd8abedc2bac53d2fa210f7661a4be06060c38c1470b1bb",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
@@ -2237,7 +2249,7 @@
         "src": ".claude/commands/roadmap/ideas.md",
         "dest": ".claude/commands/roadmap/ideas.md",
         "kind": "skill",
-        "sha256": "4843206f4a709d0d868e94ca6081c7a719ab623f1edcaa66322c3b8322e2d366",
+        "sha256": "461a8ffc43c1f147cea4e608064b133c76935ba79c02b7f7f670927589696dfe",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
@@ -2249,7 +2261,7 @@
         "src": ".claude/commands/roadmap/next.md",
         "dest": ".claude/commands/roadmap/next.md",
         "kind": "skill",
-        "sha256": "f765bc3e969d4cf8a47cf51b0f82c076459a725bec32af367c939c5688811b21",
+        "sha256": "8612d962b0e03127fc06e324d8a26b20af6b7f331c17cc33fc8adbc374576d97",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
@@ -2261,7 +2273,7 @@
         "src": ".claude/commands/roadmap/prioritize.md",
         "dest": ".claude/commands/roadmap/prioritize.md",
         "kind": "skill",
-        "sha256": "bf6d4bc87f33a4e6dbcbad4a98c6b985f36d3b3a1656565171d792533f4d6c5d",
+        "sha256": "addf47647d0b42d1ec350f9e332741472d79a869a88d6a5424915362bcc8da5f",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",

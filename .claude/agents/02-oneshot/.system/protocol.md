@@ -107,6 +107,7 @@ Read these documents FIRST, in order:
 8. Check ranks — if any config drops to "Benched", retire it and create a new config
 9. Proceed to next phase
 10. Repeat until all features are at "done" status
+11. **Run-end arbitration ship gate (S1.2, ADR-0004 — β fail-closed, conf 0.89).** Before declaring the run done / handing to `/oneshot:retro`, run `node scripts/arbitration/resolver.js`. It MUST exit 0 (no open `arbitration_needed` records). A non-zero exit means one or more units are **PARKED for arbitration** — a per-domain enforcer (design-quality, PL-as-enforcer, chiefing/no-invented-data, the resonance/conversion runner, …) hit a contract conflict, low confidence, gauntlet deadlock, or missing/contradictory required artifact and could not resolve it with no α/β in the room. The run is **NOT ship-ready**: the resolver prints each parked unit as a single **precedence-ordered per-unit bundle** (all of that unit's concerns together, highest-rank artifact concern first). Resolve each (α/β arbitrate; set `resolved:true` on the record), then re-run. **Never declare a run with open arbitration records "done"** (FINAL-PLAN §3: never silently green). Enforcers emit via `scripts/arbitration/emit.js`; fail-closed default = when uncertain, park. This is the oneshot stand-in for α/β escalation and feeds the S3.1 pilot exit gate.
 
 ## Snapshot Hashing Responsibilities (see AGENT-SYSTEM.md section 3)
 Between cycles, maintain hashes to skip redundant work:

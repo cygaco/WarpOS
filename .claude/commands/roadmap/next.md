@@ -1,10 +1,18 @@
 ---
-description: The 1-idea alternative to /roadmap:ideas — the single highest-leverage next roadmap entry (the Director of Product's top pick) with a one-paragraph rationale. For "just tell me the one thing."
+description: The 1-idea alternative to /roadmap:ideas — the single highest-leverage next roadmap entry (the role-appropriate product persona's top pick — Product Lead for single-product, Director of Product for strategic) with a one-paragraph rationale. For "just tell me the one thing."
 ---
 
 # /roadmap:next — the one thing to do next
 
-When you don't want 12 candidates, just **the single highest-leverage next roadmap entry**: the Director of Product's top pick, with a tight rationale. Read-only; proposes one thing, pairs with `/roadmap:add`.
+When you don't want 12 candidates, just **the single highest-leverage next roadmap entry**: the role-appropriate product persona's top pick, with a tight rationale. Read-only; proposes one thing, pairs with `/roadmap:add`.
+
+## Role routing (deterministic — R2 altitude split)
+
+Pick the consulting persona by the **scope** of the "what next" question, per the altitude split (FINAL-PLAN §11 R2, β `EVT-org-roadmap-principles-beta-001`):
+
+- **Single-product / within-sprint next pick** → `subagent_type: product-lead`. Signals: the single highest-leverage next item for *one* product's backlog or current sprint; `$ARGUMENTS` scoped to one product.
+- **Strategic / cross-product / lifecycle-phase-shift next pick** → `subagent_type: director-of-product`. Signals: the program's next bet, a portfolio-level or lifecycle/pivot call.
+- **Fallback (R2 — no regression):** when the Product Lead *would* be chosen but scope is ambiguous, **default to `director-of-product`** (also the standing default for WarpOS's own framework roadmap). Defaulting up never regresses — the Lead inherits the Director's principles (R4).
 
 ## Input
 
@@ -13,7 +21,7 @@ When you don't want 12 candidates, just **the single highest-leverage next roadm
 ## Procedure
 
 1. Read the same evidence as `/roadmap:ideas` — `ROADMAP.md` (Strategy, Milestones, candidates), `_requirements/00-canonical/*` (if present), recent `git log` + `paths.eventsFile`.
-2. **Consult the Director of Product** (`subagent_type: director-of-product`). Ask for **exactly one** recommendation — the single most leverage-positive next entry — applying Principle #1 (Lean Product Development): what serves the majority userbase / golden path, is a calculated risk worth taking now, and (bonus) draws a tangential connection that compounds existing work.
+2. **Consult the role-appropriate persona** — resolve it via **Role routing** above (`subagent_type: product-lead` for single-product/within-sprint scope; `subagent_type: director-of-product` for strategic/cross-product; ambiguous → default to `director-of-product`). State the chosen persona in one line. Ask for **exactly one** recommendation — the single most leverage-positive next entry — applying the `lean-product-development` principle (by slug — never an ordinal; it may renumber/move): what serves the majority userbase / golden path, is a calculated risk worth taking now, and (bonus) draws a tangential connection that compounds existing work.
 3. Output one pick:
    - **The entry** (title + 1-2 line body, ready for `/roadmap:add`).
    - **Why this, why now** (one paragraph): which lens it came from, what it unblocks, the opportunity cost of *not* doing it, and the tangential connection if any.
@@ -22,7 +30,7 @@ When you don't want 12 candidates, just **the single highest-leverage next roadm
 
 ## Relationship to /roadmap:ideas
 
-Same engine (the Director, same evidence) — `next` is `ideas` collapsed to a single decisive recommendation. Use `next` when you trust the Director to choose; use `ideas` when you want to choose from a slate. Both are read-only and propose-only.
+Same engine (the same role-routed persona, same evidence, same R2 altitude split) — `next` is `ideas` collapsed to a single decisive recommendation. Use `next` when you trust the persona to choose; use `ideas` when you want to choose from a slate. Both are read-only and propose-only.
 
 ## Anti-patterns
 
@@ -33,5 +41,5 @@ Same engine (the Director, same evidence) — `next` is `ideas` collapsed to a s
 ## Related
 
 - `/roadmap:ideas` — the 12-idea slate (4 lenses × 3).
-- `/roadmap:add` — commit the pick.
-- `director-of-product` agent — the product-lens engine.
+- `/roadmap:add` — commit the pick (role-neutral mechanical appender).
+- `product-lead` / `director-of-product` agents — the product-lens engines (single-product vs strategic, per **Role routing**).

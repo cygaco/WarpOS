@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-05-31T03:59:02.159Z",
+  "generatedAt": "2026-05-31T04:53:52.396Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.11.1",
   "migrations": [],
@@ -4787,6 +4787,27 @@
       "source": "scripts/bootstrap/lastmile/lib/score.js",
       "sha256": "db431cf3642fd4b01b0bb35c8a7d33102b3b7377276c4125215fd70a0cb10e56",
       "installedSha": "db431cf3642fd4b01b0bb35c8a7d33102b3b7377276c4125215fd70a0cb10e56"
+    },
+    "scripts/arbitration/arbitration.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/arbitration/arbitration.test.js",
+      "sha256": "cfada080bcda73d9007633dfb6be2a6d4534b547646699755c0e67a92f99ae77",
+      "installedSha": "cfada080bcda73d9007633dfb6be2a6d4534b547646699755c0e67a92f99ae77"
+    },
+    "scripts/arbitration/emit.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/arbitration/emit.js",
+      "sha256": "6713a2d6a95f703889aea97d7d9ee5deb525b42f29d6b3c4d1f2cd71f357ddaf",
+      "installedSha": "6713a2d6a95f703889aea97d7d9ee5deb525b42f29d6b3c4d1f2cd71f357ddaf"
+    },
+    "scripts/arbitration/resolver.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/arbitration/resolver.js",
+      "sha256": "197634174d8f3b5611efc61aba63c9959d1c19cf8d624098e85e3f60f50a8ae0",
+      "installedSha": "197634174d8f3b5611efc61aba63c9959d1c19cf8d624098e85e3f60f50a8ae0"
     },
     "scripts/agents/cli.js": {
       "owner": "framework",
@@ -14067,32 +14088,32 @@
       "managed": true,
       "source": ".claude/commands/roadmap/create.md",
       "kind": "md",
-      "sha256": "7a71e0255ab310399ba4a4b82f443e717c5311d27516c56e5d119f4939d98c1f",
-      "installedSha": "7a71e0255ab310399ba4a4b82f443e717c5311d27516c56e5d119f4939d98c1f"
+      "sha256": "fc906e7b66f1e1de4dd8abedc2bac53d2fa210f7661a4be06060c38c1470b1bb",
+      "installedSha": "fc906e7b66f1e1de4dd8abedc2bac53d2fa210f7661a4be06060c38c1470b1bb"
     },
     ".claude/commands/roadmap/ideas.md": {
       "owner": "framework",
       "managed": true,
       "source": ".claude/commands/roadmap/ideas.md",
       "kind": "md",
-      "sha256": "4843206f4a709d0d868e94ca6081c7a719ab623f1edcaa66322c3b8322e2d366",
-      "installedSha": "4843206f4a709d0d868e94ca6081c7a719ab623f1edcaa66322c3b8322e2d366"
+      "sha256": "461a8ffc43c1f147cea4e608064b133c76935ba79c02b7f7f670927589696dfe",
+      "installedSha": "461a8ffc43c1f147cea4e608064b133c76935ba79c02b7f7f670927589696dfe"
     },
     ".claude/commands/roadmap/next.md": {
       "owner": "framework",
       "managed": true,
       "source": ".claude/commands/roadmap/next.md",
       "kind": "md",
-      "sha256": "f765bc3e969d4cf8a47cf51b0f82c076459a725bec32af367c939c5688811b21",
-      "installedSha": "f765bc3e969d4cf8a47cf51b0f82c076459a725bec32af367c939c5688811b21"
+      "sha256": "8612d962b0e03127fc06e324d8a26b20af6b7f331c17cc33fc8adbc374576d97",
+      "installedSha": "8612d962b0e03127fc06e324d8a26b20af6b7f331c17cc33fc8adbc374576d97"
     },
     ".claude/commands/roadmap/prioritize.md": {
       "owner": "framework",
       "managed": true,
       "source": ".claude/commands/roadmap/prioritize.md",
       "kind": "md",
-      "sha256": "bf6d4bc87f33a4e6dbcbad4a98c6b985f36d3b3a1656565171d792533f4d6c5d",
-      "installedSha": "bf6d4bc87f33a4e6dbcbad4a98c6b985f36d3b3a1656565171d792533f4d6c5d"
+      "sha256": "addf47647d0b42d1ec350f9e332741472d79a869a88d6a5424915362bcc8da5f",
+      "installedSha": "addf47647d0b42d1ec350f9e332741472d79a869a88d6a5424915362bcc8da5f"
     },
     ".claude/commands/research/deep.md": {
       "owner": "framework",
@@ -15171,8 +15192,8 @@
       "managed": true,
       "source": ".claude/agents/02-oneshot/.system/protocol.md",
       "kind": "md",
-      "sha256": "3535b6d7ebfcad8766e0634ef1035bb9d53925488a3d936e1877441d70a4854c",
-      "installedSha": "3535b6d7ebfcad8766e0634ef1035bb9d53925488a3d936e1877441d70a4854c"
+      "sha256": "9542b0bad242f96773ee694a7724e348eb07ddb8866c3af6a92626738896d0e2",
+      "installedSha": "9542b0bad242f96773ee694a7724e348eb07ddb8866c3af6a92626738896d0e2"
     },
     ".claude/agents/02-oneshot/.system/skeleton-checklist.md": {
       "owner": "framework",
@@ -15457,13 +15478,21 @@
       "sha256": "1147da1e3077a39e00c772bd596c5cf11d7629d93011b609adcf6e39b05b837b",
       "installedSha": "1147da1e3077a39e00c772bd596c5cf11d7629d93011b609adcf6e39b05b837b"
     },
+    ".claude/agents/00-alex/.system/policy/adr/0004-oneshot-arbitration-needed-state.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/00-alex/.system/policy/adr/0004-oneshot-arbitration-needed-state.md",
+      "kind": "md",
+      "sha256": "7f11de4c15082e5756e23244995cf16a9261d92a8f325c63c7d30d6451f59b48",
+      "installedSha": "7f11de4c15082e5756e23244995cf16a9261d92a8f325c63c7d30d6451f59b48"
+    },
     ".claude/agents/00-alex/.system/policy/adr/INDEX.md": {
       "owner": "framework",
       "managed": true,
       "source": ".claude/agents/00-alex/.system/policy/adr/INDEX.md",
       "kind": "md",
-      "sha256": "8c8200babe4e76704d385ee7c1196e3c4b7608c1cc2b7f3ee9ff4c5cf3700913",
-      "installedSha": "8c8200babe4e76704d385ee7c1196e3c4b7608c1cc2b7f3ee9ff4c5cf3700913"
+      "sha256": "f78c523d9094c7424e065cac1db7eb1d3ca89db8c9f6d1e5d2b1bd840c246a90",
+      "installedSha": "f78c523d9094c7424e065cac1db7eb1d3ca89db8c9f6d1e5d2b1bd840c246a90"
     },
     ".claude/agents/00-alex/.system/gamma/events.jsonl": {
       "owner": "runtime",
