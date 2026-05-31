@@ -542,6 +542,7 @@ Every sprint that has been planned, executed, released, or retrospected — one 
 
 | Sprint | Title | Status | Started | Closed | Release |
 |---|---|---|---|---|---|
+| [SP-20260531-001](.claude/project/sprint/sprints/SP-20260531-001/) | _reports/ — ELI5 sprint/milestone/session report system | planning | 2026-05-31T15:43:42.379Z |  |  |
 | [SP-20260530-001](.claude/project/sprint/sprints/SP-20260530-001/) | S0.2 Artifact contracts + decision-record schema (message_brief spine) | planning | 2026-05-30T22:49:57.662Z |  |  |
 | [SP-20260528-004](.claude/project/sprint/sprints/SP-20260528-004/) | roadmap:ideas + roadmap:next — predictive roadmap skills (consume Director of Product) | planning | 2026-05-29T08:37:40.659Z |  |  |
 | [SP-20260528-003](.claude/project/sprint/sprints/SP-20260528-003/) | Director of Product agent — programmable principles | planning | 2026-05-29T07:59:13.865Z |  |  |
@@ -602,6 +603,14 @@ Every sprint that has been planned, executed, released, or retrospected — one 
 | [SP-20260518-009](.claude/project/sprint/sprints/SP-20260518-009/) | Consolidate ROADMAP.md and WARPOS_ROADMAP.md into single canonical ROADMAP.md (scaffold still shipped from generator) | closed | 2026-05-19T02:32:56.764Z | 2026-05-19T03:10:20.680Z |  |
 | [SP-20260519-001](.claude/project/sprint/sprints/SP-20260519-001/) | ROADMAP + RELEASES ledger discipline — repo-root sprint+release ledgers with skill+hook enforcement | planning | 2026-05-19T06:54:10.028Z |  |  |
 <!-- ledger:sprints — auto-managed by scripts/sprint/ledger.js. Manual edits are valid but may be overwritten on next /sprint:* invocation. -->
+
+---
+
+## ✅ Shipped — 2026-05-31 product-studio execution session
+
+The Waves 0→2 product-studio build + the reports system. Wave 1/2 landed as direct engine-fast-close commits (S1.1 chassis `ea7f20b`, Wave 2 org `70e9d27`, S1.2 arbitration + ADR-0004 `fb58d8f`, per-domain enforcers + Higgsfield render `763fda1`, S1.3 Gamma integration phase `b18263e`) — the autonomous product studio is built + enforced, and the creative loop is proven (a real Higgsfield asset generated). The one registry sprint:
+
+- **SP-20260531-001** — `_reports/` ELI5 reporting system — a unified `/report <sprint|milestone|session|checkpoint>` skill + template + folder; tl;dr-first, plain-language, watch-outs-always; engine-fast-close, dogfooded (first artifacts: this session's + this sprint's reports). β `EVT-sp20260531-001-reports-design-beta-001`.
 
 ---
 

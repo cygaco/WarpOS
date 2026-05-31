@@ -4,7 +4,7 @@
   "generated_by": "scripts/generate-framework-manifest.js",
   "counts": {
     "agent": 83,
-    "skill": 182,
+    "skill": 183,
     "reference": 28,
     "maps_baseline": 23,
     "hook": 67,
@@ -47,7 +47,7 @@
     "schema": 32,
     "release_capsule": 125,
     "paths_registry": 1,
-    "template": 81,
+    "template": 82,
     "hooks_registry": 1,
     "top_script": 5,
     "version_file": 1,
@@ -55,7 +55,7 @@
     "module_scope": 1,
     "framework_doc": 2
   },
-  "total": 927,
+  "total": 929,
   "assets": {
     "agent": [
       {
@@ -2178,6 +2178,18 @@
         "dest": ".claude/commands/redteam/scan.md",
         "kind": "skill",
         "sha256": "5248ec64bd900994c8585e6e7473451e1f55441bb1e967d2c38ea923ed958465",
+        "owner": "framework",
+        "mergeStrategy": "three_way_markdown",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "skill.report.md",
+        "src": ".claude/commands/report.md",
+        "dest": ".claude/commands/report.md",
+        "kind": "skill",
+        "sha256": "13e905cc168535e50c1204180b7224d482ffeac2b6879346803f334e4b5030b0",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
@@ -5445,7 +5457,7 @@
         "src": "scripts/warpos/manifest/walk-skip.js",
         "dest": "scripts/warpos/manifest/walk-skip.js",
         "kind": "warpos_script",
-        "sha256": "1e4e2aa4dcaf64d752626c339774626670f8536e2bdcbf9fdf3edb98ceeb7cda",
+        "sha256": "4b1c8c8d07936d2586c54855bdcadbfdd7939bd032e1bc9adfa08c9718579431",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -10772,6 +10784,18 @@
         "dest": "framework/templates/product-import/sections.json",
         "kind": "template",
         "sha256": "b4b1a8d793230f738e96f6568024407a229e62b6724e2f156e762463a8310beb",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "template.report.REPORT_TEMPLATE.md",
+        "src": "framework/templates/report/REPORT_TEMPLATE.md",
+        "dest": "framework/templates/report/REPORT_TEMPLATE.md",
+        "kind": "template",
+        "sha256": "7ccf5965c3ddce26abd099883a8858371162150c07e6dd33187d5bb1228b378c",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
