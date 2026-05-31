@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-05-31T18:14:31.067Z",
+  "generatedAt": "2026-05-31T18:37:49.274Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.11.1",
   "migrations": [],
@@ -97,8 +97,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "c9af7f3e6dc05ed1849eebe99cee5d13d54ecf68897e22d341e1ca550c2850bd",
-      "installedSha": "c9af7f3e6dc05ed1849eebe99cee5d13d54ecf68897e22d341e1ca550c2850bd"
+      "sha256": "5e24503397c763156425cc8c8a43964e56a7b69b1ee0868b54bcdf017ad0d5a6",
+      "installedSha": "5e24503397c763156425cc8c8a43964e56a7b69b1ee0868b54bcdf017ad0d5a6"
     },
     "USER_GUIDE.md": {
       "owner": "framework",
@@ -6918,6 +6918,10 @@
       "managed": false
     },
     ".claude/.session-checkpoint.json": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/.session-start-commit": {
       "owner": "runtime",
       "managed": false
     },

@@ -11,6 +11,7 @@
   "handoffs": ".claude/runtime/handoffs",
   "handoffLatest": ".claude/runtime/handoff.md",
   "plans": ".claude/runtime/plans",
+  "reportsDir": "_reports",
   "agents": ".claude/agents",
   "agentSystem": ".claude/agents/00-alex/.system",
   "betaSystem": ".claude/agents/00-alex/.system/beta",
