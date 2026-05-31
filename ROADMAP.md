@@ -542,6 +542,7 @@ Every sprint that has been planned, executed, released, or retrospected — one 
 
 | Sprint | Title | Status | Started | Closed | Release |
 |---|---|---|---|---|---|
+| [SP-20260531-005](.claude/project/sprint/sprints/SP-20260531-005/) | Integrate _guides into the bootstrap pipeline — phase-anchored, right-shape (walkthrough/checklist/notice), right-time (no launch-ready-but-blocked) | planning | 2026-05-31T18:43:57.022Z |  |  |
 | [SP-20260531-004](.claude/project/sprint/sprints/SP-20260531-004/) | scan-suite reconciliation — self-inventory enforcer (/scan:scan-coverage) + close 4 /scan:full coverage gaps | done | 2026-05-31T18:11:06.600Z |  |  |
 | [SP-20260531-003](.claude/project/sprint/sprints/SP-20260531-003/) | scan:warpos-layer-diff — product-vs-dev-tooling layer diff report | retrospected | 2026-05-31T17:47:26.616Z | 2026-05-31T17:55:35.506Z |  |
 | [SP-20260531-002](.claude/project/sprint/sprints/SP-20260531-002/) | _guides product-layer shipping + _planning reorg + ship-boundary enforcer | retrospected | 2026-05-31T16:50:09.724Z | 2026-05-31T17:20:41.443Z |  |

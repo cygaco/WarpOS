@@ -1,0 +1,70 @@
+# WarpOS Launch Guides — for total newbies
+
+> You built (or are building) an app and you're ready to launch it **for real** — accounts, sign-in, data, email, payments, privacy. These guides walk you through each piece in plain language, from zero, assuming little or no technical background.
+>
+> **How to use:** skim this page, then open the guide you need. Each guide is self-contained — **but read Section 0 and the day-zero rule below once**; they apply to *every* guide.
+
+---
+
+## The guides
+
+| Guide | What it covers | When to do it |
+|---|---|---|
+| **[DEV_SETUP_GUIDE](DEV_SETUP_GUIDE.md)** | Developer accounts & app-store registration — Apple Developer, Google Play Console, D-U-N-S | **Day zero** (long approval waits) |
+| **[AUTH_GUIDE](AUTH_GUIDE.md)** | Letting users sign in — Google/Apple social SSO, email + password, magic links | When you add login (decide the *approach* early) |
+| **[DATABASE_GUIDE](DATABASE_GUIDE.md)** | Data storage — Supabase/Postgres/Firebase/SQLite, schema, migrations, backups | Early (it's architectural) |
+| **[EMAIL_GUIDE](EMAIL_GUIDE.md)** | Sending email — transactional (verify/reset/magic-link) + marketing, deliverability (SPF/DKIM/DMARC) | When you need to send mail (domain DNS has lead time) |
+| **[PAYMENTS_GUIDE](PAYMENTS_GUIDE.md)** | Taking money — Stripe checkout, subscriptions, webhooks, entitlements | When you monetize (Stripe verification has lead time) |
+| **[PRIVACY_GDPR_GUIDE](PRIVACY_GDPR_GUIDE.md)** | Privacy & the law — GDPR/CCPA, consent, cookie banner, data export/delete, privacy policy | Before you collect real user data / before launch |
+
+---
+
+## 0. What only YOU (the human) can do vs your AI assistant
+
+Your AI coding assistant is great at **writing and wiring the code**. But across every guide, a set of steps can **only be done by you**, because they need *your* identity, *your* money, and *your* legal agreement:
+
+| The kind of step | Who | Why |
+|---|---|---|
+| Create accounts (Google Cloud, Apple, Stripe, email provider, DB host…) | **YOU** | Logged in as *you*; tied to your identity |
+| Pay fees / verify a bank or card | **YOU** | Your money, your legal contract |
+| Pass identity / business verification (photo ID, D-U-N-S) | **YOU** | It's a check that *you* are real |
+| Add DNS records, paste secrets/API keys, flip a service to "live" | **YOU** | Done in *your* dashboards, with *your* credentials |
+| Publish a privacy policy / terms as real legal documents | **YOU** | You're the legal entity making the promise |
+| Write the app code, config, schema, queries, login/payment/email wiring | **🤖 AI** | This is normal coding |
+
+Throughout the guides: **🔴 YOU MUST DO THIS** = a step the AI can't do for you. **🤖 AI CAN DO THIS** = hand it back to your assistant.
+
+> **🔑 Golden rule for newbies:** Never paste a **secret** — an API key, a "Client Secret", a signing password, a Stripe live key — into a public chat, a screenshot, or a file you'll commit to GitHub. Treat them like your house keys. Secrets live in environment variables / a secret manager, never in your code.
+
+---
+
+## ⏱️ The #1 rule: start the slow stuff on DAY ZERO
+
+**This is the single most important lesson across all the guides.** Several launch steps have a **human/bureaucratic lead time you cannot speed up** — and newbies almost always discover them *after* the app is finished, turning a "ready to launch" moment into a multi-week wait:
+
+| Slow thing | Where | Typical wait |
+|---|---|---|
+| Apple processes your $99 payment, *then* verifies you | DEV_SETUP | up to ~2 days for payment **+** 24–48 h verify |
+| Google Play identity verification (manual review) | DEV_SETUP | hours → several days |
+| Google Play **12-tester / 14-day closed test** (new personal accounts) | DEV_SETUP | **14+ days** |
+| D-U-N-S number (organization accounts, Apple/Google) | DEV_SETUP | days → weeks |
+| Stripe identity + bank verification before live payments | PAYMENTS | hours → days |
+| Email **sending-domain DNS** (SPF/DKIM/DMARC) propagation + reputation warm-up | EMAIL | hours → days |
+| Google "sensitive scope" OAuth verification (only if you request Gmail/Drive) | AUTH | days → weeks |
+
+**So: kick off every account signup + verification the moment you start building** — let the clocks run in the background while you code. Do **not** save them for launch week. The setup is cheap; the **waiting is the real cost**, so start the waiting early.
+
+---
+
+## Recommended order of operations
+
+1. **Day 1 — fire off the slow signups:** Apple Developer + Google Play (DEV_SETUP), and a Stripe account if you'll charge money (PAYMENTS). Org route? Apply for D-U-N-S first.
+2. **Early & architectural:** pick your **database** (DATABASE) and your **auth approach** (AUTH) — these shape everything and are painful to swap later.
+3. **As you build:** wire sign-in (AUTH); set up your **email** sending domain (EMAIL) so verification/magic-link mail isn't in spam.
+4. **Before you collect real user data / launch:** privacy policy + consent + data export/delete (PRIVACY_GDPR).
+5. **When you monetize:** Stripe checkout + subscriptions + webhooks, verified in **test mode** first (PAYMENTS).
+6. **Launch:** Apple review + Google Play production (after the 14-day test).
+
+---
+
+*The WarpOS launch-guide library — a reusable, plain-language launch playbook for newbie vibe coders. Last reviewed: May 2026. Rules, fees, and free tiers change; each guide's "Official sources" section is the source of truth.*

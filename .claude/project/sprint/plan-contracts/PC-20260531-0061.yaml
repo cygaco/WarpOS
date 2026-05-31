@@ -1,0 +1,142 @@
+schema: warpos/sprint/plan-contract/v1
+id: PC-20260531-0061
+created_at: "2026-05-31T18:46:03.724Z"
+updated_at: "2026-05-31T18:46:03.724Z"
+sprint: SP-20260531-005
+source_request: "Integrate the in-progress _guides guides into the bootstrap pipeline (/bootstrap:spinup + /bootstrap:lastmile) at phase-appropriate spots and in the right format (walkthrough / checklist / quick-notice), so the end user is guided to do the right thing at the right time — and doesn't finish a working product only to be blocked on a botched SSO integration, waiting on dev-account approvals, or otherwise stuck."
+source_request_verbatim: "another session is building out more _guides guides. make sure they are integrated with the bootstrap pipeline at the right spots, in the right shape. some portions should be walkthrough, some checklist, some just a quick notice, etc. the jtbd is to ensure the end user accomplishes the right thing at the right time so they dont end up with a completed product but a botched sso integration and waiting for dev account approvals or unreasonably stuck for some reason."
+request_type: integration
+interpreted_intent: "Wire the standalone _guides/ content into the bootstrap pipeline so each guide surfaces at the correct phase, in the correct shape, and at the correct TIME relative to its real-world lead time. The load-bearing JTBD is timing: long-lead external dependencies (Apple/Google/Play dev-account approval, SSO/OAuth app review, DNS) must be surfaced at project START (spinup), not discovered at last-mile — otherwise the user reaches a finished product and then stalls for days. Shorter-lead integration guidance (SSO wiring walkthrough, deploy checklist) surfaces at its relevant lastmile module/gate."
+user_or_business_outcome: "A vibe-coder going idea -> on-screen -> paid never reaches 'product done' only to be blocked: the right guide (walkthrough | checklist | notice) appears at the right pipeline moment, started early enough to clear its lead time. Eliminates the launch-ready-but-blocked failure (botched SSO, pending dev-account approvals, stuck). Operationalizes ED-012 (do account signups at project START) + the pre-flight-blocker-clearing roadmap entry."
+affected_surfaces:
+  - surface: ".claude/commands/bootstrap/spinup.md"
+    evidence_level: verified_from_repo
+    notes: "Pre-flight + Phase 1 (Intent) are the project-START anchor for long-lead, day-zero guides (dev-account signups). Currently references NO _guides content."
+  - surface: ".claude/commands/bootstrap/lastmile.md"
+    evidence_level: verified_from_repo
+    notes: "Phase 1 Readiness Audit (dimensions) + Phase 2 modules (Auth->SSO walkthrough, Platform/Deploy->app-store checklist, Payments->Stripe) + human-approval gates (notices). Currently has inline checklists but does NOT surface the standalone _guides."
+  - surface: _guides/DEV_SETUP_GUIDE.md
+    evidence_level: verified_from_repo
+    notes: "The one existing guide (day-zero signup playbook, 36KB). More guides being authored by ANOTHER session (external input to this sprint)."
+  - surface: "scripts/bootstrap/phases/*.js + scripts/bootstrap/lastmile/{phases,modules}/"
+    evidence_level: inferred_from_repo
+    notes: "The pipeline engines where guide-surfacing must be wired (the orchestrators that drive each phase)."
+  - surface: "a guide-anchor convention (frontmatter or _guides/registry)"
+    evidence_level: assumed_from_request
+    notes: "Each guide declares {anchor: phase/module, shape: walkthrough|checklist|notice, timing: when, lead_time}. Lets the pipeline surface guides by data, not hardcoded refs (so the other session's new guides slot in without editing skills)."
+  - surface: "an enforcer (scan) — no orphan guides / no missing anchors"
+    evidence_level: assumed_from_request
+    notes: "Every _guides/*.md must declare a valid anchor+shape and be surfaced by the pipeline (mirrors /scan:scan-coverage for the scan suite)."
+current_behavior:
+  evidence_level: verified_from_repo
+  notes: "_guides/ holds DEV_SETUP_GUIDE.md but the bootstrap skills reference it nowhere (grep: zero _guides/DEV_SETUP refs in .claude/commands/bootstrap/). spinup/lastmile have their own INLINE checklists (env-var, launch, security) but the standalone guides are not surfaced at any phase. So a user can complete spinup+lastmile without ever being pointed at the day-zero signup playbook -> the launch-ready-but-blocked failure."
+desired_behavior: "Each _guides/*.md declares its pipeline ANCHOR (which spinup/lastmile phase or module), SHAPE (walkthrough = interactive step-by-step; checklist = tickable items with a done-gate; notice = brief heads-up/warning), and TIMING (incl. real-world lead_time). The bootstrap pipeline surfaces each guide at its anchor in its shape: long-lead day-zero guides as a project-START notice/checklist in spinup Pre-flight/Intent; integration guides (SSO) as walkthroughs at the lastmile Auth module; platform/dev-account guides as checklists at the Platform module + human-approval gates. A scan enforces every guide is anchored + surfaced (no orphans). Content is authored elsewhere; this sprint wires placement/shape/timing."
+scope:
+  size: m
+  risk_level: low
+  complexity_drivers:
+    - "cross-cuts two pipeline skills (spinup + lastmile) + their engines"
+    - "needs a small guide-anchor CONTRACT so new guides slot in by data, not hardcoded refs (coordinates with the other session authoring content)"
+    - "the right-TIME requirement (lead-time-aware surfacing) is the subtle part — not just placement but ordering vs real-world approval queues"
+    - "shape semantics differ (walkthrough vs checklist-with-gate vs notice) — checklist/gate may interact with lastmile approval gates"
+scope_variants:
+  minimal_safe:
+    summary: "Hand-wire the existing DEV_SETUP_GUIDE.md into spinup Pre-flight/Intent (a project-START 'day-zero setup' NOTICE: start Apple/Google/Play signups now, they take days) + a lastmile Readiness-Audit reference. No contract; just two references to the one guide."
+    tradeoffs:
+      - "fastest, unblocks the highest-value case (signups too late)"
+      - "doesn't scale to the new guides the other session is adding (each needs manual wiring)"
+      - "no shape taxonomy, no enforcer"
+  recommended:
+    summary: "A guide-anchor CONTRACT (frontmatter: anchor, shape, timing, lead_time) + pipeline surfacing logic that reads it, so guides slot in by data. Wire DEV_SETUP (day-zero notice at spinup start) + map the new guides to anchors (SSO walkthrough @ lastmile Auth; dev-account checklist @ Platform + approval gate; etc.). Add /scan:guide-coverage (every _guides/*.md is anchored + surfaced; mirrors scan-coverage). Lead-time-aware: long-lead guides surface in spinup, not lastmile."
+    tradeoffs:
+      - "scales to the other session's guides with zero skill edits"
+      - "one new convention + one enforcer to maintain"
+      - "design pass needed to pin the contract + the anchor map with the other session's guide list"
+  expanded:
+    summary: "recommended PLUS: a guide registry/index, per-guide right-time GATING (e.g., lastmile execute refuses to proceed past the auth/deploy gate until the dev-account checklist is acknowledged), completion telemetry, and integration with the pre-flight-blocker pass (surface ALL ESD guides as one batched upfront operator-clearance step)."
+    tradeoffs:
+      - "strongest 'right thing right time' guarantee (gates, not just nudges)"
+      - "gating risks over-blocking; telemetry + registry are gold-plating unless asked"
+      - "larger surface; do only if the nudge-only version proves too weak"
+assumptions:
+  safe:
+    - "Guide CONTENT is authored by another session; this sprint owns PLACEMENT + SHAPE + TIMING, not the prose."
+    - "The bootstrap pipeline (spinup phases + lastmile phases/modules) is the correct surface; guides are not a new top-level flow."
+    - "Long-lead external approvals (Apple ~2d, Google verify queue, Play 14d/12-tester) are the highest-value right-time case (ED-012, DEV_SETUP_GUIDE day-zero)."
+  unsafe:
+    - "That a single shape fits all guides — the operator explicitly wants walkthrough vs checklist vs notice; the contract must support all three."
+    - "That hard-GATING (block lastmile until a guide is acknowledged) is wanted — could over-block; default to surface+nudge, make gating an explicit expanded-scope choice."
+  needs_user_or_beta_review:
+    - "The exact anchor map depends on the other session's final guide list — pin it in /sprint:design once their guides exist."
+    - Whether right-time enforcement should be a hard gate or a nudge.
+open_questions:
+  blocking: []
+  non_blocking:
+    - "Guide-anchor contract format: per-file frontmatter vs a central _guides/registry.json?"
+    - "Should the checklist shape carry a done-gate that ties into lastmile approval gates, or stay informational?"
+    - "Coordinate the anchor map with the other session's guide list (dependency, not a blocker for planning)."
+non_goals:
+  - "Authoring the guide CONTENT (owned by the other session)."
+  - Building the actual SSO/auth/payments integrations the guides describe.
+  - Auto-completing or automating dev-account signups / approvals.
+  - A GUI for guides.
+  - "The 'stale warpos versions everywhere' fix — handled separately via /fix:deep, NOT part of this sprint."
+requirement_areas:
+  - "bootstrap pipeline integration (spinup + lastmile)"
+  - "guide-anchor contract (shape + timing taxonomy)"
+  - "right-time surfacing (lead-time-aware)"
+  - orphan-guide enforcer
+high_level_story_candidates:
+  - "As a vibe-coder starting a product, I'm told at project START to begin the long-lead dev-account signups, so they're approved by the time I'm ready to ship."
+  - "As a vibe-coder at the auth step, I get a step-by-step SSO walkthrough so I don't botch the integration."
+  - "As the framework, every _guides/*.md is surfaced at a declared anchor in a declared shape — no orphan guides."
+granular_story_candidates:
+  - "Define a guide-anchor contract (anchor, shape={walkthrough|checklist|notice}, timing, lead_time)."
+  - "Add anchor metadata to DEV_SETUP_GUIDE.md + surface it as a project-START notice in spinup Pre-flight/Intent."
+  - "Map the new guides to lastmile anchors (Auth->walkthrough, Platform->checklist, approval-gate->notice)."
+  - Implement pipeline surfacing that reads the contract and renders the guide in its shape at its anchor.
+  - "Add /scan:guide-coverage: every _guides/*.md has a valid anchor+shape and is surfaced (mirrors /scan:scan-coverage)."
+workstream_candidates:
+  - guide-anchor contract
+  - spinup surfacing
+  - lastmile surfacing
+  - orphan-guide enforcer
+preliminary_ticket_candidates:
+  allowed: false
+  notes: "design_required=true. Tickets minted in /sprint:design once the contract + anchor map are pinned against the other session's final guide list."
+external_service_dependencies:
+  status: none_for_sprint
+  required: []
+  possible: []
+  notes: "The SPRINT is docs/wiring (no signup/billing/secrets). Meta-note: the sprint's PURPOSE is to surface the user's ESD-handling guidance (SSO/OAuth app review, Apple/Google/Play dev accounts, DNS) at the right time — it makes ESDs visible earlier (ED-012), but introduces none itself."
+approval_boundaries:
+  - "none beyond hard ceilings — docs + pipeline wiring; reversible; no push/deploy/paid-service/secrets. (If expanded-scope hard-gating is chosen, that gate design is an operator call.)"
+design_required: true
+execution_allowed_without_design: false
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+lane:
+  type: branch
+  value: sprint/SP-20260531-005
+  isolation_notes: "Reversible docs/wiring. Coordinate with the other session authoring _guides content (shared _guides/ dir + shared sprint/SP-20260531-003 branch lineage)."
+beta_review:
+  required: true
+  overbuild_risks:
+    - hard-gating that over-blocks the user
+    - a heavy registry/telemetry layer before the nudge version is proven
+    - "inventing a guide contract more elaborate than the other session's guides need"
+  missing_context_risks:
+    - "the other session's final guide list/shapes aren't known yet — the anchor map must be pinned in design, not assumed now"
+plan_quality:
+  status: needs_design
+  confidence: high
+next_recommended_command: "/sprint:design"
+resume_instructions: "Plan Contract written for SP-20260531-005. Run /sprint:design to pin the guide-anchor contract + the anchor map (coordinate with the other session's _guides list). If interrupted, read .claude/project/sprint/sprint-progress.yaml#resume_command."
+tracker_paths:
+  current_sprint: ".claude/project/sprint/current-sprint.yaml"
+  sprint_progress: ".claude/project/sprint/sprint-progress.yaml"
+  plan_contract: ".claude/project/sprint/plan-contracts/PC-20260531-0061.yaml"
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260531-0061.report.md"
+created_by: alpha
+updated_by: alpha

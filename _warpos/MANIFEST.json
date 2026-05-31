@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-05-31T18:37:49.274Z",
+  "generatedAt": "2026-05-31T18:48:41.536Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.11.1",
   "migrations": [],
@@ -97,8 +97,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "5e24503397c763156425cc8c8a43964e56a7b69b1ee0868b54bcdf017ad0d5a6",
-      "installedSha": "5e24503397c763156425cc8c8a43964e56a7b69b1ee0868b54bcdf017ad0d5a6"
+      "sha256": "0198f8017939be876ac54315d2e852a24500a050f2f40c9e2ab80fd52edb5808",
+      "installedSha": "0198f8017939be876ac54315d2e852a24500a050f2f40c9e2ab80fd52edb5808"
     },
     "USER_GUIDE.md": {
       "owner": "framework",
@@ -728,12 +728,54 @@
       "seeded_from": "framework/templates/_requirements/00-canonical/WATCHED_DIRS.json",
       "class": "fillable"
     },
+    "_guides/AUTH_GUIDE.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_guides/AUTH_GUIDE.md",
+      "sha256": "a303ad27bb3ad1482a54a2e0b1de59263986420be94fb74fe65a6499e4d86fe3",
+      "installedSha": "a303ad27bb3ad1482a54a2e0b1de59263986420be94fb74fe65a6499e4d86fe3"
+    },
+    "_guides/DATABASE_GUIDE.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_guides/DATABASE_GUIDE.md",
+      "sha256": "f07e83be670e1961cfcf9161db10dd838b367612c3819e44f93b063fcabc5829",
+      "installedSha": "f07e83be670e1961cfcf9161db10dd838b367612c3819e44f93b063fcabc5829"
+    },
     "_guides/DEV_SETUP_GUIDE.md": {
       "owner": "framework",
       "managed": true,
       "source": "_guides/DEV_SETUP_GUIDE.md",
-      "sha256": "dfa4c31977b75bcda971c22f53feaab3493d83b974e4aa547ee400867b9d29c4",
-      "installedSha": "dfa4c31977b75bcda971c22f53feaab3493d83b974e4aa547ee400867b9d29c4"
+      "sha256": "0188e9fcde35f177400689603c5c1a847eddba1cfc9f6ae6c4ea8436cf888dcb",
+      "installedSha": "0188e9fcde35f177400689603c5c1a847eddba1cfc9f6ae6c4ea8436cf888dcb"
+    },
+    "_guides/EMAIL_GUIDE.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_guides/EMAIL_GUIDE.md",
+      "sha256": "67ef5e2969bb9ba2091f5c312ca712d10bc446cc059d81fa6f8f0e104c41d766",
+      "installedSha": "67ef5e2969bb9ba2091f5c312ca712d10bc446cc059d81fa6f8f0e104c41d766"
+    },
+    "_guides/PAYMENTS_GUIDE.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_guides/PAYMENTS_GUIDE.md",
+      "sha256": "a1d567e7b0febb76594828be1276fa0abde0b4ec4f24c3c0e9de1b3943a3a2a5",
+      "installedSha": "a1d567e7b0febb76594828be1276fa0abde0b4ec4f24c3c0e9de1b3943a3a2a5"
+    },
+    "_guides/PRIVACY_GDPR_GUIDE.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_guides/PRIVACY_GDPR_GUIDE.md",
+      "sha256": "cfd3f89f39a38e520b23306360c798a8a5fde828bb66e88deb88523738d81efd",
+      "installedSha": "cfd3f89f39a38e520b23306360c798a8a5fde828bb66e88deb88523738d81efd"
+    },
+    "_guides/README.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_guides/README.md",
+      "sha256": "8f58166f91bfdf2e1d3f612a095bcfcd2e3fc0b63316453140521b68099da439",
+      "installedSha": "8f58166f91bfdf2e1d3f612a095bcfcd2e3fc0b63316453140521b68099da439"
     },
     "_docs/.gitkeep": {
       "owner": "project",
@@ -6921,10 +6963,6 @@
       "owner": "runtime",
       "managed": false
     },
-    ".claude/.session-start-commit": {
-      "owner": "runtime",
-      "managed": false
-    },
     ".claude/framework-installed.json": {
       "owner": "generated",
       "managed": false,
@@ -8105,6 +8143,14 @@
       "managed": false
     },
     ".claude/project/sprint/sprints/_no-active-sprint/reasoning-auto-approval.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/sprints/SP-20260531-005/current.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/sprints/SP-20260531-005/progress.yaml": {
       "owner": "runtime",
       "managed": false
     },
@@ -11472,6 +11518,14 @@
       "owner": "runtime",
       "managed": false
     },
+    ".claude/project/sprint/plan-contracts/PC-20260531-0061.report.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/plan-contracts/PC-20260531-0061.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
     ".claude/project/sprint/issues/I-20260513-001.yaml": {
       "owner": "runtime",
       "managed": false
@@ -13405,6 +13459,10 @@
       "managed": false
     },
     ".claude/project/sprint/checkpoints/SP-20260531-003-0013.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/checkpoints/SP-20260531-005-0001.yaml": {
       "owner": "runtime",
       "managed": false
     },

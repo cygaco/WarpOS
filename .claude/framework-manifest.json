@@ -49,14 +49,14 @@
     "paths_registry": 1,
     "template": 82,
     "hooks_registry": 1,
-    "guide": 1,
+    "guide": 7,
     "top_script": 5,
     "version_file": 1,
     "installer_script": 1,
     "module_scope": 1,
     "framework_doc": 2
   },
-  "total": 937,
+  "total": 943,
   "assets": {
     "agent": [
       {
@@ -11264,11 +11264,83 @@
     ],
     "guide": [
       {
+        "id": "guide.AUTH_GUIDE.md",
+        "src": "_guides/AUTH_GUIDE.md",
+        "dest": "_guides/AUTH_GUIDE.md",
+        "kind": "guide",
+        "sha256": "a303ad27bb3ad1482a54a2e0b1de59263986420be94fb74fe65a6499e4d86fe3",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "guide.DATABASE_GUIDE.md",
+        "src": "_guides/DATABASE_GUIDE.md",
+        "dest": "_guides/DATABASE_GUIDE.md",
+        "kind": "guide",
+        "sha256": "f07e83be670e1961cfcf9161db10dd838b367612c3819e44f93b063fcabc5829",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
         "id": "guide.DEV_SETUP_GUIDE.md",
         "src": "_guides/DEV_SETUP_GUIDE.md",
         "dest": "_guides/DEV_SETUP_GUIDE.md",
         "kind": "guide",
-        "sha256": "dfa4c31977b75bcda971c22f53feaab3493d83b974e4aa547ee400867b9d29c4",
+        "sha256": "0188e9fcde35f177400689603c5c1a847eddba1cfc9f6ae6c4ea8436cf888dcb",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "guide.EMAIL_GUIDE.md",
+        "src": "_guides/EMAIL_GUIDE.md",
+        "dest": "_guides/EMAIL_GUIDE.md",
+        "kind": "guide",
+        "sha256": "67ef5e2969bb9ba2091f5c312ca712d10bc446cc059d81fa6f8f0e104c41d766",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "guide.PAYMENTS_GUIDE.md",
+        "src": "_guides/PAYMENTS_GUIDE.md",
+        "dest": "_guides/PAYMENTS_GUIDE.md",
+        "kind": "guide",
+        "sha256": "a1d567e7b0febb76594828be1276fa0abde0b4ec4f24c3c0e9de1b3943a3a2a5",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "guide.PRIVACY_GDPR_GUIDE.md",
+        "src": "_guides/PRIVACY_GDPR_GUIDE.md",
+        "dest": "_guides/PRIVACY_GDPR_GUIDE.md",
+        "kind": "guide",
+        "sha256": "cfd3f89f39a38e520b23306360c798a8a5fde828bb66e88deb88523738d81efd",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "guide.README.md",
+        "src": "_guides/README.md",
+        "dest": "_guides/README.md",
+        "kind": "guide",
+        "sha256": "8f58166f91bfdf2e1d3f612a095bcfcd2e3fc0b63316453140521b68099da439",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
