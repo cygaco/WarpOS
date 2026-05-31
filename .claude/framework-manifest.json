@@ -4,7 +4,7 @@
   "generated_by": "scripts/generate-framework-manifest.js",
   "counts": {
     "agent": 84,
-    "skill": 183,
+    "skill": 184,
     "reference": 28,
     "maps_baseline": 23,
     "hook": 67,
@@ -13,7 +13,7 @@
     "pattern": 6,
     "fixture": 23,
     "warpos_script": 52,
-    "check_tool": 45,
+    "check_tool": 46,
     "agent_tool": 3,
     "decision_tool": 1,
     "runtime_tool": 1,
@@ -56,7 +56,7 @@
     "module_scope": 1,
     "framework_doc": 2
   },
-  "total": 931,
+  "total": 933,
   "assets": {
     "agent": [
       {
@@ -2659,6 +2659,18 @@
         "dest": ".claude/commands/scan/warpos-install-baseline.md",
         "kind": "skill",
         "sha256": "cd334cfd81e84356241a71179fab93619e93b6d4ab5f0dd0d205c79d43b6a872",
+        "owner": "framework",
+        "mergeStrategy": "three_way_markdown",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "skill.scan.warpos-layer-diff.md",
+        "src": ".claude/commands/scan/warpos-layer-diff.md",
+        "dest": ".claude/commands/scan/warpos-layer-diff.md",
+        "kind": "skill",
+        "sha256": "6e38098fb6d44c5261b45f56e8d381839eccdb354f227150adf3749bf4bda1fd",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
@@ -6277,6 +6289,18 @@
         "dest": "scripts/checks/warpos-install-baseline.js",
         "kind": "check_tool",
         "sha256": "dc1ebd3275c7808c3cd707a3eb4c169028e3be5a7cbe51369db8c1c93c056071",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "check_tool.warpos-layer-diff.js",
+        "src": "scripts/checks/warpos-layer-diff.js",
+        "dest": "scripts/checks/warpos-layer-diff.js",
+        "kind": "check_tool",
+        "sha256": "747c0a1fecbad4d87efdc6951f9839f6e08ee0fc946c55bce206d6e2630b4e4d",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
