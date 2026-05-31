@@ -1,0 +1,63 @@
+{
+  "$schema": "warpos/org-map/v0.1",
+  "_doc": "Machine-readable product-studio org (S0.1, SP-20260530-001). domains -> director -> leads -> specialists; β referee, α orchestrator; cross-domain gauntlets. `routing` maps each S0.2 artifact `contract.owner_domain` to the org domain + owning role. Enforced by /scan:domain-routing (validates against schemas/contracts/*.schema.json). v0.1 REVISABLE. This is the MAP, not the agents — agents for the NEW roles are built in Wave 2 (artifact-before-agent iron rule); `agent` = existing subagent_type, or null = pending.",
+  "version": "v0.1",
+  "orchestrator": { "role": "alpha", "agent": "alpha" },
+  "referee": {
+    "role": "beta",
+    "agent": "beta",
+    "scope": "Cross-domain conflict, risk, final ship gate. Enters intra-domain ONLY for ship-gate or cross-domain conflicts — NOT every intra-domain disagreement (not an intra-domain appeal court). β EVT-org-gpt-rereview-beta-001."
+  },
+  "domains": {
+    "product": {
+      "director": { "role": "director-of-product-management", "agent": "director-of-product" },
+      "leads": [
+        { "role": "product-lead", "agent": null, "owns": "requirement authoring (build_spec/PRD via /sprint:design, verified by req-reviewer); per-product backlog ranking + within-sprint sequencing", "specialists": [ { "role": "product-designer", "agent": null } ] },
+        { "role": "qa-lead", "agent": "director-of-qa", "alias": "director-of-qa", "owns": "product-driven QA; QA/fix-priority under product-priority-over-severity; directs the QA failure-mode scanner", "note": "Renamed from Director of QA; reports to Director of Product Mgmt. Keep the director-of-qa dispatch alias until all refs migrate." },
+        { "role": "research-insight-lead", "agent": null, "owns": "deep audience layer + audience-mining pipeline; audience_dossier" }
+      ],
+      "reports_to": "alpha"
+    },
+    "marketing": {
+      "director": { "role": "director-of-marketing", "agent": null },
+      "leads": [
+        { "role": "growth-lead", "agent": null, "owns": "media-buying; EQ scoring; SCALE/TEST/SKIP" },
+        { "role": "copy-lead", "agent": null, "owns": "Agora/E5 voice; owns the 'Chief' coherence review" }
+      ],
+      "specialists": [ { "role": "web-conversion-designer", "agent": null, "owns": "landing pages that convert" } ],
+      "reports_to": "alpha"
+    },
+    "engineering": {
+      "director": { "role": "director-of-engineering", "agent": null },
+      "builders": [
+        { "role": "frontend-builder", "agent": null },
+        { "role": "backend-builder", "agent": null }
+      ],
+      "note": "+Foundation/Integration builder roles only if the pilot shows shared-file pain (S1.3 Gamma integration phase owns shared files first).",
+      "reports_to": "alpha"
+    }
+  },
+  "gauntlets": {
+    "code-qc": { "domain": "engineering", "members": ["reviewer", "compliance", "redteam", "fixer"] },
+    "design-quality": {
+      "domain": "cross-domain",
+      "is_named_design_authority": true,
+      "approves": ["design-tokens", "component-usage", "visual-hierarchy", "mobile-responsive", "accessibility", "design-handoff"],
+      "note": "The named design authority across app-design (Product) and web-design (Marketing) — a gauntlet, not a person. A component library alone is not an owner."
+    }
+  },
+  "claims_boundary": {
+    "market_promise": { "owner": "marketing", "artifact": "message_brief" },
+    "product_verifiable_claim": { "owner": "product", "artifact": "offer_brief" },
+    "note": "Marketing owns the market promise; Product owns the product-verifiable claim; they must not blur. Security/compliance review stays independent of Product/Marketing pressure (its own gauntlet lane). Rooted as the shared `claims-boundary` base principle."
+  },
+  "routing": {
+    "_doc": "Each S0.2 artifact `contract.owner_domain` -> the org domain + owning role. /scan:domain-routing asserts every owner_domain present in schemas/contracts/ has an entry here, and every entry's domain is defined above (or 'cross-domain').",
+    "research_insight": { "domain": "product", "owner_role": "research-insight-lead" },
+    "marketing": { "domain": "marketing", "owner_role": "director-of-marketing" },
+    "product": { "domain": "product", "owner_role": "product-lead" },
+    "design_quality": { "domain": "cross-domain", "owner_role": "design-quality-gauntlet" },
+    "engineering": { "domain": "engineering", "owner_role": "director-of-engineering" },
+    "enforcer_emitted": { "domain": "cross-domain", "owner_role": "enforcer", "note": "decision_record — emitted by any domain's enforcer in oneshot, no human present" }
+  }
+}

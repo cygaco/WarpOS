@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-05-30T23:53:14.776Z",
+  "generatedAt": "2026-05-31T00:08:43.380Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.11.1",
   "migrations": [],
@@ -2622,8 +2622,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/warpos/manifest/build.js",
-      "sha256": "709f5ce17de99b2368732c4f8552efbc5bc3dc449ae412201dac98b443c80654",
-      "installedSha": "709f5ce17de99b2368732c4f8552efbc5bc3dc449ae412201dac98b443c80654"
+      "sha256": "69b500e9d455987b3013a31ab68efee1be5abdf100648da8bf242c18acc8ecae",
+      "installedSha": "69b500e9d455987b3013a31ab68efee1be5abdf100648da8bf242c18acc8ecae"
     },
     "scripts/warpos/manifest/test-bootstrap.js": {
       "owner": "framework",
@@ -4241,6 +4241,13 @@
       "source": "scripts/checks/dispatch-routing-parity.js",
       "sha256": "993d0f14cf0a92da61d2641f2e44cfac0890cad4e8babb4349b59fb059f1d4fc",
       "installedSha": "993d0f14cf0a92da61d2641f2e44cfac0890cad4e8babb4349b59fb059f1d4fc"
+    },
+    "scripts/checks/domain-routing-scan.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/domain-routing-scan.js",
+      "sha256": "8cff0062fc3664748a472bdca540a0fbd156d716295b57dd964ddf7424cfc00c",
+      "installedSha": "8cff0062fc3664748a472bdca540a0fbd156d716295b57dd964ddf7424cfc00c"
     },
     "scripts/checks/framework-purity.js": {
       "owner": "framework",
@@ -14508,6 +14515,14 @@
       "kind": "json",
       "sha256": "9e2594245fdaf580549b498b8fff2d1ffe4ee95f4d99ae0b608d85a272e9eaca",
       "installedSha": "9e2594245fdaf580549b498b8fff2d1ffe4ee95f4d99ae0b608d85a272e9eaca"
+    },
+    ".claude/agents/03-managers/_org/org-map.json": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/03-managers/_org/org-map.json",
+      "kind": "json",
+      "sha256": "671bd3511b949710aedc976dcdea6983b0b75d0a66b64595219002d60e4276ed",
+      "installedSha": "671bd3511b949710aedc976dcdea6983b0b75d0a66b64595219002d60e4276ed"
     },
     ".claude/agents/02-oneshot/visual-review/visual-review.md": {
       "owner": "framework",
