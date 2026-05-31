@@ -542,6 +542,7 @@ Every sprint that has been planned, executed, released, or retrospected — one 
 
 | Sprint | Title | Status | Started | Closed | Release |
 |---|---|---|---|---|---|
+| [SP-20260531-003](.claude/project/sprint/sprints/SP-20260531-003/) | scan:warpos-layer-diff — product-vs-dev-tooling layer diff report | retrospected | 2026-05-31T17:47:26.616Z | 2026-05-31T17:55:35.506Z |  |
 | [SP-20260531-002](.claude/project/sprint/sprints/SP-20260531-002/) | _guides product-layer shipping + _planning reorg + ship-boundary enforcer | retrospected | 2026-05-31T16:50:09.724Z | 2026-05-31T17:20:41.443Z |  |
 | [SP-20260531-001](.claude/project/sprint/sprints/SP-20260531-001/) | _reports/ — ELI5 sprint/milestone/session report system | planning | 2026-05-31T15:43:42.379Z |  |  |
 | [SP-20260530-001](.claude/project/sprint/sprints/SP-20260530-001/) | S0.2 Artifact contracts + decision-record schema (message_brief spine) | planning | 2026-05-30T22:49:57.662Z |  |  |

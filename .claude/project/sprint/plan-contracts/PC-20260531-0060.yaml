@@ -1,0 +1,113 @@
+schema: warpos/sprint/plan-contract/v1
+id: PC-20260531-0060
+created_at: "2026-05-31T17:48:26.475Z"
+updated_at: "2026-05-31T17:48:26.475Z"
+sprint: SP-20260531-003
+source_request: "A read-only /scan that shows the diff between WarpOS's product layer (what ships to consumer products) and its dev-tooling layer (framework-internal, not shipped)."
+source_request_verbatim: a panel where i can see the diff between the product and the dev tooling layer of warpos
+request_type: feature_add
+interpreted_intent: "Give the maintainer a readable, at-a-glance view of which framework-owned paths SHIP to consumer products (the product layer) vs which are framework-internal dev tooling that never ships (the dev-tooling layer), so the framework/product boundary is observable — not something you reconstruct by hand from two manifests."
+user_or_business_outcome: "Maintainers can see the product-vs-dev-tooling split in one command instead of manually diffing _warpos/MANIFEST.json against .claude/framework-manifest.json. Complements SP-20260531-002's fail-closed ship boundary with a read-only observability view of the same boundary."
+affected_surfaces:
+  - surface: "scripts/checks/warpos-layer-diff.js (new read-only scan script)"
+    evidence_level: assumed_from_request
+    notes: "Reads the two manifests; emits a 3-section report; --json supported."
+  - surface: ".claude/commands/scan/warpos-layer-diff.md (new skill)"
+    evidence_level: assumed_from_request
+    notes: "Registers /scan:warpos-layer-diff."
+  - surface: "scripts/checks/warpos-ship-coverage.js (reference, not modified)"
+    evidence_level: verified_from_repo
+    notes: "Its infoGaps computation (owner=framework AND not shipped) is the reusable primitive; the new scan is a read-only sibling, NOT an edit to ship-coverage."
+current_behavior:
+  evidence_level: verified_from_repo
+  notes: "The product/dev-tooling split is implicit in two separate manifests (_warpos/MANIFEST.json ownership + .claude/framework-manifest.json shipped). warpos-ship-coverage.js computes the not-shipped set as infoGaps but only as a side-effect of its pass/fail gate; there is no read-only command that just SHOWS the two layers."
+desired_behavior: "A new `scan:warpos-layer-diff` skill + scripts/checks/warpos-layer-diff.js cross-references _warpos/MANIFEST.json (ownership truth) with .claude/framework-manifest.json (shipped truth) and prints a 3-section report: (1) PRODUCT LAYER = owner=framework AND shipped; (2) DEV-TOOLING LAYER = owner=framework AND NOT shipped; (3) SUMMARY counts. Read-only, informational (exit 0), --json supported. Reuses the existing classification logic (no new data sources, no manifest mutation, no GUI)."
+scope:
+  size: s
+  risk_level: low
+  complexity_drivers:
+    - "read-only — no mutation, no manifest regen needed for the scan itself"
+    - "reuses existing manifest data + the infoGaps classification primitive"
+scope_variants:
+  minimal_safe:
+    summary: "scripts/checks/warpos-layer-diff.js only — the 3-section report + --json; no skill registration yet."
+    tradeoffs:
+      - fastest
+      - "no /scan:* entry point until the skill is added"
+  recommended:
+    summary: "minimal_safe PLUS the scan:warpos-layer-diff skill (.claude/commands/scan/) registering /scan:warpos-layer-diff; both-manifest regen so the new script/skill ship."
+    tradeoffs:
+      - "complete, invocable"
+      - one new skill to maintain
+  expanded:
+    summary: "recommended PLUS wiring into scan:full (Tier 3) + a per-root breakdown (framework/, scripts/, .claude/...)."
+    tradeoffs:
+      - most discoverable
+      - "adds scan:full surface; per-root breakdown is gold-plating unless asked"
+assumptions:
+  safe:
+    - "both manifests are the source of truth for ownership + shipped state (verified in SP-20260531-002)"
+    - "owner=framework is the relevant universe (project/generated/runtime are not 'WarpOS layers' in the operator's sense)"
+    - "the report is read-only and informational — never a gate (exit 0 always)"
+  unsafe: []
+  needs_user_or_beta_review:
+    - "whether to wire into scan:full now (expanded) or keep standalone"
+open_questions:
+  blocking: []
+  non_blocking:
+    - per-root breakdown vs flat lists
+    - "wire into scan:full now or later"
+non_goals:
+  - "A GUI / visual panel (resolved to a plain-text report per Beta KISS)"
+  - Modifying the ship logic or manifests
+  - "Re-doing Sprint A's boundary work"
+  - "Making the scan a fail/gate (it is read-only/informational)"
+requirement_areas:
+  - observability of the framework/product boundary
+  - read-only scan skill
+  - reuse of existing manifest data
+high_level_story_candidates:
+  - "As the WarpOS maintainer, I run one command and see exactly which framework paths ship to products (product layer) vs which are dev-tooling-only (never shipped)."
+  - "As the maintainer, the layer split is observable without manually diffing two manifests."
+granular_story_candidates:
+  - "Build scripts/checks/warpos-layer-diff.js: cross-reference _warpos/MANIFEST.json x .claude/framework-manifest.json; emit 3 sections (product layer / dev-tooling layer / summary counts); --json; exit 0."
+  - "Register the scan:warpos-layer-diff skill (.claude/commands/scan/warpos-layer-diff.md)."
+  - "Regenerate BOTH manifests so the new script + skill ship; verify scan:full stays green."
+workstream_candidates:
+  - read-only scan script
+  - skill registration
+  - "manifest regen + verify"
+preliminary_ticket_candidates:
+  allowed: false
+  notes: "documentation_scale=auto for an s/small feature_add -> tickets minted in design (1-2: script, skill[, regen])."
+external_service_dependencies:
+  status: none_expected
+approval_boundaries:
+  - "none beyond hard ceilings; read-only scan + new skill; reversible; no push/deploy"
+design_required: true
+execution_allowed_without_design: false
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+lane:
+  type: branch
+  value: sprint/SP-20260531-003
+  isolation_notes: "Branched off sprint/SP-20260531-002 so the diff reflects post-A reality (_guides shipped). Reversible; no push."
+beta_review:
+  required: true
+  overbuild_risks:
+    - "per-root breakdown / scan:full wiring before asked = gold-plating"
+    - drifting into a GUI instead of a plain-text report
+  missing_context_risks: []
+plan_quality:
+  status: pass
+  confidence: high
+next_recommended_command: "/sprint:design"
+resume_instructions: "Sprint SP-20260531-003 has Plan Contract PC-20260531-0060. Run the next_recommended_command. If interrupted, read .claude/project/sprint/sprint-progress.yaml#resume_command."
+tracker_paths:
+  current_sprint: ".claude/project/sprint/current-sprint.yaml"
+  sprint_progress: ".claude/project/sprint/sprint-progress.yaml"
+  plan_contract: ".claude/project/sprint/plan-contracts/PC-20260531-0060.yaml"
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260531-0060.report.md"
+created_by: alpha
+updated_by: alpha
