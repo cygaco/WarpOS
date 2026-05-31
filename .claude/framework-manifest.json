@@ -4,7 +4,7 @@
   "generated_by": "scripts/generate-framework-manifest.js",
   "counts": {
     "agent": 84,
-    "skill": 186,
+    "skill": 187,
     "reference": 28,
     "maps_baseline": 23,
     "hook": 67,
@@ -56,7 +56,7 @@
     "module_scope": 1,
     "framework_doc": 2
   },
-  "total": 947,
+  "total": 948,
   "assets": {
     "agent": [
       {
@@ -1519,6 +1519,18 @@
         "dest": ".claude/commands/growth/product-finder.md",
         "kind": "skill",
         "sha256": "2d0e366c260bb7af67a5212fb81dc0cbd7e563b2bef9ae70d7aa55acb229ecd9",
+        "owner": "framework",
+        "mergeStrategy": "three_way_markdown",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "skill.guides.write.md",
+        "src": ".claude/commands/guides/write.md",
+        "dest": ".claude/commands/guides/write.md",
+        "kind": "skill",
+        "sha256": "8c37598c82014b34c2484e79964f12b62f11797bb91d0a9aec6353c5c39cb581",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",

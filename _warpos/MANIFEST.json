@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-05-31T19:28:37.480Z",
+  "generatedAt": "2026-05-31T19:37:16.692Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.11.1",
   "migrations": [],
@@ -97,8 +97,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "171b82d071104e2201b7bfabb59065747bf5a074bd2b730b3a993255103eb647",
-      "installedSha": "171b82d071104e2201b7bfabb59065747bf5a074bd2b730b3a993255103eb647"
+      "sha256": "27c47cfd975f373a7fe1fb51cf7df4b954d200a5a60b0a6d366c0c697c1f2e94",
+      "installedSha": "27c47cfd975f373a7fe1fb51cf7df4b954d200a5a60b0a6d366c0c697c1f2e94"
     },
     "USER_GUIDE.md": {
       "owner": "framework",
@@ -8167,6 +8167,14 @@
       "owner": "runtime",
       "managed": false
     },
+    ".claude/project/sprint/sprints/SP-20260531-006/current.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/sprints/SP-20260531-006/progress.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
     ".claude/project/sprint/sprints/SP-20260531-005/current.yaml": {
       "owner": "runtime",
       "managed": false
@@ -15182,6 +15190,14 @@
       "kind": "md",
       "sha256": "49b0a700e29dceb68c7a7a019c364e7cd9bac2e4cade2b57f33fe817680b54e6",
       "installedSha": "49b0a700e29dceb68c7a7a019c364e7cd9bac2e4cade2b57f33fe817680b54e6"
+    },
+    ".claude/commands/guides/write.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/commands/guides/write.md",
+      "kind": "md",
+      "sha256": "8c37598c82014b34c2484e79964f12b62f11797bb91d0a9aec6353c5c39cb581",
+      "installedSha": "8c37598c82014b34c2484e79964f12b62f11797bb91d0a9aec6353c5c39cb581"
     },
     ".claude/commands/growth/ad-images.md": {
       "owner": "framework",
