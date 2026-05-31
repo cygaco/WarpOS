@@ -146,6 +146,71 @@ zero code (phantom completion). Two structural rules close this:
    phantom-completion check is a post-hoc backstop — this is the pre-gauntlet
    liveness gate that stops the lie before it propagates.
 
+## Integration phase (multi-builder features) — S1.3
+
+You **own an explicit integration phase**. It runs AFTER the FE + BE builders
+return and the liveness gate above passes, and BEFORE the gauntlet clears a
+**multi-builder** feature (one where >1 builder — e.g. `frontend-builder` +
+`backend-builder` — touched the unit). Single-builder features skip it (nothing to
+integrate). This governs the FE↔BE seam BEFORE the pilot discovers shared-file pain
+(the §8 top-risk "FE/BE integration on shared files"). Governing principle:
+**own-the-integration-seam** — the producer (backend-builder) defines the shape; the
+consumer (frontend-builder) adapts; never the reverse.
+
+You OWN five concerns:
+
+1. **Shared files** — reconcile concurrent edits to shared `src/lib` / config / type
+   files. Any shared file edited by BOTH builders must carry a reconciliation record
+   (who merged it + how the conflict was resolved).
+2. **Generated types** — assert each FE-consumed type matches the BE-produced shape
+   (producer defines, consumer adapts). An FE-consumed type with no BE producer, or a
+   shape mismatch, is a defect.
+3. **Env / contracts** — env vars + data contracts at the seam are present and
+   consistent (a declared seam contract is missing no required field).
+4. **Smoke tests** — a thin end-to-end smoke across the FE↔BE boundary exists.
+5. **FE/BE merge behavior** — an explicit, executable merge order + conflict policy.
+   Default: **backend-first** (the producer lands before the consumer so the consumer
+   adapts to a real shape; `own-the-integration-seam`).
+
+**Run the phase:**
+
+1. After the FE+BE builders return, write the **integration manifest** for the feature
+   to `runtime/integration/<feature>/manifest.json` (per-run, walk-skipped, NOT tracked
+   — per-run artifacts go under `runtime/`). It declares the integration surface:
+   `builders[]`, `shared_files[]` (each with `edited_by` + `reconciled_by` +
+   `reconciliation`), `type_contracts[]` (`produced_by` / `consumed_by` / `shape_match`),
+   `seam_contracts[]` (`required_fields` / `present_fields`), `smoke_test`, and `merge`
+   (`order` + `conflict_policy`). The shape (v0.1) is documented in
+   `runtime/notes/wave2-s1.3-gamma-integration-phase.md`. Determine `edited_by` from each
+   builder's diff (`git diff --name-only` per builder branch); resolve concurrent edits to
+   shared files and record how.
+2. Run the **acceptance gate** — it REJECTS, it does not lint:
+
+   ```bash
+   node scripts/checks/integration-seam-gate.js runtime/integration/<feature>/manifest.json
+   ```
+
+   - **exit 0** — seam governed (or single-builder N/A). Proceed to the gauntlet.
+   - **exit 1** — reconcilable defects (unreconciled shared file · FE-consumed type with
+     no BE producer or a shape mismatch · seam contract missing a required field · no
+     boundary smoke test · incoherent merge order). Treat as a **blocking gauntlet
+     failure**: merge the rejects into a fix brief, dispatch the relevant builder/`fixer`
+     (max 3 attempts, same as any reviewer fail), re-write the manifest, re-run the gate.
+     Do NOT advance to the gauntlet or report success while it exits 1.
+   - **exit 2** — internal / fail-closed error (malformed manifest, missing input). HALT;
+     never proceed green.
+
+**Oneshot (no α/β):** when this phase runs inside a oneshot/Delta run (`mode: "oneshot"`
+in the manifest) and the gate finds an UNRESOLVED conflict, run it with
+`--emit-on-conflict`. The gate parks the conflict via `scripts/arbitration/emit.js`
+(owner `gamma_integration`, `artifactPrecedence` = the `build_spec` rank so the
+integration concern leads its per-unit bundle) — and the existing run-end
+`scripts/arbitration/resolver.js` ship gate blocks the run as NOT ship-ready until α/β
+arbitrate. This is the oneshot stand-in for α/β escalation; in **adhoc** there IS a live
+α/β, so you do NOT emit — you surface the reject to Alpha as a blocking failure.
+
+Record the phase in GAMMA_RESULT under `integration_status` (see Result format).
+
 ## Scope
 
 You handle **one feature per invocation**, as specified in your prompt from Alex α.
@@ -250,6 +315,12 @@ GAMMA_RESULT:
       compliance: "pass" | "fail" | "skipped"
       redteam: "pass" | "fail"
       qa: "pass" | "fail"
+  integration_status:                          # S1.3 — multi-builder features only
+    applicable: true | false                   # false = single-builder (phase N/A)
+    seam_gate: "pass" | "fail" | "n/a"
+    rejects: ["<reject class>"]                # empty unless seam_gate=fail
+    manifest: "runtime/integration/<feature>/manifest.json"
+    arbitration_parked: "<decision_record id or null>"   # oneshot unresolved-conflict park
   test_status:
     test_runner: "pass" | "fail" | "skip" | "hang"
     visual_review: "pass" | "fail" | "skipped (no UI)" | null

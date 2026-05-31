@@ -28,6 +28,27 @@ Available agents: `builder`, `reviewer`, `compliance`, `qa`, `redteam`, `fixer` 
 - One builder per feature. Sequential dispatches (CLI is blocking).
 - Pass the feature spec (PRD + stories) and the adhoc prompt template.
 
+### 1.5 Integration phase (multi-builder features only) — S1.3
+
+When a feature was built by **more than one builder** (e.g. `frontend-builder` +
+`backend-builder`), Gamma runs an explicit **integration phase** AFTER the builders
+return and BEFORE the gauntlet — it OWNS the FE↔BE seam (shared files, generated types,
+env/data contracts, an end-to-end smoke test, and FE/BE merge order/conflict policy). The
+producer (backend) defines the shape; the consumer (frontend) adapts (`own-the-integration-seam`).
+Gamma writes a per-run integration manifest to `runtime/integration/<feature>/manifest.json`
+and runs the **reject-not-lint** acceptance gate:
+
+```bash
+node scripts/checks/integration-seam-gate.js runtime/integration/<feature>/manifest.json
+```
+
+exit 0 = seam governed (or single-builder N/A) → proceed to the gauntlet; exit 1 = blocking
+defect (treat like a reviewer fail: fix brief → builder/fixer, max 3, re-run); exit 2 =
+fail-closed error → HALT. In oneshot (no α/β) an unresolved conflict is parked via
+`scripts/arbitration/emit.js` (owner `gamma_integration`) and the run-end resolver blocks
+ship-ready. Full detail: `.claude/agents/00-alex/gamma.md` → "Integration phase" +
+`runtime/notes/wave2-s1.3-gamma-integration-phase.md`. Single-builder features skip this step.
+
 ### 2. Run gauntlet
 
 After builder completes, dispatch each reviewer via CLI:

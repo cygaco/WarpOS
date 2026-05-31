@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-05-31T05:30:47.700Z",
+  "generatedAt": "2026-05-31T05:41:03.648Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.11.1",
   "migrations": [],
@@ -4388,6 +4388,20 @@
       "source": "scripts/checks/ingest-firewall-scan.js",
       "sha256": "7f3e0890f57b0f034482103d4be4476432b30bfc523c25c605ca396ba216366c",
       "installedSha": "7f3e0890f57b0f034482103d4be4476432b30bfc523c25c605ca396ba216366c"
+    },
+    "scripts/checks/integration-seam-gate.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/integration-seam-gate.js",
+      "sha256": "18dbe8479a22a82525625f138ad552cfd04b70d59a2c5d49df26693ef3db4d17",
+      "installedSha": "18dbe8479a22a82525625f138ad552cfd04b70d59a2c5d49df26693ef3db4d17"
+    },
+    "scripts/checks/integration-seam-gate.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/integration-seam-gate.test.js",
+      "sha256": "3edfde0174215b22a670b4c808603103b7f9c42b4a5f6ef7738a79d688dd0a95",
+      "installedSha": "3edfde0174215b22a670b4c808603103b7f9c42b4a5f6ef7738a79d688dd0a95"
     },
     "scripts/checks/manager-principles-scan.js": {
       "owner": "framework",
@@ -15269,8 +15283,8 @@
       "managed": true,
       "source": ".claude/agents/02-oneshot/.system/protocol.md",
       "kind": "md",
-      "sha256": "9542b0bad242f96773ee694a7724e348eb07ddb8866c3af6a92626738896d0e2",
-      "installedSha": "9542b0bad242f96773ee694a7724e348eb07ddb8866c3af6a92626738896d0e2"
+      "sha256": "28d294c14ca619916c737db3d49a515db81c70dea0dd41d4ffd3c84d1db58c3a",
+      "installedSha": "28d294c14ca619916c737db3d49a515db81c70dea0dd41d4ffd3c84d1db58c3a"
     },
     ".claude/agents/02-oneshot/.system/skeleton-checklist.md": {
       "owner": "framework",
@@ -15397,8 +15411,8 @@
       "managed": true,
       "source": ".claude/agents/01-adhoc/.system/protocol.md",
       "kind": "md",
-      "sha256": "ca180c73694432308c193e13f66b0ccac8e0401cbee3fda0ed93095ff959ec07",
-      "installedSha": "ca180c73694432308c193e13f66b0ccac8e0401cbee3fda0ed93095ff959ec07"
+      "sha256": "f5adb3f0b2fb0735b5774170d13f722525acca7c7a9db812888e7a98c44b84f7",
+      "installedSha": "f5adb3f0b2fb0735b5774170d13f722525acca7c7a9db812888e7a98c44b84f7"
     },
     ".claude/agents/00-alex/alpha.md": {
       "owner": "framework",
@@ -15429,8 +15443,8 @@
       "managed": true,
       "source": ".claude/agents/00-alex/gamma.md",
       "kind": "md",
-      "sha256": "8e1956752aa21ec370863d87863d9c918d373e70cf2cd2f3697087dc728c89c1",
-      "installedSha": "8e1956752aa21ec370863d87863d9c918d373e70cf2cd2f3697087dc728c89c1"
+      "sha256": "0b162e7ab826722524c71824324be09a580d393c19b51c4efcbd1d266bfad48c",
+      "installedSha": "0b162e7ab826722524c71824324be09a580d393c19b51c4efcbd1d266bfad48c"
     },
     ".claude/agents/00-alex/.system/events.jsonl": {
       "owner": "runtime",
