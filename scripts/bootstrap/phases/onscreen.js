@@ -184,7 +184,33 @@ async function verifyServe(opts) {
 }
 
 async function run(ctx) {
-  const { product, log } = ctx;
+  const { product, log, repoRoot, dryRun } = ctx;
+
+  // S0.3: ensure the app scaffold exists before handing off — you cannot get
+  // "on screen" without an app to serve. Deterministic + idempotent (skips when a
+  // package.json already exists, e.g. /portfolio:new already scaffolded) +
+  // fail-open (a scaffold error must NOT break the phase). npm install is left to
+  // the product-side orchestrator (the scaffold ships pinned deps, not modules).
+  let scaffoldNote = "";
+  if (!dryRun && repoRoot) {
+    try {
+      const pkgPath = require("path").join(repoRoot, "package.json");
+      if (!require("fs").existsSync(pkgPath)) {
+        const { scaffoldApp } = require("../../scaffold/app");
+        const slug = String(product || require("path").basename(repoRoot) || "app")
+          .toLowerCase()
+          .replace(/[^a-z0-9-]/g, "-")
+          .replace(/^-+|-+$/g, "");
+        const res = scaffoldApp({ repoRoot, slug, install: false, log: log || (() => {}) });
+        if (res && res.ok && !res.alreadyPresent) {
+          scaffoldNote = ` — app scaffold materialized (${res.created.length} files; run npm install before serving)`;
+          if (log) log(`on-screen: app scaffold materialized (${res.created.length} files)`);
+        }
+      }
+    } catch (e) {
+      if (log) log(`on-screen: app scaffold skipped (non-fatal): ${e.message}`);
+    }
+  }
 
   // Targeting Milestone-1's first sprint (AC-5.1) and actually running it until
   // it serves is product-side, LLM-orchestrated work — a node process can't do
@@ -201,9 +227,13 @@ async function run(ctx) {
   return {
     ok: false,
     status: "needs_orchestration",
-    message: "on-screen execution is product-side",
+    message: "on-screen execution is product-side" + scaffoldNote,
     orchestration_prompt:
-      "Execute Milestone-1's first sprint product-side; gate completion with verifyServe (build clean + HTTP 200 + entry transforms). Do not claim success on build alone.",
+      "Execute Milestone-1's first sprint product-side. The WarpOS app scaffold " +
+      "(Next.js App Router + Tailwind v4 + shadcn/ui) is in place — run `npm install`, " +
+      "then build features on the primitives in src/components/ui (never hand-roll raw " +
+      "elements). Gate completion with verifyServe (build clean + HTTP 200 + entry " +
+      "transforms). Do not claim success on build alone.",
   };
 }
 

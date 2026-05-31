@@ -1,0 +1,37 @@
+import { Rocket } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+
+export default function Home() {
+  return (
+    <main className="mx-auto flex min-h-screen max-w-2xl flex-col items-center justify-center gap-6 p-8">
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Rocket className="size-5" aria-hidden /> {{SLUG}}
+          </CardTitle>
+          <CardDescription>
+            Scaffolded with WarpOS — Next.js App Router, Tailwind v4, shadcn/ui,
+            Radix, Lucide. Build on the primitives in{" "}
+            <code className="rounded bg-muted px-1 py-0.5 text-sm">
+              src/components/ui
+            </code>{" "}
+            — never hand-roll a raw &lt;button&gt; or &lt;input&gt;.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-wrap gap-3">
+          <Button>Primary</Button>
+          <Button variant="secondary">Secondary</Button>
+          <Button variant="outline">Outline</Button>
+          <Button variant="ghost">Ghost</Button>
+        </CardContent>
+      </Card>
+    </main>
+  );
+}

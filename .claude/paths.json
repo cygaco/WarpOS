@@ -36,6 +36,7 @@
   "integrationsRoot": "_requirements/09-integrations",
   "docsRoot": "_docs",
   "frameworkRoot": "framework",
+  "appScaffoldTemplates": "framework/templates/app-scaffold",
   "manifest": ".claude/manifest.json",
   "settings": ".claude/settings.json",
   "store": ".claude/agents/store.json",

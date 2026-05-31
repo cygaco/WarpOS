@@ -12,12 +12,14 @@ Creates a fresh product repo as a sibling directory to WarpOS on disk, installs 
 ## Usage
 
 ```
-/portfolio:new <slug> [--from-brief <existing-slug>] [--github]
+/portfolio:new <slug> [--from-brief <existing-slug>] [--github] [--no-scaffold] [--install]
 ```
 
 - `<slug>` — lowercase, hyphenated, 1–64 chars (`^[a-z0-9][a-z0-9-]{0,63}$`).
 - `--from-brief <slug>` — move brief files from `_docs/briefs/<slug>/` or `_docs/clones/<slug>/` into the new repo (folds in the former adopt step via the adopt engine); they're committed with the scaffold.
 - `--github` — **opt-in.** Also create a private GitHub repo (`gh repo create … --private --push`, DEC-008) and push. Operator-run only (prefix the command with `!`, or be in a permissive permission mode) — the agent is blocked from this in plain auto mode.
+- `--no-scaffold` — **opt-out.** Skip the app scaffold (S0.3). By default the product is scaffolded with a real Next+Tailwind v4+shadcn/ui+Radix+Lucide app (the "kills vibe-coded" baseline); pass this for non-web products.
+- `--install` — also run `npm install` in the new repo (default OFF — the scaffold ships pinned deps, not `node_modules`; keeping install off keeps creation fast + offline, and the next-steps print the one-line install command).
 
 ## What it does
 
@@ -27,17 +29,21 @@ Creates a fresh product repo as a sibling directory to WarpOS on disk, installs 
 4. Runs `/warp:setup` inside the new directory.
 5. Registers the slug via `scripts/portfolio/register.js`.
 6. If `--from-brief` given, moves the brief files in (the folded-in adopt step).
-7. Commits the full scaffold (warp install + brief) so the repo opens clean and ready.
-8. **Default:** prints local-only next-steps (open it manually + how to create a remote). **With `--github`:** pre-checks `gh repo view`, then `gh repo create <slug> --private --source=. --remote=origin --push`, and persists `github_url` to the registry.
-9. Emits `portfolio_new` trace event (TR-7), recording the `github` flag.
+7. **Scaffolds the app (S0.3, default on):** materializes the pinned Next.js+Tailwind v4+shadcn/ui+Radix+Lucide scaffold (`scripts/scaffold/app.js` → `framework/templates/app-scaffold`) into the repo — a real component library + design tokens + security-header baseline + a smoke e2e. Skipped with `--no-scaffold`; `--install` also runs `npm install`. Fail-open (a scaffold error never invalidates the repo + warp install).
+8. Commits the full scaffold (warp install + app scaffold + brief) so the repo opens clean and ready.
+9. **Default:** prints local-only next-steps (install + open it manually + how to create a remote). **With `--github`:** pre-checks `gh repo view`, then `gh repo create <slug> --private --source=. --remote=origin --push`, and persists `github_url` to the registry.
+10. Emits `portfolio_new` trace event (TR-7), recording the `github` flag.
 
 ## Output (default — local-only)
 
 ```
 scaffolding <slug> at <path>... running /warp:setup... done.
+  scaffold: N file(s) created, M preserved
 
-Local repo ready — WarpOS installed, committed, no remote:
+Local repo ready — WarpOS installed, app scaffolded, committed, no remote:
   <path>
+Install deps and see it on screen (the scaffold ships pinned deps, not node_modules):
+  cd "<path>" && npm install && npm run dev
 Next — open it in its own session and work there:
   /portfolio:open <slug> --spawn
 Create a private GitHub remote when you want one (run from inside the repo):
@@ -56,7 +62,7 @@ With `--github`, additionally creates + pushes the private remote and prints the
 
 ## Procedure
 
-Run: `node scripts/portfolio/new.js <slug> [--from-brief <brief-slug>] [--github]`
+Run: `node scripts/portfolio/new.js <slug> [--from-brief <brief-slug>] [--github] [--no-scaffold] [--install]`
 
 ## Related
 

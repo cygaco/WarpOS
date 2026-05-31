@@ -106,7 +106,11 @@ Invoke `roadmap:create` to produce `ROADMAP.md` — grounded in the canonical do
 first**: Milestone 1's first sprint is getting the core loop on screen.
 
 ### Phase 4 — On screen
-Execute that first sprint until the core loop **serves**, gated by
+**Scaffold-if-missing (S0.3):** before handoff, the phase materializes the WarpOS
+app scaffold (Next.js+Tailwind v4+shadcn/ui+Radix+Lucide via `scripts/scaffold/app.js`)
+when the repo has no `package.json` yet — you can't get on screen without an app to
+serve. Idempotent (no-op when `/portfolio:new` already scaffolded) and fail-open.
+Then execute that first sprint until the core loop **serves**, gated by
 verify-before-claim: build clean + dev server returns HTTP 200 + entry module
 transforms without error. "It builds" ≠ "it serves" — prove both; a live `node`
 process or an existing worktree is not evidence. Local-first, no-backend,

@@ -1,0 +1,30 @@
+import type { NextConfig } from "next";
+
+// Security headers baked in at the scaffold layer so every WarpOS-scaffolded
+// product ships hardened defaults (the "not vibe-coded" baseline). A strict CSP
+// is intentionally NOT in this static list — a correct CSP needs a per-route
+// nonce and a dev `unsafe-eval` allowance for HMR, which belongs in middleware,
+// not a blanket header (a wrong blanket CSP is the #1 thing that breaks the dev
+// serve gate). See DESIGN_SYSTEM.md → "Hardening: add a CSP".
+const securityHeaders = [
+  { key: "X-Frame-Options", value: "DENY" },
+  { key: "X-Content-Type-Options", value: "nosniff" },
+  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+  { key: "X-DNS-Prefetch-Control", value: "off" },
+  {
+    key: "Permissions-Policy",
+    value: "camera=(), microphone=(), geolocation=(), interest-cohort=()",
+  },
+  {
+    key: "Strict-Transport-Security",
+    value: "max-age=31536000; includeSubDomains",
+  },
+];
+
+const nextConfig: NextConfig = {
+  async headers() {
+    return [{ source: "/:path*", headers: securityHeaders }];
+  },
+};
+
+export default nextConfig;

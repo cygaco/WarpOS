@@ -47,6 +47,7 @@ const PATHS = {
   "integrationsRoot": path.join(PROJECT, "_requirements", "09-integrations"),
   "docsRoot": path.join(PROJECT, "_docs"),
   "frameworkRoot": path.join(PROJECT, "framework"),
+  "appScaffoldTemplates": path.join(PROJECT, "framework", "templates", "app-scaffold"),
   "manifest": path.join(PROJECT, ".claude", "manifest.json"),
   "settings": path.join(PROJECT, ".claude", "settings.json"),
   "store": path.join(PROJECT, ".claude", "agents", "store.json"),

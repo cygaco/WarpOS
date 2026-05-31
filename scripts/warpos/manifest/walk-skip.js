@@ -29,6 +29,7 @@ const WALK_SKIP_DIRS = new Set([
   ".idea",
   "runtime",
   "worktrees", // .claude/worktrees/ — agent scratch clones; not framework
+  ".worktrees", // repo-root builder isolation worktrees (.worktrees/wt-*) — agent scratch; never framework, must never enter the shipping manifest nor break its build
   "_planning", // operator planning scratch for in-flight system updates; not framework, not shipped
 ]);
 

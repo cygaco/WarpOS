@@ -79,6 +79,7 @@ Previous builders made these mistakes — you will be scored more harshly if you
 - Every interactive element MUST have an accessible name (aria-label, aria-labelledby, or visible text)
 - Follow the dark corporate theme: no gradients, no frosted glass, no emoji in UI text, muted restraint
 - If a component variant is missing, flag it in output — do NOT create ad-hoc inline replacements
+- **Scaffolded products (S0.3):** a WarpOS-scaffolded product ships `src/components/ui/` (shadcn/ui: `button`, `card`, `input`, `label`, `dialog`) + `src/lib/utils.ts` (`cn`) + tokens in `src/app/globals.css`, documented in repo-root `DESIGN_SYSTEM.md`. Extend with `npx shadcn@latest add <component>` — never hand-roll. **Contract tie (S0.2):** a `build_spec`'s `components[]` MUST resolve to primitives present in `src/components/ui/`; one with no `ui/` source is a contract defect, not a license to inline.
 
 ### PRIMITIVE-NEEDED signal (RT-011 — run-9 retro fix)
 If you would otherwise reach for a raw `<button>`, `<input>`, or `<select>` because **no existing ui/ primitive variant fits the pattern** (icon-only X close, chip toggle, inline text button, etc.), do NOT inline the raw element. Instead:

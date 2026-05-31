@@ -192,6 +192,11 @@
       "const": "framework",
       "description": "dir (framework) — paths.frameworkRoot"
     },
+    "appScaffoldTemplates": {
+      "type": "string",
+      "const": "framework/templates/app-scaffold",
+      "description": "dir (framework) — paths.appScaffoldTemplates"
+    },
     "manifest": {
       "type": "string",
       "const": ".claude/manifest.json",

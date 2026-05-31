@@ -24,6 +24,11 @@ const fromBrief = fromBriefIdx !== -1 ? args[fromBriefIdx + 1] : null;
 // remote when they want). This keeps new-product creation fully within
 // agent autonomy — no push means no data-exfiltration permission gate.
 const wantGithub = args.includes("--github");
+// S0.3: scaffold the Next+Tailwind+shadcn app by default (the "kills vibe-coded"
+// baseline). --no-scaffold opts out (non-web products); --install runs npm install
+// (default OFF — keep new.js fast + offline; we print a one-line next-step instead).
+const wantNoScaffold = args.includes("--no-scaffold");
+const wantInstall = args.includes("--install");
 // First positional arg (not a flag, and not the value-slot of --from-brief) is the slug.
 const slug = args.filter((a, i) => {
   if (a.startsWith("--")) return false;
@@ -165,8 +170,21 @@ if (fromBrief) {
   _pointToFoundingBrief(repoPath, fromBrief);
 }
 
-// ── commit the full scaffold (warp install + brief) so the repo
-//    opens clean and ready ──────────────────────────────────
+// ── S0.3: scaffold the app (Next+Tailwind+shadcn/ui+Radix+Lucide) ──
+// Default on (kills "vibe-coded"); --no-scaffold opts out. Fail-open: a scaffold
+// error never invalidates the repo + warp install already in place.
+if (!wantNoScaffold) {
+  try {
+    const { scaffoldApp } = require("../scaffold/app");
+    const res = scaffoldApp({ repoRoot: repoPath, slug, install: wantInstall, log: (m) => console.log(`  ${m}`) });
+    if (!res.ok) console.error(`app scaffold skipped: ${res.error}`);
+  } catch (e) {
+    console.error(`app scaffold skipped (non-fatal): ${e.message}`);
+  }
+}
+
+// ── commit the full scaffold (warp install + app scaffold + brief) so the
+//    repo opens clean and ready ──────────────────────────────
 spawnSync("git", ["add", "-A"], { cwd: repoPath, encoding: "utf8" });
 spawnSync(
   "git",
@@ -332,8 +350,10 @@ function _defaultBranch(cwd) {
 }
 
 function _printLocalOnlyNextSteps(slugVal, repoPathVal) {
-  console.log(`\nLocal repo ready — WarpOS installed, committed, no remote:`);
+  console.log(`\nLocal repo ready — WarpOS installed, app scaffolded, committed, no remote:`);
   console.log(`  ${repoPathVal}`);
+  console.log(`Install deps and see it on screen (the scaffold ships pinned deps, not node_modules):`);
+  console.log(`  cd "${repoPathVal}" && npm install && npm run dev`);
   console.log(`Next — open it in its own session and work there:`);
   console.log(`  /portfolio:open ${slugVal} --spawn`);
   console.log(`Create a private GitHub remote when you want one (run from inside the repo):`);
