@@ -20,7 +20,7 @@ Score a skill/prompt artifact against a structured eval-pack and emit a contract
 ### Step 1: Resolve paths
 
 Load `paths.etcEvalPacks` (`.claude/project/etc/eval-packs`) and `paths.etcDecisions`
-(`.claude/project/etc/decisions`) from `.claude/paths.json`.
+(`runtime/etc/decisions`) from `.claude/paths.json`.
 
 ### Step 2: Run the eval engine
 

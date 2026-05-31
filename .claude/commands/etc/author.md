@@ -41,7 +41,7 @@ If the argument is a path to an existing `.md`:
 
 Reference paths as `paths.X` keys — never bare literals. Example:
 - `paths.etcEvalPacks` (`.claude/project/etc/eval-packs`) for eval-pack storage
-- `paths.etcDecisions` (`.claude/project/etc/decisions`) for decision records
+- `paths.etcDecisions` (`runtime/etc/decisions`) for decision records
 - `paths.etcConsults` (`runtime/etc/consults`) for raw consult transcripts
 
 ### Step 3: Produce the eval-pack

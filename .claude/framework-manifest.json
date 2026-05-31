@@ -4,7 +4,7 @@
   "generated_by": "scripts/generate-framework-manifest.js",
   "counts": {
     "agent": 66,
-    "skill": 172,
+    "skill": 173,
     "reference": 28,
     "maps_baseline": 23,
     "hook": 67,
@@ -55,7 +55,7 @@
     "module_scope": 1,
     "framework_doc": 2
   },
-  "total": 885,
+  "total": 886,
   "assets": {
     "agent": [
       {
@@ -1121,7 +1121,7 @@
         "src": ".claude/commands/etc/author.md",
         "dest": ".claude/commands/etc/author.md",
         "kind": "skill",
-        "sha256": "b68f1e9ea6d293baf6c027752aed80bc6f146475d567a79cd6269f7ebb76c281",
+        "sha256": "1cb8afbf4a890af1cdd6157dea5844e9459a8b7ed5831ef2fe21ca2362381240",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
@@ -1133,7 +1133,7 @@
         "src": ".claude/commands/etc/eval.md",
         "dest": ".claude/commands/etc/eval.md",
         "kind": "skill",
-        "sha256": "ea7d4bf97cd8eff6dcf3b958437c1fb23da2df26a23902c9eeac5c239dd1c045",
+        "sha256": "bcf2a253df268e21226d58627d95c8d390a56f0ca523dcec228fa7b0a6a69c99",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
@@ -2058,6 +2058,18 @@
         "dest": ".claude/commands/scan/environment.md",
         "kind": "skill",
         "sha256": "8e74bb77513827983ae787968eaca0eb08ef34ca0b64dc7dca8ad2226e62de25",
+        "owner": "framework",
+        "mergeStrategy": "three_way_markdown",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "skill.scan.etc-harness.md",
+        "src": ".claude/commands/scan/etc-harness.md",
+        "dest": ".claude/commands/scan/etc-harness.md",
+        "kind": "skill",
+        "sha256": "ec84169ada0ea9fa3b07ef92d25385a45a5ddc067e484cc8174a17d268fcd87c",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
