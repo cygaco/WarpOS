@@ -37,6 +37,7 @@ const WALK_SKIP_FILES = new Set([
   ".env",
   ".env.local",
   "DUMP.md",
+  "DEV_SETUP_GUIDE.md", // untracked operator/product launch guide (not framework, not shipped)
   ".DS_Store",
   "Thumbs.db",
 ]);

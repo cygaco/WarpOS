@@ -4,16 +4,16 @@
   "generated_by": "scripts/generate-framework-manifest.js",
   "counts": {
     "agent": 66,
-    "skill": 168,
+    "skill": 169,
     "reference": 28,
     "maps_baseline": 23,
-    "hook": 66,
-    "hook_lib": 13,
+    "hook": 67,
+    "hook_lib": 15,
     "tool": 2,
     "pattern": 6,
     "fixture": 23,
     "warpos_script": 52,
-    "check_tool": 27,
+    "check_tool": 29,
     "agent_tool": 3,
     "decision_tool": 1,
     "runtime_tool": 1,
@@ -55,7 +55,7 @@
     "module_scope": 1,
     "framework_doc": 2
   },
-  "total": 852,
+  "total": 858,
   "assets": {
     "agent": [
       {
@@ -2070,6 +2070,18 @@
         "dest": ".claude/commands/scan/full.md",
         "kind": "skill",
         "sha256": "9a1096762151260bd43ef13c0188872fc3bd50b449ddd2951accfe7c0dadbed1",
+        "owner": "framework",
+        "mergeStrategy": "three_way_markdown",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "skill.scan.ingest-firewall.md",
+        "src": ".claude/commands/scan/ingest-firewall.md",
+        "dest": ".claude/commands/scan/ingest-firewall.md",
+        "kind": "skill",
+        "sha256": "0f57761c93ee1beb78a02df8f024f885fb0ec71a4a1611acee30a9d6f132ca39",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
@@ -4255,6 +4267,18 @@
         "replaces": null
       },
       {
+        "id": "hook.untrusted-content-firewall.js",
+        "src": "scripts/hooks/untrusted-content-firewall.js",
+        "dest": "scripts/hooks/untrusted-content-firewall.js",
+        "kind": "hook",
+        "sha256": "a687e7d76fa681dffecf3adc6bd5e906f0858f572c3307c2314fe7353e88e789",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
         "id": "hook.version-bump-guard.js",
         "src": "scripts/hooks/version-bump-guard.js",
         "dest": "scripts/hooks/version-bump-guard.js",
@@ -4322,6 +4346,18 @@
         "dest": "scripts/hooks/lib/gate-schema.js",
         "kind": "hook_lib",
         "sha256": "bf92f080714d9464a8c52df82ccb79f01063678f68004271db443fcf42f64a06",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "hook_lib.lib.injection-patterns.js",
+        "src": "scripts/hooks/lib/injection-patterns.js",
+        "dest": "scripts/hooks/lib/injection-patterns.js",
+        "kind": "hook_lib",
+        "sha256": "9954b4645547cf59f68da758d53456bd66cb74cace65fed01f65b6dea3cf9baf",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -4430,6 +4466,18 @@
         "dest": "scripts/hooks/lib/skill-telemetry.js",
         "kind": "hook_lib",
         "sha256": "1de6d08b91897956fc6d7e9a8947cfe07a9801fca01505f106dedc7d563075fd",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "hook_lib.lib.untrusted-content.js",
+        "src": "scripts/hooks/lib/untrusted-content.js",
+        "dest": "scripts/hooks/lib/untrusted-content.js",
+        "kind": "hook_lib",
+        "sha256": "66a4e97fb68a78cd1eec0ab8e9754de5eccdd581384cf1a5f79684384d0f4832",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -5037,7 +5085,7 @@
         "src": "scripts/warpos/manifest/walk-skip.js",
         "dest": "scripts/warpos/manifest/walk-skip.js",
         "kind": "warpos_script",
-        "sha256": "c3a897a8369b5701b4773263d25036fe270b28fdca345ee9b3e6216ae5841376",
+        "sha256": "e4f44c09ebc4d64d219464a44c005b2b3fe93e442a578563f2d8b5d1d67599b3",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -5527,6 +5575,18 @@
         "replaces": null
       },
       {
+        "id": "check_tool.ingest-firewall-scan.js",
+        "src": "scripts/checks/ingest-firewall-scan.js",
+        "dest": "scripts/checks/ingest-firewall-scan.js",
+        "kind": "check_tool",
+        "sha256": "7f3e0890f57b0f034482103d4be4476432b30bfc523c25c605ca396ba216366c",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
         "id": "check_tool.manager-principles-scan.js",
         "src": "scripts/checks/manager-principles-scan.js",
         "dest": "scripts/checks/manager-principles-scan.js",
@@ -5580,6 +5640,18 @@
         "dest": "scripts/checks/test-sprint-beta-honesty.js",
         "kind": "check_tool",
         "sha256": "5ab2b6f20dbd33aadd3264d4f916d1eab49ee4336ba6faaa7b5a4c4dcf446126",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "check_tool.test-untrusted-content.js",
+        "src": "scripts/checks/test-untrusted-content.js",
+        "dest": "scripts/checks/test-untrusted-content.js",
+        "kind": "check_tool",
+        "sha256": "d80b0c259115c0dd7b44321db5afa36770841bb173c2285cedcd7d61dabed730",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",

@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-05-31T00:08:43.380Z",
+  "generatedAt": "2026-05-31T00:28:29.206Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.11.1",
   "migrations": [],
@@ -2664,8 +2664,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/warpos/manifest/walk-skip.js",
-      "sha256": "c3a897a8369b5701b4773263d25036fe270b28fdca345ee9b3e6216ae5841376",
-      "installedSha": "c3a897a8369b5701b4773263d25036fe270b28fdca345ee9b3e6216ae5841376"
+      "sha256": "e4f44c09ebc4d64d219464a44c005b2b3fe93e442a578563f2d8b5d1d67599b3",
+      "installedSha": "e4f44c09ebc4d64d219464a44c005b2b3fe93e442a578563f2d8b5d1d67599b3"
     },
     "scripts/warpos/lib/content-hash.js": {
       "owner": "framework",
@@ -3899,6 +3899,13 @@
       "sha256": "04dd2d2bfc1b87a6bfa7aec5781c11a6df1a1921f24edecd212c1771acfe8b5a",
       "installedSha": "04dd2d2bfc1b87a6bfa7aec5781c11a6df1a1921f24edecd212c1771acfe8b5a"
     },
+    "scripts/hooks/untrusted-content-firewall.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/hooks/untrusted-content-firewall.js",
+      "sha256": "a687e7d76fa681dffecf3adc6bd5e906f0858f572c3307c2314fe7353e88e789",
+      "installedSha": "a687e7d76fa681dffecf3adc6bd5e906f0858f572c3307c2314fe7353e88e789"
+    },
     "scripts/hooks/version-bump-guard.js": {
       "owner": "framework",
       "managed": true,
@@ -3940,6 +3947,13 @@
       "source": "scripts/hooks/lib/gate-schema.js",
       "sha256": "bf92f080714d9464a8c52df82ccb79f01063678f68004271db443fcf42f64a06",
       "installedSha": "bf92f080714d9464a8c52df82ccb79f01063678f68004271db443fcf42f64a06"
+    },
+    "scripts/hooks/lib/injection-patterns.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/hooks/lib/injection-patterns.js",
+      "sha256": "9954b4645547cf59f68da758d53456bd66cb74cace65fed01f65b6dea3cf9baf",
+      "installedSha": "9954b4645547cf59f68da758d53456bd66cb74cace65fed01f65b6dea3cf9baf"
     },
     "scripts/hooks/lib/logger.js": {
       "owner": "framework",
@@ -4003,6 +4017,13 @@
       "source": "scripts/hooks/lib/skill-telemetry.js",
       "sha256": "1de6d08b91897956fc6d7e9a8947cfe07a9801fca01505f106dedc7d563075fd",
       "installedSha": "1de6d08b91897956fc6d7e9a8947cfe07a9801fca01505f106dedc7d563075fd"
+    },
+    "scripts/hooks/lib/untrusted-content.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/hooks/lib/untrusted-content.js",
+      "sha256": "66a4e97fb68a78cd1eec0ab8e9754de5eccdd581384cf1a5f79684384d0f4832",
+      "installedSha": "66a4e97fb68a78cd1eec0ab8e9754de5eccdd581384cf1a5f79684384d0f4832"
     },
     "scripts/fix-deep/append-learning-l2026-05-13-team.js": {
       "owner": "framework",
@@ -4256,6 +4277,13 @@
       "sha256": "e0399d4e9a8cad0b0f069b43ef79083f3bd146217bf4ef0f6ccbfdf2701765b0",
       "installedSha": "e0399d4e9a8cad0b0f069b43ef79083f3bd146217bf4ef0f6ccbfdf2701765b0"
     },
+    "scripts/checks/ingest-firewall-scan.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/ingest-firewall-scan.js",
+      "sha256": "7f3e0890f57b0f034482103d4be4476432b30bfc523c25c605ca396ba216366c",
+      "installedSha": "7f3e0890f57b0f034482103d4be4476432b30bfc523c25c605ca396ba216366c"
+    },
     "scripts/checks/manager-principles-scan.js": {
       "owner": "framework",
       "managed": true,
@@ -4290,6 +4318,13 @@
       "source": "scripts/checks/test-sprint-beta-honesty.js",
       "sha256": "5ab2b6f20dbd33aadd3264d4f916d1eab49ee4336ba6faaa7b5a4c4dcf446126",
       "installedSha": "5ab2b6f20dbd33aadd3264d4f916d1eab49ee4336ba6faaa7b5a4c4dcf446126"
+    },
+    "scripts/checks/test-untrusted-content.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/test-untrusted-content.js",
+      "sha256": "d80b0c259115c0dd7b44321db5afa36770841bb173c2285cedcd7d61dabed730",
+      "installedSha": "d80b0c259115c0dd7b44321db5afa36770841bb173c2285cedcd7d61dabed730"
     },
     "scripts/checks/version-coherence.js": {
       "owner": "framework",
@@ -13531,6 +13566,14 @@
       "kind": "md",
       "sha256": "9a1096762151260bd43ef13c0188872fc3bd50b449ddd2951accfe7c0dadbed1",
       "installedSha": "9a1096762151260bd43ef13c0188872fc3bd50b449ddd2951accfe7c0dadbed1"
+    },
+    ".claude/commands/scan/ingest-firewall.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/commands/scan/ingest-firewall.md",
+      "kind": "md",
+      "sha256": "0f57761c93ee1beb78a02df8f024f885fb0ec71a4a1611acee30a9d6f132ca39",
+      "installedSha": "0f57761c93ee1beb78a02df8f024f885fb0ec71a4a1611acee30a9d6f132ca39"
     },
     ".claude/commands/scan/install.md": {
       "owner": "framework",
