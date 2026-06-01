@@ -1,8 +1,8 @@
 # Enforcements Map
 
-Generated: 2026-05-31T19:28:09.351Z
+Generated: 2026-06-01T19:33:52.157Z
 
-**63** hooks, **15** lib modules. **8** uncurated (added since last hand-curation on 2026-05-13T22:37:04.323Z).
+**63** hooks, **15** lib modules. **0** uncurated (added since last hand-curation on 2026-05-31T19:28:09.351Z).
 
 ## Coverage
 

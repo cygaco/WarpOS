@@ -1,7 +1,7 @@
 {
   "metadata": {
-    "generated": "2026-05-31T19:28:09.351Z",
-    "lastUpdated": "2026-05-31T19:28:09.351Z",
+    "generated": "2026-06-01T19:33:52.157Z",
+    "lastUpdated": "2026-06-01T19:33:52.157Z",
     "total_tools": 171,
     "categories": 4,
     "regenerated_by": "scripts/regen-maps.js"
@@ -196,8 +196,8 @@
           "path": "scripts/delta-canonical-dispatch-smoke.js",
           "type": "script",
           "exists": true,
-          "size": 8056,
-          "modified": "2026-05-30T10:31:34.033Z"
+          "size": 8173,
+          "modified": "2026-06-01T16:44:13.723Z"
         },
         {
           "id": "tool:delta-cleanup-stale-fix-worktrees",
@@ -367,8 +367,8 @@
           "path": "scripts/dispatch-agent.js",
           "type": "script",
           "exists": true,
-          "size": 17159,
-          "modified": "2026-05-31T03:26:36.372Z"
+          "size": 17165,
+          "modified": "2026-06-01T16:44:02.087Z"
         },
         {
           "id": "tool:dispatch",
@@ -485,7 +485,7 @@
           "type": "script",
           "exists": true,
           "size": 21665,
-          "modified": "2026-05-31T17:16:46.365Z"
+          "modified": "2026-05-31T19:53:31.126Z"
         },
         {
           "id": "tool:generate-maps",
@@ -1213,8 +1213,8 @@
           "path": "scripts/test-dispatch-config.js",
           "type": "script",
           "exists": true,
-          "size": 5657,
-          "modified": "2026-05-30T10:31:34.033Z"
+          "size": 8573,
+          "modified": "2026-06-01T17:10:01.409Z"
         },
         {
           "id": "tool:test-dispatch-route-guard",
@@ -1549,7 +1549,7 @@
           "id": "xref:skills",
           "type": "xref",
           "note": "skills inventory lives in .claude/project/maps/inventory-skills.json",
-          "count": 186
+          "count": 194
         },
         {
           "id": "xref:hooks",

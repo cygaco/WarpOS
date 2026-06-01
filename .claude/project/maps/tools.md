@@ -1,6 +1,6 @@
 # Tools Map
 
-Generated: 2026-05-31T19:28:09.351Z
+Generated: 2026-06-01T19:33:52.157Z
 
 Scripts: **166** | npm scripts: **0** | External CLIs: **3**
 
@@ -28,7 +28,7 @@ Scripts: **166** | npm scripts: **0** | External CLIs: **3**
 | delta-build-fixer-prompt.js | 1780 | 2026-05-30T01:25:39.549Z |
 | delta-build-prompt.js | 7079 | 2026-05-30T01:25:39.550Z |
 | delta-build-reviewer-prompt.js | 10377 | 2026-05-30T01:25:39.550Z |
-| delta-canonical-dispatch-smoke.js | 8056 | 2026-05-30T10:31:34.033Z |
+| delta-canonical-dispatch-smoke.js | 8173 | 2026-06-01T16:44:13.723Z |
 | delta-cleanup-stale-fix-worktrees.js | 1604 | 2026-05-30T01:25:39.551Z |
 | delta-clear-halt.js | 624 | 2026-05-30T01:25:39.551Z |
 | delta-dispatch-builder.js | 8809 | 2026-05-30T01:25:39.554Z |
@@ -47,7 +47,7 @@ Scripts: **166** | npm scripts: **0** | External CLIs: **3**
 | delta-store-review.js | 1672 | 2026-05-30T01:25:39.565Z |
 | delta-update-heartbeat.js | 720 | 2026-05-30T01:25:39.565Z |
 | dismiss-drift-entry.js | 647 | 2026-05-30T01:25:39.566Z |
-| dispatch-agent.js | 17159 | 2026-05-31T03:26:36.372Z |
+| dispatch-agent.js | 17165 | 2026-06-01T16:44:02.087Z |
 | dispatch.js | 20217 | 2026-05-30T01:25:39.566Z |
 | drift-apply-decisions.js | 2075 | 2026-05-30T01:25:39.571Z |
 | drift-build-decisions-jsonl.js | 2675 | 2026-05-30T01:25:39.572Z |
@@ -60,7 +60,7 @@ Scripts: **166** | npm scripts: **0** | External CLIs: **3**
 | drift-verify.js | 5846 | 2026-05-30T01:25:39.574Z |
 | drift-write-decisions.js | 1743 | 2026-05-30T01:25:39.574Z |
 | fix-deep-trace-run09-cleanup.js | 3626 | 2026-05-30T01:25:39.575Z |
-| generate-framework-manifest.js | 21665 | 2026-05-31T17:16:46.365Z |
+| generate-framework-manifest.js | 21665 | 2026-05-31T19:53:31.126Z |
 | generate-maps.js | 12732 | 2026-05-30T01:25:39.577Z |
 | generate-skill-catalog.js | 9320 | 2026-05-30T01:25:39.577Z |
 | generate-steps-maps.js | 8346 | 2026-05-30T01:25:39.578Z |
@@ -141,7 +141,7 @@ Scripts: **166** | npm scripts: **0** | External CLIs: **3**
 | test-beta-gate-release.js | 6406 | 2026-05-30T01:25:39.675Z |
 | test-concurrency-lock.js | 3129 | 2026-05-30T01:25:39.675Z |
 | test-dispatch-agent-resolution.js | 2609 | 2026-05-30T01:25:39.676Z |
-| test-dispatch-config.js | 5657 | 2026-05-30T10:31:34.033Z |
+| test-dispatch-config.js | 8573 | 2026-06-01T17:10:01.409Z |
 | test-dispatch-route-guard.js | 3959 | 2026-05-30T01:25:39.676Z |
 | test-dispatch-telemetry.js | 3750 | 2026-05-30T01:25:39.677Z |
 | test-manifest-guard-product.js | 5363 | 2026-05-30T01:25:39.677Z |

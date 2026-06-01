@@ -1,8 +1,8 @@
 # Skills Map
 
-Generated: 2026-05-31T19:28:09.351Z
+Generated: 2026-06-01T19:33:52.157Z
 
-Total: **184** skills across **39** namespaces. 73 user-invocable.
+Total: **192** skills across **41** namespaces. 77 user-invocable.
 
 ## By namespace
 
@@ -24,9 +24,9 @@ Total: **184** skills across **39** namespaces. 73 user-invocable.
 
 | Name | Description | Calls | Called by |
 |---|---|---|---|
-| lastmile | "Prototype → monetizable product. Drives the 'last mile': readiness audit → launch plan → roadmap/sp | 11 | 0 |
+| lastmile | "Prototype → monetizable product. Drives the 'last mile': readiness audit → launch plan → roadmap/sp | 12 | 0 |
 | ponder | Exploratory pondering of a project — surface tensions, patterns, JTBD drift, and one forcing questio | 5 | 0 |
-| spinup | "From 'just WarpOS' to something on screen — one in-project command: intent (guided brief, or --clon | 3 | 2 |
+| spinup | "From 'just WarpOS' to something on screen — one in-project command: intent (guided brief, or --clon | 4 | 2 |
 
 ### check (4)
 
@@ -114,6 +114,15 @@ Total: **184** skills across **39** namespaces. 73 user-invocable.
 | message-brief | Distill the single winning message (the spine artifact) from an audience dossier + angles — contrast | 0 | 0 |
 | product-finder | Find validated high-margin products for paid traffic — EQ-scored (Product×Ads×Funnel×LTV), SCALE/TES | 0 | 0 |
 
+### guides (4)
+
+| Name | Description | Calls | Called by |
+|---|---|---|---|
+| coverage | Fail-closed enforcer for the _guides/ library — asserts every guide is anchored, the registry is fre | 6 | 3 |
+| integrate | Wire each _guides/ guide into the bootstrap pipeline (spinup/lastmile) at its declared anchor in its | 2 | 5 |
+| organize | Audit and restructure the _guides/ launch-guide library — backfill the guide-anchor contract onto ev | 3 | 3 |
+| write | Author a launch guide into _guides/ — grounded in the Mark Builds Brands methodology + the existing  | 5 | 2 |
+
 ### hooks (4)
 
 | Name | Description | Calls | Called by |
@@ -144,7 +153,7 @@ Total: **184** skills across **39** namespaces. 73 user-invocable.
 | Name | Description | Calls | Called by |
 |---|---|---|---|
 | deep | Deep learning — extracts from conversation + event log + oneshot retro files in parallel, deduplicat | 6 | 6 |
-| ingest | Ingest external knowledge from files, links, or YouTube videos and apply learnings to the system | 3 | 3 |
+| ingest | Ingest external knowledge from files, links, or YouTube videos and apply learnings to the system | 3 | 4 |
 | integrate | Learning integrator — promote validated high-score learnings into actual system enforcement (hooks,  | 3 | 7 |
 
 ### linters (1)
@@ -167,7 +176,7 @@ Total: **184** skills across **39** namespaces. 73 user-invocable.
 |---|---|---|---|
 | all | Registry of all maps — shows every map, its source, last updated, and staleness | 10 | 8 |
 | architecture | App structure — routes, components, libs, how they connect | 0 | 2 |
-| coverage | Maps-suite self-inventory — asserts every /maps:* skill is registered in /maps:all, no dangling regi | 3 | 1 |
+| coverage | Maps-suite self-inventory — asserts every /maps:* skill is registered in /maps:all, no dangling regi | 3 | 2 |
 | enforcements | Enforcement coverage — hooks, gates, gap analysis, open/closed gaps | 0 | 3 |
 | hooks | Hook wiring diagram — events, matchers, scripts, execution order | 0 | 1 |
 | memory | Memory store relationships — who reads/writes each store, entry counts | 0 | 1 |
@@ -183,6 +192,15 @@ Total: **184** skills across **39** namespaces. 73 user-invocable.
 | adhoc | Enter adhoc team mode — Alpha + Beta + Gamma for collaborative feature development | 2 | 5 |
 | oneshot | Initiate a oneshot build — launch Delta as standalone orchestrator for full skeleton runs | 1 | 5 |
 | solo | Enter solo mode — just Alpha and the user, no agent team | 0 | 2 |
+
+### models (4)
+
+| Name | Description | Calls | Called by |
+|---|---|---|---|
+| check | Audit configured dispatch models against the latest vendor catalogs — flag drift, deprecations, and  | 3 | 3 |
+| route | Route a specific command/role to a specific model — thin, validated wrapper over the Dispatch Consol | 2 | 3 |
+| router | Open the model router panel — ensure the catalog carries all the latest model options, then launch t | 3 | 3 |
+| update | Update the dispatch catalog to the latest models — re-ingest vendor docs, migrate deprecated/shut-do | 3 | 2 |
 
 ### oneshot (4)
 
@@ -283,7 +301,7 @@ Total: **184** skills across **39** namespaces. 73 user-invocable.
 | etc-harness | Audit the /etc authoring+eval harness — fail-closed enforcer that rejects an invented authoring form | 2 | 1 |
 | framework-purity | Refuse product-content leaks in canonical — scans for client slugs, maintainer abs paths, root-level | 2 | 4 |
 | framework-views-fresh | Verify .claude/commands and .claude/agents are byte-identical regenerations of their _warpos/ source | 2 | 3 |
-| full | Run every scan in parallel — a full system scan across project health, governance, and WarpOS distri | 46 | 18 |
+| full | Run every scan in parallel — a full system scan across project health, governance, and WarpOS distri | 46 | 19 |
 | ingest-firewall | Audit the ingest stores (_docs/research, _docs/imports, _docs/briefs, _docs/clones) for un-firewalle | 0 | 1 |
 | install | Verify a fresh WarpOS install — manifest, paths, agents, hooks, version, settings. | 1 | 4 |
 | issues | Pattern-mine events.jsonl for repeat audit-block signatures — surface candidates for /issues:log | 5 | 2 |
@@ -296,7 +314,7 @@ Total: **184** skills across **39** namespaces. 73 user-invocable.
 | roadmap-trace | "Assert every done/retrospected/released sprint has BOTH a Sprints-table ledger row AND a Shipped na | 2 | 3 |
 | role-parity | The one check that owns role parity across the org map, the dispatch catalog, and team-guard — fail- | 0 | 1 |
 | scaffold-coverage | Verify the WarpOS app scaffold (Next+Tailwind v4+shadcn/ui+Radix+Lucide) is complete and coherent —  | 2 | 1 |
-| scan-coverage | Scan-suite self-inventory — asserts every /scan:* skill is delegated by /scan:full or explicitly exc | 1 | 3 |
+| scan-coverage | Scan-suite self-inventory — asserts every /scan:* skill is delegated by /scan:full or explicitly exc | 1 | 4 |
 | sprint-beta-honesty | Audits Beta consultation honesty across post-cutoff /sprint:full runs (missing consults, placeholder | 1 | 1 |
 | system | System inventory — enumerate every active WarpOS system, diff against manifest, report drift and gap | 6 | 2 |
 | timeline | Reconstruct a build timeline from transaction, event, and provider logs. | 0 | 1 |
@@ -383,7 +401,7 @@ Total: **184** skills across **39** namespaces. 73 user-invocable.
 | sync | "Legacy alias for /warp:update that forwards to the canonical update flow so older references and mu | 2 | 4 |
 | tour | Guided introduction to WarpOS — explains everything in simple language, no jargon | 15 | 1 |
 | uninstall | Completely remove WarpOS from a project — restores pre-install state from backup | 3 | 1 |
-| update | "Update WarpOS in this project to a target release. Default = latest. Default mode = dry-run; pass - | 5 | 13 |
+| update | "Update WarpOS in this project to a target release. Default = latest. Default mode = dry-run; pass - | 5 | 14 |
 
 ## Cross-references
 
@@ -391,7 +409,7 @@ Top callers (skills that invoke the most others):
 
 - `/scan:full` → /maps:all, /oneshot:preflight, /scan:ac-coverage, /scan:adhoc-team-hygiene, /scan:architecture, /scan:coherence, /scan:design-system, /scan:dispatch-routing-parity, /scan:environment, /scan:etc-harness, /scan:framework-purity, /scan:framework-views-fresh, /scan:ingest-firewall, /scan:install, /scan:issues, /scan:node-procs, /scan:patterns, /scan:privacy, /scan:references, /scan:regressions, /scan:requirements, /scan:roadmap-trace, /scan:role-parity, /scan:scaffold-coverage, /scan:scan-coverage, /scan:sprint-beta-honesty, /scan:system, /scan:timeline, /scan:version-coherence, /scan:warpos-applied-migrations, /scan:warpos-capsule-resolvable, /scan:warpos-install-baseline, /scan:warpos-layer-diff, /scan:warpos-manifest-coverage, /scan:warpos-manifest-honesty, /scan:warpos-migration-coverage, /scan:warpos-migration-presence, /scan:warpos-path-resolution, /scan:warpos-ship-coverage, /scan:warpos-staleness, /scan:warpos-structure-parity, /scan:warpos-tracked-transients, /scan:warpos-version-quorum, /sleep:deep, /warp:doctor, /warp:health
 - `/warp:tour` → /fix:fast, /learn:deep, /maps:all, /maps:architecture, /mode:adhoc, /mode:oneshot, /mode:solo, /portfolio:list, /portfolio:open, /research:simple, /session:handoff, /session:read, /session:write, /sleep:quick, /warp:health
-- `/bootstrap:lastmile` → /learn:ingest, /learn:integrate, /qa:audit, /redteam:full, /research:deep, /roadmap:add, /scan:install, /scan:roadmap-trace, /sprint:design, /sprint:execute, /sprint:plan
+- `/bootstrap:lastmile` → /guides:integrate, /learn:ingest, /learn:integrate, /qa:audit, /redteam:full, /research:deep, /roadmap:add, /scan:install, /scan:roadmap-trace, /sprint:design, /sprint:execute, /sprint:plan
 - `/maps:all` → /maps:architecture, /maps:coverage, /maps:enforcements, /maps:hooks, /maps:memory, /maps:skills, /maps:steps, /maps:systems, /maps:tools, /scan:scan-coverage
 - `/oneshot:preflight` → /mode:oneshot, /oneshot:improve, /oneshot:retro, /oneshot:start, /preflight:run, /preflight:setup, /run:sync, /scan:architecture, /scan:environment, /scan:requirements
 - `/warp:reconcile` → /enforcement:log, /fix:deep, /issues:log, /portfolio:status, /roadmap:add, /scan:full, /scan:warpos-staleness, /warp:flag, /warp:release, /warp:update
@@ -402,9 +420,9 @@ Top callers (skills that invoke the most others):
 
 Top called (skills others invoke the most):
 
-- `/scan:full` ← /bootstrap:ponder, /check:all, /commit:land, /karpathy:run, /learn:integrate, /maps:coverage, /scan:ac-coverage, /scan:dispatch-routing-parity, /scan:node-procs, /scan:regressions, /scan:roadmap-trace, /scan:scan-coverage, /scan:system, /scan:version-coherence, /scan:warpos-ship-coverage, /sprint:full, /warp:doctor, /warp:reconcile
+- `/scan:full` ← /bootstrap:ponder, /check:all, /commit:land, /guides:coverage, /karpathy:run, /learn:integrate, /maps:coverage, /scan:ac-coverage, /scan:dispatch-routing-parity, /scan:node-procs, /scan:regressions, /scan:roadmap-trace, /scan:scan-coverage, /scan:system, /scan:version-coherence, /scan:warpos-ship-coverage, /sprint:full, /warp:doctor, /warp:reconcile
+- `/warp:update` ← /commit:both, /guides:write, /portfolio:sync, /scan:warpos-capsule-resolvable, /scan:warpos-install-baseline, /scan:warpos-layer-diff, /scan:warpos-manifest-coverage, /scan:warpos-migration-presence, /scan:warpos-staleness, /scan:warpos-structure-parity, /warp:diff, /warp:doctor, /warp:reconcile, /warp:sync
 - `/sleep:deep` ← /beta:integrate, /beta:mine, /bootstrap:ponder, /learn:deep, /reasoning:score, /scan:architecture, /scan:environment, /scan:full, /scan:patterns, /scan:references, /scan:requirements, /scan:system, /sleep:quick
-- `/warp:update` ← /commit:both, /portfolio:sync, /scan:warpos-capsule-resolvable, /scan:warpos-install-baseline, /scan:warpos-layer-diff, /scan:warpos-manifest-coverage, /scan:warpos-migration-presence, /scan:warpos-staleness, /scan:warpos-structure-parity, /warp:diff, /warp:doctor, /warp:reconcile, /warp:sync
 - `/warp:health` ← /mode:adhoc, /scan:adhoc-team-hygiene, /scan:architecture, /scan:environment, /scan:full, /scan:system, /warp:doctor, /warp:setup, /warp:tour, /warp:uninstall, /warp:update
 - `/scan:requirements` ← /beta:mine, /discover:orphaned, /oneshot:preflight, /oneshot:retro, /scan:architecture, /scan:full, /session:handoff, /sleep:deep, /sleep:quick, /warp:doctor
 - `/issues:log` ← /issues:list, /issues:resolve, /oneshot:retro, /scan:issues, /scan:patterns, /scan:regressions, /sleep:deep, /warp:flag, /warp:reconcile

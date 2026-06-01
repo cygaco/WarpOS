@@ -1,4 +1,4 @@
-{"_meta":true,"name":"Tools Map","description":"Utility scripts, npm scripts, external CLIs, cross-refs to skills/hooks.","version":"2026-05-31","counts":{"scripts":166,"npm_scripts":0,"external_clis":3,"xrefs":2},"last_regenerated":"2026-05-31T19:28:09.351Z"}
+{"_meta":true,"name":"Tools Map","description":"Utility scripts, npm scripts, external CLIs, cross-refs to skills/hooks.","version":"2026-06-01","counts":{"scripts":166,"npm_scripts":0,"external_clis":3,"xrefs":2},"last_regenerated":"2026-06-01T19:33:52.157Z"}
 {"id":"tool:agent-dashboard","name":"agent-dashboard.js","path":"scripts/agent-dashboard.js","type":"script","exists":true,"size":47991,"modified":"2026-05-30T01:25:39.518Z"}
 {"id":"tool:analyze-run12-deep","name":"analyze-run12-deep.js","path":"scripts/analyze-run12-deep.js","type":"script","exists":true,"size":4452,"modified":"2026-05-30T01:25:39.519Z"}
 {"id":"tool:analyze-run12","name":"analyze-run12.js","path":"scripts/analyze-run12.js","type":"script","exists":true,"size":5612,"modified":"2026-05-30T01:25:39.519Z"}
@@ -19,7 +19,7 @@
 {"id":"tool:delta-build-fixer-prompt","name":"delta-build-fixer-prompt.js","path":"scripts/delta-build-fixer-prompt.js","type":"script","exists":true,"size":1780,"modified":"2026-05-30T01:25:39.549Z"}
 {"id":"tool:delta-build-prompt","name":"delta-build-prompt.js","path":"scripts/delta-build-prompt.js","type":"script","exists":true,"size":7079,"modified":"2026-05-30T01:25:39.550Z"}
 {"id":"tool:delta-build-reviewer-prompt","name":"delta-build-reviewer-prompt.js","path":"scripts/delta-build-reviewer-prompt.js","type":"script","exists":true,"size":10377,"modified":"2026-05-30T01:25:39.550Z"}
-{"id":"tool:delta-canonical-dispatch-smoke","name":"delta-canonical-dispatch-smoke.js","path":"scripts/delta-canonical-dispatch-smoke.js","type":"script","exists":true,"size":8056,"modified":"2026-05-30T10:31:34.033Z"}
+{"id":"tool:delta-canonical-dispatch-smoke","name":"delta-canonical-dispatch-smoke.js","path":"scripts/delta-canonical-dispatch-smoke.js","type":"script","exists":true,"size":8173,"modified":"2026-06-01T16:44:13.723Z"}
 {"id":"tool:delta-cleanup-stale-fix-worktrees","name":"delta-cleanup-stale-fix-worktrees.js","path":"scripts/delta-cleanup-stale-fix-worktrees.js","type":"script","exists":true,"size":1604,"modified":"2026-05-30T01:25:39.551Z"}
 {"id":"tool:delta-clear-halt","name":"delta-clear-halt.js","path":"scripts/delta-clear-halt.js","type":"script","exists":true,"size":624,"modified":"2026-05-30T01:25:39.551Z"}
 {"id":"tool:delta-dispatch-builder","name":"delta-dispatch-builder.js","path":"scripts/delta-dispatch-builder.js","type":"script","exists":true,"size":8809,"modified":"2026-05-30T01:25:39.554Z"}
@@ -38,7 +38,7 @@
 {"id":"tool:delta-store-review","name":"delta-store-review.js","path":"scripts/delta-store-review.js","type":"script","exists":true,"size":1672,"modified":"2026-05-30T01:25:39.565Z"}
 {"id":"tool:delta-update-heartbeat","name":"delta-update-heartbeat.js","path":"scripts/delta-update-heartbeat.js","type":"script","exists":true,"size":720,"modified":"2026-05-30T01:25:39.565Z"}
 {"id":"tool:dismiss-drift-entry","name":"dismiss-drift-entry.js","path":"scripts/dismiss-drift-entry.js","type":"script","exists":true,"size":647,"modified":"2026-05-30T01:25:39.566Z"}
-{"id":"tool:dispatch-agent","name":"dispatch-agent.js","path":"scripts/dispatch-agent.js","type":"script","exists":true,"size":17159,"modified":"2026-05-31T03:26:36.372Z"}
+{"id":"tool:dispatch-agent","name":"dispatch-agent.js","path":"scripts/dispatch-agent.js","type":"script","exists":true,"size":17165,"modified":"2026-06-01T16:44:02.087Z"}
 {"id":"tool:dispatch","name":"dispatch.js","path":"scripts/dispatch.js","type":"script","exists":true,"size":20217,"modified":"2026-05-30T01:25:39.566Z"}
 {"id":"tool:drift-apply-decisions","name":"drift-apply-decisions.js","path":"scripts/drift-apply-decisions.js","type":"script","exists":true,"size":2075,"modified":"2026-05-30T01:25:39.571Z"}
 {"id":"tool:drift-build-decisions-jsonl","name":"drift-build-decisions-jsonl.js","path":"scripts/drift-build-decisions-jsonl.js","type":"script","exists":true,"size":2675,"modified":"2026-05-30T01:25:39.572Z"}
@@ -51,7 +51,7 @@
 {"id":"tool:drift-verify","name":"drift-verify.js","path":"scripts/drift-verify.js","type":"script","exists":true,"size":5846,"modified":"2026-05-30T01:25:39.574Z"}
 {"id":"tool:drift-write-decisions","name":"drift-write-decisions.js","path":"scripts/drift-write-decisions.js","type":"script","exists":true,"size":1743,"modified":"2026-05-30T01:25:39.574Z"}
 {"id":"tool:fix-deep-trace-run09-cleanup","name":"fix-deep-trace-run09-cleanup.js","path":"scripts/fix-deep-trace-run09-cleanup.js","type":"script","exists":true,"size":3626,"modified":"2026-05-30T01:25:39.575Z"}
-{"id":"tool:generate-framework-manifest","name":"generate-framework-manifest.js","path":"scripts/generate-framework-manifest.js","type":"script","exists":true,"size":21665,"modified":"2026-05-31T17:16:46.365Z"}
+{"id":"tool:generate-framework-manifest","name":"generate-framework-manifest.js","path":"scripts/generate-framework-manifest.js","type":"script","exists":true,"size":21665,"modified":"2026-05-31T19:53:31.126Z"}
 {"id":"tool:generate-maps","name":"generate-maps.js","path":"scripts/generate-maps.js","type":"script","exists":true,"size":12732,"modified":"2026-05-30T01:25:39.577Z"}
 {"id":"tool:generate-skill-catalog","name":"generate-skill-catalog.js","path":"scripts/generate-skill-catalog.js","type":"script","exists":true,"size":9320,"modified":"2026-05-30T01:25:39.577Z"}
 {"id":"tool:generate-steps-maps","name":"generate-steps-maps.js","path":"scripts/generate-steps-maps.js","type":"script","exists":true,"size":8346,"modified":"2026-05-30T01:25:39.578Z"}
@@ -132,7 +132,7 @@
 {"id":"tool:test-beta-gate-release","name":"test-beta-gate-release.js","path":"scripts/test-beta-gate-release.js","type":"script","exists":true,"size":6406,"modified":"2026-05-30T01:25:39.675Z"}
 {"id":"tool:test-concurrency-lock","name":"test-concurrency-lock.js","path":"scripts/test-concurrency-lock.js","type":"script","exists":true,"size":3129,"modified":"2026-05-30T01:25:39.675Z"}
 {"id":"tool:test-dispatch-agent-resolution","name":"test-dispatch-agent-resolution.js","path":"scripts/test-dispatch-agent-resolution.js","type":"script","exists":true,"size":2609,"modified":"2026-05-30T01:25:39.676Z"}
-{"id":"tool:test-dispatch-config","name":"test-dispatch-config.js","path":"scripts/test-dispatch-config.js","type":"script","exists":true,"size":5657,"modified":"2026-05-30T10:31:34.033Z"}
+{"id":"tool:test-dispatch-config","name":"test-dispatch-config.js","path":"scripts/test-dispatch-config.js","type":"script","exists":true,"size":8573,"modified":"2026-06-01T17:10:01.409Z"}
 {"id":"tool:test-dispatch-route-guard","name":"test-dispatch-route-guard.js","path":"scripts/test-dispatch-route-guard.js","type":"script","exists":true,"size":3959,"modified":"2026-05-30T01:25:39.676Z"}
 {"id":"tool:test-dispatch-telemetry","name":"test-dispatch-telemetry.js","path":"scripts/test-dispatch-telemetry.js","type":"script","exists":true,"size":3750,"modified":"2026-05-30T01:25:39.677Z"}
 {"id":"tool:test-manifest-guard-product","name":"test-manifest-guard-product.js","path":"scripts/test-manifest-guard-product.js","type":"script","exists":true,"size":5363,"modified":"2026-05-30T01:25:39.677Z"}
@@ -168,5 +168,5 @@
 {"id":"cli:gemini","name":"gemini","type":"external_cli","install":"npm i -g @google/gemini-cli","required_env":["GEMINI_API_KEY"]}
 {"id":"cli:codex","name":"codex","type":"external_cli","install":"npm i -g @openai/codex","required_env":["OPENAI_API_KEY"]}
 {"id":"cli:claude","name":"claude","type":"external_cli","install":"(Claude Code itself)","required_env":["ANTHROPIC_API_KEY"]}
-{"id":"xref:skills","type":"xref","note":"skills inventory lives in .claude/project/maps/inventory-skills.json","count":186}
+{"id":"xref:skills","type":"xref","note":"skills inventory lives in .claude/project/maps/inventory-skills.json","count":194}
 {"id":"xref:hooks","type":"xref","note":"hooks inventory lives in .claude/project/maps/inventory-hooks.json","count":65}

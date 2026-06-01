@@ -1,23 +1,24 @@
 # Systems Manifest
 
-Generated: 2026-05-31T19:28:09.351Z
+Generated: 2026-06-01T19:33:52.157Z
 
-Total: **35** systems across **2** categories. Files referenced: 34, missing on disk: 1.
+Total: **44** systems across **2** categories. Files referenced: 43, missing on disk: 1.
 
 ## By status
 
 | Status | Count |
 |---|---|
 | active | 1 |
-| untested | 34 |
+| untested | 43 |
 
 ## By category
 
-### cognition (34)
+### cognition (43)
 
 | id | name | status | files |
 |---|---|---|---|
 | skill-_report_skill_tmp | File an ELI5 report (sprint \| milestone \| session \| checkpoint) into _reports | untested | 1 |
+| skill-bootstrap-lastmile | "Prototype → monetizable product. Drives the 'last mile': readiness audit → laun | untested | 1 |
 | skill-bootstrap-spinup | "From 'just WarpOS' to something on screen — one in-project command: intent (gui | untested | 1 |
 | skill-discover-orphaned | Discover orphaned work — find every deferred, forgotten, or abandoned task acros | untested | 1 |
 | skill-etc-author | Author or refine a skill/prompt in standard format, producing a sibling eval-pac | untested | 1 |
@@ -30,9 +31,17 @@ Total: **35** systems across **2** categories. Files referenced: 34, missing on 
 | skill-growth-landing-page | Build a converting landing page from a conversion brief — conversion-hierarchy,  | untested | 1 |
 | skill-growth-message-brief | Distill the single winning message (the spine artifact) from an audience dossier | untested | 1 |
 | skill-growth-product-finder | Find validated high-margin products for paid traffic — EQ-scored (Product×Ads×Fu | untested | 1 |
+| skill-guides-coverage | Fail-closed enforcer for the _guides/ library — asserts every guide is anchored, | untested | 1 |
+| skill-guides-integrate | Wire each _guides/ guide into the bootstrap pipeline (spinup/lastmile) at its de | untested | 1 |
+| skill-guides-organize | Audit and restructure the _guides/ launch-guide library — backfill the guide-anc | untested | 1 |
+| skill-guides-write | Author a launch guide into _guides/ — grounded in the Mark Builds Brands methodo | untested | 1 |
 | skill-learn-ingest | Ingest external knowledge from files, links, or YouTube videos and apply learnin | untested | 1 |
 | skill-maps-all | Registry of all maps — shows every map, its source, last updated, and staleness | untested | 1 |
 | skill-maps-coverage | Maps-suite self-inventory — asserts every /maps:* skill is registered in /maps:a | untested | 1 |
+| skill-models-check | Audit configured dispatch models against the latest vendor catalogs — flag drift | untested | 1 |
+| skill-models-route | Route a specific command/role to a specific model — thin, validated wrapper over | untested | 1 |
+| skill-models-router | Open the model router panel — ensure the catalog carries all the latest model op | untested | 1 |
+| skill-models-update | Update the dispatch catalog to the latest models — re-ingest vendor docs, migrat | untested | 1 |
 | skill-playbook-add | Append a play to the Playbook (.claude/project/reference/playbook.md) — a named, | untested | 1 |
 | skill-portfolio-new | Scaffold a new product repo (sibling to WarpOS) with the framework installed and | untested | 1 |
 | skill-roadmap-create | "Bootstrap a product ROADMAP.md from the inputs a project actually has — prefers | untested | 1 |

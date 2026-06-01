@@ -1,4 +1,4 @@
-{"_meta":true,"name":"Hooks Map","description":"All hook scripts under scripts/hooks/ + lib modules + settings.json wiring.","version":"2026-05-31","total_hooks":65,"total_lib_modules":15,"registered_hooks":60,"orphan_hooks":5,"wiring_count":69,"last_regenerated":"2026-05-31T19:28:09.351Z"}
+{"_meta":true,"name":"Hooks Map","description":"All hook scripts under scripts/hooks/ + lib modules + settings.json wiring.","version":"2026-06-01","total_hooks":65,"total_lib_modules":15,"registered_hooks":60,"orphan_hooks":5,"wiring_count":69,"last_regenerated":"2026-06-01T19:33:52.157Z"}
 {"id":"hook:authorization-gate","name":"authorization-gate.js","path":"scripts/hooks/authorization-gate.js","registered":true,"exists":true,"size":8520,"modified":"2026-05-30T01:25:39.579Z"}
 {"id":"hook:beta-gate","name":"beta-gate.js","path":"scripts/hooks/beta-gate.js","registered":true,"exists":true,"size":9093,"modified":"2026-05-30T01:25:39.579Z"}
 {"id":"hook:boss-boundary","name":"boss-boundary.js","path":"scripts/hooks/boss-boundary.js","registered":true,"exists":true,"size":3095,"modified":"2026-05-30T01:25:39.579Z"}
@@ -71,11 +71,11 @@
 {"id":"hook-lib:injection-patterns","name":"injection-patterns.js","path":"scripts/hooks/lib/injection-patterns.js","registered":false,"type":"lib","exists":true,"size":2949,"modified":"2026-05-31T00:23:04.879Z"}
 {"id":"hook-lib:logger","name":"logger.js","path":"scripts/hooks/lib/logger.js","registered":false,"type":"lib","exists":true,"size":15612,"modified":"2026-05-30T01:25:39.590Z"}
 {"id":"hook-lib:mode","name":"mode.js","path":"scripts/hooks/lib/mode.js","registered":false,"type":"lib","exists":true,"size":2540,"modified":"2026-05-30T01:25:39.590Z"}
-{"id":"hook-lib:paths.generated","name":"paths.generated.js","path":"scripts/hooks/lib/paths.generated.js","registered":false,"type":"lib","exists":true,"size":10335,"modified":"2026-05-31T01:42:29.732Z"}
+{"id":"hook-lib:paths.generated","name":"paths.generated.js","path":"scripts/hooks/lib/paths.generated.js","registered":false,"type":"lib","exists":true,"size":10383,"modified":"2026-05-31T21:21:29.618Z"}
 {"id":"hook-lib:paths","name":"paths.js","path":"scripts/hooks/lib/paths.js","registered":false,"type":"lib","exists":true,"size":6437,"modified":"2026-05-30T01:25:39.591Z"}
 {"id":"hook-lib:project-config","name":"project-config.js","path":"scripts/hooks/lib/project-config.js","registered":false,"type":"lib","exists":true,"size":4488,"modified":"2026-05-30T01:25:39.591Z"}
 {"id":"hook-lib:provider-health","name":"provider-health.js","path":"scripts/hooks/lib/provider-health.js","registered":false,"type":"lib","exists":true,"size":10306,"modified":"2026-05-30T01:25:39.592Z"}
-{"id":"hook-lib:providers","name":"providers.js","path":"scripts/hooks/lib/providers.js","registered":false,"type":"lib","exists":true,"size":28076,"modified":"2026-05-31T04:02:33.072Z"}
+{"id":"hook-lib:providers","name":"providers.js","path":"scripts/hooks/lib/providers.js","registered":false,"type":"lib","exists":true,"size":29678,"modified":"2026-06-01T17:21:07.325Z"}
 {"id":"hook-lib:role-aliases","name":"role-aliases.js","path":"scripts/hooks/lib/role-aliases.js","registered":false,"type":"lib","exists":true,"size":1904,"modified":"2026-05-30T01:25:39.592Z"}
 {"id":"hook-lib:skill-telemetry","name":"skill-telemetry.js","path":"scripts/hooks/lib/skill-telemetry.js","registered":false,"type":"lib","exists":true,"size":5275,"modified":"2026-05-30T01:25:39.593Z"}
 {"id":"hook-lib:untrusted-content","name":"untrusted-content.js","path":"scripts/hooks/lib/untrusted-content.js","registered":false,"type":"lib","exists":true,"size":2482,"modified":"2026-05-31T00:20:08.687Z"}

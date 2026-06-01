@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "generated": "2026-05-31T19:28:09.351Z",
-    "lastUpdated": "2026-05-31T19:28:09.351Z",
-    "total_systems": 35,
+    "generated": "2026-06-01T19:33:52.157Z",
+    "lastUpdated": "2026-06-01T19:33:52.157Z",
+    "total_systems": 44,
     "categories": 2,
-    "total_files_referenced": 34,
+    "total_files_referenced": 43,
     "missing_files_on_disk": 1,
     "regenerated_by": "scripts/regen-maps.js"
   },
@@ -16,7 +16,7 @@
       ]
     },
     "untested": {
-      "count": 34,
+      "count": 43,
       "ids": [
         "skill-roadmap-ideas",
         "skill-roadmap-next",
@@ -51,7 +51,16 @@
         "skill-scan-scan-coverage",
         "skill-learn-ingest",
         "skill-maps-coverage",
-        "skill-maps-all"
+        "skill-maps-all",
+        "skill-guides-write",
+        "skill-guides-organize",
+        "skill-guides-integrate",
+        "skill-guides-coverage",
+        "skill-bootstrap-lastmile",
+        "skill-models-check",
+        "skill-models-route",
+        "skill-models-router",
+        "skill-models-update"
       ]
     }
   },
@@ -68,7 +77,7 @@
       ]
     },
     "cognition": {
-      "count": 34,
+      "count": 43,
       "systems": [
         {
           "id": "skill-_report_skill_tmp",
@@ -76,6 +85,14 @@
           "status": "untested",
           "files": [
             ".claude/commands/_report_skill_tmp.md"
+          ]
+        },
+        {
+          "id": "skill-bootstrap-lastmile",
+          "name": "\"Prototype → monetizable product. Drives the 'last mile': readiness audit → launch plan → roadmap/sprint injection → guided execution → launch-ready handoff. Picks practical defaults for vibe coders, asks only high-leverage questions, gates risky production actions behind human approval. The spinup sequel — spinup gets you on screen, lastmile gets you paid.\"",
+          "status": "untested",
+          "files": [
+            ".claude/commands/bootstrap/lastmile.md"
           ]
         },
         {
@@ -175,6 +192,38 @@
           ]
         },
         {
+          "id": "skill-guides-coverage",
+          "name": "Fail-closed enforcer for the _guides/ library — asserts every guide is anchored, the registry is fresh, every anchor is wired live into the bootstrap pipeline, and there are no orphan records or markers. The /guides analog of /scan:scan-coverage and /maps:coverage.",
+          "status": "untested",
+          "files": [
+            ".claude/commands/guides/coverage.md"
+          ]
+        },
+        {
+          "id": "skill-guides-integrate",
+          "name": "Wire each _guides/ guide into the bootstrap pipeline (spinup/lastmile) at its declared anchor in its declared shape, and record every placement in .claude/project/maps/guide-integration.jsonl — idempotent, read-before-write, with prior-integration conflict detection.",
+          "status": "untested",
+          "files": [
+            ".claude/commands/guides/integrate.md"
+          ]
+        },
+        {
+          "id": "skill-guides-organize",
+          "name": "Audit and restructure the _guides/ launch-guide library — backfill the guide-anchor contract onto every guide, (re)generate _guides/registry.json, and flag structural drift — WITHOUT rewriting guide prose (that's /guides:write). The skills:cleanup analog for guides.",
+          "status": "untested",
+          "files": [
+            ".claude/commands/guides/organize.md"
+          ]
+        },
+        {
+          "id": "skill-guides-write",
+          "name": "Author a launch guide into _guides/ — grounded in the Mark Builds Brands methodology + the existing guides, in the right shape (walkthrough/checklist/notice), carrying the guide-anchor contract so /guides:integrate can place it in the bootstrap pipeline.",
+          "status": "untested",
+          "files": [
+            ".claude/commands/guides/write.md"
+          ]
+        },
+        {
           "id": "skill-learn-ingest",
           "name": "Ingest external knowledge from files, links, or YouTube videos and apply learnings to the system",
           "status": "untested",
@@ -196,6 +245,38 @@
           "status": "untested",
           "files": [
             ".claude/commands/maps/coverage.md"
+          ]
+        },
+        {
+          "id": "skill-models-check",
+          "name": "Audit configured dispatch models against the latest vendor catalogs — flag drift, deprecations, and dead (\"ghost\") ids. --refresh deep-ingests the live vendor docs first.",
+          "status": "untested",
+          "files": [
+            ".claude/commands/models/check.md"
+          ]
+        },
+        {
+          "id": "skill-models-route",
+          "name": "Route a specific command/role to a specific model — thin, validated wrapper over the Dispatch Console (provider/model/effort/fallback), with an atomic backup ring.",
+          "status": "untested",
+          "files": [
+            ".claude/commands/models/route.md"
+          ]
+        },
+        {
+          "id": "skill-models-router",
+          "name": "Open the model router panel — ensure the catalog carries all the latest model options, then launch the Dispatch Console GUI (browser) so you can view/edit role→provider→model→effort visually.",
+          "status": "untested",
+          "files": [
+            ".claude/commands/models/router.md"
+          ]
+        },
+        {
+          "id": "skill-models-update",
+          "name": "Update the dispatch catalog to the latest models — re-ingest vendor docs, migrate deprecated/shut-down ids, add new options, sync routing, and regenerate manifests. Beta-gated for default-model changes.",
+          "status": "untested",
+          "files": [
+            ".claude/commands/models/update.md"
           ]
         },
         {
@@ -365,7 +446,7 @@
       "id": "skills",
       "name": "Skills",
       "category": "capability",
-      "count": 186
+      "count": 194
     },
     {
       "id": "hooks",

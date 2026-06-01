@@ -1,6 +1,6 @@
 # Hooks Map
 
-Generated: 2026-05-31T19:28:09.351Z
+Generated: 2026-06-01T19:33:52.157Z
 
 **65** hook scripts (60 registered, 5 orphan), **15** lib modules, **69** wiring entries.
 
@@ -14,7 +14,6 @@ Generated: 2026-05-31T19:28:09.351Z
 
 - `Bash` → `merge-guard.js`
 - `Bash` → `ledger-presence-guard.js`
-- `WebFetch|WebSearch|mcp__.*|ListMcpResourcesTool|ReadMcpResourceTool` → `untrusted-content-firewall.js`
 - `Edit|Write` → `memory-guard.js`
 - `Edit|Write` → `store-validator.js`
 - `Edit|Write` → `path-guard.js`
@@ -36,6 +35,7 @@ Generated: 2026-05-31T19:28:09.351Z
 - `Agent` → `build-transaction-boundary.js`
 - `Agent` → `response-size-guard.js`
 - `(no matcher)` → `session-tracker.js`
+- `WebFetch|WebSearch|mcp__.*|ListMcpResourcesTool|ReadMcpResourceTool` → `untrusted-content-firewall.js`
 
 ### PreToolUse
 
@@ -183,11 +183,11 @@ Generated: 2026-05-31T19:28:09.351Z
 | injection-patterns.js | 2949 | 2026-05-31T00:23:04.879Z |
 | logger.js | 15612 | 2026-05-30T01:25:39.590Z |
 | mode.js | 2540 | 2026-05-30T01:25:39.590Z |
-| paths.generated.js | 10335 | 2026-05-31T01:42:29.732Z |
+| paths.generated.js | 10383 | 2026-05-31T21:21:29.618Z |
 | paths.js | 6437 | 2026-05-30T01:25:39.591Z |
 | project-config.js | 4488 | 2026-05-30T01:25:39.591Z |
 | provider-health.js | 10306 | 2026-05-30T01:25:39.592Z |
-| providers.js | 28076 | 2026-05-31T04:02:33.072Z |
+| providers.js | 29678 | 2026-06-01T17:21:07.325Z |
 | role-aliases.js | 1904 | 2026-05-30T01:25:39.592Z |
 | skill-telemetry.js | 5275 | 2026-05-30T01:25:39.593Z |
 | untrusted-content.js | 2482 | 2026-05-31T00:20:08.687Z |
