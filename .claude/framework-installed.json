@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "0.12.1",
-  "installedCommit": "d8421345960d4325b0189701929dcc871404bf81",
-  "installedAt": "2026-06-01T00:41:30.223Z",
+  "installedCommit": "1a28e890684e1ab818eff2e422b9a0bc43c13220",
+  "installedAt": "2026-06-01T01:44:58.815Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -7676,6 +7676,56 @@
       "mergeStrategy": "replace_if_unmodified",
       "installedHash": "959bcfc713f9f2c28dbe5204a25d7b4040b42cb5a6e763a009ba9b0b735ca1c6",
       "currentHashAtInstall": "959bcfc713f9f2c28dbe5204a25d7b4040b42cb5a6e763a009ba9b0b735ca1c6",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "release_capsule.0.12.1.changelog.md",
+      "kind": "release_capsule",
+      "dest": "framework/releases/0.12.1/changelog.md",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "bbe30f4edea7d3b1cb38a2ef804dfdb5525273975ad9577d72de697019f2955c",
+      "currentHashAtInstall": "bbe30f4edea7d3b1cb38a2ef804dfdb5525273975ad9577d72de697019f2955c",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "release_capsule.0.12.1.checksums.json",
+      "kind": "release_capsule",
+      "dest": "framework/releases/0.12.1/checksums.json",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "43695ce34ede497a4b806487e7771726bd8e1aebdd1a256344dcf8a75009051c",
+      "currentHashAtInstall": "43695ce34ede497a4b806487e7771726bd8e1aebdd1a256344dcf8a75009051c",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "release_capsule.0.12.1.framework-manifest.json",
+      "kind": "release_capsule",
+      "dest": "framework/releases/0.12.1/framework-manifest.json",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "7f68fd11f779f549923f95dd36532cca5d4c0ee1a972a1f5d1994a1fcad25e85",
+      "currentHashAtInstall": "7f68fd11f779f549923f95dd36532cca5d4c0ee1a972a1f5d1994a1fcad25e85",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "release_capsule.0.12.1.release.json",
+      "kind": "release_capsule",
+      "dest": "framework/releases/0.12.1/release.json",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "a37cfe3338eafe9189bed572219842018e88d88690516ff802010fd80f58c190",
+      "currentHashAtInstall": "a37cfe3338eafe9189bed572219842018e88d88690516ff802010fd80f58c190",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "release_capsule.0.12.1.upgrade-notes.md",
+      "kind": "release_capsule",
+      "dest": "framework/releases/0.12.1/upgrade-notes.md",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "e072c13ff33fe9f5eb2a1b288486a0ea5bfb086e1cb494095c3328877ec4a6f5",
+      "currentHashAtInstall": "e072c13ff33fe9f5eb2a1b288486a0ea5bfb086e1cb494095c3328877ec4a6f5",
       "introducedIn": "0.0.0"
     },
     {

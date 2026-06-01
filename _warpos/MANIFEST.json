@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-01T00:41:30.376Z",
+  "generatedAt": "2026-06-01T01:44:58.972Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.12.1",
   "migrations": [],
@@ -6587,6 +6587,41 @@
       "sha256": "6437e0cc0db2779ad07bb4957b3aebb7829b7b34b872aad8e9d57551ce5830bf",
       "installedSha": "6437e0cc0db2779ad07bb4957b3aebb7829b7b34b872aad8e9d57551ce5830bf"
     },
+    "framework/releases/0.12.1/changelog.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "framework/releases/0.12.1/changelog.md",
+      "sha256": "bbe30f4edea7d3b1cb38a2ef804dfdb5525273975ad9577d72de697019f2955c",
+      "installedSha": "bbe30f4edea7d3b1cb38a2ef804dfdb5525273975ad9577d72de697019f2955c"
+    },
+    "framework/releases/0.12.1/checksums.json": {
+      "owner": "framework",
+      "managed": true,
+      "source": "framework/releases/0.12.1/checksums.json",
+      "sha256": "43695ce34ede497a4b806487e7771726bd8e1aebdd1a256344dcf8a75009051c",
+      "installedSha": "43695ce34ede497a4b806487e7771726bd8e1aebdd1a256344dcf8a75009051c"
+    },
+    "framework/releases/0.12.1/framework-manifest.json": {
+      "owner": "framework",
+      "managed": true,
+      "source": "framework/releases/0.12.1/framework-manifest.json",
+      "sha256": "7f68fd11f779f549923f95dd36532cca5d4c0ee1a972a1f5d1994a1fcad25e85",
+      "installedSha": "7f68fd11f779f549923f95dd36532cca5d4c0ee1a972a1f5d1994a1fcad25e85"
+    },
+    "framework/releases/0.12.1/release.json": {
+      "owner": "framework",
+      "managed": true,
+      "source": "framework/releases/0.12.1/release.json",
+      "sha256": "a37cfe3338eafe9189bed572219842018e88d88690516ff802010fd80f58c190",
+      "installedSha": "a37cfe3338eafe9189bed572219842018e88d88690516ff802010fd80f58c190"
+    },
+    "framework/releases/0.12.1/upgrade-notes.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "framework/releases/0.12.1/upgrade-notes.md",
+      "sha256": "e072c13ff33fe9f5eb2a1b288486a0ea5bfb086e1cb494095c3328877ec4a6f5",
+      "installedSha": "e072c13ff33fe9f5eb2a1b288486a0ea5bfb086e1cb494095c3328877ec4a6f5"
+    },
     "framework/releases/0.12.0/changelog.md": {
       "owner": "framework",
       "managed": true,
@@ -7037,6 +7072,10 @@
       "managed": false
     },
     ".claude/.session-checkpoint.json": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/.session-start-commit": {
       "owner": "runtime",
       "managed": false
     },
