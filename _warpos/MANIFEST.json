@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-01T22:22:04.129Z",
+  "generatedAt": "2026-06-01T23:32:15.857Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.13.1",
   "migrations": [],
@@ -899,6 +899,11 @@
       "managed": false,
       "class": "reference"
     },
+    "_docs/research/.openai-dr-driver.sh": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
     "_docs/research/2026-05-19-npm-forcing-function.md": {
       "owner": "project",
       "managed": false,
@@ -940,6 +945,186 @@
       "class": "reference"
     },
     "_docs/research/dreamteams-staffing-layer/SYNTHESIS.md": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/design-visual-hierarchy/brief.json": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/design-visual-hierarchy/driver.log": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/design-visual-hierarchy/.tmp/openai-payload.json": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/design-visual-hierarchy/.tmp/phase-input.txt": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/design-typography/brief.json": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/design-typography/driver.log": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/design-typography/.tmp/openai-payload.json": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/design-typography/.tmp/phase-input.txt": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/design-principles-taxonomy/.session.json": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/design-principles-taxonomy/brief.json": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/design-principles-taxonomy/BRIEF.md": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/design-principles-taxonomy/claude-report.md": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/design-principles-taxonomy/gemini-error.log": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/design-principles-taxonomy/SYNTHESIS.md": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/design-principles-taxonomy/.tmp/gemini-payload.json": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/design-principles-taxonomy/.tmp/gemini-result.json": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/design-principles-taxonomy/.tmp/gemini-run.log": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/design-principles-taxonomy/.tmp/openai-payload.json": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/design-principles-taxonomy/.tmp/openai-phase-0.md": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/design-principles-taxonomy/.tmp/openai-result.json": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/design-principles-taxonomy/.tmp/openai-run.log": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/design-principles-taxonomy/.tmp/phase-input.txt": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/design-principles-taxonomy/.tmp/research-brief-prompt.txt": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/design-principles-taxonomy/.tmp/run-gemini.sh": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/design-principles-taxonomy/.tmp/run-openai.sh": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/design-mobile-responsive/brief.json": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/design-layout_grid_spacing/brief.json": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/design-friction-trust-forms/brief.json": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/design-conversion-hierarchy/brief.json": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/design-consistency-design-systems-tokens/brief.json": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/design-color_and_contrast/brief.json": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/design-cognitive-load-simplicity/brief.json": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/design-cognitive-load-simplicity/driver.log": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/design-cognitive-load-simplicity/.tmp/openai-payload.json": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/design-cognitive-load-simplicity/.tmp/phase-input.txt": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/design-accessibility-wcag/brief.json": {
       "owner": "project",
       "managed": false,
       "class": "reference"
@@ -2506,6 +2691,13 @@
       "sha256": "a64d0f20dffa8fb0d2c112f1ee5a202b12d3fafbc2339e06bf97b3aac0a25327",
       "installedSha": "a64d0f20dffa8fb0d2c112f1ee5a202b12d3fafbc2339e06bf97b3aac0a25327"
     },
+    "scripts/warpos/repo-role.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/warpos/repo-role.js",
+      "sha256": "d01a7824b5485052bff2d5b326ffb06ed64b2074c3e868c48cc0707c6d8258d6",
+      "installedSha": "d01a7824b5485052bff2d5b326ffb06ed64b2074c3e868c48cc0707c6d8258d6"
+    },
     "scripts/warpos/report-format.js": {
       "owner": "framework",
       "managed": true,
@@ -2575,6 +2767,13 @@
       "source": "scripts/warpos/test-release-build-beta-honesty-gate.js",
       "sha256": "aa21c259dd69769b9b1375ac476a3007710de55efb3747b65dfd350db15336eb",
       "installedSha": "aa21c259dd69769b9b1375ac476a3007710de55efb3747b65dfd350db15336eb"
+    },
+    "scripts/warpos/test-repo-role.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/warpos/test-repo-role.js",
+      "sha256": "07105cd3825ce866302027277a0cd3aabb81459006a7786370970dfe6bb9330f",
+      "installedSha": "07105cd3825ce866302027277a0cd3aabb81459006a7786370970dfe6bb9330f"
     },
     "scripts/warpos/test-rollback-cli-smoke.js": {
       "owner": "framework",
@@ -2797,8 +2996,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/testsuite/role.js",
-      "sha256": "0dd7df4720de331ae25def2e34a3134e70f7bf42acb56ba3594a527cdc223588",
-      "installedSha": "0dd7df4720de331ae25def2e34a3134e70f7bf42acb56ba3594a527cdc223588"
+      "sha256": "8d5353c1be06bc6898db9fbade85a4f8586dbe04ea3e1222c6c6c5e2ba46ec7d",
+      "installedSha": "8d5353c1be06bc6898db9fbade85a4f8586dbe04ea3e1222c6c6c5e2ba46ec7d"
     },
     "scripts/testsuite/run.js": {
       "owner": "framework",
@@ -3140,8 +3339,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/requirements/gate.js",
-      "sha256": "d1d7df886e2d0120f39791e81d072428d883102e3a59c0a6dba11d65b3b9a84a",
-      "installedSha": "d1d7df886e2d0120f39791e81d072428d883102e3a59c0a6dba11d65b3b9a84a"
+      "sha256": "f1e605f5e80af4ae18878cab44af2ec21b5da9064141d70efe6f3462795b4822",
+      "installedSha": "f1e605f5e80af4ae18878cab44af2ec21b5da9064141d70efe6f3462795b4822"
     },
     "scripts/requirements/graph-build.js": {
       "owner": "framework",
@@ -3658,8 +3857,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/framework-purity-guard.js",
-      "sha256": "d4d0b8fd720db6b3d2b359fdbed2e03f0fbe9462878f982ab4a357535f31510a",
-      "installedSha": "d4d0b8fd720db6b3d2b359fdbed2e03f0fbe9462878f982ab4a357535f31510a"
+      "sha256": "dd55d0fc20b3c9a8cc67550bd77f3311369a2296305e127d36dbb7839eaa77ac",
+      "installedSha": "dd55d0fc20b3c9a8cc67550bd77f3311369a2296305e127d36dbb7839eaa77ac"
     },
     "scripts/hooks/gate-check.js": {
       "owner": "framework",
@@ -4535,6 +4734,13 @@
       "source": "scripts/checks/production-baseline.js",
       "sha256": "9544bad80c7ff7ad159ecee14ae642fc2a574d7ca0d61d0b18dd02fdd22ae6a1",
       "installedSha": "9544bad80c7ff7ad159ecee14ae642fc2a574d7ca0d61d0b18dd02fdd22ae6a1"
+    },
+    "scripts/checks/repo-role-single-source.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/repo-role-single-source.js",
+      "sha256": "85754850a7f868ca983375ebf026091ca747a683b3c964e21eaacdba95ec8537",
+      "installedSha": "85754850a7f868ca983375ebf026091ca747a683b3c964e21eaacdba95ec8537"
     },
     "scripts/checks/resonance-runner.js": {
       "owner": "framework",

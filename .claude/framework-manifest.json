@@ -12,8 +12,8 @@
     "tool": 2,
     "pattern": 6,
     "fixture": 23,
-    "warpos_script": 52,
-    "check_tool": 53,
+    "warpos_script": 54,
+    "check_tool": 54,
     "agent_tool": 3,
     "decision_tool": 1,
     "runtime_tool": 1,
@@ -56,7 +56,7 @@
     "module_scope": 1,
     "framework_doc": 2
   },
-  "total": 978,
+  "total": 981,
   "assets": {
     "agent": [
       {
@@ -4248,7 +4248,7 @@
         "src": "scripts/hooks/framework-purity-guard.js",
         "dest": "scripts/hooks/framework-purity-guard.js",
         "kind": "hook",
-        "sha256": "d4d0b8fd720db6b3d2b359fdbed2e03f0fbe9462878f982ab4a357535f31510a",
+        "sha256": "dd55d0fc20b3c9a8cc67550bd77f3311369a2296305e127d36dbb7839eaa77ac",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -5742,6 +5742,18 @@
         "replaces": null
       },
       {
+        "id": "warpos_script.repo-role.js",
+        "src": "scripts/warpos/repo-role.js",
+        "dest": "scripts/warpos/repo-role.js",
+        "kind": "warpos_script",
+        "sha256": "d01a7824b5485052bff2d5b326ffb06ed64b2074c3e868c48cc0707c6d8258d6",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
         "id": "warpos_script.report-format.js",
         "src": "scripts/warpos/report-format.js",
         "dest": "scripts/warpos/report-format.js",
@@ -5891,6 +5903,18 @@
         "dest": "scripts/warpos/test-release-build-beta-honesty-gate.js",
         "kind": "warpos_script",
         "sha256": "aa21c259dd69769b9b1375ac476a3007710de55efb3747b65dfd350db15336eb",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "warpos_script.test-repo-role.js",
+        "src": "scripts/warpos/test-repo-role.js",
+        "dest": "scripts/warpos/test-repo-role.js",
+        "kind": "warpos_script",
+        "sha256": "07105cd3825ce866302027277a0cd3aabb81459006a7786370970dfe6bb9330f",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -6325,6 +6349,18 @@
         "dest": "scripts/checks/production-baseline.js",
         "kind": "check_tool",
         "sha256": "9544bad80c7ff7ad159ecee14ae642fc2a574d7ca0d61d0b18dd02fdd22ae6a1",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "check_tool.repo-role-single-source.js",
+        "src": "scripts/checks/repo-role-single-source.js",
+        "dest": "scripts/checks/repo-role-single-source.js",
+        "kind": "check_tool",
+        "sha256": "85754850a7f868ca983375ebf026091ca747a683b3c964e21eaacdba95ec8537",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -6862,7 +6898,7 @@
         "src": "scripts/requirements/gate.js",
         "dest": "scripts/requirements/gate.js",
         "kind": "requirements_engine",
-        "sha256": "d1d7df886e2d0120f39791e81d072428d883102e3a59c0a6dba11d65b3b9a84a",
+        "sha256": "f1e605f5e80af4ae18878cab44af2ec21b5da9064141d70efe6f3462795b4822",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
