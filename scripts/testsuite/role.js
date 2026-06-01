@@ -7,24 +7,58 @@
  * "Replace this module's body when the resolver lands; keep the isCanonical()/
  * roleLabel() surface stable so callers don't move."
  *
- * Surface (unchanged — callers enforce.js, run.js, release-gates.js still work):
- *   isCanonical()  → boolean   true iff this repo is the canonical framework source
- *   roleLabel()    → string    resolved role, or "product" when missing/unknown
+ * CONTRACT NOTES — two-layer design (do NOT collapse):
+ *
+ *   LABEL surface  (roleLabel(), roleStatus().role):
+ *     Returns the RAW manifest repoRole string ("framework", "canonical", etc.)
+ *     or "product"/null when absent/unreadable. This is the legacy display
+ *     contract that callers (enforce.js, release-gates.js) consume as a string.
+ *     It does NOT return resolver tokens like "consumer" or "unknown".
+ *
+ *   DECISION surface (isCanonical(), roleStatus().canonical):
+ *     Backed by the shared resolver (resolveRepoRole). Correct even when the
+ *     manifest is absent (e.g. canonical-by-_warpos/MANIFEST.json signal or
+ *     version.json heuristic). Never throws — fail-safe to false on any error.
+ *
+ * Public surface (unchanged — callers enforce.js, run.js, release-gates.js):
+ *   isCanonical()  → boolean   true iff this repo IS the canonical framework source
+ *   roleLabel()    → string    raw manifest repoRole field, or "product" when absent
  *   roleStatus()   → object    { manifestExists, manifestReadable, role, canonical }
+ *                               role     = raw manifest repoRole (or null if absent)
+ *                               canonical = resolver-backed boolean
  *
  *   node scripts/testsuite/role.js   # prints { canonical, role, status } as JSON
- *
- * isCanonical() never throws — fail-safe to false (product) on any error, same
- * as the interim stub. roleStatus().canonical distinguishes a genuine product repo
- * from a corrupt/unreadable manifest (for gates that need the distinction).
  */
+"use strict";
+
+const fs = require("fs");
 const path = require("path");
 const { resolveRepoRole } = require("../warpos/repo-role");
 
 // Root of this repo, same anchor the old stub used.
 const ROOT = path.resolve(__dirname, "..", "..");
+const MANIFEST = path.join(ROOT, ".claude", "manifest.json");
 
-// true iff this repo resolves to the canonical framework role.
+// ── Internal: read the RAW manifest repoRole field (legacy display contract) ──
+// Returns the raw string from manifest.json top-level repoRole (or warpos.repoRole),
+// or null if the manifest is absent, unreadable, or has no repoRole field.
+// Strips BOM (this repo ships BOM'd JSON).
+function readRawRole() {
+  try {
+    if (!fs.existsSync(MANIFEST)) return null;
+    const m = JSON.parse(fs.readFileSync(MANIFEST, "utf8").replace(/^﻿/, ""));
+    if (!m) return null;
+    if (typeof m.repoRole === "string" && m.repoRole) return m.repoRole;
+    if (m.warpos && typeof m.warpos.repoRole === "string" && m.warpos.repoRole) return m.warpos.repoRole;
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+// ── isCanonical ───────────────────────────────────────────────────────────────
+// DECISION surface — resolver-backed. True iff resolveRepoRole resolves to
+// "canonical" via any signal (manifest, marker, version.json, etc.).
 // Never throws — resolver is fail-safe (unknown/consumer on any error).
 function isCanonical() {
   try {
@@ -34,25 +68,24 @@ function isCanonical() {
   }
 }
 
-// The resolved role label. Falls back to "product" (not "unknown") to preserve
-// backward-compat with callers that use this as a display string for consumer repos.
+// ── roleLabel ─────────────────────────────────────────────────────────────────
+// LABEL surface — returns the RAW manifest repoRole string, or "product" when
+// the field is absent or the manifest is missing/unreadable. Does NOT return
+// resolver tokens ("consumer", "unknown") — that would break callers that use
+// this as a display/gate-label value.
 function roleLabel() {
-  try {
-    const r = resolveRepoRole({ root: ROOT });
-    return r.role === "unknown" ? "product" : r.role;
-  } catch {
-    return "product";
-  }
+  const raw = readRawRole();
+  return raw !== null ? raw : "product";
 }
 
-// Extended status object for release-gate callers that need to distinguish a
-// genuine product repo from an unreadable manifest (qa W5 invariant).
+// ── roleStatus ────────────────────────────────────────────────────────────────
+// Extended status for release-gate callers that need to distinguish a genuine
+// product repo from an unreadable manifest (qa W5 invariant).
+//   .role      = raw manifest repoRole string, or null (NOT a resolver token)
+//   .canonical = resolver-backed boolean (correct without manifest via other signals)
 function roleStatus() {
-  const fs = require("fs");
-  const MANIFEST = path.join(ROOT, ".claude", "manifest.json");
   const exists = fs.existsSync(MANIFEST);
   let readable = false;
-  let role = null;
   if (exists) {
     try {
       JSON.parse(fs.readFileSync(MANIFEST, "utf8").replace(/^﻿/, ""));
@@ -61,19 +94,20 @@ function roleStatus() {
       readable = false;
     }
   }
-  // Role resolution is always from the full resolver (not manifest-only), so
-  // "canonical via version.json" still works even when manifest is unreadable.
-  let resolvedRole = null;
+  // role: raw manifest repoRole (legacy display), NOT the resolver token.
+  const role = readRawRole(); // null if absent/unreadable
+  // canonical: resolver-backed (correct via any signal, not just manifest).
+  let canonical = false;
   try {
-    resolvedRole = resolveRepoRole({ root: ROOT }).role;
+    canonical = resolveRepoRole({ root: ROOT }).role === "canonical";
   } catch {
-    resolvedRole = null;
+    canonical = false;
   }
   return {
     manifestExists: exists,
     manifestReadable: readable,
-    role: resolvedRole,
-    canonical: resolvedRole === "canonical",
+    role,
+    canonical,
   };
 }
 

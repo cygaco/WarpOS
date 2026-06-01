@@ -305,6 +305,204 @@ section("opts.cwd alias");
   } finally { cleanup(dir); }
 }
 
+// ── GAUNTLET FIX TESTS ──────────────────────────────────────────────────────
+
+// Helper: mirrors the shim's readRawRole() for a custom dir, so we can verify
+// the label-surface contract independently of the shim's hardcoded ROOT.
+function readRawRoleFrom(dir) {
+  const mp = path.join(dir, ".claude", "manifest.json");
+  try {
+    if (!fs.existsSync(mp)) return null;
+    const m = JSON.parse(fs.readFileSync(mp, "utf8").replace(/^﻿/, ""));
+    if (!m) return null;
+    if (typeof m.repoRole === "string" && m.repoRole) return m.repoRole;
+    if (m.warpos && typeof m.warpos.repoRole === "string" && m.warpos.repoRole) return m.warpos.repoRole;
+    return null;
+  } catch { return null; }
+}
+
+// 18. FIX1 — roleLabel()/roleStatus().role return RAW manifest repoRole, not resolver token
+section("FIX1 — roleLabel()/roleStatus().role use raw manifest repoRole (backward-compat contract)");
+{
+  const { roleLabel, roleStatus } = require("../testsuite/role");
+
+  // 18a: This worktree has repoRole:"canonical" → roleLabel() returns "canonical" (raw = resolver)
+  ok("roleLabel() on this worktree returns raw manifest repoRole ('canonical')", roleLabel() === "canonical",
+    `got: ${roleLabel()}`);
+  ok("roleStatus().role on this worktree returns raw manifest repoRole ('canonical')", roleStatus().role === "canonical",
+    `got: ${roleStatus().role}`);
+
+  // 18b: repoRole:"framework" → resolver returns "canonical" (role token), raw is "framework".
+  //      The shim's label contract must return "framework", NOT the resolver token "canonical".
+  {
+    const dir = makeTmpRepo({ manifestJson: { repoRole: "framework" } });
+    try {
+      const resolverRole = resolveRepoRole({ root: dir }).role;
+      const rawRole = readRawRoleFrom(dir);
+      ok("resolver maps repoRole:'framework' → 'canonical'", resolverRole === "canonical",
+        `got: ${resolverRole}`);
+      ok("raw manifest read returns 'framework' (not the resolver token)", rawRole === "framework",
+        `got: ${rawRole}`);
+      ok("raw and resolver DIFFER for 'framework' (the BC distinction the shim preserves)",
+        rawRole !== resolverRole, `raw:${rawRole}, resolver:${resolverRole}`);
+      // roleLabel() shim would return rawRole ("framework") not resolverRole ("canonical").
+      const shimLabel = rawRole !== null ? rawRole : "product";
+      ok("shim label contract for repoRole:'framework' is 'framework' (not 'canonical')", shimLabel === "framework",
+        `got: ${shimLabel}`);
+    } finally { cleanup(dir); }
+  }
+
+  // 18c: No repoRole field in manifest → raw=null → roleLabel() must return "product" (not "unknown")
+  {
+    const dir = makeTmpRepo({ manifestJson: { project: { name: "some-product" } } });
+    try {
+      const rawRole = readRawRoleFrom(dir);
+      ok("no repoRole field → raw read returns null", rawRole === null, `got: ${rawRole}`);
+      const shimLabel = rawRole !== null ? rawRole : "product";
+      ok("null raw repoRole → shim label 'product' (backward compat)", shimLabel === "product");
+    } finally { cleanup(dir); }
+  }
+
+  // 18d: Consumer repo (framework-installed.json only, no repoRole).
+  //      Resolver returns "consumer"; raw repoRole is null → shim label must be "product" NOT "consumer".
+  {
+    const dir = makeTmpRepo({ frameworkInstalled: true });
+    try {
+      const resolverRole = resolveRepoRole({ root: dir }).role;
+      const rawRole = readRawRoleFrom(dir);
+      ok("consumer repo: resolver returns 'consumer'", resolverRole === "consumer",
+        `got: ${resolverRole}`);
+      ok("consumer repo: raw manifest repoRole is null (no repoRole field)", rawRole === null,
+        `got: ${rawRole}`);
+      const shimLabel = rawRole !== null ? rawRole : "product";
+      ok("consumer repo: shim label is 'product' (NOT resolver token 'consumer')", shimLabel === "product",
+        `got: ${shimLabel}`);
+    } finally { cleanup(dir); }
+  }
+
+  // 18e: No manifest at all → roleStatus().role must be null (not a resolver token).
+  {
+    const dir = makeTmpRepo({});
+    try {
+      const rawRole = readRawRoleFrom(dir);
+      ok("no manifest → raw repoRole is null (roleStatus().role contract)", rawRole === null,
+        `got: ${rawRole}`);
+    } finally { cleanup(dir); }
+  }
+}
+
+// 19. FIX2 — Invalid override/env values fall through (domain validation)
+section("FIX2 — invalid override/env values ignored (fall through to signals)");
+{
+  // 19a: Invalid override "banana" → falls through; canonical signal wins
+  {
+    const dir = makeTmpRepo({ warposManifest: true });
+    try {
+      const r = resolveRepoRole({ root: dir, override: "banana" });
+      ok("invalid override 'banana' falls through → canonical via signal", r.role === "canonical",
+        `got role: ${r.role}, source: ${r.source}`);
+      ok("invalid override: source is NOT 'arg:override'", r.source !== "arg:override",
+        `got: ${r.source}`);
+    } finally { cleanup(dir); }
+  }
+
+  // 19b: Invalid override in unknown repo → falls through → "unknown"
+  {
+    const dir = makeTmpRepo({});
+    try {
+      const r = resolveRepoRole({ root: dir, override: "GARBAGE" });
+      ok("invalid override 'GARBAGE' in unknown repo → 'unknown' (fall-through)", r.role === "unknown",
+        `got: ${r.role}`);
+    } finally { cleanup(dir); }
+  }
+
+  // 19c: Valid override "consumer" still wins over canonical signal
+  {
+    const dir = makeTmpRepo({ warposManifest: true });
+    try {
+      const r = resolveRepoRole({ root: dir, override: "consumer" });
+      ok("valid override 'consumer' wins over canonical signal", r.role === "consumer",
+        `got: ${r.role}`);
+      ok("valid override source is 'arg:override'", r.source === "arg:override",
+        `got: ${r.source}`);
+    } finally { cleanup(dir); }
+  }
+
+  // 19d: Invalid env WARPOS_REPO_ROLE → falls through; canonical signal wins
+  {
+    const dir = makeTmpRepo({ warposManifest: true });
+    const origEnv = process.env.WARPOS_REPO_ROLE;
+    process.env.WARPOS_REPO_ROLE = "garbage_value";
+    try {
+      const r = resolveRepoRole({ root: dir });
+      ok("invalid env 'garbage_value' falls through → canonical via signal", r.role === "canonical",
+        `got role: ${r.role}, source: ${r.source}`);
+      ok("invalid env: source is NOT 'env:WARPOS_REPO_ROLE'", r.source !== "env:WARPOS_REPO_ROLE",
+        `got: ${r.source}`);
+    } finally {
+      if (origEnv === undefined) delete process.env.WARPOS_REPO_ROLE;
+      else process.env.WARPOS_REPO_ROLE = origEnv;
+      cleanup(dir);
+    }
+  }
+
+  // 19e: Valid env "consumer" still wins over canonical signal
+  {
+    const dir = makeTmpRepo({ warposManifest: true });
+    const origEnv = process.env.WARPOS_REPO_ROLE;
+    process.env.WARPOS_REPO_ROLE = "consumer";
+    try {
+      const r = resolveRepoRole({ root: dir });
+      ok("valid env 'consumer' wins over canonical signal", r.role === "consumer",
+        `got: ${r.role}`);
+      ok("valid env source is 'env:WARPOS_REPO_ROLE'", r.source === "env:WARPOS_REPO_ROLE",
+        `got: ${r.source}`);
+    } finally {
+      if (origEnv === undefined) delete process.env.WARPOS_REPO_ROLE;
+      else process.env.WARPOS_REPO_ROLE = origEnv;
+      cleanup(dir);
+    }
+  }
+
+  // 19f: override case-insensitive validity check — "CANONICAL" is valid (maps to "canonical")
+  {
+    const dir = makeTmpRepo({});
+    try {
+      const r = resolveRepoRole({ root: dir, override: "CANONICAL" });
+      ok("valid override 'CANONICAL' (uppercased) resolves to 'canonical'", r.role === "canonical",
+        `got: ${r.role}`);
+    } finally { cleanup(dir); }
+  }
+}
+
+// 20. FIX3 — Enforcer new pattern regex self-test
+section("FIX3 — enforcer pattern self-test (new regex patterns match role-derivation shapes)");
+{
+  // These are meta-tests verifying the enforcer's new patterns are correctly shaped.
+  const existsRolePattern =
+    /(existsSync|safeExists).*_warpos.*MANIFEST\.json|_warpos.*MANIFEST\.json.*(existsSync|safeExists)/;
+  const versionNamePattern =
+    /\.name\s*===\s*['"]warpos['"]|['"]warpos['"]\s*===\s*\.name/;
+
+  // existsSync / safeExists role-derivation patterns
+  ok("existsRolePattern matches fs.existsSync + _warpos/MANIFEST.json",
+    existsRolePattern.test('if (fs.existsSync(path.join(root, "_warpos", "MANIFEST.json"))) {'));
+  ok("existsRolePattern matches safeExists + _warpos/MANIFEST.json",
+    existsRolePattern.test('if (safeExists(path.join(root, "_warpos", "MANIFEST.json"))) {'));
+  ok("existsRolePattern does NOT match readFileSync (content read, not role)",
+    !existsRolePattern.test('const m = JSON.parse(fs.readFileSync(path.join(root, "_warpos", "MANIFEST.json")));'));
+
+  // version.json #name patterns
+  ok("versionNamePattern matches .name === 'warpos' (single-quote)",
+    versionNamePattern.test("if (v && v.name === 'warpos') {"));
+  ok("versionNamePattern matches .name === \"warpos\" (double-quote)",
+    versionNamePattern.test('if (v && v.name === "warpos") {'));
+  ok("versionNamePattern does NOT match .name === 'other-project'",
+    !versionNamePattern.test("if (v.name === 'other-project') {"));
+  ok("versionNamePattern does NOT match bare 'warpos' string without .name",
+    !versionNamePattern.test('const n = "warpos";'));
+}
+
 // ── Summary ─────────────────────────────────────────────────────────────────
 
 process.stdout.write(`\n${"─".repeat(55)}\n`);

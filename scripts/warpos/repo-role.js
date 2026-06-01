@@ -21,6 +21,12 @@
  *   (e) consumer heuristic      .claude/framework-installed.json present but no canonical signal
  *   (f) 'unknown'               no signals at all
  *
+ * Domain validation: override and env values MUST be a member of ROLES
+ * (canonical|consumer|unknown). An invalid value is silently ignored and
+ * processing falls through to the next precedence tier. This preserves the
+ * role ∈ ROLES invariant — returning an out-of-enum value would silently break
+ * every === 'canonical' / === 'consumer' check downstream.
+ *
  * WHY (a) MATTERS (LRN-2026-05-30): subagents and guards invoked in contexts
  * that cannot read env vars must be able to pass the role explicitly so the
  * orchestrator's resolved value threads through cleanly. This is the #1 reason
@@ -91,15 +97,27 @@ function resolveRepoRole(opts) {
     : ROOT;
 
   // ── (a) Explicit override arg ────────────────────────────────────────────
-  // Wins unconditionally — subagents pass this when env is unavailable.
+  // Wins unconditionally when valid — subagents pass this when env is unavailable.
+  // Invalid values (not in ROLES) are ignored and fall through to the next tier,
+  // preserving the role ∈ ROLES invariant.
   if (overrideArg) {
-    return makeResult(overrideArg.toLowerCase(), "arg:override");
+    const normalized = overrideArg.toLowerCase();
+    if (ROLES.includes(normalized)) {
+      return makeResult(normalized, "arg:override");
+    }
+    // Invalid override value — fall through to env/signals.
   }
 
   // ── (b) Env override ─────────────────────────────────────────────────────
+  // Same domain validation: invalid env values fall through rather than
+  // contaminating the result with a non-enum role token.
   const envVal = (process.env.WARPOS_REPO_ROLE || "").trim();
   if (envVal) {
-    return makeResult(envVal.toLowerCase(), "env:WARPOS_REPO_ROLE");
+    const normalized = envVal.toLowerCase();
+    if (ROLES.includes(normalized)) {
+      return makeResult(normalized, "env:WARPOS_REPO_ROLE");
+    }
+    // Invalid env value — fall through to signals.
   }
 
   // ── (c) Manifest / marker signals ────────────────────────────────────────

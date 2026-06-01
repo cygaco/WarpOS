@@ -5,7 +5,8 @@
  * Policy: ALL canonical-vs-consumer role derivation MUST flow through
  * scripts/warpos/repo-role.js. No guard or script may re-derive the repo role
  * by reading canonical signals inline (e.g. checking _warpos/MANIFEST.json
- * existence, .warpos-canonical, manifest.json#warpos.source, etc.).
+ * existence, .warpos-canonical, manifest.json#warpos.source, version.json#name,
+ * etc.).
  *
  * This script greps for known inline role-derivation idioms across the scripts/
  * directory tree and exits non-zero if any appear OUTSIDE the resolver itself.
@@ -29,13 +30,29 @@ const ROOT = path.resolve(__dirname, "..", "..");
 const SCRIPTS_DIR = path.join(ROOT, "scripts");
 
 // ── Allowlist ──────────────────────────────────────────────────────────────
-// Files allowed to reference canonical-detection patterns (the resolver + its
-// own test file). Relative to SCRIPTS_DIR.
-const ALLOWLIST = new Set([
+// Individual files allowed to reference canonical-detection patterns.
+const ALLOWLIST_FILES = new Set([
   path.join(SCRIPTS_DIR, "warpos", "repo-role.js"),
   path.join(SCRIPTS_DIR, "warpos", "test-repo-role.js"),
   path.join(SCRIPTS_DIR, "checks", "repo-role-single-source.js"), // self
 ]);
+
+// Entire directories allowlisted — files inside these dirs are legitimate
+// manifest-tool readers that reference _warpos/MANIFEST.json for CONTENT
+// (build, validate, test) rather than for role derivation.
+const ALLOWLIST_DIRS = [
+  path.join(SCRIPTS_DIR, "warpos", "manifest"), // build.js, validate.js, walk-skip.js, tests, etc.
+];
+
+function isAllowlisted(file) {
+  if (ALLOWLIST_FILES.has(file)) return true;
+  for (const dir of ALLOWLIST_DIRS) {
+    // Match files directly inside the directory or in any subdirectory.
+    if (file === dir) return true;
+    if (file.startsWith(dir + path.sep)) return true;
+  }
+  return false;
+}
 
 // ── Patterns that constitute "inline role derivation" ─────────────────────
 // Each entry: { name, regex } — the regex is matched against each line.
@@ -59,6 +76,23 @@ const PATTERNS = [
     // m.project.slug === "warpos" — specific canonical role signal.
     regex: /project[.\[].*slug.*===.*['"]warpos['"]|['"]warpos['"].*===.*project[.\[].*slug/,
     description: "project.slug === \"warpos\" role check — use resolveRepoRole() instead",
+  },
+  {
+    name: "warpos_manifest_existence_role",
+    // existsSync/safeExists check on _warpos/MANIFEST.json used for role derivation.
+    // Legitimate content-readers (build.js, validate.js, tests) call readFileSync/loadJson
+    // and live in scripts/warpos/manifest/ (allowlisted above). Any OTHER file calling
+    // existsSync on that path is re-deriving the role signal inline.
+    regex: /(existsSync|safeExists).*_warpos.*MANIFEST\.json|_warpos.*MANIFEST\.json.*(existsSync|safeExists)/,
+    description: "_warpos/MANIFEST.json existsSync role check — use resolveRepoRole() instead",
+  },
+  {
+    name: "version_json_name_warpos",
+    // version.json#name === "warpos" structural heuristic — a role signal.
+    // Keyed on `.name === "warpos"` / `"warpos" === .name` — specific enough to
+    // only catch role-derivation without broad false positives.
+    regex: /\.name\s*===\s*['"]warpos['"]|['"]warpos['"]\s*===\s*\.name/,
+    description: "version.json#name === \"warpos\" role check — use resolveRepoRole() instead",
   },
 ];
 
@@ -92,7 +126,7 @@ function scan() {
   const violations = [];
 
   for (const file of files) {
-    if (ALLOWLIST.has(file)) continue;
+    if (isAllowlisted(file)) continue;
 
     let content;
     try {
