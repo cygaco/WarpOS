@@ -18,7 +18,10 @@ const path = require("path");
 
 const ROOT = path.resolve(__dirname, "..");
 const read = (p) => fs.readFileSync(path.join(ROOT, p), "utf8");
-const GHOST = /gemini-3\.1-(?:pro-preview|flash|flash-lite)|gemini-3-flash\b/;
+// gemini-3.1-pro-preview SHIPPED 2026-06-01 (ai.google.dev/gemini-api/docs/
+// models/gemini-3.1-pro-preview) — no longer a ghost. The 3.1 flash tiers and
+// gemini-3-flash remain unverified ghosts until confirmed real.
+const GHOST = /gemini-3\.1-flash(?:-lite)?\b|gemini-3-flash\b/;
 
 let failures = 0;
 const fail = (msg) => {
@@ -118,6 +121,45 @@ check("dispatch-agent.js", () => {
   if (!/--provider/.test(src) || !/providerOverride/.test(src))
     throw new Error("dispatch-agent lost the --provider override");
   ok("dispatch-agent supports --provider/--model override");
+});
+
+// 7. PRIMARY gemini model AGREEMENT across every dispatch point (2026-06-01).
+// Each prior check only proves a value isn't a ghost; none proves they MATCH.
+// Changing the default in one file but not the others is the exact rename-hygiene
+// drift class CLAUDE.md flags (the model is pinned in 7 places). This makes a
+// mismatch self-detecting. NOTE: gemini-2.5-flash legitimately appears as a
+// FALLBACK rung (provider-fallback#fallback, smoke ping) — only PRIMARY/DEFAULT
+// points are asserted equal here.
+check("gemini primary-model agreement", () => {
+  const grab = (file, re, label) => {
+    const m = read(file).match(re);
+    if (!m) throw new Error(`could not read primary gemini model from ${label}`);
+    return { label, model: m[1] };
+  };
+  const points = [
+    grab("scripts/hooks/lib/providers.js",
+      /GEMINI_DEFAULT\s*=\s*process\.env\.GEMINI_MODEL\s*\|\|\s*"([^"]+)"/, "providers.GEMINI_DEFAULT"),
+    grab("scripts/dispatch/catalog.js",
+      /id:\s*"gemini",[\s\S]*?defaultModel:\s*"([^"]+)"/, "catalog.defaultModel"),
+    grab("scripts/warpos/scaffold-core.js",
+      /gemini:\s*\{[\s\S]*?default_model:\s*"([^"]+)"/, "scaffold.gemini.default_model"),
+    grab(".claude/agents/01-adhoc/redteam/orchestrator.md",
+      /provider_model:\s*(\S+)/, "adhoc redteam.provider_model"),
+    grab(".claude/agents/02-oneshot/redteam/orchestrator.md",
+      /provider_model:\s*(\S+)/, "oneshot redteam.provider_model"),
+  ];
+  // JSON-sourced points
+  const manifest = JSON.parse(read(".claude/manifest.json"));
+  points.push({ label: "manifest.gemini.default_model", model: manifest.providers.gemini.default_model });
+  const pf = JSON.parse(read(".claude/agents/00-alex/.system/policy/provider-fallback.json"));
+  points.push({ label: "provider-fallback.redteam.primary", model: String(pf.policies.redteam.primary).split(":").pop() });
+
+  const distinct = [...new Set(points.map((p) => p.model))];
+  if (distinct.length !== 1) {
+    const detail = points.map((p) => `${p.label}=${p.model}`).join(", ");
+    throw new Error(`gemini primary model DRIFT across dispatch points: ${detail}`);
+  }
+  ok(`gemini primary model agrees everywhere: ${distinct[0]}`);
 });
 
 console.log("");

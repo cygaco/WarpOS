@@ -440,7 +440,7 @@ if (!slot) {
 let result;
 try {
   // Honor the agent's frontmatter-declared provider_model (e.g. qa → gpt-5.4-mini,
-  // reviewer → gpt-5.5, redteam → gemini-2.5-flash) instead of the provider
+  // reviewer → gpt-5.5, redteam → gemini-3.1-pro-preview) instead of the provider
   // default. BUT when --provider overrides the native provider, the spec's model
   // belongs to the WRONG provider — ignore it and use --model (or let runProvider
   // pick the override provider's default).

@@ -586,11 +586,13 @@ function writeProductManifest({ target, interview = {}, stack = "unknown", frame
         },
         gemini: {
           cli: "gemini",
-          default_model: "gemini-2.5-flash",
+          default_model: "gemini-3.1-pro-preview",
           fallback: "claude",
-          // `gemini -m <model> -p <instruction>` (context via stdin). gemini-2.5-flash
-          // is the reliable default (real id + generous quota); opt into Gemini 3 Pro
-          // via GEMINI_MODEL=gemini-3-pro-preview. Auth: GEMINI_API_KEY in ~/.gemini/.env
+          // `gemini -m <model> -p <instruction>` (context via stdin). Default =
+          // gemini-3.1-pro-preview (1M in/64K out, thinking always-on). Preview tier
+          // can quota-fail/downgrade under load → fall back to the pinned flash via
+          // GEMINI_MODEL=gemini-2.5-flash. Auth: GEMINI_API_KEY in ~/.gemini/.env OR
+          // `gemini auth login` (OAuth) — REQUIRED once per fresh install / new machine.
           syntax: "gemini -m {model} -p",
         },
       },

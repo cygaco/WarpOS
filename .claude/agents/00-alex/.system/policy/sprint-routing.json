@@ -78,10 +78,10 @@
     "strongest_reasoning": ["claude:claude-opus-4-8", "openai:gpt-5.5"],
     "strong_reasoning": [
       "claude:claude-opus-4-8",
-      "gemini:gemini-2.5-flash"
+      "gemini:gemini-3.1-pro-preview"
     ],
     "strong_reviewer": ["openai:gpt-5.5", "claude:claude-sonnet-4-6"],
-    "independent_reviewer": ["gemini:gemini-2.5-flash", "openai:gpt-5.5"],
+    "independent_reviewer": ["gemini:gemini-3.1-pro-preview", "openai:gpt-5.5"],
     "economical_coder": ["claude:claude-sonnet-4-6", "openai:gpt-5.4-mini"],
     "economical_writer": [
       "claude:claude-haiku-4-5-20251001",

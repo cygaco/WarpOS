@@ -21,15 +21,15 @@
       "root_cause": "Provider CLI is installed but session/login is missing or expired.",
       "safe_to_autofix": false,
       "fix_recipe": null,
-      "remediation": "Authenticate the CLI interactively. claude: `claude /login`. openai: `codex login`. gemini: `gemini auth login`. Never auto-fix — interactive auth requires the operator.",
+      "remediation": "Authenticate the CLI interactively. claude: `claude /login`. openai: `codex login`. gemini: run `gemini` once IN THE PROJECT DIRECTORY (accept the trust prompt + complete Google login) or `gemini auth login`. This is a DAY-ZERO step on every fresh install, new machine, AND after a WarpOS/CLI update can reset it — without it the gauntlet silently falls back off gemini and loses adversarial-corpus diversity. Never auto-fix — interactive auth requires the operator.",
       "fallback_allowed": true
     },
     "auth_source_mismatch": {
       "status": "auth_source_mismatch",
-      "root_cause": "Both an API key env var AND CLI OAuth session are set — provider has ambiguous credential source.",
+      "root_cause": "Both an API key env var AND CLI OAuth session are set — provider has ambiguous credential source. For gemini this is the classic 'tries to use the API instead of the CLI' symptom: providers.js injects GEMINI_API_KEY from ~/.gemini/.env and the key WINS over the OAuth/Code-Assist session, so a stale/quota-limited key fails the gauntlet even though `gemini` works interactively.",
       "safe_to_autofix": false,
       "fix_recipe": null,
-      "remediation": "Choose ONE credential source. Either unset the API key env var to use OAuth, or `codex logout` (etc.) to use the env key. Mirrors provider-fallback.json#do_not_fall_back to surface the ambiguity rather than silently picking.",
+      "remediation": "Choose ONE credential source. gemini: to use the OAuth/CLI session, remove GEMINI_API_KEY from ~/.gemini/.env (and the project .gemini/.env); to use the API key, ensure it is valid + has quota. openai: unset OPENAI_API_KEY or `codex logout`. Mirrors provider-fallback.json#do_not_fall_back to surface the ambiguity rather than silently picking.",
       "fallback_allowed": false
     },
     "model_not_found": {

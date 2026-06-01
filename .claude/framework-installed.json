@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "0.12.1",
-  "installedCommit": "1a28e890684e1ab818eff2e422b9a0bc43c13220",
-  "installedAt": "2026-06-01T01:44:58.815Z",
+  "installedCommit": "0101e4ab303a318015810deb659eaf7885c862f9",
+  "installedAt": "2026-06-01T16:51:37.520Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -204,8 +204,8 @@
       "dest": ".claude/agents/00-alex/.system/policy/provider-failure-modes.json",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "267a36de06cda35c2d29fa53f2e21d92b4c6f65395250e7f9fc3be35e5f27cfa",
-      "currentHashAtInstall": "267a36de06cda35c2d29fa53f2e21d92b4c6f65395250e7f9fc3be35e5f27cfa",
+      "installedHash": "8ae87c8fa057cb96dc4a4628cf3af618cd23f6182d703461c3426e8bc2032361",
+      "currentHashAtInstall": "8ae87c8fa057cb96dc4a4628cf3af618cd23f6182d703461c3426e8bc2032361",
       "introducedIn": "0.0.0"
     },
     {
@@ -214,8 +214,8 @@
       "dest": ".claude/agents/00-alex/.system/policy/provider-fallback.json",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "13b9ee708a873d5329115a42d0e635d48ac21d0c757767aae705f4fc583d3881",
-      "currentHashAtInstall": "13b9ee708a873d5329115a42d0e635d48ac21d0c757767aae705f4fc583d3881",
+      "installedHash": "f7b26397a6b3b3e4fed16441cd15403b0cc95698e852ee235cbb3db6311b5d63",
+      "currentHashAtInstall": "f7b26397a6b3b3e4fed16441cd15403b0cc95698e852ee235cbb3db6311b5d63",
       "introducedIn": "0.0.0"
     },
     {
@@ -234,8 +234,8 @@
       "dest": ".claude/agents/00-alex/.system/policy/sprint-routing.json",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "23e1d7b7865d568ae8a632c8cfe51cb75dec9cfdbaf4fd8abaa89caf945f959e",
-      "currentHashAtInstall": "23e1d7b7865d568ae8a632c8cfe51cb75dec9cfdbaf4fd8abaa89caf945f959e",
+      "installedHash": "70afa288ceca4b70ef1224fd51b98d0df92d41b018790ff11bbde1fe0f07eb8c",
+      "currentHashAtInstall": "70afa288ceca4b70ef1224fd51b98d0df92d41b018790ff11bbde1fe0f07eb8c",
       "introducedIn": "0.0.0"
     },
     {
@@ -424,8 +424,8 @@
       "dest": ".claude/agents/01-adhoc/redteam/orchestrator.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "f91935fa04f7a5e967a58546da1b0bb3d9d093aa9bbf64d1be999da5f7e1ce89",
-      "currentHashAtInstall": "f91935fa04f7a5e967a58546da1b0bb3d9d093aa9bbf64d1be999da5f7e1ce89",
+      "installedHash": "27bac40068a161d2f266843534d0bbb04ca8fd73e2e606b184af9eae925ef653",
+      "currentHashAtInstall": "27bac40068a161d2f266843534d0bbb04ca8fd73e2e606b184af9eae925ef653",
       "introducedIn": "0.0.0"
     },
     {
@@ -644,8 +644,8 @@
       "dest": ".claude/agents/02-oneshot/redteam/orchestrator.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "b4ea63fdf1424006983429f6a4a6c2074ef880aa4d1dd73131cdad96aaa9cb00",
-      "currentHashAtInstall": "b4ea63fdf1424006983429f6a4a6c2074ef880aa4d1dd73131cdad96aaa9cb00",
+      "installedHash": "3ccf4785d1f08b7378497eb4c8a852ee73662ea13b368b3093e261d2a468dd99",
+      "currentHashAtInstall": "3ccf4785d1f08b7378497eb4c8a852ee73662ea13b368b3093e261d2a468dd99",
       "introducedIn": "0.0.0"
     },
     {
@@ -4054,8 +4054,8 @@
       "dest": "scripts/hooks/lib/providers.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "14a828549c42baeb782efc1d93952d130a599031bbd0206ac9e3eabe9c616a5e",
-      "currentHashAtInstall": "14a828549c42baeb782efc1d93952d130a599031bbd0206ac9e3eabe9c616a5e",
+      "installedHash": "1da768f7683d5f0ee1bde81451e0b2faba1754a34661e3106b24921748156830",
+      "currentHashAtInstall": "1da768f7683d5f0ee1bde81451e0b2faba1754a34661e3106b24921748156830",
       "introducedIn": "0.0.0"
     },
     {
@@ -4714,8 +4714,8 @@
       "dest": "scripts/warpos/scaffold-core.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "7f61a5e25361d8b2f725bef1abe11bc65bb74ba8a70e7f4df6dc53d81aed2571",
-      "currentHashAtInstall": "7f61a5e25361d8b2f725bef1abe11bc65bb74ba8a70e7f4df6dc53d81aed2571",
+      "installedHash": "f34b8ff359a1f35a41415c10de0695fea3db917f3118cbc10a48afb59af19247",
+      "currentHashAtInstall": "f34b8ff359a1f35a41415c10de0695fea3db917f3118cbc10a48afb59af19247",
       "introducedIn": "0.0.0"
     },
     {
@@ -6094,8 +6094,8 @@
       "dest": "scripts/dispatch/catalog.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "00a45f280d87a4021ef3f5c51e9f7a170775485df5cd35b54fa3bcd76bf1dc6f",
-      "currentHashAtInstall": "00a45f280d87a4021ef3f5c51e9f7a170775485df5cd35b54fa3bcd76bf1dc6f",
+      "installedHash": "cd57d5cc65fd27ebc57ca957e31510810317de0b755a9d39d451eff7bdbc5d4d",
+      "currentHashAtInstall": "cd57d5cc65fd27ebc57ca957e31510810317de0b755a9d39d451eff7bdbc5d4d",
       "introducedIn": "0.0.0"
     },
     {
@@ -9554,8 +9554,8 @@
       "dest": "scripts/dispatch-agent.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "cc67d5b05f188f4e74d9e49345d07e9de34d0efce26b82bbc621581feb013fdc",
-      "currentHashAtInstall": "cc67d5b05f188f4e74d9e49345d07e9de34d0efce26b82bbc621581feb013fdc",
+      "installedHash": "9681c258dd26cf0376513d92d5949346277d8fa4afb9fcd9a6a939f28934fe7e",
+      "currentHashAtInstall": "9681c258dd26cf0376513d92d5949346277d8fa4afb9fcd9a6a939f28934fe7e",
       "introducedIn": "0.0.0"
     },
     {

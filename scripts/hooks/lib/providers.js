@@ -79,12 +79,14 @@ function loadGeminiApiKey() {
 // (qa, learner) where cost matters more than peak reasoning.
 const OPENAI_FLAGSHIP = process.env.OPENAI_FLAGSHIP_MODEL || "gpt-5.5"; // reviewer, compliance
 const OPENAI_MINI = process.env.OPENAI_MINI_MODEL || "gpt-5.4-mini"; // qa, learner (no gpt-5.5-mini exists yet)
-// Reliable default = gemini-2.5-flash (real id, generous quota, corpus-diverse
-// from GPT/Claude). The old `gemini-3.1-pro-preview` was a GHOST id (404 on
-// v1beta) AND the real pro-preview tier hits TerminalQuotaError after 1-2 real
-// redteam scans (ROADMAP DISCOVERED-2026-05-11). Opt into Gemini 3 Pro via
-// GEMINI_MODEL=gemini-3-pro-preview when you need peak attack-chain reasoning.
-const GEMINI_DEFAULT = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+// Default = gemini-3.1-pro-preview (operator directive 2026-06-01; confirmed
+// real at ai.google.dev/gemini-api/docs/models/gemini-3.1-pro-preview — 1M in /
+// 64K out, thinking always-on). It 404'd on v1beta as of 2026-05-30 (hence the
+// old "ghost" note) but has since shipped. The preview tier CAN quota-fail /
+// silently downgrade under load; the strict downgrade-check + claude fallback +
+// the GPT 2nd security pass cover that. Fall back to the rock-solid pinned flash
+// with one env var: GEMINI_MODEL=gemini-2.5-flash.
+const GEMINI_DEFAULT = process.env.GEMINI_MODEL || "gemini-3.1-pro-preview";
 
 // Reasoning effort per role. Forces deeper deliberation across all dispatch
 // roles. Per recent learning: "LLM-as-judge is systematically biased and

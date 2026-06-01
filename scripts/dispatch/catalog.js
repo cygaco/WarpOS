@@ -96,18 +96,19 @@ const OPENAI = {
 // gemini-2.5-pro deliberately excluded per project policy
 // (see _requirements/09-integrations/PROVIDER/03-google-gemini.md)
 //
-// MODEL IDS CORRECTED 2026-05-30: the previous `gemini-3.1-*` ids were GHOSTS
-// (no such models exist). Official current ids per Google's Gemini CLI docs
-// (geminicli.com/docs/reference + github.com/google-gemini/gemini-cli):
-//   - `gemini-3-pro-preview`  (Gemini 3 Pro, the docs' own --model example)
+// MODEL IDS: `gemini-3.1-pro-preview` is the DEFAULT (operator directive
+// 2026-06-01, confirmed real at ai.google.dev/gemini-api/docs/models/
+// gemini-3.1-pro-preview — 1M in / 64K out, thinking always-on). It 404'd on
+// 2026-05-30 (hence the old "ghost" note) but has since shipped. Other real ids:
+//   - `gemini-3-pro-preview`  (Gemini 3 Pro)
 //   - `gemini-flash-latest`   (documented rolling alias for current flash)
-//   - `gemini-2.5-flash`      (concrete pinned flash)
-// Auth: GEMINI_API_KEY in ~/.gemini/.env (global) — verified working 2026-05-30.
+//   - `gemini-2.5-flash`      (concrete pinned flash — the reliable fallback)
+// Auth: GEMINI_API_KEY in ~/.gemini/.env (global) OR `gemini auth login` (OAuth)
+// — one of the two is REQUIRED once per fresh install / new machine / update.
 // `-p`/`--prompt` is being soft-deprecated upstream in favor of a positional
 // prompt, but still works in 0.44.x; revisit when the CLI hard-removes it.
-// DEFAULT = gemini-2.5-flash (real id + generous quota). gemini-3-pro-preview
-// quota-fails after 1-2 real redteam scans (ROADMAP DISCOVERED-2026-05-11), so
-// it's opt-in via GEMINI_MODEL, not the default.
+// NOTE: preview tier CAN quota-fail / silently downgrade under load — fall back
+// to the pinned flash with GEMINI_MODEL=gemini-2.5-flash.
 const GEMINI = {
   id: "gemini",
   label: "Google Gemini",
@@ -115,8 +116,16 @@ const GEMINI = {
   cliEffortFlagTemplate: "",
   syntaxTemplate: "gemini -m {model} -p",
   requiresFallback: true,
-  defaultModel: "gemini-2.5-flash",
+  defaultModel: "gemini-3.1-pro-preview",
   models: [
+    {
+      id: "gemini-3.1-pro-preview",
+      label: "Gemini 3.1 Pro (preview, thinking always-on)",
+      effortLevels: [],
+      contextTokens: 1_000_000,
+      maxOutputTokens: 64_000,
+      thinkingAlwaysOn: true,
+    },
     {
       id: "gemini-3-pro-preview",
       label: "Gemini 3 Pro (preview, thinking always-on)",
