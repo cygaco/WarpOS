@@ -37,9 +37,11 @@ Reddit / forums / FB groups: pain points, frustrations, problems users solve tha
 the product; surprising / unconventional / niche uses. Capture quotes + source refs.
 
 ### Step 3: Distill ≥3 alternate angles (dispatch copy-lead)
-Each as: a clear angle statement + supporting evidence (quotes / snippets backing it). Goal:
-≥3 angles that clearly differ from the current primary angle, ranked by hook strength
-(PIG / scroll-stopper, grounded in the customer's own words).
+Use the corpus output structure verbatim: **`Alternate Angle #N: [clear statement of the
+alternate angle]`** followed by **`Supporting Evidence: [relevant quotes / review snippets /
+discussion summary backing it]`**. Goal: **≥3 distinct, viable angles that clearly differ from
+the current primary angle**, ranked by hook strength (PIG / scroll-stopper, grounded in the
+customer's own words). Mine the philosophy behind a proven hook, never the literal lines.
 
 ### Step 4: Emit
 Write `paths.content` (`.claude/content/growth-angles-{slug}/angles.md`): the ranked angles,

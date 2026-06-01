@@ -1,3 +1,11 @@
+---
+guide: PAYMENTS
+anchor: lastmile:module/payments
+shape: walkthrough
+timing: at-module
+lead_time: "Stripe identity + bank verification before live payments: hours-days"
+---
+
 # PAYMENTS_GUIDE.md — Taking Money in Your App, for Total Newbies
 
 > **Who this is for:** You built an app (or are about to) and you want it to **make money** — charge for a subscription, a one-time purchase, or usage. You have little or no technical background. This guide walks you through it in plain language, from zero.

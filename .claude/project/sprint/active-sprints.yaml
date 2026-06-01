@@ -696,7 +696,7 @@ sprints:
     updated_at: "2026-05-31T18:43:57.022Z"
   - id: SP-20260531-006
     title: "Guides skill suite — guides:write + guides:organize + guides:integrate (recording system + conflict-resolution); supersedes SP-005"
-    status: planning
+    status: done
     lane:
       type: default
       value: null

@@ -55,8 +55,12 @@ higher-priority (lower-numbered) one.
 
 ### Principle #1 — EQ Scoring → SCALE / TEST / SKIP  *(must_follow: true)*  ·  slug `eq-scoring`
 
-- **Score every product/opportunity on the EQ ("Everything Quotient") = Product × Ads ×
-  Funnel × LTV**, each 1–10 with a one-line justification, then return a decisive verdict:
+- **Score every product/opportunity on the EQ framework — a four-variable system of Product,
+  Ads, Funnel, LTV.** Per the corpus: score the **Product dimension 1–10** as the headline EQ
+  number AND **identify which of the other three sliders (Ads / Funnel / LTV) the operator
+  would have to max out to win with it** — a great product (9–10) lets mid ads/funnel/LTV win;
+  a mid product (5–7) requires cracked ads/funnel/LTV to win. Give a one-line justification per
+  factor, then return a decisive verdict:
   - **9–10** product can win with average marketing → strong **SCALE** candidate.
   - **5–7** product needs cracked ads/funnel/LTV to win → **TEST**.
   - **below 5** → **SKIP**.

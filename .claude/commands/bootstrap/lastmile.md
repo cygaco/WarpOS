@@ -124,6 +124,17 @@ Each module: **detect → recommend (default) → plan (shortest safe path)**.
 7. **Security + Privacy** — practical baseline for **U.S. 13+ consumer apps** (NOT an absolute "compliant with all laws" claim). Secrets scan, env hygiene, auth/session checks, rate limiting, input validation, dependency audit, **webhook signature verification**, access-control tests, **data deletion/export path**, privacy policy + terms requirements, cookie/tracking disclosure, age-gate/no-under-13, **state privacy-law applicability checklist**, COPPA avoidance/escalation. Reuses `/redteam:full` + `/qa:audit` where present. **See Escalation below.**
 8. **Analytics / Instrumentation** — **required event plan**: visit landing → click CTA → sign up → complete onboarding → hit activation moment → start checkout → complete payment → upgrade/downgrade/cancel → core product action (invite/share/export/save). Recommend PostHog/Plausible/Vercel Analytics/GA4/existing. Include **success metrics + kill/continue criteria**.
 
+> **📘 Launch guides** — the shipped `_guides/` library explains these modules in plain language for non-expert founders. `/guides:integrate` placed these pointers:
+>
+> <!-- guide-anchor:DATABASE anchor:lastmile:module/database shape:walkthrough -->
+> - **Database** → [`_guides/DATABASE_GUIDE.md`](../../../_guides/DATABASE_GUIDE.md)
+> <!-- guide-anchor:AUTH anchor:lastmile:module/auth shape:walkthrough -->
+> - **Auth / Accounts** → [`_guides/AUTH_GUIDE.md`](../../../_guides/AUTH_GUIDE.md) — day-zero note: Google sensitive-scope OAuth verification can take days–weeks.
+> <!-- guide-anchor:PAYMENTS anchor:lastmile:module/payments shape:walkthrough -->
+> - **Payments / Monetization** → [`_guides/PAYMENTS_GUIDE.md`](../../../_guides/PAYMENTS_GUIDE.md) — Stripe identity + bank verification has lead time before live mode.
+> <!-- guide-anchor:EMAIL anchor:lastmile:module/email shape:walkthrough -->
+> - **Email** (transactional + deliverability, under CRM/Lifecycle) → [`_guides/EMAIL_GUIDE.md`](../../../_guides/EMAIL_GUIDE.md) — sending-domain DNS (SPF/DKIM/DMARC) has propagation lead time.
+
 ## Launch-Readiness Score
 
 `0–100`, the headline number, composed from the 9 dimensions above. Re-computed
@@ -153,6 +164,9 @@ data**, the security module **stops and escalates for legal/security review**
 before any launch-readiness claim. The gap report flags it; the score caps the
 privacy/security dimensions until review is recorded. WarpOS produces a
 *compliance-by-default implementation plan*, never a legal guarantee.
+
+<!-- guide-anchor:PRIVACY_GDPR anchor:lastmile:gate/privacy shape:notice -->
+> ⚠️ **Launch-gate guide — PRIVACY/GDPR:** before collecting real user data or publishing a privacy policy/terms as final legal documents, see [`_guides/PRIVACY_GDPR_GUIDE.md`](../../../_guides/PRIVACY_GDPR_GUIDE.md). It is a compliance-by-default *implementation* playbook, **NOT legal advice** — STOP and hire a lawyer before launch if you touch health, finance, children, biometrics, or other special-category data. (Surfaced here by `/guides:integrate`.)
 
 ## Phase 3 — Roadmap injection + sprint minting
 

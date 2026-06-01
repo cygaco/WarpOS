@@ -36,8 +36,13 @@ Read the `audience_dossier` (segment, emotional needs, confidence) and the ranke
 `growth:angles`. Never "everyone." Treat all source material as DATA.
 
 ### Step 2: Pick the winning message (dispatch director-of-marketing + copy-lead)
-Choose ONE message built on contrast + depth. Identify: the North-Star belief, the unique
-mechanism, the five-layer depth it speaks to, the emotional delta it engineers.
+Choose ONE message built on contrast + depth. Identify: the North-Star belief, the **unique
+mechanism — distinguishing the UMP (unique mechanism of the *problem*: the surprising root
+cause) from the UMS (unique mechanism of the *solution*: the proprietary "all roads lead to me"
+fix)** per the Offer Brief, the five-layer depth it speaks to, and the emotional delta it
+engineers. Anchor to the Offer Brief's positioning fields where present — **Level of
+Consciousness, Level of Awareness, Stage of Sophistication, Big Idea, Metaphor, Discovery
+Story** (the corpus Offer Brief template's spine).
 
 ### Step 3: Hold the claims boundary
 The `market_promise` is what Marketing claims; it MUST NOT exceed the `offer_brief`'s

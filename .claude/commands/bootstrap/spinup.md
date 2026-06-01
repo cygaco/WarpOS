@@ -39,6 +39,9 @@ spinup [--clone <target>]
   → 4. onscreen  execute the first sprint until the core loop SERVES (verify-before-claim)
 ```
 
+<!-- guide-anchor:DEV_SETUP anchor:spinup:preflight shape:checklist -->
+> ⏱️ **Day-zero launch guide — DEV_SETUP (start the slow clocks NOW):** the moment you begin, fire off the long-lead developer-account signups — see [`_guides/DEV_SETUP_GUIDE.md`](../../../_guides/DEV_SETUP_GUIDE.md). Apple ~2d payment+verify, Google Play identity review + 12-tester / 14-day closed test, D-U-N-S days–weeks. The setup is cheap; the *waiting* is the cost — so start the waiting early. (Surfaced here by `/guides:integrate`.)
+
 ### Phase 1 — Intent
 - **Default:** run the guided brief discussion (problem, JTBDs, emotional
   promise, value chain, wedge, MVP) — the folded-in brief flow.

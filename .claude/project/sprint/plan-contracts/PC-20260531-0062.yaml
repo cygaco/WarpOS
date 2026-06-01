@@ -1,0 +1,143 @@
+schema: warpos/sprint/plan-contract/v1
+id: PC-20260531-0062
+created_at: "2026-06-01T00:14:00.000Z"
+updated_at: "2026-06-01T00:14:00.000Z"
+sprint: SP-20260531-006
+source_request: "Build the guides skill suite — guides:organize (audit + restructure all _guides/), guides:integrate (wire guides into the bootstrap pipeline + a recording system), guides:coverage (enforcer) — on top of the already-shipped guide-anchor contract."
+source_request_verbatim: "/sprint:full a guides:write skill, a guides:organize (should look at all guides, and restructure), and guides:integrate that checks current guides and integrates them into the bootstrap pipeline at the right spots, in the right shape"
+request_type: feature_add
+interpreted_intent: "guides:write already shipped (establishes the guide-anchor contract). Complete the suite with three companion dev-tooling skills: (1) guides:organize audits + restructures the _guides/ library AND backfills the anchor-contract frontmatter onto the 7 existing guides (which currently carry none) + generates a machine-readable _guides/registry.json index; (2) guides:integrate reads the registry and wires each guide into the bootstrap pipeline (spinup/lastmile) at its declared anchor in its declared shape, recording every placement in .claude/project/maps/guide-integration.jsonl (idempotent, read-before-write, conflict detection); (3) guides:coverage is a fail-closed enforcer asserting every guide is anchored, every anchor is live in the pipeline, and there are no orphans — the /maps:coverage and /scan:scan-coverage analog for guides."
+user_or_business_outcome: "The _guides/ launch-guide library becomes a self-organizing, self-wiring, self-enforcing system: guides authored via guides:write are automatically placeable into the spinup/lastmile journey at the correct moment (long-lead day-zero items at project start, integrations at their module, legal/approval items at gates), and a coverage enforcer prevents the un-anchored / orphaned-guide drift class that the bare contract (defined-but-unapplied) currently exhibits. Closes/realizes SP-20260531-005."
+affected_surfaces:
+  - surface: ".claude/commands/guides/organize.md (new skill)"
+    evidence_level: verified_from_repo
+    notes: "Sibling of the shipped write.md; canonical .claude/commands is self-referential (write directly)."
+  - surface: ".claude/commands/guides/integrate.md (new skill)"
+    evidence_level: verified_from_repo
+    notes: "Reads registry, wires anchors into bootstrap, writes the recording jsonl."
+  - surface: ".claude/commands/guides/coverage.md (new skill)"
+    evidence_level: verified_from_repo
+    notes: "Thin skill over the fail-closed enforcer script."
+  - surface: "scripts/guides/registry.js (new helper)"
+    evidence_level: assumed_from_request
+    notes: "Deterministic builder: _guides/*.md frontmatter -> _guides/registry.json; + read helpers shared by integrate/coverage."
+  - surface: "scripts/checks/guides-coverage.js (new enforcer)"
+    evidence_level: assumed_from_request
+    notes: "Reads frontmatter + registry + guide-integration.jsonl + bootstrap skills; exit 1 on gaps. Matches scan:scan-coverage / maps:coverage precedent."
+  - surface: "_guides/*.md frontmatter (7 guides) + _guides/registry.json (new)"
+    evidence_level: verified_from_repo
+    notes: "Backfill: the 7 guides currently carry NO anchor frontmatter and no registry.json exists. Anchor map derived from _guides/README.md tables."
+  - surface: ".claude/project/maps/guide-integration.jsonl (new recording store)"
+    evidence_level: assumed_from_request
+    notes: "One record per guide x anchor; read-before-write idempotency + conflict detection."
+  - surface: ".claude/commands/bootstrap/spinup.md + lastmile.md (mutated by running integrate)"
+    evidence_level: verified_from_repo
+    notes: "integrate inserts guide pointers at anchors (spinup:preflight, lastmile:module/*, lastmile:gate/*). Reversible + recorded."
+current_behavior:
+  evidence_level: verified_from_repo
+  notes: "guides:write shipped (defines the anchor contract). The 7 guides (AUTH/DATABASE/DEV_SETUP/EMAIL/PAYMENTS/PRIVACY_GDPR/README) carry NO contract frontmatter; no _guides/registry.json; no guides:organize/integrate/coverage skills; bootstrap pipeline has no guide pointers. The contract is defined-but-unapplied — a vacuous state coverage would (correctly) fail on."
+desired_behavior: "Three new guides:* skills exist and are registered. guides:organize has been run: all 7 guides carry valid anchor frontmatter (anchor/shape/timing/lead_time) grounded in the README's when-to-do-it map, and _guides/registry.json is a generated index of them. guides:integrate has been run: each guide is wired into spinup/lastmile at its anchor in its shape, with one .claude/project/maps/guide-integration.jsonl record per placement (re-running is idempotent + detects conflicts). guides:coverage runs green: every guide anchored, every anchor live, no orphans, no dangling anchors; exits 1 when any invariant breaks."
+scope:
+  size: m
+  risk_level: low
+  complexity_drivers:
+    - "3 skills + 2 helper scripts + frontmatter backfill on 7 files + a recording store + running integrate against framework bootstrap files"
+    - "all dev-tooling-layer, reversible, no product code, no deploy"
+    - "the suite must be internally consistent (shared anchor vocabulary across write/organize/integrate/coverage)"
+scope_variants:
+  minimal_safe:
+    summary: "The 3 skills + anchor backfill + registry + coverage enforcer, but build-only for integrate (skill authored, run as dry-run demo, bootstrap not mutated)."
+    tradeoffs:
+      - "fastest, lowest-touch"
+      - "leaves the same half-applied state as today — guides authored but not actually wired (Beta D4: rejected as vacuous)"
+  recommended:
+    summary: "minimal_safe PLUS run guides:organize AND guides:integrate for real: backfill anchors, generate registry, wire guides into spinup/lastmile, write the recording jsonl, then run guides:coverage to green. Dogfooded, demonstrably wired."
+    tradeoffs:
+      - "complete + self-proving"
+      - "mutates bootstrap framework files (reversible + recorded)"
+  expanded:
+    summary: "recommended PLUS wire guides:coverage into /scan:full as a Tier check + add a pre-commit guard for un-anchored guides."
+    tradeoffs:
+      - "most enforced"
+      - "scan:full + hook surface is gold-plating unless asked (Beta D2: keep scope as stated)"
+assumptions:
+  safe:
+    - "the guide-anchor contract in guides/write.md is the source of truth for anchor vocabulary (verified shipped)"
+    - "the _guides/README.md when-to-do-it + order-of-operations tables encode the operator-intended anchor/timing for each guide (verified)"
+    - "canonical .claude/commands is self-referential — new skills are written directly, no _warpos source pointer needed (verified via scan:framework-views-fresh design note)"
+    - "all work is dev-tooling-layer, reversible, no external service, no deploy"
+  unsafe: []
+  needs_user_or_beta_review:
+    - "whether to run integrate for real vs build-only (RESOLVED: Beta D4 = run for real)"
+    - "anchor storage shape (RESOLVED: Beta D3 = frontmatter SoT + generated registry)"
+open_questions:
+  blocking: []
+  non_blocking:
+    - "EMAIL guide anchor — lastmile has no standalone 'email' module; anchor at lastmile:module/email and let integrate map it to the nearest phase (auth/website), or co-anchor a spinup notice for DNS lead time"
+    - "wire coverage into scan:full now or later (deferred — expanded variant)"
+non_goals:
+  - "Re-authoring guide CONTENT (organize restructures + backfills frontmatter; it does not rewrite the prose — that's guides:write)"
+  - "Building guides:write (already shipped)"
+  - "Wiring coverage into scan:full or adding a commit-time guard (expanded variant, not asked)"
+  - "Any product-layer code or deploy"
+requirement_areas:
+  - guide library organization + anchor backfill
+  - bootstrap-pipeline integration + recording system
+  - fail-closed coverage enforcement
+  - registry as machine-readable index
+high_level_story_candidates:
+  - "As the WarpOS maintainer, I run /guides:organize and every guide ends up with a valid anchor + a regenerated registry index, without me hand-editing frontmatter."
+  - "As the maintainer, I run /guides:integrate and each guide is wired into the spinup/lastmile journey at the right moment + shape, with an auditable record of every placement."
+  - "As the maintainer, /guides:coverage tells me — fail-closed — if any guide is un-anchored, any anchor is dead, or any guide is orphaned."
+granular_story_candidates:
+  - "Author .claude/commands/guides/organize.md: audit all _guides/, backfill anchor frontmatter from the README map, (re)generate _guides/registry.json via scripts/guides/registry.js, flag content that needs restructuring without rewriting prose."
+  - "Author scripts/guides/registry.js: deterministic _guides/*.md frontmatter -> _guides/registry.json; expose read helpers."
+  - "Author .claude/commands/guides/integrate.md: read registry, place each guide at its anchor in spinup/lastmile, append a guide-integration.jsonl record per placement; read-before-write idempotency + conflict detection."
+  - "Author .claude/commands/guides/coverage.md + scripts/checks/guides-coverage.js: assert every guide anchored, every anchor live in bootstrap, no orphans/dangles; exit 1 on any gap."
+  - "Backfill anchor frontmatter onto the 7 guides; generate registry.json."
+  - "Run organize, then integrate (mutate spinup/lastmile + write jsonl), then coverage to green."
+workstream_candidates:
+  - "guides:organize + registry helper + anchor backfill"
+  - "guides:integrate + recording system"
+  - "guides:coverage enforcer"
+  - "dogfood run (organize -> integrate -> coverage) + verify green"
+preliminary_ticket_candidates:
+  allowed: true
+  candidates:
+    - "T1: guides:organize skill + scripts/guides/registry.js + anchor backfill on 7 guides + registry.json"
+    - "T2: guides:integrate skill + .claude/project/maps/guide-integration.jsonl recording system"
+    - "T3: guides:coverage skill + scripts/checks/guides-coverage.js enforcer"
+    - "T4: dogfood run organize->integrate->coverage; verify green"
+  notes: "documentation_scale=auto for an m/low feature_add; 4 tickets, surfaces largely disjoint so T1/T2/T3 author-in-parallel then T4 runs serially. Fast-path per Beta D1 — light verification (green coverage + smoke), gauntlet skipped (low risk)."
+external_service_dependencies:
+  status: none_expected
+approval_boundaries:
+  - "none beyond hard ceilings; new dev-tooling skills + reversible bootstrap edits; no push/deploy"
+  - "push/tag/capsule for the 0.12.1 landing is a HARD CEILING — surfaced to operator as a typed line at session end (Beta D6)"
+design_required: false
+execution_allowed_without_design: true
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+lane:
+  type: default
+  value: null
+  isolation_notes: "Shared working tree; Lane 1 surfaces (.claude/commands/guides/, _guides/, scripts/guides/, scripts/checks/guides-coverage.js, bootstrap skills) are disjoint from the concurrent Lane 2 marketing-agent refinement (.claude/agents/03-managers/, growth skills) — Beta D5 confirmed safe to run parallel."
+beta_review:
+  required: true
+  overbuild_risks:
+    - "wiring coverage into scan:full / adding a commit guard before asked"
+    - "rewriting guide prose under the banner of 'organize'"
+  missing_context_risks: []
+plan_quality:
+  status: pass
+  confidence: high
+next_recommended_command: "build (fast path per Beta D1) — author the 3 skills + 2 helpers, backfill anchors, then dogfood organize->integrate->coverage"
+resume_instructions: "Sprint SP-20260531-006 has Plan Contract PC-20260531-0062. Fast path (Beta D1 DECIDE): build the suite, backfill anchors onto the 7 guides, generate _guides/registry.json, run integrate (mutate spinup/lastmile + write .claude/project/maps/guide-integration.jsonl), run coverage to green. Land via version.json->0.12.1 bump + regen both manifests + local commit; HALT before push (Beta D6)."
+tracker_paths:
+  current_sprint: ".claude/project/sprint/sprints/SP-20260531-006/current.yaml"
+  sprint_progress: ".claude/project/sprint/sprints/SP-20260531-006/progress.yaml"
+  plan_contract: ".claude/project/sprint/plan-contracts/PC-20260531-0062.yaml"
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260531-0062.report.md"
+created_by: alpha
+updated_by: alpha

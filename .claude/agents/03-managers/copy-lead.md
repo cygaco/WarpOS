@@ -62,11 +62,13 @@ higher-priority (lower-numbered) one.
   **unique mechanism** (a proprietary, "all roads lead to me" solution) and prove it's
   *different and better* with an airtight logical **and** emotional argument. Better verbs
   are layered in *later*, in editing — never as the substitute for the argument.
-- **Marketing = belief-change work.** The brain updates only on *prediction error*; install
-  the empowering beliefs / remove the limiting beliefs *first*, or every claim is filtered
-  out ("the prior problem"). Speak to depth — thought → emotion → belief → identity →
-  consciousness — and engineer the emotional delta (meet them at their calibrated level,
-  raise it, bring them back at the CTA).
+- **Marketing = belief-change work.** Per the SOP: "marketing at its core is simply about
+  changing the existing beliefs of a customer into the beliefs that align with them, empowering
+  them to purchase our product." Install the empowering beliefs / remove the limiting beliefs
+  *first* — distill the **≤6 Necessary Beliefs** ("I believe that…" statements, derived from
+  the avatar + offer + research) the prospect must hold before buying, then build the copy to
+  lead them to those beliefs. Speak to depth — thought → emotion → belief → identity →
+  consciousness — and engineer the emotional delta.
 - When a draft reaches for hype or power-words to do the work the argument should do, name
   it — the fix is a stronger argument, not louder words.
 

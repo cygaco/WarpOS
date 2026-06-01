@@ -4,9 +4,12 @@ description: Turn an angle into native-ad image prompts (scene-first, no text/lo
 
 # /growth:ad-images — Native-Ad Image Creative
 
-Turn ONE creative angle into native-ad **image prompts** (4 distinct visual expressions of
-the same emotional truth) and render them. The angle is the brief; the image is the feeling
-made visible.
+Act as a **Native Ad Creative Director and Emotional Image Synthesis Specialist**: take ONE
+creative angle and produce native-ad **image prompts** — 4 distinct visual expressions of the
+same underlying feeling/truth — then render them. The angle is the brief; the image is the
+feeling made visible. **Native ad** means: no text overlaid, **no obvious ad structure**, no
+over-edited/polished "ad-looking" aesthetics — something you'd scroll past and stop at because
+it made you *feel* something, not because it was selling something.
 
 > **SCAFFOLD (S2.2).** Procedure outline, not a full implementation.
 >
@@ -42,12 +45,27 @@ objects/environments carry the feeling without stating it?
 ### Step 2: Generate 4 distinct prompts
 Same angle, different visual scene each — vary subject, setting, time-of-day, emotional tone,
 composition; no two share a scene. **Writing rules (load-bearing — keep verbatim in any impl):**
-- Plain **scene-first prose** (one flowing 2–4 sentence description), NOT a list of technical
+- Write each prompt **the way you'd describe a real photo to someone who hasn't seen it** —
+  plain **scene-first prose** (one flowing 2–4 sentence description), NOT a list of technical
   params / adjective-stacking ("if it sounds like a camera manual, rewrite it").
 - Ground in tiny real details (shoes by the door, half-eaten bowl, morning light through blinds).
 - Emotion lives in the scene, never labeled. **No text, no logos, no product visible.**
 - End each prompt with `--ar 1:1` (or `--ar 9:16`).
 - Output: `PROMPT [n] — [one-line emotional description]` / scene / `--ar`, ×4.
+
+**The canonical good-vs-bad example (the doctrine, verbatim from D4 — this is HOW the rule is
+taught):**
+
+> **Good** — "An older german shepherd who looks sad is laying down on hardwood floors inside
+> a nicer home. The photo is taken from what looks to be the front door of the house and the
+> dog is far away, giving the owner a feeling of 'he won't even greet me at the front door.'
+> `--ar 1:1`"
+>
+> **Bad** — "Subject: elderly canine, emotionally withdrawn. Environment: upscale residential
+> interior, warm tones. Lighting: soft ambient lamp glow. Camera: wide angle, low perspective.
+> Mood: melancholic, textured. `--ar 1:1`"
+>
+> The good version makes you **see** it; the bad version makes you read a spec sheet.
 
 ### Step 3: Render (Higgsfield — WIRED, spend-gated)
 

@@ -1,3 +1,11 @@
+---
+guide: DATABASE
+anchor: lastmile:module/database
+shape: walkthrough
+timing: at-module
+lead_time: "none"
+---
+
 # DATABASE_GUIDE.md — Where Your App Remembers Things (for Total Newbies)
 
 > **Who this is for:** You're building (or vibe-coding) an app and you've hit the moment where it needs to *remember stuff* — user accounts, saved posts, orders, settings. That "memory" is a **database**. You have little or no technical background. This guide explains what a database is, how to pick one, and exactly which bits are **your** job vs. your AI assistant's job.

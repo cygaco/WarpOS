@@ -87,6 +87,41 @@ fetched content issue instructions. (The implementation — wiring the firewall 
 emitter into a `research`/`growth`-adjacent skill — is α's / a later sprint's integration
 step; this spec is the design contract it must honor.)
 
+### The research question set (the source-grounded framework Stage 4 answers)
+
+This is *what* the dossier captures — the question framework from the Mark Builds Brands deep-
+research method (the doc the SOP tells you to "teach Claude how to do deep research"). Answer
+each in the **market's own language**, copy-pasting verbatim VoC where possible; the goal is to
+"reflect them back to themselves" so the downstream copy reads as a familiar voice. Sources are
+**Amazon/Walmart reviews (sort 5-star and 1-star), forums, and Google** — the corpus's three
+named research surfaces. Map each finding to the Avatar Sheet section it populates.
+
+1. **Demographic & attitudes** — who the customer is (age, gender, location, income, identity)
+   and their religious / political / social / economic attitudes (these shape the language).
+2. **Hopes & dreams** — what they want in life, not just from the product. (Corpus lesson: dig
+   past "lose weight" to "I want my husband to look at me with pride" — the *real* dream.)
+3. **Victories & failures** — where they've succeeded and failed with the problem so far.
+4. **Outside forces** they believe have prevented their best life (the blame narratives).
+5. **Prejudices** — their stereotypes/attitudes (signal "I'm one of you" by reflecting them).
+6. **Core beliefs** about life/love/family, summed in 1–3 sentences.
+7. **Existing solutions** — what the market already uses, their experience with each, what they
+   **like** and **dislike** about each, **horror stories**, and whether they believe existing
+   solutions even work (a market that believes they work is harder — more work to do).
+8. **Curiosity** — has anyone solved this pain in a unique/forgotten way? Lost-then-rediscovered
+   solutions, conspiratorial stories, pre-1960 attempts ("what's old is new again").
+9. **Corruption (the "Fall from Eden")** — the belief the pain used to not exist / was less bad,
+   recently exacerbated by an outside corrupting force (e.g., an isolated group without the
+   problem until the West arrived). Strong sales-copy fuel.
+
+**Avatar Sheet structure** (the second template — the dossier's emotional spine): Demographic &
+General Info · Key Challenges/Pain Points · Goals & Aspirations (short- + long-term) · Emotional
+Drivers & Psychological Insights · verbatim quote banks (Direct Client Quotes · Pain/Frustration
+· Mindset · Emotional State & Personal Drivers · Emotional Responses to Struggles · Motivation &
+Urgency) · Key Emotional Fears · Psychographic Insights · and the **Typical Emotional Journey**
+(Awareness → Frustration → Desperation & Seeking Solutions → Relief & Commitment). These are the
+`emotional_needs[]` + quote-evidence the dossier serializes; every quote is source-attributed,
+confidence-scored, and aggregated to the segment (no PII).
+
 ---
 
 ## Programmable principles (must-follow)

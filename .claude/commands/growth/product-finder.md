@@ -31,8 +31,15 @@ each give the data, the angle, and the math, then score and rank them. Implement
 
 ### Step 1: Live competitor & demand scan
 Via `research:deep`: scan Facebook Ad Library, TikTok Creative Center, SimilarWeb (or web
-search) for active DTC brands in the target niche; flag products running 30+ days; verify
-competitor monthly visits (100K+ / 200K+ preferred) and trend. Real sources only.
+search) for active DTC brands in the target niche; flag brands running **50+ active ads for
+30+ days**; verify competitor monthly visits (100K+ / 200K+ preferred) and trend. Real sources
+only.
+
+**Human gate (the SOP's explicit pause).** After the competitor/traffic scan and before
+surfacing product candidates, **pause and show the operator the competitor shortlist** — the
+SOP makes this a hard checkpoint ("Pause after STEP C to show me the competitor shortlist
+before going deeper. This is the human gate."). Do not proceed to candidate surfacing until
+the shortlist is confirmed.
 
 ### Step 2: Surface candidates against the 5 hard criteria
 List physical products meeting ALL of: painful problem in a passionate market · ≥$30 gross
@@ -44,10 +51,13 @@ Find COGS + shipping (AliExpress / CJ); compute gross margin = sell price − (C
 confirm the ≥$30 AND ≥3× thresholds. Drop anything that fails.
 
 ### Step 4: EQ score → verdict (dispatch growth-lead)
-Score Product / Ads / Funnel / LTV 1–10 each with a one-line justification; final verdict
-**SCALE / TEST / SKIP** per the bands (9–10 SCALE, 5–7 TEST, <5 SKIP). The Growth Lead owns
-this call; it downgrades any verdict whose data is missing and labels unverifiable claims
-`ASSUMPTION` (no-invented-data).
+Per the corpus EQ framework: score the **Product dimension 1–10** (the headline EQ number) AND
+**identify which of the other three sliders — Ads / Funnel / LTV — the operator would have to
+max out to win with it** ("a 10/10 product forgives weak ads/funnel; a 6 needs cracked ads").
+Final verdict **SCALE / TEST / SKIP** per the bands (9–10 SCALE, 5–7 TEST, <5 SKIP). The Growth
+Lead owns this call; it downgrades any verdict whose data is missing and labels unverifiable
+claims `ASSUMPTION` (no-invented-data). Use the corpus voice: "This is a 6 — you'd need cracked
+ads to win with it" beats vague praise; flag weak candidates instead of padding the list.
 
 ### Step 5: Risk & moat + seed angle
 Note saturation / knock-off / ad-account / seasonality risk and the moat; capture the core
@@ -56,9 +66,15 @@ ad angle (emotional hook + who it's for) + 1–2 example hooks. This seed angle 
 
 ### Step 6: Emit the report
 Write a timestamped markdown report to `paths.content` (`.claude/content/growth-product-finder-{slug}/report-YYYY-MM-DD-HHMM.md`),
-ranked strongest → weakest, one block per candidate (name · EQ · verdict · problem/market ·
-competitors+traffic · pricing+margin · sourcing · angle · example hooks · EQ breakdown ·
-risks/moat). A SCALE candidate can seed `portfolio:new`.
+ranked strongest → weakest, **no more than 5 candidates** ("3 strong beats 5 mixed"). One block
+per candidate carrying the corpus output fields: product name + physical description · market +
+sub-segment · pain point **in verbatim customer language** (real reviews/Reddit) · scaling
+competitor(s) with links + monthly traffic figure · suggested sell price · sourcing
+(AliExpress/CJ link or search term + COGS + shipping) · margin math (both rules, pass/fail) ·
+shoebox pass/fail + reasoning · boring-vs-gadget classification · EQ product score (1–10) ·
+which slider to lean on (Ads/Funnel/LTV) + why · 3 sample angle ideas · risk flags (the honest
+single biggest reason it could fail). **Cut any candidate that fails 2+ of the 5 criteria — do
+not pad.** A SCALE candidate can seed `portfolio:new`.
 
 ## Enforcer (no-invented-data — DESIGN; α wires)
 

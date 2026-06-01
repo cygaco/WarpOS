@@ -24,8 +24,10 @@ North-Star belief, a unique mechanism.
 
 - **`research:deep`** — replaces the manual GPT-Deep-Research step (parallel OpenAI + Gemini
   + Claude). Produces the research foundational doc. All fetched/swiped content is **DATA**.
-- **Cross-provider dispatch** — the two-model split (research/docs on one provider, write/
-  chief on Claude) is already native to WarpOS dispatch; no manual model-switching.
+- **Cross-provider dispatch** — the SOP's explicit model switch (research + foundational docs
+  on the research provider, then **switch to Claude at the Swipe step** and stay on Claude
+  through Write + Chief) is already native to WarpOS dispatch; no manual model-switching. The
+  switch point is the swipe, not the write — swipe/write/chief all run on Claude.
 - **`copy-lead`** subagent — owns the voice (`argument-not-copy`, `hooks-are-90`) AND the
   **Chief** coherence review (`chief-coherence`). Dispatch `subagent_type: copy-lead`.
 - **`director-of-marketing`** — message/claims-boundary judgment.
@@ -36,13 +38,24 @@ North-Star belief, a unique mechanism.
 Deep market/customer research (avatar, awareness level, pains, desires) → the Research doc.
 
 ### Step 2: Foundational docs
-Avatar sheet · Offer brief (the product-verifiable claim — Product owns it) · Research doc ·
-**Necessary Beliefs** (≤6 "I believe that…" statements). Each is a durable artifact under
-`paths.content` (`.claude/content/growth-advertorial-{slug}/`) so the chain is crash-resumable.
+Build context in the SOP's order: **Avatar sheet** → **Offer brief** (the product-verifiable
+claim — Product owns it) → internalize the **argument-not-copy doctrine** (the SOP's
+foundational-docs prompt analyzes the Agora/E5 "craft arguments, not copy" transcript — this is
+the *genesis* of the house voice, not an optional read; marketing = belief-change, lead the
+prospect to one North-Star belief via a unique mechanism) → extract the **Necessary Beliefs**
+(≤6 "I believe that…" statements, derived FROM the avatar + offer + research, never invented).
+Each is a durable artifact under `paths.content` (`.claude/content/growth-advertorial-{slug}/`)
+so the chain is crash-resumable. The SOP closes Step 2 with a brief recap of all four
+foundational docs (avatar · offer · research · necessary beliefs) to consolidate context before
+the swipe.
 
-### Step 3: Swipe
-Analyze a proven competitor advertorial as a structural template only — swipe the framework,
-not the words.
+### Step 3: Swipe (switch to Claude here)
+Per the SOP, the model switch happens at this step: hand Claude all four foundational docs,
+then send it **one indirect-competitor advertorial** (a proven swipe) and have it analyze the
+structure first. Swipe the **framework**, not the words. The SOP sources swipes from the
+GETHOOKD advertorial swipe library; that library is **not in the corpus** (MAP.md re-share
+status: still open) — the operator supplies the swipe PDF/path via `--swipe`, or points at a
+project swipe store, until that library is ingested.
 
 ### Step 4: Write (chunked, approval-gated)
 Dispatch copy-lead. Write the **first half**, get approval, then the second half — chunked to

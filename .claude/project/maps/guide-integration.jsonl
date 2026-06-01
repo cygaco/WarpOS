@@ -1,0 +1,6 @@
+{"guide":"DEV_SETUP","anchor":"spinup:preflight","shape":"checklist","plugin_spot":"spinup.md#phase-1-intent-day-zero","marker":"guide-anchor:DEV_SETUP","inserted_at":"2026-06-01T00:20:00Z","status":"active","conflicts_resolved":[]}
+{"guide":"DATABASE","anchor":"lastmile:module/database","shape":"walkthrough","plugin_spot":"lastmile.md#modules","marker":"guide-anchor:DATABASE","inserted_at":"2026-06-01T00:20:00Z","status":"active","conflicts_resolved":[]}
+{"guide":"AUTH","anchor":"lastmile:module/auth","shape":"walkthrough","plugin_spot":"lastmile.md#modules","marker":"guide-anchor:AUTH","inserted_at":"2026-06-01T00:20:00Z","status":"active","conflicts_resolved":[]}
+{"guide":"PAYMENTS","anchor":"lastmile:module/payments","shape":"walkthrough","plugin_spot":"lastmile.md#modules","marker":"guide-anchor:PAYMENTS","inserted_at":"2026-06-01T00:20:00Z","status":"active","conflicts_resolved":[]}
+{"guide":"EMAIL","anchor":"lastmile:module/email","shape":"walkthrough","plugin_spot":"lastmile.md#modules","marker":"guide-anchor:EMAIL","inserted_at":"2026-06-01T00:20:00Z","status":"active","conflicts_resolved":[]}
+{"guide":"PRIVACY_GDPR","anchor":"lastmile:gate/privacy","shape":"notice","plugin_spot":"lastmile.md#security-privacy-escalation","marker":"guide-anchor:PRIVACY_GDPR","inserted_at":"2026-06-01T00:20:00Z","status":"active","conflicts_resolved":[]}

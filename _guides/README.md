@@ -1,3 +1,11 @@
+---
+guide: README
+anchor: none
+shape: notice
+timing: reference
+lead_time: "none"
+---
+
 # WarpOS Launch Guides — for total newbies
 
 > You built (or are building) an app and you're ready to launch it **for real** — accounts, sign-in, data, email, payments, privacy. These guides walk you through each piece in plain language, from zero, assuming little or no technical background.

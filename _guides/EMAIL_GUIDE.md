@@ -1,3 +1,11 @@
+---
+guide: EMAIL
+anchor: lastmile:module/email
+shape: walkthrough
+timing: at-module
+lead_time: "Sending-domain DNS (SPF/DKIM/DMARC) propagation + reputation warm-up: hours-days"
+---
+
 # EMAIL_GUIDE.md — Email for a Launching App, for Total Newbies
 
 > **Who this is for:** You're building (or just built) an app, and now you need it to **send email** — the "verify your address" message when someone signs up, the "reset your password" link, the receipt after a purchase, and maybe a newsletter or onboarding emails. You have little or no technical background. This guide explains the whole picture in plain language, from zero.

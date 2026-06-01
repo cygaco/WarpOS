@@ -1,3 +1,11 @@
+---
+guide: DEV_SETUP
+anchor: spinup:preflight
+shape: checklist
+timing: project-start
+lead_time: "Apple ~2d payment+verify; Google Play identity review hours-days; Play 12-tester / 14-day closed test; D-U-N-S days-weeks"
+---
+
 # DEV_SETUP_GUIDE.md — Developer accounts & app-store registration
 
 > **Part of the WarpOS launch-guide library** (`_guides/`). Read **`README.md`** first — it has the shared *"what only YOU can do vs your AI"* rule, the secrets golden-rule, and the day-zero timing principle.

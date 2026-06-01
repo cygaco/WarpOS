@@ -1,3 +1,11 @@
+---
+guide: AUTH
+anchor: lastmile:module/auth
+shape: walkthrough
+timing: at-module
+lead_time: "Google sensitive-scope OAuth verification: days-weeks (only if you request Gmail/Drive scope)"
+---
+
 # AUTH_GUIDE.md — Letting users sign in (Google SSO, email signup, magic links)
 
 > **Part of the WarpOS launch-guide library** (`_guides/`). New here? Read **`README.md`** first — it has the shared *"what only YOU can do vs your AI"* rule, the secrets golden-rule, and the day-zero timing principle that apply to every guide.

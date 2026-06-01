@@ -1,0 +1,68 @@
+{
+  "schema": "warpos/guides/registry/v1",
+  "guides": [
+    {
+      "guide": "AUTH",
+      "file": "_guides/AUTH_GUIDE.md",
+      "anchor": "lastmile:module/auth",
+      "shape": "walkthrough",
+      "timing": "at-module",
+      "lead_time": "Google sensitive-scope OAuth verification: days-weeks (only if you request Gmail/Drive scope)",
+      "title": "AUTH_GUIDE.md — Letting users sign in (Google SSO, email signup, magic links)"
+    },
+    {
+      "guide": "DATABASE",
+      "file": "_guides/DATABASE_GUIDE.md",
+      "anchor": "lastmile:module/database",
+      "shape": "walkthrough",
+      "timing": "at-module",
+      "lead_time": "none",
+      "title": "DATABASE_GUIDE.md — Where Your App Remembers Things (for Total Newbies)"
+    },
+    {
+      "guide": "DEV_SETUP",
+      "file": "_guides/DEV_SETUP_GUIDE.md",
+      "anchor": "spinup:preflight",
+      "shape": "checklist",
+      "timing": "project-start",
+      "lead_time": "Apple ~2d payment+verify; Google Play identity review hours-days; Play 12-tester / 14-day closed test; D-U-N-S days-weeks",
+      "title": "DEV_SETUP_GUIDE.md — Developer accounts & app-store registration"
+    },
+    {
+      "guide": "EMAIL",
+      "file": "_guides/EMAIL_GUIDE.md",
+      "anchor": "lastmile:module/email",
+      "shape": "walkthrough",
+      "timing": "at-module",
+      "lead_time": "Sending-domain DNS (SPF/DKIM/DMARC) propagation + reputation warm-up: hours-days",
+      "title": "EMAIL_GUIDE.md — Email for a Launching App, for Total Newbies"
+    },
+    {
+      "guide": "PAYMENTS",
+      "file": "_guides/PAYMENTS_GUIDE.md",
+      "anchor": "lastmile:module/payments",
+      "shape": "walkthrough",
+      "timing": "at-module",
+      "lead_time": "Stripe identity + bank verification before live payments: hours-days",
+      "title": "PAYMENTS_GUIDE.md — Taking Money in Your App, for Total Newbies"
+    },
+    {
+      "guide": "PRIVACY_GDPR",
+      "file": "_guides/PRIVACY_GDPR_GUIDE.md",
+      "anchor": "lastmile:gate/privacy",
+      "shape": "notice",
+      "timing": "at-gate",
+      "lead_time": "none (but STOP and hire a lawyer BEFORE launch if you touch health/finance/children/biometrics/special-category data)",
+      "title": "PRIVACY_GDPR_GUIDE.md — Privacy & GDPR for Total Newbies"
+    },
+    {
+      "guide": "README",
+      "file": "_guides/README.md",
+      "anchor": "none",
+      "shape": "notice",
+      "timing": "reference",
+      "lead_time": "none",
+      "title": "WarpOS Launch Guides — for total newbies"
+    }
+  ]
+}

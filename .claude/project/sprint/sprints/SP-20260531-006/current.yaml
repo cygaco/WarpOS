@@ -1,17 +1,17 @@
 schema: warpos/sprint/current-sprint/v1
 id: "SP-20260531-006"
 title: "Guides skill suite — guides:write + guides:organize + guides:integrate (recording system + conflict-resolution); supersedes SP-005"
-objective: "Run /sprint:plan to set this."
-status: not_started
+objective: "Complete the guides skill suite: guides:organize (+ anchor backfill + registry), guides:integrate (+ recording system), guides:coverage (enforcer). Built on the shipped guide-anchor contract. Supersedes/realizes SP-005."
+status: done
 created_at: "2026-05-31T19:33:11.630Z"
-updated_at: "2026-05-31T19:33:11.630Z"
-source_request: ""
-interpreted_intent: ""
-plan_contract: null
+updated_at: "2026-06-01T00:25:00.000Z"
+source_request: "/sprint:full a guides:organize (look at all guides, restructure), guides:integrate (checks current guides + integrates into the bootstrap pipeline at the right spots/shape), and a coverage enforcer"
+interpreted_intent: "Three companion dev-tooling skills + anchor backfill + a recording system, on top of the shipped guides:write contract. Fast path per Beta D1 (DECIDE). See PC-20260531-0062."
+plan_contract: PC-20260531-0062
 risk_level: low
 approval_state: none_required
-current_phase: idle
-recommended_mode: no_recommendation
+current_phase: done
+recommended_mode: adhoc
 mode_invocation_required_by_user: true
 external_services:
   identified: []
@@ -62,7 +62,7 @@ approvals:
   release: { required: false, state: not_required, ref: null }
   external_services: { required: false, state: not_required, ref: null }
 reports:
-  plan: null
+  plan: ".claude/project/sprint/plan-contracts/PC-20260531-0062.report.md"
   design: null
   execution: null
   release: null
@@ -75,8 +75,8 @@ ralph:
   next_action: null
 crash_recovery:
   last_checkpoint: null
-  resume_command: "/sprint:plan"
-  resume_summary: "Tracker initialized. No sprint started yet. Run /sprint:plan to begin."
+  resume_command: "none — sprint done"
+  resume_summary: "DONE (fast path, Beta D1). Built guides:organize/integrate/coverage + scripts/guides/registry.js + scripts/checks/guides-coverage.js; backfilled anchors onto 7 guides; generated _guides/registry.json; ran integrate (6 markers in spinup/lastmile + 6 records in guide-integration.jsonl); coverage green. Landed at version 0.12.1 (mid-release); push/tag/capsule deferred to operator. Deep retro deferred to milestone close (RI-001)."
   active_files: []
   dirty_state: false
   blockers: []

@@ -1,3 +1,11 @@
+---
+guide: PRIVACY_GDPR
+anchor: lastmile:gate/privacy
+shape: notice
+timing: at-gate
+lead_time: "none (but STOP and hire a lawyer BEFORE launch if you touch health/finance/children/biometrics/special-category data)"
+---
+
 # PRIVACY_GDPR_GUIDE.md — Privacy & GDPR for Total Newbies
 
 > ## ⚠️ READ THIS FIRST — this is NOT legal advice

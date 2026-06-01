@@ -14,7 +14,7 @@
     "mainBranch": "main"
   },
   "warpos": {
-    "version": "0.12.0",
+    "version": "0.12.1",
     "installed": true,
     "source": "self",
     "features": [
