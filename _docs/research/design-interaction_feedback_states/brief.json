@@ -1,0 +1,72 @@
+{
+  "research_question": "What are the authoritative, teachable principles for interaction feedback and UI state coverage — visibility of system status, feedback for every action (no silent actions), and the full set of component/page states (default, hover, focus, active, loading, empty, error, success, disabled), plus microinteractions and response-time thresholds — such that an AI designer agent can apply them directly in a Next/Tailwind/Radix/shadcn substrate and a vision-capable review gauntlet can mechanically PASS/FAIL a rendered UI against them?",
+  "phases": [
+    {
+      "name": "Landscape",
+      "objective": "Survey the consensus: Nielsen's #1 heuristic (visibility of system status), the canonical UI state set (the 'five states' / default-loading-empty-error-success + interactive states), microinteraction structure (trigger -> rules -> feedback -> loops), and the response-time / Doherty-threshold model.",
+      "sub_questions": [
+        "How do authoritative sources (NN/g visibility-of-system-status & microinteractions, Refactoring UI empty states, the 'states of a component' canon) enumerate the required states for components and pages?",
+        "What are the established response-time thresholds (Doherty <400ms; NN/g 0.1s/1s/10s limits) and how do they dictate WHEN to show immediate vs progress vs background feedback?"
+      ],
+      "evidence_priorities": "NN/g visibility of system status; NN/g response-time limits (0.1/1/10s); NN/g microinteractions; Refactoring UI empty states; the canonical component-states list. Cite primary/authoritative sources.",
+      "stop_condition": "Complete when the full state set, the feedback heuristic, the microinteraction model, and the response-time thresholds are each documented from a primary source."
+    },
+    {
+      "name": "Mechanics",
+      "objective": "Document how feedback and states are implemented and reasoned about: every interactive element exposes hover/focus/active/disabled visually; async actions show loading (spinner/skeleton/progress) and resolve to success or error; lists/data have an empty state; forms validate inline; the no-silent-action rule; optimistic UI; aria-live for status; focus management. Map to which feedback fits which latency.",
+      "sub_questions": [
+        "What is the complete checklist of states a component/page must cover (interactive states + async/data states), and what is the rule that EVERY user action gets visible feedback within the appropriate time?",
+        "How are states implemented checkably in a component substrate (loading skeletons, disabled state with non-color signifier, error state color+icon+text, empty-state with guidance) and surfaced to assistive tech (aria-live, role=status, aria-disabled)?"
+      ],
+      "evidence_priorities": "Microinteraction trigger/feedback model; loading/skeleton/optimistic-UI patterns; empty-state anatomy; inline-validation guidance; ARIA live regions / status roles. Concrete, checkable forms.",
+      "stop_condition": "Complete when the state checklist, the no-silent-action feedback rule, and the assistive-tech status pattern are each documented with a citable source and a concrete checkable form."
+    },
+    {
+      "name": "Failure Modes",
+      "objective": "Catalog how feedback/state coverage breaks and how each reads to the user and is detected: silent actions (click with no response), missing loading state (frozen UI / double-submit), missing empty state (blank screen), unstyled/absent error state, no visible focus, color-only state, disabled control that looks enabled, console errors that break render, state-transition flicker/FOUC.",
+      "sub_questions": [
+        "What are the most common, highest-impact feedback/state defects, and how does each manifest to the user (uncertainty, perceived freeze, blank screen, lost action, ambiguous state)?",
+        "How can each defect be DETECTED from a rendered page — clicking a control and observing no DOM/visual change, no loading indicator on async, empty container with no empty-state, error path with no styled error, missing focus ring, console errors, layout shift/flicker on transition?"
+      ],
+      "evidence_priorities": "NN/g status/feedback failures; empty-state anti-patterns; double-submit/loading issues; FOUC/CLS as a feedback failure; console-error-breaks-render. For each, an observed-vs-expected detection method.",
+      "stop_condition": "Complete when 7+ distinct feedback/state failure modes are documented, each with a user-visible symptom AND a programmatic detection method."
+    },
+    {
+      "name": "Contrarian",
+      "objective": "Surface nuance: over-feedback (too many toasts/spinners), spinner vs skeleton vs optimistic tradeoffs, when NOT to block on a spinner, Zeigarnik/goal-gradient effects, and reduced-motion constraints on feedback animation.",
+      "sub_questions": [
+        "When does feedback become noise or harm (excessive notifications, spinner-for-fast-actions, motion that violates prefers-reduced-motion), and how should a teachable rule calibrate feedback to latency and importance rather than feeding back on everything?"
+      ],
+      "evidence_priorities": "Critiques of over-notification; spinner-vs-skeleton-vs-optimistic debates; perceived-performance; prefers-reduced-motion for feedback. Note settled vs contextual.",
+      "stop_condition": "Complete when 2+ substantive critiques/nuances of naive feedback-everything are documented with the recommended hedge."
+    }
+  ],
+  "search_strategy": [
+    "Nielsen visibility of system status heuristic feedback",
+    "NN/g response time limits 0.1 1 10 seconds",
+    "Doherty threshold 400ms perceived performance",
+    "five states of a component empty loading error success",
+    "microinteractions trigger rules feedback loops Saffer",
+    "empty state design pattern guidance Refactoring UI",
+    "skeleton screen vs spinner perceived performance",
+    "inline form validation error message pattern",
+    "aria-live role status assistive technology feedback",
+    "visible focus indicator state hover active disabled",
+    "optimistic UI pattern feedback",
+    "prefers-reduced-motion feedback animation accessibility"
+  ],
+  "exclusion_criteria": [
+    "Tool/SaaS tutorials (how to use a specific prototyping product)",
+    "Framework-specific API docs without principle content",
+    "Pre-2017 articles superseded by modern async-UI practice",
+    "Game-juice/animation showcases without usability grounding"
+  ],
+  "required_output_schema": {
+    "sections": ["Executive Summary", "Phase 1: Landscape", "Phase 2: Mechanics", "Phase 3: Failure Modes", "Phase 4: Contrarian", "Source Registry", "Confidence Matrix"],
+    "per_finding_format": "claim, supporting evidence, confidence (HIGH/MEDIUM/LOW), source URLs, counter-evidence if any",
+    "per_source_format": "URL, title, credibility (1-5), recency, type (primary/secondary/opinion)"
+  },
+  "openai_instructions": "Focus on the canonical state checklist and the exact response-time thresholds (0.1s instant, 1s flow, 10s attention limit; Doherty <400ms). Build a fault tree of feedback/state failures, each with a programmatic detection method (click -> no DOM/visual delta = silent action; async with no loading node; empty container with no empty-state element; error path with no styled error; missing :focus-visible ring; color-only state; console error present; layout shift on transition). Deductive and precise; prefer NN/g and primary sources.",
+  "gemini_instructions": "SKIP — Gemini engine disabled for this run.",
+  "claude_instructions": "Investigate the contrarian angle (over-feedback, spinner-vs-skeleton-vs-optimistic, reduced-motion), cross-verify the response-time thresholds and the visibility-of-system-status heuristic against NN/g primary text, and confirm the canonical state set. Verify aria-live/role=status is the normative pattern for announcing async status to assistive tech."
+}

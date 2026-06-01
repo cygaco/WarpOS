@@ -1,0 +1,43 @@
+{
+  "research_question": "What are the evidence-based, teachable principles of design consistency via design systems — specifically design tokens (color/space/type/radius/elevation as named variables, not ad-hoc values), component-library usage (primitives over raw elements), one unified visual language, and design-to-build handoff fidelity — that let an AI designer agent PASS/FAIL a rendered UI on the design-tokens, component-usage, and design-handoff axes?",
+  "phases": [
+    {
+      "name": "Landscape",
+      "objective": "Survey the canonical principle authorities on consistency and design systems: NN/g consistency-and-standards heuristic, Jakob's Law, the W3C Design Tokens Community Group token taxonomy (global/alias/component tokens), Material 3 token tiers (reference/system/component), and the component-library / single-source-of-truth model.",
+      "sub_questions": ["What is the agreed definition and tier model of a design token (reference vs system/semantic vs component-specific)?", "Why does consistency reduce cognitive load and error (Jakob's Law, internal vs external consistency, recognition over recall)?"],
+      "evidence_priorities": "NN/g consistency article + 10 heuristics; W3C design-tokens-format spec; Material 3 tokens; Refactoring UI on defining systems (color shades, spacing scale, type scale); Laws of UX Jakob's Law.",
+      "stop_condition": "Complete when the token tier model, the consistency rationale, and the component-library SSOT model are each documented with a primary source."
+    },
+    {
+      "name": "Mechanics",
+      "objective": "How consistency is operationalized in a modern Next.js/Tailwind/Radix/shadcn substrate: CSS custom properties as the token layer (--primary, --background, oklch), @theme exposure to utilities, CVA variant primitives, semantic vs raw color naming, the spacing/type scale, and a design→build handoff that preserves intent (named tokens, component contracts, prop typing).",
+      "sub_questions": ["How do semantic/aliased tokens (e.g. --primary, --destructive) decouple intent from raw value and enable theming/dark-mode?", "What makes a component-library primitive (variant-driven Button) the right unit vs a raw <button>, and what is a faithful handoff (spec component → real ui/ primitive)?"],
+      "evidence_priorities": "Refactoring UI color/spacing/type systems; W3C token spec alias tokens; shadcn/CVA variant patterns (as principle source, not a product rec); Material 3 component tokens; design-handoff fidelity writing.",
+      "stop_condition": "Complete when token-layering, semantic naming, primitive-variant, and handoff-fidelity mechanics each have a concrete teachable example."
+    },
+    {
+      "name": "Failure Modes",
+      "objective": "What breaks consistency: hardcoded hex/raw values bypassing tokens, raw Tailwind theme color utilities (bg-blue-500) instead of semantic tokens, one-off raw <button>/<input> instead of the library primitive, untyped (any) props, token drift / forking the system, inconsistent terminology, mismatched dark-mode values, and handoff drift where the build silently diverges from the spec.",
+      "sub_questions": ["What are the most common, mechanically-detectable token/consistency violations and how do they read to the user (brand drift, inconsistent spacing, broken dark mode)?", "How does a 'use the system, don't fork it' violation propagate cost across a codebase?"],
+      "evidence_priorities": "Design-system governance post-mortems; token-drift / hardcoded-value anti-patterns; NN/g inconsistency cost; component-library adoption-failure writeups.",
+      "stop_condition": "Complete when 5+ distinct, detectable consistency failure modes are documented with how each reads to the user."
+    },
+    {
+      "name": "Contrarian",
+      "objective": "When does rigid consistency hurt? Tesler's Law / necessary complexity, when a one-off override is legitimate (allow-list discipline), 'consistency for its own sake' vs purposeful inconsistency (Von Restorff — the deliberately-different element), and the cost/overhead of a design system for small projects.",
+      "sub_questions": ["When is breaking consistency the right call, and how should an agent distinguish a legitimate exception (allow-listed, documented) from drift?"],
+      "evidence_priorities": "Critiques of over-systematization; purposeful-deviation writing; allow-list / exception-governance patterns; Tesler's Law.",
+      "stop_condition": "Complete when 2+ substantive cases for legitimate inconsistency are documented with how to govern the exception."
+    }
+  ],
+  "search_strategy": ["design tokens W3C community group format reference alias component", "Material 3 design tokens reference system component tiers", "semantic color tokens vs raw values theming dark mode", "Nielsen Norman consistency and standards heuristic", "Jakob's Law internal external consistency", "Refactoring UI defining a color palette spacing scale type scale", "CVA class variance authority component variants pattern", "design system token drift hardcoded values anti-pattern", "design to development handoff fidelity tokens", "component library primitive vs raw element"],
+  "exclusion_criteria": ["Tool tutorials (Figma/Canva/etc — principle only)", "Product-specific palettes", "Pre-2018 token tooling"],
+  "required_output_schema": {
+    "sections": ["Executive Summary", "Phase 1: Landscape", "Phase 2: Mechanics", "Phase 3: Failure Modes", "Phase 4: Contrarian", "Source Registry", "Confidence Matrix"],
+    "per_finding_format": "claim, supporting evidence, confidence (HIGH/MEDIUM/LOW), source URLs, counter-evidence if any",
+    "per_source_format": "URL, title, credibility (1-5), recency, type (primary/secondary/opinion)"
+  },
+  "openai_instructions": "Map every consistency principle to a MECHANICALLY-DETECTABLE rule an automated reviewer could PASS/FAIL: e.g. 'no hex literal in className/style', 'no raw Tailwind theme color utility for theme colors', 'interactive element must be a library primitive', 'props must be typed (no any)', 'required design-system docs must exist', 'token resolves to var(--...) not ad-hoc'. Build a fault tree from 'inconsistent UI' down to the specific detectable code/computed-style signature. Prioritize the design-tokens, component-usage, and design-handoff review axes.",
+  "gemini_instructions": "SKIPPED — Gemini engine down for this run.",
+  "claude_instructions": "Verify the W3C token tier model and the NN/g consistency heuristic against primary sources. Investigate the contrarian angle: when purposeful inconsistency (Von Restorff highlight, Tesler's Law) is correct, and how exception/allow-list governance keeps it from becoming drift. Cross-check the semantic-token / theming claim."
+}

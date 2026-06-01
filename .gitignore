@@ -86,3 +86,9 @@ runtime/growth/spend-approval.token
 
 # Operator scratch — downstream gap registers (gap-fix landed; kept for reference, not framework content)
 WarpOS-Update/
+
+# research:deep per-run scratch under _docs/research — deliverables (*.md/*.json) kept, scratch transient
+_docs/research/.tmp-*
+_docs/research/**/*.log
+_docs/research/**/.session.json
+_docs/research/**/.deep-runner.sh

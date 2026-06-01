@@ -1,0 +1,72 @@
+{
+  "research_question": "What is the canonical, evidence-based taxonomy of UI/UX and web-conversion design principles — a clustered set of ~12-18 self-contained, teachable topics — that comprehensively covers product UI craft, visual and interaction design, accessibility, and landing-page conversion, where each topic carries a stable slug, scope, depth tier, 3-5 authoritative grounding sources, and yields agent-checkable rules that collectively cover the design-quality gauntlet's six axes (design-tokens, component-usage, visual-hierarchy, mobile-responsive, accessibility, design-handoff) and visual-review's seven categories (color, layout, typography, copy, a11y, console-error, regression)?",
+  "phases": [
+    {
+      "name": "Landscape",
+      "objective": "Survey the canonical principle taxonomies that already exist and map their overlapping categories: Nielsen Norman 10 usability heuristics, Laws of UX, Gestalt principles, Refactoring UI chapters, WCAG 2.2 POUR, Material 3 / Apple HIG principle sets, and Baymard/CXL conversion frameworks.",
+      "sub_questions": [
+        "What are the established UI/UX and conversion principle taxonomies, and how does each cluster its principles?",
+        "Which principle categories recur across three or more authoritative sources (the high-consensus core)?"
+      ],
+      "evidence_priorities": "Primary authoritative sources only: nngroup.com (10 heuristics + topic taxonomy), lawsofux.com, refactoringui.com (book TOC), w3.org WCAG 2.2 (POUR + SC categories), m3.material.io and developer.apple.com HIG (as principle sources, not product plugs), baymard.com (UX research catalog), cxl.com (conversion research).",
+      "stop_condition": "Complete when 5+ canonical taxonomies are surveyed and a cross-source category-overlap map is produced."
+    },
+    {
+      "name": "Mechanics",
+      "objective": "Determine the right granularity and clustering for a ~12-18 topic teachable taxonomy — which principles deserve a standalone guide, which fold together, and what cluster structure (Foundations / Visual / Interaction / Accessibility / Conversion / Systems) best organizes them.",
+      "sub_questions": [
+        "At what granularity should principles be split into teachable guides (e.g., is typography one topic or three; do color and contrast separate)?",
+        "How do app/product UI principles and landing-page conversion principles cluster — shared foundations vs domain-specific topics?"
+      ],
+      "evidence_priorities": "Tables of contents of authoritative books (Refactoring UI, Don't Make Me Think, The Design of Everyday Things, Universal Principles of Design), design-system documentation structures (Material, Polaris, Carbon), and design-curriculum syllabi from IxDF / NN/g.",
+      "stop_condition": "Complete when a clustered ~12-18 topic taxonomy is justified against the structure of 3+ source taxonomies/curricula."
+    },
+    {
+      "name": "Failure Modes",
+      "objective": "Identify the most common, checkable design failures each candidate principle prevents, so every topic yields agent-applicable rules mirroring what visual-review and design-quality actually catch.",
+      "sub_questions": [
+        "What are the most common UI/UX and conversion design mistakes, and which principle does each map to?",
+        "Which failures are mechanically checkable (contrast ratio, tap-target size, token usage, heading order) versus judgment calls (hierarchy, cohort fit)?"
+      ],
+      "evidence_priorities": "NN/g mistake/guideline lists, Baymard checkout and UX failure studies, WCAG failure techniques and audit checklists (WebAIM), conversion-leak catalogs (CXL), and common front-end rendering defects (console errors, FOUC, layout shift).",
+      "stop_condition": "Complete when each candidate topic has 2+ concrete checkable failure modes attached."
+    },
+    {
+      "name": "Contrarian",
+      "objective": "Challenge the taxonomy: where authorities disagree, and what a pure heuristic list omits (motion/animation, content/copy/UX writing, performance-as-UX, internationalization, ethics/dark patterns) — and whether those deserve standalone topics.",
+      "sub_questions": [
+        "What important principle areas do the standard heuristic lists omit, and should each be a separate teachable topic or folded into an existing one?"
+      ],
+      "evidence_priorities": "Critiques of Nielsen's heuristics, the aesthetic-usability debate, modern additions (Core Web Vitals as UX, content design / UX writing as a discipline, dark-pattern / deceptive-design taxonomies, motion and reduced-motion).",
+      "stop_condition": "Complete when 2+ substantive gaps or disagreements in the standard taxonomies are documented with evidence."
+    }
+  ],
+  "search_strategy": [
+    "Nielsen Norman Group 10 usability heuristics",
+    "Laws of UX complete list Jon Yablonski",
+    "Refactoring UI table of contents chapters",
+    "WCAG 2.2 POUR principles success criteria categories",
+    "Gestalt principles of visual perception UI design",
+    "Baymard Institute UX guidelines categories",
+    "CXL conversion optimization principles landing page",
+    "Material Design 3 foundations principles",
+    "Apple Human Interface Guidelines principles foundations",
+    "visual hierarchy typography contrast spacing design principles",
+    "common UI design mistakes checklist",
+    "dark patterns deceptive design taxonomy"
+  ],
+  "exclusion_criteria": [
+    "Tool-specific how-tos (Figma/Canva/Webflow tutorials)",
+    "Non-authoritative listicle blogs without primary sourcing",
+    "Product marketing pages presented as principle sources",
+    "Pre-2015 material superseded by WCAG 2.2 / Material 3 / modern conversion research"
+  ],
+  "required_output_schema": {
+    "sections": ["Executive Summary", "Phase 1: Landscape", "Phase 2: Mechanics", "Phase 3: Failure Modes", "Phase 4: Contrarian", "Recommended Taxonomy (12-18 topics, clustered, with slug + scope + sources)", "Source Registry", "Confidence Matrix"],
+    "per_finding_format": "Each finding: claim, supporting evidence, confidence (HIGH/MEDIUM/LOW), source URLs, counter-evidence if any",
+    "per_source_format": "Each source: URL, title, credibility (1-5), recency, type (primary/secondary/opinion)"
+  },
+  "openai_instructions": "Construct a MECE ~12-18 topic taxonomy of UI/UX + conversion design principles. For EACH topic give: a stable UPPER_SNAKE slug, a one-line scope, its cluster, and 2-3 concrete checkable rules it yields. Then map the full topic set to these review axes and explicitly confirm coverage: design-quality (design-tokens, component-usage, visual-hierarchy, mobile-responsive, accessibility, design-handoff) and visual-review (color, layout, typography, copy, a11y, console-error, regression). Flag any axis not covered by at least one topic.",
+  "gemini_instructions": "Pull and compare the canonical principle sources (NN/g 10 heuristics, Laws of UX full list, Refactoring UI TOC, WCAG 2.2 POUR + SC categories, Gestalt principles, Baymard/CXL conversion catalogs). Extract the recurring principle CATEGORIES across them and cite a real URL for each. Produce a comparison table showing which categories appear in which source, to reveal the high-consensus core vs source-specific additions.",
+  "claude_instructions": "Verify the authority and recency of each cited source, reconcile overlapping/duplicate categories across taxonomies into a single deduplicated topic list, and investigate the contrarian angle: what is missing from heuristic lists (motion, content design/UX writing, performance UX, ethics/dark patterns, internationalization) and whether each deserves its own teachable topic or folds into an existing one."
+}

@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-01T23:32:15.857Z",
+  "generatedAt": "2026-06-01T23:55:52.398Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.13.1",
   "migrations": [],
@@ -20,8 +20,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "6932eb95943c996508e82cfecfc4c8df3bc33005e934b1124520355044838f28",
-      "installedSha": "6932eb95943c996508e82cfecfc4c8df3bc33005e934b1124520355044838f28"
+      "sha256": "2a89e1e40c3aa7ee23df9e4268da4be5251e2b74e9b822f8c9c2aabc9647cfa7",
+      "installedSha": "2a89e1e40c3aa7ee23df9e4268da4be5251e2b74e9b822f8c9c2aabc9647cfa7"
     },
     "AGENTS.md": {
       "owner": "framework",
@@ -784,6 +784,153 @@
       "sha256": "1c3b964cb5a8493872bf784aff65210f5b4d1a8a2f8de0eed03c7e33f7f55197",
       "installedSha": "1c3b964cb5a8493872bf784aff65210f5b4d1a8a2f8de0eed03c7e33f7f55197"
     },
+    "_guides/design/ACCESSIBILITY_WCAG.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_guides/design/ACCESSIBILITY_WCAG.md",
+      "sha256": "ea8127e447dd3ff4908b60c74262e2f110d356fb62131ebf1f47c7b434357dcc",
+      "installedSha": "ea8127e447dd3ff4908b60c74262e2f110d356fb62131ebf1f47c7b434357dcc"
+    },
+    "_guides/design/AFFORDANCE_CONTROLS_ICONOGRAPHY.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_guides/design/AFFORDANCE_CONTROLS_ICONOGRAPHY.md",
+      "sha256": "60e557ae83ba060a0787602603a21d0503df5fd6ca08235f85decf67b363fd95",
+      "installedSha": "60e557ae83ba060a0787602603a21d0503df5fd6ca08235f85decf67b363fd95"
+    },
+    "_guides/design/COGNITIVE_LOAD_SIMPLICITY.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_guides/design/COGNITIVE_LOAD_SIMPLICITY.md",
+      "sha256": "236638636d3a4c3357590562a0b6c183b1bd673cdfd41f371f95cdf6a8803b6e",
+      "installedSha": "236638636d3a4c3357590562a0b6c183b1bd673cdfd41f371f95cdf6a8803b6e"
+    },
+    "_guides/design/COLOR_AND_CONTRAST.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_guides/design/COLOR_AND_CONTRAST.md",
+      "sha256": "321c9ae33c5c30ddba05ed2714e96a8bfe77074c9c3f763c3bc7c66d5d63bf85",
+      "installedSha": "321c9ae33c5c30ddba05ed2714e96a8bfe77074c9c3f763c3bc7c66d5d63bf85"
+    },
+    "_guides/design/CONSISTENCY_DESIGN_SYSTEMS_TOKENS.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_guides/design/CONSISTENCY_DESIGN_SYSTEMS_TOKENS.md",
+      "sha256": "89e6a8675edf290b0d8386a53abec71e35d69de24f72c832aec94ffa8a9d8005",
+      "installedSha": "89e6a8675edf290b0d8386a53abec71e35d69de24f72c832aec94ffa8a9d8005"
+    },
+    "_guides/design/CONTENT_MICROCOPY.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_guides/design/CONTENT_MICROCOPY.md",
+      "sha256": "5529c512493ad65d6e1f5f0bbb4ec3556e8ce499f608e732cc5467ba7a5e6c09",
+      "installedSha": "5529c512493ad65d6e1f5f0bbb4ec3556e8ce499f608e732cc5467ba7a5e6c09"
+    },
+    "_guides/design/CONVERSION_HIERARCHY.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_guides/design/CONVERSION_HIERARCHY.md",
+      "sha256": "9063510e1e60db5378921aa442a08681b27a93cb2c85bf2a65a15e2a3b2366da",
+      "installedSha": "9063510e1e60db5378921aa442a08681b27a93cb2c85bf2a65a15e2a3b2366da"
+    },
+    "_guides/design/DEPTH_ELEVATION_IMAGERY.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_guides/design/DEPTH_ELEVATION_IMAGERY.md",
+      "sha256": "3f5a0f1e9804002f0082f9b4c6afc8a7ad0e152c4f59f7956811c4b89fffe6e4",
+      "installedSha": "3f5a0f1e9804002f0082f9b4c6afc8a7ad0e152c4f59f7956811c4b89fffe6e4"
+    },
+    "_guides/design/ETHICS_NO_DARK_PATTERNS.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_guides/design/ETHICS_NO_DARK_PATTERNS.md",
+      "sha256": "35b7a03f06245c2f74e08f85fad3956e26bce463850321a7d3ccb6fb4b954df6",
+      "installedSha": "35b7a03f06245c2f74e08f85fad3956e26bce463850321a7d3ccb6fb4b954df6"
+    },
+    "_guides/design/FRICTION_TRUST_FORMS.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_guides/design/FRICTION_TRUST_FORMS.md",
+      "sha256": "6ed49e353dc0cf2bfb3aee30988dcdce3300107e6c962ba0c6912f72aa4819df",
+      "installedSha": "6ed49e353dc0cf2bfb3aee30988dcdce3300107e6c962ba0c6912f72aa4819df"
+    },
+    "_guides/design/GESTALT_GROUPING.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_guides/design/GESTALT_GROUPING.md",
+      "sha256": "f4bdd914bee08de9c3577d5f28cc0a6f5af1efe0181d513c4cd4f70769dbb3d2",
+      "installedSha": "f4bdd914bee08de9c3577d5f28cc0a6f5af1efe0181d513c4cd4f70769dbb3d2"
+    },
+    "_guides/design/INTERACTION_FEEDBACK_STATES.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_guides/design/INTERACTION_FEEDBACK_STATES.md",
+      "sha256": "563f96bfebb20571fd45bee1ab38aeb129cc04430943cc99537e5b50e548b94b",
+      "installedSha": "563f96bfebb20571fd45bee1ab38aeb129cc04430943cc99537e5b50e548b94b"
+    },
+    "_guides/design/LAYOUT_GRID_SPACING.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_guides/design/LAYOUT_GRID_SPACING.md",
+      "sha256": "99a534a14da9458474ef78a2d6a33f91904b00e62ab301c455400dc3faf8a76d",
+      "installedSha": "99a534a14da9458474ef78a2d6a33f91904b00e62ab301c455400dc3faf8a76d"
+    },
+    "_guides/design/MOBILE_RESPONSIVE.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_guides/design/MOBILE_RESPONSIVE.md",
+      "sha256": "62d5d48391efec6120bb29013688e6e143720747419da62dddcb7e125c06bb6b",
+      "installedSha": "62d5d48391efec6120bb29013688e6e143720747419da62dddcb7e125c06bb6b"
+    },
+    "_guides/design/MOTION_ANIMATION.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_guides/design/MOTION_ANIMATION.md",
+      "sha256": "63905b62f1ed7a450bec3199c1abef349bd3a198c204dddf240dbfc0765dad39",
+      "installedSha": "63905b62f1ed7a450bec3199c1abef349bd3a198c204dddf240dbfc0765dad39"
+    },
+    "_guides/design/NAVIGATION_IA.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_guides/design/NAVIGATION_IA.md",
+      "sha256": "88c8eeff201887c922a03c516a8ffe2f88de898c19edcf422d291fb6eb9c8ec9",
+      "installedSha": "88c8eeff201887c922a03c516a8ffe2f88de898c19edcf422d291fb6eb9c8ec9"
+    },
+    "_guides/design/PERFORMANCE_PERCEIVED_UX.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_guides/design/PERFORMANCE_PERCEIVED_UX.md",
+      "sha256": "0e1d44a9e5ddcb128669052be18db68ddc722165c2f44defa23e574386207ede",
+      "installedSha": "0e1d44a9e5ddcb128669052be18db68ddc722165c2f44defa23e574386207ede"
+    },
+    "_guides/design/README.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_guides/design/README.md",
+      "sha256": "6c1eaf8dfb916fdd25ae4a11c616d45e365176ae49fe07c0f90d06c248ec40bb",
+      "installedSha": "6c1eaf8dfb916fdd25ae4a11c616d45e365176ae49fe07c0f90d06c248ec40bb"
+    },
+    "_guides/design/registry.json": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_guides/design/registry.json",
+      "sha256": "9cc698bce0390e8b9d9ac932c8a6085d75aee6522fc5c20e37a6624e78ca6301",
+      "installedSha": "9cc698bce0390e8b9d9ac932c8a6085d75aee6522fc5c20e37a6624e78ca6301"
+    },
+    "_guides/design/TYPOGRAPHY.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_guides/design/TYPOGRAPHY.md",
+      "sha256": "25b1771dd230b94eee3329b34f062135f8c841c8a9ea4fa2517bb8f414aca4fc",
+      "installedSha": "25b1771dd230b94eee3329b34f062135f8c841c8a9ea4fa2517bb8f414aca4fc"
+    },
+    "_guides/design/VISUAL_HIERARCHY.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_guides/design/VISUAL_HIERARCHY.md",
+      "sha256": "67fbca04942ac0445ebc98bfb27bc11945a94af7b6f0cf342fb35a7472ce0261",
+      "installedSha": "67fbca04942ac0445ebc98bfb27bc11945a94af7b6f0cf342fb35a7472ce0261"
+    },
     "_docs/.gitkeep": {
       "owner": "project",
       "managed": false,
@@ -899,11 +1046,6 @@
       "managed": false,
       "class": "reference"
     },
-    "_docs/research/.openai-dr-driver.sh": {
-      "owner": "project",
-      "managed": false,
-      "class": "reference"
-    },
     "_docs/research/2026-05-19-npm-forcing-function.md": {
       "owner": "project",
       "managed": false,
@@ -954,17 +1096,12 @@
       "managed": false,
       "class": "reference"
     },
-    "_docs/research/design-visual-hierarchy/driver.log": {
+    "_docs/research/design-visual-hierarchy/claude-report.md": {
       "owner": "project",
       "managed": false,
       "class": "reference"
     },
-    "_docs/research/design-visual-hierarchy/.tmp/openai-payload.json": {
-      "owner": "project",
-      "managed": false,
-      "class": "reference"
-    },
-    "_docs/research/design-visual-hierarchy/.tmp/phase-input.txt": {
+    "_docs/research/design-visual-hierarchy/SYNTHESIS.md": {
       "owner": "project",
       "managed": false,
       "class": "reference"
@@ -974,22 +1111,12 @@
       "managed": false,
       "class": "reference"
     },
-    "_docs/research/design-typography/driver.log": {
+    "_docs/research/design-typography/claude-report.md": {
       "owner": "project",
       "managed": false,
       "class": "reference"
     },
-    "_docs/research/design-typography/.tmp/openai-payload.json": {
-      "owner": "project",
-      "managed": false,
-      "class": "reference"
-    },
-    "_docs/research/design-typography/.tmp/phase-input.txt": {
-      "owner": "project",
-      "managed": false,
-      "class": "reference"
-    },
-    "_docs/research/design-principles-taxonomy/.session.json": {
+    "_docs/research/design-typography/SYNTHESIS.md": {
       "owner": "project",
       "managed": false,
       "class": "reference"
@@ -1009,17 +1136,7 @@
       "managed": false,
       "class": "reference"
     },
-    "_docs/research/design-principles-taxonomy/gemini-error.log": {
-      "owner": "project",
-      "managed": false,
-      "class": "reference"
-    },
     "_docs/research/design-principles-taxonomy/SYNTHESIS.md": {
-      "owner": "project",
-      "managed": false,
-      "class": "reference"
-    },
-    "_docs/research/design-principles-taxonomy/.tmp/gemini-payload.json": {
       "owner": "project",
       "managed": false,
       "class": "reference"
@@ -1029,52 +1146,17 @@
       "managed": false,
       "class": "reference"
     },
-    "_docs/research/design-principles-taxonomy/.tmp/gemini-run.log": {
-      "owner": "project",
-      "managed": false,
-      "class": "reference"
-    },
-    "_docs/research/design-principles-taxonomy/.tmp/openai-payload.json": {
-      "owner": "project",
-      "managed": false,
-      "class": "reference"
-    },
-    "_docs/research/design-principles-taxonomy/.tmp/openai-phase-0.md": {
-      "owner": "project",
-      "managed": false,
-      "class": "reference"
-    },
-    "_docs/research/design-principles-taxonomy/.tmp/openai-result.json": {
-      "owner": "project",
-      "managed": false,
-      "class": "reference"
-    },
-    "_docs/research/design-principles-taxonomy/.tmp/openai-run.log": {
-      "owner": "project",
-      "managed": false,
-      "class": "reference"
-    },
-    "_docs/research/design-principles-taxonomy/.tmp/phase-input.txt": {
-      "owner": "project",
-      "managed": false,
-      "class": "reference"
-    },
-    "_docs/research/design-principles-taxonomy/.tmp/research-brief-prompt.txt": {
-      "owner": "project",
-      "managed": false,
-      "class": "reference"
-    },
-    "_docs/research/design-principles-taxonomy/.tmp/run-gemini.sh": {
-      "owner": "project",
-      "managed": false,
-      "class": "reference"
-    },
-    "_docs/research/design-principles-taxonomy/.tmp/run-openai.sh": {
-      "owner": "project",
-      "managed": false,
-      "class": "reference"
-    },
     "_docs/research/design-mobile-responsive/brief.json": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/design-mobile-responsive/claude-report.md": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/design-mobile-responsive/SYNTHESIS.md": {
       "owner": "project",
       "managed": false,
       "class": "reference"
@@ -1084,7 +1166,42 @@
       "managed": false,
       "class": "reference"
     },
+    "_docs/research/design-layout_grid_spacing/claude-report.md": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/design-layout_grid_spacing/SYNTHESIS.md": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/design-interaction_feedback_states/brief.json": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/design-interaction_feedback_states/claude-report.md": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/design-interaction_feedback_states/SYNTHESIS.md": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
     "_docs/research/design-friction-trust-forms/brief.json": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/design-friction-trust-forms/claude-report.md": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/design-friction-trust-forms/ENGINE-STATUS.md": {
       "owner": "project",
       "managed": false,
       "class": "reference"
@@ -1094,7 +1211,27 @@
       "managed": false,
       "class": "reference"
     },
+    "_docs/research/design-conversion-hierarchy/claude-report.md": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/design-conversion-hierarchy/ENGINE-STATUS.md": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
     "_docs/research/design-consistency-design-systems-tokens/brief.json": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/design-consistency-design-systems-tokens/claude-report.md": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/design-consistency-design-systems-tokens/SYNTHESIS.md": {
       "owner": "project",
       "managed": false,
       "class": "reference"
@@ -1104,27 +1241,42 @@
       "managed": false,
       "class": "reference"
     },
+    "_docs/research/design-color_and_contrast/claude-report.md": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/design-color_and_contrast/SYNTHESIS.md": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
     "_docs/research/design-cognitive-load-simplicity/brief.json": {
       "owner": "project",
       "managed": false,
       "class": "reference"
     },
-    "_docs/research/design-cognitive-load-simplicity/driver.log": {
+    "_docs/research/design-cognitive-load-simplicity/claude-report.md": {
       "owner": "project",
       "managed": false,
       "class": "reference"
     },
-    "_docs/research/design-cognitive-load-simplicity/.tmp/openai-payload.json": {
-      "owner": "project",
-      "managed": false,
-      "class": "reference"
-    },
-    "_docs/research/design-cognitive-load-simplicity/.tmp/phase-input.txt": {
+    "_docs/research/design-cognitive-load-simplicity/SYNTHESIS.md": {
       "owner": "project",
       "managed": false,
       "class": "reference"
     },
     "_docs/research/design-accessibility-wcag/brief.json": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/design-accessibility-wcag/claude-report.md": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/design-accessibility-wcag/ENGINE-STATUS.md": {
       "owner": "project",
       "managed": false,
       "class": "reference"
@@ -15922,8 +16074,8 @@
       "managed": true,
       "source": ".claude/commands/bootstrap/spinup.md",
       "kind": "md",
-      "sha256": "507fcf244941d7a06f629562d48c42f600f2ba6664550ae1d5d1feeac1f28533",
-      "installedSha": "507fcf244941d7a06f629562d48c42f600f2ba6664550ae1d5d1feeac1f28533"
+      "sha256": "3557b42b356519477cf2fea374928f90b0777778b639cffb359e342feeabd1f5",
+      "installedSha": "3557b42b356519477cf2fea374928f90b0777778b639cffb359e342feeabd1f5"
     },
     ".claude/commands/beta/integrate.md": {
       "owner": "framework",
@@ -16018,8 +16170,8 @@
       "managed": true,
       "source": ".claude/agents/03-managers/product-designer.md",
       "kind": "md",
-      "sha256": "77b57bceb6ad635a40ac9cf9ad8445ed58d514b40bc756788e10b103ecaf0d93",
-      "installedSha": "77b57bceb6ad635a40ac9cf9ad8445ed58d514b40bc756788e10b103ecaf0d93"
+      "sha256": "e2eb3c97ba94585f53f3ec879650cce95948520d6bd19c4a3f06caebff23ea52",
+      "installedSha": "e2eb3c97ba94585f53f3ec879650cce95948520d6bd19c4a3f06caebff23ea52"
     },
     ".claude/agents/03-managers/product-lead.md": {
       "owner": "framework",
@@ -16042,8 +16194,8 @@
       "managed": true,
       "source": ".claude/agents/03-managers/web-conversion-designer.md",
       "kind": "md",
-      "sha256": "d9df16b031f5ef712a6e5a0b2a27aae757a016c175264e00de8b2b2706ddc523",
-      "installedSha": "d9df16b031f5ef712a6e5a0b2a27aae757a016c175264e00de8b2b2706ddc523"
+      "sha256": "d9fb43aa90d418d316d0d5704b241d99f0b4fea1579638bf86b72d2cc6db3d49",
+      "installedSha": "d9fb43aa90d418d316d0d5704b241d99f0b4fea1579638bf86b72d2cc6db3d49"
     },
     ".claude/agents/03-managers/_principles/base.md": {
       "owner": "framework",
@@ -16090,8 +16242,8 @@
       "managed": true,
       "source": ".claude/agents/02-oneshot/visual-review/visual-review.md",
       "kind": "md",
-      "sha256": "39298bbf588f48e5ecdf52d8f766da676243e76747fca841b933b0b5e1789061",
-      "installedSha": "39298bbf588f48e5ecdf52d8f766da676243e76747fca841b933b0b5e1789061"
+      "sha256": "2d45233be2d2ab925a511216b288e8a94ddfad7cdcfa964918cf3cb564162baf",
+      "installedSha": "2d45233be2d2ab925a511216b288e8a94ddfad7cdcfa964918cf3cb564162baf"
     },
     ".claude/agents/02-oneshot/test-runner/test-runner.md": {
       "owner": "framework",
@@ -16202,8 +16354,8 @@
       "managed": true,
       "source": ".claude/agents/02-oneshot/design-quality/design-quality.md",
       "kind": "md",
-      "sha256": "c90fbd9b6720b763a1a15317ce3ba352b5b26b986aa8452ef623fdd8dd3ab9ff",
-      "installedSha": "c90fbd9b6720b763a1a15317ce3ba352b5b26b986aa8452ef623fdd8dd3ab9ff"
+      "sha256": "9b2e63aaaf902963e58b1d04c0a2440cc020e099ae3c755d8d423a390a6484fe",
+      "installedSha": "9b2e63aaaf902963e58b1d04c0a2440cc020e099ae3c755d8d423a390a6484fe"
     },
     ".claude/agents/02-oneshot/compliance/compliance.md": {
       "owner": "framework",

@@ -114,6 +114,29 @@ Never opine from generic design-taste. Ground every call in the real project:
 - **The robustness checklist** — `.claude/project/reference/product-robustness.md` for the
   off-happy-path states the interface must handle (empty, error, re-entry).
 
+<!-- DESIGN-GUIDES:product-designer (ADDITIVE — training references, do not weaken existing grounding) -->
+### Design-principles guides (training references)
+
+Ground your craft judgment in the WarpOS **design-principles guide library**
+(`_guides/design/` · machine-readable index `_guides/design/registry.json` · overview
+`_guides/design/README.md`). These are framework-generic, self-contained teachable
+principles (NN/g, Laws of UX, Gestalt, Refactoring UI, WCAG 2.2, Baymard/CXL) — not tool
+tutorials. The guides whose `trains:` includes **product-designer** (all 19) are your
+references; each closes with a §6 agent-applicable RULES section.
+
+- **Foundations** — VISUAL_HIERARCHY, GESTALT_GROUPING, COGNITIVE_LOAD_SIMPLICITY
+- **Visual craft** — TYPOGRAPHY, COLOR_AND_CONTRAST, LAYOUT_GRID_SPACING, DEPTH_ELEVATION_IMAGERY
+- **Interaction** — INTERACTION_FEEDBACK_STATES, AFFORDANCE_CONTROLS_ICONOGRAPHY, NAVIGATION_IA, MOTION_ANIMATION
+- **Accessibility** — ACCESSIBILITY_WCAG
+- **Conversion (in-app forms/flows)** — CONVERSION_HIERARCHY, FRICTION_TRUST_FORMS
+- **Systems & cross-cutting** — CONSISTENCY_DESIGN_SYSTEMS_TOKENS, MOBILE_RESPONSIVE, CONTENT_MICROCOPY, PERFORMANCE_PERCEIVED_UX, ETHICS_NO_DARK_PATTERNS
+
+**Apply each guide's §6 agent-applicable RULES as part of your judgment; the rules are
+phrased in your own finding vocabulary** (cohort fit, cognitive load, state coverage,
+start-path fit, consistency, mobile/responsive). The guides inform the call — your output
+contract, principles, and lenses are unchanged.
+<!-- /DESIGN-GUIDES:product-designer -->
+
 If the evidence isn't there, say what you'd need rather than inventing it (inherited
 `evidence-over-invention`).
 

@@ -1,0 +1,43 @@
+{
+  "research_question": "What are the evidence-based, teachable principles of mobile-first / responsive design — fluid reflow with no overflow or overlap at small viewports, touch tap-target sizing, readable type on small screens, touch ergonomics (thumb zones, spacing between targets), and viewport/safe-area handling — that let an AI designer agent PASS/FAIL a rendered UI on the mobile-responsive axis (and the layout + a11y visual-review categories)?",
+  "phases": [
+    {
+      "name": "Landscape",
+      "objective": "Survey the canonical authorities on mobile/responsive: WCAG 2.2 SC 2.5.8 Target Size (Minimum) 24x24 CSS px and SC 1.4.10 Reflow (320 CSS px, no two-dimensional scroll), Apple HIG and Material 3 minimum touch-target guidance (44pt / 48dp), Baymard mobile forms/checkout research, and the mobile-first methodology.",
+      "sub_questions": ["What are the authoritative minimum tap-target sizes and where do 24px (WCAG), 44pt (Apple), 48dp (Material) come from — and what is the practical baseline to enforce?", "What does WCAG Reflow (SC 1.4.10) require at 320px and what counts as a violation (horizontal scroll, clipped content)?"],
+      "evidence_priorities": "W3C WCAG 2.2 SC 2.5.8 + 1.4.10; Apple HIG layout/touch; Material 3 touch target / layout; Baymard mobile research; mobile-first definition.",
+      "stop_condition": "Complete when the tap-target floors, the reflow requirement, and the mobile-first definition each have a primary source."
+    },
+    {
+      "name": "Mechanics",
+      "objective": "How responsive is built in a Next.js/Tailwind substrate: mobile-first breakpoints (base styles then sm/md/lg overrides), fluid layout (flex/grid, min-w-0 to prevent overflow, max-w on text measure), relative units (rem) and a fluid type approach, the viewport meta tag, safe-area-inset for notches, responsive images, and sizing tap targets via min-height/min-width utilities.",
+      "sub_questions": ["What concrete techniques prevent horizontal overflow and element overlap at 320-375px (min-w-0, flex-wrap, overflow handling, max-width on prose, avoiding fixed px widths)?", "How are tap targets reliably sized to the baseline and given adequate spacing, and how is readable mobile type set (min ~16px body to avoid iOS zoom, comfortable line-length)?"],
+      "evidence_priorities": "Tailwind responsive/mobile-first breakpoint model (as principle source); WCAG target-size/spacing; Smashing mobile form design; web.dev responsive/CLS; viewport + safe-area.",
+      "stop_condition": "Complete when overflow-prevention, tap-target sizing, and readable-mobile-type each have a concrete teachable technique."
+    },
+    {
+      "name": "Failure Modes",
+      "objective": "What breaks on mobile: horizontal overflow / two-dimensional scroll, overlapping elements, content clipped off-screen, fixed-px widths that don't fit 320-375px, tap targets below the floor or too close together (fat-finger errors), body type below 16px causing iOS auto-zoom, desktop-only hover affordances with no touch equivalent, hidden content behind off-canvas with no escape, and layout shift (CLS) on load.",
+      "sub_questions": ["What are the most common, detectable mobile failures and how do they read to the user (can't tap, can't read, content cut off, page jumps)?", "How can each be detected mechanically (viewport-width vs scrollWidth overflow check, computed target size, computed font-size, CLS measurement)?"],
+      "evidence_priorities": "Baymard mobile usability failures; WCAG target-size failures; mobile overflow/CLS post-mortems; fat-finger / Fitts's Law on touch.",
+      "stop_condition": "Complete when 5+ distinct, detectable mobile failure modes are documented with how each reads to the user and how to detect it."
+    },
+    {
+      "name": "Contrarian",
+      "objective": "Challenges to naive mobile-first: when desktop is the primary surface (B2B/data-dense tools), the limits of pure mobile-first (content parity vs progressive enhancement debates), responsive vs adaptive/separate-mobile trade-offs, and when a larger-than-baseline target or different layout is warranted (Fitts's Law for primary actions).",
+      "sub_questions": ["When is strict mobile-first the wrong default, and how should an agent reconcile 'mobile is the real surface' with a genuinely desktop-primary product?"],
+      "evidence_priorities": "Critiques of mobile-first; responsive-vs-adaptive analyses; B2B/desktop-primary cases; Fitts's Law for sizing beyond the minimum.",
+      "stop_condition": "Complete when 2+ substantive counter-arguments are documented with evidence."
+    }
+  ],
+  "search_strategy": ["WCAG 2.2 target size minimum 24 CSS pixels 2.5.8", "WCAG 1.4.10 reflow 320 CSS pixels horizontal scroll", "Apple HIG minimum tap target 44 points", "Material design touch target 48dp", "mobile-first responsive design definition breakpoints", "Tailwind responsive mobile-first breakpoints min-width", "prevent horizontal overflow mobile min-w-0 flex", "iOS input font-size 16px zoom prevention", "Baymard mobile form design best practices", "cumulative layout shift CLS mobile", "safe-area-inset viewport notch", "thumb zone reachability mobile ergonomics"],
+  "exclusion_criteria": ["Tool tutorials", "Product-specific layouts", "Native-only (non-web) patterns except as principle source", "Pre-2019 breakpoint advice"],
+  "required_output_schema": {
+    "sections": ["Executive Summary", "Phase 1: Landscape", "Phase 2: Mechanics", "Phase 3: Failure Modes", "Phase 4: Contrarian", "Source Registry", "Confidence Matrix"],
+    "per_finding_format": "claim, supporting evidence, confidence (HIGH/MEDIUM/LOW), source URLs, counter-evidence if any",
+    "per_source_format": "URL, title, credibility (1-5), recency, type (primary/secondary/opinion)"
+  },
+  "openai_instructions": "Map every mobile/responsive principle to a MECHANICALLY-DETECTABLE rule a Playwright-driven reviewer could PASS/FAIL at a 375x812 (and 320px) viewport: e.g. 'document.scrollWidth must not exceed viewport innerWidth (no horizontal overflow)', 'interactive target computed box >= 24x24 (prefer 44x44) CSS px', 'body/input computed font-size >= 16px', 'no element overlap', 'viewport meta present', 'no fixed px width exceeding 320'. Build a fault tree from 'broken on mobile' to the specific detectable computed-style / DOM-geometry signature. Prioritize the mobile-responsive axis.",
+  "gemini_instructions": "SKIPPED — Gemini engine down for this run.",
+  "claude_instructions": "Verify WCAG 2.2 SC 2.5.8 (24px) and SC 1.4.10 (320px reflow) against w3.org, and the Apple 44pt / Material 48dp figures against their primary docs. Investigate the contrarian angle on desktop-primary products and responsive-vs-adaptive. Cross-check the iOS 16px-to-prevent-zoom claim."
+}

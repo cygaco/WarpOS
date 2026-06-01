@@ -1,0 +1,30 @@
+{
+  "research_question": "What is the evidence-based, teachable theory of VISUAL HIERARCHY in UI/web design — how size, weight, color, contrast, position, spacing, and grouping direct attention and reading order — and what mechanically-checkable PASS/FAIL rules can an AI design-review agent apply to a rendered Next/Tailwind/Radix/shadcn page?",
+  "openai_instructions": "Focus on logical deduction and fault-tree analysis: enumerate every visual property that encodes hierarchy, the perceptual/cognitive mechanism behind each, the rank-order of their strength, and the failure tree of 'flat hierarchy' (when everything competes). Map each principle to a checkable assertion (e.g. one dominant focal point per viewport; primary CTA the most visually prominent interactive element; H1 strictly larger/heavier than H2). Cite primary sources (NN/g, Laws of UX, Gestalt, Refactoring UI). Be exhaustive on edge cases: dark mode, mobile reflow, multiple equal-weight cards.",
+  "claude_instructions": "Verify the contrarian angle: when does strong hierarchy hurt (over-emphasis, the von Restorff effect abused, banner blindness from too many 'important' things)? Cross-verify the strength-ranking of cues across sources. Investigate measurable proxies (font-size ratio, contrast ratio, whitespace ratio) that an automated agent could compute via getComputedStyle.",
+  "gemini_instructions": "SKIPPED — Gemini engine down.",
+  "search_strategy": [
+    "visual hierarchy ui design principles",
+    "refactoring ui hierarchy is everything",
+    "von restorff effect cta prominence",
+    "serial position effect layout",
+    "gestalt figure ground hierarchy",
+    "scanning patterns F pattern Z pattern web",
+    "size weight color contrast attention ranking",
+    "one focal point per screen rule",
+    "whitespace and visual hierarchy",
+    "primary secondary tertiary action button hierarchy"
+  ],
+  "exclusion_criteria": ["tool tutorials (Figma/Canva/Sketch how-tos)", "pure brand/illustration aesthetics with no UI relevance", "results that only restate without a checkable rule"],
+  "required_output_schema": {
+    "sections": ["Executive Summary", "Phase 1: Landscape", "Phase 2: Mechanics", "Phase 3: Failure Modes", "Phase 4: Contrarian", "Source Registry", "Confidence Matrix"],
+    "per_finding_format": "claim, evidence, confidence (HIGH/MEDIUM/LOW), source URLs, counter-evidence",
+    "per_source_format": "URL, title, credibility (1-5), recency, type"
+  },
+  "phases": [
+    {"name":"Landscape","objective":"Survey the canonical theory of visual hierarchy across the authorities","sub_questions":["What are the established visual properties that encode hierarchy and how do the main authorities (NN/g, Laws of UX, Gestalt, Refactoring UI) define and rank them?","What scanning/reading-order models (F-pattern, Z-pattern, layer-cake) govern how the eye traverses a layout?"],"evidence_priorities":"NN/g articles, Refactoring UI hierarchy chapter, Laws of UX (von Restorff, serial position), Gestalt figure-ground","stop_condition":"Complete when the full set of hierarchy cues and at least 2 scanning models are identified with sources"},
+    {"name":"Mechanics","objective":"How hierarchy is actually built in a component/token system","sub_questions":["How do size/weight/color/contrast/position/spacing combine into a 3-tier (hook/secondary/finisher) system in a Tailwind/shadcn substrate?","What computed-style proxies (font-size ratio, contrast delta, whitespace) make hierarchy measurable?"],"evidence_priorities":"Refactoring UI code-level guidance, type-scale ratios, de-emphasis techniques (weight/color over size)","stop_condition":"Complete when concrete build-term techniques + 2+ measurable proxies are documented"},
+    {"name":"Failure Modes","objective":"What breaks hierarchy and how it reads to users","sub_questions":["What are the named failure modes (flat hierarchy, competing focal points, buried CTA, emphasis inflation) and how does each read to the user?","How can an automated reviewer detect each failure from the rendered DOM/screenshot?"],"evidence_priorities":"'if everything is bold nothing is bold', banner blindness, accessibility heading-order coupling","stop_condition":"Complete when 5+ distinct failure modes with detection signals are documented"},
+    {"name":"Contrarian","objective":"When strong hierarchy is wrong or over-applied","sub_questions":["When does aggressive hierarchy/emphasis backfire, and what is the right restraint principle?"],"evidence_priorities":"over-emphasis, dark-pattern adjacency (false urgency), aesthetic-usability masking","stop_condition":"Complete when 2+ substantive counter-arguments with evidence are found"}
+  ]
+}

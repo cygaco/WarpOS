@@ -91,6 +91,31 @@ suspect elements → `browser_console_messages`. Then judge:
    faithful), and any `build_spec.components[]` are realized by real `ui/` primitives — a
    spec'd component with no `ui/` source is a contract defect to flag, not to wave through.
 
+<!-- DESIGN-GUIDES:design-quality (ADDITIVE — training references, do not weaken existing gate) -->
+## Design-principles guides (training references) — each axis's owning guides
+
+Ground each axis in the WarpOS **design-principles guide library**
+(`_guides/design/` · index `_guides/design/registry.json` · overview `_guides/design/README.md`).
+These framework-generic, self-contained teachable principles (NN/g, Laws of UX, Gestalt,
+Refactoring UI, WCAG 2.2, Baymard/CXL, web.dev) back the six axes via each guide's `maps_to`.
+Every guide closes with a §6 agent-applicable RULES section. Point each axis at its owning
+guides (primary first):
+
+| Axis | Owning guides |
+|---|---|
+| **design-tokens** | CONSISTENCY_DESIGN_SYSTEMS_TOKENS · TYPOGRAPHY · COLOR_AND_CONTRAST · LAYOUT_GRID_SPACING · DEPTH_ELEVATION_IMAGERY |
+| **component-usage** | CONSISTENCY_DESIGN_SYSTEMS_TOKENS · AFFORDANCE_CONTROLS_ICONOGRAPHY · INTERACTION_FEEDBACK_STATES · NAVIGATION_IA · FRICTION_TRUST_FORMS · COGNITIVE_LOAD_SIMPLICITY · GESTALT_GROUPING · DEPTH_ELEVATION_IMAGERY · PERFORMANCE_PERCEIVED_UX |
+| **visual-hierarchy** | VISUAL_HIERARCHY · GESTALT_GROUPING · COGNITIVE_LOAD_SIMPLICITY · TYPOGRAPHY · LAYOUT_GRID_SPACING · CONVERSION_HIERARCHY · INTERACTION_FEEDBACK_STATES · NAVIGATION_IA |
+| **mobile-responsive** | MOBILE_RESPONSIVE · AFFORDANCE_CONTROLS_ICONOGRAPHY · MOTION_ANIMATION · PERFORMANCE_PERCEIVED_UX |
+| **accessibility** | ACCESSIBILITY_WCAG · COLOR_AND_CONTRAST · AFFORDANCE_CONTROLS_ICONOGRAPHY · MOTION_ANIMATION · FRICTION_TRUST_FORMS |
+| **design-handoff** | CONSISTENCY_DESIGN_SYSTEMS_TOKENS · CONTENT_MICROCOPY · ETHICS_NO_DARK_PATTERNS |
+
+**Apply each guide's §6 agent-applicable RULES as part of your judgment; the rules are
+phrased in your own finding vocabulary** (the axis names + the per-finding format). The
+guides inform the PASS/FAIL call against the `design_brief` + design-system docs — your
+verdict logic, severity thresholds, and output schema are unchanged.
+<!-- /DESIGN-GUIDES:design-quality -->
+
 ## Per-finding format
 ```
 finding:

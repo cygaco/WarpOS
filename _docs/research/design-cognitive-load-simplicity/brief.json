@@ -1,0 +1,30 @@
+{
+  "research_question": "What is the evidence-based, teachable theory of COGNITIVE LOAD and SIMPLICITY in UI/web design — Hick's Law, Miller's Law, cognitive-load theory, choice overload, recognition-over-recall, progressive disclosure, KISS, Tesler's Law — and what mechanically-checkable PASS/FAIL rules can an AI design-review agent apply to reduce mental effort on a rendered Next/Tailwind/Radix/shadcn page?",
+  "openai_instructions": "Focus on logical deduction: formalize each law (Hick's RT = a + b*log2(n); Miller's 7±2 / chunking; intrinsic vs extraneous vs germane load), derive the design implication of each, and translate to a checkable assertion (e.g. primary screen surfaces <= N primary actions; forms chunk fields into labeled groups; recognition affordances over free-recall entry). Build the failure tree of an overloaded interface. Cite NN/g #6 + #8 heuristics and Laws of UX primary pages.",
+  "claude_instructions": "Investigate the contrarian angle: when does removing options or hiding behind progressive disclosure HURT (power users, Tesler's law of conservation of complexity, hidden critical actions, oversimplification that adds steps)? Cross-verify Hick's-law claims (it applies to known equiprobable choices, not all menus). Find measurable proxies an agent can compute (count of simultaneous primary CTAs, count of form fields, nav item count, density).",
+  "gemini_instructions": "SKIPPED — Gemini engine down.",
+  "search_strategy": [
+    "cognitive load theory ui design",
+    "hicks law number of choices decision time",
+    "millers law chunking 7 plus minus 2 ux",
+    "recognition over recall nielsen heuristic",
+    "progressive disclosure nielsen norman",
+    "choice overload paradox of choice ui",
+    "teslers law conservation of complexity",
+    "aesthetic minimalist design heuristic",
+    "form field reduction completion rate",
+    "KISS principle interface simplicity"
+  ],
+  "exclusion_criteria": ["tool tutorials", "marketing copywriting unrelated to load", "claims with no checkable derivation"],
+  "required_output_schema": {
+    "sections": ["Executive Summary", "Phase 1: Landscape", "Phase 2: Mechanics", "Phase 3: Failure Modes", "Phase 4: Contrarian", "Source Registry", "Confidence Matrix"],
+    "per_finding_format": "claim, evidence, confidence (HIGH/MEDIUM/LOW), source URLs, counter-evidence",
+    "per_source_format": "URL, title, credibility (1-5), recency, type"
+  },
+  "phases": [
+    {"name":"Landscape","objective":"Survey the canonical cognitive-load & simplicity laws","sub_questions":["What are the established laws (Hick, Miller, cognitive-load theory, choice overload, Tesler) and what does each precisely claim?","How do NN/g's recognition-over-recall and aesthetic-minimalist heuristics frame simplicity?"],"evidence_priorities":"Laws of UX primary pages, NN/g heuristics #6 and #8, cognitive-load theory sources","stop_condition":"Complete when all major laws are defined with sources and precise statements"},
+    {"name":"Mechanics","objective":"How to reduce load in a real interface","sub_questions":["What techniques operationalize each law (chunking, progressive disclosure, smart defaults, recognition affordances, subtract-before-add) in a Tailwind/shadcn build?","What computed proxies make load measurable (primary-action count, field count, nav breadth, choices-per-decision)?"],"evidence_priorities":"NN/g progressive disclosure, form simplification studies, default-selection research","stop_condition":"Complete when concrete techniques + 2+ measurable proxies documented"},
+    {"name":"Failure Modes","objective":"What overload looks like and how it reads","sub_questions":["What are the named failure modes (choice overload, wall of options, mandatory recall, dense screens, redundant steps) and the user symptom of each?","How can a reviewer detect each from the rendered page?"],"evidence_priorities":"abandonment, decision paralysis, error rate, time-on-task","stop_condition":"Complete when 5+ failure modes with detection signals documented"},
+    {"name":"Contrarian","objective":"When simplicity is wrong","sub_questions":["When does subtraction/hiding hurt (Tesler's law, hidden critical actions, power-user efficiency, oversimplification adding steps)?"],"evidence_priorities":"conservation of complexity, hidden-action discoverability, expert vs novice tradeoff","stop_condition":"Complete when 2+ substantive counter-arguments with evidence found"}
+  ]
+}

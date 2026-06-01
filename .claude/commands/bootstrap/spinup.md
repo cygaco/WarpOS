@@ -132,6 +132,15 @@ skill body drives it, then gates completion with `verifyServe`.
 > "not run," not a failure, and never claim a visual pass that didn't execute. Run
 > the visual pass in a session where the MCP is connected, or document its absence.
 
+<!-- design-overview-pointer (single bootstrap entry to the agent-grounding design library; anchor:none, NOT a guide-anchor marker) -->
+> 🎨 **Design-principles guides (overview):** the first-screen UX is judged by the
+> `product-designer` / `web-conversion-designer` / `design-quality` / `visual-review`
+> agents, which ground their craft in the **design-principles guide library** —
+> overview at [`_guides/design/README.md`](../../../_guides/design/README.md) (index
+> `_guides/design/registry.json`). These are agent-grounding training references
+> (`anchor: none`), not staged launch guides; the README is the one design-overview
+> entry the bootstrap pipeline surfaces.
+
 ## Execution — the orchestrator driver (SP-20260525-023)
 The phases above execute via `scripts/bootstrap/spinup-orchestrate.js` (a real
 driver, mirroring `scripts/canon/generate.js`, so `--phase`/`--resume` state is

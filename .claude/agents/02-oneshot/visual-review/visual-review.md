@@ -67,6 +67,32 @@ You are reviewing **against the spec**, not against your aesthetic. If the
 spec says "primary button uses `--color-brand-orange`," verify the rendered
 pixel matches that token's value.
 
+<!-- DESIGN-GUIDES:visual-review (ADDITIVE — training references, do not weaken existing review) -->
+## Design-principles guides (training references) — each category's owning guides
+
+Ground each finding category in the WarpOS **design-principles guide library**
+(`_guides/design/` · index `_guides/design/registry.json` · overview `_guides/design/README.md`).
+These framework-generic, self-contained teachable principles (NN/g, Laws of UX, Gestalt,
+Refactoring UI, WCAG 2.2, Baymard/CXL, web.dev) back your seven finding categories via each
+guide's `maps_to`. Every guide closes with a §6 agent-applicable RULES section. Point each
+category at its owning guides (primary first):
+
+| Category | Owning guides |
+|---|---|
+| **color** | COLOR_AND_CONTRAST · ACCESSIBILITY_WCAG · DEPTH_ELEVATION_IMAGERY · INTERACTION_FEEDBACK_STATES · CONSISTENCY_DESIGN_SYSTEMS_TOKENS |
+| **layout** | VISUAL_HIERARCHY · GESTALT_GROUPING · COGNITIVE_LOAD_SIMPLICITY · LAYOUT_GRID_SPACING · DEPTH_ELEVATION_IMAGERY · AFFORDANCE_CONTROLS_ICONOGRAPHY · NAVIGATION_IA · CONVERSION_HIERARCHY · FRICTION_TRUST_FORMS · MOBILE_RESPONSIVE |
+| **typography** | TYPOGRAPHY · CONSISTENCY_DESIGN_SYSTEMS_TOKENS |
+| **copy** | CONTENT_MICROCOPY · COGNITIVE_LOAD_SIMPLICITY · NAVIGATION_IA · CONVERSION_HIERARCHY · FRICTION_TRUST_FORMS · ETHICS_NO_DARK_PATTERNS |
+| **a11y** | ACCESSIBILITY_WCAG · COLOR_AND_CONTRAST · AFFORDANCE_CONTROLS_ICONOGRAPHY · MOTION_ANIMATION · FRICTION_TRUST_FORMS · MOBILE_RESPONSIVE |
+| **console-error** | INTERACTION_FEEDBACK_STATES · PERFORMANCE_PERCEIVED_UX |
+| **regression** | INTERACTION_FEEDBACK_STATES · MOTION_ANIMATION · CONSISTENCY_DESIGN_SYSTEMS_TOKENS · PERFORMANCE_PERCEIVED_UX |
+
+**Apply each guide's §6 agent-applicable RULES as part of your judgment; the rules are
+phrased in your own finding vocabulary** (the category names + the per-finding format). The
+guides inform what counts as a finding against the spec — your verdict logic, severity
+thresholds, and output schema are unchanged.
+<!-- /DESIGN-GUIDES:visual-review -->
+
 ## The flow
 
 For each `viewport` × `entry_path` combination:

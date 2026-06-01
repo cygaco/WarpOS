@@ -1,0 +1,72 @@
+{
+  "research_question": "What are the authoritative, teachable principles for color systems and contrast in product UI and conversion web design — covering perceptual color models (HSL/OKLCH), semantic color roles (success/warning/error/info), brand color application, the WCAG contrast floor (text and non-text), and never-color-alone for state — such that an AI designer agent can apply them directly in a Next/Tailwind/Radix/shadcn substrate and a vision-capable review gauntlet can mechanically PASS/FAIL a rendered UI against them?",
+  "phases": [
+    {
+      "name": "Landscape",
+      "objective": "Survey the consensus principles of color in UI/UX: how practitioners build color scales (lightness/saturation families), the named semantic-color roles, perceptual color spaces (HSL vs OKLCH/LCH), and the established contrast standards.",
+      "sub_questions": [
+        "How do authoritative sources (Refactoring UI, Material 3 color roles, design-token systems) define a color SYSTEM — base hues, shade ramps, neutral/gray families, and semantic roles — versus ad-hoc hex picking?",
+        "What perceptual problems do HSL and OKLCH solve (perceived-lightness inconsistency across hues), and how does that affect generating accessible shade ramps?"
+      ],
+      "evidence_priorities": "Refactoring UI 'Working with Color' chapter principles; Material 3 color roles & tonal palettes; W3C/CSS Color 4 OKLCH; design-token color taxonomies; WebAIM color articles. Cite primary docs.",
+      "stop_condition": "Complete when the shade-ramp method, the semantic-role set, the HSL-vs-perceptual-space tradeoff, and the contrast standard are each documented from a primary source."
+    },
+    {
+      "name": "Mechanics",
+      "objective": "Document exactly how color and contrast are computed and applied: WCAG 2.2 contrast-ratio math and thresholds (SC 1.4.3 4.5:1 / 3:1 large; SC 1.4.11 3:1 non-text), the relative-luminance formula, large-text definition, how to encode color as CSS custom properties / design tokens, and how state color is paired with a non-color signal.",
+      "sub_questions": [
+        "What are the exact WCAG 2.2 thresholds and definitions for SC 1.4.3 (text contrast), 1.4.11 (non-text/UI-component & graphical-object contrast), and 1.4.1 (use of color), including the 'large text' size definition and the relative-luminance calculation?",
+        "How is a color system implemented as tokens (CSS variables / theme scale) so that components reference roles (--color-primary, --color-destructive) not raw hex, and how is contrast verified on the rendered computed style?"
+      ],
+      "evidence_priorities": "W3C WCAG 2.2 Understanding docs for 1.4.1/1.4.3/1.4.11; the relative luminance + contrast-ratio formula; CSS custom properties for theming; computed-style verification (getComputedStyle backgroundColor/color). Include the exact numeric thresholds.",
+      "stop_condition": "Complete when the contrast formula + all relevant thresholds, the token-encoding pattern, and the not-color-alone pairing are each documented with a citable source."
+    },
+    {
+      "name": "Failure Modes",
+      "objective": "Catalog how color/contrast goes wrong in shipped UIs and how each reads to the user and is detected: low-contrast text, color-only state (red/green for error/success with no icon/text), brand color drift (primary rendering grey), saturated-color overuse, gray text on colored backgrounds, dark-mode contrast inversions, focus-ring contrast failures, placeholder-as-label contrast.",
+      "sub_questions": [
+        "What are the most common, highest-impact color/contrast defects in production UI, and how does each manifest to a user (illegibility, ambiguous state, inaccessible to color-blind users)?",
+        "How can each defect be DETECTED programmatically from a rendered page — computed color values, contrast ratio between fg/bg, absence of a non-color state signifier, token vs raw-hex resolution?"
+      ],
+      "evidence_priorities": "WebAIM low-vision/color-blindness data; NN/g articles on color; common-mistakes lists; deceptive/low-contrast critiques. For each failure, an observed-vs-expected detection method.",
+      "stop_condition": "Complete when 6+ distinct color/contrast failure modes are documented, each with a user-visible symptom AND a programmatic detection method."
+    },
+    {
+      "name": "Contrarian",
+      "objective": "Surface the strongest critiques and nuances: WCAG 2.x contrast math limitations vs APCA (perceptual contrast), when strict 4.5:1 over-constrains brand/dark-mode, and the tension between brand fidelity and accessibility.",
+      "sub_questions": [
+        "Where does the WCAG 2.x contrast algorithm fail perceptually (e.g., light-on-dark, thin fonts), what does APCA/WCAG 3 propose instead, and how should a teachable rule hedge so it stays correct as standards evolve?"
+      ],
+      "evidence_priorities": "APCA / WCAG 3 draft discussion; critiques of the 2.x luminance formula; brand-vs-a11y tradeoff essays. Note what is settled vs in-flux.",
+      "stop_condition": "Complete when 2+ substantive critiques of the strict-contrast/HSL approach are documented with the recommended hedge."
+    }
+  ],
+  "search_strategy": [
+    "Refactoring UI working with color principles shade scale",
+    "WCAG 2.2 1.4.3 contrast minimum 4.5:1 understanding",
+    "WCAG 2.2 1.4.11 non-text contrast UI components 3:1",
+    "WCAG 1.4.1 use of color not color alone",
+    "relative luminance contrast ratio formula sRGB",
+    "OKLCH vs HSL perceptual lightness color scale accessible",
+    "Material 3 color roles semantic tokens primary on-primary",
+    "color blindness deuteranopia UI error success red green",
+    "design tokens CSS custom properties color theming",
+    "APCA WCAG 3 perceptual contrast algorithm critique",
+    "focus ring contrast visible WCAG 2.4.11",
+    "dark mode contrast desaturation elevation surface"
+  ],
+  "exclusion_criteria": [
+    "Tool/SaaS tutorials (how to use a specific color-picker product)",
+    "Brand-specific palettes for one company",
+    "Pre-2018 articles superseded by WCAG 2.1/2.2",
+    "Pure art-theory color harmony without UI/accessibility relevance"
+  ],
+  "required_output_schema": {
+    "sections": ["Executive Summary", "Phase 1: Landscape", "Phase 2: Mechanics", "Phase 3: Failure Modes", "Phase 4: Contrarian", "Source Registry", "Confidence Matrix"],
+    "per_finding_format": "claim, supporting evidence, confidence (HIGH/MEDIUM/LOW), source URLs, counter-evidence if any",
+    "per_source_format": "URL, title, credibility (1-5), recency, type (primary/secondary/opinion)"
+  },
+  "openai_instructions": "Focus on the exact, citable numeric standards: WCAG 2.2 contrast thresholds (4.5:1, 3:1 large, 3:1 non-text), the large-text definition (18pt/24px or 14pt/18.66px bold), the relative-luminance and contrast-ratio formulas. Build a fault tree of color/contrast failures with a programmatic detection method for each (computed fg/bg color -> contrast ratio; presence/absence of non-color state signifier; token-role vs raw-hex). Be precise and deductive; prefer W3C primary sources.",
+  "gemini_instructions": "SKIP — Gemini engine disabled for this run.",
+  "claude_instructions": "Investigate the contrarian angle (APCA vs WCAG 2.x, brand-vs-a11y), cross-verify the exact WCAG thresholds against the W3C primary text, and assess the HSL-vs-OKLCH tradeoff for generating accessible scales. Verify that 'never color alone' is a normative WCAG requirement (1.4.1), not just best practice."
+}
