@@ -36,27 +36,15 @@ function gitStagedFiles() {
   }
 }
 
+// Delegated to the shared repo-role resolver (ED-009). All canonical signals
+// are checked there. Fail-safe preserved: resolver falls through to non-canonical
+// on any read/parse error (same "safer = strict" guarantee as before).
+const { resolveRepoRole } = require("../warpos/repo-role");
 function isCanonicalRepo() {
   // Canonical WarpOS dev repo: the framework itself, which has no PRODUCT
   // requirements (its _requirements/ are templates, scrub-pending). A fresh,
   // empty requirements graph is the EXPECTED state there — not a merge blocker.
-  // Same repo-role-awareness as framework-purity-guard's consumer skip.
-  try {
-    const mfp = path.resolve(__dirname, "..", "..", ".claude", "manifest.json");
-    if (fs.existsSync(mfp)) {
-      const m = JSON.parse(fs.readFileSync(mfp, "utf8"));
-      if (m && m.warpos && m.warpos.source === "self") return true;
-      if (m && m.project && m.project.slug === "warpos") return true;
-    }
-    const vjp = path.resolve(__dirname, "..", "..", "version.json");
-    if (fs.existsSync(vjp)) {
-      const v = JSON.parse(fs.readFileSync(vjp, "utf8"));
-      if (v && v.name === "warpos") return true;
-    }
-  } catch {
-    /* fall through — treat as non-canonical (safer: keeps the gate strict) */
-  }
-  return false;
+  return resolveRepoRole({ root: path.resolve(__dirname, "..", "..") }).role === "canonical";
 }
 
 function checkGraphPresent() {
