@@ -48,25 +48,12 @@ const SENTINEL_PATH = path.join(
 );
 
 // ── Canonical vs consumer detection ───────────────────────────────────
-// Canonical if ANY positive signal is present; the manifest marker is the
-// strongest (canonical ships it, consumers never do). version.json name and
-// the explicit .warpos-canonical marker are backups for trees mid-build.
+// Delegated to the shared repo-role resolver (ED-009). All canonical signals
+// (_warpos/MANIFEST.json, .warpos-canonical, manifest.json fields, version.json)
+// are checked there in a single place. Do not re-derive inline.
+const { resolveRepoRole } = require("../warpos/repo-role");
 function isCanonicalRepo() {
-  if (fs.existsSync(path.join(PROJECT_DIR, "_warpos", "MANIFEST.json"))) {
-    return true;
-  }
-  if (fs.existsSync(path.join(PROJECT_DIR, ".warpos-canonical"))) {
-    return true;
-  }
-  try {
-    const v = JSON.parse(
-      fs.readFileSync(path.join(PROJECT_DIR, "version.json"), "utf8"),
-    );
-    if (v && v.name === "warpos") return true;
-  } catch {
-    /* no/invalid version.json — not a canonical signal */
-  }
-  return false;
+  return resolveRepoRole({ root: PROJECT_DIR }).role === "canonical";
 }
 
 if (process.env.WARPOS_PURITY_GUARD === "off") process.exit(0);
