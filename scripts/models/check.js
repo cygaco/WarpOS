@@ -37,19 +37,41 @@ function parseArgs(argv) {
     json: false,
     maxAgeDays: 30,
     researchDir: path.join(ROOT, "runtime", "models-research"),
+    provider: null,
+  };
+  // A flag that needs a value must HAVE one — a missing value is a usage error
+  // (exit 2), never an uncaught throw or a silent default.
+  const needVal = (k, v) => {
+    if (v === undefined) {
+      console.error(`missing value for ${k}`);
+      process.exit(2);
+    }
+    return v;
   };
   for (let i = 0; i < argv.length; i++) {
     const k = argv[i];
     if (k === "--json") a.json = true;
-    else if (k === "--max-age-days") a.maxAgeDays = parseInt(argv[++i], 10);
-    else if (k === "--research-dir") a.researchDir = path.resolve(argv[++i]);
+    // --refresh / --provider are skill-level orchestration flags (the skill does
+    // the deep-ingest refresh). The engine accepts --provider as a scope filter
+    // and harmlessly ignores --refresh so `check.js $ARGUMENTS` never exit-2s.
+    else if (k === "--refresh") {
+      /* orchestration flag — consumed by /models:check, no-op for the engine */
+    } else if (k === "--provider") a.provider = needVal(k, argv[++i]);
+    else if (k === "--max-age-days") {
+      const v = needVal(k, argv[++i]);
+      const n = Number(v);
+      if (!Number.isInteger(n) || n < 0) {
+        console.error(`--max-age-days must be a non-negative integer: ${v}`);
+        process.exit(2);
+      }
+      a.maxAgeDays = n;
+    } else if (k === "--research-dir") a.researchDir = path.resolve(needVal(k, argv[++i]));
     else if (k === "--help" || k === "-h") a.help = true;
     else {
       console.error(`unknown arg: ${k}`);
       process.exit(2);
     }
   }
-  if (!Number.isFinite(a.maxAgeDays)) a.maxAgeDays = 30;
   return a;
 }
 
@@ -78,7 +100,9 @@ function deadIdMap(research) {
   for (const d of research.deprecations || []) {
     // ghost_watch / deprecations sometimes pack two ids in one string ("a / b")
     for (const piece of String(d.id || "").split("/")) {
-      add(piece.replace(/\(.+?\)/g, ""), d.migrate_to || d.migrateTo);
+      // migration target key varies by vendor snapshot: migrate_to (gemini/openai)
+      // vs replacement (claude). Accept all so /models:update always gets a hint.
+      add(piece.replace(/\(.+?\)/g, ""), d.migrate_to || d.migrateTo || d.replacement);
     }
   }
   for (const g of research.ghost_watch || []) {
@@ -129,7 +153,18 @@ function main() {
   const add = (provider, level, id, message) =>
     findings.push({ provider, level, id, message });
 
-  for (const [pid, provider] of Object.entries(PROVIDERS)) {
+  let entries = Object.entries(PROVIDERS);
+  if (args.provider) {
+    if (!PROVIDERS[args.provider]) {
+      console.error(
+        `unknown provider: ${args.provider} (valid: ${Object.keys(PROVIDERS).join(", ")})`,
+      );
+      process.exit(2);
+    }
+    entries = entries.filter(([pid]) => pid === args.provider);
+  }
+
+  for (const [pid, provider] of entries) {
     const stem = VENDOR_FILE[pid] || pid;
     const file = path.join(args.researchDir, `${stem}.json`);
     let research;

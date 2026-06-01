@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "0.12.1",
-  "installedCommit": "fcaaa242ba852e504f547ed7340b033b1680a53e",
-  "installedAt": "2026-06-01T17:21:17.441Z",
+  "installedCommit": "3611a67bd735eb774f9c9461aad790324ea087e8",
+  "installedAt": "2026-06-01T17:33:24.566Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -1574,8 +1574,8 @@
       "dest": ".claude/commands/models/check.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "d74bd364785b725b8e0bcc6e6b3512c860614f5550a1179489c33e4bd7f24e3c",
-      "currentHashAtInstall": "d74bd364785b725b8e0bcc6e6b3512c860614f5550a1179489c33e4bd7f24e3c",
+      "installedHash": "03810a586211b8c379b56603de71849a7595f0779879c27c30613f1ce9af38ae",
+      "currentHashAtInstall": "03810a586211b8c379b56603de71849a7595f0779879c27c30613f1ce9af38ae",
       "introducedIn": "0.0.0"
     },
     {
@@ -1584,8 +1584,8 @@
       "dest": ".claude/commands/models/route.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "14fd6518fdd7e37f2e11399ed48aaef26ecb50a42925fa498e54bf1820b253e9",
-      "currentHashAtInstall": "14fd6518fdd7e37f2e11399ed48aaef26ecb50a42925fa498e54bf1820b253e9",
+      "installedHash": "90c8e5fa2639d6fff8d467612c9d15782f81c689857999725064a622e2eaf9c0",
+      "currentHashAtInstall": "90c8e5fa2639d6fff8d467612c9d15782f81c689857999725064a622e2eaf9c0",
       "introducedIn": "0.0.0"
     },
     {
@@ -1594,8 +1594,8 @@
       "dest": ".claude/commands/models/router.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "f26bfdbd18a20d5ab8143ca3e5dfe666302380d13397ac4d91d354b59ab968fb",
-      "currentHashAtInstall": "f26bfdbd18a20d5ab8143ca3e5dfe666302380d13397ac4d91d354b59ab968fb",
+      "installedHash": "c553c9be962f0834ee30fdbe8cbc160573bd8a43df64a8bc1ccabda2276f24c3",
+      "currentHashAtInstall": "c553c9be962f0834ee30fdbe8cbc160573bd8a43df64a8bc1ccabda2276f24c3",
       "introducedIn": "0.0.0"
     },
     {

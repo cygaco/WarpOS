@@ -12,19 +12,21 @@ Open the **Dispatch Console panel** — the visual router for role→provider→
 fallback. First make sure the catalog carries the latest model *options* (so every current
 model is selectable in the panel's dropdowns), then launch the GUI.
 
-The panel is `scripts/dispatch/gui.js`: an ephemeral, **local-only** HTTP server (bound to
-127.0.0.1, random OS port, gated behind a 256-bit one-time token, lifetime tied to the CLI
-process) that auto-opens in your browser. It reads the same `catalog.js` + live dispatch
-state and writes changes through the atomic save+backup ring — identical semantics to
-`scripts/dispatch.js`, just visual.
+The panel is launched via `node scripts/dispatch.js gui` (the Dispatch Console's `gui`
+subcommand; the implementation lives in `scripts/dispatch/gui.js`, which is a library —
+do NOT run it directly, it has no entrypoint guard and would be a silent no-op). It's an
+ephemeral, **local-only** HTTP server (bound to 127.0.0.1, random OS port, gated behind a
+256-bit one-time token, lifetime tied to the CLI process) that auto-opens in your browser.
+It reads the same `catalog.js` + live dispatch state and writes changes through the atomic
+save+backup ring — identical semantics to `dispatch.js show/set`, just visual.
 
 ## Input
 
 ```
-$ARGUMENTS
+$ARGUMENTS  (skill-level flags — interpreted here, then mapped to the Console)
   --text          don't launch the browser GUI; print the text panel (dispatch.js show) instead
-  --no-open       start the GUI server but don't auto-open the browser (prints the URL)
-  --skip-check    skip the "latest options" pre-check and just open
+  --no-open       launch the GUI server but don't auto-open the browser — maps to `dispatch.js gui --no-open` (prints the URL)
+  --skip-check    skip the "latest options" pre-check (the models:check step) and just open
 ```
 
 ## Procedure
@@ -37,12 +39,12 @@ $ARGUMENTS
    and recommend `/models:update` — but still open the panel (it's a viewer/editor).
 
 2. **Open the panel:**
-   - Default (browser GUI):
+   - Default (browser GUI) — via the Console's `gui` subcommand:
      ```bash
-     node scripts/dispatch/gui.js
+     node scripts/dispatch.js gui            # opens browser at a random loopback port
+     node scripts/dispatch.js gui --no-open  # start server, print URL, don't auto-open
      ```
-     This prints the loopback URL and opens the default browser. The server exits on tab
-     close / SIGINT / stdin EOF.
+     The server prints the loopback URL and exits on tab close / SIGINT / stdin EOF.
    - `--text` (no browser — text table):
      ```bash
      node scripts/dispatch.js show

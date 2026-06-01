@@ -24,10 +24,15 @@ Two layers:
 ```
 $ARGUMENTS
   --refresh              deep-ingest the live vendor docs first (see below), then compare
+                         (skill-level flag; the compare engine accepts-and-ignores it)
   --json                 machine-readable output
-  --max-age-days <n>     staleness threshold for snapshots (default 30)
-  --provider <id>        limit a refresh to one vendor: claude | openai | gemini
+  --max-age-days <n>     staleness threshold for snapshots (default 30; non-int → exit 2)
+  --provider <id>        scope BOTH the refresh and the compare to one vendor: claude | openai | gemini
 ```
+
+> `$ARGUMENTS` is forwarded verbatim to `scripts/models/check.js`, which understands
+> `--json`, `--max-age-days`, `--provider`, and tolerates `--refresh` — so the compare
+> step never exit-2s on the orchestration flags.
 
 ## Procedure
 

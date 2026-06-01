@@ -31,8 +31,12 @@ $ARGUMENTS  →  node scripts/dispatch.js set <role> <provider> <model> [effort]
 ```
 
 The Console **validates** the tuple against `catalog.js` (`validateTuple`) — an unknown
-role, provider, model, or an effort level the model doesn't support is rejected with a
-non-zero exit and the valid options, so you can't route to something undispatchable.
+role, provider, or model is rejected with a non-zero exit and the valid options, so you
+can't route to something undispatchable. **Effort caveat:** validation only rejects an
+unsupported effort for models that *declare* `effortLevels`. Gemini models declare none
+(`effortLevels: []`, thinking is implicit/always-on), so an effort arg passed for a
+Gemini model is **accepted but ignored** — omit it for Gemini to avoid persisting a
+meaningless value.
 
 ## Procedure
 
