@@ -5,9 +5,10 @@
   "policies": {
     "redteam": {
       "primary": "gemini:gemini-3.1-pro-preview",
-      "fallback": "gemini:gemini-2.5-flash",
+      "fallback": "gemini:gemini-3.5-flash",
+      "deep_fallback": "gemini:gemini-2.5-flash",
       "second_pass": "openai:gpt-5.5",
-      "rationale": "redteam runs adversarial-corpus reasoning; gemini-3.1-pro-preview is the primary (operator directive 2026-06-01 — thinking always-on, 1M context, ideal for attack-chain reasoning). It is a PREVIEW tier and can quota-fail / silently downgrade under load, so the first fallback is the rock-solid pinned gemini-2.5-flash — same adversarial-corpus diversity, no preview fragility. A total gemini outage falls through runProvider's provider-level fallback:claude. A SECOND security pass ALWAYS runs on openai:gpt-5.5 (dispatch-agent --provider openai) so security covers two model families and survives even that. Override the primary anytime with GEMINI_MODEL=gemini-2.5-flash."
+      "rationale": "redteam runs adversarial-corpus reasoning; gemini-3.1-pro-preview is the primary (operator directive 2026-06-01 — thinking always-on, 1M context, ideal for attack-chain reasoning). It is a PREVIEW tier (v1beta) and can quota-fail / silently downgrade under load, so the first fallback is gemini-3.5-flash — the GA (v1) promotion of the 3.x Flash line: newer than 2.5, no preview fragility, same adversarial-corpus diversity (β DECIDE 2026-06-01, conf 0.87). gemini-2.5-flash is retained as deep_fallback — a prior-gen but rock-solid known-good safety net. A total gemini outage falls through runProvider's provider-level fallback:claude. A SECOND security pass ALWAYS runs on openai:gpt-5.5 (dispatch-agent --provider openai) so security covers two model families and survives even that. Override the primary anytime with GEMINI_MODEL=gemini-3.5-flash (or gemini-2.5-flash)."
     },
     "reviewer": {
       "primary": "openai:gpt-5.5",

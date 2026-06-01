@@ -102,8 +102,9 @@ const OPENAI_MINI = process.env.OPENAI_MINI_MODEL || "gpt-5.4-mini"; // qa, lear
 // 64K out, thinking always-on). It 404'd on v1beta as of 2026-05-30 (hence the
 // old "ghost" note) but has since shipped. The preview tier CAN quota-fail /
 // silently downgrade under load; the strict downgrade-check + claude fallback +
-// the GPT 2nd security pass cover that. Fall back to the rock-solid pinned flash
-// with one env var: GEMINI_MODEL=gemini-2.5-flash.
+// the GPT 2nd security pass cover that. Fall back to the GA flash with one env
+// var: GEMINI_MODEL=gemini-3.5-flash (GA; β-preferred fallback rung) or the
+// prior-gen known-good gemini-2.5-flash.
 const GEMINI_DEFAULT = process.env.GEMINI_MODEL || "gemini-3.1-pro-preview";
 
 // Reasoning effort per role. Forces deeper deliberation across all dispatch
