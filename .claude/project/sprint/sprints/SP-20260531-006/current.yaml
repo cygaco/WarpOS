@@ -2,9 +2,9 @@ schema: warpos/sprint/current-sprint/v1
 id: "SP-20260531-006"
 title: "Guides skill suite — guides:write + guides:organize + guides:integrate (recording system + conflict-resolution); supersedes SP-005"
 objective: "Complete the guides skill suite: guides:organize (+ anchor backfill + registry), guides:integrate (+ recording system), guides:coverage (enforcer). Built on the shipped guide-anchor contract. Supersedes/realizes SP-005."
-status: done
+status: closed
 created_at: "2026-05-31T19:33:11.630Z"
-updated_at: "2026-06-01T00:25:00.000Z"
+updated_at: "2026-06-01T00:37:00.000Z"
 source_request: "/sprint:full a guides:organize (look at all guides, restructure), guides:integrate (checks current guides + integrates into the bootstrap pipeline at the right spots/shape), and a coverage enforcer"
 interpreted_intent: "Three companion dev-tooling skills + anchor backfill + a recording system, on top of the shipped guides:write contract. Fast path per Beta D1 (DECIDE). See PC-20260531-0062."
 plan_contract: PC-20260531-0062
