@@ -70,6 +70,24 @@ function loadGeminiApiKey() {
 }
 
 /**
+ * Has the operator completed an interactive `gemini` OAuth / Code-Assist login?
+ * The CLI stores credentials at ~/.gemini/oauth_creds.json after login and
+ * refreshes the access token itself, so presence of a refresh/access token is
+ * the signal — we deliberately do NOT gate on access-token expiry (the CLI
+ * handles refresh). Used by the key-precedence rule below.
+ */
+function hasValidGeminiOAuth() {
+  try {
+    const os = require("os");
+    const p = path.join(os.homedir(), ".gemini", "oauth_creds.json");
+    const creds = JSON.parse(fs.readFileSync(p, "utf8"));
+    return !!(creds && (creds.refresh_token || creds.access_token));
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Provider defaults if manifest.providers is missing.
  * Keys match the CLI tool name.
  */
@@ -528,7 +546,15 @@ function runProvider(role, prompt, opts = {}) {
     if (providerName === "gemini") {
       childEnv.GEMINI_CLI_TRUST_WORKSPACE =
         childEnv.GEMINI_CLI_TRUST_WORKSPACE || "true";
-      if (!childEnv.GEMINI_API_KEY) {
+      // KEY-PRECEDENCE (operator directive 2026-06-01): the file-loaded key must
+      // win ONLY for API-requiring tasks (e.g. gemini-deep-research.js, which reads
+      // GEMINI_API_KEY directly). CLI/gauntlet dispatch does NOT require the API, so
+      // a live OAuth/Code-Assist login wins for it — we therefore do NOT inject the
+      // ~/.gemini/.env key when an OAuth session exists. This fixes the reported
+      // symptom: a stale/quota'd file key beating a working `gemini` login. We only
+      // inject the file key when there is NO OAuth (so key-only setups still work);
+      // a deliberately EXPORTED GEMINI_API_KEY in the inherited env is left as-is.
+      if (!childEnv.GEMINI_API_KEY && !hasValidGeminiOAuth()) {
         const geminiKey = loadGeminiApiKey();
         if (geminiKey) childEnv.GEMINI_API_KEY = geminiKey;
       }

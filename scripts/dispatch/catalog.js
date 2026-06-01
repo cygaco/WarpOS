@@ -89,6 +89,28 @@ const OPENAI = {
       maxOutputTokens: 128_000,
       pricing: { inPerMTok: 0.75, outPerMTok: 4.5 },
     },
+    // Added 2026-06-01 (audit vs developers.openai.com/api/docs/models/all):
+    // gpt-5.3-codex is the codex-CLI-native agentic coding model (the codex CLI's
+    // own default). We keep gpt-5.5 as the flagship for REVIEW/QA roles (general
+    // reasoning > coding-tuned for adversarial review), but expose codex as an
+    // option. gpt-5.4-nano is the cheapest 5.4-class for high-volume/sub-agent use.
+    // NOT added: gpt-5.5-pro / gpt-5.4-pro — Responses-API-only (no streaming),
+    // not cleanly dispatchable via `codex exec`; selecting them would fail.
+    {
+      id: "gpt-5.3-codex",
+      label: "GPT-5.3 Codex (agentic coding; codex-CLI native)",
+      effortLevels: ["low", "medium", "high", "xhigh"],
+      contextTokens: 400_000,
+      maxOutputTokens: 128_000,
+    },
+    {
+      id: "gpt-5.4-nano",
+      label: "GPT-5.4 Nano (cheapest 5.4-class)",
+      effortLevels: ["low", "medium", "high", "xhigh"],
+      contextTokens: 400_000,
+      maxOutputTokens: 128_000,
+      pricing: { inPerMTok: 0.2, outPerMTok: 1.25 },
+    },
   ],
 };
 
@@ -96,19 +118,26 @@ const OPENAI = {
 // gemini-2.5-pro deliberately excluded per project policy
 // (see _requirements/09-integrations/PROVIDER/03-google-gemini.md)
 //
-// MODEL IDS: `gemini-3.1-pro-preview` is the DEFAULT (operator directive
-// 2026-06-01, confirmed real at ai.google.dev/gemini-api/docs/models/
-// gemini-3.1-pro-preview — 1M in / 64K out, thinking always-on). It 404'd on
-// 2026-05-30 (hence the old "ghost" note) but has since shipped. Other real ids:
-//   - `gemini-3-pro-preview`  (Gemini 3 Pro)
-//   - `gemini-flash-latest`   (documented rolling alias for current flash)
-//   - `gemini-2.5-flash`      (concrete pinned flash — the reliable fallback)
-// Auth: GEMINI_API_KEY in ~/.gemini/.env (global) OR `gemini auth login` (OAuth)
-// — one of the two is REQUIRED once per fresh install / new machine / update.
-// `-p`/`--prompt` is being soft-deprecated upstream in favor of a positional
-// prompt, but still works in 0.44.x; revisit when the CLI hard-removes it.
-// NOTE: preview tier CAN quota-fail / silently downgrade under load — fall back
-// to the pinned flash with GEMINI_MODEL=gemini-2.5-flash.
+// MODEL IDS (audited 2026-06-01 vs ai.google.dev/gemini-api/docs/models):
+// DEFAULT = `gemini-3.1-pro-preview` (operator directive 2026-06-01) — 1M in /
+// 65K out, thinking ALWAYS-ON (thinking_level minimal|low|medium|high, default
+// high; cannot be disabled). It is a PREVIEW id (v1beta, tighter quota, may be
+// paid-API-only) — it 404'd on 2026-05-30 then shipped. Current real ids:
+//   - `gemini-3.1-pro-preview`  reasoning flagship (preview / v1beta)
+//   - `gemini-3.5-flash`        GA flash, thinking always-on (the new fast pick)
+//   - `gemini-3.1-flash-lite`   GA, cheapest Gemini-3
+//   - `gemini-2.5-flash`        GA, thinking TOGGLEABLE — safest non-preview fallback
+// REMOVED 2026-06-01: `gemini-3-pro-preview` (SHUT DOWN 2026-03-09 → 3.1) and the
+// `gemini-flash-latest` rolling alias (pin concrete ids so the strict downgrade
+// check can verify which model actually served).
+// THINKING PARAM GOTCHA: Gemini 3 uses thinking_level (string); Gemini 2.5 uses
+// thinkingBudget (int) — crossing them is a silent dispatch failure. The gemini
+// CLI exposes no effort flag, so effortLevels:[] for all (thinking is implicit).
+// Auth: GEMINI_API_KEY in ~/.gemini/.env OR `gemini auth login` (OAuth) — one is
+// REQUIRED once per fresh install / new machine / update.
+// `-p`/`--prompt` is soft-deprecated upstream (positional prompt); works in 0.44.x.
+// NOTE: preview tier CAN quota-fail / silently downgrade — fall back to GA flash
+// with GEMINI_MODEL=gemini-2.5-flash (or gemini-3.5-flash).
 const GEMINI = {
   id: "gemini",
   label: "Google Gemini",
@@ -123,30 +152,35 @@ const GEMINI = {
       label: "Gemini 3.1 Pro (preview, thinking always-on)",
       effortLevels: [],
       contextTokens: 1_000_000,
-      maxOutputTokens: 64_000,
+      maxOutputTokens: 65_536,
       thinkingAlwaysOn: true,
+      pricing: { inPerMTok: 2, outPerMTok: 12 },
     },
     {
-      id: "gemini-3-pro-preview",
-      label: "Gemini 3 Pro (preview, thinking always-on)",
+      id: "gemini-3.5-flash",
+      label: "Gemini 3.5 Flash (GA, thinking always-on)",
       effortLevels: [],
       contextTokens: 1_000_000,
-      maxOutputTokens: 64_000,
+      maxOutputTokens: 65_536,
       thinkingAlwaysOn: true,
+      pricing: { inPerMTok: 1.5, outPerMTok: 9 },
     },
     {
-      id: "gemini-flash-latest",
-      label: "Gemini Flash (latest alias)",
+      id: "gemini-3.1-flash-lite",
+      label: "Gemini 3.1 Flash-Lite (GA, thinking always-on)",
       effortLevels: [],
       contextTokens: 1_000_000,
-      maxOutputTokens: 64_000,
+      maxOutputTokens: 65_536,
+      thinkingAlwaysOn: true,
+      pricing: { inPerMTok: 0.25, outPerMTok: 1.5 },
     },
     {
       id: "gemini-2.5-flash",
-      label: "Gemini 2.5 Flash",
+      label: "Gemini 2.5 Flash (GA, safe non-preview fallback)",
       effortLevels: [],
       contextTokens: 1_000_000,
-      maxOutputTokens: 64_000,
+      maxOutputTokens: 65_536,
+      pricing: { inPerMTok: 0.3, outPerMTok: 2.5 },
     },
   ],
 };

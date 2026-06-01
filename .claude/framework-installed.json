@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "0.12.1",
-  "installedCommit": "0101e4ab303a318015810deb659eaf7885c862f9",
-  "installedAt": "2026-06-01T16:51:37.520Z",
+  "installedCommit": "ce832f76904aba6a624a21b050c6126f025eee2d",
+  "installedAt": "2026-06-01T17:11:17.847Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -4054,8 +4054,8 @@
       "dest": "scripts/hooks/lib/providers.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "1da768f7683d5f0ee1bde81451e0b2faba1754a34661e3106b24921748156830",
-      "currentHashAtInstall": "1da768f7683d5f0ee1bde81451e0b2faba1754a34661e3106b24921748156830",
+      "installedHash": "700d2dc01ecb621e547abcac5c3b092803828d6f65111508f035a89c77a67393",
+      "currentHashAtInstall": "700d2dc01ecb621e547abcac5c3b092803828d6f65111508f035a89c77a67393",
       "introducedIn": "0.0.0"
     },
     {
@@ -6094,8 +6094,8 @@
       "dest": "scripts/dispatch/catalog.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "cd57d5cc65fd27ebc57ca957e31510810317de0b755a9d39d451eff7bdbc5d4d",
-      "currentHashAtInstall": "cd57d5cc65fd27ebc57ca957e31510810317de0b755a9d39d451eff7bdbc5d4d",
+      "installedHash": "35a604dd30fb1adc26bfaf5c426071dd0573fecee21d0817db9ebfb58dba35cc",
+      "currentHashAtInstall": "35a604dd30fb1adc26bfaf5c426071dd0573fecee21d0817db9ebfb58dba35cc",
       "introducedIn": "0.0.0"
     },
     {

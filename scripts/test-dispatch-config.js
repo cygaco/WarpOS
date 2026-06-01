@@ -18,10 +18,16 @@ const path = require("path");
 
 const ROOT = path.resolve(__dirname, "..");
 const read = (p) => fs.readFileSync(path.join(ROOT, p), "utf8");
-// gemini-3.1-pro-preview SHIPPED 2026-06-01 (ai.google.dev/gemini-api/docs/
-// models/gemini-3.1-pro-preview) — no longer a ghost. The 3.1 flash tiers and
-// gemini-3-flash remain unverified ghosts until confirmed real.
-const GHOST = /gemini-3\.1-flash(?:-lite)?\b|gemini-3-flash\b/;
+// Ghost = a model id confirmed NON-SERVABLE (404 / shut down) per the 2026-06-01
+// vendor-docs audit (runtime/models-research/gemini.json#ghost_watch). The current
+// reals — gemini-3.1-pro-preview, gemini-3.5-flash, gemini-3.1-flash-lite — must
+// NOT be flagged. Confirmed-dead ids only:
+//   gemini-3-pro-preview           shut down 2026-03-09 → gemini-3.1-pro-preview
+//   gemini-3.1-flash-lite-preview  shut down 2026-05-25 → gemini-3.1-flash-lite
+//   gemini-2.5-flash-lite-preview-09-2025  shut down → gemini-2.5-flash-lite
+//   gemini-2.0-flash-exp           shut down
+//   gemini-3-flash                 never existed as a standalone id
+const GHOST = /gemini-3-pro-preview\b|gemini-3\.1-flash-lite-preview\b|gemini-2\.5-flash-lite-preview-09-2025\b|gemini-2\.0-flash-exp\b|gemini-3-flash\b/;
 
 let failures = 0;
 const fail = (msg) => {
