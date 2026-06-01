@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "0.12.1",
-  "installedCommit": "57c130ca7dd707b0a788f6c80cdda23d61b974b4",
-  "installedAt": "2026-06-01T00:29:35.577Z",
+  "installedCommit": "6ad63316e674632e36443d156f0a9509f14cc5af",
+  "installedAt": "2026-06-01T00:34:57.909Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -5114,8 +5114,8 @@
       "dest": "scripts/checks/maps-coverage.allowlist.json",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "f0ff854cdc0191114136c16c40ac0433cc13bb2fee6d888dfffdf86c8ac5ad53",
-      "currentHashAtInstall": "f0ff854cdc0191114136c16c40ac0433cc13bb2fee6d888dfffdf86c8ac5ad53",
+      "installedHash": "6418bdfd32de433552b967d8ec631cfc4a555d60b16a573b886947727dd8376f",
+      "currentHashAtInstall": "6418bdfd32de433552b967d8ec631cfc4a555d60b16a573b886947727dd8376f",
       "introducedIn": "0.0.0"
     },
     {

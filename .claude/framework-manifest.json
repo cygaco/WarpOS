@@ -6204,7 +6204,7 @@
         "src": "scripts/checks/maps-coverage.allowlist.json",
         "dest": "scripts/checks/maps-coverage.allowlist.json",
         "kind": "check_tool",
-        "sha256": "f0ff854cdc0191114136c16c40ac0433cc13bb2fee6d888dfffdf86c8ac5ad53",
+        "sha256": "6418bdfd32de433552b967d8ec631cfc4a555d60b16a573b886947727dd8376f",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",

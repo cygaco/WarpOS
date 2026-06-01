@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-01T00:29:35.735Z",
+  "generatedAt": "2026-06-01T00:34:58.032Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.12.1",
   "migrations": [],
@@ -4484,8 +4484,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/maps-coverage.allowlist.json",
-      "sha256": "f0ff854cdc0191114136c16c40ac0433cc13bb2fee6d888dfffdf86c8ac5ad53",
-      "installedSha": "f0ff854cdc0191114136c16c40ac0433cc13bb2fee6d888dfffdf86c8ac5ad53"
+      "sha256": "6418bdfd32de433552b967d8ec631cfc4a555d60b16a573b886947727dd8376f",
+      "installedSha": "6418bdfd32de433552b967d8ec631cfc4a555d60b16a573b886947727dd8376f"
     },
     "scripts/checks/maps-coverage.js": {
       "owner": "framework",
@@ -11608,6 +11608,10 @@
       "managed": false
     },
     ".claude/project/sprint/plan-contracts/PC-20260531-0061.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/plan-contracts/PC-20260531-0062.report.md": {
       "owner": "runtime",
       "managed": false
     },

@@ -10,6 +10,7 @@
     "inventory-memory": "Inventory snapshot — intermediate data.",
     "inventory-skills": "Inventory snapshot — intermediate data.",
     "inventory-systems": "Inventory snapshot — intermediate data.",
-    "inventory-tools": "Inventory snapshot — intermediate data."
+    "inventory-tools": "Inventory snapshot — intermediate data.",
+    "guide-integration": "Recording store written by /guides:integrate (one record per guide×anchor placement); enforced by /guides:coverage, not a /maps:<x> generator output."
   }
 }
