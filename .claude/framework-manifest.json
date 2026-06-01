@@ -4,7 +4,7 @@
   "generated_by": "scripts/generate-framework-manifest.js",
   "counts": {
     "agent": 84,
-    "skill": 190,
+    "skill": 194,
     "reference": 28,
     "maps_baseline": 24,
     "hook": 67,
@@ -56,7 +56,7 @@
     "module_scope": 1,
     "framework_doc": 2
   },
-  "total": 964,
+  "total": 968,
   "assets": {
     "agent": [
       {
@@ -1927,6 +1927,54 @@
         "dest": ".claude/commands/mode/solo.md",
         "kind": "skill",
         "sha256": "3806c2068fdc35e431d9e1b0ec912e3f73c76a878e4a9f316d50b8a19350465a",
+        "owner": "framework",
+        "mergeStrategy": "three_way_markdown",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "skill.models.check.md",
+        "src": ".claude/commands/models/check.md",
+        "dest": ".claude/commands/models/check.md",
+        "kind": "skill",
+        "sha256": "d74bd364785b725b8e0bcc6e6b3512c860614f5550a1179489c33e4bd7f24e3c",
+        "owner": "framework",
+        "mergeStrategy": "three_way_markdown",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "skill.models.route.md",
+        "src": ".claude/commands/models/route.md",
+        "dest": ".claude/commands/models/route.md",
+        "kind": "skill",
+        "sha256": "14fd6518fdd7e37f2e11399ed48aaef26ecb50a42925fa498e54bf1820b253e9",
+        "owner": "framework",
+        "mergeStrategy": "three_way_markdown",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "skill.models.router.md",
+        "src": ".claude/commands/models/router.md",
+        "dest": ".claude/commands/models/router.md",
+        "kind": "skill",
+        "sha256": "f26bfdbd18a20d5ab8143ca3e5dfe666302380d13397ac4d91d354b59ab968fb",
+        "owner": "framework",
+        "mergeStrategy": "three_way_markdown",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "skill.models.update.md",
+        "src": ".claude/commands/models/update.md",
+        "dest": ".claude/commands/models/update.md",
+        "kind": "skill",
+        "sha256": "f6c4aefc46af5d7e86275bf4f456cce1656e878af57ca7da9e9e7a4358fae035",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
