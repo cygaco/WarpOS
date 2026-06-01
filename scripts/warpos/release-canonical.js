@@ -581,6 +581,21 @@ function stageBuildCapsule(opts, canonical, next) {
       "n/a — dry-run",
     );
   }
+  // RI-003 (pre-build): stage 5 wrote the capsule skeleton (release.json etc.)
+  // under framework/releases/<v>/, which framework-manifest TRACKS — so the live
+  // manifest is now stale and release-build's own freshness pre-check would refuse
+  // (exit 2). Regenerate it first so release-build sees a current manifest.
+  const pre = nodeIn(canonical, "scripts/generate-framework-manifest.js", []);
+  if (!pre.ok) {
+    return receipt(
+      6,
+      false,
+      `pre-build framework-manifest regen failed (exit ${pre.status})`,
+      canonical,
+      "Run in canonical: node scripts/generate-framework-manifest.js; then --resume-from 6",
+      { stderr: (pre.stderr || "").slice(0, 300) },
+    );
+  }
   const r = nodeIn(canonical, "scripts/warpos/release-build.js", [next]);
   if (!r.ok) {
     return receipt(
@@ -592,12 +607,42 @@ function stageBuildCapsule(opts, canonical, next) {
       { stderr: r.stderr.slice(0, 500), stdout: r.stdout.slice(0, 500) },
     );
   }
+  // RI-003: the capsule just written lives under framework/releases/<v>/, which
+  // the live framework-manifest TRACKS — so building it leaves framework-manifest,
+  // the installed snapshot, and the _warpos ownership manifest stale, and the
+  // stage-7 gates hard-fail (BC-02 / BC-05 / framework_manifest). Regenerate all
+  // three NOW, in dependency order, so the tree the gates inspect is self-consistent.
+  // Order matters: _warpos tracks framework-manifest + installed; framework-manifest
+  // tracks installed + the capsule (NOT _warpos). installed's content changes after
+  // the first fm regen (fm tracks it), so fm is regenerated a second time to record
+  // the settled installed snapshot before _warpos is built last. We DO NOT re-run
+  // release-build — that would re-snapshot fm into the capsule and re-stale it
+  // (capsule self-reference loop).
+  const regenSteps = [
+    ["scripts/generate-framework-manifest.js", []],
+    ["scripts/warpos/snapshot-installed.js", []],
+    ["scripts/generate-framework-manifest.js", []],
+    ["scripts/warpos/manifest/build.js", ["--warpos-version", next]],
+  ];
+  for (const [script, sargs] of regenSteps) {
+    const rr = nodeIn(canonical, script, sargs);
+    if (!rr.ok) {
+      return receipt(
+        6,
+        false,
+        `post-capsule manifest regen failed: ${script} (exit ${rr.status})`,
+        canonical,
+        `Run in canonical: node ${script} ${sargs.join(" ")}; then re-run --resume-from 6`,
+        { stderr: (rr.stderr || "").slice(0, 400) },
+      );
+    }
+  }
   return receipt(
     6,
     true,
-    `Built capsule ${next} (manifest snapshot + checksums)`,
+    `Built capsule ${next} + regenerated framework-manifest / installed / _warpos to record it (RI-003)`,
     path.join(canonical, "framework", "releases", next),
-    `git -C ${canonical} checkout HEAD -- framework/releases/${next}/checksums.json framework/releases/${next}/framework-manifest.json`,
+    `git -C ${canonical} checkout HEAD -- framework/releases/${next} .claude/framework-manifest.json .claude/framework-installed.json _warpos/MANIFEST.json`,
   );
 }
 

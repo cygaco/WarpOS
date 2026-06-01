@@ -41,6 +41,12 @@ const WALK_SKIP_FILES = new Set([
   "DUMP.md",
   ".DS_Store",
   "Thumbs.db",
+  // Transient per-session markers hooks write under .claude/ (gitignored). They
+  // are NOT framework content; both build.js and validate.js read this one set,
+  // so listing them here keeps the two in agreement and stops the "session marker
+  // flaps the validate gate → BC-02 reds the release" class (hit during 0.13.1).
+  ".session-start-commit",
+  ".session-checkpoint.json",
 ]);
 
 module.exports = { WALK_SKIP_DIRS, WALK_SKIP_FILES };
