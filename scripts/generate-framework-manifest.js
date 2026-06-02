@@ -434,85 +434,100 @@ function collectAssets() {
   return assets.map(decorateAsset);
 }
 
+// ── Exports (for unit tests and release-build gate) ──────────────────────────
+// isExcluded is exported so release-build.js#runtimeExclusionGate can apply
+// the SAME exclusion predicate the generator uses, without duplicating the
+// regex. Keeping them in sync here (single source of truth) is the whole point.
+// RUNTIME_JSONL_PATTERN is the filename pattern for owner=runtime append-only
+// logs that must NEVER ship in a capsule (W-8 class, events/tools/skill-usage).
+// FIX2: separator-agnostic ([\\/] matches both / and \) + case-insensitive flag.
+// A Windows-style path like beta\events.jsonl would evade a /\/-only pattern.
+// The /i flag catches events.JSONL etc. (CWE-436 evasion hardening, SP-0181 E1).
+const RUNTIME_JSONL_PATTERN = /(^|[\\/])(events|tools|skill-usage)\.jsonl$/i;
+
+module.exports = { isExcluded, RUNTIME_JSONL_PATTERN };
+
 // ── Build manifest ──────────────────────────────────────
-const assets = collectAssets();
+if (require.main === module) {
+  const assets = collectAssets();
 
-// Group by kind for human readability. Within a kind, sort by src path.
-const byKind = {};
-for (const a of assets) {
-  (byKind[a.kind] = byKind[a.kind] || []).push(a);
-}
-for (const kind of Object.keys(byKind)) {
-  byKind[kind].sort((x, y) => x.src.localeCompare(y.src));
-}
-
-const version = (() => {
-  try {
-    return JSON.parse(fs.readFileSync(path.join(ROOT, "version.json"), "utf8"))
-      .version;
-  } catch {
-    return "0.0.0";
+  // Group by kind for human readability. Within a kind, sort by src path.
+  const byKind = {};
+  for (const a of assets) {
+    (byKind[a.kind] = byKind[a.kind] || []).push(a);
   }
-})();
-
-const manifest = {
-  $schema: MANIFEST_SCHEMA_VERSION,
-  version,
-  generated_by: "scripts/generate-framework-manifest.js",
-  counts: Object.fromEntries(
-    Object.entries(byKind).map(([k, v]) => [k, v.length]),
-  ),
-  total: assets.length,
-  assets: byKind,
-  generated_files: GENERATED_FILES,
-};
-
-// Phase 4 fix-forward (codex review 2026-04-30): honor --check flag.
-// Without this, release-gates.js gate "framework_manifest" always passes
-// while silently mutating the file under test.
-const CHECK_MODE = process.argv.includes("--check");
-const newJson = JSON.stringify(manifest, null, 2) + "\n";
-
-if (CHECK_MODE) {
-  let existing = "";
-  try {
-    existing = fs.readFileSync(OUT, "utf8");
-  } catch {
-    console.error(
-      `framework-manifest.json missing — run: node scripts/generate-framework-manifest.js`,
-    );
-    process.exit(1);
+  for (const kind of Object.keys(byKind)) {
+    byKind[kind].sort((x, y) => x.src.localeCompare(y.src));
   }
-  // Strip volatile fields (sha256 of any in-flight ts-bearing assets is fine
-  // since the manifest itself has no timestamp; compare verbatim).
-  if (existing !== newJson) {
-    console.error(
-      `framework-manifest.json is stale — run: node scripts/generate-framework-manifest.js`,
-    );
-    process.exit(1);
+
+  const version = (() => {
+    try {
+      return JSON.parse(fs.readFileSync(path.join(ROOT, "version.json"), "utf8"))
+        .version;
+    } catch {
+      return "0.0.0";
+    }
+  })();
+
+  const manifest = {
+    $schema: MANIFEST_SCHEMA_VERSION,
+    version,
+    generated_by: "scripts/generate-framework-manifest.js",
+    counts: Object.fromEntries(
+      Object.entries(byKind).map(([k, v]) => [k, v.length]),
+    ),
+    total: assets.length,
+    assets: byKind,
+    generated_files: GENERATED_FILES,
+  };
+
+  // Phase 4 fix-forward (codex review 2026-04-30): honor --check flag.
+  // Without this, release-gates.js gate "framework_manifest" always passes
+  // while silently mutating the file under test.
+  const CHECK_MODE = process.argv.includes("--check");
+  const newJson = JSON.stringify(manifest, null, 2) + "\n";
+
+  if (CHECK_MODE) {
+    let existing = "";
+    try {
+      existing = fs.readFileSync(OUT, "utf8");
+    } catch {
+      console.error(
+        `framework-manifest.json missing — run: node scripts/generate-framework-manifest.js`,
+      );
+      process.exit(1);
+    }
+    // Strip volatile fields (sha256 of any in-flight ts-bearing assets is fine
+    // since the manifest itself has no timestamp; compare verbatim).
+    if (existing !== newJson) {
+      console.error(
+        `framework-manifest.json is stale — run: node scripts/generate-framework-manifest.js`,
+      );
+      process.exit(1);
+    }
+    console.log(`framework-manifest.json is current.`);
+    process.exit(0);
   }
-  console.log(`framework-manifest.json is current.`);
-  process.exit(0);
+
+  // Ensure output dir exists
+  fs.mkdirSync(path.dirname(OUT), { recursive: true });
+
+  // Stable JSON output (sorted keys at each level would be nicer, but grouping
+  // by kind already gives us determinism where it matters)
+  fs.writeFileSync(OUT, newJson);
+
+  // Reporting
+  const pad = (s, n) => s.padEnd(n, " ");
+  console.log(`\n  WarpOS framework manifest written`);
+  console.log(`  Output: .claude/framework-manifest.json`);
+  console.log(`  Version: ${version}`);
+  console.log(`  Schema: ${manifest.$schema}\n`);
+  console.log(`  Asset counts by kind:`);
+  for (const [k, v] of Object.entries(manifest.counts).sort(
+    (a, b) => b[1] - a[1],
+  )) {
+    console.log(`    ${pad(k, 20)} ${v}`);
+  }
+  console.log(`    ${pad("TOTAL", 20)} ${manifest.total}`);
+  console.log(`    ${pad("+ generated", 20)} ${GENERATED_FILES.length}\n`);
 }
-
-// Ensure output dir exists
-fs.mkdirSync(path.dirname(OUT), { recursive: true });
-
-// Stable JSON output (sorted keys at each level would be nicer, but grouping
-// by kind already gives us determinism where it matters)
-fs.writeFileSync(OUT, newJson);
-
-// Reporting
-const pad = (s, n) => s.padEnd(n, " ");
-console.log(`\n  WarpOS framework manifest written`);
-console.log(`  Output: .claude/framework-manifest.json`);
-console.log(`  Version: ${version}`);
-console.log(`  Schema: ${manifest.$schema}\n`);
-console.log(`  Asset counts by kind:`);
-for (const [k, v] of Object.entries(manifest.counts).sort(
-  (a, b) => b[1] - a[1],
-)) {
-  console.log(`    ${pad(k, 20)} ${v}`);
-}
-console.log(`    ${pad("TOTAL", 20)} ${manifest.total}`);
-console.log(`    ${pad("+ generated", 20)} ${GENERATED_FILES.length}\n`);

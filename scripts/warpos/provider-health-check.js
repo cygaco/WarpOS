@@ -90,8 +90,8 @@ if (json) {
   }
 }
 
-// Hard-fail only on a required-provider red. claude is always ok (harness).
-// gemini / openai red is yellow at the top-level for now (fall-back path
-// exists). Exit 2 reserved for future use when policy requires one specific
-// provider.
-process.exit(0);
+// Hard-fail on a required-provider red (exit 2). Yellow (fall-back path
+// exists) and green both exit 0. This mirrors provider-smoke.js's exit-code
+// contract (PRD R-7) and kills the pre-0.18.1 false-green where a red verdict
+// silently exited 0, masking broken providers from health checks.
+process.exit(verdict === "red" ? 2 : 0);

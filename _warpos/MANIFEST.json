@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-02T01:46:42.412Z",
+  "generatedAt": "2026-06-02T02:18:14.579Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.13.1",
   "migrations": [],
@@ -1141,6 +1141,11 @@
       "managed": false,
       "class": "reference"
     },
+    "_docs/research/design-principles-taxonomy/.tmp/gemini-result.json": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
     "_docs/research/design-mobile-responsive/brief.json": {
       "owner": "project",
       "managed": false,
@@ -1325,6 +1330,13 @@
       "owner": "project",
       "managed": false,
       "class": "data"
+    },
+    "tests/warpos/dispatch-readiness.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": null,
+      "sha256": "3b1902c12c7136086f67cfc41653c340d50cc625e983f2f416e0ea221473cd90",
+      "installedSha": "3b1902c12c7136086f67cfc41653c340d50cc625e983f2f416e0ea221473cd90"
     },
     "tests/warpos/dispatch-route-guard.watchlist.test.js": {
       "owner": "framework",
@@ -1883,8 +1895,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/generate-framework-manifest.js",
-      "sha256": "0b68ee6231ea3bd021cbbcc04e60d0df2fb5625996b49c28fbeefa81863401de",
-      "installedSha": "0b68ee6231ea3bd021cbbcc04e60d0df2fb5625996b49c28fbeefa81863401de"
+      "sha256": "0a57bb251cb9c2be75ebb86571b4994fc14ecd3683081082b1c7423e8693a451",
+      "installedSha": "0a57bb251cb9c2be75ebb86571b4994fc14ecd3683081082b1c7423e8693a451"
     },
     "scripts/generate-maps.js": {
       "owner": "framework",
@@ -2793,8 +2805,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/warpos/provider-health-check.js",
-      "sha256": "9729f473c789338f4becee812d6a168f7afc697a782045bd8eafe7b047dd716f",
-      "installedSha": "9729f473c789338f4becee812d6a168f7afc697a782045bd8eafe7b047dd716f"
+      "sha256": "83410fa5312ca92689f817c472af3e9d9e7799934ec4608bdd7feb5c3a903979",
+      "installedSha": "83410fa5312ca92689f817c472af3e9d9e7799934ec4608bdd7feb5c3a903979"
     },
     "scripts/warpos/provider-smoke.js": {
       "owner": "framework",
@@ -2814,8 +2826,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/warpos/release-build.js",
-      "sha256": "b72c4bbc58a8a2ebffb2937c3a35e8d12863f80477b3c7980334099f6b7ec917",
-      "installedSha": "b72c4bbc58a8a2ebffb2937c3a35e8d12863f80477b3c7980334099f6b7ec917"
+      "sha256": "8339aa6c3e49dc50ea24a25d1d45571f103d9016894035e0cc5cf5a98c5841ea",
+      "installedSha": "8339aa6c3e49dc50ea24a25d1d45571f103d9016894035e0cc5cf5a98c5841ea"
     },
     "scripts/warpos/release-canonical.js": {
       "owner": "framework",
@@ -4186,8 +4198,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/session-start.js",
-      "sha256": "35f69eecf60f9525251ffd78356edb5e9c9ee74582ec605ba68281c171a3948e",
-      "installedSha": "35f69eecf60f9525251ffd78356edb5e9c9ee74582ec605ba68281c171a3948e"
+      "sha256": "323b420ec99fe15344f9dbd6e4614d2d7222d8b5889e04d9cd2a74fe6858875a",
+      "installedSha": "323b420ec99fe15344f9dbd6e4614d2d7222d8b5889e04d9cd2a74fe6858875a"
     },
     "scripts/hooks/session-stop.js": {
       "owner": "framework",
@@ -5166,8 +5178,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/bootstrap/spinup-orchestrate.js",
-      "sha256": "7023cc82835c1a63d8c2a79014e60f7606a954b82e841f5310c6a29b336729cb",
-      "installedSha": "7023cc82835c1a63d8c2a79014e60f7606a954b82e841f5310c6a29b336729cb"
+      "sha256": "8ec544ee397b3451c70c937df751456fc7c0092dc54dc5b093181ba574823961",
+      "installedSha": "8ec544ee397b3451c70c937df751456fc7c0092dc54dc5b093181ba574823961"
     },
     "scripts/bootstrap/test-spinup-orchestrate.js": {
       "owner": "framework",
@@ -5194,8 +5206,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/bootstrap/phases/onscreen.js",
-      "sha256": "02607c12f667a8290def50c6ab29a493d5067323512c09077df33e606e16d30d",
-      "installedSha": "02607c12f667a8290def50c6ab29a493d5067323512c09077df33e606e16d30d"
+      "sha256": "c10b87edf38622fc43d7cfab6656e0b24a680fd342d8f3706cd0e5e3f51febcf",
+      "installedSha": "c10b87edf38622fc43d7cfab6656e0b24a680fd342d8f3706cd0e5e3f51febcf"
     },
     "scripts/bootstrap/phases/preflight.js": {
       "owner": "framework",
@@ -5208,8 +5220,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/bootstrap/phases/roadmap.js",
-      "sha256": "de0d2c4f37fc74428a9a012a2181837c5475c077ad31b7665dce81ff24529667",
-      "installedSha": "de0d2c4f37fc74428a9a012a2181837c5475c077ad31b7665dce81ff24529667"
+      "sha256": "aabf2cc7706fd5923ec411507d2f458b1b61ebc4890849382a3104d5bd94434e",
+      "installedSha": "aabf2cc7706fd5923ec411507d2f458b1b61ebc4890849382a3104d5bd94434e"
     },
     "scripts/bootstrap/lastmile/fixtures.js": {
       "owner": "framework",
@@ -5397,8 +5409,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/agents/cli.js",
-      "sha256": "c09f5f75a572140cbf34cddd447d0217fac7272091c1f005544c6572eec0a00b",
-      "installedSha": "c09f5f75a572140cbf34cddd447d0217fac7272091c1f005544c6572eec0a00b"
+      "sha256": "154638c78f1963a82ca67ca2ad98cb83407731d24fe976c54c8383b4bab4bbd0",
+      "installedSha": "154638c78f1963a82ca67ca2ad98cb83407731d24fe976c54c8383b4bab4bbd0"
     },
     "scripts/agents/output-validator.js": {
       "owner": "framework",
@@ -6328,8 +6340,8 @@
       "owner": "framework",
       "managed": true,
       "source": "framework/templates/app-scaffold/src/app/page.tsx.tmpl",
-      "sha256": "d472021e116acf5af7197f99c898a293391f1b414710f76d4579e8736bc814dc",
-      "installedSha": "d472021e116acf5af7197f99c898a293391f1b414710f76d4579e8736bc814dc"
+      "sha256": "bf1619394b6c8ea625a8d6967ac5762a35c78ff80911ad5e682dce7da5702cb7",
+      "installedSha": "bf1619394b6c8ea625a8d6967ac5762a35c78ff80911ad5e682dce7da5702cb7"
     },
     "framework/releases/0.9.0/changelog.md": {
       "owner": "framework",
@@ -7506,10 +7518,6 @@
       "source": null,
       "sha256": "6952f8b5ed7d9e7214351fa3caf865315f810b4b6161d1601fa5162ba56ff61a",
       "installedSha": "6952f8b5ed7d9e7214351fa3caf865315f810b4b6161d1601fa5162ba56ff61a"
-    },
-    ".claude/.agent-result-hashes.json": {
-      "owner": "runtime",
-      "managed": false
     },
     ".claude/.last-checkpoint": {
       "owner": "runtime",
@@ -14382,22 +14390,6 @@
       "sha256": "264e46f1b55b145cdcc54bf8c91294f060cd297ee367e0d28a275a91e5b0bdc1",
       "installedSha": "264e46f1b55b145cdcc54bf8c91294f060cd297ee367e0d28a275a91e5b0bdc1"
     },
-    ".claude/project/memory/enforcement-debt.jsonl": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/memory/learnings.jsonl": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/memory/recurring-issues.jsonl": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/memory/systems.jsonl": {
-      "owner": "runtime",
-      "managed": false
-    },
     ".claude/project/maps/.stale.json": {
       "owner": "runtime",
       "managed": false
@@ -14522,14 +14514,6 @@
       "owner": "runtime",
       "managed": false
     },
-    ".claude/project/decisions/provider-trace.jsonl": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/builds/builder-fixture-57d0677ea6/transaction.json": {
-      "owner": "runtime",
-      "managed": false
-    },
     ".claude/dreams/2026-05-13.md": {
       "owner": "project",
       "managed": false,
@@ -14627,8 +14611,8 @@
       "managed": true,
       "source": ".claude/commands/warp/health.md",
       "kind": "md",
-      "sha256": "89ba7018f61ab24b9481e9ec696f04457c818d9507b9a9bea7807e06de9deed6",
-      "installedSha": "89ba7018f61ab24b9481e9ec696f04457c818d9507b9a9bea7807e06de9deed6"
+      "sha256": "d75f1a598052f9ac87a370ad8dd3898583223b3a3f730abd97ddea4d90d83a74",
+      "installedSha": "d75f1a598052f9ac87a370ad8dd3898583223b3a3f730abd97ddea4d90d83a74"
     },
     ".claude/commands/warp/md.md": {
       "owner": "framework",
@@ -16115,8 +16099,8 @@
       "managed": true,
       "source": ".claude/commands/agents/test.md",
       "kind": "md",
-      "sha256": "625473e236622d6975108093ac7918f978cea08d59100a12d3eec0cc4b277c68",
-      "installedSha": "625473e236622d6975108093ac7918f978cea08d59100a12d3eec0cc4b277c68"
+      "sha256": "02200481f87645c973ee2aca83a10af936ba4883c6870fd36d50386c29ac04ff",
+      "installedSha": "02200481f87645c973ee2aca83a10af936ba4883c6870fd36d50386c29ac04ff"
     },
     ".claude/agents/.system.md": {
       "owner": "framework",
@@ -16589,11 +16573,6 @@
       "kind": "md",
       "sha256": "0b162e7ab826722524c71824324be09a580d393c19b51c4efcbd1d266bfad48c",
       "installedSha": "0b162e7ab826722524c71824324be09a580d393c19b51c4efcbd1d266bfad48c"
-    },
-    ".claude/agents/00-alex/.system/events.jsonl": {
-      "owner": "runtime",
-      "managed": false,
-      "kind": "jsonl"
     },
     ".claude/agents/00-alex/.system/lexicon.md": {
       "owner": "framework",

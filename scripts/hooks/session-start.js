@@ -405,13 +405,57 @@ process.stdin.on("end", () => {
         "(paths.agentDispatchGuide).";
     }
 
+    // ── Per-role dispatch-readiness nudge (Phase 0 workstream A3) ────────────
+    // Resolve-only sweep: detect if any build-chain role resolves to a provider
+    // whose CLI is missing or unauthed. Token-free (--no-ping: no live dispatch).
+    // Best-effort + fail-open — a providers.js load failure on a partial install
+    // must NEVER break session start. Only runs on cold start / clear.
+    let dispatchReadinessNudge = "";
+    if (source === "startup" || source === "clear") {
+      try {
+        const smokePath = path.join(
+          __dirname,
+          "..",
+          "warpos",
+          "provider-smoke.js",
+        );
+        const { perRoleProbe, classifyPerRole, PER_ROLE_BUILD_CHAIN } =
+          require(smokePath);
+        // --no-ping: resolve provider+model but skip live dispatch (token-free).
+        const rows = perRoleProbe(PER_ROLE_BUILD_CHAIN, { noPing: true });
+        // RED = unresolved (provider CLI missing / providers.js can't find a
+        // mapping for the role). "resolved" rows are non-fatal for --no-ping.
+        const redRows = rows.filter(
+          (r) =>
+            r &&
+            r.provider !== "claude" &&
+            ["unresolved", "error"].includes(r.status),
+        );
+        if (redRows.length > 0) {
+          const first = redRows[0];
+          dispatchReadinessNudge =
+            "DISPATCH READINESS — " +
+            first.role +
+            " resolves to " +
+            (first.provider || "unknown provider") +
+            " but its CLI is not reachable; cross-provider dispatch will " +
+            "fall back to Claude (loses diff-model coverage). Run " +
+            "/warp:health for the full per-role verdict.";
+        }
+      } catch {
+        // Fail-open: providers.js or smoke load failure on a partial install
+        // must not block session start. Nudge is advisory only.
+      }
+    }
+
     // ── Inject context into model ──────────────────────────
     if (
       handoffContext ||
       sleepContext ||
       systemsNudge ||
       dispatchReference ||
-      teamMarkerWarning
+      teamMarkerWarning ||
+      dispatchReadinessNudge
     ) {
       let ctx = "";
       if (handoffContext) {
@@ -428,6 +472,9 @@ process.stdin.on("end", () => {
       }
       if (teamMarkerWarning) {
         ctx += `\n${teamMarkerWarning}\n`;
+      }
+      if (dispatchReadinessNudge) {
+        ctx += `\n${dispatchReadinessNudge}\n`;
       }
       ctx +=
         "Use this context to continue seamlessly. Do not ask the user to recap — you already have the state.";

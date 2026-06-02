@@ -18,7 +18,7 @@
  */
 const fs = require("fs");
 const path = require("path");
-const { execSync } = require("child_process");
+const { execSync, spawnSync } = require("child_process");
 
 function loadPaths() {
   try {
@@ -156,7 +156,26 @@ function testRole(role) {
   }
 }
 
-function testCmd(args) {
+// FIX1: testCmd accepts an optional _spawnFn for unit-test injection.
+// Real callers use the default (spawnSync). Tests can pass a mock to assert
+// routing and exit-code propagation without live API calls.
+function testCmd(args, _spawnFn) {
+  const spawnFn = _spawnFn || spawnSync;
+
+  // --smoke / --full → full dispatch-readiness sweep via provider-smoke --per-role.
+  // Exit 2 on any RED role/provider (real dispatch-readiness failure); 0 on green/yellow.
+  // Non-zero exits are propagated faithfully — we do NOT swallow them into 0.
+  if (args.includes("--smoke") || args.includes("--full")) {
+    const smokeScript = path.resolve(__dirname, "..", "warpos", "provider-smoke.js");
+    const result = spawnFn(
+      process.execPath,
+      [smokeScript, "--per-role"],
+      { stdio: "inherit" },
+    );
+    // null status = terminated by signal → treat as failure (exit 2)
+    return result.status !== null ? result.status : 2;
+  }
+
   if (args.includes("--all")) {
     let manifest = {};
     try {
@@ -209,4 +228,4 @@ function main() {
 
 if (require.main === module) main();
 
-module.exports = { listAgents, testRole, walk };
+module.exports = { listAgents, testRole, testCmd, walk };
