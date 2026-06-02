@@ -571,6 +571,53 @@ test("FIX1: record at 'now' with since in the past → still in-window → ok:tr
   assert.strictEqual(res.considered, 1);
 });
 
+// ── FIX1 Regression: clock-skew false-RED ─────────────────────────────────────
+// A real completion record whose completed_at is a few minutes AHEAD of the
+// verifier's clock (small positive skew, common across distributed machines)
+// must NOT be excluded. Prior code defaulted effectiveUntilMs = nowMs (bare),
+// so even a 1-second skew caused t > nowMs → excluded → false-RED.
+// Fix: default effectiveUntilMs = nowMs + FUTURE_SKEW_ALLOWANCE_MS (24h).
+test("FIX1 (skew-false-red regression): record 5 min ahead of verifier + --since only → accepted → ok:true", () => {
+  const now = Date.now();
+  const skewedMs = now + 5 * 60 * 1000; // 5 minutes ahead (normal clock skew)
+  const res = verifyGauntlet({
+    roles: ["reviewer"],
+    since: now - 60_000, // window starts 1 min ago, NO explicit until
+    records: [
+      makeRecord({
+        role: "reviewer",
+        completed_at: new Date(skewedMs).toISOString(),
+      }),
+    ],
+  });
+
+  assert.strictEqual(res.ok, true, "5-min skewed record must NOT be false-red'd — legit clock skew within 24h allowance");
+  assert.strictEqual(res.roles[0].status, "ran", "role must be satisfied");
+  assert.strictEqual(res.considered, 1, "skewed record must appear in considered");
+});
+
+// Confirm far-future injection (year 9999) is STILL blocked even after the skew fix.
+// The skew allowance is only 24h; a record timestamped centuries ahead is beyond both
+// the effectiveUntilMs default AND the hardCeilingMs → must still be excluded.
+test("FIX1 (golden-ticket still blocked after skew fix): year-9999 completed_at → excluded → ok:false", () => {
+  const now = Date.now();
+  const yearNineNineNineMs = new Date("9999-01-01T00:00:00Z").getTime();
+  const res = verifyGauntlet({
+    roles: ["reviewer"],
+    since: now - 60_000, // window starts 1 min ago, no explicit until
+    records: [
+      makeRecord({
+        role: "reviewer",
+        completed_at: new Date(yearNineNineNineMs).toISOString(),
+      }),
+    ],
+  });
+
+  assert.strictEqual(res.ok, false, "year-9999 record must still be excluded — Golden Ticket blocked");
+  assert.strictEqual(res.roles[0].status, "no-record", "year-9999 record must be filtered (FIX1 still active)");
+  assert.strictEqual(res.considered, 0, "year-9999 record must not appear in considered");
+});
+
 // ── FIX2 Tests: Positional malformed-taint scoping ────────────────────────────
 // (a) A malformed line that appears CLEARLY BEFORE the first in-window valid
 //     record (separated by 2+ out-of-window records) is historic → must NOT
@@ -787,6 +834,6 @@ if (failures.length) {
 process.stdout.write(
   `gauntlet-verify bite-test: ${passed}/${passed} passed\n` +
   `  covers: suppressed-record, valid, malformed, ill-typed, stale, cwd-regression, backward-compat\n` +
-  `  FIX1: future-clamp; FIX2: positional-taint(a,b,c); FIX3: no-green-from-pure-failed; FIX4: empty-roles; FIX5: real-cwd-regression\n`,
+  `  FIX1: future-clamp + skew-false-red-regression + golden-ticket-still-blocked; FIX2: positional-taint(a,b,c); FIX3: no-green-from-pure-failed; FIX4: empty-roles; FIX5: real-cwd-regression\n`,
 );
 process.exit(0);

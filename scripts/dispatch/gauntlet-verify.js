@@ -297,10 +297,17 @@ function verifyGauntlet(args = {}) {
   // base for the hard ceiling that blocks injected far-future records even when
   // an explicit `until` is set absurdly high (Golden Ticket defense-in-depth).
   const nowMs = Date.now();
-  // When a window is active and no explicit `until` was given, default to nowMs:
-  // a legitimate completion cannot have a future timestamp.
-  const effectiveUntilMs = untilMs ?? (hasWindow ? nowMs : null);
-  // Hard ceiling: records > nowMs + 24h are excluded regardless of explicit `until`.
+  // When a window is active and no explicit `until` was given, default to
+  // nowMs + FUTURE_SKEW_ALLOWANCE_MS so that legitimate completion records from
+  // machines whose clock is slightly AHEAD of the verifier (e.g. a few seconds
+  // to several minutes) are still accepted. Without the skew allowance, even a
+  // 1-second clock difference causes a false-RED because `t > nowMs` fires before
+  // the hardCeiling check. The allowance is 24h — same constant used by the
+  // hard ceiling — so clock-skew records are accepted while far-future injection
+  // (t >> now+24h) is still blocked by the hardCeilingMs line below.
+  const effectiveUntilMs = untilMs ?? (hasWindow ? nowMs + FUTURE_SKEW_ALLOWANCE_MS : null);
+  // Hard ceiling: records > nowMs + 24h are excluded regardless of explicit `until`
+  // (defense-in-depth against an absurdly large explicit until).
   const hardCeilingMs = nowMs + FUTURE_SKEW_ALLOWANCE_MS;
 
   // Filter to the run window. A record with an unknown timestamp is kept only
