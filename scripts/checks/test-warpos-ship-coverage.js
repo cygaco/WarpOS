@@ -8,11 +8,13 @@
  * Drives the gate against ephemeral temp directories — no live manifest dependency.
  *
  * Test cases:
- *   (a) NEW dangling seeded_from (not in KNOWN_DANGLING)  → gate exits 1 (RED)
- *   (b) All seeded_from in KNOWN_DANGLING allowlist       → gate exits 0 (OK)
- *   (c) Malformed _warpos/MANIFEST.json                   → gate exits 2 (setup error)
- *   (d) EXHAUSTIVE: run against THIS worktree              → info_gaps_count===0,
- *                                                             dangling_unallowlisted===0, ok===true
+ *   (a) NEW dangling seeded_from (not in KNOWN_DANGLING_SET, OUTSIDE the dirs) → exit 1 (RED)
+ *   (b) All seeded_from in KNOWN_DANGLING_SET (exact known-100 values)         → exit 0 (OK)
+ *   (c) Malformed _warpos/MANIFEST.json                                         → exit 2 (setup error)
+ *   (d) EXHAUSTIVE: run against THIS worktree → info_gaps_count===0, dangling_unallowlisted===0, ok===true
+ *   (e) FIX1: unallowlisted owner=framework info_gap path → exit 1, info_gaps_count>0 (not just INFO)
+ *   (f) FIX2: new dangle INSIDE framework/templates/_requirements/ but NOT in known-100 → exit 1 (RED)
+ *   (g) FIX2: a known-100 exact value as seeded_from → allowlisted, ok (exact-match holds)
  *
  * Exit: 0 iff all tests pass, 1 otherwise.
  */
@@ -225,6 +227,127 @@ console.log("\n[d] Exhaustive run against worktree → ok, info_gaps_count===0, 
     r.json && r.json.dangling_seeds_total === 100,
     `got ${r.json && r.json.dangling_seeds_total}`,
   );
+}
+
+// ── Test (e): FIX1 — unallowlisted owner=framework info_gap → exit 1 ─────────
+// Before FIX1, an unallowlisted owner=framework path outside hard-signal roots
+// was reported as INFO but the gate still exited 0 (false-green). After FIX1,
+// infoGaps.length === 0 is part of result.ok, so this now exits 1.
+console.log("\n[e] FIX1: unallowlisted owner=framework info_gap path → exit 1 (enforced)");
+{
+  // Use a path that is:
+  //   - owner=framework, kind=file (so the gate processes it)
+  //   - NOT under HARD_SIGNAL_ROOTS (framework/, schemas/, patterns/, .claude/commands/, .claude/agents/)
+  //     → goes to infoGaps, NOT hardGaps
+  //   - NOT in KNOWN_NOT_SHIPPED (no matching prefix or predicate)
+  //   - NOT shipped in the minimal framework-manifest fixture
+  const manifest = {
+    paths: {
+      "some-custom-dir/unreviewd-framework-tool.js": {
+        owner: "framework",
+        kind: "file",
+      },
+    },
+  };
+  const dir = makeTempFixture(manifest);
+  try {
+    const r = runGate(dir);
+    ok("(e) exit code is 1 (info_gaps now block)", r.code === 1, `got ${r.code}; stderr=${r.stderr}`);
+    ok("(e) ok===false", r.json && r.json.ok === false, `json.ok=${r.json && r.json.ok}`);
+    ok(
+      "(e) info_gaps_count > 0",
+      r.json && r.json.info_gaps_count > 0,
+      `got info_gaps_count=${r.json && r.json.info_gaps_count}`,
+    );
+    ok(
+      "(e) hard_gaps is empty (path is NOT a hard-signal root)",
+      r.json &&
+        Array.isArray(r.json.hard_gaps) &&
+        r.json.hard_gaps.length === 0,
+      `hard_gaps=${JSON.stringify(r.json && r.json.hard_gaps)}`,
+    );
+  } finally {
+    rmrf(dir);
+  }
+}
+
+// ── Test (f): FIX2 — new dangle INSIDE framework/templates/_requirements/ ────
+// but NOT one of the known-100 → exit 1.
+// This is the EXACT false-green FIX2 closes: before FIX2, a prefix-based
+// KNOWN_DANGLING would have silently allowlisted any seeded_from under
+// framework/templates/_requirements/, even a brand-new typo'd filename.
+// After FIX2 (exact-match Set), only the 100 known values are allowlisted;
+// a new filename → danglingUnallowlisted → exit 1.
+console.log("\n[f] FIX2: new dangle inside framework/templates/_requirements/ NOT in known-100 → exit 1");
+{
+  // This filename does NOT appear in KNOWN_DANGLING_SET (the 100 exact strings).
+  // It IS under framework/templates/_requirements/ — the old prefix match would have
+  // silently passed it (false-green). The new exact match must RED it.
+  const newDangle = "framework/templates/_requirements/BRAND_NEW_UNREVIEWD_TEMPLATE.md";
+  const manifest = {
+    paths: {
+      "_requirements/SomeSeededFile.md": {
+        owner: "project",
+        kind: "file",
+        seeded_from: newDangle,
+      },
+    },
+  };
+  const dir = makeTempFixture(manifest);
+  // Do NOT create the source file in the fixture — it must be dangling.
+  try {
+    const r = runGate(dir);
+    ok("(f) exit code is 1 (new dangle in known-dir REDs with exact match)", r.code === 1, `got ${r.code}`);
+    ok("(f) ok===false", r.json && r.json.ok === false, `json.ok=${r.json && r.json.ok}`);
+    ok(
+      "(f) dangling_unallowlisted contains the new path",
+      r.json &&
+        Array.isArray(r.json.dangling_unallowlisted) &&
+        r.json.dangling_unallowlisted.some((p) => p.includes("BRAND_NEW_UNREVIEWD_TEMPLATE")),
+      `dangling_unallowlisted=${JSON.stringify(r.json && r.json.dangling_unallowlisted)}`,
+    );
+  } finally {
+    rmrf(dir);
+  }
+}
+
+// ── Test (g): FIX2 — a known-100 exact value is still allowlisted → exit 0 ──
+// Confirms that the exact-match Set correctly allows the curated 100.
+// Uses a different known-100 entry than test (b) to add coverage.
+console.log("\n[g] FIX2: known-100 exact value as seeded_from → allowlisted, exit 0");
+{
+  // Pick a known-100 entry from a subdirectory (not just top-level README).
+  const known100Value = "framework/templates/_requirements/03-architecture/SECURITY.md";
+  const manifest = {
+    paths: {
+      "_requirements/Architecture/Security.md": {
+        owner: "project",
+        kind: "file",
+        seeded_from: known100Value,
+      },
+    },
+  };
+  const dir = makeTempFixture(manifest);
+  // Do NOT create the file — it must be dangling (not on disk), but known-allowlisted.
+  try {
+    const r = runGate(dir);
+    ok("(g) exit code is 0 (known-100 value is allowlisted)", r.code === 0, `got ${r.code}; stderr=${r.stderr}`);
+    ok("(g) ok===true", r.json && r.json.ok === true, `json.ok=${r.json && r.json.ok}`);
+    ok(
+      "(g) dangling_allowlisted===1",
+      r.json && r.json.dangling_allowlisted === 1,
+      `got ${r.json && r.json.dangling_allowlisted}`,
+    );
+    ok(
+      "(g) dangling_unallowlisted is empty",
+      r.json &&
+        Array.isArray(r.json.dangling_unallowlisted) &&
+        r.json.dangling_unallowlisted.length === 0,
+      `dangling_unallowlisted=${JSON.stringify(r.json && r.json.dangling_unallowlisted)}`,
+    );
+  } finally {
+    rmrf(dir);
+  }
 }
 
 // ── Summary ───────────────────────────────────────────────────────────────────
