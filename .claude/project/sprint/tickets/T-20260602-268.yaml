@@ -2,10 +2,10 @@ schema: warpos/sprint/ticket/v1
 id: T-20260602-268
 title: "Sealed-capsule consumer-contract gate: seal+isolate+lifecycle+typed-verify+matrix, wired as named release enforcer"
 type: feature
-status: in_progress
+status: done
 sprint: SP-20260602-001
 created_at: "2026-06-02T02:53:20.606Z"
-updated_at: "2026-06-02T02:53:49.800Z"
+updated_at: "2026-06-02T04:07:22.525Z"
 owner: null
 owner_agent: alpha
 risk_level: high
@@ -34,7 +34,7 @@ user_value: ""
 business_value: ""
 acceptance_criteria: []
 non_goals: []
-implementation_notes: ""
+implementation_notes: "Built foreground by Alpha (Gamma builder reaped twice, RI-004). Verified: self-test 17/17, bounded PASS, --full 4/4. 2 cross-provider gauntlet cycles, all findings resolved."
 qa_notes: ""
 redteam_notes: ""
 trace_notes: ""

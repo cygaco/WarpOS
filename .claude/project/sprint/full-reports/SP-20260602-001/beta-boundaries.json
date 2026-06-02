@@ -4,7 +4,9 @@
   "cleared": [
     "before_plan",
     "before_design",
-    "before_execute"
+    "before_execute",
+    "before_release-prep",
+    "before_retro"
   ],
-  "updated_at": "2026-06-02T02:53:49.730Z"
+  "updated_at": "2026-06-02T04:08:47.080Z"
 }

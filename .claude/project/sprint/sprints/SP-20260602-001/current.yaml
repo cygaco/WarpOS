@@ -2,15 +2,15 @@ schema: warpos/sprint/current-sprint/v1
 id: SP-20260602-001
 title: "Sealed-capsule executable consumer-contract gate (keystone)"
 objective: "Close the open half of the artifact-first, contract-tested release gate: prove a release stands up from a sealed, self-contained capsule with canonical WarpOS unreachable, via an executable consumer contract with typed-success telemetry — the structural cure for the 'downstream always missing' bug class."
-status: designing
+status: releasing
 created_at: "2026-06-02T02:46:41.132Z"
-updated_at: "2026-06-02T02:53:49.803Z"
+updated_at: "2026-06-02T04:08:34.406Z"
 source_request: "Build the keystone (DUMP.md #5): the executable consumer-contract gate in SEALED-CAPSULE posture, with full cross-provider gauntlet + telemetry verify."
 interpreted_intent: "Build the full sealed-capsule consumer-contract release gate (ADR-0006): a script + tests + release/promotion wiring that materializes the release capsule into a self-contained payload, installs ONLY that payload into a disposable out-of-tree repo where canonical is unreachable, runs the real consumer lifecycle under both repo roles across cold+warm paths, and asserts typed success (action occurred AND telemetry record exists) fail-closed. Name the enforcer per CLAUDE.md Policy & Enforcement Hygiene."
 plan_contract: ".claude/project/sprint/plan-contracts/PC-20260602-0063.yaml"
 risk_level: high
 approval_state: none_required
-current_phase: design
+current_phase: release
 recommended_mode: adhoc
 mode_invocation_required_by_user: true
 external_services:
@@ -24,15 +24,15 @@ tickets:
   planned: []
   designed: []
   ready_for_execution: []
-  in_progress:
-    - T-20260602-268
+  in_progress: []
   blocked: []
   waiting_on_human: []
   waiting_on_external_service: []
   in_review: []
   qa_failed: []
   redteam_failed: []
-  done: []
+  done:
+    - T-20260602-268
   released: []
   deferred: []
   abandoned: []
@@ -99,7 +99,7 @@ reports:
   plan: ".claude/project/sprint/plan-contracts/PC-20260602-0063.report.md"
   design: null
   execution: null
-  release: null
+  release: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\releases\\RL-20260602-035.yaml"
 ralph:
   active: false
   current_ticket: null
@@ -109,8 +109,8 @@ ralph:
   next_action: null
 crash_recovery:
   last_checkpoint: ".claude/project/sprint/sprint-progress.yaml"
-  resume_command: "/sprint:design"
-  resume_summary: "Sprint SP-20260602-001 design scaffolded (scale=m). Next: mint tickets from granular-stories, then run /sprint:execute."
+  resume_command: "/sprint:release"
+  resume_summary: "Release RL-20260602-035 in preparing state. Run /sprint:release with --id RL-20260602-035."
   active_files: []
   dirty_state: false
   blockers: []

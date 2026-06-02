@@ -546,7 +546,7 @@ Every sprint that has been planned, executed, released, or retrospected — one 
 
 | Sprint | Title | Status | Started | Closed | Release |
 |---|---|---|---|---|---|
-| [SP-20260602-001](.claude/project/sprint/sprints/SP-20260602-001/) | Sealed-capsule executable consumer-contract gate (keystone) | planning | 2026-06-02T02:46:41.132Z |  |  |
+| [SP-20260602-001](.claude/project/sprint/sprints/SP-20260602-001/) | Sealed-capsule executable consumer-contract gate (keystone) | retrospected | 2026-06-02T02:46:41.132Z | 2026-06-02T04:08:47.176Z |  |
 | [SP-20260531-006](.claude/project/sprint/sprints/SP-20260531-006/) | Guides skill suite — guides:write + guides:organize + guides:integrate (recording system + conflict-resolution); supersedes SP-005 | retrospected | 2026-05-31T19:33:11.630Z | 2026-06-01T00:38:02.143Z |  |
 | [SP-20260531-005](.claude/project/sprint/sprints/SP-20260531-005/) | Integrate _guides into the bootstrap pipeline — phase-anchored, right-shape (walkthrough/checklist/notice), right-time (no launch-ready-but-blocked) | planning | 2026-05-31T18:43:57.022Z |  |  |
 | [SP-20260531-004](.claude/project/sprint/sprints/SP-20260531-004/) | scan-suite reconciliation — self-inventory enforcer (/scan:scan-coverage) + close 4 /scan:full coverage gaps | done | 2026-05-31T18:11:06.600Z |  |  |
@@ -932,6 +932,8 @@ Sprint-2 target. Reason: dreamteam's first sprint hit a manifest gap that broke 
 **[open] Rollback snapshot for `/warp:update`.** *(Codex stay-simple must-have.)* Update creates a restorable snapshot of touched framework files (not git-only — assume users have messy repos with unstaged work). `/warp:rollback <update-id>` reverts framework files to pre-update state without touching user files.
 
 **[open] Install fixture CI matrix.** *(Codex stay-simple must-have.)* Install and update are tested against: clean repo, existing repo with prior WarpOS install, dirty repo with uncommitted changes, old-version repo upgrading multiple versions, repo with intentional user overrides. Today install is tested manually after each release; failures surface in product repos days later.
+
+**[open] 0.16.0 Pattern-realignment sprint — the real cure for the 100 dangling `seeded_from` pointers.** The sealed-capsule gate (SP-20260602-001, shipped) now CATCHES downstream-missing structurally; this sprint removes the root cause. Author the 99 real seed templates under `_warpos/templates/` (+ `_warpos/BASELINE/`), do AC2 seed-with-provenance (`scripts/warpos/views/populate-source.js`), then **clear `KNOWN_DANGLING_SET`** in `scripts/checks/warpos-ship-coverage.js` as each resolves. **Beta ruling (2026-06-01):** author the real seeds; do NOT delete the `seeded_from` pointers (correct intent); do NOT auto-stub hollow templates. Director-of-Product call on sequencing — surfaced from the keystone DUMP, not blocking. Also tracked deferred from that session: ~16 misclassified scratch artifacts (`scripts/delta-*.txt/.md/.html`) to re-classify in the manifest; 0.18.1 scope-cut items E6 (product-overlay path registry) / H4 (roadmap:improve+ship port) / G1 (glossary product-vs-dev-tooling) / G2 (gamma.md clarification); DP-gap clearance (#26/#27/#19-22/#11-13/G-13) still open. *(DISCUSSED-2026-06-02)*
 
 ---
 
