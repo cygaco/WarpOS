@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-02T02:18:14.579Z",
+  "generatedAt": "2026-06-02T02:20:03.797Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.13.1",
   "migrations": [],
@@ -1137,11 +1137,6 @@
       "class": "reference"
     },
     "_docs/research/design-principles-taxonomy/SYNTHESIS.md": {
-      "owner": "project",
-      "managed": false,
-      "class": "reference"
-    },
-    "_docs/research/design-principles-taxonomy/.tmp/gemini-result.json": {
       "owner": "project",
       "managed": false,
       "class": "reference"
@@ -5178,8 +5173,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/bootstrap/spinup-orchestrate.js",
-      "sha256": "8ec544ee397b3451c70c937df751456fc7c0092dc54dc5b093181ba574823961",
-      "installedSha": "8ec544ee397b3451c70c937df751456fc7c0092dc54dc5b093181ba574823961"
+      "sha256": "7023cc82835c1a63d8c2a79014e60f7606a954b82e841f5310c6a29b336729cb",
+      "installedSha": "7023cc82835c1a63d8c2a79014e60f7606a954b82e841f5310c6a29b336729cb"
     },
     "scripts/bootstrap/test-spinup-orchestrate.js": {
       "owner": "framework",
@@ -5206,8 +5201,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/bootstrap/phases/onscreen.js",
-      "sha256": "c10b87edf38622fc43d7cfab6656e0b24a680fd342d8f3706cd0e5e3f51febcf",
-      "installedSha": "c10b87edf38622fc43d7cfab6656e0b24a680fd342d8f3706cd0e5e3f51febcf"
+      "sha256": "02607c12f667a8290def50c6ab29a493d5067323512c09077df33e606e16d30d",
+      "installedSha": "02607c12f667a8290def50c6ab29a493d5067323512c09077df33e606e16d30d"
     },
     "scripts/bootstrap/phases/preflight.js": {
       "owner": "framework",
@@ -5220,8 +5215,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/bootstrap/phases/roadmap.js",
-      "sha256": "aabf2cc7706fd5923ec411507d2f458b1b61ebc4890849382a3104d5bd94434e",
-      "installedSha": "aabf2cc7706fd5923ec411507d2f458b1b61ebc4890849382a3104d5bd94434e"
+      "sha256": "de0d2c4f37fc74428a9a012a2181837c5475c077ad31b7665dce81ff24529667",
+      "installedSha": "de0d2c4f37fc74428a9a012a2181837c5475c077ad31b7665dce81ff24529667"
     },
     "scripts/bootstrap/lastmile/fixtures.js": {
       "owner": "framework",
@@ -6340,8 +6335,8 @@
       "owner": "framework",
       "managed": true,
       "source": "framework/templates/app-scaffold/src/app/page.tsx.tmpl",
-      "sha256": "bf1619394b6c8ea625a8d6967ac5762a35c78ff80911ad5e682dce7da5702cb7",
-      "installedSha": "bf1619394b6c8ea625a8d6967ac5762a35c78ff80911ad5e682dce7da5702cb7"
+      "sha256": "d472021e116acf5af7197f99c898a293391f1b414710f76d4579e8736bc814dc",
+      "installedSha": "d472021e116acf5af7197f99c898a293391f1b414710f76d4579e8736bc814dc"
     },
     "framework/releases/0.9.0/changelog.md": {
       "owner": "framework",
@@ -7518,6 +7513,10 @@
       "source": null,
       "sha256": "6952f8b5ed7d9e7214351fa3caf865315f810b4b6161d1601fa5162ba56ff61a",
       "installedSha": "6952f8b5ed7d9e7214351fa3caf865315f810b4b6161d1601fa5162ba56ff61a"
+    },
+    ".claude/.agent-result-hashes.json": {
+      "owner": "runtime",
+      "managed": false
     },
     ".claude/.last-checkpoint": {
       "owner": "runtime",
@@ -14390,6 +14389,22 @@
       "sha256": "264e46f1b55b145cdcc54bf8c91294f060cd297ee367e0d28a275a91e5b0bdc1",
       "installedSha": "264e46f1b55b145cdcc54bf8c91294f060cd297ee367e0d28a275a91e5b0bdc1"
     },
+    ".claude/project/memory/enforcement-debt.jsonl": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/memory/learnings.jsonl": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/memory/recurring-issues.jsonl": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/memory/systems.jsonl": {
+      "owner": "runtime",
+      "managed": false
+    },
     ".claude/project/maps/.stale.json": {
       "owner": "runtime",
       "managed": false
@@ -14511,6 +14526,14 @@
       "managed": false
     },
     ".claude/project/decisions/decision-ledger.jsonl": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/decisions/provider-trace.jsonl": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/builds/builder-fixture-57d0677ea6/transaction.json": {
       "owner": "runtime",
       "managed": false
     },
@@ -16573,6 +16596,11 @@
       "kind": "md",
       "sha256": "0b162e7ab826722524c71824324be09a580d393c19b51c4efcbd1d266bfad48c",
       "installedSha": "0b162e7ab826722524c71824324be09a580d393c19b51c4efcbd1d266bfad48c"
+    },
+    ".claude/agents/00-alex/.system/events.jsonl": {
+      "owner": "runtime",
+      "managed": false,
+      "kind": "jsonl"
     },
     ".claude/agents/00-alex/.system/lexicon.md": {
       "owner": "framework",
