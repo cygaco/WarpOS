@@ -816,6 +816,18 @@ function scenario2_existing_install_upgrade(scenario, fixtureDir, opts) {
       ).length === 0;
   assert("dry-run did NOT create a transaction directory", noTxDir);
 
+  // Guard: structure-parity must hold after the update step (SP-20260525-024).
+  // Mirrors the scenario1 idiom — reuses warpos-structure-parity.js so the
+  // REQUIRED_DIR list is a single source of truth, never duplicated here.
+  const spUpdate = runNode("scripts/checks/warpos-structure-parity.js", [], {
+    env: { CLAUDE_PROJECT_DIR: fixtureDir },
+  });
+  assert(
+    "structure-parity holds after update (SP-20260525-024 — scaffoldProduct-on-update fix)",
+    spUpdate.code === 0,
+    `code=${spUpdate.code} ${(spUpdate.stdout || spUpdate.stderr || "").slice(0, 160)}`,
+  );
+
   r.durationMs = Date.now() - t0;
   return r;
 }
