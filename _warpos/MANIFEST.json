@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-02T02:20:03.797Z",
+  "generatedAt": "2026-06-02T02:43:25.886Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.13.1",
   "migrations": [],
@@ -16736,13 +16736,21 @@
       "sha256": "26de7922137af8e2c5466a639997561721bc107b016f65629b8688ff3e756d81",
       "installedSha": "26de7922137af8e2c5466a639997561721bc107b016f65629b8688ff3e756d81"
     },
+    ".claude/agents/00-alex/.system/policy/adr/0006-sealed-capsule-consumer-contract-gate.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/00-alex/.system/policy/adr/0006-sealed-capsule-consumer-contract-gate.md",
+      "kind": "md",
+      "sha256": "b467514da9e3b444367d9e4d5a2755a71f3ffd576568f53af28171bdc6aad496",
+      "installedSha": "b467514da9e3b444367d9e4d5a2755a71f3ffd576568f53af28171bdc6aad496"
+    },
     ".claude/agents/00-alex/.system/policy/adr/INDEX.md": {
       "owner": "framework",
       "managed": true,
       "source": ".claude/agents/00-alex/.system/policy/adr/INDEX.md",
       "kind": "md",
-      "sha256": "d6f106abe90098f673a4fa0b9bdf23d4289729adbbfd604280ec4a91acecc7df",
-      "installedSha": "d6f106abe90098f673a4fa0b9bdf23d4289729adbbfd604280ec4a91acecc7df"
+      "sha256": "e4db138b014486f7ed84d297b54260cf40e65a9a3a6970e6eda0a44ea397b822",
+      "installedSha": "e4db138b014486f7ed84d297b54260cf40e65a9a3a6970e6eda0a44ea397b822"
     },
     ".claude/agents/00-alex/.system/gamma/events.jsonl": {
       "owner": "runtime",

@@ -56,6 +56,7 @@ function parseArgs(argv) {
     repoRoot: process.cwd(),
     json: false,
     dryRun: false,
+    auto: false,
   };
   for (let i = 2; i < argv.length; i++) {
     const a = argv[i];
@@ -70,6 +71,7 @@ function parseArgs(argv) {
     else if (a === "--repo-root") out.repoRoot = argv[++i];
     else if (a === "--json") out.json = true;
     else if (a === "--dry-run") out.dryRun = true;
+    else if (a === "--auto") out.auto = true;
   }
   return out;
 }
@@ -193,7 +195,14 @@ async function main() {
     saveState(args, state);
   }
 
-  const result = { ok: true, ran: ran.map((r) => r.phase), state_file: stateFile(args), completed: state.completed };
+  const lastWithData = [...ran].reverse().find((r) => r && r.data);
+  const result = {
+    ok: true,
+    ran: ran.map((r) => r.phase),
+    state_file: stateFile(args),
+    completed: state.completed,
+    data: lastWithData ? lastWithData.data : null,
+  };
   if (args.json) process.stdout.write(JSON.stringify(result, null, 2) + "\n");
   else process.stdout.write(`spinup: ${ran.length} phase(s) complete — ${ran.map((r) => r.phase).join(" → ")}\n`);
   return 0;

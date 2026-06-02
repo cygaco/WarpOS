@@ -40,7 +40,10 @@
 
 const http = require("http");
 const https = require("https");
-const { spawnSync } = require("child_process");
+const fs = require("fs");
+const net = require("net");
+const path = require("path");
+const { spawn, spawnSync } = require("child_process");
 
 // ── Real runner seam ────────────────────────────────────────────────────────
 // Runs a shell command and returns its exit code + captured output. Used for
@@ -57,6 +60,65 @@ function defaultRunCmd(cmd, cwd) {
     return { code: r.status == null ? 1 : r.status, stdout: r.stdout || "", stderr: r.error.message };
   }
   return { code: r.status == null ? 1 : r.status, stdout: r.stdout || "", stderr: r.stderr || "" };
+}
+
+function npmCmd() {
+  return process.platform === "win32" ? "npm.cmd" : "npm";
+}
+
+function runNpm(args, cwd, timeout) {
+  const command = [npmCmd(), ...args].join(" ");
+  const r = spawnSync("cmd.exe", ["/d", "/s", "/c", command], {
+    cwd,
+    encoding: "utf8",
+    windowsHide: true,
+    timeout,
+  });
+  if (r.error) {
+    return { code: r.status == null ? 1 : r.status, stdout: r.stdout || "", stderr: r.error.message };
+  }
+  return { code: r.status == null ? 1 : r.status, stdout: r.stdout || "", stderr: r.stderr || "" };
+}
+
+function findFreePort(start) {
+  return new Promise((resolve) => {
+    const tryPort = (port) => {
+      const server = net.createServer();
+      server.once("error", () => tryPort(port + 1));
+      server.once("listening", () => {
+        server.close(() => resolve(port));
+      });
+      server.listen(port, "127.0.0.1");
+    };
+    tryPort(start);
+  });
+}
+
+async function waitForHttp(url, timeoutMs) {
+  const deadline = Date.now() + timeoutMs;
+  let last = { status: 0 };
+  while (Date.now() < deadline) {
+    last = await defaultHttpGet(url);
+    if (last.status === 200) return last;
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+  }
+  return last;
+}
+
+function startDevServer(repoRoot, port) {
+  const command = `${npmCmd()} run dev -- --hostname 127.0.0.1 --port ${port}`;
+  const child = spawn(
+    "cmd.exe",
+    ["/d", "/s", "/c", command],
+    {
+      cwd: repoRoot,
+      detached: true,
+      stdio: "ignore",
+      windowsHide: true,
+    },
+  );
+  child.unref();
+  return child.pid || null;
 }
 
 // ── Real probe seam ───────────────────────────────────────────────────────────
@@ -210,6 +272,75 @@ async function run(ctx) {
     } catch (e) {
       if (log) log(`on-screen: app scaffold skipped (non-fatal): ${e.message}`);
     }
+  }
+
+  if (ctx.args && ctx.args.auto) {
+    if (dryRun) {
+      return {
+        ok: true,
+        status: "done",
+        message: "[dry-run] automatic on-screen launch planned",
+        data: {
+          serveUrl: "http://127.0.0.1:<free-port>/",
+          firstAction: "S1: Bring the first usable screen up locally from the generated scaffold.",
+        },
+      };
+    }
+
+    const packagePath = path.join(repoRoot, "package.json");
+    if (!fs.existsSync(packagePath)) {
+      return {
+        ok: false,
+        status: "failed",
+        message: "automatic on-screen launch requires package.json after app scaffold",
+      };
+    }
+
+    if (!fs.existsSync(path.join(repoRoot, "node_modules"))) {
+      if (log) log("on-screen: installing app dependencies...");
+      const install = runNpm(["install", "--no-audit", "--no-fund"], repoRoot, 600_000);
+      if (install.code !== 0) {
+        return {
+          ok: false,
+          status: "failed",
+          message: `npm install failed during automatic on-screen launch: ${(install.stderr || install.stdout || "").trim().slice(-800)}`,
+        };
+      }
+    }
+
+    if (log) log("on-screen: building generated app...");
+    const build = runNpm(["run", "build"], repoRoot, 600_000);
+    if (build.code !== 0) {
+      return {
+        ok: false,
+        status: "failed",
+        message: `npm run build failed during automatic on-screen launch: ${(build.stderr || build.stdout || "").trim().slice(-800)}`,
+      };
+    }
+
+    const port = await findFreePort(3100);
+    const serveUrl = `http://127.0.0.1:${port}/`;
+    if (log) log(`on-screen: starting dev server at ${serveUrl}`);
+    const pid = startDevServer(repoRoot, port);
+    const probe = await waitForHttp(serveUrl, 45_000);
+    if (probe.status !== 200) {
+      return {
+        ok: false,
+        status: "failed",
+        message: `dev server did not return HTTP 200 at ${serveUrl} (last status ${probe.status || "no-response"})`,
+      };
+    }
+
+    return {
+      ok: true,
+      status: "done",
+      message: `first screen is serving at ${serveUrl}`,
+      data: {
+        serveUrl,
+        devServerPid: pid,
+        firstAction: "S1: Bring the first usable screen up locally from the generated scaffold.",
+      },
+    };
   }
 
   // Targeting Milestone-1's first sprint (AC-5.1) and actually running it until

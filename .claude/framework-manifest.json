@@ -3,7 +3,7 @@
   "version": "0.13.1",
   "generated_by": "scripts/generate-framework-manifest.js",
   "counts": {
-    "agent": 84,
+    "agent": 85,
     "skill": 194,
     "reference": 28,
     "maps_baseline": 24,
@@ -56,7 +56,7 @@
     "module_scope": 1,
     "framework_doc": 2
   },
-  "total": 1004,
+  "total": 1005,
   "assets": {
     "agent": [
       {
@@ -240,11 +240,23 @@
         "replaces": null
       },
       {
+        "id": "agent.00-alex..system.policy.adr.0006-sealed-capsule-consumer-contract-gate.md",
+        "src": ".claude/agents/00-alex/.system/policy/adr/0006-sealed-capsule-consumer-contract-gate.md",
+        "dest": ".claude/agents/00-alex/.system/policy/adr/0006-sealed-capsule-consumer-contract-gate.md",
+        "kind": "agent",
+        "sha256": "b467514da9e3b444367d9e4d5a2755a71f3ffd576568f53af28171bdc6aad496",
+        "owner": "framework",
+        "mergeStrategy": "three_way_markdown",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
         "id": "agent.00-alex..system.policy.adr.INDEX.md",
         "src": ".claude/agents/00-alex/.system/policy/adr/INDEX.md",
         "dest": ".claude/agents/00-alex/.system/policy/adr/INDEX.md",
         "kind": "agent",
-        "sha256": "d6f106abe90098f673a4fa0b9bdf23d4289729adbbfd604280ec4a91acecc7df",
+        "sha256": "e4db138b014486f7ed84d297b54260cf40e65a9a3a6970e6eda0a44ea397b822",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",

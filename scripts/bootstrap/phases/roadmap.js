@@ -69,6 +69,106 @@ function isGroundedRoadmap(roadmapAbs) {
   return hasLedgerAnchor && hasMilestones;
 }
 
+function readMaybe(file) {
+  try {
+    return fs.readFileSync(file, "utf8").replace(/^\uFEFF/, "").trim();
+  } catch {
+    return "";
+  }
+}
+
+function firstMeaningfulLines(body, max) {
+  return body
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) =>
+      line &&
+      !line.includes("{{") &&
+      !line.startsWith("<!--") &&
+      !line.startsWith("#") &&
+      !line.startsWith("|") &&
+      !line.startsWith("---"))
+    .slice(0, max);
+}
+
+function renderAutomaticRoadmap(ctx, dir) {
+  const coreBrief = readMaybe(path.join(dir, "CORE_BRIEF.md"));
+  const goldenPaths = readMaybe(path.join(dir, "GOLDEN_PATHS.md"));
+  const risks = readMaybe(path.join(dir, "RISKS.md"));
+  const intent = ctx.intentFile
+    ? readMaybe(path.isAbsolute(ctx.intentFile) ? ctx.intentFile : path.join(ctx.repoRoot, ctx.intentFile))
+    : "";
+  const now = new Date().toISOString();
+  const title = ctx.product || path.basename(ctx.repoRoot);
+  const briefLines = firstMeaningfulLines(coreBrief, 5);
+  const intentLines = firstMeaningfulLines(intent, 5);
+  const pathLines = firstMeaningfulLines(goldenPaths, 6);
+  const riskLines = firstMeaningfulLines(risks, 3);
+
+  return [
+    `# ${title} Roadmap`,
+    "",
+    `Generated from bootstrap canon on ${now}.`,
+    "",
+    "## Product Intent",
+    "",
+    ...((briefLines.length ? briefLines : intentLines).length
+      ? (briefLines.length ? briefLines : intentLines).map((line) => `- ${line}`)
+      : ["- Ship the first usable product loop from the bootstrap intent."]),
+    "",
+    "## Milestones",
+    "",
+    "### Milestone 1 - First usable screen",
+    "",
+    "Goal: get the product scaffold installed, serving locally, and visible in the browser so the next sprint starts from a running app.",
+    "",
+    "### Milestone 2 - Core workflow",
+    "",
+    "Goal: turn the bootstrap intent and golden paths into the smallest complete workflow a target user can repeat.",
+    "",
+    "### Milestone 3 - Quality and release path",
+    "",
+    "Goal: add verification, edge-case handling, and deployment readiness once the core workflow is real.",
+    "",
+    "## Golden Paths",
+    "",
+    ...(pathLines.length ? pathLines.map((line) => `- ${line}`) : ["- Open the app, understand the product, and complete the primary action."]),
+    "",
+    "## Active Risks",
+    "",
+    ...(riskLines.length ? riskLines.map((line) => `- ${line}`) : ["- Canon is first-pass bootstrap output and should be refined after the first screen is running."]),
+    "",
+    "## Sprint Ledger",
+    "",
+    "<!-- ledger:sprints -->",
+    "",
+    "| Sprint | Milestone | Status | Objective |",
+    "|---|---|---|---|",
+    "| S1 | M1 | active | Bring the first usable screen up locally from the generated scaffold. |",
+    "| S2 | M2 | planned | Implement the core workflow from the highest-priority golden path. |",
+    "| S3 | M3 | planned | Add verification, resilience, and release prep. |",
+    "",
+    "## Next Action",
+    "",
+    "Start with S1: confirm the generated app serves locally, then replace the scaffold landing screen with the first product-specific workflow.",
+    "",
+  ].join("\n");
+}
+
+function writeCurrentSprint(ctx) {
+  const sprintDir = path.join(ctx.repoRoot, ".claude", "project", "sprint");
+  fs.mkdirSync(sprintDir, { recursive: true });
+  const body = [
+    "id: S1",
+    "title: First usable screen",
+    "status: active",
+    "phase: execution",
+    "objective: Bring the first usable screen up locally from the generated scaffold.",
+    "",
+  ].join("\n");
+  fs.writeFileSync(path.join(sprintDir, "current-sprint.yaml"), body, "utf8");
+}
+
 async function run(ctx) {
   const { repoRoot, product, dryRun, log } = ctx;
   const dir = canonDir(ctx);
@@ -96,6 +196,26 @@ async function run(ctx) {
       status: "done",
       message: `grounded roadmap accepted → ${roadmapRel}`,
       data: { roadmapPath: roadmapRel, grounded: true },
+    };
+  }
+
+  if (ctx.args && ctx.args.auto) {
+    if (dryRun) {
+      log(`[dry-run] would render automatic grounded roadmap from ${ctx.outDir}`);
+    } else {
+      fs.writeFileSync(roadmapAbs, renderAutomaticRoadmap(ctx, dir), "utf8");
+      writeCurrentSprint(ctx);
+      log(`automatic grounded roadmap written -> ${roadmapRel}`);
+    }
+    return {
+      ok: true,
+      status: "done",
+      message: `automatic roadmap created -> ${roadmapRel}`,
+      data: {
+        roadmapPath: roadmapRel,
+        grounded: true,
+        firstAction: "S1: Bring the first usable screen up locally from the generated scaffold.",
+      },
     };
   }
 
