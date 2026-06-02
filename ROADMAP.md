@@ -24,6 +24,30 @@ WarpOS exists to help the maintainer ship real products faster while extracting 
 
 ---
 
+## 🔭 2026-06-02 — Reconcile #2 + golden-flow-first reprioritization — TOP PRIORITY (supersedes the 2026-05-30 reconcile below)
+
+`/warp:reconcile` #2 over all 5 product registers (almanac, companycam, doogle, dreamteam, masterconsole). Verify-canonical-first (ED-008): **~30 of ~80 gaps already fixed @canonical.** Audit: `runtime/notes/warpos-gap-register-audit.md`. Full prescriptive handoff + per-gap specs: `DUMP.md`.
+
+**Direction (operator-answered 2026-06-02):** the **golden-flow end-to-end loop — bootstrap on-ramp → on-screen "WOW" on a clean machine — is the main hardening target, GENERALIZED across all portfolio projects** (masterconsole = flagship cockpit, not the only consumer). Hardening this *is* the engine's core job (get any product to on-screen/PMF). Reorders the backlog: **S4 (smart canon) → bootstrap `:setup/:paint` + event-contract → hook-point registry → C-4 consumer-contract loop.**
+
+### ✅ Shipped this session (commit `ac56602`, local — not pushed)
+- **S1** dispatch phantom killed (WI-41/42): `"$(cat FILE)"` argv → stdin / `dispatch-claude.js` wrapper across `gamma.md`/`delta.md`/`agent-dispatch-guide.md`/`oneshot/preflight.md`.
+- **W1** orphaned `design-quality` authority activated: `--lane2 block|advisory` ramp (Lane1 blocks, Lane2 advisory) wired into Gamma's gauntlet on UI units (+3 tests, 13/13).
+- **S3** provider/Gemini prefer-OAuth-else-key hardened + new `dispatch-readiness.js` (→ `/warp:health §11.5`) + quota-aware fallback.
+- **S5** guard surface: purity staged-only commit gate, new `docker-secret-ignore.js` (+ `/scan:docker-secrets`), `settings-edit-guard.js`, install-baseline guard-remediation-path check (+ W-5/W-13 regression locks).
+
+### 🔧 Next — golden-flow-first order (specs in `DUMP.md §3`)
+- **S4 — smart canon** [open] — LLM brief-expand, **zero `{{token}}` leak** + replace the hollow `no-dumb-default` enforcer (WI-38); `DATA_AND_ACCOUNTS.md.tmpl` + canon-type coverage check (WI-39); lastmile self-hosted profile + server-deploy (WG-26/29). **Gates the golden flow.**
+- **bootstrap `:setup`/`:paint` split + EVENT-CONTRACT** [open] — 2 thin skills over `spinup-orchestrate.js`; typed seam events so a cockpit renders **buttons not commands** (D7); generalized across projects. (WI-40; masterconsole M3·S16)
+- **Wire-the-judgment-layer follow-on** [open] — sprint **hook-point registry** (`{role,step,condition,mode,order}`, modeled on `_guides/registry.json`+ledger) + orchestrator-reads-registry + **bidirectional `scan:sprint-hook-coverage`**; W2 (sprint:design consults managers by composition), W3, W4 (`scan:design-guides-coverage`), delta-W1. Design: `runtime/notes/sprint-hook-points-design.md`. Implements the manager-set **router** (β+DoP approved).
+- **C-4 consumer-contract milestone** [open] — clean-room fresh-install / on-ramp simulation in the dev loop (the ED-008 systemic cure = the master-validation loop above).
+- **S2** adhoc team/build-chain hygiene [open] · **C-5 / C-9 / C-10** + builder-flagged minors per `DUMP.md §3 ITEM 9`.
+
+### 🆕 `mode:sprint`? (operator-flagged 2026-06-02) [open]
+No distinct `mode:sprint` exists today — only the shipped `/sprint:full` pipeline. Architecture settled this session: the **manager layer = domain judgment** invoked at sprint hook-points, **BELOW the orchestrator (γ/δ), alongside β (process judgment)** — managers never replace the Alex agents. Decide (β/DoP): **(a)** sprint-lifecycle as a mode-agnostic spec the existing γ/δ read *(recommended — less mode proliferation)* vs **(b)** a thin `mode:sprint` convenience session. Load-bearing artifact either way = the hook-point registry above. *(Note: FE/BE builder split already exists — `frontend-builder`/`backend-builder` in 01-adhoc + 02-oneshot.)*
+
+---
+
 ## 🔭 Downstream WARPOS.md Reconcile — verified-open (2026-05-30) — TOP PRIORITY
 
 `/warp:reconcile` run over all 4 product registers (dreamteam W-1..W-22+, companycam WG-1..WG-17+, masterconsole WI-2026-05-29-01..13, almanac W-001..W-007). **Verify-canonical-first** (ED-008): ~80% of the ~55 flagged gaps were **already fixed** in canonical@current (sprint path-keys/null-crash/templates/resume-idempotency, all 4 guard-awareness gaps, γ phantom-dispatch, partial-capsule, scaffold-version, git-dubious-ownership, stale-role-names; skills /roadmap:create + /bootstrap:spinup + sprint:full Step-8b all EXIST). The Phase-1 dispatch work this session fixed the gemini-auth/codex-flag/2nd-GPT-security cluster (WG-13, WI-02/05/08). Below = the genuinely-open remainder, triaged.

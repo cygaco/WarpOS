@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "0.13.1",
-  "installedCommit": "cf68f3f7f2f76ff5a86678e7957240aaa9871dc8",
-  "installedAt": "2026-06-02T22:32:51.619Z",
+  "installedCommit": "ac566028a06f808eb2e59cafa56e15c637205dd2",
+  "installedAt": "2026-06-02T22:44:56.217Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
