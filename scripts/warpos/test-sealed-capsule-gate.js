@@ -214,7 +214,12 @@ function seal(o) {
     if (!dest) continue;
     const absSrc = path.resolve(srcRoot, dest);
     const absDest = path.resolve(payloadDir, dest);
-    if (!isWithin(srcRoot, absSrc) || !isWithin(payloadDir, absDest)) continue; // M2 boundary
+    if (!isWithin(srcRoot, absSrc) || !isWithin(payloadDir, absDest)) {
+      // Re-gauntlet (med): a generated_file path escaping the boundary is a malformed
+      // BOM — record it as a failure (was silently skipped → false ok:true).
+      mismatched.push({ asset: dest, reason: "generated_file path escapes sealing boundary (../ traversal)" });
+      continue;
+    }
     if (fs.existsSync(absSrc)) {
       fs.mkdirSync(path.dirname(absDest), { recursive: true });
       fs.copyFileSync(absSrc, absDest);
@@ -363,13 +368,28 @@ function assertCanonicalUnreachable(o) {
  */
 function scrubbedEnv(role, repoDir) {
   const env = { ...process.env };
-  const needles = [REPO_ROOT, REPO_ROOT.replace(/\\/g, "/")];
-  const DROP = /^(NODE_PATH|INIT_CWD|OLDPWD|CLAUDE_PROJECT_DIR|npm_config_local_prefix|npm_config_prefix|npm_config_cache|npm_config_globalconfig|npm_config_userconfig)$/i;
+  // Re-gauntlet (low): case-INSENSITIVE match — Windows drive-letter casing (c:\ vs
+  // C:\) must not bypass the canonical scrub.
+  const needlesLc = [REPO_ROOT, REPO_ROOT.replace(/\\/g, "/")].map((s) => s.toLowerCase());
+  const includesCanonical = (v) => typeof v === "string" && needlesLc.some((n) => n && v.toLowerCase().includes(n));
+  // Re-gauntlet (high): PRESERVE PATH/PATHEXT + tool/cred vars even if their value
+  // embeds the canonical path — under `npm run`/`npx`, PATH carries node_modules/.bin
+  // (which contains REPO_ROOT); deleting PATH wholesale breaks every child spawn
+  // (git/node/provider CLIs). PATH-like vars are instead sanitized ENTRY-BY-ENTRY:
+  // canonical segments removed, the rest kept. Creds are needed for the telemetry dispatch.
+  const PRESERVE = /^(PATH|PATHEXT|HOME|USERPROFILE|SYSTEMROOT|WINDIR|TEMP|TMP|COMSPEC|.*_API_KEY|.*_TOKEN|GEMINI_.*|OPENAI_.*|ANTHROPIC_.*)$/i;
+  // DROP outright: canonical-pointing module/cwd resolution channels (all npm_config_*).
+  const DROP = /^(NODE_PATH|INIT_CWD|OLDPWD|CLAUDE_PROJECT_DIR|npm_config_.*)$/i;
   for (const k of Object.keys(env)) {
     if (/^WARPOS_/i.test(k)) { delete env[k]; continue; }
+    if (PRESERVE.test(k)) {
+      if (/^(PATH|PATHEXT)$/i.test(k) && typeof env[k] === "string" && env[k].includes(path.delimiter)) {
+        env[k] = env[k].split(path.delimiter).filter((seg) => !includesCanonical(seg)).join(path.delimiter);
+      }
+      continue;
+    }
     if (DROP.test(k)) { delete env[k]; continue; }
-    const v = env[k];
-    if (typeof v === "string" && needles.some((n) => n && v.includes(n))) { delete env[k]; continue; }
+    if (includesCanonical(env[k])) { delete env[k]; continue; }
   }
   if (repoDir) { env.PWD = repoDir; } // re-point cwd-ish resolution at the isolated repo
   if (role) env.WARPOS_REPO_ROLE = role; // belt; role is ALSO threaded via the resolver arg
@@ -467,9 +487,11 @@ function defaultRunStep(name, ctx) {
       const promptFile = path.join(repoDir, ".telemetry-probe.txt");
       try { fs.writeFileSync(promptFile, "Reply with exactly: OK"); } catch { /* the dispatch below will surface it */ }
       const r = node([dp, TELEMETRY_PROBE_ROLE, promptFile], 180000);
-      // A spawn error / timeout (status null) is a hard fail. Otherwise the wrapper
-      // executed and should have recorded — verifyTyped() is the authoritative check.
-      return { status: r.status === null ? 2 : 0, detail: tail(r.stdout || r.stderr), telemetryRole: TELEMETRY_PROBE_ROLE };
+      // Re-gauntlet (med): surface the dispatch exit code (don't swallow it) so a
+      // dispatch crash is visible, not hidden behind a downstream verifyTyped no-record.
+      // status null = spawn error/timeout → 2; otherwise pass the real exit through.
+      // verifyTyped() remains the authoritative typed-success check on the ledger.
+      return { status: r.status === null ? 2 : r.status, detail: `exit=${r.status} ${tail(r.stdout || r.stderr)}`, telemetryRole: TELEMETRY_PROBE_ROLE };
     }
     case "update": {
       // H2: missing update engine → fail-closed (was status:0 "n/a").
@@ -681,6 +703,18 @@ function runSelfTests() {
       // (c) staleness gate fails closed when the checker reports non-zero
       const stale = manifestIsCurrent(() => ({ status: 1, stdout: "drift" }));
       assert(!stale.ok, "manifestIsCurrent should be !ok on non-zero checker");
+    } finally { cleanup(fx.dir); cleanup(payloadDir); }
+  });
+
+  t("seal-fail-closed-on-generated-file-traversal", () => {
+    const fx = mkFixtureCapsule();
+    const payloadDir = fs.mkdtempSync(path.join(os.tmpdir(), "warpos-payload-"));
+    try {
+      // A generated_file whose dest escapes the payload boundary must FAIL seal, not skip.
+      fx.manifest.generated_files = [{ dest: path.join("..", "..", "escape.json"), builder: "empty-file" }];
+      const r = seal({ manifest: fx.manifest, srcRoot: fx.srcRoot, payloadDir });
+      assert(!r.ok, "seal must fail on generated_file path traversal");
+      assert((r.mismatched || []).some((m) => /traversal/.test(m.reason || "")), "traversal must be recorded: " + JSON.stringify(r.mismatched));
     } finally { cleanup(fx.dir); cleanup(payloadDir); }
   });
 
