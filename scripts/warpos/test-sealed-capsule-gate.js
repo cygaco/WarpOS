@@ -79,6 +79,14 @@ function assetHash(absPath, destPath) {
     : cHash.rawHash(absPath);
 }
 
+// M2 (gauntlet): a resolved path must stay under its root. A malformed manifest
+// with `../` traversal must not let seal() read or write outside srcRoot/payloadDir.
+function isWithin(root, abs) {
+  const r = path.resolve(root);
+  const a = path.resolve(abs);
+  return a === r || a.startsWith(r + path.sep);
+}
+
 // ── capsule discovery ──────────────────────────────────────────────────────
 function listCapsuleVersions() {
   let names;
@@ -167,7 +175,13 @@ function seal(o) {
         missing.push({ asset: a.id || "(unnamed)", reason: "no src/dest" });
         continue;
       }
-      const absSrc = path.join(srcRoot, src);
+      const absSrc = path.resolve(srcRoot, src);
+      const absDest = path.resolve(payloadDir, dest);
+      // M2: reject path-traversal — a malformed manifest must not escape the boundary.
+      if (!isWithin(srcRoot, absSrc) || !isWithin(payloadDir, absDest)) {
+        mismatched.push({ asset: a.id || src, src, reason: "path escapes sealing boundary (../ traversal)" });
+        continue;
+      }
       if (!fs.existsSync(absSrc)) {
         // A manifest entry whose src is absent from the source tree is exactly the
         // "downstream always missing" bug — record it; do NOT fall back to anything.
@@ -181,7 +195,6 @@ function seal(o) {
           continue;
         }
       }
-      const absDest = path.join(payloadDir, dest);
       fs.mkdirSync(path.dirname(absDest), { recursive: true });
       fs.copyFileSync(absSrc, absDest);
       copied++;
@@ -199,8 +212,9 @@ function seal(o) {
   for (const g of generated) {
     const dest = g.dest;
     if (!dest) continue;
-    const absSrc = path.join(srcRoot, dest);
-    const absDest = path.join(payloadDir, dest);
+    const absSrc = path.resolve(srcRoot, dest);
+    const absDest = path.resolve(payloadDir, dest);
+    if (!isWithin(srcRoot, absSrc) || !isWithin(payloadDir, absDest)) continue; // M2 boundary
     if (fs.existsSync(absSrc)) {
       fs.mkdirSync(path.dirname(absDest), { recursive: true });
       fs.copyFileSync(absSrc, absDest);
@@ -258,7 +272,13 @@ function isolate(o) {
     throw new Error(`isolate: temp repo ${repoDir} is inside canonical ${REPO_ROOT} — isolation impossible (fail-closed)`);
   }
   if (o.gitInit !== false) {
-    spawnSync("git", ["init", "-q"], { cwd: repoDir, encoding: "utf8" });
+    // H6 (gauntlet): don't ignore the git result — if git is missing/EPERM, isolate()
+    // would otherwise return a repo with no .git while claiming AC-2.1 git-init occurred.
+    const gi = spawnSync("git", ["init", "-q"], { cwd: repoDir, encoding: "utf8" });
+    if (gi.status !== 0 || !fs.existsSync(path.join(repoDir, ".git"))) {
+      try { fs.rmSync(repoDir, { recursive: true, force: true }); } catch { /* noop */ }
+      throw new Error(`isolate: git init failed (status=${gi.status}) or .git absent — fail-closed`);
+    }
   }
   // Copy the sealed payload into the repo.
   copyTree(payloadDir, repoDir);
@@ -292,17 +312,34 @@ function assertCanonicalUnreachable(o) {
   // Probe a couple of spellings of the canonical path (native + posix slashes).
   const needles = [canonicalRoot, canonicalRoot.replace(/\\/g, "/")];
   const offenders = [];
+  // H4 (gauntlet): the reach-back scan must cover shipped SHELL scripts too
+  // (.sh/.ps1) — isTextAsset()'s allowlist omits them, so a hardcoded canonical
+  // path there would pass undetected. Scan any plausibly-text shipped file.
+  const SCAN_EXT = new Set([".md", ".js", ".cjs", ".mjs", ".json", ".yaml", ".yml", ".ts", ".toml", ".txt", ".sh", ".ps1", ".bat", ".cmd", ".env"]);
+  const scannable = (p) => SCAN_EXT.has(path.extname(p).toLowerCase()) || path.basename(p).startsWith(".");
+  // #2 (gauntlet) — relative-`../`-escape: NOT a reach-back vector here BY CONSTRUCTION.
+  // The isolated repo lives under os.tmpdir() (e.g. C:\...\AppData\Local\Temp\...), a
+  // tree DISJOINT from canonical (C:\...\Desktop\...\WarpOS). A relative `../` chain
+  // resolves within/above the temp tree, never into canonical — so it cannot reach
+  // back. (A heuristic `../`-chain scan was tried and removed: it false-RED'd on docs
+  // that legitimately contain `../../../` in prose, with zero real security benefit.)
+  // The real reach-back vector is an ABSOLUTE canonical path literal — scanned below,
+  // now including shipped shell scripts (.sh/.ps1) that isTextAsset() omits.
   const walk = (dir) => {
     let ents;
     try { ents = fs.readdirSync(dir, { withFileTypes: true }); } catch { return; }
     for (const ent of ents) {
       const p = path.join(dir, ent.name);
       if (ent.isDirectory()) {
-        if (ent.name === ".git" || ent.name === "node_modules") continue;
+        if (ent.name === ".git") continue; // scan node_modules too — a sealed payload should not have one
         walk(p);
-      } else if (ent.isFile() && cHash.isTextAsset(p)) {
+      } else if (ent.isFile() && scannable(p)) {
         let txt;
-        try { txt = fs.readFileSync(p, "utf8"); } catch { continue; }
+        try { txt = fs.readFileSync(p, "utf8"); } catch {
+          // H4: an unreadable file we cannot clear is suspicious — flag fail-closed.
+          offenders.push({ file: path.relative(repoDir, p), needle: "(unreadable — cannot clear)" });
+          continue;
+        }
         for (const n of needles) {
           if (n && txt.includes(n)) {
             offenders.push({ file: path.relative(repoDir, p), needle: n });
@@ -316,13 +353,26 @@ function assertCanonicalUnreachable(o) {
   return { ok: offenders.length === 0, offenders };
 }
 
-/** Env with WARPOS_ (and canonical-pointing) vars scrubbed + the role forced via arg-equivalent env. */
-function scrubbedEnv(role) {
+/**
+ * Env for an isolated child process. H1 (gauntlet): scrub EVERY canonical-pointing
+ * channel — not just WARPOS_*. A child could otherwise resolve modules/cwd back to
+ * canonical via NODE_PATH, PWD/OLDPWD/INIT_CWD/CLAUDE_PROJECT_DIR, npm_config_* path
+ * vars, or ANY env var whose value embeds the canonical path. PATH and provider creds
+ * (API keys) are PRESERVED so node/git/provider CLIs still work — they don't point at
+ * canonical. PWD/cwd-ish vars are re-pointed at the isolated repo.
+ */
+function scrubbedEnv(role, repoDir) {
   const env = { ...process.env };
+  const needles = [REPO_ROOT, REPO_ROOT.replace(/\\/g, "/")];
+  const DROP = /^(NODE_PATH|INIT_CWD|OLDPWD|CLAUDE_PROJECT_DIR|npm_config_local_prefix|npm_config_prefix|npm_config_cache|npm_config_globalconfig|npm_config_userconfig)$/i;
   for (const k of Object.keys(env)) {
-    if (/^WARPOS_/i.test(k)) delete env[k];
+    if (/^WARPOS_/i.test(k)) { delete env[k]; continue; }
+    if (DROP.test(k)) { delete env[k]; continue; }
+    const v = env[k];
+    if (typeof v === "string" && needles.some((n) => n && v.includes(n))) { delete env[k]; continue; }
   }
-  if (role) env.WARPOS_REPO_ROLE = role; // belt; the gate also threads role via the resolver arg
+  if (repoDir) { env.PWD = repoDir; } // re-point cwd-ish resolution at the isolated repo
+  if (role) env.WARPOS_REPO_ROLE = role; // belt; role is ALSO threaded via the resolver arg
   return env;
 }
 
@@ -371,41 +421,62 @@ function lifecycle(o) {
   };
 }
 
+// The role used by the telemetry step's real dispatch (cheap/fast; gpt-5.4-mini).
+// verifyTyped() then checks the consumer ledger for THIS role's well-formed record.
+const TELEMETRY_PROBE_ROLE = "qa";
+
 // Default real step runner — spawns the INSTALLED repo's own scripts (never
-// canonical) with cwd=repoDir + scrubbed env + role forced via the resolver arg
-// (threaded into WARPOS_REPO_ROLE as a belt for child processes).
+// canonical) with cwd=repoDir + fully-scrubbed env + role threaded via WARPOS_REPO_ROLE.
+// H2 (gauntlet): a MISSING required engine is fail-CLOSED (non-zero), never "n/a:0" —
+// a payload that omits a required lifecycle surface is an incomplete BOM, the exact
+// thing this gate exists to catch.
 function defaultRunStep(name, ctx) {
   const { repoDir, role } = ctx;
-  const env = scrubbedEnv(role);
+  const env = scrubbedEnv(role, repoDir);
   const node = (relArgs, timeout = 120000) =>
     spawnSync(process.execPath, relArgs, { cwd: repoDir, env, encoding: "utf8", timeout });
+  const requireEngine = (rel) => {
+    const p = path.join(repoDir, rel);
+    return fs.existsSync(p) ? p : null;
+  };
   switch (name) {
-    case "setup":
-      // The payload IS the install; "setup" here re-verifies the install verifier exists.
-      return { status: fs.existsSync(path.join(repoDir, "scripts", "check", "install.js")) ? 0 : 1 };
+    case "setup": {
+      // The payload IS the install; "setup" re-verifies the install verifier shipped.
+      const ij = requireEngine(path.join("scripts", "check", "install.js"));
+      return { status: ij ? 0 : 1, detail: ij ? "" : "install verifier missing from sealed payload (incomplete BOM)" };
+    }
     case "scan:install": {
-      const r = node([path.join(repoDir, "scripts", "check", "install.js")]);
-      return { status: r.status, detail: tail(r.stdout || r.stderr) };
+      const ij = requireEngine(path.join("scripts", "check", "install.js"));
+      if (!ij) return { status: 1, detail: "install verifier missing (incomplete BOM)" };
+      const r = node([ij]);
+      return { status: r.status === null ? 2 : r.status, detail: tail(r.stdout || r.stderr) };
     }
     case "sprint": {
-      // Minimal real sprint signal: the installed sprint engine resolves + reports.
-      const sp = path.join(repoDir, "scripts", "sprint", "status.js");
-      if (!fs.existsSync(sp)) return { status: 0, detail: "sprint engine not shipped (n/a)" };
+      // H2: missing sprint engine → fail-closed (was status:0 "n/a").
+      const sp = requireEngine(path.join("scripts", "sprint", "status.js"));
+      if (!sp) return { status: 1, detail: "sprint engine missing from sealed payload (incomplete BOM)" };
       const r = node([sp]);
       return { status: r.status === null ? 2 : r.status, detail: tail(r.stdout || r.stderr) };
     }
     case "telemetry": {
-      // The installed dispatch wrapper must be present so consumer dispatches are
-      // recorded (the typed-success precondition).
-      const dp = path.join(repoDir, "scripts", "dispatch-agent.js");
-      return { status: fs.existsSync(dp) ? 0 : 1 };
+      // C2 (gauntlet): perform a REAL bounded dispatch via the INSTALLED wrapper so a
+      // completion record lands in the consumer's own ledger — the precondition
+      // verifyTyped() checks. Missing wrapper → fail-closed.
+      const dp = requireEngine("scripts/dispatch-agent.js");
+      if (!dp) return { status: 1, detail: "dispatch wrapper missing from sealed payload (incomplete BOM)" };
+      const promptFile = path.join(repoDir, ".telemetry-probe.txt");
+      try { fs.writeFileSync(promptFile, "Reply with exactly: OK"); } catch { /* the dispatch below will surface it */ }
+      const r = node([dp, TELEMETRY_PROBE_ROLE, promptFile], 180000);
+      // A spawn error / timeout (status null) is a hard fail. Otherwise the wrapper
+      // executed and should have recorded — verifyTyped() is the authoritative check.
+      return { status: r.status === null ? 2 : 0, detail: tail(r.stdout || r.stderr), telemetryRole: TELEMETRY_PROBE_ROLE };
     }
     case "update": {
-      const up = path.join(repoDir, "scripts", "warpos", "update.js");
-      if (!fs.existsSync(up)) return { status: 0, detail: "update engine not shipped (n/a)" };
-      // --status is the read-only manifest-validation path. Run the INSTALLED copy
-      // so its REPO_ROOT resolves to the sealed repo (stays isolated; no canonical
-      // reach-back). --target defaults to that same sealed repo.
+      // H2: missing update engine → fail-closed (was status:0 "n/a").
+      const up = requireEngine(path.join("scripts", "warpos", "update.js"));
+      if (!up) return { status: 1, detail: "update engine missing from sealed payload (incomplete BOM)" };
+      // --status is read-only manifest validation. The INSTALLED copy resolves its
+      // REPO_ROOT to the sealed repo (stays isolated; --target defaults there too).
       const r = node([up, "--status"]);
       return { status: r.status === null ? 2 : r.status, detail: tail(r.stdout || r.stderr) };
     }
@@ -473,7 +544,32 @@ function defaultRunCell(outer) {
     const iso = isolate({ payloadDir: outer.payloadDir });
     try {
       const lc = lifecycle({ repoDir: iso.repoDir, role: resolved.role, mode });
-      return { ok: lc.ok, role, mode, failedStep: lc.failedStep, steps: lc.steps };
+      if (!lc.ok) return { ok: false, role, mode, failedStep: lc.failedStep, steps: lc.steps };
+
+      // H5 (gauntlet): assert the CHILD-side resolver actually reports the requested
+      // role in the isolated repo (env threading honored end-to-end), not just the
+      // parent. Run the INSTALLED repo-role.js under the same scrubbed+role env.
+      const rr = spawnSync(
+        process.execPath,
+        [path.join(iso.repoDir, "scripts", "warpos", "repo-role.js"), "--json"],
+        { cwd: iso.repoDir, env: scrubbedEnv(role, iso.repoDir), encoding: "utf8", timeout: 30000 },
+      );
+      let childRole = null;
+      try { childRole = JSON.parse(rr.stdout || "{}").role; } catch { /* fall through */ }
+      if (childRole !== role) {
+        return { ok: false, role, mode, failedStep: "role-assert", detail: `child resolver reported '${childRole}', expected '${role}'`, steps: lc.steps };
+      }
+
+      // C2 (gauntlet): verifyTyped against the CONSUMER's own ledger for the telemetry
+      // probe dispatch — typed success requires a well-formed completion record in the
+      // lifecycle window. Fail-closed on no-record/malformed/ill-typed (BC-16).
+      const ledger = path.join(iso.repoDir, ".claude", "runtime", "dispatch-completions.jsonl");
+      const vt = verifyTyped({ window: lc.window, roles: [TELEMETRY_PROBE_ROLE], ledgerPath: ledger });
+      if (!vt.ok) {
+        return { ok: false, role, mode, failedStep: "verifyTyped", detail: `typed-success failed: missing=${(vt.missingRoles || []).join(",")} malformedTainted=${vt.malformedTainted}`, steps: lc.steps };
+      }
+
+      return { ok: true, role, mode, failedStep: null, steps: lc.steps, typed: true };
     } finally {
       try { fs.rmSync(iso.repoDir, { recursive: true, force: true }); } catch { /* noop */ }
     }
@@ -488,6 +584,28 @@ function tail(s, n = 200) {
 function loadCapsuleManifest(version) {
   const p = path.join(RELEASES_DIR, version, "framework-manifest.json");
   return JSON.parse(fs.readFileSync(p, "utf8").replace(/^﻿/, ""));
+}
+
+// H3 (gauntlet): when sealing a built release capsule, verify its checksums.json
+// covers the capsule files and each hash matches (capsule artifacts use rawHash —
+// binary-safe — per release-build.js). A stale/corrupt capsule must not seal silently.
+function verifyCapsuleIntegrity(version) {
+  const dir = path.join(RELEASES_DIR, version);
+  const csPath = path.join(dir, "checksums.json");
+  if (!fs.existsSync(csPath)) return { ok: false, detail: `checksums.json missing for capsule ${version}` };
+  let cs;
+  try { cs = JSON.parse(fs.readFileSync(csPath, "utf8").replace(/^﻿/, "")); }
+  catch (e) { return { ok: false, detail: `checksums.json unparseable: ${e.message}` }; }
+  const entries = (cs && cs.entries) || {};
+  if (!Object.keys(entries).length) return { ok: false, detail: "checksums.json has no entries" };
+  const bad = [];
+  for (const [file, expected] of Object.entries(entries)) {
+    const fp = path.join(dir, file);
+    if (!fs.existsSync(fp)) { bad.push(`${file}: missing`); continue; }
+    const got = cHash.rawHash(fp);
+    if (!cHash.hashMatches(got, expected)) bad.push(`${file}: hash mismatch`);
+  }
+  return { ok: bad.length === 0, detail: bad.join("; ") };
 }
 
 // ── self-test harness (fixture-based, fast, deterministic) ────────────────────
@@ -676,6 +794,13 @@ function runSelfTests() {
     assert(r.failed.includes("consumer/warm"), "failed cell must be named: " + r.failed.join(","));
   });
 
+  // M1 (gauntlet): a runGate-LEVEL negative — not just helper-level — asserting the
+  // gate actually returns a failure (non-zero) on a bad input, end to end.
+  t("rungate-fails-closed-on-bad-capsule", () => {
+    const res = runGate({ version: "0.0.0-does-not-exist" });
+    assert(res.failures > 0, "runGate must report failure for a non-existent/integrity-failing capsule");
+  });
+
   // ── S-7 manifests + testsuite registration ──
   t("manifests-current-after-build", () => {
     const r = manifestIsCurrent();
@@ -718,6 +843,13 @@ function runGate(opts) {
   const stale = manifestIsCurrent();
   if (!stale.ok) { fail(`shipped manifest stale (BC-05): ${stale.detail}`); return { failures, out }; }
   okmsg("shipped manifest current");
+
+  // (0b) H3: when sealing a built release capsule, verify its checksums first.
+  if (version) {
+    const ci = verifyCapsuleIntegrity(version);
+    if (!ci.ok) { fail(`capsule ${version} integrity check failed: ${ci.detail}`); return { failures, out }; }
+    okmsg(`capsule ${version} checksums verified`);
+  }
 
   // (1) seal
   let manifest;

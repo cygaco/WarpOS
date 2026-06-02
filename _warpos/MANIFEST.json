@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-02T03:39:24.178Z",
+  "generatedAt": "2026-06-02T03:57:25.401Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.13.1",
   "migrations": [],
@@ -97,8 +97,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "82e6df04a720bc1d61a3fefbb705476b4f767e98f359f1a7cb223b74b236b1a2",
-      "installedSha": "82e6df04a720bc1d61a3fefbb705476b4f767e98f359f1a7cb223b74b236b1a2"
+      "sha256": "c31e94e8d2dbbf6f422a1849d506026f6d6a566cca1e4cbcb6fe10a63c7a22d2",
+      "installedSha": "c31e94e8d2dbbf6f422a1849d506026f6d6a566cca1e4cbcb6fe10a63c7a22d2"
     },
     "USER_GUIDE.md": {
       "owner": "framework",
@@ -2835,8 +2835,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/warpos/release-gates.js",
-      "sha256": "c862a3c1272f45e46f15c0bc90bafb76362103d402e9189d0fe092923c4b4caf",
-      "installedSha": "c862a3c1272f45e46f15c0bc90bafb76362103d402e9189d0fe092923c4b4caf"
+      "sha256": "c809d744df7ba37bc223fbcb2bfd812833e87c85c9d162c9c77f35c89266bb12",
+      "installedSha": "c809d744df7ba37bc223fbcb2bfd812833e87c85c9d162c9c77f35c89266bb12"
     },
     "scripts/warpos/replay-bench.js": {
       "owner": "framework",
@@ -2940,8 +2940,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/warpos/test-sealed-capsule-gate.js",
-      "sha256": "4e7c21d1696b8143e79880cb316b63b8d943a887a6bfa965d4eac662d1380801",
-      "installedSha": "4e7c21d1696b8143e79880cb316b63b8d943a887a6bfa965d4eac662d1380801"
+      "sha256": "a112409022ff5a40f8fc72faec650d239e295da9ad80e11a0187da395518d5d4",
+      "installedSha": "a112409022ff5a40f8fc72faec650d239e295da9ad80e11a0187da395518d5d4"
     },
     "scripts/warpos/test-status-cli.js": {
       "owner": "framework",

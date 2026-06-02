@@ -634,15 +634,18 @@ const GATES = [
   // OUT-OF-TREE repo with canonical UNREACHABLE, and assert no reach-back + a
   // certified install. This is the structural cure for the "downstream always
   // missing" class that the tautological framework_manifest gate cannot catch.
-  // Runs the bounded real gate (seal+isolate+unreachable+scan:install); the heavy
-  // real-matrix lifecycle (--full) is an on-demand pre-release / CI step.
+  // Promotion runs the FULL contract (--full): seal+isolate+unreachable+scan:install
+  // PLUS the real lifecycle matrix (both roles × cold+warm) and typed-success
+  // telemetry verify (gauntlet finding C1 — bounded mode would let release pass
+  // without AC-3/AC-4/AC-5). The fast --self-test path is the per-commit signal
+  // (recurring-bug-classes BC-28); this is the heavier promotion gate.
   gate("sealed_capsule_contract", () => {
-    const r = runScript("scripts/warpos/test-sealed-capsule-gate.js", []);
+    const r = runScript("scripts/warpos/test-sealed-capsule-gate.js", ["--full"]);
     if (r.status === 0)
       return {
         ok: true,
         severity: "green",
-        message: "Sealed-capsule contract: current BOM stands up self-contained, canonical unreachable, no reach-back.",
+        message: "Sealed-capsule contract (--full): BOM stands up self-contained, no reach-back, lifecycle matrix + typed telemetry pass.",
       };
     if (r.status === 1)
       return {
