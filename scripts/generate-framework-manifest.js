@@ -440,7 +440,10 @@ function collectAssets() {
 // regex. Keeping them in sync here (single source of truth) is the whole point.
 // RUNTIME_JSONL_PATTERN is the filename pattern for owner=runtime append-only
 // logs that must NEVER ship in a capsule (W-8 class, events/tools/skill-usage).
-const RUNTIME_JSONL_PATTERN = /(^|\/)(events|tools|skill-usage)\.jsonl$/;
+// FIX2: separator-agnostic ([\\/] matches both / and \) + case-insensitive flag.
+// A Windows-style path like beta\events.jsonl would evade a /\/-only pattern.
+// The /i flag catches events.JSONL etc. (CWE-436 evasion hardening, SP-0181 E1).
+const RUNTIME_JSONL_PATTERN = /(^|[\\/])(events|tools|skill-usage)\.jsonl$/i;
 
 module.exports = { isExcluded, RUNTIME_JSONL_PATTERN };
 

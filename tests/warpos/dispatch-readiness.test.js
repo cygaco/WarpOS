@@ -280,12 +280,14 @@ process.stdout.write("\n3. skillScriptCompletenessGate\n");
   const g6 = skillScriptCompletenessGate(m5, {}, fakeReader);
   check("skillScriptCompletenessGate: no skill assets → passes", !g6.blocked);
 
-  // 3g. Skill file unreadable → gate skips that skill (not a failure)
+  // 3g. FIX4: Shipped skill file unreadable → gate BLOCKS (fail-closed).
+  // An unreadable skill cannot have its script refs verified; blocking prevents
+  // false-green releases where a dead skill ships silently.
   fakeReader._files = {}; // no files readable
   const m6 = makeManifest("", []);
   const g7 = skillScriptCompletenessGate(m6, {}, fakeReader);
-  // Can't read the skill file → should pass (skips unreadable files)
-  check("skillScriptCompletenessGate: unreadable skill file → skipped (passes)", !g7.blocked);
+  check("skillScriptCompletenessGate: unreadable shipped skill → blocks (fail-closed)", g7.blocked,
+    "FIX4: expected blocked=true when shipped skill is unreadable");
 
   // 3h. KNOWN_DANGLING_REFS starts empty (no intentional allowlist entries yet)
   check(
@@ -467,6 +469,316 @@ process.stdout.write("\n6. Skill .md content assertions\n");
     "test.md: explains relationship between cli.js and smoke",
     testMd.includes("dispatch-agent.js") || testMd.includes("cli.js"),
     "Missing cli.js vs smoke relationship in test.md",
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Section 7: FIX1 — cli.js --smoke/--full routes to provider-smoke + propagates exit code
+// ─────────────────────────────────────────────────────────────────────────────
+process.stdout.write("\n7. FIX1 — cli.js --smoke/--full routing\n");
+
+{
+  const CLI_JS = path.join(REPO_ROOT, "scripts", "agents", "cli.js");
+  const { testCmd } = require(CLI_JS);
+
+  // 7a. --smoke routes to provider-smoke.js --per-role
+  let capturedExe = null;
+  let capturedArgs = null;
+  const mockSpawnGreen = (exe, args, opts) => {
+    capturedExe = exe;
+    capturedArgs = args;
+    return { status: 0 }; // simulate green
+  };
+  const greenExit = testCmd(["--smoke"], mockSpawnGreen);
+  check(
+    "FIX1: --smoke routes to provider-smoke.js --per-role",
+    capturedArgs !== null &&
+      capturedArgs.some((a) => a.includes("provider-smoke.js")) &&
+      capturedArgs.includes("--per-role"),
+    `args=${JSON.stringify(capturedArgs)}`,
+  );
+  check(
+    "FIX1: --smoke propagates exit 0 (green)",
+    greenExit === 0,
+    `exit=${greenExit}`,
+  );
+
+  // 7b. --smoke propagates non-zero exit code (RED)
+  const mockSpawnRed = (exe, args, opts) => ({ status: 2 }); // simulate RED
+  const redExit = testCmd(["--smoke"], mockSpawnRed);
+  check(
+    "FIX1: --smoke propagates exit 2 (RED — not swallowed to 0)",
+    redExit === 2,
+    `exit=${redExit}`,
+  );
+
+  // 7c. --full is an alias for --smoke (same routing)
+  let capturedFull = null;
+  const mockSpawnFull = (exe, args, opts) => {
+    capturedFull = args;
+    return { status: 0 };
+  };
+  testCmd(["--full"], mockSpawnFull);
+  check(
+    "FIX1: --full alias routes to provider-smoke.js --per-role",
+    capturedFull !== null &&
+      capturedFull.some((a) => a.includes("provider-smoke.js")) &&
+      capturedFull.includes("--per-role"),
+    `args=${JSON.stringify(capturedFull)}`,
+  );
+
+  // 7d. null status (signal-killed) → treated as exit 2
+  const mockSpawnSignal = () => ({ status: null });
+  const signalExit = testCmd(["--smoke"], mockSpawnSignal);
+  check(
+    "FIX1: signal-killed (status=null) → exit 2 (treated as failure)",
+    signalExit === 2,
+    `exit=${signalExit}`,
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Section 8: FIX2 — RUNTIME_JSONL_PATTERN separator-agnostic + case-insensitive
+// ─────────────────────────────────────────────────────────────────────────────
+process.stdout.write("\n8. FIX2 — RUNTIME_JSONL_PATTERN backslash + case coverage\n");
+
+{
+  // 8a. Backslash separator caught (Windows path evasion fixed)
+  check(
+    "FIX2: RUNTIME_JSONL_PATTERN catches beta\\events.jsonl (backslash sep)",
+    RUNTIME_JSONL_PATTERN.test("beta\\events.jsonl"),
+    "Expected backslash-separated path to be caught",
+  );
+
+  // 8b. Case-insensitive: events.JSONL caught
+  check(
+    "FIX2: RUNTIME_JSONL_PATTERN catches events.JSONL (case-insensitive)",
+    RUNTIME_JSONL_PATTERN.test("beta/events.JSONL"),
+    "Expected uppercase extension to be caught",
+  );
+
+  // 8c. Mixed case + backslash
+  check(
+    "FIX2: RUNTIME_JSONL_PATTERN catches beta\\skill-usage.JSONL",
+    RUNTIME_JSONL_PATTERN.test("beta\\skill-usage.JSONL"),
+    "Expected backslash + uppercase to be caught",
+  );
+
+  // 8d. runtimeExclusionGate catches an asset with backslash src path
+  const { runtimeExclusionGate: reg } = require(RELEASE_BUILD);
+  const backslashManifest = {
+    assets: {
+      agent: [
+        {
+          id: "agent.test.events",
+          src: "beta\\events.jsonl",  // Windows-style path
+          owner: "generated",
+        },
+      ],
+    },
+  };
+  const r9 = reg(backslashManifest, {});
+  check(
+    "FIX2: runtimeExclusionGate blocks asset with backslash path (beta\\events.jsonl)",
+    r9.blocked,
+    `blocked=${r9.blocked} offenders=${JSON.stringify(r9.offenders)}`,
+  );
+
+  // 8e. Forward-slash path still caught (regression guard)
+  const fwdManifest = {
+    assets: {
+      agent: [
+        { id: "agent.test.tools", src: "beta/tools.jsonl", owner: "generated" },
+      ],
+    },
+  };
+  const r10 = reg(fwdManifest, {});
+  check(
+    "FIX2: runtimeExclusionGate still blocks forward-slash path (regression guard)",
+    r10.blocked,
+    `blocked=${r10.blocked}`,
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Section 9: FIX3 — CLI bypass flags removed from release-build.js
+// ─────────────────────────────────────────────────────────────────────────────
+process.stdout.write("\n9. FIX3 — production CLI bypass flags removed\n");
+
+{
+  const src = fs.readFileSync(RELEASE_BUILD, "utf8");
+
+  check(
+    "FIX3: --skip-runtime-exclusion-check not parsed from CLI args",
+    !src.includes('args.includes("--skip-runtime-exclusion-check")'),
+    "CLI flag --skip-runtime-exclusion-check is still being parsed from args",
+  );
+
+  check(
+    "FIX3: --skip-skill-script-check not parsed from CLI args",
+    !src.includes('args.includes("--skip-skill-script-check")'),
+    "CLI flag --skip-skill-script-check is still being parsed from args",
+  );
+
+  check(
+    "FIX3: usage string does not mention --skip-runtime-exclusion-check",
+    !src.includes("--skip-runtime-exclusion-check"),
+    "Usage string still advertises --skip-runtime-exclusion-check",
+  );
+
+  check(
+    "FIX3: usage string does not mention --skip-skill-script-check",
+    !src.includes("--skip-skill-script-check"),
+    "Usage string still advertises --skip-skill-script-check",
+  );
+
+  // Programmatic bypass still works (tests use it directly)
+  const { runtimeExclusionGate: reg2, skillScriptCompletenessGate: scg2 } = require(RELEASE_BUILD);
+  const runtimeManifestFix3 = {
+    assets: {
+      maps_baseline: [
+        { id: "m", src: ".claude/project/events/events.jsonl", owner: "runtime" },
+      ],
+    },
+  };
+  const r11 = reg2(runtimeManifestFix3, { skipRuntimeExclusionCheck: true });
+  check(
+    "FIX3: programmatic opts.skipRuntimeExclusionCheck still bypasses (for tests)",
+    !r11.blocked,
+    "Programmatic bypass should still work for test injection",
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Section 10: FIX4 — unreadable shipped skill → gate blocks (explicit message check)
+// ─────────────────────────────────────────────────────────────────────────────
+process.stdout.write("\n10. FIX4 — unreadable shipped skill blocks with informative message\n");
+
+{
+  const { skillScriptCompletenessGate: scg3 } = require(RELEASE_BUILD);
+
+  const throwingReader = () => { throw new Error("ENOENT: no such file"); };
+  const manifestWithSkill = {
+    assets: {
+      skill: [
+        { id: "skill.test", src: ".claude/commands/warp/test.md", owner: "framework" },
+      ],
+      warpos_script: [],
+    },
+  };
+
+  const r12 = scg3(manifestWithSkill, {}, throwingReader);
+  check(
+    "FIX4: unreadable shipped skill → blocked=true",
+    r12.blocked,
+    `blocked=${r12.blocked}`,
+  );
+  check(
+    "FIX4: offenders list contains the unreadable skill",
+    r12.offenders.length > 0 && r12.offenders[0].skill.includes("commands/warp/test"),
+    JSON.stringify(r12.offenders),
+  );
+  check(
+    "FIX4: offender reason mentions 'unreadable'",
+    r12.offenders.length > 0 &&
+      (r12.offenders[0].script || "").includes("unreadable"),
+    JSON.stringify(r12.offenders[0]),
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Section 11: FIX5 — skill-ref regex: invocation-context only + extension coverage
+// ─────────────────────────────────────────────────────────────────────────────
+process.stdout.write("\n11. FIX5 — skill script-ref extraction: invocation-context + extensions\n");
+
+{
+  const { skillScriptCompletenessGate: scg4 } = require(RELEASE_BUILD);
+
+  // Helper: build manifest with one skill and a set of shipped scripts.
+  const makeM = (skillContent, shippedScripts) => ({
+    assets: {
+      skill: [
+        {
+          id: "skill.fix5test",
+          src: ".claude/commands/fix5/test.md",
+          owner: "framework",
+        },
+      ],
+      warpos_script: shippedScripts.map((s) => ({
+        id: `ws.${s.replace(/\//g, ".")}`,
+        src: s,
+        dest: s,
+        owner: "framework",
+      })),
+    },
+  });
+
+  const fakeR5 = (filePath) => {
+    if (fakeR5._content !== undefined) return fakeR5._content;
+    throw new Error("ENOENT");
+  };
+
+  // 11a. Plain prose mention (no node/bash prefix, not in fenced block) → NOT caught
+  fakeR5._content = "For background, see scripts/example.js for reference.";
+  const r13 = scg4(makeM("", []), {}, fakeR5); // no scripts shipped, but prose not caught
+  check(
+    "FIX5: prose mention 'see scripts/example.js for reference' → NOT caught (no false-positive block)",
+    !r13.blocked,
+    `blocked=${r13.blocked} (expected false — prose mention should not be treated as dep)`,
+  );
+
+  // 11b. Invocation context with `node ` prefix → IS caught → blocks if not shipped
+  fakeR5._content = "Run `node scripts/warpos/real-dep.js` to build.";
+  const r14 = scg4(makeM("", []), {}, fakeR5); // real-dep.js not shipped
+  check(
+    "FIX5: `node scripts/real-dep.js` invocation → caught → blocks (not shipped)",
+    r14.blocked,
+    `blocked=${r14.blocked}`,
+  );
+
+  // 11c. Invocation context → ref IS shipped → passes
+  fakeR5._content = "Run `node scripts/warpos/shipped.js` here.";
+  const r15 = scg4(makeM("", ["scripts/warpos/shipped.js"]), {}, fakeR5);
+  check(
+    "FIX5: `node scripts/warpos/shipped.js` → shipped → passes",
+    !r15.blocked,
+    `blocked=${r15.blocked}`,
+  );
+
+  // 11d. .cjs extension in invocation context → caught
+  fakeR5._content = "Run `node scripts/lib/helper.cjs` for setup.";
+  const r16 = scg4(makeM("", []), {}, fakeR5);
+  check(
+    "FIX5: .cjs ref in invocation context → caught",
+    r16.blocked && r16.offenders.some((o) => o.script.endsWith(".cjs")),
+    JSON.stringify(r16.offenders),
+  );
+
+  // 11e. .sh extension with bash prefix → caught
+  fakeR5._content = "Run `bash scripts/setup/install.sh` to prepare.";
+  const r17 = scg4(makeM("", []), {}, fakeR5);
+  check(
+    "FIX5: bash scripts/setup/install.sh in invocation context → caught",
+    r17.blocked && r17.offenders.some((o) => o.script.endsWith(".sh")),
+    JSON.stringify(r17.offenders),
+  );
+
+  // 11f. .mjs extension in fenced code block → caught
+  fakeR5._content = "```bash\nnode scripts/lib/runner.mjs --flag\n```";
+  const r18 = scg4(makeM("", []), {}, fakeR5);
+  check(
+    "FIX5: .mjs ref in fenced code block → caught",
+    r18.blocked && r18.offenders.some((o) => o.script.endsWith(".mjs")),
+    JSON.stringify(r18.offenders),
+  );
+
+  // 11g. Ref inside fenced code block (no node prefix in prose) → caught
+  fakeR5._content = "```bash\nscripts/warpos/release-build.js 0.1.0\n```";
+  const r19 = scg4(makeM("", []), {}, fakeR5);
+  check(
+    "FIX5: scripts/ ref inside fenced code block → caught even without node prefix",
+    r19.blocked,
+    `blocked=${r19.blocked} offenders=${JSON.stringify(r19.offenders)}`,
   );
 }
 

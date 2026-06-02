@@ -159,7 +159,10 @@ function runtimeExclusionGate(manifestObj, opts) {
 
   for (const a of allAssets) {
     if (!a) continue;
-    const aPath = a.src || a.dest || "";
+    // FIX2 belt-and-suspenders: normalise separators before the pattern test so
+    // a Windows backslash path (beta\events.jsonl) never evades the check even
+    // if RUNTIME_JSONL_PATTERN's [\\/] class is somehow not in effect.
+    const aPath = (a.src || a.dest || "").replace(/\\/g, "/");
     const isRuntime = a.owner === "runtime";
     // manifestIsExcluded is the SAME predicate as generate-framework-manifest.js#isExcluded
     // (imported above). If the generator would have excluded this path, so must we.
@@ -185,8 +188,9 @@ function runtimeExclusionGate(manifestObj, opts) {
   const message =
     `release-build refuses to build: snapshotted manifest contains ${offenders.length} owner=runtime / tracked-transient asset(s) that must not ship:\n` +
     lines.join("\n") + "\n" +
-    "Remediation: Re-run scripts/generate-framework-manifest.js (it excludes owner=runtime), then re-run release-build.\n" +
-    "Bypass (emergencies only): re-run with --skip-runtime-exclusion-check.";
+    "Remediation: Re-run scripts/generate-framework-manifest.js (it excludes owner=runtime), then re-run release-build.";
+  // FIX3: No production bypass advertised (flag removed from CLI).
+  // Tests can still inject opts.skipRuntimeExclusionCheck programmatically.
   return { blocked: true, message, offenders };
 }
 
@@ -211,11 +215,49 @@ const KNOWN_DANGLING_REFS = [
   //   reason: "dev-only script intentionally not shipped; skill documents it as a local-dev step only" }
 ];
 
-// Regex to find `scripts/<...>.js` references in skill .md prose and code fences.
-// Matches: `scripts/foo/bar.js`, `node scripts/foo/bar.js`, etc.
-// Deliberately conservative: only matches the `.js` form to avoid false positives
-// on directory names or partial paths.
-const SKILL_SCRIPT_REF_RE = /scripts\/[A-Za-z0-9._/-]+\.js/g;
+// FIX5: Extract script refs from INVOCATION context only.
+//
+// Two strategies:
+//   1. Any `scripts/...` ref inside a fenced code block (``` ... ```) — these
+//      almost always document real invocations, not illustrative prose.
+//   2. Any ref immediately preceded by `node ` or `bash ` anywhere in the file
+//      (catches inline code spans like `node scripts/foo.js` in prose).
+//
+// Extensions: .js, .cjs, .mjs, .sh — covers all script types shipped by skills.
+// (.ts intentionally excluded — skills don't invoke TypeScript sources directly.)
+//
+// Heuristic bias: a scripts/ ref inside a fenced block IS caught even if
+// illustrative — in practice, skill fenced blocks document real invocations.
+// A bare mention in prose ("see scripts/example.js for reference") without a
+// node/bash prefix is NOT caught. Residual documented above.
+//
+// Note: all regexes are created inside extractSkillScriptRefs() per-call to
+// avoid lastIndex state leaking between invocations.
+function extractSkillScriptRefs(content) {
+  const refs = new Set();
+  const scriptPathPat = /scripts\/[A-Za-z0-9._/-]+\.(?:js|cjs|mjs|sh)/g;
+
+  // Strategy 1: extract all script refs inside fenced code blocks.
+  const fenceBlockPat = /^```[^\n]*\n([\s\S]*?)^```/gm;
+  let fenceMatch;
+  while ((fenceMatch = fenceBlockPat.exec(content)) !== null) {
+    const block = fenceMatch[1];
+    const innerPat = /scripts\/[A-Za-z0-9._/-]+\.(?:js|cjs|mjs|sh)/g;
+    let m;
+    while ((m = innerPat.exec(block)) !== null) {
+      refs.add(m[0].replace(/\\/g, "/"));
+    }
+  }
+
+  // Strategy 2: refs immediately preceded by `node ` or `bash ` (any context).
+  const invocationPat = /(?:node|bash)\s+(scripts\/[A-Za-z0-9._/-]+\.(?:js|cjs|mjs|sh))/g;
+  let inv;
+  while ((inv = invocationPat.exec(content)) !== null) {
+    refs.add(inv[1].replace(/\\/g, "/"));
+  }
+
+  return [...refs];
+}
 
 function skillScriptCompletenessGate(manifestObj, opts, readFileFn) {
   if (opts && opts.skipSkillScriptCheck) return { blocked: false, message: null, offenders: [] };
@@ -268,19 +310,22 @@ function skillScriptCompletenessGate(manifestObj, opts, readFileFn) {
     try {
       content = readFile(path.join(REPO_ROOT, skillAsset.src));
     } catch {
-      // Can't read skill file — skip it (not a gate failure; a missing skill
-      // source at build time would be caught by the manifest staleness gate).
+      // FIX4: An unreadable SHIPPED skill is a gate FAILURE (fail-closed).
+      // Cannot verify its script refs → block the release. A missing skill
+      // source at build time is itself a serious problem; silently skipping
+      // would allow a false-green (gap class from gauntlet review).
+      offenders.push({
+        skill: skillSrc,
+        script: "(unreadable — cannot verify script refs)",
+        reason: "shipped skill unreadable — cannot verify script refs",
+      });
       continue;
     }
 
-    // Extract all `scripts/...js` references from prose + code fences.
-    const refs = [];
-    let m;
-    SKILL_SCRIPT_REF_RE.lastIndex = 0; // reset stateful regex
-    while ((m = SKILL_SCRIPT_REF_RE.exec(content)) !== null) {
-      const ref = m[0].replace(/\\/g, "/");
-      if (!refs.includes(ref)) refs.push(ref);
-    }
+    // FIX5: Extract script refs from INVOCATION context only (node/bash prefix
+    // or inside a fenced code block). Prose mentions like "see scripts/x.js"
+    // are intentionally NOT caught. Extensions: .js, .cjs, .mjs, .sh.
+    const refs = extractSkillScriptRefs(content);
 
     for (const scriptRef of refs) {
       // Is this reference in the allowlist?
@@ -307,8 +352,9 @@ function skillScriptCompletenessGate(manifestObj, opts, readFileFn) {
     "      scripts/generate-framework-manifest.js, regen the manifest, re-run release-build.\n" +
     "  (b) If the reference is intentionally dev-only: add it to KNOWN_DANGLING_REFS\n" +
     "      in scripts/warpos/release-build.js with a justification comment.\n" +
-    "  (c) If the reference is stale/wrong: remove or correct it in the skill .md.\n" +
-    "Bypass (emergencies only): re-run with --skip-skill-script-check.";
+    "  (c) If the reference is stale/wrong: remove or correct it in the skill .md.";
+  // FIX3: No production bypass advertised (flag removed from CLI).
+  // Tests can still inject opts.skipSkillScriptCheck programmatically.
   return { blocked: true, message, offenders };
 }
 
@@ -548,15 +594,14 @@ if (require.main === module) {
   const checkOnly = args.includes("--check");
   const skipManifestCheck = args.includes("--skip-manifest-check");
   const skipBetaHonestyCheck = args.includes("--skip-beta-honesty-check");
-  // E1 bypass: emergencies only — skips the runtime-exclusion asset check.
-  const skipRuntimeExclusionCheck = args.includes("--skip-runtime-exclusion-check");
-  // E3 bypass: emergencies only — skips the skill↔script completeness check.
-  const skipSkillScriptCheck = args.includes("--skip-skill-script-check");
+  // FIX3: E1 and E3 gate bypass flags are REMOVED as public CLI flags.
+  // No production bypass is advertised. Tests that need to bypass a gate
+  // should inject opts directly into the gate functions via the programmatic
+  // opts.skipRuntimeExclusionCheck / opts.skipSkillScriptCheck properties.
   if (!version) {
     console.error(
       "Usage: node scripts/warpos/release-build.js <version> [--check]" +
-      " [--skip-manifest-check] [--skip-beta-honesty-check]" +
-      " [--skip-runtime-exclusion-check] [--skip-skill-script-check]",
+      " [--skip-manifest-check] [--skip-beta-honesty-check]",
     );
     process.exit(2);
   }
@@ -564,8 +609,6 @@ if (require.main === module) {
     check: checkOnly,
     skipManifestCheck,
     skipBetaHonestyCheck,
-    skipRuntimeExclusionCheck,
-    skipSkillScriptCheck,
   });
 }
 
