@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-02T01:10:20.386Z",
+  "generatedAt": "2026-06-02T01:46:42.412Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.13.1",
   "migrations": [],
@@ -2905,8 +2905,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/warpos/test-install-matrix.js",
-      "sha256": "59466ddb2e639b07ad252027a7b9198485e0d4641e4f4a1a0bdb68a61c48abc7",
-      "installedSha": "59466ddb2e639b07ad252027a7b9198485e0d4641e4f4a1a0bdb68a61c48abc7"
+      "sha256": "79dbdc5914d207eb74e53525133efc55998ca9783b942240badb72d6e22f27fe",
+      "installedSha": "79dbdc5914d207eb74e53525133efc55998ca9783b942240badb72d6e22f27fe"
     },
     "scripts/warpos/test-release-build-beta-honesty-gate.js": {
       "owner": "framework",
@@ -4973,6 +4973,13 @@
       "sha256": "d80b0c259115c0dd7b44321db5afa36770841bb173c2285cedcd7d61dabed730",
       "installedSha": "d80b0c259115c0dd7b44321db5afa36770841bb173c2285cedcd7d61dabed730"
     },
+    "scripts/checks/test-warpos-ship-coverage.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/test-warpos-ship-coverage.js",
+      "sha256": "7a49c51d4203c8a942d93411f9acd13d2ee6d0ca50b1a1f5e9c87301ad0c32ef",
+      "installedSha": "7a49c51d4203c8a942d93411f9acd13d2ee6d0ca50b1a1f5e9c87301ad0c32ef"
+    },
     "scripts/checks/version-coherence.js": {
       "owner": "framework",
       "managed": true,
@@ -5054,8 +5061,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/warpos-ship-coverage.js",
-      "sha256": "848ee38aab323561789237a7f784355b91984df0a6092dd022157a0675d53d90",
-      "installedSha": "848ee38aab323561789237a7f784355b91984df0a6092dd022157a0675d53d90"
+      "sha256": "30d7ff97d95263a4dab273f9926f46179cecbb444193f0d950e76c9af57cca4b",
+      "installedSha": "30d7ff97d95263a4dab273f9926f46179cecbb444193f0d950e76c9af57cca4b"
     },
     "scripts/checks/warpos-staleness.js": {
       "owner": "framework",

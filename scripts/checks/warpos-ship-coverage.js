@@ -3,7 +3,12 @@
 "use strict";
 /**
  * scripts/checks/warpos-ship-coverage.js — THE systemic enforcer for the
- * "downstream always missing something" class (SP-20260525-024).
+ * "downstream always missing something" class (SP-20260525-024). EXHAUSTIVE
+ * as of 0.16.0 (run-0160): every owner=framework path is either shipped or in
+ * a reviewed KNOWN_NOT_SHIPPED entry (zero unallowlisted info_gaps, enforced).
+ * Also asserts seeded_from integrity: every manifest seeded_from pointer must
+ * resolve to a real file, OR be in KNOWN_DANGLING_SET (exact-match; currently all
+ * 100 dangling pointers are allowlisted, tied to the deferred Pattern-realignment sprint).
  *
  * Root cause it closes: WarpOS has TWO manifests.
  *   - _warpos/MANIFEST.json (SP-20260522-001) — the AUTHORITATIVE per-path
@@ -23,10 +28,21 @@
  * the exclusion" rule applied to content). RED if any framework-owned path is
  * neither shipped nor explicitly excluded.
  *
+ * Also asserts seeded_from integrity: every `seeded_from` value in _warpos/MANIFEST.json
+ * must point at an existing file (path.join(ROOT, seeded_from) exists), OR be in
+ * KNOWN_DANGLING_SET. Any dangling seeded_from NOT in KNOWN_DANGLING_SET is a RED (new
+ * regression); the 100 currently-dangling pointers (all under
+ * framework/templates/_requirements/ + framework/templates/policy/) are in KNOWN_DANGLING_SET
+ * as EXACT strings (not prefixes — a broader prefix match would silently swallow future
+ * new dangles in the same dir), tied to the deferred 0.16.0 Pattern-realignment sprint.
+ *
  * Wire into scripts/warpos/release-gates.js so "forgot to ship X" fails the
  * release loudly instead of surfacing months later in a consumer install.
  *
- * Exit: 0 = every framework-owned path ships or is allowlisted; 1 = gap(s); 2 = setup error.
+ * Exit: 0 = every framework-owned path ships or is allowlisted (zero hard_gaps AND zero
+ *           info_gaps) AND all seeded_from pointers resolve or are in KNOWN_DANGLING_SET;
+ *       1 = gap(s) [hard_gaps | info_gaps | boundary_violations | dangling_unallowlisted];
+ *       2 = setup error.
  */
 
 const fs = require("fs");
@@ -37,9 +53,126 @@ const ROOT = process.argv.includes("--root")
   : process.cwd();
 const JSON_OUT = process.argv.includes("--json");
 
+// ── KNOWN_DANGLING: the exact 100 seed pointers dangling as of 0.16.0 Option-D ─
+// Deferred to Pattern-realignment (build _warpos/templates/ with real content).
+// CLEAR each entry as its template is authored.
+// A NEW dangling seeded_from NOT in this exact set is a RED (regression-catching gate).
+// IMPORTANT: This is a STATIC exact-match list — do NOT derive it dynamically from
+// "what doesn't exist on disk" (that would be circular/self-fulfilling). The gate
+// must assert against this FIXED known list, not against "whatever doesn't exist now".
+// Prefix-based matching (the old approach) was too broad: a new typo'd seeded_from
+// under the same dir would have been silently allowlisted. Exact membership only.
+const KNOWN_DANGLING_SET = new Set([
+  // framework/templates/_requirements/ — 99 entries
+  "framework/templates/_requirements/00-canonical/CORE_BRIEF.md",
+  "framework/templates/_requirements/00-canonical/EVOLUTION.md",
+  "framework/templates/_requirements/00-canonical/FAILURE_STATES.md",
+  "framework/templates/_requirements/00-canonical/FIELD_REGISTRY.json",
+  "framework/templates/_requirements/00-canonical/GLOSSARY.md",
+  "framework/templates/_requirements/00-canonical/GLOSSARY_TEMPLATE.md",
+  "framework/templates/_requirements/00-canonical/GOLDEN_PATHS.md",
+  "framework/templates/_requirements/00-canonical/PRECEDENCE.json",
+  "framework/templates/_requirements/00-canonical/PRODUCT_MODEL.md",
+  "framework/templates/_requirements/00-canonical/STEPS.json",
+  "framework/templates/_requirements/00-canonical/USER_COHORTS.md",
+  "framework/templates/_requirements/00-canonical/WATCHED_DIRS.json",
+  "framework/templates/_requirements/01-design-system/COLOR_SEMANTICS.md",
+  "framework/templates/_requirements/01-design-system/COMPONENT_LIBRARY.md",
+  "framework/templates/_requirements/01-design-system/UX_PRINCIPLES.md",
+  "framework/templates/_requirements/02-copy-system/COPY_STRATEGY.md",
+  "framework/templates/_requirements/02-copy-system/SURFACE_MAP.md",
+  "framework/templates/_requirements/03-architecture/ACCESSIBILITY_BASELINE.md",
+  "framework/templates/_requirements/03-architecture/AGENTIC_SYSTEM.md",
+  "framework/templates/_requirements/03-architecture/AGENT_GUIDE.md",
+  "framework/templates/_requirements/03-architecture/ANALYTICS.md",
+  "framework/templates/_requirements/03-architecture/API_SURFACE.md",
+  "framework/templates/_requirements/03-architecture/AUTH_SCHEMAS.md",
+  "framework/templates/_requirements/03-architecture/COMPONENT_HIERARCHY.md",
+  "framework/templates/_requirements/03-architecture/DATA-CONTRACTS.md",
+  "framework/templates/_requirements/03-architecture/DATA_FLOW.md",
+  "framework/templates/_requirements/03-architecture/DEPRECATION_POLICY.md",
+  "framework/templates/_requirements/03-architecture/DESIGN_TOKENS.md",
+  "framework/templates/_requirements/03-architecture/DISASTER_RECOVERY.md",
+  "framework/templates/_requirements/03-architecture/ENV_VARS.md",
+  "framework/templates/_requirements/03-architecture/ERROR_RECOVERY.md",
+  "framework/templates/_requirements/03-architecture/EXTENSION_SPEC.md",
+  "framework/templates/_requirements/03-architecture/FLOW_SPEC.md",
+  "framework/templates/_requirements/03-architecture/PATH_KEYS.md",
+  "framework/templates/_requirements/03-architecture/PERSISTENCE.md",
+  "framework/templates/_requirements/03-architecture/PIPELINES.md",
+  "framework/templates/_requirements/03-architecture/PRODUCTION_BASELINE.md",
+  "framework/templates/_requirements/03-architecture/PROMPT_TEMPLATES.md",
+  "framework/templates/_requirements/03-architecture/QA-SYSTEM-PROMPT.md",
+  "framework/templates/_requirements/03-architecture/RELEASE_READINESS.md",
+  "framework/templates/_requirements/03-architecture/SECURITY.md",
+  "framework/templates/_requirements/03-architecture/STACK.md",
+  "framework/templates/_requirements/03-architecture/THIRD_PARTY.md",
+  "framework/templates/_requirements/03-architecture/VALIDATION_RULES.md",
+  "framework/templates/_requirements/03-architecture/contracts/PAYMENT.md",
+  "framework/templates/_requirements/03-architecture/contracts/PERMISSIONS.md",
+  "framework/templates/_requirements/03-architecture/contracts/ROUTING.md",
+  "framework/templates/_requirements/03-architecture/contracts/SESSION.md",
+  "framework/templates/_requirements/03-architecture/contracts/USER.md",
+  "framework/templates/_requirements/03-architecture/contracts/WORKSPACE.md",
+  "framework/templates/_requirements/04-features/_example-onboarding/COPY.md",
+  "framework/templates/_requirements/04-features/_example-onboarding/HL-STORIES.md",
+  "framework/templates/_requirements/04-features/_example-onboarding/INPUTS.md",
+  "framework/templates/_requirements/04-features/_example-onboarding/PRD.md",
+  "framework/templates/_requirements/04-features/_example-onboarding/STORIES.md",
+  "framework/templates/_requirements/05-operations/DEPLOYMENT.md",
+  "framework/templates/_requirements/06-security/REDTEAM_REPORT.md",
+  "framework/templates/_requirements/07-testing/COVERAGE.md",
+  "framework/templates/_requirements/07-testing/PATTERNS.md",
+  "framework/templates/_requirements/07-testing/TEST_STRATEGY.md",
+  "framework/templates/_requirements/07-testing/backend/gate-dodger.spec.ts",
+  "framework/templates/_requirements/07-testing/full-flow/e2e-flow.spec.ts",
+  "framework/templates/_requirements/07-testing/recurring-bug-classes.json",
+  "framework/templates/_requirements/08-automation/CI_CD.md",
+  "framework/templates/_requirements/09-integrations/PROVIDER/01-anthropic.md",
+  "framework/templates/_requirements/09-integrations/PROVIDER/02-openai.md",
+  "framework/templates/_requirements/09-integrations/PROVIDER/03-google-gemini.md",
+  "framework/templates/_requirements/09-integrations/PROVIDER/04-stripe.md",
+  "framework/templates/_requirements/09-integrations/PROVIDER/05-upstash.md",
+  "framework/templates/_requirements/09-integrations/PROVIDER/06-playwright.md",
+  "framework/templates/_requirements/09-integrations/PROVIDER/07-codex-cli.md",
+  "framework/templates/_requirements/09-integrations/PROVIDER/08-nextjs.md",
+  "framework/templates/_requirements/09-integrations/PROVIDER/09-radix.md",
+  "framework/templates/_requirements/09-integrations/PROVIDER/10-shadcn.md",
+  "framework/templates/_requirements/09-integrations/PROVIDER/11-fly-io.md",
+  "framework/templates/_requirements/09-integrations/PROVIDER/12-vercel.md",
+  "framework/templates/_requirements/09-integrations/PROVIDER/README.md",
+  "framework/templates/_requirements/10-contracts/ARTIFACT-CONTRACTS.md",
+  "framework/templates/_requirements/README.md",
+  "framework/templates/_requirements/_audits/01-requirements-audit.md",
+  "framework/templates/_requirements/_audits/02-architecture-audit.md",
+  "framework/templates/_requirements/_audits/03-security-audit.md",
+  "framework/templates/_requirements/_audits/04-foundation-audit.md",
+  "framework/templates/_requirements/_audits/05-agents-audit.md",
+  "framework/templates/_requirements/_audits/06-cross-layer-audit.md",
+  "framework/templates/_requirements/_audits/07-tooling-audit.md",
+  "framework/templates/_requirements/_audits/08-dependencies-audit.md",
+  "framework/templates/_requirements/_audits/09-skills-audit.md",
+  "framework/templates/_requirements/_audits/10-hooks-audit.md",
+  "framework/templates/_requirements/_audits/11-meta-audit.md",
+  "framework/templates/_requirements/_audits/AUDIT_TEMPLATE.md",
+  "framework/templates/_requirements/_index/requirements.graph.json",
+  "framework/templates/_requirements/_shared/README.md",
+  "framework/templates/_requirements/_standards/GRANULAR_STORIES.md",
+  "framework/templates/_requirements/_standards/HIGH_LEVEL_STORIES.md",
+  "framework/templates/_requirements/_standards/INPUTS_TEMPLATE.md",
+  "framework/templates/_requirements/_standards/PRD_TEMPLATE.md",
+  "framework/templates/_requirements/_standards/REVIEW_PROCESS.md",
+  "framework/templates/_requirements/_standards/STORIES-COMMON.md",
+  // framework/templates/policy/ — 1 entry
+  "framework/templates/policy/decision-policy.md",
+]);
+
+// ── KNOWN_NOT_SHIPPED: framework-owned on disk but intentionally NOT shipped ──
 // Deliberate, reviewed exclusions: framework-owned on disk but intentionally
-// NOT shipped via framework-manifest. Each MUST have a reason. Prefix match on
-// the project-relative path.
+// NOT shipped via framework-manifest. Each MUST have a reason.
+// Supports two forms:
+//   { prefix: "...", reason: "..." }  — path equals or starts with prefix
+//   { match: (p) => bool, reason: "..." } — custom predicate (use for patterns)
 const KNOWN_NOT_SHIPPED = [
   // _warpos/ is the product-side source mirror — GENERATED at install time
   // (populateWarposMirror), not shipped from canonical. Canonical's own _warpos/
@@ -49,7 +182,7 @@ const KNOWN_NOT_SHIPPED = [
   // never shipped (consumers generate their own via the canon engine).
   { prefix: "_requirements/00-canonical/", reason: "WarpOS product canon (root-leak pending scrub); consumers generate their own" },
   // Dev-only / framework-maintenance artifacts (already excluded from ASSET_DIRS).
-  { prefix: "scripts/one-off/", reason: "framework-dev one-off scripts" },
+  { prefix: "scripts/one-off/", reason: "framework-dev one-off scripts (directory)" },
   { prefix: "scripts/products/", reason: "framework-dev product scripts" },
   // Installer self + dev metadata.
   { prefix: "install.ps1", reason: "the installer itself (consumers run it, don't receive a copy via manifest)" },
@@ -59,6 +192,55 @@ const KNOWN_NOT_SHIPPED = [
   { prefix: "README.md", reason: "framework-repo readme; consumers get their own scaffolded PROJECT.md/README" },
   { prefix: "CLAUDE.md", reason: "merged separately by /warp:setup CLAUDE.md merge, not a manifest asset" },
   { prefix: "version.json", reason: "shipped as version_file (separate manifest section), not an asset dir" },
+
+  // ── Exhaustive dev-tooling allowlist (SP-20260525-024 follow-up; run-0160 curation) ──
+  // Root dev documents — framework-authoring docs, never shipped to consumers.
+  { prefix: ".gitattributes", reason: "framework-repo git config — dev-tooling, not shipped to consumers" },
+  { prefix: "DICTIONARY.md", reason: "framework-repo authoring glossary — dev-tooling, not shipped to consumers" },
+  { prefix: "INTERESTING.md", reason: "framework-repo project notes — dev-tooling, not shipped to consumers" },
+  { prefix: "PROJECT.md", reason: "framework-repo project doc — dev-tooling; consumers get their own scaffolded PROJECT.md" },
+  { prefix: "RELEASES.md", reason: "framework-repo release notes — dev-tooling, not shipped to consumers" },
+  { prefix: "ROADMAP.md", reason: "framework-repo roadmap — dev-tooling, not shipped to consumers" },
+  { prefix: "USER_GUIDE.md", reason: "framework-repo user guide — dev-tooling; consumers get per-product docs" },
+
+  // Framework version migrations — internal tooling, not shipped to consumers.
+  { prefix: "migrations/", reason: "framework version migration scripts — internal tooling, never shipped to consumers" },
+
+  // Framework regression tests — internal test suite, not shipped.
+  { prefix: "tests/", reason: "framework regression test suite — internal, never shipped to consumers" },
+
+  // Top-level scripts/*.js — framework-dev orchestrators, analyzers, dashboards.
+  // Predicate covers ONLY direct children of scripts/ (no slashes in basename).
+  // scripts/hooks/, scripts/warpos/, scripts/checks/ etc. are separately governed
+  // by ASSET_DIRS and the hard-signal root check.
+  {
+    match: (p) => /^scripts\/[^/]+\.js$/.test(p),
+    reason: "top-level framework-dev tooling scripts (orchestrators/analyzers/dashboards) — not consumer assets",
+  },
+
+  // Framework-internal dev subdirectories.
+  { prefix: "scripts/arbitration/", reason: "framework-internal arbitration module — dev-tooling, not shipped" },
+  { prefix: "scripts/contracts/", reason: "framework-internal contract validation module + fixtures — dev-tooling, not shipped" },
+  { prefix: "scripts/etc/", reason: "framework-internal etc harness module — dev-tooling, not shipped" },
+  { prefix: "scripts/growth/", reason: "framework-internal growth analytics scripts — dev-tooling, not shipped" },
+  { prefix: "scripts/guides/", reason: "framework-internal guide registry scripts — dev-tooling, not shipped" },
+  { prefix: "scripts/models/", reason: "framework-internal model check scripts — dev-tooling, not shipped" },
+  { prefix: "scripts/scaffold/", reason: "framework-internal scaffold scripts — dev-tooling, not shipped" },
+  { prefix: "scripts/testsuite/", reason: "framework-internal test suite runner — dev-tooling, not shipped" },
+
+  // Stray scratch / manifest-misclassification: these files are owner=framework in the
+  // manifest but are per-run scratch artifacts that should eventually be reclassified
+  // (deferred; out of scope for this sprint). Allowlisted to avoid false-positive gate
+  // failures until the manifest is corrected.
+  {
+    match: (p) => /^scripts\/delta-[^/]+\.txt$/.test(p),
+    reason: "stray scratch: per-run delta output files — manifest-misclassification (should be owner=runtime); deferred reclassification",
+  },
+  { prefix: "scripts/market-research-fix-1-brief.md", reason: "stray scratch: per-run brief artifact — manifest-misclassification; deferred reclassification" },
+  { prefix: "scripts/store-viewer.html", reason: "stray scratch: dev HTML viewer — manifest-misclassification; deferred reclassification" },
+  { prefix: "scripts/run-compliance.sh", reason: "stray scratch: dev compliance runner — manifest-misclassification; deferred reclassification" },
+  { prefix: "scripts/install-git-hooks.sh", reason: "stray scratch: dev git-hooks installer — manifest-misclassification; deferred reclassification" },
+  { prefix: "scripts/path-lint.rules.generated.json", reason: "stray scratch: generated path-lint rules — manifest-misclassification; deferred reclassification" },
 ];
 
 // Ship-boundary (SP-20260531-002, ADR-0005): the fail-closed allow/deny
@@ -115,7 +297,14 @@ function shippedPathSet(fm) {
 }
 
 function isAllowlisted(p) {
-  return KNOWN_NOT_SHIPPED.find((a) => p === a.prefix || p.startsWith(a.prefix));
+  return KNOWN_NOT_SHIPPED.find((a) => {
+    if (typeof a.match === "function") return a.match(p);
+    return p === a.prefix || p.startsWith(a.prefix);
+  });
+}
+
+function isKnownDangling(seededFrom) {
+  return KNOWN_DANGLING_SET.has(seededFrom);
 }
 
 // HARD-FAIL roots: the consumer-essential engine. A new owner=framework path
@@ -142,8 +331,29 @@ function main() {
   const shipped = shippedPathSet(fm);
 
   const ownPaths = own.paths || {};
+
+  // ── seeded_from integrity check ───────────────────────────────────────────
+  // Every manifest seeded_from pointer must point at a real file, OR be in
+  // KNOWN_DANGLING. Dangling pointers NOT in KNOWN_DANGLING → RED (new regression).
+  const danglingAllowlisted = [];
+  const danglingUnallowlisted = [];
+  let danglingTotal = 0;
+  for (const [, entry] of Object.entries(ownPaths)) {
+    if (!entry || !entry.seeded_from) continue;
+    const sf = entry.seeded_from;
+    const resolvedPath = path.join(ROOT, sf);
+    if (fs.existsSync(resolvedPath)) continue; // resolves — OK
+    danglingTotal++;
+    if (isKnownDangling(sf)) {
+      danglingAllowlisted.push(sf);
+    } else {
+      danglingUnallowlisted.push(sf);
+    }
+  }
+
+  // ── Ship coverage check ───────────────────────────────────────────────────
   const hardGaps = []; // essential-root gaps — RED, block the release
-  const infoGaps = []; // dev-tooling gaps — reported, curation deferred
+  const infoGaps = []; // dev-tooling gaps — now fully curated; should be 0
   let frameworkOwned = 0;
   for (const [p, entry] of Object.entries(ownPaths)) {
     if (!entry || entry.owner !== "framework") continue;
@@ -176,7 +386,11 @@ function main() {
   }
 
   const result = {
-    ok: hardGaps.length === 0 && boundaryViolations.length === 0,
+    ok:
+      hardGaps.length === 0 &&
+      boundaryViolations.length === 0 &&
+      danglingUnallowlisted.length === 0 &&
+      infoGaps.length === 0, // FIX1: unallowlisted owner=framework paths now block the gate
     framework_owned_paths: frameworkOwned,
     shipped_paths: shipped.size,
     allowlisted_rules: KNOWN_NOT_SHIPPED.length,
@@ -184,6 +398,10 @@ function main() {
     boundary_violations: boundaryViolations,
     info_gaps_count: infoGaps.length,
     info_gaps: infoGaps,
+    // seeded_from integrity
+    dangling_seeds_total: danglingTotal,
+    dangling_allowlisted: danglingAllowlisted.length,
+    dangling_unallowlisted: danglingUnallowlisted,
   };
 
   if (JSON_OUT) {
@@ -191,7 +409,7 @@ function main() {
   } else {
     if (result.ok) {
       console.log(
-        `OK   [warpos-ship-coverage] every framework-owned path under the consumer-essential roots ships (${frameworkOwned} framework-owned paths scanned); ship-boundary intact (_guides ships, _planning/_reports do not).`,
+        `OK   [warpos-ship-coverage] every framework-owned path ships or is allowlisted (${frameworkOwned} paths scanned, 0 hard_gaps, 0 info_gaps, 0 boundary_violations); seeded_from: ${danglingTotal} dangling, all ${danglingAllowlisted.length} allowlisted (KNOWN_DANGLING — deferred to Pattern-realignment sprint).`,
       );
     } else {
       if (hardGaps.length) {
@@ -203,6 +421,19 @@ function main() {
           `Fix: add the covering dir to ASSET_DIRS in scripts/generate-framework-manifest.js, OR add a reviewed KNOWN_NOT_SHIPPED entry.`,
         );
       }
+      if (infoGaps.length) {
+        // FIX1: info_gaps are now a hard gate failure — an unallowlisted owner=framework
+        // path (even outside hard-signal roots) means the exclusion was not consciously
+        // reviewed. Add it to KNOWN_NOT_SHIPPED with a reason (the "name the exclusion"
+        // rule) or add it to the shipping manifest.
+        console.error(
+          `FAIL [warpos-ship-coverage] ${infoGaps.length} owner=framework path(s) are not shipped and not in KNOWN_NOT_SHIPPED (unallowlisted — every exclusion must be a conscious reviewed decision):`,
+        );
+        for (const g of infoGaps) console.error(`  - ${g}`);
+        console.error(
+          `Fix: add a reviewed KNOWN_NOT_SHIPPED entry with a reason, OR add the path to ASSET_DIRS in scripts/generate-framework-manifest.js to ship it.`,
+        );
+      }
       if (boundaryViolations.length) {
         console.error(
           `FAIL [warpos-ship-coverage] ${boundaryViolations.length} ship-boundary violation(s) (SP-20260531-002):`,
@@ -212,10 +443,19 @@ function main() {
           `Fix: _guides/** must ship (ASSET_DIRS); _planning/** + _reports/** must never ship (walk-skip + absent from ASSET_DIRS).`,
         );
       }
+      if (danglingUnallowlisted.length) {
+        console.error(
+          `FAIL [warpos-ship-coverage] ${danglingUnallowlisted.length} seeded_from pointer(s) are dangling and NOT in KNOWN_DANGLING_SET (new regression — exact-match required):`,
+        );
+        for (const d of danglingUnallowlisted) console.error(`  - ${d}`);
+        console.error(
+          `Fix: either author the seed template at that path, OR add the exact seeded_from string to KNOWN_DANGLING_SET with a reason tying it to a tracked sprint.`,
+        );
+      }
     }
-    if (infoGaps.length) {
+    if (danglingTotal > 0 && danglingUnallowlisted.length === 0) {
       console.log(
-        `INFO [warpos-ship-coverage] ${infoGaps.length} owner=framework dev-tooling path(s) not shipped (tests/, top-level scripts/*.js, root dev docs) — framework-internal; full allowlist curation tracked as the SP-20260525-024 follow-up. Run --json to list.`,
+        `INFO [warpos-ship-coverage] seeded_from: ${danglingTotal} dangling pointer(s), all ${danglingAllowlisted.length} in KNOWN_DANGLING_SET (deferred to Pattern-realignment sprint — tracked).`,
       );
     }
   }

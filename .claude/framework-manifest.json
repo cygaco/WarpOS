@@ -13,7 +13,7 @@
     "pattern": 6,
     "fixture": 23,
     "warpos_script": 54,
-    "check_tool": 54,
+    "check_tool": 55,
     "agent_tool": 3,
     "decision_tool": 1,
     "runtime_tool": 1,
@@ -56,7 +56,7 @@
     "module_scope": 1,
     "framework_doc": 2
   },
-  "total": 1003,
+  "total": 1004,
   "assets": {
     "agent": [
       {
@@ -5890,7 +5890,7 @@
         "src": "scripts/warpos/test-install-matrix.js",
         "dest": "scripts/warpos/test-install-matrix.js",
         "kind": "warpos_script",
-        "sha256": "59466ddb2e639b07ad252027a7b9198485e0d4641e4f4a1a0bdb68a61c48abc7",
+        "sha256": "79dbdc5914d207eb74e53525133efc55998ca9783b942240badb72d6e22f27fe",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -6500,6 +6500,18 @@
         "replaces": null
       },
       {
+        "id": "check_tool.test-warpos-ship-coverage.js",
+        "src": "scripts/checks/test-warpos-ship-coverage.js",
+        "dest": "scripts/checks/test-warpos-ship-coverage.js",
+        "kind": "check_tool",
+        "sha256": "7a49c51d4203c8a942d93411f9acd13d2ee6d0ca50b1a1f5e9c87301ad0c32ef",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
         "id": "check_tool.version-coherence.js",
         "src": "scripts/checks/version-coherence.js",
         "dest": "scripts/checks/version-coherence.js",
@@ -6636,7 +6648,7 @@
         "src": "scripts/checks/warpos-ship-coverage.js",
         "dest": "scripts/checks/warpos-ship-coverage.js",
         "kind": "check_tool",
-        "sha256": "848ee38aab323561789237a7f784355b91984df0a6092dd022157a0675d53d90",
+        "sha256": "30d7ff97d95263a4dab273f9926f46179cecbb444193f0d950e76c9af57cca4b",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
