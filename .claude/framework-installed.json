@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "0.13.1",
-  "installedCommit": "bf8949843020b6c5810d09f67059eeccf7be90a4",
-  "installedAt": "2026-06-02T18:24:47.574Z",
+  "installedCommit": "d86eee75e0cac3a891747c5e4ab7ead01f857dc9",
+  "installedAt": "2026-06-02T18:40:28.786Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -4584,8 +4584,8 @@
       "dest": "scripts/warpos/manifest/build.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "9c1dd10126c5f465609cb85e58c69f9519481c23e82c2fc7fc6b6344a7ae57a1",
-      "currentHashAtInstall": "9c1dd10126c5f465609cb85e58c69f9519481c23e82c2fc7fc6b6344a7ae57a1",
+      "installedHash": "09f47f3aec8a7a3882658f85f6fd93c60fe6ef1e4751877f260f0c85d5a329cc",
+      "currentHashAtInstall": "09f47f3aec8a7a3882658f85f6fd93c60fe6ef1e4751877f260f0c85d5a329cc",
       "introducedIn": "0.0.0"
     },
     {
@@ -4604,8 +4604,8 @@
       "dest": "scripts/warpos/manifest/test-build.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "4f7eab8b37431b3ee38ba41dae4b70c8dd02fc27ff8b865545a59b9ec0ce237e",
-      "currentHashAtInstall": "4f7eab8b37431b3ee38ba41dae4b70c8dd02fc27ff8b865545a59b9ec0ce237e",
+      "installedHash": "92fd116984939a282917286b16e1af8991d9ab4db11db3b26afa5f6643aa48d0",
+      "currentHashAtInstall": "92fd116984939a282917286b16e1af8991d9ab4db11db3b26afa5f6643aa48d0",
       "introducedIn": "0.0.0"
     },
     {
@@ -5394,8 +5394,8 @@
       "dest": "scripts/checks/test-warpos-ship-coverage.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "7a49c51d4203c8a942d93411f9acd13d2ee6d0ca50b1a1f5e9c87301ad0c32ef",
-      "currentHashAtInstall": "7a49c51d4203c8a942d93411f9acd13d2ee6d0ca50b1a1f5e9c87301ad0c32ef",
+      "installedHash": "b82d40fe76832344cb801f636e77c3b3341ecb6c0af414f96985a129f91163ed",
+      "currentHashAtInstall": "b82d40fe76832344cb801f636e77c3b3341ecb6c0af414f96985a129f91163ed",
       "introducedIn": "0.0.0"
     },
     {
@@ -5514,8 +5514,8 @@
       "dest": "scripts/checks/warpos-ship-coverage.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "30d7ff97d95263a4dab273f9926f46179cecbb444193f0d950e76c9af57cca4b",
-      "currentHashAtInstall": "30d7ff97d95263a4dab273f9926f46179cecbb444193f0d950e76c9af57cca4b",
+      "installedHash": "5f88bdd7a69a463a5c3717f8b6eefa2f2a13b9e22cfcafe39fd213a763d94059",
+      "currentHashAtInstall": "5f88bdd7a69a463a5c3717f8b6eefa2f2a13b9e22cfcafe39fd213a763d94059",
       "introducedIn": "0.0.0"
     },
     {
@@ -7404,8 +7404,8 @@
       "dest": "schemas/warpos-manifest.schema.json",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "938f4980d9e25774b5edb0f766955c0add67d577fd61ca2b101bd40ad8b8d19f",
-      "currentHashAtInstall": "938f4980d9e25774b5edb0f766955c0add67d577fd61ca2b101bd40ad8b8d19f",
+      "installedHash": "3e20ff11158258114e5050babd9d99aa964804afb5d5164d856a8cb2c4c2ef4f",
+      "currentHashAtInstall": "3e20ff11158258114e5050babd9d99aa964804afb5d5164d856a8cb2c4c2ef4f",
       "introducedIn": "0.0.0"
     },
     {

@@ -74,7 +74,7 @@
         },
         "seeded_from": {
           "type": "string",
-          "description": "For owner=project: project-relative pointer to the template under _warpos/templates/ or _warpos/BASELINE/ that produced the initial seed. /warp:update consults this when the seed changes to flag the entry as `seed_drift` (for user review), but never auto-overwrites."
+          "description": "For owner=project: project-relative ADVISORY provenance pointer to the resolvable seed source for this path. As of 0.16.0 the generator emits the real on-disk path (e.g. `_requirements/<x>` or the decision-policy file), not the previously-dangling `<source-prefix>/templates/...` (prefix-drift). Advisory-only — nothing dereferences it at install. The `_warpos/templates/`/`_warpos/BASELINE/` end-state and the `seed_drift` /warp:update contract are DEFERRED until those source dirs are built (SP-20260522-001)."
         },
         "compiled_from": {
           "type": "array",

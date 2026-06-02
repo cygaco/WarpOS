@@ -125,6 +125,29 @@ ok(
   JSON.stringify(counts),
 );
 
+// C2. 0.16.0 prefix-drift guard: EVERY seeded_from the generator emits MUST resolve
+// to a real file on disk. This locks the fix — build.js previously emitted
+// `framework/templates/_requirements/<x>` (a path that never existed) via a no-op
+// .replace(), producing the "100 dangling seeded_from". A regression here fails loudly
+// at the generator, before the manifest ever reaches the ship-coverage gate.
+process.stdout.write("C2. seeded_from resolvability (0.16.0 prefix-drift)\n");
+let seededTotal = 0;
+const seededDangling = [];
+for (const [rel, entry] of Object.entries(manifest.paths || {})) {
+  if (entry && typeof entry.seeded_from === "string" && entry.seeded_from) {
+    seededTotal++;
+    if (!fs.existsSync(path.join(REPO_ROOT, entry.seeded_from))) {
+      seededDangling.push(`${rel} → ${entry.seeded_from}`);
+    }
+  }
+}
+ok("manifest emits seeded_from entries to check", seededTotal > 0, `seededTotal=${seededTotal}`);
+ok(
+  "every seeded_from resolves on disk (no prefix-drift)",
+  seededDangling.length === 0,
+  `${seededDangling.length} dangling: ${JSON.stringify(seededDangling.slice(0, 5))}`,
+);
+
 // D. (skipped — would require staging an unclassified path; not worth the fixture cost in v1)
 
 // E. sha256 helper deterministic

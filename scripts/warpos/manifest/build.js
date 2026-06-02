@@ -29,7 +29,8 @@
  *      the .system/policy/, .system/beta/, store.json carve-outs) → owner=framework
  *      with source pointer to <source-prefix>/commands or /agents
  *   4. `.claude/agents/00-alex/.system/policy/decision-policy.md` → owner=project
- *      seeded_from <source-prefix>/templates/policy/decision-policy.md
+ *      seeded_from = the file itself (0.16.0 prefix-drift fix: the old
+ *      <source-prefix>/templates/policy/decision-policy.md never existed)
  *   5. .claude/agents/<*>/events.jsonl,
  *      .claude/agents/<*>/.workspace/,
  *      .claude/runtime/, .claude/content/,
@@ -38,7 +39,9 @@
  *      .claude/project/builds/, .claude/project/sprint/,
  *      .claude/project/decisions/, .claude/project/maps/         -> owner=runtime
  *   6. _requirements/<*>, _docs/<*>, root-level user content    -> owner=project
- *      seeded_from <source-prefix>/templates/...
+ *      seeded_from = the real resolvable path (0.16.0 prefix-drift fix: for
+ *      _requirements/<x> this is `_requirements/<x>` itself, not the dangling
+ *      `<source-prefix>/templates/_requirements/<x>` the no-op .replace() emitted)
  *
  * Anything outside these rules is reported as `unclassified` and the
  * generator refuses to write the manifest unless `--allow-unclassified`
@@ -189,7 +192,12 @@ function buildRules(sourcePrefix) {
       entry: () => ({
         owner: "project",
         managed: false,
-        seeded_from: `${sourcePrefix}/templates/policy/decision-policy.md`,
+        // seeded_from must resolve to a real on-disk path (0.16.0 prefix-drift fix).
+        // The old `${sourcePrefix}/templates/policy/decision-policy.md` dangled —
+        // `framework/templates/policy/` never existed. The honest seed source is the
+        // matched file itself. (Future: flip to `_warpos/templates/...` once that
+        // end-state directory is built — SP-20260522-001.)
+        seeded_from: ".claude/agents/00-alex/.system/policy/decision-policy.md",
         class: "fillable",
       }),
     },
@@ -199,7 +207,13 @@ function buildRules(sourcePrefix) {
       entry: (rel) => ({
         owner: "project",
         managed: false,
-        seeded_from: `${sourcePrefix}/templates/${rel.replace(/^_requirements\//, "_requirements/")}`,
+        // 0.16.0 prefix-drift fix: the old value was
+        // `${sourcePrefix}/templates/${rel.replace(/^_requirements\//,"_requirements/")}`
+        // — the .replace() was a NO-OP, so it emitted `framework/templates/_requirements/<rest>`,
+        // a path that never existed (the "100 dangling seeded_from"). `rel` itself
+        // (`_requirements/<rest>`) is the real, resolvable seed source. (Future: flip
+        // to `_warpos/templates/_requirements/<rest>` once that end-state is built.)
+        seeded_from: rel,
         class: "fillable",
       }),
     },

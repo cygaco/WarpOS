@@ -7,14 +7,14 @@
  * Fixture-driven tests for warpos-ship-coverage.js (AC1, run-0160).
  * Drives the gate against ephemeral temp directories — no live manifest dependency.
  *
- * Test cases:
- *   (a) NEW dangling seeded_from (not in KNOWN_DANGLING_SET, OUTSIDE the dirs) → exit 1 (RED)
- *   (b) All seeded_from in KNOWN_DANGLING_SET (exact known-100 values)         → exit 0 (OK)
+ * Test cases (0.16.0: KNOWN_DANGLING_SET is EMPTY — zero-tolerance for dangling seeded_from):
+ *   (a) NEW dangling seeded_from (outside the old dirs) → exit 1 (RED)
+ *   (b) dangling seeded_from with EMPTY KNOWN_DANGLING (former framework/templates values) → exit 1 (RED)
  *   (c) Malformed _warpos/MANIFEST.json                                         → exit 2 (setup error)
- *   (d) EXHAUSTIVE: run against THIS worktree → info_gaps_count===0, dangling_unallowlisted===0, ok===true
+ *   (d) EXHAUSTIVE: run against THIS worktree → info_gaps_count===0, dangling_unallowlisted===0, dangling_seeds_total===0, ok===true
  *   (e) FIX1: unallowlisted owner=framework info_gap path → exit 1, info_gaps_count>0 (not just INFO)
- *   (f) FIX2: new dangle INSIDE framework/templates/_requirements/ but NOT in known-100 → exit 1 (RED)
- *   (g) FIX2: a known-100 exact value as seeded_from → allowlisted, ok (exact-match holds)
+ *   (f) FIX2: a dangle inside framework/templates/_requirements/ (set empty) → exit 1 (RED)
+ *   (g) a FORMER known-100 value as seeded_from → now RED (allowlist emptied in 0.16.0)
  *
  * Exit: 0 iff all tests pass, 1 otherwise.
  */
@@ -142,8 +142,11 @@ console.log("\n[a] New dangling seeded_from (not allowlisted) → exit 1");
   }
 }
 
-// ── Test (b): seeded_from under KNOWN_DANGLING prefix → exit 0 ────────────────
-console.log("\n[b] seeded_from in KNOWN_DANGLING allowlist → exit 0");
+// ── Test (b): old known-dangling values are now RED (empty set, zero-tolerance) ─
+// 0.16.0 reconcile: KNOWN_DANGLING_SET is EMPTY, so the former framework/templates/...
+// values (which never resolved) are unallowlisted → exit 1. The mechanism still
+// exists for a future dangle; it just allowlists nothing today.
+console.log("\n[b] dangling seeded_from with empty KNOWN_DANGLING → exit 1 (zero-tolerance)");
 {
   const manifest = {
     paths: {
@@ -162,23 +165,23 @@ console.log("\n[b] seeded_from in KNOWN_DANGLING allowlist → exit 0");
   const dir = makeTempFixture(manifest);
   try {
     const r = runGate(dir);
-    ok("(b) exit code is 0", r.code === 0, `got ${r.code}; stderr=${r.stderr}`);
-    ok("(b) ok===true", r.json && r.json.ok === true, `json.ok=${r.json && r.json.ok}`);
+    ok("(b) exit code is 1", r.code === 1, `got ${r.code}; stderr=${r.stderr}`);
+    ok("(b) ok===false", r.json && r.json.ok === false, `json.ok=${r.json && r.json.ok}`);
     ok(
       "(b) dangling_seeds_total===2",
       r.json && r.json.dangling_seeds_total === 2,
       `got ${r.json && r.json.dangling_seeds_total}`,
     );
     ok(
-      "(b) dangling_allowlisted===2",
-      r.json && r.json.dangling_allowlisted === 2,
+      "(b) dangling_allowlisted===0 (set is empty)",
+      r.json && r.json.dangling_allowlisted === 0,
       `got ${r.json && r.json.dangling_allowlisted}`,
     );
     ok(
-      "(b) dangling_unallowlisted is empty",
+      "(b) dangling_unallowlisted has both paths",
       r.json &&
         Array.isArray(r.json.dangling_unallowlisted) &&
-        r.json.dangling_unallowlisted.length === 0,
+        r.json.dangling_unallowlisted.length === 2,
       `got ${JSON.stringify(r.json && r.json.dangling_unallowlisted)}`,
     );
   } finally {
@@ -223,8 +226,8 @@ console.log("\n[d] Exhaustive run against worktree → ok, info_gaps_count===0, 
     `got ${JSON.stringify(r.json && r.json.dangling_unallowlisted)}`,
   );
   ok(
-    "(d) dangling_seeds_total===100 (all 100 known-dangling)",
-    r.json && r.json.dangling_seeds_total === 100,
+    "(d) dangling_seeds_total===0 (0.16.0: prefix-drift reconciled in the generator)",
+    r.json && r.json.dangling_seeds_total === 0,
     `got ${r.json && r.json.dangling_seeds_total}`,
   );
 }
@@ -311,38 +314,37 @@ console.log("\n[f] FIX2: new dangle inside framework/templates/_requirements/ NO
   }
 }
 
-// ── Test (g): FIX2 — a known-100 exact value is still allowlisted → exit 0 ──
-// Confirms that the exact-match Set correctly allows the curated 100.
-// Uses a different known-100 entry than test (b) to add coverage.
-console.log("\n[g] FIX2: known-100 exact value as seeded_from → allowlisted, exit 0");
+// ── Test (g): a FORMER known-100 value is now RED (0.16.0 emptied the allowlist) ─
+// Guards that the reconcile actually emptied KNOWN_DANGLING_SET: a value that USED
+// to be allowlisted no longer passes — zero-tolerance holds, no accidental re-populate.
+console.log("\n[g] former known-100 value as seeded_from → now RED (allowlist empty)");
 {
-  // Pick a known-100 entry from a subdirectory (not just top-level README).
-  const known100Value = "framework/templates/_requirements/03-architecture/SECURITY.md";
+  const formerlyAllowed = "framework/templates/_requirements/03-architecture/SECURITY.md";
   const manifest = {
     paths: {
       "_requirements/Architecture/Security.md": {
         owner: "project",
         kind: "file",
-        seeded_from: known100Value,
+        seeded_from: formerlyAllowed,
       },
     },
   };
   const dir = makeTempFixture(manifest);
-  // Do NOT create the file — it must be dangling (not on disk), but known-allowlisted.
+  // Do NOT create the file — it must be dangling (not on disk).
   try {
     const r = runGate(dir);
-    ok("(g) exit code is 0 (known-100 value is allowlisted)", r.code === 0, `got ${r.code}; stderr=${r.stderr}`);
-    ok("(g) ok===true", r.json && r.json.ok === true, `json.ok=${r.json && r.json.ok}`);
+    ok("(g) exit code is 1 (former allowlisted value now RED)", r.code === 1, `got ${r.code}; stderr=${r.stderr}`);
+    ok("(g) ok===false", r.json && r.json.ok === false, `json.ok=${r.json && r.json.ok}`);
     ok(
-      "(g) dangling_allowlisted===1",
-      r.json && r.json.dangling_allowlisted === 1,
+      "(g) dangling_allowlisted===0 (set empty)",
+      r.json && r.json.dangling_allowlisted === 0,
       `got ${r.json && r.json.dangling_allowlisted}`,
     );
     ok(
-      "(g) dangling_unallowlisted is empty",
+      "(g) dangling_unallowlisted contains the former value",
       r.json &&
         Array.isArray(r.json.dangling_unallowlisted) &&
-        r.json.dangling_unallowlisted.length === 0,
+        r.json.dangling_unallowlisted.some((p) => p.includes("SECURITY.md")),
       `dangling_unallowlisted=${JSON.stringify(r.json && r.json.dangling_unallowlisted)}`,
     );
   } finally {

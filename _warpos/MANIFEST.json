@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-02T18:24:47.874Z",
+  "generatedAt": "2026-06-02T18:40:29.093Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.13.1",
   "migrations": [],
@@ -137,595 +137,595 @@
     "_requirements/README.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/README.md",
+      "seeded_from": "_requirements/README.md",
       "class": "fillable"
     },
     "_requirements/_standards/GRANULAR_STORIES.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/_standards/GRANULAR_STORIES.md",
+      "seeded_from": "_requirements/_standards/GRANULAR_STORIES.md",
       "class": "fillable"
     },
     "_requirements/_standards/HIGH_LEVEL_STORIES.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/_standards/HIGH_LEVEL_STORIES.md",
+      "seeded_from": "_requirements/_standards/HIGH_LEVEL_STORIES.md",
       "class": "fillable"
     },
     "_requirements/_standards/INPUTS_TEMPLATE.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/_standards/INPUTS_TEMPLATE.md",
+      "seeded_from": "_requirements/_standards/INPUTS_TEMPLATE.md",
       "class": "fillable"
     },
     "_requirements/_standards/PRD_TEMPLATE.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/_standards/PRD_TEMPLATE.md",
+      "seeded_from": "_requirements/_standards/PRD_TEMPLATE.md",
       "class": "fillable"
     },
     "_requirements/_standards/REVIEW_PROCESS.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/_standards/REVIEW_PROCESS.md",
+      "seeded_from": "_requirements/_standards/REVIEW_PROCESS.md",
       "class": "fillable"
     },
     "_requirements/_standards/STORIES-COMMON.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/_standards/STORIES-COMMON.md",
+      "seeded_from": "_requirements/_standards/STORIES-COMMON.md",
       "class": "fillable"
     },
     "_requirements/_shared/README.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/_shared/README.md",
+      "seeded_from": "_requirements/_shared/README.md",
       "class": "fillable"
     },
     "_requirements/_index/requirements.graph.json": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/_index/requirements.graph.json",
+      "seeded_from": "_requirements/_index/requirements.graph.json",
       "class": "fillable"
     },
     "_requirements/_audits/01-requirements-audit.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/_audits/01-requirements-audit.md",
+      "seeded_from": "_requirements/_audits/01-requirements-audit.md",
       "class": "fillable"
     },
     "_requirements/_audits/02-architecture-audit.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/_audits/02-architecture-audit.md",
+      "seeded_from": "_requirements/_audits/02-architecture-audit.md",
       "class": "fillable"
     },
     "_requirements/_audits/03-security-audit.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/_audits/03-security-audit.md",
+      "seeded_from": "_requirements/_audits/03-security-audit.md",
       "class": "fillable"
     },
     "_requirements/_audits/04-foundation-audit.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/_audits/04-foundation-audit.md",
+      "seeded_from": "_requirements/_audits/04-foundation-audit.md",
       "class": "fillable"
     },
     "_requirements/_audits/05-agents-audit.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/_audits/05-agents-audit.md",
+      "seeded_from": "_requirements/_audits/05-agents-audit.md",
       "class": "fillable"
     },
     "_requirements/_audits/06-cross-layer-audit.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/_audits/06-cross-layer-audit.md",
+      "seeded_from": "_requirements/_audits/06-cross-layer-audit.md",
       "class": "fillable"
     },
     "_requirements/_audits/07-tooling-audit.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/_audits/07-tooling-audit.md",
+      "seeded_from": "_requirements/_audits/07-tooling-audit.md",
       "class": "fillable"
     },
     "_requirements/_audits/08-dependencies-audit.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/_audits/08-dependencies-audit.md",
+      "seeded_from": "_requirements/_audits/08-dependencies-audit.md",
       "class": "fillable"
     },
     "_requirements/_audits/09-skills-audit.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/_audits/09-skills-audit.md",
+      "seeded_from": "_requirements/_audits/09-skills-audit.md",
       "class": "fillable"
     },
     "_requirements/_audits/10-hooks-audit.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/_audits/10-hooks-audit.md",
+      "seeded_from": "_requirements/_audits/10-hooks-audit.md",
       "class": "fillable"
     },
     "_requirements/_audits/11-meta-audit.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/_audits/11-meta-audit.md",
+      "seeded_from": "_requirements/_audits/11-meta-audit.md",
       "class": "fillable"
     },
     "_requirements/_audits/AUDIT_TEMPLATE.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/_audits/AUDIT_TEMPLATE.md",
+      "seeded_from": "_requirements/_audits/AUDIT_TEMPLATE.md",
       "class": "fillable"
     },
     "_requirements/10-contracts/ARTIFACT-CONTRACTS.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/10-contracts/ARTIFACT-CONTRACTS.md",
+      "seeded_from": "_requirements/10-contracts/ARTIFACT-CONTRACTS.md",
       "class": "fillable"
     },
     "_requirements/09-integrations/PROVIDER/01-anthropic.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/09-integrations/PROVIDER/01-anthropic.md",
+      "seeded_from": "_requirements/09-integrations/PROVIDER/01-anthropic.md",
       "class": "fillable"
     },
     "_requirements/09-integrations/PROVIDER/02-openai.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/09-integrations/PROVIDER/02-openai.md",
+      "seeded_from": "_requirements/09-integrations/PROVIDER/02-openai.md",
       "class": "fillable"
     },
     "_requirements/09-integrations/PROVIDER/03-google-gemini.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/09-integrations/PROVIDER/03-google-gemini.md",
+      "seeded_from": "_requirements/09-integrations/PROVIDER/03-google-gemini.md",
       "class": "fillable"
     },
     "_requirements/09-integrations/PROVIDER/04-stripe.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/09-integrations/PROVIDER/04-stripe.md",
+      "seeded_from": "_requirements/09-integrations/PROVIDER/04-stripe.md",
       "class": "fillable"
     },
     "_requirements/09-integrations/PROVIDER/05-upstash.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/09-integrations/PROVIDER/05-upstash.md",
+      "seeded_from": "_requirements/09-integrations/PROVIDER/05-upstash.md",
       "class": "fillable"
     },
     "_requirements/09-integrations/PROVIDER/06-playwright.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/09-integrations/PROVIDER/06-playwright.md",
+      "seeded_from": "_requirements/09-integrations/PROVIDER/06-playwright.md",
       "class": "fillable"
     },
     "_requirements/09-integrations/PROVIDER/07-codex-cli.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/09-integrations/PROVIDER/07-codex-cli.md",
+      "seeded_from": "_requirements/09-integrations/PROVIDER/07-codex-cli.md",
       "class": "fillable"
     },
     "_requirements/09-integrations/PROVIDER/08-nextjs.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/09-integrations/PROVIDER/08-nextjs.md",
+      "seeded_from": "_requirements/09-integrations/PROVIDER/08-nextjs.md",
       "class": "fillable"
     },
     "_requirements/09-integrations/PROVIDER/09-radix.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/09-integrations/PROVIDER/09-radix.md",
+      "seeded_from": "_requirements/09-integrations/PROVIDER/09-radix.md",
       "class": "fillable"
     },
     "_requirements/09-integrations/PROVIDER/10-shadcn.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/09-integrations/PROVIDER/10-shadcn.md",
+      "seeded_from": "_requirements/09-integrations/PROVIDER/10-shadcn.md",
       "class": "fillable"
     },
     "_requirements/09-integrations/PROVIDER/11-fly-io.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/09-integrations/PROVIDER/11-fly-io.md",
+      "seeded_from": "_requirements/09-integrations/PROVIDER/11-fly-io.md",
       "class": "fillable"
     },
     "_requirements/09-integrations/PROVIDER/12-vercel.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/09-integrations/PROVIDER/12-vercel.md",
+      "seeded_from": "_requirements/09-integrations/PROVIDER/12-vercel.md",
       "class": "fillable"
     },
     "_requirements/09-integrations/PROVIDER/README.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/09-integrations/PROVIDER/README.md",
+      "seeded_from": "_requirements/09-integrations/PROVIDER/README.md",
       "class": "fillable"
     },
     "_requirements/08-automation/CI_CD.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/08-automation/CI_CD.md",
+      "seeded_from": "_requirements/08-automation/CI_CD.md",
       "class": "fillable"
     },
     "_requirements/07-testing/COVERAGE.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/07-testing/COVERAGE.md",
+      "seeded_from": "_requirements/07-testing/COVERAGE.md",
       "class": "fillable"
     },
     "_requirements/07-testing/PATTERNS.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/07-testing/PATTERNS.md",
+      "seeded_from": "_requirements/07-testing/PATTERNS.md",
       "class": "fillable"
     },
     "_requirements/07-testing/recurring-bug-classes.json": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/07-testing/recurring-bug-classes.json",
+      "seeded_from": "_requirements/07-testing/recurring-bug-classes.json",
       "class": "fillable"
     },
     "_requirements/07-testing/TEST_STRATEGY.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/07-testing/TEST_STRATEGY.md",
+      "seeded_from": "_requirements/07-testing/TEST_STRATEGY.md",
       "class": "fillable"
     },
     "_requirements/07-testing/full-flow/e2e-flow.spec.ts": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/07-testing/full-flow/e2e-flow.spec.ts",
+      "seeded_from": "_requirements/07-testing/full-flow/e2e-flow.spec.ts",
       "class": "fillable"
     },
     "_requirements/07-testing/backend/gate-dodger.spec.ts": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/07-testing/backend/gate-dodger.spec.ts",
+      "seeded_from": "_requirements/07-testing/backend/gate-dodger.spec.ts",
       "class": "fillable"
     },
     "_requirements/06-security/REDTEAM_REPORT.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/06-security/REDTEAM_REPORT.md",
+      "seeded_from": "_requirements/06-security/REDTEAM_REPORT.md",
       "class": "fillable"
     },
     "_requirements/05-operations/DEPLOYMENT.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/05-operations/DEPLOYMENT.md",
+      "seeded_from": "_requirements/05-operations/DEPLOYMENT.md",
       "class": "fillable"
     },
     "_requirements/04-features/_example-onboarding/COPY.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/04-features/_example-onboarding/COPY.md",
+      "seeded_from": "_requirements/04-features/_example-onboarding/COPY.md",
       "class": "fillable"
     },
     "_requirements/04-features/_example-onboarding/HL-STORIES.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/04-features/_example-onboarding/HL-STORIES.md",
+      "seeded_from": "_requirements/04-features/_example-onboarding/HL-STORIES.md",
       "class": "fillable"
     },
     "_requirements/04-features/_example-onboarding/INPUTS.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/04-features/_example-onboarding/INPUTS.md",
+      "seeded_from": "_requirements/04-features/_example-onboarding/INPUTS.md",
       "class": "fillable"
     },
     "_requirements/04-features/_example-onboarding/PRD.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/04-features/_example-onboarding/PRD.md",
+      "seeded_from": "_requirements/04-features/_example-onboarding/PRD.md",
       "class": "fillable"
     },
     "_requirements/04-features/_example-onboarding/STORIES.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/04-features/_example-onboarding/STORIES.md",
+      "seeded_from": "_requirements/04-features/_example-onboarding/STORIES.md",
       "class": "fillable"
     },
     "_requirements/03-architecture/ACCESSIBILITY_BASELINE.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/03-architecture/ACCESSIBILITY_BASELINE.md",
+      "seeded_from": "_requirements/03-architecture/ACCESSIBILITY_BASELINE.md",
       "class": "fillable"
     },
     "_requirements/03-architecture/AGENTIC_SYSTEM.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/03-architecture/AGENTIC_SYSTEM.md",
+      "seeded_from": "_requirements/03-architecture/AGENTIC_SYSTEM.md",
       "class": "fillable"
     },
     "_requirements/03-architecture/AGENT_GUIDE.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/03-architecture/AGENT_GUIDE.md",
+      "seeded_from": "_requirements/03-architecture/AGENT_GUIDE.md",
       "class": "fillable"
     },
     "_requirements/03-architecture/ANALYTICS.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/03-architecture/ANALYTICS.md",
+      "seeded_from": "_requirements/03-architecture/ANALYTICS.md",
       "class": "fillable"
     },
     "_requirements/03-architecture/API_SURFACE.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/03-architecture/API_SURFACE.md",
+      "seeded_from": "_requirements/03-architecture/API_SURFACE.md",
       "class": "fillable"
     },
     "_requirements/03-architecture/AUTH_SCHEMAS.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/03-architecture/AUTH_SCHEMAS.md",
+      "seeded_from": "_requirements/03-architecture/AUTH_SCHEMAS.md",
       "class": "fillable"
     },
     "_requirements/03-architecture/COMPONENT_HIERARCHY.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/03-architecture/COMPONENT_HIERARCHY.md",
+      "seeded_from": "_requirements/03-architecture/COMPONENT_HIERARCHY.md",
       "class": "fillable"
     },
     "_requirements/03-architecture/DATA-CONTRACTS.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/03-architecture/DATA-CONTRACTS.md",
+      "seeded_from": "_requirements/03-architecture/DATA-CONTRACTS.md",
       "class": "fillable"
     },
     "_requirements/03-architecture/DATA_FLOW.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/03-architecture/DATA_FLOW.md",
+      "seeded_from": "_requirements/03-architecture/DATA_FLOW.md",
       "class": "fillable"
     },
     "_requirements/03-architecture/DEPRECATION_POLICY.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/03-architecture/DEPRECATION_POLICY.md",
+      "seeded_from": "_requirements/03-architecture/DEPRECATION_POLICY.md",
       "class": "fillable"
     },
     "_requirements/03-architecture/DESIGN_TOKENS.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/03-architecture/DESIGN_TOKENS.md",
+      "seeded_from": "_requirements/03-architecture/DESIGN_TOKENS.md",
       "class": "fillable"
     },
     "_requirements/03-architecture/DISASTER_RECOVERY.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/03-architecture/DISASTER_RECOVERY.md",
+      "seeded_from": "_requirements/03-architecture/DISASTER_RECOVERY.md",
       "class": "fillable"
     },
     "_requirements/03-architecture/ENV_VARS.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/03-architecture/ENV_VARS.md",
+      "seeded_from": "_requirements/03-architecture/ENV_VARS.md",
       "class": "fillable"
     },
     "_requirements/03-architecture/ERROR_RECOVERY.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/03-architecture/ERROR_RECOVERY.md",
+      "seeded_from": "_requirements/03-architecture/ERROR_RECOVERY.md",
       "class": "fillable"
     },
     "_requirements/03-architecture/EXTENSION_SPEC.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/03-architecture/EXTENSION_SPEC.md",
+      "seeded_from": "_requirements/03-architecture/EXTENSION_SPEC.md",
       "class": "fillable"
     },
     "_requirements/03-architecture/FLOW_SPEC.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/03-architecture/FLOW_SPEC.md",
+      "seeded_from": "_requirements/03-architecture/FLOW_SPEC.md",
       "class": "fillable"
     },
     "_requirements/03-architecture/PATH_KEYS.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/03-architecture/PATH_KEYS.md",
+      "seeded_from": "_requirements/03-architecture/PATH_KEYS.md",
       "class": "fillable"
     },
     "_requirements/03-architecture/PERSISTENCE.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/03-architecture/PERSISTENCE.md",
+      "seeded_from": "_requirements/03-architecture/PERSISTENCE.md",
       "class": "fillable"
     },
     "_requirements/03-architecture/PIPELINES.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/03-architecture/PIPELINES.md",
+      "seeded_from": "_requirements/03-architecture/PIPELINES.md",
       "class": "fillable"
     },
     "_requirements/03-architecture/PRODUCTION_BASELINE.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/03-architecture/PRODUCTION_BASELINE.md",
+      "seeded_from": "_requirements/03-architecture/PRODUCTION_BASELINE.md",
       "class": "fillable"
     },
     "_requirements/03-architecture/PROMPT_TEMPLATES.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/03-architecture/PROMPT_TEMPLATES.md",
+      "seeded_from": "_requirements/03-architecture/PROMPT_TEMPLATES.md",
       "class": "fillable"
     },
     "_requirements/03-architecture/QA-SYSTEM-PROMPT.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/03-architecture/QA-SYSTEM-PROMPT.md",
+      "seeded_from": "_requirements/03-architecture/QA-SYSTEM-PROMPT.md",
       "class": "fillable"
     },
     "_requirements/03-architecture/RELEASE_READINESS.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/03-architecture/RELEASE_READINESS.md",
+      "seeded_from": "_requirements/03-architecture/RELEASE_READINESS.md",
       "class": "fillable"
     },
     "_requirements/03-architecture/SECURITY.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/03-architecture/SECURITY.md",
+      "seeded_from": "_requirements/03-architecture/SECURITY.md",
       "class": "fillable"
     },
     "_requirements/03-architecture/STACK.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/03-architecture/STACK.md",
+      "seeded_from": "_requirements/03-architecture/STACK.md",
       "class": "fillable"
     },
     "_requirements/03-architecture/THIRD_PARTY.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/03-architecture/THIRD_PARTY.md",
+      "seeded_from": "_requirements/03-architecture/THIRD_PARTY.md",
       "class": "fillable"
     },
     "_requirements/03-architecture/VALIDATION_RULES.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/03-architecture/VALIDATION_RULES.md",
+      "seeded_from": "_requirements/03-architecture/VALIDATION_RULES.md",
       "class": "fillable"
     },
     "_requirements/03-architecture/contracts/PAYMENT.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/03-architecture/contracts/PAYMENT.md",
+      "seeded_from": "_requirements/03-architecture/contracts/PAYMENT.md",
       "class": "fillable"
     },
     "_requirements/03-architecture/contracts/PERMISSIONS.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/03-architecture/contracts/PERMISSIONS.md",
+      "seeded_from": "_requirements/03-architecture/contracts/PERMISSIONS.md",
       "class": "fillable"
     },
     "_requirements/03-architecture/contracts/ROUTING.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/03-architecture/contracts/ROUTING.md",
+      "seeded_from": "_requirements/03-architecture/contracts/ROUTING.md",
       "class": "fillable"
     },
     "_requirements/03-architecture/contracts/SESSION.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/03-architecture/contracts/SESSION.md",
+      "seeded_from": "_requirements/03-architecture/contracts/SESSION.md",
       "class": "fillable"
     },
     "_requirements/03-architecture/contracts/USER.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/03-architecture/contracts/USER.md",
+      "seeded_from": "_requirements/03-architecture/contracts/USER.md",
       "class": "fillable"
     },
     "_requirements/03-architecture/contracts/WORKSPACE.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/03-architecture/contracts/WORKSPACE.md",
+      "seeded_from": "_requirements/03-architecture/contracts/WORKSPACE.md",
       "class": "fillable"
     },
     "_requirements/02-copy-system/COPY_STRATEGY.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/02-copy-system/COPY_STRATEGY.md",
+      "seeded_from": "_requirements/02-copy-system/COPY_STRATEGY.md",
       "class": "fillable"
     },
     "_requirements/02-copy-system/SURFACE_MAP.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/02-copy-system/SURFACE_MAP.md",
+      "seeded_from": "_requirements/02-copy-system/SURFACE_MAP.md",
       "class": "fillable"
     },
     "_requirements/01-design-system/COLOR_SEMANTICS.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/01-design-system/COLOR_SEMANTICS.md",
+      "seeded_from": "_requirements/01-design-system/COLOR_SEMANTICS.md",
       "class": "fillable"
     },
     "_requirements/01-design-system/COMPONENT_LIBRARY.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/01-design-system/COMPONENT_LIBRARY.md",
+      "seeded_from": "_requirements/01-design-system/COMPONENT_LIBRARY.md",
       "class": "fillable"
     },
     "_requirements/01-design-system/UX_PRINCIPLES.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/01-design-system/UX_PRINCIPLES.md",
+      "seeded_from": "_requirements/01-design-system/UX_PRINCIPLES.md",
       "class": "fillable"
     },
     "_requirements/00-canonical/CORE_BRIEF.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/00-canonical/CORE_BRIEF.md",
+      "seeded_from": "_requirements/00-canonical/CORE_BRIEF.md",
       "class": "fillable"
     },
     "_requirements/00-canonical/EVOLUTION.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/00-canonical/EVOLUTION.md",
+      "seeded_from": "_requirements/00-canonical/EVOLUTION.md",
       "class": "fillable"
     },
     "_requirements/00-canonical/FAILURE_STATES.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/00-canonical/FAILURE_STATES.md",
+      "seeded_from": "_requirements/00-canonical/FAILURE_STATES.md",
       "class": "fillable"
     },
     "_requirements/00-canonical/FIELD_REGISTRY.json": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/00-canonical/FIELD_REGISTRY.json",
+      "seeded_from": "_requirements/00-canonical/FIELD_REGISTRY.json",
       "class": "fillable"
     },
     "_requirements/00-canonical/GLOSSARY.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/00-canonical/GLOSSARY.md",
+      "seeded_from": "_requirements/00-canonical/GLOSSARY.md",
       "class": "fillable"
     },
     "_requirements/00-canonical/GLOSSARY_TEMPLATE.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/00-canonical/GLOSSARY_TEMPLATE.md",
+      "seeded_from": "_requirements/00-canonical/GLOSSARY_TEMPLATE.md",
       "class": "fillable"
     },
     "_requirements/00-canonical/GOLDEN_PATHS.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/00-canonical/GOLDEN_PATHS.md",
+      "seeded_from": "_requirements/00-canonical/GOLDEN_PATHS.md",
       "class": "fillable"
     },
     "_requirements/00-canonical/PRECEDENCE.json": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/00-canonical/PRECEDENCE.json",
+      "seeded_from": "_requirements/00-canonical/PRECEDENCE.json",
       "class": "fillable"
     },
     "_requirements/00-canonical/PRODUCT_MODEL.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/00-canonical/PRODUCT_MODEL.md",
+      "seeded_from": "_requirements/00-canonical/PRODUCT_MODEL.md",
       "class": "fillable"
     },
     "_requirements/00-canonical/STEPS.json": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/00-canonical/STEPS.json",
+      "seeded_from": "_requirements/00-canonical/STEPS.json",
       "class": "fillable"
     },
     "_requirements/00-canonical/USER_COHORTS.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/00-canonical/USER_COHORTS.md",
+      "seeded_from": "_requirements/00-canonical/USER_COHORTS.md",
       "class": "fillable"
     },
     "_requirements/00-canonical/WATCHED_DIRS.json": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/_requirements/00-canonical/WATCHED_DIRS.json",
+      "seeded_from": "_requirements/00-canonical/WATCHED_DIRS.json",
       "class": "fillable"
     },
     "_guides/AUTH_GUIDE.md": {
@@ -3045,8 +3045,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/warpos/manifest/build.js",
-      "sha256": "9c1dd10126c5f465609cb85e58c69f9519481c23e82c2fc7fc6b6344a7ae57a1",
-      "installedSha": "9c1dd10126c5f465609cb85e58c69f9519481c23e82c2fc7fc6b6344a7ae57a1"
+      "sha256": "09f47f3aec8a7a3882658f85f6fd93c60fe6ef1e4751877f260f0c85d5a329cc",
+      "installedSha": "09f47f3aec8a7a3882658f85f6fd93c60fe6ef1e4751877f260f0c85d5a329cc"
     },
     "scripts/warpos/manifest/test-bootstrap.js": {
       "owner": "framework",
@@ -3059,8 +3059,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/warpos/manifest/test-build.js",
-      "sha256": "4f7eab8b37431b3ee38ba41dae4b70c8dd02fc27ff8b865545a59b9ec0ce237e",
-      "installedSha": "4f7eab8b37431b3ee38ba41dae4b70c8dd02fc27ff8b865545a59b9ec0ce237e"
+      "sha256": "92fd116984939a282917286b16e1af8991d9ab4db11db3b26afa5f6643aa48d0",
+      "installedSha": "92fd116984939a282917286b16e1af8991d9ab4db11db3b26afa5f6643aa48d0"
     },
     "scripts/warpos/manifest/test-installer-hook.js": {
       "owner": "framework",
@@ -5005,8 +5005,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/test-warpos-ship-coverage.js",
-      "sha256": "7a49c51d4203c8a942d93411f9acd13d2ee6d0ca50b1a1f5e9c87301ad0c32ef",
-      "installedSha": "7a49c51d4203c8a942d93411f9acd13d2ee6d0ca50b1a1f5e9c87301ad0c32ef"
+      "sha256": "b82d40fe76832344cb801f636e77c3b3341ecb6c0af414f96985a129f91163ed",
+      "installedSha": "b82d40fe76832344cb801f636e77c3b3341ecb6c0af414f96985a129f91163ed"
     },
     "scripts/checks/version-coherence.js": {
       "owner": "framework",
@@ -5089,8 +5089,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/warpos-ship-coverage.js",
-      "sha256": "30d7ff97d95263a4dab273f9926f46179cecbb444193f0d950e76c9af57cca4b",
-      "installedSha": "30d7ff97d95263a4dab273f9926f46179cecbb444193f0d950e76c9af57cca4b"
+      "sha256": "5f88bdd7a69a463a5c3717f8b6eefa2f2a13b9e22cfcafe39fd213a763d94059",
+      "installedSha": "5f88bdd7a69a463a5c3717f8b6eefa2f2a13b9e22cfcafe39fd213a763d94059"
     },
     "scripts/checks/warpos-staleness.js": {
       "owner": "framework",
@@ -5474,8 +5474,8 @@
       "owner": "framework",
       "managed": true,
       "source": "schemas/warpos-manifest.schema.json",
-      "sha256": "938f4980d9e25774b5edb0f766955c0add67d577fd61ca2b101bd40ad8b8d19f",
-      "installedSha": "938f4980d9e25774b5edb0f766955c0add67d577fd61ca2b101bd40ad8b8d19f"
+      "sha256": "3e20ff11158258114e5050babd9d99aa964804afb5d5164d856a8cb2c4c2ef4f",
+      "installedSha": "3e20ff11158258114e5050babd9d99aa964804afb5d5164d856a8cb2c4c2ef4f"
     },
     "schemas/sprint/active-sprints.schema.json": {
       "owner": "framework",
@@ -16820,7 +16820,7 @@
     ".claude/agents/00-alex/.system/policy/decision-policy.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": "framework/templates/policy/decision-policy.md",
+      "seeded_from": ".claude/agents/00-alex/.system/policy/decision-policy.md",
       "class": "fillable"
     },
     ".claude/agents/00-alex/.system/policy/ledger-presence.json": {
