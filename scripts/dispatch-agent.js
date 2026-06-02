@@ -43,6 +43,60 @@ const {
 const { record: recordProviderTrace } = require("./agents/provider-trace");
 const { validate: validateAgentOutput } = require("./agents/output-validator");
 
+// ── Canonical root anchor (AC2 / ED-016 / class-#20 fix) ──
+//
+// AGENT_ROOT is resolved from THIS FILE'S location (__dirname), NOT from
+// process.cwd() or CLAUDE_PROJECT_DIR. This is the key fix for the worktree
+// telemetry cwd bug:
+//
+//   Root cause: PATHS is built from `path.resolve(CLAUDE_PROJECT_DIR || ".")`
+//   in scripts/hooks/lib/paths.js. When a build-chain agent is dispatched with
+//   cwd=<worktree> AND CLAUDE_PROJECT_DIR is unset, PROJECT bends to the
+//   worktree, so PATHS.runtime points at worktree/.claude/runtime. The
+//   completion record lands in the worktree; gauntlet-verify reads canonical's
+//   path → false "no-record" (confirmed live: all 11 records landed in worktree).
+//
+//   Fix: this script lives at scripts/dispatch-agent.js. Its module location is
+//   IMMUTABLE (cwd-independent). AGENT_ROOT = path.resolve(__dirname, "..") is
+//   ALWAYS the root of the repo containing THIS file — canonical or consumer,
+//   never a worktree regardless of cwd.
+//
+// canonicalFile() uses AGENT_ROOT as the primary anchor. It prefers the PATHS
+// value only when PATHS has resolved to a path that is under AGENT_ROOT (i.e.
+// CLAUDE_PROJECT_DIR was set correctly to the same root). When PATHS bends to
+// a different root (worktree case), the __dirname-anchored fallback is used.
+// The net invariant: telemetry NEVER lands at a cwd-relative path.
+
+const AGENT_ROOT = path.resolve(__dirname, "..");
+const AGENT_ROOT_NORM = path.normalize(AGENT_ROOT);
+
+/**
+ * Resolve a telemetry file path, anchored to AGENT_ROOT.
+ *
+ * @param {string|undefined} pathsValue  - value from PATHS registry (may be
+ *   absolute but resolve to a worktree path when cwd-bent)
+ * @param {string} relFallback           - relative path from AGENT_ROOT to use
+ *   when pathsValue is absent or outside AGENT_ROOT
+ * @returns {string} absolute path guaranteed to be under AGENT_ROOT
+ */
+function canonicalFile(pathsValue, relFallback) {
+  if (pathsValue && path.isAbsolute(pathsValue)) {
+    const norm = path.normalize(pathsValue);
+    // Accept PATHS value only when it resolves within the same root as this
+    // script (case-insensitive on Windows). This covers the correct case
+    // (CLAUDE_PROJECT_DIR explicitly set to the canonical root) without
+    // accepting a worktree-bent path.
+    const rootPrefixMatch =
+      process.platform === "win32"
+        ? norm.toLowerCase().startsWith(AGENT_ROOT_NORM.toLowerCase() + path.sep) ||
+          norm.toLowerCase() === AGENT_ROOT_NORM.toLowerCase()
+        : norm.startsWith(AGENT_ROOT_NORM + path.sep) || norm === AGENT_ROOT_NORM;
+    if (rootPrefixMatch) return pathsValue;
+  }
+  // Fall back to __dirname-anchored canonical path — cwd-independent.
+  return path.join(AGENT_ROOT, relFallback);
+}
+
 // ── Telemetry helpers (Phase 0 workstream C) ──────────────
 //
 // Every dispatch gets a unique dispatch_id. Completion + silent-death markers
@@ -86,16 +140,21 @@ function appendJsonl(file, record) {
 }
 
 function recordCompletion(record) {
-  const file =
-    PATHS.dispatchCompletionsFile ||
-    path.join(PATHS.runtime || ".claude/runtime", "dispatch-completions.jsonl");
+  // canonicalFile() ensures the path is __dirname-anchored, never cwd-relative.
+  // Fixes ED-016/class-#20: worktree-cwd dispatches wrote to worktree's runtime.
+  const file = canonicalFile(
+    PATHS.dispatchCompletionsFile,
+    path.join(".claude", "runtime", "dispatch-completions.jsonl"),
+  );
   appendJsonl(file, record);
 }
 
 function recordDeath(record) {
-  const file =
-    PATHS.dispatchDeathsFile ||
-    path.join(PATHS.runtime || ".claude/runtime", "dispatch-deaths.jsonl");
+  // Same canonical anchor as recordCompletion — both must land in the same root.
+  const file = canonicalFile(
+    PATHS.dispatchDeathsFile,
+    path.join(".claude", "runtime", "dispatch-deaths.jsonl"),
+  );
   appendJsonl(file, record);
 }
 
@@ -261,6 +320,11 @@ if (require.main !== module) {
     getRoleModel,
     detectMode,
     modeSubdir,
+    // AC2 / ED-016 fix: exported for unit testing the canonical-path resolution.
+    // Tests can call canonicalFile(fakeWorktreePath, relFallback) directly to
+    // assert that paths outside AGENT_ROOT are replaced with the anchored fallback.
+    canonicalFile,
+    AGENT_ROOT,
   };
   return;
 }

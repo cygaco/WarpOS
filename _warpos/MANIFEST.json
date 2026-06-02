@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-01T23:55:52.398Z",
+  "generatedAt": "2026-06-02T01:10:20.386Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.13.1",
   "migrations": [],
@@ -1141,11 +1141,6 @@
       "managed": false,
       "class": "reference"
     },
-    "_docs/research/design-principles-taxonomy/.tmp/gemini-result.json": {
-      "owner": "project",
-      "managed": false,
-      "class": "reference"
-    },
     "_docs/research/design-mobile-responsive/brief.json": {
       "owner": "project",
       "managed": false,
@@ -1797,8 +1792,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/dispatch-agent.js",
-      "sha256": "9681c258dd26cf0376513d92d5949346277d8fa4afb9fcd9a6a939f28934fe7e",
-      "installedSha": "9681c258dd26cf0376513d92d5949346277d8fa4afb9fcd9a6a939f28934fe7e"
+      "sha256": "82d4a241a48c55cf6a7aa9f5d353e9488945bc4c5b1b2701f7c7341525d6eae0",
+      "installedSha": "82d4a241a48c55cf6a7aa9f5d353e9488945bc4c5b1b2701f7c7341525d6eae0"
     },
     "scripts/dispatch.js": {
       "owner": "framework",
@@ -4576,8 +4571,15 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/dispatch/gauntlet-verify.js",
-      "sha256": "1ad6743cb4330548fffffb8a119c58e9381be2f55cd04431ae9e8c3deabec92a",
-      "installedSha": "1ad6743cb4330548fffffb8a119c58e9381be2f55cd04431ae9e8c3deabec92a"
+      "sha256": "ca055c045ba00b2d9c5a7d5a66c129d198daca979d9675213c625425a22578f2",
+      "installedSha": "ca055c045ba00b2d9c5a7d5a66c129d198daca979d9675213c625425a22578f2"
+    },
+    "scripts/dispatch/gauntlet-verify.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/dispatch/gauntlet-verify.test.js",
+      "sha256": "9f4fe4da864220430057a72c86f5be2366f192152f39ede7671e781b23084c45",
+      "installedSha": "9f4fe4da864220430057a72c86f5be2366f192152f39ede7671e781b23084c45"
     },
     "scripts/dispatch/gui.js": {
       "owner": "framework",
