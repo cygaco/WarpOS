@@ -168,8 +168,9 @@ test("malformed: malformed line in window → fail-CLOSED (ok=false, malformedTa
   assert.ok(res.malformedLines >= 1, `expected >=1 malformed lines, got ${res.malformedLines}`);
 });
 
-// Without a window, malformed lines are lenient (whole-ledger view is not a run verify).
-test("malformed: no window + malformed line → lenient (ok depends only on records)", () => {
+// FIX2 (c): No window + malformed line → now fails-CLOSED (was lenient — that was Bug (b)).
+// BC-16: a no-window verify cannot silently ignore corruption. malformed>0 always taints.
+test("malformed: no window + malformed line → fail-closed (FIX2: malformed always taints)", () => {
   const now = Date.now();
   const validRecord = makeRecord({ completed_at: new Date(now).toISOString() });
   const tmpFile = writeTempFile(
@@ -182,11 +183,10 @@ test("malformed: no window + malformed line → lenient (ok depends only on reco
     completionsFile: tmpFile,
   });
 
-  // Malformed line exists but no window → lenient → role's valid record counts
-  assert.strictEqual(res.malformedTainted, false, "without window, malformed should not taint");
+  // FIX2: malformed lines taint even without a window (fail-closed, BC-16).
+  assert.strictEqual(res.malformedTainted, true, "malformed without window should taint (FIX2)");
   assert.ok(res.malformedLines >= 1, "malformed lines should still be counted/surfaced");
-  assert.strictEqual(res.roles[0].status, "ran", "valid record should still satisfy");
-  assert.strictEqual(res.ok, true, "ok should be true when window is absent");
+  assert.strictEqual(res.ok, false, "ok should be false due to malformed taint (FIX2)");
 });
 
 // readCompletions unit test: counts malformed lines correctly.
@@ -529,6 +529,248 @@ test("fell-back: satisfies gauntlet by default, fails with --strict-fallback", (
   assert.strictEqual(resStrict.ok, false, "fell-back should fail with strictFallback:true");
 });
 
+// ── FIX1 Tests: Future-timestamp clamp (Golden Ticket prevention) ────────────
+// A far-future completed_at with only `since` (no explicit `until`) must be
+// excluded — the effective upper bound defaults to now.
+test("FIX1: far-future completed_at + only `since` → excluded → no-record → ok:false", () => {
+  const now = Date.now();
+  const futureMs = now + 365 * 24 * 60 * 60 * 1000; // 1 year in the future
+  const res = verifyGauntlet({
+    roles: ["reviewer"],
+    since: now - 60_000, // window starts 1 min ago, no explicit until
+    records: [
+      makeRecord({
+        role: "reviewer",
+        completed_at: new Date(futureMs).toISOString(),
+      }),
+    ],
+  });
+
+  assert.strictEqual(res.ok, false, "far-future record must be excluded (no Golden Ticket)");
+  assert.strictEqual(res.roles[0].status, "no-record", "future record should be filtered out by FIX1");
+  assert.strictEqual(res.considered, 0, "future record must not appear in considered");
+});
+
+// A record at exactly "now" with `since` in the past must still count — not wrongly excluded.
+test("FIX1: record at 'now' with since in the past → still in-window → ok:true", () => {
+  const now = Date.now();
+  const res = verifyGauntlet({
+    roles: ["reviewer"],
+    since: now - 60_000, // 1 min ago, no explicit until
+    records: [
+      makeRecord({
+        role: "reviewer",
+        completed_at: new Date(now).toISOString(), // exactly at capture-time
+      }),
+    ],
+  });
+
+  // verifyGauntlet's internal nowMs >= now (time only moves forward), so t <= nowMs → passes.
+  assert.strictEqual(res.ok, true, "record at now must NOT be wrongly excluded (FIX1)");
+  assert.strictEqual(res.roles[0].status, "ran");
+  assert.strictEqual(res.considered, 1);
+});
+
+// ── FIX2 Tests: Positional malformed-taint scoping ────────────────────────────
+// (a) A malformed line that appears CLEARLY BEFORE the first in-window valid
+//     record (separated by 2+ out-of-window records) is historic → must NOT
+//     taint a windowed verify (prevents DoS blast-radius).
+//
+//     NOTE on fixture: the leading-edge adjacency rule (FIX2 span = firstInWindowIdx-1)
+//     means a malformed line at (firstInWindowIdx - 1) → i.e. immediately before the
+//     first in-window record → DOES taint (it could be a half-written record for this
+//     run). To test the "clearly historic / no-taint" case we must separate the
+//     malformed line by ≥2 out-of-window valid records so it falls outside the taint
+//     span. Fixture layout:
+//       Line 0: malformed  (idx=0, historic — 3 lines before first in-window)
+//       Line 1: out-of-window valid record (idx=1)
+//       Line 2: out-of-window valid record (idx=2)
+//       Line 3: in-window valid record     (idx=3) ← firstInWindowIdx
+//     Taint check: 0 >= (3 - 1) = 0 >= 2 → false → no taint ✓
+test("FIX2a: malformed line BEFORE in-window records → historic → no taint → ok:true", () => {
+  const now = Date.now();
+  const validRecord = makeRecord({
+    role: "reviewer",
+    completed_at: new Date(now).toISOString(),
+  });
+  // Out-of-window records: completed_at older than `since` (now - 60_000).
+  const oldRecord1 = makeRecord({
+    role: "reviewer",
+    completed_at: new Date(now - 120_000).toISOString(), // 2 min ago — outside window
+  });
+  const oldRecord2 = makeRecord({
+    role: "reviewer",
+    completed_at: new Date(now - 90_000).toISOString(), // 1.5 min ago — outside window
+  });
+  // Line 0: malformed (historic — clearly separated by 2 out-of-window records)
+  // Line 1: out-of-window valid record
+  // Line 2: out-of-window valid record
+  // Line 3: in-window valid record  ← firstInWindowIdx = 3, taint span starts at 2
+  const tmpFile = writeTempFile(
+    `{NOT VALID JSON — historic corruption, clearly separated}\n` +
+    `${JSON.stringify(oldRecord1)}\n` +
+    `${JSON.stringify(oldRecord2)}\n` +
+    `${JSON.stringify(validRecord)}\n`,
+  );
+
+  const res = verifyGauntlet({
+    roles: ["reviewer"],
+    since: now - 60_000,
+    completionsFile: tmpFile,
+  });
+
+  assert.strictEqual(res.ok, true, "historic malformed line (clearly separated before window records) must NOT taint (FIX2a)");
+  assert.strictEqual(res.malformedTainted, false, "malformedTainted must be false for clearly-pre-window corruption");
+  assert.ok(res.malformedLines >= 1, "malformed count must still be surfaced for observability");
+  assert.strictEqual(res.roles[0].status, "ran");
+});
+
+// (b) A malformed line that appears AFTER the first in-window valid record is
+//     in-scope → MUST taint (a crash mid-write during this run bricks the gate).
+test("FIX2b: malformed line AFTER in-window records → in-scope → tainted → ok:false", () => {
+  const now = Date.now();
+  const validRecord = makeRecord({
+    role: "reviewer",
+    completed_at: new Date(now).toISOString(),
+  });
+  // Line 0: valid in-window record
+  // Line 1: malformed (after in-window records → in-scope for this run)
+  const tmpFile = writeTempFile(
+    `${JSON.stringify(validRecord)}\n{NOT VALID JSON — crash mid-write}\n`,
+  );
+
+  const res = verifyGauntlet({
+    roles: ["reviewer"],
+    since: now - 60_000,
+    completionsFile: tmpFile,
+  });
+
+  assert.strictEqual(res.ok, false, "malformed line after in-window records must taint (FIX2b)");
+  assert.strictEqual(res.malformedTainted, true, "malformedTainted must be true for in-scope corruption");
+  assert.ok(res.malformedLines >= 1);
+});
+
+// ── FIX3 Tests: --allow-failed no longer manufactures green from pure-failed ─
+// A role with ONLY a failed record + allowFailed:true must NOT be satisfied.
+test("FIX3: role with only failed record + allowFailed:true → NOT satisfied → ok:false", () => {
+  const now = Date.now();
+  const res = verifyGauntlet({
+    roles: ["reviewer"],
+    since: now - 60_000,
+    allowFailed: true, // deprecated flag — must not green a pure-failed role
+    records: [
+      {
+        role: "reviewer",
+        ok: false, // only record is a failure — no well-formed success exists
+        provider: "openai",
+        completed_at: new Date(now).toISOString(),
+      },
+    ],
+  });
+
+  assert.strictEqual(res.ok, false, "--allow-failed must not green a pure-failed role (FIX3)");
+  assert.strictEqual(res.roles[0].status, "failed");
+  assert.strictEqual(res.roles[0].satisfied, false, "satisfied must be false for pure-failed (FIX3)");
+  assert.ok(res.missingRoles.includes("reviewer"), "reviewer must be in missingRoles");
+});
+
+// A role with a failed attempt AND a later well-formed success still satisfies
+// (best-outcome-wins: "ran" beats "failed"; allowFailed not needed for this).
+test("FIX3: failed attempt then well-formed ran record → satisfied (best-outcome-wins unaffected)", () => {
+  const now = Date.now();
+  const res = verifyGauntlet({
+    roles: ["reviewer"],
+    since: now - 60_000,
+    records: [
+      {
+        role: "reviewer",
+        ok: false, // earlier failure
+        provider: "openai",
+        completed_at: new Date(now - 30_000).toISOString(),
+      },
+      makeRecord({ // later well-formed success — best outcome wins
+        role: "reviewer",
+        completed_at: new Date(now).toISOString(),
+      }),
+    ],
+  });
+
+  assert.strictEqual(res.ok, true, "well-formed success after a failure must still satisfy (FIX3)");
+  assert.strictEqual(res.roles[0].status, "ran", "best-outcome-wins: ran beats failed");
+  assert.strictEqual(res.roles[0].satisfied, true);
+});
+
+// ── FIX4 Test: Empty roles list is never vacuously green ─────────────────────
+test("FIX4: verifyGauntlet({roles:[]}) → ok:false with noRolesRequested:true (no vacuous green)", () => {
+  const res = verifyGauntlet({ roles: [] });
+  assert.strictEqual(res.ok, false, "empty roles must yield ok:false — no vacuous green (FIX4)");
+  assert.strictEqual(res.noRolesRequested, true, "noRolesRequested flag must be set");
+  assert.strictEqual(res.roles.length, 0, "roles array must be empty");
+  assert.strictEqual(res.missingRoles.length, 0, "missingRoles must be empty (not applicable)");
+});
+
+// ── FIX5 Test: Real cwd/env-change regression (ED-016 reproduction) ──────────
+// The HOLLOW regression in the previous commit only called canonicalFile(fakePath)
+// without actually changing process.cwd() or deleting CLAUDE_PROJECT_DIR — it
+// couldn't catch a cwd-dependent regression. This test actually triggers the bug
+// scenario: chdir to a temp (worktree-like) dir AND delete the env anchor.
+test("FIX5 (cwd-regression real): canonicalFile is cwd-independent after chdir + CLAUDE_PROJECT_DIR deleted", () => {
+  const originalCwd = process.cwd();
+  const originalEnvValue = process.env.CLAUDE_PROJECT_DIR;
+  let tmpDir;
+
+  try {
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "gv-wt-cwd-"));
+
+    // Simulate the ED-016 worktree scenario:
+    //   1. cwd changes to a non-canonical location (worktree dir)
+    //   2. CLAUDE_PROJECT_DIR is unset (not passed by the dispatcher)
+    process.chdir(tmpDir);
+    delete process.env.CLAUDE_PROJECT_DIR;
+
+    // Pass a pathsValue that looks like it's under the worktree (the "bent" PATHS value).
+    const fakeWorktreePath = path.join(
+      tmpDir,
+      ".claude",
+      "runtime",
+      "dispatch-completions.jsonl",
+    );
+    const result = canonicalFile(
+      fakeWorktreePath,
+      path.join(".claude", "runtime", "dispatch-completions.jsonl"),
+    );
+
+    const expectedPath = path.join(AGENT_ROOT, ".claude", "runtime", "dispatch-completions.jsonl");
+
+    // Must return an absolute path anchored to AGENT_ROOT — never the worktree path.
+    assert.ok(
+      path.isAbsolute(result),
+      `canonicalFile must return an absolute path, got: ${result}`,
+    );
+    assert.notStrictEqual(
+      path.normalize(result).toLowerCase(),
+      path.normalize(fakeWorktreePath).toLowerCase(),
+      "result must NOT be the worktree-cwd-derived path (ED-016 regression)",
+    );
+    assert.strictEqual(
+      path.normalize(result).toLowerCase(),
+      path.normalize(expectedPath).toLowerCase(),
+      `Expected AGENT_ROOT-anchored path regardless of cwd:\n  ${expectedPath}\nGot:\n  ${result}`,
+    );
+  } finally {
+    // Always restore — test isolation is mandatory.
+    process.chdir(originalCwd);
+    if (originalEnvValue !== undefined) {
+      process.env.CLAUDE_PROJECT_DIR = originalEnvValue;
+    } else {
+      delete process.env.CLAUDE_PROJECT_DIR;
+    }
+    if (tmpDir) {
+      try { fs.rmdirSync(tmpDir); } catch { /* ignore */ }
+    }
+  }
+});
+
 // ── Result ─────────────────────────────────────────────────
 cleanupTempFiles();
 
@@ -544,6 +786,7 @@ if (failures.length) {
 
 process.stdout.write(
   `gauntlet-verify bite-test: ${passed}/${passed} passed\n` +
-  `  covers: suppressed-record, valid, malformed, ill-typed, stale, cwd-regression, backward-compat\n`,
+  `  covers: suppressed-record, valid, malformed, ill-typed, stale, cwd-regression, backward-compat\n` +
+  `  FIX1: future-clamp; FIX2: positional-taint(a,b,c); FIX3: no-green-from-pure-failed; FIX4: empty-roles; FIX5: real-cwd-regression\n`,
 );
 process.exit(0);

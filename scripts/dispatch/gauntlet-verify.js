@@ -81,6 +81,17 @@ const path = require("path");
 const { PATHS } = require("../hooks/lib/paths");
 const { normalizeRole } = require("../hooks/lib/role-aliases");
 
+// ── FIX1: Future-timestamp clamp constant ─────────────────
+// A legitimate completion record cannot be from the future. A small skew
+// allowance tolerates system clock drift across machines. Records whose
+// completed_at exceeds now + FUTURE_SKEW_ALLOWANCE_MS are excluded even
+// when an explicit `until` is set absurdly high (defense-in-depth against
+// the "Golden Ticket" attack — injecting a far-future record to permanently
+// satisfy a role for all future windowed verifies).
+// DEFERRED: per-runId correlation (no embedded runId in schema today);
+// the time-window fix closes the practical exploit. See brief notes.
+const FUTURE_SKEW_ALLOWANCE_MS = 24 * 60 * 60 * 1000; // 24 h clock-skew allowance
+
 // ── Ledger location ────────────────────────────────────────
 // paths.dispatchCompletionsFile is the registered key the dispatch wrapper
 // writes to; paths.runtime is the registered fallback dir for the bare-
@@ -156,20 +167,29 @@ function readCompletions(file) {
   try {
     raw = fs.readFileSync(file, "utf8");
   } catch {
-    return { records: [], malformed: 0, missing: true };
+    return { records: [], malformed: 0, malformedLineIndices: [], recordLineIndices: [], missing: true };
   }
   const records = [];
+  // FIX2: track 0-based file-line index for each parsed record and each malformed
+  // line so the verifier can do positional taint scoping (historic corruption before
+  // the run window does NOT taint a windowed verify).
+  const recordLineIndices = [];   // parallel to records: line index of each parsed record
+  const malformedLineIndices = []; // line indices of unparseable non-blank lines
   let malformed = 0;
+  let lineIdx = 0;
   for (const line of raw.split(/\r?\n/)) {
     const trimmed = line.trim();
-    if (!trimmed) continue;
+    if (!trimmed) { lineIdx++; continue; }
     try {
       records.push(JSON.parse(trimmed));
+      recordLineIndices.push(lineIdx);
     } catch {
+      malformedLineIndices.push(lineIdx);
       malformed++;
     }
+    lineIdx++;
   }
-  return { records, malformed, missing: false };
+  return { records, malformed, malformedLineIndices, recordLineIndices, missing: false };
 }
 
 // ── Core verification ──────────────────────────────────────
@@ -185,7 +205,10 @@ function readCompletions(file) {
  * @param {string|number} [args.until]   - window end (ISO or epoch ms); records after are ignored
  * @param {string}   [args.completionsFile] - override ledger path (default: paths.dispatchCompletionsFile)
  * @param {object[]} [args.records]      - inject pre-parsed records (testing); bypasses file read
- * @param {boolean}  [args.allowFailed]  - treat dispatched-but-errored as satisfied (default false)
+ * @param {boolean}  [args.allowFailed]  - DEPRECATED (BC-16 FIX3): accepted for backward compat
+ *   but no longer greens a role whose only record is ok:false. A pure-failed role is never
+ *   satisfied regardless of this flag. It remains accepted at CLI level to avoid breaking
+ *   existing call sites.
  * @param {boolean}  [args.strictFallback] - treat fell-back-to-claude as unsatisfied (default false)
  * @returns {{
  *   ok: boolean,
@@ -205,6 +228,7 @@ function readCompletions(file) {
  *     wellFormed: boolean|null
  *   }>,
  *   missingRoles: string[],
+ *   noRolesRequested?: boolean,
  * }}
  */
 function verifyGauntlet(args = {}) {
@@ -224,16 +248,36 @@ function verifyGauntlet(args = {}) {
     roles.push(canon);
   }
 
+  // FIX4: An empty roles list cannot vacuously be "all satisfied".
+  // The CLI already errors on --roles with empty list; the module API must also guard.
+  // Return ok:false with a clear noRolesRequested signal so callers can't misread green.
+  if (roles.length === 0) {
+    const sinceMs0 = toMs(args.since);
+    const untilMs0 = toMs(args.until);
+    return {
+      ok: false,
+      runId,
+      window: { sinceMs: sinceMs0, untilMs: untilMs0 },
+      completionsFile: null,
+      ledgerMissing: false,
+      malformedLines: 0,
+      malformedTainted: false,
+      considered: 0,
+      roles: [],
+      missingRoles: [],
+      noRolesRequested: true,
+    };
+  }
+
   const sinceMs = toMs(args.since);
   const untilMs = toMs(args.until);
   // A "window" is active when at least one bound is specified.
-  // This gates the fail-closed malformed-taint behavior: when a window is active,
-  // we cannot time-attribute a malformed line, so it is treated as potentially
-  // in-window → ledger tainted → ok:false (BC-16).
   const hasWindow = sinceMs !== null || untilMs !== null;
 
   let records;
   let malformed = 0;
+  let malformedLineIndices = []; // FIX2: line indices of unparseable lines in the file
+  let recordLineIndices = [];    // FIX2: line indices of successfully parsed records (parallel to records)
   let ledgerMissing = false;
   let completionsFile = null;
   if (Array.isArray(args.records)) {
@@ -243,29 +287,101 @@ function verifyGauntlet(args = {}) {
     const read = readCompletions(completionsFile);
     records = read.records;
     malformed = read.malformed;
+    malformedLineIndices = read.malformedLineIndices || [];
+    recordLineIndices = read.recordLineIndices || [];
     ledgerMissing = read.missing;
   }
 
-  // Malformed lines from the file: when a window is active, each malformed line
-  // COULD be the missing record for a required role (it cannot be parsed, so we
-  // cannot confirm it's outside the window). Treat as in-window → tainted.
-  // When no window is active (whole-ledger view), we allow valid records to
-  // speak for themselves; malformed count is still surfaced but doesn't veto.
-  const filemalformedTainted = malformed > 0 && hasWindow;
+  // FIX1: Stable "now" for this verify call — computed once so all checks are
+  // consistent. Used as the default upper bound (no explicit `until`) and as the
+  // base for the hard ceiling that blocks injected far-future records even when
+  // an explicit `until` is set absurdly high (Golden Ticket defense-in-depth).
+  const nowMs = Date.now();
+  // When a window is active and no explicit `until` was given, default to nowMs:
+  // a legitimate completion cannot have a future timestamp.
+  const effectiveUntilMs = untilMs ?? (hasWindow ? nowMs : null);
+  // Hard ceiling: records > nowMs + 24h are excluded regardless of explicit `until`.
+  const hardCeilingMs = nowMs + FUTURE_SKEW_ALLOWANCE_MS;
 
   // Filter to the run window. A record with an unknown timestamp is kept only
   // when no window was specified (so a caller who passes neither since nor until
   // sees the whole ledger); when a window IS specified, unknown-time records are
   // dropped (they can't be proven to belong to this run).
+  // FIX1: future-dated records are excluded via effectiveUntilMs + hardCeilingMs.
   const inWindow = (rec) => {
     const t = recordCompletedMs(rec);
-    if (sinceMs === null && untilMs === null) return true;
-    if (t === null) return false;
+    if (sinceMs === null && untilMs === null) return true; // whole-ledger view
+    if (t === null) return false; // unknown timestamp: cannot prove in-window
     if (sinceMs !== null && t < sinceMs) return false;
-    if (untilMs !== null && t > untilMs) return false;
+    // FIX1: apply effective upper bound (defaults to now when no explicit until)
+    if (effectiveUntilMs !== null && t > effectiveUntilMs) return false;
+    // FIX1: hard ceiling — defense-in-depth against injected far-future records
+    if (t > hardCeilingMs) return false;
     return true;
   };
   const considered = records.filter(inWindow);
+
+  // FIX2: Positional malformed-taint scoping.
+  //
+  // OLD (buggy): filemalformedTainted = malformed > 0 && hasWindow
+  //   Bug (a) FALSE-RED: one historic malformed line bricks ALL windowed verifies forever.
+  //   Bug (b) FALSE-OPEN: no-window → malformed lines ignored entirely.
+  //
+  // NEW (FIX2 + leading/trailing-edge closure, BC-16):
+  //   (a) No window active → any malformed line taints (fail-closed, BC-16).
+  //   (b) Window active → taint when a malformed line falls in the span
+  //       [firstInWindowIdx - 1 .. ∞):
+  //         • leading edge  (idx == firstInWindowIdx - 1): immediately before the
+  //           run's first valid record could be a half-written record from THIS
+  //           run's start → taint (leading-edge hole fixed here).
+  //         • in-window / trailing (idx >= firstInWindowIdx): already taints.
+  //         • historic safe zone (idx < firstInWindowIdx - 1): clearly predates
+  //           this run → does NOT taint (preserves DoS-blast-radius fix).
+  //       Edge: no in-window valid records AND malformed>0 → taint (the malformed
+  //       line COULD be the missing record for a required role).
+  let filemalformedTainted = false;
+  if (malformed > 0) {
+    if (!hasWindow) {
+      // No window: fail-closed on any malformed line (FIX2 bug-b fix).
+      filemalformedTainted = true;
+    } else {
+      // Window active: positional scoping (FIX2 bug-a fix).
+      // Build the set of line indices belonging to in-window valid records.
+      const inWindowLineIdxs = [];
+      for (let i = 0; i < records.length; i++) {
+        if (inWindow(records[i]) && i < recordLineIndices.length) {
+          inWindowLineIdxs.push(recordLineIndices[i]);
+        }
+      }
+      if (inWindowLineIdxs.length === 0) {
+        // No valid in-window records AND malformed lines exist → the malformed line
+        // could BE the missing record for a required role → taint.
+        filemalformedTainted = true;
+      } else {
+        const firstInWindowIdx = Math.min(...inWindowLineIdxs);
+        const lastInWindowIdx  = Math.max(...inWindowLineIdxs);
+        // Taint span (FIX2 leading+trailing-edge closure, BC-16):
+        //   [firstInWindowIdx - 1 .. ∞)
+        //
+        //   Leading edge:  a malformed line immediately before the first in-window
+        //                  record (idx == firstInWindowIdx - 1) could be a
+        //                  half-written/corrupt record from THIS run's start
+        //                  (append-only does NOT prove a leading-edge malformed
+        //                  line is historic) → taint.
+        //   Trailing edge: a malformed line after the last in-window record
+        //                  (idx > lastInWindowIdx) could be a crash-mid-write
+        //                  from THIS run → taint. The simplified span covers this
+        //                  automatically (anything >= firstInWindowIdx-1).
+        //   Historic safe zone: malformed lines more than 1 line before the first
+        //                  in-window record (idx < firstInWindowIdx - 1) predate
+        //                  this run → do NOT taint (preserves DoS-blast-radius
+        //                  fix from FIX2a — ancient corruption does not brick the
+        //                  gate permanently).
+        void lastInWindowIdx; // computed for documentation; span simplifies to idx >= fI-1
+        filemalformedTainted = malformedLineIndices.some((idx) => idx >= firstInWindowIdx - 1);
+      }
+    }
+  }
 
   // Bucket considered records by canonical role. Records with a null/empty
   // canonical role are silently skipped (they can't match any requested role).
@@ -325,7 +441,11 @@ function verifyGauntlet(args = {}) {
     let satisfied;
     if (status === "ran") satisfied = true;
     else if (status === "fell-back") satisfied = !strictFallback;
-    else if (status === "failed") satisfied = allowFailed;
+    else if (status === "failed") satisfied = false; // FIX3: allowFailed can no longer green a
+    // pure-failed role (BC-16 typed-success). A role whose best record is ok:false has no
+    // well-formed success → never satisfied. --allow-failed is kept at CLI level for backward
+    // compat (accepted, no error) but is now a no-op for pure-failed roles. allowFailed is
+    // intentionally unused here.
     else satisfied = false; // no-record and ill-typed both fail
 
     return { role, status, satisfied, record, count: recs.length, wellFormed };
@@ -391,6 +511,11 @@ if (require.main === module) {
           "    [--allow-failed] [--strict-fallback] [--json]",
           "",
           "Exit: 0 = all roles have a well-formed record; 1 = no-record/ill-typed/malformed-tainted; 2 = usage/internal error.",
+          "",
+          "Flags:",
+          "  --allow-failed      Accepted for backward compat; no longer greens a pure-failed role (BC-16 FIX3).",
+          "                      A role whose only record is ok:false is never satisfied regardless of this flag.",
+          "  --strict-fallback   Fail when any role only fell back to Claude (default: fell-back counts as ran).",
         ].join("\n") + "\n",
       );
       process.exit(0);
