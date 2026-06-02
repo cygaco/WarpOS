@@ -110,17 +110,54 @@ Check for (report as informational, not blocking):
 
 For each missing: INFO — "Optional. Install for enhanced features."
 
-### 11. Provider Health (Phase 0)
+### 11. Provider Health — Dispatch Readiness (Phase 0)
 
-Run `node scripts/warpos/provider-health-check.js --summary`. Report each
-configured provider as green/yellow/red and surface the one-line `suggestion`
-field for any non-green status.
+Run `node scripts/warpos/provider-smoke.js --per-role`.
 
-States recognised (per `scripts/hooks/lib/provider-health.js`):
+This performs a **full dispatch-readiness sweep**: it probes each configured
+provider for CLI presence + auth, AND resolves each build-chain role's
+provider + model the way real dispatch does, pinging the non-Claude ones.
+Report each provider as green/yellow/red, then report the per-role
+reachability block that the smoke renders:
+
+```
+Per-role reachability (dispatch resolution path):
+────────────────────────────────────────────────
+  ok   builder     claude  (default)                claude is the harness; always reachable
+  ok   reviewer    openai  gpt-5.5                  ping ok
+  xx   redteam     gemini  gemini-3.1-pro-preview   model_unavailable: …
+  !!   compliance  openai  gpt-5.5                  fellback: silent downgrade detected
+```
+
+Surface the per-link status (role / provider / model / status) for every role.
+A LOUD per-link verdict helps the operator pinpoint whether it is the CLI,
+model subscription, auth, or permissions that is broken.
+
+**Exit-code contract (PRD R-7):**
+- **Exit 2** — at least one role or provider is RED (model unavailable,
+  unreachable, unresolved, or error). This is a real dispatch-readiness
+  failure — a role pinned to a model unavailable on the account, a missing
+  CLI, or a broken auth. A non-zero exit is a **RED health result**, NOT a
+  passing one. Fix the flagged role before dispatching.
+- **Exit 0** — all green, OR yellow-only (fallbacks exist; dispatch will work
+  but may lose diff-model coverage). Yellow is non-blocking for now.
+
+This replaces the old `provider-health-check.js --summary` call which always
+exited 0 even on a red verdict (false-green, now fixed in 0.18.1).
+
+States recognised — **provider-level** (per `scripts/hooks/lib/provider-health.js`):
 `ok`, `cli_missing`, `auth_missing`, `auth_source_mismatch`,
 `model_not_found`, `quota_exhausted`, `free_tier_limit_zero`,
 `stale_cli_registry`, `trusted_directory_required`, `provider_timeout`,
 `unknown_error`.
+
+States recognised — **per-role** (per `scripts/warpos/provider-smoke.js#classifyPerRole`):
+`ok` (reachable), `resolved` (--no-ping: provider+model resolved, ping skipped),
+`fellback` (YELLOW — ran but silently downgraded to claude, loses diff-model coverage),
+`model_unavailable` (RED — model pinned in role spec is not served on this account),
+`unreachable` (RED — CLI present but ping failed),
+`unresolved` (RED — could not resolve provider for role),
+`error` (RED — runProvider threw).
 
 ### 12. Dispatch Hygiene (Phase 0)
 

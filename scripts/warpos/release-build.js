@@ -17,6 +17,15 @@ const { printHumanReport } = require("./report-format");
 // byte-equality content-addressed; LF normalization would be incorrect here.
 const cHash = require("./lib/content-hash");
 
+// E1 runtime-exclusion gate: import isExcluded + RUNTIME_JSONL_PATTERN from the
+// manifest generator (single source of truth). Both runtimeExclusionGate and
+// the generator use the SAME predicate so they cannot silently diverge.
+// If the generator refactors isExcluded, this import picks up the change
+// automatically — no copy-paste to keep in sync.
+const { isExcluded: manifestIsExcluded, RUNTIME_JSONL_PATTERN } = require(
+  path.join(__dirname, "..", "generate-framework-manifest.js"),
+);
+
 const REPO_ROOT = path.resolve(__dirname, "..", "..");
 const RELEASES_DIR = path.join(REPO_ROOT, "framework", "releases");
 const FRAMEWORK_MANIFEST = path.join(
@@ -108,6 +117,201 @@ function betaHonestyGate(opts, runChecker) {
   return { blocked: true, message };
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// E1: Runtime-exclusion gate (SP-0181 A2)
+//
+// Reads the SNAPSHOTTED manifest from the capsule and checks whether any asset
+// entry has owner === "runtime" or matches the tracked-transient filename
+// pattern (events/tools/skill-usage *.jsonl). These are the W-8 class:
+// per-agent event logs that got swept into the manifest walk and mislabeled
+// framework/generated. They must never ship.
+//
+// Fails closed (process.exit(2)) when blocked === true.
+// Runner-injectable (runChecker param) for unit tests without a full capsule.
+// Returns { blocked, message, offenders }.
+// ─────────────────────────────────────────────────────────────────────────────
+function runtimeExclusionGate(manifestObj, opts) {
+  if (opts && opts.skipRuntimeExclusionCheck) return { blocked: false, message: null, offenders: [] };
+
+  if (!manifestObj || typeof manifestObj !== "object") {
+    return {
+      blocked: true,
+      message:
+        "runtimeExclusionGate: manifest is not a valid object — cannot verify. " +
+        "Remediation: Re-run scripts/generate-framework-manifest.js, then re-run release-build.",
+      offenders: [],
+    };
+  }
+
+  const offenders = [];
+
+  // Flatten all asset entries from the manifest's assets map (keyed by kind).
+  const allAssets = [];
+  const assetMap = manifestObj.assets || {};
+  for (const kind of Object.keys(assetMap)) {
+    const entries = assetMap[kind];
+    if (Array.isArray(entries)) {
+      for (const a of entries) {
+        allAssets.push(a);
+      }
+    }
+  }
+
+  for (const a of allAssets) {
+    if (!a) continue;
+    const aPath = a.src || a.dest || "";
+    const isRuntime = a.owner === "runtime";
+    // manifestIsExcluded is the SAME predicate as generate-framework-manifest.js#isExcluded
+    // (imported above). If the generator would have excluded this path, so must we.
+    const isTransient = RUNTIME_JSONL_PATTERN.test(aPath) || manifestIsExcluded(aPath);
+
+    if (isRuntime || isTransient) {
+      offenders.push({
+        id: a.id || "(no id)",
+        path: aPath || "(no path)",
+        owner: a.owner || "(no owner)",
+        reason: isRuntime
+          ? "owner=runtime asset must not ship in capsule"
+          : "matches tracked-transient pattern (events/tools/skill-usage .jsonl or excluded prefix)",
+      });
+    }
+  }
+
+  if (offenders.length === 0) return { blocked: false, message: null, offenders: [] };
+
+  const lines = offenders.map(
+    (o) => `  ${o.id}  path=${o.path}  owner=${o.owner}  reason: ${o.reason}`,
+  );
+  const message =
+    `release-build refuses to build: snapshotted manifest contains ${offenders.length} owner=runtime / tracked-transient asset(s) that must not ship:\n` +
+    lines.join("\n") + "\n" +
+    "Remediation: Re-run scripts/generate-framework-manifest.js (it excludes owner=runtime), then re-run release-build.\n" +
+    "Bypass (emergencies only): re-run with --skip-runtime-exclusion-check.";
+  return { blocked: true, message, offenders };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// E3: Skill↔script completeness gate (SP-0181 A3 / WG-15)
+//
+// Parses every SHIPPED skill .md for `scripts/...` references and fails if any
+// referenced script is NOT a manifest asset. A skill that references a backing
+// script which never ships gives the consumer a dead slash command.
+//
+// Fails closed. Runner-injectable. Returns { blocked, message, offenders }.
+//
+// KNOWN_DANGLING_REFS: curated allowlist for intentional non-shipped script
+// references (e.g. dev-only scripts documented in a skill for reference).
+// Start EMPTY — only add with justification.
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Empty until a genuine intentional case is discovered and documented.
+const KNOWN_DANGLING_REFS = [
+  // Example entry format (DO NOT UNCOMMENT without justification):
+  // { skill: ".claude/commands/dev/example.md", script: "scripts/one-off/dev-only.js",
+  //   reason: "dev-only script intentionally not shipped; skill documents it as a local-dev step only" }
+];
+
+// Regex to find `scripts/<...>.js` references in skill .md prose and code fences.
+// Matches: `scripts/foo/bar.js`, `node scripts/foo/bar.js`, etc.
+// Deliberately conservative: only matches the `.js` form to avoid false positives
+// on directory names or partial paths.
+const SKILL_SCRIPT_REF_RE = /scripts\/[A-Za-z0-9._/-]+\.js/g;
+
+function skillScriptCompletenessGate(manifestObj, opts, readFileFn) {
+  if (opts && opts.skipSkillScriptCheck) return { blocked: false, message: null, offenders: [] };
+
+  if (!manifestObj || typeof manifestObj !== "object") {
+    return {
+      blocked: true,
+      message:
+        "skillScriptCompletenessGate: manifest is not a valid object — cannot verify. " +
+        "Remediation: Re-run scripts/generate-framework-manifest.js, then re-run release-build.",
+      offenders: [],
+    };
+  }
+
+  // Default file reader (real FS) — injected in tests.
+  const readFile = readFileFn || ((p) => fs.readFileSync(p, "utf8"));
+
+  // Build a flat set of all shipped asset src/dest paths (all kinds) for fast
+  // O(1) lookup. Normalise to forward-slash.
+  const allShippedPaths = new Set();
+  const assetMap = manifestObj.assets || {};
+  for (const kind of Object.keys(assetMap)) {
+    const entries = assetMap[kind];
+    if (!Array.isArray(entries)) continue;
+    for (const a of entries) {
+      if (!a) continue;
+      if (a.src) allShippedPaths.add(a.src.replace(/\\/g, "/"));
+      if (a.dest) allShippedPaths.add(a.dest.replace(/\\/g, "/"));
+    }
+  }
+
+  // Build the allowlist as a Set of "skill::script" keys for fast lookup.
+  const allowlistKeys = new Set(
+    KNOWN_DANGLING_REFS.map((r) => `${r.skill}::${r.script}`),
+  );
+
+  // Collect all shipped skill assets.
+  const skillAssets = Array.isArray(assetMap.skill) ? assetMap.skill : [];
+
+  const offenders = [];
+
+  for (const skillAsset of skillAssets) {
+    if (!skillAsset || !skillAsset.src) continue;
+    const skillSrc = skillAsset.src.replace(/\\/g, "/");
+
+    // Read the skill .md from the REPO_ROOT source (not the capsule snapshot —
+    // the capsule snapshot only contains framework-manifest.json, not the skill
+    // files themselves; skills ship from the canonical source tree).
+    let content;
+    try {
+      content = readFile(path.join(REPO_ROOT, skillAsset.src));
+    } catch {
+      // Can't read skill file — skip it (not a gate failure; a missing skill
+      // source at build time would be caught by the manifest staleness gate).
+      continue;
+    }
+
+    // Extract all `scripts/...js` references from prose + code fences.
+    const refs = [];
+    let m;
+    SKILL_SCRIPT_REF_RE.lastIndex = 0; // reset stateful regex
+    while ((m = SKILL_SCRIPT_REF_RE.exec(content)) !== null) {
+      const ref = m[0].replace(/\\/g, "/");
+      if (!refs.includes(ref)) refs.push(ref);
+    }
+
+    for (const scriptRef of refs) {
+      // Is this reference in the allowlist?
+      const key = `${skillSrc}::${scriptRef}`;
+      if (allowlistKeys.has(key)) continue;
+
+      // Is the referenced script a shipped manifest asset?
+      if (!allShippedPaths.has(scriptRef)) {
+        offenders.push({ skill: skillSrc, script: scriptRef });
+      }
+    }
+  }
+
+  if (offenders.length === 0) return { blocked: false, message: null, offenders: [] };
+
+  const lines = offenders.map(
+    (o) => `  ${o.skill} → ${o.script}`,
+  );
+  const message =
+    `release-build refuses to build: ${offenders.length} skill(s) reference script(s) not present in the manifest:\n` +
+    lines.join("\n") + "\n" +
+    "Remediation (for each entry above):\n" +
+    "  (a) If the script SHOULD ship: add its directory to ASSET_DIRS in\n" +
+    "      scripts/generate-framework-manifest.js, regen the manifest, re-run release-build.\n" +
+    "  (b) If the reference is intentionally dev-only: add it to KNOWN_DANGLING_REFS\n" +
+    "      in scripts/warpos/release-build.js with a justification comment.\n" +
+    "  (c) If the reference is stale/wrong: remove or correct it in the skill .md.\n" +
+    "Bypass (emergencies only): re-run with --skip-skill-script-check.";
+  return { blocked: true, message, offenders };
+}
+
 function buildCapsule(version, opts) {
   const checkOnly = opts && opts.check;
   const capsuleDir = path.join(RELEASES_DIR, version);
@@ -172,6 +376,37 @@ function buildCapsule(version, opts) {
     const honesty = betaHonestyGate(opts);
     if (honesty.blocked) {
       console.error(honesty.message);
+      process.exit(2);
+    }
+
+    // SP-0181 E1 — Runtime-exclusion gate. Read the SNAPSHOTTED manifest (just
+    // copied above) and assert no asset has owner=runtime or is a tracked-
+    // transient (events/tools/skill-usage .jsonl). The W-8 class: these got
+    // swept into the agents/maps walk and mislabeled framework/generated in
+    // the 0.10.0 capsule. Runs after betaHonestyGate so all gates execute in
+    // a consistent order.
+    let snapManifestObj = null;
+    try {
+      snapManifestObj = JSON.parse(fs.readFileSync(manifestSnap, "utf8"));
+    } catch (e) {
+      console.error(
+        `release-build: failed to read snapshotted manifest for runtime-exclusion gate: ${e && e.message ? e.message : e}`,
+      );
+      process.exit(2);
+    }
+    const runtimeExcl = runtimeExclusionGate(snapManifestObj, opts);
+    if (runtimeExcl.blocked) {
+      console.error(runtimeExcl.message);
+      process.exit(2);
+    }
+
+    // SP-0181 E3 — Skill↔script completeness gate. Parse every shipped skill
+    // .md for scripts/...js references and fail if any referenced script is
+    // NOT a manifest asset. A skill that references a backing script which
+    // never ships gives the consumer a dead slash command (WG-15 class).
+    const skillGate = skillScriptCompletenessGate(snapManifestObj, opts);
+    if (skillGate.blocked) {
+      console.error(skillGate.message);
       process.exit(2);
     }
   } else if (!fs.existsSync(manifestSnap)) {
@@ -313,13 +548,31 @@ if (require.main === module) {
   const checkOnly = args.includes("--check");
   const skipManifestCheck = args.includes("--skip-manifest-check");
   const skipBetaHonestyCheck = args.includes("--skip-beta-honesty-check");
+  // E1 bypass: emergencies only — skips the runtime-exclusion asset check.
+  const skipRuntimeExclusionCheck = args.includes("--skip-runtime-exclusion-check");
+  // E3 bypass: emergencies only — skips the skill↔script completeness check.
+  const skipSkillScriptCheck = args.includes("--skip-skill-script-check");
   if (!version) {
     console.error(
-      "Usage: node scripts/warpos/release-build.js <version> [--check] [--skip-manifest-check] [--skip-beta-honesty-check]",
+      "Usage: node scripts/warpos/release-build.js <version> [--check]" +
+      " [--skip-manifest-check] [--skip-beta-honesty-check]" +
+      " [--skip-runtime-exclusion-check] [--skip-skill-script-check]",
     );
     process.exit(2);
   }
-  buildCapsule(version, { check: checkOnly, skipManifestCheck, skipBetaHonestyCheck });
+  buildCapsule(version, {
+    check: checkOnly,
+    skipManifestCheck,
+    skipBetaHonestyCheck,
+    skipRuntimeExclusionCheck,
+    skipSkillScriptCheck,
+  });
 }
 
-module.exports = { buildCapsule, betaHonestyGate };
+module.exports = {
+  buildCapsule,
+  betaHonestyGate,
+  runtimeExclusionGate,
+  skillScriptCompletenessGate,
+  KNOWN_DANGLING_REFS,
+};
