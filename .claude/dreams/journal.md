@@ -286,3 +286,34 @@ Two sprints planned/designed/executed/retrospected back-to-back. 11 commits on b
 - System strength: STRONGER — 2 new enforcers (memory-enforcement hook + stale-payload guard), installer now produces complete installs, install matrix 5→6 scenarios.
 - Biggest leverage point: the **`_warpos/`-zone migration** (still the largest install-architecture gap; this sprint scaffolded the `_requirements/_docs`/sprint-infra zones but explicitly deferred the source-mirror).
 - False-memory check: verified `full.js#phase1Plan` guard exists; warp-setup registry-build block exists; `memory-enforcement-guard.js` in settings.json; 6/6 matrix green. References resolve.
+
+# Sleep Journal — 2026-06-02 (keystone + wrap-up session)
+
+## NREM Consolidation
+- Learnings: 27 → 42 (15 new this session via /learn:deep — 8 conversation + 7 events; 0 pruned — count sits in the 30-50 homeostasis band).
+- Importance: HIGH = builder-reap-foreground (RI-004), re-gauntlet-after-fix (a fix can regress), dangling-pointers-are-prefix-drift-not-missing, env-scrub-must-preserve-PATH. MEDIUM = event-pattern set (beta-gate 66×, node-e 17×, cd-prefix 439×, no-retro 22×).
+- Dedup: none needed — the 15 are distinct + session-fresh.
+
+## Cleanup (Glymphatic)
+- runtime/ gauntlet temp files cleaned. Orphan worktree (gamma/sealed-capsule-contract-gate) + branch removed by Gamma; git worktree list = canonical only.
+- Recurring issues: RI-004 (builder auto-background→reap) logged; ED-018 (Claude-builder reap not self-detecting) logged. Both gitignored/local.
+- Uncommitted (tracked): learn:deep Phase-C edit, session:end skill, ROADMAP entries, regenerated manifests — all intended, landing this close-out.
+
+## Replay (Spindle)
+- Real goal: ship the keystone, then productize the close-out itself.
+- Achieved: sealed-capsule-contract-gate shipped+pushed (main @ 0ccab5e); session:end skill built; learn:deep wired to sprint-retros + _reports.
+- Blind spot caught: nearly framed the 100 dangling seeded_from pointers as "missing templates" → they EXIST at _requirements/_standards/, manifest just points at a non-existent framework/templates/_requirements/ prefix. Operator's instinct caught it.
+
+## REM Dreams
+- 2 paintings (.claude/dreams/2026-06-02.md): "sealed box + unlit lantern", "addresses → empty shelves".
+- Schema formed: "a self-checking thing cannot be trusted to check itself" SUBSUMES three findings — verifyTyped wired to nothing, β's canned sprint-phase verdicts (beta:mine P-AP-1: 1386 records → 3 hardcoded strings), and the KNOWN_DANGLING allowlist hiding 100 mislabels. All are a watcher trusting its own narration. The structural cure: external verification by default (cross-provider gauntlet, telemetry records, real β consults).
+- Cross-pollination: the gauntlet's "unlit lantern" IS the same false-green class the keystone exists to catch — the gate caught its own disease.
+
+## Repair
+- Git clean except intended close-out changes. No new deps this session (engine sprint) — npm audit skipped. Hooks intact (systems-sync auto-registered learn:deep + session:end edits).
+- β recommendations staged (judgement-model-recommendations.md, P-043..P-050) — NOT auto-applied; /beta:integrate is the gated path.
+
+## Growth
+- System strength: UP — new enforcer (keystone), new wrap-up skill (session:end), learn-loop now fed by sprint-retros+reports, 15 learnings, RI-004/ED-018 tracked.
+- Biggest leverage point: operationalize the "watcher trusts its own narration" schema — make self-checks externally-verified by default (β verdict honesty enforcer, builder-dispatch telemetry for Claude roles, gate self-tests as gauntlet inputs).
+- Morning briefing appended to coaching.md.

@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-02T04:09:32.280Z",
+  "generatedAt": "2026-06-02T06:05:41.150Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.13.1",
   "migrations": [],
@@ -97,8 +97,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "c95ff13073b548dca7e272418175c6be2440d87dcef9985b1f139b2b33b75997",
-      "installedSha": "c95ff13073b548dca7e272418175c6be2440d87dcef9985b1f139b2b33b75997"
+      "sha256": "4e5923f1e58567b3c6d0826e517a60ba1a29a4f0bc741a26102c4b8f80e3ea63",
+      "installedSha": "4e5923f1e58567b3c6d0826e517a60ba1a29a4f0bc741a26102c4b8f80e3ea63"
     },
     "USER_GUIDE.md": {
       "owner": "framework",
@@ -14724,6 +14724,12 @@
       "class": "guide",
       "_note": "Operator's dream journal — written by /sleep:* skills + manual edits. Project-owned; never overwritten."
     },
+    ".claude/dreams/2026-06-02.md": {
+      "owner": "project",
+      "managed": false,
+      "class": "guide",
+      "_note": "Operator's dream journal — written by /sleep:* skills + manual edits. Project-owned; never overwritten."
+    },
     ".claude/dreams/coaching.md": {
       "owner": "project",
       "managed": false,
@@ -14999,6 +15005,14 @@
       "kind": "md",
       "sha256": "6df25b0a5cd171892eb4b33aff93bae2d6ec3a5b3895749fcfe20d8f63b6aa30",
       "installedSha": "6df25b0a5cd171892eb4b33aff93bae2d6ec3a5b3895749fcfe20d8f63b6aa30"
+    },
+    ".claude/commands/session/end.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/commands/session/end.md",
+      "kind": "md",
+      "sha256": "7ef793fbb7b00e920311e06f2573807d811a404ed05d5886d0620840f6e35562",
+      "installedSha": "7ef793fbb7b00e920311e06f2573807d811a404ed05d5886d0620840f6e35562"
     },
     ".claude/commands/session/handoff.md": {
       "owner": "framework",
@@ -15853,8 +15867,8 @@
       "managed": true,
       "source": ".claude/commands/learn/deep.md",
       "kind": "md",
-      "sha256": "2e355d47735e4d6bcad826665c09fee070c0e04bad3c2be98860a8ba2e331073",
-      "installedSha": "2e355d47735e4d6bcad826665c09fee070c0e04bad3c2be98860a8ba2e331073"
+      "sha256": "5c85bf90959c3eb101299286b43c997e33623fd668ec18205cc209959b75af3e",
+      "installedSha": "5c85bf90959c3eb101299286b43c997e33623fd668ec18205cc209959b75af3e"
     },
     ".claude/commands/learn/ingest.md": {
       "owner": "framework",
@@ -16946,8 +16960,8 @@
       "managed": true,
       "source": ".claude/agents/00-alex/.system/beta/judgement-model-recommendations.md",
       "kind": "md",
-      "sha256": "39b56822241b1a5eef5faf13dc2e7db0bb492b4051d2014e09e3b03aa74b5315",
-      "installedSha": "39b56822241b1a5eef5faf13dc2e7db0bb492b4051d2014e09e3b03aa74b5315"
+      "sha256": "5aadf17ccb6d20740ad74535f9e0b11a39395e560aaa416d8739af75b4a5f892",
+      "installedSha": "5aadf17ccb6d20740ad74535f9e0b11a39395e560aaa416d8739af75b4a5f892"
     },
     ".claude/agents/00-alex/.system/beta/judgement-model.md": {
       "owner": "framework",

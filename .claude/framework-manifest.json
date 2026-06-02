@@ -4,7 +4,7 @@
   "generated_by": "scripts/generate-framework-manifest.js",
   "counts": {
     "agent": 85,
-    "skill": 194,
+    "skill": 195,
     "reference": 28,
     "maps_baseline": 24,
     "hook": 67,
@@ -56,7 +56,7 @@
     "module_scope": 1,
     "framework_doc": 2
   },
-  "total": 1006,
+  "total": 1007,
   "assets": {
     "agent": [
       {
@@ -136,7 +136,7 @@
         "src": ".claude/agents/00-alex/.system/beta/judgement-model-recommendations.md",
         "dest": ".claude/agents/00-alex/.system/beta/judgement-model-recommendations.md",
         "kind": "agent",
-        "sha256": "39b56822241b1a5eef5faf13dc2e7db0bb492b4051d2014e09e3b03aa74b5315",
+        "sha256": "5aadf17ccb6d20740ad74535f9e0b11a39395e560aaa416d8739af75b4a5f892",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
@@ -1710,7 +1710,7 @@
         "src": ".claude/commands/learn/deep.md",
         "dest": ".claude/commands/learn/deep.md",
         "kind": "skill",
-        "sha256": "2e355d47735e4d6bcad826665c09fee070c0e04bad3c2be98860a8ba2e331073",
+        "sha256": "5c85bf90959c3eb101299286b43c997e33623fd668ec18205cc209959b75af3e",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
@@ -2947,6 +2947,18 @@
         "dest": ".claude/commands/session/dump.md",
         "kind": "skill",
         "sha256": "6df25b0a5cd171892eb4b33aff93bae2d6ec3a5b3895749fcfe20d8f63b6aa30",
+        "owner": "framework",
+        "mergeStrategy": "three_way_markdown",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "skill.session.end.md",
+        "src": ".claude/commands/session/end.md",
+        "dest": ".claude/commands/session/end.md",
+        "kind": "skill",
+        "sha256": "7ef793fbb7b00e920311e06f2573807d811a404ed05d5886d0620840f6e35562",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",

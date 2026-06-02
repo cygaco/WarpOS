@@ -1,5 +1,5 @@
 ---
-description: Deep learning — extracts from conversation + event log + oneshot retro files in parallel, deduplicates, reports
+description: Deep learning — extracts from conversation + event log + retro/report files (oneshot retros, sprint retros, _reports) in parallel, deduplicates, reports
 ---
 
 # /learn:deep — Comprehensive Learning Extraction
@@ -14,7 +14,7 @@ Replaces `/learn:conversation` and `/learn:events` (deleted 2026-04-29). Only `/
 |---|---|---|
 | **A. Conversation** | Corrections, effective patterns, discoveries, surprises from the current session | Phase A1–A3 below |
 | **B. Event log** | Behavioral patterns from `paths.eventsFile` — tool hotspots, prompt drift, hook triggers, modification frequency | Phase B below |
-| **C. Oneshot retro files** | Synthesized issues, hygiene rules, learnings, and improvement proposals from completed runs | Phase C below |
+| **C. Retro + report files** | Synthesized issues, hygiene rules, learnings, action-items, watch-outs from completed runs — oneshot retros, **sprint retros** (`sprint:full` Phase 5), and **`_reports/`** | Phase C below |
 
 ## Procedure
 
@@ -98,9 +98,11 @@ Categories: `event-pattern`, `dispatch-failure`, `tool-churn`, `spec-drift`, `au
 
 ---
 
-#### Phase C — Oneshot retro files scan (Agent C — NEW)
+#### Phase C — Retro + report files scan (Agent C)
 
-Read all completed-run retro artifacts. Source paths (resolve via `paths.oneshotRetros`, default `.claude/agents/02-oneshot/.system/retros/`):
+Read all completed-run retro artifacts AND closed-work reports. **THREE source families** — mine all that exist (a session is usually adhoc/sprint, not oneshot, so the sprint + report families are the common case; do NOT scan oneshot only):
+
+**(C-i) Oneshot retros** (resolve via `paths.oneshotRetros`, default `.claude/agents/02-oneshot/.system/retros/`):
 
 | File | What it contains |
 |---|---|
@@ -111,6 +113,19 @@ Read all completed-run retro artifacts. Source paths (resolve via `paths.oneshot
 | `<retro>/IMPROVEMENTS.md` | Top-level improvement backlog (cross-run) |
 | `<retro>/META-RETRO.md` | Top-level cross-run analysis (rule effectiveness, agent trends, metrics) |
 
+**(C-ii) Sprint retros** — produced by `/sprint:full` Phase 5 / `/sprint:retrospective` (resolve via `paths.sprintHistory`, default `.claude/project/sprint/history/SP-*/retro.{md,yaml}`):
+
+| File | What it contains |
+|---|---|
+| `<sprintHistory>/SP-*/retro.md` | Per-sprint outcomes, friction, action items |
+| `<sprintHistory>/SP-*/retro.yaml` | Schema-validated structured retro (action_items[], friction[]) |
+
+**(C-iii) Reports** — produced by `/report` (resolve via `paths.reports`, default `_reports/`):
+
+| File | What it contains |
+|---|---|
+| `_reports/**/*.md` | ELI5 sprint/milestone/session/checkpoint reports — tl;dr, watch-outs, deferred work |
+
 ##### C.1 What to extract
 
 - **Recurring bug patterns** (recurrence ≥ 2 in BUGS.md across runs) that don't yet have an enforced rule
@@ -118,6 +133,8 @@ Read all completed-run retro artifacts. Source paths (resolve via `paths.oneshot
 - **Prevention proposals** (P-NN-XXX in LEARNINGS.md) that haven't been picked up by `/learn:integrate` yet
 - **Top-level IMPROVEMENTS.md entries** still marked `open` or `pending`
 - **META-RETRO trend signals** indicating direction shifts (e.g., new bug class emerging, rule effectiveness dropping)
+- **Sprint-retro `action_items[]` / friction[]** (C-ii) that recur across ≥2 sprints without an enforcer — surface as integration candidates
+- **Report watch-outs / deferred-work** (C-iii) that recur across reports — these are the operator-facing signal of debt that keeps slipping
 
 ##### C.2 Dedupe before logging
 For each retro-derived candidate, check if an equivalent entry already exists in `paths.learningsFile` (search by file path + pattern). If yes: bump score / link via `evidence:` field. If no: log fresh.

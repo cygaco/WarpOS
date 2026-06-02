@@ -191,3 +191,20 @@ Last session shipped a lot. Where to pick up:
 5. **The big rock remains the `_warpos/`-zone migration** (framework source mirror in products). This sprint scaffolded the zones but deferred the mirror — still the largest install-architecture gap.
 
 Gentle note: the friction this session (3 classifier denials, 1 wrong-sprint plan) all traced to *boundaries that didn't announce themselves clearly*. The reflex that worked: when a wall blocks you 3×, stop pushing — build the path that doesn't cross it (local-only scaffold). Carry that.
+
+# Morning Briefing — 2026-06-02 (for next session)
+
+## Suggested first task
+Reliability-first, then the cleanup (a correction to the earlier Director pick):
+1. **RI-004/ED-018 — bounded-dispatch wrapper + worktree torture test** (Next: Skill Reliability). The live wound: builder dispatch silently reaps. This is the load-bearing prerequisite for any parallel/fast sprint-mode. Highest real leverage.
+2. **0.16.0 re-addressing (NOT authoring)** — the "100 dangling seeded_from" are PREFIX-DRIFT, not missing files. Reconcile the manifest pointers (framework/templates/_requirements/ → _requirements/_standards/) and/or consolidate to _warpos/templates/, then clear KNOWN_DANGLING_SET. Verify the disease reproduces before prescribing.
+
+## Review before starting
+- .claude/agents/00-alex/.system/beta/judgement-model-recommendations.md — 8 new patterns (P-043..P-050). HEADLINE: β's sprint-phase verdicts were historically CANNED (placeholder strings). Run /beta:integrate to apply the validated ones; consider a β-verdict-honesty enforcer.
+- DUMP.md — full ranked pickup + the multi-model-UI truth (consulted, not built) + immediate issues.
+- session:end skill is NEW + untested — its first real run should be operator-supervised.
+
+## Watch-outs
+- Push is operator-gated; this session's pushes were explicitly authorized.
+- Don't author the design seed templates — they exist; re-address them.
+- Re-gauntlet after any enforcer fix (a fix introduced a HIGH regression this session).
