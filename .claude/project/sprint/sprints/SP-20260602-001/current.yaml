@@ -1,0 +1,121 @@
+schema: warpos/sprint/current-sprint/v1
+id: SP-20260602-001
+title: "Sealed-capsule executable consumer-contract gate (keystone)"
+objective: "Close the open half of the artifact-first, contract-tested release gate: prove a release stands up from a sealed, self-contained capsule with canonical WarpOS unreachable, via an executable consumer contract with typed-success telemetry — the structural cure for the 'downstream always missing' bug class."
+status: designing
+created_at: "2026-06-02T02:46:41.132Z"
+updated_at: "2026-06-02T02:53:49.803Z"
+source_request: "Build the keystone (DUMP.md #5): the executable consumer-contract gate in SEALED-CAPSULE posture, with full cross-provider gauntlet + telemetry verify."
+interpreted_intent: "Build the full sealed-capsule consumer-contract release gate (ADR-0006): a script + tests + release/promotion wiring that materializes the release capsule into a self-contained payload, installs ONLY that payload into a disposable out-of-tree repo where canonical is unreachable, runs the real consumer lifecycle under both repo roles across cold+warm paths, and asserts typed success (action occurred AND telemetry record exists) fail-closed. Name the enforcer per CLAUDE.md Policy & Enforcement Hygiene."
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260602-0063.yaml"
+risk_level: high
+approval_state: none_required
+current_phase: design
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+external_services:
+  identified: []
+  blocked: []
+  ready: []
+  mocked: []
+  deferred: []
+tickets:
+  proposed: []
+  planned: []
+  designed: []
+  ready_for_execution: []
+  in_progress:
+    - T-20260602-268
+  blocked: []
+  waiting_on_human: []
+  waiting_on_external_service: []
+  in_review: []
+  qa_failed: []
+  redteam_failed: []
+  done: []
+  released: []
+  deferred: []
+  abandoned: []
+  reopened: []
+  superseded: []
+requirements:
+  prd: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260602-001\\prd.md"
+  high_level_stories: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260602-001\\high-level-stories.md"
+  granular_stories: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260602-001\\granular-stories.md"
+  copy: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260602-001\\copy.md"
+  inputs: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260602-001\\inputs.md"
+  trace: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260602-001\\trace.md"
+  acceptance_criteria: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260602-001\\acceptance-criteria.md"
+  qa_plan: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260602-001\\qa-plan.md"
+  redteam_plan: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260602-001\\redteam-plan.md"
+  release_plan: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260602-001\\release-plan.md"
+checks:
+  lint:
+    status: not_run
+    last_run: null
+    evidence: ""
+  typecheck:
+    status: not_run
+    last_run: null
+    evidence: ""
+  tests:
+    status: not_run
+    last_run: null
+    evidence: ""
+  build:
+    status: not_run
+    last_run: null
+    evidence: ""
+  qa:
+    status: not_run
+    last_run: null
+    evidence: ""
+  redteam:
+    status: not_run
+    last_run: null
+    evidence: ""
+approvals:
+  plan:
+    required: false
+    state: not_required
+    ref: null
+  design:
+    required: false
+    state: not_required
+    ref: null
+  execution:
+    required: false
+    state: not_required
+    ref: null
+  release:
+    required: false
+    state: not_required
+    ref: null
+  external_services:
+    required: false
+    state: not_required
+    ref: null
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260602-0063.report.md"
+  design: null
+  execution: null
+  release: null
+ralph:
+  active: false
+  current_ticket: null
+  current_loop: null
+  status: idle
+  last_checkpoint: null
+  next_action: null
+crash_recovery:
+  last_checkpoint: ".claude/project/sprint/sprint-progress.yaml"
+  resume_command: "/sprint:design"
+  resume_summary: "Sprint SP-20260602-001 design scaffolded (scale=m). Next: mint tickets from granular-stories, then run /sprint:execute."
+  active_files: []
+  dirty_state: false
+  blockers: []
+  safe_to_continue: true
+lane:
+  type: default
+  value: null
+  isolation_notes: ""

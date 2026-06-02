@@ -12,7 +12,7 @@
     "tool": 2,
     "pattern": 6,
     "fixture": 23,
-    "warpos_script": 54,
+    "warpos_script": 55,
     "check_tool": 55,
     "agent_tool": 3,
     "decision_tool": 1,
@@ -56,7 +56,7 @@
     "module_scope": 1,
     "framework_doc": 2
   },
-  "total": 1005,
+  "total": 1006,
   "assets": {
     "agent": [
       {
@@ -5734,7 +5734,7 @@
         "src": "scripts/warpos/release-gates.js",
         "dest": "scripts/warpos/release-gates.js",
         "kind": "warpos_script",
-        "sha256": "367a3f8e33f6733ddadb5107b5156c1f7eb9a09eb6c7cb641dcaba814e69c941",
+        "sha256": "c862a3c1272f45e46f15c0bc90bafb76362103d402e9189d0fe092923c4b4caf",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -5939,6 +5939,18 @@
         "dest": "scripts/warpos/test-rollback-cli-smoke.js",
         "kind": "warpos_script",
         "sha256": "34c8f20f5d323db5b11e5ef91ed2da0ab494833c6aa2f73f4bc2268763ee9d55",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "warpos_script.test-sealed-capsule-gate.js",
+        "src": "scripts/warpos/test-sealed-capsule-gate.js",
+        "dest": "scripts/warpos/test-sealed-capsule-gate.js",
+        "kind": "warpos_script",
+        "sha256": "4e7c21d1696b8143e79880cb316b63b8d943a887a6bfa965d4eac662d1380801",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",

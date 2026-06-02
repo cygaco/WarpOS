@@ -627,6 +627,38 @@ const GATES = [
       details: (r.stderr || r.stdout || "").split(/\r?\n/).filter(Boolean).slice(-6),
     };
   }),
+
+  // Sealed-capsule consumer-contract gate (ADR-0006 / SP-20260602-001 / keystone).
+  // The named `sealed-capsule-contract-gate` enforcer: materialize the CURRENT
+  // bill-of-materials into a self-contained payload, install it into a disposable
+  // OUT-OF-TREE repo with canonical UNREACHABLE, and assert no reach-back + a
+  // certified install. This is the structural cure for the "downstream always
+  // missing" class that the tautological framework_manifest gate cannot catch.
+  // Runs the bounded real gate (seal+isolate+unreachable+scan:install); the heavy
+  // real-matrix lifecycle (--full) is an on-demand pre-release / CI step.
+  gate("sealed_capsule_contract", () => {
+    const r = runScript("scripts/warpos/test-sealed-capsule-gate.js", []);
+    if (r.status === 0)
+      return {
+        ok: true,
+        severity: "green",
+        message: "Sealed-capsule contract: current BOM stands up self-contained, canonical unreachable, no reach-back.",
+      };
+    if (r.status === 1)
+      return {
+        ok: false,
+        severity: "red",
+        message:
+          "Sealed-capsule contract FAILED — the sealed install reaches back into canonical or is incomplete (downstream-missing/reach-back class). Block release.",
+        details: (r.stdout || r.stderr || "").split(/\r?\n/).filter((l) => l.includes("FAIL")).slice(0, 8),
+      };
+    return {
+      ok: false,
+      severity: "red",
+      message: "Sealed-capsule gate errored (fail-closed — never a clean pass on a crash).",
+      details: (r.stderr || r.stdout || "").split(/\r?\n/).filter(Boolean).slice(-6),
+    };
+  }),
 ];
 
 function run(opts) {

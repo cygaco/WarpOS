@@ -1,0 +1,128 @@
+schema: warpos/sprint/plan-contract/v1
+id: PC-20260602-0063
+created_at: "2026-06-02T02:49:16.407Z"
+updated_at: "2026-06-02T02:49:16.407Z"
+sprint: SP-20260602-001
+source_request: "Build the keystone (DUMP.md #5): the executable consumer-contract gate in SEALED-CAPSULE posture, with full cross-provider gauntlet + telemetry verify."
+source_request_verbatim: "Build the KEYSTONE (DUMP.md #5): the executable consumer-contract gate in SEALED-CAPSULE posture. Spec: (1) materialize the release capsule into a self-contained sealed payload and install ONLY that into a disposable out-of-tree repo where canonical WarpOS is UNREACHABLE; (2) run the real consumer lifecycle setup->scan:install->a real sprint->dispatch telemetry->update under BOTH repo roles (scripts/warpos/repo-role.js) across cold + warm/update paths; (3) typed success via scripts/dispatch/gauntlet-verify.js (green = action occurred AND telemetry record exists; fail-closed); (4) wire as release/promotion gate + name the enforcer. Builds on already-merged repo-role.js, gauntlet-verify.js, test-fresh-install-smoke.js. HIGH-risk enforcer-class: full 4-reviewer cross-provider gauntlet + telemetry verify REQUIRED, do NOT skip-gauntlet, expect >=1 fix cycle. Beta pre-cleared the plan (DECIDE x3): build in isolated worktree, autonomous through gauntlet, single halt = gauntlet verdict before ff-merge (halt-report to operator), ff-merge LOCAL only (no push - operator-gated). ADR-0006 already written. Engine/tooling sprint (no deploy artifact) -> fast-close path."
+request_type: architecture_change
+interpreted_intent: "Build the full sealed-capsule consumer-contract release gate (ADR-0006): a script + tests + release/promotion wiring that materializes the release capsule into a self-contained payload, installs ONLY that payload into a disposable out-of-tree repo where canonical is unreachable, runs the real consumer lifecycle under both repo roles across cold+warm paths, and asserts typed success (action occurred AND telemetry record exists) fail-closed. Name the enforcer per CLAUDE.md Policy & Enforcement Hygiene."
+user_or_business_outcome: "Releases can no longer ship code that secretly reaches back into canonical-only state (the #1 recurring 'downstream always missing' disease, e.g. the 100 dangling seeded_from pointers). A failing gate blocks promotion before a broken release reaches a real product install."
+affected_surfaces:
+  - surface: "scripts/warpos/ (new sealed-capsule gate script)"
+    evidence_level: verified_from_repo
+    notes: "Sibling to test-fresh-install-smoke.js; reuses release-build.js capsule layout in framework/releases/."
+  - surface: "scripts/warpos/repo-role.js (consumed, not modified)"
+    evidence_level: verified_from_repo
+    notes: Single-source role resolver with override-arg threading for both-role runs.
+  - surface: "scripts/dispatch/gauntlet-verify.js (consumed for typed-success telemetry)"
+    evidence_level: verified_from_repo
+    notes: "verifyGauntlet() / isWellFormedOkRecord(); fail-closed semantics."
+  - surface: "release/promotion wiring + named enforcer (scripts/checks/ or release-gates.js)"
+    evidence_level: inferred_from_repo
+    notes: "Wire as a release/promotion gate; register the enforcer name."
+  - surface: "_warpos/MANIFEST.json + .claude/framework-manifest.json (regen)"
+    evidence_level: verified_from_repo
+    notes: "New scripts are hash-tracked; regen BOTH before commit (BC-02/BC-05)."
+current_behavior:
+  evidence_level: verified_from_repo
+  notes: "Only the cheap leading-indicator slice exists (test-fresh-install-smoke.js), which installs via warp-setup source-clone with canonical REPO_ROOT REACHABLE — structurally cannot catch reach-back. The capsule ships a manifest (file list+hashes) but not the file bytes."
+desired_behavior: "A runnable gate that: (a) materializes a sealed self-contained payload from the capsule manifest; (b) installs only that payload into a disposable out-of-tree temp repo with canonical pathed-out/unreachable; (c) runs setup->scan:install->a real sprint->dispatch telemetry->update under BOTH repo roles across cold+warm paths; (d) asserts typed success via gauntlet-verify (action + well-formed telemetry record), fail-closed on runner-error/malformed/no-record; (e) is wired as a release/promotion gate with a named enforcer. Exit 0 = release stands on its own; non-zero = reach-back / contract break detected."
+scope:
+  size: l
+  risk_level: high
+  complexity_drivers:
+    - "enforcer-class: must be hardened against false-green / fail-open (every enforcer lane last session had real holes the gauntlet caught)"
+    - "true isolation: canonical must be provably unreachable from the sealed install (no abs path, scrubbed env)"
+    - "role-semantics-at-seal-vs-runtime (Class-A design call): seal in canonical role, install in consumer role"
+    - "telemetry cwd anchoring (ED-016 class): completion records must be findable from canonical, not the temp/worktree runtime"
+    - "full lifecycle x 2 roles x cold+warm = heavy; must stay bounded/non-flaky"
+scope_variants:
+  minimal_safe:
+    summary: ""
+    tradeoffs: []
+  recommended:
+    summary: ""
+    tradeoffs: []
+  expanded:
+    summary: ""
+    tradeoffs: []
+assumptions:
+  safe: []
+  unsafe: []
+  needs_user_or_beta_review: []
+open_questions:
+  blocking: []
+  non_blocking: []
+non_goals:
+  - "Publishing the capsule to a real network registry (Option C in ADR-0006 — premature; needs hosting/auth/spend)"
+  - "Authoring the 99 real seed templates / clearing KNOWN_DANGLING_SET (deferred 0.16.0 Pattern-realignment sprint — Director call)"
+  - "Re-classifying the ~16 misclassified scratch artifacts (separate cleanup)"
+  - "0.18.1 deferred items E6/H4/G1/G2"
+  - "Pushing to remote (operator-gated)"
+requirement_areas:
+  - sealed-payload materialization from capsule manifest
+  - out-of-tree isolation with canonical unreachable
+  - "executable consumer lifecycle runner (setup/scan:install/sprint/telemetry/update)"
+  - "both-role x cold+warm matrix"
+  - "typed-success assertion via gauntlet-verify (fail-closed)"
+  - "release/promotion gate wiring + named enforcer"
+  - "manifest regen + enforcement-debt closure"
+high_level_story_candidates:
+  - "As the release pipeline, I materialize a sealed self-contained payload from a built capsule so install needs nothing from canonical."
+  - "As the gate, I install the sealed payload into a disposable out-of-tree repo where canonical is unreachable, so reach-back breaks loudly."
+  - "As the gate, I run the real consumer lifecycle under both repo roles across cold+warm paths and assert typed success, so green means it truly works."
+  - "As the maintainer, the gate is wired into release/promotion with a named enforcer so violations are self-detecting."
+granular_story_candidates:
+  - "seal(version): copy the exact bytes the capsule framework-manifest enumerates into a sealed payload dir + verify against checksums.json; refuse on stale/missing manifest (fail-closed)."
+  - "isolate(): create out-of-tree temp repo, git init, install only the sealed payload, assert canonical is unreachable (no abs canonical path in installed files; WARPOS scrubbed env)."
+  - "lifecycle(role, path): run setup -> scan:install -> a minimal real sprint -> emit dispatch telemetry -> update; capture exit codes + telemetry window."
+  - "verifyTyped(window, roles): call verifyGauntlet/typed-success against canonical-anchored telemetry; fail-closed on runner-error/malformed/no-record."
+  - "matrix: run lifecycle for role in {canonical,consumer} x path in {cold,warm} via repo-role override threading."
+  - "wire: register as release/promotion gate (release-gates.js or checks/) + add named enforcer + log enforcement-debt closure if any policy remains unenforced."
+  - "regen BOTH manifests; add the gate to the testsuite/enforce.js runnable set."
+workstream_candidates:
+  - "core gate script (seal+isolate+lifecycle+verify)"
+  - "release/promotion wiring + named enforcer"
+  - "tests (unit + e2e fixture) + testsuite registration"
+  - "manifest regen + docs/enforcement-debt"
+preliminary_ticket_candidates:
+  allowed: false
+  candidates: []
+  notes: "Tickets are minted during /sprint:design unless this is documentation_scale=xs."
+external_service_dependencies:
+  status: none_expected
+  required: []
+  possible: []
+  notes: ""
+approval_boundaries:
+  - "ff-merge to main is LOCAL only; push to remote is operator-gated (hard ceiling)."
+  - "single halt-and-consult: gauntlet verdict before ff-merge (Beta Q3 pre-clearance)."
+design_required: true
+execution_allowed_without_design: false
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+lane:
+  type: default
+  value: null
+  isolation_notes: ""
+beta_review:
+  required: false
+  likely_founder_rejection_risks: []
+  overbuild_risks: []
+  missing_context_risks: []
+plan_quality:
+  status: needs_design
+  confidence: medium
+  evidence_gaps: []
+  fail_reasons: []
+next_recommended_command: "/sprint:design"
+resume_instructions: "Sprint SP-20260602-001 has Plan Contract PC-20260602-0063. Run the next_recommended_command. If interrupted, read .claude/project/sprint/sprint-progress.yaml#resume_command."
+tracker_paths:
+  current_sprint: ".claude/project/sprint/current-sprint.yaml"
+  sprint_progress: ".claude/project/sprint/sprint-progress.yaml"
+  plan_contract: ".claude/project/sprint/plan-contracts/PC-20260602-0063.yaml"
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260602-0063.report.md"
+created_by: alpha
+updated_by: alpha
