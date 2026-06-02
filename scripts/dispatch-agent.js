@@ -139,10 +139,21 @@ function appendJsonl(file, record) {
   }
 }
 
+// TEST-ONLY isolation seam: when DISPATCH_LEDGER_DIR is set (never in
+// production), completion/death records redirect there so a test can exercise
+// the real dispatch path without polluting the canonical ledger. This is an
+// EXPLICIT opt-in env — it does NOT re-open ED-016 (which was the IMPLICIT
+// cwd-bending bug). Unset → behaviour is byte-identical to canonicalFile().
+function ledgerFile(pathsValue, relFallback) {
+  const testDir = process.env.DISPATCH_LEDGER_DIR;
+  if (testDir) return path.join(testDir, path.basename(relFallback));
+  return canonicalFile(pathsValue, relFallback);
+}
+
 function recordCompletion(record) {
   // canonicalFile() ensures the path is __dirname-anchored, never cwd-relative.
   // Fixes ED-016/class-#20: worktree-cwd dispatches wrote to worktree's runtime.
-  const file = canonicalFile(
+  const file = ledgerFile(
     PATHS.dispatchCompletionsFile,
     path.join(".claude", "runtime", "dispatch-completions.jsonl"),
   );
@@ -151,7 +162,7 @@ function recordCompletion(record) {
 
 function recordDeath(record) {
   // Same canonical anchor as recordCompletion — both must land in the same root.
-  const file = canonicalFile(
+  const file = ledgerFile(
     PATHS.dispatchDeathsFile,
     path.join(".claude", "runtime", "dispatch-deaths.jsonl"),
   );
@@ -325,6 +336,14 @@ if (require.main !== module) {
     // assert that paths outside AGENT_ROOT are replaced with the anchored fallback.
     canonicalFile,
     AGENT_ROOT,
+    // RI-004 / ED-018: the Claude-role bounded dispatch wrapper
+    // (scripts/dispatch-claude.js) reuses these telemetry helpers so it writes
+    // to the SAME canonical ledger gauntlet-verify reads. Single source of the
+    // record/path logic — no second copy, no fork. (See dispatch-claude.js.)
+    recordCompletion,
+    recordDeath,
+    makeDispatchId,
+    cmdlineChecksum,
   };
   return;
 }

@@ -218,10 +218,12 @@ if [ -n "$(git status --porcelain)" ]; then
   exit 2
 fi
 set +e
-claude -p --model claude-sonnet-4-6 --effort max --agent builder "$(cat "${promptFile.replace(
-  /\\/g,
-  "/",
-)}")" > "${logFile.replace(/\\/g, "/")}" 2>&1
+# RI-004/ED-018: dispatch through the bounded wrapper, NOT raw claude -p --agent
+# builder (which silently reaps: 0 bytes, no completion record, exit lost). The
+# wrapper bounds the call, writes a death record + non-zero exit on a reap, and a
+# completion record on success. We are already inside the fresh worktree (PWD),
+# so pass it as --worktree (claude runs there; telemetry resolves canonical).
+node "${ROOT.replace(/\\/g, "/")}/scripts/dispatch-claude.js" builder "${promptFile.replace(/\\/g, "/")}" --model claude-sonnet-4-6 --effort max --worktree "$PWD" > "${logFile.replace(/\\/g, "/")}" 2>&1
 EXIT=$?
 echo "[${feature}] exit=$EXIT (worktree=$WT_DIR)"
 exit $EXIT

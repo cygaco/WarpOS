@@ -13,13 +13,16 @@ Alpha dispatches gamma in adhoc mode for:
 
 > ### ⚠ CANONICAL DISPATCH — NO EXCEPTIONS
 >
-> **All build-chain roles** (`builder`, `fixer`, `reviewer`, `compliance`, `qa`, `redteam`) **MUST** be dispatched via Bash subprocess — `claude -p --agent <role>` for Claude-routed, `node scripts/dispatch-agent.js <role>` for OpenAI/Gemini-routed. **Do NOT use the in-process `Agent` tool** for any of these roles, even when running locally as Claude. The `Agent` tool returns the full agent response into the orchestrator conversation; Bash dispatch captures stdout and parses only the JSON envelope. See `.claude/agents/00-alex/gamma.md` Dispatch Method for the full reference pattern.
+> **All build-chain roles** (`builder`, `fixer`, `reviewer`, `compliance`, `qa`, `redteam`) **MUST** be dispatched via Bash subprocess — **`node scripts/dispatch-claude.js <role>` for Claude-routed BUILD roles** (`builder`/`fixer`/`*-builder`/`stub-scaffold`: the bounded wrapper; raw `claude -p --agent <build-role>` silently REAPS — RI-004/ED-018 — and is blocked by the dispatch-route-guard hook), `claude -p --agent <role>` for the non-build Claude fallback (reviewer/qa/etc.), and `node scripts/dispatch-agent.js <role>` for OpenAI/Gemini-routed. **Do NOT use the in-process `Agent` tool** for any of these roles, even when running locally as Claude. The `Agent` tool returns the full agent response into the orchestrator conversation; Bash dispatch captures stdout and parses only the JSON envelope. See `.claude/agents/00-alex/gamma.md` Dispatch Method for the full reference pattern.
 
 ### 1. Dispatch builder(s)
 
-Gamma dispatches Layer 2 agents via the `claude` CLI (the Agent tool is not available to teammates):
+Gamma dispatches Layer 2 agents via Bash subprocess (the Agent tool is not available to teammates). Build roles go through the bounded wrapper (RI-004/ED-018):
 
 ```bash
+# build-chain Claude role (builder/fixer/*-builder/stub-scaffold) — bounded, recorded:
+node scripts/dispatch-claude.js <build-role> <prompt-file> --model sonnet -w
+# non-build Claude role (test-runner/visual-review) — raw fallback is allowed:
 claude -p --model sonnet --agent <agent-name> "prompt"
 ```
 
@@ -64,7 +67,7 @@ Dispatch sequentially (CLI `-p` is blocking). Collect ALL five results before pr
 
 If any gauntlet reviewer reports failures:
 1. Merge all findings into a single fix brief
-2. Dispatch fixer via CLI: `claude -p --model sonnet --agent fixer "fix brief..."`
+2. Dispatch fixer via the bounded wrapper (fixer is build-chain): `node scripts/dispatch-claude.js fixer <fix-brief-file> --model sonnet -w`
 3. Max 3 fix attempts per feature
 4. After each fix: targeted re-review (only re-check what failed)
 

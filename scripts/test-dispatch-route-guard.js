@@ -27,6 +27,19 @@ const SAFE = [
   "git log --oneline",
   "ls -la",
   "cat foo.txt", // not piping into a provider
+  // RI-004/ED-018: the bounded wrapper + non-build claude roles are allowed.
+  "node scripts/dispatch-claude.js builder p.txt --model sonnet -w",
+  'node "$CLAUDE_PROJECT_DIR/scripts/dispatch-claude.js" fixer p.txt --model sonnet -w',
+  "claude -p --agent test-runner some-prompt", // non-build claude role
+  "claude -p --agent visual-review some-prompt", // non-build claude role
+  // quote-aware: a forbidden substring inside a LITERAL arg is not a command
+  'git commit -m "fix: codex exec bug in notes"',
+  'node scripts/dispatch-agent.js reviewer p.txt --arg "foo; codex exec bar"',
+  // two legit wrapper invocations in one compound command
+  "node scripts/dispatch-agent.js reviewer p.txt; node scripts/dispatch-claude.js builder p.txt -w",
+  // a quoted "--agent builder" belonging to ANOTHER flag must not mis-read the role:
+  // the REAL --agent here is reviewer (non-build) → allowed.
+  'claude -p --metadata "--agent builder" --agent reviewer x',
 ];
 
 const FORBIDDEN = [
@@ -38,6 +51,20 @@ const FORBIDDEN = [
   ["cat prompt.txt | gemini -m gemini-3.1-pro-preview -p", "cat … | gemini …"],
   ["cat prompt.txt | claude -p", "cat … | claude …"],
   ["claude -p 'one-shot prompt body'", "claude -p …"],
+  // RI-004/ED-018: raw build-chain claude dispatch is forbidden (use the wrapper).
+  ['claude -p --agent builder "$(cat p.txt)"', "claude -p --agent builder"],
+  ["claude -p --agent=builder x", "claude -p --agent builder"],
+  ["claude --model sonnet -p --agent builder x", "claude -p --agent builder"],
+  ['claude -p --agent "builder" x', "claude -p --agent builder"], // quoted role value
+  ["claude -p --agent='fixer' x", "claude -p --agent fixer"], // quoted role + equals
+  ["claude -p --agent fixer < brief.txt", "claude -p --agent fixer"],
+  ["claude -p --agent frontend-builder x", "claude -p --agent frontend-builder"],
+  ["claude -p --agent stub-scaffold x", "claude -p --agent stub-scaffold"],
+  // compound / pipe / background bypasses around the canonical exemption
+  ["node scripts/dispatch-claude.js builder p.txt; claude -p --agent builder y", "claude -p --agent builder"],
+  ["codex exec foo node scripts/dispatch-claude.js builder p.txt -w", "codex exec …"],
+  ["node scripts/dispatch-claude.js builder p.txt -w | codex exec foo", "cat … | codex …"],
+  ["node scripts/dispatch-claude.js builder p.txt -w & codex exec foo", "codex exec …"],
 ];
 
 let passed = 0;

@@ -79,10 +79,15 @@ const SAFE_PROVIDER_TAILS =
   /^\s*(?:--version|--help|-h|-v|models?\b|auth\b|whoami\b|config\b|login\b|logout\b|completion\b)\b/;
 
 function hasCanonicalDispatchPrefix(cmd) {
-  // Accept any of: `node scripts/dispatch-agent.js`, `node "…/dispatch-agent.js"`,
-  // `node ${CLAUDE_PROJECT_DIR}/scripts/dispatch-agent.js`. The orchestrator
-  // specs use all three forms.
-  return /node\s+\S*(?:["'`])?[^"'`\s]*dispatch-agent\.js\b/.test(cmd);
+  // Accept `node scripts/dispatch-agent.js`, `node "…/dispatch-agent.js"`,
+  // `node ${CLAUDE_PROJECT_DIR}/scripts/dispatch-agent.js`, and the Claude-role
+  // bounded sibling dispatch-claude.js (RI-004/ED-018). The wrapper must be the
+  // LEADING command of the segment (after optional `VAR=val` env prefixes) — NOT
+  // merely appear somewhere — else `codex exec foo node …/dispatch-agent.js`
+  // would exempt the whole segment while `codex` is the real command (reviewer-HIGH).
+  return /^\s*(?:[A-Za-z_][A-Za-z0-9_]*=\S*\s+)*node\s+["'`]?\S*dispatch-(?:agent|claude)\.js\b/.test(
+    cmd,
+  );
 }
 
 function isClaudeAgentInvocation(slice) {
@@ -91,31 +96,229 @@ function isClaudeAgentInvocation(slice) {
   return /\bclaude\s+-p\b[\s\S]*\B--agent\b/.test(slice);
 }
 
+// RI-004 / ED-018: build-chain Claude roles silently reap under raw `claude -p`
+// (the harness auto-backgrounds the long call → 0 bytes, no completion record,
+// exit code lost). These MUST go through the bounded wrapper
+// `scripts/dispatch-claude.js`, which converts a reap into a death record +
+// non-zero exit. Non-build Claude roles (test-runner, visual-review) keep the
+// raw fallback — reap-detection is less load-bearing there.
+const BUILD_CHAIN_ROLES = new Set([
+  "builder",
+  "backend-builder",
+  "frontend-builder",
+  "fixer",
+  "stub-scaffold",
+]);
+
+// Robust detector (reviewer-HIGH hardening): match a RAW `claude` prompt
+// invocation that targets a build-chain role, in ANY flag order and with either
+// `--agent <role>` or `--agent=<role>`. The bounded wrapper
+// (`node scripts/dispatch-claude.js …`) takes the role POSITIONALLY and never
+// emits `claude` + `-p` + `--agent`, so this cannot false-match the wrapper —
+// which is why it's safe to run even when a `dispatch-claude.js` substring
+// appears elsewhere in a compound command (closes the segment-exemption bypass).
+// Quote-aware shell-word tokenizer: split on UNQUOTED whitespace, returning each
+// word with its surrounding quotes removed. A quoted blob like `"--agent builder"`
+// becomes ONE token (`--agent builder`), so it is NOT mistaken for an `--agent`
+// flag followed by a role (reviewer round-5 false-RED fix).
+function shellWords(s) {
+  const words = [];
+  let cur = "";
+  let inWord = false;
+  let quote = null;
+  for (let i = 0; i < s.length; i++) {
+    const ch = s[i];
+    if (quote) {
+      if (ch === quote) quote = null;
+      else cur += ch;
+      inWord = true;
+      continue;
+    }
+    if (ch === "'" || ch === '"' || ch === "`") {
+      quote = ch;
+      inWord = true;
+      continue;
+    }
+    if (ch === " " || ch === "\t") {
+      if (inWord) {
+        words.push(cur);
+        cur = "";
+        inWord = false;
+      }
+      continue;
+    }
+    cur += ch;
+    inWord = true;
+  }
+  if (inWord) words.push(cur);
+  return words;
+}
+
+// The role of the first REAL `--agent` flag (a standalone `--agent` token whose
+// next word is the role, or `--agent=<role>`). Quote-aware via shellWords, so a
+// quoted `"--agent builder"` arg to some OTHER flag is skipped.
+function roleFromAgentFlag(cmd) {
+  const words = shellWords(cmd);
+  for (let i = 0; i < words.length; i++) {
+    const w = words[i];
+    if (w === "--agent" && i + 1 < words.length) return words[i + 1].toLowerCase();
+    const m = w.match(/^--agent=(.+)$/);
+    if (m) return m[1].toLowerCase();
+  }
+  return null;
+}
+
+function rawBuildChainClaudeRole(cmd, scan) {
+  // Confirm a REAL invocation using the quote-stripped skeleton (so a literal
+  // inside quotes — e.g. `git commit -m "...claude -p --agent builder..."` — does
+  // NOT match). Then extract the role with a QUOTE-AWARE tokenizer over the
+  // ORIGINAL cmd, so a quoted role value (`--agent "builder"`) is captured while a
+  // quoted `"--agent builder"` arg to a DIFFERENT flag is NOT mis-read (reviewer-MEDIUM).
+  if (!/\bclaude\b/.test(scan)) return null; // a claude token (unquoted)
+  if (!/(?:^|\s)-p\b/.test(scan)) return null; // a -p prompt flag (any position)
+  if (!/--agent\b/.test(scan)) return null; // an --agent flag (unquoted)
+  const role = roleFromAgentFlag(cmd);
+  if (!role) return null;
+  return BUILD_CHAIN_ROLES.has(role) ? role : null;
+}
+
 /**
  * Walk the command string and find the first forbidden pattern. Returns null
  * when the command is safe.
  */
-function findForbidden(rawCmd) {
-  const cmd = rawCmd.replace(/\r?\n/g, " ").trim();
-  if (!cmd) return null;
-  if (hasCanonicalDispatchPrefix(cmd)) return null;
+// QUOTE-AWARE segment splitter (reviewer-MEDIUM): split on UNQUOTED shell
+// sequencing operators `;`, `&&`, `||`, `&` (background), and newline. A `;`
+// inside a quoted argument is NOT a separator (so we don't false-RED a benign
+// `--arg "foo; codex exec bar"`). Single pipes `|` are kept WITHIN a segment so
+// the pipe-into-provider check still sees `cat f | codex`.
+function splitSegments(cmd) {
+  const segs = [];
+  let cur = "";
+  let quote = null;
+  for (let i = 0; i < cmd.length; i++) {
+    const ch = cmd[i];
+    const next = cmd[i + 1];
+    if (quote) {
+      cur += ch;
+      if (ch === quote) quote = null;
+      continue;
+    }
+    if (ch === "'" || ch === '"' || ch === "`") {
+      quote = ch;
+      cur += ch;
+      continue;
+    }
+    if (ch === "\\") {
+      cur += ch + (next || "");
+      i++;
+      continue;
+    }
+    if (ch === "\n" || ch === "\r" || ch === ";") {
+      segs.push(cur);
+      cur = "";
+      continue;
+    }
+    if ((ch === "&" && next === "&") || (ch === "|" && next === "|")) {
+      segs.push(cur);
+      cur = "";
+      i++;
+      continue;
+    }
+    if (ch === "&") {
+      // background operator (single &) — split; `&&` already handled above.
+      segs.push(cur);
+      cur = "";
+      continue;
+    }
+    cur += ch;
+  }
+  segs.push(cur);
+  return segs;
+}
 
-  // Pipe-into-provider: `cat foo.txt | codex exec …` / `… | gemini -p` etc.
-  // The pipe alone isn't forbidden — piping codex *output* to grep is fine —
-  // we forbid piping INTO codex/gemini/claude prompt mode.
-  const pipeMatch = cmd.match(/\|\s*(codex|gemini|claude)\b([^|]*)$/);
-  if (pipeMatch) {
-    const [, provider, tail] = pipeMatch;
-    if (SAFE_PROVIDER_TAILS.test(tail)) return null;
+function findForbidden(rawCmd) {
+  if (rawCmd === undefined || rawCmd === null) return null;
+  // Segment-aware so the canonical-prefix exemption applies ONLY to the wrapper's
+  // OWN segment — not to a piggy-backed raw provider call in the same compound
+  // command (`node dispatch-claude.js …; codex exec …` / `… & codex …`).
+  for (const seg of splitSegments(String(rawCmd))) {
+    const hit = findForbiddenSegment(seg);
+    if (hit) return hit;
+  }
+  return null;
+}
+
+// Drop quoted spans ('...', "...", `...`) so a forbidden substring that is just a
+// LITERAL STRING ARGUMENT (e.g. a commit message `'fix: codex exec bug'` or
+// `--arg "foo; codex exec bar"`) is not mistaken for an actual command. The real
+// provider command tokens (`codex exec`, `claude -p --agent builder`) are always
+// UNQUOTED, so this removes false-REDs without weakening real detection.
+// (Residual: a `$(provider …)` command-substitution INSIDE double quotes does
+// execute in bash but is dropped here — an exotic form no orchestrator emits;
+// logged as enforcement-debt, out of this guardrail's drift-prevention scope.)
+function stripQuoted(s) {
+  let out = "";
+  let quote = null;
+  for (let i = 0; i < s.length; i++) {
+    const ch = s[i];
+    if (quote) {
+      if (ch === "\\") {
+        i++;
+        continue;
+      }
+      if (ch === quote) quote = null;
+      continue;
+    }
+    if (ch === "'" || ch === '"' || ch === "`") {
+      quote = ch;
+      continue;
+    }
+    out += ch;
+  }
+  return out;
+}
+
+function findForbiddenSegment(rawSeg) {
+  const cmd = rawSeg.replace(/\r?\n/g, " ").trim();
+  if (!cmd) return null;
+  // Match against the quote-stripped skeleton so literal-string args don't false-RED.
+  const scan = stripQuoted(cmd);
+
+  // RI-004 / ED-018 — checked BEFORE the canonical-prefix exemption: a raw
+  // build-chain claude dispatch is forbidden even inside a compound command
+  // (`node dispatch-claude.js …; claude -p --agent builder …`). The wrapper
+  // never emits `claude -p --agent`, so this can't false-block it.
+  const rawBuildRole = rawBuildChainClaudeRole(cmd, scan);
+  if (rawBuildRole) {
     return {
-      pattern: `cat … | ${provider} …`,
+      pattern: `claude -p --agent ${rawBuildRole}`,
       detail:
-        "piping into a cross-provider CLI as prompt input bypasses the dispatch wrapper",
+        "build-chain Claude roles silently REAP under raw `claude -p` (the harness auto-backgrounds the long call → 0 bytes, no completion record, exit code lost: RI-004/ED-018).",
+      use: `node scripts/dispatch-claude.js ${rawBuildRole} <prompt-file> --model <m> -w`,
     };
   }
 
+  // Pipe-into-provider: `cat foo.txt | codex exec …` / `… | gemini -p` etc.
+  // Checked BEFORE the canonical exemption so a wrapper invocation that pipes its
+  // result INTO a raw provider (`node dispatch-claude.js … | codex exec`) is still
+  // caught (reviewer-HIGH). The pipe alone isn't forbidden — piping codex *output*
+  // to grep is fine — we forbid piping INTO codex/gemini/claude prompt mode.
+  const pipeMatch = scan.match(/\|\s*(codex|gemini|claude)\b([^|]*)$/);
+  if (pipeMatch) {
+    const [, provider, tail] = pipeMatch;
+    if (!SAFE_PROVIDER_TAILS.test(tail)) {
+      return {
+        pattern: `cat … | ${provider} …`,
+        detail:
+          "piping into a cross-provider CLI as prompt input bypasses the dispatch wrapper",
+      };
+    }
+  }
+
+  if (hasCanonicalDispatchPrefix(scan)) return null;
+
   // Bare `codex exec` not in dispatch-agent.
-  if (/\bcodex\s+exec\b/.test(cmd)) {
+  if (/\bcodex\s+exec\b/.test(scan)) {
     return {
       pattern: "codex exec …",
       detail:
@@ -125,7 +328,7 @@ function findForbidden(rawCmd) {
 
   // `gemini … -p` (prompt invocation). Allow when next arg after gemini is a
   // safe tail.
-  const geminiMatch = cmd.match(/\bgemini\b\s*([\s\S]*)$/);
+  const geminiMatch = scan.match(/\bgemini\b\s*([\s\S]*)$/);
   if (geminiMatch) {
     const tail = geminiMatch[1];
     if (SAFE_PROVIDER_TAILS.test(tail)) {
@@ -141,7 +344,7 @@ function findForbidden(rawCmd) {
 
   // `claude -p` — only forbidden when not the documented `--agent <role>`
   // fallback form.
-  const claudeMatch = cmd.match(/\bclaude\s+-p\b[\s\S]*$/);
+  const claudeMatch = scan.match(/\bclaude\s+-p\b[\s\S]*$/);
   if (claudeMatch) {
     const slice = claudeMatch[0];
     if (!isClaudeAgentInvocation(slice)) {
@@ -154,6 +357,9 @@ function findForbidden(rawCmd) {
         };
       }
     }
+    // A `claude -p --agent <role>` for a BUILD-CHAIN role was already caught
+    // (and blocked) by rawBuildChainClaudeRole at the top. Non-build claude
+    // --agent roles fall through → allowed.
   }
 
   return null;
@@ -239,9 +445,15 @@ process.stdin.on("end", () => {
         `Pattern matched: ${hit.pattern}`,
         `Detail: ${hit.detail}`,
         "",
-        "Use:  node scripts/dispatch-agent.js <role> <prompt-file>",
-        "Why:  raw provider prompt calls re-trigger known stdin/binding failures",
-        "      (LRN-2026-04-17 Windows-stdin; LRN-2026-04-30 binding-gap).",
+        hit.use
+          ? `Use:  ${hit.use}`
+          : "Use:  node scripts/dispatch-agent.js <role> <prompt-file>",
+        hit.use
+          ? "Why:  raw `claude -p --agent` for build-chain roles silently reaps —"
+          : "Why:  raw provider prompt calls re-trigger known stdin/binding failures",
+        hit.use
+          ? "      the wrapper bounds the call + writes a death record + non-zero exit (RI-004/ED-018)."
+          : "      (LRN-2026-04-17 Windows-stdin; LRN-2026-04-30 binding-gap).",
         "",
         "One-shot bypass for an approved provider-health probe:",
         "  PowerShell: $env:WARPOS_PROVIDER_PROBE = '1'; <command>; Remove-Item Env:WARPOS_PROVIDER_PROBE",

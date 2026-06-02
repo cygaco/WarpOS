@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-02T06:05:41.150Z",
+  "generatedAt": "2026-06-02T18:24:47.874Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.13.1",
   "migrations": [],
@@ -1610,15 +1610,15 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/delta-dispatch-builder.js",
-      "sha256": "2def462e88cd8f4c8cdc68c144959edf9bc6de3a6758aac62eccfa6eeb5468b0",
-      "installedSha": "2def462e88cd8f4c8cdc68c144959edf9bc6de3a6758aac62eccfa6eeb5468b0"
+      "sha256": "0994ffd358919a3db5dd9dfec25d45e335ce30443b72b7013c99f240b1ed97da",
+      "installedSha": "0994ffd358919a3db5dd9dfec25d45e335ce30443b72b7013c99f240b1ed97da"
     },
     "scripts/delta-dispatch-fixer.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/delta-dispatch-fixer.js",
-      "sha256": "02c30a07159e9a989f840adf537e8b5ce97b6604e188fe7bbcd05ad09340af4d",
-      "installedSha": "02c30a07159e9a989f840adf537e8b5ce97b6604e188fe7bbcd05ad09340af4d"
+      "sha256": "527673c7d640a671e64ed1fa96b5c8af0c533b505313f526527ace59372b478f",
+      "installedSha": "527673c7d640a671e64ed1fa96b5c8af0c533b505313f526527ace59372b478f"
     },
     "scripts/delta-eval-mr-fix2.txt": {
       "owner": "framework",
@@ -1799,8 +1799,15 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/dispatch-agent.js",
-      "sha256": "82d4a241a48c55cf6a7aa9f5d353e9488945bc4c5b1b2701f7c7341525d6eae0",
-      "installedSha": "82d4a241a48c55cf6a7aa9f5d353e9488945bc4c5b1b2701f7c7341525d6eae0"
+      "sha256": "3935f616e8458295b996ecfcf68a071036a0af882080f7a5af139152ef3ae34e",
+      "installedSha": "3935f616e8458295b996ecfcf68a071036a0af882080f7a5af139152ef3ae34e"
+    },
+    "scripts/dispatch-claude.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/dispatch-claude.js",
+      "sha256": "9e63c6dd225b1cb85d1554c761fa140bf35f1aa8c8f8166572091d1a16016be9",
+      "installedSha": "9e63c6dd225b1cb85d1554c761fa140bf35f1aa8c8f8166572091d1a16016be9"
     },
     "scripts/dispatch.js": {
       "owner": "framework",
@@ -2506,8 +2513,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/test-dispatch-route-guard.js",
-      "sha256": "561babacc5f9a45105c48e13986eb5779a757789a7eef7bbec719935aba145db",
-      "installedSha": "561babacc5f9a45105c48e13986eb5779a757789a7eef7bbec719935aba145db"
+      "sha256": "ff42aefac8020abf7024a154579937aa8241b16b0cd9aac579a1ee9f69a3e835",
+      "installedSha": "ff42aefac8020abf7024a154579937aa8241b16b0cd9aac579a1ee9f69a3e835"
     },
     "scripts/test-dispatch-telemetry.js": {
       "owner": "framework",
@@ -3962,8 +3969,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/dispatch-route-guard.js",
-      "sha256": "f768e16470355fac556a091ff3325e2aaa66c6b4deeb723187df13b161e2e459",
-      "installedSha": "f768e16470355fac556a091ff3325e2aaa66c6b4deeb723187df13b161e2e459"
+      "sha256": "ebdbfcb4ae7a9f3fa3c455c069c13c328c8cf382b4e5f00fc6decf4a8617c87d",
+      "installedSha": "ebdbfcb4ae7a9f3fa3c455c069c13c328c8cf382b4e5f00fc6decf4a8617c87d"
     },
     "scripts/hooks/edit-watcher.js": {
       "owner": "framework",
@@ -4573,6 +4580,13 @@
       "source": "scripts/dispatch/diff.js",
       "sha256": "4784425bcda3b8f0c8423050ae54fca739c598e6db3bcfb4669d7072c898e78e",
       "installedSha": "4784425bcda3b8f0c8423050ae54fca739c598e6db3bcfb4669d7072c898e78e"
+    },
+    "scripts/dispatch/dispatch-claude.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/dispatch/dispatch-claude.test.js",
+      "sha256": "c2e62610e2fb4a2c82334f35481b0a71d11a4b84ac558d3a0efa03b0e7bf90ea",
+      "installedSha": "c2e62610e2fb4a2c82334f35481b0a71d11a4b84ac558d3a0efa03b0e7bf90ea"
     },
     "scripts/dispatch/frontmatter.js": {
       "owner": "framework",
@@ -14333,8 +14347,8 @@
       "managed": true,
       "source": ".claude/project/reference/agent-dispatch-guide.md",
       "kind": "md",
-      "sha256": "27d555fbc45941fb065558d278657bfa25c90e6210c8d5b88c8793ef9ef15014",
-      "installedSha": "27d555fbc45941fb065558d278657bfa25c90e6210c8d5b88c8793ef9ef15014"
+      "sha256": "dcb1dc994dc7aef98193a8f7ab717febe3f01d615553a50df29179f9e718b47d",
+      "installedSha": "dcb1dc994dc7aef98193a8f7ab717febe3f01d615553a50df29179f9e718b47d"
     },
     ".claude/project/reference/cross-provider-dispatch.md": {
       "owner": "framework",
@@ -16739,8 +16753,8 @@
       "managed": true,
       "source": ".claude/agents/01-adhoc/.system/protocol.md",
       "kind": "md",
-      "sha256": "f5adb3f0b2fb0735b5774170d13f722525acca7c7a9db812888e7a98c44b84f7",
-      "installedSha": "f5adb3f0b2fb0735b5774170d13f722525acca7c7a9db812888e7a98c44b84f7"
+      "sha256": "acb1b6f522ee395361877b54a8b9a9fef110cebd61db76a98a757bec2d533c42",
+      "installedSha": "acb1b6f522ee395361877b54a8b9a9fef110cebd61db76a98a757bec2d533c42"
     },
     ".claude/agents/00-alex/alpha.md": {
       "owner": "framework",
@@ -16763,16 +16777,16 @@
       "managed": true,
       "source": ".claude/agents/00-alex/delta.md",
       "kind": "md",
-      "sha256": "31bc7f325943da14d40bb735f9773c98daaad4221f53dcece4bfcd49669c5152",
-      "installedSha": "31bc7f325943da14d40bb735f9773c98daaad4221f53dcece4bfcd49669c5152"
+      "sha256": "4f973696de41052d60db739377bf981ef8ca01002b2994c2d82c0c14473ae12b",
+      "installedSha": "4f973696de41052d60db739377bf981ef8ca01002b2994c2d82c0c14473ae12b"
     },
     ".claude/agents/00-alex/gamma.md": {
       "owner": "framework",
       "managed": true,
       "source": ".claude/agents/00-alex/gamma.md",
       "kind": "md",
-      "sha256": "0b162e7ab826722524c71824324be09a580d393c19b51c4efcbd1d266bfad48c",
-      "installedSha": "0b162e7ab826722524c71824324be09a580d393c19b51c4efcbd1d266bfad48c"
+      "sha256": "8b921b45f80fc79d6906da669926e1a2fb369a277c5b0e91908bdd30ea3ad241",
+      "installedSha": "8b921b45f80fc79d6906da669926e1a2fb369a277c5b0e91908bdd30ea3ad241"
     },
     ".claude/agents/00-alex/.system/events.jsonl": {
       "owner": "runtime",

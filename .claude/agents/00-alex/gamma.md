@@ -65,13 +65,31 @@ PROVIDER=$(node -e "console.log(require('$CLAUDE_PROJECT_DIR/scripts/hooks/lib/p
 
 # 3. Route
 if [ "$PROVIDER" = "claude" ]; then
-  # Native Claude dispatch — can follow relative file paths, inlining optional
-  RESULT=$(claude -p --model sonnet --agent <role> "$(cat "$PROMPT_FILE")")
+  # Native Claude dispatch.
+  # BUILD-CHAIN roles (builder, fixer, frontend-builder, backend-builder,
+  # stub-scaffold) MUST go through the bounded wrapper scripts/dispatch-claude.js.
+  # Raw `claude -p --agent <build-role>` silently REAPS (RI-004/ED-018): the
+  # harness auto-backgrounds the long call → 0 bytes, NO completion record, exit
+  # code lost to $(...). The wrapper bounds the call, and on a reap writes a
+  # death record (.claude/runtime/dispatch-deaths.jsonl) + exits NON-ZERO; on
+  # success it writes a well-formed completion record so gauntlet-verify can
+  # confirm the builder actually ran. The dispatch-route-guard hook BLOCKS the
+  # raw form for build roles, so this is the only path.
+  # `-w` is forwarded to claude (creates the isolated worktree, as before).
+  RESULT=$(node "$CLAUDE_PROJECT_DIR/scripts/dispatch-claude.js" <role> "$PROMPT_FILE" --model sonnet -w)
+  if [ $? -ne 0 ]; then
+    echo "Build dispatch FAILED/REAPED for <role> — see .claude/runtime/dispatch-deaths.jsonl. Treat as DISPATCH FAILURE: do NOT run the gauntlet, do NOT report success."
+  fi
+  # Non-build Claude roles (test-runner, visual-review) may use the raw
+  # `claude -p --model sonnet --agent <role> "$(cat "$PROMPT_FILE")"` form —
+  # reap-detection is less load-bearing there and the guard allows it.
 else
   # Cross-provider (OpenAI / Gemini) — inlining REQUIRED (step 1 above)
   # scripts/dispatch-agent.js handles codex exec --sandbox workspace-write -m MODEL - or gemini -m MODEL -p
   RESULT=$(node "$CLAUDE_PROJECT_DIR/scripts/dispatch-agent.js" <role> "$PROMPT_FILE")
-  # If exit 1 (provider CLI unavailable), fall back to Claude
+  # If exit 1 (provider CLI unavailable), fall back to Claude. The review-layer
+  # roles that fall back here (reviewer/compliance/qa/redteam) are NOT build-chain,
+  # so the raw `--agent` fallback is guard-allowed.
   if [ $? -ne 0 ]; then
     echo "Provider unavailable — falling back to Claude for <role>"
     RESULT=$(claude -p --model sonnet --agent <role> "$(cat "$PROMPT_FILE")")

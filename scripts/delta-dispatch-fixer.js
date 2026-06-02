@@ -197,7 +197,9 @@ git worktree add -B "${fixBranch}" "$WT_DIR" "${baseBranch}"
 
 cd "$WT_DIR"
 set +e
-claude -p --model claude-sonnet-4-6 --effort max --agent fixer "$(cat "${promptFile.replace(/\\/g, "/")}")" > "${logFile.replace(/\\/g, "/")}" 2>&1
+# RI-004/ED-018: dispatch through the bounded wrapper, NOT raw claude -p --agent
+# fixer (which silently reaps). Already inside the fresh worktree (PWD).
+node "${ROOT.replace(/\\/g, "/")}/scripts/dispatch-claude.js" fixer "${promptFile.replace(/\\/g, "/")}" --model claude-sonnet-4-6 --effort max --worktree "$PWD" > "${logFile.replace(/\\/g, "/")}" 2>&1
 EXIT=$?
 echo "[${feature} fix-${attempt}] exit=$EXIT (worktree=$WT_DIR)"
 exit $EXIT

@@ -99,7 +99,18 @@ EOF
 PROVIDER=$(node -e "console.log(require('$CLAUDE_PROJECT_DIR/scripts/hooks/lib/providers').getProviderForRole('<role>'))")
 
 if [ "$PROVIDER" = "claude" ]; then
-  RESULT=$(claude -p --model sonnet --agent <role> "$(cat "$PROMPT_FILE")")
+  # BUILD-CHAIN roles (builder, fixer, frontend-builder, backend-builder,
+  # stub-scaffold) MUST use the bounded wrapper — raw `claude -p --agent`
+  # silently REAPS (RI-004/ED-018): 0 bytes, no completion record, exit lost.
+  # The wrapper bounds the call + writes a death record + non-zero exit on a
+  # reap, and a well-formed completion record on success. The dispatch-route-guard
+  # hook blocks the raw form for build roles.
+  # `-w` is forwarded to claude (creates the isolated worktree, as before).
+  RESULT=$(node "$CLAUDE_PROJECT_DIR/scripts/dispatch-claude.js" <role> "$PROMPT_FILE" --model sonnet -w)
+  if [ $? -ne 0 ]; then
+    echo "Build dispatch FAILED/REAPED for <role> — see .claude/runtime/dispatch-deaths.jsonl. DISPATCH FAILURE: do NOT run the gauntlet."
+  fi
+  # Non-build Claude roles (test-runner, visual-review): raw `claude -p --agent` is allowed.
 else
   # Cross-provider (OpenAI / Gemini) — scripts/dispatch-agent.js handles it
   RESULT=$(node "$CLAUDE_PROJECT_DIR/scripts/dispatch-agent.js" <role> "$PROMPT_FILE")
