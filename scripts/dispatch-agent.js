@@ -539,6 +539,44 @@ try {
   }
   result = runProvider(role, prompt, runOpts);
 
+  // WI-18: quota-aware fallback. When a gemini-routed role (e.g. redteam) 429s /
+  // exhausts quota, runProvider surfaces it loudly via result.quota and still
+  // sets fallback:true. Rather than silently degrading the SECURITY pass to
+  // claude (same family as the code under review — weak diff-model coverage), do
+  // ONE bounded retry on openai (the documented 2nd-GPT security-pass path), but
+  // only when the operator hasn't already forced a provider/model. Recoverable
+  // (rate-limit) AND unrecoverable (free-tier=0) both warrant the cross-family
+  // retry — the gemini path won't serve either way. Single attempt, no loop.
+  if (
+    result &&
+    !result.ok &&
+    result.quota &&
+    !providerOverride &&
+    !modelOverride &&
+    (result.provider === "gemini" || provider === "gemini")
+  ) {
+    const fbProvider = result.quota.suggestFallbackProvider || "openai";
+    if (fbProvider !== "claude") {
+      process.stderr.write(
+        `[dispatch-agent] WI-18 quota fallback: ${role} ${result.provider}` +
+          ` (${result.quota.kind}) → retrying on ${fbProvider} for cross-family` +
+          ` security coverage (1 attempt).\n`,
+      );
+      const retry = runProvider(role, prompt, { provider: fbProvider });
+      if (retry && retry.ok) {
+        retry.quotaFallbackFrom = {
+          provider: result.provider,
+          model: result.model || null,
+          kind: result.quota.kind,
+        };
+        result = retry;
+      }
+      // If the retry also fails, keep the original quota result (its loud error +
+      // fallback:true still drives the caller's existing claude fallback). Never
+      // mask a double failure as success.
+    }
+  }
+
   // Add role + structured output to result
   result.role = role;
   if (roleModel) result.specModel = roleModel;

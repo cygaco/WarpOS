@@ -118,6 +118,28 @@ test("runStaticLane returns a {ran,exitCode,ok} shape (no throw)", () => {
   assert.ok(typeof s === "object" && "ran" in s && "ok" in s, `unexpected shape: ${JSON.stringify(s)}`);
 });
 
+// 9. RAMP (W1) — lane2="advisory": a lane-2 judgment FAIL is DOWNGRADED ⇒ PASS + advisory.
+test("advisory: judgment FAIL → PASS (lane-2 downgraded to advisory)", () => {
+  const j = judgmentPass(); j.verdict = "FAIL";
+  j.axes["visual-hierarchy"] = { pass: false, findings: [{ axis: "visual-hierarchy", severity: "high" }] };
+  const out = evaluate({ staticLane: staticOK, judgment: j, designBrief: { id: "db1" }, lane2Mode: "advisory" });
+  assert.strictEqual(out.result, "PASS", `expected PASS (advisory), got ${out.result}`);
+  assert.ok((out.advisories || []).some((a) => a.reason === "judgment-fail"), JSON.stringify(out.advisories));
+});
+
+// 10. RAMP (W1) — lane2="advisory" does NOT weaken lane 1: a static-fail still REJECTs.
+test("advisory: static-fail still → REJECT (lane 1 always blocks)", () => {
+  const out = evaluate({ staticLane: staticFail, judgment: judgmentPass(), designBrief: { id: "db1" }, lane2Mode: "advisory" });
+  assert.strictEqual(out.result, "REJECT", `expected REJECT (lane 1 blocks even in advisory), got ${out.result}`);
+});
+
+// 11. RAMP (W1) — lane2="advisory": missing judgment is an advisory, not a block (no silent skip).
+test("advisory: missing judgment → PASS + advisory (no silent skip, no block)", () => {
+  const out = evaluate({ staticLane: staticOK, judgment: null, designBrief: null, lane2Mode: "advisory" });
+  assert.strictEqual(out.result, "PASS", `expected PASS (advisory), got ${out.result}`);
+  assert.ok((out.advisories || []).some((a) => a.reason === "missing-judgment"), JSON.stringify(out.advisories));
+});
+
 if (failures.length) {
   process.stderr.write(`design-quality-gate bite-test: ${passed} passed, ${failures.length} FAILED\n`);
   for (const f of failures) process.stderr.write(`  - ${f}\n`);

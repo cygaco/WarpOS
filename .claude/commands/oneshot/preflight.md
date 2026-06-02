@@ -109,7 +109,7 @@ In order:
 
    You are the stub-scaffold sub-agent. Follow `.claude/agents/02-oneshot/stub-scaffold/stub-scaffold.md`. Regenerate the stub file at the given path using the CURRENT spec signatures from the feature's PRD + INPUTS.md + src/lib/types.ts. Output ONLY the new file content.
    EOF
-   RESULT=$(claude -p --model sonnet --agent stub-scaffold "$(cat "$PROMPT")")
+   RESULT=$(node "$CLAUDE_PROJECT_DIR/scripts/dispatch-claude.js" stub-scaffold "$PROMPT" --model sonnet)
    ```
 4. **Reset oneshot feature statuses:**
    ```bash

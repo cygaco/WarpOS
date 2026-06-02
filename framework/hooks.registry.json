@@ -100,6 +100,17 @@
       "testFixtures": ["fixtures/hooks/default/bash-git-commit.json"]
     },
     {
+      "id": "settings-edit-guard",
+      "script": "scripts/hooks/settings-edit-guard.js",
+      "owner": "framework",
+      "enabled": true,
+      "failMode": "fail-open",
+      "fixturesRequired": false,
+      "purpose": "Advisory: warn (never block) on direct hand-edit of the GENERATED .claude/settings.json — point the operator at settings.local.json + recompile. Pairs with `compile --check`. WI-33.",
+      "registrations": [{ "event": "PreToolUse", "matcher": "Edit|Write" }],
+      "testFixtures": ["fixtures/hooks/default/edit-text.json"]
+    },
+    {
       "id": "path-registry-guard",
       "script": "scripts/hooks/path-registry-guard.js",
       "owner": "framework",

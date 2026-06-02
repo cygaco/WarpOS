@@ -29,12 +29,17 @@
  *   --full   Walk the entire on-disk tree. Reports every current
  *            violation. Useful for taking inventory of the pre-scrub
  *            leak debt.
- *   --diff   (default) Scan only `git diff --cached` (staged) +
- *            `git diff` (unstaged) changes. Fails on any new violation.
- *            Wired into the canonical pre-commit guard.
+ *   --diff   (default) Scan `git diff --cached` (staged) + `git diff`
+ *            (unstaged) changes. The full change-set view — used by the
+ *            manual /scan:framework-purity skill.
+ *   --staged Scan ONLY `git diff --cached` (staged) changes. This is the
+ *            COMMIT gate: a commit only writes the staged tree, so the
+ *            pre-commit guard must judge what is actually being committed,
+ *            not unrelated unstaged edits that aren't part of this commit
+ *            (WI-23). Wired into scripts/hooks/framework-purity-guard.js.
  *
  * Usage:
- *   node scripts/checks/framework-purity.js [--full | --diff] [--json] [--quiet]
+ *   node scripts/checks/framework-purity.js [--full | --diff | --staged] [--json] [--quiet]
  *
  * Exit codes:
  *   0  clean — no violations
@@ -48,7 +53,13 @@ const fs = require("fs");
 const path = require("path");
 const { execSync } = require("child_process");
 
-const REPO_ROOT = path.resolve(__dirname, "..", "..");
+// REPO_ROOT defaults to the canonical repo (two levels up from this file).
+// WARPOS_PURITY_ROOT is a test-only seam: it lets the test suite point the
+// scanner at a throwaway git repo so staged-vs-unstaged scoping (WI-23) can be
+// exercised hermetically without a false-RED on the real working tree.
+const REPO_ROOT = process.env.WARPOS_PURITY_ROOT
+  ? path.resolve(process.env.WARPOS_PURITY_ROOT)
+  : path.resolve(__dirname, "..", "..");
 
 // ── Configurable rule set ────────────────────────────────────────────
 
@@ -220,15 +231,19 @@ function scanPath(rel, findings) {
 
 // ── Git change set ───────────────────────────────────────────────────
 
-function gitChangedFiles() {
+// stagedOnly=true → only `git diff --cached` (the commit gate, WI-23). A commit
+// writes the staged tree; an unstaged edit elsewhere is NOT part of this commit,
+// so the pre-commit guard must not block on it. stagedOnly=false → staged +
+// unstaged (the manual change-set view used by /scan:framework-purity).
+function gitChangedFiles(stagedOnly) {
   try {
-    // Files staged or unstaged for ADD/MODIFY/COPY/RENAME — but NOT
-    // for DELETE (those are going away post-commit; no point scanning
-    // their content for leaks).
-    const out = execSync(
-      "git diff --cached --name-only --diff-filter=ACMR && git diff --name-only --diff-filter=ACMR",
-      { encoding: "utf8", cwd: REPO_ROOT },
-    );
+    // Files staged (and, unless stagedOnly, also unstaged) for
+    // ADD/MODIFY/COPY/RENAME — but NOT for DELETE (those are going away
+    // post-commit; no point scanning their content for leaks).
+    const cmd = stagedOnly
+      ? "git diff --cached --name-only --diff-filter=ACMR"
+      : "git diff --cached --name-only --diff-filter=ACMR && git diff --name-only --diff-filter=ACMR";
+    const out = execSync(cmd, { encoding: "utf8", cwd: REPO_ROOT });
     const set = new Set(out.split("\n").map((s) => s.trim()).filter(Boolean));
     return Array.from(set);
   } catch {
@@ -288,8 +303,8 @@ function run(opts) {
   };
 
   let files;
-  if (opts.mode === "diff") {
-    files = gitChangedFiles();
+  if (opts.mode === "diff" || opts.mode === "staged") {
+    files = gitChangedFiles(opts.mode === "staged");
   } else {
     files = [];
     for (const full of walk(REPO_ROOT)) {
@@ -356,6 +371,7 @@ function parseArgs(argv) {
     if (a === "--help" || a === "-h") out.help = true;
     else if (a === "--full") out.mode = "full";
     else if (a === "--diff") out.mode = "diff";
+    else if (a === "--staged") out.mode = "staged";
     else if (a === "--json") out.json = true;
     else if (a === "--quiet") out.quiet = true;
   }
@@ -379,7 +395,8 @@ Detectors:
                   warposFlag/warposPromote token references
 
 Modes:
-  --diff  (default)  scan git diff --cached + git diff
+  --diff  (default)  scan git diff --cached + git diff (staged + unstaged)
+  --staged           scan git diff --cached only (the commit gate, WI-23)
   --full              walk entire repo
 
 Exit codes:

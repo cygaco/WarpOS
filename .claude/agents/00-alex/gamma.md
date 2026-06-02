@@ -81,7 +81,7 @@ if [ "$PROVIDER" = "claude" ]; then
     echo "Build dispatch FAILED/REAPED for <role> — see .claude/runtime/dispatch-deaths.jsonl. Treat as DISPATCH FAILURE: do NOT run the gauntlet, do NOT report success."
   fi
   # Non-build Claude roles (test-runner, visual-review) may use the raw
-  # `claude -p --model sonnet --agent <role> "$(cat "$PROMPT_FILE")"` form —
+  # `claude -p --model sonnet --agent <role> < "$PROMPT_FILE"` STDIN form —
   # reap-detection is less load-bearing there and the guard allows it.
 else
   # Cross-provider (OpenAI / Gemini) — inlining REQUIRED (step 1 above)
@@ -92,7 +92,7 @@ else
   # so the raw `--agent` fallback is guard-allowed.
   if [ $? -ne 0 ]; then
     echo "Provider unavailable — falling back to Claude for <role>"
-    RESULT=$(claude -p --model sonnet --agent <role> "$(cat "$PROMPT_FILE")")
+    RESULT=$(claude -p --model sonnet --agent <role> < "$PROMPT_FILE")
   fi
 fi
 
@@ -291,12 +291,38 @@ for the feature, run the **test pilot** before reporting GAMMA_RESULT:
    Treat visual-review findings of severity `critical` or `high` as a
    reviewer failure → fix-agent dispatch.
 
+   **Design authority gate (W1).** For the SAME UI-diff condition, ALSO run the
+   org's named cross-domain design authority — the `design-quality` gate (built +
+   bite-tested at `scripts/checks/design-quality-gate.js`; it was previously
+   *uncalled* by any pipeline — this wiring activates it):
+
+   1. Dispatch the `design-quality` agent via the Agent tool (multimodal, like
+      visual-review) to produce the DesignQualityResult JSON; write it to `$DQ_RESULT`.
+   2. Run the gate in the **pre-mvp ramp** — Lane 1 (static `design-system --strict`)
+      **blocks**, Lane 2 (judgment) is **advisory** (DP A2: advisory → baseline → block):
+
+      ```bash
+      node "$CLAUDE_PROJECT_DIR/scripts/checks/design-quality-gate.js" \
+        --lane2 advisory --judgment "$DQ_RESULT" --json
+      ```
+
+   - **Exit ≠ 0 ⇒ Lane 1 REJECT** (design-system violations, or the static lane
+     could not run) — treat as a reviewer failure → fix-agent dispatch. Lane 1 is
+     fail-closed and ALWAYS blocks, even in the ramp.
+   - **Exit 0 with `advisories[]` ⇒ Lane 2 findings are ADVISORY** (verdict FAIL /
+     INVESTIGATE / missing-judgment do NOT block the ship yet) — record them in
+     `GAMMA_RESULT.test_status.design_quality` for α review.
+   - **Baseline flip:** once `design-quality` has a clean low-false-positive record
+     on real UI, drop `--lane2 advisory` (default = `block`) so Lane 2 becomes
+     fail-closed too. Never let a MISSING Lane-2 result read as a silent pass.
+
 3. Aggregate both into `GAMMA_RESULT.test_status`:
 
    ```
    test_status:
      test_runner: "pass" | "fail" | "skip" | "hang"
      visual_review: "pass" | "fail" | "skipped (no UI)" | null
+     design_quality: "pass" | "lane1-reject" | "advisory" | "skipped (no UI)" | null
      critical_findings: <int>
      high_findings: <int>
      screenshots: ["runtime/qa/runs/<ts>/..."]

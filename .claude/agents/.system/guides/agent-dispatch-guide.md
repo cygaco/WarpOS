@@ -31,7 +31,7 @@ Delta (orchestrator)
   │     ├── ANTHROPIC route (builder, fixer):
   │     │     git worktree add -B agent/X .worktrees/wt-X HEAD
   │     │     cd .worktrees/wt-X
-  │     │     claude -p --model sonnet-4-6 --effort max --agent builder "$(cat prompt.txt)" \
+  │     │     node scripts/dispatch-claude.js builder prompt.txt --model sonnet \
   │     │       > output.json 2>&1
   │     │
   │     ├── OPENAI route (reviewer, compliance, qa, learner):
@@ -157,7 +157,7 @@ WT_DIR=".worktrees/wt-${feature}"
 git worktree prune
 git worktree add -B "agent/${feature}" "$WT_DIR" HEAD
 cd "$WT_DIR"
-claude -p --model ... --agent builder "$(cat prompt.txt)" > output.json 2>&1
+node scripts/dispatch-claude.js builder prompt.txt --model sonnet > output.json 2>&1   # raw `claude -p --agent builder` is guard-BLOCKED (RI-004 reap; argv "$(cat)" phantoms on multi-KB Windows prompts) — use the bounded wrapper from inside the worktree cwd
 ```
 
 The `-B` force-resets `agent/<feature>`. This is intentional — old commits remain reachable from `skeleton-testN-1` history; only the branch label moves.

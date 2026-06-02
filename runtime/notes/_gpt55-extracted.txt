@@ -1,0 +1,367 @@
+As of May 30, 2026, my blunt read: your reconciliation is directionally right, but your sequencing is wrong and you are underestimating the “contracts before agents” problem. You are adding roles faster than you are adding enforceable interfaces. That is how multi-agent systems become theater.
+
+**Architecture Critique**
+
+Your condensation misses one foundation: **artifact contracts**. F0 says who owns decisions. F1 says what audience data exists. But nothing yet says what artifacts agents exchange, their required fields, validity rules, freshness, confidence, or approval state.
+
+Add **F2 Artifact Contracts** before W2/W3:
+
+```yaml
+artifacts:
+  audience_dossier:
+    owner: director_product
+    consumers: [director_marketing, design_lead, qa_director]
+    required: [segments, jobs, fears, desires, constraints, evidence, confidence]
+  design_brief:
+    owner: design_lead
+    consumers: [frontend_builder, reviewer, visual_review]
+    required: [audience, flows, components, states, accessibility, tokens, acceptance]
+  conversion_brief:
+    owner: director_marketing
+    consumers: [web_conversion_designer, frontend_builder]
+    required: [offer, icp, objections, proof, funnel_stage, cta, analytics]
+  build_spec:
+    owner: gamma
+    consumers: [frontend_builder, backend_builder]
+    required: [scope, file_ownership, contracts, tests, rollback]
+```
+
+Without this, your FE/BE split and design handoff will fail by ambiguity.
+
+Also: the `/etc` skill should not “extend chain-of-thought.” That is the wrong abstraction. Store **procedures, rubrics, examples, counterexamples, decision records, and compressed rationales**. Do not build a system whose correctness depends on preserving hidden reasoning traces. Make `/etc` a prompt/skill authoring and evaluation harness, not a CoT warehouse.
+
+**Decision Model**
+
+Per-domain owners are better than central `b` for domain quality, but worse for consistency. Central `b` gives coherence and bottleneck. Domain owners give expertise and turf conflict. The mature shape is:
+
+- Domain owner decides inside domain.
+- `b` owns arbitration, risk taxonomy, escalation, and final release gate.
+- Alpha/Gamma owns orchestration, not judgment.
+- Every decision produces a typed record.
+- Routing is enforced by code, not prose.
+
+Implement routing as policy-as-code:
+
+```yaml
+decision_domains:
+  product:
+    owner: director_product
+    triggers: [positioning, roadmap, feature_priority, user_value, pricing_packaging]
+    required_inputs: [audience_dossier, product_context]
+  marketing:
+    owner: director_marketing
+    triggers: [offer, messaging, funnel, landing_page_copy, campaign, cta]
+    required_inputs: [audience_dossier, product_positioning]
+  design:
+    owner: design_lead
+    triggers: [ux_flow, visual_system, component_choice, accessibility, layout]
+    required_inputs: [audience_dossier, product_requirements]
+  quality:
+    owner: director_qa
+    triggers: [test_strategy, risk_coverage, release_readiness, defect_severity]
+  risk:
+    owner: beta
+    triggers: [security, compliance, irreversible, cross_domain_conflict, class_a]
+```
+
+Enforcer behavior:
+
+```ts
+type DecisionRequest = {
+  id: string
+  class: "A" | "B" | "C"
+  domains: string[]
+  artifactRefs: string[]
+  proposedBy: string
+  summary: string
+}
+
+function route(req: DecisionRequest) {
+  const owners = req.domains.map(domainOwner)
+  if (req.class === "A" || owners.length > 1) return [...owners, "beta"]
+  return owners
+}
+```
+
+Tests you need:
+
+- Product decision without Director of Product consult fails.
+- Marketing copy change without Director of Marketing fails.
+- Design system change without Design Lead fails.
+- Multi-domain decision requires all domain owners plus `b`.
+- `b` cannot silently override without an arbitration record.
+- Enforcer rejects stale audience dossiers.
+- Decision logs are immutable append-only.
+
+Telemetry:
+
+```yaml
+decision_log:
+  decision_id:
+  timestamp:
+  class:
+  domains:
+  consulted_agents:
+  missing_required_agents:
+  owner_decision:
+  beta_gate:
+  conflicts:
+  artifact_versions:
+  confidence:
+  final_status:
+```
+
+Who-owns-this ambiguity should not go to Slack-style vibes. Use a **domain classifier** first, then explicit fallback: if confidence < 0.75 or domains > 1, route multi-owner plus `b`.
+
+**FE/BE Builder Split**
+
+A two-way split is necessary but not sufficient. You need a third role: **integration builder** or **full-stack assembler**.
+
+Pitfalls:
+
+- Auth touches frontend, backend, middleware, env, DB, tests.
+- Forms touch UI, validation, API contracts, persistence, error states.
+- Design tokens touch app shell, components, Tailwind config, tests.
+- Backend schema changes break frontend generated types.
+- FE builder will fake APIs unless contract-first is enforced.
+- BE builder will ignore UX states unless design brief owns them.
+
+Recommended build chain:
+
+```yaml
+foundation_builder:
+  owns: [project scaffold, package config, shared types, lint/test setup, component library wiring]
+frontend_builder:
+  owns: [routes, UI components, client state, forms, accessibility, visual states]
+backend_builder:
+  owns: [API, DB schema, auth, services, server validation]
+integration_builder:
+  owns: [end-to-end wiring, contracts, env, migrations, smoke tests]
+```
+
+If you refuse a fourth builder, make Gamma perform integration explicitly. Do not pretend FE and BE can independently land full-stack work.
+
+**Design + Marketing**
+
+Your org shape is mostly right. But the conversion website should live under **Marketing**, with **Design as required approver** and **Product as claims/positioning approver**.
+
+Ownership:
+
+- Director of Marketing owns offer, audience segment, funnel, copy, CTA, proof, analytics.
+- Web/Conversion Designer owns page experience, hierarchy, persuasion layout, responsive execution.
+- Design Lead owns quality bar, brand coherence, accessibility, design-to-build handoff.
+- Director of Product owns product truth: no fake claims, no mismatched positioning.
+
+So: Web/Conversion reports operationally to Design Lead, but the landing-page decision owner is Marketing. Joint approval only for release.
+
+What current model workflows support: OpenAI Codex is explicitly positioned for parallel software engineering tasks with configured environments and tests; OpenAI also emphasizes Codex/CLI/IDE/code review workflows for real engineering productivity. Anthropic Claude Code supports specialized subagents and project-level agent definitions. Anthropic prompt caching is useful for large stable context: system instructions, examples, tool definitions, and project docs at the front of the prompt. Those map cleanly to your architecture: Claude-family agents for broad synthesis/design/code generation; OpenAI/Codex-family agents for independent critique, code review, implementation verification, and parallel task execution. Sources: OpenAI Codex docs/articles, Anthropic subagent docs, Anthropic prompt caching docs. [OpenAI Codex](https://openai.com/index/introducing-codex/), [GPT-5.1-Codex-Max](https://openai.com/index/gpt-5-1-codex-max/), [Claude Code subagents](https://docs.anthropic.com/en/docs/claude-code/sub-agents), [Anthropic prompt caching](https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching).
+
+Concrete division of labor:
+
+- Claude/Anthropic: long-context product synthesis, audience dossier drafting, UX flow exploration, component-level implementation, design rationale.
+- OpenAI/Codex: adversarial review, codebase-grounded refactors, test generation, regression detection, alternate implementation plans, final gate.
+- Both: never ask either to “make it beautiful.” Give them artifact contracts, screenshots, examples, brand constraints, conversion hypothesis, component inventory, and acceptance tests.
+
+To avoid generic output:
+
+- Require a real component library in scaffold. shadcn/ui supports Next.js and Tailwind v4, and Radix provides accessible primitives. [shadcn Next.js install](https://v3.shadcn.com/docs/installation/next), [Radix accessibility](https://www.radix-ui.com/primitives/docs/overview/accessibility).
+- Require design tokens before screens.
+- Require 3 competitor teardowns and 3 anti-examples.
+- Require page-specific conversion hypothesis.
+- Require screenshot QA at desktop/mobile.
+- Ban stock SaaS sections unless justified: “hero, logo cloud, three cards, testimonial” should fail by default.
+
+Agent procedures:
+
+```yaml
+director_marketing:
+  inputs: [audience_dossier, product_positioning, business_goal, traffic_source]
+  steps: [choose segment, define offer, map objections, select proof, define CTA, analytics events]
+  outputs: [conversion_brief, message_hierarchy, experiment_plan]
+
+design_lead:
+  inputs: [audience_dossier, product_requirements, conversion_brief]
+  steps: [set UX principles, assign specialist, review flows, enforce component system, approve handoff]
+  outputs: [design_brief, component_inventory, acceptance_criteria]
+
+product_app_designer:
+  inputs: [audience_dossier, JTBD, app_requirements, component_inventory]
+  steps: [map workflows, reduce cognitive load, define states, specify accessibility, produce FE-ready spec]
+  outputs: [ux_flow, screen_specs, state_matrix, component_usage]
+
+web_conversion_designer:
+  inputs: [conversion_brief, audience_dossier, brand_tokens]
+  steps: [build persuasion sequence, wireframe page, define visual hierarchy, specify responsive behavior]
+  outputs: [landing_page_spec, copy_blocks, section_rationale, tracking_requirements]
+```
+
+**Audience Pipeline**
+
+Your audience goal is right but dangerously broad. “Mine everything” can become noisy surveillance. Make it segment-level, source-attributed, and confidence-scored. No individual profiling. No PII. No private data unless user-provided and consented.
+
+Schema:
+
+```yaml
+audience_dossier:
+  product_id:
+  segment:
+    name:
+    inclusion:
+    exclusion:
+    demographics:
+    tech_literacy:
+    accessibility_needs:
+    buying_context:
+  jobs:
+    functional:
+    emotional:
+    social:
+  pains:
+    workflow:
+    personal_life_adjacent:
+    financial:
+    status:
+    cognitive:
+  desires:
+    explicit:
+    latent:
+    identity:
+  fears:
+    failure_modes:
+    social_risks:
+    switching_risks:
+  objections:
+    price:
+    trust:
+    complexity:
+    timing:
+  language:
+    phrases:
+    taboo_words:
+    reading_level:
+    tone:
+  behavior:
+    discovery_channels:
+    decision_process:
+    alternatives:
+    triggers:
+  evidence:
+    sources:
+      - type:
+        url_or_ref:
+        quote_or_summary:
+        date:
+        confidence:
+  design_implications:
+  marketing_implications:
+  qa_implications:
+```
+
+Methods:
+
+- Review mining: app stores, G2/Capterra, Reddit/forums, Amazon/book reviews if relevant.
+- Search-intent mining: query clusters, “alternatives to,” “how do I,” “is X worth it.”
+- Competitor teardown: promises, objections, CTAs, proof mechanisms.
+- Sales/support transcript import if available and consented.
+- Synthetic interviews only after real-source mining, and label them synthetic.
+- Survey/interview templates for validation.
+- QA derives edge cases from audience constraints: low literacy, low bandwidth, mobile-only, disability, anxiety, time pressure.
+
+The key is evidence discipline: every deep psychographic claim needs source, segment, confidence, and implication. Otherwise it is horoscope text.
+
+**Sprint Plan**
+
+Your Wave 1 is not parallel-safe as written. A1 depends on F0/F2 conventions if it is used to author agents. F1 depends on artifact contracts. W2 and W3 both depend on component scaffold decisions.
+
+Resequence:
+
+Wave 0: **Contracts Spike**
+- F2 artifact schemas
+- decision event schema
+- org/domain map schema
+- scaffold contract for UI stack
+- minimal validation harness
+
+Wave 1 parallel:
+- F0 manager base, principles, org map, Director of Marketing
+- F1 audience schema + first mining pipeline
+- A1 `/etc` skill, but only against provisional F2 contracts
+
+Wave 2 parallel:
+- W1 routing enforcer + telemetry using F0/F2
+- W2 design/marketing agents using F1/F2
+- W2b component-library scaffold wiring
+
+Wave 3:
+- W3 builder specialization after design/build/spec contracts stabilize
+- Add integration builder or Gamma integration protocol
+
+Wave 4:
+- End-to-end pilot product through the whole chain
+- Use pilot defects to revise contracts before scaling
+
+Thin contracts to de-risk parallelism:
+
+```yaml
+interface_versions:
+  audience_dossier: v0.1
+  design_brief: v0.1
+  conversion_brief: v0.1
+  build_spec: v0.1
+  decision_record: v0.1
+```
+
+Parallel teams can build against v0.1, but breaking schema changes require migration notes.
+
+**Director Of Marketing**
+
+Must-follow principles:
+
+1. Own the market, not the UI.
+2. Every page has one primary conversion goal.
+3. Message before layout.
+4. Specific beats clever.
+5. Proof must match claim strength.
+6. Objections are first-class requirements.
+7. Segment specificity beats generic appeal.
+8. Analytics events are part of the spec.
+9. Do not invent claims Product cannot defend.
+10. Brand consistency matters, but conversion clarity wins unless Product/Brand explicitly overrules.
+
+Decision ownership:
+
+```yaml
+marketing_owns:
+  - positioning_for_campaign
+  - landing_page_offer
+  - copy_hierarchy
+  - funnel_stage
+  - CTA
+  - proof_strategy
+  - objection_handling
+  - analytics_plan
+
+marketing_consults:
+  product: [claims, roadmap, pricing, ICP]
+  design: [visual hierarchy, accessibility, interaction]
+  qa: [tracking validation, broken funnel states]
+  beta: [risk, legal-ish claims, cross-domain conflict]
+```
+
+**Top 5 Risks**
+
+1. **Role proliferation without contracts**: many agents, weak artifact boundaries.
+2. **Decision theater**: agents “consulted” but not enforced.
+3. **Generic design output**: no component inventory, no visual QA, no audience evidence.
+4. **FE/BE split causes integration failures**: shared files and full-stack features fall between owners.
+5. **Audience psychographics become hallucinated**: deep claims without evidence, confidence, or ethics rules.
+
+**Top 5 Leverage Moves**
+
+1. Add F2 artifact contracts before adding more agents.
+2. Build the routing enforcer early with failing tests for missing domain consults.
+3. Wire shadcn/Radix/Tailwind into scaffolding before creating design agents.
+4. Add an integration-builder role or explicit Gamma integration phase.
+5. Run one pilot product through the full loop before sprinting the whole architecture.
+
+My strongest recommendation: do **contracts + enforcer + component scaffold** before the agent expansion. New agents without enforceable inputs/outputs will look impressive in transcripts and leak quality in production.

@@ -1,0 +1,51 @@
+You are a principal AI-systems architect and product strategist. I lead WarpOS, an autonomous multi-agent "AI operating system" that builds software products. I'm planning a large system update and want sharp, senior, CRITICAL review BEFORE I commit it to sprints. Challenge my assumptions. Flag hidden dependencies and failure modes. Where you'd do it differently, say so and why. Be concrete and opinionated, not hedging. I am highly technical.
+
+== EXISTING SYSTEM ==
+Agent tiers:
+- Orchestrators: Alex a (architect/orchestrator), Alex b (judgment/decision model, read-only; returns DECIDE/DIRECTIVE/ESCALATE over a Class A/B/C decision taxonomy with a stage-weighted scoring rubric; logs every decision), Alex g (adhoc build orchestrator), Alex d (oneshot build orchestrator).
+- Build-chain: ONE generic builder (writes code from a spec in an isolated git worktree), plus reviewer, compliance, qa (7 personas), redteam (11 personas), fixer, req-reviewer, test-runner, visual-review, learner. Reviewer/compliance run on a DIFFERENT provider (OpenAI gpt-5.5) than the builder (Claude/Anthropic) for blind-spot diversity.
+- Managers (recently added, read-only advisors, NOT yet wired into the live decision loop): Director of Product (10 must-follow programmable principles), Director of QA (7 principles). Two principles are DUPLICATED verbatim across both. There is NO shared principles base. b is the ONLY agent actually consulted on decisions today; a 2026-05 routing rule says product-strategy calls should consult the directors first, but it is UNENFORCED prose.
+- Products are scaffolded from templates. There is a documented opinionated UI stack (Next.js + Tailwind v4 + Radix + shadcn/ui + Lucide) but it is NOT wired into scaffolding/build; generated products ship with no component library. Net: integrated but unused.
+- Audience/persona docs exist as canonical templates but are functional/JTBD-only: no deep psychographic/emotional layer, no mining pipeline.
+
+== GOALS ==
+1. Decision-making beyond b: bring directors (and future managers) into decisions by domain.
+2. A Web/Conversion design agent (marketing sites that CONVERT).
+3. A Product/App (UI/UX) design agent: great app UI/UX specialized to the target audience; principles = build-for-audience incl. limitations (e.g. elderly -> bigger/simpler, low tech literacy), KISS, "clarity is king" (clear beats witty), clear iconography. Also: actually USE a real component library.
+4. Split the single builder into specialized frontend-builder + backend-builder.
+5. A new "/etc" authoring skill that extends an agent/skill's chain-of-thought + few-shot EXAMPLES, using a GPT-5.5 cross-provider consult during authoring.
+6. A shared principles layer all managers inherit (incl. "clarity is king").
+7. Deepen the audience layer into a PIPELINE that mines EVERYTHING about the audience: all demographics, likes, interests, hobbies, problems in their personal life, plus deepest needs/desires/emotions/fears/wants.
+8. (NEW) Add a Director of MARKETING. There is meaningful interplay between design and marketing (esp. the conversion website lives at that seam).
+
+== OPERATOR DECISIONS (settled) ==
+- Decision model: PER-DOMAIN OWNERS. Product calls -> Director of Product; quality -> Director of QA; design -> a Design Lead; marketing -> Director of Marketing; b only arbitrates CROSS-domain conflicts and owns risk/escalation/the final gate.
+- Design org: a Design Lead orchestrator over TWO specialists (Product/App UI-UX + Web/Conversion); Design Lead owns the design->build handoff.
+- Org hierarchy (start minimal): the design function REPORTS UP to the Director of Product. QA is its own domain. Now adding a Director of Marketing as a peer domain owner; the Web/Conversion designer sits at the design<->marketing seam (open question: does conversion-web report into Design under Product, into Marketing, or jointly?).
+- End goal: a SPRINT PLAN with parallel sprints where safe.
+
+== MY RECONCILED ARCHITECTURE (critique) ==
+7(+1) asks -> 2 FOUNDATIONS + 3 WORKSTREAMS + 1 ACCELERATOR:
+- F0 Manager Base + Org Hierarchy (asks 1-substrate + 6 + 8 + hierarchy): one shared inherited manager-principles base (dedup duplicated principles into it; add clarity-is-king + cross-cutting principles); a machine-readable org/reporting + domain-ownership map (now incl. Director of Marketing); the decision-routing contract (per-domain owners, b as gate/arbiter) WITH AN ENFORCER (today it is unenforced prose).
+- F1 Audience/Insight Layer (ask 7): a comprehensive audience schema (demographics + psychographics + interests/hobbies + personal-life problems + emotional needs/fears/desires/wants + behavioral + voice) AND a multi-source mining PIPELINE producing a per-product audience dossier consumed by Director of Product, Director of Marketing, Design Lead, designers, Director of QA.
+- W1 Decision/Manager System (ask 1): wire per-domain owners + b-gate into the LIVE loop (auto-consult + telemetry + enforcer).
+- W2 Design+Marketing Function (asks 2+3+8): Design Lead + Product/App designer + Web/Conversion designer + Director of Marketing, inheriting F0, consuming F1; PLUS wiring a real component library into scaffold + build.
+- W3 Builder Specialization (ask 4): frontend-builder + backend-builder; FE builder consumes design specs from W2; partition file scopes; reviewer/compliance/qa stay builder-agnostic.
+- A1 /etc skill (ask 5): cross-provider CoT/example enrichment; built early; used to author F0/W1/W2 agents.
+
+== DRAFT PARALLEL SPRINT PLAN (critique sequencing + parallel-safety) ==
+- Wave 1 (parallel): [S1] A1 /etc; [S2] F0 manager base + hierarchy + principles dedup + routing enforcer + Director of Marketing; [S3] F1 audience layer + mining pipeline.
+- Wave 2 (parallel): [S4] W2 design+marketing agents; [S5] W2b UI component-library scaffold/install wiring; [S6] W3 builder FE/BE split.
+- Wave 3: [S7] W1 wire per-domain decision routing + enforcer + telemetry.
+
+== WHAT I WANT FROM YOU ==
+1. Stress-test the reconciliation: mis-condensed anything, or missed an overlap/dependency?
+2. PER-DOMAIN-OWNER decision model with b-as-gate: failure modes vs central b? How to resolve cross-domain conflicts and who-owns-this ambiguity? How do mature multi-agent systems structure a manager/decision layer? Concretely, how to IMPLEMENT + ENFORCE domain-ownership routing so it is not just prose (schema, hook, telemetry, tests)?
+3. FE/BE builder split: pitfalls (shared files, full-stack features, design->FE handoff). Is a 2-way split right, or do I need a third integration/fullstack role or a shared-foundation owner?
+4. Design+Marketing Function: critique Design-Lead + 2 specialists + Director of Marketing. Where should the conversion WEBSITE live (design vs marketing vs joint)? MOST IMPORTANT: how are leading teams ACTUALLY using OpenAI + Anthropic models TOGETHER to generate high-converting websites AND great app UI today? Concrete workflows, tools, division of labor between the two model families, and what makes output NOT look generic/vibe-coded. Give each design/marketing agent's operating procedure (inputs -> steps -> outputs).
+5. Audience mining pipeline: which dimensions + methods make it genuinely deep and NON-generic? How to mine personal-life problems / fears / desires rigorously AND ethically (segment-level, no PII)? What sources/methods? Give a concrete schema.
+6. Parallel sprint plan: what is truly parallel-safe vs hidden ordering hazards? Re-sequence if needed. Where to add a thin contract/interface to de-risk parallelism?
+7. Director of Marketing specifically: what are its must-follow principles + decision ownership, and how does it interplay with Design and Product without turf overlap?
+8. Top 5 RISKS and top 5 HIGHEST-LEVERAGE moves for the whole program.
+
+Prefer concrete recommendations, example operating-procedures, and schemas over generalities.

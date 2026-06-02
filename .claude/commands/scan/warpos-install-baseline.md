@@ -14,4 +14,14 @@ Preflight gate composed by `scripts/warpos/preflight.js`. Closes failure-mode F-
 node scripts/checks/warpos-install-baseline.js [--target <path>] [--force-fresh] [--json]
 ```
 
-Linked: SP-20260513-005 / S-4 / AC-S-4.2 / R-4 / C-1 / failure-mining.md F-4.
+## `--guard-remediation` — the closed-trap backstop (C-8 / doogle WG-1)
+
+A second, canonical-side assertion: every script path a guard names in a USER-FACING remediation message ("Run: node scripts/X.js", "Use: …", a `block()` reason, a stderr instruction) must actually EXIST on disk. Otherwise a guard blocks the user and then points them at a file the install never shipped — a closed trap with no exit (the doogle WG-1 class). This scans `scripts/hooks/*.js`, extracts remediation script paths (strict extension boundary — `.json` data files are never treated as runnable), and fails if any is missing.
+
+```bash
+node scripts/checks/warpos-install-baseline.js --guard-remediation [--json]
+```
+
+`status: green` — every guard remediation script path exists. `status: red` (exit 1) — at least one points at a missing file; findings list `guard → path`. Run BOTH modes in `/scan:full`: the baseline check (per-target) and `--guard-remediation` (canonical guard-set integrity).
+
+Linked: SP-20260513-005 / S-4 / AC-S-4.2 / R-4 / C-1 / failure-mining.md F-4 / C-8 / doogle WG-1.

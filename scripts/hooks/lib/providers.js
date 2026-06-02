@@ -71,20 +71,109 @@ function loadGeminiApiKey() {
 
 /**
  * Has the operator completed an interactive `gemini` OAuth / Code-Assist login?
- * The CLI stores credentials at ~/.gemini/oauth_creds.json after login and
- * refreshes the access token itself, so presence of a refresh/access token is
- * the signal — we deliberately do NOT gate on access-token expiry (the CLI
- * handles refresh). Used by the key-precedence rule below.
+ *
+ * WI-19 (operator pain, flagged twice): the gemini CLI silently uses the
+ * free-tier API KEY whenever GEMINI_API_KEY is in the env — even when the user
+ * is logged into a PAID OAuth account. We must NOT inject the file key when a
+ * usable OAuth/login session exists, so a logged-in CLI uses the paid account.
+ *
+ * Detection (conservative, two independent signals — either one counts):
+ *   1. ~/.gemini/oauth_creds.json carries a refresh/access token. The CLI writes
+ *      this after `gemini auth login` and refreshes the access token itself, so
+ *      we deliberately do NOT gate on token expiry (the CLI handles refresh).
+ *   2. The gemini settings file selects `oauth-personal` auth. New
+ *      projects/bootstraps that did `gemini auth login` but whose creds file
+ *      landed in a non-default spot (or got rotated) still record the auth-type
+ *      choice here — this is the signal `provider-health.js` already trusts, and
+ *      catches the "new project / after switching" cases the operator reported.
+ *
+ * Operator escape hatches (env, so no code change needed):
+ *   - WARPOS_GEMINI_PREFER_OAUTH=1  → assume OAuth (never inject the file key,
+ *     even if detection misses). Use when you KNOW you're logged in.
+ *   - WARPOS_GEMINI_FORCE_KEY=1     → ignore OAuth detection and inject the file
+ *     key anyway (the old unconditional behavior). Use for key-only setups that
+ *     happen to also have stale oauth_creds.json lying around.
+ *
+ * Returns true when the file key should be SKIPPED (an OAuth session is assumed
+ * present); false when it's safe/needed to inject the file key.
  */
 function hasValidGeminiOAuth() {
-  try {
-    const os = require("os");
-    const p = path.join(os.homedir(), ".gemini", "oauth_creds.json");
-    const creds = JSON.parse(fs.readFileSync(p, "utf8"));
-    return !!(creds && (creds.refresh_token || creds.access_token));
-  } catch {
-    return false;
+  // Explicit force-key wins: behave like the old unconditional injection.
+  if (process.env.WARPOS_GEMINI_FORCE_KEY === "1") return false;
+  // Explicit prefer-OAuth wins: never inject the key.
+  if (process.env.WARPOS_GEMINI_PREFER_OAUTH === "1") return true;
+
+  const os = require("os");
+  const home = os.homedir();
+
+  // Signal 1 — credential file with a live/refreshable token.
+  for (const credsPath of [
+    path.join(home, ".gemini", "oauth_creds.json"),
+    path.join(home, ".config", "gemini", "oauth_creds.json"),
+  ]) {
+    try {
+      const creds = JSON.parse(fs.readFileSync(credsPath, "utf8"));
+      if (creds && (creds.refresh_token || creds.access_token)) return true;
+    } catch {
+      /* try next */
+    }
   }
+
+  // Signal 2 — settings file records an oauth-personal auth choice.
+  for (const settingsPath of [
+    path.join(home, ".gemini", "settings.json"),
+    path.join(home, ".config", "gemini", "settings.json"),
+    path.join(home, "AppData", "Roaming", "gemini", "settings.json"),
+  ]) {
+    try {
+      const obj = JSON.parse(fs.readFileSync(settingsPath, "utf8"));
+      const selected =
+        (obj && obj.auth && obj.auth.selectedType) || obj.selectedAuthType;
+      if (selected && /oauth/i.test(String(selected))) return true;
+    } catch {
+      /* try next */
+    }
+  }
+
+  return false;
+}
+
+/**
+ * WI-18 — quota / rate-limit detector for a failed dispatch.
+ *
+ * A preview-tier gemini (or a free-tier key) can 429 / RESOURCE_EXHAUSTED mid
+ * cross-provider gauntlet. Before this, runProvider returned a generic
+ * `fallback:true` and the failure was easy to read as a silent false-green
+ * (the caller's claude fallback ran, but nobody noticed the paid model never
+ * served). This classifies the stderr/error text so the caller can (a) see a
+ * LOUD, specific reason and (b) route to the openai security pass deliberately.
+ *
+ * Conservative: pure string match on signals every vendor emits. Returns a
+ * small record or null. Never throws, never spends a token.
+ */
+function classifyQuotaFailure(text) {
+  const s = String(text || "").toLowerCase();
+  if (!s) return null;
+  // Free-tier daily limit of zero is unrecoverable — distinguish it so the
+  // caller doesn't retry/back off pointlessly.
+  if (
+    (s.includes("free") && /limit:\s*0|limit\s*=\s*0|per[\s-]?day.*0/.test(s)) ||
+    s.includes("free_tier_limit")
+  ) {
+    return { kind: "free_tier_limit_zero", recoverable: false };
+  }
+  if (
+    s.includes("resource_exhausted") ||
+    s.includes("quota") ||
+    s.includes("rate limit") ||
+    s.includes("ratelimit") ||
+    s.includes("rate_limit") ||
+    /\b429\b/.test(s) ||
+    s.includes("too many requests")
+  ) {
+    return { kind: "quota_exhausted", recoverable: true };
+  }
+  return null;
 }
 
 /**
@@ -547,14 +636,18 @@ function runProvider(role, prompt, opts = {}) {
     if (providerName === "gemini") {
       childEnv.GEMINI_CLI_TRUST_WORKSPACE =
         childEnv.GEMINI_CLI_TRUST_WORKSPACE || "true";
-      // KEY-PRECEDENCE (operator directive 2026-06-01): the file-loaded key must
-      // win ONLY for API-requiring tasks (e.g. gemini-deep-research.js, which reads
-      // GEMINI_API_KEY directly). CLI/gauntlet dispatch does NOT require the API, so
-      // a live OAuth/Code-Assist login wins for it — we therefore do NOT inject the
-      // ~/.gemini/.env key when an OAuth session exists. This fixes the reported
-      // symptom: a stale/quota'd file key beating a working `gemini` login. We only
-      // inject the file key when there is NO OAuth (so key-only setups still work);
-      // a deliberately EXPORTED GEMINI_API_KEY in the inherited env is left as-is.
+      // KEY-PRECEDENCE (WI-19, operator directive 2026-06-01): the file-loaded key
+      // must win ONLY for API-requiring tasks (e.g. gemini-deep-research.js, which
+      // reads GEMINI_API_KEY directly). CLI/gauntlet dispatch does NOT require the
+      // API, so a live OAuth/Code-Assist login wins for it — we therefore do NOT
+      // inject the ~/.gemini/.env key when an OAuth session is detected. This fixes
+      // the reported symptom: a stale/quota'd free-tier file key beating a working
+      // paid `gemini` login (esp. on new projects/bootstraps or after switching).
+      // hasValidGeminiOAuth() checks creds file + settings auth-type and honors
+      // WARPOS_GEMINI_PREFER_OAUTH=1 / WARPOS_GEMINI_FORCE_KEY=1 overrides.
+      // SAFE DEFAULT: when there is NO OAuth, we still inject the file key, so the
+      // headless fix (L15: key + trust) never regresses on key-only / fresh setups.
+      // A deliberately EXPORTED GEMINI_API_KEY in the inherited env is left as-is.
       if (!childEnv.GEMINI_API_KEY && !hasValidGeminiOAuth()) {
         const geminiKey = loadGeminiApiKey();
         if (geminiKey) childEnv.GEMINI_API_KEY = geminiKey;
@@ -626,6 +719,28 @@ function runProvider(role, prompt, opts = {}) {
       cmd: cmd.slice(0, 200),
     };
   } catch (err) {
+    // WI-18: detect a quota/429 failure and surface it LOUDLY rather than
+    // returning a generic fallback that reads as a silent false-green. We keep
+    // fallback:true (so the caller's existing claude/openai fallback still runs
+    // — never weaken dispatch) but add quota:{...} so the caller can route the
+    // security pass to openai deliberately, and we emit a one-line stderr notice
+    // so the failure is visible in the dispatch log, not buried.
+    const errText = String(
+      (err && (err.stderr || err.message)) || err || "",
+    );
+    const quota = classifyQuotaFailure(errText);
+    if (quota) {
+      try {
+        process.stderr.write(
+          `[providers.js] QUOTA: ${providerName} (${model}) hit ${quota.kind}` +
+            `${quota.recoverable ? "" : " — UNRECOVERABLE (free-tier daily=0)"}.` +
+            ` Falling back to ${cfg.fallback || "claude"}. For a 2nd security pass` +
+            ` on a different family use runProvider(role, prompt, {provider:'openai'}).\n`,
+        );
+      } catch {
+        /* stderr unavailable */
+      }
+    }
     return {
       ok: false,
       provider: providerName,
@@ -634,6 +749,19 @@ function runProvider(role, prompt, opts = {}) {
       fallback: true,
       error: String(err.message || err).slice(0, 500),
       stderrBytes: typeof err.stderrBytes === "number" ? err.stderrBytes : 0,
+      ...(quota
+        ? {
+            quota: {
+              kind: quota.kind,
+              recoverable: quota.recoverable,
+              // Hint the caller toward the cross-family fallback. We never
+              // auto-switch provider inside runProvider (that would mask the
+              // failure); the caller decides, with this flag making it loud.
+              suggestFallbackProvider:
+                providerName === "gemini" ? "openai" : cfg.fallback || "claude",
+            },
+          }
+        : {}),
     };
   } finally {
     // Cleanup temp file unless debugging
@@ -708,6 +836,11 @@ module.exports = {
   providerAvailable,
   parseProviderJson,
   assertStrictModel,
+  // WI-19/WI-04: exported so the static dispatch-readiness check agrees with the
+  // live dispatch path on what "logged into gemini" means.
+  hasValidGeminiOAuth,
+  // WI-18: exported for unit testing the quota classifier.
+  classifyQuotaFailure,
   DEFAULT_PROVIDERS,
   DEFAULT_AGENT_PROVIDERS,
   DEFAULT_REASONING_EFFORT,

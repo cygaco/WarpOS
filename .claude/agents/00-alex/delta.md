@@ -116,7 +116,7 @@ else
   RESULT=$(node "$CLAUDE_PROJECT_DIR/scripts/dispatch-agent.js" <role> "$PROMPT_FILE")
   if [ $? -ne 0 ]; then
     echo "Provider unavailable — falling back to Claude for <role>"
-    RESULT=$(claude -p --model sonnet --agent <role> "$(cat "$PROMPT_FILE")")
+    RESULT=$(claude -p --model sonnet --agent <role> < "$PROMPT_FILE")
   fi
 fi
 

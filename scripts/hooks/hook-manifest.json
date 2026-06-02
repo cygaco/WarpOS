@@ -1,7 +1,7 @@
 {
   "$schema": "warpos/hook-manifest/v1",
   "generatedFrom": "framework/hooks.registry.json",
-  "updatedAt": "2026-05-31T20:23:47.568Z",
+  "updatedAt": "2026-06-02T22:14:05.394Z",
   "hooks": {
     "session-start.js": {
       "script": "scripts/hooks/session-start.js",
@@ -129,6 +129,23 @@
       "blocks": [],
       "testFixtures": [
         "fixtures/hooks/default/bash-git-commit.json"
+      ],
+      "owner": "framework",
+      "fixturesRequired": false,
+      "enabled": true
+    },
+    "settings-edit-guard.js": {
+      "script": "scripts/hooks/settings-edit-guard.js",
+      "events": [
+        {
+          "hookEvent": "PreToolUse",
+          "matcher": "Edit|Write"
+        }
+      ],
+      "failMode": "fail-open",
+      "blocks": [],
+      "testFixtures": [
+        "fixtures/hooks/default/edit-text.json"
       ],
       "owner": "framework",
       "fixturesRequired": false,

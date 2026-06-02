@@ -159,6 +159,29 @@ States recognised — **per-role** (per `scripts/warpos/provider-smoke.js#classi
 `unresolved` (RED — could not resolve provider for role),
 `error` (RED — runProvider threw).
 
+### 11.5 Dispatch Readiness — static auth-tier table (WI-04 / C-3)
+
+Run `node scripts/checks/dispatch-readiness.js`.
+
+This is the **static, no-token complement** to Section 11's live smoke. Before
+spending a dispatch it walks every provider + every build-chain role offline and
+reports a PASS/PARTIAL/FAIL table across four axes: **CLI installed?**, **model id
+valid (not a ghost)?**, **effort/flags valid?**, and **auth tier (OAuth vs key vs
+none)**. The auth-tier column surfaces the WI-19 axis: a gemini row showing
+`oauth` means a paid login is in use; `key` means free-tier API key only (a
+PARTIAL — free-tier quota risk); `none` is a FAIL (run `gemini auth login`).
+
+Read-only and **fail-open** — exits 0 even on FAIL so it never blocks
+`/warp:health`. Report each provider's verdict and any GHOST/EFFORT/auth lines.
+- Provider FAIL → RED: "Fix before dispatching — see the row's reason
+  (missing CLI, ghost model, or no auth)."
+- Provider PARTIAL → YELLOW: "Dispatch will work but is degraded (effort
+  mismatch, or gemini on a free-tier key instead of a paid OAuth login)."
+- All PASS → GREEN.
+
+When this is green, Section 11's live `--per-role` ping confirms real
+reachability. (Pass `--strict` to make it exit 2 on any FAIL for a CI gate.)
+
 ### 12. Dispatch Hygiene (Phase 0)
 
 Run `node scripts/dispatch/prune-dead-locks.js`. Report `scanned`/`removed_dead`

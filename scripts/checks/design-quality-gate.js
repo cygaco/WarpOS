@@ -74,11 +74,14 @@ function readJSON(p) {
  * @param {object|null} designBrief the supplied design_brief contract (or null)
  * @returns {{ result:"PASS"|"REJECT"|"ARBITRATION", errors:string[], emits:object[] }}
  */
-function evaluate({ staticLane, judgment, designBrief }) {
+function evaluate({ staticLane, judgment, designBrief, lane2Mode = "block" }) {
   const errors = [];
   const emits = [];
+  const advisories = []; // lane-2 findings downgraded to non-blocking under lane2Mode="advisory" (the W1 pre-mvp ramp: advisory → baseline → block, DP A2)
+  const advisory = lane2Mode === "advisory";
 
-  // LANE 1 — static, fail-closed.
+  // LANE 1 — static, fail-closed. ALWAYS blocking regardless of lane2Mode (the
+  // deterministic, regex-catchable half; DP A2: "Lane 1 blocks immediately").
   if (!staticLane || staticLane.ran !== true) {
     // The static lane could not be run => fail-closed (a gate that can't run its
     // deterministic half must not read green).
@@ -88,17 +91,24 @@ function evaluate({ staticLane, judgment, designBrief }) {
       rationale: "the static design-system lane could not be executed; a two-lane gate cannot clear on a half it never ran (fail-closed)",
       confidence: 0,
       precedenceBasis: "lane 1 unrunnable",
-    }] };
+    }], advisories };
   }
   if (staticLane.ok !== true || staticLane.exitCode !== 0) {
     errors.push(`static-fail: lane 1 (design-system.js --strict) exited ${staticLane.exitCode} — ${staticLane.summary || "design-system violations"} (the regex-catchable half rejects)`);
   }
 
-  // LANE 2 — judgment.
+  // LANE 2 — judgment. Under lane2Mode="advisory" (the W1 pre-mvp ramp) lane-2
+  // findings are RECORDED as non-blocking advisories — only LANE 1 blocks until the
+  // baseline-date flip back to "block" (DP A2: Lane 1 blocks, Lane 2 ramps). The
+  // default is "block" so existing callers/tests are unchanged.
+  const pushJ = advisory ? (e) => advisories.push(e) : (e) => emits.push(e);
+  const pushJErr = advisory
+    ? (m) => advisories.push({ reason: "judgment-fail", decision: m })
+    : (m) => errors.push(m);
   if (!judgment || typeof judgment !== "object") {
     // The judgment lane did not run / produced no parseable result. The gate will NOT
     // clear on the static half alone (the judgment half is why the gauntlet exists).
-    emits.push({
+    pushJ({
       reason: "missing-judgment",
       decision: "park: no design-quality judgment result available",
       rationale: "lane 1 ran but no parseable lane-2 DesignQualityResult was supplied; the launcher will not clear the design gate on the static half alone — a regex-only pass is the 'valid but generic' hole the judgment lane exists to close (dispatch design-quality, then re-run)",
@@ -112,7 +122,7 @@ function evaluate({ staticLane, judgment, designBrief }) {
 
     // JUDGMENT-INVESTIGATE — the spec's oneshot stand-in for escalation: do NOT guess a PASS.
     if (rec === "INVESTIGATE" || requiresHuman) {
-      emits.push({
+      pushJ({
         reason: "judgment-investigate",
         decision: `park: design-quality judgment is INVESTIGATE/requiresHuman for unit ${judgment.unit || "(?)"}`,
         rationale: `the design-quality judge returned recommendation=${rec || "(none)"} requiresHuman=${requiresHuman} (its oneshot stand-in for escalation — a missing/contradictory design_brief, not a guessed PASS): "${String(judgment.rationale || "").slice(0, 120)}"`,
@@ -124,11 +134,11 @@ function evaluate({ staticLane, judgment, designBrief }) {
       const failedAxes = judgment.axes && typeof judgment.axes === "object"
         ? Object.entries(judgment.axes).filter(([, v]) => v && v.pass === false).map(([k]) => k)
         : [];
-      errors.push(`judgment-fail: design-quality verdict=FAIL for unit ${judgment.unit || "(?)"} — failing axes [${failedAxes.join(", ") || "unspecified"}] (critical/high finding is a gate failure)`);
+      pushJErr(`judgment-fail: design-quality verdict=FAIL for unit ${judgment.unit || "(?)"} — failing axes [${failedAxes.join(", ") || "unspecified"}] (critical/high finding is a gate failure)`);
     } else if (verdict !== "PASS" && verdict !== "SKIP") {
       // A judgment result with neither PASS nor FAIL nor an investigate signal is malformed
       // => fail-closed park (never read an unrecognized verdict as green).
-      emits.push({
+      pushJ({
         reason: "judgment-malformed",
         decision: `park: design-quality judgment verdict '${judgment.verdict}' is not recognized`,
         rationale: `the lane-2 result carried verdict='${judgment.verdict}' which is neither PASS, FAIL, SKIP, nor an INVESTIGATE/requiresHuman signal; an unrecognized verdict must not read green (fail-closed)`,
@@ -141,7 +151,7 @@ function evaluate({ staticLane, judgment, designBrief }) {
     if (designBrief && designBrief.id && judgment.design_brief_ref &&
         judgment.design_brief_ref !== designBrief.id &&
         judgment.design_brief_ref !== "null") {
-      emits.push({
+      pushJ({
         reason: "design-brief-contradiction",
         decision: `park: judged design_brief '${judgment.design_brief_ref}' != supplied design_brief '${designBrief.id}'`,
         rationale: `the design-quality judge reviewed against design_brief '${judgment.design_brief_ref}' but the unit's supplied design_brief is '${designBrief.id}'; the launcher cannot reconcile which design intent governs and parks for arbitration (S2.3 contradiction case)`,
@@ -151,9 +161,9 @@ function evaluate({ staticLane, judgment, designBrief }) {
     }
   }
 
-  if (errors.length > 0) return { result: "REJECT", errors, emits };
-  if (emits.length > 0) return { result: "ARBITRATION", errors, emits };
-  return { result: "PASS", errors, emits };
+  if (errors.length > 0) return { result: "REJECT", errors, emits, advisories };
+  if (emits.length > 0) return { result: "ARBITRATION", errors, emits, advisories };
+  return { result: "PASS", errors, emits, advisories };
 }
 
 /** Run lane 1 (design-system.js --strict) as a child process. Returns the staticLane shape. */
@@ -179,9 +189,11 @@ function main(argv) {
   const json = argv.includes("--json");
   let judgmentPath = null;
   let designBriefPath = null;
+  let lane2Mode = "block";
   for (let i = 2; i < argv.length; i++) {
     if (argv[i] === "--judgment") judgmentPath = path.resolve(argv[++i]);
     else if (argv[i] === "--design-brief") designBriefPath = path.resolve(argv[++i]);
+    else if (argv[i] === "--lane2") lane2Mode = String(argv[++i] || "block").toLowerCase();
   }
 
   let out, emitted;
@@ -190,7 +202,7 @@ function main(argv) {
     const staticLane = runStaticLane();
     const judgment = judgmentPath ? readJSON(judgmentPath) : null;
     const designBrief = designBriefPath ? readJSON(designBriefPath) : null;
-    out = evaluate({ staticLane, judgment, designBrief });
+    out = evaluate({ staticLane, judgment, designBrief, lane2Mode });
 
     emitted = [];
     const unit = (judgment && judgment.unit) || (designBrief && designBrief.id) || "design-unit";
@@ -213,12 +225,18 @@ function main(argv) {
     return 2; // fail-closed
   }
 
-  const { result, errors, emits } = out;
+  const { result, errors, emits, advisories } = out;
+
+  if (advisories && advisories.length) {
+    process.stderr.write(
+      `ADVISORY [${NAME}] lane-2 (judgment) is ADVISORY (--lane2 advisory ramp — does NOT block ship; lane 1 still blocks) (${advisories.length}):\n${advisories.map((a) => "  ~ " + (a.decision || a.reason)).join("\n")}\n`,
+    );
+  }
 
   if (json) {
     process.stdout.write(
       JSON.stringify(
-        { ok: result === "PASS", check: NAME, owner: OWNER, result, errors,
+        { ok: result === "PASS", check: NAME, owner: OWNER, result, lane2Mode, errors, advisories,
           arbitration: emitted.map((r) => ({ id: r.id, unit: r.unit, decision: r.decision })) },
         null, 2,
       ) + "\n",

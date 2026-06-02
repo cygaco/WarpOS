@@ -3,8 +3,8 @@
  * framework-purity-guard.js — PreToolUse Bash hook.
  *
  * Fires on `git commit` commands. Runs scripts/checks/framework-purity
- * .js --diff to scan staged + unstaged changes. Blocks the commit if
- * any of the four detectors fires:
+ * .js --staged to scan ONLY the staged tree (what the commit will write —
+ * WI-23). Blocks the commit if any of the four detectors fires:
  *
  *   - root_leak       (gated by ROOT_LEAK_PENDING_SCRUB)
  *   - client_slug     product slugs in canonical content
@@ -107,9 +107,13 @@ if (!isCanonicalRepo()) {
   process.exit(0);
 }
 
+// WI-23: scope the COMMIT gate to STAGED files only. A `git commit` writes the
+// staged tree — unstaged edits elsewhere are NOT part of this commit, so the
+// pre-commit guard must judge only what's being committed. The full staged +
+// unstaged change-set view stays in the manual /scan:framework-purity (--diff).
 const r = spawnSync(
   process.execPath,
-  [PURITY_SCRIPT, "--diff", "--json"],
+  [PURITY_SCRIPT, "--staged", "--json"],
   {
     cwd: PROJECT_DIR,
     encoding: "utf8",
@@ -151,8 +155,8 @@ process.stderr.write(
     "framework-purity-guard: commit refused.",
     `  ${summary}`,
     "",
-    "  Run for details:",
-    "    node scripts/checks/framework-purity.js --diff",
+    "  Run for details (staged tree — what the commit refused):",
+    "    node scripts/checks/framework-purity.js --staged",
     "",
     "  To bypass (logged):",
     "    set WARPOS_PURITY_GUARD=off, OR",
