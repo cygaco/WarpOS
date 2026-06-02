@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-02T18:40:29.093Z",
+  "generatedAt": "2026-06-02T19:04:01.409Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.13.1",
   "migrations": [],
@@ -2828,8 +2828,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/warpos/release-build.js",
-      "sha256": "8339aa6c3e49dc50ea24a25d1d45571f103d9016894035e0cc5cf5a98c5841ea",
-      "installedSha": "8339aa6c3e49dc50ea24a25d1d45571f103d9016894035e0cc5cf5a98c5841ea"
+      "sha256": "a581e8af2a304bd145b228bdb4643b24d241688a66f6806d8ed2e478130bf83e",
+      "installedSha": "a581e8af2a304bd145b228bdb4643b24d241688a66f6806d8ed2e478130bf83e"
     },
     "scripts/warpos/release-canonical.js": {
       "owner": "framework",
@@ -3269,8 +3269,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/sprint/full.js",
-      "sha256": "52b19ebed5ceaa83e7bb8fedb903f92aee64dc0fe5249cc7c8fee9152be4e553",
-      "installedSha": "52b19ebed5ceaa83e7bb8fedb903f92aee64dc0fe5249cc7c8fee9152be4e553"
+      "sha256": "365e19eb818aace6cf0970be9daa84bf0d16c99cea9116db808cf46e89100d4a",
+      "installedSha": "365e19eb818aace6cf0970be9daa84bf0d16c99cea9116db808cf46e89100d4a"
     },
     "scripts/sprint/ids.js": {
       "owner": "framework",
@@ -3367,8 +3367,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/sprint/test-sprint-full.js",
-      "sha256": "48c84159754145bd74cd6a8225aa6b971974ada7159190b1a55c4abdc74c5545",
-      "installedSha": "48c84159754145bd74cd6a8225aa6b971974ada7159190b1a55c4abdc74c5545"
+      "sha256": "89b61c3640cebefd9b26a2eade64331476ba73c8562f32d6492200896a0f75bd",
+      "installedSha": "89b61c3640cebefd9b26a2eade64331476ba73c8562f32d6492200896a0f75bd"
     },
     "scripts/sprint/test-status-lag-fix.js": {
       "owner": "framework",
@@ -4984,15 +4984,15 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/sprint-beta-honesty.js",
-      "sha256": "1bef5c7c72e795076e5553a6b2e49ef3710c91e8b00bc0ca0793c81059b78eed",
-      "installedSha": "1bef5c7c72e795076e5553a6b2e49ef3710c91e8b00bc0ca0793c81059b78eed"
+      "sha256": "3cb30dc8d9a3a024a9e3a7fd8bb833fe268dd0d69aae892cfa27fc841a0a8d26",
+      "installedSha": "3cb30dc8d9a3a024a9e3a7fd8bb833fe268dd0d69aae892cfa27fc841a0a8d26"
     },
     "scripts/checks/test-sprint-beta-honesty.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/test-sprint-beta-honesty.js",
-      "sha256": "5ab2b6f20dbd33aadd3264d4f916d1eab49ee4336ba6faaa7b5a4c4dcf446126",
-      "installedSha": "5ab2b6f20dbd33aadd3264d4f916d1eab49ee4336ba6faaa7b5a4c4dcf446126"
+      "sha256": "28e7a227dacd508e09fc5e62ac2892fbaa3041e5e5523769a9e04af685fdb71a",
+      "installedSha": "28e7a227dacd508e09fc5e62ac2892fbaa3041e5e5523769a9e04af685fdb71a"
     },
     "scripts/checks/test-untrusted-content.js": {
       "owner": "framework",
@@ -15289,8 +15289,8 @@
       "managed": true,
       "source": ".claude/commands/scan/sprint-beta-honesty.md",
       "kind": "md",
-      "sha256": "d98fd5bb304c2a0c53a333b6a451a0a78c706312eb15d6e3e78e231df9f8a2af",
-      "installedSha": "d98fd5bb304c2a0c53a333b6a451a0a78c706312eb15d6e3e78e231df9f8a2af"
+      "sha256": "6f74de8bffefc92ded067bf39d98925330a8d0089ebda89321ff5f6062f7e9d7",
+      "installedSha": "6f74de8bffefc92ded067bf39d98925330a8d0089ebda89321ff5f6062f7e9d7"
     },
     ".claude/commands/scan/system.md": {
       "owner": "framework",

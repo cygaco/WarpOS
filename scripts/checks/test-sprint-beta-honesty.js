@@ -30,6 +30,7 @@ const {
   computeFindings,
   loadFullReportsData,
   validateIsoDate,
+  classifyCanned,
   EXPECTED_BOUNDARIES,
   SP003_SHIP_DATE,
   PHASE_TO_BOUNDARY,
@@ -78,10 +79,14 @@ function makeConsultRec(sprintId, boundary, opts = {}) {
     sprint_id: sprintId,
     phase_boundary: boundary,
     verdict: opts.verdict !== undefined ? opts.verdict : "DECIDE",
+    // Default is a SUBSTANTIVE, per-boundary-distinct verdict (decision token +
+    // grounding + >40 chars) so the canned detectors (P-AP-1) treat it as clean.
+    // A bare/reused message like the old "Beta says proceed" is exactly what the
+    // canned-verdict gate now flags — tests that want a canned message pass it explicitly.
     beta_message:
       opts.beta_message !== undefined
         ? opts.beta_message
-        : "Beta says proceed with moderate scrutiny.",
+        : `DECIDE 0.9 at ${boundary} — proceed; reversible, blast-radius small (per SP rubric).`,
     latency_ms: opts.latency_ms !== undefined ? opts.latency_ms : 0,
     model: opts.model !== undefined ? opts.model : "claude-opus-4-8",
     ts: opts.ts || BASE_TS,
@@ -861,6 +866,117 @@ console.log("\n(k2) PROTO-SAFE DATES — sprint_id 'constructor' treated as unda
     "PROTO-DATE-SAFE: no findings produced (undated → exempt, no false-positive date-based finding)",
     r && r.findings.length === 0,
     `got findings: ${JSON.stringify(r && r.findings)}`,
+  );
+}
+
+// ── (o) CANNED-VERDICT DETECTION (P-AP-1) ─────────────────────────────────────
+
+console.log("\n(o) CANNED — classifyCanned unit behavior:");
+{
+  ok("CANNED-CLS: 'ok' → canned_too_short", classifyCanned("ok") === "canned_too_short");
+  ok("CANNED-CLS: 'looks good' → canned_too_short", classifyCanned("looks good") === "canned_too_short");
+  ok(
+    "CANNED-CLS: 'scope is reasonable, proceed' → canned_too_short",
+    classifyCanned("scope is reasonable, proceed") === "canned_too_short",
+  );
+  ok(
+    "CANNED-CLS: long-but-bare boilerplate → canned_unstructured",
+    classifyCanned("I have looked at the whole thing and it all seems perfectly fine to proceed now.") ===
+      "canned_unstructured",
+  );
+  ok(
+    "CANNED-CLS: real structured verdict → null (not canned)",
+    classifyCanned("DECIDE 0.92. ship-coverage + framework-purity green. RI-001: engine sprint, defer retro.") === null,
+  );
+  ok(
+    "CANNED-CLS: borderline 40-char structured → null (length floor is exclusive)",
+    classifyCanned("DECIDE — proceed per SP-1 rubric, reversible.") === null,
+  );
+  ok("CANNED-CLS: empty → null (placeholder_verdict owns it)", classifyCanned("") === null);
+}
+
+console.log("\n(o1) CANNED — short message in a real sprint → canned_too_short + exit 1:");
+{
+  const sprintId = "SP-TEST-CANNED-001";
+  const events = [
+    makeConsultRec(sprintId, "before_design", { beta_message: "ok" }),
+    makePhaseStartedRec(sprintId, "design"),
+  ];
+  const r = computeFindings(events, { [sprintId]: POST_CUTOFF_DATE });
+  ok(
+    "CANNED-SHORT: has canned_too_short finding",
+    r.findings.some((f) => f.finding_type === "canned_too_short"),
+    `types: ${r.findings.map((f) => f.finding_type).join(",")}`,
+  );
+  ok("CANNED-SHORT: derived exit 1", r.findings.length > 0);
+}
+
+console.log("\n(o2) CANNED — cross-boundary duplicate (same message at 2+ boundaries):");
+{
+  const sprintId = "SP-TEST-CANNED-DUP-001";
+  const dup = "DECIDE — proceed, reversible and low blast-radius per the rubric here.";
+  const events = [
+    makeConsultRec(sprintId, "before_design", { beta_message: dup }),
+    makeConsultRec(sprintId, "before_execute", { beta_message: dup }),
+    makePhaseStartedRec(sprintId, "design"),
+    makePhaseStartedRec(sprintId, "execute"),
+  ];
+  const r = computeFindings(events, { [sprintId]: POST_CUTOFF_DATE });
+  ok(
+    "CANNED-DUP: has canned_cross_boundary_dup finding",
+    r.findings.some((f) => f.finding_type === "canned_cross_boundary_dup"),
+    `types: ${r.findings.map((f) => f.finding_type).join(",")}`,
+  );
+}
+
+console.log("\n(o3) CANNED — cross-sprint template reuse across 3 sprints:");
+{
+  const tmpl = "DECIDE — proceed, reversible and low blast-radius per the rubric here.";
+  const ids = ["SP-TEST-CST-001", "SP-TEST-CST-002", "SP-TEST-CST-003"];
+  const events = [];
+  const dates = {};
+  for (const id of ids) {
+    events.push(makeConsultRec(id, "before_design", { beta_message: tmpl }));
+    events.push(makePhaseStartedRec(id, "design"));
+    dates[id] = POST_CUTOFF_DATE;
+  }
+  const r = computeFindings(events, dates);
+  ok(
+    "CANNED-CST: has canned_cross_sprint_template finding",
+    r.findings.some((f) => f.finding_type === "canned_cross_sprint_template"),
+    `types: ${r.findings.map((f) => f.finding_type).join(",")}`,
+  );
+}
+
+console.log("\n(o4) CANNED — synthetic SP-J* sprint is EXEMPT from the audit:");
+{
+  const sprintId = "SP-J9-SYNTH-001"; // synthetic prefix → exempt
+  const events = [
+    makeConsultRec(sprintId, "before_design", { beta_message: "ok" }), // would be canned
+    makePhaseStartedRec(sprintId, "design"),
+  ];
+  const r = computeFindings(events, { [sprintId]: POST_CUTOFF_DATE });
+  ok(
+    "CANNED-SYNTH: no canned_* findings for synthetic sprint (audit-exempt)",
+    !r.findings.some((f) => String(f.finding_type).startsWith("canned_")),
+    `types: ${r.findings.map((f) => f.finding_type).join(",")}`,
+  );
+  // ...but classifyCanned still flags the string directly (the detector itself isn't exempt)
+  ok("CANNED-SYNTH: classifyCanned('ok') still flags directly", classifyCanned("ok") === "canned_too_short");
+}
+
+console.log("\n(o5) CANNED — pre-cutoff sprint with a canned verdict is EXEMPT:");
+{
+  const sprintId = "SP-TEST-CANNED-LEGACY-001";
+  const events = [
+    makeConsultRec(sprintId, "before_design", { beta_message: "ok" }),
+    makePhaseStartedRec(sprintId, "design"),
+  ];
+  const r = computeFindings(events, { [sprintId]: PRE_CUTOFF_DATE });
+  ok(
+    "CANNED-LEGACY: no findings (pre-cutoff exempt)",
+    r.findings.length === 0,
+    `got ${JSON.stringify(r.findings)}`,
   );
 }
 

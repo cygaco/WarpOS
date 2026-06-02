@@ -512,7 +512,8 @@ function testBetaConsultContract() {
     const state = makeMinimalState({ mode: "adhoc", sprintId: "SP-J3" });
     const args = {
       betaVerdict: "DECIDE",
-      betaMessage: "looks good",
+      // Substantive verdict (the runtime substance gate, P-AP-1, rejects bare ones).
+      betaMessage: "DECIDE 0.9 — the plan looks good and is reversible; proceed per SP-J3 rubric.",
       pendingPhase: "before_plan",
     };
     const r = full.maybeConsultBeta(state, "before_plan", args);
@@ -550,9 +551,11 @@ function testBetaConsultContract() {
   // J-4: Adhoc + DIRECTIVE → ok:true, directive recorded on state.betaDirectives.
   {
     const state = makeMinimalState({ mode: "adhoc", sprintId: "SP-J4" });
+    const directiveMsg =
+      "DIRECTIVE — focus only on the auth scope this sprint; defer the rest per SP-J4.";
     const args = {
       betaVerdict: "DIRECTIVE",
-      betaMessage: "focus only on auth scope",
+      betaMessage: directiveMsg,
       pendingPhase: null,
     };
     const r = full.maybeConsultBeta(state, "before_design", args);
@@ -564,8 +567,7 @@ function testBetaConsultContract() {
     );
     ok(
       "J DIRECTIVE: directive message matches",
-      state.betaDirectives[0] &&
-        state.betaDirectives[0].message === "focus only on auth scope",
+      state.betaDirectives[0] && state.betaDirectives[0].message === directiveMsg,
       state.betaDirectives[0] && state.betaDirectives[0].message,
     );
   }
@@ -575,7 +577,7 @@ function testBetaConsultContract() {
     const state = makeMinimalState({ mode: "adhoc", sprintId: "SP-J5" });
     const args = {
       betaVerdict: "ESCALATE",
-      betaMessage: "too risky without review",
+      betaMessage: "ESCALATE — too risky without a security review; blast-radius exceeds the SP-J5 rubric threshold.",
       pendingPhase: "before_execute",
     };
     const r = full.maybeConsultBeta(state, "before_execute", args);
@@ -642,7 +644,8 @@ function testBetaConsultContract() {
   //       assert both are recorded (proves it is NOT the hardcoded DECIDE placeholder).
   {
     const state = makeMinimalState({ mode: "adhoc", sprintId: "SP-J8" });
-    const distinctiveMsg = "distinctive-msg-t211-beta-contract";
+    const distinctiveMsg =
+      "DIRECTIVE-t211 — distinctive grounded rationale referencing SP-J8 and the beta-contract precedent.";
     full.maybeConsultBeta(state, "before_retro", {
       betaVerdict: "DIRECTIVE",
       betaMessage: distinctiveMsg,
@@ -677,7 +680,7 @@ function testBetaConsultContract() {
       resume: true,
       pendingPhase: "before_design",
       betaVerdict: "DECIDE",
-      betaMessage: "ok",
+      betaMessage: "DECIDE 0.9 — design boundary is clear and reversible; proceed per SP-J9 rubric.",
     };
 
     // Compute pendingIdx exactly as main() does.
@@ -804,7 +807,8 @@ function testBetaConsultContract() {
   {
     out.push("J-12. betaMessage newline sanitization (FIX 4)");
     const state = makeMinimalState({ mode: "adhoc", sprintId: "SP-J12" });
-    const rawMsg = "safe message\n## Injected\nmore text";
+    const rawMsg =
+      "DECIDE — safe message, reversible per SP-J12 rubric;\n## Injected\nlow blast-radius, proceed.";
     full.maybeConsultBeta(state, "before_plan", {
       betaVerdict: "DECIDE",
       betaMessage: rawMsg,
@@ -1011,7 +1015,7 @@ function testBetaConsultContract() {
       const state = makeMinimalState({ mode: "adhoc", sprintId: "SP-J15d" });
       const r = full.maybeConsultBeta(state, "before_plan", {
         betaVerdict: "DECIDE",
-        betaMessage: "scope is reasonable, proceed",
+        betaMessage: "DECIDE — scope is reasonable and reversible; proceed per SP-J15d rubric, low blast-radius.",
         pendingPhase: "before_plan",
       });
       ok(
@@ -1033,6 +1037,89 @@ function testBetaConsultContract() {
         "J-15e: full.js guards on !betaMessage.trim()",
         /!betaMessage\.trim\(\)/.test(src),
         "(trim guard not found)",
+      );
+    }
+  }
+
+  // ── J-16: P-AP-1 — NON-SUBSTANTIVE (canned) beta_message refused at runtime ──
+  {
+    out.push("J-16. Canned/non-substantive beta_message refused at runtime (P-AP-1)");
+
+    // J-16a: a short canned message → halt (beta_message_non_substantive), verdict NOT consumed.
+    {
+      const state = makeMinimalState({ mode: "adhoc", sprintId: "SP-J16a" });
+      const args = { betaVerdict: "DECIDE", betaMessage: "looks good", pendingPhase: "before_plan" };
+      const r = full.maybeConsultBeta(state, "before_plan", args);
+      ok(
+        "J-16a: canned DECIDE → ok:false, beta_message_non_substantive",
+        r.ok === false && r.halt_reason === "beta_message_non_substantive",
+        JSON.stringify(r),
+      );
+      ok("J-16a: no consult recorded", state.betaConsultations.length === 0);
+      ok("J-16a: verdict NOT consumed (operator resumes with a real one)", args.betaVerdict === "DECIDE");
+    }
+
+    // J-16b: long but bare boilerplate (no token, no grounding) → halt.
+    {
+      const state = makeMinimalState({ mode: "adhoc", sprintId: "SP-J16b" });
+      const r = full.maybeConsultBeta(state, "before_plan", {
+        betaVerdict: "DECIDE",
+        betaMessage: "I have looked at the whole thing carefully and it all seems perfectly fine to me now.",
+        pendingPhase: "before_plan",
+      });
+      ok(
+        "J-16b: long-but-bare boilerplate → beta_message_non_substantive",
+        r.ok === false && r.halt_reason === "beta_message_non_substantive",
+        JSON.stringify(r),
+      );
+    }
+
+    // J-16c: runtime does ONLY per-message C1/C2 — NOT cross-boundary dup (C3).
+    // Each /sprint:full resume is a separate process with state.betaConsultations
+    // freshly [], so the orchestrator has no prior-consult history. A substantive-
+    // but-reused message therefore PASSES at runtime; the AUDIT layer
+    // (computeFindings → canned_cross_boundary_dup, tested in test-sprint-beta-honesty
+    // case (o2); enforced fail-closed by the release-build betaHonestyGate) catches it.
+    {
+      const state = makeMinimalState({ mode: "adhoc", sprintId: "SP-J16c" });
+      const dup = "DECIDE — proceed, reversible and low blast-radius per the SP-J16c rubric here.";
+      const r1 = full.maybeConsultBeta(state, "before_design", {
+        betaVerdict: "DECIDE", betaMessage: dup, pendingPhase: "before_design",
+      });
+      ok("J-16c: first boundary crosses (substantive)", r1.ok === true, JSON.stringify(r1));
+      const r2 = full.maybeConsultBeta(state, "before_execute", {
+        betaVerdict: "DECIDE", betaMessage: dup, pendingPhase: "before_execute",
+      });
+      ok(
+        "J-16c: reused substantive message ALSO crosses at runtime (C3 is audit-only, not runtime)",
+        r2.ok === true,
+        JSON.stringify(r2),
+      );
+    }
+
+    // J-16d: kill switch — WARPOS_BETA_SUBSTANCE_GATE=off lets a canned message through (fail-open lever).
+    {
+      const prev = process.env.WARPOS_BETA_SUBSTANCE_GATE;
+      process.env.WARPOS_BETA_SUBSTANCE_GATE = "off";
+      try {
+        const state = makeMinimalState({ mode: "adhoc", sprintId: "SP-J16d" });
+        const r = full.maybeConsultBeta(state, "before_plan", {
+          betaVerdict: "DECIDE", betaMessage: "ok", pendingPhase: "before_plan",
+        });
+        ok("J-16d: gate=off → canned message passes (rollout lever)", r.ok === true, JSON.stringify(r));
+      } finally {
+        if (prev === undefined) delete process.env.WARPOS_BETA_SUBSTANCE_GATE;
+        else process.env.WARPOS_BETA_SUBSTANCE_GATE = prev;
+      }
+    }
+
+    // J-16e: source guard — full.js carries the runtime substance refusal (fail-closed, not warn-only).
+    {
+      const src = fs.readFileSync(path.join(__dirname, "full.js"), "utf8");
+      ok(
+        "J-16e: full.js contains beta_message_non_substantive halt",
+        src.includes("beta_message_non_substantive"),
+        "(not found)",
       );
     }
   }

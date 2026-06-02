@@ -44,6 +44,61 @@ const PHASE_TO_BOUNDARY = Object.freeze({
   retro: "before_retro",
 });
 
+// ── Canned-verdict detection (P-AP-1) ─────────────────────────────────────────
+// β's /sprint:full phase-boundary verdicts were historically CANNED: across 1386+
+// records they collapsed to ~3 hardcoded strings. The empty-message guard
+// (placeholder_verdict) catches absent messages; this catches NON-SUBSTANTIVE ones.
+// A substantive verdict is ≥40 chars AND carries SOME structure — a decision token
+// OR a grounding reference (the LENIENT "or": classifyCanned flags only when BOTH
+// are absent, keeping false-positives low; real verdicts carry both). Tuned against
+// the real corpus: real verdicts ≥96 chars + structured; canned ≤34 chars + bare.
+// This is a DETERMINISTIC string/structure check — NO model judgment, so β cannot
+// influence, be prompted past, or rationalize around it (the self-reference trap the
+// sleep-cycle abstraction names: "a self-checking thing cannot check itself").
+const MIN_SUBSTANTIVE_LEN = 40;
+// (a) decision/verdict token — the schema β is supposed to emit (beta.md DECISION/CLASS/CONFIDENCE).
+const VERDICT_TOKEN_RE = /\b(DECIDE|DIRECTIVE|ESCALATE|DECISION|CLASS\s+[ABC]\b|conf(?:idence)?|0\.\d{2})\b/i;
+// (b) grounding reference — a ticket/sprint/precedent id or an explicit reasoning connective.
+const GROUNDING_RE = /\b(SP-\d|T-\d|EVT-|RI-\d|DP-|LRN-|L-20|ADR-|per\b|because\b|precedent|rubric|reversib|blast[- ]radius|trade-?off)\b/i;
+// Cross-sprint template reuse threshold (C4).
+const CROSS_SPRINT_TEMPLATE_THRESHOLD = 3;
+// Synthetic/test sprint prefixes — exempt from the live AUDIT (they carry deliberate
+// canned fixtures). classifyCanned still classifies them in unit tests; this exemption
+// only scopes the corpus audit. The date-cutoff + undated-exempt already filters most.
+const SYNTHETIC_SPRINT_PREFIXES = ["SP-J"];
+
+function isSyntheticSprint(sprintId) {
+  return SYNTHETIC_SPRINT_PREFIXES.some((p) => String(sprintId).startsWith(p));
+}
+
+/**
+ * Normalize a message for duplicate detection (C3/C4): lowercase, strip punctuation,
+ * collapse whitespace. Conservative (exact-after-normalize) to avoid flagging two
+ * genuinely-different verdicts that merely share a phrase. Exported for tests.
+ */
+function normalizeMessage(s) {
+  return String(s || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/**
+ * Classify a NON-EMPTY beta_message as canned. Returns "canned_too_short" (C1),
+ * "canned_unstructured" (C2), or null. C1 takes precedence over C2. Empty messages
+ * return null (handled separately by placeholder_verdict). Exported for tests.
+ */
+function classifyCanned(betaMessage) {
+  const trimmed = String(betaMessage || "").trim();
+  if (!trimmed) return null;
+  if (trimmed.length < MIN_SUBSTANTIVE_LEN) return "canned_too_short"; // C1
+  const hasToken = VERDICT_TOKEN_RE.test(trimmed);
+  const hasGrounding = GROUNDING_RE.test(trimmed);
+  if (!hasToken && !hasGrounding) return "canned_unstructured"; // C2: bare boilerplate
+  return null;
+}
+
 // ── CLI flags ─────────────────────────────────────────────────────────────────
 
 const JSON_OUT = process.argv.includes("--json");
@@ -402,6 +457,9 @@ function computeFindings(events, sprintDates = {}, cutoff = SP003_SHIP_DATE, rep
   const applicableSprintIds = [];
   let undatedExempt = 0;
   let checked = 0;
+  // C4 accumulator: normalized message → { sprints:Set, samples:[{sprintId, ev}] }
+  // across all applicable, non-synthetic sprints. Populated in the loop, evaluated after.
+  const crossSprintMsgs = Object.create(null);
 
   for (const sprintId of Object.keys(sprintData)) {
     const sd = sprintData[sprintId];
@@ -468,6 +526,63 @@ function computeFindings(events, sprintDates = {}, cutoff = SP003_SHIP_DATE, rep
       }
     }
 
+    // ── Finding type 4: canned / non-substantive verdict (P-AP-1) ─────────────
+    //
+    // The empty-message case is placeholder_verdict above; this catches a NON-EMPTY
+    // but non-substantive message. Synthetic/test sprints are exempt from the audit
+    // (they carry deliberate canned fixtures; classifyCanned still flags them in unit
+    // tests). C1 (too short) / C2 (unstructured) are per-message; C3 (cross-boundary
+    // duplicate) is per-sprint; C4 (cross-sprint template) is computed after the loop.
+    if (!isSyntheticSprint(sprintId)) {
+      const boundariesByMsg = new Map(); // normalized message → Set<phase_boundary>
+      for (const ev of sd.consults) {
+        const raw = ev.beta_message;
+        if (!raw || !String(raw).trim()) continue; // empty → placeholder_verdict
+        const trimmed = String(raw).trim();
+
+        // C1 + C2
+        const cls = classifyCanned(raw);
+        if (cls) {
+          findings.push({
+            sprint_id: sprintId,
+            phase: ev.phase_boundary ? ev.phase_boundary.replace("before_", "") : null,
+            expected_consult: ev.phase_boundary || null,
+            actual_event: "sprint_full_beta_consult",
+            verdict: ev.verdict || null,
+            evidence:
+              cls === "canned_too_short"
+                ? `beta_message is ${trimmed.length} chars (< ${MIN_SUBSTANTIVE_LEN}): "${trimmed.slice(0, 40)}"`
+                : `beta_message has no decision token AND no grounding reference: "${trimmed.slice(0, 40)}"`,
+            finding_type: cls,
+          });
+        }
+
+        // C3 (per-sprint) + C4 (cross-sprint) accumulation
+        const norm = normalizeMessage(raw);
+        if (norm) {
+          if (!boundariesByMsg.has(norm)) boundariesByMsg.set(norm, new Set());
+          if (ev.phase_boundary) boundariesByMsg.get(norm).add(ev.phase_boundary);
+          if (!crossSprintMsgs[norm]) crossSprintMsgs[norm] = { sprints: new Set(), samples: [] };
+          crossSprintMsgs[norm].sprints.add(sprintId);
+          crossSprintMsgs[norm].samples.push({ sprintId, ev });
+        }
+      }
+      // C3: a normalized message reused at ≥2 DISTINCT boundaries within one sprint.
+      for (const [, boundaries] of boundariesByMsg) {
+        if (boundaries.size >= 2) {
+          findings.push({
+            sprint_id: sprintId,
+            phase: null,
+            expected_consult: null,
+            actual_event: "sprint_full_beta_consult",
+            verdict: null,
+            evidence: `identical verdict message reused across ${boundaries.size} boundaries (${[...boundaries].join(", ")})`,
+            finding_type: "canned_cross_boundary_dup",
+          });
+        }
+      }
+    }
+
     // ── Finding type 2: missing_consult ───────────────────────────────────
     //
     // Evidence that a boundary was cleared comes from TWO sources (union):
@@ -525,6 +640,30 @@ function computeFindings(events, sprintDates = {}, cutoff = SP003_SHIP_DATE, rep
           verdict: "ESCALATE",
           evidence: "no sprint_full_halt(halt_reason: beta_escalate) found for this sprint at/after consult timestamp",
           finding_type: "escalate_without_halt",
+        });
+      }
+    }
+  }
+
+  // ── Finding type 4 (C4): cross-sprint template reuse ──────────────────────
+  // A normalized message appearing across ≥3 DISTINCT applicable, non-synthetic
+  // sprints is a propagating boilerplate template, not a per-sprint consult. One
+  // finding per sprint occurrence (de-duped by sprint), so each is actionable.
+  for (const norm of Object.keys(crossSprintMsgs)) {
+    const rec = crossSprintMsgs[norm];
+    if (rec.sprints.size >= CROSS_SPRINT_TEMPLATE_THRESHOLD) {
+      const emitted = new Set();
+      for (const { sprintId, ev } of rec.samples) {
+        if (emitted.has(sprintId)) continue;
+        emitted.add(sprintId);
+        findings.push({
+          sprint_id: sprintId,
+          phase: ev.phase_boundary ? ev.phase_boundary.replace("before_", "") : null,
+          expected_consult: ev.phase_boundary || null,
+          actual_event: "sprint_full_beta_consult",
+          verdict: ev.verdict || null,
+          evidence: `verdict message reused across ${rec.sprints.size} sprints (templated boilerplate): "${String(ev.beta_message).trim().slice(0, 40)}"`,
+          finding_type: "canned_cross_sprint_template",
         });
       }
     }
@@ -666,8 +805,11 @@ module.exports = {
   computeFindings,
   loadFullReportsData,
   validateIsoDate,
+  classifyCanned,
+  normalizeMessage,
   CUTOFF,
   SP003_SHIP_DATE,
   EXPECTED_BOUNDARIES,
   PHASE_TO_BOUNDARY,
+  MIN_SUBSTANTIVE_LEN,
 };

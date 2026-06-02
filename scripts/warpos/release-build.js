@@ -110,7 +110,8 @@ function betaHonestyGate(opts, runChecker) {
     detail = (res.stderr || res.stdout || `exit ${res.status}`).trim();
   }
   const message =
-    "release-build refuses to build: Beta-consultation honesty findings in recent sprints:\n" +
+    "release-build refuses to build: Beta-consultation honesty findings in recent sprints\n" +
+    "(missing_consult / placeholder_verdict / escalate_without_halt / canned_* non-substantive verdicts):\n" +
     (detail ? "  " + detail.split("\n").join("\n  ") + "\n" : "") +
     "Remediation: resolve the findings (run `node scripts/checks/sprint-beta-honesty.js`), then re-run release-build.\n" +
     "Bypass (emergencies only): re-run with --skip-beta-honesty-check.";

@@ -661,6 +661,59 @@ function maybeConsultBeta(state, boundary, args) {
         `Obtain Beta's actual rationale for the '${verdict}' verdict at '${boundary}', then resume with a non-empty --beta-message.`,
     };
   }
+
+  // β-VERDICT-HONESTY (P-AP-1): refuse a NON-SUBSTANTIVE (canned) beta_message at
+  // runtime. The empty-message guard above only catches ABSENT messages, but β's
+  // /sprint:full verdicts historically collapsed to ~3 hardcoded strings across
+  // 1386+ records. A substantive verdict is >=40 chars AND carries SOME structure
+  // (a decision token OR a grounding reference — the lenient OR, to keep the runtime
+  // false-positive rate low; real verdicts carry both). This is a DETERMINISTIC
+  // string/structure check (NO model judgment) so β cannot be prompted past or
+  // rationalize around it — the self-reference trap. Inlined (not required from
+  // scripts/checks) to keep the orchestrator subprocess isolated. Mirrors
+  // classifyCanned() C1+C2 in scripts/checks/sprint-beta-honesty.js.
+  //
+  // SCOPE: runtime enforces only the PER-MESSAGE checks (C1 length, C2 structure).
+  // Cross-boundary (C3) and cross-sprint (C4) DUPLICATE detection is NOT done here:
+  // each /sprint:full resume is a SEPARATE process with state.betaConsultations
+  // freshly [] (one-consult-per-resume), so the orchestrator has no prior-consult
+  // history to compare against. C3/C4 are enforced fail-closed by the AUDIT layer
+  // (scripts/warpos/release-build.js betaHonestyGate + /scan:sprint-beta-honesty),
+  // which reads the full events corpus and BLOCKS the release on a duplicate.
+  // Kill switch WARPOS_BETA_SUBSTANCE_GATE=off (default ON) — fail-closed, never warn-only;
+  // an off-switch (like dispatch-route-guard's) is a rollout/emergency lever, not a soften.
+  if (process.env.WARPOS_BETA_SUBSTANCE_GATE !== "off") {
+    const m = betaMessage.trim();
+    const tokenRe = /\b(DECIDE|DIRECTIVE|ESCALATE|DECISION|CLASS\s+[ABC]\b|conf(?:idence)?|0\.\d{2})\b/i;
+    const groundRe = /\b(SP-\d|T-\d|EVT-|RI-\d|DP-|LRN-|L-20|ADR-|per\b|because\b|precedent|rubric|reversib|blast[- ]radius|trade-?off)\b/i;
+    let cannedReason = null;
+    if (m.length < 40) {
+      cannedReason = `only ${m.length} chars (< 40) — too terse to be a real consult`;
+    } else if (!tokenRe.test(m) && !groundRe.test(m)) {
+      cannedReason = "no decision token nor grounding reference — boilerplate";
+    }
+    if (cannedReason) {
+      const resumeCmd =
+        `/sprint:full --sprint ${state.sprintId} --resume` +
+        ` --pending-phase ${boundary}` +
+        ` --beta-verdict ${verdict}` +
+        ` --beta-message "<Beta's actual, specific rationale>"`;
+      return {
+        ok: false,
+        halt_reason: "beta_message_non_substantive",
+        boundary,
+        beta_verdict: verdict,
+        message:
+          `Beta verdict '${verdict}' at phase boundary '${boundary}' was supplied with a NON-SUBSTANTIVE beta_message (${cannedReason}). ` +
+          `Canned/boilerplate verdicts are refused at runtime (P-AP-1: β verdicts must be real consults, not templated strings). ` +
+          `Re-consult Beta (Alex β) for a specific, grounded rationale and resume: ${resumeCmd}`,
+        resume_command: resumeCmd,
+        next_human_action:
+          `Obtain Beta's actual, specific rationale (the decision + WHY — reference the ticket/risk/precedent) for '${verdict}' at '${boundary}', then resume with a substantive --beta-message.`,
+      };
+    }
+  }
+
   const ts = nowIso();
   const latencyMs = 0; // no live round-trip in this subprocess; elapsed is ~0
   const model = process.env.WARPOS_BETA_MODEL || "claude-opus-4-8";

@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "0.13.1",
-  "installedCommit": "d86eee75e0cac3a891747c5e4ab7ead01f857dc9",
-  "installedAt": "2026-06-02T18:40:28.786Z",
+  "installedCommit": "7e9da69303078fed2cdf11cee6b3d7830be472ad",
+  "installedAt": "2026-06-02T19:04:01.092Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -2224,8 +2224,8 @@
       "dest": ".claude/commands/scan/sprint-beta-honesty.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "d98fd5bb304c2a0c53a333b6a451a0a78c706312eb15d6e3e78e231df9f8a2af",
-      "currentHashAtInstall": "d98fd5bb304c2a0c53a333b6a451a0a78c706312eb15d6e3e78e231df9f8a2af",
+      "installedHash": "6f74de8bffefc92ded067bf39d98925330a8d0089ebda89321ff5f6062f7e9d7",
+      "currentHashAtInstall": "6f74de8bffefc92ded067bf39d98925330a8d0089ebda89321ff5f6062f7e9d7",
       "introducedIn": "0.0.0"
     },
     {
@@ -4714,8 +4714,8 @@
       "dest": "scripts/warpos/release-build.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "8339aa6c3e49dc50ea24a25d1d45571f103d9016894035e0cc5cf5a98c5841ea",
-      "currentHashAtInstall": "8339aa6c3e49dc50ea24a25d1d45571f103d9016894035e0cc5cf5a98c5841ea",
+      "installedHash": "a581e8af2a304bd145b228bdb4643b24d241688a66f6806d8ed2e478130bf83e",
+      "currentHashAtInstall": "a581e8af2a304bd145b228bdb4643b24d241688a66f6806d8ed2e478130bf83e",
       "introducedIn": "0.0.0"
     },
     {
@@ -5364,8 +5364,8 @@
       "dest": "scripts/checks/sprint-beta-honesty.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "1bef5c7c72e795076e5553a6b2e49ef3710c91e8b00bc0ca0793c81059b78eed",
-      "currentHashAtInstall": "1bef5c7c72e795076e5553a6b2e49ef3710c91e8b00bc0ca0793c81059b78eed",
+      "installedHash": "3cb30dc8d9a3a024a9e3a7fd8bb833fe268dd0d69aae892cfa27fc841a0a8d26",
+      "currentHashAtInstall": "3cb30dc8d9a3a024a9e3a7fd8bb833fe268dd0d69aae892cfa27fc841a0a8d26",
       "introducedIn": "0.0.0"
     },
     {
@@ -5374,8 +5374,8 @@
       "dest": "scripts/checks/test-sprint-beta-honesty.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "5ab2b6f20dbd33aadd3264d4f916d1eab49ee4336ba6faaa7b5a4c4dcf446126",
-      "currentHashAtInstall": "5ab2b6f20dbd33aadd3264d4f916d1eab49ee4336ba6faaa7b5a4c4dcf446126",
+      "installedHash": "28e7a227dacd508e09fc5e62ac2892fbaa3041e5e5523769a9e04af685fdb71a",
+      "currentHashAtInstall": "28e7a227dacd508e09fc5e62ac2892fbaa3041e5e5523769a9e04af685fdb71a",
       "introducedIn": "0.0.0"
     },
     {
@@ -5964,8 +5964,8 @@
       "dest": "scripts/sprint/full.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "52b19ebed5ceaa83e7bb8fedb903f92aee64dc0fe5249cc7c8fee9152be4e553",
-      "currentHashAtInstall": "52b19ebed5ceaa83e7bb8fedb903f92aee64dc0fe5249cc7c8fee9152be4e553",
+      "installedHash": "365e19eb818aace6cf0970be9daa84bf0d16c99cea9116db808cf46e89100d4a",
+      "currentHashAtInstall": "365e19eb818aace6cf0970be9daa84bf0d16c99cea9116db808cf46e89100d4a",
       "introducedIn": "0.0.0"
     },
     {
@@ -6114,8 +6114,8 @@
       "dest": "scripts/sprint/test-sprint-full.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "48c84159754145bd74cd6a8225aa6b971974ada7159190b1a55c4abdc74c5545",
-      "currentHashAtInstall": "48c84159754145bd74cd6a8225aa6b971974ada7159190b1a55c4abdc74c5545",
+      "installedHash": "89b61c3640cebefd9b26a2eade64331476ba73c8562f32d6492200896a0f75bd",
+      "currentHashAtInstall": "89b61c3640cebefd9b26a2eade64331476ba73c8562f32d6492200896a0f75bd",
       "introducedIn": "0.0.0"
     },
     {
