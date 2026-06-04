@@ -43,6 +43,12 @@ const path = require("path");
 const PHASES = ["preflight", "intent", "canon", "roadmap", "onscreen"];
 const NEEDS_ORCH = 3;
 
+// Research TIER → raw mode (WI-25 / the operator's research-tier chooser).
+//   "light"    → off    ("Light Research — Uses existing training data.")
+//   "moderate" → simple ("Moderate Research — Finds newer data for better results.")
+// "deep" stays a power-user RAW mode (--research deep) — never a surfaced tier.
+const RESEARCH_TIERS = { light: "off", moderate: "simple" };
+
 function parseArgs(argv) {
   const out = {
     product: null,
@@ -51,7 +57,8 @@ function parseArgs(argv) {
     phase: null,
     resume: false,
     out: "_requirements/00-canonical",
-    research: "off",
+    research: null, // null = not explicitly set → resolveResearch() decides
+    researchTier: null,
     state: null,
     repoRoot: process.cwd(),
     json: false,
@@ -67,6 +74,7 @@ function parseArgs(argv) {
     else if (a === "--resume") out.resume = true;
     else if (a === "--out") out.out = argv[++i];
     else if (a === "--research") out.research = argv[++i];
+    else if (a === "--research-tier") out.researchTier = argv[++i];
     else if (a === "--state") out.state = argv[++i];
     else if (a === "--repo-root") out.repoRoot = argv[++i];
     else if (a === "--json") out.json = true;
@@ -74,6 +82,37 @@ function parseArgs(argv) {
     else if (a === "--auto") out.auto = true;
   }
   return out;
+}
+
+// Is this a HEADLESS run (no human present to confirm a spend)? The no-surprise-
+// spend guard (WI-25): a headless run NEVER silently spends on web research —
+// "no user to confirm → no spend". Headless = an explicit machine flag (--auto /
+// --json) OR no TTY (a subprocess/portfolio/cockpit caller — /portfolio:new,
+// /portfolio:spinup, Master-Console). An explicit --research / --research-tier
+// always wins (the operator opted in), regardless of headless.
+function isHeadless(args) {
+  return !!(args.auto || args.json) || !process.stdout.isTTY;
+}
+
+/**
+ * Resolve the effective raw research mode (off|simple|deep) from the tier chooser
+ * + explicit flags + the interactive/headless context. Precedence:
+ *   1. explicit --research <mode>       → as given (power-user; the ONLY deep path)
+ *   2. explicit --research-tier <tier>  → light→off, moderate→simple
+ *   3. no explicit choice:
+ *        interactive → "simple" (Moderate is the pre-selected DEFAULT)
+ *        headless    → "off"    (Light — never spend without a human)
+ * Returns { mode, source } (source for logging/telemetry).
+ */
+function resolveResearch(args) {
+  if (args.research) return { mode: args.research, source: "explicit --research" };
+  if (args.researchTier) {
+    const mode = RESEARCH_TIERS[args.researchTier];
+    if (mode) return { mode, source: `--research-tier ${args.researchTier}` };
+    // unknown tier handled as a bad-arg in main(); fall through defensively
+  }
+  if (isHeadless(args)) return { mode: "off", source: "headless default (Light — no-spend)" };
+  return { mode: "simple", source: "interactive default (Moderate)" };
 }
 
 // Durable phase-state (T6). Default location is product-side scratch under
@@ -128,14 +167,14 @@ function planPhases(args, state) {
   return { phases: PHASES.slice() };
 }
 
-function buildCtx(args) {
+function buildCtx(args, research) {
   return {
     repoRoot: args.repoRoot,
     product: args.product,
     intentFile: args.intent,
     cloneTarget: args.clone,
     outDir: args.out,
-    research: args.research,
+    research, // resolved mode (off|simple|deep) — see resolveResearch()
     dryRun: args.dryRun,
     args,
     log: (m) => {
@@ -150,13 +189,25 @@ async function main() {
     process.stderr.write(`bad --research "${args.research}" (off|simple|deep)\n`);
     return 2;
   }
+  if (args.researchTier && !RESEARCH_TIERS[args.researchTier]) {
+    process.stderr.write(
+      `bad --research-tier "${args.researchTier}" (light|moderate; "deep" is --research deep, a power-user flag)\n`,
+    );
+    return 2;
+  }
+  // Resolve the effective research mode from tier/flags/interactivity (WI-25).
+  const { mode: research, source: researchSource } = resolveResearch(args);
   const state = loadState(args);
   const plan = planPhases(args, state);
   if (plan.error) {
     process.stderr.write(plan.error + "\n");
     return 2;
   }
-  const ctx = buildCtx(args);
+  const ctx = buildCtx(args, research);
+  if (!args.json)
+    process.stdout.write(
+      `spinup: research = ${research} (${researchSource})${research === "off" ? "" : " — live research spend"}\n`,
+    );
   const ran = [];
   let phaseObj;
   for (const name of plan.phases) {
@@ -201,6 +252,8 @@ async function main() {
     ran: ran.map((r) => r.phase),
     state_file: stateFile(args),
     completed: state.completed,
+    research, // resolved mode (off|simple|deep)
+    research_source: researchSource,
     data: lastWithData ? lastWithData.data : null,
   };
   if (args.json) process.stdout.write(JSON.stringify(result, null, 2) + "\n");
@@ -215,4 +268,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { parseArgs, planPhases, loadState, saveState, stateFile, buildCtx, PHASES, NEEDS_ORCH };
+module.exports = { parseArgs, planPhases, loadState, saveState, stateFile, buildCtx, resolveResearch, isHeadless, RESEARCH_TIERS, PHASES, NEEDS_ORCH };

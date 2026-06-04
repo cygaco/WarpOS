@@ -77,6 +77,26 @@ structural error (missing section, invalid JSON, product-name mismatch) — fix 
 intent or template, don't paper over it. Thin output is honest scaffold the
 product fills in over time.
 
+**1a. Research depth — ask the user (interactive only).** Before generating, when
+a human is present, present a **two-tier chooser** and pre-select **Moderate**:
+
+> **How thorough should the research be?**
+> - **Light Research** — Uses existing training data. *(no live web search, no spend)*
+> - **Moderate Research** — Finds newer data for better results. *(parallel web search — Recommended; **default**)*
+
+Hitting enter (no explicit pick) selects **Moderate**. Map the choice to the engine:
+**Light → `--research off`**, **Moderate → `--research simple`** (or pass it through the
+orchestrator as `--research-tier light|moderate`). A heavier **`--research deep`** tier
+(the expensive deep-research APIs) stays a **power-user flag** — not a surfaced choice.
+
+**No-surprise-spend guard (load-bearing).** The Moderate default lives in the
+**interactive** path the user sees + accepts. A **headless / non-interactive** run —
+`--auto`, `--json`, or any subprocess caller (`/portfolio:new`, `/portfolio:spinup`,
+the Master-Console cockpit; detected as no TTY) — **falls to Light (`off`) and never
+silently spends**. To spend in a headless run, pass an explicit `--research moderate|deep`
+(or `--research simple|deep`). The orchestrator (`spinup-orchestrate.js`) enforces this
+resolution; the chooser above is the human surface for it.
+
 **2. Capped research (opt-in — real `research:*` spend).** To fill thin docs with
 cited category signal, re-run with `--research simple` (or `deep`). The fill is
 **bounded** by `schemas/canon/research-fields.schema.json` — named fields per doc,
@@ -100,8 +120,9 @@ never open-ended discovery. The engine and the orchestrator split the work:
       --research simple --research-in _requirements/00-canonical/.canon-research-findings.json
     ```
 
-Default to `--research off` for a no-spend first pass; only run the research
-bridge when the operator wants the cited category fill.
+Default resolution (see **1a**): **interactive → Moderate (`simple`)**, **headless →
+Light (`off`, no-spend)**; `deep` is opt-in only. Run the research bridge whenever the
+resolved mode is `simple`/`deep` (the cited category fill); `off` is the no-spend pass.
 
 ### Phase 3 — Roadmap
 Invoke `roadmap:create` to produce `ROADMAP.md` — grounded in the canonical docs
@@ -150,8 +171,14 @@ durable and the chain is CI-testable):
 node scripts/bootstrap/spinup-orchestrate.js \
   [--product "<name>"] [--intent <file.md>] [--clone <target>] \
   [--phase preflight|intent|canon|roadmap|onscreen] [--resume] \
-  [--research off|simple|deep]
+  [--research-tier light|moderate] [--research off|simple|deep]
 ```
+
+- **Research depth (WI-25):** `--research-tier light|moderate` (light→off, moderate→simple)
+  is the user-facing chooser (§1a); `--research off|simple|deep` is the raw/power-user form
+  (`deep` only here). With NEITHER set, the driver resolves: **interactive → `simple` (Moderate
+  pre-selected)**, **headless (`--auto`/`--json`/no-TTY subprocess) → `off` (Light, no-spend)**.
+  An explicit flag always overrides (opt-in to spend even when headless).
 
 - **Always runs `preflight` first** (a hard gate — refuses a gappy install via
   `/scan:install`, exit ≠ 0 → stop). Deterministic phases (`preflight`, `canon`,

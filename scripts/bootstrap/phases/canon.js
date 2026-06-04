@@ -8,7 +8,7 @@
  * _requirements/00-canonical/* set by REUSING B's canon engine
  * (scripts/canon/generate.js, SP-022-T6). We do NOT reimplement canon here — we
  * shell to generate.js with --json and assert the engine's own success contract:
- *   exit 0  ∧  parsed.ok === true  ∧  artifacts.length === 11  ∧  validation.ok.
+ *   exit 0  ∧  parsed.ok === true  ∧  artifacts.length === EXPECTED_ARTIFACTS  ∧  validation.ok.
  *
  * The engine's research bridge is already built (SP-022); the default research
  * mode is "off" (no spend). We pass ctx.research straight through — the LIVE
@@ -27,8 +27,12 @@
 const fs = require("fs");
 const path = require("path");
 const { spawnSync } = require("child_process");
+const { NARRATIVE, STRUCTURED } = require("../../canon/generate");
 
-const EXPECTED_ARTIFACTS = 11; // 7 narrative MD + 4 structured JSON (NARRATIVE + STRUCTURED).
+// Derived from the canon engine's own doc lists so it CAN'T rot when a canonical
+// doc-type is added/removed (WI-39 added DATA_AND_ACCOUNTS → 8 narrative + 4
+// structured = 12; a hardcoded count silently broke the canon phase's gate).
+const EXPECTED_ARTIFACTS = NARRATIVE.length + STRUCTURED.length;
 
 // Resolve a path argument the way ctx expects: relative to ctx.repoRoot. We pass
 // generate.js absolute paths because it resolves --intent/--out against its own
