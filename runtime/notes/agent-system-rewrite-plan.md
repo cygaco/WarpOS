@@ -262,7 +262,8 @@ Source of truth = the **Dispatch Console** (`catalog.js` + `providers.js`); enfo
 2. ✅ **All flagged decisions RESOLVED:** req-reviewer + compliance → QA Reviewer scopes (Quality Lead) · pod Reviewers = code-quality only · `fixer` → **per-pod FE/BE/Security Fixers** (keep fix-one-brief discipline; re-review after each fix) · generic `builder` **scrapped** · workers **mode-agnostic** (orchestration differs, not the worker).
 3. Execute the diff in §3 (rename/rehome/scrap/new), one reviewable chunk at a time; foreground (no background builder dispatch — RI-004).
 4. Sweep ALL references (§3 blast-radius) — grep the OLD literal everywhere, not just specs.
-5. Regen both manifests + **regen every map** (`/maps:all --regenerate` — they're pre-rewrite, they catalog the OLD roles/hooks); run **`/scan:full`** (the full verification suite — health · broken-refs · coverage · `scan:role-parity` · `scan:dispatch-routing-parity` · `scan:references` · `scan:install` · `scan:framework-views-fresh`) + the §4 checklist end-to-end. **`/scan:full` must be GREEN before cutover** — the old tree is deleted ONLY when green. Converge — re-run, don't single-pass (a fix can open a new hole).
+5. **Rewire + re-test the hooks (TIER 6).** Point every role-referencing hook at the role registry — kill the `store-validator.js` `heartbeat.agent` enum + `scope-contract-guard.js` `req-reviewer` hardcodes; rebuild the hook registry (`node scripts/hooks/build.js`) and run **`node scripts/hooks/test.js --all` GREEN**; confirm `framework/hooks.registry.json` + `scripts/hooks/hook-manifest.json` regenerated. Read each flagged hook BEFORE the rename — a hook that silently no-ops post-rename is a false-green.
+6. Regen both manifests + **regen every map** (`/maps:all --regenerate` — they're pre-rewrite, they catalog the OLD roles/hooks); run **`/scan:full`** (the full verification suite — health · broken-refs · coverage · `scan:role-parity` · `scan:dispatch-routing-parity` · `scan:references` · `scan:install` · `scan:framework-views-fresh`) + the §4 checklist end-to-end. **`/scan:full` must be GREEN before cutover** — the old tree is deleted ONLY when green. Converge — re-run, don't single-pass (a fix can open a new hole).
 
 ---
 
@@ -314,6 +315,8 @@ The system is **hook-dense (~65 hooks wired in `settings.json`)**. Beyond §6's 
 - **`_guides/design/` (18 guides):** the SOURCE for the `_knowledge/design` migration (M3) — a build INPUT, not a break.
 
 **New high-risk additions to Tier 1/2:** `store-validator.js`'s `heartbeat.agent` role enum + `scope-contract-guard.js`'s `req-reviewer` hardcode — both break on rename, neither was in the original §6. **The build session must read each flagged hook before touching roles** (a hook that silently no-ops post-rename is a false-green).
+
+**Enforcer (closes the hook-hardcode class — CLAUDE.md §Policy: name a detector, don't rely on "read carefully"):** extend `scan:role-parity` to also scan **hooks** for hardcoded role literals — generalizing the `scope-contract-guard`/`store-validator` finds — so ANY hook hardcoding a role name fails the parity gate (not just agent-specs/scripts). Wire `node scripts/hooks/test.js --all` into `/scan:full` so the cutover gate (§5 step 6) re-runs every hook's own test post-rename. Net: the hook-rewiring rule is self-detecting, not aspirational.
 
 **Blast-radius coverage now:** agent-specs + core-routing (§3/§6) + hooks/scripts/skills/tests (TIER 6). *(Operator-flagged: "hooks are wired into everything" — confirmed.)*
 
