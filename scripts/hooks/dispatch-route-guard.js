@@ -108,6 +108,12 @@ const BUILD_CHAIN_ROLES = new Set([
   "frontend-builder",
   "fixer",
   "stub-scaffold",
+  // ADR-0007 per-pod split (forward-compat; should derive from
+  // role-registry.json build_chain:true once the consumer-rewire lands):
+  "security-builder",
+  "frontend-fixer",
+  "backend-fixer",
+  "security-fixer",
 ]);
 
 // Robust detector (reviewer-HIGH hardening): match a RAW `claude` prompt
@@ -402,6 +408,37 @@ process.stdin.on("data", (chunk) => (input += chunk));
 process.stdin.on("end", () => {
   try {
     const event = JSON.parse(input);
+
+    // ADR-0007 §2.5 — Agent-tool build-chain gate (the named enforcer for the
+    // context-lever). The in-process Agent tool dumps the full sub-agent response
+    // (50-100K tokens) into the ORCHESTRATOR's context AND lacks the bounded
+    // wrapper's reap-safety. Build-chain workers (builders/fixers/stub-scaffold)
+    // MUST dispatch via `node scripts/dispatch-claude.js`. Closes the §2 rule-5
+    // gap (only the raw-CLI bypass was gated before). Spec/doc authoring via
+    // general-purpose is fine; a Lead fanning out its OWN sub-reviewers inside its
+    // subprocess is exempt — this binds the TOP-level dispatch of heavy workers.
+    if (event.tool_name === "Agent") {
+      if (event.tool_response !== undefined) process.exit(0); // PostToolUse skip
+      const sub = String((event.tool_input || {}).subagent_type || "")
+        .trim()
+        .toLowerCase();
+      if (BUILD_CHAIN_ROLES.has(sub)) {
+        block(
+          [
+            "[dispatch-route-guard] In-process Agent dispatch of a build-chain role is forbidden.",
+            `Role: ${sub}`,
+            "",
+            `Use:  node scripts/dispatch-claude.js ${sub} <prompt-file> -w`,
+            "Why:  the Agent tool dumps the full sub-agent response (50-100K tokens) into the",
+            "      orchestrator's context (the §2.5 context-lever) AND lacks the wrapper's",
+            "      reap-safety (RI-004). Spec/doc authoring via general-purpose is fine — this",
+            "      binds heavy build-chain CODE workers. A Lead's own sub-reviewer fan-out is exempt.",
+          ].join("\n"),
+        );
+      }
+      process.exit(0);
+    }
+
     if (event.tool_name !== "Bash") process.exit(0);
     if (event.tool_response !== undefined) process.exit(0); // PostToolUse skip
     const cmd = ((event.tool_input || {}).command || "").trim();

@@ -6,7 +6,7 @@
  * engine (SP-20260525-022 T7 / T-20260525-235). Verify-before-claim.
  *
  * E2E (CLI, --research off — no spend, CI-safe):
- *   1. generate.js against the fixture emits all 11 artifacts.
+ *   1. generate.js against the fixture emits all 12 artifacts.
  *   2. validation passes (ok, no errors) with thin warnings expected.
  *   3. each of the 4 JSON artifacts JSON.parse()s.
  *
@@ -80,7 +80,7 @@ function e2e() {
     return;
   }
 
-  const expected = NARRATIVE.length + STRUCTURED.length; // 11
+  const expected = NARRATIVE.length + STRUCTURED.length; // 12 (8 MD + 4 JSON)
   const files = fs.readdirSync(out).filter((f) => !f.startsWith("."));
   if (files.length === expected) ok(`emitted ${expected} artifacts`);
   else fail(`emitted ${expected} artifacts`, `got ${files.length}: ${files.join(",")}`);
@@ -106,6 +106,42 @@ function e2e() {
   const ar = spawnSync(process.execPath, [assertScript, "--dir", out, "--json"], { encoding: "utf8" });
   if (ar.status === 0) ok("canon-no-unfilled-tokens assertion passes on emitted set");
   else fail("zero-token assertion passes", `status=${ar.status} ${ar.stderr || ar.stdout}`);
+
+  // WI-39: canon-type-coverage passes on the emitted set (exit 0).
+  const coverageScript = path.join(REPO, "scripts", "checks", "canon-type-coverage.js");
+  const cr = spawnSync(process.execPath, [coverageScript, "--dir", out, "--json"], { encoding: "utf8" });
+  if (cr.status === 0) ok("canon-type-coverage: all 12 types emitted (exit 0)");
+  else fail("canon-type-coverage on emitted set", `status=${cr.status} ${cr.stderr || cr.stdout}`);
+
+  // WI-39: canon-type-coverage passes with no --dir (template coverage only, exit 0).
+  const crNoDir = spawnSync(process.execPath, [coverageScript, "--json"], { encoding: "utf8" });
+  if (crNoDir.status === 0) ok("canon-type-coverage: all 12 templates present (no --dir, exit 0)");
+  else fail("canon-type-coverage no-dir", `status=${crNoDir.status} ${crNoDir.stderr || crNoDir.stdout}`);
+
+  // WI-39 negative: missing --dir that doesn't exist => exit 2.
+  const crBadDir = spawnSync(
+    process.execPath,
+    [coverageScript, "--dir", path.join(os.tmpdir(), "canon-type-coverage-does-not-exist-" + Date.now()), "--json"],
+    { encoding: "utf8" },
+  );
+  if (crBadDir.status === 2) ok("canon-type-coverage: missing --dir => exit 2");
+  else fail("canon-type-coverage missing --dir => exit 2", `got exit ${crBadDir.status}`);
+
+  // WI-39 negative: remove one required artifact => exit 1.
+  const missingTestDir = fs.mkdtempSync(path.join(os.tmpdir(), "canon-missing-"));
+  // Copy all artifacts except DATA_AND_ACCOUNTS.md
+  for (const f of files) {
+    if (f !== "DATA_AND_ACCOUNTS.md")
+      fs.copyFileSync(path.join(out, f), path.join(missingTestDir, f));
+  }
+  const crMissing = spawnSync(
+    process.execPath,
+    [coverageScript, "--dir", missingTestDir, "--json"],
+    { encoding: "utf8" },
+  );
+  if (crMissing.status === 1) ok("canon-type-coverage: missing required artifact => exit 1");
+  else fail("canon-type-coverage missing artifact => exit 1", `got exit ${crMissing.status} ${crMissing.stderr || crMissing.stdout}`);
+  fs.rmSync(missingTestDir, { recursive: true, force: true });
 
   // each JSON parses
   let jsonOk = true;

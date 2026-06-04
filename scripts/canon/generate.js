@@ -5,7 +5,7 @@
  *
  * Turns a product's intent (a brief from bootstrap:spinup's guided discussion,
  * or a clone doc from --clone) into the full _requirements/00-canonical/* set:
- * 7 narrative MD + 4 structured JSON, rendered from framework/templates/canonical/*.
+ * 8 narrative MD + 4 structured JSON, rendered from framework/templates/canonical/*.
  *
  * Pipeline: parse intent -> map sections to template fields -> brief-EXPAND thin
  * fields from intent (WI-38; deterministic derivation BEFORE research) -> detect
@@ -53,6 +53,7 @@ const NARRATIVE = [
   "EVOLUTION",
   "FAILURE_STATES",
   "GLOSSARY",
+  "DATA_AND_ACCOUNTS",
 ];
 const STRUCTURED = ["FIELD_REGISTRY", "PRECEDENCE", "STEPS", "WATCHED_DIRS"];
 
@@ -151,6 +152,16 @@ function buildFieldMap(product, sections) {
     product_primitives: pick(sections, "primitive", "feature", "mvp"),
     evolution_status_note:
       "Non-canonical projection — derived from intent; refine as the product evolves.",
+    // DATA_AND_ACCOUNTS fields. Heuristic picks from data/model/entity/schema sections
+    // for the data-shape fields and account/auth/login/user/role/permission sections
+    // for the identity fields. Fields with no honest intent source are left empty so
+    // the degrade step surfaces them as `*needs input:*` markers (WI-38).
+    data_model: pick(sections, "data model", "data", "model", "schema", "entities"),
+    core_entities: pick(sections, "entities", "entity", "data model", "schema", "model"),
+    account_types: pick(sections, "account type", "account", "user type", "plan", "tier"),
+    authentication: pick(sections, "authentication", "auth", "login", "signin", "sso", "oauth"),
+    permissions_roles: pick(sections, "permission", "role", "access control", "rbac", "acl"),
+    data_retention: pick(sections, "retention", "privacy", "gdpr", "data retention", "deletion"),
     // Fields still empty here are handled by briefExpand() (intent-derived) and,
     // if still source-less, the degrade step (-> `*needs input:*` marker).
   };
