@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-02T19:20:30.358Z",
+  "generatedAt": "2026-06-04T22:55:40.450Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.13.1",
   "migrations": [],
@@ -20,24 +20,32 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "2a89e1e40c3aa7ee23df9e4268da4be5251e2b74e9b822f8c9c2aabc9647cfa7",
-      "installedSha": "2a89e1e40c3aa7ee23df9e4268da4be5251e2b74e9b822f8c9c2aabc9647cfa7"
+      "sha256": "ce12ca56c5a33fb59887bc6d4f8b0cbd5ec2567276df838e38c33393a3f62fe6",
+      "installedSha": "ce12ca56c5a33fb59887bc6d4f8b0cbd5ec2567276df838e38c33393a3f62fe6"
+    },
+    "AGENT-STRUCTURE.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": null,
+      "_note": "Root document — source path same as destination (canonical-side).",
+      "sha256": "ee34323f6a1a18eaae3deb6ae5f597d67cb275d670d20ab3744c4fcd03cd7497",
+      "installedSha": "ee34323f6a1a18eaae3deb6ae5f597d67cb275d670d20ab3744c4fcd03cd7497"
     },
     "AGENTS.md": {
       "owner": "framework",
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "a11b922509a0920c585af8a912e63edbf8bbc128350dce0358e9ae672af476a6",
-      "installedSha": "a11b922509a0920c585af8a912e63edbf8bbc128350dce0358e9ae672af476a6"
+      "sha256": "0f4125183b058c72667cbeeb42fe742daef17505c50d47a68126d22383bd576e",
+      "installedSha": "0f4125183b058c72667cbeeb42fe742daef17505c50d47a68126d22383bd576e"
     },
     "CLAUDE.md": {
       "owner": "framework",
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "d81cc08b7e2f26d2b70d5dcbf6e0487fde8efc5c7fb4a8b289e70ef307ba085b",
-      "installedSha": "d81cc08b7e2f26d2b70d5dcbf6e0487fde8efc5c7fb4a8b289e70ef307ba085b"
+      "sha256": "f7b8c88e7b6491ab0a29c5d83c1ab0d474de7f078ffd71bc09a013dc58587b25",
+      "installedSha": "f7b8c88e7b6491ab0a29c5d83c1ab0d474de7f078ffd71bc09a013dc58587b25"
     },
     "DICTIONARY.md": {
       "owner": "framework",
@@ -97,8 +105,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "3f2e7ecca793e0391a0fa9358ab03486e5fa81b227d1bbb01fa9d175d67bf3a6",
-      "installedSha": "3f2e7ecca793e0391a0fa9358ab03486e5fa81b227d1bbb01fa9d175d67bf3a6"
+      "sha256": "fcf67d040d1352173a5fb224901dd31c6e4334e8f5a17e28af1472fc256a30d9",
+      "installedSha": "fcf67d040d1352173a5fb224901dd31c6e4334e8f5a17e28af1472fc256a30d9"
     },
     "USER_GUIDE.md": {
       "owner": "framework",
@@ -1610,8 +1618,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/delta-dispatch-builder.js",
-      "sha256": "0994ffd358919a3db5dd9dfec25d45e335ce30443b72b7013c99f240b1ed97da",
-      "installedSha": "0994ffd358919a3db5dd9dfec25d45e335ce30443b72b7013c99f240b1ed97da"
+      "sha256": "b75d46199a0f8548a7e60d6a00160888a9e71fad185d876f20c2031a570c5cec",
+      "installedSha": "b75d46199a0f8548a7e60d6a00160888a9e71fad185d876f20c2031a570c5cec"
     },
     "scripts/delta-dispatch-fixer.js": {
       "owner": "framework",
@@ -1645,8 +1653,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/delta-final-gauntlet.js",
-      "sha256": "2e223d015fe9db9b1704cf37bdf957956d717b1789b3c7cc9595755089d099b5",
-      "installedSha": "2e223d015fe9db9b1704cf37bdf957956d717b1789b3c7cc9595755089d099b5"
+      "sha256": "af94688e9dc6783173ebc2b37fae95d902462248d3beb9d79c1aec78d99c7aff",
+      "installedSha": "af94688e9dc6783173ebc2b37fae95d902462248d3beb9d79c1aec78d99c7aff"
     },
     "scripts/delta-fix-onboarding-spec.txt": {
       "owner": "framework",
@@ -1666,8 +1674,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/delta-gauntlet-watcher.js",
-      "sha256": "2cc8e99dd9de642b12c1958dc980aa3f5c9e404816d7b9b260739aa604513046",
-      "installedSha": "2cc8e99dd9de642b12c1958dc980aa3f5c9e404816d7b9b260739aa604513046"
+      "sha256": "25b1b28e6c35e5b31656d40ff5df88cf4a19da68c6eacdcafcb4e41aadde6495",
+      "installedSha": "25b1b28e6c35e5b31656d40ff5df88cf4a19da68c6eacdcafcb4e41aadde6495"
     },
     "scripts/delta-heartbeat.js": {
       "owner": "framework",
@@ -1799,8 +1807,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/dispatch-agent.js",
-      "sha256": "3935f616e8458295b996ecfcf68a071036a0af882080f7a5af139152ef3ae34e",
-      "installedSha": "3935f616e8458295b996ecfcf68a071036a0af882080f7a5af139152ef3ae34e"
+      "sha256": "9f1f9517b3cf68e2b493615756fc5afc87f98fa2dac1f1f142014445507f1235",
+      "installedSha": "9f1f9517b3cf68e2b493615756fc5afc87f98fa2dac1f1f142014445507f1235"
     },
     "scripts/dispatch-claude.js": {
       "owner": "framework",
@@ -1897,8 +1905,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/generate-framework-manifest.js",
-      "sha256": "0a57bb251cb9c2be75ebb86571b4994fc14ecd3683081082b1c7423e8693a451",
-      "installedSha": "0a57bb251cb9c2be75ebb86571b4994fc14ecd3683081082b1c7423e8693a451"
+      "sha256": "5d4a15afe2539084a035eee135f20ca1d6c72a54a5e2a2101ef4d94c6c6528b0",
+      "installedSha": "5d4a15afe2539084a035eee135f20ca1d6c72a54a5e2a2101ef4d94c6c6528b0"
     },
     "scripts/generate-maps.js": {
       "owner": "framework",
@@ -2205,8 +2213,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/path-lint.rules.generated.json",
-      "sha256": "a553a4a4c42450432798b131808abd2b6a3528f87642c642926f3d54b53554de",
-      "installedSha": "a553a4a4c42450432798b131808abd2b6a3528f87642c642926f3d54b53554de"
+      "sha256": "ccb4f4e1c282b9cc45d88c0b041f143330aeb55150bcbf88581c906c0db61edd",
+      "installedSha": "ccb4f4e1c282b9cc45d88c0b041f143330aeb55150bcbf88581c906c0db61edd"
     },
     "scripts/phase0-verify.js": {
       "owner": "framework",
@@ -2499,15 +2507,15 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/test-dispatch-agent-resolution.js",
-      "sha256": "7fb9401e17b098fdc0ee65fdb202f68eebcd75ceca3b399677562033713e9d86",
-      "installedSha": "7fb9401e17b098fdc0ee65fdb202f68eebcd75ceca3b399677562033713e9d86"
+      "sha256": "028df40b3c8c4a17db350786bbbe47417e2e0b297808fe62b74f5555e1617211",
+      "installedSha": "028df40b3c8c4a17db350786bbbe47417e2e0b297808fe62b74f5555e1617211"
     },
     "scripts/test-dispatch-config.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/test-dispatch-config.js",
-      "sha256": "f75e96995296487442035caec065c57b77aa59a3bbfa847f81d0ea42278c1e2a",
-      "installedSha": "f75e96995296487442035caec065c57b77aa59a3bbfa847f81d0ea42278c1e2a"
+      "sha256": "68323b8d637ddfad22eed53afa8999cdea091cf26596b32ccbbb3479db8834d9",
+      "installedSha": "68323b8d637ddfad22eed53afa8999cdea091cf26596b32ccbbb3479db8834d9"
     },
     "scripts/test-dispatch-route-guard.js": {
       "owner": "framework",
@@ -2544,6 +2552,13 @@
       "sha256": "e585d41d0803d6a7e19caf0c3de7f42b04965f9048faa6201794e65d22d57eeb",
       "installedSha": "e585d41d0803d6a7e19caf0c3de7f42b04965f9048faa6201794e65d22d57eeb"
     },
+    "scripts/test-merge-guard-node-e.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/test-merge-guard-node-e.js",
+      "sha256": "4265495588bd1d4b0c7ae7a032c00f722276a66ca64e34f3060a3775e6772f9c",
+      "installedSha": "4265495588bd1d4b0c7ae7a032c00f722276a66ca64e34f3060a3775e6772f9c"
+    },
     "scripts/test-merge-guard-rm.js": {
       "owner": "framework",
       "managed": true,
@@ -2578,6 +2593,13 @@
       "source": "scripts/test-response-size-guard.js",
       "sha256": "b30a1206dedfdf133dbe693d488e945f4ad7ab25e8bfa3aba9b29e7c558018b4",
       "installedSha": "b30a1206dedfdf133dbe693d488e945f4ad7ab25e8bfa3aba9b29e7c558018b4"
+    },
+    "scripts/test-settings-edit-guard.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/test-settings-edit-guard.js",
+      "sha256": "63968eaf75edb1f83d76906b0b7badafa21968b8f7a09110dc36c7240dc10491",
+      "installedSha": "63968eaf75edb1f83d76906b0b7badafa21968b8f7a09110dc36c7240dc10491"
     },
     "scripts/test-sprint-hooks.js": {
       "owner": "framework",
@@ -3045,8 +3067,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/warpos/manifest/build.js",
-      "sha256": "09f47f3aec8a7a3882658f85f6fd93c60fe6ef1e4751877f260f0c85d5a329cc",
-      "installedSha": "09f47f3aec8a7a3882658f85f6fd93c60fe6ef1e4751877f260f0c85d5a329cc"
+      "sha256": "d48fcd2f5431308ccd3976b17e506e3417257c603b1191aa63e16cf87571e1ce",
+      "installedSha": "d48fcd2f5431308ccd3976b17e506e3417257c603b1191aa63e16cf87571e1ce"
     },
     "scripts/warpos/manifest/test-bootstrap.js": {
       "owner": "framework",
@@ -3087,8 +3109,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/warpos/manifest/walk-skip.js",
-      "sha256": "61f62a83cbb00b12b69cbff9518e6eb60f0c71f40706d9e56e63653482376850",
-      "installedSha": "61f62a83cbb00b12b69cbff9518e6eb60f0c71f40706d9e56e63653482376850"
+      "sha256": "69c0ea24bf118129a8ef5d3a8bbc2fee1ddea214904d1ab0af40b193de40724a",
+      "installedSha": "69c0ea24bf118129a8ef5d3a8bbc2fee1ddea214904d1ab0af40b193de40724a"
     },
     "scripts/warpos/lib/content-hash.js": {
       "owner": "framework",
@@ -3178,8 +3200,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/system/coherence.js",
-      "sha256": "c3a01452c3f1fde42a769eae4b433b09bcd7ff829734dc49e833fddad9c8b5cd",
-      "installedSha": "c3a01452c3f1fde42a769eae4b433b09bcd7ff829734dc49e833fddad9c8b5cd"
+      "sha256": "aed0c4d3801d910f33b2022793d10b9ee01c89d0f8f0139eee891ba28877bf1c",
+      "installedSha": "aed0c4d3801d910f33b2022793d10b9ee01c89d0f8f0139eee891ba28877bf1c"
     },
     "scripts/sprint/add-sprint.js": {
       "owner": "framework",
@@ -3437,8 +3459,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/scaffold/app.js",
-      "sha256": "e70e979bcc1af40605fa2b12f21584f28d89e27d362333e4b92ead6a7f166868",
-      "installedSha": "e70e979bcc1af40605fa2b12f21584f28d89e27d362333e4b92ead6a7f166868"
+      "sha256": "24cad5b38cf8bf9ce46a50cb66ac72c78a4446aae47a9627b21ed169a8424910",
+      "installedSha": "24cad5b38cf8bf9ce46a50cb66ac72c78a4446aae47a9627b21ed169a8424910"
     },
     "scripts/scaffold/app.test.js": {
       "owner": "framework",
@@ -3906,15 +3928,15 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/beta-gate.js",
-      "sha256": "1b6544a610db9e8ee1b510722236e9aafc5add5ee4ca26b5d62f05823d4a1b37",
-      "installedSha": "1b6544a610db9e8ee1b510722236e9aafc5add5ee4ca26b5d62f05823d4a1b37"
+      "sha256": "9c871440de47b844d38e0416878ddb618512ec02e1d54aecde0e5caa4b717b99",
+      "installedSha": "9c871440de47b844d38e0416878ddb618512ec02e1d54aecde0e5caa4b717b99"
     },
     "scripts/hooks/boss-boundary.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/boss-boundary.js",
-      "sha256": "ca298ae3a5052da8a34282045c8306f361429eff1c54cc367e675077c3caff0c",
-      "installedSha": "ca298ae3a5052da8a34282045c8306f361429eff1c54cc367e675077c3caff0c"
+      "sha256": "c47df9165356dd81adf3a4fac9795d4e6324adb7b1ba3cd0abf429d5b3b53914",
+      "installedSha": "c47df9165356dd81adf3a4fac9795d4e6324adb7b1ba3cd0abf429d5b3b53914"
     },
     "scripts/hooks/build-transaction-boundary.js": {
       "owner": "framework",
@@ -3969,8 +3991,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/dispatch-route-guard.js",
-      "sha256": "ebdbfcb4ae7a9f3fa3c455c069c13c328c8cf382b4e5f00fc6decf4a8617c87d",
-      "installedSha": "ebdbfcb4ae7a9f3fa3c455c069c13c328c8cf382b4e5f00fc6decf4a8617c87d"
+      "sha256": "d6233f65d419ff3e4c439f10006f2167f4b0ad09c2532d24340c563288f8a656",
+      "installedSha": "d6233f65d419ff3e4c439f10006f2167f4b0ad09c2532d24340c563288f8a656"
     },
     "scripts/hooks/edit-watcher.js": {
       "owner": "framework",
@@ -4025,29 +4047,29 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/framework-purity-guard.js",
-      "sha256": "dd55d0fc20b3c9a8cc67550bd77f3311369a2296305e127d36dbb7839eaa77ac",
-      "installedSha": "dd55d0fc20b3c9a8cc67550bd77f3311369a2296305e127d36dbb7839eaa77ac"
+      "sha256": "f0015fb295e72bbb2f7864a34010d4fe4b022a1f5f11bf71e3665ed08188908a",
+      "installedSha": "f0015fb295e72bbb2f7864a34010d4fe4b022a1f5f11bf71e3665ed08188908a"
     },
     "scripts/hooks/gate-check.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/gate-check.js",
-      "sha256": "1ea2f7d895e3f6159ee7ecb2c264450266a6172c7b433c424f3e40df11c74d93",
-      "installedSha": "1ea2f7d895e3f6159ee7ecb2c264450266a6172c7b433c424f3e40df11c74d93"
+      "sha256": "01cf654ad67d1882e76a86eda95359af6bcec6179e7b304b63a6887693793dc3",
+      "installedSha": "01cf654ad67d1882e76a86eda95359af6bcec6179e7b304b63a6887693793dc3"
     },
     "scripts/hooks/gauntlet-gate.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/gauntlet-gate.js",
-      "sha256": "698c159777f3e91f9575479ec78f2161f6c3804698620f5758456af0d0b29269",
-      "installedSha": "698c159777f3e91f9575479ec78f2161f6c3804698620f5758456af0d0b29269"
+      "sha256": "507d1e59911ccb1581caa0df946aa1569a3ce7b32c8aaf1865b9e8f4181faec5",
+      "installedSha": "507d1e59911ccb1581caa0df946aa1569a3ce7b32c8aaf1865b9e8f4181faec5"
     },
     "scripts/hooks/hook-manifest.json": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/hook-manifest.json",
-      "sha256": "bdf365ad8621b6310b935155f02df673e5f9459feba58ec45743ae24f4877fe8",
-      "installedSha": "bdf365ad8621b6310b935155f02df673e5f9459feba58ec45743ae24f4877fe8"
+      "sha256": "4bcd3fa1f8636c09c7d04a48f924a240db77db8127d74b0571a305addbf3b449",
+      "installedSha": "4bcd3fa1f8636c09c7d04a48f924a240db77db8127d74b0571a305addbf3b449"
     },
     "scripts/hooks/learning-validator.js": {
       "owner": "framework",
@@ -4060,8 +4082,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/ledger-presence-guard.js",
-      "sha256": "dda057888d81ae0f632fc2cdc6058d1c1aaa2636966c0871751458379002e765",
-      "installedSha": "dda057888d81ae0f632fc2cdc6058d1c1aaa2636966c0871751458379002e765"
+      "sha256": "999c69d8ee73b657803c1f3b4525cca6cad3c3340ba2008728647ddd8184a5b9",
+      "installedSha": "999c69d8ee73b657803c1f3b4525cca6cad3c3340ba2008728647ddd8184a5b9"
     },
     "scripts/hooks/lint-hook-output.js": {
       "owner": "framework",
@@ -4102,15 +4124,15 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/ownership-guard.js",
-      "sha256": "c6d18f53b17d29a4235eb696c404522a6d9cba65010f04094d992785bf63dd88",
-      "installedSha": "c6d18f53b17d29a4235eb696c404522a6d9cba65010f04094d992785bf63dd88"
+      "sha256": "16fa08eb4d29aa6d015f28d66ace075a00f520765654bfd4b04773b0c43ffa82",
+      "installedSha": "16fa08eb4d29aa6d015f28d66ace075a00f520765654bfd4b04773b0c43ffa82"
     },
     "scripts/hooks/path-guard.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/path-guard.js",
-      "sha256": "1d9289ad9e28fd464608656a9cc12a5321e9bdf0e0607636a4a0f4a11357e1f0",
-      "installedSha": "1d9289ad9e28fd464608656a9cc12a5321e9bdf0e0607636a4a0f4a11357e1f0"
+      "sha256": "d9e5498f2846dbe1b7da3144ec26088b2ca8893b09209bfc3739429c641f4cdc",
+      "installedSha": "d9e5498f2846dbe1b7da3144ec26088b2ca8893b09209bfc3739429c641f4cdc"
     },
     "scripts/hooks/path-registry-guard.js": {
       "owner": "framework",
@@ -4165,8 +4187,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/response-size-guard.js",
-      "sha256": "8d0fae69e3a977054afdae479e56c0890e7c82eb6d62442fc59a1e72db194cad",
-      "installedSha": "8d0fae69e3a977054afdae479e56c0890e7c82eb6d62442fc59a1e72db194cad"
+      "sha256": "58d174fd770e8f2ce78af0295560e677550a6e9b4a9dda7552108be48054b630",
+      "installedSha": "58d174fd770e8f2ce78af0295560e677550a6e9b4a9dda7552108be48054b630"
     },
     "scripts/hooks/retro-presence-check.js": {
       "owner": "framework",
@@ -4186,8 +4208,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/scope-contract-guard.js",
-      "sha256": "0f4a1108c87f88be159d1dfd526424395a7f9ce8f70ed1bd850e2f33a4ccef55",
-      "installedSha": "0f4a1108c87f88be159d1dfd526424395a7f9ce8f70ed1bd850e2f33a4ccef55"
+      "sha256": "5876576b8ae2e76e71dfa640e4f6936eec258b88922fbfdd289f17c7f585979b",
+      "installedSha": "5876576b8ae2e76e71dfa640e4f6936eec258b88922fbfdd289f17c7f585979b"
     },
     "scripts/hooks/secret-guard.js": {
       "owner": "framework",
@@ -4223,6 +4245,13 @@
       "source": "scripts/hooks/session-tracker.js",
       "sha256": "8d0b16c671aa0d92ebac73aff6838e81dcc50bd2ad56c3eb37e064b7e7fb0563",
       "installedSha": "8d0b16c671aa0d92ebac73aff6838e81dcc50bd2ad56c3eb37e064b7e7fb0563"
+    },
+    "scripts/hooks/settings-edit-guard.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/hooks/settings-edit-guard.js",
+      "sha256": "06e55b9ed08fa382d9c55d6e56e94177c63fd1adcae038cb76d9134a71e75a42",
+      "installedSha": "06e55b9ed08fa382d9c55d6e56e94177c63fd1adcae038cb76d9134a71e75a42"
     },
     "scripts/hooks/skill-catalog-regen.js": {
       "owner": "framework",
@@ -4270,8 +4299,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/sprint-routing-guard.js",
-      "sha256": "5fc4f9e3cb5b80e76406d834a2157f1f681fa3f3c05a0b94b31d6a7a079fa4e3",
-      "installedSha": "5fc4f9e3cb5b80e76406d834a2157f1f681fa3f3c05a0b94b31d6a7a079fa4e3"
+      "sha256": "1e985eece1bdb267a94ac925525d3b05b0b45fdcf9a98b1beadf77d3cad6fdd2",
+      "installedSha": "1e985eece1bdb267a94ac925525d3b05b0b45fdcf9a98b1beadf77d3cad6fdd2"
     },
     "scripts/hooks/sprint-tracker-guard.js": {
       "owner": "framework",
@@ -4354,8 +4383,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/version-bump-guard.js",
-      "sha256": "49842f93d7b144b146aed03b2daf18fc3b7847b9be3dc0c30d0dc5366c18c95e",
-      "installedSha": "49842f93d7b144b146aed03b2daf18fc3b7847b9be3dc0c30d0dc5366c18c95e"
+      "sha256": "ef70d1c721b5fc10a50d5badf1a50802b91241946a9cffcae09599721306b5cd",
+      "installedSha": "ef70d1c721b5fc10a50d5badf1a50802b91241946a9cffcae09599721306b5cd"
     },
     "scripts/hooks/worktree-preflight.js": {
       "owner": "framework",
@@ -4417,8 +4446,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/lib/paths.generated.js",
-      "sha256": "59de40c38d46b34772e16adf9248ff56c2dcd19a6abffa811527408ada183fcd",
-      "installedSha": "59de40c38d46b34772e16adf9248ff56c2dcd19a6abffa811527408ada183fcd"
+      "sha256": "f2facc6881429cd99ab2d9d998f3542ffc8c6ab8ab4df313b8451ba22f4ca971",
+      "installedSha": "f2facc6881429cd99ab2d9d998f3542ffc8c6ab8ab4df313b8451ba22f4ca971"
     },
     "scripts/hooks/lib/paths.js": {
       "owner": "framework",
@@ -4445,15 +4474,15 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/lib/providers.js",
-      "sha256": "1111766db8db832b6b2e6123f4481dbb94dae413bf33bbc0179340760cb17109",
-      "installedSha": "1111766db8db832b6b2e6123f4481dbb94dae413bf33bbc0179340760cb17109"
+      "sha256": "b9143f6b3f529128c4626943dd8a9d405cee07c760970131c0e69a77b871a786",
+      "installedSha": "b9143f6b3f529128c4626943dd8a9d405cee07c760970131c0e69a77b871a786"
     },
     "scripts/hooks/lib/role-aliases.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/lib/role-aliases.js",
-      "sha256": "ae40a431aec9a28f03e16244544b7e932f63440991d8c21ae3f9a0968555f141",
-      "installedSha": "ae40a431aec9a28f03e16244544b7e932f63440991d8c21ae3f9a0968555f141"
+      "sha256": "8365a0c524e7350358597a3acc7598afd61fda38d5cc6d8c8bcbf49f0b6186ad",
+      "installedSha": "8365a0c524e7350358597a3acc7598afd61fda38d5cc6d8c8bcbf49f0b6186ad"
     },
     "scripts/hooks/lib/skill-telemetry.js": {
       "owner": "framework",
@@ -4564,8 +4593,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/dispatch/catalog.js",
-      "sha256": "35a604dd30fb1adc26bfaf5c426071dd0573fecee21d0817db9ebfb58dba35cc",
-      "installedSha": "35a604dd30fb1adc26bfaf5c426071dd0573fecee21d0817db9ebfb58dba35cc"
+      "sha256": "541cb82fa7fe9beb2ff8917c8cd0425887a99d7ae439e7dfb1991aaebc9a5923",
+      "installedSha": "541cb82fa7fe9beb2ff8917c8cd0425887a99d7ae439e7dfb1991aaebc9a5923"
     },
     "scripts/dispatch/cli-preview.js": {
       "owner": "framework",
@@ -4606,8 +4635,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/dispatch/gauntlet-verify.test.js",
-      "sha256": "9f4fe4da864220430057a72c86f5be2366f192152f39ede7671e781b23084c45",
-      "installedSha": "9f4fe4da864220430057a72c86f5be2366f192152f39ede7671e781b23084c45"
+      "sha256": "6561919b8029246b3b48e1e18246ee9f7e3da17c181b43dbcd377d60da5a6432",
+      "installedSha": "6561919b8029246b3b48e1e18246ee9f7e3da17c181b43dbcd377d60da5a6432"
     },
     "scripts/dispatch/gui.js": {
       "owner": "framework",
@@ -4627,8 +4656,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/dispatch/org-roles.js",
-      "sha256": "f58f0f98daf52d2eb1ea7826cf10dcfa320cbaac7eb4ff41f433a70a1e4180ca",
-      "installedSha": "f58f0f98daf52d2eb1ea7826cf10dcfa320cbaac7eb4ff41f433a70a1e4180ca"
+      "sha256": "28baf3d602ec621fff188fcbf7b83a85278b5dd55832609a5bb402f22500ad24",
+      "installedSha": "28baf3d602ec621fff188fcbf7b83a85278b5dd55832609a5bb402f22500ad24"
     },
     "scripts/dispatch/prune-dead-locks.js": {
       "owner": "framework",
@@ -4662,8 +4691,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/dispatch/state.js",
-      "sha256": "395d9976083b41b3ecec270a867a5c44131a572d2b5f17e59b5e9379dee84f95",
-      "installedSha": "395d9976083b41b3ecec270a867a5c44131a572d2b5f17e59b5e9379dee84f95"
+      "sha256": "88892730cf5bbea6efeae1016ebc137296fdbb03218ecd363fad8575c490bf28",
+      "installedSha": "88892730cf5bbea6efeae1016ebc137296fdbb03218ecd363fad8575c490bf28"
     },
     "scripts/deps/admission.js": {
       "owner": "framework",
@@ -4742,6 +4771,20 @@
       "sha256": "07057c0fd66ee8430d1508ce825d5f838222b15308226edbfee7fcc7cb91aec3",
       "installedSha": "07057c0fd66ee8430d1508ce825d5f838222b15308226edbfee7fcc7cb91aec3"
     },
+    "scripts/checks/canon-no-unfilled-tokens.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/canon-no-unfilled-tokens.js",
+      "sha256": "3270ae42c948305f93a7e506215682cf91b4cc5b93025de72ca633b4ced6597b",
+      "installedSha": "3270ae42c948305f93a7e506215682cf91b4cc5b93025de72ca633b4ced6597b"
+    },
+    "scripts/checks/canon-type-coverage.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/canon-type-coverage.js",
+      "sha256": "7c680fadb38d95b81245b5aafa609496d321d5b5de1370d076d150954d43cc91",
+      "installedSha": "7c680fadb38d95b81245b5aafa609496d321d5b5de1370d076d150954d43cc91"
+    },
     "scripts/checks/chief-coherence-enforcer.js": {
       "owner": "framework",
       "managed": true,
@@ -4767,15 +4810,15 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/design-quality-gate.js",
-      "sha256": "88f40676eb26c90ceb7cb6844e478c370cbd8cebcd2ab447ab529b6324cbd24f",
-      "installedSha": "88f40676eb26c90ceb7cb6844e478c370cbd8cebcd2ab447ab529b6324cbd24f"
+      "sha256": "18d150502d0e7d3fa241203c8cbf5c9d961ec9ea2bdb1651ce4a0abe99e28e04",
+      "installedSha": "18d150502d0e7d3fa241203c8cbf5c9d961ec9ea2bdb1651ce4a0abe99e28e04"
     },
     "scripts/checks/design-quality-gate.test.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/design-quality-gate.test.js",
-      "sha256": "f85f39bd4f174b85a646dd87dd268e98df3b52e11034f444b2df9ff6a5f9d541",
-      "installedSha": "f85f39bd4f174b85a646dd87dd268e98df3b52e11034f444b2df9ff6a5f9d541"
+      "sha256": "18e082e0a4376a550e3e699eac6ab538be0edcbabfcdc14724cadda0b5464db1",
+      "installedSha": "18e082e0a4376a550e3e699eac6ab538be0edcbabfcdc14724cadda0b5464db1"
     },
     "scripts/checks/design-system.allowlist.json": {
       "owner": "framework",
@@ -4791,6 +4834,13 @@
       "sha256": "f7d08a5169e76c9bec7ffe5c355ffca49180a4d880c9a21214a16a7780fb9292",
       "installedSha": "f7d08a5169e76c9bec7ffe5c355ffca49180a4d880c9a21214a16a7780fb9292"
     },
+    "scripts/checks/dispatch-readiness.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/dispatch-readiness.js",
+      "sha256": "e50ddfef9d14ff1f4f3d92184f8b1dde5ccc0b58fab21b18e2615cb5b37d6399",
+      "installedSha": "e50ddfef9d14ff1f4f3d92184f8b1dde5ccc0b58fab21b18e2615cb5b37d6399"
+    },
     "scripts/checks/dispatch-routing-parity.js": {
       "owner": "framework",
       "managed": true,
@@ -4798,12 +4848,19 @@
       "sha256": "993d0f14cf0a92da61d2641f2e44cfac0890cad4e8babb4349b59fb059f1d4fc",
       "installedSha": "993d0f14cf0a92da61d2641f2e44cfac0890cad4e8babb4349b59fb059f1d4fc"
     },
+    "scripts/checks/docker-secret-ignore.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/docker-secret-ignore.js",
+      "sha256": "19b4a2da61e530f7637c201bba4224d60972398a8ade5652b07a1fb2954513b4",
+      "installedSha": "19b4a2da61e530f7637c201bba4224d60972398a8ade5652b07a1fb2954513b4"
+    },
     "scripts/checks/domain-routing-scan.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/domain-routing-scan.js",
-      "sha256": "8cff0062fc3664748a472bdca540a0fbd156d716295b57dd964ddf7424cfc00c",
-      "installedSha": "8cff0062fc3664748a472bdca540a0fbd156d716295b57dd964ddf7424cfc00c"
+      "sha256": "fda5ffbc77a97b8cfee066a4e1bcb864be6a77e02ccc2ab9f872b893e7226b14",
+      "installedSha": "fda5ffbc77a97b8cfee066a4e1bcb864be6a77e02ccc2ab9f872b893e7226b14"
     },
     "scripts/checks/etc-harness-scan.js": {
       "owner": "framework",
@@ -4816,8 +4873,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/framework-purity.js",
-      "sha256": "e0399d4e9a8cad0b0f069b43ef79083f3bd146217bf4ef0f6ccbfdf2701765b0",
-      "installedSha": "e0399d4e9a8cad0b0f069b43ef79083f3bd146217bf4ef0f6ccbfdf2701765b0"
+      "sha256": "0e54a310950868344811a64f4634cda12b4bb54ac3958331dd646b050f55bfc1",
+      "installedSha": "0e54a310950868344811a64f4634cda12b4bb54ac3958331dd646b050f55bfc1"
     },
     "scripts/checks/guides-coverage.js": {
       "owner": "framework",
@@ -4865,8 +4922,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/manager-principles-scan.js",
-      "sha256": "de14f67270269c60e23ac19bab6addf160edb7be53770a420968795a1c2d36cc",
-      "installedSha": "de14f67270269c60e23ac19bab6addf160edb7be53770a420968795a1c2d36cc"
+      "sha256": "c9d816e5a584d7f0aaa8c88f90f043c8d675235eb614e3f12ca36cc3623f5361",
+      "installedSha": "c9d816e5a584d7f0aaa8c88f90f043c8d675235eb614e3f12ca36cc3623f5361"
     },
     "scripts/checks/maps-coverage.allowlist.json": {
       "owner": "framework",
@@ -4928,29 +4985,29 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/resonance-runner.js",
-      "sha256": "eef07e5f97e7217b95b05fa1e7c32afa19c5fa5830559926995a9cd417daa329",
-      "installedSha": "eef07e5f97e7217b95b05fa1e7c32afa19c5fa5830559926995a9cd417daa329"
+      "sha256": "625beefaa54efb862fb81509530cc3f1b216f2707f80e9cfe555c7a7b52e733c",
+      "installedSha": "625beefaa54efb862fb81509530cc3f1b216f2707f80e9cfe555c7a7b52e733c"
     },
     "scripts/checks/resonance-runner.test.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/resonance-runner.test.js",
-      "sha256": "edec7e1eaa831bdb8ce73788bebed2b94935eef010969f53143ef413184db990",
-      "installedSha": "edec7e1eaa831bdb8ce73788bebed2b94935eef010969f53143ef413184db990"
+      "sha256": "9836fac2aa447cb74f8286f4872674102408af645412ff73357648c89727b5dd",
+      "installedSha": "9836fac2aa447cb74f8286f4872674102408af645412ff73357648c89727b5dd"
     },
     "scripts/checks/role-parity-scan.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/role-parity-scan.js",
-      "sha256": "4de603b875e1efcd1de68e5fd6aaa4e8712138b80ea0b05adc4fe2aaa2d47227",
-      "installedSha": "4de603b875e1efcd1de68e5fd6aaa4e8712138b80ea0b05adc4fe2aaa2d47227"
+      "sha256": "dc370406d13537d926943da49b630b0c27e9d8e4a179eefe63d4cf9b25f41e88",
+      "installedSha": "dc370406d13537d926943da49b630b0c27e9d8e4a179eefe63d4cf9b25f41e88"
     },
     "scripts/checks/role-parity.test.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/role-parity.test.js",
-      "sha256": "15a54ef2a537a0f4e19ecc74077ddfa0ed17a0dc37577d7de3b0d07af2e8c83a",
-      "installedSha": "15a54ef2a537a0f4e19ecc74077ddfa0ed17a0dc37577d7de3b0d07af2e8c83a"
+      "sha256": "410fbb4e7ab5c4611f601071b08a1e84d07977f8c1ab4cc9123ef3d6b6d153c1",
+      "installedSha": "410fbb4e7ab5c4611f601071b08a1e84d07977f8c1ab4cc9123ef3d6b6d153c1"
     },
     "scripts/checks/scaffold-coverage-scan.js": {
       "owner": "framework",
@@ -4986,6 +5043,27 @@
       "source": "scripts/checks/sprint-beta-honesty.js",
       "sha256": "3cb30dc8d9a3a024a9e3a7fd8bb833fe268dd0d69aae892cfa27fc841a0a8d26",
       "installedSha": "3cb30dc8d9a3a024a9e3a7fd8bb833fe268dd0d69aae892cfa27fc841a0a8d26"
+    },
+    "scripts/checks/test-docker-secret-ignore.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/test-docker-secret-ignore.js",
+      "sha256": "c7a4b5cb068146c68ea6a04966cc8553156fd62eb9bfbd40cb643f9f9b2cf2f0",
+      "installedSha": "c7a4b5cb068146c68ea6a04966cc8553156fd62eb9bfbd40cb643f9f9b2cf2f0"
+    },
+    "scripts/checks/test-framework-purity-staged.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/test-framework-purity-staged.js",
+      "sha256": "160bb07550d884565318ebc272efb1288de103f221178cb5d3d2be239962d239",
+      "installedSha": "160bb07550d884565318ebc272efb1288de103f221178cb5d3d2be239962d239"
+    },
+    "scripts/checks/test-guard-remediation-paths.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/test-guard-remediation-paths.js",
+      "sha256": "16b1a1b6cdfcb3bd26174456b18ac12f24589b512dc6a9570e6d21bef6ade80a",
+      "installedSha": "16b1a1b6cdfcb3bd26174456b18ac12f24589b512dc6a9570e6d21bef6ade80a"
     },
     "scripts/checks/test-sprint-beta-honesty.js": {
       "owner": "framework",
@@ -5033,8 +5111,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/warpos-install-baseline.js",
-      "sha256": "dc1ebd3275c7808c3cd707a3eb4c169028e3be5a7cbe51369db8c1c93c056071",
-      "installedSha": "dc1ebd3275c7808c3cd707a3eb4c169028e3be5a7cbe51369db8c1c93c056071"
+      "sha256": "755dd891bda66c4865e917834f0dc45516307af698d47b8fe1c44aab57f61529",
+      "installedSha": "755dd891bda66c4865e917834f0dc45516307af698d47b8fe1c44aab57f61529"
     },
     "scripts/checks/warpos-layer-diff.js": {
       "owner": "framework",
@@ -5124,8 +5202,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/check/install.js",
-      "sha256": "3ada65bf7ef242f9af3c61cdccf3f04fb5c4911fb1d0341f40dcf32537f88dc3",
-      "installedSha": "3ada65bf7ef242f9af3c61cdccf3f04fb5c4911fb1d0341f40dcf32537f88dc3"
+      "sha256": "4f6bc4d69c97a06520dd71f7bbdc352dd80c9591fb3f425544c2c7f7a0b204fe",
+      "installedSha": "4f6bc4d69c97a06520dd71f7bbdc352dd80c9591fb3f425544c2c7f7a0b204fe"
     },
     "scripts/check/node-procs.js": {
       "owner": "framework",
@@ -5152,8 +5230,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/canon/generate.js",
-      "sha256": "da6dc6a12f8600138995c4b74aa39ee56eaf118a6c4d2baf5e6ad7d9e3880ce4",
-      "installedSha": "da6dc6a12f8600138995c4b74aa39ee56eaf118a6c4d2baf5e6ad7d9e3880ce4"
+      "sha256": "7b6124f0af4c688c29b185d0aba73daf383373b2ae3f1bace6bcb6b01b813733",
+      "installedSha": "7b6124f0af4c688c29b185d0aba73daf383373b2ae3f1bace6bcb6b01b813733"
     },
     "scripts/canon/research.js": {
       "owner": "framework",
@@ -5166,15 +5244,15 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/canon/test-generate.js",
-      "sha256": "fd1a922f8eb065bbc7f6dc30eb8f0940f1c6bb0e218474b04debda817db60851",
-      "installedSha": "fd1a922f8eb065bbc7f6dc30eb8f0940f1c6bb0e218474b04debda817db60851"
+      "sha256": "7d89ec126b703805d8c6d05827a898f2ee9e6e4d62911fd785928def6320920e",
+      "installedSha": "7d89ec126b703805d8c6d05827a898f2ee9e6e4d62911fd785928def6320920e"
     },
     "scripts/canon/validate.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/canon/validate.js",
-      "sha256": "1aab621f0c4ccb1a4ea424a00b8275b73376aa2af66279a8c302d6497dc4520f",
-      "installedSha": "1aab621f0c4ccb1a4ea424a00b8275b73376aa2af66279a8c302d6497dc4520f"
+      "sha256": "dd1ccd686e2ee5ee8c958d465624f98f9a10d6db6a9e996b1c505de6b8b669d6",
+      "installedSha": "dd1ccd686e2ee5ee8c958d465624f98f9a10d6db6a9e996b1c505de6b8b669d6"
     },
     "scripts/canon/fixtures/acme-intent.md": {
       "owner": "framework",
@@ -5194,22 +5272,22 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/bootstrap/spinup-orchestrate.js",
-      "sha256": "7023cc82835c1a63d8c2a79014e60f7606a954b82e841f5310c6a29b336729cb",
-      "installedSha": "7023cc82835c1a63d8c2a79014e60f7606a954b82e841f5310c6a29b336729cb"
+      "sha256": "f0032c24e1815d85d5af18b1497ccb11e62dee6da9abcc47bc762b8b2eaac6f4",
+      "installedSha": "f0032c24e1815d85d5af18b1497ccb11e62dee6da9abcc47bc762b8b2eaac6f4"
     },
     "scripts/bootstrap/test-spinup-orchestrate.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/bootstrap/test-spinup-orchestrate.js",
-      "sha256": "6e673fc336ed92cbad580e7f5b4f7bc9414d335898c586017b803f40ecd9d0c0",
-      "installedSha": "6e673fc336ed92cbad580e7f5b4f7bc9414d335898c586017b803f40ecd9d0c0"
+      "sha256": "c777fa72ffbf993f6c1722971e5f21384c671789d547ef4719dc4c1132ba3765",
+      "installedSha": "c777fa72ffbf993f6c1722971e5f21384c671789d547ef4719dc4c1132ba3765"
     },
     "scripts/bootstrap/phases/canon.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/bootstrap/phases/canon.js",
-      "sha256": "00329d62ce30c49dc6f4d0e5c9b6339ea07da1837a196067fec09776fe0eed14",
-      "installedSha": "00329d62ce30c49dc6f4d0e5c9b6339ea07da1837a196067fec09776fe0eed14"
+      "sha256": "c5d5eb02d9e6cdf5d8464b6fbbb3ee705c3293661209d97fa2345e51f26111e3",
+      "installedSha": "c5d5eb02d9e6cdf5d8464b6fbbb3ee705c3293661209d97fa2345e51f26111e3"
     },
     "scripts/bootstrap/phases/intent.js": {
       "owner": "framework",
@@ -5243,22 +5321,22 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/bootstrap/lastmile/fixtures.js",
-      "sha256": "d1009e8f37938ab09f32426adfee46429a7a2f345f79e93bf7064d8d5014bb03",
-      "installedSha": "d1009e8f37938ab09f32426adfee46429a7a2f345f79e93bf7064d8d5014bb03"
+      "sha256": "2660ccab913c0c5e17d612011ff95d49c63a877f2bd460b88d968e1f2f4f397d",
+      "installedSha": "2660ccab913c0c5e17d612011ff95d49c63a877f2bd460b88d968e1f2f4f397d"
     },
     "scripts/bootstrap/lastmile/orchestrate.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/bootstrap/lastmile/orchestrate.js",
-      "sha256": "911f52dadedf41a84d3a8dcb5913a95ead54c872ce8aaeb216eb42637f5a101f",
-      "installedSha": "911f52dadedf41a84d3a8dcb5913a95ead54c872ce8aaeb216eb42637f5a101f"
+      "sha256": "9ee9393193d7153dc92a6e6ac00bbeb1d4e4aba05f3fe57b6a6e2bc175e8dc52",
+      "installedSha": "9ee9393193d7153dc92a6e6ac00bbeb1d4e4aba05f3fe57b6a6e2bc175e8dc52"
     },
     "scripts/bootstrap/lastmile/test-orchestrate.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/bootstrap/lastmile/test-orchestrate.js",
-      "sha256": "05511c63967de6e1e18cf44cbe8c34a197a62d045b9fe66bd336a101b794c4c5",
-      "installedSha": "05511c63967de6e1e18cf44cbe8c34a197a62d045b9fe66bd336a101b794c4c5"
+      "sha256": "17f50f692d4ab325b9bfa21f75f4d9a1794cdb1cd92b92cfd7def7de731c4a30",
+      "installedSha": "17f50f692d4ab325b9bfa21f75f4d9a1794cdb1cd92b92cfd7def7de731c4a30"
     },
     "scripts/bootstrap/lastmile/phases/audit.js": {
       "owner": "framework",
@@ -5334,8 +5412,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/bootstrap/lastmile/modules/deployment.js",
-      "sha256": "b243cb58cef6d5d77fc07ab7fe33cad66cd989586d12fee427162ad903037ac5",
-      "installedSha": "b243cb58cef6d5d77fc07ab7fe33cad66cd989586d12fee427162ad903037ac5"
+      "sha256": "97327a9e327c00e2364a436b6b2bd96eaa55a756a26c37b7139b861b83ce47db",
+      "installedSha": "97327a9e327c00e2364a436b6b2bd96eaa55a756a26c37b7139b861b83ce47db"
     },
     "scripts/bootstrap/lastmile/modules/payments.js": {
       "owner": "framework",
@@ -5369,22 +5447,22 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/bootstrap/lastmile/lib/approval-gates.js",
-      "sha256": "cee28331f6437217d75ea240612a1ed289402feb045db1d0a363b662e074eeaf",
-      "installedSha": "cee28331f6437217d75ea240612a1ed289402feb045db1d0a363b662e074eeaf"
+      "sha256": "5f693786f8f5b0b5f680ab1357ebd52412b3cfbd36a8ae2a652995aa0cdcf214",
+      "installedSha": "5f693786f8f5b0b5f680ab1357ebd52412b3cfbd36a8ae2a652995aa0cdcf214"
     },
     "scripts/bootstrap/lastmile/lib/detect.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/bootstrap/lastmile/lib/detect.js",
-      "sha256": "70ba18a3fd65332e978c5084cabf6edb6ffb7b35bc5338ec21fd6943edf5f38c",
-      "installedSha": "70ba18a3fd65332e978c5084cabf6edb6ffb7b35bc5338ec21fd6943edf5f38c"
+      "sha256": "342a68b09bdfd3573bfdaaa32c66f562553703fb7ea81764d63c6a52886d2c40",
+      "installedSha": "342a68b09bdfd3573bfdaaa32c66f562553703fb7ea81764d63c6a52886d2c40"
     },
     "scripts/bootstrap/lastmile/lib/profiles.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/bootstrap/lastmile/lib/profiles.js",
-      "sha256": "8ba8b2f73ec8fe96ccd9be5ee9fdce46daa00522b4e98c9700f61a39198d03ff",
-      "installedSha": "8ba8b2f73ec8fe96ccd9be5ee9fdce46daa00522b4e98c9700f61a39198d03ff"
+      "sha256": "198c40422cac2f8f73fb24d45569f14318c7de37f15a51aba57f92d2df95df02",
+      "installedSha": "198c40422cac2f8f73fb24d45569f14318c7de37f15a51aba57f92d2df95df02"
     },
     "scripts/bootstrap/lastmile/lib/render.js": {
       "owner": "framework",
@@ -5439,8 +5517,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/agents/provider-trace.js",
-      "sha256": "962492270f068c18373970ff933258a9d97ce9ff36c097752543f9ed1edd1e65",
-      "installedSha": "962492270f068c18373970ff933258a9d97ce9ff36c097752543f9ed1edd1e65"
+      "sha256": "9176b704baca891ae8a4607ff9f28331e61912e55b98f7446d2c51f5f1304026",
+      "installedSha": "9176b704baca891ae8a4607ff9f28331e61912e55b98f7446d2c51f5f1304026"
     },
     "schemas/change-plan.schema.json": {
       "owner": "framework",
@@ -5453,8 +5531,8 @@
       "owner": "framework",
       "managed": true,
       "source": "schemas/paths.schema.json",
-      "sha256": "5fb826446263397e27b1dd579e88085551516d5feb037b183a3e9b0951fb7a53",
-      "installedSha": "5fb826446263397e27b1dd579e88085551516d5feb037b183a3e9b0951fb7a53"
+      "sha256": "704af300d0e3b03e061d27dae127ac3624cad903b06c786f098089814e2a863d",
+      "installedSha": "704af300d0e3b03e061d27dae127ac3624cad903b06c786f098089814e2a863d"
     },
     "schemas/provider-failure-modes.schema.json": {
       "owner": "framework",
@@ -5775,15 +5853,15 @@
       "owner": "framework",
       "managed": true,
       "source": "framework/hooks.registry.json",
-      "sha256": "483aaa85d4c8da89ae90bf2d309e43502977c7f35017a53789ef734f51b41e1c",
-      "installedSha": "483aaa85d4c8da89ae90bf2d309e43502977c7f35017a53789ef734f51b41e1c"
+      "sha256": "40a5acbf0afcf51372ba42a8552ad44ff92e7339a1b05a410d37e9c495fcfdb1",
+      "installedSha": "40a5acbf0afcf51372ba42a8552ad44ff92e7339a1b05a410d37e9c495fcfdb1"
     },
     "framework/paths.registry.json": {
       "owner": "framework",
       "managed": true,
       "source": "framework/paths.registry.json",
-      "sha256": "9a92eba041f3e50ad49879ebd20c0e20df86db9153ea758326ab3c8a3b3f7f6b",
-      "installedSha": "9a92eba041f3e50ad49879ebd20c0e20df86db9153ea758326ab3c8a3b3f7f6b"
+      "sha256": "33b03cedfc0e4fbd6fe5c5c8d458e1b31aed839a6e6c2e4394534112d0525b47",
+      "installedSha": "33b03cedfc0e4fbd6fe5c5c8d458e1b31aed839a6e6c2e4394534112d0525b47"
     },
     "framework/templates/sprint/README.md": {
       "owner": "framework",
@@ -6149,6 +6227,13 @@
       "sha256": "7f198e8fc3bdb540d857fc013577914453ab3a95a188c797660890df345fc7c8",
       "installedSha": "7f198e8fc3bdb540d857fc013577914453ab3a95a188c797660890df345fc7c8"
     },
+    "framework/templates/canonical/DATA_AND_ACCOUNTS.md.tmpl": {
+      "owner": "framework",
+      "managed": true,
+      "source": "framework/templates/canonical/DATA_AND_ACCOUNTS.md.tmpl",
+      "sha256": "e6158ff39409acc1fd22652b38b805817b5d445012904fa70cbdb617efd0e964",
+      "installedSha": "e6158ff39409acc1fd22652b38b805817b5d445012904fa70cbdb617efd0e964"
+    },
     "framework/templates/canonical/EVOLUTION.md.tmpl": {
       "owner": "framework",
       "managed": true,
@@ -6244,8 +6329,8 @@
       "owner": "framework",
       "managed": true,
       "source": "framework/templates/app-scaffold/next.config.ts.tmpl",
-      "sha256": "099e327e5bfb2ce911745f4c2bc6f88c6a71418bd84953fbe39b8c5ec5440398",
-      "installedSha": "099e327e5bfb2ce911745f4c2bc6f88c6a71418bd84953fbe39b8c5ec5440398"
+      "sha256": "98219c62475054f2978268b9539a9749f34e83002ee35df3e0acf94c206d5160",
+      "installedSha": "98219c62475054f2978268b9539a9749f34e83002ee35df3e0acf94c206d5160"
     },
     "framework/templates/app-scaffold/package.json.tmpl": {
       "owner": "framework",
@@ -14347,8 +14432,8 @@
       "managed": true,
       "source": ".claude/project/reference/agent-dispatch-guide.md",
       "kind": "md",
-      "sha256": "dcb1dc994dc7aef98193a8f7ab717febe3f01d615553a50df29179f9e718b47d",
-      "installedSha": "dcb1dc994dc7aef98193a8f7ab717febe3f01d615553a50df29179f9e718b47d"
+      "sha256": "9790bd39d0c036e10b1c89f34ce5124cced21d83e1e48290be94c4aed884a04f",
+      "installedSha": "9790bd39d0c036e10b1c89f34ce5124cced21d83e1e48290be94c4aed884a04f"
     },
     ".claude/project/reference/cross-provider-dispatch.md": {
       "owner": "framework",
@@ -14379,8 +14464,8 @@
       "managed": true,
       "source": ".claude/project/reference/installer-file-lifecycle.md",
       "kind": "md",
-      "sha256": "e1638c496f50bffe8e524b7d2c255395469e31700608a7270246aeed9d55c4ca",
-      "installedSha": "e1638c496f50bffe8e524b7d2c255395469e31700608a7270246aeed9d55c4ca"
+      "sha256": "561b00efaf1d5be617f34268d9bf5765380752053a592dd087738ba9ba094993",
+      "installedSha": "561b00efaf1d5be617f34268d9bf5765380752053a592dd087738ba9ba094993"
     },
     ".claude/project/reference/karpathy-autoresearch.md": {
       "owner": "framework",
@@ -14427,8 +14512,8 @@
       "managed": true,
       "source": ".claude/project/reference/product-lifecycle.md",
       "kind": "md",
-      "sha256": "588d49e7fd2383f99da74d1a78abe023ca390479a5a2d2b9f24bf895e8e47a4b",
-      "installedSha": "588d49e7fd2383f99da74d1a78abe023ca390479a5a2d2b9f24bf895e8e47a4b"
+      "sha256": "00f7ca3dc846a3d4973314d5c46532f89010edc986df0863757be49227328049",
+      "installedSha": "00f7ca3dc846a3d4973314d5c46532f89010edc986df0863757be49227328049"
     },
     ".claude/project/reference/product-robustness.md": {
       "owner": "framework",
@@ -14491,8 +14576,8 @@
       "managed": true,
       "source": ".claude/project/reference/warpos-class-wiring.md",
       "kind": "md",
-      "sha256": "f86f922ea3b15ec9e17367d4e2ac6d49dcc3d0bb534ca37015e3c22fc253e5b7",
-      "installedSha": "f86f922ea3b15ec9e17367d4e2ac6d49dcc3d0bb534ca37015e3c22fc253e5b7"
+      "sha256": "71b642f287cde980de568069d532903e43c029177b09c2cbe0877694ff822d63",
+      "installedSha": "71b642f287cde980de568069d532903e43c029177b09c2cbe0877694ff822d63"
     },
     ".claude/project/reference/warpos-launch-roadmap.md": {
       "owner": "framework",
@@ -14579,6 +14664,10 @@
       "managed": false
     },
     ".claude/project/memory/systems.jsonl": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/memory/traces.jsonl": {
       "owner": "runtime",
       "managed": false
     },
@@ -14817,8 +14906,8 @@
       "managed": true,
       "source": ".claude/commands/warp/health.md",
       "kind": "md",
-      "sha256": "d75f1a598052f9ac87a370ad8dd3898583223b3a3f730abd97ddea4d90d83a74",
-      "installedSha": "d75f1a598052f9ac87a370ad8dd3898583223b3a3f730abd97ddea4d90d83a74"
+      "sha256": "ca052e7164ce98ecd06631723f019f8559905f965908e86f91104a54bc068fc2",
+      "installedSha": "ca052e7164ce98ecd06631723f019f8559905f965908e86f91104a54bc068fc2"
     },
     ".claude/commands/warp/md.md": {
       "owner": "framework",
@@ -15017,24 +15106,24 @@
       "managed": true,
       "source": ".claude/commands/session/dump.md",
       "kind": "md",
-      "sha256": "6df25b0a5cd171892eb4b33aff93bae2d6ec3a5b3895749fcfe20d8f63b6aa30",
-      "installedSha": "6df25b0a5cd171892eb4b33aff93bae2d6ec3a5b3895749fcfe20d8f63b6aa30"
+      "sha256": "e8446b7f2ae3c82246f145492d7616f9901eeb3a9aa17d92c6298dc573bcbf31",
+      "installedSha": "e8446b7f2ae3c82246f145492d7616f9901eeb3a9aa17d92c6298dc573bcbf31"
     },
     ".claude/commands/session/end.md": {
       "owner": "framework",
       "managed": true,
       "source": ".claude/commands/session/end.md",
       "kind": "md",
-      "sha256": "7ef793fbb7b00e920311e06f2573807d811a404ed05d5886d0620840f6e35562",
-      "installedSha": "7ef793fbb7b00e920311e06f2573807d811a404ed05d5886d0620840f6e35562"
+      "sha256": "144a846af3b54bb5f145fecdf285f3e806b38d7082a5fe0c1f895ca625b94be5",
+      "installedSha": "144a846af3b54bb5f145fecdf285f3e806b38d7082a5fe0c1f895ca625b94be5"
     },
     ".claude/commands/session/handoff.md": {
       "owner": "framework",
       "managed": true,
       "source": ".claude/commands/session/handoff.md",
       "kind": "md",
-      "sha256": "b62ddf18824e2a350954a43880f217c3a9c31f67e5fd594d45a3b8d08557a705",
-      "installedSha": "b62ddf18824e2a350954a43880f217c3a9c31f67e5fd594d45a3b8d08557a705"
+      "sha256": "778f9be6aea5a330379e6e7b65c1d7077afe85f7afc8bd0a022015a27876fbe8",
+      "installedSha": "778f9be6aea5a330379e6e7b65c1d7077afe85f7afc8bd0a022015a27876fbe8"
     },
     ".claude/commands/session/history.md": {
       "owner": "framework",
@@ -15113,8 +15202,8 @@
       "managed": true,
       "source": ".claude/commands/scan/architecture.md",
       "kind": "md",
-      "sha256": "d8088df4cd154d79282d4eac8a4414bf485ca642fec575c2bf93463d1b6d79dc",
-      "installedSha": "d8088df4cd154d79282d4eac8a4414bf485ca642fec575c2bf93463d1b6d79dc"
+      "sha256": "57d6ea6cbb13f26a24c3ba7e8a54b5b811cd5bc42a44c343d4aedd7b6bc5d4bd",
+      "installedSha": "57d6ea6cbb13f26a24c3ba7e8a54b5b811cd5bc42a44c343d4aedd7b6bc5d4bd"
     },
     ".claude/commands/scan/coherence.md": {
       "owner": "framework",
@@ -15140,6 +15229,14 @@
       "sha256": "f905264eb9ca5164dbd8712c365d23809aaaf8e643fac5e3533c32bca008242c",
       "installedSha": "f905264eb9ca5164dbd8712c365d23809aaaf8e643fac5e3533c32bca008242c"
     },
+    ".claude/commands/scan/docker-secrets.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/commands/scan/docker-secrets.md",
+      "kind": "md",
+      "sha256": "7222262b4ed5ecbfff796eff63e882352009632ef7fe3a0e33e77cc91ec0c1c6",
+      "installedSha": "7222262b4ed5ecbfff796eff63e882352009632ef7fe3a0e33e77cc91ec0c1c6"
+    },
     ".claude/commands/scan/environment.md": {
       "owner": "framework",
       "managed": true,
@@ -15161,8 +15258,8 @@
       "managed": true,
       "source": ".claude/commands/scan/framework-purity.md",
       "kind": "md",
-      "sha256": "6f0d41f371d2ca38fff87d9da8e89458f00a4b34c92071f1d4a68da4b06ebb00",
-      "installedSha": "6f0d41f371d2ca38fff87d9da8e89458f00a4b34c92071f1d4a68da4b06ebb00"
+      "sha256": "069883fc89791f7624586a39ff4c2bee25c0a52e896da499954bc019a8d54b0c",
+      "installedSha": "069883fc89791f7624586a39ff4c2bee25c0a52e896da499954bc019a8d54b0c"
     },
     ".claude/commands/scan/framework-views-fresh.md": {
       "owner": "framework",
@@ -15177,8 +15274,8 @@
       "managed": true,
       "source": ".claude/commands/scan/full.md",
       "kind": "md",
-      "sha256": "8c5110a47dc19787b05fd1b8bdab1e61e7424324a2127eaea49e8ac6857f7ca5",
-      "installedSha": "8c5110a47dc19787b05fd1b8bdab1e61e7424324a2127eaea49e8ac6857f7ca5"
+      "sha256": "ff6a4d34afd21fb505957652281e3cfa8a39e7d25a57452dd3a0ba2dece7a783",
+      "installedSha": "ff6a4d34afd21fb505957652281e3cfa8a39e7d25a57452dd3a0ba2dece7a783"
     },
     ".claude/commands/scan/ingest-firewall.md": {
       "owner": "framework",
@@ -15265,8 +15362,8 @@
       "managed": true,
       "source": ".claude/commands/scan/role-parity.md",
       "kind": "md",
-      "sha256": "df779e18c02b2f4c01f518a6ca36ead48dd035b91106bdef313aadd40cab01a4",
-      "installedSha": "df779e18c02b2f4c01f518a6ca36ead48dd035b91106bdef313aadd40cab01a4"
+      "sha256": "5e9399bf234bc182ac3424340c1bfbc8323b07d761523b49cfe68652421bed86",
+      "installedSha": "5e9399bf234bc182ac3424340c1bfbc8323b07d761523b49cfe68652421bed86"
     },
     ".claude/commands/scan/scaffold-coverage.md": {
       "owner": "framework",
@@ -15337,8 +15434,8 @@
       "managed": true,
       "source": ".claude/commands/scan/warpos-install-baseline.md",
       "kind": "md",
-      "sha256": "cd334cfd81e84356241a71179fab93619e93b6d4ab5f0dd0d205c79d43b6a872",
-      "installedSha": "cd334cfd81e84356241a71179fab93619e93b6d4ab5f0dd0d205c79d43b6a872"
+      "sha256": "73e472ef85e5d1040ea8fc6adc01975db16afee1f09ea188ae37197fdcd8e445",
+      "installedSha": "73e472ef85e5d1040ea8fc6adc01975db16afee1f09ea188ae37197fdcd8e445"
     },
     ".claude/commands/scan/warpos-layer-diff.md": {
       "owner": "framework",
@@ -15497,16 +15594,16 @@
       "managed": true,
       "source": ".claude/commands/redteam/full.md",
       "kind": "md",
-      "sha256": "e1075fd46423859d02f965fc00b9f792fc805a91ba9779945ae4b67def923fd0",
-      "installedSha": "e1075fd46423859d02f965fc00b9f792fc805a91ba9779945ae4b67def923fd0"
+      "sha256": "8095d586aa89b836f114b3fc211dc18c01c196b191de66ed77172eb27cd682b6",
+      "installedSha": "8095d586aa89b836f114b3fc211dc18c01c196b191de66ed77172eb27cd682b6"
     },
     ".claude/commands/redteam/scan.md": {
       "owner": "framework",
       "managed": true,
       "source": ".claude/commands/redteam/scan.md",
       "kind": "md",
-      "sha256": "5248ec64bd900994c8585e6e7473451e1f55441bb1e967d2c38ea923ed958465",
-      "installedSha": "5248ec64bd900994c8585e6e7473451e1f55441bb1e967d2c38ea923ed958465"
+      "sha256": "fe84ee9be884bc7bdf66986d14a71f72da46d6f3b75e71fe1f4fe5e0bb3d13f9",
+      "installedSha": "fe84ee9be884bc7bdf66986d14a71f72da46d6f3b75e71fe1f4fe5e0bb3d13f9"
     },
     ".claude/commands/reasoning/log.md": {
       "owner": "framework",
@@ -15689,24 +15786,24 @@
       "managed": true,
       "source": ".claude/commands/oneshot/preflight.md",
       "kind": "md",
-      "sha256": "c83cc41855523a514982990f5160ce585b9399e9cec26ad41c256d998dcf4323",
-      "installedSha": "c83cc41855523a514982990f5160ce585b9399e9cec26ad41c256d998dcf4323"
+      "sha256": "a17a00c53e5313b7df0f447dc8ac1113e04a7af8e1db73c9789ad029932b5e9b",
+      "installedSha": "a17a00c53e5313b7df0f447dc8ac1113e04a7af8e1db73c9789ad029932b5e9b"
     },
     ".claude/commands/oneshot/retro.md": {
       "owner": "framework",
       "managed": true,
       "source": ".claude/commands/oneshot/retro.md",
       "kind": "md",
-      "sha256": "dacb8f546b4d6fa5d450ae7bf456bad21d854691618a3280c8b38e23c742694c",
-      "installedSha": "dacb8f546b4d6fa5d450ae7bf456bad21d854691618a3280c8b38e23c742694c"
+      "sha256": "ae13471692a8f7174e9e6dd51d277f2d4638ef4f0e824923b1530c342923f811",
+      "installedSha": "ae13471692a8f7174e9e6dd51d277f2d4638ef4f0e824923b1530c342923f811"
     },
     ".claude/commands/oneshot/start.md": {
       "owner": "framework",
       "managed": true,
       "source": ".claude/commands/oneshot/start.md",
       "kind": "md",
-      "sha256": "17dce571fddde3dda63fa6236cef4eeb9d71770d39a5d2dfcf87747507cba43d",
-      "installedSha": "17dce571fddde3dda63fa6236cef4eeb9d71770d39a5d2dfcf87747507cba43d"
+      "sha256": "7490e10de237615c98544b2f97e1f72974d4b9e4517e1585d4d1976c1af8e551",
+      "installedSha": "7490e10de237615c98544b2f97e1f72974d4b9e4517e1585d4d1976c1af8e551"
     },
     ".claude/commands/models/check.md": {
       "owner": "framework",
@@ -15745,16 +15842,16 @@
       "managed": true,
       "source": ".claude/commands/mode/adhoc.md",
       "kind": "md",
-      "sha256": "df92680d2cf2982c214892506f4c3654bcc948ed2decbec408680b2cbfc92e31",
-      "installedSha": "df92680d2cf2982c214892506f4c3654bcc948ed2decbec408680b2cbfc92e31"
+      "sha256": "f357e7d3823d5531793d63d669e9a938348df77d5c28a232adf14758a7e774be",
+      "installedSha": "f357e7d3823d5531793d63d669e9a938348df77d5c28a232adf14758a7e774be"
     },
     ".claude/commands/mode/oneshot.md": {
       "owner": "framework",
       "managed": true,
       "source": ".claude/commands/mode/oneshot.md",
       "kind": "md",
-      "sha256": "7ae94dcf48f8452e8bae1dae41b55f91d478ff512b72c29b0d79b17ce4c5c266",
-      "installedSha": "7ae94dcf48f8452e8bae1dae41b55f91d478ff512b72c29b0d79b17ce4c5c266"
+      "sha256": "f21696e24032f7fd9015d98ac3f35b72a652cec4fdf9a7e7bcf88e3adf9d7c36",
+      "installedSha": "f21696e24032f7fd9015d98ac3f35b72a652cec4fdf9a7e7bcf88e3adf9d7c36"
     },
     ".claude/commands/mode/solo.md": {
       "owner": "framework",
@@ -15769,8 +15866,8 @@
       "managed": true,
       "source": ".claude/commands/maps/all.md",
       "kind": "md",
-      "sha256": "d96329227bbfefbef6b5f4e1ef7ed76c76e955d23b391fefc2afd53013d47b65",
-      "installedSha": "d96329227bbfefbef6b5f4e1ef7ed76c76e955d23b391fefc2afd53013d47b65"
+      "sha256": "050cf3be4689a55adf8a03ad51b5f99b3ef552e70c0bcd22f81674f3abff63f7",
+      "installedSha": "050cf3be4689a55adf8a03ad51b5f99b3ef552e70c0bcd22f81674f3abff63f7"
     },
     ".claude/commands/maps/architecture.md": {
       "owner": "framework",
@@ -15881,8 +15978,8 @@
       "managed": true,
       "source": ".claude/commands/learn/deep.md",
       "kind": "md",
-      "sha256": "5c85bf90959c3eb101299286b43c997e33623fd668ec18205cc209959b75af3e",
-      "installedSha": "5c85bf90959c3eb101299286b43c997e33623fd668ec18205cc209959b75af3e"
+      "sha256": "f9479177021aea040e37f271280da94f0217f5801e5b5daf8caffe664adaad27",
+      "installedSha": "f9479177021aea040e37f271280da94f0217f5801e5b5daf8caffe664adaad27"
     },
     ".claude/commands/learn/ingest.md": {
       "owner": "framework",
@@ -15913,8 +16010,8 @@
       "managed": true,
       "source": ".claude/commands/karpathy/run.md",
       "kind": "md",
-      "sha256": "09e6fa34edc28b8408c54f923fd6a786074df63fedb8888b56c4a4102f1f4f22",
-      "installedSha": "09e6fa34edc28b8408c54f923fd6a786074df63fedb8888b56c4a4102f1f4f22"
+      "sha256": "da865247c32cf2d031e1d2e99e3a3859fdb636ee04ada0d1c0ed831fafd12003",
+      "installedSha": "da865247c32cf2d031e1d2e99e3a3859fdb636ee04ada0d1c0ed831fafd12003"
     },
     ".claude/commands/karpathy/status.md": {
       "owner": "framework",
@@ -16185,8 +16282,8 @@
       "managed": true,
       "source": ".claude/commands/content/contra.md",
       "kind": "md",
-      "sha256": "58304b380565f0c72e6d978c7a23b4e4442864a025efa730dc04861aa0f2f708",
-      "installedSha": "58304b380565f0c72e6d978c7a23b4e4442864a025efa730dc04861aa0f2f708"
+      "sha256": "6c981f9eb44747bbf30abe8eab311ea5a98b40b9d73b86bce5b3367b3e8e4128",
+      "installedSha": "6c981f9eb44747bbf30abe8eab311ea5a98b40b9d73b86bce5b3367b3e8e4128"
     },
     ".claude/commands/content/linkedin.md": {
       "owner": "framework",
@@ -16281,24 +16378,24 @@
       "managed": true,
       "source": ".claude/commands/bootstrap/spinup.md",
       "kind": "md",
-      "sha256": "3557b42b356519477cf2fea374928f90b0777778b639cffb359e342feeabd1f5",
-      "installedSha": "3557b42b356519477cf2fea374928f90b0777778b639cffb359e342feeabd1f5"
+      "sha256": "f7888a895edf32baae3cfbf3782b3525806c8420c4e0c693069cb73d0a7b92db",
+      "installedSha": "f7888a895edf32baae3cfbf3782b3525806c8420c4e0c693069cb73d0a7b92db"
     },
     ".claude/commands/beta/integrate.md": {
       "owner": "framework",
       "managed": true,
       "source": ".claude/commands/beta/integrate.md",
       "kind": "md",
-      "sha256": "58cdabbcf9197b3b190a50333765c281519d2f2053c4758b85ca183ea95ef6c1",
-      "installedSha": "58cdabbcf9197b3b190a50333765c281519d2f2053c4758b85ca183ea95ef6c1"
+      "sha256": "e1f93118bf10710b879b1b45a2b5a05c0cf56e127996e9de05a6ec3247131dc3",
+      "installedSha": "e1f93118bf10710b879b1b45a2b5a05c0cf56e127996e9de05a6ec3247131dc3"
     },
     ".claude/commands/beta/mine.md": {
       "owner": "framework",
       "managed": true,
       "source": ".claude/commands/beta/mine.md",
       "kind": "md",
-      "sha256": "c242bdea396e618524fca3d50110cbf1bf6ed912a9de3563a82e0656d7277aca",
-      "installedSha": "c242bdea396e618524fca3d50110cbf1bf6ed912a9de3563a82e0656d7277aca"
+      "sha256": "19e557e219c6d2e2ae2a9b8ec7a4075eee30ab6ec62270092853815538379bc5",
+      "installedSha": "19e557e219c6d2e2ae2a9b8ec7a4075eee30ab6ec62270092853815538379bc5"
     },
     ".claude/commands/agents/list.md": {
       "owner": "framework",
@@ -16321,671 +16418,567 @@
       "managed": true,
       "source": ".claude/agents/.system.md",
       "kind": "md",
-      "sha256": "7ba2ce1425a2de4110b52bc1863e8c45e168c13ced97dc46214755c3b03e3fb7",
-      "installedSha": "7ba2ce1425a2de4110b52bc1863e8c45e168c13ced97dc46214755c3b03e3fb7"
+      "sha256": "65ecb6ada6ad60fd9ab4d01e5248ef1a7d49c568e9939c4c9d453087f39c563a",
+      "installedSha": "65ecb6ada6ad60fd9ab4d01e5248ef1a7d49c568e9939c4c9d453087f39c563a"
     },
-    ".claude/agents/03-managers/copy-lead.md": {
+    ".claude/agents/_system/learner.md": {
       "owner": "framework",
       "managed": true,
-      "source": ".claude/agents/03-managers/copy-lead.md",
+      "source": ".claude/agents/_system/learner.md",
       "kind": "md",
-      "sha256": "8c7ddda7524adcbb0f04dab9daf1da6c1106d01ee1c871a34bb23cb23816981a",
-      "installedSha": "8c7ddda7524adcbb0f04dab9daf1da6c1106d01ee1c871a34bb23cb23816981a"
+      "sha256": "0c3a979bf806044cb88e2d05a92df4d9d91ed9e4a98928cadb25d290e8ab49dd",
+      "installedSha": "0c3a979bf806044cb88e2d05a92df4d9d91ed9e4a98928cadb25d290e8ab49dd"
     },
-    ".claude/agents/03-managers/director-of-engineering.md": {
+    ".claude/agents/_system/stub-scaffold.md": {
       "owner": "framework",
       "managed": true,
-      "source": ".claude/agents/03-managers/director-of-engineering.md",
+      "source": ".claude/agents/_system/stub-scaffold.md",
       "kind": "md",
-      "sha256": "06549f5f00c28443e54b7c71265a612b4f19bba6f14354478d2da3a305f24e7e",
-      "installedSha": "06549f5f00c28443e54b7c71265a612b4f19bba6f14354478d2da3a305f24e7e"
+      "sha256": "6838ff6a3ab92f9ed0c3147f810af36538a8fffd87e18192ed829d8e27a0afa6",
+      "installedSha": "6838ff6a3ab92f9ed0c3147f810af36538a8fffd87e18192ed829d8e27a0afa6"
     },
-    ".claude/agents/03-managers/director-of-marketing.md": {
+    ".claude/agents/_principles/base.md": {
       "owner": "framework",
       "managed": true,
-      "source": ".claude/agents/03-managers/director-of-marketing.md",
+      "source": ".claude/agents/_principles/base.md",
       "kind": "md",
-      "sha256": "631a7fa9c2b3dfb03af75db939eb9fc95845e847cfaef525b5031761117d2fe0",
-      "installedSha": "631a7fa9c2b3dfb03af75db939eb9fc95845e847cfaef525b5031761117d2fe0"
+      "sha256": "b0c98ffcdbb2b5e0dc7ccfc90a1f44808cf1273248811a25c02ec33e0aa2712e",
+      "installedSha": "b0c98ffcdbb2b5e0dc7ccfc90a1f44808cf1273248811a25c02ec33e0aa2712e"
     },
-    ".claude/agents/03-managers/director-of-product.md": {
+    ".claude/agents/_principles/registry.json": {
       "owner": "framework",
       "managed": true,
-      "source": ".claude/agents/03-managers/director-of-product.md",
-      "kind": "md",
-      "sha256": "ec3901da8cd924b36275151674772a292689921edd862920e47d95474a22c1c0",
-      "installedSha": "ec3901da8cd924b36275151674772a292689921edd862920e47d95474a22c1c0"
-    },
-    ".claude/agents/03-managers/director-of-qa.md": {
-      "owner": "framework",
-      "managed": true,
-      "source": ".claude/agents/03-managers/director-of-qa.md",
-      "kind": "md",
-      "sha256": "ace4859bda3471ed3e075a270b06e7c5db45d4635ad7c47aad65f76f985b97aa",
-      "installedSha": "ace4859bda3471ed3e075a270b06e7c5db45d4635ad7c47aad65f76f985b97aa"
-    },
-    ".claude/agents/03-managers/growth-lead.md": {
-      "owner": "framework",
-      "managed": true,
-      "source": ".claude/agents/03-managers/growth-lead.md",
-      "kind": "md",
-      "sha256": "80399f0bcf9f1b1a97fd54777f38a1d272597e3aeb18c7f8a2ea32fdd2ee089f",
-      "installedSha": "80399f0bcf9f1b1a97fd54777f38a1d272597e3aeb18c7f8a2ea32fdd2ee089f"
-    },
-    ".claude/agents/03-managers/product-designer.md": {
-      "owner": "framework",
-      "managed": true,
-      "source": ".claude/agents/03-managers/product-designer.md",
-      "kind": "md",
-      "sha256": "e2eb3c97ba94585f53f3ec879650cce95948520d6bd19c4a3f06caebff23ea52",
-      "installedSha": "e2eb3c97ba94585f53f3ec879650cce95948520d6bd19c4a3f06caebff23ea52"
-    },
-    ".claude/agents/03-managers/product-lead.md": {
-      "owner": "framework",
-      "managed": true,
-      "source": ".claude/agents/03-managers/product-lead.md",
-      "kind": "md",
-      "sha256": "082ce379a9ffe09bf5272053265a3826f56bff31af0fe21b66b89657cfd30927",
-      "installedSha": "082ce379a9ffe09bf5272053265a3826f56bff31af0fe21b66b89657cfd30927"
-    },
-    ".claude/agents/03-managers/research-insight-lead.md": {
-      "owner": "framework",
-      "managed": true,
-      "source": ".claude/agents/03-managers/research-insight-lead.md",
-      "kind": "md",
-      "sha256": "f98df295e60f3b9dab8c0f82a691c499f7b00e9fd329e4ee85f1f6c8957a140e",
-      "installedSha": "f98df295e60f3b9dab8c0f82a691c499f7b00e9fd329e4ee85f1f6c8957a140e"
-    },
-    ".claude/agents/03-managers/web-conversion-designer.md": {
-      "owner": "framework",
-      "managed": true,
-      "source": ".claude/agents/03-managers/web-conversion-designer.md",
-      "kind": "md",
-      "sha256": "d9fb43aa90d418d316d0d5704b241d99f0b4fea1579638bf86b72d2cc6db3d49",
-      "installedSha": "d9fb43aa90d418d316d0d5704b241d99f0b4fea1579638bf86b72d2cc6db3d49"
-    },
-    ".claude/agents/03-managers/_principles/base.md": {
-      "owner": "framework",
-      "managed": true,
-      "source": ".claude/agents/03-managers/_principles/base.md",
-      "kind": "md",
-      "sha256": "92bf909dbaab80151009c618280a929775a8768e144bd0856af7847d1969f3ce",
-      "installedSha": "92bf909dbaab80151009c618280a929775a8768e144bd0856af7847d1969f3ce"
-    },
-    ".claude/agents/03-managers/_principles/registry.json": {
-      "owner": "framework",
-      "managed": true,
-      "source": ".claude/agents/03-managers/_principles/registry.json",
+      "source": ".claude/agents/_principles/registry.json",
       "kind": "json",
-      "sha256": "5a621d24cf804a5f69e5226b2982292a29763d06f6a0aaccfc185985f70c3092",
-      "installedSha": "5a621d24cf804a5f69e5226b2982292a29763d06f6a0aaccfc185985f70c3092"
+      "sha256": "4bbbc4fc2a32c11d90f5eb1550db0dee506d0108bbd5997573a7af5fa77514e8",
+      "installedSha": "4bbbc4fc2a32c11d90f5eb1550db0dee506d0108bbd5997573a7af5fa77514e8"
     },
-    ".claude/agents/03-managers/_org/org-map.json": {
+    ".claude/agents/_org/org-map.json": {
       "owner": "framework",
       "managed": true,
-      "source": ".claude/agents/03-managers/_org/org-map.json",
+      "source": ".claude/agents/_org/org-map.json",
       "kind": "json",
-      "sha256": "0ee03d41163d8928a91d1a2614a1b785d9678e0b515bbf569aff176354394f1b",
-      "installedSha": "0ee03d41163d8928a91d1a2614a1b785d9678e0b515bbf569aff176354394f1b"
+      "sha256": "de6f9bed49833e619bde69cb9fef38969246f7558cb664c0106ab5113b6e6f58",
+      "installedSha": "de6f9bed49833e619bde69cb9fef38969246f7558cb664c0106ab5113b6e6f58"
     },
-    ".claude/agents/03-managers/_evals/resonance-conversion-rubric.json": {
+    ".claude/agents/_org/role-registry.json": {
       "owner": "framework",
       "managed": true,
-      "source": ".claude/agents/03-managers/_evals/resonance-conversion-rubric.json",
+      "source": ".claude/agents/_org/role-registry.json",
+      "kind": "json",
+      "sha256": "9aec7092370a36bfc7fe8bb83f798dd49bdeda0eb65b07d7007a102b24711749",
+      "installedSha": "9aec7092370a36bfc7fe8bb83f798dd49bdeda0eb65b07d7007a102b24711749"
+    },
+    ".claude/agents/_evals/resonance-conversion-rubric.json": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/_evals/resonance-conversion-rubric.json",
       "kind": "json",
       "sha256": "415a1f9958e4d59f0d7513394c62f79539d9b19fa4d5ff0f65a03b4d5cc0417b",
       "installedSha": "415a1f9958e4d59f0d7513394c62f79539d9b19fa4d5ff0f65a03b4d5cc0417b"
     },
-    ".claude/agents/02-oneshot/_build-core/build-core.md": {
+    ".claude/agents/product/design-lead.md": {
       "owner": "framework",
       "managed": true,
-      "source": ".claude/agents/02-oneshot/_build-core/build-core.md",
+      "source": ".claude/agents/product/design-lead.md",
       "kind": "md",
-      "sha256": "58af8177900ac493e0087d923102a303d32549158e5e8883c0c8843bcda26e19",
-      "installedSha": "58af8177900ac493e0087d923102a303d32549158e5e8883c0c8843bcda26e19"
+      "sha256": "0c4c9136a9345bd42fe0050ca95f1b2c2e6a930db3a8b32d4623f0a9ca4d4357",
+      "installedSha": "0c4c9136a9345bd42fe0050ca95f1b2c2e6a930db3a8b32d4623f0a9ca4d4357"
     },
-    ".claude/agents/02-oneshot/visual-review/visual-review.md": {
+    ".claude/agents/product/director-of-product.md": {
       "owner": "framework",
       "managed": true,
-      "source": ".claude/agents/02-oneshot/visual-review/visual-review.md",
+      "source": ".claude/agents/product/director-of-product.md",
+      "kind": "md",
+      "sha256": "64e9760ddda54d8853b1adf7cc71dd49011beea9f2278e54345114547ae54a70",
+      "installedSha": "64e9760ddda54d8853b1adf7cc71dd49011beea9f2278e54345114547ae54a70"
+    },
+    ".claude/agents/product/product-lead.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/product/product-lead.md",
+      "kind": "md",
+      "sha256": "074af40a05bf2afc2e6497761cbe56f74716da00ba26d96aae3ba57a24606653",
+      "installedSha": "074af40a05bf2afc2e6497761cbe56f74716da00ba26d96aae3ba57a24606653"
+    },
+    ".claude/agents/product/quality-lead.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/product/quality-lead.md",
+      "kind": "md",
+      "sha256": "37f55eecab1c7f11465df92674f210a7e63d14cbb37527fab95b5e9796705a2f",
+      "installedSha": "37f55eecab1c7f11465df92674f210a7e63d14cbb37527fab95b5e9796705a2f"
+    },
+    ".claude/agents/product/quality/design-quality.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/product/quality/design-quality.md",
+      "kind": "md",
+      "sha256": "1765e70bc72b3b29715ae31ec1d099afa56be227f0368f0f7b5899faad4196df",
+      "installedSha": "1765e70bc72b3b29715ae31ec1d099afa56be227f0368f0f7b5899faad4196df"
+    },
+    ".claude/agents/product/quality/qa-reviewer.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/product/quality/qa-reviewer.md",
+      "kind": "md",
+      "sha256": "3ed8b07f28b843457224155d692fe06d4c8ef1e8a65aa8bc3b3d97c5d90d7789",
+      "installedSha": "3ed8b07f28b843457224155d692fe06d4c8ef1e8a65aa8bc3b3d97c5d90d7789"
+    },
+    ".claude/agents/product/quality/test-runner.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/product/quality/test-runner.md",
+      "kind": "md",
+      "sha256": "d2bb0e84c351bc9e4273dd48212bb1d0a5fbeeb2ddef15de884756b7e216f177",
+      "installedSha": "d2bb0e84c351bc9e4273dd48212bb1d0a5fbeeb2ddef15de884756b7e216f177"
+    },
+    ".claude/agents/product/quality/visual-review.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/product/quality/visual-review.md",
       "kind": "md",
       "sha256": "2d45233be2d2ab925a511216b288e8a94ddfad7cdcfa964918cf3cb564162baf",
       "installedSha": "2d45233be2d2ab925a511216b288e8a94ddfad7cdcfa964918cf3cb564162baf"
     },
-    ".claude/agents/02-oneshot/test-runner/test-runner.md": {
+    ".claude/agents/president/alpha.md": {
       "owner": "framework",
       "managed": true,
-      "source": ".claude/agents/02-oneshot/test-runner/test-runner.md",
+      "source": ".claude/agents/president/alpha.md",
       "kind": "md",
-      "sha256": "188c32a96ae13d29c693640d494de1f00c550d5d8307831007b6b59d48a898f7",
-      "installedSha": "188c32a96ae13d29c693640d494de1f00c550d5d8307831007b6b59d48a898f7"
+      "sha256": "2bcef61497b62155783015537c04278d9e2f3a6048ce41bed05342759423e3f4",
+      "installedSha": "2bcef61497b62155783015537c04278d9e2f3a6048ce41bed05342759423e3f4"
     },
-    ".claude/agents/02-oneshot/stub-scaffold/stub-scaffold.md": {
+    ".claude/agents/president/beta.md": {
       "owner": "framework",
       "managed": true,
-      "source": ".claude/agents/02-oneshot/stub-scaffold/stub-scaffold.md",
+      "source": ".claude/agents/president/beta.md",
       "kind": "md",
-      "sha256": "f59fbaa1f604334331a2cebcd8de3731e4219cd8306cdb40a150f288c1918d96",
-      "installedSha": "f59fbaa1f604334331a2cebcd8de3731e4219cd8306cdb40a150f288c1918d96"
+      "sha256": "cd18d5540cdc5698f02cd991aaaf8e86d2c66fa641ecfc81af1daf8fd9d30deb",
+      "installedSha": "cd18d5540cdc5698f02cd991aaaf8e86d2c66fa641ecfc81af1daf8fd9d30deb"
     },
-    ".claude/agents/02-oneshot/reviewer/reviewer.md": {
+    ".claude/agents/president/delta.md": {
       "owner": "framework",
       "managed": true,
-      "source": ".claude/agents/02-oneshot/reviewer/reviewer.md",
+      "source": ".claude/agents/president/delta.md",
       "kind": "md",
-      "sha256": "b23c3f392440a3928b7857c277c5db45828012304a1e18a6eeee5fc808f06b1d",
-      "installedSha": "b23c3f392440a3928b7857c277c5db45828012304a1e18a6eeee5fc808f06b1d"
+      "sha256": "4ee9d731f73525e1644056195eb1bd85387f8f6ba246646fdbea3955aecb8fdd",
+      "installedSha": "4ee9d731f73525e1644056195eb1bd85387f8f6ba246646fdbea3955aecb8fdd"
     },
-    ".claude/agents/02-oneshot/req-reviewer/req-reviewer.md": {
+    ".claude/agents/president/epsilon.md": {
       "owner": "framework",
       "managed": true,
-      "source": ".claude/agents/02-oneshot/req-reviewer/req-reviewer.md",
+      "source": ".claude/agents/president/epsilon.md",
       "kind": "md",
-      "sha256": "34aab5ffbb6c31e957105762488b83433afee6f84669085819fd518696d7e1f0",
-      "installedSha": "34aab5ffbb6c31e957105762488b83433afee6f84669085819fd518696d7e1f0"
+      "sha256": "1ee35fe51f20ea5c1d3da1f3937ed8b2b231f8b179d80c0f42486723d29e1870",
+      "installedSha": "1ee35fe51f20ea5c1d3da1f3937ed8b2b231f8b179d80c0f42486723d29e1870"
     },
-    ".claude/agents/02-oneshot/redteam/analyze.md": {
+    ".claude/agents/president/gamma.md": {
       "owner": "framework",
       "managed": true,
-      "source": ".claude/agents/02-oneshot/redteam/analyze.md",
+      "source": ".claude/agents/president/gamma.md",
       "kind": "md",
-      "sha256": "3ced8a1aace8850e401d94c6930d48305c7a0576e941e68187a5dba985c298f6",
-      "installedSha": "3ced8a1aace8850e401d94c6930d48305c7a0576e941e68187a5dba985c298f6"
+      "sha256": "e308bd5d58d38046713281fad80771bfcd65eff1f231f1eaa2f1202ee8c3fe5d",
+      "installedSha": "e308bd5d58d38046713281fad80771bfcd65eff1f231f1eaa2f1202ee8c3fe5d"
     },
-    ".claude/agents/02-oneshot/redteam/orchestrator.md": {
+    ".claude/agents/president/.system/lexicon.md": {
       "owner": "framework",
       "managed": true,
-      "source": ".claude/agents/02-oneshot/redteam/orchestrator.md",
-      "kind": "md",
-      "sha256": "3ccf4785d1f08b7378497eb4c8a852ee73662ea13b368b3093e261d2a468dd99",
-      "installedSha": "3ccf4785d1f08b7378497eb4c8a852ee73662ea13b368b3093e261d2a468dd99"
-    },
-    ".claude/agents/02-oneshot/redteam/scan.md": {
-      "owner": "framework",
-      "managed": true,
-      "source": ".claude/agents/02-oneshot/redteam/scan.md",
-      "kind": "md",
-      "sha256": "4b4b42c8024f586aa662b9a4583a6c79346e51b2f24ae6677fbddcd9170bbbd9",
-      "installedSha": "4b4b42c8024f586aa662b9a4583a6c79346e51b2f24ae6677fbddcd9170bbbd9"
-    },
-    ".claude/agents/02-oneshot/qa/analyze.md": {
-      "owner": "framework",
-      "managed": true,
-      "source": ".claude/agents/02-oneshot/qa/analyze.md",
-      "kind": "md",
-      "sha256": "c4bf44b2a3565a80fb2aa8cf4cf4891273aa1fd472d9412d05ec2f2d336bae77",
-      "installedSha": "c4bf44b2a3565a80fb2aa8cf4cf4891273aa1fd472d9412d05ec2f2d336bae77"
-    },
-    ".claude/agents/02-oneshot/qa/orchestrator.md": {
-      "owner": "framework",
-      "managed": true,
-      "source": ".claude/agents/02-oneshot/qa/orchestrator.md",
-      "kind": "md",
-      "sha256": "bd465b872f4f304561694190f3c4b541bd5d1de9ac9795e2257fbdd0f9c15e47",
-      "installedSha": "bd465b872f4f304561694190f3c4b541bd5d1de9ac9795e2257fbdd0f9c15e47"
-    },
-    ".claude/agents/02-oneshot/qa/scan.md": {
-      "owner": "framework",
-      "managed": true,
-      "source": ".claude/agents/02-oneshot/qa/scan.md",
-      "kind": "md",
-      "sha256": "5b5ecd70ad84c1d2176bfa104449515502b86b603455d2b8fdce416734adfc7d",
-      "installedSha": "5b5ecd70ad84c1d2176bfa104449515502b86b603455d2b8fdce416734adfc7d"
-    },
-    ".claude/agents/02-oneshot/learner/learner.md": {
-      "owner": "framework",
-      "managed": true,
-      "source": ".claude/agents/02-oneshot/learner/learner.md",
-      "kind": "md",
-      "sha256": "acc510bc3cba654bebc53497d0c10e9b3474f7d4a1714dbbe947451aa1e24dc9",
-      "installedSha": "acc510bc3cba654bebc53497d0c10e9b3474f7d4a1714dbbe947451aa1e24dc9"
-    },
-    ".claude/agents/02-oneshot/frontend-builder/frontend-builder.md": {
-      "owner": "framework",
-      "managed": true,
-      "source": ".claude/agents/02-oneshot/frontend-builder/frontend-builder.md",
-      "kind": "md",
-      "sha256": "8bd78bd220419e2275af8d395887b6d27aeed0f4adabd308db7d61d9acd22cf0",
-      "installedSha": "8bd78bd220419e2275af8d395887b6d27aeed0f4adabd308db7d61d9acd22cf0"
-    },
-    ".claude/agents/02-oneshot/fixer/fixer.md": {
-      "owner": "framework",
-      "managed": true,
-      "source": ".claude/agents/02-oneshot/fixer/fixer.md",
-      "kind": "md",
-      "sha256": "b53ce819b0ebaed3596a241acad47809d4d2ffd6ee4f6d2d2e399590395e7d97",
-      "installedSha": "b53ce819b0ebaed3596a241acad47809d4d2ffd6ee4f6d2d2e399590395e7d97"
-    },
-    ".claude/agents/02-oneshot/design-quality/design-quality.md": {
-      "owner": "framework",
-      "managed": true,
-      "source": ".claude/agents/02-oneshot/design-quality/design-quality.md",
-      "kind": "md",
-      "sha256": "9b2e63aaaf902963e58b1d04c0a2440cc020e099ae3c755d8d423a390a6484fe",
-      "installedSha": "9b2e63aaaf902963e58b1d04c0a2440cc020e099ae3c755d8d423a390a6484fe"
-    },
-    ".claude/agents/02-oneshot/compliance/compliance.md": {
-      "owner": "framework",
-      "managed": true,
-      "source": ".claude/agents/02-oneshot/compliance/compliance.md",
-      "kind": "md",
-      "sha256": "cd1464bd9a6ecbd1ba91976a495ff99069d782ac8bd3dda6d05619d660455d48",
-      "installedSha": "cd1464bd9a6ecbd1ba91976a495ff99069d782ac8bd3dda6d05619d660455d48"
-    },
-    ".claude/agents/02-oneshot/compliance/spec.md": {
-      "owner": "framework",
-      "managed": true,
-      "source": ".claude/agents/02-oneshot/compliance/spec.md",
-      "kind": "md",
-      "sha256": "41439edca094e2f4c9ce2461c49d0ea7b8e143ae55c42cb4c9e71179fa0b9ef0",
-      "installedSha": "41439edca094e2f4c9ce2461c49d0ea7b8e143ae55c42cb4c9e71179fa0b9ef0"
-    },
-    ".claude/agents/02-oneshot/builder/builder.md": {
-      "owner": "framework",
-      "managed": true,
-      "source": ".claude/agents/02-oneshot/builder/builder.md",
-      "kind": "md",
-      "sha256": "8cb9f5367335f44dd0877468b30aaf357e58a5695aecb4bbbe918b00ef2c460c",
-      "installedSha": "8cb9f5367335f44dd0877468b30aaf357e58a5695aecb4bbbe918b00ef2c460c"
-    },
-    ".claude/agents/02-oneshot/backend-builder/backend-builder.md": {
-      "owner": "framework",
-      "managed": true,
-      "source": ".claude/agents/02-oneshot/backend-builder/backend-builder.md",
-      "kind": "md",
-      "sha256": "6a13c9e96ab1831ef19bd4f1a7bde4d6165a23b2d18b2305af3a81087bc942a1",
-      "installedSha": "6a13c9e96ab1831ef19bd4f1a7bde4d6165a23b2d18b2305af3a81087bc942a1"
-    },
-    ".claude/agents/02-oneshot/.system/ENV-SETUP.md": {
-      "owner": "framework",
-      "managed": true,
-      "source": ".claude/agents/02-oneshot/.system/ENV-SETUP.md",
-      "kind": "md",
-      "sha256": "7a0d92e1afdfa49da1691cf59f29cae6635f6395b435acf12ffb633c43a58af7",
-      "installedSha": "7a0d92e1afdfa49da1691cf59f29cae6635f6395b435acf12ffb633c43a58af7"
-    },
-    ".claude/agents/02-oneshot/.system/integration-map.md": {
-      "owner": "framework",
-      "managed": true,
-      "source": ".claude/agents/02-oneshot/.system/integration-map.md",
-      "kind": "md",
-      "sha256": "978aa30239d7cb05ed6a984efbe4857e01d679b2b7c8dc883fa188faa9addad8",
-      "installedSha": "978aa30239d7cb05ed6a984efbe4857e01d679b2b7c8dc883fa188faa9addad8"
-    },
-    ".claude/agents/02-oneshot/.system/LAUNCH-CHECKLIST.md": {
-      "owner": "framework",
-      "managed": true,
-      "source": ".claude/agents/02-oneshot/.system/LAUNCH-CHECKLIST.md",
-      "kind": "md",
-      "sha256": "91908a8ff1f06b4acd0ecc522027b15cd79de493455aa43f8205d1fabede0c4a",
-      "installedSha": "91908a8ff1f06b4acd0ecc522027b15cd79de493455aa43f8205d1fabede0c4a"
-    },
-    ".claude/agents/02-oneshot/.system/protocol.md": {
-      "owner": "framework",
-      "managed": true,
-      "source": ".claude/agents/02-oneshot/.system/protocol.md",
-      "kind": "md",
-      "sha256": "28d294c14ca619916c737db3d49a515db81c70dea0dd41d4ffd3c84d1db58c3a",
-      "installedSha": "28d294c14ca619916c737db3d49a515db81c70dea0dd41d4ffd3c84d1db58c3a"
-    },
-    ".claude/agents/02-oneshot/.system/skeleton-checklist.md": {
-      "owner": "framework",
-      "managed": true,
-      "source": ".claude/agents/02-oneshot/.system/skeleton-checklist.md",
-      "kind": "md",
-      "sha256": "f0f5cf33fd8f9ad7954c5f5245bb98df0bbd01a1fdf39d7ecb6255e3a81e0cf9",
-      "installedSha": "f0f5cf33fd8f9ad7954c5f5245bb98df0bbd01a1fdf39d7ecb6255e3a81e0cf9"
-    },
-    ".claude/agents/01-adhoc/_build-core/build-core.md": {
-      "owner": "framework",
-      "managed": true,
-      "source": ".claude/agents/01-adhoc/_build-core/build-core.md",
-      "kind": "md",
-      "sha256": "93f8b2cc9f97a9a330f02f6ea7b295780e07a583e15bf338672657ec4c9c9aa3",
-      "installedSha": "93f8b2cc9f97a9a330f02f6ea7b295780e07a583e15bf338672657ec4c9c9aa3"
-    },
-    ".claude/agents/01-adhoc/reviewer/reviewer.md": {
-      "owner": "framework",
-      "managed": true,
-      "source": ".claude/agents/01-adhoc/reviewer/reviewer.md",
-      "kind": "md",
-      "sha256": "d643a17d6e4d1e9d329470fcc0c6c4672bc725b5dd800208662a05408f4e5105",
-      "installedSha": "d643a17d6e4d1e9d329470fcc0c6c4672bc725b5dd800208662a05408f4e5105"
-    },
-    ".claude/agents/01-adhoc/req-reviewer/req-reviewer.md": {
-      "owner": "framework",
-      "managed": true,
-      "source": ".claude/agents/01-adhoc/req-reviewer/req-reviewer.md",
-      "kind": "md",
-      "sha256": "cef45d7d578af02762df764b6ee6b7c07a27aa674fac280075c9b497fd0cf801",
-      "installedSha": "cef45d7d578af02762df764b6ee6b7c07a27aa674fac280075c9b497fd0cf801"
-    },
-    ".claude/agents/01-adhoc/redteam/analyze.md": {
-      "owner": "framework",
-      "managed": true,
-      "source": ".claude/agents/01-adhoc/redteam/analyze.md",
-      "kind": "md",
-      "sha256": "3ced8a1aace8850e401d94c6930d48305c7a0576e941e68187a5dba985c298f6",
-      "installedSha": "3ced8a1aace8850e401d94c6930d48305c7a0576e941e68187a5dba985c298f6"
-    },
-    ".claude/agents/01-adhoc/redteam/orchestrator.md": {
-      "owner": "framework",
-      "managed": true,
-      "source": ".claude/agents/01-adhoc/redteam/orchestrator.md",
-      "kind": "md",
-      "sha256": "27bac40068a161d2f266843534d0bbb04ca8fd73e2e606b184af9eae925ef653",
-      "installedSha": "27bac40068a161d2f266843534d0bbb04ca8fd73e2e606b184af9eae925ef653"
-    },
-    ".claude/agents/01-adhoc/redteam/scan.md": {
-      "owner": "framework",
-      "managed": true,
-      "source": ".claude/agents/01-adhoc/redteam/scan.md",
-      "kind": "md",
-      "sha256": "4b4b42c8024f586aa662b9a4583a6c79346e51b2f24ae6677fbddcd9170bbbd9",
-      "installedSha": "4b4b42c8024f586aa662b9a4583a6c79346e51b2f24ae6677fbddcd9170bbbd9"
-    },
-    ".claude/agents/01-adhoc/qa/analyze.md": {
-      "owner": "framework",
-      "managed": true,
-      "source": ".claude/agents/01-adhoc/qa/analyze.md",
-      "kind": "md",
-      "sha256": "8d8f2299d95e08168dcc84f9e8d0c13f146d21b8877cd36d6ed5a7129b91d0c7",
-      "installedSha": "8d8f2299d95e08168dcc84f9e8d0c13f146d21b8877cd36d6ed5a7129b91d0c7"
-    },
-    ".claude/agents/01-adhoc/qa/orchestrator.md": {
-      "owner": "framework",
-      "managed": true,
-      "source": ".claude/agents/01-adhoc/qa/orchestrator.md",
-      "kind": "md",
-      "sha256": "19970d7778edde164520953eafe28df0d0f8481c492f08cd3b301917cfd963fc",
-      "installedSha": "19970d7778edde164520953eafe28df0d0f8481c492f08cd3b301917cfd963fc"
-    },
-    ".claude/agents/01-adhoc/qa/scan.md": {
-      "owner": "framework",
-      "managed": true,
-      "source": ".claude/agents/01-adhoc/qa/scan.md",
-      "kind": "md",
-      "sha256": "805fd7c2c2465ec3b998a4783420e1a725029c762ace5c01f3a65a5db09c9d2f",
-      "installedSha": "805fd7c2c2465ec3b998a4783420e1a725029c762ace5c01f3a65a5db09c9d2f"
-    },
-    ".claude/agents/01-adhoc/frontend-builder/frontend-builder.md": {
-      "owner": "framework",
-      "managed": true,
-      "source": ".claude/agents/01-adhoc/frontend-builder/frontend-builder.md",
-      "kind": "md",
-      "sha256": "8e6dc9d9c1898c73aa402ad4ee332c9c6039e273f30b6768ab0bf9bb52d56562",
-      "installedSha": "8e6dc9d9c1898c73aa402ad4ee332c9c6039e273f30b6768ab0bf9bb52d56562"
-    },
-    ".claude/agents/01-adhoc/fixer/fixer.md": {
-      "owner": "framework",
-      "managed": true,
-      "source": ".claude/agents/01-adhoc/fixer/fixer.md",
-      "kind": "md",
-      "sha256": "2d758234e7507bd16c943d78948ff51cf52291646c3c793fb5e2d13b3cd2cc8d",
-      "installedSha": "2d758234e7507bd16c943d78948ff51cf52291646c3c793fb5e2d13b3cd2cc8d"
-    },
-    ".claude/agents/01-adhoc/compliance/compliance.md": {
-      "owner": "framework",
-      "managed": true,
-      "source": ".claude/agents/01-adhoc/compliance/compliance.md",
-      "kind": "md",
-      "sha256": "390813ad88f16e91e00d566a0db971192bea58ae01b44101101e02413ba9ccf7",
-      "installedSha": "390813ad88f16e91e00d566a0db971192bea58ae01b44101101e02413ba9ccf7"
-    },
-    ".claude/agents/01-adhoc/builder/builder.md": {
-      "owner": "framework",
-      "managed": true,
-      "source": ".claude/agents/01-adhoc/builder/builder.md",
-      "kind": "md",
-      "sha256": "74b8f358ff7751c43564ae8188b42a60130fa308e90e172056c56733b28359c4",
-      "installedSha": "74b8f358ff7751c43564ae8188b42a60130fa308e90e172056c56733b28359c4"
-    },
-    ".claude/agents/01-adhoc/backend-builder/backend-builder.md": {
-      "owner": "framework",
-      "managed": true,
-      "source": ".claude/agents/01-adhoc/backend-builder/backend-builder.md",
-      "kind": "md",
-      "sha256": "55ecb371ba8eef3b8ed8cb428efd1dd090b36638caadfb3dd697772e81016dd1",
-      "installedSha": "55ecb371ba8eef3b8ed8cb428efd1dd090b36638caadfb3dd697772e81016dd1"
-    },
-    ".claude/agents/01-adhoc/.system/protocol.md": {
-      "owner": "framework",
-      "managed": true,
-      "source": ".claude/agents/01-adhoc/.system/protocol.md",
-      "kind": "md",
-      "sha256": "acb1b6f522ee395361877b54a8b9a9fef110cebd61db76a98a757bec2d533c42",
-      "installedSha": "acb1b6f522ee395361877b54a8b9a9fef110cebd61db76a98a757bec2d533c42"
-    },
-    ".claude/agents/00-alex/alpha.md": {
-      "owner": "framework",
-      "managed": true,
-      "source": ".claude/agents/00-alex/alpha.md",
-      "kind": "md",
-      "sha256": "bc2beb9ebe8dac0c3c0169a7d061ceaf4174b916f07ed6eba72a7c042f51b10e",
-      "installedSha": "bc2beb9ebe8dac0c3c0169a7d061ceaf4174b916f07ed6eba72a7c042f51b10e"
-    },
-    ".claude/agents/00-alex/beta.md": {
-      "owner": "framework",
-      "managed": true,
-      "source": ".claude/agents/00-alex/beta.md",
-      "kind": "md",
-      "sha256": "560a885c11f26601e0cf11f1b3fe5b2bdf00f3144f1ddfecb53b1efad2d867e7",
-      "installedSha": "560a885c11f26601e0cf11f1b3fe5b2bdf00f3144f1ddfecb53b1efad2d867e7"
-    },
-    ".claude/agents/00-alex/delta.md": {
-      "owner": "framework",
-      "managed": true,
-      "source": ".claude/agents/00-alex/delta.md",
-      "kind": "md",
-      "sha256": "4f973696de41052d60db739377bf981ef8ca01002b2994c2d82c0c14473ae12b",
-      "installedSha": "4f973696de41052d60db739377bf981ef8ca01002b2994c2d82c0c14473ae12b"
-    },
-    ".claude/agents/00-alex/gamma.md": {
-      "owner": "framework",
-      "managed": true,
-      "source": ".claude/agents/00-alex/gamma.md",
-      "kind": "md",
-      "sha256": "8b921b45f80fc79d6906da669926e1a2fb369a277c5b0e91908bdd30ea3ad241",
-      "installedSha": "8b921b45f80fc79d6906da669926e1a2fb369a277c5b0e91908bdd30ea3ad241"
-    },
-    ".claude/agents/00-alex/.system/events.jsonl": {
-      "owner": "runtime",
-      "managed": false,
-      "kind": "jsonl"
-    },
-    ".claude/agents/00-alex/.system/lexicon.md": {
-      "owner": "framework",
-      "managed": true,
-      "source": ".claude/agents/00-alex/.system/lexicon.md",
+      "source": ".claude/agents/president/.system/lexicon.md",
       "kind": "md",
       "sha256": "b03e66e7951c8c09b13e306647d96722500368af63e9b1fdaeca8ced0b3bfde3",
       "installedSha": "b03e66e7951c8c09b13e306647d96722500368af63e9b1fdaeca8ced0b3bfde3"
     },
-    ".claude/agents/00-alex/.system/skill-frontmatter.schema.json": {
+    ".claude/agents/president/.system/skill-frontmatter.schema.json": {
       "owner": "framework",
       "managed": true,
-      "source": ".claude/agents/00-alex/.system/skill-frontmatter.schema.json",
+      "source": ".claude/agents/president/.system/skill-frontmatter.schema.json",
       "kind": "json",
       "sha256": "78c75643731e725dfc328010cce8d920aa147e4ecf91cd73d5908dd3c5e8a5c7",
       "installedSha": "78c75643731e725dfc328010cce8d920aa147e4ecf91cd73d5908dd3c5e8a5c7"
     },
-    ".claude/agents/00-alex/.system/policy/current-stage.md": {
+    ".claude/agents/president/.system/policy/current-stage.md": {
       "owner": "framework",
       "managed": true,
-      "source": ".claude/agents/00-alex/.system/policy/current-stage.md",
+      "source": ".claude/agents/president/.system/policy/current-stage.md",
       "kind": "md",
       "sha256": "c2fca96b1c3acfa3fb1e46ec529d14e703b123cec1374240081ef60dc1465ccc",
       "installedSha": "c2fca96b1c3acfa3fb1e46ec529d14e703b123cec1374240081ef60dc1465ccc"
     },
-    ".claude/agents/00-alex/.system/policy/decision-policy.md": {
+    ".claude/agents/president/.system/policy/decision-policy.md": {
       "owner": "project",
       "managed": false,
-      "seeded_from": ".claude/agents/00-alex/.system/policy/decision-policy.md",
+      "seeded_from": ".claude/agents/president/.system/policy/decision-policy.md",
       "class": "fillable"
     },
-    ".claude/agents/00-alex/.system/policy/ledger-presence.json": {
+    ".claude/agents/president/.system/policy/ledger-presence.json": {
       "owner": "framework",
       "managed": true,
-      "source": ".claude/agents/00-alex/.system/policy/ledger-presence.json",
+      "source": ".claude/agents/president/.system/policy/ledger-presence.json",
       "kind": "json",
       "sha256": "382ab3fdd79fd71e781e3bea457670bd8a756db0c87fb4d5e7c3172af886587d",
       "installedSha": "382ab3fdd79fd71e781e3bea457670bd8a756db0c87fb4d5e7c3172af886587d"
     },
-    ".claude/agents/00-alex/.system/policy/provider-failure-modes.json": {
+    ".claude/agents/president/.system/policy/provider-failure-modes.json": {
       "owner": "framework",
       "managed": true,
-      "source": ".claude/agents/00-alex/.system/policy/provider-failure-modes.json",
+      "source": ".claude/agents/president/.system/policy/provider-failure-modes.json",
       "kind": "json",
       "sha256": "8ae87c8fa057cb96dc4a4628cf3af618cd23f6182d703461c3426e8bc2032361",
       "installedSha": "8ae87c8fa057cb96dc4a4628cf3af618cd23f6182d703461c3426e8bc2032361"
     },
-    ".claude/agents/00-alex/.system/policy/provider-fallback.json": {
+    ".claude/agents/president/.system/policy/provider-fallback.json": {
       "owner": "framework",
       "managed": true,
-      "source": ".claude/agents/00-alex/.system/policy/provider-fallback.json",
+      "source": ".claude/agents/president/.system/policy/provider-fallback.json",
       "kind": "json",
       "sha256": "bb4aedd16814d64416ac9be4e49f17a0524226a3e470e2f8b93e3dbc2093129f",
       "installedSha": "bb4aedd16814d64416ac9be4e49f17a0524226a3e470e2f8b93e3dbc2093129f"
     },
-    ".claude/agents/00-alex/.system/policy/sprint-full-autonomy.json": {
+    ".claude/agents/president/.system/policy/sprint-full-autonomy.json": {
       "owner": "framework",
       "managed": true,
-      "source": ".claude/agents/00-alex/.system/policy/sprint-full-autonomy.json",
+      "source": ".claude/agents/president/.system/policy/sprint-full-autonomy.json",
       "kind": "json",
       "sha256": "510871c1cf73046812ce8100ca443154fefbd7f17798273204157ad562d84dcc",
       "installedSha": "510871c1cf73046812ce8100ca443154fefbd7f17798273204157ad562d84dcc"
     },
-    ".claude/agents/00-alex/.system/policy/sprint-routing.json": {
+    ".claude/agents/president/.system/policy/sprint-routing.json": {
       "owner": "framework",
       "managed": true,
-      "source": ".claude/agents/00-alex/.system/policy/sprint-routing.json",
+      "source": ".claude/agents/president/.system/policy/sprint-routing.json",
       "kind": "json",
       "sha256": "70afa288ceca4b70ef1224fd51b98d0df92d41b018790ff11bbde1fe0f07eb8c",
       "installedSha": "70afa288ceca4b70ef1224fd51b98d0df92d41b018790ff11bbde1fe0f07eb8c"
     },
-    ".claude/agents/00-alex/.system/policy/validation-backlog-policy.md": {
+    ".claude/agents/president/.system/policy/validation-backlog-policy.md": {
       "owner": "framework",
       "managed": true,
-      "source": ".claude/agents/00-alex/.system/policy/validation-backlog-policy.md",
+      "source": ".claude/agents/president/.system/policy/validation-backlog-policy.md",
       "kind": "md",
       "sha256": "c50745af7e27e5cabc9c788648eb288613d58322943f1b4c6a465c8869a424ef",
       "installedSha": "c50745af7e27e5cabc9c788648eb288613d58322943f1b4c6a465c8869a424ef"
     },
-    ".claude/agents/00-alex/.system/policy/version-bump-guard.json": {
+    ".claude/agents/president/.system/policy/version-bump-guard.json": {
       "owner": "framework",
       "managed": true,
-      "source": ".claude/agents/00-alex/.system/policy/version-bump-guard.json",
+      "source": ".claude/agents/president/.system/policy/version-bump-guard.json",
       "kind": "json",
       "sha256": "a0ccaae343b32a97d99f1063a732ea1e62cf1945451b4faa779fb8d1c283e666",
       "installedSha": "a0ccaae343b32a97d99f1063a732ea1e62cf1945451b4faa779fb8d1c283e666"
     },
-    ".claude/agents/00-alex/.system/policy/adr/0000-template.md": {
+    ".claude/agents/president/.system/policy/adr/0000-template.md": {
       "owner": "framework",
       "managed": true,
-      "source": ".claude/agents/00-alex/.system/policy/adr/0000-template.md",
+      "source": ".claude/agents/president/.system/policy/adr/0000-template.md",
       "kind": "md",
       "sha256": "34e4d4aebb19ec2ec007e7003b0da04aa5b940e34d1ca97ce61d69a2d6c614c8",
       "installedSha": "34e4d4aebb19ec2ec007e7003b0da04aa5b940e34d1ca97ce61d69a2d6c614c8"
     },
-    ".claude/agents/00-alex/.system/policy/adr/0001-warp-promote-location.md": {
+    ".claude/agents/president/.system/policy/adr/0001-warp-promote-location.md": {
       "owner": "framework",
       "managed": true,
-      "source": ".claude/agents/00-alex/.system/policy/adr/0001-warp-promote-location.md",
+      "source": ".claude/agents/president/.system/policy/adr/0001-warp-promote-location.md",
       "kind": "md",
       "sha256": "32b0d5445adf33b9e6d1a1d2c519afdc9c90bcadc9f00feb6de46bc0fb1b6d28",
       "installedSha": "32b0d5445adf33b9e6d1a1d2c519afdc9c90bcadc9f00feb6de46bc0fb1b6d28"
     },
-    ".claude/agents/00-alex/.system/policy/adr/0002-multi-sprint-parallel-lanes.md": {
+    ".claude/agents/president/.system/policy/adr/0002-multi-sprint-parallel-lanes.md": {
       "owner": "framework",
       "managed": true,
-      "source": ".claude/agents/00-alex/.system/policy/adr/0002-multi-sprint-parallel-lanes.md",
+      "source": ".claude/agents/president/.system/policy/adr/0002-multi-sprint-parallel-lanes.md",
       "kind": "md",
       "sha256": "47ecfc36ce09cf8f4af1eba50a84b1601cdeeef065dafc5172f72105a8a3bbaf",
       "installedSha": "47ecfc36ce09cf8f4af1eba50a84b1601cdeeef065dafc5172f72105a8a3bbaf"
     },
-    ".claude/agents/00-alex/.system/policy/adr/0003-manager-principles-inheritance.md": {
+    ".claude/agents/president/.system/policy/adr/0003-manager-principles-inheritance.md": {
       "owner": "framework",
       "managed": true,
-      "source": ".claude/agents/00-alex/.system/policy/adr/0003-manager-principles-inheritance.md",
+      "source": ".claude/agents/president/.system/policy/adr/0003-manager-principles-inheritance.md",
       "kind": "md",
       "sha256": "1147da1e3077a39e00c772bd596c5cf11d7629d93011b609adcf6e39b05b837b",
       "installedSha": "1147da1e3077a39e00c772bd596c5cf11d7629d93011b609adcf6e39b05b837b"
     },
-    ".claude/agents/00-alex/.system/policy/adr/0004-oneshot-arbitration-needed-state.md": {
+    ".claude/agents/president/.system/policy/adr/0004-oneshot-arbitration-needed-state.md": {
       "owner": "framework",
       "managed": true,
-      "source": ".claude/agents/00-alex/.system/policy/adr/0004-oneshot-arbitration-needed-state.md",
+      "source": ".claude/agents/president/.system/policy/adr/0004-oneshot-arbitration-needed-state.md",
       "kind": "md",
       "sha256": "7f11de4c15082e5756e23244995cf16a9261d92a8f325c63c7d30d6451f59b48",
       "installedSha": "7f11de4c15082e5756e23244995cf16a9261d92a8f325c63c7d30d6451f59b48"
     },
-    ".claude/agents/00-alex/.system/policy/adr/0005-guides-root-ownership.md": {
+    ".claude/agents/president/.system/policy/adr/0005-guides-root-ownership.md": {
       "owner": "framework",
       "managed": true,
-      "source": ".claude/agents/00-alex/.system/policy/adr/0005-guides-root-ownership.md",
+      "source": ".claude/agents/president/.system/policy/adr/0005-guides-root-ownership.md",
       "kind": "md",
       "sha256": "26de7922137af8e2c5466a639997561721bc107b016f65629b8688ff3e756d81",
       "installedSha": "26de7922137af8e2c5466a639997561721bc107b016f65629b8688ff3e756d81"
     },
-    ".claude/agents/00-alex/.system/policy/adr/0006-sealed-capsule-consumer-contract-gate.md": {
+    ".claude/agents/president/.system/policy/adr/0006-sealed-capsule-consumer-contract-gate.md": {
       "owner": "framework",
       "managed": true,
-      "source": ".claude/agents/00-alex/.system/policy/adr/0006-sealed-capsule-consumer-contract-gate.md",
+      "source": ".claude/agents/president/.system/policy/adr/0006-sealed-capsule-consumer-contract-gate.md",
       "kind": "md",
       "sha256": "b467514da9e3b444367d9e4d5a2755a71f3ffd576568f53af28171bdc6aad496",
       "installedSha": "b467514da9e3b444367d9e4d5a2755a71f3ffd576568f53af28171bdc6aad496"
     },
-    ".claude/agents/00-alex/.system/policy/adr/INDEX.md": {
+    ".claude/agents/president/.system/policy/adr/0007-agent-system-org-rewrite.md": {
       "owner": "framework",
       "managed": true,
-      "source": ".claude/agents/00-alex/.system/policy/adr/INDEX.md",
+      "source": ".claude/agents/president/.system/policy/adr/0007-agent-system-org-rewrite.md",
       "kind": "md",
-      "sha256": "e4db138b014486f7ed84d297b54260cf40e65a9a3a6970e6eda0a44ea397b822",
-      "installedSha": "e4db138b014486f7ed84d297b54260cf40e65a9a3a6970e6eda0a44ea397b822"
+      "sha256": "1bf6e8b23815aac4fc122a86a250a2be397ceebc3de2eb2fdfcb6f608e9e5678",
+      "installedSha": "1bf6e8b23815aac4fc122a86a250a2be397ceebc3de2eb2fdfcb6f608e9e5678"
     },
-    ".claude/agents/00-alex/.system/gamma/events.jsonl": {
+    ".claude/agents/president/.system/policy/adr/INDEX.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/president/.system/policy/adr/INDEX.md",
+      "kind": "md",
+      "sha256": "9ed3124afc187368c3ddde55f7d0544f2a77577b3c83a8db40c85437624e92c0",
+      "installedSha": "9ed3124afc187368c3ddde55f7d0544f2a77577b3c83a8db40c85437624e92c0"
+    },
+    ".claude/agents/president/.system/oneshot/ENV-SETUP.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/president/.system/oneshot/ENV-SETUP.md",
+      "kind": "md",
+      "sha256": "7a0d92e1afdfa49da1691cf59f29cae6635f6395b435acf12ffb633c43a58af7",
+      "installedSha": "7a0d92e1afdfa49da1691cf59f29cae6635f6395b435acf12ffb633c43a58af7"
+    },
+    ".claude/agents/president/.system/oneshot/integration-map.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/president/.system/oneshot/integration-map.md",
+      "kind": "md",
+      "sha256": "978aa30239d7cb05ed6a984efbe4857e01d679b2b7c8dc883fa188faa9addad8",
+      "installedSha": "978aa30239d7cb05ed6a984efbe4857e01d679b2b7c8dc883fa188faa9addad8"
+    },
+    ".claude/agents/president/.system/oneshot/LAUNCH-CHECKLIST.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/president/.system/oneshot/LAUNCH-CHECKLIST.md",
+      "kind": "md",
+      "sha256": "186109d3f255930d73ce7c1212086ed8d290fe09ec41c470dd887177900c0b4b",
+      "installedSha": "186109d3f255930d73ce7c1212086ed8d290fe09ec41c470dd887177900c0b4b"
+    },
+    ".claude/agents/president/.system/oneshot/protocol.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/president/.system/oneshot/protocol.md",
+      "kind": "md",
+      "sha256": "2d3a3cb45053fd375153a3abaa907fa2102bf74f377c92edd85f5095464eade5",
+      "installedSha": "2d3a3cb45053fd375153a3abaa907fa2102bf74f377c92edd85f5095464eade5"
+    },
+    ".claude/agents/president/.system/oneshot/skeleton-checklist.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/president/.system/oneshot/skeleton-checklist.md",
+      "kind": "md",
+      "sha256": "f0f5cf33fd8f9ad7954c5f5245bb98df0bbd01a1fdf39d7ecb6255e3a81e0cf9",
+      "installedSha": "f0f5cf33fd8f9ad7954c5f5245bb98df0bbd01a1fdf39d7ecb6255e3a81e0cf9"
+    },
+    ".claude/agents/president/.system/gamma/events.jsonl": {
       "owner": "runtime",
       "managed": false,
       "kind": "jsonl"
     },
-    ".claude/agents/00-alex/.system/beta/beta-source-data.md": {
+    ".claude/agents/president/.system/beta/beta-source-data.md": {
       "owner": "framework",
       "managed": true,
-      "source": ".claude/agents/00-alex/.system/beta/beta-source-data.md",
+      "source": ".claude/agents/president/.system/beta/beta-source-data.md",
       "kind": "md",
       "sha256": "0ae9c868c8edb0933cef6bb88214b3080c13cdb126368d7243c990f62db3f60f",
       "installedSha": "0ae9c868c8edb0933cef6bb88214b3080c13cdb126368d7243c990f62db3f60f"
     },
-    ".claude/agents/00-alex/.system/beta/events.jsonl": {
+    ".claude/agents/president/.system/beta/events.jsonl": {
       "owner": "runtime",
       "managed": false,
       "kind": "jsonl"
     },
-    ".claude/agents/00-alex/.system/beta/judgement-model-recommendations-archive.md": {
+    ".claude/agents/president/.system/beta/judgement-model-recommendations-archive.md": {
       "owner": "framework",
       "managed": true,
-      "source": ".claude/agents/00-alex/.system/beta/judgement-model-recommendations-archive.md",
+      "source": ".claude/agents/president/.system/beta/judgement-model-recommendations-archive.md",
       "kind": "md",
       "sha256": "1ac8ee44890a1cd7af1938645104320151cd4e3f2b8945acd6ef91dfa4d6f6cf",
       "installedSha": "1ac8ee44890a1cd7af1938645104320151cd4e3f2b8945acd6ef91dfa4d6f6cf"
     },
-    ".claude/agents/00-alex/.system/beta/judgement-model-recommendations.md": {
+    ".claude/agents/president/.system/beta/judgement-model-recommendations.md": {
       "owner": "framework",
       "managed": true,
-      "source": ".claude/agents/00-alex/.system/beta/judgement-model-recommendations.md",
+      "source": ".claude/agents/president/.system/beta/judgement-model-recommendations.md",
       "kind": "md",
       "sha256": "5aadf17ccb6d20740ad74535f9e0b11a39395e560aaa416d8739af75b4a5f892",
       "installedSha": "5aadf17ccb6d20740ad74535f9e0b11a39395e560aaa416d8739af75b4a5f892"
     },
-    ".claude/agents/00-alex/.system/beta/judgement-model.md": {
+    ".claude/agents/president/.system/beta/judgement-model.md": {
       "owner": "framework",
       "managed": true,
-      "source": ".claude/agents/00-alex/.system/beta/judgement-model.md",
+      "source": ".claude/agents/president/.system/beta/judgement-model.md",
       "kind": "md",
-      "sha256": "0f4c15c642f5ca7b306602329f603fe4f1fd80053050ec870a0253f180374fb5",
-      "installedSha": "0f4c15c642f5ca7b306602329f603fe4f1fd80053050ec870a0253f180374fb5"
+      "sha256": "cbddc080acb13d1bce5ede44724495d65acc9bd57d0fcf958aaf422edf68f507",
+      "installedSha": "cbddc080acb13d1bce5ede44724495d65acc9bd57d0fcf958aaf422edf68f507"
     },
-    ".claude/agents/00-alex/.system/alpha/events.jsonl": {
+    ".claude/agents/president/.system/alpha/events.jsonl": {
+      "owner": "runtime",
+      "managed": false,
+      "kind": "jsonl"
+    },
+    ".claude/agents/president/.system/adhoc/protocol.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/president/.system/adhoc/protocol.md",
+      "kind": "md",
+      "sha256": "f2789d1f950fb692305d525c49b7703c99a451565554d041150fd4d2f5faf44a",
+      "installedSha": "f2789d1f950fb692305d525c49b7703c99a451565554d041150fd4d2f5faf44a"
+    },
+    ".claude/agents/growth/conversion-lead.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/growth/conversion-lead.md",
+      "kind": "md",
+      "sha256": "c67a9bdbbc82150f4b3a264ba276360b2aa1d9c5fb6bf01dcb6b8079060349a7",
+      "installedSha": "c67a9bdbbc82150f4b3a264ba276360b2aa1d9c5fb6bf01dcb6b8079060349a7"
+    },
+    ".claude/agents/growth/copy-lead.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/growth/copy-lead.md",
+      "kind": "md",
+      "sha256": "544665a4d2f0725493e38a8fe917b47a4ce9971c1bb0484ca72daf52752b8be6",
+      "installedSha": "544665a4d2f0725493e38a8fe917b47a4ce9971c1bb0484ca72daf52752b8be6"
+    },
+    ".claude/agents/growth/director-of-growth.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/growth/director-of-growth.md",
+      "kind": "md",
+      "sha256": "2ff74daa80485e31549414565b4eb37e0622bf46fdcd53160b09f9e1ea86f7e4",
+      "installedSha": "2ff74daa80485e31549414565b4eb37e0622bf46fdcd53160b09f9e1ea86f7e4"
+    },
+    ".claude/agents/growth/marketing-lead.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/growth/marketing-lead.md",
+      "kind": "md",
+      "sha256": "d50ca35d1cb167248b2313976ec9d563f020f5faf7c553dcd2f5e52ff10f2358",
+      "installedSha": "d50ca35d1cb167248b2313976ec9d563f020f5faf7c553dcd2f5e52ff10f2358"
+    },
+    ".claude/agents/growth/research-lead.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/growth/research-lead.md",
+      "kind": "md",
+      "sha256": "690f64ef8833b8ff9ed6cac4367c84e35a787082438663951e58488fbecb4837",
+      "installedSha": "690f64ef8833b8ff9ed6cac4367c84e35a787082438663951e58488fbecb4837"
+    },
+    ".claude/agents/engineering/director-of-engineering.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/engineering/director-of-engineering.md",
+      "kind": "md",
+      "sha256": "a91a48589045efff600544786e6e32f72c9884aa685bf0a01a4c031b93205932",
+      "installedSha": "a91a48589045efff600544786e6e32f72c9884aa685bf0a01a4c031b93205932"
+    },
+    ".claude/agents/engineering/security/builder.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/engineering/security/builder.md",
+      "kind": "md",
+      "sha256": "3a15f80c66348ae42eba0f1125d96a3b8fd789905104066609dd80831a312652",
+      "installedSha": "3a15f80c66348ae42eba0f1125d96a3b8fd789905104066609dd80831a312652"
+    },
+    ".claude/agents/engineering/security/fixer.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/engineering/security/fixer.md",
+      "kind": "md",
+      "sha256": "08b6a81400b14f4a6a5dcb62dea6a52627144a46728f4c829ac1306fc33c0d9b",
+      "installedSha": "08b6a81400b14f4a6a5dcb62dea6a52627144a46728f4c829ac1306fc33c0d9b"
+    },
+    ".claude/agents/engineering/security/reviewer.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/engineering/security/reviewer.md",
+      "kind": "md",
+      "sha256": "584ed4f74590c636f9bc1c50f5dc062033720d18ea8653ea7b5049828ed5f696",
+      "installedSha": "584ed4f74590c636f9bc1c50f5dc062033720d18ea8653ea7b5049828ed5f696"
+    },
+    ".claude/agents/engineering/security/security-lead.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/engineering/security/security-lead.md",
+      "kind": "md",
+      "sha256": "843ab9ed545212a4933211cab4155850e3dd5f7e4e5eabd6a25bcdaa1f6b7b77",
+      "installedSha": "843ab9ed545212a4933211cab4155850e3dd5f7e4e5eabd6a25bcdaa1f6b7b77"
+    },
+    ".claude/agents/engineering/frontend/builder.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/engineering/frontend/builder.md",
+      "kind": "md",
+      "sha256": "604d3d5cb423cd0dd2f33632e1a771b75d24cbf6d45d3f82e8e15571eee3979f",
+      "installedSha": "604d3d5cb423cd0dd2f33632e1a771b75d24cbf6d45d3f82e8e15571eee3979f"
+    },
+    ".claude/agents/engineering/frontend/fixer.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/engineering/frontend/fixer.md",
+      "kind": "md",
+      "sha256": "d87b342a7e0e930ae937808c424baa297358d43ce1d3d3a402cf7b9f8bcf0c5c",
+      "installedSha": "d87b342a7e0e930ae937808c424baa297358d43ce1d3d3a402cf7b9f8bcf0c5c"
+    },
+    ".claude/agents/engineering/frontend/frontend-lead.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/engineering/frontend/frontend-lead.md",
+      "kind": "md",
+      "sha256": "18a9d8a6df49c5d79ca43fe2f0f4b97a9dcd10265fea4c55baa1e7923e0dded2",
+      "installedSha": "18a9d8a6df49c5d79ca43fe2f0f4b97a9dcd10265fea4c55baa1e7923e0dded2"
+    },
+    ".claude/agents/engineering/frontend/reviewer.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/engineering/frontend/reviewer.md",
+      "kind": "md",
+      "sha256": "c3711ea0058745b5aaa3d32337c9b2cb565e0819c04221c9db5b7c80617a428a",
+      "installedSha": "c3711ea0058745b5aaa3d32337c9b2cb565e0819c04221c9db5b7c80617a428a"
+    },
+    ".claude/agents/engineering/backend/backend-lead.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/engineering/backend/backend-lead.md",
+      "kind": "md",
+      "sha256": "50da09ad2c0c7c7a39881522ea5842b5e22f475baf80f8805ea1ce12ad123509",
+      "installedSha": "50da09ad2c0c7c7a39881522ea5842b5e22f475baf80f8805ea1ce12ad123509"
+    },
+    ".claude/agents/engineering/backend/builder.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/engineering/backend/builder.md",
+      "kind": "md",
+      "sha256": "c0a99a860d020a8e98f64259e53b692533ec2922fa63beb7a7a1b6680f07dd54",
+      "installedSha": "c0a99a860d020a8e98f64259e53b692533ec2922fa63beb7a7a1b6680f07dd54"
+    },
+    ".claude/agents/engineering/backend/fixer.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/engineering/backend/fixer.md",
+      "kind": "md",
+      "sha256": "15cf3a72e493029d9ecbccd2b2d07b3c44287b60aaf76f9784285c8974b87f09",
+      "installedSha": "15cf3a72e493029d9ecbccd2b2d07b3c44287b60aaf76f9784285c8974b87f09"
+    },
+    ".claude/agents/engineering/backend/reviewer.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/engineering/backend/reviewer.md",
+      "kind": "md",
+      "sha256": "4e5daf5a242a493ee241467f3e1aea9cb7ff336100e4e14556150ae39276f069",
+      "installedSha": "4e5daf5a242a493ee241467f3e1aea9cb7ff336100e4e14556150ae39276f069"
+    },
+    ".claude/agents/00-alex/.system/events.jsonl": {
       "owner": "runtime",
       "managed": false,
       "kind": "jsonl"
@@ -16995,24 +16988,24 @@
       "managed": true,
       "source": ".claude/agents/.system/frontmatter-guide.md",
       "kind": "md",
-      "sha256": "25785c852dba1af0a83c965590f1f3c74ee3ede8b40ef9b6fe808a49d659af0c",
-      "installedSha": "25785c852dba1af0a83c965590f1f3c74ee3ede8b40ef9b6fe808a49d659af0c"
+      "sha256": "441ae2313a1bfa712147ac642d3f4c20b687cbb62e69ce59655d638ee14a3c5e",
+      "installedSha": "441ae2313a1bfa712147ac642d3f4c20b687cbb62e69ce59655d638ee14a3c5e"
     },
     ".claude/agents/.system/guides/agent-dispatch-guide.md": {
       "owner": "framework",
       "managed": true,
       "source": ".claude/agents/.system/guides/agent-dispatch-guide.md",
       "kind": "md",
-      "sha256": "9ff7952066612dff8594613687c92c8e4fb6235b0ae6d3efbf8f8a940439453b",
-      "installedSha": "9ff7952066612dff8594613687c92c8e4fb6235b0ae6d3efbf8f8a940439453b"
+      "sha256": "3a57f0d7b809c60a12ef0a04d90c47404a3a80c2cc3ac9bb75f84d06b142f3af",
+      "installedSha": "3a57f0d7b809c60a12ef0a04d90c47404a3a80c2cc3ac9bb75f84d06b142f3af"
     },
     ".claude/agents/.system/guides/oneshot-token-guide.md": {
       "owner": "framework",
       "managed": true,
       "source": ".claude/agents/.system/guides/oneshot-token-guide.md",
       "kind": "md",
-      "sha256": "f0c6c1cbd0fb5ca8b7bb07517a48c2250ac8da15ef0f396de88f50b788da7737",
-      "installedSha": "f0c6c1cbd0fb5ca8b7bb07517a48c2250ac8da15ef0f396de88f50b788da7737"
+      "sha256": "cb4a52ba28fa19939b9d8e45af779c19e143e8fd11f42a57fee5712c4535e784",
+      "installedSha": "cb4a52ba28fa19939b9d8e45af779c19e143e8fd11f42a57fee5712c4535e784"
     }
   }
 }

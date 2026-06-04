@@ -82,7 +82,7 @@ function checkMode() {
 }
 
 function checkAgent() {
-  const gamma = fs.readFileSync(path.join(ROOT, ".claude", "agents", "00-alex", "gamma.md"), "utf8");
+  const gamma = fs.readFileSync(path.join(ROOT, ".claude", "agents", "president", "gamma.md"), "utf8");
   const stale = [".claude/agents/.system/agent-system.md", ".claude/agents/.system/adhoc/protocol.md"].filter((s) => gamma.includes(s));
   if (stale.length > 0) return sev("red", "Gamma still references stale agent-system paths", stale);
   return sev("green", "agent startup paths and canonical dispatch callouts are current");

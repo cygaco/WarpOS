@@ -6,7 +6,7 @@
     "agent": 72,
     "skill": 196,
     "reference": 28,
-    "maps_baseline": 24,
+    "maps_baseline": 25,
     "hook": 68,
     "hook_lib": 15,
     "tool": 2,
@@ -54,9 +54,9 @@
     "version_file": 1,
     "installer_script": 1,
     "module_scope": 1,
-    "framework_doc": 2
+    "framework_doc": 3
   },
-  "total": 1005,
+  "total": 1007,
   "assets": {
     "agent": [
       {
@@ -3858,6 +3858,18 @@
         "replaces": null
       },
       {
+        "id": "maps_baseline.system-coherence.graph.json",
+        "src": ".claude/project/maps/system-coherence.graph.json",
+        "dest": ".claude/project/maps/system-coherence.graph.json",
+        "kind": "maps_baseline",
+        "sha256": "bc7b464ae2b126689176c1546bf8bbe2b91ee831c4604595e3d00936a3a82ac2",
+        "owner": "generated",
+        "mergeStrategy": "regenerate",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
         "id": "maps_baseline.systems-inventory.jsonl",
         "src": ".claude/project/maps/systems-inventory.jsonl",
         "dest": ".claude/project/maps/systems-inventory.jsonl",
@@ -4164,7 +4176,7 @@
         "src": "scripts/hooks/hook-manifest.json",
         "dest": "scripts/hooks/hook-manifest.json",
         "kind": "hook",
-        "sha256": "ba91d13f5238fe4591890519d1cbc367b2af28ecefa4751a55694466edcc5a81",
+        "sha256": "4bcd3fa1f8636c09c7d04a48f924a240db77db8127d74b0571a305addbf3b449",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -5434,7 +5446,7 @@
         "src": "scripts/warpos/manifest/build.js",
         "dest": "scripts/warpos/manifest/build.js",
         "kind": "warpos_script",
-        "sha256": "6a6a6e07f0938f3ce60c3374552edede289e210e4cd9b1bea543c0abdb8b42f1",
+        "sha256": "d48fcd2f5431308ccd3976b17e506e3417257c603b1191aa63e16cf87571e1ce",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -5506,7 +5518,7 @@
         "src": "scripts/warpos/manifest/walk-skip.js",
         "dest": "scripts/warpos/manifest/walk-skip.js",
         "kind": "warpos_script",
-        "sha256": "61f62a83cbb00b12b69cbff9518e6eb60f0c71f40706d9e56e63653482376850",
+        "sha256": "69c0ea24bf118129a8ef5d3a8bbc2fee1ddea214904d1ab0af40b193de40724a",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -7674,7 +7686,7 @@
         "src": "scripts/check/install.js",
         "dest": "scripts/check/install.js",
         "kind": "check_runner_tool",
-        "sha256": "3ada65bf7ef242f9af3c61cdccf3f04fb5c4911fb1d0341f40dcf32537f88dc3",
+        "sha256": "4f6bc4d69c97a06520dd71f7bbdc352dd80c9591fb3f425544c2c7f7a0b204fe",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -8130,7 +8142,7 @@
         "src": "scripts/system/coherence.js",
         "dest": "scripts/system/coherence.js",
         "kind": "system_tool",
-        "sha256": "c3a01452c3f1fde42a769eae4b433b09bcd7ff829734dc49e833fddad9c8b5cd",
+        "sha256": "aed0c4d3801d910f33b2022793d10b9ee01c89d0f8f0139eee891ba28877bf1c",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -12110,7 +12122,7 @@
         "src": "scripts/generate-framework-manifest.js",
         "dest": "scripts/generate-framework-manifest.js",
         "kind": "top_script",
-        "sha256": "5c28b1d44520d2b1fbf93395df14feda7b3207e9e9753a8f74609ed2f0ce9359",
+        "sha256": "5d4a15afe2539084a035eee135f20ca1d6c72a54a5e2a2101ef4d94c6c6528b0",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -12197,6 +12209,19 @@
       }
     ],
     "framework_doc": [
+      {
+        "id": "framework_doc.AGENT-STRUCTURE.md",
+        "src": "AGENT-STRUCTURE.md",
+        "dest": "AGENT-STRUCTURE.md",
+        "kind": "framework_doc",
+        "sha256": "ee34323f6a1a18eaae3deb6ae5f597d67cb275d670d20ab3744c4fcd03cd7497",
+        "owner": "framework",
+        "mergeStrategy": "append-if-exists",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null,
+        "merge": "append-if-exists"
+      },
       {
         "id": "framework_doc.AGENTS.md",
         "src": "AGENTS.md",

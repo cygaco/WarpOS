@@ -103,8 +103,8 @@ function main() {
         return { ok: false, detail: `version.json unreadable: ${e.message}` };
       }
     }),
-    check("at least one agent under agents/00-alex", () => {
-      const dir = path.join(REPO_ROOT, ".claude", "agents", "00-alex");
+    check("at least one agent under agents/president", () => {
+      const dir = path.join(REPO_ROOT, ".claude", "agents", "president");
       if (!fs.existsSync(dir)) return false;
       return fs.readdirSync(dir).some((f) => f.endsWith(".md"));
     }),

@@ -443,6 +443,9 @@ function buildRules(sourcePrefix) {
       match: (rel) =>
         rel === "CLAUDE.md" ||
         rel === "AGENTS.md" ||
+        // ADR-0007: org-structure companion doc to AGENTS.md, referenced from
+        // CLAUDE.md. Framework root doc — same class as AGENTS.md.
+        rel === "AGENT-STRUCTURE.md" ||
         rel === "PROJECT.md" ||
         rel === "README.md" ||
         rel === "USER_GUIDE.md" ||
