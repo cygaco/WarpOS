@@ -3,7 +3,7 @@
 
 /**
  * org-roles.js — config-driven role + gauntlet classification derived from the
- * machine-readable org map (.claude/agents/03-managers/_org/org-map.json).
+ * machine-readable org map (.claude/agents/_org/org-map.json).
  *
  * S1.1 work-modes chassis — the CORE domain-aware-dispatch refactor. This is the
  * SINGLE source that turns the org map into the role sets that team-guard, the
@@ -28,7 +28,6 @@ const ORG_MAP_PATH = path.join(
   ROOT,
   ".claude",
   "agents",
-  "03-managers",
   "_org",
   "org-map.json",
 );

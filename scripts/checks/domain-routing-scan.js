@@ -3,7 +3,7 @@
 
 /**
  * /scan:domain-routing — per-domain routing enforcer (S0.1, SP-20260530-001).
- * Ties the org map (.claude/agents/03-managers/_org/org-map.json) to the S0.2
+ * Ties the org map (.claude/agents/_org/org-map.json) to the S0.2
  * artifact contracts (schemas/contracts/*.schema.json). REJECTS:
  *   - unrouted-owner-domain : a contract.owner_domain with no routing entry
  *   - dangling-domain       : a routing entry's domain not in org-map.domains (nor 'cross-domain')
@@ -24,7 +24,6 @@ const ORG_MAP = path.join(
   REPO_ROOT,
   ".claude",
   "agents",
-  "03-managers",
   "_org",
   "org-map.json",
 );

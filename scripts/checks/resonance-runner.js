@@ -7,7 +7,7 @@
  * but NOT message clarity · proof strength · audience specificity · visual hierarchy
  * · objection handling · conversion hypothesis — so it ships *valid artifacts that
  * still feel generic* (FINAL-PLAN §10d). This runner scores a target artifact
- * against `.claude/agents/03-managers/_evals/resonance-conversion-rubric.json` and
+ * against `.claude/agents/_evals/resonance-conversion-rubric.json` and
  * is the "valid-but-generic" backstop the S3.1 pilot exit consumes.
  *
  * Builds to runtime/notes/wave2-s2.2-enforcers-design.md §1 + the rubric DATA. The
@@ -55,7 +55,7 @@ const path = require("path");
 const ROOT = process.env.CLAUDE_PROJECT_DIR || path.resolve(__dirname, "..", "..");
 const NAME = "resonance-runner";
 const DEFAULT_RUBRIC = path.join(
-  ROOT, ".claude/agents/03-managers/_evals/resonance-conversion-rubric.json",
+  ROOT, ".claude/agents/_evals/resonance-conversion-rubric.json",
 );
 // Owner for the arbitration record: a conversion/landing artifact → growth_lead;
 // a copy-only artifact → copy_lead (mirrors the rubric `judges` map + design-note owner).

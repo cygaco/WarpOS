@@ -13,7 +13,7 @@ Alpha dispatches gamma in adhoc mode for:
 
 > ### ⚠ CANONICAL DISPATCH — NO EXCEPTIONS
 >
-> **All build-chain roles** (the ADR-0007 roster: `*-builder`, `*-fixer`, the pod reviewers `frontend-reviewer`/`backend-reviewer`, `qa-reviewer`, `security-reviewer`) **MUST** be dispatched via Bash subprocess — **`node scripts/dispatch-claude.js <role>` for Claude-routed BUILD roles** (`*-builder`/`*-fixer`/`stub-scaffold`: the bounded wrapper; raw `claude -p --agent <build-role>` silently REAPS — RI-004/ED-018 — and is blocked by the dispatch-route-guard hook), `claude -p --agent <role>` for the non-build Claude fallback (qa-reviewer/security-reviewer/etc.), and `node scripts/dispatch-agent.js <role>` for OpenAI/Gemini-routed. **Do NOT use the in-process `Agent` tool** for any of these roles, even when running locally as Claude. The `Agent` tool returns the full agent response into the orchestrator conversation; Bash dispatch captures stdout and parses only the JSON envelope. See `.claude/agents/00-alex/gamma.md` Dispatch Method for the full reference pattern.
+> **All build-chain roles** (the ADR-0007 roster: `*-builder`, `*-fixer`, the pod reviewers `frontend-reviewer`/`backend-reviewer`, `qa-reviewer`, `security-reviewer`) **MUST** be dispatched via Bash subprocess — **`node scripts/dispatch-claude.js <role>` for Claude-routed BUILD roles** (`*-builder`/`*-fixer`/`stub-scaffold`: the bounded wrapper; raw `claude -p --agent <build-role>` silently REAPS — RI-004/ED-018 — and is blocked by the dispatch-route-guard hook), `claude -p --agent <role>` for the non-build Claude fallback (qa-reviewer/security-reviewer/etc.), and `node scripts/dispatch-agent.js <role>` for OpenAI/Gemini-routed. **Do NOT use the in-process `Agent` tool** for any of these roles, even when running locally as Claude. The `Agent` tool returns the full agent response into the orchestrator conversation; Bash dispatch captures stdout and parses only the JSON envelope. See `.claude/agents/president/gamma.md` Dispatch Method for the full reference pattern.
 
 ### 1. Dispatch builder(s)
 
@@ -49,7 +49,7 @@ exit 0 = seam governed (or single-builder N/A) → proceed to the gauntlet; exit
 defect (treat like a reviewer fail: fix brief → builder/fixer, max 3, re-run); exit 2 =
 fail-closed error → HALT. In oneshot (no α/β) an unresolved conflict is parked via
 `scripts/arbitration/emit.js` (owner `gamma_integration`) and the run-end resolver blocks
-ship-ready. Full detail: `.claude/agents/00-alex/gamma.md` → "Integration phase" +
+ship-ready. Full detail: `.claude/agents/president/gamma.md` → "Integration phase" +
 `runtime/notes/wave2-s1.3-gamma-integration-phase.md`. Single-builder features skip this step.
 
 ### 2. Run gauntlet

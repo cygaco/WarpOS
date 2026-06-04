@@ -22,7 +22,7 @@ Each principle has four fields: what the rule is, why it exists, how to apply it
 
 ## Delegation Matrix → Class A/B/C taxonomy
 
-The previous TBD delegation matrix has been superseded by the Class A/B/C taxonomy in `paths.decisionPolicy`. That doc lives at `.claude/agents/00-alex/.system/policy/decision-policy.md` and is loaded on every Beta invocation alongside this file.
+The previous TBD delegation matrix has been superseded by the Class A/B/C taxonomy in `paths.decisionPolicy`. That doc lives at `.claude/agents/president/.system/policy/decision-policy.md` and is loaded on every Beta invocation alongside this file.
 
 Use the taxonomy to classify any incoming question before applying judgment:
 - **Class A** — implementation-level, reversible. DECIDE without scoring.

@@ -163,7 +163,7 @@ test("non-object artifact → REJECT (fail-closed)", () => {
 test("real rubric on disk → clean brief PASSes (rubric is loadable + coherent)", () => {
   const realRubric = require(path.join(
     process.env.CLAUDE_PROJECT_DIR || path.resolve(__dirname, "..", ".."),
-    ".claude/agents/03-managers/_evals/resonance-conversion-rubric.json",
+    ".claude/agents/_evals/resonance-conversion-rubric.json",
   ));
   // The real message-brief needs the objection/conversion dims' required fields too.
   const a = cleanBrief();

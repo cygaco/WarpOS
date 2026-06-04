@@ -171,22 +171,21 @@ function recordDeath(record) {
 
 /**
  * Find an agent spec file for a role by scanning .claude/agents/.
- * Agents live at either:
- *   .claude/agents/<mode>/<role>/<role>.md
- *   .claude/agents/<mode>/<role>/orchestrator.md
- *   .claude/agents/00-alex/<role>.md
  *
- * Phase 0 workstream F — mode-aware resolution. Roles like `builder`,
- * `reviewer`, `qa` exist in BOTH 01-adhoc/ and 02-oneshot/ with subtly
- * different specs. The pre-Phase-0 walker picked the first match in DFS
- * order, which depended on filesystem layout. Now resolution order is:
+ * ADR-0007: the agent system is ONE department-mirroring tree of mode-agnostic
+ * roles (no more 01-adhoc/ ↔ 02-oneshot/ duplication). Specs live at:
+ *   .claude/agents/president/<face>.md            (alpha/beta/gamma/delta/epsilon)
+ *   .claude/agents/engineering/<pod>/<role>.md    (builder/reviewer/fixer per pod)
+ *   .claude/agents/product/quality/<role>.md      (qa-reviewer/design-quality/…)
+ *   .claude/agents/growth/<role>.md · product/<role>.md · _system/<role>.md
  *
- *   1. process.env.WARPOS_MODE explicit (`adhoc` | `oneshot` | `solo`)
- *   2. inferred from `.claude/agents/02-oneshot/.system/store.json#status`
- *      (running → oneshot)
- *   3. `00-alex/<role>.md` for orchestrator/identity roles (alpha, beta,
- *      gamma, delta)
- *   4. first match in DFS order (legacy fallback)
+ * Resolution order (mode-agnostic now — the same role spec serves every mode;
+ * the conducting face γ/δ/ε supplies the mode context):
+ *   1. process.env.WARPOS_MODE explicit (kept for detectMode() callers)
+ *   2. `president/<role>.md` for the faces (alpha/beta/gamma/delta/epsilon)
+ *   3. DFS over the whole department tree — match by frontmatter `name:` or stem.
+ *      Since workers are no longer duplicated, the first stem/name match is
+ *      unambiguous.
  */
 
 function detectMode() {
@@ -194,12 +193,15 @@ function detectMode() {
   if (explicit && /^(adhoc|oneshot|solo)$/i.test(explicit))
     return explicit.toLowerCase();
   try {
+    // oneshotStore now resolves (via the paths registry) to
+    // president/.system/oneshot/store.json. The literal fallback mirrors it.
     const storePath =
       PATHS.oneshotStore ||
       path.join(
         PATHS.agents || ".claude/agents",
-        "02-oneshot",
+        "president",
         ".system",
+        "oneshot",
         "store.json",
       );
     if (fs.existsSync(storePath)) {
@@ -212,9 +214,10 @@ function detectMode() {
   return "adhoc";
 }
 
-function modeSubdir(mode) {
-  if (mode === "oneshot") return "02-oneshot";
-  if (mode === "adhoc") return "01-adhoc";
+// ADR-0007: roles are mode-agnostic — there is no per-mode spec subdir any more.
+// Kept as a no-op shim so any external caller doesn't break; resolution now goes
+// president/ → DFS over the department tree.
+function modeSubdir() {
   return null;
 }
 
@@ -251,38 +254,22 @@ function findAgentSpec(role) {
     PATHS.agents || path.join(PATHS.claudeDir || ".claude", "agents");
   if (!fs.existsSync(agentsDir)) return null;
 
-  const mode = detectMode();
-  const modeDir = modeSubdir(mode);
+  // 1. The faces live directly under president/ (alpha/beta/gamma/delta/epsilon).
+  const face = tryDirect(role, path.join(agentsDir, "president", `${role}.md`));
+  if (face) return face;
 
-  // 1. Mode-specific direct hits
-  if (modeDir) {
-    const modeRoot = path.join(agentsDir, modeDir);
-    const direct = tryDirect(
-      role,
-      path.join(modeRoot, role, `${role}.md`),
-      path.join(modeRoot, role, "orchestrator.md"),
-      path.join(modeRoot, `${role}.md`),
-    );
-    if (direct) return direct;
-  }
-
-  // 2. 00-alex orchestrator/identity roles
-  const alex = tryDirect(role, path.join(agentsDir, "00-alex", `${role}.md`));
-  if (alex) return alex;
-
-  // 3. Cross-mode opposite direction (e.g. running adhoc but only oneshot has it)
-  const fallbackDir = modeDir === "01-adhoc" ? "02-oneshot" : "01-adhoc";
-  const fallbackRoot = path.join(agentsDir, fallbackDir);
-  const fallback = tryDirect(
-    role,
-    path.join(fallbackRoot, role, `${role}.md`),
-    path.join(fallbackRoot, role, "orchestrator.md"),
-    path.join(fallbackRoot, `${role}.md`),
-  );
-  if (fallback) return fallback;
-
-  // 4. Legacy DFS — kept for backward compatibility when a role lives in a
-  //    non-standard subdir.
+  // 2. DFS over the whole department tree — match a spec when its frontmatter
+  //    `name:` equals the role (authoritative) OR its stem equals the role.
+  //    ADR-0007: the new pod specs are named by FILE-stem only at the pod level
+  //    (engineering/security/reviewer.md whose frontmatter `name: security-reviewer`),
+  //    so a stem-only gate would MISS `security-reviewer`/`frontend-reviewer` —
+  //    we must consult the frontmatter `name:` of EVERY .md, not just stem hits.
+  //    Collect candidates and prefer the NEW department tree over the legacy
+  //    mode-coupled dirs during the cutover coexistence window (so a stale
+  //    01-adhoc/02-oneshot duplicate never shadows the canonical new spec).
+  const NEW_TREE = ["president", "engineering", "product", "growth", "_system"];
+  const LEGACY_TREE = ["00-alex", "01-adhoc", "02-oneshot", "03-managers"];
+  const matches = []; // { full, name, stem }
   const stack = [agentsDir];
   while (stack.length) {
     const dir = stack.pop();
@@ -298,13 +285,22 @@ function findAgentSpec(role) {
         stack.push(full);
       } else if (ent.isFile() && ent.name.endsWith(".md")) {
         const stem = ent.name.replace(/\.md$/, "");
-        if (stem === role || stem === "orchestrator") {
-          if (specMatchesRole(full, role) || stem === role) return full;
+        const nameMatch = specMatchesRole(full, role); // frontmatter name === role
+        if (nameMatch || stem === role) {
+          matches.push({ full, byName: nameMatch, stem });
         }
       }
     }
   }
-  return null;
+  if (matches.length === 0) return null;
+  const rel = (p) => path.relative(agentsDir, p).split(path.sep);
+  const inTree = (p, roots) => roots.includes(rel(p)[0]);
+  // Preference: frontmatter-name match in the NEW tree > stem match in NEW tree >
+  // name match in legacy > stem match in legacy > any.
+  const rank = (m) =>
+    (m.byName ? 0 : 2) + (inTree(m.full, NEW_TREE) ? 0 : inTree(m.full, LEGACY_TREE) ? 1 : 0.5);
+  matches.sort((a, b) => rank(a) - rank(b));
+  return matches[0].full;
 }
 
 /**

@@ -26,7 +26,6 @@ const REGISTRY = path.join(
   REPO_ROOT,
   ".claude",
   "agents",
-  "03-managers",
   "_principles",
   "registry.json",
 );

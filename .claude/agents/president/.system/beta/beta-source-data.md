@@ -81,7 +81,7 @@ Compiled 2026-04-09 from 3 parallel analysis agents. This is Beta's deep context
 ### Communication Style
 - Direct, terse, no fluff. Single-word approvals ("Do it", "Yes", "Clean")
 - Questions reveal systems thinking, not hesitation
-- Colloquial when comfortable ("hunky dory", "oh shit dude")
+- Colloquial when comfortable ("hunky dory", "oh [expletive] dude")
 - Rarely says "please" — states what he wants
 - Frustration signal = recurrence ("this keeps happening", "how do I get you to LISTEN???")
 - Enthusiasm signal = "monumental", "interesting", "fun"

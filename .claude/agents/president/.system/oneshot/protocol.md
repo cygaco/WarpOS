@@ -38,9 +38,9 @@ Read these documents FIRST, in order:
 3. .claude/agents/.system/agent-system.md — full operational spec
 4. .claude/agents/.system/oneshot/compliance.md — cross-tool compliance + builder rewards
 5. `.claude/manifest.json` → `build.phases` + `build.features` — build order, phase groupings, and per-feature dependencies. This is the canonical phase graph.
-6. `.claude/agents/02-oneshot/.system/store.json` → `features[<name>].files` — canonical per-feature file ownership. (Foundation files are in `.claude/manifest.json` → `fileOwnership.foundation`.)
-7. `.claude/agents/02-oneshot/.system/integration-map.md` — data contracts between features
-8. `.claude/agents/02-oneshot/.system/retros/` — latest numbered folder's HYGIENE.md contains the cumulative hygiene rules from all prior runs (MUST be referenced in every builder prompt). Use the HIGHEST numbered retro folder — it supersedes earlier versions while retaining their rules by reference.
+6. `.claude/agents/president/.system/oneshot/store.json` → `features[<name>].files` — canonical per-feature file ownership. (Foundation files are in `.claude/manifest.json` → `fileOwnership.foundation`.)
+7. `.claude/agents/president/.system/oneshot/integration-map.md` — data contracts between features
+8. `.claude/agents/president/.system/oneshot/retros/` — latest numbered folder's HYGIENE.md contains the cumulative hygiene rules from all prior runs (MUST be referenced in every builder prompt). Use the HIGHEST numbered retro folder — it supersedes earlier versions while retaining their rules by reference.
 9. `_docs/` — visual ground truth (production flow screenshots for builders to match UX against)
 10. `paths.decisionPolicy` — Class A/B/C taxonomy, escalation red lines, scoring rubric, tech-introduction rule. Cited by Doctrine rule 7 above.
 11. `paths.currentStage` — current product stage (`mvp` / `beta` / `production`) and stage-specific priorities/avoid-list. Stage shifts the rubric weights; rule changes that conflict with current stage priorities should be flagged or deferred.
@@ -132,7 +132,7 @@ Overlap stages when data dependencies allow — don't wait for stages that can't
 >
 > **All 7 build-chain roles** (`builder`, `fixer`, `evaluator`, `compliance`, `qa`, `redteam`, `auditor`) **MUST** be dispatched via Bash subprocess — `claude -p --agent <role>` for Claude-routed roles, `node scripts/dispatch-agent.js <role> $PROMPT` for OpenAI/Gemini-routed roles. **Do NOT use the in-process `Agent` tool** for any of these roles.
 >
-> See `.claude/agents/00-alex/delta.md` Dispatch Method section for the full reference pattern. The pattern captures stdout to a shell variable and parses the JSON envelope via `scripts/hooks/lib/providers::parseProviderJson` — this keeps the orchestrator's conversation lean so a full skeleton build fits in one session.
+> See `.claude/agents/president/delta.md` Dispatch Method section for the full reference pattern. The pattern captures stdout to a shell variable and parses the JSON envelope via `scripts/hooks/lib/providers::parseProviderJson` — this keeps the orchestrator's conversation lean so a full skeleton build fits in one session.
 >
 > `Agent` tool remains acceptable for research roles (`Explore`, `Plan`, `general-purpose`) — only the 7 build-chain roles are forbidden.
 
@@ -333,7 +333,7 @@ If the orchestrator halted (circuit breaker, manual kill, session timeout), laun
 
 ```
 You are the orchestrator. A previous run was halted.
-Read .claude/agents/02-oneshot/.system/store.json for current state; read .claude/manifest.json (build.phases + build.features) for the phase plan.
+Read .claude/agents/president/.system/oneshot/store.json for current state; read .claude/manifest.json (build.phases + build.features) for the phase plan.
 Resume from where it stopped: "done" = complete; "eval_fail"/"security_fail" = fix agents; "not_started"/"in_progress" = builders.
 For unmerged agent/* branches: status "built" → run evaluator before merge; status "in_progress" → discard and re-dispatch.
 Follow this protocol. Do not re-build completed features.
@@ -345,4 +345,4 @@ Follow this protocol. Do not re-build completed features.
 
 This protocol is executed by **Alex δ (Delta)** — the standalone oneshot orchestrator. Delta IS the session. It is not spawned by Alpha.
 
-See `.claude/agents/00-alex/delta.md` for Delta's full agent definition.
+See `.claude/agents/president/delta.md` for Delta's full agent definition.

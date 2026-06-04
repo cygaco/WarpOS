@@ -9,7 +9,7 @@
  * built BEFORE the Wave-2 repartition it protects.
  *
  * Sources (read live, never hardcoded copies):
- *   - org map         .claude/agents/03-managers/_org/org-map.json (role universe)
+ *   - org map         .claude/agents/_org/org-map.json (role universe)
  *   - dispatch roles  scripts/dispatch/catalog.js#ROLES            (required)
  *   - gamma-only set  scripts/dispatch/org-roles.js gammaOnlyTypes() — the SAME
  *                     config-driven derivation team-guard now consumes (the org
@@ -197,7 +197,7 @@ function evaluate({ org, ROLES, gammaOnly, agentResolves, registryRoles = new Se
 function validateRegistry(root, catalog) {
   const regPath = path.join(
     root,
-    ".claude/agents/03-managers/_org/role-registry.json",
+    ".claude/agents/_org/role-registry.json",
   );
   let reg;
   try {
@@ -329,7 +329,7 @@ function main(argv) {
   const json = argv.includes("--json");
   let errors;
   try {
-    const org = readJSON(path.join(ROOT, ".claude/agents/03-managers/_org/org-map.json"));
+    const org = readJSON(path.join(ROOT, ".claude/agents/_org/org-map.json"));
     const catalog = require(path.join(ROOT, "scripts/dispatch/catalog.js"));
     if (!Array.isArray(catalog.ROLES)) { process.stderr.write("role-parity: catalog.js does not export ROLES\n"); return 2; }
     // gammaOnly comes from the SAME config-driven derivation team-guard now
@@ -343,7 +343,7 @@ function main(argv) {
     // into catalog/dispatch behind the gate without a big-bang org-map rewrite.
     let registryRoles = new Set();
     try {
-      const reg = readJSON(path.join(ROOT, ".claude/agents/03-managers/_org/role-registry.json"));
+      const reg = readJSON(path.join(ROOT, ".claude/agents/_org/role-registry.json"));
       registryRoles = new Set(Object.keys(reg.roles || {}));
     } catch { /* validateRegistry below fails-closed if unreadable */ }
     errors = evaluate({ org, ROLES: catalog.ROLES, gammaOnly, agentResolves: makeRealAgentResolver(ROOT), registryRoles });

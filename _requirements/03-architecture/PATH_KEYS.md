@@ -8,16 +8,16 @@ Markdown convention: reference paths as `paths.X` in prose. Code: `const { PATHS
 
 | Key | Path | Kind | Owner | Mutable | Introduced | Notes |
 |---|---|---|---|---|---|---|
-| `adrIndex` | `.claude/agents/00-alex/.system/policy/adr/INDEX.md` | md | project | yes | 0.0.0 |  |
+| `adrIndex` | `.claude/agents/president/.system/policy/adr/INDEX.md` | md | project | yes | 0.0.0 |  |
 | `agentDispatchGuide` | `.claude/project/reference/agent-dispatch-guide.md` | md | framework | no | 0.3.0 |  |
 | `agents` | `.claude/agents` | dir | framework | no | 0.0.0 |  |
-| `agentSystem` | `.claude/agents/00-alex/.system` | dir | framework | no | 0.0.0 |  |
+| `agentSystem` | `.claude/agents/president/.system` | dir | framework | no | 0.0.0 |  |
 | `appScaffoldTemplates` | `framework/templates/app-scaffold` | dir | framework | yes | 0.12.0 | S0.3 (product-studio) — pinned Next.js+Tailwind v4+shadcn/ui |
 | `architectureRoot` | `_requirements/03-architecture` | dir | framework | yes | 0.2.0 | Track B 2026-05-03 introduced this key to replace many hardc |
 | `auditsRoot` | `_requirements/_audits` | dir | framework | yes | 0.2.0 |  |
-| `betaEvents` | `.claude/agents/00-alex/.system/beta/events.jsonl` | jsonl | runtime | yes | 0.0.0 |  |
-| `betaSourceData` | `.claude/agents/00-alex/.system/beta/beta-source-data.md` | md | runtime | yes | 0.0.0 |  |
-| `betaSystem` | `.claude/agents/00-alex/.system/beta` | dir | framework | yes | 0.0.0 |  |
+| `betaEvents` | `.claude/agents/president/.system/beta/events.jsonl` | jsonl | runtime | yes | 0.0.0 |  |
+| `betaSourceData` | `.claude/agents/president/.system/beta/beta-source-data.md` | md | runtime | yes | 0.0.0 |  |
+| `betaSystem` | `.claude/agents/president/.system/beta` | dir | framework | yes | 0.0.0 |  |
 | `briefs` | `_docs/briefs` | dir | project | yes | 0.5.1 |  |
 | `briefsCurrent` | `_docs/briefs` | dir | runtime | yes | 0.5.1 |  |
 | `briefsRoot` | `_docs/briefs` | dir | project | yes | 0.9.0 | Brief-output root for /portfolio:bootstrap (formerly /produc |
@@ -31,9 +31,9 @@ Markdown convention: reference paths as `paths.X` in prose. Code: `const { PATHS
 | `contractsSpec` | `_requirements/10-contracts/ARTIFACT-CONTRACTS.md` | file | framework | yes | 0.12.0 | Human-readable artifact-contract spec v0.1 (the chain, the s |
 | `contractsValidator` | `scripts/contracts/validate-artifact.js` | file | framework | yes | 0.12.0 | Fail-closed validator for the artifact contracts — rejects u |
 | `contractsValidatorTest` | `scripts/contracts/test-validate-artifact.js` | file | framework | yes | 0.12.0 | Validator self-test (proves pass-valid / reject-invalid); th |
-| `currentStage` | `.claude/agents/00-alex/.system/policy/current-stage.md` | md | project | yes | 0.0.0 |  |
+| `currentStage` | `.claude/agents/president/.system/policy/current-stage.md` | md | project | yes | 0.0.0 |  |
 | `decisionLedger` | `.claude/project/decisions/decision-ledger.jsonl` | jsonl | runtime | yes | 0.1.0 |  |
-| `decisionPolicy` | `.claude/agents/00-alex/.system/policy/decision-policy.md` | md | project | yes | 0.0.0 |  |
+| `decisionPolicy` | `.claude/agents/president/.system/policy/decision-policy.md` | md | project | yes | 0.0.0 |  |
 | `decisions` | `.claude/project/decisions` | dir | runtime | yes | 0.1.0 |  |
 | `designSystemRoot` | `_requirements/01-design-system` | dir | framework | yes | 0.2.0 |  |
 | `dispatchCompletionsFile` | `.claude/runtime/dispatch-completions.jsonl` | jsonl | runtime | yes | 0.3.0 |  |
@@ -56,31 +56,31 @@ Markdown convention: reference paths as `paths.X` in prose. Code: `const { PATHS
 | `imports` | `_docs/imports` | dir | project | yes | 0.8.3 | Import-questionnaire root for /portfolio:import (formerly /p |
 | `importsCurrent` | `_docs/imports` | dir | runtime | yes | 0.8.3 | Same directory as imports; runtime-write companion. |
 | `integrationsRoot` | `_requirements/09-integrations` | dir | project | yes | 0.2.0 |  |
-| `judgmentModel` | `.claude/agents/00-alex/.system/beta/judgement-model.md` | md | framework | yes | 0.0.0 |  |
-| `judgmentRecommendations` | `.claude/agents/00-alex/.system/beta/judgement-model-recommendations.md` | md | runtime | yes | 0.0.0 |  |
+| `judgmentModel` | `.claude/agents/president/.system/beta/judgement-model.md` | md | framework | yes | 0.0.0 |  |
+| `judgmentRecommendations` | `.claude/agents/president/.system/beta/judgement-model-recommendations.md` | md | runtime | yes | 0.0.0 |  |
 | `karpathyRuns` | `_docs/karpathy-auto-research` | dir | runtime | yes | 0.0.0 |  |
 | `learningsFile` | `.claude/project/memory/learnings.jsonl` | jsonl | runtime | yes | 0.0.0 |  |
-| `lexicon` | `.claude/agents/00-alex/.system/lexicon.md` | md | framework | yes | 0.0.0 |  |
+| `lexicon` | `.claude/agents/president/.system/lexicon.md` | md | framework | yes | 0.0.0 |  |
 | `loggerLib` | `scripts/hooks/lib/logger.js` | js | framework | no | 0.0.0 |  |
 | `logs` | `.claude/runtime/logs` | dir | runtime | yes | 0.0.0 |  |
 | `manifest` | `.claude/manifest.json` | json | project | yes | 0.0.0 |  |
 | `maps` | `.claude/project/maps` | dir | generated | yes | 0.0.0 |  |
 | `memory` | `.claude/project/memory` | dir | runtime | yes | 0.0.0 |  |
-| `oneshotRetros` | `.claude/agents/02-oneshot/.system/retros` | dir | runtime | yes | 0.0.0 |  |
-| `oneshotStore` | `.claude/agents/02-oneshot/.system/store.json` | json | runtime | yes | 0.0.0 |  |
-| `oneshotSystem` | `.claude/agents/02-oneshot/.system` | dir | framework | no | 0.0.0 |  |
+| `oneshotRetros` | `.claude/agents/president/.system/oneshot/retros` | dir | runtime | yes | 0.0.0 |  |
+| `oneshotStore` | `.claude/agents/president/.system/oneshot/store.json` | json | runtime | yes | 0.0.0 |  |
+| `oneshotSystem` | `.claude/agents/president/.system/oneshot` | dir | framework | no | 0.0.0 |  |
 | `pathsLib` | `scripts/hooks/lib/paths.js` | js | framework | no | 0.0.0 |  |
 | `patterns` | `patterns` | dir | framework | no | 0.0.0 |  |
 | `plans` | `.claude/runtime/plans` | dir | runtime | yes | 0.0.0 |  |
-| `policy` | `.claude/agents/00-alex/.system/policy` | dir | project | yes | 0.0.0 |  |
+| `policy` | `.claude/agents/president/.system/policy` | dir | project | yes | 0.0.0 |  |
 | `portfolioCommands` | `.claude/commands/portfolio` | dir | framework | no | 0.8.3 | Portfolio skill suite (/portfolio:* — bootstrap, clone, impo |
 | `portfolioHome` | `.claude/portfolio` | dir | project | yes | 0.9.0 | Portfolio root directory holding the registry (paths.portfol |
 | `portfolioRegistry` | `.claude/portfolio/registry.yaml` | yaml | project | yes | 0.9.0 | Canonical product registry (warpos/portfolio-registry/v1). O |
 | `portfolioScripts` | `scripts/portfolio` | dir | framework | no | 0.8.3 | Portfolio skill backing scripts (bootstrap.js, clone.js, dis |
 | `portfolioTemplates` | `framework/templates/portfolio` | dir | framework | no | 0.8.3 | Portfolio skill templates (README.md.tmpl etc). Documented i |
 | `providerAutofixLib` | `scripts/warpos/lib/provider-autofix.js` | js | framework | no | 0.5.1 |  |
-| `providerFailureModes` | `.claude/agents/00-alex/.system/policy/provider-failure-modes.json` | json | framework | no | 0.5.1 | Provider failure-mode catalog (SP-20260513-002). 10 entries, |
-| `providerFallbackPolicy` | `.claude/agents/00-alex/.system/policy/provider-fallback.json` | json | framework | no | 0.3.0 |  |
+| `providerFailureModes` | `.claude/agents/president/.system/policy/provider-failure-modes.json` | json | framework | no | 0.5.1 | Provider failure-mode catalog (SP-20260513-002). 10 entries, |
+| `providerFallbackPolicy` | `.claude/agents/president/.system/policy/provider-fallback.json` | json | framework | no | 0.3.0 |  |
 | `providerRcaLib` | `scripts/warpos/lib/provider-rca.js` | js | framework | no | 0.5.1 |  |
 | `providerSmokeSkill` | `scripts/warpos/provider-smoke.js` | js | framework | no | 0.5.1 | Provider smoke driver (SP-20260513-002). Run direct or via p |
 | `providerTmp` | `.claude/runtime/.provider-tmp` | dir | runtime | yes | 0.3.0 |  |
@@ -108,7 +108,7 @@ Markdown convention: reference paths as `paths.X` in prose. Code: `const { PATHS
 | `sprintCurrent` | `.claude/project/sprint/current-sprint.yaml` | yaml | runtime | yes | 0.4.0 |  |
 | `sprintDecisions` | `.claude/project/sprint/decisions` | dir | runtime | yes | 0.4.0 | Sprint-scope decisions. Distinct from paths.decisions (proje |
 | `sprintExternalServices` | `.claude/project/sprint/external-services` | dir | runtime | yes | 0.4.0 |  |
-| `sprintFullAutonomy` | `.claude/agents/00-alex/.system/policy/sprint-full-autonomy.json` | json | framework | yes | 0.8.0 |  |
+| `sprintFullAutonomy` | `.claude/agents/president/.system/policy/sprint-full-autonomy.json` | json | framework | yes | 0.8.0 |  |
 | `sprintFullReports` | `.claude/project/sprint/full-reports` | dir | runtime | yes | 0.8.0 |  |
 | `sprintHistory` | `.claude/project/sprint/history` | dir | runtime | yes | 0.4.0 |  |
 | `sprintIssues` | `.claude/project/sprint/issues` | dir | runtime | yes | 0.4.0 | Structured per-issue yaml. Per-project bug inbox issues.md ( |
@@ -121,7 +121,7 @@ Markdown convention: reference paths as `paths.X` in prose. Code: `const { PATHS
 | `sprintReleases` | `.claude/project/sprint/releases` | dir | runtime | yes | 0.4.0 |  |
 | `sprintRequirements` | `.claude/project/sprint/requirements` | dir | runtime | yes | 0.4.0 | Sprint-scope requirement bundles (PRD/STORIES/COPY/INPUTS/TR |
 | `sprintRoot` | `.claude/project/sprint` | dir | runtime | yes | 0.4.0 | Sprint Workflow v0.1 — downstream live tracker root. Created |
-| `sprintRouting` | `.claude/agents/00-alex/.system/policy/sprint-routing.json` | json | framework | no | 0.4.0 |  |
+| `sprintRouting` | `.claude/agents/president/.system/policy/sprint-routing.json` | json | framework | no | 0.4.0 |  |
 | `sprintSchemas` | `schemas/sprint` | dir | framework | no | 0.4.0 |  |
 | `sprintSprints` | `.claude/project/sprint/sprints` | dir | runtime | yes | 0.5.0 | Sprint Workflow v0.2 — directory containing per-sprint subdi |
 | `sprintTemplates` | `framework/templates/sprint` | dir | framework | no | 0.4.0 |  |
