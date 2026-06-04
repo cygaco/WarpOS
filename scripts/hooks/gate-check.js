@@ -15,16 +15,20 @@ const RESET = "\x1b[0m";
 const DEPS = getDeps();
 const FEATURE_NAMES = getFeatureIds();
 
-// Non-builder role keywords — if present, skip gating.
-// Matches adhoc agent names (Batch A rename 2026-04-17): security→redteam, fix→fixer.
+// Non-builder role keywords — if present (substring match), skip gating.
+// ADR-0007 roster: "reviewer" matches the per-pod reviewers + qa-reviewer +
+// security-reviewer; "qa" matches qa-reviewer; "security" matches security-*.
+// Legacy aliases (evaluator/redteam/auditor/compliance) kept for older prompts
+// (2026-04-17 + 2026-04-29 renames).
 const SKIP_ROLES = [
-  "reviewer",
-  "evaluator", // legacy alias
-  "redteam",
-  "fixer",
+  "reviewer", // covers frontend-/backend-/qa-/security-reviewer + generic reviewer
+  "evaluator", // legacy alias → reviewer
+  "redteam", // legacy → security-reviewer
+  "security", // security-reviewer / security-builder / security-fixer
+  "fixer", // covers *-fixer
   "learner",
-  "auditor", // legacy alias
-  "compliance",
+  "auditor", // legacy alias → learner
+  "compliance", // legacy → qa-reviewer
   "qa",
 ];
 

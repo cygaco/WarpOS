@@ -42,11 +42,13 @@ process.stdin.on("end", () => {
 
     const feature = featureMatch[1];
 
-    // Skip review/evaluator/redteam/compliance/qa agents — they don't need gate checks.
-    // Matches Batch A rename (2026-04-17): security→redteam, fix agent→fixer.
-    // Legacy names (security, fix agent) kept for backwards-compat with older prompts.
+    // Skip review/reviewer agents — they don't need dependency gate checks.
+    // ADR-0007 roster: the per-pod reviewers (frontend-/backend-reviewer),
+    // qa-reviewer, security-reviewer + the generic `reviewer`. Legacy names
+    // (evaluator, redteam, security, compliance, fix agent, auditor) kept for
+    // backwards-compat with older prompts (2026-04-17 + 2026-04-29 renames).
     if (
-      /evaluator|redteam|security|compliance|fixer|fix agent|auditor|test|qa.*scan|qa.*analy|qa.*orchestrat/i.test(
+      /reviewer|evaluator|redteam|security|compliance|fixer|fix agent|auditor|test|qa.*scan|qa.*analy|qa.*orchestrat/i.test(
         prompt.substring(0, 500),
       )
     ) {
