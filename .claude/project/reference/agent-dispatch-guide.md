@@ -90,6 +90,11 @@ agree — keep them in sync.
 | qa | openai | independent failure-mode pass |
 | learner | openai | cross-run synthesis |
 | redteam | gemini | different adversarial corpus, thinking-on |
+| design-lead | openai | gpt-5.5 xhigh — product design/UX/flows (ADR-0007: the one product role on gpt-5.5) |
+| frontend-reviewer | openai | gpt-5.5 xhigh — code-quality review of the Claude FE builder |
+| backend-reviewer | openai | gpt-5.5 xhigh — code-quality review of the Claude BE builder |
+| qa-reviewer | openai | gpt-5.5 xhigh — traceability + integrity + functional (absorbs req-reviewer + compliance + qa) |
+| security-reviewer | gemini | gemini-3.1-pro thinking-on — replaces redteam; + 2nd GPT jailbreak pass |
 | advisor | openai | freeform cross-provider consult — NO strict output schema |
 | consult | openai | freeform cross-provider consult — NO strict output schema |
 

@@ -125,7 +125,7 @@ function makeRealAgentResolver(root) {
  * @param gammaOnly     Set of team-guard GAMMA_ONLY_TYPES
  * @param agentResolves (agent) => bool
  */
-function evaluate({ org, ROLES, gammaOnly, agentResolves }) {
+function evaluate({ org, ROLES, gammaOnly, agentResolves, registryRoles = new Set() }) {
   const errors = [];
   const { domainRoles, builtAgents, buildChainBuilt } = collectOrgRoles(org);
 
@@ -161,8 +161,8 @@ function evaluate({ org, ROLES, gammaOnly, agentResolves }) {
   // 4. every catalog DOER role is governed
   for (const role of ROLES) {
     if (ORCHESTRATOR_SYSTEM.has(role)) continue;
-    if (!(gauntletMembers.has(role) || domainRoles.has(role) || TRANSITIONAL.has(role))) {
-      errors.push(`dispatch role "${role}" is ungoverned — not a gauntlet member, org-map domain role, or transitional (repartition drift)`);
+    if (!(gauntletMembers.has(role) || domainRoles.has(role) || TRANSITIONAL.has(role) || registryRoles.has(role))) {
+      errors.push(`dispatch role "${role}" is ungoverned — not a gauntlet member, org-map domain role, role-registry role, or transitional (repartition drift)`);
     }
   }
   // 5. built build-chain doers are gated by team-guard
@@ -245,7 +245,16 @@ function main(argv) {
     const { gammaOnlyTypes } = require(path.join(ROOT, "scripts/dispatch/org-roles.js"));
     const gammaOnly = gammaOnlyTypes(org);
     if (!(gammaOnly instanceof Set) || gammaOnly.size === 0) { process.stderr.write("role-parity: org-roles.gammaOnlyTypes() returned empty\n"); return 2; }
-    errors = evaluate({ org, ROLES: catalog.ROLES, gammaOnly, agentResolves: makeRealAgentResolver(ROOT) });
+    // Registry roles are a GOVERNANCE source (ADR-0007 keystone): a dispatch role
+    // declared in role-registry.json is governed even before the org-map structural
+    // migration folds it into domains/gauntlets — so the new roster can be wired
+    // into catalog/dispatch behind the gate without a big-bang org-map rewrite.
+    let registryRoles = new Set();
+    try {
+      const reg = readJSON(path.join(ROOT, ".claude/agents/03-managers/_org/role-registry.json"));
+      registryRoles = new Set(Object.keys(reg.roles || {}));
+    } catch { /* validateRegistry below fails-closed if unreadable */ }
+    errors = evaluate({ org, ROLES: catalog.ROLES, gammaOnly, agentResolves: makeRealAgentResolver(ROOT), registryRoles });
     // Wiring invariant: team-guard MUST delegate its gate to org-roles, else a
     // hand-edited static GAMMA_ONLY_TYPES could silently drift from the org map.
     const tgSrc = fs.readFileSync(path.join(ROOT, "scripts/hooks/team-guard.js"), "utf8");

@@ -219,6 +219,19 @@ const ROLES = [
   "qa",
   "redteam",
   "stub-scaffold",
+  // ADR-0007 new roster (coexists with the above; cutover deletes the old once green):
+  "epsilon",
+  "design-lead",
+  "frontend-reviewer",
+  "frontend-fixer",
+  "backend-reviewer",
+  "backend-fixer",
+  "security-builder",
+  "security-reviewer",
+  "security-fixer",
+  "qa-reviewer",
+  "visual-review",
+  "test-runner",
 ];
 
 const DEFAULT_PROVIDER_PER_ROLE = {
@@ -237,6 +250,19 @@ const DEFAULT_PROVIDER_PER_ROLE = {
   qa: "openai",
   redteam: "gemini",
   "stub-scaffold": "claude",
+  // ADR-0007 new roster (must match providers.js DEFAULT_AGENT_PROVIDERS):
+  epsilon: "claude",
+  "design-lead": "openai",
+  "frontend-reviewer": "openai",
+  "frontend-fixer": "claude",
+  "backend-reviewer": "openai",
+  "backend-fixer": "claude",
+  "security-builder": "claude",
+  "security-reviewer": "gemini",
+  "security-fixer": "claude",
+  "qa-reviewer": "openai",
+  "visual-review": "claude",
+  "test-runner": "claude",
 };
 
 // Effort policy (ADR-0007, operator override 2026-06-04): `max` is reserved for
@@ -261,6 +287,19 @@ const DEFAULT_EFFORT_PER_ROLE = {
   qa: "medium",
   redteam: "high",
   "stub-scaffold": null,
+  // ADR-0007 new roster (max stays alpha-only; gpt-5.5 caps at xhigh):
+  epsilon: "high",
+  "design-lead": "xhigh",
+  "frontend-reviewer": "xhigh",
+  "frontend-fixer": "high",
+  "backend-reviewer": "xhigh",
+  "backend-fixer": "high",
+  "security-builder": "high",
+  "security-reviewer": "high",
+  "security-fixer": "high",
+  "qa-reviewer": "xhigh",
+  "visual-review": "high",
+  "test-runner": "medium",
 };
 
 function getProvider(id) {

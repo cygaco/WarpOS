@@ -319,6 +319,19 @@ const DEFAULT_AGENT_PROVIDERS = {
   qa: "openai",
   // Security — Gemini for different adversarial training corpus, thinking always-on
   redteam: "gemini",
+  // ADR-0007 new roster (must match catalog.js DEFAULT_PROVIDER_PER_ROLE):
+  epsilon: "claude",
+  "design-lead": "openai",
+  "frontend-reviewer": "openai",
+  "frontend-fixer": "claude",
+  "backend-reviewer": "openai",
+  "backend-fixer": "claude",
+  "security-builder": "claude",
+  "security-reviewer": "gemini",
+  "security-fixer": "claude",
+  "qa-reviewer": "openai",
+  "visual-review": "claude",
+  "test-runner": "claude",
   // W-4: ad-hoc cross-provider consults (brainstorm, second opinion, research).
   // Non-Claude, NO strict output schema — dispatch-agent.js skips envelope
   // validation for these so freeform replies don't trip the review-envelope

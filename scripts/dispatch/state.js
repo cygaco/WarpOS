@@ -47,9 +47,18 @@ const LEGACY_ENV_REASONING_VAR_PER_ROLE = {
   learner: "REASONING_AUDITOR",
 };
 
-const FLAGSHIP_OPENAI_ROLES = ["reviewer", "compliance", "learner"];
+const FLAGSHIP_OPENAI_ROLES = [
+  "reviewer",
+  "compliance",
+  "learner",
+  // ADR-0007 new roster (gpt-5.5 flagship):
+  "design-lead",
+  "frontend-reviewer",
+  "backend-reviewer",
+  "qa-reviewer",
+];
 const MINI_OPENAI_ROLES = ["qa"];
-const GEMINI_ROLES = ["redteam"];
+const GEMINI_ROLES = ["redteam", "security-reviewer"];
 
 function readRoleFrontmatter(files) {
   if (files.length === 0) {
