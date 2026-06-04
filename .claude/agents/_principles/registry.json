@@ -4,7 +4,7 @@
   "version": "v0.1",
   "base": {
     "carrier": "manager-principles-base",
-    "doc": ".claude/agents/03-managers/_principles/base.md",
+    "doc": ".claude/agents/_principles/base.md",
     "principles": [
       "clarity-is-king",
       "map-user-journey",
@@ -14,7 +14,7 @@
   },
   "agents": {
     "director-of-product": {
-      "spec": ".claude/agents/03-managers/director-of-product.md",
+      "spec": ".claude/agents/product/director-of-product.md",
       "inherits_from": "manager-principles-base",
       "owned_principles": [
         "lean-product-development",
@@ -32,7 +32,7 @@
       ]
     },
     "product-lead": {
-      "spec": ".claude/agents/03-managers/product-lead.md",
+      "spec": ".claude/agents/product/product-lead.md",
       "inherits_from": "director-of-product",
       "owned_principles": [
         "ftue-nux",
@@ -145,7 +145,7 @@
       ]
     },
     "copy-lead": {
-      "spec": ".claude/agents/03-managers/copy-lead.md",
+      "spec": ".claude/agents/growth/copy-lead.md",
       "inherits_from": "director-of-marketing",
       "owned_principles": [
         "argument-not-copy",
@@ -177,7 +177,7 @@
       ]
     },
     "director-of-engineering": {
-      "spec": ".claude/agents/03-managers/director-of-engineering.md",
+      "spec": ".claude/agents/engineering/director-of-engineering.md",
       "inherits_from": "manager-principles-base",
       "owned_principles": [
         "contract-first-construction",

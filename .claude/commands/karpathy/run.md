@@ -43,7 +43,7 @@ From `$ARGUMENTS`, pick the closest domain template:
 
 | If description mentions… | Domain | Target candidate |
 |---|---|---|
-| alpha spawning, agent dispatch, gauntlets | `team-dispatch` | `.claude/agents/00-alex/alpha.md` (rubric block) |
+| alpha spawning, agent dispatch, gauntlets | `team-dispatch` | `.claude/agents/president/alpha.md` (rubric block) |
 | skill ergonomics, skill clarity, skill wording | `skill-clarity` | `.claude/commands/<ns>/<name>.md` |
 | hook policy, hook blocking, evaluator lock | `hook-policy` | `scripts/hooks/<name>.js` (policy block only) |
 | agent spec (non-dispatch) | `agent-spec` | `.claude/agents/**/*.md` |

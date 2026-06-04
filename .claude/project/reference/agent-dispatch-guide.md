@@ -167,8 +167,8 @@ pruner once per cold start.
 
 ## Cross-references
 
-- `.claude/agents/00-alex/gamma.md` — Gamma dispatch rules (cites this guide).
-- `.claude/agents/00-alex/delta.md` — Delta dispatch rules (cites this guide).
+- `.claude/agents/president/gamma.md` — Gamma dispatch rules (cites this guide).
+- `.claude/agents/president/delta.md` — Delta dispatch rules (cites this guide).
 - `scripts/dispatch-agent.js` — the canonical cross-provider wrapper.
 - `scripts/dispatch-claude.js` — the bounded Claude build-chain wrapper (RI-004/ED-018); `scripts/dispatch/dispatch-claude.test.js` is its torture test.
 - `scripts/hooks/lib/providers.js` — `runProvider` implementation.

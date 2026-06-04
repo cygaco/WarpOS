@@ -38,7 +38,7 @@ their results, and merge them into one unified JSON report.
 
 ### On startup
 
-1. Read `.claude/manifest.json` (`fileOwnership.foundation`) + `.claude/agents/02-oneshot/.system/store.json`
+1. Read `.claude/manifest.json` (`fileOwnership.foundation`) + `.claude/agents/president/.system/oneshot/store.json`
    (`features[<name>].files`) — scope boundaries for the feature.
 2. If oneshot mode: read `store.knownStubs` to pass to the scan sub-agent (skip false positives on
    pre-existing stubs).
@@ -68,7 +68,7 @@ their results, and merge them into one unified JSON report.
 
 Run this as sub-agent 1 (ID range: QA-001 through QA-499).
 
-Read `.claude/manifest.json` (`fileOwnership.foundation`) and `.claude/agents/02-oneshot/.system/store.json`
+Read `.claude/manifest.json` (`fileOwnership.foundation`) and `.claude/agents/president/.system/oneshot/store.json`
 (`features[<name>].files`) to verify scope boundaries.
 
 #### 1. Stale Reader (`stale-reader`)
@@ -173,7 +173,7 @@ Rules: read-only, JSON only, every finding needs file + line, clean personas lis
 Run this as sub-agent 2 (ID range: QA-500 and up).
 
 Read these before scanning:
-- `.claude/manifest.json` (`fileOwnership.foundation`) + `.claude/agents/02-oneshot/.system/store.json`
+- `.claude/manifest.json` (`fileOwnership.foundation`) + `.claude/agents/president/.system/oneshot/store.json`
   (`features[<name>].files`) — scope boundaries
 - `_requirements/03-architecture/FLOW_SPEC.md` (entry states — cross-reference with code paths)
 

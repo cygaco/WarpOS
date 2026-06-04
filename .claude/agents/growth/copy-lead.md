@@ -8,7 +8,7 @@ description: >-
   a PROGRAMMABLE principles field; owns argument-not-copy · hooks-are-90 · chief-coherence.
 tools: [Read, Grep, Glob]
 model: inherit
-layer: 03-managers
+layer: growth
 ---
 
 # Alex — Copy Lead (under the Director of Marketing)

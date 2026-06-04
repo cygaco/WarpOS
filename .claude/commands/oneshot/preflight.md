@@ -49,11 +49,11 @@ Before anything destructive:
    - `.claude/runtime/.topology-snapshot.json`, `.claude/runtime/handoff.md`, `.claude/runtime/logs/**`
    - `.claude/settings.local.json`
    - `.claude/scheduled_tasks.lock`
-   - Untracked: `.claude/agents/02-oneshot/.system/store.json.prev-run-backup.json`, `.claude/agents/store.json`
+   - Untracked: `.claude/agents/president/.system/oneshot/store.json.prev-run-backup.json`, `.claude/agents/store.json`
 
    If anything OUTSIDE that list is modified or untracked, stop and tell the user to commit/stash. If the only modifications are telemetry, snapshot-commit them with `chore: session telemetry snapshot before /oneshot:preflight` and proceed.
 2. **Confirm current branch is a skeleton branch.** Run `git branch --show-current`; expect `skeleton-test<N>`. If on master or a feature branch, warn and confirm — branching off master skips infrastructure that landed on prior skeleton branches and was never merged back.
-3. **Confirm oneshot store exists.** `.claude/agents/02-oneshot/.system/store.json` must be present. If missing, abort with instructions to initialize the store first.
+3. **Confirm oneshot store exists.** `.claude/agents/president/.system/oneshot/store.json` must be present. If missing, abort with instructions to initialize the store first.
 
 If any guard fails, report what's blocking and stop.
 
@@ -107,7 +107,7 @@ In order:
    file: <stub-path>
    drift-report: <Pass 7.9 diff for this file>
 
-   You are the stub-scaffold sub-agent. Follow `.claude/agents/02-oneshot/stub-scaffold/stub-scaffold.md`. Regenerate the stub file at the given path using the CURRENT spec signatures from the feature's PRD + INPUTS.md + src/lib/types.ts. Output ONLY the new file content.
+   You are the stub-scaffold sub-agent. Follow `.claude/agents/_system/stub-scaffold.md`. Regenerate the stub file at the given path using the CURRENT spec signatures from the feature's PRD + INPUTS.md + src/lib/types.ts. Output ONLY the new file content.
    EOF
    RESULT=$(node "$CLAUDE_PROJECT_DIR/scripts/dispatch-claude.js" stub-scaffold "$PROMPT" --model sonnet)
    ```
@@ -181,8 +181,8 @@ Resolve the project name from `.claude/manifest.json` → `project.name` and use
 - `.claude/agents/store.json` (the build system state — resolve via `paths.store`)
 - Retro directory (resolve via `manifest.projectPaths.retro`; fall back to `.claude/project/retros/` or skip if neither exists)
 - For the LATEST retro folder: `RETRO.md`, `BUGS.md`, `LEARNINGS.md`, `HYGIENE.md`, and any other `.md` files
-- `.claude/agents/02-oneshot/.system/protocol.md` (verify it references the latest HYGIENE)
-- `.claude/manifest.json` (canonical `fileOwnership.foundation`) and `.claude/agents/02-oneshot/.system/store.json` (canonical per-feature `features[<name>].files`) — oneshot uses these to enforce ownership.
+- `.claude/agents/president/.system/oneshot/protocol.md` (verify it references the latest HYGIENE)
+- `.claude/manifest.json` (canonical `fileOwnership.foundation`) and `.claude/agents/president/.system/oneshot/store.json` (canonical per-feature `features[<name>].files`) — oneshot uses these to enforce ownership.
 
 #### Checks
 
@@ -218,7 +218,7 @@ You are a skeleton state auditor. Verify that ALL feature-owned files are proper
 #### Canonical ownership sources
 
 - `.claude/manifest.json` → `fileOwnership.foundation` — canonical foundation list (must be INTACT).
-- `.claude/agents/02-oneshot/.system/store.json` → `features[<name>].files` — canonical per-feature file scope (must be STUBS).
+- `.claude/agents/president/.system/oneshot/store.json` → `features[<name>].files` — canonical per-feature file scope (must be STUBS).
 
 #### Checks
 

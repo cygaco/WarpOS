@@ -108,7 +108,7 @@ const ALLOW_LIST_SUBSTRINGS = [
   ".claude/project/events/",
   ".claude/project/memory/",
   ".claude/agents/.system/dispatch-backups/",
-  ".claude/agents/02-oneshot/.system/retros/",
+  ".claude/agents/president/.system/oneshot/retros/",
   "_requirements/_audits/",
   "_docs/",
   "/check/references.md", // the rename catalog lives here intentionally

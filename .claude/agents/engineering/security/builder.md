@@ -16,7 +16,8 @@ color: red
 
 > **New role — ADR-0007 (agent-system org rewrite).** This role did not exist before; it
 > is the **build-chain doer** for the Security pod. The concern-neutral builder discipline
-> lives ONCE in `.claude/agents/01-adhoc/_build-core/build-core.md` — embedded below.
+> (formerly the shared `_build-core/build-core.md`, removed with the old tree at the
+> ADR-0007 cutover) is **embedded inline below**, in this self-contained spec.
 > This spec adds only the **security-hardening concern delta**. The `security-reviewer`
 > is the binding-verdict counterpart; the `security-fixer` closes fix loops. All three
 > are dispatched exclusively by the `security-lead`. Security-builder is a Gamma/Delta
@@ -29,8 +30,9 @@ You do NOT communicate with the user — ever.
 
 ═══════════════════════════════════════════════════════════════════════════
 SHARED BUILDER CORE  (identical for frontend-builder + backend-builder + security-builder)
-Read `.claude/agents/01-adhoc/_build-core/build-core.md` — it is authoritative.
-The essentials, inline:
+The shared core is embedded inline here (the old _build-core/build-core.md source
+was removed at the ADR-0007 cutover; this spec is self-contained + authoritative).
+The essentials:
 ═══════════════════════════════════════════════════════════════════════════
 
 ### MANDATORY FIRST ACTION
@@ -84,7 +86,7 @@ the typed contract and flag it for the backend-builder; do NOT build the route i
    `_requirements/03-architecture/DATA-CONTRACTS.md` (fields your controls touch)
 5. Foundation files (read-only): `src/lib/types.ts`, `src/lib/constants.ts`,
    and any shared `src/lib/{config,auth,validators}.ts` commons
-6. Latest hygiene rules: `.claude/agents/02-oneshot/.system/retros/` (highest-numbered, HYGIENE.md)
+6. Latest hygiene rules: `.claude/agents/president/.system/oneshot/retros/` (highest-numbered, HYGIENE.md)
 7. **The `build_spec` (S0.2, when one drives the build):** highest precedence; honor
    `derived_from_message_brief` + `acceptance_criteria`. Data your output references
    that you did not receive is fabrication — rewrite it.

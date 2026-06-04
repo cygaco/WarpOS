@@ -4,7 +4,7 @@ Phase 4K artifact (2026-04-30). Defines how the update / promote engines map the
 
 ## Source rule
 
-`paths.decisionPolicy` (`.claude/agents/00-alex/.system/policy/decision-policy.md`) defines three classes:
+`paths.decisionPolicy` (`.claude/agents/president/.system/policy/decision-policy.md`) defines three classes:
 
 - **Class A** — implementation, reversible. Decide directly, auto-apply.
 - **Class B** — meaningful technical. Score against rubric, decide. Reviewer ack.
@@ -61,7 +61,7 @@ Engine wiring lives in `promote.js` `run()`'s classMap.
 
 - `scripts/warpos/update.js` `planClass()` — update mapping
 - `scripts/warpos/promote.js` `run()` `classMap` — promote mapping
-- `.claude/agents/00-alex/.system/policy/decision-policy.md` — source taxonomy
+- `.claude/agents/president/.system/policy/decision-policy.md` — source taxonomy
 - This doc — the union; both engines must keep their internal maps consistent with what's documented here
 
 When adding a new category to either engine, add a row to the appropriate table above first; the engines should match the doc, not the other way around.

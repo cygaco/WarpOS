@@ -28,8 +28,8 @@ Without `--turbo`, the skill behaves as before. With `--turbo` and no further ar
 
 Before launching, verify:
 
-1. **Store exists:** `.claude/agents/02-oneshot/.system/store.json` — if not, warn that a fresh store is needed
-2. **Protocol exists:** `.claude/agents/02-oneshot/.system/protocol.md`
+1. **Store exists:** `.claude/agents/president/.system/oneshot/store.json` — if not, warn that a fresh store is needed
+2. **Protocol exists:** `.claude/agents/president/.system/oneshot/protocol.md`
 3. **Phase graph exists:** `.claude/manifest.json` has `build.phases` and `build.features` populated (this is the canonical phase graph; there is no separate task-manifest file)
 4. **Skeleton stubs exist:** for each feature in `store.features`, confirm the files listed in `features[<name>].files` exist and are skeleton stubs (check against `store.knownStubs`)
 5. **Foundation passes:** Run the build command from project-config to verify the skeleton compiles
@@ -62,7 +62,7 @@ Alpha/Beta: NOT ACTIVE during oneshot
 
 Alpha is now handing off to Delta. Read and execute the Delta protocol:
 
-1. Read `.claude/agents/00-alex/delta.md` — Delta's full identity and instructions
+1. Read `.claude/agents/president/delta.md` — Delta's full identity and instructions
 2. Follow Delta's startup procedure (read all oneshot/ files)
 3. Begin the state machine from wherever store.json indicates
 
@@ -70,7 +70,7 @@ From this point forward, you ARE Delta. Alpha's doctrine (reasoning engine, sess
 
 ### Step 4: Execute
 
-Run the oneshot build following `.claude/agents/02-oneshot/.system/protocol.md`.
+Run the oneshot build following `.claude/agents/president/.system/oneshot/protocol.md`.
 
 When complete or halted, output the DELTA_RESULT as defined in delta.md.
 

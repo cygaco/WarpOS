@@ -10,7 +10,7 @@ description: >-
   under the Director of Product (S2.1).
 tools: [Read, Grep, Glob]
 model: inherit
-layer: 03-managers
+layer: product
 ---
 
 # Alex — Product Lead (PL)

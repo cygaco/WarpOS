@@ -29,9 +29,9 @@ Without `--turbo`, the skill behaves as before. With `--turbo` and no further ar
 
 ### Step 1: Verify team readiness
 
-1. Confirm Beta agent file exists: `.claude/agents/00-alex/beta.md`
-2. Confirm Gamma agent file exists: `.claude/agents/00-alex/gamma.md`
-3. Confirm adhoc protocol exists: `.claude/agents/01-adhoc/.system/protocol.md`
+1. Confirm Beta agent file exists: `.claude/agents/president/beta.md`
+2. Confirm Gamma agent file exists: `.claude/agents/president/gamma.md`
+3. Confirm adhoc protocol exists: `.claude/agents/president/.system/adhoc/protocol.md`
 
 If any are missing, warn and offer to continue in solo mode instead.
 
@@ -101,7 +101,7 @@ Agent(
   team_name: "<project>-adhoc",
   name: "Beta (β)",
   run_in_background: true,
-  prompt: "STARTUP DIRECTIVE — Acknowledge readiness via SendMessage to \"team-lead\", then go idle. Do NOT claim tasks.\n\nYou are Alex β. Joining team <project>-adhoc as \"Beta (β)\".\nLoad: .claude/agents/00-alex/beta.md, .claude/agents/00-alex/.system/policy/decision-policy.md, .claude/project/stage/current-stage.md\nSendMessage(to: \"team-lead\", summary: \"Beta online\", message: \"β online — ready for consultation.\")\nGo idle."
+  prompt: "STARTUP DIRECTIVE — Acknowledge readiness via SendMessage to \"team-lead\", then go idle. Do NOT claim tasks.\n\nYou are Alex β. Joining team <project>-adhoc as \"Beta (β)\".\nLoad: .claude/agents/president/beta.md, .claude/agents/president/.system/policy/decision-policy.md, .claude/project/stage/current-stage.md\nSendMessage(to: \"team-lead\", summary: \"Beta online\", message: \"β online — ready for consultation.\")\nGo idle."
 )
 ```
 
@@ -117,7 +117,7 @@ The harness writes a `member` entry with `backendType: "in-process"` to
 
 2.3 Spawn γ the same way with `subagent_type: "gamma"`, `name: "Gamma (γ)"`,
 and a parallel STARTUP DIRECTIVE prompt referencing
-`.claude/agents/00-alex/gamma.md` + `.claude/agents/01-adhoc/.system/protocol.md`.
+`.claude/agents/president/gamma.md` + `.claude/agents/president/.system/adhoc/protocol.md`.
 
 **Run 2.2 and 2.3 in parallel** (single message, multiple Agent tool calls) —
 they're independent.

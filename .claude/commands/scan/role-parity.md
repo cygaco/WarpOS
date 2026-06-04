@@ -13,7 +13,7 @@ dispatch catalog, and the team-guard gate in sync.
 ## What it does
 
 Reads three sources **live** (never hardcoded copies):
-- `.claude/agents/03-managers/_org/org-map.json` — the role universe (domains → directors/
+- `.claude/agents/_org/org-map.json` — the role universe (domains → directors/
   leads/specialists/builders; gauntlets; routing).
 - `scripts/dispatch/catalog.js#ROLES` — the dispatch role registry (required).
 - `scripts/hooks/team-guard.js` `GAMMA_ONLY_TYPES` — the build-chain gate (statically

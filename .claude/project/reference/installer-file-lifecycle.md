@@ -30,8 +30,8 @@ Each install writes a **ship-manifest** to the downstream project recording whic
   "installer": "warpos-sync@1.4.2",
   "installed_at": "2026-04-29T00:00:00Z",
   "owned_files": [
-    ".claude/agents/00-alex/delta.md",
-    ".claude/agents/00-alex/gamma.md",
+    ".claude/agents/president/delta.md",
+    ".claude/agents/president/gamma.md",
     ".claude/commands/mode/oneshot.md",
     "scripts/hooks/prompt-validator.js"
   ]

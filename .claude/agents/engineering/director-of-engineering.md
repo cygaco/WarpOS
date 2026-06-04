@@ -10,7 +10,7 @@ description: >-
   director-of-qa.
 tools: [Read, Grep, Glob]
 model: inherit
-layer: 03-managers
+layer: engineering
 ---
 
 # Alex — Director of Engineering (DoE)
@@ -168,7 +168,7 @@ Never opine from generic best-practice. Ground every call in the real project:
 - **The build architecture** — `.claude/agents/.system.md` (the Dark Factory model,
   builder/gauntlet roles, integration seams), `_requirements/03-architecture/*` when
   present (FLOW_SPEC, DATA-CONTRACTS, foundation files), the org map
-  (`.claude/agents/03-managers/_org/org-map.json`) for who owns what.
+  (`.claude/agents/_org/org-map.json`) for who owns what.
 - **The design substrate** — `_requirements/01-design-system/*` + the repo-root
   `DESIGN_SYSTEM.md` (the component library + tokens a scaffolded product ships), since
   FE work is judged against it.

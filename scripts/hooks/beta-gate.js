@@ -75,7 +75,7 @@ function hasRecentReleaseBetaConsultation() {
       process.env.CLAUDE_PROJECT_DIR ||
       path.resolve(__dirname, "..", "..", "..");
     // Load paths.json to find betaEvents path
-    let betaEventsRel = ".claude/agents/00-alex/.system/beta/events.jsonl";
+    let betaEventsRel = ".claude/agents/president/.system/beta/events.jsonl";
     try {
       const pj = JSON.parse(
         fs.readFileSync(path.join(projectDir, ".claude", "paths.json"), "utf8"),

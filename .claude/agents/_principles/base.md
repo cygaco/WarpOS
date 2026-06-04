@@ -3,7 +3,7 @@ name: manager-principles-base
 layer: 03-managers
 kind: principles-carrier
 slugs: [clarity-is-king, map-user-journey, evidence-over-invention, claims-boundary]
-machine_readable: .claude/agents/03-managers/_principles/registry.json
+machine_readable: .claude/agents/_principles/registry.json
 enforced_by: scripts/checks/manager-principles-scan.js
 ---
 

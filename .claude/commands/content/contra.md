@@ -75,7 +75,7 @@ Gather concrete facts for the post:
 - If showcasing a system: read its actual source files, count real stats (commits, files, hooks, events, agents, etc.)
 - If showcasing a project: read the PROJECT.md, recent git log, feature specs
 - Read the user's existing content in `.claude/content/` for voice consistency
-- Read `.claude/agents/00-alex/.system/beta/judgement-model.md` for the user's principles (these reveal what they value)
+- Read `.claude/agents/president/.system/beta/judgement-model.md` for the user's principles (these reveal what they value)
 
 ### Step 2: Plan the deck
 

@@ -102,7 +102,7 @@ Categories: `event-pattern`, `dispatch-failure`, `tool-churn`, `spec-drift`, `au
 
 Read all completed-run retro artifacts AND closed-work reports. **THREE source families** — mine all that exist (a session is usually adhoc/sprint, not oneshot, so the sprint + report families are the common case; do NOT scan oneshot only):
 
-**(C-i) Oneshot retros** (resolve via `paths.oneshotRetros`, default `.claude/agents/02-oneshot/.system/retros/`):
+**(C-i) Oneshot retros** (resolve via `paths.oneshotRetros`, default `.claude/agents/president/.system/oneshot/retros/`):
 
 | File | What it contains |
 |---|---|

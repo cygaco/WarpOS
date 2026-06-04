@@ -30,7 +30,7 @@ echo "API routes: $API_ROUTES"
 echo "Extension files: $EXTENSION_FILES"
 ```
 
-2. Read `.claude/agents/01-adhoc/redteam/orchestrator.md` for the RT Orchestrator Template
+2. Read `.claude/agents/engineering/security/reviewer.md` (the security-reviewer — ADR-0007 replaced the redteam orchestrator) for the RT Orchestrator Template
 3. Fill in the template:
    - `{{SCAN_TYPE}}` = `quick`
    - `{{TARGET_SCOPE}}` = `full-stack`

@@ -42,7 +42,7 @@
  *   - Bypass env var or sentinel present.
  *   - Any unexpected exception.
  *
- * Policy file: .claude/agents/00-alex/.system/policy/version-bump-guard.json
+ * Policy file: .claude/agents/president/.system/policy/version-bump-guard.json
  *   { "enforcement": { "mode": "warn"|"block",
  *     "soft_rollout_until": "<ISO>" } }
  *   Soft-rollout downgrades `block` to `warn` until the date passes.
@@ -88,8 +88,8 @@ const EXCLUDE_PREFIXES = [
   ".claude/project/builds/",
   ".claude/project/sprint/",
   ".claude/agents/.system/dispatch-backups/",
-  ".claude/agents/02-oneshot/.system/retros/",
-  ".claude/agents/00-alex/.system/beta/events.jsonl",
+  ".claude/agents/president/.system/oneshot/retros/",
+  ".claude/agents/president/.system/beta/events.jsonl",
   "framework/releases/",
 ];
 

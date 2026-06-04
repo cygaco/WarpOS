@@ -45,7 +45,7 @@ color: yellow
 
 ### `name` (string)
 
-The agent identifier. Must match the parent directory name (`.claude/agents/01-adhoc/reviewer/reviewer.md` → `name: reviewer`). Used by the resolver to look up provider/model defaults and by `Agent({subagent_type: <name>})`.
+The canonical agent identifier — the value the resolver and `Agent({subagent_type: <name>})` key on. ADR-0007: in the department tree the file is named by ROLE FUNCTION at the pod level (`.claude/agents/engineering/frontend/reviewer.md` → `name: frontend-reviewer`), so `name` need NOT match the file stem or parent dir — `name` is authoritative and the resolver (dispatch-agent.js / role-parity) matches by frontmatter `name:` first. Keep `name` unique across the whole tree.
 
 ### `description` (string)
 

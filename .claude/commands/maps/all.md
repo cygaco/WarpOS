@@ -42,7 +42,7 @@ Check these files for existence and last modified date:
 |----------|---------------|---------------|
 | Field values | `_requirements/00-canonical/FIELD_REGISTRY.json` (literal — project-specific) | Manual + edit-watcher drift detection |
 | Spec dependencies | `paths.specGraph` → `.claude/project/maps/SPEC_GRAPH.json` | Manual |
-| Product data flow | `paths.agents` + `/02-oneshot/.system/integration-map.md` → `.claude/agents/02-oneshot/.system/integration-map.md` | Manual |
+| Product data flow | `paths.agents` + `/02-oneshot/.system/integration-map.md` → `.claude/agents/president/.system/oneshot/integration-map.md` | Manual |
 | Copy surfaces | `_requirements/02-copy-system/SURFACE_MAP.md` (literal — project-specific) | Manual |
 | Reasoning frameworks | `paths.reference` + `/reasoning-frameworks.md` → `.claude/project/reference/reasoning-frameworks.md` | Manual |
 
