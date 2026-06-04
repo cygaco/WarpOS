@@ -18,6 +18,20 @@
 const ROLE_ALIASES = Object.freeze({
   evaluator: "reviewer",
   auditor: "learner",
+  // ADR-0007 org-rewrite renames (old → new). 1:1 only — the splits
+  // (reviewer/builder/fixer → per-pod FE/BE/Security) are NOT aliased (the
+  // conducting face passes pod context); compliance + req-reviewer ABSORB into
+  // qa-reviewer. Targets exist in catalog/registry, so normalizeRole resolves.
+  "product-designer": "design-lead",
+  "director-of-qa": "quality-lead",
+  "research-insight-lead": "research-lead",
+  "director-of-marketing": "director-of-growth",
+  "growth-lead": "marketing-lead",
+  "web-conversion-designer": "conversion-lead",
+  redteam: "security-reviewer",
+  qa: "qa-reviewer",
+  compliance: "qa-reviewer",
+  "req-reviewer": "qa-reviewer",
 });
 
 /** Reverse map: canonical → legacy (for env-var / store-key compatibility). */

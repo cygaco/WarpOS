@@ -260,7 +260,19 @@ const { normalizeRole } = require("./role-aliases");
 
 function getReasoningEffort(role) {
   const canonical = normalizeRole(role);
-  return DEFAULT_REASONING_EFFORT[canonical] || null;
+  if (DEFAULT_REASONING_EFFORT[canonical] != null)
+    return DEFAULT_REASONING_EFFORT[canonical];
+  // ADR-0007: fall back to the catalog effort map (the single source for the new
+  // roster) so aliased + new roles resolve their effort without a parallel
+  // hand-maintained list here. e.g. qa→qa-reviewer→xhigh, redteam→security-reviewer→high.
+  try {
+    const cat = require("../../dispatch/catalog");
+    const e = cat && cat.DEFAULT_EFFORT_PER_ROLE && cat.DEFAULT_EFFORT_PER_ROLE[canonical];
+    if (e != null) return e;
+  } catch {
+    /* catalog unavailable — keep null */
+  }
+  return null;
 }
 
 const DEFAULT_PROVIDERS = {
