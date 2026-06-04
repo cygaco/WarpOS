@@ -1,6 +1,6 @@
 "use strict";
 /**
- * scripts/bootstrap/lastmile/fixtures.js — the 7 holdout cases for bootstrap:lastmile,
+ * scripts/bootstrap/lastmile/fixtures.js — the 8 holdout cases for bootstrap:lastmile,
  * defined as CODE (not committed fake repos). Each case is a minimal set of file
  * contents; the e2e materializes it into a temp dir, runs detectRepoState() against
  * it, and asserts the audit catches the named gap.
@@ -128,6 +128,22 @@ const CASES = [
         "export interface PatientRecord { patientId: string; diagnosis: string; medicalRecordNumber: string; }\n",
     },
     expect: [{ path: "sensitive.escalate", equals: true }],
+  },
+  {
+    name: "self-hosted-postgres",
+    why: "own server + self-hosted Postgres (not a managed BaaS) → self-hosted profile + server-deploy (WG-29/26)",
+    files: {
+      "package.json": JSON.stringify({
+        name: "fx-self-hosted",
+        dependencies: { next: "15.0.0", react: "19.0.0", pg: "8.13.0" },
+      }),
+      "docker-compose.yml":
+        "services:\n  app:\n    build: .\n  db:\n    image: postgres:16\n",
+    },
+    expect: [
+      { path: "persistence.provider", equals: "postgres" },
+      { path: "persistence.hostingModel", equals: "self-hosted" },
+    ],
   },
 ];
 

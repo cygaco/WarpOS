@@ -8,6 +8,18 @@
 
 const { recommendStack } = require("../lib/profiles");
 
+// WG-26: is this a SELF-HOSTED deployment? Explicit when the profile says so, or
+// inferred when the persistence is self-hosted (own server/DB) with no managed
+// deploy target — i.e. the operator runs their own infra and the managed
+// (vercel/netlify/…) path would mis-route them.
+function isSelfHosted(state, profile) {
+  if (profile === "self-hosted") return true;
+  const selfHostedDb =
+    state && state.persistence && state.persistence.hostingModel === "self-hosted";
+  const noManagedTarget = !(state && state.deploy && state.deploy.target);
+  return !!(selfHostedDb && noManagedTarget);
+}
+
 function detect(state) {
   const d = (state && state.deploy) || {};
   return {
@@ -31,6 +43,22 @@ function recommend(state, profile) {
   if (platform === "desktop") {
     return { choice: "signed-builds + auto-update", rationale: "Code-sign + an update channel; host artifacts on a CDN/releases page.", alternatives: ["github releases", "self-hosted update server"] };
   }
+  // Self-hosted web (WG-26): own server + reverse proxy + TLS, not a managed host.
+  if (isSelfHosted(state, profile)) {
+    return {
+      choice: "docker-compose on a VPS + reverse proxy + TLS",
+      rationale:
+        "Self-hosted: containerize, run behind a reverse proxy with automatic TLS, " +
+        "manage with a process supervisor, and own your backups. Boring + reproducible " +
+        "beats bespoke infra.",
+      alternatives: [
+        "systemd + nginx + certbot",
+        "single-node k3s",
+        "fly.io (managed-ish)",
+        "render/railway (managed)",
+      ],
+    };
+  }
   const stack = recommendStack(profile, state).stack;
   return {
     choice: stack.hosting,
@@ -43,30 +71,60 @@ function plan(state, profile) {
   const rec = recommend(state, profile);
   const platform = (state && state.platform) || "web";
   const mobile = platform === "mobile";
+  const selfHosted = isSelfHosted(state, profile);
   const gates = ["domain-dns"];
   if (mobile) gates.push("app-store-submit");
-  return {
-    summary: `Deployment: ${rec.choice} (${platform}). Prefer boring + reliable: previews, a rollback plan, and a real production smoke test.`,
-    steps: [
-      "Environment variables: enumerate prod env vars; set them in the host, never commit secrets.",
-      "Build command: the canonical build (e.g. next build / eas build) runs clean in CI.",
-      "CI checks: typecheck + lint + tests gate every deploy.",
+  if (selfHosted) gates.push("server-provision");
+
+  // Shared steps (every deploy). Self-hosted SWAPS the managed-host specifics for
+  // the server-deploy specifics (provision/proxy/TLS/backups) — the WG-26 gap.
+  const steps = [
+    "Environment variables: enumerate prod env vars; set them in the host, never commit secrets.",
+    "Build command: the canonical build (e.g. next build / eas build) runs clean in CI.",
+    "CI checks: typecheck + lint + tests gate every deploy.",
+  ];
+  if (selfHosted) {
+    steps.push(
+      "Provision the server: stand up a VPS/host (a human-approval gate — paid infra you own + operate).",
+      "Containerize: a Dockerfile + docker-compose (or a systemd unit) that runs the app + DB reproducibly.",
+      "Reverse proxy + TLS: front the app with nginx/Caddy and automatic certificates (Let's Encrypt / Caddy).",
+      "Secrets: inject via env/a secret store on the host — never committed, never baked into the image.",
+      "Database backups + restore drill: scheduled backups AND a tested restore (a managed DB does this for you; self-hosted must own it).",
+      "Low-downtime restart: a supervised restart/rollout that doesn't drop the live service.",
+      "Production smoke test: after deploy, assert the live URL returns 200 + the core path works ('it builds' ≠ 'it serves').",
+    );
+  } else {
+    steps.push(
       "Deploy previews: a preview URL per PR for review before prod.",
       mobile
         ? "Store readiness: icons, splash, store listing, privacy nutrition labels, screenshots; submit is a human-approval gate."
         : "Custom domain: configure DNS (a human-approval gate) + HTTPS.",
       "Rollback plan: a one-command/one-click revert to the previous good deploy.",
       "Production smoke test: after deploy, assert the live URL returns 200 + the core path works ('it builds' ≠ 'it serves').",
-    ],
+    );
+  }
+
+  const tests = [
+    "build command exits 0 in CI",
+    "production smoke: deployed URL returns HTTP 200",
+  ];
+  if (selfHosted) tests.push("database backup runs AND a restore is verified on a copy");
+  else tests.push(mobile ? "EAS build produces an installable artifact" : "preview deploy succeeds for a PR");
+
+  const risks = ["DNS/domain + app-store submission are irreversible-ish — both are human-approval gates."];
+  if (selfHosted)
+    risks.push("Self-hosted infra is the operator's to patch + secure + back up — no managed safety net; provisioning is a human-approval gate.");
+
+  return {
+    summary: selfHosted
+      ? `Deployment: ${rec.choice} (self-hosted ${platform}). Own your server: containerize, reverse-proxy + TLS, and a tested backup/restore.`
+      : `Deployment: ${rec.choice} (${platform}). Prefer boring + reliable: previews, a rollback plan, and a real production smoke test.`,
+    steps,
     envVars: [],
     gates,
-    tests: [
-      "build command exits 0 in CI",
-      "production smoke: deployed URL returns HTTP 200",
-      mobile ? "EAS build produces an installable artifact" : "preview deploy succeeds for a PR",
-    ],
+    tests,
     template: "platform-deployment-plan",
-    risks: ["DNS/domain + app-store submission are irreversible-ish — both are human-approval gates."],
+    risks,
   };
 }
 

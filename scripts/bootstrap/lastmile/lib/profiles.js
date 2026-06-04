@@ -1,9 +1,12 @@
 "use strict";
 /**
- * scripts/bootstrap/lastmile/lib/profiles.js — the 8 product profiles + their
+ * scripts/bootstrap/lastmile/lib/profiles.js — the 9 product profiles + their
  * "easy-default" stacks for vibe coders, plus recommendStack() which respects an
  * existing stack rather than forcing a rewrite. The "do not overbuild" rule lives
  * here: defaults are the minimum monetizable + trustworthy + supportable path.
+ *
+ * NOTE: PROFILES is mirrored in orchestrate.js (the `--profile` validator) — keep
+ * the two arrays IDENTICAL.
  */
 
 const PROFILES = [
@@ -14,6 +17,7 @@ const PROFILES = [
   "marketplace",
   "content-community",
   "internal-external",
+  "self-hosted",
   "unknown",
 ];
 
@@ -84,6 +88,17 @@ const DEFAULT_STACKS = {
     analytics: "posthog",
     email: "resend",
   },
+  // Self-hosted: the operator runs their own server + DB (not a managed BaaS).
+  // Boring, reproducible, self-operated path — containerized behind a reverse
+  // proxy with automatic TLS; self-hostable analytics; bring-your-own auth.
+  "self-hosted": {
+    db: "postgres-self-hosted",
+    auth: "authjs-or-custom",
+    payments: "stripe",
+    hosting: "docker-compose-on-vps",
+    analytics: "plausible-self-hosted-or-posthog",
+    email: "resend",
+  },
   unknown: SIMPLE_MVP,
 };
 
@@ -93,6 +108,17 @@ function inferProfile(state) {
   if (!state) return "unknown";
   if (state.platform === "mobile") return "mobile-app";
   if (state.platform === "desktop") return "desktop-app";
+  // Self-hosted (WG-29): the persistence is self-hosted (own server/DB) AND there
+  // is no managed deploy target — the operator is running their own infra, so the
+  // managed web-saas default would mis-route them. Conservative: only when the
+  // capability signal is explicit; otherwise fall through to the web default.
+  const selfHostedDb =
+    state.persistence && state.persistence.hostingModel === "self-hosted";
+  const noManagedTarget = !(state.deploy && state.deploy.target);
+  if (selfHostedDb && noManagedTarget &&
+      (state.framework === "nextjs" || state.platform === "web" || state.platform === "unknown")) {
+    return "self-hosted";
+  }
   if (state.framework === "nextjs" || state.platform === "web") {
     // an AI dep hint nudges toward ai-tool
     return "web-saas";

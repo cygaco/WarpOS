@@ -27,6 +27,12 @@ const GATES = [
     requires: "explicit operator approval + rollback note",
   },
   {
+    id: "server-provision",
+    action: "Provision a self-hosted server / VPS (and run the product on it)",
+    why: "Spins up paid infrastructure the operator owns + operates; carries cost, patching, and security-exposure obligations a managed host would absorb.",
+    requires: "explicit operator approval + a backup/restore plan + a reverse-proxy/TLS + hardening checklist",
+  },
+  {
     id: "app-store-submit",
     action: "Submit to an app store (App Store / Play)",
     why: "Public, reviewed, hard to retract; binds the product's public identity.",

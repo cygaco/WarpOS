@@ -41,6 +41,7 @@ const path = require("path");
 
 const PHASES = ["preflight", "audit", "plan", "inject", "execute", "handoff"];
 const NEEDS_ORCH = 3;
+// MIRRORS lib/profiles.js PROFILES — keep IDENTICAL (the --profile validator).
 const PROFILES = [
   "web-saas",
   "mobile-app",
@@ -49,6 +50,7 @@ const PROFILES = [
   "marketplace",
   "content-community",
   "internal-external",
+  "self-hosted",
   "unknown",
 ];
 const MODULES = [

@@ -7,7 +7,7 @@
  * Proves (canonical, no real product stood up):
  *   - driver: planPhases (default/--phase/--resume) + phase-state round-trip
  *   - preflight: pass (runCheck 0)->done; refuse (1)->failed
- *   - detect: all 7 holdout fixtures match their expected gaps
+ *   - detect: all 8 holdout fixtures match their expected gaps
  *   - score: 9 dimensions + composite; sensitive caps privacy/security
  *   - adapters: all 8 conform to the contract + key behavioral assertions
  *   - chain: preflight -> audit(done,data) -> plan(done,artifacts) -> inject(needs_orchestration)
@@ -87,9 +87,9 @@ async function testPreflight() {
   else fail("preflight refuse", JSON.stringify(r2));
 }
 
-// ---------------------------------------------------------- detect (7 holdout fixtures)
+// ---------------------------------------------------------- detect (8 holdout fixtures)
 function testFixtures() {
-  process.stdout.write("\nE2E — detect on 7 holdout fixtures\n");
+  process.stdout.write("\nE2E — detect on 8 holdout fixtures\n");
   for (const c of CASES) {
     const dir = materialize(c);
     const st = detectRepoState(dir);

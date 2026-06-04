@@ -145,6 +145,21 @@ function detectPlatform(framework, deploy) {
 }
 
 // ── persistence / auth / payments / analytics / deploy / email ───────
+// Provider -> hosting-model CAPABILITY (WG-29). "managed" = a BaaS/hosted DB the
+// operator does NOT run (Supabase/Firebase/Turso). "self-hosted" = a DB the
+// operator runs themselves (Postgres/Mongo, an embedded SQLite file, or an ORM
+// like Prisma/Drizzle pointed at their own DB). Capability is INFERRED from the
+// provider class — the WG-29 point is that the *hosting model* (not just the
+// provider name) is what drives the self-hosted profile + server-deploy step.
+const MANAGED_PROVIDERS = new Set(["supabase", "firebase", "turso"]);
+const SELF_HOSTED_PROVIDERS = new Set([
+  "postgres",
+  "mongo",
+  "sqlite",
+  "prisma",
+  "drizzle",
+]);
+
 function detectPersistence(deps, repoRoot) {
   const evidence = [];
   let provider = null;
@@ -163,7 +178,24 @@ function detectPersistence(deps, repoRoot) {
   else if (pg) { provider = "postgres"; evidence.push(`dep:${pg}`); }
   else if (mongo) { provider = "mongo"; evidence.push(`dep:${mongo}`); }
   if (fileExists(repoRoot, "prisma/schema.prisma")) evidence.push("file:prisma/schema.prisma");
-  return { provider, evidence };
+
+  // Capability classification. Provider class is the primary signal; a
+  // docker-compose/Dockerfile is a cheap corroborating self-hosted signal (the
+  // operator is packaging their own runtime), which can also tip an otherwise
+  // managed/unknown stack toward self-hosted infra.
+  let hostingModel = null;
+  if (provider && MANAGED_PROVIDERS.has(provider)) hostingModel = "managed";
+  else if (provider && SELF_HOSTED_PROVIDERS.has(provider)) hostingModel = "self-hosted";
+  const dockerized =
+    fileExists(repoRoot, "docker-compose.yml") ||
+    fileExists(repoRoot, "docker-compose.yaml") ||
+    fileExists(repoRoot, "Dockerfile");
+  if (dockerized) {
+    evidence.push("file:docker-compose/Dockerfile");
+    // Dockerized + a self-hostable provider (or none yet) => self-hosted infra.
+    if (hostingModel !== "managed") hostingModel = "self-hosted";
+  }
+  return { provider, hostingModel, evidence };
 }
 
 function detectAuth(deps, repoRoot) {
