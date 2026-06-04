@@ -14,19 +14,19 @@
     "product": {
       "director": { "role": "director-of-product-management", "agent": "director-of-product" },
       "leads": [
-        { "role": "product-lead", "agent": "product-lead", "owns": "requirement authoring (build_spec/PRD via /sprint:design, verified by req-reviewer); per-product backlog ranking + within-sprint sequencing", "specialists": [ { "role": "product-designer", "agent": "product-designer" } ] },
-        { "role": "qa-lead", "agent": "director-of-qa", "alias": "director-of-qa", "owns": "product-driven QA; QA/fix-priority under product-priority-over-severity; directs the QA failure-mode scanner", "note": "Renamed from Director of QA; reports to Director of Product Mgmt. Keep the director-of-qa dispatch alias until all refs migrate." },
-        { "role": "research-insight-lead", "agent": "research-insight-lead", "owns": "deep audience layer + audience-mining pipeline; audience_dossier" }
+        { "role": "product-lead", "agent": "product-lead", "owns": "requirement authoring (build_spec/PRD via /sprint:design, verified by req-reviewer); per-product backlog ranking + within-sprint sequencing", "specialists": [ { "role": "product-designer", "agent": "design-lead", "_adr0007": "renamed product-designer → design-lead; spec product/design-lead.md" } ] },
+        { "role": "qa-lead", "agent": "quality-lead", "alias": "director-of-qa", "owns": "product-driven QA; QA/fix-priority under product-priority-over-severity; directs the QA failure-mode scanner", "note": "ADR-0007: renamed director-of-qa → quality-lead (spec product/quality-lead.md). Reports to Director of Product Mgmt." },
+        { "role": "research-insight-lead", "agent": "research-lead", "_adr0007": "renamed research-insight-lead → research-lead; moved to Growth (spec growth/research-lead.md)", "owns": "deep audience layer + audience-mining pipeline; audience_dossier" }
       ],
       "reports_to": "alpha"
     },
     "marketing": {
-      "director": { "role": "director-of-marketing", "agent": "director-of-marketing" },
+      "director": { "role": "director-of-marketing", "agent": "director-of-growth", "_adr0007": "renamed director-of-marketing → director-of-growth (spec growth/director-of-growth.md); dept Marketing → Growth" },
       "leads": [
-        { "role": "growth-lead", "agent": "growth-lead", "owns": "media-buying; EQ scoring; SCALE/TEST/SKIP" },
+        { "role": "growth-lead", "agent": "marketing-lead", "_adr0007": "renamed growth-lead → marketing-lead (spec growth/marketing-lead.md)", "owns": "media-buying; EQ scoring; SCALE/TEST/SKIP" },
         { "role": "copy-lead", "agent": "copy-lead", "owns": "Agora/E5 voice; owns the 'Chief' coherence review" }
       ],
-      "specialists": [ { "role": "web-conversion-designer", "agent": "web-conversion-designer", "owns": "landing pages that convert" } ],
+      "specialists": [ { "role": "web-conversion-designer", "agent": "conversion-lead", "_adr0007": "renamed web-conversion-designer → conversion-lead (spec growth/conversion-lead.md)", "owns": "landing pages that convert" } ],
       "reports_to": "alpha"
     },
     "engineering": {

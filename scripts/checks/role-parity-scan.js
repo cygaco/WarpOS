@@ -108,8 +108,22 @@ function collectOrgRoles(org) {
   return { domainRoles, builtAgents, buildChainBuilt };
 }
 
-// A declared agent "resolves" if a dir named <agent> or a <agent>.md exists under
-// .claude/agents/. Injectable so the bite-test controls it.
+// A declared agent "resolves" if, under .claude/agents/, there is a dir named
+// <agent>, a <agent>.md file, OR (ADR-0007) a .md file whose frontmatter `name:`
+// equals <agent>. The frontmatter case is REQUIRED post-cutover: the pod specs
+// are file-named by stem at the pod level (engineering/frontend/builder.md whose
+// `name: frontend-builder`), so a filename-only match would miss them and falsely
+// report frontend-builder/backend-builder as "no spec resolves". Injectable so the
+// bite-test controls it.
+function fmName(file) {
+  try {
+    const body = fs.readFileSync(file, "utf8");
+    const fm = body.match(/^---\n([\s\S]*?)\n---/);
+    if (!fm) return null;
+    const m = fm[1].match(/^name:\s*(\S+)/m);
+    return m ? m[1] : null;
+  } catch { return null; }
+}
 function makeRealAgentResolver(root) {
   const agentsRoot = path.join(root, ".claude", "agents");
   return function agentResolves(agent) {
@@ -123,7 +137,10 @@ function makeRealAgentResolver(root) {
         if (e.isDirectory()) {
           if (e.name === agent) { found = true; return; }
           if (!e.name.startsWith(".")) walk(path.join(dir, e.name), depth + 1);
-        } else if (e.isFile() && e.name === `${agent}.md`) { found = true; return; }
+        } else if (e.isFile() && e.name.endsWith(".md")) {
+          if (e.name === `${agent}.md`) { found = true; return; }
+          if (fmName(path.join(dir, e.name)) === agent) { found = true; return; }
+        }
       }
     };
     walk(agentsRoot, 0);
