@@ -5,14 +5,19 @@
 
 ---
 
-## Agent Team
+## Agent Team — Alex (the President) and his faces
 
-| Agent | Symbol | Role | Spec |
+**Alex is the President** — one identity, shown in different faces by mode. ("Alex" = name; "President" = role.)
+
+| Face | Symbol | What Alex is doing | Spec |
 |-------|--------|------|------|
-| **Alpha** | α | Architect, orchestrator | [alpha.md](.claude/agents/00-alex/alpha.md) |
-| **Beta** | β | Judgment model | [beta.md](.claude/agents/00-alex/beta.md) |
-| **Gamma** | γ | Adhoc build orchestrator | [gamma.md](.claude/agents/00-alex/gamma.md) |
-| **Delta** | δ | Standalone oneshot orchestrator | [delta.md](.claude/agents/00-alex/delta.md) |
+| α | α | Running it — architect, orchestrator | [alpha.md](.claude/agents/00-alex/alpha.md) |
+| β | β | Checking it — independent judgment, read-only | [beta.md](.claude/agents/00-alex/beta.md) |
+| γ | γ | Delivering — adhoc build (single features) | [gamma.md](.claude/agents/00-alex/gamma.md) |
+| δ | δ | Delivering — oneshot build (skeleton runs) | [delta.md](.claude/agents/00-alex/delta.md) |
+| ε | ε | Delivering — sprint (lifecycle) · design-locked, not built | _(not built)_ |
+
+The **departments** (Product, Engineering, Marketing — QA under Product) report to Alex; they are not Alex. Full org: [AGENT-STRUCTURE.md](AGENT-STRUCTURE.md).
 
 ## Build Agents
 

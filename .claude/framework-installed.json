@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "0.13.1",
-  "installedCommit": "ac566028a06f808eb2e59cafa56e15c637205dd2",
-  "installedAt": "2026-06-02T22:44:56.217Z",
+  "installedCommit": "19ca2f7a16dac4e572b9fad25784f0920c72e5e4",
+  "installedAt": "2026-06-03T23:59:24.553Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -10144,8 +10144,8 @@
       "dest": "AGENTS.md",
       "owner": "framework",
       "mergeStrategy": "append-if-exists",
-      "installedHash": "a11b922509a0920c585af8a912e63edbf8bbc128350dce0358e9ae672af476a6",
-      "currentHashAtInstall": "a11b922509a0920c585af8a912e63edbf8bbc128350dce0358e9ae672af476a6",
+      "installedHash": "1f64e58a3d5a86f8b06f04d66379243bb7c38858eef7136da92ff930d58904db",
+      "currentHashAtInstall": "1f64e58a3d5a86f8b06f04d66379243bb7c38858eef7136da92ff930d58904db",
       "introducedIn": "0.0.0"
     },
     {
@@ -10154,8 +10154,8 @@
       "dest": "CLAUDE.md",
       "owner": "framework",
       "mergeStrategy": "append-if-exists",
-      "installedHash": "d81cc08b7e2f26d2b70d5dcbf6e0487fde8efc5c7fb4a8b289e70ef307ba085b",
-      "currentHashAtInstall": "d81cc08b7e2f26d2b70d5dcbf6e0487fde8efc5c7fb4a8b289e70ef307ba085b",
+      "installedHash": "7e9f3441e411ac521186f2f16b9ba61488051b11f1a27ed8aea537e5c49e40a6",
+      "currentHashAtInstall": "7e9f3441e411ac521186f2f16b9ba61488051b11f1a27ed8aea537e5c49e40a6",
       "introducedIn": "0.0.0"
     }
   ],
