@@ -15,11 +15,16 @@
  *      - STEPS referential integrity: every steps[].phase is declared in phases[]
  *        (STEPS<->GOLDEN_PATHS); dangling = ERROR, empty-while-path-exists = WARNING.
  *      - FIELD_REGISTRY appears_in[] entries resolve to an emitted artifact = WARNING.
- *   4. THIN findings (unfilled {{tokens}} left in output, no intent source) are
- *      WARNINGS — never a silent pass, never an error (β directive).
+ *   4. WI-38 zero-unfilled-token invariant: a raw `{{token}}` surviving into ANY
+ *      rendered artifact is an ERROR (not a warning). The engine degrades every
+ *      unfilled field to a `*needs input: <field>*` marker before validation, so a
+ *      raw token here means degrade was bypassed/regressed — a real bug. The
+ *      `needs input:` markers are the SANCTIONED thin signal: reported in `thin`
+ *      (never a silent pass), never an error.
  *
  * Contract: a STRUCTURALLY correct engine produces zero ERRORS on ANY intent;
- * ERRORS mean a real bug. THIN inputs produce WARNINGS and still exit 0.
+ * ERRORS mean a real bug (incl. a raw-token leak). `needs input:` markers are
+ * reported as `thin` and still exit 0.
  */
 
 const fs = require("fs");
@@ -110,9 +115,15 @@ function validateArtifacts(artifacts, opts = {}) {
         }
       }
     }
-    // THIN: unfilled tokens left in the rendered output.
-    const m = body.match(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g);
-    if (m) for (const tok of m) thinSet.add(`${fname}:${tok.replace(/[{}\s]/g, "")}`);
+    // WI-38: a raw {{token}} surviving render is an ERROR (degrade was bypassed).
+    const raw = body.match(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g);
+    if (raw)
+      for (const tok of raw)
+        errors.push(`${fname}: raw unfilled token "${tok}" — degrade bypassed (WI-38)`);
+    // SANCTIONED thin signal: `*needs input: <field>*` markers (reported, not failed).
+    let ni;
+    const niRe = /\*needs input:\s*([a-zA-Z0-9_]+)\s*\*/g;
+    while ((ni = niRe.exec(body)) !== null) thinSet.add(`${fname}:${ni[1]}`);
   }
 
   // 2: structured JSON validity + required keys
@@ -135,9 +146,10 @@ function validateArtifacts(artifacts, opts = {}) {
     for (const k of JSON_REQUIRED[fname] || []) {
       if (!(k in obj)) errors.push(`${fname}: missing required key "${k}"`);
     }
-    // thin tokens leaking into JSON would break parse already; also flag raw {{
+    // A raw {{token}} in JSON would usually break parse above; if it survived
+    // (e.g. inside a string), it's still a WI-38 invariant breach -> ERROR.
     if (/\{\{\s*[a-zA-Z0-9_]+\s*\}\}/.test(body))
-      thinSet.add(`${fname}:unrendered-token`);
+      errors.push(`${fname}: raw unfilled token — degrade bypassed (WI-38)`);
   }
 
   // 3a: product_name identical across narrative H1s

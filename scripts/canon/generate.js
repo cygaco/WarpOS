@@ -7,9 +7,21 @@
  * or a clone doc from --clone) into the full _requirements/00-canonical/* set:
  * 7 narrative MD + 4 structured JSON, rendered from framework/templates/canonical/*.
  *
- * Pipeline: parse intent -> map sections to template fields -> detect THIN fields
- * -> (T4) fill thin fields via CAPPED research (bounded by schemas/canon/
+ * Pipeline: parse intent -> map sections to template fields -> brief-EXPAND thin
+ * fields from intent (WI-38; deterministic derivation BEFORE research) -> detect
+ * THIN fields -> degrade any STILL-unfilled token to an explicit
+ * `*needs input: <field>*` marker so a raw {{token}} NEVER ships -> (T4)
+ * optionally enrich thin fields via CAPPED research (bounded by schemas/canon/
  * research-fields.schema.json) -> render -> (T5) validate -> emit.
+ *
+ * The zero-unfilled-token invariant (WI-38, the golden-flow gate): a generated
+ * canonical set MUST contain zero raw `{{token}}`. Guaranteed STRUCTURALLY by the
+ * degrade step (every unfilled token becomes a visible `*needs input:*` marker,
+ * never a raw token) and ENFORCED by scripts/checks/canon-no-unfilled-tokens.js
+ * (exits non-zero if any raw `{{token}}` survives) — which replaces the old
+ * warning-only "thin is a warning" behavior. Brief-expand fills from intent first;
+ * the marker is the honest fallback for a field with no intent source (human/LLM
+ * fills it), and the assertion is the tripwire if degrade ever regresses.
  *
  * Runs PRODUCT-SIDE (invoked by bootstrap:spinup's canon phase in a product repo),
  * so generating product-titled canon there is correct — not a canonical purity
@@ -19,8 +31,10 @@
  *   node scripts/canon/generate.js --intent <file.md> --product "<name>"
  *        [--out <dir>] [--research simple|deep|off] [--dry-run] [--json]
  *
- * Exit: 0 ok (may include thin-field warnings), 1 fatal (no templates / no intent),
- *       2 bad args.
+ * Exit: 0 ok (may include `needs input:` markers for source-less fields — these
+ *       are the honest thin signal, NOT a raw-token leak), 1 fatal (no templates /
+ *       no intent / a raw {{token}} survived — the WI-38 invariant breach), 2 bad
+ *       args.
  */
 
 const fs = require("fs");
@@ -65,13 +79,29 @@ function parseArgs(argv) {
   return out;
 }
 
-// {{key}} substitution; leaves unmatched tokens in place so thin-detection sees them.
-function render(tmpl, data) {
-  return tmpl.replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (m, k) =>
-    data[k] === undefined || data[k] === null || data[k] === ""
-      ? m
-      : String(data[k]),
-  );
+// The explicit "this field had no intent source" marker. A generated artifact may
+// contain these (they're the honest thin signal — a human or an LLM brief-expand
+// round fills them) but it must NEVER contain a raw `{{token}}` (WI-38). Greppable
+// and asserted by scripts/checks/canon-no-unfilled-tokens.js.
+const NEEDS_INPUT = (field) => `*needs input: ${field}*`;
+// Matches an emitted needs-input marker (for thin-counting / tests).
+const NEEDS_INPUT_RE = /\*needs input:\s*([a-zA-Z0-9_]+)\s*\*/g;
+
+// {{key}} substitution.
+//   degrade=false (legacy): leave an unmatched token in place (`{{token}}`).
+//   degrade=true  (WI-38 default for narrative): replace an unmatched token with a
+//     `*needs input: <field>*` marker so a raw {{token}} never ships.
+//   degrade=true + jsonSafe=true (structured): replace with `{}` (a JSON-safe
+//     empty), since a text marker would be invalid JSON.
+function render(tmpl, data, opts = {}) {
+  const degrade = opts.degrade === true;
+  const jsonSafe = opts.jsonSafe === true;
+  return tmpl.replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (m, k) => {
+    const empty = data[k] === undefined || data[k] === null || data[k] === "";
+    if (!empty) return String(data[k]);
+    if (!degrade) return m;
+    return jsonSafe ? "{}" : NEEDS_INPUT(k);
+  });
 }
 
 // Split a markdown intent into a { "section title (lowercased)": body } map.
@@ -121,8 +151,74 @@ function buildFieldMap(product, sections) {
     product_primitives: pick(sections, "primitive", "feature", "mvp"),
     evolution_status_note:
       "Non-canonical projection — derived from intent; refine as the product evolves.",
-    // Many fields intentionally start empty -> THIN -> research (T4) / warning (T5).
+    // Fields still empty here are handled by briefExpand() (intent-derived) and,
+    // if still source-less, the degrade step (-> `*needs input:*` marker).
   };
+}
+
+// First non-empty value, or "".
+function firstNonEmpty(...vals) {
+  for (const v of vals) if (typeof v === "string" && v.trim()) return v.trim();
+  return "";
+}
+
+// WI-38 brief-EXPAND (deterministic): fill thin fields from intent BEFORE research.
+// Conservative — only derive a field when the intent genuinely supports it (e.g.
+// reuse a related section, or compose from sections that ARE present). Never
+// fabricate domain claims; a field with no honest intent source is left empty so
+// the degrade step surfaces it as `*needs input:*` (and the assertion can't be
+// fooled). Mutates + returns `data`.
+//
+// This is the ENGINE-SIDE half. A richer LLM brief-expand round is an OPTIONAL
+// enrichment the orchestrator runs (same request/response handoff as research) —
+// the zero-token invariant does NOT depend on it: degrade guarantees it offline.
+function briefExpand(data, sections) {
+  const d = data;
+  // one_liner: fall back to the problem/summary if the heuristic missed it.
+  d.one_liner = firstNonEmpty(
+    d.one_liner,
+    pick(sections, "problem", "summary", "one-liner"),
+  );
+  // what_it_is: solution/product/mvp.
+  d.what_it_is = firstNonEmpty(
+    d.what_it_is,
+    pick(sections, "solution", "product", "mvp", "what it is"),
+  );
+  // vision: a present vision section, else compose from the one-liner (clearly
+  // marked as a projection, not an asserted vision).
+  d.vision = firstNonEmpty(d.vision, pick(sections, "vision", "wedge to full"));
+  // primary_audience / primary_jtbd: each can stand in for the other when only
+  // one is given (audience and the job-to-be-done are tightly coupled in a brief).
+  d.primary_audience = firstNonEmpty(
+    d.primary_audience,
+    pick(sections, "audience", "user", "customer"),
+    d.primary_jtbd,
+  );
+  d.primary_jtbd = firstNonEmpty(
+    d.primary_jtbd,
+    pick(sections, "jtbd", "job", "problem"),
+    d.primary_audience,
+  );
+  // cohort_1_name: derive a name from the audience when present (e.g. the first
+  // line / noun-phrase of the audience description) — not a fabricated persona.
+  if (!firstNonEmpty(d.cohort_1_name) && firstNonEmpty(d.primary_audience)) {
+    const firstLine = d.primary_audience.split(/\r?\n/)[0].trim();
+    // Keep it short — a label, not a paragraph.
+    d.cohort_1_name = firstLine.length > 60 ? "Primary cohort" : firstLine;
+  }
+  // path_1_name: the core loop / golden path; fall back to the solution/MVP as the
+  // primary flow when no explicit path is named.
+  d.path_1_name = firstNonEmpty(
+    d.path_1_name,
+    pick(sections, "golden path", "core loop", "flow"),
+    d.what_it_is,
+  );
+  // product_primitives: the MVP/feature surface.
+  d.product_primitives = firstNonEmpty(
+    d.product_primitives,
+    pick(sections, "primitive", "feature", "mvp"),
+  );
+  return d;
 }
 
 // Extract the {{token}} names referenced by a template.
@@ -176,6 +272,9 @@ function main() {
   }
   const sections = parseIntentSections(fs.readFileSync(intentPath, "utf8"));
   const data = buildFieldMap(args.product, sections);
+  // WI-38: brief-expand thin fields from intent BEFORE thin-detection + render, so
+  // we research/degrade only what genuinely has no intent source.
+  briefExpand(data, sections);
 
   // Load templates; gather thin fields + thin DOCS (research candidates).
   const tmpls = {};
@@ -200,15 +299,22 @@ function main() {
     steps: "[]",
   };
   for (const name of STRUCTURED) {
+    // jsonSafeDegrade: any token NOT covered by jsonDefaults/data degrades to a
+    // JSON-safe empty container ({}), never a raw {{token}} (which would both
+    // break JSON.parse AND breach the WI-38 invariant) and never a text marker
+    // (which is invalid JSON). Robust if a JSON template gains a new token.
     tmpls[`${name}.json`] = render(
       fs.readFileSync(path.join(TMPL_DIR, `${name}.json.tmpl`), "utf8"),
       { ...jsonDefaults, ...data },
+      { degrade: true, jsonSafe: true },
     );
   }
 
-  // Render narrative + carry over structured.
+  // Render narrative WITH degrade (WI-38: no raw {{token}} ever ships — an
+  // unfilled field becomes a `*needs input:*` marker) + carry over structured.
   const artifacts = {};
-  for (const name of NARRATIVE) artifacts[`${name}.md`] = render(tmpls[`${name}.md`], data);
+  for (const name of NARRATIVE)
+    artifacts[`${name}.md`] = render(tmpls[`${name}.md`], data, { degrade: true });
   for (const name of STRUCTURED) artifacts[`${name}.json`] = tmpls[`${name}.json`];
 
   // T4: capped research. The engine owns the CAP (bounded query set from the
@@ -274,6 +380,18 @@ function main() {
     }
   }
 
+  // WI-38: the `*needs input:*` markers actually emitted into the narrative
+  // artifacts (the honest thin signal — distinct from any raw-token leak, which
+  // the assertion forbids). Counted from the rendered output, not the data map.
+  const needsInput = new Set();
+  for (const name of NARRATIVE) {
+    const body = artifacts[`${name}.md`] || "";
+    let m;
+    NEEDS_INPUT_RE.lastIndex = 0;
+    while ((m = NEEDS_INPUT_RE.exec(body)) !== null)
+      needsInput.add(`${name}.md:${m[1]}`);
+  }
+
   const result = {
     ok: validation.ok,
     product: args.product,
@@ -281,6 +399,7 @@ function main() {
     artifacts: Object.keys(artifacts),
     thin_fields: [...allThin],
     thin_docs: thinDocs,
+    needs_input: [...needsInput].sort(),
     research: researchOut,
     validation: { ok: validation.ok, errors: validation.errors, warnings: validation.warnings, thin: validation.thin },
     dry_run: args.dryRun,
@@ -303,13 +422,28 @@ function main() {
       process.stdout.write(`  research: requested — ${researchOut.request.queries.length} bounded ${researchOut.request.backend} queries written to ${path.relative(REPO_ROOT, requestFile)}; run research:* and re-invoke with --research-in\n`);
     for (const w of researchOut.warnings) process.stdout.write(`  WARNING: ${w}\n`);
     for (const w of validation.warnings) process.stdout.write(`  WARNING: ${w}\n`);
-    if (allThin.size)
+    if (needsInput.size)
       process.stdout.write(
-        `  WARNING: ${allThin.size} thin field(s) (no intent source): ${[...allThin].join(", ")}${args.research === "off" ? " — re-run with --research simple to fill" : ""}\n`,
+        `  ${needsInput.size} field(s) need input (no intent source — emitted as "needs input:" markers, NOT raw tokens): ${[...needsInput].join(", ")}${args.research === "off" ? " — fill by hand or re-run with --research simple" : ""}\n`,
       );
   }
   return validation.ok ? 0 : 1;
 }
 
 if (require.main === module) process.exit(main());
-module.exports = { main, parseArgs, parseIntentSections, buildFieldMap, render, detectThin, templateTokens, isThinDoc, NARRATIVE, STRUCTURED };
+module.exports = {
+  main,
+  parseArgs,
+  parseIntentSections,
+  buildFieldMap,
+  briefExpand,
+  firstNonEmpty,
+  render,
+  detectThin,
+  templateTokens,
+  isThinDoc,
+  NEEDS_INPUT,
+  NEEDS_INPUT_RE,
+  NARRATIVE,
+  STRUCTURED,
+};

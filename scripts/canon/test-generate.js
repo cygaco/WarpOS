@@ -36,7 +36,7 @@ const GEN = path.join(REPO, "scripts", "canon", "generate.js");
 const FIXTURE = path.join(REPO, "scripts", "canon", "fixtures", "acme-intent.md");
 const research = require("./research");
 const { validateArtifacts } = require("./validate");
-const { NARRATIVE, STRUCTURED } = require("./generate");
+const { NARRATIVE, STRUCTURED, render } = require("./generate");
 
 let passed = 0;
 let failed = 0;
@@ -91,8 +91,21 @@ function e2e() {
   const v = validateArtifacts(artifacts);
   if (v.ok && v.errors.length === 0) ok("validation ok (no errors)");
   else fail("validation ok (no errors)", v.errors.join("; "));
-  if (v.thin.length > 0) ok("thin fields reported as warnings (not errors)");
-  else fail("thin fields reported", "fixture is thin — expected thin warnings");
+  // WI-38: zero raw {{tokens}} in ANY emitted artifact (degrade guarantees it).
+  const rawLeaks = Object.entries(artifacts)
+    .filter(([, body]) => /\{\{\s*[a-zA-Z0-9_]+\s*\}\}/.test(body))
+    .map(([f]) => f);
+  if (rawLeaks.length === 0) ok("WI-38: zero raw {{tokens}} emitted");
+  else fail("WI-38: zero raw {{tokens}}", `leaked in: ${rawLeaks.join(", ")}`);
+  // The thin fixture's source-less fields are surfaced as `needs input:` markers
+  // (the sanctioned signal), reported in v.thin — never a silent pass.
+  if (v.thin.length > 0) ok("source-less fields surfaced as needs-input (reported in thin)");
+  else fail("needs-input reported", "fixture is thin — expected needs-input markers in thin");
+  // And the standing assertion script agrees on the emitted set.
+  const assertScript = path.join(REPO, "scripts", "checks", "canon-no-unfilled-tokens.js");
+  const ar = spawnSync(process.execPath, [assertScript, "--dir", out, "--json"], { encoding: "utf8" });
+  if (ar.status === 0) ok("canon-no-unfilled-tokens assertion passes on emitted set");
+  else fail("zero-token assertion passes", `status=${ar.status} ${ar.stderr || ar.stdout}`);
 
   // each JSON parses
   let jsonOk = true;
@@ -165,30 +178,45 @@ function unitsResearch() {
 
 function unitsValidate() {
   process.stdout.write("\nUNIT — validate.js (structural contract)\n");
-  // a correctly-rendered minimal CORE_BRIEF passes section-presence
+  // WI-38: a DEGRADED thin set (product_name filled, the rest -> `needs input:`
+  // markers via render's degrade) is structurally valid AND raw-token-free.
   const good = {};
   for (const name of NARRATIVE) {
     const tmpl = fs.readFileSync(
       path.join(REPO, "framework", "templates", "canonical", `${name}.md.tmpl`),
       "utf8",
     );
-    // fill only product_name; leave the rest as tokens (thin but structurally valid)
-    good[`${name}.md`] = tmpl.replace(/\{\{\s*product_name\s*\}\}/g, "Acme");
+    good[`${name}.md`] = render(tmpl, { product_name: "Acme" }, { degrade: true });
   }
   for (const name of STRUCTURED) {
     const tmpl = fs.readFileSync(
       path.join(REPO, "framework", "templates", "canonical", `${name}.json.tmpl`),
       "utf8",
     );
-    good[`${name}.json`] = tmpl
-      .replace(/\{\{value_group_1_name\}\}/g, "values")
-      .replace(/\{\{[a-zA-Z0-9_]+\}\}/g, (m) =>
-        /phases|steps/.test(m) ? "[]" : "{}",
-      );
+    good[`${name}.json`] = render(
+      tmpl,
+      { value_group_1_name: "values", phases: "[]", steps: "[]" },
+      { degrade: true, jsonSafe: true },
+    );
   }
   const vGood = validateArtifacts(good);
-  if (vGood.ok) ok("structurally-valid (thin) artifacts pass");
-  else fail("thin passes", vGood.errors.join("; "));
+  if (vGood.ok) ok("degraded (needs-input) thin artifacts pass");
+  else fail("degraded thin passes", vGood.errors.join("; "));
+  if (vGood.thin.length > 0) ok("degraded fields reported in thin (needs-input)");
+  else fail("degraded thin reported", "expected needs-input markers in thin");
+
+  // WI-38: a RAW {{token}} surviving into output is now an ERROR (degrade bypassed).
+  const rawLeak = {
+    ...good,
+    "CORE_BRIEF.md": good["CORE_BRIEF.md"].replace(
+      "*needs input: vision*",
+      "{{vision}}",
+    ),
+  };
+  const vRaw = validateArtifacts(rawLeak);
+  if (!vRaw.ok && vRaw.errors.some((e) => /raw unfilled token/.test(e)))
+    ok("raw {{token}} -> ERROR (WI-38)");
+  else fail("raw token error", JSON.stringify(vRaw.errors));
 
   // missing section -> ERROR
   const broken = { ...good, "CORE_BRIEF.md": "# Acme — Core Brief\n\n## One-Liner\nx\n" };
