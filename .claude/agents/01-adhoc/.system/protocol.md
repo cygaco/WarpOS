@@ -13,7 +13,7 @@ Alpha dispatches gamma in adhoc mode for:
 
 > ### ⚠ CANONICAL DISPATCH — NO EXCEPTIONS
 >
-> **All build-chain roles** (`builder`, `fixer`, `reviewer`, `compliance`, `qa`, `redteam`) **MUST** be dispatched via Bash subprocess — **`node scripts/dispatch-claude.js <role>` for Claude-routed BUILD roles** (`builder`/`fixer`/`*-builder`/`stub-scaffold`: the bounded wrapper; raw `claude -p --agent <build-role>` silently REAPS — RI-004/ED-018 — and is blocked by the dispatch-route-guard hook), `claude -p --agent <role>` for the non-build Claude fallback (reviewer/qa/etc.), and `node scripts/dispatch-agent.js <role>` for OpenAI/Gemini-routed. **Do NOT use the in-process `Agent` tool** for any of these roles, even when running locally as Claude. The `Agent` tool returns the full agent response into the orchestrator conversation; Bash dispatch captures stdout and parses only the JSON envelope. See `.claude/agents/00-alex/gamma.md` Dispatch Method for the full reference pattern.
+> **All build-chain roles** (the ADR-0007 roster: `*-builder`, `*-fixer`, the pod reviewers `frontend-reviewer`/`backend-reviewer`, `qa-reviewer`, `security-reviewer`) **MUST** be dispatched via Bash subprocess — **`node scripts/dispatch-claude.js <role>` for Claude-routed BUILD roles** (`*-builder`/`*-fixer`/`stub-scaffold`: the bounded wrapper; raw `claude -p --agent <build-role>` silently REAPS — RI-004/ED-018 — and is blocked by the dispatch-route-guard hook), `claude -p --agent <role>` for the non-build Claude fallback (qa-reviewer/security-reviewer/etc.), and `node scripts/dispatch-agent.js <role>` for OpenAI/Gemini-routed. **Do NOT use the in-process `Agent` tool** for any of these roles, even when running locally as Claude. The `Agent` tool returns the full agent response into the orchestrator conversation; Bash dispatch captures stdout and parses only the JSON envelope. See `.claude/agents/00-alex/gamma.md` Dispatch Method for the full reference pattern.
 
 ### 1. Dispatch builder(s)
 
@@ -26,7 +26,7 @@ node scripts/dispatch-claude.js <build-role> <prompt-file> --model sonnet -w
 claude -p --model sonnet --agent <agent-name> "prompt"
 ```
 
-Available agents: `builder`, `reviewer`, `compliance`, `qa`, `redteam`, `fixer` (all under `.claude/agents/01-adhoc/`). Note: `learner` is oneshot-only — adhoc has no learner in the gauntlet (the learner runs cross-cycle pattern analysis, which only oneshot has cycles for).
+Available agents (ADR-0007 roster, under `.claude/agents/engineering/` + `product/quality/`): `frontend-builder`/`backend-builder`/`security-builder`, the pod reviewers `frontend-reviewer`/`backend-reviewer`, `qa-reviewer` (absorbs the legacy qa+compliance+req-reviewer), `security-reviewer` (replaces redteam), and the pod fixers `frontend-fixer`/`backend-fixer`/`security-fixer`. Note: `learner` is oneshot-only — adhoc has no learner in the gauntlet (the learner runs cross-cycle pattern analysis, which only oneshot has cycles for).
 
 - One builder per feature. Sequential dispatches (CLI is blocking).
 - Pass the feature spec (PRD + stories) and the adhoc prompt template.
@@ -54,22 +54,23 @@ ship-ready. Full detail: `.claude/agents/00-alex/gamma.md` → "Integration phas
 
 ### 2. Run gauntlet
 
-After builder completes, dispatch each reviewer via CLI:
-- **Reviewer** — 7-check protocol (structural, grounding, coverage, negative, open-loop, design-compliance, code-quality)
-- **Compliance** — spec adherence + process integrity
-- **QA** — 7 failure-mode personas
-- **Redteam** — OWASP Top 10 + adversarial patterns + security-sensitive code review
-- **req-reviewer** _(Phase 3E, 2026-04-30)_ — requirements drift: behavior↔requirement↔code↔test traceability + shared-contract propagation + risk-class agreement against ChangePlan. Skipped only if `_requirements/_index/requirements.graph.json` is missing (older installs).
+After the builder(s) complete, derive the review roster from the registry
+(`org-roles.expectedGauntletRoles(pods)` — pod code-reviewers for the pods that
+built + qa-reviewer + security-reviewer; NEVER a hardcoded role list) and dispatch
+each reviewer via CLI:
+- **frontend-reviewer / backend-reviewer** — code-quality only (Check-7 7A-7G + holdout-fixture). One per pod that built; a FE-only feature runs only frontend-reviewer.
+- **qa-reviewer** — ABSORBS the legacy qa + compliance + req-reviewer scopes: the 13 functional QA personas + integrity (COPY.md exact-match, hallucinated-dep) + traceability (behavior↔req↔code↔test, contract-propagation, risk-class agreement). Skipped only if `_requirements/_index/requirements.graph.json` is missing (older installs) drops the traceability lane.
+- **security-reviewer** — REPLACES redteam: OWASP Top 10 + adversarial patterns + attack-chain correlator + prompt-injection prober (gemini corpus-diverse + the internal 2nd-GPT pass).
 
-Dispatch sequentially (CLI `-p` is blocking). Collect ALL five results before proceeding. If `req-reviewer` returns `fail` with severity `error` finding category `risk_class_disagreement` or `contract_propagation_missed`, treat as a blocking finding regardless of the other four reviewers' verdicts.
+Dispatch sequentially (CLI `-p` is blocking). Collect ALL results before proceeding. If `qa-reviewer` returns `fail` with severity `error` finding category `risk_class_disagreement` or `contract_propagation_missed`, treat as a blocking finding regardless of the other reviewers' verdicts (the absorbed req-reviewer BLOCKING rule).
 
 ### 3. Fix cycle (if needed)
 
 If any gauntlet reviewer reports failures:
 1. Merge all findings into a single fix brief
-2. Dispatch fixer via the bounded wrapper (fixer is build-chain): `node scripts/dispatch-claude.js fixer <fix-brief-file> --model sonnet -w`
+2. Dispatch the pod fixer via the bounded wrapper (fixers are build-chain): `node scripts/dispatch-claude.js <pod>-fixer <fix-brief-file> --model sonnet -w` (e.g. `frontend-fixer`/`backend-fixer`/`security-fixer` — match the pod whose reviewer failed)
 3. Max 3 fix attempts per feature
-4. After each fix: targeted re-review (only re-check what failed)
+4. After each fix: targeted re-review (only re-check what failed — the same pod reviewer RE-RUNS)
 
 ### 4. Report
 
@@ -85,12 +86,12 @@ GAMMA_RESULT:
     - name: "<feature>"
       reason: "<why>"
       fix_attempts: <N>
-  gate_checks:
+  gate_checks:                                 # ADR-0007 roster (one key per dispatched reviewer)
     - feature: "<name>"
-      reviewer: "pass" | "fail"
-      compliance: "pass" | "fail" | "skipped"
-      redteam: "pass" | "fail"
-      qa: "pass" | "fail"
+      frontend_reviewer: "pass" | "fail" | "skipped"   # skipped when no FE pod built
+      backend_reviewer: "pass" | "fail" | "skipped"    # skipped when no BE pod built
+      qa_reviewer: "pass" | "fail"             # absorbs qa/compliance/req-reviewer
+      security_reviewer: "pass" | "fail"       # replaces redteam
   human_report:
     verdict: "<pass/fail/halted in one sentence>"
     what_changed: ["<material change>"]
