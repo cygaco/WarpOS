@@ -137,6 +137,8 @@ Today the on-disk system has **two spec files per build role** (`01-adhoc/` + `0
 3. **Routing source of truth = the Dispatch Console** (`catalog.js` + `providers.js`): role → provider → model → effort. Claude roles dispatch via `claude -p --agent <role>` (in-process); openai/gemini via `dispatch-agent.js` (which *refuses* Claude roles by design).
 4. **The collapse only breaks dispatch if the reference sweep is incomplete** — a role-list or routing table still pointing to a removed/renamed role (`redteam`, generic `builder`, `qa`) or an old mode-path. That is exactly what **`scan:role-parity`** (every routed role ↔ exactly one spec; no orphans) + **`scan:dispatch-routing-parity`** (routing tables agree across `providers.js`/`catalog.js`/the guide) catch — both build-gates. **So dispatch gets *cleaner*, not more broken: one name → one spec, with the parity scans as the tripwire.**
 
+**`.system` dispatch-rule debt (found 2026-06-04 — why rules "always get skipped").** `agent-dispatch-guide.md` is **(a) duplicated + drifted** — `.claude/agents/.system/guides/` (243 lines) vs `.claude/project/reference/` (172 lines), diverged; **(b) stale** — written for the old 7-role model (`builder·fixer·reviewer·compliance·qa·redteam·learner`); **(c) mostly prose-not-enforced** — only raw-CLI-bypass (`dispatch-route-guard`), routing parity (`scan:dispatch-routing-parity`), gauntlet completion (`gauntlet-verify`), and cross-provider presence (`provider-trace`) are enforced; the rest (Agent-tool-forbidden, read-`wc -c`-first, 2nd-GPT-pass, headless gotchas) are prose that gets skipped — the "contract claimed but never enforced" pattern. **Build fix:** dedupe to ONE guide under `_system/`; update to the new roster; **pair every rule with a named enforcer or `/enforcement:log` the debt**; **wire it into the dispatcher specs via the `<!-- … -->` anchor** (the `_knowledge:integrate` mechanism) so it's *loaded*, not just *referenced*.
+
 ---
 
 ## 3. Diff analysis — current → target (absorbable vs scrap)
@@ -256,3 +258,41 @@ Source of truth = the **Dispatch Console** (`catalog.js` + `providers.js`); enfo
 3. Execute the diff in §3 (rename/rehome/scrap/new), one reviewable chunk at a time; foreground (no background builder dispatch — RI-004).
 4. Sweep ALL references (§3 blast-radius) — grep the OLD literal everywhere, not just specs.
 5. Regen both manifests; run the §4 checklist end-to-end; converge (re-run, don't single-pass).
+
+---
+
+## 6. What the rewrite BREAKS — blast radius + what-not-to-lose (2026-06-04 deep audit of `agents/`)
+
+Six parallel readers audited the whole tree. Breaks, by severity:
+
+### TIER 1 — Silent false-greens (break WITHOUT erroring — most dangerous)
+- **`gauntlet-verify.js --roles reviewer,compliance,qa,redteam` is hardcoded in BOTH `gamma.md` and `delta.md`.** Rename roles without updating the script + both orchestrators and the #1 review enforcer silently accepts a REDUCED/empty gauntlet as PASS. Highest single risk. → update `gauntlet-verify.js` + both callers atomically; `scan:role-parity` gates it.
+- **Provider maps** (`providers.js DEFAULT_AGENT_PROVIDERS`, `catalog.js`, `state.js FLAGSHIP/MINI/GEMINI_ROLES`) key by role NAME. Rename → the cognitive-diversity triangle (builder=Claude · reviewer=GPT · redteam=Gemini) silently collapses to single-provider self-review. → carry provider assignments to the new names; `scan:dispatch-routing-parity` gates it.
+- **β is ALREADY emitting canned verdicts** (P-043): ~1,386 sprint β-consults collapse to 3 byte-identical strings; "focus only on auth scope" leaks into every sprint. β looks active but produces zero discriminating judgment. → distrust ALL prior β-gated sprint metrics; rewrite β needs real per-consult reasoning + an UNREASONED/abstain honesty rule; make `/scan:sprint-beta-honesty` a release gate.
+
+### TIER 2 — Hard breaks on first step (loud, total)
+- **`gamma.md`/`delta.md` read `01-adhoc/`/`02-oneshot/` literal paths on EVERY invocation (startup).** Collapse the tree before updating startup reads → γ/δ fail on step 1.
+- **`store.json` has TWO inconsistent paths** (`.claude/agents/store.json` vs `…/02-oneshot/.system/store.json`). Pick ONE + register in `paths.json` BEFORE the collapse or every `delta-*.js` breaks at once.
+- **GAMMA_RESULT / DELTA_RESULT `gate_checks` field names** ARE the literal role names (compliance/redteam/qa/learner). Rename → orchestrators can't parse their own result envelopes.
+- **`decision-policy.md` names "Director of QA"; β reads it EVERY invocation.** β cites a dead role until updated — must land in the SAME commit as the rename.
+
+### TIER 3 — Unique logic LOST if folded naively (preserve verbatim with the renamed role)
+- **reviewer:** holdout-fixture evaluation (step-expectations + golden.json the builder never sees — the #1 anti-hallucination gate) · Check-7 (7A–7G code-quality) · CWD/branch pre-check.
+- **req-reviewer:** the 6 traceability checks (behavior↔req↔code↔test · contract-propagation · **risk-class agreement** · drift hygiene) · `not_applicable`-not-false-pass on greenfield · the BLOCKING rule (risk_class_disagreement / contract_propagation_missed override the panel).
+- **compliance:** COPY.md exact-match · `hallucinated_dep` detection · 5 violation types · cross-provider stance.
+- **qa:** 13 personas (scan 1–7 + analyze 8–13) + heavy analyze fields (flow_traces/data_flows/state_diffs/…) + the **internal Agent-tool parallel dispatch** → the Quality Lead frontmatter MUST include `tools: Agent`.
+- **redteam:** scan-mode is **ALL deterministic (NO LLM reasoning)** — a security guarantee that must not erode · the **attack-chain-correlator** (3 MEDIUMs → CRITICAL) · prompt-injection-prober · **Gemini** provider · the **2nd GPT pass**.
+- **δ-mode machinery** (survive as δ context, not lost in the collapse): `store.json` state machine · points/XP/ranks · snapshots · heartbeat · bugDataset · the **learner/Auditor between-cycle loop** (3-rule+1-spec/cycle · ADR drops · compound-signal · rule-pruning · incremental decomposition) · the **arbitration ship-gate** (emit/resolver) · resume-from-store · worktree smoke-test.
+- **design-quality W1 gate** is wired into `gamma.md` (Lane-2 advisory) — trivial to drop in a clean rewrite, NO hook detects its absence; re-wire explicitly.
+
+### TIER 4 — Gaps the rewrite must CLOSE (never built — building, not migrating)
+- **"Dispatcher can't override a FAIL" is UNENFORCED in adhoc.** Oneshot has it (arbitration resolver, fail-closed); adhoc is prose-only — γ can ignore a Reviewer FAIL. Add an adhoc post-gauntlet gate (read gate_checks → non-zero on FAIL before merge/advance).
+- **The entire manager/judgment layer is UN-ROUTED.** All 10 managers spec-only: `agent: null` in org-map never flipped · NO skill invokes `subagent_type:<manager>` · `manager-consult` telemetry doesn't exist · named enforcers (chief-coherence, pl-build-spec, resonance-runner) are "design, not built." Treat every manager-routing claim as greenfield.
+- **β honesty + the AskUserQuestion loop** (88% gate-blocked) need structural fixes, not docs.
+
+### TIER 5 — Strays / cleanups (in-scope for "no strays")
+- **Two drifted `agent-dispatch-guide.md`:** `.system/guides/` (243L) is STALE (predates RI-004); `.claude/project/reference/` (172L) is the LIVE enforced one. Kill the stale copy.
+- **`.system.md` (1433L) + oneshot `.system/{ENV-SETUP,LAUNCH-CHECKLIST,integration-map}.md` are Jobzooka-PRODUCT content** (SessionData, Bright Data, rockets.ts, steps 1–10, BRIGHTDATA/STRIPE keys) baked into the FRAMEWORK tree → strip to framework-only; relocate product content.
+- Generic `builder` "retired" but still on disk + dispatchable (ghost). `learner`/Auditor name inconsistency (file=learner · body=Auditor · traces=auditor) — pick one. design-quality vs visual-review scope overlap (no dedup). design-quality is a named cross-cut authority with NO manager spec. β's judgement-model has EMPTY Principles/Communication/Corrections sections. **Write ADR-0007** (covers the mode-agnostic collapse + managers-singleton/workers-fan-out — no ADR exists).
+
+**Net:** the rewrite is safe ONLY if (a) role renames are ATOMIC across the ~6 routing/role-list files + `gauntlet-verify.js` + the RESULT schemas, gated by `scan:role-parity` + `scan:dispatch-routing-parity`; (b) mode-paths + the store path migrate BEFORE the tree collapses; (c) every TIER-3 behavior travels with its renamed role; (d) the TIER-4 gaps are BUILT (not assumed); (e) product content is stripped from the framework spec.
