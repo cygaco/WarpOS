@@ -239,7 +239,7 @@ Walk this before declaring the build done. Each line is a concrete assertion.
 **G. Cross-doc consistency**
 - [ ] `AGENT-STRUCTURE.md` ↔ `DUMP.md` ↔ this plan ↔ `org-map.json` ↔ `org-roles.js` ↔ `catalog.js` ↔ dispatch guide all agree.
 - [ ] Both manifests regenned (framework-manifest → installed) after edits.
-- [ ] `scan:role-parity`, `scan:dispatch-routing-parity`, `scan:references`, `scan:install` all green.
+- [ ] **`/scan:full` GREEN** — the **cutover gate** (umbrella over `scan:role-parity` · `scan:dispatch-routing-parity` · `scan:references` · `scan:install` · `scan:framework-views-fresh` · all `/scan:*`). Maps regenerated (`/maps:all --regenerate`).
 
 ---
 
@@ -259,7 +259,7 @@ Source of truth = the **Dispatch Console** (`catalog.js` + `providers.js`); enfo
 2. ✅ **All flagged decisions RESOLVED:** req-reviewer + compliance → QA Reviewer scopes (Quality Lead) · pod Reviewers = code-quality only · `fixer` → **per-pod FE/BE/Security Fixers** (keep fix-one-brief discipline; re-review after each fix) · generic `builder` **scrapped** · workers **mode-agnostic** (orchestration differs, not the worker).
 3. Execute the diff in §3 (rename/rehome/scrap/new), one reviewable chunk at a time; foreground (no background builder dispatch — RI-004).
 4. Sweep ALL references (§3 blast-radius) — grep the OLD literal everywhere, not just specs.
-5. Regen both manifests; run the §4 checklist end-to-end; converge (re-run, don't single-pass).
+5. Regen both manifests + **regen every map** (`/maps:all --regenerate` — they're pre-rewrite, they catalog the OLD roles/hooks); run **`/scan:full`** (the full verification suite — health · broken-refs · coverage · `scan:role-parity` · `scan:dispatch-routing-parity` · `scan:references` · `scan:install` · `scan:framework-views-fresh`) + the §4 checklist end-to-end. **`/scan:full` must be GREEN before cutover** — the old tree is deleted ONLY when green. Converge — re-run, don't single-pass (a fix can open a new hole).
 
 ---
 
