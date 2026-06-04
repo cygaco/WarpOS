@@ -296,3 +296,17 @@ Six parallel readers audited the whole tree. Breaks, by severity:
 - Generic `builder` "retired" but still on disk + dispatchable (ghost). `learner`/Auditor name inconsistency (file=learner · body=Auditor · traces=auditor) — pick one. design-quality vs visual-review scope overlap (no dedup). design-quality is a named cross-cut authority with NO manager spec. β's judgement-model has EMPTY Principles/Communication/Corrections sections. **Write ADR-0007** (covers the mode-agnostic collapse + managers-singleton/workers-fan-out — no ADR exists).
 
 **Net:** the rewrite is safe ONLY if (a) role renames are ATOMIC across the ~6 routing/role-list files + `gauntlet-verify.js` + the RESULT schemas, gated by `scan:role-parity` + `scan:dispatch-routing-parity`; (b) mode-paths + the store path migrate BEFORE the tree collapses; (c) every TIER-3 behavior travels with its renamed role; (d) the TIER-4 gaps are BUILT (not assumed); (e) product content is stripped from the framework spec.
+
+**Blast-radius coverage (honest — NOT yet complete):** §6 covers the **agent specs + core routing/role-list files** (from the 2026-06-04 `agents/` deep audit). A full crawl of **HOOKS + every `/scan:*` + every skill + scripts** that reference the changing roles/paths is **still owed** and will EXTEND this list — run `/maps:all` + `/scan:full` + a manual hook/script crawl before the build. *(Operator-flagged 2026-06-04: "hooks are wired into everything.")*
+
+---
+
+## 7. Recommended build strategy (how to execute §3–§6 cleanly)
+
+**Thesis: one source of truth + nothing ships without an enforcer.**
+
+1. **Rebuild the declarative layer clean; keep + rewire the enforcers.** The tree is too tangled to patch in place (duplication · product content in the framework spec · un-routed managers · prose rules). Build the new department tree FRESH from the target spec; KEEP + re-point the imperative layer (`gauntlet-verify`, `dispatch-route-guard`, parity scans, dispatch wrappers). Rebuild specs; preserve the safety net.
+2. **Keystone — ONE role registry everything reads from.** Extend `org-map.json` into the single source: per role → name · home · provider/model · dispatch scope · enforcer. Make `gauntlet-verify`, `providers.js`, `catalog.js`, `state.js`, `team-guard`, `dispatch-route-guard`, and the RESULT schemas READ from it. Then renames are one edit, parity scans verify registry↔specs↔routing, and the Tier-1 silent-false-greens become structurally impossible.
+3. **Completeness bar:** every rule names a hook/scan/test that fails on violation — or `/enforcement:log` the debt. Build the Tier-4 gaps (route the manager layer + `manager-consult` telemetry; β real-verdicts + UNREASONED/abstain honesty rule; adhoc dispatcher-can't-override-FAIL gate). "Complete" = no rule can be silently skipped.
+4. **Sequence (risk-minimizing):** (a) foundation FOREGROUND — ADR-0007 + the role registry + rewire enforcers + migrate store/paths (kills Tier-1 at the root); (b) strip product content from the framework spec; (c) build the new tree, porting Tier-3 behaviors verbatim, cut over BEHIND the parity gates, delete old only when green; (d) close Tier-4 gaps; (e) sweep refs + every-inch checklist + clean-room consumer sim (ADR-0006); converge — re-run, don't single-pass.
+5. **Bootstrap:** build the enforcement spine (registry + parity gates) FOREGROUND first, get it green, THEN dispatch the bulk through the now-reliable chain. Never background the builder during it (RI-004).
