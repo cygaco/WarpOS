@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "0.13.1",
-  "installedCommit": "41c7a8db7b0678db78af03ba898f2555579db983",
-  "installedAt": "2026-06-04T18:23:13.479Z",
+  "installedCommit": "1ddf2ec6394c6026a68f5f0657be4fdb039f3a2e",
+  "installedAt": "2026-06-04T18:35:01.971Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -1194,8 +1194,8 @@
       "dest": ".claude/commands/bootstrap/spinup.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "3557b42b356519477cf2fea374928f90b0777778b639cffb359e342feeabd1f5",
-      "currentHashAtInstall": "3557b42b356519477cf2fea374928f90b0777778b639cffb359e342feeabd1f5",
+      "installedHash": "f7888a895edf32baae3cfbf3782b3525806c8420c4e0c693069cb73d0a7b92db",
+      "currentHashAtInstall": "f7888a895edf32baae3cfbf3782b3525806c8420c4e0c693069cb73d0a7b92db",
       "introducedIn": "0.0.0"
     },
     {
@@ -7334,8 +7334,8 @@
       "dest": "scripts/bootstrap/phases/canon.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "00329d62ce30c49dc6f4d0e5c9b6339ea07da1837a196067fec09776fe0eed14",
-      "currentHashAtInstall": "00329d62ce30c49dc6f4d0e5c9b6339ea07da1837a196067fec09776fe0eed14",
+      "installedHash": "c5d5eb02d9e6cdf5d8464b6fbbb3ee705c3293661209d97fa2345e51f26111e3",
+      "currentHashAtInstall": "c5d5eb02d9e6cdf5d8464b6fbbb3ee705c3293661209d97fa2345e51f26111e3",
       "introducedIn": "0.0.0"
     },
     {
@@ -7384,8 +7384,8 @@
       "dest": "scripts/bootstrap/spinup-orchestrate.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "7023cc82835c1a63d8c2a79014e60f7606a954b82e841f5310c6a29b336729cb",
-      "currentHashAtInstall": "7023cc82835c1a63d8c2a79014e60f7606a954b82e841f5310c6a29b336729cb",
+      "installedHash": "f0032c24e1815d85d5af18b1497ccb11e62dee6da9abcc47bc762b8b2eaac6f4",
+      "currentHashAtInstall": "f0032c24e1815d85d5af18b1497ccb11e62dee6da9abcc47bc762b8b2eaac6f4",
       "introducedIn": "0.0.0"
     },
     {
@@ -7394,8 +7394,8 @@
       "dest": "scripts/bootstrap/test-spinup-orchestrate.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "6e673fc336ed92cbad580e7f5b4f7bc9414d335898c586017b803f40ecd9d0c0",
-      "currentHashAtInstall": "6e673fc336ed92cbad580e7f5b4f7bc9414d335898c586017b803f40ecd9d0c0",
+      "installedHash": "c777fa72ffbf993f6c1722971e5f21384c671789d547ef4719dc4c1132ba3765",
+      "currentHashAtInstall": "c777fa72ffbf993f6c1722971e5f21384c671789d547ef4719dc4c1132ba3765",
       "introducedIn": "0.0.0"
     },
     {
