@@ -17,7 +17,7 @@
 | δ | δ | Delivering — oneshot build (skeleton runs) | [delta.md](.claude/agents/00-alex/delta.md) |
 | ε | ε | Delivering — sprint (lifecycle) · design-locked, not built | _(not built)_ |
 
-The **departments** (Product, Engineering, Marketing — QA under Product) report to Alex; they are not Alex. Full org: [AGENT-STRUCTURE.md](AGENT-STRUCTURE.md).
+The **departments** (Product, Engineering, Growth — Quality under Product) report to Alex; they are not Alex. Full org: [AGENT-STRUCTURE.md](AGENT-STRUCTURE.md).
 
 ## Build Agents
 
