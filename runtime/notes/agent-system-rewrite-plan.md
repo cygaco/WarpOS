@@ -15,19 +15,19 @@
                                        │
         ┌──────────────────────────────┼──────────────────────────────┐
    ζ DIRECTOR OF             η DIRECTOR OF                   ι DIRECTOR OF
-      PRODUCT                  ENGINEERING                     MARKETING
-   ├ κ Product Lead         ├ Frontend Lead → FE Builder    ├ ξ Growth Lead
-   ├ μ Design Lead          │                 + FE Reviewer ├ ο Conversion Lead
-   └ θ Quality Lead         ├ Backend Lead  → BE Builder    └ ν Copy Lead
-       dispatches:          │                 + BE Reviewer
+      PRODUCT                  ENGINEERING                     GROWTH
+   ├ κ Product Lead         ├ Frontend Lead → FE Builder    ├ λ Research Lead
+   ├ μ Design Lead          │                 + FE Reviewer ├ ν Copy Lead
+   └ θ Quality Lead         ├ Backend Lead  → BE Builder    ├ ο Conversion Lead
+       dispatches:          │                 + BE Reviewer └ ξ Growth Lead
        QA Reviewers ·       └ Security Lead → Security Builder
        design-quality ·                       + Security Reviewer(s)
        visual-review · test-runner
                          every Reviewer verdict is BINDING — the Lead/Director
                          cannot override a FAIL; roster is registry-fixed.
 
-   ══ SHARED KNOWLEDGE (λ steward) — everyone contributes & draws ════════════
-   audience truth · brand voice & copy · design principles · live state-of-record
+   ══ SHARED `_knowledge/` (DATA, not an org box) — fed by the leads, drawn by all ════
+   audience (Research Lead) · copy (Copy Lead) · design (Design Lead) · state (per sprint)
 ```
 
 **Faces of Alex** (one identity, mode-selected — NOT separate org titles): α run · β check · γ adhoc-deliver · δ oneshot-deliver · ε sprint-deliver *(ε design-locked, not built)*. `"Alex"` is the hidden true-name; the Greek letter is the call-sign.
@@ -42,6 +42,8 @@
 **Cross-provider diversity** stays a *dispatch property* of the Reviewer (≥1 reviewer on a different provider), not a separate agent type.
 
 **Agents are mode-agnostic (workers don't fork by mode).** Builders, Reviewers, Fixers, Leads, Directors have **one spec each** and behave identically in adhoc / oneshot / sprint. What changes per mode is the **orchestration**, never the worker: (1) the conducting face (γ adhoc · δ oneshot · ε sprint); (2) the lifecycle/cadence (single feature · full skeleton + cycles + learner · the 6-step sprint); (3) the **composition** — which agents/scopes are engaged, decided by the manager-set router by unit-type/risk; (4) the autonomy posture (oneshot solo; adhoc + sprint have human/α/β). A worker takes input → does its scoped job → returns a result; **IO + escalation routing is the orchestrator's job, not a fork in the worker.** The three faces **wrap one shared toolkit, never forked** (δ's full lifecycle is ε's precedent). *This mode-agnosticism is exactly what lets the `01-adhoc/`+`02-oneshot/` duplication collapse into one tree.*
+
+**Multiplicity — workers fan out, managers are singletons.** The **worker tier** (Builders · Reviewers · Fixers — incl. QA Reviewers and Security Reviewers) is **multi-instance**: a Lead can dispatch *several at once* on independent work — 3 FE Builders on 3 components, 2 Security Reviewers on different lenses — each in its **own isolated worktree**, each rendering its **own binding verdict**. The **manager tier** (Alex faces · Directors · Leads) is **single-instance** — exactly one of each, persistent — so authority, ownership, and verdict-binding stay unambiguous. A Lead **scales by fanning out workers, never by cloning itself**. (Pairs with parallel-builds-by-default.)
 
 ### Roster (target)
 
@@ -58,11 +60,11 @@
 | — | Frontend Lead | Engineering | FE Builder + FE Reviewer(s) + FE Fixer |
 | — | Backend Lead | Engineering | BE Builder + BE Reviewer(s) + BE Fixer |
 | — | Security Lead | Engineering | Security Builder + Security Reviewer(s) + Security Fixer |
-| ι | Director of Marketing | Marketing | — |
-| ξ | Growth Lead | Marketing | — |
-| ο | Conversion Lead | Marketing | — |
-| ν | Copy Lead | Marketing | — |
-| λ | Research/Insight Lead | Knowledge | — (stewards the shared knowledge) |
+| ι | Director of Growth | Growth | — |
+| λ | Research Lead | Growth | — (audience research → `_knowledge/audience`, shared) |
+| ν | Copy Lead | Growth | — |
+| ο | Conversion Lead | Growth | — |
+| ξ | Growth Lead | Growth | — |
 
 *(Greek letters are display call-signs; the canonical α→ρ tier-ordered re-lettering is finalized during the build, not load-bearing here.)*
 
@@ -78,7 +80,7 @@ The *same* voice feeds marketing copy AND in-app `COPY.md` → product and ads s
 ### Knowledge integration (how `_knowledge/` reaches the agents)
 
 The knowledge is **wired into the agents that consume it** — the proven guide-anchor mechanism, generalized from `_guides/` to `_knowledge/`:
-- **Source / where it comes from:** `_knowledge/copy` is populated from (a) ingested copy **methodology** (argument-not-copy · hooks-are-90 · voice), (b) the **Research/Insight Lead's** audience work (`_knowledge/audience` → the customer's real language), (c) the product **canon** (JTBD/vision/promise → the claims boundary).
+- **Source / where it comes from:** `_knowledge/copy` is populated from (a) ingested copy **methodology** (argument-not-copy · hooks-are-90 · voice), (b) the **Research Lead's** audience work (`_knowledge/audience` → the customer's real language), (c) the product **canon** (JTBD/vision/promise → the claims boundary).
 - **Wiring:** each consuming agent spec (Copy Lead, Design Lead, Conversion/Growth) carries an anchor (`<!-- COPY-KNOWLEDGE -->`); an integrate step (the `/guides:integrate` pattern → a `_knowledge:integrate` analog) wires the relevant knowledge into that anchor — idempotent, recorded in an integration ledger — so the agent runs *with* the copy system in its context.
 - **Enforcement:** a coverage scan (the `/guides:coverage` analog) asserts every knowledge file is wired into its consumers and no anchor is stale → no orphan knowledge, no silent drift.
 - **Built vs designed:** the machinery EXISTS for `_guides/` (`/guides:integrate` + `/guides:coverage` + the anchor contract + `guide-integration.jsonl`). `_knowledge/` generalizes it to wire into **agents** (not the user-facing bootstrap pipeline) — that generalization is the **M1** build.
@@ -91,7 +93,7 @@ The knowledge is **wired into the agents that consume it** — the proven guide-
 
 ```
 .claude/agents/
-  alex/                         # the President's faces (was 00-alex/)
+  president/                    # Alex's faces — the President (was 00-alex/)
     alpha.md  beta.md  gamma.md  delta.md  epsilon.md(NEW)
     .system/                    # policy, lexicon, beta judgment, ADRs (moved as-is)
   product/
@@ -111,13 +113,14 @@ The knowledge is **wired into the agents that consume it** — the proven guide-
     frontend/   frontend-lead.md  builder.md  reviewer.md  fixer.md
     backend/    backend-lead.md   builder.md  reviewer.md  fixer.md
     security/   security-lead.md  builder.md(NEW)  reviewer.md  fixer.md   # reviewer was redteam
-  marketing/
-    director-of-marketing.md
-    growth-lead.md
-    conversion-lead.md          # was web-conversion-designer.md
+  growth/                       # was marketing/ — research + message + conversion + paid
+    director-of-growth.md       # was director-of-marketing.md
+    research-lead.md            # was research-insight-lead.md (moved out of knowledge/)
     copy-lead.md
-  knowledge/
-    research-insight-lead.md    # steward; the STORES live in _knowledge/ (audience/copy/design/state)
+    conversion-lead.md          # was web-conversion-designer.md
+    growth-lead.md
+  # no knowledge/ agent folder — the _knowledge/ STORES are shared DATA, fed by the leads:
+  #   audience←Research Lead · copy←Copy Lead · design←Design Lead · state←per sprint
   _system/                      # cross-cut infra, mode-agnostic
     learner.md
     stub-scaffold.md
@@ -143,7 +146,7 @@ The knowledge is **wired into the agents that consume it** — the proven guide-
 | `product-lead` | KEEP | κ | — |
 | `product-designer` | **RENAME** | μ Design Lead | owns UI/UX authoring + mockups |
 | `director-of-qa` | **RENAME + REHOME** | θ Quality Lead (under Product) | broaden: functional **+** experience; dispatches QA Reviewers |
-| `research-insight-lead` | KEEP + **REHOME** | λ (Knowledge layer) | stewards shared audience knowledge; feeds all depts |
+| `research-insight-lead` | **RENAME + REHOME** | λ Research Lead (under Director of Growth) | audience research → `_knowledge/audience` (shared, drawn by all) |
 | `director-of-engineering` | KEEP | η | orchestrates pods |
 | `frontend-builder` | **RENAME + REHOME** | engineering/frontend/builder | under Frontend Lead |
 | `backend-builder` | **RENAME + REHOME** | engineering/backend/builder | under Backend Lead |
@@ -162,10 +165,10 @@ The knowledge is **wired into the agents that consume it** — the proven guide-
 | `learner` | KEEP + **REHOME** | _system/ | cross-cycle learning (mode-agnostic) |
 | `stub-scaffold` | KEEP + **REHOME** | _system/ | skeleton stub regen (build infra) |
 | `_build-core` | KEEP + **REHOME** | engineering/_build-core | shared builder discipline |
-| `director-of-marketing` | KEEP | ι | — |
-| `growth-lead` | KEEP | ξ | — |
-| `copy-lead` | **KEEP** | ν | **stays** (operator-reverted); also seed `_knowledge/copy` |
-| `web-conversion-designer` | **RENAME** | ο Conversion Lead | owns conversion copy + page |
+| `director-of-marketing` | **RENAME** | ι Director of Growth | dept Marketing → **Growth** (research + message + conversion + paid) |
+| `growth-lead` | KEEP | ξ (under Growth) | — |
+| `copy-lead` | **KEEP** | ν (under Growth) | **stays** (operator-reverted); also seeds `_knowledge/copy` |
+| `web-conversion-designer` | **RENAME** | ο Conversion Lead (under Growth) | owns conversion copy + page |
 | `01-adhoc/` ↔ `02-oneshot/` duplication | **COLLAPSE** | one department-based set | faces dispatch per mode; no per-mode role copies |
 
 **Reference blast-radius to sweep (no-stray rule extends to references, not just specs):**
@@ -225,6 +228,17 @@ Walk this before declaring the build done. Each line is a concrete assertion.
 - [ ] `AGENT-STRUCTURE.md` ↔ `DUMP.md` ↔ this plan ↔ `org-map.json` ↔ `org-roles.js` ↔ `catalog.js` ↔ dispatch guide all agree.
 - [ ] Both manifests regenned (framework-manifest → installed) after edits.
 - [ ] `scan:role-parity`, `scan:dispatch-routing-parity`, `scan:references`, `scan:install` all green.
+
+---
+
+## 4.5 Open decision — model routing (decide at build)
+
+**Which model / provider / effort does each role use?** The new roster (Alex faces · the Leads · per-pod Builder/Reviewer/Fixer · QA Reviewer scopes · Security Reviewer · directors · ε) needs an explicit **role→model map**. Today: α/γ on Claude Opus, β on Sonnet; `state.js` pins reviewer/compliance/learner→OpenAI-flagship, qa→OpenAI-mini, redteam→Gemini. The rewrite must redefine this for the new roles while preserving:
+- **Cross-provider diversity** — ≥1 reviewer on a different provider than the builder (no shared blind spots).
+- **The 2nd-GPT security pass** — Security runs twice (Gemini corpus-diverse + OpenAI jailbreak-tuned).
+- **Model-by-risk/capability** — heavier model + effort for high-risk / money / data units; cheaper for low-risk.
+
+Source of truth = the **Dispatch Console** (`catalog.js` + `providers.js`); enforced by `scan:dispatch-routing-parity`. This is the **one open decision added post-design** — settle it before/at the build.
 
 ---
 
