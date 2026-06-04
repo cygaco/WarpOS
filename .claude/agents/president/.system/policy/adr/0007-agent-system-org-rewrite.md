@@ -13,7 +13,7 @@ Rewrite the WarpOS agent system from four mode-coupled folders (`00-alex/`, `01-
 - **Alex = the President**; α/β/γ/δ/ε are his mode-selected **faces** (α run · β check · γ adhoc-deliver · δ oneshot-deliver · ε sprint-deliver), not separate org titles. `"Alex"` is the hidden true-name.
 - Three **departments** report to the President: **Product** (ζ Director · κ Product Lead · μ Design Lead · θ Quality Lead), **Engineering** (η Director · Frontend/Backend/Security Leads → each dispatches Builder + Reviewer + Fixer), **Growth** (ι Director · λ Research · ν Copy · ο Conversion · ξ Marketing Leads). Shared `_knowledge/` is DATA fed by the leads.
 - **Dispatched-reviewer model:** no monolithic `qa`/`redteam` agents — a Lead dispatches Reviewers parameterized by scope (Security Lead → Security Reviewers; Quality Lead → QA Reviewers).
-- **Independence invariant (load-bearing):** no agent renders a verdict on work *it authored*; the Lead/dispatcher **cannot override a FAIL**; the reviewer roster is **registry-fixed**.
+- **Independence invariant (load-bearing):** no agent renders a verdict on work *it authored*; the Lead/dispatcher **cannot override a FAIL** (enforced by `scripts/checks/adhoc-fail-override.js` / `/scan:adhoc-fail-override` — it reads the GAMMA_RESULT verdict CONTENT and rejects a binding FAIL coexisting with a declared `status:pass`/`features_completed`, closing the verdict-value blind spot `gauntlet-verify.js`'s presence-only check leaves open); the reviewer roster is **registry-fixed**.
 - **Multiplicity:** the **manager tier** (faces · Directors · Leads) is **single-instance / persistent**; the **worker tier** (Builders · Reviewers · Fixers) **fans out** N-at-a-time, each in its own worktree, each rendering its own binding verdict.
 - **Mode-agnostic workers:** one spec per role; what changes per mode is the **orchestration** (the conducting face γ/δ/ε · the lifecycle · the composition · the autonomy posture), never the worker. This is what collapses the `01-adhoc/ ↔ 02-oneshot/` duplication.
 
@@ -24,7 +24,7 @@ Encode the operator-ruled **model-routing map** (§ below) into the registry.
 The live agent system grew mode-first and is now structurally unsafe to extend:
 
 - **Duplication:** two spec files per build role (`01-adhoc/` + `02-oneshot/`) — rename hazard, drift.
-- **Product content in the framework spec:** `.system.md` (1433L) + oneshot `.system/*` carry Jobzooka product content (SessionData, Bright Data, Stripe keys) baked into the framework tree.
+- **Product content in the framework spec:** `.system.md` (1433L) + oneshot `.system/*` carry a downstream product's content (session data, scraping + payment provider keys) baked into the framework tree.
 - **Un-routed managers:** all 10 managers are spec-only (`agent: null` in org-map never flipped; no skill invokes `subagent_type:<manager>`; named enforcers "design, not built"). The judgment layer is **un-ROUTED, not under-built**.
 - **Prose rules that get skipped:** the dispatch guide is duplicated + drifted + stale (old 7-role model), and most of its rules have no enforcer.
 - **Silent false-greens (TIER-1):** `gauntlet-verify.js --roles reviewer,compliance,qa,redteam` is hardcoded in both `gamma.md`/`delta.md`; provider maps key by role NAME across `providers.js`/`catalog.js`/`state.js`; `store-validator.js` enforces a `heartbeat.agent` role enum; `scope-contract-guard.js` hardcodes `req-reviewer` — every one breaks **silently** on a rename.
@@ -91,7 +91,7 @@ Preserved invariants (β-verified): cross-provider diversity (≥1 reviewer off 
 ## Re-ratify-at-build items (decided, pending build-time confirmation with η + β)
 
 1. **All-persistent residency.** Plan-of-record: managers are persistent singleton org members the sprint *assigns* (not re-spawns) at hook-points; the always-live in-process team is the thin α + β + ε spine. The earlier design was leaner (α + β + ε only persistent, managers ephemeral-by-composition). Build the reconciled form (persistent identity, materialized at hook-point; in-process for Claude managers, subprocess-consult for cross-provider ones like μ) and re-confirm.
-2. **DoE-as-orchestrator.** η dispatches the engineering pods (inherits γ's dispatch independence); the invariant is "no agent judges work it authored + dispatcher can't override the verdict," NOT "judges don't dispatch." Confirmed by RT-2026-06-02-doe-dispatch-independence. The residual to encode: the gauntlet roster + scope is **registry-fixed, not DoE-chosen**.
+2. **DoE-as-orchestrator.** η dispatches the engineering pods (inherits γ's dispatch independence); the invariant is "no agent judges work it authored + dispatcher can't override the verdict," NOT "judges don't dispatch." Confirmed by RT-2026-06-02-doe-dispatch-independence. The residual to encode: the gauntlet roster + scope is **registry-fixed, not DoE-chosen**. The "dispatcher can't override the verdict" half is now machine-enforced by `scripts/checks/adhoc-fail-override.js` (`/scan:adhoc-fail-override`) — a verdict-CONTENT check, distinct from `gauntlet-verify.js`'s record-presence check.
 
 ## Risks
 

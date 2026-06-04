@@ -93,6 +93,10 @@ const CATEGORY_FILES = {
   code: [path.join(EVENTS_DIR, "code.jsonl")],
   plan: [path.join(EVENTS_DIR, "plans.jsonl")],
   requirement_staged: [path.join(EVENTS_DIR, "requirements-staged.jsonl")],
+  // manager_consult — telemetry for a manager/named-authority gate firing on a
+  // unit (e.g. the design-quality gate). Fan-out file lets coverage enforcers
+  // (scan:sprint-manager-consult) read consults without scanning the full log.
+  manager_consult: [path.join(EVENTS_DIR, "manager-consult.jsonl")],
 };
 
 // Only add agent fan-out if workspace exists

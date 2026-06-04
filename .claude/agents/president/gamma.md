@@ -321,8 +321,15 @@ GAMMA_RESULT:
 
       ```bash
       node "$CLAUDE_PROJECT_DIR/scripts/checks/design-quality-gate.js" \
-        --lane2 advisory --judgment "$DQ_RESULT" --json
+        --lane2 advisory --judgment "$DQ_RESULT" \
+        --mode adhoc --unit "$FEATURE" --json
       ```
+
+      `--mode adhoc --unit "$FEATURE"` make the gate emit a `manager_consult`
+      telemetry event (manager: design-quality) for this unit — the consult record
+      `scan:sprint-manager-consult` audits (proves the design authority actually
+      ran on a UI unit, vs. being silently skipped). Enforced by
+      `scripts/checks/sprint-manager-consult.js`.
 
    - **Exit ≠ 0 ⇒ Lane 1 REJECT** (design-system violations, or the static lane
      could not run) — treat as a reviewer failure → fix-agent dispatch. Lane 1 is
@@ -349,6 +356,15 @@ GAMMA_RESULT:
 If either gate fails AND fix-agent retries are exhausted, set
 `status: "fail"` with `halt_reason: "test_or_visual_gate_failed"` and report
 to α.
+
+> **Independence invariant (ADR-0007): a dispatcher CANNOT override a binding FAIL.**
+> If ANY `gate_checks` reviewer is `"fail"` (or any per-role reviewer JSON carries an
+> inner FAIL / critical / high), you may NOT declare `status: "pass"` or list that
+> feature in `features_completed` — report it honestly as `fail`/`halted`. This is not
+> advisory: `scripts/checks/adhoc-fail-override.js` (`/scan:adhoc-fail-override`) reads
+> the GAMMA_RESULT **verdict content** (the blind spot `gauntlet-verify.js`'s
+> presence-only check leaves open) and REJECTS a result where a binding FAIL coexists
+> with a declared success.
 
 ## Restrictions
 

@@ -72,6 +72,14 @@ If any gauntlet reviewer reports failures:
 3. Max 3 fix attempts per feature
 4. After each fix: targeted re-review (only re-check what failed — the same pod reviewer RE-RUNS)
 
+> **Independence invariant (ADR-0007): the dispatcher CANNOT override a binding FAIL.**
+> If a reviewer's verdict is `fail` and fix attempts are exhausted, the run is reported
+> `status: "fail"`/`"halted"` and the feature is NOT placed in `features_completed` — a
+> dispatcher may never flip a binding FAIL to a declared success. Enforced by
+> `scripts/checks/adhoc-fail-override.js` (`/scan:adhoc-fail-override`), which reads the
+> GAMMA_RESULT verdict CONTENT and rejects a FAIL-coexists-with-success result (the
+> verdict-value blind spot `gauntlet-verify.js`'s record-presence check leaves open).
+
 ### 4. Report
 
 Return structured GAMMA_RESULT to caller:

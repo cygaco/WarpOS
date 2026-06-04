@@ -19,8 +19,8 @@
  *     literals, raw Tailwind theme colors, raw <button|input|select|textarea>
  *     outside ui/, untyped props, missing design-system docs). A non-zero exit (or a
  *     runner error) is a REJECT — the regex-catchable half.
- *   - LANE 2 JUDGMENT (the design-quality dispatch, `.claude/agents/02-oneshot/
- *     design-quality/design-quality.md`): a multimodal browser review producing a
+ *   - LANE 2 JUDGMENT (the design-quality dispatch, `.claude/agents/product/
+ *     quality/design-quality.md`): a multimodal browser review producing a
  *     DesignQualityResult JSON (`verdict: PASS|FAIL`, six axes, `requiresHuman`,
  *     `recommendation`). `verdict:"FAIL"` (any critical/high axis finding) is a REJECT
  *     — what only a vision model catches (buried CTA, mobile overflow, no accessible
@@ -49,9 +49,12 @@
  * without spawning a subprocess or a browser. Mirrors role-parity-scan.js.
  *
  *   node scripts/checks/design-quality-gate.js [--judgment <result.json>] \
- *        [--design-brief <brief.json>] [--json]
+ *        [--design-brief <brief.json>] [--lane2 block|advisory] \
+ *        [--mode adhoc|oneshot] [--unit <name>] [--json]
  *   (lane 1 runs design-system.js --strict as a child process; lane 2 is read from
- *    --judgment, the DesignQualityResult the orchestrator captured from the dispatch.)
+ *    --judgment, the DesignQualityResult the orchestrator captured from the dispatch.
+ *    --mode/--unit are telemetry only: every run emits a `manager_consult` event so
+ *    scan:sprint-manager-consult can prove the design authority was consulted.)
  */
 
 const fs = require("fs");
@@ -185,15 +188,35 @@ function runStaticLane() {
   };
 }
 
+/**
+ * Map an evaluate() result + its emits to a single coarse verdict label for
+ * manager_consult telemetry. APPROVE = both lanes cleared; REJECT = a binding
+ * lane failure; MISSING = the judgment lane never ran; INVESTIGATE = parked for
+ * human/α-β; otherwise the result class itself.
+ */
+function consultVerdict(out) {
+  if (out.result === "PASS") return "APPROVE";
+  if (out.result === "REJECT") return "REJECT";
+  // ARBITRATION — distinguish the missing-judgment park from an investigate park.
+  const reasons = (out.emits || []).map((e) => e.reason);
+  if (reasons.includes("missing-judgment")) return "MISSING";
+  if (reasons.includes("judgment-investigate")) return "INVESTIGATE";
+  return "ARBITRATION";
+}
+
 function main(argv) {
   const json = argv.includes("--json");
   let judgmentPath = null;
   let designBriefPath = null;
   let lane2Mode = "block";
+  let mode = "unknown"; // --mode adhoc|oneshot (telemetry only); default unknown
+  let unit = null; // --unit <name> (telemetry only); default null
   for (let i = 2; i < argv.length; i++) {
     if (argv[i] === "--judgment") judgmentPath = path.resolve(argv[++i]);
     else if (argv[i] === "--design-brief") designBriefPath = path.resolve(argv[++i]);
     else if (argv[i] === "--lane2") lane2Mode = String(argv[++i] || "block").toLowerCase();
+    else if (argv[i] === "--mode") mode = String(argv[++i] || "unknown").toLowerCase();
+    else if (argv[i] === "--unit") unit = argv[++i] || null;
   }
 
   let out, emitted;
@@ -204,12 +227,31 @@ function main(argv) {
     const designBrief = designBriefPath ? readJSON(designBriefPath) : null;
     out = evaluate({ staticLane, judgment, designBrief, lane2Mode });
 
+    // manager_consult telemetry — emit a typed event on EVERY run so the
+    // coverage enforcer (scan:sprint-manager-consult) can prove the design
+    // authority was actually consulted on a UI-touching unit. Best-effort:
+    // logging never blocks the gate verdict (mirrors logger.js fail-open).
+    try {
+      const { log } = require(path.join(ROOT, "scripts/hooks/lib/logger.js"));
+      const consultUnit = unit || (judgment && judgment.unit) || (designBrief && designBrief.id) || null;
+      log("manager_consult", {
+        manager: "design-quality",
+        mode,
+        unit: consultUnit,
+        verdict: consultVerdict(out),
+        lane2Mode,
+        ts: new Date().toISOString(),
+      });
+    } catch {
+      /* telemetry is best-effort — never crash the gate */
+    }
+
     emitted = [];
-    const unit = (judgment && judgment.unit) || (designBrief && designBrief.id) || "design-unit";
+    const emitUnit = (judgment && judgment.unit) || (designBrief && designBrief.id) || "design-unit";
     for (const e of out.emits) {
       emitted.push(
         emit({
-          unit,
+          unit: emitUnit,
           owner: OWNER,
           decision: e.decision,
           rationale: e.rationale,

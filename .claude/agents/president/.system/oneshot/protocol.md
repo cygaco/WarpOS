@@ -85,6 +85,18 @@ Read these documents FIRST, in order:
       - **req-reviewer** _(Phase 3E added 2026-04-30)_: `claude -p --agent req-reviewer "<prompt>"` — requirements drift: behavior↔requirement↔code↔test traceability + shared-contract propagation + risk-class agreement. Skipped only if `_requirements/_index/requirements.graph.json` is missing (older installs). Findings of category `risk_class_disagreement` or `contract_propagation_missed` are blocking regardless of the other four panel verdicts.
    c. Collect ALL results from all 5 reviewers
    d. **Test-runner gate (Gate 6).** After the four-reviewer panel passes, spawn `test-runner` for each feature in the phase via `claude -p --agent test-runner ...`. Inputs: `{{FEATURE}}`, `{{WORKTREE_BRANCH}}`, `{{TIMEOUT_MS=180000}}`. The agent runs `npx playwright test _requirements/<feature>` headless, parses the JSON reporter output, and emits a `TestResult` envelope (PASS|FAIL|SKIP|HANG). If the feature touched UI (changed files intersect `src/components/**` or `src/app/**`), ALSO spawn `visual-review` in parallel with the test-runner. Visual-review uses the project-registered Playwright MCP server (`.mcp.json`) to drive a real browser; findings of severity `critical` or `high` count as a gate failure. Both must pass before merge to skeleton branch.
+
+   d.1 **Design authority gate (W1, oneshot) — UI/app-design/web-design units only.** For the SAME UI-diff condition (changed files intersect `src/components/**` or `src/app/**`), ALSO run the org's named cross-domain design authority — the `design-quality` gate — mirroring the adhoc W1 block in `.claude/agents/president/gamma.md` ("Design authority gate (W1)"). In oneshot there is no α/β to lint-and-wave-through, so the gate's verdict must REJECT, not advise:
+   1. Dispatch the `design-quality` agent via the Agent tool (multimodal, like `visual-review`) to produce the `DesignQualityResult` JSON; write it to `$DQ_RESULT`.
+   2. Run the gate (oneshot runs it **fail-closed** — Lane 1 static AND Lane 2 judgment both block; no advisory ramp here, because there is no α/β review of an advisory finding):
+
+      ```bash
+      node "$CLAUDE_PROJECT_DIR/scripts/checks/design-quality-gate.js" \
+        --judgment "$DQ_RESULT" --mode oneshot --unit <feature> --json
+      ```
+
+   - **Exit ≠ 0 ⇒ REJECT** (Lane 1 design-system violations, Lane 2 verdict FAIL, or a fail-closed park: missing judgment / INVESTIGATE / requiresHuman) — treat as a reviewer failure → fix-agent dispatch (max 3), then re-run. An unresolved park is emitted to `runtime/arbitration` and the run-end arbitration ship gate (step 11) blocks ship-ready.
+   - `--mode oneshot --unit <feature>` make the gate emit a `manager_consult` telemetry event (manager: design-quality) for this unit — the consult record `scan:sprint-manager-consult` audits. Enforced by `scripts/checks/sprint-manager-consult.js`.
    e. Calculate points + achievements: node scripts/points.js --feature <name> --run <N>
    f. Run learner analysis (spawn learner subagent to check for patterns).
       The Learner is limited to max 3 rule changes + max 1 spec patch per cycle. If the Learner proposes more, the orchestrator defers excess changes to the next cycle.

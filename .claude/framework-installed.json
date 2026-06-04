@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "0.13.1",
-  "installedCommit": "7c0dfdd6a7a994cf9af426ffa991bcdb5936f12f",
-  "installedAt": "2026-06-04T22:55:40.311Z",
+  "installedCommit": "3b80eb035d0642d595d0b3ac6111d1f64abe2a9e",
+  "installedAt": "2026-06-04T23:26:46.199Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -304,8 +304,8 @@
       "dest": ".claude/agents/president/.system/adhoc/protocol.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "f2789d1f950fb692305d525c49b7703c99a451565554d041150fd4d2f5faf44a",
-      "currentHashAtInstall": "f2789d1f950fb692305d525c49b7703c99a451565554d041150fd4d2f5faf44a",
+      "installedHash": "ed03c6fed6237bdeb0b42f222abc67cf5a588320d9ca785cb8dbc110a29d0328",
+      "currentHashAtInstall": "ed03c6fed6237bdeb0b42f222abc67cf5a588320d9ca785cb8dbc110a29d0328",
       "introducedIn": "0.0.0"
     },
     {
@@ -394,8 +394,8 @@
       "dest": ".claude/agents/president/.system/oneshot/protocol.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "2d3a3cb45053fd375153a3abaa907fa2102bf74f377c92edd85f5095464eade5",
-      "currentHashAtInstall": "2d3a3cb45053fd375153a3abaa907fa2102bf74f377c92edd85f5095464eade5",
+      "installedHash": "f20a6be2da0f025cacaa19c4924debbc668afcb875255128de06a1d6ea15197c",
+      "currentHashAtInstall": "f20a6be2da0f025cacaa19c4924debbc668afcb875255128de06a1d6ea15197c",
       "introducedIn": "0.0.0"
     },
     {
@@ -484,8 +484,8 @@
       "dest": ".claude/agents/president/.system/policy/adr/0007-agent-system-org-rewrite.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "1bf6e8b23815aac4fc122a86a250a2be397ceebc3de2eb2fdfcb6f608e9e5678",
-      "currentHashAtInstall": "1bf6e8b23815aac4fc122a86a250a2be397ceebc3de2eb2fdfcb6f608e9e5678",
+      "installedHash": "0428eda3069d864e5bcf472d5ed38f2bb3d2b84c1b9eaff917f16c324802b269",
+      "currentHashAtInstall": "0428eda3069d864e5bcf472d5ed38f2bb3d2b84c1b9eaff917f16c324802b269",
       "introducedIn": "0.0.0"
     },
     {
@@ -644,8 +644,8 @@
       "dest": ".claude/agents/president/gamma.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "e308bd5d58d38046713281fad80771bfcd65eff1f231f1eaa2f1202ee8c3fe5d",
-      "currentHashAtInstall": "e308bd5d58d38046713281fad80771bfcd65eff1f231f1eaa2f1202ee8c3fe5d",
+      "installedHash": "e663c8efd07834a43b046ca6fa54af88959cd6c416c67f80345dff8cec3764d9",
+      "currentHashAtInstall": "e663c8efd07834a43b046ca6fa54af88959cd6c416c67f80345dff8cec3764d9",
       "introducedIn": "0.0.0"
     },
     {
@@ -1859,6 +1859,16 @@
       "introducedIn": "0.0.0"
     },
     {
+      "id": "skill.scan.adhoc-fail-override.md",
+      "kind": "skill",
+      "dest": ".claude/commands/scan/adhoc-fail-override.md",
+      "owner": "framework",
+      "mergeStrategy": "three_way_markdown",
+      "installedHash": "aab83e0f2d2711952165e3e537db5b99d5875831fa74079405940f6b5cc25349",
+      "currentHashAtInstall": "aab83e0f2d2711952165e3e537db5b99d5875831fa74079405940f6b5cc25349",
+      "introducedIn": "0.0.0"
+    },
+    {
       "id": "skill.scan.adhoc-team-hygiene.md",
       "kind": "skill",
       "dest": ".claude/commands/scan/adhoc-team-hygiene.md",
@@ -1964,8 +1974,8 @@
       "dest": ".claude/commands/scan/full.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "ff6a4d34afd21fb505957652281e3cfa8a39e7d25a57452dd3a0ba2dece7a783",
-      "currentHashAtInstall": "ff6a4d34afd21fb505957652281e3cfa8a39e7d25a57452dd3a0ba2dece7a783",
+      "installedHash": "30f481e2fe383b4940b0f50fb3e59ffe78d4deb83ddc0e5658d5fbc951cea5e1",
+      "currentHashAtInstall": "30f481e2fe383b4940b0f50fb3e59ffe78d4deb83ddc0e5658d5fbc951cea5e1",
       "introducedIn": "0.0.0"
     },
     {
@@ -2106,6 +2116,16 @@
       "mergeStrategy": "three_way_markdown",
       "installedHash": "6f74de8bffefc92ded067bf39d98925330a8d0089ebda89321ff5f6062f7e9d7",
       "currentHashAtInstall": "6f74de8bffefc92ded067bf39d98925330a8d0089ebda89321ff5f6062f7e9d7",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "skill.scan.sprint-manager-consult.md",
+      "kind": "skill",
+      "dest": ".claude/commands/scan/sprint-manager-consult.md",
+      "owner": "framework",
+      "mergeStrategy": "three_way_markdown",
+      "installedHash": "77ab0b78e0a6126f4ee57cba5edf1ecedacc4b34ece998351577e5ab0c3c7352",
+      "currentHashAtInstall": "77ab0b78e0a6126f4ee57cba5edf1ecedacc4b34ece998351577e5ab0c3c7352",
       "introducedIn": "0.0.0"
     },
     {
@@ -3954,8 +3974,8 @@
       "dest": "scripts/hooks/lib/logger.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "bc85a9cb2facd3cd653e7e8c9b077ab0300afa59ab0121c957ca473dde998d58",
-      "currentHashAtInstall": "bc85a9cb2facd3cd653e7e8c9b077ab0300afa59ab0121c957ca473dde998d58",
+      "installedHash": "754628e1ae7a10eaa0e2c170c6e3b3dbe1992c6037b9ce9292640efa2db8ffe6",
+      "currentHashAtInstall": "754628e1ae7a10eaa0e2c170c6e3b3dbe1992c6037b9ce9292640efa2db8ffe6",
       "introducedIn": "0.0.0"
     },
     {
@@ -4909,6 +4929,16 @@
       "introducedIn": "0.0.0"
     },
     {
+      "id": "check_tool.adhoc-fail-override.js",
+      "kind": "check_tool",
+      "dest": "scripts/checks/adhoc-fail-override.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "a8be163e36e823adae4c87f1aaeb9dfce7bd7883086e34033c29a951e95753c7",
+      "currentHashAtInstall": "a8be163e36e823adae4c87f1aaeb9dfce7bd7883086e34033c29a951e95753c7",
+      "introducedIn": "0.0.0"
+    },
+    {
       "id": "check_tool.adhoc-team-hygiene.js",
       "kind": "check_tool",
       "dest": "scripts/checks/adhoc-team-hygiene.js",
@@ -4974,8 +5004,8 @@
       "dest": "scripts/checks/design-quality-gate.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "18d150502d0e7d3fa241203c8cbf5c9d961ec9ea2bdb1651ce4a0abe99e28e04",
-      "currentHashAtInstall": "18d150502d0e7d3fa241203c8cbf5c9d961ec9ea2bdb1651ce4a0abe99e28e04",
+      "installedHash": "bd87cc47896aacb2057e856874afa92fb3972796c642f0d9690c7725153a48eb",
+      "currentHashAtInstall": "bd87cc47896aacb2057e856874afa92fb3972796c642f0d9690c7725153a48eb",
       "introducedIn": "0.0.0"
     },
     {
@@ -5309,6 +5339,26 @@
       "introducedIn": "0.0.0"
     },
     {
+      "id": "check_tool.sprint-manager-consult.js",
+      "kind": "check_tool",
+      "dest": "scripts/checks/sprint-manager-consult.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "eaf5d27c124fd6cca1033f21b603921696c33ec7021c9e7629137a17f0e196f3",
+      "currentHashAtInstall": "eaf5d27c124fd6cca1033f21b603921696c33ec7021c9e7629137a17f0e196f3",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "check_tool.test-adhoc-fail-override.js",
+      "kind": "check_tool",
+      "dest": "scripts/checks/test-adhoc-fail-override.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "9dd59f0e294ce91009015b438ec6535bf7927ba516af6f2877cab3a1e5afdfe7",
+      "currentHashAtInstall": "9dd59f0e294ce91009015b438ec6535bf7927ba516af6f2877cab3a1e5afdfe7",
+      "introducedIn": "0.0.0"
+    },
+    {
       "id": "check_tool.test-docker-secret-ignore.js",
       "kind": "check_tool",
       "dest": "scripts/checks/test-docker-secret-ignore.js",
@@ -5346,6 +5396,16 @@
       "mergeStrategy": "replace_if_unmodified",
       "installedHash": "28e7a227dacd508e09fc5e62ac2892fbaa3041e5e5523769a9e04af685fdb71a",
       "currentHashAtInstall": "28e7a227dacd508e09fc5e62ac2892fbaa3041e5e5523769a9e04af685fdb71a",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "check_tool.test-sprint-manager-consult.js",
+      "kind": "check_tool",
+      "dest": "scripts/checks/test-sprint-manager-consult.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "13fe538e6146dbb8d08ff93133208fc3ed558d695baedc8430dbf0af1853018c",
+      "currentHashAtInstall": "13fe538e6146dbb8d08ff93133208fc3ed558d695baedc8430dbf0af1853018c",
       "introducedIn": "0.0.0"
     },
     {
