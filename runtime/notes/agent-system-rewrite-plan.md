@@ -329,3 +329,21 @@ The system is **hook-dense (~65 hooks wired in `settings.json`)**. Beyond §6's 
 3. **Completeness bar:** every rule names a hook/scan/test that fails on violation — or `/enforcement:log` the debt. Build the Tier-4 gaps (route the manager layer + `manager-consult` telemetry; β real-verdicts + UNREASONED/abstain honesty rule; adhoc dispatcher-can't-override-FAIL gate). "Complete" = no rule can be silently skipped.
 4. **Sequence (risk-minimizing):** (a) foundation FOREGROUND — ADR-0007 + the role registry + rewire enforcers + migrate store/paths (kills Tier-1 at the root); (b) strip product content from the framework spec; (c) build the new tree, porting Tier-3 behaviors verbatim, cut over BEHIND the parity gates, delete old only when green; (d) close Tier-4 gaps; (e) sweep refs + every-inch checklist + clean-room consumer sim (ADR-0006); converge — re-run, don't single-pass.
 5. **Bootstrap:** build the enforcement spine (registry + parity gates) FOREGROUND first, get it green, THEN dispatch the bulk through the now-reliable chain. Never background the builder during it (RI-004).
+
+---
+
+## 8. Skill hook-in registry — config-driven agent routing for SKILLS (reconciles roadmap / portfolio / bootstrap / growth)
+
+**The gap (operator-flagged 2026-06-04):** ~20 skills CALL agents by **hardcoded role name** → the rewrite's renames break them, and swapping an agent means editing every skill. Crawl of `.claude/commands/`:
+- **`growth/` (8 — the biggest caller):** `message-brief · ad-images · angles · product-finder · advertorial · ad-video · iterate · landing-page` — reference Copy Lead · Growth Lead (→**Marketing Lead**) · Web-Conversion Designer (→**Conversion Lead**) · Research-Insight Lead (→**Research Lead**) · design-quality · Director of Marketing (→**Director of Growth**). Many RENAMED → **break on rename.**
+- **`roadmap/` (4):** `create · ideas · next · prioritize` — consult Director of Product · Product Lead (both KEEP, but should route via the registry anyway).
+- **`bootstrap/spinup`** — dispatches the build chain + consults managers.
+- **meta:** `mode:adhoc` (spawns β/γ) · `karpathy:run` (optimizes agent specs) · `session:end` · `models:check` · `playbook:add` · `scan:patterns`/`environment`.
+- **`portfolio/`** reconciles INDIRECTLY — its skills call inner skills (`portfolio:spinup → bootstrap:spinup`), which route via the registry.
+
+**The fix (operator's insight — skills get hook-in points, like the sprint process):** a **skill hook-in registry** — same pattern as the sprint hook-point registry — `{skill, hook-point, agent-role, condition}` that **reads role names from the §7 role registry**. A skill resolves its agent **at call time from the registry**, never a hardcoded name. A rename/swap = **ONE registry edit**; the operator can **see/swap which agent each skill uses** (surface the selection, don't hide it).
+- **Chokepoint + testable:** the registry is the single chokepoint all agent-calling skills pass through; dependency-inject the resolver so the skill→agent map is unit-testable.
+- **Enforcement:** `scan:skill-hook-coverage` (bidirectional, like `scan:sprint-hook-coverage`) — every agent-calling skill has a registry entry · every entry resolves to a real role · **no skill hardcodes a role name** (extends the no-hardcoded-role-lists rule to skills). Extend `systems-sync` (already auto-registers skills) to register skill hook-in points.
+- **Independence:** agent-role selection is **registry-FIXED**, not per-invocation (same guard as the sprint DoE).
+
+**The unification:** sprint hook-points + skill hook-ins + the role registry = **ONE config-driven agent-routing layer** across every surface. The keystone principle, completed: **switching or renaming an agent is a registry edit — NEVER a skill or spec edit.** (This is also the fix for the "skills" slice of the §6 blast-radius.)
