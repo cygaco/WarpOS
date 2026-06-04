@@ -115,7 +115,19 @@ function ensureGitignore(repoRoot) {
 }
 
 function defaultRunCmd(cmd, args, cwd) {
-  const r = spawnSync(cmd, args, { cwd, encoding: "utf8", stdio: "inherit", timeout: 600_000 });
+  // WI-29 (Windows): `npm` is `npm.cmd` on win32, and spawnSync won't resolve a
+  // `.cmd` shim without a shell — a bare spawnSync("npm", …) throws ENOENT, so
+  // scaffold `--install` silently failed on Windows. Run through the shell on
+  // win32 (resolves npm/npx/any .cmd); other platforms keep the direct spawn
+  // (no shell — avoids the quoting surface). args here are fixed/internal.
+  const win = process.platform === "win32";
+  const r = spawnSync(cmd, args, {
+    cwd,
+    encoding: "utf8",
+    stdio: "inherit",
+    timeout: 600_000,
+    shell: win,
+  });
   return { code: r.status == null ? 1 : r.status, error: r.error ? r.error.message : null };
 }
 

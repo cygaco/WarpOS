@@ -22,6 +22,14 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // Pin the file-tracing root to THIS app's directory (WI-22). WarpOS scaffolds
+  // products as sibling repos under a portfolio parent; if a lockfile exists
+  // above this app, Next.js silently infers that parent as the workspace root
+  // ("Next.js inferred your workspace root…") and traces/bundles the wrong tree,
+  // which breaks standalone output + the dev serve gate. Anchoring to __dirname
+  // keeps the app self-contained regardless of any parent lockfile. (Next 15:
+  // outputFileTracingRoot is a top-level key, no longer under `experimental`.)
+  outputFileTracingRoot: __dirname,
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
