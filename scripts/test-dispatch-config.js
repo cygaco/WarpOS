@@ -108,15 +108,15 @@ check("scaffold-core.js", () => {
   ok("scaffold-core emits fixed dispatch config for new products");
 });
 
-// 5. redteam orchestrator specs (both modes) — provider_model not a ghost.
+// 5. security-reviewer spec (ADR-0007: replaces the redteam orchestrator;
+// mode-agnostic single spec) — provider_model not a ghost.
 for (const spec of [
-  ".claude/agents/01-adhoc/redteam/orchestrator.md",
-  ".claude/agents/02-oneshot/redteam/orchestrator.md",
+  ".claude/agents/engineering/security/reviewer.md",
 ]) {
   check(spec, () => {
     const fm = read(spec).match(/provider_model:\s*(\S+)/);
     if (!fm) throw new Error("no provider_model in frontmatter");
-    if (GHOST.test(fm[1])) throw new Error(`redteam provider_model is a ghost: ${fm[1]}`);
+    if (GHOST.test(fm[1])) throw new Error(`security-reviewer provider_model is a ghost: ${fm[1]}`);
     ok(`${spec.split("/").slice(-3, -1).join("/")} provider_model real: ${fm[1]}`);
   });
 }
@@ -149,16 +149,17 @@ check("gemini primary-model agreement", () => {
       /id:\s*"gemini",[\s\S]*?defaultModel:\s*"([^"]+)"/, "catalog.defaultModel"),
     grab("scripts/warpos/scaffold-core.js",
       /gemini:\s*\{[\s\S]*?default_model:\s*"([^"]+)"/, "scaffold.gemini.default_model"),
-    grab(".claude/agents/01-adhoc/redteam/orchestrator.md",
-      /provider_model:\s*(\S+)/, "adhoc redteam.provider_model"),
-    grab(".claude/agents/02-oneshot/redteam/orchestrator.md",
-      /provider_model:\s*(\S+)/, "oneshot redteam.provider_model"),
+    grab(".claude/agents/engineering/security/reviewer.md",
+      /provider_model:\s*(\S+)/, "security-reviewer.provider_model"),
   ];
   // JSON-sourced points
   const manifest = JSON.parse(read(".claude/manifest.json"));
   points.push({ label: "manifest.gemini.default_model", model: manifest.providers.gemini.default_model });
-  const pf = JSON.parse(read(".claude/agents/00-alex/.system/policy/provider-fallback.json"));
-  points.push({ label: "provider-fallback.redteam.primary", model: String(pf.policies.redteam.primary).split(":").pop() });
+  const pf = JSON.parse(read(".claude/agents/president/.system/policy/provider-fallback.json"));
+  // ADR-0007: the security pass's primary policy may live under redteam (legacy)
+  // or security-reviewer (new). Read whichever the policy carries.
+  const secPolicy = pf.policies["security-reviewer"] || pf.policies.redteam;
+  points.push({ label: "provider-fallback.security.primary", model: String(secPolicy.primary).split(":").pop() });
 
   const distinct = [...new Set(points.map((p) => p.model))];
   if (distinct.length !== 1) {

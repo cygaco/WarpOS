@@ -6,14 +6,14 @@
  *   node scripts/delta-dispatch-builder.js <feature-id>
  *
  * Reads:
- *   - .claude/agents/02-oneshot/.system/store.json  (feature.files, feature.status)
- *   - .claude/manifest.json                         (featureIdToDir for spec folder)
+ *   - .claude/agents/president/.system/oneshot/store.json  (feature.files, feature.status)
+ *   - .claude/manifest.json                                (featureIdToDir for spec folder)
  *   - HYGIENE: highest-numbered retro folder
  *
- * The builder prompt is constructed inline below (template literal). The
- * builder agent's identity + system prompt come from
- * .claude/agents/02-oneshot/builder/builder.md when claude is invoked with
- * --agent builder; this script writes only the user-message portion.
+ * The builder prompt is constructed inline below (template literal). The builder
+ * agent's identity + system prompt come from the pod builder spec
+ * (.claude/agents/engineering/<pod>/builder.md, ADR-0007) when claude is invoked
+ * with --agent <pod>-builder; this script writes only the user-message portion.
  *
  * Writes:
  *   - .claude/runtime/dispatch/<feature>-prompt.txt      (the composed prompt)
@@ -26,12 +26,14 @@ const fs = require("fs");
 const path = require("path");
 
 const ROOT = path.resolve(__dirname, "..");
+// ADR-0007: oneshot state moved to president/.system/oneshot/.
 const STORE = path.join(
   ROOT,
   ".claude",
   "agents",
-  "02-oneshot",
+  "president",
   ".system",
+  "oneshot",
   "store.json",
 );
 const MANIFEST = path.join(ROOT, ".claude", "manifest.json");
@@ -39,8 +41,9 @@ const RETROS_DIR = path.join(
   ROOT,
   ".claude",
   "agents",
-  "02-oneshot",
+  "president",
   ".system",
+  "oneshot",
   "retros",
 );
 const DISPATCH_DIR = path.join(ROOT, ".claude", "runtime", "dispatch");
