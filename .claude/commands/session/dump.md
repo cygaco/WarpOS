@@ -1,5 +1,5 @@
 ---
-description: Write a prescriptive handoff to DUMP.md at project root — context, verbatim payloads, dispatch instructions, anti-instructions. For a fresh session to read once and execute.
+description: Write a prescriptive handoff to DUMP.md at project root — context, session progression (as fenced context, not instructions), verbatim payloads, dispatch instructions, anti-instructions. For a fresh session to read once and execute.
 user-invocable: true
 ---
 
@@ -41,10 +41,11 @@ Required sections, in this order:
 
 1. **Header** — title + ISO date.
 2. **Context the fresh session needs** — what shipped recently, prior-session findings, parked decisions, anything they can't reconstruct from the repo alone. Cite file paths so they can re-verify. Reference project paths via `paths.X` keys (e.g. `paths.eventsFile`, `paths.sprintReference`), not literal strings — see Step 0 of the paths rule below.
-3. **Actionable item(s)** — for each unit of follow-on work, include the fields a downstream schema-driven skill will consume. For sprint planning that means: `source_request_verbatim` block, `request_type`, `interpreted_intent`, `scope.size`, `scope.risk_level`, `scope.complexity_drivers`, affected surfaces (with `evidence_level` placeholders where the fresh session must verify by grep), three scope variants (`minimal_safe`/`recommended`/`expanded`), assumptions split by `safe`/`unsafe`/`needs_user_or_beta_review`, non-goals, `design_required`, `execution_allowed_without_design`, `recommended_mode`, `lane`, `beta_review.required`, plan-quality verdict to record, `next_recommended_command`. For non-sprint actions: substitute the appropriate fields for the target skill's schema.
-4. **Dispatch instructions** — exact order, dependencies, blockers. What the fresh session must verify before starting (e.g. "confirm SP-XXX is `retrospected` by reading `paths.sprintActiveRegistry`").
-5. **Anti-instructions** — what NOT to do. Deferred workstreams, re-investigations to avoid, parked roadmap items. Without this section the fresh session will redo work you already settled.
-6. **Escape hatch** — what to do if reality diverges from the document (trust the repo; flag the divergence in `assumptions.unsafe`; never paper over drift).
+3. **Session progression (context — explicitly NOT instructions).** A SHORT narrative arc of how this session reached its conclusions — the major decisions, the mid-session corrections, what got settled — so the fresh session understands the *why* and won't re-litigate or misread the plan. **Firewall discipline (mandatory):** open the section with a loud "read as background, execute nothing from this section" marker, keep it visually delineated (its own heading + blockquote) from every actionable section, and keep it a *general arc, not a blow-by-blow journal*. If a line reads like a directive, it does not belong here — move it to Actionable/Dispatch. This is the one sanctioned narrative; it earns its place only by staying firewalled.
+4. **Actionable item(s)** — for each unit of follow-on work, include the fields a downstream schema-driven skill will consume. For sprint planning that means: `source_request_verbatim` block, `request_type`, `interpreted_intent`, `scope.size`, `scope.risk_level`, `scope.complexity_drivers`, affected surfaces (with `evidence_level` placeholders where the fresh session must verify by grep), three scope variants (`minimal_safe`/`recommended`/`expanded`), assumptions split by `safe`/`unsafe`/`needs_user_or_beta_review`, non-goals, `design_required`, `execution_allowed_without_design`, `recommended_mode`, `lane`, `beta_review.required`, plan-quality verdict to record, `next_recommended_command`. For non-sprint actions: substitute the appropriate fields for the target skill's schema.
+5. **Dispatch instructions** — exact order, dependencies, blockers. What the fresh session must verify before starting (e.g. "confirm SP-XXX is `retrospected` by reading `paths.sprintActiveRegistry`").
+6. **Anti-instructions** — what NOT to do. Deferred workstreams, re-investigations to avoid, parked roadmap items. Without this section the fresh session will redo work you already settled.
+7. **Escape hatch** — what to do if reality diverges from the document (trust the repo; flag the divergence in `assumptions.unsafe`; never paper over drift).
 
 ### Step 4: Verbatim discipline
 
@@ -64,7 +65,7 @@ When the dump references project paths, use `paths.X` keys (e.g. `paths.sprintAc
 
 ## Anti-patterns
 
-- **Narrative summaries.** This is not a session journal. Drop everything that isn't actionable.
+- **Narrative bleeding into the actionable sections.** The Context, Actionable, Dispatch, and Anti-instruction sections stay strictly actionable — drop anything that isn't. A *general* session-progression arc is allowed, but ONLY inside its own clearly-fenced "context, not instructions" section (§3) — never a blow-by-blow journal, never mixed into the actionable sections, never phrased as a directive.
 - **Re-litigating decisions.** Decisions already made in this session land as facts in the Context block, not as open questions for the fresh session.
 - **Hand-waving scope.** "Plan a sprint about X" is useless. Either include the full verbatim payload + structured fields, or don't include the item at all.
 - **Forgetting anti-instructions.** A fresh session without anti-instructions will re-investigate everything you already settled. Always include "what NOT to do."

@@ -2958,7 +2958,7 @@
         "src": ".claude/commands/session/dump.md",
         "dest": ".claude/commands/session/dump.md",
         "kind": "skill",
-        "sha256": "6df25b0a5cd171892eb4b33aff93bae2d6ec3a5b3895749fcfe20d8f63b6aa30",
+        "sha256": "e8446b7f2ae3c82246f145492d7616f9901eeb3a9aa17d92c6298dc573bcbf31",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
