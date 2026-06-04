@@ -297,7 +297,20 @@ Six parallel readers audited the whole tree. Breaks, by severity:
 
 **Net:** the rewrite is safe ONLY if (a) role renames are ATOMIC across the ~6 routing/role-list files + `gauntlet-verify.js` + the RESULT schemas, gated by `scan:role-parity` + `scan:dispatch-routing-parity`; (b) mode-paths + the store path migrate BEFORE the tree collapses; (c) every TIER-3 behavior travels with its renamed role; (d) the TIER-4 gaps are BUILT (not assumed); (e) product content is stripped from the framework spec.
 
-**Blast-radius coverage (honest — NOT yet complete):** §6 covers the **agent specs + core routing/role-list files** (from the 2026-06-04 `agents/` deep audit). A full crawl of **HOOKS + every `/scan:*` + every skill + scripts** that reference the changing roles/paths is **still owed** and will EXTEND this list — run `/maps:all` + `/scan:full` + a manual hook/script crawl before the build. *(Operator-flagged 2026-06-04: "hooks are wired into everything.")*
+### TIER 6 — Extended blast-radius: HOOKS · scripts · skills · tests (2026-06-04 manual crawl)
+
+The system is **hook-dense (~65 hooks wired in `settings.json`)**. Beyond §6's agent-specs + core-routing, these ALSO reference the changing roles / paths / build-chain / store:
+- **Hooks (NEW finds — weren't in the original §6):** `store-validator.js` (validates the store `heartbeat.agent` **role enum** → a rename breaks store validation) · `scope-contract-guard.js` (**hardcodes `req-reviewer`** in its allowed-reviewer list) · `gauntlet-gate.js` · `gate-check.js` · `cycle-enforcer.js` · `build-transaction-boundary.js` · `worktree-preflight.js` · `boss-boundary.js`; + the judgment/sprint hooks `beta-gate.js` · `sprint-routing-guard.js` · `sprint-approval-guard.js` · `sprint-tracker-guard.js` · `self-mod-governance.js`.
+- **Dispatch/build scripts:** `delta-dispatch-builder.js` · `delta-dispatch-fixer.js` · `delta-build-reviewer-prompt.js` · `delta-*-gauntlet.js` · `delta-aggregate-reviews.js`.
+- **Manifest/registry generators:** `generate-framework-manifest.js` + `snapshot-installed.js` (asset dirs / `TOP_LEVEL_FRAMEWORK_FILES` reference the agent dirs → the folder-collapse touches these) · `framework/hooks.registry.json` · `scripts/hooks/hook-manifest.json`.
+- **Skills (`.claude/commands/`):** `warp/health.md` · `oneshot/preflight.md` · `agents/test.md` · `learn/deep.md` · `bootstrap/spinup.md` · the `sprint:*` skills · `scan:role-parity` · `scan:dispatch-routing-parity`.
+- **Tests:** `gauntlet-verify.test.js` · `test-dispatch-route-guard.js` · `dispatch-readiness.test.js` · `sprint/test-sprint-full.js` · `role-parity.test.js` (its hardcoded ROLES list).
+- **Sprint artifacts + ledgers:** per-sprint `redteam-plan.md`/`qa-plan.md` · `routing-trace.jsonl` · `decision-ledger.jsonl` (historical role refs — leave; don't rewrite history).
+- **`_guides/design/` (18 guides):** the SOURCE for the `_knowledge/design` migration (M3) — a build INPUT, not a break.
+
+**New high-risk additions to Tier 1/2:** `store-validator.js`'s `heartbeat.agent` role enum + `scope-contract-guard.js`'s `req-reviewer` hardcode — both break on rename, neither was in the original §6. **The build session must read each flagged hook before touching roles** (a hook that silently no-ops post-rename is a false-green).
+
+**Blast-radius coverage now:** agent-specs + core-routing (§3/§6) + hooks/scripts/skills/tests (TIER 6). **Complementary tools:** `/maps:all` = the catalogued hook/enforcement WIRING map (events→hook→enforcer); `/scan:full` is best run as the build-time **verification gate** (current health · broken-refs · coverage), not a discovery tool. *(Operator-flagged: "hooks are wired into everything" — confirmed: ~65.)*
 
 ---
 
