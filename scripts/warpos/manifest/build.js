@@ -188,7 +188,7 @@ function buildRules(sourcePrefix) {
       name: "project-decision-policy",
       match: (rel) =>
         rel ===
-        ".claude/agents/00-alex/.system/policy/decision-policy.md",
+        ".claude/agents/president/.system/policy/decision-policy.md",
       entry: () => ({
         owner: "project",
         managed: false,
@@ -197,7 +197,8 @@ function buildRules(sourcePrefix) {
         // `framework/templates/policy/` never existed. The honest seed source is the
         // matched file itself. (Future: flip to `_warpos/templates/...` once that
         // end-state directory is built — SP-20260522-001.)
-        seeded_from: ".claude/agents/00-alex/.system/policy/decision-policy.md",
+        // ADR-0007: policy moved 00-alex/.system → president/.system.
+        seeded_from: ".claude/agents/president/.system/policy/decision-policy.md",
         class: "fillable",
       }),
     },
@@ -356,15 +357,16 @@ function buildRules(sourcePrefix) {
       }),
     },
     {
-      // Manager-layer machine-readable data under .claude/agents/03-managers/_*/
-      // (e.g. _principles/registry.json, _org/org-map.json) — framework source.
-      // The framework-claude-agent rule above only matches .md, so these .json
-      // data files would otherwise be unclassified (S0.1). Any .md in these dirs
-      // is already caught by the .md rule above (first-match-wins); this catches
-      // the .json data.
+      // Org-governance machine-readable data under .claude/agents/_*/ (ADR-0007:
+      // moved out of 03-managers/ to the agents root — _org/role-registry.json,
+      // _org/org-map.json, _principles/registry.json, _evals/*.json) — framework
+      // source. The framework-claude-agent rule above only matches .md, so these
+      // .json data files would otherwise be unclassified (S0.1). Any .md in these
+      // dirs is already caught by the .md rule above (first-match-wins); this
+      // catches the .json data.
       name: "framework-manager-data",
       match: (rel) =>
-        /^\.claude\/agents\/03-managers\/_[^/]+\//.test(rel),
+        /^\.claude\/agents\/_(org|principles|evals)\//.test(rel),
       entry: (rel) => ({
         owner: "framework",
         managed: true,

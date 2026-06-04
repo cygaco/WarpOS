@@ -56,9 +56,10 @@ const MANIFEST_SCHEMA_VERSION = "warpos/framework-manifest/v2";
 const EXCLUDE_RELATIVE_PREFIXES = [
   // Existing exclusions
   ".claude/agents/.system/dispatch-backups/",
-  ".claude/agents/02-oneshot/.system/retros/",
-  ".claude/agents/02-oneshot/.system/store.json", // per-project state
-  ".claude/agents/02-oneshot/.system/store.json.prev-run-backup.json",
+  // ADR-0007: oneshot runtime state moved under president/.system/oneshot/.
+  ".claude/agents/president/.system/oneshot/retros/",
+  ".claude/agents/president/.system/oneshot/store.json", // per-project state
+  ".claude/agents/president/.system/oneshot/store.json.prev-run-backup.json",
   // Phase 4J — runtime + per-session + per-project event/memory state
   ".claude/runtime/",
   ".claude/project/events/",
