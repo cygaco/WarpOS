@@ -5,6 +5,14 @@
 const fs = require("fs");
 const path = require("path");
 const { PROJECT, relPath, PATHS } = require("./lib/paths");
+// ADR-0007: normalize legacy heartbeat role values to canonical so a renamed
+// role still resolves to its exempt set. Fail-open identity if unavailable.
+let normalizeRole = (r) => r;
+try {
+  ({ normalizeRole } = require("./lib/role-aliases"));
+} catch {
+  /* keep identity */
+}
 
 // Load manifest for source_dirs config (defaults to ["src/", "extension/"])
 let sourceDirs = ["src/", "extension/"];
@@ -64,22 +72,20 @@ process.stdin.on("end", () => {
     const currentAgent = heartbeat.agent || "";
     const currentFeature = heartbeat.feature || "";
 
-    // Orchestrators and non-builder roles can edit anything
-    if (
-      !currentAgent ||
-      [
-        "boss",
-        "lead",
-        "alpha",
-        "gamma",
-        "reviewer",
-        "evaluator", // legacy alias
-        "redteam",
-        "security",
-        "fixer",
-        "compliance",
-      ].includes(currentAgent)
-    ) {
+    // Orchestrators and non-builder roles can edit anything.
+    // ADR-0007 roster + legacy aliases. normalizeRole folds redteam→
+    // security-reviewer, compliance→qa-reviewer, evaluator→reviewer so a legacy
+    // heartbeat value still resolves to an exempt role.
+    const exemptAgents = new Set([
+      "boss", "lead", "alpha", "gamma", "delta", "epsilon",
+      // reviewers (cross-provider + visual) — read code, don't own feature files:
+      "reviewer", "frontend-reviewer", "backend-reviewer", "qa-reviewer",
+      "security-reviewer", "design-quality", "visual-review",
+      // security pod + remediation + legacy:
+      "security", "fixer", "frontend-fixer", "backend-fixer", "security-fixer",
+      "compliance", "evaluator", "redteam",
+    ]);
+    if (!currentAgent || exemptAgents.has(normalizeRole(String(currentAgent).toLowerCase()))) {
       process.exit(0);
       return;
     }

@@ -93,20 +93,23 @@ test("suppressed-record: no records written → verifier fails (BC-16 core case)
 });
 
 // Also test multi-role suppression: even one suppressed role fails the gauntlet.
+// ADR-0007: use canonical roster names that do NOT alias-collapse (qa→qa-reviewer,
+// compliance→qa-reviewer would collide). frontend-reviewer + qa-reviewer are
+// distinct canonical roles.
 test("suppressed-record: one role missing → whole gauntlet fails", () => {
   const now = Date.now();
   const res = verifyGauntlet({
-    roles: ["reviewer", "qa"],
+    roles: ["frontend-reviewer", "qa-reviewer"],
     since: now - 60_000,
     records: [
-      makeRecord({ role: "reviewer", completed_at: new Date(now).toISOString() }),
-      // qa is missing
+      makeRecord({ role: "frontend-reviewer", completed_at: new Date(now).toISOString() }),
+      // qa-reviewer is missing
     ],
   });
 
-  assert.strictEqual(res.ok, false, "ok should be false when qa is missing");
-  assert.ok(!res.missingRoles.includes("reviewer"), "reviewer should NOT be in missingRoles");
-  assert.ok(res.missingRoles.includes("qa"), "qa should be in missingRoles");
+  assert.strictEqual(res.ok, false, "ok should be false when qa-reviewer is missing");
+  assert.ok(!res.missingRoles.includes("frontend-reviewer"), "frontend-reviewer should NOT be in missingRoles");
+  assert.ok(res.missingRoles.includes("qa-reviewer"), "qa-reviewer should be in missingRoles");
 });
 
 // ── Test: 2. VALID WELL-FORMED RECORD ─────────────────────
@@ -127,22 +130,37 @@ test("valid: well-formed record → verifier passes (no false-negative)", () => 
   assert.strictEqual(res.roles[0].wellFormed, true);
 });
 
-// Multi-role happy path.
+// Multi-role happy path — the ADR-0007 gauntlet roster (canonical names).
 test("valid: all roles well-formed → passes", () => {
   const now = Date.now();
   const res = verifyGauntlet({
-    roles: ["reviewer", "qa", "redteam"],
+    roles: ["frontend-reviewer", "qa-reviewer", "security-reviewer"],
     since: now - 60_000,
     records: [
-      makeRecord({ role: "reviewer", completed_at: new Date(now).toISOString() }),
-      makeRecord({ role: "qa",       completed_at: new Date(now).toISOString() }),
-      makeRecord({ role: "redteam",  completed_at: new Date(now).toISOString() }),
+      makeRecord({ role: "frontend-reviewer", completed_at: new Date(now).toISOString() }),
+      makeRecord({ role: "qa-reviewer",       completed_at: new Date(now).toISOString() }),
+      makeRecord({ role: "security-reviewer", completed_at: new Date(now).toISOString() }),
     ],
   });
 
   assert.strictEqual(res.ok, true);
   assert.strictEqual(res.malformedTainted, false);
   assert.ok(res.roles.every((r) => r.satisfied && r.wellFormed === true));
+});
+
+// Legacy-name normalization still groups old→new: a `redteam` REQUESTED role is
+// satisfied by a `security-reviewer` completion record (and vice-versa), proving
+// the alias bridge holds for historical ledgers (ADR-0007 cutover step 1).
+test("valid: legacy 'redteam' requested → satisfied by a security-reviewer record (alias bridge)", () => {
+  const now = Date.now();
+  const res = verifyGauntlet({
+    roles: ["redteam"],
+    since: now - 60_000,
+    records: [makeRecord({ role: "security-reviewer", completed_at: new Date(now).toISOString() })],
+  });
+  assert.strictEqual(res.ok, true, "redteam→security-reviewer alias must bridge the record");
+  assert.strictEqual(res.roles[0].role, "security-reviewer", "requested role normalizes to canonical");
+  assert.strictEqual(res.roles[0].status, "ran");
 });
 
 // ── Test: 3. MALFORMED RECORD IN WINDOW ────────────────────

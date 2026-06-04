@@ -376,8 +376,9 @@ function findForbiddenSegment(rawSeg) {
  * is inlined as a command-substitution argv (`"$(cat file)"` / backtick-cat)
  * rather than piped via stdin (`< file`). The inlined form works for small
  * prompts but blows the OS arg-length limit ("Argument list too long", exit
- * 126) for the large diff-bearing reviewer/redteam fallback prompts the
- * orchestrators build (observed twice at 41KB+ in SP-20260525-004). This is
+ * 126) for the large diff-bearing reviewer/security-reviewer (legacy: redteam)
+ * fallback prompts the orchestrators build (observed twice at 41KB+ in
+ * SP-20260525-004). This is
  * NOT forbidden — small prompts are fine — so we WARN, not block, and surface
  * the stdin form. Returns null when no advisory applies.
  */
@@ -397,7 +398,7 @@ function findAdvisory(rawCmd) {
   return {
     advisory: "claude -p --agent with $(cat <file>) argv",
     detail:
-      "large agent prompts (diff-bearing reviewer/redteam fallbacks) overflow the OS arg-length limit when inlined as an argv via $(cat …) — they die with 'Argument list too long' (exit 126). Pipe the prompt via stdin instead: `claude -p --model <m> --agent <role> < <prompt-file>`. Small prompts are unaffected; this is a warning, not a block.",
+      "large agent prompts (diff-bearing reviewer/security-reviewer fallbacks) overflow the OS arg-length limit when inlined as an argv via $(cat …) — they die with 'Argument list too long' (exit 126). Pipe the prompt via stdin instead: `claude -p --model <m> --agent <role> < <prompt-file>`. Small prompts are unaffected; this is a warning, not a block.",
   };
 }
 

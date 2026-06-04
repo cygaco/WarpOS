@@ -32,20 +32,27 @@
 const fs = require("fs");
 const path = require("path");
 
+// ADR-0007: normalize legacy role names to canonical so a renamed role's
+// response is still size-checked. Fail-open identity if unavailable.
+let normalizeRole = (r) => r;
+try {
+  ({ normalizeRole } = require("./lib/role-aliases"));
+} catch {
+  /* keep identity */
+}
+
 // Build-chain subagent types whose responses should be JSON-envelope-shaped.
-// Includes legacy aliases (evaluator, auditor) for transition compat.
+// ADR-0007 roster + legacy aliases (evaluator/auditor/redteam/compliance/qa).
+// Lookups normalize first, so a legacy id folds onto its canonical role.
 const BUILD_CHAIN = new Set([
-  "builder",
-  "fixer",
-  "fix-agent",
-  "reviewer",
-  "evaluator", // legacy alias
-  "compliance",
-  "learner",
-  "auditor", // legacy alias
-  "qa",
-  "redteam",
-  "delta",
+  // ADR-0007 roster:
+  "frontend-builder", "backend-builder", "security-builder",
+  "frontend-fixer", "backend-fixer", "security-fixer",
+  "frontend-reviewer", "backend-reviewer", "qa-reviewer", "security-reviewer",
+  "learner", "delta",
+  // generic transitional + legacy aliases:
+  "builder", "fixer", "fix-agent", "reviewer", "evaluator",
+  "compliance", "auditor", "qa", "redteam",
 ]);
 
 // Soft warn threshold (8KB) and hard concern threshold (32KB)
@@ -61,8 +68,9 @@ process.stdin.on("end", () => {
       process.exit(0);
     }
 
-    const subagentType = (event.tool_input?.subagent_type || "").toLowerCase();
-    if (!BUILD_CHAIN.has(subagentType)) {
+    const rawType = (event.tool_input?.subagent_type || "").toLowerCase();
+    const subagentType = normalizeRole(rawType);
+    if (!BUILD_CHAIN.has(subagentType) && !BUILD_CHAIN.has(rawType)) {
       process.exit(0);
     }
 

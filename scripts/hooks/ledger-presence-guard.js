@@ -14,7 +14,7 @@
  *   - `block`: stderr warn + decision-block JSON. (warn mode is the
  *     default through 2026-06-02; block requires explicit user approval.)
  *
- * SECONDARY CHECK (redteam): if the target file is missing its anchor
+ * SECONDARY CHECK (adversarial): if the target file is missing its anchor
  * marker entirely (operator opted out silently), emit a louder warn — the
  * row check passes by accident but the convention is being bypassed.
  *
@@ -143,7 +143,7 @@ function run(event) {
   }
   if (anchorMissing) {
     reasons.push(
-      `${path.basename(targetFile)} missing anchor "${anchor}" — operator opted out silently (redteam threat)`,
+      `${path.basename(targetFile)} missing anchor "${anchor}" — operator opted out silently (adversarial threat)`,
     );
   }
 

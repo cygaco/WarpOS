@@ -9,7 +9,7 @@
  */
 
 const assert = require("assert");
-const { evaluate, evaluateRegistry, parseGammaOnlyTypes, collectOrgRoles } = require("./role-parity-scan");
+const { evaluate, evaluateRegistry, evaluateHooks, parseGammaOnlyTypes, collectOrgRoles } = require("./role-parity-scan");
 
 let passed = 0;
 const failures = [];
@@ -137,6 +137,36 @@ test("registry: max on non-alpha → rejected", () => {
 test("registry: gpt-5.5 + max → rejected (ceiling xhigh)", () => {
   const r = clone(coherentReg); r.roles.rev.effort = "max";
   assert.ok(evaluateRegistry(r, catalogStub).some((e) => /ceiling is xhigh/.test(e)), "expected gpt-5.5-ceiling error");
+});
+
+// ── Hook scrapped-literal scan bite-tests (ADR-0007 R4) ─────────────────────
+// evaluateHooks must REJECT a hook keying on a raw scrapped literal with no
+// safety net, and ACCEPT one that normalizes / derives / carries the canonical.
+test("hooks: raw 'redteam' literal, no safety net → rejected", () => {
+  const errs = evaluateHooks({ hookSources: { "bad.js": `const X = ["redteam", "builder"]; if (X.includes(t)) block();` } });
+  assert.ok(errs.some((e) => /bad\.js.*redteam/.test(e)), `expected redteam flag, got: ${errs.join("; ")}`);
+});
+test("hooks: 'req-reviewer' literal, no safety net → rejected", () => {
+  const errs = evaluateHooks({ hookSources: { "bad2.js": `if (role === "req-reviewer") gate();` } });
+  assert.ok(errs.some((e) => /bad2\.js.*req-reviewer/.test(e)), `expected req-reviewer flag, got: ${errs.join("; ")}`);
+});
+test("hooks: scrapped literal + normalizeRole → clean (has safety net)", () => {
+  const errs = evaluateHooks({ hookSources: { "ok1.js": `const {normalizeRole}=require("./lib/role-aliases"); if (normalizeRole(r)==="x"||r==="redteam") {}` } });
+  assert.deepStrictEqual(errs, [], `expected clean (normalizes), got: ${errs.join("; ")}`);
+});
+test("hooks: scrapped literal + canonical replacement present → clean (backward-compat)", () => {
+  const errs = evaluateHooks({ hookSources: { "ok2.js": `const SKIP=["redteam","security-reviewer"]; // handles old+new` } });
+  assert.deepStrictEqual(errs, [], `expected clean (canonical present), got: ${errs.join("; ")}`);
+});
+test("hooks: compound id 'security-reviewer' alone → NOT flagged for 'reviewer'", () => {
+  const errs = evaluateHooks({ hookSources: { "ok3.js": `const r = ["security-reviewer","qa-reviewer"];` } });
+  assert.deepStrictEqual(errs, [], `compound ids must not false-flag, got: ${errs.join("; ")}`);
+});
+test("hooks: 'compliance'/'qa' gate-DIMENSION literal → NOT flagged (carve-out)", () => {
+  // compliance + qa are persistent GATE_CHECK dimensions / new-role substrings —
+  // deliberately out of scope; a hook using them raw must NOT trip the scan.
+  const errs = evaluateHooks({ hookSources: { "ok4.js": `if (gate.compliance && gate.qa) {}` } });
+  assert.deepStrictEqual(errs, [], `gate dimensions must not be flagged, got: ${errs.join("; ")}`);
 });
 
 if (failures.length) {

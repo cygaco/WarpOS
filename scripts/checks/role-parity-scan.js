@@ -246,6 +246,85 @@ function evaluateRegistry(reg, catalog) {
   return errors;
 }
 
+// ── ADR-0007 R4: hook hardcoded-role-literal scan ───────────────────────────
+// A fail-open / advisory hook that GATES on a hardcoded SCRAPPED ROLE literal
+// silently NO-OPS after the rename — the #1 false-green class (R1/R4). This scan
+// flags a hook that references a SCRAPPED role literal that has NO safe handling:
+// it is clean iff it does AT LEAST ONE of —
+//   (a) normalize through role-aliases (normalizeRole), OR
+//   (b) derive its role set from the registry (dispatch/org-roles), OR
+//   (c) ALSO reference the canonical replacement (so it handles new + old —
+//       legitimate backward-compat, e.g. a skip-list carrying both names).
+// A hook that mentions ONLY the dead literal, raw, is the break.
+//
+// Scope: the UNAMBIGUOUSLY-scrapped ROLE names. `redteam` → security-reviewer and
+// `req-reviewer` → qa-reviewer are distinct role tokens with a 1:1 canonical
+// replacement, so they're checkable without false-positives. `compliance`/`qa`/
+// `reviewer` are DELIBERATELY EXCLUDED: `compliance` + `reviewer` + `security` are
+// the PERSISTENT gate-check DIMENSIONS (ADR-0007 carve-out — store-validator etc.
+// key GATE_CHECK records on them, NOT role-routing), and `qa`/`reviewer` are
+// substrings of the new roles (qa-reviewer/*-reviewer) → unflaggable cleanly.
+const HOOK_SCRAPPED_LITERALS = ["redteam", "req-reviewer"];
+// Canonical replacement per scrapped literal — presence = backward-compat, clean.
+const SCRAPPED_CANONICAL = { redteam: "security-reviewer", "req-reviewer": "qa-reviewer" };
+
+// Token-boundary literal match that does NOT match a longer hyphenated compound.
+// `req-reviewer` is matched whole; `redteam` only as a standalone token.
+function referencesScrappedLiteral(src, literal) {
+  const q = new RegExp(`["'\`]${literal}["'\`]`);
+  const k = new RegExp(`(^|[^\\w-])${literal}([^\\w-]|$)`, "m");
+  return q.test(src) || k.test(src);
+}
+
+function normalizesOrDerives(src) {
+  return (
+    /role-aliases/.test(src) ||
+    /normalizeRole\b/.test(src) ||
+    /dispatch\/org-roles/.test(src)
+  );
+}
+
+/**
+ * Pure hook-scan core (injectable seam → bite-testable).
+ * @param hookSources  { [filename]: sourceText } for the hooks to scan
+ * @param scrappedRoles literals to flag (default HOOK_SCRAPPED_LITERALS)
+ * @returns errors[]  (empty = no unguarded scrapped-literal gate)
+ */
+function evaluateHooks({ hookSources, scrappedRoles = HOOK_SCRAPPED_LITERALS }) {
+  const errors = [];
+  for (const [name, src] of Object.entries(hookSources || {})) {
+    if (typeof src !== "string") continue;
+    if (normalizesOrDerives(src)) continue; // (a)/(b) safety net covers the whole file
+    const hits = [];
+    for (const lit of scrappedRoles) {
+      if (!referencesScrappedLiteral(src, lit)) continue;
+      const canon = SCRAPPED_CANONICAL[lit];
+      // (c) canonical replacement also present → handles new+old → clean.
+      if (canon && referencesScrappedLiteral(src, canon)) continue;
+      hits.push(lit);
+    }
+    if (hits.length === 0) continue;
+    errors.push(
+      `hook "${name}" gates on scrapped role literal(s) [${hits.join(", ")}] with no normalizeRole/role-aliases/org-roles safety net and no canonical replacement present — a rename silently no-ops it (ADR-0007 R4 false-green class)`,
+    );
+  }
+  return errors;
+}
+
+// Read every hook .js source under scripts/hooks/ (top level only — lib/ is
+// helpers, not gate hooks). Returns { filename: source }.
+function readHookSources(root) {
+  const dir = path.join(root, "scripts", "hooks");
+  const out = {};
+  let ents;
+  try { ents = fs.readdirSync(dir, { withFileTypes: true }); } catch { return out; }
+  for (const e of ents) {
+    if (!e.isFile() || !e.name.endsWith(".js")) continue;
+    try { out[e.name] = fs.readFileSync(path.join(dir, e.name), "utf8"); } catch { /* skip */ }
+  }
+  return out;
+}
+
 function main(argv) {
   const json = argv.includes("--json");
   let errors;
@@ -281,6 +360,9 @@ function main(argv) {
       return 2;
     }
     errors.push(...regResult.errors);
+    // ADR-0007 R4: scan the gate hooks for unguarded scrapped-role literals
+    // (the silent-no-op-on-rename false-green class).
+    errors.push(...evaluateHooks({ hookSources: readHookSources(ROOT) }));
   } catch (e) {
     process.stderr.write(`role-parity-scan error: ${e.message}\n`);
     return 2; // fail-closed
@@ -299,4 +381,4 @@ function main(argv) {
 
 if (require.main === module) process.exit(main(process.argv));
 
-module.exports = { evaluate, evaluateRegistry, validateRegistry, parseGammaOnlyTypes, collectOrgRoles, makeRealAgentResolver };
+module.exports = { evaluate, evaluateRegistry, validateRegistry, evaluateHooks, readHookSources, referencesScrappedLiteral, HOOK_SCRAPPED_LITERALS, parseGammaOnlyTypes, collectOrgRoles, makeRealAgentResolver };
