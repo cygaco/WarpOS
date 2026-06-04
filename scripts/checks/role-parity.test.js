@@ -9,7 +9,7 @@
  */
 
 const assert = require("assert");
-const { evaluate, parseGammaOnlyTypes, collectOrgRoles } = require("./role-parity-scan");
+const { evaluate, evaluateRegistry, parseGammaOnlyTypes, collectOrgRoles } = require("./role-parity-scan");
 
 let passed = 0;
 const failures = [];
@@ -109,6 +109,34 @@ test("collectOrgRoles tracks built agents + build-chain", () => {
   const { domainRoles, builtAgents } = collectOrgRoles(clone(coherentOrg));
   assert.ok(domainRoles.has("frontend-builder") && domainRoles.has("product-lead"), "domain roles collected");
   assert.ok(builtAgents.some((b) => b.agent === "director-of-qa"), "built agents collected");
+});
+
+// ── Registry keystone bite-tests (ADR-0007) — evaluateRegistry rejects each class ──
+const catalogStub = { PROVIDER_LIST: [{ models: [{ id: "claude-opus-4-8", aliases: ["opus"] }, { id: "gpt-5.5" }] }] };
+const coherentReg = { roles: {
+  alpha: { model: "claude-opus-4-8", effort: "max", dispatchable_by: [] },
+  beta: { model: "claude-opus-4-8", effort: "xhigh", dispatchable_by: [] },
+  rev: { model: "gpt-5.5", effort: "xhigh", dispatchable_by: ["alpha"], dispatches: ["beta"] },
+} };
+
+test("registry: coherent → 0 errors", () => {
+  assert.deepStrictEqual(evaluateRegistry(clone(coherentReg), catalogStub), []);
+});
+test("registry: model ∉ catalog → rejected", () => {
+  const r = clone(coherentReg); r.roles.rev.model = "gpt-99";
+  assert.ok(evaluateRegistry(r, catalogStub).some((e) => /model "gpt-99" is not in the catalog/.test(e)), "expected bad-model error");
+});
+test("registry: dispatch ref to unknown role → rejected", () => {
+  const r = clone(coherentReg); r.roles.rev.dispatchable_by = ["ghost"];
+  assert.ok(evaluateRegistry(r, catalogStub).some((e) => /names unknown role "ghost"/.test(e)), "expected unknown-dispatch-ref error");
+});
+test("registry: max on non-alpha → rejected", () => {
+  const r = clone(coherentReg); r.roles.beta.effort = "max";
+  assert.ok(evaluateRegistry(r, catalogStub).some((e) => /reserved for alpha/.test(e)), "expected max-policy error");
+});
+test("registry: gpt-5.5 + max → rejected (ceiling xhigh)", () => {
+  const r = clone(coherentReg); r.roles.rev.effort = "max";
+  assert.ok(evaluateRegistry(r, catalogStub).some((e) => /ceiling is xhigh/.test(e)), "expected gpt-5.5-ceiling error");
 });
 
 if (failures.length) {

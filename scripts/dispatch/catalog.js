@@ -239,16 +239,22 @@ const DEFAULT_PROVIDER_PER_ROLE = {
   "stub-scaffold": "claude",
 };
 
+// Effort policy (ADR-0007, operator override 2026-06-04): `max` is reserved for
+// VERY BIG projects AND only the TOP face (alpha) — everything else caps at the
+// model's high-water mark. Doers (builders + fixer) run `high`, NOT max; the
+// cross-provider gpt-5.5 review roles run `xhigh` (their ceiling). (qa stays
+// medium + stub-scaffold null until the Wave-2 restructure carries them to the
+// QA-Reviewer / _system entries.)
 const DEFAULT_EFFORT_PER_ROLE = {
-  alpha: null,
-  beta: "high",
-  gamma: null,
-  delta: null,
-  builder: "max",
-  "frontend-builder": "max",
-  "backend-builder": "max",
+  alpha: "max", // the sole `max` — top face + big-project exception
+  beta: "xhigh",
+  gamma: "high",
+  delta: "high",
+  builder: "high",
+  "frontend-builder": "high",
+  "backend-builder": "high",
   "design-quality": "high",
-  fixer: "max",
+  fixer: "high",
   reviewer: "xhigh",
   compliance: "xhigh",
   learner: "xhigh",

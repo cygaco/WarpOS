@@ -2,6 +2,8 @@
   "$schema": "warpos/org-map/v0.1",
   "_doc": "Machine-readable product-studio org (S0.1, SP-20260530-001). domains -> director -> leads -> specialists; β referee, α orchestrator; cross-domain gauntlets. `routing` maps each S0.2 artifact `contract.owner_domain` to the org domain + owning role. Enforced by /scan:domain-routing (validates against schemas/contracts/*.schema.json). v0.1 REVISABLE. This is the MAP, not the agents — agents for the NEW roles are built in Wave 2 (artifact-before-agent iron rule); `agent` = existing subagent_type, or null = pending.",
   "version": "v0.1",
+  "role_registry": "_org/role-registry.json",
+  "_role_registry_note": "ADR-0007 keystone: per-role identity·model-map·dispatch-authority·enforcer·disposition live in role-registry.json (the single source routers/enforcers are being rewired to read). This file's domains/gauntlets/routing remain the structural view consumed by role-parity + org-roles until the v0.2 structural migration folds them in.",
   "orchestrator": { "role": "alpha", "agent": "alpha" },
   "referee": {
     "role": "beta",

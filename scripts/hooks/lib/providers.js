@@ -245,9 +245,11 @@ const DEFAULT_REASONING_EFFORT = {
   learner: readReasoningEnv("learner", "auditor", "xhigh"),
   qa: readReasoningEnv("qa", null, "medium"), // 13 personas × volume; medium balances cost
   redteam: readReasoningEnv("redteam", null, "high"), // gemini implicit; flag is no-op
-  // Build-side roles (claude) — forced max for deepest reasoning on code generation
-  builder: readReasoningEnv("builder", null, "max"),
-  fixer: readReasoningEnv("fixer", null, "max"),
+  // Build-side roles (claude) — `high` per ADR-0007 effort policy (2026-06-04):
+  // `max` is reserved for the top face (alpha) on big projects, not the doers.
+  // Env overrides (REASONING_BUILDER / REASONING_FIXER) still win.
+  builder: readReasoningEnv("builder", null, "high"),
+  fixer: readReasoningEnv("fixer", null, "high"),
   alpha: null,
   beta: null,
   gamma: null,

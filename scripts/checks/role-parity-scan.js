@@ -174,6 +174,65 @@ function evaluate({ org, ROLES, gammaOnly, agentResolves }) {
   return errors;
 }
 
+// Registry keystone validation (ADR-0007): role-registry.json is the single
+// source of role identity + the model map + dispatch authority. Assert INTERNAL
+// consistency — every model exists in the catalog, every dispatch-authority ref
+// resolves to a registry role, and the effort policy holds (max only on alpha;
+// gpt-5.5 caps at xhigh). Spec-resolution for new roles is NOT asserted here (the
+// department tree is built in a later wave); catalog↔registry roster agreement is
+// a post-migration gate. Fail-closed (fatal) on an unreadable/unparseable registry.
+function validateRegistry(root, catalog) {
+  const regPath = path.join(
+    root,
+    ".claude/agents/03-managers/_org/role-registry.json",
+  );
+  let reg;
+  try {
+    reg = readJSON(regPath);
+  } catch (e) {
+    return {
+      errors: [`role-registry.json unreadable/unparseable: ${e.message}`],
+      fatal: true,
+    };
+  }
+  return { errors: evaluateRegistry(reg, catalog), fatal: false };
+}
+
+// Pure registry-consistency core (injectable seams → bite-testable).
+function evaluateRegistry(reg, catalog) {
+  const errors = [];
+  const roles = reg.roles || {};
+  const roleNames = new Set(Object.keys(roles));
+  const models = new Set();
+  for (const p of catalog.PROVIDER_LIST || []) {
+    for (const m of p.models || []) {
+      models.add(m.id);
+      for (const a of m.aliases || []) models.add(a);
+    }
+  }
+  for (const [name, r] of Object.entries(roles)) {
+    if (r.model && !models.has(r.model)) {
+      errors.push(`registry role "${name}" model "${r.model}" is not in the catalog`);
+    }
+    if (r.second_pass && r.second_pass.model && !models.has(r.second_pass.model)) {
+      errors.push(`registry role "${name}" second_pass.model "${r.second_pass.model}" is not in the catalog`);
+    }
+    for (const d of r.dispatchable_by || []) {
+      if (!roleNames.has(d)) errors.push(`registry role "${name}".dispatchable_by names unknown role "${d}"`);
+    }
+    for (const d of r.dispatches || []) {
+      if (!roleNames.has(d)) errors.push(`registry role "${name}".dispatches names unknown role "${d}"`);
+    }
+    if (r.effort === "max" && name !== "alpha") {
+      errors.push(`registry role "${name}" effort=max — max is reserved for alpha (ADR-0007 effort policy)`);
+    }
+    if (r.model === "gpt-5.5" && r.effort === "max") {
+      errors.push(`registry role "${name}" gpt-5.5 cannot use effort=max (ceiling is xhigh)`);
+    }
+  }
+  return errors;
+}
+
 function main(argv) {
   const json = argv.includes("--json");
   let errors;
@@ -193,6 +252,13 @@ function main(argv) {
     if (!/require\(\s*["'][^"']*dispatch\/org-roles["']\s*\)/.test(tgSrc)) {
       errors.push("team-guard.js no longer delegates its GAMMA_ONLY_TYPES gate to scripts/dispatch/org-roles (config-driven role gate bypassed — re-hardcoded?)");
     }
+    // ADR-0007 keystone: validate role-registry.json internal consistency.
+    const regResult = validateRegistry(ROOT, catalog);
+    if (regResult.fatal) {
+      process.stderr.write(`role-parity: ${regResult.errors[0]}\n`);
+      return 2;
+    }
+    errors.push(...regResult.errors);
   } catch (e) {
     process.stderr.write(`role-parity-scan error: ${e.message}\n`);
     return 2; // fail-closed
@@ -211,4 +277,4 @@ function main(argv) {
 
 if (require.main === module) process.exit(main(process.argv));
 
-module.exports = { evaluate, parseGammaOnlyTypes, collectOrgRoles, makeRealAgentResolver };
+module.exports = { evaluate, evaluateRegistry, validateRegistry, parseGammaOnlyTypes, collectOrgRoles, makeRealAgentResolver };

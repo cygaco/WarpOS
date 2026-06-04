@@ -50,5 +50,6 @@ When Beta returns DECIDE on a Class B decision with `OPEN_ADR: true`, Alpha drop
 | [0004](0004-oneshot-arbitration-needed-state.md) | Oneshot arbitration-needed state + per-mode director participation | 2026-05-31 | accepted | - |
 | [0005](0005-guides-root-ownership.md) | Root-level `_guides/` as owner=framework, shipped + /warp:update-managed | 2026-05-31 | accepted | - |
 | [0006](0006-sealed-capsule-consumer-contract-gate.md) | Sealed-capsule executable consumer-contract gate | 2026-06-02 | accepted | - |
+| [0007](0007-agent-system-org-rewrite.md) | Agent-system org rewrite: department tree · mode-agnostic workers · role-registry keystone · model-routing map | 2026-06-04 | accepted | - |
 
 When ADRs accrete, add a row here pointing at each file. Keep the table in sync with the filesystem; `/scan:references` will catch drift.

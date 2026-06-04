@@ -43,8 +43,8 @@ WarpOS exists to help the maintainer ship real products faster while extracting 
 - **C-4 consumer-contract milestone** [open] — clean-room fresh-install / on-ramp simulation in the dev loop (the ED-008 systemic cure = the master-validation loop above).
 - **S2** adhoc team/build-chain hygiene [open] · **C-5 / C-9 / C-10** + builder-flagged minors per `DUMP.md §3 ITEM 9`.
 
-### 🆕 `mode:sprint`? (operator-flagged 2026-06-02) [open]
-No distinct `mode:sprint` exists today — only the shipped `/sprint:full` pipeline. Architecture settled this session: the **manager layer = domain judgment** invoked at sprint hook-points, **BELOW the orchestrator (γ/δ), alongside β (process judgment)** — managers never replace the Alex agents. Decide (β/DoP): **(a)** sprint-lifecycle as a mode-agnostic spec the existing γ/δ read *(recommended — less mode proliferation)* vs **(b)** a thin `mode:sprint` convenience session. Load-bearing artifact either way = the hook-point registry above. *(Note: FE/BE builder split already exists — `frontend-builder`/`backend-builder` in 01-adhoc + 02-oneshot.)*
+### ✅ `mode:sprint` — DECIDED · design-locked (2026-06-04, ADR-0007)
+Settled (not "open," not "undecided," not "a 4th mode bolted on"): sprint mode is **adopted** as a **mode-agnostic lifecycle** conducted by the **ε** face (Alex's NEW sprint-deliver face) reading the **hook-point registry** (`{role,step,condition,mode,order}`); managers **self-dispatch** their phases (η dispatches build, θ dispatches qa/test), **NO Gamma**. β = process judgment, the directors = domain judgment, both at the hook-points — managers never replace the Alex faces. **Design-locked, NOT built** — build is **Phase D** of the agent-system rewrite (ADR-0007 · `runtime/notes/agent-system-rewrite-plan.md` · `DUMP.md` §2). Load-bearing artifact = the hook-point registry. *(FE/BE builder split already exists — `frontend-builder`/`backend-builder`.)*
 
 ---
 
