@@ -19,7 +19,7 @@
    ├ κ Product Lead         ├ Frontend Lead → FE Builder    ├ λ Research Lead
    ├ μ Design Lead          │                 + FE Reviewer ├ ν Copy Lead
    └ θ Quality Lead         ├ Backend Lead  → BE Builder    ├ ο Conversion Lead
-       dispatches:          │                 + BE Reviewer └ ξ Growth Lead
+       dispatches:          │                 + BE Reviewer └ ξ Marketing Lead
        QA Reviewers ·       └ Security Lead → Security Builder
        design-quality ·                       + Security Reviewer(s)
        visual-review · test-runner
@@ -64,7 +64,7 @@
 | λ | Research Lead | Growth | — (audience research → `_knowledge/audience`, shared) |
 | ν | Copy Lead | Growth | — |
 | ο | Conversion Lead | Growth | — |
-| ξ | Growth Lead | Growth | — |
+| ξ | Marketing Lead | Growth | — (paid media · campaigns) |
 
 *(Greek letters are display call-signs; the canonical α→ρ tier-ordered re-lettering is finalized during the build, not load-bearing here.)*
 
@@ -118,7 +118,7 @@ The knowledge is **wired into the agents that consume it** — the proven guide-
     research-lead.md            # was research-insight-lead.md (moved out of knowledge/)
     copy-lead.md
     conversion-lead.md          # was web-conversion-designer.md
-    growth-lead.md
+    marketing-lead.md           # was growth-lead.md
   # no knowledge/ agent folder — the _knowledge/ STORES are shared DATA, fed by the leads:
   #   audience←Research Lead · copy←Copy Lead · design←Design Lead · state←per sprint
   _system/                      # cross-cut infra, mode-agnostic
@@ -128,6 +128,14 @@ The knowledge is **wired into the agents that consume it** — the proven guide-
 ```
 
 **Naming conventions:** file = role in `kebab-case`; frontmatter carries `call_sign` (Greek), and for the Alex faces `true_name: Alex`; one spec per role (no per-mode duplicates); `_prefixed` = shared discipline/infra, not a dispatchable agent.
+
+### Dispatch rules (how the mode-collapse stays safe)
+
+Today the on-disk system has **two spec files per build role** (`01-adhoc/` + `02-oneshot/`) — that duplication is the hazard we're removing. The target dispatches cleanly:
+1. **Address by role NAME; one spec per role.** `claude -p --agent frontend-builder` → the ONE `engineering/frontend/builder.md`. No mode in the name/path → no two-files-same-name ambiguity.
+2. **Mode is CONTEXT the orchestrator passes**, never part of the agent's identity. The same spec serves adhoc/oneshot/sprint; γ/δ/ε pass the mode + scope + IO target as input.
+3. **Routing source of truth = the Dispatch Console** (`catalog.js` + `providers.js`): role → provider → model → effort. Claude roles dispatch via `claude -p --agent <role>` (in-process); openai/gemini via `dispatch-agent.js` (which *refuses* Claude roles by design).
+4. **The collapse only breaks dispatch if the reference sweep is incomplete** — a role-list or routing table still pointing to a removed/renamed role (`redteam`, generic `builder`, `qa`) or an old mode-path. That is exactly what **`scan:role-parity`** (every routed role ↔ exactly one spec; no orphans) + **`scan:dispatch-routing-parity`** (routing tables agree across `providers.js`/`catalog.js`/the guide) catch — both build-gates. **So dispatch gets *cleaner*, not more broken: one name → one spec, with the parity scans as the tripwire.**
 
 ---
 
@@ -166,7 +174,7 @@ The knowledge is **wired into the agents that consume it** — the proven guide-
 | `stub-scaffold` | KEEP + **REHOME** | _system/ | skeleton stub regen (build infra) |
 | `_build-core` | KEEP + **REHOME** | engineering/_build-core | shared builder discipline |
 | `director-of-marketing` | **RENAME** | ι Director of Growth | dept Marketing → **Growth** (research + message + conversion + paid) |
-| `growth-lead` | KEEP | ξ (under Growth) | — |
+| `growth-lead` | **RENAME** | ξ Marketing Lead (under Growth) | paid media · campaigns · EQ scoring |
 | `copy-lead` | **KEEP** | ν (under Growth) | **stays** (operator-reverted); also seeds `_knowledge/copy` |
 | `web-conversion-designer` | **RENAME** | ο Conversion Lead (under Growth) | owns conversion copy + page |
 | `01-adhoc/` ↔ `02-oneshot/` duplication | **COLLAPSE** | one department-based set | faces dispatch per mode; no per-mode role copies |
