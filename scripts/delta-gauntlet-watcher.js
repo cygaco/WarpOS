@@ -27,13 +27,14 @@ const FEATURES = [
   "auto-apply",
 ];
 // Review personas — config-driven from the org map's engineering gauntlet
-// (scripts/dispatch/org-roles.js, S1.1 chassis). Fail-safe to the known set.
+// (scripts/dispatch/org-roles.js, S1.1 chassis). Fail-safe to the ADR-0007
+// roster if the module can't load (NOT the legacy set).
 let ROLES;
 try {
-  ROLES = require("./dispatch/org-roles").reviewGauntletRoles("engineering");
+  ROLES = require("./dispatch/org-roles").gauntletReviewRoles();
   if (!Array.isArray(ROLES) || ROLES.length === 0) throw new Error("empty review set");
 } catch {
-  ROLES = ["reviewer", "compliance", "qa", "redteam"];
+  ROLES = ["frontend-reviewer", "backend-reviewer", "qa-reviewer", "security-reviewer"];
 }
 
 const expected = [];

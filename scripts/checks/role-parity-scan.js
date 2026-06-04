@@ -54,9 +54,22 @@ const ORCHESTRATOR_SYSTEM = new Set([
 
 // Catalog doer roles mid-migration to the domain org — governed but not yet
 // repartitioned. DOCUMENTED, not hidden: each retires as Wave 2 lands.
+//
+// ADR-0007 cutover: the SCRAPPED legacy review roles (reviewer/compliance/qa/
+// redteam) were removed from the code-qc gauntlet (now the new roster), so they
+// are no longer governed as gauntlet members. They REMAIN in the dispatch catalog
+// during coexistence (normalizeRole aliases compliance→qa-reviewer, redteam→
+// security-reviewer, qa→qa-reviewer; `reviewer` splits into the per-pod reviewers)
+// and are kept here as DEPRECATED-transitional so parity stays honest until the
+// catalog roster is trimmed in a follow-on cleanup. They are NOT dispatched live
+// any more (gamma/delta rewired to the derived roster) — these entries only keep
+// the legacy catalog ids governed, not endorsed.
 const TRANSITIONAL = new Map([
   ["builder", "splits into frontend-builder/backend-builder in Wave 2 (S2.3); org-map declares both (agent:null, pending)"],
-  ["qa", "the QA failure-mode scanner directed by qa-lead (org-map product domain); retires when qa-lead is built (Wave 2 S2.1)"],
+  ["qa", "DEPRECATED (ADR-0007): absorbed into qa-reviewer (alias qa→qa-reviewer). Legacy catalog id, not dispatched live; trims in the catalog-roster cleanup."],
+  ["reviewer", "DEPRECATED (ADR-0007): split into frontend-reviewer/backend-reviewer (code-quality only). Legacy catalog id, not dispatched live; trims in the catalog-roster cleanup."],
+  ["compliance", "DEPRECATED (ADR-0007): absorbed into qa-reviewer integrity scope (alias compliance→qa-reviewer). Legacy catalog id, not dispatched live; trims in the catalog-roster cleanup."],
+  ["redteam", "DEPRECATED (ADR-0007): replaced by security-reviewer (alias redteam→security-reviewer). Legacy catalog id, not dispatched live; trims in the catalog-roster cleanup."],
 ]);
 
 function readJSON(p) {

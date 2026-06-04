@@ -31,13 +31,14 @@ const FEATURES = [
 ];
 // Review personas — config-driven from the org map's engineering gauntlet
 // (scripts/dispatch/org-roles.js, S1.1 chassis): reviewGauntletRoles filters
-// remediation roles (fixer). Fail-safe to the known set if the module can't load.
+// remediation roles (fixer). Fail-safe to the ADR-0007 roster if the module
+// can't load (NOT the legacy reviewer/compliance/qa/redteam set).
 let ROLES;
 try {
-  ROLES = require("./dispatch/org-roles").reviewGauntletRoles("engineering");
+  ROLES = require("./dispatch/org-roles").gauntletReviewRoles();
   if (!Array.isArray(ROLES) || ROLES.length === 0) throw new Error("empty review set");
 } catch {
-  ROLES = ["reviewer", "compliance", "qa", "redteam"];
+  ROLES = ["frontend-reviewer", "backend-reviewer", "qa-reviewer", "security-reviewer"];
 }
 
 const ROOT = path.resolve(__dirname, "..");
@@ -56,7 +57,10 @@ for (const feat of FEATURES) {
     }
 
     const env = { ...process.env };
-    if (role !== "redteam") env.OPENAI_FLAGSHIP_MODEL = "gpt-5.4";
+    // The gemini-routed security reviewer must NOT receive the OpenAI flagship
+    // override (ADR-0007: redteam → security-reviewer). All other reviewers are
+    // OpenAI-routed and take the gpt-5.4 cost-balanced flagship for this batch.
+    if (role !== "security-reviewer") env.OPENAI_FLAGSHIP_MODEL = "gpt-5.4";
 
     // spawn detached so the parent (this script) can exit immediately.
     // stdio piped to outputFile; the launched node process will keep running.

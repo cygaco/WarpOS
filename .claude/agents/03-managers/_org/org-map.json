@@ -40,7 +40,7 @@
     }
   },
   "gauntlets": {
-    "code-qc": { "domain": "engineering", "members": ["reviewer", "compliance", "qa", "redteam", "fixer"], "note": "4 parallel review personas (reviewer·compliance·qa·redteam) + fixer (remediation, runs after review — not a parallel reviewer). org-roles.reviewGauntletRoles('engineering') filters remediation roles; the delta-* oneshot gauntlet launchers run exactly the review personas. qa retires under qa-lead in Wave 2 (S2.1)." },
+    "code-qc": { "domain": "engineering", "members": ["frontend-reviewer", "backend-reviewer", "qa-reviewer", "security-reviewer", "fixer"], "note": "ADR-0007 cutover roster (was reviewer·compliance·qa·redteam·fixer). The generic `reviewer` SPLIT into per-pod frontend-reviewer + backend-reviewer (code-quality only); qa+compliance+req-reviewer ABSORBED into ONE qa-reviewer (traceability+integrity+functional scopes); redteam → ONE security-reviewer (the 2nd-GPT pass is INTERNAL to that role, not a separate member). fixer = remediation (runs after review, not a parallel reviewer). org-roles.reviewGauntletRoles('engineering') filters remediation; gauntletReviewRoles()/expectedGauntletRoles(pods) are the DERIVED rosters gamma.md/delta.md/the delta-* launchers consume — NO hardcoded --roles literal. Pod reviewers are gated to the pods that actually built (expectedGauntletRoles) so a FE-only build doesn't expect a backend-reviewer record." },
     "design-quality": {
       "domain": "cross-domain",
       "is_named_design_authority": true,

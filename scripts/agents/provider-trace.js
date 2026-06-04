@@ -65,7 +65,19 @@ function check() {
     return { ok: false, findings: ["manifest missing"] };
   }
   const providers = manifest.agentProviders || {};
-  const reviewRoles = ["reviewer", "compliance", "qa", "redteam"];
+  // ADR-0007 cutover: the review roster is the new per-pod + qa + security set,
+  // DERIVED from the org map's code-qc gauntlet (no hardcoded legacy literal).
+  // Fail-safe to the static new roster if org-roles can't load. The cross-
+  // provider invariant this asserts (≥1 openai reviewer + the gemini security
+  // reviewer) holds for the new roster: qa-reviewer/pod-reviewers→openai,
+  // security-reviewer→gemini.
+  let reviewRoles;
+  try {
+    reviewRoles = require("../dispatch/org-roles").gauntletReviewRoles();
+    if (!Array.isArray(reviewRoles) || reviewRoles.length === 0) throw new Error("empty");
+  } catch {
+    reviewRoles = ["frontend-reviewer", "backend-reviewer", "qa-reviewer", "security-reviewer"];
+  }
   const expected = new Set(reviewRoles.map((r) => providers[r]).filter(Boolean));
   const findings = [];
   if (!expected.has("openai")) findings.push("review roles do not include openai");

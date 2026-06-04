@@ -38,12 +38,20 @@ const ORG_MAP_PATH = path.join(
 // transitional entry retires as Wave 2 lands (mirrors role-parity TRANSITIONAL).
 const STATIC_GAMMA_ONLY_AUGMENT = [
   "builder", // transitional → frontend-builder/backend-builder (Wave 2 S2.3)
-  "qa", // transitional → directed by qa-lead (Wave 2 S2.1)
+  "qa", // DEPRECATED (ADR-0007): absorbed into qa-reviewer; legacy catalog id kept gamma-gated
   "learner", // system: build-chain analysis, gamma/delta-dispatched
   "delta", // oneshot orchestrator — only the gamma tier dispatches it in adhoc
   "fix-agent", // legacy alias (2026-04-29 rename)
   "evaluator", // legacy alias → reviewer
   "auditor", // legacy alias → learner
+  // ADR-0007 cutover: SCRAPPED legacy review roles removed from the code-qc
+  // gauntlet membership but still present in the dispatch catalog during
+  // coexistence — keep them gamma-gated so team-guard can't be bypassed via a
+  // legacy id. Not dispatched live (gamma/delta use the derived roster); these
+  // trim out with the catalog-roster cleanup.
+  "reviewer", // DEPRECATED → frontend-reviewer/backend-reviewer
+  "compliance", // DEPRECATED → qa-reviewer (alias)
+  "redteam", // DEPRECATED → security-reviewer (alias)
 ];
 
 // Gauntlet members that REMEDIATE (apply fixes) rather than review in parallel —
@@ -108,6 +116,75 @@ function reviewGauntletRoles(domain, org = readOrgMap()) {
   return roles;
 }
 
+// ── ADR-0007 cutover (step 2): the gauntlet roster, DERIVED, never hardcoded ──
+// The old gauntlet `--roles reviewer,compliance,qa,redteam` was hardcoded in
+// gamma.md/delta.md and the delta-* launchers. After the role-rewrite, qa +
+// compliance + req-reviewer ABSORB into ONE qa-reviewer and redteam → ONE
+// security-reviewer, so a per-token substitution would produce a DUPLICATE
+// qa-reviewer and a collapsed expected-record count (gauntlet-verify checks for
+// one ok:true record PER listed role → it would pass on fewer real reviewers
+// than intended). So the roster is derived from org-map.json's code-qc gauntlet,
+// de-duplicated, with the pod code-reviewers (frontend-reviewer/backend-reviewer)
+// gated to the pods that ACTUALLY built (a FE-only build must not expect a
+// backend-reviewer record → false RED).
+
+// Pod code-reviewers — the per-pod split of the old generic `reviewer`. The
+// member→pod map is intrinsic to the reviewer's name (`<pod>-reviewer`).
+const POD_REVIEWER_PODS = { "frontend-reviewer": "frontend", "backend-reviewer": "backend" };
+
+// Reviewers that are NOT Bash-dispatched code-qc gauntlet lanes: the Claude-pinned
+// visual reviewers (design-quality, visual-review) are dispatched SEPARATELY via
+// the Agent tool (they need Playwright-MCP) by gamma/delta's design-authority +
+// visual-review steps. They do NOT write a code-qc dispatch-completion record, so
+// they must be excluded from the gauntlet-verify --roles roster or every verify
+// false-REDs on a missing design-quality record.
+const NON_GAUNTLET_REVIEWERS = new Set(["design-quality", "visual-review", "test-runner"]);
+
+/**
+ * The engineering CODE-QC review roster from the org map (pod code-reviewers +
+ * qa-reviewer + security-reviewer), de-duplicated, with remediation (fixer) AND
+ * the separately-dispatched visual reviewers filtered out. This is the roster the
+ * Bash-dispatched gauntlet runs + that gauntlet-verify checks for completion
+ * records. The UNCONDITIONAL membership; callers that know which pods built should
+ * narrow it via `expectedGauntletRoles(pods)`.
+ */
+function gauntletReviewRoles(org = readOrgMap()) {
+  const codeQc = (org.gauntlets || {})["code-qc"];
+  const members = (codeQc && codeQc.members) || [];
+  const roles = [];
+  for (const m of members) {
+    if (REMEDIATION_ROLES.has(m)) continue;
+    if (NON_GAUNTLET_REVIEWERS.has(m)) continue;
+    if (!roles.includes(m)) roles.push(m);
+  }
+  return roles;
+}
+
+/**
+ * The expected reviewer roster for a gauntlet run given the pods that built.
+ *
+ * @param {string[]|null} pods  the engineering pods whose builders ran
+ *   (subset of "frontend"|"backend"|"security"). null/empty/undefined = "all
+ *   pods" (no pod info → expect every pod reviewer, the safe non-narrowing
+ *   default — better a strict over-expectation than a silent under-check).
+ * @returns string[] de-duplicated expected review roles, in roster order.
+ *
+ * Non-pod reviewers (qa-reviewer, security-reviewer) ALWAYS run — qa-reviewer
+ * covers traceability+integrity+functional for every feature, security-reviewer
+ * is the standing security lane. Pod code-reviewers run only for their pod.
+ */
+function expectedGauntletRoles(pods, org = readOrgMap()) {
+  const all = gauntletReviewRoles(org);
+  const podSet = Array.isArray(pods) && pods.length ? new Set(pods) : null;
+  const out = [];
+  for (const r of all) {
+    const pod = POD_REVIEWER_PODS[r];
+    if (pod && podSet && !podSet.has(pod)) continue; // pod reviewer for a pod that didn't build
+    if (!out.includes(r)) out.push(r);
+  }
+  return out;
+}
+
 /** Every domain role: directors + leads + specialists + builders. */
 function domainRoles(org = readOrgMap()) {
   const set = new Set();
@@ -130,12 +207,15 @@ module.exports = {
   ORG_MAP_PATH,
   STATIC_GAMMA_ONLY_AUGMENT,
   REMEDIATION_ROLES,
+  POD_REVIEWER_PODS,
   readOrgMap,
   buildChainDoerRoles,
   gammaOnlyTypes,
   gauntlets,
   gauntletForDomain,
   reviewGauntletRoles,
+  gauntletReviewRoles,
+  expectedGauntletRoles,
   domainRoles,
 };
 
@@ -148,6 +228,9 @@ if (require.main === module) {
     domainRoles: [...domainRoles(org)].sort(),
     gauntlets: Object.keys(gauntlets(org)),
     reviewGauntletRoles_engineering: reviewGauntletRoles("engineering", org),
+    gauntletReviewRoles: gauntletReviewRoles(org),
+    expectedGauntletRoles_all: expectedGauntletRoles(null, org),
+    expectedGauntletRoles_frontendOnly: expectedGauntletRoles(["frontend"], org),
   };
   process.stdout.write(JSON.stringify(out, null, 2) + "\n");
 }
