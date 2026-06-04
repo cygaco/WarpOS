@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "0.13.1",
-  "installedCommit": "3528d119ba183c251d78c51d27bb942cef739dd6",
-  "installedAt": "2026-06-04T04:51:26.093Z",
+  "installedCommit": "2d43c1c7e4df86b412cf4e85de47730ee5aa1877",
+  "installedAt": "2026-06-04T05:01:00.613Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -9264,8 +9264,8 @@
       "dest": "framework/templates/app-scaffold/next.config.ts.tmpl",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "099e327e5bfb2ce911745f4c2bc6f88c6a71418bd84953fbe39b8c5ec5440398",
-      "currentHashAtInstall": "099e327e5bfb2ce911745f4c2bc6f88c6a71418bd84953fbe39b8c5ec5440398",
+      "installedHash": "98219c62475054f2978268b9539a9749f34e83002ee35df3e0acf94c206d5160",
+      "currentHashAtInstall": "98219c62475054f2978268b9539a9749f34e83002ee35df3e0acf94c206d5160",
       "introducedIn": "0.0.0"
     },
     {
