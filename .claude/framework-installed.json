@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "0.13.1",
-  "installedCommit": "d05bffcad086b5a6ca862e249612b145ff00bbdf",
-  "installedAt": "2026-06-04T22:12:20.588Z",
+  "installedCommit": "6906c75cb27303f37566efb833f50e591191e64c",
+  "installedAt": "2026-06-04T22:14:58.256Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -24,8 +24,8 @@
       "dest": ".claude/agents/_org/org-map.json",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "e6ec38eaa0bc8bfd157f279062dce4fdd21d2472763f7512df6cc344964d7840",
-      "currentHashAtInstall": "e6ec38eaa0bc8bfd157f279062dce4fdd21d2472763f7512df6cc344964d7840",
+      "installedHash": "de6f9bed49833e619bde69cb9fef38969246f7558cb664c0106ab5113b6e6f58",
+      "currentHashAtInstall": "de6f9bed49833e619bde69cb9fef38969246f7558cb664c0106ab5113b6e6f58",
       "introducedIn": "0.0.0"
     },
     {
@@ -5234,8 +5234,8 @@
       "dest": "scripts/checks/role-parity-scan.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "1a4dbea4cad294acd8cff3a1d9ac883aeb7a3d295511f8b9f4aaf1551352b2d4",
-      "currentHashAtInstall": "1a4dbea4cad294acd8cff3a1d9ac883aeb7a3d295511f8b9f4aaf1551352b2d4",
+      "installedHash": "dc370406d13537d926943da49b630b0c27e9d8e4a179eefe63d4cf9b25f41e88",
+      "currentHashAtInstall": "dc370406d13537d926943da49b630b0c27e9d8e4a179eefe63d4cf9b25f41e88",
       "introducedIn": "0.0.0"
     },
     {
