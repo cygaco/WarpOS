@@ -140,52 +140,47 @@ async function testServeGate() {
 }
 
 // ------------------------------------------------- research-tier chooser (WI-25)
+// FINAL spec (operator 2026-06-04): Moderate = the GLOBAL default EVERYWHERE
+// (interactive AND headless/automated). Light = explicit opt-down; Deep = explicit
+// opt-up and the ONLY thing never auto-defaulted. No interactive/headless branch.
 function testResearchTier() {
-  process.stdout.write("\nUNIT — research-tier resolution (Light/Moderate + no-surprise-spend)\n");
-  const { resolveResearch, isHeadless, RESEARCH_TIERS } = driver;
+  process.stdout.write("\nUNIT — research-tier resolution (Moderate global default; Deep opt-up only)\n");
+  const { resolveResearch, RESEARCH_TIERS, DEFAULT_RESEARCH } = driver;
   const base = { research: null, researchTier: null, auto: false, json: false };
-  const savedTTY = process.stdout.isTTY;
-  const withTTY = (val, fn) => {
-    try { Object.defineProperty(process.stdout, "isTTY", { value: val, configurable: true }); fn(); }
-    finally { Object.defineProperty(process.stdout, "isTTY", { value: savedTTY, configurable: true }); }
-  };
 
-  // tier mapping
+  // tier mapping + global default
   if (RESEARCH_TIERS.light === "off" && RESEARCH_TIERS.moderate === "simple")
     ok("tier map: light→off, moderate→simple");
   else fail("tier map", JSON.stringify(RESEARCH_TIERS));
+  if (DEFAULT_RESEARCH === "simple") ok("DEFAULT_RESEARCH = simple (Moderate)");
+  else fail("default const", DEFAULT_RESEARCH);
 
-  // 1. explicit --research wins (the only deep path)
-  if (resolveResearch({ ...base, research: "deep" }).mode === "deep") ok("explicit --research deep wins");
+  // explicit --research wins (light→off; deep is the opt-up)
+  if (resolveResearch({ ...base, research: "deep" }).mode === "deep") ok("explicit --research deep wins (opt-up)");
   else fail("explicit deep", "");
-  // 2. --research-tier maps
+  if (resolveResearch({ ...base, research: "light" }).mode === "off") ok("explicit --research light → off (opt-down alias)");
+  else fail("explicit light", "");
+  if (resolveResearch({ ...base, research: "off" }).mode === "off") ok("explicit --research off → off");
+  else fail("explicit off", "");
+
+  // --research-tier maps
   if (resolveResearch({ ...base, researchTier: "moderate" }).mode === "simple") ok("--research-tier moderate → simple");
   else fail("tier moderate", "");
   if (resolveResearch({ ...base, researchTier: "light" }).mode === "off") ok("--research-tier light → off");
   else fail("tier light", "");
-  // 3a. interactive default = Moderate (simple)
-  withTTY(true, () => {
-    const r = resolveResearch({ ...base });
-    if (r.mode === "simple") ok("interactive default → simple (Moderate pre-selected)");
-    else fail("interactive default", JSON.stringify(r));
-  });
-  // 3b. headless default = Light (off) — no-surprise-spend
-  withTTY(false, () => {
-    if (resolveResearch({ ...base }).mode === "off") ok("headless (no TTY) default → off (Light, no-spend)");
-    else fail("headless no-tty default", "");
-    if (resolveResearch({ ...base, auto: true }).mode === "off") ok("--auto default → off (no-spend)");
-    else fail("auto default", "");
-    if (resolveResearch({ ...base, json: true }).mode === "off") ok("--json default → off (no-spend)");
-    else fail("json default", "");
-    // explicit opt-in STILL spends even headless (operator chose)
-    if (resolveResearch({ ...base, auto: true, research: "simple" }).mode === "simple") ok("headless + explicit --research simple → simple (opted in)");
-    else fail("headless explicit opt-in", "");
-    if (resolveResearch({ ...base, auto: true, researchTier: "moderate" }).mode === "simple") ok("headless + --research-tier moderate → simple (opted in)");
-    else fail("headless tier opt-in", "");
-  });
-  // isHeadless signal
-  if (isHeadless({ auto: true }) && isHeadless({ json: true })) ok("isHeadless true for --auto / --json");
-  else fail("isHeadless flags", "");
+
+  // DEFAULT = Moderate EVERYWHERE — no interactive/headless branch.
+  if (resolveResearch({ ...base }).mode === "simple") ok("default (no flags) → simple (Moderate)");
+  else fail("default", "");
+  if (resolveResearch({ ...base, auto: true }).mode === "simple") ok("--auto default → simple (Moderate everywhere, headless too)");
+  else fail("auto default", "");
+  if (resolveResearch({ ...base, json: true }).mode === "simple") ok("--json default → simple (Moderate everywhere)");
+  else fail("json default", "");
+
+  // Deep is NEVER auto-defaulted — only an explicit --research deep yields it.
+  if (resolveResearch({ ...base }).mode !== "deep" && resolveResearch({ ...base, auto: true }).mode !== "deep")
+    ok("Deep never auto-defaulted (the one spend-guard)");
+  else fail("deep guard", "");
 }
 
 (async () => {

@@ -49,6 +49,18 @@ const NEEDS_ORCH = 3;
 // "deep" stays a power-user RAW mode (--research deep) — never a surfaced tier.
 const RESEARCH_TIERS = { light: "off", moderate: "simple" };
 
+// The GLOBAL default tier (operator-final 2026-06-04): Moderate EVERYWHERE —
+// interactive AND automated/headless. Moderate = research:"simple" = a handful of
+// parallel web searches (cents, well under the $5 autonomy line), so there is no
+// surprise-spend concern and no interactive/headless branch. Light is an explicit
+// opt-DOWN; Deep is an explicit opt-UP and the ONE spend-guard (never auto-defaulted).
+const DEFAULT_RESEARCH = "simple";
+
+// Accept "light" as an explicit --research alias for "off" (the opt-down tier name).
+function normalizeResearchMode(mode) {
+  return mode === "light" ? "off" : mode;
+}
+
 function parseArgs(argv) {
   const out = {
     product: null,
@@ -84,35 +96,28 @@ function parseArgs(argv) {
   return out;
 }
 
-// Is this a HEADLESS run (no human present to confirm a spend)? The no-surprise-
-// spend guard (WI-25): a headless run NEVER silently spends on web research —
-// "no user to confirm → no spend". Headless = an explicit machine flag (--auto /
-// --json) OR no TTY (a subprocess/portfolio/cockpit caller — /portfolio:new,
-// /portfolio:spinup, Master-Console). An explicit --research / --research-tier
-// always wins (the operator opted in), regardless of headless.
-function isHeadless(args) {
-  return !!(args.auto || args.json) || !process.stdout.isTTY;
-}
-
 /**
  * Resolve the effective raw research mode (off|simple|deep) from the tier chooser
- * + explicit flags + the interactive/headless context. Precedence:
- *   1. explicit --research <mode>       → as given (power-user; the ONLY deep path)
+ * + explicit flags. Precedence:
+ *   1. explicit --research <mode>       → as given ("light"→off; the ONLY deep path)
  *   2. explicit --research-tier <tier>  → light→off, moderate→simple
- *   3. no explicit choice:
- *        interactive → "simple" (Moderate is the pre-selected DEFAULT)
- *        headless    → "off"    (Light — never spend without a human)
+ *   3. no explicit choice                → DEFAULT_RESEARCH = "simple" (Moderate),
+ *                                          EVERYWHERE (interactive AND headless).
+ * The only spend-guard is that Deep is never auto-defaulted — it requires an
+ * explicit --research deep. Moderate's cost (a few web searches) is under the $5
+ * line, so it is the unconditional default with no interactive/headless branch.
  * Returns { mode, source } (source for logging/telemetry).
  */
 function resolveResearch(args) {
-  if (args.research) return { mode: args.research, source: "explicit --research" };
+  if (args.research) {
+    return { mode: normalizeResearchMode(args.research), source: "explicit --research" };
+  }
   if (args.researchTier) {
     const mode = RESEARCH_TIERS[args.researchTier];
     if (mode) return { mode, source: `--research-tier ${args.researchTier}` };
     // unknown tier handled as a bad-arg in main(); fall through defensively
   }
-  if (isHeadless(args)) return { mode: "off", source: "headless default (Light — no-spend)" };
-  return { mode: "simple", source: "interactive default (Moderate)" };
+  return { mode: DEFAULT_RESEARCH, source: "default (Moderate)" };
 }
 
 // Durable phase-state (T6). Default location is product-side scratch under
@@ -185,8 +190,8 @@ function buildCtx(args, research) {
 
 async function main() {
   const args = parseArgs(process.argv);
-  if (args.research && !["off", "simple", "deep"].includes(args.research)) {
-    process.stderr.write(`bad --research "${args.research}" (off|simple|deep)\n`);
+  if (args.research && !["light", "off", "simple", "deep"].includes(args.research)) {
+    process.stderr.write(`bad --research "${args.research}" (light|off|simple|deep)\n`);
     return 2;
   }
   if (args.researchTier && !RESEARCH_TIERS[args.researchTier]) {
@@ -268,4 +273,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { parseArgs, planPhases, loadState, saveState, stateFile, buildCtx, resolveResearch, isHeadless, RESEARCH_TIERS, PHASES, NEEDS_ORCH };
+module.exports = { parseArgs, planPhases, loadState, saveState, stateFile, buildCtx, resolveResearch, normalizeResearchMode, RESEARCH_TIERS, DEFAULT_RESEARCH, PHASES, NEEDS_ORCH };
