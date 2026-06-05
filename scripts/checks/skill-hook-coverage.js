@@ -44,10 +44,12 @@ const GENERIC_ROLES = new Set([
 ]);
 
 // Skills whose persona hardcodes are M1-c prose-migration pending — tracked (info), not
-// findings. EXACTLY these 8; the enforcer self-flags any that no longer hardcode (rot).
+// findings; the enforcer self-flags any that no longer hardcode (stale_allowlist_entry, rot).
+// The 4 GROWTH skills were MIGRATED (resolve via the skill-hook registry at call time) and
+// removed here; the 4 ROADMAP skills (conditional product-lead/director-of-product routing)
+// remain — the next M1-c slice.
 const MIGRATION_PENDING = [
   "roadmap:create", "roadmap:prioritize", "roadmap:ideas", "roadmap:next",
-  "growth:message-brief", "growth:advertorial", "growth:landing-page", "growth:product-finder",
 ];
 const ALLOWLIST_REASON = "M1-c prose migration pending";
 

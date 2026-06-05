@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-05T18:40:11.464Z",
+  "generatedAt": "2026-06-05T19:16:26.633Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.13.1",
   "migrations": [],
@@ -5125,8 +5125,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/skill-hook-coverage.js",
-      "sha256": "48815fe6c0f6dde595ecef35d45a32c57b7f2a81b33d4ce8081b5b3fa1c77771",
-      "installedSha": "48815fe6c0f6dde595ecef35d45a32c57b7f2a81b33d4ce8081b5b3fa1c77771"
+      "sha256": "d0820f7667d975e2322414942909a14ddc6c0742c4521ba5dad32949b2785131",
+      "installedSha": "d0820f7667d975e2322414942909a14ddc6c0742c4521ba5dad32949b2785131"
     },
     "scripts/checks/skill-hook-coverage.test.js": {
       "owner": "framework",
@@ -16299,8 +16299,8 @@
       "managed": true,
       "source": ".claude/commands/growth/advertorial.md",
       "kind": "md",
-      "sha256": "04d2b0debe75a6cda1a5c2ad0b14752b8077282e6857ab9a0f3f78cb7b5c1255",
-      "installedSha": "04d2b0debe75a6cda1a5c2ad0b14752b8077282e6857ab9a0f3f78cb7b5c1255"
+      "sha256": "0b4dab825e50416dbff60253aeb8871ced1666aa55933ca6301bdddeb91242a0",
+      "installedSha": "0b4dab825e50416dbff60253aeb8871ced1666aa55933ca6301bdddeb91242a0"
     },
     ".claude/commands/growth/angles.md": {
       "owner": "framework",
@@ -16323,24 +16323,24 @@
       "managed": true,
       "source": ".claude/commands/growth/landing-page.md",
       "kind": "md",
-      "sha256": "d0ac6c5e01355d89229c52beebfe68c9c7ea9d7c73eca5dc48d320d969c4f453",
-      "installedSha": "d0ac6c5e01355d89229c52beebfe68c9c7ea9d7c73eca5dc48d320d969c4f453"
+      "sha256": "987680bc0341478366570722845ad43268794fe28ccf94b43b797c7f4cd1b863",
+      "installedSha": "987680bc0341478366570722845ad43268794fe28ccf94b43b797c7f4cd1b863"
     },
     ".claude/commands/growth/message-brief.md": {
       "owner": "framework",
       "managed": true,
       "source": ".claude/commands/growth/message-brief.md",
       "kind": "md",
-      "sha256": "840d4ef5ae4c7a60616fa4f4090a00184fd78ec9cd8594a7ef57684898ad7bf3",
-      "installedSha": "840d4ef5ae4c7a60616fa4f4090a00184fd78ec9cd8594a7ef57684898ad7bf3"
+      "sha256": "19a584864df6038288cb0bc219c280cb648258cebbabf18658519f8f09a719cc",
+      "installedSha": "19a584864df6038288cb0bc219c280cb648258cebbabf18658519f8f09a719cc"
     },
     ".claude/commands/growth/product-finder.md": {
       "owner": "framework",
       "managed": true,
       "source": ".claude/commands/growth/product-finder.md",
       "kind": "md",
-      "sha256": "fc7677184561c4a312e20f96e17c669c14097de89bc38f323cf3b4efc308e72e",
-      "installedSha": "fc7677184561c4a312e20f96e17c669c14097de89bc38f323cf3b4efc308e72e"
+      "sha256": "a100958663c9fa5d703d22b125ad17da3b28d58dbbc93445e24b2d89b90f64f0",
+      "installedSha": "a100958663c9fa5d703d22b125ad17da3b28d58dbbc93445e24b2d89b90f64f0"
     },
     ".claude/commands/fix/deep.md": {
       "owner": "framework",
