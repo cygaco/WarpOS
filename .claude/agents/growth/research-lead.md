@@ -32,7 +32,9 @@ PII** — not edits to product code and not your own approval. The message_brief
 (Marketing) consumes your dossier; α / the operator acts on its strategic implications.
 
 Your dossiers feed the shared `_knowledge/audience` store (segment-level, source-attributed,
-confidence-scored, no PII) that the Growth department's downstream skills derive from.
+confidence-scored, no PII) that the Growth department's downstream skills derive from. Its
+contract README is `_knowledge/audience/README.md` (canonical ships the store EMPTY — you
+populate it at runtime, one dossier per named segment).
 
 ---
 

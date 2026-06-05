@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-05T22:04:20.229Z",
+  "generatedAt": "2026-06-05T22:20:36.628Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.13.1",
   "migrations": [],
@@ -901,12 +901,26 @@
       "sha256": "95eb380f0d70c1ac1e14200899c26e2ceac269db50e2ed3a896d6995f3586af2",
       "installedSha": "95eb380f0d70c1ac1e14200899c26e2ceac269db50e2ed3a896d6995f3586af2"
     },
+    "_knowledge/copy/README.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_knowledge/copy/README.md",
+      "sha256": "40014b66bc93fbb8de7c6afc4bd09a4d04d4927a83db941b49b98b7b880cfeb1",
+      "installedSha": "40014b66bc93fbb8de7c6afc4bd09a4d04d4927a83db941b49b98b7b880cfeb1"
+    },
     "_knowledge/copy/_domain.json": {
       "owner": "framework",
       "managed": true,
       "source": "_knowledge/copy/_domain.json",
       "sha256": "ad22715619b36567b7211dca894ca8aa13f6a880818d2a05b9fd505c3aedb30c",
       "installedSha": "ad22715619b36567b7211dca894ca8aa13f6a880818d2a05b9fd505c3aedb30c"
+    },
+    "_knowledge/audience/README.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_knowledge/audience/README.md",
+      "sha256": "e64a91854e2a5696abbbd6825d2effa1a053fcd8e259aa1c31e63924daff87a6",
+      "installedSha": "e64a91854e2a5696abbbd6825d2effa1a053fcd8e259aa1c31e63924daff87a6"
     },
     "_knowledge/audience/_domain.json": {
       "owner": "framework",
@@ -5040,6 +5054,20 @@
       "source": "scripts/checks/integration-seam-gate.test.js",
       "sha256": "3edfde0174215b22a670b4c808603103b7f9c42b4a5f6ef7738a79d688dd0a95",
       "installedSha": "3edfde0174215b22a670b4c808603103b7f9c42b4a5f6ef7738a79d688dd0a95"
+    },
+    "scripts/checks/knowledge-coverage.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/knowledge-coverage.js",
+      "sha256": "97e5b6b5349e81fc4e83f32facf6214ad2e1fe8ec9fa9af2ae2170ee7bc28dbc",
+      "installedSha": "97e5b6b5349e81fc4e83f32facf6214ad2e1fe8ec9fa9af2ae2170ee7bc28dbc"
+    },
+    "scripts/checks/knowledge-coverage.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/knowledge-coverage.test.js",
+      "sha256": "519c42a329718564317acbd1a4442d32e9564548d81ad7231b36bf2b3a7f756e",
+      "installedSha": "519c42a329718564317acbd1a4442d32e9564548d81ad7231b36bf2b3a7f756e"
     },
     "scripts/checks/manager-principles-scan.js": {
       "owner": "framework",
@@ -14903,6 +14931,10 @@
       "owner": "runtime",
       "managed": false
     },
+    ".claude/project/maps/knowledge-integration.jsonl": {
+      "owner": "runtime",
+      "managed": false
+    },
     ".claude/project/maps/memory.jsonl": {
       "owner": "runtime",
       "managed": false
@@ -15458,8 +15490,8 @@
       "managed": true,
       "source": ".claude/commands/scan/full.md",
       "kind": "md",
-      "sha256": "798062b2fcd22aa1fe573377c1a3c778cb11abc65d5f29ea280ed996f3f12bb2",
-      "installedSha": "798062b2fcd22aa1fe573377c1a3c778cb11abc65d5f29ea280ed996f3f12bb2"
+      "sha256": "53953d9d71c30888c551dc6aed957459c07741de7cfd7b069d21bf5cf42b1bfe",
+      "installedSha": "53953d9d71c30888c551dc6aed957459c07741de7cfd7b069d21bf5cf42b1bfe"
     },
     ".claude/commands/scan/ingest-firewall.md": {
       "owner": "framework",
@@ -16204,6 +16236,22 @@
       "kind": "md",
       "sha256": "54c53edc556f45d3e7eaa94ca78bbc36072b3ba29cc9eb9a80bddc81a238a17d",
       "installedSha": "54c53edc556f45d3e7eaa94ca78bbc36072b3ba29cc9eb9a80bddc81a238a17d"
+    },
+    ".claude/commands/knowledge/coverage.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/commands/knowledge/coverage.md",
+      "kind": "md",
+      "sha256": "457876753b9fa97d6e6afb7eb7616a71942b3e06d2720c933326ffd453e7a0c1",
+      "installedSha": "457876753b9fa97d6e6afb7eb7616a71942b3e06d2720c933326ffd453e7a0c1"
+    },
+    ".claude/commands/knowledge/integrate.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/commands/knowledge/integrate.md",
+      "kind": "md",
+      "sha256": "8a07eb760972a0373f72807f165a3f7eed87b37d155467daf913a3a969b372e3",
+      "installedSha": "8a07eb760972a0373f72807f165a3f7eed87b37d155467daf913a3a969b372e3"
     },
     ".claude/commands/karpathy/integrate.md": {
       "owner": "framework",
@@ -17079,8 +17127,8 @@
       "managed": true,
       "source": ".claude/agents/growth/copy-lead.md",
       "kind": "md",
-      "sha256": "544665a4d2f0725493e38a8fe917b47a4ce9971c1bb0484ca72daf52752b8be6",
-      "installedSha": "544665a4d2f0725493e38a8fe917b47a4ce9971c1bb0484ca72daf52752b8be6"
+      "sha256": "68cc3133cf84f060c360429f3e4d4fe8f63c6bdf0f080caa5e6b4a800cf748c2",
+      "installedSha": "68cc3133cf84f060c360429f3e4d4fe8f63c6bdf0f080caa5e6b4a800cf748c2"
     },
     ".claude/agents/growth/director-of-growth.md": {
       "owner": "framework",
@@ -17103,8 +17151,8 @@
       "managed": true,
       "source": ".claude/agents/growth/research-lead.md",
       "kind": "md",
-      "sha256": "690f64ef8833b8ff9ed6cac4367c84e35a787082438663951e58488fbecb4837",
-      "installedSha": "690f64ef8833b8ff9ed6cac4367c84e35a787082438663951e58488fbecb4837"
+      "sha256": "155f3b90c609074dd55570fb9f187ea2edc2ad2ccd8dce41ae61ebe655cbc173",
+      "installedSha": "155f3b90c609074dd55570fb9f187ea2edc2ad2ccd8dce41ae61ebe655cbc173"
     },
     ".claude/agents/engineering/director-of-engineering.md": {
       "owner": "framework",

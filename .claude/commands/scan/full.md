@@ -64,6 +64,16 @@ node scripts/checks/canon-type-coverage.js        # WI-39: the 12-type canon man
 
 Any non-zero exit is a critical finding (a canon artifact shipped a raw token, or a canon type lost its template). Both are fail-closed (exit 2 = could-not-run = NOT green).
 
+**Knowledge-layer integrity — the company-brain gate** *(default + `--deep`)*
+
+The `_knowledge/` layer enforcer (ADR-0007 "company brain", E5) runs as a direct script invocation — it is the engine behind the `/knowledge:coverage` skill (a `/knowledge:*` skill, not a `/scan:*` token, so it is referenced by path here like the canon enforcers, and is not on the `scan-coverage.allowlist.json` skill list):
+
+```bash
+node scripts/checks/knowledge-coverage.js   # E5: registry fresh · every LIBRARY consumer wired (marker block + ledger record) · every STORE has its contract README + producer ref · index not drifted · no orphan/phantom records or markers (exit 0/1/2, fail-closed)
+```
+
+A non-zero exit is a critical finding (the knowledge brain's wiring drifted — a consumer ungrounded, a marker orphaned, a store uncontracted). Fail-closed (exit 2 = could-not-run = NOT green).
+
 **Regression seed — the bug-class lens** *(default + `--deep`)*
 
 `/scan:regressions` — runs the **26 recurring bug classes** (`_requirements/07-testing/recurring-bug-classes.json`) as detectors and reports a catch-rate. Several detectors overlap the tiers above; this is the roll-up view + the 0.17.0 test-suite core. Surfaces `gap`/`partial`/`n/a` classes as the system's backlog.
