@@ -54,13 +54,20 @@ const path = require("path");
 const ROOT = process.env.CLAUDE_PROJECT_DIR || path.resolve(__dirname, "..", "..");
 const NAME = "adhoc-fail-override";
 
-// The four ADR-0007 roster gate_check reviewer keys (gamma.md gate_checks schema).
-const REVIEWER_KEYS = Object.freeze([
-  "frontend_reviewer",
-  "backend_reviewer",
-  "qa_reviewer",
-  "security_reviewer",
-]);
+// The binding-reviewer gate_check keys (gamma/delta/epsilon RESULT schema). DERIVED from
+// the role-registry (ED-023) — a reviewer rename updates the registry and these keys with
+// it, so the override check can never silently drop a renamed reviewer. Falls back to the
+// literal 4 if the registry is unreadable (the check itself stays fail-closed elsewhere).
+const REVIEWER_KEYS = Object.freeze(deriveReviewerKeys());
+function deriveReviewerKeys() {
+  try {
+    const keys = require("../dispatch/registry-roles").reviewerGateKeys();
+    if (Array.isArray(keys) && keys.length) return keys;
+  } catch {
+    /* registry unreadable → fall back to the literal */
+  }
+  return ["backend_reviewer", "frontend_reviewer", "qa_reviewer", "security_reviewer"];
+}
 
 // Declared-success status tokens across the three RESULT schemas: GAMMA uses
 // "pass"; DELTA (oneshot) + EPSILON (sprint) use "complete". A binding reviewer

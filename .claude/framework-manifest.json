@@ -6012,7 +6012,7 @@
         "src": "scripts/checks/adhoc-fail-override.js",
         "dest": "scripts/checks/adhoc-fail-override.js",
         "kind": "check_tool",
-        "sha256": "d28ca0508b2b889c88260c06a2a8222dd37e2d719696ea49e31dfc1c9c4106c3",
+        "sha256": "e94c5535955a510a0e57e915cf710751f008da23eb40f48044834ca2c3cbb2f9",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",

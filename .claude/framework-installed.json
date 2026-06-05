@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "0.13.1",
-  "installedCommit": "2e859d76a9806c5dda35e6a4bf7a65da7d547ed5",
-  "installedAt": "2026-06-05T05:32:15.449Z",
+  "installedCommit": "adb4e1a958f7ab9bbfd4873bbb7c372ea1511d4a",
+  "installedAt": "2026-06-05T05:35:17.144Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -4954,8 +4954,8 @@
       "dest": "scripts/checks/adhoc-fail-override.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "d28ca0508b2b889c88260c06a2a8222dd37e2d719696ea49e31dfc1c9c4106c3",
-      "currentHashAtInstall": "d28ca0508b2b889c88260c06a2a8222dd37e2d719696ea49e31dfc1c9c4106c3",
+      "installedHash": "e94c5535955a510a0e57e915cf710751f008da23eb40f48044834ca2c3cbb2f9",
+      "currentHashAtInstall": "e94c5535955a510a0e57e915cf710751f008da23eb40f48044834ca2c3cbb2f9",
       "introducedIn": "0.0.0"
     },
     {

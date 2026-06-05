@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-05T05:32:15.604Z",
+  "generatedAt": "2026-06-05T05:35:17.316Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.13.1",
   "migrations": [],
@@ -4824,8 +4824,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/adhoc-fail-override.js",
-      "sha256": "d28ca0508b2b889c88260c06a2a8222dd37e2d719696ea49e31dfc1c9c4106c3",
-      "installedSha": "d28ca0508b2b889c88260c06a2a8222dd37e2d719696ea49e31dfc1c9c4106c3"
+      "sha256": "e94c5535955a510a0e57e915cf710751f008da23eb40f48044834ca2c3cbb2f9",
+      "installedSha": "e94c5535955a510a0e57e915cf710751f008da23eb40f48044834ca2c3cbb2f9"
     },
     "scripts/checks/adhoc-team-hygiene.js": {
       "owner": "framework",
