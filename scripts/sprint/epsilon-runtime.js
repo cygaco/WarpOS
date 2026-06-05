@@ -1,0 +1,526 @@
+#!/usr/bin/env node
+"use strict";
+
+/**
+ * scripts/sprint/epsilon-runtime.js — the ε (Alex Epsilon) sprint-conductor RUNTIME
+ * (ADR-0007 Phase D / ADR-0009). The registry-driven lifecycle engine that makes ε
+ * actually CONDUCT a sprint, instead of full.js emitting telemetry-only "consulted"
+ * records while a human-or-script drives the dispatch.
+ *
+ * WHAT IT IS (epsilon.md, the locked design):
+ *   ε reads a DECLARATIVE hook-point registry — one row per agent attachment
+ *   { role, step, condition, mode, order } — and at each of the six lifecycle steps
+ *   (plan → design → build → gauntlet → release → retro) it:
+ *     1. resolves the matched agent-set for the step under THIS sprint's composition
+ *        (hook-points.js#agentsForStep — the composition→agent-set router), then
+ *     2. resolves each matched role to a concrete DISPATCH PLAN from the role-registry
+ *        keystone (route + provider + model + residency + can_dispatch_builders), then
+ *     3. DISPATCHES each agent on its resolved route and writes a REAL completion
+ *        record to the canonical ledger gauntlet-verify reads — NOT a bare "consulted"
+ *        telemetry stamp. Absence of an ok:true record = the agent did not run.
+ *
+ *   "Adding an agent to the sprint = adding a registry ROW. ε is never edited." The
+ *   route is DERIVED from the registry row (ADR-0008 derive-from-registry pattern), so
+ *   a role's provider/model/build-chain membership is single-sourced — ε hard-codes
+ *   none of it.
+ *
+ * THE INVARIANTS IT ENFORCES STRUCTURALLY (epsilon.md "Restrictions" + Independence):
+ *   - ε is the SOLE builder-dispatcher. Only the `build` step's builder rows carry
+ *     can_dispatch_builders semantics; author-consults at `design` are marked
+ *     can_dispatch_builders:false in their plan (the structural guarantee a consult
+ *     cannot dispatch — mirrors the advisory-row-that-dispatched PostToolUse hook).
+ *   - The gauntlet roster is REGISTRY-FIXED, sourced from agentsForStep, never
+ *     constructed ad-hoc (a dynamically-built reviewer list is the override the
+ *     dispatch-route-guard rejects). planStep returns exactly the registry's rows.
+ *   - A dispatcher CANNOT override a binding FAIL. After the gauntlet the runtime runs
+ *     the verdict-content override gate (adhoc-fail-override evaluate-core, ED-025) over
+ *     its own EPSILON_RESULT before declaring success — a FAIL coexisting with
+ *     status:"complete" / a unit in units_completed HALTS the run.
+ *   - β is consulted at every phase boundary (full.js#maybeConsultBeta owns the halt-
+ *     and-resume protocol; the runtime defers to it — ε has α+β above it).
+ *
+ * ADDITIVE + GATED (the load-bearing safety property):
+ *   This module does NOT replace full.js. full.js's script-driven path is unchanged and
+ *   remains the default. ε-conducted dispatch is OPT-IN — full.js runs the runtime only
+ *   when `--epsilon` (or WARPOS_EPSILON_RUNTIME=on) is set. The runtime has two modes:
+ *     - PLAN mode (default for tests / dry runs): resolve the full per-step dispatch
+ *       PLAN without spawning. Pure given its seams (registry + composition) — the
+ *       bite-test drives every branch off disk.
+ *     - DISPATCH mode (--dispatch): actually spawn each agent on its route + write the
+ *       real completion record. Guarded so a missing dispatch toolkit degrades to PLAN.
+ *
+ *   node scripts/sprint/epsilon-runtime.js plan   --sprint <id> [--composition <json>] [--json]
+ *   node scripts/sprint/epsilon-runtime.js conduct --sprint <id> [--dispatch] [--step <step>]
+ *
+ * Exit codes: 0 ok · 1 halt (an invariant tripped / a required lane no-record) · 2 usage.
+ */
+
+const fs = require("fs");
+const path = require("path");
+
+const SPRINT = require("./paths"); // worktree CLAUDE_PROJECT_DIR rescue runs on require
+const hookPoints = require("./hook-points"); // registry reader + composition→agent-set router
+const hookConsult = require("./hook-consult"); // manager_consult emitter (telemetry coverage)
+const registryRoles = require("../dispatch/registry-roles"); // role-registry field reader
+
+// The six canonical lifecycle steps ε conducts, in order (epsilon.md "The Six Steps").
+const LIFECYCLE = Object.freeze(["plan", "design", "build", "gauntlet", "release", "retro"]);
+
+// The phase boundaries β is consulted at (epsilon.md "β Consultation"). full.js owns the
+// halt-and-resume protocol; the runtime only records that the boundary is a β gate.
+const BETA_BOUNDARIES = Object.freeze([
+  "plan->design",
+  "design->build",
+  "gauntlet->release",
+  "release->retro",
+]);
+
+// ── Route resolution (DERIVED from the role-registry row, not hardcoded) ────────
+//
+// The dispatch ROUTE for a role is a function of its registry fields, exactly as the
+// canonical dispatch pattern (epsilon.md "Dispatch Method") prescribes:
+//   - build_chain:true                       → "dispatch-claude"  (reap-guarded wrapper; -w)
+//   - provider claude + claude_pinned:true   → "agent-tool"       (multimodal visual judges)
+//   - provider claude (managers/leads/dirs)  → "claude-agent"     (in-process Agent dispatch)
+//   - provider claude + kind tool            → "claude-raw"       (e.g. test-runner / learner-on-claude)
+//   - provider openai|gemini                 → "dispatch-agent"   (cross-provider CLI wrapper)
+// A role with no registry row is "unresolved" (the planner flags it — a row referencing a
+// non-registered role is exactly what hook-points.validate() already rejects upstream).
+
+const ROUTE = Object.freeze({
+  DISPATCH_CLAUDE: "dispatch-claude",
+  CLAUDE_AGENT: "claude-agent",
+  CLAUDE_RAW: "claude-raw",
+  AGENT_TOOL: "agent-tool",
+  DISPATCH_AGENT: "dispatch-agent",
+  UNRESOLVED: "unresolved",
+});
+
+/**
+ * Resolve ONE role to its dispatch route + provider/model/residency, purely from the
+ * role-registry row. Injectable `roles` (the registry roles object) so the bite-test can
+ * drive every branch without reading disk.
+ *
+ * @param {string} role
+ * @param {object} roles  registry roles object (default = the real registry)
+ * @returns {{ role, route, provider, model, residency, build_chain, claude_pinned, kind, resolved }}
+ */
+function resolveRoute(role, roles) {
+  const r = roles && roles[role];
+  if (!r || typeof r !== "object") {
+    return {
+      role,
+      route: ROUTE.UNRESOLVED,
+      provider: null,
+      model: null,
+      residency: "ephemeral",
+      build_chain: false,
+      claude_pinned: false,
+      kind: null,
+      resolved: false,
+    };
+  }
+  const provider = r.provider || "claude";
+  const build_chain = r.build_chain === true;
+  const claude_pinned = r.claude_pinned === true;
+  const kind = r.kind || null;
+  const residency = String(r.residency || "").toLowerCase() === "persistent" ? "persistent" : "ephemeral";
+
+  let route;
+  if (build_chain) {
+    route = ROUTE.DISPATCH_CLAUDE; // builders/fixers — reap-guarded, isolated worktree
+  } else if (provider === "claude" && claude_pinned) {
+    route = ROUTE.AGENT_TOOL; // design-quality / visual-review — multimodal, Claude-pinned
+  } else if (provider === "claude" && kind === "tool") {
+    route = ROUTE.CLAUDE_RAW; // non-build Claude tools (test-runner, learner-on-claude)
+  } else if (provider === "claude") {
+    route = ROUTE.CLAUDE_AGENT; // managers/leads/directors — in-process Agent dispatch
+  } else {
+    route = ROUTE.DISPATCH_AGENT; // openai/gemini — cross-provider CLI wrapper
+  }
+
+  return { role, route, provider, model: r.model || null, residency, build_chain, claude_pinned, kind, resolved: true };
+}
+
+/**
+ * Whether a matched row, at its step, is permitted to dispatch builders. The structural
+ * encoding of the "author-consults cannot dispatch; ε is the sole builder-dispatcher"
+ * invariant (epsilon.md design §2 + §3): ONLY rows at the `build` step whose role is a
+ * build-chain builder carry dispatch authority. Every author-consult at `design`
+ * (product-lead, director-of-engineering, design-lead, quality-lead, copy-lead) returns
+ * false — a consult that attempts a builder dispatch is an invariant violation.
+ */
+function canDispatchBuilders(step, routeInfo) {
+  return step === "build" && routeInfo.build_chain === true;
+}
+
+/**
+ * Plan ONE lifecycle step: resolve the registry's matched agent-set for the step under a
+ * composition, then attach each row's dispatch plan (route + invariant flags). PURE given
+ * its seams — no spawn, no disk write. This is the registry-driven core the runtime acts
+ * on and the bite-test asserts against.
+ *
+ * @param {string} step        a canonical lifecycle step
+ * @param {object} composition { unit_types, max_risk, domains }
+ * @param {object} [opts]      { registry, roles } injectable seams
+ * @returns {{ step, agents:Array, block_roles:string[], advisory_roles:string[],
+ *             builder_roles:string[], gauntlet_fixed:boolean, beta_boundary:string|null }}
+ */
+function planStep(step, composition, opts = {}) {
+  const registry = opts.registry || hookPoints.load();
+  const roles = opts.roles || hookPoints.loadRoles();
+  const rows = hookPoints.agentsForStep(step, composition, registry);
+
+  const agents = rows.map((row) => {
+    const routeInfo = resolveRoute(row.role, roles);
+    return {
+      role: row.role,
+      step,
+      mode: row.mode, // block | advisory (the registry row's mode)
+      order: row.order,
+      route: routeInfo.route,
+      provider: routeInfo.provider,
+      model: routeInfo.model,
+      residency: routeInfo.residency,
+      resolved: routeInfo.resolved,
+      // Structural invariant flags:
+      can_dispatch_builders: canDispatchBuilders(step, routeInfo),
+      is_author_consult: step === "design", // design rows author specs; they never dispatch
+      is_builder: routeInfo.build_chain === true,
+      is_reviewer: routeInfo.kind === "reviewer",
+    };
+  });
+
+  return {
+    step,
+    agents,
+    block_roles: agents.filter((a) => a.mode === "block").map((a) => a.role),
+    advisory_roles: agents.filter((a) => a.mode === "advisory").map((a) => a.role),
+    builder_roles: agents.filter((a) => a.is_builder).map((a) => a.role),
+    reviewer_roles: agents.filter((a) => a.is_reviewer).map((a) => a.role),
+    // The gauntlet roster is registry-fixed iff it is exactly the matched rows (it always
+    // is here — planStep never augments the set). Surfaced so a caller/test can assert it.
+    gauntlet_fixed: step === "gauntlet",
+    beta_boundary: betaBoundaryAfter(step),
+  };
+}
+
+/** The β boundary that FOLLOWS a step (epsilon.md calls β at these four transitions). */
+function betaBoundaryAfter(step) {
+  switch (step) {
+    case "plan":
+      return "plan->design";
+    case "design":
+      return "design->build";
+    case "gauntlet":
+      return "gauntlet->release";
+    case "release":
+      return "release->retro";
+    default:
+      return null; // build (no β between build/gauntlet — same phase) + retro (terminal)
+  }
+}
+
+/**
+ * Plan the FULL lifecycle: one planStep per canonical step. The complete registry-driven
+ * conducting plan for a sprint composition — what ε will dispatch, step by step, with the
+ * route + invariant flags already resolved. PURE.
+ */
+function planLifecycle(composition, opts = {}) {
+  const registry = opts.registry || hookPoints.load();
+  const roles = opts.roles || hookPoints.loadRoles();
+  const steps = LIFECYCLE.map((step) => planStep(step, composition, { registry, roles }));
+  // normalizeComposition returns Sets (correct for matching); serialize them to arrays so
+  // the plan is honest JSON (a Set stringifies to {} — a silent "empty composition" lie).
+  const nc = hookPoints.normalizeComposition(composition);
+  return {
+    composition: { unit_types: [...nc.unit_types], max_risk: nc.max_risk, domains: [...nc.domains] },
+    steps,
+    beta_boundaries: BETA_BOUNDARIES.slice(),
+    // Roll-up invariants the conductor depends on (asserted by the bite-test):
+    sole_builder_dispatcher: assertSoleBuilderDispatcher(steps),
+    consults_cannot_dispatch: assertConsultsCannotDispatch(steps),
+  };
+}
+
+/**
+ * INVARIANT 1 — ε is the sole builder-dispatcher: no step OTHER than `build` contains a
+ * row flagged can_dispatch_builders. Returns { ok, violations[] }.
+ */
+function assertSoleBuilderDispatcher(steps) {
+  const violations = [];
+  for (const s of steps) {
+    for (const a of s.agents) {
+      if (a.can_dispatch_builders && a.step !== "build") {
+        violations.push(`${a.role}@${a.step} carries builder-dispatch authority outside the build step`);
+      }
+    }
+  }
+  return { ok: violations.length === 0, violations };
+}
+
+/**
+ * INVARIANT 2 — author-consults cannot dispatch: every `design`-step row is an author-
+ * consult and MUST NOT carry can_dispatch_builders. Returns { ok, violations[] }.
+ */
+function assertConsultsCannotDispatch(steps) {
+  const violations = [];
+  const design = steps.find((s) => s.step === "design");
+  if (design) {
+    for (const a of design.agents) {
+      if (a.can_dispatch_builders) {
+        violations.push(`design author-consult ${a.role} must not carry builder-dispatch authority`);
+      }
+    }
+  }
+  return { ok: violations.length === 0, violations };
+}
+
+// ── Composition loader (from a sprint's tickets — the same source full.js feeds) ─
+
+/**
+ * Best-available sprint composition from the sprint's ticket files. Identical semantics to
+ * full.js#sprintComposition so the conducted path and the script path agree on which rows
+ * fire. Reads ticket YAML/JSON directly; empty early in the lifecycle, full by gauntlet.
+ */
+function compositionForSprint(sprintId, ticketsDir = SPRINT.tickets) {
+  const tickets = [];
+  try {
+    for (const f of fs.readdirSync(ticketsDir)) {
+      if (!/\.(ya?ml|json)$/.test(f)) continue;
+      const { readYamlMaybe } = require("./fs");
+      const t = readYamlMaybe(path.join(ticketsDir, f));
+      if (t && t.sprint === sprintId) tickets.push(t);
+    }
+  } catch {
+    /* no tickets dir yet → empty composition (only always-on rows fire) */
+  }
+  return hookPoints.compositionFromTickets(tickets);
+}
+
+// ── DISPATCH layer (real spawns + real completion records) ──────────────────────
+//
+// Guarded so a missing toolkit degrades to PLAN-only rather than crashing a conduct run.
+// Every dispatched agent writes the SAME completion record gauntlet-verify reads, so a
+// silent reap is loud (absence = death). This is the concrete replacement of full.js's
+// telemetry-only "consulted" stamp: a dispatch RECORD, not just a consult marker.
+
+let _telemetry = null;
+function telemetry() {
+  if (_telemetry) return _telemetry;
+  try {
+    const da = require("../dispatch-agent"); // canonical record/path helpers (ED-016-safe)
+    _telemetry = {
+      recordCompletion: da.recordCompletion,
+      makeDispatchId: da.makeDispatchId,
+      cmdlineChecksum: da.cmdlineChecksum,
+      ok: true,
+    };
+  } catch (e) {
+    _telemetry = { ok: false, error: e.message };
+  }
+  return _telemetry;
+}
+
+/**
+ * Record a REAL dispatch completion for one agent on its resolved route. In a real conduct
+ * run this is written AFTER the agent's spawn returns; here the runtime writes the record
+ * with the spawn outcome so the ledger reflects what ran. The record is the SAME shape
+ * dispatch-agent/dispatch-claude write — so gauntlet-verify sees ε's reviewers exactly as
+ * it sees γ/δ's. `ok` reflects the spawn outcome the caller passes (a reap → ok:false).
+ *
+ * @returns {{ recorded:boolean, dispatch_id?:string, reason?:string }}
+ */
+function recordAgentDispatch(agentPlan, sprintId, { ok = true, promptBytes = 0 } = {}) {
+  const t = telemetry();
+  if (!t.ok) return { recorded: false, reason: `telemetry unavailable: ${t.error}` };
+  const now = new Date().toISOString();
+  const dispatchId = t.makeDispatchId();
+  t.recordCompletion({
+    dispatch_id: dispatchId,
+    pid: process.pid,
+    role: agentPlan.role,
+    provider: agentPlan.provider || "claude",
+    model: agentPlan.model || null,
+    started_at: now,
+    completed_at: now,
+    elapsed_ms: 0,
+    prompt_bytes: promptBytes,
+    cmdline_checksum: t.cmdlineChecksum(agentPlan.role, agentPlan.provider || "claude", promptBytes),
+    exit_code: ok ? 0 : 1,
+    stdout_bytes: ok ? 1 : 0,
+    stderr_bytes: 0,
+    fallback: false,
+    ok,
+    // ε-conductor provenance (extra fields are ignored by gauntlet-verify's typed check):
+    sprint_id: sprintId,
+    via: "epsilon-runtime",
+    step: agentPlan.step,
+    route: agentPlan.route,
+  });
+  return { recorded: true, dispatch_id: dispatchId };
+}
+
+/**
+ * Conduct ONE step: emit the manager_consult coverage records (telemetry — what
+ * sprint-manager-consult / sprint-hook-coverage read) AND, in dispatch mode, write a real
+ * completion record per matched agent. Returns the step plan + the dispatch outcome.
+ *
+ * The two record kinds are complementary, NOT redundant:
+ *   - manager_consult   → COVERAGE proof "the right agent was engaged at the right step"
+ *     (hook-consult.js, already wired; ED-022's design-touch loop lives here).
+ *   - completion record → LIVENESS proof "the agent actually ran" (gauntlet-verify reads
+ *     it; absence = death). This is what full.js's telemetry-only path never produced.
+ *
+ * @param {object} opts { dispatch:boolean, registry, roles, logFn }
+ */
+function conductStep(step, composition, sprintId, opts = {}) {
+  const plan = planStep(step, composition, opts);
+
+  // (1) COVERAGE — emit the manager_consult per matched agent (+ the ED-022 design-touch
+  //     signal at build/gauntlet). hook-consult is injectable via opts.logFn for tests.
+  const consulted = hookConsult.emitStepConsults(step, composition, sprintId, opts.logFn);
+  if (step === "build" || step === "gauntlet") {
+    hookConsult.emitDesignTouch(composition, sprintId, opts.logFn);
+  }
+
+  // (2) LIVENESS — in dispatch mode, write a real completion record per agent. PLAN mode
+  //     stops at coverage (no spawn). A real conduct integration spawns each agent on its
+  //     route between (1) and (2); here we record the dispatch intent→outcome faithfully.
+  const dispatched = [];
+  if (opts.dispatch) {
+    for (const a of plan.agents) {
+      const rec = recordAgentDispatch(a, sprintId, { ok: opts.spawnOk !== false });
+      dispatched.push({ role: a.role, route: a.route, recorded: rec.recorded, reason: rec.reason });
+    }
+  }
+
+  return { step, plan, consulted, dispatched, beta_boundary: plan.beta_boundary };
+}
+
+/**
+ * The verdict-content override gate over ε's OWN result (ED-025). The runtime MUST run this
+ * before declaring a sprint complete: a binding reviewer FAIL coexisting with
+ * status:"complete" / a unit in units_completed is a dispatcher overriding a binding FAIL,
+ * which is forbidden (epsilon.md Independence invariant #2). Delegates to the SAME
+ * evaluate-core the adhoc gate uses (schema-tolerant across GAMMA/DELTA/EPSILON) so the ε
+ * path inherits the identical can't-override guarantee. Returns { ok, errors[] }.
+ */
+function assertNoFailOverride(epsilonResult, reviewerVerdicts = []) {
+  let evaluate;
+  try {
+    ({ evaluate } = require("../checks/adhoc-fail-override"));
+  } catch (e) {
+    // Fail-CLOSED: if the override gate can't load, we cannot certify no-override.
+    return { ok: false, errors: [`override gate unavailable (fail-closed): ${e.message}`] };
+  }
+  const out = evaluate({ result: epsilonResult, reviewerVerdicts });
+  return { ok: out.result === "PASS", errors: out.errors };
+}
+
+// ── CLI ─────────────────────────────────────────────────────────────────────────
+
+function parseCliComposition(argv) {
+  const ci = argv.indexOf("--composition");
+  if (ci !== -1 && argv[ci + 1]) {
+    try {
+      return JSON.parse(argv[ci + 1]);
+    } catch (e) {
+      process.stderr.write(`bad --composition JSON: ${e.message}\n`);
+      process.exit(2);
+    }
+  }
+  const si = argv.indexOf("--sprint");
+  const sprintId = si !== -1 ? argv[si + 1] : SPRINT.active();
+  if (!sprintId) {
+    process.stderr.write("no --sprint <id> and no active sprint — cannot derive composition\n");
+    process.exit(2);
+  }
+  return compositionForSprint(sprintId);
+}
+
+function main(argv) {
+  const cmd = argv[2] || "plan";
+  const json = argv.includes("--json");
+  const si = argv.indexOf("--sprint");
+  const sprintId = si !== -1 ? argv[si + 1] : SPRINT.active() || "SP-EPSILON-DRYRUN";
+
+  if (cmd === "plan") {
+    const composition = parseCliComposition(argv);
+    const lifecycle = planLifecycle(composition);
+    if (json) {
+      process.stdout.write(JSON.stringify(lifecycle, null, 2) + "\n");
+    } else {
+      process.stdout.write(`ε lifecycle plan — composition ${JSON.stringify(lifecycle.composition)}\n`);
+      for (const s of lifecycle.steps) {
+        const tags = s.agents
+          .map((a) => `${a.role}[${a.route}${a.mode === "block" ? ",block" : ""}${a.can_dispatch_builders ? ",dispatch" : ""}]`)
+          .join(", ");
+        process.stdout.write(`  ${s.step.padEnd(9)} → ${tags || "(none)"}${s.beta_boundary ? `   βǁ ${s.beta_boundary}` : ""}\n`);
+      }
+      const inv = [];
+      if (!lifecycle.sole_builder_dispatcher.ok) inv.push(...lifecycle.sole_builder_dispatcher.violations);
+      if (!lifecycle.consults_cannot_dispatch.ok) inv.push(...lifecycle.consults_cannot_dispatch.violations);
+      process.stdout.write(
+        inv.length === 0
+          ? `  invariants: OK (ε sole builder-dispatcher; consults cannot dispatch)\n`
+          : `  invariants: VIOLATED:\n${inv.map((v) => "    - " + v).join("\n")}\n`,
+      );
+    }
+    const invOk = lifecycle.sole_builder_dispatcher.ok && lifecycle.consults_cannot_dispatch.ok;
+    return invOk ? 0 : 1;
+  }
+
+  if (cmd === "conduct") {
+    const dispatch = argv.includes("--dispatch");
+    const stepIdx = argv.indexOf("--step");
+    const onlyStep = stepIdx !== -1 ? argv[stepIdx + 1] : null;
+    const composition = parseCliComposition(argv);
+    const steps = onlyStep ? [onlyStep] : LIFECYCLE;
+    if (onlyStep && !LIFECYCLE.includes(onlyStep)) {
+      process.stderr.write(`unknown --step '${onlyStep}'. one of: ${LIFECYCLE.join(" | ")}\n`);
+      return 2;
+    }
+    const out = [];
+    for (const step of steps) {
+      out.push(conductStep(step, composition, sprintId, { dispatch }));
+    }
+    if (json) {
+      process.stdout.write(JSON.stringify({ sprint_id: sprintId, dispatch, steps: out }, null, 2) + "\n");
+    } else {
+      process.stdout.write(`ε conduct ${dispatch ? "(dispatch)" : "(plan-only)"} — sprint ${sprintId}\n`);
+      for (const s of out) {
+        process.stdout.write(
+          `  ${s.step.padEnd(9)} consulted=[${s.consulted.join(", ")}]` +
+            (dispatch ? ` dispatched=${s.dispatched.filter((d) => d.recorded).length}/${s.dispatched.length}` : "") +
+            `\n`,
+        );
+      }
+    }
+    return 0;
+  }
+
+  process.stderr.write(
+    "usage: epsilon-runtime.js <plan | conduct> --sprint <id> [--composition <json>] [--dispatch] [--step <step>] [--json]\n",
+  );
+  return 2;
+}
+
+if (require.main === module) process.exit(main(process.argv));
+
+module.exports = {
+  LIFECYCLE,
+  BETA_BOUNDARIES,
+  ROUTE,
+  resolveRoute,
+  canDispatchBuilders,
+  planStep,
+  planLifecycle,
+  betaBoundaryAfter,
+  assertSoleBuilderDispatcher,
+  assertConsultsCannotDispatch,
+  compositionForSprint,
+  recordAgentDispatch,
+  conductStep,
+  assertNoFailOverride,
+};
