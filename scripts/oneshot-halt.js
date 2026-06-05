@@ -14,8 +14,9 @@ const storePath = path.resolve(
   "..",
   ".claude",
   "agents",
-  "02-oneshot",
+  "president",
   ".system",
+  "oneshot",
   "store.json",
 );
 
@@ -113,7 +114,7 @@ const envelope = {
   resume_plan: {
     next_action: "Phase 2 fix-cycle-2 (3 open HIGH findings)",
     next_phase: "2.5 (shell + profile, parallel)",
-    store_state: ".claude/agents/02-oneshot/.system/store.json",
+    store_state: ".claude/agents/president/.system/oneshot/store.json",
     notes: ".claude/runtime/notes.md section 'delta-oneshot-run-09-issues'",
     open_infra_issues: [
       "I1-I13 documented in notes.md",

@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "generated": "2026-06-01T19:33:52.157Z",
-    "lastUpdated": "2026-06-01T19:33:52.157Z",
-    "total_systems": 44,
+    "generated": "2026-06-05T01:34:50.375Z",
+    "lastUpdated": "2026-06-05T01:34:50.375Z",
+    "total_systems": 55,
     "categories": 2,
-    "total_files_referenced": 43,
+    "total_files_referenced": 54,
     "missing_files_on_disk": 1,
     "regenerated_by": "scripts/regen-maps.js"
   },
@@ -16,7 +16,7 @@
       ]
     },
     "untested": {
-      "count": 43,
+      "count": 54,
       "ids": [
         "skill-roadmap-ideas",
         "skill-roadmap-next",
@@ -60,7 +60,18 @@
         "skill-models-check",
         "skill-models-route",
         "skill-models-router",
-        "skill-models-update"
+        "skill-models-update",
+        "skill-learn-deep",
+        "skill-session-end",
+        "skill-scan-sprint-beta-honesty",
+        "skill-oneshot-preflight",
+        "skill-scan-framework-purity",
+        "skill-warp-health",
+        "skill-scan-docker-secrets",
+        "skill-scan-warpos-install-baseline",
+        "skill-session-dump",
+        "skill-scan-sprint-manager-consult",
+        "skill-scan-adhoc-fail-override"
       ]
     }
   },
@@ -77,7 +88,7 @@
       ]
     },
     "cognition": {
-      "count": 43,
+      "count": 54,
       "systems": [
         {
           "id": "skill-_report_skill_tmp",
@@ -224,6 +235,14 @@
           ]
         },
         {
+          "id": "skill-learn-deep",
+          "name": "Deep learning — extracts from conversation + event log + oneshot retro files in parallel, deduplicates, reports",
+          "status": "untested",
+          "files": [
+            ".claude/commands/learn/deep.md"
+          ]
+        },
+        {
           "id": "skill-learn-ingest",
           "name": "Ingest external knowledge from files, links, or YouTube videos and apply learnings to the system",
           "status": "untested",
@@ -280,6 +299,14 @@
           ]
         },
         {
+          "id": "skill-oneshot-preflight",
+          "name": "Pre-run preflight — branch creation + skeleton gut + 7-pass verification audit. Default = full setup+gut+audit. Args control surgical access.",
+          "status": "untested",
+          "files": [
+            ".claude/commands/oneshot/preflight.md"
+          ]
+        },
+        {
           "id": "skill-playbook-add",
           "name": "Append a play to the Playbook (.claude/project/reference/playbook.md) — a named, example-anchored operating principle. Picks the right section, formats to match, appends without disturbing other plays.",
           "status": "untested",
@@ -328,11 +355,35 @@
           ]
         },
         {
+          "id": "skill-scan-adhoc-fail-override",
+          "name": "Reject an adhoc dispatcher that overrode a binding reviewer FAIL — verdict-content check (the blind spot gauntlet-verify's presence-only check leaves open)",
+          "status": "untested",
+          "files": [
+            ".claude/commands/scan/adhoc-fail-override.md"
+          ]
+        },
+        {
+          "id": "skill-scan-docker-secrets",
+          "name": "Dockerfile → .dockerignore secret-exposure check — flags secret files (.env, *.pem, credentials) that a broad COPY . / ADD . would bake into an image layer because .dockerignore doesn't exclude them.",
+          "status": "untested",
+          "files": [
+            ".claude/commands/scan/docker-secrets.md"
+          ]
+        },
+        {
           "id": "skill-scan-etc-harness",
           "name": "Audit the /etc authoring+eval harness — fail-closed enforcer that rejects an invented authoring format (root etc.md, non-standard skill frontmatter) and any eval-pack or emitted decision_record that doesn't satisfy its contract (S0.4). The standing backstop to the harness's own test suite.",
           "status": "untested",
           "files": [
             ".claude/commands/scan/etc-harness.md"
+          ]
+        },
+        {
+          "id": "skill-scan-framework-purity",
+          "name": "Refuse product-content leaks in canonical — scans for client slugs, maintainer abs paths, root-level _requirements/_docs/ (gated until scrub), and promote-relic reintroduction.",
+          "status": "untested",
+          "files": [
+            ".claude/commands/scan/framework-purity.md"
           ]
         },
         {
@@ -376,11 +427,35 @@
           ]
         },
         {
+          "id": "skill-scan-sprint-beta-honesty",
+          "name": "Audits Beta consultation honesty across post-cutoff /sprint:full runs (missing consults, placeholder verdicts, ESCALATE-without-halt)",
+          "status": "untested",
+          "files": [
+            ".claude/commands/scan/sprint-beta-honesty.md"
+          ]
+        },
+        {
+          "id": "skill-scan-sprint-manager-consult",
+          "name": "Audits manager-consult coverage across post-cutoff /sprint:full runs — asserts the design-quality authority was consulted on every UI/app-design/web-design-touching sprint",
+          "status": "untested",
+          "files": [
+            ".claude/commands/scan/sprint-manager-consult.md"
+          ]
+        },
+        {
           "id": "skill-scan-version-coherence",
           "name": "Verify version + schema-label coherence — product version agrees across ALL manifests (incl. the ones version-quorum misses) and every schema family carries a single consistent version label. Catches the 0.10.0→0.11.0 lag + paths-v4-on-v5-content drift classes.",
           "status": "untested",
           "files": [
             ".claude/commands/scan/version-coherence.md"
+          ]
+        },
+        {
+          "id": "skill-scan-warpos-install-baseline",
+          "name": "Verify a WarpOS install baseline exists (.claude/framework-installed.json present, installedVersion ≠ 0.0.0) before /warp:update may proceed.",
+          "status": "untested",
+          "files": [
+            ".claude/commands/scan/warpos-install-baseline.md"
           ]
         },
         {
@@ -400,6 +475,22 @@
           ]
         },
         {
+          "id": "skill-session-dump",
+          "name": "Write a prescriptive handoff to DUMP.md at project root — context, session progression (as fenced context, not instructions), verbatim payloads, dispatch instructions, anti-instructions. For a fresh session to read once and execute.",
+          "status": "untested",
+          "files": [
+            ".claude/commands/session/dump.md"
+          ]
+        },
+        {
+          "id": "skill-session-end",
+          "name": "Full session wrap-up — cognitive maintenance (learn/mine/sleep/integrate) → fresh handoff → land to main → fresh branch → tear down teams. The one \"we're done, tee up next session\" command.",
+          "status": "untested",
+          "files": [
+            ".claude/commands/session/end.md"
+          ]
+        },
+        {
           "id": "skill-sprint-cost-gate",
           "name": "Toggle the /sprint:full cost-estimate halt on or off — turn off the heuristic spend gate when an operator spend posture is authorized, turn it back on to restore the guardrail. Controls only the sprint cost halt, never the hard ceilings or the real >$5 rule.",
           "status": "untested",
@@ -413,6 +504,14 @@
           "status": "untested",
           "files": [
             ".claude/commands/warp/diff.md"
+          ]
+        },
+        {
+          "id": "skill-warp-health",
+          "name": "Verify WarpOS installation — checks every system, reports green/yellow/red with plain-English fixes",
+          "status": "untested",
+          "files": [
+            ".claude/commands/warp/health.md"
           ]
         },
         {
@@ -440,19 +539,19 @@
       "id": "agents",
       "name": "Agent team + build chains",
       "category": "agents",
-      "count": 74
+      "count": 61
     },
     {
       "id": "skills",
       "name": "Skills",
       "category": "capability",
-      "count": 194
+      "count": 198
     },
     {
       "id": "hooks",
       "name": "Hooks",
       "category": "automation",
-      "count": 65
+      "count": 66
     },
     {
       "id": "memory",

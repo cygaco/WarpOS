@@ -1,14 +1,14 @@
 {
   "metadata": {
-    "generated": "2026-06-01T19:33:52.157Z",
-    "lastUpdated": "2026-06-01T19:33:52.157Z",
-    "total_tools": 171,
+    "generated": "2026-06-05T01:34:50.375Z",
+    "lastUpdated": "2026-06-05T01:34:50.375Z",
+    "total_tools": 174,
     "categories": 4,
     "regenerated_by": "scripts/regen-maps.js"
   },
   "categories": {
     "scripts": {
-      "count": 166,
+      "count": 169,
       "items": [
         {
           "id": "tool:agent-dashboard",
@@ -151,8 +151,8 @@
           "path": "scripts/delta-build-fix-brief.js",
           "type": "script",
           "exists": true,
-          "size": 6324,
-          "modified": "2026-05-30T01:25:39.548Z"
+          "size": 6336,
+          "modified": "2026-06-05T01:31:25.796Z"
         },
         {
           "id": "tool:delta-build-fixer-prompt-from-worktree",
@@ -160,8 +160,8 @@
           "path": "scripts/delta-build-fixer-prompt-from-worktree.js",
           "type": "script",
           "exists": true,
-          "size": 2365,
-          "modified": "2026-05-30T01:25:39.549Z"
+          "size": 2372,
+          "modified": "2026-06-05T01:31:04.325Z"
         },
         {
           "id": "tool:delta-build-fixer-prompt",
@@ -169,8 +169,8 @@
           "path": "scripts/delta-build-fixer-prompt.js",
           "type": "script",
           "exists": true,
-          "size": 1780,
-          "modified": "2026-05-30T01:25:39.549Z"
+          "size": 1787,
+          "modified": "2026-06-05T01:30:59.166Z"
         },
         {
           "id": "tool:delta-build-prompt",
@@ -178,8 +178,8 @@
           "path": "scripts/delta-build-prompt.js",
           "type": "script",
           "exists": true,
-          "size": 7079,
-          "modified": "2026-05-30T01:25:39.550Z"
+          "size": 7107,
+          "modified": "2026-06-05T01:30:31.025Z"
         },
         {
           "id": "tool:delta-build-reviewer-prompt",
@@ -187,8 +187,8 @@
           "path": "scripts/delta-build-reviewer-prompt.js",
           "type": "script",
           "exists": true,
-          "size": 10377,
-          "modified": "2026-05-30T01:25:39.550Z"
+          "size": 10391,
+          "modified": "2026-06-05T01:31:02.593Z"
         },
         {
           "id": "tool:delta-canonical-dispatch-smoke",
@@ -214,8 +214,8 @@
           "path": "scripts/delta-clear-halt.js",
           "type": "script",
           "exists": true,
-          "size": 624,
-          "modified": "2026-05-30T01:25:39.551Z"
+          "size": 636,
+          "modified": "2026-06-05T01:31:22.474Z"
         },
         {
           "id": "tool:delta-dispatch-builder",
@@ -223,8 +223,8 @@
           "path": "scripts/delta-dispatch-builder.js",
           "type": "script",
           "exists": true,
-          "size": 8809,
-          "modified": "2026-05-30T01:25:39.554Z"
+          "size": 9396,
+          "modified": "2026-06-04T22:57:13.994Z"
         },
         {
           "id": "tool:delta-dispatch-fixer",
@@ -232,8 +232,8 @@
           "path": "scripts/delta-dispatch-fixer.js",
           "type": "script",
           "exists": true,
-          "size": 7335,
-          "modified": "2026-05-30T01:25:39.554Z"
+          "size": 7566,
+          "modified": "2026-06-05T01:31:40.877Z"
         },
         {
           "id": "tool:delta-final-gauntlet",
@@ -241,8 +241,8 @@
           "path": "scripts/delta-final-gauntlet.js",
           "type": "script",
           "exists": true,
-          "size": 2723,
-          "modified": "2026-05-31T03:26:36.371Z"
+          "size": 3059,
+          "modified": "2026-06-04T22:57:13.994Z"
         },
         {
           "id": "tool:delta-gate-check",
@@ -250,8 +250,8 @@
           "path": "scripts/delta-gate-check.js",
           "type": "script",
           "exists": true,
-          "size": 2003,
-          "modified": "2026-05-30T01:25:39.556Z"
+          "size": 2015,
+          "modified": "2026-06-05T01:31:23.932Z"
         },
         {
           "id": "tool:delta-gauntlet-watcher",
@@ -259,8 +259,8 @@
           "path": "scripts/delta-gauntlet-watcher.js",
           "type": "script",
           "exists": true,
-          "size": 2068,
-          "modified": "2026-05-31T03:26:36.372Z"
+          "size": 2144,
+          "modified": "2026-06-04T22:57:13.995Z"
         },
         {
           "id": "tool:delta-heartbeat",
@@ -268,8 +268,8 @@
           "path": "scripts/delta-heartbeat.js",
           "type": "script",
           "exists": true,
-          "size": 1209,
-          "modified": "2026-05-30T01:25:39.558Z"
+          "size": 1228,
+          "modified": "2026-06-05T01:31:07.574Z"
         },
         {
           "id": "tool:delta-log-integrations",
@@ -286,8 +286,8 @@
           "path": "scripts/delta-mark-built.js",
           "type": "script",
           "exists": true,
-          "size": 7493,
-          "modified": "2026-05-30T01:25:39.558Z"
+          "size": 7505,
+          "modified": "2026-06-05T01:31:27.669Z"
         },
         {
           "id": "tool:delta-mark-done",
@@ -295,8 +295,8 @@
           "path": "scripts/delta-mark-done.js",
           "type": "script",
           "exists": true,
-          "size": 846,
-          "modified": "2026-05-30T01:25:39.559Z"
+          "size": 858,
+          "modified": "2026-06-05T01:31:29.555Z"
         },
         {
           "id": "tool:delta-pre-clean-worktrees",
@@ -313,8 +313,8 @@
           "path": "scripts/delta-queue-foundation.js",
           "type": "script",
           "exists": true,
-          "size": 1013,
-          "modified": "2026-05-30T01:25:39.562Z"
+          "size": 1025,
+          "modified": "2026-06-05T01:31:30.938Z"
         },
         {
           "id": "tool:delta-render-tracker",
@@ -322,8 +322,8 @@
           "path": "scripts/delta-render-tracker.js",
           "type": "script",
           "exists": true,
-          "size": 4806,
-          "modified": "2026-05-30T01:25:39.564Z"
+          "size": 4814,
+          "modified": "2026-06-05T01:30:44.507Z"
         },
         {
           "id": "tool:delta-show-findings",
@@ -340,8 +340,8 @@
           "path": "scripts/delta-store-review.js",
           "type": "script",
           "exists": true,
-          "size": 1672,
-          "modified": "2026-05-30T01:25:39.565Z"
+          "size": 1684,
+          "modified": "2026-06-05T01:31:32.620Z"
         },
         {
           "id": "tool:delta-update-heartbeat",
@@ -349,8 +349,8 @@
           "path": "scripts/delta-update-heartbeat.js",
           "type": "script",
           "exists": true,
-          "size": 720,
-          "modified": "2026-05-30T01:25:39.565Z"
+          "size": 727,
+          "modified": "2026-06-05T01:30:46.371Z"
         },
         {
           "id": "tool:dismiss-drift-entry",
@@ -367,8 +367,17 @@
           "path": "scripts/dispatch-agent.js",
           "type": "script",
           "exists": true,
-          "size": 17165,
-          "modified": "2026-06-01T16:44:02.087Z"
+          "size": 24166,
+          "modified": "2026-06-04T22:57:13.995Z"
+        },
+        {
+          "id": "tool:dispatch-claude",
+          "name": "dispatch-claude.js",
+          "path": "scripts/dispatch-claude.js",
+          "type": "script",
+          "exists": true,
+          "size": 14763,
+          "modified": "2026-06-02T18:08:39.246Z"
         },
         {
           "id": "tool:dispatch",
@@ -484,8 +493,8 @@
           "path": "scripts/generate-framework-manifest.js",
           "type": "script",
           "exists": true,
-          "size": 21665,
-          "modified": "2026-05-31T19:53:31.126Z"
+          "size": 23132,
+          "modified": "2026-06-04T22:57:13.996Z"
         },
         {
           "id": "tool:generate-maps",
@@ -790,8 +799,8 @@
           "path": "scripts/oneshot-halt.js",
           "type": "script",
           "exists": true,
-          "size": 4332,
-          "modified": "2026-05-30T01:25:39.632Z"
+          "size": 4351,
+          "modified": "2026-06-05T01:32:20.554Z"
         },
         {
           "id": "tool:oneshot-heartbeat",
@@ -799,8 +808,8 @@
           "path": "scripts/oneshot-heartbeat.js",
           "type": "script",
           "exists": true,
-          "size": 1118,
-          "modified": "2026-05-30T01:25:39.632Z"
+          "size": 1130,
+          "modified": "2026-06-05T01:31:46.752Z"
         },
         {
           "id": "tool:oneshot-phase-complete",
@@ -808,8 +817,8 @@
           "path": "scripts/oneshot-phase-complete.js",
           "type": "script",
           "exists": true,
-          "size": 1811,
-          "modified": "2026-05-30T01:25:39.633Z"
+          "size": 1823,
+          "modified": "2026-06-05T01:31:59.017Z"
         },
         {
           "id": "tool:oneshot-store-file-sync",
@@ -817,8 +826,8 @@
           "path": "scripts/oneshot-store-file-sync.js",
           "type": "script",
           "exists": true,
-          "size": 4770,
-          "modified": "2026-05-30T01:25:39.633Z"
+          "size": 4782,
+          "modified": "2026-06-05T01:31:56.619Z"
         },
         {
           "id": "tool:oneshot-store-reset",
@@ -826,8 +835,8 @@
           "path": "scripts/oneshot-store-reset.js",
           "type": "script",
           "exists": true,
-          "size": 3060,
-          "modified": "2026-05-30T01:25:39.633Z"
+          "size": 3072,
+          "modified": "2026-06-05T01:31:59.906Z"
         },
         {
           "id": "tool:patch-store-backend-skipped",
@@ -844,8 +853,8 @@
           "path": "scripts/path-lint.js",
           "type": "script",
           "exists": true,
-          "size": 14677,
-          "modified": "2026-05-30T10:31:34.033Z"
+          "size": 14694,
+          "modified": "2026-06-05T01:33:21.187Z"
         },
         {
           "id": "tool:phase0-verify",
@@ -988,8 +997,8 @@
           "path": "scripts/regen-maps.js",
           "type": "script",
           "exists": true,
-          "size": 47568,
-          "modified": "2026-05-30T01:25:39.648Z"
+          "size": 47570,
+          "modified": "2026-06-05T01:33:51.971Z"
         },
         {
           "id": "tool:research-append-learnings",
@@ -1204,8 +1213,8 @@
           "path": "scripts/test-dispatch-agent-resolution.js",
           "type": "script",
           "exists": true,
-          "size": 2609,
-          "modified": "2026-05-30T01:25:39.676Z"
+          "size": 4084,
+          "modified": "2026-06-04T22:57:14.003Z"
         },
         {
           "id": "tool:test-dispatch-config",
@@ -1213,8 +1222,8 @@
           "path": "scripts/test-dispatch-config.js",
           "type": "script",
           "exists": true,
-          "size": 8573,
-          "modified": "2026-06-01T17:10:01.409Z"
+          "size": 8681,
+          "modified": "2026-06-04T22:57:14.003Z"
         },
         {
           "id": "tool:test-dispatch-route-guard",
@@ -1222,8 +1231,8 @@
           "path": "scripts/test-dispatch-route-guard.js",
           "type": "script",
           "exists": true,
-          "size": 3959,
-          "modified": "2026-05-30T01:25:39.676Z"
+          "size": 6087,
+          "modified": "2026-06-02T18:17:35.473Z"
         },
         {
           "id": "tool:test-dispatch-telemetry",
@@ -1260,6 +1269,15 @@
           "exists": true,
           "size": 4453,
           "modified": "2026-05-30T01:25:39.678Z"
+        },
+        {
+          "id": "tool:test-merge-guard-node-e",
+          "name": "test-merge-guard-node-e.js",
+          "path": "scripts/test-merge-guard-node-e.js",
+          "type": "script",
+          "exists": true,
+          "size": 3521,
+          "modified": "2026-06-04T21:24:41.662Z"
         },
         {
           "id": "tool:test-merge-guard-rm",
@@ -1305,6 +1323,15 @@
           "exists": true,
           "size": 2469,
           "modified": "2026-05-30T01:25:39.680Z"
+        },
+        {
+          "id": "tool:test-settings-edit-guard",
+          "name": "test-settings-edit-guard.js",
+          "path": "scripts/test-settings-edit-guard.js",
+          "type": "script",
+          "exists": true,
+          "size": 3000,
+          "modified": "2026-06-04T21:24:41.662Z"
         },
         {
           "id": "tool:test-sprint-hooks",
@@ -1411,8 +1438,8 @@
           "path": "scripts/update-onboarding-done.js",
           "type": "script",
           "exists": true,
-          "size": 2695,
-          "modified": "2026-05-30T01:25:39.688Z"
+          "size": 2707,
+          "modified": "2026-06-05T01:34:10.091Z"
         },
         {
           "id": "tool:validate-gates",
@@ -1420,8 +1447,8 @@
           "path": "scripts/validate-gates.js",
           "type": "script",
           "exists": true,
-          "size": 7165,
-          "modified": "2026-05-30T01:25:39.689Z"
+          "size": 7181,
+          "modified": "2026-06-05T01:34:07.931Z"
         },
         {
           "id": "tool:verify-drift-detector",
@@ -1549,19 +1576,19 @@
           "id": "xref:skills",
           "type": "xref",
           "note": "skills inventory lives in .claude/project/maps/inventory-skills.json",
-          "count": 194
+          "count": 198
         },
         {
           "id": "xref:hooks",
           "type": "xref",
           "note": "hooks inventory lives in .claude/project/maps/inventory-hooks.json",
-          "count": 65
+          "count": 66
         }
       ]
     }
   },
   "summary": {
-    "scripts": 166,
+    "scripts": 169,
     "npm_scripts": 0,
     "external_clis": 3,
     "xrefs": 2

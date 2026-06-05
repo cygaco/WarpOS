@@ -18,7 +18,7 @@ if (!feature || !fixBriefFile || !outputFile) {
 
 const store = JSON.parse(
   fs.readFileSync(
-    path.join(PROJ, ".claude/agents/02-oneshot/.system/store.json"),
+    path.join(PROJ, ".claude/agents/president/.system/oneshot/store.json"),
     "utf8",
   ),
 );

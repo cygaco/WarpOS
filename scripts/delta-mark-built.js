@@ -33,8 +33,9 @@ const STORE = path.join(
   ROOT,
   ".claude",
   "agents",
-  "02-oneshot",
+  "president",
   ".system",
+  "oneshot",
   "store.json",
 );
 

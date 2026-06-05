@@ -31,8 +31,9 @@ const storePath = path.join(
   projectRoot,
   ".claude",
   "agents",
-  "02-oneshot",
+  "president",
   ".system",
+  "oneshot",
   "store.json",
 );
 const specsRoot = path.join(projectRoot, "requirements", "04-features");

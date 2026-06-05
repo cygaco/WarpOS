@@ -25,7 +25,7 @@
  *   WARN — paths that resolve BUT have a dedicated paths.json key:
  *     - .claude/project/events/events.jsonl          → paths.eventsFile
  *     - .claude/project/memory/learnings.jsonl       → paths.learningsFile
- *     - .claude/agents/00-alex/.system/beta/         → paths.betaSystem
+ *     - .claude/agents/president/.system/beta/       → paths.betaSystem
  *     - scripts/hooks/lib/paths.js                   → paths.pathsLib
  *     ...
  *
@@ -166,23 +166,23 @@ const WARN = [
     key: "systemsFile",
   },
   {
-    re: /\.claude\/agents\/00-alex\/\.system\/beta\/judgement-model\.md/g,
+    re: /\.claude\/agents\/president\/\.system\/beta\/judgement-model\.md/g,
     key: "judgmentModel",
   },
   {
-    re: /\.claude\/agents\/00-alex\/\.system\/beta\/judgement-model-recommendations\.md/g,
+    re: /\.claude\/agents\/president\/\.system\/beta\/judgement-model-recommendations\.md/g,
     key: "judgmentRecommendations",
   },
   {
-    re: /\.claude\/agents\/00-alex\/\.system\/beta\/events\.jsonl/g,
+    re: /\.claude\/agents\/president\/\.system\/beta\/events\.jsonl/g,
     key: "betaEvents",
   },
   {
-    re: /\.claude\/agents\/00-alex\/\.system\/beta\/beta-source-data\.md/g,
+    re: /\.claude\/agents\/president\/\.system\/beta\/beta-source-data\.md/g,
     key: "betaSourceData",
   },
   {
-    re: /\.claude\/agents\/00-alex\/\.system\/lexicon\.md/g,
+    re: /\.claude\/agents\/president\/\.system\/lexicon\.md/g,
     key: "lexicon",
   },
   {
@@ -276,7 +276,7 @@ const SKIP_SUBSTRINGS = [
   "scripts/hooks/path-guard.js", // holds the patterns by design
   "/scan/references.md", // rename catalog lives here (was /check/references.md before the check:→scan: rename; 2026-05-30 fix — the rename missed this exempt → 8 false criticals)
   ".claude/dreams/",
-  ".claude/agents/02-oneshot/.system/retros/", // historical retros
+  ".claude/agents/president/.system/oneshot/retros/", // historical retros
   ".claude/agents/.system/dispatch-backups/", // dispatch snapshots
   "backups/",
   "SYSTEMS-REFERENCE.md", // doc being migrated

@@ -217,4 +217,4 @@ Open a session in the project directory and say: "Read and execute `.claude/agen
 Submit as a Codex task with the repo attached.
 
 ### Resuming
-"Read `.claude/agents/store.json` and resume the oneshot build from where it stopped."
+"Read `.claude/agents/president/.system/oneshot/store.json` and resume the oneshot build from where it stopped."

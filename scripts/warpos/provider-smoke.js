@@ -253,7 +253,7 @@ function loadFailureModeCatalog() {
     process.cwd(),
     ".claude",
     "agents",
-    "00-alex",
+    "president",
     ".system",
     "policy",
     "provider-failure-modes.json",

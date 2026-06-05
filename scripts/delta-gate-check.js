@@ -19,8 +19,9 @@ const STORE = path.resolve(
   "..",
   ".claude",
   "agents",
-  "02-oneshot",
+  "president",
   ".system",
+  "oneshot",
   "store.json",
 );
 

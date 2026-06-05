@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "generated": "2026-06-01T19:33:52.157Z",
-    "lastUpdated": "2026-06-01T19:33:52.157Z",
-    "total_hooks": 63,
+    "generated": "2026-06-05T01:34:50.375Z",
+    "lastUpdated": "2026-06-05T01:34:50.375Z",
+    "total_hooks": 64,
     "total_modules": 15,
-    "uncurated": 0,
+    "uncurated": 1,
     "total_gaps": 84,
     "gaps_closed": 73,
     "gaps_open": 11,
@@ -62,8 +62,8 @@
         "paths",
         "mode"
       ],
-      "file_size": 9093,
-      "file_modified": "2026-05-30T01:25:39.579Z",
+      "file_size": 9095,
+      "file_modified": "2026-06-04T22:57:13.996Z",
       "note": "Escalated 2026-05-13: added release-gate. Release-context AskUserQuestion now requires a recent Beta consultation logged to paths.betaEvents (per CLAUDE.md beta-consultation protocol). `deploy` dropped from ESCAPE_KEYWORDS — it was the most common escape path and let release decisions skip Beta entirely."
     },
     {
@@ -91,8 +91,8 @@
         "store.json",
         "project-config"
       ],
-      "file_size": 3095,
-      "file_modified": "2026-05-30T01:25:39.579Z"
+      "file_size": 3145,
+      "file_modified": "2026-06-04T22:57:13.997Z"
     },
     {
       "id": "build-transaction-boundary",
@@ -284,8 +284,8 @@
       "depends_on": [
         "logger"
       ],
-      "file_size": 9840,
-      "file_modified": "2026-05-30T01:25:39.583Z",
+      "file_size": 19881,
+      "file_modified": "2026-06-04T22:57:13.997Z",
       "note": "Prevents binding-gap regressions (LRN-2026-04-17 Windows stdin; LRN-2026-04-30 binding-gap) by forcing all cross-provider CLI prompt calls through the canonical wrapper that carries runProvider+concurrency-lock fixes."
     },
     {
@@ -485,8 +485,8 @@
       "phase": "?",
       "mode": "?",
       "file": "scripts/hooks/framework-purity-guard.js",
-      "file_size": 5160,
-      "file_modified": "2026-05-30T01:25:39.586Z",
+      "file_size": 5253,
+      "file_modified": "2026-06-04T21:24:41.660Z",
       "registered": true,
       "gates": [],
       "blocks": [],
@@ -520,8 +520,8 @@
       "depends_on": [
         "store.json"
       ],
-      "file_size": 5053,
-      "file_modified": "2026-05-30T01:25:39.586Z"
+      "file_size": 5496,
+      "file_modified": "2026-06-04T22:57:13.997Z"
     },
     {
       "id": "gauntlet-gate",
@@ -560,8 +560,8 @@
         "store.json runLog",
         "store.json features"
       ],
-      "file_size": 8310,
-      "file_modified": "2026-05-30T01:25:39.587Z"
+      "file_size": 8464,
+      "file_modified": "2026-06-05T01:32:38.729Z"
     },
     {
       "id": "learning-validator",
@@ -600,8 +600,8 @@
       "phase": "?",
       "mode": "?",
       "file": "scripts/hooks/ledger-presence-guard.js",
-      "file_size": 6981,
-      "file_modified": "2026-05-30T01:25:39.588Z",
+      "file_size": 6991,
+      "file_modified": "2026-06-05T01:33:56.186Z",
       "registered": true,
       "gates": [],
       "blocks": [],
@@ -789,8 +789,8 @@
       "depends_on": [
         "store.json"
       ],
-      "file_size": 3699,
-      "file_modified": "2026-05-30T01:25:39.596Z"
+      "file_size": 4504,
+      "file_modified": "2026-06-04T22:57:14.000Z"
     },
     {
       "id": "path-guard",
@@ -826,8 +826,8 @@
       "depends_on": [
         "paths"
       ],
-      "file_size": 8938,
-      "file_modified": "2026-05-30T01:25:39.596Z"
+      "file_size": 8945,
+      "file_modified": "2026-06-04T22:57:14.000Z"
     },
     {
       "id": "path-registry-guard",
@@ -985,8 +985,8 @@
         "paths"
       ],
       "note": "Not registered as a lifecycle hook; used by /check:references skill and manual audits.",
-      "file_size": 13283,
-      "file_modified": "2026-05-30T01:25:39.598Z"
+      "file_size": 13294,
+      "file_modified": "2026-06-05T01:32:46.530Z"
     },
     {
       "id": "region-marker-guard",
@@ -1095,8 +1095,8 @@
       "depends_on": [
         "logger"
       ],
-      "file_size": 4715,
-      "file_modified": "2026-05-30T01:25:39.599Z",
+      "file_size": 5353,
+      "file_modified": "2026-06-04T22:57:14.000Z",
       "note": "Tripwire for run-8 bug class: in-process Agent dispatch returning 100K+ prose overflowed orchestrator context. Real fix is JSON-envelope prompt templates; this hook surfaces prompt-template drift."
     },
     {
@@ -1128,8 +1128,8 @@
       "depends_on": [
         "paths"
       ],
-      "file_size": 2815,
-      "file_modified": "2026-05-30T01:25:39.599Z",
+      "file_size": 2833,
+      "file_modified": "2026-06-05T01:32:40.402Z",
       "note": "HYGIENE Rule 64 enforcement. Sources: run-9 cross-session inbox sessions moc2ua2s, mocaecxt, mocd8rff. Flip default to enforce after one clean session passes."
     },
     {
@@ -1182,8 +1182,8 @@
       "pre_check": "On Agent PreToolUse: resolve role from subagent_type or prompt heuristics; if build-chain, scan prompt for scope contract markers; block on absence.",
       "post_check": "none",
       "depends_on": [],
-      "file_size": 1758,
-      "file_modified": "2026-05-30T01:25:39.600Z",
+      "file_size": 4536,
+      "file_modified": "2026-06-04T22:57:14.001Z",
       "note": "Companion to ownership-guard. Forces builders/fixers to declare their write scope up front rather than discovering ownership violations at write-time."
     },
     {
@@ -1268,8 +1268,8 @@
         "context-sources",
         "paths"
       ],
-      "file_size": 17700,
-      "file_modified": "2026-05-30T01:25:39.601Z"
+      "file_size": 19728,
+      "file_modified": "2026-06-02T02:20:03.412Z"
     },
     {
       "id": "session-stop",
@@ -1292,8 +1292,8 @@
         "logger",
         "paths"
       ],
-      "file_size": 18562,
-      "file_modified": "2026-05-30T01:25:39.602Z"
+      "file_size": 18584,
+      "file_modified": "2026-06-05T01:32:42.786Z"
     },
     {
       "id": "session-tracker",
@@ -1317,6 +1317,24 @@
       ],
       "file_size": 9491,
       "file_modified": "2026-05-30T01:25:39.602Z"
+    },
+    {
+      "id": "settings-edit-guard",
+      "type": "hook",
+      "matcher": "?",
+      "phase": "?",
+      "mode": "?",
+      "file": "scripts/hooks/settings-edit-guard.js",
+      "file_size": 4852,
+      "file_modified": "2026-06-04T21:24:41.661Z",
+      "registered": true,
+      "gates": [],
+      "blocks": [],
+      "warns": [],
+      "allows": [],
+      "gaps_closed": [],
+      "uncurated": true,
+      "uncurated_note": "added since last hand-curated regen — fields ?, ?, ? need a /maps:enforcements review"
     },
     {
       "id": "skill-catalog-regen",
@@ -1423,8 +1441,8 @@
         "providers"
       ],
       "timeout": 5000,
-      "file_size": 33997,
-      "file_modified": "2026-05-30T01:25:39.603Z"
+      "file_size": 34063,
+      "file_modified": "2026-06-05T01:32:19.070Z"
     },
     {
       "id": "spec-test-staleness",
@@ -1501,8 +1519,8 @@
       "phase": "?",
       "mode": "?",
       "file": "scripts/hooks/sprint-routing-guard.js",
-      "file_size": 9606,
-      "file_modified": "2026-05-30T01:25:39.604Z",
+      "file_size": 9608,
+      "file_modified": "2026-06-04T22:57:14.001Z",
       "registered": true,
       "gates": [],
       "blocks": [],
@@ -1877,8 +1895,8 @@
       "phase": "?",
       "mode": "?",
       "file": "scripts/hooks/version-bump-guard.js",
-      "file_size": 7682,
-      "file_modified": "2026-05-30T01:25:39.609Z",
+      "file_size": 7695,
+      "file_modified": "2026-06-05T01:33:53.816Z",
       "registered": true,
       "gates": [],
       "blocks": [],
@@ -1992,8 +2010,8 @@
         "assess-session.js"
       ],
       "file": "scripts/hooks/lib/logger.js",
-      "file_size": 15612,
-      "file_modified": "2026-05-30T01:25:39.590Z"
+      "file_size": 15922,
+      "file_modified": "2026-06-04T23:27:24.271Z"
     },
     {
       "id": "mode",
@@ -2020,8 +2038,8 @@
       ],
       "generated_from": "framework/paths.registry.json",
       "file": "scripts/hooks/lib/paths.generated.js",
-      "file_size": 10383,
-      "file_modified": "2026-05-31T21:21:29.618Z"
+      "file_size": 10443,
+      "file_modified": "2026-06-04T22:57:13.999Z"
     },
     {
       "id": "paths",
@@ -2032,8 +2050,8 @@
         "~30 hooks (edit-watcher, memory-guard, path-guard, smart-context, etc.)"
       ],
       "file": "scripts/hooks/lib/paths.js",
-      "file_size": 6437,
-      "file_modified": "2026-05-30T01:25:39.591Z"
+      "file_size": 6608,
+      "file_modified": "2026-06-05T01:30:10.380Z"
     },
     {
       "id": "project-config",
@@ -2071,8 +2089,8 @@
         "scripts/dispatch-agent.js"
       ],
       "file": "scripts/hooks/lib/providers.js",
-      "file_size": 29678,
-      "file_modified": "2026-06-01T17:21:07.325Z",
+      "file_size": 36805,
+      "file_modified": "2026-06-04T22:57:13.999Z",
       "note": "Source of binding-gap fixes. dispatch-route-guard hook exists to force every caller through this module."
     },
     {
@@ -2087,8 +2105,8 @@
         "cycle-enforcer.js"
       ],
       "file": "scripts/hooks/lib/role-aliases.js",
-      "file_size": 1904,
-      "file_modified": "2026-05-30T01:25:39.592Z"
+      "file_size": 2579,
+      "file_modified": "2026-06-04T22:57:13.999Z"
     },
     {
       "id": "skill-telemetry",

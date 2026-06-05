@@ -58,7 +58,7 @@ const SKIP_PATTERNS = [
   /\.claude[/\\]project[/\\]events[/\\]/,
   /\.claude[/\\]runtime[/\\]/,
   /\.claude[/\\]agents[/\\]\.system[/\\]dispatch-backups[/\\]/,
-  /\.claude[/\\]agents[/\\]02-oneshot[/\\]\.system[/\\]retros[/\\]/,
+  /\.claude[/\\]agents[/\\]president[/\\]\.system[/\\]oneshot[/\\]retros[/\\]/,
   /docs[/\\]audit-reports[/\\]/,
 ];
 

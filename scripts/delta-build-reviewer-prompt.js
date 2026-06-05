@@ -16,7 +16,7 @@ if (!role || !feature || !worktreePath || !outputFile) {
 
 const store = JSON.parse(
   fs.readFileSync(
-    path.join(PROJ, ".claude/agents/02-oneshot/.system/store.json"),
+    path.join(PROJ, ".claude/agents/president/.system/oneshot/store.json"),
     "utf8",
   ),
 );
@@ -58,7 +58,7 @@ const stories = readFile(
 const inputs = readFile(PROJ, "_requirements/04-features/" + featureDir + "/INPUTS.md");
 const integrationMap = readFile(
   PROJ,
-  ".claude/agents/02-oneshot/.system/integration-map.md",
+  ".claude/agents/president/.system/oneshot/integration-map.md",
 );
 const types = readFile(PROJ, "src/lib/types.ts");
 

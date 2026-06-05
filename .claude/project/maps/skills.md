@@ -1,8 +1,8 @@
 # Skills Map
 
-Generated: 2026-06-01T19:33:52.157Z
+Generated: 2026-06-05T01:34:50.375Z
 
-Total: **192** skills across **41** namespaces. 77 user-invocable.
+Total: **196** skills across **41** namespaces. 77 user-invocable.
 
 ## By namespace
 
@@ -11,14 +11,14 @@ Total: **192** skills across **41** namespaces. 77 user-invocable.
 | Name | Description | Calls | Called by |
 |---|---|---|---|
 | list | Enumerate every agent spec by mode and role. | 0 | 0 |
-| test | Smoke-dispatch one agent role (or all non-claude roles) with a tiny ping prompt. | 0 | 0 |
+| test | Smoke-dispatch one agent role (or all non-claude roles) with a tiny ping prompt. | 1 | 0 |
 
 ### beta (2)
 
 | Name | Description | Calls | Called by |
 |---|---|---|---|
 | integrate | Apply validated recommendations from beta mining into the judgment model | 2 | 2 |
-| mine | Mine patterns from user behavior — prompts, decisions, skill chains, evolution cycles | 4 | 2 |
+| mine | Mine patterns from user behavior — prompts, decisions, skill chains, evolution cycles | 4 | 3 |
 
 ### bootstrap (3)
 
@@ -26,7 +26,7 @@ Total: **192** skills across **41** namespaces. 77 user-invocable.
 |---|---|---|---|
 | lastmile | "Prototype → monetizable product. Drives the 'last mile': readiness audit → launch plan → roadmap/sp | 12 | 0 |
 | ponder | Exploratory pondering of a project — surface tensions, patterns, JTBD drift, and one forcing questio | 5 | 0 |
-| spinup | "From 'just WarpOS' to something on screen — one in-project command: intent (guided brief, or --clon | 4 | 2 |
+| spinup | "From 'just WarpOS' to something on screen — one in-project command: intent (guided brief, or --clon | 5 | 2 |
 
 ### check (4)
 
@@ -42,7 +42,7 @@ Total: **192** skills across **41** namespaces. 77 user-invocable.
 | Name | Description | Calls | Called by |
 |---|---|---|---|
 | both | "[deprecated alias → /commit:land] Commit locally then push — superseded by /commit:land, which also | 3 | 1 |
-| land | Land the working branch — commit locally, push the branch, then merge it into the repo's default bra | 4 | 1 |
+| land | Land the working branch — commit locally, push the branch, then merge it into the repo's default bra | 4 | 2 |
 | local | Stage and commit changes locally — smart message, no push | 0 | 1 |
 | remote | Push current branch to remote — with safety checks | 0 | 1 |
 
@@ -152,9 +152,9 @@ Total: **192** skills across **41** namespaces. 77 user-invocable.
 
 | Name | Description | Calls | Called by |
 |---|---|---|---|
-| deep | Deep learning — extracts from conversation + event log + oneshot retro files in parallel, deduplicat | 6 | 6 |
+| deep | Deep learning — extracts from conversation + event log + retro/report files (oneshot retros, sprint  | 8 | 7 |
 | ingest | Ingest external knowledge from files, links, or YouTube videos and apply learnings to the system | 3 | 4 |
-| integrate | Learning integrator — promote validated high-score learnings into actual system enforcement (hooks,  | 3 | 7 |
+| integrate | Learning integrator — promote validated high-score learnings into actual system enforcement (hooks,  | 3 | 8 |
 
 ### linters (1)
 
@@ -189,7 +189,7 @@ Total: **192** skills across **41** namespaces. 77 user-invocable.
 
 | Name | Description | Calls | Called by |
 |---|---|---|---|
-| adhoc | Enter adhoc team mode — Alpha + Beta + Gamma for collaborative feature development | 2 | 5 |
+| adhoc | Enter adhoc team mode — Alpha + Beta + Gamma for collaborative feature development | 2 | 6 |
 | oneshot | Initiate a oneshot build — launch Delta as standalone orchestrator for full skeleton runs | 1 | 5 |
 | solo | Enter solo mode — just Alpha and the user, no agent team | 0 | 2 |
 
@@ -243,7 +243,7 @@ Total: **192** skills across **41** namespaces. 77 user-invocable.
 | open | Open a registered portfolio product — print its path and a cd hint, or spawn a new terminal window w | 0 | 3 |
 | register | Register an existing local repo as a portfolio product in ~/.warpos/portfolio.json. | 0 | 1 |
 | run | Run a skill against another portfolio product in a fresh Claude subprocess — never retargets the cur | 1 | 1 |
-| spinup | "From WarpOS, run the idea→on-screen on-ramp against a registered product: dispatches /bootstrap:spi | 4 | 2 |
+| spinup | "From WarpOS, run the idea→on-screen on-ramp against a registered product: dispatches /bootstrap:spi | 4 | 3 |
 | status | Portfolio dashboard — per-product WarpOS version, last commit, dirty count, current sprint, GitHub r | 1 | 2 |
 | sync | Run /warp:update across every registered portfolio product sequentially. No fail-fast — failures cap | 1 | 0 |
 
@@ -267,7 +267,7 @@ Total: **192** skills across **41** namespaces. 77 user-invocable.
 | Name | Description | Calls | Called by |
 |---|---|---|---|
 | full | Full red team audit — 11 personas across deterministic scanning + LLM reasoning. Finds auth bypasses | 1 | 1 |
-| scan | Quick red team scan — deterministic tools only (deps, routes, CVEs, secrets, config). Fast, no LLM r | 0 | 0 |
+| scan | Quick red team scan — deterministic tools only (deps, routes, CVEs, secrets, config). Fast, no LLM r | 0 | 1 |
 
 ### research (2)
 
@@ -287,27 +287,29 @@ Total: **192** skills across **41** namespaces. 77 user-invocable.
 | next | The 1-idea alternative to /roadmap:ideas — the single highest-leverage next roadmap entry (the role- | 2 | 2 |
 | prioritize | Role-aware roadmap prioritization — runs /roadmap:cleanup first, then consults the Product Lead (sin | 4 | 0 |
 
-### scan (42)
+### scan (45)
 
 | Name | Description | Calls | Called by |
 |---|---|---|---|
 | ac-coverage | Read-only audit of acceptance-criteria.md verified_by:- linkage across active sprints. | 2 | 1 |
+| adhoc-fail-override | Reject an adhoc dispatcher that overrode a binding reviewer FAIL — verdict-content check (the blind  | 0 | 2 |
 | adhoc-team-hygiene | Read-only probe for adhoc-team accretion — flags teams whose members carry a -N de-dup suffix or a s | 2 | 1 |
 | architecture | Architecture integrity — do the layers connect? agent system, cross-layer seams, documentation healt | 6 | 7 |
 | coherence | Run the WarpOS system coherence graph across 15 drift types. | 0 | 1 |
 | design-system | Design system compliance check - scans UI code for raw colors, raw primitives, missing design docs,  | 0 | 1 |
 | dispatch-routing-parity | Assert the role→provider routing tables agree across providers.js, catalog.js, and the dispatch guid | 1 | 1 |
+| docker-secrets | Dockerfile → .dockerignore secret-exposure check — flags secret files (.env, *.pem, credentials) tha | 2 | 1 |
 | environment | Environment readiness and tooling quality — fast go/no-go or deep audit | 8 | 3 |
 | etc-harness | Audit the /etc authoring+eval harness — fail-closed enforcer that rejects an invented authoring form | 2 | 1 |
 | framework-purity | Refuse product-content leaks in canonical — scans for client slugs, maintainer abs paths, root-level | 2 | 4 |
 | framework-views-fresh | Verify .claude/commands and .claude/agents are byte-identical regenerations of their _warpos/ source | 2 | 3 |
-| full | Run every scan in parallel — a full system scan across project health, governance, and WarpOS distri | 46 | 19 |
+| full | Run every scan in parallel — a full system scan across project health, governance, and WarpOS distri | 50 | 20 |
 | ingest-firewall | Audit the ingest stores (_docs/research, _docs/imports, _docs/briefs, _docs/clones) for un-firewalle | 0 | 1 |
 | install | Verify a fresh WarpOS install — manifest, paths, agents, hooks, version, settings. | 1 | 4 |
 | issues | Pattern-mine events.jsonl for repeat audit-block signatures — surface candidates for /issues:log | 5 | 2 |
 | node-procs | Read-only diagnostic — list Node processes on the host with PID, start-time, working-set KB, and com | 1 | 2 |
 | patterns | Cross-run intelligence and automation proposals — diagnose recurring patterns or propose prevention | 8 | 5 |
-| privacy | Pre-publish scan for personal data — credentials, emails, homedir paths, runtime files tracked by gi | 0 | 1 |
+| privacy | Pre-publish scan for personal data — credentials, emails, homedir paths, runtime files tracked by gi | 0 | 2 |
 | references | Cross-file reference integrity — broken links, orphans, stale SPEC_GRAPH edges | 4 | 9 |
 | regressions | Run the regression-seed suite — the 26 recurring bug classes from the 0.17.0 spec, made runnable. Re | 2 | 1 |
 | requirements | Specification consistency, coverage, and drift — static audit, change-driven propagation check, or p | 7 | 10 |
@@ -315,13 +317,14 @@ Total: **192** skills across **41** namespaces. 77 user-invocable.
 | role-parity | The one check that owns role parity across the org map, the dispatch catalog, and team-guard — fail- | 0 | 1 |
 | scaffold-coverage | Verify the WarpOS app scaffold (Next+Tailwind v4+shadcn/ui+Radix+Lucide) is complete and coherent —  | 2 | 1 |
 | scan-coverage | Scan-suite self-inventory — asserts every /scan:* skill is delegated by /scan:full or explicitly exc | 1 | 4 |
-| sprint-beta-honesty | Audits Beta consultation honesty across post-cutoff /sprint:full runs (missing consults, placeholder | 1 | 1 |
+| sprint-beta-honesty | Audits Beta consultation honesty across post-cutoff /sprint:full runs (missing consults, placeholder | 1 | 2 |
+| sprint-manager-consult | Audits manager-consult coverage across post-cutoff /sprint:full runs — asserts the design-quality au | 3 | 1 |
 | system | System inventory — enumerate every active WarpOS system, diff against manifest, report drift and gap | 6 | 2 |
 | timeline | Reconstruct a build timeline from transaction, event, and provider logs. | 0 | 1 |
 | version-coherence | Verify version + schema-label coherence — product version agrees across ALL manifests (incl. the one | 2 | 1 |
 | warpos-applied-migrations | Detect already-applied WarpOS migration scripts left on disk in consumer projects | 0 | 1 |
 | warpos-capsule-resolvable | Verify the capsule for /warp:update --to <v> is resolvable from REPO_ROOT, sibling clones, manifest. | 1 | 1 |
-| warpos-install-baseline | Verify a WarpOS install baseline exists (.claude/framework-installed.json present, installedVersion  | 1 | 1 |
+| warpos-install-baseline | Verify a WarpOS install baseline exists (.claude/framework-installed.json present, installedVersion  | 2 | 1 |
 | warpos-layer-diff | Read-only product-vs-dev-tooling layer diff — lists which framework-owned paths SHIP to consumer pro | 3 | 1 |
 | warpos-manifest-coverage | Verify every on-disk path is enumerated in _warpos/MANIFEST.json — catches "added framework content, | 3 | 3 |
 | warpos-manifest-honesty | Verify framework-installed.json reflects actual disk state (no missing files, no hash drift) | 1 | 3 |
@@ -334,13 +337,14 @@ Total: **192** skills across **41** namespaces. 77 user-invocable.
 | warpos-tracked-transients | Catch transient state accidentally committed (.warpos/, qa-*.png, runtime/qa-*/, etc.) | 0 | 1 |
 | warpos-version-quorum | Verify version.json, .claude/framework-manifest.json, .claude/framework-installed.json, and install. | 0 | 2 |
 
-### session (10)
+### session (11)
 
 | Name | Description | Calls | Called by |
 |---|---|---|---|
-| checkpoint | Force an immediate session checkpoint save — captures conversation context and tool activity that gi | 0 | 1 |
-| dump | Write a prescriptive handoff to DUMP.md at project root — context, verbatim payloads, dispatch instr | 7 | 0 |
-| handoff | Generate a rich AI-analyzed handoff document (replaces /handoff) | 1 | 2 |
+| checkpoint | Force an immediate session checkpoint save — captures conversation context and tool activity that gi | 0 | 2 |
+| dump | Write a prescriptive handoff to DUMP.md at project root — context, session progression (as fenced co | 7 | 1 |
+| end | Full session wrap-up — cognitive maintenance (learn/mine/sleep/integrate) → fresh handoff → land to  | 10 | 0 |
+| handoff | Generate a rich AI-analyzed handoff document (replaces /handoff) | 1 | 3 |
 | history | Browse past session handoff summaries from the handoffs directory — useful for tracking what happene | 1 | 1 |
 | read | Read the cross-session inbox — see what other Alex sessions have been doing | 0 | 2 |
 | recap | Catch up on the last N turns of this session — what you asked, what I did, what's still pending | 3 | 1 |
@@ -362,8 +366,8 @@ Total: **192** skills across **41** namespaces. 77 user-invocable.
 
 | Name | Description | Calls | Called by |
 |---|---|---|---|
-| deep | "Full sleep cycle — all 6 phases: NREM consolidation, cleanup, replay, REM dreaming, repair, growth  | 8 | 13 |
-| quick | Light nap — NREM consolidation + glymphatic cleanup only (~5 min) | 2 | 2 |
+| deep | "Full sleep cycle — all 6 phases: NREM consolidation, cleanup, replay, REM dreaming, repair, growth  | 8 | 14 |
+| quick | Light nap — NREM consolidation + glymphatic cleanup only (~5 min) | 2 | 3 |
 
 ### sprint (8)
 
@@ -372,10 +376,10 @@ Total: **192** skills across **41** namespaces. 77 user-invocable.
 | cost-gate | Toggle the /sprint:full cost-estimate halt on or off — turn off the heuristic spend gate when an ope | 2 | 0 |
 | design | Turn an approved Plan Contract into PRD, stories, COPY, INPUTS, TRACE, acceptance criteria, QA, red- | 2 | 4 |
 | execute | Execute the sprint via Ralph-style plan/act/test/review/record/checkpoint loops per ticket, with cra | 4 | 5 |
-| full | Single-invocation execution of the full sprint pipeline (plan→design→execute→release-prep→retro) und | 8 | 5 |
+| full | Single-invocation execution of the full sprint pipeline (plan→design→execute→release-prep→retro) und | 8 | 8 |
 | plan | Turn a brief plain-language request into a structured sprint plan and durable Plan Contract. Evidenc | 3 | 6 |
 | release | Prepare and execute a sprint release — final checks, approval, deploy gate, release notes, rollback  | 4 | 6 |
-| retrospective | Synthesize a post-sprint retrospective from tracker artifacts — outcomes, friction, action items. Id | 3 | 2 |
+| retrospective | Synthesize a post-sprint retrospective from tracker artifacts — outcomes, friction, action items. Id | 3 | 3 |
 | status | Read-only status view of every live sprint — shows id, lane, status, phase, last checkpoint, and the | 3 | 0 |
 
 ### ui (1)
@@ -393,7 +397,7 @@ Total: **192** skills across **41** namespaces. 77 user-invocable.
 | diff | Diff canonical WarpOS against an installed product — version/staleness, framework-file drift (stale  | 6 | 0 |
 | doctor | "Unified WarpOS diagnostic — runs every health check in one place. Like /warp:health but full-covera | 9 | 2 |
 | flag | Flag a WarpOS framework/tooling gap from a downstream product — append a structured, canonical-consu | 3 | 1 |
-| health | Verify WarpOS installation — checks every system, reports green/yellow/red with plain-English fixes | 2 | 11 |
+| health | Verify WarpOS installation — checks every system, reports green/yellow/red with plain-English fixes | 2 | 12 |
 | md | "Tune CLAUDE.md with project-specific context — refresh the auto-generated project block from PROJEC | 2 | 0 |
 | reconcile | Reconcile downstream-flagged WarpOS gaps into canonical — discover every product's WARPOS.md, verify | 10 | 1 |
 | release | "Drive a full WarpOS release of the canonical clone from this product repo — promote, bump, regen, b | 0 | 4 |
@@ -407,26 +411,26 @@ Total: **192** skills across **41** namespaces. 77 user-invocable.
 
 Top callers (skills that invoke the most others):
 
-- `/scan:full` → /maps:all, /oneshot:preflight, /scan:ac-coverage, /scan:adhoc-team-hygiene, /scan:architecture, /scan:coherence, /scan:design-system, /scan:dispatch-routing-parity, /scan:environment, /scan:etc-harness, /scan:framework-purity, /scan:framework-views-fresh, /scan:ingest-firewall, /scan:install, /scan:issues, /scan:node-procs, /scan:patterns, /scan:privacy, /scan:references, /scan:regressions, /scan:requirements, /scan:roadmap-trace, /scan:role-parity, /scan:scaffold-coverage, /scan:scan-coverage, /scan:sprint-beta-honesty, /scan:system, /scan:timeline, /scan:version-coherence, /scan:warpos-applied-migrations, /scan:warpos-capsule-resolvable, /scan:warpos-install-baseline, /scan:warpos-layer-diff, /scan:warpos-manifest-coverage, /scan:warpos-manifest-honesty, /scan:warpos-migration-coverage, /scan:warpos-migration-presence, /scan:warpos-path-resolution, /scan:warpos-ship-coverage, /scan:warpos-staleness, /scan:warpos-structure-parity, /scan:warpos-tracked-transients, /scan:warpos-version-quorum, /sleep:deep, /warp:doctor, /warp:health
+- `/scan:full` → /maps:all, /oneshot:preflight, /scan:ac-coverage, /scan:adhoc-fail-override, /scan:adhoc-team-hygiene, /scan:architecture, /scan:coherence, /scan:design-system, /scan:dispatch-routing-parity, /scan:docker-secrets, /scan:environment, /scan:etc-harness, /scan:framework-purity, /scan:framework-views-fresh, /scan:ingest-firewall, /scan:install, /scan:issues, /scan:node-procs, /scan:patterns, /scan:privacy, /scan:references, /scan:regressions, /scan:requirements, /scan:roadmap-trace, /scan:role-parity, /scan:scaffold-coverage, /scan:scan-coverage, /scan:sprint-beta-honesty, /scan:sprint-manager-consult, /scan:system, /scan:timeline, /scan:version-coherence, /scan:warpos-applied-migrations, /scan:warpos-capsule-resolvable, /scan:warpos-install-baseline, /scan:warpos-layer-diff, /scan:warpos-manifest-coverage, /scan:warpos-manifest-honesty, /scan:warpos-migration-coverage, /scan:warpos-migration-presence, /scan:warpos-path-resolution, /scan:warpos-ship-coverage, /scan:warpos-staleness, /scan:warpos-structure-parity, /scan:warpos-tracked-transients, /scan:warpos-version-quorum, /sleep:deep, /sprint:full, /warp:doctor, /warp:health
 - `/warp:tour` → /fix:fast, /learn:deep, /maps:all, /maps:architecture, /mode:adhoc, /mode:oneshot, /mode:solo, /portfolio:list, /portfolio:open, /research:simple, /session:handoff, /session:read, /session:write, /sleep:quick, /warp:health
 - `/bootstrap:lastmile` → /guides:integrate, /learn:ingest, /learn:integrate, /qa:audit, /redteam:full, /research:deep, /roadmap:add, /scan:install, /scan:roadmap-trace, /sprint:design, /sprint:execute, /sprint:plan
 - `/maps:all` → /maps:architecture, /maps:coverage, /maps:enforcements, /maps:hooks, /maps:memory, /maps:skills, /maps:steps, /maps:systems, /maps:tools, /scan:scan-coverage
 - `/oneshot:preflight` → /mode:oneshot, /oneshot:improve, /oneshot:retro, /oneshot:start, /preflight:run, /preflight:setup, /run:sync, /scan:architecture, /scan:environment, /scan:requirements
+- `/session:end` → /beta:mine, /commit:land, /learn:deep, /learn:integrate, /mode:adhoc, /session:checkpoint, /session:dump, /session:handoff, /sleep:deep, /sleep:quick
 - `/warp:reconcile` → /enforcement:log, /fix:deep, /issues:log, /portfolio:status, /roadmap:add, /scan:full, /scan:warpos-staleness, /warp:flag, /warp:release, /warp:update
 - `/oneshot:retro` → /issues:log, /oneshot:improve, /oneshot:preflight, /oneshot:start, /retro:code, /retro:context, /retro:full, /scan:patterns, /scan:requirements
 - `/warp:doctor` → /hooks:test, /paths:lint, /scan:architecture, /scan:full, /scan:references, /scan:requirements, /warp:health, /warp:release, /warp:update
 - `/discover:orphaned` → /discover:systems, /issues:list, /learn:integrate, /oneshot:retro, /scan:patterns, /scan:requirements, /session:resume, /session:write
-- `/scan:environment` → /discover:systems, /hooks:test, /maps:all, /maps:enforcements, /scan:architecture, /scan:references, /sleep:deep, /warp:health
 
 Top called (skills others invoke the most):
 
-- `/scan:full` ← /bootstrap:ponder, /check:all, /commit:land, /guides:coverage, /karpathy:run, /learn:integrate, /maps:coverage, /scan:ac-coverage, /scan:dispatch-routing-parity, /scan:node-procs, /scan:regressions, /scan:roadmap-trace, /scan:scan-coverage, /scan:system, /scan:version-coherence, /scan:warpos-ship-coverage, /sprint:full, /warp:doctor, /warp:reconcile
+- `/scan:full` ← /bootstrap:ponder, /check:all, /commit:land, /guides:coverage, /karpathy:run, /learn:integrate, /maps:coverage, /scan:ac-coverage, /scan:dispatch-routing-parity, /scan:node-procs, /scan:regressions, /scan:roadmap-trace, /scan:scan-coverage, /scan:system, /scan:version-coherence, /scan:warpos-install-baseline, /scan:warpos-ship-coverage, /sprint:full, /warp:doctor, /warp:reconcile
+- `/sleep:deep` ← /beta:integrate, /beta:mine, /bootstrap:ponder, /learn:deep, /reasoning:score, /scan:architecture, /scan:environment, /scan:full, /scan:patterns, /scan:references, /scan:requirements, /scan:system, /session:end, /sleep:quick
 - `/warp:update` ← /commit:both, /guides:write, /portfolio:sync, /scan:warpos-capsule-resolvable, /scan:warpos-install-baseline, /scan:warpos-layer-diff, /scan:warpos-manifest-coverage, /scan:warpos-migration-presence, /scan:warpos-staleness, /scan:warpos-structure-parity, /warp:diff, /warp:doctor, /warp:reconcile, /warp:sync
-- `/sleep:deep` ← /beta:integrate, /beta:mine, /bootstrap:ponder, /learn:deep, /reasoning:score, /scan:architecture, /scan:environment, /scan:full, /scan:patterns, /scan:references, /scan:requirements, /scan:system, /sleep:quick
-- `/warp:health` ← /mode:adhoc, /scan:adhoc-team-hygiene, /scan:architecture, /scan:environment, /scan:full, /scan:system, /warp:doctor, /warp:setup, /warp:tour, /warp:uninstall, /warp:update
+- `/warp:health` ← /agents:test, /mode:adhoc, /scan:adhoc-team-hygiene, /scan:architecture, /scan:environment, /scan:full, /scan:system, /warp:doctor, /warp:setup, /warp:tour, /warp:uninstall, /warp:update
 - `/scan:requirements` ← /beta:mine, /discover:orphaned, /oneshot:preflight, /oneshot:retro, /scan:architecture, /scan:full, /session:handoff, /sleep:deep, /sleep:quick, /warp:doctor
 - `/issues:log` ← /issues:list, /issues:resolve, /oneshot:retro, /scan:issues, /scan:patterns, /scan:regressions, /sleep:deep, /warp:flag, /warp:reconcile
 - `/scan:references` ← /discover:systems, /maps:steps, /roadmap:cleanup, /scan:architecture, /scan:environment, /scan:full, /scan:requirements, /scan:system, /warp:doctor
 - `/fix:deep` ← /fix:fast, /issues:list, /issues:log, /reasoning:log, /reasoning:run, /scan:patterns, /sprint:execute, /warp:reconcile
+- `/learn:integrate` ← /bootstrap:lastmile, /discover:orphaned, /discover:systems, /learn:deep, /scan:requirements, /session:end, /sprint:release, /sprint:retrospective
 - `/maps:all` ← /beta:mine, /maps:coverage, /maps:steps, /scan:architecture, /scan:environment, /scan:full, /scan:references, /warp:tour
-- `/oneshot:retro` ← /discover:orphaned, /learn:deep, /oneshot:improve, /oneshot:preflight, /oneshot:start, /scan:issues, /scan:patterns, /scan:requirements

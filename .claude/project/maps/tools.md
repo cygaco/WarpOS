@@ -1,8 +1,8 @@
 # Tools Map
 
-Generated: 2026-06-01T19:33:52.157Z
+Generated: 2026-06-05T01:34:50.375Z
 
-Scripts: **166** | npm scripts: **0** | External CLIs: **3**
+Scripts: **169** | npm scripts: **0** | External CLIs: **3**
 
 ## Utility scripts (scripts/*.js)
 
@@ -23,31 +23,32 @@ Scripts: **166** | npm scripts: **0** | External CLIs: **3**
 | check-prd-anchors.js | 4392 | 2026-05-30T01:25:39.537Z |
 | check-test-staleness.js | 4517 | 2026-05-30T01:25:39.537Z |
 | delta-aggregate-reviews.js | 4888 | 2026-05-31T03:26:36.371Z |
-| delta-build-fix-brief.js | 6324 | 2026-05-30T01:25:39.548Z |
-| delta-build-fixer-prompt-from-worktree.js | 2365 | 2026-05-30T01:25:39.549Z |
-| delta-build-fixer-prompt.js | 1780 | 2026-05-30T01:25:39.549Z |
-| delta-build-prompt.js | 7079 | 2026-05-30T01:25:39.550Z |
-| delta-build-reviewer-prompt.js | 10377 | 2026-05-30T01:25:39.550Z |
+| delta-build-fix-brief.js | 6336 | 2026-06-05T01:31:25.796Z |
+| delta-build-fixer-prompt-from-worktree.js | 2372 | 2026-06-05T01:31:04.325Z |
+| delta-build-fixer-prompt.js | 1787 | 2026-06-05T01:30:59.166Z |
+| delta-build-prompt.js | 7107 | 2026-06-05T01:30:31.025Z |
+| delta-build-reviewer-prompt.js | 10391 | 2026-06-05T01:31:02.593Z |
 | delta-canonical-dispatch-smoke.js | 8173 | 2026-06-01T16:44:13.723Z |
 | delta-cleanup-stale-fix-worktrees.js | 1604 | 2026-05-30T01:25:39.551Z |
-| delta-clear-halt.js | 624 | 2026-05-30T01:25:39.551Z |
-| delta-dispatch-builder.js | 8809 | 2026-05-30T01:25:39.554Z |
-| delta-dispatch-fixer.js | 7335 | 2026-05-30T01:25:39.554Z |
-| delta-final-gauntlet.js | 2723 | 2026-05-31T03:26:36.371Z |
-| delta-gate-check.js | 2003 | 2026-05-30T01:25:39.556Z |
-| delta-gauntlet-watcher.js | 2068 | 2026-05-31T03:26:36.372Z |
-| delta-heartbeat.js | 1209 | 2026-05-30T01:25:39.558Z |
+| delta-clear-halt.js | 636 | 2026-06-05T01:31:22.474Z |
+| delta-dispatch-builder.js | 9396 | 2026-06-04T22:57:13.994Z |
+| delta-dispatch-fixer.js | 7566 | 2026-06-05T01:31:40.877Z |
+| delta-final-gauntlet.js | 3059 | 2026-06-04T22:57:13.994Z |
+| delta-gate-check.js | 2015 | 2026-06-05T01:31:23.932Z |
+| delta-gauntlet-watcher.js | 2144 | 2026-06-04T22:57:13.995Z |
+| delta-heartbeat.js | 1228 | 2026-06-05T01:31:07.574Z |
 | delta-log-integrations.js | 2213 | 2026-05-30T01:25:39.558Z |
-| delta-mark-built.js | 7493 | 2026-05-30T01:25:39.558Z |
-| delta-mark-done.js | 846 | 2026-05-30T01:25:39.559Z |
+| delta-mark-built.js | 7505 | 2026-06-05T01:31:27.669Z |
+| delta-mark-done.js | 858 | 2026-06-05T01:31:29.555Z |
 | delta-pre-clean-worktrees.js | 3855 | 2026-05-30T01:25:39.560Z |
-| delta-queue-foundation.js | 1013 | 2026-05-30T01:25:39.562Z |
-| delta-render-tracker.js | 4806 | 2026-05-30T01:25:39.564Z |
+| delta-queue-foundation.js | 1025 | 2026-06-05T01:31:30.938Z |
+| delta-render-tracker.js | 4814 | 2026-06-05T01:30:44.507Z |
 | delta-show-findings.js | 1011 | 2026-05-30T01:25:39.564Z |
-| delta-store-review.js | 1672 | 2026-05-30T01:25:39.565Z |
-| delta-update-heartbeat.js | 720 | 2026-05-30T01:25:39.565Z |
+| delta-store-review.js | 1684 | 2026-06-05T01:31:32.620Z |
+| delta-update-heartbeat.js | 727 | 2026-06-05T01:30:46.371Z |
 | dismiss-drift-entry.js | 647 | 2026-05-30T01:25:39.566Z |
-| dispatch-agent.js | 17165 | 2026-06-01T16:44:02.087Z |
+| dispatch-agent.js | 24166 | 2026-06-04T22:57:13.995Z |
+| dispatch-claude.js | 14763 | 2026-06-02T18:08:39.246Z |
 | dispatch.js | 20217 | 2026-05-30T01:25:39.566Z |
 | drift-apply-decisions.js | 2075 | 2026-05-30T01:25:39.571Z |
 | drift-build-decisions-jsonl.js | 2675 | 2026-05-30T01:25:39.572Z |
@@ -60,7 +61,7 @@ Scripts: **166** | npm scripts: **0** | External CLIs: **3**
 | drift-verify.js | 5846 | 2026-05-30T01:25:39.574Z |
 | drift-write-decisions.js | 1743 | 2026-05-30T01:25:39.574Z |
 | fix-deep-trace-run09-cleanup.js | 3626 | 2026-05-30T01:25:39.575Z |
-| generate-framework-manifest.js | 21665 | 2026-05-31T19:53:31.126Z |
+| generate-framework-manifest.js | 23132 | 2026-06-04T22:57:13.996Z |
 | generate-maps.js | 12732 | 2026-05-30T01:25:39.577Z |
 | generate-skill-catalog.js | 9320 | 2026-05-30T01:25:39.577Z |
 | generate-steps-maps.js | 8346 | 2026-05-30T01:25:39.578Z |
@@ -94,13 +95,13 @@ Scripts: **166** | npm scripts: **0** | External CLIs: **3**
 | one-off-start-checks.js | 8232 | 2026-05-30T01:25:39.625Z |
 | one-off-stub-coverage-check.js | 4834 | 2026-05-30T01:25:39.625Z |
 | one-off-update-known-stubs.js | 560 | 2026-05-30T01:25:39.625Z |
-| oneshot-halt.js | 4332 | 2026-05-30T01:25:39.632Z |
-| oneshot-heartbeat.js | 1118 | 2026-05-30T01:25:39.632Z |
-| oneshot-phase-complete.js | 1811 | 2026-05-30T01:25:39.633Z |
-| oneshot-store-file-sync.js | 4770 | 2026-05-30T01:25:39.633Z |
-| oneshot-store-reset.js | 3060 | 2026-05-30T01:25:39.633Z |
+| oneshot-halt.js | 4351 | 2026-06-05T01:32:20.554Z |
+| oneshot-heartbeat.js | 1130 | 2026-06-05T01:31:46.752Z |
+| oneshot-phase-complete.js | 1823 | 2026-06-05T01:31:59.017Z |
+| oneshot-store-file-sync.js | 4782 | 2026-06-05T01:31:56.619Z |
+| oneshot-store-reset.js | 3072 | 2026-06-05T01:31:59.906Z |
 | patch-store-backend-skipped.js | 1153 | 2026-05-30T01:25:39.634Z |
-| path-lint.js | 14677 | 2026-05-30T10:31:34.033Z |
+| path-lint.js | 14694 | 2026-06-05T01:33:21.187Z |
 | phase0-verify.js | 3274 | 2026-05-30T01:25:39.636Z |
 | points.js | 4007 | 2026-05-30T01:25:39.636Z |
 | preflight-7-8-sync.js | 5333 | 2026-05-30T01:25:39.641Z |
@@ -116,7 +117,7 @@ Scripts: **166** | npm scripts: **0** | External CLIs: **3**
 | read-store-state.js | 319 | 2026-05-30T01:25:39.647Z |
 | record-gate-check.js | 1916 | 2026-05-30T01:25:39.647Z |
 | recurring-issues-helper.js | 9224 | 2026-05-30T01:25:39.647Z |
-| regen-maps.js | 47568 | 2026-05-30T01:25:39.648Z |
+| regen-maps.js | 47570 | 2026-06-05T01:33:51.971Z |
 | research-append-learnings.js | 7439 | 2026-05-30T01:25:39.652Z |
 | research-build-payload.js | 5061 | 2026-05-30T01:25:39.652Z |
 | reset-cycle-step.js | 505 | 2026-05-30T01:25:39.654Z |
@@ -140,18 +141,20 @@ Scripts: **166** | npm scripts: **0** | External CLIs: **3**
 | systems-append-run09.js | 2306 | 2026-05-30T01:25:39.675Z |
 | test-beta-gate-release.js | 6406 | 2026-05-30T01:25:39.675Z |
 | test-concurrency-lock.js | 3129 | 2026-05-30T01:25:39.675Z |
-| test-dispatch-agent-resolution.js | 2609 | 2026-05-30T01:25:39.676Z |
-| test-dispatch-config.js | 8573 | 2026-06-01T17:10:01.409Z |
-| test-dispatch-route-guard.js | 3959 | 2026-05-30T01:25:39.676Z |
+| test-dispatch-agent-resolution.js | 4084 | 2026-06-04T22:57:14.003Z |
+| test-dispatch-config.js | 8681 | 2026-06-04T22:57:14.003Z |
+| test-dispatch-route-guard.js | 6087 | 2026-06-02T18:17:35.473Z |
 | test-dispatch-telemetry.js | 3750 | 2026-05-30T01:25:39.677Z |
 | test-manifest-guard-product.js | 5363 | 2026-05-30T01:25:39.677Z |
 | test-memory-guard-targets.js | 4104 | 2026-05-30T01:25:39.677Z |
 | test-merge-guard-cd-prefix.js | 4453 | 2026-05-30T01:25:39.678Z |
+| test-merge-guard-node-e.js | 3521 | 2026-06-04T21:24:41.662Z |
 | test-merge-guard-rm.js | 2217 | 2026-05-30T01:25:39.678Z |
 | test-provider-health.js | 3258 | 2026-05-30T01:25:39.679Z |
 | test-providers-stdin-fix.js | 2160 | 2026-05-30T01:25:39.679Z |
 | test-requirement-format-guard.js | 4756 | 2026-05-30T01:25:39.679Z |
 | test-response-size-guard.js | 2469 | 2026-05-30T01:25:39.680Z |
+| test-settings-edit-guard.js | 3000 | 2026-06-04T21:24:41.662Z |
 | test-sprint-hooks.js | 55673 | 2026-05-30T01:25:39.680Z |
 | test-sprint-migration.js | 20071 | 2026-05-30T01:25:39.680Z |
 | test-sprint-tracker-autoinject.js | 6472 | 2026-05-30T01:25:39.681Z |
@@ -163,8 +166,8 @@ Scripts: **166** | npm scripts: **0** | External CLIs: **3**
 | update-heartbeat.js | 743 | 2026-05-30T01:25:39.687Z |
 | update-market-research-gauntlet.js | 1630 | 2026-05-30T01:25:39.688Z |
 | update-market-research-merged.js | 972 | 2026-05-30T01:25:39.688Z |
-| update-onboarding-done.js | 2695 | 2026-05-30T01:25:39.688Z |
-| validate-gates.js | 7165 | 2026-05-30T01:25:39.689Z |
+| update-onboarding-done.js | 2707 | 2026-06-05T01:34:10.091Z |
+| validate-gates.js | 7181 | 2026-06-05T01:34:07.931Z |
 | verify-drift-detector.js | 808 | 2026-05-30T01:25:39.689Z |
 | verify-ui.js | 5832 | 2026-05-30T01:25:39.689Z |
 | warp-setup.js | 41715 | 2026-05-30T15:13:30.581Z |

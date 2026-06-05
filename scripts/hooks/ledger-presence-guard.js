@@ -71,7 +71,7 @@ function run(event) {
     PROJECT,
     ".claude",
     "agents",
-    "00-alex",
+    "president",
     ".system",
     "policy",
     "ledger-presence.json",

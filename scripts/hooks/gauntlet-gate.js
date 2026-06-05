@@ -78,8 +78,9 @@ process.stdin.on("end", () => {
         "..",
         ".claude",
         "agents",
-        "02-oneshot",
+        "president",
         ".system",
+        "oneshot",
         "store.json",
       );
     }

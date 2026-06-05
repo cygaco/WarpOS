@@ -34,8 +34,9 @@ process.stdin.on("end", () => {
         PROJECT,
         ".claude",
         "agents",
-        "02-oneshot",
+        "president",
         ".system",
+        "oneshot",
         "retros",
       );
     }

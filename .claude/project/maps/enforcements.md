@@ -1,8 +1,8 @@
 # Enforcements Map
 
-Generated: 2026-06-01T19:33:52.157Z
+Generated: 2026-06-05T01:34:50.375Z
 
-**63** hooks, **15** lib modules. **0** uncurated (added since last hand-curation on 2026-05-31T19:28:09.351Z).
+**64** hooks, **15** lib modules. **1** uncurated (added since last hand-curation on 2026-06-01T19:33:52.157Z).
 
 ## Coverage
 
@@ -59,6 +59,7 @@ Generated: 2026-06-01T19:33:52.157Z
 | session-start | (universal) | SessionStart | fail-open | yes |  |
 | session-stop | (universal) | Stop|SessionEnd|StopFailure | fail-open | yes |  |
 | session-tracker | (universal) | PostToolUse | fail-open | yes |  |
+| settings-edit-guard | ? | ? | ? | yes | yes |
 | skill-catalog-regen | Edit|Write | PostToolUse | fail-open | yes |  |
 | skill-counter | (universal) | UserPromptSubmit | fail-open | no |  |
 | skill-invocation-tracker | SlashCommand|Skill | PreToolUse | fail-open | yes |  |

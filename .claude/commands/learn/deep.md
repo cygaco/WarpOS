@@ -120,7 +120,7 @@ Read all completed-run retro artifacts AND closed-work reports. **THREE source f
 | `<sprintHistory>/SP-*/retro.md` | Per-sprint outcomes, friction, action items |
 | `<sprintHistory>/SP-*/retro.yaml` | Schema-validated structured retro (action_items[], friction[]) |
 
-**(C-iii) Reports** — produced by `/report` (resolve via `paths.reports`, default `_reports/`):
+**(C-iii) Reports** — produced by `/report` (resolve via `paths.reportsDir`, default `_reports/`):
 
 | File | What it contains |
 |---|---|

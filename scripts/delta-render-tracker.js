@@ -7,7 +7,7 @@
  *
  * Reads:
  *   - .claude/manifest.json                              (build.phases + build.features)
- *   - .claude/agents/02-oneshot/.system/store.json       (features[].status, heartbeat)
+ *   - .claude/agents/president/.system/oneshot/store.json (features[].status, heartbeat)
  *   - .claude/runtime/run.json                           (runNumber)
  *
  * Writes one ANSI-colored phase tree to stdout — meant for the orchestrator
@@ -23,7 +23,7 @@ function read(p) {
 }
 
 const manifest = read(".claude/manifest.json");
-const store = read(".claude/agents/02-oneshot/.system/store.json");
+const store = read(".claude/agents/president/.system/oneshot/store.json");
 let runNumber = "?";
 try {
   runNumber = read(".claude/runtime/run.json").runNumber;

@@ -25,8 +25,9 @@ const STORE = path.join(
   ROOT,
   ".claude",
   "agents",
-  "02-oneshot",
+  "president",
   ".system",
+  "oneshot",
   "store.json",
 );
 const MANIFEST = path.join(ROOT, ".claude", "manifest.json");
@@ -34,8 +35,9 @@ const RETROS_DIR = path.join(
   ROOT,
   ".claude",
   "agents",
-  "02-oneshot",
+  "president",
   ".system",
+  "oneshot",
   "retros",
 );
 const DISPATCH_DIR = path.join(ROOT, ".claude", "runtime", "dispatch");

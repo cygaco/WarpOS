@@ -5,7 +5,7 @@ const path = require("path");
 
 const storePath = path.join(
   __dirname,
-  "../.claude/agents/02-oneshot/.system/store.json",
+  "../.claude/agents/president/.system/oneshot/store.json",
 );
 const store = JSON.parse(fs.readFileSync(storePath, "utf8"));
 

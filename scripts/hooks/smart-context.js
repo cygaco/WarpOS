@@ -747,14 +747,17 @@ async function main() {
   //      α + β + γ team is active; route decisions through Beta.
   //   4. Unknown → emit nothing (no mode detected).
   try {
-    const oneshotStorePath = path.join(
-      PROJECT,
-      ".claude",
-      "agents",
-      "02-oneshot",
-      ".system",
-      "store.json",
-    );
+    const oneshotStorePath =
+      PATHS.oneshotStore ||
+      path.join(
+        PROJECT,
+        ".claude",
+        "agents",
+        "president",
+        ".system",
+        "oneshot",
+        "store.json",
+      );
     const modeMarkerPath = path.join(
       PROJECT,
       ".claude",

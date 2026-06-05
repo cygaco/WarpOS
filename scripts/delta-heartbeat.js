@@ -5,7 +5,7 @@
  * Usage: node scripts/delta-heartbeat.js '<json-fragment>'
  *   e.g. node scripts/delta-heartbeat.js '{"phase":1,"cycleStep":"dispatching","feature":"auth+rockets","status":"dispatching"}'
  *
- * Writes to .claude/agents/02-oneshot/.system/store.json → heartbeat.
+ * Writes to .claude/agents/president/.system/oneshot/store.json → heartbeat.
  * Merges with existing heartbeat, sets agent='delta' and timestamp=now.
  */
 const fs = require("fs");
@@ -16,8 +16,9 @@ const STORE = path.resolve(
   "..",
   ".claude",
   "agents",
-  "02-oneshot",
+  "president",
   ".system",
+  "oneshot",
   "store.json",
 );
 

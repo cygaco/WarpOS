@@ -722,7 +722,7 @@ function regenMemory() {
     PROJECT,
     ".claude",
     "agents",
-    "00-alex",
+    "president",
     ".system",
     "beta",
     "events.jsonl",

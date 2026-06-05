@@ -57,7 +57,7 @@ const HARDCODED_UNKNOWN_FALLBACK = Object.freeze({
   fix_recipe: null,
   remediation:
     "Inspect events.jsonl for the smoke event with full stderr. " +
-    "If recurring, add a catalog entry under .claude/agents/00-alex/.system/policy/provider-failure-modes.json.",
+    "If recurring, add a catalog entry under .claude/agents/president/.system/policy/provider-failure-modes.json.",
   fallback_allowed: true,
 });
 

@@ -213,7 +213,7 @@ function loadPolicy(project) {
     project,
     ".claude",
     "agents",
-    "00-alex",
+    "president",
     ".system",
     "policy",
     "version-bump-guard.json",
