@@ -10,8 +10,8 @@ When you don't want 12 candidates, just **the single highest-leverage next roadm
 
 Pick the consulting persona by the **scope** of the "what next" question, per the altitude split (FINAL-PLAN §11 R2, β `EVT-org-roadmap-principles-beta-001`):
 
-- **Single-product / within-sprint next pick** → `subagent_type: product-lead`. Signals: the single highest-leverage next item for *one* product's backlog or current sprint; `$ARGUMENTS` scoped to one product.
-- **Strategic / cross-product / lifecycle-phase-shift next pick** → `subagent_type: director-of-product`. Signals: the program's next bet, a portfolio-level or lifecycle/pivot call.
+- **Single-product / within-sprint next pick** → the **product-lead** persona. Signals: the single highest-leverage next item for *one* product's backlog or current sprint; `$ARGUMENTS` scoped to one product.
+- **Strategic / cross-product / lifecycle-phase-shift next pick** → the **director-of-product** persona. Signals: the program's next bet, a portfolio-level or lifecycle/pivot call.
 - **Fallback (R2 — no regression):** when the Product Lead *would* be chosen but scope is ambiguous, **default to `director-of-product`** (also the standing default for WarpOS's own framework roadmap). Defaulting up never regresses — the Lead inherits the Director's principles (R4).
 
 ## Input
@@ -21,7 +21,7 @@ Pick the consulting persona by the **scope** of the "what next" question, per th
 ## Procedure
 
 1. Read the same evidence as `/roadmap:ideas` — `ROADMAP.md` (Strategy, Milestones, candidates), `_requirements/00-canonical/*` (if present), recent `git log` + `paths.eventsFile`.
-2. **Consult the role-appropriate persona** — resolve it via **Role routing** above (`subagent_type: product-lead` for single-product/within-sprint scope; `subagent_type: director-of-product` for strategic/cross-product; ambiguous → default to `director-of-product`). State the chosen persona in one line. Ask for **exactly one** recommendation — the single most leverage-positive next entry — applying the `lean-product-development` principle (by slug — never an ordinal; it may renumber/move): what serves the majority userbase / golden path, is a calculated risk worth taking now, and (bonus) draws a tangential connection that compounds existing work.
+2. **Consult the role-appropriate persona** — resolve the candidate agents from the skill-hook registry at call time: `node scripts/skills/skill-hook-points.js resolve roadmap:next pick`. It returns both personas with their `condition` (single-product vs strategic) and the `default`. Pick per the **Role routing** rules above; when scope is ambiguous, dispatch the `default` role (the R2 no-regression fallback). Do NOT hardcode a role name. State the chosen persona in one line. Ask for **exactly one** recommendation — the single most leverage-positive next entry — applying the `lean-product-development` principle (by slug — never an ordinal; it may renumber/move): what serves the majority userbase / golden path, is a calculated risk worth taking now, and (bonus) draws a tangential connection that compounds existing work.
 3. Output one pick:
    - **The entry** (title + 1-2 line body, ready for `/roadmap:add`).
    - **Why this, why now** (one paragraph): which lens it came from, what it unblocks, the opportunity cost of *not* doing it, and the tangential connection if any.

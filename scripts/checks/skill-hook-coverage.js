@@ -43,14 +43,16 @@ const GENERIC_ROLES = new Set([
   "general-purpose", "builder", "fixer", "stub-scaffold",
 ]);
 
-// Skills whose persona hardcodes are M1-c prose-migration pending — tracked (info), not
-// findings; the enforcer self-flags any that no longer hardcode (stale_allowlist_entry, rot).
-// The 4 GROWTH skills were MIGRATED (resolve via the skill-hook registry at call time) and
-// removed here; the 4 ROADMAP skills (conditional product-lead/director-of-product routing)
-// remain — the next M1-c slice.
-const MIGRATION_PENDING = [
-  "roadmap:create", "roadmap:prioritize", "roadmap:ideas", "roadmap:next",
-];
+// M1-c COMPLETE for the 8 registered agent-calling skills (roadmap×4 + growth×4) — all now
+// resolve their persona from the skill-hook registry at call time, no hardcoded names. The
+// allowlist is EMPTY: any skill that hardcodes a persona subagent_type now FAILS the gate
+// (no migration-pending escape hatch left).
+// M1-c CONTINUATION (tracked): ad-images.md + iterate.md dispatch personas via PROSE
+// ("**`growth-lead`** subagent — owns…") with NO subagent_type literal + stale names — the
+// registry undercounts them and this enforcer's subagent_type-anchored detection misses
+// prose dispatches. Next slice: register+migrate those (and any siblings) + broaden the
+// STALE check to bold-backtick dispatch-description context.
+const MIGRATION_PENDING = [];
 const ALLOWLIST_REASON = "M1-c prose migration pending";
 
 // A dispatch that hardcodes a persona role: `subagent_type` followed by a role name.

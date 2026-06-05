@@ -10,8 +10,8 @@ Surfaces **12 candidate roadmap entries** across four evidence lenses (3 per len
 
 Pick the consulting persona by the **scope** of the idea generation, per the altitude split (FINAL-PLAN §11 R2, β `EVT-org-roadmap-principles-beta-001`):
 
-- **Single-product / within-sprint candidate generation** → `subagent_type: product-lead`. Signals: candidates for *one* product's backlog or next sprint, `--lens active` on a single product's thread, `$ARGUMENTS` scoped to one product.
-- **Strategic / cross-product / lifecycle-phase-shift candidate generation** → `subagent_type: director-of-product`. Signals: the **vision** lens, portfolio-wide ideas, lifecycle-phase or pivot bets, program-altitude direction.
+- **Single-product / within-sprint candidate generation** → the **product-lead** persona. Signals: candidates for *one* product's backlog or next sprint, `--lens active` on a single product's thread, `$ARGUMENTS` scoped to one product.
+- **Strategic / cross-product / lifecycle-phase-shift candidate generation** → the **director-of-product** persona. Signals: the **vision** lens, portfolio-wide ideas, lifecycle-phase or pivot bets, program-altitude direction.
 - **Fallback (R2 — no regression):** when the Product Lead *would* be chosen but scope is ambiguous, **default to `director-of-product`** (also the standing default for WarpOS's own framework roadmap). Defaulting up never regresses — the Lead inherits the Director's principles (R4).
 
 Whole-slate runs (all four lenses, no product scoping) default to the **Director of Product** — the vision lens alone makes the run strategic-altitude.
@@ -41,7 +41,7 @@ Whole-slate runs (all four lenses, no product scoping) default to the **Director
 ## Procedure
 
 1. Read the evidence above. Identify: the last 3 Shipped milestones, the last 3 added entries (active thread), the Strategy/vision, and the whole-backlog shape.
-2. **Consult the role-appropriate persona** — resolve it via **Role routing** above (`subagent_type: product-lead` for single-product/within-sprint scope; `subagent_type: director-of-product` for strategic/cross-product/whole-slate; ambiguous → default to `director-of-product`), or — once 0.14.0 skill-scoped injection lands — via the `temporary-agent` directive. State the chosen persona in one line. Hand it the evidence + the four lenses; ask for 3 candidate entries per lens, each applying the `lean-product-development` principle (by slug — never an ordinal; it may renumber/move) and naming any tangential connection drawn.
+2. **Consult the role-appropriate persona** — resolve the candidate agents from the skill-hook registry at call time: `node scripts/skills/skill-hook-points.js resolve roadmap:ideas generate`. It returns both personas with their `condition` (single-product vs strategic) and the `default`. Pick per the **Role routing** rules above; when scope is ambiguous (whole-slate runs included), dispatch the `default` role (the R2 no-regression fallback). Do NOT hardcode a role name. (Once 0.14.0 skill-scoped injection lands, this may instead arrive via the `temporary-agent` directive.) State the chosen persona in one line. Hand it the evidence + the four lenses; ask for 3 candidate entries per lens, each applying the `lean-product-development` principle (by slug — never an ordinal; it may renumber/move) and naming any tangential connection drawn.
 3. Format each idea as a ready-to-paste roadmap candidate: a one-line title + 2-3 line body + the lens + the evidence it's grounded in + (if relevant) which milestone it feeds.
 4. **Propose only.** Do not write to `ROADMAP.md`. End by reminding the operator: `commit a pick with /roadmap:add "<idea>"`.
 

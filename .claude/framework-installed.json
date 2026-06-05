@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "0.13.1",
-  "installedCommit": "f574a7e611c4595323e6fb89b03743240edc287b",
-  "installedAt": "2026-06-05T19:16:26.483Z",
+  "installedCommit": "2ac4c922c041daa7ddda52b45a56356445b33da0",
+  "installedAt": "2026-06-05T19:20:42.495Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -1844,8 +1844,8 @@
       "dest": ".claude/commands/roadmap/create.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "fc906e7b66f1e1de4dd8abedc2bac53d2fa210f7661a4be06060c38c1470b1bb",
-      "currentHashAtInstall": "fc906e7b66f1e1de4dd8abedc2bac53d2fa210f7661a4be06060c38c1470b1bb",
+      "installedHash": "eab0247c6d8b8d58b5f3dba99b8a74ae83fb63ed2a98eb88eb21130d2d77deb4",
+      "currentHashAtInstall": "eab0247c6d8b8d58b5f3dba99b8a74ae83fb63ed2a98eb88eb21130d2d77deb4",
       "introducedIn": "0.0.0"
     },
     {
@@ -1854,8 +1854,8 @@
       "dest": ".claude/commands/roadmap/ideas.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "461a8ffc43c1f147cea4e608064b133c76935ba79c02b7f7f670927589696dfe",
-      "currentHashAtInstall": "461a8ffc43c1f147cea4e608064b133c76935ba79c02b7f7f670927589696dfe",
+      "installedHash": "39332a0610da5e6f5f38a2236d5444011e57279e51c77fffbea4bb6158c8e3c0",
+      "currentHashAtInstall": "39332a0610da5e6f5f38a2236d5444011e57279e51c77fffbea4bb6158c8e3c0",
       "introducedIn": "0.0.0"
     },
     {
@@ -1864,8 +1864,8 @@
       "dest": ".claude/commands/roadmap/next.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "8612d962b0e03127fc06e324d8a26b20af6b7f331c17cc33fc8adbc374576d97",
-      "currentHashAtInstall": "8612d962b0e03127fc06e324d8a26b20af6b7f331c17cc33fc8adbc374576d97",
+      "installedHash": "8f56cab8980a477678bd971dcb7dc699ad7cf153fc5fb80b6a76b0f2779b7b61",
+      "currentHashAtInstall": "8f56cab8980a477678bd971dcb7dc699ad7cf153fc5fb80b6a76b0f2779b7b61",
       "introducedIn": "0.0.0"
     },
     {
@@ -1874,8 +1874,8 @@
       "dest": ".claude/commands/roadmap/prioritize.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "addf47647d0b42d1ec350f9e332741472d79a869a88d6a5424915362bcc8da5f",
-      "currentHashAtInstall": "addf47647d0b42d1ec350f9e332741472d79a869a88d6a5424915362bcc8da5f",
+      "installedHash": "90f9913cb26616abcbc51bf5052459b3c8f2557800e0369438f4e732a0b85645",
+      "currentHashAtInstall": "90f9913cb26616abcbc51bf5052459b3c8f2557800e0369438f4e732a0b85645",
       "introducedIn": "0.0.0"
     },
     {
@@ -5394,8 +5394,8 @@
       "dest": "scripts/checks/skill-hook-coverage.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "d0820f7667d975e2322414942909a14ddc6c0742c4521ba5dad32949b2785131",
-      "currentHashAtInstall": "d0820f7667d975e2322414942909a14ddc6c0742c4521ba5dad32949b2785131",
+      "installedHash": "a28053f0bdbfb4ed5cdf1b2cdc5cb335b56bf079b96751e692db1e655f5321ea",
+      "currentHashAtInstall": "a28053f0bdbfb4ed5cdf1b2cdc5cb335b56bf079b96751e692db1e655f5321ea",
       "introducedIn": "0.0.0"
     },
     {

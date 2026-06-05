@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-05T19:16:26.633Z",
+  "generatedAt": "2026-06-05T19:20:42.645Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.13.1",
   "migrations": [],
@@ -5125,8 +5125,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/skill-hook-coverage.js",
-      "sha256": "d0820f7667d975e2322414942909a14ddc6c0742c4521ba5dad32949b2785131",
-      "installedSha": "d0820f7667d975e2322414942909a14ddc6c0742c4521ba5dad32949b2785131"
+      "sha256": "a28053f0bdbfb4ed5cdf1b2cdc5cb335b56bf079b96751e692db1e655f5321ea",
+      "installedSha": "a28053f0bdbfb4ed5cdf1b2cdc5cb335b56bf079b96751e692db1e655f5321ea"
     },
     "scripts/checks/skill-hook-coverage.test.js": {
       "owner": "framework",
@@ -15715,32 +15715,32 @@
       "managed": true,
       "source": ".claude/commands/roadmap/create.md",
       "kind": "md",
-      "sha256": "fc906e7b66f1e1de4dd8abedc2bac53d2fa210f7661a4be06060c38c1470b1bb",
-      "installedSha": "fc906e7b66f1e1de4dd8abedc2bac53d2fa210f7661a4be06060c38c1470b1bb"
+      "sha256": "eab0247c6d8b8d58b5f3dba99b8a74ae83fb63ed2a98eb88eb21130d2d77deb4",
+      "installedSha": "eab0247c6d8b8d58b5f3dba99b8a74ae83fb63ed2a98eb88eb21130d2d77deb4"
     },
     ".claude/commands/roadmap/ideas.md": {
       "owner": "framework",
       "managed": true,
       "source": ".claude/commands/roadmap/ideas.md",
       "kind": "md",
-      "sha256": "461a8ffc43c1f147cea4e608064b133c76935ba79c02b7f7f670927589696dfe",
-      "installedSha": "461a8ffc43c1f147cea4e608064b133c76935ba79c02b7f7f670927589696dfe"
+      "sha256": "39332a0610da5e6f5f38a2236d5444011e57279e51c77fffbea4bb6158c8e3c0",
+      "installedSha": "39332a0610da5e6f5f38a2236d5444011e57279e51c77fffbea4bb6158c8e3c0"
     },
     ".claude/commands/roadmap/next.md": {
       "owner": "framework",
       "managed": true,
       "source": ".claude/commands/roadmap/next.md",
       "kind": "md",
-      "sha256": "8612d962b0e03127fc06e324d8a26b20af6b7f331c17cc33fc8adbc374576d97",
-      "installedSha": "8612d962b0e03127fc06e324d8a26b20af6b7f331c17cc33fc8adbc374576d97"
+      "sha256": "8f56cab8980a477678bd971dcb7dc699ad7cf153fc5fb80b6a76b0f2779b7b61",
+      "installedSha": "8f56cab8980a477678bd971dcb7dc699ad7cf153fc5fb80b6a76b0f2779b7b61"
     },
     ".claude/commands/roadmap/prioritize.md": {
       "owner": "framework",
       "managed": true,
       "source": ".claude/commands/roadmap/prioritize.md",
       "kind": "md",
-      "sha256": "addf47647d0b42d1ec350f9e332741472d79a869a88d6a5424915362bcc8da5f",
-      "installedSha": "addf47647d0b42d1ec350f9e332741472d79a869a88d6a5424915362bcc8da5f"
+      "sha256": "90f9913cb26616abcbc51bf5052459b3c8f2557800e0369438f4e732a0b85645",
+      "installedSha": "90f9913cb26616abcbc51bf5052459b3c8f2557800e0369438f4e732a0b85645"
     },
     ".claude/commands/research/deep.md": {
       "owner": "framework",
