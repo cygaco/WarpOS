@@ -1,6 +1,6 @@
 # Tools Map
 
-Generated: 2026-06-05T01:34:50.375Z
+Generated: 2026-06-05T03:38:10.821Z
 
 Scripts: **169** | npm scripts: **0** | External CLIs: **3**
 
@@ -23,29 +23,29 @@ Scripts: **169** | npm scripts: **0** | External CLIs: **3**
 | check-prd-anchors.js | 4392 | 2026-05-30T01:25:39.537Z |
 | check-test-staleness.js | 4517 | 2026-05-30T01:25:39.537Z |
 | delta-aggregate-reviews.js | 4888 | 2026-05-31T03:26:36.371Z |
-| delta-build-fix-brief.js | 6336 | 2026-06-05T01:31:25.796Z |
-| delta-build-fixer-prompt-from-worktree.js | 2372 | 2026-06-05T01:31:04.325Z |
-| delta-build-fixer-prompt.js | 1787 | 2026-06-05T01:30:59.166Z |
-| delta-build-prompt.js | 7107 | 2026-06-05T01:30:31.025Z |
-| delta-build-reviewer-prompt.js | 10391 | 2026-06-05T01:31:02.593Z |
+| delta-build-fix-brief.js | 6336 | 2026-06-05T01:45:08.439Z |
+| delta-build-fixer-prompt-from-worktree.js | 2372 | 2026-06-05T01:45:08.440Z |
+| delta-build-fixer-prompt.js | 1787 | 2026-06-05T01:45:08.440Z |
+| delta-build-prompt.js | 7107 | 2026-06-05T01:45:08.441Z |
+| delta-build-reviewer-prompt.js | 10391 | 2026-06-05T01:45:08.441Z |
 | delta-canonical-dispatch-smoke.js | 8173 | 2026-06-01T16:44:13.723Z |
 | delta-cleanup-stale-fix-worktrees.js | 1604 | 2026-05-30T01:25:39.551Z |
-| delta-clear-halt.js | 636 | 2026-06-05T01:31:22.474Z |
+| delta-clear-halt.js | 636 | 2026-06-05T01:45:08.442Z |
 | delta-dispatch-builder.js | 9396 | 2026-06-04T22:57:13.994Z |
-| delta-dispatch-fixer.js | 7566 | 2026-06-05T01:31:40.877Z |
+| delta-dispatch-fixer.js | 7566 | 2026-06-05T01:45:08.442Z |
 | delta-final-gauntlet.js | 3059 | 2026-06-04T22:57:13.994Z |
-| delta-gate-check.js | 2015 | 2026-06-05T01:31:23.932Z |
+| delta-gate-check.js | 2015 | 2026-06-05T01:45:08.442Z |
 | delta-gauntlet-watcher.js | 2144 | 2026-06-04T22:57:13.995Z |
-| delta-heartbeat.js | 1228 | 2026-06-05T01:31:07.574Z |
+| delta-heartbeat.js | 1228 | 2026-06-05T01:45:08.443Z |
 | delta-log-integrations.js | 2213 | 2026-05-30T01:25:39.558Z |
-| delta-mark-built.js | 7505 | 2026-06-05T01:31:27.669Z |
-| delta-mark-done.js | 858 | 2026-06-05T01:31:29.555Z |
+| delta-mark-built.js | 7505 | 2026-06-05T01:45:08.443Z |
+| delta-mark-done.js | 858 | 2026-06-05T01:45:08.444Z |
 | delta-pre-clean-worktrees.js | 3855 | 2026-05-30T01:25:39.560Z |
-| delta-queue-foundation.js | 1025 | 2026-06-05T01:31:30.938Z |
-| delta-render-tracker.js | 4814 | 2026-06-05T01:30:44.507Z |
+| delta-queue-foundation.js | 1025 | 2026-06-05T01:45:08.444Z |
+| delta-render-tracker.js | 4814 | 2026-06-05T01:45:08.444Z |
 | delta-show-findings.js | 1011 | 2026-05-30T01:25:39.564Z |
-| delta-store-review.js | 1684 | 2026-06-05T01:31:32.620Z |
-| delta-update-heartbeat.js | 727 | 2026-06-05T01:30:46.371Z |
+| delta-store-review.js | 1684 | 2026-06-05T01:45:08.445Z |
+| delta-update-heartbeat.js | 727 | 2026-06-05T01:45:08.445Z |
 | dismiss-drift-entry.js | 647 | 2026-05-30T01:25:39.566Z |
 | dispatch-agent.js | 24166 | 2026-06-04T22:57:13.995Z |
 | dispatch-claude.js | 14763 | 2026-06-02T18:08:39.246Z |
@@ -95,13 +95,13 @@ Scripts: **169** | npm scripts: **0** | External CLIs: **3**
 | one-off-start-checks.js | 8232 | 2026-05-30T01:25:39.625Z |
 | one-off-stub-coverage-check.js | 4834 | 2026-05-30T01:25:39.625Z |
 | one-off-update-known-stubs.js | 560 | 2026-05-30T01:25:39.625Z |
-| oneshot-halt.js | 4351 | 2026-06-05T01:32:20.554Z |
-| oneshot-heartbeat.js | 1130 | 2026-06-05T01:31:46.752Z |
-| oneshot-phase-complete.js | 1823 | 2026-06-05T01:31:59.017Z |
-| oneshot-store-file-sync.js | 4782 | 2026-06-05T01:31:56.619Z |
-| oneshot-store-reset.js | 3072 | 2026-06-05T01:31:59.906Z |
+| oneshot-halt.js | 4351 | 2026-06-05T01:45:08.448Z |
+| oneshot-heartbeat.js | 1130 | 2026-06-05T01:45:08.449Z |
+| oneshot-phase-complete.js | 1823 | 2026-06-05T01:45:08.449Z |
+| oneshot-store-file-sync.js | 4782 | 2026-06-05T01:45:08.449Z |
+| oneshot-store-reset.js | 3072 | 2026-06-05T01:45:08.450Z |
 | patch-store-backend-skipped.js | 1153 | 2026-05-30T01:25:39.634Z |
-| path-lint.js | 14694 | 2026-06-05T01:33:21.187Z |
+| path-lint.js | 14694 | 2026-06-05T01:45:08.450Z |
 | phase0-verify.js | 3274 | 2026-05-30T01:25:39.636Z |
 | points.js | 4007 | 2026-05-30T01:25:39.636Z |
 | preflight-7-8-sync.js | 5333 | 2026-05-30T01:25:39.641Z |
@@ -117,7 +117,7 @@ Scripts: **169** | npm scripts: **0** | External CLIs: **3**
 | read-store-state.js | 319 | 2026-05-30T01:25:39.647Z |
 | record-gate-check.js | 1916 | 2026-05-30T01:25:39.647Z |
 | recurring-issues-helper.js | 9224 | 2026-05-30T01:25:39.647Z |
-| regen-maps.js | 47570 | 2026-06-05T01:33:51.971Z |
+| regen-maps.js | 47570 | 2026-06-05T01:45:08.451Z |
 | research-append-learnings.js | 7439 | 2026-05-30T01:25:39.652Z |
 | research-build-payload.js | 5061 | 2026-05-30T01:25:39.652Z |
 | reset-cycle-step.js | 505 | 2026-05-30T01:25:39.654Z |
@@ -146,7 +146,7 @@ Scripts: **169** | npm scripts: **0** | External CLIs: **3**
 | test-dispatch-route-guard.js | 6087 | 2026-06-02T18:17:35.473Z |
 | test-dispatch-telemetry.js | 3750 | 2026-05-30T01:25:39.677Z |
 | test-manifest-guard-product.js | 5363 | 2026-05-30T01:25:39.677Z |
-| test-memory-guard-targets.js | 4104 | 2026-05-30T01:25:39.677Z |
+| test-memory-guard-targets.js | 5171 | 2026-06-05T03:24:07.889Z |
 | test-merge-guard-cd-prefix.js | 4453 | 2026-05-30T01:25:39.678Z |
 | test-merge-guard-node-e.js | 3521 | 2026-06-04T21:24:41.662Z |
 | test-merge-guard-rm.js | 2217 | 2026-05-30T01:25:39.678Z |
@@ -166,8 +166,8 @@ Scripts: **169** | npm scripts: **0** | External CLIs: **3**
 | update-heartbeat.js | 743 | 2026-05-30T01:25:39.687Z |
 | update-market-research-gauntlet.js | 1630 | 2026-05-30T01:25:39.688Z |
 | update-market-research-merged.js | 972 | 2026-05-30T01:25:39.688Z |
-| update-onboarding-done.js | 2707 | 2026-06-05T01:34:10.091Z |
-| validate-gates.js | 7181 | 2026-06-05T01:34:07.931Z |
+| update-onboarding-done.js | 2707 | 2026-06-05T01:45:08.452Z |
+| validate-gates.js | 7181 | 2026-06-05T01:45:08.452Z |
 | verify-drift-detector.js | 808 | 2026-05-30T01:25:39.689Z |
 | verify-ui.js | 5832 | 2026-05-30T01:25:39.689Z |
 | warp-setup.js | 41715 | 2026-05-30T15:13:30.581Z |

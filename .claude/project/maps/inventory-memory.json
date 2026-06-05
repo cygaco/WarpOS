@@ -1,7 +1,7 @@
 {
   "metadata": {
-    "generated": "2026-06-05T01:34:50.375Z",
-    "lastUpdated": "2026-06-05T01:34:50.375Z",
+    "generated": "2026-06-05T03:38:10.821Z",
+    "lastUpdated": "2026-06-05T03:38:10.821Z",
     "total_stores": 10,
     "tiers": 3,
     "regenerated_by": "scripts/regen-maps.js"
@@ -13,10 +13,10 @@
         "path": ".claude/project/events/events.jsonl",
         "category": "events",
         "tier": "centralized",
-        "entryCount": 18495,
+        "entryCount": 18922,
         "exists": true,
-        "size": 5995332,
-        "modified": "2026-06-05T01:34:48.967Z"
+        "size": 6122355,
+        "modified": "2026-06-05T03:38:05.877Z"
       },
       {
         "id": "manager-consult",
@@ -33,20 +33,20 @@
         "path": ".claude/project/events/requirements.jsonl",
         "category": "events",
         "tier": "centralized",
-        "entryCount": 382,
+        "entryCount": 387,
         "exists": true,
-        "size": 205397,
-        "modified": "2026-06-05T01:33:56.331Z"
+        "size": 208368,
+        "modified": "2026-06-05T03:26:37.279Z"
       },
       {
         "id": "tools",
         "path": ".claude/project/events/tools.jsonl",
         "category": "events",
         "tier": "centralized",
-        "entryCount": 9213,
+        "entryCount": 9481,
         "exists": true,
-        "size": 2896355,
-        "modified": "2026-06-05T01:34:44.595Z"
+        "size": 2976140,
+        "modified": "2026-06-05T03:36:19.971Z"
       }
     ],
     "semantic": [
@@ -55,10 +55,10 @@
         "path": ".claude/project/memory/enforcement-debt.jsonl",
         "category": "memory",
         "tier": "semantic",
-        "entryCount": 17,
+        "entryCount": 18,
         "exists": true,
-        "size": 20369,
-        "modified": "2026-06-05T00:26:45.081Z"
+        "size": 21628,
+        "modified": "2026-06-05T01:55:37.476Z"
       },
       {
         "id": "learnings",
@@ -87,8 +87,8 @@
         "tier": "semantic",
         "entryCount": 55,
         "exists": true,
-        "size": 49042,
-        "modified": "2026-06-05T01:33:56.313Z"
+        "size": 49068,
+        "modified": "2026-06-05T03:26:37.296Z"
       },
       {
         "id": "traces",
@@ -115,7 +115,7 @@
     ]
   },
   "totals": {
-    "total_lines": 28303,
-    "total_size": 9304705
+    "total_lines": 29004,
+    "total_size": 9515769
   }
 }

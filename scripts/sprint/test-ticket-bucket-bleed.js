@@ -23,6 +23,13 @@ const { spawnSync } = require("child_process");
 
 const REPO = path.resolve(__dirname, "..", "..");
 
+// Resolve the routing-policy copy target from the paths registry rather than a
+// baked literal — paths.js#routing (key sprintRouting) points at the canonical
+// location, which moved under ADR-0007 (00-alex → president). Deriving the
+// REPO-relative path here keeps this fixture honest if the policy moves again.
+const SPRINT = require("./paths");
+const ROUTING_REL = path.relative(REPO, SPRINT.routing).split(path.sep).join("/");
+
 let passed = 0;
 let failed = 0;
 
@@ -52,7 +59,7 @@ function buildProject(activeStatuses) {
     ".claude/paths.json",
     "schemas/sprint",
     "framework/templates/sprint",
-    ".claude/agents/00-alex/.system/policy/sprint-routing.json",
+    ROUTING_REL,
   ]) {
     const src = path.join(REPO, rel);
     const dst = path.join(tmp, rel);

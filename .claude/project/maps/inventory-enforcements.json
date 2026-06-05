@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "generated": "2026-06-05T01:34:50.375Z",
-    "lastUpdated": "2026-06-05T01:34:50.375Z",
+    "generated": "2026-06-05T03:38:10.821Z",
+    "lastUpdated": "2026-06-05T03:38:10.821Z",
     "total_hooks": 64,
     "total_modules": 15,
-    "uncurated": 1,
+    "uncurated": 0,
     "total_gaps": 84,
     "gaps_closed": 73,
     "gaps_open": 11,
@@ -561,7 +561,7 @@
         "store.json features"
       ],
       "file_size": 8464,
-      "file_modified": "2026-06-05T01:32:38.729Z"
+      "file_modified": "2026-06-05T01:45:08.445Z"
     },
     {
       "id": "learning-validator",
@@ -601,7 +601,7 @@
       "mode": "?",
       "file": "scripts/hooks/ledger-presence-guard.js",
       "file_size": 6991,
-      "file_modified": "2026-06-05T01:33:56.186Z",
+      "file_modified": "2026-06-05T01:45:08.446Z",
       "registered": true,
       "gates": [],
       "blocks": [],
@@ -704,8 +704,8 @@
         "logger",
         "paths"
       ],
-      "file_size": 13574,
-      "file_modified": "2026-05-30T01:25:39.595Z"
+      "file_size": 14408,
+      "file_modified": "2026-06-05T03:23:28.624Z"
     },
     {
       "id": "merge-guard",
@@ -986,7 +986,7 @@
       ],
       "note": "Not registered as a lifecycle hook; used by /check:references skill and manual audits.",
       "file_size": 13294,
-      "file_modified": "2026-06-05T01:32:46.530Z"
+      "file_modified": "2026-06-05T01:45:08.446Z"
     },
     {
       "id": "region-marker-guard",
@@ -1129,7 +1129,7 @@
         "paths"
       ],
       "file_size": 2833,
-      "file_modified": "2026-06-05T01:32:40.402Z",
+      "file_modified": "2026-06-05T01:45:08.447Z",
       "note": "HYGIENE Rule 64 enforcement. Sources: run-9 cross-session inbox sessions moc2ua2s, mocaecxt, mocd8rff. Flip default to enforce after one clean session passes."
     },
     {
@@ -1293,7 +1293,7 @@
         "paths"
       ],
       "file_size": 18584,
-      "file_modified": "2026-06-05T01:32:42.786Z"
+      "file_modified": "2026-06-05T01:45:08.447Z"
     },
     {
       "id": "session-tracker",
@@ -1442,7 +1442,7 @@
       ],
       "timeout": 5000,
       "file_size": 34063,
-      "file_modified": "2026-06-05T01:32:19.070Z"
+      "file_modified": "2026-06-05T01:45:08.448Z"
     },
     {
       "id": "spec-test-staleness",
@@ -1896,7 +1896,7 @@
       "mode": "?",
       "file": "scripts/hooks/version-bump-guard.js",
       "file_size": 7695,
-      "file_modified": "2026-06-05T01:33:53.816Z",
+      "file_modified": "2026-06-05T01:45:08.448Z",
       "registered": true,
       "gates": [],
       "blocks": [],
@@ -2010,8 +2010,8 @@
         "assess-session.js"
       ],
       "file": "scripts/hooks/lib/logger.js",
-      "file_size": 15922,
-      "file_modified": "2026-06-04T23:27:24.271Z"
+      "file_size": 16632,
+      "file_modified": "2026-06-05T03:26:37.152Z"
     },
     {
       "id": "mode",
@@ -2051,7 +2051,7 @@
       ],
       "file": "scripts/hooks/lib/paths.js",
       "file_size": 6608,
-      "file_modified": "2026-06-05T01:30:10.380Z"
+      "file_modified": "2026-06-05T01:45:08.446Z"
     },
     {
       "id": "project-config",

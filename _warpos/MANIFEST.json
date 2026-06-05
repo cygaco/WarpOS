@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-05T02:03:10.435Z",
+  "generatedAt": "2026-06-05T03:38:11.528Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.13.1",
   "migrations": [],
@@ -2542,8 +2542,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/test-memory-guard-targets.js",
-      "sha256": "6048b6d296315e8c03d9eaf275b86d3039da29b50d98f806b18514ee277b9313",
-      "installedSha": "6048b6d296315e8c03d9eaf275b86d3039da29b50d98f806b18514ee277b9313"
+      "sha256": "0444ea38a8b59d3255d3d350f27592ed92dbeb11efe21616751dcb267e229c3f",
+      "installedSha": "0444ea38a8b59d3255d3d350f27592ed92dbeb11efe21616751dcb267e229c3f"
     },
     "scripts/test-merge-guard-cd-prefix.js": {
       "owner": "framework",
@@ -3294,6 +3294,13 @@
       "sha256": "365e19eb818aace6cf0970be9daa84bf0d16c99cea9116db808cf46e89100d4a",
       "installedSha": "365e19eb818aace6cf0970be9daa84bf0d16c99cea9116db808cf46e89100d4a"
     },
+    "scripts/sprint/heartbeat.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/sprint/heartbeat.js",
+      "sha256": "caad227088a6517991f927a9e574b207fabaada2f8b5de198b593c0ee7e02d2a",
+      "installedSha": "caad227088a6517991f927a9e574b207fabaada2f8b5de198b593c0ee7e02d2a"
+    },
     "scripts/sprint/ids.js": {
       "owner": "framework",
       "managed": true,
@@ -3371,12 +3378,19 @@
       "sha256": "daf34aeaf198505705d97c97db88a46932be7c254f2673a1301e7eb3b3bfbea3",
       "installedSha": "daf34aeaf198505705d97c97db88a46932be7c254f2673a1301e7eb3b3bfbea3"
     },
+    "scripts/sprint/test-heartbeat.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/sprint/test-heartbeat.js",
+      "sha256": "35cd0e01e2086df65940ec4de88234759d97fccd86626d6e3ab4b534c055f9f9",
+      "installedSha": "35cd0e01e2086df65940ec4de88234759d97fccd86626d6e3ab4b534c055f9f9"
+    },
     "scripts/sprint/test-plan-honors-registry-primary.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/sprint/test-plan-honors-registry-primary.js",
-      "sha256": "2279899e6be3da960a5d69eaa89669571d6bbf1a8d14ec08e898a97118bf73d2",
-      "installedSha": "2279899e6be3da960a5d69eaa89669571d6bbf1a8d14ec08e898a97118bf73d2"
+      "sha256": "a1d29c89c22fd7c9c38fefbf350c9d17ac7cec920bc266990690ddb8df62a395",
+      "installedSha": "a1d29c89c22fd7c9c38fefbf350c9d17ac7cec920bc266990690ddb8df62a395"
     },
     "scripts/sprint/test-regression-seed-gate.js": {
       "owner": "framework",
@@ -3403,8 +3417,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/sprint/test-ticket-bucket-bleed.js",
-      "sha256": "691abcde7d31d8349ffd30ab268b2a76bdce176808e3d5964fa5039b2e2ab235",
-      "installedSha": "691abcde7d31d8349ffd30ab268b2a76bdce176808e3d5964fa5039b2e2ab235"
+      "sha256": "45cae0ea1177ba1725339562c2b375094aff2e21bd580973c4eb9e2d908f0616",
+      "installedSha": "45cae0ea1177ba1725339562c2b375094aff2e21bd580973c4eb9e2d908f0616"
     },
     "scripts/sprint/ticket.js": {
       "owner": "framework",
@@ -4110,8 +4124,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/memory-guard.js",
-      "sha256": "8a7445dc48b1c82fc63d71a0e816670bd328d6e159e2057de58febfa908a015f",
-      "installedSha": "8a7445dc48b1c82fc63d71a0e816670bd328d6e159e2057de58febfa908a015f"
+      "sha256": "f0ea4278d40f56bf610971b7f666f6df7fe174820144a2d6e0913369c8ce7804",
+      "installedSha": "f0ea4278d40f56bf610971b7f666f6df7fe174820144a2d6e0913369c8ce7804"
     },
     "scripts/hooks/merge-guard.js": {
       "owner": "framework",
@@ -4432,8 +4446,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/lib/logger.js",
-      "sha256": "754628e1ae7a10eaa0e2c170c6e3b3dbe1992c6037b9ce9292640efa2db8ffe6",
-      "installedSha": "754628e1ae7a10eaa0e2c170c6e3b3dbe1992c6037b9ce9292640efa2db8ffe6"
+      "sha256": "16407f22122dba34e8c7241df034ee4d11b4a334ed3c4036e503d6ca2dfc4b14",
+      "installedSha": "16407f22122dba34e8c7241df034ee4d11b4a334ed3c4036e503d6ca2dfc4b14"
     },
     "scripts/hooks/lib/mode.js": {
       "owner": "framework",
@@ -4768,8 +4782,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/adhoc-fail-override.js",
-      "sha256": "a8be163e36e823adae4c87f1aaeb9dfce7bd7883086e34033c29a951e95753c7",
-      "installedSha": "a8be163e36e823adae4c87f1aaeb9dfce7bd7883086e34033c29a951e95753c7"
+      "sha256": "d28ca0508b2b889c88260c06a2a8222dd37e2d719696ea49e31dfc1c9c4106c3",
+      "installedSha": "d28ca0508b2b889c88260c06a2a8222dd37e2d719696ea49e31dfc1c9c4106c3"
     },
     "scripts/checks/adhoc-team-hygiene.js": {
       "owner": "framework",
@@ -5062,8 +5076,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/test-adhoc-fail-override.js",
-      "sha256": "9dd59f0e294ce91009015b438ec6535bf7927ba516af6f2877cab3a1e5afdfe7",
-      "installedSha": "9dd59f0e294ce91009015b438ec6535bf7927ba516af6f2877cab3a1e5afdfe7"
+      "sha256": "51fcc72f4078ad518af01e51b39f13b4f35df688399aba9ca22da3f39697b667",
+      "installedSha": "51fcc72f4078ad518af01e51b39f13b4f35df688399aba9ca22da3f39697b667"
     },
     "scripts/checks/test-docker-secret-ignore.js": {
       "owner": "framework",

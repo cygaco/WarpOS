@@ -1,7 +1,7 @@
 {
   "metadata": {
-    "generated": "2026-06-05T01:34:50.375Z",
-    "lastUpdated": "2026-06-05T01:34:50.375Z",
+    "generated": "2026-06-05T03:38:10.821Z",
+    "lastUpdated": "2026-06-05T03:38:10.821Z",
     "total_hooks": 66,
     "total_lib_modules": 15,
     "registered_hooks": 61,
@@ -187,7 +187,7 @@
       "registered": true,
       "exists": true,
       "size": 8464,
-      "modified": "2026-06-05T01:32:38.729Z"
+      "modified": "2026-06-05T01:45:08.445Z"
     },
     {
       "id": "hook:learning-validator",
@@ -205,7 +205,7 @@
       "registered": true,
       "exists": true,
       "size": 6991,
-      "modified": "2026-06-05T01:33:56.186Z"
+      "modified": "2026-06-05T01:45:08.446Z"
     },
     {
       "id": "hook:lint-hook-output",
@@ -240,8 +240,8 @@
       "path": "scripts/hooks/memory-guard.js",
       "registered": true,
       "exists": true,
-      "size": 13574,
-      "modified": "2026-05-30T01:25:39.595Z"
+      "size": 14408,
+      "modified": "2026-06-05T03:23:28.624Z"
     },
     {
       "id": "hook:merge-guard",
@@ -313,7 +313,7 @@
       "registered": false,
       "exists": true,
       "size": 13294,
-      "modified": "2026-06-05T01:32:46.530Z"
+      "modified": "2026-06-05T01:45:08.446Z"
     },
     {
       "id": "hook:region-marker-guard",
@@ -349,7 +349,7 @@
       "registered": true,
       "exists": true,
       "size": 2833,
-      "modified": "2026-06-05T01:32:40.402Z"
+      "modified": "2026-06-05T01:45:08.447Z"
     },
     {
       "id": "hook:save-session-lint",
@@ -403,7 +403,7 @@
       "registered": true,
       "exists": true,
       "size": 18584,
-      "modified": "2026-06-05T01:32:42.786Z"
+      "modified": "2026-06-05T01:45:08.447Z"
     },
     {
       "id": "hook:session-tracker",
@@ -457,7 +457,7 @@
       "registered": true,
       "exists": true,
       "size": 34063,
-      "modified": "2026-06-05T01:32:19.070Z"
+      "modified": "2026-06-05T01:45:08.448Z"
     },
     {
       "id": "hook:spec-test-staleness",
@@ -592,7 +592,7 @@
       "registered": true,
       "exists": true,
       "size": 7695,
-      "modified": "2026-06-05T01:33:53.816Z"
+      "modified": "2026-06-05T01:45:08.448Z"
     },
     {
       "id": "hook:worktree-preflight",
@@ -660,8 +660,8 @@
       "registered": false,
       "type": "lib",
       "exists": true,
-      "size": 15922,
-      "modified": "2026-06-04T23:27:24.271Z"
+      "size": 16632,
+      "modified": "2026-06-05T03:26:37.152Z"
     },
     {
       "id": "hook-lib:mode",
@@ -691,7 +691,7 @@
       "type": "lib",
       "exists": true,
       "size": 6608,
-      "modified": "2026-06-05T01:30:10.380Z"
+      "modified": "2026-06-05T01:45:08.446Z"
     },
     {
       "id": "hook-lib:project-config",

@@ -65,6 +65,41 @@ function gammaResult(overrides = {}) {
   };
 }
 
+// EPSILON_RESULT (sprint/ε) keys differ: gate_checks[].unit + units_completed +
+// status:"complete". Same independence invariant — ED-025 schema parity.
+function epsilonGateCheck(unit, overrides = {}) {
+  return {
+    unit,
+    frontend_reviewer: "pass",
+    backend_reviewer: "pass",
+    qa_reviewer: "pass",
+    security_reviewer: "pass",
+    ...overrides,
+  };
+}
+
+function epsilonResult(overrides = {}) {
+  return {
+    sprint_id: "SP-x",
+    mode: "sprint",
+    status: "complete",
+    units_completed: ["unit-a"],
+    gate_checks: [epsilonGateCheck("unit-a")],
+    ...overrides,
+  };
+}
+
+// DELTA_RESULT (oneshot/δ): status:"complete" but keyed on feature/features_completed.
+function deltaResult(overrides = {}) {
+  return {
+    mode: "oneshot",
+    status: "complete",
+    features_completed: ["feat-y"],
+    gate_checks: [gateCheck("feat-y")],
+    ...overrides,
+  };
+}
+
 // ── Unit: predicate sanity ────────────────────────────────────────────────────
 
 console.log("Predicates:");
@@ -161,6 +196,57 @@ console.log("\n(e2) reviewer JSON inner FAIL + status:'fail' + not completed →
   ok("PASSes (reviewer FAIL honestly reflected as status:fail)", out.result === "PASS", `got ${out.result}: ${out.errors.join("; ")}`);
 }
 
+// ── (g) EPSILON_RESULT (sprint) schema parity — ED-025 ────────────────────────
+
+console.log("\n(g) EPSILON override: qa_reviewer fail + status:'complete' + unit in units_completed → REJECT:");
+{
+  const result = epsilonResult({
+    status: "complete",
+    units_completed: ["unit-a"],
+    gate_checks: [epsilonGateCheck("unit-a", { qa_reviewer: "fail" })],
+  });
+  const out = evaluate({ result, reviewerVerdicts: [] });
+  ok("REJECTs (ε declared complete over a binding FAIL)", out.result === "REJECT", `got ${out.result}: ${out.errors.join("; ")}`);
+  ok("error names the unit", out.errors.some((e) => /unit-a/.test(e)), out.errors.join("; "));
+  ok("error cites units_completed (not features_completed)", out.errors.some((e) => /units_completed/.test(e)), out.errors.join("; "));
+}
+
+console.log("\n(g2) EPSILON honest: security_reviewer fail + status:'halted' + unit NOT completed → PASS:");
+{
+  const result = epsilonResult({
+    status: "halted",
+    units_completed: [],
+    gate_checks: [epsilonGateCheck("unit-a", { security_reviewer: "fail" })],
+  });
+  const out = evaluate({ result, reviewerVerdicts: [] });
+  ok("PASSes (ε halted is honest)", out.result === "PASS", `got ${out.result}: ${out.errors.join("; ")}`);
+}
+
+console.log("\n(g3) EPSILON all-pass + status:'complete' → PASS:");
+{
+  const out = evaluate({ result: epsilonResult(), reviewerVerdicts: [] });
+  ok("PASSes", out.result === "PASS", `got ${out.result}: ${out.errors.join("; ")}`);
+}
+
+// ── (h) DELTA_RESULT (oneshot) schema parity — status:"complete" + features_completed ──
+
+console.log("\n(h) DELTA override: security_reviewer fail + status:'complete' + feature completed → REJECT:");
+{
+  const result = deltaResult({
+    status: "complete",
+    features_completed: ["feat-y"],
+    gate_checks: [gateCheck("feat-y", { security_reviewer: "fail" })],
+  });
+  const out = evaluate({ result, reviewerVerdicts: [] });
+  ok("REJECTs (δ 'complete' is a declared success)", out.result === "REJECT", `got ${out.result}: ${out.errors.join("; ")}`);
+}
+
+console.log("\n(h2) DELTA all-pass + status:'complete' → PASS:");
+{
+  const out = evaluate({ result: deltaResult(), reviewerVerdicts: [] });
+  ok("PASSes", out.result === "PASS", `got ${out.result}: ${out.errors.join("; ")}`);
+}
+
 // ── CLI subprocess tests ──────────────────────────────────────────────────────
 
 console.log("\n(f) CLI EXIT CODES — subprocess tests:");
@@ -214,6 +300,23 @@ console.log("\n(f) CLI EXIT CODES — subprocess tests:");
   {
     const r = cp.spawnSync(process.execPath, [ENGINE, "--result", path.join(tmpDir, "nope.json"), "--reviewers", emptyReviewers], { encoding: "utf8" });
     ok("CLI: --result missing file → exit 2 (fail-closed)", r.status === 2, `got status=${r.status} stderr=${r.stderr}`);
+  }
+
+  // 7. EPSILON_RESULT override (sprint schema: unit + units_completed + status:complete) → exit 1
+  {
+    const f = path.join(tmpDir, "epsilon-override.json");
+    fs.writeFileSync(
+      f,
+      JSON.stringify(
+        epsilonResult({
+          status: "complete",
+          units_completed: ["unit-a"],
+          gate_checks: [epsilonGateCheck("unit-a", { security_reviewer: "fail" })],
+        }),
+      ),
+    );
+    const r = cp.spawnSync(process.execPath, [ENGINE, "--result", f, "--reviewers", emptyReviewers], { encoding: "utf8" });
+    ok("CLI: ε override (status:complete) → exit 1 (reject)", r.status === 1, `got status=${r.status} stdout=${r.stdout} stderr=${r.stderr}`);
   }
 
   try { fs.rmSync(tmpDir, { recursive: true }); } catch { /* ignore */ }

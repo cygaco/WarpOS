@@ -87,17 +87,26 @@ function stripNonTargetText(cmd) {
 // single string we can substring-test for protected filenames — but only over
 // tokens that are genuinely write destinations, never the whole command.
 function writeTargetsText(strippedCmd) {
+  // `git rm`/`git mv`/`git cp` are version-controlled, recoverable mutations —
+  // NOT raw filesystem destruction. `git rm --cached <file>` only unstages
+  // (index-only, file untouched on disk). Neutralize the leading `git ` so the
+  // cp/mv/rm operand scanner below doesn't treat the verb inside `git rm` as a
+  // bare `rm`. Mirrors merge-guard.js's `if (/\bgit\s+rm\b/.test(s)) continue;`.
+  // Without this, `git rm --cached events.jsonl && echo done` false-positives
+  // (the `echo` taints the allSafe early-exit, then `\b(rm)\b` matches inside
+  // `git rm`). Source: 2026-06-04 memory-guard git-rm-cached false-positive.
+  const s = strippedCmd.replace(/\bgit\s+(rm|mv|cp)\b/g, "git __vcs_$1__");
   const targets = [];
   // 1. Redirect targets: `>file`, `> file`, `>>file` (but not fd dups `>&2`,
   //    and not the `2>`/`1>` fd prefix — the path is what follows `>`).
   const redir = /(?<!=)>>?\s*([^\s>&|;]+)/g;
   let m;
-  while ((m = redir.exec(strippedCmd)) !== null) {
+  while ((m = redir.exec(s)) !== null) {
     targets.push(m[1]);
   }
   // 2. tee targets: `tee file`, `tee -a file ...` (every non-flag operand).
   const tee = /\btee\b((?:\s+(?:-\S+|[^\s|;&]+))*)/g;
-  while ((m = tee.exec(strippedCmd)) !== null) {
+  while ((m = tee.exec(s)) !== null) {
     for (const tok of m[1].split(/\s+/).filter(Boolean)) {
       if (!tok.startsWith("-")) targets.push(tok);
     }
@@ -105,8 +114,10 @@ function writeTargetsText(strippedCmd) {
   // 3. cp/mv/rm operands. For cp/mv the destination is the last operand; for rm
   //    every non-flag operand is a delete target. Collect all operands — a
   //    protected file appearing as ANY operand of these is a real mutation.
+  //    (The `git __vcs_rm__` rewrite above means git-tracked removals no longer
+  //    match here — they're recoverable and intentionally allowed.)
   const fileops = /\b(cp|mv|rm)\b((?:\s+(?:-\S+|[^\s|;&]+))*)/g;
-  while ((m = fileops.exec(strippedCmd)) !== null) {
+  while ((m = fileops.exec(s)) !== null) {
     for (const tok of m[2].split(/\s+/).filter(Boolean)) {
       if (!tok.startsWith("-")) targets.push(tok);
     }

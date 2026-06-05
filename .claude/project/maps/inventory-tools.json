@@ -1,7 +1,7 @@
 {
   "metadata": {
-    "generated": "2026-06-05T01:34:50.375Z",
-    "lastUpdated": "2026-06-05T01:34:50.375Z",
+    "generated": "2026-06-05T03:38:10.821Z",
+    "lastUpdated": "2026-06-05T03:38:10.821Z",
     "total_tools": 174,
     "categories": 4,
     "regenerated_by": "scripts/regen-maps.js"
@@ -152,7 +152,7 @@
           "type": "script",
           "exists": true,
           "size": 6336,
-          "modified": "2026-06-05T01:31:25.796Z"
+          "modified": "2026-06-05T01:45:08.439Z"
         },
         {
           "id": "tool:delta-build-fixer-prompt-from-worktree",
@@ -161,7 +161,7 @@
           "type": "script",
           "exists": true,
           "size": 2372,
-          "modified": "2026-06-05T01:31:04.325Z"
+          "modified": "2026-06-05T01:45:08.440Z"
         },
         {
           "id": "tool:delta-build-fixer-prompt",
@@ -170,7 +170,7 @@
           "type": "script",
           "exists": true,
           "size": 1787,
-          "modified": "2026-06-05T01:30:59.166Z"
+          "modified": "2026-06-05T01:45:08.440Z"
         },
         {
           "id": "tool:delta-build-prompt",
@@ -179,7 +179,7 @@
           "type": "script",
           "exists": true,
           "size": 7107,
-          "modified": "2026-06-05T01:30:31.025Z"
+          "modified": "2026-06-05T01:45:08.441Z"
         },
         {
           "id": "tool:delta-build-reviewer-prompt",
@@ -188,7 +188,7 @@
           "type": "script",
           "exists": true,
           "size": 10391,
-          "modified": "2026-06-05T01:31:02.593Z"
+          "modified": "2026-06-05T01:45:08.441Z"
         },
         {
           "id": "tool:delta-canonical-dispatch-smoke",
@@ -215,7 +215,7 @@
           "type": "script",
           "exists": true,
           "size": 636,
-          "modified": "2026-06-05T01:31:22.474Z"
+          "modified": "2026-06-05T01:45:08.442Z"
         },
         {
           "id": "tool:delta-dispatch-builder",
@@ -233,7 +233,7 @@
           "type": "script",
           "exists": true,
           "size": 7566,
-          "modified": "2026-06-05T01:31:40.877Z"
+          "modified": "2026-06-05T01:45:08.442Z"
         },
         {
           "id": "tool:delta-final-gauntlet",
@@ -251,7 +251,7 @@
           "type": "script",
           "exists": true,
           "size": 2015,
-          "modified": "2026-06-05T01:31:23.932Z"
+          "modified": "2026-06-05T01:45:08.442Z"
         },
         {
           "id": "tool:delta-gauntlet-watcher",
@@ -269,7 +269,7 @@
           "type": "script",
           "exists": true,
           "size": 1228,
-          "modified": "2026-06-05T01:31:07.574Z"
+          "modified": "2026-06-05T01:45:08.443Z"
         },
         {
           "id": "tool:delta-log-integrations",
@@ -287,7 +287,7 @@
           "type": "script",
           "exists": true,
           "size": 7505,
-          "modified": "2026-06-05T01:31:27.669Z"
+          "modified": "2026-06-05T01:45:08.443Z"
         },
         {
           "id": "tool:delta-mark-done",
@@ -296,7 +296,7 @@
           "type": "script",
           "exists": true,
           "size": 858,
-          "modified": "2026-06-05T01:31:29.555Z"
+          "modified": "2026-06-05T01:45:08.444Z"
         },
         {
           "id": "tool:delta-pre-clean-worktrees",
@@ -314,7 +314,7 @@
           "type": "script",
           "exists": true,
           "size": 1025,
-          "modified": "2026-06-05T01:31:30.938Z"
+          "modified": "2026-06-05T01:45:08.444Z"
         },
         {
           "id": "tool:delta-render-tracker",
@@ -323,7 +323,7 @@
           "type": "script",
           "exists": true,
           "size": 4814,
-          "modified": "2026-06-05T01:30:44.507Z"
+          "modified": "2026-06-05T01:45:08.444Z"
         },
         {
           "id": "tool:delta-show-findings",
@@ -341,7 +341,7 @@
           "type": "script",
           "exists": true,
           "size": 1684,
-          "modified": "2026-06-05T01:31:32.620Z"
+          "modified": "2026-06-05T01:45:08.445Z"
         },
         {
           "id": "tool:delta-update-heartbeat",
@@ -350,7 +350,7 @@
           "type": "script",
           "exists": true,
           "size": 727,
-          "modified": "2026-06-05T01:30:46.371Z"
+          "modified": "2026-06-05T01:45:08.445Z"
         },
         {
           "id": "tool:dismiss-drift-entry",
@@ -800,7 +800,7 @@
           "type": "script",
           "exists": true,
           "size": 4351,
-          "modified": "2026-06-05T01:32:20.554Z"
+          "modified": "2026-06-05T01:45:08.448Z"
         },
         {
           "id": "tool:oneshot-heartbeat",
@@ -809,7 +809,7 @@
           "type": "script",
           "exists": true,
           "size": 1130,
-          "modified": "2026-06-05T01:31:46.752Z"
+          "modified": "2026-06-05T01:45:08.449Z"
         },
         {
           "id": "tool:oneshot-phase-complete",
@@ -818,7 +818,7 @@
           "type": "script",
           "exists": true,
           "size": 1823,
-          "modified": "2026-06-05T01:31:59.017Z"
+          "modified": "2026-06-05T01:45:08.449Z"
         },
         {
           "id": "tool:oneshot-store-file-sync",
@@ -827,7 +827,7 @@
           "type": "script",
           "exists": true,
           "size": 4782,
-          "modified": "2026-06-05T01:31:56.619Z"
+          "modified": "2026-06-05T01:45:08.449Z"
         },
         {
           "id": "tool:oneshot-store-reset",
@@ -836,7 +836,7 @@
           "type": "script",
           "exists": true,
           "size": 3072,
-          "modified": "2026-06-05T01:31:59.906Z"
+          "modified": "2026-06-05T01:45:08.450Z"
         },
         {
           "id": "tool:patch-store-backend-skipped",
@@ -854,7 +854,7 @@
           "type": "script",
           "exists": true,
           "size": 14694,
-          "modified": "2026-06-05T01:33:21.187Z"
+          "modified": "2026-06-05T01:45:08.450Z"
         },
         {
           "id": "tool:phase0-verify",
@@ -998,7 +998,7 @@
           "type": "script",
           "exists": true,
           "size": 47570,
-          "modified": "2026-06-05T01:33:51.971Z"
+          "modified": "2026-06-05T01:45:08.451Z"
         },
         {
           "id": "tool:research-append-learnings",
@@ -1258,8 +1258,8 @@
           "path": "scripts/test-memory-guard-targets.js",
           "type": "script",
           "exists": true,
-          "size": 4104,
-          "modified": "2026-05-30T01:25:39.677Z"
+          "size": 5171,
+          "modified": "2026-06-05T03:24:07.889Z"
         },
         {
           "id": "tool:test-merge-guard-cd-prefix",
@@ -1439,7 +1439,7 @@
           "type": "script",
           "exists": true,
           "size": 2707,
-          "modified": "2026-06-05T01:34:10.091Z"
+          "modified": "2026-06-05T01:45:08.452Z"
         },
         {
           "id": "tool:validate-gates",
@@ -1448,7 +1448,7 @@
           "type": "script",
           "exists": true,
           "size": 7181,
-          "modified": "2026-06-05T01:34:07.931Z"
+          "modified": "2026-06-05T01:45:08.452Z"
         },
         {
           "id": "tool:verify-drift-detector",

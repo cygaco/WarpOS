@@ -15,11 +15,14 @@
  * nothing detects it. This check reads the VERDICT CONTENT and rejects that override.
  * It deliberately does NOT reuse gauntlet-verify (presence ≠ verdict).
  *
- * INPUT — the adhoc GAMMA_RESULT (schema at gamma.md ~374-401):
- *   { status: "pass"|"fail"|"halted",
- *     features_completed: ["<feature>"],
- *     gate_checks: [ { feature, frontend_reviewer, backend_reviewer, qa_reviewer,
- *                      security_reviewer } ]  // each "pass"|"fail"|"skipped" }
+ * INPUT — a dispatcher RESULT envelope. Schema-tolerant across all three faces that
+ * share the independence invariant (ED-025 — ε/oneshot parity; the keys differ but
+ * the override semantics are identical):
+ *   GAMMA_RESULT   (adhoc/γ)    status:"pass"     · features_completed · gate_checks[].feature
+ *   DELTA_RESULT   (oneshot/δ)  status:"complete" · features_completed · gate_checks[].feature
+ *   EPSILON_RESULT (sprint/ε)   status:"complete" · units_completed    · gate_checks[].unit
+ *   gate_checks[] cell: { <feature|unit>, frontend_reviewer, backend_reviewer,
+ *                      qa_reviewer, security_reviewer }  // each "pass"|"fail"|"skipped"
  * Supplied via --result <gamma-result.json>. Optionally, per-role reviewer output
  * JSONs under .claude/runtime/dispatch/ (or --reviewers <dir>) are ALSO scanned for an
  * inner verdict of FAIL / critical / high (the reviewer said fail even if the
@@ -28,8 +31,8 @@
  * REJECT (exit 1) when ANY binding FAIL coexists with a declared success:
  *   - any gate_check reviewer verdict == "fail", OR any reviewer JSON inner verdict is
  *     FAIL / critical / high, AND
- *   - the declared top-level status == "pass" OR the feature appears in
- *     features_completed.
+ *   - the declared top-level status is a success token ("pass"|"complete") OR the
+ *     feature/unit appears in features_completed/units_completed.
  * (An HONEST run — FAIL with status:"fail"/"halted" and the feature NOT completed —
  *  passes: the dispatcher did not override.)
  *
@@ -58,6 +61,11 @@ const REVIEWER_KEYS = Object.freeze([
   "qa_reviewer",
   "security_reviewer",
 ]);
+
+// Declared-success status tokens across the three RESULT schemas: GAMMA uses
+// "pass"; DELTA (oneshot) + EPSILON (sprint) use "complete". A binding reviewer
+// FAIL coexisting with any of these is the override this check rejects (ED-025).
+const DECLARED_SUCCESS = Object.freeze(new Set(["pass", "complete"]));
 
 // Default location the adhoc gauntlet writes per-role reviewer output JSONs to.
 const DEFAULT_REVIEWERS_DIR = path.join(ROOT, ".claude", "runtime", "dispatch");
@@ -118,12 +126,17 @@ function evaluate({ result, reviewerVerdicts = [] }) {
   const errors = [];
   let checked = 0;
 
-  // Establish the "declared success" surface.
+  // Establish the "declared success" surface — schema-tolerant across GAMMA
+  // (adhoc, status:"pass", features_completed), DELTA (oneshot, status:"complete",
+  // features_completed) and EPSILON (sprint, status:"complete", units_completed).
+  // Same override semantics on all three; only the field names differ (ED-025).
   const topStatus = result ? String(result.status || "").trim().toLowerCase() : "";
-  const declaredPass = topStatus === "pass";
+  const declaredPass = DECLARED_SUCCESS.has(topStatus);
+  const completedField =
+    result && Array.isArray(result.units_completed) ? "units_completed" : "features_completed";
   const completed = new Set(
-    result && Array.isArray(result.features_completed)
-      ? result.features_completed.map((x) => String(x))
+    result && Array.isArray(result[completedField])
+      ? result[completedField].map((x) => String(x))
       : [],
   );
 
@@ -131,7 +144,8 @@ function evaluate({ result, reviewerVerdicts = [] }) {
   const gateChecks = result && Array.isArray(result.gate_checks) ? result.gate_checks : [];
   for (const gc of gateChecks) {
     if (!gc || typeof gc !== "object") continue;
-    const feature = String(gc.feature || "(unnamed)");
+    // GAMMA/DELTA key the gate_check cell on `feature`; EPSILON keys it on `unit`.
+    const feature = String(gc.feature || gc.unit || "(unnamed)");
     const failedReviewers = REVIEWER_KEYS.filter((k) => isFailVerdict(gc[k]));
     if (failedReviewers.length === 0) continue;
     checked++;
@@ -140,10 +154,10 @@ function evaluate({ result, reviewerVerdicts = [] }) {
     // The override: a binding reviewer FAIL coexists with a declared success.
     if (declaredPass || featureCompleted) {
       const why = [];
-      if (declaredPass) why.push(`top-level status == "pass"`);
-      if (featureCompleted) why.push(`feature "${feature}" is in features_completed`);
+      if (declaredPass) why.push(`top-level status == "${topStatus}"`);
+      if (featureCompleted) why.push(`"${feature}" is in ${completedField}`);
       errors.push(
-        `override: feature "${feature}" has FAILING reviewer(s) [${failedReviewers.join(", ")}] yet ${why.join(" AND ")} — a dispatcher cannot override a binding FAIL (ADR-0007 independence invariant)`,
+        `override: "${feature}" has FAILING reviewer(s) [${failedReviewers.join(", ")}] yet ${why.join(" AND ")} — a dispatcher cannot override a binding FAIL (ADR-0007 independence invariant)`,
       );
     }
   }
@@ -162,8 +176,8 @@ function evaluate({ result, reviewerVerdicts = [] }) {
       // informational. Here result!=null is the real case; the null branch is handled
       // by main()'s graceful-empty (no result + reviewers-only → exit 0).
       const why = [];
-      if (declaredPass) why.push(`top-level status == "pass"`);
-      if (featureCompleted) why.push(`feature "${feature}" is in features_completed`);
+      if (declaredPass) why.push(`top-level status == "${topStatus}"`);
+      if (featureCompleted) why.push(`"${feature}" is in ${completedField}`);
       errors.push(
         `override: reviewer output ${rv.source} reports a binding FAIL (fail/critical/high)${feature ? ` for "${feature}"` : ""} yet ${why.join(" AND ") || "the run was declared successful"} — dispatcher cannot override a binding FAIL`,
       );
@@ -299,4 +313,4 @@ function main(argv) {
 
 if (require.main === module) process.exit(main(process.argv));
 
-module.exports = { evaluate, reviewerJsonIsFail, isFailVerdict, loadReviewerVerdicts, REVIEWER_KEYS, NAME };
+module.exports = { evaluate, reviewerJsonIsFail, isFailVerdict, loadReviewerVerdicts, REVIEWER_KEYS, DECLARED_SUCCESS, NAME };

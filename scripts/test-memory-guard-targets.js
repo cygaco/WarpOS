@@ -87,6 +87,34 @@ const cases = [
   },
   { cmd: `cat ${EVENTS}`, expect: "allow", name: "cat (read) events.jsonl" },
 
+  // ── ALLOW: `git rm` is a version-controlled, recoverable mutation ──
+  //   `git rm --cached <file>` unstages only (file untouched on disk);
+  //   `git rm <file>` records a tracked, recoverable deletion. Neither is the
+  //   raw destruction this guard exists to stop. The `&& echo` / `node x;`
+  //   variants below taint the allSafe early-exit, so they exercise the
+  //   writeTargetsText `git rm` neutralization, not just the allowlist.
+  //   (2026-06-04 git-rm-cached false-positive.)
+  {
+    cmd: `git rm --cached ${EVENTS}`,
+    expect: "allow",
+    name: "git rm --cached events.jsonl (index-only)",
+  },
+  {
+    cmd: `git rm --cached ${EVENTS} && echo done`,
+    expect: "allow",
+    name: "git rm --cached events.jsonl chained with && echo (past allSafe)",
+  },
+  {
+    cmd: `node foo.js; git rm --cached ${LEARN}`,
+    expect: "allow",
+    name: "git rm --cached learnings.jsonl after a ;-chained non-safe cmd",
+  },
+  {
+    cmd: `git rm ${LEARN}`,
+    expect: "allow",
+    name: "git rm learnings.jsonl (tracked, recoverable delete)",
+  },
+
   // ── BLOCK: genuine overwrite / truncation / delete of a real target ──
   {
     cmd: `echo x > ${EVENTS}`,

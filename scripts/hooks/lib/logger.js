@@ -56,34 +56,38 @@ const SESSION_ID_FILE = path.join(RUNTIME_DIR, ".session-id");
 // Backward compat: some hooks import EVENTS_FILE
 const EVENTS_FILE = LOG_FILE;
 
-// ── Agent system paths (reads team name from manifest) ──
-// Graceful: if no manifest or .system dir exists, agent fan-out is skipped
+// ── Agent system paths ──────────────────────────────────
+// The per-agent (alpha/beta/gamma) event fan-out lives under the President's
+// `.system` dir. Post-ADR-0007 (the agent-org rewrite, 2026-06-04) this is
+// `.claude/agents/president/.system` — resolved here from the paths registry
+// (PATHS.agentSystem) rather than reconstructed from the team name, so a future
+// rehome is one registry edit. The pre-ADR-0007 layouts (`00-<name>/.system`,
+// `<name>/.workspace`) are kept as ordered fallbacks for un-migrated installs.
+// Graceful: if none of these dirs exists, agent fan-out is skipped — the main
+// LOG_FILE write above is independent and unaffected.
 let WORKSPACE = "";
 let WORKSPACE_EVENTS = "";
 try {
-  const { getAgentName } = require("./project-config");
-  const agentName = getAgentName();
-  // Try new structure first (00-alex/.system), fall back to old (.workspace)
-  const agentDir = path.join(PROJECT, ".claude", "agents", `00-${agentName}`);
-  const sysDir = path.join(agentDir, ".system");
-  const wsDir = path.join(
-    PROJECT,
-    ".claude",
-    "agents",
-    agentName,
-    ".workspace",
-  );
-  const dir = fs.existsSync(sysDir)
-    ? sysDir
-    : fs.existsSync(wsDir)
-      ? wsDir
-      : "";
+  const candidates = [];
+  if (PATHS.agentSystem) candidates.push(PATHS.agentSystem);
+  try {
+    const { getAgentName } = require("./project-config");
+    const agentName = getAgentName();
+    // Legacy fallbacks (pre-ADR-0007), tried only if the registry dir is absent.
+    candidates.push(
+      path.join(PROJECT, ".claude", "agents", `00-${agentName}`, ".system"),
+      path.join(PROJECT, ".claude", "agents", agentName, ".workspace"),
+    );
+  } catch {
+    /* no manifest available — registry path is enough */
+  }
+  const dir = candidates.find((d) => d && fs.existsSync(d)) || "";
   if (dir) {
     WORKSPACE = dir;
     WORKSPACE_EVENTS = path.join(dir, "events.jsonl");
   }
 } catch {
-  /* no manifest available — global mode */
+  /* fail-open — agent fan-out is best-effort, never blocks logging */
 }
 
 // ── Category fan-out: parallel event files for fast lookup ──
