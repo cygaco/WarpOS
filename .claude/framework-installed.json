@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "0.13.1",
-  "installedCommit": "bba07456fda05c05cb9585ac5d17fd8906319406",
-  "installedAt": "2026-06-05T16:55:32.446Z",
+  "installedCommit": "ec3f24909a8059d0b7f4c6ab72216556d5d19056",
+  "installedAt": "2026-06-05T17:05:48.227Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -3364,8 +3364,8 @@
       "dest": "scripts/hooks/dispatch-route-guard.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "d6233f65d419ff3e4c439f10006f2167f4b0ad09c2532d24340c563288f8a656",
-      "currentHashAtInstall": "d6233f65d419ff3e4c439f10006f2167f4b0ad09c2532d24340c563288f8a656",
+      "installedHash": "f0b4497aeb324e00ed36de92c51f4237a28ab9f9f2cd7d676fd30242c7150eb9",
+      "currentHashAtInstall": "f0b4497aeb324e00ed36de92c51f4237a28ab9f9f2cd7d676fd30242c7150eb9",
       "introducedIn": "0.0.0"
     },
     {
@@ -6494,8 +6494,8 @@
       "dest": "scripts/dispatch/state.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "88892730cf5bbea6efeae1016ebc137296fdbb03218ecd363fad8575c490bf28",
-      "currentHashAtInstall": "88892730cf5bbea6efeae1016ebc137296fdbb03218ecd363fad8575c490bf28",
+      "installedHash": "04df26ffc8ec2ec6e3118e9a77239a5ceb0b606f400768c88e524421ce3ea7c1",
+      "currentHashAtInstall": "04df26ffc8ec2ec6e3118e9a77239a5ceb0b606f400768c88e524421ce3ea7c1",
       "introducedIn": "0.0.0"
     },
     {

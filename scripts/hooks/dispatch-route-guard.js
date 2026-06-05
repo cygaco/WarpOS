@@ -102,19 +102,39 @@ function isClaudeAgentInvocation(slice) {
 // `scripts/dispatch-claude.js`, which converts a reap into a death record +
 // non-zero exit. Non-build Claude roles (test-runner, visual-review) keep the
 // raw fallback — reap-detection is less load-bearing there.
-const BUILD_CHAIN_ROLES = new Set([
+// v0.2 consumer rewire (Tier 1): derive the build-chain set from the role-registry
+// keystone (build_chain:true) and UNION the scrapped aliases {builder,fixer} the
+// guard must still block in raw `claude --agent <role>` invocations (β TRAP-B). The
+// require is GUARDED and deriveOrFallback warns loudly: this is a fail-open hook, so
+// a broken registry read must fall back to the literal, never crash. The derived set
+// deep-equals the prior literal (CUT-SAFETY verified before the cut).
+let registryRoles = null;
+try {
+  registryRoles = require("../dispatch/registry-roles");
+} catch {
+  /* fail-open: BUILD_CHAIN_ROLES falls back to its literal below */
+}
+const BUILD_CHAIN_ROLES_LITERAL = [
   "builder",
   "backend-builder",
   "frontend-builder",
   "fixer",
   "stub-scaffold",
-  // ADR-0007 per-pod split (forward-compat; should derive from
-  // role-registry.json build_chain:true once the consumer-rewire lands):
+  // ADR-0007 per-pod split (now derived from role-registry.json build_chain:true):
   "security-builder",
   "frontend-fixer",
   "backend-fixer",
   "security-fixer",
-]);
+];
+const BUILD_CHAIN_ROLES = new Set(
+  registryRoles
+    ? registryRoles.deriveOrFallback(
+        () => [...registryRoles.buildChainRoles(), "builder", "fixer"],
+        BUILD_CHAIN_ROLES_LITERAL,
+        "dispatch-route-guard.BUILD_CHAIN_ROLES",
+      )
+    : BUILD_CHAIN_ROLES_LITERAL,
+);
 
 // Robust detector (reviewer-HIGH hardening): match a RAW `claude` prompt
 // invocation that targets a build-chain role, in ANY flag order and with either

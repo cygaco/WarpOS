@@ -14,6 +14,9 @@ const {
   DEFAULT_EFFORT_PER_ROLE,
   resolveModelAlias,
 } = require("./catalog");
+// v0.2 consumer-rewire foundation: the dispatch-side registry reader (the ONE
+// place that derives role lists/maps from the role-registry keystone).
+const registryRoles = require("./registry-roles");
 
 // Local re-export so the resolver (which previously didn't import the catalog
 // helper) can normalize aliases like "sonnet" → "claude-sonnet-4-6".
@@ -47,18 +50,27 @@ const LEGACY_ENV_REASONING_VAR_PER_ROLE = {
   learner: "REASONING_AUDITOR",
 };
 
-const FLAGSHIP_OPENAI_ROLES = [
-  "reviewer",
-  "compliance",
-  "learner",
-  // ADR-0007 new roster (gpt-5.5 flagship):
-  "design-lead",
-  "frontend-reviewer",
-  "backend-reviewer",
-  "qa-reviewer",
-];
+// v0.2 consumer rewire (Tier 1): derive the active roster from the role-registry
+// keystone and UNION the scrapped back-compat aliases that still need routing
+// (β TRAP-B: a naive "active-only" derive silently drops them). LOUD FALLBACK to
+// the full prior literal if the registry read fails — deriveOrFallback warns to
+// stderr; a silent fallback would mask a broken derivation. Each derived set
+// deep-equals its prior literal as a set (CUT-SAFETY verified before the cut).
+const FLAGSHIP_OPENAI_ROLES = registryRoles.deriveOrFallback(
+  () => [
+    ...new Set([...registryRoles.flagshipOpenaiRoles(), "reviewer", "compliance"]),
+  ],
+  ["reviewer", "compliance", "learner", "design-lead", "frontend-reviewer", "backend-reviewer", "qa-reviewer"],
+  "state.FLAGSHIP_OPENAI_ROLES",
+);
+// Pure scrapped alias with no active registry equivalent (no derivation source) —
+// stays a literal: qa → mini-openai back-compat routing.
 const MINI_OPENAI_ROLES = ["qa"];
-const GEMINI_ROLES = ["redteam", "security-reviewer"];
+const GEMINI_ROLES = registryRoles.deriveOrFallback(
+  () => [...new Set([...registryRoles.geminiRoles(), "redteam"])],
+  ["redteam", "security-reviewer"],
+  "state.GEMINI_ROLES",
+);
 
 function readRoleFrontmatter(files) {
   if (files.length === 0) {

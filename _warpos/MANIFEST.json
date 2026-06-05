@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-05T16:55:32.618Z",
+  "generatedAt": "2026-06-05T17:05:48.369Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.13.1",
   "migrations": [],
@@ -4033,8 +4033,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/dispatch-route-guard.js",
-      "sha256": "d6233f65d419ff3e4c439f10006f2167f4b0ad09c2532d24340c563288f8a656",
-      "installedSha": "d6233f65d419ff3e4c439f10006f2167f4b0ad09c2532d24340c563288f8a656"
+      "sha256": "f0b4497aeb324e00ed36de92c51f4237a28ab9f9f2cd7d676fd30242c7150eb9",
+      "installedSha": "f0b4497aeb324e00ed36de92c51f4237a28ab9f9f2cd7d676fd30242c7150eb9"
     },
     "scripts/hooks/edit-watcher.js": {
       "owner": "framework",
@@ -4740,8 +4740,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/dispatch/state.js",
-      "sha256": "88892730cf5bbea6efeae1016ebc137296fdbb03218ecd363fad8575c490bf28",
-      "installedSha": "88892730cf5bbea6efeae1016ebc137296fdbb03218ecd363fad8575c490bf28"
+      "sha256": "04df26ffc8ec2ec6e3118e9a77239a5ceb0b606f400768c88e524421ce3ea7c1",
+      "installedSha": "04df26ffc8ec2ec6e3118e9a77239a5ceb0b606f400768c88e524421ce3ea7c1"
     },
     "scripts/dispatch/test-registry-roles.js": {
       "owner": "framework",
