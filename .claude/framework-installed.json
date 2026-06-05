@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "0.13.1",
-  "installedCommit": "af1fe4008cababc490ab9b0ba8d3147231db7abd",
-  "installedAt": "2026-06-05T22:41:15.678Z",
+  "installedCommit": "2619634c97fb4f7ec703f71652dd13d23c48e5cf",
+  "installedAt": "2026-06-05T23:11:33.689Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -519,13 +519,23 @@
       "introducedIn": "0.0.0"
     },
     {
+      "id": "agent.president..system.policy.adr.0009-epsilon-sprint-runtime.md",
+      "kind": "agent",
+      "dest": ".claude/agents/president/.system/policy/adr/0009-epsilon-sprint-runtime.md",
+      "owner": "framework",
+      "mergeStrategy": "three_way_markdown",
+      "installedHash": "7a2b4a5528a4913fd72ab9a38981659c04b3ef8965a341f5e21d149b1c3aed94",
+      "currentHashAtInstall": "7a2b4a5528a4913fd72ab9a38981659c04b3ef8965a341f5e21d149b1c3aed94",
+      "introducedIn": "0.0.0"
+    },
+    {
       "id": "agent.president..system.policy.adr.INDEX.md",
       "kind": "agent",
       "dest": ".claude/agents/president/.system/policy/adr/INDEX.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "2e97d8a2145d6095f3c6e87aecaba1654c1c116fbf2c7e1e92728c2d2022b5fe",
-      "currentHashAtInstall": "2e97d8a2145d6095f3c6e87aecaba1654c1c116fbf2c7e1e92728c2d2022b5fe",
+      "installedHash": "ca914932bfa6d535364e1d0f89df56c801870277e98aa4f75c8153ec360b648d",
+      "currentHashAtInstall": "ca914932bfa6d535364e1d0f89df56c801870277e98aa4f75c8153ec360b648d",
       "introducedIn": "0.0.0"
     },
     {
@@ -664,8 +674,8 @@
       "dest": ".claude/agents/president/epsilon.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "5b3988cdb9f2b0b2061c808caa84364db51884453e30cdb1763cffdfae0b4036",
-      "currentHashAtInstall": "5b3988cdb9f2b0b2061c808caa84364db51884453e30cdb1763cffdfae0b4036",
+      "installedHash": "ecbb98ed1b0027c574754b6fef4c56925c8fefe358d1f68b55dcd120e9eb0e7a",
+      "currentHashAtInstall": "ecbb98ed1b0027c574754b6fef4c56925c8fefe358d1f68b55dcd120e9eb0e7a",
       "introducedIn": "0.0.0"
     },
     {
@@ -3266,16 +3276,6 @@
       "mergeStrategy": "regenerate",
       "installedHash": "0a73675caa8242fd84c83f5c6fbeac608ff4e03b89f61fc2bbcb07c3e3bcbe9c",
       "currentHashAtInstall": "0a73675caa8242fd84c83f5c6fbeac608ff4e03b89f61fc2bbcb07c3e3bcbe9c",
-      "introducedIn": "0.0.0"
-    },
-    {
-      "id": "maps_baseline.system-coherence.graph.json",
-      "kind": "maps_baseline",
-      "dest": ".claude/project/maps/system-coherence.graph.json",
-      "owner": "generated",
-      "mergeStrategy": "regenerate",
-      "installedHash": "1b9927192cfdfea8087cc4e851f53defdfbf117f633ba2506c579fea0b6fd2e3",
-      "currentHashAtInstall": "1b9927192cfdfea8087cc4e851f53defdfbf117f633ba2506c579fea0b6fd2e3",
       "introducedIn": "0.0.0"
     },
     {
@@ -6109,6 +6109,36 @@
       "introducedIn": "0.0.0"
     },
     {
+      "id": "sprint_engine.epsilon-runtime.js",
+      "kind": "sprint_engine",
+      "dest": "scripts/sprint/epsilon-runtime.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "d8183bdf8b6c6b8b67de51693ba8c4ee59b4c1421c4fb053df52289a26bf63d6",
+      "currentHashAtInstall": "d8183bdf8b6c6b8b67de51693ba8c4ee59b4c1421c4fb053df52289a26bf63d6",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "sprint_engine.epsilon-runtime.test.js",
+      "kind": "sprint_engine",
+      "dest": "scripts/sprint/epsilon-runtime.test.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "d29b44e0afe94be207d09f9729217cebb91a21e7ac76921aac98b8359c3930fa",
+      "currentHashAtInstall": "d29b44e0afe94be207d09f9729217cebb91a21e7ac76921aac98b8359c3930fa",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "sprint_engine.epsilon-wiring.test.js",
+      "kind": "sprint_engine",
+      "dest": "scripts/sprint/epsilon-wiring.test.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "3d1f915e42eacfbead54f5441d0fc3562391f1240e2e4f4646635d3571aee03b",
+      "currentHashAtInstall": "3d1f915e42eacfbead54f5441d0fc3562391f1240e2e4f4646635d3571aee03b",
+      "introducedIn": "0.0.0"
+    },
+    {
       "id": "sprint_engine.execute.js",
       "kind": "sprint_engine",
       "dest": "scripts/sprint/execute.js",
@@ -6144,8 +6174,8 @@
       "dest": "scripts/sprint/full.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "3336e3b125a2f6a336dd31d702fcddcb5e10a95e68afe4f9381c3e690b42e22a",
-      "currentHashAtInstall": "3336e3b125a2f6a336dd31d702fcddcb5e10a95e68afe4f9381c3e690b42e22a",
+      "installedHash": "872ce5876d7539caf42a4c9a6c9e4d622e2bd815e96bb1d080ebb18307776737",
+      "currentHashAtInstall": "872ce5876d7539caf42a4c9a6c9e4d622e2bd815e96bb1d080ebb18307776737",
       "introducedIn": "0.0.0"
     },
     {
