@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-05T14:41:00.628Z",
+  "generatedAt": "2026-06-05T16:55:32.618Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.13.1",
   "migrations": [],
@@ -4908,8 +4908,15 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/dispatch-routing-parity.js",
-      "sha256": "993d0f14cf0a92da61d2641f2e44cfac0890cad4e8babb4349b59fb059f1d4fc",
-      "installedSha": "993d0f14cf0a92da61d2641f2e44cfac0890cad4e8babb4349b59fb059f1d4fc"
+      "sha256": "a516693268a1ecfe5c7d7807a826f3663d3e5ead4818a7ac6b2a2e5f5794b435",
+      "installedSha": "a516693268a1ecfe5c7d7807a826f3663d3e5ead4818a7ac6b2a2e5f5794b435"
+    },
+    "scripts/checks/dispatch-routing-parity.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/dispatch-routing-parity.test.js",
+      "sha256": "448d1347b5d918c959d226b4f243b560b54be3b2670a588bd2bc067361a327e0",
+      "installedSha": "448d1347b5d918c959d226b4f243b560b54be3b2670a588bd2bc067361a327e0"
     },
     "scripts/checks/docker-secret-ignore.js": {
       "owner": "framework",

@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "0.13.1",
-  "installedCommit": "19e7257c7a84ee6156fb3030cc1e0bb76cdf6e2a",
-  "installedAt": "2026-06-05T14:41:00.481Z",
+  "installedCommit": "bba07456fda05c05cb9585ac5d17fd8906319406",
+  "installedAt": "2026-06-05T16:55:32.446Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -5074,8 +5074,18 @@
       "dest": "scripts/checks/dispatch-routing-parity.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "993d0f14cf0a92da61d2641f2e44cfac0890cad4e8babb4349b59fb059f1d4fc",
-      "currentHashAtInstall": "993d0f14cf0a92da61d2641f2e44cfac0890cad4e8babb4349b59fb059f1d4fc",
+      "installedHash": "a516693268a1ecfe5c7d7807a826f3663d3e5ead4818a7ac6b2a2e5f5794b435",
+      "currentHashAtInstall": "a516693268a1ecfe5c7d7807a826f3663d3e5ead4818a7ac6b2a2e5f5794b435",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "check_tool.dispatch-routing-parity.test.js",
+      "kind": "check_tool",
+      "dest": "scripts/checks/dispatch-routing-parity.test.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "448d1347b5d918c959d226b4f243b560b54be3b2670a588bd2bc067361a327e0",
+      "currentHashAtInstall": "448d1347b5d918c959d226b4f243b560b54be3b2670a588bd2bc067361a327e0",
       "introducedIn": "0.0.0"
     },
     {

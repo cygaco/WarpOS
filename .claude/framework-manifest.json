@@ -13,7 +13,7 @@
     "pattern": 6,
     "fixture": 23,
     "warpos_script": 55,
-    "check_tool": 68,
+    "check_tool": 69,
     "agent_tool": 3,
     "decision_tool": 1,
     "runtime_tool": 1,
@@ -56,7 +56,7 @@
     "module_scope": 1,
     "framework_doc": 3
   },
-  "total": 1025,
+  "total": 1026,
   "assets": {
     "agent": [
       {
@@ -6156,7 +6156,19 @@
         "src": "scripts/checks/dispatch-routing-parity.js",
         "dest": "scripts/checks/dispatch-routing-parity.js",
         "kind": "check_tool",
-        "sha256": "993d0f14cf0a92da61d2641f2e44cfac0890cad4e8babb4349b59fb059f1d4fc",
+        "sha256": "a516693268a1ecfe5c7d7807a826f3663d3e5ead4818a7ac6b2a2e5f5794b435",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "check_tool.dispatch-routing-parity.test.js",
+        "src": "scripts/checks/dispatch-routing-parity.test.js",
+        "dest": "scripts/checks/dispatch-routing-parity.test.js",
+        "kind": "check_tool",
+        "sha256": "448d1347b5d918c959d226b4f243b560b54be3b2670a588bd2bc067361a327e0",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
