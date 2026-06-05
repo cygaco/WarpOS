@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "0.13.1",
-  "installedCommit": "e4931947eb32a46eaca558e119106e628d56a4c0",
-  "installedAt": "2026-06-05T20:45:10.723Z",
+  "installedCommit": "11d54ec3f8b2de231adee23328409824c12d267b",
+  "installedAt": "2026-06-05T22:04:20.054Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -274,8 +274,8 @@
       "dest": ".claude/agents/growth/conversion-lead.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "c67a9bdbbc82150f4b3a264ba276360b2aa1d9c5fb6bf01dcb6b8079060349a7",
-      "currentHashAtInstall": "c67a9bdbbc82150f4b3a264ba276360b2aa1d9c5fb6bf01dcb6b8079060349a7",
+      "installedHash": "7ca96b83fa1c6444008e7eee8d7a6cb1b7a520d87d8d3f8bcbd9db5be45ac20b",
+      "currentHashAtInstall": "7ca96b83fa1c6444008e7eee8d7a6cb1b7a520d87d8d3f8bcbd9db5be45ac20b",
       "introducedIn": "0.0.0"
     },
     {
@@ -684,8 +684,8 @@
       "dest": ".claude/agents/product/design-lead.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "0c4c9136a9345bd42fe0050ca95f1b2c2e6a930db3a8b32d4623f0a9ca4d4357",
-      "currentHashAtInstall": "0c4c9136a9345bd42fe0050ca95f1b2c2e6a930db3a8b32d4623f0a9ca4d4357",
+      "installedHash": "164215f2b27932a15655d7c86662c3800e9170a550ab7df215de3520943d0561",
+      "currentHashAtInstall": "164215f2b27932a15655d7c86662c3800e9170a550ab7df215de3520943d0561",
       "introducedIn": "0.0.0"
     },
     {
@@ -724,8 +724,8 @@
       "dest": ".claude/agents/product/quality/design-quality.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "1765e70bc72b3b29715ae31ec1d099afa56be227f0368f0f7b5899faad4196df",
-      "currentHashAtInstall": "1765e70bc72b3b29715ae31ec1d099afa56be227f0368f0f7b5899faad4196df",
+      "installedHash": "e9a5e8617f88e73374b12bf59ef26fc89008aa51fd50c70b414a8fde4d316a1c",
+      "currentHashAtInstall": "e9a5e8617f88e73374b12bf59ef26fc89008aa51fd50c70b414a8fde4d316a1c",
       "introducedIn": "0.0.0"
     },
     {
@@ -754,8 +754,8 @@
       "dest": ".claude/agents/product/quality/visual-review.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "2d45233be2d2ab925a511216b288e8a94ddfad7cdcfa964918cf3cb564162baf",
-      "currentHashAtInstall": "2d45233be2d2ab925a511216b288e8a94ddfad7cdcfa964918cf3cb564162baf",
+      "installedHash": "9781c7f2628f65827a06b64e4bf18b2ca483ef2962235f857d10e0f1d82dcbe5",
+      "currentHashAtInstall": "9781c7f2628f65827a06b64e4bf18b2ca483ef2962235f857d10e0f1d82dcbe5",
       "introducedIn": "0.0.0"
     },
     {
@@ -824,8 +824,8 @@
       "dest": ".claude/commands/bootstrap/spinup.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "8100129b43e2f0e7a6d87b1ad8ebb1c01ae438254cbd354343ff793b90f001dc",
-      "currentHashAtInstall": "8100129b43e2f0e7a6d87b1ad8ebb1c01ae438254cbd354343ff793b90f001dc",
+      "installedHash": "5653839aa6e1272c3308778b8d5181286ea409fb972b5a5f0befe024c1ffda1f",
+      "currentHashAtInstall": "5653839aa6e1272c3308778b8d5181286ea409fb972b5a5f0befe024c1ffda1f",
       "introducedIn": "0.0.0"
     },
     {
@@ -4554,8 +4554,8 @@
       "dest": "scripts/warpos/manifest/build.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "d48fcd2f5431308ccd3976b17e506e3417257c603b1191aa63e16cf87571e1ce",
-      "currentHashAtInstall": "d48fcd2f5431308ccd3976b17e506e3417257c603b1191aa63e16cf87571e1ce",
+      "installedHash": "7a01da3a0b10af2dadaded81c45dc11755a77233786f1ba6c88cffba34531a7f",
+      "currentHashAtInstall": "7a01da3a0b10af2dadaded81c45dc11755a77233786f1ba6c88cffba34531a7f",
       "introducedIn": "0.0.0"
     },
     {
@@ -6676,6 +6676,36 @@
       "mergeStrategy": "replace_if_unmodified",
       "installedHash": "1d00978419ffcf4467b2efde4405f9a3a3bb556f9d84135461daa4d596d530d9",
       "currentHashAtInstall": "1d00978419ffcf4467b2efde4405f9a3a3bb556f9d84135461daa4d596d530d9",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "skills_tool.skill-hook-points.js",
+      "kind": "skills_tool",
+      "dest": "scripts/skills/skill-hook-points.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "df2e027bd2b3bc55353eadc6a5eaf7b94b92fa6d1885bae881e41fc92e4d6d94",
+      "currentHashAtInstall": "df2e027bd2b3bc55353eadc6a5eaf7b94b92fa6d1885bae881e41fc92e4d6d94",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "skills_tool.test-skill-hook-points.js",
+      "kind": "skills_tool",
+      "dest": "scripts/skills/test-skill-hook-points.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "368addf12fba87a0155cf3a603400e30dcb001ea5e993591c9d7bb8ceb7e12c6",
+      "currentHashAtInstall": "368addf12fba87a0155cf3a603400e30dcb001ea5e993591c9d7bb8ceb7e12c6",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "knowledge_tool.registry.js",
+      "kind": "knowledge_tool",
+      "dest": "scripts/knowledge/registry.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "fea68df04b558273efdb0f748c1f118e646df58ce38e7a86423dcbd0e55c6bd8",
+      "currentHashAtInstall": "fea68df04b558273efdb0f748c1f118e646df58ce38e7a86423dcbd0e55c6bd8",
       "introducedIn": "0.0.0"
     },
     {
@@ -9939,216 +9969,6 @@
       "introducedIn": "0.0.0"
     },
     {
-      "id": "guide.design.ACCESSIBILITY_WCAG.md",
-      "kind": "guide",
-      "dest": "_guides/design/ACCESSIBILITY_WCAG.md",
-      "owner": "framework",
-      "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "ea8127e447dd3ff4908b60c74262e2f110d356fb62131ebf1f47c7b434357dcc",
-      "currentHashAtInstall": "ea8127e447dd3ff4908b60c74262e2f110d356fb62131ebf1f47c7b434357dcc",
-      "introducedIn": "0.0.0"
-    },
-    {
-      "id": "guide.design.AFFORDANCE_CONTROLS_ICONOGRAPHY.md",
-      "kind": "guide",
-      "dest": "_guides/design/AFFORDANCE_CONTROLS_ICONOGRAPHY.md",
-      "owner": "framework",
-      "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "60e557ae83ba060a0787602603a21d0503df5fd6ca08235f85decf67b363fd95",
-      "currentHashAtInstall": "60e557ae83ba060a0787602603a21d0503df5fd6ca08235f85decf67b363fd95",
-      "introducedIn": "0.0.0"
-    },
-    {
-      "id": "guide.design.COGNITIVE_LOAD_SIMPLICITY.md",
-      "kind": "guide",
-      "dest": "_guides/design/COGNITIVE_LOAD_SIMPLICITY.md",
-      "owner": "framework",
-      "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "236638636d3a4c3357590562a0b6c183b1bd673cdfd41f371f95cdf6a8803b6e",
-      "currentHashAtInstall": "236638636d3a4c3357590562a0b6c183b1bd673cdfd41f371f95cdf6a8803b6e",
-      "introducedIn": "0.0.0"
-    },
-    {
-      "id": "guide.design.COLOR_AND_CONTRAST.md",
-      "kind": "guide",
-      "dest": "_guides/design/COLOR_AND_CONTRAST.md",
-      "owner": "framework",
-      "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "321c9ae33c5c30ddba05ed2714e96a8bfe77074c9c3f763c3bc7c66d5d63bf85",
-      "currentHashAtInstall": "321c9ae33c5c30ddba05ed2714e96a8bfe77074c9c3f763c3bc7c66d5d63bf85",
-      "introducedIn": "0.0.0"
-    },
-    {
-      "id": "guide.design.CONSISTENCY_DESIGN_SYSTEMS_TOKENS.md",
-      "kind": "guide",
-      "dest": "_guides/design/CONSISTENCY_DESIGN_SYSTEMS_TOKENS.md",
-      "owner": "framework",
-      "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "89e6a8675edf290b0d8386a53abec71e35d69de24f72c832aec94ffa8a9d8005",
-      "currentHashAtInstall": "89e6a8675edf290b0d8386a53abec71e35d69de24f72c832aec94ffa8a9d8005",
-      "introducedIn": "0.0.0"
-    },
-    {
-      "id": "guide.design.CONTENT_MICROCOPY.md",
-      "kind": "guide",
-      "dest": "_guides/design/CONTENT_MICROCOPY.md",
-      "owner": "framework",
-      "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "5529c512493ad65d6e1f5f0bbb4ec3556e8ce499f608e732cc5467ba7a5e6c09",
-      "currentHashAtInstall": "5529c512493ad65d6e1f5f0bbb4ec3556e8ce499f608e732cc5467ba7a5e6c09",
-      "introducedIn": "0.0.0"
-    },
-    {
-      "id": "guide.design.CONVERSION_HIERARCHY.md",
-      "kind": "guide",
-      "dest": "_guides/design/CONVERSION_HIERARCHY.md",
-      "owner": "framework",
-      "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "9063510e1e60db5378921aa442a08681b27a93cb2c85bf2a65a15e2a3b2366da",
-      "currentHashAtInstall": "9063510e1e60db5378921aa442a08681b27a93cb2c85bf2a65a15e2a3b2366da",
-      "introducedIn": "0.0.0"
-    },
-    {
-      "id": "guide.design.DEPTH_ELEVATION_IMAGERY.md",
-      "kind": "guide",
-      "dest": "_guides/design/DEPTH_ELEVATION_IMAGERY.md",
-      "owner": "framework",
-      "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "3f5a0f1e9804002f0082f9b4c6afc8a7ad0e152c4f59f7956811c4b89fffe6e4",
-      "currentHashAtInstall": "3f5a0f1e9804002f0082f9b4c6afc8a7ad0e152c4f59f7956811c4b89fffe6e4",
-      "introducedIn": "0.0.0"
-    },
-    {
-      "id": "guide.design.ETHICS_NO_DARK_PATTERNS.md",
-      "kind": "guide",
-      "dest": "_guides/design/ETHICS_NO_DARK_PATTERNS.md",
-      "owner": "framework",
-      "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "35b7a03f06245c2f74e08f85fad3956e26bce463850321a7d3ccb6fb4b954df6",
-      "currentHashAtInstall": "35b7a03f06245c2f74e08f85fad3956e26bce463850321a7d3ccb6fb4b954df6",
-      "introducedIn": "0.0.0"
-    },
-    {
-      "id": "guide.design.FRICTION_TRUST_FORMS.md",
-      "kind": "guide",
-      "dest": "_guides/design/FRICTION_TRUST_FORMS.md",
-      "owner": "framework",
-      "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "6ed49e353dc0cf2bfb3aee30988dcdce3300107e6c962ba0c6912f72aa4819df",
-      "currentHashAtInstall": "6ed49e353dc0cf2bfb3aee30988dcdce3300107e6c962ba0c6912f72aa4819df",
-      "introducedIn": "0.0.0"
-    },
-    {
-      "id": "guide.design.GESTALT_GROUPING.md",
-      "kind": "guide",
-      "dest": "_guides/design/GESTALT_GROUPING.md",
-      "owner": "framework",
-      "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "f4bdd914bee08de9c3577d5f28cc0a6f5af1efe0181d513c4cd4f70769dbb3d2",
-      "currentHashAtInstall": "f4bdd914bee08de9c3577d5f28cc0a6f5af1efe0181d513c4cd4f70769dbb3d2",
-      "introducedIn": "0.0.0"
-    },
-    {
-      "id": "guide.design.INTERACTION_FEEDBACK_STATES.md",
-      "kind": "guide",
-      "dest": "_guides/design/INTERACTION_FEEDBACK_STATES.md",
-      "owner": "framework",
-      "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "563f96bfebb20571fd45bee1ab38aeb129cc04430943cc99537e5b50e548b94b",
-      "currentHashAtInstall": "563f96bfebb20571fd45bee1ab38aeb129cc04430943cc99537e5b50e548b94b",
-      "introducedIn": "0.0.0"
-    },
-    {
-      "id": "guide.design.LAYOUT_GRID_SPACING.md",
-      "kind": "guide",
-      "dest": "_guides/design/LAYOUT_GRID_SPACING.md",
-      "owner": "framework",
-      "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "99a534a14da9458474ef78a2d6a33f91904b00e62ab301c455400dc3faf8a76d",
-      "currentHashAtInstall": "99a534a14da9458474ef78a2d6a33f91904b00e62ab301c455400dc3faf8a76d",
-      "introducedIn": "0.0.0"
-    },
-    {
-      "id": "guide.design.MOBILE_RESPONSIVE.md",
-      "kind": "guide",
-      "dest": "_guides/design/MOBILE_RESPONSIVE.md",
-      "owner": "framework",
-      "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "62d5d48391efec6120bb29013688e6e143720747419da62dddcb7e125c06bb6b",
-      "currentHashAtInstall": "62d5d48391efec6120bb29013688e6e143720747419da62dddcb7e125c06bb6b",
-      "introducedIn": "0.0.0"
-    },
-    {
-      "id": "guide.design.MOTION_ANIMATION.md",
-      "kind": "guide",
-      "dest": "_guides/design/MOTION_ANIMATION.md",
-      "owner": "framework",
-      "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "63905b62f1ed7a450bec3199c1abef349bd3a198c204dddf240dbfc0765dad39",
-      "currentHashAtInstall": "63905b62f1ed7a450bec3199c1abef349bd3a198c204dddf240dbfc0765dad39",
-      "introducedIn": "0.0.0"
-    },
-    {
-      "id": "guide.design.NAVIGATION_IA.md",
-      "kind": "guide",
-      "dest": "_guides/design/NAVIGATION_IA.md",
-      "owner": "framework",
-      "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "88c8eeff201887c922a03c516a8ffe2f88de898c19edcf422d291fb6eb9c8ec9",
-      "currentHashAtInstall": "88c8eeff201887c922a03c516a8ffe2f88de898c19edcf422d291fb6eb9c8ec9",
-      "introducedIn": "0.0.0"
-    },
-    {
-      "id": "guide.design.PERFORMANCE_PERCEIVED_UX.md",
-      "kind": "guide",
-      "dest": "_guides/design/PERFORMANCE_PERCEIVED_UX.md",
-      "owner": "framework",
-      "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "0e1d44a9e5ddcb128669052be18db68ddc722165c2f44defa23e574386207ede",
-      "currentHashAtInstall": "0e1d44a9e5ddcb128669052be18db68ddc722165c2f44defa23e574386207ede",
-      "introducedIn": "0.0.0"
-    },
-    {
-      "id": "guide.design.README.md",
-      "kind": "guide",
-      "dest": "_guides/design/README.md",
-      "owner": "framework",
-      "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "6c1eaf8dfb916fdd25ae4a11c616d45e365176ae49fe07c0f90d06c248ec40bb",
-      "currentHashAtInstall": "6c1eaf8dfb916fdd25ae4a11c616d45e365176ae49fe07c0f90d06c248ec40bb",
-      "introducedIn": "0.0.0"
-    },
-    {
-      "id": "guide.design.registry.json",
-      "kind": "guide",
-      "dest": "_guides/design/registry.json",
-      "owner": "framework",
-      "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "9cc698bce0390e8b9d9ac932c8a6085d75aee6522fc5c20e37a6624e78ca6301",
-      "currentHashAtInstall": "9cc698bce0390e8b9d9ac932c8a6085d75aee6522fc5c20e37a6624e78ca6301",
-      "introducedIn": "0.0.0"
-    },
-    {
-      "id": "guide.design.TYPOGRAPHY.md",
-      "kind": "guide",
-      "dest": "_guides/design/TYPOGRAPHY.md",
-      "owner": "framework",
-      "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "25b1771dd230b94eee3329b34f062135f8c841c8a9ea4fa2517bb8f414aca4fc",
-      "currentHashAtInstall": "25b1771dd230b94eee3329b34f062135f8c841c8a9ea4fa2517bb8f414aca4fc",
-      "introducedIn": "0.0.0"
-    },
-    {
-      "id": "guide.design.VISUAL_HIERARCHY.md",
-      "kind": "guide",
-      "dest": "_guides/design/VISUAL_HIERARCHY.md",
-      "owner": "framework",
-      "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "67fbca04942ac0445ebc98bfb27bc11945a94af7b6f0cf342fb35a7472ce0261",
-      "currentHashAtInstall": "67fbca04942ac0445ebc98bfb27bc11945a94af7b6f0cf342fb35a7472ce0261",
-      "introducedIn": "0.0.0"
-    },
-    {
       "id": "guide.DEV_SETUP_GUIDE.md",
       "kind": "guide",
       "dest": "_guides/DEV_SETUP_GUIDE.md",
@@ -10209,6 +10029,256 @@
       "introducedIn": "0.0.0"
     },
     {
+      "id": "knowledge.audience._domain.json",
+      "kind": "knowledge",
+      "dest": "_knowledge/audience/_domain.json",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "85ea174b097eca8757690d99fb16d0cce75f1cde8a974de57db9386329c6260c",
+      "currentHashAtInstall": "85ea174b097eca8757690d99fb16d0cce75f1cde8a974de57db9386329c6260c",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "knowledge.copy._domain.json",
+      "kind": "knowledge",
+      "dest": "_knowledge/copy/_domain.json",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "ad22715619b36567b7211dca894ca8aa13f6a880818d2a05b9fd505c3aedb30c",
+      "currentHashAtInstall": "ad22715619b36567b7211dca894ca8aa13f6a880818d2a05b9fd505c3aedb30c",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "knowledge.design._domain.json",
+      "kind": "knowledge",
+      "dest": "_knowledge/design/_domain.json",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "95eb380f0d70c1ac1e14200899c26e2ceac269db50e2ed3a896d6995f3586af2",
+      "currentHashAtInstall": "95eb380f0d70c1ac1e14200899c26e2ceac269db50e2ed3a896d6995f3586af2",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "knowledge.design.ACCESSIBILITY_WCAG.md",
+      "kind": "knowledge",
+      "dest": "_knowledge/design/ACCESSIBILITY_WCAG.md",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "15548f9063ed7a64a37eb52578193affe4344df91399487bb87bc92eeeced5a4",
+      "currentHashAtInstall": "15548f9063ed7a64a37eb52578193affe4344df91399487bb87bc92eeeced5a4",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "knowledge.design.AFFORDANCE_CONTROLS_ICONOGRAPHY.md",
+      "kind": "knowledge",
+      "dest": "_knowledge/design/AFFORDANCE_CONTROLS_ICONOGRAPHY.md",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "3b10d4bd0348b6827881c22610bd39f54c4cc695a978addd37bb3fc178c48ae0",
+      "currentHashAtInstall": "3b10d4bd0348b6827881c22610bd39f54c4cc695a978addd37bb3fc178c48ae0",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "knowledge.design.COGNITIVE_LOAD_SIMPLICITY.md",
+      "kind": "knowledge",
+      "dest": "_knowledge/design/COGNITIVE_LOAD_SIMPLICITY.md",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "e6094be8fed19b8a583d19bd93d9b404e0935a001e631353c1b2012d5e6043d6",
+      "currentHashAtInstall": "e6094be8fed19b8a583d19bd93d9b404e0935a001e631353c1b2012d5e6043d6",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "knowledge.design.COLOR_AND_CONTRAST.md",
+      "kind": "knowledge",
+      "dest": "_knowledge/design/COLOR_AND_CONTRAST.md",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "e3ca9c18da7fc19ad0600e3f6cb5efa4d30e35a1e7de2e9f640279931c14ff0e",
+      "currentHashAtInstall": "e3ca9c18da7fc19ad0600e3f6cb5efa4d30e35a1e7de2e9f640279931c14ff0e",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "knowledge.design.CONSISTENCY_DESIGN_SYSTEMS_TOKENS.md",
+      "kind": "knowledge",
+      "dest": "_knowledge/design/CONSISTENCY_DESIGN_SYSTEMS_TOKENS.md",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "84f94257226c628c29100b404873d5f505b743962388187508ab8fc2377c1942",
+      "currentHashAtInstall": "84f94257226c628c29100b404873d5f505b743962388187508ab8fc2377c1942",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "knowledge.design.CONTENT_MICROCOPY.md",
+      "kind": "knowledge",
+      "dest": "_knowledge/design/CONTENT_MICROCOPY.md",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "b0b2c91a1d713d7eab49f90aa9f81417335910d054f2761f61c5874161952775",
+      "currentHashAtInstall": "b0b2c91a1d713d7eab49f90aa9f81417335910d054f2761f61c5874161952775",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "knowledge.design.CONVERSION_HIERARCHY.md",
+      "kind": "knowledge",
+      "dest": "_knowledge/design/CONVERSION_HIERARCHY.md",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "3a10f2b5417d1a009ba71308b1901fd5e9da49e9079033cf16ef3dd9466480c2",
+      "currentHashAtInstall": "3a10f2b5417d1a009ba71308b1901fd5e9da49e9079033cf16ef3dd9466480c2",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "knowledge.design.DEPTH_ELEVATION_IMAGERY.md",
+      "kind": "knowledge",
+      "dest": "_knowledge/design/DEPTH_ELEVATION_IMAGERY.md",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "a7e9ca78057ab5da93682e444a57587be4e4a3621513f8f6e25b35168ac303a5",
+      "currentHashAtInstall": "a7e9ca78057ab5da93682e444a57587be4e4a3621513f8f6e25b35168ac303a5",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "knowledge.design.ETHICS_NO_DARK_PATTERNS.md",
+      "kind": "knowledge",
+      "dest": "_knowledge/design/ETHICS_NO_DARK_PATTERNS.md",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "61b991faac7e177bebef7ff23983d745d660c0a3d41c0d71e84cf7bc53f57a85",
+      "currentHashAtInstall": "61b991faac7e177bebef7ff23983d745d660c0a3d41c0d71e84cf7bc53f57a85",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "knowledge.design.FRICTION_TRUST_FORMS.md",
+      "kind": "knowledge",
+      "dest": "_knowledge/design/FRICTION_TRUST_FORMS.md",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "4fea1812b9fda3249c70a85e505dfb273a4fea72caabfd9aa943554b701cdde6",
+      "currentHashAtInstall": "4fea1812b9fda3249c70a85e505dfb273a4fea72caabfd9aa943554b701cdde6",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "knowledge.design.GESTALT_GROUPING.md",
+      "kind": "knowledge",
+      "dest": "_knowledge/design/GESTALT_GROUPING.md",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "44f66740cae504c421fe4efae27dc9e1dd0a9d1a145ad0383871d95bfb084ab1",
+      "currentHashAtInstall": "44f66740cae504c421fe4efae27dc9e1dd0a9d1a145ad0383871d95bfb084ab1",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "knowledge.design.INTERACTION_FEEDBACK_STATES.md",
+      "kind": "knowledge",
+      "dest": "_knowledge/design/INTERACTION_FEEDBACK_STATES.md",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "77f1f39976f01d511827399700e02c0c8a7984e1ba0363592667e243096601d6",
+      "currentHashAtInstall": "77f1f39976f01d511827399700e02c0c8a7984e1ba0363592667e243096601d6",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "knowledge.design.LAYOUT_GRID_SPACING.md",
+      "kind": "knowledge",
+      "dest": "_knowledge/design/LAYOUT_GRID_SPACING.md",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "39c06f0c6ae175be415cf81ebe1d9672c3d0bd169fc804618d55a8f3128aa301",
+      "currentHashAtInstall": "39c06f0c6ae175be415cf81ebe1d9672c3d0bd169fc804618d55a8f3128aa301",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "knowledge.design.MOBILE_RESPONSIVE.md",
+      "kind": "knowledge",
+      "dest": "_knowledge/design/MOBILE_RESPONSIVE.md",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "b7d2588ea4a8cbe1f259d7bfb19efa4260f8abf136e75d05988bbf56d6205996",
+      "currentHashAtInstall": "b7d2588ea4a8cbe1f259d7bfb19efa4260f8abf136e75d05988bbf56d6205996",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "knowledge.design.MOTION_ANIMATION.md",
+      "kind": "knowledge",
+      "dest": "_knowledge/design/MOTION_ANIMATION.md",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "6973ede0de3ec40fdf7aed67a7d7825c94769e39cda61e2adeacc5ae1f6b75aa",
+      "currentHashAtInstall": "6973ede0de3ec40fdf7aed67a7d7825c94769e39cda61e2adeacc5ae1f6b75aa",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "knowledge.design.NAVIGATION_IA.md",
+      "kind": "knowledge",
+      "dest": "_knowledge/design/NAVIGATION_IA.md",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "7d6b9c426002a18336b3ea6e1852db03bd1b0ae91f199ea20cf481f9fffeeb8e",
+      "currentHashAtInstall": "7d6b9c426002a18336b3ea6e1852db03bd1b0ae91f199ea20cf481f9fffeeb8e",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "knowledge.design.PERFORMANCE_PERCEIVED_UX.md",
+      "kind": "knowledge",
+      "dest": "_knowledge/design/PERFORMANCE_PERCEIVED_UX.md",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "64685b27012f7c2d37fdd98a4fd3127101a640c8f48e98261bf68ebe98644ce3",
+      "currentHashAtInstall": "64685b27012f7c2d37fdd98a4fd3127101a640c8f48e98261bf68ebe98644ce3",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "knowledge.design.README.md",
+      "kind": "knowledge",
+      "dest": "_knowledge/design/README.md",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "29a42841588fce30a62a8e047c79bb92784eab7faff721f95897b94b29722ef1",
+      "currentHashAtInstall": "29a42841588fce30a62a8e047c79bb92784eab7faff721f95897b94b29722ef1",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "knowledge.design.registry.json",
+      "kind": "knowledge",
+      "dest": "_knowledge/design/registry.json",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "b11b76aefb0fc16763bd342ad59c69125100b270d4b4d1eb9d6507a71351a7d6",
+      "currentHashAtInstall": "b11b76aefb0fc16763bd342ad59c69125100b270d4b4d1eb9d6507a71351a7d6",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "knowledge.design.TYPOGRAPHY.md",
+      "kind": "knowledge",
+      "dest": "_knowledge/design/TYPOGRAPHY.md",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "33f7719453a704d62f55f542fba63e587558eb37cb53fad4339a028fde18ecef",
+      "currentHashAtInstall": "33f7719453a704d62f55f542fba63e587558eb37cb53fad4339a028fde18ecef",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "knowledge.design.VISUAL_HIERARCHY.md",
+      "kind": "knowledge",
+      "dest": "_knowledge/design/VISUAL_HIERARCHY.md",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "978642aa789f02c563a852e1831edbdb7b5cc0fb35efcaf7cf9c952db9d894ad",
+      "currentHashAtInstall": "978642aa789f02c563a852e1831edbdb7b5cc0fb35efcaf7cf9c952db9d894ad",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "knowledge.registry.json",
+      "kind": "knowledge",
+      "dest": "_knowledge/registry.json",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "42a151bda2ef4733b7eab142523a6810e6701044ba8309585f528e53e89d5fb2",
+      "currentHashAtInstall": "42a151bda2ef4733b7eab142523a6810e6701044ba8309585f528e53e89d5fb2",
+      "introducedIn": "0.0.0"
+    },
+    {
       "id": "top_script.dispatch-agent.js",
       "kind": "top_script",
       "dest": "scripts/dispatch-agent.js",
@@ -10224,8 +10294,8 @@
       "dest": "scripts/generate-framework-manifest.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "5d4a15afe2539084a035eee135f20ca1d6c72a54a5e2a2101ef4d94c6c6528b0",
-      "currentHashAtInstall": "5d4a15afe2539084a035eee135f20ca1d6c72a54a5e2a2101ef4d94c6c6528b0",
+      "installedHash": "aff7535071788a46f6ed2b7125dec98da416fdcf9466b0d71340ffb2be62a9ec",
+      "currentHashAtInstall": "aff7535071788a46f6ed2b7125dec98da416fdcf9466b0d71340ffb2be62a9ec",
       "introducedIn": "0.0.0"
     },
     {

@@ -5,7 +5,7 @@ shape: walkthrough
 timing: reference
 lead_time: "none"
 tier: core
-trains: [product-designer, web-conversion-designer, design-quality, visual-review]
+trains: [design-lead, conversion-lead, design-quality, visual-review]
 maps_to: [design-tokens, accessibility, color, a11y]
 sources:
   - "https://webaim.org/articles/contrast/"
@@ -39,8 +39,8 @@ When any of these is done by *raw hex picked per-component* instead of by a *nam
 
 **Which agents and checks this governs:**
 
-- **product-designer** — owns the per-screen call that color carries meaning legibly for the *real cohort, including their limitations* (`build-for-audience-incl-limitations`): older eyes, low-vision, color-blind, bright-sunlight contexts all need a higher contrast floor and never-color-alone. Pairs with `clear-iconography` (state communicated with a consistent, legible vocabulary, not "red = bad" alone).
-- **web-conversion-designer** — color is a primary lever of `conversion-hierarchy`: the single dominant CTA must be the most saturated/contrasting thing on the page, and competing high-saturation elements are conversion leaks.
+- **design-lead** — owns the per-screen call that color carries meaning legibly for the *real cohort, including their limitations* (`build-for-audience-incl-limitations`): older eyes, low-vision, color-blind, bright-sunlight contexts all need a higher contrast floor and never-color-alone. Pairs with `clear-iconography` (state communicated with a consistent, legible vocabulary, not "red = bad" alone).
+- **conversion-lead** — color is a primary lever of `conversion-hierarchy`: the single dominant CTA must be the most saturated/contrasting thing on the page, and competing high-saturation elements are conversion leaks.
 - **design-quality gauntlet** — this guide feeds two of its six axes directly: **`design-tokens`** (colors resolve to the token set, not ad-hoc values) and **`accessibility`** (sufficient contrast; not color-alone for state).
 - **visual-review** — feeds two of its seven categories: **`color`** (brand color drift, wrong/illegible color) and **`a11y`** (contrast failures, color-only signaling).
 

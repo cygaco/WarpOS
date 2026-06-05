@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-05T20:09:47.625Z",
+  "generatedAt": "2026-06-05T22:04:20.229Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.13.1",
   "migrations": [],
@@ -44,8 +44,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "f7b8c88e7b6491ab0a29c5d83c1ab0d474de7f078ffd71bc09a013dc58587b25",
-      "installedSha": "f7b8c88e7b6491ab0a29c5d83c1ab0d474de7f078ffd71bc09a013dc58587b25"
+      "sha256": "b2417e529bc184d256eec7ebbc840f53b897c072212dc586aadb1cd4139ff9a6",
+      "installedSha": "b2417e529bc184d256eec7ebbc840f53b897c072212dc586aadb1cd4139ff9a6"
     },
     "DICTIONARY.md": {
       "owner": "framework",
@@ -107,6 +107,10 @@
       "_note": "Root document — source path same as destination (canonical-side).",
       "sha256": "95885f68584f8ddd4fd0403a9b04504de85d34d282ca0fb8acf244df6b8db1ee",
       "installedSha": "95885f68584f8ddd4fd0403a9b04504de85d34d282ca0fb8acf244df6b8db1ee"
+    },
+    "TRACKER.md": {
+      "owner": "runtime",
+      "managed": false
     },
     "USER_GUIDE.md": {
       "owner": "framework",
@@ -736,6 +740,181 @@
       "seeded_from": "_requirements/00-canonical/WATCHED_DIRS.json",
       "class": "fillable"
     },
+    "_knowledge/registry.json": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_knowledge/registry.json",
+      "sha256": "42a151bda2ef4733b7eab142523a6810e6701044ba8309585f528e53e89d5fb2",
+      "installedSha": "42a151bda2ef4733b7eab142523a6810e6701044ba8309585f528e53e89d5fb2"
+    },
+    "_knowledge/design/ACCESSIBILITY_WCAG.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_knowledge/design/ACCESSIBILITY_WCAG.md",
+      "sha256": "15548f9063ed7a64a37eb52578193affe4344df91399487bb87bc92eeeced5a4",
+      "installedSha": "15548f9063ed7a64a37eb52578193affe4344df91399487bb87bc92eeeced5a4"
+    },
+    "_knowledge/design/AFFORDANCE_CONTROLS_ICONOGRAPHY.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_knowledge/design/AFFORDANCE_CONTROLS_ICONOGRAPHY.md",
+      "sha256": "3b10d4bd0348b6827881c22610bd39f54c4cc695a978addd37bb3fc178c48ae0",
+      "installedSha": "3b10d4bd0348b6827881c22610bd39f54c4cc695a978addd37bb3fc178c48ae0"
+    },
+    "_knowledge/design/COGNITIVE_LOAD_SIMPLICITY.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_knowledge/design/COGNITIVE_LOAD_SIMPLICITY.md",
+      "sha256": "e6094be8fed19b8a583d19bd93d9b404e0935a001e631353c1b2012d5e6043d6",
+      "installedSha": "e6094be8fed19b8a583d19bd93d9b404e0935a001e631353c1b2012d5e6043d6"
+    },
+    "_knowledge/design/COLOR_AND_CONTRAST.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_knowledge/design/COLOR_AND_CONTRAST.md",
+      "sha256": "e3ca9c18da7fc19ad0600e3f6cb5efa4d30e35a1e7de2e9f640279931c14ff0e",
+      "installedSha": "e3ca9c18da7fc19ad0600e3f6cb5efa4d30e35a1e7de2e9f640279931c14ff0e"
+    },
+    "_knowledge/design/CONSISTENCY_DESIGN_SYSTEMS_TOKENS.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_knowledge/design/CONSISTENCY_DESIGN_SYSTEMS_TOKENS.md",
+      "sha256": "84f94257226c628c29100b404873d5f505b743962388187508ab8fc2377c1942",
+      "installedSha": "84f94257226c628c29100b404873d5f505b743962388187508ab8fc2377c1942"
+    },
+    "_knowledge/design/CONTENT_MICROCOPY.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_knowledge/design/CONTENT_MICROCOPY.md",
+      "sha256": "b0b2c91a1d713d7eab49f90aa9f81417335910d054f2761f61c5874161952775",
+      "installedSha": "b0b2c91a1d713d7eab49f90aa9f81417335910d054f2761f61c5874161952775"
+    },
+    "_knowledge/design/CONVERSION_HIERARCHY.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_knowledge/design/CONVERSION_HIERARCHY.md",
+      "sha256": "3a10f2b5417d1a009ba71308b1901fd5e9da49e9079033cf16ef3dd9466480c2",
+      "installedSha": "3a10f2b5417d1a009ba71308b1901fd5e9da49e9079033cf16ef3dd9466480c2"
+    },
+    "_knowledge/design/DEPTH_ELEVATION_IMAGERY.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_knowledge/design/DEPTH_ELEVATION_IMAGERY.md",
+      "sha256": "a7e9ca78057ab5da93682e444a57587be4e4a3621513f8f6e25b35168ac303a5",
+      "installedSha": "a7e9ca78057ab5da93682e444a57587be4e4a3621513f8f6e25b35168ac303a5"
+    },
+    "_knowledge/design/ETHICS_NO_DARK_PATTERNS.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_knowledge/design/ETHICS_NO_DARK_PATTERNS.md",
+      "sha256": "61b991faac7e177bebef7ff23983d745d660c0a3d41c0d71e84cf7bc53f57a85",
+      "installedSha": "61b991faac7e177bebef7ff23983d745d660c0a3d41c0d71e84cf7bc53f57a85"
+    },
+    "_knowledge/design/FRICTION_TRUST_FORMS.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_knowledge/design/FRICTION_TRUST_FORMS.md",
+      "sha256": "4fea1812b9fda3249c70a85e505dfb273a4fea72caabfd9aa943554b701cdde6",
+      "installedSha": "4fea1812b9fda3249c70a85e505dfb273a4fea72caabfd9aa943554b701cdde6"
+    },
+    "_knowledge/design/GESTALT_GROUPING.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_knowledge/design/GESTALT_GROUPING.md",
+      "sha256": "44f66740cae504c421fe4efae27dc9e1dd0a9d1a145ad0383871d95bfb084ab1",
+      "installedSha": "44f66740cae504c421fe4efae27dc9e1dd0a9d1a145ad0383871d95bfb084ab1"
+    },
+    "_knowledge/design/INTERACTION_FEEDBACK_STATES.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_knowledge/design/INTERACTION_FEEDBACK_STATES.md",
+      "sha256": "77f1f39976f01d511827399700e02c0c8a7984e1ba0363592667e243096601d6",
+      "installedSha": "77f1f39976f01d511827399700e02c0c8a7984e1ba0363592667e243096601d6"
+    },
+    "_knowledge/design/LAYOUT_GRID_SPACING.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_knowledge/design/LAYOUT_GRID_SPACING.md",
+      "sha256": "39c06f0c6ae175be415cf81ebe1d9672c3d0bd169fc804618d55a8f3128aa301",
+      "installedSha": "39c06f0c6ae175be415cf81ebe1d9672c3d0bd169fc804618d55a8f3128aa301"
+    },
+    "_knowledge/design/MOBILE_RESPONSIVE.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_knowledge/design/MOBILE_RESPONSIVE.md",
+      "sha256": "b7d2588ea4a8cbe1f259d7bfb19efa4260f8abf136e75d05988bbf56d6205996",
+      "installedSha": "b7d2588ea4a8cbe1f259d7bfb19efa4260f8abf136e75d05988bbf56d6205996"
+    },
+    "_knowledge/design/MOTION_ANIMATION.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_knowledge/design/MOTION_ANIMATION.md",
+      "sha256": "6973ede0de3ec40fdf7aed67a7d7825c94769e39cda61e2adeacc5ae1f6b75aa",
+      "installedSha": "6973ede0de3ec40fdf7aed67a7d7825c94769e39cda61e2adeacc5ae1f6b75aa"
+    },
+    "_knowledge/design/NAVIGATION_IA.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_knowledge/design/NAVIGATION_IA.md",
+      "sha256": "7d6b9c426002a18336b3ea6e1852db03bd1b0ae91f199ea20cf481f9fffeeb8e",
+      "installedSha": "7d6b9c426002a18336b3ea6e1852db03bd1b0ae91f199ea20cf481f9fffeeb8e"
+    },
+    "_knowledge/design/PERFORMANCE_PERCEIVED_UX.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_knowledge/design/PERFORMANCE_PERCEIVED_UX.md",
+      "sha256": "64685b27012f7c2d37fdd98a4fd3127101a640c8f48e98261bf68ebe98644ce3",
+      "installedSha": "64685b27012f7c2d37fdd98a4fd3127101a640c8f48e98261bf68ebe98644ce3"
+    },
+    "_knowledge/design/README.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_knowledge/design/README.md",
+      "sha256": "29a42841588fce30a62a8e047c79bb92784eab7faff721f95897b94b29722ef1",
+      "installedSha": "29a42841588fce30a62a8e047c79bb92784eab7faff721f95897b94b29722ef1"
+    },
+    "_knowledge/design/registry.json": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_knowledge/design/registry.json",
+      "sha256": "b11b76aefb0fc16763bd342ad59c69125100b270d4b4d1eb9d6507a71351a7d6",
+      "installedSha": "b11b76aefb0fc16763bd342ad59c69125100b270d4b4d1eb9d6507a71351a7d6"
+    },
+    "_knowledge/design/TYPOGRAPHY.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_knowledge/design/TYPOGRAPHY.md",
+      "sha256": "33f7719453a704d62f55f542fba63e587558eb37cb53fad4339a028fde18ecef",
+      "installedSha": "33f7719453a704d62f55f542fba63e587558eb37cb53fad4339a028fde18ecef"
+    },
+    "_knowledge/design/VISUAL_HIERARCHY.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_knowledge/design/VISUAL_HIERARCHY.md",
+      "sha256": "978642aa789f02c563a852e1831edbdb7b5cc0fb35efcaf7cf9c952db9d894ad",
+      "installedSha": "978642aa789f02c563a852e1831edbdb7b5cc0fb35efcaf7cf9c952db9d894ad"
+    },
+    "_knowledge/design/_domain.json": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_knowledge/design/_domain.json",
+      "sha256": "95eb380f0d70c1ac1e14200899c26e2ceac269db50e2ed3a896d6995f3586af2",
+      "installedSha": "95eb380f0d70c1ac1e14200899c26e2ceac269db50e2ed3a896d6995f3586af2"
+    },
+    "_knowledge/copy/_domain.json": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_knowledge/copy/_domain.json",
+      "sha256": "ad22715619b36567b7211dca894ca8aa13f6a880818d2a05b9fd505c3aedb30c",
+      "installedSha": "ad22715619b36567b7211dca894ca8aa13f6a880818d2a05b9fd505c3aedb30c"
+    },
+    "_knowledge/audience/_domain.json": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_knowledge/audience/_domain.json",
+      "sha256": "85ea174b097eca8757690d99fb16d0cce75f1cde8a974de57db9386329c6260c",
+      "installedSha": "85ea174b097eca8757690d99fb16d0cce75f1cde8a974de57db9386329c6260c"
+    },
     "_guides/AUTH_GUIDE.md": {
       "owner": "framework",
       "managed": true,
@@ -791,153 +970,6 @@
       "source": "_guides/registry.json",
       "sha256": "1c3b964cb5a8493872bf784aff65210f5b4d1a8a2f8de0eed03c7e33f7f55197",
       "installedSha": "1c3b964cb5a8493872bf784aff65210f5b4d1a8a2f8de0eed03c7e33f7f55197"
-    },
-    "_guides/design/ACCESSIBILITY_WCAG.md": {
-      "owner": "framework",
-      "managed": true,
-      "source": "_guides/design/ACCESSIBILITY_WCAG.md",
-      "sha256": "ea8127e447dd3ff4908b60c74262e2f110d356fb62131ebf1f47c7b434357dcc",
-      "installedSha": "ea8127e447dd3ff4908b60c74262e2f110d356fb62131ebf1f47c7b434357dcc"
-    },
-    "_guides/design/AFFORDANCE_CONTROLS_ICONOGRAPHY.md": {
-      "owner": "framework",
-      "managed": true,
-      "source": "_guides/design/AFFORDANCE_CONTROLS_ICONOGRAPHY.md",
-      "sha256": "60e557ae83ba060a0787602603a21d0503df5fd6ca08235f85decf67b363fd95",
-      "installedSha": "60e557ae83ba060a0787602603a21d0503df5fd6ca08235f85decf67b363fd95"
-    },
-    "_guides/design/COGNITIVE_LOAD_SIMPLICITY.md": {
-      "owner": "framework",
-      "managed": true,
-      "source": "_guides/design/COGNITIVE_LOAD_SIMPLICITY.md",
-      "sha256": "236638636d3a4c3357590562a0b6c183b1bd673cdfd41f371f95cdf6a8803b6e",
-      "installedSha": "236638636d3a4c3357590562a0b6c183b1bd673cdfd41f371f95cdf6a8803b6e"
-    },
-    "_guides/design/COLOR_AND_CONTRAST.md": {
-      "owner": "framework",
-      "managed": true,
-      "source": "_guides/design/COLOR_AND_CONTRAST.md",
-      "sha256": "321c9ae33c5c30ddba05ed2714e96a8bfe77074c9c3f763c3bc7c66d5d63bf85",
-      "installedSha": "321c9ae33c5c30ddba05ed2714e96a8bfe77074c9c3f763c3bc7c66d5d63bf85"
-    },
-    "_guides/design/CONSISTENCY_DESIGN_SYSTEMS_TOKENS.md": {
-      "owner": "framework",
-      "managed": true,
-      "source": "_guides/design/CONSISTENCY_DESIGN_SYSTEMS_TOKENS.md",
-      "sha256": "89e6a8675edf290b0d8386a53abec71e35d69de24f72c832aec94ffa8a9d8005",
-      "installedSha": "89e6a8675edf290b0d8386a53abec71e35d69de24f72c832aec94ffa8a9d8005"
-    },
-    "_guides/design/CONTENT_MICROCOPY.md": {
-      "owner": "framework",
-      "managed": true,
-      "source": "_guides/design/CONTENT_MICROCOPY.md",
-      "sha256": "5529c512493ad65d6e1f5f0bbb4ec3556e8ce499f608e732cc5467ba7a5e6c09",
-      "installedSha": "5529c512493ad65d6e1f5f0bbb4ec3556e8ce499f608e732cc5467ba7a5e6c09"
-    },
-    "_guides/design/CONVERSION_HIERARCHY.md": {
-      "owner": "framework",
-      "managed": true,
-      "source": "_guides/design/CONVERSION_HIERARCHY.md",
-      "sha256": "9063510e1e60db5378921aa442a08681b27a93cb2c85bf2a65a15e2a3b2366da",
-      "installedSha": "9063510e1e60db5378921aa442a08681b27a93cb2c85bf2a65a15e2a3b2366da"
-    },
-    "_guides/design/DEPTH_ELEVATION_IMAGERY.md": {
-      "owner": "framework",
-      "managed": true,
-      "source": "_guides/design/DEPTH_ELEVATION_IMAGERY.md",
-      "sha256": "3f5a0f1e9804002f0082f9b4c6afc8a7ad0e152c4f59f7956811c4b89fffe6e4",
-      "installedSha": "3f5a0f1e9804002f0082f9b4c6afc8a7ad0e152c4f59f7956811c4b89fffe6e4"
-    },
-    "_guides/design/ETHICS_NO_DARK_PATTERNS.md": {
-      "owner": "framework",
-      "managed": true,
-      "source": "_guides/design/ETHICS_NO_DARK_PATTERNS.md",
-      "sha256": "35b7a03f06245c2f74e08f85fad3956e26bce463850321a7d3ccb6fb4b954df6",
-      "installedSha": "35b7a03f06245c2f74e08f85fad3956e26bce463850321a7d3ccb6fb4b954df6"
-    },
-    "_guides/design/FRICTION_TRUST_FORMS.md": {
-      "owner": "framework",
-      "managed": true,
-      "source": "_guides/design/FRICTION_TRUST_FORMS.md",
-      "sha256": "6ed49e353dc0cf2bfb3aee30988dcdce3300107e6c962ba0c6912f72aa4819df",
-      "installedSha": "6ed49e353dc0cf2bfb3aee30988dcdce3300107e6c962ba0c6912f72aa4819df"
-    },
-    "_guides/design/GESTALT_GROUPING.md": {
-      "owner": "framework",
-      "managed": true,
-      "source": "_guides/design/GESTALT_GROUPING.md",
-      "sha256": "f4bdd914bee08de9c3577d5f28cc0a6f5af1efe0181d513c4cd4f70769dbb3d2",
-      "installedSha": "f4bdd914bee08de9c3577d5f28cc0a6f5af1efe0181d513c4cd4f70769dbb3d2"
-    },
-    "_guides/design/INTERACTION_FEEDBACK_STATES.md": {
-      "owner": "framework",
-      "managed": true,
-      "source": "_guides/design/INTERACTION_FEEDBACK_STATES.md",
-      "sha256": "563f96bfebb20571fd45bee1ab38aeb129cc04430943cc99537e5b50e548b94b",
-      "installedSha": "563f96bfebb20571fd45bee1ab38aeb129cc04430943cc99537e5b50e548b94b"
-    },
-    "_guides/design/LAYOUT_GRID_SPACING.md": {
-      "owner": "framework",
-      "managed": true,
-      "source": "_guides/design/LAYOUT_GRID_SPACING.md",
-      "sha256": "99a534a14da9458474ef78a2d6a33f91904b00e62ab301c455400dc3faf8a76d",
-      "installedSha": "99a534a14da9458474ef78a2d6a33f91904b00e62ab301c455400dc3faf8a76d"
-    },
-    "_guides/design/MOBILE_RESPONSIVE.md": {
-      "owner": "framework",
-      "managed": true,
-      "source": "_guides/design/MOBILE_RESPONSIVE.md",
-      "sha256": "62d5d48391efec6120bb29013688e6e143720747419da62dddcb7e125c06bb6b",
-      "installedSha": "62d5d48391efec6120bb29013688e6e143720747419da62dddcb7e125c06bb6b"
-    },
-    "_guides/design/MOTION_ANIMATION.md": {
-      "owner": "framework",
-      "managed": true,
-      "source": "_guides/design/MOTION_ANIMATION.md",
-      "sha256": "63905b62f1ed7a450bec3199c1abef349bd3a198c204dddf240dbfc0765dad39",
-      "installedSha": "63905b62f1ed7a450bec3199c1abef349bd3a198c204dddf240dbfc0765dad39"
-    },
-    "_guides/design/NAVIGATION_IA.md": {
-      "owner": "framework",
-      "managed": true,
-      "source": "_guides/design/NAVIGATION_IA.md",
-      "sha256": "88c8eeff201887c922a03c516a8ffe2f88de898c19edcf422d291fb6eb9c8ec9",
-      "installedSha": "88c8eeff201887c922a03c516a8ffe2f88de898c19edcf422d291fb6eb9c8ec9"
-    },
-    "_guides/design/PERFORMANCE_PERCEIVED_UX.md": {
-      "owner": "framework",
-      "managed": true,
-      "source": "_guides/design/PERFORMANCE_PERCEIVED_UX.md",
-      "sha256": "0e1d44a9e5ddcb128669052be18db68ddc722165c2f44defa23e574386207ede",
-      "installedSha": "0e1d44a9e5ddcb128669052be18db68ddc722165c2f44defa23e574386207ede"
-    },
-    "_guides/design/README.md": {
-      "owner": "framework",
-      "managed": true,
-      "source": "_guides/design/README.md",
-      "sha256": "6c1eaf8dfb916fdd25ae4a11c616d45e365176ae49fe07c0f90d06c248ec40bb",
-      "installedSha": "6c1eaf8dfb916fdd25ae4a11c616d45e365176ae49fe07c0f90d06c248ec40bb"
-    },
-    "_guides/design/registry.json": {
-      "owner": "framework",
-      "managed": true,
-      "source": "_guides/design/registry.json",
-      "sha256": "9cc698bce0390e8b9d9ac932c8a6085d75aee6522fc5c20e37a6624e78ca6301",
-      "installedSha": "9cc698bce0390e8b9d9ac932c8a6085d75aee6522fc5c20e37a6624e78ca6301"
-    },
-    "_guides/design/TYPOGRAPHY.md": {
-      "owner": "framework",
-      "managed": true,
-      "source": "_guides/design/TYPOGRAPHY.md",
-      "sha256": "25b1771dd230b94eee3329b34f062135f8c841c8a9ea4fa2517bb8f414aca4fc",
-      "installedSha": "25b1771dd230b94eee3329b34f062135f8c841c8a9ea4fa2517bb8f414aca4fc"
-    },
-    "_guides/design/VISUAL_HIERARCHY.md": {
-      "owner": "framework",
-      "managed": true,
-      "source": "_guides/design/VISUAL_HIERARCHY.md",
-      "sha256": "67fbca04942ac0445ebc98bfb27bc11945a94af7b6f0cf342fb35a7472ce0261",
-      "installedSha": "67fbca04942ac0445ebc98bfb27bc11945a94af7b6f0cf342fb35a7472ce0261"
     },
     "_docs/.gitkeep": {
       "owner": "project",
@@ -1905,8 +1937,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/generate-framework-manifest.js",
-      "sha256": "5d4a15afe2539084a035eee135f20ca1d6c72a54a5e2a2101ef4d94c6c6528b0",
-      "installedSha": "5d4a15afe2539084a035eee135f20ca1d6c72a54a5e2a2101ef4d94c6c6528b0"
+      "sha256": "aff7535071788a46f6ed2b7125dec98da416fdcf9466b0d71340ffb2be62a9ec",
+      "installedSha": "aff7535071788a46f6ed2b7125dec98da416fdcf9466b0d71340ffb2be62a9ec"
     },
     "scripts/generate-maps.js": {
       "owner": "framework",
@@ -3067,8 +3099,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/warpos/manifest/build.js",
-      "sha256": "d48fcd2f5431308ccd3976b17e506e3417257c603b1191aa63e16cf87571e1ce",
-      "installedSha": "d48fcd2f5431308ccd3976b17e506e3417257c603b1191aa63e16cf87571e1ce"
+      "sha256": "7a01da3a0b10af2dadaded81c45dc11755a77233786f1ba6c88cffba34531a7f",
+      "installedSha": "7a01da3a0b10af2dadaded81c45dc11755a77233786f1ba6c88cffba34531a7f"
     },
     "scripts/warpos/manifest/test-bootstrap.js": {
       "owner": "framework",
@@ -3972,6 +4004,13 @@
       "source": "scripts/learn/probe-spec-and-audit.js",
       "sha256": "1d00978419ffcf4467b2efde4405f9a3a3bb556f9d84135461daa4d596d530d9",
       "installedSha": "1d00978419ffcf4467b2efde4405f9a3a3bb556f9d84135461daa4d596d530d9"
+    },
+    "scripts/knowledge/registry.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/knowledge/registry.js",
+      "sha256": "fea68df04b558273efdb0f748c1f118e646df58ce38e7a86423dcbd0e55c6bd8",
+      "installedSha": "fea68df04b558273efdb0f748c1f118e646df58ce38e7a86423dcbd0e55c6bd8"
     },
     "scripts/hooks/authorization-gate.js": {
       "owner": "framework",
@@ -5125,15 +5164,15 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/skill-hook-coverage.js",
-      "sha256": "a28053f0bdbfb4ed5cdf1b2cdc5cb335b56bf079b96751e692db1e655f5321ea",
-      "installedSha": "a28053f0bdbfb4ed5cdf1b2cdc5cb335b56bf079b96751e692db1e655f5321ea"
+      "sha256": "3228611ee03cd557054aa71f1aa2d9cab244c40beecfc7a757fdca1922e0d682",
+      "installedSha": "3228611ee03cd557054aa71f1aa2d9cab244c40beecfc7a757fdca1922e0d682"
     },
     "scripts/checks/skill-hook-coverage.test.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/skill-hook-coverage.test.js",
-      "sha256": "c764eb524c8315f5bedafde448dabd5d51ac41074c8af6568c47edda533bf4ef",
-      "installedSha": "c764eb524c8315f5bedafde448dabd5d51ac41074c8af6568c47edda533bf4ef"
+      "sha256": "72de6bebb2714a80fef6dd5d75308cf0d0513c884ee0a9aa7537d7d2665d675d",
+      "installedSha": "72de6bebb2714a80fef6dd5d75308cf0d0513c884ee0a9aa7537d7d2665d675d"
     },
     "scripts/checks/sprint-beta-honesty.js": {
       "owner": "framework",
@@ -15531,8 +15570,8 @@
       "managed": true,
       "source": ".claude/commands/scan/skill-hook-coverage.md",
       "kind": "md",
-      "sha256": "bb01080006e363862b4bf41f9d81d92b983bb54a4562f1da457475a90c1e4237",
-      "installedSha": "bb01080006e363862b4bf41f9d81d92b983bb54a4562f1da457475a90c1e4237"
+      "sha256": "aae0965f4ac8f0e6068f54d0ef5da93a734b31fb82cac6510bd288495d531759",
+      "installedSha": "aae0965f4ac8f0e6068f54d0ef5da93a734b31fb82cac6510bd288495d531759"
     },
     ".claude/commands/scan/sprint-beta-honesty.md": {
       "owner": "framework",
@@ -15883,8 +15922,8 @@
       "managed": true,
       "source": ".claude/commands/playbook/add.md",
       "kind": "md",
-      "sha256": "5db3ee609fbd5e9f9438c01e2f93e14197641b7c3dd5fa470698c34d0a206679",
-      "installedSha": "5db3ee609fbd5e9f9438c01e2f93e14197641b7c3dd5fa470698c34d0a206679"
+      "sha256": "738393afd3d71ed37f211904b51b202dd48af46dd457a14587665b9042563899",
+      "installedSha": "738393afd3d71ed37f211904b51b202dd48af46dd457a14587665b9042563899"
     },
     ".claude/commands/permissions/authorized.md": {
       "owner": "framework",
@@ -16283,64 +16322,64 @@
       "managed": true,
       "source": ".claude/commands/growth/ad-images.md",
       "kind": "md",
-      "sha256": "73c12f257c82fc048b3bad2c903fc6579bd4b3e4cb4f24f45a9707a610df5317",
-      "installedSha": "73c12f257c82fc048b3bad2c903fc6579bd4b3e4cb4f24f45a9707a610df5317"
+      "sha256": "b8ae8e2d5650f9f048d1aac7572037f6e041f8dc9d8838700175a987d6cc49d6",
+      "installedSha": "b8ae8e2d5650f9f048d1aac7572037f6e041f8dc9d8838700175a987d6cc49d6"
     },
     ".claude/commands/growth/ad-video.md": {
       "owner": "framework",
       "managed": true,
       "source": ".claude/commands/growth/ad-video.md",
       "kind": "md",
-      "sha256": "555a3bcd9bfbc36abd73c3dae8f5023d98d6966e2181014a8919919a7bd9e50a",
-      "installedSha": "555a3bcd9bfbc36abd73c3dae8f5023d98d6966e2181014a8919919a7bd9e50a"
+      "sha256": "560608f17036a10a6cd691640b8bfe0952fd9308ede4cbb7b7756742a57d82e4",
+      "installedSha": "560608f17036a10a6cd691640b8bfe0952fd9308ede4cbb7b7756742a57d82e4"
     },
     ".claude/commands/growth/advertorial.md": {
       "owner": "framework",
       "managed": true,
       "source": ".claude/commands/growth/advertorial.md",
       "kind": "md",
-      "sha256": "0b4dab825e50416dbff60253aeb8871ced1666aa55933ca6301bdddeb91242a0",
-      "installedSha": "0b4dab825e50416dbff60253aeb8871ced1666aa55933ca6301bdddeb91242a0"
+      "sha256": "ae05b0c195e65da4a9a3faca6d7f0370bc9a900ec97e59e7b89a113a3e0179f6",
+      "installedSha": "ae05b0c195e65da4a9a3faca6d7f0370bc9a900ec97e59e7b89a113a3e0179f6"
     },
     ".claude/commands/growth/angles.md": {
       "owner": "framework",
       "managed": true,
       "source": ".claude/commands/growth/angles.md",
       "kind": "md",
-      "sha256": "86598b0323a9b25811c4508f5c7a2bc79b1380d325bc860b43ea3f60e7287797",
-      "installedSha": "86598b0323a9b25811c4508f5c7a2bc79b1380d325bc860b43ea3f60e7287797"
+      "sha256": "0e618331e950207aaee9a07519da26913033e8c6653707b24e54b70798798db3",
+      "installedSha": "0e618331e950207aaee9a07519da26913033e8c6653707b24e54b70798798db3"
     },
     ".claude/commands/growth/iterate.md": {
       "owner": "framework",
       "managed": true,
       "source": ".claude/commands/growth/iterate.md",
       "kind": "md",
-      "sha256": "6b2570e8428b7c29e3d01300028dff071d8cd0585e8e34d29d285270a32218d5",
-      "installedSha": "6b2570e8428b7c29e3d01300028dff071d8cd0585e8e34d29d285270a32218d5"
+      "sha256": "442954ec942d6ce1f660016896e61f6d3dcebce9427af89755378cbfa64a0cc3",
+      "installedSha": "442954ec942d6ce1f660016896e61f6d3dcebce9427af89755378cbfa64a0cc3"
     },
     ".claude/commands/growth/landing-page.md": {
       "owner": "framework",
       "managed": true,
       "source": ".claude/commands/growth/landing-page.md",
       "kind": "md",
-      "sha256": "987680bc0341478366570722845ad43268794fe28ccf94b43b797c7f4cd1b863",
-      "installedSha": "987680bc0341478366570722845ad43268794fe28ccf94b43b797c7f4cd1b863"
+      "sha256": "cfb442c5f01ab7ee2b31967e68cc5313474c96e544f5e035f0bd1b8fde8c8db0",
+      "installedSha": "cfb442c5f01ab7ee2b31967e68cc5313474c96e544f5e035f0bd1b8fde8c8db0"
     },
     ".claude/commands/growth/message-brief.md": {
       "owner": "framework",
       "managed": true,
       "source": ".claude/commands/growth/message-brief.md",
       "kind": "md",
-      "sha256": "19a584864df6038288cb0bc219c280cb648258cebbabf18658519f8f09a719cc",
-      "installedSha": "19a584864df6038288cb0bc219c280cb648258cebbabf18658519f8f09a719cc"
+      "sha256": "33c40f752ae685f732bf9665ee3508dd17d5dc29b4a4809688c05506ab746635",
+      "installedSha": "33c40f752ae685f732bf9665ee3508dd17d5dc29b4a4809688c05506ab746635"
     },
     ".claude/commands/growth/product-finder.md": {
       "owner": "framework",
       "managed": true,
       "source": ".claude/commands/growth/product-finder.md",
       "kind": "md",
-      "sha256": "a100958663c9fa5d703d22b125ad17da3b28d58dbbc93445e24b2d89b90f64f0",
-      "installedSha": "a100958663c9fa5d703d22b125ad17da3b28d58dbbc93445e24b2d89b90f64f0"
+      "sha256": "c878805ebca592c8ba8a3017ff5cf76e327e362af39cab4a1c90a6cf762a3a1a",
+      "installedSha": "c878805ebca592c8ba8a3017ff5cf76e327e362af39cab4a1c90a6cf762a3a1a"
     },
     ".claude/commands/fix/deep.md": {
       "owner": "framework",
@@ -16547,8 +16586,8 @@
       "managed": true,
       "source": ".claude/commands/bootstrap/spinup.md",
       "kind": "md",
-      "sha256": "f7888a895edf32baae3cfbf3782b3525806c8420c4e0c693069cb73d0a7b92db",
-      "installedSha": "f7888a895edf32baae3cfbf3782b3525806c8420c4e0c693069cb73d0a7b92db"
+      "sha256": "5653839aa6e1272c3308778b8d5181286ea409fb972b5a5f0befe024c1ffda1f",
+      "installedSha": "5653839aa6e1272c3308778b8d5181286ea409fb972b5a5f0befe024c1ffda1f"
     },
     ".claude/commands/beta/integrate.md": {
       "owner": "framework",
@@ -16643,8 +16682,8 @@
       "managed": true,
       "source": ".claude/agents/_org/skill-hook-points.json",
       "kind": "json",
-      "sha256": "78f65136b0f1eb4aa97e4077815ef19ad0a1b293f4d6c747d438eda32d1cc151",
-      "installedSha": "78f65136b0f1eb4aa97e4077815ef19ad0a1b293f4d6c747d438eda32d1cc151"
+      "sha256": "f80f44ce2cac4ffab279d87e2c1b1fc45e8458a7cf64ac608e58d9bcb85d5fbb",
+      "installedSha": "f80f44ce2cac4ffab279d87e2c1b1fc45e8458a7cf64ac608e58d9bcb85d5fbb"
     },
     ".claude/agents/_org/sprint-hook-points.json": {
       "owner": "framework",
@@ -16667,8 +16706,8 @@
       "managed": true,
       "source": ".claude/agents/product/design-lead.md",
       "kind": "md",
-      "sha256": "0c4c9136a9345bd42fe0050ca95f1b2c2e6a930db3a8b32d4623f0a9ca4d4357",
-      "installedSha": "0c4c9136a9345bd42fe0050ca95f1b2c2e6a930db3a8b32d4623f0a9ca4d4357"
+      "sha256": "164215f2b27932a15655d7c86662c3800e9170a550ab7df215de3520943d0561",
+      "installedSha": "164215f2b27932a15655d7c86662c3800e9170a550ab7df215de3520943d0561"
     },
     ".claude/agents/product/director-of-product.md": {
       "owner": "framework",
@@ -16699,8 +16738,8 @@
       "managed": true,
       "source": ".claude/agents/product/quality/design-quality.md",
       "kind": "md",
-      "sha256": "1765e70bc72b3b29715ae31ec1d099afa56be227f0368f0f7b5899faad4196df",
-      "installedSha": "1765e70bc72b3b29715ae31ec1d099afa56be227f0368f0f7b5899faad4196df"
+      "sha256": "e9a5e8617f88e73374b12bf59ef26fc89008aa51fd50c70b414a8fde4d316a1c",
+      "installedSha": "e9a5e8617f88e73374b12bf59ef26fc89008aa51fd50c70b414a8fde4d316a1c"
     },
     ".claude/agents/product/quality/qa-reviewer.md": {
       "owner": "framework",
@@ -16723,8 +16762,8 @@
       "managed": true,
       "source": ".claude/agents/product/quality/visual-review.md",
       "kind": "md",
-      "sha256": "2d45233be2d2ab925a511216b288e8a94ddfad7cdcfa964918cf3cb564162baf",
-      "installedSha": "2d45233be2d2ab925a511216b288e8a94ddfad7cdcfa964918cf3cb564162baf"
+      "sha256": "9781c7f2628f65827a06b64e4bf18b2ca483ef2962235f857d10e0f1d82dcbe5",
+      "installedSha": "9781c7f2628f65827a06b64e4bf18b2ca483ef2962235f857d10e0f1d82dcbe5"
     },
     ".claude/agents/president/alpha.md": {
       "owner": "framework",
@@ -17003,16 +17042,16 @@
       "managed": true,
       "source": ".claude/agents/president/.system/beta/judgement-model-recommendations.md",
       "kind": "md",
-      "sha256": "7afe96a17f36e001768a6a020a2b3abeac0a354fb76d80de17d6c431d3b04b4f",
-      "installedSha": "7afe96a17f36e001768a6a020a2b3abeac0a354fb76d80de17d6c431d3b04b4f"
+      "sha256": "f36ea53143ab370341506b130fd3ecd2a0b34627c8f97cae7efa353ace044779",
+      "installedSha": "f36ea53143ab370341506b130fd3ecd2a0b34627c8f97cae7efa353ace044779"
     },
     ".claude/agents/president/.system/beta/judgement-model.md": {
       "owner": "framework",
       "managed": true,
       "source": ".claude/agents/president/.system/beta/judgement-model.md",
       "kind": "md",
-      "sha256": "cbddc080acb13d1bce5ede44724495d65acc9bd57d0fcf958aaf422edf68f507",
-      "installedSha": "cbddc080acb13d1bce5ede44724495d65acc9bd57d0fcf958aaf422edf68f507"
+      "sha256": "c0390bb1c6a89ae161ba6f86c7882b4917f4834beaef7ca98d035d8d0079f547",
+      "installedSha": "c0390bb1c6a89ae161ba6f86c7882b4917f4834beaef7ca98d035d8d0079f547"
     },
     ".claude/agents/president/.system/alpha/events.jsonl": {
       "owner": "runtime",
@@ -17032,8 +17071,8 @@
       "managed": true,
       "source": ".claude/agents/growth/conversion-lead.md",
       "kind": "md",
-      "sha256": "c67a9bdbbc82150f4b3a264ba276360b2aa1d9c5fb6bf01dcb6b8079060349a7",
-      "installedSha": "c67a9bdbbc82150f4b3a264ba276360b2aa1d9c5fb6bf01dcb6b8079060349a7"
+      "sha256": "7ca96b83fa1c6444008e7eee8d7a6cb1b7a520d87d8d3f8bcbd9db5be45ac20b",
+      "installedSha": "7ca96b83fa1c6444008e7eee8d7a6cb1b7a520d87d8d3f8bcbd9db5be45ac20b"
     },
     ".claude/agents/growth/copy-lead.md": {
       "owner": "framework",

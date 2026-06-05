@@ -5,7 +5,7 @@ shape: walkthrough
 timing: reference
 lead_time: "none"
 tier: standard
-trains: [product-designer, design-quality, visual-review]
+trains: [design-lead, design-quality, visual-review]
 maps_to: [visual-hierarchy, component-usage, layout]
 sources:
   - "https://ixdf.org/literature/topics/gestalt-principles"
@@ -26,7 +26,7 @@ Grouping is **pre-attentive**: the brain partitions a screen into groups in the 
 
 For the WarpOS designer agents specifically:
 
-- **product-designer** owns clarity and consistency (`kiss`, `clear-iconography`). Gestalt is how a screen becomes "simple": fewer *perceived* objects (a labeled group reads as one chunk) lowers cognitive load even when the element count is unchanged. It's also how the same action looks the same everywhere — similarity is the perceptual mechanism behind a consistent visual language.
+- **design-lead** owns clarity and consistency (`kiss`, `clear-iconography`). Gestalt is how a screen becomes "simple": fewer *perceived* objects (a labeled group reads as one chunk) lowers cognitive load even when the element count is unchanged. It's also how the same action looks the same everywhere — similarity is the perceptual mechanism behind a consistent visual language.
 - **design-quality** judges the `visual-hierarchy` and `component-usage` axes. A control whose label is visually grouped with the *wrong* field, a card whose footer floats free of its body, or a related set of items with no shared region are all Gestalt failures that read as hierarchy/grouping defects.
 - **visual-review** judges the `layout` category from pixels. Most "this looks off / cluttered / disorganized" findings reduce to a violated Gestalt law — equal spacing inside and outside a group, a misaligned item breaking continuity, a tooltip with no figure-ground separation from the page.
 
@@ -41,7 +41,7 @@ Elements placed close together are perceived as a group; elements with more spac
 - **The within < between invariant.** A label and its input must be closer to each other than that pair is to the next field. A card's title, body, and metadata must be closer to each other than the card is to its neighbor. When inner and outer spacing are equal, the eye cannot find the group boundary and the layout reads as an undifferentiated grid of items.
 - **Whitespace is the separator.** You do not need a border or a line to create a group — a larger gap does it. Refactoring UI's rule: reach for space before you reach for a divider. Dividers add visual noise; absence of a divider where proximity already groups is *cleaner*, not lazier.
 - **The classic failure** (NN/g): a label sitting equidistant between the field above and the field below, so the user can't tell which field it labels. Proximity ambiguity in a form is a data-entry error generator.
-- *Why (perception):* proximity grouping is one of the earliest, most robust visual operations; it is largely involuntary and survives across cultures and ages, which is why it's the safest lever for low-literacy or older cohorts (the product-designer's `build-for-audience-incl-limitations`).
+- *Why (perception):* proximity grouping is one of the earliest, most robust visual operations; it is largely involuntary and survives across cultures and ages, which is why it's the safest lever for low-literacy or older cohorts (the design-lead's `build-for-audience-incl-limitations`).
 
 ### 2. Similarity — shared appearance encodes "same kind"
 
@@ -72,7 +72,7 @@ The eye prefers to follow continuous lines and smooth paths; elements arranged a
 **Closure:** the mind fills in gaps to perceive a complete, recognizable shape (an icon outline, a partially-shown carousel item that implies "more to the right"). **Prägnanz (law of good figure):** people perceive the *simplest* possible interpretation of complex stimuli.
 
 - **Closure lets you do more with less** — a clipped card at the viewport edge tells the user the list continues; an open-path icon still reads as the object. But broken closure (a shape that *almost* closes but visibly doesn't, a border that's open on one side by accident) reads as a rendering bug.
-- **Prägnanz is the argument for simplicity** (the product-designer's `kiss`): a layout that resolves to a clean grid of obvious groups is perceived as effortless; one that has no simple reading is perceived as cluttered and is mentally taxing. "If the eye can't find the simple structure, there isn't one."
+- **Prägnanz is the argument for simplicity** (the design-lead's `kiss`): a layout that resolves to a clean grid of obvious groups is perceived as effortless; one that has no simple reading is perceived as cluttered and is mentally taxing. "If the eye can't find the simple structure, there isn't one."
 
 ### 6. Figure-ground — what is foreground vs. background
 

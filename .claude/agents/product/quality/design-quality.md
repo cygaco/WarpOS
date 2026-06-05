@@ -91,11 +91,11 @@ suspect elements → `browser_console_messages`. Then judge:
    faithful), and any `build_spec.components[]` are realized by real `ui/` primitives — a
    spec'd component with no `ui/` source is a contract defect to flag, not to wave through.
 
-<!-- DESIGN-GUIDES:design-quality (ADDITIVE — training references, do not weaken existing gate) -->
+<!-- knowledge:design role:design-quality (grounding — training references, do not weaken existing gate) -->
 ## Design-principles guides (training references) — each axis's owning guides
 
 Ground each axis in the WarpOS **design-principles guide library**
-(`_guides/design/` · index `_guides/design/registry.json` · overview `_guides/design/README.md`).
+(`_knowledge/design/` · index `_knowledge/design/registry.json` · overview `_knowledge/design/README.md`).
 These framework-generic, self-contained teachable principles (NN/g, Laws of UX, Gestalt,
 Refactoring UI, WCAG 2.2, Baymard/CXL, web.dev) back the six axes via each guide's `maps_to`.
 Every guide closes with a §6 agent-applicable RULES section. Point each axis at its owning
@@ -114,7 +114,7 @@ guides (primary first):
 phrased in your own finding vocabulary** (the axis names + the per-finding format). The
 guides inform the PASS/FAIL call against the `design_brief` + design-system docs — your
 verdict logic, severity thresholds, and output schema are unchanged.
-<!-- /DESIGN-GUIDES:design-quality -->
+<!-- /knowledge:design role:design-quality -->
 
 ## Per-finding format
 ```

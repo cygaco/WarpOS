@@ -5,7 +5,7 @@ shape: walkthrough
 timing: reference
 lead_time: "none"
 tier: core
-trains: [product-designer, web-conversion-designer, design-quality, visual-review]
+trains: [design-lead, conversion-lead, design-quality, visual-review]
 maps_to: [design-tokens, visual-hierarchy, layout]
 sources:
   - "https://www.designsystems.com/space-grids-and-layouts/"
@@ -36,8 +36,8 @@ When spacing is arbitrary (7px here, 13px there, 23px somewhere else), the eye g
 
 **Which agents and checks this governs:**
 
-- **product-designer** — `kiss` ("subtract before you add"; a clear screen is a *spaced* screen) and the cognitive-load lens both live here. Crowding is a tax the user pays every visit.
-- **web-conversion-designer** — whitespace isolates the CTA and the value prop (the `conversion-hierarchy` hook→proof→CTA flow is largely a *spacing* decision: give the dominant action room).
+- **design-lead** — `kiss` ("subtract before you add"; a clear screen is a *spaced* screen) and the cognitive-load lens both live here. Crowding is a tax the user pays every visit.
+- **conversion-lead** — whitespace isolates the CTA and the value prop (the `conversion-hierarchy` hook→proof→CTA flow is largely a *spacing* decision: give the dominant action room).
 - **design-quality gauntlet** — feeds **`design-tokens`** (spacing/sizing resolve to the scale, not magic numbers) and **`visual-hierarchy`** (space creates emphasis and grouping).
 - **visual-review** — feeds the **`layout`** category (overlap, overflow, missing padding, misalignment, broken reflow).
 

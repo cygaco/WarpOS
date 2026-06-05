@@ -5,7 +5,7 @@ shape: walkthrough
 timing: reference
 lead_time: "none"
 tier: core
-trains: [product-designer, web-conversion-designer, design-quality, visual-review]
+trains: [design-lead, conversion-lead, design-quality, visual-review]
 maps_to: [visual-hierarchy, component-usage, layout, copy]
 sources:
   - "https://www.nngroup.com/articles/ten-usability-heuristics/"
@@ -31,8 +31,8 @@ Every element, choice, and step is a tax the user pays on every visit. A first-t
 
 For the **agents this guide trains**:
 
-- **product-designer** — this is the home of the owned `kiss` principle ("the simplest interface that does the job wins; subtract before you add") and the `cognitive-load` decision lens. It also enforces the cohort-limitation floor (#1 `build-for-audience-incl-limitations`): low-literacy or older cohorts have *less* working memory headroom and need recognition, defaults, and fewer steps.
-- **web-conversion-designer** — the conversion page has one job; every extra field, link, or choice is a leak. Choice and friction reduction are direct conversion levers.
+- **design-lead** — this is the home of the owned `kiss` principle ("the simplest interface that does the job wins; subtract before you add") and the `cognitive-load` decision lens. It also enforces the cohort-limitation floor (#1 `build-for-audience-incl-limitations`): low-literacy or older cohorts have *less* working memory headroom and need recognition, defaults, and fewer steps.
+- **conversion-lead** — the conversion page has one job; every extra field, link, or choice is a leak. Choice and friction reduction are direct conversion levers.
 - **design-quality** gauntlet — backs the **`visual-hierarchy`** axis (clarity = simplicity at the layout altitude) and **`component-usage`** (recognition affordances, progressive disclosure realized with the right primitives).
 - **visual-review** — backs the **`layout`** category (dense, overloaded screens) and the **`copy`** category (jargon and walls of text are load).
 

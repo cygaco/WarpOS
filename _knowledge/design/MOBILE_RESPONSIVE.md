@@ -5,7 +5,7 @@ shape: walkthrough
 timing: reference
 lead_time: "none"
 tier: core
-trains: [product-designer, web-conversion-designer, design-quality, visual-review]
+trains: [design-lead, conversion-lead, design-quality, visual-review]
 maps_to: [mobile-responsive, layout, a11y]
 sources: ["https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html", "https://www.w3.org/WAI/WCAG21/Understanding/reflow", "https://www.w3.org/TR/WCAG22/", "https://baymard.com/blog/mobile-checkout", "https://www.smashingmagazine.com/2018/08/best-practices-for-mobile-form-design/", "https://css-tricks.com/16px-or-larger-text-prevents-ios-form-zoom/", "https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollWidth", "https://web.dev/articles/vitals"]
 ---
@@ -40,8 +40,8 @@ These map directly to the design-quality finding: *"at the mobile viewport the l
 - **SC 1.4.10 Reflow** — content must be usable "without loss of information or functionality, and without requiring scrolling in two dimensions" at **320 CSS px** width (320px ≡ 1280px at 400% zoom), except content that genuinely needs 2-D layout (maps, diagrams, data tables). [w3.org — verified]
 
 **For the designer agents.**
-- **`product-designer`** has a mobile/responsive lens — app screens must hold at 375px.
-- **`web-conversion-designer`** has a mobile lens — landing pages convert on phones; the hero, proof, and CTA must all work at 375px.
+- **`design-lead`** has a mobile/responsive lens — app screens must hold at 375px.
+- **`conversion-lead`** has a mobile lens — landing pages convert on phones; the hero, proof, and CTA must all work at 375px.
 - **`design-quality`** rejects on the **mobile-responsive** axis: a mobile view that overflows or buries content behind an off-canvas with no escape is a gate failure, not a suggestion.
 - **`visual-review`** catches the rendered symptoms at the mobile viewport: broken `layout` (overlap, off-screen content, missing padding) and `a11y` (targets too small, type too small).
 

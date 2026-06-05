@@ -5,7 +5,7 @@ shape: walkthrough
 timing: reference
 lead_time: "none"
 tier: standard
-trains: [product-designer, design-quality, visual-review]
+trains: [design-lead, design-quality, visual-review]
 maps_to: [design-tokens, component-usage, layout, color]
 sources:
   - "https://refactoringui.com/"
@@ -25,7 +25,7 @@ A screen is physically flat, but users read it as layered: a card floats above t
 
 For the WarpOS designer agents:
 
-- **product-designer** owns consistency and clarity (`clear-iconography`, `kiss`). Elevation is a *semantic* signal — "this is clickable / this is on top / this is the active surface." Inconsistent elevation is the same class of bug as inconsistent iconography: the same depth meaning two different things. Imagery handling (especially user-uploaded) is squarely the `build-for-audience-incl-limitations` and state-coverage lens — real content is messy.
+- **design-lead** owns consistency and clarity (`clear-iconography`, `kiss`). Elevation is a *semantic* signal — "this is clickable / this is on top / this is the active surface." Inconsistent elevation is the same class of bug as inconsistent iconography: the same depth meaning two different things. Imagery handling (especially user-uploaded) is squarely the `build-for-audience-incl-limitations` and state-coverage lens — real content is messy.
 - **design-quality** judges `design-tokens` (elevation must resolve to the token set, not ad-hoc box-shadows) and `component-usage` (the right primitive carries the right elevation for its role). A hand-rolled `box-shadow: 2px 2px 4px black` instead of a token is a tokens violation even when it "looks ok."
 - **visual-review** judges `layout` (overlap/layering reads correctly) and `color` (image overlay contrast, shadow visibility in light *and* dark mode). It also catches the **CLS / layout-shift** failure: images with no reserved space that jump the layout when they load.
 

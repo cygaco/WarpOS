@@ -8,11 +8,11 @@ lead_time: "none"
 
 # WarpOS Design-Principles Guides — agent training references
 
-> This is the **design-principles guide library**: 19 self-contained, teachable UI/UX & web-conversion guides that **train the AI designer agents** — `product-designer`, `web-conversion-designer`, the `design-quality` gauntlet, and `visual-review`. Each guide closes with a §6 **agent-applicable RULES** section phrased in the agents' own finding vocabulary, so a guide is something an agent can PASS/FAIL against.
+> This is the **design-principles guide library**: 19 self-contained, teachable UI/UX & web-conversion guides that **train the AI designer agents** — `design-lead`, `conversion-lead`, the `design-quality` gauntlet, and `visual-review`. Each guide closes with a §6 **agent-applicable RULES** section phrased in the agents' own finding vocabulary, so a guide is something an agent can PASS/FAIL against.
 >
 > **These are NOT launch guides.** Every guide here is `anchor: none` — they are *agent grounding*, consumed at judgment time, not staged into the spinup/lastmile bootstrap pipeline like the launch guides one level up (`_guides/*.md`). The single bootstrap touchpoint for this library is one pointer to this README (the design-overview entry); the rules live inside the agents that read them.
 >
-> **Machine-readable index:** `_guides/design/registry.json` — per-guide `tier` / `cluster` / `trains` / `maps_to`, plus a coverage block proving every design-quality axis and every visual-review category is owned by ≥1 guide.
+> **Machine-readable index:** `_knowledge/design/registry.json` — per-guide `tier` / `cluster` / `trains` / `maps_to`, plus a coverage block proving every design-quality axis and every visual-review category is owned by ≥1 guide.
 
 ---
 
@@ -20,8 +20,8 @@ lead_time: "none"
 
 | Agent | What it reads here |
 |---|---|
-| **product-designer** | every guide whose `trains:` includes `product-designer` — app UI/UX craft, cohort fit, state coverage, simplicity, consistency |
-| **web-conversion-designer** | every guide whose `trains:` includes `web-conversion-designer` — conversion hierarchy, friction/forms, typography, color, accessibility, mobile |
+| **design-lead** | every guide whose `trains:` includes `design-lead` — app UI/UX craft, cohort fit, state coverage, simplicity, consistency |
+| **conversion-lead** | every guide whose `trains:` includes `conversion-lead` — conversion hierarchy, friction/forms, typography, color, accessibility, mobile |
 | **design-quality** (gauntlet) | the guides backing its **six approval axes** — each axis's owning guides are listed in the coverage table below |
 | **visual-review** | the guides backing its **seven finding categories** — each category's owning guides are listed in the coverage table below |
 

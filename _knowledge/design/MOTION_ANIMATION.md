@@ -5,7 +5,7 @@ shape: walkthrough
 timing: reference
 lead_time: "none"
 tier: standard
-trains: [product-designer, design-quality, visual-review]
+trains: [design-lead, design-quality, visual-review]
 maps_to: [accessibility, mobile-responsive, regression, a11y]
 sources:
   - "https://www.w3.org/WAI/WCAG21/Understanding/animation-from-interactions.html"
@@ -28,7 +28,7 @@ For the **user**, motion answers questions the static frame cannot: *Did my tap 
 
 For the **designer agents**, motion is a cross-cutting concern with two checkable faces:
 
-- **`product-designer`** owns the *purpose* of motion — does each animation earn its place (orientation/continuity/feedback) or is it gratuitous, and does the build honor `prefers-reduced-motion`.
+- **`design-lead`** owns the *purpose* of motion — does each animation earn its place (orientation/continuity/feedback) or is it gratuitous, and does the build honor `prefers-reduced-motion`.
 - **`design-quality`** judges it on the **`accessibility`** axis (reduced-motion respected, no motion-only signifier) and the **`mobile-responsive`** axis (animation that's smooth on desktop but janks/overflows on a mid-tier phone is a mobile defect).
 - **`visual-review`** catches it on the **`regression`** category (FOUC, content flash, transition flicker, layout shift during animation) and the **`a11y`** category (motion that ignores the user's reduced-motion setting).
 

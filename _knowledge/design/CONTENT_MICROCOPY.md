@@ -5,7 +5,7 @@ shape: walkthrough
 timing: reference
 lead_time: "none"
 tier: standard
-trains: [product-designer, web-conversion-designer, design-quality, visual-review]
+trains: [design-lead, conversion-lead, design-quality, visual-review]
 maps_to: [design-handoff, copy]
 sources:
   - "https://www.nngroup.com/articles/ten-usability-heuristics/"
@@ -25,7 +25,7 @@ Words *are* interface. A user doesn't read a button and a label as "design" and 
 
 For the **designer agents**:
 
-- **`product-designer`** and **`web-conversion-designer`** both author and review the in-context words — labels, errors, empty states, CTAs. Copy that doesn't match the design intent (a "Save" button that actually publishes; a CTA that promises more than the offer) is a handoff defect.
+- **`design-lead`** and **`conversion-lead`** both author and review the in-context words — labels, errors, empty states, CTAs. Copy that doesn't match the design intent (a "Save" button that actually publishes; a CTA that promises more than the offer) is a handoff defect.
 - **`design-quality`** judges it on the **`design-handoff`** axis: *does the rendered copy match the intended copy and the action's true behavior?* A spec'd label that's missing, wrong, or truncated is a contract defect to flag, not wave through.
 - **`visual-review`** owns the **`copy`** category outright: wrong/missing/placeholder text, untranslated keys, lorem ipsum in production, mismatched headings, and misleading labels are all `copy` findings.
 

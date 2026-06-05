@@ -5,7 +5,7 @@ shape: walkthrough
 timing: reference
 lead_time: "none"
 tier: standard
-trains: [product-designer, design-quality, visual-review]
+trains: [design-lead, design-quality, visual-review]
 maps_to: [visual-hierarchy, component-usage, layout, copy]
 sources:
   - "https://www.nngroup.com/articles/menu-design/"
@@ -30,7 +30,7 @@ Two laws govern this:
 
 For the WarpOS designer agents:
 
-- **product-designer** owns the **start-path** and journey lens (`map-user-journey`, `cold-vs-warm-start`/`ftue-nux`). Navigation is how a first-time user gets oriented and how a returning user gets to their goal fast. A buried entry point or a confusing IA breaks the cold-start experience the product-designer is responsible for. Labels are also a `clear-iconography`/clarity concern — a navigation label is a signifier.
+- **design-lead** owns the **start-path** and journey lens (`map-user-journey`, `cold-vs-warm-start`/`ftue-nux`). Navigation is how a first-time user gets oriented and how a returning user gets to their goal fast. A buried entry point or a confusing IA breaks the cold-start experience the design-lead is responsible for. Labels are also a `clear-iconography`/clarity concern — a navigation label is a signifier.
 - **design-quality** judges `visual-hierarchy` (the primary nav and current-location cue are prominent and clear) and `component-usage` (nav is built from real, consistent primitives). A nav where you can't tell which item is active is a hierarchy finding.
 - **visual-review** judges `layout` (nav placement, current-location highlight, breadcrumb rendering) and `copy` (nav labels — wrong, jargony, or ambiguous text). It catches the menu with no active-state indicator and the mystery label.
 

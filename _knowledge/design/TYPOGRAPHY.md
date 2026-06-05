@@ -5,7 +5,7 @@ shape: walkthrough
 timing: reference
 lead_time: "none"
 tier: core
-trains: [product-designer, web-conversion-designer, design-quality, visual-review]
+trains: [design-lead, conversion-lead, design-quality, visual-review]
 maps_to: [design-tokens, visual-hierarchy, typography]
 sources:
   - "https://refactoringui.com/"
@@ -34,8 +34,8 @@ Text is most of the interface. If it's hard to read or its hierarchy is flat, ev
 
 For the **agents this guide trains**:
 
-- **product-designer** — type is where `clarity-is-king` and `clear-iconography` (legible visual language) become concrete; a returning user tolerates dense type less than a first-timer, and the cohort's *limitations* (older eyes, low vision, small phones) set the size/contrast floor.
-- **web-conversion-designer** — readable, scannable type is conversion: an intimidating wall of long lines makes users skip the value prop entirely (Baymard observed this directly in e-commerce testing).
+- **design-lead** — type is where `clarity-is-king` and `clear-iconography` (legible visual language) become concrete; a returning user tolerates dense type less than a first-timer, and the cohort's *limitations* (older eyes, low vision, small phones) set the size/contrast floor.
+- **conversion-lead** — readable, scannable type is conversion: an intimidating wall of long lines makes users skip the value prop entirely (Baymard observed this directly in e-commerce testing).
 - **design-quality** gauntlet — this guide backs the **`design-tokens`** axis (type scale/size/line-height must resolve to tokens, not ad-hoc values) and contributes to the **`visual-hierarchy`** axis (type as the hierarchy carrier).
 - **visual-review** — backs the **`typography`** category directly: wrong size, illegible line length/height, too many fonts, low-contrast text, wrong heading level are all typography findings.
 

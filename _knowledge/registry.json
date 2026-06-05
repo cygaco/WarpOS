@@ -1,0 +1,42 @@
+{
+  "schema": "warpos/knowledge/registry/v1",
+  "domains": [
+    {
+      "domain": "audience",
+      "kind": "store",
+      "producer": "research-lead",
+      "consumers": [
+        "conversion-lead",
+        "copy-lead",
+        "director-of-growth"
+      ],
+      "contract": "_knowledge/audience/README.md",
+      "schema_ref": "schemas/contracts/audience_dossier.schema.json"
+    },
+    {
+      "domain": "copy",
+      "kind": "store",
+      "producer": "copy-lead",
+      "consumers": [
+        "conversion-lead",
+        "director-of-growth"
+      ],
+      "contract": "_knowledge/copy/README.md",
+      "schema_ref": null
+    },
+    {
+      "domain": "design",
+      "kind": "library",
+      "producer": "design-lead",
+      "consumers": [
+        "conversion-lead",
+        "design-lead",
+        "design-quality",
+        "visual-review"
+      ],
+      "index": "_knowledge/design/registry.json",
+      "overview": "_knowledge/design/README.md",
+      "artifact_count": 19
+    }
+  ]
+}

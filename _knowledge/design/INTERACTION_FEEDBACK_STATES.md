@@ -5,7 +5,7 @@ shape: walkthrough
 timing: reference
 lead_time: "none"
 tier: core
-trains: [product-designer, web-conversion-designer, design-quality, visual-review]
+trains: [design-lead, conversion-lead, design-quality, visual-review]
 maps_to: [component-usage, visual-hierarchy, console-error, regression, color]
 sources:
   - "https://www.nngroup.com/articles/ten-usability-heuristics/"
@@ -33,8 +33,8 @@ Most real-world UI defects aren't in the happy path; they're in the *seams* — 
 
 **Which agents and checks this governs:**
 
-- **product-designer** — owns the **state-coverage lens** (are empty / loading / error / success states designed, not just the happy screen?) and the **start-path-fit lens** (does the screen work *cold* — first-time, empty — as well as *warm*?). Pairs with `clear-iconography`: state communicated with a consistent, legible vocabulary, "no spinning-cat ambiguity, no glitchy transitions."
-- **web-conversion-designer** — feedback on the CTA (loading on submit, success confirmation) is part of not losing the conversion at the moment of action; a form that silently swallows a submit is a leak.
+- **design-lead** — owns the **state-coverage lens** (are empty / loading / error / success states designed, not just the happy screen?) and the **start-path-fit lens** (does the screen work *cold* — first-time, empty — as well as *warm*?). Pairs with `clear-iconography`: state communicated with a consistent, legible vocabulary, "no spinning-cat ambiguity, no glitchy transitions."
+- **conversion-lead** — feedback on the CTA (loading on submit, success confirmation) is part of not losing the conversion at the moment of action; a form that silently swallows a submit is a leak.
 - **design-quality gauntlet** — feeds **`component-usage`** (library primitives expose their full state set per intended variant) and **`visual-hierarchy`** (status/feedback is surfaced where the eye is).
 - **visual-review** — feeds **`console-error`** (errors that break render), **`regression`** (state-transition flicker / FOUC / layout shift), and **`color`** (state colors — paired with the never-color-alone rule).
 

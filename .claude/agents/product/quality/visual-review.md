@@ -67,11 +67,11 @@ You are reviewing **against the spec**, not against your aesthetic. If the
 spec says "primary button uses `--color-brand-orange`," verify the rendered
 pixel matches that token's value.
 
-<!-- DESIGN-GUIDES:visual-review (ADDITIVE — training references, do not weaken existing review) -->
+<!-- knowledge:design role:visual-review (grounding — training references, do not weaken existing review) -->
 ## Design-principles guides (training references) — each category's owning guides
 
 Ground each finding category in the WarpOS **design-principles guide library**
-(`_guides/design/` · index `_guides/design/registry.json` · overview `_guides/design/README.md`).
+(`_knowledge/design/` · index `_knowledge/design/registry.json` · overview `_knowledge/design/README.md`).
 These framework-generic, self-contained teachable principles (NN/g, Laws of UX, Gestalt,
 Refactoring UI, WCAG 2.2, Baymard/CXL, web.dev) back your seven finding categories via each
 guide's `maps_to`. Every guide closes with a §6 agent-applicable RULES section. Point each
@@ -91,7 +91,7 @@ category at its owning guides (primary first):
 phrased in your own finding vocabulary** (the category names + the per-finding format). The
 guides inform what counts as a finding against the spec — your verdict logic, severity
 thresholds, and output schema are unchanged.
-<!-- /DESIGN-GUIDES:visual-review -->
+<!-- /knowledge:design role:visual-review -->
 
 ## The flow
 

@@ -5,7 +5,7 @@ shape: walkthrough
 timing: reference
 lead_time: "none"
 tier: core
-trains: [product-designer, web-conversion-designer, design-quality, visual-review]
+trains: [design-lead, conversion-lead, design-quality, visual-review]
 maps_to: [visual-hierarchy, layout]
 sources:
   - "https://www.nngroup.com/articles/ten-usability-heuristics/"
@@ -33,8 +33,8 @@ A screen without hierarchy is a maze: every element shouts at the same volume, s
 
 For the **agents this guide trains**:
 
-- **product-designer** — hierarchy is the craft expression of the inherited `clarity-is-king` and the owned `kiss` principle: a clear screen has one obvious focal point and a legible second tier. Hierarchy is how "what's most important" becomes visible without a paragraph of explanation.
-- **web-conversion-designer** — the conversion page has *one job*. Hierarchy is the mechanism of the hook→proof→CTA flow: the value-prop hook lands first, proof sustains, the single dominant CTA finishes. A buried or co-equal CTA is a conversion leak.
+- **design-lead** — hierarchy is the craft expression of the inherited `clarity-is-king` and the owned `kiss` principle: a clear screen has one obvious focal point and a legible second tier. Hierarchy is how "what's most important" becomes visible without a paragraph of explanation.
+- **conversion-lead** — the conversion page has *one job*. Hierarchy is the mechanism of the hook→proof→CTA flow: the value-prop hook lands first, proof sustains, the single dominant CTA finishes. A buried or co-equal CTA is a conversion leak.
 - **design-quality** gauntlet — this guide is the backing for the **`visual-hierarchy`** axis: "the primary action/message is the most prominent thing; the eye lands where the brief says it should. Clarity beats cleverness. A buried CTA or competing emphasis is a finding."
 - **visual-review** — backs the **`layout`** category: overlapping/competing focal points, off-balance emphasis, and a CTA that doesn't read as primary are layout findings.
 

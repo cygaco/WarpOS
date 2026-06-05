@@ -404,6 +404,21 @@ function buildRules(sourcePrefix) {
       }),
     },
     {
+      // E5 / ADR-0007: `_knowledge/` is the shared agent-grounding knowledge
+      // layer (the company "brain" — the design-principles guide library plus
+      // per-domain knowledge stores). Framework content that ships to consumer
+      // products like `_guides/` (owner=framework, managed=true). Migrated home
+      // of the design library (was `_guides/design/`, E5/M3). The fail-closed
+      // ship boundary is asserted by scan:warpos-ship-coverage (MUST_SHIP).
+      name: "framework-knowledge-dir",
+      match: (rel) => rel.startsWith("_knowledge/"),
+      entry: (rel) => ({
+        owner: "framework",
+        managed: true,
+        source: rel,
+      }),
+    },
+    {
       // The canonical `framework/` directory (releases, paths.registry.json,
       // migrations) ships into every product verbatim via the framework-
       // manifest. It is framework source-of-truth INDEPENDENT of --source-
@@ -494,8 +509,11 @@ function buildRules(sourcePrefix) {
       }),
     },
     {
-      name: "runtime-dump",
-      match: (rel) => rel === "DUMP.md",
+      name: "runtime-working-doc",
+      // DUMP.md (session handoff) + TRACKER.md (the rewrite burndown) are
+      // WarpOS-internal working docs at root — tracked, but NOT shipped to
+      // products and not a framework view. owner=runtime, managed=false.
+      match: (rel) => rel === "DUMP.md" || rel === "TRACKER.md",
       entry: () => ({ owner: "runtime", managed: false }),
     },
     {

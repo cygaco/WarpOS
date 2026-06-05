@@ -5,7 +5,7 @@ shape: walkthrough
 timing: reference
 lead_time: "none"
 tier: core
-trains: [product-designer, web-conversion-designer, design-quality, visual-review]
+trains: [design-lead, conversion-lead, design-quality, visual-review]
 maps_to: [design-tokens, component-usage, design-handoff, color, typography, regression]
 sources: ["https://www.w3.org/community/design-tokens/", "https://www.designtokens.org/tr/drafts/format/", "https://www.nngroup.com/articles/consistency-and-standards/", "https://www.nngroup.com/articles/ten-usability-heuristics/", "https://lawsofux.com/teslers-law/", "https://lawsofux.com/von-restorff-effect/", "https://refactoringui.com/", "https://overlayqa.com/blog/design-system-drift/"]
 ---
@@ -39,8 +39,8 @@ When any layer is bypassed — a hardcoded hex instead of a token, a raw `<butto
 - **Theming and dark mode become possible.** When components reference *semantic* tokens, switching light↔dark or rebranding is a token-set swap, not a find-and-replace across hundreds of files. Hardcoded values make every theme a manual rewrite.
 
 **For the designer agents.**
-- **`product-designer`** owns the *consistency* lens — it must build app UI from the existing primitives and tokens, never inventing a one-off.
-- **`web-conversion-designer`** must keep landing pages in the same visual language as the product so the ad→lander→app journey feels like one brand.
+- **`design-lead`** owns the *consistency* lens — it must build app UI from the existing primitives and tokens, never inventing a one-off.
+- **`conversion-lead`** must keep landing pages in the same visual language as the product so the ad→lander→app journey feels like one brand.
 - **`design-quality`** approves/rejects on the **design-tokens**, **component-usage**, and **design-handoff** axes — this guide is its rulebook for those three.
 - **`visual-review`** catches the *rendered* symptoms: color drift (`color`), wrong type (`typography`), and step-to-step inconsistency or regression (`regression`).
 
@@ -82,7 +82,7 @@ Use the **intended variant** for the intended meaning: a destructive action is `
 
 ### 3.4 One visual language across app and web
 
-The product UI and the marketing/landing pages must share the same tokens and primitives. A landing page that uses `bg-blue-500` while the app uses `bg-primary` breaks the brand the moment a user crosses from ad → lander → app. `web-conversion-designer` output is held to the same token/component rules as `product-designer` output — the design-quality gauntlet is *builder-agnostic*.
+The product UI and the marketing/landing pages must share the same tokens and primitives. A landing page that uses `bg-blue-500` while the app uses `bg-primary` breaks the brand the moment a user crosses from ad → lander → app. `conversion-lead` output is held to the same token/component rules as `design-lead` output — the design-quality gauntlet is *builder-agnostic*.
 
 ### 3.5 Handoff fidelity (the build realizes the spec)
 
@@ -194,7 +194,7 @@ Each rule is a PASS/FAIL the **design-quality** (`design-tokens` / `component-us
 - **DH-1 — Required design-system docs exist.** *(static rule `missing-design-doc`)* — FAIL (**high**) if the required docs are absent (mature: `_requirements/01-design-system/{COMPONENT_LIBRARY,COLOR_SEMANTICS,UX_PRINCIPLES,FEEDBACK_PATTERNS}.md`; greenfield: `DESIGN_SYSTEM.md` + `globals.css` + `src/components/ui/`). *Why:* no declared source of truth ⇒ nothing to be consistent with.
 - **DH-2 — Spec'd components are realized by a real primitive.** — FAIL (**high**) if a `design_brief`/`build_spec` names a component with **no** corresponding `src/components/ui/` source. *Observed:* spec calls for `<Stepper>`, no `ui/stepper`. *Expected:* a real primitive. *Severity:* contract defect — do not wave through.
 - **DH-3 — Rendered intent matches the brief.** — FAIL (**high**) if the rendered variant/color/copy diverges from the brief's stated intent (handoff drift), even if it "looks close." *Detect (judgment lane):* compare render to brief.
-- **DH-4 — One visual language across domains.** — FAIL (**medium**) if web/landing UI uses different tokens/primitives than the app for the same role (e.g. lander `bg-blue-500` vs app `bg-primary`). Applies to both `product-designer` and `web-conversion-designer` output.
+- **DH-4 — One visual language across domains.** — FAIL (**medium**) if web/landing UI uses different tokens/primitives than the app for the same role (e.g. lander `bg-blue-500` vs app `bg-primary`). Applies to both `design-lead` and `conversion-lead` output.
 
 ### Visual-review categories
 - **CR-1 (`color`)** — FAIL (**high**) if a brand/semantic color renders as the wrong value (e.g. a primary button computed grey instead of the `--primary` token). *Detect:* computed `background-color`/`color` vs the token value.

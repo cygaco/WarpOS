@@ -159,8 +159,8 @@ skill body drives it, then gates completion with `verifyServe`.
 > 🎨 **Design-principles guides (overview):** the first-screen UX is judged by the
 > `design-lead` / `conversion-lead` / `design-quality` / `visual-review`
 > agents, which ground their craft in the **design-principles guide library** —
-> overview at [`_guides/design/README.md`](../../../_guides/design/README.md) (index
-> `_guides/design/registry.json`). These are agent-grounding training references
+> overview at [`_knowledge/design/README.md`](../../../_knowledge/design/README.md) (index
+> `_knowledge/design/registry.json`). These are agent-grounding training references
 > (`anchor: none`), not staged launch guides; the README is the one design-overview
 > entry the bootstrap pipeline surfaces.
 

@@ -5,7 +5,7 @@ shape: walkthrough
 timing: reference
 lead_time: "none"
 tier: standard
-trains: [product-designer, design-quality, visual-review]
+trains: [design-lead, design-quality, visual-review]
 maps_to: [component-usage, accessibility, mobile-responsive, a11y, layout]
 sources:
   - "https://ixdf.org/literature/topics/signifiers"
@@ -22,13 +22,13 @@ sources:
 
 ## Why it matters
 
-A control the user can't *recognize* as a control might as well not exist; a target they can't reliably hit is a control that fights them; an icon they have to guess at is a riddle. These are not polish issues — they are the difference between a usable and an unusable interface, and they fall heaviest on exactly the cohorts the product-designer is sworn to serve (older users, low-literacy users, motor-impaired users, one-handed/situational users — `build-for-audience-incl-limitations`).
+A control the user can't *recognize* as a control might as well not exist; a target they can't reliably hit is a control that fights them; an icon they have to guess at is a riddle. These are not polish issues — they are the difference between a usable and an unusable interface, and they fall heaviest on exactly the cohorts the design-lead is sworn to serve (older users, low-literacy users, motor-impaired users, one-handed/situational users — `build-for-audience-incl-limitations`).
 
 Don Norman's framing is the spine here: an **affordance** is what an object *can do* (a button can be pressed); a **signifier** is the perceptible cue that *tells the user* it can (the button's fill, border, shadow, hover state). Flat design's great regression was stripping signifiers — making clickable things indistinguishable from text — so this guide is partly a corrective: signal interactivity, don't hide it.
 
 For the WarpOS designer agents:
 
-- **product-designer** explicitly owns **`clear-iconography`**: "an icon that needs a caption to be understood has failed; prefer a labeled icon to a clever-but-opaque one." This guide is the deep version of that owned principle, plus the affordance and target-size craft that makes controls usable for the real cohort.
+- **design-lead** explicitly owns **`clear-iconography`**: "an icon that needs a caption to be understood has failed; prefer a labeled icon to a clever-but-opaque one." This guide is the deep version of that owned principle, plus the affordance and target-size craft that makes controls usable for the real cohort.
 - **design-quality** judges `component-usage` (controls are the right interactive primitive, with real affordance and state), `accessibility` (accessible names, focus, target size), and `mobile-responsive` (tap targets hold at mobile). A control with no hover/focus signifier, or a 16px icon-button tap target, is a finding.
 - **visual-review** judges `a11y` (target size, accessible names, focus visibility) and `layout` (controls reachable, not crammed). It catches the icon-only button with no label/tooltip and the mystery-meat nav.
 

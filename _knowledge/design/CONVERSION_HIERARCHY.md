@@ -5,7 +5,7 @@ shape: walkthrough
 timing: reference
 lead_time: "none"
 tier: core
-trains: [web-conversion-designer, product-designer, design-quality, visual-review]
+trains: [conversion-lead, design-lead, design-quality, visual-review]
 maps_to: [visual-hierarchy, layout, copy]
 sources:
   - "https://cxl.com/blog/how-to-build-a-high-converting-landing-page/"
@@ -21,7 +21,7 @@ sources:
 
 **Conversion hierarchy is visual hierarchy applied to a page that has exactly one job: arrange the page so a first-time visitor, scanning for a few seconds, perceives the value proposition, then the proof, then a single unmissable call-to-action — with no competing focal point pulling attention off that path.**
 
-This guide trains the `web-conversion-designer` (it owns the `conversion-hierarchy` lens) and `product-designer` on the marketing/landing surface, and produces checkable rules for the `design-quality` `visual-hierarchy` axis and the `visual-review` `layout` + `copy` categories.
+This guide trains the `conversion-lead` (it owns the `conversion-hierarchy` lens) and `design-lead` on the marketing/landing surface, and produces checkable rules for the `design-quality` `visual-hierarchy` axis and the `visual-review` `layout` + `copy` categories.
 
 ---
 
@@ -42,7 +42,7 @@ This is `VISUAL_HIERARCHY` (the foundations guide) specialized for a page whose 
 **For the product/user:** a visitor decides in seconds whether a page is worth their time. If the page has no clear focal point — three equal-weight buttons, a hero that states a category instead of a benefit, a nav bar full of escape hatches — the visitor doesn't know what to do, so they do nothing. "If everything stands out, nothing stands out" is not an aesthetic complaint on a landing page; it is lost conversion. Eye-tracking work (NN/g) shows attention concentrates on the first viewport but users *do* scroll when the top earns it; the job of the hierarchy is to earn the scroll and then deliver the action.
 
 **For the designer agents:**
-- This is the **owned lens of `web-conversion-designer`** (`conversion-hierarchy`) and the conversion specialization of the `visual-hierarchy` design-quality axis.
+- This is the **owned lens of `conversion-lead`** (`conversion-hierarchy`) and the conversion specialization of the `visual-hierarchy` design-quality axis.
 - It governs `visual-review` `layout` (is there one dominant focal point? is the CTA unmissable?) and `copy` (does the headline state a benefit? does each section install a belief or remove an objection?).
 - It is the guardrail that keeps a page from becoming a feature list — and it pairs with the ethics guide so that "make the CTA dominant" never tips into manipulative urgency.
 

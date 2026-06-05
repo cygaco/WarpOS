@@ -5,7 +5,7 @@ shape: walkthrough
 timing: reference
 lead_time: "none"
 tier: core
-trains: [product-designer, web-conversion-designer, design-quality, visual-review]
+trains: [design-lead, conversion-lead, design-quality, visual-review]
 maps_to: [accessibility, color, a11y]
 sources:
   - "https://www.w3.org/TR/WCAG22/"
@@ -51,7 +51,7 @@ WCAG defines conformance at three **levels**: **A** (minimum), **AA** (the targe
 
 **For the designer agents specifically:**
 - This guide is the **primary source for the `accessibility` axis** of the `design-quality` gauntlet (it owns the whole axis) and the **`a11y` category** of `visual-review`. It also feeds `color` / `visual-review color` (contrast).
-- `product-designer` and `web-conversion-designer` both build forms, CTAs, and interactive controls — every one of those is an accessibility surface.
+- `design-lead` and `conversion-lead` both build forms, CTAs, and interactive controls — every one of those is an accessibility surface.
 - Because ~57–70% of WCAG issues are NOT machine-detectable (see §5/§6), the agent's discipline at *build time* is the real enforcement — the gauntlet catches the rest.
 
 ---

@@ -5,7 +5,7 @@ shape: walkthrough
 timing: reference
 lead_time: "none"
 tier: standard
-trains: [web-conversion-designer, product-designer, design-quality, visual-review]
+trains: [conversion-lead, design-lead, design-quality, visual-review]
 maps_to: [design-handoff, copy]
 sources:
   - "https://www.deceptive.design/"
@@ -26,8 +26,8 @@ Persuasion and deception sit on a continuum, and the line is the user's *informe
 
 For the **designer agents** this is a guardrail on the *conversion* cluster:
 
-- **`web-conversion-designer`** is the agent most tempted here — its job is to lift conversion, and dark patterns *look* like conversion wins. This guide is the boundary on that lane: optimize the *honest* funnel, never the deceptive one.
-- **`product-designer`** owns the in-app equivalents — roach-motel cancellation, nagging permission prompts, pre-checked sharing defaults, confirmshaming opt-outs.
+- **`conversion-lead`** is the agent most tempted here — its job is to lift conversion, and dark patterns *look* like conversion wins. This guide is the boundary on that lane: optimize the *honest* funnel, never the deceptive one.
+- **`design-lead`** owns the in-app equivalents — roach-motel cancellation, nagging permission prompts, pre-checked sharing defaults, confirmshaming opt-outs.
 - **`design-quality`** judges it on the **`design-handoff`** axis: *is the rendered intent faithful and honest, or does it deceive?* A flow that misrepresents the action is an intent-fidelity defect.
 - **`visual-review`** owns the **`copy`** angle: misleading labels, confirmshaming wording, fake-urgency strings, and trick questions are `copy` findings.
 

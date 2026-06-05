@@ -5,7 +5,7 @@ shape: walkthrough
 timing: reference
 lead_time: "none"
 tier: core
-trains: [web-conversion-designer, product-designer, design-quality, visual-review]
+trains: [conversion-lead, design-lead, design-quality, visual-review]
 maps_to: [component-usage, accessibility, copy, a11y, layout]
 sources:
   - "https://baymard.com/blog/mobile-forms-avoid-inline-labels"
@@ -22,7 +22,7 @@ sources:
 
 **A form is the moment of friction where intent is converted into a completed action; this guide is the discipline of removing every unnecessary obstacle (fewer fields, visible labels, forgiving validation, correct mobile inputs) and supplying the trust the user needs at the point of commitment — so the form is the easiest possible bridge from "I'm interested" to "done."**
 
-This guide trains `web-conversion-designer` (forms on landing/checkout surfaces) and `product-designer` (in-app forms), and yields checkable rules for the `design-quality` `component-usage` + `accessibility` axes and the `visual-review` `copy` + `a11y` + `layout` categories.
+This guide trains `conversion-lead` (forms on landing/checkout surfaces) and `design-lead` (in-app forms), and yields checkable rules for the `design-quality` `component-usage` + `accessibility` axes and the `visual-review` `copy` + `a11y` + `layout` categories.
 
 ---
 
@@ -44,7 +44,7 @@ Every form is a transaction: the user gives effort (and data, and trust) in exch
 **For the product/user:** forms are where conversions are won or lost. Friction is measurable abandonment — Baymard's research finds the average checkout asks for **roughly twice as many fields as needed**, and complex/confusing layout is a top abandonment cause. A user who can't tell what a field wants (placeholder vanished), who gets yelled at mid-typing, who hits a vague "invalid input," or who is asked for sensitive data with no trust context, quietly leaves. On mobile, a wrong keyboard or a missing autofill turns a 20-second task into a frustrating one.
 
 **For the designer agents:**
-- Forms are a shared surface for both designer agents (in-app for `product-designer`, lead/checkout for `web-conversion-designer`).
+- Forms are a shared surface for both designer agents (in-app for `design-lead`, lead/checkout for `conversion-lead`).
 - This guide governs `component-usage` (form primitives: label, input, error, fieldset), `accessibility` (the form's whole a11y story), and `copy` (labels, helper text, error messages) — so it sits at the intersection of multiple gauntlet axes.
 - It is the conversion guide's natural partner: `CONVERSION_HIERARCHY` gets the click to the CTA; this guide gets the form *completed*.
 

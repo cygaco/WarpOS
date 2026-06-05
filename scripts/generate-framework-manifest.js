@@ -219,6 +219,14 @@ const ASSET_DIRS = [
   { src: "scripts/events", kind: "events_tool" },
   { src: "scripts/fix-deep", kind: "fix_deep_tool" },
   { src: "scripts/learn", kind: "learn_tool" },
+  // E4 (M1 §8): scripts/skills backs the skill→agent hook-points registry +
+  // resolver (skill-hook-points.js) + its bite-test — framework logic the
+  // migrated skills and scan:skill-hook-coverage rely on, so it must ship.
+  // (Latent unshipped gap from the E4 land, caught here by ship-coverage.)
+  { src: "scripts/skills", kind: "skills_tool" },
+  // E5 (_knowledge layer): scripts/knowledge backs the knowledge registry
+  // engine + the knowledge-coverage enforcer (runs in products via scan:full).
+  { src: "scripts/knowledge", kind: "knowledge_tool" },
   { src: "scripts/lib", kind: "script_lib" },
   { src: "scripts/linters", kind: "linter_tool" },
   { src: "scripts/manifest", kind: "manifest_tool" },
@@ -253,6 +261,12 @@ const ASSET_DIRS = [
   // owner=framework + managed=true (build.js framework-guides-dir rule); the
   // fail-closed ship boundary is asserted by scan:warpos-ship-coverage.
   { src: "_guides", kind: "guide" },
+  // E5 / ADR-0007: `_knowledge/` is the shared agent-grounding knowledge layer
+  // (the company "brain" — the design-principles guide library + per-domain
+  // knowledge stores). Ships as framework content like `_guides/`; the build.js
+  // framework-knowledge-dir rule sets owner=framework + managed=true. The design
+  // library migrated here from `_guides/design/` (E5/M3).
+  { src: "_knowledge", kind: "knowledge" },
 ];
 
 // Top-level scripts (peers of scripts/hooks/, scripts/tools/).

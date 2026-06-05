@@ -5,7 +5,7 @@ shape: walkthrough
 timing: reference
 lead_time: "none"
 tier: standard
-trains: [product-designer, web-conversion-designer, design-quality, visual-review]
+trains: [design-lead, conversion-lead, design-quality, visual-review]
 maps_to: [mobile-responsive, component-usage, console-error, regression]
 sources:
   - "https://web.dev/articles/vitals"
@@ -28,7 +28,7 @@ Speed is conversion and trust. Users abandon slow pages, mis-tap shifting layout
 
 For the **designer agents**:
 
-- **`product-designer`** and **`web-conversion-designer`** both own this — load *is* conversion, and in-app responsiveness *is* usability. The design decisions (image sizing, what loads first, skeletons vs spinners, optimistic UI, reserved space) directly set the Vitals.
+- **`design-lead`** and **`conversion-lead`** both own this — load *is* conversion, and in-app responsiveness *is* usability. The design decisions (image sizing, what loads first, skeletons vs spinners, optimistic UI, reserved space) directly set the Vitals.
 - **`design-quality`** judges it on the **`mobile-responsive`** axis (load + responsiveness on a real phone is where slow/jank bites hardest) and **`component-usage`** (correct loading/skeleton/empty/error primitives instead of ad-hoc spinners or blank screens).
 - **`visual-review`** owns **`console-error`** (errors that break or block render) and **`regression`** (layout shift / CLS — content jumping, the classic "I tapped the wrong thing because it moved" bug).
 
