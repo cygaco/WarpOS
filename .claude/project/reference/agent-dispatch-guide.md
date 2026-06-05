@@ -122,6 +122,26 @@ Blocked by `scripts/hooks/dispatch-route-guard.js` (PreToolUse, Bash matcher):
 - `claude -p --agent <role> …` — documented Claude fallback for **non-build** roles only (build roles are blocked; see Forbidden patterns).
 - Any command running under `WARPOS_PROVIDER_PROBE=1` — one-shot health probe escape hatch (the bypass is logged via `lib/logger`).
 
+## In-process Agent dispatch — the context-lever (§2.5 + ED-021)
+
+The in-process **Agent tool** dumps the *full* sub-agent response into the
+**orchestrator's** context. Two contracts govern it (both in `dispatch-route-guard.js`,
+on the `Agent` tool branch):
+
+| Case | Rule | Strength |
+|---|---|---|
+| Agent dispatch of a **build-chain role** (`subagent_type` ∈ builders/fixers/stub-scaffold) | **BLOCKED** — use `node scripts/dispatch-claude.js <role> <prompt-file> -w`. The Agent tool dumps 50-100K tokens into the orchestrator AND lacks the wrapper's reap-safety (RI-004/§2.5). Spec/doc authoring via `general-purpose` is fine; a Lead fanning out its OWN sub-reviewers is exempt. | hard block |
+| Agent dispatch whose prompt runs a **heavy aggregate/verify/research skill** (`/scan:full`, `/research:deep`, `/redteam:full`, `/qa:audit`, big synthesis) **without a lean-return request** | **ADVISORY (ED-021)** — instruct the sub-agent to WRITE its full output to a file and RETURN ONE short verdict envelope ("≤8 lines: PASS/FAIL + counts + the file path"), don't return the full aggregation. | non-blocking warning |
+
+**The lean-return contract (ED-021):** run heavy skills via a dispatched sub-agent
+that returns an **envelope, not content** — the orchestrator holds envelopes, not
+the tens-of-thousands-of-tokens of sub-output (memory:
+`feedback-orchestrator-holds-envelopes-not-content`). The advisory is suppressed
+when the prompt already asks for a lean / envelope / write-file-then-summarize
+return, so the right pattern is silent and the wrong one is nudged. It is a
+warning (not a block) because the guard sees only the dispatch prompt, not the
+eventual return shape.
+
 ## Why this matters (precedent)
 
 - **LRN-2026-04-17** — codex CLI on Windows died with 0 bytes output when
