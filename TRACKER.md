@@ -4,13 +4,13 @@
 >
 > **Legend:** ✅ done & verified · 🟡 partial · ⬜ open/not-started · 🅿️ parked (deliberate) · 🔒 design-locked (deferred by decision)
 >
-> **State as of 2026-06-05 · `main` = `5c8377c`** (+ uncommitted M1-c tail, landing this session). Backup: `backup/pre-cutover-2026-06-04` (never delete).
+> **State as of 2026-06-05 · `main` = `6dcd318`** (E5 `_knowledge/` layer LANDED; scan-gate PASS, operator-authorized push). Backup: `backup/pre-cutover-2026-06-04` (never delete).
 
 ---
 
 ## The picture in one line
 
-**~90% done.** The *plumbing* (org tree, registries, routing, enforcers, skill resolution) is built, verified, and on `main`. What's left is **one real build (E5 `_knowledge/`)**, **one parked refactor (E6 ED-024)**, **one design-locked runtime (E7 ε)**, and a **cluster of enforcer-debt items (E8)**.
+**~95% done.** The *plumbing* (org tree, registries, routing, enforcers, skill resolution) **and the `_knowledge/` brain (E5)** are built, verified, and on `main`. What's left — **E6 (ED-024 org-map collapse), E7 (ε sprint-runtime), E8 (enforcer debt)** — is launching as **parallel `/sprint:full` sprints this session** (operator-authorized "all three", 2026-06-05).
 
 ---
 
@@ -54,12 +54,15 @@ Skills resolve their persona from the registry at call time, never hardcode a ro
 **E4 is DONE** — every agent-calling skill (12 registered) resolves its persona from the registry; no skill names a persona as a hardcoded dispatch.
 **Evidence:** `aa86338`,`f574a7e`,`2ac4c92`,`5c8377c` (on `main`); tail landing this session.
 
-### ⬜ E5 — M1-d: the `_knowledge/` layer  *(THE big build left)*
-- [ ] ⬜ Decide the `_knowledge/{audience,copy,design,state}` directory shape (store does NOT exist yet — only named in the registry; `audience`+`copy` specified, `design`/`state` not)
-- [ ] ⬜ `_knowledge:integrate` skill — generalize `/guides:integrate`'s machinery (anchor contract + registry + integration ledger + idempotent read-before-write)
-- [ ] ⬜ Wire `_knowledge` into the consuming agent specs (research-lead→audience, copy-lead→copy, design-lead→design)
-- [ ] ⬜ **M3 migration:** `_guides/design` (18 guides) → `_knowledge/design`
-- [ ] ⬜ A `_knowledge` coverage enforcer (the `/guides:coverage` / `scan:scan-coverage` mold)
+### ✅ E5 — M1-d: the `_knowledge/` layer  *(LANDED 2026-06-05 · `3f9470d`→`6dcd318`)*
+The shared agent-grounding brain (ADR-0007): two-kind taxonomy (β DECIDE 0.86) — **library** (design) + **store** (audience, copy); `state` parked (per-sprint runtime, no canonical instance).
+- [x] Directory shape decided (β-blessed) — `_knowledge/{design,audience,copy}` built; `_domain.json` per domain → generated `_knowledge/registry.json`
+- [x] `scripts/knowledge/registry.js` — the domain-registry engine (generalizes `scripts/guides/registry.js`; deterministic, role-validated)
+- [x] `/knowledge:integrate` skill — library via `<!-- knowledge:<domain> role:<role> -->` marker blocks per consumer spec; store via producer-ref + contract README; ledger `knowledge-integration.jsonl` (idempotent, read-before-write)
+- [x] **M3 migration:** `_guides/design` (19 guides) → `_knowledge/design` (git mv + 137 ref-fixes incl. dead role names; 4 consumer marker blocks repointed); both manifest systems taught `_knowledge/`
+- [x] `/knowledge:coverage` + `scripts/checks/knowledge-coverage.js` (fail-closed, pure `evaluate()` + 9/9 bite-test) wired into `/scan:full`; store READMEs (audience/copy) + lead wiring
+- [x] Scan-gate PASS (independent agent, verified vs parent 11d54ec); ship-coverage GREEN; landed.
+**Also fixed in-flight:** 2 latent ship gaps (`scripts/skills` unshipped, `TRACKER.md` unclassified) + a `/fix:deep` cutover-ref cleanup (3 dead-role slugs; RCA: the alias table masks staleness → ED-026 enriched).
 
 ### 🅿️ E6 — ED-024: `org-map.json` → registry structural collapse  *(parked, own sprint)*
 - [ ] 🅿️ Collapse org-map's reporting-line structural view into the registry (`dispatchable_by`)
@@ -74,7 +77,7 @@ Skills resolve their persona from the registry at call time, never hardcode a ro
 ### 🟡 E8 — enforcer-debt hardening
 Rewrite-specific debt:
 - [x] **ED-023** — `adhoc-fail-override` REVIEWER_KEYS derives from the registry *(closed this session; ledger flipped to enforced)*
-- [ ] ⬜ **ED-026** — cutover-completeness gate (grep the imperative layer — scripts/paths/hooks/fixtures — for deleted-old-tree literals; fail closed)
+- [ ] ⬜ **ED-026** — cutover-completeness gate (grep the imperative layer — scripts/paths/hooks/fixtures — for deleted-old-tree literals; fail closed). **Enriched 2026-06-05 (/fix:deep):** the `role-aliases.js` back-compat table MASKS staleness — `manager-principles` + `role-parity` pass GREEN on stale data, so the gate must check RAW literals (not alias-resolved roles) and allowlist the legit exceptions (alias table, frozen `framework/releases/*`, `was:` fields, the ADR, migrated-from comments). Known live instances to clean: `_principles/registry.json` dead keys + `03-managers/` paths, `resonance-conversion-rubric`, role-registry `current_spec` (unread), the `00-alex/01-adhoc/02-oneshot/03-managers` surface. Learning `L-2026-06-05-alias-table-masks-cutover-staleness`.
 - [ ] ⬜ **ED-021** — heavy-skill lean-return dispatch contract (orchestrators hold envelopes, not full sub-output)
 - [ ] 🟡 **ED-022 / ED-025** — see E7 (sprint-path enforcers)
 Older framework debt (pre-rewrite, lower priority): ED-009 (shared repo-role resolver), ED-010 (lifecycle phases 3–5 skill gap), ED-011 (retro auto-trigger), ED-012 (DEV_SETUP day-zero), ED-013, ED-014, ED-015, ED-017, ED-018, ED-019, ED-020 — all `open`; triage in the final session or defer to the framework backlog.
@@ -88,11 +91,11 @@ Older framework debt (pre-rewrite, lower priority): ED-009 (shared repo-role res
 
 ## 🎯 FINAL SESSION — "blow everything out" target order
 
-1. **Finish E4** (the 6-line cleanup — likely landed before this session ends).
-2. **E5 — `_knowledge/` layer** — the one real remaining build. Start with the directory-shape decision (β/operator), then `_knowledge:integrate`, then wiring + the M3 guides migration + the coverage enforcer.
-3. **E6 — ED-024** — the parked org-map collapse, as its own scoped sprint (design the role-parity independent-witness first — Trap-A discipline).
-4. **E7 — ε runtime + ED-025/ED-022** — the sprint conductor (biggest, most-deferred; needs the ADR written when built).
-5. **E8 — ED-026 / ED-021** + triage the older EDs + the 3 RIs.
+1. ✅ **E4 finished** + landed (prior).
+2. ✅ **E5 — `_knowledge/` layer LANDED** (`6dcd318`, 2026-06-05) — directory-shape decided (β), `_knowledge:integrate` + coverage enforcer + M3 migration + store domains, scan-gate PASS.
+3. ⏳ **E6 — ED-024** — parked org-map collapse, its own scoped sprint (design the role-parity independent-witness first — Trap-A). **Launching as a parallel `/sprint:full` this session.**
+4. ⏳ **E7 — ε runtime + ED-025/ED-022** — the sprint conductor (biggest, most-deferred; ADR written as part of sprint-design). **Launching as a parallel `/sprint:full` this session** (operator authorized "all three").
+5. ⏳ **E8 — ED-026 / ED-021** + triage the older EDs + the 3 RIs. **Launching as a parallel `/sprint:full` this session.** ED-026 carries the enriched alias-masking scope (see E8).
 
 When E5–E7 close, the agent-system rewrite is **done** — and the durable form of this tracker (per the ROADMAP "epics-over-milestones" entry) becomes the standing planning instrument.
 
