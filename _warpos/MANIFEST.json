@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-05T19:20:42.645Z",
+  "generatedAt": "2026-06-05T20:09:47.625Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.13.1",
   "migrations": [],
@@ -105,8 +105,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "fcf67d040d1352173a5fb224901dd31c6e4334e8f5a17e28af1472fc256a30d9",
-      "installedSha": "fcf67d040d1352173a5fb224901dd31c6e4334e8f5a17e28af1472fc256a30d9"
+      "sha256": "95885f68584f8ddd4fd0403a9b04504de85d34d282ca0fb8acf244df6b8db1ee",
+      "installedSha": "95885f68584f8ddd4fd0403a9b04504de85d34d282ca0fb8acf244df6b8db1ee"
     },
     "USER_GUIDE.md": {
       "owner": "framework",
@@ -15419,8 +15419,8 @@
       "managed": true,
       "source": ".claude/commands/scan/full.md",
       "kind": "md",
-      "sha256": "056f104be9554a936273e5ec794d1423d6b43fbe164b8d592a8e2b082166fb3b",
-      "installedSha": "056f104be9554a936273e5ec794d1423d6b43fbe164b8d592a8e2b082166fb3b"
+      "sha256": "798062b2fcd22aa1fe573377c1a3c778cb11abc65d5f29ea280ed996f3f12bb2",
+      "installedSha": "798062b2fcd22aa1fe573377c1a3c778cb11abc65d5f29ea280ed996f3f12bb2"
     },
     ".claude/commands/scan/ingest-firewall.md": {
       "owner": "framework",
