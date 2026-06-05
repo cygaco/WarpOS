@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "0.13.1",
-  "installedCommit": "697b296b6be5da0e70b6fbaf45ac0c69d4129cd2",
-  "installedAt": "2026-06-05T03:57:57.370Z",
+  "installedCommit": "688b1e349098d7df5baf4e1ab794f4f7a743579e",
+  "installedAt": "2026-06-05T04:07:11.129Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -34,8 +34,8 @@
       "dest": ".claude/agents/_org/role-registry.json",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "9aec7092370a36bfc7fe8bb83f798dd49bdeda0eb65b07d7007a102b24711749",
-      "currentHashAtInstall": "9aec7092370a36bfc7fe8bb83f798dd49bdeda0eb65b07d7007a102b24711749",
+      "installedHash": "23a4de56e58a79d9e38392f0fcd52e1c64293719a11caf06f9262dfe18e21fb1",
+      "currentHashAtInstall": "23a4de56e58a79d9e38392f0fcd52e1c64293719a11caf06f9262dfe18e21fb1",
       "introducedIn": "0.0.0"
     },
     {
@@ -6024,8 +6024,8 @@
       "dest": "scripts/sprint/hook-points.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "a95241bc4d79d5f94be94b4a884fda7a0bbef6331b46215c2c9a0b3616c4217f",
-      "currentHashAtInstall": "a95241bc4d79d5f94be94b4a884fda7a0bbef6331b46215c2c9a0b3616c4217f",
+      "installedHash": "220d9d68c93a6a5b96cb041a65ca41e2ad793a912e3448f03c3c75e1f8f8bd80",
+      "currentHashAtInstall": "220d9d68c93a6a5b96cb041a65ca41e2ad793a912e3448f03c3c75e1f8f8bd80",
       "introducedIn": "0.0.0"
     },
     {
@@ -6164,8 +6164,8 @@
       "dest": "scripts/sprint/test-hook-points.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "124ac8f919b0dc73ee4f5e1561b6149fb1a8ccea64cbd2e74d8c841bcce6d251",
-      "currentHashAtInstall": "124ac8f919b0dc73ee4f5e1561b6149fb1a8ccea64cbd2e74d8c841bcce6d251",
+      "installedHash": "2e3dd50ae88b76eb170a99d8d81accbe79a3c2f2850595b6a91fd94e5865881e",
+      "currentHashAtInstall": "2e3dd50ae88b76eb170a99d8d81accbe79a3c2f2850595b6a91fd94e5865881e",
       "introducedIn": "0.0.0"
     },
     {

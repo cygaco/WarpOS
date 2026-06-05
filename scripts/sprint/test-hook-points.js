@@ -18,6 +18,7 @@ const {
   STEPS,
   load,
   loadRoleIds,
+  residencyOf,
   normalizeComposition,
   matchCondition,
   agentsForStep,
@@ -141,6 +142,19 @@ function baselineRows() {
   ok("orphan step (retro missing) → FAIL", validate({ rows: orphan }, REAL_IDS).errors.some((e) => /orphan step/.test(e)));
 
   ok("rows not an array → FAIL", !validate({ rows: "nope" }, REAL_IDS).ok);
+}
+
+// ── residency (β watch item — sprint-topology residency as a registry-row field) ──
+
+console.log("\nresidencyOf (real registry):");
+{
+  ok("alpha → persistent", residencyOf("alpha") === "persistent");
+  ok("beta → persistent", residencyOf("beta") === "persistent");
+  ok("epsilon → persistent", residencyOf("epsilon") === "persistent");
+  ok("quality-lead → ephemeral (default — manager, §8 B′)", residencyOf("quality-lead") === "ephemeral");
+  ok("director-of-engineering → ephemeral", residencyOf("director-of-engineering") === "ephemeral");
+  ok("frontend-builder → ephemeral", residencyOf("frontend-builder") === "ephemeral");
+  ok("unknown role → ephemeral (safe default)", residencyOf("ghost-role") === "ephemeral");
 }
 
 console.log(`\nResults: ${passes} passed, ${failures} failed.`);

@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-05T03:57:57.540Z",
+  "generatedAt": "2026-06-05T04:07:11.278Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.13.1",
   "migrations": [],
@@ -3305,8 +3305,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/sprint/hook-points.js",
-      "sha256": "a95241bc4d79d5f94be94b4a884fda7a0bbef6331b46215c2c9a0b3616c4217f",
-      "installedSha": "a95241bc4d79d5f94be94b4a884fda7a0bbef6331b46215c2c9a0b3616c4217f"
+      "sha256": "220d9d68c93a6a5b96cb041a65ca41e2ad793a912e3448f03c3c75e1f8f8bd80",
+      "installedSha": "220d9d68c93a6a5b96cb041a65ca41e2ad793a912e3448f03c3c75e1f8f8bd80"
     },
     "scripts/sprint/ids.js": {
       "owner": "framework",
@@ -3396,8 +3396,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/sprint/test-hook-points.js",
-      "sha256": "124ac8f919b0dc73ee4f5e1561b6149fb1a8ccea64cbd2e74d8c841bcce6d251",
-      "installedSha": "124ac8f919b0dc73ee4f5e1561b6149fb1a8ccea64cbd2e74d8c841bcce6d251"
+      "sha256": "2e3dd50ae88b76eb170a99d8d81accbe79a3c2f2850595b6a91fd94e5865881e",
+      "installedSha": "2e3dd50ae88b76eb170a99d8d81accbe79a3c2f2850595b6a91fd94e5865881e"
     },
     "scripts/sprint/test-plan-honors-registry-primary.js": {
       "owner": "framework",
@@ -16542,8 +16542,8 @@
       "managed": true,
       "source": ".claude/agents/_org/role-registry.json",
       "kind": "json",
-      "sha256": "9aec7092370a36bfc7fe8bb83f798dd49bdeda0eb65b07d7007a102b24711749",
-      "installedSha": "9aec7092370a36bfc7fe8bb83f798dd49bdeda0eb65b07d7007a102b24711749"
+      "sha256": "23a4de56e58a79d9e38392f0fcd52e1c64293719a11caf06f9262dfe18e21fb1",
+      "installedSha": "23a4de56e58a79d9e38392f0fcd52e1c64293719a11caf06f9262dfe18e21fb1"
     },
     ".claude/agents/_org/sprint-hook-points.json": {
       "owner": "framework",

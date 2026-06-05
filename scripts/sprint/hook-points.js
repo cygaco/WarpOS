@@ -54,15 +54,32 @@ function load(p = hookPointsPath()) {
   return readJson(p);
 }
 
+/** The roles object from the role-registry keystone (roles may be under .roles). */
+function loadRoles(p = roleRegistryPath()) {
+  const raw = readJson(p);
+  return raw && raw.roles && typeof raw.roles === "object" ? raw.roles : raw;
+}
+
 /** The set of real role ids from the role-registry keystone (the parity source). */
 function loadRoleIds(p = roleRegistryPath()) {
-  const raw = readJson(p);
-  // roles may live under .roles or be the top-level map; keep only objects that look
-  // like role rows (carry a tier/home/kind) so wrapper keys (schema/scrapped/…) drop.
-  const roles = raw && raw.roles && typeof raw.roles === "object" ? raw.roles : raw;
+  const roles = loadRoles(p);
+  // keep only objects that look like role rows (carry a tier/home/kind) so wrapper
+  // keys (schema/scrapped/…) drop.
   return Object.keys(roles).filter(
     (k) => roles[k] && typeof roles[k] === "object" && (roles[k].tier || roles[k].home || roles[k].kind),
   );
+}
+
+/**
+ * Sprint-topology residency of a role (β's load-bearing watch item): "persistent" iff
+ * the role-registry row says so, else "ephemeral" — the §8 B′ default (only the α+β+ε
+ * spine is persistent; managers materialize ephemerally per composition). A future §8b
+ * all-persistent pivot is then a one-field flip per manager row, not a rebuild.
+ */
+function residencyOf(role, roles = loadRoles()) {
+  const row = roles && roles[role];
+  const r = row && typeof row === "object" ? String(row.residency || "").toLowerCase() : "";
+  return r === "persistent" ? "persistent" : "ephemeral";
 }
 
 /** Normalize a sprint composition to { unit_types:Set, max_risk:string, domains:Set }. */
@@ -207,7 +224,9 @@ module.exports = {
   RISK_ORDER,
   MODES,
   load,
+  loadRoles,
   loadRoleIds,
+  residencyOf,
   normalizeComposition,
   matchCondition,
   agentsForStep,
