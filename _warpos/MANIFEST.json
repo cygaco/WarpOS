@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-05T23:29:44.948Z",
+  "generatedAt": "2026-06-05T23:33:24.010Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.13.1",
   "migrations": [],
@@ -2266,8 +2266,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/phase0-verify.js",
-      "sha256": "801026638e06677c62f5a40b731dca98b8a22e4dafd7284c91aeb64c2dea603a",
-      "installedSha": "801026638e06677c62f5a40b731dca98b8a22e4dafd7284c91aeb64c2dea603a"
+      "sha256": "1757f65d96bd27267d4d4293e1066db5adefc4f4ee1dd745e2016f680e6ce133",
+      "installedSha": "1757f65d96bd27267d4d4293e1066db5adefc4f4ee1dd745e2016f680e6ce133"
     },
     "scripts/points.js": {
       "owner": "framework",
@@ -2672,8 +2672,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/test-sprint.js",
-      "sha256": "d6bb3ae4c7efab9e5d953e5421bf2544c57ca4b4912122e7be98b0212ec03686",
-      "installedSha": "d6bb3ae4c7efab9e5d953e5421bf2544c57ca4b4912122e7be98b0212ec03686"
+      "sha256": "be98c4cdabc15cfc67df562aaab7977d082b81b88886526928f54e8898cc5848",
+      "installedSha": "be98c4cdabc15cfc67df562aaab7977d082b81b88886526928f54e8898cc5848"
     },
     "scripts/test-staged-drift-reconciler.js": {
       "owner": "framework",
@@ -16756,8 +16756,8 @@
       "managed": true,
       "source": ".claude/agents/_principles/registry.json",
       "kind": "json",
-      "sha256": "4bbbc4fc2a32c11d90f5eb1550db0dee506d0108bbd5997573a7af5fa77514e8",
-      "installedSha": "4bbbc4fc2a32c11d90f5eb1550db0dee506d0108bbd5997573a7af5fa77514e8"
+      "sha256": "34b2320422dfac41e7970f716b8f7fc3edca75cb812ca17c2f2e16d7ea8942f0",
+      "installedSha": "34b2320422dfac41e7970f716b8f7fc3edca75cb812ca17c2f2e16d7ea8942f0"
     },
     ".claude/agents/_org/org-map.json": {
       "owner": "framework",
@@ -16772,8 +16772,8 @@
       "managed": true,
       "source": ".claude/agents/_org/role-registry.json",
       "kind": "json",
-      "sha256": "30218bc8b48cf2f99f4cd65d451c1f15e96b7906e0de672bb078b0158f089715",
-      "installedSha": "30218bc8b48cf2f99f4cd65d451c1f15e96b7906e0de672bb078b0158f089715"
+      "sha256": "323309d1a766e83e03feaa761a56d0cc938431f7b99aea65a5d850285dd019f4",
+      "installedSha": "323309d1a766e83e03feaa761a56d0cc938431f7b99aea65a5d850285dd019f4"
     },
     ".claude/agents/_org/skill-hook-points.json": {
       "owner": "framework",
@@ -16796,8 +16796,8 @@
       "managed": true,
       "source": ".claude/agents/_evals/resonance-conversion-rubric.json",
       "kind": "json",
-      "sha256": "415a1f9958e4d59f0d7513394c62f79539d9b19fa4d5ff0f65a03b4d5cc0417b",
-      "installedSha": "415a1f9958e4d59f0d7513394c62f79539d9b19fa4d5ff0f65a03b4d5cc0417b"
+      "sha256": "935aeb2ba0ac58d5c285ce6c89236ab8a329d53e3567e99325d8c0ef5b427612",
+      "installedSha": "935aeb2ba0ac58d5c285ce6c89236ab8a329d53e3567e99325d8c0ef5b427612"
     },
     ".claude/agents/product/design-lead.md": {
       "owner": "framework",

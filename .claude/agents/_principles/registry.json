@@ -51,8 +51,8 @@
         "pivot"
       ]
     },
-    "product-designer": {
-      "spec": ".claude/agents/03-managers/product-designer.md",
+    "design-lead": {
+      "spec": ".claude/agents/product/design-lead.md",
       "inherits_from": "product-lead",
       "owned_principles": [
         "build-for-audience-incl-limitations",
@@ -74,8 +74,8 @@
         "cold-vs-warm-start"
       ]
     },
-    "research-insight-lead": {
-      "spec": ".claude/agents/03-managers/research-insight-lead.md",
+    "research-lead": {
+      "spec": ".claude/agents/growth/research-lead.md",
       "inherits_from": "director-of-product",
       "owned_principles": [
         "no-invented-data",
@@ -95,8 +95,8 @@
         "pivot"
       ]
     },
-    "director-of-qa": {
-      "spec": ".claude/agents/03-managers/director-of-qa.md",
+    "quality-lead": {
+      "spec": ".claude/agents/product/quality-lead.md",
       "inherits_from": "manager-principles-base",
       "owned_principles": [
         "product-priority-over-severity",
@@ -113,8 +113,8 @@
         "claims-boundary"
       ]
     },
-    "director-of-marketing": {
-      "spec": ".claude/agents/03-managers/director-of-marketing.md",
+    "director-of-growth": {
+      "spec": ".claude/agents/growth/director-of-growth.md",
       "inherits_from": "manager-principles-base",
       "owned_principles": [
         "copy-over-creative",
@@ -127,8 +127,8 @@
         "claims-boundary"
       ]
     },
-    "growth-lead": {
-      "spec": ".claude/agents/03-managers/growth-lead.md",
+    "marketing-lead": {
+      "spec": ".claude/agents/growth/marketing-lead.md",
       "inherits_from": "director-of-marketing",
       "owned_principles": [
         "eq-scoring",
@@ -161,8 +161,8 @@
         "message-first"
       ]
     },
-    "web-conversion-designer": {
-      "spec": ".claude/agents/03-managers/web-conversion-designer.md",
+    "conversion-lead": {
+      "spec": ".claude/agents/growth/conversion-lead.md",
       "inherits_from": "director-of-marketing",
       "owned_principles": [
         "conversion-hierarchy"
@@ -210,30 +210,30 @@
     "ftue-nux": { "name": "First-Time Experience is Sacred (FTUE/NUX)", "rooted_in": "product-lead", "note": "Execution-tier principle: MOVED to the Product Lead at S2.1 (its natural home, R4) — the Lead agent now exists to carry it. Formerly rooted on the Director of Product (with a moves_to annotation) until this carrier existed." },
     "cold-vs-warm-start": { "name": "Cold Start vs Warm Start", "rooted_in": "product-lead", "note": "Execution-tier principle: MOVED to the Product Lead at S2.1 (R4) — the Lead agent now exists to carry it. Formerly rooted on the Director of Product until this carrier existed." },
 
-    "product-priority-over-severity": { "name": "Product Priority over Severity", "rooted_in": "director-of-qa", "note": "QA's natural home (DoQA #1). Formerly ALSO carried on DoP as its #7 (removed in S0.1); the DoQA cross-reference now uses this slug, not the DoP ordinal." },
-    "golden-first": { "name": "Golden First (by path and by user)", "rooted_in": "director-of-qa" },
-    "size-testing-scope-depth": { "name": "Size Testing by Scope × Depth, Deliberately", "rooted_in": "director-of-qa" },
-    "gate-ordered-phases": { "name": "Gate in Ordered Phases; a Blocker Stops the Line", "rooted_in": "director-of-qa" },
-    "test-real-world": { "name": "Test the Real World, Not the Happy Demo", "rooted_in": "director-of-qa" },
-    "acceptance-subjective": { "name": "Acceptance Is Subjective Too", "rooted_in": "director-of-qa" },
+    "product-priority-over-severity": { "name": "Product Priority over Severity", "rooted_in": "quality-lead", "note": "QA's natural home (DoQA #1). Formerly ALSO carried on DoP as its #7 (removed in S0.1); the DoQA cross-reference now uses this slug, not the DoP ordinal." },
+    "golden-first": { "name": "Golden First (by path and by user)", "rooted_in": "quality-lead" },
+    "size-testing-scope-depth": { "name": "Size Testing by Scope × Depth, Deliberately", "rooted_in": "quality-lead" },
+    "gate-ordered-phases": { "name": "Gate in Ordered Phases; a Blocker Stops the Line", "rooted_in": "quality-lead" },
+    "test-real-world": { "name": "Test the Real World, Not the Happy Demo", "rooted_in": "quality-lead" },
+    "acceptance-subjective": { "name": "Acceptance Is Subjective Too", "rooted_in": "quality-lead" },
 
-    "build-for-audience-incl-limitations": { "name": "Build for the Audience, Including Their Limitations", "rooted_in": "product-designer", "note": "Craft-tier (Product Designer): the design expression of the inherited audience-is-king — design for the cohort's concrete limitations (elderly -> bigger/simpler; low tech-literacy -> no jargon), not just an idealized user." },
-    "kiss": { "name": "KISS (Keep It Simple)", "rooted_in": "product-designer", "note": "Craft-tier (Product Designer): the layout/interaction expression of the inherited clarity-is-king — the simplest interface that does the job; subtract before adding." },
-    "clear-iconography": { "name": "Clear Iconography & Visual Language", "rooted_in": "product-designer", "note": "Craft-tier (Product Designer): every icon/label/state reads unambiguously to the target audience; consistent visual language (pairs with the design-quality gauntlet's component-usage + visual-hierarchy checks)." },
+    "build-for-audience-incl-limitations": { "name": "Build for the Audience, Including Their Limitations", "rooted_in": "design-lead", "note": "Craft-tier (Product Designer): the design expression of the inherited audience-is-king — design for the cohort's concrete limitations (elderly -> bigger/simpler; low tech-literacy -> no jargon), not just an idealized user." },
+    "kiss": { "name": "KISS (Keep It Simple)", "rooted_in": "design-lead", "note": "Craft-tier (Product Designer): the layout/interaction expression of the inherited clarity-is-king — the simplest interface that does the job; subtract before adding." },
+    "clear-iconography": { "name": "Clear Iconography & Visual Language", "rooted_in": "design-lead", "note": "Craft-tier (Product Designer): every icon/label/state reads unambiguously to the target audience; consistent visual language (pairs with the design-quality gauntlet's component-usage + visual-hierarchy checks)." },
 
-    "no-invented-data": { "name": "No Invented Data", "rooted_in": "research-insight-lead", "note": "Research-craft-tier: the sharpening of the inherited evidence-over-invention at the audience-research altitude — never fabricate psychographics/quotes/metrics; synthetic extrapolations are labelled synthetic:true, never presented as observed." },
-    "confidence-scored": { "name": "Confidence-Scored", "rooted_in": "research-insight-lead", "note": "Research-craft-tier: every claim + dossier carries a 0-1 confidence; low confidence is a first-class result, never rounded up (audience_dossier.confidence)." },
-    "no-pii": { "name": "No PII (segment-level only)", "rooted_in": "research-insight-lead", "note": "Research-craft-tier: dossiers are segment-level with no personally-identifiable info (pii_free:true) — the line between audience research and surveillance (FINAL-PLAN anti-surveillance guardrail)." },
+    "no-invented-data": { "name": "No Invented Data", "rooted_in": "research-lead", "note": "Research-craft-tier: the sharpening of the inherited evidence-over-invention at the audience-research altitude — never fabricate psychographics/quotes/metrics; synthetic extrapolations are labelled synthetic:true, never presented as observed." },
+    "confidence-scored": { "name": "Confidence-Scored", "rooted_in": "research-lead", "note": "Research-craft-tier: every claim + dossier carries a 0-1 confidence; low confidence is a first-class result, never rounded up (audience_dossier.confidence)." },
+    "no-pii": { "name": "No PII (segment-level only)", "rooted_in": "research-lead", "note": "Research-craft-tier: dossiers are segment-level with no personally-identifiable info (pii_free:true) — the line between audience research and surveillance (FINAL-PLAN anti-surveillance guardrail)." },
 
-    "copy-over-creative": { "name": "Copy over Creative", "rooted_in": "director-of-marketing", "note": "Marketing domain (S2.2): copy is the foundation, creative carries it; the deliverable is a winning MESSAGE (transmutable across formats), not a winning ad. 'Ugly ads = pretty profits.'" },
-    "message-first": { "name": "Message-First", "rooted_in": "director-of-marketing", "note": "Marketing domain (S2.2): everything derives from one winning message built on contrast + 5-layer depth (thought->emotion->belief->identity->consciousness). The message_brief is the spine; the market_promise stays inside the claims-boundary. The Marketing application of inherited clarity-is-king — NOT a second clarity slug (dedup pass §11.A)." },
-    "eq-scoring": { "name": "EQ Scoring -> SCALE/TEST/SKIP", "rooted_in": "growth-lead", "note": "Growth execution-tier: EQ = Product x Ads x Funnel x LTV (1-10 each + justification); 9-10 SCALE, 5-7 TEST, <5 SKIP. Skeptical/decisive; missing live data => downgrade, never certify SCALE; unverifiable => ASSUMPTION." },
-    "money-loves-speed": { "name": "Money Loves Speed", "rooted_in": "growth-lead", "note": "Growth execution-tier: the tightest feedback loop wins; assume nothing, only data is real; fan out the WINNER (not guesses) via growth:iterate / karpathy:run." },
-    "ltv-cac": { "name": "LTV:CAC >= 3", "rooted_in": "growth-lead", "note": "Growth execution-tier: judge Ads + Funnel + back-end LTV; target >=3:1 (high-ticket 7-10:1); margin math shown not asserted; the funnel is a force multiplier on every creative." },
+    "copy-over-creative": { "name": "Copy over Creative", "rooted_in": "director-of-growth", "note": "Marketing domain (S2.2): copy is the foundation, creative carries it; the deliverable is a winning MESSAGE (transmutable across formats), not a winning ad. 'Ugly ads = pretty profits.'" },
+    "message-first": { "name": "Message-First", "rooted_in": "director-of-growth", "note": "Marketing domain (S2.2): everything derives from one winning message built on contrast + 5-layer depth (thought->emotion->belief->identity->consciousness). The message_brief is the spine; the market_promise stays inside the claims-boundary. The Marketing application of inherited clarity-is-king — NOT a second clarity slug (dedup pass §11.A)." },
+    "eq-scoring": { "name": "EQ Scoring -> SCALE/TEST/SKIP", "rooted_in": "marketing-lead", "note": "Growth execution-tier: EQ = Product x Ads x Funnel x LTV (1-10 each + justification); 9-10 SCALE, 5-7 TEST, <5 SKIP. Skeptical/decisive; missing live data => downgrade, never certify SCALE; unverifiable => ASSUMPTION." },
+    "money-loves-speed": { "name": "Money Loves Speed", "rooted_in": "marketing-lead", "note": "Growth execution-tier: the tightest feedback loop wins; assume nothing, only data is real; fan out the WINNER (not guesses) via growth:iterate / karpathy:run." },
+    "ltv-cac": { "name": "LTV:CAC >= 3", "rooted_in": "marketing-lead", "note": "Growth execution-tier: judge Ads + Funnel + back-end LTV; target >=3:1 (high-ticket 7-10:1); margin math shown not asserted; the funnel is a force multiplier on every creative." },
     "argument-not-copy": { "name": "Argument, Not Copy (Agora/E5)", "rooted_in": "copy-lead", "note": "Copy execution-tier: persuade by the magnificence of the argument, not the words; lead to one North-Star belief; introduce + prove a unique mechanism; marketing = belief-change work (install/remove beliefs first); verbs layered later in editing." },
     "hooks-are-90": { "name": "Hooks Are 90%", "rooted_in": "copy-lead", "note": "Copy execution-tier: the hook is ~90% of the effort (PIG / scroll-stopper test), grounded in real voice-of-customer; mine the philosophy/framework, not the literal copy." },
     "chief-coherence": { "name": "Chief Coherence", "rooted_in": "copy-lead", "note": "Copy execution-tier: owns the editor-in-chief pass — copy vs avatar/proof/beliefs/levels-of-consciousness/objections + chiefing discipline (read-aloud greased-slide, grade <=8, <=6 'I believe that…' beliefs, no decorative images, correct caps). Fails => not done. The named gate behind the chief-coherence enforcer." },
-    "conversion-hierarchy": { "name": "Conversion Hierarchy", "rooted_in": "web-conversion-designer", "note": "Web craft-tier: one job + one obvious CTA; hook->proof->CTA flow; mobile-first; every element installs a belief / removes an objection; respects the ad->lander->offer journey. Defers formal token/accessibility/handoff approval to the design-quality gauntlet. The conversion-specific application of inherited clarity-is-king — NOT a second clarity slug." },
+    "conversion-hierarchy": { "name": "Conversion Hierarchy", "rooted_in": "conversion-lead", "note": "Web craft-tier: one job + one obvious CTA; hook->proof->CTA flow; mobile-first; every element installs a belief / removes an objection; respects the ad->lander->offer journey. Defers formal token/accessibility/handoff approval to the design-quality gauntlet. The conversion-specific application of inherited clarity-is-king — NOT a second clarity slug." },
 
     "contract-first-construction": { "name": "Contract-First Construction", "rooted_in": "director-of-engineering", "summary": "What gets built derives from a contract (the build_spec, highest precedence, realizing the design_brief), not from vibes; contracts declare precedence so per-domain gauntlets can't deadlock. A build_spec naming a component with no ui/ source is a contract defect, not a license to hand-roll." },
     "enforcer-over-checklist": { "name": "Enforcer over Checklist", "rooted_in": "director-of-engineering", "summary": "Every engineering rule names what makes a violation self-detecting (hook/scan/test/gate that exits non-zero); enforcers must REJECT not lint and fail closed (runner-error -> non-zero, malformed -> fail-closed). The engineering application of CLAUDE.md Policy & Enforcement Hygiene." },

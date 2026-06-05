@@ -52,14 +52,14 @@ const checks = [
   {
     name: "gamma references dispatch guide",
     ok: fileContains(
-      ".claude/agents/00-alex/gamma.md",
+      ".claude/agents/president/gamma.md",
       "paths.agentDispatchGuide",
     ),
   },
   {
     name: "delta references dispatch guide",
     ok: fileContains(
-      ".claude/agents/00-alex/delta.md",
+      ".claude/agents/president/delta.md",
       "paths.agentDispatchGuide",
     ),
   },

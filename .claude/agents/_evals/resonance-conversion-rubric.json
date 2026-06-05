@@ -14,11 +14,11 @@
   "judges": {
     "message-clarity": "copy-lead",
     "proof-strength": "copy-lead",
-    "audience-specificity": "research-insight-lead",
-    "visual-hierarchy": "web-conversion-designer",
+    "audience-specificity": "research-lead",
+    "visual-hierarchy": "conversion-lead",
     "objection-handling": "copy-lead",
-    "conversion-hypothesis": "growth-lead",
-    "_arbiter": "director-of-marketing",
+    "conversion-hypothesis": "marketing-lead",
+    "_arbiter": "director-of-growth",
     "_note": "Per-dimension judge applies its owned principle. The Director of Marketing arbitrates a split or an ARBITRATION-NEEDED; β only on cross-domain conflict / ship gate."
   },
   "dimensions": [
