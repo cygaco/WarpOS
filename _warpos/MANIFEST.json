@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-05T05:24:54.820Z",
+  "generatedAt": "2026-06-05T05:32:15.604Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.13.1",
   "migrations": [],
@@ -4708,6 +4708,13 @@
       "sha256": "5bcaa5188f6e3466b75560d7d55baf7d6f6d84b36214a8617be15d266d4379c9",
       "installedSha": "5bcaa5188f6e3466b75560d7d55baf7d6f6d84b36214a8617be15d266d4379c9"
     },
+    "scripts/dispatch/registry-roles.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/dispatch/registry-roles.js",
+      "sha256": "9edfd29ec6ea9829d6d9edc53ac6f4557b4e4dc74870519d65b6c041d6dd8e1e",
+      "installedSha": "9edfd29ec6ea9829d6d9edc53ac6f4557b4e4dc74870519d65b6c041d6dd8e1e"
+    },
     "scripts/dispatch/required-fallback.js": {
       "owner": "framework",
       "managed": true,
@@ -4735,6 +4742,13 @@
       "source": "scripts/dispatch/state.js",
       "sha256": "88892730cf5bbea6efeae1016ebc137296fdbb03218ecd363fad8575c490bf28",
       "installedSha": "88892730cf5bbea6efeae1016ebc137296fdbb03218ecd363fad8575c490bf28"
+    },
+    "scripts/dispatch/test-registry-roles.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/dispatch/test-registry-roles.js",
+      "sha256": "f5e250fa7431ee0c3ab7726ecbe98a463c7c2d6e356618d0ba2d6645de5a302f",
+      "installedSha": "f5e250fa7431ee0c3ab7726ecbe98a463c7c2d6e356618d0ba2d6645de5a302f"
     },
     "scripts/deps/admission.js": {
       "owner": "framework",

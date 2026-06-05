@@ -27,7 +27,7 @@
     "requirements_engine": 12,
     "paths_engine": 4,
     "sprint_engine": 39,
-    "dispatch_engine": 18,
+    "dispatch_engine": 20,
     "check_runner_tool": 4,
     "docs_tool": 1,
     "events_tool": 1,
@@ -56,7 +56,7 @@
     "module_scope": 1,
     "framework_doc": 3
   },
-  "total": 1023,
+  "total": 1025,
   "assets": {
     "agent": [
       {
@@ -7824,6 +7824,18 @@
         "replaces": null
       },
       {
+        "id": "dispatch_engine.registry-roles.js",
+        "src": "scripts/dispatch/registry-roles.js",
+        "dest": "scripts/dispatch/registry-roles.js",
+        "kind": "dispatch_engine",
+        "sha256": "9edfd29ec6ea9829d6d9edc53ac6f4557b4e4dc74870519d65b6c041d6dd8e1e",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
         "id": "dispatch_engine.required-fallback.js",
         "src": "scripts/dispatch/required-fallback.js",
         "dest": "scripts/dispatch/required-fallback.js",
@@ -7865,6 +7877,18 @@
         "dest": "scripts/dispatch/state.js",
         "kind": "dispatch_engine",
         "sha256": "88892730cf5bbea6efeae1016ebc137296fdbb03218ecd363fad8575c490bf28",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "dispatch_engine.test-registry-roles.js",
+        "src": "scripts/dispatch/test-registry-roles.js",
+        "dest": "scripts/dispatch/test-registry-roles.js",
+        "kind": "dispatch_engine",
+        "sha256": "f5e250fa7431ee0c3ab7726ecbe98a463c7c2d6e356618d0ba2d6645de5a302f",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",

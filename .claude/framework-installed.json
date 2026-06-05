@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "0.13.1",
-  "installedCommit": "b988411aa1e10297a05067b885dce2e0eee791e0",
-  "installedAt": "2026-06-05T05:24:54.650Z",
+  "installedCommit": "2e859d76a9806c5dda35e6a4bf7a65da7d547ed5",
+  "installedAt": "2026-06-05T05:32:15.449Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -6439,6 +6439,16 @@
       "introducedIn": "0.0.0"
     },
     {
+      "id": "dispatch_engine.registry-roles.js",
+      "kind": "dispatch_engine",
+      "dest": "scripts/dispatch/registry-roles.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "9edfd29ec6ea9829d6d9edc53ac6f4557b4e4dc74870519d65b6c041d6dd8e1e",
+      "currentHashAtInstall": "9edfd29ec6ea9829d6d9edc53ac6f4557b4e4dc74870519d65b6c041d6dd8e1e",
+      "introducedIn": "0.0.0"
+    },
+    {
       "id": "dispatch_engine.required-fallback.js",
       "kind": "dispatch_engine",
       "dest": "scripts/dispatch/required-fallback.js",
@@ -6476,6 +6486,16 @@
       "mergeStrategy": "replace_if_unmodified",
       "installedHash": "88892730cf5bbea6efeae1016ebc137296fdbb03218ecd363fad8575c490bf28",
       "currentHashAtInstall": "88892730cf5bbea6efeae1016ebc137296fdbb03218ecd363fad8575c490bf28",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "dispatch_engine.test-registry-roles.js",
+      "kind": "dispatch_engine",
+      "dest": "scripts/dispatch/test-registry-roles.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "f5e250fa7431ee0c3ab7726ecbe98a463c7c2d6e356618d0ba2d6645de5a302f",
+      "currentHashAtInstall": "f5e250fa7431ee0c3ab7726ecbe98a463c7c2d6e356618d0ba2d6645de5a302f",
       "introducedIn": "0.0.0"
     },
     {
