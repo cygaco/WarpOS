@@ -58,16 +58,14 @@ const NAME = "adhoc-fail-override";
 // the role-registry (ED-023) — a reviewer rename updates the registry and these keys with
 // it, so the override check can never silently drop a renamed reviewer. Falls back to the
 // literal 4 if the registry is unreadable (the check itself stays fail-closed elsewhere).
-const REVIEWER_KEYS = Object.freeze(deriveReviewerKeys());
-function deriveReviewerKeys() {
-  try {
-    const keys = require("../dispatch/registry-roles").reviewerGateKeys();
-    if (Array.isArray(keys) && keys.length) return keys;
-  } catch {
-    /* registry unreadable → fall back to the literal */
-  }
-  return ["backend_reviewer", "frontend_reviewer", "qa_reviewer", "security_reviewer"];
-}
+const registryRoles = require("../dispatch/registry-roles");
+const REVIEWER_KEYS = Object.freeze(
+  registryRoles.deriveOrFallback(
+    () => registryRoles.reviewerGateKeys(),
+    ["backend_reviewer", "frontend_reviewer", "qa_reviewer", "security_reviewer"],
+    "adhoc-fail-override.REVIEWER_KEYS",
+  ),
+);
 
 // Declared-success status tokens across the three RESULT schemas: GAMMA uses
 // "pass"; DELTA (oneshot) + EPSILON (sprint) use "complete". A binding reviewer

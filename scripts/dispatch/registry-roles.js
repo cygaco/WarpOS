@@ -118,8 +118,33 @@ function reviewerGateKeys(roles = loadRoles()) {
     .sort();
 }
 
+/**
+ * Derive a role list from the registry, falling back LOUDLY to a literal if the derive
+ * throws or returns empty (β: a silent fallback masks a broken derivation = lying). The
+ * literal is the recovery net; its use ALWAYS warns to stderr — never silent. This is the
+ * required shape for every v0.2 consumer rewire.
+ */
+function deriveOrFallback(deriveFn, literal, label) {
+  try {
+    const v = deriveFn();
+    const nonEmpty = v && (Array.isArray(v) ? v.length > 0 : Object.keys(v).length > 0);
+    if (nonEmpty) return v;
+    throw new Error("registry derive returned empty");
+  } catch (e) {
+    try {
+      process.stderr.write(
+        `[registry-roles] WARN: '${label}' fell back to its literal — registry derive failed: ${e.message}\n`,
+      );
+    } catch {
+      /* ignore stderr write failure */
+    }
+    return literal;
+  }
+}
+
 module.exports = {
   registryPath,
+  deriveOrFallback,
   loadRegistry,
   loadRoles,
   roleIds,

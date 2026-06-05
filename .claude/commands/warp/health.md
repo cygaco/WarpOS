@@ -63,12 +63,12 @@ If flagged: YELLOW — "Reconcile via `SendMessage {type:\"shutdown_request\"}` 
 
 ### 4. Agent System
 Check `.claude/agents/` has:
-- `00-alex/alpha.md` — orchestrator
-- `00-alex/beta.md` — judgment model
-- `00-alex/gamma.md` — adhoc builder
-- `00-alex/delta.md` — oneshot runner
-- `01-adhoc/` — adhoc mode agents
-- `02-oneshot/` — oneshot mode agents
+- `president/alpha.md` — orchestrator
+- `president/beta.md` — judgment model
+- `president/gamma.md` — adhoc builder
+- `president/delta.md` — oneshot runner
+- `president/.system/adhoc/` — adhoc mode agents
+- `president/.system/oneshot/` — oneshot mode agents
 
 If alpha.md missing: RED — "Core agent missing."
 If any sub-agents missing: YELLOW — "Some build modes won't work fully."

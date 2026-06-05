@@ -80,5 +80,26 @@ function tryRequire(p) { try { return require(p); } catch { return null; } }
   }
 }
 
+// ── (3) deriveOrFallback — the loud-fallback contract (β requirement) ─────────
+
+console.log("\nderiveOrFallback (loud fallback):");
+{
+  ok("returns the derived value when non-empty", eq(R.deriveOrFallback(() => ["a", "b"], ["x"], "t"), ["a", "b"]));
+
+  const orig = process.stderr.write.bind(process.stderr);
+  let warned = "";
+  process.stderr.write = (s) => { warned += s; return true; };
+  const fb = R.deriveOrFallback(() => { throw new Error("boom"); }, ["lit"], "T-LABEL");
+  process.stderr.write = orig;
+  ok("falls back to the literal on throw", eq(fb, ["lit"]));
+  ok("the fallback is LOUD (warns to stderr, names the label)", /WARN[\s\S]*T-LABEL/.test(warned), JSON.stringify(warned));
+
+  let warned2 = "";
+  process.stderr.write = (s) => { warned2 += s; return true; };
+  const fb2 = R.deriveOrFallback(() => [], ["lit2"], "EMPTY-LABEL");
+  process.stderr.write = orig;
+  ok("empty derive → loud fallback too", eq(fb2, ["lit2"]) && /EMPTY-LABEL/.test(warned2));
+}
+
 console.log(`\nResults: ${passes} passed, ${failures} failed.`);
 process.exit(failures === 0 ? 0 : 1);

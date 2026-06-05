@@ -15,7 +15,7 @@ Run a full structural audit of a WarpOS install:
 - `.claude/agents/`, `.claude/commands/`, `scripts/hooks/` exist and non-empty
 - `.claude/framework-manifest.json`, `version.json` present
 - `manifest.warpos.installed === true`, `warpos.version` is semver
-- At least one agent file under `agents/00-alex/`
+- At least one agent file under `agents/president/`
 
 ## Input
 
@@ -52,7 +52,7 @@ not a WarpOS-installed repo (no .claude/manifest.json) — run /warp:setup first
 
 ```bash
 $ node scripts/check/install.js | tail -3
-OK    at least one agent under agents/00-alex
+OK    at least one agent under agents/president
 # 12/12 passed
 ```
 

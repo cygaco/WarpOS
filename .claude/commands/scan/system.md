@@ -46,9 +46,9 @@ These are the canonical WarpOS system categories. Scan each, produce a list, com
 - Scan: top-level `.md` files with `identity` or `doctrine` keywords in frontmatter.
 
 ### 2. Agents
-- `paths.agents/00-alex/*.md` — core team (alpha, beta, gamma, delta)
-- `paths.agents/01-adhoc/**/*.md` — adhoc-mode build-chain agents
-- `paths.agents/02-oneshot/**/*.md` — oneshot-mode build-chain agents
+- `paths.agents/president/*.md` — president faces (alpha, beta, gamma, delta, epsilon)
+- `paths.agents/president/.system/adhoc/**/*.md` — adhoc-mode build-chain agents
+- `paths.agents/president/.system/oneshot/**/*.md` — oneshot-mode build-chain agents
 - `paths.agentSystem/*` — shared agent system files (protocol, lexicon, policy)
 - `paths.betaSystem/*` — Beta's judgment model
 
