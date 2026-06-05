@@ -11,7 +11,7 @@
  * Builds to runtime/notes/wave2-s2.3-design-quality-wiring.md (the two-lane design).
  * Builder-agnostic by construction: it keys on the rendered result + the static scan
  * of src/components|src/app, never on who authored the UI (frontend-builder /
- * web-conversion-designer / a growth skill).
+ * conversion-lead / a growth skill).
  *
  * Two lanes — BOTH must pass for a design unit to clear the gate:
  *   - LANE 1 STATIC (deterministic, already exists, fail-closed):

@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-05T22:20:36.628Z",
+  "generatedAt": "2026-06-05T22:41:15.858Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.13.1",
   "migrations": [],
@@ -4940,8 +4940,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/design-quality-gate.js",
-      "sha256": "bd87cc47896aacb2057e856874afa92fb3972796c642f0d9690c7725153a48eb",
-      "installedSha": "bd87cc47896aacb2057e856874afa92fb3972796c642f0d9690c7725153a48eb"
+      "sha256": "2470bd1e264eba824d29f39e7066e8e4e144a5d5f835a78a3a34784850665d2c",
+      "installedSha": "2470bd1e264eba824d29f39e7066e8e4e144a5d5f835a78a3a34784850665d2c"
     },
     "scripts/checks/design-quality-gate.test.js": {
       "owner": "framework",
@@ -5136,8 +5136,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/resonance-runner.js",
-      "sha256": "625beefaa54efb862fb81509530cc3f1b216f2707f80e9cfe555c7a7b52e733c",
-      "installedSha": "625beefaa54efb862fb81509530cc3f1b216f2707f80e9cfe555c7a7b52e733c"
+      "sha256": "610e7dacdaa323eca173762f010206b2aff335f481fd4904dc1e037df74ff282",
+      "installedSha": "610e7dacdaa323eca173762f010206b2aff335f481fd4904dc1e037df74ff282"
     },
     "scripts/checks/resonance-runner.test.js": {
       "owner": "framework",
@@ -16786,8 +16786,8 @@
       "managed": true,
       "source": ".claude/agents/product/quality/design-quality.md",
       "kind": "md",
-      "sha256": "e9a5e8617f88e73374b12bf59ef26fc89008aa51fd50c70b414a8fde4d316a1c",
-      "installedSha": "e9a5e8617f88e73374b12bf59ef26fc89008aa51fd50c70b414a8fde4d316a1c"
+      "sha256": "6283e9363ea19d5f4671025d2af54d0bafdfe5cbfea32b2b6608c945b87fdb53",
+      "installedSha": "6283e9363ea19d5f4671025d2af54d0bafdfe5cbfea32b2b6608c945b87fdb53"
     },
     ".claude/agents/product/quality/qa-reviewer.md": {
       "owner": "framework",

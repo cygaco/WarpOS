@@ -14,8 +14,8 @@
  * rubric is the source of truth (6 dimensions, 0-4 scale, per-dimension judge,
  * mechanical sub-checks). This runner owns the **mechanical fail-closed floor** +
  * the **anti-generic overall rule**; the per-dimension JUDGMENT scores come from the
- * judge agents (copy-lead / research-insight-lead / web-conversion-designer /
- * growth-lead) and are passed in on the artifact as `dimension_scores`.
+ * judge agents (copy-lead / research-lead / conversion-lead /
+ * marketing-lead) and are passed in on the artifact as `dimension_scores`.
  *
  * THE OVERALL RULE (rubric `scoring.overall_rule`, the anti-'valid-but-generic' rule):
  *   PASS iff EVERY required dimension scores >= 3 AND no mechanical floor hard-fails.
