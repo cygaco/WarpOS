@@ -101,5 +101,38 @@ console.log("\nderiveOrFallback (loud fallback):");
   ok("empty derive → loud fallback too", eq(fb2, ["lit2"]) && /EMPTY-LABEL/.test(warned2));
 }
 
+// ── (4) ED-024 org-roles collapse — buildChainDoerRoles/domainRoles derive from
+//        the registry, gauntlet members stay org-map-sourced ────────────────────
+console.log("\nED-024 org-roles registry-derivation (the collapse cut-safety):");
+{
+  const OR = tryRequire("./org-roles");
+  if (OR) {
+    const bcd = OR.buildChainDoerRoles();
+    // build-chain doers now come from the registry (build_chain:true). Every
+    // registry build_chain role MUST appear (the collapse's whole point — the old
+    // org-map roster omitted the security pod + fixers + stub-scaffold).
+    const regBuildChain = R.buildChainRoles();
+    const missingBC = regBuildChain.filter((r) => !bcd.has(r));
+    ok("buildChainDoerRoles ⊇ registry build_chain set (security pod + fixers included)", missingBC.length === 0, "missing: " + missingBC.join(","));
+    // gauntlet members are still folded in (review-orchestration roster preserved).
+    ok("buildChainDoerRoles still includes the code-qc gauntlet reviewers", ["frontend-reviewer", "backend-reviewer", "qa-reviewer", "security-reviewer"].every((r) => bcd.has(r)), [...bcd].join(","));
+
+    // domainRoles now derives from registry home ∈ product-studio domains. It must
+    // carry the LIVE leads/directors (not the stale pre-rename names) and must NOT
+    // carry a scrapped/stale name like director-of-marketing/product-designer.
+    const dr = OR.domainRoles();
+    ok("domainRoles carries LIVE leads (director-of-growth, research-lead, quality-lead)", ["director-of-growth", "research-lead", "quality-lead"].every((r) => dr.has(r)), [...dr].sort().join(","));
+    ok("domainRoles has NO stale pre-rename names (director-of-marketing/product-designer/research-insight-lead)", !["director-of-marketing", "product-designer", "research-insight-lead", "qa-lead", "growth-lead", "web-conversion-designer", "director-of-product-management"].some((r) => dr.has(r)), [...dr].sort().join(","));
+    ok("domainRoles excludes faces + _system tools (president/_system homes)", !["alpha", "beta", "gamma", "delta", "epsilon", "learner", "stub-scaffold"].some((r) => dr.has(r)), [...dr].sort().join(","));
+
+    // gammaOnlyTypes = build-chain doers ∪ static augment — the gate set must
+    // still gate every registry build_chain doer (no gate hole post-collapse).
+    const got = OR.gammaOnlyTypes();
+    ok("gammaOnlyTypes gates every registry build_chain doer (no gate hole)", regBuildChain.every((r) => got.has(r)), regBuildChain.filter((r) => !got.has(r)).join(","));
+  } else {
+    console.log("  ..  org-roles not importable — skipped");
+  }
+}
+
 console.log(`\nResults: ${passes} passed, ${failures} failed.`);
 process.exit(failures === 0 ? 0 : 1);
