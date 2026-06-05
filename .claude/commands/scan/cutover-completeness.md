@@ -4,7 +4,7 @@ description: ED-026 cutover gate — greps the IMPERATIVE layer + keystone regis
 
 # /scan:cutover-completeness — Did the rename actually finish?
 
-A tree-wide rename/cutover (ADR-0007: the `00-alex/01-adhoc/02-oneshot/03-managers` tree → `president/engineering/product/growth/_system`, plus the role renames `product-designer`→`design-lead`, `web-conversion-designer`→`conversion-lead`, `research-insight-lead`→`research-lead`, `growth-lead`→`marketing-lead`) is only **done** when the **imperative layer** is migrated too — runtime path consumers, hooks, the paths registry + fallback tables, fixtures, and the keystone registries.
+A tree-wide rename/cutover (ADR-0007: the `00-alex/01-adhoc/02-oneshot/03-managers` tree → `president/engineering/product/growth/_system`, plus the role renames `product-designer`→`design-lead`, `web-conversion-designer`→`conversion-lead`, `research-insight-lead`→`research-lead`, `growth-lead`→`marketing-lead`) is only **done** when the **imperative layer** is migrated too — runtime path consumers, hooks, the paths registry + fallback tables, fixtures, and the keystone registries. <!-- stale-ok: this gate documents the renamed-away role names it greps for; naming them is its purpose, not a stale dispatch -->
 
 `/scan:role-parity` does **not** cover this. It asserts the declarative role↔spec bijection — and it proved 33/33 GREEN while 21 oneshot-δ scripts + the `paths.js` fallback table still pointed at the deleted tree (δ would ENOENT-crash mid-run). **Worse:** `scripts/hooks/lib/role-aliases.js` resolves old→new, so `manager-principles` + `role-parity` scan GREEN on **stale registry data** — the staleness is invisible (`L-2026-06-05-alias-table-masks-cutover-staleness`).
 
@@ -22,7 +22,7 @@ node scripts/checks/cutover-completeness.js --json   # machine-readable (finding
 One invariant: **no deleted-old-tree path literal and no renamed-away role name appears as LIVE (non-comment, non-`was:`) content** in the imperative layer or the keystone registries.
 
 - **Targets** — the layer role-parity misses: `scripts/hooks/lib/paths.js` + `paths.generated.js` + `.claude/paths.json` + `framework/paths.registry.json` (incl. the `LEGACY_FALLBACK` table), all of `scripts/hooks/**` + `scripts/checks/**` + `scripts/sprint/**`, the live dispatch/manifest scripts, `fixtures/**`, and the keystone registries (`_principles/registry.json`, `_org/role-registry.json`, `_evals/*.json`). Bite-tests (`*.test.js`) are excluded by construction — they deliberately embed old names to test detection.
-- **Literals** — dead-tree dirs `00-alex` · `01-adhoc/` · `02-oneshot/` · `03-managers`; renamed-away roles `product-designer` · `web-conversion-designer` · `research-insight-lead` · `growth-lead` (matched as whole tokens, so `research-lead` never false-matches `research-insight-lead`).
+- **Literals** — dead-tree dirs `00-alex` · `01-adhoc/` · `02-oneshot/` · `03-managers`; renamed-away roles `product-designer` · `web-conversion-designer` · `research-insight-lead` · `growth-lead` (matched as whole tokens, so `research-lead` never false-matches `research-insight-lead`). <!-- stale-ok: these are the gate's grep targets, documented by design -->
 
 Exit `0` clean · `1` at least one live-stale ref · `2` runner/allowlist error (**fail-closed** — a cutover gate that errors must never read green; the false-green lesson).
 
@@ -41,7 +41,7 @@ Each allowlist entry carries a **reason**; an entry that matches nothing is surf
 
 On the live tree it exits **1** with ~36 findings — this is **correct**; ED-026 is a *flag-don't-fix* gate (cleanup is a follow-up). The flagged set:
 
-- `_principles/registry.json` — dead role-name **keys** (`product-designer`/`research-insight-lead`/`growth-lead`/`web-conversion-designer` + the two directors) + `spec:` paths under `03-managers/` + `rooted_in:` dead-role values.
+- `_principles/registry.json` — dead role-name **keys** (`product-designer`/`research-insight-lead`/`growth-lead`/`web-conversion-designer` + the two directors) + `spec:` paths under `03-managers/` + `rooted_in:` dead-role values. <!-- stale-ok: documents the dead keys this gate flags -->
 - `_org/role-registry.json` — the `current_spec` vestigial field still points at `01-adhoc/`/`02-oneshot/`/`03-managers` (the `was:` rename history is correctly NOT flagged).
 - `_evals/resonance-conversion-rubric.json` — dead role names as rubric attribution values.
 - `scripts/phase0-verify.js` + `scripts/test-sprint.js` — genuinely-broken live refs to spec/policy files that moved to `president/` (an ENOENT-class break — exactly the residue ED-026 exists to surface).

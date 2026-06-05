@@ -2421,7 +2421,7 @@
         "src": ".claude/commands/scan/cutover-completeness.md",
         "dest": ".claude/commands/scan/cutover-completeness.md",
         "kind": "skill",
-        "sha256": "2d99b4a7ea53490e02141045606cd7ee6d70c8611fb9b7576a1863c94871f30c",
+        "sha256": "18d1854dee3c7f72b15033e030c4d7ff23164815258f13b3e85426a5080d437e",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
