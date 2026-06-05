@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-05T05:13:26.336Z",
+  "generatedAt": "2026-06-05T05:18:10.291Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.13.1",
   "migrations": [],
@@ -3291,8 +3291,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/sprint/full.js",
-      "sha256": "5104d2ce4835303ab6750b5189fb835318e663edb63b438bd434198ce5b73949",
-      "installedSha": "5104d2ce4835303ab6750b5189fb835318e663edb63b438bd434198ce5b73949"
+      "sha256": "3336e3b125a2f6a336dd31d702fcddcb5e10a95e68afe4f9381c3e690b42e22a",
+      "installedSha": "3336e3b125a2f6a336dd31d702fcddcb5e10a95e68afe4f9381c3e690b42e22a"
     },
     "scripts/sprint/heartbeat.js": {
       "owner": "framework",
@@ -3300,6 +3300,13 @@
       "source": "scripts/sprint/heartbeat.js",
       "sha256": "04c8b923de2290513f6a987613389a59aa614b690607eb5d8df29d7f28e17d62",
       "installedSha": "04c8b923de2290513f6a987613389a59aa614b690607eb5d8df29d7f28e17d62"
+    },
+    "scripts/sprint/hook-consult.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/sprint/hook-consult.js",
+      "sha256": "d8fb4b471d56d056de6ddba7b9fbddb4a38debf5ffb530baba7a122fd548e91b",
+      "installedSha": "d8fb4b471d56d056de6ddba7b9fbddb4a38debf5ffb530baba7a122fd548e91b"
     },
     "scripts/sprint/hook-points.js": {
       "owner": "framework",
@@ -3391,6 +3398,13 @@
       "source": "scripts/sprint/test-heartbeat.js",
       "sha256": "84433728a87517ae122e39bd3039d5919f7657e388bdf7678d81412f0c6493a5",
       "installedSha": "84433728a87517ae122e39bd3039d5919f7657e388bdf7678d81412f0c6493a5"
+    },
+    "scripts/sprint/test-hook-consult.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/sprint/test-hook-consult.js",
+      "sha256": "78316c44f79abbb00cf604cf53080c721fc0bb5079178dc89e5b6bdefcbe8d54",
+      "installedSha": "78316c44f79abbb00cf604cf53080c721fc0bb5079178dc89e5b6bdefcbe8d54"
     },
     "scripts/sprint/test-hook-points.js": {
       "owner": "framework",

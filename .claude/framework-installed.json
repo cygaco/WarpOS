@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "0.13.1",
-  "installedCommit": "f0623bea20884196205a59877ab02a29a885f6b0",
-  "installedAt": "2026-06-05T05:13:26.182Z",
+  "installedCommit": "3c32fa81df7982c545656d720ad3fd8c63b5f22d",
+  "installedAt": "2026-06-05T05:18:10.146Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -6004,8 +6004,8 @@
       "dest": "scripts/sprint/full.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "5104d2ce4835303ab6750b5189fb835318e663edb63b438bd434198ce5b73949",
-      "currentHashAtInstall": "5104d2ce4835303ab6750b5189fb835318e663edb63b438bd434198ce5b73949",
+      "installedHash": "3336e3b125a2f6a336dd31d702fcddcb5e10a95e68afe4f9381c3e690b42e22a",
+      "currentHashAtInstall": "3336e3b125a2f6a336dd31d702fcddcb5e10a95e68afe4f9381c3e690b42e22a",
       "introducedIn": "0.0.0"
     },
     {
@@ -6016,6 +6016,16 @@
       "mergeStrategy": "replace_if_unmodified",
       "installedHash": "04c8b923de2290513f6a987613389a59aa614b690607eb5d8df29d7f28e17d62",
       "currentHashAtInstall": "04c8b923de2290513f6a987613389a59aa614b690607eb5d8df29d7f28e17d62",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "sprint_engine.hook-consult.js",
+      "kind": "sprint_engine",
+      "dest": "scripts/sprint/hook-consult.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "d8fb4b471d56d056de6ddba7b9fbddb4a38debf5ffb530baba7a122fd548e91b",
+      "currentHashAtInstall": "d8fb4b471d56d056de6ddba7b9fbddb4a38debf5ffb530baba7a122fd548e91b",
       "introducedIn": "0.0.0"
     },
     {
@@ -6156,6 +6166,16 @@
       "mergeStrategy": "replace_if_unmodified",
       "installedHash": "84433728a87517ae122e39bd3039d5919f7657e388bdf7678d81412f0c6493a5",
       "currentHashAtInstall": "84433728a87517ae122e39bd3039d5919f7657e388bdf7678d81412f0c6493a5",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "sprint_engine.test-hook-consult.js",
+      "kind": "sprint_engine",
+      "dest": "scripts/sprint/test-hook-consult.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "78316c44f79abbb00cf604cf53080c721fc0bb5079178dc89e5b6bdefcbe8d54",
+      "currentHashAtInstall": "78316c44f79abbb00cf604cf53080c721fc0bb5079178dc89e5b6bdefcbe8d54",
       "introducedIn": "0.0.0"
     },
     {

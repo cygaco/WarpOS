@@ -26,7 +26,7 @@
     "preflight_tool": 1,
     "requirements_engine": 12,
     "paths_engine": 4,
-    "sprint_engine": 37,
+    "sprint_engine": 39,
     "dispatch_engine": 18,
     "check_runner_tool": 4,
     "docs_tool": 1,
@@ -56,7 +56,7 @@
     "module_scope": 1,
     "framework_doc": 3
   },
-  "total": 1018,
+  "total": 1020,
   "assets": {
     "agent": [
       {
@@ -7298,7 +7298,7 @@
         "src": "scripts/sprint/full.js",
         "dest": "scripts/sprint/full.js",
         "kind": "sprint_engine",
-        "sha256": "5104d2ce4835303ab6750b5189fb835318e663edb63b438bd434198ce5b73949",
+        "sha256": "3336e3b125a2f6a336dd31d702fcddcb5e10a95e68afe4f9381c3e690b42e22a",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -7311,6 +7311,18 @@
         "dest": "scripts/sprint/heartbeat.js",
         "kind": "sprint_engine",
         "sha256": "04c8b923de2290513f6a987613389a59aa614b690607eb5d8df29d7f28e17d62",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "sprint_engine.hook-consult.js",
+        "src": "scripts/sprint/hook-consult.js",
+        "dest": "scripts/sprint/hook-consult.js",
+        "kind": "sprint_engine",
+        "sha256": "d8fb4b471d56d056de6ddba7b9fbddb4a38debf5ffb530baba7a122fd548e91b",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -7479,6 +7491,18 @@
         "dest": "scripts/sprint/test-heartbeat.js",
         "kind": "sprint_engine",
         "sha256": "84433728a87517ae122e39bd3039d5919f7657e388bdf7678d81412f0c6493a5",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "sprint_engine.test-hook-consult.js",
+        "src": "scripts/sprint/test-hook-consult.js",
+        "dest": "scripts/sprint/test-hook-consult.js",
+        "kind": "sprint_engine",
+        "sha256": "78316c44f79abbb00cf604cf53080c721fc0bb5079178dc89e5b6bdefcbe8d54",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",

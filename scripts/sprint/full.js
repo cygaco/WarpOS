@@ -49,6 +49,52 @@ const {
   writeText,
 } = require("./fs");
 const heartbeat = require("./heartbeat"); // ε liveness heartbeat (Phase D d)
+const hookPoints = require("./hook-points"); // composition→agent-set router (Phase D F1/F2)
+const hookConsult = require("./hook-consult"); // manager_consult emitter (Phase D F3b)
+
+// full.js PHASES are coarser than the hook-point lifecycle: 'execute' covers build+
+// gauntlet, 'release-prep' is release. Map each completed phase to its step set so the
+// orchestrator emits a manager_consult per engaged agent (Phase D F3b — closes ED-022).
+const PHASE_TO_HOOK_STEPS = Object.freeze({
+  plan: ["plan"],
+  design: ["design"],
+  execute: ["build", "gauntlet"],
+  "release-prep": ["release"],
+  retro: ["retro"],
+});
+
+// Best-available sprint composition from the sprint's ticket files (empty early, full by
+// the gauntlet step — which is when the design authority must be present, so ED-022
+// closes correctly). Reads ticket YAML directly, decoupled from phase ticket-loading.
+function sprintComposition(sprintId) {
+  const tickets = [];
+  try {
+    for (const f of fs.readdirSync(SPRINT.tickets)) {
+      if (!/\.(ya?ml|json)$/.test(f)) continue;
+      const t = readYamlMaybe(path.join(SPRINT.tickets, f));
+      if (t && t.sprint === sprintId) tickets.push(t);
+    }
+  } catch {
+    /* no tickets dir yet → empty composition (only always-on agents fire) */
+  }
+  return hookPoints.compositionFromTickets(tickets);
+}
+
+// Emit the manager_consult records for a completed phase's hook-point step(s) (the ε
+// materialization: who was engaged at each step). Non-fatal — telemetry, never a halt.
+function emitPhaseConsults(sprintId, phase) {
+  const steps = PHASE_TO_HOOK_STEPS[phase] || [];
+  if (!steps.length || !sprintId) return;
+  try {
+    const composition = sprintComposition(sprintId);
+    for (const step of steps) hookConsult.emitStepConsults(step, composition, sprintId);
+    if (steps.includes("build") || steps.includes("gauntlet")) {
+      hookConsult.emitDesignTouch(composition, sprintId);
+    }
+  } catch {
+    /* emission must never break the pipeline */
+  }
+}
 
 const REPO_ROOT = SPRINT.PROJECT;
 const PATHS = JSON.parse(
@@ -1746,6 +1792,7 @@ function main() {
       );
       return 1;
     }
+    emitPhaseConsults(sprintId, PHASES[i]);
   }
 
   state.outcome = "done";
