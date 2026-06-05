@@ -1,8 +1,8 @@
 {
   "metadata": {
-    "generated": "2026-06-05T03:57:56.826Z",
-    "lastUpdated": "2026-06-05T03:57:56.826Z",
-    "total_skills": 196,
+    "generated": "2026-06-05T05:24:54.103Z",
+    "lastUpdated": "2026-06-05T05:24:54.103Z",
+    "total_skills": 197,
     "namespaces": 41,
     "user_invocable": 77,
     "regenerated_by": "scripts/regen-maps.js"
@@ -2015,7 +2015,7 @@
     },
     "scan": {
       "namespace": "scan",
-      "count": 45,
+      "count": 46,
       "skills": [
         {
           "id": "scan:ac-coverage",
@@ -2257,6 +2257,7 @@
               "/scan:scaffold-coverage",
               "/scan:scan-coverage",
               "/scan:sprint-beta-honesty",
+              "/scan:sprint-hook-coverage",
               "/scan:sprint-manager-consult",
               "/scan:system",
               "/scan:timeline",
@@ -2519,6 +2520,22 @@
             "writes": [],
             "references": [],
             "calls": [
+              "/sprint:full"
+            ]
+          }
+        },
+        {
+          "id": "scan:sprint-hook-coverage",
+          "name": "sprint-hook-coverage",
+          "description": "Bidirectional coverage of the sprint hook-point registry — FORWARD (every matched block-row has a manager_consult record per /sprint:full run) + REVERSE (registry structurally coherent against role-registry)",
+          "file": ".claude/commands/scan/sprint-hook-coverage.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/scan:sprint-manager-consult",
               "/sprint:full"
             ]
           }
@@ -3581,12 +3598,12 @@
   "summary": {
     "by_invocability": {
       "user_invocable": 77,
-      "system_only": 119
+      "system_only": 120
     },
     "most_referenced_namespaces": [
       {
         "namespace": "scan",
-        "count": 45
+        "count": 46
       },
       {
         "namespace": "warp",

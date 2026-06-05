@@ -1,7 +1,7 @@
 {
   "metadata": {
-    "generated": "2026-06-05T03:57:56.826Z",
-    "lastUpdated": "2026-06-05T03:57:56.826Z",
+    "generated": "2026-06-05T05:24:54.103Z",
+    "lastUpdated": "2026-06-05T05:24:54.103Z",
     "total_stores": 10,
     "tiers": 3,
     "regenerated_by": "scripts/regen-maps.js"
@@ -13,10 +13,10 @@
         "path": ".claude/project/events/events.jsonl",
         "category": "events",
         "tier": "centralized",
-        "entryCount": 18995,
+        "entryCount": 19227,
         "exists": true,
-        "size": 6145642,
-        "modified": "2026-06-05T03:57:54.767Z"
+        "size": 6216629,
+        "modified": "2026-06-05T05:24:52.502Z"
       },
       {
         "id": "manager-consult",
@@ -33,20 +33,20 @@
         "path": ".claude/project/events/requirements.jsonl",
         "category": "events",
         "tier": "centralized",
-        "entryCount": 388,
+        "entryCount": 394,
         "exists": true,
-        "size": 208763,
-        "modified": "2026-06-05T03:54:29.305Z"
+        "size": 212148,
+        "modified": "2026-06-05T05:23:10.208Z"
       },
       {
         "id": "tools",
         "path": ".claude/project/events/tools.jsonl",
         "category": "events",
         "tier": "centralized",
-        "entryCount": 9525,
+        "entryCount": 9654,
         "exists": true,
-        "size": 2989563,
-        "modified": "2026-06-05T03:57:19.993Z"
+        "size": 3030395,
+        "modified": "2026-06-05T05:23:17.450Z"
       }
     ],
     "semantic": [
@@ -85,10 +85,10 @@
         "path": ".claude/project/memory/systems.jsonl",
         "category": "memory",
         "tier": "semantic",
-        "entryCount": 55,
+        "entryCount": 56,
         "exists": true,
-        "size": 49068,
-        "modified": "2026-06-05T03:26:37.296Z"
+        "size": 50012,
+        "modified": "2026-06-05T05:23:10.210Z"
       },
       {
         "id": "traces",
@@ -115,7 +115,7 @@
     ]
   },
   "totals": {
-    "total_lines": 29122,
-    "total_size": 9552874
+    "total_lines": 29490,
+    "total_size": 9669022
   }
 }

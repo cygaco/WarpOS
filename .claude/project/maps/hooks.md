@@ -1,6 +1,6 @@
 # Hooks Map
 
-Generated: 2026-06-05T03:57:56.826Z
+Generated: 2026-06-05T05:24:54.103Z
 
 **66** hook scripts (61 registered, 5 orphan), **15** lib modules, **70** wiring entries.
 
@@ -132,7 +132,7 @@ Generated: 2026-06-05T03:57:56.826Z
 | lint-hook-output.js | yes | 1964 | 2026-05-30T01:25:39.593Z |
 | lint.js | yes | 2684 | 2026-05-30T01:25:39.594Z |
 | memory-enforcement-guard.js | yes | 3339 | 2026-05-30T01:25:39.594Z |
-| memory-guard.js | yes | 14408 | 2026-06-05T03:23:28.624Z |
+| memory-guard.js | yes | 14408 | 2026-06-05T05:13:42.033Z |
 | merge-guard.js | yes | 23252 | 2026-05-30T01:25:39.595Z |
 | ownership-guard.js | yes | 4504 | 2026-06-04T22:57:14.000Z |
 | path-guard.js | yes | 8945 | 2026-06-04T22:57:14.000Z |
@@ -183,7 +183,7 @@ Generated: 2026-06-05T03:57:56.826Z
 | context-sources.js | 8286 | 2026-05-30T01:25:39.589Z |
 | gate-schema.js | 3894 | 2026-05-30T01:25:39.589Z |
 | injection-patterns.js | 2949 | 2026-05-31T00:23:04.879Z |
-| logger.js | 16632 | 2026-06-05T03:26:37.152Z |
+| logger.js | 16632 | 2026-06-05T05:13:42.032Z |
 | mode.js | 2540 | 2026-05-30T01:25:39.590Z |
 | paths.generated.js | 10443 | 2026-06-04T22:57:13.999Z |
 | paths.js | 6608 | 2026-06-05T01:45:08.446Z |

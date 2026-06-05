@@ -37,7 +37,7 @@ Dispatch the scan suite **in parallel** (via Agent tool, each producing a sub-re
 
 **Tier 2 — Governance & quality** *(default + `--deep`)*
 
-`/scan:ac-coverage` · `/scan:coherence` · `/scan:design-system` · `/scan:dispatch-routing-parity` · `/scan:privacy` · `/scan:docker-secrets` · `/scan:roadmap-trace` · `/scan:sprint-beta-honesty` · `/scan:sprint-manager-consult` · `/scan:adhoc-fail-override` · `/scan:adhoc-team-hygiene` · `/scan:timeline` · `/scan:node-procs` · `/scan:issues` · `/scan:role-parity` · `/scan:scaffold-coverage` · `/scan:etc-harness` · `/scan:ingest-firewall` · `/scan:scan-coverage`
+`/scan:ac-coverage` · `/scan:coherence` · `/scan:design-system` · `/scan:dispatch-routing-parity` · `/scan:privacy` · `/scan:docker-secrets` · `/scan:roadmap-trace` · `/scan:sprint-beta-honesty` · `/scan:sprint-manager-consult` · `/scan:sprint-hook-coverage` · `/scan:adhoc-fail-override` · `/scan:adhoc-team-hygiene` · `/scan:timeline` · `/scan:node-procs` · `/scan:issues` · `/scan:role-parity` · `/scan:scaffold-coverage` · `/scan:etc-harness` · `/scan:ingest-firewall` · `/scan:scan-coverage`
 
 **Tier 3 — WarpOS distribution integrity** *(default + `--deep`)*
 
@@ -48,6 +48,8 @@ Dispatch the scan suite **in parallel** (via Agent tool, each producing a sub-re
 > **Coverage note (2026-05-31, SP-20260531-004):** added `/scan:role-parity`, `/scan:scaffold-coverage`, `/scan:etc-harness`, `/scan:ingest-firewall` (4 governance/security enforcers that existed but were never delegated) + `/scan:scan-coverage` (the new self-inventory). That manual-comparison gap is now **enforced**: `/scan:scan-coverage` (`scripts/checks/scan-coverage.js`) asserts every `/scan:*` is delegated here or on `scan-coverage.allowlist.json` with a reason — so this list can no longer drift from the `scan/` directory silently. `/scan:warpos-layer-diff` is intentionally excluded (read-only informational, never a gate).
 
 > **Coverage note (2026-06-04, ADR-0007 Tier-4):** added `/scan:sprint-manager-consult` (asserts the named design authority `design-quality` was consulted on every UI-touching `/sprint:full` run — GAP 1) and `/scan:adhoc-fail-override` (rejects a dispatcher that overrode a binding reviewer FAIL — GAP 2, a verdict-CONTENT check distinct from `gauntlet-verify.js`'s record-presence check). Both are the Tier-4 enforcement of ADR-0007's independence + design-authority invariants.
+
+> **Coverage note (2026-06-05, Phase D F3c):** added `/scan:sprint-hook-coverage` — the bidirectional coverage enforcer for the sprint hook-point registry (`.claude/agents/_org/sprint-hook-points.json`): FORWARD (every `block`-row that matched a run's composition has a `manager_consult` record) + REVERSE (registry structurally coherent — every role ∈ `role-registry`, no orphan step). Generalizes the single-manager `/scan:sprint-manager-consult` to the whole registry; the operator's "easily find gaps" made self-detecting on the agent↔sprint surface.
 
 **Canon integrity — the golden-flow gate** *(default + `--deep`)*
 

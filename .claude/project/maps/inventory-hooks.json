@@ -1,7 +1,7 @@
 {
   "metadata": {
-    "generated": "2026-06-05T03:57:56.826Z",
-    "lastUpdated": "2026-06-05T03:57:56.826Z",
+    "generated": "2026-06-05T05:24:54.103Z",
+    "lastUpdated": "2026-06-05T05:24:54.103Z",
     "total_hooks": 66,
     "total_lib_modules": 15,
     "registered_hooks": 61,
@@ -241,7 +241,7 @@
       "registered": true,
       "exists": true,
       "size": 14408,
-      "modified": "2026-06-05T03:23:28.624Z"
+      "modified": "2026-06-05T05:13:42.033Z"
     },
     {
       "id": "hook:merge-guard",
@@ -661,7 +661,7 @@
       "type": "lib",
       "exists": true,
       "size": 16632,
-      "modified": "2026-06-05T03:26:37.152Z"
+      "modified": "2026-06-05T05:13:42.032Z"
     },
     {
       "id": "hook-lib:mode",

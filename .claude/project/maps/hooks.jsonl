@@ -1,4 +1,4 @@
-{"_meta":true,"name":"Hooks Map","description":"All hook scripts under scripts/hooks/ + lib modules + settings.json wiring.","version":"2026-06-05","total_hooks":66,"total_lib_modules":15,"registered_hooks":61,"orphan_hooks":5,"wiring_count":70,"last_regenerated":"2026-06-05T03:57:56.826Z"}
+{"_meta":true,"name":"Hooks Map","description":"All hook scripts under scripts/hooks/ + lib modules + settings.json wiring.","version":"2026-06-05","total_hooks":66,"total_lib_modules":15,"registered_hooks":61,"orphan_hooks":5,"wiring_count":70,"last_regenerated":"2026-06-05T05:24:54.103Z"}
 {"id":"hook:authorization-gate","name":"authorization-gate.js","path":"scripts/hooks/authorization-gate.js","registered":true,"exists":true,"size":8520,"modified":"2026-05-30T01:25:39.579Z"}
 {"id":"hook:beta-gate","name":"beta-gate.js","path":"scripts/hooks/beta-gate.js","registered":true,"exists":true,"size":9095,"modified":"2026-06-04T22:57:13.996Z"}
 {"id":"hook:boss-boundary","name":"boss-boundary.js","path":"scripts/hooks/boss-boundary.js","registered":true,"exists":true,"size":3145,"modified":"2026-06-04T22:57:13.997Z"}
@@ -24,7 +24,7 @@
 {"id":"hook:lint-hook-output","name":"lint-hook-output.js","path":"scripts/hooks/lint-hook-output.js","registered":true,"exists":true,"size":1964,"modified":"2026-05-30T01:25:39.593Z"}
 {"id":"hook:lint","name":"lint.js","path":"scripts/hooks/lint.js","registered":true,"exists":true,"size":2684,"modified":"2026-05-30T01:25:39.594Z"}
 {"id":"hook:memory-enforcement-guard","name":"memory-enforcement-guard.js","path":"scripts/hooks/memory-enforcement-guard.js","registered":true,"exists":true,"size":3339,"modified":"2026-05-30T01:25:39.594Z"}
-{"id":"hook:memory-guard","name":"memory-guard.js","path":"scripts/hooks/memory-guard.js","registered":true,"exists":true,"size":14408,"modified":"2026-06-05T03:23:28.624Z"}
+{"id":"hook:memory-guard","name":"memory-guard.js","path":"scripts/hooks/memory-guard.js","registered":true,"exists":true,"size":14408,"modified":"2026-06-05T05:13:42.033Z"}
 {"id":"hook:merge-guard","name":"merge-guard.js","path":"scripts/hooks/merge-guard.js","registered":true,"exists":true,"size":23252,"modified":"2026-05-30T01:25:39.595Z"}
 {"id":"hook:ownership-guard","name":"ownership-guard.js","path":"scripts/hooks/ownership-guard.js","registered":true,"exists":true,"size":4504,"modified":"2026-06-04T22:57:14.000Z"}
 {"id":"hook:path-guard","name":"path-guard.js","path":"scripts/hooks/path-guard.js","registered":true,"exists":true,"size":8945,"modified":"2026-06-04T22:57:14.000Z"}
@@ -70,7 +70,7 @@
 {"id":"hook-lib:context-sources","name":"context-sources.js","path":"scripts/hooks/lib/context-sources.js","registered":false,"type":"lib","exists":true,"size":8286,"modified":"2026-05-30T01:25:39.589Z"}
 {"id":"hook-lib:gate-schema","name":"gate-schema.js","path":"scripts/hooks/lib/gate-schema.js","registered":false,"type":"lib","exists":true,"size":3894,"modified":"2026-05-30T01:25:39.589Z"}
 {"id":"hook-lib:injection-patterns","name":"injection-patterns.js","path":"scripts/hooks/lib/injection-patterns.js","registered":false,"type":"lib","exists":true,"size":2949,"modified":"2026-05-31T00:23:04.879Z"}
-{"id":"hook-lib:logger","name":"logger.js","path":"scripts/hooks/lib/logger.js","registered":false,"type":"lib","exists":true,"size":16632,"modified":"2026-06-05T03:26:37.152Z"}
+{"id":"hook-lib:logger","name":"logger.js","path":"scripts/hooks/lib/logger.js","registered":false,"type":"lib","exists":true,"size":16632,"modified":"2026-06-05T05:13:42.032Z"}
 {"id":"hook-lib:mode","name":"mode.js","path":"scripts/hooks/lib/mode.js","registered":false,"type":"lib","exists":true,"size":2540,"modified":"2026-05-30T01:25:39.590Z"}
 {"id":"hook-lib:paths.generated","name":"paths.generated.js","path":"scripts/hooks/lib/paths.generated.js","registered":false,"type":"lib","exists":true,"size":10443,"modified":"2026-06-04T22:57:13.999Z"}
 {"id":"hook-lib:paths","name":"paths.js","path":"scripts/hooks/lib/paths.js","registered":false,"type":"lib","exists":true,"size":6608,"modified":"2026-06-05T01:45:08.446Z"}

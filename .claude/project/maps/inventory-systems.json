@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "generated": "2026-06-05T03:57:56.826Z",
-    "lastUpdated": "2026-06-05T03:57:56.826Z",
-    "total_systems": 55,
+    "generated": "2026-06-05T05:24:54.103Z",
+    "lastUpdated": "2026-06-05T05:24:54.103Z",
+    "total_systems": 56,
     "categories": 2,
-    "total_files_referenced": 54,
+    "total_files_referenced": 55,
     "missing_files_on_disk": 1,
     "regenerated_by": "scripts/regen-maps.js"
   },
@@ -16,7 +16,7 @@
       ]
     },
     "untested": {
-      "count": 54,
+      "count": 55,
       "ids": [
         "skill-roadmap-ideas",
         "skill-roadmap-next",
@@ -71,7 +71,8 @@
         "skill-scan-warpos-install-baseline",
         "skill-session-dump",
         "skill-scan-sprint-manager-consult",
-        "skill-scan-adhoc-fail-override"
+        "skill-scan-adhoc-fail-override",
+        "skill-scan-sprint-hook-coverage"
       ]
     }
   },
@@ -88,7 +89,7 @@
       ]
     },
     "cognition": {
-      "count": 54,
+      "count": 55,
       "systems": [
         {
           "id": "skill-_report_skill_tmp",
@@ -435,6 +436,14 @@
           ]
         },
         {
+          "id": "skill-scan-sprint-hook-coverage",
+          "name": "Bidirectional coverage of the sprint hook-point registry — FORWARD (every matched block-row has a manager_consult record per /sprint:full run) + REVERSE (registry structurally coherent against role-registry)",
+          "status": "untested",
+          "files": [
+            ".claude/commands/scan/sprint-hook-coverage.md"
+          ]
+        },
+        {
           "id": "skill-scan-sprint-manager-consult",
           "name": "Audits manager-consult coverage across post-cutoff /sprint:full runs — asserts the design-quality authority was consulted on every UI/app-design/web-design-touching sprint",
           "status": "untested",
@@ -545,7 +554,7 @@
       "id": "skills",
       "name": "Skills",
       "category": "capability",
-      "count": 198
+      "count": 199
     },
     {
       "id": "hooks",

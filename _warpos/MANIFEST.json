@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-05T05:18:10.291Z",
+  "generatedAt": "2026-06-05T05:24:54.820Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.13.1",
   "migrations": [],
@@ -5093,6 +5093,13 @@
       "sha256": "3cb30dc8d9a3a024a9e3a7fd8bb833fe268dd0d69aae892cfa27fc841a0a8d26",
       "installedSha": "3cb30dc8d9a3a024a9e3a7fd8bb833fe268dd0d69aae892cfa27fc841a0a8d26"
     },
+    "scripts/checks/sprint-hook-coverage.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/sprint-hook-coverage.js",
+      "sha256": "b83b521e3ad063d0598cd3688db9b0ce8e0f387225e78ea7907806a6cf60b11f",
+      "installedSha": "b83b521e3ad063d0598cd3688db9b0ce8e0f387225e78ea7907806a6cf60b11f"
+    },
     "scripts/checks/sprint-manager-consult.js": {
       "owner": "framework",
       "managed": true,
@@ -5134,6 +5141,13 @@
       "source": "scripts/checks/test-sprint-beta-honesty.js",
       "sha256": "28e7a227dacd508e09fc5e62ac2892fbaa3041e5e5523769a9e04af685fdb71a",
       "installedSha": "28e7a227dacd508e09fc5e62ac2892fbaa3041e5e5523769a9e04af685fdb71a"
+    },
+    "scripts/checks/test-sprint-hook-coverage.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/test-sprint-hook-coverage.js",
+      "sha256": "2ac727a6a49069ca5acf4f8b6bb8f135786cb72ddc911a11d2d9e05ff2f7b9cf",
+      "installedSha": "2ac727a6a49069ca5acf4f8b6bb8f135786cb72ddc911a11d2d9e05ff2f7b9cf"
     },
     "scripts/checks/test-sprint-manager-consult.js": {
       "owner": "framework",
@@ -15356,8 +15370,8 @@
       "managed": true,
       "source": ".claude/commands/scan/full.md",
       "kind": "md",
-      "sha256": "30f481e2fe383b4940b0f50fb3e59ffe78d4deb83ddc0e5658d5fbc951cea5e1",
-      "installedSha": "30f481e2fe383b4940b0f50fb3e59ffe78d4deb83ddc0e5658d5fbc951cea5e1"
+      "sha256": "c070f30ae67b6d1887a331b0d2204ebe9cab8201fce907c818489d1ebe10c3f3",
+      "installedSha": "c070f30ae67b6d1887a331b0d2204ebe9cab8201fce907c818489d1ebe10c3f3"
     },
     ".claude/commands/scan/ingest-firewall.md": {
       "owner": "framework",
@@ -15470,6 +15484,14 @@
       "kind": "md",
       "sha256": "6f74de8bffefc92ded067bf39d98925330a8d0089ebda89321ff5f6062f7e9d7",
       "installedSha": "6f74de8bffefc92ded067bf39d98925330a8d0089ebda89321ff5f6062f7e9d7"
+    },
+    ".claude/commands/scan/sprint-hook-coverage.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/commands/scan/sprint-hook-coverage.md",
+      "kind": "md",
+      "sha256": "c8e68c4b06311ee3ae2f3c3b8767765cc787b2fd3827ac834108996045e23ea9",
+      "installedSha": "c8e68c4b06311ee3ae2f3c3b8767765cc787b2fd3827ac834108996045e23ea9"
     },
     ".claude/commands/scan/sprint-manager-consult.md": {
       "owner": "framework",

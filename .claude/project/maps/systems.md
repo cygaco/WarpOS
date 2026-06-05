@@ -1,19 +1,19 @@
 # Systems Manifest
 
-Generated: 2026-06-05T03:57:56.826Z
+Generated: 2026-06-05T05:24:54.103Z
 
-Total: **55** systems across **2** categories. Files referenced: 54, missing on disk: 1.
+Total: **56** systems across **2** categories. Files referenced: 55, missing on disk: 1.
 
 ## By status
 
 | Status | Count |
 |---|---|
 | active | 1 |
-| untested | 54 |
+| untested | 55 |
 
 ## By category
 
-### cognition (54)
+### cognition (55)
 
 | id | name | status | files |
 |---|---|---|---|
@@ -60,6 +60,7 @@ Total: **55** systems across **2** categories. Files referenced: 54, missing on 
 | skill-scan-scaffold-coverage | Verify the WarpOS app scaffold (Next+Tailwind v4+shadcn/ui+Radix+Lucide) is comp | untested | 1 |
 | skill-scan-scan-coverage | Scan-suite self-inventory — asserts every /scan:* skill is delegated by /scan:fu | untested | 1 |
 | skill-scan-sprint-beta-honesty | Audits Beta consultation honesty across post-cutoff /sprint:full runs (missing c | untested | 1 |
+| skill-scan-sprint-hook-coverage | Bidirectional coverage of the sprint hook-point registry — FORWARD (every matche | untested | 1 |
 | skill-scan-sprint-manager-consult | Audits manager-consult coverage across post-cutoff /sprint:full runs — asserts t | untested | 1 |
 | skill-scan-version-coherence | Verify version + schema-label coherence — product version agrees across ALL mani | untested | 1 |
 | skill-scan-warpos-install-baseline | Verify a WarpOS install baseline exists (.claude/framework-installed.json presen | untested | 1 |

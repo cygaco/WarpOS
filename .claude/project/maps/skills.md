@@ -1,8 +1,8 @@
 # Skills Map
 
-Generated: 2026-06-05T03:57:56.826Z
+Generated: 2026-06-05T05:24:54.103Z
 
-Total: **196** skills across **41** namespaces. 77 user-invocable.
+Total: **197** skills across **41** namespaces. 77 user-invocable.
 
 ## By namespace
 
@@ -287,7 +287,7 @@ Total: **196** skills across **41** namespaces. 77 user-invocable.
 | next | The 1-idea alternative to /roadmap:ideas — the single highest-leverage next roadmap entry (the role- | 2 | 2 |
 | prioritize | Role-aware roadmap prioritization — runs /roadmap:cleanup first, then consults the Product Lead (sin | 4 | 0 |
 
-### scan (45)
+### scan (46)
 
 | Name | Description | Calls | Called by |
 |---|---|---|---|
@@ -303,7 +303,7 @@ Total: **196** skills across **41** namespaces. 77 user-invocable.
 | etc-harness | Audit the /etc authoring+eval harness — fail-closed enforcer that rejects an invented authoring form | 2 | 1 |
 | framework-purity | Refuse product-content leaks in canonical — scans for client slugs, maintainer abs paths, root-level | 2 | 4 |
 | framework-views-fresh | Verify .claude/commands and .claude/agents are byte-identical regenerations of their _warpos/ source | 2 | 3 |
-| full | Run every scan in parallel — a full system scan across project health, governance, and WarpOS distri | 50 | 20 |
+| full | Run every scan in parallel — a full system scan across project health, governance, and WarpOS distri | 51 | 20 |
 | ingest-firewall | Audit the ingest stores (_docs/research, _docs/imports, _docs/briefs, _docs/clones) for un-firewalle | 0 | 1 |
 | install | Verify a fresh WarpOS install — manifest, paths, agents, hooks, version, settings. | 1 | 4 |
 | issues | Pattern-mine events.jsonl for repeat audit-block signatures — surface candidates for /issues:log | 5 | 2 |
@@ -318,7 +318,8 @@ Total: **196** skills across **41** namespaces. 77 user-invocable.
 | scaffold-coverage | Verify the WarpOS app scaffold (Next+Tailwind v4+shadcn/ui+Radix+Lucide) is complete and coherent —  | 2 | 1 |
 | scan-coverage | Scan-suite self-inventory — asserts every /scan:* skill is delegated by /scan:full or explicitly exc | 1 | 4 |
 | sprint-beta-honesty | Audits Beta consultation honesty across post-cutoff /sprint:full runs (missing consults, placeholder | 1 | 2 |
-| sprint-manager-consult | Audits manager-consult coverage across post-cutoff /sprint:full runs — asserts the design-quality au | 3 | 1 |
+| sprint-hook-coverage | Bidirectional coverage of the sprint hook-point registry — FORWARD (every matched block-row has a ma | 2 | 1 |
+| sprint-manager-consult | Audits manager-consult coverage across post-cutoff /sprint:full runs — asserts the design-quality au | 3 | 2 |
 | system | System inventory — enumerate every active WarpOS system, diff against manifest, report drift and gap | 6 | 2 |
 | timeline | Reconstruct a build timeline from transaction, event, and provider logs. | 0 | 1 |
 | version-coherence | Verify version + schema-label coherence — product version agrees across ALL manifests (incl. the one | 2 | 1 |
@@ -376,7 +377,7 @@ Total: **196** skills across **41** namespaces. 77 user-invocable.
 | cost-gate | Toggle the /sprint:full cost-estimate halt on or off — turn off the heuristic spend gate when an ope | 2 | 0 |
 | design | Turn an approved Plan Contract into PRD, stories, COPY, INPUTS, TRACE, acceptance criteria, QA, red- | 2 | 4 |
 | execute | Execute the sprint via Ralph-style plan/act/test/review/record/checkpoint loops per ticket, with cra | 4 | 5 |
-| full | Single-invocation execution of the full sprint pipeline (plan→design→execute→release-prep→retro) und | 8 | 8 |
+| full | Single-invocation execution of the full sprint pipeline (plan→design→execute→release-prep→retro) und | 8 | 9 |
 | plan | Turn a brief plain-language request into a structured sprint plan and durable Plan Contract. Evidenc | 3 | 6 |
 | release | Prepare and execute a sprint release — final checks, approval, deploy gate, release notes, rollback  | 4 | 6 |
 | retrospective | Synthesize a post-sprint retrospective from tracker artifacts — outcomes, friction, action items. Id | 3 | 3 |
@@ -411,7 +412,7 @@ Total: **196** skills across **41** namespaces. 77 user-invocable.
 
 Top callers (skills that invoke the most others):
 
-- `/scan:full` → /maps:all, /oneshot:preflight, /scan:ac-coverage, /scan:adhoc-fail-override, /scan:adhoc-team-hygiene, /scan:architecture, /scan:coherence, /scan:design-system, /scan:dispatch-routing-parity, /scan:docker-secrets, /scan:environment, /scan:etc-harness, /scan:framework-purity, /scan:framework-views-fresh, /scan:ingest-firewall, /scan:install, /scan:issues, /scan:node-procs, /scan:patterns, /scan:privacy, /scan:references, /scan:regressions, /scan:requirements, /scan:roadmap-trace, /scan:role-parity, /scan:scaffold-coverage, /scan:scan-coverage, /scan:sprint-beta-honesty, /scan:sprint-manager-consult, /scan:system, /scan:timeline, /scan:version-coherence, /scan:warpos-applied-migrations, /scan:warpos-capsule-resolvable, /scan:warpos-install-baseline, /scan:warpos-layer-diff, /scan:warpos-manifest-coverage, /scan:warpos-manifest-honesty, /scan:warpos-migration-coverage, /scan:warpos-migration-presence, /scan:warpos-path-resolution, /scan:warpos-ship-coverage, /scan:warpos-staleness, /scan:warpos-structure-parity, /scan:warpos-tracked-transients, /scan:warpos-version-quorum, /sleep:deep, /sprint:full, /warp:doctor, /warp:health
+- `/scan:full` → /maps:all, /oneshot:preflight, /scan:ac-coverage, /scan:adhoc-fail-override, /scan:adhoc-team-hygiene, /scan:architecture, /scan:coherence, /scan:design-system, /scan:dispatch-routing-parity, /scan:docker-secrets, /scan:environment, /scan:etc-harness, /scan:framework-purity, /scan:framework-views-fresh, /scan:ingest-firewall, /scan:install, /scan:issues, /scan:node-procs, /scan:patterns, /scan:privacy, /scan:references, /scan:regressions, /scan:requirements, /scan:roadmap-trace, /scan:role-parity, /scan:scaffold-coverage, /scan:scan-coverage, /scan:sprint-beta-honesty, /scan:sprint-hook-coverage, /scan:sprint-manager-consult, /scan:system, /scan:timeline, /scan:version-coherence, /scan:warpos-applied-migrations, /scan:warpos-capsule-resolvable, /scan:warpos-install-baseline, /scan:warpos-layer-diff, /scan:warpos-manifest-coverage, /scan:warpos-manifest-honesty, /scan:warpos-migration-coverage, /scan:warpos-migration-presence, /scan:warpos-path-resolution, /scan:warpos-ship-coverage, /scan:warpos-staleness, /scan:warpos-structure-parity, /scan:warpos-tracked-transients, /scan:warpos-version-quorum, /sleep:deep, /sprint:full, /warp:doctor, /warp:health
 - `/warp:tour` → /fix:fast, /learn:deep, /maps:all, /maps:architecture, /mode:adhoc, /mode:oneshot, /mode:solo, /portfolio:list, /portfolio:open, /research:simple, /session:handoff, /session:read, /session:write, /sleep:quick, /warp:health
 - `/bootstrap:lastmile` → /guides:integrate, /learn:ingest, /learn:integrate, /qa:audit, /redteam:full, /research:deep, /roadmap:add, /scan:install, /scan:roadmap-trace, /sprint:design, /sprint:execute, /sprint:plan
 - `/maps:all` → /maps:architecture, /maps:coverage, /maps:enforcements, /maps:hooks, /maps:memory, /maps:skills, /maps:steps, /maps:systems, /maps:tools, /scan:scan-coverage
@@ -431,6 +432,6 @@ Top called (skills others invoke the most):
 - `/scan:requirements` ← /beta:mine, /discover:orphaned, /oneshot:preflight, /oneshot:retro, /scan:architecture, /scan:full, /session:handoff, /sleep:deep, /sleep:quick, /warp:doctor
 - `/issues:log` ← /issues:list, /issues:resolve, /oneshot:retro, /scan:issues, /scan:patterns, /scan:regressions, /sleep:deep, /warp:flag, /warp:reconcile
 - `/scan:references` ← /discover:systems, /maps:steps, /roadmap:cleanup, /scan:architecture, /scan:environment, /scan:full, /scan:requirements, /scan:system, /warp:doctor
+- `/sprint:full` ← /learn:deep, /roadmap:create, /scan:full, /scan:roadmap-trace, /scan:sprint-beta-honesty, /scan:sprint-hook-coverage, /scan:sprint-manager-consult, /session:turbo, /sprint:cost-gate
 - `/fix:deep` ← /fix:fast, /issues:list, /issues:log, /reasoning:log, /reasoning:run, /scan:patterns, /sprint:execute, /warp:reconcile
 - `/learn:integrate` ← /bootstrap:lastmile, /discover:orphaned, /discover:systems, /learn:deep, /scan:requirements, /session:end, /sprint:release, /sprint:retrospective
-- `/maps:all` ← /beta:mine, /maps:coverage, /maps:steps, /scan:architecture, /scan:environment, /scan:full, /scan:references, /warp:tour

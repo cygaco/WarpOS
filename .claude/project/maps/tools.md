@@ -1,6 +1,6 @@
 # Tools Map
 
-Generated: 2026-06-05T03:57:56.826Z
+Generated: 2026-06-05T05:24:54.103Z
 
 Scripts: **169** | npm scripts: **0** | External CLIs: **3**
 
@@ -146,7 +146,7 @@ Scripts: **169** | npm scripts: **0** | External CLIs: **3**
 | test-dispatch-route-guard.js | 6087 | 2026-06-02T18:17:35.473Z |
 | test-dispatch-telemetry.js | 3750 | 2026-05-30T01:25:39.677Z |
 | test-manifest-guard-product.js | 5363 | 2026-05-30T01:25:39.677Z |
-| test-memory-guard-targets.js | 5171 | 2026-06-05T03:24:07.889Z |
+| test-memory-guard-targets.js | 5171 | 2026-06-05T05:13:42.036Z |
 | test-merge-guard-cd-prefix.js | 4453 | 2026-05-30T01:25:39.678Z |
 | test-merge-guard-node-e.js | 3521 | 2026-06-04T21:24:41.662Z |
 | test-merge-guard-rm.js | 2217 | 2026-05-30T01:25:39.678Z |

@@ -1,7 +1,7 @@
 {
   "metadata": {
-    "generated": "2026-06-05T03:57:56.826Z",
-    "lastUpdated": "2026-06-05T03:57:56.826Z",
+    "generated": "2026-06-05T05:24:54.103Z",
+    "lastUpdated": "2026-06-05T05:24:54.103Z",
     "total_hooks": 64,
     "total_modules": 15,
     "uncurated": 0,
@@ -705,7 +705,7 @@
         "paths"
       ],
       "file_size": 14408,
-      "file_modified": "2026-06-05T03:23:28.624Z"
+      "file_modified": "2026-06-05T05:13:42.033Z"
     },
     {
       "id": "merge-guard",
@@ -2011,7 +2011,7 @@
       ],
       "file": "scripts/hooks/lib/logger.js",
       "file_size": 16632,
-      "file_modified": "2026-06-05T03:26:37.152Z"
+      "file_modified": "2026-06-05T05:13:42.032Z"
     },
     {
       "id": "mode",
