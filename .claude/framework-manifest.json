@@ -2862,7 +2862,7 @@
         "src": ".claude/commands/session/end.md",
         "dest": ".claude/commands/session/end.md",
         "kind": "skill",
-        "sha256": "144a846af3b54bb5f145fecdf285f3e806b38d7082a5fe0c1f895ca625b94be5",
+        "sha256": "c8a3ddc6247821f35728504a693233fe2180855c80bd80fa37c10c1787a4a1c5",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",

@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "0.13.1",
-  "installedCommit": "23038971eaf0ab99331cf6fe7ab1a6cc52e8f2cb",
-  "installedAt": "2026-06-05T06:06:00.360Z",
+  "installedCommit": "19e7257c7a84ee6156fb3030cc1e0bb76cdf6e2a",
+  "installedAt": "2026-06-05T14:41:00.481Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -2344,8 +2344,8 @@
       "dest": ".claude/commands/session/end.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "144a846af3b54bb5f145fecdf285f3e806b38d7082a5fe0c1f895ca625b94be5",
-      "currentHashAtInstall": "144a846af3b54bb5f145fecdf285f3e806b38d7082a5fe0c1f895ca625b94be5",
+      "installedHash": "c8a3ddc6247821f35728504a693233fe2180855c80bd80fa37c10c1787a4a1c5",
+      "currentHashAtInstall": "c8a3ddc6247821f35728504a693233fe2180855c80bd80fa37c10c1787a4a1c5",
       "introducedIn": "0.0.0"
     },
     {

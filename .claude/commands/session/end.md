@@ -1,5 +1,5 @@
 ---
-description: Full session wrap-up — cognitive maintenance (learn/mine/sleep/integrate) → fresh handoff → land to main → fresh branch → tear down teams. The one "we're done, tee up next session" command.
+description: Full session wrap-up — cognitive maintenance (learn/mine/sleep → integrate learnings + β recs) → fresh handoff → land to main → fresh branch → tear down teams. The one "we're done, tee up next session" command.
 ---
 
 # /session:end — Full Session Wrap-Up
@@ -28,8 +28,12 @@ Run `/beta:mine`. Writes recommendations to the β staging file (`.claude/agents
 ### Phase 3 — Consolidate (`/sleep:deep`, or `/sleep:quick` with `--quick`)
 Run `/sleep:deep` (all 6 phases). **Depends on Phase 1 + 2 output** (Phase 4 of sleep reviews the β recs + freshly-logged learnings). This is the long pole (~15-30 min). With `--quick`, run `/sleep:quick` instead.
 
-### Phase 4 — Integrate (`/learn:integrate`)
-Run `/learn:integrate` to promote validated, high-score learnings into actual enforcement (hooks/rules/skills/agent specs). Runs AFTER sleep so it acts on the consolidated set.
+### Phase 4 — Integrate (`/learn:integrate` + `/beta:integrate`)
+Both run AFTER sleep (Phase 3) so they act on the **consolidated + reviewed** set. They touch different targets (learnings → enforcement; β recs → judgment model), so run them in parallel:
+- **`/learn:integrate`** — promote validated, high-score **learnings** into actual enforcement (hooks / rules / skills / agent specs).
+- **`/beta:integrate`** — promote the validated **β pattern-mining recommendations** (staged by Phase 2's `/beta:mine`, reviewed in `/sleep:deep` Phase 4) into the **β judgment model**. This is the counterpart to `/learn:integrate`: without it, `/beta:mine`'s recs sit in the staging file *mined-but-never-applied* — the exact gap that left P-051..P-054 staged at session-2 end. Apply only operator-validated / high-confidence recs; a NEW *principle* or *policy* item still needs its own operator ruling (don't auto-promote a behavioral principle).
+
+> Both are no-ops if Phase 1/2 produced nothing to integrate — fail-open: note and continue.
 
 ### Phase 5 — Handoff (`/session:dump`)
 Run `/session:dump` to write a fresh prescriptive `DUMP.md` at project root. MUST include: (a) what shipped this session (commits, verified), (b) the **next-session pickup** (ranked, role-aware — consult `director-of-product`/`product-lead` for the top pick), (c) **immediate issues found** this session, (d) anti-instructions / coordination lessons, (e) state + spend notes. `DUMP.md` is gitignored/local — it does not get committed; it's read once by the next session.
@@ -58,13 +62,14 @@ Kill ALL persistent teams + members for this project so the next session spawns 
 Tell the operator: what consolidated (learnings/recs/integrations), the `DUMP.md` next-pick, what landed (commit + pushed-or-local), the fresh branch name, teams torn down, and a one-line "you're clear to start a fresh session."
 
 ## Notes / lessons baked in
-- **Sequential by dependency** — sleep needs learn+mine; integrate needs sleep; dump needs the analysis; land needs manifests fresh; branch + teardown come last.
+- **Sequential by dependency** — sleep needs learn+mine; BOTH integrators (`/learn:integrate` + `/beta:integrate`) need sleep; dump needs the analysis; land needs manifests fresh; branch + teardown come last.
+- **Mine + integrate are a PAIR (run both halves)** — `/beta:mine` only STAGES recommendations; `/beta:integrate` is what APPLIES the validated ones to the judgment model. Running mine without integrate (as session-2 did) leaves recs perpetually staged. Same shape as `/learn:deep`→`/learn:integrate`.
 - **Push is autonomy-gated** — default to local-only unless authorized.
 - **First real run of a new orchestration skill should be operator-supervised** — don't trust an untested wrap-up on a critical push; hand-drive once, then rely on it.
 - **Don't `node -e` fs-writes** (merge-guard blocks) — use Write/Edit or a one-shot `scripts/*.js`.
 
 ## Related
-- `/learn:deep`, `/beta:mine`, `/sleep:deep`, `/sleep:quick`, `/learn:integrate` — the cognitive-maintenance chain.
+- `/learn:deep`, `/beta:mine`, `/sleep:deep`, `/sleep:quick`, `/learn:integrate`, `/beta:integrate` — the cognitive-maintenance chain (mine+integrate and deep+integrate are PAIRS — run both halves).
 - `/session:dump`, `/session:handoff`, `/session:checkpoint` — handoff artifacts.
 - `/commit:land` — the commit→push→merge flow.
 - `/mode:adhoc` — re-spawns the team next session.
