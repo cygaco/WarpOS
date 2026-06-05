@@ -85,14 +85,31 @@ function readOrgMap() {
 }
 
 /**
- * Build-chain DOER roles declared in org-map: every domain `builders[].role`
- * plus every gauntlet member. These are the roles only Gamma/Delta may dispatch.
+ * Build-chain DOER roles: the build-chain doers + every gauntlet member. These
+ * are the roles only Gamma/Delta may dispatch.
+ *
+ * ED-024: the build-chain doer SET now derives from the REGISTRY (build_chain:true
+ * — the keystone is the single structural source), NOT org-map's `domains.builders`
+ * roster (which collapsed: it carried STALE pre-rename role names and omitted the
+ * security pod + the fixers). The gauntlet MEMBERS still come from org-map — the
+ * review-gauntlet ROSTER is org-map's own concern (a review-orchestration view, not
+ * a reporting line), and it is already current. LOUD FALLBACK to the prior org-map
+ * builder source if the registry derive fails (required v0.2 consumer shape — a
+ * silent fallback that masks a broken derive is lying, β).
  */
 function buildChainDoerRoles(org = readOrgMap()) {
   const set = new Set();
-  for (const d of Object.values(org.domains || {})) {
-    for (const b of d.builders || []) if (b.role) set.add(b.role);
-  }
+  // Build-chain doers from the registry (was: org-map domains.builders).
+  const builders = registryRoles
+    ? registryRoles.deriveOrFallback(
+        () => registryRoles.buildChainRoles(),
+        // fallback: the pre-collapse org-map builder roster (best-effort).
+        Object.values(org.domains || {}).flatMap((d) => (d.builders || []).map((b) => b.role).filter(Boolean)),
+        "org-roles.buildChainDoerRoles(builders)",
+      )
+    : Object.values(org.domains || {}).flatMap((d) => (d.builders || []).map((b) => b.role).filter(Boolean));
+  for (const r of builders) if (r) set.add(r);
+  // Gauntlet members stay org-map-sourced (review-orchestration roster).
   for (const g of Object.values(org.gauntlets || {})) {
     for (const m of g.members || []) set.add(m);
   }
@@ -207,22 +224,48 @@ function expectedGauntletRoles(pods, org = readOrgMap()) {
   return out;
 }
 
-/** Every domain role: directors + leads + specialists + builders. */
+// Product-studio domains (the org domains with a reporting hierarchy). The
+// registry's `president` (faces) + `_system` (infra tools) homes are NOT product-
+// studio domains — domainRoles historically meant product/engineering/growth
+// members only, so we keep that semantics when deriving from registry `home`.
+const PRODUCT_STUDIO_HOMES = new Set(["product", "engineering", "growth", "marketing"]);
+
+/**
+ * Every domain role (directors + leads + specialists + builders of the product-
+ * studio domains).
+ *
+ * ED-024: derived from the REGISTRY (`home` ∈ product-studio domains) — the keystone
+ * is the single structural source. WAS: walked org-map's `domains.*` roster, which
+ * collapsed (it carried stale pre-rename names + omitted 28/33 live roles). LOUD
+ * FALLBACK to the org-map roster if the registry derive fails (v0.2 consumer shape).
+ */
 function domainRoles(org = readOrgMap()) {
-  const set = new Set();
-  const add = (r) => {
-    if (r) set.add(r);
-  };
-  for (const d of Object.values(org.domains || {})) {
-    if (d.director) add(d.director.role);
-    for (const lead of d.leads || []) {
-      add(lead.role);
-      for (const sp of lead.specialists || []) add(sp.role);
+  const fromOrgMap = () => {
+    const set = new Set();
+    for (const d of Object.values(org.domains || {})) {
+      if (d.director && d.director.role) set.add(d.director.role);
+      for (const lead of d.leads || []) {
+        if (lead.role) set.add(lead.role);
+        for (const sp of lead.specialists || []) if (sp.role) set.add(sp.role);
+      }
+      for (const sp of d.specialists || []) if (sp.role) set.add(sp.role);
+      for (const b of d.builders || []) if (b.role) set.add(b.role);
     }
-    for (const sp of d.specialists || []) add(sp.role);
-    for (const b of d.builders || []) add(b.role);
-  }
-  return set;
+    return [...set];
+  };
+  const list = registryRoles
+    ? registryRoles.deriveOrFallback(
+        () => {
+          const roles = registryRoles.loadRoles(); // read once, not per-role
+          return registryRoles
+            .roleIds(roles)
+            .filter((r) => PRODUCT_STUDIO_HOMES.has((roles[r] || {}).home));
+        },
+        fromOrgMap(),
+        "org-roles.domainRoles",
+      )
+    : fromOrgMap();
+  return new Set(list);
 }
 
 module.exports = {

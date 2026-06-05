@@ -1,15 +1,16 @@
 {
   "$schema": "warpos/org-map/v0.1",
-  "_doc": "Machine-readable product-studio org (S0.1, SP-20260530-001). domains -> director -> leads -> specialists; β referee, α orchestrator; cross-domain gauntlets. `routing` maps each S0.2 artifact `contract.owner_domain` to the org domain + owning role. Enforced by /scan:domain-routing (validates against schemas/contracts/*.schema.json). v0.1 REVISABLE. This is the MAP, not the agents — agents for the NEW roles are built in Wave 2 (artifact-before-agent iron rule); `agent` = existing subagent_type, or null = pending.",
+  "_doc": "Machine-readable product-studio org (S0.1, SP-20260530-001). β referee, α orchestrator; cross-domain gauntlets. `routing` maps each S0.2 artifact `contract.owner_domain` to the org domain + owning role. Enforced by /scan:domain-routing (validates against schemas/contracts/*.schema.json). v0.1 REVISABLE.",
   "version": "v0.1",
   "role_registry": "_org/role-registry.json",
-  "_role_registry_note": "ADR-0007 keystone: per-role identity·model-map·dispatch-authority·enforcer·disposition live in role-registry.json (the single source routers/enforcers are being rewired to read). This file's domains/gauntlets/routing remain the structural view consumed by role-parity + org-roles until the v0.2 structural migration folds them in.",
+  "_role_registry_note": "ADR-0007 keystone: per-role identity·model-map·dispatch-authority·enforcer·disposition live in role-registry.json. ED-024 (ADR-0010): the REPORTING-LINE STRUCTURE collapsed into the registry — the registry's `home`/`sub_home` + `dispatchable_by` are now the SINGLE structural source, verified against the on-disk spec tree by scan:role-parity (the independent, non-vacuous witness). The LIVE structural consumers (role-parity, org-roles.domainRoles/buildChainDoerRoles) now derive from the registry, NOT from `domains{}` below. `domains{}` is RETAINED as a non-authoritative legacy view ONLY because `routing`/`gauntlets` still reference its (stale, pre-rename) role names; its per-role roster (leads/specialists/builders + `agent`) is SUPERSEDED dead weight — E8 (stale-ref cleanup) physically removes it together with the routing-role rename. Do NOT re-add a structural consumer that reads `domains{}` rosters.",
   "orchestrator": { "role": "alpha", "agent": "alpha" },
   "referee": {
     "role": "beta",
     "agent": "beta",
     "scope": "Cross-domain conflict, risk, final ship gate. Enters intra-domain ONLY for ship-gate or cross-domain conflicts — NOT every intra-domain disagreement (not an intra-domain appeal court). β EVT-org-gpt-rereview-beta-001."
   },
+  "_domains_superseded": "ED-024 (ADR-0010): SUPERSEDED as the reporting-line structural source — role-registry.json (home/sub_home/dispatchable_by) is now the single structural source, witnessed against the on-disk spec tree by scan:role-parity. The per-role rosters below (leads/specialists/builders + their `role`/`agent`) carry STALE pre-rename names (director-of-marketing→director-of-growth, product-designer→design-lead, research-insight-lead→research-lead, etc.) and omit most live roles; NO live structural consumer reads them any more. Retained ONLY so `routing`/`gauntlets` (which still name these stale roles) keep resolving until E8 removes this block + renames the routing roles together. Treat as read-only legacy; do not extend.",
   "domains": {
     "product": {
       "director": { "role": "director-of-product-management", "agent": "director-of-product" },

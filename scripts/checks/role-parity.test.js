@@ -9,7 +9,16 @@
  */
 
 const assert = require("assert");
-const { evaluate, evaluateRegistry, evaluateHooks, parseGammaOnlyTypes, collectOrgRoles } = require("./role-parity-scan");
+const { execFileSync } = require("child_process");
+const {
+  evaluate,
+  evaluateRegistry,
+  evaluateReportingStructure,
+  scanSpecTree,
+  evaluateHooks,
+  parseGammaOnlyTypes,
+  collectOrgRoles,
+} = require("./role-parity-scan");
 
 let passed = 0;
 const failures = [];
@@ -172,6 +181,99 @@ test("reporting-line: reviewer dispatchable_by a build_chain TOOL → rejected (
   const errs = evaluateRegistry(r, catalogStub);
   assert.ok(errs.some((e) => /reviewer "rvw" is dispatchable_by doer "scaffold".*build_chain/.test(e)),
     `expected build_chain-doer violation, got: ${errs.join("; ")}`);
+});
+
+// ── ED-024 INDEPENDENT-WITNESS bite-tests — the Trap-A non-vacuity proof ─────
+// Once the org-map reporting-line view collapses into the registry, role-parity
+// reads the registry for the reporting structure. evaluateReportingStructure keeps
+// the gate non-vacuous by checking that structure against the INDEPENDENT spec
+// tree (scanSpecTree, file-authored, NOT registry-derived). These tests PROVE the
+// witness BITES when the registry's reporting fields drift from the tree — exactly
+// the property dispatch-routing-parity's bite-test proves for its registry anchor.
+// A synthetic spec-tree witness (decoupled from disk so the bite is deterministic).
+const witnessTree = { byName: {
+  alpha:           { home: "president",   sub_home: null,      file: "president/alpha.md" },
+  "product-lead":  { home: "product",     sub_home: null,      file: "product/product-lead.md" },
+  "qa-reviewer":   { home: "product",     sub_home: "quality", file: "product/quality/qa-reviewer.md" },
+  "frontend-builder": { home: "engineering", sub_home: "frontend", file: "engineering/frontend/builder.md" },
+} };
+const structReg = { roles: {
+  alpha:              { home: "president",   tier: "face",   kind: "run" },
+  "product-lead":     { home: "product",     tier: "lead",   kind: "lead" },
+  "qa-reviewer":      { home: "product", sub_home: "quality", tier: "worker", kind: "reviewer" },
+  "frontend-builder": { home: "engineering", sub_home: "frontend", tier: "worker", kind: "builder" },
+} };
+
+test("witness: registry ⇄ spec tree consistent → 0 errors", () => {
+  const errs = evaluateReportingStructure({ reg: clone(structReg), specTree: witnessTree });
+  assert.deepStrictEqual(errs, [], `expected clean, got: ${errs.join("; ")}`);
+});
+
+// BITE 1 (non-vacuity) — a registry HOME that drifts from the spec-tree department
+// IS caught. This is the whole reason the witness exists: the structure lives in
+// the registry, but a wrong reporting department is caught against the FILE TREE,
+// not against the registry itself. A registry-vs-registry check would MISS this.
+test("witness: registry home drifts from spec-tree department → rejected", () => {
+  const r = clone(structReg);
+  r.roles["product-lead"].home = "engineering"; // registry says eng; spec lives in product/
+  const errs = evaluateReportingStructure({ reg: r, specTree: witnessTree });
+  assert.ok(errs.some((e) => /home-drift: registry role "product-lead" home="engineering".*department "product"/.test(e)),
+    `expected home-drift bite, got: ${errs.join("; ")}`);
+});
+
+// BITE 2 — a registry SUB_HOME (pod) that drifts from the spec-tree pod is caught.
+test("witness: registry sub_home drifts from spec-tree pod → rejected", () => {
+  const r = clone(structReg);
+  r.roles["qa-reviewer"].sub_home = "frontend"; // spec lives in product/quality/
+  const errs = evaluateReportingStructure({ reg: r, specTree: witnessTree });
+  assert.ok(errs.some((e) => /sub_home-drift: registry role "qa-reviewer" sub_home="frontend".*pod "quality"/.test(e)),
+    `expected sub_home-drift bite, got: ${errs.join("; ")}`);
+});
+
+// BITE 3 — a registry role with NO backing spec on disk is caught (the structure
+// names a role the tree does not back — e.g. a role added to the registry whose
+// spec was never filed, or a typo'd registry key).
+test("witness: registry role absent from spec tree → rejected (no-spec-on-disk)", () => {
+  const r = clone(structReg);
+  r.roles["ghost-lead"] = { home: "product", tier: "lead", kind: "lead" };
+  const errs = evaluateReportingStructure({ reg: r, specTree: witnessTree });
+  assert.ok(errs.some((e) => /no-spec-on-disk: registry role "ghost-lead"/.test(e)),
+    `expected no-spec-on-disk bite, got: ${errs.join("; ")}`);
+});
+
+// BITE 4 — sub_home present in registry but the spec is at department level (no pod)
+// → drift (absent ≢ "quality"). Guards the absent≡null normalization both ways.
+test("witness: registry sub_home set but spec at department level → rejected", () => {
+  const r = clone(structReg);
+  r.roles["product-lead"].sub_home = "quality"; // spec lives directly in product/, no pod
+  const errs = evaluateReportingStructure({ reg: r, specTree: witnessTree });
+  assert.ok(errs.some((e) => /sub_home-drift: registry role "product-lead" sub_home="quality".*pod \(none\)/.test(e)),
+    `expected sub_home-vs-none bite, got: ${errs.join("; ")}`);
+});
+
+// NO FALSE POSITIVE — an exempt role skips the home/sub_home check but must still
+// resolve to a spec (the exempt seam for faces/system roles, if ever needed).
+test("witness: exempt role skips home check but still needs a spec", () => {
+  const r = clone(structReg);
+  r.roles.alpha.home = "somewhere-else"; // would drift, but alpha is exempt
+  const errs = evaluateReportingStructure({ reg: r, specTree: witnessTree, exempt: new Set(["alpha"]) });
+  assert.ok(!errs.some((e) => /alpha/.test(e)), `exempt role must not be flagged for home drift, got: ${errs.join("; ")}`);
+});
+
+// INTEGRATION (real disk) — scanSpecTree over the real .claude/agents/ tree backs
+// EVERY real registry role, and the real registry's home/sub_home match the tree.
+// This is the live, non-synthetic non-vacuity proof: it would FAIL the moment the
+// real registry's reporting structure diverged from where the specs actually live.
+test("witness: REAL registry ⇄ REAL spec tree (live, 0 drift)", () => {
+  const fs = require("fs");
+  const path = require("path");
+  const root = path.join(__dirname, "..", "..");
+  const reg = JSON.parse(fs.readFileSync(path.join(root, ".claude/agents/_org/role-registry.json"), "utf8").replace(/^﻿/, ""));
+  const specTree = scanSpecTree(root);
+  const errs = evaluateReportingStructure({ reg, specTree });
+  assert.deepStrictEqual(errs, [], `real registry drifted from the spec tree: ${errs.join("; ")}`);
+  // sanity: the witness actually SAW the roster (not an empty-tree vacuous pass)
+  assert.ok(Object.keys(specTree.byName).length >= 30, `spec tree witness saw too few specs (${Object.keys(specTree.byName).length}) — would be a vacuous pass`);
 });
 
 // ── Hook scrapped-literal scan bite-tests (ADR-0007 R4) ─────────────────────

@@ -118,7 +118,7 @@ function collectOrgRoles(org) {
 function fmName(file) {
   try {
     const body = fs.readFileSync(file, "utf8");
-    const fm = body.match(/^---\n([\s\S]*?)\n---/);
+    const fm = body.match(/^---\r?\n([\s\S]*?)\r?\n---/);
     if (!fm) return null;
     const m = fm[1].match(/^name:\s*(\S+)/m);
     return m ? m[1] : null;
@@ -146,6 +146,119 @@ function makeRealAgentResolver(root) {
     walk(agentsRoot, 0);
     return found;
   };
+}
+
+// ── ED-024 INDEPENDENT WITNESS: the on-disk spec tree ───────────────────────
+// When ED-024 collapses org-map's reporting-line view into the registry, the
+// registry becomes the single STRUCTURAL source (home/sub_home/dispatchable_by).
+// That creates the TRAP-A vacuity risk: if role-parity reads the registry for the
+// reporting structure AND checks the registry against itself, the gate is
+// tautological — a false-green. (Identical to scan:dispatch-routing-parity's
+// registry anchor: it survives the providers/catalog rewire ONLY because it also
+// checks the registry against independent, non-derived witnesses — the human doc
+// + the loud-fallback consumers. DUMP 2026-06-05, Trap-A.)
+//
+// THE WITNESS is the agent spec TREE under .claude/agents/. It is independently
+// authored data — a human files each spec .md in a department/pod directory and
+// writes its frontmatter `name:`. It is NOT derived from role-registry.json. So
+// checking the registry's declared home/sub_home AGAINST where the spec physically
+// lives stays meaningful after the collapse: it catches a registry reporting field
+// (home/sub_home — i.e. which department/pod a role reports into) that drifts from
+// the spec tree, a role with no spec on disk, and a spec whose frontmatter name
+// disagrees with its registry key. The bite-test PROVES each bites.
+//
+// Department = the FIRST path segment under .claude/agents/ (engineering, product,
+// growth, president, _system). Pod (sub_home) = the SECOND segment IFF the spec is
+// nested a level deeper (engineering/frontend/builder.md → home=engineering,
+// sub_home=frontend); a spec directly in the department dir has no pod. This is
+// derived ENTIRELY from the file's location + frontmatter — never from the
+// registry's own `spec`/`home` fields — so the registry cannot "mark its own
+// homework". Returns { byName: { <roleId>: { home, sub_home, file } }, files }.
+//
+// Known non-pod department-level directories whose immediate children are still
+// "department-level" specs (no pod) — a spec one level below the department but
+// inside one of these is treated as having NO pod. (Currently none: every nested
+// dir IS a pod. Kept as the documented seam if a non-pod grouping dir appears.)
+const NON_POD_SUBDIRS = new Set([]);
+
+function scanSpecTree(root) {
+  const agentsRoot = path.join(root, ".claude", "agents");
+  const byName = {};
+  let files = 0;
+  const walk = (dir, segs, depth) => {
+    if (depth > 6) return;
+    let ents;
+    try { ents = fs.readdirSync(dir, { withFileTypes: true }); } catch { return; }
+    for (const e of ents) {
+      // Skip dot-dirs (.system etc.) — they hold guides/policy, not role specs.
+      if (e.name.startsWith(".")) continue;
+      if (e.isDirectory()) {
+        walk(path.join(dir, e.name), [...segs, e.name], depth + 1);
+      } else if (e.isFile() && e.name.endsWith(".md")) {
+        const nm = fmName(path.join(dir, e.name));
+        if (!nm) continue; // a .md with no frontmatter name is not a role spec
+        files++;
+        const home = segs[0] || null; // first dir under .claude/agents/
+        // pod = the next segment, when the spec is nested below the department
+        // dir and that segment is not a documented non-pod grouping dir.
+        let sub_home = null;
+        if (segs.length >= 2 && !NON_POD_SUBDIRS.has(segs[1])) sub_home = segs[1];
+        // First spec wins per role id (role ids are unique; a duplicate name is a
+        // separate problem the resolver/agentResolves path would surface).
+        if (!byName[nm]) {
+          byName[nm] = { home, sub_home, file: path.relative(root, path.join(dir, e.name)).replace(/\\/g, "/") };
+        }
+      }
+    }
+  };
+  walk(agentsRoot, [], 0);
+  return { byName, files };
+}
+
+/**
+ * Pure reporting-structure witness core (injectable seams → bite-testable).
+ *
+ * Given the registry roles + the independent spec-tree map, REJECT each way the
+ * registry's reporting structure can drift from the ground-truth tree:
+ *   - no-spec-on-disk : a registry role whose id has NO spec .md under
+ *                       .claude/agents/ (frontmatter name match). The reporting
+ *                       structure names a role that doesn't physically exist.
+ *   - home-drift      : registry home != the department dir the spec lives in.
+ *   - sub_home-drift  : registry sub_home != the pod dir the spec lives in
+ *                       (treating absent ≡ null on both sides).
+ *
+ * This is the NON-VACUOUS anchor for the post-collapse role-parity: the structure
+ * lives in the registry, but it is verified against the file tree (witness), not
+ * against itself. Roles can be exempted (faces/system roles whose "home" is a
+ * grouping dir, not a reporting department) via `exempt`.
+ *
+ * @param reg       parsed role-registry.json (uses reg.roles)
+ * @param specTree  { byName } from scanSpecTree (the independent witness)
+ * @param exempt    Set of role ids to skip home/sub_home checks for (still must
+ *                  resolve to a spec) — default empty.
+ */
+function evaluateReportingStructure({ reg, specTree, exempt = new Set() }) {
+  const errors = [];
+  const roles = (reg && reg.roles) || {};
+  const byName = (specTree && specTree.byName) || {};
+  for (const [name, r] of Object.entries(roles)) {
+    if (!r || typeof r !== "object") continue;
+    const onDisk = byName[name];
+    if (!onDisk) {
+      errors.push(`no-spec-on-disk: registry role "${name}" has no spec .md under .claude/agents/ whose frontmatter name="${name}" (reporting structure names a role the spec tree does not back)`);
+      continue;
+    }
+    if (exempt.has(name)) continue;
+    if (r.home && onDisk.home && r.home !== onDisk.home) {
+      errors.push(`home-drift: registry role "${name}" home="${r.home}" but its spec lives under department "${onDisk.home}" (${onDisk.file}) — the registry's reporting department drifted from the spec tree`);
+    }
+    const regSub = r.sub_home || null;
+    const diskSub = onDisk.sub_home || null;
+    if (regSub !== diskSub) {
+      errors.push(`sub_home-drift: registry role "${name}" sub_home=${regSub ? `"${regSub}"` : "(none)"} but its spec lives in pod ${diskSub ? `"${diskSub}"` : "(none)"} (${onDisk.file})`);
+    }
+  }
+  return errors;
 }
 
 /**
@@ -208,9 +321,15 @@ function evaluate({ org, ROLES, gammaOnly, agentResolves, registryRoles = new Se
 // source of role identity + the model map + dispatch authority. Assert INTERNAL
 // consistency — every model exists in the catalog, every dispatch-authority ref
 // resolves to a registry role, and the effort policy holds (max only on alpha;
-// gpt-5.5 caps at xhigh). Spec-resolution for new roles is NOT asserted here (the
-// department tree is built in a later wave); catalog↔registry roster agreement is
-// a post-migration gate. Fail-closed (fatal) on an unreadable/unparseable registry.
+// gpt-5.5 caps at xhigh).
+//
+// ED-024: the registry is now the single STRUCTURAL source (the org-map reporting-
+// line view collapsed into it), so we ALSO assert the registry's reporting
+// structure (home/sub_home per role) against the INDEPENDENT spec-tree witness
+// (scanSpecTree) — the non-vacuous Trap-A anchor. This replaces the old "spec-
+// resolution NOT asserted here / department tree built later" note: the tree is
+// built, so home/sub_home drift is now a hard parity failure, not a deferral.
+// Fail-closed (fatal) on an unreadable/unparseable registry.
 function validateRegistry(root, catalog) {
   const regPath = path.join(
     root,
@@ -225,7 +344,11 @@ function validateRegistry(root, catalog) {
       fatal: true,
     };
   }
-  return { errors: evaluateRegistry(reg, catalog), fatal: false };
+  const errors = evaluateRegistry(reg, catalog);
+  // ED-024 independent witness: registry reporting structure ↔ on-disk spec tree.
+  const specTree = scanSpecTree(root);
+  errors.push(...evaluateReportingStructure({ reg, specTree }));
+  return { errors, fatal: false };
 }
 
 // ADR-0007 reporting-line invariant (operator, 2026-06-04): "reviewers CANNOT
@@ -423,4 +546,4 @@ function main(argv) {
 
 if (require.main === module) process.exit(main(process.argv));
 
-module.exports = { evaluate, evaluateRegistry, validateRegistry, evaluateHooks, readHookSources, referencesScrappedLiteral, HOOK_SCRAPPED_LITERALS, parseGammaOnlyTypes, collectOrgRoles, makeRealAgentResolver, isDoerRole };
+module.exports = { evaluate, evaluateRegistry, validateRegistry, evaluateReportingStructure, scanSpecTree, evaluateHooks, readHookSources, referencesScrappedLiteral, HOOK_SCRAPPED_LITERALS, parseGammaOnlyTypes, collectOrgRoles, makeRealAgentResolver, isDoerRole };
