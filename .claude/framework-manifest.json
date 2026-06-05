@@ -5542,7 +5542,7 @@
         "src": "scripts/warpos/manifest/walk-skip.js",
         "dest": "scripts/warpos/manifest/walk-skip.js",
         "kind": "warpos_script",
-        "sha256": "69c0ea24bf118129a8ef5d3a8bbc2fee1ddea214904d1ab0af40b193de40724a",
+        "sha256": "ac48ab8c757af567b38dd571d5615f22c381cf064962a166dc82741b9a9a271f",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",

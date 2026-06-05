@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "0.13.1",
-  "installedCommit": "b3c7d5a6c7d366afa62fe97705071151bf898f11",
-  "installedAt": "2026-06-05T01:44:46.929Z",
+  "installedCommit": "9a132af0ef6e0085d5bfed7254cb055a374752d5",
+  "installedAt": "2026-06-05T02:03:10.294Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -4564,8 +4564,8 @@
       "dest": "scripts/warpos/manifest/walk-skip.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "69c0ea24bf118129a8ef5d3a8bbc2fee1ddea214904d1ab0af40b193de40724a",
-      "currentHashAtInstall": "69c0ea24bf118129a8ef5d3a8bbc2fee1ddea214904d1ab0af40b193de40724a",
+      "installedHash": "ac48ab8c757af567b38dd571d5615f22c381cf064962a166dc82741b9a9a271f",
+      "currentHashAtInstall": "ac48ab8c757af567b38dd571d5615f22c381cf064962a166dc82741b9a9a271f",
       "introducedIn": "0.0.0"
     },
     {

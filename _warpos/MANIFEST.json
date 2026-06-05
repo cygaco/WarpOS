@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-05T01:44:47.073Z",
+  "generatedAt": "2026-06-05T02:03:10.435Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.13.1",
   "migrations": [],
@@ -20,8 +20,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "ce12ca56c5a33fb59887bc6d4f8b0cbd5ec2567276df838e38c33393a3f62fe6",
-      "installedSha": "ce12ca56c5a33fb59887bc6d4f8b0cbd5ec2567276df838e38c33393a3f62fe6"
+      "sha256": "f5c08df8ed7d2d79538e4a56181f4c9da51ffbe7e984d83e5a2816c070877565",
+      "installedSha": "f5c08df8ed7d2d79538e4a56181f4c9da51ffbe7e984d83e5a2816c070877565"
     },
     "AGENT-STRUCTURE.md": {
       "owner": "framework",
@@ -3109,8 +3109,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/warpos/manifest/walk-skip.js",
-      "sha256": "69c0ea24bf118129a8ef5d3a8bbc2fee1ddea214904d1ab0af40b193de40724a",
-      "installedSha": "69c0ea24bf118129a8ef5d3a8bbc2fee1ddea214904d1ab0af40b193de40724a"
+      "sha256": "ac48ab8c757af567b38dd571d5615f22c381cf064962a166dc82741b9a9a271f",
+      "installedSha": "ac48ab8c757af567b38dd571d5615f22c381cf064962a166dc82741b9a9a271f"
     },
     "scripts/warpos/lib/content-hash.js": {
       "owner": "framework",

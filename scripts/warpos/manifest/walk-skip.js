@@ -32,6 +32,7 @@ const WALK_SKIP_DIRS = new Set([
   ".worktrees", // repo-root builder isolation worktrees (.worktrees/wt-*) — agent scratch; never framework, must never enter the shipping manifest nor break its build
   "_planning", // operator planning scratch for in-flight system updates; not framework, not shipped
   "_reports", // per-project report OUTPUT (sprint/milestone/session/checkpoint reports via /report); created on use like runtime/ — NOT framework content. The /report skill (.claude/commands/) + framework/templates/report/ ship and seed it; the emitted reports themselves never ship. (SP-20260531-001)
+  "agent-memory", // .claude/agent-memory/<teammate>/ — per-agent teammate memory store (e.g. Beta's accumulated judgment); runtime/local like the home memory dir + gitignored, NOT framework content. Without this skip the builder can't classify it and the build fails (session-end 2026-06-05).
 ]);
 
 // Individual files never enumerated in the shipping manifest.

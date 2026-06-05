@@ -37,6 +37,8 @@ Thumbs.db
 .claude/project/maps/system-coherence.graph.json
 .claude/logs/
 .claude/worktrees/
+# Per-agent teammate memory store (runtime; local like the home memory dir, not committed).
+.claude/agent-memory/
 
 # Session handoff dump (regenerable via /session:dump — do NOT commit)
 DUMP.md
