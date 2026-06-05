@@ -4,13 +4,13 @@
 >
 > **Legend:** ✅ done & verified · 🟡 partial · ⬜ open/not-started · 🅿️ parked (deliberate) · 🔒 design-locked (deferred by decision)
 >
-> **State as of 2026-06-05 · `main` = `6dcd318`** (E5 `_knowledge/` layer LANDED; scan-gate PASS, operator-authorized push). Backup: `backup/pre-cutover-2026-06-04` (never delete).
+> **State as of 2026-06-05 · `main` = `db0a778`** (E5–E8 ALL LANDED — the ADR-0007 rewrite is DONE; `/scan:cutover-completeness` GREEN, 61-ref cutover debt cleaned). Backup: `backup/pre-cutover-2026-06-04` (never delete).
 
 ---
 
 ## The picture in one line
 
-**~95% done.** The *plumbing* (org tree, registries, routing, enforcers, skill resolution) **and the `_knowledge/` brain (E5)** are built, verified, and on `main`. What's left — **E6 (ED-024 org-map collapse), E7 (ε sprint-runtime), E8 (enforcer debt)** — is launching as **parallel `/sprint:full` sprints this session** (operator-authorized "all three", 2026-06-05).
+**DONE.** E1–E8 are built, verified, and on `main` (`db0a778`). This session landed the whole remaining rewrite via three parallel sprints: **E5** (`_knowledge/` brain), **E6** (org-map→registry collapse + spec-tree witness), **E7** (ε sprint-runtime + ADR-0009 + ED-025/ED-022), **E8** (ED-026 cutover gate + ED-021) — then **cleaned the 61-ref cutover debt** so `/scan:cutover-completeness` is GREEN. Every gate green. The only genuinely-staged item: the ε per-agent **spawn** increment (documented in ADR-0009 as the named follow-on; the engine + invariants + both ED-closures are real on main today). **The agent-system rewrite is complete.**
 
 ---
 
@@ -64,23 +64,21 @@ The shared agent-grounding brain (ADR-0007): two-kind taxonomy (β DECIDE 0.86) 
 - [x] Scan-gate PASS (independent agent, verified vs parent 11d54ec); ship-coverage GREEN; landed.
 **Also fixed in-flight:** 2 latent ship gaps (`scripts/skills` unshipped, `TRACKER.md` unclassified) + a `/fix:deep` cutover-ref cleanup (3 dead-role slugs; RCA: the alias table masks staleness → ED-026 enriched).
 
-### 🅿️ E6 — ED-024: `org-map.json` → registry structural collapse  *(parked, own sprint)*
-- [ ] 🅿️ Collapse org-map's reporting-line structural view into the registry (`dispatchable_by`)
-- **Why parked (β):** Trap-A-class refactor of `scan:role-parity`'s OWN source — needs the independent-witness design settled upfront. **Low urgency:** the authoritative source (`dispatchable_by`) is already correct + the reporting enforcer already reads it; org-map is a harmless stale secondary view.
+### ✅ E6 — ED-024: org-map → registry structural collapse  *(LANDED 2026-06-05 · merge `0320e11`)*
+- [x] Collapsed org-map's reporting-line roster into role-registry `dispatchable_by`; `scan:role-parity` now anchors on the registry, **witnessed by the independent on-disk spec tree** (spec-path encodes home/sub_home, frontmatter name:=role id) — NON-VACUOUS, proven by `role-parity.test` 30/30 (5 bite classes). The Trap-A discipline held. **ADR-0010**; ED-024 enforced.
 
-### 🔒 E7 — ε sprint-conductor RUNTIME  *(design-locked, deferred)*
-- [ ] 🔒 Build the ε runtime: instantiate ε + spawn the manager agent-set at each hook-point (honoring `residency`), replacing the script-driven phases' telemetry-only "consulted" records with real dispatch
-- [ ] ⬜ **ED-025** — extend the dispatcher-can't-override-FAIL gate to the ε/sprint `DELTA_RESULT` path (currently adhoc/γ only)
-- [ ] ⬜ **ED-022** closure — the `ui_touched`→design-quality consult signal (emitter built; closure open)
-- **Status:** sprints run **script-driven** today (`full.js` + the framework) — not blocking; ε-as-agent is the deferred enhancement. `epsilon.md` exists but is DESIGN-LOCKED.
+### ✅ E7 — ε sprint-conductor RUNTIME  *(LANDED 2026-06-05 · merge `34213e2` · ADR-0009)*
+- [x] Built the ε runtime (`scripts/sprint/epsilon-runtime.js`, 526L): a registry reader + lifecycle engine that resolves the matched agent-set at each hook-point + DERIVES each role's dispatch route from the registry (ADR-0008 pattern) + writes REAL completion records (replacing telemetry-only). Invariants enforced structurally (sole builder-dispatcher, author-consults can't dispatch, β at boundaries, self-gates via the override gate). DESIGN-LOCKED banner lifted.
+- [x] **ADDITIVE** — wired into `full.js` behind `--epsilon`; default path BYTE-IDENTICAL (proven: `test-sprint-full` 156/156 + an ε-vs-script coverage-parity test).
+- [x] **ED-025** closed (the can't-override-FAIL gate covers the ε/sprint path; ε self-gates via `assertNoFailOverride`). **ED-022** closed + proven E2E (UI sprint records the design-quality consult; non-vacuous).
+- [ ] ⬜ **STAGED (ADR-0009 risk #4):** the literal per-agent SPAWN under `--epsilon-dispatch` — the runtime shapes+writes real records now; spawning each agent on its resolved route is the next increment. *The only honestly-deferred piece in the rewrite.*
 
-### 🟡 E8 — enforcer-debt hardening
-Rewrite-specific debt:
-- [x] **ED-023** — `adhoc-fail-override` REVIEWER_KEYS derives from the registry *(closed this session; ledger flipped to enforced)*
-- [ ] ⬜ **ED-026** — cutover-completeness gate (grep the imperative layer — scripts/paths/hooks/fixtures — for deleted-old-tree literals; fail closed). **Enriched 2026-06-05 (/fix:deep):** the `role-aliases.js` back-compat table MASKS staleness — `manager-principles` + `role-parity` pass GREEN on stale data, so the gate must check RAW literals (not alias-resolved roles) and allowlist the legit exceptions (alias table, frozen `framework/releases/*`, `was:` fields, the ADR, migrated-from comments). Known live instances to clean: `_principles/registry.json` dead keys + `03-managers/` paths, `resonance-conversion-rubric`, role-registry `current_spec` (unread), the `00-alex/01-adhoc/02-oneshot/03-managers` surface. Learning `L-2026-06-05-alias-table-masks-cutover-staleness`.
-- [ ] ⬜ **ED-021** — heavy-skill lean-return dispatch contract (orchestrators hold envelopes, not full sub-output)
-- [ ] 🟡 **ED-022 / ED-025** — see E7 (sprint-path enforcers)
-Older framework debt (pre-rewrite, lower priority): ED-009 (shared repo-role resolver), ED-010 (lifecycle phases 3–5 skill gap), ED-011 (retro auto-trigger), ED-012 (DEV_SETUP day-zero), ED-013, ED-014, ED-015, ED-017, ED-018, ED-019, ED-020 — all `open`; triage in the final session or defer to the framework backlog.
+### ✅ E8 — enforcer-debt hardening  *(rewrite-specific debt CLOSED 2026-06-05)*
+- [x] **ED-023** — `adhoc-fail-override` REVIEWER_KEYS derives from the registry *(prior session)*.
+- [x] **ED-026** — `/scan:cutover-completeness` (E8, merge `146108f`): greps RAW deleted-tree literals + renamed-away roles across the imperative layer + keystone registries, fail-closed, wired into `/scan:full`; checks raw literals NOT alias-resolved (the alias-table-masking insight, `L-2026-06-05`). **The 61 flagged stale refs were CLEANED** (`db0a778`) → gate GREEN. Both the enforcer-gap AND the live debt are closed.
+- [x] **ED-021** — heavy-skill lean-return dispatch contract (`dispatch-route-guard.js#findHeavySkillAdvisory`, E8).
+- [x] **ED-022 / ED-024 / ED-025** — closed by E7 (ε runtime) · E6 (org-map collapse) · E7. All `enforced` in the debt ledger.
+Older framework debt (pre-rewrite, NOT rewrite blockers — ordinary backlog): ED-009, ED-010, ED-011, ED-012, ED-013, ED-014, ED-015, ED-017, ED-018, ED-019, ED-020, ED-027, ED-028 — all `open`; triage in future sessions.
 
 ### 🟡 Operational papercuts (RIs — not rewrite blockers)
 - [ ] ⬜ **RI-001** — BC-02/BC-05 false-RED on Windows CRLF (high)
@@ -93,9 +91,11 @@ Older framework debt (pre-rewrite, lower priority): ED-009 (shared repo-role res
 
 1. ✅ **E4 finished** + landed (prior).
 2. ✅ **E5 — `_knowledge/` layer LANDED** (`6dcd318`, 2026-06-05) — directory-shape decided (β), `_knowledge:integrate` + coverage enforcer + M3 migration + store domains, scan-gate PASS.
-3. ⏳ **E6 — ED-024** — parked org-map collapse, its own scoped sprint (design the role-parity independent-witness first — Trap-A). **Launching as a parallel `/sprint:full` this session.**
-4. ⏳ **E7 — ε runtime + ED-025/ED-022** — the sprint conductor (biggest, most-deferred; ADR written as part of sprint-design). **Launching as a parallel `/sprint:full` this session** (operator authorized "all three").
-5. ⏳ **E8 — ED-026 / ED-021** + triage the older EDs + the 3 RIs. **Launching as a parallel `/sprint:full` this session.** ED-026 carries the enriched alias-masking scope (see E8).
+3. ✅ **E6 — ED-024 LANDED** (`0320e11`) — org-map collapse + spec-tree witness (non-vacuous, 30/30 bite-test). ADR-0010.
+4. ✅ **E7 — ε runtime LANDED** (`34213e2`, ADR-0009) — additive (default path byte-identical); ED-025 + ED-022 closed. One staged increment: per-agent spawn (ADR-0009 risk #4).
+5. ✅ **E8 — ED-026 + ED-021 LANDED** (`146108f`) + the 61-ref cutover cleanup (`db0a778`) → `/scan:cutover-completeness` GREEN.
+
+**🏁 The agent-system rewrite (ADR-0007, E1–E8) is COMPLETE on `main`.** Remaining = the ε per-agent-spawn increment (ADR-0009) + the older framework backlog (ED-009/010/… + the 3 RIs) — none are rewrite blockers; ordinary backlog for future sessions.
 
 When E5–E7 close, the agent-system rewrite is **done** — and the durable form of this tracker (per the ROADMAP "epics-over-milestones" entry) becomes the standing planning instrument.
 
