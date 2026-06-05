@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-05T18:28:10.230Z",
+  "generatedAt": "2026-06-05T18:40:11.464Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.13.1",
   "migrations": [],
@@ -5120,6 +5120,20 @@
       "source": "scripts/checks/scan-coverage.test.js",
       "sha256": "056bcfb969a574638134198cfc9f40b23e567f9300e80057634232c15228bd26",
       "installedSha": "056bcfb969a574638134198cfc9f40b23e567f9300e80057634232c15228bd26"
+    },
+    "scripts/checks/skill-hook-coverage.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/skill-hook-coverage.js",
+      "sha256": "48815fe6c0f6dde595ecef35d45a32c57b7f2a81b33d4ce8081b5b3fa1c77771",
+      "installedSha": "48815fe6c0f6dde595ecef35d45a32c57b7f2a81b33d4ce8081b5b3fa1c77771"
+    },
+    "scripts/checks/skill-hook-coverage.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/skill-hook-coverage.test.js",
+      "sha256": "c764eb524c8315f5bedafde448dabd5d51ac41074c8af6568c47edda533bf4ef",
+      "installedSha": "c764eb524c8315f5bedafde448dabd5d51ac41074c8af6568c47edda533bf4ef"
     },
     "scripts/checks/sprint-beta-honesty.js": {
       "owner": "framework",
@@ -15405,8 +15419,8 @@
       "managed": true,
       "source": ".claude/commands/scan/full.md",
       "kind": "md",
-      "sha256": "c070f30ae67b6d1887a331b0d2204ebe9cab8201fce907c818489d1ebe10c3f3",
-      "installedSha": "c070f30ae67b6d1887a331b0d2204ebe9cab8201fce907c818489d1ebe10c3f3"
+      "sha256": "056f104be9554a936273e5ec794d1423d6b43fbe164b8d592a8e2b082166fb3b",
+      "installedSha": "056f104be9554a936273e5ec794d1423d6b43fbe164b8d592a8e2b082166fb3b"
     },
     ".claude/commands/scan/ingest-firewall.md": {
       "owner": "framework",
@@ -15511,6 +15525,14 @@
       "kind": "md",
       "sha256": "6cb77746c56fa9291ef1c504a5d8bcf7980454676aa31a0dd0517cd9530676a9",
       "installedSha": "6cb77746c56fa9291ef1c504a5d8bcf7980454676aa31a0dd0517cd9530676a9"
+    },
+    ".claude/commands/scan/skill-hook-coverage.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/commands/scan/skill-hook-coverage.md",
+      "kind": "md",
+      "sha256": "bb01080006e363862b4bf41f9d81d92b983bb54a4562f1da457475a90c1e4237",
+      "installedSha": "bb01080006e363862b4bf41f9d81d92b983bb54a4562f1da457475a90c1e4237"
     },
     ".claude/commands/scan/sprint-beta-honesty.md": {
       "owner": "framework",

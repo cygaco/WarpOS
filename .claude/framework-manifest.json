@@ -4,7 +4,7 @@
   "generated_by": "scripts/generate-framework-manifest.js",
   "counts": {
     "agent": 75,
-    "skill": 199,
+    "skill": 200,
     "reference": 28,
     "maps_baseline": 25,
     "hook": 68,
@@ -13,7 +13,7 @@
     "pattern": 6,
     "fixture": 23,
     "warpos_script": 55,
-    "check_tool": 69,
+    "check_tool": 71,
     "agent_tool": 3,
     "decision_tool": 1,
     "runtime_tool": 1,
@@ -56,7 +56,7 @@
     "module_scope": 1,
     "framework_doc": 3
   },
-  "total": 1028,
+  "total": 1031,
   "assets": {
     "agent": [
       {
@@ -2454,7 +2454,7 @@
         "src": ".claude/commands/scan/full.md",
         "dest": ".claude/commands/scan/full.md",
         "kind": "skill",
-        "sha256": "c070f30ae67b6d1887a331b0d2204ebe9cab8201fce907c818489d1ebe10c3f3",
+        "sha256": "056f104be9554a936273e5ec794d1423d6b43fbe164b8d592a8e2b082166fb3b",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
@@ -2611,6 +2611,18 @@
         "dest": ".claude/commands/scan/scan-coverage.md",
         "kind": "skill",
         "sha256": "6cb77746c56fa9291ef1c504a5d8bcf7980454676aa31a0dd0517cd9530676a9",
+        "owner": "framework",
+        "mergeStrategy": "three_way_markdown",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "skill.scan.skill-hook-coverage.md",
+        "src": ".claude/commands/scan/skill-hook-coverage.md",
+        "dest": ".claude/commands/scan/skill-hook-coverage.md",
+        "kind": "skill",
+        "sha256": "bb01080006e363862b4bf41f9d81d92b983bb54a4562f1da457475a90c1e4237",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
@@ -6517,6 +6529,30 @@
         "dest": "scripts/checks/scan-coverage.test.js",
         "kind": "check_tool",
         "sha256": "056bcfb969a574638134198cfc9f40b23e567f9300e80057634232c15228bd26",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "check_tool.skill-hook-coverage.js",
+        "src": "scripts/checks/skill-hook-coverage.js",
+        "dest": "scripts/checks/skill-hook-coverage.js",
+        "kind": "check_tool",
+        "sha256": "48815fe6c0f6dde595ecef35d45a32c57b7f2a81b33d4ce8081b5b3fa1c77771",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "check_tool.skill-hook-coverage.test.js",
+        "src": "scripts/checks/skill-hook-coverage.test.js",
+        "dest": "scripts/checks/skill-hook-coverage.test.js",
+        "kind": "check_tool",
+        "sha256": "c764eb524c8315f5bedafde448dabd5d51ac41074c8af6568c47edda533bf4ef",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",

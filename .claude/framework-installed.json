@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "0.13.1",
-  "installedCommit": "2202abf16360127b8b666e336d42637171a0e2a3",
-  "installedAt": "2026-06-05T18:28:10.073Z",
+  "installedCommit": "aa86338f9697e6898ac6d8cb7cf1e5ac106f3c2c",
+  "installedAt": "2026-06-05T18:40:11.312Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -2004,8 +2004,8 @@
       "dest": ".claude/commands/scan/full.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "c070f30ae67b6d1887a331b0d2204ebe9cab8201fce907c818489d1ebe10c3f3",
-      "currentHashAtInstall": "c070f30ae67b6d1887a331b0d2204ebe9cab8201fce907c818489d1ebe10c3f3",
+      "installedHash": "056f104be9554a936273e5ec794d1423d6b43fbe164b8d592a8e2b082166fb3b",
+      "currentHashAtInstall": "056f104be9554a936273e5ec794d1423d6b43fbe164b8d592a8e2b082166fb3b",
       "introducedIn": "0.0.0"
     },
     {
@@ -2136,6 +2136,16 @@
       "mergeStrategy": "three_way_markdown",
       "installedHash": "6cb77746c56fa9291ef1c504a5d8bcf7980454676aa31a0dd0517cd9530676a9",
       "currentHashAtInstall": "6cb77746c56fa9291ef1c504a5d8bcf7980454676aa31a0dd0517cd9530676a9",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "skill.scan.skill-hook-coverage.md",
+      "kind": "skill",
+      "dest": ".claude/commands/scan/skill-hook-coverage.md",
+      "owner": "framework",
+      "mergeStrategy": "three_way_markdown",
+      "installedHash": "bb01080006e363862b4bf41f9d81d92b983bb54a4562f1da457475a90c1e4237",
+      "currentHashAtInstall": "bb01080006e363862b4bf41f9d81d92b983bb54a4562f1da457475a90c1e4237",
       "introducedIn": "0.0.0"
     },
     {
@@ -5376,6 +5386,26 @@
       "mergeStrategy": "replace_if_unmodified",
       "installedHash": "056bcfb969a574638134198cfc9f40b23e567f9300e80057634232c15228bd26",
       "currentHashAtInstall": "056bcfb969a574638134198cfc9f40b23e567f9300e80057634232c15228bd26",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "check_tool.skill-hook-coverage.js",
+      "kind": "check_tool",
+      "dest": "scripts/checks/skill-hook-coverage.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "48815fe6c0f6dde595ecef35d45a32c57b7f2a81b33d4ce8081b5b3fa1c77771",
+      "currentHashAtInstall": "48815fe6c0f6dde595ecef35d45a32c57b7f2a81b33d4ce8081b5b3fa1c77771",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "check_tool.skill-hook-coverage.test.js",
+      "kind": "check_tool",
+      "dest": "scripts/checks/skill-hook-coverage.test.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "c764eb524c8315f5bedafde448dabd5d51ac41074c8af6568c47edda533bf4ef",
+      "currentHashAtInstall": "c764eb524c8315f5bedafde448dabd5d51ac41074c8af6568c47edda533bf4ef",
       "introducedIn": "0.0.0"
     },
     {
