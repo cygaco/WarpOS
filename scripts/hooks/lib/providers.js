@@ -314,7 +314,19 @@ const DEFAULT_PROVIDERS = {
  * `manifest.agentProviders`. This is the KEY decision: which agent goes to
  * which provider for model diversity.
  */
-const DEFAULT_AGENT_PROVIDERS = {
+// v0.2 consumer rewire: DERIVE from the role-registry keystone ∪ the back-compat
+// shim ∪ the W-4 freeform-consult pseudo-roles. GUARDED require + deriveOrFallback —
+// this is a hook lib, so a broken registry read must fall back to the literal, never
+// crash. CUT-SAFETY: derived yields the same provider for every role the literal
+// named (verified before the cut); the registry adds the claude manager/director
+// roles (behavior-neutral — getProviderForRole defaults unlisted → claude).
+let registryRoles = null;
+try {
+  registryRoles = require("../../dispatch/registry-roles");
+} catch {
+  /* fail-open: DEFAULT_AGENT_PROVIDERS falls back to its literal below */
+}
+const LITERAL_DEFAULT_AGENT_PROVIDERS = {
   alpha: "claude",
   beta: "claude",
   gamma: "claude",
@@ -351,6 +363,20 @@ const DEFAULT_AGENT_PROVIDERS = {
   advisor: "openai",
   consult: "openai",
 };
+
+const DEFAULT_AGENT_PROVIDERS = registryRoles
+  ? registryRoles.deriveOrFallback(
+      () => ({
+        ...registryRoles.providerMap(),
+        ...registryRoles.SCRAPPED_PROVIDER_ALIASES,
+        // W-4 freeform cross-provider consult pseudo-roles (not registry roles).
+        advisor: "openai",
+        consult: "openai",
+      }),
+      LITERAL_DEFAULT_AGENT_PROVIDERS,
+      "providers.DEFAULT_AGENT_PROVIDERS",
+    )
+  : LITERAL_DEFAULT_AGENT_PROVIDERS;
 
 /**
  * Build the reasoning-flag fragment for a given provider+role pair.

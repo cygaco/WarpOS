@@ -234,7 +234,13 @@ const ROLES = [
   "test-runner",
 ];
 
-const DEFAULT_PROVIDER_PER_ROLE = {
+// v0.2 consumer-rewire foundation: the per-role maps DERIVE from the role-registry
+// keystone (the single source). The literals below are RETAINED as the loud-fallback
+// recovery net — deriveOrFallback warns to stderr if the registry read fails; a
+// silent fallback would mask a broken derivation (β).
+const registryRoles = require("./registry-roles");
+
+const LITERAL_DEFAULT_PROVIDER_PER_ROLE = {
   alpha: "claude",
   beta: "claude",
   gamma: "claude",
@@ -271,7 +277,7 @@ const DEFAULT_PROVIDER_PER_ROLE = {
 // cross-provider gpt-5.5 review roles run `xhigh` (their ceiling). (qa stays
 // medium + stub-scaffold null until the Wave-2 restructure carries them to the
 // QA-Reviewer / _system entries.)
-const DEFAULT_EFFORT_PER_ROLE = {
+const LITERAL_DEFAULT_EFFORT_PER_ROLE = {
   alpha: "max", // the sole `max` — top face + big-project exception
   beta: "xhigh",
   gamma: "high",
@@ -301,6 +307,29 @@ const DEFAULT_EFFORT_PER_ROLE = {
   "visual-review": "high",
   "test-runner": "medium",
 };
+
+// Derived (registry ∪ back-compat shim). CUT-SAFETY: for every role the prior
+// literal named, the derived map yields the same value (verified before the cut);
+// the registry additionally carries the ADR-0007 manager/director roles — claude
+// providers (behavior-neutral: unlisted defaults to claude) and `high` efforts
+// (new keys, regressing no existing route; managers dispatch in-process where the
+// reasoning-effort flag is not consulted). LOUD FALLBACK to the literals above.
+const DEFAULT_PROVIDER_PER_ROLE = registryRoles.deriveOrFallback(
+  () => ({
+    ...registryRoles.providerMap(),
+    ...registryRoles.SCRAPPED_PROVIDER_ALIASES,
+  }),
+  LITERAL_DEFAULT_PROVIDER_PER_ROLE,
+  "catalog.DEFAULT_PROVIDER_PER_ROLE",
+);
+const DEFAULT_EFFORT_PER_ROLE = registryRoles.deriveOrFallback(
+  () => ({
+    ...registryRoles.effortMap(),
+    ...registryRoles.SCRAPPED_EFFORT_ALIASES,
+  }),
+  LITERAL_DEFAULT_EFFORT_PER_ROLE,
+  "catalog.DEFAULT_EFFORT_PER_ROLE",
+);
 
 function getProvider(id) {
   const normalized = normalizeProviderId(id);

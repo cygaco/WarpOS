@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "0.13.1",
-  "installedCommit": "ec3f24909a8059d0b7f4c6ab72216556d5d19056",
-  "installedAt": "2026-06-05T17:05:48.227Z",
+  "installedCommit": "8a6e73db72717b11e0a10d8cd583d593516d70a8",
+  "installedAt": "2026-06-05T17:26:17.958Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -34,8 +34,8 @@
       "dest": ".claude/agents/_org/role-registry.json",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "23a4de56e58a79d9e38392f0fcd52e1c64293719a11caf06f9262dfe18e21fb1",
-      "currentHashAtInstall": "23a4de56e58a79d9e38392f0fcd52e1c64293719a11caf06f9262dfe18e21fb1",
+      "installedHash": "dd57d5d7c9533899cf9ac25f5a6619be70d7f460b4ab02fea00c334b9d4b85e7",
+      "currentHashAtInstall": "dd57d5d7c9533899cf9ac25f5a6619be70d7f460b4ab02fea00c334b9d4b85e7",
       "introducedIn": "0.0.0"
     },
     {
@@ -499,13 +499,23 @@
       "introducedIn": "0.0.0"
     },
     {
+      "id": "agent.president..system.policy.adr.0008-dispatch-consumers-derive-from-registry.md",
+      "kind": "agent",
+      "dest": ".claude/agents/president/.system/policy/adr/0008-dispatch-consumers-derive-from-registry.md",
+      "owner": "framework",
+      "mergeStrategy": "three_way_markdown",
+      "installedHash": "7497308e10cb44bdb0c8e0b4a7b22a7adc5d2ce795695e47d2f0d3aec6bba3bd",
+      "currentHashAtInstall": "7497308e10cb44bdb0c8e0b4a7b22a7adc5d2ce795695e47d2f0d3aec6bba3bd",
+      "introducedIn": "0.0.0"
+    },
+    {
       "id": "agent.president..system.policy.adr.INDEX.md",
       "kind": "agent",
       "dest": ".claude/agents/president/.system/policy/adr/INDEX.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "9ed3124afc187368c3ddde55f7d0544f2a77577b3c83a8db40c85437624e92c0",
-      "currentHashAtInstall": "9ed3124afc187368c3ddde55f7d0544f2a77577b3c83a8db40c85437624e92c0",
+      "installedHash": "2e97d8a2145d6095f3c6e87aecaba1654c1c116fbf2c7e1e92728c2d2022b5fe",
+      "currentHashAtInstall": "2e97d8a2145d6095f3c6e87aecaba1654c1c116fbf2c7e1e92728c2d2022b5fe",
       "introducedIn": "0.0.0"
     },
     {
@@ -4054,8 +4064,8 @@
       "dest": "scripts/hooks/lib/providers.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "b9143f6b3f529128c4626943dd8a9d405cee07c760970131c0e69a77b871a786",
-      "currentHashAtInstall": "b9143f6b3f529128c4626943dd8a9d405cee07c760970131c0e69a77b871a786",
+      "installedHash": "cdd8a633bbce69e8ef2c9743711ca7faa33a1d9db5e90d30a663351ea5259288",
+      "currentHashAtInstall": "cdd8a633bbce69e8ef2c9743711ca7faa33a1d9db5e90d30a663351ea5259288",
       "introducedIn": "0.0.0"
     },
     {
@@ -6344,8 +6354,8 @@
       "dest": "scripts/dispatch/catalog.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "541cb82fa7fe9beb2ff8917c8cd0425887a99d7ae439e7dfb1991aaebc9a5923",
-      "currentHashAtInstall": "541cb82fa7fe9beb2ff8917c8cd0425887a99d7ae439e7dfb1991aaebc9a5923",
+      "installedHash": "639bbd7ea803c36f1abc007d8d3dd0bc361b34cf67e4d23eab8607b4ad9ee72a",
+      "currentHashAtInstall": "639bbd7ea803c36f1abc007d8d3dd0bc361b34cf67e4d23eab8607b4ad9ee72a",
       "introducedIn": "0.0.0"
     },
     {
@@ -6434,8 +6444,8 @@
       "dest": "scripts/dispatch/org-roles.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "28baf3d602ec621fff188fcbf7b83a85278b5dd55832609a5bb402f22500ad24",
-      "currentHashAtInstall": "28baf3d602ec621fff188fcbf7b83a85278b5dd55832609a5bb402f22500ad24",
+      "installedHash": "9bb3f707b4aa9675418782b50ec39bda64e5bbfb9d101678fa4bb009b26a5b1e",
+      "currentHashAtInstall": "9bb3f707b4aa9675418782b50ec39bda64e5bbfb9d101678fa4bb009b26a5b1e",
       "introducedIn": "0.0.0"
     },
     {
@@ -6454,8 +6464,8 @@
       "dest": "scripts/dispatch/registry-roles.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "5d29c25c339d99f7c885858f4c6bfb69c64c540da92c7c3c1076fe7805902e03",
-      "currentHashAtInstall": "5d29c25c339d99f7c885858f4c6bfb69c64c540da92c7c3c1076fe7805902e03",
+      "installedHash": "2837d23537256a2eb2f043ad227b8868073a2813cf3436e60bde2b684a2770d9",
+      "currentHashAtInstall": "2837d23537256a2eb2f043ad227b8868073a2813cf3436e60bde2b684a2770d9",
       "introducedIn": "0.0.0"
     },
     {

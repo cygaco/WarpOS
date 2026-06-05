@@ -142,9 +142,35 @@ function deriveOrFallback(deriveFn, literal, label) {
   }
 }
 
+// ── Back-compat shim (NOT registry-derived) ───────────────────────────────────
+// Scrapped (pre-ADR-0007) role aliases still wired for back-compat dispatch.
+// These are deliberately NOT in the registry; consumer maps UNION them so a
+// dispatch that still names an old role routes correctly until the aliases are
+// fully trimmed (β TRAP-B: a naive "derive active only" silently drops them).
+// Single-sourced here so the eventual trim is ONE edit, not N. Values mirror the
+// pre-rewire consumer literals exactly (CUT-SAFETY: derived ∪ shim == literal).
+const SCRAPPED_PROVIDER_ALIASES = Object.freeze({
+  builder: "claude",
+  fixer: "claude",
+  reviewer: "openai",
+  compliance: "openai",
+  qa: "openai",
+  redteam: "gemini",
+});
+const SCRAPPED_EFFORT_ALIASES = Object.freeze({
+  builder: "high",
+  fixer: "high",
+  reviewer: "xhigh",
+  compliance: "xhigh",
+  qa: "medium",
+  redteam: "high",
+});
+
 module.exports = {
   registryPath,
   deriveOrFallback,
+  SCRAPPED_PROVIDER_ALIASES,
+  SCRAPPED_EFFORT_ALIASES,
   loadRegistry,
   loadRoles,
   roleIds,

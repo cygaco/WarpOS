@@ -3,7 +3,7 @@
   "version": "0.13.1",
   "generated_by": "scripts/generate-framework-manifest.js",
   "counts": {
-    "agent": 73,
+    "agent": 74,
     "skill": 199,
     "reference": 28,
     "maps_baseline": 25,
@@ -56,7 +56,7 @@
     "module_scope": 1,
     "framework_doc": 3
   },
-  "total": 1026,
+  "total": 1027,
   "assets": {
     "agent": [
       {
@@ -88,7 +88,7 @@
         "src": ".claude/agents/_org/role-registry.json",
         "dest": ".claude/agents/_org/role-registry.json",
         "kind": "agent",
-        "sha256": "23a4de56e58a79d9e38392f0fcd52e1c64293719a11caf06f9262dfe18e21fb1",
+        "sha256": "dd57d5d7c9533899cf9ac25f5a6619be70d7f460b4ab02fea00c334b9d4b85e7",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
@@ -648,11 +648,23 @@
         "replaces": null
       },
       {
+        "id": "agent.president..system.policy.adr.0008-dispatch-consumers-derive-from-registry.md",
+        "src": ".claude/agents/president/.system/policy/adr/0008-dispatch-consumers-derive-from-registry.md",
+        "dest": ".claude/agents/president/.system/policy/adr/0008-dispatch-consumers-derive-from-registry.md",
+        "kind": "agent",
+        "sha256": "7497308e10cb44bdb0c8e0b4a7b22a7adc5d2ce795695e47d2f0d3aec6bba3bd",
+        "owner": "framework",
+        "mergeStrategy": "three_way_markdown",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
         "id": "agent.president..system.policy.adr.INDEX.md",
         "src": ".claude/agents/president/.system/policy/adr/INDEX.md",
         "dest": ".claude/agents/president/.system/policy/adr/INDEX.md",
         "kind": "agent",
-        "sha256": "9ed3124afc187368c3ddde55f7d0544f2a77577b3c83a8db40c85437624e92c0",
+        "sha256": "2e97d8a2145d6095f3c6e87aecaba1654c1c116fbf2c7e1e92728c2d2022b5fe",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
@@ -4922,7 +4934,7 @@
         "src": "scripts/hooks/lib/providers.js",
         "dest": "scripts/hooks/lib/providers.js",
         "kind": "hook_lib",
-        "sha256": "b9143f6b3f529128c4626943dd8a9d405cee07c760970131c0e69a77b871a786",
+        "sha256": "cdd8a633bbce69e8ef2c9743711ca7faa33a1d9db5e90d30a663351ea5259288",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -7708,7 +7720,7 @@
         "src": "scripts/dispatch/catalog.js",
         "dest": "scripts/dispatch/catalog.js",
         "kind": "dispatch_engine",
-        "sha256": "541cb82fa7fe9beb2ff8917c8cd0425887a99d7ae439e7dfb1991aaebc9a5923",
+        "sha256": "639bbd7ea803c36f1abc007d8d3dd0bc361b34cf67e4d23eab8607b4ad9ee72a",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -7816,7 +7828,7 @@
         "src": "scripts/dispatch/org-roles.js",
         "dest": "scripts/dispatch/org-roles.js",
         "kind": "dispatch_engine",
-        "sha256": "28baf3d602ec621fff188fcbf7b83a85278b5dd55832609a5bb402f22500ad24",
+        "sha256": "9bb3f707b4aa9675418782b50ec39bda64e5bbfb9d101678fa4bb009b26a5b1e",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -7840,7 +7852,7 @@
         "src": "scripts/dispatch/registry-roles.js",
         "dest": "scripts/dispatch/registry-roles.js",
         "kind": "dispatch_engine",
-        "sha256": "5d29c25c339d99f7c885858f4c6bfb69c64c540da92c7c3c1076fe7805902e03",
+        "sha256": "2837d23537256a2eb2f043ad227b8868073a2813cf3436e60bde2b684a2770d9",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",

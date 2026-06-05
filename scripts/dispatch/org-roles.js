@@ -53,9 +53,32 @@ const STATIC_GAMMA_ONLY_AUGMENT = [
   "redteam", // DEPRECATED → security-reviewer (alias)
 ];
 
+// v0.2: the dispatch-side role-registry reader (the ONE place that derives role
+// lists from the keystone). GUARDED require — org-roles feeds the team-guard hook,
+// so a broken registry read must fall back to the literal, never crash.
+let registryRoles = null;
+try {
+  registryRoles = require("./registry-roles");
+} catch {
+  /* fail-open: REMEDIATION_ROLES falls back to its literal below */
+}
+
 // Gauntlet members that REMEDIATE (apply fixes) rather than review in parallel —
 // excluded from reviewGauntletRoles() so a fixer is never launched as a reviewer.
-const REMEDIATION_ROLES = new Set(["fixer", "fix-agent"]);
+// v0.2: DERIVE the active fixers from the registry (kind:fixer) ∪ the scrapped
+// aliases {fixer, fix-agent} that still appear as gauntlet members during
+// coexistence (β TRAP-B). A benign SUPERSET — the new pod fixers (backend/frontend/
+// security-fixer) SHOULD also be excluded from review parallelization and regress no
+// existing exclusion. LOUD FALLBACK to the literal.
+const REMEDIATION_ROLES = new Set(
+  registryRoles
+    ? registryRoles.deriveOrFallback(
+        () => [...registryRoles.fixerRoles(), "fixer", "fix-agent"],
+        ["fixer", "fix-agent"],
+        "org-roles.REMEDIATION_ROLES",
+      )
+    : ["fixer", "fix-agent"],
+);
 
 function readOrgMap() {
   return JSON.parse(fs.readFileSync(ORG_MAP_PATH, "utf8").replace(/^﻿/, ""));
