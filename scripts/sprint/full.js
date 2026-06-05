@@ -51,6 +51,7 @@ const {
 const heartbeat = require("./heartbeat"); // ε liveness heartbeat (Phase D d)
 const hookPoints = require("./hook-points"); // composition→agent-set router (Phase D F1/F2)
 const hookConsult = require("./hook-consult"); // manager_consult emitter (Phase D F3b)
+const epsilonRuntime = require("./epsilon-runtime"); // ε sprint-conductor runtime (ADR-0009)
 
 // full.js PHASES are coarser than the hook-point lifecycle: 'execute' covers build+
 // gauntlet, 'release-prep' is release. Map each completed phase to its step set so the
@@ -82,11 +83,29 @@ function sprintComposition(sprintId) {
 
 // Emit the manager_consult records for a completed phase's hook-point step(s) (the ε
 // materialization: who was engaged at each step). Non-fatal — telemetry, never a halt.
-function emitPhaseConsults(sprintId, phase) {
+//
+// ADR-0009 (ε-conducted, ADDITIVE): when `epsilon` is set, each step is run through the ε
+// sprint-conductor RUNTIME (conductStep) instead of the bare consult emitter. The runtime
+// emits the IDENTICAL manager_consult coverage records (so every existing enforcer keeps
+// seeing them) AND — under `epsilonDispatch` — writes a REAL per-agent completion record
+// to the canonical ledger gauntlet-verify reads (the liveness proof full.js's telemetry-
+// only path never produced). The default path (epsilon unset) is byte-for-byte the prior
+// behavior: conductStep with {dispatch:false} delegates straight back to the same
+// hookConsult emitter, so the script-driven sprint is unchanged.
+function emitPhaseConsults(sprintId, phase, opts = {}) {
   const steps = PHASE_TO_HOOK_STEPS[phase] || [];
   if (!steps.length || !sprintId) return;
   try {
     const composition = sprintComposition(sprintId);
+    if (opts.epsilon) {
+      // ε-conducted: the runtime owns the per-step dispatch. It re-emits the same coverage
+      // consults + design-touch internally, so we do NOT also call hookConsult here.
+      for (const step of steps) {
+        epsilonRuntime.conductStep(step, composition, sprintId, { dispatch: !!opts.epsilonDispatch });
+      }
+      return;
+    }
+    // Default (script-driven) path — telemetry-only consults, unchanged.
     for (const step of steps) hookConsult.emitStepConsults(step, composition, sprintId);
     if (steps.includes("build") || steps.includes("gauntlet")) {
       hookConsult.emitDesignTouch(composition, sprintId);
@@ -151,6 +170,13 @@ function parseArgs(argv) {
     betaMessage: null,
     pendingPhase: null,
     costGate: null,
+    // ε-conducted mode (ADR-0009): when set, each completed phase's hook-point step(s) are
+    // run through the ε sprint-conductor RUNTIME (registry-driven REAL dispatch + completion
+    // records) instead of full.js's telemetry-only emitPhaseConsults. ADDITIVE — the default
+    // (flag absent / WARPOS_EPSILON_RUNTIME unset) is the unchanged script path.
+    // `--epsilon-dispatch` additionally writes real per-agent completion records.
+    epsilon: process.env.WARPOS_EPSILON_RUNTIME === "on",
+    epsilonDispatch: false,
   };
   for (let i = 2; i < argv.length; i++) {
     const a = argv[i];
@@ -167,6 +193,8 @@ function parseArgs(argv) {
     else if (a === "--beta-message") out.betaMessage = argv[++i];
     else if (a === "--pending-phase") out.pendingPhase = argv[++i];
     else if (a === "--cost-gate") out.costGate = argv[++i];
+    else if (a === "--epsilon") out.epsilon = true;
+    else if (a === "--epsilon-dispatch") { out.epsilon = true; out.epsilonDispatch = true; }
     else if (!a.startsWith("--") && out.request === null) out.request = a;
   }
   return out;
@@ -193,6 +221,11 @@ Flags:
   --beta-verdict <v>            DECIDE | DIRECTIVE | ESCALATE — verdict from Beta consultation
   --beta-message "<text>"       message accompanying the Beta verdict
   --pending-phase <boundary>    phase boundary the verdict applies to (e.g. before_plan)
+  --epsilon                     ε-conduct the sprint: run each phase's hook-points through
+                                the ε runtime (registry-driven) instead of telemetry-only
+                                consults (ADR-0009; additive — default is the script path)
+  --epsilon-dispatch            as --epsilon, and ALSO write a real per-agent completion
+                                record per dispatched agent (the liveness ledger)
   --help, -h                    show this message
 
 Hard ceilings (never bypassable by any preset):
@@ -1674,6 +1707,11 @@ function main() {
     halts: [],
     tickets: { done: [], deferred: [], abandoned: [] },
     outcome: null,
+    // ε-conducted mode (ADR-0009) — additive; default false. When true, emitPhaseConsults
+    // routes each completed phase's step(s) through the ε runtime (real registry-driven
+    // dispatch) instead of telemetry-only consults.
+    epsilon: !!args.epsilon,
+    epsilonDispatch: !!args.epsilonDispatch,
   };
 
   // Branch protection
@@ -1792,7 +1830,7 @@ function main() {
       );
       return 1;
     }
-    emitPhaseConsults(sprintId, PHASES[i]);
+    emitPhaseConsults(sprintId, PHASES[i], { epsilon: state.epsilon, epsilonDispatch: state.epsilonDispatch });
   }
 
   state.outcome = "done";
@@ -1830,4 +1868,6 @@ module.exports = {
   readClearedBetaBoundaries,
   recordClearedBetaBoundary,
   betaBoundariesPath,
+  emitPhaseConsults,
+  sprintComposition,
 };
