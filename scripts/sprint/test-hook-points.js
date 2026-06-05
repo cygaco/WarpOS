@@ -22,6 +22,7 @@ const {
   normalizeComposition,
   matchCondition,
   agentsForStep,
+  compositionFromTickets,
   validate,
 } = require("./hook-points");
 
@@ -155,6 +156,24 @@ console.log("\nresidencyOf (real registry):");
   ok("director-of-engineering → ephemeral", residencyOf("director-of-engineering") === "ephemeral");
   ok("frontend-builder → ephemeral", residencyOf("frontend-builder") === "ephemeral");
   ok("unknown role → ephemeral (safe default)", residencyOf("ghost-role") === "ephemeral");
+}
+
+// ── compositionFromTickets (sprint composition derivation, feeds the router) ──
+
+console.log("\ncompositionFromTickets:");
+{
+  const comp = compositionFromTickets([
+    { type: "feature", unit_type: "frontend", risk_level: "medium" },
+    { type: "feature", unit_type: "backend", risk_level: "high" },
+    { type: "copy", risk_level: "low" },
+  ]);
+  ok("aggregates unit_types (frontend+backend)", comp.unit_types.includes("frontend") && comp.unit_types.includes("backend"), JSON.stringify(comp));
+  ok("max_risk = highest across tickets (high)", comp.max_risk === "high", comp.max_risk);
+  ok("type:'copy' implies the copy domain", comp.domains.includes("copy"), JSON.stringify(comp.domains));
+  ok("empty tickets → empty composition", JSON.stringify(compositionFromTickets([])) === JSON.stringify({ unit_types: [], max_risk: "", domains: [] }));
+  // end-to-end: the derived composition drives the router
+  const gauntlet = agentsForStep("gauntlet", comp, REG).map((r) => r.role);
+  ok("derived comp drives the router (FE+BE → both pod reviewers)", gauntlet.includes("frontend-reviewer") && gauntlet.includes("backend-reviewer"), gauntlet.join(","));
 }
 
 console.log(`\nResults: ${passes} passed, ${failures} failed.`);

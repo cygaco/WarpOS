@@ -79,6 +79,16 @@
       "type": "string",
       "enum": ["low", "medium", "high", "critical"]
     },
+    "unit_type": {
+      "type": ["string", "null"],
+      "enum": ["frontend", "backend", "security", "ui", "fullstack", "data", "infra", null],
+      "description": "Engineering surface this ticket touches — feeds the sprint hook-point router (which builders/reviewers/design agents fire at build/gauntlet/design). Optional; absent = untyped (only always-on agents fire)."
+    },
+    "domain": {
+      "type": ["string", "null"],
+      "enum": ["product", "marketing", "copy", null],
+      "description": "Business domain — feeds the copy/marketing hook-point rows (copy-lead at design). Optional; type:'copy' also implies the copy domain."
+    },
     "approval_required": { "type": "boolean" },
     "approval_state": {
       "type": "string",

@@ -271,6 +271,8 @@ function cmdCreate(argv) {
     owner: f.owner || null,
     owner_agent: f["owner-agent"] || null,
     risk_level: f.risk || "low",
+    unit_type: f["unit-type"] || null,
+    domain: f.domain || null,
     approval_required: f["approval-required"] === "true",
     approval_state:
       f["approval-required"] === "true" ? "pending" : "not_required",

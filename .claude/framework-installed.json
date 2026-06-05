@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "0.13.1",
-  "installedCommit": "688b1e349098d7df5baf4e1ab794f4f7a743579e",
-  "installedAt": "2026-06-05T04:07:11.129Z",
+  "installedCommit": "f0623bea20884196205a59877ab02a29a885f6b0",
+  "installedAt": "2026-06-05T05:13:26.182Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -3204,8 +3204,8 @@
       "dest": ".claude/project/maps/system-coherence.graph.json",
       "owner": "generated",
       "mergeStrategy": "regenerate",
-      "installedHash": "bc7b464ae2b126689176c1546bf8bbe2b91ee831c4604595e3d00936a3a82ac2",
-      "currentHashAtInstall": "bc7b464ae2b126689176c1546bf8bbe2b91ee831c4604595e3d00936a3a82ac2",
+      "installedHash": "eedaa2c8b97f4ee17fa24103af480d0d0b99c635e559af2f1287e0613c4053b3",
+      "currentHashAtInstall": "eedaa2c8b97f4ee17fa24103af480d0d0b99c635e559af2f1287e0613c4053b3",
       "introducedIn": "0.0.0"
     },
     {
@@ -6024,8 +6024,8 @@
       "dest": "scripts/sprint/hook-points.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "220d9d68c93a6a5b96cb041a65ca41e2ad793a912e3448f03c3c75e1f8f8bd80",
-      "currentHashAtInstall": "220d9d68c93a6a5b96cb041a65ca41e2ad793a912e3448f03c3c75e1f8f8bd80",
+      "installedHash": "488d6f99eddb2788cf92b0120d4e8b2ee7eebf617d7617ad277440705f3927a2",
+      "currentHashAtInstall": "488d6f99eddb2788cf92b0120d4e8b2ee7eebf617d7617ad277440705f3927a2",
       "introducedIn": "0.0.0"
     },
     {
@@ -6164,8 +6164,8 @@
       "dest": "scripts/sprint/test-hook-points.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "2e3dd50ae88b76eb170a99d8d81accbe79a3c2f2850595b6a91fd94e5865881e",
-      "currentHashAtInstall": "2e3dd50ae88b76eb170a99d8d81accbe79a3c2f2850595b6a91fd94e5865881e",
+      "installedHash": "aa1f80ff88c4538e0aa93e9e51e4aa61bac6ba459a5062acb70cce6d2b9e1c16",
+      "currentHashAtInstall": "aa1f80ff88c4538e0aa93e9e51e4aa61bac6ba459a5062acb70cce6d2b9e1c16",
       "introducedIn": "0.0.0"
     },
     {
@@ -6224,8 +6224,8 @@
       "dest": "scripts/sprint/ticket.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "cc2bfaa31ce918eb5c96dacef3e7a4b709e2d1a4785c193188cf4d04eca434a2",
-      "currentHashAtInstall": "cc2bfaa31ce918eb5c96dacef3e7a4b709e2d1a4785c193188cf4d04eca434a2",
+      "installedHash": "ff299966a3fa00b7be2161a784b1390b54028946347e4683581ed35abb0b1214",
+      "currentHashAtInstall": "ff299966a3fa00b7be2161a784b1390b54028946347e4683581ed35abb0b1214",
       "introducedIn": "0.0.0"
     },
     {
@@ -7474,8 +7474,8 @@
       "dest": "schemas/sprint/ticket.schema.json",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "a038abc727e768cf6a265325d9166b1e17d8195641ff81a6b4f349331f77ea03",
-      "currentHashAtInstall": "a038abc727e768cf6a265325d9166b1e17d8195641ff81a6b4f349331f77ea03",
+      "installedHash": "cea47220589dbb89d2ce4013f2cbcc95936a990879a0b9aa6d1625af0c7a6491",
+      "currentHashAtInstall": "cea47220589dbb89d2ce4013f2cbcc95936a990879a0b9aa6d1625af0c7a6491",
       "introducedIn": "0.0.0"
     },
     {

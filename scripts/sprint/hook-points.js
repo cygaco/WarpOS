@@ -122,6 +122,32 @@ function agentsForStep(step, composition, registry = load()) {
 }
 
 /**
+ * Derive a sprint composition { unit_types, max_risk, domains } from its tickets.
+ * Pure — the orchestrator (full.js) passes the tickets it already loaded. max_risk is
+ * the highest risk_level across tickets; unit_types/domains aggregate the per-ticket
+ * fields (type:"copy" also implies the copy domain so a copy ticket engages copy-lead
+ * even without an explicit domain).
+ */
+function compositionFromTickets(tickets = []) {
+  const unit_types = new Set();
+  const domains = new Set();
+  let maxRank = 0;
+  let max_risk = "";
+  for (const t of tickets) {
+    if (!t || typeof t !== "object") continue;
+    if (t.unit_type) unit_types.add(String(t.unit_type).toLowerCase());
+    if (t.domain) domains.add(String(t.domain).toLowerCase());
+    if (String(t.type || "").toLowerCase() === "copy") domains.add("copy");
+    const rank = RISK_ORDER[String(t.risk_level || "").toLowerCase()] || 0;
+    if (rank > maxRank) {
+      maxRank = rank;
+      max_risk = String(t.risk_level).toLowerCase();
+    }
+  }
+  return { unit_types: [...unit_types], max_risk, domains: [...domains] };
+}
+
+/**
  * Validate the registry against the canonical steps + the real role roster.
  * @param {object} registry  the parsed sprint-hook-points.json
  * @param {string[]} roleIds the real role ids (from role-registry.json)
@@ -230,6 +256,7 @@ module.exports = {
   normalizeComposition,
   matchCondition,
   agentsForStep,
+  compositionFromTickets,
   validate,
   hookPointsPath,
   roleRegistryPath,
