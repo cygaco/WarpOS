@@ -92,6 +92,15 @@ console.log("\nevaluateStall (threshold = STALL_MINUTES = " + STALL_MINUTES + ")
   const r = evaluateStall({ ts: "not-a-date" }, STALL_MINUTES, T0);
   ok("unparseable ts → stale OPEN, reason 'unparseable_ts'", r.stale === true && r.reason === "unparseable_ts");
 }
+{
+  // A finished run's last heartbeat is old but NOT a hang — terminal status wins over age.
+  const r = evaluateStall({ ts: isoAt(T0), status: "done" }, STALL_MINUTES, T0 + minutes(120));
+  ok("terminal status 'done' (2h old) → NOT stale, reason 'terminal'", r.stale === false && r.reason === "terminal", JSON.stringify(r));
+}
+{
+  const r = evaluateStall({ ts: isoAt(T0), status: "halted" }, STALL_MINUTES, T0 + minutes(120));
+  ok("terminal status 'halted' → circuit_breaker closed", r.circuit_breaker === "closed" && r.reason === "terminal");
+}
 
 // ── emitToPath → checkPath round-trip (real file) ─────────────────────────────
 

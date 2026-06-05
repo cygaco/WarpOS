@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-05T03:38:11.528Z",
+  "generatedAt": "2026-06-05T03:49:12.478Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.13.1",
   "migrations": [],
@@ -3291,15 +3291,15 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/sprint/full.js",
-      "sha256": "365e19eb818aace6cf0970be9daa84bf0d16c99cea9116db808cf46e89100d4a",
-      "installedSha": "365e19eb818aace6cf0970be9daa84bf0d16c99cea9116db808cf46e89100d4a"
+      "sha256": "5104d2ce4835303ab6750b5189fb835318e663edb63b438bd434198ce5b73949",
+      "installedSha": "5104d2ce4835303ab6750b5189fb835318e663edb63b438bd434198ce5b73949"
     },
     "scripts/sprint/heartbeat.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/sprint/heartbeat.js",
-      "sha256": "caad227088a6517991f927a9e574b207fabaada2f8b5de198b593c0ee7e02d2a",
-      "installedSha": "caad227088a6517991f927a9e574b207fabaada2f8b5de198b593c0ee7e02d2a"
+      "sha256": "04c8b923de2290513f6a987613389a59aa614b690607eb5d8df29d7f28e17d62",
+      "installedSha": "04c8b923de2290513f6a987613389a59aa614b690607eb5d8df29d7f28e17d62"
     },
     "scripts/sprint/ids.js": {
       "owner": "framework",
@@ -3382,8 +3382,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/sprint/test-heartbeat.js",
-      "sha256": "35cd0e01e2086df65940ec4de88234759d97fccd86626d6e3ab4b534c055f9f9",
-      "installedSha": "35cd0e01e2086df65940ec4de88234759d97fccd86626d6e3ab4b534c055f9f9"
+      "sha256": "84433728a87517ae122e39bd3039d5919f7657e388bdf7678d81412f0c6493a5",
+      "installedSha": "84433728a87517ae122e39bd3039d5919f7657e388bdf7678d81412f0c6493a5"
     },
     "scripts/sprint/test-plan-honors-registry-primary.js": {
       "owner": "framework",

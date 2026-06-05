@@ -41,6 +41,9 @@ const { PATHS } = require("../hooks/lib/paths");
 const AGENT = "epsilon";
 // δ's 30-min stall threshold, shared as the one liveness constant across the faces.
 const STALL_MINUTES = 30;
+// Statuses that mean the run STOPPED on purpose — a stale heartbeat carrying one of
+// these is a finished run, never a hang (the outcome is authoritative once terminal).
+const TERMINAL_STATUSES = new Set(["done", "complete", "halted"]);
 
 // ── Pure cores (injected seams → hermetic tests, no disk/clock) ───────────────
 
@@ -66,6 +69,11 @@ function evaluateStall(heartbeat, staleMinutes = STALL_MINUTES, nowMs = Date.now
     return { stale: true, ageMinutes: null, circuit_breaker: "open", reason: "unparseable_ts" };
   }
   const ageMinutes = (nowMs - t) / 60000;
+  // A run that reached a TERMINAL status stopped on purpose — not a stall, however
+  // long ago (once terminal, the outcome is authoritative, not liveness).
+  if (TERMINAL_STATUSES.has(String(heartbeat.status || "").toLowerCase())) {
+    return { stale: false, ageMinutes, circuit_breaker: "closed", reason: "terminal" };
+  }
   const stale = ageMinutes > staleMinutes;
   return {
     stale,
@@ -196,5 +204,6 @@ module.exports = {
   emit,
   check,
   STALL_MINUTES,
+  TERMINAL_STATUSES,
   AGENT,
 };

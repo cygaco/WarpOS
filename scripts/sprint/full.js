@@ -48,6 +48,7 @@ const {
   nowIso,
   writeText,
 } = require("./fs");
+const heartbeat = require("./heartbeat"); // ε liveness heartbeat (Phase D d)
 
 const REPO_ROOT = SPRINT.PROJECT;
 const PATHS = JSON.parse(
@@ -1700,6 +1701,7 @@ function main() {
             consult.resume_command || `/sprint:full --sprint ${sprintId} --resume`,
         });
         state.outcome = `halted:${consult.halt_reason}`;
+        heartbeat.emit(sprintId, { phase: state.currentPhase, status: "halted", reason: consult.halt_reason });
         const haltPath = writeHaltReport(state, consult);
         process.stderr.write(
           `/sprint:full halted (${consult.halt_reason}). See ${haltPath}\n`,
@@ -1720,6 +1722,9 @@ function main() {
         clearedBoundaries.push(boundary);
       }
     }
+    // ε liveness heartbeat — stamp the phase transition so an external observer, a
+    // resume, or `heartbeat.js check` can tell a live run from a hung one (Phase D d).
+    heartbeat.emit(sprintId, { phase: PHASES[i], status: "running" });
     const result = phaseFns[i]();
     if (!result.ok) {
       state.halts.push({
@@ -1728,6 +1733,7 @@ function main() {
         resume_command: `/sprint:full --sprint ${sprintId} --resume`,
       });
       state.outcome = `halted:${result.halt_reason}`;
+      heartbeat.emit(sprintId, { phase: state.currentPhase, status: "halted", reason: result.halt_reason });
       const haltPath = writeHaltReport(state, result);
       process.stderr.write(
         `/sprint:full halted (${result.halt_reason}). See ${haltPath}\n`,
@@ -1743,6 +1749,7 @@ function main() {
   }
 
   state.outcome = "done";
+  heartbeat.emit(sprintId, { phase: "retro", status: "done" });
   const reportPath = writeFinalReport(state);
   process.stdout.write(`/sprint:full done. Report: ${reportPath}\n`);
   checkpoint(state, "completed", "Sprint pipeline complete", `Outcome=done`);

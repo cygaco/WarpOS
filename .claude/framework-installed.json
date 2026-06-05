@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "0.13.1",
-  "installedCommit": "63cf8a49b9e7b8347ba647723145d95a14bd7bdc",
-  "installedAt": "2026-06-05T03:38:11.368Z",
+  "installedCommit": "2a72f859371605261706294b3d85193e3b648f5c",
+  "installedAt": "2026-06-05T03:49:12.318Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -5994,8 +5994,8 @@
       "dest": "scripts/sprint/full.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "365e19eb818aace6cf0970be9daa84bf0d16c99cea9116db808cf46e89100d4a",
-      "currentHashAtInstall": "365e19eb818aace6cf0970be9daa84bf0d16c99cea9116db808cf46e89100d4a",
+      "installedHash": "5104d2ce4835303ab6750b5189fb835318e663edb63b438bd434198ce5b73949",
+      "currentHashAtInstall": "5104d2ce4835303ab6750b5189fb835318e663edb63b438bd434198ce5b73949",
       "introducedIn": "0.0.0"
     },
     {
@@ -6004,8 +6004,8 @@
       "dest": "scripts/sprint/heartbeat.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "caad227088a6517991f927a9e574b207fabaada2f8b5de198b593c0ee7e02d2a",
-      "currentHashAtInstall": "caad227088a6517991f927a9e574b207fabaada2f8b5de198b593c0ee7e02d2a",
+      "installedHash": "04c8b923de2290513f6a987613389a59aa614b690607eb5d8df29d7f28e17d62",
+      "currentHashAtInstall": "04c8b923de2290513f6a987613389a59aa614b690607eb5d8df29d7f28e17d62",
       "introducedIn": "0.0.0"
     },
     {
@@ -6134,8 +6134,8 @@
       "dest": "scripts/sprint/test-heartbeat.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "35cd0e01e2086df65940ec4de88234759d97fccd86626d6e3ab4b534c055f9f9",
-      "currentHashAtInstall": "35cd0e01e2086df65940ec4de88234759d97fccd86626d6e3ab4b534c055f9f9",
+      "installedHash": "84433728a87517ae122e39bd3039d5919f7657e388bdf7678d81412f0c6493a5",
+      "currentHashAtInstall": "84433728a87517ae122e39bd3039d5919f7657e388bdf7678d81412f0c6493a5",
       "introducedIn": "0.0.0"
     },
     {
