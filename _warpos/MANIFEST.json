@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-04T23:26:46.342Z",
+  "generatedAt": "2026-06-05T00:29:14.008Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.13.1",
   "migrations": [],
@@ -5006,15 +5006,15 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/role-parity-scan.js",
-      "sha256": "dc370406d13537d926943da49b630b0c27e9d8e4a179eefe63d4cf9b25f41e88",
-      "installedSha": "dc370406d13537d926943da49b630b0c27e9d8e4a179eefe63d4cf9b25f41e88"
+      "sha256": "79fbbd08647f81be27b43d076dfef36464e070e3c1048e76755598775f05e1c7",
+      "installedSha": "79fbbd08647f81be27b43d076dfef36464e070e3c1048e76755598775f05e1c7"
     },
     "scripts/checks/role-parity.test.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/role-parity.test.js",
-      "sha256": "410fbb4e7ab5c4611f601071b08a1e84d07977f8c1ab4cc9123ef3d6b6d153c1",
-      "installedSha": "410fbb4e7ab5c4611f601071b08a1e84d07977f8c1ab4cc9123ef3d6b6d153c1"
+      "sha256": "7ed37aa3c401056c6920a281d6a971a7d819b380dc0742d74f16fd84ad66ea43",
+      "installedSha": "7ed37aa3c401056c6920a281d6a971a7d819b380dc0742d74f16fd84ad66ea43"
     },
     "scripts/checks/scaffold-coverage-scan.js": {
       "owner": "framework",
@@ -16772,8 +16772,8 @@
       "managed": true,
       "source": ".claude/agents/president/.system/policy/adr/0007-agent-system-org-rewrite.md",
       "kind": "md",
-      "sha256": "0428eda3069d864e5bcf472d5ed38f2bb3d2b84c1b9eaff917f16c324802b269",
-      "installedSha": "0428eda3069d864e5bcf472d5ed38f2bb3d2b84c1b9eaff917f16c324802b269"
+      "sha256": "be3d6d8f1d48e406b42de6895ac183464dcce5f1fd8cb5e4e7530c1780929d25",
+      "installedSha": "be3d6d8f1d48e406b42de6895ac183464dcce5f1fd8cb5e4e7530c1780929d25"
     },
     ".claude/agents/president/.system/policy/adr/INDEX.md": {
       "owner": "framework",

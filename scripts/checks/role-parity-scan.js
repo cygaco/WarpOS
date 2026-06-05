@@ -228,6 +228,19 @@ function validateRegistry(root, catalog) {
   return { errors: evaluateRegistry(reg, catalog), fatal: false };
 }
 
+// ADR-0007 reporting-line invariant (operator, 2026-06-04): "reviewers CANNOT
+// report to doers; doers CAN report to reviewers; both can share a manager."
+// A DOER is a build-chain role: kind ∈ {builder, fixer} OR build_chain:true (the
+// latter also catches a kind:tool build-chain role like stub-scaffold). The
+// registry encodes a role's managers as `dispatchable_by` (the roles allowed to
+// dispatch it), so the invariant = NO reviewer's dispatchable_by entry resolves
+// to a doer. Hard structural invariant → severity critical. Source of truth is
+// role-registry's kind + build_chain (NOT org-map, whose engineering block is
+// stale and omits the leads).
+function isDoerRole(role) {
+  return !!role && (role.kind === "builder" || role.kind === "fixer" || role.build_chain === true);
+}
+
 // Pure registry-consistency core (injectable seams → bite-testable).
 function evaluateRegistry(reg, catalog) {
   const errors = [];
@@ -258,6 +271,18 @@ function evaluateRegistry(reg, catalog) {
     }
     if (r.model === "gpt-5.5" && r.effort === "max") {
       errors.push(`registry role "${name}" gpt-5.5 cannot use effort=max (ceiling is xhigh)`);
+    }
+    // Reporting-line invariant: a reviewer must never report to (be dispatchable
+    // by) a doer. Resolve each dispatchable_by name to its registry entry to read
+    // that manager's kind/build_chain. CRITICAL — a future edit pointing a
+    // reviewer's dispatcher at a builder/fixer otherwise passes every other check.
+    if (r.kind === "reviewer") {
+      for (const d of r.dispatchable_by || []) {
+        const manager = roles[d];
+        if (manager && isDoerRole(manager)) {
+          errors.push(`[CRITICAL] reviewer "${name}" is dispatchable_by doer "${d}" (kind="${manager.kind}"${manager.build_chain ? ", build_chain" : ""}) — reviewers CANNOT report to doers (ADR-0007 reporting-line invariant)`);
+        }
+      }
     }
   }
   return errors;
@@ -398,4 +423,4 @@ function main(argv) {
 
 if (require.main === module) process.exit(main(process.argv));
 
-module.exports = { evaluate, evaluateRegistry, validateRegistry, evaluateHooks, readHookSources, referencesScrappedLiteral, HOOK_SCRAPPED_LITERALS, parseGammaOnlyTypes, collectOrgRoles, makeRealAgentResolver };
+module.exports = { evaluate, evaluateRegistry, validateRegistry, evaluateHooks, readHookSources, referencesScrappedLiteral, HOOK_SCRAPPED_LITERALS, parseGammaOnlyTypes, collectOrgRoles, makeRealAgentResolver, isDoerRole };

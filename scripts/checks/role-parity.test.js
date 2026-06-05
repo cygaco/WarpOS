@@ -139,6 +139,41 @@ test("registry: gpt-5.5 + max → rejected (ceiling xhigh)", () => {
   assert.ok(evaluateRegistry(r, catalogStub).some((e) => /ceiling is xhigh/.test(e)), "expected gpt-5.5-ceiling error");
 });
 
+// ── Reporting-line invariant bite-tests (ADR-0007, operator 2026-06-04) ──────
+// "reviewers CANNOT report to doers; doers CAN report to reviewers; both share a
+// manager." Doer = kind∈{builder,fixer} OR build_chain:true. A reviewer whose
+// dispatchable_by resolves to a doer must be REJECTED (severity critical).
+// Fixture: a manager (lead), two doers (builder by kind, a build_chain:true tool),
+// and reviewers — mirrors the real registry's frontend pod shape.
+const reportingReg = { roles: {
+  lead: { kind: "lead", model: "claude-opus-4-8", effort: "high", dispatchable_by: [] },
+  bld: { kind: "builder", model: "claude-opus-4-8", effort: "high", build_chain: true, dispatchable_by: ["lead"] },
+  scaffold: { kind: "tool", model: "claude-opus-4-8", effort: "high", build_chain: true, dispatchable_by: ["lead"] },
+  rvw: { kind: "reviewer", model: "gpt-5.5", effort: "xhigh", dispatchable_by: ["lead"] },
+} };
+
+test("reporting-line: reviewer dispatchable_by a LEAD (manager) → clean", () => {
+  assert.deepStrictEqual(evaluateRegistry(clone(reportingReg), catalogStub), [],
+    "reviewer reporting to a non-doer manager must stay green");
+});
+test("reporting-line: doer dispatchable_by a reviewer → clean (allowed direction)", () => {
+  const r = clone(reportingReg); r.roles.bld.dispatchable_by = ["lead", "rvw"];
+  assert.deepStrictEqual(evaluateRegistry(r, catalogStub), [],
+    "doers CAN report to reviewers — must not be flagged");
+});
+test("reporting-line: reviewer dispatchable_by a BUILDER (kind) → rejected (CRITICAL)", () => {
+  const r = clone(reportingReg); r.roles.rvw.dispatchable_by = ["lead", "bld"];
+  const errs = evaluateRegistry(r, catalogStub);
+  assert.ok(errs.some((e) => /reviewer "rvw" is dispatchable_by doer "bld".*reporting-line/.test(e) && /CRITICAL/.test(e)),
+    `expected critical reporting-line violation, got: ${errs.join("; ")}`);
+});
+test("reporting-line: reviewer dispatchable_by a build_chain TOOL → rejected (build_chain doer)", () => {
+  const r = clone(reportingReg); r.roles.rvw.dispatchable_by = ["scaffold"];
+  const errs = evaluateRegistry(r, catalogStub);
+  assert.ok(errs.some((e) => /reviewer "rvw" is dispatchable_by doer "scaffold".*build_chain/.test(e)),
+    `expected build_chain-doer violation, got: ${errs.join("; ")}`);
+});
+
 // ── Hook scrapped-literal scan bite-tests (ADR-0007 R4) ─────────────────────
 // evaluateHooks must REJECT a hook keying on a raw scrapped literal with no
 // safety net, and ACCEPT one that normalizes / derives / carries the canonical.

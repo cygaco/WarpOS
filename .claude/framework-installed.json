@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "0.13.1",
-  "installedCommit": "3b80eb035d0642d595d0b3ac6111d1f64abe2a9e",
-  "installedAt": "2026-06-04T23:26:46.199Z",
+  "installedCommit": "855318ebac9b3f6d69e1dd3ee992ff17955a8231",
+  "installedAt": "2026-06-05T00:29:13.838Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -484,8 +484,8 @@
       "dest": ".claude/agents/president/.system/policy/adr/0007-agent-system-org-rewrite.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "0428eda3069d864e5bcf472d5ed38f2bb3d2b84c1b9eaff917f16c324802b269",
-      "currentHashAtInstall": "0428eda3069d864e5bcf472d5ed38f2bb3d2b84c1b9eaff917f16c324802b269",
+      "installedHash": "be3d6d8f1d48e406b42de6895ac183464dcce5f1fd8cb5e4e7530c1780929d25",
+      "currentHashAtInstall": "be3d6d8f1d48e406b42de6895ac183464dcce5f1fd8cb5e4e7530c1780929d25",
       "introducedIn": "0.0.0"
     },
     {
@@ -5274,8 +5274,8 @@
       "dest": "scripts/checks/role-parity-scan.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "dc370406d13537d926943da49b630b0c27e9d8e4a179eefe63d4cf9b25f41e88",
-      "currentHashAtInstall": "dc370406d13537d926943da49b630b0c27e9d8e4a179eefe63d4cf9b25f41e88",
+      "installedHash": "79fbbd08647f81be27b43d076dfef36464e070e3c1048e76755598775f05e1c7",
+      "currentHashAtInstall": "79fbbd08647f81be27b43d076dfef36464e070e3c1048e76755598775f05e1c7",
       "introducedIn": "0.0.0"
     },
     {
@@ -5284,8 +5284,8 @@
       "dest": "scripts/checks/role-parity.test.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "410fbb4e7ab5c4611f601071b08a1e84d07977f8c1ab4cc9123ef3d6b6d153c1",
-      "currentHashAtInstall": "410fbb4e7ab5c4611f601071b08a1e84d07977f8c1ab4cc9123ef3d6b6d153c1",
+      "installedHash": "7ed37aa3c401056c6920a281d6a971a7d819b380dc0742d74f16fd84ad66ea43",
+      "currentHashAtInstall": "7ed37aa3c401056c6920a281d6a971a7d819b380dc0742d74f16fd84ad66ea43",
       "introducedIn": "0.0.0"
     },
     {
