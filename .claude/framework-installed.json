@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "0.13.1",
-  "installedCommit": "95ebfed776b890b26ecca6c72c77f73009259696",
-  "installedAt": "2026-06-05T20:30:01.002Z",
+  "installedCommit": "e4931947eb32a46eaca558e119106e628d56a4c0",
+  "installedAt": "2026-06-05T20:45:10.723Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -354,8 +354,8 @@
       "dest": ".claude/agents/president/.system/beta/judgement-model-recommendations.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "7afe96a17f36e001768a6a020a2b3abeac0a354fb76d80de17d6c431d3b04b4f",
-      "currentHashAtInstall": "7afe96a17f36e001768a6a020a2b3abeac0a354fb76d80de17d6c431d3b04b4f",
+      "installedHash": "f36ea53143ab370341506b130fd3ecd2a0b34627c8f97cae7efa353ace044779",
+      "currentHashAtInstall": "f36ea53143ab370341506b130fd3ecd2a0b34627c8f97cae7efa353ace044779",
       "introducedIn": "0.0.0"
     },
     {
@@ -364,8 +364,8 @@
       "dest": ".claude/agents/president/.system/beta/judgement-model.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "cbddc080acb13d1bce5ede44724495d65acc9bd57d0fcf958aaf422edf68f507",
-      "currentHashAtInstall": "cbddc080acb13d1bce5ede44724495d65acc9bd57d0fcf958aaf422edf68f507",
+      "installedHash": "c0390bb1c6a89ae161ba6f86c7882b4917f4834beaef7ca98d035d8d0079f547",
+      "currentHashAtInstall": "c0390bb1c6a89ae161ba6f86c7882b4917f4834beaef7ca98d035d8d0079f547",
       "introducedIn": "0.0.0"
     },
     {
@@ -544,8 +544,8 @@
       "dest": ".claude/agents/president/.system/policy/decision-policy.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "0ebec06d6456c35eaeb9330baf8f337c9687449a7c00ecea7a41b8846e6225cf",
-      "currentHashAtInstall": "0ebec06d6456c35eaeb9330baf8f337c9687449a7c00ecea7a41b8846e6225cf",
+      "installedHash": "0cfd0cefa1df7fe88f2b5a5618c0c8d605d26061b33466d7f2582e8044743c64",
+      "currentHashAtInstall": "0cfd0cefa1df7fe88f2b5a5618c0c8d605d26061b33466d7f2582e8044743c64",
       "introducedIn": "0.0.0"
     },
     {
@@ -10314,8 +10314,8 @@
       "dest": "CLAUDE.md",
       "owner": "framework",
       "mergeStrategy": "append-if-exists",
-      "installedHash": "f7b8c88e7b6491ab0a29c5d83c1ab0d474de7f078ffd71bc09a013dc58587b25",
-      "currentHashAtInstall": "f7b8c88e7b6491ab0a29c5d83c1ab0d474de7f078ffd71bc09a013dc58587b25",
+      "installedHash": "b2417e529bc184d256eec7ebbc840f53b897c072212dc586aadb1cd4139ff9a6",
+      "currentHashAtInstall": "b2417e529bc184d256eec7ebbc840f53b897c072212dc586aadb1cd4139ff9a6",
       "introducedIn": "0.0.0"
     }
   ],

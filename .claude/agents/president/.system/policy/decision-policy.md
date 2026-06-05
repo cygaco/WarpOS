@@ -114,6 +114,13 @@ When a Class B decision has multiple viable options, score each option on these 
 
 **Stage shifts the weights.** When `paths.currentStage` flips from `mvp` to `beta`, Reliability becomes mandatory-pass and Speed-to-ship drops. When it flips from `beta` to `production`, Cost rises to high and Performance enters the rubric. The criteria stay; the weights move. See `paths.currentStage` for the current stage's emphasis.
 
+**Completeness bar for "migration/inventory complete" or "all callers handled" DECIDEs** (DP-gap #38, /beta:integrate 2026-06-05 — a verification-rigor check, not a new red line). Before returning DECIDE that a migration, rename, or inventory is *complete* — or that *all* callers/uses of a target are handled — require evidence that:
+
+1. **Every surface form of the target was searched** — literal key + prose/informal mention (e.g. bold-backtick `**`role`**` dispatch) + alias + indirect reference. A single-surface-form scan is a lower bound, not a count. (Forward-search analog of the Refactor-Hygiene "grep ALL occurrences of the OLD literal" rule.)
+2. **Any retired-identifier guard backing the claim is scoped to the no-legitimate-residual class** — partition old/`was` names into (a) fully-retired-no-legitimate-use and (b) still-valid-elsewhere, and fail-flag only (a). An over-broad detector floods false-reds and gets dismissed (the false-green inverse).
+
+This complements — and is distinct from — the rename-hygiene rule (which is about the OLD literal specifically): this bar is about completeness of the *forward* search and the *precision* of the backing detector.
+
 ---
 
 ## Tech-introduction rule
