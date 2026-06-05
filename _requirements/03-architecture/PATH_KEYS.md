@@ -69,6 +69,7 @@ Markdown convention: reference paths as `paths.X` in prose. Code: `const { PATHS
 | `oneshotRetros` | `.claude/agents/president/.system/oneshot/retros` | dir | runtime | yes | 0.0.0 |  |
 | `oneshotStore` | `.claude/agents/president/.system/oneshot/store.json` | json | runtime | yes | 0.0.0 |  |
 | `oneshotSystem` | `.claude/agents/president/.system/oneshot` | dir | framework | no | 0.0.0 |  |
+| `orgRoleRegistry` | `.claude/agents/_org/role-registry.json` | json | framework | no | 0.13.0 |  |
 | `pathsLib` | `scripts/hooks/lib/paths.js` | js | framework | no | 0.0.0 |  |
 | `patterns` | `patterns` | dir | framework | no | 0.0.0 |  |
 | `plans` | `.claude/runtime/plans` | dir | runtime | yes | 0.0.0 |  |
@@ -99,6 +100,7 @@ Markdown convention: reference paths as `paths.X` in prose. Code: `const { PATHS
 | `runtime` | `.claude/runtime` | dir | runtime | yes | 0.0.0 |  |
 | `settings` | `.claude/settings.json` | json | project | yes | 0.0.0 |  |
 | `skillCatalog` | `.claude/runtime/skill-catalog.json` | json | generated | yes | 0.5.1 | Generated compact index of every user-invocable slash comman |
+| `skillHookPoints` | `.claude/agents/_org/skill-hook-points.json` | json | framework | no | 0.13.1 |  |
 | `skillUsageFile` | `.claude/project/events/skill-usage.jsonl` | jsonl | runtime | yes | 0.1.3 |  |
 | `specGraph` | `.claude/project/maps/SPEC_GRAPH.json` | json | generated | yes | 0.0.0 |  |
 | `specsRoot` | `_requirements/04-features` | dir | project | yes | 0.1.0 | replaces `manifest.projectPaths.specs (originally docs/05-features, then requirements/05-features, then requirements/04-features)` |
@@ -111,6 +113,7 @@ Markdown convention: reference paths as `paths.X` in prose. Code: `const { PATHS
 | `sprintFullAutonomy` | `.claude/agents/president/.system/policy/sprint-full-autonomy.json` | json | framework | yes | 0.8.0 |  |
 | `sprintFullReports` | `.claude/project/sprint/full-reports` | dir | runtime | yes | 0.8.0 |  |
 | `sprintHistory` | `.claude/project/sprint/history` | dir | runtime | yes | 0.4.0 |  |
+| `sprintHookPoints` | `.claude/agents/_org/sprint-hook-points.json` | json | framework | no | 0.13.0 |  |
 | `sprintIssues` | `.claude/project/sprint/issues` | dir | runtime | yes | 0.4.0 | Structured per-issue yaml. Per-project bug inbox issues.md ( |
 | `sprintIssuesLedger` | `issues.md` | md | project | yes | 0.4.0 | Human-readable per-project bug inbox at repo root. Distinct  |
 | `sprintPlanContracts` | `.claude/project/sprint/plan-contracts` | dir | runtime | yes | 0.4.0 |  |

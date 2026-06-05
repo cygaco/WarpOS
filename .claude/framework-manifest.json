@@ -3,7 +3,7 @@
   "version": "0.13.1",
   "generated_by": "scripts/generate-framework-manifest.js",
   "counts": {
-    "agent": 74,
+    "agent": 75,
     "skill": 199,
     "reference": 28,
     "maps_baseline": 25,
@@ -56,7 +56,7 @@
     "module_scope": 1,
     "framework_doc": 3
   },
-  "total": 1027,
+  "total": 1028,
   "assets": {
     "agent": [
       {
@@ -89,6 +89,18 @@
         "dest": ".claude/agents/_org/role-registry.json",
         "kind": "agent",
         "sha256": "dd57d5d7c9533899cf9ac25f5a6619be70d7f460b4ab02fea00c334b9d4b85e7",
+        "owner": "framework",
+        "mergeStrategy": "three_way_markdown",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "agent._org.skill-hook-points.json",
+        "src": ".claude/agents/_org/skill-hook-points.json",
+        "dest": ".claude/agents/_org/skill-hook-points.json",
+        "kind": "agent",
+        "sha256": "78f65136b0f1eb4aa97e4077815ef19ad0a1b293f4d6c747d438eda32d1cc151",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
@@ -4886,7 +4898,7 @@
         "src": "scripts/hooks/lib/paths.generated.js",
         "dest": "scripts/hooks/lib/paths.generated.js",
         "kind": "hook_lib",
-        "sha256": "f2facc6881429cd99ab2d9d998f3542ffc8c6ab8ab4df313b8451ba22f4ca971",
+        "sha256": "f83b347dbe830e3cf9849910dc31b763f92503797b40820e2b3ab09e9cde4c36",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -8990,7 +9002,7 @@
         "src": "schemas/paths.schema.json",
         "dest": "schemas/paths.schema.json",
         "kind": "schema",
-        "sha256": "704af300d0e3b03e061d27dae127ac3624cad903b06c786f098089814e2a863d",
+        "sha256": "3f97db618de46f6845a65cac559982d0733e75ff3e06bcd554e43ec0ec8ab07f",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -10974,7 +10986,7 @@
         "src": "framework/paths.registry.json",
         "dest": "framework/paths.registry.json",
         "kind": "paths_registry",
-        "sha256": "33b03cedfc0e4fbd6fe5c5c8d458e1b31aed839a6e6c2e4394534112d0525b47",
+        "sha256": "9f0e736b700a3e64d20974d8027d0cc1deed384e5df082aaf4295a1f08803ca2",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",

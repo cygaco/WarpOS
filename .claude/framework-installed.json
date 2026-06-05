@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "0.13.1",
-  "installedCommit": "8a6e73db72717b11e0a10d8cd583d593516d70a8",
-  "installedAt": "2026-06-05T17:26:17.958Z",
+  "installedCommit": "2202abf16360127b8b666e336d42637171a0e2a3",
+  "installedAt": "2026-06-05T18:28:10.073Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -36,6 +36,16 @@
       "mergeStrategy": "three_way_markdown",
       "installedHash": "dd57d5d7c9533899cf9ac25f5a6619be70d7f460b4ab02fea00c334b9d4b85e7",
       "currentHashAtInstall": "dd57d5d7c9533899cf9ac25f5a6619be70d7f460b4ab02fea00c334b9d4b85e7",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "agent._org.skill-hook-points.json",
+      "kind": "agent",
+      "dest": ".claude/agents/_org/skill-hook-points.json",
+      "owner": "framework",
+      "mergeStrategy": "three_way_markdown",
+      "installedHash": "78f65136b0f1eb4aa97e4077815ef19ad0a1b293f4d6c747d438eda32d1cc151",
+      "currentHashAtInstall": "78f65136b0f1eb4aa97e4077815ef19ad0a1b293f4d6c747d438eda32d1cc151",
       "introducedIn": "0.0.0"
     },
     {
@@ -4024,8 +4034,8 @@
       "dest": "scripts/hooks/lib/paths.generated.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "f2facc6881429cd99ab2d9d998f3542ffc8c6ab8ab4df313b8451ba22f4ca971",
-      "currentHashAtInstall": "f2facc6881429cd99ab2d9d998f3542ffc8c6ab8ab4df313b8451ba22f4ca971",
+      "installedHash": "f83b347dbe830e3cf9849910dc31b763f92503797b40820e2b3ab09e9cde4c36",
+      "currentHashAtInstall": "f83b347dbe830e3cf9849910dc31b763f92503797b40820e2b3ab09e9cde4c36",
       "introducedIn": "0.0.0"
     },
     {
@@ -7384,8 +7394,8 @@
       "dest": "schemas/paths.schema.json",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "704af300d0e3b03e061d27dae127ac3624cad903b06c786f098089814e2a863d",
-      "currentHashAtInstall": "704af300d0e3b03e061d27dae127ac3624cad903b06c786f098089814e2a863d",
+      "installedHash": "3f97db618de46f6845a65cac559982d0733e75ff3e06bcd554e43ec0ec8ab07f",
+      "currentHashAtInstall": "3f97db618de46f6845a65cac559982d0733e75ff3e06bcd554e43ec0ec8ab07f",
       "introducedIn": "0.0.0"
     },
     {
@@ -9034,8 +9044,8 @@
       "dest": "framework/paths.registry.json",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "33b03cedfc0e4fbd6fe5c5c8d458e1b31aed839a6e6c2e4394534112d0525b47",
-      "currentHashAtInstall": "33b03cedfc0e4fbd6fe5c5c8d458e1b31aed839a6e6c2e4394534112d0525b47",
+      "installedHash": "9f0e736b700a3e64d20974d8027d0cc1deed384e5df082aaf4295a1f08803ca2",
+      "currentHashAtInstall": "9f0e736b700a3e64d20974d8027d0cc1deed384e5df082aaf4295a1f08803ca2",
       "introducedIn": "0.0.0"
     },
     {

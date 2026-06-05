@@ -822,6 +822,30 @@
       "introducedIn": "0.4.0",
       "docsToken": "paths.sprintRouting"
     },
+    "orgRoleRegistry": {
+      "path": ".claude/agents/_org/role-registry.json",
+      "kind": "json",
+      "owner": "framework",
+      "mutable": false,
+      "introducedIn": "0.13.0",
+      "docsToken": "paths.orgRoleRegistry"
+    },
+    "sprintHookPoints": {
+      "path": ".claude/agents/_org/sprint-hook-points.json",
+      "kind": "json",
+      "owner": "framework",
+      "mutable": false,
+      "introducedIn": "0.13.0",
+      "docsToken": "paths.sprintHookPoints"
+    },
+    "skillHookPoints": {
+      "path": ".claude/agents/_org/skill-hook-points.json",
+      "kind": "json",
+      "owner": "framework",
+      "mutable": false,
+      "introducedIn": "0.13.1",
+      "docsToken": "paths.skillHookPoints"
+    },
     "briefs": {
       "path": "_docs/briefs",
       "kind": "dir",

@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-05T17:26:18.122Z",
+  "generatedAt": "2026-06-05T18:28:10.230Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.13.1",
   "migrations": [],
@@ -3476,6 +3476,20 @@
       "sha256": "325867faab70256771d10fb1a415996476df5cd6a6e24a50d1f73880dfe212a8",
       "installedSha": "325867faab70256771d10fb1a415996476df5cd6a6e24a50d1f73880dfe212a8"
     },
+    "scripts/skills/skill-hook-points.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/skills/skill-hook-points.js",
+      "sha256": "df2e027bd2b3bc55353eadc6a5eaf7b94b92fa6d1885bae881e41fc92e4d6d94",
+      "installedSha": "df2e027bd2b3bc55353eadc6a5eaf7b94b92fa6d1885bae881e41fc92e4d6d94"
+    },
+    "scripts/skills/test-skill-hook-points.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/skills/test-skill-hook-points.js",
+      "sha256": "368addf12fba87a0155cf3a603400e30dcb001ea5e993591c9d7bb8ceb7e12c6",
+      "installedSha": "368addf12fba87a0155cf3a603400e30dcb001ea5e993591c9d7bb8ceb7e12c6"
+    },
     "scripts/self-mod/governance.js": {
       "owner": "framework",
       "managed": true,
@@ -4488,8 +4502,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/lib/paths.generated.js",
-      "sha256": "f2facc6881429cd99ab2d9d998f3542ffc8c6ab8ab4df313b8451ba22f4ca971",
-      "installedSha": "f2facc6881429cd99ab2d9d998f3542ffc8c6ab8ab4df313b8451ba22f4ca971"
+      "sha256": "f83b347dbe830e3cf9849910dc31b763f92503797b40820e2b3ab09e9cde4c36",
+      "installedSha": "f83b347dbe830e3cf9849910dc31b763f92503797b40820e2b3ab09e9cde4c36"
     },
     "scripts/hooks/lib/paths.js": {
       "owner": "framework",
@@ -5636,8 +5650,8 @@
       "owner": "framework",
       "managed": true,
       "source": "schemas/paths.schema.json",
-      "sha256": "704af300d0e3b03e061d27dae127ac3624cad903b06c786f098089814e2a863d",
-      "installedSha": "704af300d0e3b03e061d27dae127ac3624cad903b06c786f098089814e2a863d"
+      "sha256": "3f97db618de46f6845a65cac559982d0733e75ff3e06bcd554e43ec0ec8ab07f",
+      "installedSha": "3f97db618de46f6845a65cac559982d0733e75ff3e06bcd554e43ec0ec8ab07f"
     },
     "schemas/provider-failure-modes.schema.json": {
       "owner": "framework",
@@ -5965,8 +5979,8 @@
       "owner": "framework",
       "managed": true,
       "source": "framework/paths.registry.json",
-      "sha256": "33b03cedfc0e4fbd6fe5c5c8d458e1b31aed839a6e6c2e4394534112d0525b47",
-      "installedSha": "33b03cedfc0e4fbd6fe5c5c8d458e1b31aed839a6e6c2e4394534112d0525b47"
+      "sha256": "9f0e736b700a3e64d20974d8027d0cc1deed384e5df082aaf4295a1f08803ca2",
+      "installedSha": "9f0e736b700a3e64d20974d8027d0cc1deed384e5df082aaf4295a1f08803ca2"
     },
     "framework/templates/sprint/README.md": {
       "owner": "framework",
@@ -16601,6 +16615,14 @@
       "kind": "json",
       "sha256": "dd57d5d7c9533899cf9ac25f5a6619be70d7f460b4ab02fea00c334b9d4b85e7",
       "installedSha": "dd57d5d7c9533899cf9ac25f5a6619be70d7f460b4ab02fea00c334b9d4b85e7"
+    },
+    ".claude/agents/_org/skill-hook-points.json": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/_org/skill-hook-points.json",
+      "kind": "json",
+      "sha256": "78f65136b0f1eb4aa97e4077815ef19ad0a1b293f4d6c747d438eda32d1cc151",
+      "installedSha": "78f65136b0f1eb4aa97e4077815ef19ad0a1b293f4d6c747d438eda32d1cc151"
     },
     ".claude/agents/_org/sprint-hook-points.json": {
       "owner": "framework",

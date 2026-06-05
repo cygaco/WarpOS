@@ -492,6 +492,21 @@
       "const": ".claude/agents/president/.system/policy/sprint-routing.json",
       "description": "json (framework) — paths.sprintRouting"
     },
+    "orgRoleRegistry": {
+      "type": "string",
+      "const": ".claude/agents/_org/role-registry.json",
+      "description": "json (framework) — paths.orgRoleRegistry"
+    },
+    "sprintHookPoints": {
+      "type": "string",
+      "const": ".claude/agents/_org/sprint-hook-points.json",
+      "description": "json (framework) — paths.sprintHookPoints"
+    },
+    "skillHookPoints": {
+      "type": "string",
+      "const": ".claude/agents/_org/skill-hook-points.json",
+      "description": "json (framework) — paths.skillHookPoints"
+    },
     "briefs": {
       "type": "string",
       "const": "_docs/briefs",
