@@ -14,17 +14,28 @@
 // FORWARD (coverage): every skill REGISTERED in the registry resolves to a real skill file
 //   at .claude/commands/<ns>/<name>.md — a registered-but-phantom entry is `phantom_skill_entry`.
 //
-// HARDCODE / STALE (the live-bug catch): scan EVERY .claude/commands/**/*.md body for a
-//   dispatch that hardcodes a renameable persona role (subagent_type: <name>). For each:
-//     - name ∈ staleNames (a role the registry renamed AWAY via its `was` field) ->
-//       `hardcoded_stale_role` (HIGH — would fail to dispatch);
-//     - else name is a registry role that is ALSO a skill-hook-points key-role (a renameable
-//       persona the skill SHOULD resolve at call time) AND the owning skill ∉ allowlist ->
-//       `hardcoded_role`. Stable faces + generics (alpha..epsilon, general-purpose, builder,
-//       fixer, stub-scaffold) are legit literal dispatches — never `hardcoded_role`.
-//     - allowlist = skills migration-pending (M1-c); their hardcodes -> info (tracked). An
-//       allowlisted skill with NO hardcode -> `stale_allowlist_entry` (the allowlist must not
-//       rot — mirrors scan-coverage's reasonless/stale self-flagging).
+// HARDCODE / STALE — TWO ASYMMETRIC checks on every .claude/commands/**/*.md body:
+//
+//   (1) STALE (persona-rename), scanned ANYWHERE in a command body, NARROWED to PERSONA
+//       renames only. personaStaleNames = the `was` values of roles whose id matches
+//       /^director-/ OR /-lead$/ (the management personas). This EXCLUDES worker scraps
+//       (redteam/qa/reviewer/compliance/builder/fixer/req-reviewer): their `was` values
+//       appear legitimately all over .claude/commands (skill names like /redteam:full,
+//       /qa:audit; dispatch docs), so flagging them would flood false positives. Any LINE
+//       containing a personaStaleName (word-boundary) -> `hardcoded_stale_role` (HIGH —
+//       a renamed-away persona name is always wrong, descriptive OR dispatch), UNLESS the
+//       line carries the suppress marker `stale-ok`.
+//
+//   (2) CURRENT-persona DISPATCH, kept NARROW to a dispatch context. personaRoles = the
+//       skill-hook-points key-roles that are real registry ids. A current persona counts
+//       as a "dispatch" when EITHER (a) it follows `subagent_type` (SUBAGENT_TYPE_RE), OR
+//       (b) it appears bold-backtick **`<role>`** on a LINE that ALSO carries a dispatch
+//       keyword (subagent|dispatch|resolve|consult). Registered skill -> `hardcoded_role`;
+//       unregistered skill -> `unregistered_persona_skill`. GENERIC_ROLES are never flagged.
+//
+//   allowlist = skills migration-pending (M1-c); their (1)/(2) hits -> info (tracked). An
+//   allowlisted skill with NO hardcode -> `stale_allowlist_entry` (the allowlist must not
+//   rot — mirrors scan-coverage's reasonless/stale self-flagging).
 //
 // See .claude/commands/scan/skill-hook-coverage.md for the full spec.
 
@@ -43,37 +54,46 @@ const GENERIC_ROLES = new Set([
   "general-purpose", "builder", "fixer", "stub-scaffold",
 ]);
 
-// M1-c COMPLETE for the 8 registered agent-calling skills (roadmap×4 + growth×4) — all now
-// resolve their persona from the skill-hook registry at call time, no hardcoded names. The
-// allowlist is EMPTY: any skill that hardcodes a persona subagent_type now FAILS the gate
-// (no migration-pending escape hatch left).
-// M1-c CONTINUATION (tracked): ad-images.md + iterate.md dispatch personas via PROSE
-// ("**`growth-lead`** subagent — owns…") with NO subagent_type literal + stale names — the
-// registry undercounts them and this enforcer's subagent_type-anchored detection misses
-// prose dispatches. Next slice: register+migrate those (and any siblings) + broaden the
-// STALE check to bold-backtick dispatch-description context.
+// M1-c COMPLETE for the registered agent-calling skills — all should resolve their persona
+// from the skill-hook registry at call time, no hardcoded names (neither subagent_type
+// literals nor bold-backtick prose dispatch). The allowlist is EMPTY: any skill that
+// hardcodes a persona now FAILS the gate (no migration-pending escape hatch left).
 const MIGRATION_PENDING = [];
 const ALLOWLIST_REASON = "M1-c prose migration pending";
 
 // A dispatch that hardcodes a persona role: `subagent_type` followed by a role name.
 const SUBAGENT_TYPE_RE = /subagent_type["'\s:=]+([a-z][a-z0-9-]+)/g;
 
+// A persona named in bold-backtick prose: **`<role>`** (the prose-dispatch idiom).
+const BOLD_BACKTICK_ROLE_RE = /\*\*`([a-z][a-z0-9-]+)`\*\*/g;
+
+// On a bold-backtick line, ONE of these words turns "named" into "dispatched".
+const DISPATCH_KEYWORD_RE = /\b(subagent|dispatch|resolve|consult)/i;
+
+// The suppress marker for the STALE line-scan (e.g. a legit counter-example in docs).
+const STALE_OK_MARKER = "stale-ok";
+
 // ── CLI flags ─────────────────────────────────────────────────────────────────
 
 const JSON_OUT = process.argv.includes("--json");
 
-// ── Stale-name derivation (the renamed-away names) ─────────────────────────────
+// ── Stale-name derivation (renamed-away PERSONA names only) ─────────────────────
 
 /**
- * Every non-empty `was` value across the role-registry roles (the renamed-away names).
- * `was` may be a string OR an array (e.g. qa-reviewer.was = ["qa","req-reviewer","compliance"]).
+ * The renamed-away names of the MANAGEMENT PERSONAS only — the `was` values of roles whose
+ * id matches /^director-/ OR /-lead$/. Deliberately EXCLUDES worker scraps (redteam, qa,
+ * reviewer, compliance, fixer, req-reviewer, …): their `was` values appear legitimately all
+ * over .claude/commands (skill names, dispatch docs) and flagging them floods false positives.
+ * `was` may be a string OR an array.
  * @param {object} roleRegistryRoles  the roles{} map from role-registry.json
  * @returns {Set<string>}
  */
-function deriveStaleNames(roleRegistryRoles = {}) {
+function derivePersonaStaleNames(roleRegistryRoles = {}) {
   const out = new Set();
-  for (const role of Object.values(roleRegistryRoles)) {
+  for (const [key, role] of Object.entries(roleRegistryRoles)) {
     if (!role || typeof role !== "object" || role.was == null) continue;
+    const id = typeof role.id === "string" && role.id ? role.id : key;
+    if (!/^director-/.test(id) && !/-lead$/.test(id)) continue; // management personas only
     const vals = Array.isArray(role.was) ? role.was : [role.was];
     for (const v of vals) if (typeof v === "string" && v.trim()) out.add(v.trim());
   }
@@ -115,14 +135,22 @@ function skillToCommandPath(skillId, commandsDir = PATHS.commands) {
 // ── Core compute (exported, PURE given its inputs — no disk) ───────────────────
 
 /**
- * @param {object}        registry      the skill hook-point registry
- * @param {string[]}      roleIds       real role ids from role-registry
- * @param {object[]}      commandFiles  [{ skill, path, body }]
- * @param {Set<string>}   staleNames    renamed-away names (from `was`)
- * @param {Set<string>}   allowlist     migration-pending skill ids
+ * @param {object}        registry           the skill hook-point registry
+ * @param {string[]}      roleIds            real role ids from role-registry
+ * @param {object[]}      commandFiles       [{ skill, path, body }]
+ * @param {Set<string>}   personaStaleNames  renamed-away MANAGEMENT-persona names
+ * @param {Set<string>}   personaRoles       optional override of the renameable persona roles
+ * @param {Set<string>}   allowlist          migration-pending skill ids
  * @returns {{ findings, info }}
  */
-function evaluate({ registry, roleIds, commandFiles = [], staleNames = new Set(), allowlist = new Set() }) {
+function evaluate({
+  registry,
+  roleIds,
+  commandFiles = [],
+  personaStaleNames = new Set(),
+  personaRoles: personaRolesArg,
+  allowlist = new Set(),
+}) {
   const findings = [];
   const info = [];
 
@@ -134,9 +162,9 @@ function evaluate({ registry, roleIds, commandFiles = [], staleNames = new Set()
 
   const roleIdSet = new Set(roleIds);
   // The renameable PERSONAS: registry roles that are ALSO key-roles in skill-hook-points.
-  const personaRoles = new Set(
-    skillHookPoints.hookRows(registry).map((r) => r.role).filter((r) => roleIdSet.has(r)),
-  );
+  const personaRoles =
+    personaRolesArg ||
+    new Set(skillHookPoints.hookRows(registry).map((r) => r.role).filter((r) => roleIdSet.has(r)));
 
   // 2. FORWARD — every REGISTERED skill resolves to a real command file.
   const filePaths = new Set(commandFiles.map((c) => c.path));
@@ -151,44 +179,78 @@ function evaluate({ registry, roleIds, commandFiles = [], staleNames = new Set()
     }
   }
 
-  // 3. HARDCODE / STALE — scan every command body for a hardcoded persona dispatch.
+  const registeredSkills = new Set(skillHookPoints.skillIds(registry));
+
+  // 3. HARDCODE / STALE — scan every command body line-by-line.
   //    Track which allowlisted skills actually carry a hardcode (to detect rot).
   const allowlistHit = new Set();
+  const push = (skillAllowed, finding) => {
+    if (skillAllowed) { allowlistHit.add(finding.skill); info.push(finding); }
+    else findings.push(finding);
+  };
+
   for (const cf of commandFiles) {
     const allowed = allowlist.has(cf.skill);
-    SUBAGENT_TYPE_RE.lastIndex = 0;
-    let m;
-    while ((m = SUBAGENT_TYPE_RE.exec(cf.body)) !== null) {
-      const name = m[1];
+    const lines = String(cf.body).split(/\r?\n/);
 
-      if (staleNames.has(name)) {
-        // A renamed-away name — would fail to dispatch. Allowlist tracks it; otherwise HIGH.
-        const f = {
-          finding_type: "hardcoded_stale_role",
-          skill: cf.skill,
-          role: name,
-          severity: "high",
-          path: cf.path,
-          evidence: `${cf.skill} hardcodes subagent_type: ${name} — a role the registry renamed away (stale; would fail to dispatch)`,
-        };
-        if (allowed) { allowlistHit.add(cf.skill); info.push(f); }
-        else findings.push(f);
-        continue;
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+
+      // (1) STALE — a renamed-away MANAGEMENT-persona name ANYWHERE on the line, unless
+      //     suppressed. Descriptive OR dispatch: a renamed-away persona name is always wrong.
+      const suppressed = line.includes(STALE_OK_MARKER);
+      if (!suppressed) {
+        for (const stale of personaStaleNames) {
+          const re = new RegExp(`(?<![A-Za-z0-9-])${escapeRe(stale)}(?![A-Za-z0-9-])`);
+          if (re.test(line)) {
+            push(allowed, {
+              finding_type: "hardcoded_stale_role",
+              skill: cf.skill,
+              role: stale,
+              severity: "high",
+              path: cf.path,
+              line: i + 1,
+              evidence: `${cf.skill} names persona '${stale}' (line ${i + 1}) — a role the registry renamed away (stale; would fail to dispatch)`,
+            });
+          }
+        }
       }
 
-      if (GENERIC_ROLES.has(name)) continue; // stable face / generic — legit literal dispatch
-      if (!personaRoles.has(name)) continue; // not a renameable persona — out of scope
+      // (2) CURRENT-persona DISPATCH — narrow to a dispatch context.
+      //     (a) subagent_type: <persona>
+      SUBAGENT_TYPE_RE.lastIndex = 0;
+      let m;
+      while ((m = SUBAGENT_TYPE_RE.exec(line)) !== null) {
+        flagCurrentPersona(m[1]);
+      }
+      //     (b) **`<persona>`** on a line that ALSO carries a dispatch keyword.
+      if (DISPATCH_KEYWORD_RE.test(line)) {
+        BOLD_BACKTICK_ROLE_RE.lastIndex = 0;
+        let b;
+        while ((b = BOLD_BACKTICK_ROLE_RE.exec(line)) !== null) {
+          flagCurrentPersona(b[1]);
+        }
+      }
 
-      // A current renameable persona the skill should resolve at call time.
-      const f = {
-        finding_type: "hardcoded_role",
-        skill: cf.skill,
-        role: name,
-        path: cf.path,
-        evidence: `${cf.skill} hardcodes persona subagent_type: ${name} — should resolve via skill-hook-points at call time`,
-      };
-      if (allowed) { allowlistHit.add(cf.skill); info.push(f); }
-      else findings.push(f);
+      // eslint-disable-next-line no-inner-declarations
+      function flagCurrentPersona(name) {
+        if (personaStaleNames.has(name)) return; // already covered by (1) STALE
+        if (GENERIC_ROLES.has(name)) return; // stable face / generic — legit literal dispatch
+        if (!personaRoles.has(name)) return; // not a renameable persona — out of scope
+        const type = registeredSkills.has(cf.skill) ? "hardcoded_role" : "unregistered_persona_skill";
+        const why =
+          type === "hardcoded_role"
+            ? `should resolve via skill-hook-points at call time`
+            : `dispatches a persona but is not registered in skill-hook-points`;
+        push(allowed, {
+          finding_type: type,
+          skill: cf.skill,
+          role: name,
+          path: cf.path,
+          line: i + 1,
+          evidence: `${cf.skill} dispatches persona '${name}' (line ${i + 1}) — ${why}`,
+        });
+      }
     }
   }
 
@@ -205,6 +267,11 @@ function evaluate({ registry, roleIds, commandFiles = [], staleNames = new Set()
   }
 
   return { findings, info };
+}
+
+/** Escape a literal for use inside a RegExp. */
+function escapeRe(s) {
+  return String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 // ── CLI ───────────────────────────────────────────────────────────────────────
@@ -230,11 +297,11 @@ function main() {
     return 2;
   }
 
-  const staleNames = deriveStaleNames(roles);
+  const personaStaleNames = derivePersonaStaleNames(roles);
   const commandFiles = loadCommandFiles();
   const allowlist = new Set(MIGRATION_PENDING);
 
-  const { findings, info } = evaluate({ registry, roleIds, commandFiles, staleNames, allowlist });
+  const { findings, info } = evaluate({ registry, roleIds, commandFiles, personaStaleNames, allowlist });
 
   const skillsN = skillHookPoints.skillIds(registry).length;
   const filesN = commandFiles.length;
@@ -246,6 +313,7 @@ function main() {
       ok,
       skills: skillsN,
       command_files: filesN,
+      persona_stale_names: [...personaStaleNames].sort(),
       findings: findings.slice(0, 50),
       totalFindings: findings.length,
       info: tracked,
@@ -262,4 +330,4 @@ function main() {
 
 if (require.main === module) process.exit(main());
 
-module.exports = { evaluate, deriveStaleNames };
+module.exports = { evaluate, derivePersonaStaleNames };

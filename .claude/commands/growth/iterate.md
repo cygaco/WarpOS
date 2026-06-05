@@ -26,9 +26,11 @@ plus:
   is a thin domain wrapper that frames the artifact + metric for it.
 - **Parallel subagents** (default-to-parallel) — fan out all N variations concurrently, not
   serially. This is WarpOS's single biggest edge over a serial Cowork flow.
-- **`growth-lead`** subagent — owns `money-loves-speed` + the winner-fan-out gate: iteration
-  may only fan out from an artifact with **real metric data** attached (no opinion-driven
-  scaling); ranks the resulting variations.
+- **The speed gate** — owns `money-loves-speed` + the winner-fan-out gate: iteration may only fan
+  out from an artifact with **real metric data** attached (no opinion-driven scaling); ranks the
+  resulting variations. Resolve the agent from the skill-hook registry at call time and dispatch
+  what it returns (do NOT hardcode a role name; the registry tracks the current persona):
+  `node scripts/skills/skill-hook-points.js resolve growth:iterate speed-gate` (the `speed-gate` hook).
 
 ## Procedure (outline)
 

@@ -26,7 +26,10 @@ Turn ONE creative angle into a video ad following the 5-step path: swipe → scr
 
 ## Reuses (do not re-derive)
 
-- **`copy-lead`** subagent — script voice (`argument-not-copy`) + the hook (`hooks-are-90`).
+- **Script voice** (`argument-not-copy`) + the hook (`hooks-are-90`) — resolve the agent from the
+  skill-hook registry at call time and dispatch what it returns (do NOT hardcode a role name; the
+  registry tracks the current persona): `node scripts/skills/skill-hook-points.js resolve growth:ad-video script-voice`
+  (the `script-voice` hook).
 - **`growth:ad-images`** — the start-frame is produced exactly as a native-ad image prompt
   (same scene-first / no-text-logo rules); reuse that step, don't re-derive it.
 - **Parallel subagents** — generate storyboard clips concurrently.

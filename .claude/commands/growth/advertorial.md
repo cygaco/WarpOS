@@ -28,7 +28,7 @@ North-Star belief, a unique mechanism.
   on the research provider, then **switch to Claude at the Swipe step** and stay on Claude
   through Write + Chief) is already native to WarpOS dispatch; no manual model-switching. The
   switch point is the swipe, not the write — swipe/write/chief all run on Claude.
-- **`copy-lead`** subagent (the `voice-and-chief` hook) — owns the voice (`argument-not-copy`,
+- The copy-lead subagent (the `voice-and-chief` hook) — owns the voice (`argument-not-copy`,
   `hooks-are-90`) AND the **Chief** coherence review (`chief-coherence`). Resolve the agent from
   the skill-hook registry at call time — `node scripts/skills/skill-hook-points.js resolve growth:advertorial voice-and-chief`
   — and dispatch the role it returns (do NOT hardcode a role name; the registry tracks the

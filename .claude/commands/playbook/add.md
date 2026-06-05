@@ -42,6 +42,6 @@ If `$ARGUMENTS` already contains a `###` heading, treat it as pre-formatted: cho
 ## Related
 
 - The Playbook itself — `.claude/project/reference/playbook.md`
-- `director-of-product` / `director-of-qa` agents — the primary consumers
+- `director-of-product` / `quality-lead` agents — the primary consumers
 - `/roadmap:add` — the structural sibling this mirrors
 - `.claude/project/reference/product-lifecycle.md`, `product-robustness.md` — adjacent canon

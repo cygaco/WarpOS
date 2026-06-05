@@ -157,7 +157,7 @@ skill body drives it, then gates completion with `verifyServe`.
 
 <!-- design-overview-pointer (single bootstrap entry to the agent-grounding design library; anchor:none, NOT a guide-anchor marker) -->
 > 🎨 **Design-principles guides (overview):** the first-screen UX is judged by the
-> `product-designer` / `web-conversion-designer` / `design-quality` / `visual-review`
+> `design-lead` / `conversion-lead` / `design-quality` / `visual-review`
 > agents, which ground their craft in the **design-principles guide library** —
 > overview at [`_guides/design/README.md`](../../../_guides/design/README.md) (index
 > `_guides/design/registry.json`). These are agent-grounding training references

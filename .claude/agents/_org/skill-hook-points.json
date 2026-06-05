@@ -64,6 +64,32 @@
         { "hook_point": "eq-scoring", "role": "marketing-lead", "note": "EQ scoring + SCALE/TEST/SKIP + risk/moat (eq-scoring, ltv-cac) (ADR-0007: was growth-lead)" },
         { "hook_point": "angle-sanity", "role": "director-of-growth", "note": "message/angle sanity on the candidate's seed angle (ADR-0007: was director-of-marketing)" }
       ]
+    },
+    "growth:ad-images": {
+      "domain": "growth",
+      "hooks": [
+        { "hook_point": "angle-voice", "role": "copy-lead", "note": "angle/voice judgment — the angle is the brief (hooks-are-90, argument-not-copy)" },
+        { "hook_point": "angle-judgment", "role": "director-of-growth", "note": "message/angle judgment on the creative angle (ADR-0007: was director-of-marketing)" }
+      ]
+    },
+    "growth:ad-video": {
+      "domain": "growth",
+      "hooks": [
+        { "hook_point": "script-voice", "role": "copy-lead", "note": "script voice (argument-not-copy) + the hook (hooks-are-90)" }
+      ]
+    },
+    "growth:angles": {
+      "domain": "growth",
+      "hooks": [
+        { "hook_point": "hook-voice", "role": "copy-lead", "note": "hook/voice judgment on the angles (hooks-are-90, argument-not-copy): mine the philosophy, not the copy" },
+        { "hook_point": "grounding", "role": "research-lead", "note": "grounds angles in / feeds the audience_dossier (segment-level, confidence-scored) (ADR-0007: was research-insight-lead)" }
+      ]
+    },
+    "growth:iterate": {
+      "domain": "growth",
+      "hooks": [
+        { "hook_point": "speed-gate", "role": "marketing-lead", "note": "money-loves-speed + winner-fan-out gate: fan-out requires real metric data; ranks the variations (ADR-0007: was growth-lead)" }
+      ]
     }
   }
 }

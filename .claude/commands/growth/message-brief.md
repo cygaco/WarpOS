@@ -21,17 +21,17 @@ to the S0.2 contract; Marketing owns the **market promise** here (claims boundar
 
 ## Reuses (do not re-derive)
 
-- **`director-of-growth`** subagent (the `distill-message` hook) — owns `message-first` +
+- The director-of-growth subagent (the `distill-message` hook) — owns `message-first` +
   `copy-over-creative`: picks the winning message, ensures contrast + depth, and holds the
   market promise inside the claims boundary. Resolve the agent from the skill-hook registry at
   call time — `node scripts/skills/skill-hook-points.js resolve growth:message-brief distill-message`
   — and dispatch the role it returns (do NOT hardcode a role name; the registry tracks the
   current persona).
-- **`copy-lead`** subagent (the `shape-copy` hook) — `argument-not-copy` + `hooks-are-90`:
+- The copy-lead subagent (the `shape-copy` hook) — `argument-not-copy` + `hooks-are-90`:
   shapes the core message as an argument leading to a single North-Star belief. Resolve at call
   time — `node scripts/skills/skill-hook-points.js resolve growth:message-brief shape-copy` —
   and dispatch the role it returns (do NOT hardcode a role name).
-- **`research-insight-lead`** / `audience_dossier` (Product domain) — the upstream emotional
+- **`research-lead`** / `audience_dossier` (Product domain) — the upstream emotional
   layer the message is built on.
 
 ## Procedure (outline)
