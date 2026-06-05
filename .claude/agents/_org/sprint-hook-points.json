@@ -1,0 +1,49 @@
+{
+  "schema": "warpos/sprint-hook-points/v0.1",
+  "_note": "Declarative agent->sprint-step attachment registry (ADR-0007 / Phase D foundation). ONE row per attachment: which role fires at which lifecycle step, under what condition, advisory or blocking. `role` references .claude/agents/_org/role-registry.json by id. Adding/swapping an agent = editing a ROW, never the orchestrator (same proven pattern as _guides/registry.json). Consumed by scripts/sprint/hook-points.js (the composition->agent-set router) and the bidirectional scan:sprint-hook-coverage enforcer (forward: every matched row ran or logged debt; reverse: every dispatching role is registered, no step orphaned). Rows are the current-roster translation of sprint-hook-points-design.md sec.5 (which used pre-ADR-0007 names: product-designer->design-lead, DoQA->quality-lead, redteam->security-reviewer, qa+compliance->qa-reviewer).",
+  "lifecycle": ["plan", "design", "build", "gauntlet", "release", "retro"],
+  "phase_map": {
+    "_note": "full.js PHASES are coarser than the lifecycle hook-points: build+gauntlet both occur inside full.js 'execute'; release maps to 'release-prep'. The runtime reconciles.",
+    "plan": "plan",
+    "design": "design",
+    "build": "execute",
+    "gauntlet": "execute",
+    "release": "release-prep",
+    "retro": "retro"
+  },
+  "condition_forms": {
+    "always": "string literal — fires every sprint",
+    "unit_type": "{ unit_type: [..] } — fires if the sprint composition includes ANY listed unit type (frontend|backend|security|ui)",
+    "risk_min": "{ risk_min: <low|medium|high|critical> } — fires if the sprint max risk class is >= the given level",
+    "domain": "{ domain: [..] } — fires if the composition includes ANY listed domain (marketing|copy)"
+  },
+  "modes": {
+    "block": "a matched row that does NOT run (or whose verdict FAILs) halts/blocks the step",
+    "advisory": "a matched row that does not run is a warning, not a halt (e.g. design-quality's W1 ramp)"
+  },
+  "rows": [
+    { "role": "director-of-product", "step": "plan", "condition": "always", "mode": "advisory", "order": 10, "_role": "strategy / sequencing" },
+    { "role": "product-lead", "step": "plan", "condition": "always", "mode": "advisory", "order": 20, "_role": "milestone -> sprint scope" },
+
+    { "role": "product-lead", "step": "design", "condition": "always", "mode": "block", "order": 10, "authors": "PRD (R-N), stories (H-N/S-N), acceptance criteria" },
+    { "role": "director-of-engineering", "step": "design", "condition": { "unit_type": ["frontend", "backend", "security"] }, "mode": "advisory", "order": 20, "authors": "build_spec, FE/BE split, INPUTS/TRACE, integration-seam owner" },
+    { "role": "design-lead", "step": "design", "condition": { "unit_type": ["ui", "frontend"] }, "mode": "advisory", "order": 30, "authors": "UX of stories, visual mockup + flow (the design-review judges against it)" },
+    { "role": "quality-lead", "step": "design", "condition": { "risk_min": "medium" }, "mode": "advisory", "order": 40, "authors": "qa-plan, AC verified_by coverage" },
+    { "role": "copy-lead", "step": "design", "condition": { "domain": ["marketing", "copy"] }, "mode": "advisory", "order": 50, "authors": "COPY (C-N) grounded in _knowledge/copy" },
+
+    { "role": "frontend-builder", "step": "build", "condition": { "unit_type": ["frontend", "ui"] }, "mode": "block", "order": 10 },
+    { "role": "backend-builder", "step": "build", "condition": { "unit_type": ["backend"] }, "mode": "block", "order": 20 },
+    { "role": "security-builder", "step": "build", "condition": { "unit_type": ["security"] }, "mode": "block", "order": 30, "_role": "hardening: authn/z, secrets, validation" },
+
+    { "role": "frontend-reviewer", "step": "gauntlet", "condition": { "unit_type": ["frontend", "ui"] }, "mode": "block", "order": 10, "scope": "code-quality" },
+    { "role": "backend-reviewer", "step": "gauntlet", "condition": { "unit_type": ["backend"] }, "mode": "block", "order": 20, "scope": "code-quality" },
+    { "role": "qa-reviewer", "step": "gauntlet", "condition": "always", "mode": "block", "order": 30, "scope": "functional + traceability + integrity (absorbs req-reviewer + compliance)" },
+    { "role": "security-reviewer", "step": "gauntlet", "condition": "always", "mode": "block", "order": 40, "scope": "OWASP/authz/injection/secrets; cross-provider 2nd pass (was redteam)" },
+    { "role": "visual-review", "step": "gauntlet", "condition": { "unit_type": ["ui", "frontend"] }, "mode": "block", "order": 50 },
+    { "role": "design-quality", "step": "gauntlet", "condition": { "unit_type": ["ui", "frontend"] }, "mode": "advisory", "order": 60, "_role": "named cross-domain design authority; W1 ramp advisory->baseline->block; emits the design manager_consult ED-022 checks for" },
+
+    { "role": "qa-reviewer", "step": "release", "condition": "always", "mode": "block", "order": 10, "scope": "release-diff (integrity/traceability over the cut)", "_note": "release-reviewers are a model-class diff property, not a dedicated role; qa-reviewer carries the integrity lane over the release diff" },
+
+    { "role": "learner", "step": "retro", "condition": "always", "mode": "advisory", "order": 10, "_note": "sec.5 scoped learner-at-retro to oneshot; generalized to all retros (advisory — eps defers self-management to alpha+beta, so non-blocking)" }
+  ]
+}

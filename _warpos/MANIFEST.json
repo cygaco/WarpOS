@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-05T03:49:12.478Z",
+  "generatedAt": "2026-06-05T03:57:57.540Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.13.1",
   "migrations": [],
@@ -3301,6 +3301,13 @@
       "sha256": "04c8b923de2290513f6a987613389a59aa614b690607eb5d8df29d7f28e17d62",
       "installedSha": "04c8b923de2290513f6a987613389a59aa614b690607eb5d8df29d7f28e17d62"
     },
+    "scripts/sprint/hook-points.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/sprint/hook-points.js",
+      "sha256": "a95241bc4d79d5f94be94b4a884fda7a0bbef6331b46215c2c9a0b3616c4217f",
+      "installedSha": "a95241bc4d79d5f94be94b4a884fda7a0bbef6331b46215c2c9a0b3616c4217f"
+    },
     "scripts/sprint/ids.js": {
       "owner": "framework",
       "managed": true,
@@ -3384,6 +3391,13 @@
       "source": "scripts/sprint/test-heartbeat.js",
       "sha256": "84433728a87517ae122e39bd3039d5919f7657e388bdf7678d81412f0c6493a5",
       "installedSha": "84433728a87517ae122e39bd3039d5919f7657e388bdf7678d81412f0c6493a5"
+    },
+    "scripts/sprint/test-hook-points.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/sprint/test-hook-points.js",
+      "sha256": "124ac8f919b0dc73ee4f5e1561b6149fb1a8ccea64cbd2e74d8c841bcce6d251",
+      "installedSha": "124ac8f919b0dc73ee4f5e1561b6149fb1a8ccea64cbd2e74d8c841bcce6d251"
     },
     "scripts/sprint/test-plan-honors-registry-primary.js": {
       "owner": "framework",
@@ -16530,6 +16544,14 @@
       "kind": "json",
       "sha256": "9aec7092370a36bfc7fe8bb83f798dd49bdeda0eb65b07d7007a102b24711749",
       "installedSha": "9aec7092370a36bfc7fe8bb83f798dd49bdeda0eb65b07d7007a102b24711749"
+    },
+    ".claude/agents/_org/sprint-hook-points.json": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/_org/sprint-hook-points.json",
+      "kind": "json",
+      "sha256": "21f635cafa4677560d274069093e8ae984caf5e94451c390782f4f60c6afa2ec",
+      "installedSha": "21f635cafa4677560d274069093e8ae984caf5e94451c390782f4f60c6afa2ec"
     },
     ".claude/agents/_evals/resonance-conversion-rubric.json": {
       "owner": "framework",

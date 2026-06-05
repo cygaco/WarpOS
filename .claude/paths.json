@@ -96,6 +96,8 @@
   "sprintSchemas": "schemas/sprint",
   "sprintReference": ".claude/project/reference/sprint-workflow.md",
   "sprintRouting": ".claude/agents/president/.system/policy/sprint-routing.json",
+  "sprintHookPoints": ".claude/agents/_org/sprint-hook-points.json",
+  "orgRoleRegistry": ".claude/agents/_org/role-registry.json",
   "briefs": "_docs/briefs",
   "briefsCurrent": "_docs/briefs",
   "clones": "_docs/clones",
