@@ -47,7 +47,7 @@ const GUARD = path.join(
   "dispatch-route-guard.js",
 );
 
-const { findForbidden } = require(GUARD);
+const { findForbidden, findHeavySkillAdvisory } = require(GUARD);
 
 let passed = 0;
 let failed = 0;
@@ -237,6 +237,70 @@ if (fs.existsSync(CATALOG)) {
     }
   }
 }
+
+// ── 6. ED-021: heavy-skill lean-return advisory (Agent-tool prompts) ──
+//
+// findHeavySkillAdvisory FIRES when an Agent dispatch prompt runs a heavy
+// aggregate/verify skill (/scan:full, /research:deep, /redteam:full, /qa:audit)
+// WITHOUT a lean-return request, and is SUPPRESSED when the prompt already asks
+// for a lean / envelope / write-file-then-summarize return. Non-blocking.
+
+const HEAVY_NO_LEAN = [
+  "Run /scan:full and tell me what's red.",
+  "Please run /research:deep on the competitor and summarize the market.",
+  "Dispatch this: run /redteam:full against the auth surface.",
+  "Execute /qa:audit across the codebase and report failures.",
+  // bare form (no leading slash)
+  "kick off scan:full for the whole repo",
+];
+for (const p of HEAVY_NO_LEAN) {
+  const adv = findHeavySkillAdvisory(p);
+  check(
+    `ED-021 FIRES (heavy, no lean-return): '${p.slice(0, 50)}'`,
+    adv !== null,
+    `findHeavySkillAdvisory returned null for: ${p}`,
+  );
+}
+
+const HEAVY_WITH_LEAN = [
+  // explicit lean-return contract phrasings → suppressed
+  "Run /scan:full. Write the full report to a file and return ONE lean verdict envelope (≤8 lines).",
+  "Run /research:deep, write findings to disk, then return only a short envelope.",
+  "Dispatch /redteam:full but do NOT return the full output — return ≤6 lines: verdict + counts + file path.",
+  "Run /qa:audit; lean-return only: write the report file and return a 5 line summary.",
+];
+for (const p of HEAVY_WITH_LEAN) {
+  const adv = findHeavySkillAdvisory(p);
+  check(
+    `ED-021 SUPPRESSED (lean-return requested): '${p.slice(0, 50)}'`,
+    adv === null,
+    `findHeavySkillAdvisory should be null (lean-return present), got: ${JSON.stringify(adv)}`,
+  );
+}
+
+// Non-heavy skill prompts must NOT trigger the advisory (no false positives).
+const NOT_HEAVY = [
+  "Run /fix:fast on the failing test.",
+  "Author a PRD for the new feature.",
+  "Dispatch a builder to implement the login form.",
+  "", // empty prompt
+];
+for (const p of NOT_HEAVY) {
+  const adv = findHeavySkillAdvisory(p);
+  check(
+    `ED-021 no false-positive (non-heavy): '${p.slice(0, 40)}'`,
+    adv === null,
+    `findHeavySkillAdvisory should be null for non-heavy prompt, got: ${JSON.stringify(adv)}`,
+  );
+}
+
+// The advisory must be non-blocking — it is surfaced as additionalContext, never
+// as a `findForbidden` block. Sanity: a heavy-skill prompt is NOT a forbidden Bash cmd.
+check(
+  "ED-021 advisory is non-blocking (heavy-skill prompt is not a findForbidden hit)",
+  findForbidden("Run /scan:full and summarize") === null,
+  "heavy-skill prompt must not be a hard block",
+);
 
 // ── Summary ───────────────────────────────────────────────────
 

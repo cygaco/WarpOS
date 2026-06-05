@@ -422,6 +422,62 @@ function findAdvisory(rawCmd) {
   };
 }
 
+// --- ED-021: heavy-skill lean-return advisory (Agent tool) ----------------
+//
+// The §2.5 build-chain gate above BLOCKS heavy CODE workers from running
+// in-process. ED-021 is the sibling for heavy AGGREGATE / VERIFY / RESEARCH
+// skills: `/scan:full` (~30-scan roll-up), `/research:deep`, `/redteam:full`,
+// `/qa:audit`, and big multi-source synthesis. Run in the orchestrator's own
+// subprocess, they pull tens of thousands of tokens of sub-output into the
+// orchestrator's context — the "context limits too soon" leak the operator
+// flagged (memory: feedback-orchestrator-holds-envelopes-not-content). The fix
+// is to DISPATCH them to a lean-return sub-agent that writes its full output to a
+// file and returns ONE short verdict envelope.
+//
+// This is a CONTRACT, not a hard safety gate (the build-chain reap-risk is), and
+// the guard can only see the dispatch prompt — not the eventual return shape — so
+// it WARNS (non-blocking `additionalContext`), exactly like findAdvisory's
+// argv-overflow warning. It fires when an Agent dispatch's prompt invokes a heavy
+// skill but does NOT request a lean / envelope / write-file-then-summarize return.
+const HEAVY_SKILLS = [
+  "scan:full",
+  "research:deep",
+  "redteam:full",
+  "qa:audit",
+];
+// A heavy-skill invocation in the prompt: `/scan:full`, `scan:full`, or a bare
+// `node scripts/checks/full…`-style aggregate run named by the skill token.
+const HEAVY_SKILL_RE = new RegExp(
+  `(?:^|\\s|/)(${HEAVY_SKILLS.map((s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})\\b`,
+  "i",
+);
+// The prompt already asks for a lean / bounded / envelope return → contract met.
+const LEAN_RETURN_RE =
+  /lean[\s-]?return|return\s+(?:only\s+)?(?:a\s+|one\s+)?(?:lean\s+|short\s+|≤?\s*\d+[\s-]?line\s+)?(?:verdict\s+)?envelope|envelope[\s-]?(?:only|return)|write\b[\s\S]{0,80}?\b(?:file|to\s+disk)[\s\S]{0,80}?\breturn\b|return[\s\S]{0,60}?\b(?:≤|<=|under|at most|no more than)\s*\d+\s*lines?\b|do(?:\s+not|n't)\s+(?:return|dump|paste)\s+(?:the\s+)?full\b|don't\s+aggregate[\s\S]{0,40}?context/i;
+
+/**
+ * Non-blocking advisory for ED-021. Given an Agent dispatch's prompt text, returns
+ * an advisory when it runs a heavy aggregate/verify skill WITHOUT a lean-return
+ * request, else null. Pure + exported so the bite-test fires each branch.
+ */
+function findHeavySkillAdvisory(promptText) {
+  const text = String(promptText || "");
+  if (!text.trim()) return null;
+  const m = HEAVY_SKILL_RE.exec(text);
+  if (!m) return null;
+  if (LEAN_RETURN_RE.test(text)) return null; // contract already satisfied
+  const skill = m[1].toLowerCase();
+  return {
+    advisory: `heavy-skill in-orchestrator dispatch without lean-return (${skill})`,
+    skill,
+    detail:
+      `[dispatch-route-guard] ED-021: this Agent dispatch runs the heavy aggregate/verify skill '/${skill}' but the prompt does not request a LEAN RETURN. ` +
+      `Heavy skills (/scan:full, /research:deep, /redteam:full, /qa:audit, big synthesis) pull tens of thousands of tokens of sub-output into the orchestrator's context when their full result is returned. ` +
+      `Instruct the sub-agent to WRITE its full output to a file and RETURN ONE short verdict envelope (e.g. "≤8 lines: PASS/FAIL + counts + the file path") — do NOT return the full aggregation. ` +
+      `This is a context-hygiene contract (a warning, not a block).`,
+  };
+}
+
 // --- Hook plumbing --------------------------------------------------------
 
 let input = "";
@@ -455,6 +511,27 @@ process.stdin.on("end", () => {
             "      reap-safety (RI-004). Spec/doc authoring via general-purpose is fine — this",
             "      binds heavy build-chain CODE workers. A Lead's own sub-reviewer fan-out is exempt.",
           ].join("\n"),
+        );
+      }
+      // ED-021 — heavy aggregate/verify skill run in-orchestrator without a
+      // lean-return request. Non-blocking advisory (context-hygiene contract),
+      // mirroring the Bash argv-overflow advisory below.
+      const prompt = String((event.tool_input || {}).prompt || "");
+      const heavyAdv = findHeavySkillAdvisory(prompt);
+      if (heavyAdv) {
+        try {
+          const { logEvent } = require("./lib/logger");
+          logEvent("warn", "system", "dispatch-route-guard", "", heavyAdv.advisory);
+        } catch {
+          /* logger optional */
+        }
+        process.stdout.write(
+          JSON.stringify({
+            hookSpecificOutput: {
+              hookEventName: "PreToolUse",
+              additionalContext: heavyAdv.detail,
+            },
+          }),
         );
       }
       process.exit(0);
@@ -527,4 +604,4 @@ process.stdin.on("end", () => {
   }
 });
 
-module.exports = { findForbidden, findAdvisory };
+module.exports = { findForbidden, findAdvisory, findHeavySkillAdvisory, HEAVY_SKILLS };
