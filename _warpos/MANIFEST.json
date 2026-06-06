@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-06T09:53:34.516Z",
+  "generatedAt": "2026-06-06T18:08:33.094Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.14.0",
   "migrations": [],
@@ -4359,8 +4359,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/memory-guard.js",
-      "sha256": "f0ea4278d40f56bf610971b7f666f6df7fe174820144a2d6e0913369c8ce7804",
-      "installedSha": "f0ea4278d40f56bf610971b7f666f6df7fe174820144a2d6e0913369c8ce7804"
+      "sha256": "dcb7f15a43f65a12a83cf2403a06f113915c2d4ff6bd2f3a5ed88627b1b15ee1",
+      "installedSha": "dcb7f15a43f65a12a83cf2403a06f113915c2d4ff6bd2f3a5ed88627b1b15ee1"
     },
     "scripts/hooks/merge-guard.js": {
       "owner": "framework",
@@ -15492,8 +15492,8 @@
       "managed": true,
       "source": ".claude/commands/sleep/deep.md",
       "kind": "md",
-      "sha256": "b632b1eaffb11e461921d3ab6cae5dfdeea1d79e3cd3b0fbd49def5d0fa0bc59",
-      "installedSha": "b632b1eaffb11e461921d3ab6cae5dfdeea1d79e3cd3b0fbd49def5d0fa0bc59"
+      "sha256": "84263a895306daf631c6c4b1c3b98e4c4fc4abde9e1673d76f507365db90f7a0",
+      "installedSha": "84263a895306daf631c6c4b1c3b98e4c4fc4abde9e1673d76f507365db90f7a0"
     },
     ".claude/commands/sleep/quick.md": {
       "owner": "framework",
@@ -15556,8 +15556,8 @@
       "managed": true,
       "source": ".claude/commands/session/end.md",
       "kind": "md",
-      "sha256": "c8a3ddc6247821f35728504a693233fe2180855c80bd80fa37c10c1787a4a1c5",
-      "installedSha": "c8a3ddc6247821f35728504a693233fe2180855c80bd80fa37c10c1787a4a1c5"
+      "sha256": "c83b7400ed93c081d6cef9c708644ea73c3c87812756218a6a038122f76fdee8",
+      "installedSha": "c83b7400ed93c081d6cef9c708644ea73c3c87812756218a6a038122f76fdee8"
     },
     ".claude/commands/session/handoff.md": {
       "owner": "framework",

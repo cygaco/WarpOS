@@ -74,9 +74,9 @@ Apply decay function to restore signal-to-noise ratio:
 - Entries with `score: 0` and `pending_validation: true` older than 14 days → **remove**
 - Entries with `effective: null` older than 21 days → **remove** (never validated = noise)
 - Entries with vague/generic tips (no file paths, no specific patterns) → **consolidate into fewer, sharper rules** or remove
-- After pruning, renormalize: if >60 learnings remain, prune the bottom 20% by score
+- After pruning, renormalize: if >1000 learnings remain, prune the bottom 20% by score
 
-**Target:** 30-50 active learnings. More than that = noise drowning signal (analogous to synaptic saturation).
+**Max:** 1000 active learnings. Keep accumulating below that — learnings are cheap and recall is selective (smart-context surfaces only the relevant few per prompt), so bias toward KEEPING signal rather than aggressively cutting. Only prune above the max, or when an entry is genuinely stale/never-validated (the decay rules above).
 
 #### 1e. Pattern Promotion (Neocortical Transfer)
 
@@ -389,4 +389,4 @@ When the next session starts, the context enhancer reads:
 - In dark mode: repair auto-applies with atomic commits
 - Sleep does NOT touch `src/` code — only specs, docs, system files
 - **Never self-rate learnings.** Promotion requires validation evidence, not self-assessment.
-- **Target 30-50 active learnings.** More = noise. Fewer = amnesia. This is the synaptic homeostasis sweet spot.
+- **Max 1000 active learnings.** Bias toward KEEPING signal — recall is selective (smart-context surfaces only the relevant few per prompt), so a large store is low-cost. Only prune above the max or when entries are genuinely stale/never-validated (the decay rules). Don't cut aggressively.

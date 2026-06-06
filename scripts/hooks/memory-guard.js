@@ -172,16 +172,16 @@ process.stdin.on("end", () => {
                   /* skip malformed lines */
                 }
               }
-              if (activeCount > 100) {
+              if (activeCount > 1000) {
                 process.stderr.write(
-                  `\x1b[33m[memory-guard] WARN: ${activeCount} active learnings (target: 60-100). Consider pruning with /learn:conversation.\x1b[0m\n`,
+                  `\x1b[33m[memory-guard] WARN: ${activeCount} active learnings (max: 1000). Consider pruning with /learn:conversation.\x1b[0m\n`,
                 );
                 logEvent(
                   "warn",
                   "system",
                   "learning-count-high",
                   "",
-                  `${activeCount} active learnings exceeds 100 target`,
+                  `${activeCount} active learnings exceeds 1000 max`,
                 );
               }
             }
