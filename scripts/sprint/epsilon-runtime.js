@@ -314,6 +314,7 @@ function telemetry() {
       recordCompletion: da.recordCompletion,
       makeDispatchId: da.makeDispatchId,
       cmdlineChecksum: da.cmdlineChecksum,
+      AGENT_ROOT: da.AGENT_ROOT,
       ok: true,
     };
   } catch (e) {
@@ -331,7 +332,13 @@ function telemetry() {
  *
  * @returns {{ recorded:boolean, dispatch_id?:string, reason?:string }}
  */
-function recordAgentDispatch(agentPlan, sprintId, { ok = true, promptBytes = 0 } = {}) {
+function recordAgentDispatch(agentPlan, sprintId, { ok, promptBytes = 0 } = {}) {
+  // FAKE-GREEN GUARD: refuse to write a completion record without an EXPLICIT boolean
+  // outcome from a real spawn. The prior `{ ok = true }` default let conductStep stamp
+  // ok:true liveness records with no spawn behind them (the bug the operator caught).
+  if (typeof ok !== "boolean") {
+    return { recorded: false, reason: "refusing to record without a real spawn outcome (ok must be a boolean returned by spawnAgent)" };
+  }
   const t = telemetry();
   if (!t.ok) return { recorded: false, reason: `telemetry unavailable: ${t.error}` };
   const now = new Date().toISOString();
@@ -361,6 +368,96 @@ function recordAgentDispatch(agentPlan, sprintId, { ok = true, promptBytes = 0 }
   return { recorded: true, dispatch_id: dispatchId };
 }
 
+// ── REAL spawn (Increment A — ADR-0009 Mitigation #4; β DECIDE 0.88/0.89) ─────────
+//
+// ε --dispatch ACTUALLY spawns each agent on its resolved route; the completion record
+// reflects the REAL outcome. The 3 routes a node process CAN spawn:
+//   - DISPATCH_AGENT (openai/gemini) → scripts/dispatch-agent.js  (writes its own record)
+//   - DISPATCH_CLAUDE (build-chain)  → scripts/dispatch-claude.js (writes its own record)
+//   - CLAUDE_RAW                     → `claude -p --agent`         (writes NO record per
+//                                       ED-018 → ε records the REAL outcome here)
+// The 2 in-process routes a node process CANNOT spawn (CLAUDE_AGENT managers/leads,
+// AGENT_TOOL design-quality/visual-review — in-process Claude teammates spawned only by the
+// harness Agent tool) return spawned:false / requires-orchestrator and write NO record. The
+// full ε-the-agent conductor (those routes, via the Agent tool) is the next named increment.
+
+const { spawnSync: _spawnSync } = require("child_process");
+
+function agentRoot() {
+  const t = telemetry();
+  return (t.ok && t.AGENT_ROOT) || path.resolve(__dirname, "..", "..");
+}
+
+/** Write a real per-agent prompt for the step; returns the file path. */
+function writeStepPrompt(agentPlan, sprintId) {
+  const dir = path.join(agentRoot(), ".claude", "runtime", "epsilon-prompts");
+  fs.mkdirSync(dir, { recursive: true });
+  const file = path.join(dir, `${sprintId}-${agentPlan.step}-${agentPlan.role}.txt`);
+  fs.writeFileSync(
+    file,
+    `Sprint ${sprintId} — lifecycle step "${agentPlan.step}". You are dispatched as role ` +
+      `"${agentPlan.role}" (route ${agentPlan.route}). Carry out your ${agentPlan.step}-step ` +
+      `responsibility per your role spec and return your result envelope.\n`,
+  );
+  return file;
+}
+
+/** Normalize a spawnSync result into a uniform outcome. ok requires exit 0 AND non-empty
+ *  stdout (0-byte-on-exit-0 is the ED-018 reap signature — a reap, not a success). */
+function interpretSpawn(r, agentPlan, recordedByCli) {
+  if (!r || r.error) {
+    return { spawned: false, ok: false, recorded: false, route: agentPlan.route, reason: `spawn failed: ${(r && r.error && r.error.message) || "no result"}` };
+  }
+  const exit = typeof r.status === "number" ? r.status : 1;
+  const outBytes = Buffer.byteLength(r.stdout || "");
+  const ok = exit === 0 && outBytes > 0;
+  return { spawned: true, ok, recorded: recordedByCli, route: agentPlan.route, exit_code: exit, output_bytes: outBytes, reaped: !ok };
+}
+
+/**
+ * REALLY spawn one agent on its route + return the real outcome. opts.run is injectable
+ * (default child_process spawnSync) so the bite-test drives every branch deterministically.
+ * NEVER returns ok:true without an actual spawn — the fake-green this replaces.
+ */
+function spawnAgent(agentPlan, sprintId, opts = {}) {
+  const run = opts.run || _spawnSync;
+  const root = agentRoot();
+  const env = { ...process.env, ...(opts.env || {}) };
+  const common = { encoding: "utf8", env, timeout: opts.timeoutMs || 15 * 60 * 1000, maxBuffer: 32 * 1024 * 1024 };
+
+  // In-process Claude teammates — a node script CANNOT spawn these (harness Agent tool only).
+  if (agentPlan.route === ROUTE.CLAUDE_AGENT || agentPlan.route === ROUTE.AGENT_TOOL) {
+    return { spawned: false, ok: false, recorded: false, route: agentPlan.route, reason: "requires-orchestrator: in-process Claude teammate — dispatched by ε-the-agent / α via the harness Agent tool, not from a node script (next increment: --epsilon-dispatch)" };
+  }
+  if (agentPlan.route === ROUTE.UNRESOLVED) {
+    return { spawned: false, ok: false, recorded: false, route: agentPlan.route, reason: "unresolved route (no role-registry row)" };
+  }
+
+  const promptFile = opts.promptFile || writeStepPrompt(agentPlan, sprintId);
+
+  if (agentPlan.route === ROUTE.DISPATCH_AGENT) {
+    const r = run(process.execPath, [path.join(root, "scripts/dispatch-agent.js"), agentPlan.role, promptFile], common);
+    return interpretSpawn(r, agentPlan, /*recordedByCli=*/ true);
+  }
+  if (agentPlan.route === ROUTE.DISPATCH_CLAUDE) {
+    const args = [path.join(root, "scripts/dispatch-claude.js"), agentPlan.role, promptFile];
+    if (opts.worktree) args.push("--worktree", opts.worktree);
+    const r = run(process.execPath, args, { ...common, timeout: opts.timeoutMs || 20 * 60 * 1000 });
+    return interpretSpawn(r, agentPlan, /*recordedByCli=*/ true);
+  }
+  // CLAUDE_RAW — `claude -p --agent` writes NO completion record (ED-018) → ε records the REAL outcome.
+  const bin = env.DISPATCH_CLAUDE_BIN || "claude";
+  const binArgs = env.DISPATCH_CLAUDE_BIN_ARGS ? JSON.parse(env.DISPATCH_CLAUDE_BIN_ARGS) : [];
+  const prompt = fs.readFileSync(promptFile, "utf8");
+  const r = run(bin, [...binArgs, "-p", "--agent", agentPlan.role], { ...common, input: prompt });
+  const out = interpretSpawn(r, agentPlan, /*recordedByCli=*/ false);
+  if (out.spawned) {
+    recordAgentDispatch(agentPlan, sprintId, { ok: out.ok, promptBytes: Buffer.byteLength(prompt) });
+    out.recorded = true;
+  }
+  return out;
+}
+
 /**
  * Conduct ONE step: emit the manager_consult coverage records (telemetry — what
  * sprint-manager-consult / sprint-hook-coverage read) AND, in dispatch mode, write a real
@@ -384,14 +481,16 @@ function conductStep(step, composition, sprintId, opts = {}) {
     hookConsult.emitDesignTouch(composition, sprintId, opts.logFn);
   }
 
-  // (2) LIVENESS — in dispatch mode, write a real completion record per agent. PLAN mode
-  //     stops at coverage (no spawn). A real conduct integration spawns each agent on its
-  //     route between (1) and (2); here we record the dispatch intent→outcome faithfully.
+  // (2) LIVENESS — in dispatch mode, REALLY SPAWN each agent on its route (spawnAgent) so the
+  //     completion record reflects the real outcome. PLAN mode stops at coverage (no spawn).
+  //     NO ok:true record is ever written without an actual spawn; in-process routes honestly
+  //     return requires-orchestrator and write nothing. opts.run/opts.spawn are injectable for tests.
   const dispatched = [];
   if (opts.dispatch) {
+    const spawn = opts.spawn || spawnAgent;
     for (const a of plan.agents) {
-      const rec = recordAgentDispatch(a, sprintId, { ok: opts.spawnOk !== false });
-      dispatched.push({ role: a.role, route: a.route, recorded: rec.recorded, reason: rec.reason });
+      const out = spawn(a, sprintId, opts);
+      dispatched.push({ role: a.role, route: a.route, spawned: out.spawned, ok: out.ok, recorded: out.recorded, reason: out.reason });
     }
   }
 
@@ -521,6 +620,9 @@ module.exports = {
   assertConsultsCannotDispatch,
   compositionForSprint,
   recordAgentDispatch,
+  spawnAgent,
+  interpretSpawn,
+  writeStepPrompt,
   conductStep,
   assertNoFailOverride,
 };

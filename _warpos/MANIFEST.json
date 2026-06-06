@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-05T23:44:43.924Z",
+  "generatedAt": "2026-06-06T00:55:47.048Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.13.1",
   "migrations": [],
@@ -105,8 +105,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "d0bb96eedadaf54a557c880f31ad70cd67ab458541179e458a0b19d48b97e281",
-      "installedSha": "d0bb96eedadaf54a557c880f31ad70cd67ab458541179e458a0b19d48b97e281"
+      "sha256": "aed59c7ac00fe70c1e4b3917f1ae16ef55692cc5c1e281b736d85a3cbeffb279",
+      "installedSha": "aed59c7ac00fe70c1e4b3917f1ae16ef55692cc5c1e281b736d85a3cbeffb279"
     },
     "TRACKER.md": {
       "owner": "runtime",
@@ -3316,15 +3316,15 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/sprint/epsilon-runtime.js",
-      "sha256": "d8183bdf8b6c6b8b67de51693ba8c4ee59b4c1421c4fb053df52289a26bf63d6",
-      "installedSha": "d8183bdf8b6c6b8b67de51693ba8c4ee59b4c1421c4fb053df52289a26bf63d6"
+      "sha256": "505aaef944b3f6340585f3d7b7d567da717e1bc5e832d4ea651b496b1b5da628",
+      "installedSha": "505aaef944b3f6340585f3d7b7d567da717e1bc5e832d4ea651b496b1b5da628"
     },
     "scripts/sprint/epsilon-runtime.test.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/sprint/epsilon-runtime.test.js",
-      "sha256": "d29b44e0afe94be207d09f9729217cebb91a21e7ac76921aac98b8359c3930fa",
-      "installedSha": "d29b44e0afe94be207d09f9729217cebb91a21e7ac76921aac98b8359c3930fa"
+      "sha256": "ca8115e1bfc73679d3a7f340bedbd026f29c6d7e2f20b982e335c40a211cc628",
+      "installedSha": "ca8115e1bfc73679d3a7f340bedbd026f29c6d7e2f20b982e335c40a211cc628"
     },
     "scripts/sprint/epsilon-wiring.test.js": {
       "owner": "framework",
@@ -9057,6 +9057,14 @@
       "owner": "runtime",
       "managed": false
     },
+    ".claude/project/sprint/sprints/SP-20260605-001/current.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/sprints/SP-20260605-001/progress.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
     ".claude/project/sprint/sprints/SP-20260602-001/current.yaml": {
       "owner": "runtime",
       "managed": false
@@ -12737,6 +12745,10 @@
       "owner": "runtime",
       "managed": false
     },
+    ".claude/project/sprint/full-reports/SP-20260605-001/halt-2026-06-06T00-35-57-402Z.md": {
+      "owner": "runtime",
+      "managed": false
+    },
     ".claude/project/sprint/full-reports/SP-20260602-001/beta-boundaries.json": {
       "owner": "runtime",
       "managed": false
@@ -14558,6 +14570,10 @@
       "managed": false
     },
     ".claude/project/sprint/checkpoints/SP-20260602-001-0013.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/checkpoints/SP-20260605-001-0001.yaml": {
       "owner": "runtime",
       "managed": false
     },
@@ -17066,8 +17082,8 @@
       "managed": true,
       "source": ".claude/agents/president/.system/policy/adr/0009-epsilon-sprint-runtime.md",
       "kind": "md",
-      "sha256": "7a2b4a5528a4913fd72ab9a38981659c04b3ef8965a341f5e21d149b1c3aed94",
-      "installedSha": "7a2b4a5528a4913fd72ab9a38981659c04b3ef8965a341f5e21d149b1c3aed94"
+      "sha256": "4c3b0f2b66323bbc36704a63e9e8147e5dc1f9212d1c20abc69ff934d784c611",
+      "installedSha": "4c3b0f2b66323bbc36704a63e9e8147e5dc1f9212d1c20abc69ff934d784c611"
     },
     ".claude/agents/president/.system/policy/adr/0010-orgmap-reporting-collapse.md": {
       "owner": "framework",

@@ -199,18 +199,42 @@ console.log("\n(6) conductStep emits manager_consult coverage + the ED-022 desig
   ok("backend-only gauntlet emits NO design-touch", !beEmitted.some((e) => e.kind === "sprint_full_design_touch"));
 }
 
-// ── (7) DISPATCH mode records via an injected telemetry seam (no canonical write) ─
-
-console.log("\n(7) every dispatchable agent resolves a route + provider for its completion record:");
+// ── (7) DISPATCH really spawns; no record without a real outcome (the fake-green is DEAD) ─
+//   The bug the operator caught: conductStep --dispatch stamped ok:true WITHOUT a spawn, and
+//   the old (7) only checked a PRECONDITION (route resolved), deferring the spawn to an
+//   "integration check" that was the stub itself. These assert the SHIPPED spawnAgent really
+//   spawns (via an injected runner — deterministic, no real subprocess/API/canonical write)
+//   and that NO ok:true exists without a real outcome (β: the proof gate must be structural).
+console.log("\n(7) DISPATCH really spawns; no record without a real outcome (the fake-green is dead):");
 {
-  // The real ledger write is covered by the integration check (epsilon-runtime --dispatch
-  // against the gitignored worktree runtime). This unit assertion proves the PRECONDITION:
-  // every agent the runtime would dispatch carries a resolved route + provider, so the
-  // completion record gauntlet-verify reads is always well-formed (no UNRESOLVED record).
-  const beComp = { unit_types: ["backend"], max_risk: "medium", domains: [] };
-  const plan = rt.planStep("gauntlet", beComp, SEAMS);
-  ok("each gauntlet agent has a resolved route to record", plan.agents.every((a) => a.route && a.route !== rt.ROUTE.UNRESOLVED));
-  ok("each gauntlet agent carries a provider for the record", plan.agents.every((a) => !!a.provider));
+  // interpretSpawn is the pure outcome classifier. A reap (0-byte on exit 0) MUST be a failure.
+  ok("exit 0 + output → ok:true", rt.interpretSpawn({ status: 0, stdout: "hi" }, { role: "r", route: rt.ROUTE.DISPATCH_AGENT }, true).ok === true);
+  const reapR = rt.interpretSpawn({ status: 0, stdout: "" }, { role: "r", route: rt.ROUTE.CLAUDE_RAW }, false);
+  ok("exit 0 + 0 bytes (the ED-018 reap) → ok:FALSE + reaped", reapR.spawned === true && reapR.ok === false && reapR.reaped === true);
+  ok("non-zero exit → ok:false", rt.interpretSpawn({ status: 1, stdout: "" }, { role: "r", route: rt.ROUTE.CLAUDE_RAW }, false).ok === false);
+  ok("spawn error → spawned:false", rt.interpretSpawn({ error: new Error("ENOENT") }, { role: "r", route: rt.ROUTE.DISPATCH_AGENT }, true).spawned === false);
+
+  // spawnAgent with an injected runner — a CLI route REALLY spawns (the dispatch CLI owns the record).
+  const cliOut = rt.spawnAgent({ role: "security-reviewer", step: "gauntlet", route: rt.ROUTE.DISPATCH_AGENT, provider: "gemini", model: "x" }, "SP-T", { run: () => ({ status: 0, stdout: "ok" }), promptFile: __filename });
+  ok("CLI route really spawns → spawned:true, ok:true, recorded-by-cli", cliOut.spawned === true && cliOut.ok === true && cliOut.recorded === true);
+
+  // in-process Claude-teammate route → requires-orchestrator, NO record (the honest path, not faked).
+  const ipOut = rt.spawnAgent({ role: "design-quality", step: "gauntlet", route: rt.ROUTE.AGENT_TOOL, provider: "claude" }, "SP-T", {});
+  ok("in-process route → spawned:false + requires-orchestrator + recorded:false", ipOut.spawned === false && ipOut.recorded === false && /requires-orchestrator/.test(ipOut.reason));
+
+  // THE FAKE-GREEN GUARD: recordAgentDispatch refuses to write a record without an explicit boolean outcome.
+  const noOutcome = rt.recordAgentDispatch({ role: "x", step: "build", route: "dispatch-claude" }, "SP-T", {});
+  ok("recordAgentDispatch REFUSES a record without a real spawn outcome", noOutcome.recorded === false && /refusing/.test(noOutcome.reason));
+
+  // conductStep --dispatch never fakes: in-process roles get NO record; outcomes pass through honestly.
+  const out = rt.conductStep("gauntlet", { unit_types: ["ui", "frontend"], max_risk: "high", domains: [] }, "SP-T", {
+    ...SEAMS, dispatch: true,
+    spawn: (a) => (a.route === rt.ROUTE.AGENT_TOOL || a.route === rt.ROUTE.CLAUDE_AGENT)
+      ? { spawned: false, ok: false, recorded: false, route: a.route, reason: "requires-orchestrator" }
+      : { spawned: true, ok: true, recorded: true, route: a.route },
+  });
+  ok("conductStep --dispatch records each agent's real outcome", out.dispatched.length > 0 && out.dispatched.every((d) => typeof d.spawned === "boolean"));
+  ok("conductStep never fabricates an in-process record", out.dispatched.filter((d) => /agent-tool|claude-agent/.test(d.route)).every((d) => d.recorded === false));
 }
 
 // ── (8) β boundaries are at the four phase transitions ──────────────────────────
