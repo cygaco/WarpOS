@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-06T21:52:14.450Z",
+  "generatedAt": "2026-06-06T22:26:02.475Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.15.0",
   "migrations": [],
@@ -3926,8 +3926,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/portfolio/new-lib.js",
-      "sha256": "eec1e32313a8bd7770e0d45288c064d08884cfcecb4428d9a6c62afa1824dda5",
-      "installedSha": "eec1e32313a8bd7770e0d45288c064d08884cfcecb4428d9a6c62afa1824dda5"
+      "sha256": "e45d914b1c5ad98520d9dd0a9164d21eb2909b269cb6bc1658f4aef0e869acb0",
+      "installedSha": "e45d914b1c5ad98520d9dd0a9164d21eb2909b269cb6bc1658f4aef0e869acb0"
     },
     "scripts/portfolio/new.js": {
       "owner": "framework",
@@ -5307,6 +5307,13 @@
       "source": "scripts/checks/pl-build-spec-enforcer.test.js",
       "sha256": "ab66f90b6ba6f51c356d384d8164eeeb0a6637dd39cdf8806f23917e4f8c41a3",
       "installedSha": "ab66f90b6ba6f51c356d384d8164eeeb0a6637dd39cdf8806f23917e4f8c41a3"
+    },
+    "scripts/checks/portfolio-installer-loud.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/portfolio-installer-loud.js",
+      "sha256": "c92cf2ff01637768b607f5629cf4a6cc1320696a4fad3a9f78e7684fcc7a45ff",
+      "installedSha": "c92cf2ff01637768b607f5629cf4a6cc1320696a4fad3a9f78e7684fcc7a45ff"
     },
     "scripts/checks/production-baseline.js": {
       "owner": "framework",

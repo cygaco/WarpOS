@@ -136,16 +136,18 @@ function createProductRepo(opts) {
   );
   if (gitCommit.status !== 0) return { ok: false, code: 4, error: `git commit failed: ${gitCommit.stderr}` };
 
-  // warp:setup — invoke installer
-  const setupScript = path.resolve(WARPOS_ROOT, "scripts/warp-setup.js");
-  if (fs.existsSync(setupScript)) {
-    const setup = spawnSync(
-      "node", [setupScript, repoPath, "--yes", "--skip-backup"],
-      { cwd: WARPOS_ROOT, encoding: "utf8", timeout: 60_000 },
-    );
-    if (setup.status !== 0) {
-      return { ok: false, code: 4, error: `/warp:setup failed:\n${setup.stderr || setup.stdout}` };
-    }
+  // ── install WarpOS into the new repo (LOUD, never silent) ──
+  // WI-50 regression: this step used to resolve scripts/warp-setup.js against
+  // WARPOS_ROOT and existsSync-GUARD it. But warp-setup.js is the canonical
+  // installer that is INTENTIONALLY NEVER SHIPPED (release-build.js: "lives in
+  // the canonical clone, never shipped") — so on any CONSUMER install the guard
+  // was false and the install SILENTLY no-op'd, producing a project with app
+  // files but no WarpOS engine (no .claude/, no scripts/ tree) → dead on
+  // arrival. Fix: install via install.ps1 (shipped in every capsule), and FAIL
+  // LOUDLY if no installer exists or the install produced no engine.
+  const install = _installWarpOS(repoPath);
+  if (!install.ok) {
+    return { ok: false, code: 4, error: install.error };
   }
 
   // ── register ───────────────────────────────────────────────
@@ -383,6 +385,63 @@ function _readInstalledVersion(repoPathVal) {
   return null;
 }
 
+// Install WarpOS into a freshly-created product repo using the SHIPPED
+// installer. Prefer install.ps1 (present in every release capsule AND the
+// canonical clone); fall back to the canonical-only warp-setup.js when
+// install.ps1 is absent. The prior code existsSync-guarded warp-setup.js and
+// SILENTLY skipped when absent — so a consumer install produced a project with
+// app files but no WarpOS engine (WI-50). This FAILS LOUDLY when no installer
+// is available AND asserts the install actually produced a complete WarpOS tree
+// (.claude/framework-installed.json) — never a silent no-op. Returns
+// {ok:true} | {ok:false, error}.
+function _installWarpOS(repoPath, { spawn = spawnSync } = {}) {
+  const psInstaller = path.resolve(WARPOS_ROOT, "install.ps1");
+  const legacySetup = path.resolve(WARPOS_ROOT, "scripts/warp-setup.js");
+  let res;
+  if (fs.existsSync(psInstaller)) {
+    // install.ps1 resolves its source from its own location, so it installs the
+    // RUNNING WarpOS (canonical or consumer) into the target repo.
+    res = spawn(
+      "powershell",
+      ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", psInstaller,
+        "-Target", repoPath, "-SkipPrompt"],
+      { cwd: WARPOS_ROOT, encoding: "utf8", timeout: 120_000 },
+    );
+  } else if (fs.existsSync(legacySetup)) {
+    res = spawn(
+      "node", [legacySetup, repoPath, "--yes", "--skip-backup"],
+      { cwd: WARPOS_ROOT, encoding: "utf8", timeout: 120_000 },
+    );
+  } else {
+    return {
+      ok: false,
+      error:
+        `No WarpOS installer found at ${WARPOS_ROOT} (neither install.ps1 nor ` +
+        `scripts/warp-setup.js). The running WarpOS install is incomplete — ` +
+        `cannot install WarpOS into ${repoPath}.`,
+    };
+  }
+  if (res.status !== 0) {
+    return {
+      ok: false,
+      error: `WarpOS install into ${repoPath} failed:\n${(res.stderr || res.stdout || "").trim()}`,
+    };
+  }
+  // Completeness gate — the install MUST produce a real WarpOS tree, not a
+  // silent no-op. install.ps1 writes .claude/framework-installed.json on
+  // success; its absence means the engine was not installed.
+  if (!fs.existsSync(path.join(repoPath, ".claude", "framework-installed.json"))) {
+    return {
+      ok: false,
+      error:
+        `WarpOS install into ${repoPath} reported success but produced no engine ` +
+        `(.claude/framework-installed.json is missing). The created project would ` +
+        `be WarpOS-less — refusing to continue (WI-50 silent-no-op guard).`,
+    };
+  }
+  return { ok: true };
+}
+
 function _pathOffset(absPath) {
   const os = require("os");
   try { return path.relative(os.homedir(), absPath); } catch { return "<path>"; }
@@ -400,6 +459,7 @@ module.exports = {
   createProductRepo,
   scaffoldProductApp,
   validateSlug,
+  _installWarpOS,
   SLUG_RE,
   RESERVED,
   WARPOS_ROOT,

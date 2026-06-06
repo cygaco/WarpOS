@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "0.15.0",
-  "installedCommit": "f015b2cf8d4ee57030075e215112f21a4e5c84c7",
-  "installedAt": "2026-06-06T21:52:14.262Z",
+  "installedCommit": "424e346b87bd873b051da4f4da2711c981122445",
+  "installedAt": "2026-06-06T22:26:02.252Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -5439,6 +5439,16 @@
       "introducedIn": "0.0.0"
     },
     {
+      "id": "check_tool.portfolio-installer-loud.js",
+      "kind": "check_tool",
+      "dest": "scripts/checks/portfolio-installer-loud.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "c92cf2ff01637768b607f5629cf4a6cc1320696a4fad3a9f78e7684fcc7a45ff",
+      "currentHashAtInstall": "c92cf2ff01637768b607f5629cf4a6cc1320696a4fad3a9f78e7684fcc7a45ff",
+      "introducedIn": "0.0.0"
+    },
+    {
       "id": "check_tool.production-baseline.js",
       "kind": "check_tool",
       "dest": "scripts/checks/production-baseline.js",
@@ -7014,8 +7024,8 @@
       "dest": "scripts/portfolio/new-lib.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "eec1e32313a8bd7770e0d45288c064d08884cfcecb4428d9a6c62afa1824dda5",
-      "currentHashAtInstall": "eec1e32313a8bd7770e0d45288c064d08884cfcecb4428d9a6c62afa1824dda5",
+      "installedHash": "e45d914b1c5ad98520d9dd0a9164d21eb2909b269cb6bc1658f4aef0e869acb0",
+      "currentHashAtInstall": "e45d914b1c5ad98520d9dd0a9164d21eb2909b269cb6bc1658f4aef0e869acb0",
       "introducedIn": "0.0.0"
     },
     {

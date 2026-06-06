@@ -13,7 +13,7 @@
     "pattern": 6,
     "fixture": 23,
     "warpos_script": 55,
-    "check_tool": 76,
+    "check_tool": 77,
     "agent_tool": 3,
     "decision_tool": 1,
     "runtime_tool": 1,
@@ -60,7 +60,7 @@
     "module_scope": 1,
     "framework_doc": 3
   },
-  "total": 1069,
+  "total": 1070,
   "assets": {
     "agent": [
       {
@@ -6600,6 +6600,18 @@
         "replaces": null
       },
       {
+        "id": "check_tool.portfolio-installer-loud.js",
+        "src": "scripts/checks/portfolio-installer-loud.js",
+        "dest": "scripts/checks/portfolio-installer-loud.js",
+        "kind": "check_tool",
+        "sha256": "c92cf2ff01637768b607f5629cf4a6cc1320696a4fad3a9f78e7684fcc7a45ff",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
         "id": "check_tool.production-baseline.js",
         "src": "scripts/checks/production-baseline.js",
         "dest": "scripts/checks/production-baseline.js",
@@ -8542,7 +8554,7 @@
         "src": "scripts/portfolio/new-lib.js",
         "dest": "scripts/portfolio/new-lib.js",
         "kind": "portfolio_tool",
-        "sha256": "eec1e32313a8bd7770e0d45288c064d08884cfcecb4428d9a6c62afa1824dda5",
+        "sha256": "e45d914b1c5ad98520d9dd0a9164d21eb2909b269cb6bc1658f4aef0e869acb0",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",

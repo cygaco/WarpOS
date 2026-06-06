@@ -138,6 +138,56 @@
   + `isFreshEntry` gate); the four `/mode:*` skills carry the STOP section; ED-031 present in
   `enforcement-debt.jsonl`.
 
+### UW-005 — WI-50: /portfolio:new silent-installer-no-op regression (fix + BC-29 gate)
+
+- **Date and time:** 2026-06-06
+- **Session ID:** session/2026-06-06
+- **Agent or agents involved:** Alpha (α; verify-first then focused engine fix — right-sized
+  away from the full ε sprint per RI-001 engine-sprint-fast-close)
+- **Description of work:** Fixed a real, consumer-only regression flagged by the masterconsole
+  session (its WI-50, downstream fix `9451259`) and **verified-canonical-first** (ED-008) before
+  building: `scripts/portfolio/new-lib.js` `createProductRepo` installed WarpOS into a new product
+  by calling `scripts/warp-setup.js` — the canonical-clone-only installer that is INTENTIONALLY
+  NEVER SHIPPED (`release-build.js` allowlist) — guarded by `fs.existsSync`. On any CONSUMER install
+  the file is absent → guard false → the install step **silently no-op'd** → the created project got
+  app files but no WarpOS engine (no `.claude/`, no `scripts/` tree), dead on arrival. The 0.15.0
+  step-driven rewrite (E-SPINUP-STEPS-001) rebuilt `new-lib.js` without absorbing masterconsole's
+  0.14.0 fix, reintroducing the bug for consumers. (NOTE: it does NOT reproduce when running
+  `/portfolio:new` from canonical, where `warp-setup.js` is present — classic ED-008 "downstream
+  reflects its installed version.") **Fix:** new `_installWarpOS(repoPath, {spawn})` helper installs
+  via the SHIPPED `install.ps1` (`-Target <repo> -SkipPrompt`; `$Source` self-resolves so it installs
+  the running WarpOS — canonical OR consumer), keeps `warp-setup.js` as a legacy fallback, and
+  replaces the silent skip with a **loud completeness gate** (asserts `.claude/framework-installed.json`
+  exists post-install; FAILS LOUDLY when no installer is available or the install produced no engine).
+- **Files changed:** `scripts/portfolio/new-lib.js` (fix + `_installWarpOS` helper + export);
+  `scripts/checks/portfolio-installer-loud.js` (NEW — the BC-29 detector: static source contract +
+  injected-spawn behavioral D1/D2/D3 checks); `_requirements/07-testing/recurring-bug-classes.json`
+  (+BC-29, status covered); `.claude/framework-manifest.json` + `.claude/framework-installed.json` +
+  `_warpos/MANIFEST.json` (regen — new detector is now a tracked asset, 1069→1070).
+- **Paths changed:** +`scripts/checks/portfolio-installer-loud.js` (new framework asset).
+- **Wirings changed:** BC-29 is now a gated regression class — the testsuite enforcer
+  (`scripts/testsuite/enforce.js`, canonical-mandatory, release-blocking) runs the detector.
+- **Definitions changed:** None.
+- **Reason work was not attached to an epic or sprint:** Hotfix for a 0.15.0 regression, relayed via
+  the operator from masterconsole's gap register; picked up directly. Natural parent epic =
+  E-GOLDEN-FLOW-001 (the create-a-project → on-screen golden flow, whose first step this bug breaks).
+- **Should it be retroactively attached to an epic or sprint?** Yes — fold under E-GOLDEN-FLOW-001
+  (or E-CONTENT-DELIVERY-001 ship-coverage). President to reconcile. The 0.15.1 release carries it.
+- **Follow-up action required:** **Cut 0.15.1** (operator-requested) so downstream takes it clean —
+  GATED on operator approval (release pushes + ff-merges to `main` + tags). Optional deeper follow-up:
+  confirm every consumer install actually ships a runnable `install.ps1` + `version.json`
+  (E-CONTENT-DELIVERY-001 ship-coverage) so the loud-fail path is rarely hit.
+- **Evidence of completion:** Detector `node scripts/checks/portfolio-installer-loud.js` → exit 0
+  (`[BC-29] PASS`); testsuite enforce → 17/19 runnable green, 0 NEW regressions, exit 0; `new-lib.js`
+  `node -c` parses; manifests regenerated (asset count 1070). Fix verified against canonical 0.15.0
+  source (warp-setup.js present in repo but 0 refs in the 0.15.0 capsule; install.ps1 shipped with
+  `-Target`/`-SkipPrompt`; `$Source = Split-Path -Parent $MyInvocation.MyCommand.Path`).
+- **Related definitions:** Validator, Wiring, Verification, Evidence (see TRACKER.md).
+- **Related verification items:** `scripts/portfolio/new-lib.js` Verified Exists (`_installWarpOS`
+  exported, install.ps1 + framework-installed.json gate present); BC-29 present in
+  `recurring-bug-classes.json` (29 classes); `scripts/checks/portfolio-installer-loud.js` Verified
+  Exists + runnable (exit 0).
+
 ---
 
 ## Reconciled / closed entries
