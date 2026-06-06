@@ -12,12 +12,12 @@
 - **Scope:** Build `_warpos/templates/` + `_warpos/BASELINE/` in canonical; migrate `framework/templates` → `_warpos/templates`; fix the dangling `seeded_from` at `scripts/warpos/manifest/build.js:196-202`; extend `populate-source.js` to seed `_requirements/` / `_docs/` with provenance; harden `warpos-ship-coverage.js` to assert every `seeded_from` resolves + curate ~218 owner=framework dev-tooling paths into a reviewed KNOWN_NOT_SHIPPED allowlist (exhaustive, not essential-only); add an install-matrix update-parity assertion (every REQUIRED_DIR present post-update).
 - **Out of scope:** The executable consumer-contract gate (E-GOLDEN-FLOW-001); channels (E-STABLE-CHANNEL-001).
 - **Current state:** Active
-- **Percent completion:** ~50% — SP-20260525-024 shipped the essential-roots patch (`framework/templates` + `hooks.registry` → ASSET_DIRS, `scaffoldProduct` + `populateWarposMirror` into `update.js`) plus the `warpos-ship-coverage.js` enforcer. The structural/exhaustive reconciliation, the `_warpos/templates` migration, and the install-matrix update parity remain. Conservative per §20.
+- **Percent completion:** ~60% (verified 2026-06-06; revised up from ~50% after a verify-first re-check found DoD #2 already landed). DONE & ENFORCED: DoD #2 — ship-coverage is exhaustive (`warpos-ship-coverage.js` green: 1304 paths, 0 hard_gaps / 0 info_gaps / 0 boundary_violations, info_gaps a hard failure, reviewed `KNOWN_NOT_SHIPPED` allowlist) and `seeded_from` integrity is zero-tolerance (0 dangling, `KNOWN_DANGLING_SET` empty) — the 0.16.0-themed work that the ROADMAP next-action was still (stalely) listing as TODO. OPEN: DoD #1 (`_warpos/templates/` + `_warpos/BASELINE/` build + `framework/templates` migration, verified absent), DoD #3 (provenance-seeding; `populate-source.js` absent), DoD #4 (install-matrix update-parity — partial: scenario 2 `existing_install_upgrade` + post-update checks exist, full REQUIRED_DIR assertion unconfirmed). Conservative per §20.
 
 ## Definition of Done
 <!-- Concrete, checkable criteria. Nothing reaches 100% until all are satisfied + evidenced (§20, §27). -->
 - [ ] `_warpos/templates/` + `_warpos/BASELINE/` exist; `framework/templates` migrated (no orphaned copy)
-- [ ] All `seeded_from` pointers resolve, verified by hardened ship-coverage exiting 0 with zero unallowlisted owner=framework paths
+- [x] All `seeded_from` pointers resolve, verified by hardened ship-coverage exiting 0 with zero unallowlisted owner=framework paths — **DONE** (verified 2026-06-06: `node scripts/checks/warpos-ship-coverage.js` → exit 0, 1304 paths, 0 gaps, 0 dangling, `KNOWN_DANGLING_SET` empty)
 - [ ] Fresh install seeds `_requirements/` / `_docs/` with provenance, not bare `.gitkeep`
 - [ ] `test-install-matrix.js` existing_install_upgrade asserts every REQUIRED_DIR present post-update
 
@@ -30,7 +30,7 @@
 ## Related sprints
 <!-- Link each sprint tracker in /trackers/sprints/ -->
 - Pattern-realignment-to-SP-20260522-001 — Planned — realign the content-delivery path to the SP-20260522-001 ownership/shipping taxonomy (named in the 0.16.0 block)
-- Ship-coverage-hardening — Planned — make `warpos-ship-coverage.js` assert every `seeded_from` resolves + curate the exhaustive KNOWN_NOT_SHIPPED allowlist (named in the 0.16.0 block)
+- Ship-coverage-hardening — **DONE** (verified 2026-06-06) — `warpos-ship-coverage.js` asserts every `seeded_from` resolves + the exhaustive KNOWN_NOT_SHIPPED allowlist is curated; gate runs green with info_gaps as a hard failure
 - Install-matrix-update-parity — Planned — add the update-parity assertion (every REQUIRED_DIR present post-update) to `test-install-matrix.js` (named in the 0.16.0 block)
 
 ## Dependencies
@@ -65,8 +65,28 @@
 - Next action: build `_warpos/templates/` + `_warpos/BASELINE/`; migrate `framework/templates`; fix the dangling `seeded_from`; harden ship-coverage to exhaustive.
 - Evidence/references: ../../ROADMAP.md § Epics → Active epics (`🟡 0.16.0` block); SP-20260525-024 (essential-roots patch); scripts/checks/warpos-ship-coverage.js.
 
+### 2026-06-06 — Session session/2026-06-06 (verify-first reconcile)
+- Agent(s): President Agent (α) · Mode: sprint (warpos-sprint team α+ε+β; β consulted → DECIDE)
+- Work performed: Started a scoped E-CONTENT-DELIVERY-001 sprint (harden ship-coverage to exhaustive + fix dangling `seeded_from`). Bounded verify-first inspection (ED-008) found BOTH items ALREADY DONE in canonical — `warpos-ship-coverage.js` runs green/exhaustive (1304 paths, 0 hard_gaps / 0 info_gaps / 0 boundary_violations, info_gaps a hard failure, reviewed `KNOWN_NOT_SHIPPED` allowlist) and `seeded_from` is zero-tolerance (0 dangling, `KNOWN_DANGLING_SET` empty). Aborted the build (nothing to build); reconciled the stale ROADMAP epic + this tracker. β DECIDE (Class B, 0.87): defer the higher-blast-radius templates migration to its own scoped sprint with upfront design; reconcile now.
+- Files changed: ../../ROADMAP.md (epic block: completion / related-sprints / next-action), this tracker, ../../_reports/epics/E-CONTENT-DELIVERY-001.md (correction appended).
+- Paths changed: none · Wirings changed: none (reconcile only)
+- Decisions: β-DECIDE — defer templates migration to its own scoped sprint; reconcile now.
+- Issues discovered: ROADMAP epic state was STALE (listed DoD #2 as TODO when it had landed) — second verify-first catch this session (cf. the masterconsole false-alarm).
+- Definitions added/changed: None
+- State change: Active (unchanged) · Completion change: ~50% → ~60%
+- Verification performed: ran `scripts/checks/warpos-ship-coverage.js` (exit 0, green); `_warpos/templates` + `_warpos/BASELINE` confirmed absent; `populate-source.js` absent (DoD #3 open); `test-install-matrix.js` has scenario 2 + post-update checks (DoD #4 partial).
+- Validation run: `node scripts/trackers/validate.js` (run after this reconcile) · Next action: mint the templates-migration sprint (see Current next action).
+- Evidence/references: ship-coverage gate run; β verdict (DECIDE, precedent EVT-sp20260531-006-d7-lane3-ri002-001).
+
 ## Change log
 <!-- §25 -->
+### 2026-06-06 — Verify-first reconcile: DoD #2 found already done (President α, sprint mode)
+- Changed: Completion ~50% → ~60%; DoD #2 (`seeded_from` integrity + exhaustive ship-coverage) marked DONE & enforced; next-action re-pointed from the (already-done) ship-coverage/`seeded_from` work to the genuine remaining `_warpos/templates` migration (deferred to its own scoped sprint per β-DECIDE); Ship-coverage-hardening related-sprint → DONE.
+- Reason: A scoped sprint's bounded verify-first inspection (ED-008) found the ROADMAP epic's next-action listed already-landed work; reconciled tracker to reality.
+- Affected: ../../ROADMAP.md (epic block), this tracker, ../../_reports/epics/E-CONTENT-DELIVERY-001.md (correction appended).
+- Previous state: Active ~50%; next-action included "fix dangling `seeded_from`; harden ship-coverage to exhaustive" (both already done).
+- New state: Active ~60%; DoD #2 done & enforced; next-action = a scoped templates-migration sprint.
+
 ### 2026-06-06 — Epic created during T5 roadmap→epic migration (President Agent via systems builder)
 - Changed: Created E-CONTENT-DELIVERY-001 — Content-Delivery Integrity & Ownership-Pattern Realignment, at Active / ~50%, from the deprecated `🟡 0.16.0` milestone block.
 - Reason: T5 of `agentic_os_tracker_system_improvements.md` (§29) — migrate roadmap milestones → enforced epics; the content-delivery-integrity work needs an epic tracker file as its source of truth.
@@ -88,12 +108,13 @@
 | `warpos-ship-coverage.js` enforcer | Yes | Verified Exists | scripts/checks/warpos-ship-coverage.js | shipped in SP-20260525-024 | 2026-06-06 | President Agent |
 | `_warpos/templates/` | Yes | Missing But Required | `_warpos/templates/` (target of `framework/templates` migration) | to build (DoD item 1) | 2026-06-06 | President Agent |
 | `_warpos/BASELINE/` | Yes | Missing But Required | `_warpos/BASELINE/` | to build (DoD item 1) | 2026-06-06 | President Agent |
-| Dangling `seeded_from` | No | Present But Should Be Removed | scripts/warpos/manifest/build.js:196-202 | to fix (scope) | 2026-06-06 | President Agent |
+| Dangling `seeded_from` | No | Verified Nonexistent | resolved in the `build.js` generator (`KNOWN_DANGLING_SET` empty) | `node scripts/checks/warpos-ship-coverage.js` → 0 dangling, exit 0 | 2026-06-06 | President Agent |
+| Exhaustive ship-coverage (info_gaps hard-fail) | Yes | Verified Wired | `scripts/checks/warpos-ship-coverage.js` → release-gates | gate green: 1304 paths, 0 hard_gaps/0 info_gaps/0 boundary_violations | 2026-06-06 | President Agent |
 | Install-matrix update-parity assertion | Yes | Missing But Required | `test-install-matrix.js` existing_install_upgrade | to add (DoD item 4) | 2026-06-06 | President Agent |
 
 ## Current next action
 <!-- Required while state is not Completed/Cancelled/Superseded -->
-Build `_warpos/templates/` + `_warpos/BASELINE/`; migrate `framework/templates`; fix the dangling `seeded_from`; harden ship-coverage to exhaustive.
+Mint a scoped **templates-migration sprint** (β-DECIDE 2026-06-06: structural shipping-layer change → its own sprint with upfront design, not a session-tail re-scope): build `_warpos/templates/` + `_warpos/BASELINE/` and migrate `framework/templates` (9 dirs) to that end-state home, keeping the now-exhaustive ship-coverage gate green through the cutover. Then DoD #3 (provenance-seeding) + verify/complete DoD #4 (install-matrix update-parity). NOTE: `seeded_from` integrity + exhaustive ship-coverage (DoD #2) are DONE & enforced (verified 2026-06-06) — no longer next actions.
 
 ## Completion record
 <!-- Fill only on completion (§15/§37). See COMPLETION_RECORD_TEMPLATE.md. -->
