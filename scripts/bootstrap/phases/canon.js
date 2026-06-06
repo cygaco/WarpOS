@@ -93,6 +93,14 @@ async function run(ctx) {
   const outAbs = resolveUnderRepo(repoRoot, outDir);
   const force = Boolean(ctx.args && ctx.args.force);
 
+  // Dry-run preview when the intent isn't materialized yet (e.g. a full-chain
+  // --dry-run where setup didn't write the brief): report what canon WOULD do
+  // without shelling to the engine (which would fail on the missing file).
+  if (dryRun && !fs.existsSync(intentAbs)) {
+    log(`[dry-run] would render + gate canonical scaffold for "${product}" from ${intentFile} (intent not yet materialized in this dry-run)`);
+    return { ok: true, status: "done", message: `[dry-run] canon previewed for "${product}" → ${outDir}`, data: { out: outDir, roadmapPath: "ROADMAP.md" } };
+  }
+
   // ── 1. SCAFFOLD (deterministic) — skip when artifacts already exist ──────
   if (force || !canonArtifactsPresent(outAbs)) {
     const generateScript = path.join(repoRoot, "scripts", "canon", "generate.js");

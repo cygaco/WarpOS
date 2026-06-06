@@ -9017,7 +9017,7 @@
         "src": "scripts/bootstrap/phases/canon.js",
         "dest": "scripts/bootstrap/phases/canon.js",
         "kind": "bootstrap_tool",
-        "sha256": "6f7e46910639e9e1da335c6ff31ea68950133974cfcae333c4814372ef369a5d",
+        "sha256": "0dad534b48f0581dff8611e12dfffb914f0de0f37d0ae495e3b568ead1f68d68",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",

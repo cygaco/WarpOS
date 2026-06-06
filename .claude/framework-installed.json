@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "0.14.0",
-  "installedCommit": "c9583dd60666fb8f2c3cf0f0d56753a0bd5641e6",
-  "installedAt": "2026-06-06T21:06:17.845Z",
+  "installedCommit": "8ab26d26136c66a901e1a4f81190621ff5a661eb",
+  "installedAt": "2026-06-06T21:08:42.174Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -7404,8 +7404,8 @@
       "dest": "scripts/bootstrap/phases/canon.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "6f7e46910639e9e1da335c6ff31ea68950133974cfcae333c4814372ef369a5d",
-      "currentHashAtInstall": "6f7e46910639e9e1da335c6ff31ea68950133974cfcae333c4814372ef369a5d",
+      "installedHash": "0dad534b48f0581dff8611e12dfffb914f0de0f37d0ae495e3b568ead1f68d68",
+      "currentHashAtInstall": "0dad534b48f0581dff8611e12dfffb914f0de0f37d0ae495e3b568ead1f68d68",
       "introducedIn": "0.0.0"
     },
     {
