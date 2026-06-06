@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "0.14.0",
-  "installedCommit": "8ab26d26136c66a901e1a4f81190621ff5a661eb",
-  "installedAt": "2026-06-06T21:08:42.174Z",
+  "installedCommit": "2cb5b066576d47f307862e3046955fd6088e1a1c",
+  "installedAt": "2026-06-06T21:29:25.897Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -3584,8 +3584,8 @@
       "dest": "scripts/hooks/hook-manifest.json",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "4bcd3fa1f8636c09c7d04a48f924a240db77db8127d74b0571a305addbf3b449",
-      "currentHashAtInstall": "4bcd3fa1f8636c09c7d04a48f924a240db77db8127d74b0571a305addbf3b449",
+      "installedHash": "bfeed1202dcc8362d38e0039309b6a435f5206007168739e1104cbe6e7a53ffb",
+      "currentHashAtInstall": "bfeed1202dcc8362d38e0039309b6a435f5206007168739e1104cbe6e7a53ffb",
       "introducedIn": "0.0.0"
     },
     {
@@ -6536,6 +6536,16 @@
       "mergeStrategy": "replace_if_unmodified",
       "installedHash": "5aed931492592c8910a31a5f30d16442b412ff62b861f425460db1f6715a3f9e",
       "currentHashAtInstall": "5aed931492592c8910a31a5f30d16442b412ff62b861f425460db1f6715a3f9e",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "tracker_tool.validate.js",
+      "kind": "tracker_tool",
+      "dest": "scripts/trackers/validate.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "0dc8f612a9f980becd0560d4bbbc8e631dd2260559c8bcf0d5ac78bbdfd0d6f8",
+      "currentHashAtInstall": "0dc8f612a9f980becd0560d4bbbc8e631dd2260559c8bcf0d5ac78bbdfd0d6f8",
       "introducedIn": "0.0.0"
     },
     {
@@ -10174,8 +10184,8 @@
       "dest": "framework/hooks.registry.json",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "40a5acbf0afcf51372ba42a8552ad44ff92e7339a1b05a410d37e9c495fcfdb1",
-      "currentHashAtInstall": "40a5acbf0afcf51372ba42a8552ad44ff92e7339a1b05a410d37e9c495fcfdb1",
+      "installedHash": "15cd4aed89f783b4d767f810f3f230f0884c7b0a9271b8b8467baff6e7dc4abc",
+      "currentHashAtInstall": "15cd4aed89f783b4d767f810f3f230f0884c7b0a9271b8b8467baff6e7dc4abc",
       "introducedIn": "0.0.0"
     },
     {
@@ -10544,8 +10554,8 @@
       "dest": "scripts/generate-framework-manifest.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "aff7535071788a46f6ed2b7125dec98da416fdcf9466b0d71340ffb2be62a9ec",
-      "currentHashAtInstall": "aff7535071788a46f6ed2b7125dec98da416fdcf9466b0d71340ffb2be62a9ec",
+      "installedHash": "ea678df6908b6d0f3d7cc361e662d6f1ed19f31c447475a403265be380049ab2",
+      "currentHashAtInstall": "ea678df6908b6d0f3d7cc361e662d6f1ed19f31c447475a403265be380049ab2",
       "introducedIn": "0.0.0"
     },
     {

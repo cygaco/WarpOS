@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-06T21:08:42.324Z",
+  "generatedAt": "2026-06-06T21:29:26.045Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.14.0",
   "migrations": [],
@@ -2071,8 +2071,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/generate-framework-manifest.js",
-      "sha256": "aff7535071788a46f6ed2b7125dec98da416fdcf9466b0d71340ffb2be62a9ec",
-      "installedSha": "aff7535071788a46f6ed2b7125dec98da416fdcf9466b0d71340ffb2be62a9ec"
+      "sha256": "ea678df6908b6d0f3d7cc361e662d6f1ed19f31c447475a403265be380049ab2",
+      "installedSha": "ea678df6908b6d0f3d7cc361e662d6f1ed19f31c447475a403265be380049ab2"
     },
     "scripts/generate-maps.js": {
       "owner": "framework",
@@ -4332,8 +4332,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/hook-manifest.json",
-      "sha256": "4bcd3fa1f8636c09c7d04a48f924a240db77db8127d74b0571a305addbf3b449",
-      "installedSha": "4bcd3fa1f8636c09c7d04a48f924a240db77db8127d74b0571a305addbf3b449"
+      "sha256": "bfeed1202dcc8362d38e0039309b6a435f5206007168739e1104cbe6e7a53ffb",
+      "installedSha": "bfeed1202dcc8362d38e0039309b6a435f5206007168739e1104cbe6e7a53ffb"
     },
     "scripts/hooks/learning-validator.js": {
       "owner": "framework",
@@ -6236,8 +6236,8 @@
       "owner": "framework",
       "managed": true,
       "source": "framework/hooks.registry.json",
-      "sha256": "40a5acbf0afcf51372ba42a8552ad44ff92e7339a1b05a410d37e9c495fcfdb1",
-      "installedSha": "40a5acbf0afcf51372ba42a8552ad44ff92e7339a1b05a410d37e9c495fcfdb1"
+      "sha256": "15cd4aed89f783b4d767f810f3f230f0884c7b0a9271b8b8467baff6e7dc4abc",
+      "installedSha": "15cd4aed89f783b4d767f810f3f230f0884c7b0a9271b8b8467baff6e7dc4abc"
     },
     "framework/paths.registry.json": {
       "owner": "framework",

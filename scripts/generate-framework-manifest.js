@@ -204,6 +204,7 @@ const ASSET_DIRS = [
   // slash commands but not the backing scripts. Adding both as
   // first-class kinds.
   { src: "scripts/sprint", kind: "sprint_engine" },
+  { src: "scripts/trackers", kind: "tracker_tool" },
   { src: "scripts/dispatch", kind: "dispatch_engine" },
   // 0.8.2 fix-forward (2026-05-21): 15 scripts subdirs shipped slash commands
   // that referenced backing scripts under these dirs, but the dirs were never

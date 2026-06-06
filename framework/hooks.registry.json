@@ -571,6 +571,28 @@
       "testFixtures": ["fixtures/hooks/retro-presence-check/stop.json"]
     },
     {
+      "id": "tracker-start-of-work",
+      "script": "scripts/hooks/tracker-start-of-work.js",
+      "owner": "framework",
+      "enabled": true,
+      "failMode": "fail-open",
+      "fixturesRequired": false,
+      "purpose": "SessionStart: run the tracker validator + inject the tracker's validity verdict so an agent cannot begin work unaware the source-of-truth TRACKER.md is red (§28.2 Start-of-Work Enforcement).",
+      "registrations": [{ "event": "SessionStart", "matcher": "" }],
+      "testFixtures": ["fixtures/hooks/default/session-start.json"]
+    },
+    {
+      "id": "tracker-completion-gate",
+      "script": "scripts/hooks/tracker-completion-gate.js",
+      "owner": "framework",
+      "enabled": true,
+      "failMode": "fail-open",
+      "fixturesRequired": false,
+      "purpose": "Stop: run the tracker validator and refuse to let a session end quietly on a RED tracker (advisory by default; TRACKER_GATE_ENFORCE=1 blocks) — §28.5/§28.6.",
+      "registrations": [{ "event": "Stop", "matcher": "" }],
+      "testFixtures": ["fixtures/hooks/default/stop.json"]
+    },
+    {
       "id": "session-stop",
       "script": "scripts/hooks/session-stop.js",
       "owner": "framework",
