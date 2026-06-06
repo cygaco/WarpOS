@@ -2,9 +2,9 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-06T21:29:26.045Z",
+  "generatedAt": "2026-06-06T21:31:34.992Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
-  "warposVersion": "0.14.0",
+  "warposVersion": "0.15.0",
   "migrations": [],
   "paths": {
     ".gitattributes": {
@@ -63,8 +63,8 @@
       "owner": "framework",
       "managed": true,
       "source": null,
-      "sha256": "d92ce93c1aebd3a6e1b18a9053c1a3b015863c309da14d0fe9ae8954ada92b1d",
-      "installedSha": "d92ce93c1aebd3a6e1b18a9053c1a3b015863c309da14d0fe9ae8954ada92b1d"
+      "sha256": "930a7e6328d50dc38125857d0290e9a6b39a6fca4d027e16e8481cf90586b98a",
+      "installedSha": "930a7e6328d50dc38125857d0290e9a6b39a6fca4d027e16e8481cf90586b98a"
     },
     "INTERESTING.md": {
       "owner": "framework",
@@ -101,8 +101,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "d91771cabeffb97d8512f394dc1868a78ef8ccb74b87f67e6631f50fb42d3c3c",
-      "installedSha": "d91771cabeffb97d8512f394dc1868a78ef8ccb74b87f67e6631f50fb42d3c3c"
+      "sha256": "f368f4611541104a03a48d2ce7206d3fa1f5be3494006e49d173a4341835d294",
+      "installedSha": "f368f4611541104a03a48d2ce7206d3fa1f5be3494006e49d173a4341835d294"
     },
     "ROADMAP.md": {
       "owner": "framework",
@@ -133,8 +133,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "3165476d7419d73e5b7ec356e31b810f56a41dc5e417a7312ea4e6add620ee3e",
-      "installedSha": "3165476d7419d73e5b7ec356e31b810f56a41dc5e417a7312ea4e6add620ee3e"
+      "sha256": "cc6ae07e4e0922c4b02970ebf6586ec890a8fd02bc260b9360e62581eb321ed1",
+      "installedSha": "cc6ae07e4e0922c4b02970ebf6586ec890a8fd02bc260b9360e62581eb321ed1"
     },
     "_warpos/MANIFEST.json": {
       "owner": "generated",
@@ -7456,6 +7456,41 @@
       "source": "framework/releases/0.2.0/upgrade-notes.md",
       "sha256": "6437e0cc0db2779ad07bb4957b3aebb7829b7b34b872aad8e9d57551ce5830bf",
       "installedSha": "6437e0cc0db2779ad07bb4957b3aebb7829b7b34b872aad8e9d57551ce5830bf"
+    },
+    "framework/releases/0.15.0/changelog.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "framework/releases/0.15.0/changelog.md",
+      "sha256": "4d1a5f6e6ddda2e0e87adc8e69f5767f5f794f0c98cd7c1c71fd9528b3cf9c91",
+      "installedSha": "4d1a5f6e6ddda2e0e87adc8e69f5767f5f794f0c98cd7c1c71fd9528b3cf9c91"
+    },
+    "framework/releases/0.15.0/checksums.json": {
+      "owner": "framework",
+      "managed": true,
+      "source": "framework/releases/0.15.0/checksums.json",
+      "sha256": "e6f0ac206229146ee784d676792f8276229d8576cc1b8ef8bb9ef4f249f9fbb1",
+      "installedSha": "e6f0ac206229146ee784d676792f8276229d8576cc1b8ef8bb9ef4f249f9fbb1"
+    },
+    "framework/releases/0.15.0/framework-manifest.json": {
+      "owner": "framework",
+      "managed": true,
+      "source": "framework/releases/0.15.0/framework-manifest.json",
+      "sha256": "73ec6b06cc286aa41e9434f15137c0fd10d7ca83bbba68c488282d0598f70b48",
+      "installedSha": "73ec6b06cc286aa41e9434f15137c0fd10d7ca83bbba68c488282d0598f70b48"
+    },
+    "framework/releases/0.15.0/release.json": {
+      "owner": "framework",
+      "managed": true,
+      "source": "framework/releases/0.15.0/release.json",
+      "sha256": "c6384659a39527c32de7bb2f519ef74b156bf55ccba9020920bd2627619533bd",
+      "installedSha": "c6384659a39527c32de7bb2f519ef74b156bf55ccba9020920bd2627619533bd"
+    },
+    "framework/releases/0.15.0/upgrade-notes.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "framework/releases/0.15.0/upgrade-notes.md",
+      "sha256": "7499e2dce878a7fcf7203fa8baab78674420cbaa98b8d06e49fe0da5c6d3d286",
+      "installedSha": "7499e2dce878a7fcf7203fa8baab78674420cbaa98b8d06e49fe0da5c6d3d286"
     },
     "framework/releases/0.14.0/changelog.md": {
       "owner": "framework",
