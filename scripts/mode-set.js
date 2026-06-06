@@ -43,12 +43,13 @@ const path = require("path");
 const PROJECT_DIR = process.env.CLAUDE_PROJECT_DIR || process.cwd();
 const MARKER_PATH = path.join(PROJECT_DIR, ".claude", "runtime", "mode.json");
 
-const VALID_MODES = ["solo", "adhoc", "oneshot"];
+const VALID_MODES = ["solo", "adhoc", "oneshot", "sprint"];
 
 const ALLOWED_TRANSITIONS = {
-  solo: ["adhoc", "oneshot"],
-  adhoc: ["solo", "oneshot"],
-  oneshot: ["solo", "adhoc"],
+  solo: ["adhoc", "oneshot", "sprint"],
+  adhoc: ["solo", "oneshot", "sprint"],
+  oneshot: ["solo", "adhoc", "sprint"],
+  sprint: ["solo", "adhoc", "oneshot"],
 };
 
 function parseArgs(argv) {

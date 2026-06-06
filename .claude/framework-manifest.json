@@ -4,7 +4,7 @@
   "generated_by": "scripts/generate-framework-manifest.js",
   "counts": {
     "agent": 77,
-    "skill": 203,
+    "skill": 204,
     "reference": 28,
     "maps_baseline": 26,
     "hook": 68,
@@ -59,7 +59,7 @@
     "module_scope": 1,
     "framework_doc": 3
   },
-  "total": 1054,
+  "total": 1055,
   "assets": {
     "agent": [
       {
@@ -1870,6 +1870,18 @@
         "dest": ".claude/commands/mode/solo.md",
         "kind": "skill",
         "sha256": "3806c2068fdc35e431d9e1b0ec912e3f73c76a878e4a9f316d50b8a19350465a",
+        "owner": "framework",
+        "mergeStrategy": "three_way_markdown",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "skill.mode.sprint.md",
+        "src": ".claude/commands/mode/sprint.md",
+        "dest": ".claude/commands/mode/sprint.md",
+        "kind": "skill",
+        "sha256": "484e5e80dc88cccb9bb7c5371a3ec98eebb403beb9ad8a4a3df1268ec34a82ad",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
@@ -12719,7 +12731,7 @@
         "src": "scripts/mode-set.js",
         "dest": "scripts/mode-set.js",
         "kind": "top_script",
-        "sha256": "055208a1a9afa5c67c12af5fa2c5fb6635c0ad9de1f7fe30b9c181e72857b123",
+        "sha256": "cedd2a72555b3a09ba8233e20983c7c6435a0d1c47ca0c6f64e19bf3e040d142",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",

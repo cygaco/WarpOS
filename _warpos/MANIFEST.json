@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-06T00:55:47.048Z",
+  "generatedAt": "2026-06-06T00:58:40.594Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.13.1",
   "migrations": [],
@@ -2077,8 +2077,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/mode-set.js",
-      "sha256": "055208a1a9afa5c67c12af5fa2c5fb6635c0ad9de1f7fe30b9c181e72857b123",
-      "installedSha": "055208a1a9afa5c67c12af5fa2c5fb6635c0ad9de1f7fe30b9c181e72857b123"
+      "sha256": "cedd2a72555b3a09ba8233e20983c7c6435a0d1c47ca0c6f64e19bf3e040d142",
+      "installedSha": "cedd2a72555b3a09ba8233e20983c7c6435a0d1c47ca0c6f64e19bf3e040d142"
     },
     "scripts/one-off-add-backend-to-store.js": {
       "owner": "framework",
@@ -16166,6 +16166,14 @@
       "kind": "md",
       "sha256": "3806c2068fdc35e431d9e1b0ec912e3f73c76a878e4a9f316d50b8a19350465a",
       "installedSha": "3806c2068fdc35e431d9e1b0ec912e3f73c76a878e4a9f316d50b8a19350465a"
+    },
+    ".claude/commands/mode/sprint.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/commands/mode/sprint.md",
+      "kind": "md",
+      "sha256": "484e5e80dc88cccb9bb7c5371a3ec98eebb403beb9ad8a4a3df1268ec34a82ad",
+      "installedSha": "484e5e80dc88cccb9bb7c5371a3ec98eebb403beb9ad8a4a3df1268ec34a82ad"
     },
     ".claude/commands/maps/all.md": {
       "owner": "framework",

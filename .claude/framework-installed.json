@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "0.13.1",
-  "installedCommit": "2a6544178ed79073792bce9d150902461ed10ae9",
-  "installedAt": "2026-06-06T00:55:46.867Z",
+  "installedCommit": "4f85286ea7895cadc09eeccb0fe7a86c630a66eb",
+  "installedAt": "2026-06-06T00:58:40.420Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -1516,6 +1516,16 @@
       "mergeStrategy": "three_way_markdown",
       "installedHash": "3806c2068fdc35e431d9e1b0ec912e3f73c76a878e4a9f316d50b8a19350465a",
       "currentHashAtInstall": "3806c2068fdc35e431d9e1b0ec912e3f73c76a878e4a9f316d50b8a19350465a",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "skill.mode.sprint.md",
+      "kind": "skill",
+      "dest": ".claude/commands/mode/sprint.md",
+      "owner": "framework",
+      "mergeStrategy": "three_way_markdown",
+      "installedHash": "484e5e80dc88cccb9bb7c5371a3ec98eebb403beb9ad8a4a3df1268ec34a82ad",
+      "currentHashAtInstall": "484e5e80dc88cccb9bb7c5371a3ec98eebb403beb9ad8a4a3df1268ec34a82ad",
       "introducedIn": "0.0.0"
     },
     {
@@ -10474,8 +10484,8 @@
       "dest": "scripts/mode-set.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "055208a1a9afa5c67c12af5fa2c5fb6635c0ad9de1f7fe30b9c181e72857b123",
-      "currentHashAtInstall": "055208a1a9afa5c67c12af5fa2c5fb6635c0ad9de1f7fe30b9c181e72857b123",
+      "installedHash": "cedd2a72555b3a09ba8233e20983c7c6435a0d1c47ca0c6f64e19bf3e040d142",
+      "currentHashAtInstall": "cedd2a72555b3a09ba8233e20983c7c6435a0d1c47ca0c6f64e19bf3e040d142",
       "introducedIn": "0.0.0"
     },
     {
