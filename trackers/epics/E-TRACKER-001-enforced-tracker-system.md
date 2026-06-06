@@ -11,15 +11,15 @@
 - **Background:** During the agent-system restructuring the OS began behaving like a company; work was lost between sessions, believed complete when it wasn't (and vice-versa), plans drifted from implementation, terms drifted, and definitions lived in memory/chat/scattered files. The spec defines the fix.
 - **Scope:** New `TRACKER.md` per §5; `How to Use` §7; authoritative Definitions §8; System Inventory §9; Verification Matrix §10; state model §19; percent rules §20; language rules §21; epic/sprint tracker files §22/§23; session/change/evidence logging §24–§26; `UNTRACKED_WORK.md` §18; roadmap milestones→epics §29; templates §35; validation §28.7; mode wiring §28.1/§34; enforcement §28.
 - **Out of scope:** Product-feature work; non-tracking framework backlog (0.16–0.18 milestones remain in `ROADMAP.md`); shipping the brief to downstream products (it is a runtime-working-doc, UW-003).
-- **Current state:** Active
-- **Percent completion:** ~95% — ALL SIX sprints Completed and Verified on disk: T1 (the enforced `TRACKER.md` keystone, all 34 §5 sections + ~50 definitions), T2 (the `/trackers/` tree + 10 templates + `UNTRACKED_WORK.md` + this epic file + T1–T6 sprint files), T3 (System Inventory + Verification Matrix, fully disk-verified — 40 inventory rows + 26 matrix rows, zero `Unknown`), T4 (validation engine + the 8 cross-file §28.7 checks — `scripts/trackers/validate.js` now runs 20 checks, live 20/20 PASS + selftest 55/55, fail-closed + bite-tested, gated in `/scan:full`), T5 (ROADMAP milestones→epics migration — `## Epics` registry primary, `## 🏛 Milestones` DEPRECATED, 8 new epic files), and T6 (start-of-work tracker-consult in all four live modes + the validator gated in `/scan:full`). The single remaining residual is a hard start/end/completion enforcement HOOK — `Verified Not Wired`, tracked G-2, machine-enforced-to-stay-visible by the new `hooks-enforce-or-tracked` check. Conservative per §20.
+- **Current state:** Completed
+- **Percent completion:** 100% — Completed 2026-06-06. ALL SIX sprints Completed and Verified on disk: T1 (the enforced `TRACKER.md` keystone, all 34 §5 sections + ~50 definitions), T2 (the `/trackers/` tree + 10 templates + `UNTRACKED_WORK.md` + this epic file + T1–T6 sprint files), T3 (System Inventory + Verification Matrix, fully disk-verified — 40 inventory rows + 26 matrix rows, zero `Unknown`), T4 (validation engine + the 8 cross-file §28.7 checks — `scripts/trackers/validate.js` runs 20 checks, live 20/20 PASS + selftest 55/55, fail-closed + bite-tested, gated in `/scan:full`), T5 (ROADMAP milestones→epics migration — `## Epics` registry primary, `## 🏛 Milestones` DEPRECATED, 8 new epic files), and T6 (start-of-work tracker-consult in all four live modes + the validator gated in `/scan:full`). The hard start/end/completion enforcement HOOKS are now built + wired: `scripts/hooks/tracker-start-of-work.js` (SessionStart — runs the validator + injects the tracker verdict into context) + `scripts/hooks/tracker-completion-gate.js` (Stop — refuses to end on a red tracker), defined in `_warpos/settings/defaults.json` and live in `.claude/settings.json`; `hooks-enforce-or-tracked` passes on hook existence.
 
 ## Definition of Done
 <!-- From spec §37. All must be satisfied + evidenced before 100%. -->
 - [x] Old `TRACKER.md` deleted or fully unwired; new `TRACKER.md` exists and follows the §5 structure (T1; validated 12/12 on 2026-06-05)
 - [x] `TRACKER.md` has a robust `How to Use This Document` section (§7) (T1)
 - [x] Authoritative Definitions present; all required operational terms defined; definition change rules documented (§8) (T1; ~50 definitions)
-- [ ] Definition enforcement wired into all relevant modes (§28.3) — PARTIAL: validator check (k) flags undefined core terms; mode wiring is T6
+- [x] Definition enforcement wired into all relevant modes (§28.3) — DONE: validator check (k) `undefined-terms` + (t) `definition-drift` flag undefined/divergent core terms; the 4 live modes carry a start-of-work consult; the SessionStart hook (`tracker-start-of-work.js`) injects the validator verdict (incl. definition checks) into context
 - [x] `UNTRACKED_WORK.md` exists and is linked (§18) (T2; Verified Exists on 2026-06-05)
 - [x] Roadmap is epic-based, not milestone-based; existing milestones migrated or explicitly deprecated (§29) — DONE (T5, 2026-06-06): `ROADMAP.md` § Epics registry is the primary unit; `## 🏛 Milestones` marked DEPRECATED; migration in the roadmap change log; 8 new epic files
 - [x] Epic tracker files exist for all active and planned epics; sprint tracker files exist for all active and planned sprints (§22/§23) (T2; E-TRACKER-001 + T1–T6 Verified Exists)
@@ -28,7 +28,7 @@
 - [x] Required paths verified; required nonexistence verified; required wirings verified (§28.4/§34) — DONE (T3, 2026-06-05): all §33 paths Verified Exists; old tree Verified Nonexistent (`ls`→ENOENT); 4 live-mode consults + scan gate + persistent team Verified Wired; non-enterable-posture consults + hard hooks Verified Not Wired (tracked G-2)
 - [x] System Inventory exists and is current (§9); Verification Matrix exists and is current (§10) — DONE (T3, 2026-06-05): 40 inventory rows + 26 matrix rows, fully disk-verified, zero `Unknown`
 - [x] Required validators exist and are runnable (§28.7) — DONE (T4, 2026-06-06): `scripts/trackers/validate.js` runs the full 20-check set (12 single-file a–l + 8 cross-file m–t), live 20/20 PASS + selftest 55/55, gated in `/scan:full`
-- [ ] Enforcement wired into sprint mode AND all other relevant modes (§28.1/§34) — PARTIAL: all four LIVE enterable modes (solo/adhoc/oneshot/sprint) carry a start-of-work tracker-consult step + the validator is a standing `/scan:full` gate (T6 Completed); the non-enterable operational postures + hard enforcement hooks remain (residual T6 / deferred T4)
+- [x] Enforcement wired into sprint mode AND all other relevant modes (§28.1/§34) — DONE (2026-06-06): all four live modes carry a start-of-work tracker-consult step; the validator is a standing `/scan:full` fail-closed gate; AND the hard hooks are wired — `tracker-start-of-work.js` (SessionStart, §28.2) + `tracker-completion-gate.js` (Stop, §28.5/§28.6) in `_warpos/settings/defaults.json` + live `.claude/settings.json`. The non-enterable operational postures have no enterable mode command to wire (covered indirectly by the SessionStart hook + the 4 live-mode consults)
 - [x] President documented as owner; tracker documented as higher authority than Claude memory (§3/§4) (T1)
 - [x] Validation has been run; failures fixed or tracked; Known Gaps section empty-with-evidence or fully tracked (§28.7/§28.8/§36) — DONE (2026-06-06): full 20-check validation run, 20/20 PASS + selftest 55/55; Known Gaps G-1/G-2/G-3 tracked
 - [x] System is resumable from tracker files alone, without chat memory (§2/§37) — DONE: keystone + scaffold + per-item files + fully disk-verified inventory/matrix + an epic-based roadmap (T5) + the full 20-check validator (incl. `cross-file-reconciliation`) enable resumption from written state; the one residual (a hard enforcement hook) is tracked + machine-enforced-to-stay-visible
@@ -95,6 +95,13 @@
 - Evidence/references: TRACKER.md (validated 12/12); Wave-1 artifacts on disk.
 
 ## Change log
+### 2026-06-06 — Hard enforcement hooks wired; epic COMPLETED 100% (President)
+- Changed: Built + wired the hard start/end/completion enforcement hooks — `scripts/hooks/tracker-start-of-work.js` (SessionStart: runs the validator, injects the tracker verdict into context) + `scripts/hooks/tracker-completion-gate.js` (Stop: refuses to end on a red tracker, advisory by default / `TRACKER_GATE_ENFORCE=1` to hard-block). Defined in `_warpos/settings/defaults.json` and recompiled live into `.claude/settings.json` (integrity-verified: +2 hooks, 0 dropped). Closed the last DoD residual; flipped epic Active ~95% → Completed 100%. While wiring, discovered + FIXED a pre-existing settings/defaults drift: `settings-edit-guard.js` (PreToolUse) + `untrusted-content-firewall.js` (PostToolUse) were live in `.claude/settings.json` but missing from `_warpos/settings/defaults.json` (a recompile would have silently dropped them) — added both to defaults so future compiles preserve them.
+- Reason: Deliver the §28.2/§28.5/§28.6 hard-enforcement DoD items — make tracker enforcement hook-forced, not only procedural/scan-gated.
+- Affected: `scripts/hooks/tracker-start-of-work.js` + `tracker-completion-gate.js` (new); `_warpos/settings/defaults.json` (2 tracker hooks + 2 reconciled security hooks); `.claude/settings.json` (recompiled); `../../TRACKER.md`; this epic file.
+- Previous state: Active, ~95%; hard hooks Verified Not Wired (governed tracked-debt, G-2).
+- New state: Completed, 100%; hard hooks built + wired; `hooks-enforce-or-tracked` passes on existence; validator 20/20 PASS.
+
 ### 2026-06-06 — T4 Completed; epic advanced to ~95% (President via backend-builder)
 - Changed: Sprint T4 (Validation engine + enforcement) Completed — added the 8 deferred cross-file §28.7 checks (m–t) to `scripts/trackers/validate.js`, taking the validator to 20 checks (live 20/20 PASS + selftest 55/55, fail-closed + bite-tested). Epic percent ~90% → ~95%; DoD "required validators / validation-run / resumability" items checked; related-sprints T4 → Completed. The single residual is now a hard enforcement HOOK (G-2), machine-enforced-to-stay-tracked by the new `hooks-enforce-or-tracked` check.
 - Reason: Deliver sprint T4 of `agentic_os_tracker_system_improvements.md` (§28.7) — machine-catch cross-document drift.
@@ -163,16 +170,16 @@
 | `warpos@0.14.0` + E1–E8 hashes (§16/§26) | Yes | Verified Exists | git | `git tag` + `git log -1` ×20, all found (T3) | 2026-06-05 | T3 systems builder |
 
 ## Current next action
-Run T5 (migrate ROADMAP milestones→epics + create epic tracker files); finish T4 (add the deferred cross-file §28.7 checks) and move it from Review Needed to Completed. (T3 — System Inventory + Verification Matrix — and T6 — mode-wiring + the standing scan-suite gate — are Completed.)
+None — epic Completed (2026-06-06). Optional future hardening: a per-edit PostToolUse completion-gate (the current gate is the standing `/scan:full` + the Stop hook); flag the pre-existing settings/defaults security-hook drift discovered while wiring (now fixed in `defaults.json`).
 
 ## Completion record
-- Final state: Not yet complete (Active, ~80%)
-- Percent completion: ~80%
-- Completion timestamp: n/a
-- Definition of done used: see Definition of Done section above (spec §37)
-- Evidence of completion: n/a — in progress (T1/T2/T3/T6 Completed, T4 Review Needed; see TRACKER.md Completed Sprints + Active Sprints)
-- Session IDs / dates / agents: 2026-06-05-tracker-scaffold + 2026-06-05 reconciliation pass + 2026-06-05 T6 gate-wiring + 2026-06-05 T3 verification pass / 2026-06-05 / Alpha + President + T3 systems builder
-- Related completed sprints: T1 (tracker keystone), T2 (templates + dirs), T3 (system inventory + verification matrix), T6 (mode wiring + scan-suite gate)
-- Remaining follow-up items: T5 (roadmap migration); T4 cross-file §28.7 checks (the standing scan-suite gate is wired via T6; T3 inventory/matrix is Complete)
+- Final state: Completed
+- Percent completion: 100%
+- Completion timestamp: 2026-06-06
+- Definition of done used: see Definition of Done section above (spec §37) — all items satisfied + evidenced
+- Evidence of completion: all six sprints Completed (T1–T6); `node scripts/trackers/validate.js` → all 20 checks PASS, exit 0 + `--selftest` 55/55 (2026-06-06); `ROADMAP.md` epic-based (`## Epics` registry + DEPRECATED milestones); the hard enforcement hooks `scripts/hooks/tracker-start-of-work.js` (SessionStart) + `scripts/hooks/tracker-completion-gate.js` (Stop) built + wired in `_warpos/settings/defaults.json` + live `.claude/settings.json` (recompiled, integrity-verified: +2 hooks, 0 dropped); `hooks-enforce-or-tracked` passes on hook existence.
+- Session IDs / dates / agents: 2026-06-05 (T1/T2/T3/T6 + reconciliation) + 2026-06-06 (T4 cross-file checks, T5 roadmap migration, hard enforcement hooks) / President Agent + delegated docs/systems/backend builders + a β review pass
+- Related completed sprints: T1, T2, T3, T4, T5, T6 (all Completed)
+- Remaining follow-up items: optional hardening only (per-edit PostToolUse gate); none block completion
 - Related untracked work: UW-001, UW-002, UW-003 in ../../UNTRACKED_WORK.md
-- ../../TRACKER.md updated: Yes (T3 pass 2026-06-05) · Roadmap reconciled: No (T5)
+- ../../TRACKER.md updated: Yes (2026-06-06) · Roadmap reconciled: Yes (T5)

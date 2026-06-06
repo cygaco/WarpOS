@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-06T09:03:29.076Z",
+  "generatedAt": "2026-06-06T09:37:03.985Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.14.0",
   "migrations": [],
@@ -151,8 +151,8 @@
       "managed": true,
       "source": "_warpos/settings/defaults.json",
       "_note": "_warpos/ is the framework source-of-truth zone in installed products (post-SP-20260522-001).",
-      "sha256": "1799b57d23a4432492111f1ef2bddef40b20c2943ae5492c7ae67d53b2ab456e",
-      "installedSha": "1799b57d23a4432492111f1ef2bddef40b20c2943ae5492c7ae67d53b2ab456e"
+      "sha256": "e99c261a5d81650cb9a22d85af628ff930e915b55c80fa11fd7f24f5f6803292",
+      "installedSha": "e99c261a5d81650cb9a22d85af628ff930e915b55c80fa11fd7f24f5f6803292"
     },
     "_requirements/README.md": {
       "owner": "project",
@@ -4606,6 +4606,20 @@
       "source": "scripts/hooks/test.js",
       "sha256": "cd3ed48fc4ed0fda02114483b0a9a4bab91c1e293e3d94720bcf2e78fcb1bcd1",
       "installedSha": "cd3ed48fc4ed0fda02114483b0a9a4bab91c1e293e3d94720bcf2e78fcb1bcd1"
+    },
+    "scripts/hooks/tracker-completion-gate.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/hooks/tracker-completion-gate.js",
+      "sha256": "859b23adf1bbb8f879ed70d144b8be9ae505e21c10bec2f3a8d2e9cfd6beda68",
+      "installedSha": "859b23adf1bbb8f879ed70d144b8be9ae505e21c10bec2f3a8d2e9cfd6beda68"
+    },
+    "scripts/hooks/tracker-start-of-work.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/hooks/tracker-start-of-work.js",
+      "sha256": "81e21362c43f705b48d06fb6b3e3e4a6df95d57273d6e1e4673f3012c731e295",
+      "installedSha": "81e21362c43f705b48d06fb6b3e3e4a6df95d57273d6e1e4673f3012c731e295"
     },
     "scripts/hooks/typecheck.js": {
       "owner": "framework",

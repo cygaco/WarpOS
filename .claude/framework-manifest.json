@@ -7,7 +7,7 @@
     "skill": 205,
     "reference": 28,
     "maps_baseline": 26,
-    "hook": 68,
+    "hook": 70,
     "hook_lib": 15,
     "tool": 2,
     "pattern": 6,
@@ -59,7 +59,7 @@
     "module_scope": 1,
     "framework_doc": 3
   },
-  "total": 1061,
+  "total": 1063,
   "assets": {
     "agent": [
       {
@@ -4852,6 +4852,30 @@
         "dest": "scripts/hooks/test.js",
         "kind": "hook",
         "sha256": "cd3ed48fc4ed0fda02114483b0a9a4bab91c1e293e3d94720bcf2e78fcb1bcd1",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "hook.tracker-completion-gate.js",
+        "src": "scripts/hooks/tracker-completion-gate.js",
+        "dest": "scripts/hooks/tracker-completion-gate.js",
+        "kind": "hook",
+        "sha256": "859b23adf1bbb8f879ed70d144b8be9ae505e21c10bec2f3a8d2e9cfd6beda68",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "hook.tracker-start-of-work.js",
+        "src": "scripts/hooks/tracker-start-of-work.js",
+        "dest": "scripts/hooks/tracker-start-of-work.js",
+        "kind": "hook",
+        "sha256": "81e21362c43f705b48d06fb6b3e3e4a6df95d57273d6e1e4673f3012c731e295",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",

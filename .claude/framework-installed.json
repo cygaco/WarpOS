@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "0.14.0",
-  "installedCommit": "633338e78618a8db338eda2b7a9731e901f28db1",
-  "installedAt": "2026-06-06T07:52:05.526Z",
+  "installedCommit": "aeba1a32efff34ceee304c098cccb5c629de6659",
+  "installedAt": "2026-06-06T09:37:03.664Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -3996,6 +3996,26 @@
       "mergeStrategy": "replace_if_unmodified",
       "installedHash": "cd3ed48fc4ed0fda02114483b0a9a4bab91c1e293e3d94720bcf2e78fcb1bcd1",
       "currentHashAtInstall": "cd3ed48fc4ed0fda02114483b0a9a4bab91c1e293e3d94720bcf2e78fcb1bcd1",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "hook.tracker-completion-gate.js",
+      "kind": "hook",
+      "dest": "scripts/hooks/tracker-completion-gate.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "859b23adf1bbb8f879ed70d144b8be9ae505e21c10bec2f3a8d2e9cfd6beda68",
+      "currentHashAtInstall": "859b23adf1bbb8f879ed70d144b8be9ae505e21c10bec2f3a8d2e9cfd6beda68",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "hook.tracker-start-of-work.js",
+      "kind": "hook",
+      "dest": "scripts/hooks/tracker-start-of-work.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "81e21362c43f705b48d06fb6b3e3e4a6df95d57273d6e1e4673f3012c731e295",
+      "currentHashAtInstall": "81e21362c43f705b48d06fb6b3e3e4a6df95d57273d6e1e4673f3012c731e295",
       "introducedIn": "0.0.0"
     },
     {
