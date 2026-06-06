@@ -57,6 +57,7 @@
 
 const fs = require("fs");
 const path = require("path");
+const crypto = require("crypto");
 
 const SPRINT = require("./paths"); // worktree CLAUDE_PROJECT_DIR rescue runs on require
 const hookPoints = require("./hook-points"); // registry reader + composition→agent-set router
@@ -332,38 +333,51 @@ function telemetry() {
  *
  * @returns {{ recorded:boolean, dispatch_id?:string, reason?:string }}
  */
-function recordAgentDispatch(agentPlan, sprintId, { ok, promptBytes = 0 } = {}) {
+function recordAgentDispatch(
+  agentPlan,
+  sprintId,
+  { ok, promptBytes = 0, evidenceBytes, evidenceSha, elapsedMs = 0, via = "epsilon-runtime" } = {},
+) {
   // FAKE-GREEN GUARD: refuse to write a completion record without an EXPLICIT boolean
   // outcome from a real spawn. The prior `{ ok = true }` default let conductStep stamp
   // ok:true liveness records with no spawn behind them (the bug the operator caught).
   if (typeof ok !== "boolean") {
-    return { recorded: false, reason: "refusing to record without a real spawn outcome (ok must be a boolean returned by spawnAgent)" };
+    return { recorded: false, reason: "refusing to record without a real spawn outcome (ok must be a boolean returned by spawnAgent / derived from real evidence bytes)" };
   }
   const t = telemetry();
   if (!t.ok) return { recorded: false, reason: `telemetry unavailable: ${t.error}` };
   const now = new Date().toISOString();
+  // Backdate started_at by the REAL elapsed (in-process path passes the Agent-tool wall-clock)
+  // so the record reflects actual duration, not elapsed_ms:0 (a synthetic 0 is a fake-tell).
+  const startedAt = elapsedMs > 0 ? new Date(Date.parse(now) - elapsedMs).toISOString() : now;
   const dispatchId = t.makeDispatchId();
+  // stdout_bytes carries REAL output size: the subprocess stdout for CLI routes (caller sets
+  // evidenceBytes from the Agent-tool return for in-process), falling back to the 1/0 liveness
+  // bit only when no real byte count is available.
+  const stdoutBytes = typeof evidenceBytes === "number" ? evidenceBytes : ok ? 1 : 0;
   t.recordCompletion({
     dispatch_id: dispatchId,
     pid: process.pid,
     role: agentPlan.role,
     provider: agentPlan.provider || "claude",
     model: agentPlan.model || null,
-    started_at: now,
+    started_at: startedAt,
     completed_at: now,
-    elapsed_ms: 0,
+    elapsed_ms: elapsedMs,
     prompt_bytes: promptBytes,
     cmdline_checksum: t.cmdlineChecksum(agentPlan.role, agentPlan.provider || "claude", promptBytes),
     exit_code: ok ? 0 : 1,
-    stdout_bytes: ok ? 1 : 0,
+    stdout_bytes: stdoutBytes,
     stderr_bytes: 0,
     fallback: false,
     ok,
     // ε-conductor provenance (extra fields are ignored by gauntlet-verify's typed check):
     sprint_id: sprintId,
-    via: "epsilon-runtime",
+    via,
     step: agentPlan.step,
     route: agentPlan.route,
+    // in-process evidence binding (Increment B): sha256 of the Agent-tool return that backs ok.
+    ...(evidenceSha ? { evidence_sha: evidenceSha } : {}),
   });
   return { recorded: true, dispatch_id: dispatchId };
 }
@@ -456,6 +470,55 @@ function spawnAgent(agentPlan, sprintId, opts = {}) {
     out.recorded = true;
   }
   return out;
+}
+
+// ── In-process dispatch record (Increment B — ADR-0009 Mitigation #4, the named next step) ──
+//
+// The 2 in-process Claude-teammate routes (CLAUDE_AGENT — managers/leads/directors;
+// AGENT_TOOL — design-quality/visual-review) CANNOT be spawned by a node process; only the
+// harness Agent tool can (ε-the-agent / α). So those are dispatched by ε-the-agent via the
+// Agent tool, which captures the agent's RETURNED ENVELOPE to a file; ε then calls this to
+// write the SAME completion record gauntlet-verify reads (absence of an ok:true record = the
+// lane silently died, per epsilon.md).
+//
+// The honesty guarantee is preserved exactly as for the CLI routes: `ok` is DERIVED FROM the
+// real evidence bytes, never self-asserted. A 0-byte Agent return = the in-process analog of
+// the ED-018 reap (a dispatch that produced nothing → ok:false). NO evidence file at all =
+// no proof a spawn happened → REFUSE (no record). This is what keeps ε-the-agent from
+// re-introducing the fake-green the operator caught — it cannot stamp ok:true out of thin
+// air; it must produce the Agent tool's actual return, whose byte count decides ok.
+
+function recordInProcessCompletion(agentPlan, sprintId, { evidenceFile, elapsedMs = 0 } = {}) {
+  if (agentPlan.route !== ROUTE.CLAUDE_AGENT && agentPlan.route !== ROUTE.AGENT_TOOL) {
+    return {
+      recorded: false,
+      reason: `record-inprocess is for in-process routes only (CLAUDE_AGENT / AGENT_TOOL); got route '${agentPlan.route}' — a CLI-routable role must go through spawnAgent (which captures real subprocess output), not here`,
+    };
+  }
+  // No evidence file → there is NO proof an Agent-tool spawn happened. Refuse — the in-process
+  // mirror of recordAgentDispatch's "ok must be a real outcome" guard (the anti-fake-green floor).
+  if (!evidenceFile || !fs.existsSync(evidenceFile)) {
+    return { recorded: false, reason: "refusing to record without the Agent-tool return evidence (--evidence <file>): no spawn behind it" };
+  }
+  let buf;
+  try {
+    buf = fs.readFileSync(evidenceFile);
+  } catch (e) {
+    return { recorded: false, reason: `evidence unreadable: ${e.message}` };
+  }
+  const evidenceBytes = buf.length;
+  const evidenceSha = crypto.createHash("sha256").update(buf).digest("hex");
+  const ok = evidenceBytes > 0; // 0-byte return = reap (ED-018 analog), NOT a success
+  const result = recordAgentDispatch(agentPlan, sprintId, {
+    ok,
+    evidenceBytes,
+    evidenceSha,
+    elapsedMs,
+    via: "epsilon-agent",
+  });
+  // Surface the DERIVED outcome so callers (CLI + tests) see what ok was bound to — proves
+  // ok came from the evidence bytes, not an assertion.
+  return { ...result, ok, evidence_bytes: evidenceBytes, evidence_sha: evidenceSha };
 }
 
 /**
@@ -599,8 +662,34 @@ function main(argv) {
     return 0;
   }
 
+  if (cmd === "record-inprocess") {
+    // ε-the-agent calls this AFTER dispatching an in-process role via the harness Agent tool,
+    // passing the file it wrote the agent's returned envelope to. The record's ok is derived
+    // from that file's byte count — record-inprocess CANNOT fabricate liveness.
+    const get = (flag) => {
+      const i = argv.indexOf(flag);
+      return i !== -1 ? argv[i + 1] : null;
+    };
+    const role = get("--role");
+    const step = get("--step");
+    const evidenceFile = get("--evidence");
+    const elapsedMs = parseInt(get("--elapsed-ms") || "0", 10) || 0;
+    if (!role || !step || !evidenceFile) {
+      process.stderr.write(
+        "usage: epsilon-runtime.js record-inprocess --sprint <id> --role <role> --step <step> --evidence <file> [--elapsed-ms <n>]\n",
+      );
+      return 2;
+    }
+    const roles = hookPoints.loadRoles();
+    const rr = resolveRoute(role, roles);
+    const agentPlan = { role, step, route: rr.route, provider: rr.provider, model: rr.model };
+    const out = recordInProcessCompletion(agentPlan, sprintId, { evidenceFile, elapsedMs });
+    process.stdout.write(JSON.stringify({ command: "record-inprocess", sprint_id: sprintId, ...agentPlan, ...out }, null, json ? 2 : 0) + "\n");
+    return out.recorded ? 0 : 1;
+  }
+
   process.stderr.write(
-    "usage: epsilon-runtime.js <plan | conduct> --sprint <id> [--composition <json>] [--dispatch] [--step <step>] [--json]\n",
+    "usage: epsilon-runtime.js <plan | conduct | record-inprocess> --sprint <id> [--composition <json>] [--dispatch] [--step <step>] [--role <r> --evidence <file>] [--json]\n",
   );
   return 2;
 }
@@ -620,6 +709,7 @@ module.exports = {
   assertConsultsCannotDispatch,
   compositionForSprint,
   recordAgentDispatch,
+  recordInProcessCompletion,
   spawnAgent,
   interpretSpawn,
   writeStepPrompt,

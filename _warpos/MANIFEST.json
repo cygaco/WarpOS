@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-06T01:21:58.436Z",
+  "generatedAt": "2026-06-06T01:39:49.820Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.13.1",
   "migrations": [],
@@ -3316,15 +3316,15 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/sprint/epsilon-runtime.js",
-      "sha256": "505aaef944b3f6340585f3d7b7d567da717e1bc5e832d4ea651b496b1b5da628",
-      "installedSha": "505aaef944b3f6340585f3d7b7d567da717e1bc5e832d4ea651b496b1b5da628"
+      "sha256": "ddf12255e9a39893e8bb96aa9ae4b862630d8903ea15ba80b9eaf48d53f97d91",
+      "installedSha": "ddf12255e9a39893e8bb96aa9ae4b862630d8903ea15ba80b9eaf48d53f97d91"
     },
     "scripts/sprint/epsilon-runtime.test.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/sprint/epsilon-runtime.test.js",
-      "sha256": "ca8115e1bfc73679d3a7f340bedbd026f29c6d7e2f20b982e335c40a211cc628",
-      "installedSha": "ca8115e1bfc73679d3a7f340bedbd026f29c6d7e2f20b982e335c40a211cc628"
+      "sha256": "89c982fef1056b5c892a7214cb26ac894ec34cbc49f98ce87422dfdeab8526db",
+      "installedSha": "89c982fef1056b5c892a7214cb26ac894ec34cbc49f98ce87422dfdeab8526db"
     },
     "scripts/sprint/epsilon-wiring.test.js": {
       "owner": "framework",
@@ -16172,8 +16172,8 @@
       "managed": true,
       "source": ".claude/commands/mode/sprint.md",
       "kind": "md",
-      "sha256": "484e5e80dc88cccb9bb7c5371a3ec98eebb403beb9ad8a4a3df1268ec34a82ad",
-      "installedSha": "484e5e80dc88cccb9bb7c5371a3ec98eebb403beb9ad8a4a3df1268ec34a82ad"
+      "sha256": "93bd866b2257b126bbb134d12839a80dc0f94f5d4179d52b804b675872da22d6",
+      "installedSha": "93bd866b2257b126bbb134d12839a80dc0f94f5d4179d52b804b675872da22d6"
     },
     ".claude/commands/maps/all.md": {
       "owner": "framework",
@@ -16916,8 +16916,8 @@
       "managed": true,
       "source": ".claude/agents/president/epsilon.md",
       "kind": "md",
-      "sha256": "ecbb98ed1b0027c574754b6fef4c56925c8fefe358d1f68b55dcd120e9eb0e7a",
-      "installedSha": "ecbb98ed1b0027c574754b6fef4c56925c8fefe358d1f68b55dcd120e9eb0e7a"
+      "sha256": "3a10b15cdd53702c782c6473b56e4318d4955c35f8c04e6dd8720702256df99a",
+      "installedSha": "3a10b15cdd53702c782c6473b56e4318d4955c35f8c04e6dd8720702256df99a"
     },
     ".claude/agents/president/gamma.md": {
       "owner": "framework",
@@ -17090,8 +17090,8 @@
       "managed": true,
       "source": ".claude/agents/president/.system/policy/adr/0009-epsilon-sprint-runtime.md",
       "kind": "md",
-      "sha256": "4c3b0f2b66323bbc36704a63e9e8147e5dc1f9212d1c20abc69ff934d784c611",
-      "installedSha": "4c3b0f2b66323bbc36704a63e9e8147e5dc1f9212d1c20abc69ff934d784c611"
+      "sha256": "6737e33af9c74a7b91aaa6d04f45d2db76c6f888072c6459de4afd48f448aef0",
+      "installedSha": "6737e33af9c74a7b91aaa6d04f45d2db76c6f888072c6459de4afd48f448aef0"
     },
     ".claude/agents/president/.system/policy/adr/0010-orgmap-reporting-collapse.md": {
       "owner": "framework",

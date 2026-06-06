@@ -15,19 +15,39 @@ a registry row; ε is never edited.
 > Sibling of `/mode:adhoc` (α+β+γ, single features) and `/mode:oneshot` (δ, skeleton builds).
 > Sprint mode is for roadmap-sequenced, full-lifecycle work across all the manager + worker roles.
 
-## What's REAL today vs the next increment (honest scope — ADR-0009 Mitigation #4)
+## What's REAL — both dispatch halves (honest scope — ADR-0009 Mitigation #4)
 
-- **REAL (landed, tested, proven):** ε dispatches the **CLI-routable** roles for real —
-  build-chain **builders** (`dispatch-claude.js`), cross-provider **reviewers** (`dispatch-agent.js`
-  → GPT/Gemini), and claude-raw tools (`claude -p --agent`). The completion record reflects the
-  **real** spawn outcome (a reap → `ok:false`); `recordAgentDispatch` refuses to write without a
-  real outcome (the fake-green guard). Proven: a real `gemini-3.1-pro-preview` dispatch through ε
-  wrote a real 19.3s completion record; structural assertions in `epsilon-runtime.test.js` §7.
-- **NEXT INCREMENT (named, not faked):** the **in-process** roster — managers/leads (`claude-agent`)
-  and the Claude-pinned `design-quality`/`visual-review` (`agent-tool`) — cannot be spawned by a
-  node process (only the harness Agent tool can). ε returns `requires-orchestrator` for them
-  honestly (no record). Dispatching those via ε-the-agent (`--epsilon-dispatch` of the in-process
-  roster) is the next step. Until then, those consults are surfaced for α / the orchestrator.
+- **CLI-routable roles — REAL via the node runtime:** ε dispatches build-chain **builders**
+  (`dispatch-claude.js`), cross-provider **reviewers** (`dispatch-agent.js` → GPT/Gemini), and
+  claude-raw tools (`claude -p --agent`). The completion record reflects the **real** spawn
+  outcome (a reap = 0-byte-on-exit-0 → `ok:false`); `recordAgentDispatch` refuses to write
+  without a real boolean outcome (the fake-green guard). Proven: real `gpt-5.5` + `gemini-3.1-pro-preview`
+  dispatches through ε wrote real completion records (315s / 107s wall-clock, real output bytes).
+- **In-process roster — REAL via ε-the-agent + the Agent tool (Increment B):** managers/leads/directors
+  (`claude-agent`) and the Claude-pinned `design-quality`/`visual-review` (`agent-tool`) CANNOT be
+  spawned by a node process — only the harness Agent tool can. So ε-the-agent dispatches them via
+  `Agent(subagent_type: <role>)`, captures the returned envelope to a file, and records with
+  `record-inprocess --evidence <file>` — whose `ok` is **derived from the real Agent-return bytes**
+  (0-byte = reap → `ok:false`; no evidence = REFUSE, no record). Proven: a real `product-lead`
+  Agent-tool spawn → evidence-bound record (`via:epsilon-agent`, 514 real bytes + `evidence_sha`).
+
+### The in-process conduct loop (ε-the-agent)
+
+For each plan entry whose route is `claude-agent` / `agent-tool` (the ε runtime returns these as
+`spawned:false, reason:requires-orchestrator` — it cannot spawn them from a node process):
+
+1. Dispatch via the harness Agent tool: `Agent(subagent_type: <role>, prompt: <step prompt>)`.
+2. Capture the agent's returned envelope to a file (e.g. `.claude/runtime/epsilon-prompts/<sprint>-<step>-<role>.return.txt`).
+3. Write the completion record:
+   ```bash
+   node scripts/sprint/epsilon-runtime.js record-inprocess \
+     --sprint <id> --role <role> --step <step> --evidence <file> [--elapsed-ms <n>]
+   ```
+
+NEVER write the record without the Agent's real return — `record-inprocess` REFUSES on missing
+evidence and records `ok:false` on a 0-byte return. The record is the same `ok:true` liveness
+`gauntlet-verify` reads (absence = the lane silently died), so an in-process reviewer lane is
+gated exactly like a CLI reviewer lane.
 
 ## Inputs
 
@@ -60,7 +80,7 @@ Acknowledge the mode switch:
 MODE: sprint
 Conductor: ε (Alex Epsilon) — the sprint deliver-face
 Lifecycle: plan → design → build → gauntlet → release → retro (registry-driven)
-Dispatch: REAL for CLI routes (builders + cross-provider reviewers); in-process roster = next increment
+Dispatch: REAL — CLI routes via the node runtime (builders + cross-provider reviewers); in-process roster (managers/leads/design-quality) via ε-the-agent + the Agent tool (record-inprocess)
 β: consulted at the four phase boundaries (plan→design, design→build, gauntlet→release, release→retro)
 ```
 
@@ -78,6 +98,7 @@ Or drive the ε runtime directly:
 ```bash
 node scripts/sprint/epsilon-runtime.js plan    --sprint <SP-id> [--json]   # resolve the per-step dispatch plan
 node scripts/sprint/epsilon-runtime.js conduct --sprint <SP-id> --dispatch # conduct + REALLY dispatch (CLI routes)
+node scripts/sprint/epsilon-runtime.js record-inprocess --sprint <SP-id> --role <r> --step <s> --evidence <file>  # record an in-process Agent-tool spawn
 ```
 
 ### Step 4: Update heartbeat (if store exists)
@@ -89,8 +110,9 @@ If `.claude/agents/store.json` exists and has a heartbeat, update:
 
 ### Step 5: Confirm
 
-Report: "Sprint mode active. ε conducts the lifecycle; CLI-routable agents dispatch for real,
-in-process roster surfaces for the orchestrator. Run `/sprint:full \"<request>\"` to start a sprint."
+Report: "Sprint mode active. ε conducts the lifecycle; CLI-routable agents dispatch for real via
+the node runtime, the in-process roster dispatches via ε-the-agent + the Agent tool (evidence-bound
+`record-inprocess`). Run `/sprint:full \"<request>\"` to start a sprint."
 
 ### Step 6 (only when `--turbo` is passed): Apply turbo authorization
 
@@ -112,4 +134,4 @@ node scripts/turbo/apply.js --scope manifest-edit,write-jsonl,worktree-ops --ttl
 - Conductor spec: `.claude/agents/president/epsilon.md`
 - Runtime: `scripts/sprint/epsilon-runtime.js` (+ `epsilon-runtime.test.js`)
 - Orchestrator: `/sprint:full` (`scripts/sprint/full.js`)
-- ADR: `0009-epsilon-sprint-runtime.md` (Mitigation #4 = the real-dispatch increment + the next step)
+- ADR: `0009-epsilon-sprint-runtime.md` (Mitigation #4 = real dispatch — both the CLI-route + in-process increments)

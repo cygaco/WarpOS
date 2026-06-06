@@ -15,6 +15,9 @@
  */
 
 const rt = require("./epsilon-runtime");
+const fs = require("fs");
+const path = require("path");
+const os = require("os");
 
 let passed = 0;
 let failed = 0;
@@ -235,6 +238,58 @@ console.log("\n(7) DISPATCH really spawns; no record without a real outcome (the
   });
   ok("conductStep --dispatch records each agent's real outcome", out.dispatched.length > 0 && out.dispatched.every((d) => typeof d.spawned === "boolean"));
   ok("conductStep never fabricates an in-process record", out.dispatched.filter((d) => /agent-tool|claude-agent/.test(d.route)).every((d) => d.recorded === false));
+}
+
+// ── (7b) in-process dispatch records are EVIDENCE-BOUND (Increment B — ADR-0009) ──
+//   ε-the-agent dispatches the in-process roster (claude-agent managers/leads/directors;
+//   agent-tool design-quality/visual-review) via the harness Agent tool, then records via
+//   recordInProcessCompletion — whose ok is DERIVED FROM the real Agent-return byte count,
+//   never self-asserted. The same anti-fake-green floor the CLI routes get from real stdout.
+//   (Writes to an ISOLATED tmp ledger via DISPATCH_LEDGER_DIR — never the canonical ledger.)
+console.log("\n(7b) in-process dispatch records are evidence-bound (Increment B):");
+{
+  const tmp = path.join(os.tmpdir(), `epsilon-ip-${process.pid}`);
+  const led = path.join(tmp, "ledger");
+  fs.mkdirSync(led, { recursive: true });
+  const prevLedger = process.env.DISPATCH_LEDGER_DIR;
+  process.env.DISPATCH_LEDGER_DIR = led; // isolate: ledgerFile() redirects here, not canonical
+
+  const readLast = () => {
+    const f = path.join(led, "dispatch-completions.jsonl");
+    if (!fs.existsSync(f)) return null;
+    const lines = fs.readFileSync(f, "utf8").trim().split("\n").filter(Boolean);
+    return lines.length ? JSON.parse(lines[lines.length - 1]) : null;
+  };
+
+  const plPlan = { role: "product-lead", step: "plan", route: rt.ROUTE.CLAUDE_AGENT, provider: "claude" };
+
+  // success: a non-empty Agent return → ok:true, stdout_bytes = REAL evidence bytes, evidence_sha bound.
+  const evFile = path.join(tmp, "ev.txt");
+  fs.writeFileSync(evFile, "ENVELOPE: product-lead ack — in-process dispatch proven\n");
+  const evBytes = fs.statSync(evFile).size;
+  const okRes = rt.recordInProcessCompletion(plPlan, "SP-T", { evidenceFile: evFile, elapsedMs: 1234 });
+  const okRec = readLast();
+  ok("record-inprocess writes a record from real Agent-return evidence", okRes.recorded === true && !!okRes.dispatch_id);
+  ok("in-process ok:true is DERIVED from real evidence bytes (not a synthetic 1)", okRes.ok === true && okRes.evidence_bytes === evBytes && evBytes > 1);
+  ok("the persisted record carries real stdout_bytes + evidence_sha + via:epsilon-agent + real elapsed", okRec && okRec.stdout_bytes === evBytes && /^[0-9a-f]{64}$/.test(okRec.evidence_sha || "") && okRec.via === "epsilon-agent" && okRec.elapsed_ms === 1234);
+
+  // reap: a 0-byte Agent return → ok:FALSE (in-process analog of the ED-018 reap), recorded honestly.
+  const emptyFile = path.join(tmp, "empty.txt");
+  fs.writeFileSync(emptyFile, "");
+  const reapRes = rt.recordInProcessCompletion(plPlan, "SP-T", { evidenceFile: emptyFile });
+  ok("0-byte Agent return → ok:FALSE (reap), not a fake success", reapRes.recorded === true && reapRes.ok === false && reapRes.evidence_bytes === 0);
+
+  // missing evidence → REFUSE (no proof a spawn happened → no record). The anti-fake-green floor.
+  const refuse = rt.recordInProcessCompletion(plPlan, "SP-T", { evidenceFile: path.join(tmp, "nope.txt") });
+  ok("missing evidence → REFUSE (no record without a real Agent return)", refuse.recorded === false && /refusing/.test(refuse.reason));
+
+  // wrong tool: a CLI-routable role must go through spawnAgent (real subprocess), not record-inprocess.
+  const wrong = rt.recordInProcessCompletion({ role: "qa-reviewer", step: "gauntlet", route: rt.ROUTE.DISPATCH_AGENT, provider: "openai" }, "SP-T", { evidenceFile: evFile });
+  ok("CLI-route role via record-inprocess → REFUSE (wrong tool)", wrong.recorded === false && /in-process routes only/.test(wrong.reason));
+
+  if (prevLedger === undefined) delete process.env.DISPATCH_LEDGER_DIR;
+  else process.env.DISPATCH_LEDGER_DIR = prevLedger;
+  try { fs.rmSync(tmp, { recursive: true, force: true }); } catch { /* best-effort */ }
 }
 
 // ── (8) β boundaries are at the four phase transitions ──────────────────────────
