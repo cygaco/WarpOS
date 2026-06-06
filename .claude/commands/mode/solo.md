@@ -35,6 +35,10 @@ node scripts/mode-set.js solo --by alpha
 
 If the prior mode has an `activeBuild` or different `lockOwner`, the CLI will refuse and print why. Halt the active build first or pass `--force` (logs the override).
 
+### Step 1.5: Start-of-work — consult TRACKER.md
+
+Before substantial long-running work, read `TRACKER.md` (spec §7.2 / §28.1) and determine whether the work belongs to an **active** epic/sprint, a **planned** one, **untracked** work, or a **new** epic/sprint that must be created. Solo work that meaningfully changes roadmap/epic/sprint/definition/path/wiring state must not start from memory — if it falls outside a tracked epic/sprint, record it in `UNTRACKED_WORK.md` (§7.9). Quick one-off tasks with no state effect skip this.
+
 ### Step 2: Set mode context
 
 Acknowledge the mode switch:

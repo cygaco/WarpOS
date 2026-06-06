@@ -11,7 +11,7 @@
 - **Scope:** A runnable validator covering the §28.7 check list (missing tracker files, broken links, active items with no next action, completed-without-evidence, completed-below-100%, 100%-not-marked-completed, sprints without parent epics, undefined terms, definition drift, ambiguous state language, unverified/missing paths, missing wiring, blank sections, etc.); completion-gate enforcement (§28.6); failure handling (§28.8) so failures are fixed or tracked, never ignored. Validator must fail-closed / not lie-green.
 - **Out of scope:** Mode-consultation wiring (T6); roadmap migration (T5); System Inventory/Matrix authoring (T3, but the validator checks them).
 - **Current state:** Review Needed
-- **Percent completion:** ~85% — The runnable, fail-closed validation engine IS built: `scripts/trackers/validate.js` (pure `evaluate()` core + thin FS reader + in-file bite-test) passes its selftest 33/33 and a live run on 2026-06-05 reports all 12 checks PASS (exit 0); the `/trackers:validate` skill (`.claude/commands/trackers/validate.md`) surfaces it. Held below 100% (Review Needed) because two follow-ups remain — see Current next action + Open questions.
+- **Percent completion:** ~90% — The runnable, fail-closed validation engine IS built: `scripts/trackers/validate.js` (pure `evaluate()` core + thin FS reader + in-file bite-test) passes its selftest 33/33 and a live run on 2026-06-05 reports all 12 checks PASS (exit 0); the `/trackers:validate` skill (`.claude/commands/trackers/validate.md`) surfaces it; and it is now wired into the standing `/scan:full` suite as a fail-closed automatic gate (sprint T6, 2026-06-05), closing the first of the two prior follow-ups. Held below 100% (Review Needed) because one follow-up remains — the deferred cross-file §28.7 checks (see Current next action).
 
 ## Definition of Done
 - [x] A validator exists and is runnable (manually; automatically where possible) — §28.7 — `scripts/trackers/validate.js` + `/trackers:validate` skill
@@ -30,8 +30,8 @@
 - [ ] Wire completion-gate enforcement (§28.6) — DEFERRED (standing-runner gate)
 - [x] Test it fails closed (adversarial / false-green check) — selftest 33/33, incl. fail-closed cases
 - [x] Run it; record result + failures — 12/12 PASS, exit 0 (2026-06-05); recorded in TRACKER.md header
-- [ ] Add the deferred cross-file §28.7 checks — DEFERRED
-- [ ] Wire `/trackers:validate` into the standing scan suite as an enforcement gate — DEFERRED
+- [ ] Add the deferred cross-file §28.7 checks — DEFERRED (sole remaining T4 work)
+- [x] Wire `/trackers:validate` into the standing scan suite as an enforcement gate — DONE (sprint T6, 2026-06-05): `.claude/commands/scan/full.md` "Tracker integrity" block invokes `node scripts/trackers/validate.js`; verified by Read post-edit + `node scripts/checks/scan-coverage.js` → 0 findings
 
 ## Files expected to change
 - A validator script + its registration
@@ -56,7 +56,7 @@
 - Completion-gate enforcement (§28.6); start-of-work and end-of-work checks (§28.2/§28.5); the standing-runner enforcement gate for `/trackers:validate` — source files TBD.
 
 ## Wirings verified
-- None currently recorded — the validator is runnable on-demand but is NOT yet wired into a standing runner / hook (deferred follow-up).
+- Standing scan-suite gate → `.claude/commands/scan/full.md` "Tracker integrity — the enforced-tracker gate" block invokes `node scripts/trackers/validate.js` — Verified Wired (sprint T6, 2026-06-05; Read post-edit + `node scripts/checks/scan-coverage.js` → 0 findings). The completion-gate hook (§28.6) and the per-mode enforcement hooks remain unwired (deferred follow-up).
 
 ## Dependencies
 - T1 (TRACKER.md structure) — satisfied. T3 (full System Inventory + Verification Matrix) would let the cross-file checks validate against a completed inventory, but the single-file engine already runs against the live TRACKER.md.
@@ -72,7 +72,7 @@
 
 ## Open questions
 - Resolved: implemented as a standalone script (`scripts/trackers/validate.js`) surfaced by a `/trackers:validate` skill.
-- Open: which standing runner is the enforcement gate's home (candidate `/scan:full`)?
+- Resolved: the enforcement gate's home is `/scan:full` (wired by sprint T6, 2026-06-05).
 - Open: should the completion gate (§28.6) be a hook (Stop) or a validator-invoked check?
 - Open: how to structure the deferred cross-file checks (read the roadmap + epic + sprint files alongside TRACKER.md) without breaking the pure-`evaluate()` seam discipline?
 
@@ -92,6 +92,13 @@
 - Evidence/references: scripts/trackers/validate.js; .claude/commands/trackers/validate.md.
 
 ## Change log
+### 2026-06-05 — Standing-gate follow-up closed (via sprint T6)
+- Changed: T4 advanced ~85% → ~90% — the "wire `/trackers:validate` into the standing scan suite" follow-up is DONE (delivered by sprint T6: `node scripts/trackers/validate.js` gated in `/scan:full`).
+- Reason: One of T4's two remaining follow-ups landed; only the cross-file §28.7 checks remain before Completed.
+- Affected: this sprint file; ../../TRACKER.md (Active Sprints T4, Enforcement/Validation Requirements, Required Wirings).
+- Previous state: Review Needed, ~85% (two follow-ups: standing gate + cross-file checks).
+- New state: Review Needed, ~90% (one follow-up: cross-file checks).
+
 ### 2026-06-05 — Reconciliation pass (President)
 - Changed: T4 set Review Needed (~85%) — the validation engine + skill exist and pass; two follow-ups remain.
 - Reason: The sprint file claimed Planned 0% while the engine is built and passing.
@@ -119,20 +126,21 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | Tracker validator | Yes | Verified Exists | `scripts/trackers/validate.js` | selftest 33/33; live 12/12 PASS, exit 0 | 2026-06-05 | President |
 | /trackers:validate skill | Yes | Verified Exists | `.claude/commands/trackers/validate.md` | ls/Read | 2026-06-05 | President |
-| Completion-gate wiring (§28.6) | Yes | Missing But Required | standing runner (TBD) | not yet wired | 2026-06-05 | President |
+| Standing scan-suite gate | Yes | Verified Wired | `.claude/commands/scan/full.md` → `node scripts/trackers/validate.js` | Read post-edit + `scan-coverage.js` 0 findings (T6) | 2026-06-05 | President |
+| Completion-gate hook (§28.6) | Yes | Missing But Required | Stop hook (TBD) | not yet wired | 2026-06-05 | President |
 | Cross-file §28.7 checks | Yes | Missing But Required | validator (TBD extension) | not yet built | 2026-06-05 | President |
 
 ## Current next action
-Two follow-ups before Completed: (1) wire `/trackers:validate` into the standing scan suite as an enforcement gate; (2) add the deferred cross-file §28.7 checks — definition-drift; epics-missing-from-roadmap / roadmap-still-using-milestones; TRACKER↔roadmap↔epic↔sprint reconciliation; work-logs-with-no-session-ID; expected-nonexistence; "modes that perform work but don't consult the tracker"; "hooks that should enforce tracking but are missing".
+One follow-up remains before Completed: add the deferred cross-file §28.7 checks — definition-drift; epics-missing-from-roadmap / roadmap-still-using-milestones; TRACKER↔roadmap↔epic↔sprint reconciliation; work-logs-with-no-session-ID; expected-nonexistence; "modes that perform work but don't consult the tracker"; "hooks that should enforce tracking but are missing". (The standing scan-suite enforcement gate is DONE — wired in `/scan:full` by sprint T6 on 2026-06-05.)
 
 ## Completion record
 - Final state: Not yet complete (Review Needed)
-- Percent completion: ~85%
+- Percent completion: ~90%
 - Completion timestamp: n/a
 - Definition of done used: see Definition of Done section above
-- Evidence of completion: `scripts/trackers/validate.js` (selftest 33/33; live 12/12 PASS, exit 0 on 2026-06-05) + `.claude/commands/trackers/validate.md` on disk; TRACKER.md header validation fields set real.
-- Session IDs / dates / agents: 2026-06-05 reconciliation pass / 2026-06-05 / President (engine built in the Wave-1 build session)
+- Evidence of completion: `scripts/trackers/validate.js` (selftest 33/33; live 12/12 PASS, exit 0 on 2026-06-05) + `.claude/commands/trackers/validate.md` on disk; TRACKER.md header validation fields set real; the validator now gated in `.claude/commands/scan/full.md` (T6).
+- Session IDs / dates / agents: 2026-06-05 reconciliation pass + T6 gate-wiring / 2026-06-05 / President (engine built in the Wave-1 build session)
 - Parent epic: E-TRACKER-001
-- Remaining follow-up items: enforcement-gate wiring; deferred cross-file §28.7 checks
+- Remaining follow-up items: deferred cross-file §28.7 checks (the standing scan-suite enforcement gate is now wired via T6)
 - Related untracked work: None
 - ../../TRACKER.md updated: Yes (reconciled 2026-06-05) · Roadmap reconciled: No

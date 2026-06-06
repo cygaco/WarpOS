@@ -159,6 +159,10 @@ Dispatch: REAL — CLI routes via the node runtime (builders + cross-provider re
 β: consulted at the four phase boundaries (plan→design, design→build, gauntlet→release, release→retro)
 ```
 
+### Step 2.5: Start-of-work — consult TRACKER.md
+
+Before running the sprint (substantial long-running work), read `TRACKER.md` (spec §7.2 / §28.1) and determine whether this sprint belongs to an **active** epic/sprint, a **planned** one, **untracked** work, or a **new** epic/sprint that must be created. Confirm the relevant epic/sprint's current state, next action, blockers, and that its `/trackers/` file exists; create a missing tracker file before starting. The sprint must not begin from memory alone; meaningful work outside a tracked epic/sprint is recorded in `UNTRACKED_WORK.md` (§7.9). (This is the tracker-consult step only — it does not alter the α+ε+β persistent-team setup in Steps 1.5/1.75.)
+
 ### Step 3: Run the sprint
 
 Sprint mode is driven by **`/sprint:full`** (the orchestrator that chains the five phases under a

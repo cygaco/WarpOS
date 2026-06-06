@@ -46,6 +46,10 @@ node scripts/mode-set.js oneshot --by alpha --lock-owner delta --active-build "$
 
 The lock blocks transitions until Delta halts and clears it (Delta writes `--lock-owner ""` on halt). If a stale lock blocks you, halt the build first or pass `--force`.
 
+### Step 2.5: Start-of-work — consult TRACKER.md
+
+Before handing off to Delta, read `TRACKER.md` (spec §7.2 / §28.1) and determine whether this skeleton build belongs to an **active** epic/sprint, a **planned** one, **untracked** work, or a **new** epic/sprint that must be created. A oneshot build is meaningful long-running work — it must not start from memory alone; if it falls outside a tracked epic/sprint, record it in `UNTRACKED_WORK.md` (§7.9). This runs while still Alpha, before the Delta handoff.
+
 ### Step 3: Set mode context
 
 Acknowledge the mode switch:

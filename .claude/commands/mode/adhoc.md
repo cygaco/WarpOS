@@ -45,6 +45,10 @@ node scripts/mode-set.js adhoc --by alpha
 
 If the prior mode is `oneshot` with an `activeBuild`, the CLI refuses — halt the build first.
 
+### Step 1.6: Start-of-work — consult TRACKER.md
+
+Before substantial long-running work, read `TRACKER.md` (spec §7.2 / §28.1) and determine whether the feature belongs to an **active** epic/sprint, a **planned** one, **untracked** work, or a **new** epic/sprint that must be created. Do not begin meaningful build work from memory alone. Meaningful work performed outside a tracked epic/sprint is recorded in `UNTRACKED_WORK.md` (§7.9).
+
 ### Step 1.75: Classify any existing team state (Phase 0 workstream I)
 
 Before spawning a new team, classify the current team state. The team

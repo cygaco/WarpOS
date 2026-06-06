@@ -12,7 +12,7 @@
 - **Scope:** New `TRACKER.md` per §5; `How to Use` §7; authoritative Definitions §8; System Inventory §9; Verification Matrix §10; state model §19; percent rules §20; language rules §21; epic/sprint tracker files §22/§23; session/change/evidence logging §24–§26; `UNTRACKED_WORK.md` §18; roadmap milestones→epics §29; templates §35; validation §28.7; mode wiring §28.1/§34; enforcement §28.
 - **Out of scope:** Product-feature work; non-tracking framework backlog (0.16–0.18 milestones remain in `ROADMAP.md`); shipping the brief to downstream products (it is a runtime-working-doc, UW-003).
 - **Current state:** Active
-- **Percent completion:** ~50% — 3 of 6 sprints done. T1 (the enforced `TRACKER.md` keystone, all 34 §5 sections + ~50 definitions, replacing the interim tracker) and T2 (the `/trackers/` tree + 10 templates + `UNTRACKED_WORK.md` + this epic file + T1–T6 sprint files) are Completed and Verified Exists on disk. T4's validation engine (`scripts/trackers/validate.js`) is built and passing (selftest 33/33; live 12/12 PASS on 2026-06-05) and the `/trackers:validate` skill exists — T4 is Review Needed (enforcement-gate wiring + deferred cross-file checks remain). Still not built: System Inventory/Verification Matrix completion (T3), roadmap milestones→epics migration (T5), and mode wiring (T6). Conservative per §20.
+- **Percent completion:** ~65% — 4 of 6 sprints done. T1 (the enforced `TRACKER.md` keystone, all 34 §5 sections + ~50 definitions, replacing the interim tracker), T2 (the `/trackers/` tree + 10 templates + `UNTRACKED_WORK.md` + this epic file + T1–T6 sprint files), and T6 (start-of-work tracker-consult in all four live modes + the validator wired into the standing `/scan:full` suite as a fail-closed gate) are Completed and Verified on disk. T4's validation engine (`scripts/trackers/validate.js`) is built, passing (selftest 33/33; live 12/12 PASS on 2026-06-05), and now gated in `/scan:full` — T4 is Review Needed (only the deferred cross-file checks remain). Still not built: System Inventory/Verification Matrix completion (T3) and roadmap milestones→epics migration (T5). Conservative per §20.
 
 ## Definition of Done
 <!-- From spec §37. All must be satisfied + evidenced before 100%. -->
@@ -27,8 +27,8 @@
 - [x] State language standardized; percent rules documented; update triggers documented (§19/§20/§27) (T1)
 - [ ] Required paths verified; required nonexistence verified; required wirings verified (§28.4/§34) — PARTIAL: paths verified (T2/this pass); wirings Unknown (T6)
 - [ ] System Inventory exists and is current (§9); Verification Matrix exists and is current (§10) — SEEDED + reconciled 2026-06-05; full disk-verification is T3
-- [ ] Required validators exist and are runnable (§28.7) — PARTIAL: single-file engine built + passing (T4 Review Needed); cross-file checks + standing gate deferred
-- [ ] Enforcement wired into sprint mode AND all other relevant modes (§28.1/§34) — T6
+- [ ] Required validators exist and are runnable (§28.7) — PARTIAL: single-file engine built + passing AND gated in `/scan:full` (T6); cross-file checks deferred (T4 Review Needed)
+- [ ] Enforcement wired into sprint mode AND all other relevant modes (§28.1/§34) — PARTIAL: all four LIVE enterable modes (solo/adhoc/oneshot/sprint) carry a start-of-work tracker-consult step + the validator is a standing `/scan:full` gate (T6 Completed); the non-enterable operational postures + hard enforcement hooks remain (residual T6 / deferred T4)
 - [x] President documented as owner; tracker documented as higher authority than Claude memory (§3/§4) (T1)
 - [ ] Validation has been run; failures fixed or tracked; Known Gaps section empty-with-evidence or fully tracked (§28.7/§28.8/§36) — PARTIAL: single-file validation run 12/12 PASS on 2026-06-05; Known Gaps G-1/G-2/G-3 tracked; cross-file checks deferred
 - [ ] System is resumable from tracker files alone, without chat memory (§2/§37) — PARTIAL: keystone + scaffold + per-item files + passing validator enable it; completes when T3/T5/T6 land
@@ -40,9 +40,9 @@
 - [T1 — tracker keystone](../sprints/T1-tracker-keystone.md) — Completed (100%) — new TRACKER.md + ~50 definitions, validated 12/12
 - [T2 — templates and dirs](../sprints/T2-templates-and-dirs.md) — Completed (100%) — scaffold dirs + 10 templates + UNTRACKED_WORK.md + epic/sprint files
 - [T3 — system inventory + verification matrix](../sprints/T3-system-inventory-and-verification-matrix.md) — Planned
-- [T4 — validation engine + enforcement](../sprints/T4-validation-engine-and-enforcement.md) — Review Needed (~85%) — engine built + passing (selftest 33/33, live 12/12); enforcement-gate wiring + cross-file checks remain
+- [T4 — validation engine + enforcement](../sprints/T4-validation-engine-and-enforcement.md) — Review Needed (~90%) — engine built + passing (selftest 33/33, live 12/12) + now gated in `/scan:full` (T6); only the deferred cross-file §28.7 checks remain
 - [T5 — roadmap milestones → epics](../sprints/T5-roadmap-milestones-to-epics.md) — Planned
-- [T6 — mode wiring](../sprints/T6-mode-wiring.md) — Planned
+- [T6 — mode wiring + scan-suite gate](../sprints/T6-mode-wiring.md) — Completed (100%) — start-of-work tracker-consult in all four live modes + the validator wired into `/scan:full` as a fail-closed gate
 
 ## Dependencies
 - The interim `TRACKER.md` (agent-system rewrite burndown) must be deleted/unwired and replaced — a coordinated cutover, not a silent overwrite (§3, §32).
@@ -95,6 +95,13 @@
 - Evidence/references: TRACKER.md (validated 12/12); Wave-1 artifacts on disk.
 
 ## Change log
+### 2026-06-05 — T6 Completed; epic advanced to ~65% (President via systems builder)
+- Changed: Sprint T6 (mode-wiring + scan-suite gate) Completed — start-of-work tracker-consult wired into all four live modes + the validator gated in `/scan:full`; T4 advanced to ~90% (standing-gate follow-up closed); epic percent ~50% → ~65%; related-sprints + Verification-log mode-wiring rows + DoD validator/enforcement items updated.
+- Reason: Deliver sprint T6 + the standing-gate half of T4's enforcement tail of `agentic_os_tracker_system_improvements.md`.
+- Affected: this epic file; ../../TRACKER.md; trackers/sprints/T6 + T4 files; the 4 mode skills + `scan/full.md`.
+- Previous state: Active, ~50%; T6 Planned; mode wiring Unknown.
+- New state: Active, ~65%; T6 Completed; 4 live modes + standing gate Verified Wired.
+
 ### 2026-06-05 — Reconciliation pass (President)
 - Changed: Reconciled epic state to disk — T1/T2 Completed, T4 Review Needed, percent 15% → ~50%, DoD items checked off, Verification log flipped to Verified Exists.
 - Reason: The epic file had drifted from reality during the parallel build wave.
@@ -128,19 +135,21 @@
 | Verification Matrix (§10) | Yes | Exists But Incomplete | TRACKER.md | seeded + reconciled; full disk-verification is T3 | 2026-06-05 | President |
 | Validation engine (§28.7) | Yes | Verified Exists | `scripts/trackers/validate.js` | selftest 33/33; live 12/12 PASS, exit 0 | 2026-06-05 | President |
 | /trackers:validate skill | Yes | Verified Exists | `.claude/commands/trackers/validate.md` | ls/Read | 2026-06-05 | President |
-| Mode wiring (§34) | Yes | Unknown | modes / hooks | not yet inspected — T6 | 2026-06-05 | Alpha |
+| Mode wiring — 4 live modes (§28.1) | Yes | Verified Wired | `.claude/commands/mode/{solo,adhoc,oneshot,sprint}.md` | start-of-work consult step; Read post-edit | 2026-06-05 | President |
+| Standing scan-suite gate (§28.7) | Yes | Verified Wired | `.claude/commands/scan/full.md` → `node scripts/trackers/validate.js` | Read post-edit + `scan-coverage.js` 0 findings | 2026-06-05 | President |
+| Mode wiring — non-enterable postures + hard hooks (§34) | Yes | Unknown / Missing But Required | modes / hooks | residual T6 / deferred T4 | 2026-06-05 | President |
 
 ## Current next action
-Run T3 (fill System Inventory + Verification Matrix from disk), T5 (migrate ROADMAP milestones→epics + create epic tracker files), and T6 (wire tracker checks into all modes); finish T4 (wire `/trackers:validate` into the standing scan suite as an enforcement gate + add the deferred cross-file §28.7 checks) and move it from Review Needed to Completed.
+Run T3 (fill System Inventory + Verification Matrix from disk) and T5 (migrate ROADMAP milestones→epics + create epic tracker files); finish T4 (add the deferred cross-file §28.7 checks) and move it from Review Needed to Completed. (T6 — mode-wiring + the standing scan-suite gate — is Completed.)
 
 ## Completion record
-- Final state: Not yet complete (Active, ~50%)
-- Percent completion: ~50%
+- Final state: Not yet complete (Active, ~65%)
+- Percent completion: ~65%
 - Completion timestamp: n/a
 - Definition of done used: see Definition of Done section above (spec §37)
-- Evidence of completion: n/a — in progress (T1/T2 Completed, T4 Review Needed; see TRACKER.md Completed Sprints + Active Sprints)
-- Session IDs / dates / agents: 2026-06-05-tracker-scaffold + 2026-06-05 reconciliation pass / 2026-06-05 / Alpha + President
-- Related completed sprints: T1 (tracker keystone), T2 (templates + dirs)
-- Remaining follow-up items: T3 (inventory/matrix), T5 (roadmap migration), T6 (mode wiring); T4 enforcement-gate wiring + cross-file checks
+- Evidence of completion: n/a — in progress (T1/T2/T6 Completed, T4 Review Needed; see TRACKER.md Completed Sprints + Active Sprints)
+- Session IDs / dates / agents: 2026-06-05-tracker-scaffold + 2026-06-05 reconciliation pass + 2026-06-05 T6 gate-wiring / 2026-06-05 / Alpha + President
+- Related completed sprints: T1 (tracker keystone), T2 (templates + dirs), T6 (mode wiring + scan-suite gate)
+- Remaining follow-up items: T3 (inventory/matrix), T5 (roadmap migration); T4 cross-file §28.7 checks (the standing scan-suite gate is now wired via T6)
 - Related untracked work: UW-001, UW-002, UW-003 in ../../UNTRACKED_WORK.md
 - ../../TRACKER.md updated: Yes (reconciled 2026-06-05) · Roadmap reconciled: No (T5)
