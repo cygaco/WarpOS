@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-06T08:32:47.060Z",
+  "generatedAt": "2026-06-06T09:03:29.076Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.14.0",
   "migrations": [],
@@ -3316,8 +3316,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/trackers/validate.js",
-      "sha256": "1f35f08862bcbd5ad165faad7479175f735e072f0e9aabeea2011da95e27edd0",
-      "installedSha": "1f35f08862bcbd5ad165faad7479175f735e072f0e9aabeea2011da95e27edd0"
+      "sha256": "0dc8f612a9f980becd0560d4bbbc8e631dd2260559c8bcf0d5ac78bbdfd0d6f8",
+      "installedSha": "0dc8f612a9f980becd0560d4bbbc8e631dd2260559c8bcf0d5ac78bbdfd0d6f8"
     },
     "scripts/tools/emit-attestation-events.js": {
       "owner": "framework",

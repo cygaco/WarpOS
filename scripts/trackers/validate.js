@@ -37,6 +37,25 @@
  *                              the §8 Definitions section.
  *   (l) required-paths       — the §33 required files/dirs/templates exist.
  *
+ * CROSS-FILE CHECKS (§28.7 — m–t; each fail-closed: a missing/unverified seam
+ * FAILs, never silently passes):
+ *   (m) roadmap-epic-based      — ROADMAP.md has a `## Epics` heading and any
+ *                                 `## …Milestones` heading is marked DEPRECATED.
+ *   (n) epics-in-roadmap        — every `trackers/epics/E-*.md` epic ID is
+ *                                 referenced in ROADMAP.md.
+ *   (o) modes-consult-tracker   — each of solo/adhoc/oneshot/sprint has a
+ *                                 start-of-work "consult TRACKER.md" step.
+ *   (p) work-log-session-id     — every Session-Logging session entry names a
+ *                                 session ID or carries the backfill sentinel.
+ *   (q) expected-nonexistence   — every Verification-Matrix "Verified
+ *                                 Nonexistent" path is actually absent on disk.
+ *   (r) cross-file-reconciliation — a TRACKER item's state agrees with the
+ *                                 state recorded in its linked epic/sprint file.
+ *   (s) hooks-enforce-or-tracked — an expected enforcement hook either exists OR
+ *                                 its absence is acknowledged in Known Gaps.
+ *   (t) definition-drift        — no term carries two materially-different
+ *                                 `## Definition:` blocks.
+ *
  * FAIL-CLOSED CONTRACT:
  *   - evaluate() returns a structured result; it NEVER throws on malformed
  *     tracker content — malformed input surfaces as a FAIL, never a silent pass.
@@ -479,6 +498,150 @@ function parsePercent(val) {
 const isActive = (s) => /\bactive\b/i.test(s || "");
 const isCompleted = (s) => /\b(completed|complete|done)\b/i.test(s || "");
 
+// ── Cross-file (§28.7) helpers (pure) ─────────────────────────────────────────
+
+// The four live, enterable modes that MUST consult the tracker at start-of-work.
+const TRACKER_CONSULT_MODES = ["solo", "adhoc", "oneshot", "sprint"];
+
+// The expected start-of-work / end-of-work / completion-gate enforcement hooks
+// for the enforced-tracker system. These are HARD enforcement points distinct
+// from the generic session/skill/sprint trackers; today they are unbuilt and the
+// gap is acknowledged in Known Gaps (G-2) — check (s) stays green while tracked.
+const EXPECTED_ENFORCEMENT_HOOKS = [
+  "scripts/hooks/tracker-start-of-work.js",
+  "scripts/hooks/tracker-completion-gate.js",
+];
+
+/**
+ * Normalize a free-text state ("Active.", "Completed", "Review Needed.", "Done")
+ * to a canonical token so a TRACKER item state and its linked file's state can be
+ * compared without tripping on punctuation/synonyms. Unknown → the cleaned text.
+ */
+function normState(s) {
+  const t = String(s == null ? "" : s)
+    .replace(/[`*_.]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase();
+  if (/\b(completed|complete|done|shipped|finished)\b/.test(t)) return "completed";
+  if (/\breview\b/.test(t)) return "review";
+  if (/\b(cancelled|canceled|superseded|abandoned)\b/.test(t)) return "cancelled";
+  if (/\b(active|in progress|in-progress|ongoing)\b/.test(t)) return "active";
+  if (/\b(planned|not started|backlog|proposed)\b/.test(t)) return "planned";
+  if (/\bblocked\b/.test(t)) return "blocked";
+  return t;
+}
+
+/**
+ * Derive a stable epic ID (e.g. "E-TRACKER-001") from an epic tracker filename
+ * like "E-TRACKER-001-enforced-tracker-system.md". The ID is `E-` + one-or-more
+ * WORD- segments + a numeric segment; the trailing `-slug` is dropped. Returns ""
+ * if the name does not match the epic-ID shape.
+ */
+function epicIdFromFilename(name) {
+  const base = String(name || "").replace(/\.md$/i, "");
+  const m = /^E-(?:[A-Za-z0-9]+-)*[0-9]{2,}/.exec(base);
+  return m ? m[0] : "";
+}
+
+/** Does a ROADMAP have an epic-based registry and no LIVE (non-deprecated) Milestones heading? */
+function roadmapIsEpicBased(roadmap) {
+  const md = String(roadmap == null ? "" : roadmap);
+  const hasEpics = /^##\s+Epics\b/im.test(md);
+  let liveMilestones = false;
+  for (const line of md.split(/\r?\n/)) {
+    if (/^##\s+/.test(line) && /milestones/i.test(line)) {
+      if (!/deprecated/i.test(line)) liveMilestones = true;
+    }
+  }
+  return { hasEpics, liveMilestones };
+}
+
+/**
+ * Parse the session-log entries from the "Session Logging Rules" section body.
+ * Each non-empty paragraph whose text looks like a session-log entry (it names a
+ * "session log" or carries a "Session ID:" field) is one entry. Returns the array
+ * of raw entry strings.
+ */
+function parseSessionLogEntries(tracker) {
+  const sections = splitSections(String(tracker == null ? "" : tracker), 1);
+  const sec = sections.find((s) =>
+    headingMatchesSection(s.headingText, "Session Logging Rules")
+  );
+  if (!sec) return [];
+  // An ENTRY is a paragraph that records an actual logged session: it carries a
+  // `Session ID:` field OR is introduced by a "… session log:" label. The
+  // section's rules prose ("must include: session ID; date; …") is NOT an entry —
+  // it lists required fields but has no `Session ID:` field of its own.
+  return sec.body
+    .split(/\n\s*\n/)
+    .map((p) => p.trim())
+    .filter((p) => {
+      if (!p) return false;
+      if (/session id\s*[:：]/i.test(p)) return true; // carries a Session ID: field
+      // …or opens with a "<label> session log:" entry header (not the rules prose,
+      // which begins "Every meaningful work session … must be logged.").
+      const head = p.split(/\r?\n/)[0].slice(0, 48);
+      return /\bsession log\b[^.\n]*[:：]/i.test(head);
+    });
+}
+
+/** A session-log entry is well-identified if it names a session ID or carries the backfill sentinel. */
+function sessionEntryIdentified(entry) {
+  const e = String(entry || "");
+  if (/to be backfilled/i.test(e)) return true; // explicit sentinel
+  // A real session ID after "Session ID:" — something that is not just the
+  // sentinel and not empty. Accept any non-trivial token (e.g. SP-2026..., a uuid).
+  const m = /session id\s*[:：]\s*([^·\n]+)/i.exec(e);
+  if (m) {
+    const v = m[1].trim().replace(/[.;]+$/, "");
+    if (v && !/^to be backfilled/i.test(v)) return true;
+  }
+  return false;
+}
+
+/** Extract { term → [firstSentence, ...] } from all `## Definition: <Term>` blocks in the tracker. */
+function parseDefinitionBlocks(tracker) {
+  const out = {};
+  const sections = splitSections(String(tracker == null ? "" : tracker), 2);
+  for (const s of sections) {
+    const m = /^definition:\s*(.+)$/i.exec(s.headingText.trim());
+    if (!m) continue;
+    const term = m[1].replace(/[`*_]/g, "").trim().toLowerCase();
+    if (!term) continue;
+    // First sentence of the definition body (drop a leading "Definition:" label).
+    const body = String(s.body || "")
+      .replace(/^\s*definition\s*[:：]\s*/i, "")
+      .trim();
+    const firstSentence = (body.split(/(?<=[.!?])\s/)[0] || body).trim();
+    (out[term] = out[term] || []).push(firstSentence);
+  }
+  return out;
+}
+
+/** Light "materially different" comparison of two definition first-sentences. */
+function defsMateriallyDiffer(a, b) {
+  const norm = (s) =>
+    String(s || "")
+      .toLowerCase()
+      .replace(/[`*_]/g, "")
+      .replace(/[^a-z0-9 ]+/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  const na = norm(a);
+  const nb = norm(b);
+  if (na === nb) return false;
+  // Jaccard word overlap — high overlap = same definition reworded, not drift.
+  const wa = new Set(na.split(" ").filter(Boolean));
+  const wb = new Set(nb.split(" ").filter(Boolean));
+  if (wa.size === 0 || wb.size === 0) return na !== nb;
+  let inter = 0;
+  for (const w of wa) if (wb.has(w)) inter++;
+  const union = wa.size + wb.size - inter;
+  const jaccard = union === 0 ? 1 : inter / union;
+  return jaccard < 0.5;
+}
+
 // ── PURE CORE ─────────────────────────────────────────────────────────────────
 /**
  * Evaluate the tracker system. All seams injected — NO fs, NO cwd.
@@ -491,6 +654,16 @@ const isCompleted = (s) => /\b(completed|complete|done)\b/i.test(s || "");
  * @param {object} [input.linkTargets]  map { "<repo-relative link>": boolean-exists }.
  *                                      A link present-as-key with false = broken.
  * @param {object} [input.pathExists]   map { "<§33 path>": boolean-exists }.
+ *
+ * Cross-file (§28.7) seams — all OPTIONAL, all fail-closed when absent:
+ * @param {string}  [input.roadmap]        raw ROADMAP.md ("" if missing).
+ * @param {boolean} [input.roadmapPresent] whether ROADMAP.md exists.
+ * @param {string[]} [input.epicIds]       epic IDs from trackers/epics/E-*.md filenames.
+ * @param {object}  [input.modeConsults]   map { solo,adhoc,oneshot,sprint → bool }.
+ * @param {object}  [input.nonexistence]   map { "<path>" → actually-absent bool } for
+ *                                         every Verified-Nonexistent matrix path.
+ * @param {object}  [input.itemFileStates] map { "<item label>" → state in its linked file }.
+ * @param {object}  [input.enforcementHooks] map { "<hook path>" → exists bool }.
  * @returns {{ ok:boolean, checks:Array<{check,status,details}>, fatal:boolean }}
  *
  * NEVER throws on malformed tracker content — a parse failure becomes a FAIL.
@@ -511,6 +684,19 @@ function evaluate(input) {
       : trackerRaw.length > 0;
   const linkTargets = (input && input.linkTargets) || {};
   const pathExists = (input && input.pathExists) || {};
+
+  // Cross-file seams (optional; absence is handled fail-closed per check).
+  const roadmapRaw = input && input.roadmap != null ? String(input.roadmap) : "";
+  const roadmapPresent =
+    input && typeof input.roadmapPresent === "boolean"
+      ? input.roadmapPresent
+      : roadmapRaw.length > 0;
+  const epicIds = input && Array.isArray(input.epicIds) ? input.epicIds : null;
+  const modeConsults = input && input.modeConsults ? input.modeConsults : null;
+  const nonexistence = input && input.nonexistence ? input.nonexistence : null;
+  const itemFileStates = input && input.itemFileStates ? input.itemFileStates : null;
+  const enforcementHooks =
+    input && input.enforcementHooks ? input.enforcementHooks : null;
 
   let sections;
   let items;
@@ -712,6 +898,168 @@ function evaluate(input) {
     add("required-paths", details);
   }
 
+  // ── CROSS-FILE CHECKS (§28.7 — m–t) ────────────────────────────────────────
+
+  // (m) roadmap-epic-based — ROADMAP has a `## Epics` registry and no LIVE
+  // (non-deprecated) Milestones heading. Absent roadmap → FAIL (fail-closed).
+  {
+    const details = [];
+    if (!roadmapPresent) {
+      details.push("ROADMAP.md is missing — cannot confirm an epic-based roadmap (fail-closed)");
+    } else {
+      const { hasEpics, liveMilestones } = roadmapIsEpicBased(roadmapRaw);
+      if (!hasEpics) details.push('ROADMAP.md has no `## Epics` heading — roadmap is not epic-based');
+      if (liveMilestones)
+        details.push('ROADMAP.md has a `## …Milestones` heading not marked DEPRECATED');
+    }
+    add("roadmap-epic-based", details);
+  }
+
+  // (n) epics-in-roadmap — every epic file's ID is referenced in ROADMAP.md.
+  // No epicIds seam, or absent roadmap → FAIL (fail-closed).
+  {
+    const details = [];
+    if (epicIds === null) {
+      details.push("epic-ID seam not provided — cannot verify epics are in the roadmap (fail-closed)");
+    } else if (!roadmapPresent) {
+      details.push("ROADMAP.md is missing — cannot verify epics are referenced (fail-closed)");
+    } else {
+      for (const id of epicIds) {
+        if (!id) {
+          details.push("an epic file has an unparseable epic ID (fail-closed)");
+          continue;
+        }
+        if (!roadmapRaw.includes(id)) {
+          details.push(`epic ${id} is not referenced in ROADMAP.md`);
+        }
+      }
+    }
+    add("epics-in-roadmap", details);
+  }
+
+  // (o) modes-consult-tracker — each of the 4 live modes has a start-of-work
+  // tracker-consult step. Missing seam, or any mode missing/false → FAIL.
+  {
+    const details = [];
+    if (modeConsults === null) {
+      details.push("mode-consult seam not provided — cannot verify mode wiring (fail-closed)");
+    } else {
+      for (const mode of TRACKER_CONSULT_MODES) {
+        if (modeConsults[mode] !== true) {
+          details.push(`mode "${mode}" has no start-of-work TRACKER.md consult step`);
+        }
+      }
+    }
+    add("modes-consult-tracker", details);
+  }
+
+  // (p) work-log-session-id — every Session-Logging entry names a session ID or
+  // carries the explicit backfill sentinel.
+  {
+    const details = [];
+    if (!trackerPresent) {
+      details.push("TRACKER.md missing — cannot verify session-log entries (fail-closed)");
+    } else {
+      const entries = parseSessionLogEntries(trackerRaw);
+      for (const e of entries) {
+        if (!sessionEntryIdentified(e)) {
+          const head = e.split(/\n/)[0].slice(0, 60);
+          details.push(`session-log entry names no session ID and lacks the backfill sentinel: "${head}…"`);
+        }
+      }
+    }
+    add("work-log-session-id", details);
+  }
+
+  // (q) expected-nonexistence — every Verified-Nonexistent path is actually
+  // absent on disk. Missing seam, or any such path EXISTS/unverified → FAIL.
+  {
+    const details = [];
+    if (nonexistence === null) {
+      details.push("expected-nonexistence seam not provided — cannot verify (fail-closed)");
+    } else {
+      for (const [p, absent] of Object.entries(nonexistence)) {
+        if (absent !== true) {
+          details.push(`path marked "Verified Nonexistent" actually EXISTS (or is unverified): ${p}`);
+        }
+      }
+    }
+    add("expected-nonexistence", details);
+  }
+
+  // (r) cross-file-reconciliation — a TRACKER item's state agrees with the state
+  // recorded in its linked epic/sprint FILE. Only items WITH a linked file are
+  // reconciled; a linked-file state that could not be read → FAIL (fail-closed).
+  {
+    const details = [];
+    if (itemFileStates === null) {
+      details.push("item-file-state seam not provided — cannot reconcile cross-file states (fail-closed)");
+    } else {
+      for (const it of items) {
+        if (!Object.prototype.hasOwnProperty.call(itemFileStates, it.label)) continue; // no linked file
+        const fileState = itemFileStates[it.label];
+        if (fileState == null || fileState === false) {
+          details.push(`${it.kind} ${it.label}: linked file state unverified (fail-closed)`);
+          continue;
+        }
+        const a = normState(it.state);
+        const b = normState(fileState);
+        if (a !== b) {
+          details.push(`${it.kind} ${it.label}: TRACKER state "${it.state}" (${a}) disagrees with file state "${fileState}" (${b})`);
+        }
+      }
+    }
+    add("cross-file-reconciliation", details);
+  }
+
+  // (s) hooks-enforce-or-tracked — an expected enforcement hook either EXISTS or
+  // its absence is acknowledged in `# Known Gaps and Open Flaws`. FAILs only when
+  // a hook is missing AND the gap is not acknowledged (enforcement-debt pattern).
+  {
+    const details = [];
+    if (enforcementHooks === null) {
+      details.push("enforcement-hook seam not provided — cannot verify enforcement hooks (fail-closed)");
+    } else {
+      const gapsSec = sections.find((s) =>
+        headingMatchesSection(s.headingText, "Known Gaps and Open Flaws")
+      );
+      const gapsText = (gapsSec ? gapsSec.body : "").toLowerCase();
+      // The gap is acknowledged when the Known-Gaps text mentions an enforcement
+      // hook for the start-of-work / end-of-work / completion-gate points.
+      const gapAcknowledged =
+        /hook/.test(gapsText) &&
+        /(start-of-work|end-of-work|completion-gate|completion gate|enforcement hook)/.test(gapsText);
+      for (const [hook, exists] of Object.entries(enforcementHooks)) {
+        if (exists === true) continue; // present → fine
+        if (!gapAcknowledged) {
+          details.push(`expected enforcement hook missing and NOT acknowledged in Known Gaps: ${hook}`);
+        }
+      }
+    }
+    add("hooks-enforce-or-tracked", details);
+  }
+
+  // (t) definition-drift — no term carries two materially-different
+  // `## Definition:` blocks. Light + fail-closed (parse failure → no false pass).
+  {
+    const details = [];
+    if (!trackerPresent) {
+      details.push("TRACKER.md missing — cannot check definition drift (fail-closed)");
+    } else {
+      const defs = parseDefinitionBlocks(trackerRaw);
+      for (const [term, sentences] of Object.entries(defs)) {
+        if (sentences.length < 2) continue;
+        for (let i = 1; i < sentences.length; i++) {
+          if (defsMateriallyDiffer(sentences[0], sentences[i])) {
+            details.push(`term "${term}" has two materially-different definitions: "${sentences[0]}" vs "${sentences[i]}"`);
+            break;
+          }
+        }
+      }
+    }
+    add("definition-drift", details);
+  }
+
   const ok = checks.every((c) => c.status === "PASS");
   return { ok, checks, fatal: false };
 }
@@ -746,6 +1094,90 @@ function resolveLinkExists(link) {
   } catch {
     return false;
   }
+}
+
+/** Read a repo-relative file, or null if it cannot be read (absence/error). */
+function readRepoFile(rel) {
+  try {
+    return fs.readFileSync(path.join(ROOT, rel.replace(/\\/g, "/")), "utf8");
+  } catch {
+    return null;
+  }
+}
+
+/** List basenames in a repo-relative dir, or [] if it does not exist. */
+function listRepoDir(rel) {
+  try {
+    return fs.readdirSync(path.join(ROOT, rel.replace(/\\/g, "/")));
+  } catch {
+    return [];
+  }
+}
+
+/** Does a mode command file contain a start-of-work "consult TRACKER.md" step? */
+function modeConsultsTracker(modeMd) {
+  const md = String(modeMd || "");
+  // A start-of-work tracker-consult: a heading or line that pairs
+  // "Start-of-work" with "consult TRACKER.md", as wired by sprint T6.
+  if (/start-of-work\b[^\n]*\bconsult\b[^\n]*\bTRACKER\.md\b/i.test(md)) return true;
+  // Tolerant fallback: a "consult"/"read" step that names TRACKER.md AND mentions
+  // start-of-work / before-work within the same line.
+  for (const line of md.split(/\r?\n/)) {
+    if (/TRACKER\.md/.test(line) && /(consult|read)/i.test(line) && /(start-of-work|before .*work|begin)/i.test(line)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Parse the Verification-Matrix rows marked "Verified Nonexistent" and return the
+ * set of concrete repo-relative paths each row asserts are absent. The matrix
+ * names paths in backticks; the old mode-tree row lists a brace-expansion
+ * (`.claude/agents/{00-alex,01-adhoc,...}`) which we expand into per-dir paths.
+ */
+function parseVerifiedNonexistentPaths(tracker) {
+  const sections = splitSections(String(tracker == null ? "" : tracker), 1);
+  const matrix = sections.find((s) =>
+    headingMatchesSection(s.headingText, "Verification Matrix")
+  );
+  const inv = sections.find((s) =>
+    headingMatchesSection(s.headingText, "System Inventory")
+  );
+  const paths = new Set();
+  for (const sec of [matrix, inv]) {
+    if (!sec) continue;
+    for (const line of sec.body.split(/\r?\n/)) {
+      if (!/verified nonexistent/i.test(line)) continue;
+      for (const m of line.matchAll(/`([^`]+)`/g)) {
+        for (const p of expandBracePaths(m[1])) {
+          const clean = p.replace(/\\/g, "/").replace(/^\.\//, "").replace(/\/+$/g, "");
+          if (clean && /\//.test(clean)) paths.add(clean);
+        }
+      }
+    }
+  }
+  return [...paths];
+}
+
+/** Expand a shell-style brace path `a/{x,y}` into ["a/x","a/y"]; passthrough otherwise. */
+function expandBracePaths(p) {
+  const s = String(p || "").trim();
+  const m = /^(.*)\{([^}]+)\}(.*)$/.exec(s);
+  if (!m) return [s];
+  const [, pre, inner, post] = m;
+  return inner.split(",").map((part) => `${pre}${part.trim()}${post}`);
+}
+
+/** Read the `- **Current state:**` / `Final state:` value from a tracker item file. */
+function fileStateOf(rel) {
+  const md = readRepoFile(rel);
+  if (md == null) return null;
+  for (const line of md.split(/\r?\n/)) {
+    const m = /^[-*]\s*\**\s*(?:current|final)\s+state\s*\**\s*[:：]\s*(.+)$/i.exec(line.trim());
+    if (m) return m[1].replace(/[`*]/g, "").trim();
+  }
+  return null;
 }
 
 function run() {
@@ -784,12 +1216,65 @@ function run() {
   const pathExists = {};
   for (const p of REQUIRED_PATHS) pathExists[p] = existsRepo(p);
 
-  const res = evaluate({ tracker, trackerPresent, items, linkTargets, pathExists });
+  // ── Cross-file (§28.7) seams, built from disk ──────────────────────────────
+
+  // (m) ROADMAP.md.
+  const roadmap = readRepoFile("ROADMAP.md");
+  const roadmapPresent = roadmap != null;
+
+  // (n) epic IDs from trackers/epics/E-*.md filenames.
+  const epicIds = listRepoDir("trackers/epics")
+    .filter((f) => /^E-.*\.md$/i.test(f))
+    .map(epicIdFromFilename);
+
+  // (o) start-of-work tracker-consult per live mode.
+  const modeConsults = {};
+  for (const mode of TRACKER_CONSULT_MODES) {
+    const md = readRepoFile(`.claude/commands/mode/${mode}.md`);
+    modeConsults[mode] = md != null && modeConsultsTracker(md);
+  }
+
+  // (q) every Verified-Nonexistent path → actually-absent bool.
+  const nonexistence = {};
+  for (const p of parseVerifiedNonexistentPaths(tracker)) {
+    nonexistence[p] = !existsRepo(p) && !existsRepo(p + "/");
+  }
+
+  // (r) each item's linked-file state (only items whose link points to a real file).
+  const itemFileStates = {};
+  for (const it of items) {
+    const link = it.trackerLink;
+    if (!link) continue;
+    const rel = link.replace(/\\/g, "/").replace(/^\.\//, "").replace(/^\//, "");
+    if (!/(^|\/)trackers\//.test(rel) || !/\.md$/i.test(rel)) continue; // file, under trackers/
+    if (!existsRepo(rel)) continue; // (d) reports a missing tracker file; don't double-fail here
+    itemFileStates[it.label] = fileStateOf(rel); // null if state field unreadable → (r) fail-closed
+  }
+
+  // (s) expected enforcement hooks → exists bool.
+  const enforcementHooks = {};
+  for (const h of EXPECTED_ENFORCEMENT_HOOKS) enforcementHooks[h] = existsRepo(h);
+
+  const res = evaluate({
+    tracker,
+    trackerPresent,
+    items,
+    linkTargets,
+    pathExists,
+    roadmap: roadmap || "",
+    roadmapPresent,
+    epicIds,
+    modeConsults,
+    nonexistence,
+    itemFileStates,
+    enforcementHooks,
+  });
   res.fatal = false;
   res.summary = {
     sections: REQUIRED_SECTIONS.length,
     links: links.length,
     requiredPaths: REQUIRED_PATHS.length,
+    epics: epicIds.length,
     root: ROOT,
   };
   return res;
@@ -814,7 +1299,7 @@ function report(res) {
   }
   if (res.summary) {
     lines.push(
-      `  (${res.summary.links} link(s) · ${res.summary.requiredPaths} §33 path(s) · root ${res.summary.root})`
+      `  (${res.summary.links} link(s) · ${res.summary.requiredPaths} §33 path(s) · ${res.summary.epics != null ? res.summary.epics + " epic(s) · " : ""}root ${res.summary.root})`
     );
   }
   return lines.join("\n");
@@ -911,6 +1396,27 @@ function selftest() {
     "trackers/epics/E-DONE-000-z.md": true,
   };
 
+  // A coherent Session-Logging entry: a real session log with a Session ID field.
+  const SESSION_LOG_BODY = [
+    "Every meaningful work session on an epic or sprint must be logged. Each entry must include: session ID; date; work performed.",
+    "",
+    "Seed session log (keystone-authoring session): Session ID: to be backfilled · Date: 2026-06-05 · Work performed: authored the tracker.",
+  ].join("\n");
+
+  // A coherent Known-Gaps body that ACKNOWLEDGES the missing enforcement hooks so
+  // check (s) stays green under the enforcement-debt pattern.
+  const KNOWN_GAPS_BODY = [
+    "### G-1 — Tracker enforcement hooks pending",
+    "- Description: the start-of-work / completion-gate enforcement hook is not yet built; tracked here so the absence is visible.",
+    "- Current state: Recorded; no enforcement hook in `.claude/hooks` yet.",
+  ].join("\n");
+
+  // Per-section coherent bodies for sections that carry parsed cross-file content.
+  const SECTION_BODIES = {
+    "Session Logging Rules": SESSION_LOG_BODY,
+    "Known Gaps and Open Flaws": KNOWN_GAPS_BODY,
+  };
+
   // Render an item map back into a faithful markdown tracker.
   const renderTracker = (itemsBySection) =>
     REQUIRED_SECTIONS.map((s) => {
@@ -922,6 +1428,9 @@ function selftest() {
             `## Definition: ${term}\nDefinition: operational definition of ${term}.\nWhy it matters: it matters.\nWhere it applies: everywhere.`
         ).join("\n\n");
         return `# ${s}\n\n${defs}\n`;
+      }
+      if (Object.prototype.hasOwnProperty.call(SECTION_BODIES, s)) {
+        return `# ${s}\n\n${SECTION_BODIES[s]}\n`;
       }
       const its = itemsBySection[s];
       if (its && its.length) {
@@ -943,6 +1452,45 @@ function selftest() {
   const coherentPaths = {};
   for (const p of REQUIRED_PATHS) coherentPaths[p] = true;
 
+  // ── Cross-file (§28.7) coherent seam fixtures ────────────────────────────────
+  // A coherent ROADMAP: an `## Epics` registry, a DEPRECATED Milestones heading,
+  // and a reference to each demo epic ID.
+  const coherentRoadmap = [
+    "# ROADMAP",
+    "",
+    "## Epics",
+    "- E-DEMO-001 — demo epic (active)",
+    "- E-DONE-000 — finished epic (completed)",
+    "",
+    "## 🏛 Milestones — ⚠️ DEPRECATED (migrated to `## Epics`)",
+    "- (historical only)",
+  ].join("\n");
+  const coherentEpicIds = ["E-DEMO-001", "E-DONE-000"];
+  const coherentModeConsults = { solo: true, adhoc: true, oneshot: true, sprint: true };
+  const coherentNonexistence = { ".claude/agents/00-alex": true, ".claude/agents/01-adhoc": true };
+  // Item file-states agree with the rendered TRACKER item states (parsed labels:
+  // E-DEMO-001 Active, T1 Active, E-DONE-000 Completed).
+  const coherentItemFileStates = {
+    "E-DEMO-001": "Active",
+    "T1": "Active",
+    "E-DONE-000": "Completed",
+  };
+  // Enforcement hooks are MISSING but acknowledged in Known Gaps → (s) PASS.
+  const coherentHooks = {
+    "scripts/hooks/tracker-start-of-work.js": false,
+    "scripts/hooks/tracker-completion-gate.js": false,
+  };
+
+  const crossFileSeams = () => ({
+    roadmap: coherentRoadmap,
+    roadmapPresent: true,
+    epicIds: [...coherentEpicIds],
+    modeConsults: { ...coherentModeConsults },
+    nonexistence: { ...coherentNonexistence },
+    itemFileStates: { ...coherentItemFileStates },
+    enforcementHooks: { ...coherentHooks },
+  });
+
   // A coherent input — items are PARSED from the markdown (not injected), so the
   // parser is exercised. linkTargets cover the item links + are fail-closed safe.
   const coherent = () => ({
@@ -950,6 +1498,7 @@ function selftest() {
     trackerPresent: true,
     linkTargets: { ...itemLinkTargets },
     pathExists: { ...coherentPaths },
+    ...crossFileSeams(),
   });
 
   // Build an input from a mutated item map (re-rendered, re-parsed).
@@ -961,6 +1510,7 @@ function selftest() {
       trackerPresent: true,
       linkTargets: { ...itemLinkTargets },
       pathExists: { ...coherentPaths },
+      ...crossFileSeams(),
     };
   };
 
@@ -1136,6 +1686,127 @@ function selftest() {
     assert(fails(res, "required-paths"), "unprobed path must fail closed");
   });
 
+  // ── CROSS-FILE CHECKS (m–t): one PASS + one FAIL each, all fail-closed ───────
+
+  // (m) roadmap-epic-based — a LIVE (non-deprecated) Milestones heading → fires.
+  t("(m) coherent → roadmap-epic-based PASS", () => assert(passes(evaluate(coherent()), "roadmap-epic-based")));
+  t("(m) live milestones heading → roadmap-epic-based FAIL", () => {
+    const s = coherent();
+    s.roadmap = "# ROADMAP\n\n## Epics\n- E-DEMO-001\n\n## 🏛 Milestones\n- still here, not deprecated\n";
+    const res = evaluate(s);
+    assert(fails(res, "roadmap-epic-based"), "live Milestones heading must fail");
+  });
+  // (m) fail-closed — absent roadmap → FAIL.
+  t("(m) absent roadmap → roadmap-epic-based FAIL (fail-closed)", () => {
+    const s = coherent();
+    s.roadmap = "";
+    s.roadmapPresent = false;
+    assert(fails(evaluate(s), "roadmap-epic-based"), "absent roadmap must fail closed");
+  });
+
+  // (n) epics-in-roadmap — an epic ID not referenced in ROADMAP → fires.
+  t("(n) coherent → epics-in-roadmap PASS", () => assert(passes(evaluate(coherent()), "epics-in-roadmap")));
+  t("(n) epic absent from roadmap → epics-in-roadmap FAIL", () => {
+    const s = coherent();
+    s.epicIds = [...s.epicIds, "E-MISSING-999"];
+    const res = evaluate(s);
+    assert(fails(res, "epics-in-roadmap"), "unreferenced epic must fail");
+    assert(checkOf(res, "epics-in-roadmap").details.some((d) => /E-MISSING-999/.test(d)), "names the missing epic");
+  });
+  // (n) fail-closed — epics on disk but no seam → FAIL.
+  t("(n) no epicIds seam → epics-in-roadmap FAIL (fail-closed)", () => {
+    const s = coherent();
+    delete s.epicIds;
+    assert(fails(evaluate(s), "epics-in-roadmap"), "missing epicIds seam must fail closed");
+  });
+
+  // (o) modes-consult-tracker — a mode missing its consult step → fires.
+  t("(o) coherent → modes-consult-tracker PASS", () => assert(passes(evaluate(coherent()), "modes-consult-tracker")));
+  t("(o) a mode missing consult → modes-consult-tracker FAIL", () => {
+    const s = coherent();
+    s.modeConsults = { ...s.modeConsults, oneshot: false };
+    const res = evaluate(s);
+    assert(fails(res, "modes-consult-tracker"), "missing mode consult must fail");
+    assert(checkOf(res, "modes-consult-tracker").details.some((d) => /oneshot/.test(d)), "names oneshot");
+  });
+  // (o) fail-closed — no seam → FAIL.
+  t("(o) no modeConsults seam → modes-consult-tracker FAIL (fail-closed)", () => {
+    const s = coherent();
+    delete s.modeConsults;
+    assert(fails(evaluate(s), "modes-consult-tracker"), "missing modeConsults seam must fail closed");
+  });
+
+  // (p) work-log-session-id — a session-log entry with no ID and no sentinel → fires.
+  t("(p) coherent → work-log-session-id PASS", () => assert(passes(evaluate(coherent()), "work-log-session-id")));
+  t("(p) entry w/o session ID or sentinel → work-log-session-id FAIL", () => {
+    const s = coherent();
+    s.tracker = s.tracker.replace(
+      "Seed session log (keystone-authoring session): Session ID: to be backfilled · Date: 2026-06-05 · Work performed: authored the tracker.",
+      "Orphan session log: Date: 2026-06-05 · Work performed: did some work with no recorded session identifier."
+    );
+    const res = evaluate(s);
+    assert(fails(res, "work-log-session-id"), "unidentified session-log entry must fail");
+  });
+
+  // (q) expected-nonexistence — a "Verified Nonexistent" path that EXISTS → fires.
+  t("(q) coherent → expected-nonexistence PASS", () => assert(passes(evaluate(coherent()), "expected-nonexistence")));
+  t("(q) nonexistent-marked path exists → expected-nonexistence FAIL", () => {
+    const s = coherent();
+    s.nonexistence = { ...s.nonexistence, ".claude/agents/00-alex": false }; // actually present
+    const res = evaluate(s);
+    assert(fails(res, "expected-nonexistence"), "an existing should-be-absent path must fail");
+    assert(checkOf(res, "expected-nonexistence").details.some((d) => /00-alex/.test(d)), "names the path");
+  });
+  // (q) fail-closed — no seam → FAIL.
+  t("(q) no nonexistence seam → expected-nonexistence FAIL (fail-closed)", () => {
+    const s = coherent();
+    delete s.nonexistence;
+    assert(fails(evaluate(s), "expected-nonexistence"), "missing nonexistence seam must fail closed");
+  });
+
+  // (r) cross-file-reconciliation — TRACKER state disagrees with the file's state → fires.
+  t("(r) coherent → cross-file-reconciliation PASS", () => assert(passes(evaluate(coherent()), "cross-file-reconciliation")));
+  t("(r) state disagrees with file → cross-file-reconciliation FAIL", () => {
+    const s = coherent();
+    s.itemFileStates = { ...s.itemFileStates, "E-DEMO-001": "Completed" }; // TRACKER says Active
+    const res = evaluate(s);
+    assert(fails(res, "cross-file-reconciliation"), "state disagreement must fail");
+    assert(checkOf(res, "cross-file-reconciliation").details.some((d) => /E-DEMO-001/.test(d)), "names the item");
+  });
+  // (r) fail-closed — a linked file whose state could not be read → FAIL.
+  t("(r) unreadable linked-file state → cross-file-reconciliation FAIL (fail-closed)", () => {
+    const s = coherent();
+    s.itemFileStates = { ...s.itemFileStates, "T1": null }; // file present but state unreadable
+    assert(fails(evaluate(s), "cross-file-reconciliation"), "unverified file state must fail closed");
+  });
+
+  // (s) hooks-enforce-or-tracked — hook missing AND gap NOT acknowledged → fires.
+  t("(s) coherent (missing-but-tracked) → hooks-enforce-or-tracked PASS", () => assert(passes(evaluate(coherent()), "hooks-enforce-or-tracked")));
+  t("(s) hook missing + gap unacknowledged → hooks-enforce-or-tracked FAIL", () => {
+    const s = coherent();
+    // Strip the Known-Gaps acknowledgement of the enforcement hook.
+    s.tracker = s.tracker.replace(KNOWN_GAPS_BODY, "None currently recorded.");
+    const res = evaluate(s);
+    assert(fails(res, "hooks-enforce-or-tracked"), "missing+unacknowledged hook must fail");
+  });
+  // (s) fail-closed — no seam → FAIL.
+  t("(s) no enforcementHooks seam → hooks-enforce-or-tracked FAIL (fail-closed)", () => {
+    const s = coherent();
+    delete s.enforcementHooks;
+    assert(fails(evaluate(s), "hooks-enforce-or-tracked"), "missing enforcementHooks seam must fail closed");
+  });
+
+  // (t) definition-drift — a term with two materially-different definitions → fires.
+  t("(t) coherent → definition-drift PASS", () => assert(passes(evaluate(coherent()), "definition-drift")));
+  t("(t) two divergent definitions of a term → definition-drift FAIL", () => {
+    const s = coherent();
+    // Append a second, materially-different `## Definition: Epic` block.
+    s.tracker = s.tracker + "\n\n## Definition: Epic\nDefinition: a tiny throwaway one-off chore unrelated to any long-running goal whatsoever.\n";
+    const res = evaluate(s);
+    assert(fails(res, "definition-drift"), "divergent duplicate definition must fail");
+    assert(checkOf(res, "definition-drift").details.some((d) => /epic/i.test(d)), "names the drifted term");
+  });
+
   // FAIL-CLOSED — missing tracker → not a pass, sections-present FAILs, never throws.
   t("missing tracker → not-ok, fail-closed (no throw)", () => {
     const res = evaluate({ tracker: "", trackerPresent: false, items: [], linkTargets: {}, pathExists: coherentPaths });
@@ -1205,7 +1876,7 @@ function selftest() {
     process.stderr.write(`\n${NAME} selftest: ${results.length - failed.length}/${results.length} passed, ${failed.length} FAILED\n`);
     process.exit(1);
   }
-  process.stdout.write(`\n${NAME} selftest: ${results.length}/${results.length} bite cases passed (positive + a–l fire both ways + fail-closed)\n`);
+  process.stdout.write(`\n${NAME} selftest: ${results.length}/${results.length} bite cases passed (positive + a–t fire both ways + fail-closed)\n`);
   process.exit(0);
 }
 
