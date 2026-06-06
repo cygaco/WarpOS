@@ -327,6 +327,9 @@ Architectural shifts parked behind explicit revival triggers. No sprint cycles u
 #### 🔵 WarpOS-as-product deep dogfooding
 **Trigger:** product cadence is consistently healthy (cadence-rule violations stay at 0 for 4+ consecutive sprint windows). Distinct from 0.10.0 boundary closure — that creates the *private workspace* for product-thinking; this *spec-treats the framework itself as a product* with PRDs, stories, `/preflight:run`, `/qa:audit`, `/redteam:full` self-audit. Boundary first; dogfooding much later.
 
+#### 🔵 Reusable execution prompts — a saved operating-prompt library (DISCUSSED-2026-06-06)
+The 0.14.0 + enforced-tracker marathon distilled the operator's multi-session kickoff into a **reusable execution prompt** — the recurring operating rules (blanket commit/push/merge approval + spend ceiling, lean-do-now-over-defer, fan-out parallel builders one-writer-per-file, dogfood-the-tracker, escalate-only-on-a-new-irreversible-risk) — preserved in `DUMP.md` under "THE REUSABLE EXECUTION PROMPT". Idea: promote that from a one-off DUMP section to a first-class capability — a `_prompts/` (or registry-backed, à la `_guides`/`_knowledge`) library of **named, parameterizable operating prompts**, saved from a session (extend `/session:dump`, which already captures it) and invoked next session (`/prompt:run <name>`), so common operating patterns and long multi-session goals resume without re-typing the rules. **Trigger:** the operator re-pastes the same operating rules across ≥3 sessions, OR the `session:dump` reusable-prompt block gets hand-copied more than a couple of times. Open questions: storage shape (`_prompts/` vs registry); overlap with `session:dump`/`session:handoff`; parameter binding; skill-pair vs thin convention.
+
 ### Shipped
 
 #### 🟢 Product Last-Mile Foundry — `bootstrap:lastmile` *(built + merged 2026-05-25; folds into a future release)*
