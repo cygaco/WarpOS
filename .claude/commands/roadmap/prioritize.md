@@ -10,7 +10,7 @@ Turn a sprawling roadmap into a ranked **do-next** order. Runs `/roadmap:cleanup
 
 Pick the consulting persona by the **scope** of the prioritization, per the altitude split (FINAL-PLAN §11 R2, β `EVT-org-roadmap-principles-beta-001`):
 
-- **Single-product backlog ranking / within-sprint sequencing** → the **product-lead** persona. Signals: a single product's open backlog, ordering candidates inside one product/milestone, "what's next in *this* sprint", `$ARGUMENTS` scoped to one product or sprint range (e.g. `"rank only the Sprint 11+ candidates"`).
+- **Single-product backlog ranking / within-sprint sequencing** → the **product-lead** persona. Signals: a single product's open backlog, ordering candidates inside one product/epic, "what's next in *this* sprint", `$ARGUMENTS` scoped to one product or sprint range (e.g. `"rank only the Sprint 11+ candidates"`).
 - **Strategic / cross-product / lifecycle-phase-shift ranking** → the **director-of-product** persona. Signals: ranking that trades across products, a lifecycle-phase or pivot call, portfolio-level sequencing, "what should the *program* do next".
 - **Fallback (R2 — no regression):** when the Product Lead *would* be chosen but the scope is ambiguous, **default to `director-of-product`**. The Director is also the standing default for WarpOS's own framework roadmap (a single "product", but program-altitude) until a per-product Lead is explicitly in scope. Defaulting up never regresses behavior — the Lead inherits the Director's principles (R4), so a Director ranking is always at least as principled.
 
@@ -27,7 +27,7 @@ Run `/roadmap:cleanup` to detect completed/stale/duplicate entries and surface h
 
 ### Phase 2: Consult the role-appropriate product manager
 Resolve the candidate agents from the skill-hook registry at call time: `node scripts/skills/skill-hook-points.js resolve roadmap:prioritize rank`. It returns both personas with their `condition` (single-product vs strategic) and the `default`. Pick per the **Role routing** rules above; when scope is ambiguous, dispatch the `default` role (the R2 no-regression fallback). Do NOT hardcode a role name. State which you chose and why in one line. Dispatch that persona and hand it:
-- the cleaned `ROADMAP.md` (Milestones + Sprint Pickup Queue + backlog),
+- the cleaned `ROADMAP.md` (Epics + Sprint Pickup Queue + backlog),
 - canonical intent (`_requirements/00-canonical/*` when present) + the lifecycle model (`.claude/project/reference/product-lifecycle.md`) + the playbook (`.claude/project/reference/playbook.md`),
 - any `$ARGUMENTS` focus/constraint.
 

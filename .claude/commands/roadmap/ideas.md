@@ -25,7 +25,7 @@ Whole-slate runs (all four lenses, no product scoping) default to the **Director
 
 ## Evidence the skill reads (ground every idea — never invent)
 
-1. `ROADMAP.md` — Strategy block, 🏛 Milestones (Upcoming + Later + Shipped), Sprint 11+ candidates, Sprint backlog.
+1. `ROADMAP.md` — Strategy block, 🏛 Epics (Upcoming + Later + Shipped), Sprint 11+ candidates, Sprint backlog.
 2. Canonical intent (if present) — `_requirements/00-canonical/*` (CORE_BRIEF, USER_COHORTS, GOLDEN_PATHS, PRODUCT_MODEL, EVOLUTION, FAILURE_STATES).
 3. Recent activity — `git log` (last ~15), `paths.eventsFile` tail, `PROJECT.md`.
 
@@ -40,9 +40,9 @@ Whole-slate runs (all four lenses, no product scoping) default to the **Director
 
 ## Procedure
 
-1. Read the evidence above. Identify: the last 3 Shipped milestones, the last 3 added entries (active thread), the Strategy/vision, and the whole-backlog shape.
+1. Read the evidence above. Identify: the last 3 Shipped epics, the last 3 added entries (active thread), the Strategy/vision, and the whole-backlog shape.
 2. **Consult the role-appropriate persona** — resolve the candidate agents from the skill-hook registry at call time: `node scripts/skills/skill-hook-points.js resolve roadmap:ideas generate`. It returns both personas with their `condition` (single-product vs strategic) and the `default`. Pick per the **Role routing** rules above; when scope is ambiguous (whole-slate runs included), dispatch the `default` role (the R2 no-regression fallback). Do NOT hardcode a role name. (Once 0.14.0 skill-scoped injection lands, this may instead arrive via the `temporary-agent` directive.) State the chosen persona in one line. Hand it the evidence + the four lenses; ask for 3 candidate entries per lens, each applying the `lean-product-development` principle (by slug — never an ordinal; it may renumber/move) and naming any tangential connection drawn.
-3. Format each idea as a ready-to-paste roadmap candidate: a one-line title + 2-3 line body + the lens + the evidence it's grounded in + (if relevant) which milestone it feeds.
+3. Format each idea as a ready-to-paste roadmap candidate: a one-line title + 2-3 line body + the lens + the evidence it's grounded in + (if relevant) which epic it feeds.
 4. **Propose only.** Do not write to `ROADMAP.md`. End by reminding the operator: `commit a pick with /roadmap:add "<idea>"`.
 
 ## Output shape
@@ -51,9 +51,9 @@ Whole-slate runs (all four lenses, no product scoping) default to the **Director
 ROADMAP IDEAS — 4 lenses × 3
 
 LENS: whole-roadmap
-  1. <title> — <2-3 line rationale>  [evidence: …]  [feeds: <milestone?>]
+  1. <title> — <2-3 line rationale>  [evidence: …]  [feeds: <epic?>]
   2. …
-LENS: last-3-shipped  (<the 3 milestones>)
+LENS: last-3-shipped  (<the 3 epics>)
   …
 LENS: last-3-active  (<the 3 entries>)
   …

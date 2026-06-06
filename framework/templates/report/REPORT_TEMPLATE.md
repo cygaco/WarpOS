@@ -44,6 +44,6 @@
 <!-- The audit trail, kept below the ELI5 layer for anyone who wants to dig in:
      - Commits (hashes + one-line subjects)
      - Artifacts (files created/changed, reports, specs, PRs)
-     - Related ids (sprint id, milestone/version, prior report links)
+     - Related ids (sprint id, epic/version, prior report links)
      - Anything a future reader would need to reconstruct the work.
      Links and ids are fine here - this is the one section where detail wins. -->

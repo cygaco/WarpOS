@@ -1,127 +1,102 @@
 #!/usr/bin/env node
 "use strict";
 /**
- * scripts/bootstrap/spinup-orchestrate.js — the bootstrap:spinup orchestration
- * driver (SP-20260525-023). Turns the documented phase hooks in
- * .claude/commands/bootstrap/spinup.md into an executable one-command on-ramp.
+ * scripts/bootstrap/spinup-orchestrate.js — the step-driven bootstrap:spinup
+ * driver (WARPOS-PROMPT §1/§2). Each step is INDEPENDENTLY dispatchable, idempotent,
+ * and resumable; LLM steps return `needs_orchestration` with a machine-readable
+ * `orchestration_prompt` so any consumer — an in-loop Alpha session OR a product-side
+ * headless runner (the Master Console cockpit) — can drive one step = one turn.
  *
- * Architecture (β SP-023 Q(a)): a real driver module (mirrors scripts/canon/
- * generate.js) so --phase/--resume state is durable and the chain is CI-testable
- * via a fixture e2e — NOT skill-body string-parsing.
+ * INVOCATION CONTRACT (positional subcommand, like `git commit`):
+ *   node scripts/bootstrap/spinup-orchestrate.js [<step>] [--clone <url>]
+ *     [--name <n>] [--what <w>] [--who <c>] [--where android|ios|web|desktop-pc|desktop-mac]
+ *     [--product <name>] [--intent <file>] [--out <dir>] [--research simple|deep]
+ *     [--research-in <file>] [--allow-needs-input <field>]... [--repo-root <dir>]
+ *     [--resume] [--json] [--dry-run] [--force]
  *
- * BUILT in canonical, EXECUTES product-side. The driver sequences five phases and
- * persists phase-state. Each phase is a module under scripts/bootstrap/phases/
- * exporting `{ name, run(ctx) }`. DETERMINISTIC phases (preflight, canon,
- * --clone intent) do their work in-process by shelling to existing engines
- * (scripts/check/install.js, scripts/canon/generate.js, scripts/portfolio/
- * clone.js). LLM-ORCHESTRATED steps (the guided brief, roadmap:create synthesis,
- * real sprint execution) cannot run from a node process, so a phase returns
- * status `needs_orchestration` with an `orchestration_prompt`; the skill body
- * (spinup.md / Alpha) fulfills it, then re-invokes with the produced artifact.
- * This mirrors B's canon research bridge and respects the dispatch-route-guard.
+ *   <step> ∈ { setup, canon, roadmap, paint }. Omitted ⇒ full chain. `--phase <step>`
+ *   is accepted as a back-compat alias. NOT a dashed-flag-only contract.
  *
- * Canonical proves the CHAIN on a fixture (β Q(c)); standing up a real product
- * is a non-goal — the on-screen phase's verify-before-claim gate is implemented
- * and unit-tested, but a real serve happens product-side.
+ * STABLE --json STATUS:
+ *   { phase, status: "ok"|"needs_orchestration"|"failed", ran:[...], orchestration_prompt,
+ *     data: { serveUrl, firstAction, roadmapPath, ... } }
  *
- * Usage:
- *   node scripts/bootstrap/spinup-orchestrate.js \
- *     [--product "<name>"] [--intent <file.md>] [--clone <target>] \
- *     [--phase preflight|intent|canon|roadmap|onscreen] [--resume] \
- *     [--out <canonical-dir>] [--research off|simple|deep] \
- *     [--state <state-file>] [--repo-root <dir>] [--json] [--dry-run]
+ * ANTI-DEGRADE (§2): there is NO `--research off`/`light`, NO `--auto`/`--fast`/skip,
+ * and no tier/alias that resolves to off. Floor = `simple` (cheap real research,
+ * default); `deep` = explicit opt-up. `--research off` is REJECTED non-zero.
  *
- * Exit: 0 ok (pipeline complete or single phase done),
- *       1 phase failed,
- *       3 phase needs orchestration (skill body must fulfill + re-invoke),
- *       2 bad args.
+ * Exit: 0 ok (step/chain complete), 1 step failed, 3 needs orchestration, 2 bad args.
  */
 
 const fs = require("fs");
 const path = require("path");
 
-const PHASES = ["preflight", "intent", "canon", "roadmap", "onscreen"];
+const STEPS = ["setup", "canon", "roadmap", "paint"];
 const NEEDS_ORCH = 3;
 
-// Research TIER → raw mode (WI-25 / the operator's research-tier chooser).
-//   "light"    → off    ("Light Research — Uses existing training data.")
-//   "moderate" → simple ("Moderate Research — Finds newer data for better results.")
-// "deep" stays a power-user RAW mode (--research deep) — never a surfaced tier.
-const RESEARCH_TIERS = { light: "off", moderate: "simple" };
-
-// The GLOBAL default tier (operator-final 2026-06-04): Moderate EVERYWHERE —
-// interactive AND automated/headless. Moderate = research:"simple" = a handful of
-// parallel web searches (cents, well under the $5 autonomy line), so there is no
-// surprise-spend concern and no interactive/headless branch. Light is an explicit
-// opt-DOWN; Deep is an explicit opt-UP and the ONE spend-guard (never auto-defaulted).
+// Anti-degrade: the ONLY accepted research modes. `off`/`light`/`none` are rejected
+// (no path to un-synthesized canon). Floor = simple; deep = explicit opt-up.
+const RESEARCH_MODES = ["simple", "deep"];
 const DEFAULT_RESEARCH = "simple";
-
-// Accept "light" as an explicit --research alias for "off" (the opt-down tier name).
-function normalizeResearchMode(mode) {
-  return mode === "light" ? "off" : mode;
-}
+// Aliases that historically resolved to a no-spend/degraded mode — now REJECTED so a
+// renamed hole can't reintroduce the WI-51 degrade path.
+const REJECTED_RESEARCH = new Set(["off", "light", "none", "skip", "auto", "fast"]);
 
 function parseArgs(argv) {
   const out = {
+    step: null,
     product: null,
+    name: null,
+    what: null,
+    who: null,
+    where: null,
     intent: null,
     clone: null,
-    phase: null,
     resume: false,
     out: "_requirements/00-canonical",
-    research: null, // null = not explicitly set → resolveResearch() decides
-    researchTier: null,
+    research: null, // null ⇒ resolveResearch() → DEFAULT_RESEARCH
+    researchIn: null,
+    allowNeedsInput: [],
     state: null,
     repoRoot: process.cwd(),
     json: false,
     dryRun: false,
-    auto: false,
+    force: false,
   };
   for (let i = 2; i < argv.length; i++) {
     const a = argv[i];
-    if (a === "--product") out.product = argv[++i];
+    if (a === "--phase" || a === "--step") out.step = argv[++i];
+    else if (a === "--product") out.product = argv[++i];
+    else if (a === "--name") out.name = argv[++i];
+    else if (a === "--what") out.what = argv[++i];
+    else if (a === "--who") out.who = argv[++i];
+    else if (a === "--where") out.where = argv[++i];
     else if (a === "--intent") out.intent = argv[++i];
     else if (a === "--clone") out.clone = argv[++i];
-    else if (a === "--phase") out.phase = argv[++i];
     else if (a === "--resume") out.resume = true;
     else if (a === "--out") out.out = argv[++i];
     else if (a === "--research") out.research = argv[++i];
-    else if (a === "--research-tier") out.researchTier = argv[++i];
+    else if (a === "--research-in") out.researchIn = argv[++i];
+    else if (a === "--allow-needs-input") out.allowNeedsInput.push(argv[++i]);
     else if (a === "--state") out.state = argv[++i];
     else if (a === "--repo-root") out.repoRoot = argv[++i];
     else if (a === "--json") out.json = true;
     else if (a === "--dry-run") out.dryRun = true;
-    else if (a === "--auto") out.auto = true;
+    else if (a === "--force") out.force = true;
+    else if (!a.startsWith("-") && out.step === null && STEPS.includes(a)) out.step = a; // positional subcommand
+    else if (!a.startsWith("-") && out.step === null && out._badPositional == null) out._badPositional = a; // unknown bare arg
   }
   return out;
 }
 
-/**
- * Resolve the effective raw research mode (off|simple|deep) from the tier chooser
- * + explicit flags. Precedence:
- *   1. explicit --research <mode>       → as given ("light"→off; the ONLY deep path)
- *   2. explicit --research-tier <tier>  → light→off, moderate→simple
- *   3. no explicit choice                → DEFAULT_RESEARCH = "simple" (Moderate),
- *                                          EVERYWHERE (interactive AND headless).
- * The only spend-guard is that Deep is never auto-defaulted — it requires an
- * explicit --research deep. Moderate's cost (a few web searches) is under the $5
- * line, so it is the unconditional default with no interactive/headless branch.
- * Returns { mode, source } (source for logging/telemetry).
- */
+// Resolve the effective research mode. Anti-degrade: reject any off/degrade alias.
 function resolveResearch(args) {
   if (args.research) {
-    return { mode: normalizeResearchMode(args.research), source: "explicit --research" };
+    return { mode: args.research, source: "explicit --research" };
   }
-  if (args.researchTier) {
-    const mode = RESEARCH_TIERS[args.researchTier];
-    if (mode) return { mode, source: `--research-tier ${args.researchTier}` };
-    // unknown tier handled as a bad-arg in main(); fall through defensively
-  }
-  return { mode: DEFAULT_RESEARCH, source: "default (Moderate)" };
+  return { mode: DEFAULT_RESEARCH, source: "default (simple)" };
 }
 
-// Durable phase-state (T6). Default location is product-side scratch under
-// .warpos/; the e2e overrides via --state to a temp file.
 function stateFile(args) {
   return args.state || path.join(args.repoRoot, ".warpos", "spinup-state.json");
 }
@@ -129,13 +104,10 @@ function stateFile(args) {
 function loadState(args) {
   const f = stateFile(args);
   if (fs.existsSync(f)) {
-    try {
-      return JSON.parse(fs.readFileSync(f, "utf8"));
-    } catch {
-      /* fall through to fresh */
-    }
+    try { return JSON.parse(fs.readFileSync(f, "utf8")); }
+    catch { /* fall through to fresh */ }
   }
-  return { schema: "warpos/bootstrap/spinup-state/v1", completed: [], phases: {} };
+  return { schema: "warpos/bootstrap/spinup-state/v2", completed: [], phases: {} };
 }
 
 function saveState(args, state) {
@@ -145,95 +117,131 @@ function saveState(args, state) {
   fs.writeFileSync(f, JSON.stringify(state, null, 2) + "\n", "utf8");
 }
 
-// Load a phase module. Kept lazy so a single --phase run doesn't require every
-// module to be present (resilient while modules land in parallel).
 function loadPhase(name) {
   return require(path.join(__dirname, "phases", `${name}.js`));
 }
 
-// Decide which phases to run this invocation.
-//   --phase <name> : just that one.
-//   --resume       : every phase after the last completed (preflight always re-runs — it's a gate).
-//   default        : all phases in order.
-function planPhases(args, state) {
-  if (args.phase) {
-    if (!PHASES.includes(args.phase)) return { error: `unknown phase "${args.phase}"` };
-    // preflight is a gate; always run it ahead of any single non-preflight phase
-    return { phases: args.phase === "preflight" ? ["preflight"] : ["preflight", args.phase] };
+// Decide which steps to run this invocation. Each step is independent — a single
+// step runs JUST that step (no gate-prepend), reading prior-step output from saved
+// state. --resume continues after the last completed step. Default = full chain.
+function planSteps(args, state) {
+  if (args.step) {
+    if (!STEPS.includes(args.step)) return { error: `unknown step "${args.step}" (setup|canon|roadmap|paint)` };
+    return { steps: [args.step] };
   }
   if (args.resume) {
-    const lastIdx = state.completed.length
-      ? Math.max(...state.completed.map((p) => PHASES.indexOf(p)))
-      : -1;
-    const remaining = PHASES.slice(lastIdx + 1);
-    // preflight is a gate; always re-run it ahead of resumed work
-    return { phases: remaining[0] === "preflight" ? remaining : ["preflight", ...remaining] };
+    const lastIdx = state.completed.length ? Math.max(...state.completed.map((p) => STEPS.indexOf(p))) : -1;
+    return { steps: STEPS.slice(lastIdx + 1) };
   }
-  return { phases: PHASES.slice() };
+  return { steps: STEPS.slice() };
 }
 
-function buildCtx(args, research) {
+// Seed the cross-step carry from saved state so a standalone `canon`/`roadmap`/`paint`
+// run reads the setup step's intent/platform/out without re-running setup.
+function seedCarry(state) {
+  const carry = {};
+  for (const step of STEPS) {
+    const d = state.phases[step] && state.phases[step].data;
+    if (d) Object.assign(carry, d);
+  }
+  return carry;
+}
+
+function buildCtx(args, research, carry) {
   return {
-    repoRoot: args.repoRoot,
-    product: args.product,
-    intentFile: args.intent,
+    repoRoot: carry.repoRoot || args.repoRoot,
+    product: args.product || args.name || carry.product || null,
+    name: args.name,
+    what: args.what,
+    who: args.who,
+    where: args.where || carry.platform || null,
+    intentFile: args.intent || carry.intentFile || null,
     cloneTarget: args.clone,
     outDir: args.out,
-    research, // resolved mode (off|simple|deep) — see resolveResearch()
+    research,
+    researchIn: args.researchIn,
+    allowNeedsInput: args.allowNeedsInput,
     dryRun: args.dryRun,
     args,
-    log: (m) => {
-      if (!args.json) process.stdout.write(`  ${m}\n`);
-    },
+    log: (m) => { if (!args.json) process.stdout.write(`  ${m}\n`); },
   };
+}
+
+// Normalize the per-step data into the stable consumer-contract shape.
+function normalizeData(data) {
+  const d = data || {};
+  return Object.assign(
+    { serveUrl: d.serveUrl || null, firstAction: d.firstAction || null, roadmapPath: d.roadmapPath || null },
+    d,
+  );
+}
+
+function emitJson(obj) {
+  process.stdout.write(JSON.stringify(obj, null, 2) + "\n");
 }
 
 async function main() {
   const args = parseArgs(process.argv);
-  if (args.research && !["light", "off", "simple", "deep"].includes(args.research)) {
-    process.stderr.write(`bad --research "${args.research}" (light|off|simple|deep)\n`);
+
+  if (args._badPositional != null) {
+    const msg = `unknown step "${args._badPositional}" (setup|canon|roadmap|paint); product name goes via --name/--product`;
+    if (args.json) emitJson({ phase: "args", status: "failed", ran: [], orchestration_prompt: null, data: normalizeData(), message: msg });
+    else process.stderr.write(msg + "\n");
     return 2;
   }
-  if (args.researchTier && !RESEARCH_TIERS[args.researchTier]) {
-    process.stderr.write(
-      `bad --research-tier "${args.researchTier}" (light|moderate; "deep" is --research deep, a power-user flag)\n`,
-    );
-    return 2;
+
+  // ── Anti-degrade arg validation (§2) — reject any off/degrade research mode ──
+  if (args.research) {
+    if (REJECTED_RESEARCH.has(args.research)) {
+      const msg = `--research "${args.research}" is rejected: there is NO path to degraded/un-synthesized canon. Use --research simple (default) or --research deep.`;
+      if (args.json) emitJson({ phase: args.step || "args", status: "failed", ran: [], orchestration_prompt: null, data: normalizeData(), message: msg });
+      else process.stderr.write(msg + "\n");
+      return 2;
+    }
+    if (!RESEARCH_MODES.includes(args.research)) {
+      const msg = `bad --research "${args.research}" (simple|deep)`;
+      if (args.json) emitJson({ phase: args.step || "args", status: "failed", ran: [], orchestration_prompt: null, data: normalizeData(), message: msg });
+      else process.stderr.write(msg + "\n");
+      return 2;
+    }
   }
-  // Resolve the effective research mode from tier/flags/interactivity (WI-25).
+
   const { mode: research, source: researchSource } = resolveResearch(args);
   const state = loadState(args);
-  const plan = planPhases(args, state);
+  const plan = planSteps(args, state);
   if (plan.error) {
-    process.stderr.write(plan.error + "\n");
+    if (args.json) emitJson({ phase: args.step || "args", status: "failed", ran: [], orchestration_prompt: null, data: normalizeData(), message: plan.error });
+    else process.stderr.write(plan.error + "\n");
     return 2;
   }
-  const ctx = buildCtx(args, research);
-  if (!args.json)
-    process.stdout.write(
-      `spinup: research = ${research} (${researchSource})${research === "off" ? "" : " — live research spend"}\n`,
-    );
+
+  if (!args.json) process.stdout.write(`spinup: research = ${research} (${researchSource}) — live research spend\n`);
+
+  const carry = seedCarry(state);
   const ran = [];
-  let phaseObj;
-  for (const name of plan.phases) {
-    try {
-      phaseObj = loadPhase(name);
-    } catch (e) {
-      process.stderr.write(`phase module missing: ${name} (${e.message})\n`);
+  let lastData = {};
+
+  for (const name of plan.steps) {
+    let phaseObj;
+    try { phaseObj = loadPhase(name); }
+    catch (e) {
+      const msg = `step module missing: ${name} (${e.message})`;
+      if (args.json) emitJson({ phase: name, status: "failed", ran: ran.map((r) => r.phase), orchestration_prompt: null, data: normalizeData(lastData), message: msg });
+      else process.stderr.write(msg + "\n");
       return 1;
     }
-    if (!args.json) process.stdout.write(`spinup: phase ${name}...\n`);
+    if (!args.json) process.stdout.write(`spinup: step ${name}...\n`);
+
+    const ctx = buildCtx(args, research, carry);
     let res;
-    try {
-      res = await phaseObj.run(ctx);
-    } catch (e) {
-      res = { ok: false, status: "failed", message: e.message };
-    }
+    try { res = await phaseObj.run(ctx); }
+    catch (e) { res = { ok: false, status: "failed", message: e.message }; }
     ran.push({ phase: name, ...res });
+    if (res.data) { Object.assign(carry, res.data); lastData = Object.assign({}, lastData, res.data); }
 
     if (res.status === "needs_orchestration") {
-      // Skill body (Alpha) must fulfill res.orchestration_prompt, then re-invoke.
-      if (args.json) process.stdout.write(JSON.stringify({ ok: false, phase: name, ...res, ran }, null, 2) + "\n");
+      const out = { phase: name, status: "needs_orchestration", ran: ran.map((r) => r.phase), orchestration_prompt: res.orchestration_prompt || null, data: normalizeData(lastData), message: res.message };
+      if (args.json) emitJson(out);
       else {
         process.stdout.write(`  NEEDS ORCHESTRATION (${name}): ${res.message}\n`);
         if (res.orchestration_prompt) process.stdout.write(`  → ${res.orchestration_prompt}\n`);
@@ -241,28 +249,30 @@ async function main() {
       return NEEDS_ORCH;
     }
     if (!res.ok) {
-      if (args.json) process.stdout.write(JSON.stringify({ ok: false, phase: name, ...res, ran }, null, 2) + "\n");
+      const out = { phase: name, status: "failed", ran: ran.map((r) => r.phase), orchestration_prompt: null, data: normalizeData(lastData), message: res.message };
+      if (args.json) emitJson(out);
       else process.stdout.write(`  FAILED (${name}): ${res.message}\n`);
       return 1;
     }
-    // record completion
     if (!state.completed.includes(name)) state.completed.push(name);
     state.phases[name] = { ok: true, at: new Date().toISOString(), data: res.data || null };
     saveState(args, state);
   }
 
-  const lastWithData = [...ran].reverse().find((r) => r && r.data);
-  const result = {
-    ok: true,
+  const lastPhase = ran.length ? ran[ran.length - 1].phase : (args.step || null);
+  const out = {
+    phase: lastPhase,
+    status: "ok",
     ran: ran.map((r) => r.phase),
+    orchestration_prompt: null,
+    data: normalizeData(lastData),
     state_file: stateFile(args),
     completed: state.completed,
-    research, // resolved mode (off|simple|deep)
+    research,
     research_source: researchSource,
-    data: lastWithData ? lastWithData.data : null,
   };
-  if (args.json) process.stdout.write(JSON.stringify(result, null, 2) + "\n");
-  else process.stdout.write(`spinup: ${ran.length} phase(s) complete — ${ran.map((r) => r.phase).join(" → ")}\n`);
+  if (args.json) emitJson(out);
+  else process.stdout.write(`spinup: ${ran.length} step(s) complete — ${ran.map((r) => r.phase).join(" → ")}\n`);
   return 0;
 }
 
@@ -273,4 +283,7 @@ if (require.main === module) {
   });
 }
 
-module.exports = { parseArgs, planPhases, loadState, saveState, stateFile, buildCtx, resolveResearch, normalizeResearchMode, RESEARCH_TIERS, DEFAULT_RESEARCH, PHASES, NEEDS_ORCH };
+module.exports = {
+  parseArgs, planSteps, loadState, saveState, stateFile, buildCtx, seedCarry, normalizeData,
+  resolveResearch, RESEARCH_MODES, REJECTED_RESEARCH, DEFAULT_RESEARCH, STEPS, NEEDS_ORCH,
+};

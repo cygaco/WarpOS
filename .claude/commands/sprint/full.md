@@ -248,7 +248,7 @@ pre-planned roadmap item is still tracked:
    half is **enforced** by the ledger (idempotent, anchor-gated
    `<!-- ledger:sprints -->`).
 2. **Shipped narrative** — the completion step appends a one-line Shipped entry
-   under the matching milestone, or under an **"Ad-hoc / unplanned"** subsection
+   under the matching epic, or under an **"Ad-hoc / unplanned"** subsection
    for off-roadmap work. This half is **skill-body discipline** (no hook verifies
    it) → enforcement-debt, closed by `/scan:roadmap-trace` (asserts every
    `done`/`retrospected` sprint has both a Shipped entry AND a ledger row; wired

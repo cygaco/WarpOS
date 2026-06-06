@@ -124,7 +124,7 @@ Read all completed-run retro artifacts AND closed-work reports. **THREE source f
 
 | File | What it contains |
 |---|---|
-| `_reports/**/*.md` | ELI5 sprint/milestone/session/checkpoint reports — tl;dr, watch-outs, deferred work |
+| `_reports/**/*.md` | ELI5 sprint/epic/session/checkpoint reports — tl;dr, watch-outs, deferred work |
 
 ##### C.1 What to extract
 

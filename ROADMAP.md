@@ -43,6 +43,15 @@ WarpOS exists to help the maintainer ship real products faster while extracting 
 - **Current next action:** finish T4's cross-file §28.7 checks; then flip the epic to Completed.
 - **Related definitions:** Tracker, Epic, Sprint, Validator, Roadmap, Milestone (deprecated).
 
+#### E-SPINUP-STEPS-001 — Step-driven, degrade-proof `bootstrap:spinup` + Milestone→Epic
+- **Goal:** Refactor `bootstrap:spinup` into a step-driven, independently-dispatchable, idempotent, resumable pipeline (`setup → canon → roadmap → paint`) with a stable `--json` status + machine-readable `orchestration_prompt` (the consumer dispatch contract), make the engine STRUCTURALLY refuse degraded canon for good (no `--research off`, no `--auto` skip, fail-closed `canon-no-unfilled-tokens` gate, raw input never in canon), add a `--where` platform target, reconcile `portfolio:new` into the `setup` step, and rename Milestone→Epic across the live framework. Reuse existing engines.
+- **Priority:** High (the consumer-contract substance under E-GOLDEN-FLOW-001 — unblocks the Master Console headless runner; the on-ramp's degrade-proofing is core-loop). **State:** Active. **Completion:** ~10% (§0 gap analysis done; build in progress).
+- **Epic tracker:** [trackers/epics/E-SPINUP-STEPS-001-step-driven-degrade-proof-spinup.md](trackers/epics/E-SPINUP-STEPS-001-step-driven-degrade-proof-spinup.md).
+- **Related sprints:** [S-SPINUP-001](trackers/sprints/S-SPINUP-001-step-driven-degrade-proof-spinup.md) (Active — §1–§7 build + §8 acceptance).
+- **Dependencies:** none hard; consumes the canon engine + `canon-no-unfilled-tokens` + `portfolio/clone.js` + `scaffold/app.js` + `roadmap:create`. **Unblocks:** `MASTERCONSOLE-PROMPT.md`. **Rationale:** the Create flow dies at canon (one-exec chain hits exit-3 and punts to the user); one-step-one-turn + a degrade-proof engine is the structural cure, and it kills the WI-51→WI-47 degraded-canon regression class for good. **Expected impact:** any consumer (in-loop Alpha OR the cockpit runner) can drive the on-ramp one step per turn to a served first paint, and no caller can ever ship thin/placeholder canon.
+- **Current next action:** build §1 (positional `<step>` subcommand + folded setup/paint phases + stable `--json`) and §4 (portfolio:new create/scaffold reconcile).
+- **Related definitions:** Epic, Sprint, Validator, Wiring, Verification, Evidence. **Source:** `WARPOS-PROMPT.md` (2026-06-06).
+
 #### E-GOLDEN-FLOW-001 — Golden-Flow End-to-End Hardening + Executable Consumer-Contract Gate
 - **Goal:** Make the bootstrap on-ramp → on-screen "WOW" on a clean machine the hardened core target, GENERALIZED across all portfolio products, and prove the exact sealed capsule a consumer pins survives a real consumer lifecycle (`setup → scan:install → real sprint → dispatch telemetry → update`, both repo roles, cold + warm) before external users hit it.
 - **Priority:** TOP (operator-directed 2026-06-02; pre-mvp engine-reliability carve-out = core-loop). **State:** Active. **Completion:** ~35% (cheap-slice fresh-install smoke shipped `ff04cd9`; S1/W1/S3/S5 shipped `ac56602`; sealed-capsule isolation + executable contract still open).
@@ -120,6 +129,7 @@ Architectural bets parked behind explicit revival triggers; no sprint cycles and
 - **E-NPM-DISTRIBUTION** — npm distribution as forcing function. *Trigger:* most active meta-work would be unnecessary under the npm shape. *(Essay: `_docs/research/2026-05-19-npm-forcing-function.md`.)*
 - **E-WARPOS-DOGFOOD** — WarpOS-as-product deep dogfooding. *Trigger:* cadence-rule violations stay at 0 for 4+ consecutive sprint windows (boundary closure first).
 - **E-PROMPT-LIBRARY** — reusable saved operating-prompt library. *Trigger:* the operator re-pastes the same operating rules across ≥3 sessions, or the `session:dump` reusable-prompt block gets hand-copied more than a couple of times. *(DISCUSSED-2026-06-06.)*
+- **E-NATIVE-PACKAGING-001** — native app scaffolds for `bootstrap:spinup --where`. *Goal:* `scripts/scaffold/app.js` grows platform-conditional scaffolds — Expo/React Native for `android|ios`, Tauri/Electron for `desktop-pc|desktop-mac` — so `--where` produces a native baseline, not just web/PWA. *Trigger:* a portfolio product actually targets a native platform (until then the web/PWA baseline + honest target-recording is the v1, per `WARPOS.md` WG-1). *Source:* WARPOS-PROMPT.md §3 (created 2026-06-06 by E-SPINUP-STEPS-001).
 
 ### Completed epics
 

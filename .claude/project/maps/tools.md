@@ -43,9 +43,8 @@ Generated: 2026-06-05T23:48:21.960Z
 | tool:preflight | preflight.js | script | scripts/bootstrap/lastmile/phases/preflight.js | 1463 |
 | tool:test-orchestrate | test-orchestrate.js | script | scripts/bootstrap/lastmile/test-orchestrate.js | 19325 |
 | tool:canon | canon.js | script | scripts/bootstrap/phases/canon.js | 5865 |
-| tool:intent | intent.js | script | scripts/bootstrap/phases/intent.js | 9913 |
-| tool:onscreen | onscreen.js | script | scripts/bootstrap/phases/onscreen.js | 14616 |
-| tool:preflight | preflight.js | script | scripts/bootstrap/phases/preflight.js | 1663 |
+| tool:setup | setup.js | script | scripts/bootstrap/phases/setup.js | 11900 |
+| tool:paint | paint.js | script | scripts/bootstrap/phases/paint.js | 7400 |
 | tool:roadmap | roadmap.js | script | scripts/bootstrap/phases/roadmap.js | 11746 |
 | tool:spinup-orchestrate | spinup-orchestrate.js | script | scripts/bootstrap/spinup-orchestrate.js | 11275 |
 | tool:test-spinup-orchestrate | test-spinup-orchestrate.js | script | scripts/bootstrap/test-spinup-orchestrate.js | 10077 |

@@ -5,10 +5,12 @@ user-invocable: true
 
 # /portfolio:spinup — On-ramp a product from WarpOS
 
-`/portfolio:spinup <slug> [--clone <target>] [--phase <name>] [--resume]` — the
+`/portfolio:spinup <slug> [<step>] [--clone <target>] [--name <n>] [--what <w>]
+[--who <c>] [--where <platform>] [--research simple|deep] [--resume] [--json]` — the
 from-WarpOS entry point to the product on-ramp. It dispatches the real
 implementation, **`/bootstrap:spinup`**, into the registered product's working
-tree, without leaving or retargeting the WarpOS session.
+tree, without leaving or retargeting the WarpOS session. The positional `<step>`
+(`setup|canon|roadmap|paint`) and all modifiers pass through verbatim.
 
 > **One implementation, two entry points.** `bootstrap:spinup` (in-project) is
 > the source of truth; this wrapper just runs it against a chosen product from
@@ -17,10 +19,10 @@ tree, without leaving or retargeting the WarpOS session.
 
 ## Input
 
-`$ARGUMENTS` — `<slug> [--clone <target>] [--phase <intent|canon|roadmap|onscreen>] [--resume]`
+`$ARGUMENTS` — `<slug> [<step:setup|canon|roadmap|paint>] [--clone <target>] [--name <n>] [--what <w>] [--who <c>] [--where <platform>] [--research simple|deep] [--resume] [--json]`
 
 - **slug** — a registered product slug (see `/portfolio:list`). Exits 1 if not found.
-- All other flags pass through verbatim to `/bootstrap:spinup`.
+- **`<step>`** and all other flags pass through verbatim to `/bootstrap:spinup`.
 
 ## Procedure
 
@@ -30,7 +32,7 @@ subprocess with `CLAUDE_PROJECT_DIR` set to the product's `repo_path`; the paren
 WarpOS session is never retargeted:
 
 ```bash
-node scripts/portfolio/dispatch.js <slug> /bootstrap:spinup [--clone <target>] [--phase <name>] [--resume]
+node scripts/portfolio/dispatch.js <slug> /bootstrap:spinup [<step>] [--clone <target>] [--name <n>] [--what <w>] [--who <c>] [--where <platform>] [--research simple|deep] [--resume] [--json]
 ```
 
 Target subprocess stdout/stderr pipes to the caller; exit code propagates. See

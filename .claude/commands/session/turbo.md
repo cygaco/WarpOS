@@ -62,7 +62,7 @@ these levers — each one removes a class of round-trip observed building WarpOS
    a green e2e, skip the reviewer/qa/redteam gauntlet; keep it for `high`/`critical`.
 4. **Engine-sprint fast-close.** Tooling/engine sprints have no deploy artifact —
    close via `git` ff-merge to `main` + status→closed instead of dead-ending in
-   `/sprint:full`'s release-prep (RI-001). Defer the retro to milestone close.
+   `/sprint:full`'s release-prep (RI-001). Defer the retro to epic close.
 5. **Don't over-deliberate reversible bookkeeping.** Cheap, reversible, local-only
    actions (status flips, local merges, doc edits) are act-don't-deliberate.
 

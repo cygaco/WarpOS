@@ -20,7 +20,7 @@ Pick the consulting persona by the **scope** of the "what next" question, per th
 
 ## Procedure
 
-1. Read the same evidence as `/roadmap:ideas` — `ROADMAP.md` (Strategy, Milestones, candidates), `_requirements/00-canonical/*` (if present), recent `git log` + `paths.eventsFile`.
+1. Read the same evidence as `/roadmap:ideas` — `ROADMAP.md` (Strategy, Epics, candidates), `_requirements/00-canonical/*` (if present), recent `git log` + `paths.eventsFile`.
 2. **Consult the role-appropriate persona** — resolve the candidate agents from the skill-hook registry at call time: `node scripts/skills/skill-hook-points.js resolve roadmap:next pick`. It returns both personas with their `condition` (single-product vs strategic) and the `default`. Pick per the **Role routing** rules above; when scope is ambiguous, dispatch the `default` role (the R2 no-regression fallback). Do NOT hardcode a role name. State the chosen persona in one line. Ask for **exactly one** recommendation — the single most leverage-positive next entry — applying the `lean-product-development` principle (by slug — never an ordinal; it may renumber/move): what serves the majority userbase / golden path, is a calculated risk worth taking now, and (bonus) draws a tangential connection that compounds existing work.
 3. Output one pick:
    - **The entry** (title + 1-2 line body, ready for `/roadmap:add`).

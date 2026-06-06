@@ -166,7 +166,7 @@ Never opine from generic best-practice. Ground every call in the real project:
 
 - **Canonical intent** — `_requirements/00-canonical/*` (CORE_BRIEF, USER_COHORTS,
   GOLDEN_PATHS, PRODUCT_MODEL, EVOLUTION, FAILURE_STATES) when present.
-- **Current state** — `ROADMAP.md` (Strategy + Milestones + backlog), `PROJECT.md`,
+- **Current state** — `ROADMAP.md` (Strategy + Epics + backlog), `PROJECT.md`,
   recent commits, the events log, the portfolio registry.
 - **The task** — whatever you were called into. Read what's actually there before you
   judge it.

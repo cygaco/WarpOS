@@ -19,8 +19,8 @@ Detect what grounding the project actually has and pick the richest available,
    exists (CORE_BRIEF, USER_COHORTS, GOLDEN_PATHS, PRODUCT_MODEL, EVOLUTION,
    FAILURE_STATES). Mine those and reason through the **role-routed product persona**
    (see **Role routing** — the Director of Product by default): sequence by
-   user value × evidence × leverage; name the bet each milestone makes. This is the
-   fuller WarpOS milestone-0.14.0 "Managerial Agent Layer" shape.
+   user value × evidence × leverage; name the bet each epic makes. This is the
+   fuller WarpOS 0.14.0 "Managerial Agent Layer" shape.
 2. **Clone + brief (fallback):** no `00-canonical/*`, but a competitor clone
    brief (`_docs/clones/<slug>/<slug>.clone.md` — JTBDs, scored features,
    gaps `G-*`, opportunities `O-*`) and/or `PROJECT.md` exist. Mine those.
@@ -31,12 +31,12 @@ don't ask. State which source set was used in the run summary.
 ## Role routing (deterministic — R2 altitude split)
 
 Bootstrapping a roadmap is the **product-lens reasoning step** — sequencing
-milestones, naming the bet each makes, and phasing by lifecycle. Pick the persona
+epics, naming the bet each makes, and phasing by lifecycle. Pick the persona
 by the **altitude of that reasoning** (FINAL-PLAN §11 R2, β
 `EVT-org-roadmap-principles-beta-001`):
 
 - **Default → the **director-of-product** persona.** Roadmap *creation* is inherently
-  strategic: it sets the milestone arc, names lifecycle bets, and sequences by user
+  strategic: it sets the epic arc, names lifecycle bets, and sequences by user
   value × evidence × leverage — a strategic / lifecycle-phase call. This is the
   "Director-of-PM lens" the canonical-grounded path already invokes, now made an
   explicit dispatch. The Director is also the standing default for WarpOS's own
@@ -44,7 +44,7 @@ by the **altitude of that reasoning** (FINAL-PLAN §11 R2, β
 - **The **product-lead** persona** only when the bootstrap is explicitly scoped to a
   *single product's* execution-level backlog/sequencing with the strategic arc already
   fixed (e.g. re-bootstrapping a known product's sprint queue, not setting its
-  milestone bets) — the per-product / within-sprint altitude.
+  epic bets) — the per-product / within-sprint altitude.
 - **Fallback (R2 — no regression):** if scope is ambiguous, **default to
   `director-of-product`**. Defaulting up never regresses — the Lead inherits the
   Director's principles (R4), and the prior behavior of this skill was the Director-of-PM
@@ -62,17 +62,18 @@ State the chosen persona (and why) in the run summary.
 
 ## Invariants
 
-1. **Evidence-bound.** Every milestone and every sprint MUST cite its grounding —
+1. **Evidence-bound.** Every epic and every sprint MUST cite its grounding —
    a `JTBD-N` / `G-N` / `O-N` from the clone brief, or a canonical doc + line,
-   or a `PROJECT.md` line. No milestone without a citation. Unciteable ideas go
+   or a `PROJECT.md` line. No epic without a citation. Unciteable ideas go
    to a "Later (unvalidated)" bucket, not the sequence.
-2. **MVP-core-loop first.** Milestone 1 validates the core loop before infra.
-   **Milestone 1's first sprint MUST be a `/portfolio:spinup`** — get the loop
-   on screen and prove it serves before front-loading anything else. Then
+2. **MVP-core-loop first.** Epic 1 validates the core loop before infra.
+   **Epic 1's first sprint = the paint step / core-loop sprint** — get the loop
+   on screen and prove it serves (the bootstrap:spinup `paint` step's
+   verify-before-claim gate) before front-loading anything else. Then
    sequence top opportunities by **leverage × evidence**.
 3. **Structure parity.** Render the full `ROADMAP-EXAMPLE.md` shape:
    - **Strategy** block (grounded one-paragraph thesis + the bet).
-   - 🏛 **Milestones** — an Upcoming sequence overview, then per milestone:
+   - 🏛 **Epics** — an Upcoming sequence overview, then per epic:
      the shift / before→after / sprints-feeding-it / definition-of-done /
      reality-unlocked.
    - **Later** — trigger-gated (what unlocks it), incl. the unvalidated bucket.
@@ -95,27 +96,27 @@ State the chosen persona (and why) in the run summary.
    through that persona's lens.
    Clone/brief: read the clone brief's JTBD/feature/gap/opportunity sections +
    `PROJECT.md`. Build the evidence index (every claim → citation).
-3. **Sequence** (through the consulted persona). Milestone 1 = core-loop validation,
-   first sprint = `/portfolio:spinup`. Then order remaining milestones by
-   leverage × evidence. Each milestone names its bet + DoD + the reality it unlocks.
+3. **Sequence** (through the consulted persona). Epic 1 = core-loop validation,
+   first sprint = the paint step (core loop on screen). Then order remaining epics by
+   leverage × evidence. Each epic names its bet + DoD + the reality it unlocks.
 4. **Render** `ROADMAP.md` in the Invariant-3 structure, including the
    `<!-- ledger:sprints -->` anchor (so future `/sprint:full` runs auto-record
    rows — see WG-16 / Step 8b).
-5. **Verify + report:** confirm every milestone/sprint carries a citation, the
-   ledger anchor is present, Milestone 1's first sprint is a spinup, which source
-   set was used, and which persona was consulted (Director of Product vs Product
-   Lead) + why. Print the milestone sequence.
+5. **Verify + report:** confirm every epic/sprint carries a citation, the
+   ledger anchor is present, Epic 1's first sprint is the core-loop/paint sprint,
+   which source set was used, and which persona was consulted (Director of Product vs
+   Product Lead) + why. Print the epic sequence.
 
 ## Notes
 
 - Reference paths via `paths.*` keys, not literals (path-lint enforces).
 - This skill is the fallback half (clone+brief) AND the preferred half
   (canonical+DoPM) of one design — the canonical-grounded path is the
-  milestone-0.14.0 managerial-agent shape; this ships the detection + both
+  0.14.0 managerial-agent shape; this ships the detection + both
   source readers, with the DoPM lens deepening as 0.14.0 lands.
-- Sibling skills: `/portfolio:spinup` (Milestone 1's first sprint),
-  `bootstrap:spinup --clone` (produces the fallback brief), `/roadmap:add` /
-  `/roadmap:cleanup` (operate on the result).
+- Sibling skills: `/portfolio:spinup` (the on-ramp; its `paint` step is Epic 1's
+  first sprint), `bootstrap:spinup --clone` (produces the fallback brief),
+  `/roadmap:add` / `/roadmap:cleanup` (operate on the result).
 
 ## Reference
 

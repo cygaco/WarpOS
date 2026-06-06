@@ -16,15 +16,15 @@ Authority: Highest written source of truth for active, planned, completed, cance
 
 ## Related Tracker Documents
 
-- `ROADMAP.md` — the framework backlog and strategic direction, now **epic-based** (sprint T5, 2026-06-06): its `## Epics` section is the authoritative epic registry (4 active + 5 planned + 4 parked trigger-gated + 10 completed + 1 superseded), and the older `## 🏛 Milestones` structure is marked DEPRECATED (preserved for history). This `TRACKER.md` owns E-TRACKER-001 (active) + E-ADR0007 (completed) in detail; the broader theme-epics are registered in `ROADMAP.md` § Epics, each with a `trackers/epics/` file. Path verified to exist: `C:/Users/Vlad/Desktop/Claude/Projects/WarpOS/ROADMAP.md` (epic-file links resolved 2026-06-06).
+- `ROADMAP.md` — the framework backlog and strategic direction, now **epic-based** (sprint T5, 2026-06-06): its `## Epics` section is the authoritative epic registry (4 active + 5 planned + 4 parked trigger-gated + 10 completed + 1 superseded), and the older `## 🏛 Milestones` structure is marked DEPRECATED (preserved for history). This `TRACKER.md` owns E-TRACKER-001 (active) + E-ADR0007 (completed) in detail; the broader theme-epics are registered in `ROADMAP.md` § Epics, each with a `trackers/epics/` file. Path verified to exist: `ROADMAP.md` (repo-root relative; epic-file links resolved 2026-06-06).
 - `/trackers/epics/` — 9 epic tracker files Verified Exists (ls/Read 2026-06-06): `E-TRACKER-001` (T2) + the 8 created by sprint T5 (`E-GOLDEN-FLOW-001`, `E-CONTENT-DELIVERY-001`, `E-TEST-SUITE-001`, `E-STABLE-CHANNEL-001`, `E-BOUNDARY-001`, `E-MULTIPRODUCT-001`, `E-SKILL-CATALOG-001`, `E-MANAGER-LAYER-001`), one per active/planned roadmap epic.
 - `UNTRACKED_WORK.md` — meaningful work performed outside formal epics/sprints. Verified Exists (ls/Read on 2026-06-05); created by sprint T2. Recorded as Verified Exists in the Verification Matrix.
 - `/trackers/` — per-epic and per-sprint tracker files, templates, and records. Verified Exists (ls/Read on 2026-06-05): `trackers/`, `trackers/epics/`, `trackers/sprints/`, `trackers/templates/` (10 templates) + `trackers/README.md`; created by sprint T2. Recorded as Verified Exists in the Verification Matrix.
 
 ## Current Global State Summary
 
-- Active epics: 0 owned directly by this tracker — E-TRACKER-001 (Enforced TRACKER System) reached Completed (100%) on 2026-06-06 (all six sprints T1–T6 Completed + the hard enforcement hooks built + wired). The roadmap's broader theme-epics (3 active + 5 planned) are tracked in `ROADMAP.md` § Epics with `trackers/epics/` files — see Related Tracker Documents.
-- Active sprints: 0 (all six E-TRACKER-001 sprints T1–T6 Completed; the validator runs 20 checks).
+- Active epics: 1 owned directly by this tracker — E-SPINUP-STEPS-001 (Step-driven, degrade-proof bootstrap:spinup + Milestone→Epic, ~10%, Active 2026-06-06; source `WARPOS-PROMPT.md`). E-TRACKER-001 (Enforced TRACKER System) reached Completed (100%) on 2026-06-06. The roadmap's broader theme-epics are tracked in `ROADMAP.md` § Epics with `trackers/epics/` files — see Related Tracker Documents.
+- Active sprints: 1 (S-SPINUP-001 — Step-driven, degrade-proof bootstrap:spinup, ~5%, parent E-SPINUP-STEPS-001). All six E-TRACKER-001 sprints T1–T6 are Completed; the validator runs 20 checks.
 - Planned epics: 0 owned directly by this tracker (the roadmap's 5 planned theme-epics live in `ROADMAP.md` § Epics).
 - Planned sprints: 0 (T5 is now Completed — see Completed Sprints; only the T4 cross-file tail remains under the Active sprint).
 - Completed epics: 2 (E-TRACKER-001 — Enforced TRACKER System, 100%, completed 2026-06-06 with all six sprints + the hard enforcement hooks; E-ADR0007 — Agent-System Rewrite, 100%, verified on `main`, E1–E8 hashes + `warpos@0.14.0` tag re-verified against `git` on 2026-06-05). The roadmap registers 10 completed theme-epics (mapped to existing Shipped receipts) in `ROADMAP.md` § Epics.
@@ -385,7 +385,7 @@ Where it applies: Everywhere; the scope of this entire document.
 
 # System Inventory
 
-Per spec §9, every tracker-relevant component is inventoried below. This inventory was fully disk-verified by sprint T3 on 2026-06-05: every row was checked with `ls`/`test`/Read/`grep`/`node`/`git` against canonical `C:/Users/Vlad/Desktop/Claude/Projects/WarpOS`, and there are no `Unknown` rows — every state is a definite §10 verification state. Verifying agent: the T3 verification pass (President-delegated systems builder). For each item: Name | Type | Expected path | Exists? | Verified state | Verification method + evidence (timestamp 2026-06-05 unless noted).
+Per spec §9, every tracker-relevant component is inventoried below. This inventory was fully disk-verified by sprint T3 on 2026-06-05: every row was checked with `ls`/`test`/Read/`grep`/`node`/`git` against the canonical repo root, and there are no `Unknown` rows — every state is a definite §10 verification state. Verifying agent: the T3 verification pass (President-delegated systems builder). For each item: Name | Type | Expected path | Exists? | Verified state | Verification method + evidence (timestamp 2026-06-05 unless noted).
 
 | Item | Type | Expected path | Exists? | Verified state | Method + evidence (2026-06-05, T3) |
 |---|---|---|---|---|---|
@@ -479,13 +479,30 @@ No `Unknown` rows remain. The `Verified Not Wired` rows are tracked follow-ups (
 
 # Active Epics
 
-None currently recorded. E-TRACKER-001 — Enforced TRACKER System — reached Completed (100%) on 2026-06-06 when the hard start/end/completion enforcement hooks landed (see Completed Epics). The roadmap's broader theme-epics (active + planned) are tracked in `ROADMAP.md` § Epics with their own `trackers/epics/` files, not as Active Epics here.
+E-TRACKER-001 — Enforced TRACKER System — reached Completed (100%) on 2026-06-06 (see Completed Epics). The roadmap's broader theme-epics (E-GOLDEN-FLOW-001 etc.) are tracked in `ROADMAP.md` § Epics with their own `trackers/epics/` files. The one epic owned directly by this tracker as Active is:
+
+### E-SPINUP-STEPS-001 — Step-driven, degrade-proof bootstrap:spinup + Milestone→Epic
+- Link to epic tracker: [trackers/epics/E-SPINUP-STEPS-001-step-driven-degrade-proof-spinup.md](trackers/epics/E-SPINUP-STEPS-001-step-driven-degrade-proof-spinup.md) — Verified Exists (Write/Read 2026-06-06).
+- Current state: Active
+- Percent completion: 10% — §0 gap analysis complete (`runtime/notes/warpos-spinup-gap-analysis.md`); build in progress.
+- Goal: Refactor `bootstrap:spinup` into a step-driven (`setup → canon → roadmap → paint`), idempotent, resumable pipeline with a stable `--json` status + consumer dispatch contract, a degrade-proof engine (no path to thin/placeholder canon), a `--where` platform target, a `portfolio:new` reconcile, and a Milestone→Epic rename. Source: `WARPOS-PROMPT.md` (2026-06-06).
+- Current next action: build §1 (positional `<step>` subcommand + folded setup/paint phases + stable `--json`) + §4 (portfolio:new create/scaffold reconcile).
+- Evidence of progress: `runtime/notes/warpos-spinup-gap-analysis.md` (32-row behavior→step table, zero dropped behaviors).
+- Related roadmap item: `ROADMAP.md` § Epics → E-SPINUP-STEPS-001.
 
 ---
 
 # Active Sprints
 
-None currently recorded. All six E-TRACKER-001 sprints (T1, T2, T3, T4, T5, T6) are Completed — see Completed Sprints. T4 — Validation engine + enforcement — moved from Review Needed to Completed on 2026-06-06 when its deferred cross-file §28.7 checks landed (the validator now runs 20 checks: 12 single-file a–l + 8 cross-file m–t). The epic E-TRACKER-001 remains Active at ~95% with a single residual (a hard start/end/completion enforcement HOOK), tracked under Known Gap G-2 and enforced-to-stay-visible by the new `hooks-enforce-or-tracked` check — see the epic's Next required action.
+### S-SPINUP-001 — Step-driven, degrade-proof bootstrap:spinup
+- Link to sprint tracker: [trackers/sprints/S-SPINUP-001-step-driven-degrade-proof-spinup.md](trackers/sprints/S-SPINUP-001-step-driven-degrade-proof-spinup.md) — Verified Exists (Write/Read 2026-06-06).
+- Parent epic: E-SPINUP-STEPS-001
+- Current state: Active
+- Percent completion: 5% — gap analysis done; structural build starting.
+- Current next action: build §1 step refactor + §4 portfolio:new reconcile.
+- Evidence of progress: `runtime/notes/warpos-spinup-gap-analysis.md`; source read end-to-end (pre-refactor baseline).
+
+All six E-TRACKER-001 sprints (T1, T2, T3, T4, T5, T6) are Completed — see Completed Sprints. T4 — Validation engine + enforcement — moved from Review Needed to Completed on 2026-06-06 when its deferred cross-file §28.7 checks landed (the validator now runs 20 checks: 12 single-file a–l + 8 cross-file m–t). The epic E-TRACKER-001 remains Active at ~95% with a single residual (a hard start/end/completion enforcement HOOK), tracked under Known Gap G-2 and enforced-to-stay-visible by the new `hooks-enforce-or-tracked` check — see the epic's Next required action.
 - Related system inventory items: tracker validation engine; /trackers:validate skill.
 
 ---
@@ -1020,5 +1037,5 @@ Per spec §36. Each gap carries: id, description, severity, affected area, affec
 - Required fix: a session-bootstrap guard that detects a stale/pruned worktree cwd and refuses or re-roots to canonical; and a convention that tracker/dispatch records are written via absolute canonical paths, not cwd-relative. Until built, the operational mitigation (used this session) is to prefix every command with the absolute canonical root and use absolute paths for all file operations.
 - Current state: Recorded; mitigation applied this session; no automated guard yet.
 - Related epic/sprint: not E-TRACKER-001 directly; a session-bootstrap follow-up (candidate future epic). Cross-references existing project memory on dispatch completion records + enforcer debt ED-016.
-- Evidence: this session's cwd was `...\.claude\worktrees\e6-orgmap-collapse\.claude\worktrees\e6-recover` (a pruned nested worktree); all work was performed on canonical `C:/Users/Vlad/Desktop/Claude/Projects/WarpOS` via absolute paths.
+- Evidence: this session's cwd was `...\.claude\worktrees\e6-orgmap-collapse\.claude\worktrees\e6-recover` (a pruned nested worktree); all work was performed on the canonical repo root via absolute paths.
 - Next action: log a session-bootstrap-guard follow-up (candidate epic) and reference it from `ROADMAP.md`; until then, keep using the absolute-path mitigation.

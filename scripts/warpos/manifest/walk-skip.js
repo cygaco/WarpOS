@@ -40,6 +40,14 @@ const WALK_SKIP_FILES = new Set([
   ".env",
   ".env.local",
   "DUMP.md",
+  // Transient/local root docs — operator input specs + per-repo registers, NOT
+  // shipped framework (same class as DUMP.md). WARPOS.md is a per-repo gap register
+  // (products generate their own via /warp:flag; canonical's is local, never shipped);
+  // WARPOS-ISSUES.md is a session issue log; the *-PROMPT.md files are operator input.
+  "WARPOS.md",
+  "WARPOS-ISSUES.md",
+  "WARPOS-PROMPT.md",
+  "MASTERCONSOLE-PROMPT.md",
   ".DS_Store",
   "Thumbs.db",
   // Transient per-session markers hooks write under .claude/ (gitignored). They
