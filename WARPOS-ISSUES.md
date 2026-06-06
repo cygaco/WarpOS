@@ -27,6 +27,12 @@
 - **Impact:** None on this work — the spinup refactor introduced ZERO new failures (verified HEAD vs working-tree fail-set parity).
 - **Status:** Noted, pre-existing, out of scope for WARPOS-PROMPT. Candidate follow-ups: make `test-status-cli` copy its drift fixture's transitive deps (or run in-place); audit the hl-stories/prds linters.
 
+### I-4 — β teammate did not return boundary-consult verdicts
+- **When:** Design boundary + pre-land of the spinup refactor.
+- **What:** Two `SendMessage` consults were sent to the persistent `Beta (β)` teammate (design-boundary batched consult + a pre-land verdict nudge). Neither returned a DECIDE/DIRECTIVE/ESCALATE within the build window. The persistent team IS alive and correctly formed (`~/.claude/teams/warpos-sprint/config.json` → team-lead (α) | Epsilon (ε) | Beta (β)).
+- **Impact:** Low/none for this work — proceeded under the batched-β cadence (no response = no objection = no block) on a prescriptive spec with a green gauntlet (32/32 + zero regressions). But a silent β defeats the boundary-consult safety net.
+- **Status:** Noted. Possible causes: background teammate idle-without-send, or the consult queued and not auto-delivered. Candidate follow-up: a liveness/ack probe for persistent teammates before relying on a (non-)response, or a timeout→escalate-to-operator on a missing β verdict.
+
 ### I-3 — `roadmap:create.md` references a non-existent `ROADMAP-EXAMPLE.md`
 - **When:** §5 rename of `roadmap:create.md`.
 - **What:** `roadmap:create.md` cites `ROADMAP-EXAMPLE.md` as its structure model, but no such file exists in the repo (`glob **/ROADMAP-EXAMPLE.md` → none). Pre-existing dangling reference (present before this session; preserved through the rename).
