@@ -27,11 +27,11 @@
 - **Impact:** None on this work — the spinup refactor introduced ZERO new failures (verified HEAD vs working-tree fail-set parity).
 - **Status:** Noted, pre-existing, out of scope for WARPOS-PROMPT. Candidate follow-ups: make `test-status-cli` copy its drift fixture's transitive deps (or run in-place); audit the hl-stories/prds linters.
 
-### I-4 — β teammate did not return boundary-consult verdicts
+### I-4 — β consult verdicts arrived DELAYED (after the build window), not absent — latency, not silence
 - **When:** Design boundary + pre-land of the spinup refactor.
-- **What:** Two `SendMessage` consults were sent to the persistent `Beta (β)` teammate (design-boundary batched consult + a pre-land verdict nudge). Neither returned a DECIDE/DIRECTIVE/ESCALATE within the build window. The persistent team IS alive and correctly formed (`~/.claude/teams/warpos-sprint/config.json` → team-lead (α) | Epsilon (ε) | Beta (β)).
-- **Impact:** Low/none for this work — proceeded under the batched-β cadence (no response = no objection = no block) on a prescriptive spec with a green gauntlet (32/32 + zero regressions). But a silent β defeats the boundary-consult safety net.
-- **Status:** Noted. Possible causes: background teammate idle-without-send, or the consult queued and not auto-delivered. Candidate follow-up: a liveness/ack probe for persistent teammates before relying on a (non-)response, or a timeout→escalate-to-operator on a missing β verdict.
+- **What:** Two `SendMessage` consults to the persistent `Beta (β)` teammate did not deliver within the build window, so I proceeded under batched-β. **Correction (β flagged this):** both verdicts DID land — they arrived after the close-out as delayed team messages: **DECIDE CLASS B 0.87** (batched design-boundary — proceed on all four: remove `--auto` entirely as a degrade path, fail-closed canon gate is an addition, live-only rename correct, in-loop build correct given RI-004; no phase boundary needs a halt) and **DECIDE CLASS A 0.92** (pre-land reconfirm — "land it; 32/32 is the closing artifact"). So the original "β did not return verdicts" framing was wrong: it's a delivery-LATENCY artifact of the batched/background-teammate pattern, not a non-response. β's verdicts independently validated every design decision.
+- **Impact:** None on this work — I proceeded correctly and β's late verdicts agreed on every point. The real issue is consult→verdict round-trip latency exceeding the build window for a background teammate, which silently degrades the boundary-consult safety net into after-the-fact validation.
+- **Status:** Noted (corrected). Candidate follow-up: a liveness/ack probe + a bounded wait (or timeout→escalate) before treating a missing β verdict as "no objection," so the consult is a true gate rather than retroactive confirmation. The "no response = proceed" batched cadence is sound, but should distinguish "β said proceed" from "β hasn't answered yet."
 
 ### I-3 — `roadmap:create.md` references a non-existent `ROADMAP-EXAMPLE.md`
 - **When:** §5 rename of `roadmap:create.md`.
