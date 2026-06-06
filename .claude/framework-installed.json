@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "0.14.0",
-  "installedCommit": "0650e5893d1f03385ad3b9ad83da7630e3f2e831",
-  "installedAt": "2026-06-06T04:44:41.332Z",
+  "installedCommit": "d39ea7dac2843b615c4fb640ac7c9bc789b280df",
+  "installedAt": "2026-06-06T05:34:20.311Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -2659,6 +2659,16 @@
       "introducedIn": "0.0.0"
     },
     {
+      "id": "skill.trackers.validate.md",
+      "kind": "skill",
+      "dest": ".claude/commands/trackers/validate.md",
+      "owner": "framework",
+      "mergeStrategy": "three_way_markdown",
+      "installedHash": "e85fc94486aa44a9fa2cc964e3c8aabc6d8ba6937e32804ef797b1ff6e3e1365",
+      "currentHashAtInstall": "e85fc94486aa44a9fa2cc964e3c8aabc6d8ba6937e32804ef797b1ff6e3e1365",
+      "introducedIn": "0.0.0"
+    },
+    {
       "id": "skill.turbo.md",
       "kind": "skill",
       "dest": ".claude/commands/turbo.md",
@@ -4624,8 +4634,8 @@
       "dest": "scripts/warpos/manifest/build.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "777a56752d3897bc61376169e18f3c7b880d03fe668045fba3bc045804e76ef0",
-      "currentHashAtInstall": "777a56752d3897bc61376169e18f3c7b880d03fe668045fba3bc045804e76ef0",
+      "installedHash": "3179df6520f3956021aea00177991ac8dc954d0c0849c3cc96712a458fc71a3d",
+      "currentHashAtInstall": "3179df6520f3956021aea00177991ac8dc954d0c0849c3cc96712a458fc71a3d",
       "introducedIn": "0.0.0"
     },
     {

@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-06T04:44:41.654Z",
+  "generatedAt": "2026-06-06T05:34:20.637Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.14.0",
   "migrations": [],
@@ -113,6 +113,10 @@
       "installedSha": "6886954e0167e8a3c93f787989a3616dd6494304d266e518adcc5fa03143f66b"
     },
     "TRACKER.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    "UNTRACKED_WORK.md": {
       "owner": "runtime",
       "managed": false
     },
@@ -1383,6 +1387,78 @@
       "owner": "project",
       "managed": false,
       "class": "data"
+    },
+    "trackers/README.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    "trackers/templates/CHANGE_LOG_TEMPLATE.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    "trackers/templates/COMPLETION_RECORD_TEMPLATE.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    "trackers/templates/DEFINITION_TEMPLATE.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    "trackers/templates/EPIC_TEMPLATE.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    "trackers/templates/EVIDENCE_LOG_TEMPLATE.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    "trackers/templates/RECONCILIATION_TEMPLATE.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    "trackers/templates/SESSION_LOG_TEMPLATE.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    "trackers/templates/SPRINT_TEMPLATE.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    "trackers/templates/UNTRACKED_WORK_TEMPLATE.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    "trackers/templates/VERIFICATION_TEMPLATE.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    "trackers/sprints/T1-tracker-keystone.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    "trackers/sprints/T2-templates-and-dirs.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    "trackers/sprints/T3-system-inventory-and-verification-matrix.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    "trackers/sprints/T4-validation-engine-and-enforcement.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    "trackers/sprints/T5-roadmap-milestones-to-epics.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    "trackers/sprints/T6-mode-wiring.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    "trackers/epics/E-TRACKER-001-enforced-tracker-system.md": {
+      "owner": "runtime",
+      "managed": false
     },
     "tests/warpos/dispatch-readiness.test.js": {
       "owner": "framework",
@@ -3117,8 +3193,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/warpos/manifest/build.js",
-      "sha256": "777a56752d3897bc61376169e18f3c7b880d03fe668045fba3bc045804e76ef0",
-      "installedSha": "777a56752d3897bc61376169e18f3c7b880d03fe668045fba3bc045804e76ef0"
+      "sha256": "3179df6520f3956021aea00177991ac8dc954d0c0849c3cc96712a458fc71a3d",
+      "installedSha": "3179df6520f3956021aea00177991ac8dc954d0c0849c3cc96712a458fc71a3d"
     },
     "scripts/warpos/manifest/test-bootstrap.js": {
       "owner": "framework",
@@ -3203,6 +3279,13 @@
       "source": "scripts/turbo/install-hook.js",
       "sha256": "54295b80e3264199d9e45aad8843aa488a385d5ae49bc7f6cf98d73f86ef18e6",
       "installedSha": "54295b80e3264199d9e45aad8843aa488a385d5ae49bc7f6cf98d73f86ef18e6"
+    },
+    "scripts/trackers/validate.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/trackers/validate.js",
+      "sha256": "1f35f08862bcbd5ad165faad7479175f735e072f0e9aabeea2011da95e27edd0",
+      "installedSha": "1f35f08862bcbd5ad165faad7479175f735e072f0e9aabeea2011da95e27edd0"
     },
     "scripts/tools/emit-attestation-events.js": {
       "owner": "framework",
@@ -15285,6 +15368,14 @@
       "kind": "md",
       "sha256": "93f8bfa35493f9ddb50cc8350e89fcc22d7be472a3240023ef2c0dab0af4ce8b",
       "installedSha": "93f8bfa35493f9ddb50cc8350e89fcc22d7be472a3240023ef2c0dab0af4ce8b"
+    },
+    ".claude/commands/trackers/validate.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/commands/trackers/validate.md",
+      "kind": "md",
+      "sha256": "e85fc94486aa44a9fa2cc964e3c8aabc6d8ba6937e32804ef797b1ff6e3e1365",
+      "installedSha": "e85fc94486aa44a9fa2cc964e3c8aabc6d8ba6937e32804ef797b1ff6e3e1365"
     },
     ".claude/commands/sprint/cost-gate.md": {
       "owner": "framework",

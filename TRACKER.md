@@ -1,102 +1,957 @@
-# WarpOS — Agent-System Rewrite TRACKER (interim)
+# TRACKER.md
 
-> **What this is.** A persistent, per-task-state tracker for the **agent-system rewrite (ADR-0007)** initiative — the work of the last several days. The interim form of the roadmapped "epics-over-milestones + per-task tracker." Status is **verified against disk + git**, not claims (the audits that built this checked the actual files). Scope = the rewrite only; the broader framework backlog (0.16–0.18 milestones etc.) lives in `ROADMAP.md`.
->
-> **Legend:** ✅ done & verified · 🟡 partial · ⬜ open/not-started · 🅿️ parked (deliberate) · 🔒 design-locked (deferred by decision)
->
-> **State as of 2026-06-05 · `main` = `db0a778`** (E5–E8 ALL LANDED — the ADR-0007 rewrite is DONE; `/scan:cutover-completeness` GREEN, 61-ref cutover debt cleaned). Backup: `backup/pre-cutover-2026-06-04` (never delete).
+Version: 1.0.0
 
----
+Owner: President Agent
 
-## The picture in one line
+Last Updated: 2026-06-05 (reconciliation pass)
 
-**DONE.** E1–E8 are built, verified, and on `main` (`db0a778`). This session landed the whole remaining rewrite via three parallel sprints: **E5** (`_knowledge/` brain), **E6** (org-map→registry collapse + spec-tree witness), **E7** (ε sprint-runtime + ADR-0009 + ED-025/ED-022), **E8** (ED-026 cutover gate + ED-021) — then **cleaned the 61-ref cutover debt** so `/scan:cutover-completeness` is GREEN. Every gate green. The only genuinely-staged item: the ε per-agent **spawn** increment (documented in ADR-0009 as the named follow-on; the engine + invariants + both ED-closures are real on main today). **The agent-system rewrite is complete.**
+Last Validation: 2026-06-05 — `node scripts/trackers/validate.js` (all 12 checks pass, exit 0)
 
----
+Validation Status: Passing (12/12 checks; verified by `ls`/Read on 2026-06-05)
 
-## EPICS
+Purpose: The highest written source of truth for active, planned, completed, cancelled, superseded, untracked, definition-bound, and verification-bound long-running work in the WarpOS Agentic OS. This document exists so that an agent can resume any large goal from written files alone — knowing what exists, what is active, what is planned, what is done, what is verified, what is missing, and what the next action is — with no meaningful loss, terminology drift, missing paths, missing wiring, or hidden dependency on memory.
 
-### ✅ E1 — Org cutover (the foundation)
-Department tree (`president/product/engineering/growth/_system/_org`) replaced the old mode-based tree; role-registry keystone; mode-agnostic workers; dispatched-reviewer independence invariant.
-- [x] Dept-tree folder collapse — old `00-alex/01-adhoc/02-oneshot/03-managers/` deleted, verified gone
-- [x] `role-registry.json` keystone (33 roles) — the single source of role identity/model/authority
-- [x] Atomic rename + Tier-3 verbatim ports + cutover behind parity gates
-- [x] **All 32/33 agent specs are REAL** (74–574 lines, no stubs) — the "managers are spec-only" fear is false; only ε is design-locked (→ E7)
-- [x] ADR-0007 accepted
-**Evidence:** cutover commits `09bac6f`→`9a132af`; `/scan:full` green at cutover.
+Authority: Highest written source of truth for active, planned, completed, cancelled, superseded, untracked, definition-bound, and verification-bound long-running work. `TRACKER.md` outranks Claude's built-in memory, chat memory, implied context, informal summaries, agent assumptions, old roadmap language, and unverified wiring assumptions. See section "Authority and Conflict Resolution" for the full order.
 
-### ✅ E2 — Phase D: sprint hook-point FRAMEWORK
-The declarative registry + router that lets agents wire into sprint lifecycle steps.
-- [x] `sprint-hook-points.json` (16 rows / 6 steps) + composition→agent-set router (`hook-points.js`)
-- [x] `residency` field + `residencyOf()` (consumed at runtime)
-- [x] `manager_consult` emitter wired into `full.js` (ED-022 emitter)
-- [x] `scan:sprint-hook-coverage` (bidirectional enforcer) + ε liveness heartbeat
-- [ ] ⬜ ε actually *running* the lifecycle → that's **E7** (deferred)
-**Evidence:** `688b1e3`→`2e859d7`.
+## Related Tracker Documents
 
-### ✅ E3 — v0.2: dispatch consumers derive from the registry  *(this session)*
-The registry became the single source of truth for role→provider/effort/build_chain/kind.
-- [x] `registry-roles.js` reader (providerMap/effortMap/buildChainRoles/… + `deriveOrFallback` loud fallback)
-- [x] **Trap-A fix** — `scan:dispatch-routing-parity` anchors on the registry (non-vacuous), proven by a 9-case bite-test
-- [x] Tier-1 sets (`BUILD_CHAIN`/`GEMINI`/`FLAGSHIP`) derive
-- [x] Tier-3 maps (`catalog` provider+effort, `providers.DEFAULT_AGENT_PROVIDERS`, `org-roles.REMEDIATION_ROLES`) derive
-- [x] Registry reconciliation (security-reviewer effort→high, stub-scaffold→null) — **ADR-0008**
-- [x] CUT-SAFETY 0-regression verified vs git HEAD; scan-gated PASS; LANDED
-**Evidence:** `ec3f249`,`b29d331`,`2202abf` (on `main`); ADR-0008.
+- `ROADMAP.md` — the framework backlog and strategic direction (epic-based migration in progress; see Known Gaps G-2 and epic E-TRACKER-001 / sprint T5). Path verified to exist: `C:/Users/Vlad/Desktop/Claude/Projects/WarpOS/ROADMAP.md`.
+- `UNTRACKED_WORK.md` — meaningful work performed outside formal epics/sprints. Verified Exists (ls/Read on 2026-06-05); created by sprint T2. Recorded as Verified Exists in the Verification Matrix.
+- `/trackers/` — per-epic and per-sprint tracker files, templates, and records. Verified Exists (ls/Read on 2026-06-05): `trackers/`, `trackers/epics/`, `trackers/sprints/`, `trackers/templates/` (10 templates) + `trackers/README.md`; created by sprint T2. Recorded as Verified Exists in the Verification Matrix.
 
-### ✅ E4 — M1 §8: skill→agent resolution  *(this session)*
-Skills resolve their persona from the registry at call time, never hardcode a role name.
-- [x] `skill-hook-points.json` registry + `skill-hook-points.js` resolver + 8-case bite-test
-- [x] `scan:skill-hook-coverage` enforcer, wired into `/scan:full`
-- [x] Migrate the 8 `subagent_type`-literal skills (roadmap×4 + growth×4); `MIGRATION_PENDING` emptied
-- [x] **M1-c tail** — register+migrate the 4 prose-dispatch skills (`ad-images`/`ad-video`/`angles`/`iterate`); fix 3 descriptive stale names (message-brief/spinup/playbook); broaden the enforcer (persona-stale-anywhere + bold-backtick-dispatch + `stale-ok` suppress); bite-test 14/14
-- [x] final convergence: cleaned 6 bold-backtick persona lines in the earlier-migrated 4 growth skills — broadened gate GREEN (0 gaps), bite-test 14/14
-**E4 is DONE** — every agent-calling skill (12 registered) resolves its persona from the registry; no skill names a persona as a hardcoded dispatch.
-**Evidence:** `aa86338`,`f574a7e`,`2ac4c92`,`5c8377c` (on `main`); tail landing this session.
+## Current Global State Summary
 
-### ✅ E5 — M1-d: the `_knowledge/` layer  *(LANDED 2026-06-05 · `3f9470d`→`6dcd318`)*
-The shared agent-grounding brain (ADR-0007): two-kind taxonomy (β DECIDE 0.86) — **library** (design) + **store** (audience, copy); `state` parked (per-sprint runtime, no canonical instance).
-- [x] Directory shape decided (β-blessed) — `_knowledge/{design,audience,copy}` built; `_domain.json` per domain → generated `_knowledge/registry.json`
-- [x] `scripts/knowledge/registry.js` — the domain-registry engine (generalizes `scripts/guides/registry.js`; deterministic, role-validated)
-- [x] `/knowledge:integrate` skill — library via `<!-- knowledge:<domain> role:<role> -->` marker blocks per consumer spec; store via producer-ref + contract README; ledger `knowledge-integration.jsonl` (idempotent, read-before-write)
-- [x] **M3 migration:** `_guides/design` (19 guides) → `_knowledge/design` (git mv + 137 ref-fixes incl. dead role names; 4 consumer marker blocks repointed); both manifest systems taught `_knowledge/`
-- [x] `/knowledge:coverage` + `scripts/checks/knowledge-coverage.js` (fail-closed, pure `evaluate()` + 9/9 bite-test) wired into `/scan:full`; store READMEs (audience/copy) + lead wiring
-- [x] Scan-gate PASS (independent agent, verified vs parent 11d54ec); ship-coverage GREEN; landed.
-**Also fixed in-flight:** 2 latent ship gaps (`scripts/skills` unshipped, `TRACKER.md` unclassified) + a `/fix:deep` cutover-ref cleanup (3 dead-role slugs; RCA: the alias table masks staleness → ED-026 enriched).
+- Active epics: 1 (E-TRACKER-001 — Enforced TRACKER System, ~50% — 3 of 6 sprints done: T1, T2 Completed; T4 Review Needed).
+- Active sprints: 1 (T4 — validation engine + enforcement, Review Needed, ~85%).
+- Planned epics: 0.
+- Planned sprints: 3 (T3, T5, T6 — all parented to E-TRACKER-001).
+- Completed epics: 1 (E-ADR0007 — Agent-System Rewrite, 100%, verified on `main`).
+- Completed sprints (summarized): T1 (TRACKER keystone + definitions) and T2 (templates + dirs + UNTRACKED_WORK) landed in the Wave-1 commit; plus the ADR-0007 rewrite across E1–E8 (see Completed Sprints) and the WarpOS 0.14.0 release (tag `warpos@0.14.0`).
+- Cancelled or superseded work: the interim ADR-0007-rewrite TRACKER.md is Superseded by this file (see Cancelled or Superseded Work).
+- Untracked work: tracked in `UNTRACKED_WORK.md` (Verified Exists, ls/Read on 2026-06-05; created by sprint T2).
+- Known gaps: 3 (G-1 ship-boundary audit; G-2 tracker system mid-build — now T1/T2 done, T4 in review, T3/T5/T6 remain; G-3 stale-worktree-cwd hazard).
 
-### ✅ E6 — ED-024: org-map → registry structural collapse  *(LANDED 2026-06-05 · merge `0320e11`)*
-- [x] Collapsed org-map's reporting-line roster into role-registry `dispatchable_by`; `scan:role-parity` now anchors on the registry, **witnessed by the independent on-disk spec tree** (spec-path encodes home/sub_home, frontmatter name:=role id) — NON-VACUOUS, proven by `role-parity.test` 30/30 (5 bite classes). The Trap-A discipline held. **ADR-0010**; ED-024 enforced.
+## Current Highest-Priority Next Action
 
-### ✅ E7 — ε sprint-conductor RUNTIME  *(LANDED 2026-06-05 · merge `34213e2` · ADR-0009)*
-- [x] Built the ε runtime (`scripts/sprint/epsilon-runtime.js`, 526L): a registry reader + lifecycle engine that resolves the matched agent-set at each hook-point + DERIVES each role's dispatch route from the registry (ADR-0008 pattern) + writes REAL completion records (replacing telemetry-only). Invariants enforced structurally (sole builder-dispatcher, author-consults can't dispatch, β at boundaries, self-gates via the override gate). DESIGN-LOCKED banner lifted.
-- [x] **ADDITIVE** — wired into `full.js` behind `--epsilon`; default path BYTE-IDENTICAL (proven: `test-sprint-full` 156/156 + an ε-vs-script coverage-parity test).
-- [x] **ED-025** closed (the can't-override-FAIL gate covers the ε/sprint path; ε self-gates via `assertNoFailOverride`). **ED-022** closed + proven E2E (UI sprint records the design-quality consult; non-vacuous).
-- [ ] ⬜ **STAGED (ADR-0009 risk #4):** the literal per-agent SPAWN under `--epsilon-dispatch` — the runtime shapes+writes real records now; spawning each agent on its resolved route is the next increment. *The only honestly-deferred piece in the rewrite.*
-
-### ✅ E8 — enforcer-debt hardening  *(rewrite-specific debt CLOSED 2026-06-05)*
-- [x] **ED-023** — `adhoc-fail-override` REVIEWER_KEYS derives from the registry *(prior session)*.
-- [x] **ED-026** — `/scan:cutover-completeness` (E8, merge `146108f`): greps RAW deleted-tree literals + renamed-away roles across the imperative layer + keystone registries, fail-closed, wired into `/scan:full`; checks raw literals NOT alias-resolved (the alias-table-masking insight, `L-2026-06-05`). **The 61 flagged stale refs were CLEANED** (`db0a778`) → gate GREEN. Both the enforcer-gap AND the live debt are closed.
-- [x] **ED-021** — heavy-skill lean-return dispatch contract (`dispatch-route-guard.js#findHeavySkillAdvisory`, E8).
-- [x] **ED-022 / ED-024 / ED-025** — closed by E7 (ε runtime) · E6 (org-map collapse) · E7. All `enforced` in the debt ledger.
-Older framework debt (pre-rewrite, NOT rewrite blockers — ordinary backlog): ED-009, ED-010, ED-011, ED-012, ED-013, ED-014, ED-015, ED-017, ED-018, ED-019, ED-020, ED-027, ED-028 — all `open`; triage in future sessions.
-
-### 🟡 Operational papercuts (RIs — not rewrite blockers)
-- [ ] ⬜ **RI-001** — BC-02/BC-05 false-RED on Windows CRLF (high)
-- [ ] ⬜ **RI-002** — fresh-minor release version-state refresh reds gates 6–7 (high)
-- [ ] ⬜ **RI-004** — build-chain dispatch silent-death via harness reap (high)
+Finish sprint T4 (move it from Review Needed to Completed) by (1) wiring `/trackers:validate` into the standing scan suite as an enforcement gate, and (2) adding the cross-file §28.7 checks the single-file engine deferred (definition-drift; epics-missing-from-roadmap / roadmap-still-using-milestones; TRACKER↔roadmap↔epic↔sprint reconciliation; work-logs-with-no-session-ID; expected-nonexistence; modes-that-work-but-don't-consult-the-tracker; missing-enforcement-hooks). Then run sprints T3 (fill System Inventory + Verification Matrix from disk), T5 (migrate ROADMAP milestones→epics + create epic tracker files), and T6 (wire tracker checks into all modes).
 
 ---
 
-## 🎯 FINAL SESSION — "blow everything out" target order
+# How to Use This Document
 
-1. ✅ **E4 finished** + landed (prior).
-2. ✅ **E5 — `_knowledge/` layer LANDED** (`6dcd318`, 2026-06-05) — directory-shape decided (β), `_knowledge:integrate` + coverage enforcer + M3 migration + store domains, scan-gate PASS.
-3. ✅ **E6 — ED-024 LANDED** (`0320e11`) — org-map collapse + spec-tree witness (non-vacuous, 30/30 bite-test). ADR-0010.
-4. ✅ **E7 — ε runtime LANDED** (`34213e2`, ADR-0009) — additive (default path byte-identical); ED-025 + ED-022 closed. One staged increment: per-agent spawn (ADR-0009 risk #4).
-5. ✅ **E8 — ED-026 + ED-021 LANDED** (`146108f`) + the 61-ref cutover cleanup (`db0a778`) → `/scan:cutover-completeness` GREEN.
+This section is operational instructions, not passive documentation. Every agent must read and apply this section before doing meaningful work that could affect roadmap, epic, sprint, definition, implementation, documentation, validation, wiring, or Agentic OS state.
 
-**🏁 The agent-system rewrite (ADR-0007, E1–E8) is COMPLETE on `main`.** Remaining = the ε per-agent-spawn increment (ADR-0009) + the older framework backlog (ED-009/010/… + the 3 RIs) — none are rewrite blockers; ordinary backlog for future sessions.
+## Required Use Cases
 
-When E5–E7 close, the agent-system rewrite is **done** — and the durable form of this tracker (per the ROADMAP "epics-over-milestones" entry) becomes the standing planning instrument.
+Consult `TRACKER.md` when: starting work; resuming work; planning work; creating, updating, or completing an epic or sprint; cancelling or superseding work; changing scope; discovering or resolving a blocker; changing, introducing, or interpreting definitions; verifying paths, file/directory existence or nonexistence, hooks, commands, mode wiring, or validator behavior; working outside a sprint; preparing a handoff; compacting or summarizing context; switching modes; reconciling roadmap state; reviewing completion claims; validating project state; debugging state mismatch; and answering "what is done / next / exists / missing / wired / enforced?"
 
-*Interim tracker authored 2026-06-05 (session 3), verified by two disk-level audits. Companion to `DUMP.md` (the prescriptive next-session handoff). This file is the durable burndown; DUMP is the execution brief.*
+## Start-of-Work Procedure
+
+Before beginning meaningful work, the agent must:
+
+1. Open or inspect `TRACKER.md`.
+2. Identify whether the work belongs to an active epic, an active sprint, a planned epic, a planned sprint, completed work being revisited, cancelled/superseded work, untracked work, or a new epic/sprint that must be created.
+3. Check the Definitions section for relevant terminology.
+4. Confirm the current state of the relevant epic or sprint.
+5. Confirm the current next action.
+6. Confirm blockers and dependencies.
+7. Confirm whether the roadmap needs updating.
+8. Confirm whether tracker files exist for the relevant epic or sprint.
+9. Confirm whether all referenced paths exist or are intentionally nonexistent.
+10. Confirm whether all referenced modes, hooks, commands, and enforcement points are actually wired.
+11. Create missing tracker files if required.
+12. Record missing paths, missing wiring, or unclear state as validation failures if discovered.
+13. Record the session start if the work is meaningful enough to affect state.
+
+Agents must not begin substantial work from memory alone.
+
+## During-Work Procedure
+
+Update tracker records when: the goal or scope changes; a task is added or removed; a blocker is discovered or resolved; a decision is made; evidence is produced; files, paths, or wirings change or are discovered missing; a mode, hook, or validation command is added or changed; a definition is introduced or changes; work moves between states (planned→active→review→completed, or cancelled/superseded); the next action changes; or percent completion changes meaningfully. Tiny edits do not require an update, but meaningful state, scope, definition, evidence, path, wiring, enforcement, or validation changes must never go untracked.
+
+## End-of-Work Procedure
+
+Before ending a meaningful work session, update: `TRACKER.md`; the relevant epic tracker; the relevant sprint tracker; `ROADMAP.md` (if roadmap state changed); `UNTRACKED_WORK.md` (if work happened outside a tracked epic or sprint); the Definitions section (if terms were introduced/changed); the System Inventory (if paths, modes, hooks, commands, validators, templates, or wiring changed); the Verification Matrix (if any existence/nonexistence/wiring state was checked); the Evidence log (if work was completed/verified); the Change Log (if scope, state, definition, path, wiring, or plan changed); and the Session log. Leave a clear next action unless the item is completed, cancelled, or superseded.
+
+## Resume Procedure
+
+When resuming, use tracker files as the source of truth. Read, in order: `TRACKER.md`; the relevant epic tracker; the relevant sprint tracker; relevant definitions; the latest session-log, change-log, and evidence-log entries; the System Inventory; the Verification Matrix. Identify the next action. Verify whether blockers still exist and whether referenced files/wirings still exist if the work depends on them. Continue from tracker state, not memory. If memory conflicts with tracker state, the tracker wins. If tracker state conflicts with filesystem or code inspection, reconcile before claiming completion. If tracker state is unclear, mark it unclear and reconcile before proceeding.
+
+## Completion Procedure
+
+Before claiming work complete, verify: the definition of done exists and is satisfied; evidence is recorded; files changed are listed; required paths exist; required paths that should not exist are confirmed nonexistent; required directories, templates, hooks, modes, commands, and validators exist and are wired/runnable; required validation checks pass or failures are tracked; tests/validation/review steps are recorded; the session log is updated; the change log is updated if the plan changed; roadmap state is reconciled; epic tracker, sprint tracker, and `TRACKER.md` are updated and agree; remaining follow-up work is explicitly recorded or confirmed absent; no required definition is missing; no related untracked work remains unreconciled; no referenced path, wiring, or enforcement point remains assumed but unverified. Agents must not say work is complete unless the tracker and evidence support that claim.
+
+## Definition Use Procedure
+
+Before using a system term in planning or tracking, check whether it is defined in `TRACKER.md`. If defined, use it per the recorded definition. If undefined and it affects planning, execution, state, authority, completion, enforcement, validation, or Agentic OS behavior, add it to the Definitions section before relying on it. If a term has conflicting meanings across older documents: record the conflict; choose or propose the authoritative definition; update `TRACKER.md`; update affected documents or mark them stale; add a change-log entry; run or update validation if the definition affects enforcement. Definitions must not live only in chat, memory, code comments, or scattered documents.
+
+## Verification Use Procedure
+
+Before relying on any referenced path, file, directory, hook, command, mode, validator, template, or wiring, verify its current state and record it as one of: Exists and is correct; Exists but stale; Exists but incomplete; Exists but miswired; Missing but required; Missing and intentionally nonexistent; Present but should be removed; Unknown and requiring inspection. Assumptions are not verification. A path mentioned anywhere must not be treated as real until verified.
+
+## Mode Integration Procedure
+
+Every mode that can affect work must consult `TRACKER.md`: sprint mode, roadmap mode, epic-planning mode, implementation mode, review mode, debugging mode, refactor mode, documentation mode, agent-coordination mode, handoff mode, resumption mode, validation mode, and research mode when research affects roadmap, scope, plans, definitions, or enforcement. A mode may not bypass the tracker because the work seems small. If a mode performs meaningful work outside an epic or sprint, it must record that work in `UNTRACKED_WORK.md`.
+
+NOTE (verified state): the live WarpOS modes are `solo`, `adhoc`, `oneshot`, `sprint` (verified at `.claude/commands/mode/`). The remaining "modes" named above are operational postures, not enterable mode commands. Their tracker wiring is recorded as Unknown / Not-Yet-Verified in Required Wirings and is the subject of sprint T6.
+
+## Failure Procedure
+
+If an agent discovers work was performed without proper tracking, it must: stop treating the state as reliable; record the gap in `UNTRACKED_WORK.md` or the affected tracker; identify what was done, what is unknown, and the affected files, paths, wirings, definitions, and epics/sprints; reconcile the work into the correct tracker structure; add a change-log entry; continue only after state is clear enough to proceed. Silent correction is prohibited.
+
+## Prohibited Uses
+
+`TRACKER.md` must not be used as: a loose note file; a motivational progress log; a vague project summary; a replacement for actual evidence; a dumping ground for unverified claims; a place to mark work complete without proof; a place to hide unresolved ambiguity; a passive document that is not enforced; a substitute for epic and sprint trackers; a place where definitions are implied instead of recorded; a place where paths are assumed instead of verified; or a place where wiring is claimed without inspection.
+
+---
+
+# Authority and Conflict Resolution
+
+This tracker is owned by the President agent and has higher authority than: Claude's built-in memory; chat memory; implied context; informal summaries; agent assumptions; old roadmap language; unlinked sprint notes; unlinked implementation notes; prior terminology used before this tracker existed; undocumented code behavior; and unverified wiring assumptions.
+
+When sources conflict, authority resolves in this order:
+
+1. `TRACKER.md`
+2. Definitions inside `TRACKER.md`
+3. Verification and validation records linked from `TRACKER.md`
+4. Epic tracker files
+5. Sprint tracker files
+6. Roadmap files
+7. Untracked work logs
+8. Directly inspected code, config, hooks, and paths
+9. Claude memory or chat recollection
+
+Claude memory may be used as a hint but must never override tracker state, tracker definitions, verified filesystem state, roadmap state, epic state, sprint state, wiring state, or completion evidence. If direct inspection of code or paths contradicts tracker state, the tracker is not automatically overwritten — the contradiction must be recorded and resolved through the Reconciliation process.
+
+---
+
+# Definitions
+
+All operational definitions used by this system are tracked here. Each definition explains how the term is used inside the WarpOS Agentic OS, not just its general meaning. Definitions in `TRACKER.md` outrank definitions in Claude memory, old roadmap files, old sprint notes, old implementation plans, chat summaries, agent assumptions, unlinked documentation, and code comments unless verified and reconciled. The full record format is per spec §8.1 (Term, Definition, Why it matters, Where it applies, Owner, Date added, Last updated, Related documents, Related enforcement rules, Change history). To keep this keystone readable, each definition below carries Term / Definition / Why it matters / Where it applies; Owner is President Agent, Date added and Last updated are 2026-06-05, and Change history is "None (initial entry)" for every term unless stated otherwise.
+
+## Definition: Roadmap
+Definition: The strategic backlog of WarpOS, held in `ROADMAP.md`, that names the meaningful strategic goals (epics) and their priority ordering. Target structure is epic-based (Roadmap item == Epic); the current `ROADMAP.md` is Now/Next/Later/Archive and is NOT yet fully epic-based (migration owned by sprint T5).
+Why it matters: It is the top-level "what should we do and in what order"; epics derive from it.
+Where it applies: Roadmap mode; epic creation; reconciliation between roadmap and tracker state.
+
+## Definition: Epic
+Definition: A meaningful strategic goal that maps to a roadmap item, owns zero or more sprints, and has its own tracker file at `/trackers/epics/<EPIC-ID>-<short-name>.md`. Labeled with an ID (e.g. `E-TRACKER-001`).
+Why it matters: Epics are the unit the roadmap is organized around; an epic cannot be Active without its own tracker file.
+Where it applies: Roadmap, Active/Planned/Completed Epics sections, epic-planning mode.
+
+## Definition: Sprint
+Definition: A bounded execution effort within a parent epic, with a specific goal, scope, definition of done, tracker file at `/trackers/sprints/<SPRINT-ID>-<short-name>.md`, session log, change log, evidence log, and completion record.
+Why it matters: Sprints are the smallest formal unit of tracked long-running execution. Work is not a sprint unless it has a tracker and can be resumed from written state.
+Where it applies: Sprint mode (ε conductor); Active/Planned/Completed Sprints sections.
+
+## Definition: Task
+Definition: A discrete unit of work inside a sprint. Tasks belong inside sprints unless small enough to be handled as untracked work.
+Why it matters: Tasks are the executable granularity below a sprint; loose tasks that belong to a sprint must not hang off the roadmap directly.
+Where it applies: Sprint tracker `Tasks` lists; the Roadmap→Epic→Sprint→Task hierarchy.
+
+## Definition: Tracker
+Definition: A written, append-aware document that mirrors the actual state of long-running work and enables resumption from files alone. `TRACKER.md` is the primary tracker; each epic and sprint has its own tracker file.
+Why it matters: The tracker is the source of truth that replaces memory and chat as the basis for resumption.
+Where it applies: Everywhere; this entire system.
+
+## Definition: Definition
+Definition: A recorded operational meaning of a system term, in the format of spec §8.1, stored in this Definitions section (the authoritative store) and templated by `/trackers/templates/DEFINITION_TEMPLATE.md`.
+Why it matters: Definitions prevent terminology drift across sessions, agents, and modes; undefined operational terms are a validation failure.
+Where it applies: Definition Use Procedure; Definition Enforcement; validation.
+
+## Definition: Source of truth
+Definition: The authoritative written record for a given fact. For tracked long-running work and its definitions, the source of truth is `TRACKER.md`, resolved by the authority order in the Authority section.
+Why it matters: Disagreements are resolved by deferring to the highest-authority source, not by memory or assertion.
+Where it applies: Authority and Conflict Resolution; Reconciliation.
+
+## Definition: State
+Definition: The lifecycle status of an epic or sprint, drawn from the fixed nine-value State Model (`Planned`, `Ready`, `Active`, `Blocked`, `Paused`, `Review Needed`, `Completed`, `Cancelled`, `Superseded`).
+Why it matters: A consistent state vocabulary makes status machine-checkable and unambiguous across agents.
+Where it applies: Every epic and sprint entry; State Model; validation.
+
+## Definition: Percent completion
+Definition: A conservative, evidence-based estimate of completed work against the stated goal and definition of done, per the bands in Percent Completion Rules. Not a vibe, guess, or motivational signal.
+Why it matters: Honest percentages prevent "believed complete when it was not" failures.
+Where it applies: All epic/sprint entries; Percent Completion Rules; the completion gate.
+
+## Definition: Completion
+Definition: The state in which work meets its definition of done AND has recorded evidence AND has the tracker, roadmap, definitions, paths, wirings, and validators all reconciled per the Completion Procedure and the 100% rule.
+Why it matters: Completion is a gated claim, not a feeling; over-claiming completion is a primary failure this system prevents.
+Where it applies: Completion Procedure; Completion Gate Enforcement; Percent Completion Rules.
+
+## Definition: Verification
+Definition: The act of checking the actual current state of a path, file, directory, hook, command, mode, validator, template, or wiring against expectation, recording one of the allowed verification states with the method, timestamp, and evidence.
+Why it matters: Assumptions are not verification; claims of existence/nonexistence/wiring are invalid without verification evidence.
+Where it applies: Verification Use Procedure; Verification Matrix; Path and Wiring Enforcement.
+
+## Definition: Evidence
+Definition: Concrete, resumable proof of a claim — file paths changed, commands/tests run and their results, validation results, commit hashes, explicit existence/nonexistence confirmations, or explicit wiring/validator-ran confirmations — concrete enough that another agent can resume or verify without memory.
+Why it matters: Work must not be marked complete without evidence.
+Where it applies: Evidence Rules; the Evidence log; completion claims.
+
+## Definition: Blocker
+Definition: A specific, named condition that prevents work from continuing until resolved. An item with an unresolved blocker is in state `Blocked`.
+Why it matters: Blockers must be explicit and assigned a resolution path, not hidden behind vague status.
+Where it applies: Active Epics/Sprints blocker fields; the State Model (`Blocked`).
+
+## Definition: Dependency
+Definition: Another epic, sprint, path, wiring, file, or external condition that this work requires before it can be Ready or Completed.
+Why it matters: Dependencies determine readiness and ordering; an unmet hard dependency keeps work `Planned` or `Blocked`.
+Where it applies: Epic/sprint tracker `Dependencies`; roadmap dependency ordering.
+
+## Definition: Risk
+Definition: A possible future condition that could change scope, state, completion, or correctness, recorded so it can be watched and mitigated.
+Why it matters: Naming risks lets agents pre-empt them rather than discover them as blockers later.
+Where it applies: Epic/sprint tracker `Risks`.
+
+## Definition: Scope
+Definition: The explicit set of work an epic or sprint commits to deliver.
+Why it matters: Scope bounds completion; scope changes are meaningful state changes that must be tracked.
+Where it applies: Epic/sprint tracker `Scope`; During-Work Procedure; Change Log.
+
+## Definition: Out of scope
+Definition: Work explicitly excluded from an epic or sprint, recorded so it is not silently assumed complete or incomplete.
+Why it matters: Naming exclusions prevents false "incomplete" readings and scope creep.
+Where it applies: Epic/sprint tracker `Out of scope`.
+
+## Definition: Change log
+Definition: An append-only record, per spec §25, of every change to state, scope, goal, requirements, blockers, definitions, terminology, paths, wirings, validators, hooks, modes, commands, or plans — with what changed, when, who/what found it, what it affects, and previous→new state.
+Why it matters: When a plan changes, the old plan must not simply disappear; changes must be traceable.
+Where it applies: The Change Tracking section here and the `Change Log` in every epic/sprint tracker.
+
+## Definition: Session log
+Definition: An append-only per-session record, per spec §24, of meaningful work on an epic or sprint, including session ID, date/times, agents, mode, work performed, files/paths/wirings changed, decisions, issues, definitions changed, state changes, percent change, verification/validation run and results, next action, and evidence.
+Why it matters: Session logs make work auditable and resumable; corrections must themselves be logged.
+Where it applies: The Session Logging section here and per-tracker session logs.
+
+## Definition: Evidence log
+Definition: The recorded set of evidence entries supporting completion or verification claims for an item.
+Why it matters: It is where the proof behind a status lives; completion without an evidence log entry is invalid.
+Where it applies: Evidence Rules; per-tracker evidence logs.
+
+## Definition: Untracked work
+Definition: Meaningful work completed outside a formal epic or sprint, captured in `UNTRACKED_WORK.md` with the spec §18 fields, pending reconciliation into the proper structure.
+Why it matters: Work outside epics/sprints must not become invisible or a loophole for avoiding planning.
+Where it applies: Untracked Work section; `UNTRACKED_WORK.md`; Untracked Work Policy.
+
+## Definition: Reconciliation
+Definition: The recorded process of resolving a disagreement between two or more tracker-related sources by selecting the authoritative source, fixing the affected documents, and logging the resolution per spec §32.
+Why it matters: Contradictions are resolved deliberately and traceably, never by silent overwrite.
+Where it applies: Reconciliation Rules; Authority order; the President's ownership duties.
+
+## Definition: Superseded
+Definition: A state and a classification meaning the work has been replaced by another epic, sprint, plan, definition, path, wiring, or system design, recorded with the superseding item.
+Why it matters: Replaced work must not be deleted without a trace; resumers must see why it stopped and what replaced it.
+Where it applies: State Model (`Superseded`); Cancelled or Superseded Work section.
+
+## Definition: Cancelled
+Definition: A state and a classification meaning the work will not be done and has NOT been replaced by another item.
+Why it matters: Distinguishing cancelled (abandoned) from superseded (replaced) keeps history honest.
+Where it applies: State Model (`Cancelled`); Cancelled or Superseded Work section.
+
+## Definition: Meaningful work
+Definition: Work that changes, or could change, roadmap, epic, sprint, definition, implementation, documentation, validation, wiring, path, enforcement, or Agentic OS state — as opposed to a trivial edit with no state effect.
+Why it matters: It is the threshold that triggers tracker reads at start and tracker updates at end.
+Where it applies: Start-of-Work, During-Work, End-of-Work procedures; Update Triggers.
+
+## Definition: Meaningful interval
+Definition: A point at which tracker state must be flushed to disk — a sprint session start/end, a handoff, a context compaction, a task completion, a blocker change, a scope/priority change, a completion claim, or a mode switch with changed state.
+Why it matters: It bounds how stale the tracker is allowed to get; meaningful state must never go untracked.
+Where it applies: Update Triggers; End-of-Work Procedure.
+
+## Definition: Meaningful state change
+Definition: A change to state, scope, evidence, blockers, definitions, authority, paths, wirings, validation, enforcement, or resumability of tracked work.
+Why it matters: Every meaningful state change requires a tracker update; tiny edits do not.
+Where it applies: During-Work Procedure; Update Triggers; Change Tracking.
+
+## Definition: Mode
+Definition: An operating posture of the Agentic OS. The live enterable modes are `solo`, `adhoc`, `oneshot`, and `sprint` (verified at `.claude/commands/mode/`). Other "modes" named in the spec (roadmap, review, debugging, refactor, documentation, etc.) are operational postures, not enterable commands; their tracker wiring is Unknown / Not-Yet-Verified.
+Why it matters: Every mode that can affect work must consult the tracker; mode wiring is a verification target.
+Where it applies: Mode Integration Procedure; Required Wirings; sprint T6.
+
+## Definition: Agent
+Definition: A role in the WarpOS department tree (`president`, `product`, `engineering`, `growth`, `_system`, `_org`-governed), identified by `.claude/agents/_org/role-registry.json` (33 roles, verified). Agents read and update tracker documents; the President owns correctness.
+Why it matters: Agents are the actors bound by this system; the role-registry is the keystone of agent identity.
+Where it applies: Ownership; agent-coordination mode; all procedures.
+
+## Definition: Owner
+Definition: The role accountable for the correctness, reconciliation, and final state authority of a tracked item or document.
+Why it matters: Every tracked item and document must have a named accountable owner; unowned entries are a validation failure.
+Where it applies: Every epic/sprint/definition/gap record; Ownership.
+
+## Definition: President agent
+Definition: The owning role of `TRACKER.md`, accountable per spec §4 for the tracker's existence, authority, definition completeness, truthful epic/sprint representation, path/wiring verification, recorded expected-nonexistence, timely updates, no-lost-completed-work, no-false-completion, captured untracked work, agent compliance, document consistency, real enforcement, run validation, and no-invisible-gaps. Resides at `.claude/agents/president/` in the department tree (verified directory exists).
+Why it matters: It centralizes accountability for the truthfulness of the whole tracking layer.
+Where it applies: Ownership; Authority; Reconciliation; every "Owner: President Agent" field.
+
+## Definition: Next action
+Definition: The single, concrete, written instruction for what to do next on an item. Every Active item must have a non-empty next action; Completed/Cancelled/Superseded items have none.
+Why it matters: A clear next action is what makes resumption near-perfect; "active with no next action" is a validation failure.
+Where it applies: Every Active epic/sprint; the header's highest-priority next action; validation.
+
+## Definition: Definition of done
+Definition: The explicit, checkable set of conditions that must hold for an item to be Completed, recorded in the item's tracker before completion can be claimed.
+Why it matters: Completion is measured against the DoD; no item may be 100% without a satisfied, recorded DoD.
+Where it applies: Completion Procedure; the 100% rule; Definition of Done sections.
+
+## Definition: Planned
+Definition: State — the work is known and captured but not ready to begin.
+Why it matters: Distinguishes captured-but-not-startable work from Ready work.
+Where it applies: State Model; Planned Epics/Sprints sections.
+
+## Definition: Ready
+Definition: State — the work has enough context, requirements, and dependencies resolved to begin.
+Why it matters: Marks the transition point where work may legitimately start.
+Where it applies: State Model.
+
+## Definition: Active
+Definition: State — work has started and is currently expected to continue. Requires its own tracker file and a non-empty next action.
+Why it matters: Active is the only state implying in-flight work; it carries the strongest tracking obligations.
+Where it applies: State Model; Active Epics/Sprints sections.
+
+## Definition: Blocked
+Definition: State — work cannot continue until a specific named blocker is resolved.
+Why it matters: Surfaces stalled work and the exact condition needed to unstall it.
+Where it applies: State Model; blocker fields.
+
+## Definition: Paused
+Definition: State — work is intentionally stopped but may resume later.
+Why it matters: Distinguishes a deliberate pause from a blocker or a cancellation.
+Where it applies: State Model.
+
+## Definition: Review Needed
+Definition: State — implementation or planning work is believed complete enough for review, but completion has not yet been confirmed.
+Why it matters: Prevents "believed complete" from being recorded as Completed before verification.
+Where it applies: State Model; the review→completed transition.
+
+## Definition: System Inventory
+Definition: The per spec §9 catalog of every tracker-relevant component (files, directories, templates, modes, hooks, commands, validators, agent roles, roadmap artifacts, epic/sprint trackers, definition records, logs, docs, configs, scripts, tests, enforcement points, deprecated artifacts) with expected vs actual path/state, existence, wiring, verification method/timestamp/agent, and relations.
+Why it matters: No referenced operational artifact may remain outside the inventory.
+Where it applies: System Inventory section; verification; completion.
+
+## Definition: Verification Matrix
+Definition: The per spec §10 proof table of existence, nonexistence, state, and wiring for everything the system references, using the allowed verification states.
+Why it matters: It is where claims become evidenced; `Unknown` that affects completion is a validation failure or blocker.
+Where it applies: Verification Matrix section; Verification Use Procedure.
+
+## Definition: Wiring
+Definition: A verified connection between a behavior and its enforcement point — a mode that actually consults the tracker, a hook that actually fires, a command that is actually runnable, a check actually invoked by a runner. A wiring is real only when verified in the actual implementation, not in prose.
+Why it matters: Claimed-but-unverified wiring is the "system instructions described intended behavior but did not prove enforcement" failure this system targets.
+Where it applies: Required Wirings; Path and Wiring Enforcement; sprint T6.
+
+## Definition: Hook
+Definition: A WarpOS hook script wired into a Claude Code lifecycle event via `.claude/settings.json` (e.g. PreToolUse/PostToolUse/Stop matchers). Hooks are a primary enforcement mechanism beyond prose.
+Why it matters: Tracker rules must be enforced by hooks where possible, not only described.
+Where it applies: Enforcement Requirements; System Inventory (type Hook); Required Wirings.
+
+## Definition: Command
+Definition: A runnable invocation — a WarpOS skill under `.claude/commands/` or a node script under `scripts/` — that an agent or hook can execute. A command is "runnable" only when verified to exist and execute.
+Why it matters: Documented-but-not-runnable commands are a validation failure (spec §28.7).
+Where it applies: System Inventory (type Command); validation; Required Wirings.
+
+## Definition: Validator
+Definition: A runnable check that proves a tracker invariant (e.g. missing tracker files, ambiguous state language, undefined terms, definition drift, missing/stale paths, missing wiring, completion without evidence). The tracker validation engine is NOT yet built (owned by sprint T4).
+Why it matters: Validators turn the prose rules into machine-enforced gates; "documented but not runnable" validators fail validation.
+Where it applies: Validation Requirements; Enforcement; sprint T4.
+
+## Definition: Template
+Definition: A practical fill-in skeleton under `/trackers/templates/` for epics, sprints, session logs, change logs, evidence logs, definitions, untracked-work entries, completion records, verification records, reconciliation records, and system-inventory records. The 10 templates are Verified Exists in `/trackers/templates/` (created by sprint T2; ls/Read on 2026-06-05).
+Why it matters: Templates let agents produce conformant records quickly and unambiguously.
+Where it applies: Required Templates; sprint T2.
+
+## Definition: Path
+Definition: A filesystem location referenced by the system. A path is "real" only when verified to exist; "intentionally nonexistent" only when verified absent and recorded as expected-absent.
+Why it matters: The system must neither assume paths exist nor assume they do not.
+Where it applies: Verification Matrix; System Inventory; Path and Wiring Enforcement.
+
+## Definition: Expected nonexistence
+Definition: A recorded, verified state in which a path or artifact does not exist AND is intended not to exist (e.g. a deleted old-tree directory after a cutover).
+Why it matters: Verified-absent-and-intended is distinct from missing-but-required; both must be recorded, not assumed.
+Where it applies: Verification Matrix (`Verified Nonexistent`); cutover verification.
+
+## Definition: Known gap
+Definition: A recorded deficiency in the Agentic OS tracking layer, captured in the Known Gaps section with spec §36 fields (id, description, severity, area, files, wirings, modes, discovery date, discovered-by, owner, required fix, state, related epic/sprint, evidence, next action).
+Why it matters: If a gap exists it must be recorded as a blocker, validation failure, unfinished task, or follow-up — no gap may remain invisible.
+Where it applies: Known Gaps and Open Flaws section; validation; completion.
+
+## Definition: Agentic OS
+Definition: The WarpOS agent operating system — the department-tree agents, role-registry keystone, modes, skills (`.claude/commands/`), hooks, scripts (`scripts/`), the ε sprint runtime, and the enforcement/validation layer — that this tracker governs the long-running work of.
+Why it matters: It is the system this tracker mirrors and keeps truthful and resumable.
+Where it applies: Everywhere; the scope of this entire document.
+
+---
+
+# System Inventory
+
+Per spec §9, every tracker-relevant component must be inventoried. This is the seed inventory, reconciled to disk on 2026-06-05; remaining unverified items are marked `Unknown` honestly. Sprint T3 (system-inventory + verification-matrix) completes the full disk-verification. For each item: Name | Type | Expected path | Verified state | Verification method (Verified-Exists rows verified by ls/Read on 2026-06-05 by the President reconciliation pass unless noted).
+
+| Item | Type | Expected path | Exists? | Verified state | Method |
+|---|---|---|---|---|---|
+| TRACKER.md | File | `C:/.../WarpOS/TRACKER.md` | Yes | Verified Exists (this file; 943 lines, 34 §5 sections, ~50 definitions, validated 12/12) | ls/Read + `node scripts/trackers/validate.js` on 2026-06-05 |
+| ROADMAP.md | File | `C:/.../WarpOS/ROADMAP.md` | Yes | Verified Exists; NOT yet epic-based (G-2/T5) | `ls -la ROADMAP.md` |
+| UNTRACKED_WORK.md | File | `C:/.../WarpOS/UNTRACKED_WORK.md` | Yes | Verified Exists (sprint T2) | ls/Read on 2026-06-05 |
+| /trackers/ | Directory | `C:/.../WarpOS/trackers/` | Yes | Verified Exists (sprint T2; + `trackers/README.md`) | ls/Read on 2026-06-05 |
+| /trackers/epics/ | Directory | `C:/.../WarpOS/trackers/epics/` | Yes | Verified Exists (sprint T2) | ls/Read on 2026-06-05 |
+| /trackers/sprints/ | Directory | `C:/.../WarpOS/trackers/sprints/` | Yes | Verified Exists (sprint T2; T1–T6 sprint files present) | ls/Read on 2026-06-05 |
+| /trackers/templates/ | Directory | `C:/.../WarpOS/trackers/templates/` | Yes | Verified Exists (sprint T2; 10 templates) | ls/Read on 2026-06-05 |
+| E-TRACKER-001 epic tracker | Epic tracker | `/trackers/epics/E-TRACKER-001-enforced-tracker-system.md` | Yes | Verified Exists (sprint T2; epic is Active and links to this file) | ls/Read on 2026-06-05 |
+| T1 sprint tracker | Sprint tracker | `/trackers/sprints/T1-tracker-keystone.md` | Yes | Verified Exists (sprint T2) | ls/Read on 2026-06-05 |
+| role-registry.json (keystone) | Configuration file | `.claude/agents/_org/role-registry.json` | Yes | Verified Exists; 33 roles | `ls` + `node` count = 33 |
+| Department tree | Directory | `.claude/agents/{president,product,engineering,growth,_system,_org}` | Yes | Verified Exists | `ls .claude/agents` |
+| ε sprint runtime | Script | `scripts/sprint/epsilon-runtime.js` | Yes | Verified Exists (34382 bytes) | `ls -la` |
+| Mode commands | Command | `.claude/commands/mode/{solo,adhoc,oneshot,sprint}.md` | Yes | Verified Exists (4 modes) | `ls .claude/commands/mode` |
+| KNOWN_DANGLING_REFS baseline | Enforcement point | `scripts/warpos/release-build.js` | Yes | Verified Exists; 32 refs (A:4 B:11 C:17) | `node` require + count |
+| Tracker validation engine | Validator | `scripts/trackers/validate.js` | Yes | Verified Exists (sprint T4; selftest 33/33; live run 12/12 PASS, exit 0) | ls/Read + `node scripts/trackers/validate.js` on 2026-06-05 |
+| /trackers:validate skill | Command | `.claude/commands/trackers/validate.md` | Yes | Verified Exists (sprint T4) | ls/Read on 2026-06-05 |
+| Tracker mode-wiring | Wiring | mode skills + hooks | Unknown | Unknown — requires inspection (sprint T6) | not yet inspected |
+| Templates (10 in `/trackers/templates/`) | Template | `/trackers/templates/*.md` | Yes | Verified Exists (sprint T2; 10 templates) | ls/Read on 2026-06-05 |
+
+No referenced operational artifact may remain outside this inventory; sprint T3 reconciles any additions discovered during verification.
+
+---
+
+# Verification Matrix
+
+Per spec §10. Allowed states: `Verified Exists`, `Verified Nonexistent`, `Verified Wired`, `Verified Not Wired`, `Exists But Stale`, `Exists But Incomplete`, `Exists But Miswired`, `Missing But Required`, `Present But Should Be Removed`, `Unknown`. `Unknown` is allowed temporarily but is a validation failure or blocker if it affects completion. Checked 2026-06-05 21:51 PDT by the President-delegated systems builder unless noted.
+
+| Item | Required? | Should exist? | State | Evidence / check |
+|---|---|---|---|---|
+| TRACKER.md | Yes | Yes | Verified Exists (validated 12/12) | ls/Read + `node scripts/trackers/validate.js` on 2026-06-05 |
+| ROADMAP.md | Yes | Yes | Exists But Incomplete (not epic-based; G-2/T5) | `ls -la ROADMAP.md` (238749 bytes) |
+| UNTRACKED_WORK.md | Yes | Yes | Verified Exists | ls/Read on 2026-06-05 |
+| /trackers/ (+ epics/sprints/templates) | Yes | Yes | Verified Exists (trackers/, epics/, sprints/, templates/ + README.md; 10 templates; T1–T6 + E-TRACKER-001) | ls/Read on 2026-06-05 |
+| `.claude/agents/_org/role-registry.json` | Yes | Yes | Verified Exists (33 roles) | `ls` + `node` count |
+| Department tree dirs | Yes | Yes | Verified Exists | `ls .claude/agents` |
+| Old mode-based tree (`00-alex/01-adhoc/02-oneshot/03-managers`) | No | No (post-cutover) | Verified Nonexistent (expected nonexistence) | per E-ADR0007 cutover; `/scan:cutover-completeness` GREEN on `main` (prior-session evidence; re-verify in T3) |
+| `scripts/sprint/epsilon-runtime.js` | Yes | Yes | Verified Exists | `ls -la` (34382 bytes) |
+| Mode commands (solo/adhoc/oneshot/sprint) | Yes | Yes | Verified Exists | `ls .claude/commands/mode` |
+| Sprint-mode tracker consult | Yes | Yes | Unknown (sprint T6) | not yet inspected for a TRACKER.md read step |
+| Roadmap/review/debug/refactor/doc/coord/handoff/validation tracker consult | Yes | Yes | Unknown (sprint T6) | not yet inspected |
+| Definition-enforcement wiring | Yes | Yes | Unknown (sprint T4/T6) | single-file engine defers definition-drift; not yet wired into a runner |
+| Start-of-work / end-of-work / completion-gate wiring | Yes | Yes | Unknown (sprint T4/T6) | not yet inspected |
+| Path/wiring verification wiring | Yes | Yes | Unknown (sprint T4/T6) | not yet inspected |
+| Tracker validation engine (`scripts/trackers/validate.js`) | Yes | Yes | Verified Exists (selftest 33/33; live 12/12 PASS, exit 0) | ls/Read + `node scripts/trackers/validate.js` on 2026-06-05 |
+| /trackers:validate skill (`.claude/commands/trackers/validate.md`) | Yes | Yes | Verified Exists | ls/Read on 2026-06-05 |
+| Templates (10 in `/trackers/templates/`) | Yes | Yes | Verified Exists | ls/Read on 2026-06-05 |
+| `warpos@0.14.0` tag | Yes (evidence for completed release) | Yes | Verified Exists | `git tag --list "warpos@0.14*"` → `warpos@0.14.0` |
+
+---
+
+# Active Epics
+
+### E-TRACKER-001 — Enforced TRACKER System
+- Link to epic tracker: `/trackers/epics/E-TRACKER-001-enforced-tracker-system.md` — Verified Exists (ls/Read on 2026-06-05; created by sprint T2).
+- Goal: Implement the enforced tracking system specified in `agentic_os_tracker_system_improvements.md` — replace the interim tracker with a `TRACKER.md` that follows all 34 required sections, define all required operational terms, build templates and the `/trackers/` structure, migrate the roadmap to epics, wire tracker checks into all relevant modes, and add a runnable validation engine.
+- Current state: Active.
+- Percent completion: ~50% (3 of 6 sprints done — T1 keystone `TRACKER.md` + ~50 definitions and T2 `/trackers/` tree + 10 templates + `UNTRACKED_WORK.md` are Completed; T4 validation engine is built and passing, in Review Needed; T3 inventory/matrix completion, T5 roadmap migration, and T6 mode wiring remain — verified-unbuilt).
+- Session IDs that worked on it: the Wave-1 build sessions (2026-06-05) plus this 2026-06-05 reconciliation pass (President; session ID to be backfilled by the orchestrator).
+- Dates/times worked on: 2026-06-05.
+- Agents that worked on it: President Agent (owner) via delegated docs/systems builders (Wave-1) and the reconciliation pass.
+- Current owner: President Agent.
+- Current blockers: None currently recorded.
+- Current risks: T4's enforcement wiring + cross-file §28.7 checks are not yet built, so this epic cannot reach 100% until they land and T3/T5/T6 complete.
+- Latest meaningful update: 2026-06-05 — reconciliation pass: Wave-1 artifacts marked Verified Exists; T1/T2 set Completed; T4 set Review Needed; validation status set Passing (12/12).
+- Next required action: Run T3 (fill System Inventory + Verification Matrix from disk), T5 (migrate ROADMAP milestones→epics + create epic tracker files), T6 (wire tracker checks into all modes); finish T4 enforcement-wiring + cross-file checks.
+- Evidence of progress: this `TRACKER.md` (validated 12/12 by `scripts/trackers/validate.js` on 2026-06-05); the `/trackers/` tree + 10 templates + `UNTRACKED_WORK.md` on disk; `scripts/trackers/validate.js` (selftest 33/33).
+- Related sprints: T1 (Completed), T2 (Completed), T4 (Review Needed), T3/T5/T6 (Planned).
+- Related roadmap item: the ROADMAP "epics-over-milestones + per-task tracker" direction (to be formalized as a roadmap epic in sprint T5).
+- Related definitions: Tracker, Epic, Sprint, Validator, Template, Wiring, Verification Matrix, System Inventory.
+- Related verification items: `/trackers/` (Verified Exists); tracker validation engine (Verified Exists); tracker mode-wiring (Unknown — T6).
+- Related system inventory items: TRACKER.md; /trackers/; 10 templates; tracker validation engine; /trackers:validate skill.
+
+---
+
+# Active Sprints
+
+### T4 — Validation engine + enforcement
+- Link to sprint tracker: `/trackers/sprints/T4-validation-engine-and-enforcement.md` — Verified Exists (ls/Read on 2026-06-05).
+- Goal: Build a runnable, fail-closed validation engine for the §28.7 conditions, wire it into a runner, and make this tracker's Last Validation / Validation Status fields real.
+- Current state: Review Needed.
+- Percent completion: ~85% (the engine is built and passing — `scripts/trackers/validate.js` selftest 33/33, live run 12/12 checks PASS, exit 0 — and the `/trackers:validate` skill exists; two follow-ups remain before Completed: enforcement-gate wiring and the deferred cross-file checks).
+- Session IDs that worked on it: the Wave-1 build session (2026-06-05) + this 2026-06-05 reconciliation pass.
+- Dates/times worked on: 2026-06-05.
+- Agents that worked on it: President Agent (owner) via a delegated systems builder.
+- Current owner: President Agent.
+- Current blockers: None currently recorded.
+- Current risks: Until the engine is wired into the standing scan suite it is runnable-on-demand but not an automatic gate; the cross-file checks are deferred, so cross-document drift is not yet machine-caught.
+- Latest meaningful update: 2026-06-05 — engine + skill verified on disk; live validation run recorded 12/12 PASS; sprint set Review Needed.
+- Next required action: (1) Wire `/trackers:validate` into the standing scan suite as an enforcement gate. (2) Add the cross-file §28.7 checks the single-file engine deferred: definition-drift; epics-missing-from-roadmap / roadmap-still-using-milestones; TRACKER↔roadmap↔epic↔sprint reconciliation; work-logs-with-no-session-ID; expected-nonexistence; "modes that perform work but don't consult the tracker"; "hooks that should enforce tracking but are missing".
+- Open questions: Which runner is the gate's home (candidate `/scan:full`)? Should the completion-gate be a hook (Stop) or a validator-invoked check?
+- Evidence of progress: `scripts/trackers/validate.js` (Verified Exists; selftest 33/33; live `node scripts/trackers/validate.js` → all 12 checks pass, exit 0, on 2026-06-05); `.claude/commands/trackers/validate.md` (Verified Exists).
+- Parent epic: E-TRACKER-001.
+- Related roadmap item: epics-over-milestones direction (T5).
+- Related definitions: Validator, Validation, Command, Hook, Wiring.
+- Related verification items: tracker validation engine (Verified Exists); /trackers:validate skill (Verified Exists); definition-enforcement / completion-gate wiring (Unknown — deferred follow-ups).
+- Related system inventory items: tracker validation engine; /trackers:validate skill.
+
+---
+
+# Planned but Not Started Epics
+
+None currently recorded.
+
+---
+
+# Planned but Not Started Sprints
+
+All planned sprints below are parented to epic E-TRACKER-001. Each is state `Planned`, `0%` complete (no preparatory work has occurred), with a Verified-Exists tracker file under `/trackers/sprints/` (ls/Read on 2026-06-05). (T2 is Completed — see Completed Sprints; T4 is Review Needed — see Active Sprints.)
+
+### T3 — System Inventory + Verification Matrix
+- Link to sprint tracker: `/trackers/sprints/T3-system-inventory-and-verification-matrix.md` — Verified Exists (ls/Read on 2026-06-05).
+- Goal: Complete the System Inventory and Verification Matrix — verify every tracker-relevant path, file, directory, mode, hook, command, validator, and template; resolve every `Unknown` to a definite verification state or record it as a blocker.
+- Current state: Planned.
+- Percent completion: 0%.
+- Parent epic: E-TRACKER-001.
+- Dependencies: T2 (templates including VERIFICATION/SYSTEM-INVENTORY templates) — satisfied.
+- Entry criteria: `/trackers/templates/` exists (satisfied).
+- Proposed first action: enumerate every path referenced by the spec and this tracker, then verify each.
+- Related definitions: System Inventory, Verification Matrix, Verification, Path, Expected nonexistence.
+- Related verification items: every `Unknown` row in the Verification Matrix.
+
+### T5 — Roadmap milestones → epics
+- Link to sprint tracker: `/trackers/sprints/T5-roadmap-milestones-to-epics.md` — Verified Exists (ls/Read on 2026-06-05).
+- Goal: Migrate `ROADMAP.md` from its current Now/Next/Later structure into an epic-based structure per spec §29; create or link epic tracker files; record the migration in the roadmap change log; deprecate residual milestone language.
+- Current state: Planned.
+- Percent completion: 0%.
+- Parent epic: E-TRACKER-001.
+- Dependencies: T2 (epic template) — satisfied; T3 (verified inventory).
+- Entry criteria: epic template + `/trackers/epics/` exist (satisfied).
+- Proposed first action: enumerate current roadmap items and decide one-epic / multi-epic / remove for each.
+- Related definitions: Roadmap, Epic.
+- Related verification items: `ROADMAP.md` (Exists But Incomplete — not epic-based).
+
+### T6 — Mode wiring
+- Link to sprint tracker: `/trackers/sprints/T6-mode-wiring.md` — Verified Exists (ls/Read on 2026-06-05).
+- Goal: Wire tracker consult, definition checks, and path/wiring verification into all relevant modes (sprint, roadmap, epic-planning, implementation, review, debugging, refactor, documentation, agent-coordination, handoff/resumption, validation, research-when-relevant) per spec §28.1 and §34; verify each wiring in the actual implementation; resolve every Required-Wirings `Unknown` row.
+- Current state: Planned.
+- Percent completion: 0%.
+- Parent epic: E-TRACKER-001.
+- Dependencies: T4 (validation), T3 (verified mode inventory).
+- Entry criteria: validation engine exists to enforce the new wiring.
+- Proposed first action: inspect each mode skill for a TRACKER.md read step; record present vs missing.
+- Related definitions: Mode, Wiring, Hook, Command.
+- Related verification items: every mode-wiring row in Required Wirings (all Unknown / Not-Yet-Verified).
+
+---
+
+# Completed Epics
+
+### E-ADR0007 — Agent-System Rewrite (ADR-0007)
+- Link to epic tracker: No per-epic tracker file under `/trackers/epics/` exists yet (the rewrite predates this system; its durable record was the interim `TRACKER.md`, now summarized here). Follow-up: optionally backfill a retro epic tracker (recorded as a non-blocking follow-up, not required for the completed claim).
+- Goal: Restructure the Agentic OS from a development-tool shape to a company-like department tree — replace the mode-based agent tree with `president/product/engineering/growth/_system/_org`, establish the `role-registry.json` keystone, derive dispatch consumers from the registry, resolve skills→agents from the registry, build the `_knowledge/` brain, collapse the org-map into the registry, build the ε sprint-conductor runtime, and harden enforcer debt.
+- Final state: Completed.
+- Percent completion: 100% for E1–E8 as defined (one honestly-deferred increment remains as a named follow-on — the ε per-agent SPAWN under `--epsilon-dispatch` — documented in ADR-0009; not a blocker to the rewrite's completion claim).
+- Session IDs that worked on it: multiple sessions across 2026-06-04 → 2026-06-05 (the cutover, then three parallel landing sprints).
+- Dates/times worked on: 2026-06-04 (cutover) through 2026-06-05 (E5–E8 landing + 61-ref cutover cleanup + ε dispatch made real).
+- Agents that worked on it: the department-tree agents under President accountability (Alpha/Beta/Gamma/Delta/ε faces + managers/directors as wired).
+- Completion timestamp: 2026-06-05.
+- Evidence of completion (per the interim tracker, verified against disk + git there): cutover commits `09bac6f`→`9a132af`; E2 `688b1e3`→`2e859d7`; E3 `ec3f249`,`b29d331`,`2202abf` (ADR-0008); E4 `aa86338`,`f574a7e`,`2ac4c92`,`5c8377c`; E5 `3f9470d`→`6dcd318`; E6 merge `0320e11` (ADR-0010); E7 merge `34213e2` (ADR-0009); E8 merge `146108f`; 61-ref cutover cleanup `db0a778`; ε dispatch made real + `/mode:sprint` added `f279b47` (per DUMP.md). `/scan:cutover-completeness` GREEN on `main`; `role-parity` 30/30; ship-coverage / skill-hook-coverage OK; roadmap-trace 30/30. Note: these hashes are carried forward from the interim tracker and DUMP.md as recorded evidence; sprint T3 will re-verify them against current `git log` as part of inventory verification.
+- Definition of done used: ADR-0007 acceptance + all of E1–E8 landed on `main` with every gate green (as recorded in the interim tracker).
+- Remaining follow-up items: (1) the ε per-agent SPAWN increment under `--epsilon-dispatch` (ADR-0009 risk #4) — honestly deferred, not a rewrite blocker; (2) optional backfill of a per-epic tracker file for historical completeness.
+- Related completed sprints: E1–E8 (summarized in Completed Sprints below).
+- Related untracked work: the doc-sync and roadmap-backfill work recorded in DUMP.md is to be reconciled into `UNTRACKED_WORK.md` once that file exists (sprint T2).
+- Related definitions: Agentic OS, Agent, President agent, Sprint, ε sprint runtime (per the ε-runtime System Inventory entry).
+- Related verification results: old mode-based tree Verified Nonexistent; role-registry Verified Exists (33 roles); ε runtime Verified Exists.
+
+---
+
+# Completed Sprints
+
+The ADR-0007 rewrite was executed as eight workstreams (E1–E8). They predate this enforced tracker, so they did not have per-sprint tracker files under `/trackers/sprints/`; their durable record was the interim `TRACKER.md` and is summarized here without loss. All were verified against disk + git in their landing sessions. Per-sprint tracker files are an optional historical backfill (recorded as a non-blocking follow-up), not required for these completed claims. The first two E-TRACKER-001 sprints (T1, T2) are also Completed and — unlike E1–E8 — carry their own tracker files under `/trackers/sprints/`.
+
+### T1 — TRACKER keystone + definitions · Completed 2026-06-05
+- Link to sprint tracker: `/trackers/sprints/T1-tracker-keystone.md` — Verified Exists (ls/Read on 2026-06-05).
+- Goal/result: Authored the keystone `TRACKER.md` with all 34 §5 sections (none omitted) and ~50 operational definitions; seeded the System Inventory and Verification Matrix; pre-recorded the real work as a dogfood; reconciled and retired the interim ADR-0007-rewrite tracker (now Superseded).
+- Final state: Completed.
+- Percent completion: 100%.
+- Parent epic: E-TRACKER-001.
+- Evidence of completion: the 943-line `TRACKER.md` with all 34 §5 sections + ~50 definitions, validated 12/12 by `scripts/trackers/validate.js` (live run on 2026-06-05, exit 0); landed in the Wave-1 commit. Verified by ls/Read + `node scripts/trackers/validate.js` on 2026-06-05.
+
+### T2 — Templates + directories + UNTRACKED_WORK · Completed 2026-06-05
+- Link to sprint tracker: `/trackers/sprints/T2-templates-and-dirs.md` — Verified Exists (ls/Read on 2026-06-05).
+- Goal/result: Created the `/trackers/` directory tree (`epics/`, `sprints/`, `templates/`) + `trackers/README.md`, all 10 templates, `UNTRACKED_WORK.md`, the E-TRACKER-001 epic tracker file, and the T1–T6 sprint tracker files — the scaffold the rest of the epic fills in.
+- Final state: Completed.
+- Percent completion: 100%.
+- Parent epic: E-TRACKER-001.
+- Evidence of completion: `trackers/` tree + 10 templates in `trackers/templates/` + `UNTRACKED_WORK.md` + `trackers/epics/E-TRACKER-001-enforced-tracker-system.md` + `trackers/sprints/T1..T6` on disk; landed in the Wave-1 commit. Verified by ls/Read on 2026-06-05.
+
+### E1 — Org cutover (the foundation) · Completed 2026-06-04
+- Goal/result: Department tree replaced the old mode-based tree; `role-registry.json` keystone (33 roles); mode-agnostic workers; dispatched-reviewer independence invariant. All 32/33 agent specs are real (74–574 lines, no stubs); only ε was design-locked at the time (→ E7). ADR-0007 accepted.
+- Evidence: cutover commits `09bac6f`→`9a132af`; `/scan:full` green at cutover. Parent epic: E-ADR0007.
+
+### E2 — Phase D: sprint hook-point framework · Completed
+- Goal/result: `sprint-hook-points.json` (16 rows / 6 steps) + composition→agent-set router (`hook-points.js`); `residency` field + `residencyOf()`; `manager_consult` emitter wired into `full.js`; `scan:sprint-hook-coverage` bidirectional enforcer + ε liveness heartbeat. (ε actually running the lifecycle was deferred to E7.)
+- Evidence: `688b1e3`→`2e859d7`. Parent epic: E-ADR0007.
+
+### E3 — v0.2: dispatch consumers derive from the registry · Completed
+- Goal/result: registry became the single source of truth for role→provider/effort/build_chain/kind; `registry-roles.js` reader with loud fallback; `scan:dispatch-routing-parity` anchored on the registry (non-vacuous, 9-case bite-test); Tier-1 sets and Tier-3 maps derive; registry reconciliation (ADR-0008); 0-regression verified vs HEAD; landed.
+- Evidence: `ec3f249`,`b29d331`,`2202abf`; ADR-0008. Parent epic: E-ADR0007.
+
+### E4 — M1 §8: skill→agent resolution · Completed
+- Goal/result: `skill-hook-points.json` registry + resolver + bite-test; `scan:skill-hook-coverage` wired into `/scan:full`; migrated all 12 agent-calling skills to resolve persona from the registry (no hardcoded persona dispatch); enforcer broadened (persona-stale-anywhere + bold-backtick-dispatch + `stale-ok` suppress); bite-test 14/14.
+- Evidence: `aa86338`,`f574a7e`,`2ac4c92`,`5c8377c`. Parent epic: E-ADR0007.
+
+### E5 — M1-d: the `_knowledge/` layer · Completed 2026-06-05
+- Goal/result: shared agent-grounding brain (ADR-0007) — library (design) + store (audience, copy); `_knowledge/` built with `_domain.json` → generated registry; `scripts/knowledge/registry.js` engine; `/knowledge:integrate` (marker blocks + producer-ref + ledger); M3 migration of `_guides/design` (19 guides) → `_knowledge/design` with 137 ref-fixes; `/knowledge:coverage` fail-closed enforcer (9/9 bite-test) wired into `/scan:full`; scan-gate PASS; landed. Also fixed 2 latent ship gaps.
+- Evidence: `3f9470d`→`6dcd318`. Parent epic: E-ADR0007.
+
+### E6 — ED-024: org-map → registry structural collapse · Completed 2026-06-05
+- Goal/result: collapsed org-map's reporting-line roster into role-registry `dispatchable_by`; `scan:role-parity` anchors on the registry, witnessed by the independent on-disk spec tree (non-vacuous; `role-parity.test` 30/30, 5 bite classes). ADR-0010; ED-024 enforced.
+- Evidence: merge `0320e11`. Parent epic: E-ADR0007.
+
+### E7 — ε sprint-conductor runtime · Completed 2026-06-05
+- Goal/result: built the ε runtime (`scripts/sprint/epsilon-runtime.js`) — registry reader + lifecycle engine that resolves the matched agent-set per hook-point, derives each role's dispatch route from the registry, and writes REAL completion records; invariants enforced structurally; design-locked banner lifted; wired into `full.js` behind `--epsilon` with default path byte-identical (156/156 + ε-vs-script parity test); ED-025 + ED-022 closed and proven E2E. STAGED follow-on: the literal per-agent SPAWN under `--epsilon-dispatch` (ADR-0009 risk #4). Subsequently (per DUMP.md) ε dispatch was made REAL on both route classes and `/mode:sprint` added (`f279b47`).
+- Evidence: merge `34213e2`; ADR-0009; `f279b47`. Parent epic: E-ADR0007.
+
+### E8 — Enforcer-debt hardening · Completed 2026-06-05
+- Goal/result: ED-023 (`adhoc-fail-override` REVIEWER_KEYS derive from registry); ED-026 (`/scan:cutover-completeness` greps raw deleted-tree literals + renamed-away roles, fail-closed, wired into `/scan:full`) plus the 61 flagged stale refs CLEANED → gate GREEN; ED-021 (heavy-skill lean-return dispatch contract). ED-022/024/025 closed by E7/E6.
+- Evidence: merge `146108f`; cleanup `db0a778`. Parent epic: E-ADR0007.
+
+### WarpOS 0.14.0 release · Completed 2026-06-05
+- Goal/result: cut the WarpOS 0.14.0 canonical release (built by `scripts/warpos/release-canonical.js`), tagged `warpos@0.14.0`. First release to run the `skillScriptCompletenessGate`, which surfaced the 32 pre-existing skill→script refs now baselined in `KNOWN_DANGLING_REFS` (see Known Gaps G-1).
+- Evidence: `git tag --list` → `warpos@0.14.0` (Verified Exists this session); release commit `0650e58`. Parent epic: none (standalone release; not part of the rewrite epic).
+
+---
+
+# Cancelled or Superseded Work
+
+The interim `TRACKER.md` (the "WarpOS — Agent-System Rewrite TRACKER (interim)", E1–E8 burndown) is SUPERSEDED by this enforced `TRACKER.md`.
+- Label/type: Document (interim tracker).
+- Previous goal: a persistent per-task-state burndown for the ADR-0007 agent-system rewrite (the interim form of the roadmapped epics-over-milestones tracker).
+- Final state: Superseded.
+- Reason: replaced by the enforced tracker required by `agentic_os_tracker_system_improvements.md`. Its real content (the completed E1–E8 rewrite and the 0.14.0 release) is preserved without loss in the Completed Epics and Completed Sprints sections above.
+- Superseding item: this `TRACKER.md` (Version 1.0.0).
+- Date changed: 2026-06-05.
+- Session ID: this session (to be backfilled).
+- Agent making the change: President Agent via delegated systems builder.
+- Evidence/rationale: the interim file was overwritten in place by this document; its E1–E8 and release content is summarized in Completed Epics/Sprints.
+- Affected documents: `TRACKER.md` (this file); `DUMP.md` (companion handoff, still valid as context).
+- Follow-up required: none for the supersession itself; the rewrite's deferred ε-spawn increment is tracked as a follow-up under E-ADR0007.
+
+---
+
+# Untracked Work
+
+`UNTRACKED_WORK.md` is Verified Exists (ls/Read on 2026-06-05; created by sprint T2) and is the authoritative store for untracked work; it is linked from the Related Tracker Documents section. The following meaningful work performed outside a formal epic/sprint is summarized here and is reconciled in `UNTRACKED_WORK.md`:
+
+- 2026-06-05 — doc-sync of about-docs (CLAUDE.md/PROJECT.md/AGENTS.md/AGENT-STRUCTURE.md/README.md) to the landed ADR-0007 tree + live ε runtime, and roadmap Shipped-narrative backfill (per DUMP.md, commits `f279b47`/`a6ab0bc`). Reason not attached to an epic/sprint: doc-maintenance done out-of-band during the rewrite landing. Should be retroactively attached to E-ADR0007 or left as standalone historical work — to be decided by the President during the next untracked-work reconciliation.
+
+The President agent must periodically reconcile untracked work into the proper structure (Untracked Work Policy).
+
+---
+
+# State Model
+
+All epics and sprints must use one of these nine states. Do not invent ambiguous states unless this schema is explicitly updated.
+
+- `Planned` — the work is known and captured but not ready to begin.
+- `Ready` — the work has enough context, requirements, and dependencies resolved to begin.
+- `Active` — work has started and is currently expected to continue.
+- `Blocked` — work cannot continue until a specific blocker is resolved.
+- `Paused` — work is intentionally stopped but may resume later.
+- `Review Needed` — implementation or planning work is believed complete enough for review, but completion has not yet been confirmed.
+- `Completed` — the work meets its definition of done and has evidence of completion.
+- `Cancelled` — the work will not be done and has not been replaced by another item.
+- `Superseded` — the work has been replaced by another epic, sprint, plan, definition, path, wiring, or system design.
+
+---
+
+# Percent Completion Rules
+
+Percent completion must be conservative, evidence-based, and non-performative. Bands:
+
+- `0%` — no meaningful work has started.
+- `1–25%` — discovery, setup, or early implementation has begun.
+- `26–50%` — meaningful implementation exists but major work remains.
+- `51–75%` — the core work exists but integration, validation, or important gaps remain.
+- `76–99%` — the work is substantially complete but not fully verified.
+- `100%` — complete, verified, documented, tracker-updated, reconciled, and passing required validation.
+
+Nothing may be marked `100%` unless: the definition of done is satisfied; evidence of completion is recorded; the relevant epic/sprint tracker is updated; `TRACKER.md` is updated; related roadmap state is updated; related definitions are present and current; required paths are verified; required wirings are verified; required validators pass or failures are explicitly tracked; any remaining follow-ups are explicitly captured elsewhere.
+
+---
+
+# Language Rules
+
+Tracker language must be precise, factual, and state-safe. Do not use language that creates ambiguity about actual state.
+
+Prohibited: "likely done by the end of this session"; "probably complete"; "mostly handled"; "should be fine"; "seems done"; "basically finished"; "we can assume this is complete"; "no need to track this"; "memory has it"; "done unless something comes up"; "this is obvious"; "this does not need a definition"; "the agent will know what this means"; "path should exist"; "probably wired"; "looks wired enough"; "validation should pass".
+
+Required alternatives: "Incomplete; next action is X."; "Implemented but not verified."; "Verified against X on YYYY-MM-DD."; "Blocked by X."; "Completed according to definition of done Y."; "Superseded by EPIC-###."; "Moved to UNTRACKED_WORK.md pending reconciliation."; "Requires review before completion."; "Definition missing; must be added before use."; "State unknown; requires reconciliation."; "Path missing but required."; "Path verified nonexistent and expected to be nonexistent."; "Wiring verified in file X."; "Validation failed; failure recorded in X."
+
+Every tracker entry must distinguish planned / in-progress / implemented / verified / completed / deferred / cancelled / superseded / unknown-state / undefined-terminology / unverified-paths / unverified-wiring / known-validation-failures. Unknown state must be labeled unknown, not guessed. Undefined terms must be labeled undefined, not inferred. Unverified paths and wirings must be labeled unverified, not assumed.
+
+---
+
+# Update Triggers
+
+`TRACKER.md` and related tracker files must be updated at meaningful intervals; meaningful state changes must never go untracked. Updates are required: at the start and end of a sprint session; before a handoff; before context compaction; after completing a task; after discovering or resolving a blocker; after changing scope or priority; after changing roadmap structure; after creating or completing an epic or sprint; after cancelling or superseding work; after meaningful work outside an epic/sprint; after adding a new operational term, changing a definition, or discovering definition drift; after creating/deleting/moving a path, discovering a path missing, or verifying expected nonexistence; after adding/removing wiring or discovering missing wiring; after adding/changing a validator or running validation; before claiming work complete; before switching modes if work state changed; before relying on prior state from memory; and before using a term whose definition affects state, completion, planning, authority, validation, or enforcement. A tracker update is not required for every tiny edit, but it is required whenever state, scope, evidence, blockers, definitions, authority, paths, wirings, validation, enforcement, or resumability changes.
+
+---
+
+# Enforcement Requirements
+
+Proper use of this tracker must not exist only in prose; it must be enforced. The implementation must add enforcement mechanisms wherever possible. Current enforcement status is recorded honestly below: the tracker validation engine IS built and passing (`scripts/trackers/validate.js`, selftest 33/33, live 12/12 PASS on 2026-06-05; runnable via the `/trackers:validate` skill), but it is not yet wired into a standing runner as an automatic gate, and the mode wiring is not yet built (sprint T4 enforcement-wiring follow-up + sprint T6).
+
+## Mode Integration Enforcement
+The tracker system must be wired into all relevant modes (sprint, roadmap, epic-planning, implementation, review, debugging, refactor, documentation, agent-coordination, handoff/resumption, validation, research-when-relevant). Current state: Unknown / Not-Yet-Verified for every mode (sprint T6). No mode may bypass the tracker because the work seems small.
+
+## Start-of-Work Enforcement
+Before meaningful work, agents must check whether the work belongs to an active/planned epic or sprint, untracked work, or a new epic/sprint to create. Enforcement mechanism: Not yet wired (sprint T4/T6). Currently procedural (How to Use → Start-of-Work).
+
+## Definition Enforcement
+Before relying on a term affecting roadmap/epic/sprint/task/state/authority/ownership/completion/evidence/validation/path/wiring/enforcement, agents must verify it is defined here; add it if missing, clarify if ambiguous, reconcile if conflicting. Undefined operational terminology is a validation failure. Enforcement mechanism: PARTIAL — `scripts/trackers/validate.js` check (k) `undefined-terms` flags a used-but-undefined core operational term; cross-file definition-drift is a deferred T4 cross-file check (not yet wired).
+
+## Path and Wiring Enforcement
+Before relying on a path/file/directory/hook/command/mode/validator/template/wiring, agents must verify it. A claim that something exists/does-not-exist/is-wired is invalid without corresponding verification evidence. Enforcement mechanism: Not yet wired (sprint T4); currently procedural (Verification Use Procedure).
+
+## End-of-Work Enforcement
+Before ending a session, agents must update the relevant epic/sprint trackers, `TRACKER.md`, `UNTRACKED_WORK.md` (if applicable), roadmap (if changed), definitions (if changed), System Inventory (if paths/wiring changed), and Verification Matrix (if verification performed). Enforcement mechanism: Not yet wired (sprint T4/T6).
+
+## Completion Gate Enforcement
+Agents must not mark a sprint/epic complete unless the §28.6 conditions hold (DoD satisfied; evidence recorded; session/change logs updated; definitions present; required files/dirs/nonexistence/wirings verified; validators pass or failures tracked; roadmap reconciled; untracked work reconciled or linked; next action empty or moved to a follow-up; `TRACKER.md` and the item's own tracker agree). Enforcement mechanism: Not yet wired (sprint T4).
+
+---
+
+# Validation Requirements
+
+The system must include a validation process (the tracker validation engine — Verified Exists at `scripts/trackers/validate.js`, sprint T4) that checks for: missing epic/sprint tracker files; broken links; active items with no next action; completed items without evidence; completed items below `100%`; `100%` items not marked completed; sprints without parent epics; epics missing from the roadmap; work logs with no session ID; ambiguous state language; undefined operational terms; definition drift; untracked work that should be attached to an epic/sprint; roadmap items still using milestones instead of epics; blank tracker sections; tracker entries missing owner/state/evidence/next-action; conflicts between `TRACKER.md`, roadmap, epic trackers, and sprint trackers; referenced paths that do not exist; referenced paths that exist but should not; required paths with unknown state; required wirings with unknown state; claims of wiring without evidence; validators documented but not runnable; modes that can perform work but do not consult the tracker; hooks that should enforce tracking but are missing.
+
+Validation is runnable manually and, where possible, automatically. Current status: the single-file engine IS built and runnable — `scripts/trackers/validate.js` (selftest 33/33; live run on 2026-06-05 = all 12 checks PASS, exit 0; surfaced via the `/trackers:validate` skill). This tracker's `Last Validation` is 2026-06-05 and `Validation Status` is Passing (12/12). The engine covers the single-file checks (sections-present, no-blank-section, broken-links, active-tracker-files, active-next-action, completed-evidence, completed-100, hundred-completed, sprint-parent-epic, ambiguous-language, undefined-terms, required-paths). The cross-file checks remain deferred (T4 follow-up): definition-drift, epics-missing-from-roadmap / roadmap-still-using-milestones, TRACKER↔roadmap↔epic↔sprint reconciliation, work-logs-with-no-session-ID, expected-nonexistence, "modes that perform work but don't consult the tracker", and "hooks that should enforce tracking but are missing"; and the engine is not yet wired into a standing runner as an automatic gate (T4 enforcement-wiring follow-up). If validation fails, agents must not claim the tracker system is healthy; failures must be fixed immediately, added to a tracked sprint, added to an active blocker list, or added to `UNTRACKED_WORK.md` pending reconciliation. Validation failures must not be ignored.
+
+---
+
+# Roadmap Rules
+
+The roadmap must no longer be organized around generic milestones; it must be organized into epics (Roadmap item == Epic). Current state: `ROADMAP.md` is Verified Exists but is Now/Next/Later/Archive-structured, NOT yet epic-based — recorded as Exists But Incomplete and as Known Gap G-2-adjacent; migration is owned by sprint T5.
+
+The roadmap must include: title, version, last-updated timestamp, owner, strategic purpose, current active epics, planned epics, completed epics, superseded epics, cancelled epics, dependencies between epics, priority ordering, current focus, deferred work, links to `TRACKER.md`, links to relevant epic trackers, related definitions, related verification items. Each roadmap item must map to an epic with: epic number, title, goal, priority, state, completion percentage, link to epic tracker, related sprints, dependencies, rationale, expected impact, current next action, related definitions. The roadmap must not contain vague milestone entries that cannot be tracked, resumed, or verified. Existing milestones must be migrated into epics or explicitly marked deprecated during migration (sprint T5); the roadmap must not retain duplicate milestone and epic structures unless the milestone structure is explicitly marked deprecated.
+
+---
+
+# Epic Tracker Rules
+
+Every epic must have its own tracker document at `/trackers/epics/<EPIC-ID>-<short-name>.md`, linked from `TRACKER.md`. Each epic tracker must include: epic label and number; title; owner; parent roadmap area; goal; background; scope; out of scope; current state; percent completion; definition of done; related definitions; related sprints; dependencies; blockers; risks; decisions; open questions; session log; change log; evidence log; verification log; current next action; completion record. An epic cannot remain listed Active without its own tracker file. Current state: `/trackers/epics/` is Verified Exists (ls/Read on 2026-06-05; created by sprint T2); E-TRACKER-001's epic tracker file `/trackers/epics/E-TRACKER-001-enforced-tracker-system.md` is Verified Exists and linked from the Active Epics section.
+
+---
+
+# Sprint Tracker Rules
+
+Every sprint must have its own tracker document at `/trackers/sprints/<SPRINT-ID>-<short-name>.md`, linked from `TRACKER.md`. Each sprint tracker must include: sprint label and number; title; owner; parent epic; goal; scope; out of scope; current state; percent completion; definition of done; related definitions; tasks; files expected to change; files actually changed; paths expected to exist; paths verified to exist; paths verified nonexistent; wirings expected; wirings verified; dependencies; blockers; risks; decisions; open questions; session log; change log; evidence log; verification log; current next action; completion record. A sprint cannot remain listed Active without its own tracker file. Current state: `/trackers/sprints/` is Verified Exists (ls/Read on 2026-06-05; created by sprint T2); T1–T6's sprint tracker files are all Verified Exists on disk.
+
+---
+
+# Session Logging Rules
+
+Every meaningful work session on an epic or sprint must be logged. Each session log entry must include: session ID; date; start time (if known); end time (if known); agent(s) involved; mode used; work performed; files changed; paths changed; wirings changed; decisions made; issues discovered; definitions added or changed; state changes; completion-percentage change; verification performed; validation run; validation result; next action; evidence or references. Session logs are append-only unless correcting a factual error, and corrections must themselves be logged.
+
+Seed session log (keystone-authoring session): Session ID: to be backfilled by orchestrator · Date: 2026-06-05 · Agent: President Agent via delegated docs/systems builder · Mode: documentation/build · Work performed: authored the enforced `TRACKER.md` keystone (all 34 sections; ~50 definitions; seeded System Inventory + Verification Matrix from verified facts; pre-recorded E-TRACKER-001 + T1–T6 + completed E-ADR0007/E1–E8 + 0.14.0 release; recorded gaps G-1/G-2/G-3) · Files changed: `TRACKER.md` · Paths changed: none created (only `TRACKER.md` overwritten) · Wirings changed: none · Definitions added: all in the Definitions section · State changes: interim tracker → Superseded; E-TRACKER-001 → Active; T1 → Active · Completion change: T1 0%→~80%, E-TRACKER-001 0%→~15% · Verification performed: see Verification Matrix · Validation run: none (engine not yet built at that point) · Validation result: not run then · Next action: sprint T2 (`/trackers/` + templates + `UNTRACKED_WORK.md`) · Evidence: this file.
+
+Reconciliation session log (2026-06-05): Session ID: to be backfilled · Date: 2026-06-05 · Agent: President Agent (reconciliation pass) · Mode: documentation/reconciliation · Work performed: reconciled `TRACKER.md` to disk — flipped Wave-1 artifacts to Verified Exists, set T1/T2 Completed, T4 Review Needed, E-TRACKER-001 ~50%, validation status Passing; added the reconciliation Change Log + Reconciliation entries · Files changed: `TRACKER.md` (+ the E-TRACKER-001 epic file and T1/T2/T4 sprint files reconciled to match) · Paths changed: none created · Wirings changed: none · Definitions added: none · State changes: T1 Active→Completed; T2 Planned→Completed; T4 Planned→Review Needed; E-TRACKER-001 ~15%→~50% · Completion change: T1 ~80%→100%, T2 0%→100%, T4 0%→~85%, E-TRACKER-001 ~15%→~50% · Verification performed: ls/Read on 2026-06-05 over all Wave-1 artifacts (see Verification Matrix) · Validation run: `node scripts/trackers/validate.js` · Validation result: all 12 checks PASS, exit 0 · Next action: T3 (inventory/matrix), T5 (roadmap migration), T6 (mode wiring); finish T4 enforcement-gate + cross-file checks · Evidence: this file (validated 12/12); the Wave-1 artifacts on disk.
+
+---
+
+# Change Tracking Rules
+
+Changes to epics, sprints, roadmap structure, goals, scope, requirements, blockers, definitions, terminology, paths, wirings, validators, hooks, modes, commands, or plans must always be recorded. If an issue is found and added to a plan, the tracker must show what was found, when, who/what found it, which epic/sprint it affects, what changed because of it, and whether scope/state/completion/definition/path/wiring/validation/priority changed. A changed plan must not simply disappear; the change must be traceable. Each tracker document includes a `Change Log` section with dated, session-attributed entries.
+
+## Change Log
+
+### 2026-06-05 — Reconciliation pass (President)
+- Changed: Reconciliation — marked the Wave-1 artifacts Verified Exists (`UNTRACKED_WORK.md`, the `/trackers/` tree + 10 templates + README, the E-TRACKER-001 epic file + T1–T6 sprint files, `scripts/trackers/validate.js`, and the `/trackers:validate` skill), set T1/T2 Completed (100%) and T4 Review Needed (~85%), moved E-TRACKER-001 to ~50%, and set validation status Passing (12/12).
+- Reason: The tracker had drifted during the parallel build wave — it still marked now-existing artifacts Missing But Required / Unknown and claimed ~15%. This pass makes the tracker truthful against disk (ls/Read on 2026-06-05) and against the live validator run (`node scripts/trackers/validate.js` → 12/12 PASS, exit 0).
+- Affected: Header (Last Validation / Validation Status / state summary / next action); System Inventory + Verification Matrix rows; Active Epics (E-TRACKER-001 ~50%); Active Sprints (T4 Review Needed replaces T1); Planned Sprints (T2/T4 removed; T3/T5/T6 links Verified Exists); Completed Sprints (T1, T2 added); Untracked Work; Enforcement/Validation Requirements; Epic/Sprint Tracker Rules; Definition of Done; Required Files/Templates; Implementation Priority; Non-Negotiable note; Known Gap G-2 (severity High→Medium).
+- Previous state: artifacts Missing But Required / Unknown; T1 Active ~80%; T2/T4 Planned 0%; epic ~15%; `Validation Status: Not Yet Run`.
+- New state: artifacts Verified Exists; T1/T2 Completed; T4 Review Needed; epic ~50%; `Validation Status: Passing (12/12)`. Genuinely-unbuilt items (T3/T5/T6 deliverables, ROADMAP migration, mode wiring, T4's enforcement-gate + cross-file checks) left honestly Planned / Unknown / Missing But Required.
+
+### 2026-06-05 21:51 PDT — Session (keystone authoring)
+- Changed: Created the enforced `TRACKER.md` (Version 1.0.0), replacing the interim ADR-0007-rewrite tracker.
+- Reason: Implement the enforced tracking system required by `agentic_os_tracker_system_improvements.md` (epic E-TRACKER-001, sprint T1).
+- Affected: `TRACKER.md`; the interim tracker (now Superseded); E-TRACKER-001 (Active); T1 (Active); T2–T6 (Planned); E-ADR0007 and its E1–E8 + the 0.14.0 release (recorded as Completed); gaps G-1/G-2/G-3 (recorded).
+- Previous state: interim per-task burndown for E1–E8.
+- New state: enforced 34-section tracker with definitions, inventory, verification matrix, state model, validation/enforcement rules, and pre-recorded dogfood work.
+
+---
+
+# Evidence Rules
+
+Work must not be marked complete without evidence. Evidence may include: file paths changed; tests run; commands run; validation results; review notes; screenshots where relevant; links to implementation files; links to PRs/commits/diffs where available; explicit confirmation that a document exists; explicit confirmation that a document does not exist and should not exist; explicit confirmation that a mode or hook is wired; explicit confirmation that a validator ran; explicit confirmation that relevant definitions exist; explicit confirmation that roadmap state is reconciled. Evidence must be concrete enough that another agent can resume or verify the work without relying on memory.
+
+Seed evidence log (this session): (1) `ls -la TRACKER.md ROADMAP.md` → TRACKER.md and ROADMAP.md exist; UNTRACKED_WORK.md absent. (2) `ls trackers` → no such directory. (3) `ls .claude/agents` → department tree dirs present. (4) `node` count over `role-registry.json` → 33 roles. (5) `ls -la scripts/sprint/epsilon-runtime.js` → exists, 34382 bytes. (6) `ls .claude/commands/mode` → solo/adhoc/oneshot/sprint. (7) `node` require of `release-build.js` → KNOWN_DANGLING_REFS length 32 (A:4, B:11, C:17). (8) `git tag --list "warpos@0.14*"` → `warpos@0.14.0`.
+
+---
+
+# Definition of Done
+
+Definition of Done for the whole E-TRACKER-001 project (per spec §37). This work is complete only when:
+
+- The old `TRACKER.md` has been deleted or fully unwired. — DONE (overwritten this session; interim recorded as Superseded).
+- A new `TRACKER.md` exists. — DONE (this file).
+- `TRACKER.md` follows the required structure (all 34 sections). — DONE; confirmed by validation: `scripts/trackers/validate.js` check (a) sections-present PASS on 2026-06-05.
+- `TRACKER.md` includes a robust How to Use section. — DONE.
+- `TRACKER.md` includes authoritative definitions; all required operational terms are defined; definition change rules documented. — DONE this session.
+- Definition enforcement wired into all relevant modes. — NOT DONE (sprint T6).
+- `UNTRACKED_WORK.md` exists and is linked. — DONE (Verified Exists, ls/Read on 2026-06-05; sprint T2; linked from Related Tracker Documents).
+- Roadmap structure is epic-based; existing milestones migrated or deprecated. — NOT DONE (sprint T5).
+- Epic tracker files exist for all active and planned epics. — DONE (E-TRACKER-001 epic tracker Verified Exists; sprint T2).
+- Sprint tracker files exist for all active and planned sprints. — DONE (T1–T6 sprint trackers Verified Exists; sprint T2).
+- Completed epics and sprints have evidence records. — DONE for E-ADR0007/E1–E8 + 0.14.0 (carried-forward evidence; T3 re-verifies hashes).
+- State language standardized; percent rules documented; update triggers documented. — DONE this session.
+- Required paths verified; required nonexistence verified where applicable; required wirings verified. — PARTIAL (seed verification this session; completed by T3/T6).
+- Required validators exist and are runnable. — DONE for the single-file engine (`scripts/trackers/validate.js`, selftest 33/33, live 12/12 PASS on 2026-06-05); PARTIAL overall (cross-file checks + standing-runner gate deferred, sprint T4 follow-up).
+- System Inventory and Verification Matrix exist and are current. — SEEDED; current as of 2026-06-05; full disk-verification completed by T3.
+- Enforcement wired into sprint mode and all other relevant modes. — NOT DONE (sprint T6).
+- President documented as owner; tracker documented as higher authority than Claude memory. — DONE.
+- Validation exists, has been run, and failures are fixed or tracked. — DONE for the single-file engine (built; run 2026-06-05 = 12/12 PASS, exit 0; `Last Validation: 2026-06-05`, `Validation Status: Passing`); PARTIAL overall (cross-file checks + automatic gate deferred, sprint T4 follow-up).
+- Known gaps and open flaws are either empty with evidence or fully tracked. — DONE (G-1/G-2/G-3 tracked).
+- The system can be resumed from tracker files alone without relying on chat memory. — PARTIAL (the keystone + scaffold + per-epic/per-sprint files + a passing validator enable resumption of E-TRACKER-001; full resumability for all work completes when T3/T5/T6 land and T4 reaches Completed).
+
+The project is NOT yet complete: E-TRACKER-001 is ~50%; T1 (keystone) and T2 (scaffold) are Completed and T4 (validation engine) is in Review, but T3 (inventory/matrix completion), T5 (roadmap migration), and T6 (mode wiring) remain, and T4's enforcement-wiring + cross-file checks are not yet built.
+
+---
+
+# Reconciliation Rules
+
+Reconciliation is required when two or more tracker-related sources disagree about: state; percent completion; ownership; scope; next action; blockers; evidence; completion; roadmap placement; definitions; sprint/epic relationship; untracked work; path existence; path nonexistence; directory state; mode wiring; hook wiring; command availability; validator behavior; or template state. A reconciliation entry must include: conflict discovered; sources involved; authoritative source selected; final reconciled state; reason; date and time; session ID; agent; documents updated; remaining uncertainty (if any). Unresolved conflicts must be marked as blockers or review-needed items. If direct inspection contradicts tracker state, the tracker is not automatically overwritten — the contradiction is recorded and reconciled. The President agent owns reconciliation.
+
+### 2026-06-05 — Reconciliation: tracker state vs disk (President)
+- Conflict discovered: `TRACKER.md` claimed the Wave-1 artifacts were Missing But Required / Unknown and the epic was ~15%, but those artifacts exist on disk and the validator passes.
+- Sources involved: `TRACKER.md` (stale) vs direct filesystem inspection (ls/Read on 2026-06-05) vs the live validator run (`node scripts/trackers/validate.js`) vs the epic/sprint tracker files.
+- Authoritative source selected: directly-inspected filesystem + validator run (per the Authority order, item 8 inspected code/paths and item 3 validation records resolve the existence/validation facts the stale prose contradicted).
+- Final reconciled state: artifacts Verified Exists; T1/T2 Completed (100%); T4 Review Needed (~85%); E-TRACKER-001 ~50%; `Validation Status: Passing (12/12)`.
+- Reason: the tracker drifted from reality during the parallel build wave; this pass realigns the written state with disk without losing the genuinely-unbuilt items (T3/T5/T6, ROADMAP migration, mode wiring, T4 enforcement-gate + cross-file checks remain Planned / Unknown / Missing But Required).
+- Date and time: 2026-06-05. Session ID: to be backfilled. Agent: President Agent (reconciliation pass).
+- Documents updated: `TRACKER.md` (Header, inventory, matrix, epic, sprints, completed sprints, untracked work, enforcement/validation, tracker rules, DoD, required files/templates, implementation priority, non-negotiables, G-2, change log, this entry); the E-TRACKER-001 epic file and the T1/T2/T4 sprint files (state/percent/evidence reconciled to match).
+- Remaining uncertainty: the E-ADR0007 evidence commit hashes are still carried forward from the interim tracker and DUMP.md (sprint T3 re-verifies them against current `git log`); tracker mode-wiring remains Unknown (T6).
+
+(Prior pending re-verification, not yet a conflict: the E-ADR0007 evidence commit hashes are carried forward from the interim tracker and DUMP.md; sprint T3 will re-verify them against current `git log` and record a reconciliation entry if any disagree.)
+
+---
+
+# Required Files
+
+Per spec §33, the implementation must create, verify, or explicitly reject these files/paths. Current verified state shown (2026-06-05 21:51 PDT):
+
+- `TRACKER.md` — Verified Exists (this file).
+- `ROADMAP.md` — Verified Exists (Exists But Incomplete: not epic-based; sprint T5).
+- `UNTRACKED_WORK.md` — Verified Exists (ls/Read on 2026-06-05; sprint T2).
+- `/trackers/` — Verified Exists (ls/Read on 2026-06-05; sprint T2).
+- `/trackers/epics/` — Verified Exists (ls/Read on 2026-06-05; sprint T2).
+- `/trackers/sprints/` — Verified Exists (ls/Read on 2026-06-05; sprint T2).
+- `/trackers/templates/` — Verified Exists (ls/Read on 2026-06-05; sprint T2).
+- `/trackers/templates/EPIC_TEMPLATE.md` — Verified Exists (ls/Read on 2026-06-05; sprint T2).
+- `/trackers/templates/SPRINT_TEMPLATE.md` — Verified Exists (ls/Read on 2026-06-05; sprint T2).
+- `/trackers/templates/SESSION_LOG_TEMPLATE.md` — Verified Exists (ls/Read on 2026-06-05; sprint T2).
+- `/trackers/templates/UNTRACKED_WORK_TEMPLATE.md` — Verified Exists (ls/Read on 2026-06-05; sprint T2).
+- `/trackers/templates/DEFINITION_TEMPLATE.md` — Verified Exists (ls/Read on 2026-06-05; sprint T2).
+- `/trackers/templates/CHANGE_LOG_TEMPLATE.md` — Verified Exists (ls/Read on 2026-06-05; sprint T2).
+- `/trackers/templates/EVIDENCE_LOG_TEMPLATE.md` — Verified Exists (ls/Read on 2026-06-05; sprint T2).
+- `/trackers/templates/VERIFICATION_TEMPLATE.md` — Verified Exists (ls/Read on 2026-06-05; sprint T2).
+- `/trackers/templates/RECONCILIATION_TEMPLATE.md` — Verified Exists (ls/Read on 2026-06-05; sprint T2).
+- `/trackers/templates/COMPLETION_RECORD_TEMPLATE.md` — Verified Exists (ls/Read on 2026-06-05; sprint T2).
+
+Old paths that should no longer exist: the old mode-based agent tree (`.claude/agents/00-alex`, `01-adhoc`, `02-oneshot`, `03-managers`) — recorded as Verified Nonexistent / expected-nonexistent per the E-ADR0007 cutover; sprint T3 re-verifies on disk. Note: this project (WarpOS canonical) places trackers under `.claude/`-adjacent root paths; the `/trackers/` root-relative organization above is the chosen structure and is linked clearly from this `TRACKER.md`.
+
+---
+
+# Required Wirings
+
+Per spec §34, the implementation must verify and document each wiring below. Every row is currently `Unknown` / `Not-Yet-Verified` and is the subject of the verification sprint (T6, with the validation engine from T4). A wiring must not be marked complete because it was described in prose; it must be verified in the actual Agentic OS implementation. Each row records: Wiring | Purpose | Source (expected) | Verification result.
+
+| Wiring | Purpose | Source file (expected) | Result |
+|---|---|---|---|
+| Sprint mode tracker checks | Sprint mode consults `TRACKER.md` at start/end | `.claude/commands/mode/sprint.md` / `scripts/sprint/*` | Unknown / Not-Yet-Verified (T6) |
+| Roadmap mode tracker checks | Roadmap edits reconcile with tracker | roadmap skills under `.claude/commands/roadmap/` | Unknown / Not-Yet-Verified (T6) |
+| Epic planning tracker checks | Epic creation requires a tracker file | (epic-planning surface TBD) | Unknown / Not-Yet-Verified (T6) |
+| Implementation mode tracker checks | Implementation consults tracker before substantial work | mode/agent surfaces | Unknown / Not-Yet-Verified (T6) |
+| Review mode tracker checks | Review confirms completion against tracker | review surfaces | Unknown / Not-Yet-Verified (T6) |
+| Debugging mode tracker checks | Debugging records state mismatch into tracker | debug surfaces | Unknown / Not-Yet-Verified (T6) |
+| Refactor mode tracker checks | Refactor records path/wiring changes | refactor surfaces | Unknown / Not-Yet-Verified (T6) |
+| Documentation mode tracker checks | Doc work records untracked work when outside a sprint | doc surfaces | Unknown / Not-Yet-Verified (T6) |
+| Agent coordination tracker checks | Coordination defers to tracker authority | agent-coordination surfaces | Unknown / Not-Yet-Verified (T6) |
+| Handoff/resumption tracker checks | Handoff/resume reads tracker, not memory | `/session:handoff`, `/session:resume` | Unknown / Not-Yet-Verified (T6) |
+| Validation mode tracker checks | Validation runs the tracker checks | `/scan:*` runner (candidate) | Unknown / Not-Yet-Verified (T4/T6) |
+| Definition enforcement checks | Block use of undefined operational terms | validation engine | Unknown / Not-Yet-Verified (T4) |
+| Start-of-work checks | Force a tracker read before meaningful work | hook (PreToolUse) candidate | Unknown / Not-Yet-Verified (T4/T6) |
+| End-of-work checks | Force tracker updates before session end | hook (Stop) candidate | Unknown / Not-Yet-Verified (T4/T6) |
+| Completion gate checks | Block completion claims without §28.6 evidence | validation engine / hook | Unknown / Not-Yet-Verified (T4) |
+| Path verification checks | Block "exists/nonexistent" claims without evidence | validation engine | Unknown / Not-Yet-Verified (T4) |
+| Wiring verification checks | Block "wired" claims without evidence | validation engine | Unknown / Not-Yet-Verified (T4) |
+| Validation commands | Make tracker validation runnable manually + automatically | `scripts/trackers/validate.js` + `/trackers:validate` skill | Runnable manually (Verified Exists; 12/12 PASS on 2026-06-05); NOT yet wired into a standing runner as an automatic gate (deferred T4 follow-up) |
+
+---
+
+# Required Templates
+
+Per spec §35, the system must include templates for: epic trackers; sprint trackers; session logs; change logs; evidence logs; definition records; untracked-work entries; completion records; verification records; reconciliation records; system-inventory records. Templates must be practical, not decorative, and designed so agents can fill them in quickly without ambiguity. Current state: 10 templates are Verified Exists in `/trackers/templates/` (ls/Read on 2026-06-05; sprint T2 deliverable): EPIC_TEMPLATE, SPRINT_TEMPLATE, SESSION_LOG_TEMPLATE, CHANGE_LOG_TEMPLATE, EVIDENCE_LOG_TEMPLATE, DEFINITION_TEMPLATE, UNTRACKED_WORK_TEMPLATE, VERIFICATION_TEMPLATE, RECONCILIATION_TEMPLATE, and COMPLETION_RECORD_TEMPLATE. The §35 "system-inventory record" template was folded into the VERIFICATION/SYSTEM-INVENTORY workflow and is not a separate file; whether to add a standalone SYSTEM_INVENTORY_RECORD_TEMPLATE is a T3 follow-up.
+
+---
+
+# Implementation Priority
+
+Per spec §38, the implementation order is: (1) inspect the current Agentic OS structure; (2) inventory current roadmap/tracker/epic/sprint/definition/mode/hook/command/validator/template files; (3) verify existence/nonexistence/state of every relevant path; (4) verify wiring of every mode and enforcement point; (5) delete/unwire the old `TRACKER.md`; (6) create the new `TRACKER.md`; (7) add How to Use; (8) add Definitions; (9) define all required terms; (10) add System Inventory; (11) add Verification Matrix; (12) create tracker directories and templates; (13) create `UNTRACKED_WORK.md`; (14) migrate roadmap milestones→epics; (15–16) create/migrate epic and sprint tracker files; (17–22) wire tracker/definition/path/wiring checks into sprint mode then all other modes; (23–26) add validation for tracker/definition/path/wiring; (27) reconcile existing work; (28) run validation and fix failures; (29) record completion evidence; (30) record remaining gaps.
+
+Mapping to this project's sprints: steps 1–11 are sprint T1 (with verification seeded and completed in T3); step 12–13 are sprint T2; steps 3–4 verification completion is sprint T3; step 14 is sprint T5; steps 15–16 are sprint T2 (file creation) + T5 (roadmap migration); steps 17–22 are sprint T6; steps 23–26 are sprint T4; steps 27–30 span T3/T4. Current position: steps 6–13 are DONE (T1 + T2 Completed) and the validation engine of steps 23–26 is built and passing (T4 Review Needed); remaining are step 14 (T5 roadmap migration), steps 17–22 (T6 mode wiring), step 3–4 completion (T3), and T4's enforcement-wiring + cross-file checks.
+
+---
+
+# Non-Negotiable Requirements
+
+Per spec §39, the system must not: rely on memory as the source of truth; allow meaningful work to disappear between sessions; mark work complete without evidence; use ambiguous state language; use undefined operational terminology; allow definitions to live only in memory/chat/scattered documents; assume paths exist; assume paths do not exist; assume wiring exists; claim enforcement exists unless enforcement is verified; keep roadmap milestones as the primary organizing unit; treat tracker updates as optional; allow active sprints/epics without their own tracker files; allow work completed outside epics/sprints to remain invisible; allow definition changes without a change record; allow validation failures to be ignored; or allow known gaps/flaws in the Agentic OS tracking layer to remain invisible. The system must be thorough first; efficiency comes later.
+
+Honest current-state note against these non-negotiables: two requirements are NOT yet fully met and are tracked as in-flight, not hidden — (a) "enforcement must be verified, not claimed" — the validation engine IS built and passing (`scripts/trackers/validate.js`, 12/12 PASS on 2026-06-05), but it is not yet wired into a standing runner as an automatic gate, and the mode wiring is not yet built (Unknown, sprints T4 follow-up / T6); (b) "roadmap must not keep milestones as the primary unit" — `ROADMAP.md` is not yet epic-based (sprint T5). The "no active epic/sprint without its own tracker file" requirement is now MET: E-TRACKER-001's epic tracker and T1–T6's sprint trackers are Verified Exists on disk (sprint T2). The two open items are recorded as Known Gap G-2 (tracker system mid-build) and in the Definition of Done, not asserted as satisfied.
+
+---
+
+# Known Gaps and Open Flaws
+
+Per spec §36. Each gap carries: id, description, severity, affected area, affected files/paths, affected wirings, affected modes, discovery date, discovered by, current owner, required fix, current state, related epic/sprint, evidence, next action. (The "No known gaps" closing statement is NOT used, because validation has not been run and gaps exist.)
+
+### G-1 — E3 ship-boundary audit (32 baselined skill→script refs)
+- Description: The `skillScriptCompletenessGate` (first run in WarpOS 0.14.0) surfaced 32 pre-existing skill→script references, now baselined in `KNOWN_DANGLING_REFS` in `scripts/warpos/release-build.js`. They fall in three classes: (A) gate false-positives — illustrative placeholders / run-local artifacts that are not canonical scripts (4 entries); (B) canonical-dev / framework-maintenance / installer scripts intentionally not shipped (11 entries); (C) consumer-eligible scripts that back a shipped consumer skill but are not yet in the manifest and SHOULD ship (17 entries).
+- Severity: Medium (no broken install today — the refs are baselined and the gate blocks any NEW ref; but class-C consumer skills ship without their backing scripts, a latent downstream-dead-skill risk).
+- Affected area: WarpOS ship boundary / release manifest.
+- Affected files/paths: `scripts/warpos/release-build.js` (KNOWN_DANGLING_REFS); the class-C backing scripts under `scripts/` (e.g. models/etc/guides/dispatch/oneshot/maps families per the per-entry reasons).
+- Affected wirings: the release manifest / `skillScriptCompletenessGate`.
+- Affected modes: release flow (`/warp:release`).
+- Discovery date: 2026-06-05 (the 0.14.0 release, first run of the gate).
+- Discovered by: the `skillScriptCompletenessGate` during the 0.14.0 release.
+- Current owner: President Agent (delegable to engineering).
+- Required fix: ship every class-(C) consumer-eligible script into the manifest; teach the gate to skip class-(A) placeholders; confirm the class-(B) dev-only calls. Then the baseline can shrink toward zero.
+- Current state: Recorded; baselined and gate-blocking-on-new. Not yet fixed.
+- Related epic/sprint: not E-TRACKER-001; an engineering/release follow-up (candidate future epic). Cross-referenced from `ROADMAP.md` / issues.md per the release-build comment.
+- Evidence: `node` require of `release-build.js` → KNOWN_DANGLING_REFS length 32 (A:4, B:11, C:17), verified this session; the in-file comment block (lines 207–248) documents the three classes and the fix.
+- Next action: schedule the ship-boundary audit; ship class-C scripts; teach the gate to skip class-A.
+
+### G-2 — Tracker system mid-build (T3/T5/T6 + T4 follow-ups pending)
+- Description: The enforced tracker system is partially built. T1 (keystone `TRACKER.md` + ~50 definitions) and T2 (`/trackers/` tree, 10 templates, `UNTRACKED_WORK.md`, the E-TRACKER-001 epic file, T1–T6 sprint files) are Completed and Verified Exists on disk; T4's validation engine (`scripts/trackers/validate.js`) is built and passing (selftest 33/33, live 12/12 PASS) and the `/trackers:validate` skill exists — T4 is Review Needed. Still not built: the completed inventory/verification (T3), T4's enforcement-gate wiring + deferred cross-file §28.7 checks, the roadmap milestones→epics migration (T5), and the mode wiring (T6). Consequently `ROADMAP.md` is not yet epic-based, the validator is not yet an automatic gate, and tracker mode-wiring is Unknown.
+- Severity: Medium (down from High — the tracking layer now has its keystone, scaffold, per-item files, and a passing validator; what remains is roadmap migration, mode wiring, and turning the validator into a standing gate — tracked, not hidden).
+- Affected area: the Agentic OS tracking layer (roadmap migration + mode wiring + enforcement-gate remaining).
+- Affected files/paths: `ROADMAP.md` (not epic-based; T5); the validator's standing-runner integration + cross-file checks (deferred T4 follow-up).
+- Affected wirings: the mode-consult rows in Required Wirings (Unknown / Not-Yet-Verified, T6); the start-of-work/end-of-work/completion-gate wirings (deferred T4 follow-up).
+- Affected modes: all relevant modes (sprint, roadmap, epic-planning, implementation, review, debugging, refactor, documentation, agent-coordination, handoff/resumption, validation).
+- Discovery date: 2026-06-05.
+- Discovered by: President Agent (by design — this is the build-in-progress, recorded as a gap so the unfinished state is never invisible).
+- Current owner: President Agent.
+- Required fix: complete sprints T3, T5, T6; finish T4's enforcement-gate wiring + cross-file checks; keep this tracker's `Last Validation` / `Validation Status` current.
+- Current state: In progress (E-TRACKER-001 ~50%; T1/T2 Completed; T4 Review Needed; T3/T5/T6 Planned).
+- Related epic/sprint: E-TRACKER-001; sprints T3, T4, T5, T6.
+- Evidence: ls/Read on 2026-06-05 → `trackers/` tree + 10 templates + `UNTRACKED_WORK.md` + epic file + T1–T6 present; `node scripts/trackers/validate.js` → 12/12 PASS, exit 0; this tracker's `Validation Status: Passing`.
+- Next action: run T3 (complete inventory/matrix from disk), T5 (roadmap migration), T6 (mode wiring); finish T4 enforcement-wiring + cross-file checks.
+
+### G-3 — Stale-worktree-cwd operational hazard
+- Description: A session can launch with its current working directory inside a git-pruned but still-on-disk worktree (cwd lock), making relative-path operations target a dead worktree instead of canonical. This session itself launched in a nested stale worktree (`.claude/worktrees/e6-orgmap-collapse/.claude/worktrees/e6-recover`) and had to operate on canonical via absolute paths only. The same hazard previously produced false "silent death" / wrong-completion-record-path readings (see project memory on dispatch completion records using a relative path).
+- Severity: Medium (does not corrupt canonical when absolute paths are used, but silently misroutes any relative-path or git operation; a real source of "work lost between sessions" and false verification readings).
+- Affected area: session bootstrap / worktree lifecycle / any tooling that resolves paths relative to cwd.
+- Affected files/paths: lingering `.claude/worktrees/**` directories that are git-pruned but not removed (cwd lock); any tracker/dispatch record written via a relative path.
+- Affected wirings: dispatch completion-record writers; any start-of-work/end-of-work hook that assumes cwd == canonical.
+- Affected modes: all modes when launched from a stale worktree cwd.
+- Discovery date: 2026-06-05 (observed this session); consistent with prior project memory (dispatch completion records relative-path cwd bug; RI-004-adjacent).
+- Discovered by: this session (the systems builder, operating under the stale-worktree contract).
+- Current owner: President Agent (delegable to engineering / session-bootstrap owner).
+- Required fix: a session-bootstrap guard that detects a stale/pruned worktree cwd and refuses or re-roots to canonical; and a convention that tracker/dispatch records are written via absolute canonical paths, not cwd-relative. Until built, the operational mitigation (used this session) is to prefix every command with the absolute canonical root and use absolute paths for all file operations.
+- Current state: Recorded; mitigation applied this session; no automated guard yet.
+- Related epic/sprint: not E-TRACKER-001 directly; a session-bootstrap follow-up (candidate future epic). Cross-references existing project memory on dispatch completion records + enforcer debt ED-016.
+- Evidence: this session's cwd was `...\.claude\worktrees\e6-orgmap-collapse\.claude\worktrees\e6-recover` (a pruned nested worktree); all work was performed on canonical `C:/Users/Vlad/Desktop/Claude/Projects/WarpOS` via absolute paths.
+- Next action: log a session-bootstrap-guard follow-up (candidate epic) and reference it from `ROADMAP.md`; until then, keep using the absolute-path mitigation.

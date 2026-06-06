@@ -519,7 +519,19 @@ function buildRules(sourcePrefix) {
       match: (rel) =>
         rel === "DUMP.md" ||
         rel === "TRACKER.md" ||
+        rel === "UNTRACKED_WORK.md" ||
         rel === "agentic_os_tracker_system_improvements.md",
+      entry: () => ({ owner: "runtime", managed: false }),
+    },
+    {
+      name: "runtime-trackers-tree",
+      // The /trackers/ working tree (epics, sprints, templates, README) is the
+      // enforced-tracker system's instance data — WarpOS-internal working state,
+      // tracked but NOT shipped to products and not a framework view.
+      // owner=runtime, managed=false. (Future ship-boundary call: promote the
+      // templates/ subset to owner=framework so products receive the scaffolding
+      // via /warp:update — tracked as a follow-up, not decided here.)
+      match: (rel) => rel.startsWith("trackers/"),
       entry: () => ({ owner: "runtime", managed: false }),
     },
     {

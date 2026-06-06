@@ -4,7 +4,7 @@
   "generated_by": "scripts/generate-framework-manifest.js",
   "counts": {
     "agent": 77,
-    "skill": 204,
+    "skill": 205,
     "reference": 28,
     "maps_baseline": 26,
     "hook": 68,
@@ -59,7 +59,7 @@
     "module_scope": 1,
     "framework_doc": 3
   },
-  "total": 1060,
+  "total": 1061,
   "assets": {
     "agent": [
       {
@@ -3245,6 +3245,18 @@
         "replaces": null
       },
       {
+        "id": "skill.trackers.validate.md",
+        "src": ".claude/commands/trackers/validate.md",
+        "dest": ".claude/commands/trackers/validate.md",
+        "kind": "skill",
+        "sha256": "e85fc94486aa44a9fa2cc964e3c8aabc6d8ba6937e32804ef797b1ff6e3e1365",
+        "owner": "framework",
+        "mergeStrategy": "three_way_markdown",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
         "id": "skill.turbo.md",
         "src": ".claude/commands/turbo.md",
         "dest": ".claude/commands/turbo.md",
@@ -5617,7 +5629,7 @@
         "src": "scripts/warpos/manifest/build.js",
         "dest": "scripts/warpos/manifest/build.js",
         "kind": "warpos_script",
-        "sha256": "777a56752d3897bc61376169e18f3c7b880d03fe668045fba3bc045804e76ef0",
+        "sha256": "3179df6520f3956021aea00177991ac8dc954d0c0849c3cc96712a458fc71a3d",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
