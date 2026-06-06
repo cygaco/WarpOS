@@ -1,0 +1,26 @@
+schema: warpos/sprint/sprint-progress/v1
+sprint: SP-20260605-001
+updated_at: "2026-06-06T00:35:57.432Z"
+current_phase: boot
+current_command: "/sprint:full"
+current_ticket: null
+current_task: null
+current_loop: null
+status: closed
+last_completed_step: sprint_full_boot_halted
+next_action: "Beta consultation required at phase boundary 'before_plan'. Consult Beta (Alex β) about the upcoming phase, then resume: /sprint:full --sprint SP-20260605-001 --resume --pending-phase before_plan --beta-verdict <DECIDE|DIRECTIVE|ESCALATE> --beta-message \"<response from Beta>\""
+active_files: []
+modified_files: []
+checks_last_run: null
+checks_passing: []
+checks_failing: []
+blockers: []
+approvals_needed: []
+external_services_needed: []
+issues_opened: []
+tickets_updated: []
+ralph_checkpoint: null
+resume_command: ""
+resume_notes: "CLOSED — goal delivered out-of-band. /sprint:full booted and halted at the before_plan β gate (beta_consult_pending, designed adhoc behaviour) and was not resumed; the fix was delivered in the foreground via 4f85286 (REAL ε dispatch — fake-green killed) + 4bfb3c4 (/mode:sprint entry). Real dispatch proven live: ε conducted the gauntlet step → real gpt-5.5 (315s) + gemini-3.1-pro-preview (107s) completion records, ok:true."
+safe_to_continue: true
+stop_reason: null
