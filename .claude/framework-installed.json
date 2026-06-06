@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "0.15.0",
-  "installedCommit": "46e6dcf73e6add82f6803cff1ad54be08d15eff5",
-  "installedAt": "2026-06-06T21:31:34.675Z",
+  "installedCommit": "f015b2cf8d4ee57030075e215112f21a4e5c84c7",
+  "installedAt": "2026-06-06T21:52:14.262Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -654,8 +654,8 @@
       "dest": ".claude/agents/president/alpha.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "2bcef61497b62155783015537c04278d9e2f3a6048ce41bed05342759423e3f4",
-      "currentHashAtInstall": "2bcef61497b62155783015537c04278d9e2f3a6048ce41bed05342759423e3f4",
+      "installedHash": "513022ba8ce1f4f5cf8d4d06f758ab49829ea3e1ea348bae5d05f6239d8a5926",
+      "currentHashAtInstall": "513022ba8ce1f4f5cf8d4d06f758ab49829ea3e1ea348bae5d05f6239d8a5926",
       "introducedIn": "0.0.0"
     },
     {
@@ -1494,8 +1494,8 @@
       "dest": ".claude/commands/mode/adhoc.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "d527eb4d3b0aefe6121800931d9ca205bd972d4caede3dedeeed14a6ef0ea13f",
-      "currentHashAtInstall": "d527eb4d3b0aefe6121800931d9ca205bd972d4caede3dedeeed14a6ef0ea13f",
+      "installedHash": "f21e86ce37a020fcdabc2569f659c1fdf45149968248f68def5c0c0293c3b68e",
+      "currentHashAtInstall": "f21e86ce37a020fcdabc2569f659c1fdf45149968248f68def5c0c0293c3b68e",
       "introducedIn": "0.0.0"
     },
     {
@@ -1504,8 +1504,8 @@
       "dest": ".claude/commands/mode/oneshot.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "0fe5e5692c2f8611f5bf0a1d0c1ec3d5b6e8f343a8ff97f9649fe183181a6216",
-      "currentHashAtInstall": "0fe5e5692c2f8611f5bf0a1d0c1ec3d5b6e8f343a8ff97f9649fe183181a6216",
+      "installedHash": "ed472521970a4744adee8b1c37e794e00807e8c259c70006250d7ec17f801e42",
+      "currentHashAtInstall": "ed472521970a4744adee8b1c37e794e00807e8c259c70006250d7ec17f801e42",
       "introducedIn": "0.0.0"
     },
     {
@@ -1514,8 +1514,8 @@
       "dest": ".claude/commands/mode/solo.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "d7045bc1d842d9f4b23b9254259a77d9c39bfb707d971c9ca0a49f0e27367a4a",
-      "currentHashAtInstall": "d7045bc1d842d9f4b23b9254259a77d9c39bfb707d971c9ca0a49f0e27367a4a",
+      "installedHash": "cc355d8e534c66c61cd3c7fff02899a76746b5f41b0f60165f063634695191c1",
+      "currentHashAtInstall": "cc355d8e534c66c61cd3c7fff02899a76746b5f41b0f60165f063634695191c1",
       "introducedIn": "0.0.0"
     },
     {
@@ -1524,8 +1524,8 @@
       "dest": ".claude/commands/mode/sprint.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "713559493f0ef1a09816238540021ad193ef846809c1639a0c7c046832afe339",
-      "currentHashAtInstall": "713559493f0ef1a09816238540021ad193ef846809c1639a0c7c046832afe339",
+      "installedHash": "517cd32dca9c0b50c75f43e272e2f9b8f7ff34ffde4f9f1dfe30756cb848e184",
+      "currentHashAtInstall": "517cd32dca9c0b50c75f43e272e2f9b8f7ff34ffde4f9f1dfe30756cb848e184",
       "introducedIn": "0.0.0"
     },
     {
@@ -10624,8 +10624,8 @@
       "dest": "scripts/mode-set.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "cedd2a72555b3a09ba8233e20983c7c6435a0d1c47ca0c6f64e19bf3e040d142",
-      "currentHashAtInstall": "cedd2a72555b3a09ba8233e20983c7c6435a0d1c47ca0c6f64e19bf3e040d142",
+      "installedHash": "c6ae22c145d264179df7d85fbc63284acbac5b59b216dd072fde81901a6cc40a",
+      "currentHashAtInstall": "c6ae22c145d264179df7d85fbc63284acbac5b59b216dd072fde81901a6cc40a",
       "introducedIn": "0.0.0"
     },
     {
@@ -10694,8 +10694,8 @@
       "dest": "CLAUDE.md",
       "owner": "framework",
       "mergeStrategy": "append-if-exists",
-      "installedHash": "ed468efdf5efe63b08903523de966b0bad434b6d45481dba770d57c4871fa5a1",
-      "currentHashAtInstall": "ed468efdf5efe63b08903523de966b0bad434b6d45481dba770d57c4871fa5a1",
+      "installedHash": "6677cd50342cf6b57640033fa26f2fb5861db106df2e8c7551b7c22633b73988",
+      "currentHashAtInstall": "6677cd50342cf6b57640033fa26f2fb5861db106df2e8c7551b7c22633b73988",
       "introducedIn": "0.0.0"
     }
   ],

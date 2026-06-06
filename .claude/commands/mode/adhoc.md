@@ -25,6 +25,19 @@ Without `--turbo`, the skill behaves as before. With `--turbo` and no further ar
 
 > **`node-e-fs` is deliberately excluded from the default.** The auto-mode classifier hard-denies a turbo scope that auto-approves arbitrary `node -e` execution (Auto-Mode Bypass), so a default containing it fails on first use. Pass it explicitly only in a non-auto-mode session; the durable `settings.allow` already grants the common `node -e` fs writes. (`scripts/turbo/apply.js` also drops it under auto-mode.)
 
+## ⛔ Mode-init ≠ authorization — STOP after setup
+
+Entering adhoc mode is **plumbing only**: run the setup steps below (team, marker,
+turbo), give the Step 5 "Adhoc team active — what feature are we working on?"
+confirmation, then **STOP and await an explicit in-session task.** Do **NOT** chain
+into work — not a build, not a γ dispatch, not "continue" — even when a prior session's
+handoff / `DUMP.md` / `TRACKER.md` says to continue or names a forward plan. An
+inherited "continue" is **context, not a command**: the first state-changing action
+after a bare `/mode:adhoc` needs an explicit operator instruction given **this**
+session. (ROADMAP: "Mode-entry must NOT trigger autonomous work", REPORTED-2026-06-06
+→ addressed; enforced mechanically by the `scripts/mode-set.js` fresh-entry posture
+banner, behaviorally by this section + α/CLAUDE.md doctrine.)
+
 ## Procedure
 
 ### Step 1: Verify team readiness

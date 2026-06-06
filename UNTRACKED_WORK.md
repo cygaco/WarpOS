@@ -99,6 +99,45 @@
 - **Related verification items:** `scripts/warpos/manifest/build.js` Verified Exists; rule covers the
   brief, `DUMP.md`, and `TRACKER.md`.
 
+### UW-004 — Mode-init ≠ authorization (mode-entry must not trigger autonomous work)
+
+- **Date and time:** 2026-06-06
+- **Session ID:** session/2026-06-06
+- **Agent or agents involved:** Alpha (α, solo dev fix — NOT a sprint run)
+- **Description of work:** Implemented the ROADMAP item "Mode-entry must NOT trigger autonomous
+  work (mode-init ≠ authorization)" (REPORTED-2026-06-06, commit `9e6b45c`). Three layers:
+  (1) **mechanical** — `scripts/mode-set.js`, the single canonical mode-marker writer every
+  `/mode:*` skill calls, now prints a loud "⛔ MODE-INIT ≠ AUTHORIZATION — setup only, STOP and
+  await an explicit in-session task" banner on every *fresh* mode entry (silent on same-mode
+  lock/activeBuild re-runs); (2) **behavioral** — all four `/mode:*` skills (`sprint`, `adhoc`,
+  `oneshot`, `solo`) gained a top-of-Procedure "⛔ Mode-init ≠ authorization — STOP after setup"
+  section, and `sprint.md`'s "Run the sprint" step is re-gated as a separate, task-triggered action
+  explicitly NOT reached by mode entry; (3) **doctrine** — `CLAUDE.md` + `alpha.md` carry a
+  "Mode-init ≠ authorization" rule scoping "Act, don't ask" (an inherited "continue" from a
+  handoff/DUMP/TRACKER is context, not a command). Residual (no mechanical *detector* of a
+  violation) logged as enforcement-debt **ED-031**.
+- **Files changed:** `scripts/mode-set.js`; `.claude/commands/mode/{sprint,adhoc,oneshot,solo}.md`;
+  `.claude/agents/president/alpha.md`; `CLAUDE.md`; `ROADMAP.md` (item → shipped);
+  `.claude/project/memory/enforcement-debt.jsonl` (ED-031).
+- **Paths changed:** None created/deleted (edits to existing files).
+- **Wirings changed:** mode-set.js now emits the posture banner at the mode-entry chokepoint.
+- **Definitions changed:** None (reinforces the existing autonomy doctrine).
+- **Reason work was not attached to an epic or sprint:** Small, focused dev-tooling correction
+  picked up directly from a ROADMAP backlog item via an explicit operator instruction this session;
+  too small to warrant a formal sprint, and (fittingly) running a sprint to do it would be the very
+  over-eager behavior being fixed.
+- **Should it be retroactively attached to an epic or sprint?** Candidate parent: a skill-reliability
+  / agent-posture epic if one is formed. President to reconcile. Until then this is the record.
+- **Follow-up action required:** None blocking. Optional: build the ED-031 detector (a PreToolUse
+  first-action gate or a telemetry/scan check) if mode-init drift recurs despite the banner+doctrine.
+- **Evidence of completion:** Banner tested live — silent on same-mode re-run, prints on fresh entry
+  (sprint→adhoc→sprint cycle, this session); enforcement-debt JSONL re-parsed clean (23 lines,
+  last id ED-031); ROADMAP item flipped to `[shipped — 2026-06-06]`.
+- **Related definitions:** Mode, Agent, Untracked work (see TRACKER.md).
+- **Related verification items:** `scripts/mode-set.js` Verified Exists (banner fn `printPostureBanner`
+  + `isFreshEntry` gate); the four `/mode:*` skills carry the STOP section; ED-031 present in
+  `enforcement-debt.jsonl`.
+
 ---
 
 ## Reconciled / closed entries

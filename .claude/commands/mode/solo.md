@@ -23,6 +23,18 @@ Without `--turbo`, the skill behaves as before. With `--turbo` and no further ar
 
 `manifest-edit,write-jsonl` — config edits + jsonl audit writes. No `push-to-main`, no `destructive-git`, no `node-e-fs`. TTL = 60m. Sibling skill: [`/turbo`](../turbo.md).
 
+## ⛔ Mode-init ≠ authorization — STOP after setup
+
+Entering solo mode is **plumbing only**: write the marker, give the Step 3 "Solo mode
+active — what do you need?" confirmation, then **STOP and await an explicit in-session
+task.** Do **NOT** chain into work or "continue" a prior plan — even when a handoff /
+`DUMP.md` / `TRACKER.md` says to continue or names a forward plan. An inherited
+"continue" is **context, not a command**: the first state-changing action after a bare
+`/mode:solo` needs an explicit operator instruction given **this** session. (ROADMAP:
+"Mode-entry must NOT trigger autonomous work", REPORTED-2026-06-06 → addressed; enforced
+mechanically by the `scripts/mode-set.js` fresh-entry posture banner, behaviorally by
+this section + α/CLAUDE.md doctrine.)
+
 ## Procedure
 
 ### Step 1: Write mode marker

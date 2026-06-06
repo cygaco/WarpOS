@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-06T21:31:34.992Z",
+  "generatedAt": "2026-06-06T21:52:14.450Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.15.0",
   "migrations": [],
@@ -48,8 +48,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "ed468efdf5efe63b08903523de966b0bad434b6d45481dba770d57c4871fa5a1",
-      "installedSha": "ed468efdf5efe63b08903523de966b0bad434b6d45481dba770d57c4871fa5a1"
+      "sha256": "6677cd50342cf6b57640033fa26f2fb5861db106df2e8c7551b7c22633b73988",
+      "installedSha": "6677cd50342cf6b57640033fa26f2fb5861db106df2e8c7551b7c22633b73988"
     },
     "DICTIONARY.md": {
       "owner": "framework",
@@ -109,8 +109,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "d8c429a90236f665bacdacc34678ad618e9d2cee9fd36d7f4939bee5ca4563b6",
-      "installedSha": "d8c429a90236f665bacdacc34678ad618e9d2cee9fd36d7f4939bee5ca4563b6"
+      "sha256": "bf868638c6758815fae10add5a13bffb00da48dba429c66561118512aa9d4da0",
+      "installedSha": "bf868638c6758815fae10add5a13bffb00da48dba429c66561118512aa9d4da0"
     },
     "TRACKER.md": {
       "owner": "runtime",
@@ -2197,8 +2197,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/mode-set.js",
-      "sha256": "cedd2a72555b3a09ba8233e20983c7c6435a0d1c47ca0c6f64e19bf3e040d142",
-      "installedSha": "cedd2a72555b3a09ba8233e20983c7c6435a0d1c47ca0c6f64e19bf3e040d142"
+      "sha256": "c6ae22c145d264179df7d85fbc63284acbac5b59b216dd072fde81901a6cc40a",
+      "installedSha": "c6ae22c145d264179df7d85fbc63284acbac5b59b216dd072fde81901a6cc40a"
     },
     "scripts/one-off-add-backend-to-store.js": {
       "owner": "framework",
@@ -16367,32 +16367,32 @@
       "managed": true,
       "source": ".claude/commands/mode/adhoc.md",
       "kind": "md",
-      "sha256": "d527eb4d3b0aefe6121800931d9ca205bd972d4caede3dedeeed14a6ef0ea13f",
-      "installedSha": "d527eb4d3b0aefe6121800931d9ca205bd972d4caede3dedeeed14a6ef0ea13f"
+      "sha256": "f21e86ce37a020fcdabc2569f659c1fdf45149968248f68def5c0c0293c3b68e",
+      "installedSha": "f21e86ce37a020fcdabc2569f659c1fdf45149968248f68def5c0c0293c3b68e"
     },
     ".claude/commands/mode/oneshot.md": {
       "owner": "framework",
       "managed": true,
       "source": ".claude/commands/mode/oneshot.md",
       "kind": "md",
-      "sha256": "0fe5e5692c2f8611f5bf0a1d0c1ec3d5b6e8f343a8ff97f9649fe183181a6216",
-      "installedSha": "0fe5e5692c2f8611f5bf0a1d0c1ec3d5b6e8f343a8ff97f9649fe183181a6216"
+      "sha256": "ed472521970a4744adee8b1c37e794e00807e8c259c70006250d7ec17f801e42",
+      "installedSha": "ed472521970a4744adee8b1c37e794e00807e8c259c70006250d7ec17f801e42"
     },
     ".claude/commands/mode/solo.md": {
       "owner": "framework",
       "managed": true,
       "source": ".claude/commands/mode/solo.md",
       "kind": "md",
-      "sha256": "d7045bc1d842d9f4b23b9254259a77d9c39bfb707d971c9ca0a49f0e27367a4a",
-      "installedSha": "d7045bc1d842d9f4b23b9254259a77d9c39bfb707d971c9ca0a49f0e27367a4a"
+      "sha256": "cc355d8e534c66c61cd3c7fff02899a76746b5f41b0f60165f063634695191c1",
+      "installedSha": "cc355d8e534c66c61cd3c7fff02899a76746b5f41b0f60165f063634695191c1"
     },
     ".claude/commands/mode/sprint.md": {
       "owner": "framework",
       "managed": true,
       "source": ".claude/commands/mode/sprint.md",
       "kind": "md",
-      "sha256": "713559493f0ef1a09816238540021ad193ef846809c1639a0c7c046832afe339",
-      "installedSha": "713559493f0ef1a09816238540021ad193ef846809c1639a0c7c046832afe339"
+      "sha256": "517cd32dca9c0b50c75f43e272e2f9b8f7ff34ffde4f9f1dfe30756cb848e184",
+      "installedSha": "517cd32dca9c0b50c75f43e272e2f9b8f7ff34ffde4f9f1dfe30756cb848e184"
     },
     ".claude/commands/maps/all.md": {
       "owner": "framework",
@@ -17111,8 +17111,8 @@
       "managed": true,
       "source": ".claude/agents/president/alpha.md",
       "kind": "md",
-      "sha256": "2bcef61497b62155783015537c04278d9e2f3a6048ce41bed05342759423e3f4",
-      "installedSha": "2bcef61497b62155783015537c04278d9e2f3a6048ce41bed05342759423e3f4"
+      "sha256": "513022ba8ce1f4f5cf8d4d06f758ab49829ea3e1ea348bae5d05f6239d8a5926",
+      "installedSha": "513022ba8ce1f4f5cf8d4d06f758ab49829ea3e1ea348bae5d05f6239d8a5926"
     },
     ".claude/agents/president/beta.md": {
       "owner": "framework",

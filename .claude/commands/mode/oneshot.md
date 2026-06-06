@@ -22,6 +22,18 @@ Without `--turbo`, the skill behaves as before. With `--turbo` and no further ar
 
 `manifest-edit,write-jsonl,node-e-fs,worktree-ops` — same scope set as `/mode:adhoc --turbo`, but with TTL = 4h to match a typical Delta run. No `push-to-main`, no `destructive-git`. Sibling skill: [`/turbo`](../turbo.md).
 
+## ⛔ Mode-init ≠ authorization — STOP after setup
+
+`/mode:oneshot` is special: it is an **explicit launch request**, not a passive mode
+switch — the operator invoking it IS the instruction to run the build (with the brief
+they provide). What it must NOT do is launch off an **inherited** "continue": a prior
+session's handoff / `DUMP.md` / `TRACKER.md` saying "continue" or naming a forward plan
+is **context, not a command**. If `/mode:oneshot` is entered without an explicit
+in-session brief, do the pre-flight + marker, then **STOP and ask what to build** —
+never auto-start a skeleton run from memory or a handoff alone. (ROADMAP: "Mode-entry
+must NOT trigger autonomous work", REPORTED-2026-06-06 → addressed; the
+`scripts/mode-set.js` fresh-entry posture banner fires on entry.)
+
 ## Procedure
 
 ### Step 1: Pre-flight checks

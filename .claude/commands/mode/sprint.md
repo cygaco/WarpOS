@@ -89,7 +89,25 @@ gated exactly like a CLI reviewer lane.
 operations for builder dispatch. No `push-to-main`, no `destructive-git`. TTL = 60m. (`push-to-main`
 is opt-in only, per CLAUDE.md autonomy.)
 
+## ⛔ Mode-init ≠ authorization — STOP after setup
+
+Entering sprint mode is **plumbing only**: run the setup steps below (marker, team,
+turbo), give the "Sprint mode active — what should we work on?" confirmation, then
+**STOP and await an explicit in-session task.** Do **NOT** chain into a sprint — not
+`/sprint:full`, not the ε runtime, not a build, not "continue" — even when a prior
+session's handoff / `DUMP.md` / `TRACKER.md` says to continue or names a forward plan.
+An inherited "continue" is **context, not a command**: the first state-changing action
+after a bare `/mode:sprint` needs an explicit operator instruction given **this**
+session. Running a sprint (Step 3) is a **separate, task-triggered action**, never a
+consequence of mode entry. (ROADMAP: "Mode-entry must NOT trigger autonomous work",
+REPORTED-2026-06-06 → addressed; enforced mechanically by the `scripts/mode-set.js`
+fresh-entry posture banner, behaviorally by this section + α/CLAUDE.md doctrine.)
+
 ## Procedure
+
+> Steps 1–2.5 + 4 + 6 are **mode entry** and end at the Step 5 confirmation. Step 3
+> ("Run the sprint") is **out of band** — it runs ONLY when the operator gives an
+> explicit task this session, not as part of entering the mode.
 
 ### Step 1: Write mode marker
 
@@ -163,7 +181,11 @@ Dispatch: REAL — CLI routes via the node runtime (builders + cross-provider re
 
 Before running the sprint (substantial long-running work), read `TRACKER.md` (spec §7.2 / §28.1) and determine whether this sprint belongs to an **active** epic/sprint, a **planned** one, **untracked** work, or a **new** epic/sprint that must be created. Confirm the relevant epic/sprint's current state, next action, blockers, and that its `/trackers/` file exists; create a missing tracker file before starting. The sprint must not begin from memory alone; meaningful work outside a tracked epic/sprint is recorded in `UNTRACKED_WORK.md` (§7.9). (This is the tracker-consult step only — it does not alter the α+ε+β persistent-team setup in Steps 1.5/1.75.)
 
-### Step 3: Run the sprint
+### Step 3 (separate action — runs ONLY on an explicit in-session task, NOT on mode entry): Run the sprint
+
+> **Gate:** do not reach this step as part of entering the mode. Mode entry ends at the
+> Step 5 confirmation. Run a sprint only when the operator gives an explicit request in
+> this session. A handoff/`DUMP.md`/`TRACKER.md` "continue" does NOT satisfy this gate.
 
 Sprint mode is driven by **`/sprint:full`** (the orchestrator that chains the five phases under a
 bounded autonomy preset) — it invokes the ε runtime for dispatch:
