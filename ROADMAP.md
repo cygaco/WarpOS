@@ -641,6 +641,15 @@ Every sprint that has been planned, executed, released, or retrospected — one 
 
 ---
 
+## ✅ Shipped — early June 2026 (narrative backfill)
+
+Two retrospected sprints carried ledger rows but no Shipped narrative (the gap `scan:roadmap-trace` flags); backfilled here from the Sprints ledger so the enforcer is honest:
+
+- **SP-20260531-006** — Guides skill suite (`guides:write` + `guides:organize` + `guides:integrate`) — the `_guides/` recording system + conflict-resolution; supersedes SP-005. Closed 2026-06-01.
+- **SP-20260602-001** — Sealed-capsule executable consumer-contract gate (keystone) — the structural catch for downstream-missing: CATCHES the false-green / downstream-missing class at release (per the 0.16.0 pattern-realignment entry below). Closed 2026-06-02.
+
+---
+
 ## ✅ Shipped — 2026-05-31 product-studio execution session
 
 The Waves 0→2 product-studio build + the reports system. Wave 1/2 landed as direct engine-fast-close commits (S1.1 chassis `ea7f20b`, Wave 2 org `70e9d27`, S1.2 arbitration + ADR-0004 `fb58d8f`, per-domain enforcers + Higgsfield render `763fda1`, S1.3 Gamma integration phase `b18263e`) — the autonomous product studio is built + enforced, and the creative loop is proven (a real Higgsfield asset generated). The one registry sprint:
