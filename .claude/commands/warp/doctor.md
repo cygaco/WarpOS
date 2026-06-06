@@ -71,7 +71,7 @@ When called as `/warp:doctor --gates-only`, runs only the 10 release gates:
 3. Reference Integrity — `/scan:references --json`
 4. Hook Registration — `/hooks:test --registered`
 5. Hook Fixture Tests — `/hooks:test --all` (skipped if 5G hasn't shipped fixtures yet; surfaced as YEL not RED until then)
-6. Fresh Install Fixture — `node scripts/test-fresh-install.js` (skipped if `fixtures/install-empty-next-app/` missing — Phase 4G)
+6. Fresh Install Fixture — `node scripts/warpos/test-fresh-install-smoke.js` (skipped if `fixtures/install-empty-next-app/` missing — Phase 4G)
 7. Update Fixture from previous — `node scripts/warpos/update.js --to <prev-version> --dry-run` against `fixtures/update-from-<prev>-clean/`
 8. Customized Install Fixture — same engine against `fixtures/update-from-<prev>-customized/`
 9. Runtime Leak Scan — `git ls-files | grep -E '\\.claude/runtime/|\\.claude/project/events/'` empty

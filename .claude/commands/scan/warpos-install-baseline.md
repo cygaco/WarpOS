@@ -16,7 +16,7 @@ node scripts/checks/warpos-install-baseline.js [--target <path>] [--force-fresh]
 
 ## `--guard-remediation` — the closed-trap backstop (C-8 / doogle WG-1)
 
-A second, canonical-side assertion: every script path a guard names in a USER-FACING remediation message ("Run: node scripts/X.js", "Use: …", a `block()` reason, a stderr instruction) must actually EXIST on disk. Otherwise a guard blocks the user and then points them at a file the install never shipped — a closed trap with no exit (the doogle WG-1 class). This scans `scripts/hooks/*.js`, extracts remediation script paths (strict extension boundary — `.json` data files are never treated as runnable), and fails if any is missing.
+A second, canonical-side assertion: every script path a guard names in a USER-FACING remediation message ("Run: node scripts/<name>.js", "Use: …", a `block()` reason, a stderr instruction) must actually EXIST on disk. Otherwise a guard blocks the user and then points them at a file the install never shipped — a closed trap with no exit (the doogle WG-1 class). This scans `scripts/hooks/*.js`, extracts remediation script paths (strict extension boundary — `.json` data files are never treated as runnable), and fails if any is missing.
 
 ```bash
 node scripts/checks/warpos-install-baseline.js --guard-remediation [--json]

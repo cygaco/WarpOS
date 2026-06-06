@@ -510,10 +510,16 @@ function buildRules(sourcePrefix) {
     },
     {
       name: "runtime-working-doc",
-      // DUMP.md (session handoff) + TRACKER.md (the rewrite burndown) are
-      // WarpOS-internal working docs at root — tracked, but NOT shipped to
-      // products and not a framework view. owner=runtime, managed=false.
-      match: (rel) => rel === "DUMP.md" || rel === "TRACKER.md",
+      // DUMP.md (session handoff), TRACKER.md (the burndown), and
+      // agentic_os_tracker_system_improvements.md (the active tracker-system
+      // project spec / requirements input) are WarpOS-internal working docs at
+      // root — tracked, but NOT shipped to products and not a framework view.
+      // owner=runtime, managed=false. (Remove the brief entry when that project
+      // lands and the spec is archived/relocated under _requirements/.)
+      match: (rel) =>
+        rel === "DUMP.md" ||
+        rel === "TRACKER.md" ||
+        rel === "agentic_os_tracker_system_improvements.md",
       entry: () => ({ owner: "runtime", managed: false }),
     },
     {

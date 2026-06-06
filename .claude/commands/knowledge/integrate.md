@@ -59,7 +59,7 @@ Between OPEN and CLOSE sits the grounding prose: a `### <Domain> … (training r
 | `library` | each `consumers[]` role's **agent spec** (`paths.agents`/…) | OPEN/CLOSE marker block fencing a grounding section | one record per consumer, with `marker` |
 | `store` | the **`producer`** role's **agent spec** | a prose reference to the store path (`_knowledge/<domain>`) **+** the contract README at `_knowledge/<domain>/README.md` | one record for the producer, with `store_ref` + `contract`, **no** `marker` |
 
-Resolve a role slug → spec path the same way the registry does (the `paths.roleRegistry` `.claude/agents/_org/role-registry.json` carries each role's `spec`); a role that the registry validates is guaranteed to resolve.
+Resolve a role slug → spec path the same way the registry does (the `paths.orgRoleRegistry` `.claude/agents/_org/role-registry.json` carries each role's `spec`); a role that the registry validates is guaranteed to resolve.
 
 ## Procedure
 

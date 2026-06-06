@@ -21,7 +21,7 @@ Runs `node scripts/checks/knowledge-coverage.js`. The `_knowledge/` layer has **
 The invariants:
 
 1. **Registry fresh** — `_knowledge/registry.json` matches the per-domain `_knowledge/<domain>/_domain.json` declarations (no hand-edits, no missed rebuild via `scripts/knowledge/registry.js`).
-2. **Domains valid** — every `_domain.json` has a valid `kind` (`library`|`store`) and a `producer`/`consumers[]` that are real roles in `paths.roleRegistry`.
+2. **Domains valid** — every `_domain.json` has a valid `kind` (`library`|`store`) and a `producer`/`consumers[]` that are real roles in `paths.orgRoleRegistry`.
 3. **Library consumers wired** — every `consumers[]` role has both (a) an `active` integration record in `.claude/project/maps/knowledge-integration.jsonl` AND (b) a live `<!-- knowledge:<domain> role:<role> -->` marker in **its own** agent spec.
 4. **Library index fresh** — the domain's internal index (e.g. `_knowledge/design/registry.json`) exists, its entry count equals the on-disk artifact count, and every indexed guide path resolves (no silent drift of the rich index).
 5. **Store contract wired** — the contract README exists AND the producer's spec references the store path `_knowledge/<domain>`.
