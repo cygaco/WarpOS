@@ -23,19 +23,19 @@ Authority: Highest written source of truth for active, planned, completed, cance
 
 ## Current Global State Summary
 
-- Active epics: 1 owned directly by this tracker — E-SPINUP-STEPS-001 (Step-driven, degrade-proof bootstrap:spinup + Milestone→Epic, ~10%, Active 2026-06-06; source `WARPOS-PROMPT.md`). E-TRACKER-001 (Enforced TRACKER System) reached Completed (100%) on 2026-06-06. The roadmap's broader theme-epics are tracked in `ROADMAP.md` § Epics with `trackers/epics/` files — see Related Tracker Documents.
-- Active sprints: 1 (S-SPINUP-001 — Step-driven, degrade-proof bootstrap:spinup, ~5%, parent E-SPINUP-STEPS-001). All six E-TRACKER-001 sprints T1–T6 are Completed; the validator runs 20 checks.
+- Active epics: 0 owned directly by this tracker — E-SPINUP-STEPS-001 (Step-driven, degrade-proof bootstrap:spinup + Milestone→Epic) reached Completed (100%) on 2026-06-06, landed on `main` @ `c9583dd`; E-TRACKER-001 (Enforced TRACKER System) Completed (100%) 2026-06-06. The roadmap's broader theme-epics are tracked in `ROADMAP.md` § Epics with `trackers/epics/` files — see Related Tracker Documents.
+- Active sprints: 0 (S-SPINUP-001 Completed 100% 2026-06-06; all six E-TRACKER-001 sprints T1–T6 Completed). The validator runs 20 checks.
 - Planned epics: 0 owned directly by this tracker (the roadmap's 5 planned theme-epics live in `ROADMAP.md` § Epics).
 - Planned sprints: 0 (T5 is now Completed — see Completed Sprints; only the T4 cross-file tail remains under the Active sprint).
-- Completed epics: 2 (E-TRACKER-001 — Enforced TRACKER System, 100%, completed 2026-06-06 with all six sprints + the hard enforcement hooks; E-ADR0007 — Agent-System Rewrite, 100%, verified on `main`, E1–E8 hashes + `warpos@0.14.0` tag re-verified against `git` on 2026-06-05). The roadmap registers 10 completed theme-epics (mapped to existing Shipped receipts) in `ROADMAP.md` § Epics.
-- Completed sprints (summarized): T1 (TRACKER keystone + definitions), T2 (templates + dirs + UNTRACKED_WORK), T3 (system inventory + verification matrix, disk-verified 2026-06-05), T4 (validation engine + the 8 cross-file §28.7 checks, 2026-06-06 — validator now 20 checks), T5 (roadmap milestones→epics migration, 2026-06-06), and T6 (mode-wiring + scan-suite gate); plus the ADR-0007 rewrite across E1–E8 (see Completed Sprints) and the WarpOS 0.14.0 release (tag `warpos@0.14.0`).
+- Completed epics: 3 (E-SPINUP-STEPS-001 — Step-driven, degrade-proof bootstrap:spinup + Milestone→Epic, 100%, completed 2026-06-06, landed on `main` @ `c9583dd`; E-TRACKER-001 — Enforced TRACKER System, 100%, completed 2026-06-06 with all six sprints + the hard enforcement hooks; E-ADR0007 — Agent-System Rewrite, 100%, verified on `main`, E1–E8 hashes + `warpos@0.14.0` tag re-verified against `git` on 2026-06-05). The roadmap registers 10 completed theme-epics (mapped to existing Shipped receipts) in `ROADMAP.md` § Epics.
+- Completed sprints (summarized): S-SPINUP-001 (step-driven degrade-proof bootstrap:spinup, 2026-06-06, `c9583dd`); T1 (TRACKER keystone + definitions), T2 (templates + dirs + UNTRACKED_WORK), T3 (system inventory + verification matrix, disk-verified 2026-06-05), T4 (validation engine + the 8 cross-file §28.7 checks, 2026-06-06 — validator now 20 checks), T5 (roadmap milestones→epics migration, 2026-06-06), and T6 (mode-wiring + scan-suite gate); plus the ADR-0007 rewrite across E1–E8 (see Completed Sprints) and the WarpOS 0.14.0 release (tag `warpos@0.14.0`).
 - Cancelled or superseded work: the interim ADR-0007-rewrite TRACKER.md is Superseded by this file (see Cancelled or Superseded Work).
 - Untracked work: tracked in `UNTRACKED_WORK.md` (Verified Exists, ls/Read on 2026-06-05; created by sprint T2).
 - Known gaps: 2 open + 1 resolved (G-1 ship-boundary audit — open; G-2 tracker system — RESOLVED 2026-06-06: all six sprints T1–T6 Completed, the validator runs the full 20-check set, and the hard enforcement hooks are built + wired; G-3 stale-worktree-cwd hazard — open, lingering dir cleaned this session, automated guard still pending).
 
 ## Current Highest-Priority Next Action
 
-E-TRACKER-001 (Enforced TRACKER System) is COMPLETE — the President's enforced-tracker objective is delivered. All six sprints T1–T6 are Completed, the validator runs the full 20-check set (12 single-file a–l + 8 cross-file m–t, live 20/20 PASS + selftest 55/55), the roadmap is epic-based, and the hard start/end/completion enforcement hooks are built + wired (`scripts/hooks/tracker-start-of-work.js` SessionStart + `scripts/hooks/tracker-completion-gate.js` Stop). There is NO active tracker-system work remaining. The next highest-leverage work is on `ROADMAP.md` § Epics — the active theme-epics (E-GOLDEN-FLOW-001 consumer-contract gate, E-CONTENT-DELIVERY-001, E-TEST-SUITE-001); use `/roadmap:next` for the single highest-leverage pick. Optional tracker-system hardening (non-blocking): a per-edit PostToolUse completion-gate; fixing the pre-existing settings/defaults security-hook drift was done while wiring (now reconciled in `defaults.json`).
+E-SPINUP-STEPS-001 (Step-driven, degrade-proof bootstrap:spinup + Milestone→Epic) is COMPLETE — landed on `main` @ `c9583dd` (2026-06-06). The on-ramp is now step-driven (`setup → canon → roadmap → paint`), idempotent, resumable, with a stable `--json` consumer dispatch contract and an engine that structurally refuses degraded canon (`--research off`/`--auto` rejected; fail-closed `canon-no-unfilled-tokens` gate; raw input never in canon). This unblocks the GATED `MASTERCONSOLE-PROMPT.md` headless runner (the product-layer consumer — NOT executed this session, by operator instruction). E-TRACKER-001 is also COMPLETE. There is NO active tracker-owned work remaining. The next highest-leverage work is on `ROADMAP.md` § Epics — the active theme-epics (E-GOLDEN-FLOW-001 consumer-contract gate, E-CONTENT-DELIVERY-001, E-TEST-SUITE-001); use `/roadmap:next` for the single highest-leverage pick. Follow-ups (non-blocking): E-NATIVE-PACKAGING-001 (native scaffolds, trigger-gated); ED-029 (machine-audit of `--allow-needs-input`); the Master Console runner when its dependency gate is re-verified.
 
 ---
 
@@ -479,30 +479,13 @@ No `Unknown` rows remain. The `Verified Not Wired` rows are tracked follow-ups (
 
 # Active Epics
 
-E-TRACKER-001 — Enforced TRACKER System — reached Completed (100%) on 2026-06-06 (see Completed Epics). The roadmap's broader theme-epics (E-GOLDEN-FLOW-001 etc.) are tracked in `ROADMAP.md` § Epics with their own `trackers/epics/` files. The one epic owned directly by this tracker as Active is:
-
-### E-SPINUP-STEPS-001 — Step-driven, degrade-proof bootstrap:spinup + Milestone→Epic
-- Link to epic tracker: [trackers/epics/E-SPINUP-STEPS-001-step-driven-degrade-proof-spinup.md](trackers/epics/E-SPINUP-STEPS-001-step-driven-degrade-proof-spinup.md) — Verified Exists (Write/Read 2026-06-06).
-- Current state: Active
-- Percent completion: 10% — §0 gap analysis complete (`runtime/notes/warpos-spinup-gap-analysis.md`); build in progress.
-- Goal: Refactor `bootstrap:spinup` into a step-driven (`setup → canon → roadmap → paint`), idempotent, resumable pipeline with a stable `--json` status + consumer dispatch contract, a degrade-proof engine (no path to thin/placeholder canon), a `--where` platform target, a `portfolio:new` reconcile, and a Milestone→Epic rename. Source: `WARPOS-PROMPT.md` (2026-06-06).
-- Current next action: build §1 (positional `<step>` subcommand + folded setup/paint phases + stable `--json`) + §4 (portfolio:new create/scaffold reconcile).
-- Evidence of progress: `runtime/notes/warpos-spinup-gap-analysis.md` (32-row behavior→step table, zero dropped behaviors).
-- Related roadmap item: `ROADMAP.md` § Epics → E-SPINUP-STEPS-001.
+None currently recorded. E-TRACKER-001 (Enforced TRACKER System) and E-SPINUP-STEPS-001 (Step-driven, degrade-proof bootstrap:spinup + Milestone→Epic) both reached Completed (100%) — see Completed Epics. The roadmap's broader theme-epics (E-GOLDEN-FLOW-001 etc.) are tracked in `ROADMAP.md` § Epics with their own `trackers/epics/` files, not as Active Epics here.
 
 ---
 
 # Active Sprints
 
-### S-SPINUP-001 — Step-driven, degrade-proof bootstrap:spinup
-- Link to sprint tracker: [trackers/sprints/S-SPINUP-001-step-driven-degrade-proof-spinup.md](trackers/sprints/S-SPINUP-001-step-driven-degrade-proof-spinup.md) — Verified Exists (Write/Read 2026-06-06).
-- Parent epic: E-SPINUP-STEPS-001
-- Current state: Active
-- Percent completion: 5% — gap analysis done; structural build starting.
-- Current next action: build §1 step refactor + §4 portfolio:new reconcile.
-- Evidence of progress: `runtime/notes/warpos-spinup-gap-analysis.md`; source read end-to-end (pre-refactor baseline).
-
-All six E-TRACKER-001 sprints (T1, T2, T3, T4, T5, T6) are Completed — see Completed Sprints. T4 — Validation engine + enforcement — moved from Review Needed to Completed on 2026-06-06 when its deferred cross-file §28.7 checks landed (the validator now runs 20 checks: 12 single-file a–l + 8 cross-file m–t). The epic E-TRACKER-001 remains Active at ~95% with a single residual (a hard start/end/completion enforcement HOOK), tracked under Known Gap G-2 and enforced-to-stay-visible by the new `hooks-enforce-or-tracked` check — see the epic's Next required action.
+None currently recorded. S-SPINUP-001 (Step-driven, degrade-proof bootstrap:spinup) reached Completed (100%) on 2026-06-06 — see Completed Sprints. All six E-TRACKER-001 sprints (T1, T2, T3, T4, T5, T6) are also Completed. T4 — Validation engine + enforcement — moved from Review Needed to Completed on 2026-06-06 when its deferred cross-file §28.7 checks landed (the validator now runs 20 checks: 12 single-file a–l + 8 cross-file m–t). The epic E-TRACKER-001 remains Active at ~95% with a single residual (a hard start/end/completion enforcement HOOK), tracked under Known Gap G-2 and enforced-to-stay-visible by the new `hooks-enforce-or-tracked` check — see the epic's Next required action.
 - Related system inventory items: tracker validation engine; /trackers:validate skill.
 
 ---
@@ -553,11 +536,34 @@ None currently recorded. (All six E-TRACKER-001 sprints have started: T1, T2, T3
 - Related definitions: Agentic OS, Agent, President agent, Sprint, ε sprint runtime (per the ε-runtime System Inventory entry).
 - Related verification results: old mode-based tree Verified Nonexistent; role-registry Verified Exists (33 roles); ε runtime Verified Exists.
 
+### E-SPINUP-STEPS-001 — Step-driven, degrade-proof bootstrap:spinup + Milestone→Epic
+- Link to epic tracker: [trackers/epics/E-SPINUP-STEPS-001-step-driven-degrade-proof-spinup.md](trackers/epics/E-SPINUP-STEPS-001-step-driven-degrade-proof-spinup.md) — Verified Exists (Write/Read 2026-06-06).
+- Goal: Refactor `bootstrap:spinup` into a step-driven (`setup → canon → roadmap → paint`), idempotent, resumable pipeline with a stable `--json` status + a consumer dispatch contract, a degrade-proof engine (no path to thin/placeholder canon), a `--where` platform target, a `portfolio:new` reconcile, and a Milestone→Epic rename. Source: `WARPOS-PROMPT.md` (2026-06-06).
+- Final state: Completed.
+- Percent completion: 100%.
+- Completion timestamp: 2026-06-06.
+- Session IDs / dates / agents: 2026-06-06 · President α (build in-loop) + ε + β (persistent team) + one background systems builder (§5 prose-doc rename).
+- Definition of done used: the §8 acceptance in the epic tracker — all items satisfied + evidenced.
+- Evidence of completion: landed on `main` @ `c9583dd` (`feat(spinup): step-driven, degrade-proof bootstrap:spinup + Milestone→Epic`). Gauntlet: `node scripts/bootstrap/test-spinup-orchestrate.js` → 32/32; `node scripts/trackers/validate.js` → 20/20; `node scripts/check/roadmap-trace.js` → 30/30; `node scripts/canon/test-generate.js` → 24/24; framework-purity OK; warpos-manifest-honesty OK (1063 assets). Zero regressions (HEAD-vs-worktree linter fail-set parity 21/24). Manifests regenerated (framework-manifest + installed snapshot + _warpos). New files: `scripts/bootstrap/phases/{setup,paint}.js`, `scripts/portfolio/new-lib.js`, `WARPOS.md` (WG-1 native-scaffold flag). Deleted: `scripts/bootstrap/phases/{preflight,intent,onscreen}.js`. Enforcement debt logged: ED-029 (--allow-needs-input audit). Native-packaging epic E-NATIVE-PACKAGING-001 parked in `ROADMAP.md`.
+- Remaining follow-up items: native scaffolds (E-NATIVE-PACKAGING-001, trigger-gated); ED-029 machine-audit of --allow-needs-input; the gated `MASTERCONSOLE-PROMPT.md` consumer runner (separate product layer — not executed this session). None block completion.
+- Related completed sprints: S-SPINUP-001.
+- Related roadmap item: `ROADMAP.md` § Epics → E-SPINUP-STEPS-001.
+- Related definitions: Epic, Sprint, Validator, Wiring, Verification, Evidence.
+- `TRACKER.md` updated: Yes · Roadmap reconciled: Yes.
+
 ---
 
 # Completed Sprints
 
 The ADR-0007 rewrite was executed as eight workstreams (E1–E8). They predate this enforced tracker, so they did not have per-sprint tracker files under `/trackers/sprints/`; their durable record was the interim `TRACKER.md` and is summarized here without loss. All were verified against disk + git in their landing sessions. Per-sprint tracker files are an optional historical backfill (recorded as a non-blocking follow-up), not required for these completed claims. All six E-TRACKER-001 sprints T1, T2, T3, T4, T5, and T6 are Completed and — unlike E1–E8 — carry their own tracker files under `/trackers/sprints/`.
+
+### S-SPINUP-001 — Step-driven, degrade-proof bootstrap:spinup · Completed 2026-06-06
+- Link to sprint tracker: [trackers/sprints/S-SPINUP-001-step-driven-degrade-proof-spinup.md](trackers/sprints/S-SPINUP-001-step-driven-degrade-proof-spinup.md) — Verified Exists (Write/Read 2026-06-06).
+- Parent epic: E-SPINUP-STEPS-001.
+- Goal/result: Implemented WARPOS-PROMPT.md §1–§7 as one cohesive refactor of `scripts/bootstrap/spinup-orchestrate.js` + the phase modules (`setup`/`canon`/`roadmap`/`paint`) + `test-spinup-orchestrate.js` + `spinup.md` + `portfolio/new-lib.js`, then verified §8 acceptance.
+- Final state: Completed. · Percent completion: 100%. · Completion timestamp: 2026-06-06.
+- Evidence of completion: landed on `main` @ `c9583dd`; `node scripts/bootstrap/test-spinup-orchestrate.js` → 32/32; tracker 20/20; roadmap-trace 30/30; framework-purity OK. See the parent epic's evidence for the full gauntlet.
+- Related untracked work: None. · `TRACKER.md` updated: Yes · Roadmap reconciled: Yes.
 
 ### T1 — TRACKER keystone + definitions · Completed 2026-06-05
 - Link to sprint tracker: `/trackers/sprints/T1-tracker-keystone.md` — Verified Exists (ls/Read on 2026-06-05).

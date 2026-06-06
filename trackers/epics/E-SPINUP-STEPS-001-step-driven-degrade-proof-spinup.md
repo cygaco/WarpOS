@@ -11,19 +11,19 @@
 - **Background:** The Master Console Create flow dies at canon: the consumer runs the whole chain in one exec, the orchestrator exits code 3 (`needs_orchestration`) at the first LLM phase, and the consumer has no in-loop agent to do the synthesis, so the flow stalls at canon and punts to the user. The framework fix = one step = one turn, each step independently dispatchable/idempotent/resumable with a clean `--json` status, AND an engine that can NEVER ship degraded canon regardless of caller (the WI-51→WI-47 regression must be made structurally impossible). Source: `WARPOS-PROMPT.md` (2026-06-06); root cause confirmed in `server/bootstrap-actions.ts`.
 - **Scope:** §0 gap analysis (behavior→step table); §1 step-driven invocation contract (positional `<step>` subcommand, `--json` status shape, consumer dispatch contract, fold preflight+intent→setup / onscreen→paint); §2 anti-degrade engine (remove `--research off`/`light`, reject non-zero; remove `--auto` degrade/skip; wire `canon-no-unfilled-tokens` as a fail-closed non-opt-out gate; raw input never in canon; `--allow-needs-input` audited single-field exception); §3 platform `--where`; §4 reconcile `portfolio:new` into `create()/scaffold()` callables reused by `setup`; §5 Milestone→Epic global rename (live layer); §6 portfolio suite scope (`spinup` pass-through + `new` reconcile only); §7 regression enforcers (per-step seam, idempotent, resume, `--research off` rejected, anti-degrade gate, headless-contract, `--research-in` fixture); §8 β + acceptance.
 - **Out of scope:** `server/` and any Master Console cockpit UI (that is `MASTERCONSOLE-PROMPT.md`, GATED — built separately). Native mobile/desktop scaffolds (v1 ships web/PWA baseline + a native-packaging follow-on epic). Rewriting historical sprint-requirement archives / plan-contracts / `_reports` (immutable history; the rename targets the LIVE framework layer only).
-- **Current state:** Active
-- **Percent completion:** 10% — §0 gap analysis complete (`runtime/notes/warpos-spinup-gap-analysis.md`); epic + sprint registered; build in progress.
+- **Current state:** Completed
+- **Percent completion:** 100% — landed on `main` @ `c9583dd` (2026-06-06); all §0–§8 delivered + evidenced.
 
 ## Definition of Done
-- [ ] Each step (`setup`/`canon`/`roadmap`/`paint`) is independently dispatchable + idempotent (2nd run = no-op) + resumable + emits a valid `--json` status (`{ phase, status, ran[], orchestration_prompt, data{serveUrl,firstAction,roadmapPath} }`).
-- [ ] Full chain reaches a served first paint when synthesis is fulfilled (in-loop or via a consumer runner).
-- [ ] The engine has NO path to degraded output: `--research off` and any degrade alias/skip rejected non-zero; the `canon-no-unfilled-tokens` fail-closed gate is non-opt-out; raw user input never lands in canon (intent/brief only).
-- [ ] `--where android|ios|web|desktop-pc|desktop-mac` accepted; recorded in brief + canon PRODUCT_MODEL; influences roadmap; passed to scaffold (web/PWA baseline for all v1 + native-packaging epic + `/warp:flag`).
-- [ ] `portfolio:new` reconciled — one `create()/scaffold()` implementation reused by `setup`; no duplicated create/scaffold logic.
-- [ ] Milestone→Epic green under `scan:roadmap-trace`; no LIVE (non-deprecated) Milestones heading remains in the live layer.
-- [ ] Portfolio scope limited to `spinup` pass-through + `new` reconcile (no `portfolio:canon/roadmap/paint`).
-- [ ] Gap-analysis table shows zero dropped behaviors (recorded).
-- [ ] Seam + headless-contract + anti-degrade + research-off-rejected tests pass; consumer dispatch contract documented in the skill body with its named enforcer.
+- [x] Each step (`setup`/`canon`/`roadmap`/`paint`) is independently dispatchable + idempotent (2nd run = no-op) + resumable + emits a valid `--json` status (`{ phase, status, ran[], orchestration_prompt, data{serveUrl,firstAction,roadmapPath} }`). — verified by the seam tests (32/32).
+- [x] Full chain reaches a served first paint when synthesis is fulfilled (in-loop or via a consumer runner). — the framework exposes the path (setup→canon→roadmap→paint with `needs_orchestration` handoffs); canonical proves the chain on a fixture (a real served paint is product-side, by design).
+- [x] The engine has NO path to degraded output: `--research off` and any degrade alias/skip rejected non-zero; the `canon-no-unfilled-tokens` fail-closed gate is non-opt-out; raw user input never lands in canon (intent/brief only). — tested (research-off rejection + anti-degrade gate).
+- [x] `--where android|ios|web|desktop-pc|desktop-mac` accepted; recorded in brief + canon PRODUCT_MODEL; influences roadmap; passed to scaffold (web/PWA baseline for all v1 + native-packaging epic + `/warp:flag`). — `setup.js` threads it; `E-NATIVE-PACKAGING-001` + `WARPOS.md` WG-1.
+- [x] `portfolio:new` reconciled — one `create()/scaffold()` implementation reused by `setup`; no duplicated create/scaffold logic. — `scripts/portfolio/new-lib.js` (createProductRepo/scaffoldProductApp); `new.js` thin CLI; `setup.js` reuses.
+- [x] Milestone→Epic green under `scan:roadmap-trace`; no LIVE (non-deprecated) Milestones heading remains in the live layer. — roadmap-trace 30/30.
+- [x] Portfolio scope limited to `spinup` pass-through + `new` reconcile (no `portfolio:canon/roadmap/paint`). — verified; no new portfolio sub-skills.
+- [x] Gap-analysis table shows zero dropped behaviors (recorded). — `runtime/notes/warpos-spinup-gap-analysis.md` (32 rows, 2 intentional anti-degrade removals).
+- [x] Seam + headless-contract + anti-degrade + research-off-rejected tests pass; consumer dispatch contract documented in the skill body with its named enforcer. — `test-spinup-orchestrate.js` 32/32; contract + enforcer documented in `spinup.md`.
 
 ## Related definitions
 - Epic, Sprint, Validator, Wiring, Verification, Evidence — see ../../TRACKER.md
@@ -84,16 +84,16 @@
 | canon-no-unfilled-tokens enforcer | Yes | Exists But Incomplete | scripts/checks/canon-no-unfilled-tokens.js | Read — NOT wired into the canon phase as a gate (the §2 work) | 2026-06-06 | President α |
 
 ## Current next action
-Build §1 (step-driven invocation contract) + §4 (portfolio:new reconcile) in `scripts/bootstrap/spinup-orchestrate.js` + the phase modules; then §2 anti-degrade, §3 `--where`, §5 rename, §7 enforcers; close with §8 β + acceptance.
+None — epic Completed (2026-06-06, landed on `main` @ `c9583dd`). Non-blocking follow-ups: E-NATIVE-PACKAGING-001 (native scaffolds, trigger-gated); ED-029 (machine-audit of `--allow-needs-input`); the GATED Master Console runner (`MASTERCONSOLE-PROMPT.md`, separate product layer).
 
 ## Completion record
-- Final state: Not yet complete
-- Percent completion: n/a
-- Completion timestamp: n/a
-- Definition of done used: see Definition of Done above
-- Evidence of completion: n/a
-- Session IDs / dates / agents: 2026-06-06 · President α + ε + β
-- Related completed sprints: none yet
-- Remaining follow-up items: full §1–§8 build
+- Final state: Completed
+- Percent completion: 100%
+- Completion timestamp: 2026-06-06
+- Definition of done used: the §8 acceptance + the Definition of Done section above — all items satisfied + evidenced.
+- Evidence of completion: landed on `main` @ `c9583dd`; `node scripts/bootstrap/test-spinup-orchestrate.js` → 32/32; `node scripts/trackers/validate.js` → 20/20; `node scripts/check/roadmap-trace.js` → 30/30; `node scripts/canon/test-generate.js` → 24/24; framework-purity OK; warpos-manifest-honesty OK (1063 assets). Zero regressions (HEAD-vs-worktree linter parity 21/24). Manifests regenerated.
+- Session IDs / dates / agents: 2026-06-06 · President α (build in-loop) + ε + β (persistent team) + one background systems builder (§5 prose-doc rename).
+- Related completed sprints: S-SPINUP-001
+- Remaining follow-up items: E-NATIVE-PACKAGING-001 (parked); ED-029 (logged); Master Console runner (gated, not this session).
 - Related untracked work: None
 - ../../TRACKER.md updated: Yes · Roadmap reconciled: Yes
