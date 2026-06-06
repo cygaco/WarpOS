@@ -24,6 +24,125 @@ WarpOS exists to help the maintainer ship real products faster while extracting 
 
 ---
 
+## Epics
+
+> **Version:** 1.0.0 · **Owner:** President Agent · **Last updated:** 2026-06-06 (epic migration, sprint T5 of [E-TRACKER-001](trackers/epics/E-TRACKER-001-enforced-tracker-system.md)).
+>
+> **This is the roadmap's primary organizing unit (spec §29 — Roadmap item == Epic).** Each epic maps to a roadmap theme with: goal, priority, state, completion %, link to its epic tracker, related sprints, dependencies, rationale, expected impact, current next action, related definitions. The older **`## 🏛 Milestones`** structure below is **DEPRECATED** (relabelled here, preserved for history — the version-themed milestone numbers `0.10.0`/`0.12.0`/`0.13.0`/`0.14.0`/`0.16.0`/`0.17.0`/`0.18.0` had drifted from the actual release tags, so epic IDs are **semantic**, decoupled from release versions). The detail behind each epic still lives in its milestone block + Now/Next/Later sections below + the per-sprint receipts in `Shipped`. Authority + state definitions: [TRACKER.md](TRACKER.md) (§Definitions). Related verification: every active/planned epic below has a `trackers/epics/` file (created by sprint T5; ls/Read 2026-06-06).
+>
+> **Priority ordering (current focus first):** the `/warp:reconcile` golden-flow thrust (E-GOLDEN-FLOW-001) + content-delivery integrity (E-CONTENT-DELIVERY-001) lead; E-TRACKER-001 is closing; the remaining theme-epics are planned; the trigger-gated bets are parked with no current commitment.
+
+### Active epics
+
+#### E-TRACKER-001 — Enforced TRACKER System
+- **Goal:** Implement the enforced tracking system specified in `agentic_os_tracker_system_improvements.md` — a 34-section `TRACKER.md`, full operational definitions, the `/trackers/` scaffold + templates, an epic-based roadmap, mode-wiring, and a runnable validation engine.
+- **Priority:** High (this agent's own substrate; finish, don't expand). **State:** Active. **Completion:** ~90% (T1/T2/T3/T5/T6 Completed; T4 Review Needed).
+- **Epic tracker:** [trackers/epics/E-TRACKER-001-enforced-tracker-system.md](trackers/epics/E-TRACKER-001-enforced-tracker-system.md).
+- **Related sprints:** T1 keystone (Completed) · T2 templates+dirs (Completed) · T3 inventory/matrix (Completed) · T4 validation engine (Review Needed) · T5 roadmap→epics (this migration) · T6 mode-wiring (Completed).
+- **Dependencies:** none external. **Rationale:** resumability of any large goal from written files alone, without memory. **Expected impact:** state can never silently drift between sessions; completion claims become evidenced + machine-gated.
+- **Current next action:** finish T4's cross-file §28.7 checks; then flip the epic to Completed.
+- **Related definitions:** Tracker, Epic, Sprint, Validator, Roadmap, Milestone (deprecated).
+
+#### E-GOLDEN-FLOW-001 — Golden-Flow End-to-End Hardening + Executable Consumer-Contract Gate
+- **Goal:** Make the bootstrap on-ramp → on-screen "WOW" on a clean machine the hardened core target, GENERALIZED across all portfolio products, and prove the exact sealed capsule a consumer pins survives a real consumer lifecycle (`setup → scan:install → real sprint → dispatch telemetry → update`, both repo roles, cold + warm) before external users hit it.
+- **Priority:** TOP (operator-directed 2026-06-02; pre-mvp engine-reliability carve-out = core-loop). **State:** Active. **Completion:** ~35% (cheap-slice fresh-install smoke shipped `ff04cd9`; S1/W1/S3/S5 shipped `ac56602`; sealed-capsule isolation + executable contract still open).
+- **Epic tracker:** [trackers/epics/E-GOLDEN-FLOW-001-golden-flow-consumer-contract.md](trackers/epics/E-GOLDEN-FLOW-001-golden-flow-consumer-contract.md).
+- **Related sprints:** SP-20260602-001 (consumer-contract keystone, retrospected) · the ranked do-next #1/#2/#3/#5/#7/#8 in the Sprint Pickup Queue.
+- **Dependencies:** shared repo-role resolver (ED-009) + typed success semantics (BC-16) unblock the gate. **Rationale:** "contractless productization" is the root behind ~every downstream WARPOS.md gap; the gate is the structural cure. **Expected impact:** a pull-posture becomes safe, a freeze snapshot gets certified, and the stability signal that informs the launch-time freeze/pull call is produced.
+- **Current next action:** build the executable consumer-contract gate (sealed-capsule isolation + both-role cold+warm lifecycle); land the shared repo-role resolver first.
+- **Related definitions:** Wiring, Verification, Evidence. **Detail (deprecated-milestone source):** the two `🔭 … TOP PRIORITY` reconcile blocks + `🔭 Root-cause deepening` below.
+
+#### E-CONTENT-DELIVERY-001 — Content-Delivery Integrity & Ownership-Pattern Realignment
+- **Goal:** Make "downstream is always missing something" stop being a recurring class — the shipping manifest provably covers the ownership manifest, every `seeded_from` pointer resolves, seed zones arrive seeded-with-provenance, and update restores the install skeleton.
+- **Priority:** High (in-flight; finishes the "#3 big rock"; ranked do-next #4). **State:** Active. **Completion:** ~50% (SP-20260525-024 shipped the essential-roots patch + `warpos-ship-coverage.js`; structural/exhaustive reconciliation + `_warpos/templates` migration + install-matrix update parity remain).
+- **Epic tracker:** [trackers/epics/E-CONTENT-DELIVERY-001-content-delivery-integrity.md](trackers/epics/E-CONTENT-DELIVERY-001-content-delivery-integrity.md).
+- **Related sprints:** Pattern-realignment-to-SP-20260522-001 · Ship-coverage-hardening · Install-matrix-update-parity (all planned under this epic).
+- **Dependencies:** ownership/shipping manifest taxonomy (SP-20260522-001). **Rationale:** two manifests drifted with nothing gating reconciliation. **Expected impact:** a framework-owned path can no longer ship to nobody; a seed zone can no longer arrive as a bare `.gitkeep`.
+- **Current next action:** build `_warpos/templates/` + `_warpos/BASELINE/`; migrate `framework/templates`; fix the dangling `seeded_from`; harden ship-coverage to exhaustive.
+- **Absorbed open items** (homed here so they don't fall off the deprecated 0.18.1 block): **E6** — product-overlay path registry (`.claude/paths.local.json` deep-merged by `scripts/paths/build.js`, or an `owner:project` section `/warp:update` never overwrites) so product-specific path keys survive framework updates without MERGE_CONFLICT + honesty-drift each update *(dreamteam W-9)*.
+- **Related definitions:** Verification, Path, Wiring. **Detail (deprecated-milestone source):** `🟡 0.16.0` block below.
+
+#### E-TEST-SUITE-001 — Per-Sprint Exhaustive Test-Suite System
+- **Goal:** Make exhaustive testing a permanent system, not per-sprint discretion — every canonical sprint ships/extends a test suite gated by a named enforcer, seeded with a baseline regression set covering every recurring bug class; the product layer opts in but is never forced.
+- **Priority:** High (engine trust precondition). **State:** Active. **Completion:** ~40% (foundation shipped — `scripts/testsuite/enforce.js` + the 26-class regression seed `_requirements/07-testing/recurring-bug-classes.json` + the sprint-close `regressionSeedGate()` + release-gate wiring; the `_planning`/diff/hook-overhaul batch + their exhaustive suites remain).
+- **Epic tracker:** [trackers/epics/E-TEST-SUITE-001-per-sprint-test-suite.md](trackers/epics/E-TEST-SUITE-001-per-sprint-test-suite.md).
+- **Related sprints:** SP-20260528-002 (foundation, planning) · the `_planning`/diff/hook-overhaul sprints (planned).
+- **Dependencies:** shared repo-role resolver (for the canonical-mandatory / consumer-optional switch). **Rationale:** the framework is unstable — green gates pass without exhaustive behavioral coverage. **Expected impact:** "green" becomes trustable for every framework change.
+- **Current next action:** complete the `_planning` seed-zone + WarpOS↔product diff + hook-system overhaul, each with its exhaustive suite.
+- **Related definitions:** Validator, Validation, Evidence. **Detail (deprecated-milestone source):** `🟡 0.17.0` + `🔬 Mandatory regression seed` blocks below.
+
+### Planned epics
+
+#### E-STABLE-CHANNEL-001 — Stable / LTS Release Channel
+- **Goal:** WarpOS stops being one rolling `latest`; releases flow edge → latest → stable → lts, and a release earns stable/lts only by passing the full regression seed + an artifact-first downstream contract test + a soak window. Products pin to a channel.
+- **Priority:** Medium (deferred pre-mvp; pull forward when a 2nd external consumer needs differentiated risk). **State:** Planned. **Completion:** 0%.
+- **Epic tracker:** [trackers/epics/E-STABLE-CHANNEL-001-stable-lts-channel.md](trackers/epics/E-STABLE-CHANNEL-001-stable-lts-channel.md).
+- **Related sprints:** Release-channel-model · Stable-promotion-gate · Channel-aware-update+pinning (all planned).
+- **Dependencies:** E-TEST-SUITE-001's regression seed (defines "stable"); E-GOLDEN-FLOW-001's contract gate (the promotion-boundary substance). **Rationale:** downstream tracks a single rolling latest and inherits hollow-rung/regressed releases. **Expected impact:** the operator (and external users) can choose stability over freshness.
+- **Current next action:** none yet (Planned; activate after E-TEST-SUITE-001 + E-GOLDEN-FLOW-001 land). **Related definitions:** Roadmap, Epic, Evidence. **Detail:** `🟡 0.18.0` block below.
+
+#### E-BOUNDARY-001 — Framework Boundary Closure
+- **Goal:** Move the framework/product boundary from "documented" to "enforced at write-time" — relocate WarpOS-as-product specs to a private repo, flip `ROOT_LEAK_PENDING_SCRUB=false`, and have `framework-purity-guard` hard-refuse any reintroduction.
+- **Priority:** Medium (operator-scoped — the framework cannot self-execute the repo move). **State:** Planned. **Completion:** 0%.
+- **Epic tracker:** [trackers/epics/E-BOUNDARY-001-framework-boundary-closure.md](trackers/epics/E-BOUNDARY-001-framework-boundary-closure.md).
+- **Related sprints:** SP-20260525-001 (maintainer canonical scrub) · SP-20260525-002 (post-scrub gate hardening) — both planning.
+- **Dependencies:** operator runs `/portfolio:new --slug warpos-as-product` + the spec move. **Rationale:** product-titled specs co-exist with canonical source behind a leak-pending flag. **Expected impact:** the framework can publish externally without a "did we leak?" audit step.
+- **Current next action:** none yet (Planned; operator-gated). **Related definitions:** Roadmap, Epic. **Detail:** `🟡 0.10.0` block below.
+
+#### E-MULTIPRODUCT-001 — Multi-Product Distribution Maturity
+- **Goal:** Keep N≥3 portfolio products current with low maintainer touch — capsules ship complete orchestrator infra, the installer is branch-safe by default, same-name agent collisions prompt for resolution, and the install matrix exercises cross-version `--apply`.
+- **Priority:** Medium. **State:** Planned. **Completion:** 0%.
+- **Epic tracker:** [trackers/epics/E-MULTIPRODUCT-001-multi-product-distribution.md](trackers/epics/E-MULTIPRODUCT-001-multi-product-distribution.md).
+- **Related sprints:** SP-20260525-005..009 (capsule fix / branch-safety / collision-detect / cross-version matrix / skill-engine coherence) — all planning.
+- **Dependencies:** none hard. **Rationale:** each new product is a custodial burden without this. **Expected impact:** a 4th/5th/Nth product onboards as one command + name. **Current next action:** none yet (Planned).
+- **Related definitions:** Roadmap, Epic, Path. **Detail:** `🟡 0.12.0` block below.
+
+#### E-SKILL-CATALOG-001 — Skill Catalog Polish
+- **Goal:** Zero known papercuts in the skill catalog — every shipped skill is either end-to-end-verified or honestly marked deprecated (research:* consolidation, provider-catalog hygiene, skill merges, events retention).
+- **Priority:** Low (opportunistic, cadence-rule permitting). **State:** Planned. **Completion:** 0% (some sub-items shipped piecemeal — ghost-model hygiene partly addressed in the dispatch cluster).
+- **Epic tracker:** [trackers/epics/E-SKILL-CATALOG-001-skill-catalog-polish.md](trackers/epics/E-SKILL-CATALOG-001-skill-catalog-polish.md).
+- **Related sprints:** SP-20260525-010..013 (research consolidation / provider hygiene / skill merges / events retention) — all planning.
+- **Dependencies:** none. **Rationale:** the catalog is a place where you must know which skills "actually work." **Expected impact:** every shipped skill is trustworthy or honestly deprecated. **Current next action:** none yet (Planned).
+- **Absorbed open items** (homed here so they don't fall off the deprecated 0.18.1 block): **H4** — port `/roadmap:improve` + `/roadmap:ship` (almanac-built multi-agent Workflow skills) into canonical *(almanac)*; **G1** — add the product-layer-vs-dev-tooling-layer distinction to the `DICTIONARY.md` glossary *(dreamteam W-16)*; **G2** — add the invocation-authority-vs-mode clarification to `gamma.md` *(mc WI-12)*.
+- **Related definitions:** Command, Roadmap. **Detail:** `🟡 0.13.0` block below.
+
+#### E-MANAGER-LAYER-001 — Managerial Agent Layer
+- **Goal:** Give the agent system a strategic managerial layer (Director personas, skill-scoped agent injection, roadmap skills consulting a product lens) instead of build-chain only.
+- **Priority:** Low. **State:** Planned (NOT Superseded — most of the original scope was delivered early by E-ADR0007; the residual injection mechanism remains to be built). **Completion:** ~70% delivered out-of-band — ADR-0007 built the `president/product/engineering/growth` department tree with Director/Lead personas + `role-registry.json`, and the `/roadmap:*` skills already resolve a role-aware Product-Lead/Director-of-Product persona from the registry; the original `.claude/agents/03-managers/` shape is retired. Residual ~30%: the declarative `temporary-agent:` frontmatter injection mechanism + `manager-consult` event audit trail.
+- **Epic tracker:** [trackers/epics/E-MANAGER-LAYER-001-managerial-agent-layer.md](trackers/epics/E-MANAGER-LAYER-001-managerial-agent-layer.md).
+- **Related sprints:** SP-20260525-014..017 + SP-20260528-003/004 (Director of Product agent + roadmap:ideas/next) — planning. **Dependencies:** E-ADR0007 (delivered the substrate). **Rationale:** roadmap work was "Alex's best guess" not "Director-consulted." **Expected impact:** strategic judgment becomes an invokable, audited capability. **Current next action:** none yet (Planned; reconcile what ADR-0007 already delivered vs the residual injection mechanism before activating).
+- **Related definitions:** Agent, President agent. **Detail:** `🟡 0.14.0` block below (note: the milestone's `03-managers/` directory was superseded by ADR-0007's department tree).
+
+### Parked epics (trigger-gated — no current commitment)
+
+Architectural bets parked behind explicit revival triggers; no sprint cycles and no epic tracker file until the trigger fires (then they graduate to Planned). Full design notes under `### Later (trigger-gated)` + `## Later: Platform Bets` below.
+- **E-CENTRAL-WARPOS** — central multi-product architecture. *Trigger:* updates cost >30 min/week, or cross-product orchestration/reporting/shared-memory becomes a recurring need, or new-product setup is still painful after E-MULTIPRODUCT-001. *(RFC: `_docs/research/2026-05-21-central-warpos-rfc.md`.)*
+- **E-NPM-DISTRIBUTION** — npm distribution as forcing function. *Trigger:* most active meta-work would be unnecessary under the npm shape. *(Essay: `_docs/research/2026-05-19-npm-forcing-function.md`.)*
+- **E-WARPOS-DOGFOOD** — WarpOS-as-product deep dogfooding. *Trigger:* cadence-rule violations stay at 0 for 4+ consecutive sprint windows (boundary closure first).
+- **E-PROMPT-LIBRARY** — reusable saved operating-prompt library. *Trigger:* the operator re-pastes the same operating rules across ≥3 sessions, or the `session:dump` reusable-prompt block gets hand-copied more than a couple of times. *(DISCUSSED-2026-06-06.)*
+
+### Completed epics
+
+Each maps to a shipped milestone; full per-sprint receipts live under `Shipped` below (and the version-history `## ✅ Shipped in vX.Y.Z` sections). No separate epic tracker file is required for completed epics (spec §22 requires files for active + planned only); the receipts ARE the evidence.
+- **E-ADR0007** — Agent-System Rewrite (ADR-0007). 100%. Department tree + `role-registry.json` keystone + dispatch-from-registry + `_knowledge/` brain + ε sprint runtime; landed on `main`, tag `warpos@0.14.0`. *Authoritative record: [TRACKER.md](TRACKER.md) §Completed Epics.*
+- **E-ONRAMP-001** — Unified Product On-Ramp (milestone 0.15.0, shipped 2026-05-25). `bootstrap:*`/`portfolio:*` reach one idea→screen on-ramp; `product:*` deleted.
+- **E-LASTMILE-001** — Product Last-Mile Foundry (`bootstrap:lastmile`, built+merged 2026-05-25). Prototype → monetizable launch with human-approval gates.
+- **E-SPRINT-HONESTY-001** — Sprint Workflow Honesty (milestone 0.11.0). Real Beta consults via halt-at-boundary + `/scan:sprint-beta-honesty`.
+- **E-INSTALL-RELIABILITY-001** — Install Pipeline Reliability Checkpoint (milestone 0.9.0). 5-scenario CI matrix + snapshot rollback + per-file status + versioned migrations.
+- **E-MANIFEST-ARCH-001** — Manifest-Driven Architecture (milestone 0.8.x). `_warpos/MANIFEST.json` ownership taxonomy + generator/validator/regenerator + 3-layer settings compiler.
+- **E-UPDATE-PIPELINE-001** — Hardened Update Pipeline (milestone 0.7.x). Content-hash + sha256 un-truncation + operator-override + release/apply separation.
+- **E-TXN-PARALLEL-001** — Transactional `/warp:update` + Multi-Sprint Parallelism (milestone 0.5.x). Atomic snapshot/lock/rollback + concurrent sprints.
+- **E-SPRINT-WORKFLOW-001** — Sprint Workflow v0.1 (milestone 0.4.0). The four-command sprint workflow; the sprint-id era begins.
+- **E-GENESIS-001** — Genesis (milestone 0.1.0). WarpOS exists — hooks, three-mode dispatch, Alex α/β/γ/δ, paths registry, memory stores.
+
+### Superseded / cancelled epics
+- **Interim ADR-0007-rewrite TRACKER** — Superseded by the enforced `TRACKER.md` (see [TRACKER.md](TRACKER.md) §Cancelled or Superseded Work). No cancelled epics currently recorded.
+
+### Roadmap change log
+- **2026-06-06 — Epic migration (sprint T5 of E-TRACKER-001, President via systems builders).** Migrated `ROADMAP.md` from milestone-organized to **epic-organized** per spec §29. Added this `## Epics` registry as the primary organizing unit (4 active + 5 planned epics with §29 fields + `trackers/epics/` files; 4 parked trigger-gated bets; 10 completed epics mapped to existing Shipped receipts; 1 superseded). Marked the `## 🏛 Milestones` section DEPRECATED (preserved for history; it remains the detail source behind each epic). **No content removed** — the Now/Next/Later sections, the `## Sprints` ledger table, and all `Shipped`/`✅ Shipped in vX.Y.Z` narrative regions are untouched (the `scan:roadmap-trace` + `scan:references` contracts are preserved). Epic IDs are **semantic**, decoupled from the drifted version-themed milestone numbers. Previous state: milestone-organized, `TRACKER.md` recorded ROADMAP "Exists But Incomplete (not epic-based)". New state: epic-based; `TRACKER.md` E-TRACKER-001 DoD line "Roadmap structure is epic-based" → DONE.
+
+---
+
 ## 🔭 2026-06-02 — Reconcile #2 + golden-flow-first reprioritization — TOP PRIORITY (supersedes the 2026-05-30 reconcile below)
 
 `/warp:reconcile` #2 over all 5 product registers (almanac, companycam, doogle, dreamteam, masterconsole). Verify-canonical-first (ED-008): **~30 of ~80 gaps already fixed @canonical.** Audit: `runtime/notes/warpos-gap-register-audit.md`. Full prescriptive handoff + per-gap specs: `DUMP.md`.
@@ -84,9 +203,11 @@ Each is a `paths.decisionPolicy` / `paths.currentStage` touch → never auto-app
 
 ---
 
-## 🏛 Milestones
+## 🏛 Milestones — ⚠️ DEPRECATED (migrated to `## Epics`, 2026-06-06)
 
-Director-of-product framing: the roadmap is a rhythm — **n sprints → milestone hit → n sprints → milestone hit**. Each milestone names *what shifts in the engineering reality* of the framework; the sprints listed beneath it are the units of work that close it. Pulling a milestone forward means planning its sprints (via `/sprint:plan` / `/sprint:full`), shipping them, then closing the milestone when its definition-of-done holds.
+> **⚠️ DEPRECATED 2026-06-06 (sprint T5 of E-TRACKER-001).** This milestone structure is no longer the roadmap's organizing unit — it was migrated to the **`## Epics`** registry above (spec §29 — Roadmap item == Epic). The version-themed milestone numbers here (`0.10.0`/`0.12.0`/`0.13.0`/`0.14.0`/`0.16.0`/`0.17.0`/`0.18.0`) had **drifted from the actual release tags**, so epics use semantic IDs decoupled from release versions. **This section is preserved for history and as the detail behind each epic** (each epic's `Detail (deprecated-milestone source)` field points back here). Do not add new milestones — add epics to `## Epics` and the per-sprint receipts to `Shipped`. Milestone→epic mapping: `0.16.0`→E-CONTENT-DELIVERY-001 · `0.17.0`→E-TEST-SUITE-001 · `0.18.0`→E-STABLE-CHANNEL-001 · `0.10.0`→E-BOUNDARY-001 · `0.12.0`→E-MULTIPRODUCT-001 · `0.13.0`→E-SKILL-CATALOG-001 · `0.14.0`→E-MANAGER-LAYER-001 (largely superseded by E-ADR0007) · `0.15.0`→E-ONRAMP-001 (completed) · the golden-flow/consumer-contract thrust → E-GOLDEN-FLOW-001.
+
+Director-of-product framing (historical): the roadmap was a rhythm — **n sprints → milestone hit → n sprints → milestone hit**. Each milestone named *what shifts in the engineering reality* of the framework; the sprints listed beneath it were the units of work that closed it. *(This rhythm now lives at the epic granularity — see `## Epics`.)*
 
 **Upcoming** sequence (top = next, intended order — opportunistic milestones can pull forward when cadence allows):
 

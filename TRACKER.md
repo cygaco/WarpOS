@@ -4,11 +4,11 @@ Version: 1.0.0
 
 Owner: President Agent
 
-Last Updated: 2026-06-05 (T3 system-inventory + verification-matrix disk-verification pass)
+Last Updated: 2026-06-06 (T5 roadmap milestones→epics migration: ROADMAP.md is now epic-based; 8 new epic tracker files; milestone structure deprecated)
 
-Last Validation: 2026-06-05 — `node scripts/trackers/validate.js` (all 12 checks pass, exit 0)
+Last Validation: 2026-06-06 — `node scripts/trackers/validate.js` (all 12 checks pass, exit 0)
 
-Validation Status: Passing (12/12 checks; verified by `node scripts/trackers/validate.js`, exit 0, on 2026-06-05)
+Validation Status: Passing (12/12 checks; verified by `node scripts/trackers/validate.js`, exit 0, on 2026-06-06)
 
 Purpose: The highest written source of truth for active, planned, completed, cancelled, superseded, untracked, definition-bound, and verification-bound long-running work in the WarpOS Agentic OS. This document exists so that an agent can resume any large goal from written files alone — knowing what exists, what is active, what is planned, what is done, what is verified, what is missing, and what the next action is — with no meaningful loss, terminology drift, missing paths, missing wiring, or hidden dependency on memory.
 
@@ -16,25 +16,26 @@ Authority: Highest written source of truth for active, planned, completed, cance
 
 ## Related Tracker Documents
 
-- `ROADMAP.md` — the framework backlog and strategic direction (epic-based migration in progress; see Known Gaps G-2 and epic E-TRACKER-001 / sprint T5). Path verified to exist: `C:/Users/Vlad/Desktop/Claude/Projects/WarpOS/ROADMAP.md`.
+- `ROADMAP.md` — the framework backlog and strategic direction, now **epic-based** (sprint T5, 2026-06-06): its `## Epics` section is the authoritative epic registry (4 active + 5 planned + 4 parked trigger-gated + 10 completed + 1 superseded), and the older `## 🏛 Milestones` structure is marked DEPRECATED (preserved for history). This `TRACKER.md` owns E-TRACKER-001 (active) + E-ADR0007 (completed) in detail; the broader theme-epics are registered in `ROADMAP.md` § Epics, each with a `trackers/epics/` file. Path verified to exist: `C:/Users/Vlad/Desktop/Claude/Projects/WarpOS/ROADMAP.md` (epic-file links resolved 2026-06-06).
+- `/trackers/epics/` — 9 epic tracker files Verified Exists (ls/Read 2026-06-06): `E-TRACKER-001` (T2) + the 8 created by sprint T5 (`E-GOLDEN-FLOW-001`, `E-CONTENT-DELIVERY-001`, `E-TEST-SUITE-001`, `E-STABLE-CHANNEL-001`, `E-BOUNDARY-001`, `E-MULTIPRODUCT-001`, `E-SKILL-CATALOG-001`, `E-MANAGER-LAYER-001`), one per active/planned roadmap epic.
 - `UNTRACKED_WORK.md` — meaningful work performed outside formal epics/sprints. Verified Exists (ls/Read on 2026-06-05); created by sprint T2. Recorded as Verified Exists in the Verification Matrix.
 - `/trackers/` — per-epic and per-sprint tracker files, templates, and records. Verified Exists (ls/Read on 2026-06-05): `trackers/`, `trackers/epics/`, `trackers/sprints/`, `trackers/templates/` (10 templates) + `trackers/README.md`; created by sprint T2. Recorded as Verified Exists in the Verification Matrix.
 
 ## Current Global State Summary
 
-- Active epics: 1 (E-TRACKER-001 — Enforced TRACKER System, ~80% — T1, T2, T3, T6 Completed; T4 Review Needed ~90%; only T5 + T4-tail remain).
+- Active epics: 1 owned directly by this tracker (E-TRACKER-001 — Enforced TRACKER System, ~90% — T1, T2, T3, T5, T6 Completed; T4 Review Needed ~90%; only the T4 cross-file tail remains). The roadmap's broader theme-epics (3 more active + 5 planned) are tracked in `ROADMAP.md` § Epics with `trackers/epics/` files — see Related Tracker Documents.
 - Active sprints: 1 (T4 — validation engine + enforcement, Review Needed, ~90%).
-- Planned epics: 0.
-- Planned sprints: 1 (T5 — parented to E-TRACKER-001). (T3 is now Completed — see Completed Sprints.)
-- Completed epics: 1 (E-ADR0007 — Agent-System Rewrite, 100%, verified on `main`; E1–E8 commit hashes + `warpos@0.14.0` tag re-verified against `git log`/`git tag` on 2026-06-05, T3).
-- Completed sprints (summarized): T1 (TRACKER keystone + definitions), T2 (templates + dirs + UNTRACKED_WORK), T3 (system inventory + verification matrix, disk-verified 2026-06-05), and T6 (mode-wiring + scan-suite gate); plus the ADR-0007 rewrite across E1–E8 (see Completed Sprints) and the WarpOS 0.14.0 release (tag `warpos@0.14.0`).
+- Planned epics: 0 owned directly by this tracker (the roadmap's 5 planned theme-epics live in `ROADMAP.md` § Epics).
+- Planned sprints: 0 (T5 is now Completed — see Completed Sprints; only the T4 cross-file tail remains under the Active sprint).
+- Completed epics: 1 (E-ADR0007 — Agent-System Rewrite, 100%, verified on `main`; E1–E8 commit hashes + `warpos@0.14.0` tag re-verified against `git log`/`git tag` on 2026-06-05, T3). The roadmap registers 10 completed theme-epics (mapped to existing Shipped receipts) in `ROADMAP.md` § Epics.
+- Completed sprints (summarized): T1 (TRACKER keystone + definitions), T2 (templates + dirs + UNTRACKED_WORK), T3 (system inventory + verification matrix, disk-verified 2026-06-05), T5 (roadmap milestones→epics migration, 2026-06-06), and T6 (mode-wiring + scan-suite gate); plus the ADR-0007 rewrite across E1–E8 (see Completed Sprints) and the WarpOS 0.14.0 release (tag `warpos@0.14.0`).
 - Cancelled or superseded work: the interim ADR-0007-rewrite TRACKER.md is Superseded by this file (see Cancelled or Superseded Work).
 - Untracked work: tracked in `UNTRACKED_WORK.md` (Verified Exists, ls/Read on 2026-06-05; created by sprint T2).
-- Known gaps: 3 (G-1 ship-boundary audit; G-2 tracker system mid-build — now T1/T2/T3/T6 done, T4 in review, only T5 + T4-tail remain; G-3 stale-worktree-cwd hazard).
+- Known gaps: 3 (G-1 ship-boundary audit; G-2 tracker system mid-build — now T1/T2/T3/T5/T6 done, T4 in review, only the T4 cross-file tail remains; G-3 stale-worktree-cwd hazard — lingering stale-worktree dir cleaned this session, automated guard still pending).
 
 ## Current Highest-Priority Next Action
 
-Run sprint T5 (migrate ROADMAP milestones→epics + create epic tracker files) and finish sprint T4 (move it from Review Needed to Completed) by adding the cross-file §28.7 checks the single-file engine deferred (definition-drift; epics-missing-from-roadmap / roadmap-still-using-milestones; TRACKER↔roadmap↔epic↔sprint reconciliation; work-logs-with-no-session-ID; expected-nonexistence; modes-that-work-but-don't-consult-the-tracker; missing-enforcement-hooks). T4's other follow-up — wiring `/trackers:validate` into the standing scan suite — is DONE (sprint T6, 2026-06-05: gated in `/scan:full`). Sprints T3 (System Inventory + Verification Matrix, disk-verified 2026-06-05) and T6 (mode-wiring + scan-suite gate) are Completed.
+Finish sprint T4 (move it from Review Needed to Completed) by adding the cross-file §28.7 checks the single-file engine deferred (definition-drift; epics-missing-from-roadmap / roadmap-still-using-milestones; TRACKER↔roadmap↔epic↔sprint reconciliation; work-logs-with-no-session-ID; expected-nonexistence; modes-that-work-but-don't-consult-the-tracker; missing-enforcement-hooks). T5 (migrate ROADMAP milestones→epics + create epic tracker files) is now Completed (2026-06-06: `ROADMAP.md` § Epics registry is the primary organizing unit, milestone structure deprecated, 8 new `trackers/epics/` files). T4's standing-scan-suite follow-up was DONE in T6 (2026-06-05: gated in `/scan:full`). Sprints T3, T5, and T6 are Completed.
 
 ---
 
@@ -131,7 +132,7 @@ Claude memory may be used as a hint but must never override tracker state, track
 All operational definitions used by this system are tracked here. Each definition explains how the term is used inside the WarpOS Agentic OS, not just its general meaning. Definitions in `TRACKER.md` outrank definitions in Claude memory, old roadmap files, old sprint notes, old implementation plans, chat summaries, agent assumptions, unlinked documentation, and code comments unless verified and reconciled. The full record format is per spec §8.1 (Term, Definition, Why it matters, Where it applies, Owner, Date added, Last updated, Related documents, Related enforcement rules, Change history). To keep this keystone readable, each definition below carries Term / Definition / Why it matters / Where it applies; Owner is President Agent, Date added and Last updated are 2026-06-05, and Change history is "None (initial entry)" for every term unless stated otherwise.
 
 ## Definition: Roadmap
-Definition: The strategic backlog of WarpOS, held in `ROADMAP.md`, that names the meaningful strategic goals (epics) and their priority ordering. Target structure is epic-based (Roadmap item == Epic); the current `ROADMAP.md` is Now/Next/Later/Archive and is NOT yet fully epic-based (migration owned by sprint T5).
+Definition: The strategic backlog of WarpOS, held in `ROADMAP.md`, that names the meaningful strategic goals (epics) and their priority ordering. Structure is epic-based (Roadmap item == Epic): as of sprint T5 (2026-06-06) `ROADMAP.md` carries a `## Epics` registry as its primary organizing unit and the legacy Now/Next/Later + `## 🏛 Milestones` structure is preserved-but-deprecated (milestones explicitly marked DEPRECATED).
 Why it matters: It is the top-level "what should we do and in what order"; epics derive from it.
 Where it applies: Roadmap mode; epic creation; reconciliation between roadmap and tracker state.
 
@@ -389,7 +390,8 @@ Per spec §9, every tracker-relevant component is inventoried below. This invent
 | Item | Type | Expected path | Exists? | Verified state | Method + evidence (2026-06-05, T3) |
 |---|---|---|---|---|---|
 | TRACKER.md | File | `WarpOS/TRACKER.md` | Yes | Verified Exists (this file; 34 §5 sections, ~50 definitions, validated 12/12) | `ls -la TRACKER.md` (116912 bytes) + `node scripts/trackers/validate.js` exit 0 |
-| ROADMAP.md | File | `WarpOS/ROADMAP.md` | Yes | Exists But Incomplete — present (238749 bytes) but NOT yet epic-based; migration is sprint T5 (G-2) | `ls -la ROADMAP.md` |
+| ROADMAP.md | File | `WarpOS/ROADMAP.md` | Yes | Verified Exists — epic-based as of sprint T5 (2026-06-06): `## Epics` registry is the primary unit; `## 🏛 Milestones` marked DEPRECATED | `grep "^## Epics" ROADMAP.md` + `grep "DEPRECATED" ROADMAP.md` + Read post-edit |
+| trackers/epics/ (9 epic files) | Epic trackers | `WarpOS/trackers/epics/E-*.md` | Yes | Verified Exists — E-TRACKER-001 (T2) + 8 created by T5 (E-GOLDEN-FLOW-001, E-CONTENT-DELIVERY-001, E-TEST-SUITE-001, E-STABLE-CHANNEL-001, E-BOUNDARY-001, E-MULTIPRODUCT-001, E-SKILL-CATALOG-001, E-MANAGER-LAYER-001); all 9 ROADMAP §Epics links resolve | `ls -1 trackers/epics/` (9) + `grep -oE "trackers/epics/E-[A-Z0-9-]+-[a-z-]+\.md" ROADMAP.md` → 9/9 OK |
 | UNTRACKED_WORK.md | File | `WarpOS/UNTRACKED_WORK.md` | Yes | Verified Exists (sprint T2; 6741 bytes) | `ls -la UNTRACKED_WORK.md` |
 | /trackers/ | Directory | `WarpOS/trackers/` | Yes | Verified Exists (sprint T2; + `trackers/README.md`, 2657 bytes) | `ls -la trackers/` |
 | /trackers/epics/ | Directory | `WarpOS/trackers/epics/` | Yes | Verified Exists (sprint T2; 1 epic file) | `ls -la trackers/epics/` |
@@ -440,7 +442,8 @@ Per spec §10. Allowed states: `Verified Exists`, `Verified Nonexistent`, `Verif
 | Item | Required? | Should exist? | State | Evidence / check (2026-06-05, T3) |
 |---|---|---|---|---|
 | TRACKER.md | Yes | Yes | Verified Exists (validated 12/12) | `node scripts/trackers/validate.js` exit 0 + `ls -la TRACKER.md` |
-| ROADMAP.md | Yes | Yes | Exists But Incomplete (not epic-based; G-2/T5) | `ls -la ROADMAP.md` (238749 bytes) |
+| ROADMAP.md | Yes | Yes | Verified Exists — epic-based (sprint T5, 2026-06-06): `## Epics` registry primary; `## 🏛 Milestones` DEPRECATED | `grep "^## Epics" ROADMAP.md` + Read post-edit |
+| trackers/epics/ (9 epic files) | Yes | Yes | Verified Exists — E-TRACKER-001 + 8 from T5; all 9 ROADMAP §Epics links resolve | `ls -1 trackers/epics/` (9) + `grep`-resolve 9/9 OK |
 | UNTRACKED_WORK.md | Yes | Yes | Verified Exists | `ls -la UNTRACKED_WORK.md` (6741 bytes) |
 | /trackers/ (+ epics/sprints/templates) | Yes | Yes | Verified Exists (trackers/, epics/, sprints/, templates/ + README.md; 10 templates; T1–T6 + E-TRACKER-001) | `ls -la trackers/ trackers/epics/ trackers/sprints/ trackers/templates/` |
 | 10 templates (each, individually) | Yes | Yes | Verified Exists (EPIC/SPRINT/SESSION_LOG/CHANGE_LOG/EVIDENCE_LOG/DEFINITION/UNTRACKED_WORK/VERIFICATION/RECONCILIATION/COMPLETION_RECORD) | `ls -la trackers/templates/` → exactly 10 files |
@@ -476,18 +479,18 @@ No `Unknown` rows remain. The `Verified Not Wired` rows are tracked follow-ups (
 - Link to epic tracker: `/trackers/epics/E-TRACKER-001-enforced-tracker-system.md` — Verified Exists (ls/Read on 2026-06-05; created by sprint T2).
 - Goal: Implement the enforced tracking system specified in `agentic_os_tracker_system_improvements.md` — replace the interim tracker with a `TRACKER.md` that follows all 34 required sections, define all required operational terms, build templates and the `/trackers/` structure, migrate the roadmap to epics, wire tracker checks into all relevant modes, and add a runnable validation engine.
 - Current state: Active.
-- Percent completion: ~80% (T1 keystone `TRACKER.md` + ~50 definitions, T2 `/trackers/` tree + 10 templates + `UNTRACKED_WORK.md`, T3 disk-verified System Inventory + Verification Matrix, and T6 mode-wiring + scan-suite gate are Completed; T4 validation engine is built, passing, and gated in `/scan:full`, Review Needed ~90% pending its cross-file checks; only T5 roadmap migration + the T4 cross-file tail remain — verified-unbuilt).
+- Percent completion: ~90% (T1 keystone `TRACKER.md` + ~50 definitions, T2 `/trackers/` tree + 10 templates + `UNTRACKED_WORK.md`, T3 disk-verified System Inventory + Verification Matrix, T5 roadmap milestones→epics migration, and T6 mode-wiring + scan-suite gate are Completed; T4 validation engine is built, passing, and gated in `/scan:full`, Review Needed ~90% pending its cross-file checks; only the T4 cross-file tail remains — verified-unbuilt).
 - Session IDs that worked on it: the Wave-1 build sessions (2026-06-05), the reconciliation pass, and this 2026-06-05 T3 verification pass (President-delegated systems builder; session ID to be backfilled by the orchestrator).
 - Dates/times worked on: 2026-06-05.
 - Agents that worked on it: President Agent (owner) via delegated docs/systems builders (Wave-1), the reconciliation pass, and the T3 verification pass.
 - Current owner: President Agent.
 - Current blockers: None currently recorded.
-- Current risks: T4's cross-file §28.7 checks are not yet built, so this epic cannot reach 100% until they land and T5 completes. (T3 inventory/matrix, T6 mode-wiring, and the standing scan-suite gate are now done — those risks are retired.)
-- Latest meaningful update: 2026-06-05 — sprint T3 Completed: the System Inventory (40 rows) and Verification Matrix (26 rows) are fully disk-verified with zero `Unknown` rows; E-ADR0007 E1–E8 commit hashes + the `warpos@0.14.0` tag re-verified against `git`; epic advanced to ~80%.
-- Next required action: Run T5 (migrate ROADMAP milestones→epics + create epic tracker files); finish T4's cross-file §28.7 checks. (T3, T6, and the standing-runner gate are Completed.)
+- Current risks: T4's cross-file §28.7 checks are not yet built, so this epic cannot reach 100% until they land. (T3 inventory/matrix, T5 roadmap migration, T6 mode-wiring, and the standing scan-suite gate are now done — those risks are retired.)
+- Latest meaningful update: 2026-06-06 — sprint T5 Completed: `ROADMAP.md` migrated to epic-based (`## Epics` registry as the primary organizing unit, `## 🏛 Milestones` marked DEPRECATED, roadmap change-log entry); 8 new `trackers/epics/` files created (one per active/planned roadmap epic) and individually validated; epic advanced to ~90%.
+- Next required action: Finish T4's cross-file §28.7 checks (definition-drift; epics-missing-from-roadmap / roadmap-still-using-milestones; TRACKER↔roadmap↔epic↔sprint reconciliation; work-logs-with-no-session-ID; expected-nonexistence; modes-that-work-but-don't-consult-the-tracker; missing-enforcement-hooks). (T3, T5, T6, and the standing-runner gate are Completed.)
 - Evidence of progress: this `TRACKER.md` (validated 12/12 by `scripts/trackers/validate.js` on 2026-06-05); the fully disk-verified System Inventory + Verification Matrix (T3); the `/trackers/` tree + 10 templates + `UNTRACKED_WORK.md` on disk; `scripts/trackers/validate.js` (selftest 33/33) gated in `/scan:full`; the four live mode skills carry a start-of-work tracker-consult step.
-- Related sprints: T1 (Completed), T2 (Completed), T3 (Completed), T6 (Completed), T4 (Review Needed), T5 (Planned).
-- Related roadmap item: the ROADMAP "epics-over-milestones + per-task tracker" direction (to be formalized as a roadmap epic in sprint T5).
+- Related sprints: T1 (Completed), T2 (Completed), T3 (Completed), T5 (Completed), T6 (Completed), T4 (Review Needed).
+- Related roadmap item: `ROADMAP.md` § Epics → E-TRACKER-001 (the epics-over-milestones + per-task-tracker direction, formalized as the epic registry by sprint T5, 2026-06-06).
 - Related definitions: Tracker, Epic, Sprint, Validator, Template, Wiring, Verification Matrix, System Inventory.
 - Related verification items: `/trackers/` (Verified Exists); tracker validation engine (Verified Exists); tracker mode-wiring (Verified Wired — 4 live modes + scan gate, T6); residual non-enterable-posture consult (Verified Not Wired — residual T6).
 - Related system inventory items: TRACKER.md; /trackers/; 10 templates; tracker validation engine; /trackers:validate skill.
@@ -527,19 +530,7 @@ None currently recorded.
 
 # Planned but Not Started Sprints
 
-All planned sprints below are parented to epic E-TRACKER-001. Each is state `Planned`, `0%` complete (no preparatory work has occurred), with a Verified-Exists tracker file under `/trackers/sprints/` (ls/Read on 2026-06-05). (T1, T2, T3, and T6 are Completed — see Completed Sprints; T4 is Review Needed — see Active Sprints.)
-
-### T5 — Roadmap milestones → epics
-- Link to sprint tracker: `/trackers/sprints/T5-roadmap-milestones-to-epics.md` — Verified Exists (ls/Read on 2026-06-05).
-- Goal: Migrate `ROADMAP.md` from its current Now/Next/Later structure into an epic-based structure per spec §29; create or link epic tracker files; record the migration in the roadmap change log; deprecate residual milestone language.
-- Current state: Planned.
-- Percent completion: 0%.
-- Parent epic: E-TRACKER-001.
-- Dependencies: T2 (epic template) — satisfied; T3 (verified inventory).
-- Entry criteria: epic template + `/trackers/epics/` exist (satisfied).
-- Proposed first action: enumerate current roadmap items and decide one-epic / multi-epic / remove for each.
-- Related definitions: Roadmap, Epic.
-- Related verification items: `ROADMAP.md` (Exists But Incomplete — not epic-based).
+None currently recorded. (All six E-TRACKER-001 sprints have started: T1, T2, T3, T5, T6 are Completed — see Completed Sprints; T4 is Review Needed — see Active Sprints. T5 — Roadmap milestones → epics — moved from Planned to Completed on 2026-06-06.) The roadmap's planned theme-epics are tracked in `ROADMAP.md` § Epics, not as sprints here.
 
 ---
 
@@ -566,7 +557,7 @@ All planned sprints below are parented to epic E-TRACKER-001. Each is state `Pla
 
 # Completed Sprints
 
-The ADR-0007 rewrite was executed as eight workstreams (E1–E8). They predate this enforced tracker, so they did not have per-sprint tracker files under `/trackers/sprints/`; their durable record was the interim `TRACKER.md` and is summarized here without loss. All were verified against disk + git in their landing sessions. Per-sprint tracker files are an optional historical backfill (recorded as a non-blocking follow-up), not required for these completed claims. The E-TRACKER-001 sprints T1, T2, T3, and T6 are also Completed and — unlike E1–E8 — carry their own tracker files under `/trackers/sprints/`.
+The ADR-0007 rewrite was executed as eight workstreams (E1–E8). They predate this enforced tracker, so they did not have per-sprint tracker files under `/trackers/sprints/`; their durable record was the interim `TRACKER.md` and is summarized here without loss. All were verified against disk + git in their landing sessions. Per-sprint tracker files are an optional historical backfill (recorded as a non-blocking follow-up), not required for these completed claims. The E-TRACKER-001 sprints T1, T2, T3, T5, and T6 are also Completed and — unlike E1–E8 — carry their own tracker files under `/trackers/sprints/`.
 
 ### T1 — TRACKER keystone + definitions · Completed 2026-06-05
 - Link to sprint tracker: `/trackers/sprints/T1-tracker-keystone.md` — Verified Exists (ls/Read on 2026-06-05).
@@ -599,6 +590,14 @@ The ADR-0007 rewrite was executed as eight workstreams (E1–E8). They predate t
 - Percent completion: 100%.
 - Parent epic: E-TRACKER-001.
 - Evidence of completion: `.claude/commands/mode/solo.md` (Step 1.5), `mode/adhoc.md` (Step 1.6), `mode/oneshot.md` (Step 2.5), `mode/sprint.md` (Step 2.5) each carry a "Start-of-work — consult TRACKER.md" step (verified by Read post-edit on 2026-06-05); `.claude/commands/scan/full.md` "Tracker integrity — the enforced-tracker gate" block invokes `node scripts/trackers/validate.js` (verified by Read post-edit); `node scripts/checks/scan-coverage.js` → 0 findings (suite registration did not drift); `node scripts/trackers/validate.js` → 12/12 PASS, exit 0 on 2026-06-05.
+
+### T5 — Roadmap milestones → epics · Completed 2026-06-06
+- Link to sprint tracker: `/trackers/sprints/T5-roadmap-milestones-to-epics.md` — Verified Exists (ls/Read on 2026-06-05).
+- Goal/result: Migrated `ROADMAP.md` from milestone-organized to epic-organized per spec §29 — added a `## Epics` registry as the primary organizing unit (4 active + 5 planned epics with §29 fields, 4 parked trigger-gated bets, 10 completed epics mapped to existing Shipped receipts, 1 superseded), marked the `## 🏛 Milestones` section DEPRECATED (preserved for history; epic IDs semantic, decoupled from the drifted version-themed milestone numbers), recorded the migration in a roadmap change-log entry, and created 8 new `trackers/epics/` files (one per active/planned roadmap epic). Content-preserving: the Now/Next/Later sections, the `## Sprints` ledger table, and all `Shipped` narrative regions were left untouched (the `scan:roadmap-trace` + `scan:references` contracts hold).
+- Final state: Completed.
+- Percent completion: 100%.
+- Parent epic: E-TRACKER-001.
+- Evidence of completion: `ROADMAP.md` § Epics + the `## 🏛 Milestones — ⚠️ DEPRECATED` banner + the `### Roadmap change log` entry (Read post-edit 2026-06-06); the 8 new epic files in `trackers/epics/` (`ls -1 trackers/epics/` → 9 files; each `grep`-verified to resolve from the ROADMAP links — all 9 `OK`); each new epic file individually validated by its author (`node scripts/trackers/validate.js` exit 0); the full tracker still 12/12 PASS (`node scripts/trackers/validate.js`, exit 0, on 2026-06-06). Verified by the T5 migration pass (President + delegated systems builders) on 2026-06-06.
 
 ### E1 — Org cutover (the foundation) · Completed 2026-06-04
 - Goal/result: Department tree replaced the old mode-based tree; `role-registry.json` keystone (33 roles); mode-agnostic workers; dispatched-reviewer independence invariant. All 32/33 agent specs are real (74–574 lines, no stubs); only ε was design-locked at the time (→ E7). ADR-0007 accepted.
@@ -748,7 +747,7 @@ Validation is runnable manually and, where possible, automatically. Current stat
 
 # Roadmap Rules
 
-The roadmap must no longer be organized around generic milestones; it must be organized into epics (Roadmap item == Epic). Current state: `ROADMAP.md` is Verified Exists but is Now/Next/Later/Archive-structured, NOT yet epic-based — recorded as Exists But Incomplete and as Known Gap G-2-adjacent; migration is owned by sprint T5.
+The roadmap must no longer be organized around generic milestones; it must be organized into epics (Roadmap item == Epic). Current state: `ROADMAP.md` is Verified Exists and **epic-based** as of sprint T5 (2026-06-06) — its `## Epics` section is the primary organizing unit (4 active + 5 planned epics with the §29 fields, each linked to a `trackers/epics/` file; 4 parked trigger-gated bets; 10 completed epics mapped to existing Shipped receipts; 1 superseded), and the `## 🏛 Milestones` structure is explicitly marked DEPRECATED (preserved for history, not duplicated as an active unit). Verified by Read post-edit + `grep` link-resolution (9/9) on 2026-06-06.
 
 The roadmap must include: title, version, last-updated timestamp, owner, strategic purpose, current active epics, planned epics, completed epics, superseded epics, cancelled epics, dependencies between epics, priority ordering, current focus, deferred work, links to `TRACKER.md`, links to relevant epic trackers, related definitions, related verification items. Each roadmap item must map to an epic with: epic number, title, goal, priority, state, completion percentage, link to epic tracker, related sprints, dependencies, rationale, expected impact, current next action, related definitions. The roadmap must not contain vague milestone entries that cannot be tracked, resumed, or verified. Existing milestones must be migrated into epics or explicitly marked deprecated during migration (sprint T5); the roadmap must not retain duplicate milestone and epic structures unless the milestone structure is explicitly marked deprecated.
 
@@ -774,6 +773,8 @@ Seed session log (keystone-authoring session): Session ID: to be backfilled by o
 
 Reconciliation session log (2026-06-05): Session ID: to be backfilled · Date: 2026-06-05 · Agent: President Agent (reconciliation pass) · Mode: documentation/reconciliation · Work performed: reconciled `TRACKER.md` to disk — flipped Wave-1 artifacts to Verified Exists, set T1/T2 Completed, T4 Review Needed, E-TRACKER-001 ~50%, validation status Passing; added the reconciliation Change Log + Reconciliation entries · Files changed: `TRACKER.md` (+ the E-TRACKER-001 epic file and T1/T2/T4 sprint files reconciled to match) · Paths changed: none created · Wirings changed: none · Definitions added: none · State changes: T1 Active→Completed; T2 Planned→Completed; T4 Planned→Review Needed; E-TRACKER-001 ~15%→~50% · Completion change: T1 ~80%→100%, T2 0%→100%, T4 0%→~85%, E-TRACKER-001 ~15%→~50% · Verification performed: ls/Read on 2026-06-05 over all Wave-1 artifacts (see Verification Matrix) · Validation run: `node scripts/trackers/validate.js` · Validation result: all 12 checks PASS, exit 0 · Next action: T3 (inventory/matrix), T5 (roadmap migration), T6 (mode wiring); finish T4 enforcement-gate + cross-file checks · Evidence: this file (validated 12/12); the Wave-1 artifacts on disk.
 
+T5 session log (2026-06-06): Session ID: to be backfilled · Date: 2026-06-06 · Agent: President Agent (α) + delegated systems builders · Mode: sprint (start-of-work tracker-consult performed: read `TRACKER.md` + `DUMP.md` first) · Work performed: sprint T5 — migrated `ROADMAP.md` to epic-based (added the `## Epics` registry as the primary organizing unit with 4 active + 5 planned epics, 4 parked trigger-gated bets, 10 completed + 1 superseded; marked `## 🏛 Milestones` DEPRECATED; added a roadmap change-log entry), and created 8 new `trackers/epics/` files (one per active/planned roadmap epic) · Files changed: `ROADMAP.md`; 8 new `trackers/epics/E-*.md`; `TRACKER.md` (this update) · Paths changed: 8 epic files created under `trackers/epics/` · Wirings changed: none · Definitions added: none (Definition: Roadmap updated to reflect epic-based) · State changes: T5 Planned→Completed; E-TRACKER-001 ~80%→~90% · Completion change: T5 0%→100%, E-TRACKER-001 ~80%→~90% · Verification performed: `ls -1 trackers/epics/` → 9 files; `grep`-resolution of all 9 ROADMAP §Epics links → 9/9 OK; Read post-edit of the `## Epics` + DEPRECATED-milestones banner · Validation run: `node scripts/trackers/validate.js` (after each epic file + the final TRACKER edits) · Validation result: all 12 checks PASS, exit 0 · Next action: finish T4's cross-file §28.7 checks · Evidence: `ROADMAP.md` § Epics + DEPRECATED banner + roadmap change log; the 9 epic files on disk; this `TRACKER.md` (validated 12/12).
+
 ---
 
 # Change Tracking Rules
@@ -781,6 +782,13 @@ Reconciliation session log (2026-06-05): Session ID: to be backfilled · Date: 2
 Changes to epics, sprints, roadmap structure, goals, scope, requirements, blockers, definitions, terminology, paths, wirings, validators, hooks, modes, commands, or plans must always be recorded. If an issue is found and added to a plan, the tracker must show what was found, when, who/what found it, which epic/sprint it affects, what changed because of it, and whether scope/state/completion/definition/path/wiring/validation/priority changed. A changed plan must not simply disappear; the change must be traceable. Each tracker document includes a `Change Log` section with dated, session-attributed entries.
 
 ## Change Log
+
+### 2026-06-06 — T5 Roadmap milestones → epics migration (President, via systems builders)
+- Changed: Migrated `ROADMAP.md` from milestone-organized to **epic-organized** per spec §29. Added a `## Epics` registry as the roadmap's primary organizing unit (Version 1.0.0, owner President, last-updated 2026-06-06) with 4 active + 5 planned epics carrying the §29 fields (goal, priority, state, completion %, epic-tracker link, related sprints, dependencies, rationale, expected impact, current next action, related definitions), 4 parked trigger-gated bets, 10 completed epics mapped to existing Shipped receipts, and 1 superseded item. Marked the `## 🏛 Milestones` section **DEPRECATED** (banner + milestone→epic mapping; preserved for history as the detail source behind each epic). Added a `### Roadmap change log` entry recording the migration. Created 8 new `trackers/epics/` files (one per active/planned roadmap epic), each template-conformant and individually validated. Epic IDs are semantic (decoupled from the drifted version-themed milestone numbers `0.10.0`/`0.12.0`/`0.13.0`/`0.14.0`/`0.16.0`/`0.17.0`/`0.18.0`). **No content removed** — the Now/Next/Later sections, the `## Sprints` ledger table (`ledger.js`-owned), and all `Shipped`/`✅ Shipped in vX.Y.Z` narrative regions are untouched (the `scan:roadmap-trace` + `scan:references` contracts are preserved).
+- Reason: Sprint T5 of the `agentic_os_tracker_system_improvements.md` objective (§29 Roadmap Rules) — make the roadmap epic-based so each long-running goal is a tracked, resumable epic, not a vague milestone.
+- Affected: `ROADMAP.md` (new `## Epics` section; `## 🏛 Milestones` header → DEPRECATED banner; new `### Roadmap change log`); `trackers/epics/` (8 new files: E-GOLDEN-FLOW-001, E-CONTENT-DELIVERY-001, E-TEST-SUITE-001, E-STABLE-CHANNEL-001, E-BOUNDARY-001, E-MULTIPRODUCT-001, E-SKILL-CATALOG-001, E-MANAGER-LAYER-001); `TRACKER.md` (Header global summary + Last Updated + next action; Related Tracker Documents ROADMAP + new `/trackers/epics/` line; Definition: Roadmap; E-TRACKER-001 ~80%→~90% + sprints roll-up + next action; Active/Planned/Completed Sprints — T5 Planned→Completed; Roadmap Rules; Definition of Done — roadmap-epic-based + epic-files lines → DONE + final summary; Required Files ROADMAP row; System Inventory + Verification Matrix ROADMAP + epic-files rows; Known Gap G-2; this Change Log + Session Log entries).
+- Previous state: `ROADMAP.md` milestone-organized, recorded "Exists But Incomplete (not epic-based)"; T5 Planned 0%; E-TRACKER-001 ~80%; only E-TRACKER-001's epic file existed.
+- New state: `ROADMAP.md` epic-based; T5 Completed (100%); E-TRACKER-001 ~90% (only the T4 cross-file tail remains); 9 epic files Verified Exists, all ROADMAP §Epics links resolve (9/9); validator still 12/12 PASS (`node scripts/trackers/validate.js`, exit 0, 2026-06-06).
 
 ### 2026-06-05 — T3 System Inventory + Verification Matrix disk-verification (President, via systems builder)
 - Changed: Made the System Inventory (§9) and Verification Matrix (§10) COMPLETE and TRUTHFUL by disk-verifying every tracker-relevant artifact and resolving every `Unknown` to a definite verification state. Expanded the inventory to 40 rows (each of the 10 templates individually; T2–T6 sprint files individually; the scan gate, the sprint persistent-team wiring, the old-tree Verified-Nonexistent row, the `warpos@0.14.0` tag) and the matrix to 26 rows, each carrying a verification method + exact evidence + 2026-06-05 timestamp + verifying agent. The former `Unknown` matrix rows (roadmap/handoff/review-etc. consult; definition-enforcement; start/end/completion hook; path/wiring HARD wiring) were each checked on disk and resolved to `Verified Not Wired` (genuine, recorded findings — tracked under G-2, not blockers). Re-verified the E-ADR0007 (E1–E8) commit hashes + the `warpos@0.14.0` tag against `git`. Set sprint T3 → Completed (100%) and advanced E-TRACKER-001 to ~80%.
@@ -831,8 +839,8 @@ Definition of Done for the whole E-TRACKER-001 project (per spec §37). This wor
 - `TRACKER.md` includes authoritative definitions; all required operational terms are defined; definition change rules documented. — DONE this session.
 - Definition enforcement wired into all relevant modes. — PARTIAL: a start-of-work tracker-consult step is wired into all four live modes (solo/adhoc/oneshot/sprint, T6) + the validator's undefined-terms check (k) is a standing `/scan:full` gate; a hard definition-enforcement hook + the non-enterable-posture consult remain (residual T6 / deferred T4).
 - `UNTRACKED_WORK.md` exists and is linked. — DONE (Verified Exists, ls/Read on 2026-06-05; sprint T2; linked from Related Tracker Documents).
-- Roadmap structure is epic-based; existing milestones migrated or deprecated. — NOT DONE (sprint T5).
-- Epic tracker files exist for all active and planned epics. — DONE (E-TRACKER-001 epic tracker Verified Exists; sprint T2).
+- Roadmap structure is epic-based; existing milestones migrated or deprecated. — DONE (sprint T5, 2026-06-06): `ROADMAP.md` § Epics is the primary organizing unit; `## 🏛 Milestones` marked DEPRECATED (preserved); migration recorded in the roadmap change log.
+- Epic tracker files exist for all active and planned epics. — DONE (sprint T5, 2026-06-06): 9 epic tracker files Verified Exists in `trackers/epics/` — E-TRACKER-001 (T2) + the 8 roadmap theme-epics (3 active: E-GOLDEN-FLOW-001, E-CONTENT-DELIVERY-001, E-TEST-SUITE-001; 5 planned: E-STABLE-CHANNEL-001, E-BOUNDARY-001, E-MULTIPRODUCT-001, E-SKILL-CATALOG-001, E-MANAGER-LAYER-001). Parked trigger-gated bets get a file only on activation (per their definition, they are not yet Planned-to-start).
 - Sprint tracker files exist for all active and planned sprints. — DONE (T1–T6 sprint trackers Verified Exists; sprint T2).
 - Completed epics and sprints have evidence records. — DONE for E-ADR0007/E1–E8 + 0.14.0 (evidence re-verified against `git log`/`git tag` by sprint T3 on 2026-06-05; all 20 spot-checked hashes + the `warpos@0.14.0` tag confirmed).
 - State language standardized; percent rules documented; update triggers documented. — DONE this session.
@@ -845,7 +853,7 @@ Definition of Done for the whole E-TRACKER-001 project (per spec §37). This wor
 - Known gaps and open flaws are either empty with evidence or fully tracked. — DONE (G-1/G-2/G-3 tracked).
 - The system can be resumed from tracker files alone without relying on chat memory. — PARTIAL (the keystone + scaffold + per-epic/per-sprint files + a fully disk-verified inventory/matrix + a passing validator enable resumption of E-TRACKER-001; full resumability for all work completes when T5 lands and T4 reaches Completed).
 
-The project is NOT yet complete: E-TRACKER-001 is ~80%; T1 (keystone), T2 (scaffold), T3 (inventory/matrix disk-verification), and T6 (mode wiring + scan-suite gate) are Completed and T4 (validation engine, now gated in `/scan:full`) is in Review (~90%), but T5 (roadmap migration) remains and T4's cross-file checks are not yet built.
+The project is NOT yet complete: E-TRACKER-001 is ~90%; T1 (keystone), T2 (scaffold), T3 (inventory/matrix disk-verification), T5 (roadmap milestones→epics migration), and T6 (mode wiring + scan-suite gate) are Completed and T4 (validation engine, now gated in `/scan:full`) is in Review (~90%); only T4's cross-file §28.7 checks remain before the epic can reach 100%.
 
 ---
 
@@ -882,7 +890,7 @@ Reconciliation is required when two or more tracker-related sources disagree abo
 Per spec §33, the implementation must create, verify, or explicitly reject these files/paths. Current verified state shown (2026-06-05 21:51 PDT):
 
 - `TRACKER.md` — Verified Exists (this file).
-- `ROADMAP.md` — Verified Exists (Exists But Incomplete: not epic-based; sprint T5).
+- `ROADMAP.md` — Verified Exists and epic-based (sprint T5, 2026-06-06: `## Epics` registry is the primary organizing unit; `## 🏛 Milestones` marked DEPRECATED).
 - `UNTRACKED_WORK.md` — Verified Exists (ls/Read on 2026-06-05; sprint T2).
 - `/trackers/` — Verified Exists (ls/Read on 2026-06-05; sprint T2).
 - `/trackers/epics/` — Verified Exists (ls/Read on 2026-06-05; sprint T2).
@@ -975,21 +983,21 @@ Per spec §36. Each gap carries: id, description, severity, affected area, affec
 - Evidence: `node` require of `release-build.js` → KNOWN_DANGLING_REFS length 32 (A:4, B:11, C:17), verified this session; the in-file comment block (lines 207–248) documents the three classes and the fix.
 - Next action: schedule the ship-boundary audit; ship class-C scripts; teach the gate to skip class-A.
 
-### G-2 — Tracker system mid-build (T5 + T4 cross-file checks pending)
-- Description: The enforced tracker system is mostly built. T1 (keystone `TRACKER.md` + ~50 definitions), T2 (`/trackers/` tree, 10 templates, `UNTRACKED_WORK.md`, the E-TRACKER-001 epic file, T1–T6 sprint files), T3 (System Inventory + Verification Matrix, fully disk-verified 2026-06-05 with zero `Unknown` rows), and T6 (start-of-work tracker-consult in all four live modes + the validator wired into `/scan:full` as a fail-closed gate) are Completed and Verified on disk; T4's validation engine (`scripts/trackers/validate.js`) is built, passing (selftest 33/33, live 12/12 PASS), and now gated in `/scan:full` — T4 is Review Needed. Still not built: T4's deferred cross-file §28.7 checks and the roadmap milestones→epics migration (T5). Consequently `ROADMAP.md` is not yet epic-based, cross-document drift is not yet machine-caught, and the non-enterable-posture consults + hard enforcement hooks are `Verified Not Wired` (tracked here). (T3 inventory/matrix is now Complete, the validator IS an automatic gate, and the four live modes consult the tracker — those gaps are closed.)
-- Severity: Medium (the tracking layer now has its keystone, scaffold, per-item files, a fully disk-verified inventory/matrix, a passing validator wired as a standing gate, and mode-consult in all live modes; what remains is roadmap migration and the cross-file validator checks — tracked, not hidden).
-- Affected area: the Agentic OS tracking layer (roadmap migration + cross-file validator checks + non-enterable-posture consult / hard enforcement hooks remaining).
-- Affected files/paths: `ROADMAP.md` (not epic-based; T5); the validator's cross-file checks (deferred T4 follow-up).
+### G-2 — Tracker system mid-build (T4 cross-file checks pending)
+- Description: The enforced tracker system is mostly built. T1 (keystone `TRACKER.md` + ~50 definitions), T2 (`/trackers/` tree, 10 templates, `UNTRACKED_WORK.md`, the E-TRACKER-001 epic file, T1–T6 sprint files), T3 (System Inventory + Verification Matrix, fully disk-verified 2026-06-05 with zero `Unknown` rows), T5 (ROADMAP milestones→epics migration, 2026-06-06 — `## Epics` registry primary, `## 🏛 Milestones` DEPRECATED, 8 new epic files), and T6 (start-of-work tracker-consult in all four live modes + the validator wired into `/scan:full` as a fail-closed gate) are Completed and Verified on disk; T4's validation engine (`scripts/trackers/validate.js`) is built, passing (selftest 33/33, live 12/12 PASS), and now gated in `/scan:full` — T4 is Review Needed. Still not built: T4's deferred cross-file §28.7 checks; consequently cross-document drift is not yet machine-caught, and the non-enterable-posture consults + hard enforcement hooks are `Verified Not Wired` (tracked here). (T3 inventory/matrix, the T5 epic-based roadmap, the standing validator gate, and the four live-mode consults are now Complete — those gaps are closed.)
+- Severity: Medium (the tracking layer now has its keystone, scaffold, per-item files, a fully disk-verified inventory/matrix, an epic-based roadmap, a passing validator wired as a standing gate, and mode-consult in all live modes; what remains is the cross-file validator checks — tracked, not hidden).
+- Affected area: the Agentic OS tracking layer (cross-file validator checks + non-enterable-posture consult / hard enforcement hooks remaining).
+- Affected files/paths: `scripts/trackers/validate.js` (the cross-file §28.7 checks, deferred T4 follow-up).
 - Affected wirings: the start-of-work/end-of-work/completion-gate HARD-hook wirings + the non-enterable-posture consult rows in Required Wirings (residual T6 / deferred T4 follow-up). (The 4 live-mode consult wirings + the standing scan-suite gate are now Verified Wired.)
 - Affected modes: the non-enterable operational postures (roadmap, epic-planning, review, debugging, refactor, documentation, agent-coordination, handoff/resumption) for consult-wiring; the four live modes are now wired.
 - Discovery date: 2026-06-05.
 - Discovered by: President Agent (by design — this is the build-in-progress, recorded as a gap so the unfinished state is never invisible).
 - Current owner: President Agent.
-- Required fix: complete sprint T5; finish T4's cross-file checks; optionally wire the hard enforcement hooks + non-enterable-posture consult; keep this tracker's `Last Validation` / `Validation Status` current.
-- Current state: In progress (E-TRACKER-001 ~80%; T1/T2/T3/T6 Completed; T4 Review Needed ~90%; T5 Planned).
+- Required fix: finish T4's cross-file checks; optionally wire the hard enforcement hooks + non-enterable-posture consult; keep this tracker's `Last Validation` / `Validation Status` current.
+- Current state: In progress (E-TRACKER-001 ~90%; T1/T2/T3/T5/T6 Completed; T4 Review Needed ~90%).
 - Related epic/sprint: E-TRACKER-001; sprints T3, T4, T5, T6.
-- Evidence: ls/Read on 2026-06-05 → `trackers/` tree + 10 templates + `UNTRACKED_WORK.md` + epic file + T1–T6 present; the 4 mode skills carry a start-of-work consult step + `scan/full.md` invokes the validator (`grep`); the System Inventory (40 rows) + Verification Matrix (26 rows) are fully disk-verified with zero `Unknown` (T3, 2026-06-05); `node scripts/trackers/validate.js` → 12/12 PASS, exit 0; this tracker's `Validation Status: Passing`.
-- Next action: run T5 (roadmap migration); finish T4 cross-file checks.
+- Evidence: ls/Read on 2026-06-05/06 → `trackers/` tree + 10 templates + `UNTRACKED_WORK.md` + 9 epic files + T1–T6 present; `ROADMAP.md` § Epics registry + DEPRECATED milestones (Read post-edit 2026-06-06); the 4 mode skills carry a start-of-work consult step + `scan/full.md` invokes the validator (`grep`); the System Inventory + Verification Matrix are fully disk-verified with zero `Unknown` (T3, 2026-06-05); `node scripts/trackers/validate.js` → 12/12 PASS, exit 0; this tracker's `Validation Status: Passing`.
+- Next action: finish T4 cross-file checks.
 
 ### G-3 — Stale-worktree-cwd operational hazard
 - Description: A session can launch with its current working directory inside a git-pruned but still-on-disk worktree (cwd lock), making relative-path operations target a dead worktree instead of canonical. This session itself launched in a nested stale worktree (`.claude/worktrees/e6-orgmap-collapse/.claude/worktrees/e6-recover`) and had to operate on canonical via absolute paths only. The same hazard previously produced false "silent death" / wrong-completion-record-path readings (see project memory on dispatch completion records using a relative path).
