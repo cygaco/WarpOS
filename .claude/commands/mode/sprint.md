@@ -15,6 +15,36 @@ a registry row; ε is never edited.
 > Sibling of `/mode:adhoc` (α+β+γ, single features) and `/mode:oneshot` (δ, skeleton builds).
 > Sprint mode is for roadmap-sequenced, full-lifecycle work across all the manager + worker roles.
 
+## The sprint team — persistent core + on-demand roster
+
+Sprint mode runs a small **persistent coordination team** (spawned on mode entry, exactly
+like adhoc's α+β+γ) plus an **on-demand hook-point roster** that ε dispatches per phase.
+
+**Persistent team (the standing core — these three are always present):**
+- **α (Alpha)** — lead / orchestrator (the session).
+- **ε (Epsilon)** — the sprint **conductor and dispatch controller**: reads the hook-point
+  registry, resolves each step's agent-set, derives each role's route from the role-registry
+  keystone, and really dispatches. (ε is to sprint mode what γ is to adhoc mode.)
+- **β (Beta)** — process judgment, consulted at the four phase boundaries
+  (plan→design, design→build, gauntlet→release, release→retro).
+
+**On-demand roster (NOT persistent — ε dispatches each at its registry hook-point, per
+`.claude/agents/_org/sprint-hook-points.json`):**
+
+| Step | Roles ε dispatches |
+|---|---|
+| plan | director-of-product, product-lead |
+| design | product-lead, director-of-engineering, design-lead, quality-lead, copy-lead |
+| build | frontend-builder, backend-builder, security-builder |
+| gauntlet | frontend-reviewer, backend-reviewer, qa-reviewer, security-reviewer, visual-review, design-quality |
+| release | qa-reviewer |
+| retro | learner |
+
+The **Director of Product** (and every other director / lead / builder / reviewer) is
+**domain judgment at its hook-point, not a standing member** — directors give domain
+judgment, β gives process judgment, and ε never replaces them. Adding or removing one of
+these is a single registry row in `sprint-hook-points.json`; the persistent team never changes.
+
 ## What's REAL — both dispatch halves (honest scope — ADR-0009 Mitigation #4)
 
 - **CLI-routable roles — REAL via the node runtime:** ε dispatches build-chain **builders**
@@ -72,12 +102,57 @@ node scripts/mode-set.js sprint --by alpha
 If the prior mode has an `activeBuild` or a different `lockOwner`, the CLI refuses and prints
 why — halt the active build first, or pass `--force` (logs the override).
 
+### Step 1.5: Verify team readiness + reconcile any existing team
+
+Confirm the persistent-team specs exist:
+- `.claude/agents/president/beta.md` (β)
+- `.claude/agents/president/epsilon.md` (ε)
+- `.claude/agents/president/alpha.md` (α)
+
+Then reconcile any existing team (avoid the `-N` accretion bug, W-21): run the read-only
+probe `node scripts/checks/adhoc-team-hygiene.js`. If a same-named member from a dead session
+exists, `SendMessage {type:"shutdown_request"}` it **before** spawning. Cleanup =
+`shutdown_request`, NEVER edit `config.json`. Classify fresh / stale / defunct exactly as
+`/mode:adhoc` Step 1.75 does; when in doubt, recreate.
+
+**Prerequisite:** `.claude/settings.json` must set `env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = "1"`
+(else `TeamCreate`/`SendMessage` are not loaded — `/warp:health` §3.5 flags it).
+
+### Step 1.75: Create the persistent team + spawn ε + β
+
+**Concrete tool calls — execute directly, do not wrap in prompt-style language:**
+
+1. `TeamCreate(team_name: "<project>-sprint", description: "Sprint mode persistent team — α lead + ε conductor + β judgment", agent_type: "alpha")`
+   - Prefix with the project slug (`warpos-sprint`, etc.) to avoid `~/.claude/teams/` collisions
+     with sibling-project teams. If "team already exists" and you want a clean slate, `TeamDelete` first (members must be idle).
+
+2. Spawn ε + β as in-process teammates **in parallel** (single message, two Agent calls).
+   `team_name` and `name` ARE accepted by the harness when teams are enabled even though the
+   Agent schema doesn't list them — pass them anyway. Each gets a STARTUP DIRECTIVE: acknowledge
+   readiness via `SendMessage(to:"team-lead")`, then go idle, do NOT auto-claim tasks.
+
+   ```
+   Agent(subagent_type: "epsilon", team_name: "<project>-sprint", name: "Epsilon (ε)",
+     run_in_background: true,
+     prompt: "STARTUP DIRECTIVE — SendMessage readiness to \"team-lead\", then go idle; do NOT claim tasks.\nYou are Alex ε, the sprint conductor joining <project>-sprint as \"Epsilon (ε)\".\nLoad: .claude/agents/president/epsilon.md + scripts/sprint/epsilon-runtime.js + .claude/agents/_org/sprint-hook-points.json.\nSendMessage(to:\"team-lead\", summary:\"Epsilon online\", message:\"ε online — ready to conduct.\")\nGo idle.")
+
+   Agent(subagent_type: "beta", team_name: "<project>-sprint", name: "Beta (β)",
+     run_in_background: true,
+     prompt: "STARTUP DIRECTIVE — SendMessage readiness to \"team-lead\", then go idle; do NOT claim tasks.\nYou are Alex β joining <project>-sprint as \"Beta (β)\".\nLoad: .claude/agents/president/beta.md + .claude/agents/president/.system/policy/decision-policy.md.\nSendMessage(to:\"team-lead\", summary:\"Beta online\", message:\"β online — ready for boundary consultation.\")\nGo idle.")
+   ```
+
+**Layer 1 (persistent team):** α (lead) + ε (conductor) + β (judgment) — members in
+`~/.claude/teams/<project>-sprint/config.json`, addressable by name via SendMessage.
+**Layer 2 (ε's hook-point roster):** directors / leads / builders / reviewers / learner —
+dispatched ephemerally by ε per the hook-point registry; NOT team members, they exit on return.
+
 ### Step 2: Set mode context
 
 Acknowledge the mode switch:
 
 ```
 MODE: sprint
+Team: α (lead) + ε (conductor/dispatch) + β (judgment) — persistent; directors/leads on-demand at hook-points
 Conductor: ε (Alex Epsilon) — the sprint deliver-face
 Lifecycle: plan → design → build → gauntlet → release → retro (registry-driven)
 Dispatch: REAL — CLI routes via the node runtime (builders + cross-provider reviewers); in-process roster (managers/leads/design-quality) via ε-the-agent + the Agent tool (record-inprocess)
