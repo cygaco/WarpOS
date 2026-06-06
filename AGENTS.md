@@ -11,38 +11,39 @@
 
 | Face | Symbol | What Alex is doing | Spec |
 |-------|--------|------|------|
-| α | α | Running it — architect, orchestrator | [alpha.md](.claude/agents/00-alex/alpha.md) |
-| β | β | Checking it — independent judgment, read-only | [beta.md](.claude/agents/00-alex/beta.md) |
-| γ | γ | Delivering — adhoc build (single features) | [gamma.md](.claude/agents/00-alex/gamma.md) |
-| δ | δ | Delivering — oneshot build (skeleton runs) | [delta.md](.claude/agents/00-alex/delta.md) |
-| ε | ε | Delivering — sprint (lifecycle) · design-locked, not built | _(not built)_ |
+| α | α | Running it — architect, orchestrator | [alpha.md](.claude/agents/president/alpha.md) |
+| β | β | Checking it — independent judgment, read-only | [beta.md](.claude/agents/president/beta.md) |
+| γ | γ | Delivering — adhoc build (single features) | [gamma.md](.claude/agents/president/gamma.md) |
+| δ | δ | Delivering — oneshot build (skeleton runs) | [delta.md](.claude/agents/president/delta.md) |
+| ε | ε | Delivering — sprint (full lifecycle) | [epsilon.md](.claude/agents/president/epsilon.md) |
 
 The **departments** (Product, Engineering, Growth — Quality under Product) report to Alex; they are not Alex. Full org: [AGENT-STRUCTURE.md](AGENT-STRUCTURE.md).
 
 ## Build Agents
 
-| Agent | Role | Adhoc | Oneshot |
-|-------|------|-------|---------|
-| **Builder** | Code writer (scoped, isolated worktree) | [adhoc](.claude/agents/01-adhoc/builder/) | [oneshot](.claude/agents/02-oneshot/builder/) |
-| **Reviewer** | 7-check protocol — spec/design (1-6) + code quality (7) | [adhoc](.claude/agents/01-adhoc/reviewer/) | [oneshot](.claude/agents/02-oneshot/reviewer/) |
-| **Req-Reviewer** | Requirements ↔ code ↔ test traceability | [adhoc](.claude/agents/01-adhoc/req-reviewer/) | [oneshot](.claude/agents/02-oneshot/req-reviewer/) |
-| **Compliance** | Process integrity (branch theft, phantom completion, hygiene) | [adhoc](.claude/agents/01-adhoc/compliance/) | [oneshot](.claude/agents/02-oneshot/compliance/) |
-| **QA** | Failure scanner (13 personas, self-orchestrating) | [adhoc](.claude/agents/01-adhoc/qa/) | [oneshot](.claude/agents/02-oneshot/qa/) |
-| **Red Team** | Security scanner (11 personas, self-orchestrating) | [adhoc](.claude/agents/01-adhoc/redteam/) | [oneshot](.claude/agents/02-oneshot/redteam/) |
-| **Fixer** | Bug fixer (scoped, from structured Fix Brief) | [adhoc](.claude/agents/01-adhoc/fixer/) | [oneshot](.claude/agents/02-oneshot/fixer/) |
-| **Learner** | Cross-cycle pattern analysis, environment evolution | — | [oneshot](.claude/agents/02-oneshot/learner/) |
-| **Stub-Scaffold** | Regenerates skeleton stub files from current spec | — | [oneshot](.claude/agents/02-oneshot/stub-scaffold/) |
-| **Test-Runner** | Headless Playwright E2E test runner | — | [oneshot](.claude/agents/02-oneshot/test-runner/) |
-| **Visual-Review** | Visual UI review via Playwright MCP browser | — | [oneshot](.claude/agents/02-oneshot/visual-review/) |
+Specs are mode-agnostic and organized by department/pod; role → spec routing comes from the keystone [_org/role-registry.json](.claude/agents/_org/role-registry.json).
+
+| Agent | Role | Spec / Home |
+|-------|------|-------------|
+| **Builder** | Code writer (scoped, isolated worktree) | [frontend](.claude/agents/engineering/frontend/builder.md) · [backend](.claude/agents/engineering/backend/builder.md) · [security](.claude/agents/engineering/security/builder.md) |
+| **Reviewer** | Code quality (Check-7 + holdout-fixture) | [frontend](.claude/agents/engineering/frontend/reviewer.md) · [backend](.claude/agents/engineering/backend/reviewer.md) |
+| **QA-Reviewer** | Traceability + integrity + 13 failure-mode personas (absorbs Req-Reviewer, Compliance, QA) | [qa-reviewer](.claude/agents/product/quality/qa-reviewer.md) |
+| **Security-Reviewer** | Security scanner — OWASP, injection, attack-chain, prompt-injection (replaces Red Team) | [security-reviewer](.claude/agents/engineering/security/reviewer.md) |
+| **Fixer** | Bug fixer (scoped, from structured Fix Brief) | [frontend](.claude/agents/engineering/frontend/fixer.md) · [backend](.claude/agents/engineering/backend/fixer.md) · [security](.claude/agents/engineering/security/fixer.md) |
+| **Learner** | Cross-cycle pattern analysis, environment evolution | [learner](.claude/agents/_system/learner.md) |
+| **Stub-Scaffold** | Regenerates skeleton stub files from current spec | [stub-scaffold](.claude/agents/_system/stub-scaffold.md) |
+| **Test-Runner** | Headless Playwright E2E test runner | [test-runner](.claude/agents/product/quality/test-runner.md) |
+| **Visual-Review** | Visual UI review via Playwright MCP browser | [visual-review](.claude/agents/product/quality/visual-review.md) |
 
 ## Build Modes
 
 | Mode | Purpose | Protocol |
 |------|---------|----------|
-| **Oneshot** | Full skeleton builds | [protocol.md](.claude/agents/02-oneshot/.system/protocol.md) |
-| **Adhoc** | Single feature builds | [protocol.md](.claude/agents/01-adhoc/.system/protocol.md) |
+| **Adhoc** | Single feature builds | [protocol.md](.claude/agents/president/.system/adhoc/protocol.md) |
+| **Oneshot** | Full skeleton builds | [protocol.md](.claude/agents/president/.system/oneshot/protocol.md) |
+| **Sprint** | Full lifecycle (plan→design→build→gauntlet→release→retro) | [epsilon-runtime.js](scripts/sprint/epsilon-runtime.js) |
 
-**Adhoc team** (α + β + γ) is the default for development. **Oneshot** is a standalone Delta session (no team — Delta IS the session). **Solo** (Alpha alone) is rare.
+**Adhoc team** (α + β + γ) is the default for development. **Oneshot** is a standalone Delta session (no team — Delta IS the session). **Sprint** is Epsilon conducting the full lifecycle via the registry-driven runtime. **Solo** (Alpha alone) is rare.
 
 ## Key Documents
 
@@ -54,12 +55,15 @@ The **departments** (Product, Engineering, Growth — Quality under Product) rep
 | [manifest.json](.claude/manifest.json) | WarpOS identity card — project metadata, features, phases, providers |
 | [paths.json](.claude/paths.json) | Centralized path registry — all hooks/scripts read paths from here |
 
-## Dispatch Templates (per mode)
+## Dispatch Templates (by department)
 
 | Directory | Purpose |
 |-----------|---------|
-| [01-adhoc/](.claude/agents/01-adhoc/) | Adhoc mode agents (builder, evaluator, fixer, compliance, qa/, redteam/) |
-| [02-oneshot/](.claude/agents/02-oneshot/) | Oneshot mode agents (builder, evaluator, fixer, compliance, auditor, qa/, redteam/) |
+| [president/](.claude/agents/president/) | The 5 Alex faces (α/β/γ/δ/ε) + `.system/` policy, ADRs, mode protocols |
+| [engineering/](.claude/agents/engineering/) | Frontend/backend/security pods — builder, reviewer, fixer, leads, director |
+| [product/](.claude/agents/product/) | Product + Quality (qa-reviewer, design-quality, visual-review, test-runner), leads, director |
+| [growth/](.claude/agents/growth/) | Growth dept — research, copy, conversion, marketing leads, director |
+| [_org/](.claude/agents/_org/) | Keystone `role-registry.json` — the role ↔ spec source of truth |
 
 ## Hard Rules (all agents)
 
@@ -84,8 +88,8 @@ Every builder output is reviewed by a 4-agent parallel gauntlet:
 1. **CLAUDE.md** — framework config, identity pointer
 2. **AGENTS.md** (this file) — router to all agent docs
 3. **PROJECT.md** — project-specific context
-4. **alpha.md / beta.md / gamma.md / delta.md** — individual agent identities
+4. **alpha.md / beta.md / gamma.md / delta.md / epsilon.md** — individual agent identities
 5. **.system.md** — detailed operational spec
-6. **{mode}/protocol.md** — mode-specific orchestration
+6. **president/.system/{mode}/protocol.md** — mode-specific orchestration
 7. **.claude/manifest.json** — project metadata, features, agent providers
 8. **.claude/paths.json** — centralized path registry

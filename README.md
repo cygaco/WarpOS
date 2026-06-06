@@ -106,10 +106,12 @@ WarpOS/
 ├── AGENTS.md              — Agent system router (copied to your project)
 ├── install.ps1            — Windows installer entry point
 ├── .claude/               — The AI operating system
-│   ├── agents/            — 4 Alex agents + build agents per mode
-│   │   ├── 00-alex/       — Alpha, Beta, Gamma, Delta
-│   │   ├── 01-adhoc/      — Adhoc mode agents (builder, evaluator, QA, etc.)
-│   │   └── 02-oneshot/    — Oneshot mode agents + state machine docs
+│   ├── agents/            — the 5 Alex faces + the org (departments + build agents)
+│   │   ├── president/     — Alpha, Beta, Gamma, Delta, Epsilon (the 5 faces)
+│   │   ├── engineering/   — Engineering department agents
+│   │   ├── product/       — Product department agents (Quality lives here)
+│   │   ├── growth/        — Growth department agents
+│   │   └── _org/          — Role registry (the org keystone)
 │   ├── commands/          — 95 skills (slash commands)
 │   └── project/reference/ — Reasoning frameworks, operational loop
 ├── scripts/hooks/         — 52 automated hooks + lib modules
@@ -201,6 +203,7 @@ WarpOS/
 - `/mode:solo` — Solo mode (just you + Alex)
 - `/mode:adhoc` — Team mode (Alpha + Beta + Gamma)
 - `/mode:oneshot` — Oneshot build (Delta standalone)
+- `/mode:sprint` — Sprint mode (Epsilon conducts the full plan→build→gauntlet→release→retro lifecycle)
 
 ### Oneshot
 - `/oneshot:start` — Lightweight kickoff
@@ -266,11 +269,12 @@ WarpOS/
 | Agent | Symbol | Role |
 |-------|--------|------|
 | Alex Alpha (α) | Lead | Architect, orchestrator, main session |
-| Alex Beta (β) | Judge | Simulates user judgment, routes decisions |
+| Alex Beta (β) | Judge | Simulates user judgment, routes decisions (read-only) |
 | Alex Gamma (γ) | Builder | Adhoc feature builds, dispatches sub-agents |
 | Alex Delta (δ) | Runner | Oneshot full skeleton builds |
+| Alex Epsilon (ε) | Conductor | Sprint mode — drives the full plan→build→gauntlet→release→retro lifecycle |
 
-Plus build agents: Builder, Reviewer (7-check spec+code review), Req-Reviewer (requirements traceability), Compliance, Fixer, QA (13 failure-mode personas), Red Team (11 security personas). Oneshot adds Learner (cross-cycle pattern analysis), Stub-Scaffold, Test-Runner, Visual-Review. ~30 agent spec files under `.claude/agents/`.
+Plus build agents, organized into departments (`engineering`, `product`, `growth`): Builder, Reviewer (7-check spec+code review), Req-Reviewer (requirements traceability), Compliance, Fixer, QA (13 failure-mode personas), Red Team (11 security personas). Oneshot adds Learner (cross-cycle pattern analysis), Stub-Scaffold, Test-Runner, Visual-Review. ~60 agent spec files under `.claude/agents/`.
 
 ## Requirements System
 

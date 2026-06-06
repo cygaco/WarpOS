@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-06T03:02:58.888Z",
+  "generatedAt": "2026-06-06T03:11:49.442Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.13.1",
   "migrations": [],
@@ -28,24 +28,24 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "ee34323f6a1a18eaae3deb6ae5f597d67cb275d670d20ab3744c4fcd03cd7497",
-      "installedSha": "ee34323f6a1a18eaae3deb6ae5f597d67cb275d670d20ab3744c4fcd03cd7497"
+      "sha256": "59d5a8a22b914293f0caa57cf05c348448c15e70655ae5d2649d1ee3aeb2fb52",
+      "installedSha": "59d5a8a22b914293f0caa57cf05c348448c15e70655ae5d2649d1ee3aeb2fb52"
     },
     "AGENTS.md": {
       "owner": "framework",
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "0f4125183b058c72667cbeeb42fe742daef17505c50d47a68126d22383bd576e",
-      "installedSha": "0f4125183b058c72667cbeeb42fe742daef17505c50d47a68126d22383bd576e"
+      "sha256": "7d2202554580d6b854712548f3ee02be62addb0486238636506c5797b1241348",
+      "installedSha": "7d2202554580d6b854712548f3ee02be62addb0486238636506c5797b1241348"
     },
     "CLAUDE.md": {
       "owner": "framework",
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "b2417e529bc184d256eec7ebbc840f53b897c072212dc586aadb1cd4139ff9a6",
-      "installedSha": "b2417e529bc184d256eec7ebbc840f53b897c072212dc586aadb1cd4139ff9a6"
+      "sha256": "ed468efdf5efe63b08903523de966b0bad434b6d45481dba770d57c4871fa5a1",
+      "installedSha": "ed468efdf5efe63b08903523de966b0bad434b6d45481dba770d57c4871fa5a1"
     },
     "DICTIONARY.md": {
       "owner": "framework",
@@ -81,16 +81,16 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "84d883d14fd495fe33824b51125acfbb72a25e99739cfb632df3a8fe2d05356d",
-      "installedSha": "84d883d14fd495fe33824b51125acfbb72a25e99739cfb632df3a8fe2d05356d"
+      "sha256": "118a97c77c452da49445c2095bd77ed26af46129fe7726690a7622c411c2c9a1",
+      "installedSha": "118a97c77c452da49445c2095bd77ed26af46129fe7726690a7622c411c2c9a1"
     },
     "README.md": {
       "owner": "framework",
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "9068bf472628953fcc9b1dad97c63bb4f54287d87a8e19162547a5374f140e96",
-      "installedSha": "9068bf472628953fcc9b1dad97c63bb4f54287d87a8e19162547a5374f140e96"
+      "sha256": "f891f883a0369100d16e5f9376394022455b52988f1563289f67c5fa958296c9",
+      "installedSha": "f891f883a0369100d16e5f9376394022455b52988f1563289f67c5fa958296c9"
     },
     "RELEASES.md": {
       "owner": "framework",

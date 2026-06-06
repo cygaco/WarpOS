@@ -4,7 +4,7 @@
 
 ## What WarpOS is
 
-WarpOS is an AI operating system for Claude Code. It gives a single developer a multi-agent engineering team (Alex α/β/γ/δ), a registry of slash-command skills, a pipeline of automated hooks, an enforced sprint workflow, and learning/memory infrastructure that persists across sessions.
+WarpOS is an AI operating system for Claude Code. It gives a single developer a multi-agent engineering team (Alex α/β/γ/δ/ε), a registry of slash-command skills, a pipeline of automated hooks, an enforced sprint workflow, and learning/memory infrastructure that persists across sessions.
 
 You install it into a project, open Claude Code, and you stop talking to a single assistant — you talk to a team that plans, builds, reviews, and learns.
 
@@ -16,6 +16,7 @@ You install it into a project, open Claude Code, and you stop talking to a singl
 | Beta  | β | Judgment model — DECIDE / DIRECTIVE / ESCALATE | On every Class-B/C decision; before any `AskUserQuestion` |
 | Gamma | γ | Adhoc build orchestrator (single features) | When a real feature build kicks off in `/mode:adhoc` |
 | Delta | δ | Oneshot build orchestrator (full skeleton runs) | Standalone in `/mode:oneshot` — Delta IS the session |
+| Epsilon | ε | Sprint conductor — full lifecycle (plan→design→build→gauntlet→release→retro) | In `/mode:sprint` — drives `/sprint:full`; resolves the agent roster per step from the registry and dispatches for REAL with completion records (ADR-0009) |
 
 Plus build agents:
 
@@ -31,6 +32,7 @@ Full router in [AGENTS.md](AGENTS.md).
 | `solo` | Alpha alone | System tweaking, quick edits, exploratory reading. Default for 80% of work. |
 | `adhoc` | Alpha + Beta + Gamma | Building one feature with oversight. Gamma dispatches the gauntlet (Builder → Evaluator → Compliance → QA → Red Team). |
 | `oneshot` | Delta standalone | End-to-end skeleton rebuild. State machine, cycles, fix loops. No Alpha/Beta. |
+| `sprint` | Epsilon conducts | Full roadmap-sequenced lifecycle (plan→design→build→gauntlet→release→retro). ε resolves the agent roster per step from the registry and dispatches for REAL — CLI-routable builders+reviewers via `dispatch-*.js`, the in-process roster via the harness Agent tool + `record-inprocess`. β at the four phase boundaries. |
 
 Modes are **project-wide and persistent** — set in any terminal applies to all terminals on that project.
 
@@ -38,7 +40,7 @@ Modes are **project-wide and persistent** — set in any terminal applies to all
 
 ### Sprint workflow
 
-Plain-language request → durable Plan Contract → designed requirements bundle → executable tickets → reviewed, traceable changes. Four skills: `/sprint:plan`, `/sprint:design`, `/sprint:execute`, `/sprint:release`. Per-sprint state under `.claude/project/sprint/sprints/<SP-id>/`. Multi-sprint parallel — active sprints tracked in `paths.sprintActiveRegistry` with one designated `primary`.
+Plain-language request → durable Plan Contract → designed requirements bundle → executable tickets → reviewed, traceable changes. Skills: `/sprint:plan`, `/sprint:design`, `/sprint:execute`, `/sprint:release` — or `/sprint:full` to run the whole pipeline autonomously under a bounded preset. In `/mode:sprint`, **ε (the sprint conductor)** drives the lifecycle via the registry-driven runtime (`scripts/sprint/epsilon-runtime.js`, ADR-0009) with REAL per-agent dispatch + completion records `gauntlet-verify` reads. Per-sprint state under `.claude/project/sprint/sprints/<SP-id>/`. Multi-sprint parallel — active sprints tracked in `paths.sprintActiveRegistry` with one designated `primary`.
 
 ### Skills
 
@@ -70,7 +72,7 @@ Review and security agents run on a *different* AI provider than the one generat
 
 | Agent class | Provider | Rationale |
 |---|---|---|
-| Builder, Fixer, Alpha, Beta, Gamma, Delta | Claude | Code generation + orchestration tuned to Claude |
+| Builder, Fixer, Alpha, Beta, Gamma, Delta, Epsilon | Claude | Code generation + orchestration tuned to Claude |
 | Evaluator, Compliance, Auditor, QA | OpenAI (Codex CLI) | Deep review with different lens |
 | Red Team | Gemini | Different adversarial training corpus |
 

@@ -1,6 +1,6 @@
 # WarpOS — Your Agent Company
 
-> Plain-language map of who's who. Snapshot: 2026-06-04. (Source files at the bottom; the authoritative spec is `runtime/notes/agent-system-rewrite-plan.md`.)
+> Plain-language map of who's who. Snapshot: 2026-06-05. (Source files at the bottom; the keystone is `.claude/agents/_org/role-registry.json`, with the org & runtime decisions recorded in ADR-0007 / ADR-0009 under `president/.system/policy/adr/`.)
 
 ---
 
@@ -89,10 +89,15 @@ Product grounds in it (what to build), Growth grounds in it (who / what message)
 
 ---
 
-## Today vs. the plan
+## What's landed
 
-- **Today — real & running:** Alex (α/β) + delivery faces (γ adhoc, δ oneshot), builders + reviewers, the directors + their teams all exist and work — under the *old* role names + the mode-duplicated folders.
-- **The plan — agreed, design-locked, NOT built (build = next session):** the **ε** sprint face + its hook-point registry · the **role registry** (one source of truth) · the department-based folders · per-pod Fixers · `_knowledge/` wiring · the **skill hook-in registry** · the renames (Director of Growth · Marketing/Conversion/Research/Quality/Design Leads). **Full spec: `runtime/notes/agent-system-rewrite-plan.md`** (§1 org → §8 skill routing). Master plan + recovery anchor: `DUMP.md`.
+The org rewrite (ADR-0007) and the **ε** sprint runtime (ADR-0009) are **both landed on `main`** — what this doc describes is the live system, not a plan:
+
+- **All five faces are real & running:** Alex (α run · β check) + the three delivery faces (γ adhoc · δ oneshot · **ε sprint**), builders + reviewers + per-pod fixers, the directors + their teams — all under the department-based folders and the current role names.
+- **The keystone is wired:** the **role registry** (`_org/role-registry.json`) is the single role↔spec source of truth, and dispatch routes derive from it · the department folders (`engineering`/`product`/`growth`) + `president/` (faces) replaced the old mode-duplicated folders · `_knowledge/` is the shared brain · the skill- and sprint-hook-point registries live alongside the keystone in `_org/`.
+- **ε actually dispatches both route classes:** CLI builders + reviewers (via `dispatch-claude.js` / `dispatch-agent.js`) and the in-process roster (via the harness Agent tool + evidence-bound `record-inprocess`), conducting the full sprint lifecycle (plan→design→build→gauntlet→release→retro) through `scripts/sprint/epsilon-runtime.js`.
+
+Master plan + recovery anchor: `DUMP.md`.
 
 ---
 
@@ -100,10 +105,11 @@ Product grounds in it (what to build), Growth grounds in it (who / what message)
 
 | Piece | File |
 |---|---|
-| Alex's faces (α/β/γ/δ) | `.claude/agents/00-alex/{alpha,beta,gamma,delta}.md` |
-| Build crew (one-feature / from-scratch) | `.claude/agents/01-adhoc/` · `.claude/agents/02-oneshot/` |
-| Departments & teams | `.claude/agents/03-managers/` |
-| Machine-readable org | `.claude/agents/03-managers/_org/org-map.json` |
-| Department rulebooks | `.claude/agents/03-managers/_principles/registry.json` |
-| **The authoritative rewrite spec** | **`runtime/notes/agent-system-rewrite-plan.md`** |
+| Alex's faces (α/β/γ/δ/ε) | `.claude/agents/president/{alpha,beta,gamma,delta,epsilon}.md` |
+| Departments & teams | `.claude/agents/{engineering,product,growth}/` (builders · reviewers · fixers · leads · directors) |
+| **The keystone — role↔spec source of truth** | **`.claude/agents/_org/role-registry.json`** (dispatch routes derive from it) |
+| Machine-readable org | `.claude/agents/_org/org-map.json` |
+| Department rulebooks | `.claude/agents/_principles/registry.json` |
+| Decision policy + ADRs | `.claude/agents/president/.system/policy/` (ADRs under `…/adr/`) |
+| ε sprint runtime | `scripts/sprint/epsilon-runtime.js` (ADR-0009) |
 | Master plan + recovery anchor | `DUMP.md` |

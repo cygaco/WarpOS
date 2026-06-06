@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "0.13.1",
-  "installedCommit": "b57aa406073fbb3c243bf4051f5a74cca79ca8f4",
-  "installedAt": "2026-06-06T03:02:58.702Z",
+  "installedCommit": "a6ab0bcfe949a8fbd98e9e1644525d3e0fa41198",
+  "installedAt": "2026-06-06T03:11:49.284Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -10534,8 +10534,8 @@
       "dest": "AGENT-STRUCTURE.md",
       "owner": "framework",
       "mergeStrategy": "append-if-exists",
-      "installedHash": "ee34323f6a1a18eaae3deb6ae5f597d67cb275d670d20ab3744c4fcd03cd7497",
-      "currentHashAtInstall": "ee34323f6a1a18eaae3deb6ae5f597d67cb275d670d20ab3744c4fcd03cd7497",
+      "installedHash": "59d5a8a22b914293f0caa57cf05c348448c15e70655ae5d2649d1ee3aeb2fb52",
+      "currentHashAtInstall": "59d5a8a22b914293f0caa57cf05c348448c15e70655ae5d2649d1ee3aeb2fb52",
       "introducedIn": "0.0.0"
     },
     {
@@ -10544,8 +10544,8 @@
       "dest": "AGENTS.md",
       "owner": "framework",
       "mergeStrategy": "append-if-exists",
-      "installedHash": "0f4125183b058c72667cbeeb42fe742daef17505c50d47a68126d22383bd576e",
-      "currentHashAtInstall": "0f4125183b058c72667cbeeb42fe742daef17505c50d47a68126d22383bd576e",
+      "installedHash": "7d2202554580d6b854712548f3ee02be62addb0486238636506c5797b1241348",
+      "currentHashAtInstall": "7d2202554580d6b854712548f3ee02be62addb0486238636506c5797b1241348",
       "introducedIn": "0.0.0"
     },
     {
@@ -10554,8 +10554,8 @@
       "dest": "CLAUDE.md",
       "owner": "framework",
       "mergeStrategy": "append-if-exists",
-      "installedHash": "b2417e529bc184d256eec7ebbc840f53b897c072212dc586aadb1cd4139ff9a6",
-      "currentHashAtInstall": "b2417e529bc184d256eec7ebbc840f53b897c072212dc586aadb1cd4139ff9a6",
+      "installedHash": "ed468efdf5efe63b08903523de966b0bad434b6d45481dba770d57c4871fa5a1",
+      "currentHashAtInstall": "ed468efdf5efe63b08903523de966b0bad434b6d45481dba770d57c4871fa5a1",
       "introducedIn": "0.0.0"
     }
   ],
