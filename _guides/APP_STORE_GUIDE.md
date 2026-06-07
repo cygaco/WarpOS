@@ -25,7 +25,7 @@ Before Apple even looks at your features, your **privacy paperwork** has to be i
 | **Privacy-policy URL** in App Store Connect **and** linked in-app | 🔴 **YOU** publish | **[RULE 5.1.1(i)]** Every app must have one. Same URL in the store metadata *and* reachable from inside the app. |
 | **In-app account deletion** | 🤖 AI builds / 🔴 YOU verify | **[RULE 5.1.1(v)]** If your app lets users *create* an account, it must also let them **delete** it *from within the app* — not "email us to delete." (Ties to your erasure flow in PRIVACY_GDPR_GUIDE.) |
 | **App Privacy "nutrition label"** questionnaire | 🔴 **YOU** answer | The **14 data-type categories** (contact info, health, location, identifiers, usage, etc.) you fill in App Store Connect. It must cover **your app AND every third-party SDK** you bundle (ads, analytics, crash tools all collect data). |
-| **Privacy Manifest** (`PrivacyInfo.xcprivacy`) | 🤖 AI / build tool | **Enforced since May 1 2024.** A file in your app that declares your data use **and** an Apple-approved *reason* for each "Required Reason API" you call. **Missing or wrong = rejected at upload**, before review even starts. Third-party SDKs must ship their own **signed** manifests. |
+| **Privacy Manifest** (`PrivacyInfo.xcprivacy`) | 🤖 AI / build tool | **Enforced since May 1 2024.** A file in your app that declares your data use **and** an Apple-approved *reason* for each "Required Reason API" you call. **Missing or wrong = rejected at upload**, before review even starts. The **signed-manifest** requirement isn't "every SDK" — it applies to the **commonly-used third-party SDKs on Apple's published list** and to SDKs that call **Required Reason APIs**. Tie what you check to **Apple's current list** (it grows). |
 | **Consent before third-party sharing** | 🔴 **YOU** | **[RULE 5.1.2(i), updated Nov 2025]** You must disclose and get **explicit consent** before sharing personal data with third parties — Apple's wording now explicitly **"including with third-party AI."** If you pipe user data to an LLM/API, you must say so and get a yes. |
 
 > 🧒 *Newbie note:* the **privacy label** is a *questionnaire you answer*; the **privacy manifest** is a *file in your code*. They're different things with confusingly similar names. The label is your public "what I collect" card on the store page; the manifest is the machine-readable proof Apple checks at upload. Both must match what your code actually does.
@@ -98,13 +98,13 @@ This is the section newbies get most wrong and lose the most money on. Read it s
 
 ### [FLUX] The external-payment situation — region-by-region, and changing
 
-This is in **active litigation and rulemaking**. Treat the dates as load-bearing:
+This is in **active litigation and rulemaking**, and the specifics below are a *snapshot* that will move. Treat the dates as load-bearing, and before you rely on any external-payment path, **read the current Apple guideline for your specific storefront AND your specific business model** — the rules differ by both, and a blog summary (or this guide) is not a substitute for the live text:
 
-- **United States — [FLUX, since May 1 2025]:** after the *Epic v. Apple* ruling, US apps may include **external-purchase links/buttons** that send users to your own web checkout, with **no special entitlement and no Apple commission** on those external purchases. **BUT Apple is appealing** — this could revert. Don't architect your whole business assuming it's permanent.
-- **European Union — [FLUX, DMA, June 2025]:** under the Digital Markets Act you **can** use external payments and even alternative app marketplaces — but **it is NOT free.** Apple charges a **Core Technology Fee / Core Technology Commission (~5%)** plus store fees, which together land at roughly **10–20%**, not zero.
-- **Rest of the world:** **IAP is still required** for digital goods. No link-out, no alternative.
+- **United States — [FLUX, since May 1 2025]:** after the *Epic v. Apple* ruling, US apps may include **external-purchase links/buttons** that send users to your own web checkout, broadly without a special entitlement or Apple commission on those external purchases. **BUT Apple is appealing** — this could revert. Don't architect your whole business assuming it's permanent.
+- **European Union — [FLUX, DMA, 2025]:** under the Digital Markets Act you **can** use external payments and even alternative app marketplaces — but **it is NOT free.** Apple layers on fees (e.g. a **Core Technology Fee / Core Technology Commission** plus store/processing fees), and the **total is not a simple universal 5%** — it varies by program, app size, and which terms you're on, and Apple keeps revising it. Model *your* numbers against the **current** fee schedule; don't assume "EU = ~5%."
+- **Rest of the world:** **IAP is still generally required** for digital goods — no link-out, no alternative — unless a local ruling has carved out an exception you've actually confirmed.
 
-> 🧒 *Newbie note:* the dangerous myth is *"the US no-commission link-out applies everywhere."* **It does not.** US ≠ EU ≠ everywhere-else, and all three are moving targets in 2026. When you read a blog post saying "you can skip Apple's cut now," check **(1)** the date and **(2)** which country it's about.
+> 🧒 *Newbie note:* the dangerous myth is *"the US no-commission link-out applies everywhere."* **It does not.** US ≠ EU ≠ everywhere-else, and all three are moving targets in 2026. When you read a blog post saying "you can skip Apple's cut now," check **(1)** the date, **(2)** which country it's about, and **(3)** the live Apple guideline for your business model — then decide.
 
 **Cross-link:** Stripe, web checkout, subscriptions, and webhooks live in **[PAYMENTS_GUIDE](PAYMENTS_GUIDE.md)**. The rule of thumb: **in-app digital = Apple IAP; real-world goods = Stripe/Apple Pay.**
 
@@ -135,7 +135,45 @@ This is in **active litigation and rulemaking**. Treat the dates as load-bearing
 
 ---
 
-## 6. Google Play, in brief
+## 6. Extra App Store traps for AI / chat / social apps
+
+The buckets in §5 catch *most* apps. But if your app lets users **post, message, upload, or generate content that other people can see** — which describes almost every AI, chat, and social app — Apple holds you to **extra** rules that vibe-coded apps routinely miss. Each one is its own rejection.
+
+### User-generated content (UGC) needs moderation — **[Apple RULE 1.2]**
+
+The moment one user's content can reach another user, Apple treats it as **user-generated content** and requires **all four** of these *built into the app* (not "we'll add it later"):
+
+| Required control | What it means |
+|---|---|
+| **Report objectionable content** | A way for users to flag a specific post/message/image as objectionable, in-app. |
+| **Block abusive users** | A way for a user to block another user so they stop seeing their content. |
+| **Moderation / removal** | A process to act on reports — remove flagged content and eject abusive users. Apple expects this to be **timely** (historically "act within 24 hours" on reports). |
+| **Published contact method** | A way for users to reach *you* about abuse — a published support contact. |
+
+> 🧒 *Newbie note:* this is the single most common rejection for AI-chat and social apps. An app where users see each other's messages or AI-generated posts but has **no report button and no block button** is an automatic 1.2 reject — even if the app is otherwise perfect. Build all four *before* you submit.
+
+### App Tracking Transparency (ATT) + honest privacy labels
+
+| If you do this… | …then you must |
+|---|---|
+| **Track users across other companies' apps and websites** (for ads, or to share with data brokers) | Show the **App Tracking Transparency (ATT)** prompt and ask permission *before* tracking — and reflect it honestly in your **privacy label** (ties to §1). Cross-app tracking without the ATT prompt is a rejection. |
+| **Send user data to a third-party AI provider** (OpenAI/Anthropic/Google, etc.) | **Disclose** that sharing in your privacy policy and labels, and get any **consent** Apple's Guideline 5.1.2(i) requires (the "including third-party AI" wording from §1). Don't quietly pipe prompts to an LLM. |
+
+> 🧒 *Newbie note:* "tracking" has a specific Apple meaning — linking your users' data with data from *other companies* for ads/brokering. Plain in-app analytics about *your own* app usually isn't "tracking," but **cross-app** tracking is, and it needs the ATT prompt. When unsure, the safe answer on the privacy label is the *honest* one.
+
+### Encryption export compliance
+
+When you upload, App Store Connect asks **export-compliance** questions about encryption. Don't panic and don't lie:
+
+- **Standard HTTPS still counts as "encryption"** for the questionnaire — so most apps answer "yes, my app uses encryption."
+- **But many apps qualify for an exemption** (using only standard/exempt encryption like HTTPS), so a "yes" usually doesn't mean paperwork — it means selecting the right exemption.
+- **Answer truthfully.** A false export-compliance answer is its own problem, separate from review.
+
+> **🤖 AI CAN DO THIS:** *"Add an in-app report-content button, a block-user control, and a moderation/removal flow with a published support contact, so my app meets Apple Guideline 1.2 for user-generated content. Wire the ATT prompt before any cross-app tracking."* The assistant builds the UI and plumbing; **🔴 you** answer the export-compliance and privacy-label questions truthfully in App Store Connect.
+
+---
+
+## 7. Google Play, in brief
 
 You'll likely ship Android too. The full account setup is in **[DEV_SETUP_GUIDE](DEV_SETUP_GUIDE.md)** — here's what matters at the *approval* gate:
 
@@ -150,7 +188,7 @@ You'll likely ship Android too. The full account setup is in **[DEV_SETUP_GUIDE]
 
 ---
 
-## 7. Gotchas (what actually bites newbies)
+## 8. Gotchas (what actually bites newbies)
 
 - **Submitted with placeholder/Lorem content** still in the app → instant **2.1** reject.
 - **No demo credentials**, so the reviewer hits your login wall and can't get in → instant reject. Always fill **App Review Information**.
@@ -159,11 +197,14 @@ You'll likely ship Android too. The full account setup is in **[DEV_SETUP_GUIDE]
 - **Forgot the Privacy Manifest** (`PrivacyInfo.xcprivacy`) → rejected **at upload**, before review even starts.
 - **Assumed the US no-commission link-out applies worldwide** → it doesn't; EU has fees, rest-of-world requires IAP.
 - **Left the Google 14-day closed test until launch week** → a hard two-week wall you can't speed up.
+- **A chat/AI/social app with no report + block + moderation** → automatic **1.2** UGC reject, no matter how polished the rest is.
+- **Cross-app tracking without the ATT prompt** → rejection; the privacy label must match what you actually track.
+- **Quietly piping prompts to a third-party AI** without disclosing it → undisclosed third-party data sharing (5.1.2(i)).
 - **Built the whole app, then validated demand never** → cleared Apple's bar for something nobody wanted.
 
 ---
 
-## 8. Launch checklist (copy into your tracker)
+## 9. Launch checklist (copy into your tracker)
 
 ```
 APP STORE — APPLE
@@ -171,13 +212,17 @@ APP STORE — APPLE
 [ ] In-app account deletion works (required if accounts exist) (5.1.1(v)) (🤖→🔴)
 [ ] App Privacy "nutrition label" answered — covers app + every SDK (🔴)
 [ ] PrivacyInfo.xcprivacy manifest present + Required Reason API reasons (🤖)
-[ ] Third-party SDKs ship signed privacy manifests
+[ ] SDKs on Apple's commonly-used list (+ Required-Reason-API SDKs) ship signed manifests
 [ ] Consent before sharing data with third parties incl. AI (5.1.2(i)) (🔴)
 [ ] App is COMPLETE — no placeholder/Lorem, no crashes, no dead links (2.1)
 [ ] Working DEMO CREDENTIALS in App Review Information (🔴)
 [ ] More than a web-wrapper — real native function (4.2)
 [ ] Tested on TestFlight (internal ≤100 / external ≤10,000)
 [ ] Sign in with Apple offered IF a social login is offered (4.8)
+[ ] (UGC apps) Report content + block user + moderation/removal + support contact (1.2) (🤖→🔴)
+[ ] (Cross-app tracking) ATT prompt shown before tracking; privacy label matches
+[ ] (Third-party AI) data sharing disclosed in policy + labels; consent if required (5.1.2(i))
+[ ] Encryption export-compliance questions answered truthfully (HTTPS counts; exemptions common) (🔴)
 [ ] Digital goods use Apple IAP/StoreKit — NOT Stripe (3.1.1)
 [ ] Real-world goods use Apple Pay/card, NOT IAP (3.1.3(e))
 [ ] External-payment plan checked per REGION + DATE (US/EU/RoW) [FLUX]
@@ -193,7 +238,7 @@ GOOGLE PLAY (brief — see DEV_SETUP_GUIDE)
 
 ---
 
-## 9. Plain-English glossary
+## 10. Plain-English glossary
 
 - **App Review** — Apple's manual, human check of every app before it goes live (and on every update).
 - **App Store Connect** — Apple's dashboard where you manage your app, metadata, builds, privacy answers, and submissions.
@@ -205,12 +250,15 @@ GOOGLE PLAY (brief — see DEV_SETUP_GUIDE)
 - **Sign in with Apple** — Apple's privacy-preserving login you must *also* offer if you offer third-party social logins (Guideline 4.8).
 - **Resolution Center** — the in-console message thread where Apple tells you *why* you were rejected and you reply after fixing.
 - **Small Business Program** — Apple's reduced **15%** commission tier for developers under $1M/year in proceeds.
-- **DMA** — the EU's Digital Markets Act, which forces Apple to allow external payments / alt-marketplaces in the EU (but with its own fees).
+- **DMA** — the EU's Digital Markets Act, which forces Apple to allow external payments / alt-marketplaces in the EU (but with its own fees — not a simple universal 5%; check the current schedule for your app size and terms).
 - **Data Safety form** — Google Play's equivalent of Apple's privacy label; must match what you collect.
+- **UGC** — *user-generated content*: anything one user posts, sends, uploads, or generates that another user can see. Triggers Apple Guideline 1.2's report/block/moderate/contact requirements.
+- **ATT** — *App Tracking Transparency*: Apple's required prompt asking permission before you track a user across **other companies'** apps and sites (for ads/data brokering).
+- **Export compliance** — the encryption questions App Store Connect asks at upload. Standard HTTPS counts as encryption, but most apps qualify for an exemption. Answer truthfully.
 
 ---
 
-## 10. Official sources (the source of truth — rules change, payment rules are in litigation)
+## 11. Official sources (the source of truth — rules change, payment rules are in litigation)
 
 - **App Store Review Guidelines:** https://developer.apple.com/app-store/review/guidelines/
 - **App Privacy Details (the nutrition label):** https://developer.apple.com/app-store/app-privacy-details/
@@ -218,6 +266,7 @@ GOOGLE PLAY (brief — see DEV_SETUP_GUIDE)
 - **TestFlight:** https://developer.apple.com/testflight/
 - **In-App Purchase / StoreKit:** https://developer.apple.com/in-app-purchase/ and https://developer.apple.com/documentation/storekit/
 - **Google Play — closed-testing requirement (new personal accounts):** https://support.google.com/googleplay/android-developer/answer/14151465
+- **Encryption export compliance (App Store Connect):** https://developer.apple.com/help/app-store-connect/manage-app-information/overview-of-export-compliance
 
 ---
 

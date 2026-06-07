@@ -2,6 +2,15 @@
   "schema": "warpos/guides/registry/v1",
   "guides": [
     {
+      "guide": "API_LIMITS",
+      "file": "_guides/API_LIMITS_GUIDE.md",
+      "anchor": "spinup:preflight",
+      "shape": "checklist",
+      "timing": "project-start",
+      "lead_time": "3rd-party API usage TIERS rise gradually with account age + verified spend (days→months to high tiers); money alone won't unlock them — start climbing + request increases EARLY.",
+      "title": "API_LIMITS_GUIDE.md — Third-Party API Limits & Capacity Prep (for Total Newbies)"
+    },
+    {
       "guide": "APP_STORE",
       "file": "_guides/APP_STORE_GUIDE.md",
       "anchor": "lastmile:gate/app-store",

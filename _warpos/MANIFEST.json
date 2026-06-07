@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-07T05:52:44.474Z",
+  "generatedAt": "2026-06-07T11:39:23.296Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.15.2",
   "migrations": [],
@@ -109,8 +109,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "fcf18880fa26f0c6170ef741461c6e6577cfb38748f497b8f8ed19ba3985672f",
-      "installedSha": "fcf18880fa26f0c6170ef741461c6e6577cfb38748f497b8f8ed19ba3985672f"
+      "sha256": "56342ad3d2179e2fc2bc92802c33320f9ece988bc7cab4709cf6bb6b5e818d76",
+      "installedSha": "56342ad3d2179e2fc2bc92802c33320f9ece988bc7cab4709cf6bb6b5e818d76"
     },
     "TRACKER.md": {
       "owner": "runtime",
@@ -756,64 +756,85 @@
       "owner": "framework",
       "managed": true,
       "source": "_knowledge/registry.json",
-      "sha256": "8f4f5269031bd01c86058c04a2cd6babe152b56dffcad23c3a16d31524caacf8",
-      "installedSha": "8f4f5269031bd01c86058c04a2cd6babe152b56dffcad23c3a16d31524caacf8"
+      "sha256": "c5d50da3c3373a32464a26c635a36365bf94e5062b3b25662743c213fe082fab",
+      "installedSha": "c5d50da3c3373a32464a26c635a36365bf94e5062b3b25662743c213fe082fab"
+    },
+    "_knowledge/security/AUTHENTICATION_AND_SESSION.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_knowledge/security/AUTHENTICATION_AND_SESSION.md",
+      "sha256": "b81ec47aaf93de4acfbc0f80d022238d1cb8217a3d60eab87a5c750c7a42d25b",
+      "installedSha": "b81ec47aaf93de4acfbc0f80d022238d1cb8217a3d60eab87a5c750c7a42d25b"
     },
     "_knowledge/security/AUTHZ_AND_TENANT_ISOLATION.md": {
       "owner": "framework",
       "managed": true,
       "source": "_knowledge/security/AUTHZ_AND_TENANT_ISOLATION.md",
-      "sha256": "d8dcd288ee9241fdfa6a559ec149b0811f9217e4121a35b7e4bf908be369d54b",
-      "installedSha": "d8dcd288ee9241fdfa6a559ec149b0811f9217e4121a35b7e4bf908be369d54b"
+      "sha256": "43bd4caad586c91da8741f4b4bda730e5d15767aa6f616e460861d68f627d0cf",
+      "installedSha": "43bd4caad586c91da8741f4b4bda730e5d15767aa6f616e460861d68f627d0cf"
     },
     "_knowledge/security/INPUT_VALIDATION_AND_INJECTION.md": {
       "owner": "framework",
       "managed": true,
       "source": "_knowledge/security/INPUT_VALIDATION_AND_INJECTION.md",
-      "sha256": "1c2e7253a74e4a9ec8ed7c8e1974c87f3ab66e3669293b65e63d3f6e33f299c5",
-      "installedSha": "1c2e7253a74e4a9ec8ed7c8e1974c87f3ab66e3669293b65e63d3f6e33f299c5"
+      "sha256": "69a52f7123d010ff9a34a7c722b14e91dcd1c2c806b0a0e16371305dcd5c6d84",
+      "installedSha": "69a52f7123d010ff9a34a7c722b14e91dcd1c2c806b0a0e16371305dcd5c6d84"
+    },
+    "_knowledge/security/LOGGING_BACKUP_IR.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_knowledge/security/LOGGING_BACKUP_IR.md",
+      "sha256": "05defbf72982af0d1be0a3a0000da89fdf90a94051c04034b7ad6d5b1c2e781d",
+      "installedSha": "05defbf72982af0d1be0a3a0000da89fdf90a94051c04034b7ad6d5b1c2e781d"
+    },
+    "_knowledge/security/MOBILE_CLIENT_SECURITY.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_knowledge/security/MOBILE_CLIENT_SECURITY.md",
+      "sha256": "7ba82e133d19b8f7bbd1b4db5ff6837ab932ef22b4698ccce31ecd0be76dcafc",
+      "installedSha": "7ba82e133d19b8f7bbd1b4db5ff6837ab932ef22b4698ccce31ecd0be76dcafc"
     },
     "_knowledge/security/PROMPT_INJECTION_AND_LLM.md": {
       "owner": "framework",
       "managed": true,
       "source": "_knowledge/security/PROMPT_INJECTION_AND_LLM.md",
-      "sha256": "9a7ecf55dd3d881e428be355e060ba78d1883356f83383ffd94b7775927c4446",
-      "installedSha": "9a7ecf55dd3d881e428be355e060ba78d1883356f83383ffd94b7775927c4446"
+      "sha256": "18b3f4b58e2d8b435e3e3f944675f36d9f0f9861d233d8263f9b266c8d19ede9",
+      "installedSha": "18b3f4b58e2d8b435e3e3f944675f36d9f0f9861d233d8263f9b266c8d19ede9"
     },
     "_knowledge/security/RATE_LIMITING_AND_ABUSE.md": {
       "owner": "framework",
       "managed": true,
       "source": "_knowledge/security/RATE_LIMITING_AND_ABUSE.md",
-      "sha256": "3dceb3f88eae4f517500ff5391d8d085fd34d7350f060f1ce6a5f0cbace271b8",
-      "installedSha": "3dceb3f88eae4f517500ff5391d8d085fd34d7350f060f1ce6a5f0cbace271b8"
+      "sha256": "aead959592fc197965bb918cdacc0a8c1f8d8db927e684dbd8a92657b7893670",
+      "installedSha": "aead959592fc197965bb918cdacc0a8c1f8d8db927e684dbd8a92657b7893670"
     },
     "_knowledge/security/README.md": {
       "owner": "framework",
       "managed": true,
       "source": "_knowledge/security/README.md",
-      "sha256": "ae5c5fb1a23d1e69f405108e3e5ba272697be99374d92f0cb60e7198ac99c972",
-      "installedSha": "ae5c5fb1a23d1e69f405108e3e5ba272697be99374d92f0cb60e7198ac99c972"
+      "sha256": "15d3338397b091a10c65a7c6fef2eeb446f85a2d7c50e7c151dcb6ec4aaf2dfc",
+      "installedSha": "15d3338397b091a10c65a7c6fef2eeb446f85a2d7c50e7c151dcb6ec4aaf2dfc"
     },
     "_knowledge/security/registry.json": {
       "owner": "framework",
       "managed": true,
       "source": "_knowledge/security/registry.json",
-      "sha256": "38ca02dcecdca4d946bcc7fb42611f13b7b2c7bde6fb92e31f85f000cdd4a8ef",
-      "installedSha": "38ca02dcecdca4d946bcc7fb42611f13b7b2c7bde6fb92e31f85f000cdd4a8ef"
+      "sha256": "02a9bbb2d8562f70969ed543a1464313ddab657581d0329f93913a443b23e87a",
+      "installedSha": "02a9bbb2d8562f70969ed543a1464313ddab657581d0329f93913a443b23e87a"
     },
     "_knowledge/security/SECRETS_AND_CONFIG.md": {
       "owner": "framework",
       "managed": true,
       "source": "_knowledge/security/SECRETS_AND_CONFIG.md",
-      "sha256": "92b87943cf4ce927b7636a39370d501a85f117df6d23c41d88704aca6db4e87b",
-      "installedSha": "92b87943cf4ce927b7636a39370d501a85f117df6d23c41d88704aca6db4e87b"
+      "sha256": "e124bd2ef1905b62106f47cf58e51d318a63c854b09c31201ed1a60fead959c0",
+      "installedSha": "e124bd2ef1905b62106f47cf58e51d318a63c854b09c31201ed1a60fead959c0"
     },
     "_knowledge/security/WEB_SECURITY_HEADERS_CSRF_CORS.md": {
       "owner": "framework",
       "managed": true,
       "source": "_knowledge/security/WEB_SECURITY_HEADERS_CSRF_CORS.md",
-      "sha256": "609424af4c5da5f74c2c9b397463aa5bda4916b7053960a95614d4492ec300e3",
-      "installedSha": "609424af4c5da5f74c2c9b397463aa5bda4916b7053960a95614d4492ec300e3"
+      "sha256": "5f4cfc4a14fbf51d9e699c9b8c55fddf1ced2ac6c113a43c32c6507915d511ef",
+      "installedSha": "5f4cfc4a14fbf51d9e699c9b8c55fddf1ced2ac6c113a43c32c6507915d511ef"
     },
     "_knowledge/security/_domain.json": {
       "owner": "framework",
@@ -1053,12 +1074,19 @@
       "sha256": "85ea174b097eca8757690d99fb16d0cce75f1cde8a974de57db9386329c6260c",
       "installedSha": "85ea174b097eca8757690d99fb16d0cce75f1cde8a974de57db9386329c6260c"
     },
+    "_guides/API_LIMITS_GUIDE.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_guides/API_LIMITS_GUIDE.md",
+      "sha256": "448d4dade10c32e3354740a0ea76e1c91a300ee5a0fb38ef8e45c49e255964a3",
+      "installedSha": "448d4dade10c32e3354740a0ea76e1c91a300ee5a0fb38ef8e45c49e255964a3"
+    },
     "_guides/APP_STORE_GUIDE.md": {
       "owner": "framework",
       "managed": true,
       "source": "_guides/APP_STORE_GUIDE.md",
-      "sha256": "ab75fc4cf8f4ade23295138c4061bdb58c1fde1193dcf90f4f00c7ae84302fc4",
-      "installedSha": "ab75fc4cf8f4ade23295138c4061bdb58c1fde1193dcf90f4f00c7ae84302fc4"
+      "sha256": "5ab949531550604fb130b365bbc8fdc39fbd9960155ca879a8abc4316a080cda",
+      "installedSha": "5ab949531550604fb130b365bbc8fdc39fbd9960155ca879a8abc4316a080cda"
     },
     "_guides/AUTH_GUIDE.md": {
       "owner": "framework",
@@ -1092,8 +1120,8 @@
       "owner": "framework",
       "managed": true,
       "source": "_guides/LEGAL_GUIDE.md",
-      "sha256": "e7b8d29a9ffb2db33e37c8003846ac15b64e500ff9ed5464d72217b29ccd7d1e",
-      "installedSha": "e7b8d29a9ffb2db33e37c8003846ac15b64e500ff9ed5464d72217b29ccd7d1e"
+      "sha256": "2275774df2a65bb17eeeed3ded0593a9316f0e70f3dd05b7292b2fd7ef6ca7b7",
+      "installedSha": "2275774df2a65bb17eeeed3ded0593a9316f0e70f3dd05b7292b2fd7ef6ca7b7"
     },
     "_guides/PAYMENTS_GUIDE.md": {
       "owner": "framework",
@@ -1113,22 +1141,22 @@
       "owner": "framework",
       "managed": true,
       "source": "_guides/README.md",
-      "sha256": "a31706c0d00ffa0c45b57a7e219ec072e2e11a80ddae4eb33fdbf3ac03febb23",
-      "installedSha": "a31706c0d00ffa0c45b57a7e219ec072e2e11a80ddae4eb33fdbf3ac03febb23"
+      "sha256": "47a040b83ca24c7b025d0a29e79d0f3d1e01c954d035d8b63170f0a0f081918b",
+      "installedSha": "47a040b83ca24c7b025d0a29e79d0f3d1e01c954d035d8b63170f0a0f081918b"
     },
     "_guides/registry.json": {
       "owner": "framework",
       "managed": true,
       "source": "_guides/registry.json",
-      "sha256": "55fd6feff4edae3dd1561633d6b77da9dd53d589304be4d58069efe672b88d5e",
-      "installedSha": "55fd6feff4edae3dd1561633d6b77da9dd53d589304be4d58069efe672b88d5e"
+      "sha256": "2c1247d0f6912b98ac48f95394a636369bbe701d78b455a05413030313c2c1c9",
+      "installedSha": "2c1247d0f6912b98ac48f95394a636369bbe701d78b455a05413030313c2c1c9"
     },
     "_guides/SECURITY_GUIDE.md": {
       "owner": "framework",
       "managed": true,
       "source": "_guides/SECURITY_GUIDE.md",
-      "sha256": "75a15ce13a68361b85e3b381fff357018835ca9722ce30b3dda834829ade0546",
-      "installedSha": "75a15ce13a68361b85e3b381fff357018835ca9722ce30b3dda834829ade0546"
+      "sha256": "190da91d6acb073dea1a71e21cac51ee4202b298312bd72c7170ab41e2d4ea78",
+      "installedSha": "190da91d6acb073dea1a71e21cac51ee4202b298312bd72c7170ab41e2d4ea78"
     },
     "_docs/.gitkeep": {
       "owner": "project",
@@ -1260,7 +1288,57 @@
       "managed": false,
       "class": "reference"
     },
+    "_docs/research/_launch-readiness-2026-06/deep-research-appstore-o3.md": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/_launch-readiness-2026-06/deep-research-legal-o3.md": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/_launch-readiness-2026-06/deep-research-legal-o4mini.md": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/_launch-readiness-2026-06/deep-research-security-best-practices-o3-progressive.md": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/_launch-readiness-2026-06/deep-research-security-hardening-o3-progressive.md": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/_launch-readiness-2026-06/deep-research-security-o3.md": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/_launch-readiness-2026-06/deep-research-vibe-pwns-o3-progressive.md": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
     "_docs/research/_launch-readiness-2026-06/ENVELOPES.md": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/_launch-readiness-2026-06/gpt55pro-security-expansion.md": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/_launch-readiness-2026-06/SYNTHESIS-progressive.md": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/_launch-readiness-2026-06/SYNTHESIS.md": {
       "owner": "project",
       "managed": false,
       "class": "reference"
@@ -8358,14 +8436,6 @@
       "sha256": "6952f8b5ed7d9e7214351fa3caf865315f810b4b6161d1601fa5162ba56ff61a",
       "installedSha": "6952f8b5ed7d9e7214351fa3caf865315f810b4b6161d1601fa5162ba56ff61a"
     },
-    ".claude/.agent-result-hashes.json": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/.last-checkpoint": {
-      "owner": "runtime",
-      "managed": false
-    },
     ".claude/framework-installed.json": {
       "owner": "generated",
       "managed": false,
@@ -15413,26 +15483,6 @@
       "sha256": "264e46f1b55b145cdcc54bf8c91294f060cd297ee367e0d28a275a91e5b0bdc1",
       "installedSha": "264e46f1b55b145cdcc54bf8c91294f060cd297ee367e0d28a275a91e5b0bdc1"
     },
-    ".claude/project/memory/enforcement-debt.jsonl": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/memory/learnings.jsonl": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/memory/recurring-issues.jsonl": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/memory/systems.jsonl": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/memory/traces.jsonl": {
-      "owner": "runtime",
-      "managed": false
-    },
     ".claude/project/maps/.stale.json": {
       "owner": "runtime",
       "managed": false
@@ -15529,27 +15579,11 @@
       "owner": "runtime",
       "managed": false
     },
-    ".claude/project/maps/tools.jsonl": {
-      "owner": "runtime",
-      "managed": false
-    },
     ".claude/project/maps/tools.md": {
       "owner": "runtime",
       "managed": false
     },
     ".claude/project/events/events.jsonl": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/events/manager-consult.jsonl": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/events/requirements.jsonl": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/events/tools.jsonl": {
       "owner": "runtime",
       "managed": false
     },
@@ -15562,14 +15596,6 @@
       "managed": false
     },
     ".claude/project/decisions/decision-ledger.jsonl": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/decisions/provider-trace.jsonl": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/builds/builder-fixture-57d0677ea6/transaction.json": {
       "owner": "runtime",
       "managed": false
     },
@@ -17228,8 +17254,8 @@
       "managed": true,
       "source": ".claude/commands/bootstrap/spinup.md",
       "kind": "md",
-      "sha256": "e2fc6aa85ea943407f90cd287cdee6d89aa5a62cb0cdedf3289f25d869144d80",
-      "installedSha": "e2fc6aa85ea943407f90cd287cdee6d89aa5a62cb0cdedf3289f25d869144d80"
+      "sha256": "5f14ea1132f10f9ea3a72312d3a5bc7e3f3594c430a6c7cef8770ee4c18d5010",
+      "installedSha": "5f14ea1132f10f9ea3a72312d3a5bc7e3f3594c430a6c7cef8770ee4c18d5010"
     },
     ".claude/commands/beta/integrate.md": {
       "owner": "framework",
@@ -17669,11 +17695,6 @@
       "sha256": "f0f5cf33fd8f9ad7954c5f5245bb98df0bbd01a1fdf39d7ecb6255e3a81e0cf9",
       "installedSha": "f0f5cf33fd8f9ad7954c5f5245bb98df0bbd01a1fdf39d7ecb6255e3a81e0cf9"
     },
-    ".claude/agents/president/.system/gamma/events.jsonl": {
-      "owner": "runtime",
-      "managed": false,
-      "kind": "jsonl"
-    },
     ".claude/agents/president/.system/beta/beta-source-data.md": {
       "owner": "framework",
       "managed": true,
@@ -17681,11 +17702,6 @@
       "kind": "md",
       "sha256": "0ae9c868c8edb0933cef6bb88214b3080c13cdb126368d7243c990f62db3f60f",
       "installedSha": "0ae9c868c8edb0933cef6bb88214b3080c13cdb126368d7243c990f62db3f60f"
-    },
-    ".claude/agents/president/.system/beta/events.jsonl": {
-      "owner": "runtime",
-      "managed": false,
-      "kind": "jsonl"
     },
     ".claude/agents/president/.system/beta/judgement-model-recommendations-archive.md": {
       "owner": "framework",
@@ -17710,11 +17726,6 @@
       "kind": "md",
       "sha256": "c0390bb1c6a89ae161ba6f86c7882b4917f4834beaef7ca98d035d8d0079f547",
       "installedSha": "c0390bb1c6a89ae161ba6f86c7882b4917f4834beaef7ca98d035d8d0079f547"
-    },
-    ".claude/agents/president/.system/alpha/events.jsonl": {
-      "owner": "runtime",
-      "managed": false,
-      "kind": "jsonl"
     },
     ".claude/agents/president/.system/adhoc/protocol.md": {
       "owner": "framework",

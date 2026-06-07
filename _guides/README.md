@@ -27,6 +27,7 @@ lead_time: "none"
 | **[SECURITY_GUIDE](SECURITY_GUIDE.md)** | Not getting hacked — database/RLS lockdown, secrets, rate limits + AI usage caps, prompt injection, input validation | As you build → a hardening pass before launch |
 | **[APP_STORE_GUIDE](APP_STORE_GUIDE.md)** | Getting an iOS app approved — privacy labels, TestFlight, Sign in with Apple, In-App Purchase rules | Before you submit to the App Store |
 | **[LEGAL_GUIDE](LEGAL_GUIDE.md)** | Legal protection — Terms of Service, subscription-cancel law, data declarations, trademark/IP, your LLC | Before launch (a legal gate) |
+| **[API_LIMITS_GUIDE](API_LIMITS_GUIDE.md)** | Third-party API limits & capacity prep — provider rate/usage tiers ramp over time, so you can't just launch on their API for unlimited users | Day zero (tiers ramp over weeks/months) |
 
 ---
 

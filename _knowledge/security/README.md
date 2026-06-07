@@ -8,7 +8,7 @@ lead_time: "none"
 
 # WarpOS Application-Security Knowledge Library — agent training references
 
-> This is the **security-hardening knowledge library**: 6 self-contained, teachable references that **train the Security pod agents** — `security-builder` (builds the hardening), `security-fixer` (repairs it), and `security-reviewer` (the binding red-team verdict). Each ref closes with a §6 **agent-applicable RULES** section phrased as PASS/FAIL assertions in the reviewer's own finding vocabulary, so a ref is something an agent can grade a build against.
+> This is the **security-hardening knowledge library**: 9 self-contained, teachable references that **train the Security pod agents** — `security-builder` (builds the hardening), `security-fixer` (repairs it), and `security-reviewer` (the binding red-team verdict). Each ref closes with a §6 **agent-applicable RULES** section phrased as PASS/FAIL assertions in the reviewer's own finding vocabulary, so a ref is something an agent can grade a build against.
 >
 > **These are NOT launch guides.** Every ref here is `anchor: none` — they are *agent grounding*, consumed at judgment time, not staged into the spinup/lastmile bootstrap pipeline. The newbie-facing, plain-language launch playbook for the same topics is the separate **[`_guides/SECURITY_GUIDE.md`](../../_guides/SECURITY_GUIDE.md)** ("How Not to Get Hacked"). This library is the deep, precise, reviewer-grade layer behind it.
 >
@@ -28,18 +28,21 @@ Producer/owner: **`security-lead`** (the Security pod manager). Each agent appli
 
 ---
 
-## The 6 references
+## The 9 references
 
 | Ref | Tier | Rule IDs | Maps to |
 |---|---|---|---|
 | [AUTHZ_AND_TENANT_ISOLATION](AUTHZ_AND_TENANT_ISOLATION.md) | core | `AUTHZ-*` | authz |
+| [AUTHENTICATION_AND_SESSION](AUTHENTICATION_AND_SESSION.md) | core | `AUTHN-*` | auth-session · authz |
 | [SECRETS_AND_CONFIG](SECRETS_AND_CONFIG.md) | core | `SECRET-*` | secrets |
 | [RATE_LIMITING_AND_ABUSE](RATE_LIMITING_AND_ABUSE.md) | core | `RATE-*` | rate-limiting · authz |
 | [PROMPT_INJECTION_AND_LLM](PROMPT_INJECTION_AND_LLM.md) | core | `PINJ-*` | prompt-injection · input-validation |
 | [INPUT_VALIDATION_AND_INJECTION](INPUT_VALIDATION_AND_INJECTION.md) | core | `INVAL-*` | input-validation |
 | [WEB_SECURITY_HEADERS_CSRF_CORS](WEB_SECURITY_HEADERS_CSRF_CORS.md) | standard | `WEBSEC-*` | web-hardening · supply-chain |
+| [LOGGING_BACKUP_IR](LOGGING_BACKUP_IR.md) | core | `OPS-*` | detect-respond |
+| [MOBILE_CLIENT_SECURITY](MOBILE_CLIENT_SECURITY.md) | standard | `MOB-*` | mobile-client |
 
-**Coverage — every security-review axis is owned by ≥1 ref:** `authz` (AUTHZ, RATE) · `secrets` (SECRET) · `rate-limiting` (RATE) · `prompt-injection` (PINJ) · `input-validation` (INVAL, PINJ) · `web-hardening` (WEBSEC) · `supply-chain` (WEBSEC). No gap.
+**Coverage — every security-review axis is owned by ≥1 ref:** `authz` (AUTHZ, RATE, AUTHN) · `auth-session` (AUTHN) · `secrets` (SECRET) · `rate-limiting` (RATE) · `prompt-injection` (PINJ) · `input-validation` (INVAL, PINJ) · `web-hardening` (WEBSEC) · `supply-chain` (WEBSEC) · `detect-respond` (OPS) · `mobile-client` (MOB). No gap.
 
 ---
 
