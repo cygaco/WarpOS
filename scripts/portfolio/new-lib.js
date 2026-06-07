@@ -385,39 +385,106 @@ function _readInstalledVersion(repoPathVal) {
   return null;
 }
 
+// install.ps1's own preflight (install.ps1:~47) refuses any SOURCE repo that
+// lacks these three files — it derives $Source from its OWN location, so the
+// dir we invoke install.ps1 from must satisfy this contract. paths.json +
+// version.json + the framework-manifest are the engine's identity; a CONSUMER
+// product install carries paths.json/version.json but NOT framework-manifest.json
+// (framework-layer, intentionally not shipped) and so is not a valid source.
+const _SOURCE_CONTRACT = [
+  ".claude/framework-manifest.json",
+  ".claude/paths.json",
+  "version.json",
+];
+
+// A dir is a valid WarpOS engine install SOURCE only if it satisfies install.ps1's
+// source contract AND carries an actual installer (install.ps1 or the
+// canonical-only warp-setup.js).
+function _isValidInstallSource(root) {
+  const hasContract = _SOURCE_CONTRACT.every((f) => fs.existsSync(path.join(root, f)));
+  const hasInstaller =
+    fs.existsSync(path.join(root, "install.ps1")) ||
+    fs.existsSync(path.join(root, "scripts", "warp-setup.js"));
+  return hasContract && hasInstaller;
+}
+
+// Resolve a dir that is a VALID WarpOS engine install source. The running root is
+// valid when WarpOS is canonical (or a consumer that still ships the manifest),
+// but a CONSUMER product driving the engine (e.g. a cockpit running a Create)
+// has no framework-manifest.json and CANNOT be a source — install.ps1 correctly
+// refuses it ("Source repo missing required file: .claude\framework-manifest.json",
+// WI-50 round 3, 2026-06-07). Fall back to a sibling canonical clone, matching
+// the existing capsule sibling-resolution precedent
+// (scripts/checks/warpos-capsule-resolvable.js: ../WarpOS, ../warpos). Returns an
+// absolute root path, or null if no valid source exists.
+function _installSourceCandidates(startRoot) {
+  return [
+    startRoot,
+    path.resolve(startRoot, "..", "WarpOS"),
+    path.resolve(startRoot, "..", "warpos"),
+  ];
+}
+function _resolveInstallerRoot(startRoot = WARPOS_ROOT) {
+  for (const c of _installSourceCandidates(startRoot)) {
+    if (_isValidInstallSource(c)) return c;
+  }
+  return null;
+}
+
 // Install WarpOS into a freshly-created product repo using the SHIPPED
 // installer. Prefer install.ps1 (present in every release capsule AND the
 // canonical clone); fall back to the canonical-only warp-setup.js when
-// install.ps1 is absent. The prior code existsSync-guarded warp-setup.js and
-// SILENTLY skipped when absent — so a consumer install produced a project with
-// app files but no WarpOS engine (WI-50). This FAILS LOUDLY when no installer
+// install.ps1 is absent. The installer is resolved against a VALID engine source
+// (the running root if it qualifies, else a sibling canonical clone) — NOT blindly
+// against WARPOS_ROOT, which is a consumer when a cockpit drives the engine
+// (WI-50 round 3). The prior code existsSync-guarded warp-setup.js and SILENTLY
+// skipped when absent — so a consumer install produced a project with app files
+// but no WarpOS engine (WI-50). This FAILS LOUDLY when no valid source/installer
 // is available AND asserts the install actually produced a complete WarpOS tree
 // (.claude/framework-installed.json) — never a silent no-op. Returns
 // {ok:true} | {ok:false, error}.
-function _installWarpOS(repoPath, { spawn = spawnSync } = {}) {
-  const psInstaller = path.resolve(WARPOS_ROOT, "install.ps1");
-  const legacySetup = path.resolve(WARPOS_ROOT, "scripts/warp-setup.js");
+function _installWarpOS(repoPath, { spawn = spawnSync, resolveRoot = _resolveInstallerRoot } = {}) {
+  const installerRoot = resolveRoot(WARPOS_ROOT);
+  if (!installerRoot) {
+    return {
+      ok: false,
+      error:
+        `No valid WarpOS engine source found. The running WarpOS root ` +
+        `(${WARPOS_ROOT}) is a consumer install — it is missing ` +
+        `.claude/framework-manifest.json, so install.ps1 refuses it as a source ` +
+        `— and no sibling canonical engine was found. Tried: ` +
+        `${_installSourceCandidates(WARPOS_ROOT).join(", ")}. A valid source must ` +
+        `carry ${_SOURCE_CONTRACT.join(", ")} plus an installer. Clone the ` +
+        `canonical WarpOS engine as a sibling (../WarpOS) to enable Create.`,
+    };
+  }
+  const psInstaller = path.resolve(installerRoot, "install.ps1");
+  const legacySetup = path.resolve(installerRoot, "scripts/warp-setup.js");
   let res;
   if (fs.existsSync(psInstaller)) {
-    // install.ps1 resolves its source from its own location, so it installs the
-    // RUNNING WarpOS (canonical or consumer) into the target repo.
+    // install.ps1 resolves its source ($Source) from its OWN location, so
+    // invoking the resolved installerRoot's install.ps1 installs THAT engine
+    // (canonical, possibly a sibling of a consumer) into the target repo.
     res = spawn(
       "powershell",
       ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", psInstaller,
         "-Target", repoPath, "-SkipPrompt"],
-      { cwd: WARPOS_ROOT, encoding: "utf8", timeout: 120_000 },
+      { cwd: installerRoot, encoding: "utf8", timeout: 120_000 },
     );
   } else if (fs.existsSync(legacySetup)) {
     res = spawn(
       "node", [legacySetup, repoPath, "--yes", "--skip-backup"],
-      { cwd: WARPOS_ROOT, encoding: "utf8", timeout: 120_000 },
+      { cwd: installerRoot, encoding: "utf8", timeout: 120_000 },
     );
   } else {
+    // Unreachable in practice: _isValidInstallSource already requires one of
+    // these installers, so a resolved installerRoot always has one. Kept as a
+    // fail-loud backstop rather than a silent no-op (WI-50 discipline).
     return {
       ok: false,
       error:
-        `No WarpOS installer found at ${WARPOS_ROOT} (neither install.ps1 nor ` +
-        `scripts/warp-setup.js). The running WarpOS install is incomplete — ` +
+        `No WarpOS installer found at ${installerRoot} (neither install.ps1 nor ` +
+        `scripts/warp-setup.js). The resolved WarpOS source is incomplete — ` +
         `cannot install WarpOS into ${repoPath}.`,
     };
   }
@@ -460,6 +527,8 @@ module.exports = {
   scaffoldProductApp,
   validateSlug,
   _installWarpOS,
+  _resolveInstallerRoot,
+  _isValidInstallSource,
   SLUG_RE,
   RESERVED,
   WARPOS_ROOT,

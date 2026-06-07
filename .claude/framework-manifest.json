@@ -40,7 +40,7 @@
     "linter_tool": 1,
     "manifest_tool": 1,
     "maps_tool": 2,
-    "portfolio_tool": 14,
+    "portfolio_tool": 15,
     "research_tool": 5,
     "schema_tool": 1,
     "system_tool": 1,
@@ -60,7 +60,7 @@
     "module_scope": 1,
     "framework_doc": 3
   },
-  "total": 1093,
+  "total": 1094,
   "assets": {
     "agent": [
       {
@@ -8590,7 +8590,19 @@
         "src": "scripts/portfolio/new-lib.js",
         "dest": "scripts/portfolio/new-lib.js",
         "kind": "portfolio_tool",
-        "sha256": "e45d914b1c5ad98520d9dd0a9164d21eb2909b269cb6bc1658f4aef0e869acb0",
+        "sha256": "8edfe1b4929c6f2e1f3fcc962d8c23798a415300f8b043aa0f2c6b8bd137cc13",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "portfolio_tool.new-lib.test.js",
+        "src": "scripts/portfolio/new-lib.test.js",
+        "dest": "scripts/portfolio/new-lib.test.js",
+        "kind": "portfolio_tool",
+        "sha256": "a70881c2264bf76325e82f2d5612b5ddfbe2c7ccf488bc98c36dc3d5c37e87b9",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",

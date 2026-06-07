@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-07T04:56:02.534Z",
+  "generatedAt": "2026-06-07T07:47:47.466Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.15.2",
   "migrations": [],
@@ -3989,8 +3989,15 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/portfolio/new-lib.js",
-      "sha256": "e45d914b1c5ad98520d9dd0a9164d21eb2909b269cb6bc1658f4aef0e869acb0",
-      "installedSha": "e45d914b1c5ad98520d9dd0a9164d21eb2909b269cb6bc1658f4aef0e869acb0"
+      "sha256": "8edfe1b4929c6f2e1f3fcc962d8c23798a415300f8b043aa0f2c6b8bd137cc13",
+      "installedSha": "8edfe1b4929c6f2e1f3fcc962d8c23798a415300f8b043aa0f2c6b8bd137cc13"
+    },
+    "scripts/portfolio/new-lib.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/portfolio/new-lib.test.js",
+      "sha256": "a70881c2264bf76325e82f2d5612b5ddfbe2c7ccf488bc98c36dc3d5c37e87b9",
+      "installedSha": "a70881c2264bf76325e82f2d5612b5ddfbe2c7ccf488bc98c36dc3d5c37e87b9"
     },
     "scripts/portfolio/new.js": {
       "owner": "framework",
