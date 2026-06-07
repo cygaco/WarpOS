@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-07T01:49:25.312Z",
+  "generatedAt": "2026-06-07T02:03:47.026Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.15.1",
   "migrations": [],
@@ -109,8 +109,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "ea0065b95e45a37b140d4a87227db232b11a9511cd3d653a54025bb2481ec5ba",
-      "installedSha": "ea0065b95e45a37b140d4a87227db232b11a9511cd3d653a54025bb2481ec5ba"
+      "sha256": "3aa4dcf25bf54b2b3ce9d7c7fe1ff36cd40984cb56c2ab2669c932728ec90dda",
+      "installedSha": "3aa4dcf25bf54b2b3ce9d7c7fe1ff36cd40984cb56c2ab2669c932728ec90dda"
     },
     "TRACKER.md": {
       "owner": "runtime",
@@ -1509,6 +1509,10 @@
       "managed": false
     },
     "trackers/epics/E-CONTENT-DELIVERY-001-content-delivery-integrity.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    "trackers/epics/E-DISPATCH-INTEGRITY-001-agent-dispatch-integrity.md": {
       "owner": "runtime",
       "managed": false
     },
