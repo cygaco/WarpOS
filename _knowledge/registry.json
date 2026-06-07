@@ -14,6 +14,17 @@
       "schema_ref": "schemas/contracts/audience_dossier.schema.json"
     },
     {
+      "domain": "compliance",
+      "kind": "library",
+      "producer": "quality-lead",
+      "consumers": [
+        "qa-reviewer"
+      ],
+      "index": "_knowledge/compliance/registry.json",
+      "overview": "_knowledge/compliance/README.md",
+      "artifact_count": 4
+    },
+    {
       "domain": "copy",
       "kind": "store",
       "producer": "copy-lead",
@@ -37,6 +48,19 @@
       "index": "_knowledge/design/registry.json",
       "overview": "_knowledge/design/README.md",
       "artifact_count": 19
+    },
+    {
+      "domain": "security",
+      "kind": "library",
+      "producer": "security-lead",
+      "consumers": [
+        "security-builder",
+        "security-fixer",
+        "security-reviewer"
+      ],
+      "index": "_knowledge/security/registry.json",
+      "overview": "_knowledge/security/README.md",
+      "artifact_count": 9
     }
   ]
 }

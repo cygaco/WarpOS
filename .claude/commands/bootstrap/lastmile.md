@@ -134,6 +134,8 @@ Each module: **detect → recommend (default) → plan (shortest safe path)**.
 > - **Payments / Monetization** → [`_guides/PAYMENTS_GUIDE.md`](../../../_guides/PAYMENTS_GUIDE.md) — Stripe identity + bank verification has lead time before live mode.
 > <!-- guide-anchor:EMAIL anchor:lastmile:module/email shape:walkthrough -->
 > - **Email** (transactional + deliverability, under CRM/Lifecycle) → [`_guides/EMAIL_GUIDE.md`](../../../_guides/EMAIL_GUIDE.md) — sending-domain DNS (SPF/DKIM/DMARC) has propagation lead time.
+> <!-- guide-anchor:SECURITY anchor:lastmile:module/security shape:checklist -->
+> - **Security + Privacy** (don't get hacked) → [`_guides/SECURITY_GUIDE.md`](../../../_guides/SECURITY_GUIDE.md) — database/RLS lockdown, secrets hygiene, rate limits + AI usage caps, prompt injection, input validation.
 
 ## Launch-Readiness Score
 
@@ -167,6 +169,12 @@ privacy/security dimensions until review is recorded. WarpOS produces a
 
 <!-- guide-anchor:PRIVACY_GDPR anchor:lastmile:gate/privacy shape:notice -->
 > ⚠️ **Launch-gate guide — PRIVACY/GDPR:** before collecting real user data or publishing a privacy policy/terms as final legal documents, see [`_guides/PRIVACY_GDPR_GUIDE.md`](../../../_guides/PRIVACY_GDPR_GUIDE.md). It is a compliance-by-default *implementation* playbook, **NOT legal advice** — STOP and hire a lawyer before launch if you touch health, finance, children, biometrics, or other special-category data. (Surfaced here by `/guides:integrate`.)
+
+<!-- guide-anchor:LEGAL anchor:lastmile:gate/legal shape:notice -->
+> ⚠️ **Launch-gate guide — LEGAL:** before launch, see [`_guides/LEGAL_GUIDE.md`](../../../_guides/LEGAL_GUIDE.md) — Terms of Service + liability shield, subscription-cancellation law (the FTC Click-to-Cancel rule was vacated July 2025, but state ARLs + ROSCA still bind), declaring every data point so disclosures match reality, trademark/IP clearance, and forming an LLC. **NOT legal advice** — hire a lawyer for sensitive/regulated data, equity/fundraising, or AGPL dependencies. (Surfaced here by `/guides:integrate`.)
+
+<!-- guide-anchor:APP_STORE anchor:lastmile:gate/app-store shape:checklist -->
+> 📘 **Launch-gate guide — APP STORE:** before submitting an iOS app, see [`_guides/APP_STORE_GUIDE.md`](../../../_guides/APP_STORE_GUIDE.md) — App Privacy labels + the Privacy Manifest, a complete app with working demo credentials (Guideline 2.1), Sign in with Apple (4.8), and the In-App-Purchase rules (region-split and in active flux). Apple App Review is ~24–48h and first-submit rejections are common, so budget resubmission cycles. (Surfaced here by `/guides:integrate`.)
 
 ## Phase 3 — Roadmap injection + sprint minting
 

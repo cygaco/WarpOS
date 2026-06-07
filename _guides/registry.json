@@ -2,6 +2,24 @@
   "schema": "warpos/guides/registry/v1",
   "guides": [
     {
+      "guide": "API_LIMITS",
+      "file": "_guides/API_LIMITS_GUIDE.md",
+      "anchor": "spinup:preflight",
+      "shape": "checklist",
+      "timing": "project-start",
+      "lead_time": "3rd-party API usage TIERS rise gradually with account age + verified spend (days→months to high tiers); money alone won't unlock them — start climbing + request increases EARLY.",
+      "title": "API_LIMITS_GUIDE.md — Third-Party API Limits & Capacity Prep (for Total Newbies)"
+    },
+    {
+      "guide": "APP_STORE",
+      "file": "_guides/APP_STORE_GUIDE.md",
+      "anchor": "lastmile:gate/app-store",
+      "shape": "checklist",
+      "timing": "at-gate",
+      "lead_time": "Apple App Review typically 24-48h; first-submit rejection is common — budget resubmission cycles. IAP/external-payment rules differ by region and are in active flux.",
+      "title": "APP_STORE_GUIDE.md — Getting Your iOS App Approved (for Total Newbies)"
+    },
+    {
       "guide": "AUTH",
       "file": "_guides/AUTH_GUIDE.md",
       "anchor": "lastmile:module/auth",
@@ -38,6 +56,15 @@
       "title": "EMAIL_GUIDE.md — Email for a Launching App, for Total Newbies"
     },
     {
+      "guide": "LEGAL",
+      "file": "_guides/LEGAL_GUIDE.md",
+      "anchor": "lastmile:gate/legal",
+      "shape": "notice",
+      "timing": "at-gate",
+      "lead_time": "none (but STOP and hire a lawyer BEFORE launch for health/finance/children/biometric/regulated data, equity/fundraising, or AGPL anywhere in your dependency tree)",
+      "title": "LEGAL_GUIDE.md — Legal Protection for Your Launch (for Total Newbies)"
+    },
+    {
       "guide": "PAYMENTS",
       "file": "_guides/PAYMENTS_GUIDE.md",
       "anchor": "lastmile:module/payments",
@@ -63,6 +90,15 @@
       "timing": "reference",
       "lead_time": "none",
       "title": "WarpOS Launch Guides — for total newbies"
+    },
+    {
+      "guide": "SECURITY",
+      "file": "_guides/SECURITY_GUIDE.md",
+      "anchor": "lastmile:module/security",
+      "shape": "checklist",
+      "timing": "at-module",
+      "lead_time": "none",
+      "title": "SECURITY_GUIDE.md — How Not to Get Hacked (for Total Newbies)"
     }
   ]
 }

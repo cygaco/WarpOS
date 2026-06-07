@@ -24,6 +24,10 @@ lead_time: "none"
 | **[EMAIL_GUIDE](EMAIL_GUIDE.md)** | Sending email — transactional (verify/reset/magic-link) + marketing, deliverability (SPF/DKIM/DMARC) | When you need to send mail (domain DNS has lead time) |
 | **[PAYMENTS_GUIDE](PAYMENTS_GUIDE.md)** | Taking money — Stripe checkout, subscriptions, webhooks, entitlements | When you monetize (Stripe verification has lead time) |
 | **[PRIVACY_GDPR_GUIDE](PRIVACY_GDPR_GUIDE.md)** | Privacy & the law — GDPR/CCPA, consent, cookie banner, data export/delete, privacy policy | Before you collect real user data / before launch |
+| **[SECURITY_GUIDE](SECURITY_GUIDE.md)** | Not getting hacked — database/RLS lockdown, secrets, rate limits + AI usage caps, prompt injection, input validation | As you build → a hardening pass before launch |
+| **[APP_STORE_GUIDE](APP_STORE_GUIDE.md)** | Getting an iOS app approved — privacy labels, TestFlight, Sign in with Apple, In-App Purchase rules | Before you submit to the App Store |
+| **[LEGAL_GUIDE](LEGAL_GUIDE.md)** | Legal protection — Terms of Service, subscription-cancel law, data declarations, trademark/IP, your LLC | Before launch (a legal gate) |
+| **[API_LIMITS_GUIDE](API_LIMITS_GUIDE.md)** | Third-party API limits & capacity prep — provider rate/usage tiers ramp over time, so you can't just launch on their API for unlimited users | Day zero (tiers ramp over weeks/months) |
 
 ---
 

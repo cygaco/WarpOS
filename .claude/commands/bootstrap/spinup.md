@@ -54,6 +54,8 @@ spinup [setup → canon → roadmap → paint]
 
 <!-- guide-anchor:DEV_SETUP anchor:spinup:preflight shape:checklist -->
 > ⏱️ **Day-zero launch guide — DEV_SETUP (start the slow clocks NOW):** the moment you begin, fire off the long-lead developer-account signups — see [`_guides/DEV_SETUP_GUIDE.md`](../../../_guides/DEV_SETUP_GUIDE.md). Apple ~2d payment+verify, Google Play identity review + 12-tester / 14-day closed test, D-U-N-S days–weeks. The setup is cheap; the *waiting* is the cost — so start the waiting early. (Surfaced here by `/guides:integrate`.)
+<!-- guide-anchor:API_LIMITS anchor:spinup:preflight shape:checklist -->
+> ⏱️ **Day-zero launch guide — API_LIMITS (the limits ramp over time too):** third-party API usage tiers (OpenAI/AI, email, SMS, Stripe) rise gradually with account age + verified spend — money alone won't unlock them — so you can't just launch on a provider's API and serve unlimited users on day one. See [`_guides/API_LIMITS_GUIDE.md`](../../../_guides/API_LIMITS_GUIDE.md): start climbing tiers + request increases early, and architect for the ceiling (per-user quotas, backoff, fallback providers). (Surfaced here by `/guides:integrate`.)
 
 ### Step 1 — setup (DETERMINISTIC — no LLM)
 Create the product repo when the target isn't a WarpOS repo yet (reusing
