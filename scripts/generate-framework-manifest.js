@@ -256,6 +256,14 @@ const ASSET_DIRS = [
   // missing templates. hooks.registry.json is the hook source-of-truth the hook
   // build reads; also absent. Both surfaced by the ship-coverage enforcer.
   { src: "framework/templates", kind: "template" },
+  // 2026-06-06: trackers/templates/* are the enforced-tracker (Epic) system's
+  // reusable scaffolding templates — owner=framework (build.js
+  // framework-trackers-templates rule). The tracker validator (validate.js §33)
+  // demands them, but before this they shipped to nobody: a consumer that
+  // updated to the tracker system got the validator with no templates + no way
+  // to scaffold ("shipped the referee, not the field"; warpos-enforcer-shippability).
+  // /trackers:init consumes these downstream.
+  { src: "trackers/templates", kind: "template" },
   { src: "framework/hooks.registry.json", kind: "hooks_registry" },
   // SP-20260531-002 (ADR-0005): `_guides/` ships WarpOS-authored,
   // product-facing launch guides (e.g. DEV_SETUP_GUIDE.md) to consumer products.

@@ -704,6 +704,7 @@ Every sprint that has been planned, executed, released, or retrospected — one 
 
 | Sprint | Title | Status | Started | Closed | Release |
 |---|---|---|---|---|---|
+| [SP-20260606-001](.claude/project/sprint/sprints/SP-20260606-001/) | Clean-update: enforcer-shippability gate + tracker initializer | planning | 2026-06-07T01:19:56.198Z |  |  |
 | [SP-20260605-001](.claude/project/sprint/sprints/SP-20260605-001/) | ε sprint-runtime real dispatch + /mode:sprint entry | closed | 2026-06-06T00:35:24.839Z | 2026-06-06 |  |
 | [SP-20260602-001](.claude/project/sprint/sprints/SP-20260602-001/) | Sealed-capsule executable consumer-contract gate (keystone) | retrospected | 2026-06-02T02:46:41.132Z | 2026-06-02T04:08:47.176Z |  |
 | [SP-20260531-006](.claude/project/sprint/sprints/SP-20260531-006/) | Guides skill suite — guides:write + guides:organize + guides:integrate (recording system + conflict-resolution); supersedes SP-005 | retrospected | 2026-05-31T19:33:11.630Z | 2026-06-01T00:38:02.143Z |  |

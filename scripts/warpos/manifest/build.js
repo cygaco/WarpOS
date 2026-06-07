@@ -520,17 +520,35 @@ function buildRules(sourcePrefix) {
         rel === "DUMP.md" ||
         rel === "TRACKER.md" ||
         rel === "UNTRACKED_WORK.md" ||
+        rel === "WARP.md" ||
         rel === "agentic_os_tracker_system_improvements.md",
       entry: () => ({ owner: "runtime", managed: false }),
     },
     {
+      name: "framework-trackers-templates",
+      // The "future ship-boundary call" the runtime-trackers-tree rule below
+      // anticipated, made now (2026-06-06): the trackers/templates/* subset is
+      // REUSABLE FRAMEWORK scaffolding — products receive it via /warp:update so
+      // /trackers:init can scaffold the enforced-tracker system downstream.
+      // Closes the "shipped the referee, not the field" gap (the tracker
+      // validator demands these templates; before this they shipped to nobody —
+      // warpos-enforcer-shippability). Must precede the trackers/ runtime rule
+      // (first-match wins). The rest of trackers/ (epics/sprints/README + the
+      // TRACKER.md instance data) stays owner=runtime below.
+      match: (rel) => rel.startsWith("trackers/templates/"),
+      entry: (rel) => ({
+        owner: "framework",
+        managed: true,
+        source: rel,
+        kind: rel.endsWith(".md") ? "md" : undefined,
+      }),
+    },
+    {
       name: "runtime-trackers-tree",
-      // The /trackers/ working tree (epics, sprints, templates, README) is the
-      // enforced-tracker system's instance data — WarpOS-internal working state,
+      // The rest of the /trackers/ working tree (epics, sprints, README) is the
+      // enforced-tracker system's INSTANCE data — WarpOS-internal working state,
       // tracked but NOT shipped to products and not a framework view.
-      // owner=runtime, managed=false. (Future ship-boundary call: promote the
-      // templates/ subset to owner=framework so products receive the scaffolding
-      // via /warp:update — tracked as a follow-up, not decided here.)
+      // owner=runtime, managed=false. (templates/ split out above → framework.)
       match: (rel) => rel.startsWith("trackers/"),
       entry: () => ({ owner: "runtime", managed: false }),
     },
