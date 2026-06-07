@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "0.15.2",
-  "installedCommit": "d2be0fdbeb80a8cfcfafc3a5041c2daca704c5a1",
-  "installedAt": "2026-06-07T04:56:02.367Z",
+  "installedCommit": "7f23ccf8bad5f0d33f43295385871838dcc76040",
+  "installedAt": "2026-06-07T05:52:44.301Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -234,8 +234,8 @@
       "dest": ".claude/agents/engineering/security/builder.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "3a15f80c66348ae42eba0f1125d96a3b8fd789905104066609dd80831a312652",
-      "currentHashAtInstall": "3a15f80c66348ae42eba0f1125d96a3b8fd789905104066609dd80831a312652",
+      "installedHash": "33658d6c92cfdd05218d08662a63f52497fc40a739feba0f1fe36b1dd9b65638",
+      "currentHashAtInstall": "33658d6c92cfdd05218d08662a63f52497fc40a739feba0f1fe36b1dd9b65638",
       "introducedIn": "0.0.0"
     },
     {
@@ -244,8 +244,8 @@
       "dest": ".claude/agents/engineering/security/fixer.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "08b6a81400b14f4a6a5dcb62dea6a52627144a46728f4c829ac1306fc33c0d9b",
-      "currentHashAtInstall": "08b6a81400b14f4a6a5dcb62dea6a52627144a46728f4c829ac1306fc33c0d9b",
+      "installedHash": "2836d91f5d958398882f2f9874db62271cb9bcd67a77f7d3c70b1b728af5648f",
+      "currentHashAtInstall": "2836d91f5d958398882f2f9874db62271cb9bcd67a77f7d3c70b1b728af5648f",
       "introducedIn": "0.0.0"
     },
     {
@@ -254,8 +254,8 @@
       "dest": ".claude/agents/engineering/security/reviewer.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "584ed4f74590c636f9bc1c50f5dc062033720d18ea8653ea7b5049828ed5f696",
-      "currentHashAtInstall": "584ed4f74590c636f9bc1c50f5dc062033720d18ea8653ea7b5049828ed5f696",
+      "installedHash": "301e2b22585dd26f79fcfd0af55409e15b7f99808cdedf1659b459b22b6b2dde",
+      "currentHashAtInstall": "301e2b22585dd26f79fcfd0af55409e15b7f99808cdedf1659b459b22b6b2dde",
       "introducedIn": "0.0.0"
     },
     {
@@ -754,8 +754,8 @@
       "dest": ".claude/agents/product/quality/qa-reviewer.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "3ed8b07f28b843457224155d692fe06d4c8ef1e8a65aa8bc3b3d97c5d90d7789",
-      "currentHashAtInstall": "3ed8b07f28b843457224155d692fe06d4c8ef1e8a65aa8bc3b3d97c5d90d7789",
+      "installedHash": "e276c3ac2bf197e717173954c8a0c5916175f702b7c031b3c28ed1e507e3b542",
+      "currentHashAtInstall": "e276c3ac2bf197e717173954c8a0c5916175f702b7c031b3c28ed1e507e3b542",
       "introducedIn": "0.0.0"
     },
     {
@@ -824,8 +824,8 @@
       "dest": ".claude/commands/bootstrap/lastmile.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "161a819f3500cdb8ddb3b22942a4ada7ec969f7a095be179c6613bd72e8f4477",
-      "currentHashAtInstall": "161a819f3500cdb8ddb3b22942a4ada7ec969f7a095be179c6613bd72e8f4477",
+      "installedHash": "75c07a9c0584f90ec7b0276207611ca0c678b177e501f3aa4b7d69a07f924310",
+      "currentHashAtInstall": "75c07a9c0584f90ec7b0276207611ca0c678b177e501f3aa4b7d69a07f924310",
       "introducedIn": "0.0.0"
     },
     {
@@ -3164,8 +3164,8 @@
       "dest": ".claude/project/maps/guide-integration.jsonl",
       "owner": "generated",
       "mergeStrategy": "regenerate",
-      "installedHash": "41c2b4e70ed1df01cfeb713a3e97a0bdb4bc84d3abe2ce4c2d9f4160759ae467",
-      "currentHashAtInstall": "41c2b4e70ed1df01cfeb713a3e97a0bdb4bc84d3abe2ce4c2d9f4160759ae467",
+      "installedHash": "561aea4b90fb217947efa157f16d48bbf528d961d91bf4a7a4fbac7e46309e22",
+      "currentHashAtInstall": "561aea4b90fb217947efa157f16d48bbf528d961d91bf4a7a4fbac7e46309e22",
       "introducedIn": "0.0.0"
     },
     {
@@ -3274,8 +3274,8 @@
       "dest": ".claude/project/maps/knowledge-integration.jsonl",
       "owner": "generated",
       "mergeStrategy": "regenerate",
-      "installedHash": "bb53a99ce5075fe1eb3048fa157b799003a825017be196bcdeea5148f4e69fc9",
-      "currentHashAtInstall": "bb53a99ce5075fe1eb3048fa157b799003a825017be196bcdeea5148f4e69fc9",
+      "installedHash": "efdf563e4377d37b8b45ba2e88c5413095ba5eb71123819468e3dba11e115ba4",
+      "currentHashAtInstall": "efdf563e4377d37b8b45ba2e88c5413095ba5eb71123819468e3dba11e115ba4",
       "introducedIn": "0.0.0"
     },
     {
@@ -10479,6 +10479,16 @@
       "introducedIn": "0.0.0"
     },
     {
+      "id": "guide.APP_STORE_GUIDE.md",
+      "kind": "guide",
+      "dest": "_guides/APP_STORE_GUIDE.md",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "ab75fc4cf8f4ade23295138c4061bdb58c1fde1193dcf90f4f00c7ae84302fc4",
+      "currentHashAtInstall": "ab75fc4cf8f4ade23295138c4061bdb58c1fde1193dcf90f4f00c7ae84302fc4",
+      "introducedIn": "0.0.0"
+    },
+    {
       "id": "guide.AUTH_GUIDE.md",
       "kind": "guide",
       "dest": "_guides/AUTH_GUIDE.md",
@@ -10519,6 +10529,16 @@
       "introducedIn": "0.0.0"
     },
     {
+      "id": "guide.LEGAL_GUIDE.md",
+      "kind": "guide",
+      "dest": "_guides/LEGAL_GUIDE.md",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "e7b8d29a9ffb2db33e37c8003846ac15b64e500ff9ed5464d72217b29ccd7d1e",
+      "currentHashAtInstall": "e7b8d29a9ffb2db33e37c8003846ac15b64e500ff9ed5464d72217b29ccd7d1e",
+      "introducedIn": "0.0.0"
+    },
+    {
       "id": "guide.PAYMENTS_GUIDE.md",
       "kind": "guide",
       "dest": "_guides/PAYMENTS_GUIDE.md",
@@ -10544,8 +10564,8 @@
       "dest": "_guides/README.md",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "ddec92ee0adc4e8d095d568ce928c76bd15c2347da0ba2b5119999c45a09089c",
-      "currentHashAtInstall": "ddec92ee0adc4e8d095d568ce928c76bd15c2347da0ba2b5119999c45a09089c",
+      "installedHash": "a31706c0d00ffa0c45b57a7e219ec072e2e11a80ddae4eb33fdbf3ac03febb23",
+      "currentHashAtInstall": "a31706c0d00ffa0c45b57a7e219ec072e2e11a80ddae4eb33fdbf3ac03febb23",
       "introducedIn": "0.0.0"
     },
     {
@@ -10554,8 +10574,18 @@
       "dest": "_guides/registry.json",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "1c3b964cb5a8493872bf784aff65210f5b4d1a8a2f8de0eed03c7e33f7f55197",
-      "currentHashAtInstall": "1c3b964cb5a8493872bf784aff65210f5b4d1a8a2f8de0eed03c7e33f7f55197",
+      "installedHash": "55fd6feff4edae3dd1561633d6b77da9dd53d589304be4d58069efe672b88d5e",
+      "currentHashAtInstall": "55fd6feff4edae3dd1561633d6b77da9dd53d589304be4d58069efe672b88d5e",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "guide.SECURITY_GUIDE.md",
+      "kind": "guide",
+      "dest": "_guides/SECURITY_GUIDE.md",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "75a15ce13a68361b85e3b381fff357018835ca9722ce30b3dda834829ade0546",
+      "currentHashAtInstall": "75a15ce13a68361b85e3b381fff357018835ca9722ce30b3dda834829ade0546",
       "introducedIn": "0.0.0"
     },
     {
@@ -10576,6 +10606,76 @@
       "mergeStrategy": "replace_if_unmodified",
       "installedHash": "e64a91854e2a5696abbbd6825d2effa1a053fcd8e259aa1c31e63924daff87a6",
       "currentHashAtInstall": "e64a91854e2a5696abbbd6825d2effa1a053fcd8e259aa1c31e63924daff87a6",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "knowledge.compliance._domain.json",
+      "kind": "knowledge",
+      "dest": "_knowledge/compliance/_domain.json",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "ff7667c7b7e4f44d1a96336eadf8df2e64c9aee9167d35743e9074b734e1aa95",
+      "currentHashAtInstall": "ff7667c7b7e4f44d1a96336eadf8df2e64c9aee9167d35743e9074b734e1aa95",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "knowledge.compliance.APP_STORE_AND_PLATFORM_POLICY.md",
+      "kind": "knowledge",
+      "dest": "_knowledge/compliance/APP_STORE_AND_PLATFORM_POLICY.md",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "2824037c656544ab8ed7f6a0b75ac518f8dae14e824d33d0ccdd8b0e731bfbcb",
+      "currentHashAtInstall": "2824037c656544ab8ed7f6a0b75ac518f8dae14e824d33d0ccdd8b0e731bfbcb",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "knowledge.compliance.CONSUMER_PROTECTION_AND_SUBSCRIPTIONS.md",
+      "kind": "knowledge",
+      "dest": "_knowledge/compliance/CONSUMER_PROTECTION_AND_SUBSCRIPTIONS.md",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "24ec95e8b047740b5a70033aa4cd6c89cb8549864affc55e405013a88cede00b",
+      "currentHashAtInstall": "24ec95e8b047740b5a70033aa4cd6c89cb8549864affc55e405013a88cede00b",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "knowledge.compliance.IP_AND_TRADEMARK.md",
+      "kind": "knowledge",
+      "dest": "_knowledge/compliance/IP_AND_TRADEMARK.md",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "25685dca3882da2479cbad454567f8475a5fe833ebd4ea8e77411ec946e9a292",
+      "currentHashAtInstall": "25685dca3882da2479cbad454567f8475a5fe833ebd4ea8e77411ec946e9a292",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "knowledge.compliance.PRIVACY_AND_DATA_COMPLIANCE.md",
+      "kind": "knowledge",
+      "dest": "_knowledge/compliance/PRIVACY_AND_DATA_COMPLIANCE.md",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "e570a6339de563def91a09d4607ca6746115afcb2710f3725f2daba9d04f5ab4",
+      "currentHashAtInstall": "e570a6339de563def91a09d4607ca6746115afcb2710f3725f2daba9d04f5ab4",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "knowledge.compliance.README.md",
+      "kind": "knowledge",
+      "dest": "_knowledge/compliance/README.md",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "ebc7269d8c26e66e7bf6b19d61e79ff469da733662500a949e569c9cec4ca5b7",
+      "currentHashAtInstall": "ebc7269d8c26e66e7bf6b19d61e79ff469da733662500a949e569c9cec4ca5b7",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "knowledge.compliance.registry.json",
+      "kind": "knowledge",
+      "dest": "_knowledge/compliance/registry.json",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "5f6452732cdbc3fae6f1af7c7d213883b1d03b003dc30fea71fd8c0c7da4ac52",
+      "currentHashAtInstall": "5f6452732cdbc3fae6f1af7c7d213883b1d03b003dc30fea71fd8c0c7da4ac52",
       "introducedIn": "0.0.0"
     },
     {
@@ -10824,8 +10924,98 @@
       "dest": "_knowledge/registry.json",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "42a151bda2ef4733b7eab142523a6810e6701044ba8309585f528e53e89d5fb2",
-      "currentHashAtInstall": "42a151bda2ef4733b7eab142523a6810e6701044ba8309585f528e53e89d5fb2",
+      "installedHash": "8f4f5269031bd01c86058c04a2cd6babe152b56dffcad23c3a16d31524caacf8",
+      "currentHashAtInstall": "8f4f5269031bd01c86058c04a2cd6babe152b56dffcad23c3a16d31524caacf8",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "knowledge.security._domain.json",
+      "kind": "knowledge",
+      "dest": "_knowledge/security/_domain.json",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "80633890a89ecde086614d1a8ff4c0541d8021d03698c4e1d8d3d0a54398dc0b",
+      "currentHashAtInstall": "80633890a89ecde086614d1a8ff4c0541d8021d03698c4e1d8d3d0a54398dc0b",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "knowledge.security.AUTHZ_AND_TENANT_ISOLATION.md",
+      "kind": "knowledge",
+      "dest": "_knowledge/security/AUTHZ_AND_TENANT_ISOLATION.md",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "d8dcd288ee9241fdfa6a559ec149b0811f9217e4121a35b7e4bf908be369d54b",
+      "currentHashAtInstall": "d8dcd288ee9241fdfa6a559ec149b0811f9217e4121a35b7e4bf908be369d54b",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "knowledge.security.INPUT_VALIDATION_AND_INJECTION.md",
+      "kind": "knowledge",
+      "dest": "_knowledge/security/INPUT_VALIDATION_AND_INJECTION.md",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "1c2e7253a74e4a9ec8ed7c8e1974c87f3ab66e3669293b65e63d3f6e33f299c5",
+      "currentHashAtInstall": "1c2e7253a74e4a9ec8ed7c8e1974c87f3ab66e3669293b65e63d3f6e33f299c5",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "knowledge.security.PROMPT_INJECTION_AND_LLM.md",
+      "kind": "knowledge",
+      "dest": "_knowledge/security/PROMPT_INJECTION_AND_LLM.md",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "9a7ecf55dd3d881e428be355e060ba78d1883356f83383ffd94b7775927c4446",
+      "currentHashAtInstall": "9a7ecf55dd3d881e428be355e060ba78d1883356f83383ffd94b7775927c4446",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "knowledge.security.RATE_LIMITING_AND_ABUSE.md",
+      "kind": "knowledge",
+      "dest": "_knowledge/security/RATE_LIMITING_AND_ABUSE.md",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "3dceb3f88eae4f517500ff5391d8d085fd34d7350f060f1ce6a5f0cbace271b8",
+      "currentHashAtInstall": "3dceb3f88eae4f517500ff5391d8d085fd34d7350f060f1ce6a5f0cbace271b8",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "knowledge.security.README.md",
+      "kind": "knowledge",
+      "dest": "_knowledge/security/README.md",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "ae5c5fb1a23d1e69f405108e3e5ba272697be99374d92f0cb60e7198ac99c972",
+      "currentHashAtInstall": "ae5c5fb1a23d1e69f405108e3e5ba272697be99374d92f0cb60e7198ac99c972",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "knowledge.security.registry.json",
+      "kind": "knowledge",
+      "dest": "_knowledge/security/registry.json",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "38ca02dcecdca4d946bcc7fb42611f13b7b2c7bde6fb92e31f85f000cdd4a8ef",
+      "currentHashAtInstall": "38ca02dcecdca4d946bcc7fb42611f13b7b2c7bde6fb92e31f85f000cdd4a8ef",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "knowledge.security.SECRETS_AND_CONFIG.md",
+      "kind": "knowledge",
+      "dest": "_knowledge/security/SECRETS_AND_CONFIG.md",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "92b87943cf4ce927b7636a39370d501a85f117df6d23c41d88704aca6db4e87b",
+      "currentHashAtInstall": "92b87943cf4ce927b7636a39370d501a85f117df6d23c41d88704aca6db4e87b",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "knowledge.security.WEB_SECURITY_HEADERS_CSRF_CORS.md",
+      "kind": "knowledge",
+      "dest": "_knowledge/security/WEB_SECURITY_HEADERS_CSRF_CORS.md",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "609424af4c5da5f74c2c9b397463aa5bda4916b7053960a95614d4492ec300e3",
+      "currentHashAtInstall": "609424af4c5da5f74c2c9b397463aa5bda4916b7053960a95614d4492ec300e3",
       "introducedIn": "0.0.0"
     },
     {

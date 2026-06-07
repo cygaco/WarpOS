@@ -76,6 +76,12 @@ the typed contract and flag it for the backend-builder; do NOT build the route i
 - Environment/secrets wiring (`src/lib/config/**`) that reads from vault/env, never
   from client-supplied input
 
+<!-- knowledge:security role:security-builder (grounding — training references, do not weaken existing grounding) -->
+### Security knowledge library (training references)
+
+Ground your hardening in the WarpOS **application-security knowledge library** (`_knowledge/security/` · index `_knowledge/security/registry.json` · overview `_knowledge/security/README.md`) — framework-generic references (OWASP Top 10 2025, API/LLM Top 10, Supabase RLS — current 2025–2026) on authz/RLS + tenant isolation, secrets/config, rate-limiting/abuse, prompt-injection/LLM, input-validation/injection, and web headers/CSRF/CORS + supply-chain. Build to each ref's §6 RULES up front (the same `AUTHZ-*`/`SECRET-*`/`RATE-*`/`PINJ-*`/`INVAL-*`/`WEBSEC-*` assertions the security-reviewer's binding verdict checks) so hardening passes review the first time. This block GROUNDS your build with references; it never weakens your existing scope or the security hardening rules below.
+<!-- /knowledge:security role:security-builder -->
+
 ### Read these first
 1. `.claude/agents/.system.md` (your role definition — the Dark Factory model)
 2. The unit spec: `_requirements/04-features/{{FEATURE_SLUG}}/PRD.md`
