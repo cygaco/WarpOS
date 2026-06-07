@@ -99,7 +99,11 @@ session's handoff / `DUMP.md` / `TRACKER.md` says to continue or names a forward
 An inherited "continue" is **context, not a command**: the first state-changing action
 after a bare `/mode:sprint` needs an explicit operator instruction given **this**
 session. Running a sprint (Step 3) is a **separate, task-triggered action**, never a
-consequence of mode entry. (ROADMAP: "Mode-entry must NOT trigger autonomous work",
+consequence of mode entry. **The team spawn (Steps 1.5/1.75) IS part of *setup*, not
+"the work" — bring α+ε+β up on entry; NEVER defer it. Deferring the team while
+"waiting for the task" is exactly what makes the persistent team look like it "never
+comes up" (witnessed 2026-06-06: the team was deferred, then the operator had to ask
+"where's the team?").** (ROADMAP: "Mode-entry must NOT trigger autonomous work",
 REPORTED-2026-06-06 → addressed; enforced mechanically by the `scripts/mode-set.js`
 fresh-entry posture banner, behaviorally by this section + α/CLAUDE.md doctrine.)
 
@@ -159,6 +163,15 @@ exists, `SendMessage {type:"shutdown_request"}` it **before** spawning. Cleanup 
      prompt: "STARTUP DIRECTIVE — SendMessage readiness to \"team-lead\", then go idle; do NOT claim tasks.\nYou are Alex β joining <project>-sprint as \"Beta (β)\".\nLoad: .claude/agents/president/beta.md + .claude/agents/president/.system/policy/decision-policy.md.\nSendMessage(to:\"team-lead\", summary:\"Beta online\", message:\"β online — ready for boundary consultation.\")\nGo idle.")
    ```
 
+3. **Confirm readiness BEFORE proceeding — a spawned team is not a live team until it
+   acknowledges.** Wait for BOTH `SendMessage(to:"team-lead")` readiness pings (ε + β)
+   before Step 2 / before any boundary consult. A consult sent to a teammate that hasn't
+   finished starting up is MISSED, and the teammate then goes idle without answering
+   (witnessed 2026-06-06: β consulted pre-readiness sat idle until nudged). Recovery:
+   **idle ≠ dead** — re-send a `SendMessage` to wake an idle teammate; if a spawn returns
+   but NO readiness ping ever arrives, the teammate was likely reaped (RI-004-class) —
+   re-spawn it. Do NOT reach a boundary consult (or `/sprint:full`) until both pings are in.
+
 **Layer 1 (persistent team):** α (lead) + ε (conductor) + β (judgment) — members in
 `~/.claude/teams/<project>-sprint/config.json`, addressable by name via SendMessage.
 **Layer 2 (ε's hook-point roster):** directors / leads / builders / reviewers / learner —
@@ -186,6 +199,18 @@ Before running the sprint (substantial long-running work), read `TRACKER.md` (sp
 > **Gate:** do not reach this step as part of entering the mode. Mode entry ends at the
 > Step 5 confirmation. Run a sprint only when the operator gives an explicit request in
 > this session. A handoff/`DUMP.md`/`TRACKER.md` "continue" does NOT satisfy this gate.
+
+**How the team is engaged during `/sprint:full` (read this — it's why the team can look "absent"):**
+`/sprint:full` runs as a **node subprocess that CANNOT reach the in-process team** —
+`SendMessage`/`Agent` are harness-only (`scripts/sprint/full.js`: *"a spawnSync-d node
+subprocess cannot reach the in-process SendMessage/…"*). So β is consulted by **halt-and-bridge**,
+not by the script talking to β: the orchestrator HALTS with `beta_consult_pending` at each phase
+boundary, **Alpha** relays the consult to the live β teammate, captures the verdict, and resumes
+with `--beta-verdict <V> --beta-message "<…>"`. Therefore the persistent team must already be UP
+(Steps 1.5/1.75, readiness confirmed) **before** `/sprint:full` reaches a boundary — `/sprint:full`
+**cannot bring the team up itself.** If β isn't up when the halt fires, there is nothing to consult
+and the run stalls — that is the "the team isn't there" symptom. (`/sprint:full` does not spawn,
+check, or wake the team; Alpha owns team liveness across the node seam.)
 
 Sprint mode is driven by **`/sprint:full`** (the orchestrator that chains the five phases under a
 bounded autonomy preset) — it invokes the ε runtime for dispatch:

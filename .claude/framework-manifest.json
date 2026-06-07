@@ -1882,7 +1882,7 @@
         "src": ".claude/commands/mode/sprint.md",
         "dest": ".claude/commands/mode/sprint.md",
         "kind": "skill",
-        "sha256": "517cd32dca9c0b50c75f43e272e2f9b8f7ff34ffde4f9f1dfe30756cb848e184",
+        "sha256": "d9fca29f0436e100444144720e267667d10ddf5c695ca278bf2423fe97d5cea0",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
