@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-07T09:09:27.588Z",
+  "generatedAt": "2026-06-07T17:26:33.372Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.15.3",
   "migrations": [],
@@ -113,8 +113,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "21f5478ec4148d222cdd21bd69c006be552f1816a1ec7863f6d8e154f8bb4bf0",
-      "installedSha": "21f5478ec4148d222cdd21bd69c006be552f1816a1ec7863f6d8e154f8bb4bf0"
+      "sha256": "4b9a42e7f0fd4f4f3fccf15a5444b03beb35b283460ae4f632a6f0c03520cc65",
+      "installedSha": "4b9a42e7f0fd4f4f3fccf15a5444b03beb35b283460ae4f632a6f0c03520cc65"
     },
     "TRACKER.md": {
       "owner": "runtime",
@@ -1549,6 +1549,10 @@
       "managed": false
     },
     "trackers/epics/E-STABLE-CHANNEL-001-stable-lts-channel.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    "trackers/epics/E-SYSTEM-ORG-001-agent-system-org-cleanup.md": {
       "owner": "runtime",
       "managed": false
     },

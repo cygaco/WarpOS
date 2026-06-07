@@ -15,6 +15,7 @@
   - F-3 — `gauntlet-verify` runId/`--since` correlation: filter by `sprint_id`; refuse a whole-ledger verify so a historic `ok:true` can't green a never-run lane.
   - F-4 — De-dot + restructure the agents folder: one visible convention (no `.system`/`_system`/`.system.md` collision), one canonical dispatch-guide (delete the stale-and-wrong orphan), per the recommended tree; both-layers rename (specs + scripts/paths). Absorbs the parked "simplify .claude/agents" roadmap item.
   - F-5 — Harden residual silent surfaces: `dispatch-agent.js` provider-unavailable writes a record; reap-census check; `cli.js` skip-by-visible-`_` not `startsWith(".")`.
+- **Note (operator-directed 2026-06-07):** F-4 + F-5 are now CONSOLIDATED under [E-SYSTEM-ORG-001](E-SYSTEM-ORG-001-agent-system-org-cleanup.md) (S-3/S-4) — the broader agent-system org / `.system` duplicate-drift cleanup (forced by the diagnosed dispatch-guide duplication). F-1/F-2/F-3 (coverage-honesty / two-world seam / gauntlet-verify correlation) remain this epic's scope.
 - **Out of scope:** A live full `/sprint:full --epsilon-dispatch` end-to-end run (proved each route in isolation; F-2 delivers the live run). `.system.md` product-leakage scrub (flag to scan:framework-purity; folded into F-4).
 - **Current state:** Active
 - **Percent completion:** 0% — diagnosed cross-provider + fixes scoped; no fix built yet. (The diagnosis itself + this epic are the deliverables of the 2026-06-07 session.)
