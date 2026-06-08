@@ -7,7 +7,7 @@
     "skill": 206,
     "reference": 27,
     "maps_baseline": 26,
-    "hook": 75,
+    "hook": 76,
     "hook_lib": 16,
     "tool": 2,
     "pattern": 6,
@@ -60,7 +60,7 @@
     "module_scope": 1,
     "framework_doc": 3
   },
-  "total": 1164,
+  "total": 1165,
   "assets": {
     "agent": [
       {
@@ -4728,11 +4728,23 @@
         "replaces": null
       },
       {
+        "id": "hook.session-stop-sentinel.test.js",
+        "src": "scripts/hooks/session-stop-sentinel.test.js",
+        "dest": "scripts/hooks/session-stop-sentinel.test.js",
+        "kind": "hook",
+        "sha256": "58a1db1a8afdd4b0b16c08a66234921abb2fcc8aee8b68123cfbad23add10a50",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
         "id": "hook.session-stop.js",
         "src": "scripts/hooks/session-stop.js",
         "dest": "scripts/hooks/session-stop.js",
         "kind": "hook",
-        "sha256": "4993a8be43e1713a3be3dfdd95be926abfb2db0cec4961e5412a3e888e9f07c7",
+        "sha256": "402b4da408c5de4ea2c5ca3a54ae78a1a9219e8a6cd55f50c29b2dfac3f6c332",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",

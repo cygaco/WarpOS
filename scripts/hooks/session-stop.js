@@ -1,6 +1,15 @@
 #!/usr/bin/env node
-// Stop hook: auto-generates handoff when a session ends + copies to clipboard.
+// SessionEnd / manual hook: auto-generates the RICH narrative handoff (Layer 2)
+// at session close + copies to clipboard.
 // Assembles: git state + user prompt log + compact summaries → paths.handoffLatest
+//
+// S-11 (RI-006): this is the CLOSE-TIME Layer-2 artifact. The cheap per-turn
+// live-state is Layer-1 (handoff-live.js). This hook is wired to Stop +
+// SessionEnd + StopFailure, but it only does its (expensive, LLM-summary-reading)
+// work on SessionEnd + manual invocation — a plain end-of-turn `Stop` returns
+// early (Layer-1 already snapshotted). The freeze sentinel was retired: the OLD
+// once-per-session `.session-handoff-done` lock let the first `Stop` write + lock,
+// so the SessionEnd meant to capture FINAL state skipped → frozen handoff.
 
 const { execSync } = require("child_process");
 const fs = require("fs");
@@ -25,13 +34,24 @@ process.stdin.on("end", () => {
     const claudeDir = path.join(cwd, ".claude");
     const handoffsDir = PATHS.handoffs;
 
-    // Idempotent guard — don't regenerate if already done this session
     const runtimeDir = PATHS.runtime;
     fs.mkdirSync(runtimeDir, { recursive: true });
-    const guardPath = path.join(runtimeDir, ".session-handoff-done");
-    if (fs.existsSync(guardPath)) {
+
+    // S-11 Layer-2 sentinel-retire (RI-006). The rich narrative handoff is a
+    // CLOSE-TIME artifact — it runs on SessionEnd (close / `/clear` / logout) and
+    // on a manual invocation (/session:handoff, /session:end, direct `node` run),
+    // NOT on every end-of-turn `Stop`/`StopFailure` (Layer-1 handoff-live.js
+    // already snapshotted those). Gating on the trigger — instead of the old
+    // once-per-session `.session-handoff-done` sentinel — is what removes the
+    // freeze: every SessionEnd now refreshes, and the `/clear` SessionEnd is no
+    // longer blocked. A hard kill / terminal close does not fire SessionEnd, so
+    // that case is covered by Layer-1's last snapshot only (the rich handoff is
+    // honestly absent after a crash — never implied otherwise).
+    const hookEvent =
+      (event && (event.hook_event_name || event.hookEventName)) || "";
+    if (hookEvent === "Stop" || hookEvent === "StopFailure") {
       process.stderr.write(
-        "[Session Stop] Handoff already generated this session — skipping\n",
+        `[Session Stop] ${hookEvent}: end-of-turn — Layer-1 live-state covers this; the rich handoff defers to SessionEnd/manual\n`,
       );
       process.exit(0);
       return;
@@ -563,11 +583,8 @@ process.stdin.on("end", () => {
       /* inbox post is optional */
     }
 
-    // Mark handoff as done (idempotent guard — reuses guardPath from line 19)
-    fs.writeFileSync(guardPath, new Date().toISOString());
-
     process.stderr.write(
-      `[Session Stop] Handoff saved + copied to clipboard\n`,
+      `[Session Stop] Rich handoff (${hookEvent || "manual"}) saved + copied to clipboard\n`,
     );
     process.exit(0);
   } catch (err) {
