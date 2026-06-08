@@ -1,11 +1,11 @@
 {
   "metadata": {
-    "generated": "2026-06-08T16:07:50.686Z",
-    "lastUpdated": "2026-06-08T16:07:50.686Z",
-    "total_hooks": 68,
+    "generated": "2026-06-08T18:54:41.962Z",
+    "lastUpdated": "2026-06-08T18:54:41.962Z",
+    "total_hooks": 70,
     "total_lib_modules": 15,
-    "registered_hooks": 63,
-    "orphan_hooks": 5,
+    "registered_hooks": 64,
+    "orphan_hooks": 6,
     "regenerated_by": "scripts/regen-maps.js"
   },
   "hooks": [
@@ -188,6 +188,24 @@
       "exists": true,
       "size": 8464,
       "modified": "2026-06-05T01:45:08.445Z"
+    },
+    {
+      "id": "hook:handoff-live",
+      "name": "handoff-live.js",
+      "path": "scripts/hooks/handoff-live.js",
+      "registered": true,
+      "exists": true,
+      "size": 10556,
+      "modified": "2026-06-08T18:42:03.651Z"
+    },
+    {
+      "id": "hook:handoff-live.test",
+      "name": "handoff-live.test.js",
+      "path": "scripts/hooks/handoff-live.test.js",
+      "registered": false,
+      "exists": true,
+      "size": 8603,
+      "modified": "2026-06-08T18:42:17.088Z"
     },
     {
       "id": "hook:learning-validator",
@@ -393,8 +411,8 @@
       "path": "scripts/hooks/session-start.js",
       "registered": true,
       "exists": true,
-      "size": 19732,
-      "modified": "2026-06-08T04:56:41.298Z"
+      "size": 22946,
+      "modified": "2026-06-08T18:32:34.382Z"
     },
     {
       "id": "hook:session-stop",
@@ -775,22 +793,22 @@
   "wiring": [
     {
       "event": "SessionStart",
-      "matcher": "",
+      "matcher": "*",
       "hook": "session-start.js"
     },
     {
       "event": "SessionStart",
-      "matcher": "",
+      "matcher": "*",
       "hook": "tracker-start-of-work.js"
     },
     {
       "event": "UserPromptSubmit",
-      "matcher": "",
+      "matcher": "*",
       "hook": "smart-context.js"
     },
     {
       "event": "UserPromptSubmit",
-      "matcher": "",
+      "matcher": "*",
       "hook": "prompt-logger.js"
     },
     {
@@ -1090,7 +1108,7 @@
     },
     {
       "event": "PostToolUse",
-      "matcher": "",
+      "matcher": "*",
       "hook": "session-tracker.js"
     },
     {
@@ -1100,32 +1118,47 @@
     },
     {
       "event": "PostCompact",
-      "matcher": "",
+      "matcher": "*",
       "hook": "compact-saver.js"
     },
     {
       "event": "Stop",
-      "matcher": "",
+      "matcher": "*",
       "hook": "retro-presence-check.js"
     },
     {
       "event": "Stop",
-      "matcher": "",
-      "hook": "tracker-completion-gate.js"
+      "matcher": "*",
+      "hook": "handoff-live.js"
     },
     {
       "event": "Stop",
-      "matcher": "",
+      "matcher": "*",
       "hook": "session-stop.js"
     },
     {
+      "event": "Stop",
+      "matcher": "*",
+      "hook": "tracker-completion-gate.js"
+    },
+    {
       "event": "SessionEnd",
-      "matcher": "",
+      "matcher": "*",
+      "hook": "handoff-live.js"
+    },
+    {
+      "event": "SessionEnd",
+      "matcher": "*",
       "hook": "session-stop.js"
     },
     {
       "event": "StopFailure",
-      "matcher": "",
+      "matcher": "*",
+      "hook": "handoff-live.js"
+    },
+    {
+      "event": "StopFailure",
+      "matcher": "*",
       "hook": "session-stop.js"
     },
     {

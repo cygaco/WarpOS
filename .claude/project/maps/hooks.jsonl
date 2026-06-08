@@ -1,4 +1,4 @@
-{"_meta":true,"name":"Hooks Map","description":"All hook scripts under scripts/hooks/ + lib modules + settings.json wiring.","version":"2026-06-08","total_hooks":68,"total_lib_modules":15,"registered_hooks":63,"orphan_hooks":5,"wiring_count":72,"last_regenerated":"2026-06-08T16:07:50.686Z"}
+{"_meta":true,"name":"Hooks Map","description":"All hook scripts under scripts/hooks/ + lib modules + settings.json wiring.","version":"2026-06-08","total_hooks":70,"total_lib_modules":15,"registered_hooks":64,"orphan_hooks":6,"wiring_count":75,"last_regenerated":"2026-06-08T18:54:41.962Z"}
 {"id":"hook:authorization-gate","name":"authorization-gate.js","path":"scripts/hooks/authorization-gate.js","registered":true,"exists":true,"size":8520,"modified":"2026-05-30T01:25:39.579Z"}
 {"id":"hook:beta-gate","name":"beta-gate.js","path":"scripts/hooks/beta-gate.js","registered":true,"exists":true,"size":9095,"modified":"2026-06-04T22:57:13.996Z"}
 {"id":"hook:boss-boundary","name":"boss-boundary.js","path":"scripts/hooks/boss-boundary.js","registered":true,"exists":true,"size":3145,"modified":"2026-06-04T22:57:13.997Z"}
@@ -19,6 +19,8 @@
 {"id":"hook:framework-purity-guard","name":"framework-purity-guard.js","path":"scripts/hooks/framework-purity-guard.js","registered":true,"exists":true,"size":5253,"modified":"2026-06-04T21:24:41.660Z"}
 {"id":"hook:gate-check","name":"gate-check.js","path":"scripts/hooks/gate-check.js","registered":true,"exists":true,"size":5636,"modified":"2026-06-08T05:38:13.758Z"}
 {"id":"hook:gauntlet-gate","name":"gauntlet-gate.js","path":"scripts/hooks/gauntlet-gate.js","registered":true,"exists":true,"size":8464,"modified":"2026-06-05T01:45:08.445Z"}
+{"id":"hook:handoff-live","name":"handoff-live.js","path":"scripts/hooks/handoff-live.js","registered":true,"exists":true,"size":10556,"modified":"2026-06-08T18:42:03.651Z"}
+{"id":"hook:handoff-live.test","name":"handoff-live.test.js","path":"scripts/hooks/handoff-live.test.js","registered":false,"exists":true,"size":8603,"modified":"2026-06-08T18:42:17.088Z"}
 {"id":"hook:learning-validator","name":"learning-validator.js","path":"scripts/hooks/learning-validator.js","registered":true,"exists":true,"size":6416,"modified":"2026-05-30T01:25:39.587Z"}
 {"id":"hook:ledger-presence-guard","name":"ledger-presence-guard.js","path":"scripts/hooks/ledger-presence-guard.js","registered":true,"exists":true,"size":6991,"modified":"2026-06-05T01:45:08.446Z"}
 {"id":"hook:lint-hook-output","name":"lint-hook-output.js","path":"scripts/hooks/lint-hook-output.js","registered":true,"exists":true,"size":1964,"modified":"2026-05-30T01:25:39.593Z"}
@@ -41,7 +43,7 @@
 {"id":"hook:scope-contract-guard","name":"scope-contract-guard.js","path":"scripts/hooks/scope-contract-guard.js","registered":true,"exists":true,"size":4536,"modified":"2026-06-04T22:57:14.001Z"}
 {"id":"hook:secret-guard","name":"secret-guard.js","path":"scripts/hooks/secret-guard.js","registered":true,"exists":true,"size":2786,"modified":"2026-05-30T01:25:39.600Z"}
 {"id":"hook:self-mod-governance","name":"self-mod-governance.js","path":"scripts/hooks/self-mod-governance.js","registered":true,"exists":true,"size":923,"modified":"2026-05-30T01:25:39.601Z"}
-{"id":"hook:session-start","name":"session-start.js","path":"scripts/hooks/session-start.js","registered":true,"exists":true,"size":19732,"modified":"2026-06-08T04:56:41.298Z"}
+{"id":"hook:session-start","name":"session-start.js","path":"scripts/hooks/session-start.js","registered":true,"exists":true,"size":22946,"modified":"2026-06-08T18:32:34.382Z"}
 {"id":"hook:session-stop","name":"session-stop.js","path":"scripts/hooks/session-stop.js","registered":true,"exists":true,"size":18584,"modified":"2026-06-05T01:45:08.447Z"}
 {"id":"hook:session-tracker","name":"session-tracker.js","path":"scripts/hooks/session-tracker.js","registered":true,"exists":true,"size":9491,"modified":"2026-05-30T01:25:39.602Z"}
 {"id":"hook:settings-edit-guard","name":"settings-edit-guard.js","path":"scripts/hooks/settings-edit-guard.js","registered":true,"exists":true,"size":4852,"modified":"2026-06-04T21:24:41.661Z"}

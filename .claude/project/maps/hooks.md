@@ -1,14 +1,14 @@
 # Hooks Map
 
-Generated: 2026-06-08T16:07:50.686Z
+Generated: 2026-06-08T18:54:41.962Z
 
-**68** hook scripts (63 registered, 5 orphan), **15** lib modules, **72** wiring entries.
+**70** hook scripts (64 registered, 6 orphan), **15** lib modules, **75** wiring entries.
 
 ## Wiring (event → matcher → hook)
 
 ### PostCompact
 
-- `(no matcher)` → `compact-saver.js`
+- `*` → `compact-saver.js`
 
 ### PostToolUse
 
@@ -34,7 +34,7 @@ Generated: 2026-06-08T16:07:50.686Z
 - `Edit|Write` → `memory-enforcement-guard.js`
 - `Agent` → `build-transaction-boundary.js`
 - `Agent` → `response-size-guard.js`
-- `(no matcher)` → `session-tracker.js`
+- `*` → `session-tracker.js`
 - `WebFetch|WebSearch|mcp__.*|ListMcpResourcesTool|ReadMcpResourceTool` → `untrusted-content-firewall.js`
 
 ### PreToolUse
@@ -79,27 +79,30 @@ Generated: 2026-06-08T16:07:50.686Z
 
 ### SessionEnd
 
-- `(no matcher)` → `session-stop.js`
+- `*` → `handoff-live.js`
+- `*` → `session-stop.js`
 
 ### SessionStart
 
-- `(no matcher)` → `session-start.js`
-- `(no matcher)` → `tracker-start-of-work.js`
+- `*` → `session-start.js`
+- `*` → `tracker-start-of-work.js`
 
 ### Stop
 
-- `(no matcher)` → `retro-presence-check.js`
-- `(no matcher)` → `tracker-completion-gate.js`
-- `(no matcher)` → `session-stop.js`
+- `*` → `retro-presence-check.js`
+- `*` → `handoff-live.js`
+- `*` → `session-stop.js`
+- `*` → `tracker-completion-gate.js`
 
 ### StopFailure
 
-- `(no matcher)` → `session-stop.js`
+- `*` → `handoff-live.js`
+- `*` → `session-stop.js`
 
 ### UserPromptSubmit
 
-- `(no matcher)` → `smart-context.js`
-- `(no matcher)` → `prompt-logger.js`
+- `*` → `smart-context.js`
+- `*` → `prompt-logger.js`
 
 ### git-pre-commit
 
@@ -129,6 +132,8 @@ Generated: 2026-06-08T16:07:50.686Z
 | framework-purity-guard.js | yes | 5253 | 2026-06-04T21:24:41.660Z |
 | gate-check.js | yes | 5636 | 2026-06-08T05:38:13.758Z |
 | gauntlet-gate.js | yes | 8464 | 2026-06-05T01:45:08.445Z |
+| handoff-live.js | yes | 10556 | 2026-06-08T18:42:03.651Z |
+| handoff-live.test.js | no | 8603 | 2026-06-08T18:42:17.088Z |
 | learning-validator.js | yes | 6416 | 2026-05-30T01:25:39.587Z |
 | ledger-presence-guard.js | yes | 6991 | 2026-06-05T01:45:08.446Z |
 | lint-hook-output.js | yes | 1964 | 2026-05-30T01:25:39.593Z |
@@ -151,7 +156,7 @@ Generated: 2026-06-08T16:07:50.686Z
 | scope-contract-guard.js | yes | 4536 | 2026-06-04T22:57:14.001Z |
 | secret-guard.js | yes | 2786 | 2026-05-30T01:25:39.600Z |
 | self-mod-governance.js | yes | 923 | 2026-05-30T01:25:39.601Z |
-| session-start.js | yes | 19732 | 2026-06-08T04:56:41.298Z |
+| session-start.js | yes | 22946 | 2026-06-08T18:32:34.382Z |
 | session-stop.js | yes | 18584 | 2026-06-05T01:45:08.447Z |
 | session-tracker.js | yes | 9491 | 2026-05-30T01:25:39.602Z |
 | settings-edit-guard.js | yes | 4852 | 2026-06-04T21:24:41.661Z |

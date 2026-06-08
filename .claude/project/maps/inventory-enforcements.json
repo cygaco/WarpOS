@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "generated": "2026-06-08T16:07:50.686Z",
-    "lastUpdated": "2026-06-08T16:07:50.686Z",
-    "total_hooks": 66,
+    "generated": "2026-06-08T18:54:41.962Z",
+    "lastUpdated": "2026-06-08T18:54:41.962Z",
+    "total_hooks": 68,
     "total_modules": 15,
-    "uncurated": 0,
+    "uncurated": 2,
     "total_gaps": 83,
     "gaps_closed": 75,
     "gaps_open": 8,
@@ -597,6 +597,42 @@
       ],
       "file_size": 8464,
       "file_modified": "2026-06-05T01:45:08.445Z"
+    },
+    {
+      "id": "handoff-live",
+      "type": "hook",
+      "matcher": "?",
+      "phase": "?",
+      "mode": "?",
+      "file": "scripts/hooks/handoff-live.js",
+      "file_size": 10556,
+      "file_modified": "2026-06-08T18:42:03.651Z",
+      "registered": true,
+      "gates": [],
+      "blocks": [],
+      "warns": [],
+      "allows": [],
+      "gaps_closed": [],
+      "uncurated": true,
+      "uncurated_note": "added since last hand-curated regen — fields ?, ?, ? need a /maps:enforcements review"
+    },
+    {
+      "id": "handoff-live.test",
+      "type": "hook",
+      "matcher": "?",
+      "phase": "?",
+      "mode": "?",
+      "file": "scripts/hooks/handoff-live.test.js",
+      "file_size": 8603,
+      "file_modified": "2026-06-08T18:42:17.088Z",
+      "registered": false,
+      "gates": [],
+      "blocks": [],
+      "warns": [],
+      "allows": [],
+      "gaps_closed": [],
+      "uncurated": true,
+      "uncurated_note": "added since last hand-curated regen — fields ?, ?, ? need a /maps:enforcements review"
     },
     {
       "id": "learning-validator",
@@ -1344,8 +1380,8 @@
         "context-sources",
         "paths"
       ],
-      "file_size": 19732,
-      "file_modified": "2026-06-08T04:56:41.298Z"
+      "file_size": 22946,
+      "file_modified": "2026-06-08T18:32:34.382Z"
     },
     {
       "id": "session-stop",

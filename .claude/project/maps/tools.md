@@ -1,8 +1,8 @@
 # Tools Map
 
-Generated: 2026-06-08T16:07:50.686Z
+Generated: 2026-06-08T18:54:41.962Z
 
-Scripts: **171** | npm scripts: **0** | External CLIs: **3**
+Scripts: **173** | npm scripts: **0** | External CLIs: **3**
 
 ## Utility scripts (scripts/*.js)
 
@@ -47,9 +47,9 @@ Scripts: **171** | npm scripts: **0** | External CLIs: **3**
 | delta-store-review.js | 1684 | 2026-06-05T01:45:08.445Z |
 | delta-update-heartbeat.js | 727 | 2026-06-05T01:45:08.445Z |
 | dismiss-drift-entry.js | 647 | 2026-05-30T01:25:39.566Z |
-| dispatch-agent.js | 28779 | 2026-06-08T15:57:58.217Z |
-| dispatch-claude.js | 20631 | 2026-06-08T15:58:17.216Z |
-| dispatch-skill.js | 18468 | 2026-06-08T05:08:02.360Z |
+| dispatch-agent.js | 28779 | 2026-06-08T16:11:01.669Z |
+| dispatch-claude.js | 20640 | 2026-06-08T16:42:49.375Z |
+| dispatch-skill.js | 24174 | 2026-06-08T18:23:18.588Z |
 | dispatch-skill.test.js | 10611 | 2026-06-08T05:08:02.376Z |
 | dispatch.js | 20217 | 2026-06-08T04:56:41.298Z |
 | drift-apply-decisions.js | 2075 | 2026-05-30T01:25:39.571Z |
@@ -131,6 +131,8 @@ Scripts: **171** | npm scripts: **0** | External CLIs: **3**
 | set-heartbeat-market-research-builder.js | 708 | 2026-05-30T01:25:39.658Z |
 | skill-adherence-report.js | 4675 | 2026-05-30T01:25:39.658Z |
 | skill-description-audit.js | 7429 | 2026-05-30T01:25:39.659Z |
+| skills-test.js | 20010 | 2026-06-08T18:30:58.395Z |
+| skills-test.test.js | 11553 | 2026-06-08T18:27:56.943Z |
 | sleep-20260422-analyze.js | 4078 | 2026-05-30T01:25:39.659Z |
 | sleep-20260422-consolidate.js | 4154 | 2026-05-30T01:25:39.660Z |
 | sleep-20260422-log-events.js | 517 | 2026-05-30T01:25:39.660Z |

@@ -1,7 +1,7 @@
 {
   "metadata": {
-    "generated": "2026-06-08T16:07:50.686Z",
-    "lastUpdated": "2026-06-08T16:07:50.686Z",
+    "generated": "2026-06-08T18:54:41.962Z",
+    "lastUpdated": "2026-06-08T18:54:41.962Z",
     "total_stores": 10,
     "tiers": 3,
     "regenerated_by": "scripts/regen-maps.js"
@@ -13,10 +13,10 @@
         "path": ".claude/project/events/events.jsonl",
         "category": "events",
         "tier": "centralized",
-        "entryCount": 27872,
+        "entryCount": 28474,
         "exists": true,
-        "size": 9061412,
-        "modified": "2026-06-08T16:07:48.205Z"
+        "size": 9249817,
+        "modified": "2026-06-08T18:54:40.360Z"
       },
       {
         "id": "manager-consult",
@@ -33,20 +33,20 @@
         "path": ".claude/project/events/requirements.jsonl",
         "category": "events",
         "tier": "centralized",
-        "entryCount": 605,
+        "entryCount": 631,
         "exists": true,
-        "size": 331819,
-        "modified": "2026-06-08T16:03:00.481Z"
+        "size": 346089,
+        "modified": "2026-06-08T18:42:17.222Z"
       },
       {
         "id": "tools",
         "path": ".claude/project/events/tools.jsonl",
         "category": "events",
         "tier": "centralized",
-        "entryCount": 14431,
+        "entryCount": 14821,
         "exists": true,
-        "size": 4557098,
-        "modified": "2026-06-08T16:06:44.126Z"
+        "size": 4679018,
+        "modified": "2026-06-08T18:54:00.372Z"
       }
     ],
     "semantic": [
@@ -55,10 +55,10 @@
         "path": ".claude/project/memory/enforcement-debt.jsonl",
         "category": "memory",
         "tier": "semantic",
-        "entryCount": 25,
+        "entryCount": 26,
         "exists": true,
-        "size": 37646,
-        "modified": "2026-06-08T05:41:41.902Z"
+        "size": 38532,
+        "modified": "2026-06-08T17:05:45.204Z"
       },
       {
         "id": "learnings",
@@ -75,10 +75,10 @@
         "path": ".claude/project/memory/recurring-issues.jsonl",
         "category": "memory",
         "tier": "semantic",
-        "entryCount": 5,
+        "entryCount": 6,
         "exists": true,
-        "size": 5940,
-        "modified": "2026-06-07T07:49:16.733Z"
+        "size": 6947,
+        "modified": "2026-06-08T17:55:50.992Z"
       },
       {
         "id": "systems",
@@ -88,7 +88,7 @@
         "entryCount": 73,
         "exists": true,
         "size": 65106,
-        "modified": "2026-06-08T16:03:00.452Z"
+        "modified": "2026-06-08T18:42:17.252Z"
       },
       {
         "id": "traces",
@@ -115,7 +115,7 @@
     ]
   },
   "totals": {
-    "total_lines": 43251,
-    "total_size": 14243770
+    "total_lines": 44271,
+    "total_size": 14570258
   }
 }

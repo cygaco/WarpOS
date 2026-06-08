@@ -6,5 +6,17 @@
   "skills": {
     "stale_since": "2026-06-08T16:03:00.452Z",
     "trigger": ".claude/commands/scan/full.md"
+  },
+  "hooks": {
+    "stale_since": "2026-06-08T18:31:39.485Z",
+    "trigger": "scripts/hooks/handoff-live.js"
+  },
+  "enforcements": {
+    "stale_since": "2026-06-08T18:31:39.486Z",
+    "trigger": "scripts/hooks/handoff-live.js"
+  },
+  "memory": {
+    "stale_since": "2026-06-08T18:31:39.486Z",
+    "trigger": "scripts/hooks/handoff-live.js"
   }
 }

@@ -1,7 +1,7 @@
 {
   "metadata": {
-    "generated": "2026-06-08T16:07:50.686Z",
-    "lastUpdated": "2026-06-08T16:07:50.686Z",
+    "generated": "2026-06-08T18:54:41.962Z",
+    "lastUpdated": "2026-06-08T18:54:41.962Z",
     "total_systems": 73,
     "categories": 2,
     "total_files_referenced": 72,
@@ -701,7 +701,7 @@
       "id": "agents",
       "name": "Agent team + build chains",
       "category": "agents",
-      "count": 65
+      "count": 67
     },
     {
       "id": "skills",
@@ -713,7 +713,7 @@
       "id": "hooks",
       "name": "Hooks",
       "category": "automation",
-      "count": 68
+      "count": 70
     },
     {
       "id": "memory",

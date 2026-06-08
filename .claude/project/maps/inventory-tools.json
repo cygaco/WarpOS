@@ -1,14 +1,14 @@
 {
   "metadata": {
-    "generated": "2026-06-08T16:07:50.686Z",
-    "lastUpdated": "2026-06-08T16:07:50.686Z",
-    "total_tools": 176,
+    "generated": "2026-06-08T18:54:41.962Z",
+    "lastUpdated": "2026-06-08T18:54:41.962Z",
+    "total_tools": 178,
     "categories": 4,
     "regenerated_by": "scripts/regen-maps.js"
   },
   "categories": {
     "scripts": {
-      "count": 171,
+      "count": 173,
       "items": [
         {
           "id": "tool:agent-dashboard",
@@ -368,7 +368,7 @@
           "type": "script",
           "exists": true,
           "size": 28779,
-          "modified": "2026-06-08T15:57:58.217Z"
+          "modified": "2026-06-08T16:11:01.669Z"
         },
         {
           "id": "tool:dispatch-claude",
@@ -376,8 +376,8 @@
           "path": "scripts/dispatch-claude.js",
           "type": "script",
           "exists": true,
-          "size": 20631,
-          "modified": "2026-06-08T15:58:17.216Z"
+          "size": 20640,
+          "modified": "2026-06-08T16:42:49.375Z"
         },
         {
           "id": "tool:dispatch-skill",
@@ -385,8 +385,8 @@
           "path": "scripts/dispatch-skill.js",
           "type": "script",
           "exists": true,
-          "size": 18468,
-          "modified": "2026-06-08T05:08:02.360Z"
+          "size": 24174,
+          "modified": "2026-06-08T18:23:18.588Z"
         },
         {
           "id": "tool:dispatch-skill.test",
@@ -1118,6 +1118,24 @@
           "modified": "2026-05-30T01:25:39.659Z"
         },
         {
+          "id": "tool:skills-test",
+          "name": "skills-test.js",
+          "path": "scripts/skills-test.js",
+          "type": "script",
+          "exists": true,
+          "size": 20010,
+          "modified": "2026-06-08T18:30:58.395Z"
+        },
+        {
+          "id": "tool:skills-test.test",
+          "name": "skills-test.test.js",
+          "path": "scripts/skills-test.test.js",
+          "type": "script",
+          "exists": true,
+          "size": 11553,
+          "modified": "2026-06-08T18:27:56.943Z"
+        },
+        {
           "id": "tool:sleep-20260422-analyze",
           "name": "sleep-20260422-analyze.js",
           "path": "scripts/sleep-20260422-analyze.js",
@@ -1600,13 +1618,13 @@
           "id": "xref:hooks",
           "type": "xref",
           "note": "hooks inventory lives in .claude/project/maps/inventory-hooks.json",
-          "count": 68
+          "count": 70
         }
       ]
     }
   },
   "summary": {
-    "scripts": 171,
+    "scripts": 173,
     "npm_scripts": 0,
     "external_clis": 3,
     "xrefs": 2
