@@ -121,6 +121,88 @@ process.stdin.on("end", () => {
       process.exit(0);
     }
 
+    // ── Sprint-context persistent-team advisory (ED-035) ──────────────────
+    // In sprint mode the operator expects work to flow through a PERSISTENT team
+    // (TeamCreate + named members, reusable + DM-able), NOT fire-and-forget one-off
+    // agents. The team-spawn step lives inside /mode:sprint's body — bypassed when a
+    // session kicks off from a /clear'd handoff with "/mode:sprint" as embedded text
+    // (treated as context, the Skill never invoked) — so it skips SILENTLY and recurs
+    // (RT-2026-06-06-sprint-team-orphaned-by-node-seam + the 2026-06-08 recurrence).
+    // This fires at the dispatch — the exact skip point — reading the persisted mode
+    // marker, OUTSIDE the bypassed /mode:sprint caller. ADVISORY ONLY: it never blocks
+    // (blocking my own orchestration is too risky); it ramps by counting one-off worker
+    // dispatches and suppresses once a persistent team is active. Fail-open throughout.
+    if (currentMode === "sprint") {
+      const hasTeamName = !!(
+        toolInput.team_name && String(toolInput.team_name).trim()
+      );
+      // Research/cognition agents are legitimately one-off (not "the team").
+      // (Teammates β/γ already exited above.)
+      const RESEARCH_TYPES = new Set(["explore", "plan"]);
+      const isWorker = agentType && !RESEARCH_TYPES.has(agentType);
+      if (hasTeamName || !isWorker) {
+        process.exit(0); // flowing through a team, or a legit research one-off
+      }
+      // Is a persistent team already active? (a fresh config under ~/.claude/teams)
+      let teamActive = false;
+      try {
+        const teamsRoot = path.join(
+          process.env.HOME || process.env.USERPROFILE || "",
+          ".claude",
+          "teams",
+        );
+        if (fs.existsSync(teamsRoot)) {
+          for (const d of fs.readdirSync(teamsRoot)) {
+            const cfg = path.join(teamsRoot, d, "config.json");
+            try {
+              if (
+                fs.existsSync(cfg) &&
+                (Date.now() - fs.statSync(cfg).mtimeMs) / 3600000 < 24
+              ) {
+                teamActive = true;
+                break;
+              }
+            } catch {
+              /* skip this team dir */
+            }
+          }
+        }
+      } catch {
+        /* no teams dir — treat as no active team */
+      }
+      // Per-session one-off counter (best-effort ramp; advise once the PATTERN shows).
+      let n = 1;
+      try {
+        const cPath = path.join(
+          projectDir,
+          ".claude",
+          "runtime",
+          ".sprint-oneoff-count",
+        );
+        n = (parseInt(fs.readFileSync(cPath, "utf8"), 10) || 0) + 1;
+        fs.writeFileSync(cPath, teamActive ? "0" : String(n));
+      } catch {
+        /* counter is best-effort */
+      }
+      if (!teamActive && n >= 2) {
+        process.stdout.write(
+          JSON.stringify({
+            hookSpecificOutput: {
+              hookEventName: "PreToolUse",
+              additionalContext:
+                `[team-guard] SPRINT MODE + no active persistent team, but this is ` +
+                `one-off worker dispatch #${n} (no team_name). The operator expects ` +
+                `sprint work to flow through a PERSISTENT team (TeamCreate + named ` +
+                `members, reusable + DM-able in FleetView), not fire-and-forget agents ` +
+                `— stand one up before fanning out further. (ED-035; this exact skip ` +
+                `recurred 2026-06-06 and 2026-06-08.) Advisory, not a block.`,
+            },
+          }),
+        );
+      }
+      process.exit(0);
+    }
+
     // Adhoc mode: either explicit mode.json or the legacy heartbeat check.
     // Directory existence alone is insufficient — it persists after crashes.
     // smart-context.js writes heartbeat.json with the current session ID.

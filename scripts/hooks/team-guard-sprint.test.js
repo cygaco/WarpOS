@@ -1,0 +1,122 @@
+#!/usr/bin/env node
+// ─────────────────────────────────────────────────────────────────────────────
+// team-guard-sprint.test.js — P5 planted-violation test for the ED-035 sprint
+// persistent-team advisory added to team-guard.js. Spawns the REAL hook as a
+// subprocess with a sealed temp CLAUDE_PROJECT_DIR + HOME and synthetic Agent
+// events, asserting:
+//   • PLANTED VIOLATION: sprint + one-off worker dispatch #>=2 + no active team
+//     => advisory FIRES (this is the skip that recurred 2026-06-06 & 06-08).
+//   • team_name present => NO advisory (flowing through a team).
+//   • research one-off (Explore) => NO advisory.
+//   • solo mode => NO advisory.
+//   • active team under ~/.claude/teams => advisory SUPPRESSED.
+//   • first one-off (ramp, n<2) => NO advisory.
+//   • REGRESSION: adhoc + build-chain type still BLOCKS (decision:block).
+// The advisory is NON-BLOCKING — assert it never emits decision:block.
+// ─────────────────────────────────────────────────────────────────────────────
+"use strict";
+
+const assert = require("assert");
+const fs = require("fs");
+const os = require("os");
+const path = require("path");
+const { spawnSync } = require("child_process");
+
+const HOOK = path.join(__dirname, "team-guard.js");
+
+let pass = 0;
+let fail = 0;
+function ok(name, fn) {
+  try {
+    fn();
+    pass++;
+    console.log(`  ok  ${name}`);
+  } catch (e) {
+    fail++;
+    console.log(`FAIL  ${name}\n      ${e.message}`);
+  }
+}
+
+// Run the hook with a sealed env + event. opts: {mode, teamName, seedCount,
+// activeTeam, agentType, name}. Returns { stdout, status }.
+function runGuard(opts = {}) {
+  const proj = fs.mkdtempSync(path.join(os.tmpdir(), "tg-proj-"));
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), "tg-home-"));
+  fs.mkdirSync(path.join(proj, ".claude", "runtime"), { recursive: true });
+  if (opts.mode) {
+    fs.writeFileSync(
+      path.join(proj, ".claude", "runtime", "mode.json"),
+      JSON.stringify({ mode: opts.mode }),
+    );
+  }
+  fs.writeFileSync(path.join(proj, ".claude", "runtime", ".session-id"), "s-test");
+  if (typeof opts.seedCount === "number") {
+    fs.writeFileSync(
+      path.join(proj, ".claude", "runtime", ".sprint-oneoff-count"),
+      String(opts.seedCount),
+    );
+  }
+  if (opts.activeTeam) {
+    const cfg = path.join(home, ".claude", "teams", "warpos-sprint");
+    fs.mkdirSync(cfg, { recursive: true });
+    fs.writeFileSync(path.join(cfg, "config.json"), "{}"); // fresh mtime = now
+  }
+  const event = {
+    tool_name: "Agent",
+    tool_input: {
+      subagent_type: opts.agentType || "general-purpose",
+      name: opts.name || "worker",
+      ...(opts.teamName ? { team_name: opts.teamName } : {}),
+    },
+  };
+  const r = spawnSync("node", [HOOK], {
+    input: JSON.stringify(event),
+    env: { ...process.env, CLAUDE_PROJECT_DIR: proj, HOME: home, USERPROFILE: home },
+    encoding: "utf8",
+  });
+  return { stdout: r.stdout || "", status: r.status };
+}
+
+const fires = (s) => /SPRINT MODE/.test(s) && /persistent team/i.test(s);
+const blocks = (s) => /"decision"\s*:\s*"block"/.test(s);
+
+// ── PLANTED VIOLATION — the recurring skip must be caught ──
+ok("PLANTED: sprint + 2nd one-off worker + no team => advisory FIRES (non-blocking)", () => {
+  const { stdout } = runGuard({ mode: "sprint", seedCount: 1, agentType: "general-purpose" });
+  assert.ok(fires(stdout), "advisory should fire");
+  assert.ok(!blocks(stdout), "advisory must NEVER block");
+});
+
+ok("sprint + team_name present => NO advisory (flowing through a team)", () => {
+  const { stdout } = runGuard({ mode: "sprint", seedCount: 5, teamName: "warpos-sprint" });
+  assert.ok(!fires(stdout), "should not advise when dispatching into a team");
+});
+
+ok("sprint + research one-off (Explore) => NO advisory", () => {
+  const { stdout } = runGuard({ mode: "sprint", seedCount: 5, agentType: "explore" });
+  assert.ok(!fires(stdout), "research one-offs are legitimate");
+});
+
+ok("solo mode => NO advisory", () => {
+  const { stdout } = runGuard({ mode: "solo", seedCount: 5, agentType: "general-purpose" });
+  assert.ok(!fires(stdout), "solo is opt-out");
+});
+
+ok("sprint + active team under ~/.claude/teams => advisory SUPPRESSED", () => {
+  const { stdout } = runGuard({ mode: "sprint", seedCount: 5, activeTeam: true, agentType: "general-purpose" });
+  assert.ok(!fires(stdout), "a fresh team config suppresses the advisory");
+});
+
+ok("sprint + first one-off (n<2 ramp) => NO advisory", () => {
+  const { stdout } = runGuard({ mode: "sprint", seedCount: 0, agentType: "general-purpose" });
+  assert.ok(!fires(stdout), "ramp: do not advise on the first one-off");
+});
+
+// ── REGRESSION — the existing adhoc build-chain block must still work ──
+ok("REGRESSION: adhoc + build-chain type still BLOCKS", () => {
+  const { stdout } = runGuard({ mode: "adhoc", agentType: "builder" });
+  assert.ok(blocks(stdout), "adhoc build-chain block must still fire");
+});
+
+console.log(`\nteam-guard-sprint: ${pass}/${pass + fail} pass`);
+process.exit(fail ? 1 : 0);
