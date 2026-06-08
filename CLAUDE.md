@@ -114,6 +114,62 @@ Three rules with bug-class evidence — all validated multiple times across runs
 
 **Every policy needs a named enforcer.** When you write a rule, convention, contract, or invariant — in a skill, doc, hook spec, agent prompt, CLAUDE.md, ADR, PRD, anywhere — answer the question "what makes a violation self-detecting?" Enforcers are mechanism-agnostic: hook, test, schema validator, CI check, agent contract clause, release gate, script that exits non-zero, telemetry signal someone actually reads, fixture that breaks loudly. If nothing detects violations, log a `paths.enforcementDebt` entry via `/enforcement:log` so the gap is visible at `/enforcement:list` and surfaces at `/scan:full`. The aspirational-vs-enforced pattern is a recurring class — routing policy (SP-20260514-002), release-ledger discipline (SP-20260519-001), β consultation, retro creation, capsule presence per release — each fixed one sprint at a time when the structural fix is to refuse to ship a policy without naming its enforcer (or its debt) at write-time. Source: pattern recurrence across SP-20260514-002, SP-20260519-001, sleep-journal 2026-05-13 (hollow ladder rungs), 17 beta-gate-blocked events in 3 days.
 
+## Dispatch
+
+Full rules: `paths.agentDispatchGuide` (`.claude/project/reference/agent-dispatch-guide.md`).
+Read it before any cross-provider or build-chain dispatch — the rules apply to ad-hoc consults
+and in-session reviewers, not only build-chain.
+
+**CLI-vs-API (the fundamental rule):** CLI is mandatory for agent dispatch. API is allowed ONLY
+for capabilities with no CLI equivalent (deep-research, GPT-Pro API-only models). API availability
+NEVER implies API dispatch. Enforcer: `scripts/checks/dispatch-contract.js validate` (wired into
+`/scan:full`).
+
+**Shape rule:**
+
+| Work | Shape | Wrapper |
+|------|-------|---------|
+| Build-chain Claude roles (builder/fixer/\*-builder) | Bash subprocess | `node scripts/dispatch-claude.js <role> <prompt-file> -w` |
+| Cross-provider roles (reviewer/security/redteam/consult) | Bash subprocess | `node scripts/dispatch-agent.js <role> <prompt-file>` |
+| Heavy skills (scan:full, research:deep, qa:audit) | Subprocess returning lean envelope | Instruct sub-agent: write output to file, return ≤8-line envelope |
+| Research/Plan/β judgment | In-process Agent tool | OK — small return, orchestrator context needed |
+| Raw `claude -p --agent <build-role>` | **BLOCKED** | Silently reaped — use the bounded wrapper |
+| Raw `curl`/SDK to provider APIs outside allowlisted wrappers | **BLOCKED** | API-when-CLI violation |
+
+**Orchestrator holds envelopes, not content.** Heavy sub-agent output goes to a file; the
+orchestrator reads only the ≤8-line envelope (verdict + counts + path). This is the structural
+answer to context-limit exhaustion mid-task.
+
+## Tool Use
+
+Behavioral rules for the harness tools. Violations are hard to notice because the tool returns
+a result (even a wrong/empty one) without flagging the error.
+
+**Grep `glob` false-negative trap (confirmed bug class):** the `glob` param is matched against
+the full CWD path, NOT the `path` arg. A `glob` with a leading directory segment
+(`engineering/**/*.md`, `{a,b}/**/*.md`) combined with a separate `path` arg silently matches
+nothing — 0 results, looks clean.
+
+| Correct | Incorrect |
+|---|---|
+| `path:.claude/agents` + `glob:**/*.md` | `path:.claude/agents` + `glob:engineering/**/*.md` |
+| Full CWD-relative glob `.claude/agents/engineering/**/*.md` | `glob:{engineering,product}/**/*.md` + `path:` |
+| Glob tool (handles braces fine) | Grep `glob` with brace-list + `path` |
+
+**Rule:** when a scoped search returns 0 results, re-run a second way before trusting the zero.
+False-negatives are silent.
+
+**Edit discipline — always read before editing:** copy `old_string` from a fresh Read/Grep of
+the CURRENT file. Never reconstruct it from memory — the file may have changed since you last
+read it, and a reconstructed `old_string` that doesn't match causes a silent no-op or an error.
+
+**Dot-dir behavior:** both Grep and Glob traverse dot-dirs. The "dot-dirs get skipped" effect
+lives in WarpOS's own scripts (`startsWith(".")` skips in manifest walkers), not in the harness
+tools.
+
+Enforcer: `scan:tools` self-test (seeded fixture at `runtime/agent-system-plan/tooltest/`).
+Enforcement debt logged: ED-033.
+
 ## Project Context
 
 For product-specific context, see [PROJECT.md](PROJECT.md) (create one for your project). For the agent system, see [AGENTS.md](AGENTS.md).

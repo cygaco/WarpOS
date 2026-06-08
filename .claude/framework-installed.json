@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "0.15.4",
-  "installedCommit": "68435a00d97727a565c06be779725be9764e4afb",
-  "installedAt": "2026-06-08T02:22:04.661Z",
+  "installedCommit": "2ecb30e7e65d08dcc3acfdd956a8ff60d681ad9f",
+  "installedAt": "2026-06-08T04:43:40.095Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -664,8 +664,8 @@
       "dest": ".claude/agents/president/alpha.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "513022ba8ce1f4f5cf8d4d06f758ab49829ea3e1ea348bae5d05f6239d8a5926",
-      "currentHashAtInstall": "513022ba8ce1f4f5cf8d4d06f758ab49829ea3e1ea348bae5d05f6239d8a5926",
+      "installedHash": "9bf2bc858a5458e4263353870c8851d14e14e1c3126f5f852786351839fe250c",
+      "currentHashAtInstall": "9bf2bc858a5458e4263353870c8851d14e14e1c3126f5f852786351839fe250c",
       "introducedIn": "0.0.0"
     },
     {
@@ -2074,8 +2074,8 @@
       "dest": ".claude/commands/scan/full.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "d01986749062bf7ab0d3b280179de633bfd2f38cb3e685bb667544b891dec004",
-      "currentHashAtInstall": "d01986749062bf7ab0d3b280179de633bfd2f38cb3e685bb667544b891dec004",
+      "installedHash": "4da794269b8a29c1f29075f8389e1f5b56e73ccc768005ca75c5935403c8aadc",
+      "currentHashAtInstall": "4da794269b8a29c1f29075f8389e1f5b56e73ccc768005ca75c5935403c8aadc",
       "introducedIn": "0.0.0"
     },
     {
@@ -2854,8 +2854,8 @@
       "dest": ".claude/project/reference/agent-dispatch-guide.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "8ea967a684c395fbd7092352c0ff120caf7bef20ef747efdf2a325733cf7fc28",
-      "currentHashAtInstall": "8ea967a684c395fbd7092352c0ff120caf7bef20ef747efdf2a325733cf7fc28",
+      "installedHash": "17d1a861b4d67b31df4eb32b04db9b3f3f247658acb64a6783381c0fe3025665",
+      "currentHashAtInstall": "17d1a861b4d67b31df4eb32b04db9b3f3f247658acb64a6783381c0fe3025665",
       "introducedIn": "0.0.0"
     },
     {
@@ -4204,8 +4204,8 @@
       "dest": "scripts/hooks/lib/providers.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "cdd8a633bbce69e8ef2c9743711ca7faa33a1d9db5e90d30a663351ea5259288",
-      "currentHashAtInstall": "cdd8a633bbce69e8ef2c9743711ca7faa33a1d9db5e90d30a663351ea5259288",
+      "installedHash": "88782e4bcc24c2e143a1d26fb0ca1d5b1af5afdb8e46a0b1b2e1b186c2fb5dce",
+      "currentHashAtInstall": "88782e4bcc24c2e143a1d26fb0ca1d5b1af5afdb8e46a0b1b2e1b186c2fb5dce",
       "introducedIn": "0.0.0"
     },
     {
@@ -5289,6 +5289,36 @@
       "introducedIn": "0.0.0"
     },
     {
+      "id": "check_tool.duplicate-doc-drift.allowlist.json",
+      "kind": "check_tool",
+      "dest": "scripts/checks/duplicate-doc-drift.allowlist.json",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "d568afeb8f65aa0fa6dd978d7201a3cc7e59acf4cfb67295e982dce923912b4c",
+      "currentHashAtInstall": "d568afeb8f65aa0fa6dd978d7201a3cc7e59acf4cfb67295e982dce923912b4c",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "check_tool.duplicate-doc-drift.js",
+      "kind": "check_tool",
+      "dest": "scripts/checks/duplicate-doc-drift.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "5fe221733c04a1534367bca7105af1b48431c44e975660d3e8bb1eeeb37edb88",
+      "currentHashAtInstall": "5fe221733c04a1534367bca7105af1b48431c44e975660d3e8bb1eeeb37edb88",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "check_tool.duplicate-doc-drift.test.js",
+      "kind": "check_tool",
+      "dest": "scripts/checks/duplicate-doc-drift.test.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "c3ab56ebc504226ca8ce3dbde59e11c3ac7090011ab5474a0361bc3e4679a433",
+      "currentHashAtInstall": "c3ab56ebc504226ca8ce3dbde59e11c3ac7090011ab5474a0361bc3e4679a433",
+      "introducedIn": "0.0.0"
+    },
+    {
       "id": "check_tool.etc-harness-scan.js",
       "kind": "check_tool",
       "dest": "scripts/checks/etc-harness-scan.js",
@@ -5296,6 +5326,26 @@
       "mergeStrategy": "replace_if_unmodified",
       "installedHash": "a28328b5bc7180cb01f8d4f41eb8865fb96af766c7a49000035f8467e3e5afd4",
       "currentHashAtInstall": "a28328b5bc7180cb01f8d4f41eb8865fb96af766c7a49000035f8467e3e5afd4",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "check_tool.file-usage-trace.js",
+      "kind": "check_tool",
+      "dest": "scripts/checks/file-usage-trace.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "fbdb176e88c76a61e1d222762b12cc1d14b74ffebc44e792206064f255467ccf",
+      "currentHashAtInstall": "fbdb176e88c76a61e1d222762b12cc1d14b74ffebc44e792206064f255467ccf",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "check_tool.file-usage-trace.test.js",
+      "kind": "check_tool",
+      "dest": "scripts/checks/file-usage-trace.test.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "897f11437c765da7b1f577c8c2ddbd76ea58cf10fe2ada252621a4a31a1f8ecd",
+      "currentHashAtInstall": "897f11437c765da7b1f577c8c2ddbd76ea58cf10fe2ada252621a4a31a1f8ecd",
       "introducedIn": "0.0.0"
     },
     {
@@ -11394,8 +11444,8 @@
       "dest": "CLAUDE.md",
       "owner": "framework",
       "mergeStrategy": "append-if-exists",
-      "installedHash": "6677cd50342cf6b57640033fa26f2fb5861db106df2e8c7551b7c22633b73988",
-      "currentHashAtInstall": "6677cd50342cf6b57640033fa26f2fb5861db106df2e8c7551b7c22633b73988",
+      "installedHash": "030bcdba9cad639a6a0c6fbd1dffdeab64f2538f9a8305cbbe17e91c03e64e5b",
+      "currentHashAtInstall": "030bcdba9cad639a6a0c6fbd1dffdeab64f2538f9a8305cbbe17e91c03e64e5b",
       "introducedIn": "0.0.0"
     }
   ],

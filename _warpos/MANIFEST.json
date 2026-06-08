@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-08T02:22:04.999Z",
+  "generatedAt": "2026-06-08T04:43:40.270Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.15.4",
   "migrations": [],
@@ -48,8 +48,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "6677cd50342cf6b57640033fa26f2fb5861db106df2e8c7551b7c22633b73988",
-      "installedSha": "6677cd50342cf6b57640033fa26f2fb5861db106df2e8c7551b7c22633b73988"
+      "sha256": "030bcdba9cad639a6a0c6fbd1dffdeab64f2538f9a8305cbbe17e91c03e64e5b",
+      "installedSha": "030bcdba9cad639a6a0c6fbd1dffdeab64f2538f9a8305cbbe17e91c03e64e5b"
     },
     "DICTIONARY.md": {
       "owner": "framework",
@@ -5046,8 +5046,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/lib/providers.js",
-      "sha256": "cdd8a633bbce69e8ef2c9743711ca7faa33a1d9db5e90d30a663351ea5259288",
-      "installedSha": "cdd8a633bbce69e8ef2c9743711ca7faa33a1d9db5e90d30a663351ea5259288"
+      "sha256": "88782e4bcc24c2e143a1d26fb0ca1d5b1af5afdb8e46a0b1b2e1b186c2fb5dce",
+      "installedSha": "88782e4bcc24c2e143a1d26fb0ca1d5b1af5afdb8e46a0b1b2e1b186c2fb5dce"
     },
     "scripts/hooks/lib/role-aliases.js": {
       "owner": "framework",
@@ -5539,12 +5539,47 @@
       "sha256": "fda5ffbc77a97b8cfee066a4e1bcb864be6a77e02ccc2ab9f872b893e7226b14",
       "installedSha": "fda5ffbc77a97b8cfee066a4e1bcb864be6a77e02ccc2ab9f872b893e7226b14"
     },
+    "scripts/checks/duplicate-doc-drift.allowlist.json": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/duplicate-doc-drift.allowlist.json",
+      "sha256": "d568afeb8f65aa0fa6dd978d7201a3cc7e59acf4cfb67295e982dce923912b4c",
+      "installedSha": "d568afeb8f65aa0fa6dd978d7201a3cc7e59acf4cfb67295e982dce923912b4c"
+    },
+    "scripts/checks/duplicate-doc-drift.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/duplicate-doc-drift.js",
+      "sha256": "5fe221733c04a1534367bca7105af1b48431c44e975660d3e8bb1eeeb37edb88",
+      "installedSha": "5fe221733c04a1534367bca7105af1b48431c44e975660d3e8bb1eeeb37edb88"
+    },
+    "scripts/checks/duplicate-doc-drift.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/duplicate-doc-drift.test.js",
+      "sha256": "c3ab56ebc504226ca8ce3dbde59e11c3ac7090011ab5474a0361bc3e4679a433",
+      "installedSha": "c3ab56ebc504226ca8ce3dbde59e11c3ac7090011ab5474a0361bc3e4679a433"
+    },
     "scripts/checks/etc-harness-scan.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/etc-harness-scan.js",
       "sha256": "a28328b5bc7180cb01f8d4f41eb8865fb96af766c7a49000035f8467e3e5afd4",
       "installedSha": "a28328b5bc7180cb01f8d4f41eb8865fb96af766c7a49000035f8467e3e5afd4"
+    },
+    "scripts/checks/file-usage-trace.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/file-usage-trace.js",
+      "sha256": "fbdb176e88c76a61e1d222762b12cc1d14b74ffebc44e792206064f255467ccf",
+      "installedSha": "fbdb176e88c76a61e1d222762b12cc1d14b74ffebc44e792206064f255467ccf"
+    },
+    "scripts/checks/file-usage-trace.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/file-usage-trace.test.js",
+      "sha256": "897f11437c765da7b1f577c8c2ddbd76ea58cf10fe2ada252621a4a31a1f8ecd",
+      "installedSha": "897f11437c765da7b1f577c8c2ddbd76ea58cf10fe2ada252621a4a31a1f8ecd"
     },
     "scripts/checks/framework-purity.js": {
       "owner": "framework",
@@ -15434,8 +15469,8 @@
       "managed": true,
       "source": ".claude/project/reference/agent-dispatch-guide.md",
       "kind": "md",
-      "sha256": "8ea967a684c395fbd7092352c0ff120caf7bef20ef747efdf2a325733cf7fc28",
-      "installedSha": "8ea967a684c395fbd7092352c0ff120caf7bef20ef747efdf2a325733cf7fc28"
+      "sha256": "17d1a861b4d67b31df4eb32b04db9b3f3f247658acb64a6783381c0fe3025665",
+      "installedSha": "17d1a861b4d67b31df4eb32b04db9b3f3f247658acb64a6783381c0fe3025665"
     },
     ".claude/project/reference/cross-provider-dispatch.md": {
       "owner": "framework",
@@ -16316,8 +16351,8 @@
       "managed": true,
       "source": ".claude/commands/scan/full.md",
       "kind": "md",
-      "sha256": "d01986749062bf7ab0d3b280179de633bfd2f38cb3e685bb667544b891dec004",
-      "installedSha": "d01986749062bf7ab0d3b280179de633bfd2f38cb3e685bb667544b891dec004"
+      "sha256": "4da794269b8a29c1f29075f8389e1f5b56e73ccc768005ca75c5935403c8aadc",
+      "installedSha": "4da794269b8a29c1f29075f8389e1f5b56e73ccc768005ca75c5935403c8aadc"
     },
     ".claude/commands/scan/ingest-firewall.md": {
       "owner": "framework",
@@ -17660,8 +17695,8 @@
       "managed": true,
       "source": ".claude/agents/president/alpha.md",
       "kind": "md",
-      "sha256": "513022ba8ce1f4f5cf8d4d06f758ab49829ea3e1ea348bae5d05f6239d8a5926",
-      "installedSha": "513022ba8ce1f4f5cf8d4d06f758ab49829ea3e1ea348bae5d05f6239d8a5926"
+      "sha256": "9bf2bc858a5458e4263353870c8851d14e14e1c3126f5f852786351839fe250c",
+      "installedSha": "9bf2bc858a5458e4263353870c8851d14e14e1c3126f5f852786351839fe250c"
     },
     ".claude/agents/president/beta.md": {
       "owner": "framework",

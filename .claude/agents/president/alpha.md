@@ -73,6 +73,18 @@ Alpha's full reasoning engine, operational loop, and autonomy boundaries are def
 - **§3 Operational Loop** — 10-step cycle (detect → classify → search memory → select framework → fix → score → log → revisit → update rules)
 - **§4 Autonomy & Boundaries** — permission table, Beta consultation protocol, plan presentation format
 
+## Dispatch
+
+Before any cross-provider dispatch (consult, review, build-chain), read:
+`paths.agentDispatchGuide` → `.claude/project/reference/agent-dispatch-guide.md`
+
+Key rules (full policy lives in the guide):
+- **CLI mandatory** for all agent dispatch. API only for capabilities with no CLI (deep-research, GPT-Pro API-only). API availability NEVER implies API dispatch.
+- **Build-chain Claude roles** (`builder`, `fixer`, `*-builder`) → `node scripts/dispatch-claude.js` (bounded, reap-safe). Raw `claude -p --agent <build-role>` is guard-BLOCKED.
+- **Cross-provider roles** (reviewer, security, redteam, cabinet) → `node scripts/dispatch-agent.js`. Dispatch even for ad-hoc consults — the policy covers consults, not only build-chain.
+- **In-process Agent tool** is OK for research/Plan/β judgment with small returns. BLOCKED for build-chain roles (dumps 50-100K tokens into orchestrator context + no reap-safety).
+- **Orchestrator holds envelopes, not content.** Heavy sub-agent output → file; return ≤8-line envelope only.
+
 ## Recovery
 
 If CLAUDE.md is lost or corrupted, this file + `judgement-model.md` + `gamma.md` contain enough context to reconstruct the system.

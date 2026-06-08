@@ -26,6 +26,24 @@ const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
 const { PROJECT, PATHS } = require("./paths");
+// PLAN §17.2 step-1 wire-through: the live cross-provider dispatch spawns through
+// the dispatch SAFETY KERNEL (tool-ID→abs path, arg allowlist, shell:false,
+// tree-kill) and resolves keys through the shared N-3 AUTH-RESOLVER (full source
+// precedence, in-code dotenv, BOM-safe, never a shell). GUARDED requires — a hook
+// lib must never crash on a missing/broken module; fall back to the legacy
+// shell:true spawn only if the kernel can't be loaded (logged once).
+let safeSpawn = null;
+let authResolver = null;
+try {
+  safeSpawn = require("../../dispatch/safe-spawn");
+} catch {
+  /* fail-open: legacy spawn path below */
+}
+try {
+  authResolver = require("../../dispatch/auth-resolver");
+} catch {
+  /* fail-open: loadGeminiApiKey fallback below */
+}
 
 // ── Config resolution ───────────────────────────────────────
 function loadManifest() {
@@ -622,34 +640,47 @@ function runProvider(role, prompt, opts = {}) {
     // is harmless when the shell parses the command.
     const reasoningFlag = buildReasoningFlag(providerName, role);
 
-    let cmd;
+    // ── Build the argv ARRAY (no shell string) for the safety kernel ──
+    // safeSpawnSync resolves the tool-ID → realpath'd absolute exe (the model
+    // never supplies the path), allowlists every flag/value (shell:false),
+    // normalizes stdin (UTF-8/BOM/CRLF), and tree-kills on timeout. The codex +
+    // gemini ARG_POLICY entries in safe-spawn.js were authored for exactly these
+    // invocations. (PLAN §17.2 step-1 wire-through.)
+    // The reasoning flag is a single string like "-c model_reasoning_effort=high"
+    // → split into discrete argv tokens.
+    const reasoningArgs = reasoningFlag
+      ? reasoningFlag.split(/\s+/).filter(Boolean)
+      : [];
+    let toolId;
+    let argv;
     if (providerName === "openai") {
-      // codex exec reads stdin when passed `-` as the prompt.
-      // `--full-auto` is DEPRECATED in Codex ≥0.135 (deprecation warning leaks
-      // into the JSON envelope, corrupting parseProviderJson). `codex exec` is
-      // inherently non-interactive, so the headless replacement is just
-      // `--sandbox workspace-write` — `--ask-for-approval` is interactive-only
-      // and `exec` rejects it as an unexpected argument.
-      // Reasoning flag (e.g. `-c model_reasoning_effort=high`) injected if role-mapped.
-      cmd = `${cfg.cli} exec --sandbox workspace-write ${reasoningFlag} -m ${model} -`;
+      // `codex exec --sandbox workspace-write [-c …] -m <model> -` (stdin prompt).
+      toolId = "codex";
+      argv = ["exec", "--sandbox", "workspace-write", ...reasoningArgs, "-m", model, "-"];
     } else if (providerName === "gemini") {
-      // gemini CLI: context on stdin, instruction via -p, `-o json` returns a
-      // JSON envelope with { response, stats.models } so we can verify which
-      // model actually served the request (preview models can silently fall
-      // back under load). We extract response as `output` and record the
-      // served model as `actualModel`.
-      //
-      // Phase 0 workstream E: optional --skip-trust. The gemini CLI refuses
-      // to run outside a trusted directory on some platforms. The flag is
-      // gated by env (WARPOS_GEMINI_TRUST_BYPASS=1) so projects can opt in
-      // without changing source. Default OFF — trust enforcement may be
-      // intentional in regulated repos.
-      const trustFlag =
-        process.env.WARPOS_GEMINI_TRUST_BYPASS === "1" ? " --skip-trust" : "";
-      cmd = `${cfg.cli}${trustFlag} -m ${model} -p "Process the instructions on stdin and produce the requested output." -o json`;
+      // gemini: context on stdin, fixed instruction via -p, `-o json` envelope.
+      // --skip-trust gated by WARPOS_GEMINI_TRUST_BYPASS (default OFF).
+      toolId = "gemini";
+      const trustArgs =
+        process.env.WARPOS_GEMINI_TRUST_BYPASS === "1" ? ["--skip-trust"] : [];
+      argv = [
+        ...trustArgs,
+        "-m", model,
+        "-p", "Process the instructions on stdin and produce the requested output.",
+        "-o", "json",
+      ];
     } else {
-      // Generic pattern from cfg.syntax (used when manifest overrides defaults)
-      cmd = `${cfg.syntax.replace("{model}", model).replace("{reasoning}", reasoningFlag)}`;
+      // A manifest-overridden provider with a custom cfg.syntax has no ARG_POLICY
+      // entry in the safety kernel → fail CLOSED rather than spawn an unvetted
+      // shell string. (Add a tool-ID + arg-policy to safe-spawn.js to support it.)
+      return {
+        ok: false,
+        provider: providerName,
+        model,
+        output: "",
+        fallback: true,
+        error: `Provider "${providerName}" uses a custom cfg.syntax not covered by the dispatch safety kernel (safe-spawn ARG_POLICY). Add a tool-ID + arg-policy before dispatching — refusing an unvetted shell spawn.`,
+      };
     }
 
     // Phase 0 workstream C: capture stderr so silent zero-byte deaths leave
@@ -702,34 +733,59 @@ function runProvider(role, prompt, opts = {}) {
       // headless fix (L15: key + trust) never regresses on key-only / fresh setups.
       // A deliberately EXPORTED GEMINI_API_KEY in the inherited env is left as-is.
       if (!childEnv.GEMINI_API_KEY && !hasValidGeminiOAuth()) {
-        const geminiKey = loadGeminiApiKey();
-        if (geminiKey) childEnv.GEMINI_API_KEY = geminiKey;
+        // N-3: resolve via the shared auth-resolver (full source precedence,
+        // in-code dotenv, BOM-safe, never a shell). Refuse a shell-suspicious
+        // value. Value injected into the child env only — never logged. Falls
+        // back to the legacy local reader if the resolver can't be loaded.
+        if (authResolver) {
+          const r = authResolver.resolveKey("GEMINI_API_KEY", { withValue: true });
+          if (r.found && r.value && !r.suspicious) childEnv.GEMINI_API_KEY = r.value;
+        } else {
+          const geminiKey = loadGeminiApiKey();
+          if (geminiKey) childEnv.GEMINI_API_KEY = geminiKey;
+        }
       }
     }
-    const { spawnSync } = require("child_process");
-    const spawned = spawnSync(cmd, {
-      cwd: PROJECT,
-      env: childEnv,
-      timeout: timeoutMs,
-      input: Buffer.from(promptContent, "utf8"),
-      maxBuffer: 32 * 1024 * 1024, // 32MB for long review outputs
-      shell: true,
-      encoding: "buffer",
-    });
-    if (spawned.error) throw spawned.error;
-    const stdoutBuf = spawned.stdout || Buffer.alloc(0);
-    const stderrBuf = spawned.stderr || Buffer.alloc(0);
-    const rawOutput = stdoutBuf.toString("utf8").trim();
-    const stderrText = stderrBuf.toString("utf8");
-    const stderrBytes = stderrBuf.length;
-    if (spawned.status !== 0) {
-      const errMessage = stderrText.trim() || `exit ${spawned.status}`;
-      const e = new Error(errMessage);
-      e.stderr = stderrText;
-      e.status = spawned.status;
-      e.stderrBytes = stderrBytes;
+    // ── Spawn through the dispatch SAFETY KERNEL (shell:false, arg-allowlisted,
+    // tool resolved to abs path, tree-kill on timeout). Fail CLOSED if the kernel
+    // can't be loaded — refuse the legacy shell:true spawn rather than silently
+    // re-introduce the injection surface the wire-through closed.
+    if (!safeSpawn) {
+      const e = new Error(
+        "dispatch safety kernel (scripts/dispatch/safe-spawn.js) unavailable — refusing the legacy shell:true spawn. Restore the module.",
+      );
+      e.kernelMissing = true;
       throw e;
     }
+    const spawned = safeSpawn.safeSpawnSync(toolId, argv, {
+      cwd: PROJECT,
+      env: childEnv,
+      input: promptContent,
+      timeoutMs,
+      maxBuffer: 32 * 1024 * 1024, // 32MB for long review outputs
+    });
+    const stderrText = spawned.stderr || "";
+    const stderrBytes = Buffer.byteLength(stderrText, "utf8");
+    // safeSpawnSync classifies an arg/resolution refusal, a timeout/spawn reap,
+    // a non-zero exit, AND a zero-byte-on-exit-0 (the false-green class) all as
+    // !ok → throw so the existing quota-classify + claude-fallback path handles
+    // every failure uniformly. (This is STRICTER than the old code, which
+    // accepted exit-0-empty as success → a silent false-green.)
+    if (!spawned.ok) {
+      const detail = spawned.violations
+        ? `arg-policy: ${spawned.violations.join("; ")}`
+        : spawned.detail
+          ? spawned.detail
+          : stderrText.trim() || spawned.reason || `exit ${spawned.exitCode}`;
+      const e = new Error(detail);
+      e.stderr = stderrText;
+      e.status = spawned.exitCode;
+      e.stderrBytes = stderrBytes;
+      e.reaped = spawned.reaped;
+      e.reason = spawned.reason;
+      throw e;
+    }
+    const rawOutput = (spawned.stdout || "").trim();
 
     // Gemini JSON envelope unwrap + actual-model audit
     let output = rawOutput;
@@ -769,7 +825,7 @@ function runProvider(role, prompt, opts = {}) {
       actualModel,
       output,
       stderrBytes,
-      cmd: cmd.slice(0, 200),
+      cmd: [toolId, ...argv].join(" ").slice(0, 200),
     };
   } catch (err) {
     // WI-18: detect a quota/429 failure and surface it LOUDLY rather than
