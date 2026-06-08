@@ -26,6 +26,14 @@ const fs = require("fs");
 const path = require("path");
 
 const PROJECT_ROOT = path.resolve(__dirname, "..", "..");
+
+// PLAN §17.4: the coverage-record argv/stamp schema version. Bumped whenever the
+// set of §17.4 fields a wrapper stamps (or their meaning) changes, so the coverage
+// gate can REJECT a record written under an older/unknown schema as stale or
+// backfilled (a record's mere existence is not coverage). Both wrappers stamp it;
+// the coverage gate requires the CURRENT value. One source of truth here in the
+// dispatch keystone — both wrappers + the gate already read this module.
+const ARGV_SCHEMA_VERSION = "1";
 // Path-override seam (downstream products + tests): point at an alternate contract
 // or registry without code change. Defaults to the canonical _org/ keystones.
 const CONTRACT_PATH = process.env.WARPOS_DISPATCH_CONTRACT_PATH || path.join(PROJECT_ROOT, ".claude", "agents", "_org", "dispatch-contract.json");
@@ -253,6 +261,7 @@ function validateContractFile() {
 module.exports = {
   loadContract, loadRegistry, classForRole, contractForRole, validateDispatch,
   skillExecution, validateContractFile, registryAttrs, CONTRACT_PATH, REGISTRY_PATH,
+  ARGV_SCHEMA_VERSION,
 };
 
 // ── CLI ─────────────────────────────────────────────────────

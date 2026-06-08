@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-08T16:10:39.165Z",
+  "generatedAt": "2026-06-08T16:11:14.894Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.15.4",
   "migrations": [],
@@ -2253,15 +2253,15 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/dispatch-agent.js",
-      "sha256": "8ccc965ac119f9930b1430094a4477f14afbc64b6da17ef545dc242472bce7e7",
-      "installedSha": "8ccc965ac119f9930b1430094a4477f14afbc64b6da17ef545dc242472bce7e7"
+      "sha256": "617df7720d3443c16f207f0c5c2b7c7578ff2d98bf3697e8dff94256b4e51877",
+      "installedSha": "617df7720d3443c16f207f0c5c2b7c7578ff2d98bf3697e8dff94256b4e51877"
     },
     "scripts/dispatch-claude.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/dispatch-claude.js",
-      "sha256": "6745811c7b1790c923861ff2dc0dac18184c62ad62c8f4e9ba53c4353c8cdb62",
-      "installedSha": "6745811c7b1790c923861ff2dc0dac18184c62ad62c8f4e9ba53c4353c8cdb62"
+      "sha256": "cf8261f0ef3f7e8193dceba98db8bbe30c90bd3b74d18ac9b7d49fe3c7c8a3b6",
+      "installedSha": "cf8261f0ef3f7e8193dceba98db8bbe30c90bd3b74d18ac9b7d49fe3c7c8a3b6"
     },
     "scripts/dispatch-skill.js": {
       "owner": "framework",
@@ -5207,15 +5207,15 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/dispatch/coverage-gate.js",
-      "sha256": "e7d1831f25c943c18c6bce9f214c2702c7f9c7ec6998b5ef32dae03bbc57165d",
-      "installedSha": "e7d1831f25c943c18c6bce9f214c2702c7f9c7ec6998b5ef32dae03bbc57165d"
+      "sha256": "16af46ae08b6ad887e57f007239ae853daa5dfef07dfd1c01d1d63ed4e6e650a",
+      "installedSha": "16af46ae08b6ad887e57f007239ae853daa5dfef07dfd1c01d1d63ed4e6e650a"
     },
     "scripts/dispatch/coverage-gate.test.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/dispatch/coverage-gate.test.js",
-      "sha256": "75499d8291320dab5d8c819eddb36b2e29141ea4770ee655fbd2a96a17e371a6",
-      "installedSha": "75499d8291320dab5d8c819eddb36b2e29141ea4770ee655fbd2a96a17e371a6"
+      "sha256": "c62b62f317a147e4e5f8dd57ac437db3aac40ff84219f9e5f1989f15c3e1a8ee",
+      "installedSha": "c62b62f317a147e4e5f8dd57ac437db3aac40ff84219f9e5f1989f15c3e1a8ee"
     },
     "scripts/dispatch/diff.js": {
       "owner": "framework",
@@ -5235,8 +5235,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/dispatch/dispatch-contract.js",
-      "sha256": "57494a8ef73d84027875133748ef677eea33fb5ae4de01c40759e66bceb0d260",
-      "installedSha": "57494a8ef73d84027875133748ef677eea33fb5ae4de01c40759e66bceb0d260"
+      "sha256": "4321e3303e634f63bc90b4843b02b91ed08475014474eac7922667df53697077",
+      "installedSha": "4321e3303e634f63bc90b4843b02b91ed08475014474eac7922667df53697077"
     },
     "scripts/dispatch/dispatch-contract.test.js": {
       "owner": "framework",
@@ -16385,8 +16385,8 @@
       "managed": true,
       "source": ".claude/commands/scan/full.md",
       "kind": "md",
-      "sha256": "c20eaa9404931af96ff5f21c015aec66df5f77b643260a4d09354b3ed69c121c",
-      "installedSha": "c20eaa9404931af96ff5f21c015aec66df5f77b643260a4d09354b3ed69c121c"
+      "sha256": "7002746aa244362015993fe70462379c78b0657fdb195c7cf89b7ba42d921536",
+      "installedSha": "7002746aa244362015993fe70462379c78b0657fdb195c7cf89b7ba42d921536"
     },
     ".claude/commands/scan/ingest-firewall.md": {
       "owner": "framework",

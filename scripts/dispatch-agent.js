@@ -150,6 +150,32 @@ function promptDigest(promptBufOrStr) {
   }
 }
 
+// Digest of the produced OUTPUT — §17.4 proof-of-artifact: a coverage record must
+// prove it produced non-trivial output, not merely that "a role ran". Returns null
+// for empty/whitespace output, so the coverage gate can detect blind/unproven
+// coverage (an ok:true record with no real artifact behind it). Buffer or string.
+function outputDigest(outBufOrStr) {
+  try {
+    const s = Buffer.isBuffer(outBufOrStr)
+      ? outBufOrStr.toString("utf8")
+      : String(outBufOrStr == null ? "" : outBufOrStr);
+    if (!s.trim()) return null;
+    return "sha256:" + crypto.createHash("sha256").update(Buffer.from(s, "utf8")).digest("hex").slice(0, 32);
+  } catch {
+    return null;
+  }
+}
+
+// §17.4 argv/stamp schema version — sourced from the dispatch keystone (one source
+// of truth). Fail-soft so a contract-read hiccup never crashes a live dispatch.
+function argvSchemaVersion() {
+  try {
+    return require("./dispatch/dispatch-contract").ARGV_SCHEMA_VERSION || "1";
+  } catch {
+    return "1";
+  }
+}
+
 function ensureDir(p) {
   try {
     fs.mkdirSync(p, { recursive: true });
@@ -372,6 +398,10 @@ if (require.main !== module) {
     // dispatch-claude.js so both wrappers write the SAME coverage-gradeable schema.
     runContext,
     promptDigest,
+    // §17.4 schema strengthening — reused by dispatch-claude.js so both wrappers
+    // stamp output_digest (proof-of-artifact) + the argv schema version identically.
+    outputDigest,
+    argvSchemaVersion,
   };
   return;
 }
@@ -701,6 +731,12 @@ try {
     prompt_digest: promptDigest(prompt),
     shape: "subprocess-cross-provider",
     tool_id: provider === "openai" ? "codex" : provider === "gemini" ? "gemini" : provider,
+    // §17.4 strengthening: schema version (the gate rejects stale/backfilled
+    // records), cwd, and output_digest (proof the dispatch produced real output —
+    // a record's mere existence is not coverage).
+    argv_schema_version: argvSchemaVersion(),
+    cwd: AGENT_ROOT,
+    output_digest: outputDigest(result.output),
   });
 
   // Silent zero-byte death: process returned a non-ok with no stdout AND no

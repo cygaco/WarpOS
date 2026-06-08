@@ -65,6 +65,10 @@ const {
   // wrapper, so both write a uniformly coverage-gradeable record.
   runContext,
   promptDigest,
+  // §17.4 strengthening: shared output_digest (proof-of-artifact) + argv schema
+  // version stampers — identical schema across both wrappers.
+  outputDigest,
+  argvSchemaVersion,
 } = require("./dispatch-agent");
 
 // PLAN §17.2 step-1 wire-through: the build-chain Claude spawn routes through the
@@ -416,6 +420,12 @@ recordCompletion({
   prompt_digest: promptDigest(promptBuf),
   shape: "subprocess-claude",
   tool_id: "claude",
+  // §17.4 strengthening: schema version (anti-stale/backfill), cwd (the worktree
+  // the builder ran in), and output_digest (proof of non-trivial output — "" on a
+  // reap yields null, so a reaped record carries no false artifact proof).
+  argv_schema_version: argvSchemaVersion(),
+  cwd: runCwd,
+  output_digest: outputDigest(stdoutBuf),
 });
 
 // On a reap, write the durable DEATH record (mirrors the silent_zero_byte_death

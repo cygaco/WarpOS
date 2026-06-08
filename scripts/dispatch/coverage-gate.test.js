@@ -12,10 +12,13 @@
 
 const { harness } = require("../checks/lib/fixture-harness");
 const { evaluate, parseExpect } = require("./coverage-gate");
+const { ARGV_SCHEMA_VERSION } = require("./dispatch-contract");
 
 const h = harness("coverage-gate");
 
 const RUN = "run-abc";
+// A realistic post-§17.4 record: backed + at the current schema + carrying
+// output_digest (proof-of-artifact). Override per case.
 function rec(over) {
   return {
     dispatch_id: "d-1",
@@ -24,6 +27,8 @@ function rec(over) {
     role: "x",
     provider: "openai",
     ok: true,
+    argv_schema_version: ARGV_SCHEMA_VERSION,
+    output_digest: "sha256:feedface00000000000000000000",
     ...over,
   };
 }
@@ -73,6 +78,59 @@ h.violation("a record from another run_id does NOT satisfy this run's coverage",
     runId: RUN,
     records: [rec({ role: "security-reviewer", provider: "gemini", run_id: "OTHER-RUN", dispatch_id: "d-o" })],
     expected: [{ role: "security-reviewer" }],
+  }));
+
+// ── PLANTED (§17.4): a current-schema backed ok:true record with NO artifact proof ──
+h.violation("a record with no output_digest/artifact is blind coverage (rejected)", () =>
+  evaluate({
+    runId: RUN,
+    records: [rec({ role: "security-reviewer", provider: "gemini", dispatch_id: "d-np", output_digest: null })],
+    expected: [{ role: "security-reviewer" }],
+  }));
+
+// ── PLANTED (§17.4): a record stamped at a STALE/older schema version ──
+h.violation("a record at a stale argv_schema_version does not satisfy coverage", () =>
+  evaluate({
+    runId: RUN,
+    records: [rec({ role: "security-reviewer", provider: "gemini", dispatch_id: "d-sv", argv_schema_version: "0" })],
+    expected: [{ role: "security-reviewer" }],
+  }));
+
+// ── PLANTED (§17.4): a record with NO argv_schema_version (pre-schema / backfill) ──
+h.violation("a record with no argv_schema_version is stale/backfilled (rejected)", () => {
+  const r = rec({ role: "security-reviewer", provider: "gemini", dispatch_id: "d-ns" });
+  delete r.argv_schema_version;
+  return evaluate({ runId: RUN, records: [r], expected: [{ role: "security-reviewer" }] });
+});
+
+// ── PLANTED (§17.4): an unauditable waiver (no reason) ──
+h.violation("a waiver with no reason is rejected (unauditable)", () =>
+  evaluate({ runId: RUN, records: [], expected: [{ role: "security-reviewer", waiver: {} }] }));
+
+// ── PLANTED (§17.4): a named artifact the record does not carry ──
+h.violation("a named artifact with no matching record digest is flagged", () =>
+  evaluate({
+    runId: RUN,
+    records: [rec({ role: "frontend-builder", provider: "claude", dispatch_id: "d-art" })],
+    expected: [{ role: "frontend-builder", artifact: "runtime/x/out.md" }],
+  }));
+
+// ── known-answer (§17.4): an AUDITABLE waiver (reason given) → waived, not missing ──
+h.pass("a waiver WITH a reason covers the role as waived", () =>
+  evaluate({
+    runId: RUN,
+    records: [],
+    expected: [{ role: "security-reviewer", waiver: { reason: "no UI this sprint; design-quality N/A" } }],
+  }));
+
+// ── known-answer (§17.4): a named artifact whose digest is in the record → covered ──
+h.pass("a named artifact whose digest is in the record => covered", () =>
+  evaluate({
+    runId: RUN,
+    records: [
+      rec({ role: "frontend-builder", provider: "claude", dispatch_id: "d-ok", artifacts: [{ path: "runtime/x/out.md", sha256: "sha256:abc" }] }),
+    ],
+    expected: [{ role: "frontend-builder", artifact: "runtime/x/out.md" }],
   }));
 
 // ── parseExpect helper ──────────────────────────────────────

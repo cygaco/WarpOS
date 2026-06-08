@@ -17,17 +17,26 @@
  *   - a record claiming ok:true WITHOUT a dispatch_id/cmdline_checksum is a
  *     hand-authored phantom row and is REJECTED.
  *
+ * §17.4 strengthening — a record's mere EXISTENCE is not coverage. A satisfying
+ * record must ALSO be stamped at the CURRENT argv schema version (a stale or
+ * backfilled record is rejected) AND carry artifact proof (a non-empty output_digest
+ * or an artifacts[] digest — proof it actually produced output). A named `artifact`
+ * can be re-hashed on disk (--verify-artifacts) to prove it appeared. A role may be
+ * AUDITABLY waived (with a reason), never silently dropped.
+ *
  * Expected obligations are read from the dispatch-contract keystone (§17.1) per
  * role. `evaluate()` is pure (synthetic records + expectations -> verdict) so it
- * is P5-testable with planted violations. REPORT-ONLY by default (PLAN §4 ramp);
- * --enforce / WARPOS_COVERAGE_GATE_ENFORCE=block makes a violation exit non-zero.
+ * is P5-testable with planted violations. BLOCKING by default (PLAN §4 ramp FLIPPED,
+ * now that §17.4 makes the gate non-fakeable); --report-only /
+ * WARPOS_COVERAGE_GATE_ENFORCE=report surfaces violations WITHOUT exiting non-zero.
  *
- * Zero runtime deps.
+ * Zero runtime deps (Node core only).
  */
 
 const fs = require("fs");
 const path = require("path");
-const { contractForRole } = require("./dispatch-contract");
+const crypto = require("crypto");
+const { contractForRole, ARGV_SCHEMA_VERSION } = require("./dispatch-contract");
 
 const PROJECT_ROOT = path.resolve(__dirname, "..", "..");
 
@@ -36,18 +45,57 @@ function isBackedRecord(r) {
   return !!(r && typeof r.dispatch_id === "string" && r.dispatch_id && typeof r.cmdline_checksum === "string" && r.cmdline_checksum);
 }
 
+// §17.4 "a record's existence ≠ covered" — a coverage record must prove it produced
+// SOMETHING: a non-empty output_digest (the universal proof for reviewer/skill/build
+// stdout) OR at least one artifacts[] entry carrying a digest. A backed ok:true
+// record with neither is "blind coverage" and does NOT satisfy a role.
+function hasArtifactProof(r) {
+  if (r && typeof r.output_digest === "string" && r.output_digest) return true;
+  if (r && Array.isArray(r.artifacts) && r.artifacts.some((a) => a && a.sha256)) return true;
+  return false;
+}
+
+/** sha256 (matching the wrappers' 32-hex truncation) of a file, or null if unreadable. */
+function sha256File(p) {
+  try {
+    return "sha256:" + crypto.createHash("sha256").update(fs.readFileSync(p)).digest("hex").slice(0, 32);
+  } catch {
+    return null;
+  }
+}
+
 /**
- * evaluate({ records, expected, runId }) -> { ok, violations[], covered[], missing[] }
- *   records  : completion records (objects) from the ledger.
- *   expected : [{ role, shape?, plan_item_id? }] — the roles a phase CLAIMS it covered.
- *   runId    : when set, only records with this run_id count (a record from another
- *              run cannot satisfy this run's coverage).
+ * evaluate({ records, expected, runId, schemaVersion?, verifyArtifacts? })
+ *   -> { ok, violations[], covered[], missing[], waived[] }
+ *
+ *   records         : completion records (objects) from the ledger.
+ *   expected        : [{ role, shape?, plan_item_id?, artifact?, waiver?{reason} }]
+ *                     — the roles a phase CLAIMS it covered. `artifact` names a file
+ *                     the role must have produced; `waiver` AUDITABLY excuses a role.
+ *   runId           : when set, only records with this run_id count.
+ *   schemaVersion   : the CURRENT argv/stamp schema a record must carry (default the
+ *                     keystone's ARGV_SCHEMA_VERSION) — a record at an older/unknown
+ *                     version is stale or backfilled and does NOT satisfy coverage.
+ *   verifyArtifacts : when true, a named `artifact` is re-hashed on disk and must
+ *                     EXIST with a digest matching the record (proof it appeared).
+ *
+ * §17.4: a backed ok:true record's mere EXISTENCE is not coverage. A satisfying
+ * record must ALSO be at the current schema AND prove it produced output
+ * (output_digest / artifacts). This closes the "backfillable, fakeable, blind to
+ * whether the artifact appeared" hole — the precondition for flipping to blocking.
  */
 function evaluate(input) {
-  const { records = [], expected = [], runId = null } = input || {};
+  const {
+    records = [],
+    expected = [],
+    runId = null,
+    schemaVersion = ARGV_SCHEMA_VERSION,
+    verifyArtifacts = false,
+  } = input || {};
   const violations = [];
   const covered = [];
   const missing = [];
+  const waived = [];
   const pool = (runId ? records.filter((r) => r && r.run_id === runId) : records.slice()).filter(Boolean);
 
   for (const exp of expected) {
@@ -56,13 +104,31 @@ function evaluate(input) {
       violations.push("expected entry with no role");
       continue;
     }
+
+    // Waiver: a role may be explicitly, AUDITABLY excused (a known skip / tolerated
+    // failure) instead of silently missing — but ONLY with a reason, so the
+    // flip-to-blocking gate has an accountable escape, never a silent loophole.
+    if (exp.waiver) {
+      const reason = exp.waiver && typeof exp.waiver.reason === "string" ? exp.waiver.reason.trim() : "";
+      if (!reason) {
+        violations.push(`role '${role}' is waived but the waiver carries no reason — an unauditable waiver is REJECTED (name why the role is skipped).`);
+      } else {
+        waived.push({ role, reason });
+      }
+      continue;
+    }
+
     let c = null;
     try {
       c = contractForRole(role);
     } catch {
       /* contract unavailable — still enforce backed-record presence */
     }
-    const hit = pool.find(
+
+    // Candidate records: right role, ok:true, BACKED, shape + plan_item match if
+    // required. A satisfying HIT must ALSO be at the current schema AND carry
+    // artifact proof — split out so the failure message names the real reason.
+    const roleRecs = pool.filter(
       (r) =>
         r.role === role &&
         r.ok === true &&
@@ -70,31 +136,56 @@ function evaluate(input) {
         (!exp.shape || r.shape === exp.shape) &&
         (!exp.plan_item_id || r.plan_item_id === exp.plan_item_id),
     );
+    const hit = roleRecs.find((r) => r.argv_schema_version === schemaVersion && hasArtifactProof(r));
+
     if (!hit) {
       missing.push(role);
-      violations.push(
-        `expected role '${role}'${exp.shape ? ` (shape ${exp.shape})` : ""} has NO ok:true backed completion record${runId ? ` for run ${runId}` : ""} — coverage claim is UNBACKED (sprint-theater guard).`,
-      );
+      const noProof = roleRecs.find((r) => r.argv_schema_version === schemaVersion && !hasArtifactProof(r));
+      const staleOnly = roleRecs.find((r) => r.argv_schema_version !== schemaVersion);
+      if (noProof) {
+        violations.push(`expected role '${role}' has an ok:true backed record but NO output_digest/artifact proof — it shows a role 'ran' without proving it produced output (blind coverage). REJECTED (§17.4).`);
+      } else if (staleOnly) {
+        violations.push(`expected role '${role}' has only a record at argv_schema_version=${JSON.stringify(staleOnly.argv_schema_version ?? null)} (current is ${JSON.stringify(schemaVersion)}) — a stale/backfilled record does not satisfy coverage.`);
+      } else {
+        violations.push(`expected role '${role}'${exp.shape ? ` (shape ${exp.shape})` : ""} has NO ok:true backed completion record${runId ? ` for run ${runId}` : ""} — coverage claim is UNBACKED (sprint-theater guard).`);
+      }
       continue;
     }
+
     if (c && c.coverage && c.coverage.cross_provider_required && hit.provider === "claude") {
-      violations.push(
-        `role '${role}' requires cross-provider review but its record shows provider=claude — a Claude clone graded Claude's work (diversity violation).`,
-      );
+      violations.push(`role '${role}' requires cross-provider review but its record shows provider=claude — a Claude clone graded Claude's work (diversity violation).`);
     }
-    covered.push({ role, dispatch_id: hit.dispatch_id, provider: hit.provider || null, shape: hit.shape || null });
+
+    // Named-artifact obligation: when the expected entry names a file artifact, the
+    // record must carry its digest, and (when verifyArtifacts) the file must EXIST
+    // on disk with a MATCHING digest — proof it actually appeared, not just that a
+    // digest string was stamped.
+    if (exp.artifact) {
+      const arts = Array.isArray(hit.artifacts) ? hit.artifacts : [];
+      const a = arts.find((x) => x && x.path === exp.artifact);
+      if (!a || !a.sha256) {
+        violations.push(`role '${role}' was expected to produce artifact ${JSON.stringify(exp.artifact)} but its record carries no matching artifact digest.`);
+      } else if (verifyArtifacts) {
+        const onDisk = sha256File(path.isAbsolute(exp.artifact) ? exp.artifact : path.join(PROJECT_ROOT, exp.artifact));
+        if (onDisk === null) {
+          violations.push(`role '${role}' artifact ${JSON.stringify(exp.artifact)} does not exist on disk — the record claims it but it never appeared.`);
+        } else if (onDisk !== a.sha256) {
+          violations.push(`role '${role}' artifact ${JSON.stringify(exp.artifact)} on disk (${onDisk}) does not match the record's digest (${a.sha256}) — content drift / faked digest.`);
+        }
+      }
+    }
+
+    covered.push({ role, dispatch_id: hit.dispatch_id, provider: hit.provider || null, shape: hit.shape || null, output_digest: hit.output_digest || null });
   }
 
   // phantom-coverage guard: any ok:true record in the pool that is NOT backed.
   for (const r of pool) {
     if (r.ok === true && !isBackedRecord(r)) {
-      violations.push(
-        `a completion record (role=${r.role || "?"}) claims ok:true but lacks dispatch_id/cmdline_checksum — hand-authored phantom coverage row REJECTED.`,
-      );
+      violations.push(`a completion record (role=${r.role || "?"}) claims ok:true but lacks dispatch_id/cmdline_checksum — hand-authored phantom coverage row REJECTED.`);
     }
   }
 
-  return { ok: violations.length === 0, violations, covered, missing };
+  return { ok: violations.length === 0, violations, covered, missing, waived };
 }
 
 /** Read the canonical dispatch-completions ledger as an array of records. */
@@ -131,7 +222,7 @@ function parseExpect(spec) {
     });
 }
 
-module.exports = { evaluate, readLedger, isBackedRecord, parseExpect };
+module.exports = { evaluate, readLedger, isBackedRecord, hasArtifactProof, sha256File, parseExpect };
 
 // ── CLI ─────────────────────────────────────────────────────
 if (require.main === module) {
@@ -142,13 +233,18 @@ if (require.main === module) {
   };
   const runId = flag("--run");
   const expected = parseExpect(flag("--expect"));
-  const enforce = argv.includes("--enforce") || process.env.WARPOS_COVERAGE_GATE_ENFORCE === "block";
+  // FLIPPED (PLAN §4 ramp, §17.4): BLOCKING is now the default. Opt OUT with
+  // --report-only or WARPOS_COVERAGE_GATE_ENFORCE=report. (--enforce / =block stay
+  // accepted as explicit no-ops for back-compat with existing call sites.)
+  const reportOnly = argv.includes("--report-only") || process.env.WARPOS_COVERAGE_GATE_ENFORCE === "report";
+  const enforce = !reportOnly;
+  const verifyArtifacts = argv.includes("--verify-artifacts");
   const records = readLedger(flag("--ledger"));
-  const res = evaluate({ records, expected, runId });
+  const res = evaluate({ records, expected, runId, verifyArtifacts });
   process.stdout.write(
     JSON.stringify({ mode: enforce ? "blocking" : "report-only", run: runId, ...res }, null, 2) + "\n",
   );
-  // Report-only: always exit 0 (surface the violations, don't block). Blocking:
-  // exit non-zero on any violation (the §4-flipped state).
+  // Blocking: exit non-zero on any violation. Report-only: always exit 0 (surface
+  // the violations without blocking).
   process.exit(enforce && !res.ok ? 1 : 0);
 }
