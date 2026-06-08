@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "0.15.4",
-  "installedCommit": "06409e8604577ca83197ff95f2f5a32f7e9e3a89",
-  "installedAt": "2026-06-08T02:06:51.860Z",
+  "installedCommit": "04f740737d79176f399769f2c6c976b6b984fa7b",
+  "installedAt": "2026-06-08T02:13:25.403Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -11274,8 +11274,8 @@
       "dest": "scripts/dispatch-agent.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "228e50f6101a186e663542aebef63cf147cdfe78964df12a6f2bbf775c777d88",
-      "currentHashAtInstall": "228e50f6101a186e663542aebef63cf147cdfe78964df12a6f2bbf775c777d88",
+      "installedHash": "8221026ef6a58b3d15e2c9bc7c49817b46936b9b2abfc21b4b2c1ac5687326a9",
+      "currentHashAtInstall": "8221026ef6a58b3d15e2c9bc7c49817b46936b9b2abfc21b4b2c1ac5687326a9",
       "introducedIn": "0.0.0"
     },
     {

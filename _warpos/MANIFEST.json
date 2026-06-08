@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-08T02:06:52.210Z",
+  "generatedAt": "2026-06-08T02:16:26.845Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.15.4",
   "migrations": [],
@@ -2253,8 +2253,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/dispatch-agent.js",
-      "sha256": "228e50f6101a186e663542aebef63cf147cdfe78964df12a6f2bbf775c777d88",
-      "installedSha": "228e50f6101a186e663542aebef63cf147cdfe78964df12a6f2bbf775c777d88"
+      "sha256": "8221026ef6a58b3d15e2c9bc7c49817b46936b9b2abfc21b4b2c1ac5687326a9",
+      "installedSha": "8221026ef6a58b3d15e2c9bc7c49817b46936b9b2abfc21b4b2c1ac5687326a9"
     },
     "scripts/dispatch-claude.js": {
       "owner": "framework",
