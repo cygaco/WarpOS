@@ -73,6 +73,11 @@ const {
   AGENT_ROOT,
   runContext, // N-1 (§17.4) run_id / phase_id / plan_item_id stampers
   promptDigest,
+  // §17.4 schema strengthening — the coverage gate now REQUIRES these on a record
+  // for it to count (anti-stale/backfill + proof-of-artifact). Same stampers as the
+  // other two wrappers so a skill record is uniformly coverage-gradeable.
+  outputDigest,
+  argvSchemaVersion,
 } = require("./dispatch-agent");
 
 // The fail-closed skill-execution reader (PLAN §13). An unverified `subprocess`
@@ -359,6 +364,14 @@ function dispatchSkill(opts) {
     prompt_digest: promptDigest(promptBuf),
     shape: "subprocess-skill",
     tool_id: "claude",
+    // §17.4 strengthening: schema version + cwd + output_digest (proof the skill
+    // produced output) so this record SATISFIES the strengthened coverage gate.
+    // output_digest alone is the proof-of-artifact; a named-artifact on-disk check
+    // (the file carries a header, so its digest ≠ output_digest) is left to a future
+    // step that hashes the written file, not faked here.
+    argv_schema_version: argvSchemaVersion(),
+    cwd: AGENT_ROOT,
+    output_digest: outputDigest(stdoutBuf),
     skill,
     subprocess_verified: !!exec.verified,
     artifact: artifactPath,
