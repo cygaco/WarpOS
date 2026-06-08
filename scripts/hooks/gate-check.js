@@ -26,10 +26,12 @@ const SKIP_ROLES = [
   "redteam", // legacy → security-reviewer
   "security", // security-reviewer / security-builder / security-fixer
   "fixer", // covers *-fixer
-  "learner",
-  "auditor", // legacy alias → learner
+  "ops-analyst", // S-7: was `learner`
+  "learner", // legacy alias → ops-analyst
+  "auditor", // legacy alias → ops-analyst
   "compliance", // legacy → qa-reviewer
   "qa",
+  "cabinet", // S-7: freeform consult — not a builder dispatch
 ];
 
 function loadStore() {

@@ -49,10 +49,12 @@ const BUILD_CHAIN = new Set([
   "frontend-builder", "backend-builder", "security-builder",
   "frontend-fixer", "backend-fixer", "security-fixer",
   "frontend-reviewer", "backend-reviewer", "qa-reviewer", "security-reviewer",
-  "learner", "delta",
+  // S-7: canonical names (lookups normalize first, so the set must carry the
+  // NEW canonical so a dispatch by the new id is recognized). Legacy ids below.
+  "ops-analyst", "skeleton-builder", "delta",
   // generic transitional + legacy aliases:
   "builder", "fixer", "fix-agent", "reviewer", "evaluator",
-  "compliance", "auditor", "qa", "redteam",
+  "compliance", "learner", "auditor", "stub-scaffold", "qa", "redteam",
 ]);
 
 // Soft warn threshold (8KB) and hard concern threshold (32KB)

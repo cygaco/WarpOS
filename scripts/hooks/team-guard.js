@@ -27,7 +27,8 @@ try {
 } catch {
   GAMMA_ONLY_TYPES = new Set([
     "builder", "fixer", "fix-agent", "reviewer", "evaluator", "compliance",
-    "learner", "auditor", "qa", "redteam", "delta",
+    "ops-analyst", "learner", "auditor", "qa", "redteam", "delta", // S-7: learner→ops-analyst (legacy ids kept)
+    "skeleton-builder", "stub-scaffold", // S-7: stub-scaffold→skeleton-builder (legacy kept)
     "frontend-builder", "backend-builder",
   ]);
 }

@@ -71,8 +71,11 @@ const otherCases = [
   ["design-quality", path.join("product", "quality", "design-quality.md")],
   ["visual-review", path.join("product", "quality", "visual-review.md")],
   ["test-runner", path.join("product", "quality", "test-runner.md")],
-  ["learner", path.join("_system", "learner.md")],
-  ["stub-scaffold", path.join("_system", "stub-scaffold.md")],
+  // S-7 (PLAN §9.4): learner→ops-analyst re-homed _system→president;
+  // stub-scaffold→skeleton-builder re-homed _system→engineering; cabinet new in president.
+  ["ops-analyst", path.join("president", "ops-analyst.md")],
+  ["skeleton-builder", path.join("engineering", "skeleton-builder.md")],
+  ["cabinet", path.join("president", "cabinet.md")],
   ["design-lead", path.join("product", "design-lead.md")],
 ];
 for (const [role, expectedTail] of otherCases) {

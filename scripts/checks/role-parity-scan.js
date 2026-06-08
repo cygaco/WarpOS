@@ -47,9 +47,13 @@ const NAME = "role-parity";
 
 // Framework orchestrator + system roles — NOT domain doers, so they need no
 // domain/gauntlet home. (alpha/beta = org-map orchestrator/referee; gamma/delta =
-// orchestrators; learner/stub-scaffold = system.)
+// orchestrators; ops-analyst/skeleton-builder/cabinet = system tools — S-7 renamed
+// from learner/stub-scaffold + the new cabinet consult role. Legacy ids retained so
+// a transitional catalog still skips them here.)
 const ORCHESTRATOR_SYSTEM = new Set([
-  "alpha", "beta", "gamma", "delta", "learner", "stub-scaffold",
+  "alpha", "beta", "gamma", "delta",
+  "ops-analyst", "skeleton-builder", "cabinet",
+  "learner", "stub-scaffold", // S-7 legacy ids (back-compat)
 ]);
 
 // Catalog doer roles mid-migration to the domain org — governed but not yet

@@ -51,7 +51,12 @@ const skillHookPoints = require("../skills/skill-hook-points");
 // `hardcoded_role` branch only — a renamed-AWAY name still trips `hardcoded_stale_role`.
 const GENERIC_ROLES = new Set([
   "alpha", "beta", "gamma", "delta", "epsilon",
-  "general-purpose", "builder", "fixer", "stub-scaffold",
+  "general-purpose", "builder", "fixer",
+  // S-7: skeleton-builder is the live build-chain tool name; stub-scaffold kept
+  // whitelisted as its legacy id (a skill — oneshot/preflight.md — still dispatches
+  // it via the alias; flagging it stale would RED the gate before the skill body is
+  // migrated, which is out of this S-7 role-plumbing scope — see return caveat).
+  "skeleton-builder", "stub-scaffold",
 ]);
 
 // M1-c COMPLETE for the registered agent-calling skills — all should resolve their persona

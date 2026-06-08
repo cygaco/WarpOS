@@ -114,12 +114,25 @@ try {
 } catch {
   /* fail-open: BUILD_CHAIN_ROLES falls back to its literal below */
 }
+// S-7: normalize a legacy role id (stub-scaffold → skeleton-builder, etc.) before
+// the build-chain gate so a raw `claude -p --agent <legacy-id>` can't bypass the
+// guard once the registry-derived set carries only the NEW canonical name. Guarded
+// + identity-fallback — this is a fail-open hook; a broken alias module must never
+// crash it. (Memory: rename-cutover-covers-both-layers — the IMPERATIVE gate must
+// repoint too, not just the role↔spec bijection.)
+let normalizeRole = (r) => r;
+try {
+  ({ normalizeRole } = require("./lib/role-aliases"));
+} catch {
+  /* fail-open: identity normalize (legacy-id gating degrades, never crashes) */
+}
 const BUILD_CHAIN_ROLES_LITERAL = [
   "builder",
   "backend-builder",
   "frontend-builder",
   "fixer",
-  "stub-scaffold",
+  "skeleton-builder", // S-7: was `stub-scaffold` (build_chain tool, re-homed to engineering)
+  "stub-scaffold", // S-7 legacy id — keep blocked so a raw dispatch by the old name can't bypass the guard
   // ADR-0007 per-pod split (now derived from role-registry.json build_chain:true):
   "security-builder",
   "frontend-fixer",
@@ -205,7 +218,8 @@ function rawBuildChainClaudeRole(cmd, scan) {
   if (!/--agent\b/.test(scan)) return null; // an --agent flag (unquoted)
   const role = roleFromAgentFlag(cmd);
   if (!role) return null;
-  return BUILD_CHAIN_ROLES.has(role) ? role : null;
+  // S-7: normalize legacy ids (stub-scaffold → skeleton-builder) before the gate.
+  return BUILD_CHAIN_ROLES.has(normalizeRole(role)) ? role : null;
 }
 
 /**
@@ -489,7 +503,7 @@ process.stdin.on("end", () => {
     // ADR-0007 §2.5 — Agent-tool build-chain gate (the named enforcer for the
     // context-lever). The in-process Agent tool dumps the full sub-agent response
     // (50-100K tokens) into the ORCHESTRATOR's context AND lacks the bounded
-    // wrapper's reap-safety. Build-chain workers (builders/fixers/stub-scaffold)
+    // wrapper's reap-safety. Build-chain workers (builders/fixers/skeleton-builder)
     // MUST dispatch via `node scripts/dispatch-claude.js`. Closes the §2 rule-5
     // gap (only the raw-CLI bypass was gated before). Spec/doc authoring via
     // general-purpose is fine; a Lead fanning out its OWN sub-reviewers inside its
@@ -499,7 +513,8 @@ process.stdin.on("end", () => {
       const sub = String((event.tool_input || {}).subagent_type || "")
         .trim()
         .toLowerCase();
-      if (BUILD_CHAIN_ROLES.has(sub)) {
+      // S-7: normalize legacy ids (stub-scaffold → skeleton-builder) before the gate.
+      if (BUILD_CHAIN_ROLES.has(normalizeRole(sub))) {
         block(
           [
             "[dispatch-route-guard] In-process Agent dispatch of a build-chain role is forbidden.",

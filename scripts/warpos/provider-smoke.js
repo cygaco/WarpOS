@@ -332,7 +332,7 @@ const PER_ROLE_BUILD_CHAIN = [
   "compliance",
   "qa",
   "redteam",
-  "learner",
+  "ops-analyst", // S-7: was `learner`
 ];
 
 function loadPingPrompt(targetRoot) {

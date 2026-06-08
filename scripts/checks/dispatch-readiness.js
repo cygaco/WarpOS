@@ -137,7 +137,7 @@ const BUILD_CHAIN_ROLES = [
   "compliance",
   "qa",
   "redteam",
-  "learner",
+  "ops-analyst", // S-7: was `learner`
 ];
 
 function resolveRole(role) {

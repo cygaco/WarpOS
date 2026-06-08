@@ -31,8 +31,11 @@ const KNOWN_SUBAGENT_TYPES = new Set([
   "qa",
   "redteam",
   "security",
-  "learner",
-  "auditor", // legacy — normalized to learner downstream
+  "ops-analyst", // S-7: was `learner`
+  "learner", // legacy — normalized to ops-analyst downstream
+  "auditor", // legacy — normalized to ops-analyst downstream
+  "skeleton-builder", // S-7: was `stub-scaffold`
+  "cabinet", // S-7: freeform consult (legacy ids advisor/consult normalize here)
 ]);
 
 function resolveRole(subagentType, prompt) {
@@ -60,10 +63,10 @@ function detectRole(prompt) {
   )
     return "qa";
   if (
-    /\b(learner|auditor)\b/.test(head) &&
+    /\b(ops-analyst|learner|auditor)\b/.test(head) &&
     /\banalyz\b|\bpattern\b|\brule\b/.test(head)
   )
-    return "learner";
+    return "ops-analyst"; // S-7: canonical (legacy trigger words kept for back-compat detection)
   if (/\bfix\b/.test(head) && /\bagent\b|\bbrief\b/.test(head)) return "fixer";
   if (/\bfeature:\s*\S+/.test(prompt.slice(0, 500))) return "builder";
   if (/\bbuild\b/.test(head) && /\bimplement\b|\bcreate\b|\bgut\b/.test(head))

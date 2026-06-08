@@ -44,6 +44,6 @@
 
     { "role": "qa-reviewer", "step": "release", "condition": "always", "mode": "block", "order": 10, "scope": "release-diff (integrity/traceability over the cut)", "_note": "release-reviewers are a model-class diff property, not a dedicated role; qa-reviewer carries the integrity lane over the release diff" },
 
-    { "role": "learner", "step": "retro", "condition": "always", "mode": "advisory", "order": 10, "_note": "sec.5 scoped learner-at-retro to oneshot; generalized to all retros (advisory — eps defers self-management to alpha+beta, so non-blocking)" }
+    { "role": "ops-analyst", "step": "retro", "condition": "always", "mode": "advisory", "order": 10, "_note": "S-7: role renamed learner→ops-analyst. sec.5 scoped ops-analyst-at-retro to oneshot; generalized to all retros (advisory — eps defers self-management to alpha+beta, so non-blocking)" }
   ]
 }

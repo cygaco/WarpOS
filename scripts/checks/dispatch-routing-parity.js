@@ -57,7 +57,8 @@ const CLAUDE_BY_DEFINITION = new Set([
   "delta",
   "builder",
   "fixer",
-  "stub-scaffold",
+  "skeleton-builder", // S-7: was `stub-scaffold`
+  "stub-scaffold", // S-7 legacy id (back-compat)
 ]);
 
 function fail(msg) {

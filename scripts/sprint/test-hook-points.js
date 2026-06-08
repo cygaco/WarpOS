@@ -103,7 +103,7 @@ console.log("\nagentsForStep (router, real registry):");
 // ── validate negative cases (synthetic) ───────────────────────────────────────
 
 console.log("\nvalidate negative cases:");
-const REAL_IDS = ["product-lead", "qa-reviewer", "frontend-builder", "director-of-product", "director-of-engineering", "design-lead", "quality-lead", "copy-lead", "backend-builder", "security-builder", "frontend-reviewer", "backend-reviewer", "security-reviewer", "visual-review", "design-quality", "learner"];
+const REAL_IDS = ["product-lead", "qa-reviewer", "frontend-builder", "director-of-product", "director-of-engineering", "design-lead", "quality-lead", "copy-lead", "backend-builder", "security-builder", "frontend-reviewer", "backend-reviewer", "security-reviewer", "visual-review", "design-quality", "ops-analyst"]; // S-7: learner → ops-analyst
 // A complete, valid baseline covering all 6 steps, then we corrupt copies of it.
 function baselineRows() {
   return [
@@ -112,7 +112,7 @@ function baselineRows() {
     { role: "frontend-builder", step: "build", condition: { unit_type: ["frontend"] }, mode: "block", order: 10 },
     { role: "qa-reviewer", step: "gauntlet", condition: "always", mode: "block", order: 10 },
     { role: "qa-reviewer", step: "release", condition: "always", mode: "block", order: 10 },
-    { role: "learner", step: "retro", condition: "always", mode: "advisory", order: 10 },
+    { role: "ops-analyst", step: "retro", condition: "always", mode: "advisory", order: 10 }, // S-7: learner → ops-analyst
   ];
 }
 {

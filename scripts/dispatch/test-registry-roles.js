@@ -123,7 +123,11 @@ console.log("\nED-024 org-roles registry-derivation (the collapse cut-safety):")
     const dr = OR.domainRoles();
     ok("domainRoles carries LIVE leads (director-of-growth, research-lead, quality-lead)", ["director-of-growth", "research-lead", "quality-lead"].every((r) => dr.has(r)), [...dr].sort().join(","));
     ok("domainRoles has NO stale pre-rename names (director-of-marketing/product-designer/research-insight-lead)", !["director-of-marketing", "product-designer", "research-insight-lead", "qa-lead", "growth-lead", "web-conversion-designer", "director-of-product-management"].some((r) => dr.has(r)), [...dr].sort().join(","));
-    ok("domainRoles excludes faces + _system tools (president/_system homes)", !["alpha", "beta", "gamma", "delta", "epsilon", "learner", "stub-scaffold"].some((r) => dr.has(r)), [...dr].sort().join(","));
+    // S-7 re-home: ops-analyst + cabinet are President's-office tools (home=president)
+    // → excluded from domainRoles (president ∉ product-studio homes). skeleton-builder
+    // re-homed _system→engineering, so it is now legitimately an engineering DOMAIN
+    // role and is NOT asserted-excluded here.
+    ok("domainRoles excludes faces + President's-office tools (president home)", !["alpha", "beta", "gamma", "delta", "epsilon", "ops-analyst", "cabinet", "learner"].some((r) => dr.has(r)), [...dr].sort().join(","));
 
     // gammaOnlyTypes = build-chain doers ∪ static augment — the gate set must
     // still gate every registry build_chain doer (no gate hole post-collapse).

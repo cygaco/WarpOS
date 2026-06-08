@@ -78,7 +78,8 @@ const BUILD_CHAIN_ROLES = new Set([
   "backend-builder",
   "frontend-builder",
   "fixer",
-  "stub-scaffold",
+  "skeleton-builder", // S-7: was `stub-scaffold` (this set is matched WITHOUT normalize)
+  "stub-scaffold", // S-7 legacy id (back-compat)
 ]);
 
 function usage(msg) {

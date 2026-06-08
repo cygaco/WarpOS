@@ -66,7 +66,7 @@ const FLAGSHIP_OPENAI_ROLES = registryRoles.deriveOrFallback(
   () => [
     ...new Set([...registryRoles.flagshipOpenaiRoles(), "reviewer", "compliance"]),
   ],
-  ["reviewer", "compliance", "learner", "design-lead", "frontend-reviewer", "backend-reviewer", "qa-reviewer"],
+  ["reviewer", "compliance", "ops-analyst", "design-lead", "frontend-reviewer", "backend-reviewer", "qa-reviewer", "cabinet"],
   "state.FLAGSHIP_OPENAI_ROLES",
 );
 // Pure scrapped alias with no active registry equivalent (no derivation source) —
