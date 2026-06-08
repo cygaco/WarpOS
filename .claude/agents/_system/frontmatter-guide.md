@@ -262,4 +262,4 @@ The CLI rejects saves that:
 - `_requirements/09-integrations/PROVIDER/` — per-provider model tables
 - `scripts/dispatch/catalog.js` — JS source of truth for dropdowns and validation
 - `scripts/dispatch.js` — CLI entrypoint
-- `.claude/agents/_system/agent-system.md` — top-level agent system spec
+- `.claude/agents/_system/guides/gauntlet-contract.md` — gauntlet/circuit-breaker mechanism contract (the `agent-system.md` monolith is non-authoritative archive)

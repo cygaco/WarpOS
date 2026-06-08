@@ -95,7 +95,7 @@ exist, do NOT build it inline — emit a note for the backend builder / the inte
   the backend owns (you call it; you don't define the route behind it).
 
 ### Read order
-1. `.claude/agents/_system/agent-system.md` (your role definition — the Dark Factory model)
+1. `.claude/agents/_system/guides/gauntlet-contract.md` (the Dark Factory / parallel-gauntlet model — your role definition is this spec + `_org/role-registry.json`)
 2. The unit spec: `_requirements/04-features/{{FEATURE_SLUG}}/PRD.md`
 3. The unit stories: `_requirements/04-features/{{FEATURE_SLUG}}/STORIES.md`
 4. Foundation files you depend on (read-only): `src/lib/types.ts`, `src/lib/constants.ts`

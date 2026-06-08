@@ -493,7 +493,7 @@ Ground your integrity/compliance checks in the WarpOS **launch-compliance knowle
 
 ### Read these first
 
-1. `.claude/agents/_system/agent-system.md` (your role definition)
+1. `.claude/agents/_system/guides/gauntlet-contract.md` (the gauntlet you review within; role definition: this spec + `_org/role-registry.json`)
 2. The feature spec: `_requirements/04-features/{{FEATURE_SLUG}}/PRD.md`
 3. The feature stories: `_requirements/04-features/{{FEATURE_SLUG}}/STORIES.md`
 4. The feature copy: `_requirements/04-features/{{FEATURE_SLUG}}/COPY.md`

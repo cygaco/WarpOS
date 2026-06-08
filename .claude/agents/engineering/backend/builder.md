@@ -106,8 +106,8 @@ and FE/BE merge.
 READ ORDER — before writing code
 ═══════════════════════════════════════════════════════════════════════════
 
-1. `.claude/agents/_system/agent-system.md` — your role definition (Dark Factory model + the
-   producer/consumer integration-seam rules in §14)
+1. `.claude/agents/_system/guides/gauntlet-contract.md` — the Dark Factory / parallel-gauntlet model your build runs inside (your role definition is THIS spec + `_org/role-registry.json`); the
+   producer/consumer integration-seam rules remain in the `_system/agent-system.md` archive (§14)
 2. The unit spec: `_requirements/04-features/{{FEATURE_SLUG}}/PRD.md`
 3. The unit stories: `_requirements/04-features/{{FEATURE_SLUG}}/STORIES.md`
 4. Foundation files (read-only): `src/lib/types.ts`, `src/lib/constants.ts`,
