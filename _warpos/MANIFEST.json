@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-08T16:22:59.123Z",
+  "generatedAt": "2026-06-08T16:38:06.062Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.15.4",
   "migrations": [],
@@ -17595,6 +17595,14 @@
       "kind": "md",
       "sha256": "13a6b49bedecd3020431602c506b9db14030190f4399a79e7950214c00c238d3",
       "installedSha": "13a6b49bedecd3020431602c506b9db14030190f4399a79e7950214c00c238d3"
+    },
+    ".claude/agents/_system/guides/gauntlet-contract.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/_system/guides/gauntlet-contract.md",
+      "kind": "md",
+      "sha256": "4e2474930de9fe4cab35c56699d5ef4a8f61b5e44ce680f7e36a9248542e5dd2",
+      "installedSha": "4e2474930de9fe4cab35c56699d5ef4a8f61b5e44ce680f7e36a9248542e5dd2"
     },
     ".claude/agents/_system/guides/oneshot-token-guide.md": {
       "owner": "framework",

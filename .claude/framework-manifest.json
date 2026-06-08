@@ -3,7 +3,7 @@
   "version": "0.15.4",
   "generated_by": "scripts/generate-framework-manifest.js",
   "counts": {
-    "agent": 79,
+    "agent": 80,
     "skill": 206,
     "reference": 27,
     "maps_baseline": 26,
@@ -60,7 +60,7 @@
     "module_scope": 1,
     "framework_doc": 3
   },
-  "total": 1148,
+  "total": 1149,
   "assets": {
     "agent": [
       {
@@ -189,6 +189,18 @@
         "dest": ".claude/agents/_system/guides/agent-dispatch-guide.md",
         "kind": "agent",
         "sha256": "13a6b49bedecd3020431602c506b9db14030190f4399a79e7950214c00c238d3",
+        "owner": "framework",
+        "mergeStrategy": "three_way_markdown",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "agent._system.guides.gauntlet-contract.md",
+        "src": ".claude/agents/_system/guides/gauntlet-contract.md",
+        "dest": ".claude/agents/_system/guides/gauntlet-contract.md",
+        "kind": "agent",
+        "sha256": "4e2474930de9fe4cab35c56699d5ef4a8f61b5e44ce680f7e36a9248542e5dd2",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
