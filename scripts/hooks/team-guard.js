@@ -37,6 +37,37 @@ try {
 const TEAMMATE_NAMES = ["beta", "gamma", "β", "γ"];
 const TEAMMATE_TYPES = new Set(["beta", "gamma"]);
 
+// S-12c heartbeat-liveness (false-block mitigation #1). The (a)/(b) liveness uses
+// a 24h config-mtime window; a correct team that has merely been IDLE >24h would
+// read "not live" and the hard gate would false-block. A sid-keyed
+// ~/.claude/runtime/.team-live-<sid> marker — written when a correct team is
+// confirmed up — asserts liveness by PRESENCE (sid-scoped, so a crashed session's
+// marker never matches the live .session-id), independent of config freshness.
+// Fail-CLOSED to "not fresh" on any error (the caller treats absence as "verify via
+// config" — it never *grants* readiness on an exception).
+function teamHeartbeatFresh(projectDir) {
+  try {
+    const sidPath = path.join(projectDir, ".claude", "runtime", ".session-id");
+    if (!fs.existsSync(sidPath)) return false;
+    const sid = fs.readFileSync(sidPath, "utf8").trim();
+    if (!sid) return false;
+    const hbPath = path.join(
+      process.env.HOME || process.env.USERPROFILE || "",
+      ".claude",
+      "runtime",
+      `.team-live-${sid}`,
+    );
+    if (!fs.existsSync(hbPath)) return false;
+    // Presence is the signal; sid-scoping is the real staleness guard. Bound the
+    // age generously (7d) so a same-sid resume after a very long idle re-verifies,
+    // while still surviving the 24h config-mtime window this exists to bypass.
+    const m = fs.statSync(hbPath).mtimeMs;
+    return (Date.now() - m) / 3600000 < 168;
+  } catch {
+    return false;
+  }
+}
+
 let input = "";
 process.stdin.on("data", (chunk) => (input += chunk));
 process.stdin.on("end", () => {
@@ -136,12 +167,19 @@ process.stdin.on("end", () => {
       const hasTeamName = !!(
         toolInput.team_name && String(toolInput.team_name).trim()
       );
-      // Research/cognition agents are legitimately one-off (not "the team").
-      // (Teammates β/γ already exited above.)
+      // Bootstrap + read-only ALLOW-list (S-12c airtight against false-block #2,
+      // bootstrap deadlock): the company FACES (so the team CAN be stood up — β/γ
+      // already exited above via TEAMMATE_TYPES; ε/δ must be allowed here too) and
+      // research/cognition one-offs (legitimately not "the team"). A WORKER is
+      // anything else with a subagent_type (general-purpose + the build-chain
+      // GAMMA_ONLY_TYPES) — that is what the gate guards.
+      const FACE_TYPES = new Set(["epsilon", "beta", "gamma", "delta"]);
       const RESEARCH_TYPES = new Set(["explore", "plan"]);
-      const isWorker = agentType && !RESEARCH_TYPES.has(agentType);
+      const isWorker =
+        agentType && !FACE_TYPES.has(agentType) && !RESEARCH_TYPES.has(agentType);
       if (hasTeamName || !isWorker) {
-        process.exit(0); // flowing through a team, or a legit research one-off
+        // into-team dispatch, a face (bootstrap), or a legit research one-off
+        process.exit(0);
       }
       // Is a persistent team active, AND does it carry ε (the sprint conductor /
       // quality-gate)? The persistent SPRINT team is the named company faces α+ε+β
@@ -188,6 +226,49 @@ process.stdin.on("end", () => {
         }
       }
       const teamReady = teamActive && teamHasEpsilon;
+
+      // ── S-12c — HARD PreToolUse readiness GATE (un-skippable team-init) ──────
+      // Ramps advisory→block: DEFAULT OFF (the (b) advisory below runs as today).
+      // When the operator flips HARD_GATE on (env WARPOS_TEAM_GATE_HARD=1 OR a
+      // .claude/runtime/.team-gate-hard marker), a WORKER dispatch with no correct
+      // team live is BLOCKED from the 1st (NO ramp — un-skippable), while the
+      // bootstrap/read-only ALLOW-list above keeps the team standable-up. Three
+      // false-block guards: (1) heartbeat-liveness so a long-idle correct team is
+      // still "live"; (2) a kill-switch so a stuck gate is bypassable without
+      // editing the hook; (3) fail-open via the outer try/catch.
+      const hardGate =
+        process.env.WARPOS_TEAM_GATE_HARD === "1" ||
+        fs.existsSync(
+          path.join(projectDir, ".claude", "runtime", ".team-gate-hard"),
+        );
+      const killSwitch =
+        process.env.WARPOS_DISABLE_TEAM_GATE === "1" ||
+        fs.existsSync(
+          path.join(projectDir, ".claude", "runtime", ".team-gate-off"),
+        );
+      // Liveness = the correct team is ready by config (fresh + ε) OR a sid-keyed
+      // heartbeat confirms it up independent of the 24h config-mtime window.
+      const teamLive = teamReady || teamHeartbeatFresh(projectDir);
+      if (hardGate && !killSwitch && !teamLive) {
+        const why = !teamActive
+          ? "no active persistent team"
+          : "the active team is MISSING ε (the sprint conductor / quality-gate)";
+        process.stdout.write(
+          JSON.stringify({
+            decision: "block",
+            reason:
+              `⛔ SPRINT MODE + no correct team live (${why}). Stand up the company ` +
+              `faces FIRST — TeamCreate {name:"warpos-sprint"}, then ` +
+              `Agent(subagent_type:epsilon …) + Agent(subagent_type:beta …) — then ` +
+              `dispatch workers through the team (pass team_name). Bootstrap calls ` +
+              `(faces / explore / plan / any team_name) are allowed. Kill-switch: ` +
+              `WARPOS_DISABLE_TEAM_GATE=1 or touch .claude/runtime/.team-gate-off. ` +
+              `(E-SYSTEM-ORG-001 S-12c)`,
+          }),
+        );
+        process.exit(0);
+      }
+
       // Per-session one-off counter (best-effort ramp; advise once the PATTERN shows).
       let n = 1;
       try {
