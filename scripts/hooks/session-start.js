@@ -510,8 +510,103 @@ process.stdin.on("end", () => {
       }
     }
 
+    // ── System-sourced MANDATORY persistent-team init (E-SYSTEM-ORG-001 S-12) ──
+    // ROOT FIX for the recurring memory-over-system team miss (RT-2026-06-08-*,
+    // recurred 2026-06-06): the correct team-init lives inside /mode:<mode> Step
+    // 1.75 — a caller BYPASSED when a session kicks off from a /clear'd handoff
+    // that names /mode:sprint as TEXT (read as context, the Skill never invoked),
+    // so I improvise the team from a lossy auto-memory summary → wrong roster.
+    // mode.json PERSISTS across /clear, so HERE — at session entry, before any
+    // improvisation — we read it and, if the mode's persistent team is not live
+    // with the RIGHT faces, inject the EXACT Step-1.75 calls (sourced from the
+    // SYSTEM, not memory) as the mandatory first action. Fail-open.
+    let teamInitDirective = "";
+    if (source === "startup" || source === "clear") {
+      try {
+        let curMode = "";
+        try {
+          curMode = (
+            JSON.parse(fs.readFileSync(path.join(runtimeDir, "mode.json"), "utf8"))
+              .mode || ""
+          ).toLowerCase();
+        } catch {
+          /* no or malformed mode marker — no directive */
+        }
+        const TEAM_MODES = {
+          sprint: {
+            faces: ["epsilon", "beta"],
+            desc: "α lead + ε conductor + β judgment",
+            spawns: [
+              ["epsilon", "Epsilon (ε)", ".claude/agents/president/epsilon.md + scripts/sprint/epsilon-runtime.js + .claude/agents/_org/sprint-hook-points.json"],
+              ["beta", "Beta (β)", ".claude/agents/president/beta.md"],
+            ],
+          },
+          adhoc: {
+            faces: ["beta", "gamma"],
+            desc: "α lead + β judgment + γ build-orchestrator",
+            spawns: [
+              ["beta", "Beta (β)", ".claude/agents/president/beta.md"],
+              ["gamma", "Gamma (γ)", ".claude/agents/president/gamma.md"],
+            ],
+          },
+        };
+        const spec = TEAM_MODES[curMode];
+        if (spec) {
+          const slug =
+            path.basename(cwd).toLowerCase().replace(/[^a-z0-9]/g, "") || "project";
+          // Is the correct team live? (a fresh ~/.claude/teams config carrying ALL faces)
+          let live = false;
+          try {
+            const teamsRoot = path.join(
+              process.env.HOME || process.env.USERPROFILE || "",
+              ".claude",
+              "teams",
+            );
+            if (fs.existsSync(teamsRoot)) {
+              for (const d of fs.readdirSync(teamsRoot)) {
+                const cfg = path.join(teamsRoot, d, "config.json");
+                try {
+                  if ((Date.now() - fs.statSync(cfg).mtimeMs) / 3600000 >= 24) continue;
+                  const blob = JSON.stringify(
+                    JSON.parse(fs.readFileSync(cfg, "utf8")).members || [],
+                  ).toLowerCase();
+                  if (spec.faces.every((f) => blob.includes(f))) {
+                    live = true;
+                    break;
+                  }
+                } catch {
+                  /* skip this team dir */
+                }
+              }
+            }
+          } catch {
+            /* no teams dir — treat as not live */
+          }
+          if (!live) {
+            const team = `${slug}-${curMode}`;
+            const calls = [
+              `  TeamCreate(team_name:"${team}", agent_type:"alpha", description:"${curMode} persistent team — ${spec.desc}")`,
+              ...spec.spawns.map(
+                ([t, nm, load]) =>
+                  `  Agent(subagent_type:"${t}", team_name:"${team}", name:"${nm}", run_in_background:true, prompt:"STARTUP DIRECTIVE — SendMessage readiness to team-lead, then go idle (do NOT auto-claim tasks). Load: ${load}.")`,
+              ),
+            ].join("\n");
+            teamInitDirective =
+              `⛔ ${curMode.toUpperCase()} MODE IS ACTIVE (mode.json) but the persistent team is NOT up. ` +
+              `Per /mode:${curMode} Step 1.75, your FIRST action MUST be to stand up the company faces — ` +
+              `the SYSTEM's procedure with the RIGHT agents, NOT improvised general-purpose workers, NOT a memory summary:\n${calls}\n` +
+              `Then WAIT for both readiness pings (SendMessage to team-lead) before any boundary consult or work; do NOT proceed with the task until the team acks. ` +
+              `(E-SYSTEM-ORG-001 S-12 / ED-035; this team-skip recurred 2026-06-06 & 2026-06-08 — "where's the team?" / "where's epsilon?".)`;
+          }
+        }
+      } catch {
+        /* team-init directive is best-effort + fail-open */
+      }
+    }
+
     // ── Inject context into model ──────────────────────────
     if (
+      teamInitDirective ||
       handoffContext ||
       liveStateContext ||
       sleepContext ||
@@ -521,6 +616,9 @@ process.stdin.on("end", () => {
       dispatchReadinessNudge
     ) {
       let ctx = "";
+      if (teamInitDirective) {
+        ctx += `${teamInitDirective}\n\n`;
+      }
       if (liveStateContext) {
         ctx += `⚠ LIVE SESSION STATE (newer than the last narrative handoff — uncommitted/untracked work may not be reflected in the handoff below):\n\n${liveStateContext}\n\n`;
       }

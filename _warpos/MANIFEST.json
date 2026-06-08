@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-08T19:35:23.810Z",
+  "generatedAt": "2026-06-08T19:52:50.874Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.15.4",
   "migrations": [],
@@ -4825,12 +4825,19 @@
       "sha256": "310118465d1cf2720e2ab3a91879fb8a1be851ef0f75c9008652340864e0d8e8",
       "installedSha": "310118465d1cf2720e2ab3a91879fb8a1be851ef0f75c9008652340864e0d8e8"
     },
+    "scripts/hooks/session-start-teaminit.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/hooks/session-start-teaminit.test.js",
+      "sha256": "61e3095620102239cef69c6ed95592a9a39c350e429ab7058ce20c76ab77824d",
+      "installedSha": "61e3095620102239cef69c6ed95592a9a39c350e429ab7058ce20c76ab77824d"
+    },
     "scripts/hooks/session-start.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/session-start.js",
-      "sha256": "0d2ce7fee6d0e15c752e00c9f61f1403a883428d2f27e5861d5a26e3f2cb29e1",
-      "installedSha": "0d2ce7fee6d0e15c752e00c9f61f1403a883428d2f27e5861d5a26e3f2cb29e1"
+      "sha256": "3e42ebfee6ad8e64912f96d706e4aac1ef139d3441676ad3d6cd14175a1988dd",
+      "installedSha": "3e42ebfee6ad8e64912f96d706e4aac1ef139d3441676ad3d6cd14175a1988dd"
     },
     "scripts/hooks/session-stop.js": {
       "owner": "framework",
