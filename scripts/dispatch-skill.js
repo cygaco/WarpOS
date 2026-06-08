@@ -1,0 +1,449 @@
+#!/usr/bin/env node
+"use strict";
+
+/**
+ * dispatch-skill.js — "Alpha as god-dispatcher" core (PLAN §13).
+ *
+ * Runs a HEAVY skill (e.g. /scan:full, /research:deep, /qa:audit) as a bounded
+ * subprocess and returns a LEAN ENVELOPE (≤8 lines: verdict + counts + the
+ * artifact file path) on stdout — so the orchestrator delegates the skill instead
+ * of running it inline and bloating its own context with tens of thousands of
+ * tokens of aggregate output (ED-021 / agent-dispatch-guide §9 + §13: the
+ * orchestrator holds envelopes, not content).
+ *
+ * It is the SKILL analog of dispatch-claude.js (which dispatches a build ROLE).
+ * Same reap-safety, same canonical telemetry ledger, same N-1 run_id machinery —
+ * a phantom "the skill ran" is impossible.
+ *
+ * What it does:
+ *   1. Input-gates the skill name + args (refuses shell metachars) exactly like
+ *      scripts/portfolio/dispatch.js (SKILL_RE / SAFE_ARG_RE, argv array, shell:false).
+ *   2. Consults dispatch-contract.js#skillExecution — the FAIL-CLOSED reader. An
+ *      `inline-required` skill (needs the live conversation) is REFUSED for
+ *      subprocess dispatch; an UNVERIFIED `subprocess` candidate is reported (the
+ *      reader downgrades it to `inline`, but we still let the operator force it with
+ *      --force-subprocess for the §13.6 smoke run that EARNS verification).
+ *   3. Spawns `claude -p "/skill args"` (via --agent general-purpose, the documented
+ *      dispatch path) BOUNDED by a timeout shorter than the harness auto-background
+ *      reap threshold — like dispatch-claude.js — so a long skill returns control in
+ *      time to write a durable record instead of being silently reaped (RI-004).
+ *   4. Captures the FULL skill output to runtime/skill-runs/<skill>-<id>.md.
+ *   5. On ANY reap signal (timeout / spawn-fail / 0-byte / non-zero) → writes a
+ *      DEATH record + an ok:false completion record to the canonical ledger and
+ *      exits NON-ZERO (the caller's liveness check fires).
+ *   6. On success → writes an ok:true BACKED completion record (reusing the N-1
+ *      run_id machinery via runContext()) so the coverage gate can prove the skill
+ *      actually ran for this run — no sprint theater.
+ *   7. Emits a ≤8-line envelope on stdout (verdict, counts, the artifact path).
+ *
+ * dryRun / --probe: resolve + decide (input-gate, contract-consult, plan the spawn)
+ * and return WITHOUT spawning — the §14 dry-run seam.
+ *
+ * Usage:
+ *   node scripts/dispatch-skill.js /<ns>:<skill> [args...]
+ *   node scripts/dispatch-skill.js /scan:full --probe
+ *   node scripts/dispatch-skill.js /research:deep "topic" --force-subprocess
+ *
+ * Output on stdout: the lean envelope (≤8 lines).
+ * Exit codes:
+ *   0 — skill ran and produced non-trivial output (envelope on stdout).
+ *   1 — REAP (timeout / spawn-fail / 0-byte / non-zero) OR contract refusal.
+ *   2 — usage / input-gate failure.
+ *
+ * Test seam (no real `claude` CLI required, no spend):
+ *   DISPATCH_SKILL_BIN        — executable to spawn (default "claude")
+ *   DISPATCH_SKILL_BIN_ARGS   — JSON array prepended before the args (e.g. a fake)
+ *   DISPATCH_SKILL_TIMEOUT_MS — bound override (default 15 min)
+ *   DISPATCH_LEDGER_DIR       — isolate the completion/death ledger (reused from
+ *                               dispatch-agent.js — same opt-in test seam)
+ *   DISPATCH_SKILL_RUNS_DIR   — override the artifact dir (default runtime/skill-runs)
+ */
+
+const fs = require("fs");
+const path = require("path");
+const { spawnSync } = require("child_process");
+
+// Reuse the canonical telemetry helpers — the SAME ledger the coverage gate +
+// gauntlet-verify read. Single source of the record/path logic (no fork).
+const {
+  recordCompletion,
+  recordDeath,
+  makeDispatchId,
+  cmdlineChecksum,
+  AGENT_ROOT,
+  runContext, // N-1 (§17.4) run_id / phase_id / plan_item_id stampers
+  promptDigest,
+} = require("./dispatch-agent");
+
+// The fail-closed skill-execution reader (PLAN §13). An unverified `subprocess`
+// candidate resolves to `inline`; `inline-required` is context-bound.
+const { skillExecution } = require("./dispatch/dispatch-contract");
+
+// ── Input gate (mirrors scripts/portfolio/dispatch.js) ──────
+const SKILL_RE = /^\/[a-z][a-z0-9_-]*(:[a-z][a-z0-9_-]*)?$/;
+const SAFE_ARG_RE = /^[A-Za-z0-9_\-./:=@,+]+$/;
+
+const PROVIDER = "claude";
+const DEFAULT_TIMEOUT_MS = 15 * 60 * 1000; // 15 min — shorter than the harness reap threshold
+const MAX_BUFFER = 64 * 1024 * 1024; // 64 MB — heavy skills emit big aggregates
+
+/** Slug form of a skill name: "/scan:full" -> "scan-full" (filesystem-safe). */
+function skillSlug(skill) {
+  return skill.replace(/^\//, "").replace(/[^a-z0-9]+/gi, "-");
+}
+
+/**
+ * validateInputs({ skill, skillArgs }) -> { ok, msg? }
+ * Pure — the planted-metachar test calls this directly.
+ */
+function validateInputs(opts) {
+  if (!opts || !opts.skill) {
+    return { ok: false, msg: "Usage: dispatch-skill.js /<namespace>:<skill> [args...]" };
+  }
+  if (!SKILL_RE.test(opts.skill)) {
+    return {
+      ok: false,
+      msg: `invalid skill name '${opts.skill}'. Must match ${SKILL_RE} (e.g. /scan:full or /research:deep). Refusing — shell-metachar guard.`,
+    };
+  }
+  for (const arg of opts.skillArgs || []) {
+    if (!SAFE_ARG_RE.test(arg)) {
+      return {
+        ok: false,
+        msg: `skill arg '${arg}' contains characters outside [A-Za-z0-9_\\-./:=@,+]. Refusing — shell-metachar guard.`,
+      };
+    }
+  }
+  return { ok: true };
+}
+
+/**
+ * resolveExecution(skill, { forceSubprocess }) -> { ok, execution, verified, reason?, note? }
+ * Consults the fail-closed contract reader. An `inline-required` skill is REFUSED
+ * for subprocess dispatch (it needs the live conversation). An unverified
+ * `subprocess` candidate is allowed to proceed ONLY under --force-subprocess (the
+ * §13.6 smoke run that earns verification) — otherwise it's reported as not-yet-trusted.
+ */
+function resolveExecution(skill, opts) {
+  // The contract keys skills WITHOUT the leading slash (e.g. "session:handoff").
+  // Normalize so the inline-required / verified lookups actually match — a missed
+  // key would silently fall through to "inline" and (with --force) let a
+  // context-bound skill be subprocessed, defeating the whole fail-closed point.
+  const contractKey = String(skill).replace(/^\//, "");
+  let resolved;
+  try {
+    resolved = skillExecution(contractKey); // { skill, execution, verified, source }
+  } catch {
+    // Contract unreadable → fail-closed: only an explicit --force-subprocess proceeds.
+    resolved = { skill, execution: "inline", verified: false, source: "contract-unreadable" };
+  }
+  if (resolved.execution === "inline-required") {
+    return {
+      ok: false,
+      execution: resolved.execution,
+      verified: resolved.verified,
+      reason: `skill '${skill}' is inline-required (needs the LIVE conversation) — it CANNOT be dispatched as a subprocess (§13.5). Run it inline.`,
+    };
+  }
+  // `subprocess` (verified) → proceed. Unverified subprocess / inline → only with --force.
+  if (resolved.verified && resolved.execution === "subprocess") {
+    return { ok: true, execution: "subprocess", verified: true };
+  }
+  if (opts && opts.forceSubprocess) {
+    return {
+      ok: true,
+      execution: "subprocess",
+      verified: false,
+      note: `skill '${skill}' is not yet subprocess-verified (source=${resolved.source}) — proceeding under --force-subprocess (this is a §13.6 smoke run that EARNS verification; do not trust the result until stamped).`,
+    };
+  }
+  return {
+    ok: false,
+    execution: resolved.execution,
+    verified: false,
+    reason: `skill '${skill}' is not a verified subprocess candidate (execution=${resolved.execution}, verified=false). Run inline, or pass --force-subprocess to do the §13.6 smoke run that earns verification.`,
+  };
+}
+
+// ── Envelope (≤8 lines) ─────────────────────────────────────
+/**
+ * Build a lean envelope from the captured skill output. We do NOT parse the skill's
+ * semantics (each skill is different) — we extract a coarse verdict + a couple of
+ * counts heuristically and ALWAYS include the artifact path so the orchestrator can
+ * open the full output only if it needs to. ≤8 lines, hard-capped.
+ */
+function buildEnvelope({ skill, ok, reaped, reason, artifactPath, output, elapsedMs }) {
+  const lines = [];
+  if (!ok) {
+    lines.push(`SKILL ${skill}: FAILED (${reason || (reaped ? "reap" : "error")})`);
+    if (artifactPath) lines.push(`artifact: ${artifactPath}`);
+    return lines.slice(0, 8).join("\n");
+  }
+  const text = String(output || "");
+  // Coarse verdict sniff — PASS/FAIL/REJECT tokens if the skill emitted one.
+  const verdictMatch = text.match(/\b(PASS|FAIL|REJECT|GREEN|RED|YELLOW|OK)\b/);
+  const verdict = verdictMatch ? verdictMatch[1].toUpperCase() : "DONE";
+  // Coarse counts — common aggregate signals. Best-effort, never load-bearing.
+  const findings = (text.match(/\bfindings?\b/gi) || []).length;
+  const errs = (text.match(/\berrors?\b/gi) || []).length;
+  lines.push(`SKILL ${skill}: ${verdict} (${(elapsedMs / 1000).toFixed(1)}s, ${Buffer.byteLength(text, "utf8")} bytes)`);
+  lines.push(`signals: ~${findings} finding-mentions, ~${errs} error-mentions`);
+  lines.push(`artifact: ${artifactPath}`);
+  lines.push(`(full output in the artifact — open it only if the envelope is insufficient)`);
+  return lines.slice(0, 8).join("\n");
+}
+
+/**
+ * dispatchSkill(opts) -> { exitCode, status, envelope, artifactPath?, reaped?, reason? }
+ * Programmatic entry point. opts: { skill, skillArgs, dryRun, forceSubprocess,
+ *   stdout?, stderr? }. Always resolves (never throws) — failures map to an exitCode.
+ */
+function dispatchSkill(opts) {
+  const stderr = (opts && opts.stderr) || process.stderr;
+
+  // 1. Input gate.
+  const v = validateInputs(opts);
+  if (!v.ok) {
+    stderr.write(v.msg + "\n");
+    return { exitCode: 2, status: "input_invalid", envelope: v.msg };
+  }
+  const skill = opts.skill;
+  const skillArgs = opts.skillArgs || [];
+
+  // 2. Contract consult (fail-closed).
+  const exec = resolveExecution(skill, opts);
+  if (!exec.ok) {
+    stderr.write(exec.reason + "\n");
+    return {
+      exitCode: 1,
+      status: "contract_refused",
+      reason: exec.reason,
+      envelope: `SKILL ${skill}: REFUSED (${exec.reason})`,
+    };
+  }
+  if (exec.note) stderr.write("[dispatch-skill] " + exec.note + "\n");
+
+  // Artifact path — runtime/skill-runs/<skill>-<id>.md (walk-skipped runtime/, NOT
+  // .claude/runtime — per the per-run-artifacts discipline).
+  const dispatchId = makeDispatchId();
+  const runsDir =
+    process.env.DISPATCH_SKILL_RUNS_DIR ||
+    path.join(AGENT_ROOT, "runtime", "skill-runs");
+  const artifactPath = path.join(runsDir, `${skillSlug(skill)}-${dispatchId}.md`);
+
+  // The prompt is the slash-command invocation. argv-array form keeps the shell out
+  // of it even though skill+args were already input-gated above.
+  const promptStr = `${skill} ${skillArgs.join(" ")}`.trim();
+  const promptBuf = Buffer.from(promptStr, "utf8");
+  const promptBytes = promptBuf.length;
+
+  // 3/dryRun. The §14 dry-run seam: resolve + decide, never spawn.
+  if (opts.dryRun) {
+    const envelope = [
+      `DRY-RUN ${skill}: would dispatch as subprocess (verified=${exec.verified})`,
+      `prompt: ${promptStr.slice(0, 120)}`,
+      `artifact (planned): ${artifactPath}`,
+    ].join("\n");
+    return { exitCode: 0, status: "dry_run", envelope, artifactPath, verified: exec.verified };
+  }
+
+  // 4. Bound + spawn.
+  const BIN = process.env.DISPATCH_SKILL_BIN || "claude";
+  let prefixArgs = [];
+  try {
+    prefixArgs = JSON.parse(process.env.DISPATCH_SKILL_BIN_ARGS || "[]");
+    if (!Array.isArray(prefixArgs)) prefixArgs = [];
+  } catch {
+    prefixArgs = [];
+  }
+  // `claude -p --agent general-purpose "/skill args"` — the documented dispatch path
+  // (a fresh agent reads its prompt and invokes the named skill). Mirrors
+  // portfolio/dispatch.js's argv shape.
+  const claudeArgs = [...prefixArgs, "-p", "--agent", "general-purpose", promptStr];
+
+  const TIMEOUT_MS = parseInt(
+    process.env.DISPATCH_SKILL_TIMEOUT_MS || `${DEFAULT_TIMEOUT_MS}`,
+    10,
+  );
+  // Real claude on Windows is a .cmd shim → needs shell. The test seam sets
+  // DISPATCH_SKILL_BIN (a real node executable) → no shell needed.
+  const useShell = process.env.DISPATCH_SKILL_BIN ? false : process.platform === "win32";
+  // Pass canonical CLAUDE_PROJECT_DIR so any nested telemetry resolves to canonical
+  // (ED-016 class), not a cwd-bent path.
+  const childEnv = { ...process.env, CLAUDE_PROJECT_DIR: AGENT_ROOT };
+
+  const startedAt = new Date().toISOString();
+  const startedMs = Date.now();
+  const cmdChecksum = cmdlineChecksum(skill, PROVIDER, promptBytes);
+
+  const spawned = spawnSync(BIN, claudeArgs, {
+    input: promptBuf,
+    timeout: TIMEOUT_MS,
+    maxBuffer: MAX_BUFFER,
+    cwd: AGENT_ROOT,
+    env: childEnv,
+    encoding: "buffer",
+    shell: useShell,
+    windowsHide: true,
+  });
+
+  // 5. Classify the outcome (same order as dispatch-claude.js: timeout →
+  // spawn-fail → non-zero → empty/whitespace).
+  const stdoutBuf = spawned.stdout || Buffer.alloc(0);
+  const stderrBuf = spawned.stderr || Buffer.alloc(0);
+  const stdoutBytes = stdoutBuf.length;
+  const stderrBytes = stderrBuf.length;
+  const outputStr = stdoutBuf.toString("utf8");
+  const trimmedLen = outputStr.trim().length;
+  const status = spawned.status;
+  const signal = spawned.signal;
+  const errCode = spawned.error && spawned.error.code ? spawned.error.code : null;
+
+  const timedOut = errCode === "ETIMEDOUT" || signal === "SIGTERM" || signal === "SIGKILL";
+  const spawnFailed = errCode === "ENOENT" || errCode === "EACCES" || errCode === "EPERM";
+
+  let reaped = false;
+  let reason = null;
+  if (timedOut) {
+    reaped = true;
+    reason = "skill_timeout_reap";
+  } else if (spawnFailed) {
+    reaped = true;
+    reason = "skill_spawn_failed";
+  } else if (typeof status === "number" && status !== 0) {
+    reaped = true;
+    reason = "skill_nonzero_exit";
+  } else if (trimmedLen === 0) {
+    reaped = true;
+    reason = "skill_zero_byte_reap"; // exit 0 but no real output → silent reap
+  }
+  const ok = !reaped;
+
+  // 4 (cont). Capture the FULL output to the artifact — ALWAYS (even on reap, so a
+  // post-mortem has whatever bytes did come back). Best-effort; never blocks.
+  try {
+    fs.mkdirSync(runsDir, { recursive: true });
+    const header =
+      `<!-- dispatch-skill ${skill} | id=${dispatchId} | ${startedAt} | ok=${ok}` +
+      (reason ? ` | reason=${reason}` : "") +
+      ` -->\n\n`;
+    fs.writeFileSync(artifactPath, header + outputStr, "utf8");
+  } catch {
+    /* artifact write is best-effort — the ledger record is the durable proof */
+  }
+
+  const completedAt = new Date().toISOString();
+  const elapsedMs = Date.now() - startedMs;
+
+  // 6. ALWAYS write a completion record — a real run is greenable (ok:true, BACKED
+  // via dispatch_id + cmdline_checksum, the coverage-gate#isBackedRecord shape); a
+  // reap is ok:false. N-1 run-context (...runContext()) lets the coverage gate prove
+  // this skill ran for THIS run (no sprint theater).
+  recordCompletion({
+    dispatch_id: dispatchId,
+    pid: process.pid,
+    role: `skill:${skillSlug(skill)}`,
+    provider: PROVIDER,
+    model: null,
+    started_at: startedAt,
+    completed_at: completedAt,
+    elapsed_ms: elapsedMs,
+    prompt_bytes: promptBytes,
+    cmdline_checksum: cmdChecksum,
+    exit_code: typeof status === "number" ? status : null,
+    stdout_bytes: stdoutBytes,
+    stderr_bytes: stderrBytes,
+    fallback: false,
+    ok,
+    ...runContext(),
+    prompt_digest: promptDigest(promptBuf),
+    shape: "subprocess-skill",
+    tool_id: "claude",
+    skill,
+    subprocess_verified: !!exec.verified,
+    artifact: artifactPath,
+  });
+
+  // On a reap, write the durable DEATH record (mirrors dispatch-claude.js).
+  if (reaped) {
+    recordDeath({
+      dispatch_id: dispatchId,
+      timestamp: completedAt,
+      pid: process.pid,
+      role: `skill:${skillSlug(skill)}`,
+      provider: PROVIDER,
+      model: null,
+      prompt_bytes: promptBytes,
+      cmdline_checksum: cmdChecksum,
+      exit_code: typeof status === "number" ? status : null,
+      signal: signal || null,
+      stdout_bytes: stdoutBytes,
+      stderr_bytes: stderrBytes,
+      timeout_ms: TIMEOUT_MS,
+      reason,
+      skill,
+      hint:
+        reason === "skill_timeout_reap"
+          ? `${skill} exceeded ${TIMEOUT_MS}ms bound and was killed (likely harness reap / hang).`
+          : reason === "skill_zero_byte_reap"
+            ? `${skill} produced 0 bytes of stdout (silent reap — the ED-018 signature).`
+            : reason === "skill_spawn_failed"
+              ? `could not spawn '${BIN}' (${errCode}).`
+              : `${skill} exited ${status}.`,
+    });
+  }
+
+  // 7. The lean envelope.
+  const envelope = buildEnvelope({
+    skill,
+    ok,
+    reaped,
+    reason,
+    artifactPath,
+    output: outputStr,
+    elapsedMs,
+  });
+
+  return {
+    exitCode: ok ? 0 : 1,
+    status: ok ? "ok" : "reaped",
+    reaped,
+    reason: reason || undefined,
+    envelope,
+    artifactPath,
+    elapsedMs,
+  };
+}
+
+// ── arg parsing ─────────────────────────────────────────────
+function parseArgs(argv) {
+  const out = { skill: null, skillArgs: [], dryRun: false, forceSubprocess: false };
+  for (let i = 2; i < argv.length; i++) {
+    const a = argv[i];
+    if (a === "--probe" || a === "--dry-run") out.dryRun = true;
+    else if (a === "--force-subprocess") out.forceSubprocess = true;
+    else if (!out.skill) out.skill = a;
+    else out.skillArgs.push(a);
+  }
+  return out;
+}
+
+module.exports = {
+  dispatchSkill,
+  parseArgs,
+  validateInputs,
+  resolveExecution,
+  buildEnvelope,
+  skillSlug,
+  SKILL_RE,
+  SAFE_ARG_RE,
+};
+
+// ── CLI ─────────────────────────────────────────────────────
+if (require.main === module) {
+  const opts = parseArgs(process.argv);
+  const r = dispatchSkill(opts);
+  // The envelope is the product — lean stdout the orchestrator holds.
+  process.stdout.write((r.envelope || "") + "\n");
+  process.exit(r.exitCode);
+}

@@ -1,6 +1,8 @@
 # Agent System — Operational Specification
 
-> **Note for WarpOS users:** This document contains the full multi-agent orchestration rules. Some examples reference a specific project (Jobzooka) — those are illustrative. Your project will have different components, features, and file structures. The rules and framework are universal; the examples show how they were applied in practice.
+> **Status (E-SYSTEM-ORG-001, 2026-06-08):** De-dotted from `.claude/agents/.system.md` → `_system/agent-system.md`. This is the **legacy pre-ADR-0007 orchestration monolith**, retained for reference. The **current, authoritative** dispatch + role rules live in [`_system/guides/agent-dispatch-guide.md`](guides/agent-dispatch-guide.md) and the role registry `_org/role-registry.json` — treat those as source-of-truth on any conflict. (D-3 content-extraction of the still-live gauntlet contract into a focused doc is a tracked follow-up.)
+
+> **Note for WarpOS users:** This document contains the full multi-agent orchestration rules. Some examples reference a specific illustrative example project — those are placeholders. Your project will have different components, features, and file structures. The rules and framework are universal; the examples show how they were applied in practice.
 
 > **Architecture: Dark Factory**
 > The specification is the product. Code is disposable. The quality gate is automated — no human reviews code. If you are adding human code review steps, you are breaking the architecture.

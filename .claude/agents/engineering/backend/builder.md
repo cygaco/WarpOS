@@ -106,7 +106,7 @@ and FE/BE merge.
 READ ORDER — before writing code
 ═══════════════════════════════════════════════════════════════════════════
 
-1. `.claude/agents/.system.md` — your role definition (Dark Factory model + the
+1. `.claude/agents/_system/agent-system.md` — your role definition (Dark Factory model + the
    producer/consumer integration-seam rules in §14)
 2. The unit spec: `_requirements/04-features/{{FEATURE_SLUG}}/PRD.md`
 3. The unit stories: `_requirements/04-features/{{FEATURE_SLUG}}/STORIES.md`

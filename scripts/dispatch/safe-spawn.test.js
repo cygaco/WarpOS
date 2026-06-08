@@ -16,9 +16,23 @@
  */
 
 const assert = require("assert");
+const fs = require("fs");
+const os = require("os");
 const path = require("path");
+const { spawn } = require("child_process");
 const { harness, sealedDir } = require("../checks/lib/fixture-harness");
-const { assertArgs, resolveTool, normalizeStdin, safeSpawnSync, PROJECT_ROOT } = require("./safe-spawn");
+const { assertArgs, resolveTool, normalizeStdin, treeKill, safeSpawnSync, PROJECT_ROOT } = require("./safe-spawn");
+
+// Synchronous, event-loop-free sleep so a process-liveness poll can block inside a
+// synchronous h.test without a foreground shell `sleep`. The detached descendants
+// append their PIDs from their OWN processes, so we only need to re-read a file —
+// no event loop required between reads.
+function sleepSync(ms) {
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+}
+const isAlive = (pid) => {
+  try { process.kill(pid, 0); return true; } catch { return false; }
+};
 
 const h = harness("safe-spawn");
 
@@ -114,6 +128,71 @@ h.test("safeSpawnSync runs a real deterministic command on the happy path", () =
   // returns a well-formed shape.
   assert.ok(typeof r === "object" && "ok" in r && "reaped" in r, JSON.stringify(r));
   if (r.ok) assert.match(r.stdout.trim(), /^true$/, `stdout=${JSON.stringify(r.stdout)}`);
+});
+
+// ── treeKill — CHILD *and* GRANDCHILD die (PLAN §17.3 / §17.6 precond #2) ──
+// The "orphaned paid subprocess tree" residual: CLIs spawn their OWN children, so
+// killing only the top process leaks grandchildren that keep burning paid tokens.
+// This plants a real 3-level node tree (parent → child → GRANDCHILD, all real PIDs,
+// long-sleeping) and proves treeKill(parentPid) reaps ALL THREE — the GRANDCHILD
+// death being the load-bearing assertion the prior 21 cases never exercised.
+h.test("treeKill reaps a parent + child + GRANDCHILD process tree (not just the top)", () => {
+  // Cross-platform: parent/child are spawned detached so on POSIX treeKill's
+  // process-group kill reaches them; on win32 `taskkill /T` walks the live tree.
+  // Each level appends its own PID to a sealed temp file (deterministic handoff that
+  // doesn't depend on stdio inheritance across spawn hops).
+  const pidFile = path.join(os.tmpdir(), `warpos-treekill-${process.pid}-${Date.now()}.txt`);
+  fs.writeFileSync(pidFile, "");
+  const fj = JSON.stringify(pidFile);
+  const detached = process.platform !== "win32";
+  const dj = String(detached);
+  // GRANDCHILD: record PID, then sleep ~60s (kept alive only by the timer).
+  const gSrc = `const fs=require("fs");fs.appendFileSync(${fj},"G "+process.pid+"\\n");setTimeout(()=>{},60000);`;
+  // CHILD: spawn the grandchild, record PID, sleep.
+  const cSrc = `const cp=require("child_process");const fs=require("fs");cp.spawn(process.execPath,["-e",${JSON.stringify(gSrc)}],{stdio:"ignore",detached:${dj}}).unref();fs.appendFileSync(${fj},"C "+process.pid+"\\n");setTimeout(()=>{},60000);`;
+  // PARENT: spawn the child, record PID, sleep.
+  const pSrc = `const cp=require("child_process");const fs=require("fs");cp.spawn(process.execPath,["-e",${JSON.stringify(cSrc)}],{stdio:"ignore",detached:${dj}}).unref();fs.appendFileSync(${fj},"P "+process.pid+"\\n");setTimeout(()=>{},60000);`;
+
+  let pids = {};
+  let killed = false;
+  try {
+    const parent = spawn(process.execPath, ["-e", pSrc], { stdio: "ignore", detached });
+    parent.unref();
+
+    // Harvest all three PIDs from the sealed file (bounded poll, fully synchronous).
+    const harvestDeadline = Date.now() + 8000;
+    while (Date.now() < harvestDeadline) {
+      const lines = fs.readFileSync(pidFile, "utf8").trim().split(/\r?\n/).filter(Boolean);
+      if (lines.length >= 3) {
+        for (const l of lines) { const [k, v] = l.split(" "); pids[k] = Number(v); }
+        break;
+      }
+      sleepSync(50);
+    }
+    assert.ok(pids.P && pids.C && pids.G, `failed to harvest all 3 PIDs (got ${JSON.stringify(pids)})`);
+    assert.ok(isAlive(pids.P) && isAlive(pids.C) && isAlive(pids.G), `tree not fully alive pre-kill: ${JSON.stringify(pids)}`);
+
+    // The unit under test: a SINGLE treeKill on the top PID must reap the whole tree.
+    assert.strictEqual(treeKill(pids.P), true, "treeKill should report success");
+    killed = true;
+
+    // Poll for death (taskkill /T + process teardown is async at the OS level).
+    const deathDeadline = Date.now() + 5000;
+    while (Date.now() < deathDeadline && (isAlive(pids.P) || isAlive(pids.C) || isAlive(pids.G))) {
+      sleepSync(50);
+    }
+    assert.ok(!isAlive(pids.P), `parent ${pids.P} survived treeKill`);
+    assert.ok(!isAlive(pids.C), `child ${pids.C} survived treeKill`);
+    // THE key assertion: a grandchild two levels down must NOT outlive a tree-kill.
+    assert.ok(!isAlive(pids.G), `GRANDCHILD ${pids.G} survived treeKill — orphaned paid subprocess leak`);
+  } finally {
+    // Deterministic: never leak processes even if an assertion above failed.
+    for (const pid of [pids.P, pids.C, pids.G]) {
+      if (pid && isAlive(pid)) { try { treeKill(pid); } catch {} }
+    }
+    if (!killed && pids.P) { try { treeKill(pids.P); } catch {} }
+    try { fs.unlinkSync(pidFile); } catch {}
+  }
 });
 
 h.done();

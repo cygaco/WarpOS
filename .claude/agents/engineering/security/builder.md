@@ -83,7 +83,7 @@ Ground your hardening in the WarpOS **application-security knowledge library** (
 <!-- /knowledge:security role:security-builder -->
 
 ### Read these first
-1. `.claude/agents/.system.md` (your role definition — the Dark Factory model)
+1. `.claude/agents/_system/agent-system.md` (your role definition — the Dark Factory model)
 2. The unit spec: `_requirements/04-features/{{FEATURE_SLUG}}/PRD.md`
 3. The unit stories: `_requirements/04-features/{{FEATURE_SLUG}}/STORIES.md`
 4. Architecture contracts (when present):

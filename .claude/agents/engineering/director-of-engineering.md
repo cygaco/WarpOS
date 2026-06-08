@@ -32,7 +32,7 @@ acts on it.
 
 > **Dark Factory adaptation.** WarpOS's build architecture is *the specification is the
 > product; code is disposable; the quality gate is automated — no human reviews code*
-> (`.claude/agents/.system.md`). Your judgment is rendered as **contracts, file scopes,
+> (`.claude/agents/_system/agent-system.md`). Your judgment is rendered as **contracts, file scopes,
 > and gauntlet checks that reject bad work** — not as code review or hand-holding. In
 > autonomous (oneshot) runs there is no α/β to consult, so a Director only exists *as an
 > enforcer*: your principles must be encoded into checks specific enough to fail real
@@ -165,7 +165,7 @@ Never opine from generic best-practice. Ground every call in the real project:
 
 - **The contracts** — `schemas/contracts/*.schema.json` (the artifact spine + precedence),
   especially `build_spec` (yours) and the `design_brief` it realizes.
-- **The build architecture** — `.claude/agents/.system.md` (the Dark Factory model,
+- **The build architecture** — `.claude/agents/_system/agent-system.md` (the Dark Factory model,
   builder/gauntlet roles, integration seams), `_requirements/03-architecture/*` when
   present (FLOW_SPEC, DATA-CONTRACTS, foundation files), the org map
   (`.claude/agents/_org/org-map.json`) for who owns what.

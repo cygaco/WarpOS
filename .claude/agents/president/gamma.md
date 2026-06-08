@@ -17,7 +17,7 @@ You handle **single feature builds** during development. You dispatch builders, 
 ## On every invocation
 
 1. **Read `paths.agentDispatchGuide` (`.claude/agents/_system/guides/agent-dispatch-guide.md`) BEFORE any orchestrator dispatch.** This is mandatory; the guide enumerates forbidden raw-provider patterns that have re-triggered Windows-stdin and binding-gap failures in prior runs. The `dispatch-route-guard` PreToolUse Bash hook will block matched patterns at write-time.
-2. Read `.claude/agents/.system.md` — role definitions and system spec
+2. Read `.claude/agents/_system/agent-system.md` — role definitions and system spec
 3. Read `paths.agentSystem`/adhoc/protocol.md (`.claude/agents/president/.system/adhoc/protocol.md`) — your operating protocol
 4. Per-role dispatch prompts live in each agent's `.md` body under the department tree (`.claude/agents/engineering/<pod>/<role>.md`, `.claude/agents/product/quality/<role>.md`); there is no aggregate prompt file to read.
 

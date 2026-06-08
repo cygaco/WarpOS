@@ -107,7 +107,7 @@ const model = parseFlag("--model");
 const effort = parseFlag("--effort"); // forwarded to claude (builders/fixers force --effort max)
 const worktree = parseFlag("--worktree");
 // `-w` passthrough: the framework's builder dispatch uses `claude … -w` to have
-// the CLI create an isolated worktree (.claude/agents/.system.md). The wrapper
+// the CLI create an isolated worktree (.claude/agents/_system/agent-system.md). The wrapper
 // MUST preserve that isolation — forward `-w` to claude unchanged. (Use
 // --worktree <path> instead when the orchestrator already created the worktree
 // and wants the child to run with cwd set to it.)
