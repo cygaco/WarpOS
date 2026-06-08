@@ -294,6 +294,68 @@ process.stdin.on("end", () => {
       checks.push("Handoff: none found");
     }
 
+    // ── Layer-1 live-state freshness comparison (S-11, RI-006) ────────────
+    // The cheap per-turn `handoff-live-<sid>.md` (written by handoff-live.js) is
+    // the safety net for tracker-drift + untracked work. If it is NEWER than the
+    // rich handoff.md (a crash after the last clean /session:end, or a /clear),
+    // surface the delta — else the uncommitted work it captured stays invisible
+    // (the exact failure S-11 prevents). Per-session_id keyed (decision #1),
+    // /clear-bridge aware (decision #2), fail-open.
+    let liveStateContext = "";
+    try {
+      const curSid = (
+        event.session_id ||
+        process.env.CLAUDE_SESSION_ID ||
+        (fs.existsSync(sessionIdPath)
+          ? fs.readFileSync(sessionIdPath, "utf8").trim()
+          : "")
+      )
+        .toString()
+        .replace(/[^A-Za-z0-9_-]/g, "")
+        .slice(0, 48);
+      const liveFiles = fs
+        .readdirSync(runtimeDir)
+        .filter((f) => /^handoff-live-.+\.md$/.test(f))
+        .map((f) => ({
+          name: f,
+          sid: f.replace(/^handoff-live-/, "").replace(/\.md$/, ""),
+          mtime: fs.statSync(path.join(runtimeDir, f)).mtimeMs,
+        }))
+        .sort((a, b) => b.mtime - a.mtime);
+      // Prefer the file matching the CURRENT sid; else the most recent + label it.
+      const chosen = liveFiles.find((f) => curSid && f.sid === curSid) || liveFiles[0];
+      if (chosen) {
+        const handoffMtime = fs.existsSync(handoffPath)
+          ? fs.statSync(handoffPath).mtimeMs
+          : 0;
+        const ageHours = (Date.now() - chosen.mtime) / 3600000;
+        // Surface only when the live snapshot is NEWER than the narrative (or no
+        // narrative exists) AND recent enough to matter (≤72h).
+        if (ageHours < 72 && chosen.mtime > handoffMtime + 1000) {
+          const content = fs
+            .readFileSync(path.join(runtimeDir, chosen.name), "utf8")
+            .trim();
+          let label;
+          if (source === "clear") {
+            label =
+              "captured at /clear — pre-clear live state; ignore if you cleared to switch tasks (the uncommitted-files list is useful either way)";
+          } else if (source === "startup" && (!curSid || chosen.sid !== curSid)) {
+            label = `from a PRIOR session (\`${chosen.sid}\`) — verify against current git state before trusting`;
+          } else if (curSid && chosen.sid === curSid) {
+            label = "this session's live state — newer than the last narrative handoff";
+          } else {
+            label = `live state from session \`${chosen.sid}\` — verify against current git`;
+          }
+          liveStateContext = `(${label})\n\n${content}`;
+          checks.push(
+            `Live-state: surfaced (${ageHours < 1 ? "just now" : Math.round(ageHours) + "h ago"}, newer than narrative)`,
+          );
+        }
+      }
+    } catch {
+      /* live-state surfacing is optional + fail-open */
+    }
+
     // ── Systems Health Nudge ────────────────────────────────
     let systemsNudge = "";
     if (source === "startup" || source === "clear") {
@@ -451,6 +513,7 @@ process.stdin.on("end", () => {
     // ── Inject context into model ──────────────────────────
     if (
       handoffContext ||
+      liveStateContext ||
       sleepContext ||
       systemsNudge ||
       dispatchReference ||
@@ -458,6 +521,9 @@ process.stdin.on("end", () => {
       dispatchReadinessNudge
     ) {
       let ctx = "";
+      if (liveStateContext) {
+        ctx += `⚠ LIVE SESSION STATE (newer than the last narrative handoff — uncommitted/untracked work may not be reflected in the handoff below):\n\n${liveStateContext}\n\n`;
+      }
       if (handoffContext) {
         ctx += `PREVIOUS SESSION HANDOFF (auto-loaded):\n\n${handoffContext}\n\n`;
       }
