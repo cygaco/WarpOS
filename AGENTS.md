@@ -1,7 +1,7 @@
 # Alex Agent System
 
 > Router and table of contents for the multi-agent build system.
-> For the full operational specification, see [.system.md](.claude/agents/.system.md).
+> For the full operational specification, see [agent-system.md](.claude/agents/_system/agent-system.md).
 
 ---
 
@@ -30,8 +30,8 @@ Specs are mode-agnostic and organized by department/pod; role → spec routing c
 | **QA-Reviewer** | Traceability + integrity + 13 failure-mode personas (absorbs Req-Reviewer, Compliance, QA) | [qa-reviewer](.claude/agents/product/quality/qa-reviewer.md) |
 | **Security-Reviewer** | Security scanner — OWASP, injection, attack-chain, prompt-injection (replaces Red Team) | [security-reviewer](.claude/agents/engineering/security/reviewer.md) |
 | **Fixer** | Bug fixer (scoped, from structured Fix Brief) | [frontend](.claude/agents/engineering/frontend/fixer.md) · [backend](.claude/agents/engineering/backend/fixer.md) · [security](.claude/agents/engineering/security/fixer.md) |
-| **Learner** | Cross-cycle pattern analysis, environment evolution | [learner](.claude/agents/_system/learner.md) |
-| **Stub-Scaffold** | Regenerates skeleton stub files from current spec | [stub-scaffold](.claude/agents/_system/stub-scaffold.md) |
+| **Ops-Analyst** | Cross-cycle pattern analysis, environment evolution (S-7: was Learner) | [ops-analyst](.claude/agents/president/ops-analyst.md) |
+| **Skeleton-Builder** | Regenerates skeleton stub files from current spec (S-7: was Stub-Scaffold) | [skeleton-builder](.claude/agents/engineering/skeleton-builder.md) |
 | **Test-Runner** | Headless Playwright E2E test runner | [test-runner](.claude/agents/product/quality/test-runner.md) |
 | **Visual-Review** | Visual UI review via Playwright MCP browser | [visual-review](.claude/agents/product/quality/visual-review.md) |
 
@@ -51,7 +51,7 @@ Specs are mode-agnostic and organized by department/pod; role → spec routing c
 |----------|---------|
 | [CLAUDE.md](CLAUDE.md) | Framework config, identity pointer, memory system |
 | [PROJECT.md](PROJECT.md) | Project-specific context (product, architecture, env) |
-| [.system.md](.claude/agents/.system.md) | Full operational specification |
+| [agent-system.md](.claude/agents/_system/agent-system.md) | Full operational specification |
 | [manifest.json](.claude/manifest.json) | WarpOS identity card — project metadata, features, phases, providers |
 | [paths.json](.claude/paths.json) | Centralized path registry — all hooks/scripts read paths from here |
 
@@ -59,7 +59,7 @@ Specs are mode-agnostic and organized by department/pod; role → spec routing c
 
 | Directory | Purpose |
 |-----------|---------|
-| [president/](.claude/agents/president/) | The 5 Alex faces (α/β/γ/δ/ε) + `.system/` policy, ADRs, mode protocols |
+| [president/](.claude/agents/president/) | The 5 Alex faces (α/β/γ/δ/ε) + `_system/` policy, ADRs, mode protocols |
 | [engineering/](.claude/agents/engineering/) | Frontend/backend/security pods — builder, reviewer, fixer, leads, director |
 | [product/](.claude/agents/product/) | Product + Quality (qa-reviewer, design-quality, visual-review, test-runner), leads, director |
 | [growth/](.claude/agents/growth/) | Growth dept — research, copy, conversion, marketing leads, director |
@@ -89,7 +89,7 @@ Every builder output is reviewed by a 4-agent parallel gauntlet:
 2. **AGENTS.md** (this file) — router to all agent docs
 3. **PROJECT.md** — project-specific context
 4. **alpha.md / beta.md / gamma.md / delta.md / epsilon.md** — individual agent identities
-5. **.system.md** — detailed operational spec
+5. **_system/agent-system.md** — detailed operational spec
 6. **president/_system/{mode}/protocol.md** — mode-specific orchestration
 7. **.claude/manifest.json** — project metadata, features, agent providers
 8. **.claude/paths.json** — centralized path registry

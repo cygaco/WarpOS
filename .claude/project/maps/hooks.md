@@ -1,8 +1,8 @@
 # Hooks Map
 
-Generated: 2026-06-08T20:21:24.827Z
+Generated: 2026-06-08T21:25:40.124Z
 
-**72** hook scripts (64 registered, 8 orphan), **15** lib modules, **75** wiring entries.
+**72** hook scripts (64 registered, 8 orphan), **16** lib modules, **75** wiring entries.
 
 ## Wiring (event → matcher → hook)
 
@@ -113,7 +113,7 @@ Generated: 2026-06-08T20:21:24.827Z
 | Hook | Registered | Size | Modified |
 |---|---|---|---|
 | authorization-gate.js | yes | 8520 | 2026-05-30T01:25:39.579Z |
-| beta-gate.js | yes | 9095 | 2026-06-08T20:13:54.823Z |
+| beta-gate.js | yes | 9095 | 2026-06-08T20:28:50.013Z |
 | boss-boundary.js | yes | 3145 | 2026-06-04T22:57:13.997Z |
 | build-transaction-boundary.js | yes | 3760 | 2026-05-30T01:25:39.580Z |
 | build.js | no | 6528 | 2026-05-30T01:25:39.580Z |
@@ -142,7 +142,7 @@ Generated: 2026-06-08T20:21:24.827Z
 | memory-guard.js | yes | 14402 | 2026-06-07T03:35:59.239Z |
 | merge-guard.js | yes | 23252 | 2026-05-30T01:25:39.595Z |
 | ownership-guard.js | yes | 4504 | 2026-06-04T22:57:14.000Z |
-| path-guard.js | yes | 8945 | 2026-06-08T20:13:54.823Z |
+| path-guard.js | yes | 8945 | 2026-06-08T20:28:50.013Z |
 | path-registry-guard.js | yes | 5451 | 2026-05-30T01:25:39.597Z |
 | pre-commit-steps-check.js | yes | 8602 | 2026-05-30T01:25:39.597Z |
 | prompt-logger.js | yes | 1843 | 2026-05-30T01:25:39.597Z |
@@ -167,7 +167,7 @@ Generated: 2026-06-08T20:21:24.827Z
 | smart-context.js | yes | 34063 | 2026-06-05T01:45:08.448Z |
 | spec-test-staleness.js | yes | 5448 | 2026-05-30T01:25:39.604Z |
 | sprint-approval-guard.js | yes | 6158 | 2026-05-30T01:25:39.604Z |
-| sprint-routing-guard.js | yes | 9608 | 2026-06-08T20:13:54.823Z |
+| sprint-routing-guard.js | yes | 9608 | 2026-06-08T20:28:50.013Z |
 | sprint-tracker-guard.js | yes | 15870 | 2026-05-30T01:25:39.605Z |
 | step-hardcode-suggester.js | yes | 7087 | 2026-05-30T01:25:39.605Z |
 | step-registry-guard.js | yes | 12054 | 2026-05-30T01:25:39.606Z |
@@ -182,7 +182,7 @@ Generated: 2026-06-08T20:21:24.827Z
 | typecheck.js | yes | 1688 | 2026-05-30T01:25:39.608Z |
 | ui-lint.js | yes | 3311 | 2026-05-30T01:25:39.609Z |
 | untrusted-content-firewall.js | yes | 3144 | 2026-05-31T00:20:57.240Z |
-| version-bump-guard.js | yes | 7695 | 2026-06-08T20:13:54.823Z |
+| version-bump-guard.js | yes | 7695 | 2026-06-08T20:28:50.013Z |
 | worktree-preflight.js | yes | 5180 | 2026-05-30T01:25:39.610Z |
 
 ## Lib modules
@@ -194,9 +194,10 @@ Generated: 2026-06-08T20:21:24.827Z
 | context-sources.js | 8286 | 2026-05-30T01:25:39.589Z |
 | gate-schema.js | 3894 | 2026-05-30T01:25:39.589Z |
 | injection-patterns.js | 2949 | 2026-05-31T00:23:04.879Z |
-| logger.js | 16632 | 2026-06-08T20:13:54.823Z |
+| logger.js | 16632 | 2026-06-08T20:28:50.013Z |
 | mode.js | 2540 | 2026-05-30T01:25:39.590Z |
-| paths.generated.js | 10736 | 2026-06-08T20:11:53.395Z |
+| oneshot-store.js | 2337 | 2026-06-08T21:07:45.656Z |
+| paths.generated.js | 10736 | 2026-06-08T20:28:50.013Z |
 | paths.js | 6608 | 2026-06-05T01:45:08.446Z |
 | project-config.js | 4488 | 2026-05-30T01:25:39.591Z |
 | provider-health.js | 10306 | 2026-05-30T01:25:39.592Z |

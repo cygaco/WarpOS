@@ -15,6 +15,7 @@
  */
 const fs = require("fs");
 const path = require("path");
+const { readOneshotStore } = require("./hooks/lib/oneshot-store");
 
 const ROOT = path.resolve(__dirname, "..");
 
@@ -23,7 +24,9 @@ function read(p) {
 }
 
 const manifest = read(".claude/manifest.json");
-const store = read(".claude/agents/president/_system/oneshot/store.json");
+// Store read via PATHS.oneshotStore (ED-037) — soft-empty {} on a fresh
+// checkout where store.json doesn't exist yet, instead of an ENOENT crash.
+const store = readOneshotStore();
 let runNumber = "?";
 try {
   runNumber = read(".claude/runtime/run.json").runNumber;

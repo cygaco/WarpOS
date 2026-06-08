@@ -1,9 +1,9 @@
 {
   "metadata": {
-    "generated": "2026-06-08T20:21:24.827Z",
-    "lastUpdated": "2026-06-08T20:21:24.827Z",
+    "generated": "2026-06-08T21:25:40.124Z",
+    "lastUpdated": "2026-06-08T21:25:40.124Z",
     "total_hooks": 72,
-    "total_lib_modules": 15,
+    "total_lib_modules": 16,
     "registered_hooks": 64,
     "orphan_hooks": 8,
     "regenerated_by": "scripts/regen-maps.js"
@@ -25,7 +25,7 @@
       "registered": true,
       "exists": true,
       "size": 9095,
-      "modified": "2026-06-08T20:13:54.823Z"
+      "modified": "2026-06-08T20:28:50.013Z"
     },
     {
       "id": "hook:boss-boundary",
@@ -286,7 +286,7 @@
       "registered": true,
       "exists": true,
       "size": 8945,
-      "modified": "2026-06-08T20:13:54.823Z"
+      "modified": "2026-06-08T20:28:50.013Z"
     },
     {
       "id": "hook:path-registry-guard",
@@ -511,7 +511,7 @@
       "registered": true,
       "exists": true,
       "size": 9608,
-      "modified": "2026-06-08T20:13:54.823Z"
+      "modified": "2026-06-08T20:28:50.013Z"
     },
     {
       "id": "hook:sprint-tracker-guard",
@@ -646,7 +646,7 @@
       "registered": true,
       "exists": true,
       "size": 7695,
-      "modified": "2026-06-08T20:13:54.823Z"
+      "modified": "2026-06-08T20:28:50.013Z"
     },
     {
       "id": "hook:worktree-preflight",
@@ -715,7 +715,7 @@
       "type": "lib",
       "exists": true,
       "size": 16632,
-      "modified": "2026-06-08T20:13:54.823Z"
+      "modified": "2026-06-08T20:28:50.013Z"
     },
     {
       "id": "hook-lib:mode",
@@ -728,6 +728,16 @@
       "modified": "2026-05-30T01:25:39.590Z"
     },
     {
+      "id": "hook-lib:oneshot-store",
+      "name": "oneshot-store.js",
+      "path": "scripts/hooks/lib/oneshot-store.js",
+      "registered": false,
+      "type": "lib",
+      "exists": true,
+      "size": 2337,
+      "modified": "2026-06-08T21:07:45.656Z"
+    },
+    {
       "id": "hook-lib:paths.generated",
       "name": "paths.generated.js",
       "path": "scripts/hooks/lib/paths.generated.js",
@@ -735,7 +745,7 @@
       "type": "lib",
       "exists": true,
       "size": 10736,
-      "modified": "2026-06-08T20:11:53.395Z"
+      "modified": "2026-06-08T20:28:50.013Z"
     },
     {
       "id": "hook-lib:paths",

@@ -122,7 +122,7 @@ and in-session reviewers, not only build-chain.
 
 **CLI-vs-API (the fundamental rule):** CLI is mandatory for agent dispatch. API is allowed ONLY
 for capabilities with no CLI equivalent (deep-research, GPT-Pro API-only models). API availability
-NEVER implies API dispatch. Enforcer: `scripts/checks/dispatch-contract.js validate` (wired into
+NEVER implies API dispatch. Enforcer: `scripts/dispatch/dispatch-contract.js validate` (wired into
 `/scan:full`).
 
 **Shape rule:**

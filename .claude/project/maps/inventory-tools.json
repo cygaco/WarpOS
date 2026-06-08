@@ -1,14 +1,14 @@
 {
   "metadata": {
-    "generated": "2026-06-08T20:21:24.827Z",
-    "lastUpdated": "2026-06-08T20:21:24.827Z",
-    "total_tools": 178,
+    "generated": "2026-06-08T21:25:40.124Z",
+    "lastUpdated": "2026-06-08T21:25:40.124Z",
+    "total_tools": 181,
     "categories": 4,
     "regenerated_by": "scripts/regen-maps.js"
   },
   "categories": {
     "scripts": {
-      "count": 173,
+      "count": 176,
       "items": [
         {
           "id": "tool:agent-dashboard",
@@ -160,8 +160,8 @@
           "path": "scripts/delta-build-fixer-prompt-from-worktree.js",
           "type": "script",
           "exists": true,
-          "size": 2372,
-          "modified": "2026-06-08T20:13:54.823Z"
+          "size": 2495,
+          "modified": "2026-06-08T21:06:26.924Z"
         },
         {
           "id": "tool:delta-build-fixer-prompt",
@@ -169,8 +169,8 @@
           "path": "scripts/delta-build-fixer-prompt.js",
           "type": "script",
           "exists": true,
-          "size": 1787,
-          "modified": "2026-06-08T20:13:54.823Z"
+          "size": 1910,
+          "modified": "2026-06-08T21:06:18.456Z"
         },
         {
           "id": "tool:delta-build-prompt",
@@ -178,8 +178,8 @@
           "path": "scripts/delta-build-prompt.js",
           "type": "script",
           "exists": true,
-          "size": 7107,
-          "modified": "2026-06-08T20:13:54.823Z"
+          "size": 7352,
+          "modified": "2026-06-08T21:05:59.267Z"
         },
         {
           "id": "tool:delta-build-reviewer-prompt",
@@ -187,8 +187,8 @@
           "path": "scripts/delta-build-reviewer-prompt.js",
           "type": "script",
           "exists": true,
-          "size": 10391,
-          "modified": "2026-06-08T20:13:54.823Z"
+          "size": 10475,
+          "modified": "2026-06-08T21:06:08.346Z"
         },
         {
           "id": "tool:delta-canonical-dispatch-smoke",
@@ -224,7 +224,7 @@
           "type": "script",
           "exists": true,
           "size": 9396,
-          "modified": "2026-06-08T20:13:54.823Z"
+          "modified": "2026-06-08T20:28:50.013Z"
         },
         {
           "id": "tool:delta-dispatch-fixer",
@@ -269,7 +269,7 @@
           "type": "script",
           "exists": true,
           "size": 1228,
-          "modified": "2026-06-08T20:13:54.823Z"
+          "modified": "2026-06-08T20:28:50.013Z"
         },
         {
           "id": "tool:delta-log-integrations",
@@ -322,8 +322,8 @@
           "path": "scripts/delta-render-tracker.js",
           "type": "script",
           "exists": true,
-          "size": 4814,
-          "modified": "2026-06-08T20:13:54.823Z"
+          "size": 4991,
+          "modified": "2026-06-08T21:05:35.962Z"
         },
         {
           "id": "tool:delta-show-findings",
@@ -333,6 +333,15 @@
           "exists": true,
           "size": 1011,
           "modified": "2026-05-30T01:25:39.564Z"
+        },
+        {
+          "id": "tool:delta-store-read.test",
+          "name": "delta-store-read.test.js",
+          "path": "scripts/delta-store-read.test.js",
+          "type": "script",
+          "exists": true,
+          "size": 5897,
+          "modified": "2026-06-08T21:07:08.435Z"
         },
         {
           "id": "tool:delta-store-review",
@@ -349,8 +358,8 @@
           "path": "scripts/delta-update-heartbeat.js",
           "type": "script",
           "exists": true,
-          "size": 727,
-          "modified": "2026-06-08T20:13:54.823Z"
+          "size": 882,
+          "modified": "2026-06-08T21:05:42.942Z"
         },
         {
           "id": "tool:dismiss-drift-entry",
@@ -368,7 +377,7 @@
           "type": "script",
           "exists": true,
           "size": 28779,
-          "modified": "2026-06-08T20:13:54.823Z"
+          "modified": "2026-06-08T20:28:50.013Z"
         },
         {
           "id": "tool:dispatch-claude",
@@ -385,8 +394,8 @@
           "path": "scripts/dispatch-skill.js",
           "type": "script",
           "exists": true,
-          "size": 24174,
-          "modified": "2026-06-08T18:23:18.588Z"
+          "size": 28663,
+          "modified": "2026-06-08T21:09:26.335Z"
         },
         {
           "id": "tool:dispatch-skill.test",
@@ -394,8 +403,8 @@
           "path": "scripts/dispatch-skill.test.js",
           "type": "script",
           "exists": true,
-          "size": 10611,
-          "modified": "2026-06-08T05:08:02.376Z"
+          "size": 11813,
+          "modified": "2026-06-08T21:08:33.109Z"
         },
         {
           "id": "tool:dispatch",
@@ -512,7 +521,7 @@
           "type": "script",
           "exists": true,
           "size": 24747,
-          "modified": "2026-06-08T20:13:54.823Z"
+          "modified": "2026-06-08T20:28:50.013Z"
         },
         {
           "id": "tool:generate-maps",
@@ -817,8 +826,8 @@
           "path": "scripts/oneshot-halt.js",
           "type": "script",
           "exists": true,
-          "size": 4351,
-          "modified": "2026-06-08T20:13:54.823Z"
+          "size": 4655,
+          "modified": "2026-06-08T21:06:36.812Z"
         },
         {
           "id": "tool:oneshot-heartbeat",
@@ -872,7 +881,7 @@
           "type": "script",
           "exists": true,
           "size": 14694,
-          "modified": "2026-06-08T20:13:54.823Z"
+          "modified": "2026-06-08T20:28:50.013Z"
         },
         {
           "id": "tool:phase0-verify",
@@ -1118,6 +1127,24 @@
           "modified": "2026-05-30T01:25:39.659Z"
         },
         {
+          "id": "tool:skills-bench",
+          "name": "skills-bench.js",
+          "path": "scripts/skills-bench.js",
+          "type": "script",
+          "exists": true,
+          "size": 21836,
+          "modified": "2026-06-08T21:09:18.890Z"
+        },
+        {
+          "id": "tool:skills-bench.test",
+          "name": "skills-bench.test.js",
+          "path": "scripts/skills-bench.test.js",
+          "type": "script",
+          "exists": true,
+          "size": 12061,
+          "modified": "2026-06-08T21:10:11.199Z"
+        },
+        {
           "id": "tool:skills-test",
           "name": "skills-test.js",
           "path": "scripts/skills-test.js",
@@ -1259,7 +1286,7 @@
           "type": "script",
           "exists": true,
           "size": 9030,
-          "modified": "2026-06-08T20:13:54.823Z"
+          "modified": "2026-06-08T20:28:50.029Z"
         },
         {
           "id": "tool:test-dispatch-route-guard",
@@ -1403,7 +1430,7 @@
           "type": "script",
           "exists": true,
           "size": 16394,
-          "modified": "2026-06-08T20:13:54.823Z"
+          "modified": "2026-06-08T20:28:50.029Z"
         },
         {
           "id": "tool:test-staged-drift-reconciler",
@@ -1624,7 +1651,7 @@
     }
   },
   "summary": {
-    "scripts": 173,
+    "scripts": 176,
     "npm_scripts": 0,
     "external_clis": 3,
     "xrefs": 2

@@ -6,21 +6,19 @@
  */
 const fs = require("fs");
 const path = require("path");
+const { PATHS } = require("./hooks/lib/paths");
+const { readOneshotStore } = require("./hooks/lib/oneshot-store");
 
 const haltReason = process.argv[2] || "context budget";
 
-const storePath = path.resolve(
-  __dirname,
-  "..",
-  ".claude",
-  "agents",
-  "president",
-  ".system",
-  "oneshot",
-  "store.json",
-);
+// Store via PATHS.oneshotStore (ED-037) — also corrects the stale `.system`
+// literal this script used (D-2 moved it to `_system`). Soft-empty {} on a
+// missing/malformed store instead of an ENOENT crash; the heartbeat + halt
+// metadata can still be stamped and written.
+const storePath = PATHS.oneshotStore;
 
-const s = JSON.parse(fs.readFileSync(storePath, "utf8"));
+const s = readOneshotStore(storePath);
+s.features = s.features || {};
 
 // Mark onboarding partial (built + fixed but re-verify incomplete)
 if (s.features.onboarding) {

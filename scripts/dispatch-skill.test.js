@@ -227,4 +227,27 @@ h.failClosed("unverified subprocess WITHOUT --force is refused (no spawn)", () =
   return { ok: r.exitCode === 0 }; // ok:false ⇒ correctly refused (fail-closed)
 });
 
+// ── 11. Injection-shaped arg is REFUSED pre-spawn (no spawn, no record, no artifact) ──
+// The dispatch-claude analog: a command-injection arg must be rejected BEFORE any
+// subprocess is spawned. dispatch-skill has two pre-spawn defenses — the input gate
+// (SAFE_ARG_RE) fronting the safety kernel's claude arg-allowlist (which itself
+// refuses positionals + metachars). A `;calc`-bearing arg never reaches a spawn:
+// exitCode 2 (input gate), NO completion record, NO artifact file.
+h.violation("injection arg ';calc' refused pre-spawn (exit≠0, no record, no artifact)", () => {
+  const ledger = path.join(scratch, "l-inject");
+  const runs = path.join(scratch, "runs-inject");
+  const res = runCli({
+    skill: "/scan:full",
+    args: ["x;calc"], // shell-injection metachar in a skill arg
+    fake: fakeHappy,
+    ledgerDir: ledger,
+    runsDir: runs,
+  });
+  const comps = readLedger(ledger, "dispatch-completions.jsonl");
+  const artifacts = fs.existsSync(runs) ? fs.readdirSync(runs) : [];
+  const refused = res.status !== 0 && comps.length === 0 && artifacts.length === 0;
+  // h.violation asserts the planted injection is NOT treated as a pass.
+  return { ok: !refused };
+});
+
 h.done();

@@ -93,6 +93,20 @@ const {
 // candidate resolves to `inline`; `inline-required` is context-bound.
 const { skillExecution } = require("./dispatch/dispatch-contract");
 
+// PLAN §17.2 wire-through: the LAST raw skill spawn routes through the shared
+// dispatch SAFETY KERNEL (scripts/dispatch/safe-spawn.js) — `claude` resolved to an
+// absolute path so the model never chooses the exe (repo/temp PATH-hijack refused),
+// every flag/value allowlisted, stdin UTF-8/BOM/CRLF-normalized, whole-tree kill on
+// timeout, and cmd.exe/c for the .cmd shim. Loaded best-effort; the PRODUCTION path
+// fails CLOSED if it's missing (refuses the legacy shell spawn rather than
+// re-opening the injection surface) — mirrors dispatch-claude.js + providers.js.
+let safeSpawn = null;
+try {
+  safeSpawn = require("./dispatch/safe-spawn");
+} catch {
+  safeSpawn = null;
+}
+
 // ── Input gate (mirrors scripts/portfolio/dispatch.js) ──────
 const SKILL_RE = /^\/[a-z][a-z0-9_-]*(:[a-z][a-z0-9_-]*)?$/;
 const SAFE_ARG_RE = /^[A-Za-z0-9_\-./:=@,+]+$/;
@@ -368,18 +382,17 @@ function dispatchSkill(opts) {
   } catch {
     prefixArgs = [];
   }
-  // `claude -p --agent general-purpose "/skill args"` — the documented dispatch path
-  // (a fresh agent reads its prompt and invokes the named skill). Mirrors
-  // portfolio/dispatch.js's argv shape.
-  const claudeArgs = [...prefixArgs, "-p", "--agent", "general-purpose", promptStr];
+  // `claude -p --agent general-purpose` — the documented dispatch path (a fresh
+  // agent reads its prompt from STDIN and invokes the named skill). The prompt is
+  // delivered via stdin (promptBuf), NOT as a positional arg: the safety kernel's
+  // `claude` arg-policy refuses positionals (the model must never inject a free arg),
+  // mirroring dispatch-claude.js which also passes its prompt only on stdin.
+  const claudeArgs = [...prefixArgs, "-p", "--agent", "general-purpose"];
 
   const TIMEOUT_MS = parseInt(
     process.env.DISPATCH_SKILL_TIMEOUT_MS || `${DEFAULT_TIMEOUT_MS}`,
     10,
   );
-  // Real claude on Windows is a .cmd shim → needs shell. The test seam sets
-  // DISPATCH_SKILL_BIN (a real node executable) → no shell needed.
-  const useShell = process.env.DISPATCH_SKILL_BIN ? false : process.platform === "win32";
   // Pass canonical CLAUDE_PROJECT_DIR so any nested telemetry resolves to canonical
   // (ED-016 class), not a cwd-bent path.
   const childEnv = { ...process.env, CLAUDE_PROJECT_DIR: AGENT_ROOT };
@@ -388,47 +401,120 @@ function dispatchSkill(opts) {
   const startedMs = Date.now();
   const cmdChecksum = cmdlineChecksum(skill, PROVIDER, promptBytes);
 
-  const spawned = spawnSync(BIN, claudeArgs, {
-    input: promptBuf,
-    timeout: TIMEOUT_MS,
-    maxBuffer: MAX_BUFFER,
-    cwd: AGENT_ROOT,
-    env: childEnv,
-    encoding: "buffer",
-    shell: useShell,
-    windowsHide: true,
-  });
+  // ── Spawn: production → the safety kernel; test-seam → direct ─
+  // PRODUCTION (no DISPATCH_SKILL_BIN): route through safeSpawnSync — claude resolved
+  // to an abs path (repo/temp PATH-hijack refused), every flag/value allowlisted,
+  // stdin UTF-8/BOM/CRLF-normalized, whole process tree killed on timeout, cmd.exe/c
+  // for the .cmd shim. Fail CLOSED if the kernel is missing. (PLAN §17.2 / §16.3.)
+  // TEST SEAM (DISPATCH_SKILL_BIN set): a direct spawn of the injected fake node bin,
+  // so dispatch-skill.test.js reproduces the reap fixtures deterministically without
+  // the real CLI. Mirrors the providers.js / dispatch-claude.js seam exactly — the
+  // kernel's own spawn/resolve/arg behavior is covered by safe-spawn.test.js.
+  const usingSeam = !!process.env.DISPATCH_SKILL_BIN;
 
-  // 5. Classify the outcome (same order as dispatch-claude.js: timeout →
-  // spawn-fail → non-zero → empty/whitespace).
-  const stdoutBuf = spawned.stdout || Buffer.alloc(0);
-  const stderrBuf = spawned.stderr || Buffer.alloc(0);
+  let stdoutBuf = Buffer.alloc(0);
+  let stderrBuf = Buffer.alloc(0);
+  let status = null; // exit code; null when killed by signal / refused pre-spawn
+  let signal = null;
+  let spawnFailDetail = null; // arg-policy / resolution refusal detail for the death hint
+  let reaped = false;
+  let reason = null;
+
+  if (usingSeam) {
+    // The test seam sets DISPATCH_SKILL_BIN to a real node executable → spawn it
+    // directly, shell:false (no .cmd shim to invoke; mirrors dispatch-claude.js's seam).
+    const spawned = spawnSync(BIN, claudeArgs, {
+      input: promptBuf,
+      timeout: TIMEOUT_MS,
+      maxBuffer: MAX_BUFFER,
+      cwd: AGENT_ROOT,
+      env: childEnv,
+      encoding: "buffer",
+      shell: false,
+      windowsHide: true,
+    });
+    stdoutBuf = spawned.stdout || Buffer.alloc(0);
+    stderrBuf = spawned.stderr || Buffer.alloc(0);
+    status = spawned.status;
+    signal = spawned.signal;
+    const errCode = spawned.error && spawned.error.code ? spawned.error.code : null;
+    const timedOut = errCode === "ETIMEDOUT" || signal === "SIGTERM" || signal === "SIGKILL";
+    const spawnFailed = errCode === "ENOENT" || errCode === "EACCES" || errCode === "EPERM";
+    // Best-effort tree-kill on the seam (the production path's kernel does this for real).
+    if (timedOut && process.platform === "win32" && spawned.pid) {
+      try {
+        spawnSync("taskkill", ["/T", "/F", "/PID", String(spawned.pid)], { timeout: 5000 });
+      } catch {
+        /* best effort */
+      }
+    }
+    // Classification order (same as dispatch-claude.js): timeout → spawn-fail →
+    // non-zero → empty/whitespace stdout (the ED-018 silent-reap signature).
+    const trimmedLen = stdoutBuf.toString("utf8").trim().length;
+    if (timedOut) {
+      reaped = true;
+      reason = "skill_timeout_reap";
+    } else if (spawnFailed) {
+      reaped = true;
+      reason = "skill_spawn_failed";
+      spawnFailDetail = errCode;
+    } else if (typeof status === "number" && status !== 0) {
+      reaped = true;
+      reason = "skill_nonzero_exit";
+    } else if (trimmedLen === 0) {
+      reaped = true;
+      reason = "skill_zero_byte_reap"; // exit 0 but no real output → silent reap
+    }
+  } else {
+    // Production — fail CLOSED if the kernel can't be loaded (refuse the legacy spawn).
+    if (!safeSpawn) {
+      const msg =
+        "dispatch safety kernel (scripts/dispatch/safe-spawn.js) unavailable — refusing the " +
+        "legacy shell spawn rather than re-opening the injection surface. Restore the module.";
+      stderr.write(msg + "\n");
+      return { exitCode: 2, status: "kernel_missing", envelope: `SKILL ${skill}: REFUSED (${msg})` };
+    }
+    const r = safeSpawn.safeSpawnSync("claude", claudeArgs, {
+      input: promptBuf,
+      timeoutMs: TIMEOUT_MS,
+      maxBuffer: MAX_BUFFER,
+      cwd: AGENT_ROOT,
+      env: childEnv,
+    });
+    // The kernel already resolved + arg-checked + spawned + tree-killed + classified.
+    // It suppresses stdout to "" on a reap, so a reaped run records 0 stdout bytes.
+    stdoutBuf = Buffer.from(r.stdout || "", "utf8");
+    stderrBuf = Buffer.from(r.stderr || "", "utf8");
+    status = typeof r.exitCode === "number" ? r.exitCode : null;
+    // Translate the kernel's classification → the skill_* reason vocabulary the death
+    // record + envelope expect. A PRE-spawn refusal (disallowed arg / hijacked exe /
+    // unresolved cmd.exe) is a LOUD spawn failure, never a silent pass — fail-closed,
+    // with the kernel's detail carried into the hint.
+    if (
+      r.reason === "arg_policy_violation" ||
+      r.reason === "tool_resolution_refused" ||
+      r.reason === "cmd_exe_unresolved"
+    ) {
+      reaped = true;
+      reason = "skill_spawn_failed";
+      spawnFailDetail = r.violations ? `arg-policy: ${r.violations.join("; ")}` : r.detail || r.reason;
+    } else if (r.reaped) {
+      reaped = true;
+      reason =
+        r.reason === "timeout_reap"
+          ? "skill_timeout_reap"
+          : r.reason === "spawn_failed"
+            ? "skill_spawn_failed"
+            : r.reason === "zero_byte_reap"
+              ? "skill_zero_byte_reap"
+              : "skill_nonzero_exit";
+      if (reason === "skill_spawn_failed") spawnFailDetail = r.detail || r.reason;
+    }
+  }
+
   const stdoutBytes = stdoutBuf.length;
   const stderrBytes = stderrBuf.length;
   const outputStr = stdoutBuf.toString("utf8");
-  const trimmedLen = outputStr.trim().length;
-  const status = spawned.status;
-  const signal = spawned.signal;
-  const errCode = spawned.error && spawned.error.code ? spawned.error.code : null;
-
-  const timedOut = errCode === "ETIMEDOUT" || signal === "SIGTERM" || signal === "SIGKILL";
-  const spawnFailed = errCode === "ENOENT" || errCode === "EACCES" || errCode === "EPERM";
-
-  let reaped = false;
-  let reason = null;
-  if (timedOut) {
-    reaped = true;
-    reason = "skill_timeout_reap";
-  } else if (spawnFailed) {
-    reaped = true;
-    reason = "skill_spawn_failed";
-  } else if (typeof status === "number" && status !== 0) {
-    reaped = true;
-    reason = "skill_nonzero_exit";
-  } else if (trimmedLen === 0) {
-    reaped = true;
-    reason = "skill_zero_byte_reap"; // exit 0 but no real output → silent reap
-  }
   const ok = !reaped;
 
   // 4 (cont). Capture the FULL output to the artifact — ALWAYS (even on reap, so a
@@ -508,7 +594,7 @@ function dispatchSkill(opts) {
           : reason === "skill_zero_byte_reap"
             ? `${skill} produced 0 bytes of stdout (silent reap — the ED-018 signature).`
             : reason === "skill_spawn_failed"
-              ? `could not spawn '${BIN}' (${errCode}).`
+              ? `could not spawn '${BIN}' via the dispatch safety kernel (${spawnFailDetail || "spawn refused"}).`
               : `${skill} exited ${status}.`,
     });
   }

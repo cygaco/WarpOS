@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "generated": "2026-06-08T20:21:24.827Z",
-    "lastUpdated": "2026-06-08T20:21:24.827Z",
+    "generated": "2026-06-08T21:25:40.124Z",
+    "lastUpdated": "2026-06-08T21:25:40.124Z",
     "total_hooks": 70,
-    "total_modules": 15,
-    "uncurated": 2,
+    "total_modules": 16,
+    "uncurated": 0,
     "total_gaps": 83,
     "gaps_closed": 75,
     "gaps_open": 8,
@@ -78,7 +78,7 @@
         "mode"
       ],
       "file_size": 9095,
-      "file_modified": "2026-06-08T20:13:54.823Z",
+      "file_modified": "2026-06-08T20:28:50.013Z",
       "note": "Escalated 2026-05-13: added release-gate. Release-context AskUserQuestion now requires a recent Beta consultation logged to paths.betaEvents (per CLAUDE.md beta-consultation protocol). `deploy` dropped from ESCAPE_KEYWORDS — it was the most common escape path and let release decisions skip Beta entirely."
     },
     {
@@ -939,7 +939,7 @@
         "paths"
       ],
       "file_size": 8945,
-      "file_modified": "2026-06-08T20:13:54.823Z"
+      "file_modified": "2026-06-08T20:28:50.013Z"
     },
     {
       "id": "path-registry-guard",
@@ -1691,7 +1691,7 @@
         "policy/sprint-routing.json"
       ],
       "file_size": 9608,
-      "file_modified": "2026-06-08T20:13:54.823Z",
+      "file_modified": "2026-06-08T20:28:50.013Z",
       "note": "SP-20260514-002 routing-policy enforcer (the aspirational-vs-enforced fix for sprint routing). Fail-open on any unexpected error. Three finalize artifacts gated; plan + ticket writes recorded by their drivers."
     },
     {
@@ -2181,7 +2181,7 @@
         "policy/version-bump-guard.json"
       ],
       "file_size": 7695,
-      "file_modified": "2026-06-08T20:13:54.823Z",
+      "file_modified": "2026-06-08T20:28:50.013Z",
       "note": "2026-05-20 audit: 28 new assets + 179 SHA drifts accumulated against the 0.8.0 label over 5 days because no enforcer surfaced it at write-time — downstream /warp:update --to 0.8.0 got a stale framework. Makes the version-bump-after-capsule requirement self-detecting. FRAMEWORK_PREFIXES canonical here since SP-20260522-001 retired the promote.js mirror."
     },
     {
@@ -2293,7 +2293,7 @@
       ],
       "file": "scripts/hooks/lib/logger.js",
       "file_size": 16632,
-      "file_modified": "2026-06-08T20:13:54.823Z"
+      "file_modified": "2026-06-08T20:28:50.013Z"
     },
     {
       "id": "mode",
@@ -2310,6 +2310,14 @@
       "file_modified": "2026-05-30T01:25:39.590Z"
     },
     {
+      "id": "oneshot-store",
+      "type": "module",
+      "file": "scripts/hooks/lib/oneshot-store.js",
+      "file_size": 2337,
+      "file_modified": "2026-06-08T21:07:45.656Z",
+      "uncurated": true
+    },
+    {
       "id": "paths.generated",
       "type": "module",
       "kind": "generated",
@@ -2321,7 +2329,7 @@
       "generated_from": "framework/paths.registry.json",
       "file": "scripts/hooks/lib/paths.generated.js",
       "file_size": 10736,
-      "file_modified": "2026-06-08T20:11:53.395Z"
+      "file_modified": "2026-06-08T20:28:50.013Z"
     },
     {
       "id": "paths",

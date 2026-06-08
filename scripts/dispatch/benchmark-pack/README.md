@@ -1,12 +1,23 @@
 # Skill-dispatch benchmark pack — §13.7 "is it worth it + are the results good?"
 
-> **SCAFFOLD — heavy A/B §13.7 measurement DEFERRED. No skill is `subprocess_verified` yet. This directory describes a replayable task set; it contains NO fabricated measurements.**
+> **SCAFFOLD + MECHANISM — the §13.7 A/B runner (`scripts/skills-bench.js`) is BUILT and fixture-proven (`skills-bench.test.js`); the heavy real measurement is DEFERRED. No skill is `subprocess_verified:true` yet. This directory describes the replayable task set + benchset schemas; it contains NO fabricated measurements (every number in the examples is a clearly-marked placeholder).**
 
 `skills:test` (§13.6, `scripts/skills-test.js`) proves a subprocess skill *runs* headless.
 This pack is the §13.7 *second gate*: it proves subprocessing a skill is actually
 **beneficial** — that it **saves meaningful tokens/context AND the results are as good as
 inline**. A skill is finalized as `execution: subprocess` only when BOTH gates pass,
 measured per-skill, never assumed (PLAN §13.6 → §13.7, §17.5).
+
+The §13.7 measurement RUNNER is **`scripts/skills-bench.js`** (fixture-proven by
+`scripts/skills-bench.test.js`). It reads a *benchset* (`bench-result.schema.json`) — the
+per-task A/B token MEASUREMENTS + thresholds + judge metadata — computes both axes, and
+on a BOTH-pass **finalizes** the skill in the skill-weight registry by setting the STRICT
+`subprocess_verified: true` (the value `dispatch-contract.js#skillExecution` requires to
+actually route subprocess) plus an `earn_it` block `{ tokens_saved, quality_verdict,
+context_needed?, measured_at, run_id, axis1, axis2 }`. **Two-gate ladder:** the §13.6 ping
+stamp is an OBJECT (`subprocess_verified:{date,run_id,…}`) → proves runnable but, being
+`!== true`, still routes inline; §13.7 is what flips it to the strict `true`. Fail-closed:
+either axis failing → not finalized → the skill stays inline.
 
 §17.5 is explicit that this cannot be judged from a single run (retries, summarization,
 review churn, and stale-context failures hide the true cost). So §13.7 requires a small
@@ -61,19 +72,45 @@ skill-weight registry per skill:
 
 ```
 benchmark-pack/
-  README.md                 ← this file (the contract)
-  task-set.schema.json      ← schema for a replayable task set
-  task-set.example.json     ← a worked EXAMPLE shape (illustrative; NOT a measurement)
-  task-sets/                ← (future) one <skill>.json per skill under measurement
-  runs/                     ← (future) raw inline/subprocess run artifacts, per task
-  results/                  ← (future) computed savings + quality verdicts, per skill
+  README.md                   ← this file (the contract)
+  task-set.schema.json        ← schema for the INPUT side: a replayable task set (tasks + thresholds)
+  task-set.example.json       ← worked EXAMPLE task set (illustrative; NOT a measurement)
+  bench-result.schema.json    ← schema for the MEASURED side: a benchset skills-bench.js consumes/produces
+  bench-result.example.json   ← worked EXAMPLE benchset (SYNTHETIC placeholder counts; NOT a measurement)
+  task-sets/                  ← (future) one <skill>.json task set per skill under measurement
+  runs/                       ← (future) raw inline/subprocess run artifacts, per task
+  results/                    ← (future) computed savings + quality verdicts, per skill
 ```
 
-A real task set carries, per task: a stable `task_id`, the skill + input, a `gold`
-expectation (or a rubric), and the per-axis thresholds. A run records the orchestrator
-token counts for both arms, the envelope, the artifact digests, and the anonymized judge
-verdict. See `task-set.schema.json` for the exact shape and `task-set.example.json` for a
-filled illustrative example.
+Two paired schemas:
+
+- **`task-set.schema.json`** — the INPUT: per task a stable `task_id`, the skill + input,
+  a `gold` expectation (or rubric), and the per-axis thresholds.
+- **`bench-result.schema.json`** — the MEASURED side `skills-bench.js` reads: per task the
+  orchestrator token counts for both arms (`inline_orchestrator_tokens`, `envelope_tokens`),
+  optional artifact digests, the thresholds, and the independent judge's `verdict`. The
+  runner computes Axis 1 from these counts and reads Axis 2 from the judge verdict (it never
+  self-grades).
+
+See each `.schema.json` for the exact shape and the matching `*.example.json` for a filled
+illustrative example. **Both examples carry placeholder/synthetic numbers, clearly marked —
+neither is a real measurement.**
+
+### Running the mechanism on a fixture (no spend)
+
+```
+# both axes pass → EARNED → would finalize (dry):
+SKILLS_BENCH_JUDGE_OVERRIDE='{"<skill>":{"verdict":"subprocess>=inline","score":0.0}}' \
+  node scripts/skills-bench.js --registry <fixture-registry.json> --benchset <benchset.json> --no-finalize
+
+# the fixture A/B test (both-pass→stamped; axis-1-fail→not finalized; axis-2-fail→not finalized):
+node scripts/skills-bench.test.js
+```
+
+`SKILLS_BENCH_JUDGE_OVERRIDE` STUBS the cross-provider judge deterministically for the
+fixture path — there is no real judge dispatch and no spend. With **no** override and no
+real judge wired, Axis 2 is **UNGRADED** and the skill fails closed (never self-graded,
+never assumed-good).
 
 ---
 
@@ -91,13 +128,19 @@ harness run). When a future session decides to earn-it for a specific skill:
 2. **Author the task set** — `task-sets/<skill>.json` against `task-set.schema.json`: a
    handful of representative inputs with gold expectations + the two-axis thresholds.
 3. **Run both arms per task** — capture INLINE orchestrator tokens and SUBPROCESS
-   (envelope-only) orchestrator tokens; store raw artifacts under `runs/`.
-4. **Compute Axis 1** — `net_savings` per the formula; require both thresholds.
-5. **Grade Axis 2** — gold-first, then an anonymized cross-provider judge for the
-   subjective delta (the diff-model-review pattern; never self-grade).
-6. **Stamp the registry per skill** — `{ subprocess_verified, tokens_saved, quality_verdict,
-   context_needed?, measured_at, run_id }`. A skill that fails either axis stays `inline`.
-7. **Anti-rot** — re-measure on skill change; the Phase-0 dry-run (§14) cannot pass while
+   (envelope-only) orchestrator tokens; store raw artifacts under `runs/`. Record them
+   into a *benchset* (`bench-result.schema.json`): one `measurements[]` entry per task
+   with `inline_orchestrator_tokens` + `envelope_tokens` (+ optional artifact digests).
+4. **Grade Axis 2** — gold-first, then an anonymized cross-provider judge for the
+   subjective delta (the diff-model-review pattern; never self-grade); write the judge's
+   `verdict` (+ optional signed `score`) into the benchset's `judge` block.
+5. **Run the harness** — `node scripts/skills-bench.js --registry .claude/runtime/skill-weight.json
+   --benchset <benchset.json>`. It computes Axis 1 (`net_savings` per the formula, both
+   thresholds) and reads Axis 2 from the judge verdict, then on a BOTH-pass **finalizes**
+   the registry: sets the strict `subprocess_verified: true` + the `earn_it` block
+   `{ tokens_saved, quality_verdict, context_needed?, measured_at, run_id, axis1, axis2 }`.
+   A skill that fails either axis stays `inline` (exit 1, nothing stamped).
+6. **Anti-rot** — re-measure on skill change; the Phase-0 dry-run (§14) cannot pass while
    any `subprocess`-classified skill lacks a CURRENT savings+quality measurement.
 
 > **Enforcer note (§13.6 anti-rot):** `subprocess_verified` must be invalidated when a
@@ -111,10 +154,16 @@ harness run). When a future session decides to earn-it for a specific skill:
 ## What is DEFERRED (explicit, honest scope)
 
 - **No skill is `subprocess_verified` yet** — not the 6 heavy real skills, not any other.
-  This session shipped the HARNESS + the token-free resolve mode + a fixture-proven ping
-  path. The fixture test stamps/fails-closed on FIXTURE skills only.
+  Across §13.6 + §13.7 this work shipped the HARNESSES — the §13.6 runnability harness
+  (`skills-test.js`, resolve + fixture-proven ping) and the §13.7 A/B measurement runner
+  (`skills-bench.js`, fixture-proven by `skills-bench.test.js`). Both fixture tests
+  stamp/fail-closed on FIXTURE skills ONLY; the live `.claude/runtime/skill-weight.json` is
+  asserted byte-unchanged and carries **0** finalized (`subprocess_verified:true`) skills.
 - **No real A/B measurement exists** — there are no run artifacts under `runs/` and no
-  verdicts under `results/`. Every number in `task-set.example.json` is an illustrative
-  placeholder, clearly marked, not a measurement.
-- **The §13.7 heavy measurement itself is DEFERRED** — it is an expensive, deliberate
-  future action per the steps above, one skill at a time, starting with a real §13.6 ping.
+  verdicts under `results/`. Every number in `task-set.example.json` and
+  `bench-result.example.json` is an illustrative placeholder, clearly marked, not a
+  measurement (the example benchset's zeros would in fact FAIL Axis 1 fail-closed).
+- **The §13.7 heavy measurement itself is DEFERRED** — the *mechanism* exists and is
+  fixture-proven, but RUNNING it against the 6 real heavy skills is an expensive, deliberate
+  future action per the steps above ($-budgeted; one skill at a time; each replays the skill
+  twice + a real cross-provider judge call), starting with a real §13.6 ping.

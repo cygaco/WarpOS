@@ -104,7 +104,7 @@ Skills: 72 across 22 namespaces
 | :log | — | traces.jsonl | traces.jsonl |
 | :score | — | learnings.jsonl, traces.jsonl | traces.jsonl, learnings.jsonl |
 
-Reference: `.claude/reference/reasoning-frameworks.md`
+Reference: `.claude/project/reference/reasoning-frameworks.md`
 
 ### reconcile (2 skills)
 

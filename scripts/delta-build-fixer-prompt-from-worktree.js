@@ -3,6 +3,7 @@
 // Usage: node scripts/delta-build-fixer-prompt-from-worktree.js <feature> <worktree-path> <fix-brief-file> <output-file>
 const fs = require("fs");
 const path = require("path");
+const { readOneshotStore } = require("./hooks/lib/oneshot-store");
 
 const PROJ = path.join(__dirname, "..");
 const feature = process.argv[2];
@@ -17,14 +18,11 @@ if (!feature || !worktreePath || !fixBriefFile || !outputFile) {
   process.exit(1);
 }
 
-const store = JSON.parse(
-  fs.readFileSync(
-    path.join(PROJ, ".claude/agents/president/_system/oneshot/store.json"),
-    "utf8",
-  ),
-);
+// Store via PATHS.oneshotStore (ED-037) — soft-empty {} on a fresh checkout
+// instead of an ENOENT crash; the missing-feature path below still errors.
+const store = readOneshotStore();
 
-const featureData = store.features[feature];
+const featureData = (store.features || {})[feature];
 if (!featureData) {
   console.error(`Feature not found in store: ${feature}`);
   process.exit(1);

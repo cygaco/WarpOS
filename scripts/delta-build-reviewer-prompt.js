@@ -3,6 +3,7 @@
 // Usage: node scripts/delta-build-reviewer-prompt.js <role> <feature> <worktree-path> <output-file>
 const fs = require("fs");
 const path = require("path");
+const { readOneshotStore } = require("./hooks/lib/oneshot-store");
 
 const PROJ = path.join(__dirname, "..");
 const [role, feature, worktreePath, outputFile] = process.argv.slice(2);
@@ -14,16 +15,13 @@ if (!role || !feature || !worktreePath || !outputFile) {
   process.exit(1);
 }
 
-const store = JSON.parse(
-  fs.readFileSync(
-    path.join(PROJ, ".claude/agents/president/_system/oneshot/store.json"),
-    "utf8",
-  ),
-);
+// Store via PATHS.oneshotStore (ED-037) — soft-empty {} on a fresh checkout
+// instead of an ENOENT crash.
+const store = readOneshotStore();
 const manifest = JSON.parse(
   fs.readFileSync(path.join(PROJ, ".claude/manifest.json"), "utf8"),
 );
-const featureData = store.features[feature];
+const featureData = (store.features || {})[feature] || {};
 const featureDir = manifest.build.featureIdToDir?.[feature] || feature;
 
 function readFile(basePath, relPath) {
