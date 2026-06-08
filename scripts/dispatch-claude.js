@@ -67,6 +67,21 @@ const {
   promptDigest,
 } = require("./dispatch-agent");
 
+// PLAN §17.2 step-1 wire-through: the build-chain Claude spawn routes through the
+// shared dispatch SAFETY KERNEL (scripts/dispatch/safe-spawn.js) — tool resolved
+// to an absolute path so the model never chooses the exe (repo/temp PATH-hijack
+// refused), every flag/value allowlisted, stdin UTF-8/BOM/CRLF-normalized,
+// whole-tree kill on timeout, and cmd.exe/c for the .cmd shim. Loaded best-effort;
+// the PRODUCTION path fails CLOSED if it's missing (refuses the legacy shell spawn
+// rather than re-opening the injection surface) — mirrors the providers.js
+// Wave-1 wire-through.
+let safeSpawn = null;
+try {
+  safeSpawn = require("./dispatch/safe-spawn");
+} catch {
+  safeSpawn = null;
+}
+
 const PROVIDER = "claude";
 const DEFAULT_TIMEOUT_MS = 20 * 60 * 1000; // 20 min — builders are heavier than the 15-min review ceiling
 const MAX_BUFFER = 32 * 1024 * 1024; // 32 MB
@@ -250,62 +265,119 @@ try {
   /* fail-open — contract consult never blocks a working dispatch */
 }
 
-const spawned = spawnSync(BIN, claudeArgs, {
-  input: promptBuf,
-  timeout: TIMEOUT_MS,
-  maxBuffer: MAX_BUFFER,
-  cwd: runCwd,
-  env: childEnv,
-  encoding: "buffer",
-  shell: useShell,
-  windowsHide: true,
-});
+// ── Spawn: production → the safety kernel; test-seam → direct ─
+// PRODUCTION (no DISPATCH_CLAUDE_BIN): route through safeSpawnSync — the model
+// never chooses the exe (claude resolved to an abs path; repo/temp PATH-hijack
+// refused), every flag/value is allowlisted, stdin is UTF-8/BOM/CRLF-normalized,
+// and the WHOLE process tree is killed on timeout (taskkill /T /F). Fail CLOSED if
+// the kernel is missing. (PLAN §17.2 step-1 / §16.3 / §17.3.)
+// TEST SEAM (DISPATCH_CLAUDE_BIN set): a direct spawn of the injected fake node
+// bin, so dispatch-claude.test.js reproduces the reap fixtures deterministically
+// without the real CLI. This branch is unreachable in real dispatch; the kernel's
+// own spawn/resolve/arg behavior is covered by safe-spawn.test.js and the live
+// wire-through is probe-verified (mirrors the providers.js Wave-1 pattern).
+const usingSeam = !!process.env.DISPATCH_CLAUDE_BIN;
 
-// ── Classify the outcome ────────────────────────────────────
-const stdoutBuf = spawned.stdout || Buffer.alloc(0);
-const stderrBuf = spawned.stderr || Buffer.alloc(0);
-const stdoutBytes = stdoutBuf.length;
-const stderrBytes = stderrBuf.length;
-// trim() defeats whitespace/banner-only false-greens (reviewer-HIGH): a CLI that
-// emits only a blank line or a banner is NOT a successful build.
-const trimmedStdoutLen = stdoutBuf.toString("utf8").trim().length;
-const status = spawned.status; // null when killed by signal
-const signal = spawned.signal; // 'SIGTERM' on timeout kill
-const errCode = spawned.error && spawned.error.code ? spawned.error.code : null;
+let stdoutBuf = Buffer.alloc(0);
+let stderrBuf = Buffer.alloc(0);
+let status = null; // exit code; null when killed by signal / refused pre-spawn
+let signal = null; // 'SIGTERM' on a seam-path timeout kill (kernel handles its own)
+let spawnFailDetail = null; // arg-policy / resolution refusal detail for the death hint
+let reaped = false;
+let reason = null;
 
-const timedOut = errCode === "ETIMEDOUT" || signal === "SIGTERM" || signal === "SIGKILL";
-const spawnFailed = errCode === "ENOENT" || errCode === "EACCES" || errCode === "EPERM";
-
-// Best-effort (reviewer-HIGH): on a Windows timeout, spawnSync's SIGTERM kills
-// the shell but the claude grandchild may survive. taskkill the tree by pid.
-// The REAL safety net is the isolation gate above — a survivor edits a throwaway
-// worktree, never canonical. (Residual: a reparented grandchild may escape.)
-if (timedOut && process.platform === "win32" && spawned.pid) {
-  try {
-    spawnSync("taskkill", ["/T", "/F", "/PID", String(spawned.pid)], { timeout: 5000 });
-  } catch {
-    /* best effort */
+if (usingSeam) {
+  const spawned = spawnSync(BIN, claudeArgs, {
+    input: promptBuf,
+    timeout: TIMEOUT_MS,
+    maxBuffer: MAX_BUFFER,
+    cwd: runCwd,
+    env: childEnv,
+    encoding: "buffer",
+    shell: useShell,
+    windowsHide: true,
+  });
+  stdoutBuf = spawned.stdout || Buffer.alloc(0);
+  stderrBuf = spawned.stderr || Buffer.alloc(0);
+  status = spawned.status;
+  signal = spawned.signal;
+  const errCode = spawned.error && spawned.error.code ? spawned.error.code : null;
+  const timedOut = errCode === "ETIMEDOUT" || signal === "SIGTERM" || signal === "SIGKILL";
+  const spawnFailed = errCode === "ENOENT" || errCode === "EACCES" || errCode === "EPERM";
+  // Best-effort tree-kill on the seam (the production path's kernel does this for real).
+  if (timedOut && process.platform === "win32" && spawned.pid) {
+    try {
+      spawnSync("taskkill", ["/T", "/F", "/PID", String(spawned.pid)], { timeout: 5000 });
+    } catch {
+      /* best effort */
+    }
+  }
+  // trim() defeats whitespace/banner-only false-greens: a CLI emitting only a blank
+  // line or a banner is NOT a successful build. Classification order: timeout →
+  // spawn-failure → non-zero exit → empty/whitespace stdout (the ED-018 signature).
+  const trimmedStdoutLen = stdoutBuf.toString("utf8").trim().length;
+  if (timedOut) {
+    reaped = true;
+    reason = "builder_timeout_reap";
+  } else if (spawnFailed) {
+    reaped = true;
+    reason = "builder_spawn_failed";
+    spawnFailDetail = errCode;
+  } else if (typeof status === "number" && status !== 0) {
+    reaped = true;
+    reason = "builder_nonzero_exit";
+  } else if (trimmedStdoutLen === 0) {
+    reaped = true;
+    reason = "builder_zero_byte_reap"; // exit 0 but no real output → silent reap
+  }
+} else {
+  // Production — fail CLOSED if the kernel can't be loaded (refuse the legacy spawn).
+  if (!safeSpawn) {
+    usage(
+      "dispatch safety kernel (scripts/dispatch/safe-spawn.js) unavailable — refusing the " +
+        "legacy shell spawn rather than re-opening the injection surface. Restore the module.",
+    );
+  }
+  const r = safeSpawn.safeSpawnSync("claude", claudeArgs, {
+    input: promptBuf,
+    timeoutMs: TIMEOUT_MS,
+    maxBuffer: MAX_BUFFER,
+    cwd: runCwd,
+    env: childEnv,
+  });
+  // The kernel already resolved + arg-checked + spawned + tree-killed + classified.
+  // It suppresses stdout to "" on a reap, so a reaped run records 0 stdout bytes.
+  stdoutBuf = Buffer.from(r.stdout || "", "utf8");
+  stderrBuf = Buffer.from(r.stderr || "", "utf8");
+  status = typeof r.exitCode === "number" ? r.exitCode : null;
+  // Translate the kernel's classification → the builder_* reason vocabulary the
+  // death record + gauntlet post-mortem expect. A PRE-spawn refusal (disallowed
+  // arg / hijacked exe / unresolved cmd.exe) is a LOUD spawn failure, never a
+  // silent pass — fail-closed, with the kernel's detail carried into the hint.
+  if (
+    r.reason === "arg_policy_violation" ||
+    r.reason === "tool_resolution_refused" ||
+    r.reason === "cmd_exe_unresolved"
+  ) {
+    reaped = true;
+    reason = "builder_spawn_failed";
+    spawnFailDetail = r.violations ? `arg-policy: ${r.violations.join("; ")}` : r.detail || r.reason;
+  } else if (r.reaped) {
+    reaped = true;
+    reason =
+      r.reason === "timeout_reap"
+        ? "builder_timeout_reap"
+        : r.reason === "spawn_failed"
+          ? "builder_spawn_failed"
+          : r.reason === "zero_byte_reap"
+            ? "builder_zero_byte_reap"
+            : "builder_nonzero_exit";
+    if (reason === "builder_spawn_failed") spawnFailDetail = r.detail || r.reason;
   }
 }
 
-// Classification order (reviewer-fix): timeout → spawn-failure → non-zero exit →
-// empty/whitespace stdout on exit 0 (the ED-018 silent-reap signature). A
-// non-zero exit is named as such even when it produced no bytes.
-let reaped = false;
-let reason = null;
-if (timedOut) {
-  reaped = true;
-  reason = "builder_timeout_reap";
-} else if (spawnFailed) {
-  reaped = true;
-  reason = "builder_spawn_failed";
-} else if (typeof status === "number" && status !== 0) {
-  reaped = true;
-  reason = "builder_nonzero_exit";
-} else if (trimmedStdoutLen === 0) {
-  reaped = true;
-  reason = "builder_zero_byte_reap"; // exit 0 but no real output → silent reap
-}
+const stdoutBytes = stdoutBuf.length;
+const stderrBytes = stderrBuf.length;
 
 // CONTRACT BOUNDARY (reviewer-HIGH, scoped decision): this wrapper detects a
 // REAP (silent death / timeout / empty output) — "did the process run and
@@ -370,7 +442,7 @@ if (reaped) {
         : reason === "builder_zero_byte_reap"
           ? `claude -p --agent ${role} produced 0 bytes of stdout (silent reap — the ED-018 signature).`
           : reason === "builder_spawn_failed"
-            ? `could not spawn '${BIN}' (${errCode}).`
+            ? `could not spawn the '${role}' builder via the dispatch safety kernel (${spawnFailDetail || "spawn refused"}).`
             : `claude -p --agent ${role} exited ${status}.`,
   });
 }
