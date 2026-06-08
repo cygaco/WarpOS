@@ -122,6 +122,34 @@ function cmdlineChecksum(role, provider, promptBytes) {
   );
 }
 
+// N-1 (PLAN §17.4): run-context fields stamped onto every completion record so the
+// coverage gate (scripts/dispatch/coverage-gate.js) can prove a phase's CLAIMED
+// roles ACTUALLY dispatched under the same run — killing "sprint theater" (a
+// coverage row with no backing dispatch). Sourced from the orchestrator's env;
+// null when dispatched ad-hoc (a null run_id simply can't satisfy a run-scoped
+// coverage check, which is the correct fail-closed behavior).
+function runContext() {
+  return {
+    run_id: process.env.WARPOS_RUN_ID || null,
+    phase_id: process.env.WARPOS_PHASE_ID || null,
+    plan_item_id: process.env.WARPOS_PLAN_ITEM_ID || null,
+  };
+}
+
+// Digest of the prompt — proof-of-content for the §17.4 coverage record: a record
+// is tied to the exact spec it ran, not just "a role ran". Accepts a Buffer or a
+// string; fail-soft to null.
+function promptDigest(promptBufOrStr) {
+  try {
+    const buf = Buffer.isBuffer(promptBufOrStr)
+      ? promptBufOrStr
+      : Buffer.from(String(promptBufOrStr), "utf8");
+    return "sha256:" + crypto.createHash("sha256").update(buf).digest("hex").slice(0, 32);
+  } catch {
+    return null;
+  }
+}
+
 function ensureDir(p) {
   try {
     fs.mkdirSync(p, { recursive: true });
@@ -340,6 +368,10 @@ if (require.main !== module) {
     recordDeath,
     makeDispatchId,
     cmdlineChecksum,
+    // N-1 (PLAN §17.4): run-context + prompt-digest stampers, reused by
+    // dispatch-claude.js so both wrappers write the SAME coverage-gradeable schema.
+    runContext,
+    promptDigest,
   };
   return;
 }
@@ -636,6 +668,11 @@ try {
     stderr_bytes: stderrBytes,
     fallback: !!result.fallback,
     ok: !!result.ok,
+    // N-1 (§17.4): run-context + shape + tool + prompt digest for the coverage gate.
+    ...runContext(),
+    prompt_digest: promptDigest(prompt),
+    shape: "subprocess-cross-provider",
+    tool_id: provider === "openai" ? "codex" : provider === "gemini" ? "gemini" : provider,
   });
 
   // Silent zero-byte death: process returned a non-ok with no stdout AND no

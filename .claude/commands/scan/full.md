@@ -86,6 +86,16 @@ node scripts/trackers/validate.js   # E-TRACKER-001/T4: TRACKER.md carries all 3
 
 A non-zero exit is a critical finding (the tracker drifted from reality / lies about state — a missing section, an active item with no next action, a completed item with no evidence, a broken tracker-file link). Fail-closed (exit 2 = could-not-run = NOT green). This is what makes the tracker's truthfulness an automatic gate, not a runnable-on-demand check.
 
+**Dispatch-shape integrity — the dispatch-contract gate** *(default + `--deep`)*
+
+The dispatch-shape keystone (`.claude/agents/_org/dispatch-contract.json`, PLAN §17.1 — the dispatch analogue of `role-registry.json`) runs as a direct script invocation — it guards the dispatch system's shape policy, not a `/scan:*` skill (referenced by path here like the canon/knowledge/tracker enforcers; NOT on the `scan-coverage.allowlist.json` skill list):
+
+```bash
+node scripts/dispatch/dispatch-contract.js validate   # PLAN §17.1: every role-registry role resolves to a dispatch-shape class; classes reference real shapes; the build_chain<->in-process-agent invariant holds; role_overrides target real roles (exit 0/1, fail-closed)
+```
+
+A non-zero exit is a critical finding (the dispatch contract drifted from the role registry — a role with no class, a class allowing a ghost shape, a build-chain role that could be dispatched in-process). The N-1 coverage gate (`node scripts/dispatch/coverage-gate.js --run <id> --expect <roles>`) is the companion runtime check that makes a backing `ok:true` completion record the precondition for "covered" (kills sprint theater) — REPORT-ONLY this release (PLAN §4 ramp: report-only → blocking). The safety kernel (`scripts/dispatch/safe-spawn.js`) + auth-resolver (N-3, `scripts/dispatch/auth-resolver.js`) + each module's `*.test.js` carry the P5 planted-violation tests.
+
 **Regression seed — the bug-class lens** *(default + `--deep`)*
 
 `/scan:regressions` — runs the **26 recurring bug classes** (`_requirements/07-testing/recurring-bug-classes.json`) as detectors and reports a catch-rate. Several detectors overlap the tiers above; this is the roll-up view + the 0.17.0 test-suite core. Surfaces `gap`/`partial`/`n/a` classes as the system's backlog.

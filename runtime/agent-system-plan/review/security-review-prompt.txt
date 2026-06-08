@@ -1,0 +1,1001 @@
+You are an INDEPENDENT cross-provider security reviewer (a different model family from the Claude author — no self-grading). Adversarially review these three NEW WarpOS dispatch-safety modules for a Windows-first Node.js agent OS. Focus ONLY on real, exploitable defects, ranked by severity.
+
+THREAT MODEL + required controls (from o3 deep-research, already adopted in design):
+- CVE-2024-27980: Node can auto-shell .cmd/.bat past shell:false on Windows. safe-spawn invokes .cmd shims via `cmd.exe /c`.
+- PATH/PATHEXT hijack: a planted claude.cmd earlier in PATH. resolveTool rejects repo-local + temp-dir resolutions and never lets the model supply the exe path.
+- safe-spawn != safe ARGUMENTS: assertArgs must allowlist subcommands/flags per tool, not merely refuse shell metacharacters.
+- env injection: dotenv must be parsed IN-CODE (never `export $(grep .env|xargs)`); a `$()`/backtick value must be returned inert AND flagged.
+- secrets: never logged; auth-resolver returns source LABELS not values by default.
+
+QUESTIONS: (1) Any BYPASS of assertArgs — an arg shape that reaches the tool carrying a dangerous flag/metachar? (2) Any resolveTool bypass — a hijack path that passes the repo/temp/approved-roots checks? (3) Any way dotenvParse executes or leaks a value? (4) Is the build_chain<->in-process-agent invariant in dispatch-contract actually enforced, or can a build-chain role be dispatched in-process? (5) Anything Windows-specific wrong (PATHEXT, slash-flags, cmd.exe quoting)? (6) Any concrete missed control or off-by-one.
+
+Respond as JSON ONLY: {"verdict":"PASS|CONCERNS|FAIL","findings":[{"severity":"critical|high|medium|low","file":"","issue":"","exploit":"","fix":""}],"summary":""}. Be specific with line-level detail. If nothing is exploitable, return PASS and state what you verified.
+
+===== FILE: scripts/dispatch/safe-spawn.js =====
+#!/usr/bin/env node
+"use strict";
+
+/**
+ * safe-spawn.js — the dispatch SAFETY KERNEL (PLAN §16.3 / §17.3 / §17.4).
+ *
+ * The o3 deep-research + GPT-5.5 final review found our existing `shell:false` /
+ * `shell:true`-on-Windows spawns INSUFFICIENT. This module is the shared, audited
+ * primitive every dispatcher (dispatch-claude / dispatch-agent / future
+ * dispatch-skill / dispatch-api) routes through, closing:
+ *
+ *  - CVE-2024-27980 / PATH-hijack (HIGH/MED): the MODEL never chooses the
+ *    executable path. `resolveTool(id)` maps a FIXED tool-ID allowlist →
+ *    realpath'd absolute path, and REJECTS a resolution that lands inside the
+ *    repo / temp / a model-supplied path (a planted `claude.cmd` earlier in PATH).
+ *  - "safe-spawn != safe ARGUMENTS" (HIGH): `assertArgs(id, args)` ALLOWLISTS the
+ *    permitted subcommands/flags per tool — an unknown flag, a shell metachar, a
+ *    UNC path, or a model-supplied absolute-exe arg is REFUSED. Metachar-refusal
+ *    alone (the old gate) is not enough; a whitelisted binary's own flags are
+ *    weapons.
+ *  - Encoding/newline skew (MED): `normalizeStdin()` forces UTF-8, strips a BOM,
+ *    and normalizes CRLF->LF on the stdin/file handoff.
+ *  - Orphaned paid subprocess trees (HIGH): `treeKill(pid)` does a real tree-kill
+ *    (`taskkill /T /F` on Windows; process-group kill on POSIX), not just
+ *    `child.kill()` of the top process (CLIs spawn their own children).
+ *
+ * Day-one floor per §17.3: tree-kill + timeout + drain + the arg-allowlist. Job
+ * Objects / AppContainer are DEFERRED (§17.7) behind a real survivor-test.
+ *
+ * Pure helpers (resolveTool/assertArgs/normalizeStdin) are exported and unit-
+ * tested with planted violations (P5). `safeSpawnSync` is the integrator.
+ *
+ * Zero runtime deps.
+ */
+
+const fs = require("fs");
+const os = require("os");
+const path = require("path");
+const { spawnSync } = require("child_process");
+
+const PROJECT_ROOT = path.resolve(__dirname, "..", "..");
+
+// ── Tool-ID allowlist (the model never supplies an exe path) ──
+// kind drives invocation. `.cmd` shims on Windows still carry CVE-2024-27980
+// residual risk — mitigated by the arg-allowlist (no metachars reach the shell)
+// + arg-array invocation. `node` runs OUR absolute JS entrypoints only.
+const TOOL_IDS = new Set(["claude", "codex", "gemini", "node", "git", "taskkill"]);
+
+// ── Per-tool argument policy (allowlist, not just metachar refusal) ──
+// flags: allowed flag tokens. valueFlags: flags that consume the next arg, with a
+// validator for that value. positionals: validator for bare args. Unknown flag or
+// a failing value => REJECT.
+const TOKEN = /^[A-Za-z0-9][A-Za-z0-9._:-]*$/; // model/role/effort/level tokens
+const EFFORT = /^(low|medium|high|xhigh|max)$/i;
+const SANDBOX = /^(workspace-write|read-only|danger-full-access)$/;
+const APPROVAL = /^(never|on-failure|on-request|untrusted)$/;
+// SHELL_META — the BROAD set (incl. parens + ANY whitespace) used for flag TOKENS
+// and positionals, which never legitimately contain these.
+const SHELL_META = /[`$;&|<>()\s]/;
+// INJECT_META — the command-injection set applied to EVERY arg AND every consumed
+// flag VALUE. (GPT-5.5 review CRITICAL: consumed values skipped the universal
+// check, so `-o ...x&calc` reached `cmd.exe /c` for a .cmd shim — a CVE-2024-27980
+// bypass.) Excludes space/parens so a legitimate value with spaces (the gemini -p
+// instruction, a path) still passes, but refuses the cmd.exe/posix separators +
+// substitution that actually weaponize a .cmd shim: & | < > ^ " backtick $ ; CR LF.
+const INJECT_META = /[`$;&|<>^"\r\n]/;
+const isInRepo = (p) => {
+  try {
+    const r = path.resolve(p);
+    return r === PROJECT_ROOT || r.startsWith(PROJECT_ROOT + path.sep);
+  } catch {
+    return false;
+  }
+};
+// True iff `p` resolves under (or equal to) `dir` — a REAL boundary check, not a
+// string prefix (GPT-5.5 review HIGH: "TempX".startsWith("Temp") false-passed).
+const isUnderDir = (p, dir) => {
+  try {
+    const r = path.resolve(p);
+    const d = path.resolve(dir);
+    return r === d || r.startsWith(d + path.sep);
+  } catch {
+    return false;
+  }
+};
+
+const ARG_POLICY = {
+  codex: {
+    subcommands: new Set(["exec"]),
+    boolFlags: new Set(["-"]),
+    valueFlags: {
+      "--sandbox": (v) => SANDBOX.test(v),
+      "--ask-for-approval": (v) => APPROVAL.test(v),
+      "-m": (v) => TOKEN.test(v),
+      "--model": (v) => TOKEN.test(v),
+      // `-c key=value` reasoning override: key.token=value.token, no metachars.
+      "-c": (v) => /^[a-z0-9_]+=[A-Za-z0-9._-]+$/i.test(v),
+      "-o": (v) => isInRepo(v) || isUnderDir(v, os.tmpdir()),
+    },
+    positionals: (v) => v === "-",
+  },
+  gemini: {
+    subcommands: new Set([]),
+    boolFlags: new Set(["-", "--skip-trust"]),
+    valueFlags: {
+      "-m": (v) => TOKEN.test(v),
+      "--model": (v) => TOKEN.test(v),
+      "-o": (v) => /^(json|text)$/.test(v),
+      // -p carries a fixed instruction string; allow plain ASCII words/space/period
+      // only — NO quotes/parens/metachars (aligns with INJECT_META; shell:false anyway).
+      "-p": (v) => /^[A-Za-z0-9 .,:/-]+$/.test(v) && v.length <= 4096,
+    },
+    positionals: (v) => v === "-",
+  },
+  claude: {
+    subcommands: new Set([]),
+    boolFlags: new Set(["-p", "-w"]),
+    valueFlags: {
+      "--agent": (v) => TOKEN.test(v),
+      "--model": (v) => TOKEN.test(v),
+      "--effort": (v) => EFFORT.test(v),
+      "--worktree": (v) => isInRepo(v) && !SHELL_META.test(v),
+    },
+    positionals: () => false,
+  },
+  node: {
+    subcommands: new Set([]),
+    boolFlags: new Set([]),
+    valueFlags: {},
+    // node runs OUR scripts: an absolute path UNDER the repo, plus free-form script
+    // args that carry no shell metachars (shell:false, but defense in depth).
+    positionals: (v) =>
+      (path.isAbsolute(v) ? isInRepo(v) : true) && !SHELL_META.test(v),
+  },
+  taskkill: {
+    subcommands: new Set([]),
+    boolFlags: new Set(["/T", "/F"]),
+    valueFlags: { "/PID": (v) => /^[0-9]+$/.test(v) },
+    positionals: () => false,
+  },
+  git: {
+    subcommands: new Set(["diff", "status", "rev-parse", "worktree", "config", "log"]),
+    boolFlags: new Set(["--porcelain", "--name-only", "--cached", "--is-inside-work-tree"]),
+    valueFlags: { "-C": (v) => isInRepo(v) },
+    positionals: (v) => !SHELL_META.test(v),
+  },
+};
+
+// A UNC path or a drive-absolute executable arg — the model must never choose an
+// executable path; reject these wherever they appear in argv.
+const looksLikeUNC = (v) =>
+  /^\\\\/.test(v) || (/^[a-z]:[\\/]/i.test(v) && /\.(exe|cmd|bat|ps1|sh)$/i.test(v));
+
+// GPT-5.5 review CRITICAL fix: a CONSUMED flag value must pass the universal
+// injection + UNC checks too (the validator alone — e.g. codex -o's path check —
+// does not reject `&`/`|`, which weaponize a .cmd shim via `cmd.exe /c`).
+function consumedValueViolations(flag, v) {
+  const out = [];
+  if (typeof v !== "string") return out; // undefined handled by the caller
+  if (INJECT_META.test(v)) out.push(`value of ${flag} (${JSON.stringify(v)}) contains a command-injection metacharacter`);
+  if (looksLikeUNC(v)) out.push(`value of ${flag} (${JSON.stringify(v)}) is a UNC/absolute-executable path`);
+  return out;
+}
+
+/**
+ * Validate an argv array against a tool's policy. Returns { ok, violations[] }.
+ * REJECTS: a shell metachar anywhere, a UNC / absolute-executable arg, an unknown
+ * flag, or a flag value that fails its validator. The FIRST positional after a
+ * recognized subcommand is checked against `subcommands`.
+ */
+function assertArgs(toolId, args) {
+  const violations = [];
+  const policy = ARG_POLICY[toolId];
+  if (!policy) return { ok: false, violations: [`no arg-policy for tool '${toolId}'`] };
+  if (!Array.isArray(args)) return { ok: false, violations: ["args must be an array"] };
+
+  let i = 0;
+  let sawSubcommand = false;
+  while (i < args.length) {
+    const a = args[i];
+    if (typeof a !== "string") {
+      violations.push(`arg ${i} is not a string`);
+      i++;
+      continue;
+    }
+    if (SHELL_META.test(a)) violations.push(`arg ${i} (${JSON.stringify(a)}) contains a shell metacharacter/space`);
+    if (looksLikeUNC(a)) violations.push(`arg ${i} (${JSON.stringify(a)}) looks like a UNC/absolute-executable path (model must never choose the executable)`);
+
+    if (a.startsWith("-") && a !== "-" && !/^\//.test(a)) {
+      // a flag (dash-led; Windows slash-flags like /T handled as bool below)
+      if (Object.prototype.hasOwnProperty.call(policy.valueFlags, a)) {
+        const v = args[i + 1];
+        if (v === undefined) violations.push(`flag ${a} expects a value`);
+        else {
+          for (const vio of consumedValueViolations(a, v)) violations.push(vio);
+          if (!policy.valueFlags[a](v)) violations.push(`flag ${a} got an invalid value ${JSON.stringify(v)}`);
+        }
+        i += 2;
+        continue;
+      }
+      if (policy.boolFlags.has(a)) {
+        i++;
+        continue;
+      }
+      violations.push(`unknown/disallowed flag for ${toolId}: ${JSON.stringify(a)}`);
+      i++;
+      continue;
+    }
+    // Windows slash-flags (/T /F /PID) for taskkill
+    if (/^\//.test(a)) {
+      if (Object.prototype.hasOwnProperty.call(policy.valueFlags, a)) {
+        const v = args[i + 1];
+        if (v === undefined) violations.push(`flag ${a} expects a value`);
+        else {
+          for (const vio of consumedValueViolations(a, v)) violations.push(vio);
+          if (!policy.valueFlags[a](v)) violations.push(`flag ${a} got an invalid value ${JSON.stringify(v)}`);
+        }
+        i += 2;
+        continue;
+      }
+      if (policy.boolFlags.has(a)) {
+        i++;
+        continue;
+      }
+      violations.push(`unknown/disallowed flag for ${toolId}: ${JSON.stringify(a)}`);
+      i++;
+      continue;
+    }
+    // a positional / subcommand / '-'
+    if (a === "-") {
+      if (!policy.boolFlags.has("-")) violations.push(`${toolId} does not accept stdin '-'`);
+      i++;
+      continue;
+    }
+    if (!sawSubcommand && policy.subcommands.size) {
+      if (policy.subcommands.has(a)) {
+        sawSubcommand = true;
+        i++;
+        continue;
+      }
+      // not a known subcommand — fall through to positional check.
+    }
+    if (!policy.positionals(a)) violations.push(`disallowed positional for ${toolId}: ${JSON.stringify(a)}`);
+    i++;
+  }
+  return { ok: violations.length === 0, violations };
+}
+
+// ── Tool resolution (NEVER from a model-supplied path) ──────
+function which(cmd) {
+  // No shell; query PATH ourselves so a planted shim in cwd cannot win via shell
+  // resolution order. Returns the first existing match across PATH + a FIXED
+  // extension set. GPT-5.5 review MEDIUM fix: process.env.PATHEXT is attacker-
+  // controlled (a hostile parent env can add/empty entries), so we IGNORE it and
+  // use a hardcoded allowlist for safety-critical resolution.
+  const exts = process.platform === "win32"
+    ? [".COM", ".EXE", ".BAT", ".CMD"]
+    : [""];
+  const dirs = (process.env.PATH || "").split(path.delimiter).filter(Boolean);
+  for (const dir of dirs) {
+    for (const ext of exts) {
+      const cand = path.join(dir, cmd + ext);
+      try {
+        if (fs.existsSync(cand) && fs.statSync(cand).isFile()) return cand;
+      } catch {
+        /* next */
+      }
+    }
+  }
+  return null;
+}
+
+/**
+ * Resolve a FIXED tool-ID to a realpath'd absolute executable path, then REJECT
+ * an unsafe resolution. The model never supplies the path; only an ID from
+ * TOOL_IDS is accepted.
+ *
+ * Rejections (§16.2/§17.3):
+ *   - id not in the allowlist,
+ *   - resolved path is inside the repo (a planted repo-local shim) or under the
+ *     OS temp dir (a writable hijack location),
+ *   - WARPOS_APPROVED_TOOL_ROOTS is set and the path is under none of them.
+ *
+ * Test seam: WARPOS_TOOL_<ID>_PATH forces a path (used by unit tests + the
+ * existing DISPATCH_*_BIN seams); it is still subjected to the same safety checks.
+ */
+function resolveTool(toolId, opts = {}) {
+  if (!TOOL_IDS.has(toolId)) return { ok: false, reason: `tool-id '${toolId}' is not in the allowlist` };
+  const p = opts.path || process.env[`WARPOS_TOOL_${toolId.toUpperCase()}_PATH`] || which(toolId);
+  if (!p) return { ok: false, reason: `tool '${toolId}' not found on PATH` };
+  let real;
+  try {
+    real = fs.realpathSync(p);
+  } catch {
+    real = path.resolve(p);
+  }
+  if (!opts.allowRepoLocal && isInRepo(real)) {
+    return { ok: false, reason: `resolved '${toolId}' to a repo-local path (${real}) — refusing (PATH-hijack guard)` };
+  }
+  const tmp = os.tmpdir();
+  if (real === tmp || real.startsWith(tmp + path.sep)) {
+    return { ok: false, reason: `resolved '${toolId}' under the OS temp dir (${real}) — refusing (writable-hijack guard)` };
+  }
+  const approved = (process.env.WARPOS_APPROVED_TOOL_ROOTS || "").split(path.delimiter).filter(Boolean);
+  if (approved.length && !approved.some((root) => real === root || real.startsWith(root + path.sep))) {
+    return { ok: false, reason: `resolved '${toolId}' (${real}) is under no WARPOS_APPROVED_TOOL_ROOTS entry` };
+  }
+  const ext = path.extname(real).toLowerCase();
+  const kind = ext === ".cmd" || ext === ".bat" ? "cmd-shim" : ext === ".exe" || ext === "" ? "native" : "script";
+  return { ok: true, path: real, kind };
+}
+
+// ── stdin normalization ─────────────────────────────────────
+/** Force UTF-8, strip a leading BOM, normalize CRLF->LF. Returns a Buffer. */
+function normalizeStdin(input) {
+  let s = Buffer.isBuffer(input) ? input.toString("utf8") : String(input == null ? "" : input);
+  if (s.charCodeAt(0) === 0xfeff) s = s.slice(1);
+  s = s.replace(/\r\n/g, "\n");
+  return Buffer.from(s, "utf8");
+}
+
+// ── tree-kill ───────────────────────────────────────────────
+/** Best-effort kill of the WHOLE process tree (CLIs spawn children). */
+function treeKill(pid) {
+  if (!pid) return false;
+  try {
+    if (process.platform === "win32") {
+      spawnSync("taskkill", ["/T", "/F", "/PID", String(pid)], { timeout: 5000, windowsHide: true });
+    } else {
+      try {
+        process.kill(-pid, "SIGKILL"); // process group
+      } catch {
+        process.kill(pid, "SIGKILL");
+      }
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// ── integrator ──────────────────────────────────────────────
+/**
+ * The safe synchronous spawn: resolve the tool (never a model path), assert the
+ * argv allowlist, normalize stdin, spawn with shell:false (or `cmd.exe /c` for a
+ * .cmd shim — explicit shell boundary + the arg-allowlist already refused
+ * metachars), bound by timeout, tree-kill on timeout, and classify a reap
+ * (timeout / spawn-failure / non-zero / zero-byte-on-exit-0).
+ *
+ * Returns { ok, reaped, reason?, exitCode, stdout, stderr, tool, durationMs }.
+ * On a resolution/arg violation it returns ok:false WITHOUT spawning (fail-closed).
+ */
+function safeSpawnSync(toolId, args, opts = {}) {
+  const argCheck = assertArgs(toolId, args || []);
+  if (!argCheck.ok) return { ok: false, reaped: false, reason: "arg_policy_violation", violations: argCheck.violations, stdout: "", stderr: "", exitCode: null };
+  const tool = resolveTool(toolId, opts.resolve || {});
+  if (!tool.ok) return { ok: false, reaped: false, reason: "tool_resolution_refused", detail: tool.reason, stdout: "", stderr: "", exitCode: null };
+
+  const timeoutMs = opts.timeoutMs || 20 * 60 * 1000;
+  const input = opts.input != null ? normalizeStdin(opts.input) : undefined;
+  const childEnv = opts.env || process.env;
+
+  // .cmd shim => explicit `cmd.exe /c <abs.cmd> args` (the arg-allowlist already
+  // refused shell metachars, so cmd.exe parsing has nothing to weaponize). Native
+  // / script / posix => arg-array, shell:false.
+  let bin = tool.path;
+  let spawnArgs = args || [];
+  const useShell = false;
+  if (tool.kind === "cmd-shim" && process.platform === "win32") {
+    bin = process.env.ComSpec || "cmd.exe";
+    spawnArgs = ["/c", tool.path, ...(args || [])];
+  }
+
+  const started = Date.now();
+  const sp = spawnSync(bin, spawnArgs, {
+    input,
+    timeout: timeoutMs,
+    maxBuffer: opts.maxBuffer || 32 * 1024 * 1024,
+    cwd: opts.cwd || PROJECT_ROOT,
+    env: childEnv,
+    encoding: "buffer",
+    shell: useShell,
+    windowsHide: true,
+  });
+  const durationMs = Date.now() - started;
+
+  const stdout = (sp.stdout || Buffer.alloc(0)).toString("utf8");
+  const stderr = (sp.stderr || Buffer.alloc(0)).toString("utf8");
+  const status = sp.status;
+  const signal = sp.signal;
+  const errCode = sp.error && sp.error.code ? sp.error.code : null;
+  const timedOut = errCode === "ETIMEDOUT" || signal === "SIGTERM" || signal === "SIGKILL";
+
+  if (timedOut && sp.pid) treeKill(sp.pid);
+
+  let reaped = false;
+  let reason = null;
+  if (timedOut) { reaped = true; reason = "timeout_reap"; }
+  else if (errCode === "ENOENT" || errCode === "EACCES" || errCode === "EPERM") { reaped = true; reason = "spawn_failed"; }
+  else if (typeof status === "number" && status !== 0) { reaped = true; reason = "nonzero_exit"; }
+  else if (stdout.trim().length === 0) { reaped = true; reason = "zero_byte_reap"; }
+
+  return {
+    ok: !reaped,
+    reaped,
+    reason: reason || undefined,
+    exitCode: typeof status === "number" ? status : null,
+    stdout: reaped ? "" : stdout,
+    stderr: stderr.slice(0, 4000),
+    tool: { id: toolId, path: tool.path, kind: tool.kind },
+    durationMs,
+  };
+}
+
+module.exports = { resolveTool, assertArgs, normalizeStdin, treeKill, safeSpawnSync, TOOL_IDS, ARG_POLICY, PROJECT_ROOT };
+
+
+===== FILE: scripts/dispatch/auth-resolver.js =====
+#!/usr/bin/env node
+"use strict";
+
+/**
+ * auth-resolver.js — N-3: the shared, safe, verify-before-declaring auth resolver.
+ *
+ * THE BUG THIS CLOSES (PLAN §2 env-b / §13.3 / §16.2 / N-3, LIVE-hit twice on
+ * 2026-06-07): a dispatch declares a key "missing" or trusts a STALE one because
+ * it (a) only reads `process.env`, never the `.env*` files; OR (b) reads a stale
+ * `.env.local` while the real key lives in an out-of-tree override; OR (c) loads
+ * keys via `export $(grep .env.local | xargs)` — a shell-INJECTION vector where a
+ * `.env` value like `KEY=$(rm -rf …)` executes on shell-load (§16.2, HIGH).
+ *
+ * The fixes, all here, in one place every dispatcher shares:
+ *   1. IN-CODE dotenv parsing — NEVER a shell. A `$(...)`/backtick value is
+ *      returned as an inert literal, never executed. (Kills the §16.2 vector.)
+ *   2. FULL precedence across ALL sources, checked in order, so a real key is
+ *      never missed: out-of-tree override key-file → process.env → project
+ *      .env.local → project .env → ~/.gemini/.env (gemini) → OAuth (gemini).
+ *   3. LABELS, NOT VALUES — the report API returns the SOURCE a key came from and
+ *      its length, never the secret. The value is handed back ONLY to an explicit
+ *      in-code caller that must inject it into a child env (opts.withValue), and
+ *      is never logged.
+ *   4. LIST THE CHECKED SOURCES on failure — "OPENAI_API_KEY unavailable after
+ *      checking env + .env.local + .env", never a bare "not set".
+ *   5. VERIFY-BEFORE-DECLARING-AVAILABLE seam — present ≠ valid (a present-but-
+ *      invalid key reads as "set" yet 401s). `probe()` is the live bounded auth
+ *      check (Phase-0 §17.6 #4); detection-only by default (no spend).
+ *
+ * BOM-safe: a UTF-8 BOM at the head of a `.env` file (the PowerShell-pipe hazard,
+ * feedback_ps_pipe_bom_corrupts_keys) is stripped before parsing so a BOM-prefixed
+ * key name still matches.
+ *
+ * Zero runtime deps. CLI: `node scripts/dispatch/auth-resolver.js report [KEY...]`.
+ */
+
+const fs = require("fs");
+const os = require("os");
+const path = require("path");
+
+// Anchor project root from this file's location (cwd-independent — same discipline
+// as dispatch-agent.js AGENT_ROOT). scripts/dispatch/auth-resolver.js → ../../ .
+const PROJECT_ROOT = path.resolve(__dirname, "..", "..");
+
+// ── In-code dotenv parse (NO shell, BOM-safe) ───────────────
+/**
+ * Parse dotenv text into a plain object WITHOUT a shell. Supports:
+ *   KEY=value · export KEY=value · KEY="quoted" · KEY='quoted' · # comments ·
+ *   blank lines. A value containing `$(`/backticks is returned VERBATIM as an
+ *   inert string — it is NEVER expanded or executed (the §16.2 fix). The set of
+ *   keys whose value looks shell-dangerous is returned in `.suspicious` so a
+ *   caller can refuse to use them (defense in depth).
+ */
+function dotenvParse(text) {
+  const out = {};
+  const suspicious = [];
+  if (text == null) return { values: out, suspicious };
+  // Strip a leading UTF-8 BOM (PowerShell-pipe hazard) before parsing.
+  let s = String(text);
+  if (s.charCodeAt(0) === 0xfeff) s = s.slice(1);
+  for (const rawLine of s.split(/\r?\n/)) {
+    const line = rawLine.trim();
+    if (!line || line.startsWith("#")) continue;
+    const m = line.match(/^(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)$/);
+    if (!m) continue;
+    const key = m[1];
+    let val = m[2];
+    // Strip a trailing inline comment ONLY for unquoted values.
+    const quoted = /^(["']).*\1$/.test(val);
+    if (quoted) {
+      val = val.slice(1, -1);
+    } else {
+      const hash = val.indexOf(" #");
+      if (hash >= 0) val = val.slice(0, hash);
+      val = val.trim();
+    }
+    if (/\$\(|`/.test(val)) suspicious.push(key);
+    out[key] = val;
+  }
+  return { values: out, suspicious };
+}
+
+function readFileSafe(file) {
+  try {
+    return fs.readFileSync(file, "utf8");
+  } catch {
+    return null;
+  }
+}
+
+// ── Source chains per key ───────────────────────────────────
+// Each entry is a labeled source. `kind` drives how it is read. Order = precedence
+// (an out-of-tree override key-file wins, then process.env, then project files).
+function sourceChain(keyName) {
+  const home = os.homedir();
+  const chain = [];
+
+  // 1. Out-of-tree override key-file (env points at a file holding only the key).
+  //    OPENAI_KEY_FILE / GEMINI_KEY_FILE — the Desktop-override pattern that bit
+  //    us on 2026-06-07 (real key in an override, stale key in .env.local).
+  const overrideEnv = `${keyName.replace(/_API_KEY$/, "")}_KEY_FILE`;
+  if (process.env[overrideEnv]) {
+    chain.push({ label: `override:${overrideEnv}`, kind: "keyfile", file: process.env[overrideEnv], key: keyName });
+  }
+
+  // 2. process.env (a deliberately exported key wins over project files).
+  chain.push({ label: "process.env", kind: "env", key: keyName });
+
+  // 3. Project dotenv files.
+  chain.push({ label: ".env.local", kind: "dotenv", file: path.join(PROJECT_ROOT, ".env.local"), key: keyName });
+  chain.push({ label: ".env", kind: "dotenv", file: path.join(PROJECT_ROOT, ".env"), key: keyName });
+
+  // 4. Gemini-specific: the CLI's own env file, then OAuth detection.
+  if (/^GEMINI_API_KEY$|^GOOGLE_API_KEY$/.test(keyName)) {
+    chain.push({ label: "~/.gemini/.env", kind: "dotenv", file: path.join(home, ".gemini", ".env"), key: "GEMINI_API_KEY" });
+    chain.push({ label: "~/.gemini/oauth", kind: "gemini-oauth" });
+  }
+  return chain;
+}
+
+function readSource(src) {
+  switch (src.kind) {
+    case "env": {
+      const v = process.env[src.key];
+      return v && v.trim() ? v.trim() : null;
+    }
+    case "keyfile": {
+      // A key-file may be the bare key OR a dotenv-style `KEY=...`.
+      const txt = readFileSafe(src.file);
+      if (txt == null) return null;
+      const parsed = dotenvParse(txt);
+      if (parsed.values[src.key]) return parsed.values[src.key].trim();
+      // Bare-value file: first non-comment, non-blank line.
+      const bare = String(txt).replace(/^﻿/, "").split(/\r?\n/).map((l) => l.trim()).find((l) => l && !l.startsWith("#"));
+      return bare || null;
+    }
+    case "dotenv": {
+      const txt = readFileSafe(src.file);
+      if (txt == null) return null;
+      const parsed = dotenvParse(txt);
+      const v = parsed.values[src.key];
+      return v && v.trim() ? v.trim() : null;
+    }
+    case "gemini-oauth": {
+      // OAuth presence is a SOURCE for "auth available" even with no API key.
+      for (const credsPath of [
+        path.join(os.homedir(), ".gemini", "oauth_creds.json"),
+        path.join(os.homedir(), ".config", "gemini", "oauth_creds.json"),
+      ]) {
+        const txt = readFileSafe(credsPath);
+        if (!txt) continue;
+        try {
+          const creds = JSON.parse(txt);
+          if (creds && (creds.refresh_token || creds.access_token)) return "__oauth__";
+        } catch {
+          /* try next */
+        }
+      }
+      return null;
+    }
+    default:
+      return null;
+  }
+}
+
+// ── Public API ──────────────────────────────────────────────
+/**
+ * Resolve a key across its full source chain.
+ *
+ * Returns (label-only by default):
+ *   { key, found, source, checked: [labels], length, oauth, suspicious }
+ * - `source`  — the label of the FIRST source that yielded a value (precedence).
+ * - `checked` — every source label inspected, in order (for the error message).
+ * - `length`  — value length (a non-secret signal it's plausibly real), never the value.
+ * - `oauth`   — true when auth came from an OAuth session (no raw key).
+ * - `suspicious` — true if the winning value looks shell-dangerous (`$(`/backtick).
+ *
+ * With { withValue: true } the result ALSO carries `value` — for in-code callers
+ * that must inject it into a child env. Callers MUST NOT log `value`.
+ */
+function resolveKey(keyName, opts = {}) {
+  const chain = sourceChain(keyName);
+  const checked = [];
+  for (const src of chain) {
+    checked.push(src.label);
+    const v = readSource(src);
+    if (v) {
+      const oauth = v === "__oauth__";
+      const parsedSuspicious = !oauth && /\$\(|`/.test(v);
+      const result = {
+        key: keyName,
+        found: true,
+        source: src.label,
+        checked,
+        length: oauth ? 0 : v.length,
+        oauth,
+        suspicious: parsedSuspicious,
+      };
+      if (opts.withValue && !oauth) result.value = v;
+      return result;
+    }
+  }
+  return { key: keyName, found: false, source: null, checked, length: 0, oauth: false, suspicious: false };
+}
+
+/**
+ * Human-readable, value-free explanation for a failed resolution — the
+ * "lists the checked sources" requirement (N-3). Never includes a secret.
+ */
+function unavailableMessage(res) {
+  return `${res.key} unavailable after checking: ${res.checked.join(" → ")}. ` +
+    `Set it in .env.local, export it, or point ${res.key.replace(/_API_KEY$/, "")}_KEY_FILE at a key-file.`;
+}
+
+/**
+ * VERIFY-BEFORE-DECLARING-AVAILABLE (§17.6 #4). A present key can still be invalid
+ * (the exact 2026-06-07 bug: present-but-invalid → 401). `probe` is the seam for a
+ * live bounded auth check. Default mode = "detect" (NO network/spend): returns the
+ * resolution + a format sanity check only. mode "live" is reserved for a real
+ * minimal authenticated call wired by the caller (kept opt-in so the resolver
+ * never spends a token by surprise — autonomy: API spend is gated).
+ *
+ * Returns { key, found, source, valid: true|false|null, reason }.
+ *   valid=null  → not probed live (detection only); `found` still tells you presence.
+ *   valid=false → resolved but failed the live/format check.
+ */
+function probe(keyName, opts = {}) {
+  const res = resolveKey(keyName, { withValue: opts.mode === "live" });
+  if (!res.found) {
+    return { key: keyName, found: false, source: null, valid: false, reason: unavailableMessage(res) };
+  }
+  if (res.oauth) {
+    return { key: keyName, found: true, source: res.source, valid: null, reason: "OAuth session present (no raw key to format-check; live probe handled by the CLI)." };
+  }
+  if (res.suspicious) {
+    return { key: keyName, found: true, source: res.source, valid: false, reason: `value from ${res.source} contains shell metacharacters ($(/backtick) — refusing to trust (possible injection / corruption).` };
+  }
+  // Detection mode: a cheap format sanity check (length floor). NOT a guarantee.
+  if (opts.mode !== "live") {
+    const plausible = res.length >= 20;
+    return {
+      key: keyName,
+      found: true,
+      source: res.source,
+      valid: plausible ? null : false,
+      reason: plausible
+        ? `present (source=${res.source}, len=${res.length}); live validity NOT probed — pass mode:"live" for a real auth call.`
+        : `present but implausibly short (len=${res.length}) — likely a placeholder/truncated key.`,
+    };
+  }
+  // Live mode: the resolver does not itself make the provider call (that is the
+  // CLI/dispatcher's job, with its own spend gate). It hands the value to the
+  // caller's `opts.liveCheck(value)` predicate if provided, else reports the seam.
+  if (typeof opts.liveCheck === "function") {
+    let ok = false, reason = "live check failed";
+    try {
+      const r = opts.liveCheck(res.value);
+      ok = !!(r && (r === true || r.ok));
+      reason = ok ? `live auth OK (source=${res.source})` : (r && r.reason) || "live auth check returned false";
+    } catch (e) {
+      ok = false;
+      reason = `live check threw: ${e && e.message ? e.message : e}`;
+    }
+    return { key: keyName, found: true, source: res.source, valid: ok, reason };
+  }
+  return { key: keyName, found: true, source: res.source, valid: null, reason: `present (source=${res.source}); no liveCheck supplied — caller must perform the bounded authenticated call.` };
+}
+
+module.exports = { resolveKey, dotenvParse, unavailableMessage, probe, sourceChain, PROJECT_ROOT };
+
+// ── CLI: report (label-only, safe to print/log) ─────────────
+if (require.main === module) {
+  const [, , cmd, ...keys] = process.argv;
+  if (cmd === "report") {
+    const targets = keys.length ? keys : ["OPENAI_API_KEY", "GEMINI_API_KEY"];
+    const report = targets.map((k) => {
+      const r = resolveKey(k); // NEVER withValue on the CLI path — labels only.
+      return {
+        key: r.key,
+        found: r.found,
+        source: r.source,
+        length: r.length,
+        oauth: r.oauth,
+        suspicious: r.suspicious,
+        checked: r.checked,
+        ...(r.found ? {} : { hint: unavailableMessage(r) }),
+      };
+    });
+    process.stdout.write(JSON.stringify({ ok: true, report }, null, 2) + "\n");
+    process.exit(0);
+  }
+  process.stderr.write("usage: node scripts/dispatch/auth-resolver.js report [KEY ...]\n");
+  process.exit(2);
+}
+
+
+===== FILE: scripts/dispatch/dispatch-contract.js =====
+#!/usr/bin/env node
+"use strict";
+
+/**
+ * dispatch-contract.js — reader + validator for the dispatch-shape keystone
+ * (.claude/agents/_org/dispatch-contract.json, PLAN §17.1).
+ *
+ * role-registry.json owns role IDENTITY; this resolves the dispatch SHAPE contract
+ * for a role by DERIVING its class from registry attributes (single source — no
+ * duplicated role list), then merging defaults <- class <- role_override.
+ *
+ * The consumer API `validateDispatch({role, shape, toolId, cwd})` encodes the three
+ * operator-named dispatch failures as contract violations:
+ *   (ii)  API-when-CLI            => shape 'api' for a role whose allowed_shapes lacks it.
+ *   (iii) in-process-when-subproc => shape 'in-process-agent' on a forbidden role (build-chain).
+ *   (i)   skipped coverage        => surfaced by the coverage gate using `coverage` here.
+ *
+ * `validateContractFile()` is the keystone integrity check (every registry role
+ * resolves; classes reference real shapes; the build-chain<->in-process invariant
+ * holds). Pure functions; CLI: `node scripts/dispatch/dispatch-contract.js validate`.
+ *
+ * Zero runtime deps.
+ */
+
+const fs = require("fs");
+const path = require("path");
+
+const PROJECT_ROOT = path.resolve(__dirname, "..", "..");
+// Path-override seam (downstream products + tests): point at an alternate contract
+// or registry without code change. Defaults to the canonical _org/ keystones.
+const CONTRACT_PATH = process.env.WARPOS_DISPATCH_CONTRACT_PATH || path.join(PROJECT_ROOT, ".claude", "agents", "_org", "dispatch-contract.json");
+const REGISTRY_PATH = process.env.WARPOS_ROLE_REGISTRY_PATH || path.join(PROJECT_ROOT, ".claude", "agents", "_org", "role-registry.json");
+
+function readJson(file) {
+  return JSON.parse(fs.readFileSync(file, "utf8"));
+}
+
+let _contract = null;
+let _registry = null;
+function loadContract(force) {
+  if (!_contract || force) _contract = readJson(CONTRACT_PATH);
+  return _contract;
+}
+function loadRegistry(force) {
+  if (!_registry || force) _registry = readJson(REGISTRY_PATH);
+  return _registry;
+}
+
+/** Registry attributes for a role (or null if unknown). */
+function registryAttrs(role) {
+  const reg = loadRegistry();
+  const r = reg.roles && reg.roles[role];
+  if (!r) return null;
+  return {
+    tier: r.tier || null,
+    kind: r.kind || null,
+    provider: r.provider || null,
+    build_chain: r.build_chain === true,
+    claude_pinned: r.claude_pinned === true,
+  };
+}
+
+/** Apply class_derivation rules (first match) to a role's registry attributes. */
+function classForRole(role) {
+  const contract = loadContract();
+  const attrs = registryAttrs(role);
+  if (!attrs) return null; // unknown role — caller decides (validateDispatch flags it)
+  const rules = (contract.class_derivation && contract.class_derivation.rules) || [];
+  for (const rule of rules) {
+    const w = rule.when || {};
+    let match = true;
+    for (const k of Object.keys(w)) {
+      if (attrs[k] !== w[k]) { match = false; break; }
+    }
+    if (match) return rule.class;
+  }
+  return (contract.class_derivation && contract.class_derivation.fallback_class) || null;
+}
+
+function mergeContract(base, over) {
+  if (!over) return base;
+  const out = { ...base, ...over };
+  // one-level-deep merge for the nested policy objects.
+  for (const key of ["coverage", "budget"]) {
+    if (base[key] || over[key]) out[key] = { ...(base[key] || {}), ...(over[key] || {}) };
+  }
+  // strip _doc/_note noise from a resolved contract.
+  delete out._doc;
+  delete out._note;
+  return out;
+}
+
+/**
+ * The resolved dispatch contract for a role: defaults <- class <- role_override.
+ * Returns { role, class, ...contract } or { role, class:null, unknown:true }.
+ */
+function contractForRole(role) {
+  const contract = loadContract();
+  const cls = classForRole(role);
+  if (!cls) return { role, class: null, unknown: true };
+  const classContract = (contract.role_classes && contract.role_classes[cls]) || {};
+  const override = (contract.role_overrides && contract.role_overrides[role]) || null;
+  const resolved = mergeContract(mergeContract(contract.defaults || {}, classContract), override);
+  return { role, class: cls, ...resolved };
+}
+
+function toolMatches(allowed, toolId) {
+  if (allowed == null) return toolId == null || toolId === null;
+  if (Array.isArray(allowed)) return allowed.includes(toolId);
+  return allowed === toolId;
+}
+
+/**
+ * Validate a proposed dispatch against the role's contract.
+ *   { role, shape, toolId?, cwd? } -> { ok, violations[], contract }
+ * Encodes failures (ii) + (iii); (i) is the coverage gate's job (it reads `coverage`).
+ */
+function validateDispatch(req) {
+  const violations = [];
+  const role = req && req.role;
+  const shape = req && req.shape;
+  if (!role) return { ok: false, violations: ["no role supplied"], contract: null };
+  const c = contractForRole(role);
+  if (c.unknown) {
+    return { ok: false, violations: [`role '${role}' is not in role-registry.json — cannot resolve a dispatch contract (fail-closed)`], contract: c };
+  }
+  if (!shape) {
+    violations.push("no shape supplied");
+  } else {
+    // DEFENSE-IN-DEPTH (GPT-5.5 review MEDIUM fix): enforce the build_chain ->
+    // NOT-in-process invariant DIRECTLY against role-registry, independent of the
+    // merged contract. A misconfigured class/override that accidentally re-allowed
+    // in-process-agent for a build-chain role would otherwise pass; this hard check
+    // can't be bypassed by editing dispatch-contract.json. (validateContractFile
+    // remains the integrity gate; this is the runtime backstop.)
+    const attrs = registryAttrs(role);
+    if (attrs && attrs.build_chain && shape === "in-process-agent") {
+      violations.push(`role '${role}' is build_chain (role-registry) and MUST NOT be dispatched in-process-agent — hard invariant, independent of the contract file.`);
+    }
+    const allowed = c.allowed_shapes || [];
+    const forbidden = c.forbidden_shapes || [];
+    if (forbidden.includes(shape)) {
+      // (iii) in-process-when-subprocess for build-chain is the canonical case.
+      violations.push(`shape '${shape}' is FORBIDDEN for role '${role}' (class ${c.class}). Allowed: ${allowed.join(", ")}.`);
+    } else if (!allowed.includes(shape)) {
+      // (ii) api-when-CLI lands here: 'api' not in a CLI role's allowed_shapes.
+      const hint = shape === "api" ? " — API availability never implies API dispatch (PLAN §3/N-2)." : "";
+      violations.push(`shape '${shape}' is not allowed for role '${role}' (class ${c.class}). Allowed: ${allowed.join(", ")}.${hint}`);
+    }
+  }
+  if (req && "toolId" in req && shape && !violations.length) {
+    if (!toolMatches(c.tool_id, req.toolId)) {
+      violations.push(`tool '${req.toolId}' does not match the contract tool_id (${JSON.stringify(c.tool_id)}) for role '${role}'.`);
+    }
+  }
+  if (req && req.cwd && c.cwd_policy === "worktree-required") {
+    // light check: build-chain must NOT run in canonical root.
+    const cwdReal = path.resolve(req.cwd);
+    if (cwdReal === PROJECT_ROOT) {
+      violations.push(`role '${role}' has cwd_policy 'worktree-required' but cwd is the canonical root — a build-chain role must run in an isolated worktree.`);
+    }
+  }
+  return { ok: violations.length === 0, violations, contract: c };
+}
+
+/**
+ * Resolve a skill's execution shape (PLAN §13). Fail-closed: an unverified
+ * `subprocess` candidate is treated as `inline` (never trust an unverified
+ * subprocess classification). Returns { skill, execution, verified, source }.
+ */
+function skillExecution(skill) {
+  const contract = loadContract();
+  const cand = contract.skills && contract.skills.candidates && contract.skills.candidates[skill];
+  if (!cand) return { skill, execution: "inline", verified: false, source: "default" };
+  if (cand.execution === "subprocess" && cand.subprocess_verified !== true) {
+    return { skill, execution: "inline", verified: false, source: "unverified-subprocess-falls-back-to-inline" };
+  }
+  return { skill, execution: cand.execution, verified: cand.subprocess_verified === true, source: "candidate" };
+}
+
+/**
+ * Keystone integrity check. Returns { ok, violations[] }.
+ * - every role-registry role resolves to a known class,
+ * - every class's allowed_shapes/forbidden_shapes reference real shapes,
+ * - the build-chain <-> in-process invariant holds for every build-chain role,
+ * - role_overrides reference real roles.
+ */
+function validateContractFile() {
+  const violations = [];
+  let contract, reg;
+  try {
+    contract = loadContract(true);
+    reg = loadRegistry(true);
+  } catch (e) {
+    return { ok: false, violations: [`cannot load contract/registry: ${e && e.message ? e.message : e}`] };
+  }
+  const shapeNames = new Set(Object.keys(contract.shapes || {}));
+  const classNames = new Set(Object.keys(contract.role_classes || {}));
+
+  // classes reference real shapes
+  for (const [cls, def] of Object.entries(contract.role_classes || {})) {
+    for (const s of def.allowed_shapes || []) if (!shapeNames.has(s)) violations.push(`class ${cls} allows unknown shape '${s}'`);
+    for (const s of def.forbidden_shapes || []) if (!shapeNames.has(s)) violations.push(`class ${cls} forbids unknown shape '${s}'`);
+    // a class may not both allow and forbid the same shape
+    for (const s of def.allowed_shapes || []) if ((def.forbidden_shapes || []).includes(s)) violations.push(`class ${cls} both allows AND forbids '${s}'`);
+  }
+  // derivation rules reference real classes
+  for (const rule of (contract.class_derivation && contract.class_derivation.rules) || []) {
+    if (!classNames.has(rule.class)) violations.push(`class_derivation rule -> unknown class '${rule.class}'`);
+  }
+  const fb = contract.class_derivation && contract.class_derivation.fallback_class;
+  if (fb && !classNames.has(fb)) violations.push(`fallback_class '${fb}' is not a defined class`);
+
+  // every registry role classifies, and build-chain invariant holds
+  const scrapped = new Set(Object.keys(reg.scrapped || {}));
+  for (const role of Object.keys(reg.roles || {})) {
+    const cls = classForRole(role);
+    if (!cls || !classNames.has(cls)) {
+      violations.push(`registry role '${role}' does not resolve to a defined class (got ${JSON.stringify(cls)})`);
+      continue;
+    }
+    const c = contractForRole(role);
+    const attrs = registryAttrs(role);
+    if (attrs && attrs.build_chain) {
+      if ((c.allowed_shapes || []).includes("in-process-agent")) violations.push(`build-chain role '${role}' must NOT allow in-process-agent`);
+      if (!(c.forbidden_shapes || []).includes("in-process-agent")) violations.push(`build-chain role '${role}' must FORBID in-process-agent`);
+      if (!(c.allowed_shapes || []).includes("subprocess-claude")) violations.push(`build-chain role '${role}' must allow subprocess-claude`);
+    }
+    // a cross-provider reviewer must not be in-process (kills diversity)
+    if (attrs && attrs.kind === "reviewer" && attrs.provider && attrs.provider !== "claude") {
+      if (!(c.forbidden_shapes || []).includes("in-process-agent")) violations.push(`cross-provider reviewer '${role}' must FORBID in-process-agent (provider diversity)`);
+    }
+  }
+  // role_overrides reference real, non-scrapped roles
+  for (const role of Object.keys(contract.role_overrides || {})) {
+    if (role.startsWith("_")) continue;
+    if (!reg.roles || !reg.roles[role]) {
+      if (scrapped.has(role)) violations.push(`role_override '${role}' targets a SCRAPPED role`);
+      else violations.push(`role_override '${role}' is not a role in role-registry.json`);
+    }
+  }
+  return { ok: violations.length === 0, violations };
+}
+
+module.exports = {
+  loadContract, loadRegistry, classForRole, contractForRole, validateDispatch,
+  skillExecution, validateContractFile, registryAttrs, CONTRACT_PATH, REGISTRY_PATH,
+};
+
+// ── CLI ─────────────────────────────────────────────────────
+if (require.main === module) {
+  const [, , cmd, ...rest] = process.argv;
+  if (cmd === "validate") {
+    const res = validateContractFile();
+    process.stdout.write(JSON.stringify(res, null, 2) + "\n");
+    process.exit(res.ok ? 0 : 1);
+  }
+  if (cmd === "role" && rest[0]) {
+    process.stdout.write(JSON.stringify(contractForRole(rest[0]), null, 2) + "\n");
+    process.exit(0);
+  }
+  if (cmd === "check" && rest[0]) {
+    // check <role> <shape> [toolId]
+    const res = validateDispatch({ role: rest[0], shape: rest[1], toolId: rest[2] });
+    process.stdout.write(JSON.stringify(res, null, 2) + "\n");
+    process.exit(res.ok ? 0 : 1);
+  }
+  process.stderr.write("usage: dispatch-contract.js validate | role <role> | check <role> <shape> [toolId]\n");
+  process.exit(2);
+}
+
+

@@ -61,6 +61,10 @@ const {
   makeDispatchId,
   cmdlineChecksum,
   AGENT_ROOT,
+  // N-1 (§17.4): same run-context + prompt-digest stampers as the cross-provider
+  // wrapper, so both write a uniformly coverage-gradeable record.
+  runContext,
+  promptDigest,
 } = require("./dispatch-agent");
 
 const PROVIDER = "claude";
@@ -213,6 +217,38 @@ const startedAt = new Date().toISOString();
 const startedMs = Date.now();
 const cmdChecksum = cmdlineChecksum(role, PROVIDER, promptBytes);
 
+// ── Dispatch-contract consult (§17.1 keystone) ──────────────
+// Every dispatcher READS FROM the contract. This wrapper owns the subprocess-claude
+// shape, so it asserts the role is contract-allowed to be dispatched this way (a
+// cross-provider reviewer routed here, or a role that forbids subprocess-claude,
+// is a routing error). REPORT-ONLY by default (PLAN §4 ramp: report-only -> blocking);
+// set WARPOS_DISPATCH_CONTRACT_ENFORCE=block to make a violation fatal. Fail-OPEN
+// on any contract-read error — the contract must never crash a working dispatch.
+try {
+  const { validateDispatch } = require("./dispatch/dispatch-contract");
+  const verdict = validateDispatch({
+    role,
+    shape: "subprocess-claude",
+    toolId: "claude",
+    cwd: runCwd,
+  });
+  if (!verdict.ok) {
+    const blocking = process.env.WARPOS_DISPATCH_CONTRACT_ENFORCE === "block";
+    process.stderr.write(
+      `[dispatch-claude] dispatch-contract ${blocking ? "VIOLATION" : "advisory"}: ` +
+        `${verdict.violations.join("; ")}\n`,
+    );
+    if (blocking) {
+      console.log(
+        JSON.stringify({ ok: false, provider: PROVIDER, role, reaped: false, reason: "dispatch_contract_violation", violations: verdict.violations }),
+      );
+      process.exit(1);
+    }
+  }
+} catch {
+  /* fail-open — contract consult never blocks a working dispatch */
+}
+
 const spawned = spawnSync(BIN, claudeArgs, {
   input: promptBuf,
   timeout: TIMEOUT_MS,
@@ -302,6 +338,11 @@ recordCompletion({
   stderr_bytes: stderrBytes,
   fallback: false,
   ok,
+  // N-1 (§17.4): run-context + shape + tool + prompt digest for the coverage gate.
+  ...runContext(),
+  prompt_digest: promptDigest(promptBuf),
+  shape: "subprocess-claude",
+  tool_id: "claude",
 });
 
 // On a reap, write the durable DEATH record (mirrors the silent_zero_byte_death

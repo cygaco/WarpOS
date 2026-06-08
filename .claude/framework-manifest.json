@@ -3,7 +3,7 @@
   "version": "0.15.3",
   "generated_by": "scripts/generate-framework-manifest.js",
   "counts": {
-    "agent": 77,
+    "agent": 78,
     "skill": 206,
     "reference": 28,
     "maps_baseline": 26,
@@ -13,7 +13,7 @@
     "pattern": 6,
     "fixture": 23,
     "warpos_script": 55,
-    "check_tool": 78,
+    "check_tool": 79,
     "agent_tool": 3,
     "decision_tool": 1,
     "runtime_tool": 1,
@@ -28,7 +28,7 @@
     "paths_engine": 4,
     "sprint_engine": 42,
     "tracker_tool": 2,
-    "dispatch_engine": 20,
+    "dispatch_engine": 28,
     "check_runner_tool": 4,
     "docs_tool": 1,
     "events_tool": 1,
@@ -60,7 +60,7 @@
     "module_scope": 1,
     "framework_doc": 3
   },
-  "total": 1122,
+  "total": 1132,
   "assets": {
     "agent": [
       {
@@ -69,6 +69,18 @@
         "dest": ".claude/agents/_evals/resonance-conversion-rubric.json",
         "kind": "agent",
         "sha256": "935aeb2ba0ac58d5c285ce6c89236ab8a329d53e3567e99325d8c0ef5b427612",
+        "owner": "framework",
+        "mergeStrategy": "three_way_markdown",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "agent._org.dispatch-contract.json",
+        "src": ".claude/agents/_org/dispatch-contract.json",
+        "dest": ".claude/agents/_org/dispatch-contract.json",
+        "kind": "agent",
+        "sha256": "cbe85f3d5a1e8c17f0c6bbb54fdd0302517ac0690d56e5bbcf60b362ab39520a",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
@@ -2530,7 +2542,7 @@
         "src": ".claude/commands/scan/full.md",
         "dest": ".claude/commands/scan/full.md",
         "kind": "skill",
-        "sha256": "71692ba315d9a51af89e885844fcdf11da74cc5f2bf7023dd6e53dcb59d36d8a",
+        "sha256": "588933aa90d52e60f1b6cf90d22c63a6ac3b5c21050c9cccf069579b21e1c46c",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
@@ -6528,6 +6540,18 @@
         "replaces": null
       },
       {
+        "id": "check_tool.lib.fixture-harness.js",
+        "src": "scripts/checks/lib/fixture-harness.js",
+        "dest": "scripts/checks/lib/fixture-harness.js",
+        "kind": "check_tool",
+        "sha256": "9a1ed25b82d06edfd3ff10f719489c8a694be9b1546df51001b59abc59ec2019",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
         "id": "check_tool.manager-principles-scan.js",
         "src": "scripts/checks/manager-principles-scan.js",
         "dest": "scripts/checks/manager-principles-scan.js",
@@ -8022,6 +8046,30 @@
         "replaces": null
       },
       {
+        "id": "dispatch_engine.auth-resolver.js",
+        "src": "scripts/dispatch/auth-resolver.js",
+        "dest": "scripts/dispatch/auth-resolver.js",
+        "kind": "dispatch_engine",
+        "sha256": "78bea14ad57cefe5d39508cf673a87f33f4709ff4a7fb114debf1d7c0f8ae62f",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "dispatch_engine.auth-resolver.test.js",
+        "src": "scripts/dispatch/auth-resolver.test.js",
+        "dest": "scripts/dispatch/auth-resolver.test.js",
+        "kind": "dispatch_engine",
+        "sha256": "4e7e2a3180c6af7b04501d6cb8b980e20664724141ad79ecc129cb3483844c47",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
         "id": "dispatch_engine.backup.js",
         "src": "scripts/dispatch/backup.js",
         "dest": "scripts/dispatch/backup.js",
@@ -8070,6 +8118,30 @@
         "replaces": null
       },
       {
+        "id": "dispatch_engine.coverage-gate.js",
+        "src": "scripts/dispatch/coverage-gate.js",
+        "dest": "scripts/dispatch/coverage-gate.js",
+        "kind": "dispatch_engine",
+        "sha256": "e7d1831f25c943c18c6bce9f214c2702c7f9c7ec6998b5ef32dae03bbc57165d",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "dispatch_engine.coverage-gate.test.js",
+        "src": "scripts/dispatch/coverage-gate.test.js",
+        "dest": "scripts/dispatch/coverage-gate.test.js",
+        "kind": "dispatch_engine",
+        "sha256": "75499d8291320dab5d8c819eddb36b2e29141ea4770ee655fbd2a96a17e371a6",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
         "id": "dispatch_engine.diff.js",
         "src": "scripts/dispatch/diff.js",
         "dest": "scripts/dispatch/diff.js",
@@ -8087,6 +8159,30 @@
         "dest": "scripts/dispatch/dispatch-claude.test.js",
         "kind": "dispatch_engine",
         "sha256": "c2e62610e2fb4a2c82334f35481b0a71d11a4b84ac558d3a0efa03b0e7bf90ea",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "dispatch_engine.dispatch-contract.js",
+        "src": "scripts/dispatch/dispatch-contract.js",
+        "dest": "scripts/dispatch/dispatch-contract.js",
+        "kind": "dispatch_engine",
+        "sha256": "57494a8ef73d84027875133748ef677eea33fb5ae4de01c40759e66bceb0d260",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "dispatch_engine.dispatch-contract.test.js",
+        "src": "scripts/dispatch/dispatch-contract.test.js",
+        "dest": "scripts/dispatch/dispatch-contract.test.js",
+        "kind": "dispatch_engine",
+        "sha256": "eaa290d679336e81572ce8abacae8c441dd93d890ce074a79d80650e1885a3f1",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -8207,6 +8303,30 @@
         "dest": "scripts/dispatch/role-files.js",
         "kind": "dispatch_engine",
         "sha256": "6fae27243a4d3ce6cee02d33be4d7bd4873e1d4a9b925ba72651f7cea8e5d89c",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "dispatch_engine.safe-spawn.js",
+        "src": "scripts/dispatch/safe-spawn.js",
+        "dest": "scripts/dispatch/safe-spawn.js",
+        "kind": "dispatch_engine",
+        "sha256": "8bfc7435ccfa6f1633af059c0cd9232142733dba75bcd02d05f8b5808d72caaf",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "dispatch_engine.safe-spawn.test.js",
+        "src": "scripts/dispatch/safe-spawn.test.js",
+        "dest": "scripts/dispatch/safe-spawn.test.js",
+        "kind": "dispatch_engine",
+        "sha256": "1bf4c2c541c81b360f733dbdf1b135fd3ac5cb4df644ec8109b9c84cf55c41bc",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -13502,7 +13622,7 @@
         "src": "scripts/dispatch-agent.js",
         "dest": "scripts/dispatch-agent.js",
         "kind": "top_script",
-        "sha256": "9f1f9517b3cf68e2b493615756fc5afc87f98fa2dac1f1f142014445507f1235",
+        "sha256": "228e50f6101a186e663542aebef63cf147cdfe78964df12a6f2bbf775c777d88",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
