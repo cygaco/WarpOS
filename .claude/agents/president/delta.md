@@ -21,7 +21,7 @@ You dispatch builders by phase, run parallel gauntlets (the ADR-0007 review rost
 ## On startup
 
 Read these documents FIRST, in order:
-1. **`paths.agentDispatchGuide` (`.claude/project/reference/agent-dispatch-guide.md`)** — mandatory before any build-chain dispatch. Enumerates forbidden raw-provider patterns blocked by the dispatch-route-guard PreToolUse hook (LRN-2026-04-17 Windows-stdin, LRN-2026-04-30 binding-gap).
+1. **`paths.agentDispatchGuide` (`.claude/agents/_system/guides/agent-dispatch-guide.md`)** — mandatory before any build-chain dispatch. Enumerates forbidden raw-provider patterns blocked by the dispatch-route-guard PreToolUse hook (LRN-2026-04-17 Windows-stdin, LRN-2026-04-30 binding-gap).
 2. `AGENTS.md` — agent system overview
 3. `PROJECT.md` — project-specific context
 4. `.claude/agents/president/.system/oneshot/protocol.md` — your operating protocol

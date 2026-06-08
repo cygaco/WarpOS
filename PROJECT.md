@@ -82,7 +82,7 @@ Configured in `.claude/manifest.json#agentProviders`. Missing provider CLI → g
 
 ### Dispatch agents via `scripts/dispatch-agent.js`
 
-Build-chain agents are dispatched via `node scripts/dispatch-agent.js <role> <prompt-file>` (or the documented `claude -p --agent <role>` Claude fallback). Raw `codex exec`, `gemini -p`, or `cat … | codex|gemini|claude` calls from Bash are blocked by the `dispatch-route-guard.js` hook — closes the LRN-2026-04-17 Windows-stdin and LRN-2026-04-30 binding-gap classes. Full rules: `.claude/project/reference/agent-dispatch-guide.md`.
+Build-chain agents are dispatched via `node scripts/dispatch-agent.js <role> <prompt-file>` (or the documented `claude -p --agent <role>` Claude fallback). Raw `codex exec`, `gemini -p`, or `cat … | codex|gemini|claude` calls from Bash are blocked by the `dispatch-route-guard.js` hook — closes the LRN-2026-04-17 Windows-stdin and LRN-2026-04-30 binding-gap classes. Full rules: `.claude/agents/_system/guides/agent-dispatch-guide.md`.
 
 ### Every policy needs a named enforcer
 

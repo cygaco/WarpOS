@@ -10,7 +10,7 @@
 //                                keystone — the CANONICAL single source of truth)
 //   1. DEFAULT_AGENT_PROVIDERS   in scripts/hooks/lib/providers.js   (runtime dispatch resolver)
 //   2. DEFAULT_PROVIDER_PER_ROLE in scripts/dispatch/catalog.js      (dispatch-CLI source of truth)
-//   3. role→provider table       in .claude/project/reference/agent-dispatch-guide.md (the doc)
+//   3. role→provider table       in .claude/agents/_system/guides/agent-dispatch-guide.md (the doc)
 //
 // TRAP-A (v0.2 migration): the JS maps (1,2) are being rewired to DERIVE from the
 // registry (0). Comparing derived-vs-derived would be tautological — a vacuous
@@ -263,11 +263,15 @@ function run() {
   const providersMap = p1.map;
   const catalogMap = p2.map;
 
+  // De-dot move (0.15.5, E-SYSTEM-ORG-001 S-2/S-3): the canonical guide now lives
+  // under the agent tree at _system/guides/. Kept as a literal join here (this gate
+  // pre-dates the move); the registry source of truth is paths.agentDispatchGuide.
   const docPath = path.join(
     ROOT,
     ".claude",
-    "project",
-    "reference",
+    "agents",
+    "_system",
+    "guides",
     "agent-dispatch-guide.md",
   );
   const doc = parseDocRoutingTable(docPath);
@@ -294,7 +298,7 @@ function run() {
           registry: "scripts/dispatch/registry-roles.js#providerMap() (canonical)",
           providersJs: "scripts/hooks/lib/providers.js#DEFAULT_AGENT_PROVIDERS",
           catalogJs: "scripts/dispatch/catalog.js#DEFAULT_PROVIDER_PER_ROLE",
-          doc: "project/reference/agent-dispatch-guide.md (role→provider table)",
+          doc: ".claude/agents/_system/guides/agent-dispatch-guide.md (role→provider table)",
         },
         docTableFound: doc.found,
         rolesChecked,

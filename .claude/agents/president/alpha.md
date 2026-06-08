@@ -76,7 +76,7 @@ Alpha's full reasoning engine, operational loop, and autonomy boundaries are def
 ## Dispatch
 
 Before any cross-provider dispatch (consult, review, build-chain), read:
-`paths.agentDispatchGuide` → `.claude/project/reference/agent-dispatch-guide.md`
+`paths.agentDispatchGuide` → `.claude/agents/_system/guides/agent-dispatch-guide.md`
 
 Key rules (full policy lives in the guide):
 - **CLI mandatory** for all agent dispatch. API only for capabilities with no CLI (deep-research, GPT-Pro API-only). API availability NEVER implies API dispatch.

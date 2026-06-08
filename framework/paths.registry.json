@@ -576,11 +576,13 @@
       "docsToken": "paths.loggerLib"
     },
     "agentDispatchGuide": {
-      "path": ".claude/project/reference/agent-dispatch-guide.md",
+      "path": ".claude/agents/_system/guides/agent-dispatch-guide.md",
       "kind": "md",
       "owner": "framework",
       "mutable": false,
       "introducedIn": "0.3.0",
+      "movedIn": "0.15.5",
+      "previousPath": ".claude/project/reference/agent-dispatch-guide.md",
       "docsToken": "paths.agentDispatchGuide"
     },
     "dispatchLocks": {

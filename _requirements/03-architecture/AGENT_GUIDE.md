@@ -42,7 +42,7 @@
 | Env vars | `CLAUDE.md` |
 | Prompts | `PROMPT_TEMPLATES.md` |
 | Agent identity | `.claude/agents/00-alex/{alpha,beta,gamma,delta}.md` |
-| Agent dispatch protocol | `.claude/project/reference/agent-dispatch-guide.md` (canonical; `paths.agentDispatchGuide`) |
+| Agent dispatch protocol | `.claude/agents/_system/guides/agent-dispatch-guide.md` (canonical; `paths.agentDispatchGuide`) |
 
 ## Hygiene
 

@@ -573,7 +573,7 @@ ${c.bold("on save:")}
 
 ${c.bold("docs:")}
   _requirements/09-integrations/PROVIDER/             (model lists per provider)
-  .claude/agents/.system/frontmatter-guide.md (frontmatter reference)
+  .claude/agents/_system/frontmatter-guide.md (frontmatter reference)
 `);
 }
 

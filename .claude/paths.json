@@ -66,7 +66,7 @@
   "lexicon": ".claude/agents/president/.system/lexicon.md",
   "pathsLib": "scripts/hooks/lib/paths.js",
   "loggerLib": "scripts/hooks/lib/logger.js",
-  "agentDispatchGuide": ".claude/project/reference/agent-dispatch-guide.md",
+  "agentDispatchGuide": ".claude/agents/_system/guides/agent-dispatch-guide.md",
   "dispatchLocks": ".claude/runtime/dispatch-locks",
   "dispatchDeathsFile": ".claude/runtime/dispatch-deaths.jsonl",
   "dispatchCompletionsFile": ".claude/runtime/dispatch-completions.jsonl",

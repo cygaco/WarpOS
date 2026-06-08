@@ -91,6 +91,6 @@
     "gauntlet-verify.js + gamma.md + delta.md": "--roles reviewer,compliance,qa,redteam (the #1 silent-false-green)",
     "GAMMA_RESULT / DELTA_RESULT schemas": "gate_checks field names ARE the role names",
     "scripts/checks/role-parity-scan.js": "extend to scan HOOKS for hardcoded role literals; assert roles{} ↔ catalog ROLES ↔ specs",
-    ".claude/project/reference/agent-dispatch-guide.md": "the role→provider table (dispatch-routing-parity requires it)"
+    ".claude/agents/_system/guides/agent-dispatch-guide.md": "the role→provider table (dispatch-routing-parity requires it)"
   }
 }

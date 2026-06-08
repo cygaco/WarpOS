@@ -344,7 +344,7 @@
     },
     "agentDispatchGuide": {
       "type": "string",
-      "const": ".claude/project/reference/agent-dispatch-guide.md",
+      "const": ".claude/agents/_system/guides/agent-dispatch-guide.md",
       "description": "md (framework) — paths.agentDispatchGuide"
     },
     "dispatchLocks": {

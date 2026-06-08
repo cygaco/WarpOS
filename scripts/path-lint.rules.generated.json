@@ -233,7 +233,7 @@
       "key": "settings"
     },
     {
-      "match": "\\.claude/project/reference/agent-dispatch-guide\\.md",
+      "match": "\\.claude/agents/_system/guides/agent-dispatch-guide\\.md",
       "key": "agentDispatchGuide"
     },
     {

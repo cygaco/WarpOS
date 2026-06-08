@@ -77,7 +77,7 @@ const PATHS = {
   "lexicon": path.join(PROJECT, ".claude", "agents", "president", ".system", "lexicon.md"),
   "pathsLib": path.join(PROJECT, "scripts", "hooks", "lib", "paths.js"),
   "loggerLib": path.join(PROJECT, "scripts", "hooks", "lib", "logger.js"),
-  "agentDispatchGuide": path.join(PROJECT, ".claude", "project", "reference", "agent-dispatch-guide.md"),
+  "agentDispatchGuide": path.join(PROJECT, ".claude", "agents", "_system", "guides", "agent-dispatch-guide.md"),
   "dispatchLocks": path.join(PROJECT, ".claude", "runtime", "dispatch-locks"),
   "dispatchDeathsFile": path.join(PROJECT, ".claude", "runtime", "dispatch-deaths.jsonl"),
   "dispatchCompletionsFile": path.join(PROJECT, ".claude", "runtime", "dispatch-completions.jsonl"),

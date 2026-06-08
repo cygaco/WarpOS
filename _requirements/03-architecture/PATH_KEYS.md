@@ -9,7 +9,7 @@ Markdown convention: reference paths as `paths.X` in prose. Code: `const { PATHS
 | Key | Path | Kind | Owner | Mutable | Introduced | Notes |
 |---|---|---|---|---|---|---|
 | `adrIndex` | `.claude/agents/president/.system/policy/adr/INDEX.md` | md | project | yes | 0.0.0 |  |
-| `agentDispatchGuide` | `.claude/project/reference/agent-dispatch-guide.md` | md | framework | no | 0.3.0 |  |
+| `agentDispatchGuide` | `.claude/agents/_system/guides/agent-dispatch-guide.md` | md | framework | no | 0.3.0 |  |
 | `agents` | `.claude/agents` | dir | framework | no | 0.0.0 |  |
 | `agentSystem` | `.claude/agents/president/.system` | dir | framework | no | 0.0.0 |  |
 | `appScaffoldTemplates` | `framework/templates/app-scaffold` | dir | framework | yes | 0.12.0 | S0.3 (product-studio) — pinned Next.js+Tailwind v4+shadcn/ui |

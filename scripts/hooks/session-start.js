@@ -401,7 +401,7 @@ process.stdin.on("end", () => {
         "`codex exec` / `gemini -p` / `cat … | codex|gemini|claude` " +
         "calls from Bash are blocked by the dispatch-route-guard hook " +
         "(LRN-2026-04-17 Windows-stdin, LRN-2026-04-30 binding-gap). Full " +
-        "rules: .claude/project/reference/agent-dispatch-guide.md " +
+        "rules: .claude/agents/_system/guides/agent-dispatch-guide.md " +
         "(paths.agentDispatchGuide).";
     }
 

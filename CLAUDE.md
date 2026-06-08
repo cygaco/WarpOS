@@ -116,7 +116,7 @@ Three rules with bug-class evidence — all validated multiple times across runs
 
 ## Dispatch
 
-Full rules: `paths.agentDispatchGuide` (`.claude/project/reference/agent-dispatch-guide.md`).
+Full rules: `paths.agentDispatchGuide` (`.claude/agents/_system/guides/agent-dispatch-guide.md`).
 Read it before any cross-provider or build-chain dispatch — the rules apply to ad-hoc consults
 and in-session reviewers, not only build-chain.
 

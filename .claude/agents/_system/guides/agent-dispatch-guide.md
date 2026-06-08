@@ -12,7 +12,7 @@ cross-provider consults, in-session reviewers, and the orchestrator's
 own dispatch decisions. The session-start banner scopes this as
 "build-chain"; that is the most common case but NOT the only case.
 
-paths.agentDispatchGuide → `.claude/project/reference/agent-dispatch-guide.md`
+paths.agentDispatchGuide → `.claude/agents/_system/guides/agent-dispatch-guide.md`
 
 ---
 

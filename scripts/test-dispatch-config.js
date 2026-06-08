@@ -47,14 +47,19 @@ function check(label, fn) {
 // 1. providers.js — the load-bearing dispatch path.
 check("providers.js", () => {
   const src = read("scripts/hooks/lib/providers.js");
-  // The actual codex command must NOT use the deprecated flag.
-  const cmdLine = src.match(/cmd = `\$\{cfg\.cli\} exec [^`]*`/);
-  if (!cmdLine) throw new Error("could not locate the codex exec cmd template");
-  if (/--full-auto/.test(cmdLine[0]))
-    throw new Error("codex cmd still uses DEPRECATED --full-auto");
-  if (!/--sandbox workspace-write/.test(cmdLine[0]))
-    throw new Error("codex cmd missing --sandbox workspace-write");
-  ok("codex cmd uses --sandbox workspace-write (not --full-auto)");
+  // Post Wave-1 wire-through (E-SYSTEM-ORG-001): codex dispatch is built as an
+  // argv ARRAY routed through the safe-spawn kernel (shell:false), not a shell
+  // cmd-string template. Assert the new form + the deprecated-flag ban.
+  const codexArgv = src.match(/argv = \["exec",[^\]]*\]/);
+  if (!codexArgv)
+    throw new Error("could not locate the codex exec argv array");
+  if (/--full-auto/.test(codexArgv[0]))
+    throw new Error("codex argv still uses DEPRECATED --full-auto");
+  if (!/"--sandbox", "workspace-write"/.test(codexArgv[0]))
+    throw new Error("codex argv missing --sandbox workspace-write");
+  if (!/safeSpawn\.safeSpawnSync\(toolId, argv/.test(src))
+    throw new Error("providers.js no longer routes dispatch through the safe-spawn kernel");
+  ok("codex argv uses --sandbox workspace-write through safe-spawn (not --full-auto)");
   // GEMINI default must not be a ghost.
   const gd = src.match(/GEMINI_DEFAULT\s*=\s*process\.env\.GEMINI_MODEL\s*\|\|\s*"([^"]+)"/);
   if (!gd) throw new Error("could not find GEMINI_DEFAULT");

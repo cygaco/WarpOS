@@ -45,7 +45,7 @@ const integrations = [
   {
     learning_id: "lrn-2026-04-28-dispatch-guide",
     target:
-      "guide:.claude/agents/.system/guides/agent-dispatch-guide.md, guide:.claude/agents/.system/guides/oneshot-token-guide.md",
+      "guide:.claude/agents/_system/guides/agent-dispatch-guide.md, guide:.claude/agents/_system/guides/oneshot-token-guide.md",
     tip: "Bash subprocess dispatch + token-budget tactics — committed earlier in run-12",
     intent: "agent-tooling",
   },
