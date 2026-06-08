@@ -215,10 +215,10 @@ const ROLES = [
   "fixer",
   "reviewer",
   "compliance",
-  "learner",
+  "ops-analyst", // S-7: was `learner`
   "qa",
   "redteam",
-  "stub-scaffold",
+  "skeleton-builder", // S-7: was `stub-scaffold`
   // ADR-0007 new roster (coexists with the above; cutover deletes the old once green):
   "epsilon",
   "design-lead",
@@ -232,6 +232,7 @@ const ROLES = [
   "qa-reviewer",
   "visual-review",
   "test-runner",
+  "cabinet", // S-7: the registered freeform consult role (was advisor/consult pseudo-roles)
 ];
 
 // v0.2 consumer-rewire foundation: the per-role maps DERIVE from the role-registry
@@ -252,10 +253,11 @@ const LITERAL_DEFAULT_PROVIDER_PER_ROLE = {
   fixer: "claude",
   reviewer: "openai",
   compliance: "openai",
-  learner: "openai",
+  "ops-analyst": "openai", // S-7: was `learner`
   qa: "openai",
   redteam: "gemini",
-  "stub-scaffold": "claude",
+  "skeleton-builder": "claude", // S-7: was `stub-scaffold`
+  cabinet: "openai", // S-7: registered freeform consult role
   // ADR-0007 new roster (must match providers.js DEFAULT_AGENT_PROVIDERS):
   epsilon: "claude",
   "design-lead": "openai",
@@ -289,10 +291,11 @@ const LITERAL_DEFAULT_EFFORT_PER_ROLE = {
   fixer: "high",
   reviewer: "xhigh",
   compliance: "xhigh",
-  learner: "xhigh",
+  "ops-analyst": "xhigh", // S-7: was `learner`
   qa: "medium",
   redteam: "high",
-  "stub-scaffold": null,
+  "skeleton-builder": null, // S-7: was `stub-scaffold`
+  cabinet: "xhigh", // S-7: registered freeform consult role
   // ADR-0007 new roster (max stays alpha-only; gpt-5.5 caps at xhigh):
   epsilon: "high",
   "design-lead": "xhigh",

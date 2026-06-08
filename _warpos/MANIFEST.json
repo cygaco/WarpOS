@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-08T05:11:26.934Z",
+  "generatedAt": "2026-06-08T05:22:58.237Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.15.4",
   "migrations": [],
@@ -2253,8 +2253,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/dispatch-agent.js",
-      "sha256": "8221026ef6a58b3d15e2c9bc7c49817b46936b9b2abfc21b4b2c1ac5687326a9",
-      "installedSha": "8221026ef6a58b3d15e2c9bc7c49817b46936b9b2abfc21b4b2c1ac5687326a9"
+      "sha256": "8ccc965ac119f9930b1430094a4477f14afbc64b6da17ef545dc242472bce7e7",
+      "installedSha": "8ccc965ac119f9930b1430094a4477f14afbc64b6da17ef545dc242472bce7e7"
     },
     "scripts/dispatch-claude.js": {
       "owner": "framework",
@@ -5060,15 +5060,15 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/lib/providers.js",
-      "sha256": "88782e4bcc24c2e143a1d26fb0ca1d5b1af5afdb8e46a0b1b2e1b186c2fb5dce",
-      "installedSha": "88782e4bcc24c2e143a1d26fb0ca1d5b1af5afdb8e46a0b1b2e1b186c2fb5dce"
+      "sha256": "5751fdbc7071dac011dde489daab4a25e1b9a6bb62e9bc4c0c704013428d6ef7",
+      "installedSha": "5751fdbc7071dac011dde489daab4a25e1b9a6bb62e9bc4c0c704013428d6ef7"
     },
     "scripts/hooks/lib/role-aliases.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/lib/role-aliases.js",
-      "sha256": "8365a0c524e7350358597a3acc7598afd61fda38d5cc6d8c8bcbf49f0b6186ad",
-      "installedSha": "8365a0c524e7350358597a3acc7598afd61fda38d5cc6d8c8bcbf49f0b6186ad"
+      "sha256": "d5a84009631f1659cf237f3fc7bef87243fa654d3fed13459c7c9baa607e7dff",
+      "installedSha": "d5a84009631f1659cf237f3fc7bef87243fa654d3fed13459c7c9baa607e7dff"
     },
     "scripts/hooks/lib/skill-telemetry.js": {
       "owner": "framework",
@@ -5193,8 +5193,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/dispatch/catalog.js",
-      "sha256": "639bbd7ea803c36f1abc007d8d3dd0bc361b34cf67e4d23eab8607b4ad9ee72a",
-      "installedSha": "639bbd7ea803c36f1abc007d8d3dd0bc361b34cf67e4d23eab8607b4ad9ee72a"
+      "sha256": "332d62bab9c032d2d9a8df848b759925a0536d5c64d9de784ab44174e6801dfc",
+      "installedSha": "332d62bab9c032d2d9a8df848b759925a0536d5c64d9de784ab44174e6801dfc"
     },
     "scripts/dispatch/cli-preview.js": {
       "owner": "framework",
@@ -17588,22 +17588,6 @@
       "sha256": "1ee6fb525e58d1b492e04b985610829da03eaba1f5a93bcf2018e1fa20292649",
       "installedSha": "1ee6fb525e58d1b492e04b985610829da03eaba1f5a93bcf2018e1fa20292649"
     },
-    ".claude/agents/_system/learner.md": {
-      "owner": "framework",
-      "managed": true,
-      "source": ".claude/agents/_system/learner.md",
-      "kind": "md",
-      "sha256": "0c3a979bf806044cb88e2d05a92df4d9d91ed9e4a98928cadb25d290e8ab49dd",
-      "installedSha": "0c3a979bf806044cb88e2d05a92df4d9d91ed9e4a98928cadb25d290e8ab49dd"
-    },
-    ".claude/agents/_system/stub-scaffold.md": {
-      "owner": "framework",
-      "managed": true,
-      "source": ".claude/agents/_system/stub-scaffold.md",
-      "kind": "md",
-      "sha256": "6838ff6a3ab92f9ed0c3147f810af36538a8fffd87e18192ed829d8e27a0afa6",
-      "installedSha": "6838ff6a3ab92f9ed0c3147f810af36538a8fffd87e18192ed829d8e27a0afa6"
-    },
     ".claude/agents/_system/guides/agent-dispatch-guide.md": {
       "owner": "framework",
       "managed": true,
@@ -17657,8 +17641,8 @@
       "managed": true,
       "source": ".claude/agents/_org/role-registry.json",
       "kind": "json",
-      "sha256": "25f4beb53363a7226f15ea398acf3239e5ac08f794b7c24038c964a4cad0b319",
-      "installedSha": "25f4beb53363a7226f15ea398acf3239e5ac08f794b7c24038c964a4cad0b319"
+      "sha256": "cddc05533a1396017ed20a18868a24bb564a4cb6f04cd2f2225a013e69548e3e",
+      "installedSha": "cddc05533a1396017ed20a18868a24bb564a4cb6f04cd2f2225a013e69548e3e"
     },
     ".claude/agents/_org/skill-hook-points.json": {
       "owner": "framework",
@@ -17764,6 +17748,14 @@
       "sha256": "cd18d5540cdc5698f02cd991aaaf8e86d2c66fa641ecfc81af1daf8fd9d30deb",
       "installedSha": "cd18d5540cdc5698f02cd991aaaf8e86d2c66fa641ecfc81af1daf8fd9d30deb"
     },
+    ".claude/agents/president/cabinet.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/president/cabinet.md",
+      "kind": "md",
+      "sha256": "54cf07bc42e1f02f97b20a59fcbb591d21632cd3203ec12704f54dc2504277dc",
+      "installedSha": "54cf07bc42e1f02f97b20a59fcbb591d21632cd3203ec12704f54dc2504277dc"
+    },
     ".claude/agents/president/delta.md": {
       "owner": "framework",
       "managed": true,
@@ -17787,6 +17779,14 @@
       "kind": "md",
       "sha256": "5e4c1f930acf383566605413012a85d492ebca4f5613687576a1e13893650861",
       "installedSha": "5e4c1f930acf383566605413012a85d492ebca4f5613687576a1e13893650861"
+    },
+    ".claude/agents/president/ops-analyst.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/president/ops-analyst.md",
+      "kind": "md",
+      "sha256": "7f413d1defdc8dbe3ffa4a10139970636ef6d7b649d77ff389cf8df3df81769a",
+      "installedSha": "7f413d1defdc8dbe3ffa4a10139970636ef6d7b649d77ff389cf8df3df81769a"
     },
     ".claude/agents/president/.system/lexicon.md": {
       "owner": "framework",
@@ -17839,8 +17839,8 @@
       "managed": true,
       "source": ".claude/agents/president/.system/policy/provider-fallback.json",
       "kind": "json",
-      "sha256": "bb4aedd16814d64416ac9be4e49f17a0524226a3e470e2f8b93e3dbc2093129f",
-      "installedSha": "bb4aedd16814d64416ac9be4e49f17a0524226a3e470e2f8b93e3dbc2093129f"
+      "sha256": "aeb5c1e3d9a6fab7b4fb1936207a798ae862346563c2b492505a979e6c2797e8",
+      "installedSha": "aeb5c1e3d9a6fab7b4fb1936207a798ae862346563c2b492505a979e6c2797e8"
     },
     ".claude/agents/president/.system/policy/sprint-full-autonomy.json": {
       "owner": "framework",
@@ -18112,6 +18112,14 @@
       "kind": "md",
       "sha256": "4a65ce1de894a5acf7c13803d18fd357117a8ce8e698106ecc78447a769f2d79",
       "installedSha": "4a65ce1de894a5acf7c13803d18fd357117a8ce8e698106ecc78447a769f2d79"
+    },
+    ".claude/agents/engineering/skeleton-builder.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/engineering/skeleton-builder.md",
+      "kind": "md",
+      "sha256": "2ff880abd86b608093cf80d6a7c22a5dcd44aa4b9809246791c92c5f35f98233",
+      "installedSha": "2ff880abd86b608093cf80d6a7c22a5dcd44aa4b9809246791c92c5f35f98233"
     },
     ".claude/agents/engineering/security/builder.md": {
       "owner": "framework",

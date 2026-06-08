@@ -38,11 +38,12 @@ const ORG_MAP_PATH = path.join(
 const STATIC_GAMMA_ONLY_AUGMENT = [
   "builder", // transitional → frontend-builder/backend-builder (Wave 2 S2.3)
   "qa", // DEPRECATED (ADR-0007): absorbed into qa-reviewer; legacy catalog id kept gamma-gated
-  "learner", // system: build-chain analysis, gamma/delta-dispatched
+  "ops-analyst", // S-7: system tool (cross-cycle analysis), gamma/delta-dispatched; not build_chain so it needs the explicit gate (was `learner`)
+  "learner", // S-7 legacy alias → ops-analyst — keep gamma-gated so a stale dispatch by the old id can't bypass team-guard
   "delta", // oneshot orchestrator — only the gamma tier dispatches it in adhoc
   "fix-agent", // legacy alias (2026-04-29 rename)
   "evaluator", // legacy alias → reviewer
-  "auditor", // legacy alias → learner
+  "auditor", // legacy alias → ops-analyst (collapsed; S-7)
   // ADR-0007 cutover: SCRAPPED legacy review roles removed from the code-qc
   // gauntlet membership but still present in the dispatch catalog during
   // coexistence — keep them gamma-gated so team-guard can't be bypassed via a

@@ -637,12 +637,13 @@ try {
   if (roleModel) result.specModel = roleModel;
   const parsed = parseProviderJson(result.output);
   if (parsed) result.parsed = parsed;
-  // W-4: advisor/consult roles are freeform (brainstorm, second opinion,
-  // research) — they carry no review envelope. Skip strict validation so a
-  // freeform reply isn't logged as an invalid ComplianceResult ("invalid
-  // verdict null"), which previously polluted review-role telemetry whenever an
-  // ad-hoc consult borrowed the compliance role.
-  const FREEFORM_ROLES = new Set(["advisor", "consult"]);
+  // S-7: `cabinet` is the registered freeform consult role (brainstorm, second
+  // opinion, research) — it carries no review envelope. advisor/consult are its
+  // legacy ids (kept here so a partially-migrated caller still skips validation;
+  // normalizeRole collapses them to cabinet). Skip strict validation so a
+  // freeform reply isn't logged as an invalid ComplianceResult ("invalid verdict
+  // null"), which would pollute review-role telemetry.
+  const FREEFORM_ROLES = new Set(["cabinet", "advisor", "consult"]);
   const envelopeValidation = FREEFORM_ROLES.has(role)
     ? { ok: true, errors: [], normalized: null, freeform: true }
     : validateAgentOutput(role, parsed || result.output || "");

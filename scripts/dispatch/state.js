@@ -28,7 +28,8 @@ const { parse: parseFm, getValue } = require("./frontmatter");
 const PROJECT_ROOT = process.cwd();
 
 // Per-role env var. New canonical name first; legacy name kept for one
-// transition cycle (renamed 2026-04-29: evaluator → reviewer, auditor → learner).
+// transition cycle (renamed 2026-04-29: evaluator → reviewer, auditor → learner;
+// S-7: learner → ops-analyst, stub-scaffold → skeleton-builder).
 const ENV_REASONING_VAR_PER_ROLE = {
   alpha: null,
   beta: null,
@@ -38,16 +39,21 @@ const ENV_REASONING_VAR_PER_ROLE = {
   fixer: "REASONING_FIXER",
   reviewer: "REASONING_REVIEWER",
   compliance: "REASONING_COMPLIANCE",
-  learner: "REASONING_LEARNER",
+  // S-7: keyed by the new canonical id ops-analyst. The env var name stays
+  // REASONING_LEARNER (the operator-facing knob is unchanged — disambiguation:
+  // the env var is NOT renamed, only the role id is); the legacy REASONING_AUDITOR
+  // still works via LEGACY_ENV_REASONING_VAR_PER_ROLE below.
+  "ops-analyst": "REASONING_LEARNER",
   qa: "REASONING_QA",
   redteam: "REASONING_REDTEAM",
-  "stub-scaffold": null,
+  "skeleton-builder": null, // S-7: was `stub-scaffold`
+  cabinet: null, // S-7: freeform consult — effort from frontmatter/default
 };
 
 // Legacy fallback env var per canonical role (used when new var is unset).
 const LEGACY_ENV_REASONING_VAR_PER_ROLE = {
   reviewer: "REASONING_EVALUATOR",
-  learner: "REASONING_AUDITOR",
+  "ops-analyst": "REASONING_AUDITOR", // S-7: keyed by new canonical (was `learner`)
 };
 
 // v0.2 consumer rewire (Tier 1): derive the active roster from the role-registry

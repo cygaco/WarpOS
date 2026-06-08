@@ -24,7 +24,7 @@
       "fallback": "claude:claude-haiku-4-5-20251001",
       "rationale": "qa runs 13 personas — cost-balanced primary. Haiku fallback keeps per-persona cost predictable on outages."
     },
-    "learner": {
+    "ops-analyst": {
       "primary": "openai:gpt-5.5",
       "fallback": "claude:claude-sonnet-4-6"
     }

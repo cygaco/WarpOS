@@ -1,6 +1,6 @@
 ---
-name: stub-scaffold
-description: "Regenerates a single skeleton stub file from current feature spec. Dispatched by /oneshot:preflight (setup mode) when Pass 7.9 detects signature drift. Produces stub only — no real logic, no validation, no security checks. Type/interface exports use CURRENT spec signatures, not carried-forward from prior builds."
+name: skeleton-builder
+description: "Regenerates a single skeleton stub file from current feature spec. Dispatched by /oneshot:preflight (setup mode) when Pass 7.9 detects signature drift. Produces stub only — no real logic, no validation, no security checks. Type/interface exports use CURRENT spec signatures, not carried-forward from prior builds. (Formerly `stub-scaffold`; legacy id resolves via role-aliases.)"
 tools: Read, Grep, Glob, Write
 disallowedTools: Agent, Bash, Edit
 provider: claude
@@ -11,7 +11,7 @@ maxTurns: 15
 color: yellow
 ---
 
-# Stub-Scaffold Agent
+# Skeleton-Builder Agent
 
 You regenerate ONE stub file from the feature's current spec. You do NOT implement logic — you produce a minimal skeleton that reflects what the PRD + INPUTS.md + foundation types currently say the feature should expose.
 

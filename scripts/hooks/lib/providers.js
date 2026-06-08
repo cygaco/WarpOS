@@ -260,7 +260,10 @@ function readReasoningEnv(canonical, legacy, fallback) {
 const DEFAULT_REASONING_EFFORT = {
   reviewer: readReasoningEnv("reviewer", "evaluator", "xhigh"),
   compliance: readReasoningEnv("compliance", null, "xhigh"),
-  learner: readReasoningEnv("learner", "auditor", "xhigh"),
+  // S-7: learner → ops-analyst. New env var REASONING_OPS_ANALYST wins; the legacy
+  // REASONING_LEARNER is honored via the same legacy-name pattern (mirrors how the
+  // old `learner` key honored REASONING_AUDITOR). 1-hop legacy fallback.
+  "ops-analyst": readReasoningEnv("ops-analyst", "learner", "xhigh"),
   qa: readReasoningEnv("qa", null, "medium"), // 13 personas × volume; medium balances cost
   redteam: readReasoningEnv("redteam", null, "high"), // gemini implicit; flag is no-op
   // Build-side roles (claude) — `high` per ADR-0007 effort policy (2026-06-04):
@@ -357,7 +360,7 @@ const LITERAL_DEFAULT_AGENT_PROVIDERS = {
   // Review layer — GPT-5.5 for different lens on Claude's output, forced high reasoning
   reviewer: "openai",
   compliance: "openai",
-  learner: "openai",
+  "ops-analyst": "openai", // S-7: was `learner`
   qa: "openai",
   // Security — Gemini for different adversarial training corpus, thinking always-on
   redteam: "gemini",
@@ -374,12 +377,14 @@ const LITERAL_DEFAULT_AGENT_PROVIDERS = {
   "qa-reviewer": "openai",
   "visual-review": "claude",
   "test-runner": "claude",
-  // W-4: ad-hoc cross-provider consults (brainstorm, second opinion, research).
-  // Non-Claude, NO strict output schema — dispatch-agent.js skips envelope
-  // validation for these so freeform replies don't trip the review-envelope
-  // validator (false "invalid verdict null") or distort review-role telemetry.
-  advisor: "openai",
-  consult: "openai",
+  // S-7: the registered freeform cross-provider consult role (brainstorm, second
+  // opinion, research). Non-Claude, NO strict output schema — dispatch-agent.js
+  // skips envelope validation for it so freeform replies don't trip the
+  // review-envelope validator (false "invalid verdict null") or distort
+  // review-role telemetry. Legacy ids advisor/consult resolve to cabinet via
+  // role-aliases (getProviderForRole normalizeRole()s before lookup) — no explicit
+  // legacy entries here, so they don't surface to dispatch-routing-parity.
+  cabinet: "openai",
 };
 
 const DEFAULT_AGENT_PROVIDERS = registryRoles
@@ -387,9 +392,11 @@ const DEFAULT_AGENT_PROVIDERS = registryRoles
       () => ({
         ...registryRoles.providerMap(),
         ...registryRoles.SCRAPPED_PROVIDER_ALIASES,
-        // W-4 freeform cross-provider consult pseudo-roles (not registry roles).
-        advisor: "openai",
-        consult: "openai",
+        // S-7: cabinet is now a real registry role (providerMap covers it), so the
+        // W-4 pseudo-roles advisor/consult no longer need explicit map entries —
+        // getProviderForRole normalizeRole()s them to cabinet, which resolves. (An
+        // explicit entry here would surface them to dispatch-routing-parity as
+        // undocumented non-Claude roles. The alias is the single back-compat hop.)
       }),
       LITERAL_DEFAULT_AGENT_PROVIDERS,
       "providers.DEFAULT_AGENT_PROVIDERS",

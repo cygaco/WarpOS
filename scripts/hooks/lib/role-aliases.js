@@ -17,7 +17,10 @@
 /** Map from legacy role name → canonical role name. */
 const ROLE_ALIASES = Object.freeze({
   evaluator: "reviewer",
-  auditor: "learner",
+  // S-7 (PLAN §9.4): learner → ops-analyst. `auditor` collapses straight to the
+  // new canonical (aliases are 1-hop — never auditor→learner→ops-analyst).
+  auditor: "ops-analyst",
+  learner: "ops-analyst",
   // ADR-0007 org-rewrite renames (old → new). 1:1 only — the splits
   // (reviewer/builder/fixer → per-pod FE/BE/Security) are NOT aliased (the
   // conducting face passes pod context); compliance + req-reviewer ABSORB into
@@ -32,12 +35,22 @@ const ROLE_ALIASES = Object.freeze({
   qa: "qa-reviewer",
   compliance: "qa-reviewer",
   "req-reviewer": "qa-reviewer",
+  // S-7 (PLAN §9.4): stub-scaffold → skeleton-builder (re-homed to engineering).
+  "stub-scaffold": "skeleton-builder",
+  // S-7 (PLAN §9.4): the W-4 freeform consult pseudo-roles advisor + consult
+  // collapse into the ONE registered freeform role `cabinet` (President's office).
+  advisor: "cabinet",
+  consult: "cabinet",
 });
 
 /** Reverse map: canonical → legacy (for env-var / store-key compatibility). */
 const LEGACY_ROLE_NAMES = Object.freeze({
   reviewer: "evaluator",
-  learner: "auditor",
+  // S-7: ops-analyst's legacy env/store key is the learner one (REASONING_LEARNER,
+  // which itself legacy-chains to REASONING_AUDITOR via readReasoningEnv).
+  "ops-analyst": "learner",
+  "skeleton-builder": "stub-scaffold",
+  cabinet: "advisor",
 });
 
 /**
