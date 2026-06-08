@@ -56,6 +56,14 @@
  *   (t) definition-drift        — no term carries two materially-different
  *                                 `## Definition:` blocks.
  *
+ * ADVISORY TIER (S-10 / ED-034 — REPORT-ONLY, OUTSIDE the binding 20):
+ *   session-relative-language (anti-deixis) — flags bare session-relative deixis
+ *   ("this session", "next session", "currently", bare "now", a session ordinal)
+ *   in a clause that carries no absolute anchor (ISO date OR 7–40-hex commit hash).
+ *   It NEVER touches res.ok / the 20-check tally / the suite exit code; it is
+ *   surfaced as a separate ADVISORY block. Ramp: report-only → blocking (the flip
+ *   is owned by E-SYSTEM-ORG-001 once the existing high-read lines are converted).
+ *
  * FAIL-CLOSED CONTRACT:
  *   - evaluate() returns a structured result; it NEVER throws on malformed
  *     tracker content — malformed input surfaces as a FAIL, never a silent pass.
@@ -1068,6 +1076,163 @@ function escapeRe(s) {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+// ── ADVISORY TIER (S-10 / ED-034): session-relative-language (anti-deixis) ─────
+//
+// This is a REPORT-ONLY check, INTENTIONALLY OUTSIDE the 20 binding checks of
+// evaluate(). It NEVER touches res.ok, the 20/20 tally, or the suite exit code —
+// it returns warnings that run()/report() surface as a clearly-separated advisory
+// block. The ramp is report-only → blocking (the eventual flip is Alpha's; the
+// epic E-SYSTEM-ORG-001 § "Tracker language convention (anti-deixis)" owns it).
+//
+// RULE (the epic's authoritative spec): TRACKER prose must be ABSOLUTE +
+// state-chained, never bare session-relative deixis. A session-relative phrase
+// ("this session", "next session", "currently", bare "now", a session ordinal
+// like "session 3", "no X this session", "DONE this session") is ambiguous when
+// read LATER — "no execution this session" reads to a future session as a present
+// instruction. The fix: carry an absolute anchor — an ISO date (YYYY-MM-DD) and/or
+// a 7–40-hex commit hash — within the SAME clause.
+//
+// A phrase is FLAGGED iff it appears in a non-allowlisted clause that lacks an
+// in-clause anchor. Allowlist (NOT flagged): fenced ``` code blocks; blockquote
+// lines that quote an old handoff; the rule-definition sections that LIST the
+// banned phrases as examples (Language Rules + an anti-deixis convention section);
+// and the fixed empty-section sentinel "None currently recorded.".
+
+// Banned deictic phrases as `{ re, label }`. `\s` (never a literal space before a
+// char-class `]`) is used throughout so Write can't smuggle a NUL byte in.
+const DEIXIS_PATTERNS = [
+  { re: /\bthis\s+session\b/i, label: "this session" },
+  { re: /\bnext\s+session\b/i, label: "next session" },
+  { re: /\b(?:last|previous|prior)\s+session\b/i, label: "<last/previous/prior> session" },
+  { re: /\bthis\s+release\b/i, label: "this release" },
+  { re: /\bnext\s+release\b/i, label: "next release" },
+  // A session ordinal used as a temporal subject ("session 3", "session 4").
+  { re: /\bsession\s+\d+\b/i, label: "session <N> (ordinal)" },
+  { re: /\bcurrently\b/i, label: "currently" },
+  // Bare "now" — deictic uses only, NOT the adjectival "now <X>" change-result
+  // construction ("now epic-based", "now Completed"). Anchored to clause-initial
+  // "Now," / "right now" / "as of now" / "for now" / "by now" / "until now".
+  { re: /(?:^|[—·;.]\s*)now\b[,\s]/i, label: "now (clause-initial deictic)" },
+  { re: /\b(?:right|as\s+of|for|by|until)\s+now\b/i, label: "<right/as-of/for/by/until> now" },
+];
+
+// An absolute anchor in the same clause: an ISO date OR a 7–40-hex commit hash.
+// The hash branch requires the run to be all-hex AND contain a digit, so an
+// all-letter word like "decade" or "feedback" is never mistaken for a hash.
+const ISO_DATE_RE = /\b\d{4}-\d{2}-\d{2}\b/;
+const HASH_RE = /\b(?=[0-9a-f]{7,40}\b)[0-9a-f]*[0-9][0-9a-f]*\b/i;
+
+/** True if a clause carries an absolute anchor (ISO date or commit hash). */
+function clauseHasAnchor(clause) {
+  return ISO_DATE_RE.test(clause) || HASH_RE.test(clause);
+}
+
+/** Split a line into clause segments on sentence / em-dash / middot / semicolon. */
+function splitClauses(line) {
+  return String(line == null ? "" : line)
+    .split(/(?:\s—\s|\s·\s|—|·|;|(?<=[.!?])\s)/)
+    .map((c) => c.trim())
+    .filter(Boolean);
+}
+
+// Lines/clauses that LIST the banned phrases as examples (rule-definition
+// context) — they must not self-trip. We allowlist the whole Language Rules
+// section + any anti-deixis convention section by heading, but also carry this
+// fixed empty-section sentinel + a couple of literal markers as belt-and-braces.
+const DEIXIS_ALLOW_PHRASES = [
+  /none\s+currently\s+recorded/i, // the §5 empty-section sentinel — a fixed sentinel, not a status claim
+];
+
+/** Heading text that marks a rule-definition section whose body LISTS the bans. */
+function isDeixisRuleSectionHeading(headingText) {
+  const h = String(headingText || "").toLowerCase();
+  return (
+    headingMatchesSection(h, "Language Rules") ||
+    /anti-deixis/.test(h) ||
+    /session-relative/.test(h) ||
+    /tracker language convention/.test(h) ||
+    /\bdeixis\b/.test(h)
+  );
+}
+
+/**
+ * PURE advisory evaluator — NO fs, NO cwd, never throws on malformed input.
+ *
+ * @param {object} input
+ * @param {string} input.tracker  raw TRACKER.md contents ("" if missing).
+ * @returns {{ warnings: Array<{line:number, phrase:string, clause:string, raw:string}>,
+ *             scannedLines:number }}
+ *
+ * A line is exempt when: it is inside a fenced ``` block; it is a blockquote
+ * (`> …`, an old-handoff quote); it is inside a rule-definition section (Language
+ * Rules / anti-deixis convention); or it matches an allowlisted sentinel phrase.
+ * Otherwise each banned deictic phrase whose CLAUSE lacks an anchor is a warning.
+ */
+function evaluateDeixis(input) {
+  const md = input && input.tracker != null ? String(input.tracker) : "";
+  const warnings = [];
+  const lines = md.split(/\r?\n/);
+
+  let inFence = false; // inside a ``` fenced block
+  let inRuleSection = false; // inside a rule-definition section (lists the bans)
+  let scannedLines = 0;
+
+  for (let i = 0; i < lines.length; i++) {
+    const raw = lines[i];
+
+    // Fenced-code toggle — a line whose first non-space chars are ``` or ~~~.
+    if (/^\s*(```|~~~)/.test(raw)) {
+      inFence = !inFence;
+      continue;
+    }
+    if (inFence) continue; // allowlist: fenced code (quoted handoffs/snippets)
+
+    // Track entry/exit of a rule-definition section by its H1/H2 heading. Any
+    // ATX heading closes the previous rule section; a deixis-rule heading opens one.
+    if (/^#{1,6}\s+/.test(raw)) {
+      inRuleSection = isDeixisRuleSectionHeading(normHeading(raw));
+      continue;
+    }
+    if (inRuleSection) continue; // allowlist: the convention section LISTS the bans
+
+    if (/^\s*>/.test(raw)) continue; // allowlist: blockquote (quotes an old handoff)
+
+    // Allowlisted sentinel phrases (e.g. the "None currently recorded." sentinel).
+    if (DEIXIS_ALLOW_PHRASES.some((re) => re.test(raw))) {
+      // The sentinel may share a line with real prose; only skip the sentinel's
+      // own clause, still scan the rest. Drop the sentinel clause from scanning.
+      const clauses = splitClauses(raw).filter(
+        (c) => !DEIXIS_ALLOW_PHRASES.some((re) => re.test(c))
+      );
+      scannedLines++;
+      flagClauses(clauses, i + 1, raw, warnings);
+      continue;
+    }
+
+    scannedLines++;
+    flagClauses(splitClauses(raw), i + 1, raw, warnings);
+  }
+
+  return { warnings, scannedLines };
+}
+
+/** Push a warning for each banned deictic phrase in an un-anchored clause. */
+function flagClauses(clauses, lineNo, raw, warnings) {
+  for (const clause of clauses) {
+    if (clauseHasAnchor(clause)) continue; // anchored → state-chained, OK
+    for (const { re, label } of DEIXIS_PATTERNS) {
+      if (re.test(clause)) {
+        warnings.push({
+          line: lineNo,
+          phrase: label,
+          clause: clause.slice(0, 120),
+          raw: String(raw).trim().slice(0, 160),
+        });
+      }
+    }
+  }
+}
+
 // ── FS layer (thin) ───────────────────────────────────────────────────────────
 const abs = (rel) => path.join(ROOT, rel.replace(/\/+$/g, "").split("/").join(path.sep) + (rel.endsWith("/") ? path.sep : ""));
 
@@ -1277,6 +1442,9 @@ function run() {
     epics: epicIds.length,
     root: ROOT,
   };
+  // ADVISORY tier (S-10 / ED-034) — report-only; NEVER changes res.ok / exit code
+  // / the 20 binding checks. Attached separately so the "20" tally stays honest.
+  res.advisory = { deixis: evaluateDeixis({ tracker }) };
   return res;
 }
 
@@ -1301,6 +1469,19 @@ function report(res) {
     lines.push(
       `  (${res.summary.links} link(s) · ${res.summary.requiredPaths} §33 path(s) · ${res.summary.epics != null ? res.summary.epics + " epic(s) · " : ""}root ${res.summary.root})`
     );
+  }
+  // ── ADVISORY (S-10 / ED-034): report-only, OUTSIDE the binding 20 ────────────
+  if (res.advisory && res.advisory.deixis) {
+    const w = res.advisory.deixis.warnings || [];
+    lines.push("");
+    lines.push(
+      `ADVISORY [${NAME}] session-relative-language (anti-deixis, REPORT-ONLY · not part of the 20 binding checks): ${w.length} warning(s)`
+    );
+    for (const wn of w.slice(0, 50)) {
+      lines.push(`      ⚠ L${wn.line} «${wn.phrase}» — ${wn.clause}`);
+    }
+    if (w.length > 50) lines.push(`      … and ${w.length - 50} more`);
+    if (w.length === 0) lines.push("      · no un-anchored session-relative deixis found");
   }
   return lines.join("\n");
 }
@@ -1868,6 +2049,78 @@ function selftest() {
     assert(items.length === 0, "prose must yield zero items, got: " + items.map((i) => i.label).join(","));
   });
 
+  // ── ADVISORY (S-10 / ED-034): session-relative-language (anti-deixis) ────────
+  // Planted-violation P5 cases — prove the check FLAGS a bare deictic phrase,
+  // does NOT flag an anchored one, and honors every allowlist context.
+  const deixisWarns = (md) => evaluateDeixis({ tracker: md }).warnings;
+  const hasPhrase = (md, sub) =>
+    deixisWarns(md).some((w) => w.phrase.includes(sub) || w.clause.toLowerCase().includes(sub.toLowerCase()));
+
+  // (a) FLAGGED — a banned deictic phrase with NO in-clause anchor.
+  t("(deixis) bare 'no execution this session' → FLAGGED", () => {
+    const w = deixisWarns("# Active Epics\n\n- Status: no execution this session.\n");
+    assert(w.length >= 1, "expected ≥1 deixis warning, got " + w.length);
+    assert(w.some((x) => x.phrase === "this session"), "should name 'this session'");
+  });
+  t("(deixis) 'NEXT ACTION (session 4): do Y' → FLAGGED (ordinal)", () =>
+    assert(hasPhrase("# Active Sprints\n\n- NEXT ACTION (session 4): do Y\n", "ordinal"), "session ordinal must flag"));
+  t("(deixis) bare 'currently procedural' → FLAGGED", () =>
+    assert(deixisWarns("# Validation Requirements\n\nEnforcement is currently procedural.\n").length >= 1, "currently must flag"));
+
+  // (b) NOT flagged — the SAME phrase WITH an absolute anchor in-clause.
+  t("(deixis) 'DONE this session 2026-06-08' (ISO anchor) → NOT flagged", () =>
+    assert(deixisWarns("# Completed Epics\n\n- DONE this session 2026-06-08; evidence recorded.\n").length === 0,
+      "ISO date in-clause should anchor"));
+  t("(deixis) 'this session @aa60e7e' (hash anchor) → NOT flagged", () =>
+    assert(deixisWarns("# Completed Epics\n\n- Shipped this session @aa60e7e.\n").length === 0,
+      "commit hash in-clause should anchor"));
+  t("(deixis) anchor only counts WITHIN the same clause", () => {
+    // ISO date in a DIFFERENT clause (after the period) must NOT rescue the
+    // un-anchored deictic clause before it.
+    const w = deixisWarns("# Active Epics\n\n- No work this session. Reconciled 2026-06-08.\n");
+    assert(w.length >= 1, "cross-clause anchor must NOT rescue the deictic clause");
+  });
+
+  // (c) ALLOWLIST — fenced block, blockquote, convention section, sentinel.
+  t("(deixis) inside fenced ``` block → NOT flagged (allowlist)", () => {
+    const md = "# Active Epics\n\n```\nno execution this session\n```\n";
+    assert(deixisWarns(md).length === 0, "fenced code must be exempt");
+  });
+  t("(deixis) blockquoted old-handoff line → NOT flagged (allowlist)", () =>
+    assert(deixisWarns("# Active Epics\n\n> handoff said: no execution this session\n").length === 0,
+      "blockquote must be exempt"));
+  t("(deixis) Language Rules section listing the bans → NOT flagged (allowlist)", () => {
+    const md = "# Language Rules\n\nProhibited: \"this session\"; \"next session\"; \"currently\"; session 3.\n";
+    assert(deixisWarns(md).length === 0, "rule-definition section must be exempt");
+  });
+  t("(deixis) anti-deixis convention section → NOT flagged (allowlist)", () => {
+    const md = "## Tracker language convention (anti-deixis)\n\nBanned: \"this session\", \"currently\", \"session 4\".\n";
+    assert(deixisWarns(md).length === 0, "convention section must be exempt");
+  });
+  t("(deixis) 'None currently recorded.' sentinel → NOT flagged (allowlist)", () =>
+    assert(deixisWarns("# Untracked Work\n\nNone currently recorded.\n").length === 0,
+      "empty-section sentinel must be exempt"));
+
+  // (d) "now" tuning — adjectival change-result NOT flagged; deictic IS flagged.
+  t("(deixis) 'now epic-based' (change-result) → NOT flagged", () =>
+    assert(deixisWarns("# System Inventory\n\nROADMAP.md is now epic-based.\n").length === 0,
+      "adjectival 'now <X>' must not flag"));
+  t("(deixis) 'right now' (deictic) → FLAGGED", () =>
+    assert(deixisWarns("# Active Epics\n\n- Do this right now.\n").length >= 1, "deictic 'right now' must flag"));
+
+  // (e) advisory is REPORT-ONLY — run() attaches it without changing the 20/ok.
+  t("(deixis) advisory is separate from the 20 binding checks (report-only)", () => {
+    const res = evaluate(coherent());
+    assert(res.checks.length === 20, "binding suite must be exactly 20 checks, got " + res.checks.length);
+    assert(!res.checks.some((c) => c.check === "session-relative-language"),
+      "deixis check must NOT be in the binding checks array");
+  });
+
+  // (f) REMOVE-THE-CHECK guard — if evaluateDeixis stopped flagging, this FAILS.
+  t("(deixis) check is live — a known violation produces ≥1 warning", () =>
+    assert(deixisWarns("loose prose: handled this session, nothing more.\n").length >= 1,
+      "a bare deictic phrase MUST produce a warning (check must be live)"));
+
   const failed = results.filter((r) => !r.ok);
   for (const r of results) {
     process.stdout.write(`  ${r.ok ? "ok" : "FAIL"}  ${r.name}${r.ok ? "" : " — " + r.err}\n`);
@@ -1876,7 +2129,7 @@ function selftest() {
     process.stderr.write(`\n${NAME} selftest: ${results.length - failed.length}/${results.length} passed, ${failed.length} FAILED\n`);
     process.exit(1);
   }
-  process.stdout.write(`\n${NAME} selftest: ${results.length}/${results.length} bite cases passed (positive + a–t fire both ways + fail-closed)\n`);
+  process.stdout.write(`\n${NAME} selftest: ${results.length}/${results.length} bite cases passed (positive + a–t fire both ways + fail-closed + advisory deixis)\n`);
   process.exit(0);
 }
 
@@ -1925,6 +2178,9 @@ if (require.main === module) main();
 
 module.exports = {
   evaluate,
+  evaluateDeixis, // ADVISORY (S-10 / ED-034) — report-only, outside the 20 binding checks
+  splitClauses,
+  clauseHasAnchor,
   splitSections,
   parseItems,
   extractLinks,
@@ -1934,5 +2190,6 @@ module.exports = {
   REQUIRED_PATHS,
   AMBIGUOUS_PHRASES,
   CORE_TERMS,
+  DEIXIS_PATTERNS,
   run,
 };
