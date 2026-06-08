@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-08T19:13:02.827Z",
+  "generatedAt": "2026-06-08T19:35:23.810Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.15.4",
   "migrations": [],
@@ -4941,15 +4941,15 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/team-guard-sprint.test.js",
-      "sha256": "ac4f655b88479feb6db1d76f64a05683f6b5890a2d0ac0343d10c3a1ba96075b",
-      "installedSha": "ac4f655b88479feb6db1d76f64a05683f6b5890a2d0ac0343d10c3a1ba96075b"
+      "sha256": "89d6ad8734a44890f0a59f42cb0a0b38fe7eaa78fbf683fee1fd0b7f6459c91a",
+      "installedSha": "89d6ad8734a44890f0a59f42cb0a0b38fe7eaa78fbf683fee1fd0b7f6459c91a"
     },
     "scripts/hooks/team-guard.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/team-guard.js",
-      "sha256": "0e88cb69c624bb61138dd9b7188dd444df5bb82a034e6acc808d29c33976b05f",
-      "installedSha": "0e88cb69c624bb61138dd9b7188dd444df5bb82a034e6acc808d29c33976b05f"
+      "sha256": "e75607f3e90d3955395f73b607f45089a67b99d7442344b43864434e057874ea",
+      "installedSha": "e75607f3e90d3955395f73b607f45089a67b99d7442344b43864434e057874ea"
     },
     "scripts/hooks/template-fillability.js": {
       "owner": "framework",

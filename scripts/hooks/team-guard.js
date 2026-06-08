@@ -143,8 +143,13 @@ process.stdin.on("end", () => {
       if (hasTeamName || !isWorker) {
         process.exit(0); // flowing through a team, or a legit research one-off
       }
-      // Is a persistent team already active? (a fresh config under ~/.claude/teams)
-      let teamActive = false;
+      // Is a persistent team active, AND does it carry ε (the sprint conductor /
+      // quality-gate)? The persistent SPRINT team is the named company faces α+ε+β
+      // — a team of only generic workers with NO ε is the 2nd miss the operator
+      // caught 2026-06-08 ("this isn't the persistent team I imagined — where's
+      // epsilon?"). Read the freshest active team config + check members for ε.
+      let activeCfg = null;
+      let activeMtime = 0;
       try {
         const teamsRoot = path.join(
           process.env.HOME || process.env.USERPROFILE || "",
@@ -155,12 +160,10 @@ process.stdin.on("end", () => {
           for (const d of fs.readdirSync(teamsRoot)) {
             const cfg = path.join(teamsRoot, d, "config.json");
             try {
-              if (
-                fs.existsSync(cfg) &&
-                (Date.now() - fs.statSync(cfg).mtimeMs) / 3600000 < 24
-              ) {
-                teamActive = true;
-                break;
+              const m = fs.statSync(cfg).mtimeMs;
+              if ((Date.now() - m) / 3600000 < 24 && m > activeMtime) {
+                activeCfg = cfg;
+                activeMtime = m;
               }
             } catch {
               /* skip this team dir */
@@ -170,6 +173,21 @@ process.stdin.on("end", () => {
       } catch {
         /* no teams dir — treat as no active team */
       }
+      const teamActive = !!activeCfg;
+      let teamHasEpsilon = false;
+      if (activeCfg) {
+        try {
+          const doc = JSON.parse(fs.readFileSync(activeCfg, "utf8"));
+          teamHasEpsilon = (doc.members || []).some((mem) =>
+            /epsilon|(^|[^a-z])ε([^a-z]|$)/i.test(
+              `${mem && mem.name} ${mem && mem.agentType}`,
+            ),
+          );
+        } catch {
+          /* malformed config — treat ε as absent */
+        }
+      }
+      const teamReady = teamActive && teamHasEpsilon;
       // Per-session one-off counter (best-effort ramp; advise once the PATTERN shows).
       let n = 1;
       try {
@@ -180,22 +198,25 @@ process.stdin.on("end", () => {
           ".sprint-oneoff-count",
         );
         n = (parseInt(fs.readFileSync(cPath, "utf8"), 10) || 0) + 1;
-        fs.writeFileSync(cPath, teamActive ? "0" : String(n));
+        fs.writeFileSync(cPath, teamReady ? "0" : String(n));
       } catch {
         /* counter is best-effort */
       }
-      if (!teamActive && n >= 2) {
+      if (!teamReady && n >= 2) {
+        const advice = !teamActive
+          ? `no active persistent team — stand up the company faces (TeamCreate + ` +
+            `subagent_type epsilon + beta; α leads, ε conducts) before fanning out`
+          : `a team is active but it is MISSING ε (Epsilon — the sprint conductor / ` +
+            `quality-gate). The persistent SPRINT team is the named faces α+ε+β, not ` +
+            `generic general-purpose workers — spawn subagent_type:epsilon into the team`;
         process.stdout.write(
           JSON.stringify({
             hookSpecificOutput: {
               hookEventName: "PreToolUse",
               additionalContext:
-                `[team-guard] SPRINT MODE + no active persistent team, but this is ` +
-                `one-off worker dispatch #${n} (no team_name). The operator expects ` +
-                `sprint work to flow through a PERSISTENT team (TeamCreate + named ` +
-                `members, reusable + DM-able in FleetView), not fire-and-forget agents ` +
-                `— stand one up before fanning out further. (ED-035; this exact skip ` +
-                `recurred 2026-06-06 and 2026-06-08.) Advisory, not a block.`,
+                `[team-guard] SPRINT MODE + one-off worker dispatch #${n} (no ` +
+                `team_name): ${advice}. (ED-035; the no-team skip recurred 2026-06-06 ` +
+                `and the wrong-roster/missing-ε miss 2026-06-08.) Advisory, not a block.`,
             },
           }),
         );

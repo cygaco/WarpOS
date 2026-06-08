@@ -59,7 +59,10 @@ function runGuard(opts = {}) {
   if (opts.activeTeam) {
     const cfg = path.join(home, ".claude", "teams", "warpos-sprint");
     fs.mkdirSync(cfg, { recursive: true });
-    fs.writeFileSync(path.join(cfg, "config.json"), "{}"); // fresh mtime = now
+    const members = opts.teamHasEpsilon
+      ? [{ name: "epsilon", agentType: "epsilon" }, { name: "beta", agentType: "beta" }]
+      : [{ name: "reviewer", agentType: "general-purpose" }, { name: "builder", agentType: "general-purpose" }];
+    fs.writeFileSync(path.join(cfg, "config.json"), JSON.stringify({ members })); // fresh mtime = now
   }
   const event = {
     tool_name: "Agent",
@@ -77,7 +80,8 @@ function runGuard(opts = {}) {
   return { stdout: r.stdout || "", status: r.status };
 }
 
-const fires = (s) => /SPRINT MODE/.test(s) && /persistent team/i.test(s);
+const fires = (s) => /SPRINT MODE/.test(s) && /ED-035/.test(s);
+const missingEps = (s) => /MISSING ε/.test(s) || /MISSING .{0,3}Epsilon/i.test(s);
 const blocks = (s) => /"decision"\s*:\s*"block"/.test(s);
 
 // ── PLANTED VIOLATION — the recurring skip must be caught ──
@@ -102,9 +106,16 @@ ok("solo mode => NO advisory", () => {
   assert.ok(!fires(stdout), "solo is opt-out");
 });
 
-ok("sprint + active team under ~/.claude/teams => advisory SUPPRESSED", () => {
-  const { stdout } = runGuard({ mode: "sprint", seedCount: 5, activeTeam: true, agentType: "general-purpose" });
-  assert.ok(!fires(stdout), "a fresh team config suppresses the advisory");
+ok("sprint + active team WITHOUT ε => advisory FIRES (missing epsilon — the 2026-06-08 miss)", () => {
+  const { stdout } = runGuard({ mode: "sprint", seedCount: 5, activeTeam: true, teamHasEpsilon: false, agentType: "general-purpose" });
+  assert.ok(fires(stdout), "a team of only generic workers (no ε) should still advise");
+  assert.ok(missingEps(stdout), "the advice must name the missing ε/Epsilon");
+  assert.ok(!blocks(stdout), "advisory must NEVER block");
+});
+
+ok("sprint + active team WITH ε => advisory SUPPRESSED (the right faces)", () => {
+  const { stdout } = runGuard({ mode: "sprint", seedCount: 5, activeTeam: true, teamHasEpsilon: true, agentType: "general-purpose" });
+  assert.ok(!fires(stdout), "a team carrying ε is the correct sprint roster — no advisory");
 });
 
 ok("sprint + first one-off (n<2 ramp) => NO advisory", () => {
