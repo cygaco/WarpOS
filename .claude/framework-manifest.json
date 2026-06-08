@@ -6388,7 +6388,7 @@
         "src": "scripts/checks/cutover-completeness.allowlist.json",
         "dest": "scripts/checks/cutover-completeness.allowlist.json",
         "kind": "check_tool",
-        "sha256": "6250fa8d489a68fb2878e826a35dbcdd914ee0cbbcee3c65df9610f420a80f8e",
+        "sha256": "bf769af2a36c5452834f71facb54ab6fbafdee1237220866aa78a848e9a8d5fb",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
