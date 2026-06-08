@@ -13682,7 +13682,7 @@
         "src": "scripts/dispatch-agent.js",
         "dest": "scripts/dispatch-agent.js",
         "kind": "top_script",
-        "sha256": "228e50f6101a186e663542aebef63cf147cdfe78964df12a6f2bbf775c777d88",
+        "sha256": "8221026ef6a58b3d15e2c9bc7c49817b46936b9b2abfc21b4b2c1ac5687326a9",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",

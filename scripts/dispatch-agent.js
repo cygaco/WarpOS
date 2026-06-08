@@ -462,6 +462,33 @@ if (provider === "claude") {
   process.exit(2);
 }
 
+// ── Dispatch-contract consult (§17.1 keystone — symmetric with dispatch-claude.js) ──
+// This wrapper owns the subprocess-cross-provider shape. Assert the role is
+// contract-allowed to be dispatched this way (a build-chain role, or a claude-pinned
+// reviewer routed here, is a routing error). REPORT-ONLY by default (PLAN §4 ramp);
+// WARPOS_DISPATCH_CONTRACT_ENFORCE=block makes a violation fatal. Fail-OPEN on any
+// contract-read error so the contract never crashes a working cross-provider dispatch.
+try {
+  const { validateDispatch } = require("./dispatch/dispatch-contract");
+  const verdict = validateDispatch({
+    role,
+    shape: "subprocess-cross-provider",
+    toolId: provider === "openai" ? "codex" : provider === "gemini" ? "gemini" : provider,
+  });
+  if (!verdict.ok) {
+    const blocking = process.env.WARPOS_DISPATCH_CONTRACT_ENFORCE === "block";
+    process.stderr.write(
+      `[dispatch-agent] dispatch-contract ${blocking ? "VIOLATION" : "advisory"}: ${verdict.violations.join("; ")}\n`,
+    );
+    if (blocking) {
+      console.log(JSON.stringify({ ok: false, provider, role, error: "dispatch_contract_violation", violations: verdict.violations }));
+      process.exit(1);
+    }
+  }
+} catch {
+  /* fail-open — contract consult never blocks a working dispatch */
+}
+
 // Phase 5T F8: Gemini redteam prompts above 75KB routinely timed out.
 // Return a structured fallback signal before spending the provider timeout.
 if (provider === "gemini" && role === "redteam" && promptBytes > 75 * 1024) {
