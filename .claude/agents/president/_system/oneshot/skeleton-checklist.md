@@ -147,7 +147,7 @@ src/
     test-harness.ts     — QA runner
     scraper-scripts.ts  — BD page scripts
     deus-mechanicus.ts  — manifest interfaces
-    deus-mechanicus-jobzooka.ts — manifest factory
+    deus-mechanicus-<product>.ts — manifest factory
     warp-profiles.ts    — cross-product profiles
 
 extension/

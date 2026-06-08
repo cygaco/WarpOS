@@ -4,7 +4,7 @@ Phase 4K artifact (2026-04-30). Defines how the update / promote engines map the
 
 ## Source rule
 
-`paths.decisionPolicy` (`.claude/agents/president/.system/policy/decision-policy.md`) defines three classes:
+`paths.decisionPolicy` (`.claude/agents/president/_system/policy/decision-policy.md`) defines three classes:
 
 - **Class A** — implementation, reversible. Decide directly, auto-apply.
 - **Class B** — meaningful technical. Score against rubric, decide. Reviewer ack.
@@ -42,7 +42,7 @@ The promote engine (`scripts/warpos/promote.js`) uses 9 categories. Mapping:
 | `FRAMEWORK_DELETE` | B | Target has it, source doesn't — needs human ack before deleting upstream (avoid accidental removal of WarpOS-only assets). |
 | `GENERATED_IGNORE` | A | Skip — target regenerates. |
 | `RUNTIME_IGNORE` | A | Skip — per-session state. |
-| `PROJECT_IGNORE` | A | Skip — project-specific (e.g. jobzooka specs). |
+| `PROJECT_IGNORE` | A | Skip — project-specific (e.g. a downstream product's specs). |
 | `MIGRATION_CANDIDATE` | B | Migration script — propagate if missing in target. Reviewer must confirm idempotence. |
 | `TEMPLATE_REVIEW` | C | Per-project filled file — must be promoted as TEMPLATE only. Manual review. |
 | `SECRET_BLOCK` | C | Looks like a secret — refuse. |
@@ -61,7 +61,7 @@ Engine wiring lives in `promote.js` `run()`'s classMap.
 
 - `scripts/warpos/update.js` `planClass()` — update mapping
 - `scripts/warpos/promote.js` `run()` `classMap` — promote mapping
-- `.claude/agents/president/.system/policy/decision-policy.md` — source taxonomy
+- `.claude/agents/president/_system/policy/decision-policy.md` — source taxonomy
 - This doc — the union; both engines must keep their internal maps consistent with what's documented here
 
 When adding a new category to either engine, add a row to the appropriate table above first; the engines should match the doc, not the other way around.

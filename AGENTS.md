@@ -39,8 +39,8 @@ Specs are mode-agnostic and organized by department/pod; role → spec routing c
 
 | Mode | Purpose | Protocol |
 |------|---------|----------|
-| **Adhoc** | Single feature builds | [protocol.md](.claude/agents/president/.system/adhoc/protocol.md) |
-| **Oneshot** | Full skeleton builds | [protocol.md](.claude/agents/president/.system/oneshot/protocol.md) |
+| **Adhoc** | Single feature builds | [protocol.md](.claude/agents/president/_system/adhoc/protocol.md) |
+| **Oneshot** | Full skeleton builds | [protocol.md](.claude/agents/president/_system/oneshot/protocol.md) |
 | **Sprint** | Full lifecycle (plan→design→build→gauntlet→release→retro) | [epsilon-runtime.js](scripts/sprint/epsilon-runtime.js) |
 
 **Adhoc team** (α + β + γ) is the default for development. **Oneshot** is a standalone Delta session (no team — Delta IS the session). **Sprint** is Epsilon conducting the full lifecycle via the registry-driven runtime. **Solo** (Alpha alone) is rare.
@@ -90,6 +90,6 @@ Every builder output is reviewed by a 4-agent parallel gauntlet:
 3. **PROJECT.md** — project-specific context
 4. **alpha.md / beta.md / gamma.md / delta.md / epsilon.md** — individual agent identities
 5. **.system.md** — detailed operational spec
-6. **president/.system/{mode}/protocol.md** — mode-specific orchestration
+6. **president/_system/{mode}/protocol.md** — mode-specific orchestration
 7. **.claude/manifest.json** — project metadata, features, agent providers
 8. **.claude/paths.json** — centralized path registry

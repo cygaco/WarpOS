@@ -43,7 +43,7 @@ So: **this is the "WarpOS dispatch-shape" system.** The agent-system org cleanup
 ## 0. What was read (honoring "read the entire tree")
 
 **Read in full this session:**
-`.claude/agents/.system.md` (1434 ln), `.system/frontmatter-guide.md`, `.system/guides/agent-dispatch-guide.md` (the orphan), `.system/guides/oneshot-token-guide.md`, `_system/learner.md`, `_system/stub-scaffold.md`, `_principles/base.md`, all 5 faces (`president/alpha|beta|gamma|delta|epsilon.md`), `president/.system/adhoc/protocol.md`, `president/.system/oneshot/protocol.md`, `president/.system/lexicon.md`, `president/.system/policy/decision-policy.md`, `president/.system/policy/adr/0007` + `0008`, `engineering/director-of-engineering.md`, `product/quality/qa-reviewer.md`, plus the canonical `.claude/project/reference/agent-dispatch-guide.md`, `_org/role-registry.json`, `scripts/dispatch-agent.js`, `scripts/hooks/lib/providers.js`, `.claude/commands/research/deep.md`.
+`.claude/agents/.system.md` (1434 ln), `.system/frontmatter-guide.md`, `.system/guides/agent-dispatch-guide.md` (the orphan), `.system/guides/oneshot-token-guide.md`, `_system/learner.md`, `_system/stub-scaffold.md`, `_principles/base.md`, all 5 faces (`president/alpha|beta|gamma|delta|epsilon.md`), `president/_system/adhoc/protocol.md`, `president/_system/oneshot/protocol.md`, `president/_system/lexicon.md`, `president/_system/policy/decision-policy.md`, `president/_system/policy/adr/0007` + `0008`, `engineering/director-of-engineering.md`, `product/quality/qa-reviewer.md`, plus the canonical `.claude/project/reference/agent-dispatch-guide.md`, `_org/role-registry.json`, `scripts/dispatch-agent.js`, `scripts/hooks/lib/providers.js`, `.claude/commands/research/deep.md`.
 
 **Verified via targeted grep (confirmed they reference the system docs / are blast-radius, not yet full-read):** `product/director-of-product.md`, `engineering/security/builder.md` (both cite `.system.md`).
 
@@ -59,7 +59,7 @@ There are **THREE** dotted "system" locations under `.claude/agents/`, not the o
 |---|------|------------|-------------|
 | A | `.claude/agents/.system.md` (file, 1434 ln) | **OLD pre-ADR-0007 monolith** — "Dark Factory", a downstream product's examples, the retired 8-role model (Auditor/Evaluator/Compliance/QA/Fix Agent), old heartbeat + store schema, old gauntlet. BUT still carries live mechanism contracts (parallel gauntlet, snapshot-diff, circuit-breaker, escalation ladder, context-scoping) that δ/oneshot reference. | **Mine live mechanisms → focused doc; archive the rest (non-authoritative, excluded from spec-enumeration). De-dot.** |
 | B | `.claude/agents/.system/` (folder) | `guides/agent-dispatch-guide.md` (**STALE ORPHAN**, 243 ln, 2026-04-28), `guides/oneshot-token-guide.md` (Delta context-budget guide — still useful), `frontmatter-guide.md` (frontmatter authoring ref — useful, stale role/model examples). | **Move into `_system/guides/`. De-dot.** |
-| C | `.claude/agents/president/.system/` (folder) | **Far more load-bearing:** `oneshot/store.json` (live state machine), `policy/decision-policy.md`, `policy/current-stage.md`, `policy/adr/0000–0010 + INDEX`, `beta/` (judgment model + events + source data), `adhoc/protocol.md`, `oneshot/protocol.md`, `lexicon.md`. All wired via `paths.*` (`paths.decisionPolicy`, `paths.currentStage`, `paths.adrIndex`, `paths.policy`, `paths.oneshotStore`, `paths.betaEvents`) + a literal fallback in `dispatch-agent.js`. | **DEFER (GPT-5.5 + α agree).** Too load-bearing; de-dotting it couples doc cleanup to oneshot/runtime migration and risks breaking Delta. Separate, later sprint. |
+| C | `.claude/agents/president/_system/` (folder) | **Far more load-bearing:** `oneshot/store.json` (live state machine), `policy/decision-policy.md`, `policy/current-stage.md`, `policy/adr/0000–0010 + INDEX`, `beta/` (judgment model + events + source data), `adhoc/protocol.md`, `oneshot/protocol.md`, `lexicon.md`. All wired via `paths.*` (`paths.decisionPolicy`, `paths.currentStage`, `paths.adrIndex`, `paths.policy`, `paths.oneshotStore`, `paths.betaEvents`) + a literal fallback in `dispatch-agent.js`. | **DEFER (GPT-5.5 + α agree).** Too load-bearing; de-dotting it couples doc cleanup to oneshot/runtime migration and risks breaking Delta. Separate, later sprint. |
 
 ### The proven forcing case — `agent-dispatch-guide.md` exists twice and has drifted
 
@@ -116,7 +116,7 @@ So `_system/` is the right de-dot target: it already holds the infra agent specs
 
 ### Decisions locked this session
 - **D-1 (S-2 canonical home): MOVE the dispatch guide into the agent tree** → `.claude/agents/_system/guides/agent-dispatch-guide.md`, and repoint `paths.agentDispatchGuide` there. Matches the operator's intuition ("the most important doc in our agent system") + the epic framing + GPT-5.5. **Hard move, not a copy** — no same-basename redirect (that would defeat the new drift enforcer); a one-release migration note instead.
-- **D-2 (S-3 scope): DE-DOT only `.claude/agents/.system/` + `.system.md` now; DEFER `president/.system/`** to a later, dedicated sprint (its blast radius = paths registry + oneshot store + ADRs + beta + ~10 delta scripts; coupling it here risks breaking Delta).
+- **D-2 (S-3 scope): DE-DOT only `.claude/agents/.system/` + `.system.md` now; DEFER `president/_system/`** to a later, dedicated sprint (its blast radius = paths registry + oneshot store + ADRs + beta + ~10 delta scripts; coupling it here risks breaking Delta).
 - **D-3 (`.system.md` handling): do NOT recreate an authoritative monolith.** Extract the still-live mechanism contracts into a focused `_system/guides/gauntlet-contract.md` (parallel gauntlet + snapshot-diff + circuit-breaker + escalation ladder + context-scoping), and archive the pre-ADR-0007 remainder as clearly-marked non-authoritative, **excluded from spec/dispatch enumeration**.
 - **D-4 (duplicate-drift enforcer scoping): the detector must NOT fail legitimate per-pod duplicates** (`builder.md`, `fixer.md`, `reviewer.md` repeat by design across pods; `protocol.md` is adhoc+oneshot). Scope it to **framework-owned non-role docs** (same shipped basename, drifted content), via a path-pair allowlist. Split it out of `cutover-completeness` into its own scan.
 
@@ -193,9 +193,9 @@ So `_system/` is the right de-dot target: it already holds the infra agent specs
 | `dispatch-agent.js` `findAgentSpec` DFS over `_system` | could pick up reference docs as specs | add `_system/guides` exclusion OR invert to role-registry-path + frontmatter `name:` only |
 | `scripts/checks/role-parity-scan.js`, `cutover-completeness.allowlist.json`, `system/coherence.js`, `test-dispatch-config.js` | scan agent paths | re-check after move |
 | manifests (×3) ship `.system/*` with IDs `agent..system.*` (double-dot artifact) | dest paths | move to `_system/...` + regen manifests |
-| ~8 hooks w/ `.system` carve-outs (`smart-context`, `beta-gate`, `sprint-routing-guard`, `version-bump-guard`, `path-guard`, `paths/gate`, `sprint/paths`, `warpos/release-gates`) | mostly reference `president/.system` (DEFERRED) — verify none key on the top-level `.system/` being moved | audit each before S-3 |
+| ~8 hooks w/ `.system` carve-outs (`smart-context`, `beta-gate`, `sprint-routing-guard`, `version-bump-guard`, `path-guard`, `paths/gate`, `sprint/paths`, `warpos/release-gates`) | mostly reference `president/_system` (DEFERRED) — verify none key on the top-level `.system/` being moved | audit each before S-3 |
 
-### DEFERRED (president/.system/) — do NOT touch this session or in S-3
+### DEFERRED (president/_system/) — do NOT touch this session or in S-3
 `paths.js` `LEGACY_FALLBACK_PATHS`, `dispatch-agent.js` oneshot-store fallback, `delta-*.js` (×~10), `oneshot-*.js`, `decision-policy`/`current-stage`/`adrIndex`/`betaEvents` consumers, beta.md/delta.md/epsilon.md startup reads. Tracked for a later dedicated sprint.
 
 ---
@@ -231,7 +231,7 @@ See §8 of the chat response. These harden the **end-user product** `_guides`/`_
 
 ## 8. Not doing this session
 - Any file move, rename, delete, manifest regen, or path-registry edit (planning only).
-- `president/.system/` de-dot (deferred to its own sprint).
+- `president/_system/` de-dot (deferred to its own sprint).
 - E-DISPATCH-INTEGRITY F-1/F-2 full build (N-1 overlaps; the rest stays in that epic).
 
 ---
@@ -484,7 +484,7 @@ Phase 0 steps (run BEFORE any real change):
 Meta-principles for HOW we planned well (the how, not the what). Each is grounded in a real moment this session, so it's a check you can re-apply, not a platitude.
 
 1. **Ground in truth; never plan from assumption.** Claims get validated in the code/files — CLI-vs-API was *confirmed in `providers.js`*, not assumed. "Stop assuming" is a planning rule, not just a coding one.
-2. **Read the whole surface before judging it.** The full agent-tree read surfaced a THIRD dotted dir (`president/.system`) + 8 `.system.md` citers the original framing missed.
+2. **Read the whole surface before judging it.** The full agent-tree read surfaced a THIRD dotted dir (`president/_system`) + 8 `.system.md` citers the original framing missed.
 3. **Verify a mechanism before committing it to the plan.** The skill-dispatch feasibility read of `portfolio/dispatch.js` exposed the reap caveat that would have sunk a naive build.
 4. **Test your tools; trust nothing silently.** The Grep-glob false-negative was caught by an isolated probe — and it had been hiding real blast radius.
 5. **Find the FULL blast radius — with the RIGHT tools — and a resolution per item.** A false-negative search reads as "all clear"; re-confirm with a second method.
@@ -492,8 +492,8 @@ Meta-principles for HOW we planned well (the how, not the what). Each is grounde
 7. **Every policy needs a named enforcer — or logged debt.** Designed-not-built → `/enforcement:log` (ED-033), so the gap is visible at `/scan:full`, not forgotten.
 8. **Isolated testing for everything.** Sealed fixtures/capsules + a planted-violation case that MUST fail — the only real defense against false-greens.
 9. **Dry-run / simulate end-to-end before executing.** Rehearse in a sealed copy so issues surface before they hit live state (Phase 0).
-10. **Get an independent, cross-provider second opinion on big calls.** GPT-5.5 caught the legitimate-duplicate-basename trap, the defer-`president/.system` call, and the `dispatch-api` wrapper.
-11. **Defer the load-bearing/risky; sequence the safe-and-proven first.** Defer `president/.system` (deeply wired); do the dispatch-guide consolidation first (the proven forcing case).
+10. **Get an independent, cross-provider second opinion on big calls.** GPT-5.5 caught the legitimate-duplicate-basename trap, the defer-`president/_system` call, and the `dispatch-api` wrapper.
+11. **Defer the load-bearing/risky; sequence the safe-and-proven first.** Defer `president/_system` (deeply wired); do the dispatch-guide consolidation first (the proven forcing case).
 12. **One source of truth; make the WRONG state self-detecting.** Registry-derived routing + a duplicate-drift detector for the gap `scan:references` structurally cannot see.
 13. **Reframe to the real problem.** "Agent-system cleanup" → "the WarpOS dispatch-shape system" (skills + agents = one question).
 14. **Surface taste/irreversible calls to the operator; decide the rest.** Renames surfaced for approval; corrections owned openly (the alpha.md↔CLAUDE.md fix); Class-A decided directly.

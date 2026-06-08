@@ -160,7 +160,7 @@ check("gemini primary-model agreement", () => {
   // JSON-sourced points
   const manifest = JSON.parse(read(".claude/manifest.json"));
   points.push({ label: "manifest.gemini.default_model", model: manifest.providers.gemini.default_model });
-  const pf = JSON.parse(read(".claude/agents/president/.system/policy/provider-fallback.json"));
+  const pf = JSON.parse(read(".claude/agents/president/_system/policy/provider-fallback.json"));
   // ADR-0007: the security pass's primary policy may live under redteam (legacy)
   // or security-reviewer (new). Read whichever the policy carries.
   const secPolicy = pf.policies["security-reviewer"] || pf.policies.redteam;

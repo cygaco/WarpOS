@@ -15,7 +15,7 @@ if (!feature || !outputFile) {
 
 const store = JSON.parse(
   fs.readFileSync(
-    path.join(PROJ, ".claude/agents/president/.system/oneshot/store.json"),
+    path.join(PROJ, ".claude/agents/president/_system/oneshot/store.json"),
     "utf8",
   ),
 );
@@ -41,7 +41,7 @@ function readFile(relPath) {
 }
 
 // Find highest retro with HYGIENE.md
-const retrosDir = path.join(PROJ, ".claude/agents/president/.system/oneshot/retros");
+const retrosDir = path.join(PROJ, ".claude/agents/president/_system/oneshot/retros");
 const retros = fs
   .readdirSync(retrosDir)
   .filter((d) => /^\d+$/.test(d))
@@ -161,8 +161,8 @@ ${readFile(`_requirements/04-features/${featureDir}/INPUTS.md`)}
 
 ## Integration Map (data contracts)
 
---- BEGIN file: .claude/agents/president/.system/oneshot/integration-map.md ---
-${readFile(".claude/agents/president/.system/oneshot/integration-map.md")}
+--- BEGIN file: .claude/agents/president/_system/oneshot/integration-map.md ---
+${readFile(".claude/agents/president/_system/oneshot/integration-map.md")}
 --- END file ---
 
 ---

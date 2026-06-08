@@ -188,7 +188,7 @@ function buildRules(sourcePrefix) {
       name: "project-decision-policy",
       match: (rel) =>
         rel ===
-        ".claude/agents/president/.system/policy/decision-policy.md",
+        ".claude/agents/president/_system/policy/decision-policy.md",
       entry: () => ({
         owner: "project",
         managed: false,
@@ -197,8 +197,8 @@ function buildRules(sourcePrefix) {
         // `framework/templates/policy/` never existed. The honest seed source is the
         // matched file itself. (Future: flip to `_warpos/templates/...` once that
         // end-state directory is built — SP-20260522-001.)
-        // ADR-0007: policy moved 00-alex/.system → president/.system.
-        seeded_from: ".claude/agents/president/.system/policy/decision-policy.md",
+        // ADR-0007: policy moved 00-alex/.system → president/_system.
+        seeded_from: ".claude/agents/president/_system/policy/decision-policy.md",
         class: "fillable",
       }),
     },

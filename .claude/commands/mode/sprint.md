@@ -160,7 +160,7 @@ exists, `SendMessage {type:"shutdown_request"}` it **before** spawning. Cleanup 
 
    Agent(subagent_type: "beta", team_name: "<project>-sprint", name: "Beta (β)",
      run_in_background: true,
-     prompt: "STARTUP DIRECTIVE — SendMessage readiness to \"team-lead\", then go idle; do NOT claim tasks.\nYou are Alex β joining <project>-sprint as \"Beta (β)\".\nLoad: .claude/agents/president/beta.md + .claude/agents/president/.system/policy/decision-policy.md.\nSendMessage(to:\"team-lead\", summary:\"Beta online\", message:\"β online — ready for boundary consultation.\")\nGo idle.")
+     prompt: "STARTUP DIRECTIVE — SendMessage readiness to \"team-lead\", then go idle; do NOT claim tasks.\nYou are Alex β joining <project>-sprint as \"Beta (β)\".\nLoad: .claude/agents/president/beta.md + .claude/agents/president/_system/policy/decision-policy.md.\nSendMessage(to:\"team-lead\", summary:\"Beta online\", message:\"β online — ready for boundary consultation.\")\nGo idle.")
    ```
 
 3. **Confirm readiness BEFORE proceeding — a spawned team is not a live team until it

@@ -20,7 +20,7 @@
 
 ## What's NOT yet moved (the "live"/KEEP specs — REHOME at cutover, do NOT rewrite)
 These roles are `status: live` in the registry — their CURRENT specs are fine; they just need MOVING (git mv), and that move is a TIER-2 hard-break risk (startup path reads), so it was deferred to cutover:
-- **The 4 faces** `00-alex/{alpha,beta,gamma,delta}.md` → `president/` + the `00-alex/.system/` dir → `president/.system/`. **GOTCHA:** `gamma.md`/`delta.md` read `01-adhoc/`/`02-oneshot/` literal paths on startup, and `decision-policy.md` is read by β every invocation — these path reads must be repointed IN THE SAME COMMIT as the move (TIER-2).
+- **The 4 faces** `00-alex/{alpha,beta,gamma,delta}.md` → `president/` + the `00-alex/.system/` dir → `president/_system/`. **GOTCHA:** `gamma.md`/`delta.md` read `01-adhoc/`/`02-oneshot/` literal paths on startup, and `decision-policy.md` is read by β every invocation — these path reads must be repointed IN THE SAME COMMIT as the move (TIER-2).
 - `03-managers/director-of-product.md` → `product/` · `03-managers/director-of-engineering.md` → `engineering/` · `03-managers/copy-lead.md` → `growth/` (these 3 were NOT re-created — they're KEEP; move them).
 
 ## Cutover steps (in order — each behind the gates)

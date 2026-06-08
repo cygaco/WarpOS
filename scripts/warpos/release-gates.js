@@ -346,8 +346,8 @@ const GATES = [
       ".claude/.session-checkpoint.json",
       ".claude/scheduled_tasks.lock",
       ".claude/agents/.system/dispatch-backups/",
-      ".claude/agents/president/.system/oneshot/store.json",
-      ".claude/agents/president/.system/oneshot/store.json.prev-run-backup.json",
+      ".claude/agents/president/_system/oneshot/store.json",
+      ".claude/agents/president/_system/oneshot/store.json.prev-run-backup.json",
     ];
     // Differentiate pre-existing leaks (committed before the leak rule
     // existed) from new leaks (added in the most recent change). New

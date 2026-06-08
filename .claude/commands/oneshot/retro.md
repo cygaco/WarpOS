@@ -204,7 +204,7 @@ Scan git diff for code-level retro signals. ~2-3 commands.
 
 ```bash
 # What's the retro baseline? (last retro commit on the retro dir)
-BASELINE=$(git log --oneline -1 --format="%H" -- "$(node -e "console.log(require('./.claude/manifest.json').projectPaths?.retro || '.claude/agents/president/.system/oneshot/retros')")")
+BASELINE=$(git log --oneline -1 --format="%H" -- "$(node -e "console.log(require('./.claude/manifest.json').projectPaths?.retro || '.claude/agents/president/_system/oneshot/retros')")")
 
 # What changed in src/ + scripts/?
 git diff "$BASELINE..HEAD" --stat -- 'src/' 'scripts/'

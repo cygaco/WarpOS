@@ -38,9 +38,9 @@ Read these documents FIRST, in order:
 3. .claude/agents/.system/agent-system.md — full operational spec
 4. .claude/agents/.system/oneshot/compliance.md — cross-tool compliance + builder rewards
 5. `.claude/manifest.json` → `build.phases` + `build.features` — build order, phase groupings, and per-feature dependencies. This is the canonical phase graph.
-6. `.claude/agents/president/.system/oneshot/store.json` → `features[<name>].files` — canonical per-feature file ownership. (Foundation files are in `.claude/manifest.json` → `fileOwnership.foundation`.)
-7. `.claude/agents/president/.system/oneshot/integration-map.md` — data contracts between features
-8. `.claude/agents/president/.system/oneshot/retros/` — latest numbered folder's HYGIENE.md contains the cumulative hygiene rules from all prior runs (MUST be referenced in every builder prompt). Use the HIGHEST numbered retro folder — it supersedes earlier versions while retaining their rules by reference.
+6. `.claude/agents/president/_system/oneshot/store.json` → `features[<name>].files` — canonical per-feature file ownership. (Foundation files are in `.claude/manifest.json` → `fileOwnership.foundation`.)
+7. `.claude/agents/president/_system/oneshot/integration-map.md` — data contracts between features
+8. `.claude/agents/president/_system/oneshot/retros/` — latest numbered folder's HYGIENE.md contains the cumulative hygiene rules from all prior runs (MUST be referenced in every builder prompt). Use the HIGHEST numbered retro folder — it supersedes earlier versions while retaining their rules by reference.
 9. `_docs/` — visual ground truth (production flow screenshots for builders to match UX against)
 10. `paths.decisionPolicy` — Class A/B/C taxonomy, escalation red lines, scoring rubric, tech-introduction rule. Cited by Doctrine rule 7 above.
 11. `paths.currentStage` — current product stage (`mvp` / `beta` / `production`) and stage-specific priorities/avoid-list. Stage shifts the rubric weights; rule changes that conflict with current stage priorities should be flagged or deferred.
@@ -345,7 +345,7 @@ If the orchestrator halted (circuit breaker, manual kill, session timeout), laun
 
 ```
 You are the orchestrator. A previous run was halted.
-Read .claude/agents/president/.system/oneshot/store.json for current state; read .claude/manifest.json (build.phases + build.features) for the phase plan.
+Read .claude/agents/president/_system/oneshot/store.json for current state; read .claude/manifest.json (build.phases + build.features) for the phase plan.
 Resume from where it stopped: "done" = complete; "eval_fail"/"security_fail" = fix agents; "not_started"/"in_progress" = builders.
 For unmerged agent/* branches: status "built" → run evaluator before merge; status "in_progress" → discard and re-dispatch.
 Follow this protocol. Do not re-build completed features.

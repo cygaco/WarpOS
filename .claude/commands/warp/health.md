@@ -67,8 +67,8 @@ Check `.claude/agents/` has:
 - `president/beta.md` — judgment model
 - `president/gamma.md` — adhoc builder
 - `president/delta.md` — oneshot runner
-- `president/.system/adhoc/` — adhoc mode agents
-- `president/.system/oneshot/` — oneshot mode agents
+- `president/_system/adhoc/` — adhoc mode agents
+- `president/_system/oneshot/` — oneshot mode agents
 
 If alpha.md missing: RED — "Core agent missing."
 If any sub-agents missing: YELLOW — "Some build modes won't work fully."

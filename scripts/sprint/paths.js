@@ -162,7 +162,7 @@ const SPRINT = {
   schemas: p("sprintSchemas", "schemas/sprint"),
   routing: p(
     "sprintRouting",
-    ".claude/agents/president/.system/policy/sprint-routing.json",
+    ".claude/agents/president/_system/policy/sprint-routing.json",
   ),
   reference: p(
     "sprintReference",

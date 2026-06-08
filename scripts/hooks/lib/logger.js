@@ -59,7 +59,7 @@ const EVENTS_FILE = LOG_FILE;
 // ── Agent system paths ──────────────────────────────────
 // The per-agent (alpha/beta/gamma) event fan-out lives under the President's
 // `.system` dir. Post-ADR-0007 (the agent-org rewrite, 2026-06-04) this is
-// `.claude/agents/president/.system` — resolved here from the paths registry
+// `.claude/agents/president/_system` — resolved here from the paths registry
 // (PATHS.agentSystem) rather than reconstructed from the team name, so a future
 // rehome is one registry edit. The pre-ADR-0007 layouts (`00-<name>/.system`,
 // `<name>/.workspace`) are kept as ordered fallbacks for un-migrated installs.

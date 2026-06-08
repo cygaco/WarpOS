@@ -18,11 +18,11 @@ No speculation — only what the logs/reports/memory literally say.
 
 - `.claude/project/memory/events.jsonl` — **ABSENT**. Real events log lives at `.claude/project/events/events.jsonl` (24,288 lines, 7.9 MB).
 - `.claude/project/memory/{traces,learnings,recurring-issues,enforcement-debt,systems}.jsonl` — present.
-- Sub-agent logs: `.claude/agents/president/.system/{alpha,beta,gamma}/events.jsonl` (alpha+gamma 0 bytes; beta 93 lines).
+- Sub-agent logs: `.claude/agents/president/_system/{alpha,beta,gamma}/events.jsonl` (alpha+gamma 0 bytes; beta 93 lines).
 - Root MD: `DUMP.md`, `WARP.md`, `WARPOS-PROMPT.md`, `TRACKER.md`, **plus `WARPOS-ISSUES.md`** (not in the original list but in-scope).
 - Reports: `_reports/{sessions,sprints,epics}/...`.
 - Sleep journals / dreams: `.claude/dreams/{journal.md,coaching.md,2026-05-13.md,2026-05-19.md,2026-05-21.md,2026-05-25.md,2026-06-02.md}`.
-- No `*retro*` directory holds real retro instances — only templates/fixtures (`framework/templates/sprint/retrospective/`, `fixtures/hooks/retro-presence-check`). `.claude/agents/president/.system/oneshot/retros` does not exist.
+- No `*retro*` directory holds real retro instances — only templates/fixtures (`framework/templates/sprint/retrospective/`, `fixtures/hooks/retro-presence-check`). `.claude/agents/president/_system/oneshot/retros` does not exist.
 
 ---
 

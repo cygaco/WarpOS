@@ -18,7 +18,7 @@
     },
     {
       "basename": "protocol.md",
-      "dirGlobs": [".claude/agents/president/.system/*/"],
+      "dirGlobs": [".claude/agents/president/_system/*/"],
       "reason": "Mode protocol doc — adhoc and oneshot each ship their own protocol.md by design (different team shapes). D-4: must NOT fail as drift."
     },
     {

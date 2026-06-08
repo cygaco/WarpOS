@@ -23,7 +23,7 @@ This is an **orchestration skill** — it chains existing skills in dependency o
 Run `/learn:deep`. It mines THREE sources in parallel: conversation, event log, and retro/report files (oneshot retros + **sprint retros** `paths.sprintHistory` + **`_reports/`**). Subagents can't read the transcript — do the conversation phase yourself; fan out events + retros as read-only subagents that RETURN candidates (write centrally to avoid concurrent-write conflicts on `paths.learningsFile`).
 
 ### Phase 2 — Mine user patterns (`/beta:mine`)
-Run `/beta:mine`. Writes recommendations to the β staging file (`.claude/agents/president/.system/beta/judgement-model-recommendations.md`). Does NOT modify the judgement model directly — Phase 3 reviews the recs. Can run as a background subagent while Phase 1 finishes.
+Run `/beta:mine`. Writes recommendations to the β staging file (`.claude/agents/president/_system/beta/judgement-model-recommendations.md`). Does NOT modify the judgement model directly — Phase 3 reviews the recs. Can run as a background subagent while Phase 1 finishes.
 
 ### Phase 3 — Consolidate (`/sleep:deep`, or `/sleep:quick` with `--quick`)
 Run `/sleep:deep` (all 6 phases). **Depends on Phase 1 + 2 output** (Phase 4 of sleep reviews the β recs + freshly-logged learnings). This is the long pole (~15-30 min). With `--quick`, run `/sleep:quick` instead.

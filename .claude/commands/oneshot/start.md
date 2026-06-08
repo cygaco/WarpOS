@@ -26,7 +26,7 @@ Run these checks in parallel, all read-only. Each must pass.
 | **A. Mode** | Read `.claude/runtime/mode.json`. Must be `mode: "oneshot"`. | Abort with: "Mode is `<X>`. Run `/mode:oneshot` first." |
 | **B. Branch** | `git branch --show-current` matches `^skeleton-test\d+$`. | Abort with: "Not on a skeleton branch. Run `/oneshot:preflight --setup-only` first." |
 | **C. Working tree** | `git status --porcelain` clean (modulo runtime telemetry whitelist — same list as `/oneshot:preflight` Step 2.1). | Abort with: "Uncommitted changes. Commit/stash first." |
-| **D. Store exists** | `.claude/agents/president/.system/oneshot/store.json` present. | Abort with: "Oneshot store missing." |
+| **D. Store exists** | `.claude/agents/president/_system/oneshot/store.json` present. | Abort with: "Oneshot store missing." |
 | **E. Store ready for run** | All non-foundation features in store have `status: "not_started"`. | Abort with: "Store not reset for new run. Run `/oneshot:preflight --setup-only` first." |
 | **F. Run number current** | `.claude/runtime/run.json` `runNumber` matches the current branch's N. | Abort with: "Run number out of sync. Run `node scripts/sync-run-number.js --manual`." |
 | **G. Manifest features in store** | Every `manifest.build.features[].id` (phase ≥ 1) has a corresponding `store.features[<id>]` entry. **Exemption: phase=0 features.** Manifest's unified `foundation` is a product-level abstraction; store enumerates 10 granular `foundation-*` build-orchestration sub-units. Both are valid at different layers. For phase=0, instead verify `manifest.fileOwnership.foundation` files are each owned by some `foundation-*` store entry's `files[]`. | Abort with: "Manifest features missing from store: <list>. Add entries before launch." |

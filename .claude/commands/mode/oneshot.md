@@ -40,8 +40,8 @@ must NOT trigger autonomous work", REPORTED-2026-06-06 → addressed; the
 
 Before launching, verify:
 
-1. **Store exists:** `.claude/agents/president/.system/oneshot/store.json` — if not, warn that a fresh store is needed
-2. **Protocol exists:** `.claude/agents/president/.system/oneshot/protocol.md`
+1. **Store exists:** `.claude/agents/president/_system/oneshot/store.json` — if not, warn that a fresh store is needed
+2. **Protocol exists:** `.claude/agents/president/_system/oneshot/protocol.md`
 3. **Phase graph exists:** `.claude/manifest.json` has `build.phases` and `build.features` populated (this is the canonical phase graph; there is no separate task-manifest file)
 4. **Skeleton stubs exist:** for each feature in `store.features`, confirm the files listed in `features[<name>].files` exist and are skeleton stubs (check against `store.knownStubs`)
 5. **Foundation passes:** Run the build command from project-config to verify the skeleton compiles
@@ -86,7 +86,7 @@ From this point forward, you ARE Delta. Alpha's doctrine (reasoning engine, sess
 
 ### Step 4: Execute
 
-Run the oneshot build following `.claude/agents/president/.system/oneshot/protocol.md`.
+Run the oneshot build following `.claude/agents/president/_system/oneshot/protocol.md`.
 
 When complete or halted, output the DELTA_RESULT as defined in delta.md.
 

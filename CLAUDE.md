@@ -54,7 +54,7 @@ The skill library under `.claude/commands` encodes known-good procedures. **Pref
 
 ### Decision Authority
 
-The single source of truth for decision rights, escalation red lines, scoring rubric, and the tech-introduction rule is `paths.decisionPolicy` (`.claude/agents/president/.system/policy/decision-policy.md`). Current product stage and stage-specific priorities live at `paths.currentStage`. Beta loads both on every invocation; in solo mode, Alpha consults them directly.
+The single source of truth for decision rights, escalation red lines, scoring rubric, and the tech-introduction rule is `paths.decisionPolicy` (`.claude/agents/president/_system/policy/decision-policy.md`). Current product stage and stage-specific priorities live at `paths.currentStage`. Beta loads both on every invocation; in solo mode, Alpha consults them directly.
 
 **Three decision classes:**
 - **Class A** — implementation, reversible. Decide directly.

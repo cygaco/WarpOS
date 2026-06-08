@@ -74,8 +74,8 @@ node scripts/checks/adhoc-fail-override.js [--result <gamma-result.json>] [--rev
 
 ## See also
 
-- ADR-0007 (`.claude/agents/president/.system/policy/adr/0007-agent-system-org-rewrite.md`) — the independence invariant this enforces (GAP 2)
+- ADR-0007 (`.claude/agents/president/_system/policy/adr/0007-agent-system-org-rewrite.md`) — the independence invariant this enforces (GAP 2)
 - `.claude/agents/president/gamma.md` — the GAMMA_RESULT `gate_checks` schema + fix-cycle this audits
-- `.claude/agents/president/.system/adhoc/protocol.md` — the adhoc gauntlet + fix cycle
+- `.claude/agents/president/_system/adhoc/protocol.md` — the adhoc gauntlet + fix cycle
 - `scripts/dispatch/gauntlet-verify.js` — the presence-only enforcer whose verdict-content blind spot this complements (NOT reused)
 - `scripts/checks/test-adhoc-fail-override.js` — bite-test (run `node scripts/checks/test-adhoc-fail-override.js`)

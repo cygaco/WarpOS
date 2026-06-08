@@ -47,8 +47,8 @@ These are the canonical WarpOS system categories. Scan each, produce a list, com
 
 ### 2. Agents
 - `paths.agents/president/*.md` — president faces (alpha, beta, gamma, delta, epsilon)
-- `paths.agents/president/.system/adhoc/**/*.md` — adhoc-mode build-chain agents
-- `paths.agents/president/.system/oneshot/**/*.md` — oneshot-mode build-chain agents
+- `paths.agents/president/_system/adhoc/**/*.md` — adhoc-mode build-chain agents
+- `paths.agents/president/_system/oneshot/**/*.md` — oneshot-mode build-chain agents
 - `paths.agentSystem/*` — shared agent system files (protocol, lexicon, policy)
 - `paths.betaSystem/*` — Beta's judgment model
 

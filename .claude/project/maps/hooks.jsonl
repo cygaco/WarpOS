@@ -1,6 +1,6 @@
-{"_meta":true,"name":"Hooks Map","description":"All hook scripts under scripts/hooks/ + lib modules + settings.json wiring.","version":"2026-06-08","total_hooks":70,"total_lib_modules":15,"registered_hooks":64,"orphan_hooks":6,"wiring_count":75,"last_regenerated":"2026-06-08T18:54:41.962Z"}
+{"_meta":true,"name":"Hooks Map","description":"All hook scripts under scripts/hooks/ + lib modules + settings.json wiring.","version":"2026-06-08","total_hooks":72,"total_lib_modules":15,"registered_hooks":64,"orphan_hooks":8,"wiring_count":75,"last_regenerated":"2026-06-08T20:21:24.827Z"}
 {"id":"hook:authorization-gate","name":"authorization-gate.js","path":"scripts/hooks/authorization-gate.js","registered":true,"exists":true,"size":8520,"modified":"2026-05-30T01:25:39.579Z"}
-{"id":"hook:beta-gate","name":"beta-gate.js","path":"scripts/hooks/beta-gate.js","registered":true,"exists":true,"size":9095,"modified":"2026-06-04T22:57:13.996Z"}
+{"id":"hook:beta-gate","name":"beta-gate.js","path":"scripts/hooks/beta-gate.js","registered":true,"exists":true,"size":9095,"modified":"2026-06-08T20:13:54.823Z"}
 {"id":"hook:boss-boundary","name":"boss-boundary.js","path":"scripts/hooks/boss-boundary.js","registered":true,"exists":true,"size":3145,"modified":"2026-06-04T22:57:13.997Z"}
 {"id":"hook:build-transaction-boundary","name":"build-transaction-boundary.js","path":"scripts/hooks/build-transaction-boundary.js","registered":true,"exists":true,"size":3760,"modified":"2026-05-30T01:25:39.580Z"}
 {"id":"hook:build","name":"build.js","path":"scripts/hooks/build.js","registered":false,"exists":true,"size":6528,"modified":"2026-05-30T01:25:39.580Z"}
@@ -29,7 +29,7 @@
 {"id":"hook:memory-guard","name":"memory-guard.js","path":"scripts/hooks/memory-guard.js","registered":true,"exists":true,"size":14402,"modified":"2026-06-07T03:35:59.239Z"}
 {"id":"hook:merge-guard","name":"merge-guard.js","path":"scripts/hooks/merge-guard.js","registered":true,"exists":true,"size":23252,"modified":"2026-05-30T01:25:39.595Z"}
 {"id":"hook:ownership-guard","name":"ownership-guard.js","path":"scripts/hooks/ownership-guard.js","registered":true,"exists":true,"size":4504,"modified":"2026-06-04T22:57:14.000Z"}
-{"id":"hook:path-guard","name":"path-guard.js","path":"scripts/hooks/path-guard.js","registered":true,"exists":true,"size":8945,"modified":"2026-06-04T22:57:14.000Z"}
+{"id":"hook:path-guard","name":"path-guard.js","path":"scripts/hooks/path-guard.js","registered":true,"exists":true,"size":8945,"modified":"2026-06-08T20:13:54.823Z"}
 {"id":"hook:path-registry-guard","name":"path-registry-guard.js","path":"scripts/hooks/path-registry-guard.js","registered":true,"exists":true,"size":5451,"modified":"2026-05-30T01:25:39.597Z"}
 {"id":"hook:pre-commit-steps-check","name":"pre-commit-steps-check.js","path":"scripts/hooks/pre-commit-steps-check.js","registered":true,"exists":true,"size":8602,"modified":"2026-05-30T01:25:39.597Z"}
 {"id":"hook:prompt-logger","name":"prompt-logger.js","path":"scripts/hooks/prompt-logger.js","registered":true,"exists":true,"size":1843,"modified":"2026-05-30T01:25:39.597Z"}
@@ -43,7 +43,8 @@
 {"id":"hook:scope-contract-guard","name":"scope-contract-guard.js","path":"scripts/hooks/scope-contract-guard.js","registered":true,"exists":true,"size":4536,"modified":"2026-06-04T22:57:14.001Z"}
 {"id":"hook:secret-guard","name":"secret-guard.js","path":"scripts/hooks/secret-guard.js","registered":true,"exists":true,"size":2786,"modified":"2026-05-30T01:25:39.600Z"}
 {"id":"hook:self-mod-governance","name":"self-mod-governance.js","path":"scripts/hooks/self-mod-governance.js","registered":true,"exists":true,"size":923,"modified":"2026-05-30T01:25:39.601Z"}
-{"id":"hook:session-start","name":"session-start.js","path":"scripts/hooks/session-start.js","registered":true,"exists":true,"size":22946,"modified":"2026-06-08T18:32:34.382Z"}
+{"id":"hook:session-start-teaminit.test","name":"session-start-teaminit.test.js","path":"scripts/hooks/session-start-teaminit.test.js","registered":false,"exists":true,"size":4665,"modified":"2026-06-08T19:49:48.192Z"}
+{"id":"hook:session-start","name":"session-start.js","path":"scripts/hooks/session-start.js","registered":true,"exists":true,"size":27679,"modified":"2026-06-08T19:48:52.890Z"}
 {"id":"hook:session-stop","name":"session-stop.js","path":"scripts/hooks/session-stop.js","registered":true,"exists":true,"size":18584,"modified":"2026-06-05T01:45:08.447Z"}
 {"id":"hook:session-tracker","name":"session-tracker.js","path":"scripts/hooks/session-tracker.js","registered":true,"exists":true,"size":9491,"modified":"2026-05-30T01:25:39.602Z"}
 {"id":"hook:settings-edit-guard","name":"settings-edit-guard.js","path":"scripts/hooks/settings-edit-guard.js","registered":true,"exists":true,"size":4852,"modified":"2026-06-04T21:24:41.661Z"}
@@ -53,13 +54,14 @@
 {"id":"hook:smart-context","name":"smart-context.js","path":"scripts/hooks/smart-context.js","registered":true,"exists":true,"size":34063,"modified":"2026-06-05T01:45:08.448Z"}
 {"id":"hook:spec-test-staleness","name":"spec-test-staleness.js","path":"scripts/hooks/spec-test-staleness.js","registered":true,"exists":true,"size":5448,"modified":"2026-05-30T01:25:39.604Z"}
 {"id":"hook:sprint-approval-guard","name":"sprint-approval-guard.js","path":"scripts/hooks/sprint-approval-guard.js","registered":true,"exists":true,"size":6158,"modified":"2026-05-30T01:25:39.604Z"}
-{"id":"hook:sprint-routing-guard","name":"sprint-routing-guard.js","path":"scripts/hooks/sprint-routing-guard.js","registered":true,"exists":true,"size":9608,"modified":"2026-06-04T22:57:14.001Z"}
+{"id":"hook:sprint-routing-guard","name":"sprint-routing-guard.js","path":"scripts/hooks/sprint-routing-guard.js","registered":true,"exists":true,"size":9608,"modified":"2026-06-08T20:13:54.823Z"}
 {"id":"hook:sprint-tracker-guard","name":"sprint-tracker-guard.js","path":"scripts/hooks/sprint-tracker-guard.js","registered":true,"exists":true,"size":15870,"modified":"2026-05-30T01:25:39.605Z"}
 {"id":"hook:step-hardcode-suggester","name":"step-hardcode-suggester.js","path":"scripts/hooks/step-hardcode-suggester.js","registered":true,"exists":true,"size":7087,"modified":"2026-05-30T01:25:39.605Z"}
 {"id":"hook:step-registry-guard","name":"step-registry-guard.js","path":"scripts/hooks/step-registry-guard.js","registered":true,"exists":true,"size":12054,"modified":"2026-05-30T01:25:39.606Z"}
 {"id":"hook:store-validator","name":"store-validator.js","path":"scripts/hooks/store-validator.js","registered":true,"exists":true,"size":16480,"modified":"2026-05-30T01:25:39.606Z"}
 {"id":"hook:systems-sync","name":"systems-sync.js","path":"scripts/hooks/systems-sync.js","registered":true,"exists":true,"size":7605,"modified":"2026-05-30T01:25:39.607Z"}
-{"id":"hook:team-guard","name":"team-guard.js","path":"scripts/hooks/team-guard.js","registered":true,"exists":true,"size":7350,"modified":"2026-06-08T05:38:13.758Z"}
+{"id":"hook:team-guard-sprint.test","name":"team-guard-sprint.test.js","path":"scripts/hooks/team-guard-sprint.test.js","registered":false,"exists":true,"size":6198,"modified":"2026-06-08T19:34:42.108Z"}
+{"id":"hook:team-guard","name":"team-guard.js","path":"scripts/hooks/team-guard.js","registered":true,"exists":true,"size":12058,"modified":"2026-06-08T19:34:13.056Z"}
 {"id":"hook:template-fillability","name":"template-fillability.js","path":"scripts/hooks/template-fillability.js","registered":true,"exists":true,"size":2939,"modified":"2026-05-30T01:25:39.607Z"}
 {"id":"hook:test","name":"test.js","path":"scripts/hooks/test.js","registered":false,"exists":true,"size":11730,"modified":"2026-05-30T01:25:39.608Z"}
 {"id":"hook:tracker-completion-gate","name":"tracker-completion-gate.js","path":"scripts/hooks/tracker-completion-gate.js","registered":true,"exists":true,"size":3400,"modified":"2026-06-07T03:35:59.240Z"}
@@ -67,16 +69,16 @@
 {"id":"hook:typecheck","name":"typecheck.js","path":"scripts/hooks/typecheck.js","registered":true,"exists":true,"size":1688,"modified":"2026-05-30T01:25:39.608Z"}
 {"id":"hook:ui-lint","name":"ui-lint.js","path":"scripts/hooks/ui-lint.js","registered":true,"exists":true,"size":3311,"modified":"2026-05-30T01:25:39.609Z"}
 {"id":"hook:untrusted-content-firewall","name":"untrusted-content-firewall.js","path":"scripts/hooks/untrusted-content-firewall.js","registered":true,"exists":true,"size":3144,"modified":"2026-05-31T00:20:57.240Z"}
-{"id":"hook:version-bump-guard","name":"version-bump-guard.js","path":"scripts/hooks/version-bump-guard.js","registered":true,"exists":true,"size":7695,"modified":"2026-06-05T01:45:08.448Z"}
+{"id":"hook:version-bump-guard","name":"version-bump-guard.js","path":"scripts/hooks/version-bump-guard.js","registered":true,"exists":true,"size":7695,"modified":"2026-06-08T20:13:54.823Z"}
 {"id":"hook:worktree-preflight","name":"worktree-preflight.js","path":"scripts/hooks/worktree-preflight.js","registered":true,"exists":true,"size":5180,"modified":"2026-05-30T01:25:39.610Z"}
 {"id":"hook-lib:banner","name":"banner.js","path":"scripts/hooks/lib/banner.js","registered":false,"type":"lib","exists":true,"size":4392,"modified":"2026-05-30T01:25:39.588Z"}
 {"id":"hook-lib:concurrency-lock","name":"concurrency-lock.js","path":"scripts/hooks/lib/concurrency-lock.js","registered":false,"type":"lib","exists":true,"size":10962,"modified":"2026-05-30T01:25:39.589Z"}
 {"id":"hook-lib:context-sources","name":"context-sources.js","path":"scripts/hooks/lib/context-sources.js","registered":false,"type":"lib","exists":true,"size":8286,"modified":"2026-05-30T01:25:39.589Z"}
 {"id":"hook-lib:gate-schema","name":"gate-schema.js","path":"scripts/hooks/lib/gate-schema.js","registered":false,"type":"lib","exists":true,"size":3894,"modified":"2026-05-30T01:25:39.589Z"}
 {"id":"hook-lib:injection-patterns","name":"injection-patterns.js","path":"scripts/hooks/lib/injection-patterns.js","registered":false,"type":"lib","exists":true,"size":2949,"modified":"2026-05-31T00:23:04.879Z"}
-{"id":"hook-lib:logger","name":"logger.js","path":"scripts/hooks/lib/logger.js","registered":false,"type":"lib","exists":true,"size":16632,"modified":"2026-06-05T05:13:42.032Z"}
+{"id":"hook-lib:logger","name":"logger.js","path":"scripts/hooks/lib/logger.js","registered":false,"type":"lib","exists":true,"size":16632,"modified":"2026-06-08T20:13:54.823Z"}
 {"id":"hook-lib:mode","name":"mode.js","path":"scripts/hooks/lib/mode.js","registered":false,"type":"lib","exists":true,"size":2540,"modified":"2026-05-30T01:25:39.590Z"}
-{"id":"hook-lib:paths.generated","name":"paths.generated.js","path":"scripts/hooks/lib/paths.generated.js","registered":false,"type":"lib","exists":true,"size":10736,"modified":"2026-06-08T04:56:41.298Z"}
+{"id":"hook-lib:paths.generated","name":"paths.generated.js","path":"scripts/hooks/lib/paths.generated.js","registered":false,"type":"lib","exists":true,"size":10736,"modified":"2026-06-08T20:11:53.395Z"}
 {"id":"hook-lib:paths","name":"paths.js","path":"scripts/hooks/lib/paths.js","registered":false,"type":"lib","exists":true,"size":6608,"modified":"2026-06-05T01:45:08.446Z"}
 {"id":"hook-lib:project-config","name":"project-config.js","path":"scripts/hooks/lib/project-config.js","registered":false,"type":"lib","exists":true,"size":4488,"modified":"2026-05-30T01:25:39.591Z"}
 {"id":"hook-lib:provider-health","name":"provider-health.js","path":"scripts/hooks/lib/provider-health.js","registered":false,"type":"lib","exists":true,"size":10306,"modified":"2026-05-30T01:25:39.592Z"}

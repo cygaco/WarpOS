@@ -1,6 +1,6 @@
 # WarpOS — Your Agent Company
 
-> Plain-language map of who's who. Snapshot: 2026-06-05. (Source files at the bottom; the keystone is `.claude/agents/_org/role-registry.json`, with the org & runtime decisions recorded in ADR-0007 / ADR-0009 under `president/.system/policy/adr/`.)
+> Plain-language map of who's who. Snapshot: 2026-06-05. (Source files at the bottom; the keystone is `.claude/agents/_org/role-registry.json`, with the org & runtime decisions recorded in ADR-0007 / ADR-0009 under `president/_system/policy/adr/`.)
 
 ---
 
@@ -110,6 +110,6 @@ Master plan + recovery anchor: `DUMP.md`.
 | **The keystone — role↔spec source of truth** | **`.claude/agents/_org/role-registry.json`** (dispatch routes derive from it) |
 | Machine-readable org | `.claude/agents/_org/org-map.json` |
 | Department rulebooks | `.claude/agents/_principles/registry.json` |
-| Decision policy + ADRs | `.claude/agents/president/.system/policy/` (ADRs under `…/adr/`) |
+| Decision policy + ADRs | `.claude/agents/president/_system/policy/` (ADRs under `…/adr/`) |
 | ε sprint runtime | `scripts/sprint/epsilon-runtime.js` (ADR-0009) |
 | Master plan + recovery anchor | `DUMP.md` |

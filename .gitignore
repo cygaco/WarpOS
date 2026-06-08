@@ -27,9 +27,9 @@ Thumbs.db
 .claude/handoff.md
 .claude/agents/*/events.jsonl
 .claude/agents/*/.workspace/
-.claude/agents/*/.system/events.jsonl
-# ADR-0007: per-agent runtime event logs live deeper under .system/<role>/ now
-# (e.g. president/.system/beta/events.jsonl, president/.system/gamma/events.jsonl).
+.claude/agents/*/_system/events.jsonl
+# ADR-0007 + D-2: per-agent runtime event logs live deeper under _system/<role>/ now
+# (e.g. president/_system/beta/events.jsonl, president/_system/gamma/events.jsonl).
 .claude/agents/**/events.jsonl
 # Runtime tool-usage log under the maps dir (owner=runtime append-only).
 .claude/project/maps/tools.jsonl

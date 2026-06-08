@@ -185,23 +185,23 @@
       "key": "recurringIssuesFile"
     },
     {
-      "match": "\\.claude/agents/president/\\.system/beta/judgement-model\\.md",
+      "match": "\\.claude/agents/president/_system/beta/judgement-model\\.md",
       "key": "judgmentModel"
     },
     {
-      "match": "\\.claude/agents/president/\\.system/beta/judgement-model-recommendations\\.md",
+      "match": "\\.claude/agents/president/_system/beta/judgement-model-recommendations\\.md",
       "key": "judgmentRecommendations"
     },
     {
-      "match": "\\.claude/agents/president/\\.system/beta/events\\.jsonl",
+      "match": "\\.claude/agents/president/_system/beta/events\\.jsonl",
       "key": "betaEvents"
     },
     {
-      "match": "\\.claude/agents/president/\\.system/beta/beta-source-data\\.md",
+      "match": "\\.claude/agents/president/_system/beta/beta-source-data\\.md",
       "key": "betaSourceData"
     },
     {
-      "match": "\\.claude/agents/president/\\.system/lexicon\\.md",
+      "match": "\\.claude/agents/president/_system/lexicon\\.md",
       "key": "lexicon"
     },
     {
@@ -253,7 +253,7 @@
       "key": "providerTmp"
     },
     {
-      "match": "\\.claude/agents/president/\\.system/policy/provider-fallback\\.json",
+      "match": "\\.claude/agents/president/_system/policy/provider-fallback\\.json",
       "key": "providerFallbackPolicy"
     },
     {
@@ -273,7 +273,7 @@
       "key": "sprintReference"
     },
     {
-      "match": "\\.claude/agents/president/\\.system/policy/sprint-routing\\.json",
+      "match": "\\.claude/agents/president/_system/policy/sprint-routing\\.json",
       "key": "sprintRouting"
     }
   ],
@@ -291,7 +291,7 @@
     "scripts/hooks/path-guard.js",
     "/check/references.md",
     ".claude/dreams/",
-    ".claude/agents/president/.system/oneshot/retros/",
+    ".claude/agents/president/_system/oneshot/retros/",
     ".claude/agents/.system/dispatch-backups/",
     "backups/",
     "SYSTEMS-REFERENCE.md",

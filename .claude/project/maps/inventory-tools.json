@@ -1,7 +1,7 @@
 {
   "metadata": {
-    "generated": "2026-06-08T18:54:41.962Z",
-    "lastUpdated": "2026-06-08T18:54:41.962Z",
+    "generated": "2026-06-08T20:21:24.827Z",
+    "lastUpdated": "2026-06-08T20:21:24.827Z",
     "total_tools": 178,
     "categories": 4,
     "regenerated_by": "scripts/regen-maps.js"
@@ -161,7 +161,7 @@
           "type": "script",
           "exists": true,
           "size": 2372,
-          "modified": "2026-06-05T01:45:08.440Z"
+          "modified": "2026-06-08T20:13:54.823Z"
         },
         {
           "id": "tool:delta-build-fixer-prompt",
@@ -170,7 +170,7 @@
           "type": "script",
           "exists": true,
           "size": 1787,
-          "modified": "2026-06-05T01:45:08.440Z"
+          "modified": "2026-06-08T20:13:54.823Z"
         },
         {
           "id": "tool:delta-build-prompt",
@@ -179,7 +179,7 @@
           "type": "script",
           "exists": true,
           "size": 7107,
-          "modified": "2026-06-05T01:45:08.441Z"
+          "modified": "2026-06-08T20:13:54.823Z"
         },
         {
           "id": "tool:delta-build-reviewer-prompt",
@@ -188,7 +188,7 @@
           "type": "script",
           "exists": true,
           "size": 10391,
-          "modified": "2026-06-05T01:45:08.441Z"
+          "modified": "2026-06-08T20:13:54.823Z"
         },
         {
           "id": "tool:delta-canonical-dispatch-smoke",
@@ -224,7 +224,7 @@
           "type": "script",
           "exists": true,
           "size": 9396,
-          "modified": "2026-06-04T22:57:13.994Z"
+          "modified": "2026-06-08T20:13:54.823Z"
         },
         {
           "id": "tool:delta-dispatch-fixer",
@@ -269,7 +269,7 @@
           "type": "script",
           "exists": true,
           "size": 1228,
-          "modified": "2026-06-05T01:45:08.443Z"
+          "modified": "2026-06-08T20:13:54.823Z"
         },
         {
           "id": "tool:delta-log-integrations",
@@ -323,7 +323,7 @@
           "type": "script",
           "exists": true,
           "size": 4814,
-          "modified": "2026-06-05T01:45:08.444Z"
+          "modified": "2026-06-08T20:13:54.823Z"
         },
         {
           "id": "tool:delta-show-findings",
@@ -350,7 +350,7 @@
           "type": "script",
           "exists": true,
           "size": 727,
-          "modified": "2026-06-05T01:45:08.445Z"
+          "modified": "2026-06-08T20:13:54.823Z"
         },
         {
           "id": "tool:dismiss-drift-entry",
@@ -368,7 +368,7 @@
           "type": "script",
           "exists": true,
           "size": 28779,
-          "modified": "2026-06-08T16:11:01.669Z"
+          "modified": "2026-06-08T20:13:54.823Z"
         },
         {
           "id": "tool:dispatch-claude",
@@ -512,7 +512,7 @@
           "type": "script",
           "exists": true,
           "size": 24747,
-          "modified": "2026-06-07T03:35:59.239Z"
+          "modified": "2026-06-08T20:13:54.823Z"
         },
         {
           "id": "tool:generate-maps",
@@ -818,7 +818,7 @@
           "type": "script",
           "exists": true,
           "size": 4351,
-          "modified": "2026-06-05T01:45:08.448Z"
+          "modified": "2026-06-08T20:13:54.823Z"
         },
         {
           "id": "tool:oneshot-heartbeat",
@@ -872,7 +872,7 @@
           "type": "script",
           "exists": true,
           "size": 14694,
-          "modified": "2026-06-05T01:45:08.450Z"
+          "modified": "2026-06-08T20:13:54.823Z"
         },
         {
           "id": "tool:phase0-verify",
@@ -1259,7 +1259,7 @@
           "type": "script",
           "exists": true,
           "size": 9030,
-          "modified": "2026-06-08T04:56:41.298Z"
+          "modified": "2026-06-08T20:13:54.823Z"
         },
         {
           "id": "tool:test-dispatch-route-guard",
@@ -1403,7 +1403,7 @@
           "type": "script",
           "exists": true,
           "size": 16394,
-          "modified": "2026-06-06T09:54:11.892Z"
+          "modified": "2026-06-08T20:13:54.823Z"
         },
         {
           "id": "tool:test-staged-drift-reconciler",
@@ -1618,7 +1618,7 @@
           "id": "xref:hooks",
           "type": "xref",
           "note": "hooks inventory lives in .claude/project/maps/inventory-hooks.json",
-          "count": 70
+          "count": 72
         }
       ]
     }

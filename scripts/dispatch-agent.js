@@ -248,7 +248,7 @@ function detectMode() {
     return explicit.toLowerCase();
   try {
     // oneshotStore now resolves (via the paths registry) to
-    // president/.system/oneshot/store.json. The literal fallback mirrors it.
+    // president/_system/oneshot/store.json. The literal fallback mirrors it.
     const storePath =
       PATHS.oneshotStore ||
       path.join(

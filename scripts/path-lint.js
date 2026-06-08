@@ -25,7 +25,7 @@
  *   WARN — paths that resolve BUT have a dedicated paths.json key:
  *     - .claude/project/events/events.jsonl          → paths.eventsFile
  *     - .claude/project/memory/learnings.jsonl       → paths.learningsFile
- *     - .claude/agents/president/.system/beta/       → paths.betaSystem
+ *     - .claude/agents/president/_system/beta/       → paths.betaSystem
  *     - scripts/hooks/lib/paths.js                   → paths.pathsLib
  *     ...
  *
@@ -276,7 +276,7 @@ const SKIP_SUBSTRINGS = [
   "scripts/hooks/path-guard.js", // holds the patterns by design
   "/scan/references.md", // rename catalog lives here (was /check/references.md before the check:→scan: rename; 2026-05-30 fix — the rename missed this exempt → 8 false criticals)
   ".claude/dreams/",
-  ".claude/agents/president/.system/oneshot/retros/", // historical retros
+  ".claude/agents/president/_system/oneshot/retros/", // historical retros
   ".claude/agents/.system/dispatch-backups/", // dispatch snapshots
   "backups/",
   "SYSTEMS-REFERENCE.md", // doc being migrated

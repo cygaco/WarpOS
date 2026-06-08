@@ -59,7 +59,7 @@ You should be on the `skeleton` branch with a clean working tree (no uncommitted
 Open Claude Code in the project directory and paste:
 
 ```
-Read and execute .claude/agents/president/.system/oneshot/protocol.md
+Read and execute .claude/agents/president/_system/oneshot/protocol.md
 ```
 
 That's it. The oneshot orchestrator reads the system docs, dispatches builders, runs evaluators, and orchestrates the whole build.
@@ -127,16 +127,16 @@ The system halts after:
 To resume, start a new Claude Code session and paste:
 
 ```
-You are the Oneshot orchestrator for Jobzooka. A previous run was halted.
+You are the Oneshot orchestrator for the product. A previous run was halted.
 
-Read .claude/agents/president/.system/oneshot/store.json to see current state (features[<name>].files + feature statuses).
+Read .claude/agents/president/_system/oneshot/store.json to see current state (features[<name>].files + feature statuses).
 Read .claude/manifest.json → build.phases for the full build plan.
 
 Resume from where the previous run stopped. Features marked "done" are complete.
 Features marked "eval_fail" or "security_fail" need fix agents.
 Features marked "not_started" or "in_progress" need builders.
 
-Follow the same rules as .claude/agents/president/.system/oneshot/protocol.md. Do not re-build completed features.
+Follow the same rules as .claude/agents/president/_system/oneshot/protocol.md. Do not re-build completed features.
 ```
 
 ### Session Timeout
@@ -174,13 +174,13 @@ When all features show `done` in the store:
 
 | What               | Command / File                                                               |
 | ------------------ | ---------------------------------------------------------------------------- |
-| Start the build    | "Read and execute .claude/agents/president/.system/oneshot/protocol.md"             |
-| Check progress     | `cat .claude/agents/president/.system/oneshot/store.json`                           |
+| Start the build    | "Read and execute .claude/agents/president/_system/oneshot/protocol.md"             |
+| Check progress     | `cat .claude/agents/president/_system/oneshot/store.json`                           |
 | Resume after halt  | Paste resume prompt (see above)                                              |
 | Verify build       | `npm run build`                                                              |
 | See agent branches | `git branch -a`                                                              |
 | Feature specs      | `_requirements/04-features/*/PRD.md`                                                  |
 | Agent system rules | `.claude/agents/.system/agent-system.md`                                     |
-| File ownership     | `.claude/agents/president/.system/oneshot/store.json → features[<name>].files`      |
+| File ownership     | `.claude/agents/president/_system/oneshot/store.json → features[<name>].files`      |
 | Build order        | `.claude/manifest.json → build.phases`                                       |
 | Env var guide      | `_docs/09-agentic-system/ENV-SETUP.md`                                        |

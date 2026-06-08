@@ -92,7 +92,7 @@ Ground your hardening in the WarpOS **application-security knowledge library** (
    `_requirements/03-architecture/DATA-CONTRACTS.md` (fields your controls touch)
 5. Foundation files (read-only): `src/lib/types.ts`, `src/lib/constants.ts`,
    and any shared `src/lib/{config,auth,validators}.ts` commons
-6. Latest hygiene rules: `.claude/agents/president/.system/oneshot/retros/` (highest-numbered, HYGIENE.md)
+6. Latest hygiene rules: `.claude/agents/president/_system/oneshot/retros/` (highest-numbered, HYGIENE.md)
 7. **The `build_spec` (S0.2, when one drives the build):** highest precedence; honor
    `derived_from_message_brief` + `acceptance_criteria`. Data your output references
    that you did not receive is fabrication — rewrite it.

@@ -74,32 +74,32 @@
     },
     "agentSystem": {
       "type": "string",
-      "const": ".claude/agents/president/.system",
+      "const": ".claude/agents/president/_system",
       "description": "dir (framework) — paths.agentSystem"
     },
     "betaSystem": {
       "type": "string",
-      "const": ".claude/agents/president/.system/beta",
+      "const": ".claude/agents/president/_system/beta",
       "description": "dir (framework) — paths.betaSystem"
     },
     "policy": {
       "type": "string",
-      "const": ".claude/agents/president/.system/policy",
+      "const": ".claude/agents/president/_system/policy",
       "description": "dir (project) — paths.policy"
     },
     "decisionPolicy": {
       "type": "string",
-      "const": ".claude/agents/president/.system/policy/decision-policy.md",
+      "const": ".claude/agents/president/_system/policy/decision-policy.md",
       "description": "md (project) — paths.decisionPolicy"
     },
     "currentStage": {
       "type": "string",
-      "const": ".claude/agents/president/.system/policy/current-stage.md",
+      "const": ".claude/agents/president/_system/policy/current-stage.md",
       "description": "md (project) — paths.currentStage"
     },
     "adrIndex": {
       "type": "string",
-      "const": ".claude/agents/president/.system/policy/adr/INDEX.md",
+      "const": ".claude/agents/president/_system/policy/adr/INDEX.md",
       "description": "md (project) — paths.adrIndex"
     },
     "commands": {
@@ -214,17 +214,17 @@
     },
     "oneshotStore": {
       "type": "string",
-      "const": ".claude/agents/president/.system/oneshot/store.json",
+      "const": ".claude/agents/president/_system/oneshot/store.json",
       "description": "json (runtime) — paths.oneshotStore"
     },
     "oneshotSystem": {
       "type": "string",
-      "const": ".claude/agents/president/.system/oneshot",
+      "const": ".claude/agents/president/_system/oneshot",
       "description": "dir (framework) — paths.oneshotSystem"
     },
     "oneshotRetros": {
       "type": "string",
-      "const": ".claude/agents/president/.system/oneshot/retros",
+      "const": ".claude/agents/president/_system/oneshot/retros",
       "description": "dir (runtime) — paths.oneshotRetros"
     },
     "eventsFile": {
@@ -309,27 +309,27 @@
     },
     "judgmentModel": {
       "type": "string",
-      "const": ".claude/agents/president/.system/beta/judgement-model.md",
+      "const": ".claude/agents/president/_system/beta/judgement-model.md",
       "description": "md (framework) — paths.judgmentModel"
     },
     "judgmentRecommendations": {
       "type": "string",
-      "const": ".claude/agents/president/.system/beta/judgement-model-recommendations.md",
+      "const": ".claude/agents/president/_system/beta/judgement-model-recommendations.md",
       "description": "md (runtime) — paths.judgmentRecommendations"
     },
     "betaSourceData": {
       "type": "string",
-      "const": ".claude/agents/president/.system/beta/beta-source-data.md",
+      "const": ".claude/agents/president/_system/beta/beta-source-data.md",
       "description": "md (runtime) — paths.betaSourceData"
     },
     "betaEvents": {
       "type": "string",
-      "const": ".claude/agents/president/.system/beta/events.jsonl",
+      "const": ".claude/agents/president/_system/beta/events.jsonl",
       "description": "jsonl (runtime) — paths.betaEvents"
     },
     "lexicon": {
       "type": "string",
-      "const": ".claude/agents/president/.system/lexicon.md",
+      "const": ".claude/agents/president/_system/lexicon.md",
       "description": "md (framework) — paths.lexicon"
     },
     "pathsLib": {
@@ -369,7 +369,7 @@
     },
     "providerFallbackPolicy": {
       "type": "string",
-      "const": ".claude/agents/president/.system/policy/provider-fallback.json",
+      "const": ".claude/agents/president/_system/policy/provider-fallback.json",
       "description": "json (framework) — paths.providerFallbackPolicy"
     },
     "sprintRoot": {
@@ -439,7 +439,7 @@
     },
     "sprintFullAutonomy": {
       "type": "string",
-      "const": ".claude/agents/president/.system/policy/sprint-full-autonomy.json",
+      "const": ".claude/agents/president/_system/policy/sprint-full-autonomy.json",
       "description": "json (framework) — paths.sprintFullAutonomy"
     },
     "sprintFullReports": {
@@ -489,7 +489,7 @@
     },
     "sprintRouting": {
       "type": "string",
-      "const": ".claude/agents/president/.system/policy/sprint-routing.json",
+      "const": ".claude/agents/president/_system/policy/sprint-routing.json",
       "description": "json (framework) — paths.sprintRouting"
     },
     "orgRoleRegistry": {
@@ -564,7 +564,7 @@
     },
     "providerFailureModes": {
       "type": "string",
-      "const": ".claude/agents/president/.system/policy/provider-failure-modes.json",
+      "const": ".claude/agents/president/_system/policy/provider-failure-modes.json",
       "description": "json (framework) — paths.providerFailureModes"
     },
     "providerRcaLib": {

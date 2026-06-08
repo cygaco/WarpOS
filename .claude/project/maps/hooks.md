@@ -1,8 +1,8 @@
 # Hooks Map
 
-Generated: 2026-06-08T18:54:41.962Z
+Generated: 2026-06-08T20:21:24.827Z
 
-**70** hook scripts (64 registered, 6 orphan), **15** lib modules, **75** wiring entries.
+**72** hook scripts (64 registered, 8 orphan), **15** lib modules, **75** wiring entries.
 
 ## Wiring (event → matcher → hook)
 
@@ -113,7 +113,7 @@ Generated: 2026-06-08T18:54:41.962Z
 | Hook | Registered | Size | Modified |
 |---|---|---|---|
 | authorization-gate.js | yes | 8520 | 2026-05-30T01:25:39.579Z |
-| beta-gate.js | yes | 9095 | 2026-06-04T22:57:13.996Z |
+| beta-gate.js | yes | 9095 | 2026-06-08T20:13:54.823Z |
 | boss-boundary.js | yes | 3145 | 2026-06-04T22:57:13.997Z |
 | build-transaction-boundary.js | yes | 3760 | 2026-05-30T01:25:39.580Z |
 | build.js | no | 6528 | 2026-05-30T01:25:39.580Z |
@@ -142,7 +142,7 @@ Generated: 2026-06-08T18:54:41.962Z
 | memory-guard.js | yes | 14402 | 2026-06-07T03:35:59.239Z |
 | merge-guard.js | yes | 23252 | 2026-05-30T01:25:39.595Z |
 | ownership-guard.js | yes | 4504 | 2026-06-04T22:57:14.000Z |
-| path-guard.js | yes | 8945 | 2026-06-04T22:57:14.000Z |
+| path-guard.js | yes | 8945 | 2026-06-08T20:13:54.823Z |
 | path-registry-guard.js | yes | 5451 | 2026-05-30T01:25:39.597Z |
 | pre-commit-steps-check.js | yes | 8602 | 2026-05-30T01:25:39.597Z |
 | prompt-logger.js | yes | 1843 | 2026-05-30T01:25:39.597Z |
@@ -156,7 +156,8 @@ Generated: 2026-06-08T18:54:41.962Z
 | scope-contract-guard.js | yes | 4536 | 2026-06-04T22:57:14.001Z |
 | secret-guard.js | yes | 2786 | 2026-05-30T01:25:39.600Z |
 | self-mod-governance.js | yes | 923 | 2026-05-30T01:25:39.601Z |
-| session-start.js | yes | 22946 | 2026-06-08T18:32:34.382Z |
+| session-start-teaminit.test.js | no | 4665 | 2026-06-08T19:49:48.192Z |
+| session-start.js | yes | 27679 | 2026-06-08T19:48:52.890Z |
 | session-stop.js | yes | 18584 | 2026-06-05T01:45:08.447Z |
 | session-tracker.js | yes | 9491 | 2026-05-30T01:25:39.602Z |
 | settings-edit-guard.js | yes | 4852 | 2026-06-04T21:24:41.661Z |
@@ -166,13 +167,14 @@ Generated: 2026-06-08T18:54:41.962Z
 | smart-context.js | yes | 34063 | 2026-06-05T01:45:08.448Z |
 | spec-test-staleness.js | yes | 5448 | 2026-05-30T01:25:39.604Z |
 | sprint-approval-guard.js | yes | 6158 | 2026-05-30T01:25:39.604Z |
-| sprint-routing-guard.js | yes | 9608 | 2026-06-04T22:57:14.001Z |
+| sprint-routing-guard.js | yes | 9608 | 2026-06-08T20:13:54.823Z |
 | sprint-tracker-guard.js | yes | 15870 | 2026-05-30T01:25:39.605Z |
 | step-hardcode-suggester.js | yes | 7087 | 2026-05-30T01:25:39.605Z |
 | step-registry-guard.js | yes | 12054 | 2026-05-30T01:25:39.606Z |
 | store-validator.js | yes | 16480 | 2026-05-30T01:25:39.606Z |
 | systems-sync.js | yes | 7605 | 2026-05-30T01:25:39.607Z |
-| team-guard.js | yes | 7350 | 2026-06-08T05:38:13.758Z |
+| team-guard-sprint.test.js | no | 6198 | 2026-06-08T19:34:42.108Z |
+| team-guard.js | yes | 12058 | 2026-06-08T19:34:13.056Z |
 | template-fillability.js | yes | 2939 | 2026-05-30T01:25:39.607Z |
 | test.js | no | 11730 | 2026-05-30T01:25:39.608Z |
 | tracker-completion-gate.js | yes | 3400 | 2026-06-07T03:35:59.240Z |
@@ -180,7 +182,7 @@ Generated: 2026-06-08T18:54:41.962Z
 | typecheck.js | yes | 1688 | 2026-05-30T01:25:39.608Z |
 | ui-lint.js | yes | 3311 | 2026-05-30T01:25:39.609Z |
 | untrusted-content-firewall.js | yes | 3144 | 2026-05-31T00:20:57.240Z |
-| version-bump-guard.js | yes | 7695 | 2026-06-05T01:45:08.448Z |
+| version-bump-guard.js | yes | 7695 | 2026-06-08T20:13:54.823Z |
 | worktree-preflight.js | yes | 5180 | 2026-05-30T01:25:39.610Z |
 
 ## Lib modules
@@ -192,9 +194,9 @@ Generated: 2026-06-08T18:54:41.962Z
 | context-sources.js | 8286 | 2026-05-30T01:25:39.589Z |
 | gate-schema.js | 3894 | 2026-05-30T01:25:39.589Z |
 | injection-patterns.js | 2949 | 2026-05-31T00:23:04.879Z |
-| logger.js | 16632 | 2026-06-05T05:13:42.032Z |
+| logger.js | 16632 | 2026-06-08T20:13:54.823Z |
 | mode.js | 2540 | 2026-05-30T01:25:39.590Z |
-| paths.generated.js | 10736 | 2026-06-08T04:56:41.298Z |
+| paths.generated.js | 10736 | 2026-06-08T20:11:53.395Z |
 | paths.js | 6608 | 2026-06-05T01:45:08.446Z |
 | project-config.js | 4488 | 2026-05-30T01:25:39.591Z |
 | provider-health.js | 10306 | 2026-05-30T01:25:39.592Z |

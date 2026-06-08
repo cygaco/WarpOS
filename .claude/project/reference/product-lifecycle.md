@@ -36,7 +36,7 @@ Hitting PMF often requires **pivoting** — sometimes **multiple times**. A pivo
 ## Declaring the current stage
 A product's current phase is **declared**, not guessed. Stage tokens map to the phases:
 `research` · `pre-mvp` (= Early Development / Pre-Launch) · `launch` · `finding-pmf` · `pmf`.
-- **Source of truth:** `paths.currentStage` (`.claude/agents/president/.system/policy/current-stage.md`) — the `**Stage:**` field. Edit + commit on a real transition.
+- **Source of truth:** `paths.currentStage` (`.claude/agents/president/_system/policy/current-stage.md`) — the `**Stage:**` field. Edit + commit on a real transition.
 - **Quick override:** the `WARPOS_LIFECYCLE_STAGE` env var (session / CI / `.claude/settings.json#env`).
 - **Resolve anywhere:** `node scripts/warpos/lifecycle-stage.js` (precedence: env → file → `unknown`). Subagents can't read env, so the orchestrator resolves and passes the stage to the Directors on dispatch.
 

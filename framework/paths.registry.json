@@ -104,7 +104,7 @@
       "docsToken": "paths.agents"
     },
     "agentSystem": {
-      "path": ".claude/agents/president/.system",
+      "path": ".claude/agents/president/_system",
       "kind": "dir",
       "owner": "framework",
       "mutable": false,
@@ -112,7 +112,7 @@
       "docsToken": "paths.agentSystem"
     },
     "betaSystem": {
-      "path": ".claude/agents/president/.system/beta",
+      "path": ".claude/agents/president/_system/beta",
       "kind": "dir",
       "owner": "framework",
       "mutable": true,
@@ -120,7 +120,7 @@
       "docsToken": "paths.betaSystem"
     },
     "policy": {
-      "path": ".claude/agents/president/.system/policy",
+      "path": ".claude/agents/president/_system/policy",
       "kind": "dir",
       "owner": "project",
       "mutable": true,
@@ -128,7 +128,7 @@
       "docsToken": "paths.policy"
     },
     "decisionPolicy": {
-      "path": ".claude/agents/president/.system/policy/decision-policy.md",
+      "path": ".claude/agents/president/_system/policy/decision-policy.md",
       "kind": "md",
       "owner": "project",
       "mutable": true,
@@ -136,7 +136,7 @@
       "docsToken": "paths.decisionPolicy"
     },
     "currentStage": {
-      "path": ".claude/agents/president/.system/policy/current-stage.md",
+      "path": ".claude/agents/president/_system/policy/current-stage.md",
       "kind": "md",
       "owner": "project",
       "mutable": true,
@@ -144,7 +144,7 @@
       "docsToken": "paths.currentStage"
     },
     "adrIndex": {
-      "path": ".claude/agents/president/.system/policy/adr/INDEX.md",
+      "path": ".claude/agents/president/_system/policy/adr/INDEX.md",
       "kind": "md",
       "owner": "project",
       "mutable": true,
@@ -364,7 +364,7 @@
       "docsToken": "paths.store"
     },
     "oneshotStore": {
-      "path": ".claude/agents/president/.system/oneshot/store.json",
+      "path": ".claude/agents/president/_system/oneshot/store.json",
       "kind": "json",
       "owner": "runtime",
       "mutable": true,
@@ -372,7 +372,7 @@
       "docsToken": "paths.oneshotStore"
     },
     "oneshotSystem": {
-      "path": ".claude/agents/president/.system/oneshot",
+      "path": ".claude/agents/president/_system/oneshot",
       "kind": "dir",
       "owner": "framework",
       "mutable": false,
@@ -380,7 +380,7 @@
       "docsToken": "paths.oneshotSystem"
     },
     "oneshotRetros": {
-      "path": ".claude/agents/president/.system/oneshot/retros",
+      "path": ".claude/agents/president/_system/oneshot/retros",
       "kind": "dir",
       "owner": "runtime",
       "mutable": true,
@@ -520,7 +520,7 @@
       "docsToken": "paths.specGraph"
     },
     "judgmentModel": {
-      "path": ".claude/agents/president/.system/beta/judgement-model.md",
+      "path": ".claude/agents/president/_system/beta/judgement-model.md",
       "kind": "md",
       "owner": "framework",
       "mutable": true,
@@ -528,7 +528,7 @@
       "docsToken": "paths.judgmentModel"
     },
     "judgmentRecommendations": {
-      "path": ".claude/agents/president/.system/beta/judgement-model-recommendations.md",
+      "path": ".claude/agents/president/_system/beta/judgement-model-recommendations.md",
       "kind": "md",
       "owner": "runtime",
       "mutable": true,
@@ -536,7 +536,7 @@
       "docsToken": "paths.judgmentRecommendations"
     },
     "betaSourceData": {
-      "path": ".claude/agents/president/.system/beta/beta-source-data.md",
+      "path": ".claude/agents/president/_system/beta/beta-source-data.md",
       "kind": "md",
       "owner": "runtime",
       "mutable": true,
@@ -544,7 +544,7 @@
       "docsToken": "paths.betaSourceData"
     },
     "betaEvents": {
-      "path": ".claude/agents/president/.system/beta/events.jsonl",
+      "path": ".claude/agents/president/_system/beta/events.jsonl",
       "kind": "jsonl",
       "owner": "runtime",
       "mutable": true,
@@ -552,7 +552,7 @@
       "docsToken": "paths.betaEvents"
     },
     "lexicon": {
-      "path": ".claude/agents/president/.system/lexicon.md",
+      "path": ".claude/agents/president/_system/lexicon.md",
       "kind": "md",
       "owner": "framework",
       "mutable": true,
@@ -618,7 +618,7 @@
       "docsToken": "paths.providerTmp"
     },
     "providerFallbackPolicy": {
-      "path": ".claude/agents/president/.system/policy/provider-fallback.json",
+      "path": ".claude/agents/president/_system/policy/provider-fallback.json",
       "kind": "json",
       "owner": "framework",
       "mutable": false,
@@ -735,7 +735,7 @@
       "docsToken": "paths.sprintRegressionCorpus"
     },
     "sprintFullAutonomy": {
-      "path": ".claude/agents/president/.system/policy/sprint-full-autonomy.json",
+      "path": ".claude/agents/president/_system/policy/sprint-full-autonomy.json",
       "kind": "json",
       "owner": "framework",
       "mutable": true,
@@ -817,7 +817,7 @@
       "docsToken": "paths.sprintReference"
     },
     "sprintRouting": {
-      "path": ".claude/agents/president/.system/policy/sprint-routing.json",
+      "path": ".claude/agents/president/_system/policy/sprint-routing.json",
       "kind": "json",
       "owner": "framework",
       "mutable": false,
@@ -946,7 +946,7 @@
       "_note": "Provider smoke driver (SP-20260513-002). Run direct or via postflight registerExternalCheck."
     },
     "providerFailureModes": {
-      "path": ".claude/agents/president/.system/policy/provider-failure-modes.json",
+      "path": ".claude/agents/president/_system/policy/provider-failure-modes.json",
       "kind": "json",
       "owner": "framework",
       "mutable": false,
@@ -1295,7 +1295,7 @@
     "scripts/hooks/path-guard.js",
     "/check/references.md",
     ".claude/dreams/",
-    ".claude/agents/president/.system/oneshot/retros/",
+    ".claude/agents/president/_system/oneshot/retros/",
     ".claude/agents/.system/dispatch-backups/",
     "backups/",
     "SYSTEMS-REFERENCE.md",

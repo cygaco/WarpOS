@@ -4,7 +4,7 @@ description: Audits manager-consult coverage across post-cutoff /sprint:full run
 
 # /scan:sprint-manager-consult
 
-Audits the **manager-consult coverage** required by ADR-0007 (Tier-4 enforcement, GAP 1). The named cross-domain design authority (`design-quality`) is now wired into both build modes — adhoc (`.claude/agents/president/gamma.md` → "Design authority gate (W1)") and oneshot (`.claude/agents/president/.system/oneshot/protocol.md` Step 4 d.1). A wired gate that is silently **skipped** on a UI-touching sprint is invisible: nothing records that the design authority was ever consulted. This check closes that gap.
+Audits the **manager-consult coverage** required by ADR-0007 (Tier-4 enforcement, GAP 1). The named cross-domain design authority (`design-quality`) is now wired into both build modes — adhoc (`.claude/agents/president/gamma.md` → "Design authority gate (W1)") and oneshot (`.claude/agents/president/_system/oneshot/protocol.md` Step 4 d.1). A wired gate that is silently **skipped** on a UI-touching sprint is invisible: nothing records that the design authority was ever consulted. This check closes that gap.
 
 For every post-cutoff `/sprint:full` run that shows a **design-touch signal**, it asserts a `manager_consult` event for `design-quality` exists in `paths.eventsFile` (events.jsonl) over the run — else it FAILs, listing the sprint.
 
@@ -77,9 +77,9 @@ node scripts/checks/sprint-manager-consult.js [--json] [--since <ISO-date>]
 
 ## See also
 
-- ADR-0007 (`.claude/agents/president/.system/policy/adr/0007-agent-system-org-rewrite.md`) — the org rewrite whose Tier-4 enforcement this closes (GAP 1: manager-consult routing + telemetry)
+- ADR-0007 (`.claude/agents/president/_system/policy/adr/0007-agent-system-org-rewrite.md`) — the org rewrite whose Tier-4 enforcement this closes (GAP 1: manager-consult routing + telemetry)
 - `scripts/checks/design-quality-gate.js` — the two-lane design authority gate that emits the `manager_consult` telemetry
 - `.claude/agents/president/gamma.md` → "Design authority gate (W1)" — the adhoc caller
-- `.claude/agents/president/.system/oneshot/protocol.md` Step 4 d.1 — the oneshot caller
+- `.claude/agents/president/_system/oneshot/protocol.md` Step 4 d.1 — the oneshot caller
 - `/scan:sprint-beta-honesty` — the sibling coverage enforcer this check's structure clones
 - `scripts/checks/test-sprint-manager-consult.js` — fixture-driven tests (run `node scripts/checks/test-sprint-manager-consult.js`)

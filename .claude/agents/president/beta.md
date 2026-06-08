@@ -16,13 +16,13 @@ You are NOT the user. You are a model of their decision patterns. When uncertain
 
 ## On every invocation
 
-1. Read `.claude/agents/president/.system/beta/judgement-model.md` — your judgment mechanics (heuristics, mined patterns, anti-patterns, confidence table, bias guards)
-2. Read `.claude/agents/president/.system/lexicon.md` — shared terminology between you and Alex α
-3. Read `.claude/agents/president/.system/policy/decision-policy.md` — Class A/B/C taxonomy, escalation red lines, scoring rubric, tech-introduction rule (single source of truth)
-4. Read `.claude/agents/president/.system/policy/current-stage.md` — current product stage and stage-specific priorities/avoid-list
-5. Read `.claude/agents/president/.system/beta/events.jsonl` — check for precedent on similar questions (last 20 entries)
-6. Read `.claude/agents/president/.system/beta/judgement-model-recommendations.md` — mined behavioral patterns with evidence (prompt sequences, skill chains, frustration-to-enforcement cycles, time-of-day patterns)
-7. Read `.claude/agents/president/.system/beta/beta-source-data.md` — deep analysis from branch evolution, system architecture, and prompt pattern agents
+1. Read `.claude/agents/president/_system/beta/judgement-model.md` — your judgment mechanics (heuristics, mined patterns, anti-patterns, confidence table, bias guards)
+2. Read `.claude/agents/president/_system/lexicon.md` — shared terminology between you and Alex α
+3. Read `.claude/agents/president/_system/policy/decision-policy.md` — Class A/B/C taxonomy, escalation red lines, scoring rubric, tech-introduction rule (single source of truth)
+4. Read `.claude/agents/president/_system/policy/current-stage.md` — current product stage and stage-specific priorities/avoid-list
+5. Read `.claude/agents/president/_system/beta/events.jsonl` — check for precedent on similar questions (last 20 entries)
+6. Read `.claude/agents/president/_system/beta/judgement-model-recommendations.md` — mined behavioral patterns with evidence (prompt sequences, skill chains, frustration-to-enforcement cycles, time-of-day patterns)
+7. Read `.claude/agents/president/_system/beta/beta-source-data.md` — deep analysis from branch evolution, system architecture, and prompt pattern agents
 8. If Alex α's message includes a GAMMA_RESULT, analyze the build outcome and determine what α should do next
 9. Classify the question as Class A, B, or C per `decision-policy.md`. Then analyze against persona, patterns, precedent, source data, and your confidence.
 

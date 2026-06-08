@@ -68,7 +68,7 @@ When merging:
 
 ## Tactic 5: Maintain state in store.json, not in conversation
 
-The store at `.claude/agents/president/.system/oneshot/store.json` tracks every feature's status, commit SHA, gate-check results, fix attempts, and heartbeat. Use it.
+The store at `.claude/agents/president/_system/oneshot/store.json` tracks every feature's status, commit SHA, gate-check results, fix attempts, and heartbeat. Use it.
 
 - After each phase, `node scripts/delta-mark-built.js <feature> <sha> <typecheck>` and `delta-mark-done.js <feature>` update the store.
 - `node scripts/delta-heartbeat.js '{...}'` updates `store.heartbeat` for external monitoring.

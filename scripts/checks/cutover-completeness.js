@@ -63,6 +63,10 @@ const DEAD_TREE = [
   { literal: "01-adhoc/", re: /\b01-adhoc\// },
   { literal: "02-oneshot/", re: /\b02-oneshot\// },
   { literal: "03-managers", re: /\b03-managers\b/ },
+  // D-2 (2026-06-08): the president/.system → president/_system de-dot. A live
+  // straggler still naming the dotted dir in a scanned dir is exit-1. (This file
+  // is self-allowlisted, so this needle definition does not self-flag.)
+  { literal: "president/.system", re: /president\/\.system/ },
 ];
 // Renamed-away ROLE names (1:1 ADR-0007 renames whose target now exists). Matched
 // as whole tokens (word-ish boundary) so `research-lead` never matches inside

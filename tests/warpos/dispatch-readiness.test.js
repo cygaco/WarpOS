@@ -316,7 +316,7 @@ process.stdout.write("\n4. isExcluded agreement between E1 gate and generator\n"
     ".claude/runtime/",
     ".claude/runtime/handoffs/somefile.md",
     ".claude/project/events/",
-    ".claude/agents/president/.system/oneshot/retros/run-009/HYGIENE.md",
+    ".claude/agents/president/_system/oneshot/retros/run-009/HYGIENE.md",
   ];
 
   // Fixture set: paths that SHOULD NOT be excluded (normal framework assets)

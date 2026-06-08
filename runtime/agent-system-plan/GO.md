@@ -21,7 +21,7 @@ The **WarpOS dispatch-shape reliability system**: the best dispatch shape for ev
 ## Locked decisions
 - GPT-Pro library: **full scope, phased** (high-risk release gates first).
 - Renames (LOCKED): `learner`→**ops-analyst** @ President's office; `stub-scaffold`→**skeleton-builder** @ engineering; `consult`/`advisor`→**cabinet** @ President's office.
-- **DEFER** `president/.system` de-dot (too load-bearing: oneshot store, decision-policy, 10 ADRs, beta model).
+- **DEFER** `president/_system` de-dot (too load-bearing: oneshot store, decision-policy, 10 ADRs, beta model).
 - **DEFER** AppContainer/egress + GUI refresh + broad renames behind the safety kernel.
 - Agent-system cleanup is the TOP theme — but its **destructive** parts (renames/deletes) wait for the safety kernel + contract + file-usage trace.
 

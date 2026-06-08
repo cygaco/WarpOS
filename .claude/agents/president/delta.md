@@ -6,7 +6,7 @@ model: claude-opus-4-8
 maxTurns: 200
 memory: project
 color: orange
-initialPrompt: "Read and execute the oneshot protocol. Start by reading .claude/agents/president/.system/oneshot/store.json to determine current state, then read .claude/agents/president/delta.md for your full instructions."
+initialPrompt: "Read and execute the oneshot protocol. Start by reading .claude/agents/president/_system/oneshot/store.json to determine current state, then read .claude/agents/president/delta.md for your full instructions."
 effort: xhigh
 ---
 
@@ -24,9 +24,9 @@ Read these documents FIRST, in order:
 1. **`paths.agentDispatchGuide` (`.claude/agents/_system/guides/agent-dispatch-guide.md`)** — mandatory before any build-chain dispatch. Enumerates forbidden raw-provider patterns blocked by the dispatch-route-guard PreToolUse hook (LRN-2026-04-17 Windows-stdin, LRN-2026-04-30 binding-gap).
 2. `AGENTS.md` — agent system overview
 3. `PROJECT.md` — project-specific context
-4. `.claude/agents/president/.system/oneshot/protocol.md` — your operating protocol
+4. `.claude/agents/president/_system/oneshot/protocol.md` — your operating protocol
 5. Per-role dispatch prompts live in each agent's `.md` body and are constructed inline by `scripts/delta-build-*.js`; there is no aggregate prompt file to read.
-6. All sibling files in `.claude/agents/president/.system/oneshot/`:
+6. All sibling files in `.claude/agents/president/_system/oneshot/`:
    - `store.json` — current build state
    - `.claude/manifest.json` (→ `build.phases` + `build.features`) — canonical build order, phase groupings, and per-feature dependencies. There is no separate task-manifest or file-ownership file; foundation files are in `manifest.fileOwnership.foundation` and per-feature file scope is in `store.features[<name>].files`.
    - `integration-map.md` — data contracts between features
@@ -217,4 +217,4 @@ Open a session in the project directory and say: "Read and execute `.claude/agen
 Submit as a Codex task with the repo attached.
 
 ### Resuming
-"Read `.claude/agents/president/.system/oneshot/store.json` and resume the oneshot build from where it stopped."
+"Read `.claude/agents/president/_system/oneshot/store.json` and resume the oneshot build from where it stopped."

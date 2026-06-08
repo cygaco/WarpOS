@@ -10,13 +10,13 @@ Apply validated recommendations from `judgement-model-recommendations.md` into `
 
 ### Step 1: Load recommendations
 
-Read `.claude/agents/president/.system/beta/judgement-model-recommendations.md`.
+Read `.claude/agents/president/_system/beta/judgement-model-recommendations.md`.
 
 If the file doesn't exist or is empty, report "No pending recommendations" and exit.
 
 ### Step 2: Load current judgment model
 
-Read `.claude/agents/president/.system/beta/judgement-model.md`.
+Read `.claude/agents/president/_system/beta/judgement-model.md`.
 
 ### Step 3: Review each recommendation
 
@@ -46,7 +46,7 @@ For each recommendation:
 ### Step 5: Archive and clear
 
 After all recommendations are processed:
-1. Archive the recommendations file — append its contents to `.claude/agents/president/.system/beta/judgement-model-recommendations-archive.md` with a date header
+1. Archive the recommendations file — append its contents to `.claude/agents/president/_system/beta/judgement-model-recommendations-archive.md` with a date header
 2. Clear the recommendations file (write empty)
 
 ### Step 6: Report
@@ -58,7 +58,7 @@ Applied:  {N} recommendations
 Skipped:  {M} (low confidence or user rejected)
 Flagged:  {K} (needs new principle — user review)
 
-Judgment model updated: .claude/agents/president/.system/beta/judgement-model.md
+Judgment model updated: .claude/agents/president/_system/beta/judgement-model.md
 ```
 
 ## Rules

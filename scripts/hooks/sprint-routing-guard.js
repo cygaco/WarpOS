@@ -96,7 +96,7 @@ function handle(event) {
     ? PATHS.sprintRouting
     : path.join(
         PROJECT,
-        ".claude/agents/president/.system/policy/sprint-routing.json",
+        ".claude/agents/president/_system/policy/sprint-routing.json",
       );
   if (!fs.existsSync(policyPath)) {
     debugLog(`policy missing at ${policyPath} — fail-open`);

@@ -10,6 +10,6 @@
   },
   "prefixes": {
     "framework/releases/": "Frozen shipped release capsules — immutable artifacts of a prior WarpOS version; they correctly carry the tree shape that was current when they shipped. Never rewrite a frozen capsule.",
-    ".claude/agents/president/.system/policy/adr/": "The ADR-0007 decision record (and sibling ADRs) documents the cutover — it NAMES the old tree + old role names as the 'from' side of the rewrite. That is its job."
+    ".claude/agents/president/_system/policy/adr/": "The ADR-0007 decision record (and sibling ADRs) documents the cutover — it NAMES the old tree + old role names as the 'from' side of the rewrite. That is its job. (D-2: dir de-dotted .system→_system 2026-06-08.)"
   }
 }
