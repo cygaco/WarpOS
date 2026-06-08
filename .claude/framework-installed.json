@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "0.15.4",
-  "installedCommit": "cfbadfabe4ec813faa816d7bc5f642153b66dc64",
-  "installedAt": "2026-06-08T05:06:02.819Z",
+  "installedCommit": "f85adbdb85b482ddb1e5a332703d752b5e58a545",
+  "installedAt": "2026-06-08T05:11:26.776Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -94,8 +94,8 @@
       "dest": ".claude/agents/_system/agent-system.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "e44388ff8b539b5a1b7ac1aced168a371b8a81c37456d156d26920d9ec2080f4",
-      "currentHashAtInstall": "e44388ff8b539b5a1b7ac1aced168a371b8a81c37456d156d26920d9ec2080f4",
+      "installedHash": "1b640503e31df69e2a150da537a36ff71771511ef6199fee000a51e7eea058a1",
+      "currentHashAtInstall": "1b640503e31df69e2a150da537a36ff71771511ef6199fee000a51e7eea058a1",
       "introducedIn": "0.0.0"
     },
     {
@@ -2074,8 +2074,8 @@
       "dest": ".claude/commands/scan/full.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "4da794269b8a29c1f29075f8389e1f5b56e73ccc768005ca75c5935403c8aadc",
-      "currentHashAtInstall": "4da794269b8a29c1f29075f8389e1f5b56e73ccc768005ca75c5935403c8aadc",
+      "installedHash": "453f81326285634300fcd04e200b600f5fb4c8a54c4865c2c0241f87d28075f5",
+      "currentHashAtInstall": "453f81326285634300fcd04e200b600f5fb4c8a54c4865c2c0241f87d28075f5",
       "introducedIn": "0.0.0"
     },
     {
