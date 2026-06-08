@@ -17,7 +17,7 @@ scan is the named approver that makes those two invariants self-detecting.
 ## What it does
 
 Rejects (exit 1) when ANY of these hold on the built tree:
-- a root `.claude/commands/etc.md` exists (namespace convention violation — a subcommanded
+- a root `.claude/commands/etc.md` exists (namespace convention violation — a subcommanded <!-- doc-ref-ignore: this path is a REJECT condition (must NOT exist), not a navigational ref -->
   namespace must have no root file);
 - any `.claude/commands/etc/*.md` lacks the standard frontmatter `description` or a
   `## Procedure` section (= an invented / non-standard authoring format);

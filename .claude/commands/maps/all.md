@@ -46,7 +46,7 @@ Check these files for existence and last modified date:
 | Copy surfaces | `_requirements/02-copy-system/SURFACE_MAP.md` (literal — project-specific) | Manual |
 | Reasoning frameworks | `paths.reference` + `/reasoning-frameworks.md` → `.claude/project/reference/reasoning-frameworks.md` | Manual |
 
-When this skill runs, read `.claude/paths.json` first and resolve each key to its current value. Do NOT hardcode the old pre-refactor paths like `.claude/agents/INTEGRATION-MAP.md` or `.claude/reference/reasoning-frameworks.md` — those locations moved during the project reorganization. If a file resolves to a path that doesn't exist, search under `paths.agents/**` and `paths.reference/**` before flagging as MISSING — it may have moved again.
+When this skill runs, read `.claude/paths.json` first and resolve each key to its current value. Do NOT hardcode the old pre-refactor paths like `.claude/agents/INTEGRATION-MAP.md` or `.claude/reference/reasoning-frameworks.md` — those locations moved during the project reorganization. If a file resolves to a path that doesn't exist, search under `paths.agents/**` and `paths.reference/**` before flagging as MISSING — it may have moved again. <!-- doc-ref-ignore: this line deliberately names OLD pre-refactor paths as anti-examples -->
 
 ### Step 2: Check staleness
 

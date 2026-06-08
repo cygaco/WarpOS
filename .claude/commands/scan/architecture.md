@@ -39,7 +39,7 @@ Spawn an Explore agent. Focus: **can agents build from these docs without contra
 ### Additional files to read
 
 - `.claude/agents/president/{alpha,beta,gamma,delta,epsilon}.md` — president faces
-- `.claude/agents/president/_system/protocol.md` (if exists) — shared protocol
+- `.claude/agents/president/_system/protocol.md` (if exists) — shared protocol <!-- doc-ref-ignore: explicitly conditional ("if exists"); the real protocols are the adhoc/oneshot ones below -->
 - `.claude/agents/president/_system/adhoc/protocol.md` — adhoc mode protocol
 - `.claude/agents/president/_system/oneshot/protocol.md` — oneshot state machine
 - `.claude/agents/president/_system/adhoc/*/` and `.claude/agents/president/_system/oneshot/*/` — build-chain agent definitions

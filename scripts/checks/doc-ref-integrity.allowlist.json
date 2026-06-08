@@ -1,0 +1,51 @@
+{
+  "_comment": "S-13b doc-ref-integrity allowlist. A canon doc may legitimately cite a path absent on disk: runtime-generated artifacts, frozen/per-version capsules, removed-by-design dead-tree paths (the live-CODE layer is guarded by cutover-completeness.js), planned/aspirational scripts named in ROADMAP/WARPOS, historical change-log/ADR descriptions, or per-domain-generated scaffolds. List target PREFIXES (startsWith, forward slashes) and exact LITERALS. Per-line `<!-- doc-ref-ignore -->` in the doc is the inline escape hatch for self-documenting/anti-example lines. Keep this honest — every entry must read as 'this path is SUPPOSED to be absent', not 'I don't want to fix it'. Prefer fixing a genuine navigational stale ref over allowlisting it.",
+
+  "pathPrefixes": [
+    "runtime/",
+    "framework/releases/",
+    "_warpos/releases/",
+    ".claude/runtime/",
+    ".claude/worktrees/",
+    ".claude/eval/",
+    ".claude/.session",
+    ".claude/project/events/",
+    ".claude/project/maps/",
+    ".claude/project/memory/",
+    ".claude/project/sprint/",
+    ".claude/project/stage/",
+    ".claude/agents/.system",
+    ".claude/agents/00-alex/",
+    ".claude/agents/01-adhoc/",
+    ".claude/agents/02-oneshot/",
+    ".claude/agents/03-managers/",
+    "../sprints/SP-"
+  ],
+
+  "literals": [
+    ".claude/scheduled_tasks.lock",
+    ".claude/paths.local.json",
+    ".claude/project/reference/SPEC_GRAPH.json",
+    ".claude/agents/store.json",
+    ".claude/agents/president/_system/oneshot/store.json",
+    ".claude/agents/president/_system/oneshot/store.json.prev-run-backup.json",
+    ".claude/agents/INTEGRATION-MAP.md",
+    ".claude/reference/architecture-map.md",
+    ".claude/project/reference/agent-dispatch-guide.md",
+    ".claude/agents/builder.md",
+    "framework/templates/app-scaffold/DESIGN_SYSTEM.md",
+    "trackers/sprints/T1..T6",
+    "scripts/warpos/promote.js",
+    "scripts/warpos/migrate-machine.js",
+    "scripts/warpos/beta-mine-analyze.js",
+    "scripts/portfolio/generate-vscode-tasks.js",
+    "scripts/prepare.js",
+    "scripts/score.js",
+    "scripts/research/deep-run.js",
+    "gemini-report.md",
+    "claude-report.md",
+    "openai-report.md",
+    "chatgpt-report.md",
+    "BRIEF.md"
+  ]
+}

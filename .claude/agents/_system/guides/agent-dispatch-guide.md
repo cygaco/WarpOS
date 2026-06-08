@@ -35,7 +35,7 @@ capabilities that have no CLI equivalent.**
 gauntlet roles — all dispatched via `dispatch-agent.js` / `dispatch-claude.js`
 CLI wrappers, not raw API.
 
-Enforcer: `scripts/checks/dispatch-contract.js validate` (report-only, wired
+Enforcer: `scripts/dispatch/dispatch-contract.js validate` (report-only, wired
 into `/scan:full` Dispatch-shape integrity gate).
 
 ---

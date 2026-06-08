@@ -23,7 +23,7 @@ If no changed files, report:
 
 ### Step 2: Spawn QA Agent
 
-Spawn the QA agent (`.claude/agents/qa.md`) with:
+Spawn the QA agent (`.claude/agents/product/quality/qa-reviewer.md`) with:
 
 **Agent type:** qa
 

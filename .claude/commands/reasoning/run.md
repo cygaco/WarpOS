@@ -51,7 +51,7 @@ Determine the problem type:
 
 ### Select Framework
 
-Consult `.claude/reference/reasoning-frameworks.md` routing table.
+Consult `.claude/project/reference/reasoning-frameworks.md` routing table.
 
 Rules:
 1. Match signals to the router table
@@ -81,7 +81,7 @@ Assume the impulse is wrong. Make the strongest case against it in 2-3 sentences
 
 ### Step 4: Framework Lens
 
-Consult `.claude/reference/reasoning-frameworks.md`. Pick 1-2 frameworks to *challenge* the first impulse (not to solve the problem — to reveal blind spots):
+Consult `.claude/project/reference/reasoning-frameworks.md`. Pick 1-2 frameworks to *challenge* the first impulse (not to solve the problem — to reveal blind spots):
 
 | Problem smells like... | Framework key question |
 |------|------|

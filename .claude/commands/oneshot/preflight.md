@@ -107,7 +107,7 @@ In order:
    file: <stub-path>
    drift-report: <Pass 7.9 diff for this file>
 
-   You are the stub-scaffold sub-agent. Follow `.claude/agents/_system/stub-scaffold.md`. Regenerate the stub file at the given path using the CURRENT spec signatures from the feature's PRD + INPUTS.md + src/lib/types.ts. Output ONLY the new file content.
+   You are the stub-scaffold sub-agent. Follow `.claude/agents/engineering/skeleton-builder.md`. Regenerate the stub file at the given path using the CURRENT spec signatures from the feature's PRD + INPUTS.md + src/lib/types.ts. Output ONLY the new file content.
    EOF
    RESULT=$(node "$CLAUDE_PROJECT_DIR/scripts/dispatch-claude.js" stub-scaffold "$PROMPT" --model sonnet)
    ```
