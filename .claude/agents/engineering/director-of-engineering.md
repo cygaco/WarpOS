@@ -166,7 +166,7 @@ Never opine from generic best-practice. Ground every call in the real project:
 - **The contracts** — `schemas/contracts/*.schema.json` (the artifact spine + precedence),
   especially `build_spec` (yours) and the `design_brief` it realizes.
 - **The build architecture** — `.claude/agents/_system/guides/gauntlet-contract.md` (the Dark Factory model,
-  gauntlet roles; producer/consumer integration-seam rules remain in the `_system/agent-system.md` archive §14), `_requirements/03-architecture/*` when
+  gauntlet roles; producer/consumer integration-seam rules live in `.claude/agents/_system/guides/integration-seam-contract.md`), `_requirements/03-architecture/*` when
   present (FLOW_SPEC, DATA-CONTRACTS, foundation files), the org map
   (`.claude/agents/_org/org-map.json`) for who owns what.
 - **The design substrate** — `_requirements/01-design-system/*` + the repo-root

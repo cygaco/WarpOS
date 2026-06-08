@@ -1,6 +1,6 @@
 # Agent System — Operational Specification
 
-> **Status (E-SYSTEM-ORG-001, 2026-06-08):** De-dotted from `.claude/agents/.system.md` → `_system/agent-system.md`. This is the **legacy pre-ADR-0007 orchestration monolith**, retained for reference. The **current, authoritative** dispatch + role rules live in [`_system/guides/agent-dispatch-guide.md`](guides/agent-dispatch-guide.md) and the role registry `_org/role-registry.json` — treat those as source-of-truth on any conflict. **D-3 DONE:** the still-live gauntlet / circuit-breaker / context-scoping contract is extracted into the authoritative [`_system/guides/gauntlet-contract.md`](guides/gauntlet-contract.md); the producer/consumer integration-seam rules (§14) remain here pending a separate extraction. Treat everything in THIS file as non-authoritative archive (superseded by `gauntlet-contract.md` + `agent-dispatch-guide.md` + `_org/role-registry.json`).
+> **Status (E-SYSTEM-ORG-001, 2026-06-08):** De-dotted from `.claude/agents/.system.md` → `_system/agent-system.md`. This is the **legacy pre-ADR-0007 orchestration monolith**, retained for reference. The **current, authoritative** dispatch + role rules live in [`_system/guides/agent-dispatch-guide.md`](guides/agent-dispatch-guide.md) and the role registry `_org/role-registry.json` — treat those as source-of-truth on any conflict. **All live mechanisms are now extracted** — the gauntlet / circuit-breaker / context-scoping contract into the authoritative [`_system/guides/gauntlet-contract.md`](guides/gauntlet-contract.md) (D-3 DONE), and the producer/consumer integration-seam model (§14) into the authoritative [`_system/guides/integration-seam-contract.md`](guides/integration-seam-contract.md) (2026-06-08, D-3 follow-on). This monolith is **fully superseded for live mechanisms** — treat everything in THIS file as non-authoritative archive (superseded by `gauntlet-contract.md` + `integration-seam-contract.md` + `agent-dispatch-guide.md` + `_org/role-registry.json`).
 
 > **Note for WarpOS users:** This document contains the full multi-agent orchestration rules. Some examples reference a specific illustrative example project — those are placeholders. Your project will have different components, features, and file structures. The rules and framework are universal; the examples show how they were applied in practice.
 
@@ -1019,6 +1019,8 @@ See `_requirements/00-canonical/GLOSSARY.md` → Steps section for the actual co
 ---
 
 ## 14. Connecting Points Between Features
+
+> **Extracted** to [`_system/guides/integration-seam-contract.md`](guides/integration-seam-contract.md) (2026-06-08) — this archived copy is non-authoritative. Defer to the extracted contract for the producer/consumer integration-seam model.
 
 ### Layer 1: Types (contracts)
 

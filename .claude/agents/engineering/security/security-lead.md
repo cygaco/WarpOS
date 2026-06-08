@@ -163,7 +163,7 @@ pod depends on. Slug: `blast-radius-before-hardening`.
 
 - `role-registry.json` — canonical roster; reviewer identity and 2-pass spec come from here
 - `schemas/contracts/*.schema.json` — the artifact contracts the hardening must satisfy
-- `.claude/agents/_system/guides/gauntlet-contract.md` — Dark Factory / parallel-gauntlet model; gauntlet roles (producer/consumer integration-seam rules: `_system/agent-system.md` archive §14)
+- `.claude/agents/_system/guides/gauntlet-contract.md` — Dark Factory / parallel-gauntlet model; gauntlet roles (producer/consumer integration-seam rules: `.claude/agents/_system/guides/integration-seam-contract.md`)
 - `build_spec` for the current feature — the contract the pod works against
 - `paths.eventsFile` — prior security events, enforcement-debt entries, past FAIL findings
 - `CLAUDE.md` "Policy & Enforcement Hygiene" — the project-wide enforcer rule the Lead applies
