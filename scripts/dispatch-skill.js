@@ -39,9 +39,18 @@
  * dryRun / --probe: resolve + decide (input-gate, contract-consult, plan the spawn)
  * and return WITHOUT spawning — the §14 dry-run seam.
  *
+ * --resolve / --no-ping (the agents:test --no-ping analog, §13.6): given a skill
+ * name, LOCATE its .md under .claude/commands/, read its `execution:` class, and
+ * return a lean JSON envelope { skill, found, path, execution, subprocess_eligible,
+ * run_id } WITHOUT spawning/running the skill. TOKEN-FREE, P5-isolated, zero side
+ * effects (no spawn, no ledger record, no artifact). It verifies ROUTABILITY only —
+ * not that the skill runs headless — so it is the cheap pre-flight that the
+ * skills-test harness uses in `--mode resolve`. It NEVER stamps subprocess_verified.
+ *
  * Usage:
  *   node scripts/dispatch-skill.js /<ns>:<skill> [args...]
  *   node scripts/dispatch-skill.js /scan:full --probe
+ *   node scripts/dispatch-skill.js --resolve --skill scan:full
  *   node scripts/dispatch-skill.js /research:deep "topic" --force-subprocess
  *
  * Output on stdout: the lean envelope (≤8 lines).
@@ -168,6 +177,104 @@ function resolveExecution(skill, opts) {
     verified: false,
     reason: `skill '${skill}' is not a verified subprocess candidate (execution=${resolved.execution}, verified=false). Run inline, or pass --force-subprocess to do the §13.6 smoke run that earns verification.`,
   };
+}
+
+// ── Resolve mode (--resolve / --no-ping; the agents:test --no-ping analog) ──
+// Token-free routability pre-flight: locate the skill's .md, read its execution
+// class, report subprocess eligibility — WITHOUT spawning. Zero side effects.
+const COMMANDS_DIR = path.join(AGENT_ROOT, ".claude", "commands");
+
+/**
+ * Read the `execution:` field from a skill .md frontmatter, if declared. Returns
+ * the declared string or null. Mirrors skill-weight.js's frontmatter parse.
+ */
+function readDeclaredExecution(mdPath) {
+  let text;
+  try {
+    text = fs.readFileSync(mdPath, "utf8");
+  } catch {
+    return null;
+  }
+  if (!text.startsWith("---")) return null;
+  const close = text.indexOf("\n---", 3);
+  if (close === -1) return null;
+  const block = text.slice(3, close);
+  for (const line of block.split(/\r?\n/)) {
+    const m = line.match(/^execution\s*:\s*(.*)$/);
+    if (m) {
+      let v = m[1].trim();
+      if ((v.startsWith('"') && v.endsWith('"')) || (v.startsWith("'") && v.endsWith("'"))) {
+        v = v.slice(1, -1);
+      }
+      return v || null;
+    }
+  }
+  return null;
+}
+
+/**
+ * resolveSkill({ skill }) -> { skill, found, path, execution, subprocess_eligible,
+ *   verified_level, run_id }
+ *
+ * Token-free RESOLVE: locate `<ns>/<name>.md` under .claude/commands/, read its
+ * execution class (frontmatter `execution:` if declared, else the fail-closed
+ * contract reader's classification), and report whether it is routable as a
+ * subprocess. Does NOT spawn, does NOT touch the ledger, does NOT stamp
+ * subprocess_verified. `verified_level: "resolve"` is explicit — this proves
+ * routability only, NEVER full §13.6 verification.
+ *
+ * `skill` may be supplied with or without the leading slash.
+ */
+function resolveSkill(opts) {
+  const raw = String((opts && opts.skill) || "").trim();
+  const contractKey = raw.replace(/^\//, "");
+  const runId = makeDispatchId();
+  if (!contractKey || !SKILL_RE.test("/" + contractKey)) {
+    return {
+      skill: raw,
+      found: false,
+      path: null,
+      execution: null,
+      subprocess_eligible: false,
+      verified_level: "resolve",
+      run_id: runId,
+      reason: `invalid skill name '${raw}'`,
+    };
+  }
+  // <ns>:<name> -> .claude/commands/<ns>/<name>.md ; bare <name> -> <name>.md
+  const relMd = contractKey.split(":").join(path.sep) + ".md";
+  const mdPath = path.join(COMMANDS_DIR, relMd);
+  const found = fs.existsSync(mdPath);
+
+  // Execution class: prefer the author's frontmatter `execution:`; else consult the
+  // fail-closed contract reader (an unverified subprocess candidate reads as inline).
+  let execution = null;
+  if (found) execution = readDeclaredExecution(mdPath);
+  if (!execution) {
+    try {
+      const r = skillExecution(contractKey);
+      execution = r && r.execution ? r.execution : null;
+    } catch {
+      execution = null;
+    }
+  }
+  // Eligible = the skill exists AND its class is a subprocess candidate (declared
+  // subprocess, OR an inline-classified-but-declared candidate). `inline-required`
+  // is NEVER subprocess-eligible (needs the live conversation). A missing skill is
+  // never eligible. NOTE: eligibility ≠ verified — that is the harness's ping job.
+  const subprocess_eligible = found && execution === "subprocess";
+  const result = {
+    skill: contractKey,
+    found,
+    path: found ? path.relative(AGENT_ROOT, mdPath).replace(/\\/g, "/") : null,
+    execution,
+    subprocess_eligible,
+    verified_level: "resolve",
+    run_id: runId,
+  };
+  if (!found) result.reason = `no skill .md at ${relMd} under .claude/commands/`;
+  else if (execution === "inline-required") result.reason = "inline-required — needs the live conversation, never subprocess-eligible";
+  return result;
 }
 
 // ── Envelope (≤8 lines) ─────────────────────────────────────
@@ -430,11 +537,13 @@ function dispatchSkill(opts) {
 
 // ── arg parsing ─────────────────────────────────────────────
 function parseArgs(argv) {
-  const out = { skill: null, skillArgs: [], dryRun: false, forceSubprocess: false };
+  const out = { skill: null, skillArgs: [], dryRun: false, forceSubprocess: false, resolve: false };
   for (let i = 2; i < argv.length; i++) {
     const a = argv[i];
     if (a === "--probe" || a === "--dry-run") out.dryRun = true;
     else if (a === "--force-subprocess") out.forceSubprocess = true;
+    else if (a === "--resolve" || a === "--no-ping") out.resolve = true;
+    else if (a === "--skill") out.skill = argv[++i] || null; // explicit --skill <name>
     else if (!out.skill) out.skill = a;
     else out.skillArgs.push(a);
   }
@@ -443,6 +552,8 @@ function parseArgs(argv) {
 
 module.exports = {
   dispatchSkill,
+  resolveSkill,
+  readDeclaredExecution,
   parseArgs,
   validateInputs,
   resolveExecution,
@@ -455,6 +566,13 @@ module.exports = {
 // ── CLI ─────────────────────────────────────────────────────
 if (require.main === module) {
   const opts = parseArgs(process.argv);
+  // --resolve / --no-ping: token-free routability pre-flight, lean JSON, NO spawn.
+  if (opts.resolve) {
+    const r = resolveSkill(opts);
+    process.stdout.write(JSON.stringify(r) + "\n");
+    // exit 0 if the skill resolved to a routable .md; 1 if not found (fail-closed).
+    process.exit(r.found ? 0 : 1);
+  }
   const r = dispatchSkill(opts);
   // The envelope is the product — lean stdout the orchestrator holds.
   process.stdout.write((r.envelope || "") + "\n");
