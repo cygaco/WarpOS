@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-08T02:16:26.845Z",
+  "generatedAt": "2026-06-08T02:22:04.999Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.15.4",
   "migrations": [],
@@ -3611,8 +3611,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/trackers/validate.js",
-      "sha256": "0dc8f612a9f980becd0560d4bbbc8e631dd2260559c8bcf0d5ac78bbdfd0d6f8",
-      "installedSha": "0dc8f612a9f980becd0560d4bbbc8e631dd2260559c8bcf0d5ac78bbdfd0d6f8"
+      "sha256": "935eec995872eab6b116d6909cbb48103a9fff70de1d35c6762979f294d7fcc3",
+      "installedSha": "935eec995872eab6b116d6909cbb48103a9fff70de1d35c6762979f294d7fcc3"
     },
     "scripts/tools/emit-attestation-events.js": {
       "owner": "framework",
@@ -5636,6 +5636,20 @@
       "source": "scripts/checks/maps-coverage.test.js",
       "sha256": "f02d3810dd9e5492f735593548cc221290713bc36a1a53e7b95893a0f07f21c4",
       "installedSha": "f02d3810dd9e5492f735593548cc221290713bc36a1a53e7b95893a0f07f21c4"
+    },
+    "scripts/checks/no-nul-bytes.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/no-nul-bytes.js",
+      "sha256": "23ce8aa6e04ec1aea9e8aaa3f36df2daa9e604325878911afe892157c69f0105",
+      "installedSha": "23ce8aa6e04ec1aea9e8aaa3f36df2daa9e604325878911afe892157c69f0105"
+    },
+    "scripts/checks/no-nul-bytes.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/no-nul-bytes.test.js",
+      "sha256": "476d113e7bf682899d04f8aa452be874982453b0fa3533d3ee25b46567fd6667",
+      "installedSha": "476d113e7bf682899d04f8aa452be874982453b0fa3533d3ee25b46567fd6667"
     },
     "scripts/checks/path-usage.js": {
       "owner": "framework",
@@ -16302,8 +16316,8 @@
       "managed": true,
       "source": ".claude/commands/scan/full.md",
       "kind": "md",
-      "sha256": "588933aa90d52e60f1b6cf90d22c63a6ac3b5c21050c9cccf069579b21e1c46c",
-      "installedSha": "588933aa90d52e60f1b6cf90d22c63a6ac3b5c21050c9cccf069579b21e1c46c"
+      "sha256": "d01986749062bf7ab0d3b280179de633bfd2f38cb3e685bb667544b891dec004",
+      "installedSha": "d01986749062bf7ab0d3b280179de633bfd2f38cb3e685bb667544b891dec004"
     },
     ".claude/commands/scan/ingest-firewall.md": {
       "owner": "framework",

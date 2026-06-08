@@ -1817,7 +1817,7 @@ function selftest() {
 
   // FAIL-CLOSED — malformed/garbage input does not throw and is not ok.
   t("garbage input → handled, not-ok, no throw", () => {
-    const res = evaluate({ tracker: " ￿###no headings here\n[bad](", trackerPresent: true, linkTargets: {}, pathExists: {} });
+    const res = evaluate({ tracker: "\u0000￿###no headings here\n[bad](", trackerPresent: true, linkTargets: {}, pathExists: {} });
     assert(res && Array.isArray(res.checks), "must return a structured result");
     assert(!res.ok, "garbage must not pass");
   });

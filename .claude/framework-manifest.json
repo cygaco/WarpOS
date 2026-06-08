@@ -13,7 +13,7 @@
     "pattern": 6,
     "fixture": 23,
     "warpos_script": 55,
-    "check_tool": 79,
+    "check_tool": 81,
     "agent_tool": 3,
     "decision_tool": 1,
     "runtime_tool": 1,
@@ -60,7 +60,7 @@
     "module_scope": 1,
     "framework_doc": 3
   },
-  "total": 1137,
+  "total": 1139,
   "assets": {
     "agent": [
       {
@@ -2542,7 +2542,7 @@
         "src": ".claude/commands/scan/full.md",
         "dest": ".claude/commands/scan/full.md",
         "kind": "skill",
-        "sha256": "588933aa90d52e60f1b6cf90d22c63a6ac3b5c21050c9cccf069579b21e1c46c",
+        "sha256": "d01986749062bf7ab0d3b280179de633bfd2f38cb3e685bb667544b891dec004",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
@@ -6600,6 +6600,30 @@
         "replaces": null
       },
       {
+        "id": "check_tool.no-nul-bytes.js",
+        "src": "scripts/checks/no-nul-bytes.js",
+        "dest": "scripts/checks/no-nul-bytes.js",
+        "kind": "check_tool",
+        "sha256": "23ce8aa6e04ec1aea9e8aaa3f36df2daa9e604325878911afe892157c69f0105",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "check_tool.no-nul-bytes.test.js",
+        "src": "scripts/checks/no-nul-bytes.test.js",
+        "dest": "scripts/checks/no-nul-bytes.test.js",
+        "kind": "check_tool",
+        "sha256": "476d113e7bf682899d04f8aa452be874982453b0fa3533d3ee25b46567fd6667",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
         "id": "check_tool.path-usage.js",
         "src": "scripts/checks/path-usage.js",
         "dest": "scripts/checks/path-usage.js",
@@ -8024,7 +8048,7 @@
         "src": "scripts/trackers/validate.js",
         "dest": "scripts/trackers/validate.js",
         "kind": "tracker_tool",
-        "sha256": "0dc8f612a9f980becd0560d4bbbc8e631dd2260559c8bcf0d5ac78bbdfd0d6f8",
+        "sha256": "935eec995872eab6b116d6909cbb48103a9fff70de1d35c6762979f294d7fcc3",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
