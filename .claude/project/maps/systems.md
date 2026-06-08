@@ -1,19 +1,19 @@
 # Systems Manifest
 
-Generated: 2026-06-05T05:24:54.103Z
+Generated: 2026-06-08T16:07:50.686Z
 
-Total: **56** systems across **2** categories. Files referenced: 55, missing on disk: 1.
+Total: **73** systems across **2** categories. Files referenced: 72, missing on disk: 1.
 
 ## By status
 
 | Status | Count |
 |---|---|
 | active | 1 |
-| untested | 55 |
+| untested | 72 |
 
 ## By category
 
-### cognition (55)
+### cognition (72)
 
 | id | name | status | files |
 |---|---|---|---|
@@ -35,10 +35,16 @@ Total: **56** systems across **2** categories. Files referenced: 55, missing on 
 | skill-guides-integrate | Wire each _guides/ guide into the bootstrap pipeline (spinup/lastmile) at its de | untested | 1 |
 | skill-guides-organize | Audit and restructure the _guides/ launch-guide library — backfill the guide-anc | untested | 1 |
 | skill-guides-write | Author a launch guide into _guides/ — grounded in the Mark Builds Brands methodo | untested | 1 |
+| skill-knowledge-coverage | Fail-closed enforcer for the _knowledge/ layer (the company "brain", ADR-0007) — | untested | 1 |
+| skill-knowledge-integrate | Wire each _knowledge/ domain into its consumers in its declared shape — LIBRARY  | untested | 1 |
 | skill-learn-deep | Deep learning — extracts from conversation + event log + oneshot retro files in  | untested | 1 |
 | skill-learn-ingest | Ingest external knowledge from files, links, or YouTube videos and apply learnin | untested | 1 |
 | skill-maps-all | Registry of all maps — shows every map, its source, last updated, and staleness | untested | 1 |
 | skill-maps-coverage | Maps-suite self-inventory — asserts every /maps:* skill is registered in /maps:a | untested | 1 |
+| skill-mode-adhoc | Enter adhoc team mode — Alpha + Beta + Gamma for collaborative feature developme | untested | 1 |
+| skill-mode-oneshot | Initiate a oneshot build — launch Delta as standalone orchestrator for full skel | untested | 1 |
+| skill-mode-solo | Enter solo mode — just Alpha and the user, no agent team | untested | 1 |
+| skill-mode-sprint | Enter sprint mode — ε (Alex Epsilon) conducts the full sprint lifecycle (plan→de | untested | 1 |
 | skill-models-check | Audit configured dispatch models against the latest vendor catalogs — flag drift | untested | 1 |
 | skill-models-route | Route a specific command/role to a specific model — thin, validated wrapper over | untested | 1 |
 | skill-models-router | Open the model router panel — ensure the catalog carries all the latest model op | untested | 1 |
@@ -46,29 +52,40 @@ Total: **56** systems across **2** categories. Files referenced: 55, missing on 
 | skill-oneshot-preflight | Pre-run preflight — branch creation + skeleton gut + 7-pass verification audit.  | untested | 1 |
 | skill-playbook-add | Append a play to the Playbook (.claude/project/reference/playbook.md) — a named, | untested | 1 |
 | skill-portfolio-new | Scaffold a new product repo (sibling to WarpOS) with the framework installed and | untested | 1 |
+| skill-portfolio-spinup | "From WarpOS, run the idea→on-screen on-ramp against a registered product: dispa | untested | 1 |
+| skill-report | File an ELI5 report (sprint \| epic \| session \| checkpoint) into _reports/ — t | untested | 1 |
 | skill-roadmap-create | "Bootstrap a product ROADMAP.md from the inputs a project actually has — prefers | untested | 1 |
 | skill-roadmap-ideas | Predict candidate roadmap entries across four evidence lenses (3 each = 12 ideas | untested | 1 |
 | skill-roadmap-next | The 1-idea alternative to /roadmap:ideas — the single highest-leverage next road | untested | 1 |
 | skill-roadmap-prioritize | Director-of-Product-driven roadmap prioritization — runs /roadmap:cleanup first, | untested | 1 |
 | skill-scan-adhoc-fail-override | Reject an adhoc dispatcher that overrode a binding reviewer FAIL — verdict-conte | untested | 1 |
+| skill-scan-architecture | Architecture integrity — do the layers connect? agent system, cross-layer seams, | untested | 1 |
+| skill-scan-cutover-completeness | ED-026 cutover gate — greps the IMPERATIVE layer + keystone registries for RAW d | untested | 1 |
 | skill-scan-docker-secrets | Dockerfile → .dockerignore secret-exposure check — flags secret files (.env, *.p | untested | 1 |
+| skill-scan-environment | Environment readiness and tooling quality — fast go/no-go or deep audit | untested | 1 |
 | skill-scan-etc-harness | Audit the /etc authoring+eval harness — fail-closed enforcer that rejects an inv | untested | 1 |
 | skill-scan-framework-purity | Refuse product-content leaks in canonical — scans for client slugs, maintainer a | untested | 1 |
 | skill-scan-full | Run every scan in parallel — a full system scan across project health, governanc | untested | 1 |
 | skill-scan-ingest-firewall | Audit the ingest stores (_docs/research, _docs/imports, _docs/briefs, _docs/clon | untested | 1 |
+| skill-scan-install | Verify a fresh WarpOS install — manifest, paths, agents, hooks, version, setting | untested | 1 |
 | skill-scan-role-parity | The one check that owns role parity across the org map, the dispatch catalog, an | untested | 1 |
 | skill-scan-scaffold-coverage | Verify the WarpOS app scaffold (Next+Tailwind v4+shadcn/ui+Radix+Lucide) is comp | untested | 1 |
 | skill-scan-scan-coverage | Scan-suite self-inventory — asserts every /scan:* skill is delegated by /scan:fu | untested | 1 |
+| skill-scan-skill-hook-coverage | Bidirectional coverage of the skill hook-point registry — REVERSE (registry cohe | untested | 1 |
 | skill-scan-sprint-beta-honesty | Audits Beta consultation honesty across post-cutoff /sprint:full runs (missing c | untested | 1 |
 | skill-scan-sprint-hook-coverage | Bidirectional coverage of the sprint hook-point registry — FORWARD (every matche | untested | 1 |
 | skill-scan-sprint-manager-consult | Audits manager-consult coverage across post-cutoff /sprint:full runs — asserts t | untested | 1 |
+| skill-scan-system | System inventory — enumerate every active WarpOS system, diff against manifest,  | untested | 1 |
 | skill-scan-version-coherence | Verify version + schema-label coherence — product version agrees across ALL mani | untested | 1 |
 | skill-scan-warpos-install-baseline | Verify a WarpOS install baseline exists (.claude/framework-installed.json presen | untested | 1 |
 | skill-scan-warpos-layer-diff | Read-only product-vs-dev-tooling layer diff — lists which framework-owned paths  | untested | 1 |
 | skill-scan-warpos-ship-coverage | Verify every framework-owned path under the consumer-essential roots is actually | untested | 1 |
 | skill-session-dump | Write a prescriptive handoff to DUMP.md at project root — context, session progr | untested | 1 |
 | skill-session-end | Full session wrap-up — cognitive maintenance (learn/mine/sleep/integrate) → fres | untested | 1 |
+| skill-session-turbo | Session speed mode — pre-authorize a batch of high-impact actions (permissions.a | untested | 1 |
+| skill-sleep-deep | "Full sleep cycle — all 6 phases: NREM consolidation, cleanup, replay, REM dream | untested | 1 |
 | skill-sprint-cost-gate | Toggle the /sprint:full cost-estimate halt on or off — turn off the heuristic sp | untested | 1 |
+| skill-sprint-full | Single-invocation execution of the full sprint pipeline (plan→design→execute→rel | untested | 1 |
 | skill-warp-diff | Diff canonical WarpOS against an installed product — version/staleness, framewor | untested | 1 |
 | skill-warp-health | Verify WarpOS installation — checks every system, reports green/yellow/red with  | untested | 1 |
 | skill-warp-reconcile | Reconcile downstream-flagged WarpOS gaps into canonical — discover every product | untested | 1 |

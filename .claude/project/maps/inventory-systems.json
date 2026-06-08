@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "generated": "2026-06-05T05:24:54.103Z",
-    "lastUpdated": "2026-06-05T05:24:54.103Z",
-    "total_systems": 56,
+    "generated": "2026-06-08T16:07:50.686Z",
+    "lastUpdated": "2026-06-08T16:07:50.686Z",
+    "total_systems": 73,
     "categories": 2,
-    "total_files_referenced": 55,
+    "total_files_referenced": 72,
     "missing_files_on_disk": 1,
     "regenerated_by": "scripts/regen-maps.js"
   },
@@ -16,7 +16,7 @@
       ]
     },
     "untested": {
-      "count": 55,
+      "count": 72,
       "ids": [
         "skill-roadmap-ideas",
         "skill-roadmap-next",
@@ -72,7 +72,24 @@
         "skill-session-dump",
         "skill-scan-sprint-manager-consult",
         "skill-scan-adhoc-fail-override",
-        "skill-scan-sprint-hook-coverage"
+        "skill-scan-sprint-hook-coverage",
+        "skill-scan-install",
+        "skill-scan-system",
+        "skill-scan-architecture",
+        "skill-scan-environment",
+        "skill-scan-skill-hook-coverage",
+        "skill-knowledge-integrate",
+        "skill-knowledge-coverage",
+        "skill-scan-cutover-completeness",
+        "skill-mode-sprint",
+        "skill-sleep-deep",
+        "skill-report",
+        "skill-sprint-full",
+        "skill-session-turbo",
+        "skill-portfolio-spinup",
+        "skill-mode-adhoc",
+        "skill-mode-oneshot",
+        "skill-mode-solo"
       ]
     }
   },
@@ -89,7 +106,7 @@
       ]
     },
     "cognition": {
-      "count": 55,
+      "count": 72,
       "systems": [
         {
           "id": "skill-_report_skill_tmp",
@@ -236,6 +253,22 @@
           ]
         },
         {
+          "id": "skill-knowledge-coverage",
+          "name": "Fail-closed enforcer for the _knowledge/ layer (the company \"brain\", ADR-0007) — asserts the domain registry is fresh, every LIBRARY consumer is grounded by a marker block backed by a record, every STORE has its contract README + a producer reference, the design index hasn't drifted, and there are no orphan/phantom records or markers. The /knowledge analog of /guides:coverage and /scan:scan-coverage.",
+          "status": "untested",
+          "files": [
+            ".claude/commands/knowledge/coverage.md"
+          ]
+        },
+        {
+          "id": "skill-knowledge-integrate",
+          "name": "Wire each _knowledge/ domain into its consumers in its declared shape — LIBRARY domains via a knowledge-marker block in every consumer agent spec, STORE domains via a producer-spec store reference + contract README — and record every placement in .claude/project/maps/knowledge-integration.jsonl. Idempotent, read-before-write, with prior-integration conflict detection.",
+          "status": "untested",
+          "files": [
+            ".claude/commands/knowledge/integrate.md"
+          ]
+        },
+        {
           "id": "skill-learn-deep",
           "name": "Deep learning — extracts from conversation + event log + oneshot retro files in parallel, deduplicates, reports",
           "status": "untested",
@@ -265,6 +298,38 @@
           "status": "untested",
           "files": [
             ".claude/commands/maps/coverage.md"
+          ]
+        },
+        {
+          "id": "skill-mode-adhoc",
+          "name": "Enter adhoc team mode — Alpha + Beta + Gamma for collaborative feature development",
+          "status": "untested",
+          "files": [
+            ".claude/commands/mode/adhoc.md"
+          ]
+        },
+        {
+          "id": "skill-mode-oneshot",
+          "name": "Initiate a oneshot build — launch Delta as standalone orchestrator for full skeleton runs",
+          "status": "untested",
+          "files": [
+            ".claude/commands/mode/oneshot.md"
+          ]
+        },
+        {
+          "id": "skill-mode-solo",
+          "name": "Enter solo mode — just Alpha and the user, no agent team",
+          "status": "untested",
+          "files": [
+            ".claude/commands/mode/solo.md"
+          ]
+        },
+        {
+          "id": "skill-mode-sprint",
+          "name": "Enter sprint mode — ε (Alex Epsilon) conducts the full sprint lifecycle (plan→design→build→gauntlet→release→retro) via the registry-driven runtime, with REAL agent dispatch.",
+          "status": "untested",
+          "files": [
+            ".claude/commands/mode/sprint.md"
           ]
         },
         {
@@ -324,6 +389,22 @@
           ]
         },
         {
+          "id": "skill-portfolio-spinup",
+          "name": "\"From WarpOS, run the idea→on-screen on-ramp against a registered product: dispatches /bootstrap:spinup into the product's repo. Thin wrapper over bootstrap:spinup (the real implementation).\"",
+          "status": "untested",
+          "files": [
+            ".claude/commands/portfolio/spinup.md"
+          ]
+        },
+        {
+          "id": "skill-report",
+          "name": "File an ELI5 report (sprint | epic | session | checkpoint) into _reports/ — tl;dr first, plain language, watch-outs always",
+          "status": "untested",
+          "files": [
+            ".claude/commands/report.md"
+          ]
+        },
+        {
           "id": "skill-roadmap-create",
           "name": "\"Bootstrap a product ROADMAP.md from the inputs a project actually has — prefers _requirements/00-canonical/* + a Director-of-PM lens when present, falls back to the competitor clone brief + PROJECT.md. Evidence-bound, MVP-core-loop first.\"",
           "status": "untested",
@@ -364,11 +445,35 @@
           ]
         },
         {
+          "id": "skill-scan-architecture",
+          "name": "Architecture integrity — do the layers connect? agent system, cross-layer seams, documentation health",
+          "status": "untested",
+          "files": [
+            ".claude/commands/scan/architecture.md"
+          ]
+        },
+        {
+          "id": "skill-scan-cutover-completeness",
+          "name": "ED-026 cutover gate — greps the IMPERATIVE layer + keystone registries for RAW deleted-old-tree literals (00-alex/01-adhoc/02-oneshot/03-managers) + renamed-away role names, fail-closed. Catches the staleness role-parity can't, because it checks raw literals NOT alias-resolved roles (the alias table masks cutover-incompleteness).",
+          "status": "untested",
+          "files": [
+            ".claude/commands/scan/cutover-completeness.md"
+          ]
+        },
+        {
           "id": "skill-scan-docker-secrets",
           "name": "Dockerfile → .dockerignore secret-exposure check — flags secret files (.env, *.pem, credentials) that a broad COPY . / ADD . would bake into an image layer because .dockerignore doesn't exclude them.",
           "status": "untested",
           "files": [
             ".claude/commands/scan/docker-secrets.md"
+          ]
+        },
+        {
+          "id": "skill-scan-environment",
+          "name": "Environment readiness and tooling quality — fast go/no-go or deep audit",
+          "status": "untested",
+          "files": [
+            ".claude/commands/scan/environment.md"
           ]
         },
         {
@@ -404,6 +509,14 @@
           ]
         },
         {
+          "id": "skill-scan-install",
+          "name": "Verify a fresh WarpOS install — manifest, paths, agents, hooks, version, settings.",
+          "status": "untested",
+          "files": [
+            ".claude/commands/scan/install.md"
+          ]
+        },
+        {
           "id": "skill-scan-role-parity",
           "name": "The one check that owns role parity across the org map, the dispatch catalog, and team-guard — fail-closed enforcer (S1.1) so repartitioning agents by domain can't silently drift the registry. Built BEFORE the Wave-2 repartition it guards.",
           "status": "untested",
@@ -428,6 +541,14 @@
           ]
         },
         {
+          "id": "skill-scan-skill-hook-coverage",
+          "name": "Bidirectional coverage of the skill hook-point registry — REVERSE (registry coherent vs role-registry) + FORWARD (every registered skill has a command file) + HARDCODE/STALE (no skill body hardcodes a renamed-away or unresolved persona role)",
+          "status": "untested",
+          "files": [
+            ".claude/commands/scan/skill-hook-coverage.md"
+          ]
+        },
+        {
           "id": "skill-scan-sprint-beta-honesty",
           "name": "Audits Beta consultation honesty across post-cutoff /sprint:full runs (missing consults, placeholder verdicts, ESCALATE-without-halt)",
           "status": "untested",
@@ -449,6 +570,14 @@
           "status": "untested",
           "files": [
             ".claude/commands/scan/sprint-manager-consult.md"
+          ]
+        },
+        {
+          "id": "skill-scan-system",
+          "name": "System inventory — enumerate every active WarpOS system, diff against manifest, report drift and gaps",
+          "status": "untested",
+          "files": [
+            ".claude/commands/scan/system.md"
           ]
         },
         {
@@ -500,11 +629,35 @@
           ]
         },
         {
+          "id": "skill-session-turbo",
+          "name": "Session speed mode — pre-authorize a batch of high-impact actions (permissions.allow) AND switch the build cadence to fast levers (parallel builds, batched Beta, skip-gauntlet-when-low-risk, engine-sprint fast-close). The one command to go fast for a work session.",
+          "status": "untested",
+          "files": [
+            ".claude/commands/session/turbo.md"
+          ]
+        },
+        {
+          "id": "skill-sleep-deep",
+          "name": "\"Full sleep cycle — all 6 phases: NREM consolidation, cleanup, replay, REM dreaming, repair, growth (~15-30 min)\"",
+          "status": "untested",
+          "files": [
+            ".claude/commands/sleep/deep.md"
+          ]
+        },
+        {
           "id": "skill-sprint-cost-gate",
           "name": "Toggle the /sprint:full cost-estimate halt on or off — turn off the heuristic spend gate when an operator spend posture is authorized, turn it back on to restore the guardrail. Controls only the sprint cost halt, never the hard ceilings or the real >$5 rule.",
           "status": "untested",
           "files": [
             ".claude/commands/sprint/cost-gate.md"
+          ]
+        },
+        {
+          "id": "skill-sprint-full",
+          "name": "Single-invocation execution of the full sprint pipeline (plan→design→execute→release-prep→retro) under a bounded autonomy preset. Cannot bypass CLAUDE.md hard ceilings.",
+          "status": "untested",
+          "files": [
+            ".claude/commands/sprint/full.md"
           ]
         },
         {
@@ -548,19 +701,19 @@
       "id": "agents",
       "name": "Agent team + build chains",
       "category": "agents",
-      "count": 61
+      "count": 65
     },
     {
       "id": "skills",
       "name": "Skills",
       "category": "capability",
-      "count": 199
+      "count": 206
     },
     {
       "id": "hooks",
       "name": "Hooks",
       "category": "automation",
-      "count": 66
+      "count": 68
     },
     {
       "id": "memory",
@@ -608,7 +761,7 @@
       "id": "reference-docs",
       "name": "Reference documentation",
       "category": "knowledge",
-      "count": 28
+      "count": 27
     },
     {
       "id": "patterns",

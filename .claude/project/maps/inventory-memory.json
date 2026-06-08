@@ -1,7 +1,7 @@
 {
   "metadata": {
-    "generated": "2026-06-05T05:24:54.103Z",
-    "lastUpdated": "2026-06-05T05:24:54.103Z",
+    "generated": "2026-06-08T16:07:50.686Z",
+    "lastUpdated": "2026-06-08T16:07:50.686Z",
     "total_stores": 10,
     "tiers": 3,
     "regenerated_by": "scripts/regen-maps.js"
@@ -13,40 +13,40 @@
         "path": ".claude/project/events/events.jsonl",
         "category": "events",
         "tier": "centralized",
-        "entryCount": 19227,
+        "entryCount": 27872,
         "exists": true,
-        "size": 6216629,
-        "modified": "2026-06-05T05:24:52.502Z"
+        "size": 9061412,
+        "modified": "2026-06-08T16:07:48.205Z"
       },
       {
         "id": "manager-consult",
         "path": ".claude/project/events/manager-consult.jsonl",
         "category": "events",
         "tier": "centralized",
-        "entryCount": 1,
+        "entryCount": 75,
         "exists": true,
-        "size": 273,
-        "modified": "2026-06-04T23:20:21.650Z"
+        "size": 20776,
+        "modified": "2026-06-08T05:32:42.513Z"
       },
       {
         "id": "requirements",
         "path": ".claude/project/events/requirements.jsonl",
         "category": "events",
         "tier": "centralized",
-        "entryCount": 394,
+        "entryCount": 605,
         "exists": true,
-        "size": 212148,
-        "modified": "2026-06-05T05:23:10.208Z"
+        "size": 331819,
+        "modified": "2026-06-08T16:03:00.481Z"
       },
       {
         "id": "tools",
         "path": ".claude/project/events/tools.jsonl",
         "category": "events",
         "tier": "centralized",
-        "entryCount": 9654,
+        "entryCount": 14431,
         "exists": true,
-        "size": 3030395,
-        "modified": "2026-06-05T05:23:17.450Z"
+        "size": 4557098,
+        "modified": "2026-06-08T16:06:44.126Z"
       }
     ],
     "semantic": [
@@ -55,50 +55,50 @@
         "path": ".claude/project/memory/enforcement-debt.jsonl",
         "category": "memory",
         "tier": "semantic",
-        "entryCount": 18,
+        "entryCount": 25,
         "exists": true,
-        "size": 21628,
-        "modified": "2026-06-05T01:55:37.476Z"
+        "size": 37646,
+        "modified": "2026-06-08T05:41:41.902Z"
       },
       {
         "id": "learnings",
         "path": ".claude/project/memory/learnings.jsonl",
         "category": "memory",
         "tier": "semantic",
-        "entryCount": 45,
+        "entryCount": 65,
         "exists": true,
-        "size": 32941,
-        "modified": "2026-06-03T01:04:13.687Z"
+        "size": 53230,
+        "modified": "2026-06-07T02:16:10.905Z"
       },
       {
         "id": "recurring-issues",
         "path": ".claude/project/memory/recurring-issues.jsonl",
         "category": "memory",
         "tier": "semantic",
-        "entryCount": 4,
+        "entryCount": 5,
         "exists": true,
-        "size": 4933,
-        "modified": "2026-06-02T03:14:54.343Z"
+        "size": 5940,
+        "modified": "2026-06-07T07:49:16.733Z"
       },
       {
         "id": "systems",
         "path": ".claude/project/memory/systems.jsonl",
         "category": "memory",
         "tier": "semantic",
-        "entryCount": 56,
+        "entryCount": 73,
         "exists": true,
-        "size": 50012,
-        "modified": "2026-06-05T05:23:10.210Z"
+        "size": 65106,
+        "modified": "2026-06-08T16:03:00.452Z"
       },
       {
         "id": "traces",
         "path": ".claude/project/memory/traces.jsonl",
         "category": "memory",
         "tier": "semantic",
-        "entryCount": 3,
+        "entryCount": 6,
         "exists": true,
-        "size": 3413,
-        "modified": "2026-06-03T00:07:27.093Z"
+        "size": 10149,
+        "modified": "2026-06-07T01:08:56.809Z"
       }
     ],
     "beta": [
@@ -107,15 +107,15 @@
         "path": ".claude/agents/president/.system/beta/events.jsonl",
         "category": "beta",
         "tier": "beta",
-        "entryCount": 88,
+        "entryCount": 94,
         "exists": true,
-        "size": 96650,
-        "modified": "2026-06-04T22:46:41.997Z"
+        "size": 100594,
+        "modified": "2026-06-08T04:42:04.114Z"
       }
     ]
   },
   "totals": {
-    "total_lines": 29490,
-    "total_size": 9669022
+    "total_lines": 43251,
+    "total_size": 14243770
   }
 }

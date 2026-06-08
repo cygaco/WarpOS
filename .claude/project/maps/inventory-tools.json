@@ -1,14 +1,14 @@
 {
   "metadata": {
-    "generated": "2026-06-05T05:24:54.103Z",
-    "lastUpdated": "2026-06-05T05:24:54.103Z",
-    "total_tools": 174,
+    "generated": "2026-06-08T16:07:50.686Z",
+    "lastUpdated": "2026-06-08T16:07:50.686Z",
+    "total_tools": 176,
     "categories": 4,
     "regenerated_by": "scripts/regen-maps.js"
   },
   "categories": {
     "scripts": {
-      "count": 169,
+      "count": 171,
       "items": [
         {
           "id": "tool:agent-dashboard",
@@ -278,7 +278,7 @@
           "type": "script",
           "exists": true,
           "size": 2213,
-          "modified": "2026-05-30T01:25:39.558Z"
+          "modified": "2026-06-08T04:56:41.298Z"
         },
         {
           "id": "tool:delta-mark-built",
@@ -367,8 +367,8 @@
           "path": "scripts/dispatch-agent.js",
           "type": "script",
           "exists": true,
-          "size": 24166,
-          "modified": "2026-06-04T22:57:13.995Z"
+          "size": 28779,
+          "modified": "2026-06-08T15:57:58.217Z"
         },
         {
           "id": "tool:dispatch-claude",
@@ -376,8 +376,26 @@
           "path": "scripts/dispatch-claude.js",
           "type": "script",
           "exists": true,
-          "size": 14763,
-          "modified": "2026-06-02T18:08:39.246Z"
+          "size": 20631,
+          "modified": "2026-06-08T15:58:17.216Z"
+        },
+        {
+          "id": "tool:dispatch-skill",
+          "name": "dispatch-skill.js",
+          "path": "scripts/dispatch-skill.js",
+          "type": "script",
+          "exists": true,
+          "size": 18468,
+          "modified": "2026-06-08T05:08:02.360Z"
+        },
+        {
+          "id": "tool:dispatch-skill.test",
+          "name": "dispatch-skill.test.js",
+          "path": "scripts/dispatch-skill.test.js",
+          "type": "script",
+          "exists": true,
+          "size": 10611,
+          "modified": "2026-06-08T05:08:02.376Z"
         },
         {
           "id": "tool:dispatch",
@@ -386,7 +404,7 @@
           "type": "script",
           "exists": true,
           "size": 20217,
-          "modified": "2026-05-30T01:25:39.566Z"
+          "modified": "2026-06-08T04:56:41.298Z"
         },
         {
           "id": "tool:drift-apply-decisions",
@@ -493,8 +511,8 @@
           "path": "scripts/generate-framework-manifest.js",
           "type": "script",
           "exists": true,
-          "size": 23132,
-          "modified": "2026-06-04T22:57:13.996Z"
+          "size": 24747,
+          "modified": "2026-06-07T03:35:59.239Z"
         },
         {
           "id": "tool:generate-maps",
@@ -637,8 +655,8 @@
           "path": "scripts/mode-set.js",
           "type": "script",
           "exists": true,
-          "size": 5205,
-          "modified": "2026-05-30T01:25:39.618Z"
+          "size": 7111,
+          "modified": "2026-06-07T03:35:59.240Z"
         },
         {
           "id": "tool:one-off-add-backend-to-store",
@@ -862,8 +880,8 @@
           "path": "scripts/phase0-verify.js",
           "type": "script",
           "exists": true,
-          "size": 3274,
-          "modified": "2026-05-30T01:25:39.636Z"
+          "size": 3278,
+          "modified": "2026-06-06T09:54:11.891Z"
         },
         {
           "id": "tool:points",
@@ -1213,8 +1231,8 @@
           "path": "scripts/test-dispatch-agent-resolution.js",
           "type": "script",
           "exists": true,
-          "size": 4084,
-          "modified": "2026-06-04T22:57:14.003Z"
+          "size": 4328,
+          "modified": "2026-06-08T05:38:13.758Z"
         },
         {
           "id": "tool:test-dispatch-config",
@@ -1222,8 +1240,8 @@
           "path": "scripts/test-dispatch-config.js",
           "type": "script",
           "exists": true,
-          "size": 8681,
-          "modified": "2026-06-04T22:57:14.003Z"
+          "size": 9030,
+          "modified": "2026-06-08T04:56:41.298Z"
         },
         {
           "id": "tool:test-dispatch-route-guard",
@@ -1366,8 +1384,8 @@
           "path": "scripts/test-sprint.js",
           "type": "script",
           "exists": true,
-          "size": 16392,
-          "modified": "2026-05-30T01:25:39.681Z"
+          "size": 16394,
+          "modified": "2026-06-06T09:54:11.892Z"
         },
         {
           "id": "tool:test-staged-drift-reconciler",
@@ -1576,19 +1594,19 @@
           "id": "xref:skills",
           "type": "xref",
           "note": "skills inventory lives in .claude/project/maps/inventory-skills.json",
-          "count": 199
+          "count": 206
         },
         {
           "id": "xref:hooks",
           "type": "xref",
           "note": "hooks inventory lives in .claude/project/maps/inventory-hooks.json",
-          "count": 66
+          "count": 68
         }
       ]
     }
   },
   "summary": {
-    "scripts": 169,
+    "scripts": 171,
     "npm_scripts": 0,
     "external_clis": 3,
     "xrefs": 2

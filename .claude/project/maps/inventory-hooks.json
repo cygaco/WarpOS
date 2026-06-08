@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "generated": "2026-06-05T05:24:54.103Z",
-    "lastUpdated": "2026-06-05T05:24:54.103Z",
-    "total_hooks": 66,
+    "generated": "2026-06-08T16:07:50.686Z",
+    "lastUpdated": "2026-06-08T16:07:50.686Z",
+    "total_hooks": 68,
     "total_lib_modules": 15,
-    "registered_hooks": 61,
+    "registered_hooks": 63,
     "orphan_hooks": 5,
     "regenerated_by": "scripts/regen-maps.js"
   },
@@ -96,8 +96,8 @@
       "path": "scripts/hooks/dispatch-route-guard.js",
       "registered": true,
       "exists": true,
-      "size": 19881,
-      "modified": "2026-06-04T22:57:13.997Z"
+      "size": 26061,
+      "modified": "2026-06-08T05:38:13.758Z"
     },
     {
       "id": "hook:edit-watcher",
@@ -177,8 +177,8 @@
       "path": "scripts/hooks/gate-check.js",
       "registered": true,
       "exists": true,
-      "size": 5496,
-      "modified": "2026-06-04T22:57:13.997Z"
+      "size": 5636,
+      "modified": "2026-06-08T05:38:13.758Z"
     },
     {
       "id": "hook:gauntlet-gate",
@@ -240,8 +240,8 @@
       "path": "scripts/hooks/memory-guard.js",
       "registered": true,
       "exists": true,
-      "size": 14408,
-      "modified": "2026-06-05T05:13:42.033Z"
+      "size": 14402,
+      "modified": "2026-06-07T03:35:59.239Z"
     },
     {
       "id": "hook:merge-guard",
@@ -303,8 +303,8 @@
       "path": "scripts/hooks/prompt-validator.js",
       "registered": true,
       "exists": true,
-      "size": 6076,
-      "modified": "2026-05-30T01:25:39.598Z"
+      "size": 6390,
+      "modified": "2026-06-08T05:38:13.758Z"
     },
     {
       "id": "hook:ref-checker",
@@ -339,8 +339,8 @@
       "path": "scripts/hooks/response-size-guard.js",
       "registered": true,
       "exists": true,
-      "size": 5353,
-      "modified": "2026-06-04T22:57:14.000Z"
+      "size": 5564,
+      "modified": "2026-06-08T05:38:13.758Z"
     },
     {
       "id": "hook:retro-presence-check",
@@ -393,8 +393,8 @@
       "path": "scripts/hooks/session-start.js",
       "registered": true,
       "exists": true,
-      "size": 19728,
-      "modified": "2026-06-02T02:20:03.412Z"
+      "size": 19732,
+      "modified": "2026-06-08T04:56:41.298Z"
     },
     {
       "id": "hook:session-stop",
@@ -537,8 +537,8 @@
       "path": "scripts/hooks/team-guard.js",
       "registered": true,
       "exists": true,
-      "size": 7191,
-      "modified": "2026-05-31T03:26:36.373Z"
+      "size": 7350,
+      "modified": "2026-06-08T05:38:13.758Z"
     },
     {
       "id": "hook:template-fillability",
@@ -557,6 +557,24 @@
       "exists": true,
       "size": 11730,
       "modified": "2026-05-30T01:25:39.608Z"
+    },
+    {
+      "id": "hook:tracker-completion-gate",
+      "name": "tracker-completion-gate.js",
+      "path": "scripts/hooks/tracker-completion-gate.js",
+      "registered": true,
+      "exists": true,
+      "size": 3400,
+      "modified": "2026-06-07T03:35:59.240Z"
+    },
+    {
+      "id": "hook:tracker-start-of-work",
+      "name": "tracker-start-of-work.js",
+      "path": "scripts/hooks/tracker-start-of-work.js",
+      "registered": true,
+      "exists": true,
+      "size": 3901,
+      "modified": "2026-06-07T03:35:59.240Z"
     },
     {
       "id": "hook:typecheck",
@@ -680,8 +698,8 @@
       "registered": false,
       "type": "lib",
       "exists": true,
-      "size": 10443,
-      "modified": "2026-06-04T22:57:13.999Z"
+      "size": 10736,
+      "modified": "2026-06-08T04:56:41.298Z"
     },
     {
       "id": "hook-lib:paths",
@@ -720,8 +738,8 @@
       "registered": false,
       "type": "lib",
       "exists": true,
-      "size": 36805,
-      "modified": "2026-06-04T22:57:13.999Z"
+      "size": 41222,
+      "modified": "2026-06-08T05:23:57.530Z"
     },
     {
       "id": "hook-lib:role-aliases",
@@ -730,8 +748,8 @@
       "registered": false,
       "type": "lib",
       "exists": true,
-      "size": 2579,
-      "modified": "2026-06-04T22:57:13.999Z"
+      "size": 3333,
+      "modified": "2026-06-08T05:23:57.530Z"
     },
     {
       "id": "hook-lib:skill-telemetry",
@@ -759,6 +777,11 @@
       "event": "SessionStart",
       "matcher": "",
       "hook": "session-start.js"
+    },
+    {
+      "event": "SessionStart",
+      "matcher": "",
+      "hook": "tracker-start-of-work.js"
     },
     {
       "event": "UserPromptSubmit",
@@ -1084,6 +1107,11 @@
       "event": "Stop",
       "matcher": "",
       "hook": "retro-presence-check.js"
+    },
+    {
+      "event": "Stop",
+      "matcher": "",
+      "hook": "tracker-completion-gate.js"
     },
     {
       "event": "Stop",
