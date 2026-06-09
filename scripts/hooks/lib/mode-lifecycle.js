@@ -48,11 +48,31 @@ function loadModes(registryPath = REGISTRY_FILE) {
   return null;
 }
 
-/** The lifecycle entry for a mode (registry first, FALLBACK on unreadable). */
+/** Is a present registry entry well-formed for the fields the readers consume?
+ *  The readers derive `roster` (an array of role-id strings) and `requires_team`
+ *  (a boolean) from this entry — so those must be well-typed. A PRESENT-but-
+ *  malformed entry must NOT be trusted: it would yield an empty roster / false
+ *  requires_team in the hot-path hooks, defeating the fail-open design. */
+function isWellFormedEntry(e) {
+  return (
+    !!e &&
+    typeof e === "object" &&
+    !Array.isArray(e) &&
+    Array.isArray(e.roster) &&
+    e.roster.every((r) => typeof r === "string") &&
+    typeof e.requires_team === "boolean"
+  );
+}
+
+/** The lifecycle entry for a mode (registry first, FALLBACK on unreadable OR on
+ *  a present-but-malformed entry — fail-open). */
 function modeEntry(mode, registryPath = REGISTRY_FILE) {
   const m = String(mode || "").toLowerCase();
   const modes = loadModes(registryPath);
-  if (modes && modes[m]) return modes[m];
+  // Trust a PRESENT registry entry only when its per-mode SHAPE is valid;
+  // otherwise FALL BACK (fail-open) so a partially-malformed entry can never
+  // hand back an empty roster / false requires_team to the readers.
+  if (modes && isWellFormedEntry(modes[m])) return modes[m];
   return FALLBACK[m] || null;
 }
 

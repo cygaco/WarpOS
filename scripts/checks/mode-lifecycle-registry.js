@@ -31,8 +31,11 @@
  *   2 — internal error (unreadable inputs) — fail-closed
  *
  * Usage:
- *   node scripts/checks/mode-lifecycle-registry.js [validate] [--registry <path>] [--json]
- *   (--registry overrides the registry path; used by the planted-fixture test.)
+ *   node scripts/checks/mode-lifecycle-registry.js [validate] [--registry <path>]
+ *       [--reader <path>] [--team-guard <path>] [--session-start <path>] [--json]
+ *   (--registry/--reader/--team-guard/--session-start override the corresponding
+ *    input path; used ONLY by the sealed planted-fixture tests — defaults are the
+ *    real tree. The real files are never mutated.)
  */
 
 const fs = require("fs");
@@ -70,11 +73,51 @@ const eqArr = (a, b) =>
   a.length === b.length &&
   a.every((x, i) => String(x).toLowerCase() === String(b[i]).toLowerCase());
 
+// ── reader-drift detectors (check 3) ─────────────────────────────────────────
+// Strip // line + /* */ block comments so a DEAD (commented-out) import/call
+// cannot satisfy the "derives from the registry" check, and a comment that
+// merely mentions the anti-pattern cannot false-trigger the literal detector.
+function stripComments(src) {
+  const noBlock = src.replace(/\/\*[\s\S]*?\*\//g, " ");
+  return noBlock
+    .split("\n")
+    .map((line) => {
+      let i = line.indexOf("//");
+      // Keep "://" (URLs): skip a // immediately preceded by a colon.
+      while (i > 0 && line[i - 1] === ":") i = line.indexOf("//", i + 1);
+      return i === -1 ? line : line.slice(0, i);
+    })
+    .join("\n");
+}
+
+// (A) The reader must IMPORT the shared reader AND actually CALL a roster-
+// deriving function — a bare/commented mention no longer counts.
+const READER_IMPORT = /require\([^)]*lib\/mode-lifecycle[^)]*\)/;
+const READER_CALL = /\.\s*(allFaces|faces|roster|requiresTeam|modeEntry)\s*\(/;
+// (B1) A reintroduced authoritative roster-source const assigned a LITERAL
+// (array / Set-of-array / object map) instead of being derived from the reader.
+// `FACE_TYPES = modeFaces` (an identifier) is fine; `FACE_TYPES = new Set([…])`
+// / `= [ … ]` / `= { … }` is drift.
+const HARDCODED_ROSTER_CONST =
+  /\b(FACE_TYPES|TEAM_MODES|TEAM_BY_MODE|REQUIRED_TEAM(?:_MODES)?|MODE_ROSTERS?|ROSTER_BY_MODE)\b\s*=\s*(new\s+Set\s*\(\s*\[|\[|\{)/;
+// (B2) A reconstructed mode→roster map literal (regardless of the const name):
+// an object key that is a mode name whose value is an array opening with a role
+// id. The legitimate flat fail-open fallback (a Set of roles, not mode-keyed) is
+// NOT matched.
+const MODE_ROSTER_MAP =
+  /\b(solo|adhoc|oneshot|sprint)\b\s*:\s*\[\s*["'](alpha|beta|gamma|delta|epsilon)\b/;
+
 function main() {
   const args = process.argv.slice(2);
   const asJson = args.includes("--json");
-  const ri = args.indexOf("--registry");
-  const registryPath = ri >= 0 && args[ri + 1] ? args[ri + 1] : DEFAULT_REGISTRY;
+  const flagVal = (flag, dflt) => {
+    const i = args.indexOf(flag);
+    return i >= 0 && args[i + 1] ? args[i + 1] : dflt;
+  };
+  const registryPath = flagVal("--registry", DEFAULT_REGISTRY);
+  const readerPath = flagVal("--reader", READER);
+  const teamGuardPath = flagVal("--team-guard", TEAM_GUARD);
+  const sessionStartPath = flagVal("--session-start", SESSION_START);
 
   const problems = [];
 
@@ -110,8 +153,8 @@ function main() {
   // ── 2. MIRROR — lib/mode-lifecycle.js FALLBACK ⟷ registry ───────────────────
   let FALLBACK = null;
   try {
-    delete require.cache[require.resolve(READER)];
-    FALLBACK = require(READER).FALLBACK;
+    delete require.cache[require.resolve(readerPath)];
+    FALLBACK = require(readerPath).FALLBACK;
   } catch (e) {
     problems.push(`mirror: cannot load lib/mode-lifecycle.js FALLBACK: ${e.message}`);
   }
@@ -119,7 +162,18 @@ function main() {
     for (const m of LIVE_MODES) {
       const reg = modes[m];
       const fb = FALLBACK[m];
-      if (!reg || !fb) continue; // schema check already flagged absence
+      // FAIL-CLOSED: a live mode absent from the fail-open mirror must be a
+      // PROBLEM, not a skip — otherwise the readers would have no fallback for
+      // that mode and the absence would slip past silently (the exact fail-open
+      // hole this validator exists to close). Registry-absence is already
+      // reported by the SCHEMA section above; flag FALLBACK-absence here.
+      if (!fb) {
+        problems.push(
+          `mirror: live mode "${m}" MISSING from reader FALLBACK ` +
+            `(lib/mode-lifecycle.js) — the fail-open mirror must cover every live mode`,
+        );
+      }
+      if (!reg || !fb) continue; // both present required for the field compare below
       if (!eqArr(reg.roster, fb.roster)) {
         problems.push(
           `drift: mode "${m}" roster — registry [${(reg.roster || []).join(",")}] ` +
@@ -135,17 +189,33 @@ function main() {
     }
   }
 
-  // ── 3. READERS reference the shared reader (resolve from the registry) ───────
+  // ── 3. READERS still DERIVE their roster from the registry ───────────────────
+  // Behavioral, not a bare string match: each reader must (a) IMPORT the shared
+  // reader AND actually CALL a roster-deriving function (a dead/commented import
+  // no longer passes), and (b) NOT reintroduce a hardcoded roster literal — a
+  // FACE_TYPES/TEAM_MODES-style const assigned an array/Set/map, or a
+  // reconstructed mode→roster map — even if a dead import lingers. The
+  // legitimate fail-open fallback (a flat Set of faces inside a catch) is NOT a
+  // mode-keyed map and is NOT an authoritative source const, so it is not flagged.
   for (const [label, file] of [
-    ["team-guard.js", TEAM_GUARD],
-    ["session-start.js", SESSION_START],
+    ["team-guard.js", teamGuardPath],
+    ["session-start.js", sessionStartPath],
   ]) {
     try {
-      const src = fs.readFileSync(file, "utf8");
-      if (!/lib\/mode-lifecycle/.test(src)) {
+      const code = stripComments(fs.readFileSync(file, "utf8"));
+      if (!READER_IMPORT.test(code) || !READER_CALL.test(code)) {
         problems.push(
-          `readers: ${label} does not reference ./lib/mode-lifecycle — it must ` +
-            `resolve required-team-by-mode FROM the registry, not a hardcoded literal`,
+          `readers: ${label} does not DERIVE its roster from ./lib/mode-lifecycle ` +
+            `(missing the import or a roster-deriving call: allFaces/faces/roster/` +
+            `requiresTeam/modeEntry) — it must resolve required-team-by-mode FROM ` +
+            `the registry, not a hardcoded literal`,
+        );
+      }
+      if (HARDCODED_ROSTER_CONST.test(code) || MODE_ROSTER_MAP.test(code)) {
+        problems.push(
+          `readers: ${label} reintroduces a HARDCODED roster literal (a ` +
+            `FACE_TYPES/TEAM_MODES-style const or a mode→roster map) — the roster ` +
+            `must be derived from the registry, not re-hardcoded`,
         );
       }
     } catch (e) {

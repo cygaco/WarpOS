@@ -50,9 +50,10 @@ function ok(name, fn) {
   }
 }
 
-function runValidator(registryPath) {
+function runValidator(registryPath, extra = []) {
   const args = ["validate"];
   if (registryPath) args.push("--registry", registryPath);
+  args.push(...extra);
   const r = spawnSync("node", [VALIDATOR, ...args], { encoding: "utf8" });
   return { status: r.status, stdout: r.stdout || "", stderr: r.stderr || "" };
 }
@@ -140,6 +141,125 @@ ok("planted-wrong-roster-fails", () => {
   // The real registry is untouched.
   const stillGood = JSON.parse(fs.readFileSync(REGISTRY, "utf8"));
   assert.deepStrictEqual(stillGood.modes.sprint.roster, ["alpha", "epsilon", "beta"]);
+});
+
+// AC-FIX1 — modeEntry() shape-validates a PRESENT registry entry: a present-but-
+// malformed entry (roster !array / requires_team !bool) FALLS BACK (fail-open)
+// instead of being trusted; a well-formed entry is still returned as-is.
+ok("modeEntry-malformed-entry-falls-back", () => {
+  delete require.cache[require.resolve(READER)];
+  const ml = require(READER);
+
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "mlr-fix1-"));
+  const bad = path.join(dir, "mode-lifecycle.json");
+  const doc = JSON.parse(fs.readFileSync(REGISTRY, "utf8"));
+  // Malform sprint: roster becomes a string, requires_team becomes a string.
+  doc.modes.sprint.roster = "alpha,epsilon,beta";
+  doc.modes.sprint.requires_team = "yes";
+  fs.writeFileSync(bad, JSON.stringify(doc, null, 2));
+
+  // The malformed present entry must NOT be trusted — fall back to FALLBACK.
+  assert.deepStrictEqual(
+    ml.modeEntry("sprint", bad),
+    ml.FALLBACK.sprint,
+    "malformed present entry must fall back to FALLBACK (fail-open)",
+  );
+  assert.deepStrictEqual(
+    ml.roster("sprint", bad),
+    ml.FALLBACK.sprint.roster,
+    "roster() falls back on a malformed entry (no empty roster)",
+  );
+  assert.strictEqual(
+    ml.requiresTeam("sprint", bad),
+    ml.FALLBACK.sprint.requires_team,
+    "requiresTeam() falls back on a malformed entry (no false negative)",
+  );
+  // A WELL-FORMED present entry is still returned from the registry as before.
+  const realSprint = JSON.parse(fs.readFileSync(REGISTRY, "utf8")).modes.sprint;
+  assert.deepStrictEqual(
+    ml.modeEntry("sprint", REGISTRY),
+    realSprint,
+    "a well-formed registry entry is still returned unchanged",
+  );
+});
+
+// AC-4.3 — fail-CLOSED: a live mode MISSING from the reader FALLBACK is a
+// reported problem, not a silent skip (uses the real registry + a planted reader
+// whose FALLBACK omits one live mode).
+ok("missing-FALLBACK-mode-fails", () => {
+  delete require.cache[require.resolve(READER)];
+  const realFB = require(READER).FALLBACK;
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "mlr-fb-"));
+  const fixtureReader = path.join(dir, "reader.js");
+  const fb = JSON.parse(JSON.stringify(realFB));
+  delete fb.sprint; // a live mode absent from the fail-open mirror
+  fs.writeFileSync(
+    fixtureReader,
+    `module.exports = { FALLBACK: ${JSON.stringify(fb)} };\n`,
+  );
+
+  const r = runValidator(null, ["--reader", fixtureReader]); // real registry
+  assert.notStrictEqual(r.status, 0, "missing FALLBACK mode must FAIL closed");
+  assert.ok(
+    /MISSING from reader FALLBACK/.test(r.stdout),
+    `the failure must name the missing-FALLBACK mode\n${r.stdout}`,
+  );
+});
+
+// AC-4.4 — fail-CLOSED: a reader that reintroduces a HARDCODED roster literal
+// fails EVEN WITH a live import+call present (the pure-string check missed this).
+ok("hardcoded-roster-literal-fails", () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "mlr-lit-"));
+  const fixture = path.join(dir, "team-guard.js");
+  fs.writeFileSync(
+    fixture,
+    'const ml = require("./lib/mode-lifecycle");\n' +
+      "const live = ml.allFaces();\n" +
+      'const FACE_TYPES = new Set(["alpha", "epsilon", "beta"]);\n',
+  );
+  const r = runValidator(null, ["--team-guard", fixture]);
+  assert.notStrictEqual(r.status, 0, "a reintroduced roster literal must FAIL");
+  assert.ok(
+    /HARDCODED roster literal/.test(r.stdout),
+    `the failure must name the hardcoded literal\n${r.stdout}`,
+  );
+});
+
+// AC-4.5 — fail-CLOSED: a DEAD (commented-out) import + a hardcoded literal — the
+// exact scenario the old pure-string match let slip — fails closed.
+ok("dead-import-with-literal-fails", () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "mlr-dead-"));
+  const fixture = path.join(dir, "session-start.js");
+  fs.writeFileSync(
+    fixture,
+    '// const ml = require("./lib/mode-lifecycle").faces(curMode); // dead import\n' +
+      'const FACE_TYPES = ["alpha", "epsilon", "beta"];\n',
+  );
+  const r = runValidator(null, ["--session-start", fixture]);
+  assert.notStrictEqual(r.status, 0, "dead import + literal must FAIL closed");
+  assert.ok(
+    /does not DERIVE its roster|HARDCODED roster literal/.test(r.stdout),
+    `the failure must name the drift\n${r.stdout}`,
+  );
+});
+
+// AC-4.6 — fail-CLOSED: a reconstructed mode→roster MAP literal is caught even
+// under a non-listed const name (name-agnostic map detector), with a live import.
+ok("mode-roster-map-literal-fails", () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "mlr-map-"));
+  const fixture = path.join(dir, "team-guard.js");
+  fs.writeFileSync(
+    fixture,
+    'const ml = require("./lib/mode-lifecycle");\n' +
+      "const live = ml.faces('sprint');\n" +
+      'const myRosters = { sprint: ["alpha", "epsilon", "beta"], adhoc: ["beta", "gamma"] };\n',
+  );
+  const r = runValidator(null, ["--team-guard", fixture]);
+  assert.notStrictEqual(r.status, 0, "a mode→roster map literal must FAIL");
+  assert.ok(
+    /HARDCODED roster literal/.test(r.stdout),
+    `the failure must name the hardcoded map\n${r.stdout}`,
+  );
 });
 
 console.log(`\nmode-lifecycle-registry: ${pass}/${pass + fail} pass`);
