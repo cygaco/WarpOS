@@ -262,5 +262,107 @@ ok("mode-roster-map-literal-fails", () => {
   );
 });
 
+// AC-FIX2A — allFaces() shape-validates per mode: a malformed `roster` (a STRING,
+// not an array) for a LIVE mode must NOT be iterated as characters. The class bug
+// (fix-cycle #2): a raw `for…of modes[m].roster` over a string roster yields a
+// bogus non-empty face set (single chars/punctuation) to team-guard's bootstrap
+// allow-list instead of failing open.
+ok("allFaces-malformed-roster-falls-back-no-char-iteration", () => {
+  delete require.cache[require.resolve(READER)];
+  const ml = require(READER);
+
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "mlr-fix2a-"));
+  const bad = path.join(dir, "mode-lifecycle.json");
+  const doc = JSON.parse(fs.readFileSync(REGISTRY, "utf8"));
+  // Malform sprint's roster into a STRING — the exact char-iteration trap.
+  doc.modes.sprint.roster = "alpha,epsilon,beta";
+  fs.writeFileSync(bad, JSON.stringify(doc, null, 2));
+
+  const set = ml.allFaces(bad);
+  // No single-character / punctuation face leaked from iterating the string.
+  for (const face of set) {
+    assert.ok(
+      face.length > 1 && /^[a-z]+$/.test(face),
+      `allFaces must not contain a char-iterated face "${face}"`,
+    );
+  }
+  assert.ok(!set.has("a") && !set.has(",") && !set.has("l"), "no string characters leaked");
+  // The result is the clean fail-open union (FALLBACK rosters minus alpha):
+  // sprint fell back to FALLBACK.sprint; the other modes are still well-formed.
+  assert.deepStrictEqual([...set].sort(), ["beta", "delta", "epsilon", "gamma"]);
+  // alpha (the lead) is never a face.
+  assert.ok(!set.has("alpha"), "alpha is excluded from the face set");
+});
+
+// AC-FIX2B-quoted-double — a reintroduced mode→roster map with DOUBLE-QUOTED keys
+// (`"sprint": ["epsilon", …]`) must FAIL closed. The roster here is alpha-LESS so
+// only the quoted-key MODE_ROSTER_MAP extension (not BARE_ROSTER_LITERAL) can
+// catch it — isolating the fix.
+ok("quoted-key(double)-mode-roster-map-fails", () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "mlr-qkd-"));
+  const fixture = path.join(dir, "team-guard.js");
+  fs.writeFileSync(
+    fixture,
+    'const ml = require("./lib/mode-lifecycle");\n' +
+      "const live = ml.allFaces();\n" +
+      'const myRosters = { "sprint": ["epsilon", "beta"], "adhoc": ["beta", "gamma"] };\n',
+  );
+  const r = runValidator(null, ["--team-guard", fixture]);
+  assert.notStrictEqual(r.status, 0, "a double-quoted-key mode→roster map must FAIL");
+  assert.ok(/HARDCODED roster literal/.test(r.stdout), `must name the hardcoded map\n${r.stdout}`);
+});
+
+// AC-FIX2B-quoted-single — same with SINGLE-QUOTED keys (`'oneshot': ['delta',…]`).
+ok("quoted-key(single)-mode-roster-map-fails", () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "mlr-qks-"));
+  const fixture = path.join(dir, "session-start.js");
+  fs.writeFileSync(
+    fixture,
+    "const ml = require('./lib/mode-lifecycle');\n" +
+      "const live = ml.faces('sprint');\n" +
+      "const myRosters = { 'oneshot': ['delta', 'epsilon'] };\n",
+  );
+  const r = runValidator(null, ["--session-start", fixture]);
+  assert.notStrictEqual(r.status, 0, "a single-quoted-key mode→roster map must FAIL");
+  assert.ok(/HARDCODED roster literal/.test(r.stdout), `must name the hardcoded map\n${r.stdout}`);
+});
+
+// AC-FIX2B-bare-roster — a bare LEAD-inclusive roster array literal under an
+// arbitrary const name (`const x = ["alpha","epsilon","beta"]`) must FAIL. Form
+// (e): not name-listed (B1) and not mode-keyed (B2) — only BARE_ROSTER_LITERAL
+// catches it, via the "alpha" comma-adjacency that marks a lead-inclusive roster.
+ok("bare-roster-literal-fails", () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "mlr-brl-"));
+  const fixture = path.join(dir, "team-guard.js");
+  fs.writeFileSync(
+    fixture,
+    'const ml = require("./lib/mode-lifecycle");\n' +
+      "const live = ml.allFaces();\n" +
+      'const myRoster = ["alpha", "epsilon", "beta"];\n',
+  );
+  const r = runValidator(null, ["--team-guard", fixture]);
+  assert.notStrictEqual(r.status, 0, "a bare lead-inclusive roster literal must FAIL");
+  assert.ok(/HARDCODED roster literal/.test(r.stdout), `must name the hardcoded literal\n${r.stdout}`);
+});
+
+// AC-FIX2B-no-false-positive — the legitimate fail-open FACES Set (roster MINUS
+// alpha, inside a catch) must NOT be flagged. This is the guard against the
+// BARE_ROSTER_LITERAL detector over-reaching onto the real team-guard.js safety
+// net (`new Set(["epsilon","beta","gamma","delta"])`).
+ok("legit-failopen-faces-set-not-flagged", () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "mlr-legit-"));
+  const fixture = path.join(dir, "team-guard.js");
+  fs.writeFileSync(
+    fixture,
+    "let modeFaces;\n" +
+      'try { modeFaces = require("./lib/mode-lifecycle").allFaces(); }\n' +
+      'catch { modeFaces = new Set(["epsilon", "beta", "gamma", "delta"]); }\n',
+  );
+  // Only --team-guard is overridden; --session-start defaults to the real (clean)
+  // file, so a clean validator => exit 0 proves the faces Set is NOT flagged.
+  const r = runValidator(null, ["--team-guard", fixture]);
+  assert.strictEqual(r.status, 0, `a legit fail-open faces Set (no alpha) must PASS\n${r.stdout}`);
+});
+
 console.log(`\nmode-lifecycle-registry: ${pass}/${pass + fail} pass`);
 process.exit(fail ? 1 : 0);

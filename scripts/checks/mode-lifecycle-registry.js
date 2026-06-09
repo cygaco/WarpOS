@@ -104,8 +104,23 @@ const HARDCODED_ROSTER_CONST =
 // an object key that is a mode name whose value is an array opening with a role
 // id. The legitimate flat fail-open fallback (a Set of roles, not mode-keyed) is
 // NOT matched.
+// CLASS FIX (fix-cycle #2): the mode key may be QUOTED — a bare key (`sprint:`),
+// a double-quoted key (`"sprint":`), or a single-quoted key (`'sprint':`) — and
+// the prior `\b(mode)\b\s*:` failed on quoted keys because the closing quote sits
+// between the name and the colon, letting a quoted-key map slip past. Allow an
+// OPTIONAL surrounding quote on each side of the mode name.
 const MODE_ROSTER_MAP =
-  /\b(solo|adhoc|oneshot|sprint)\b\s*:\s*\[\s*["'](alpha|beta|gamma|delta|epsilon)\b/;
+  /["']?\b(solo|adhoc|oneshot|sprint)\b["']?\s*:\s*\[\s*["'](alpha|beta|gamma|delta|epsilon)\b/;
+// (B3) A bare ROSTER array literal (no mode key, any const name) — a LEAD-
+// inclusive roster: a quoted "alpha" comma-adjacent to another quoted role id
+// inside an array (e.g. `const x = ["alpha","epsilon","beta"]`). This is the
+// reintroduced-hardcoded-roster form that B1 (name-listed) and B2 (mode-keyed)
+// both miss. CRUCIAL non-false-positive: a legitimate fail-open FACES fallback is
+// roster-MINUS-alpha (it never contains "alpha"), so the in-catch
+// `new Set(["epsilon","beta","gamma","delta"])` safety net — and any faces set —
+// is NOT matched. Only a lead-inclusive roster copied from the registry trips it.
+const BARE_ROSTER_LITERAL =
+  /["']alpha["']\s*,\s*["'](?:alpha|beta|gamma|delta|epsilon)["']|["'](?:beta|gamma|delta|epsilon)["']\s*,\s*["']alpha["']/;
 
 function main() {
   const args = process.argv.slice(2);
@@ -193,10 +208,12 @@ function main() {
   // Behavioral, not a bare string match: each reader must (a) IMPORT the shared
   // reader AND actually CALL a roster-deriving function (a dead/commented import
   // no longer passes), and (b) NOT reintroduce a hardcoded roster literal — a
-  // FACE_TYPES/TEAM_MODES-style const assigned an array/Set/map, or a
-  // reconstructed mode→roster map — even if a dead import lingers. The
-  // legitimate fail-open fallback (a flat Set of faces inside a catch) is NOT a
-  // mode-keyed map and is NOT an authoritative source const, so it is not flagged.
+  // FACE_TYPES/TEAM_MODES-style const assigned an array/Set/map, a reconstructed
+  // mode→roster map (bare- OR quoted-key), or a bare lead-inclusive roster array
+  // (alpha comma-adjacent to another role) — even if a dead import lingers. The
+  // legitimate fail-open fallback (a flat Set of FACES — roster MINUS alpha —
+  // inside a catch) is not mode-keyed, carries no "alpha", and is not an
+  // authoritative source const, so it is not flagged.
   for (const [label, file] of [
     ["team-guard.js", teamGuardPath],
     ["session-start.js", sessionStartPath],
@@ -211,10 +228,15 @@ function main() {
             `the registry, not a hardcoded literal`,
         );
       }
-      if (HARDCODED_ROSTER_CONST.test(code) || MODE_ROSTER_MAP.test(code)) {
+      if (
+        HARDCODED_ROSTER_CONST.test(code) ||
+        MODE_ROSTER_MAP.test(code) ||
+        BARE_ROSTER_LITERAL.test(code)
+      ) {
         problems.push(
           `readers: ${label} reintroduces a HARDCODED roster literal (a ` +
-            `FACE_TYPES/TEAM_MODES-style const or a mode→roster map) — the roster ` +
+            `FACE_TYPES/TEAM_MODES-style const, a mode→roster map [bare- OR ` +
+            `quoted-key], or a bare lead-inclusive roster array) — the roster ` +
             `must be derived from the registry, not re-hardcoded`,
         );
       }

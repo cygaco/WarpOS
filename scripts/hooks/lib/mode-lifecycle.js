@@ -96,12 +96,32 @@ function requiresTeam(mode, registryPath = REGISTRY_FILE) {
 }
 
 /** The union of all faces across every mode — the bootstrap-allowed set
- *  (team-guard's FACE_TYPES). Lowercased Set, alpha excluded. */
+ *  (team-guard's FACE_TYPES). Lowercased Set, alpha excluded.
+ *
+ *  CLASS FIX (S-LC-01 fix-cycle #2): this MUST NOT iterate a RAW registry roster.
+ *  The prior `for (const r of modes[m].roster || [])` over `loadModes()` would, on
+ *  a present-but-malformed entry (e.g. roster: "alpha,epsilon,beta" — a STRING,
+ *  not an array), iterate the string's CHARACTERS via for…of and hand back a
+ *  bogus non-empty face set to team-guard's bootstrap allow-list. Instead we
+ *  enumerate the live-mode set (FALLBACK keys — the drift-validator-enforced live
+ *  mode list — unioned with any registry mode KEYS) and derive EACH mode's roster
+ *  through the SHAPE-VALIDATED roster() helper (→ modeEntry → isWellFormedEntry).
+ *  A malformed entry therefore falls back fail-open PER MODE instead of leaking
+ *  characters. No raw `.roster` is ever read here. */
 function allFaces(registryPath = REGISTRY_FILE) {
-  const modes = loadModes(registryPath) || FALLBACK;
+  // Enumerate mode KEYS only (never a roster value): the trusted FALLBACK keys
+  // (every live mode is guaranteed present — the validator fails closed otherwise)
+  // plus any extra registry mode keys. Roster VALUES come solely from roster().
+  const modeKeys = new Set(Object.keys(FALLBACK));
+  const modes = loadModes(registryPath);
+  if (modes && typeof modes === "object") {
+    for (const k of Object.keys(modes)) modeKeys.add(String(k).toLowerCase());
+  }
   const set = new Set();
-  for (const m of Object.keys(modes)) {
-    for (const r of modes[m].roster || []) {
+  for (const m of modeKeys) {
+    // roster() routes through modeEntry()→isWellFormedEntry: a malformed entry
+    // yields the FALLBACK roster, never a char-iterated string.
+    for (const r of roster(m, registryPath)) {
       const id = String(r).toLowerCase();
       if (id !== "alpha") set.add(id);
     }
