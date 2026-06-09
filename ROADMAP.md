@@ -731,6 +731,14 @@ See "Next: Skill Reliability" + "Later: Platform Bets" sections later in this fi
 - Events retention policy (events.jsonl crosses ~6MB in real-world usage)
 - Skill merges: `/retro:context+/retro:code → /retro:full`, `/fav:list+/fav:search → /fav`
 
+**Discovered 2026-06-08 (dispatch-shape session + `/learn:deep`) — pull-forward-able:**
+- **Mode-lifecycle enforcement epic (THE big one).** The recurring dispatch/mode-failure class (ε-skip, orphaned background dispatch, reap-fix-not-all-callers, state-misread-from-tea-leaves) has ONE root cause: orchestration invariants are memory-enforced, not GATED (`RT-2026-06-08-dispatch-class-rca`). Cure = a mechanical `mode:init:gate` action-boundary enforcer. Full planning prompt: `_planning/ingest/warpos-lifecycle.md` — run in a fresh **plan-mode** session to produce the epic plan; decompose keystone-first (`mode:init:gate`). Its **Section H is the unbuilt founder/provider-readiness (T1/T2/T3) panel** the operator keeps asking for — ships as one of its sprints.
+- **Retro→learning loop leak (3-source convergence).** `/sprint:full` never auto-invokes retro synthesis → 71% of sprint retros (17/24) are hollow `skeleton` shells; RI-001's retro-deferral has no milestone backstop; 56 no-retro warnings in 3d. Fix: wire `retrospective-synthesis` into the `/sprint:full` + `/sprint:release` skill bodies by default. (learnings `L-2026-06-08-sprint-retros-land-as-skeleton` + `-ri001-deferred-retro-no-backstop`; ED-011)
+- **ED-039 — dispatch-claude.js reap (all-callers).** The T-269 `safeSpawnFile` reap fix covers `dispatch-skill.js` but NOT `dispatch-claude.js` production (still buffered `safeSpawnSync`) → long roster builds reap silently with no record (orphaned SP-20260608-001's T-270). Extend `safeSpawnFile` to the build-dispatch path. (`L-2026-06-08-spawn-fix-must-cover-all-callers`)
+- **Write-time enforcement gaps (event-log scan).** The `cd "<abs>" &&` bash-prefix anti-pattern runs at **42%** (548/1296; enforcement is post-hoc strip+log, not write-time). The true dominant repeat-block is **memory-guard** (`rm` on events.jsonl 123×/3d), not merge-guard — consider a write-time PreToolUse rewrite/warn for both. (`L-2026-06-08-cd-prefix-antipattern-pervasive` + `-memory-guard-is-true-dominant-block`)
+- **sprint-tag-guard audit-half.** `ticket.js` refuses a wrong `--sprint` at CREATE time, but nothing flags an EXISTING ticket whose `sprint:` field disagrees with its bucket (recurred ≥5 sprints). Build the audit half. (`L-2026-06-08-sprint-tag-guard-audit-half-open`)
+- **Silent-reap visibility.** A dispatch reap emits NO event (0 dispatch-failure events fired this window, yet T-270 orphaned) — its signature is a *missing* completion record, not a failure event. A dispatch-ledger state surface would make "is the build alive?" a read, not a guess. (`L-2026-06-08-reap-is-silent-no-event`)
+
 ### How to pick up
 
 ```
