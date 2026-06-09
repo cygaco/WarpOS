@@ -37,7 +37,7 @@
 ## Dependencies
 - E-SYSTEM-ORG-001 (dispatch-shape north star, ~99%) — prerequisite; this epic builds on `dispatch-contract.json`, `dispatch-shape.js`, `safe-spawn.js`, `coverage-gate.js`. State: near-complete on `main`.
 - E-DISPATCH-INTEGRITY-001 (coverage-honesty) — sibling; its run-ledger precondition work pairs with Wave 2's coverage-gate wiring. State: Active.
-- Operator decisions on the § Human Approval Points (turbo push/spend default; provider funding/subscription detection method; mode-behavior backward-compat) before the affected waves flip to blocking.
+- Operator decisions on the § Human Approval Points (turbo push/spend default; provider funding/subscription detection method; mode-behavior backward-compat) before the affected waves flip to blocking. **RESOLVED 2026-06-09 (operator) — see Change log: all 6 §22 points ruled (turbo spend = $100 framework default, push per-action; provider = self-attestation + opt-in probe; mode-behavior backward-compat DEFERRED to the Wave-1 gate-flip).**
 
 ## Blockers
 - None currently recorded (Planned; execution is approval-gated per the plan's § Implementation-Phase Preflight Checklist).
@@ -57,9 +57,9 @@
 - 2026-06-08 — Post-authoring GPT-5.5 cross-provider review (cabinet, `ok:true`, model gpt-5.5) + α feasibility check CONVERGED → verdict NEEDS-REWORK on OVERCLAIMS (not the foundation); β-DECIDE 0.91 to fold doc-only honesty corrections. The 4 corrections (folded into the plan §1A/§8.3/§8.4/§8.8/§20/§22/§25): (1) turbo auto-push proven infeasible — `git push *` is already in `permissions.allow` yet the harness classifier still blocks push-to-main → push stays per-action; (2) mode-switch enforcement moves into `mode-set.js` as the single lifecycle-transaction writer, PreToolUse guard = BACKSTOP-ONLY; (3) team teardown downgraded mechanical→best-effort+reconcile; (4) blast-radius = fail-OPEN on parse, fail-CLOSED only on explicit bad states, report-only ramp. Evidence: `runtime/agent-system-plan/lifecycle-review/gpt55-review.out`. Foundation intact.
 
 ## Open questions
-- Turbo auto-push/merge + spend default — RESOLVED 2026-06-08 (operator: "highest autonomy possible") — see § Decisions. Residual sub-call: the exact framework-default spend-ceiling value ($100 baseline recommended).
-- Provider funding/subscription detection method (self-attestation vs gated billing-API probe vs infer-from-dispatch) — likely not read-only-detectable — owner: operator.
-- T3 tier subscription floor (`Max 5x` vs a lower hobbyist Claude sub — source's own open Q) — owner: operator.
+- Turbo auto-push/merge + spend default — RESOLVED 2026-06-08 (operator: "highest autonomy possible") — see § Decisions. Residual sub-call: the exact framework-default spend-ceiling value ($100 baseline recommended). **RESOLVED 2026-06-09 (operator): $100 framework-default ceiling (raisable per session); push/merge-to-main stays per-action. Encoded as DP-gap #39(a) in `paths.decisionPolicy`.**
+- Provider funding/subscription detection method (self-attestation vs gated billing-API probe vs infer-from-dispatch) — likely not read-only-detectable — owner: operator. **RESOLVED 2026-06-09 (operator): self-attestation default + optional opt-in billing-API probe; REJECT infer-from-dispatch.**
+- T3 tier subscription floor (`Max 5x` vs a lower hobbyist Claude sub — source's own open Q) — owner: operator. **DEFERRED 2026-06-09 (operator) to Wave 4 design.**
 - Should provider readiness become its own epic (E-PROVIDER-TIER-001) now or stay Wave 4 — owner: President + operator.
 
 ## Session log
@@ -81,6 +81,13 @@
 - Affected: ROADMAP.md (epic registry), TRACKER.md (header pointer), trackers/epics/ (new file), _planning/ (plan + principles).
 - Previous state: not tracked (the work was named only in prose as the TRACKER header's "NEXT epic").
 - New state: Planned, 0%, plan authored + Phase-0 grounded.
+
+### 2026-06-09 — Session (adhoc)
+- Changed: all 6 § Human Approval Points (plan §22) RESOLVED by the operator, and the 5 staged β recommendations PROMOTED into the judgment model. Specifically — #1 epic ID+title APPROVED; #2 turbo/spend APPROVED ($100 framework-default ceiling, raisable per session; auto-grants spend+commit+branch within the never-allowed hard ceilings; push/merge-to-main STAYS per-action because the harness classifier sits above `permissions.allow`); #3 provider detection APPROVED self-attestation default + optional opt-in billing-API probe, REJECT infer-from-dispatch (T3 tier-value DEFERRED to Wave 4); #4 backward-incompatible mode behavior DEFERRED to the Wave-1 gate-flip; #5 `epic:` command names APPROVED all 10, build `/epic:plan`+`/epic:fold` first; #6 Playbook direction APPROVED reference-procedures, design `/playbook:run` later. β recs PROMOTED: P-060 (review-discipline), P-061 (honesty-over-optimism), P-062 (autonomy-ceiling-resolves-upward), P-063 (procedure-integrity) → judgment-model.md; G-20 (pre-build review-gating) → judgment-model.md Reasoning/Heuristic; DP-gap #39(a) (turbo operator-declared override + autonomy-ESCALATE-resolves-upward) → decision-policy.md.
+- Reason: the operator ruled on the §22 approval points and directed PROMOTE on all five staged β recommendations from the 2026-06-08→09 mining cycle.
+- Affected: `_planning/warpos-lifecycle-plan.md` (§22 annotated with resolutions), `.claude/agents/president/_system/beta/judgement-model.md` (P-060..P-063 + G-20 + changelog rows), `.claude/agents/president/_system/policy/decision-policy.md` (DP-gap #39(a) § Autonomy-ceiling resolution), `.claude/agents/president/_system/beta/judgement-model-recommendations.md` (INTEGRATION STATUS marked operator-ruled), this file.
+- Previous state: Planned, 0%, §22 approval points open (3 RESOLVED-2026-06-08 + 3 open); 5 β recs LEFT STAGED for operator ruling.
+- New state: Planned, 0%, all §22 approval points resolved (4 APPROVED, #3 partial-defer of the T3 sub-call, #4 DEFERRED to Wave-1 gate-flip); 5 β recs promoted. Execution remains approval-gated (no code work started).
 
 ## Evidence log
 ### 2026-06-08 — Epic plan authored + Phase-0 grounded
