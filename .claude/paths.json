@@ -67,6 +67,7 @@
   "pathsLib": "scripts/hooks/lib/paths.js",
   "loggerLib": "scripts/hooks/lib/logger.js",
   "agentDispatchGuide": ".claude/agents/_system/guides/agent-dispatch-guide.md",
+  "modeMarker": ".claude/runtime/mode.json",
   "dispatchLocks": ".claude/runtime/dispatch-locks",
   "dispatchDeathsFile": ".claude/runtime/dispatch-deaths.jsonl",
   "dispatchCompletionsFile": ".claude/runtime/dispatch-completions.jsonl",

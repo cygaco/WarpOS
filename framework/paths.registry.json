@@ -585,6 +585,15 @@
       "previousPath": ".claude/project/reference/agent-dispatch-guide.md",
       "docsToken": "paths.agentDispatchGuide"
     },
+    "modeMarker": {
+      "path": ".claude/runtime/mode.json",
+      "kind": "json",
+      "owner": "runtime",
+      "mutable": true,
+      "introducedIn": "0.15.4",
+      "docsToken": "paths.modeMarker",
+      "_note": "Session-written mode marker {mode: adhoc|oneshot|sprint|solo}. Read by lib/mode.js#getMode (the resolver) + team-guard.js/session-start.js; mapped to its lifecycle contract by .claude/agents/_org/mode-lifecycle.json. Registered as a paths key in S-LC-01 (E-LIFECYCLE-001) so the marker path is single-sourced."
+    },
     "dispatchLocks": {
       "path": ".claude/runtime/dispatch-locks",
       "kind": "dir",

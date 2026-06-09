@@ -347,6 +347,11 @@
       "const": ".claude/agents/_system/guides/agent-dispatch-guide.md",
       "description": "md (framework) — paths.agentDispatchGuide"
     },
+    "modeMarker": {
+      "type": "string",
+      "const": ".claude/runtime/mode.json",
+      "description": "json (runtime) — paths.modeMarker"
+    },
     "dispatchLocks": {
       "type": "string",
       "const": ".claude/runtime/dispatch-locks",

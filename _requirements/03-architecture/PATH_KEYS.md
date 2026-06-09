@@ -66,6 +66,7 @@ Markdown convention: reference paths as `paths.X` in prose. Code: `const { PATHS
 | `manifest` | `.claude/manifest.json` | json | project | yes | 0.0.0 |  |
 | `maps` | `.claude/project/maps` | dir | generated | yes | 0.0.0 |  |
 | `memory` | `.claude/project/memory` | dir | runtime | yes | 0.0.0 |  |
+| `modeMarker` | `.claude/runtime/mode.json` | json | runtime | yes | 0.15.4 | Session-written mode marker {mode: adhoc|oneshot|sprint|solo |
 | `oneshotRetros` | `.claude/agents/president/_system/oneshot/retros` | dir | runtime | yes | 0.0.0 |  |
 | `oneshotStore` | `.claude/agents/president/_system/oneshot/store.json` | json | runtime | yes | 0.0.0 |  |
 | `oneshotSystem` | `.claude/agents/president/_system/oneshot` | dir | framework | no | 0.0.0 |  |

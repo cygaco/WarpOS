@@ -532,25 +532,39 @@ process.stdin.on("end", () => {
         } catch {
           /* no or malformed mode marker — no directive */
         }
-        const TEAM_MODES = {
-          sprint: {
-            faces: ["epsilon", "beta"],
-            desc: "α lead + ε conductor + β judgment",
-            spawns: [
-              ["epsilon", "Epsilon (ε)", ".claude/agents/president/epsilon.md + scripts/sprint/epsilon-runtime.js + .claude/agents/_org/sprint-hook-points.json"],
-              ["beta", "Beta (β)", ".claude/agents/president/beta.md"],
-            ],
-          },
-          adhoc: {
-            faces: ["beta", "gamma"],
-            desc: "α lead + β judgment + γ build-orchestrator",
-            spawns: [
-              ["beta", "Beta (β)", ".claude/agents/president/beta.md"],
-              ["gamma", "Gamma (γ)", ".claude/agents/president/gamma.md"],
-            ],
-          },
+        // S-LC-01: the per-mode ROSTER (which faces) is resolved FROM the
+        // Mode-Lifecycle Registry (.claude/agents/_org/mode-lifecycle.json) via
+        // the shared reader — no hardcoded required-team-by-mode map remains as
+        // the authoritative source. Only the PRESENTATION (display name + the
+        // spec-load path per face, and the human desc) stays local — it is not
+        // roster data. Fail-open: if the reader is unavailable the FALLBACK
+        // mirror inside lib/mode-lifecycle.js still yields the right faces.
+        let registryFaces;
+        try {
+          registryFaces = require("./lib/mode-lifecycle").faces(curMode);
+        } catch {
+          registryFaces = [];
+        }
+        // Per-face presentation (display name + STARTUP load path). Keyed by the
+        // role id the registry roster carries. desc is the human one-liner.
+        const FACE_PRESENTATION = {
+          epsilon: ["Epsilon (ε)", ".claude/agents/president/epsilon.md + scripts/sprint/epsilon-runtime.js + .claude/agents/_org/sprint-hook-points.json"],
+          beta: ["Beta (β)", ".claude/agents/president/beta.md"],
+          gamma: ["Gamma (γ)", ".claude/agents/president/gamma.md"],
         };
-        const spec = TEAM_MODES[curMode];
+        const MODE_DESC = {
+          sprint: "α lead + ε conductor + β judgment",
+          adhoc: "α lead + β judgment + γ build-orchestrator",
+        };
+        let spec = null;
+        if (registryFaces.length && MODE_DESC[curMode]) {
+          const spawns = registryFaces
+            .filter((f) => FACE_PRESENTATION[f])
+            .map((f) => [f, FACE_PRESENTATION[f][0], FACE_PRESENTATION[f][1]]);
+          if (spawns.length) {
+            spec = { faces: registryFaces, desc: MODE_DESC[curMode], spawns };
+          }
+        }
         if (spec) {
           const slug =
             path.basename(cwd).toLowerCase().replace(/[^a-z0-9]/g, "") || "project";

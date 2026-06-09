@@ -4,10 +4,15 @@
 // across beta-gate.js, smart-context.js, team-guard.js (P-07-05).
 //
 // Mode resolution order (matches team-guard.js, RT-013):
-//   1. .claude/runtime/mode.json {mode: "adhoc" | "oneshot" | "solo"}
+//   1. .claude/runtime/mode.json {mode: "adhoc" | "oneshot" | "sprint" | "solo"}
 //   2. legacy heartbeat fallback (an adhoc team's heartbeat with
 //      matching session-id)
 //   3. default "solo"
+//
+// S-LC-01: the "sprint" case was previously MISSING from getMode() — a
+// mode.json:{mode:"sprint"} fell through to "solo". Sprint is now a
+// first-class resolved mode (the registry .claude/agents/_org/mode-lifecycle.json
+// is the SoT for what each mode requires).
 
 const fs = require("fs");
 const path = require("path");
@@ -56,10 +61,12 @@ function adhocHeartbeatMatches() {
   }
 }
 
-/** Resolve the active mode. Returns one of "adhoc" | "oneshot" | "solo". */
+/** Resolve the active mode. Returns one of
+ *  "adhoc" | "oneshot" | "sprint" | "solo". */
 function getMode() {
   const explicit = readModeFile();
   if (explicit === "oneshot") return "oneshot";
+  if (explicit === "sprint") return "sprint";
   if (explicit === "solo") return "solo";
   if (explicit === "adhoc") return "adhoc";
   if (adhocHeartbeatMatches()) return "adhoc";
@@ -68,12 +75,14 @@ function getMode() {
 
 const isAdhoc = () => getMode() === "adhoc";
 const isOneshot = () => getMode() === "oneshot";
+const isSprint = () => getMode() === "sprint";
 const isSolo = () => getMode() === "solo";
 
 module.exports = {
   getMode,
   isAdhoc,
   isOneshot,
+  isSprint,
   isSolo,
   readModeFile,
   getCurrentSessionId,

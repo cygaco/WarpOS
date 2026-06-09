@@ -12,6 +12,20 @@
 const fs = require("fs");
 const path = require("path");
 
+// S-LC-01: the bootstrap-face allow-list is the union of every mode's roster,
+// resolved FROM the Mode-Lifecycle Registry (.claude/agents/_org/mode-lifecycle.json)
+// via the shared reader — NOT a hardcoded literal. Fail-open to the known set if
+// the reader is unavailable (a guard must never crash); the registry is the
+// authoritative source (drift is caught by scripts/checks/mode-lifecycle-registry.js).
+let modeFaces;
+try {
+  modeFaces = require("./lib/mode-lifecycle").allFaces();
+  if (!(modeFaces instanceof Set) || modeFaces.size === 0)
+    throw new Error("empty face set");
+} catch {
+  modeFaces = new Set(["epsilon", "beta", "gamma", "delta"]);
+}
+
 // Build-chain agent types that only Gamma should dispatch. CONFIG-DRIVEN from
 // the org map via scripts/dispatch/org-roles.js (S1.1 chassis): org-map domain
 // builders[] + gauntlet members + a documented static augment (legacy rename
@@ -173,7 +187,7 @@ process.stdin.on("end", () => {
       // research/cognition one-offs (legitimately not "the team"). A WORKER is
       // anything else with a subagent_type (general-purpose + the build-chain
       // GAMMA_ONLY_TYPES) — that is what the gate guards.
-      const FACE_TYPES = new Set(["epsilon", "beta", "gamma", "delta"]);
+      const FACE_TYPES = modeFaces; // registry-derived (see module head, S-LC-01)
       const RESEARCH_TYPES = new Set(["explore", "plan"]);
       const isWorker =
         agentType && !FACE_TYPES.has(agentType) && !RESEARCH_TYPES.has(agentType);
