@@ -102,21 +102,25 @@ function requiresTeam(mode, registryPath = REGISTRY_FILE) {
  *  The prior `for (const r of modes[m].roster || [])` over `loadModes()` would, on
  *  a present-but-malformed entry (e.g. roster: "alpha,epsilon,beta" — a STRING,
  *  not an array), iterate the string's CHARACTERS via for…of and hand back a
- *  bogus non-empty face set to team-guard's bootstrap allow-list. Instead we
- *  enumerate the live-mode set (FALLBACK keys — the drift-validator-enforced live
- *  mode list — unioned with any registry mode KEYS) and derive EACH mode's roster
- *  through the SHAPE-VALIDATED roster() helper (→ modeEntry → isWellFormedEntry).
- *  A malformed entry therefore falls back fail-open PER MODE instead of leaking
- *  characters. No raw `.roster` is ever read here. */
+ *  bogus non-empty face set to team-guard's bootstrap allow-list. Each mode's
+ *  roster is therefore derived through the SHAPE-VALIDATED roster() helper
+ *  (→ modeEntry → isWellFormedEntry); a malformed entry falls back fail-open PER
+ *  MODE instead of leaking characters. No raw `.roster` is ever read here.
+ *
+ *  CLASS FIX (S-LC-01 fix-cycle #3): the mode KEY-SET is CLOSED. We enumerate
+ *  ONLY the canonical/validated live-mode keys (Object.keys(FALLBACK) — the
+ *  drift-validator-enforced live-mode list) and DO NOT union extra registry mode
+ *  KEYS. The prior union let a STRAY registry mode (e.g. `"rogue": { roster:
+ *  ["alpha","general-purpose"] }`) contribute its roster into the bootstrap
+ *  FACE_TYPES allow-list — boundary widening that would let team-guard treat a
+ *  sprint worker dispatch as bootstrap-allowed instead of BLOCKING. A registry
+ *  mode KEY absent from the canonical set now contributes NO faces (fail-open in
+ *  the reader; the validator additionally fails CLOSED on any unknown key). */
 function allFaces(registryPath = REGISTRY_FILE) {
-  // Enumerate mode KEYS only (never a roster value): the trusted FALLBACK keys
-  // (every live mode is guaranteed present — the validator fails closed otherwise)
-  // plus any extra registry mode keys. Roster VALUES come solely from roster().
-  const modeKeys = new Set(Object.keys(FALLBACK));
-  const modes = loadModes(registryPath);
-  if (modes && typeof modes === "object") {
-    for (const k of Object.keys(modes)) modeKeys.add(String(k).toLowerCase());
-  }
+  // CLOSED key-set: enumerate ONLY the canonical live-mode keys (never a
+  // registry-supplied extra key, never a roster value). Roster VALUES come solely
+  // from the shape-validated roster() helper.
+  const modeKeys = Object.keys(FALLBACK);
   const set = new Set();
   for (const m of modeKeys) {
     // roster() routes through modeEntry()→isWellFormedEntry: a malformed entry

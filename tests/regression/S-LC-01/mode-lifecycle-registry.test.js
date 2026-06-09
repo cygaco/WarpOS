@@ -364,5 +364,74 @@ ok("legit-failopen-faces-set-not-flagged", () => {
   assert.strictEqual(r.status, 0, `a legit fail-open faces Set (no alpha) must PASS\n${r.stdout}`);
 });
 
+// AC-FIX3A — allFaces() enumerates a CLOSED mode key-set: a STRAY registry mode
+// key (outside the canonical FALLBACK/live-mode set) contributes NO faces. The
+// class bug (fix-cycle #3): allFaces unioned `Object.keys(modes)`, so a stray
+// `"rogue": { roster: ["alpha","general-purpose"] }` leaked general-purpose into
+// team-guard's bootstrap FACE_TYPES allow-list — boundary widening.
+ok("allFaces-ignores-unknown-mode-key", () => {
+  delete require.cache[require.resolve(READER)];
+  const ml = require(READER);
+
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "mlr-fix3a-"));
+  const bad = path.join(dir, "mode-lifecycle.json");
+  const doc = JSON.parse(fs.readFileSync(REGISTRY, "utf8"));
+  // A stray mode whose roster would inject a non-face AND a bogus face.
+  doc.modes.rogue = { roster: ["alpha", "general-purpose"], requires_team: true };
+  fs.writeFileSync(bad, JSON.stringify(doc, null, 2));
+
+  const set = ml.allFaces(bad);
+  assert.ok(!set.has("general-purpose"), "a stray mode's roster must not leak a face");
+  assert.ok(!set.has("rogue"), "the stray mode key itself is never a face");
+  // Only the canonical live-mode faces remain (closed key-set).
+  assert.deepStrictEqual([...set].sort(), ["beta", "delta", "epsilon", "gamma"]);
+});
+
+// AC-FIX3B — fail-CLOSED: an UNKNOWN mode KEY in the registry (outside the closed
+// LIVE_MODES set) is a reported problem. The rogue entry is otherwise well-formed
+// so ONLY the unknown-mode check fires (isolating the fix).
+ok("validator-rejects-unknown-mode", () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "mlr-unk-"));
+  const fixture = path.join(dir, "mode-lifecycle.json");
+  const doc = JSON.parse(fs.readFileSync(REGISTRY, "utf8"));
+  doc.modes.rogue = {
+    roster: ["alpha", "epsilon"],
+    requires_team: true,
+    bindings: [],
+    provider_tier: "T1",
+    dispatch_profile_ref: "dispatch-contract.json#/role_classes",
+    teardown: { policy: "none" },
+  };
+  fs.writeFileSync(fixture, JSON.stringify(doc, null, 2));
+
+  const r = runValidator(fixture);
+  assert.notStrictEqual(r.status, 0, "an unknown mode key must FAIL closed");
+  assert.ok(/UNKNOWN mode/.test(r.stdout), `the failure must name the unknown mode\n${r.stdout}`);
+});
+
+// AC-FIX3C — fail-CLOSED: a LIVE mode whose roster contains a NON-FACE id
+// (general-purpose) fails closed. The fixture reader FALLBACK MIRRORS the same
+// roster so the MIRROR/drift check is CLEAN — isolating the non-face check as the
+// sole failure (defense-in-depth: even a non-drifting KNOWN mode can't inject a
+// bogus face). The validator derives its allowlist from the REAL reader, so the
+// compromised fixture mirror cannot whitelist general-purpose.
+ok("validator-rejects-non-face-roster-id", () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "mlr-nonface-"));
+  const fixtureReg = path.join(dir, "mode-lifecycle.json");
+  const fixtureReader = path.join(dir, "reader.js");
+  const doc = JSON.parse(fs.readFileSync(REGISTRY, "utf8"));
+  doc.modes.sprint.roster = ["alpha", "epsilon", "beta", "general-purpose"];
+  fs.writeFileSync(fixtureReg, JSON.stringify(doc, null, 2));
+
+  delete require.cache[require.resolve(READER)];
+  const fb = JSON.parse(JSON.stringify(require(READER).FALLBACK));
+  fb.sprint.roster = ["alpha", "epsilon", "beta", "general-purpose"]; // mirror => no drift
+  fs.writeFileSync(fixtureReader, `module.exports = { FALLBACK: ${JSON.stringify(fb)} };\n`);
+
+  const r = runValidator(fixtureReg, ["--reader", fixtureReader]);
+  assert.notStrictEqual(r.status, 0, "a non-face roster id must FAIL closed");
+  assert.ok(/NON-FACE/.test(r.stdout), `the failure must name the non-face id\n${r.stdout}`);
+});
+
 console.log(`\nmode-lifecycle-registry: ${pass}/${pass + fail} pass`);
 process.exit(fail ? 1 : 0);

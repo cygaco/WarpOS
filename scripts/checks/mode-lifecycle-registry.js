@@ -18,9 +18,16 @@
  *   1. SCHEMA   — registry parses; every live mode (solo|adhoc|oneshot|sprint)
  *                 present with roster[]/requires_team(bool)/bindings[]/
  *                 provider_tier(str)/dispatch_profile_ref(str)/teardown(obj).
+ *                 The live-mode set is CLOSED: any UNKNOWN mode key (outside
+ *                 LIVE_MODES) fails closed — a stray mode would widen the
+ *                 bootstrap face allow-list (fix-cycle #3).
  *   2. MIRROR   — lib/mode-lifecycle.js#FALLBACK roster+requires_team match the
  *                 registry per mode (the fail-open mirror must not silently
  *                 diverge from the SoT — that is the drift bug class).
+ *  2b. ROSTER   — every roster id (even for a KNOWN mode) must be a recognized
+ *                 FACE drawn from the canonical FALLBACK union (alpha/beta/gamma/
+ *                 delta/epsilon); a NON-FACE id (e.g. general-purpose) fails
+ *                 closed so it cannot be injected into FACE_TYPES (fix-cycle #3).
  *   3. READERS  — team-guard.js + session-start.js reference the shared reader
  *                 (./lib/mode-lifecycle) — i.e. they still resolve from the
  *                 registry rather than re-hardcoding a roster.
@@ -163,6 +170,20 @@ function main() {
         }
       }
     }
+    // FAIL-CLOSED (fix-cycle #3): the live-mode set is CLOSED. Any registry mode
+    // KEY outside LIVE_MODES is boundary-widening — a stray mode (e.g. "rogue")
+    // would inject its roster into the bootstrap FACE_TYPES allow-list. The reader
+    // (allFaces) now ignores such keys fail-open; the validator rejects them
+    // fail-CLOSED so an unknown mode can never reach a "valid" tree.
+    for (const k of Object.keys(modes)) {
+      if (!LIVE_MODES.includes(String(k).toLowerCase())) {
+        problems.push(
+          `schema: UNKNOWN mode "${k}" present in registry — the live-mode set is ` +
+            `CLOSED (${LIVE_MODES.join("|")}); a stray mode widens the bootstrap ` +
+            `face allow-list`,
+        );
+      }
+    }
   }
 
   // ── 2. MIRROR — lib/mode-lifecycle.js FALLBACK ⟷ registry ───────────────────
@@ -200,6 +221,46 @@ function main() {
           `drift: mode "${m}" requires_team — registry ${reg.requires_team} ` +
             `≠ reader FALLBACK ${fb.requires_team}`,
         );
+      }
+    }
+  }
+
+  // ── 2b. ROSTER FACE ALLOWLIST — every roster id must be a recognized FACE ─────
+  // FAIL-CLOSED (fix-cycle #3): even a KNOWN mode must not inject a BOGUS face
+  // (e.g. "general-purpose") into the bootstrap FACE_TYPES allow-list. The
+  // canonical valid-face/role set is the union of roster ids across the REAL
+  // reader's FALLBACK (alpha/beta/gamma/delta/epsilon). It is loaded from the
+  // DEFAULT reader (READER), NOT --reader, so the allowlist stays canonical even
+  // when a sealed fixture overrides the reader for the MIRROR test — a non-face
+  // roster id is rejected against the TRUE face set, not a compromised mirror.
+  let canonicalRoles = null;
+  try {
+    delete require.cache[require.resolve(READER)];
+    const realFB = require(READER).FALLBACK;
+    canonicalRoles = new Set();
+    for (const m of Object.keys(realFB || {})) {
+      const r = realFB[m] && realFB[m].roster;
+      if (Array.isArray(r)) {
+        for (const id of r) canonicalRoles.add(String(id).toLowerCase());
+      }
+    }
+  } catch (e) {
+    problems.push(
+      `roster: cannot derive the canonical face allowlist from reader FALLBACK: ${e.message}`,
+    );
+  }
+  if (modes && canonicalRoles && canonicalRoles.size) {
+    for (const m of LIVE_MODES) {
+      const entry = modes[m];
+      if (!entry || !Array.isArray(entry.roster)) continue;
+      for (const r of entry.roster) {
+        if (!canonicalRoles.has(String(r).toLowerCase())) {
+          problems.push(
+            `roster: mode "${m}" roster contains NON-FACE id "${r}" — not a ` +
+              `recognized face (${[...canonicalRoles].join("|")}); a bogus roster ` +
+              `id injects a non-face into the bootstrap FACE_TYPES allow-list`,
+          );
+        }
       }
     }
   }
