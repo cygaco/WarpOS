@@ -269,6 +269,35 @@ try {
   /* fail-open — contract consult never blocks a working dispatch */
 }
 
+// ── Shape-resolver self-detection (T-20260608-271) ──────────────────────────
+// This wrapper OWNS the subprocess-claude shape. Consult the LIVE resolver
+// (dispatch-shape.js) as the independent authority: if resolveShape would pick a
+// DIFFERENT shape for this role, the role is being routed through the WRONG wrapper
+// (e.g. a cross-provider reviewer pushed through dispatch-claude) — the wrong shape
+// self-detects on a REAL dispatch (the north star's 2nd clause). Report-only by default
+// (same ramp as the contract consult); WARPOS_DISPATCH_CONTRACT_ENFORCE=block makes a
+// high-severity mismatch fatal. Fail-OPEN on any resolver error.
+try {
+  const { shapeMismatch } = require("./dispatch/dispatch-shape");
+  const mm = shapeMismatch("subprocess-claude", { kind: "agent", id: role });
+  if (mm && mm.mismatch) {
+    const blocking = process.env.WARPOS_DISPATCH_CONTRACT_ENFORCE === "block" && mm.severity === "high";
+    process.stderr.write(
+      `[dispatch-claude] shape-resolver ${blocking ? "VIOLATION" : "advisory"}: ` +
+        `role '${role}' dispatched as 'subprocess-claude' but the resolver picks '${mm.expected}' ` +
+        `(${mm.expectedReason || mm.reason}; severity=${mm.severity || "medium"}).\n`,
+    );
+    if (blocking) {
+      console.log(
+        JSON.stringify({ ok: false, provider: PROVIDER, role, reaped: false, reason: "dispatch_shape_mismatch", expected: mm.expected, actual: "subprocess-claude", severity: mm.severity }),
+      );
+      process.exit(1);
+    }
+  }
+} catch {
+  /* fail-open — the resolver consult never crashes a working dispatch */
+}
+
 // ── Spawn: production → the safety kernel; test-seam → direct ─
 // PRODUCTION (no DISPATCH_CLAUDE_BIN): route through safeSpawnSync — the model
 // never chooses the exe (claude resolved to an abs path; repo/temp PATH-hijack

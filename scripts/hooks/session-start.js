@@ -582,6 +582,35 @@ process.stdin.on("end", () => {
           } catch {
             /* no teams dir — treat as not live */
           }
+          // S-12c heartbeat WRITER (cross-provider review 2026-06-08 CRITICAL:
+          // teamHeartbeatFresh had no production writer — only the test fixture
+          // wrote the marker, so a long-idle (>24h config) correct team would
+          // false-block once the hard gate ships ON). When the correct team is
+          // confirmed live HERE (session start/resume), stamp the sid-keyed
+          // ~/.claude/runtime/.team-live-<sid> marker the gate reads as the
+          // freshness-independent liveness signal. Fail-open (never blocks start).
+          if (live) {
+            try {
+              const sidPath = path.join(cwd, ".claude", "runtime", ".session-id");
+              const sid = fs.existsSync(sidPath)
+                ? fs.readFileSync(sidPath, "utf8").trim()
+                : "";
+              if (sid) {
+                const hbDir = path.join(
+                  process.env.HOME || process.env.USERPROFILE || "",
+                  ".claude",
+                  "runtime",
+                );
+                fs.mkdirSync(hbDir, { recursive: true });
+                fs.writeFileSync(
+                  path.join(hbDir, `.team-live-${sid}`),
+                  JSON.stringify({ ts: new Date().toISOString(), mode: curMode }),
+                );
+              }
+            } catch {
+              /* heartbeat write is best-effort — never block session start */
+            }
+          }
           if (!live) {
             const team = `${slug}-${curMode}`;
             const calls = [

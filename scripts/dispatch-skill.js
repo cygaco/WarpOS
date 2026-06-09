@@ -114,6 +114,13 @@ const SAFE_ARG_RE = /^[A-Za-z0-9_\-./:=@,+]+$/;
 const PROVIDER = "claude";
 const DEFAULT_TIMEOUT_MS = 15 * 60 * 1000; // 15 min — shorter than the harness reap threshold
 const MAX_BUFFER = 64 * 1024 * 1024; // 64 MB — heavy skills emit big aggregates
+// RI-004 reap mitigation (ticket T-20260608-269): the production spawn writes the
+// child's stdout to a DURABLE FILE (safeSpawnFile) so an outer-harness reap of the
+// dispatcher cannot lose a result `claude` already produced, AND retries a reaped
+// attempt up to MAX_REAP_RETRIES times — each retry first RECOVERS the prior
+// attempt's savepoint (no re-spend) before re-spawning. Override via env.
+const _maxRetriesRaw = parseInt(process.env.DISPATCH_SKILL_MAX_RETRIES || "2", 10);
+const MAX_REAP_RETRIES = Number.isFinite(_maxRetriesRaw) && _maxRetriesRaw >= 0 ? _maxRetriesRaw : 2;
 
 /** Slug form of a skill name: "/scan:full" -> "scan-full" (filesystem-safe). */
 function skillSlug(skill) {
@@ -474,13 +481,51 @@ function dispatchSkill(opts) {
       stderr.write(msg + "\n");
       return { exitCode: 2, status: "kernel_missing", envelope: `SKILL ${skill}: REFUSED (${msg})` };
     }
-    const r = safeSpawn.safeSpawnSync("claude", claudeArgs, {
-      input: promptBuf,
-      timeoutMs: TIMEOUT_MS,
-      maxBuffer: MAX_BUFFER,
-      cwd: AGENT_ROOT,
-      env: childEnv,
-    });
+    // RI-004 reap fix: write the child's stdout to a DURABLE FILE (the .out
+    // savepoint) so an outer-harness reap of THIS dispatcher cannot lose a result
+    // `claude` already produced, and RETRY a reaped attempt — each retry first
+    // RECOVERS the prior attempt's savepoint before re-spending. The savepoint path
+    // is STABLE across this call's retries (keyed off dispatchId) so recovery works.
+    const outFile = artifactPath + ".out";
+    let r = null;
+    let attempts = 0;
+    for (let attempt = 0; attempt <= MAX_REAP_RETRIES; attempt++) {
+      attempts = attempt + 1;
+      r = safeSpawn.safeSpawnFile("claude", claudeArgs, {
+        input: promptBuf,
+        timeoutMs: TIMEOUT_MS,
+        maxBuffer: MAX_BUFFER,
+        cwd: AGENT_ROOT,
+        env: childEnv,
+        outFile,
+        recover: true, // a prior attempt that finished cleanly is recovered, not re-run
+      });
+      // A pre-spawn refusal (arg-policy / resolution) is fatal — NEVER retry it.
+      if (
+        r.reason === "arg_policy_violation" ||
+        r.reason === "tool_resolution_refused" ||
+        r.reason === "cmd_exe_unresolved" ||
+        r.reason === "missing_out_file"
+      ) {
+        break;
+      }
+      if (!r.reaped) break; // success (fresh or recovered) — stop retrying
+      // reaped → loop and retry (the savepoint recovery on the next pass returns the
+      // real bytes if the reaped attempt had actually finished writing the file).
+    }
+    if (attempts > 1) {
+      stderr.write(
+        `[dispatch-skill] ${skill}: ${attempts} attempt(s) — ${r.recovered ? "RECOVERED from savepoint" : r.reaped ? "still reaped after retries" : "succeeded on re-spawn after a reap"} (RI-004 mitigation).\n`,
+      );
+    }
+    // Clean up the savepoint sidecars on a definitive outcome (the .md artifact below
+    // is the durable record). Best-effort.
+    if (!r.reaped) {
+      try {
+        fs.rmSync(outFile, { force: true });
+        fs.rmSync(outFile + ".done", { force: true });
+      } catch { /* best effort */ }
+    }
     // The kernel already resolved + arg-checked + spawned + tree-killed + classified.
     // It suppresses stdout to "" on a reap, so a reaped run records 0 stdout bytes.
     stdoutBuf = Buffer.from(r.stdout || "", "utf8");
@@ -493,7 +538,8 @@ function dispatchSkill(opts) {
     if (
       r.reason === "arg_policy_violation" ||
       r.reason === "tool_resolution_refused" ||
-      r.reason === "cmd_exe_unresolved"
+      r.reason === "cmd_exe_unresolved" ||
+      r.reason === "missing_out_file"
     ) {
       reaped = true;
       reason = "skill_spawn_failed";

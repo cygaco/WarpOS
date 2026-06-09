@@ -21,7 +21,7 @@ const os = require("os");
 const path = require("path");
 const { spawn } = require("child_process");
 const { harness, sealedDir } = require("../checks/lib/fixture-harness");
-const { assertArgs, resolveTool, normalizeStdin, treeKill, safeSpawnSync, PROJECT_ROOT } = require("./safe-spawn");
+const { assertArgs, resolveTool, normalizeStdin, treeKill, safeSpawnSync, safeSpawnFile, PROJECT_ROOT } = require("./safe-spawn");
 
 // Synchronous, event-loop-free sleep so a process-liveness poll can block inside a
 // synchronous h.test without a foreground shell `sleep`. The detached descendants
@@ -192,6 +192,98 @@ h.test("treeKill reaps a parent + child + GRANDCHILD process tree (not just the 
     }
     if (!killed && pids.P) { try { treeKill(pids.P); } catch {} }
     try { fs.unlinkSync(pidFile); } catch {}
+  }
+});
+
+// ── safeSpawnFile — durable-file + savepoint recovery (RI-004 reap fix) ──
+// Ticket T-20260608-269: the §13.6 ping reaped ~50% because safeSpawnSync buffers
+// stdout in RAM and only surfaces it at child exit — an outer-harness reap of the
+// dispatcher lost a result `claude` had already produced. safeSpawnFile writes the
+// child's stdout to a DURABLE FILE and drops a savepoint sentinel, so the result is
+// recoverable independent of how the parent dies.
+
+// (1) Happy path: the out-file holds the real output AND a savepoint sentinel lands.
+h.test("safeSpawnFile writes a durable out-file + savepoint sentinel on a clean run", () => {
+  const fx = sealedDir({}, "ssfile-ok");
+  try {
+    const outFile = fx.file("out.txt");
+    const r = safeSpawnFile("git", ["rev-parse", "--is-inside-work-tree"], { cwd: PROJECT_ROOT, outFile });
+    assert.ok(r.ok, `expected ok, got ${JSON.stringify(r)}`);
+    assert.strictEqual(r.recovered, false, "first run is NOT a recovery");
+    // The durable file holds the output (not an in-memory buffer that dies with the parent).
+    assert.ok(fs.existsSync(outFile), "out-file must exist on disk");
+    assert.match(fs.readFileSync(outFile, "utf8").trim(), /^true$/, "out-file holds the real stdout");
+    assert.match(r.stdout.trim(), /^true$/, "returned stdout mirrors the file");
+    // The savepoint sentinel proves a recoverable result for a later retry.
+    assert.ok(fs.existsSync(outFile + ".done"), "savepoint sentinel must exist");
+    const sv = JSON.parse(fs.readFileSync(outFile + ".done", "utf8"));
+    assert.strictEqual(sv.ok, true, "sentinel marks a clean run");
+  } finally {
+    fx.cleanup();
+  }
+});
+
+// (2) THE load-bearing reap-resistance assertion: a second call with a valid
+// savepoint RECOVERS the prior result WITHOUT re-spawning — so a bounded retry after
+// an outer reap returns the real bytes the reaped attempt produced, with no re-spend.
+h.test("safeSpawnFile RECOVERS from a savepoint without re-spawning (no re-spend)", () => {
+  const fx = sealedDir({}, "ssfile-recover");
+  try {
+    const outFile = fx.file("out.txt");
+    // Plant a savepoint as if a PRIOR attempt finished cleanly but the parent was then
+    // reaped before it could surface the result. Point the tool-id at a NON-EXISTENT
+    // exe via the path seam: if recovery did NOT happen, the re-spawn would FAIL — so a
+    // successful, correct result PROVES the savepoint path was taken (no spawn at all).
+    fs.writeFileSync(outFile, "RECOVERED-PAYLOAD\n", "utf8");
+    fs.writeFileSync(outFile + ".done", JSON.stringify({ ok: true, exitCode: 0, bytes: 18, durationMs: 999 }) + "\n", "utf8");
+    const r = safeSpawnFile("git", ["rev-parse", "--is-inside-work-tree"], {
+      cwd: PROJECT_ROOT,
+      outFile,
+      // Force resolution to a bogus exe: a real spawn would reap; recovery must win first.
+      resolve: { path: path.join(PROJECT_ROOT, "does-not-exist-ssfile.exe") },
+    });
+    assert.ok(r.ok, `recovery must succeed, got ${JSON.stringify(r)}`);
+    assert.strictEqual(r.recovered, true, "must report recovered:true (savepoint path)");
+    assert.match(r.stdout, /RECOVERED-PAYLOAD/, "recovered the prior attempt's real bytes");
+  } finally {
+    fx.cleanup();
+  }
+});
+
+// (3) A reaped run leaves NO trustworthy savepoint (so a retry re-spawns, never
+// recovers a phantom). Plant a zero-byte out-file with NO sentinel → a fresh spawn
+// runs and a real result replaces it.
+h.test("safeSpawnFile does NOT recover from a missing/zero-byte savepoint", () => {
+  const fx = sealedDir({}, "ssfile-noreap");
+  try {
+    const outFile = fx.file("out.txt");
+    fs.writeFileSync(outFile, "", "utf8"); // empty, NO .done sentinel
+    const r = safeSpawnFile("git", ["rev-parse", "--is-inside-work-tree"], { cwd: PROJECT_ROOT, outFile });
+    // No valid savepoint → it must actually re-run (recovered:false) and succeed.
+    assert.strictEqual(r.recovered, false, "must NOT recover without a sentinel");
+    assert.ok(r.ok, `re-spawn should succeed, got ${JSON.stringify(r)}`);
+    assert.match(r.stdout.trim(), /^true$/, "real re-run output");
+  } finally {
+    fx.cleanup();
+  }
+});
+
+// (4) Fail-closed: safeSpawnFile without an outFile refuses (no spawn).
+h.failClosed("safeSpawnFile fails closed without an outFile (NO spawn)", () => {
+  const r = safeSpawnFile("git", ["rev-parse", "--is-inside-work-tree"], { cwd: PROJECT_ROOT });
+  return { ok: r.ok === true || r.reason !== "missing_out_file" };
+});
+
+// (5) Fail-closed: an arg violation is refused BEFORE any spawn or file write.
+h.failClosed("safeSpawnFile fails closed on an arg violation (NO spawn, NO file)", () => {
+  const fx = sealedDir({}, "ssfile-argviol");
+  try {
+    const outFile = fx.file("out.txt");
+    const r = safeSpawnFile("codex", ["exec", "--evil-flag", "-"], { outFile });
+    const wrong = r.ok === true || r.reason !== "arg_policy_violation" || fs.existsSync(outFile);
+    return { ok: wrong };
+  } finally {
+    fx.cleanup();
   }
 });
 

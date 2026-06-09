@@ -519,6 +519,29 @@ try {
   /* fail-open — contract consult never blocks a working dispatch */
 }
 
+// ── Shape-resolver self-detection (T-20260608-271) ──────────────────────────
+// This wrapper OWNS the subprocess-cross-provider shape. Consult the LIVE resolver as
+// the independent authority: if resolveShape picks a DIFFERENT shape for this role, the
+// role is routed through the wrong wrapper (e.g. a build-chain builder pushed through the
+// cross-provider path) — the wrong shape self-detects on a REAL dispatch. Report-only by
+// default; WARPOS_DISPATCH_CONTRACT_ENFORCE=block makes a high-severity mismatch fatal.
+try {
+  const { shapeMismatch } = require("./dispatch/dispatch-shape");
+  const mm = shapeMismatch("subprocess-cross-provider", { kind: "agent", id: role });
+  if (mm && mm.mismatch) {
+    const blocking = process.env.WARPOS_DISPATCH_CONTRACT_ENFORCE === "block" && mm.severity === "high";
+    process.stderr.write(
+      `[dispatch-agent] shape-resolver ${blocking ? "VIOLATION" : "advisory"}: role '${role}' dispatched as 'subprocess-cross-provider' but the resolver picks '${mm.expected}' (${mm.expectedReason || mm.reason}; severity=${mm.severity || "medium"}).\n`,
+    );
+    if (blocking) {
+      console.log(JSON.stringify({ ok: false, provider, role, error: "dispatch_shape_mismatch", expected: mm.expected, actual: "subprocess-cross-provider", severity: mm.severity }));
+      process.exit(1);
+    }
+  }
+} catch {
+  /* fail-open — the resolver consult never crashes a working dispatch */
+}
+
 // Phase 5T F8: Gemini redteam prompts above 75KB routinely timed out.
 // Return a structured fallback signal before spending the provider timeout.
 if (provider === "gemini" && role === "redteam" && promptBytes > 75 * 1024) {

@@ -109,8 +109,12 @@ function runGuard(opts = {}) {
     },
   };
   const env = { ...process.env, CLAUDE_PROJECT_DIR: proj, HOME: home, USERPROFILE: home };
-  if (opts.hardGate) env.WARPOS_TEAM_GATE_HARD = "1";
-  else delete env.WARPOS_TEAM_GATE_HARD;
+  // S-12c is now DEFAULT-ON: the gate is active unless WARPOS_TEAM_GATE_SOFT=1.
+  // `hardGate:true` is the normal shipped posture (no env needed); `hardGate:false`
+  // means "explicitly soften the gate back to advisory-only" (the ramp-off path).
+  delete env.WARPOS_TEAM_GATE_HARD; // legacy force-on; default-on no longer needs it
+  if (opts.hardGate === false) env.WARPOS_TEAM_GATE_SOFT = "1";
+  else delete env.WARPOS_TEAM_GATE_SOFT;
   if (opts.killSwitchEnv) env.WARPOS_DISABLE_TEAM_GATE = "1";
   else delete env.WARPOS_DISABLE_TEAM_GATE;
   const r = spawnSync("node", [HOOK], { input: JSON.stringify(event), env, encoding: "utf8" });
@@ -181,10 +185,55 @@ ok("(8) heartbeat fresh but config-mtime >24h => ALLOW (no false-block)", () => 
   assert.ok(!blocks(stdout), "a long-idle but live team must not false-block");
 });
 
-// (+) DEFAULT OFF — gate dormant; advisory-only behavior preserved.
-ok("(+) HARD_GATE OFF (default) + no team + worker => ALLOW (advisory only)", () => {
+// (+) DEFAULT ON — the gate is now active out-of-the-box (S-12c mechanical flip,
+// operator 2026-06-08). NO flag set => a worker with no correct team BLOCKS.
+ok("(+) DEFAULT (no flag) + no team + worker => BLOCK (gate ships ON)", () => {
+  const { stdout } = runGuard({ mode: "sprint", hardGate: true, agentType: "general-purpose" });
+  assert.ok(isGateBlock(stdout), "the gate must block by default — no marker required");
+});
+
+// (+) SOFT opt-out — WARPOS_TEAM_GATE_SOFT=1 ramps the gate back to advisory.
+ok("(+) WARPOS_TEAM_GATE_SOFT=1 + no team + worker => ALLOW (soft ramp-off)", () => {
   const { stdout } = runGuard({ mode: "sprint", hardGate: false, agentType: "general-purpose" });
-  assert.ok(!blocks(stdout), "with HARD_GATE off the gate must never block (ramp safety)");
+  assert.ok(!blocks(stdout), "the soft kill ramps the gate to advisory-only");
+});
+
+// (+) SPOOF ε — a worker named/typed "epsilon-helper" must NOT satisfy readiness
+// (cross-provider review 2026-06-08 HIGH: `/epsilon/` substring was spoofable).
+ok("(+) team member 'epsilon-helper' (spoof) => BLOCK worker (not real ε)", () => {
+  const proj = fs.mkdtempSync(path.join(os.tmpdir(), "tgg-proj-"));
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), "tgg-home-"));
+  fs.mkdirSync(path.join(proj, ".claude", "runtime"), { recursive: true });
+  fs.mkdirSync(path.join(home, ".claude", "runtime"), { recursive: true });
+  fs.writeFileSync(
+    path.join(proj, ".claude", "runtime", "mode.json"),
+    JSON.stringify({ mode: "sprint" }),
+  );
+  fs.writeFileSync(path.join(proj, ".claude", "runtime", ".session-id"), "s-spoof");
+  fs.writeFileSync(path.join(proj, ".claude", "runtime", ".sprint-oneoff-count"), "5");
+  // a team whose only "ε-ish" member is a spoof substring match
+  const cfgDir = path.join(home, ".claude", "teams", "warpos-sprint");
+  fs.mkdirSync(cfgDir, { recursive: true });
+  fs.writeFileSync(
+    path.join(cfgDir, "config.json"),
+    JSON.stringify({
+      members: [
+        { name: "epsilon-helper", agentType: "general-purpose" },
+        { name: "builder", agentType: "general-purpose" },
+      ],
+    }),
+  );
+  const event = {
+    tool_name: "Agent",
+    tool_input: { subagent_type: "general-purpose", name: "worker" },
+  };
+  const env = { ...process.env, CLAUDE_PROJECT_DIR: proj, HOME: home, USERPROFILE: home };
+  delete env.WARPOS_TEAM_GATE_HARD;
+  delete env.WARPOS_TEAM_GATE_SOFT;
+  delete env.WARPOS_DISABLE_TEAM_GATE;
+  const r = spawnSync("node", [HOOK], { input: JSON.stringify(event), env, encoding: "utf8" });
+  assert.ok(isGateBlock(r.stdout || ""), "a spoof 'epsilon-helper' must not count as ε");
+  assert.ok(/MISSING ε/.test(r.stdout || ""), "block reason names missing ε");
 });
 
 // (+) bootstrap — δ face (oneshot conductor) also allowed under the gate.

@@ -101,3 +101,11 @@ _docs/research/.tmp-*
 _docs/research/**/*.log
 _docs/research/**/.session.json
 _docs/research/**/.deep-runner.sh
+
+# per-run scratch (research/scan-runs/skill-runs/sprint-notes) — never commit
+runtime/research/
+runtime/scan-runs/
+runtime/skill-runs/
+runtime/sprint/
+runtime/notes/
+runtime/agent-system-plan/

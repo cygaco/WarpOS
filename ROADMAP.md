@@ -750,6 +750,7 @@ Every sprint that has been planned, executed, released, or retrospected — one 
 
 | Sprint | Title | Status | Started | Closed | Release |
 |---|---|---|---|---|---|
+| [SP-20260608-001](.claude/project/sprint/sprints/SP-20260608-001/) | Dispatch-shape north star — resolver + earn-it ping-reap fix + mechanical enforcement | planning | 2026-06-08T23:39:51.757Z |  |  |
 | [SP-20260606-001](.claude/project/sprint/sprints/SP-20260606-001/) | Clean-update: enforcer-shippability gate + tracker initializer | planning | 2026-06-07T01:19:56.198Z |  |  |
 | [SP-20260605-001](.claude/project/sprint/sprints/SP-20260605-001/) | ε sprint-runtime real dispatch + /mode:sprint entry | closed | 2026-06-06T00:35:24.839Z | 2026-06-06 |  |
 | [SP-20260602-001](.claude/project/sprint/sprints/SP-20260602-001/) | Sealed-capsule executable consumer-contract gate (keystone) | retrospected | 2026-06-02T02:46:41.132Z | 2026-06-02T04:08:47.176Z |  |

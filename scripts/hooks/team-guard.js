@@ -216,10 +216,20 @@ process.stdin.on("end", () => {
       if (activeCfg) {
         try {
           const doc = JSON.parse(fs.readFileSync(activeCfg, "utf8"));
-          teamHasEpsilon = (doc.members || []).some((mem) =>
-            /epsilon|(^|[^a-z])ε([^a-z]|$)/i.test(
-              `${mem && mem.name} ${mem && mem.agentType}`,
-            ),
+          // EXACT role/type/name match, not a substring (cross-provider review
+          // 2026-06-08 HIGH: `/epsilon/` matched a spoof worker `epsilon-helper`;
+          // also check mem.role, the schema's real authority). A member counts as
+          // ε only if a normalized identity field EQUALS "epsilon" or "ε".
+          const isEpsilon = (v) => {
+            const s = String(v == null ? "" : v).trim().toLowerCase();
+            return s === "epsilon" || s === "ε";
+          };
+          teamHasEpsilon = (doc.members || []).some(
+            (mem) =>
+              mem &&
+              (isEpsilon(mem.agentType) ||
+                isEpsilon(mem.role) ||
+                isEpsilon(mem.name)),
           );
         } catch {
           /* malformed config — treat ε as absent */
@@ -236,11 +246,13 @@ process.stdin.on("end", () => {
       // false-block guards: (1) heartbeat-liveness so a long-idle correct team is
       // still "live"; (2) a kill-switch so a stuck gate is bypassable without
       // editing the hook; (3) fail-open via the outer try/catch.
-      const hardGate =
-        process.env.WARPOS_TEAM_GATE_HARD === "1" ||
-        fs.existsSync(
-          path.join(projectDir, ".claude", "runtime", ".team-gate-hard"),
-        );
+      // S-12c MECHANICAL: the hard gate now DEFAULTS ON (operator 2026-06-08:
+      // "it must ship enabled — an enforcement that depends on you flipping a
+      // marker isn't an enforcement"). The kill-switch below (env or marker) is
+      // the durable escape; the heartbeat + fail-open guard against false-blocks.
+      // The old WARPOS_TEAM_GATE_HARD / .team-gate-hard opt-IN is retained as a
+      // belt-and-suspenders force-on, but absence no longer disables the gate.
+      const hardGate = process.env.WARPOS_TEAM_GATE_SOFT !== "1";
       const killSwitch =
         process.env.WARPOS_DISABLE_TEAM_GATE === "1" ||
         fs.existsSync(

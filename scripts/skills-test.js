@@ -79,9 +79,13 @@ const SKILL_WEIGHT_GEN = path.join(__dirname, "dispatch", "skill-weight.js");
 const DISPATCH_SKILL =
   process.env.SKILLS_TEST_DISPATCH || path.join(__dirname, "dispatch-skill.js");
 
-// Bounded smoke timeout for ping mode (overridable). Kept WELL below the harness
-// auto-background reap threshold so a hung skill surfaces as a reap, not a hang.
-const PING_TIMEOUT_MS = parseInt(process.env.DISPATCH_SKILL_TIMEOUT_MS || "120000", 10);
+// Bounded smoke timeout for ping mode (overridable). Raised to 180s (was 120s):
+// prior ε evidence showed OK pings up to 128s and REAP runs at 150s that were
+// IN-KERNEL TIMEOUT reaps — a real ping that legitimately ran ~150s was being killed
+// by a too-tight bound, masquerading as the RI-004 reap (ticket T-20260608-269). The
+// durable-file spawn + retry in dispatch-skill.js handles the OUTER-harness reap; a
+// roomier bound stops the in-kernel timeout from reaping a slow-but-honest ping.
+const PING_TIMEOUT_MS = parseInt(process.env.DISPATCH_SKILL_TIMEOUT_MS || "180000", 10);
 
 // ── Registry load (regenerate via skill-weight.js if absent) ──
 function loadRegistry(registryPath) {

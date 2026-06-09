@@ -1,0 +1,128 @@
+schema: warpos/sprint/plan-contract/v1
+id: PC-20260608-0064
+created_at: "2026-06-08T23:44:13.317Z"
+updated_at: "2026-06-08T23:44:13.317Z"
+sprint: SP-20260608-001
+source_request: "Implement the dispatch-shape north star: a live shape resolver (dispatch-shape.js) verified+tested+wired as the consulted authority; fix the §13.6 ping reap blocker so the §13.7 earn-it can stamp; finish mechanical enforcement (doc-ref auto-fire at commit, team-gate default-on). Engine sprint, ff-merge close."
+source_request_verbatim: "Implement the dispatch-shape NORTH STAR (PLAN 17): a live shape RESOLVER (scripts/dispatch/dispatch-shape.js) verified against the decision rule, tested, and wired as the consulted authority so the wrong shape self-detects; FIX the 13.6 ping reap blocker (~50% non-deterministic reap) so the 13.7 earn-it can actually stamp skills; finish mechanical enforcement (doc-ref-integrity auto-fires at commit via merge-guard; team-gate default-on). Engine/tooling sprint, ff-merge close, no release-build."
+request_type: architecture_change
+interpreted_intent: "Build the LIVE dispatch-shape decision keystone: (1) scripts/dispatch/dispatch-shape.js#resolveShape(unit) applies PLAN §17's per-unit decision rule (inline/in-process-agent/subprocess-claude/subprocess-cross-provider/api) reading the dispatch-contract (agents) + skill-weight registry (skills, fail-closed on the earn-it proof) + the research criteria-matrix for ad-hoc units, and shapeMismatch() makes the WRONG shape self-detecting; wire it as the authority consulted by route-guard / the dispatch wrappers. (2) Fix the §13.6 ping non-deterministic reap (the RI-004 CLI-buffer reap, ~50%) so a subprocess skill can be honestly §13.6-pinged then §13.7-measured then stamped subprocess_verified:true (0 are today → all route inline). (3) Mechanical-enforcement close-out: doc-ref-integrity fires automatically at commit via merge-guard (not report-only-in-/scan:full); the S-12c team-gate ships default-ON."
+user_or_business_outcome: "The orchestrator stops choosing dispatch shapes by hand (the recurring failure: build-chain run in-process, heavy skills run inline, the team skipped). Every unit gets the right shape from one consulted resolver; a wrong shape is caught mechanically; and a subprocess skill only routes subprocess once it has PROVEN it pays + stays good — so the dispatch system is reliable, not aspirational."
+affected_surfaces:
+  - surface: "scripts/dispatch/dispatch-shape.js (NEW resolver — drafted, needs gauntlet)"
+    evidence_level: verified_from_repo
+    notes: "resolveShape(unit) + shapeMismatch(); reuses dispatch-contract.js classForRole/skillExecution; fail-open to inline."
+  - surface: "scripts/dispatch/dispatch-contract.js (consumed)"
+    evidence_level: verified_from_repo
+    notes: "the static contract is the authority for agent shapes + skill execution; the resolver wraps it."
+  - surface: "scripts/dispatch/dispatch-skill.js + the §13.6 ping path"
+    evidence_level: verified_from_repo
+    notes: "the non-deterministic reap (~50%) blocks honest §13.6 stamping — the true unblock per Beta's directive."
+  - surface: "route-guard / dispatch wrappers (wire the resolver as consulted authority)"
+    evidence_level: inferred_from_repo
+    notes: shapeMismatch wired so the wrong shape is self-detecting.
+  - surface: "scripts/hooks/merge-guard.js (doc-ref auto-fire) + scripts/hooks/team-guard.js (default-ON)"
+    evidence_level: verified_from_repo
+    notes: "mechanical-enforcement close-out; mostly on-disk from the prior ε run."
+  - surface: "_warpos/MANIFEST.json + .claude/framework-manifest.json (regen)"
+    evidence_level: verified_from_repo
+    notes: "new scripts are hash-tracked; regen BOTH before commit (BC-02/BC-05)."
+current_behavior:
+  evidence_level: verified_from_repo
+  notes: "The shapes are DEFINED + roles pre-classified in dispatch-contract.json, with a VALIDATOR (validateDispatch) — but there is NO resolver the orchestrator consults to pick a shape per unit, and nothing applies the decision rule to an ad-hoc unit (so the shape is chosen by hand → wrong). The skill earn-it (§13.6/§13.7) harness exists but was never run; 0 skills are subprocess_verified → all route inline. A prior ε run proved scan:full EARNS subprocess (83.9% / 5860 tok, gpt-5.5 judge PASS) but could not stamp because the §13.6 ping reaps ~50%."
+desired_behavior: "resolveShape(unit) returns {shape, proven, reason, source} for any agent/skill/ad-hoc unit per PLAN §17; shapeMismatch flags a wrong shape (route-guard consults it). The §13.6 ping is deterministic (no reap) so a subprocess skill can be pinged → measured → stamped; at least the proven skills carry subprocess_verified:true and route subprocess. doc-ref-integrity exits non-zero automatically at commit on a broken ref; the team-gate is default-ON. Engine sprint: ff-merge to main, no release-build."
+scope:
+  size: l
+  risk_level: high
+  complexity_drivers:
+    - "keystone: the resolver becomes the consulted authority — a wrong decision-rule encoding misroutes every unit (must match PLAN §17 exactly; gauntlet with a mismatched-shape test)"
+    - "the §13.6 ping reap is non-deterministic (~50%) — a reliability fix to a CLI-buffer reap (RI-004 class), hard to make deterministic"
+    - "fail-closed discipline: an unproven subprocess must resolve INLINE (never a silent unproven subprocess); the earn-it gate must not false-green"
+    - "default-ON team-gate could false-block live work — keep the heartbeat + kill-switch + fail-open intact"
+scope_variants:
+  minimal_safe: "Resolver + its gauntlet test + the §13.6 ping-reap fix only; defer wiring + enforcement close-out."
+  recommended: "Resolver (verified+tested+wired) + §13.6 ping-reap fix + the §13.7 stamp for whatever earns it + mechanical-enforcement close-out."
+  expanded: "Above + run the full §13.7 A/B for all 6 heavy skills + extend the resolver criteria-matrix coverage."
+assumptions:
+  - "dispatch-shape.js drafted this session is a faithful starting point for PLAN §17 (Beta: keep-and-verify, do not rebuild)."
+  - "the §13.6 reap is the RI-004 CLI-buffer reap class (background claude -p reaped at 0 bytes); a bounded/streamed spawn or savepoint mitigates it."
+  - "scan:full genuinely earns subprocess (prior ε real numbers); other heavy skills likely similar but unmeasured."
+open_questions:
+  - "Can the §13.6 ping be made deterministic, or is a retry/savepoint the honest mitigation (and is that good enough to stamp)?"
+  - "Does any heavy skill FAIL the earn-it (envelope ≈ inline) and correctly stay inline?"
+non_goals:
+  - "Running the full §13.7 A/B for all 6 heavy skills this sprint (bounded; prove the mechanism + stamp what cleanly earns)."
+  - "S-5 boundary scrub / the warpos-as-product repo move (operator-gated)."
+  - "Pushing to remote (operator-gated hard ceiling)."
+  - A GUI for the resolver / dispatch-console refresh.
+requirement_areas:
+  - "live shape resolver (resolveShape + shapeMismatch) faithful to PLAN §17"
+  - "resolver wiring as the consulted authority (route-guard / dispatch wrappers)"
+  - "§13.6 ping reap reliability fix"
+  - "§13.7 earn-it stamp for proven skills (fail-closed)"
+  - "mechanical-enforcement close-out (doc-ref auto-fire + team-gate default-ON)"
+  - "manifest regen + tests + named-enforcer hygiene"
+high_level_story_candidates:
+  - "As the orchestrator, I consult ONE resolver that tells me the right shape for any unit per the §17 decision rule, so I stop choosing shapes by hand."
+  - "As the system, a dispatch in the WRONG shape is self-detecting (shapeMismatch), so misroutes are caught mechanically."
+  - "As the maintainer, the §13.6 ping is reliable, so a subprocess skill can be honestly proven and stamped (not stuck inline forever)."
+  - "As the maintainer, the doc-ref + team enforcers fire automatically (commit-time / default-on), not only when someone runs a scan."
+granular_story_candidates:
+  - "TICKET-1 (Beta: FIRST): fix the §13.6 ping non-deterministic reap so a bounded ping returns a real result deterministically (or a documented retry/savepoint mitigation that lets the earn-it stamp honestly); prove with N consecutive non-reaping pings."
+  - "TICKET-2: ε gauntlets the drafted resolver with a REAL PLAN-§17 decision-rule test (each rule branch incl. a mismatched-shape via shapeMismatch; agent→contract, unproven-subprocess-skill→inline fail-closed, proven→subprocess, ad-hoc criteria-matrix); harden per findings."
+  - "TICKET-3: wire resolveShape + shapeMismatch as the consulted authority in route-guard / the dispatch wrappers (the wrong shape self-detects on a real dispatch)."
+  - "TICKET-4: run §13.6 ping + §13.7 measurement for the heavy skills now that the ping is reliable; stamp subprocess_verified:true ONLY where both axes genuinely pass (fail-closed); the resolver then routes them subprocess."
+  - "TICKET-5 (scope-guarded close-out): verify/finish doc-ref-integrity merge-guard auto-fire + team-guard default-ON; regen BOTH manifests; ff-merge to main."
+workstream_candidates:
+  - "§13.6 ping reliability (the unblock)"
+  - "resolver gauntlet + wiring (the keystone)"
+  - "§13.7 earn-it stamp (the proof)"
+  - "mechanical-enforcement close-out + manifest regen"
+preliminary_ticket_candidates:
+  - title: "Fix §13.6 ping non-deterministic reap (the unblock)"
+    type: bug
+    risk: high
+    order: 1
+  - title: "Gauntlet + harden the dispatch-shape resolver (real §17 decision-rule test)"
+    type: feature
+    risk: high
+    order: 2
+  - title: Wire resolveShape/shapeMismatch as the consulted authority
+    type: feature
+    risk: medium
+    order: 3
+  - title: "Run earn-it + stamp proven subprocess skills (fail-closed)"
+    type: feature
+    risk: medium
+    order: 4
+  - title: "Mechanical-enforcement close-out + manifest regen + ff-merge"
+    type: chore
+    risk: low
+    order: 5
+external_service_dependencies: []
+approval_boundaries:
+  - "ff-merge to main is LOCAL only; push to remote is operator-gated (hard ceiling)."
+  - "single halt-and-consult: gauntlet verdict before ff-merge."
+  - "cross-provider judge spend stays under the >$5 operator rule per call."
+design_required: false
+execution_allowed_without_design: true
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+lane: engine
+beta_review:
+  before_plan:
+    verdict: DIRECTIVE
+    summary: "Scope coherent as one sprint; resequence so the §13.6 ping-reap fix is ticket #1; keep α's resolver draft (ε gauntlets it, do not rebuild); enforcement is scope-guarded close-out. No irreversible risk."
+plan_quality:
+  confidence: high
+  notes: "Grounded in PLAN §16/§17 (the decision rule verbatim) + real prior ε measurement (scan:full earns; ping reaps ~50%). Beta DIRECTIVE incorporated into ticket ordering."
+next_recommended_command: "/sprint:design"
+resume_instructions: "Sprint SP-20260608-001 has Plan Contract PC-20260608-0064. Run the next_recommended_command. If interrupted, read .claude/project/sprint/sprint-progress.yaml#resume_command."
+tracker_paths:
+  current_sprint: ".claude/project/sprint/current-sprint.yaml"
+  sprint_progress: ".claude/project/sprint/sprint-progress.yaml"
+  plan_contract: ".claude/project/sprint/plan-contracts/PC-20260608-0064.yaml"
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260608-0064.report.md"
+created_by: alpha
+updated_by: alpha

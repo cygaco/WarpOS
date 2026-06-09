@@ -457,4 +457,151 @@ function safeSpawnSync(toolId, args, opts = {}) {
   };
 }
 
-module.exports = { resolveTool, assertArgs, normalizeStdin, treeKill, safeSpawnSync, TOOL_IDS, ARG_POLICY, PROJECT_ROOT };
+// ── file-backed, savepoint-recoverable spawn (RI-004 reap fix) ──
+/**
+ * safeSpawnFile(toolId, args, opts) — the reap-resistant variant of safeSpawnSync
+ * (ticket T-20260608-269). IDENTICAL resolution + arg-allowlist + tree-kill safety,
+ * but the child's stdout is redirected to a DURABLE FILE descriptor (opts.outFile)
+ * instead of an in-memory buffer that is only returned at child exit.
+ *
+ * Why this is the deterministic fix for the §13.6 ping reap:
+ *   safeSpawnSync buffers ALL stdout in RAM and surfaces it ONLY when the child
+ *   exits — so if the DISPATCHER process is auto-backgrounded + reaped mid-flight
+ *   (RI-004 / the Claude Code CLI-buffer reap, which correlates with LONGER runs),
+ *   the real result is lost even though `claude` may have finished. Here the OS
+ *   writes the child's bytes to `outFile` AS THEY ARRIVE, so the result is durable
+ *   on disk independent of how the parent dies. On clean exit we drop a SENTINEL
+ *   (`outFile + ".done"`, JSON {exitCode, bytes, durationMs}) — a SAVEPOINT.
+ *
+ * Recovery (opts.recover, default true): BEFORE spawning, if a valid sentinel + a
+ * non-empty out-file already exist for this invocation, RECOVER that result without
+ * re-spawning + re-spending. So a bounded retry after a parent-side reap returns the
+ * real bytes the prior attempt actually produced (savepoint-and-recover, the RI-004
+ * chunk+savepoint pattern applied to a single skill ping).
+ *
+ * Returns the SAME shape as safeSpawnSync, PLUS { outFile, recovered, savepoint }.
+ * On a resolution/arg violation it returns ok:false WITHOUT spawning (fail-closed).
+ *
+ * Required: opts.outFile (absolute path the child stdout is written to).
+ */
+function safeSpawnFile(toolId, args, opts = {}) {
+  if (!opts.outFile) {
+    return { ok: false, reaped: false, reason: "missing_out_file", detail: "safeSpawnFile requires opts.outFile", stdout: "", stderr: "", exitCode: null };
+  }
+  // The arg-allowlist gates EVERY path (never recover on a malformed invocation).
+  const argCheck = assertArgs(toolId, args || []);
+  if (!argCheck.ok) return { ok: false, reaped: false, reason: "arg_policy_violation", violations: argCheck.violations, stdout: "", stderr: "", exitCode: null };
+
+  const outFile = path.resolve(opts.outFile);
+  const sentinel = outFile + ".done";
+  const recover = opts.recover !== false;
+
+  // ── Savepoint recovery: a prior attempt already finished cleanly? ──
+  // A valid sentinel ({ok:true,...}) + a non-empty out-file = a recoverable result.
+  // Checked BEFORE resolveTool: recovery needs no live tool (the work is already done),
+  // and a retry after a reap should not re-fail on a transient resolution hiccup.
+  if (recover) {
+    try {
+      if (fs.existsSync(sentinel) && fs.existsSync(outFile)) {
+        const sv = JSON.parse(fs.readFileSync(sentinel, "utf8"));
+        const body = fs.readFileSync(outFile, "utf8");
+        if (sv && sv.ok && body.trim().length > 0) {
+          return {
+            ok: true, reaped: false, recovered: true, savepoint: sentinel,
+            exitCode: typeof sv.exitCode === "number" ? sv.exitCode : 0,
+            stdout: body, stderr: "", outFile,
+            tool: { id: toolId, path: null, kind: null },
+            durationMs: sv.durationMs || 0,
+          };
+        }
+      }
+    } catch {
+      /* corrupt/partial savepoint → fall through and re-spawn */
+    }
+  }
+
+  const tool = resolveTool(toolId, opts.resolve || {});
+  if (!tool.ok) return { ok: false, reaped: false, reason: "tool_resolution_refused", detail: tool.reason, stdout: "", stderr: "", exitCode: null };
+
+  const timeoutMs = opts.timeoutMs || 20 * 60 * 1000;
+  const input = opts.input != null ? normalizeStdin(opts.input) : undefined;
+  const childEnv = opts.env || process.env;
+
+  let bin = tool.path;
+  let spawnArgs = args || [];
+  if (tool.kind === "cmd-shim" && process.platform === "win32") {
+    const cmdExe = system32("cmd.exe");
+    if (!cmdExe) {
+      return { ok: false, reaped: false, reason: "cmd_exe_unresolved", detail: `cmd.exe not found under ${systemRoot()}\\System32`, stdout: "", stderr: "", exitCode: null };
+    }
+    bin = cmdExe;
+    spawnArgs = ["/c", tool.path, ...(args || [])];
+  }
+
+  // Open the out-file for writing and hand its fd to the child as stdout. The OS
+  // flushes the child's bytes to disk as they are produced — durable across a parent
+  // reap. A fresh (truncated) file each spawn; the sentinel is removed first so a
+  // stale one can never mask a fresh in-flight run.
+  fs.mkdirSync(path.dirname(outFile), { recursive: true });
+  try { fs.rmSync(sentinel, { force: true }); } catch { /* best effort */ }
+  const outFd = fs.openSync(outFile, "w");
+
+  const started = Date.now();
+  let sp;
+  try {
+    sp = spawnSync(bin, spawnArgs, {
+      input,
+      timeout: timeoutMs,
+      cwd: opts.cwd || PROJECT_ROOT,
+      env: childEnv,
+      stdio: [input != null ? "pipe" : "ignore", outFd, "pipe"],
+      shell: false,
+      windowsHide: true,
+    });
+  } finally {
+    try { fs.closeSync(outFd); } catch { /* already closed */ }
+  }
+  const durationMs = Date.now() - started;
+
+  // stdout came from the FILE, not the buffer (stdio[1] was an fd, so sp.stdout is null).
+  let stdout = "";
+  try { stdout = fs.readFileSync(outFile, "utf8"); } catch { stdout = ""; }
+  const stderr = (sp.stderr || Buffer.alloc(0)).toString("utf8");
+  const status = sp.status;
+  const signal = sp.signal;
+  const errCode = sp.error && sp.error.code ? sp.error.code : null;
+  const timedOut = errCode === "ETIMEDOUT" || signal === "SIGTERM" || signal === "SIGKILL";
+
+  if (timedOut && sp.pid) treeKill(sp.pid);
+
+  let reaped = false;
+  let reason = null;
+  if (timedOut) { reaped = true; reason = "timeout_reap"; }
+  else if (errCode === "ENOENT" || errCode === "EACCES" || errCode === "EPERM") { reaped = true; reason = "spawn_failed"; }
+  else if (typeof status === "number" && status !== 0) { reaped = true; reason = "nonzero_exit"; }
+  else if (stdout.trim().length === 0) { reaped = true; reason = "zero_byte_reap"; }
+
+  // On a clean run, drop the SAVEPOINT sentinel so a later retry can recover without
+  // re-spending. A reaped run leaves NO sentinel (nothing trustworthy to recover).
+  if (!reaped) {
+    try {
+      fs.writeFileSync(sentinel, JSON.stringify({ ok: true, exitCode: typeof status === "number" ? status : 0, bytes: Buffer.byteLength(stdout, "utf8"), durationMs }) + "\n", "utf8");
+    } catch { /* best effort — the out-file itself is still the durable proof */ }
+  }
+
+  return {
+    ok: !reaped,
+    reaped,
+    reason: reason || undefined,
+    recovered: false,
+    savepoint: reaped ? null : sentinel,
+    exitCode: typeof status === "number" ? status : null,
+    stdout: reaped ? "" : stdout,
+    stderr: stderr.slice(0, 4000),
+    outFile,
+    tool: { id: toolId, path: tool.path, kind: tool.kind },
+    durationMs,
+  };
+}
+
+module.exports = { resolveTool, assertArgs, normalizeStdin, treeKill, safeSpawnSync, safeSpawnFile, TOOL_IDS, ARG_POLICY, PROJECT_ROOT };

@@ -264,6 +264,47 @@ process.stdin.on("end", () => {
 
     // === Block rules ===
 
+    // S-13b MECHANICAL doc-ref-integrity gate (operator 2026-06-08:
+    // "report-only inside /scan:full = theater; enforcements must be MECHANICAL").
+    // Fires AUTOMATICALLY at commit + non-agent merge time — a broken canon ref
+    // exits non-zero here, no human /scan:full invocation required. The allowlist
+    // + per-line `<!-- doc-ref-ignore -->` remain the escape. Fail-closed: a
+    // runner crash (exit 2) blocks too (a runner error is never a pass). Skipped
+    // silently if the enforcer is absent (older install layout).
+    if (
+      /^\s*git\s+commit\b/.test(cmd) ||
+      (/^\s*git\s+merge\b/.test(cmd) && !/git\s+merge\s+agent\//.test(cmd))
+    ) {
+      const docRef = path.join(PROJECT, "scripts", "checks", "doc-ref-integrity.js");
+      if (require("fs").existsSync(docRef)) {
+        const { spawnSync } = require("child_process");
+        const dr = spawnSync(process.execPath, [docRef, "--enforce"], {
+          cwd: PROJECT,
+          encoding: "utf8",
+        });
+        // exit 0 = clean (allow); exit 1 = broken refs (block); exit 2 = runner
+        // crash (fail-closed block). Any other non-zero is also fail-closed.
+        if (dr.status === 1) {
+          const tail = (dr.stderr || dr.stdout || "")
+            .split("\n")
+            .slice(-12)
+            .join("\n");
+          block(
+            `merge-guard: doc-ref-integrity found broken canon reference(s) — blocked.\n${tail}\n\nFix: repoint the dead ref, or (if legitimately absent) add it to scripts/checks/doc-ref-integrity.allowlist.json or mark the line with <!-- doc-ref-ignore -->. Re-run: node scripts/checks/doc-ref-integrity.js --enforce`,
+          );
+        } else if (dr.status !== 0 && dr.status !== null) {
+          const errTail = (dr.stderr || dr.stdout || "")
+            .split("\n")
+            .slice(-8)
+            .join("\n");
+          const sig = dr.signal ? ` signal=${dr.signal}` : "";
+          block(
+            `merge-guard: doc-ref-integrity runner crashed (exit=${dr.status}${sig}) — fail-closed.\n${errTail}\n\nFix: run it directly — node scripts/checks/doc-ref-integrity.js --enforce`,
+          );
+        }
+      }
+    }
+
     // Phase 2A: path coherence gate runs before ANY git merge. If the gate
     // fails, the merge is blocked — broken path identity must be fixed
     // first. Skipped for the agent/* check below (which has its own
