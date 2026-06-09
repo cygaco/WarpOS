@@ -52,9 +52,11 @@
 - 2026-06-08 — One epic (not split) — the spine (Mode-Lifecycle Registry → lifecycle-event registry → init-gate → team manager) is shared across all areas; splitting fragments the source of truth. Provider readiness (Wave 4) is the one cleanly-separable workstream and may fast-follow as E-PROVIDER-TIER-001 if it grows.
 - 2026-06-08 — "25 hook events" reframed to 2 real PreToolUse guards + ~23 virtual registry-driven events logged to `paths.eventsFile` — the harness hook-event set is closed at 8 (read-only-verified).
 - 2026-06-08 — Extend, don't reinvent: `dispatch-contract.json` IS the dispatch permission matrix; the provider-health stack already exists. The epic layers onto both.
+- 2026-06-08 — Turbo default = highest autonomy (operator decision, β-escalated Class C): `/session:turbo` auto-grants spend + commit + push + merge-to-main + branch ops within the never-allowed hard ceilings, delivered via a durable operator-declared `permissions.allow` profile (NOT a self-grant the auto-mode classifier rejects, per `feedback_turbo_broad_scope_denied`). Deliberately overrides "Push = Ask first" for turbo sessions. (S-LC-07.)
+- 2026-06-08 — β consult (5 calls, `EVT-lifecycle-epic-decomp-2026-06-08`, logged to `paths.betaEvents`): one epic [DECIDE 0.87] (provider readiness = candidate split evaluated at Wave-4 kickoff, not pre-committed); sequencing sound [DECIDE 0.90] (W1 slips with W0, never around it); epic suite design-10-build-2 [DECIDE 0.85] (other 8 explicitly gated as fast-follow); provider detection = self-attestation + opt-in probe, reject infer-from-dispatch [DECIDE 0.84]; turbo [ESCALATE] → operator decision above.
 
 ## Open questions
-- Turbo auto-push/merge + spend default (source §F wants $100 + commit/push/merge-to-main) vs CLAUDE.md Autonomy ("Push = Ask first") + the auto-mode classifier's broad-scope denial — owner: operator (a Human Approval Point in the plan).
+- Turbo auto-push/merge + spend default — RESOLVED 2026-06-08 (operator: "highest autonomy possible") — see § Decisions. Residual sub-call: the exact framework-default spend-ceiling value ($100 baseline recommended).
 - Provider funding/subscription detection method (self-attestation vs gated billing-API probe vs infer-from-dispatch) — likely not read-only-detectable — owner: operator.
 - T3 tier subscription floor (`Max 5x` vs a lower hobbyist Claude sub — source's own open Q) — owner: operator.
 - Should provider readiness become its own epic (E-PROVIDER-TIER-001) now or stay Wave 4 — owner: President + operator.
