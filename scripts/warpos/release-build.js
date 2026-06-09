@@ -231,6 +231,8 @@ const KNOWN_DANGLING_REFS = [
     reason: "(A) illustrative command-pattern example ('node scripts/foo.js'), not a real invocation" },
   { skill: ".claude/commands/discover/systems.md", script: "scripts/hooks/foo.js",
     reason: "(A) illustrative feature-cohesion example placeholder, not a real script" },
+  { skill: ".claude/commands/scan/full.md", script: "scripts/foo.js",
+    reason: "(A) illustrative prose ('a backtick scripts/foo.js-shaped ref' describing doc-ref-integrity), not a real invocation" },
   { skill: ".claude/commands/maps/enforcements.md", script: "scripts/hooks/hook-name.js",
     reason: "(A) illustrative JSON-schema example value (the 'file' field), not a real script" },
   { skill: ".claude/commands/karpathy/run.md", script: "scripts/score.js",
@@ -317,14 +319,16 @@ const KNOWN_DANGLING_REFS = [
 // avoid lastIndex state leaking between invocations.
 function extractSkillScriptRefs(content) {
   const refs = new Set();
-  const scriptPathPat = /scripts\/[A-Za-z0-9._/-]+\.(?:js|cjs|mjs|sh)/g;
+  // Trailing (?![A-Za-z0-9]) keeps `.js` from matching inside `.json` paths
+  // (e.g. scripts/checks/foo.allowlist.json must NOT yield foo.allowlist.js).
+  const scriptPathPat = /scripts\/[A-Za-z0-9._/-]+\.(?:js|cjs|mjs|sh)(?![A-Za-z0-9])/g;
 
   // Strategy 1: extract all script refs inside fenced code blocks.
   const fenceBlockPat = /^```[^\n]*\n([\s\S]*?)^```/gm;
   let fenceMatch;
   while ((fenceMatch = fenceBlockPat.exec(content)) !== null) {
     const block = fenceMatch[1];
-    const innerPat = /scripts\/[A-Za-z0-9._/-]+\.(?:js|cjs|mjs|sh)/g;
+    const innerPat = /scripts\/[A-Za-z0-9._/-]+\.(?:js|cjs|mjs|sh)(?![A-Za-z0-9])/g;
     let m;
     while ((m = innerPat.exec(block)) !== null) {
       refs.add(m[0].replace(/\\/g, "/"));
@@ -332,7 +336,7 @@ function extractSkillScriptRefs(content) {
   }
 
   // Strategy 2: refs immediately preceded by `node ` or `bash ` (any context).
-  const invocationPat = /(?:node|bash)\s+(scripts\/[A-Za-z0-9._/-]+\.(?:js|cjs|mjs|sh))/g;
+  const invocationPat = /(?:node|bash)\s+(scripts\/[A-Za-z0-9._/-]+\.(?:js|cjs|mjs|sh))(?![A-Za-z0-9])/g;
   let inv;
   while ((inv = invocationPat.exec(content)) !== null) {
     refs.add(inv[1].replace(/\\/g, "/"));

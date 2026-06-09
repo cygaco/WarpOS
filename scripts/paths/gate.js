@@ -383,6 +383,9 @@ function checkDocsTokens() {
     "CHANGELOG.md",
     "CHANGELOG-test-system.md",
     ".claude/runtime/plans/",
+    // Transaction backups snapshot superseded files verbatim; they are
+    // append-only records, not live docs (same rationale as deprecated-alias).
+    ".warpos/",
   ];
   const accept = (f) => {
     const rel = path.relative(ROOT, f).replace(/\\/g, "/");
