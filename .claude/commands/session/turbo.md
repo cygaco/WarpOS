@@ -26,7 +26,7 @@ Two layers in one command, for when you want a fast work session:
                [--speed]   # also print/activate the speed-cadence checklist
 ```
 
-- `--scope <csv>` — comma-separated scope vocab (below). Default: `manifest-edit,write-jsonl,node-e-fs`. **`push-to-main` is opt-in only** — never in the default set, per CLAUDE.md autonomy.
+- `--scope <csv>` — comma-separated scope vocab (below). Default: `manifest-edit,write-jsonl,node-e-fs`. **`push-to-main` is opt-in only** — never in the default set, per CLAUDE.md autonomy. Note: the harness auto-mode classifier sits ABOVE `permissions.allow`, so even an active `push-to-main` scope (or a durable `Bash(git push *)` allow rule) does NOT make a push-to-main classifier-immune — it still needs per-action operator intent (PROVEN 2026-06-09, L-2026-06-09-classifier-above-permissions-allow).
 - `--scope all` — every scope except the safety floor.
 - `--ttl <duration>` — e.g. `30m`, `60m`, `2h`. Default: `60m`.
 - `--reason "<text>"` — operator-readable reason logged with the authorization.

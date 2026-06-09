@@ -112,27 +112,33 @@ teams are enabled, even though the tool's documented schema in the prompt does
 NOT list them. Pass them anyway. Validated 2026-05-14 (RT-006 +
 L-2026-05-14-test-the-call-before-declaring-impossible).
 
+**The `name` MUST be a plain alphanumeric token** — the harness now enforces
+`^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$` on the spawn `name` and REJECTS the old
+parens+unicode forms (`Beta (β)`). Use plain `Beta` / `Gamma`
+(L-2026-06-09-team-name-regex-rejects-parens-unicode).
+
 ```
 Agent(
   subagent_type: "beta",
   team_name: "<project>-adhoc",
-  name: "Beta (β)",
+  name: "Beta",
   run_in_background: true,
-  prompt: "STARTUP DIRECTIVE — Acknowledge readiness via SendMessage to \"team-lead\", then go idle. Do NOT claim tasks.\n\nYou are Alex β. Joining team <project>-adhoc as \"Beta (β)\".\nLoad: .claude/agents/president/beta.md, .claude/agents/president/_system/policy/decision-policy.md, .claude/project/stage/current-stage.md\nSendMessage(to: \"team-lead\", summary: \"Beta online\", message: \"β online — ready for consultation.\")\nGo idle."
+  prompt: "STARTUP DIRECTIVE — Acknowledge readiness via SendMessage to \"team-lead\", then go idle. Do NOT claim tasks.\n\nYou are Alex β. Joining team <project>-adhoc as \"Beta\".\nLoad: .claude/agents/president/beta.md, .claude/agents/president/_system/policy/decision-policy.md, .claude/project/stage/current-stage.md\nSendMessage(to: \"team-lead\", summary: \"Beta online\", message: \"β online — ready for consultation.\")\nGo idle."
 )
 ```
 
 Success response:
 ```
 Spawned successfully.
-agent_id: Beta (β)@<project>-adhoc
-name: Beta (β)
+agent_id: Beta@<project>-adhoc
+name: Beta
 team_name: <project>-adhoc
 ```
 The harness writes a `member` entry with `backendType: "in-process"` to
 `~/.claude/teams/<project>-adhoc/config.json`.
 
-2.3 Spawn γ the same way with `subagent_type: "gamma"`, `name: "Gamma (γ)"`,
+2.3 Spawn γ the same way with `subagent_type: "gamma"`, `name: "Gamma"` (plain
+token — same regex as β above),
 and a parallel STARTUP DIRECTIVE prompt referencing
 `.claude/agents/president/gamma.md` + `.claude/agents/president/_system/adhoc/protocol.md`.
 

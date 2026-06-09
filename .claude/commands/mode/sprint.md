@@ -150,17 +150,20 @@ exists, `SendMessage {type:"shutdown_request"}` it **before** spawning. Cleanup 
 
 2. Spawn ε + β as in-process teammates **in parallel** (single message, two Agent calls).
    `team_name` and `name` ARE accepted by the harness when teams are enabled even though the
-   Agent schema doesn't list them — pass them anyway. Each gets a STARTUP DIRECTIVE: acknowledge
+   Agent schema doesn't list them — pass them anyway. **The `name` MUST be a plain alphanumeric
+   token** — the harness now enforces `^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$` and REJECTS the old
+   parens+unicode forms (`Epsilon (ε)`, `Beta (β)`); use plain `Epsilon` / `Beta`
+   (L-2026-06-09-team-name-regex-rejects-parens-unicode). Each gets a STARTUP DIRECTIVE: acknowledge
    readiness via `SendMessage(to:"team-lead")`, then go idle, do NOT auto-claim tasks.
 
    ```
-   Agent(subagent_type: "epsilon", team_name: "<project>-sprint", name: "Epsilon (ε)",
+   Agent(subagent_type: "epsilon", team_name: "<project>-sprint", name: "Epsilon",
      run_in_background: true,
-     prompt: "STARTUP DIRECTIVE — SendMessage readiness to \"team-lead\", then go idle; do NOT claim tasks.\nYou are Alex ε, the sprint conductor joining <project>-sprint as \"Epsilon (ε)\".\nLoad: .claude/agents/president/epsilon.md + scripts/sprint/epsilon-runtime.js + .claude/agents/_org/sprint-hook-points.json.\nSendMessage(to:\"team-lead\", summary:\"Epsilon online\", message:\"ε online — ready to conduct.\")\nGo idle.")
+     prompt: "STARTUP DIRECTIVE — SendMessage readiness to \"team-lead\", then go idle; do NOT claim tasks.\nYou are Alex ε, the sprint conductor joining <project>-sprint as \"Epsilon\".\nLoad: .claude/agents/president/epsilon.md + scripts/sprint/epsilon-runtime.js + .claude/agents/_org/sprint-hook-points.json.\nSendMessage(to:\"team-lead\", summary:\"Epsilon online\", message:\"ε online — ready to conduct.\")\nGo idle.")
 
-   Agent(subagent_type: "beta", team_name: "<project>-sprint", name: "Beta (β)",
+   Agent(subagent_type: "beta", team_name: "<project>-sprint", name: "Beta",
      run_in_background: true,
-     prompt: "STARTUP DIRECTIVE — SendMessage readiness to \"team-lead\", then go idle; do NOT claim tasks.\nYou are Alex β joining <project>-sprint as \"Beta (β)\".\nLoad: .claude/agents/president/beta.md + .claude/agents/president/_system/policy/decision-policy.md.\nSendMessage(to:\"team-lead\", summary:\"Beta online\", message:\"β online — ready for boundary consultation.\")\nGo idle.")
+     prompt: "STARTUP DIRECTIVE — SendMessage readiness to \"team-lead\", then go idle; do NOT claim tasks.\nYou are Alex β joining <project>-sprint as \"Beta\".\nLoad: .claude/agents/president/beta.md + .claude/agents/president/_system/policy/decision-policy.md.\nSendMessage(to:\"team-lead\", summary:\"Beta online\", message:\"β online — ready for boundary consultation.\")\nGo idle.")
    ```
 
 3. **Confirm readiness BEFORE proceeding — a spawned team is not a live team until it

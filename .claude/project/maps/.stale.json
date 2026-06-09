@@ -14,5 +14,9 @@
   "memory": {
     "stale_since": "2026-06-08T18:31:39.486Z",
     "trigger": "scripts/hooks/handoff-live.js"
+  },
+  "tools": {
+    "stale_since": "2026-06-09T04:16:14.086Z",
+    "trigger": ".claude/commands/session/turbo.md"
   }
 }

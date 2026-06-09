@@ -317,3 +317,131 @@ Two sprints planned/designed/executed/retrospected back-to-back. 11 commits on b
 - System strength: UP — new enforcer (keystone), new wrap-up skill (session:end), learn-loop now fed by sprint-retros+reports, 15 learnings, RI-004/ED-018 tracked.
 - Biggest leverage point: operationalize the "watcher trusts its own narration" schema — make self-checks externally-verified by default (β verdict honesty enforcer, builder-dispatch telemetry for Claude roles, gate self-tests as gauntlet inputs).
 - Morning briefing appended to coaching.md.
+
+---
+
+# Sleep Journal — 2026-06-09 (dispatch-shape + lifecycle-plan session)
+
+Cycle over the 2026-06-08→09 arc: the dispatch-shape north star landing (SP-20260608-001) and the
+E-LIFECYCLE-001 mode-lifecycle plan + GPT-5.5 cross-provider review. Small, focused cycle — several
+phases are near-no-ops because the inputs (5 new 06-09 learnings + 12 dispatch-shape 06-08 learnings,
+P-060..P-063 β recs) arrived through `/learn:deep` and `/beta:mine` THIS session and are already
+well-formed; sleep's job here is clustering, scoring/importance-tagging, and dream-abstraction rather
+than pruning.
+
+## NREM Consolidation
+- Learnings: 87 → 87 (0 pruned, 0 promoted, 0 merged). Nothing stale enough to decay — every recent
+  entry is <2 days old; total is far under the 1000 cap, so bias = KEEP.
+- Importance audit: the store carries NO `importance` field on any of 87 entries (schema uses
+  `category`/`status`/`score` instead). Did NOT mass-backfill a field the smart-context pipeline
+  doesn't read — inferred importance inline instead:
+  - **HIGH (error_prevention / user_correction):** the 3 score-3 entries —
+    dispatch-skip-enforcer-outside-bypassed-caller (06-08), classifier-above-permissions-allow (06-09),
+    and the orchestration-invariants-need-action-boundary-gates root-cause synthesis (06-08).
+  - **MEDIUM (score-2, validated this session by GPT-5.5 review):** the 4 other 06-09 learnings
+    (cross-provider-review-of-plans, transaction-in-single-writer, hotpath-gate-fail-open-on-parse,
+    team-name-regex-rejects-parens-unicode).
+  - **MEDIUM-pending:** the ~13 score-0 dispatch-shape 06-08 learnings — real but single-session,
+    pending a second confirmation.
+- **Clusters formed (3):**
+  1. **GUARD-PLACEMENT** — fix-must-sit-at-the-action-boundary-not-inside-a-skippable-caller:
+     {dispatch-skip-enforcer-outside-bypassed-caller, spawn-fix-must-cover-all-callers,
+     transaction-in-single-writer, orchestration-invariants-need-action-boundary-gates}. Root: a guard
+     on ONE entry path leaves every other path naked. This is the session's dominant pattern.
+  2. **RUNTIME-EPISTEMICS** — can't-infer-process-state-from-artifacts:
+     {reap-is-silent-no-event, dont-call-stalled-from-tea-leaves, conductor-must-wait-not-fire-and-forget,
+     conductor-independent-verify-catches-false-green, failclosed-earnit-zero-stamped-is-honest}. Root:
+     neither a worker's ok:true NOR an empty worktree is ground truth — only an independent re-run is.
+  3. **PLAN-HONESTY / FEASIBILITY-CEILING** — review-shrinks-overclaims-before-code:
+     {cross-provider-review-of-plans, classifier-above-permissions-allow, hotpath-gate-fail-open-on-parse,
+     team-name-regex-rejects-parens-unicode}. Root: a plan's own confident prose is not correctness; an
+     independent cross-provider review surfaces the infeasible guarantee.
+- **Links added (schema-meta):** all three clusters reduce to ONE meta-schema — *trust an
+  independently-run check over any narrator (artifact silence, self-report, or your own draft)* — the
+  generalization of BC-16 ("harden every enforcer against lying") from enforcers to every source of
+  state. Logged as the cross-pollination thread in the dream file.
+- Conflicts resolved: 0 (no contradictions; cluster 2's "don't trust ok:true" and "don't trust
+  emptiness" are complementary, not contradictory — both resolve to "independently verify").
+- Decay applied: 0 (nothing stale/unvalidated past the 14/21-day windows).
+- Promotions: 0 patterns → permanent rules this cycle (the GUARD-PLACEMENT meta-pattern is a promotion
+  CANDIDATE — it appears 4×, but all `effective:null` pending_validation, so it has not yet met the
+  3×-effective bar. Flagged for `/learn:integrate`).
+
+## Cleanup (Glymphatic)
+- Session files cleared: none (no orphan temp files in `.claude/`).
+- Events: 31,078 lines / 9.57 MB, window 2026-05-29 → 2026-06-09. ALL events <30 days old → NO
+  compaction needed (oldest is 11 days). Note for next cycle: at ~18k events/week this file will cross
+  the 30-day compaction threshold within ~2-3 weeks; first monthly summary will be due ~2026-06-29.
+- Handoffs pruned: 0 (none older than 7 days under `.claude/runtime/handoffs`).
+- **Orphan worktree DETECTED:** `.claude/worktrees/bubbly-wondering-flute` @ 901f36c
+  (branch `worktree-bubbly-wondering-flute`) — sits at an OLD commit (901f36c, 5 commits behind HEAD
+  68e7bd6), detached from current work. NOT auto-removed (per the never-orphan-an-in-flight-builder
+  memory) but it shows no recent writes and predates this session's landed work → flagged for
+  `git worktree remove` next session after a liveness check. 0 `agent/*` branches.
+- git gc --auto: clean (exit 0).
+- Uncommitted files: 1 — `judgement-model-recommendations.md` (the staged P-060..P-063 block, expected;
+  will land with the session-end commit).
+- Recurring system issues: 5 open. RI-004 (build-chain dispatch silent-death via reap) is directly
+  REINFORCED by this session's RUNTIME-EPISTEMICS cluster — the reap-is-silent learning is fresh
+  evidence for it (count could bump). RI-006 (auto-handoff Stop/SessionEnd sentinel collision) is new
+  2026-06-08. 0 resolution-candidates (no permanent fix landed this session). 0 new scan-candidates.
+
+## Replay (Spindle)
+- Today's real goal: land the dispatch-shape north star, then get an HONEST, externally-reviewed plan
+  for the mode-lifecycle enforcement epic — and have ALL phases of the wrap-up procedures actually run
+  ("NO SKIPPING", said 3×).
+- Achieved: dispatch-shape landed (SP-20260608-001 reconciled); E-LIFECYCLE-001 plan authored, β-consulted
+  (4 DECIDE + 1 ESCALATE), GPT-5.5-reviewed (NEEDS-REWORK → 3 overclaims folded honest), turbo resolved
+  upward by operator.
+- Blind spots: (1) the reap STILL emits no event — RI-004's enforcer debt is untouched; (2) the
+  orphan worktree was created and left behind during the dispatch-shape build; (3) GUARD-PLACEMENT
+  appears 4× but has no hook enforcing "gate the action boundary, not the caller" — it's still a
+  memory-rule (the exact failure mode it describes).
+- Unused-skills / 2-week-cold: not separately audited this small cycle (no-op).
+- User style notes: three "DO NOT SKIP ANYTHING" prompts in one session (P-063) — the frustration is
+  PHASE-OMISSION inside composite skills, not slowness. And every autonomy escalation resolved UPWARD
+  ("highest autonomy possible", P-062) — the operator's default is maximum autonomy short of the
+  never-allowed list.
+
+## REM Dreams
+- GUARD-PLACEMENT: dream "The Gate Inside the Door" — a guard on one entry path is a window left open
+  in the wall beside the door; gate the single writer / action boundary.
+- RUNTIME-EPISTEMICS: dream "The Reap Leaves No Body" — absence-of-artifact is not death; the reap's
+  signature is the shape of nothing, indistinguishable from nothing-yet and nothing-elsewhere.
+- PLAN-HONESTY: dream "The Plan That Shrank and Got Stronger" — an honest ceiling is the floor you can
+  actually stand on; the foundation (registry-first) survived, the overclaims fell away.
+- Cross-pollination: the runtime-epistemics half (06-08) and the design-epistemics half (06-09) are the
+  SAME instruction — trust an independently-run check over any narrator (silence, self-report, or your
+  own draft). BC-16 generalized to every source of state.
+- Schema: one meta-pattern subsumes all 3 clusters (the independently-run-check principle).
+- Dream paintings: 3 saved to `.claude/dreams/2026-06-09.md` (each with a Deep Read).
+- Subconscious learnings: 3 extracted — door-vs-wall question before logging a "fix"; conductor needs a
+  positive liveness signal it controls; lock-state is the discriminator between regress-protection and
+  feasibility-cut.
+
+## Repair
+- Security: no secret scan run on src/ (sleep does not touch src/); the uncommitted change is a docs
+  recommendations file — clean.
+- Dependencies: not re-audited this cycle (no dependency changes in the session arc) — no-op.
+- Architecture: 1 orphan worktree (above); no phantom references surfaced in the touched docs.
+- Hooks: not re-verified this small cycle; RI-006 (Stop/SessionEnd sentinel collision) remains the one
+  known hook-integrity issue, already tracked.
+- Mode: dark — but repairs here are flag-only (worktree removal deferred to a liveness-checked next
+  session; reap-event enforcer is a build, not a sleep fix).
+
+## Growth
+- System strength: STRENGTHENING. 17 new learnings this arc, 3 distinct clusters with a clean unifying
+  schema, a high-blast-radius plan made honest BEFORE any code (the best kind of strengthening — a
+  bug-class avoided pre-build). The recurring weakness: invariants keep being written to memory instead
+  of gated (GUARD-PLACEMENT is the meta-diagnosis of that very weakness).
+- Biggest leverage point: **build the action-boundary gate for the GUARD-PLACEMENT class.** The session
+  proved 4× that memory-enforced orchestration invariants fail silently; the leverage is to convert
+  "ε conducts / wait-for-dispatch / fix-all-callers / gate-the-single-writer" from CLAUDE.md prose into
+  a hook at the action boundary (this is literally what E-LIFECYCLE-001 is scoped to do — so the
+  leverage point is: SHIP E-LIFECYCLE-001, and make the reap emit an event so RI-004 stops being read
+  off silence).
+- Morning briefing: appended to coaching.md.
+- False memory check: verified the 3 score-3 learnings against current state — classifier-above-permissions
+  confirmed (git push * IS in both settings files, push still gated this session); dispatch-skip-enforcer
+  confirmed against the landed SP-20260608-001 resolver; orchestration-invariants synthesis is a
+  meta-claim over the other 3, internally consistent. No false memories.

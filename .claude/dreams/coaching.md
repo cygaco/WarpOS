@@ -208,3 +208,42 @@ Reliability-first, then the cleanup (a correction to the earlier Director pick):
 - Push is operator-gated; this session's pushes were explicitly authorized.
 - Don't author the design seed templates — they exist; re-address them.
 - Re-gauntlet after any enforcer fix (a fix introduced a HIGH regression this session).
+
+---
+
+# Morning Briefing — 2026-06-09 (sleep cycle: dispatch-shape + lifecycle-plan)
+
+**Where we are:** Dispatch-shape north star landed (SP-20260608-001). E-LIFECYCLE-001 plan is
+authored, β-consulted, GPT-5.5-reviewed, and made honest (3 overclaims downgraded to feasibility
+ceilings) — but NOT yet built. The plan IS the answer to this session's dominant bug class.
+
+**Key unresolved items from tonight's sleep:**
+- **GUARD-PLACEMENT is still memory-enforced, not gated.** 4 learnings this session say the same thing:
+  a fix inside a skippable caller is bypassed; gate the action boundary / single writer instead. The
+  irony — that rule is itself still just a memory rule. E-LIFECYCLE-001 is scoped to fix exactly this.
+- **The reap emits no event (RI-004).** Tonight's RUNTIME-EPISTEMICS cluster proved you keep reading
+  "stalled" off the silence of a reaped worktree. Until a reap emits an event, that guess will recur.
+- **Orphan worktree** `bubbly-wondering-flute` @ 901f36c (5 behind HEAD) — left over from the
+  dispatch-shape build. Liveness-check, then `git worktree remove` early next session.
+
+**Dream solutions worth reviewing** (`.claude/dreams/2026-06-09.md`):
+- Door-vs-wall: before logging any "fix," ask which single writer / action boundary makes it
+  self-detecting. "The agent will remember" = an open window.
+- The conductor needs a positive liveness signal IT controls (its own re-run ping / a heartbeat) —
+  both the worker's ok:true and the worktree's silence are unreliable narrators.
+- Lock-state is the discriminator: an OPEN plan invites the feasibility cut (P-061); a LOCKED build
+  must not be regressed (β advises HOW only). Don't confuse the two.
+
+**Suggested first task for next session:** Build E-LIFECYCLE-001 (it converts the GUARD-PLACEMENT
+invariants from CLAUDE.md prose into action-boundary gates) — and while in dispatch territory, log/scope
+the reap-emits-an-event enforcer so RI-004 stops being inferred from nothing. First, clean up the orphan
+worktree.
+
+**Operator-style reminders surfaced this cycle:**
+- "NO SKIPPING" (said 3×, P-063): run EVERY phase of a composite skill (`/session:end`, `/learn:deep`).
+  Fast cadence may trim internal ceremony (gauntlet depth) but NEVER skip a declared phase.
+- Autonomy escalations resolve UPWARD (P-062): default recommendation framing = "maximum autonomy short
+  of the never-allowed list," not a conservative middle option.
+- The operator gates a high-blast-radius PLAN on cross-provider review BEFORE trusting it (P-060) — and
+  welcomes an honest ceiling that shrinks an overclaim (P-061). Surface the alarming findings, not a
+  clean summary.
