@@ -1,19 +1,19 @@
 # Systems Manifest
 
-Generated: 2026-06-08T21:25:40.124Z
+Generated: 2026-06-09T02:39:45.965Z
 
-Total: **73** systems across **2** categories. Files referenced: 72, missing on disk: 1.
+Total: **77** systems across **2** categories. Files referenced: 76, missing on disk: 1.
 
 ## By status
 
 | Status | Count |
 |---|---|
 | active | 1 |
-| untested | 72 |
+| untested | 76 |
 
 ## By category
 
-### cognition (72)
+### cognition (76)
 
 | id | name | status | files |
 |---|---|---|---|
@@ -53,6 +53,8 @@ Total: **73** systems across **2** categories. Files referenced: 72, missing on 
 | skill-playbook-add | Append a play to the Playbook (.claude/project/reference/playbook.md) — a named, | untested | 1 |
 | skill-portfolio-new | Scaffold a new product repo (sibling to WarpOS) with the framework installed and | untested | 1 |
 | skill-portfolio-spinup | "From WarpOS, run the idea→on-screen on-ramp against a registered product: dispa | untested | 1 |
+| skill-qa-check | Passive QA scan on recent git diff changes — checks for 7 failure-mode signature | untested | 1 |
+| skill-reasoning-run | Reason through a problem or decision — auto-detects quick triage vs deep deliber | untested | 1 |
 | skill-report | File an ELI5 report (sprint \| epic \| session \| checkpoint) into _reports/ — t | untested | 1 |
 | skill-roadmap-create | "Bootstrap a product ROADMAP.md from the inputs a project actually has — prefers | untested | 1 |
 | skill-roadmap-ideas | Predict candidate roadmap entries across four evidence lenses (3 each = 12 ideas | untested | 1 |
@@ -83,6 +85,8 @@ Total: **73** systems across **2** categories. Files referenced: 72, missing on 
 | skill-session-dump | Write a prescriptive handoff to DUMP.md at project root — context, session progr | untested | 1 |
 | skill-session-end | Full session wrap-up — cognitive maintenance (learn/mine/sleep/integrate) → fres | untested | 1 |
 | skill-session-turbo | Session speed mode — pre-authorize a batch of high-impact actions (permissions.a | untested | 1 |
+| skill-skills-cleanup | Audit all skills for dead weight, duplicates, broken references, and namespace i | untested | 1 |
+| skill-skills-delete | Remove a skill from .claude/commands with a backup, so it can be restored if the | untested | 1 |
 | skill-sleep-deep | "Full sleep cycle — all 6 phases: NREM consolidation, cleanup, replay, REM dream | untested | 1 |
 | skill-sprint-cost-gate | Toggle the /sprint:full cost-estimate halt on or off — turn off the heuristic sp | untested | 1 |
 | skill-sprint-full | Single-invocation execution of the full sprint pipeline (plan→design→execute→rel | untested | 1 |

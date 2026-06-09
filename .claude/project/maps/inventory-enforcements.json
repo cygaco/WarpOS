@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "generated": "2026-06-08T21:25:40.124Z",
-    "lastUpdated": "2026-06-08T21:25:40.124Z",
-    "total_hooks": 70,
+    "generated": "2026-06-09T02:39:45.965Z",
+    "lastUpdated": "2026-06-09T02:39:45.965Z",
+    "total_hooks": 72,
     "total_modules": 16,
-    "uncurated": 0,
+    "uncurated": 2,
     "total_gaps": 83,
     "gaps_closed": 75,
     "gaps_open": 8,
@@ -868,8 +868,8 @@
         "paths",
         "store.json heartbeat.cycleStep"
       ],
-      "file_size": 23252,
-      "file_modified": "2026-05-30T01:25:39.595Z",
+      "file_size": 25427,
+      "file_modified": "2026-06-09T00:41:40.597Z",
       "note": "Escalated 2026-05-13: cd-prefix coverage widened from git-only tails to ANY trailing command (`cd <project> && <anything>`, `cd . && <anything>`) and promoted from advisory warn to transparent auto-strip via hookSpecificOutput.updatedInput.command. Addresses 16x/day cd-prefix repeat (LRN-2026-05-13-cd-prefix-repeat) with merge-safe semantics (LRN-2026-05-13-merge-safe-cd-strip). PreToolUse Bash transform; never re-runs the command — only rewrites it."
     },
     {
@@ -1398,8 +1398,26 @@
         "context-sources",
         "paths"
       ],
-      "file_size": 27679,
-      "file_modified": "2026-06-08T19:48:52.890Z"
+      "file_size": 29099,
+      "file_modified": "2026-06-09T00:41:40.598Z"
+    },
+    {
+      "id": "session-stop-sentinel.test",
+      "type": "hook",
+      "matcher": "?",
+      "phase": "?",
+      "mode": "?",
+      "file": "scripts/hooks/session-stop-sentinel.test.js",
+      "file_size": 5847,
+      "file_modified": "2026-06-08T22:03:39.609Z",
+      "registered": false,
+      "gates": [],
+      "blocks": [],
+      "warns": [],
+      "allows": [],
+      "gaps_closed": [],
+      "uncurated": true,
+      "uncurated_note": "added since last hand-curated regen — fields ?, ?, ? need a /maps:enforcements review"
     },
     {
       "id": "session-stop",
@@ -1422,8 +1440,8 @@
         "logger",
         "paths"
       ],
-      "file_size": 18584,
-      "file_modified": "2026-06-05T01:45:08.447Z"
+      "file_size": 19907,
+      "file_modified": "2026-06-08T22:01:59.750Z"
     },
     {
       "id": "session-tracker",
@@ -1898,14 +1916,32 @@
       "file_modified": "2026-05-30T01:25:39.607Z"
     },
     {
+      "id": "team-guard-gate.test",
+      "type": "hook",
+      "matcher": "?",
+      "phase": "?",
+      "mode": "?",
+      "file": "scripts/hooks/team-guard-gate.test.js",
+      "file_size": 11806,
+      "file_modified": "2026-06-09T00:41:40.599Z",
+      "registered": false,
+      "gates": [],
+      "blocks": [],
+      "warns": [],
+      "allows": [],
+      "gaps_closed": [],
+      "uncurated": true,
+      "uncurated_note": "added since last hand-curated regen — fields ?, ?, ? need a /maps:enforcements review"
+    },
+    {
       "id": "team-guard-sprint.test",
       "type": "hook",
       "matcher": "?",
       "phase": "?",
       "mode": "?",
       "file": "scripts/hooks/team-guard-sprint.test.js",
-      "file_size": 6198,
-      "file_modified": "2026-06-08T19:34:42.108Z",
+      "file_size": 6605,
+      "file_modified": "2026-06-09T00:41:40.599Z",
       "registered": false,
       "gates": [],
       "blocks": [],
@@ -1947,8 +1983,8 @@
         "logger",
         "role-aliases"
       ],
-      "file_size": 12058,
-      "file_modified": "2026-06-08T19:34:13.056Z"
+      "file_size": 17162,
+      "file_modified": "2026-06-09T00:41:40.600Z"
     },
     {
       "id": "template-fillability",

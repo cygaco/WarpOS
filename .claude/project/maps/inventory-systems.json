@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "generated": "2026-06-08T21:25:40.124Z",
-    "lastUpdated": "2026-06-08T21:25:40.124Z",
-    "total_systems": 73,
+    "generated": "2026-06-09T02:39:45.965Z",
+    "lastUpdated": "2026-06-09T02:39:45.965Z",
+    "total_systems": 77,
     "categories": 2,
-    "total_files_referenced": 72,
+    "total_files_referenced": 76,
     "missing_files_on_disk": 1,
     "regenerated_by": "scripts/regen-maps.js"
   },
@@ -16,7 +16,7 @@
       ]
     },
     "untested": {
-      "count": 72,
+      "count": 76,
       "ids": [
         "skill-roadmap-ideas",
         "skill-roadmap-next",
@@ -89,7 +89,11 @@
         "skill-portfolio-spinup",
         "skill-mode-adhoc",
         "skill-mode-oneshot",
-        "skill-mode-solo"
+        "skill-mode-solo",
+        "skill-reasoning-run",
+        "skill-skills-cleanup",
+        "skill-skills-delete",
+        "skill-qa-check"
       ]
     }
   },
@@ -106,7 +110,7 @@
       ]
     },
     "cognition": {
-      "count": 72,
+      "count": 76,
       "systems": [
         {
           "id": "skill-_report_skill_tmp",
@@ -397,6 +401,22 @@
           ]
         },
         {
+          "id": "skill-qa-check",
+          "name": "Passive QA scan on recent git diff changes — checks for 7 failure-mode signatures",
+          "status": "untested",
+          "files": [
+            ".claude/commands/qa/check.md"
+          ]
+        },
+        {
+          "id": "skill-reasoning-run",
+          "name": "Reason through a problem or decision — auto-detects quick triage vs deep deliberation",
+          "status": "untested",
+          "files": [
+            ".claude/commands/reasoning/run.md"
+          ]
+        },
+        {
           "id": "skill-report",
           "name": "File an ELI5 report (sprint | epic | session | checkpoint) into _reports/ — tl;dr first, plain language, watch-outs always",
           "status": "untested",
@@ -637,6 +657,22 @@
           ]
         },
         {
+          "id": "skill-skills-cleanup",
+          "name": "Audit all skills for dead weight, duplicates, broken references, and namespace issues — then clean up",
+          "status": "untested",
+          "files": [
+            ".claude/commands/skills/cleanup.md"
+          ]
+        },
+        {
+          "id": "skill-skills-delete",
+          "name": "Remove a skill from .claude/commands with a backup, so it can be restored if the deletion turns out to be premature.",
+          "status": "untested",
+          "files": [
+            ".claude/commands/skills/delete.md"
+          ]
+        },
+        {
           "id": "skill-sleep-deep",
           "name": "\"Full sleep cycle — all 6 phases: NREM consolidation, cleanup, replay, REM dreaming, repair, growth (~15-30 min)\"",
           "status": "untested",
@@ -713,7 +749,7 @@
       "id": "hooks",
       "name": "Hooks",
       "category": "automation",
-      "count": 72
+      "count": 74
     },
     {
       "id": "memory",

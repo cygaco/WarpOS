@@ -1,8 +1,8 @@
 # Hooks Map
 
-Generated: 2026-06-08T21:25:40.124Z
+Generated: 2026-06-09T02:39:45.965Z
 
-**72** hook scripts (64 registered, 8 orphan), **16** lib modules, **75** wiring entries.
+**74** hook scripts (64 registered, 10 orphan), **16** lib modules, **75** wiring entries.
 
 ## Wiring (event → matcher → hook)
 
@@ -140,7 +140,7 @@ Generated: 2026-06-08T21:25:40.124Z
 | lint.js | yes | 2684 | 2026-05-30T01:25:39.594Z |
 | memory-enforcement-guard.js | yes | 3339 | 2026-05-30T01:25:39.594Z |
 | memory-guard.js | yes | 14402 | 2026-06-07T03:35:59.239Z |
-| merge-guard.js | yes | 23252 | 2026-05-30T01:25:39.595Z |
+| merge-guard.js | yes | 25427 | 2026-06-09T00:41:40.597Z |
 | ownership-guard.js | yes | 4504 | 2026-06-04T22:57:14.000Z |
 | path-guard.js | yes | 8945 | 2026-06-08T20:28:50.013Z |
 | path-registry-guard.js | yes | 5451 | 2026-05-30T01:25:39.597Z |
@@ -157,8 +157,9 @@ Generated: 2026-06-08T21:25:40.124Z
 | secret-guard.js | yes | 2786 | 2026-05-30T01:25:39.600Z |
 | self-mod-governance.js | yes | 923 | 2026-05-30T01:25:39.601Z |
 | session-start-teaminit.test.js | no | 4665 | 2026-06-08T19:49:48.192Z |
-| session-start.js | yes | 27679 | 2026-06-08T19:48:52.890Z |
-| session-stop.js | yes | 18584 | 2026-06-05T01:45:08.447Z |
+| session-start.js | yes | 29099 | 2026-06-09T00:41:40.598Z |
+| session-stop-sentinel.test.js | no | 5847 | 2026-06-08T22:03:39.609Z |
+| session-stop.js | yes | 19907 | 2026-06-08T22:01:59.750Z |
 | session-tracker.js | yes | 9491 | 2026-05-30T01:25:39.602Z |
 | settings-edit-guard.js | yes | 4852 | 2026-06-04T21:24:41.661Z |
 | skill-catalog-regen.js | yes | 2181 | 2026-05-30T01:25:39.602Z |
@@ -173,8 +174,9 @@ Generated: 2026-06-08T21:25:40.124Z
 | step-registry-guard.js | yes | 12054 | 2026-05-30T01:25:39.606Z |
 | store-validator.js | yes | 16480 | 2026-05-30T01:25:39.606Z |
 | systems-sync.js | yes | 7605 | 2026-05-30T01:25:39.607Z |
-| team-guard-sprint.test.js | no | 6198 | 2026-06-08T19:34:42.108Z |
-| team-guard.js | yes | 12058 | 2026-06-08T19:34:13.056Z |
+| team-guard-gate.test.js | no | 11806 | 2026-06-09T00:41:40.599Z |
+| team-guard-sprint.test.js | no | 6605 | 2026-06-09T00:41:40.599Z |
+| team-guard.js | yes | 17162 | 2026-06-09T00:41:40.600Z |
 | template-fillability.js | yes | 2939 | 2026-05-30T01:25:39.607Z |
 | test.js | no | 11730 | 2026-05-30T01:25:39.608Z |
 | tracker-completion-gate.js | yes | 3400 | 2026-06-07T03:35:59.240Z |

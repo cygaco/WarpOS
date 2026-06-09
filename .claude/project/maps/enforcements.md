@@ -1,8 +1,8 @@
 # Enforcements Map
 
-Generated: 2026-06-08T21:25:40.124Z
+Generated: 2026-06-09T02:39:45.965Z
 
-**70** hooks, **16** lib modules. **0** uncurated (added since last hand-curation on 2026-06-08T20:21:24.827Z).
+**72** hooks, **16** lib modules. **2** uncurated (added since last hand-curation on 2026-06-08T21:25:40.124Z).
 
 ## Coverage
 
@@ -60,6 +60,7 @@ Generated: 2026-06-08T21:25:40.124Z
 | self-mod-governance | Edit|Write | PreToolUse | advisory | yes |  |
 | session-start-teaminit.test | ? | ? | ? | no | yes |
 | session-start | (universal) | SessionStart | fail-open | yes |  |
+| session-stop-sentinel.test | ? | ? | ? | no | yes |
 | session-stop | (universal) | Stop|SessionEnd|StopFailure | fail-open | yes |  |
 | session-tracker | (universal) | PostToolUse | fail-open | yes |  |
 | settings-edit-guard | Edit|Write | PreToolUse | advisory | yes |  |
@@ -75,6 +76,7 @@ Generated: 2026-06-08T21:25:40.124Z
 | step-registry-guard | Edit|Write | PreToolUse | fail-closed | yes |  |
 | store-validator | Edit|Write | PreToolUse+PostToolUse | fail-closed | yes |  |
 | systems-sync | Edit|Write | PostToolUse | fail-open | yes |  |
+| team-guard-gate.test | ? | ? | ? | no | yes |
 | team-guard-sprint.test | ? | ? | ? | no | yes |
 | team-guard | Agent | PreToolUse | fail-closed | yes |  |
 | template-fillability | Edit|Write | PostToolUse | advisory | yes |  |

@@ -1,11 +1,11 @@
 {
   "metadata": {
-    "generated": "2026-06-08T21:25:40.124Z",
-    "lastUpdated": "2026-06-08T21:25:40.124Z",
-    "total_hooks": 72,
+    "generated": "2026-06-09T02:39:45.965Z",
+    "lastUpdated": "2026-06-09T02:39:45.965Z",
+    "total_hooks": 74,
     "total_lib_modules": 16,
     "registered_hooks": 64,
-    "orphan_hooks": 8,
+    "orphan_hooks": 10,
     "regenerated_by": "scripts/regen-maps.js"
   },
   "hooks": [
@@ -267,8 +267,8 @@
       "path": "scripts/hooks/merge-guard.js",
       "registered": true,
       "exists": true,
-      "size": 23252,
-      "modified": "2026-05-30T01:25:39.595Z"
+      "size": 25427,
+      "modified": "2026-06-09T00:41:40.597Z"
     },
     {
       "id": "hook:ownership-guard",
@@ -420,8 +420,17 @@
       "path": "scripts/hooks/session-start.js",
       "registered": true,
       "exists": true,
-      "size": 27679,
-      "modified": "2026-06-08T19:48:52.890Z"
+      "size": 29099,
+      "modified": "2026-06-09T00:41:40.598Z"
+    },
+    {
+      "id": "hook:session-stop-sentinel.test",
+      "name": "session-stop-sentinel.test.js",
+      "path": "scripts/hooks/session-stop-sentinel.test.js",
+      "registered": false,
+      "exists": true,
+      "size": 5847,
+      "modified": "2026-06-08T22:03:39.609Z"
     },
     {
       "id": "hook:session-stop",
@@ -429,8 +438,8 @@
       "path": "scripts/hooks/session-stop.js",
       "registered": true,
       "exists": true,
-      "size": 18584,
-      "modified": "2026-06-05T01:45:08.447Z"
+      "size": 19907,
+      "modified": "2026-06-08T22:01:59.750Z"
     },
     {
       "id": "hook:session-tracker",
@@ -559,13 +568,22 @@
       "modified": "2026-05-30T01:25:39.607Z"
     },
     {
+      "id": "hook:team-guard-gate.test",
+      "name": "team-guard-gate.test.js",
+      "path": "scripts/hooks/team-guard-gate.test.js",
+      "registered": false,
+      "exists": true,
+      "size": 11806,
+      "modified": "2026-06-09T00:41:40.599Z"
+    },
+    {
       "id": "hook:team-guard-sprint.test",
       "name": "team-guard-sprint.test.js",
       "path": "scripts/hooks/team-guard-sprint.test.js",
       "registered": false,
       "exists": true,
-      "size": 6198,
-      "modified": "2026-06-08T19:34:42.108Z"
+      "size": 6605,
+      "modified": "2026-06-09T00:41:40.599Z"
     },
     {
       "id": "hook:team-guard",
@@ -573,8 +591,8 @@
       "path": "scripts/hooks/team-guard.js",
       "registered": true,
       "exists": true,
-      "size": 12058,
-      "modified": "2026-06-08T19:34:13.056Z"
+      "size": 17162,
+      "modified": "2026-06-09T00:41:40.600Z"
     },
     {
       "id": "hook:template-fillability",

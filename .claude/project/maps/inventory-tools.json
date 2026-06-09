@@ -1,7 +1,7 @@
 {
   "metadata": {
-    "generated": "2026-06-08T21:25:40.124Z",
-    "lastUpdated": "2026-06-08T21:25:40.124Z",
+    "generated": "2026-06-09T02:39:45.965Z",
+    "lastUpdated": "2026-06-09T02:39:45.965Z",
     "total_tools": 181,
     "categories": 4,
     "regenerated_by": "scripts/regen-maps.js"
@@ -376,8 +376,8 @@
           "path": "scripts/dispatch-agent.js",
           "type": "script",
           "exists": true,
-          "size": 28779,
-          "modified": "2026-06-08T20:28:50.013Z"
+          "size": 30265,
+          "modified": "2026-06-09T00:41:40.593Z"
         },
         {
           "id": "tool:dispatch-claude",
@@ -385,8 +385,8 @@
           "path": "scripts/dispatch-claude.js",
           "type": "script",
           "exists": true,
-          "size": 20640,
-          "modified": "2026-06-08T16:42:49.375Z"
+          "size": 22296,
+          "modified": "2026-06-09T00:41:40.593Z"
         },
         {
           "id": "tool:dispatch-skill",
@@ -394,8 +394,8 @@
           "path": "scripts/dispatch-skill.js",
           "type": "script",
           "exists": true,
-          "size": 28663,
-          "modified": "2026-06-08T21:09:26.335Z"
+          "size": 31146,
+          "modified": "2026-06-09T00:41:40.593Z"
         },
         {
           "id": "tool:dispatch-skill.test",
@@ -1150,8 +1150,8 @@
           "path": "scripts/skills-test.js",
           "type": "script",
           "exists": true,
-          "size": 20010,
-          "modified": "2026-06-08T18:30:58.395Z"
+          "size": 20348,
+          "modified": "2026-06-09T00:41:40.600Z"
         },
         {
           "id": "tool:skills-test.test",
@@ -1645,7 +1645,7 @@
           "id": "xref:hooks",
           "type": "xref",
           "note": "hooks inventory lives in .claude/project/maps/inventory-hooks.json",
-          "count": 72
+          "count": 74
         }
       ]
     }

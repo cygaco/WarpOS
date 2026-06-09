@@ -1,6 +1,6 @@
 # Tools Map
 
-Generated: 2026-06-08T21:25:40.124Z
+Generated: 2026-06-09T02:39:45.965Z
 
 Scripts: **176** | npm scripts: **0** | External CLIs: **3**
 
@@ -48,9 +48,9 @@ Scripts: **176** | npm scripts: **0** | External CLIs: **3**
 | delta-store-review.js | 1684 | 2026-06-05T01:45:08.445Z |
 | delta-update-heartbeat.js | 882 | 2026-06-08T21:05:42.942Z |
 | dismiss-drift-entry.js | 647 | 2026-05-30T01:25:39.566Z |
-| dispatch-agent.js | 28779 | 2026-06-08T20:28:50.013Z |
-| dispatch-claude.js | 20640 | 2026-06-08T16:42:49.375Z |
-| dispatch-skill.js | 28663 | 2026-06-08T21:09:26.335Z |
+| dispatch-agent.js | 30265 | 2026-06-09T00:41:40.593Z |
+| dispatch-claude.js | 22296 | 2026-06-09T00:41:40.593Z |
+| dispatch-skill.js | 31146 | 2026-06-09T00:41:40.593Z |
 | dispatch-skill.test.js | 11813 | 2026-06-08T21:08:33.109Z |
 | dispatch.js | 20217 | 2026-06-08T04:56:41.298Z |
 | drift-apply-decisions.js | 2075 | 2026-05-30T01:25:39.571Z |
@@ -134,7 +134,7 @@ Scripts: **176** | npm scripts: **0** | External CLIs: **3**
 | skill-description-audit.js | 7429 | 2026-05-30T01:25:39.659Z |
 | skills-bench.js | 21836 | 2026-06-08T21:09:18.890Z |
 | skills-bench.test.js | 12061 | 2026-06-08T21:10:11.199Z |
-| skills-test.js | 20010 | 2026-06-08T18:30:58.395Z |
+| skills-test.js | 20348 | 2026-06-09T00:41:40.600Z |
 | skills-test.test.js | 11553 | 2026-06-08T18:27:56.943Z |
 | sleep-20260422-analyze.js | 4078 | 2026-05-30T01:25:39.659Z |
 | sleep-20260422-consolidate.js | 4154 | 2026-05-30T01:25:39.660Z |
