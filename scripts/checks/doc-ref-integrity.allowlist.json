@@ -46,6 +46,12 @@
     "claude-report.md",
     "openai-report.md",
     "chatgpt-report.md",
-    "BRIEF.md"
+    "BRIEF.md",
+    ".claude/agents/_org/mode-lifecycle.json",
+    ".claude/agents/_org/mode-lifecycle-hooks.json",
+    "scripts/hooks/lib/lifecycle-events.js",
+    "scripts/hooks/mode-lifecycle-guard.js",
+    "scripts/teams/lifecycle.js",
+    "scripts/warpos/provider-tier-check.js"
   ]
 }
