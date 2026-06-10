@@ -406,6 +406,42 @@ function findForbiddenSegment(rawSeg) {
 }
 
 /**
+ * Detects the sanctioned `--review-fallback` lane (T-305 G2):
+ *   node scripts/dispatch-claude.js <review-role> <prompt> [args] --review-fallback
+ *
+ * This is the BLESSED fallback path for cross-provider review roles when their
+ * normal provider (openai/gemini) is quota-exhausted. dispatch-claude.js handles
+ * the actual routing; this detector lets the route-guard explicitly RECOGNIZE the
+ * lane (rather than it falling through silently via the canonical-prefix allowance).
+ *
+ * Key properties:
+ *   - Writes a LEDGERED ok:true completion record (fallback:true + provider:claude +
+ *     quota_fallback_from) so gauntlet-verify SEES it and coverage-gate TRIPS the
+ *     cross_provider_required debt VISIBLY. Honest debt, never silent green.
+ *   - No -w required (review roles are READ-ONLY — they don't write code).
+ *   - dispatch-claude.js REFUSES --review-fallback for build-chain roles (they still
+ *     require -w/--worktree isolation). This detector does NOT enforce that — it
+ *     merely names the recognized pattern; the dispatch enforces the role guard.
+ *
+ * Returns true when the command is the sanctioned review-fallback route, else false.
+ */
+function isReviewFallbackRoute(rawCmd) {
+  const cmd = String(rawCmd || "").replace(/\r?\n/g, " ").trim();
+  if (!cmd) return false;
+  const scan = stripQuoted(cmd);
+  // Must be a dispatch-claude.js invocation (the Claude-role bounded wrapper).
+  // The canonical-prefix regex matches both dispatch-agent.js and dispatch-claude.js;
+  // we narrow to dispatch-claude.js specifically.
+  if (
+    !/^\s*(?:[A-Za-z_][A-Za-z0-9_]*=\S*\s+)*node\s+["'`]?\S*dispatch-claude\.js\b/.test(scan)
+  ) return false;
+  // Must include the --review-fallback flag (unquoted — a quoted --review-fallback
+  // would not be passed as a real flag to node, so we match unquoted only).
+  if (!/\B--review-fallback\b/.test(scan)) return false;
+  return true;
+}
+
+/**
  * Non-blocking advisory: a `claude -p … --agent <role>` invocation whose prompt
  * is inlined as a command-substitution argv (`"$(cat file)"` / backtick-cat)
  * rather than piped via stdin (`< file`). The inlined form works for small
@@ -619,4 +655,4 @@ process.stdin.on("end", () => {
   }
 });
 
-module.exports = { findForbidden, findAdvisory, findHeavySkillAdvisory, HEAVY_SKILLS };
+module.exports = { findForbidden, findAdvisory, findHeavySkillAdvisory, HEAVY_SKILLS, isReviewFallbackRoute };

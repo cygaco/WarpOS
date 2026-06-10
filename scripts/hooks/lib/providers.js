@@ -44,6 +44,68 @@ try {
 } catch {
   /* fail-open: loadGeminiApiKey fallback below */
 }
+// T-20260610-306: TTL'd circuit breaker — marks a provider down after a quota
+// failure so subsequent dispatches skip it instead of re-burning the quota window.
+// Guarded require: if the module is missing or broken the breaker is simply absent
+// (fail-open; providerAvailable falls through to its normal CLI check).
+let providerBreaker = null;
+try {
+  providerBreaker = require("../../dispatch/provider-breaker");
+} catch {
+  /* fail-open: breaker unavailable, dispatch proceeds normally */
+}
+
+// ── Auth mode label (value-free, inline — importing dispatch-readiness would be circular) ──
+// Returns a SHORT label: "key (metered)" | "oauth (plan)" | "key (unknown posture)" | "none" | "harness" | "unknown"
+// VALUE-FREE: reads only field PRESENCE, never field values.
+const os_mod = require("os");
+function readFileSafeLocal(p) {
+  try { return fs.readFileSync(p, "utf8"); } catch { return null; }
+}
+function detectAuthModeLabel(provider) {
+  try {
+    if (provider === "claude") return "harness";
+    if (provider === "openai") {
+      const authFiles = [
+        path.join(os_mod.homedir(), ".codex", "auth.json"),
+        path.join(os_mod.homedir(), ".config", "codex", "auth.json"),
+      ];
+      for (const f of authFiles) {
+        const raw = readFileSafeLocal(f);
+        if (raw === null) continue;
+        let parsed = null;
+        try { parsed = JSON.parse(raw); } catch { /* unparseable */ }
+        if (parsed !== null && typeof parsed === "object") {
+          if (
+            Object.prototype.hasOwnProperty.call(parsed, "auth_mode") ||
+            Object.prototype.hasOwnProperty.call(parsed, "OPENAI_API_KEY")
+          ) return "key (metered)";
+          if (
+            Object.prototype.hasOwnProperty.call(parsed, "access_token") ||
+            Object.prototype.hasOwnProperty.call(parsed, "refresh_token") ||
+            Object.prototype.hasOwnProperty.call(parsed, "tokens") ||
+            Object.prototype.hasOwnProperty.call(parsed, "id_token")
+          ) return "oauth (plan)";
+          return "key (unknown posture)";
+        }
+        return "key (unknown posture)";
+      }
+      if (process.env.OPENAI_API_KEY || process.env.CODEX_API_KEY) return "key (env)";
+      return "none";
+    }
+    if (provider === "gemini") {
+      // Mirror gemini OAuth check without importing dispatch-readiness.
+      const credsPath = path.join(os_mod.homedir(), ".gemini", "oauth_creds.json");
+      const raw = readFileSafeLocal(credsPath);
+      if (raw && /(refresh|access)_token/.test(raw)) return "oauth (plan)";
+      if (process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY) return "key (env)";
+      return "none";
+    }
+    return "unknown";
+  } catch {
+    return "unknown";
+  }
+}
 
 // ── Config resolution ───────────────────────────────────────
 function loadManifest() {
@@ -457,6 +519,18 @@ function cliAvailable(cmd) {
 
 function providerAvailable(providerName) {
   if (providerName === "claude") return true; // always available — it's the harness
+  // ── Circuit-breaker consult — SINGLE chokepoint for every provider ──────
+  // Every caller that reaches here (dispatch-shape, dispatch-claude, dispatch-agent,
+  // provider-health checks) inherits this gate. No per-wrapper consults needed.
+  // FAIL-OPEN: if providerBreaker failed to load OR isDown throws, fall through
+  // to the normal CLI check — a broken breaker NEVER blocks a healthy provider.
+  if (providerBreaker) {
+    try {
+      if (providerBreaker.isDown(providerName)) return false;
+    } catch {
+      // Fail-open: breaker error must never block a healthy provider
+    }
+  }
   const cfg = getProviderConfig(providerName);
   if (!cfg) return false;
   return cliAvailable(cfg.cli);
@@ -855,6 +929,25 @@ function runProvider(role, prompt, opts = {}) {
     );
     const quota = classifyQuotaFailure(errText);
     if (quota) {
+      // T-20260610-306: mark the provider down in the circuit breaker so the NEXT
+      // dispatch skips it instead of re-burning the quota window. Only for
+      // quota_exhausted (recoverable=true) — the recoverable case the breaker
+      // is designed for. Best-effort (providerBreaker is already fail-open).
+      if (quota.kind === "quota_exhausted" && providerBreaker) {
+        try {
+          providerBreaker.markDown(providerName, {
+            kind: quota.kind,
+            untilMs: providerBreaker.computeUntil(
+              providerName,
+              errText,
+              Date.now(),
+            ),
+            evidence: `${quota.kind} on model=${model}`.slice(0, 200),
+          });
+        } catch {
+          /* fail-open: breaker write failure must not block the error return */
+        }
+      }
       try {
         process.stderr.write(
           `[providers.js] QUOTA: ${providerName} (${model}) hit ${quota.kind}` +
@@ -884,6 +977,10 @@ function runProvider(role, prompt, opts = {}) {
               // failure); the caller decides, with this flag making it loud.
               suggestFallbackProvider:
                 providerName === "gemini" ? "openai" : cfg.fallback || "claude",
+              // Auth mode label — VALUE-FREE (mode label only, never key value).
+              // Surfaces "key (metered)" vs "oauth (plan)" so a quota error
+              // envelope is self-diagnosing: one read and the posture is clear.
+              auth_mode: detectAuthModeLabel(providerName),
             },
           }
         : {}),

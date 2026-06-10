@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-10T21:03:21.751Z",
+  "generatedAt": "2026-06-10T22:14:09.052Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.15.4",
   "migrations": [],
@@ -2422,8 +2422,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/dispatch-claude.js",
-      "sha256": "0361cb75179c901a6d46cbb0c42b828a92fd6d9593af3b0fe3a09de9b1accf8c",
-      "installedSha": "0361cb75179c901a6d46cbb0c42b828a92fd6d9593af3b0fe3a09de9b1accf8c"
+      "sha256": "94a8d4c09cfe2b60a1b6ebc57a68209068aed0b582e366c47c1abcff17a045ba",
+      "installedSha": "94a8d4c09cfe2b60a1b6ebc57a68209068aed0b582e366c47c1abcff17a045ba"
     },
     "scripts/dispatch-skill.js": {
       "owner": "framework",
@@ -4816,8 +4816,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/dispatch-route-guard.js",
-      "sha256": "303dff65e52d773d567eb6310007ca360bee304c2d19392672eb1399c7a91fed",
-      "installedSha": "303dff65e52d773d567eb6310007ca360bee304c2d19392672eb1399c7a91fed"
+      "sha256": "747db3a0dfb67c07f18767bd8f4624e5f5fb93bbd29513dd3978f2e05029fb78",
+      "installedSha": "747db3a0dfb67c07f18767bd8f4624e5f5fb93bbd29513dd3978f2e05029fb78"
     },
     "scripts/hooks/edit-watcher.js": {
       "owner": "framework",
@@ -5390,8 +5390,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/lib/providers.js",
-      "sha256": "b1d61bd05d974367a3c6e583cd70eda6bb349cb498f55748dccd302e67bbc428",
-      "installedSha": "b1d61bd05d974367a3c6e583cd70eda6bb349cb498f55748dccd302e67bbc428"
+      "sha256": "e243a580876b9cde24f2e421cd17f1d06601a609a92b6798c6406b7be1ea4f50",
+      "installedSha": "e243a580876b9cde24f2e421cd17f1d06601a609a92b6798c6406b7be1ea4f50"
     },
     "scripts/hooks/lib/role-aliases.js": {
       "owner": "framework",
@@ -5579,8 +5579,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/dispatch/dispatch-claude.test.js",
-      "sha256": "aee42ce63a0dcd3e6941728ea9c08558118c91a355aa1930117acf566416cee5",
-      "installedSha": "aee42ce63a0dcd3e6941728ea9c08558118c91a355aa1930117acf566416cee5"
+      "sha256": "908a2c786d2810c64fd0fe9ed6ef181b8f5013ddc232759fb0e9e0255f4e59ce",
+      "installedSha": "908a2c786d2810c64fd0fe9ed6ef181b8f5013ddc232759fb0e9e0255f4e59ce"
     },
     "scripts/dispatch/dispatch-contract.js": {
       "owner": "framework",
@@ -5651,6 +5651,20 @@
       "source": "scripts/dispatch/org-roles.js",
       "sha256": "1628b6de7ffffbbeb05926297d4f06b8a925a58157dde8896c1142fd862a668d",
       "installedSha": "1628b6de7ffffbbeb05926297d4f06b8a925a58157dde8896c1142fd862a668d"
+    },
+    "scripts/dispatch/provider-breaker.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/dispatch/provider-breaker.js",
+      "sha256": "baf8e158382e2ec34caeed8275eec7ff1df928f5560f7a0b3cc8ac794718dce7",
+      "installedSha": "baf8e158382e2ec34caeed8275eec7ff1df928f5560f7a0b3cc8ac794718dce7"
+    },
+    "scripts/dispatch/provider-breaker.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/dispatch/provider-breaker.test.js",
+      "sha256": "e9f6118bfed7a9362bd15d0e2407f2f434c39570036be278dffc2764eec111cf",
+      "installedSha": "e9f6118bfed7a9362bd15d0e2407f2f434c39570036be278dffc2764eec111cf"
     },
     "scripts/dispatch/prune-dead-locks.js": {
       "owner": "framework",
@@ -5950,8 +5964,15 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/dispatch-readiness.js",
-      "sha256": "e721ef8259660c0b8e4fc9690704ef3ad1052453a29cb455701814f34181d2da",
-      "installedSha": "e721ef8259660c0b8e4fc9690704ef3ad1052453a29cb455701814f34181d2da"
+      "sha256": "e06281245e007c82ad6c13319cee83ed80bef700cecedc91e5a9cd4a7c3fc659",
+      "installedSha": "e06281245e007c82ad6c13319cee83ed80bef700cecedc91e5a9cd4a7c3fc659"
+    },
+    "scripts/checks/dispatch-readiness.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/dispatch-readiness.test.js",
+      "sha256": "787a5a926e893aa1893bd4a45fc1aeda4d3de3b62ba0553599bd63039139a3f2",
+      "installedSha": "787a5a926e893aa1893bd4a45fc1aeda4d3de3b62ba0553599bd63039139a3f2"
     },
     "scripts/checks/dispatch-routing-parity.js": {
       "owner": "framework",
@@ -9186,14 +9207,6 @@
       "source": null,
       "sha256": "6952f8b5ed7d9e7214351fa3caf865315f810b4b6161d1601fa5162ba56ff61a",
       "installedSha": "6952f8b5ed7d9e7214351fa3caf865315f810b4b6161d1601fa5162ba56ff61a"
-    },
-    ".claude/.agent-result-hashes.json": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/.last-checkpoint": {
-      "owner": "runtime",
-      "managed": false
     },
     ".claude/framework-installed.json": {
       "owner": "generated",
@@ -17342,26 +17355,6 @@
       "sha256": "264e46f1b55b145cdcc54bf8c91294f060cd297ee367e0d28a275a91e5b0bdc1",
       "installedSha": "264e46f1b55b145cdcc54bf8c91294f060cd297ee367e0d28a275a91e5b0bdc1"
     },
-    ".claude/project/memory/enforcement-debt.jsonl": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/memory/learnings.jsonl": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/memory/recurring-issues.jsonl": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/memory/systems.jsonl": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/memory/traces.jsonl": {
-      "owner": "runtime",
-      "managed": false
-    },
     ".claude/project/maps/.stale.json": {
       "owner": "runtime",
       "managed": false
@@ -17458,27 +17451,7 @@
       "owner": "runtime",
       "managed": false
     },
-    ".claude/project/maps/tools.jsonl": {
-      "owner": "runtime",
-      "managed": false
-    },
     ".claude/project/maps/tools.md": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/events/events.jsonl": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/events/manager-consult.jsonl": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/events/requirements.jsonl": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/events/tools.jsonl": {
       "owner": "runtime",
       "managed": false
     },
@@ -17491,14 +17464,6 @@
       "managed": false
     },
     ".claude/project/decisions/decision-ledger.jsonl": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/decisions/provider-trace.jsonl": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/builds/builder-fixture-57d0677ea6/transaction.json": {
       "owner": "runtime",
       "managed": false
     },
@@ -19772,11 +19737,6 @@
       "sha256": "f486c86b18ba51edefac2e00e918414cdbfc4098400b86800511a0549da312f8",
       "installedSha": "f486c86b18ba51edefac2e00e918414cdbfc4098400b86800511a0549da312f8"
     },
-    ".claude/agents/president/_system/gamma/events.jsonl": {
-      "owner": "runtime",
-      "managed": false,
-      "kind": "jsonl"
-    },
     ".claude/agents/president/_system/beta/beta-source-data.md": {
       "owner": "framework",
       "managed": true,
@@ -19784,11 +19744,6 @@
       "kind": "md",
       "sha256": "0ae9c868c8edb0933cef6bb88214b3080c13cdb126368d7243c990f62db3f60f",
       "installedSha": "0ae9c868c8edb0933cef6bb88214b3080c13cdb126368d7243c990f62db3f60f"
-    },
-    ".claude/agents/president/_system/beta/events.jsonl": {
-      "owner": "runtime",
-      "managed": false,
-      "kind": "jsonl"
     },
     ".claude/agents/president/_system/beta/judgement-model-recommendations-archive.md": {
       "owner": "framework",
@@ -19813,11 +19768,6 @@
       "kind": "md",
       "sha256": "77543c52ff0f7c0b7674fa31e6fc0b6eed8946d53268d9b74014640e29ac5ce7",
       "installedSha": "77543c52ff0f7c0b7674fa31e6fc0b6eed8946d53268d9b74014640e29ac5ce7"
-    },
-    ".claude/agents/president/_system/alpha/events.jsonl": {
-      "owner": "runtime",
-      "managed": false,
-      "kind": "jsonl"
     },
     ".claude/agents/president/_system/adhoc/protocol.md": {
       "owner": "framework",

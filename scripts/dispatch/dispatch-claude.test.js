@@ -26,6 +26,7 @@ const path = require("path");
 const { spawnSync } = require("child_process");
 
 const { verifyGauntlet } = require("./gauntlet-verify");
+const { evaluate: coverageEvaluate } = require("./coverage-gate");
 
 const DISPATCH_CLAUDE = path.join(__dirname, "..", "dispatch-claude.js");
 const REPO_ROOT = path.resolve(__dirname, "..", ".."); // == the wrapper's AGENT_ROOT
@@ -75,7 +76,8 @@ fs.writeFileSync(promptFile, "Build the thing per spec.\n");
 
 // Run the wrapper as a subprocess with an isolated ledger + fake bin.
 // iso: "w" (default, forwards -w) | "worktree:<path>" | "none" (no isolation flag)
-function runWrapper({ fake, ledgerDir, extraArgs = [], timeoutMs, iso = "w" }) {
+// role: role to dispatch (default "builder" for backward compat with all existing tests)
+function runWrapper({ fake, ledgerDir, extraArgs = [], timeoutMs, iso = "w", role = "builder" }) {
   fs.mkdirSync(ledgerDir, { recursive: true });
   const env = {
     ...process.env,
@@ -88,7 +90,7 @@ function runWrapper({ fake, ledgerDir, extraArgs = [], timeoutMs, iso = "w" }) {
     iso === "w" ? ["-w"] : iso.startsWith("worktree:") ? ["--worktree", iso.slice(9)] : [];
   const res = spawnSync(
     process.execPath,
-    [DISPATCH_CLAUDE, "builder", promptFile, "--model", "sonnet", ...isoArgs, ...extraArgs],
+    [DISPATCH_CLAUDE, role, promptFile, "--model", "sonnet", ...isoArgs, ...extraArgs],
     { env, encoding: "utf8", timeout: 60000 },
   );
   return res;
@@ -245,6 +247,81 @@ test("G1: generic build id 'builder' advisory is truthful — no '(fail-closed)'
   // The record must still be written correctly.
   const comps = readLedger(ledger, "dispatch-completions.jsonl");
   assert(comps.length === 1 && comps[0].ok === true, "completion record must still be ok:true after G1 fix");
+});
+
+// ── 11. review-fallback happy path ─────────────────────────
+test("review-fallback: reviewer role w/o -w → exit 0 + ok:true record with fallback:true + provider:claude + quota_fallback_from(openai)", () => {
+  const ledger = path.join(scratch, "l11");
+  const res = runWrapper({
+    fake: fakeHappy,
+    ledgerDir: ledger,
+    role: "backend-reviewer",
+    iso: "none",
+    extraArgs: ["--review-fallback"],
+  });
+  assert(res.status === 0, `expected exit 0 for review-fallback reviewer, got ${res.status} (stderr: ${(res.stderr || "").slice(0, 500)})`);
+  const comps = readLedger(ledger, "dispatch-completions.jsonl");
+  assert(comps.length === 1 && comps[0].ok === true, "expected one ok:true completion record");
+  assert(comps[0].fallback === true, `expected fallback:true, got ${JSON.stringify(comps[0].fallback)}`);
+  assert(comps[0].provider === "claude", `expected provider:"claude", got ${JSON.stringify(comps[0].provider)}`);
+  assert(
+    comps[0].quota_fallback_from && comps[0].quota_fallback_from.provider === "openai",
+    `expected quota_fallback_from.provider==="openai", got ${JSON.stringify(comps[0].quota_fallback_from)}`,
+  );
+});
+
+// ── 12. review-fallback + gauntlet-verify ──────────────────
+test("review-fallback: gauntlet-verify sees the record → status 'fell-back' (not 'no-record')", () => {
+  const ledger = path.join(scratch, "l11"); // reuse l11 record
+  const comps = readLedger(ledger, "dispatch-completions.jsonl");
+  const rec = comps[0];
+  const v = verifyGauntlet({
+    roles: ["backend-reviewer"],
+    completionsFile: path.join(ledger, "dispatch-completions.jsonl"),
+    since: rec.started_at,
+  });
+  assert(v.ok === true, `gauntlet-verify should pass (fell-back counts as ran): ${JSON.stringify(v.roles)}`);
+  assert(
+    v.roles[0].status === "fell-back",
+    `expected status 'fell-back', got '${v.roles[0].status}' (the record has fallback:true so gauntlet recognises it as a fallback run, not a silent gap)`,
+  );
+});
+
+// ── 13. coverage-gate trips cross_provider_required on a claude fallback record ──
+test("review-fallback: coverage-gate FLAGS claude record as cross_provider_required debt (no silent green)", () => {
+  const ledger = path.join(scratch, "l11"); // reuse l11 record
+  const comps = readLedger(ledger, "dispatch-completions.jsonl");
+  const result = coverageEvaluate({
+    records: comps,
+    expected: [{ role: "backend-reviewer" }],
+  });
+  // The gate MUST NOT be ok:true — a claude-only fallback record never silently satisfies
+  // the cross-provider requirement. The violation must name the provider-diversity problem.
+  assert(result.ok === false, "coverage-gate should NOT pass when cross_provider_required role ran on claude (fallback record is visible debt, not green)");
+  assert(
+    result.violations.some((v) => /cross.?provider|diversity|claude/i.test(v)),
+    `expected a cross-provider violation, got: ${JSON.stringify(result.violations)}`,
+  );
+});
+
+// ── 14. build-chain role via --review-fallback → refused ───
+test("review-fallback: build-chain role ('builder') via --review-fallback → exit 2 + refusal message", () => {
+  const ledger = path.join(scratch, "l14");
+  const res = runWrapper({
+    fake: fakeHappy,
+    ledgerDir: ledger,
+    role: "builder",
+    iso: "none",
+    extraArgs: ["--review-fallback"],
+  });
+  assert(res.status === 2, `expected exit 2 (usage refusal), got ${res.status}`);
+  assert(
+    (res.stderr || "").includes("review-fallback") && (res.stderr || "").toLowerCase().includes("build-chain"),
+    `expected refusal message mentioning 'review-fallback' and 'build-chain', got stderr: ${(res.stderr || "").slice(0, 500)}`,
+  );
+  // No completion record should be written for a refused dispatch.
+  const comps = readLedger(ledger, "dispatch-completions.jsonl");
+  assert(comps.length === 0, "no completion record should be written when review-fallback is refused");
 });
 
 // ── Summary ─────────────────────────────────────────────────
