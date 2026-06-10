@@ -1,0 +1,26 @@
+schema: warpos/sprint/sprint-progress/v1
+sprint: S-LC-12
+updated_at: "2026-06-10T14:44:50.247Z"
+current_phase: plan
+current_command: "/sprint:full"
+current_ticket: null
+current_task: null
+current_loop: null
+status: halted
+last_completed_step: sprint_full_plan_halted
+next_action: "Most-recent plan-payload (plan-payload-s-lc-01.json) targets sprint 'S-LC-01', not 'S-LC-12'. The skill body likely skipped Step 1.1 (write .warpos/plan-payload-<slug>.json for THIS sprint) — Phase 1 would plan the WRONG sprint. Write the correct payload for S-LC-12, then resume."
+active_files: []
+modified_files: []
+checks_last_run: null
+checks_passing: []
+checks_failing: []
+blockers: []
+approvals_needed: []
+external_services_needed: []
+issues_opened: []
+tickets_updated: []
+ralph_checkpoint: null
+resume_command: "/sprint:full --sprint S-LC-12 --resume"
+resume_notes: "halt_reason=plan_payload_sprint_mismatch"
+safe_to_continue: true
+stop_reason: null

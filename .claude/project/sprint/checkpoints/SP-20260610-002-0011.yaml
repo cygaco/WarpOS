@@ -1,14 +1,14 @@
 schema: warpos/sprint/sprint-progress/v1
 sprint: SP-20260610-002
-updated_at: "2026-06-10T15:30:02.454Z"
-current_phase: retro
+updated_at: "2026-06-10T15:29:23.361Z"
+current_phase: release-prep
 current_command: "/sprint:full"
 current_ticket: null
 current_task: null
 current_loop: null
-status: completed
-last_completed_step: sprint_full_retro_completed
-next_action: Sprint pipeline complete
+status: halted
+last_completed_step: sprint_full_release-prep_halted
+next_action: "Beta consultation required at phase boundary 'before_retro'. Consult Beta (Alex β) about the upcoming phase, then resume: /sprint:full --sprint SP-20260610-002 --resume --pending-phase before_retro --beta-verdict <DECIDE|DIRECTIVE|ESCALATE> --beta-message \"<response from Beta>\""
 active_files: []
 modified_files: []
 checks_last_run: null
@@ -21,6 +21,6 @@ issues_opened: []
 tickets_updated: []
 ralph_checkpoint: null
 resume_command: "/sprint:full --sprint SP-20260610-002 --resume"
-resume_notes: "Outcome=done"
+resume_notes: "halt_reason=beta_consult_pending"
 safe_to_continue: true
 stop_reason: null

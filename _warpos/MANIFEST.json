@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-10T15:27:16.408Z",
+  "generatedAt": "2026-06-10T15:29:20.000Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.15.4",
   "migrations": [],
@@ -14445,6 +14445,14 @@
       "owner": "runtime",
       "managed": false
     },
+    ".claude/project/sprint/full-reports/SP-20260610-002/halt-2026-06-10T15-27-35-623Z.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/full-reports/SP-20260610-002/halt-2026-06-10T15-28-15-483Z.md": {
+      "owner": "runtime",
+      "managed": false
+    },
     ".claude/project/sprint/full-reports/SP-20260608-001/beta-boundaries.json": {
       "owner": "runtime",
       "managed": false
@@ -16466,6 +16474,14 @@
       "managed": false
     },
     ".claude/project/sprint/checkpoints/SP-20260610-002-0007.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/checkpoints/SP-20260610-002-0008.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/checkpoints/SP-20260610-002-0009.yaml": {
       "owner": "runtime",
       "managed": false
     },

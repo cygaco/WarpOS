@@ -1,14 +1,14 @@
 schema: warpos/sprint/sprint-progress/v1
 sprint: SP-20260610-002
-updated_at: "2026-06-10T15:30:02.454Z"
-current_phase: retro
+updated_at: "2026-06-10T15:30:02.111Z"
+current_phase: release-prep
 current_command: "/sprint:full"
 current_ticket: null
 current_task: null
 current_loop: null
-status: completed
-last_completed_step: sprint_full_retro_completed
-next_action: Sprint pipeline complete
+status: running
+last_completed_step: sprint_full_release-prep_running
+next_action: "Phase 5: retrospective"
 active_files: []
 modified_files: []
 checks_last_run: null
@@ -21,6 +21,6 @@ issues_opened: []
 tickets_updated: []
 ralph_checkpoint: null
 resume_command: "/sprint:full --sprint SP-20260610-002 --resume"
-resume_notes: "Outcome=done"
+resume_notes: "resume: release record already prepared — skipping (target=staging)"
 safe_to_continue: true
 stop_reason: null

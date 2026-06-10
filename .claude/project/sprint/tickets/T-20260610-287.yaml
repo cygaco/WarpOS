@@ -2,10 +2,10 @@ schema: warpos/sprint/ticket/v1
 id: T-20260610-287
 title: "Pin 6 model:inherit specs + beta.md from role-registry (right layer + regen) + frontmatter-guide scoping"
 type: bug
-status: in_progress
+status: done
 sprint: SP-20260610-002
 created_at: "2026-06-10T14:48:46.173Z"
-updated_at: "2026-06-10T14:49:41.223Z"
+updated_at: "2026-06-10T15:24:11.673Z"
 owner: null
 owner_agent: alpha
 risk_level: medium

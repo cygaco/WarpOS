@@ -2,10 +2,10 @@ schema: warpos/sprint/ticket/v1
 id: T-20260610-290
 title: "epsilon.md + dispatch-guide: sanctioned subprocess conduct route + startup self-check + WG-6 stall rules"
 type: docs
-status: in_progress
+status: done
 sprint: SP-20260610-002
 created_at: "2026-06-10T14:48:46.295Z"
-updated_at: "2026-06-10T14:49:41.329Z"
+updated_at: "2026-06-10T15:24:11.799Z"
 owner: null
 owner_agent: alpha
 risk_level: low
