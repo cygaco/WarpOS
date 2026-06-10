@@ -54,6 +54,7 @@ Every `RL-*` at status=prepared OR =deployed. Each row links to the full `RL-*.y
 
 | Release | Sprint | Status | Target | Deployed | Notes |
 |---|---|---|---|---|---|
+| [RL-20260610-042](.claude/project/sprint/releases/RL-20260610-042.yaml) | [SP-20260610-007](.claude/project/sprint/sprints/SP-20260610-007/) | prepared | staging |  | E-DISPATCH-SHAPE-001 W1 — make availability and fallback real |
 | [RL-20260610-041](.claude/project/sprint/releases/RL-20260610-041.yaml) | [SP-20260610-006](.claude/project/sprint/sprints/SP-20260610-006/) | prepared | staging |  | E-DISPATCH-SHAPE-001 W0 — make the ids and clocks true |
 | [RL-20260610-040](.claude/project/sprint/releases/RL-20260610-040.yaml) | [SP-20260610-005](.claude/project/sprint/sprints/SP-20260610-005/) | prepared | staging |  | E-DISPATCH-INTEGRITY-001 F-1+F-3 — coverage-honesty (kill telemetry-only false-greens) |
 | [RL-20260610-039](.claude/project/sprint/releases/RL-20260610-039.yaml) | [SP-20260610-001](.claude/project/sprint/sprints/SP-20260610-001/) | prepared | staging |  | Lanes C+D — sprint-pipeline truth + research:deep runnability (WARPOS.md sweep 2026-06-10) |

@@ -1,0 +1,120 @@
+schema: warpos/sprint/current-sprint/v1
+id: SP-20260610-007
+title: "E-DISPATCH-SHAPE-001 W1 — make availability and fallback real"
+objective: "Close the three availability/fallback gaps from the dispatch-stack audit (NOTAGAIN §7 W1) so the dispatch stack behaves correctly when providers go down — the highest-risk moment: (G2) ONE sanctioned, LEDGERED claude-fallback review lane so a claude review when cross-providers are quota-dead is RECORDED and VISIBLE to gauntlet-verify (and visibly trips cross_provider_required as honest debt, not silently satisfies coverage); (G5) a provider circuit breaker — providers.js writes a provider-down state file on quota_exhausted classification with a TTL, consulted before dispatch so a quota-dead provider is not blindly re-burned (telemetry: 6 reviewer prompts x 3 retries each into a known-dead window), fail-open on breaker-file faults; (G4/N4) auth-posture surface — parse codex auth.json auth_mode (value-free, mode label only), fix the detectAuthTier metered-as-oauth misreport, surface key(metered) vs oauth(plan) in dispatch-readiness/provider-tier rows + quota error envelopes. Each gap ships a planted-violation test; goldens before/after on touched wrappers. Engine sprint, RI-001 fast-close."
+status: releasing
+created_at: "2026-06-10T21:05:28.944Z"
+updated_at: "2026-06-10T22:26:17.966Z"
+source_request: "Conduct W1 of E-DISPATCH-SHAPE-001 (availability and fallback real) as SP-20260610-007. Three tickets per the epic's Current next action + NOTAGAIN §7 W1 + audit gaps G2/G4/G5/N4. All three touch providers.js — sequential where shared."
+interpreted_intent: "Make the dispatch stack DEGRADE HONESTLY when providers go down: a claude fallback review is recorded + visible (not invisible to gauntlet-verify); a quota-dead provider is not re-burned; and the auth posture that caused 3 days of unseen metered billing is one read away. W1 of the dispatch-shape epic — does NOT flip ENFORCE or make the resolver the only door (that is W2)."
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260610-0071.yaml"
+risk_level: high
+approval_state: none_required
+current_phase: release
+recommended_mode: sprint
+mode_invocation_required_by_user: true
+external_services:
+  identified: []
+  blocked: []
+  ready: []
+  mocked: []
+  deferred: []
+tickets:
+  proposed: []
+  planned: []
+  designed: []
+  ready_for_execution: []
+  in_progress: []
+  blocked: []
+  waiting_on_human: []
+  waiting_on_external_service: []
+  in_review: []
+  qa_failed: []
+  redteam_failed: []
+  done:
+    - T-20260610-305
+    - T-20260610-306
+    - T-20260610-307
+  released: []
+  deferred: []
+  abandoned: []
+  reopened: []
+  superseded: []
+requirements:
+  prd: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260610-007\\prd.md"
+  high_level_stories: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260610-007\\high-level-stories.md"
+  granular_stories: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260610-007\\granular-stories.md"
+  copy: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260610-007\\copy.md"
+  inputs: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260610-007\\inputs.md"
+  trace: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260610-007\\trace.md"
+  acceptance_criteria: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260610-007\\acceptance-criteria.md"
+  qa_plan: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260610-007\\qa-plan.md"
+  redteam_plan: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260610-007\\redteam-plan.md"
+  release_plan: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260610-007\\release-plan.md"
+checks:
+  lint:
+    status: not_run
+    last_run: null
+    evidence: ""
+  typecheck:
+    status: not_run
+    last_run: null
+    evidence: ""
+  tests:
+    status: not_run
+    last_run: null
+    evidence: ""
+  build:
+    status: not_run
+    last_run: null
+    evidence: ""
+  qa:
+    status: not_run
+    last_run: null
+    evidence: ""
+  redteam:
+    status: not_run
+    last_run: null
+    evidence: ""
+approvals:
+  plan:
+    required: false
+    state: not_required
+    ref: null
+  design:
+    required: false
+    state: not_required
+    ref: null
+  execution:
+    required: false
+    state: not_required
+    ref: null
+  release:
+    required: false
+    state: not_required
+    ref: null
+  external_services:
+    required: false
+    state: not_required
+    ref: null
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260610-0071.report.md"
+  design: null
+  execution: null
+  release: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\releases\\RL-20260610-042.yaml"
+ralph:
+  active: false
+  current_ticket: null
+  current_loop: null
+  status: idle
+  last_checkpoint: null
+  next_action: null
+crash_recovery:
+  last_checkpoint: ".claude/project/sprint/sprint-progress.yaml"
+  resume_command: "/sprint:release"
+  resume_summary: "Release RL-20260610-042 in preparing state. Run /sprint:release with --id RL-20260610-042."
+  active_files: []
+  dirty_state: false
+  blockers: []
+  safe_to_continue: true
+lane: engine

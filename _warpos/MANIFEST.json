@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-10T22:14:09.052Z",
+  "generatedAt": "2026-06-10T22:26:34.964Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.15.4",
   "migrations": [],
@@ -105,16 +105,16 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "db7e8b903c7df7aa5a73bda08244f3e6fa2ebe0fd7f638427866665edd3250f9",
-      "installedSha": "db7e8b903c7df7aa5a73bda08244f3e6fa2ebe0fd7f638427866665edd3250f9"
+      "sha256": "c6850a4cfd4bc702c9de7a2b54d93f0709835c1c46691de6aa1dc45ef4319b7d",
+      "installedSha": "c6850a4cfd4bc702c9de7a2b54d93f0709835c1c46691de6aa1dc45ef4319b7d"
     },
     "ROADMAP.md": {
       "owner": "framework",
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "5e1f5f646281e071967db7ef01d8f51b5be7c435869d8d0e2914530a7834e931",
-      "installedSha": "5e1f5f646281e071967db7ef01d8f51b5be7c435869d8d0e2914530a7834e931"
+      "sha256": "41d8c80514f89c3fa02cc0cd1d550f2ef5854e42205a7c644963f63544600b36",
+      "installedSha": "41d8c80514f89c3fa02cc0cd1d550f2ef5854e42205a7c644963f63544600b36"
     },
     "TRACKER.md": {
       "owner": "runtime",
@@ -9208,6 +9208,14 @@
       "sha256": "6952f8b5ed7d9e7214351fa3caf865315f810b4b6161d1601fa5162ba56ff61a",
       "installedSha": "6952f8b5ed7d9e7214351fa3caf865315f810b4b6161d1601fa5162ba56ff61a"
     },
+    ".claude/.agent-result-hashes.json": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/.last-checkpoint": {
+      "owner": "runtime",
+      "managed": false
+    },
     ".claude/framework-installed.json": {
       "owner": "generated",
       "managed": false,
@@ -10535,7 +10543,27 @@
       "owner": "runtime",
       "managed": false
     },
+    ".claude/project/sprint/tickets/T-20260610-305.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/tickets/T-20260610-306.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/tickets/T-20260610-307.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
     ".claude/project/sprint/sprints/_no-active-sprint/reasoning-auto-approval.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/sprints/SP-20260610-007/current.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/sprints/SP-20260610-007/progress.yaml": {
       "owner": "runtime",
       "managed": false
     },
@@ -11212,6 +11240,46 @@
       "managed": false
     },
     ".claude/project/sprint/sprints/S-LC-01/progress.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/SP-20260610-007/acceptance-criteria.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/SP-20260610-007/copy.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/SP-20260610-007/granular-stories.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/SP-20260610-007/high-level-stories.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/SP-20260610-007/inputs.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/SP-20260610-007/prd.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/SP-20260610-007/qa-plan.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/SP-20260610-007/redteam-plan.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/SP-20260610-007/release-plan.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/SP-20260610-007/trace.md": {
       "owner": "runtime",
       "managed": false
     },
@@ -13767,6 +13835,10 @@
       "owner": "runtime",
       "managed": false
     },
+    ".claude/project/sprint/releases/RL-20260610-042.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
     ".claude/project/sprint/ralph/SP-20260521-001/T-20260521-168.yaml": {
       "owner": "runtime",
       "managed": false
@@ -14499,7 +14571,23 @@
       "owner": "runtime",
       "managed": false
     },
+    ".claude/project/sprint/plan-contracts/PC-20260610-0071.report.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/plan-contracts/PC-20260610-0071.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
     ".claude/project/sprint/issues/I-20260513-001.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/history/SP-20260610-007/retro.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/history/SP-20260610-007/retro.yaml": {
       "owner": "runtime",
       "managed": false
     },
@@ -14752,6 +14840,34 @@
       "managed": false
     },
     ".claude/project/sprint/full-reports/.gitkeep": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/full-reports/SP-20260610-007/beta-boundaries.json": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/full-reports/SP-20260610-007/halt-2026-06-10T21-09-40-551Z.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/full-reports/SP-20260610-007/halt-2026-06-10T21-10-43-346Z.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/full-reports/SP-20260610-007/halt-2026-06-10T21-10-58-914Z.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/full-reports/SP-20260610-007/halt-2026-06-10T22-25-54-623Z.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/full-reports/SP-20260610-007/halt-2026-06-10T22-26-18-129Z.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/full-reports/SP-20260610-007/sprint-full-report.md": {
       "owner": "runtime",
       "managed": false
     },
@@ -17031,6 +17147,50 @@
       "owner": "runtime",
       "managed": false
     },
+    ".claude/project/sprint/checkpoints/SP-20260610-007-0001.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/checkpoints/SP-20260610-007-0002.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/checkpoints/SP-20260610-007-0003.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/checkpoints/SP-20260610-007-0004.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/checkpoints/SP-20260610-007-0005.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/checkpoints/SP-20260610-007-0006.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/checkpoints/SP-20260610-007-0007.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/checkpoints/SP-20260610-007-0008.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/checkpoints/SP-20260610-007-0009.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/checkpoints/SP-20260610-007-0010.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/checkpoints/SP-20260610-007-0011.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
     ".claude/project/sprint/approvals/AP-20260512-001.yaml": {
       "owner": "runtime",
       "managed": false
@@ -17355,6 +17515,26 @@
       "sha256": "264e46f1b55b145cdcc54bf8c91294f060cd297ee367e0d28a275a91e5b0bdc1",
       "installedSha": "264e46f1b55b145cdcc54bf8c91294f060cd297ee367e0d28a275a91e5b0bdc1"
     },
+    ".claude/project/memory/enforcement-debt.jsonl": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/memory/learnings.jsonl": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/memory/recurring-issues.jsonl": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/memory/systems.jsonl": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/memory/traces.jsonl": {
+      "owner": "runtime",
+      "managed": false
+    },
     ".claude/project/maps/.stale.json": {
       "owner": "runtime",
       "managed": false
@@ -17451,7 +17631,27 @@
       "owner": "runtime",
       "managed": false
     },
+    ".claude/project/maps/tools.jsonl": {
+      "owner": "runtime",
+      "managed": false
+    },
     ".claude/project/maps/tools.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/events/events.jsonl": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/events/manager-consult.jsonl": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/events/requirements.jsonl": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/events/tools.jsonl": {
       "owner": "runtime",
       "managed": false
     },
@@ -17464,6 +17664,14 @@
       "managed": false
     },
     ".claude/project/decisions/decision-ledger.jsonl": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/decisions/provider-trace.jsonl": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/builds/builder-fixture-57d0677ea6/transaction.json": {
       "owner": "runtime",
       "managed": false
     },
@@ -19737,6 +19945,11 @@
       "sha256": "f486c86b18ba51edefac2e00e918414cdbfc4098400b86800511a0549da312f8",
       "installedSha": "f486c86b18ba51edefac2e00e918414cdbfc4098400b86800511a0549da312f8"
     },
+    ".claude/agents/president/_system/gamma/events.jsonl": {
+      "owner": "runtime",
+      "managed": false,
+      "kind": "jsonl"
+    },
     ".claude/agents/president/_system/beta/beta-source-data.md": {
       "owner": "framework",
       "managed": true,
@@ -19744,6 +19957,11 @@
       "kind": "md",
       "sha256": "0ae9c868c8edb0933cef6bb88214b3080c13cdb126368d7243c990f62db3f60f",
       "installedSha": "0ae9c868c8edb0933cef6bb88214b3080c13cdb126368d7243c990f62db3f60f"
+    },
+    ".claude/agents/president/_system/beta/events.jsonl": {
+      "owner": "runtime",
+      "managed": false,
+      "kind": "jsonl"
     },
     ".claude/agents/president/_system/beta/judgement-model-recommendations-archive.md": {
       "owner": "framework",
@@ -19768,6 +19986,11 @@
       "kind": "md",
       "sha256": "77543c52ff0f7c0b7674fa31e6fc0b6eed8946d53268d9b74014640e29ac5ce7",
       "installedSha": "77543c52ff0f7c0b7674fa31e6fc0b6eed8946d53268d9b74014640e29ac5ce7"
+    },
+    ".claude/agents/president/_system/alpha/events.jsonl": {
+      "owner": "runtime",
+      "managed": false,
+      "kind": "jsonl"
     },
     ".claude/agents/president/_system/adhoc/protocol.md": {
       "owner": "framework",

@@ -1,0 +1,117 @@
+schema: warpos/sprint/plan-contract/v1
+id: PC-20260610-0071
+created_at: "2026-06-10T21:10:43.095Z"
+updated_at: "2026-06-10T21:10:43.095Z"
+sprint: SP-20260610-007
+source_request: "Conduct W1 of E-DISPATCH-SHAPE-001 (availability and fallback real) as SP-20260610-007. Three tickets per the epic's Current next action + NOTAGAIN §7 W1 + audit gaps G2/G4/G5/N4. All three touch providers.js — sequential where shared."
+source_request_verbatim: "W1 — make availability and fallback real. (1) Recorded claude-fallback review lane (G2): ONE sanctioned, LEDGERED door for claude-fallback reviews when cross-providers are down — the record must visibly trip cross_provider_required in coverage-gate (honest debt, NOT silent satisfaction); gauntlet-verify must SEE the lane (planted fixture); respect dispatch-route-guard (wrapper route allowlisted, raw claude -p stays non-build-only). (2) Provider circuit breaker (G5): providers.js writes a provider-down state file (.claude/runtime/provider-down.json or similar) on quota_exhausted classification with a TTL (gemini's own reset when parseable, else default ~30m); dispatch wrappers consult it BEFORE spawning and fail fast with the breaker info (no blind retry storms); fail-open on breaker-file faults; planted re-burn test. (3) Auth-posture surface (G4/N4, ROADMAP item 6): parse codex auth.json auth_mode (value-free — mode label only, never key material); fix the detectAuthTier metered-as-oauth misreport; dispatch-readiness/provider-tier rows show key(metered) vs oauth(plan); quota error envelopes from providers.js include the auth mode. PLANTED tests per ticket; goldens before/after on touched wrappers."
+request_type: bug_fix_batch
+interpreted_intent: "Make the dispatch stack DEGRADE HONESTLY when providers go down: a claude fallback review is recorded + visible (not invisible to gauntlet-verify); a quota-dead provider is not re-burned; and the auth posture that caused 3 days of unseen metered billing is one read away. W1 of the dispatch-shape epic — does NOT flip ENFORCE or make the resolver the only door (that is W2)."
+user_or_business_outcome: "When both cross-providers are quota-dead, a claude review lane is LEDGERED and gauntlet-verify sees it (no blind spot at the highest-risk moment); a quota-dead provider is short-circuited before another blind retry burns it; and a metered codex key reads as 'key (metered)' instead of being misreported as funded oauth — closing the 3-day metered-drain class. Each guarded by a planted-violation test."
+affected_surfaces:
+  - surface: "G2 — recorded claude-fallback review lane: scripts/dispatch-claude.js (--review-fallback non-build mode) OR scripts/sprint/epsilon-runtime.js record-inprocess (--fallback-from); + scripts/hooks/dispatch-route-guard.js (allowlist the route); + coverage-gate visibility"
+    evidence_level: verified_from_repo
+    notes: "Today: dispatch-agent exits 2 on provider=claude; raw `claude -p --agent` writes NO record (ED-018, invisible to gauntlet-verify); record-inprocess hard-refuses non-CLAUDE_AGENT/AGENT_TOOL routes (epsilon-runtime.js:492-497) so backend-reviewer/qa-reviewer (DISPATCH_AGENT route) are un-recordable. coverage-gate.js:155 ALREADY trips on `coverage.cross_provider_required && hit.provider==='claude'` — so a claude record for a cross-provider role VISIBLY shows as the debt (exactly right). DECISION (β): option (i) dispatch-claude --review-fallback non-build mode (no -w gate; already writes records + handles any role token; route-guard points fallback traffic here) vs option (ii) record-inprocess --fallback-from carve-out (stamps fallback:true, provider:claude, quotaFallbackFrom). Recommend (i) dispatch-claude --review-fallback: it's a REAL recorded subprocess lane (gauntlet-verify sees a normal completion record), single-wrapper, and route-guard can bless ONE explicit mode instead of raw claude -p; (ii) only covers the Agent-tool (top-level α) path. The record must carry fallback:true + the cross-provider origin so coverage-gate:155 trips visibly."
+  - surface: "G5 — provider circuit breaker: scripts/hooks/lib/providers.js (write on classifyQuotaFailure; consult in providerAvailable ~L458) + a new breaker module (e.g. scripts/dispatch/provider-breaker.js) + the dispatch wrappers consulting before spawn"
+    evidence_level: verified_from_repo
+    notes: "classifyQuotaFailure (providers.js:172) returns {kind:'quota_exhausted',recoverable:true}. No breaker exists. Fix: on quota_exhausted, write .claude/runtime/provider-down.json {provider→{kind,until,evidence}} with a TTL (parse gemini 'resets after Xh' when present, else default ~30m); providerAvailable() (L458) consults it (provider is 'down' until TTL); wrappers fail fast with breaker info instead of re-spawning into the dead window. FAIL-OPEN on any breaker-file fault (unreadable/corrupt/missing → provider treated as available — a broken breaker must NEVER block a healthy provider). Surface in dispatch-readiness."
+  - surface: "G4/N4 — auth-posture surface: scripts/checks/dispatch-readiness.js#detectAuthTier (L116-127 openai branch) + scripts/hooks/lib/providers.js (quota error envelope) + provider-tier rows"
+    evidence_level: verified_from_repo
+    notes: "detectAuthTier (dispatch-readiness.js:122-124) does `loggedIn = authFiles.some(exists)` then `if (loggedIn) return tier:'oauth'` — treats mere EXISTENCE of ~/.codex/auth.json as oauth. But `codex login --with-api-key` ALSO writes auth.json (with auth_mode + OPENAI_API_KEY — the 2026-06-07 incident file), so a metered key is misreported as oauth/paid (provider-tier-check inherits oauthFunded=true). Fix: PARSE auth.json content — auth_mode/OPENAI_API_KEY present → tier 'key' detail 'key (metered)'; tokens (access/refresh) present → 'oauth' detail 'oauth (plan)'. VALUE-FREE: read only the MODE label, NEVER key material. Stamp the auth mode into providers.js quota error envelopes (classifyQuotaFailure call site) so the next misdiagnosis is one read away."
+  - surface: "Planted-violation tests (3) + goldens: a fallback claude record SEEN by gauntlet-verify + tripping cross_provider_required; a quota_exhausted re-burn blocked by the breaker; a metered auth.json reading 'key (metered)' not 'oauth'"
+    evidence_level: inferred_from_repo
+    notes: "G2: planted fixture — a fallback claude completion record for a cross-provider role is SEEN by gauntlet-verify AND coverage-gate flags it cross_provider_required (visible debt). G5: planted re-burn — a second dispatch into a quota-dead window is short-circuited by the breaker (no re-spawn); fail-open when the breaker file is corrupt. G4/N4: planted — a metered auth.json (auth_mode+OPENAI_API_KEY) reads tier 'key (metered)', NOT 'oauth'; a token auth.json reads 'oauth'."
+current_behavior:
+  evidence_level: verified_from_repo
+  notes: "G2: no sanctioned recorded claude-fallback lane — raw claude -p writes no record, Agent-tool writes no record, record-inprocess refuses cross-provider routes; gauntlet-verify blind when providers down. G5: no circuit breaker anywhere; a quota-dead provider re-burned every dispatch (6 prompts x 3 retries into the dead window). G4/N4: detectAuthTier reports a metered codex key as oauth/paid (existence-only check); provider-tier inherits the lie; the 3-day metered drain was invisible. All live-reproduced in the audit."
+desired_behavior: "G2: ONE sanctioned ledgered claude-fallback review lane; a claude record for a cross-provider role is recorded, SEEN by gauntlet-verify, and visibly trips cross_provider_required (honest debt). G5: providers.js writes provider-down.json on quota_exhausted (TTL'd); wrappers consult before spawn + fail fast; fail-open on breaker faults; no re-burn. G4/N4: detectAuthTier parses auth.json content — metered key reads 'key (metered)', oauth reads 'oauth (plan)'; provider-tier + quota envelopes carry the mode. Three planted tests green."
+scope:
+  size: m
+  risk_level: high
+  complexity_drivers:
+    - "all three tickets touch providers.js — sequential builds (chained worktrees) to avoid shared-file conflicts; G2 may also touch dispatch-claude.js + route-guard, G5 a new breaker module + wrappers, G4 dispatch-readiness.js"
+    - "G5 breaker MUST fail-open on any file fault — a broken breaker that blocks a healthy provider is worse than no breaker; the fail-open path is the load-bearing safety property"
+    - "G2's recorded lane must trip cross_provider_required VISIBLY (the record is honest debt, NOT silent coverage satisfaction) — getting this backwards would let a claude-only gauntlet read as cross-provider-satisfied (the exact anti-pattern)"
+    - "G4 must be VALUE-FREE — read only the auth_mode label, NEVER key material into logs/envelopes (a key leak would be a security regression)"
+    - "the W0 lesson (fix-all-callers): G5's breaker-consult + G4's auth-read must cover ALL relevant call sites/providers, not 3-of-4 (the W0 runProvider miss)"
+scope_variants:
+  minimal_safe: "G5 (circuit breaker) + G4/N4 (auth posture) — the two that prevent active harm (re-burn + metered drain); defer G2's recorded-lane mode."
+  recommended: "All three W1 gaps + planted tests. G2 via option (i) dispatch-claude --review-fallback (single recorded wrapper lane, route-guard-blessed); G5 breaker module + providers.js write/consult + fail-open; G4/N4 detectAuthTier content-parse + envelope stamp."
+  expanded: "Above + extend the breaker consult to dispatch-readiness's status row + a /scan-runnable breaker-staleness surface — only if additive/report-only."
+assumptions:
+  - "coverage-gate.js:155 already trips cross_provider_required on a claude record — so G2's job is to make the lane RECORDABLE (gauntlet-verify-visible); the debt-visibility is already wired."
+  - "Option (i) dispatch-claude --review-fallback is the better G2 home (real recorded subprocess lane, single wrapper, route-guard-blessable) — to be ratified by β."
+  - "The breaker file lives under .claude/runtime/ (gitignored, per-project runtime state — correct home, not a shipped asset)."
+  - "auth.json content carries auth_mode and/or OPENAI_API_KEY for a metered key, and access/refresh tokens for oauth — parse for the MODE, never the value."
+open_questions:
+  - "G2 option (i) dispatch-claude --review-fallback vs (ii) record-inprocess --fallback-from — β to confirm (i) (broader coverage: a real recorded subprocess lane vs Agent-tool-only)."
+  - "G5 default TTL when gemini's reset isn't parseable — ~30m proposed; β to confirm (vs a longer/shorter default)."
+  - "G5 breaker-consult placement — inside providerAvailable() (every caller inherits) vs in each wrapper before spawn — recommend providerAvailable() as the single chokepoint; β to confirm."
+non_goals:
+  - "W2 (ENFORCE flip, resolver-as-only-door, route-guard stops blessing raw claude -p, envelope-contract revival/burial) and W3 (per-class lane policy)."
+  - "Auto-routing/auto-fallback provider SELECTION (the breaker SHORT-CIRCUITS a dead provider; it does not auto-pick a replacement — that's a separate concern)."
+  - "Editing .claude/commands/scan/full.md (classifier-held — standalone-runnable surfaces only)."
+  - "Re-fixing NOTAGAIN §6 receipts or W0's landed work."
+  - "Pushing / regenerating manifests in canonical (α owns the end-of-arc)."
+requirement_areas:
+  - "G2: ONE recorded claude-fallback review lane (ledgered, gauntlet-verify-visible, trips cross_provider_required)"
+  - "G5: provider circuit breaker (provider-down.json, TTL, consult-before-spawn, fail-open)"
+  - "G4/N4: auth-posture surface (detectAuthTier content-parse, key(metered) vs oauth, envelope stamp)"
+  - "3 planted tests (fallback-lane-seen / re-burn-blocked / metered-reads-metered) + wrapper goldens"
+high_level_story_candidates:
+  - "As gauntlet-verify, when both cross-providers are down a claude fallback review lane is LEDGERED and I SEE it, so liveness verification isn't blind at the highest-risk moment."
+  - "As coverage-gate, a claude record for a cross-provider role visibly trips cross_provider_required (honest debt), so a claude-only gauntlet never silently reads as cross-provider-satisfied."
+  - "As the dispatch stack, a quota-dead provider is short-circuited by a TTL'd breaker, so I stop re-burning it with blind retries."
+  - "As the operator, a metered codex key reads 'key (metered)' not 'oauth (plan)', so the 3-day metered-billing drain class is one read away."
+  - "As the maintainer, a planted-violation test fails closed on each of the three gaps."
+granular_story_candidates:
+  - "TICKET-1 (BACKEND, G2): add dispatch-claude.js --review-fallback non-build review mode (no -w gate; writes a normal completion record stamped fallback:true + the cross-provider origin so coverage-gate:155 trips visibly); allowlist the route in dispatch-route-guard; planted fixture: gauntlet-verify SEES the fallback record AND coverage-gate flags it cross_provider_required."
+  - "TICKET-2 (BACKEND, G5): provider circuit breaker — new scripts/dispatch/provider-breaker.js (write/read/TTL/fail-open); providers.js writes .claude/runtime/provider-down.json on classifyQuotaFailure(quota_exhausted) (parse gemini reset else ~30m); providerAvailable() consults it before reporting available; wrappers fail fast with breaker info; planted re-burn test + a fail-open-on-corrupt-file test."
+  - "TICKET-3 (BACKEND, G4/N4): auth-posture surface — detectAuthTier parses auth.json content (auth_mode/OPENAI_API_KEY → 'key (metered)'; tokens → 'oauth (plan)'; VALUE-FREE); provider-tier rows + providers.js quota error envelope carry the mode; planted test: metered auth.json reads 'key (metered)' not 'oauth'."
+workstream_candidates:
+  - "G2 recorded claude-fallback lane (dispatch-claude --review-fallback + route-guard)"
+  - "G5 provider circuit breaker (breaker module + providers.js write/consult + wrappers)"
+  - "G4/N4 auth-posture surface (detectAuthTier content-parse + envelope stamp)"
+  - "3 planted tests + wrapper goldens"
+preliminary_ticket_candidates:
+  - title: "G2: recorded claude-fallback review lane (dispatch-claude --review-fallback, ledgered, trips cross_provider_required, route-guard-blessed) + planted fixture"
+    type: feature
+    risk: high
+    order: 1
+  - title: "G5: provider circuit breaker (provider-down.json TTL + consult-before-spawn + fail-open) + planted re-burn test"
+    type: feature
+    risk: high
+    order: 2
+  - title: "G4/N4: auth-posture surface (detectAuthTier content-parse metered-vs-oauth + envelope stamp) + planted test"
+    type: bug
+    risk: medium
+    order: 3
+external_service_dependencies: []
+approval_boundaries:
+  - "β is NOT pre-cleared (W1) — consult β at plan→design (this payload summary); DECIDE proceeds, ESCALATE halts to α."
+  - "Cross-provider reviewers QUOTA-DEAD — do NOT dispatch them; build + verify, report MERGE-READY; α runs the claude execution-access gauntlet + the cross-family debt extends."
+  - "All three touch providers.js — SEQUENTIAL chained-worktree builds."
+  - "ff-merge LOCAL only; α owns the end-of-arc merge + canonical manifest regen + push."
+  - "Do NOT touch .claude/commands/scan/full.md, tests/regression/S-LC-07, or NOTAGAIN §6 receipts. gemini may recover ~23:40Z — do NOT poll; α owns the post-recovery re-review queue."
+design_required: false
+execution_allowed_without_design: true
+recommended_mode: sprint
+mode_invocation_required_by_user: true
+lane: engine
+beta_review:
+  before_plan:
+    verdict: PENDING
+    summary: "β consult required at plan→design — NOT pre-cleared (W1). Decisions for β: (A) G2 home — option (i) dispatch-claude --review-fallback (recommend: real recorded subprocess lane, single wrapper, route-guard-blessable, broader than Agent-tool-only) vs (ii) record-inprocess --fallback-from. (B) G5 breaker-consult placement — inside providerAvailable() as the single chokepoint (recommend) vs per-wrapper; default TTL ~30m when gemini reset unparseable. (C) confirm the fail-open invariant on breaker faults + the value-free auth-mode read (no key material) + the cross_provider_required-trips-VISIBLY requirement (a claude record is honest debt, never silent satisfaction). HIGH risk (live provider path) → planted tests mandatory, golden wrapper tests before/after, fix-all-callers (the W0 runProvider lesson)."
+plan_quality:
+  confidence: high
+  notes: "Grounded in NOTAGAIN §7 W1 + the epic Current next action + audit gaps G2 (lines 118-119), G4 (124-125), G5 (127-128), N4 + a live per-file re-confirm: detectAuthTier existence-only check (dispatch-readiness.js:122-124), classifyQuotaFailure shape (providers.js:172-192), providerAvailable (L458), coverage-gate cross_provider_required trip (L155), record-inprocess route refusal (epsilon-runtime:492-497). All three reproduce. β consult pending at plan→design. Fold the W0 fix-all-callers lesson (runProvider was the 4th missed wrapper)."
+next_recommended_command: "/sprint:design"
+resume_instructions: "Sprint SP-20260610-007 has Plan Contract PC-20260610-0071. Run the next_recommended_command. If interrupted, read .claude/project/sprint/sprint-progress.yaml#resume_command."
+tracker_paths:
+  current_sprint: ".claude/project/sprint/current-sprint.yaml"
+  sprint_progress: ".claude/project/sprint/sprint-progress.yaml"
+  plan_contract: ".claude/project/sprint/plan-contracts/PC-20260610-0071.yaml"
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260610-0071.report.md"
+created_by: epsilon
+updated_by: epsilon

@@ -6,7 +6,7 @@
     "agent": 84,
     "skill": 218,
     "reference": 27,
-    "maps_baseline": 25,
+    "maps_baseline": 26,
     "hook": 78,
     "hook_lib": 18,
     "tool": 2,
@@ -62,7 +62,7 @@
     "module_scope": 1,
     "framework_doc": 3
   },
-  "total": 1215,
+  "total": 1216,
   "assets": {
     "agent": [
       {
@@ -4265,6 +4265,18 @@
         "dest": ".claude/project/maps/SPEC_GRAPH.json",
         "kind": "maps_baseline",
         "sha256": "fe8ff1cf68e216aba4b5bccb5fa67c7edebd04e75cc9ef66d21801dff537714e",
+        "owner": "generated",
+        "mergeStrategy": "regenerate",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "maps_baseline.system-coherence.graph.json",
+        "src": ".claude/project/maps/system-coherence.graph.json",
+        "dest": ".claude/project/maps/system-coherence.graph.json",
+        "kind": "maps_baseline",
+        "sha256": "8c9189ca1564ff1a3b97dac84023882e1d09e83921e11253f496beee0bbdb924",
         "owner": "generated",
         "mergeStrategy": "regenerate",
         "introducedIn": "0.0.0",
