@@ -59,6 +59,10 @@ function splitList(s) {
 function normalizeExisting(raw) {
   if (!raw || typeof raw !== "object") return {};
   return {
+    // Preserve unknown/future fields first (gauntlet 2026-06-10, qa+security lanes:
+    // a strict literal silently DROPPED unmapped sub-objects — crash_recovery, ralph,
+    // reports — corrupting resume state). Known fields are normalized OVER the spread.
+    ...raw,
     current_phase: typeof raw.current_phase === "string" ? raw.current_phase : "idle",
     current_command: typeof raw.current_command === "string" ? raw.current_command : "none",
     current_ticket: raw.current_ticket != null ? raw.current_ticket : null,

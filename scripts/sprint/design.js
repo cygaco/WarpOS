@@ -152,20 +152,31 @@ function checkTraceIntegrity(outDir, sprintId) {
     if (!fs.existsSync(prdPath)) return { ok: true };
     const prdText = fs.readFileSync(prdPath, "utf8");
 
+    // Match BOTH backticked (`R-1`) and bare (table rows "| R-1 |", prose) R-ids —
+    // gauntlet 2026-06-10 (qa+security lanes): the backtick-only regex missed table
+    // rows and, worse, an unparseable PRD yielded defined.size===0 → silent ok.
+    const RID = /\bR-(\d+)\b/g;
     const defined = new Set();
-    for (const m of prdText.matchAll(/`(R-\d+)`/g)) defined.add(m[1]);
-    if (defined.size === 0) return { ok: true };
+    for (const m of prdText.matchAll(RID)) defined.add(`R-${m[1]}`);
 
     const errors = [];
+    let refCount = 0;
     for (const fname of ["granular-stories.md", "trace.md"]) {
       const fpath = path.join(outDir, fname);
       if (!fs.existsSync(fpath)) continue;
       const ftext = fs.readFileSync(fpath, "utf8");
-      for (const m of ftext.matchAll(/`(R-\d+)`/g)) {
-        if (!defined.has(m[1])) {
-          errors.push(`${fname}: references \`${m[1]}\` which is not defined in prd.md`);
+      for (const m of ftext.matchAll(RID)) {
+        refCount++;
+        const rid = `R-${m[1]}`;
+        if (!defined.has(rid)) {
+          errors.push(`${fname}: references ${rid} which is not defined in prd.md`);
         }
       }
+    }
+    // FAIL-CLOSED: stories/trace cite R-ids but the PRD defines none parseable —
+    // that's the born-broken state WG-7 exists to prevent, not a pass.
+    if (defined.size === 0 && refCount > 0) {
+      errors.push(`prd.md defines NO parseable R-ids while stories/trace reference ${refCount} — traceability cannot be validated`);
     }
     if (errors.length) {
       return {

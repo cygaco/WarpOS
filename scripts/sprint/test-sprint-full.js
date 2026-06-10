@@ -1484,6 +1484,20 @@ function testSprintModeEpsilonDefaults() {
     "M-4: source uses WARPOS_EPSILON_RUNTIME env guard",
     fullSrc.includes("WARPOS_EPSILON_RUNTIME"),
   );
+
+  // M-5 (gauntlet fix-cycle 2026-06-10): explicit OPT-OUT must win over the
+  // sprint-mode default — without --no-epsilon, sprint mode would force ε ON
+  // with no escape hatch (qa+security blockers).
+  const noEpsilon = full.parseArgs(["node", "full.js", "--no-epsilon"]);
+  ok("M-5: --no-epsilon sets epsilon=false", noEpsilon.epsilon === false);
+  ok("M-5: --no-epsilon sets epsilonDispatch=false", noEpsilon.epsilonDispatch === false);
+  ok("M-5: --no-epsilon sets _epsilonExplicit=true", noEpsilon._epsilonExplicit === true);
+  ok("M-5: --no-epsilon sets _epsilonDispatchExplicit=true", noEpsilon._epsilonDispatchExplicit === true);
+
+  const noDispatch = full.parseArgs(["node", "full.js", "--epsilon", "--no-epsilon-dispatch"]);
+  ok("M-6: --no-epsilon-dispatch keeps epsilon=true", noDispatch.epsilon === true);
+  ok("M-6: --no-epsilon-dispatch sets epsilonDispatch=false", noDispatch.epsilonDispatch === false);
+  ok("M-6: --no-epsilon-dispatch sets _epsilonDispatchExplicit=true", noDispatch._epsilonDispatchExplicit === true);
 }
 
 // ── N. Design-without-roster enforcer (T-297) ────────────────────────
@@ -1585,6 +1599,46 @@ function testRIdSingleSourcing() {
     "O-6: design.js uses modular R-id wrap (reqCount + 1)",
     designSrc.includes("reqCount") && designSrc.includes("% reqCount"),
   );
+
+  // O-7 (gauntlet fix-cycle 2026-06-10): bare (un-backticked) R-ids in table rows
+  // must be matched, and an unparseable PRD with cited refs must FAIL not pass.
+  const os = require("os");
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "trace-int-"));
+  try {
+    fs.writeFileSync(path.join(tmp, "prd.md"), "## Requirements\n| R-1 | thing |\n| R-2 | other |\n");
+    fs.writeFileSync(path.join(tmp, "granular-stories.md"), "story cites R-1 and bare R-3 in a row | R-3 |\n");
+    fs.writeFileSync(path.join(tmp, "trace.md"), "| R-2 |\n");
+    const r1 = design.checkTraceIntegrity(tmp, "SP-TEST");
+    ok("O-7: bare table-row R-ids matched; orphan R-3 caught", r1.ok === false && /R-3/.test(r1.message || ""));
+
+    fs.writeFileSync(path.join(tmp, "prd.md"), "no requirement ids here at all\n");
+    const r2 = design.checkTraceIntegrity(tmp, "SP-TEST");
+    ok("O-7: PRD with zero parseable R-ids + cited refs → FAIL (fail-closed)", r2.ok === false);
+
+    fs.writeFileSync(path.join(tmp, "prd.md"), "| R-1 |\n| R-2 |\n| R-3 |\n");
+    fs.writeFileSync(path.join(tmp, "granular-stories.md"), "cites `R-1` and | R-2 |\n");
+    fs.writeFileSync(path.join(tmp, "trace.md"), "| R-3 |\n");
+    const r3 = design.checkTraceIntegrity(tmp, "SP-TEST");
+    ok("O-7: consistent mixed-format set → ok", r3.ok === true);
+  } finally {
+    try { fs.rmSync(tmp, { recursive: true, force: true }); } catch { /* best-effort */ }
+  }
+
+  // O-8 (gauntlet fix-cycle 2026-06-10): normalizeExisting must PRESERVE unknown
+  // fields (crash_recovery/ralph/reports sub-objects) — strict literal dropped them.
+  const checkpoint = require("./checkpoint.js");
+  const norm = checkpoint.normalizeExisting({
+    current_phase: "execute",
+    crash_recovery: { last_known_good: "x" },
+    ralph: { loop: 3 },
+    reports: ["r1"],
+    some_future_field: 42,
+  });
+  ok("O-8: normalizeExisting preserves crash_recovery", norm.crash_recovery && norm.crash_recovery.last_known_good === "x");
+  ok("O-8: normalizeExisting preserves ralph", norm.ralph && norm.ralph.loop === 3);
+  ok("O-8: normalizeExisting preserves reports", Array.isArray(norm.reports) && norm.reports[0] === "r1");
+  ok("O-8: normalizeExisting preserves unknown future fields", norm.some_future_field === 42);
+  ok("O-8: normalizeExisting still normalizes known fields", norm.current_phase === "execute" && norm.status === "running");
 }
 
 // ── Run ──────────────────────────────────────────────────────────────

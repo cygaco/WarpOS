@@ -204,6 +204,16 @@ function parseArgs(argv) {
       out.epsilon = true; out.epsilonDispatch = true;
       out._epsilonExplicit = true; out._epsilonDispatchExplicit = true;
     }
+    // Explicit OPT-OUT (gauntlet 2026-06-10, qa+security lanes): without these,
+    // the sprint-mode default-ON would silently override a user's opt-out intent
+    // — there'd be no way to run the legacy path in sprint mode.
+    else if (a === "--no-epsilon") {
+      out.epsilon = false; out.epsilonDispatch = false;
+      out._epsilonExplicit = true; out._epsilonDispatchExplicit = true;
+    }
+    else if (a === "--no-epsilon-dispatch") {
+      out.epsilonDispatch = false; out._epsilonDispatchExplicit = true;
+    }
     else if (!a.startsWith("--") && out.request === null) out.request = a;
   }
   return out;
