@@ -86,6 +86,7 @@ Markdown convention: reference paths as `paths.X` in prose. Code: `const { PATHS
 | `providerFallbackPolicy` | `.claude/agents/president/_system/policy/provider-fallback.json` | json | framework | no | 0.3.0 |  |
 | `providerRcaLib` | `scripts/warpos/lib/provider-rca.js` | js | framework | no | 0.5.1 |  |
 | `providerSmokeSkill` | `scripts/warpos/provider-smoke.js` | js | framework | no | 0.5.1 | Provider smoke driver (SP-20260513-002). Run direct or via p |
+| `providerTierConfig` | `.claude/runtime/provider-tier-config.json` | json | runtime | yes | 0.19.0 | S-LC-10 (E-LIFECYCLE-001) preferred-tier config: per-provide |
 | `providerTmp` | `.claude/runtime/.provider-tmp` | dir | runtime | yes | 0.3.0 |  |
 | `providerTrace` | `.claude/project/decisions/provider-trace.jsonl` | jsonl | runtime | yes | 0.1.0 |  |
 | `reasoningFrameworks` | `.claude/project/reference/reasoning-frameworks.md` | md | framework | no | 0.5.1 | Classification table, framework router, fix-quality levels ( |

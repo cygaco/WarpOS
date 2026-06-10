@@ -182,6 +182,40 @@ Read-only and **fail-open** — exits 0 even on FAIL so it never blocks
 When this is green, Section 11's live `--per-role` ping confirms real
 reachability. (Pass `--strict` to make it exit 2 on any FAIL for a CI gate.)
 
+### 11.6 Provider Tier Readiness — T1/T2/T3 (S-LC-10)
+
+Run `node scripts/warpos/provider-tier-check.js`.
+
+This **layers a tier grade over** Sections 11/11.5's health stack (it reuses
+`dispatch-readiness.js` + `auth-resolver.js`, never duplicating them) and answers
+a question reachability alone cannot: **is each provider funded / subscribed to
+the floor the operator selected?**
+
+- **T1 — reachable**: CLI installed + auth present (the existing health checks).
+- **T2 — funded/keyed**: T1, plus a value-free funding signal — an API key NAME
+  present (read value-free, never the secret) OR a paid OAuth login.
+- **T3 — subscribed**: T2, plus the provider's subscription tier meets the
+  configured **floor** (operator-tunable, default `max_5x` for Claude). T3 is
+  **value-free-undetectable** (no billing API), so it is confirmed only by
+  **self-attestation** (the preferred-tier config) — never by running a paid
+  call (infer-from-dispatch is rejected, §22 #3).
+
+Claude is treated as a **fundable + sub-checked provider** (not auto-ok): it gets
+T1 as the harness floor, but T2/T3 require a value-free key NAME or attestation.
+
+Read-only and **fail-open** — the check exits 0 always. Report each provider's
+verdict:
+- `tier_met` → GREEN ("meets the selected tier").
+- `tier_short` → YELLOW ("below the selected tier — see the row; set funding or
+  lower the selected tier with `--set-tier`"). Confident (a value-free dimension).
+- `unknown-self-attested` → INFO ("selected tier needs a subscription floor we
+  can't detect value-free; self-attest it via `--set-tier <provider> t3 --sub
+  <max_5x|pro|…>`"). Never a failure.
+
+The preferred-tier config (`.claude/runtime/provider-tier-config.json`,
+`paths.providerTierConfig`) is written ONLY behind the confirm-class
+`--set-tier` / `--write` flag; this health read never mutates it.
+
 ### 12. Dispatch Hygiene (Phase 0)
 
 Run `node scripts/dispatch/prune-dead-locks.js`. Report `scanned`/`removed_dead`

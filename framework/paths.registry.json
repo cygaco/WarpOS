@@ -626,6 +626,15 @@
       "introducedIn": "0.3.0",
       "docsToken": "paths.providerTmp"
     },
+    "providerTierConfig": {
+      "path": ".claude/runtime/provider-tier-config.json",
+      "kind": "json",
+      "owner": "runtime",
+      "mutable": true,
+      "introducedIn": "0.19.0",
+      "docsToken": "paths.providerTierConfig",
+      "_note": "S-LC-10 (E-LIFECYCLE-001) preferred-tier config: per-provider selected/attested tier + the operator-tunable T3 subscription floor (default max_5x). Same runtime home as authorization.json — gitignored, per-machine, absent => framework defaults (provider-tier-config.js#FRAMEWORK_DEFAULTS). Read read-only by provider-tier-check.js; written ONLY behind the confirm-class --write/--set-tier flag."
+    },
     "providerFallbackPolicy": {
       "path": ".claude/agents/president/_system/policy/provider-fallback.json",
       "kind": "json",

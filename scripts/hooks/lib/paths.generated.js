@@ -83,6 +83,7 @@ const PATHS = {
   "dispatchDeathsFile": path.join(PROJECT, ".claude", "runtime", "dispatch-deaths.jsonl"),
   "dispatchCompletionsFile": path.join(PROJECT, ".claude", "runtime", "dispatch-completions.jsonl"),
   "providerTmp": path.join(PROJECT, ".claude", "runtime", ".provider-tmp"),
+  "providerTierConfig": path.join(PROJECT, ".claude", "runtime", "provider-tier-config.json"),
   "providerFallbackPolicy": path.join(PROJECT, ".claude", "agents", "president", "_system", "policy", "provider-fallback.json"),
   "sprintRoot": path.join(PROJECT, ".claude", "project", "sprint"),
   "sprintCurrent": path.join(PROJECT, ".claude", "project", "sprint", "current-sprint.yaml"),

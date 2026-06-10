@@ -1042,6 +1042,16 @@ try {
 
 // ── Summary ─────────────────────────────────────────────
 // ── Provider CLI check (informational) ──────────────────
+// FAST-FOLLOW (S-LC-10): this presence-only check is the natural hook-in point
+// for the T1/T2/T3 provider-tier readiness report
+// (scripts/warpos/provider-tier-check.js). The read-only tier surface is already
+// wired into /warp:health (§11.6) and /scan:environment (E28.5). The DEEPER
+// install-flow wiring here — explain tiers → choose → save the preferred-tier
+// config → check-only-selected → remediate (install CLIs / add funding) — is
+// DEFERRED: those are confirm-class install/write actions (§14) that must gate
+// behind explicit operator confirmation, not auto-run during setup. When wired,
+// call `node scripts/warpos/provider-tier-check.js --json` here (report-only) and
+// gate any `--set-tier` write / CLI install on an explicit prompt.
 const codexPresent = cmdExists("codex");
 const geminiPresent = cmdExists("gemini");
 

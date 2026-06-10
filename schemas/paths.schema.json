@@ -372,6 +372,11 @@
       "const": ".claude/runtime/.provider-tmp",
       "description": "dir (runtime) — paths.providerTmp"
     },
+    "providerTierConfig": {
+      "type": "string",
+      "const": ".claude/runtime/provider-tier-config.json",
+      "description": "json (runtime) — paths.providerTierConfig"
+    },
     "providerFallbackPolicy": {
       "type": "string",
       "const": ".claude/agents/president/_system/policy/provider-fallback.json",
