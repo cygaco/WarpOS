@@ -82,6 +82,94 @@ function teamHeartbeatFresh(projectDir) {
   }
 }
 
+// ── S-LC-04: REGISTRY-DRIVEN init-gate helpers (E-LIFECYCLE-001) ──────────────
+// Generalize the gate from a HARDCODED sprint-only ε literal to the
+// Mode-Lifecycle Registry (.claude/agents/_org/mode-lifecycle.json) via the
+// shared reader. The required CONDUCTOR face for a requires_team mode is the
+// FIRST non-alpha face in the mode's roster (sprint → epsilon, adhoc → beta).
+// Editing a mode's roster in the registry re-points the gate with NO code change
+// (the de-dup S-LC-01 did). FAIL-OPEN throughout — a guard must never crash on an
+// unreadable/malformed registry; the reader already mirrors FALLBACK, and these
+// wrappers swallow any residual error so the sprint gate can never widen and a
+// non-sprint mode can never block on a registry fault.
+const FACE_SYMBOL = {
+  alpha: "α",
+  beta: "β",
+  gamma: "γ",
+  delta: "δ",
+  epsilon: "ε",
+};
+
+/** The registry-derived conductor/lead face a requires_team mode must carry, as
+ *  { id, symbol }. FAIL-OPEN to the known sprint conductor (ε) so a registry read
+ *  failure can never widen the DEFAULT-ON sprint gate; null for an unknown/teamless
+ *  mode. */
+function requiredConductor(mode) {
+  try {
+    const f = require("./lib/mode-lifecycle").faces(mode);
+    if (Array.isArray(f) && f.length) {
+      const id = String(f[0]).toLowerCase();
+      return { id, symbol: FACE_SYMBOL[id] || id };
+    }
+  } catch {
+    /* fall through to the fail-open default */
+  }
+  return String(mode || "").toLowerCase() === "sprint"
+    ? { id: "epsilon", symbol: "ε" }
+    : null;
+}
+
+/** Does the mode operate through a persistent team (registry requires_team)?
+ *  FAIL-OPEN to false (no readiness gate) on any reader error. */
+function requiresTeamMode(mode) {
+  try {
+    return !!require("./lib/mode-lifecycle").requiresTeam(mode);
+  } catch {
+    return false;
+  }
+}
+
+/** Does any FRESH (<24h) active team under ~/.claude/teams carry the given
+ *  conductor face? EXACT identity match (id or symbol) — spoof-safe like the
+ *  sprint path. FAIL-OPEN to false (caller treats false as "not ready"; for a
+ *  non-sprint mode that only ADVISES — never blocks). */
+function teamCarriesConductor(conductor) {
+  if (!conductor) return false;
+  try {
+    const teamsRoot = path.join(
+      process.env.HOME || process.env.USERPROFILE || "",
+      ".claude",
+      "teams",
+    );
+    if (!fs.existsSync(teamsRoot)) return false;
+    const isConductor = (v) => {
+      const s = String(v == null ? "" : v).trim().toLowerCase();
+      return s === conductor.id || s === conductor.symbol;
+    };
+    for (const d of fs.readdirSync(teamsRoot)) {
+      const cfg = path.join(teamsRoot, d, "config.json");
+      try {
+        const m = fs.statSync(cfg).mtimeMs;
+        if ((Date.now() - m) / 3600000 >= 24) continue;
+        const doc = JSON.parse(fs.readFileSync(cfg, "utf8"));
+        const has = (doc.members || []).some(
+          (mem) =>
+            mem &&
+            (isConductor(mem.agentType) ||
+              isConductor(mem.role) ||
+              isConductor(mem.name)),
+        );
+        if (has) return true;
+      } catch {
+        /* skip this unreadable team dir */
+      }
+    }
+  } catch {
+    /* no teams dir / unreadable — not ready */
+  }
+  return false;
+}
+
 let input = "";
 process.stdin.on("data", (chunk) => (input += chunk));
 process.stdin.on("end", () => {
@@ -226,6 +314,17 @@ process.stdin.on("end", () => {
         /* no teams dir — treat as no active team */
       }
       const teamActive = !!activeCfg;
+      // S-LC-04: the required CONDUCTOR face is now REGISTRY-DRIVEN (resolved from
+      // mode-lifecycle.json via lib/mode-lifecycle → faces(mode)[0]), NOT a
+      // hardcoded "epsilon" literal. For sprint the registry/FALLBACK yields ε, so
+      // this is BEHAVIOR-IDENTICAL to the prior hardcoded check (golden-preserved);
+      // a registry that names a different sprint conductor re-points the gate with
+      // no code change. FAIL-OPEN: requiredConductor() falls back to ε for sprint
+      // if the reader is unavailable, so a read failure can never widen the gate.
+      const conductor = requiredConductor(currentMode) || {
+        id: "epsilon",
+        symbol: "ε",
+      };
       let teamHasEpsilon = false;
       if (activeCfg) {
         try {
@@ -233,20 +332,21 @@ process.stdin.on("end", () => {
           // EXACT role/type/name match, not a substring (cross-provider review
           // 2026-06-08 HIGH: `/epsilon/` matched a spoof worker `epsilon-helper`;
           // also check mem.role, the schema's real authority). A member counts as
-          // ε only if a normalized identity field EQUALS "epsilon" or "ε".
-          const isEpsilon = (v) => {
+          // the conductor only if a normalized identity field EQUALS the registry
+          // conductor id or its symbol.
+          const isConductor = (v) => {
             const s = String(v == null ? "" : v).trim().toLowerCase();
-            return s === "epsilon" || s === "ε";
+            return s === conductor.id || s === conductor.symbol;
           };
           teamHasEpsilon = (doc.members || []).some(
             (mem) =>
               mem &&
-              (isEpsilon(mem.agentType) ||
-                isEpsilon(mem.role) ||
-                isEpsilon(mem.name)),
+              (isConductor(mem.agentType) ||
+                isConductor(mem.role) ||
+                isConductor(mem.name)),
           );
         } catch {
-          /* malformed config — treat ε as absent */
+          /* malformed config — treat the conductor as absent */
         }
       }
       const teamReady = teamActive && teamHasEpsilon;
@@ -383,6 +483,66 @@ process.stdin.on("end", () => {
       };
       process.stdout.write(JSON.stringify(result));
       process.exit(0);
+    }
+
+    // ── S-LC-04 generalized init-gate — REPORT-ONLY for non-sprint modes ──────
+    // The §8.6 mode-init checklist's team-readiness item, GENERALIZED across all
+    // modes and resolved FROM the Mode-Lifecycle Registry (requires_team +
+    // conductor face) — NOT hardcoded. Sprint keeps its DEFAULT-ON hard gate
+    // (handled in the sprint branch above). For a NON-sprint mode that requires a
+    // team (adhoc), the gate runs REPORT-ONLY this sprint: it emits an advisory
+    // and ALLOWS — it NEVER blocks. The flip-to-blocking for other modes needs
+    // §22 #4 operator sign-off (NOT this sprint). Ramped + suppressed-when-ready
+    // to bound noise; fail-open throughout. (E-LIFECYCLE-001 S-LC-04)
+    try {
+      if (
+        currentMode &&
+        currentMode !== "sprint" &&
+        requiresTeamMode(currentMode)
+      ) {
+        const isFace = modeFaces.has(agentType);
+        const isResearch = agentType === "explore" || agentType === "plan";
+        const isWorkerish = !!agentType && !isFace && !isResearch;
+        if (isWorkerish) {
+          const conductor = requiredConductor(currentMode);
+          const ready = teamCarriesConductor(conductor);
+          // Per-mode ramp counter (mirrors the sprint advisory): advise on the
+          // 2nd+ worker when no ready team is live; reset to 0 once ready — so a
+          // repeated init for the SAME mode never duplicates/escalates work.
+          let n = 1;
+          try {
+            const cPath = path.join(
+              projectDir,
+              ".claude",
+              "runtime",
+              ".initgate-oneoff-count",
+            );
+            n = (parseInt(fs.readFileSync(cPath, "utf8"), 10) || 0) + 1;
+            fs.writeFileSync(cPath, ready ? "0" : String(n));
+          } catch {
+            /* counter is best-effort */
+          }
+          if (!ready && n >= 2) {
+            const sym = conductor ? conductor.symbol : "the lead face";
+            process.stdout.write(
+              JSON.stringify({
+                hookSpecificOutput: {
+                  hookEventName: "PreToolUse",
+                  additionalContext:
+                    `[init-gate] ${currentMode.toUpperCase()} requires a persistent ` +
+                    `team (registry requires_team=true) but none carrying ${sym} is ` +
+                    `live — worker dispatch #${n}. Stand up the mode's faces before ` +
+                    `fanning out. REPORT-ONLY this sprint (does NOT block; flip-to-` +
+                    `blocking for other modes needs §22 #4 sign-off). ` +
+                    `(E-LIFECYCLE-001 S-LC-04)`,
+                },
+              }),
+            );
+          }
+        }
+      }
+    } catch {
+      /* generalized gate is report-only + fail-open — never disturb dispatch */
     }
 
     // Research agents (Explore, Plan, general-purpose, etc.) — allowed
