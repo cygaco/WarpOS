@@ -34,6 +34,13 @@ WarpOS exists to help the maintainer ship real products faster while extracting 
 
 ### Active epics
 
+#### E-DISPATCH-SHAPE-001 — Dispatch-Shape Decision Spine (one matrix, one resolver, invariants as machine preconditions) — ⭐⭐ TOP (operator-directed 2026-06-10)
+- **Goal:** end the 8-week dispatch-failure recurrence (40 incidents, 28.1% of 231 dispatches failed, 20 live stack gaps — full diagnostic: `NOTAGAIN.md` @7c0718a) by making the dispatch shape a DECIDED thing: task class × required capabilities → ONE shape, resolved by `scripts/dispatch/dispatch-shape.js` as the only door, with the 15 recurring orchestration invariants wired as machine preconditions instead of prose.
+- **Priority:** ⭐⭐ TOP (operator 2026-06-10: "we should be… headed into an epic to determine the right dispatch shape for each task"). **State:** Active (W0 starting 2026-06-10). **Completion:** 0%.
+- **Epic tracker:** [trackers/epics/E-DISPATCH-SHAPE-001-dispatch-shape-decision-spine.md](trackers/epics/E-DISPATCH-SHAPE-001-dispatch-shape-decision-spine.md) · plan artifact `_planning/epics/E-DISPATCH-SHAPE-001.md`.
+- **Waves:** W0 ids/clocks true (role-id bijection, run_id export, timeout sanity) → W1 availability real (recorded claude-fallback lane, provider circuit breaker, auth-posture surface) → W2 resolver as the only door (ENFORCE flip, wrapper refusal, envelope ADR) → W3 per-failure-class review-lane policy. Anti-rebuild guard: NOTAGAIN §6 receipts are never re-fixed.
+- **Dependencies:** extends E-DISPATCH-INTEGRITY-001 F-1/F-3 (landed 2026-06-10) + E-LIFECYCLE-001 mode_profiles/provider-tier (landed, report-only). NOTAGAIN §8 operator decisions run parallel, not blocking W0/W1.
+
 #### E-SYSTEM-ORG-001 — Agent-System Organization & Canonical Source-of-Truth Cleanup (`.system` files/folders) — ⭐⭐ TOP (operator-directed 2026-06-07)
 - **Goal:** ONE canonical source of truth per agent-system artifact — no duplicate, drifted, orphaned, or mispointed `.system` files/folders. The ADR-0007 org-rewrite left a CLASS of these (a copy made into the new `.claude/agents/` tree while the maintained canonical stayed at the old `.claude/project/reference/` location, pointers aimed at one while the operator/agents look at the other), which is the structural root behind "why do agents keep skipping/misreading the dispatch guide" and similar recurring confusion.
 - **Priority:** ⭐⭐ TOP (operator-directed 2026-06-07 — "add figuring all this out to the top of the roadmap; pull in the tasks on fixing the organization and all the 'system' files and folders"). **State:** Planned (analysis-first; do the audit before moving/deleting canonical files). **Completion:** 0%.
@@ -778,6 +785,7 @@ Every sprint that has been planned, executed, released, or retrospected — one 
 
 | Sprint | Title | Status | Started | Closed | Release |
 |---|---|---|---|---|---|
+| [SP-20260610-006](.claude/project/sprint/sprints/SP-20260610-006/) | E-DISPATCH-SHAPE-001 W0 - ids and clocks true (role-id bijection, run_id export, timeout sanity) | planning | 2026-06-10T19:57:00.169Z |  |  |
 | [SP-20260610-005](.claude/project/sprint/sprints/SP-20260610-005/) | E-DISPATCH-INTEGRITY F-1+F-3 coverage-honesty | retrospected | 2026-06-10T16:12:06.947Z | 2026-06-10T16:55:56.095Z |  |
 | [SP-20260610-001](.claude/project/sprint/sprints/SP-20260610-001/) | Lane A - ship/install integrity (WARPOS.md sweep) | planning | 2026-06-10T15:51:46.173Z |  |  |
 | [SP-20260610-003](.claude/project/sprint/sprints/SP-20260610-003/) | Lanes C+D - sprint-pipeline truth + research:deep runnability (WARPOS.md sweep) | retrospected | 2026-06-10T15:32:08.947Z | 2026-06-10T16:05:02.123Z |  |
