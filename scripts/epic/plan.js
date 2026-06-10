@@ -47,7 +47,10 @@ const {
   verifyEpicMarkdown,
 } = require("./lib");
 // Single source for the 20 enforcement-criteria categories (S-LC-11, PLAN §11).
-const { categoryChecklistMarkdown } = require("../sprint/ac-categories");
+const {
+  categoryChecklistMarkdown,
+  stripCategoryChecklist,
+} = require("../sprint/ac-categories");
 
 const ROOT = process.env.CLAUDE_PROJECT_DIR || path.resolve(__dirname, "..", "..");
 
@@ -57,6 +60,23 @@ function asList(items, empty = "- None currently recorded.") {
   const arr = (items || []).filter((x) => x != null && String(x).trim());
   if (!arr.length) return empty;
   return arr.map((x) => `- ${String(x).trim()}`).join("\n");
+}
+
+const AC_EMPTY = "- None recorded yet — fill from the 20-category checklist below.";
+
+/**
+ * Render the § Acceptance criteria body. Strips any pre-existing
+ * marker-delimited category checklist from the incoming AC FIRST, so the fresh
+ * `categoryChecklistMarkdown()` appended below is the ONLY checklist in the
+ * artifact (S-LC-11 idempotency: a round-trip parse→regenerate or a `--force`
+ * re-emit must NOT duplicate the 20-category section). Accepts an AC array
+ * (normal case) or a pre-rendered AC section string (round-trip case). PURE.
+ */
+function renderAcceptanceCriteria(ac) {
+  const rendered = typeof ac === "string" ? ac : asList(ac, AC_EMPTY);
+  const stripped = stripCategoryChecklist(rendered);
+  const body = String(stripped == null ? "" : stripped).trim();
+  return body || AC_EMPTY;
 }
 
 function asText(v, fallback = "TBD") {
@@ -238,7 +258,7 @@ ${asText(p.scope)}
 ${asText(p.outOfScope, "None recorded.")}
 
 ## 4. Acceptance criteria
-${asList(p.acceptanceCriteria, "- None recorded yet — fill from the 20-category checklist below.")}
+${renderAcceptanceCriteria(p.acceptanceCriteria)}
 
 ${categoryChecklistMarkdown()}
 

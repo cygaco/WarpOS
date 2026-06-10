@@ -29,8 +29,25 @@ const {
 const {
   AC_CATEGORIES: SRC_CATEGORIES,
   categoryChecklistMarkdown,
+  stripCategoryChecklist,
+  CHECKLIST_MARKER_OPEN,
 } = require(path.join(ROOT, "scripts", "sprint", "ac-categories.js"));
 const epicPlan = require(path.join(ROOT, "scripts", "epic", "plan.js"));
+
+// The OPEN marker that prefixes every rendered checklist; the CLOSE marker
+// (`<!-- /ac-categories:checklist -->`) does NOT contain this substring, so a
+// count of this literal == the number of checklists in the artifact.
+const OPEN_MARKER_RE = /<!-- ac-categories:checklist/g;
+function countChecklists(s) {
+  return (String(s).match(OPEN_MARKER_RE) || []).length;
+}
+// Extract the "## 4. Acceptance criteria" section body (up to the next H2) — the
+// FULL AC section incl. the rendered checklist, as a round-trip parse would.
+function acSectionOf(planMd) {
+  const m = String(planMd).match(/## 4\. Acceptance criteria\n([\s\S]*?)\n## 5\./);
+  assert.ok(m, "plan has a parseable § Acceptance criteria section");
+  return m[1];
+}
 
 const CHECK = path.join(ROOT, "scripts", "sprint", "check-ac-coverage.js");
 const h = harness("S-LC-11/ac-category-coverage");
@@ -141,6 +158,68 @@ h.test("/epic:plan (buildEpic) emits all 20 category stubs in the plan artifact"
   const cov = checkCategoryCoverage(built.plan);
   assert.strictEqual(cov.missing.length, 0, "all 20 categories are named in the emitted plan");
   assert.strictEqual(cov.named_no_proof.length, 20, "all 20 are stubs awaiting proof");
+});
+
+// ── S-LC-11 IDEMPOTENCY: the 20-category checklist scaffold is dedup-before-render ──
+// Marker-delimited so a re-emit over AC that ALREADY carries a checklist (a
+// round-trip parse→regenerate, or a --force re-emit) yields EXACTLY ONE — not two.
+
+// FRESH CASE stays at one (no regression of today's behavior).
+h.test("fresh /epic:plan emits EXACTLY ONE category checklist", () => {
+  const built = epicPlan.buildEpic({
+    epicId: "E-EXAMPLE-002",
+    title: "S-LC-11 fresh-case idempotency",
+    definitionOfDone: ["proven by this test"],
+    date: "2026-06-09",
+  });
+  assert.ok(built.ok, `build must succeed: ${(built.errors || []).join("; ")}`);
+  assert.strictEqual(countChecklists(built.plan), 1, "fresh plan has exactly one checklist");
+});
+
+// ROUND-TRIP CASE: feeding the FULL AC section (incl. the rendered checklist)
+// back in as p.acceptanceCriteria must NOT duplicate the section. This is the
+// load-bearing assertion: without the strip-before-render, this is 2.
+h.test("re-emit over AC that already carries the checklist stays at ONE (idempotent)", () => {
+  const mk = (over) =>
+    epicPlan.buildEpic({
+      epicId: "E-EXAMPLE-003",
+      title: "S-LC-11 round-trip idempotency",
+      definitionOfDone: ["proven by this test"],
+      date: "2026-06-09",
+      ...over,
+    });
+
+  const first = mk();
+  assert.ok(first.ok, `first build must succeed: ${(first.errors || []).join("; ")}`);
+  assert.strictEqual(countChecklists(first.plan), 1, "first emit has exactly one checklist");
+
+  // Round-trip: extract the FULL AC section (bullets + checklist + markers).
+  const fedBack = acSectionOf(first.plan);
+  assert.ok(fedBack.includes(CHECKLIST_MARKER_OPEN), "the fed-back AC section carries a checklist");
+
+  const second = mk({ acceptanceCriteria: fedBack });
+  assert.ok(second.ok, `second build must succeed: ${(second.errors || []).join("; ")}`);
+  assert.strictEqual(
+    countChecklists(second.plan),
+    1,
+    "re-emit must NOT duplicate — exactly one checklist marker after a round-trip",
+  );
+
+  // …and the checker still detects all 20 categories THROUGH the markers.
+  const cov = checkCategoryCoverage(second.plan);
+  assert.strictEqual(cov.missing.length, 0, "all 20 categories still detected with markers present");
+  assert.strictEqual(cov.named_no_proof.length, 20, "all 20 still read as named (stubs) post-round-trip");
+});
+
+// The strip helper removes the marker block (markers inclusive), keeps the rest.
+h.test("stripCategoryChecklist removes the marker-delimited block, preserves AC bullets", () => {
+  const withChecklist =
+    "## Acceptance criteria\n\n- a real AC\n\n" + categoryChecklistMarkdown() + "\n\n- another AC\n";
+  assert.ok(withChecklist.includes(CHECKLIST_MARKER_OPEN), "precondition: has a checklist");
+  const stripped = stripCategoryChecklist(withChecklist);
+  assert.strictEqual(countChecklists(stripped), 0, "strip removes the checklist block entirely");
+  assert.ok(stripped.includes("- a real AC"), "strip keeps the AC bullets above");
+  assert.ok(stripped.includes("- another AC"), "strip keeps the AC bullets below");
 });
 
 h.done();

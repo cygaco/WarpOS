@@ -51,6 +51,40 @@ const AC_CATEGORIES = Object.freeze([
 const CATEGORY_SECTION_HEADING =
   "Enforcement-criteria coverage — 20 categories (PLAN §11 / S-LC-11)";
 
+// STABLE markers wrapping the rendered checklist so it is detectable + removable
+// (mirrors the fold.js idempotency-marker pattern). The scaffold, the strip
+// helper, and the tests all key off THESE constants — single source, no drift.
+// The markers are HTML comments, so they never collide with a category phrase
+// and never break the checker's category detection.
+const CHECKLIST_MARKER_OPEN = "<!-- ac-categories:checklist (auto, S-LC-11) -->";
+const CHECKLIST_MARKER_CLOSE = "<!-- /ac-categories:checklist -->";
+
+function escapeRegExp(s) {
+  return String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/**
+ * Remove any pre-existing marker-delimited category checklist block(s) from the
+ * given markdown — markers inclusive, collapsing the blank lines they leave.
+ * PURE. Lets a producer (e.g. /epic:plan) re-render EXACTLY ONE checklist even
+ * when its input AC text already carries one (a round-trip parse→regenerate, or
+ * a `--force` re-emit) — the S-LC-11 idempotency requirement. Mirrors fold.js's
+ * marker-keyed no-op discipline.
+ *
+ * @param {string} md markdown that may contain 0..n marker-delimited checklists.
+ * @returns the same markdown with every marker-delimited checklist removed.
+ */
+function stripCategoryChecklist(md) {
+  if (md == null) return md;
+  const re = new RegExp(
+    `\\n*${escapeRegExp(CHECKLIST_MARKER_OPEN)}[\\s\\S]*?${escapeRegExp(
+      CHECKLIST_MARKER_CLOSE,
+    )}[ \\t]*\\n?`,
+    "g",
+  );
+  return String(md).replace(re, "\n").replace(/\n{3,}/g, "\n\n");
+}
+
 /**
  * Render the 20-category Acceptance-Criteria checklist a producer scaffolds into
  * its plan/epic artifact. Each category is a STUB the author fills with a proof;
@@ -69,7 +103,11 @@ function categoryChecklistMarkdown(opts = {}) {
   const rows = AC_CATEGORIES.map(
     (cat) => `- [ ] **${cat}** — proof: ${stub}`,
   ).join("\n");
-  return `${hashes} ${CATEGORY_SECTION_HEADING}
+  // Marker-wrapped (S-LC-11): the OPEN/CLOSE comments make the block detectable
+  // + strippable so a re-render never duplicates it. Content between the markers
+  // is unchanged — the checker keys off the category rows, not the markers.
+  return `${CHECKLIST_MARKER_OPEN}
+${hashes} ${CATEGORY_SECTION_HEADING}
 
 Every category below needs AC + a **proof** — a planted fixture that must fail, a
 real record (run_id + elapsed/bytes), a green/blocked exit code, or a captured
@@ -78,13 +116,17 @@ real proof; a bare \`proof: ${stub}\` stub is "named but unproven" and is FLAGGE
 (report-only) by \`/scan:ac-coverage --categories\`. Single source for this list:
 \`scripts/sprint/ac-categories.js\` (${AC_CATEGORIES.length} categories).
 
-${rows}`;
+${rows}
+${CHECKLIST_MARKER_CLOSE}`;
 }
 
 module.exports = {
   AC_CATEGORIES,
   CATEGORY_SECTION_HEADING,
+  CHECKLIST_MARKER_OPEN,
+  CHECKLIST_MARKER_CLOSE,
   categoryChecklistMarkdown,
+  stripCategoryChecklist,
 };
 
 // Self-check: `node scripts/sprint/ac-categories.js --selftest`
@@ -102,8 +144,22 @@ if (require.main === module && process.argv.includes("--selftest")) {
   }
   // deterministic
   assert.strictEqual(md, categoryChecklistMarkdown(), "render is deterministic");
+  // marker-wrapped + strippable (S-LC-11 idempotency)
+  assert.ok(md.includes(CHECKLIST_MARKER_OPEN), "checklist carries the OPEN marker");
+  assert.ok(md.includes(CHECKLIST_MARKER_CLOSE), "checklist carries the CLOSE marker");
+  const stripped = stripCategoryChecklist(`before\n\n${md}\n\nafter`);
+  assert.ok(!stripped.includes(CHECKLIST_MARKER_OPEN), "strip removes the checklist block");
+  assert.ok(
+    stripped.includes("before") && stripped.includes("after"),
+    "strip preserves surrounding text",
+  );
+  assert.strictEqual(
+    stripCategoryChecklist(`x\n\n${md}\n\n${md}\n\ny`).match(/<!-- ac-categories:checklist/g),
+    null,
+    "strip removes EVERY marker block (dedup-before-render)",
+  );
   process.stdout.write(
-    `ac-categories selftest: ${AC_CATEGORIES.length} categories, checklist renders all, deterministic — OK\n`,
+    `ac-categories selftest: ${AC_CATEGORIES.length} categories, checklist renders all, deterministic, marker-wrapped + strippable — OK\n`,
   );
   process.exit(0);
 }
