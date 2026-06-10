@@ -281,6 +281,24 @@ the tens-of-thousands-of-tokens of sub-output (memory:
 when the prompt already asks for a lean / envelope / write-file-then-summarize
 return.
 
+### Teammate-ε conduct routes (ED-041)
+
+When ε is a **teammate** (spawned via `Agent(subagent_type:"epsilon")` into a team), the
+harness Agent tool is unavailable — *"Agent is not available inside subagents"* (ED-041).
+**Sanctioned subprocess-only routes:**
+
+| Work | Route |
+|------|-------|
+| Build-chain (builders/fixers) | `node scripts/dispatch-claude.js <role> <prompt-file> -w` |
+| Cross-provider (reviewers/security) | `node scripts/dispatch-agent.js <role> <prompt-file>` |
+| Non-build Claude roles (test-runner) | `claude -p --agent <role> < "$PROMPT_FILE"` |
+| In-process roster (managers/leads/design-quality/visual-review) | **DEFERRED to α** — report `spawned:false, reason:requires-orchestrator`; α dispatches via Agent tool |
+
+**Blocking-only dispatch (WG-6):** teammate-ε MUST dispatch subprocesses **foreground/blocking**
+and record completions **in the same turn**. NEVER go idle with an outstanding subprocess — the
+harness does NOT re-wake a teammate when a background process completes. Observed as 25-minute
+stalls (WG-6 ×3). See `.claude/agents/president/epsilon.md` TEAMMATE STALL RULES.
+
 ---
 
 ## §10 — Worktree isolation (build-chain only)

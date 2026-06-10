@@ -108,6 +108,11 @@ Update `paths.systemsFile` and `_knowledge/state/` (living state-of-record; upda
 
 ## Heartbeat + Circuit Breaker (inherited from δ)
 
+> **Scope:** applies ONLY when ε is the **top-level session** (α wearing the ε conductor face
+> running a long sprint). Does NOT run for a **teammate-spawned ε** — for teammate-ε liveness,
+> see the TEAMMATE STALL RULES (WG-6) in the Dispatch Method section below and
+> `scripts/checks/epsilon-liveness.js`.
+
 ε runs long — the same reason δ needs a heartbeat applies here.
 
 **Heartbeat:** Write a heartbeat record to `paths.eventsFile` every N steps (configure per sprint). Format: `{ type: "heartbeat", agent: "epsilon", sprint: "<id>", step: "<current>", ts: "<ISO>" }`. Answers "is it hung?" for any observer.
@@ -123,7 +128,44 @@ Checkpoints give resume. The heartbeat answers liveness. Together they make ε s
 
 ## Dispatch Method
 
-Follow the canonical dispatch pattern inherited from γ/δ verbatim — the machinery is shared, not forked:
+### Conduct routes by spawn context (ED-041)
+
+ε operates in two contexts — the conduct route is determined by which one is active:
+
+| Context | Spawned via | Agent tool? | Sanctioned routes |
+|---|---|---|---|
+| **Top-level session** | α wearing the ε face | YES | Subprocess wrappers (below) + in-process roster via Agent tool |
+| **Teammate** | `Agent(subagent_type:"epsilon")` into a team | NO — *"Agent is not available inside subagents"* | Subprocess-only: `dispatch-claude.js` (build-chain) · `dispatch-agent.js` (cross-provider) · `claude -p --agent` (non-build Claude roles) |
+
+The `in-process-agent` shape (managers/leads/design-quality/visual-review) is **α-only**. A
+teammate-ε that receives `spawned:false, reason:requires-orchestrator` entries from the runtime
+CANNOT dispatch them — report to the team lead so α can dispatch via the Agent tool.
+Operator-ratified 2026-06-09.
+
+### STARTUP ROUTE SELF-CHECK
+
+At spawn, ε MUST determine its context and include it in the `SendMessage(to:"team-lead")`
+readiness report:
+- Agent tool available → `"TOP-LEVEL context: in-process roster available."`
+- Agent tool unavailable → `"TEAMMATE context: subprocess-only routes active; in-process roster deferred to α."`
+
+This makes the doc's promise verifiable at spawn, not assumed.
+
+### TEAMMATE STALL RULES (WG-6)
+
+A teammate-ε that launches background subprocesses and goes idle "waiting for returns" will wait
+FOREVER — the harness re-wakes a teammate ONLY on an incoming `SendMessage`; a subprocess
+completing does NOT trigger a re-wake. The belief that "the harness re-wakes me" is FALSE.
+Observed as a 25-minute stall ×3 (WG-6). Enforcer: `scripts/checks/epsilon-liveness.js`.
+
+1. **NEVER go idle while a background subprocess is outstanding.** There is no wake event; the wait is infinite.
+2. **Dispatch subprocesses BLOCKING/foreground** — bounded by `DISPATCH_BUILDER_TIMEOUT_MS`. Capture the return and write the completion record **in the same turn**.
+3. **Before any unavoidable idle point**, report concrete state to the team lead: what is outstanding, where evidence will land. The lead can watchdog and recover.
+4. **Lead's recovery:** idle ≠ dead — `SendMessage` wakes an idle teammate. No readiness ping after spawn ≈ reaped (RI-004-class) — re-spawn.
+
+---
+
+**When ε is the top-level session face**, follow the canonical dispatch pattern inherited from γ/δ verbatim — the machinery is shared, not forked:
 
 - Build-chain roles (builders, fixers): `node scripts/dispatch-claude.js <role> <prompt-file> --model sonnet -w` — the reap-guard wrapper is MANDATORY. Never raw `claude -p --agent` for build-chain.
 - Cross-provider (reviewers, security): `node scripts/dispatch-agent.js <role> <prompt-file>` with inline pre-fetch of all files the agent's prompt references (codex/gemini CLIs pipe stdin; they cannot follow relative file paths).

@@ -103,6 +103,20 @@ node scripts/checks/planning-principles.js             # /scan:planning-principl
 
 A non-zero exit (when blocking) is a critical finding (the dispatch contract drifted from the role registry — a role with no class, a class allowing a ghost shape, a build-chain role that could be dispatched in-process). The N-1 coverage gate (`node scripts/dispatch/coverage-gate.js --run <id> --expect <roles>`) is the companion runtime check that makes a backing `ok:true` completion record the precondition for "covered" (kills sprint theater) — now **BLOCKING by default** (PLAN §4 ramp FLIPPED): the §17.4 strengthening makes a record's mere existence insufficient (it must be stamped at the current `argv_schema_version` AND carry artifact proof — `output_digest` or an `artifacts[]` digest — so a stale/backfilled/blind record is rejected), with an auditable `waiver{reason}` escape; `--report-only` opts out. It is a RUNTIME gate (needs a `--run <id>` + `--expect`), so it is invoked per sprint phase. Its STATIC-scan complement is `coverage-gate-scan.js` (S-LC-06, in the block above) — the LIVE CALLER that audits the dispatch-completions ledger run-by-run with no per-run `--expect` (it derives the expected roles from the ok:true claims in each run), surfacing the same sprint-theater class report-only + fail-open during a `/scan:full` pass. The **duplicate-doc-drift** enforcer (PLAN §4 S-6) is the self-detecting backstop for E-SYSTEM-ORG-001 — it makes the "same-basename shipped doc drifted" class loud. The Wave-2 consolidation removed the `agent-dispatch-guide.md` duplicate (0-drifted), so per §4-step-8 it is now **BLOCKING** (`--strict`). The **provider-api-policy** enforcer (N-2) is likewise **BLOCKING** (live repo clean at the flip). Both keep allowlists for sanctioned cases; both fail-closed on their own errors. The safety kernel (`scripts/dispatch/safe-spawn.js` — now WIRED into the live cross-provider spawn path via `scripts/hooks/lib/providers.js`) + auth-resolver (N-3, `scripts/dispatch/auth-resolver.js`) + each module's `*.test.js` carry the P5 planted-violation tests. The **doc-ref-integrity** enforcer (E-SYSTEM-ORG-001 S-13b) is the navigational-link complement to duplicate-doc-drift: a broken repo-relative ref in high-read canon (the stale-link class the operator hit after the `.system`/ADR-0007/role-rename waves). It ships **REPORT-ONLY** at a 0-broken baseline (168 surfaced refs → fixed-or-categorized); `--enforce` is the ramp tail. `scripts/checks/doc-ref-integrity.test.js` carries the P5 cases.
 
+**Sprint conductor liveness** *(default + `--deep`)*
+
+The epsilon-liveness enforcer detects a stalled sprint conductor (WG-6 ×3 — observed 25-minute
+stalls): when in-process evidence files older than 10 minutes have no matching completion record
+in the dispatch ledger, the conductor is likely stuck (a teammate-ε went idle waiting for a
+subprocess return that will never re-wake it). REPORT-ONLY — never blocks `/scan:full`:
+
+```bash
+node scripts/checks/epsilon-liveness.js   # T-291 / doogle WG-6 (REPORT-ONLY): scans .claude/runtime/epsilon-prompts/*.return.txt older than 10m; each with no sha256 or sprint+step+role match in dispatch-completions.jsonl → epsilon-stalled finding. exit 0/1/2, fail-closed (unreadable ledger + evidence = exit 1). Run directly with --stale-minutes / --evidence-dir for a real-time gate.
+```
+
+A non-zero exit (when run directly) names orphaned evidence files and their age. Fail-closed on
+runner errors (exit 2). Linked: `T-291` · `doogle WG-6` · `ED-041` · `epsilon.md` TEAMMATE STALL RULES · `scripts/checks/epsilon-liveness.test.js`.
+
 **Source hygiene — the NUL-byte gate** *(default + `--deep`)*
 
 A literal NUL byte (0x00) never legitimately appears in our `.js/.json/.md/.ts` sources — it sneaks in via tooling artifacts (a literal space before `]` in a regex char class serialized to 0x00 via the Write tool) and silently corrupts a file (ripgrep treats it as binary + skips it; Edit can't match across it). Runs as a direct script invocation (a source-hygiene script, not a `/scan:*` skill):
