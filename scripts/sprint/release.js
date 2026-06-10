@@ -96,6 +96,25 @@ function emitGate(kind, data) {
 // `runEnforcer` is injectable for focused tests of the verdict→exit-code
 // mapping; production calls pass nothing and the real enforcer is used.
 function regressionSeedGate(runEnforcer) {
+  // Product-repo guard: resolve role BEFORE the default closure reaches
+  // require("../testsuite/enforce") — that module is not shipped to product repos
+  // (absent from ASSET_DIRS in generate-framework-manifest.js), so its
+  // MODULE_NOT_FOUND would be caught as runner_error → exit 3 (BLOCK), making it
+  // impossible to close a sprint in a product repo.  The intended behavior is
+  // "product repos no-op exit 0", and the role-awareness that would have achieved
+  // that lived INSIDE the missing module — a closed trap this guard breaks open.
+  //
+  // resolveRepoRole() IS shipped (warpos_script in ASSET_DIRS) and does NOT depend
+  // on testsuite/.  Only applied on the production (non-injected) path so that
+  // injected test stubs (A-G) continue to exercise the verdict→exit mapping.
+  if (!runEnforcer) {
+    const { resolveRepoRole } = require("../warpos/repo-role");
+    const { role } = resolveRepoRole();
+    if (role !== "canonical") {
+      emitGate("sprint_release_regression_gate", { result: "opt-in-noop", role });
+      return 0;
+    }
+  }
   const run = runEnforcer || ((opts) => require("../testsuite/enforce").run(opts));
   let verdict;
   try {
