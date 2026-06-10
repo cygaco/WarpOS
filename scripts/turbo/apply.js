@@ -149,7 +149,13 @@ const DEFAULT_TTL_MIN = 60;
 
 // ── CLI parse ──────────────────────────────────────────────
 function parseArgs(argv) {
-  const out = { mode: "apply", scopes: null, ttl: null, reason: null };
+  const out = {
+    mode: "apply",
+    scopes: null,
+    ttl: null,
+    reason: null,
+    spendCeiling: null,
+  };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === "--off") out.mode = "off";
@@ -157,8 +163,22 @@ function parseArgs(argv) {
     else if (a === "--scope") out.scopes = String(argv[++i] || "").trim();
     else if (a === "--ttl") out.ttl = String(argv[++i] || "").trim();
     else if (a === "--reason") out.reason = String(argv[++i] || "").trim();
+    // Operator-raised per-session spend ceiling (USD). Framework default is $100
+    // (scripts/turbo/spend-ledger.js#FRAMEWORK_DEFAULT_CEILING_USD); when set, it
+    // is stamped into authorization.json as `spend_ceiling_usd` and read by the
+    // ledger as the runtime override. Omitted → ledger uses the framework default.
+    else if (a === "--spend-ceiling") out.spendCeiling = String(argv[++i] || "").trim();
   }
   return out;
+}
+
+// Parse an operator-supplied spend ceiling. Returns a positive number, or null
+// (omitted / invalid → the ledger falls back to the framework default $100).
+function parseSpendCeiling(s) {
+  if (s == null || s === "") return null;
+  const n = parseFloat(String(s).replace(/^\$/, ""));
+  if (!Number.isFinite(n) || n <= 0) return null;
+  return n;
 }
 
 // ── TTL parsing: "60m", "2h", "90", number-as-minutes ──────
@@ -288,7 +308,7 @@ function mergePermissions(settings, scopes) {
 }
 
 // ── Authorization state file ───────────────────────────────
-function writeAuthorization(scopes, ttlMin, reason) {
+function writeAuthorization(scopes, ttlMin, reason, spendCeilingUsd) {
   ensureDir(RUNTIME_DIR);
   const now = new Date();
   const expires = new Date(now.getTime() + ttlMin * 60 * 1000);
@@ -302,6 +322,12 @@ function writeAuthorization(scopes, ttlMin, reason) {
     snapshot_path: path.relative(PROJECT, SNAPSHOT_PATH).replace(/\\/g, "/"),
     safety_floor: SAFETY_FLOOR,
   };
+  // Operator-raised per-session spend ceiling (P-058 source-vs-instance): only
+  // stamped when explicitly provided. Absent → the ledger uses the framework
+  // default ($100). NEVER bakes a per-session instance value as the default.
+  if (typeof spendCeilingUsd === "number" && Number.isFinite(spendCeilingUsd) && spendCeilingUsd > 0) {
+    auth.spend_ceiling_usd = spendCeilingUsd;
+  }
   const tmp = AUTH_PATH + ".tmp";
   fs.writeFileSync(tmp, JSON.stringify(auth, null, 2) + "\n", "utf8");
   fs.renameSync(tmp, AUTH_PATH);
@@ -387,6 +413,7 @@ function renderStatus() {
     `  granted_at:    ${auth.granted_at}`,
     `  expires_at:    ${auth.expires_at}`,
     `  reason:        ${auth.reason || "(none)"}`,
+    `  spend_ceiling: ${typeof auth.spend_ceiling_usd === "number" ? "$" + auth.spend_ceiling_usd + " (operator-raised)" : "$100 (framework default)"}`,
     `  snapshot:      ${auth.snapshot_path}`,
     `  bypasses:      ${bypasses} since granted_at`,
     "",
@@ -461,6 +488,7 @@ function main() {
   }
   const ttlMin = parseTtlMinutes(args.ttl);
   const reason = args.reason || "";
+  const spendCeilingUsd = parseSpendCeiling(args.spendCeiling);
 
   let settings;
   try {
@@ -480,13 +508,13 @@ function main() {
     return 3;
   }
 
-  const auth = writeAuthorization(scopes, ttlMin, reason);
+  const auth = writeAuthorization(scopes, ttlMin, reason, spendCeilingUsd);
 
   logAudit(
     "turbo-on",
     SETTINGS_PATH,
     `scopes=${scopes.join("|")} ttl_min=${ttlMin} added_perms=${added} snapshot=${snapshotTaken}`,
-    { scopes, ttl_min: ttlMin, reason },
+    { scopes, ttl_min: ttlMin, reason, spend_ceiling_usd: spendCeilingUsd },
   );
 
   process.stdout.write(
@@ -497,6 +525,7 @@ function main() {
       `  granted_at:    ${auth.granted_at}`,
       `  expires_at:    ${auth.expires_at}`,
       `  reason:        ${reason || "(none)"}`,
+      `  spend_ceiling: ${spendCeilingUsd != null ? "$" + spendCeilingUsd + " (operator-raised)" : "$100 (framework default)"}`,
       `  permissions:   +${added} entries (additive merge)`,
       `  snapshot:      ${snapshotTaken ? "taken (first apply this session)" : "skipped (already in turbo session)"}`,
       "",
@@ -522,6 +551,8 @@ module.exports = {
   SAFETY_FLOOR,
   parseArgs,
   parseTtlMinutes,
+  parseSpendCeiling,
   normalizeScopes,
   readAuthorization,
+  writeAuthorization,
 };
