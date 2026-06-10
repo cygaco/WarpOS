@@ -1,0 +1,137 @@
+schema: warpos/sprint/plan-contract/v1
+id: PC-20260610-0066
+created_at: "2026-06-10T14:47:00.069Z"
+updated_at: "2026-06-10T14:47:00.069Z"
+sprint: SP-20260610-002
+source_request: "Lane B of the 2026-06-10 WARPOS.md sweep fix arc: WG-2 model pins + role-parity enforcer; WG-5 class_derivation cross-provider-lead rule + shape-vs-route parity FAIL; WG-4 epsilon.md + dispatch-guide sanctioned subprocess conduct route; WG-6 epsilon.md stall rules + fail-closed epsilon-stalled liveness check. Engine sprint, ff-merge close, defer retro (RI-001). Beta batched-precleared all boundaries (EVT-warpos-sprint-2026-06-10-batched-001, DECIDE 0.87)."
+source_request_verbatim: "Lane B — dispatch/registry coherence fixes from the 2026-06-10 WARPOS.md sweep (runtime/notes/warpos-md-sweep-2026-06-10.md §Lane B): (1) doogle WG-2: replace model: inherit with registry-derived pins in the 6 role specs (director-of-engineering, copy-lead, cabinet, ops-analyst, director-of-product, product-lead) + fix president/beta.md sonnet-vs-registry-opus drift + extend role-parity enforcer (scripts/checks/role-parity-scan.js) to FAIL when spec frontmatter model differs from role-registry model incl. the inherit case; (2) doogle WG-5: add dispatch-contract.json class_derivation rule routing cross-provider leads (provider openai/gemini) before the generic tier:lead→manager rule, so design-lead's derived shape matches its registry route; extend parity scan to FAIL on shape-vs-route contradictions; (3) doogle WG-4: rewrite epsilon.md + agent-dispatch-guide.md so subprocess dispatch (claude -p --agent for non-build roles, dispatch-claude.js for build-chain, dispatch-agent.js cross-provider) is the SANCTIONED conduct route for teammate-spawned epsilon (operator-ratified in doogle 2026-06-09) + epsilon startup self-check that records which conduct route is active; (4) doogle WG-6: add teammate stall rules to epsilon.md (never idle awaiting background returns, dispatch blocking, report-before-idle) + a fail-closed epsilon-stalled liveness check (evidence files without matching ledger record after N minutes = loud event)."
+request_type: bug_fix_batch
+interpreted_intent: "Make the role-registry the enforced single routing source (model pins + shape derivation), make the documented teammate-ε conduct path match what the harness actually permits (subprocess routes, ED-041), and make conductor stalls self-detecting instead of operator-babysat. All four are coherence repairs to existing architecture, no new architecture (Beta OPEN_ADR false)."
+user_or_business_outcome: "Sub-agents stop silently running on the session model; shape-based enforcers stop contradicting the registry; every future product install gets a conduct loop that is actually implementable; ε stalls become loud events instead of 25-minute silent waits. Downstream products (doogle proved all four live) inherit the fixes on next release."
+affected_surfaces:
+  - surface: ".claude/agents/engineering/director-of-engineering.md, growth/copy-lead.md, president/cabinet.md, president/ops-analyst.md, product/director-of-product.md, product/product-lead.md (model: inherit → registry-derived pin)"
+    evidence_level: verified_from_repo
+    notes: "grep '^model: inherit' verified 2026-06-10. CHECK FIRST whether these are generated views of _warpos sources (scan:framework-views-fresh contract) — if so edit the SOURCE and regen, never the view alone."
+  - surface: ".claude/agents/president/beta.md (model: claude-sonnet-4-6 vs registry claude-opus-4-8)"
+    evidence_level: verified_from_repo
+    notes: "drift instance named in WG-2; β reviewed and approved its own pin change (metadata not behavior, registry-grounded)."
+  - surface: ".claude/agents/_system/frontmatter-guide.md (documents model: inherit as a valid value)"
+    evidence_level: verified_from_repo
+    notes: "guide must stop documenting inherit as valid for registry-routed roles, or scope it to non-registry agents."
+  - surface: ".claude/agents/_org/dispatch-contract.json class_derivation.rules (insert cross-provider-lead rule before {tier:lead}→manager)"
+    evidence_level: verified_from_repo
+    notes: "first-match for design-lead today = {tier:lead}→manager→in-process-agent; registry routes openai/gpt-5.5 subprocess. Rule must key on provider!=claude for tier:lead/kind:lead."
+  - surface: "scripts/checks/role-parity-scan.js (extend: spec-model-vs-registry FAIL incl. inherit; shape-vs-route contradiction FAIL)"
+    evidence_level: verified_from_repo
+    notes: "existing enforcer file, Lane A does NOT touch it (Lane A owns warpos-install-baseline.js — β cross-lane condition confirmed disjoint)."
+  - surface: ".claude/agents/president/epsilon.md (WG-4 sanctioned subprocess conduct route + WG-6 teammate stall rules)"
+    evidence_level: verified_from_repo
+    notes: "heartbeat §109-120 assumes ε-is-session; no stall rules today. Operator ratified subprocess as the right route (doogle 2026-06-09)."
+  - surface: ".claude/agents/_system/guides/agent-dispatch-guide.md (teammate-ε conduct route section)"
+    evidence_level: verified_from_repo
+    notes: "add the sanctioned teammate-ε routes; align with /mode:sprint ED-041 language (already updated there)."
+  - surface: "NEW scripts/checks/epsilon-liveness.js (fail-closed: evidence files without matching ledger record after N minutes = loud epsilon-stalled event)"
+    evidence_level: inferred_from_repo
+    notes: "Beta: fail-closed per P-053. Pattern mirrors gauntlet-verify absence-detection applied to the conductor."
+  - surface: "_warpos sources for any edited .claude view + BOTH manifests (regen last, BC-02/BC-05)"
+    evidence_level: verified_from_repo
+    notes: "regen-both-manifests discipline; framework-views-fresh must stay green."
+current_behavior:
+  evidence_level: verified_from_repo
+  notes: "6 specs + frontmatter-guide carry model: inherit → in-process Agent spawns inherit the session model, bypassing role-registry routing; beta.md pins sonnet vs registry opus. dispatch-contract first-match {tier:lead}→manager forces in-process-agent for design-lead vs registry subprocess/gpt-5.5 (live advisory observed in doogle SP-20260609-001). epsilon.md documents an Agent-tool conduct loop a teammate-ε cannot execute (ED-041) and a heartbeat/circuit-breaker that does not run for teammate-ε; no stall rules → conductor idled 25 min on returned work, recurrence ×3 in doogle."
+desired_behavior: "No registry-routed spec carries model: inherit; claude-provider specs' frontmatter model == registry model (beta.md = opus); role-parity-scan FAILS on any spec-vs-registry model mismatch and on any contract-shape-vs-registry-route contradiction; dispatch-contract derives subprocess shape for cross-provider leads; epsilon.md + dispatch guide document subprocess as the sanctioned teammate-ε conduct route with a startup route self-check; epsilon.md carries the stall rules; epsilon-liveness check exits non-zero on evidence-without-record staleness. Both manifests regenerated; framework-views-fresh green."
+scope:
+  size: m
+  risk_level: medium
+  complexity_drivers:
+    - "agent specs may be generated views of _warpos sources — source-vs-generated discipline (P-058 class); builder must detect and edit the right layer"
+    - "dispatch-contract class_derivation is first-match ordered — rule insertion position is load-bearing; needs planted-fixture tests both ways"
+    - "role-parity-scan extension must not false-positive on legitimately non-registry agents (frontmatter-guide scoping)"
+    - "epsilon-liveness N-minute threshold needs a deterministic test fixture (no wall-clock flake)"
+scope_variants:
+  minimal_safe: "WG-2 pins + parity enforcer only; defer WG-4/5/6 docs+liveness."
+  recommended: "All four items with their named enforcers: pins + parity model check; contract rule + shape-vs-route check; epsilon.md/guide rewrite + startup self-check; stall rules + epsilon-liveness fail-closed check. Regen both manifests, views-fresh green."
+  expanded: "Above + generate spec frontmatter model from role-registry at view-regen time (the full single-source pipeline) — ONLY if the regen tooling already has a hook point; otherwise defer to a follow-up."
+assumptions:
+  - "role-registry.json is the declared routing SoT (ADR-0008 keystone) — parity failures resolve toward the registry."
+  - "The 6-spec list + frontmatter-guide is the complete model:inherit set (grep-verified 2026-06-10; builder re-verifies)."
+  - "Lane A (concurrent, ε-conducted) touches generate-framework-manifest.js / release.js / scaffold payload / warpos-install-baseline.js — disjoint from this lane's surfaces (β cross-lane condition verified)."
+open_questions:
+  - "Exact pin for openai-routed roles' frontmatter (cabinet, ops-analyst): registry model (gpt-5.5, honest but not Agent-tool-spawnable) vs the claude fallback model with a comment — design phase resolves; enforcer rule follows the design decision."
+  - "epsilon-liveness threshold N (default 10 min?) and its wiring point (scan:full report-only first vs immediate)."
+non_goals:
+  - "Flipping any report-only gate to blocking (E-LIFECYCLE §22 #4, operator-gated, codex-blocked)."
+  - "Lane C's epsilon-dispatch default flip (β-gated on this lane's WG-6 landing first — happens in Lane C, not here)."
+  - "Touching Lane A surfaces (generate-framework-manifest.js, release.js, warpos-install-baseline.js, scaffold payload)."
+  - "Re-architecting the harness teammate wake seam (the real WG-6c fix is upstream-harness, out of WarpOS control)."
+  - "Pushing to remote (α owns merge; push is per-action operator-cadence)."
+requirement_areas:
+  - "model pins + frontmatter-guide scoping (WG-2)"
+  - "role-parity model + shape-vs-route enforcement (WG-2/WG-5 enforcers)"
+  - "dispatch-contract cross-provider-lead derivation rule (WG-5)"
+  - "epsilon conduct-route documentation + startup self-check (WG-4)"
+  - "epsilon stall rules + liveness enforcer (WG-6)"
+  - "source-vs-view regen + both manifests"
+high_level_story_candidates:
+  - "As the dispatcher, every registry-routed role's spec model agrees with the registry, so sub-agents never silently run on the session model."
+  - "As an enforcer author, the dispatch-contract's derived shape never contradicts the registry route, so shape-based gates can be trusted."
+  - "As a teammate-spawned ε, my documented conduct route is one I can actually execute, and my startup records which route is live."
+  - "As the team lead, a stalled conductor surfaces as a loud event within N minutes instead of waiting for me to notice."
+granular_story_candidates:
+  - "TICKET-1: verify view-vs-source layer for agent specs; pin the 6 specs + beta.md from role-registry (right layer + regen); scope frontmatter-guide's inherit documentation; re-grep zero model:inherit on registry-routed roles."
+  - "TICKET-2: extend role-parity-scan.js — FAIL on spec-model≠registry-model (incl. inherit) for registry-routed roles; planted-violation fixture each way; keep existing checks green."
+  - "TICKET-3: insert dispatch-contract class_derivation rule (cross-provider lead → subprocess shape) before {tier:lead}; extend parity scan to FAIL on shape-vs-route contradiction; planted fixtures (design-lead resolves subprocess; claude leads still manager)."
+  - "TICKET-4: rewrite epsilon.md conduct-loop section + agent-dispatch-guide.md teammate-ε section (sanctioned subprocess routes, ED-041-consistent); add startup route self-check instruction; add WG-6 stall rules block."
+  - "TICKET-5: build scripts/checks/epsilon-liveness.js (fail-closed, deterministic fixture) + wire report-only into /scan:full; regen BOTH manifests; ff-merge close."
+workstream_candidates:
+  - "registry pins + parity enforcement (TICKET-1+2)"
+  - "contract derivation + shape parity (TICKET-3)"
+  - "epsilon docs + stall rules + liveness (TICKET-4+5)"
+preliminary_ticket_candidates:
+  - title: "Pin 6 model:inherit specs + beta.md from role-registry (right layer + regen) + frontmatter-guide scoping"
+    type: bug
+    risk: medium
+    order: 1
+  - title: "role-parity-scan: FAIL on spec-model≠registry-model incl. inherit (planted fixtures)"
+    type: feature
+    risk: medium
+    order: 2
+  - title: "dispatch-contract cross-provider-lead derivation rule + shape-vs-route parity FAIL (planted fixtures)"
+    type: feature
+    risk: medium
+    order: 3
+  - title: "epsilon.md + dispatch-guide: sanctioned subprocess conduct route + startup self-check + WG-6 stall rules"
+    type: docs
+    risk: low
+    order: 4
+  - title: "epsilon-liveness fail-closed check + /scan:full wiring + regen both manifests + ff-merge"
+    type: feature
+    risk: medium
+    order: 5
+external_service_dependencies: []
+approval_boundaries:
+  - "ff-merge to june-9/main is LOCAL; push is operator-cadence per-action."
+  - "gauntlet reviewers on gemini (openai quota_exhausted); claude fallback allowed; at least one gemini lane."
+  - no paid spend beyond gauntlet reviewer calls.
+design_required: false
+execution_allowed_without_design: true
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+lane: engine
+beta_review:
+  before_plan:
+    verdict: DECIDE
+    summary: "Batched front-loaded consult EVT-warpos-sprint-2026-06-10-batched-001 (2026-06-10): Lane B DECIDE, Class B, confidence 0.87, OPEN_ADR false, no per-phase halt — silence=proceed pre-cleared for all four boundaries. Conditions absorbed: liveness enforcer fail-closed (P-053 / EVT-dump-items-124-closure-001 gate#1 shape); beta.md pin approved as metadata-not-behavior with position-swap check applied (registry is declared SoT); cross-lane file disjointness with Lane A confirmed at kickoff (warpos-install-baseline.js vs role-parity-scan.js)."
+plan_quality:
+  confidence: high
+  notes: "Every item verified reproducing in canonical @75cd7e5 with file:line evidence (runtime/notes/warpos-md-sweep-2026-06-10.md); WG-4 fix shape operator-ratified in doogle 2026-06-09; WG-6 recurrence ×3 documented. β batched-precleared all boundaries."
+next_recommended_command: "/sprint:design"
+resume_instructions: "Sprint SP-20260610-002 has Plan Contract PC-20260610-0066. Run the next_recommended_command. If interrupted, read .claude/project/sprint/sprint-progress.yaml#resume_command."
+tracker_paths:
+  current_sprint: ".claude/project/sprint/current-sprint.yaml"
+  sprint_progress: ".claude/project/sprint/sprint-progress.yaml"
+  plan_contract: ".claude/project/sprint/plan-contracts/PC-20260610-0066.yaml"
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260610-0066.report.md"
+created_by: alpha
+updated_by: alpha
