@@ -294,6 +294,8 @@ the full convention.
 
 ## Reference
 
+Plans must obey `_planning/principle.md` (the canonical planning principles — ground in truth, name an enforcer, prove done, assess blast radius); enforced report-only by `/scan:planning-principles`. Durable plan artifacts persist under `_planning/sprints/` (see `_planning/README.md` for the tracker-linkage convention).
+
 Full sprint workflow doc: `paths.sprintReference`.
 Crash recovery procedure: `_docs/sprint/CRASH_RECOVERY.md`.
 Framework vs downstream boundary: `_docs/sprint/FRAMEWORK_VS_DOWNSTREAM.md`.
