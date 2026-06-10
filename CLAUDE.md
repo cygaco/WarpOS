@@ -71,7 +71,7 @@ The single source of truth for decision rights, escalation red lines, scoring ru
 
 **Oneshot** — δ runs standalone. Full skeleton builds with state machine, cycles, points. No Alpha/Beta.
 
-**Sprint** — ε conducts the full lifecycle (plan→design→build→gauntlet→release→retro) via the registry-driven runtime (`scripts/sprint/epsilon-runtime.js`, ADR-0009), driven by `/sprint:full`; enter with `/mode:sprint`. REAL agent dispatch on both route classes: CLI-routable builders + cross-provider reviewers (`dispatch-claude.js` / `dispatch-agent.js`), and the in-process roster (managers/leads/design-quality/visual-review) via the harness Agent tool + an evidence-bound `record-inprocess` completion record (the same `ok:true` liveness `gauntlet-verify` reads). β is consulted at the four phase boundaries.
+**Sprint** — ε conducts the full lifecycle (plan→design→build→gauntlet→release→retro) via the registry-driven runtime (`scripts/sprint/epsilon-runtime.js`, ADR-0009), driven by `/sprint:full`; enter with `/mode:sprint`. REAL agent dispatch on both route classes: CLI-routable builders + cross-provider reviewers (`dispatch-claude.js` / `dispatch-agent.js`), and the in-process roster (managers/leads/design-quality/visual-review) via the harness Agent tool + an evidence-bound `record-inprocess` completion record (the same `ok:true` liveness `gauntlet-verify` reads) — that Agent-tool path is the TOP-LEVEL orchestrator's (α, wearing the ε face); a teammate-spawned ε can't call the Agent tool (ED-041) so it uses the CLI routes only. β is consulted at the four phase boundaries.
 
 ## Paths — Single Source of Truth
 

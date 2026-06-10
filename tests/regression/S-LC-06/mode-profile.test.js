@@ -105,4 +105,30 @@ h.test("runtime narrowing can only REMOVE shapes — a fabricated wider narrow s
   assert.ok(!shapes.includes("subprocess-cross-provider"), "must never resolve a builder to cross-provider");
 });
 
+// ── ED-041: the alpha_only_shapes annotation on the sprint profile ──────────
+// The `in-process-agent` shape is α-ONLY in sprint mode — only the top-level
+// orchestrator (α, wearing the ε face) can spawn it via the Agent tool; a
+// teammate-spawned ε cannot ("Agent is not available inside subagents").
+h.test("mode_profiles.sprint.alpha_only_shapes === ['in-process-agent'] (ED-041)", () => {
+  const assert = require("assert");
+  const c = baseContract();
+  assert.deepStrictEqual(c.mode_profiles.sprint.alpha_only_shapes, ["in-process-agent"]);
+});
+
+// ── known-answer: a well-formed alpha_only_shapes (all known shapes) validates ──
+h.pass("a well-formed alpha_only_shapes (known shapes) validates", () => {
+  const c = baseContract();
+  c.mode_profiles.adhoc.alpha_only_shapes = ["in-process-agent"]; // an annotation; does not narrow
+  return validateSealed(c, "aos-ok");
+});
+
+// ── PLANTED VIOLATION: an alpha_only_shapes containing an UNKNOWN shape ──
+// A typo'd / fabricated shape in the annotation must be REJECTED by the validator
+// (the field is recognized and validated against the shape vocabulary, ED-041).
+h.violation("an alpha_only_shapes containing an unknown shape is REJECTED (ED-041)", () => {
+  const c = baseContract();
+  c.mode_profiles.sprint.alpha_only_shapes = ["in-process-agent", "ghost-shape"];
+  return validateSealed(c, "aos-ghost"); // ok:true ONLY if the unknown shape WRONGLY passed
+});
+
 h.done();

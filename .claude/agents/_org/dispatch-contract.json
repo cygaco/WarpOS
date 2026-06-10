@@ -177,7 +177,7 @@
 
   "role_overrides": {
     "_doc": "Per-role exceptions merged LAST (defaults <- class <- override). Empty by design — exceptions are a smell; prefer fixing the class derivation. Documented carve-outs only.",
-    "epsilon": { "allowed_shapes": ["inline"], "_note": "sprint conductor: runs inline as the session AND dispatches the roster via the Agent tool + the ε runtime; its own shape is inline." }
+    "epsilon": { "allowed_shapes": ["inline"], "_note": "ε is the sprint conductor: runs inline as the session; its own shape is inline. The in-process roster (`in-process-agent`: managers/leads/design-quality/visual-review) is spawned via the harness Agent tool BY THE TOP-LEVEL ORCHESTRATOR (α) — a teammate-spawned ε CANNOT call the Agent tool (Agent unavailable inside subagents, ED-041). A teammate-ε dispatches the CLI-routable roster only (subprocess-claude builders via dispatch-claude.js, subprocess-cross-provider reviewers via dispatch-agent.js) + drives the ε runtime." }
   },
 
   "mode_profiles": {
@@ -198,7 +198,9 @@
         "cross_provider_reviewer": ["subprocess-cross-provider"],
         "claude_pinned_reviewer": ["in-process-agent"],
         "manager": ["in-process-agent"]
-      }
+      },
+      "alpha_only_shapes": ["in-process-agent"],
+      "_alpha_only_note": "ED-041: in sprint mode the `in-process-agent` shape (managers/leads/design-quality/visual-review) is α-ONLY — only the TOP-LEVEL orchestrator (α, wearing the ε conductor face) can spawn it via the harness Agent tool. A teammate-spawned ε CANNOT call the Agent tool ('Agent is not available inside subagents'), so a teammate-ε dispatches ONLY the CLI-routable roster: subprocess-claude builders (dispatch-claude.js) + subprocess-cross-provider reviewers (dispatch-agent.js). This annotation does NOT narrow class_shapes; it records WHO may use the listed shape."
     },
     "oneshot": {
       "_doc": "δ standalone skeleton build. Build-chain via subprocess-claude (isolated worktree); no cross-provider reviewers required for a skeleton run.",

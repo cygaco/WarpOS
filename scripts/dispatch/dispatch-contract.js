@@ -353,6 +353,24 @@ function validateContractFile() {
         }
       }
     }
+    // ── alpha_only_shapes (ED-041): a RECOGNIZED annotation naming which of a
+    // mode's listed shapes are α-ONLY — only the TOP-LEVEL orchestrator (α, the ε
+    // conductor face) may spawn them (a teammate-spawned ε cannot call the Agent
+    // tool: "Agent is not available inside subagents"). It does NOT narrow class_shapes;
+    // it records WHO may use the shape. It must be an ARRAY whose entries are all
+    // KNOWN shapes (the same shape vocabulary as allowed_shapes); an unknown shape
+    // is a typo'd annotation and is REJECTED. Recognizing the key here keeps it from
+    // being silently ignored and lets the validator FAIL a malformed annotation.
+    if ("alpha_only_shapes" in profile) {
+      const aos = profile.alpha_only_shapes;
+      if (!Array.isArray(aos)) {
+        violations.push(`mode_profile '${mode}'.alpha_only_shapes must be an array of shapes`);
+      } else {
+        for (const s of aos) {
+          if (!shapeNames.has(s)) violations.push(`mode_profile '${mode}'.alpha_only_shapes lists the unknown shape '${s}' (must be a known dispatch shape)`);
+        }
+      }
+    }
   }
 
   return { ok: violations.length === 0, violations };

@@ -53,18 +53,31 @@ these is a single registry row in `sprint-hook-points.json`; the persistent team
   outcome (a reap = 0-byte-on-exit-0 → `ok:false`); `recordAgentDispatch` refuses to write
   without a real boolean outcome (the fake-green guard). Proven: real `gpt-5.5` + `gemini-3.1-pro-preview`
   dispatches through ε wrote real completion records (315s / 107s wall-clock, real output bytes).
-- **In-process roster — REAL via ε-the-agent + the Agent tool (Increment B):** managers/leads/directors
+- **In-process roster — REAL via the top-level orchestrator + the Agent tool (Increment B):** managers/leads/directors
   (`claude-agent`) and the Claude-pinned `design-quality`/`visual-review` (`agent-tool`) CANNOT be
-  spawned by a node process — only the harness Agent tool can. So ε-the-agent dispatches them via
+  spawned by a node process — only the harness Agent tool can, and that tool is callable ONLY by the
+  **top-level orchestrator (α, wearing the ε conductor face)**, never by a teammate-spawned ε (ED-041:
+  "Agent is not available inside subagents"). So the top-level orchestrator dispatches them via
   `Agent(subagent_type: <role>)`, captures the returned envelope to a file, and records with
   `record-inprocess --evidence <file>` — whose `ok` is **derived from the real Agent-return bytes**
   (0-byte = reap → `ok:false`; no evidence = REFUSE, no record). Proven: a real `product-lead`
   Agent-tool spawn → evidence-bound record (`via:epsilon-agent`, 514 real bytes + `evidence_sha`).
 
-### The in-process conduct loop (ε-the-agent)
+### The in-process conduct loop (α, the top-level orchestrator wearing the ε face)
+
+> **Who may call the Agent tool (ED-041):** the in-process-roster dispatch below uses the harness
+> Agent tool, which is available ONLY to the **top-level orchestrator (α, wearing the ε conductor
+> face)**. A **teammate-spawned ε** CANNOT call the Agent tool — *"Agent is not available inside
+> subagents."* So when ε is itself a teammate, it dispatches the **CLI-routable roster only**
+> (subprocess-claude builders via `dispatch-claude.js`, subprocess-cross-provider reviewers via
+> `dispatch-agent.js`) and leaves the `in-process-agent` shape (managers/leads/design-quality/
+> visual-review) to the top-level orchestrator. The `in-process-agent` shape is **α-only** (see
+> `dispatch-contract.json` → `mode_profiles.sprint.alpha_only_shapes`). The loop below is therefore
+> run by the top-level orchestrator.
 
 For each plan entry whose route is `claude-agent` / `agent-tool` (the ε runtime returns these as
-`spawned:false, reason:requires-orchestrator` — it cannot spawn them from a node process):
+`spawned:false, reason:requires-orchestrator` — it cannot spawn them from a node process, and only
+the top-level orchestrator can spawn them via the Agent tool):
 
 1. Dispatch via the harness Agent tool: `Agent(subagent_type: <role>, prompt: <step prompt>)`.
 2. Capture the agent's returned envelope to a file (e.g. `.claude/runtime/epsilon-prompts/<sprint>-<step>-<role>.return.txt`).
