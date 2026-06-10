@@ -46,6 +46,8 @@ const {
   isValidEpicId,
   verifyEpicMarkdown,
 } = require("./lib");
+// Single source for the 20 enforcement-criteria categories (S-LC-11, PLAN §11).
+const { categoryChecklistMarkdown } = require("../sprint/ac-categories");
 
 const ROOT = process.env.CLAUDE_PROJECT_DIR || path.resolve(__dirname, "..", "..");
 
@@ -236,7 +238,9 @@ ${asText(p.scope)}
 ${asText(p.outOfScope, "None recorded.")}
 
 ## 4. Acceptance criteria
-${asList(p.acceptanceCriteria, "- None recorded yet — AC enforcement is added by /scan:ac-coverage (S-LC-11).")}
+${asList(p.acceptanceCriteria, "- None recorded yet — fill from the 20-category checklist below.")}
+
+${categoryChecklistMarkdown()}
 
 ## 5. Sprint candidates
 ${sprintList(p.sprintCandidates)}

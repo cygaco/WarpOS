@@ -58,8 +58,12 @@ plumbing). Produce, at minimum:
   `scope`, `outOfScope`.
 - `definitionOfDone[]` — concrete, checkable, each later provable (≥1 required;
   an empty DoD is a blank required section and the script refuses it).
-- `acceptanceCriteria[]` — the 20 AC categories where applicable (S-LC-11 adds
-  the enforcer; carry them now).
+- `acceptanceCriteria[]` — free-form AC. The plan artifact ALSO auto-scaffolds the
+  **20 enforcement-criteria categories** (S-LC-11, PLAN §11) as a checklist in
+  `## 4. Acceptance criteria`, single-sourced from `scripts/sprint/ac-categories.js`
+  (each category a `proof: TODO` stub for the author to fill; `/scan:ac-coverage
+  --categories` flags unproven ones report-only). The scaffold is deterministic, so
+  a `--force` re-run reproduces it byte-identically (no duplication).
 - `sprintCandidates[]` — `{ id, goal, state }`; sequenced into waves.
 - `dependencyMap[]`, `riskMap[]`, `decisions[]`, `openQuestions[]`.
 - `requiredAgents`, `requiredModes`, `teamBehavior`, `lifecycleHooks`.

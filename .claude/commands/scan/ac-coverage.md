@@ -2,7 +2,7 @@
 description: Read-only audit of acceptance-criteria.md verified_by:- linkage across active sprints.
 user-invocable: true
 namespace: check
-reads: [".claude/project/sprint/sprints/*/current.yaml", ".claude/project/sprint/plan-contracts/*.yaml", ".claude/project/sprint/requirements/*/acceptance-criteria.md"]
+reads: [".claude/project/sprint/sprints/*/current.yaml", ".claude/project/sprint/plan-contracts/*.yaml", ".claude/project/sprint/requirements/*/acceptance-criteria.md", "_planning/epics/*.md", "scripts/sprint/ac-categories.js"]
 writes: []
 ---
 
@@ -24,8 +24,36 @@ Diagnostic only. **Never modifies tracker state.**
 $ARGUMENTS  →  forwarded to: node scripts/sprint/check-ac-coverage.js
   --sprint <SP-id>     audit a specific sprint instead of all active sprints
   --json               machine-readable output (array of per-sprint reports)
+  --categories         AXIS 2 — the 20 enforcement-criteria categories (S-LC-11)
+  --file <path>        (axis 2) audit one plan/epic/sprint AC artifact by path
+  --enforce            (axis 2) exit non-zero on an uncovered category (opt-in)
   --help               print usage
 ```
+
+## Two coverage axes
+
+1. **Per-AC linkage (default).** Each Given/When/Then `AC-N.N` has a real
+   `verified_by:` line. This is the original SP-20260518-007 convention.
+2. **The 20 enforcement-criteria categories (`--categories`, S-LC-11 / PLAN §11).**
+   A *different* axis: does the plan/epic/sprint AC artifact carry AC for **all
+   20** categories — *correct mode selection · mode switching · team teardown ·
+   team creation · team verification · lifecycle-hook firing · hook ordering ·
+   agent dispatch · sprint/epic binding · tracker linkage · planning-artifact
+   persistence · provider readiness · safety gates · test strategy ·
+   fixture/holdout coverage · review requirements · completion proof ·
+   user-approval points · learning/persistence capture · blast-radius analysis* —
+   each with a proof? The single source for this list is
+   `scripts/sprint/ac-categories.js` (the checker, the `/epic:plan` scaffold, and
+   the S-LC-11 tests all read the SAME array — no drift). A category is
+   **covered** when the artifact NAMES it and a proof / `verified_by:` sits in its
+   window; **named-but-unproven** when it carries only a bare `proof: TODO` stub;
+   **missing** when not named at all.
+
+   **Report-only ramp.** A plan missing categories is FLAGGED (listed in
+   findings) and **exits 0** — it is NOT blocked, matching the rest of
+   E-LIFECYCLE-001's report-only→blocking discipline until operator sign-off
+   flips it. `--enforce` opts into a non-zero exit on any gap (off by default).
+   **Fail-open:** an unreadable/absent artifact reports nothing and exits 0.
 
 ## Output
 
@@ -72,5 +100,8 @@ release record. The release ship-gate's cited-test executor (R-6) is the
 - Placeholder `verified_by:` lines containing `{{` or `<test-file>`
   count as `missing` so the audit doesn't false-positive on scaffolded
   templates.
-- v1 does NOT auto-register `/scan:ac-coverage` in `/scan:full`. Add
-  it manually if you want it in the default health pass.
+- `/scan:ac-coverage` **is** delegated by `/scan:full` (Tier 2 — Governance
+  & quality). The default health pass runs **axis 1** (per-AC linkage); the
+  **axis 2** category coverage (`--categories`) is **report-only** and run
+  on-demand (or via `--enforce` once the operator flips the ramp to blocking) —
+  it is intentionally NOT double-wired as a separate `/scan:full` entry.
