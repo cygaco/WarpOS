@@ -18,6 +18,8 @@ const {
   evaluateHooks,
   parseGammaOnlyTypes,
   collectOrgRoles,
+  evaluateModelPins,
+  evaluateShapeRouteConflicts,
 } = require("./role-parity-scan");
 
 let passed = 0;
@@ -306,10 +308,128 @@ test("hooks: 'compliance'/'qa' gate-DIMENSION literal → NOT flagged (carve-out
   assert.deepStrictEqual(errs, [], `gate dimensions must not be flagged, got: ${errs.join("; ")}`);
 });
 
+// ── T-288: model-pin check bite-tests ───────────────────────────────────────
+// evaluateModelPins must REJECT inherit (always) and a wrong claude model, and
+// ACCEPT correct model pins (claude matches, cross-provider with any concrete).
+const mpReg = { roles: {
+  "director-of-engineering": { provider: "claude", model: "claude-opus-4-8", spec: ".claude/agents/engineering/director-of-engineering.md" },
+  "cabinet": { provider: "openai", model: "gpt-5.5", spec: ".claude/agents/president/cabinet.md" },
+} };
+
+test("model-pin: claude role spec matches registry model → clean", () => {
+  const specFm = {
+    ".claude/agents/engineering/director-of-engineering.md": "claude-opus-4-8",
+    ".claude/agents/president/cabinet.md": "claude-opus-4-8", // fallback pin (cross-provider: OK)
+  };
+  const errs = evaluateModelPins({ reg: mpReg, specFm });
+  assert.deepStrictEqual(errs, [], `expected clean, got: ${errs.join("; ")}`);
+});
+
+test("model-pin: spec has model:inherit → rejected (any provider)", () => {
+  const specFm = {
+    ".claude/agents/engineering/director-of-engineering.md": "inherit",
+  };
+  const errs = evaluateModelPins({ reg: mpReg, specFm });
+  assert.ok(
+    errs.some((e) => /model-pin.*director-of-engineering.*inherit.*FORBIDDEN/.test(e)),
+    `expected inherit-forbidden error, got: ${errs.join("; ")}`
+  );
+});
+
+test("model-pin: claude role spec pins wrong model → rejected", () => {
+  const specFm = {
+    ".claude/agents/engineering/director-of-engineering.md": "claude-sonnet-4-6", // wrong
+  };
+  const errs = evaluateModelPins({ reg: mpReg, specFm });
+  assert.ok(
+    errs.some((e) => /model-pin.*director-of-engineering.*claude-sonnet-4-6.*claude-opus-4-8/.test(e)),
+    `expected wrong-model error, got: ${errs.join("; ")}`
+  );
+});
+
+// ── T-289: shape-vs-route parity bite-tests ──────────────────────────────────
+// evaluateShapeRouteConflicts must REJECT a cross-provider lead (design-lead
+// analog) when the class_derivation has no specific rule and it falls through to
+// the tier:lead catch-all (→ manager, in-process-only), and ACCEPT when the
+// specific cross_provider_consult_lead rule is present.
+const cpLeadReg = { roles: {
+  "design-lead": { tier: "lead", kind: "lead", provider: "openai", model: "gpt-5.5" },
+  "product-lead": { tier: "lead", kind: "lead", provider: "claude", model: "claude-opus-4-8" },
+  "quality-lead": { tier: "lead", kind: "lead", provider: "claude", model: "claude-opus-4-8" },
+} };
+
+// Contract WITHOUT the cross-provider-lead rule (revert-style planted violation)
+const contractWithoutCPL = {
+  class_derivation: {
+    rules: [
+      { when: { tier: "face" }, class: "face" },
+      { when: { build_chain: true }, class: "build_chain_worker" },
+      { when: { kind: "reviewer", provider: "openai" }, class: "cross_provider_reviewer" },
+      { when: { tier: "director" }, class: "manager" },
+      { when: { tier: "lead" }, class: "manager" }, // missing cross-provider-lead rule!
+      { when: { kind: "tool", provider: "openai" }, class: "tool_cross_provider" },
+    ],
+    fallback_class: "manager"
+  },
+  role_classes: {
+    face: { allowed_shapes: ["inline"] },
+    build_chain_worker: { allowed_shapes: ["subprocess-claude"] },
+    cross_provider_reviewer: { allowed_shapes: ["subprocess-cross-provider"] },
+    manager: { allowed_shapes: ["in-process-agent"] },
+    tool_cross_provider: { allowed_shapes: ["subprocess-cross-provider"] },
+  }
+};
+
+// Contract WITH the cross-provider-lead rule (the fix applied)
+const contractWithCPL = {
+  class_derivation: {
+    rules: [
+      { when: { tier: "face" }, class: "face" },
+      { when: { build_chain: true }, class: "build_chain_worker" },
+      { when: { kind: "reviewer", provider: "openai" }, class: "cross_provider_reviewer" },
+      { when: { tier: "director" }, class: "manager" },
+      { when: { tier: "lead", provider: "openai" }, class: "cross_provider_consult_lead" },
+      { when: { tier: "lead" }, class: "manager" },
+      { when: { kind: "tool", provider: "openai" }, class: "tool_cross_provider" },
+    ],
+    fallback_class: "manager"
+  },
+  role_classes: {
+    face: { allowed_shapes: ["inline"] },
+    build_chain_worker: { allowed_shapes: ["subprocess-claude"] },
+    cross_provider_reviewer: { allowed_shapes: ["subprocess-cross-provider"] },
+    cross_provider_consult_lead: { allowed_shapes: ["subprocess-cross-provider"] },
+    manager: { allowed_shapes: ["in-process-agent"] },
+    tool_cross_provider: { allowed_shapes: ["subprocess-cross-provider"] },
+  }
+};
+
+test("shape-route-conflict: cross-provider lead without specific rule → rejected", () => {
+  const errs = evaluateShapeRouteConflicts({ reg: cpLeadReg, contract: contractWithoutCPL });
+  assert.ok(
+    errs.some((e) => /shape-route-conflict.*design-lead/.test(e)),
+    `expected shape-route-conflict for design-lead, got: ${errs.join("; ")}`
+  );
+});
+
+test("shape-route-conflict: cross-provider lead WITH specific rule → clean", () => {
+  const errs = evaluateShapeRouteConflicts({ reg: cpLeadReg, contract: contractWithCPL });
+  assert.deepStrictEqual(errs, [], `expected clean with cross_provider_consult_lead rule, got: ${errs.join("; ")}`);
+});
+
+test("shape-route-conflict: claude leads (product-lead/quality-lead) not flagged", () => {
+  // Claude-provider leads are not subject to the cross-provider shape check
+  const errs = evaluateShapeRouteConflicts({ reg: cpLeadReg, contract: contractWithoutCPL });
+  assert.ok(
+    !errs.some((e) => /product-lead/.test(e) || /quality-lead/.test(e)),
+    `claude leads must not be flagged for shape-route, got: ${errs.join("; ")}`
+  );
+});
+
 if (failures.length) {
   process.stderr.write(`role-parity bite-test: ${passed} passed, ${failures.length} FAILED\n`);
   for (const f of failures) process.stderr.write(`  - ${f}\n`);
   process.exit(1);
 }
-process.stdout.write(`role-parity bite-test: ${passed}/${passed} passed (positive + 5 bite classes + 2 sanity)\n`);
+process.stdout.write(`role-parity bite-test: ${passed}/${passed} passed (positive + 5 bite classes + 2 sanity + model-pin + shape-route)\n`);
 process.exit(0);

@@ -3,7 +3,7 @@ name: ops-analyst
 description: Analyzes patterns across reviewer/security/compliance results, bug dataset, and conflict dataset. Adjusts environment for next cycle. Does NOT write feature code. (Formerly `learner`; legacy id resolves via role-aliases.)
 tools: Read, Grep, Glob, Bash, Edit, Write
 disallowedTools: Agent
-model: inherit
+model: claude-opus-4-8
 provider: openai
 provider_model: gpt-5.5
 provider_fallback: claude

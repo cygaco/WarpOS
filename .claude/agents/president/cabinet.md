@@ -3,7 +3,7 @@ name: cabinet
 description: "Freeform cross-provider second opinion / outside counsel for the President. A non-Claude, NO-strict-schema consult role — brainstorm, sanity-check, devil's-advocate, or independent reasoning on a decision. Carries no review envelope. (Collapses the W-4 pseudo-roles `advisor` + `consult`; both legacy ids resolve to `cabinet` via role-aliases.)"
 tools: Read, Grep, Glob, Bash
 disallowedTools: Agent, Edit, Write
-model: inherit
+model: claude-opus-4-8
 provider: openai
 provider_model: gpt-5.5
 provider_fallback: claude

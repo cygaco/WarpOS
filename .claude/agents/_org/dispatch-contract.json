@@ -75,6 +75,7 @@
       { "when": { "kind": "reviewer", "provider": "gemini" }, "class": "cross_provider_reviewer" },
       { "when": { "kind": "reviewer", "provider": "claude" }, "class": "claude_pinned_reviewer" },
       { "when": { "tier": "director" }, "class": "manager" },
+      { "when": { "tier": "lead", "provider": "openai" }, "class": "cross_provider_consult_lead" },
       { "when": { "tier": "lead" }, "class": "manager" },
       { "when": { "kind": "tool", "provider": "claude" }, "class": "tool_claude" },
       { "when": { "kind": "tool", "provider": "openai" }, "class": "tool_cross_provider" },
@@ -134,6 +135,20 @@
       "secret_policy": "none",
       "output_policy": "envelope",
       "coverage": { "binding_verdict": true, "completion_record_required": true, "cross_provider_required": false, "claude_pinned": true, "record_via": "record-inprocess" }
+    },
+    "cross_provider_consult_lead": {
+      "_doc": "cross-provider lead (design-lead/openai) — routes via subprocess-cross-provider like a reviewer; advises and authors but does not emit a binding verdict. Provider diversity preserved for the lead's authoring work. Mirrors cross_provider_reviewer shape with binding_verdict:false.",
+      "allowed_shapes": ["subprocess-cross-provider"],
+      "forbidden_shapes": ["in-process-agent", "api"],
+      "tool_id": ["codex", "gemini"],
+      "cwd_policy": "canonical",
+      "file_scope": "read-only",
+      "env_allowlist": ["PATH", "HOME", "USERPROFILE", "GEMINI_API_KEY", "GEMINI_CLI_TRUST_WORKSPACE", "GIT_CONFIG_COUNT", "GIT_CONFIG_KEY_0", "GIT_CONFIG_VALUE_0", "ComSpec", "PATHEXT", "SystemRoot"],
+      "secret_policy": "inject-from-auth-resolver",
+      "timeout_ms": 900000,
+      "budget": { "tokens": 200000, "usd": 5.0 },
+      "output_policy": "envelope+drain+redact",
+      "coverage": { "binding_verdict": false, "completion_record_required": true, "cross_provider_required": true }
     },
     "manager": {
       "_doc": "directors + leads (incl. quality-lead) — small Claude returns that need orchestrator context; dispatched via the Agent tool, recorded via record-inprocess.",

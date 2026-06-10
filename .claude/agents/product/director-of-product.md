@@ -8,7 +8,7 @@ description: >-
   Lean Product Development. Generalizes 0.14.0's roadmap-scoped Director-of-PM into
   a general callable agent.
 tools: [Read, Grep, Glob]
-model: inherit
+model: claude-opus-4-8
 layer: product
 ---
 

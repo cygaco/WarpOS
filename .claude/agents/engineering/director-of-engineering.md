@@ -9,7 +9,7 @@ description: >-
   Construction. Apex of the engineering domain; sibling of director-of-product and
   director-of-qa.
 tools: [Read, Grep, Glob]
-model: inherit
+model: claude-opus-4-8
 layer: engineering
 ---
 
