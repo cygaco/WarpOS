@@ -958,7 +958,7 @@ test("F3-fix: --sprint alone (no window) + MATCHING stamped record -> counted ->
 test("F3-fix: garbage --since value (no --sprint) -> exit 2, not whole-ledger scan", () => {
   const r = cp.spawnSync(
     process.execPath,
-    [SCRIPT, "--roles", "reviewer", "--since", "not-a-date"],
+    [path.join(__dirname, "gauntlet-verify.js"), "--roles", "reviewer", "--since", "not-a-date"],
     { encoding: "utf8" },
   );
   assert.strictEqual(r.status, 2, `Expected exit 2 on garbage --since, got ${r.status}. stderr: ${r.stderr}`);
@@ -971,7 +971,7 @@ test("F3-fix: garbage --since value (no --sprint) -> exit 2, not whole-ledger sc
 test("F3-fix: garbage --until value (no --sprint) -> exit 2, not whole-ledger scan", () => {
   const r = cp.spawnSync(
     process.execPath,
-    [SCRIPT, "--roles", "reviewer", "--until", "garbage-2026"],
+    [path.join(__dirname, "gauntlet-verify.js"), "--roles", "reviewer", "--until", "garbage-2026"],
     { encoding: "utf8" },
   );
   assert.strictEqual(r.status, 2, `Expected exit 2 on garbage --until, got ${r.status}. stderr: ${r.stderr}`);
