@@ -1,8 +1,8 @@
 # Hooks Map
 
-Generated: 2026-06-10T00:19:58.299Z
+Generated: 2026-06-10T00:53:42.728Z
 
-**74** hook scripts (64 registered, 10 orphan), **17** lib modules, **75** wiring entries.
+**74** hook scripts (64 registered, 10 orphan), **18** lib modules, **75** wiring entries.
 
 ## Wiring (event → matcher → hook)
 
@@ -196,11 +196,12 @@ Generated: 2026-06-10T00:19:58.299Z
 | context-sources.js | 8286 | 2026-05-30T01:25:39.589Z |
 | gate-schema.js | 3894 | 2026-05-30T01:25:39.589Z |
 | injection-patterns.js | 2949 | 2026-05-31T00:23:04.879Z |
+| lifecycle-events.js | 8418 | 2026-06-10T00:49:53.712Z |
 | logger.js | 16632 | 2026-06-08T20:28:50.013Z |
 | mode-lifecycle.js | 6175 | 2026-06-10T00:04:52.690Z |
 | mode.js | 2944 | 2026-06-10T00:04:52.691Z |
 | oneshot-store.js | 2337 | 2026-06-08T21:07:45.656Z |
-| paths.generated.js | 10807 | 2026-06-10T00:04:52.691Z |
+| paths.generated.js | 10909 | 2026-06-10T00:49:53.712Z |
 | paths.js | 6608 | 2026-06-05T01:45:08.446Z |
 | project-config.js | 4488 | 2026-05-30T01:25:39.591Z |
 | provider-health.js | 10306 | 2026-05-30T01:25:39.592Z |

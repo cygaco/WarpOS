@@ -1,8 +1,8 @@
 # Enforcements Map
 
-Generated: 2026-06-10T00:19:58.299Z
+Generated: 2026-06-10T00:53:42.728Z
 
-**72** hooks, **17** lib modules. **0** uncurated (added since last hand-curation on 2026-06-09T04:27:35.568Z).
+**72** hooks, **18** lib modules. **0** uncurated (added since last hand-curation on 2026-06-10T00:19:58.299Z).
 
 ## Coverage
 
@@ -97,6 +97,7 @@ Generated: 2026-06-10T00:19:58.299Z
 | context-sources | scripts/hooks/lib/context-sources.js |  |
 | gate-schema | scripts/hooks/lib/gate-schema.js |  |
 | injection-patterns | scripts/hooks/lib/injection-patterns.js |  |
+| lifecycle-events | scripts/hooks/lib/lifecycle-events.js | yes |
 | logger | scripts/hooks/lib/logger.js |  |
 | mode-lifecycle | scripts/hooks/lib/mode-lifecycle.js | yes |
 | mode | scripts/hooks/lib/mode.js |  |

@@ -172,5 +172,15 @@ ok("unreadable-registry-exits-2", () => {
   assert.strictEqual(r.status, 2, "an unreadable registry fails closed (exit 2)");
 });
 
+ok("default-registry-resolves-clean (no --registry, exercises DEFAULT_REGISTRY)", () => {
+  // Regression (post-merge bug, 2026-06-09): PATHS.modeLifecycleHooks is an
+  // ABSOLUTE path; the buggy `path.join(ROOT, it)` doubled the root → ENOENT →
+  // exit 2 in canonical, masked because every other test passes --registry. Run
+  // with NO flag so DEFAULT_REGISTRY must resolve the real registry + run clean.
+  const r = run([]);
+  assert.strictEqual(r.status, 0, `default registry must resolve + run clean (exit 0); got ${r.status}: ${r.stderr}`);
+  assert.ok(/0 gaps/.test(r.stdout), `clean real tree reports 0 gaps; got: ${r.stdout}`);
+});
+
 console.log(`\nmode-lifecycle-hooks-coverage: ${pass}/${pass + fail} pass`);
 process.exit(fail ? 1 : 0);

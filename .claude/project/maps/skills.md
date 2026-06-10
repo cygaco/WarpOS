@@ -1,6 +1,6 @@
 # Skills Map
 
-Generated: 2026-06-10T00:19:58.299Z
+Generated: 2026-06-10T00:53:42.728Z
 
 Total: **204** skills across **43** namespaces. 77 user-invocable.
 

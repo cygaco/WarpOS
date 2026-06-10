@@ -39,9 +39,11 @@ const { PATHS } = require("../hooks/lib/paths");
 const ROOT = path.resolve(__dirname, "..", "..");
 
 const DEFAULT_REGISTRY =
-  PATHS.modeLifecycleHooks
-    ? path.join(ROOT, PATHS.modeLifecycleHooks)
-    : path.join(ROOT, ".claude", "agents", "_org", "mode-lifecycle-hooks.json");
+  // PATHS.modeLifecycleHooks is already an ABSOLUTE resolved path (lib/paths) —
+  // use it directly; path.join(ROOT, <absolute>) doubled the root (ENOENT in
+  // canonical, masked in the build worktree where the tests passed --registry).
+  PATHS.modeLifecycleHooks ||
+  path.join(ROOT, ".claude", "agents", "_org", "mode-lifecycle-hooks.json");
 const DEFAULT_ALLOWLIST = path.join(__dirname, "mode-lifecycle-hooks-coverage.allowlist.json");
 
 const VALID_MODES = ["block", "advisory"];

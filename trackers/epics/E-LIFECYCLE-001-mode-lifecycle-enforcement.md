@@ -12,7 +12,7 @@
 - **Scope:** (1) Mode-Lifecycle Registry (`.claude/agents/_org/mode-lifecycle.json`) — per-mode roster/bindings/tier/dispatch-profile/teardown, de-duplicating the 3 hardcoded sites; (2) Lifecycle-event registry + logger + coverage enforcer (2 real PreToolUse guards + ~23 virtual events to `paths.eventsFile`); (3) generalized fail-closed `mode:init:gate` + mode-switch preflight guard; (4) project-scoped persistent-team lifecycle manager (spawn/verify/kill/teardown/orphan/resume) + a SessionEnd hook backstop; (5) dispatch parallelism axis (under/over-dispatch detection) + coverage-gate live wiring; (6) turbo hardening (spend ceiling + safe commit/push/merge profile); (7) provider-tier (T1/T2/T3) readiness + preferred-tier config layered on the existing health stack; (8) `_planning` lifecycle integration + an `epic:` suite (design 10, build `/epic:plan`+`/epic:fold`) + canonicalized planning principles + an acceptance-criteria enforcement system.
 - **Out of scope:** inventing new harness hook events (the set is closed at 8); rebuilding the dispatch matrix / provider health stack / tracker validator (all are EXTENDED, not replaced); the org/GTM "product-studio" expansion (the separate `_planning/plans/*` epic — the cast, not the stage); building all 10 `epic:` commands now; any live provider auth/funding/trust mutation during planning; replacing `/session:end`'s rich teardown (a mechanical backstop is added, not a replacement).
 - **Current state:** Active
-- **Percent completion:** ~10% — plan authored + Phase-0 grounded 2026-06-08; Wave-0 keystone S-LC-01 (Mode-Lifecycle Registry) LANDED 2026-06-09 @76da472 (1 of 12 planned sprints), gauntlet-clean. Conservative — the remaining 11 sprints (lifecycle-event registry, the Wave-1 mechanical gates, team manager, dispatch/turbo, planning+epic-suite, provider readiness, AC enforcement) carry the bulk of the DoD.
+- **Percent completion:** ~17% — plan authored + Phase-0 grounded 2026-06-08; **Wave 0 COMPLETE** — both foundation sprints landed: S-LC-01 (Mode-Lifecycle Registry) @76da472 + S-LC-02 (Lifecycle-Event Registry + logger + coverage enforcer) @d23e212, 2 of 12 planned sprints, both gauntlet-clean. Conservative — the remaining 10 sprints (the Wave-1 mechanical gates, team manager, dispatch/turbo, planning+epic-suite, provider readiness, AC enforcement) carry the bulk of the DoD.
 
 ## Definition of Done
 - [ ] Mode-Lifecycle Registry is the SOLE source of truth (all readers resolve from it; the `mode-lifecycle-registry` validator is green; the DEFAULT-ON drift reconciled) — proven by a planted wrong-roster fixture failing.
@@ -33,7 +33,8 @@
 
 ## Related sprints
 - **S-LC-01 — Mode-Lifecycle Registry keystone (Wave 0)** — Completed 2026-06-09 @76da472 (gauntlet-clean). Sprint dir: `.claude/project/sprint/sprints/S-LC-01/`.
-- The remaining 11 sprint candidates (S-LC-02 … S-LC-12 across 6 waves) are minted via `/sprint:plan` at execution time. See [../../_planning/warpos-lifecycle-plan.md](../../_planning/warpos-lifecycle-plan.md) § "Proposed Sprint Breakdown".
+- **S-LC-02 — Lifecycle-Event Registry + logger + coverage enforcer (Wave 0)** — Completed 2026-06-09 @d23e212 (gauntlet-clean, both lanes PASS on gemini). Sprint dir: `.claude/project/sprint/sprints/S-LC-02/`. **Wave 0 is COMPLETE with both S-LC-01 + S-LC-02 done.**
+- The remaining 10 sprint candidates (S-LC-03 … S-LC-12 across 5 waves) are minted via `/sprint:plan` at execution time. See [../../_planning/warpos-lifecycle-plan.md](../../_planning/warpos-lifecycle-plan.md) § "Proposed Sprint Breakdown".
 
 ## Dependencies
 - E-SYSTEM-ORG-001 (dispatch-shape north star, ~99%) — prerequisite; this epic builds on `dispatch-contract.json`, `dispatch-shape.js`, `safe-spawn.js`, `coverage-gate.js`. State: near-complete on `main`.
@@ -97,6 +98,13 @@
 - Previous state: Planned, 0%, execution approval-gated (no code work started).
 - New state: **Active, ~10%** — 1 of 12 planned sprints landed (the Wave-0 keystone); Wave-0 S-LC-02 + the Wave-1 gates are the open next steps.
 
+### 2026-06-09 — S-LC-02 (Lifecycle-Event Registry) LANDED — Wave 0 COMPLETE
+- Changed: the other Wave-0 sprint **S-LC-02 — Lifecycle-Event Registry + logger + coverage enforcer** executed and landed on branch `june-9` @ `d23e212`, gauntlet-clean (both lanes PASS on gemini). Deliverables (additive, report-only): new `.claude/agents/_org/mode-lifecycle-hooks.json` (23 virtual events, schema `warpos/mode-lifecycle-hooks/v0.1`, `harness_fires:false`) + `scripts/hooks/lib/lifecycle-events.js` (labels-only, fail-open logger) + `scripts/checks/mode-lifecycle-hooks-coverage.js` (report-only coverage enforcer — exit 0 clean/gap, exit 2 parse, P-053 loud-fail; wired report-only into `/scan:full`); `tests/regression/S-LC-02/*` (3 suites, 27 cases incl. a default-registry-resolution regression); the `modeLifecycleHooks` paths key registered. A post-merge path-doubling bug in the coverage enforcer was caught by α's canonical verify, fixed + regression-tested. With S-LC-01, this **COMPLETES Wave 0** (both foundation registries now exist — the Wave-1 mechanical gates that read them are unblocked).
+- Reason: operator-confirmed execution session for the second Wave-0 sprint (the lifecycle-event registry the epic plan reframed "25 hook events" into — 2 real PreToolUse guards land in Wave 1; the ~23 virtual events log to `paths.eventsFile` from here).
+- Affected: `.claude/agents/_org/mode-lifecycle-hooks.json` (new), `scripts/hooks/lib/lifecycle-events.js` (new), `scripts/checks/mode-lifecycle-hooks-coverage.js` (new), `tests/regression/S-LC-02/*` (new), the paths registry (`modeLifecycleHooks` key), `/scan:full` (report-only wiring); this file (Percent completion, Related sprints, Current next action), `.claude/project/sprint/sprints/S-LC-02/{current,progress}.yaml` (status→done), `ROADMAP.md` (S-LC-02 ledger row + Active-epics entry), `TRACKER.md` (Active reconciliation).
+- Previous state: Active, ~10% — 1 of 12 sprints landed (Wave-0 keystone S-LC-01); Wave 0 incomplete.
+- New state: **Active, ~17%** — 2 of 12 planned sprints landed; **Wave 0 COMPLETE** (S-LC-01 + S-LC-02 both done); the Wave-1 mechanical gates (S-LC-03/04/05) are now unblocked and the open next steps.
+
 ## Evidence log
 ### 2026-06-08 — Epic plan authored + Phase-0 grounded
 - Evidence type: File changed.
@@ -114,7 +122,7 @@
 | Harness hook events = closed set of 8 | Yes | Verified Exists | `.claude/settings.json` | grep -o two ways | 2026-06-08 | Phase-0 investigators |
 
 ## Current next action
-S-LC-01 (Mode-Lifecycle Registry keystone, Wave 0) is DONE — landed 2026-06-09 @76da472, gauntlet-clean. Next execution step: **S-LC-02 — Lifecycle-Event Registry + logger + coverage enforcer** (the other Wave-0 sprint; parallel-safe with S-LC-01 and now unblocked since the registry keystone it pairs with has landed) **OR** open the **Wave-1 mechanical gates** (S-LC-03 mode-switch preflight guard · S-LC-04 generalized fail-closed `mode:init:gate` · S-LC-05 persistent-team lifecycle manager), each minted via `/sprint:plan`. The full plan remains at `../../_planning/warpos-lifecycle-plan.md` § "Proposed Sprint Breakdown".
+**Wave 0 is COMPLETE** — both foundation sprints landed 2026-06-09: S-LC-01 (Mode-Lifecycle Registry keystone) @76da472 + S-LC-02 (Lifecycle-Event Registry + logger + coverage enforcer) @d23e212, both gauntlet-clean. Next execution step: open the **Wave-1 mechanical gates**, now unblocked because both Wave-0 registries exist — **S-LC-03 mode-switch preflight guard** · **S-LC-04 generalized fail-closed `mode:init:gate`** · **S-LC-05 persistent-team lifecycle manager**, each minted via `/sprint:plan`. The full plan remains at `../../_planning/warpos-lifecycle-plan.md` § "Proposed Sprint Breakdown".
 
 ## Completion record
 - Final state: Not yet complete.

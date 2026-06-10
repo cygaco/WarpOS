@@ -1,9 +1,9 @@
 {
   "metadata": {
-    "generated": "2026-06-10T00:19:58.299Z",
-    "lastUpdated": "2026-06-10T00:19:58.299Z",
+    "generated": "2026-06-10T00:53:42.728Z",
+    "lastUpdated": "2026-06-10T00:53:42.728Z",
     "total_hooks": 72,
-    "total_modules": 17,
+    "total_modules": 18,
     "uncurated": 0,
     "total_gaps": 83,
     "gaps_closed": 75,
@@ -2317,6 +2317,14 @@
       "file_modified": "2026-05-31T00:23:04.879Z"
     },
     {
+      "id": "lifecycle-events",
+      "type": "module",
+      "file": "scripts/hooks/lib/lifecycle-events.js",
+      "file_size": 8418,
+      "file_modified": "2026-06-10T00:49:53.712Z",
+      "uncurated": true
+    },
+    {
       "id": "logger",
       "type": "module",
       "kind": "lib",
@@ -2372,8 +2380,8 @@
       ],
       "generated_from": "framework/paths.registry.json",
       "file": "scripts/hooks/lib/paths.generated.js",
-      "file_size": 10807,
-      "file_modified": "2026-06-10T00:04:52.691Z"
+      "file_size": 10909,
+      "file_modified": "2026-06-10T00:49:53.712Z"
     },
     {
       "id": "paths",

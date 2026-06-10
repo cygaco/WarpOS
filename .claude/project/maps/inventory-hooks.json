@@ -1,9 +1,9 @@
 {
   "metadata": {
-    "generated": "2026-06-10T00:19:58.299Z",
-    "lastUpdated": "2026-06-10T00:19:58.299Z",
+    "generated": "2026-06-10T00:53:42.728Z",
+    "lastUpdated": "2026-06-10T00:53:42.728Z",
     "total_hooks": 74,
-    "total_lib_modules": 17,
+    "total_lib_modules": 18,
     "registered_hooks": 64,
     "orphan_hooks": 10,
     "regenerated_by": "scripts/regen-maps.js"
@@ -726,6 +726,16 @@
       "modified": "2026-05-31T00:23:04.879Z"
     },
     {
+      "id": "hook-lib:lifecycle-events",
+      "name": "lifecycle-events.js",
+      "path": "scripts/hooks/lib/lifecycle-events.js",
+      "registered": false,
+      "type": "lib",
+      "exists": true,
+      "size": 8418,
+      "modified": "2026-06-10T00:49:53.712Z"
+    },
+    {
       "id": "hook-lib:logger",
       "name": "logger.js",
       "path": "scripts/hooks/lib/logger.js",
@@ -772,8 +782,8 @@
       "registered": false,
       "type": "lib",
       "exists": true,
-      "size": 10807,
-      "modified": "2026-06-10T00:04:52.691Z"
+      "size": 10909,
+      "modified": "2026-06-10T00:49:53.712Z"
     },
     {
       "id": "hook-lib:paths",

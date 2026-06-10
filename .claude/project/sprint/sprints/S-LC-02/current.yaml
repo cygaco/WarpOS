@@ -1,0 +1,120 @@
+schema: warpos/sprint/current-sprint/v1
+id: S-LC-02
+title: "Lifecycle-Event Registry + Logger + Coverage enforcer"
+objective: "Add the Lifecycle-Event Registry (.claude/agents/_org/mode-lifecycle-hooks.json — 23 virtual events, schema warpos/mode-lifecycle-hooks/v0.1, harness_fires:false), a labels-only fail-open logger (scripts/hooks/lib/lifecycle-events.js), and a report-only coverage enforcer (scripts/checks/mode-lifecycle-hooks-coverage.js — exit 0 clean/gap, exit 2 parse, P-053 loud-fail) wired report-only into /scan:full; register the modeLifecycleHooks paths key. Wave 0 of E-LIFECYCLE-001 (the other half of the foundation, paired with S-LC-01's Mode-Lifecycle Registry). Additive + report-only — no live enforcement."
+status: done
+created_at: "2026-06-10T00:27:03.599Z"
+updated_at: "2026-06-09T00:00:00.000Z"
+source_request: "Build the Lifecycle-Event Registry + logger + coverage enforcer (the other Wave-0 sprint of E-LIFECYCLE-001): a declarative registry of the ~23 virtual mode-lifecycle events, a fail-open labels-only logger, and a report-only coverage enforcer wired into /scan:full; register a paths.* key for the registry. Additive, report-only. Engine/tooling sprint, ff-merge close, defer retro to epic close (RI-001)."
+interpreted_intent: "Establish the declarative lifecycle-event registry (the virtual-event template the epic plan reframed '25 hook events' into — 2 real PreToolUse guards live in Wave 1, the ~23 virtual events log to paths.eventsFile here), plus a fail-open logger and a report-only coverage enforcer that the epic's later live wiring consumes. Pairs with S-LC-01 to COMPLETE Wave 0."
+plan_contract: null
+risk_level: low
+approval_state: none_required
+current_phase: done
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+external_services:
+  identified: []
+  blocked: []
+  ready: []
+  mocked: []
+  deferred: []
+tickets:
+  proposed: []
+  planned: []
+  designed: []
+  ready_for_execution: []
+  in_progress: []
+  blocked: []
+  waiting_on_human: []
+  waiting_on_external_service: []
+  in_review: []
+  qa_failed: []
+  redteam_failed: []
+  done:
+    - T-20260610-279
+    - T-20260610-280
+    - T-20260610-281
+  released: []
+  deferred: []
+  abandoned: []
+  reopened: []
+  superseded: []
+requirements:
+  prd: null
+  high_level_stories: null
+  granular_stories: null
+  copy: null
+  inputs: null
+  trace: null
+  acceptance_criteria: null
+  qa_plan: null
+  redteam_plan: null
+  release_plan: null
+checks:
+  lint:
+    status: not_run
+    last_run: null
+    evidence: ""
+  typecheck:
+    status: not_run
+    last_run: null
+    evidence: ""
+  tests:
+    status: not_run
+    last_run: null
+    evidence: ""
+  build:
+    status: not_run
+    last_run: null
+    evidence: ""
+  qa:
+    status: not_run
+    last_run: null
+    evidence: ""
+  redteam:
+    status: not_run
+    last_run: null
+    evidence: ""
+approvals:
+  plan:
+    required: false
+    state: not_required
+    ref: null
+  design:
+    required: false
+    state: not_required
+    ref: null
+  execution:
+    required: false
+    state: not_required
+    ref: null
+  release:
+    required: false
+    state: not_required
+    ref: null
+  external_services:
+    required: false
+    state: not_required
+    ref: null
+reports:
+  plan: null
+  design: null
+  execution: null
+  release: null
+ralph:
+  active: false
+  current_ticket: null
+  current_loop: null
+  status: idle
+  last_checkpoint: null
+  next_action: null
+crash_recovery:
+  last_checkpoint: null
+  resume_command: "/sprint:plan"
+  resume_summary: "S-LC-02 (Lifecycle-Event Registry + logger + coverage enforcer, Wave 0 of E-LIFECYCLE-001) landed on branch june-9 @d23e212, gauntlet-clean (both lanes PASS on gemini). A post-merge path-doubling bug in the coverage enforcer was caught by canonical verify, fixed + regression-tested. No further action on this sprint. This COMPLETES Wave 0 (S-LC-01 + S-LC-02 both done)."
+  active_files: []
+  dirty_state: false
+  blockers: []
+  safe_to_continue: true
+lane: engine
