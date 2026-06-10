@@ -10,13 +10,19 @@
 // team's current lead. SendMessage(to:"Beta (β)") then becomes ambiguous and
 // the team carries dead weight across sessions.
 //
-// This check flags two accretion signatures per team — it does NOT mutate
-// anything (reconcile is /mode:adhoc's job; Alpha wires this into /warp:health):
-//   1. -N-suffixed member names    (e.g. "Beta (β)-2") — duplicate accretion
+// This check flags accretion + stale signatures per team — it does NOT mutate
+// anything (reconcile is /mode:adhoc's + scripts/teams/lifecycle.js's job; Alpha
+// wires this into /warp:health):
+//   1. -N-suffixed member names    (e.g. "Beta (β)-2") — duplicate accretion [HARD]
 //   2. session drift               — a member's prompt references a session id
-//                                    that is NOT the team's current leadSessionId
+//                                    that is NOT the team's current leadSessionId [HARD]
+//   3. stale-team handle           — config.json older than STALE_HOURS — a stale
+//                                    team handle to reconcile before reuse [ADVISORY]
+//                                    (S-LC-05 orphan/stale-detection extension)
 //
-// Exit 0 = clean (or no teams); 1 = accretion found.
+// Exit 0 = clean (or only advisory findings); 1 = a HARD accretion finding (or
+// any finding under --strict). The stale-team tier is ADVISORY so a long-idle
+// but otherwise-valid team does not red the gate — pass --strict to fail on it.
 
 "use strict";
 
@@ -25,7 +31,20 @@ const os = require("os");
 const path = require("path");
 
 const JSON_OUT = process.argv.includes("--json");
-const TEAMS_DIR = path.join(os.homedir(), ".claude", "teams");
+const STRICT = process.argv.includes("--strict");
+// Test-only override so a fixture can point this scan at a temp teams dir
+// WITHOUT touching the real machine-global ~/.claude/teams (which holds other
+// projects' live teams). Shared with scripts/teams/lifecycle.js.
+const TEAMS_DIR =
+  process.env.WARPOS_TEAMS_DIR_OVERRIDE ||
+  path.join(os.homedir(), ".claude", "teams");
+
+// Staleness threshold — mirrors session-start.js's 24h `.team-marker` warning
+// and scripts/teams/lifecycle.js STALE_HOURS.
+const STALE_HOURS = 24;
+
+// Finding types that are ADVISORY (reported, but do NOT flip exit unless --strict).
+const ADVISORY_TYPES = new Set(["stale-team"]);
 
 // A trailing "-<digits>" on a member name is Claude Code's de-dup suffix when a
 // name already exists in the team — the tell-tale of accretion. We match it on
@@ -56,7 +75,9 @@ function listTeamConfigs(dir) {
 
 function inspectTeam(teamFile) {
   let cfg;
+  let ageHours = 0;
   try {
+    ageHours = (Date.now() - fs.statSync(teamFile).mtimeMs) / 3_600_000;
     cfg = JSON.parse(fs.readFileSync(teamFile, "utf8"));
   } catch (e) {
     return { unreadable: true, error: e.message, findings: [] };
@@ -64,6 +85,17 @@ function inspectTeam(teamFile) {
   const members = Array.isArray(cfg.members) ? cfg.members : [];
   const leadSession = cfg.leadSessionId || null;
   const findings = [];
+
+  // 3. Stale-team handle (ADVISORY) — a config older than STALE_HOURS is a stale
+  //    handle that should be reconciled before reuse (S-LC-05 orphan/stale
+  //    detection). Advisory so a long-idle valid team doesn't red the gate.
+  if (ageHours >= STALE_HOURS) {
+    findings.push({
+      type: "stale-team",
+      member: "<team>",
+      detail: `team handle is ${Math.round(ageHours)}h old (≥${STALE_HOURS}h) — stale; reconcile before reuse`,
+    });
+  }
 
   for (const m of members) {
     const name = m.name || m.agentId || "<unnamed>";
@@ -110,6 +142,8 @@ function main() {
   const teams = listTeamConfigs(TEAMS_DIR);
   const report = [];
   let totalFindings = 0;
+  let hardFindings = 0;
+  let advisoryFindings = 0;
   let unreadable = 0;
 
   for (const t of teams) {
@@ -121,6 +155,10 @@ function main() {
     }
     if (res.findings.length) {
       totalFindings += res.findings.length;
+      for (const f of res.findings) {
+        if (ADVISORY_TYPES.has(f.type)) advisoryFindings++;
+        else hardFindings++;
+      }
       report.push({
         team: t.name,
         memberCount: res.memberCount,
@@ -130,7 +168,9 @@ function main() {
     }
   }
 
-  const ok = totalFindings === 0;
+  // Exit-flipping: HARD findings always fail; advisory findings fail only under
+  // --strict. A clean scan (no hard findings, advisory ignored) stays exit 0.
+  const ok = hardFindings === 0 && (!STRICT || advisoryFindings === 0);
 
   if (JSON_OUT) {
     console.log(
@@ -140,6 +180,8 @@ function main() {
         teamsWithFindings: report.filter((r) => !r.unreadable).length,
         unreadable,
         findingCount: totalFindings,
+        hardFindings,
+        advisoryFindings,
         teams: report,
       }),
     );
@@ -151,14 +193,17 @@ function main() {
     process.exit(0);
   }
   if (ok) {
+    const note = advisoryFindings
+      ? ` (${advisoryFindings} advisory stale finding(s) — not blocking; --strict to fail)`
+      : "";
     console.log(
-      `OK   [adhoc-team-hygiene] ${teams.length} team(s) scanned, no accretion`,
+      `OK   [adhoc-team-hygiene] ${teams.length} team(s) scanned, no hard accretion${note}`,
     );
     process.exit(0);
   }
 
   console.error(
-    `FAIL [adhoc-team-hygiene] ${totalFindings} accretion finding(s) across ${report.filter((r) => !r.unreadable).length} team(s):`,
+    `FAIL [adhoc-team-hygiene] ${hardFindings} hard + ${advisoryFindings} advisory finding(s) across ${report.filter((r) => !r.unreadable).length} team(s):`,
   );
   for (const r of report) {
     if (r.unreadable) {
