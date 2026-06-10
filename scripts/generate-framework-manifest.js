@@ -295,6 +295,14 @@ const TOP_LEVEL_SCRIPTS = [
   // 0.8.2 fix-forward (2026-05-21): mode-set.js backs /mode:* skills (adhoc/oneshot/solo).
   // a consumer install couldn't run /mode:adhoc --turbo because this file wasn't classified.
   { src: "scripts/mode-set.js", kind: "top_script" },
+  // WG-1 (T-20260610-292): dispatch-claude.js is the MANDATORY build-chain dispatch
+  // wrapper (reap-guarded) for all Claude builder/fixer roles. The dispatch guides
+  // instruct products to use `node scripts/dispatch-claude.js <role> <prompt-file> -w`
+  // for every build-chain invocation — without this entry it never reached product installs,
+  // creating a closed trap (guide mandates a file the installer never shipped).
+  // Note: scripts/dispatch/dispatch-claude.test.js ships via the scripts/dispatch/ dir
+  // walk (kind: dispatch_engine) — no duplicate entry needed here.
+  { src: "scripts/dispatch-claude.js", kind: "top_script" },
   // warp-setup.js is NOT shipped to target projects — it's the installer itself.
   //   Clients invoke it from ../WarpOS/, not from their own scripts/.
 ];
