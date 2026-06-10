@@ -152,6 +152,14 @@ const worktree = parseFlag("--worktree");
 // --worktree <path> instead when the orchestrator already created the worktree
 // and wants the child to run with cwd set to it.)
 const passW = argv.includes("-w");
+// --review-fallback: sanctioned fallback lane for cross-provider review roles when
+// their normal provider (openai/gemini) is quota-dead. Dispatches a NON-BUILD review
+// role as claude and writes a LEDGERED ok:true record with fallback:true +
+// provider:claude + quota_fallback_from so coverage-gate sees the debt VISIBLY.
+// NOTE: review-fallback bypasses the build-chain isolation gate (review roles are
+// READ-ONLY — they don't write code). Build-chain roles via --review-fallback are
+// REFUSED — they must still use -w or --worktree. (T-305 G2)
+const reviewFallback = argv.includes("--review-fallback");
 
 if (!role || !promptArg) {
   usage("Usage: <role> and <prompt-file | '-'> are both required.");
@@ -166,6 +174,18 @@ if (model && !/^[a-z0-9][a-z0-9._:-]*$/i.test(model)) {
 }
 if (effort && !/^[a-z]+$/i.test(effort)) {
   usage(`Invalid effort token: ${JSON.stringify(effort)} (expected e.g. low|medium|high|max).`);
+}
+
+// --review-fallback guard: build-chain roles write code and MUST use -w/--worktree
+// isolation — they are never allowed via the review-fallback read-only path.
+// This check fires BEFORE the isolation gate so the error message is specific.
+if (reviewFallback && BUILD_CHAIN_ROLES.has(role.toLowerCase())) {
+  usage(
+    `--review-fallback cannot be used with build-chain role '${role}'. ` +
+    `review-fallback is for READ-ONLY review roles only (e.g. backend-reviewer, ` +
+    `qa-reviewer, frontend-reviewer, security-reviewer). Build-chain roles write ` +
+    `code and MUST use -w or --worktree isolation. (T-305 G2)`,
+  );
 }
 
 // CRITICAL ISOLATION GATE (reviewer-CRITICAL ×2): a build-chain role must run
@@ -208,6 +228,29 @@ if (BUILD_CHAIN_ROLES.has(role.toLowerCase()) && !passW && !worktreeValid) {
       `or --worktree <distinct-git-worktree>. A missing, canonical, or non-worktree path is ` +
       `refused so a builder never edits canonical.`,
   );
+}
+
+// ── review-fallback: look up the role's normal cross-provider origin ────────────
+// When --review-fallback is set, stamp the completion record with the provider this
+// role WOULD have used if available (its registry `provider` attribute — openai for
+// most reviewers, gemini for security-reviewer). This is the fallback-origin field
+// coverage-gate reads to confirm the debt is VISIBLE (it still trips
+// cross_provider_required since record.provider === "claude", which is what we want:
+// honest visible debt, NOT silent green). Fail-soft: if the registry doesn't know
+// the role, carry provider:null (still stamps fallback:true + the reason).
+let quotaFallbackFrom = null;
+if (reviewFallback) {
+  try {
+    const { registryAttrs: _rfRegAttrs } = require("./dispatch/dispatch-contract");
+    const attrs = _rfRegAttrs(role);
+    quotaFallbackFrom = {
+      provider: (attrs && attrs.provider) || null,
+      reason: "quota_exhausted",
+    };
+  } catch {
+    // fail-soft: dispatch still proceeds; origin is null
+    quotaFallbackFrom = { provider: null, reason: "quota_exhausted" };
+  }
 }
 
 // ── Load the prompt ─────────────────────────────────────────
@@ -307,15 +350,26 @@ try {
     // Genuinely unknown id (not in role-registry, not a GENERIC_BUILD_ID), or a real
     // violation for a registered role. Keep the honest fail-closed wording unchanged.
     const blocking = process.env.WARPOS_DISPATCH_CONTRACT_ENFORCE === "block";
-    process.stderr.write(
-      `[dispatch-claude] dispatch-contract ${blocking ? "VIOLATION" : "advisory"}: ` +
-        `${verdict.violations.join("; ")}\n`,
-    );
-    if (blocking) {
-      console.log(
-        JSON.stringify({ ok: false, provider: PROVIDER, role, reaped: false, reason: "dispatch_contract_violation", violations: verdict.violations }),
+    if (reviewFallback && !blocking) {
+      // --review-fallback: the shape mismatch (subprocess-claude for a cross-provider
+      // reviewer role) is INTENTIONAL — the normal provider is quota-exhausted. Suppress
+      // the advisory and emit a clear informational note instead.
+      process.stderr.write(
+        `[dispatch-claude] review-fallback: role '${role}' routed through subprocess-claude ` +
+          `intentionally (cross-provider quota exhausted; fallback origin: ` +
+          `${quotaFallbackFrom && quotaFallbackFrom.provider || "unknown"}).\n`,
       );
-      process.exit(1);
+    } else {
+      process.stderr.write(
+        `[dispatch-claude] dispatch-contract ${blocking ? "VIOLATION" : "advisory"}: ` +
+          `${verdict.violations.join("; ")}\n`,
+      );
+      if (blocking) {
+        console.log(
+          JSON.stringify({ ok: false, provider: PROVIDER, role, reaped: false, reason: "dispatch_contract_violation", violations: verdict.violations }),
+        );
+        process.exit(1);
+      }
     }
   }
 } catch {
@@ -339,6 +393,10 @@ try {
       // in role-registry — but we KNOW it's a build-chain sentinel (class-resolved
       // above). Suppress the misleading "resolver picks 'inline'" advisory; the
       // contract consult block above already emitted the truthful note.
+    } else if (reviewFallback) {
+      // --review-fallback: shape mismatch (subprocess-claude for a cross-provider reviewer)
+      // is intentional. Suppress the advisory — the contract-consult block above already
+      // emitted the informational note about the fallback origin.
     } else {
       const blocking = process.env.WARPOS_DISPATCH_CONTRACT_ENFORCE === "block" && mm.severity === "high";
       process.stderr.write(
@@ -502,7 +560,12 @@ recordCompletion({
   exit_code: typeof status === "number" ? status : null,
   stdout_bytes: stdoutBytes,
   stderr_bytes: stderrBytes,
-  fallback: false,
+  // fallback:true when --review-fallback was set (cross-provider quota exhausted).
+  // coverage-gate at :155 sees provider:"claude" + cross_provider_required → VISIBLE debt.
+  // Do NOT set anything that would suppress the cross_provider_required trip —
+  // a claude-only fallback must NEVER silently satisfy a cross-provider requirement.
+  fallback: reviewFallback,
+  ...(quotaFallbackFrom ? { quota_fallback_from: quotaFallbackFrom } : {}),
   ok,
   // N-1 (§17.4): run-context + shape + tool + prompt digest for the coverage gate.
   ...runContext(),
