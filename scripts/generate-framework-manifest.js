@@ -291,6 +291,11 @@ const TOP_LEVEL_SCRIPTS = [
   { src: "scripts/path-lint.js", kind: "top_script" },
   { src: "scripts/dispatch-agent.js", kind: "top_script" },
   { src: "scripts/generate-maps.js", kind: "top_script" },
+  // T-20260610-296 (Lane A class-closer): generate-steps-maps.js is mandated by the
+  // pre-commit-steps-check.js guard ("node scripts/generate-steps-maps.js --check")
+  // but was absent from the ship payload — the same closed-trap class as WG-1, surfaced
+  // by the new --ship-coverage assertion. It is a top-level peer of generate-maps.js.
+  { src: "scripts/generate-steps-maps.js", kind: "top_script" },
   { src: "scripts/generate-framework-manifest.js", kind: "top_script" },
   // 0.8.2 fix-forward (2026-05-21): mode-set.js backs /mode:* skills (adhoc/oneshot/solo).
   // a consumer install couldn't run /mode:adhoc --turbo because this file wasn't classified.
