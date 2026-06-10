@@ -197,6 +197,8 @@ function scaffoldProduct({ target, warposRoot, log }) {
       "> agent operates under, see [CLAUDE.md](CLAUDE.md). For the agent system router,",
       "> see [AGENTS.md](AGENTS.md). WarpOS will never overwrite this file — it's yours.",
       "",
+      "> **Founding brief:** see `_docs/briefs/` — the brief this product was scaffolded from (if one was provided).",
+      "",
       "## Product",
       "",
       "_What is this product? One or two sentences: what it does and who it's for._",
