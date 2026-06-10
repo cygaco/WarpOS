@@ -54,16 +54,16 @@ tickets:
     - T-20260518-113
     - T-20260518-114
 requirements:
-  prd: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260518-007\\prd.md"
-  high_level_stories: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260518-007\\high-level-stories.md"
-  granular_stories: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260518-007\\granular-stories.md"
-  copy: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260518-007\\copy.md"
-  inputs: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260518-007\\inputs.md"
-  trace: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260518-007\\trace.md"
-  acceptance_criteria: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260518-007\\acceptance-criteria.md"
-  qa_plan: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260518-007\\qa-plan.md"
-  redteam_plan: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260518-007\\redteam-plan.md"
-  release_plan: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260518-007\\release-plan.md"
+  prd: ".claude/project/sprint/requirements/SP-20260518-007/prd.md"
+  high_level_stories: ".claude/project/sprint/requirements/SP-20260518-007/high-level-stories.md"
+  granular_stories: ".claude/project/sprint/requirements/SP-20260518-007/granular-stories.md"
+  copy: ".claude/project/sprint/requirements/SP-20260518-007/copy.md"
+  inputs: ".claude/project/sprint/requirements/SP-20260518-007/inputs.md"
+  trace: ".claude/project/sprint/requirements/SP-20260518-007/trace.md"
+  acceptance_criteria: ".claude/project/sprint/requirements/SP-20260518-007/acceptance-criteria.md"
+  qa_plan: ".claude/project/sprint/requirements/SP-20260518-007/qa-plan.md"
+  redteam_plan: ".claude/project/sprint/requirements/SP-20260518-007/redteam-plan.md"
+  release_plan: ".claude/project/sprint/requirements/SP-20260518-007/release-plan.md"
 checks:
   lint:
     status: not_run
@@ -114,7 +114,7 @@ reports:
   plan: ".claude/project/sprint/plan-contracts/PC-20260518-0011.report.md"
   design: null
   execution: null
-  release: "C:\\Users\\Vladislav Zhirnov\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\releases\\RL-20260518-011.yaml"
+  release: ".claude/project/sprint/releases/RL-20260518-011.yaml"
 ralph:
   active: false
   current_ticket: null

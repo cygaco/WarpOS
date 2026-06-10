@@ -144,7 +144,7 @@ function test_check_ac_coverage_emits_prose_and_correct_exit_code() {
 // ── AC-3.1.3 (skill body conventions) ──────────────────────────────
 function test_check_ac_coverage_skill_body_conventions() {
   const body = fs.readFileSync(
-    path.join(REPO, ".claude", "commands", "check", "ac-coverage.md"),
+    path.join(REPO, ".claude", "commands", "scan", "ac-coverage.md"),
     "utf8",
   );
   if (!/user-invocable:\s*true/.test(body)) {
