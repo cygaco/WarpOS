@@ -11,7 +11,7 @@
  *   node scripts/checks/test-sprint-hook-coverage.js
  */
 
-const { computeFindings, reverseCoverage } = require("./sprint-hook-coverage");
+const { computeFindings, reverseCoverage, RECORD_BACKED_CUTOFF } = require("./sprint-hook-coverage");
 const hookPoints = require("../sprint/hook-points");
 
 let passes = 0, failures = 0;
@@ -73,6 +73,62 @@ console.log("\nexemptions:");
   // no run marker (consult only) → not an attributed /sprint:full run
   const r = computeFindings([consult("SP-E", "frontend-reviewer")], REG, { "SP-E": FE }, { "SP-E": "2026-06-06" }, "2026-06-05");
   ok("consult without a run marker → not applicable", r.applicable === 0);
+}
+
+// ── F-1 RECORD-BACKED COVERAGE (E-DISPATCH-INTEGRITY-001) ────────────────────
+// Three planted fixtures (post-RECORD_BACKED_CUTOFF = "2026-06-10"):
+//   F1a — post-cutoff sprint, block-row had telemetry, NO dispatch record → finding
+//   F1b — post-cutoff sprint, block-row had telemetry + in-window record → green
+//   F1c — between WIRE_DATE and RECORD_BACKED_CUTOFF, telemetry-only → green (legacy)
+
+console.log("\nF-1 RECORD-BACKED COVERAGE:");
+{
+  // Synthetic dispatch record builder (role, completedAt within sprint event time window)
+  const EV_TS = "2026-06-06T10:00:00.000Z"; // event ts used in all F-1 fixtures
+  const HISTORIC_TS = "2026-01-01T00:00:00.000Z"; // clearly before sprint window
+
+  const makeRec = (sid) => ({ cat: "audit", sprint_id: sid, ts: EV_TS, data: { kind: "sprint_full_phase_started", ts: EV_TS } });
+  const makeC = (sid, mgr) => ({ cat: "manager_consult", sprint_id: sid, ts: EV_TS, data: { manager: mgr, ts: EV_TS } });
+  const makeDispatch = (role, completedAt) => ({
+    dispatch_id: "d-f1-test",
+    role,
+    provider: "openai",
+    model: "gpt-5.5",
+    ok: true,
+    started_at: completedAt,
+    completed_at: completedAt,
+  });
+
+  // F1a: post-cutoff, block agent has telemetry but NO dispatch record → finding
+  {
+    const events = [makeRec("SP-F1A"), makeC("SP-F1A", "qa-reviewer"), makeC("SP-F1A", "frontend-reviewer")];
+    const r = computeFindings(events, REG, { "SP-F1A": FE }, { "SP-F1A": RECORD_BACKED_CUTOFF }, "2026-06-05", []);
+    ok("F1a: post-cutoff block-row telemetry-only → finding", r.findings.length >= 1, JSON.stringify(r.findings));
+    ok("F1a: finding_type missing_block_agent", r.findings.every((f) => f.finding_type === "missing_block_agent"));
+  }
+
+  // F1b: post-cutoff, block agents have telemetry + in-window dispatch records → green
+  {
+    const events = [makeRec("SP-F1B"), makeC("SP-F1B", "qa-reviewer"), makeC("SP-F1B", "frontend-reviewer")];
+    const dispatch = [makeDispatch("qa-reviewer", EV_TS), makeDispatch("frontend-reviewer", EV_TS)];
+    const r = computeFindings(events, REG, { "SP-F1B": FE }, { "SP-F1B": RECORD_BACKED_CUTOFF }, "2026-06-05", dispatch);
+    ok("F1b: post-cutoff block-row + in-window records → 0 findings", r.findings.length === 0, JSON.stringify(r.findings));
+  }
+
+  // F1b-historic: post-cutoff, block agents have telemetry + ONLY HISTORIC dispatch records → finding
+  {
+    const events = [makeRec("SP-F1BH"), makeC("SP-F1BH", "qa-reviewer"), makeC("SP-F1BH", "frontend-reviewer")];
+    const dispatch = [makeDispatch("qa-reviewer", HISTORIC_TS), makeDispatch("frontend-reviewer", HISTORIC_TS)];
+    const r = computeFindings(events, REG, { "SP-F1BH": FE }, { "SP-F1BH": RECORD_BACKED_CUTOFF }, "2026-06-05", dispatch);
+    ok("F1b-historic: post-cutoff + only historic records (outside window) → finding", r.findings.length >= 1, JSON.stringify(r.findings));
+  }
+
+  // F1c: between WIRE_DATE and RECORD_BACKED_CUTOFF (sprint="2026-06-06"), telemetry-only → green
+  {
+    const events = [makeRec("SP-F1C"), makeC("SP-F1C", "qa-reviewer"), makeC("SP-F1C", "frontend-reviewer")];
+    const r = computeFindings(events, REG, { "SP-F1C": FE }, { "SP-F1C": "2026-06-06" }, "2026-06-05", []);
+    ok("F1c: between WIRE_DATE and RECORD_BACKED_CUTOFF, telemetry-only → green (legacy predicate)", r.findings.length === 0, JSON.stringify(r.findings));
+  }
 }
 
 // ── REVERSE (registry coherence) ──────────────────────────────────────────────

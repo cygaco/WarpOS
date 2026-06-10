@@ -32,6 +32,7 @@ const {
   computeFindings,
   validateIsoDate,
   WIRE_DATE,
+  RECORD_BACKED_CUTOFF,
   REQUIRED_MANAGER,
   DESIGN_TOUCH_MANAGERS,
 } = require("./sprint-manager-consult");
@@ -93,6 +94,7 @@ function makeManagerConsultRec(sprintId, manager, extra = {}) {
 
 console.log("Module exports:");
 ok("WIRE_DATE is 2026-06-04", WIRE_DATE === "2026-06-04", `got ${WIRE_DATE}`);
+ok("RECORD_BACKED_CUTOFF is 2026-06-10", RECORD_BACKED_CUTOFF === "2026-06-10", `got ${RECORD_BACKED_CUTOFF}`);
 ok("REQUIRED_MANAGER is design-quality", REQUIRED_MANAGER === "design-quality");
 ok(
   "DESIGN_TOUCH_MANAGERS includes visual-review",
@@ -250,6 +252,120 @@ console.log("\n(i) --SINCE VALIDATION — validateIsoDate predicate:");
   ok("SINCE-INVALID: '2026-13-01' → false", !validateIsoDate("2026-13-01"));
   ok("SINCE-INVALID: '2026-02-30' → false (V8 rollover)", !validateIsoDate("2026-02-30"));
   ok("SINCE-INVALID: '' → false", !validateIsoDate(""));
+}
+
+// ── (k) F-1 RECORD-BACKED COVERAGE (E-DISPATCH-INTEGRITY-001) ────────────────
+// Three planted fixtures:
+//   k1 — post-RECORD_BACKED_CUTOFF sprint, telemetry-only (no dispatch record) → RED
+//   k2 — post-RECORD_BACKED_CUTOFF sprint, telemetry + in-window dispatch record → GREEN
+//   k3 — between WIRE_DATE and RECORD_BACKED_CUTOFF, telemetry-only → GREEN (legacy predicate)
+
+console.log("\n(k) F-1 RECORD-BACKED COVERAGE — post-2026-06-10 requires dispatch record:");
+
+const POST_RECORD_BACKED_DATE = RECORD_BACKED_CUTOFF; // "2026-06-10" — at the cutoff boundary
+const BACKING_RECORD_TS = BASE_TS; // same as event ts → falls within sprint window
+const HISTORIC_RECORD_TS = "2026-01-01T00:00:00.000Z"; // way before events → outside window
+
+function makeDispatchRecord(role, completedAt, extra = {}) {
+  return {
+    dispatch_id: `d-test-${Math.random().toString(36).slice(2)}`,
+    role,
+    provider: "openai",
+    model: "gpt-5.5",
+    ok: true,
+    started_at: completedAt,
+    completed_at: completedAt,
+    ...extra,
+  };
+}
+
+// k1 — post-cutoff, telemetry consult present, NO backing dispatch record → RED
+{
+  const sprintId = "SP-TEST-RB-MISS-001";
+  const events = [
+    makeSprintFullRec(sprintId),
+    makeManagerConsultRec(sprintId, "visual-review"), // design-touch signal
+    makeManagerConsultRec(sprintId, "design-quality"), // telemetry says consulted
+  ];
+  const r = computeFindings(
+    events,
+    { [sprintId]: POST_RECORD_BACKED_DATE },
+    WIRE_DATE,
+    [], // no dispatch records
+  );
+  ok(
+    "k1: post-cutoff + telemetry-only → RED (missing_design_consult)",
+    r.findings.length > 0 && r.findings.some((f) => f.finding_type === "missing_design_consult"),
+    `findings=${JSON.stringify(r.findings)}`,
+  );
+  ok("k1: applicable=1", r.applicable === 1, `got ${r.applicable}`);
+}
+
+// k2 — post-cutoff, telemetry consult + in-window backing dispatch record → GREEN
+{
+  const sprintId = "SP-TEST-RB-OK-001";
+  const events = [
+    makeSprintFullRec(sprintId),
+    makeManagerConsultRec(sprintId, "visual-review"),
+    makeManagerConsultRec(sprintId, "design-quality"),
+  ];
+  const backingRecord = makeDispatchRecord("design-quality", BACKING_RECORD_TS);
+  const r = computeFindings(
+    events,
+    { [sprintId]: POST_RECORD_BACKED_DATE },
+    WIRE_DATE,
+    [backingRecord],
+  );
+  ok(
+    "k2: post-cutoff + telemetry + in-window record → GREEN (0 findings)",
+    r.findings.length === 0,
+    `findings=${JSON.stringify(r.findings)}`,
+  );
+  ok("k2: applicable=1", r.applicable === 1, `got ${r.applicable}`);
+}
+
+// k2b — post-cutoff, backing record is ONLY historic (before sprint window) → RED
+{
+  const sprintId = "SP-TEST-RB-HISTORIC-001";
+  const events = [
+    makeSprintFullRec(sprintId),
+    makeManagerConsultRec(sprintId, "visual-review"),
+    makeManagerConsultRec(sprintId, "design-quality"),
+  ];
+  const historicRecord = makeDispatchRecord("design-quality", HISTORIC_RECORD_TS);
+  const r = computeFindings(
+    events,
+    { [sprintId]: POST_RECORD_BACKED_DATE },
+    WIRE_DATE,
+    [historicRecord],
+  );
+  ok(
+    "k2b: post-cutoff + telemetry + historic-only record (outside sprint window) → RED",
+    r.findings.length > 0 && r.findings.some((f) => f.finding_type === "missing_design_consult"),
+    `findings=${JSON.stringify(r.findings)}`,
+  );
+}
+
+// k3 — sprint date between WIRE_DATE and RECORD_BACKED_CUTOFF → old predicate (no record needed)
+{
+  const sprintId = "SP-TEST-RB-LEGACY-001";
+  const events = [
+    makeSprintFullRec(sprintId),
+    makeManagerConsultRec(sprintId, "visual-review"),
+    makeManagerConsultRec(sprintId, "design-quality"),
+  ];
+  // No backing records — should still pass (old predicate)
+  const r = computeFindings(
+    events,
+    { [sprintId]: POST_CUTOFF_DATE }, // "2026-06-05" — after WIRE_DATE, before RECORD_BACKED_CUTOFF
+    WIRE_DATE,
+    [], // no dispatch records — legacy predicate, not required
+  );
+  ok(
+    "k3: between WIRE_DATE and RECORD_BACKED_CUTOFF, telemetry-only → GREEN (legacy predicate)",
+    r.findings.length === 0,
+    `findings=${JSON.stringify(r.findings)}`,
+  );
 }
 
 // ── (j) CLI EXIT CODES — subprocess tests ────────────────────────────────────

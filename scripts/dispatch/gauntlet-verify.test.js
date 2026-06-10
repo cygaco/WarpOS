@@ -21,6 +21,7 @@ const assert = require("assert");
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
+const cp = require("child_process");
 
 const {
   verifyGauntlet,
@@ -836,6 +837,132 @@ test("FIX5 (cwd-regression real): canonicalFile is cwd-independent after chdir +
   }
 });
 
+// ── F-3 Tests: Sprint-ID correlation + refuse unbounded (E-DISPATCH-INTEGRITY-001) ─
+
+// Planted fixture A: a record with a DIFFERENT sprint_id is excluded even when it falls
+// within the time window — "different sprint" must NOT green the current sprint's lane.
+test("F3-sprint-id: record with wrong sprint_id → excluded even if in window → no-record → fail", () => {
+  const now = Date.now();
+  const res = verifyGauntlet({
+    roles: ["reviewer"],
+    sprintId: "SP-NEW-001",
+    since: now - 60_000,
+    records: [
+      makeRecord({
+        sprint_id: "SP-OLD-001", // wrong sprint — must be excluded
+        completed_at: new Date(now).toISOString(), // in time window
+      }),
+    ],
+  });
+  assert.strictEqual(res.ok, false, "wrong sprint_id record must not satisfy");
+  assert.strictEqual(res.roles[0].status, "no-record", `expected no-record, got ${res.roles[0].status}`);
+  assert.strictEqual(res.considered, 0, "wrong-sprint record must not appear in considered");
+});
+
+// Planted fixture B: a record WITH matching sprint_id AND in time window -> satisfies.
+test("F3-sprint-id: record with matching sprint_id -> included -> ran -> pass", () => {
+  const now = Date.now();
+  const res = verifyGauntlet({
+    roles: ["reviewer"],
+    sprintId: "SP-NEW-001",
+    since: now - 60_000,
+    records: [
+      makeRecord({
+        sprint_id: "SP-NEW-001", // matching sprint
+        completed_at: new Date(now).toISOString(),
+      }),
+    ],
+  });
+  assert.strictEqual(res.ok, true, "matching sprint_id + in-window record must satisfy");
+  assert.strictEqual(res.roles[0].status, "ran");
+  assert.strictEqual(res.considered, 1);
+});
+
+// Records without sprint_id fall through to time-window correlation (backwards compat).
+test("F3-sprint-id: record without sprint_id field -> time-window applies -> included if in window", () => {
+  const now = Date.now();
+  const rec = makeRecord({ completed_at: new Date(now).toISOString() });
+  delete rec.sprint_id; // explicitly absent (makeRecord does not set it)
+  const res = verifyGauntlet({
+    roles: ["reviewer"],
+    sprintId: "SP-NEW-001",
+    since: now - 60_000,
+    records: [rec],
+  });
+  assert.strictEqual(res.ok, true, "record without sprint_id should fall through to time-window (backwards compat)");
+  assert.strictEqual(res.roles[0].status, "ran");
+});
+
+// Planted fixture: ledger with ONLY a historic record (older than window / different sprint)
+// FAIL for current sprint; a correlated fresh record passes.
+test("F3-planted: historic-only record (outside window+wrong sprint) fails; fresh correlated record passes", () => {
+  const now = Date.now();
+  const historicMs = now - 24 * 60 * 60 * 1000 - 60_000; // >24h ago
+
+  // Historic record with wrong sprint -> fail
+  const resFail = verifyGauntlet({
+    roles: ["reviewer"],
+    sprintId: "SP-NEW-002",
+    since: now - 60_000,
+    records: [
+      makeRecord({ sprint_id: "SP-OLD-002", completed_at: new Date(historicMs).toISOString() }),
+    ],
+  });
+  assert.strictEqual(resFail.ok, false, "historic record from a different sprint must fail");
+  assert.strictEqual(resFail.roles[0].status, "no-record");
+
+  // Fresh correlated record -> pass
+  const resPass = verifyGauntlet({
+    roles: ["reviewer"],
+    sprintId: "SP-NEW-002",
+    since: now - 60_000,
+    records: [
+      makeRecord({ sprint_id: "SP-NEW-002", completed_at: new Date(now).toISOString() }),
+    ],
+  });
+  assert.strictEqual(resPass.ok, true, "fresh correlated record must pass");
+  assert.strictEqual(resPass.roles[0].status, "ran");
+});
+
+// F-3 CLI: refuse unbounded -- no --sprint, no --since, no --until -> exit 2
+test("F3-CLI: no --sprint, no --since, no --until -> exit 2 (refuse unbounded)", () => {
+  const r = cp.spawnSync(
+    process.execPath,
+    [path.join(__dirname, "gauntlet-verify.js"), "--roles", "reviewer"],
+    { encoding: "utf8" },
+  );
+  assert.strictEqual(r.status, 2, `Expected exit 2 (refuse unbounded F-3), got ${r.status}. stderr: ${r.stderr}`);
+  assert.ok(
+    r.stderr.includes("F-3") || r.stderr.toLowerCase().includes("unbounded"),
+    `Expected F-3 or 'unbounded' in stderr, got: ${r.stderr}`,
+  );
+});
+
+// F-3 CLI: --sprint alone (no since/until) -> NOT refused (has sprint correlation)
+test("F3-CLI: --roles + --sprint (no since/until) -> NOT refused by correlation check", () => {
+  const r = cp.spawnSync(
+    process.execPath,
+    [path.join(__dirname, "gauntlet-verify.js"), "--roles", "reviewer", "--sprint", "SP-TEST-001"],
+    { encoding: "utf8" },
+  );
+  // No ledger -> roles are no-record -> exit 1, NOT exit 2
+  assert.notStrictEqual(r.status, 2, `Should NOT exit 2 (correlation satisfied by --sprint); got ${r.status} stderr=${r.stderr}`);
+});
+
+// F-3 CLI: --since alone (no sprint/until) -> NOT refused
+test("F3-CLI: --roles + --since (no sprint/until) -> NOT refused (has window)", () => {
+  const r = cp.spawnSync(
+    process.execPath,
+    [
+      path.join(__dirname, "gauntlet-verify.js"),
+      "--roles", "reviewer",
+      "--since", new Date(Date.now() - 60_000).toISOString(),
+    ],
+    { encoding: "utf8" },
+  );
+  assert.notStrictEqual(r.status, 2, `Should NOT exit 2 (has --since); got ${r.status} stderr=${r.stderr}`);
+});
+
 // ── Result ─────────────────────────────────────────────────
 cleanupTempFiles();
 
@@ -852,6 +979,7 @@ if (failures.length) {
 process.stdout.write(
   `gauntlet-verify bite-test: ${passed}/${passed} passed\n` +
   `  covers: suppressed-record, valid, malformed, ill-typed, stale, cwd-regression, backward-compat\n` +
-  `  FIX1: future-clamp + skew-false-red-regression + golden-ticket-still-blocked; FIX2: positional-taint(a,b,c); FIX3: no-green-from-pure-failed; FIX4: empty-roles; FIX5: real-cwd-regression\n`,
+  `  FIX1: future-clamp + skew-false-red-regression + golden-ticket-still-blocked; FIX2: positional-taint(a,b,c); FIX3: no-green-from-pure-failed; FIX4: empty-roles; FIX5: real-cwd-regression\n` +
+  `  F-3 (E-DISPATCH-INTEGRITY-001): sprint-id-correlation + historic-green-prevention + CLI-refuse-unbounded\n`,
 );
 process.exit(0);
