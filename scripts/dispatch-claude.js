@@ -86,8 +86,16 @@ try {
   safeSpawn = null;
 }
 
+// T-20260610-304 (G8/N1): foreground-aware timeout clamp. The raw default is 20m but
+// the harness FOREGROUND Bash ceiling is 600s — a foreground wrapper is killed by the
+// harness BEFORE its own bound fires, so it never writes its death record. The shared
+// policy helper clamps to 540s (FOREGROUND_CEILING_MS) unless an explicit background
+// signal (WARPOS_DISPATCH_BACKGROUND=1 / opts.background) is present. FAIL-CLOSED:
+// absence of the signal ⇒ clamp, never the longer default.
+const { foregroundAwareTimeout, WRAPPER_DEFAULTS } = require("./dispatch/timeout-policy");
+
 const PROVIDER = "claude";
-const DEFAULT_TIMEOUT_MS = 20 * 60 * 1000; // 20 min — builders are heavier than the 15-min review ceiling
+const DEFAULT_TIMEOUT_MS = WRAPPER_DEFAULTS["dispatch-claude"]; // 20 min — sourced from canonical policy
 const MAX_BUFFER = 32 * 1024 * 1024; // 32 MB
 
 // Build-chain roles edit a repo — they MUST run isolated (a worktree), never in
@@ -100,6 +108,18 @@ const BUILD_CHAIN_ROLES = new Set([
   "skeleton-builder", // S-7: was `stub-scaffold` (this set is matched WITHOUT normalize)
   "stub-scaffold", // S-7 legacy id (back-compat)
 ]);
+
+// GENERIC BUILD IDS — G1 / β option (c) / EVT-dispatch-shape-w0-plan-design-001.
+// These ids are mandated by the dispatch GUIDE for build-chain dispatch but are
+// deliberately NOT in role-registry.json (the FE/BE split is contextual; a 1:1
+// alias would be wrong — role-aliases.js intentionally omits them). The result:
+// validateDispatch({ role:"builder" }) returns ok:false + "(fail-closed)" — correct
+// for the registry (the role truly is unresolvable there) but LYING when printed as
+// the dispatch advisory, because this wrapper DOES know "builder" is a valid
+// build-chain sentinel. Fix: for a generic id, re-validate against build_chain_worker
+// directly (the class dispatch-claude.js already enforces via BUILD_CHAIN_ROLES +
+// the isolation gate). The wrapper and the contract then AGREE on the truthful result.
+const GENERIC_BUILD_IDS = new Set(["builder"]);
 
 function usage(msg) {
   console.error(
@@ -215,9 +235,12 @@ if (model) claudeArgs.push("--model", model);
 if (effort) claudeArgs.push("--effort", effort);
 if (passW) claudeArgs.push("-w"); // forward worktree-creation to claude (preserve isolation)
 
-const TIMEOUT_MS = parseInt(
-  process.env.DISPATCH_BUILDER_TIMEOUT_MS || `${DEFAULT_TIMEOUT_MS}`,
-  10,
+// T-20260610-304: clamp requested bound to foreground ceiling (540s). An env override
+// sets the *requested* bound but the foreground ceiling is the hard cap. Background
+// signal (WARPOS_DISPATCH_BACKGROUND=1) passes through the full requested bound.
+const TIMEOUT_MS = foregroundAwareTimeout(
+  parseInt(process.env.DISPATCH_BUILDER_TIMEOUT_MS || `${DEFAULT_TIMEOUT_MS}`, 10),
+  {}, // opts — WARPOS_DISPATCH_BACKGROUND env var is checked inside the helper
 );
 
 // cwd = the VALIDATED worktree (builder edits there); else canonical root. When
@@ -245,14 +268,44 @@ const cmdChecksum = cmdlineChecksum(role, PROVIDER, promptBytes);
 // set WARPOS_DISPATCH_CONTRACT_ENFORCE=block to make a violation fatal. Fail-OPEN
 // on any contract-read error — the contract must never crash a working dispatch.
 try {
-  const { validateDispatch } = require("./dispatch/dispatch-contract");
+  const { validateDispatch, validateDispatchForClass } = require("./dispatch/dispatch-contract");
   const verdict = validateDispatch({
     role,
     shape: "subprocess-claude",
     toolId: "claude",
     cwd: runCwd,
   });
-  if (!verdict.ok) {
+  if (!verdict.ok && GENERIC_BUILD_IDS.has(role.toLowerCase())) {
+    // G1 / β option (c): re-validate against build_chain_worker class directly.
+    // validateDispatch returned ok:false only because 'builder' (the generic id the
+    // GUIDE mandates) is not in role-registry.json — NOT because the dispatch is
+    // wrong. dispatch-claude.js already enforced the isolation gate (BUILD_CHAIN_ROLES
+    // + the -w / --worktree check above). Use the class-level helper so the advisory
+    // is TRUTHFUL: either "resolved to build_chain_worker (OK)" or a real violation
+    // (e.g. cwd is canonical when -w isn't providing its own worktree). NOT "(fail-closed)".
+    // EVT-dispatch-shape-w0-plan-design-001 (β ratified option c).
+    const classVerdict = validateDispatchForClass({
+      class: "build_chain_worker",
+      shape: "subprocess-claude",
+      toolId: "claude",
+      cwd: runCwd,
+    });
+    if (classVerdict.ok) {
+      // Truthful informational: generic id resolved to a real class, shape OK.
+      process.stderr.write(
+        `[dispatch-claude] dispatch-contract: generic build id '${role}' resolved to class 'build_chain_worker' (subprocess-claude OK)\n`,
+      );
+    } else {
+      // A real violation (e.g. worktree-required + canonical cwd when using -w).
+      // Report it honestly — still NOT "(fail-closed)", since the shape/tool are correct.
+      process.stderr.write(
+        `[dispatch-claude] dispatch-contract advisory: ${classVerdict.violations.join("; ")}\n`,
+      );
+    }
+    // Proceed-on-advisory default unchanged (W0 scope; no REFUSE flip).
+  } else if (!verdict.ok) {
+    // Genuinely unknown id (not in role-registry, not a GENERIC_BUILD_ID), or a real
+    // violation for a registered role. Keep the honest fail-closed wording unchanged.
     const blocking = process.env.WARPOS_DISPATCH_CONTRACT_ENFORCE === "block";
     process.stderr.write(
       `[dispatch-claude] dispatch-contract ${blocking ? "VIOLATION" : "advisory"}: ` +
@@ -281,17 +334,24 @@ try {
   const { shapeMismatch } = require("./dispatch/dispatch-shape");
   const mm = shapeMismatch("subprocess-claude", { kind: "agent", id: role });
   if (mm && mm.mismatch) {
-    const blocking = process.env.WARPOS_DISPATCH_CONTRACT_ENFORCE === "block" && mm.severity === "high";
-    process.stderr.write(
-      `[dispatch-claude] shape-resolver ${blocking ? "VIOLATION" : "advisory"}: ` +
-        `role '${role}' dispatched as 'subprocess-claude' but the resolver picks '${mm.expected}' ` +
-        `(${mm.expectedReason || mm.reason}; severity=${mm.severity || "medium"}).\n`,
-    );
-    if (blocking) {
-      console.log(
-        JSON.stringify({ ok: false, provider: PROVIDER, role, reaped: false, reason: "dispatch_shape_mismatch", expected: mm.expected, actual: "subprocess-claude", severity: mm.severity }),
+    if (GENERIC_BUILD_IDS.has(role.toLowerCase())) {
+      // G1: the resolver falls back to adhoc/inline for 'builder' because it isn't
+      // in role-registry — but we KNOW it's a build-chain sentinel (class-resolved
+      // above). Suppress the misleading "resolver picks 'inline'" advisory; the
+      // contract consult block above already emitted the truthful note.
+    } else {
+      const blocking = process.env.WARPOS_DISPATCH_CONTRACT_ENFORCE === "block" && mm.severity === "high";
+      process.stderr.write(
+        `[dispatch-claude] shape-resolver ${blocking ? "VIOLATION" : "advisory"}: ` +
+          `role '${role}' dispatched as 'subprocess-claude' but the resolver picks '${mm.expected}' ` +
+          `(${mm.expectedReason || mm.reason}; severity=${mm.severity || "medium"}).\n`,
       );
-      process.exit(1);
+      if (blocking) {
+        console.log(
+          JSON.stringify({ ok: false, provider: PROVIDER, role, reaped: false, reason: "dispatch_shape_mismatch", expected: mm.expected, actual: "subprocess-claude", severity: mm.severity }),
+        );
+        process.exit(1);
+      }
     }
   }
 } catch {

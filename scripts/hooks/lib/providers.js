@@ -573,8 +573,17 @@ function modelsMatch(requested, reported) {
 function runProvider(role, prompt, opts = {}) {
   // Bumped 2026-04-28 from 120s → 900s. xhigh reasoning + 175KB review prompts
   // routinely exceed 2 min on gpt-5.4; gemini-3.1 pro-preview with 90KB prompts
-  // also timed out at 120s. 15 min is the new ceiling for review-class workloads.
-  const timeoutMs = opts.timeoutMs || 900_000;
+  // also timed out at 120s. 15 min is the new RAW bound for review-class workloads.
+  // T-304 fix-cycle (claude backend lane, 2026-06-10): runProvider was the FOURTH
+  // wrapper of NOTAGAIN audit G8 and the W0 build clamped only the other three —
+  // a foreground runProvider at 900s outlives the 600s harness Bash kill, so its
+  // death/quota record never gets written. Same fail-closed clamp as the wrappers:
+  // foreground (or undetectable) → ≤540s; explicit background signal → full bound.
+  const { foregroundAwareTimeout, WRAPPER_DEFAULTS } = require("../../dispatch/timeout-policy");
+  const timeoutMs = foregroundAwareTimeout(
+    opts.timeoutMs || WRAPPER_DEFAULTS["run-provider"],
+    opts,
+  );
   const strict = opts.strict !== false; // default ON — fail on silent downgrade
   // opts.provider forces a provider regardless of the role→provider manifest
   // mapping — used for a SECOND security pass on GPT:

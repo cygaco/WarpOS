@@ -107,12 +107,20 @@ try {
   safeSpawn = null;
 }
 
+// T-20260610-304 (G8/N1): foreground-aware timeout clamp. The raw default is 15m but
+// the harness FOREGROUND Bash ceiling is 600s — a foreground wrapper is killed by the
+// harness BEFORE its own bound fires, so it never writes its death record. The shared
+// policy helper clamps to 540s (FOREGROUND_CEILING_MS) unless an explicit background
+// signal (WARPOS_DISPATCH_BACKGROUND=1 / opts.background) is present. FAIL-CLOSED:
+// absence of the signal ⇒ clamp, never the longer default.
+const { foregroundAwareTimeout, WRAPPER_DEFAULTS } = require("./dispatch/timeout-policy");
+
 // ── Input gate (mirrors scripts/portfolio/dispatch.js) ──────
 const SKILL_RE = /^\/[a-z][a-z0-9_-]*(:[a-z][a-z0-9_-]*)?$/;
 const SAFE_ARG_RE = /^[A-Za-z0-9_\-./:=@,+]+$/;
 
 const PROVIDER = "claude";
-const DEFAULT_TIMEOUT_MS = 15 * 60 * 1000; // 15 min — shorter than the harness reap threshold
+const DEFAULT_TIMEOUT_MS = WRAPPER_DEFAULTS["dispatch-skill"]; // 15 min — sourced from canonical policy
 const MAX_BUFFER = 64 * 1024 * 1024; // 64 MB — heavy skills emit big aggregates
 // RI-004 reap mitigation (ticket T-20260608-269): the production spawn writes the
 // child's stdout to a DURABLE FILE (safeSpawnFile) so an outer-harness reap of the
@@ -396,9 +404,12 @@ function dispatchSkill(opts) {
   // mirroring dispatch-claude.js which also passes its prompt only on stdin.
   const claudeArgs = [...prefixArgs, "-p", "--agent", "general-purpose"];
 
-  const TIMEOUT_MS = parseInt(
-    process.env.DISPATCH_SKILL_TIMEOUT_MS || `${DEFAULT_TIMEOUT_MS}`,
-    10,
+  // T-20260610-304: clamp requested bound to foreground ceiling (540s). An env override
+  // sets the *requested* bound but the foreground ceiling is the hard cap. Background
+  // signal (WARPOS_DISPATCH_BACKGROUND=1) passes through the full requested bound.
+  const TIMEOUT_MS = foregroundAwareTimeout(
+    parseInt(process.env.DISPATCH_SKILL_TIMEOUT_MS || `${DEFAULT_TIMEOUT_MS}`, 10),
+    {}, // opts — WARPOS_DISPATCH_BACKGROUND env var is checked inside the helper
   );
   // Pass canonical CLAUDE_PROJECT_DIR so any nested telemetry resolves to canonical
   // (ED-016 class), not a cwd-bent path.

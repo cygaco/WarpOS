@@ -191,6 +191,67 @@ function validateDispatch(req) {
 }
 
 /**
+ * Validate a proposed dispatch against a NAMED class's contract directly,
+ * bypassing the role-registry lookup. Used for known generic build ids (e.g.
+ * 'builder') that are NOT in role-registry.json but map to a real class —
+ * so the advisory emitted by the wrapper is TRUTHFUL rather than "(fail-closed)".
+ * G1 / β option (c) / EVT-dispatch-shape-w0-plan-design-001.
+ *
+ *   { class, shape, toolId?, cwd? } -> { ok, violations[], contract }
+ *
+ * The shape + toolId + cwd_policy checks mirror validateDispatch but operate
+ * against the class definition directly, never against registry attributes.
+ * DEFENSE-IN-DEPTH note: this function does NOT have access to build_chain
+ * registry attributes (the role is not in the registry), so the hard invariant
+ * check (build_chain → NOT in-process) cannot be applied here. That invariant
+ * ONLY guards registered roles via validateDispatch; callers who use this helper
+ * must know the class maps to a safe shape (build_chain_worker + subprocess-claude
+ * is the only sanctioned call site — dispatch-claude.js, which already enforces
+ * the worktree isolation gate for build-chain roles BEFORE reaching this path).
+ */
+function validateDispatchForClass(req) {
+  const violations = [];
+  const className = req && req.class;
+  const shape = req && req.shape;
+  if (!className) return { ok: false, violations: ["no class supplied"], contract: null };
+  const contract = loadContract();
+  const classContract = contract.role_classes && contract.role_classes[className];
+  if (!classContract) {
+    return {
+      ok: false,
+      violations: [`class '${className}' is not in role_classes — cannot resolve a dispatch contract`],
+      contract: null,
+    };
+  }
+  const resolved = mergeContract(contract.defaults || {}, classContract);
+  if (!shape) {
+    violations.push("no shape supplied");
+  } else {
+    const allowed = resolved.allowed_shapes || [];
+    const forbidden = resolved.forbidden_shapes || [];
+    if (forbidden.includes(shape)) {
+      violations.push(`shape '${shape}' is FORBIDDEN for class '${className}'. Allowed: ${allowed.join(", ")}.`);
+    } else if (!allowed.includes(shape)) {
+      const hint = shape === "api" ? " — API availability never implies API dispatch (PLAN §3/N-2)." : "";
+      violations.push(`shape '${shape}' is not allowed for class '${className}'. Allowed: ${allowed.join(", ")}.${hint}`);
+    }
+  }
+  if (req && "toolId" in req && shape && !violations.length) {
+    if (!toolMatches(resolved.tool_id, req.toolId)) {
+      violations.push(`tool '${req.toolId}' does not match the contract tool_id (${JSON.stringify(resolved.tool_id)}) for class '${className}'.`);
+    }
+  }
+  if (resolved.cwd_policy === "worktree-required") {
+    if (!req.cwd) {
+      violations.push(`class '${className}' has cwd_policy 'worktree-required' but NO cwd was supplied — a build-chain dispatch must name its isolated worktree (omitting cwd is not a bypass).`);
+    } else if (path.resolve(req.cwd) === PROJECT_ROOT) {
+      violations.push(`class '${className}' has cwd_policy 'worktree-required' but cwd is the canonical root — a build-chain role must run in an isolated worktree.`);
+    }
+  }
+  return { ok: violations.length === 0, violations, contract: { class: className, ...resolved } };
+}
+
+/**
  * The mode-scoped dispatch profile (S-LC-06 / PLAN §8.7) for a mode, or null.
  * A profile NARROWS (never widens) which shapes a class/role may use in that mode.
  */
@@ -378,6 +439,7 @@ function validateContractFile() {
 
 module.exports = {
   loadContract, loadRegistry, classForRole, contractForRole, validateDispatch,
+  validateDispatchForClass,
   skillExecution, validateContractFile, registryAttrs, CONTRACT_PATH, REGISTRY_PATH,
   ARGV_SCHEMA_VERSION, modeProfile, allowedShapesForRoleInMode,
 };

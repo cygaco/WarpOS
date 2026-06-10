@@ -229,6 +229,24 @@ test("--worktree <subdir without .git> → exit 2 (not a real worktree)", () => 
   assert(comps.length === 0, "no record when a plain subdir is refused");
 });
 
+// ── 10. G1: generic build id 'builder' → advisory is TRUTHFUL ──────────────────
+test("G1: generic build id 'builder' advisory is truthful — no '(fail-closed)' lie", () => {
+  const ledger = path.join(scratch, "l10");
+  const res = runWrapper({ fake: fakeHappy, ledgerDir: ledger });
+  // Dispatch must still succeed — proceed-on-advisory default is unchanged (W0).
+  assert(res.status === 0, `expected exit 0 after G1 fix, got ${res.status} (stderr: ${(res.stderr || "").slice(0, 500)})`);
+  // G1 PLANTED VIOLATION: the OLD advisory said "(fail-closed)" for 'builder' — that was a lie.
+  // After the fix, the advisory must NOT contain "(fail-closed)".
+  // If this assertion fails, it means the GENERIC_BUILD_IDS re-route was not applied.
+  assert(
+    !(res.stderr || "").includes("(fail-closed)"),
+    `G1 REGRESSION: advisory still says '(fail-closed)' for generic build id 'builder'. stderr: ${(res.stderr || "").slice(0, 500)}`,
+  );
+  // The record must still be written correctly.
+  const comps = readLedger(ledger, "dispatch-completions.jsonl");
+  assert(comps.length === 1 && comps[0].ok === true, "completion record must still be ok:true after G1 fix");
+});
+
 // ── Summary ─────────────────────────────────────────────────
 console.log(`\ndispatch-claude.test.js — ${passed} passed, ${failed} failed`);
 process.exit(failed === 0 ? 0 : 1);

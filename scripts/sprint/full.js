@@ -38,6 +38,7 @@
 
 const fs = require("fs");
 const path = require("path");
+const crypto = require("crypto");
 const { spawnSync, execSync } = require("child_process");
 
 const SPRINT = require("./paths");
@@ -931,6 +932,7 @@ function checkDesignWithoutRoster(sprintId) {
 
 function phase1Plan(state, args) {
   state.currentPhase = "plan";
+  process.env.WARPOS_PHASE_ID = state.currentPhase; // T-303 (N8): phase context for child dispatches
   emit("sprint_full_phase_started", {
     sprint_id: state.sprintId,
     phase: "plan",
@@ -1105,6 +1107,7 @@ function deriveDocScale(state) {
 
 function phase2Design(state) {
   state.currentPhase = "design";
+  process.env.WARPOS_PHASE_ID = state.currentPhase; // T-303 (N8)
 
   // On --resume, if tickets are already minted from a prior run, skip
   // the rescaffold + tickets_pending halt and advance to Phase 3.
@@ -1223,6 +1226,7 @@ function phase2Design(state) {
 
 function phase3Execute(state) {
   state.currentPhase = "execute";
+  process.env.WARPOS_PHASE_ID = state.currentPhase; // T-303 (N8)
   emit("sprint_full_phase_started", {
     sprint_id: state.sprintId,
     phase: "execute",
@@ -1402,6 +1406,7 @@ function findExistingStagingRelease(sprintId, target) {
 
 function phase4ReleasePrep(state) {
   state.currentPhase = "release-prep";
+  process.env.WARPOS_PHASE_ID = state.currentPhase; // T-303 (N8)
   emit("sprint_full_phase_started", {
     sprint_id: state.sprintId,
     phase: "release-prep",
@@ -1610,6 +1615,7 @@ function flipActiveSprintsStatusForRetro(sprintId) {
 
 function phase5Retro(state) {
   state.currentPhase = "retro";
+  process.env.WARPOS_PHASE_ID = state.currentPhase; // T-303 (N8)
   emit("sprint_full_phase_started", {
     sprint_id: state.sprintId,
     phase: "retro",
@@ -1745,6 +1751,19 @@ function main() {
     );
     return 2;
   }
+
+  // T-303 (N8): establish run-context env vars so all child dispatches (runHelper
+  // spreads ...process.env) carry the same run identity. Rule: respect an inherited
+  // WARPOS_RUN_ID — a parent orchestrator's run_id wins; only generate when absent.
+  // Format mirrors makeDispatchId() but prefixed `run-` to distinguish orchestrator
+  // runs from per-dispatch ids.
+  if (!process.env.WARPOS_RUN_ID) {
+    process.env.WARPOS_RUN_ID =
+      "run-" + Date.now().toString(36) + "-" + crypto.randomBytes(4).toString("hex");
+  }
+  // Stamp the sprint id so dispatch wrappers' runContext() returns the correct sprint.
+  process.env.WARPOS_SPRINT_ID = sprintId;
+  // WARPOS_PHASE_ID is set at each phase entry (below in each phase function).
 
   // Cost gate: per-run --cost-gate on|off overrides the persistent toggle
   // (scripts/sprint/cost-gate.js -> .claude/runtime/sprint-cost-gate.json).
