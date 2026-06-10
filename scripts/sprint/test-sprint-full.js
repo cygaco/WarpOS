@@ -1498,6 +1498,19 @@ function testSprintModeEpsilonDefaults() {
   ok("M-6: --no-epsilon-dispatch keeps epsilon=true", noDispatch.epsilon === true);
   ok("M-6: --no-epsilon-dispatch sets epsilonDispatch=false", noDispatch.epsilonDispatch === false);
   ok("M-6: --no-epsilon-dispatch sets _epsilonDispatchExplicit=true", noDispatch._epsilonDispatchExplicit === true);
+
+  // M-7 (re-review fix-cycle 2026-06-10): STANDALONE --no-epsilon-dispatch (no
+  // --epsilon) — qa caught M-6 masking the main()-level override: the sprint-mode
+  // default must guard the dispatch half with _epsilonDispatchExplicit too.
+  const soloNoDispatch = full.parseArgs(["node", "full.js", "--no-epsilon-dispatch"]);
+  ok("M-7: standalone --no-epsilon-dispatch → epsilonDispatch=false", soloNoDispatch.epsilonDispatch === false);
+  ok("M-7: standalone --no-epsilon-dispatch → _epsilonDispatchExplicit=true", soloNoDispatch._epsilonDispatchExplicit === true);
+  ok("M-7: standalone --no-epsilon-dispatch leaves _epsilonExplicit=false", soloNoDispatch._epsilonExplicit === false);
+  const fullSrc2 = fs.readFileSync(path.join(__dirname, "full.js"), "utf8");
+  ok(
+    "M-7: main() sprint-default guards dispatch half with _epsilonDispatchExplicit",
+    /if \(!args\._epsilonDispatchExplicit\) args\.epsilonDispatch = true;/.test(fullSrc2),
+  );
 }
 
 // ── N. Design-without-roster enforcer (T-297) ────────────────────────

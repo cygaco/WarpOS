@@ -1717,7 +1717,9 @@ function main() {
       const modeLib = require("../hooks/lib/mode");
       if (modeLib.isSprint()) {
         args.epsilon = true;
-        args.epsilonDispatch = true;
+        // Re-review fix (gauntlet 2026-06-10, qa lane): respect a standalone
+        // --no-epsilon-dispatch — the dispatch half has its own explicit tracker.
+        if (!args._epsilonDispatchExplicit) args.epsilonDispatch = true;
       }
     } catch {
       /* fail-open: mode detection unavailable — do not default ON */
