@@ -175,8 +175,14 @@ function parseArgs(argv) {
     // records) instead of full.js's telemetry-only emitPhaseConsults. ADDITIVE — the default
     // (flag absent / WARPOS_EPSILON_RUNTIME unset) is the unchanged script path.
     // `--epsilon-dispatch` additionally writes real per-agent completion records.
+    // T-297: in sprint mode these default ON (sprint-mode default applied in main() after
+    // mode detection; explicit CLI flags and WARPOS_EPSILON_RUNTIME env always win).
     epsilon: process.env.WARPOS_EPSILON_RUNTIME === "on",
     epsilonDispatch: false,
+    // Tracks whether epsilon/epsilonDispatch were set via explicit CLI flag (vs env/default).
+    // Used by main() to determine whether to apply the sprint-mode default.
+    _epsilonExplicit: false,
+    _epsilonDispatchExplicit: false,
   };
   for (let i = 2; i < argv.length; i++) {
     const a = argv[i];
@@ -193,8 +199,11 @@ function parseArgs(argv) {
     else if (a === "--beta-message") out.betaMessage = argv[++i];
     else if (a === "--pending-phase") out.pendingPhase = argv[++i];
     else if (a === "--cost-gate") out.costGate = argv[++i];
-    else if (a === "--epsilon") out.epsilon = true;
-    else if (a === "--epsilon-dispatch") { out.epsilon = true; out.epsilonDispatch = true; }
+    else if (a === "--epsilon") { out.epsilon = true; out._epsilonExplicit = true; }
+    else if (a === "--epsilon-dispatch") {
+      out.epsilon = true; out.epsilonDispatch = true;
+      out._epsilonExplicit = true; out._epsilonDispatchExplicit = true;
+    }
     else if (!a.startsWith("--") && out.request === null) out.request = a;
   }
   return out;
@@ -870,6 +879,44 @@ function maybeConsultBeta(state, boundary, args) {
   return { ok: false, halt_reason: "invalid_beta_verdict", boundary, message: `Unexpected verdict state for '${verdict}'.` };
 }
 
+// ── T-297: design-without-roster enforcer (report-only) ──────────────
+//
+// When ε-dispatch is active and the design scaffold succeeds, verify that at
+// least one design-step dispatch completion record exists on the ledger. If
+// requirement artifacts were written but no roster records exist, emit a
+// `design_without_roster` warning event (never halts — report-only this sprint).
+//
+// TODO(T-297-enforcer-ramp): promote to halt once ε-dispatch is the default
+// for a full sprint cycle and the ledger consistently carries design records.
+function checkDesignWithoutRoster(sprintId) {
+  try {
+    const completionsPath = path.join(REPO_ROOT, PATHS.dispatchCompletionsFile);
+    const hasLedger = fs.existsSync(completionsPath);
+    let hasDesignRecord = false;
+    if (hasLedger) {
+      const lines = fs.readFileSync(completionsPath, "utf8").split(/\r?\n/).filter(Boolean);
+      hasDesignRecord = lines.some((line) => {
+        try {
+          const rec = JSON.parse(line);
+          return rec.sprint === sprintId && rec.step === "design" && rec.ok === true;
+        } catch { return false; }
+      });
+    }
+    if (!hasDesignRecord) {
+      emit("design_without_roster", {
+        sprint_id: sprintId,
+        ledger_exists: hasLedger,
+        warning:
+          "design artifacts scaffolded but no ε-dispatch roster records found for " +
+          "design step — consult records may be telemetry-only (report-only, T-297-enforcer-ramp)",
+        enforcement: "report-only",
+      });
+    }
+  } catch {
+    /* fail-open: a report-only check must never break the pipeline */
+  }
+}
+
 // ── Phase 1: plan ─────────────────────────────────────────────────────
 
 function phase1Plan(state, args) {
@@ -1115,6 +1162,8 @@ function phase2Design(state) {
       message: `scripts/sprint/design.js exited ${res.code}.\nstderr: ${res.stderr}`,
     };
   }
+  // T-297: design-without-roster enforcer — check only when ε-dispatch is active.
+  if (state.epsilonDispatch) checkDesignWithoutRoster(state.sprintId);
   const dur = Date.now() - startTs;
   state.timeline.push({
     idx: 2,
@@ -1648,6 +1697,23 @@ function main() {
     return 2;
   }
 
+  // T-297: Sprint-mode default — when the active session mode is sprint, enable
+  // ε-conduct (epsilon + epsilonDispatch) by default. Explicit CLI flags
+  // (_epsilonExplicit tracks them) and WARPOS_EPSILON_RUNTIME env always win.
+  // Non-sprint modes: behavior byte-identical to today. Fail-open on mode error.
+  const _envEpsilonSet = Object.prototype.hasOwnProperty.call(process.env, "WARPOS_EPSILON_RUNTIME");
+  if (!args._epsilonExplicit && !_envEpsilonSet) {
+    try {
+      const modeLib = require("../hooks/lib/mode");
+      if (modeLib.isSprint()) {
+        args.epsilon = true;
+        args.epsilonDispatch = true;
+      }
+    } catch {
+      /* fail-open: mode detection unavailable — do not default ON */
+    }
+  }
+
   const presetResult = loadPreset(args.autonomy);
   if (!presetResult.ok) {
     process.stderr.write(presetResult.error + "\n");
@@ -1870,4 +1936,5 @@ module.exports = {
   betaBoundariesPath,
   emitPhaseConsults,
   sprintComposition,
+  checkDesignWithoutRoster,
 };

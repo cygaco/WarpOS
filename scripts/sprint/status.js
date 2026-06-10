@@ -66,6 +66,11 @@ function gatherRows() {
       let currentLoop = null;
       let lastCheckpoint = "";
       let resumeCommand = "";
+      // AL-W-006: expose full crash_recovery, ralph, and reports objects so --json
+      // consumers see the complete current.yaml schema (not just extracted scalars).
+      let crashRecovery = null;
+      let ralph = null;
+      let reports = null;
 
       if (currentExists) {
         const current = readYamlMaybe(paths.current);
@@ -79,6 +84,9 @@ function gatherRows() {
           resumeCommand =
             (current.crash_recovery && current.crash_recovery.resume_command) ||
             "";
+          crashRecovery = current.crash_recovery || null;
+          ralph = current.ralph || null;
+          reports = current.reports || null;
         }
       }
       if (progressExists) {
@@ -108,6 +116,10 @@ function gatherRows() {
         last_checkpoint: lastCheckpoint,
         resume_command: resumeCommand,
         primary: registry && registry.primary === entry.id,
+        // AL-W-006: full sub-objects for --json schema alignment with current.yaml.
+        crash_recovery: crashRecovery,
+        ralph,
+        reports,
       });
     }
   }
@@ -130,6 +142,9 @@ function gatherRows() {
         last_checkpoint: relPath(path.join(dir, "progress.yaml")),
         resume_command: "",
         primary: false,
+        crash_recovery: null,
+        ralph: null,
+        reports: null,
       });
     }
   }

@@ -53,6 +53,38 @@ function splitList(s) {
     .filter(Boolean);
 }
 
+// AL-W-006: normalize the existing progress.yaml against the current schema before
+// merging. Prevents stale or version-mismatched fields from silently propagating to
+// the new checkpoint (e.g., a bool current_loop from an older schema version).
+function normalizeExisting(raw) {
+  if (!raw || typeof raw !== "object") return {};
+  return {
+    current_phase: typeof raw.current_phase === "string" ? raw.current_phase : "idle",
+    current_command: typeof raw.current_command === "string" ? raw.current_command : "none",
+    current_ticket: raw.current_ticket != null ? raw.current_ticket : null,
+    current_task: raw.current_task != null ? raw.current_task : null,
+    current_loop: typeof raw.current_loop === "number" ? raw.current_loop : null,
+    status: typeof raw.status === "string" ? raw.status : "running",
+    last_completed_step: typeof raw.last_completed_step === "string" ? raw.last_completed_step : "",
+    next_action: typeof raw.next_action === "string" ? raw.next_action : "",
+    active_files: Array.isArray(raw.active_files) ? raw.active_files : [],
+    modified_files: Array.isArray(raw.modified_files) ? raw.modified_files : [],
+    checks_last_run: raw.checks_last_run != null ? raw.checks_last_run : null,
+    checks_passing: Array.isArray(raw.checks_passing) ? raw.checks_passing : [],
+    checks_failing: Array.isArray(raw.checks_failing) ? raw.checks_failing : [],
+    blockers: Array.isArray(raw.blockers) ? raw.blockers : [],
+    approvals_needed: Array.isArray(raw.approvals_needed) ? raw.approvals_needed : [],
+    external_services_needed: Array.isArray(raw.external_services_needed) ? raw.external_services_needed : [],
+    issues_opened: Array.isArray(raw.issues_opened) ? raw.issues_opened : [],
+    tickets_updated: Array.isArray(raw.tickets_updated) ? raw.tickets_updated : [],
+    ralph_checkpoint: raw.ralph_checkpoint != null ? raw.ralph_checkpoint : null,
+    resume_command: typeof raw.resume_command === "string" ? raw.resume_command : "",
+    resume_notes: typeof raw.resume_notes === "string" ? raw.resume_notes : "",
+    safe_to_continue: typeof raw.safe_to_continue === "boolean" ? raw.safe_to_continue : true,
+    stop_reason: raw.stop_reason != null ? raw.stop_reason : null,
+  };
+}
+
 function frozenCheckpointPath(sprintId) {
   const dir = SPRINT.checkpoints;
   ensureDir(dir);
@@ -80,7 +112,7 @@ function main() {
     process.stderr.write("required: --sprint <id>\n");
     return 2;
   }
-  const existing = readYamlMaybe(SPRINT.progress) || {};
+  const existing = normalizeExisting(readYamlMaybe(SPRINT.progress) || {});
   const next = {
     schema: "warpos/sprint/sprint-progress/v1",
     sprint: a.sprint,
@@ -150,4 +182,4 @@ if (require.main === module) {
   process.exit(main());
 }
 
-module.exports = { main };
+module.exports = { main, normalizeExisting };
