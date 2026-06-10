@@ -29,6 +29,8 @@
     ".claude/agents/store.json",
     ".claude/agents/president/_system/oneshot/store.json",
     ".claude/agents/president/_system/oneshot/store.json.prev-run-backup.json",
+    ".claude/agents/president/_system/beta/events.jsonl",
+    ".claude/.agent-result-hashes.json",
     ".claude/agents/INTEGRATION-MAP.md",
     ".claude/reference/architecture-map.md",
     ".claude/project/reference/agent-dispatch-guide.md",
