@@ -56,7 +56,11 @@ function loadPlanContract(current) {
   return readYamlMaybe(resolved);
 }
 
-function buildGranularStoriesBody(candidates, outcome) {
+// T-298: R-ids in granular stories must stay within the set defined in prd.md
+// (R-1..R-N where N = requirement_areas.length). If there are more stories than
+// requirement areas, wrap around using modular indexing so no R-id > N is emitted.
+function buildGranularStoriesBody(candidates, outcome, reqAreas) {
+  const reqCount = Array.isArray(reqAreas) ? reqAreas.length : 0;
   if (!candidates || candidates.length === 0) {
     return `## S-1 — (fill from plan contract)\n\n**As** the user\n**I want** (fill)\n**So that** ${outcome}\n\nAcceptance criteria:\n- AC-1: (set by design step)\n\nLinked: \`H-1\`, \`R-1\`.\nCOPY: see \`copy.md\`.\nINPUTS: see \`inputs.md\`.\nTRACE: see \`trace.md\`.\n`;
   }
@@ -64,6 +68,8 @@ function buildGranularStoriesBody(candidates, outcome) {
     .map((candidate, idx) => {
       const n = idx + 1;
       const title = typeof candidate === "string" ? candidate : String(candidate);
+      // Cap R-id to defined requirement areas (modular wrap when stories > req areas).
+      const rId = reqCount > 0 ? `R-${(n - 1) % reqCount + 1}` : `R-${n}`;
       return [
         `## S-${n} — ${title}`,
         ``,
@@ -74,7 +80,7 @@ function buildGranularStoriesBody(candidates, outcome) {
         `Acceptance criteria:`,
         `- AC-1: (set by design step)`,
         ``,
-        `Linked: \`H-1\`, \`R-${n}\`.`,
+        `Linked: \`H-1\`, \`${rId}\`.`,
         `COPY: see \`copy.md\`.`,
         `INPUTS: see \`inputs.md\`.`,
         `TRACE: see \`trace.md\`.`,
@@ -82,6 +88,100 @@ function buildGranularStoriesBody(candidates, outcome) {
       ].join("\n");
     })
     .join("\n");
+}
+
+// T-298: single-source helpers — PRD R-list, trace map rows, and trace entries all
+// derive from the SAME plan.requirement_areas (N items → R-1..R-N everywhere).
+
+function buildRequirementsList(areas) {
+  if (!areas || areas.length === 0) {
+    return "- `R-1` — (fill from plan contract)";
+  }
+  return areas.map((area, i) => `- \`R-${i + 1}\` — ${area}`).join("\n");
+}
+
+function buildTraceMapRows(areas, sourceRequest) {
+  const src = (sourceRequest || "request").split(/\s+/).slice(0, 5).join(" ");
+  if (!areas || areas.length === 0) {
+    return `| ${src} | R-1 | S-1 | C-1 | IN-1 | — | T-… | — | — | — | — |`;
+  }
+  return areas
+    .map((_, i) => {
+      const n = i + 1;
+      return `| ${src} | R-${n} | S-${n} | C-${n} | IN-${n} | — | T-… | — | — | — | — |`;
+    })
+    .join("\n");
+}
+
+function buildTraceEntries(areas) {
+  if (!areas || areas.length === 0) {
+    return [
+      `## TR-1 — (fill)`,
+      ``,
+      `**Event:** (fill)`,
+      `**When:** (fill)`,
+      `**Captured fields:** (fill)`,
+      `**Linked requirement:** \`R-1\``,
+      `**Linked story:** \`S-1\``,
+      `**Why we capture this:** (fill)`,
+    ].join("\n");
+  }
+  return areas
+    .map((area, i) => {
+      const n = i + 1;
+      return [
+        `## TR-${n} — ${area}`,
+        ``,
+        `**Event:** (fill)`,
+        `**When:** (fill)`,
+        `**Captured fields:** (fill)`,
+        `**Linked requirement:** \`R-${n}\``,
+        `**Linked story:** \`S-${n}\``,
+        `**Why we capture this:** (fill)`,
+      ].join("\n");
+    })
+    .join("\n\n");
+}
+
+// T-298: Trace-integrity check — every R-id referenced in granular-stories.md and
+// trace.md must be defined in prd.md. FAIL-CLOSED for newly scaffolded sprints
+// (not legacy-waived). Fail-open for file-read errors.
+function checkTraceIntegrity(outDir, sprintId) {
+  try {
+    const prdPath = path.join(outDir, "prd.md");
+    if (!fs.existsSync(prdPath)) return { ok: true };
+    const prdText = fs.readFileSync(prdPath, "utf8");
+
+    const defined = new Set();
+    for (const m of prdText.matchAll(/`(R-\d+)`/g)) defined.add(m[1]);
+    if (defined.size === 0) return { ok: true };
+
+    const errors = [];
+    for (const fname of ["granular-stories.md", "trace.md"]) {
+      const fpath = path.join(outDir, fname);
+      if (!fs.existsSync(fpath)) continue;
+      const ftext = fs.readFileSync(fpath, "utf8");
+      for (const m of ftext.matchAll(/`(R-\d+)`/g)) {
+        if (!defined.has(m[1])) {
+          errors.push(`${fname}: references \`${m[1]}\` which is not defined in prd.md`);
+        }
+      }
+    }
+    if (errors.length) {
+      return {
+        ok: false,
+        message:
+          `R-id trace-integrity FAILED for sprint ${sprintId}:\n` +
+          errors.map((e) => `  - ${e}`).join("\n") +
+          `\nAll R-ids in granular-stories.md and trace.md must be defined in prd.md ` +
+          `(defined: ${[...defined].join(", ")}). ` +
+          `Fix requirement_areas in the plan contract and re-run /sprint:design.`,
+      };
+    }
+    return { ok: true };
+  } catch {
+    return { ok: true }; // fail-open for unexpected errors
+  }
 }
 
 function scaffold(args) {
@@ -142,6 +242,15 @@ function scaffold(args) {
     desired_behavior: plan.desired_behavior,
     surface_1: (plan.affected_surfaces[0] || {}).surface || "—",
     surface_1_evidence: (plan.affected_surfaces[0] || {}).evidence_level || "—",
+    // T-298: single-source R-id variables — derived from plan.requirement_areas.
+    // requirements_list, trace_map_rows, trace_entries all use the same N-item source.
+    requirements_list: buildRequirementsList(plan.requirement_areas || []),
+    trace_map_rows: buildTraceMapRows(
+      plan.requirement_areas || [],
+      plan.source_request_verbatim || "",
+    ),
+    trace_entries: buildTraceEntries(plan.requirement_areas || []),
+    // Keep legacy scalar vars for templates that still reference them directly.
     requirement_1: plan.requirement_areas[0] || "—",
     requirement_2: plan.requirement_areas[1] || "—",
     requirement_3: plan.requirement_areas[2] || "—",
@@ -157,6 +266,7 @@ function scaffold(args) {
     granular_stories_body: buildGranularStoriesBody(
       plan.granular_story_candidates || [],
       plan.user_or_business_outcome || "—",
+      plan.requirement_areas || [],
     ),
   };
 
@@ -294,6 +404,14 @@ function scaffold(args) {
   } catch (err) {
     process.stderr.write(`routing-trace: skipped (${err.message})\n`);
   }
+  // T-298: trace-integrity check — every R-id in granular-stories.md and trace.md
+  // must be defined in prd.md (fail-closed for newly scaffolded sprints).
+  const traceCheck = checkTraceIntegrity(outDir, current.id);
+  if (!traceCheck.ok) {
+    process.stderr.write(`${traceCheck.message}\n`);
+    return 1;
+  }
+
   // SP-20260518-007 R-5: Sprint Goal Verification fixture gate. Fully gated
   // on plan.goal_verification presence (backward-compat for pre-Sprint-A
   // Plan Contracts) — when absent, gate is a no-op.
@@ -401,4 +519,12 @@ if (require.main === module) {
   process.exit(main());
 }
 
-module.exports = { main, scaffold, buildGranularStoriesBody };
+module.exports = {
+  main,
+  scaffold,
+  buildGranularStoriesBody,
+  buildRequirementsList,
+  buildTraceMapRows,
+  buildTraceEntries,
+  checkTraceIntegrity,
+};

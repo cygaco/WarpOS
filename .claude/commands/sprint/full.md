@@ -48,6 +48,12 @@ Do NOT use `/sprint:full` for:
 
 Defaults: `--autonomy moderate --scope recommended --documentation-scale auto --mode adhoc`.
 
+**ε-conduct default (sprint-mode only):** When the session mode is `sprint` (`.claude/runtime/mode.json`
+`mode === "sprint"`), `--epsilon` and `--epsilon-dispatch` are ON by default — the orchestrator
+detects this via `scripts/hooks/lib/mode.js#isSprint()`. Explicit CLI flags (`--epsilon`,
+`--no-epsilon`, `--epsilon-dispatch`) and `WARPOS_EPSILON_RUNTIME` env var always win. Non-sprint
+sessions have byte-identical behavior to the pre-T-297 default (ε OFF unless explicitly passed).
+
 See `paths.sprintFullAutonomy` for preset definitions and
 `_docs/sprint/AUTONOMY.md` for plain-English semantics. The 11 input
 contracts (validation + failure modes) live in
@@ -102,7 +108,21 @@ The orchestrator drives all 5 phases. Each phase writes a checkpoint
 via `scripts/sprint/checkpoint.js` and emits `sprint_full_phase_*`
 events to `paths.eventsFile`.
 
-### Step 2b — Skill body design-phase handoff (Phase 2 halt)
+### Step 2b — ε-conducted design phase (Phase 2)
+
+**When ε-conduct is active** (`epsilonDispatch: true` — the default in sprint sessions, see above),
+Phase 2 routes through ε's hook-point roster rather than a bare scaffold call:
+
+- ε dispatches in-process Agent-tool calls for the design roster (product-lead, design-lead,
+  req-reviewer, and per-phase peers listed in `epsilon.md`'s hook-point registry).
+- **ED-041 constraint:** ε, when a teammate (spawned by α via the Agent tool), CANNOT call the
+  Agent tool itself. In that posture, α acts as the relay: it runs the design roster agents
+  directly as in-process Agent-tool dispatches and writes their completion records.
+  Top-level α (wearing the ε face) does NOT have this constraint and calls the roster directly.
+- Every roster completion is recorded to `paths.dispatchCompletionsFile`
+  (`.claude/runtime/dispatch-completions.jsonl`) with `{sprint, step:"design", ok:true}`.
+- After design.js succeeds, the orchestrator checks for those records and emits a
+  `design_without_roster` warning event if none are found (report-only, `T-297-enforcer-ramp`).
 
 After Phase 2 scaffolds the requirements templates, the orchestrator
 **always halts** with `halt_reason: tickets_pending`. This is by
@@ -113,6 +133,8 @@ ticket scope from rendered templates.
 
 1. Review and fill `.claude/project/sprint/requirements/<SP-id>/`
    (prd.md, acceptance-criteria.md, granular-stories.md, etc.).
+   - The PRD's Requirements list is generated from `plan_contract.requirement_areas`
+     (R-1..R-N, single-source per T-298). Do NOT add R-ids that don't exist in that list.
 2. Mint tickets via:
    ```bash
    node scripts/sprint/ticket.js create \
@@ -128,13 +150,23 @@ The orchestrator's Phase 3 will refuse to advance (halt: `no_tickets_ready`)
 if it finds zero `ready_for_execution` tickets AND zero `done`/`deferred`
 tickets — this is the second guard against hollow runs.
 
-### Step 3 — Skill body Ralph-loop handoff (Phase 3 execute)
+### Step 3 — ε-conducted execute phase + Ralph-loop handoff (Phase 3)
 
 When the orchestrator reaches Phase 3, it iterates
-`ready_for_execution` tickets and marks each `in_progress`. The actual
-Ralph loop (`plan → act → test → review → record → checkpoint`) is
+`ready_for_execution` tickets and marks each `in_progress`.
+
+**When ε-conduct is active,** ε dispatches the build-chain agents (builders, reviewers, fixers)
+via the CLI routes (`dispatch-claude.js` / `dispatch-agent.js`) — the ADR-0009 registry-driven
+runtime. Each builder/reviewer dispatch lands a completion record in
+`paths.dispatchCompletionsFile` (`.claude/runtime/dispatch-completions.jsonl`) with
+`{sprint, step:"execute", role, ok}` so the gauntlet-verify can check liveness (not just the
+presence of the file). Worktree-cwd dispatches write to the WORKTREE's runtime path — see
+`project_dispatch_completions_relative_path_cwd` memory for the caveat; check the worktree
+record before concluding silent death.
+
+The Ralph loop (`plan → act → test → review → record → checkpoint`) is
 the skill body's responsibility per `/sprint:execute`'s contract.
-Alpha drives each ticket through its loop interactively, then marks
+Alpha drives each ticket through its loop, then marks
 the ticket `done` and continues to the next.
 
 Mapping `execute.js` stop_reasons to the preset's
@@ -336,9 +368,14 @@ trace in v0.1.
 
 ## Relationship to existing modes
 
-- **Solo:** Alpha runs all 5 phases directly. No Beta cadence.
-- **Adhoc (default):** Alpha runs phases; Beta consulted at the 4
-  phase boundaries. ESCALATE halts regardless of preset.
+- **Solo:** Alpha runs all 5 phases directly. No Beta cadence. ε-conduct default still applies
+  when mode is `sprint`; toggle with `--no-epsilon` if you need bare-scaffold behavior.
+- **Adhoc (default):** Alpha runs phases; Beta consulted at the 4 phase boundaries. ESCALATE
+  halts regardless of preset. ε-conduct is the default in sprint sessions (see above).
+- **Sprint (session-level):** When `/mode:sprint` is active, the orchestrator auto-enables
+  `epsilon + epsilonDispatch` — ε conducts the full lifecycle via the ADR-0009 registry-driven
+  runtime. α wears the ε face at the top level and calls the in-process roster directly (no
+  ED-041 constraint); a teammate-spawned ε uses CLI routes only.
 - **Oneshot:** NOT supported. `--mode oneshot` is rejected. Oneshot is
   for skeleton rebuilds, not sprint pipelines.
 

@@ -1449,6 +1449,144 @@ function testBetaBoundaryPersistence() {
   }
 }
 
+// ── M. Sprint-mode epsilon defaults (T-297) ──────────────────────────
+
+function testSprintModeEpsilonDefaults() {
+  out.push("M. sprint-mode epsilon defaults (T-297)");
+
+  // M-1: parseArgs with --epsilon sets _epsilonExplicit=true, epsilon=true
+  const withEpsilon = full.parseArgs(["node", "full.js", "--epsilon"]);
+  ok("M-1: --epsilon sets _epsilonExplicit=true", withEpsilon._epsilonExplicit === true);
+  ok("M-1: --epsilon sets epsilon=true", withEpsilon.epsilon === true);
+
+  // M-2: parseArgs with --epsilon-dispatch sets both explicit flags
+  const withEpsilonDispatch = full.parseArgs(["node", "full.js", "--epsilon-dispatch"]);
+  ok("M-2: --epsilon-dispatch sets _epsilonExplicit=true", withEpsilonDispatch._epsilonExplicit === true);
+  ok("M-2: --epsilon-dispatch sets _epsilonDispatchExplicit=true", withEpsilonDispatch._epsilonDispatchExplicit === true);
+  ok("M-2: --epsilon-dispatch sets epsilonDispatch=true", withEpsilonDispatch.epsilonDispatch === true);
+
+  // M-3: no flags → _epsilonExplicit=false (sprint-mode default may override but CLI alone doesn't)
+  const noFlags = full.parseArgs(["node", "full.js", "--sprint", "SP-TEST"]);
+  ok("M-3: no flags → _epsilonExplicit=false", noFlags._epsilonExplicit === false);
+  ok("M-3: no flags → _epsilonDispatchExplicit=false", noFlags._epsilonDispatchExplicit === false);
+
+  // M-4: full.js source has isSprint() call guarded by _epsilonExplicit check
+  const fullSrc = fs.readFileSync(path.join(__dirname, "full.js"), "utf8");
+  ok(
+    "M-4: source references isSprint() for sprint-mode default",
+    fullSrc.includes("isSprint()"),
+  );
+  ok(
+    "M-4: source checks _epsilonExplicit before applying sprint-mode default",
+    fullSrc.includes("_epsilonExplicit"),
+  );
+  ok(
+    "M-4: source uses WARPOS_EPSILON_RUNTIME env guard",
+    fullSrc.includes("WARPOS_EPSILON_RUNTIME"),
+  );
+}
+
+// ── N. Design-without-roster enforcer (T-297) ────────────────────────
+
+function testDesignWithoutRosterEnforcer() {
+  out.push("N. design-without-roster enforcer (T-297)");
+
+  // N-1: full.js exports checkDesignWithoutRoster
+  ok(
+    "N-1: full exports checkDesignWithoutRoster",
+    typeof full.checkDesignWithoutRoster === "function",
+  );
+
+  // N-2: source-string checks for enforcer landmarks in full.js
+  const fullSrc = fs.readFileSync(path.join(__dirname, "full.js"), "utf8");
+  ok(
+    "N-2: source emits design_without_roster event kind",
+    fullSrc.includes("design_without_roster"),
+  );
+  ok(
+    "N-2: source references T-297-enforcer-ramp TODO marker",
+    fullSrc.includes("T-297-enforcer-ramp"),
+  );
+  ok(
+    "N-2: source calls checkDesignWithoutRoster from phase2Design",
+    fullSrc.includes("checkDesignWithoutRoster"),
+  );
+
+  // N-3: checkDesignWithoutRoster is fail-open (does not throw on missing ledger)
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "warp-test-n3-"));
+  let threw = false;
+  try {
+    // Call with a sprint id that has no ledger file — should not throw
+    full.checkDesignWithoutRoster("SP-TEST-MISSING");
+  } catch {
+    threw = true;
+  }
+  ok("N-3: checkDesignWithoutRoster does not throw when ledger absent", !threw);
+  try { fs.rmSync(tmpDir, { recursive: true, force: true }); } catch {}
+}
+
+// ── O. R-id single-sourcing (T-298) ──────────────────────────────────
+
+function testRIdSingleSourcing() {
+  out.push("O. R-id single-sourcing (T-298)");
+  const design = require("./design");
+
+  // O-1: buildGranularStoriesBody with >3 req areas caps R-ids modularly
+  const areas4 = ["Area one", "Area two", "Area three", "Area four"];
+  const body4 = design.buildGranularStoriesBody(
+    [
+      { id: "T-1", title: "Story one", riskLevel: "low", type: "feature" },
+      { id: "T-2", title: "Story two", riskLevel: "low", type: "feature" },
+      { id: "T-3", title: "Story three", riskLevel: "low", type: "feature" },
+      { id: "T-4", title: "Story four", riskLevel: "low", type: "feature" },
+      { id: "T-5", title: "Story five", riskLevel: "low", type: "feature" },
+    ],
+    "Test outcome",
+    areas4,
+  );
+  // R-ids in the body should be R-1..R-4 only (mod 4 wrap), never R-5
+  ok("O-1: body with 4 req areas contains R-1", body4.includes("R-1"));
+  ok("O-1: body with 4 req areas contains R-4", body4.includes("R-4"));
+  ok("O-1: body with 4 req areas does NOT contain R-5 (modular cap)", !body4.includes("R-5"));
+
+  // O-2: buildRequirementsList generates N entries from areas
+  const list3 = design.buildRequirementsList(["Req A", "Req B", "Req C"]);
+  ok("O-2: buildRequirementsList generates R-1", list3.includes("R-1"));
+  ok("O-2: buildRequirementsList generates R-3", list3.includes("R-3"));
+  ok("O-2: buildRequirementsList does NOT generate R-4 for 3-area list", !list3.includes("R-4"));
+
+  const list5 = design.buildRequirementsList(["A", "B", "C", "D", "E"]);
+  ok("O-2: buildRequirementsList generates R-5 for 5-area list", list5.includes("R-5"));
+
+  // O-3: buildTraceMapRows generates N rows
+  const rows = design.buildTraceMapRows(["Area A", "Area B"], "Test request");
+  ok("O-3: buildTraceMapRows returns string", typeof rows === "string");
+  ok("O-3: buildTraceMapRows includes R-1", rows.includes("R-1"));
+  ok("O-3: buildTraceMapRows includes R-2", rows.includes("R-2"));
+  ok("O-3: buildTraceMapRows does NOT include R-3 for 2-area list", !rows.includes("R-3"));
+
+  // O-4: buildTraceEntries generates N sections
+  const entries = design.buildTraceEntries(["Area A", "Area B"]);
+  ok("O-4: buildTraceEntries returns string", typeof entries === "string");
+  ok("O-4: buildTraceEntries includes TR-1", entries.includes("TR-1"));
+  ok("O-4: buildTraceEntries includes TR-2", entries.includes("TR-2"));
+  ok("O-4: buildTraceEntries does NOT include TR-3 for 2-area list", !entries.includes("TR-3"));
+
+  // O-5: checkTraceIntegrity is exported from design.js
+  ok("O-5: design exports checkTraceIntegrity", typeof design.checkTraceIntegrity === "function");
+
+  // O-6: source-string checks for design.js new functions
+  const designSrc = fs.readFileSync(path.join(__dirname, "design.js"), "utf8");
+  ok("O-6: design.js source has buildRequirementsList", designSrc.includes("buildRequirementsList"));
+  ok("O-6: design.js source has buildTraceMapRows", designSrc.includes("buildTraceMapRows"));
+  ok("O-6: design.js source has buildTraceEntries", designSrc.includes("buildTraceEntries"));
+  ok("O-6: design.js source has checkTraceIntegrity", designSrc.includes("checkTraceIntegrity"));
+  ok(
+    "O-6: design.js uses modular R-id wrap (reqCount + 1)",
+    designSrc.includes("reqCount") && designSrc.includes("% reqCount"),
+  );
+}
+
 // ── Run ──────────────────────────────────────────────────────────────
 
 function main() {
@@ -1465,6 +1603,9 @@ function main() {
   testBetaConsultContract();
   testReleaseRecordIdempotencyAndModerateGate();
   testBetaBoundaryPersistence();
+  testSprintModeEpsilonDefaults();
+  testDesignWithoutRosterEnforcer();
+  testRIdSingleSourcing();
 
   out.push("");
   out.push(`Results: ${passes} passed, ${failures} failed.`);

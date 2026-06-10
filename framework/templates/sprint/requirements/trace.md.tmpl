@@ -13,24 +13,11 @@
 
 ## Trace Map
 
+> One row per requirement area (R-1..R-N, single-source from plan_contract.requirement_areas,
+> T-298). Fill in Ticket, Code, and Test columns during execution.
+
 | Source | Requirement | Story | COPY | INPUT | ESD | Ticket | Code | Test | Release | Learning |
 |---|---|---|---|---|---|---|---|---|---|---|
-| {{source_request_short}} | R-1 | S-1 | C-1 | IN-1 | — | T-… | {{code_file_1}} | {{test_file_1}} | — | — |
+{{trace_map_rows}}
 
-## TR-1 — {{trace_1_id}}
-
-**Event:** {{trace_1_event}}
-**When:** {{trace_1_when}}
-**Captured fields:** {{trace_1_fields}}
-**Linked requirement:** `R-1`
-**Linked story:** `S-1`
-**Why we capture this:** {{trace_1_why}}
-
-## TR-2 — {{trace_2_id}}
-
-**Event:** {{trace_2_event}}
-**When:** {{trace_2_when}}
-**Captured fields:** {{trace_2_fields}}
-**Linked requirement:** `R-2`
-**Linked story:** `S-2`
-**Why we capture this:** {{trace_2_why}}
+{{trace_entries}}
