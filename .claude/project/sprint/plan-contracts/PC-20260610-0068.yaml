@@ -1,0 +1,114 @@
+schema: warpos/sprint/plan-contract/v1
+id: PC-20260610-0068
+created_at: "2026-06-10T15:32:22.350Z"
+updated_at: "2026-06-10T15:32:22.350Z"
+sprint: SP-20260610-003
+source_request: "Lanes C+D of the 2026-06-10 WARPOS.md sweep fix arc. β batched-precleared (EVT-warpos-sprint-2026-06-10-batched-001): Lane C DECIDE 0.82 with ONE gate — the epsilon-dispatch default flip commits only after Lane B's WG-6 stall rules land (SATISFIED: landed @d13254d on sprint/SP-20260610-002); Lane D DECIDE 0.91. Engine sprint, ff-merge close, defer retro (RI-001)."
+source_request_verbatim: "Lane C (sprint-pipeline truth): (1) WG-3: rewrite the /sprint:full skill body (.claude/commands/sprint/full.md) for the org era — Phase 2/3 route through ε's hook-point roster instead of instructing α to author design artifacts + mint tickets itself; flip --epsilon-dispatch to default ON when the live mode is sprint (use scripts/hooks/lib/mode.js isSprint() — the S-LC-01 mode-lifecycle registry mechanism — NOT a new literal); add a design-transition enforcer: refuse the design→designed transition when requirement artifacts changed without matching roster completion records on the ledger. (2) WG-7: derive the PRD R-section and stories/trace R-references from the SAME source (plan contract requirement_areas), sized dynamically, in the design scaffold; add a trace-integrity check — every R-id cited in stories/trace MUST be defined in the PRD (fail, not legacy-waive). (3) AL-W-006: align status.js/checkpoint.js field schemas with the current.yaml schema (crash_recovery, ralph, reports fields). Lane D (research:deep runnability): (4) MC-WG-2: ship scripts/research/deep-run.js — standalone node runner with INTERNAL async polling (no bash sleep), all fs-writes inside the script; rewrite .claude/commands/research/deep.md as a thin wrapper that launches it; (5) MC-WG-3: Phase 0 adds a tiny billable test call per provider (cheap model, <=5 tokens) classifying insufficient_quota/429-credits as an up-front skip with an actionable message."
+request_type: bug_fix_batch
+interpreted_intent: "Close the aspirational-vs-enforced gap in the sprint pipeline (the org roster is policy without an enforcer on the default path) and make the deep-research skill actually runnable under the harness security model."
+user_or_business_outcome: "Sprint mode stops silently bypassing the company org; scaffolded sprints are born with consistent traceability; /research:deep works instead of dying on blocked primitives; depleted API keys are caught up front instead of after async submission."
+affected_surfaces:
+  - surface: ".claude/commands/sprint/full.md (org-era rewrite)"
+    evidence_level: verified_from_repo
+    notes: "grep -c epsilon → 0 verified 2026-06-10."
+  - surface: "scripts/sprint/full.js (epsilon-dispatch default when isSprint(); design-transition enforcer seam)"
+    evidence_level: verified_from_repo
+    notes: "full.js:178-179 epsilon opt-in env, epsilonDispatch:false. β condition: use the registry-backed isSprint(), no stale literals."
+  - surface: "scripts/sprint/design.js + framework/templates/sprint/requirements/* (R-id single-sourcing)"
+    evidence_level: verified_from_repo
+    notes: "live reproduction TODAY: SP-20260610-002 scaffold minted stories/trace R-refs beyond the PRD R-list; sub-agent had to repair."
+  - surface: "scripts/sprint/status.js + checkpoint.js (schema align)"
+    evidence_level: verified_from_repo
+    notes: "status.js:55-100 missing crash_recovery/ralph/reports vs current.yaml schema; checkpoint.js:83 returns existing without validation."
+  - surface: "NEW scripts/research/deep-run.js + .claude/commands/research/deep.md (thin wrapper)"
+    evidence_level: verified_from_repo
+    notes: "deep.md lines 255/339/452 sleep + 212-468 node -e writeFileSync; no deep-run.js exists."
+  - surface: "NEW trace-integrity check (R-id cited ⊆ R-id defined) wired report-only"
+    evidence_level: inferred_from_repo
+    notes: "fold into scan:requirements or req-format-guard per existing idiom; fail not legacy-waive for newly scaffolded sprints."
+current_behavior:
+  evidence_level: verified_from_repo
+  notes: "See affected_surfaces — all verified with file:line on 2026-06-10 (runtime/notes/warpos-md-sweep-2026-06-10.md)."
+desired_behavior: "sprint-mode /sprint:full defaults to ε-dispatch (registry-derived mode detection); the skill prose matches the engine; design transition requires roster records; scaffolded R-ids are consistent by construction + enforced; status/checkpoint read the real schema; research:deep runs as a standalone node runner with an up-front quota probe."
+scope:
+  size: m
+  risk_level: medium
+  complexity_drivers:
+    - "full.js is the live sprint engine — the flip must not break non-sprint modes (default unchanged outside sprint mode) and needs a planted test"
+    - "design-transition enforcer must not false-positive on legacy sprints (scope to newly scaffolded)"
+    - "deep-run.js touches paid APIs — quota probe must be <=5 tokens and respect the $5 floor; no key values in output (auth-resolver labels only)"
+scope_variants:
+  minimal_safe: "WG-7 scaffold fix + AL-W-006 align + deep-run.js only; defer the epsilon flip."
+  recommended: "All five items; epsilon flip lands behind isSprint() with planted tests both ways; trace-integrity + design-transition enforcers report-only first."
+  expanded: "Above + retrofit trace repair for existing open sprints (NOT recommended — closed sprints stay untouched)."
+assumptions:
+  - "Lane B's WG-6 stall rules are landed (β gate) — TRUE @d13254d on the integration branch."
+  - "lib/mode.js isSprint() exists and reads the mode-lifecycle registry (S-LC-01)."
+  - "Lane A (ε, concurrent) touches generate-framework-manifest.js/release.js/warpos-install-baseline.js/scaffold payload — disjoint from these surfaces (release.js is Lane A's; Lane C does NOT touch release.js)."
+open_questions:
+  - "Design-transition enforcer wiring point: inside full.js design phase vs a standalone check — builder follows the dispatch-contract.js validate idiom unless full.js has a natural seam."
+  - "Quota probe model choice per provider (cheapest available; openai gpt-4o-mini-class, gemini flash-class)."
+non_goals:
+  - "Touching Lane A surfaces (release.js, generate-framework-manifest.js, warpos-install-baseline.js)."
+  - Flipping any E-LIFECYCLE report-only gate to blocking.
+  - "Re-running existing closed sprints' traceability."
+  - "Pushing to remote (α merges; push per-action)."
+requirement_areas:
+  - "sprint:full org-era skill + epsilon-dispatch default (WG-3)"
+  - "design-transition roster-record enforcer (WG-3 enforcer)"
+  - "R-id single-source scaffold + trace-integrity check (WG-7)"
+  - "status/checkpoint schema align (AL-W-006)"
+  - "deep-run.js standalone runner + thin skill (MC-WG-2)"
+  - "Phase 0 billable quota probe (MC-WG-3)"
+high_level_story_candidates:
+  - "As the operator, sprint mode runs the company org by default — α stops ghost-writing the roster's design work."
+  - "As an auditor, every scaffolded sprint's R-ids are consistent from birth and enforced."
+  - "As the operator, /research:deep runs to completion in the harness and tells me up front when a key has no credit."
+granular_story_candidates:
+  - "TICKET-1: /sprint:full skill org-era rewrite + full.js epsilon-dispatch default via isSprint() (planted tests: sprint mode→ON, other modes→unchanged) + design-transition enforcer (report-only)."
+  - "TICKET-2: design scaffold R-id single-sourcing + trace-integrity check + AL-W-006 status/checkpoint schema align."
+  - "TICKET-3: scripts/research/deep-run.js + deep.md thin wrapper + Phase 0 quota probe."
+workstream_candidates:
+  - "sprint-pipeline (TICKET-1+2)"
+  - "research (TICKET-3)"
+preliminary_ticket_candidates:
+  - title: "sprint:full org-era skill + epsilon-dispatch default (isSprint) + design-transition enforcer"
+    type: feature
+    risk: medium
+    order: 1
+  - title: "R-id single-source scaffold + trace-integrity check + status/checkpoint schema align"
+    type: bug
+    risk: medium
+    order: 2
+  - title: "deep-run.js standalone runner + thin deep.md + Phase 0 quota probe"
+    type: feature
+    risk: medium
+    order: 3
+external_service_dependencies: []
+approval_boundaries:
+  - "ff-merge local only; push per-action."
+  - "quota probe spend ≤ cents, within the $5 floor."
+  - "gauntlet on gemini + claude fallback."
+design_required: false
+execution_allowed_without_design: true
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+lane: engine
+beta_review:
+  before_plan:
+    verdict: DECIDE
+    summary: "Batched consult EVT-warpos-sprint-2026-06-10-batched-001: Lane C DECIDE 0.82 (gate: epsilon flip after Lane B WG-6 — SATISFIED @d13254d; mode detection must be registry-backed isSprint(), confirmed), Lane D DECIDE 0.91. Silence=proceed all boundaries."
+plan_quality:
+  confidence: high
+  notes: "All items verified reproducing 2026-06-10 with file:line; WG-7 re-reproduced live in this session's own scaffold."
+next_recommended_command: "/sprint:design"
+resume_instructions: "Sprint SP-20260610-003 has Plan Contract PC-20260610-0068. Run the next_recommended_command. If interrupted, read .claude/project/sprint/sprint-progress.yaml#resume_command."
+tracker_paths:
+  current_sprint: ".claude/project/sprint/current-sprint.yaml"
+  sprint_progress: ".claude/project/sprint/sprint-progress.yaml"
+  plan_contract: ".claude/project/sprint/plan-contracts/PC-20260610-0068.yaml"
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260610-0068.report.md"
+created_by: alpha
+updated_by: alpha
