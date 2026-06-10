@@ -92,4 +92,24 @@ real proof; a bare `proof: TODO` stub is "named but unproven" and is FLAGGED
 - W3: sprint-hook-points conditions + coverage-gate fields — additive schema extension.
 
 ---
+
+## 12. W2 design prep (α, 2026-06-10 — written after W0+W1 landed @ba61a2f; W2 NOT started)
+
+W2 = the HIGH-blast wave: the resolver becomes the only door. Design decisions drafted here so the W2 sprint builds from a settled target, not live deliberation.
+
+### 12.1 The four W2 components, ramped
+1. **Wrapper shape-refusal (the core):** each of the 3 wrappers + epsilon-runtime consults `dispatch-shape.js#resolveShape(role, context)` at spawn; a mismatch between the requested shape and the resolved shape REFUSES (exit 2, named reason). Ramp: per-wrapper env-gated report-only (`WARPOS_SHAPE_DOOR=report|enforce`, default report) → flip per wrapper after one clean sprint each → default enforce with kill-switch (`WARPOS_DISABLE_SHAPE_DOOR=1`). The resolver's known weakness (it picked 'inline' for a real subprocess builder — "no distinguishing signal") must be fixed FIRST: the W0 run-correlation env (WARPOS_RUN_ID + the contract class from validateDispatchForClass) IS the distinguishing signal the resolver lacked — wire resolveShape to consume them.
+2. **dispatch-contract ENFORCE flip:** precondition = zero advisory-noise dispatches across one full sprint (evidence accruing: all post-W0 ledger roles are registry-resolvable; SP-20260610-008 is the candidate evidence sprint). Flip is one constant + the planted scrapped-id test flips from advisory-asserting to refusal-asserting.
+3. **route-guard repoint:** stop blessing recordless raw `claude -p --agent <non-build-role>`; the W1 `--review-fallback` lane (recorded) is now the sanctioned claude review route. Also wire-or-remove `isReviewFallbackRoute` (qa minor, 2026-06-10). NOTE: raw `claude -p --agent` remains legitimate for consult-class roles ONLY if a recorded equivalent exists — decide per role-class in the W2 design, don't blanket-ban what has no recorded alternative yet.
+4. **Envelope ADR (revive-or-bury, draft = ADR-0012):** telemetry showed 36/36 envelope-validation failures while the actual review envelopes (parsed JSON verdicts) worked all day — the generic validator validates the WRONG contract. DRAFT DECISION: bury the generic envelope validator; replace with per-role-class envelope schemas declared in dispatch-contract (`role_classes.<class>.envelope_schema`), validated only where declared, with a consumer that ACTS on failure (re-prompt once, then fail the lane). Either way the dead 100%-fail validator stops pretending.
+
+### 12.2 W2 entry gate (all must hold before the sprint starts)
+- Cross-family review debt CLEARED on W0+W1 diffs (gemini re-review when quota resets ~2026-06-10T23:40Z, or GPT after codex OAuth restore) — W2 modifies the refusal layer itself; it gets the strongest available review, not the weakest.
+- Advisory-noise-zero evidence: one full sprint (SP-008 candidate) with 0 contract-resolution advisories on the ledger.
+- resolveShape distinguishing-signal fix designed (12.1.1) — without it, enforce-mode would refuse LEGITIMATE subprocess builders.
+- Provider health: at least 2 of 3 families live (the breaker + auth-posture from W1 make this checkable mechanically: provider-down.json empty + auth modes sane).
+
+### 12.3 Rollback
+Every W2 component carries its own kill-switch env + report-only fallback; the wrapper refusal is 4 independent flips (one per wrapper), never a big bang. A false-refusal in production = set the kill-switch, file the planted-test gap, fix, re-flip.
+
 _End of plan artifact for E-DISPATCH-SHAPE-001. State lives in the epic tracker; this is the durable plan._
