@@ -1,0 +1,115 @@
+schema: warpos/sprint/plan-contract/v1
+id: PC-20260610-0070
+created_at: "2026-06-10T20:02:17.236Z"
+updated_at: "2026-06-10T20:02:17.236Z"
+sprint: SP-20260610-006
+source_request: "Conduct W0 of E-DISPATCH-SHAPE-001 (the dispatch-shape decision spine). Three tickets, all in scripts/dispatch/* + the wrappers + full.js/epsilon-runtime, per NOTAGAIN.md §7 W0 + runtime/notes/notagain-stack-audit.md gaps G1, N8, G8/N1."
+source_request_verbatim: "W0 — make the ids and clocks true. (1) Role-id bijection (audit G1): the generic 'builder' id the dispatch guide mandates is unresolvable by dispatch-contract/role-registry — every builder dispatch prints a misleading '(fail-closed)' advisory and proceeds. Fix per existing idiom (alias 'builder' to the right registry row, or a real generic row; pick the LESS invasive, record the choice in the commit). The wrapper and the contract must agree; the advisory must become truthful. (2) Run-correlation export (audit N8): full.js + epsilon-runtime export WARPOS_RUN_ID/WARPOS_PHASE_ID into dispatched-wrapper env; all three wrappers stamp run_id (and sprint_id when available) from env onto completion records. (3) Timeout sanity (audit G8/N1): every wrapper's effective bound must be < its applicable ceiling (foreground harness Bash ≤600s → bound ≤540s) OR the dispatch must be documented/forced background; the death record must ALWAYS be written before the bound expires. Add a /scan:full-runnable config check (standalone-runnable; do NOT edit .claude/commands/scan/full.md). PLANTED-VIOLATION TESTS for all three."
+request_type: bug_fix_batch
+interpreted_intent: "Make the dispatch ledger honest at the id + clock level so the enforcement layer above it (coverage-gate run-scoping, gauntlet-verify liveness, the §17.4 contract) has true inputs to work on. These are the W0 foundation of the dispatch-shape epic — the smallest fixes that unblock W1/W2. NOT building the resolver-as-only-door (that is W2); NOT flipping ENFORCE (that is W2 after the sweep)."
+user_or_business_outcome: "A builder dispatch no longer prints a lying '(fail-closed)' advisory then proceeds; real runs carry a run_id so run-scoped coverage is satisfiable instead of degrading to time-window correlation; a foreground-dispatched wrapper writes its death record before the harness kills it (the doogle 560s death that wrote nothing stops happening). Each is guarded by a planted-violation test so the gap can't silently reopen."
+affected_surfaces:
+  - surface: "G1 — role-id bijection: scripts/dispatch-claude.js (~L247-270 advisory) + scripts/dispatch/dispatch-contract.js (validateDispatch) + role-registry/role-aliases"
+    evidence_level: verified_from_repo
+    notes: "validateDispatch({role:'builder'}) returns ok:false 'role builder is not in role-registry.json (fail-closed)' but both wrappers treat it as a stderr advisory and PROCEED unless WARPOS_DISPATCH_CONTRACT_ENFORCE=block (never set). 'builder' is in scrapped{} and role-aliases.js deliberately does NOT alias splits (FE vs BE is contextual). DECISION NEEDED (β): the audit's 3 options — (a) sweep to pod roles + REFUSE once ENFORCE (out of W0 scope — needs the flip); (b) register a real generic 'builder' row (tier:worker,kind:builder,build_chain:true); (c) teach the wrapper to map 'builder'→build_chain_worker class so the consult is meaningful + the advisory is truthful. Recommend (c) as LEAST invasive for W0 (no registry-row addition, no ENFORCE dependency): make the advisory HONEST — a known-generic build id resolves to the build_chain_worker contract class (truthful 'resolved to build-chain-worker', silent); a truly-unknown id keeps the honest fail-closed wording. The wrapper + contract agree via the class mapping."
+  - surface: "N8 — run-correlation export: scripts/sprint/full.js (dispatch call sites) + scripts/sprint/epsilon-runtime.js (spawnAgent env)"
+    evidence_level: verified_from_repo
+    notes: "EXPORT-only fix: the wrappers ALREADY stamp run_id from env (dispatch-agent.js runContext() L131-134 reads process.env.WARPOS_RUN_ID/WARPOS_PHASE_ID; dispatch-claude + dispatch-skill reuse it). The orchestrators don't SET them on the child env. full.js + epsilon-runtime spawnAgent must put WARPOS_RUN_ID (+ WARPOS_PHASE_ID, + WARPOS_SPRINT_ID when available) into the dispatched child's env. Then run_id stops being null 231/231."
+  - surface: "G8/N1 — timeout sanity: scripts/dispatch-claude.js:90 (DEFAULT_TIMEOUT_MS=20m) + epsilon-runtime.js:440/459 (15/20m) + scripts/dispatch-skill.js (15m) + a NEW standalone config-check script"
+    evidence_level: verified_from_repo
+    notes: "Every wrapper default-bound (dispatch-claude 20m, epsilon 15/20m, dispatch-skill 15m, dispatch-agent 15m) exceeds the 600s foreground harness ceiling → a foreground-Bash-invoked wrapper is killed before it writes its death record (doogle 560s death wrote nothing). Fix: a foreground-aware effective bound ≤540s (the wrapper picks the lower of its default and a foreground cap when not explicitly backgrounded), OR document the mandatory background pairing; ensure the death record is written on the bound. NEW: a standalone config-check (scripts/checks/dispatch-timeout-sanity.js or similar) that asserts every wrapper's foreground effective bound ≤540s — report-only, runnable standalone; the /scan:full wiring is a COMMENT note only (do NOT edit scan/full.md — classifier-held)."
+  - surface: "Planted-violation tests (3): scrapped-id refusal/truthful-advisory test; null-run_id-under-live-run fails coverage test; foreground-bound>540s fails the config check test"
+    evidence_level: inferred_from_repo
+    notes: "Each gap earns a test that FAILS on the un-fixed state: (1) a 'builder' dispatch resolves truthfully (or a scrapped id refuses under ENFORCE) — assert the advisory wording is honest; (2) a completion record written with null run_id under a live run (WARPOS_RUN_ID set) fails the coverage run-scope check; (3) a wrapper whose foreground effective bound >540s fails dispatch-timeout-sanity."
+current_behavior:
+  evidence_level: verified_from_repo
+  notes: "G1: builder dispatch prints '(fail-closed)' and proceeds (advisory-only, ENFORCE never set); 78/231 ledger records carry unresolvable roles. N8: run_id null on all 231 real records (orchestrators never export WARPOS_RUN_ID). G8/N1: wrapper bounds 15-20m all exceed the 600s foreground ceiling; a foreground dispatch is killed before its death record (doogle 560s death wrote nothing). All three live-reproduced in the audit."
+desired_behavior: "G1: a builder dispatch's advisory is truthful — resolvable→silent/honest 'resolved to build-chain-worker', truly-unresolvable→honest fail-closed wording; the wrapper and contract agree. N8: full.js+epsilon-runtime export WARPOS_RUN_ID/PHASE_ID/SPRINT_ID; real records carry a non-null run_id; run-scoped coverage is satisfiable. G8/N1: every wrapper's foreground effective bound ≤540s (or documented background); the death record is always written before the bound; a standalone config check fails a >540s foreground bound. Three planted-violation tests green."
+scope:
+  size: m
+  risk_level: high
+  complexity_drivers:
+    - "the dispatch wrappers are the live build/review path — a wrong timeout or env change breaks every dispatch; additive + behavior-preserving, golden the existing wrapper tests before/after"
+    - "the G1 advisory-wording change must NOT silently flip behavior to REFUSE (that is the ENFORCE ramp, W2/out-of-scope) — it makes the wording truthful only, keeping the proceed-on-advisory default this sprint"
+    - "the run_id export must not leak into unrelated child processes or overwrite an existing run_id; scope it to the dispatch call sites"
+    - "the timeout fix's foreground-vs-background detection must be correct — a real background dispatch legitimately needs the longer bound; the cap applies to the foreground path only"
+    - "the config check must fail-closed (an unreadable wrapper default reads as a violation, not a pass) and be runnable standalone (no scan/full.md edit — classifier-held)"
+scope_variants:
+  minimal_safe: "N8 (run_id export) + G8/N1 (timeout sanity + config check) only — the two purely-mechanical id/clock fixes; defer G1's advisory-wording decision."
+  recommended: "All three W0 gaps + their planted-violation tests. G1 via option (c) (least invasive — truthful advisory via build_chain_worker class mapping, no ENFORCE dependency); N8 export from both orchestrators; G8/N1 foreground-aware bound + standalone config check."
+  expanded: "Above + extend the run_id export to ALSO stamp sprint_id from env on records (the conduct rule asks 'sprint_id when available') and a coverage-gate assertion that a live run with a null-run_id record is flagged — only if it stays additive/report-only."
+assumptions:
+  - "The wrappers already stamp run_id from env (verified dispatch-agent.js runContext); N8 is export-only on the orchestrator side."
+  - "Option (c) for G1 (truthful advisory via class mapping, no registry-row add, no ENFORCE flip) is the least-invasive choice that makes the wrapper+contract agree — to be ratified by β (the conduct rule says 'record the choice in the commit')."
+  - "The foreground harness Bash ceiling is 600s (per the audit + the harness timeout cap); 540s is the safe wrapper bound (60s headroom for the death-record write)."
+  - "The standalone config check can live as a new scripts/checks/*.js runnable without the scan/full.md wiring (the wiring is a comment note only — classifier-held)."
+open_questions:
+  - "G1 option (a) vs (b) vs (c) — β to confirm (c) is the right W0 least-invasive call, OR direct (b) register-a-generic-row if the generic id is deemed operationally load-bearing."
+  - "Timeout fix mechanism: a foreground-cap inside each wrapper (the wrapper clamps to 540s unless backgrounded) vs a documented caller-pairing (Bash timeout 600000 + DISPATCH_BUILDER_TIMEOUT_MS=540000). Recommend the in-wrapper clamp (structural, not prose) — β to confirm."
+non_goals:
+  - "W1/W2/W3 of the epic (claude-fallback wrapper, circuit breaker, auth-posture, resolver-as-only-door, ENFORCE flip, per-class lane policy)."
+  - "Flipping WARPOS_DISPATCH_CONTRACT_ENFORCE (the report-only→blocking ramp — W2)."
+  - "Editing .claude/commands/scan/full.md (classifier-held — standalone-runnable check only)."
+  - "Re-fixing anything in NOTAGAIN §6 receipts (F-1/F-2/F-3, S-12, safe-spawn, WG-1..9, S-LC-07)."
+  - "Pushing to remote / regenerating manifests in canonical (α owns the end-of-arc)."
+requirement_areas:
+  - "G1: builder role-id bijection — truthful advisory (wrapper+contract agree)"
+  - "N8: WARPOS_RUN_ID/PHASE_ID export from full.js+epsilon-runtime onto wrapper env"
+  - "G8/N1: foreground-aware wrapper timeout bound + always-write death record"
+  - "standalone dispatch-timeout-sanity config check (report-only, no scan/full.md edit)"
+  - "3 planted-violation tests (scrapped-id/run_id/timeout)"
+high_level_story_candidates:
+  - "As the dispatch ledger, a builder dispatch's advisory tells the truth (resolvable→silent, unresolvable→honest), so 4-sprints-of-builds-on-a-lying-advisory can't recur."
+  - "As the coverage gate, real runs carry a run_id, so run-scoped §17.4 coverage is satisfiable instead of degrading to time-windows."
+  - "As the death-record layer, a foreground-dispatched wrapper writes its death record before the harness kills it, so a 560s death no longer writes nothing."
+  - "As the maintainer, a planted-violation test fails closed on each of the three gaps, so they can't silently reopen."
+granular_story_candidates:
+  - "TICKET-1 (BACKEND, G1): make the builder advisory truthful — dispatch-claude maps a known-generic build id to the build_chain_worker contract class (resolvable→honest/silent), a truly-unknown id keeps the fail-closed wording; wrapper + dispatch-contract agree; planted test: a scrapped id's advisory is honest, a resolvable id is silent. Record the option choice in the commit."
+  - "TICKET-2 (BACKEND, N8): full.js + epsilon-runtime spawnAgent export WARPOS_RUN_ID + WARPOS_PHASE_ID (+ WARPOS_SPRINT_ID when available) onto the dispatched child env; planted test: a record written under a live run (env set) carries a non-null run_id and satisfies the coverage run-scope check; a null run_id under a live run fails it."
+  - "TICKET-3 (BACKEND, G8/N1): foreground-aware wrapper bound — dispatch-claude/epsilon/dispatch-skill clamp the effective foreground bound to ≤540s unless explicitly backgrounded; death record always written on the bound; NEW standalone scripts/checks/dispatch-timeout-sanity.js (report-only, fail-closed) asserts every wrapper's foreground bound ≤540s; planted test: a >540s foreground bound fails the check. /scan:full wiring as a comment note only."
+workstream_candidates:
+  - "G1 truthful-advisory (wrapper+contract agreement)"
+  - "N8 run_id export (orchestrator side)"
+  - "G8/N1 timeout sanity + standalone config check"
+  - "3 planted-violation tests"
+preliminary_ticket_candidates:
+  - title: "G1: truthful builder advisory — wrapper maps generic build id to build_chain_worker class + contract agreement + planted test"
+    type: bug
+    risk: high
+    order: 1
+  - title: "N8: export WARPOS_RUN_ID/PHASE_ID/SPRINT_ID from full.js+epsilon-runtime onto wrapper env + planted run-scope test"
+    type: bug
+    risk: medium
+    order: 2
+  - title: "G8/N1: foreground-aware wrapper bound (≤540s) + always-write death record + standalone dispatch-timeout-sanity check + planted test"
+    type: bug
+    risk: high
+    order: 3
+external_service_dependencies: []
+approval_boundaries:
+  - "β is NOT pre-cleared for this epic — consult β at plan→design (this payload's summary); DECIDE proceeds, ESCALATE halts to α."
+  - "Cross-provider reviewers QUOTA-DEAD (openai metered-dry, gemini resets ~23:40Z) — do NOT dispatch them; build + verify, report MERGE-READY; α runs the execution-access claude gauntlet via the Agent tool."
+  - "ff-merge LOCAL only; α owns the end-of-arc merge + canonical manifest regen + push."
+  - "Do NOT touch .claude/commands/scan/full.md, tests/regression/S-LC-07, or NOTAGAIN §6 receipts."
+design_required: false
+execution_allowed_without_design: true
+recommended_mode: sprint
+mode_invocation_required_by_user: true
+lane: engine
+beta_review:
+  before_plan:
+    verdict: PENDING
+    summary: "β consult required at plan→design — NOT pre-cleared (new epic E-DISPATCH-SHAPE-001). Key decision for β: ratify G1 option (c) (truthful advisory via build_chain_worker class mapping — least invasive, no registry-row add, no ENFORCE dependency, keeps proceed-on-advisory default this sprint) over (a) sweep+refuse [needs the ENFORCE flip — out of W0] or (b) register a generic row; and the timeout-fix mechanism (in-wrapper foreground clamp ≤540s vs documented caller-pairing — recommend the structural in-wrapper clamp). HIGH risk (live dispatch path) → planted-violation tests mandatory, golden the wrapper tests before/after. Confirm the three fixes stay additive/behavior-preserving (G1 makes wording truthful only, does NOT flip to REFUSE)."
+plan_quality:
+  confidence: high
+  notes: "Grounded in NOTAGAIN.md §4 + §7 W0 + runtime/notes/notagain-stack-audit.md (G1 lines 113-116 live-reproduced, N8 line 150, G8/N1 lines 136-137 + 143) + a live per-file re-confirm (dispatch-claude.js:90 20m default, epsilon-runtime.js:440/459 15/20m, dispatch-agent.js runContext L131-134 already stamps from env, role-aliases.js confirms builder deliberately not aliased). All three reproduce. β consult pending at plan→design."
+next_recommended_command: "/sprint:design"
+resume_instructions: "Sprint SP-20260610-006 has Plan Contract PC-20260610-0070. Run the next_recommended_command. If interrupted, read .claude/project/sprint/sprint-progress.yaml#resume_command."
+tracker_paths:
+  current_sprint: ".claude/project/sprint/current-sprint.yaml"
+  sprint_progress: ".claude/project/sprint/sprint-progress.yaml"
+  plan_contract: ".claude/project/sprint/plan-contracts/PC-20260610-0070.yaml"
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260610-0070.report.md"
+created_by: epsilon
+updated_by: epsilon

@@ -1,6 +1,6 @@
 # Tools Map
 
-Generated: 2026-06-10T05:05:32.519Z
+Generated: 2026-06-10T19:19:44.206Z
 
 Scripts: **176** | npm scripts: **0** | External CLIs: **3**
 
@@ -64,7 +64,7 @@ Scripts: **176** | npm scripts: **0** | External CLIs: **3**
 | drift-verify.js | 5846 | 2026-05-30T01:25:39.574Z |
 | drift-write-decisions.js | 1743 | 2026-05-30T01:25:39.574Z |
 | fix-deep-trace-run09-cleanup.js | 3626 | 2026-05-30T01:25:39.575Z |
-| generate-framework-manifest.js | 25384 | 2026-06-10T04:17:56.702Z |
+| generate-framework-manifest.js | 26450 | 2026-06-10T16:09:05.298Z |
 | generate-maps.js | 12732 | 2026-05-30T01:25:39.577Z |
 | generate-skill-catalog.js | 9320 | 2026-05-30T01:25:39.577Z |
 | generate-steps-maps.js | 8346 | 2026-05-30T01:25:39.578Z |
@@ -177,7 +177,7 @@ Scripts: **176** | npm scripts: **0** | External CLIs: **3**
 | validate-gates.js | 7181 | 2026-06-05T01:45:08.452Z |
 | verify-drift-detector.js | 808 | 2026-05-30T01:25:39.689Z |
 | verify-ui.js | 5832 | 2026-05-30T01:25:39.689Z |
-| warp-setup.js | 42488 | 2026-06-10T04:48:35.555Z |
+| warp-setup.js | 42488 | 2026-06-10T13:54:45.235Z |
 | warpos-sync-run09.js | 4731 | 2026-05-30T01:25:39.690Z |
 | write-market-research-fix-1-brief.js | 6620 | 2026-05-30T01:25:39.710Z |
 | write-mr-fix1-brief.js | 7402 | 2026-05-30T01:25:39.711Z |

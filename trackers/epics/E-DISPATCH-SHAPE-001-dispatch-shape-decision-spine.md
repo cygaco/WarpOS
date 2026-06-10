@@ -12,8 +12,8 @@
 - **Background:** TBD Plan artifact: [../../_planning/epics/E-DISPATCH-SHAPE-001.md](../../_planning/epics/E-DISPATCH-SHAPE-001.md).
 - **Scope:** The dispatch decision spine only: scripts/dispatch/* (dispatch-shape.js resolver, dispatch-contract.json + reader, coverage-gate, gauntlet-verify seams), the three wrappers (dispatch-agent.js, dispatch-claude.js, dispatch-skill.js), scripts/hooks/dispatch-route-guard.js + scope-contract-guard.js taxonomy, scripts/hooks/lib/providers.js quota/breaker seam, full.js/epsilon-runtime.js env export, health checks gaining auth-posture rows.
 - **Out of scope:** Re-fixing NOTAGAIN §6 receipts; E-LIFECYCLE-001 gate flips (operator-gated, §8); the sprint-engine boundary/manifest-flap frictions (RI-003/engine UX — separate); product-layer work.
-- **Current state:** Planned
-- **Percent completion:** 0% — conservative; plan authored, no sprints landed.
+- **Current state:** Active
+- **Percent completion:** ~25% — W0 LANDED 2026-06-10 via SP-20260610-006 (release RL-20260610-041): T-302 truthful builder advisory (validateDispatchForClass; 'builder'→build_chain_worker class, honest wording for unknown ids, NO refuse — that's W2); T-303 run-correlation export (WARPOS_RUN_ID/PHASE_ID/SPRINT_ID from full.js+epsilon-runtime onto wrapper env; coverage-gate run-scope satisfiable; was null 231/231); T-304 foreground-aware timeout (scripts/dispatch/timeout-policy.js FOREGROUND_CEILING_MS=540s fail-closed clamp, death-on-bound, standalone dispatch-timeout-sanity check 5/5 wrappers). Gauntlet: claude 2-lane execution-access (qa PASS; backend FAIL→fix-cycle afe02a4 clamped runProvider, the 4TH G8 wrapper the build missed — the fix-all-callers law caught inside its own fix — →re-review PASS). β DECIDE 0.88 (EVT-dispatch-shape-w0-plan-design-001, ε-consulted directly). DEBT: cross-family (GPT/gemini) review pass owed on the W0 diff when quota recovers (logged, same §H pattern). W1 (availability/fallback/auth-posture) is next.
 
 ## Definition of Done
 - [ ] W0 ids/clocks true: the generic 'builder' role id resolves identically in the wrapper and the dispatch contract (bijection — alias row or guide sweep, one choice recorded); WARPOS_RUN_ID/WARPOS_PHASE_ID exported by full.js/epsilon-runtime onto wrapper env and stamped on records (run-scoped §17.4 coverage satisfiable on a real run); every wrapper timeout bound < its applicable ceiling (foreground ≤9min or mandated background) with a death record ALWAYS written; planted-violation tests for each (scrapped-id dispatch REFUSES; null run_id under a live run fails coverage; foreground bound >540s fails a /scan:full config check).
@@ -80,7 +80,7 @@
 | ROADMAP § Epics entry for E-DISPATCH-SHAPE-001 | Yes | Missing But Required | ROADMAP.md | pending α integration | 2026-06-10 | Alex |
 
 ## Current next action
-Mint the Wave-0 sprint candidate(s) via /sprint:plan, then wire E-DISPATCH-SHAPE-001 into ROADMAP § Epics + the TRACKER header (α at integration).
+W0 DONE 2026-06-10 (SP-20260610-006 @ RL-20260610-041, gauntlet-clean; see § Percent completion for the full receipt). NEXT (open as of 2026-06-10): **W1 — make availability and fallback real**: (a) ONE recorded claude-fallback review lane (ledgered; visibly trips cross_provider_required — gauntlet-verify must SEE it via planted fixture); (b) provider circuit breaker (provider-down state written on quota classification, TTL'd, consulted before dispatch — ends blind retry storms); (c) auth-POSTURE surface (parse auth.json auth_mode; metered-key reads as metered in dispatch-readiness/provider-tier; auth mode stamped into quota error envelopes — closes the 3-day metered-billing drain class, ROADMAP backlog item 6). Mint the W1 sprint id explicitly (RI-007) before invoking the engine. ALSO OWED: cross-family review pass on the W0 diff (base 4d7301f → afe02a4) when GPT/gemini quota recovers.
 
 ## Completion record
 - Final state: Not yet complete.

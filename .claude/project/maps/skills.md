@@ -1,6 +1,6 @@
 # Skills Map
 
-Generated: 2026-06-10T05:05:32.519Z
+Generated: 2026-06-10T19:19:44.206Z
 
 Total: **216** skills across **44** namespaces. 87 user-invocable.
 
@@ -214,7 +214,7 @@ Total: **216** skills across **44** namespaces. 87 user-invocable.
 | adhoc | Enter adhoc team mode — Alpha + Beta + Gamma for collaborative feature development | 2 | 7 |
 | oneshot | Initiate a oneshot build — launch Delta as standalone orchestrator for full skeleton runs | 1 | 6 |
 | solo | Enter solo mode — just Alpha and the user, no agent team | 0 | 2 |
-| sprint | Enter sprint mode — ε (Alex Epsilon) conducts the full sprint lifecycle (plan→design→build→gauntlet→ | 4 | 0 |
+| sprint | Enter sprint mode — ε (Alex Epsilon) conducts the full sprint lifecycle (plan→design→build→gauntlet→ | 4 | 1 |
 
 ### models (4)
 
@@ -404,7 +404,7 @@ Total: **216** skills across **44** namespaces. 87 user-invocable.
 | cost-gate | Toggle the /sprint:full cost-estimate halt on or off — turn off the heuristic spend gate when an ope | 2 | 0 |
 | design | Turn an approved Plan Contract into PRD, stories, COPY, INPUTS, TRACE, acceptance criteria, QA, red- | 2 | 4 |
 | execute | Execute the sprint via Ralph-style plan/act/test/review/record/checkpoint loops per ticket, with cra | 4 | 5 |
-| full | Single-invocation execution of the full sprint pipeline (plan→design→execute→release-prep→retro) und | 8 | 10 |
+| full | Single-invocation execution of the full sprint pipeline (plan→design→execute→release-prep→retro) und | 9 | 10 |
 | plan | Turn a brief plain-language request into a structured sprint plan and durable Plan Contract. Evidenc | 4 | 9 |
 | release | Prepare and execute a sprint release — final checks, approval, deploy gate, release notes, rollback  | 4 | 6 |
 | retrospective | Synthesize a post-sprint retrospective from tracker artifacts — outcomes, friction, action items. Id | 3 | 3 |
@@ -454,8 +454,8 @@ Top callers (skills that invoke the most others):
 - `/oneshot:preflight` → /mode:oneshot, /oneshot:improve, /oneshot:retro, /oneshot:start, /preflight:run, /preflight:setup, /run:sync, /scan:architecture, /scan:environment, /scan:requirements
 - `/warp:reconcile` → /enforcement:log, /fix:deep, /issues:log, /portfolio:status, /roadmap:add, /scan:full, /scan:warpos-staleness, /warp:flag, /warp:release, /warp:update
 - `/oneshot:retro` → /issues:log, /oneshot:improve, /oneshot:preflight, /oneshot:start, /retro:code, /retro:context, /retro:full, /scan:patterns, /scan:requirements
+- `/sprint:full` → /mode:oneshot, /mode:sprint, /scan:full, /scan:roadmap-trace, /sprint:design, /sprint:execute, /sprint:plan, /sprint:release, /sprint:retrospective
 - `/warp:doctor` → /hooks:test, /paths:lint, /scan:architecture, /scan:full, /scan:references, /scan:requirements, /warp:health, /warp:release, /warp:update
-- `/discover:orphaned` → /discover:systems, /issues:list, /learn:integrate, /oneshot:retro, /scan:patterns, /scan:requirements, /session:resume, /session:write
 
 Top called (skills others invoke the most):
 

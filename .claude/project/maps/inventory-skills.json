@@ -1,7 +1,7 @@
 {
   "metadata": {
-    "generated": "2026-06-10T05:05:32.519Z",
-    "lastUpdated": "2026-06-10T05:05:32.519Z",
+    "generated": "2026-06-10T19:19:44.206Z",
+    "lastUpdated": "2026-06-10T19:19:44.206Z",
     "total_skills": 216,
     "namespaces": 44,
     "user_invocable": 87,
@@ -3514,6 +3514,7 @@
             "references": [],
             "calls": [
               "/mode:oneshot",
+              "/mode:sprint",
               "/scan:full",
               "/scan:roadmap-trace",
               "/sprint:design",

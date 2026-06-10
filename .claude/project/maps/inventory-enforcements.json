@@ -1,7 +1,7 @@
 {
   "metadata": {
-    "generated": "2026-06-10T05:05:32.519Z",
-    "lastUpdated": "2026-06-10T05:05:32.519Z",
+    "generated": "2026-06-10T19:19:44.206Z",
+    "lastUpdated": "2026-06-10T19:19:44.206Z",
     "total_hooks": 74,
     "total_modules": 18,
     "uncurated": 0,
@@ -880,7 +880,7 @@
       "mode": "?",
       "file": "scripts/hooks/mode-lifecycle-guard.js",
       "file_size": 16777,
-      "file_modified": "2026-06-10T02:39:09.386Z",
+      "file_modified": "2026-06-10T13:54:45.222Z",
       "registered": true,
       "gates": [],
       "blocks": [],
@@ -1383,7 +1383,7 @@
       "mode": "?",
       "file": "scripts/hooks/session-end-team-teardown.js",
       "file_size": 2782,
-      "file_modified": "2026-06-10T02:39:09.518Z",
+      "file_modified": "2026-06-10T13:54:45.232Z",
       "registered": true,
       "gates": [],
       "blocks": [],
@@ -2020,7 +2020,7 @@
         "role-aliases"
       ],
       "file_size": 25885,
-      "file_modified": "2026-06-10T02:39:09.211Z"
+      "file_modified": "2026-06-10T13:54:45.232Z"
     },
     {
       "id": "template-fillability",
@@ -2417,7 +2417,7 @@
       "generated_from": "framework/paths.registry.json",
       "file": "scripts/hooks/lib/paths.generated.js",
       "file_size": 11004,
-      "file_modified": "2026-06-10T04:48:35.555Z"
+      "file_modified": "2026-06-10T13:54:45.222Z"
     },
     {
       "id": "paths",

@@ -1,17 +1,17 @@
 schema: warpos/sprint/current-sprint/v1
-id: "SP-20260610-006"
-title: "E-DISPATCH-SHAPE-001 W0 - ids and clocks true (role-id bijection, run_id export, timeout sanity)"
-objective: "Run /sprint:plan to set this."
-status: not_started
+id: SP-20260610-006
+title: "E-DISPATCH-SHAPE-001 W0 — make the ids and clocks true"
+objective: "Close the three smallest, highest-leverage gaps from the dispatch-stack audit (NOTAGAIN §7 W0) so the dispatch ledger's ids and clocks stop lying: (G1) the generic 'builder' role the dispatch guide mandates becomes either resolvable or its advisory becomes truthful — the wrapper and the contract must agree; (N8) full.js + epsilon-runtime export WARPOS_RUN_ID/WARPOS_PHASE_ID onto dispatched-wrapper env so the wrappers' existing run_id stampers fire on real runs (today run_id is null 231/231, making §17.4 run-scoped coverage unsatisfiable); (G8/N1) every wrapper's effective bound is < its applicable ceiling (foreground harness Bash ≤600s → bound ≤540s) or the dispatch is documented/forced background, and the death record is ALWAYS written before the bound expires. Each gap ships with a planted-violation test. Engine/tooling sprint, RI-001 fast-close."
+status: releasing
 created_at: "2026-06-10T19:57:00.169Z"
-updated_at: "2026-06-10T19:57:00.169Z"
-source_request: ""
-interpreted_intent: ""
-plan_contract: null
-risk_level: low
+updated_at: "2026-06-10T21:01:46.933Z"
+source_request: "Conduct W0 of E-DISPATCH-SHAPE-001 (the dispatch-shape decision spine). Three tickets, all in scripts/dispatch/* + the wrappers + full.js/epsilon-runtime, per NOTAGAIN.md §7 W0 + runtime/notes/notagain-stack-audit.md gaps G1, N8, G8/N1."
+interpreted_intent: "Make the dispatch ledger honest at the id + clock level so the enforcement layer above it (coverage-gate run-scoping, gauntlet-verify liveness, the §17.4 contract) has true inputs to work on. These are the W0 foundation of the dispatch-shape epic — the smallest fixes that unblock W1/W2. NOT building the resolver-as-only-door (that is W2); NOT flipping ENFORCE (that is W2 after the sweep)."
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260610-0070.yaml"
+risk_level: high
 approval_state: none_required
-current_phase: idle
-recommended_mode: no_recommendation
+current_phase: release
+recommended_mode: sprint
 mode_invocation_required_by_user: true
 external_services:
   identified: []
@@ -31,41 +31,77 @@ tickets:
   in_review: []
   qa_failed: []
   redteam_failed: []
-  done: []
+  done:
+    - T-20260610-302
+    - T-20260610-303
+    - T-20260610-304
   released: []
   deferred: []
   abandoned: []
   reopened: []
   superseded: []
 requirements:
-  prd: null
-  high_level_stories: null
-  granular_stories: null
-  copy: null
-  inputs: null
-  trace: null
-  acceptance_criteria: null
-  qa_plan: null
-  redteam_plan: null
-  release_plan: null
+  prd: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260610-006\\prd.md"
+  high_level_stories: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260610-006\\high-level-stories.md"
+  granular_stories: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260610-006\\granular-stories.md"
+  copy: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260610-006\\copy.md"
+  inputs: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260610-006\\inputs.md"
+  trace: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260610-006\\trace.md"
+  acceptance_criteria: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260610-006\\acceptance-criteria.md"
+  qa_plan: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260610-006\\qa-plan.md"
+  redteam_plan: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260610-006\\redteam-plan.md"
+  release_plan: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260610-006\\release-plan.md"
 checks:
-  lint: { status: not_run, last_run: null, evidence: "" }
-  typecheck: { status: not_run, last_run: null, evidence: "" }
-  tests: { status: not_run, last_run: null, evidence: "" }
-  build: { status: not_run, last_run: null, evidence: "" }
-  qa: { status: not_run, last_run: null, evidence: "" }
-  redteam: { status: not_run, last_run: null, evidence: "" }
+  lint:
+    status: not_run
+    last_run: null
+    evidence: ""
+  typecheck:
+    status: not_run
+    last_run: null
+    evidence: ""
+  tests:
+    status: not_run
+    last_run: null
+    evidence: ""
+  build:
+    status: not_run
+    last_run: null
+    evidence: ""
+  qa:
+    status: not_run
+    last_run: null
+    evidence: ""
+  redteam:
+    status: not_run
+    last_run: null
+    evidence: ""
 approvals:
-  plan: { required: false, state: not_required, ref: null }
-  design: { required: false, state: not_required, ref: null }
-  execution: { required: false, state: not_required, ref: null }
-  release: { required: false, state: not_required, ref: null }
-  external_services: { required: false, state: not_required, ref: null }
+  plan:
+    required: false
+    state: not_required
+    ref: null
+  design:
+    required: false
+    state: not_required
+    ref: null
+  execution:
+    required: false
+    state: not_required
+    ref: null
+  release:
+    required: false
+    state: not_required
+    ref: null
+  external_services:
+    required: false
+    state: not_required
+    ref: null
 reports:
-  plan: null
+  plan: ".claude/project/sprint/plan-contracts/PC-20260610-0070.report.md"
   design: null
   execution: null
-  release: null
+  release: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\releases\\RL-20260610-041.yaml"
 ralph:
   active: false
   current_ticket: null
@@ -74,10 +110,11 @@ ralph:
   last_checkpoint: null
   next_action: null
 crash_recovery:
-  last_checkpoint: null
-  resume_command: "/sprint:plan"
-  resume_summary: "Tracker initialized. No sprint started yet. Run /sprint:plan to begin."
+  last_checkpoint: ".claude/project/sprint/sprint-progress.yaml"
+  resume_command: "/sprint:release"
+  resume_summary: "Release RL-20260610-041 in preparing state. Run /sprint:release with --id RL-20260610-041."
   active_files: []
   dirty_state: false
   blockers: []
   safe_to_continue: true
+lane: engine

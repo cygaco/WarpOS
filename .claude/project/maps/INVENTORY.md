@@ -1,6 +1,6 @@
 # Tool Inventory — Project Ecosystem
 
-**Generated:** 2026-06-10T05:05:32.519Z
+**Generated:** 2026-06-10T19:19:44.206Z
 **Source:** `scripts/regen-maps.js` (deterministic file walks; no LLM synthesis).
 
 ## Headline counts
@@ -17,7 +17,7 @@
 | npm scripts (package.json) | 0 |
 | External CLIs | 3 |
 | Memory stores | 9 |
-| Memory total lines | 50837 |
+| Memory total lines | 54259 |
 | Systems (systems.jsonl entries) | 77 |
 | System categories | 2 |
 | Enforcement hooks (curated) | 74 |

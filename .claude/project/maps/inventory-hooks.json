@@ -1,7 +1,7 @@
 {
   "metadata": {
-    "generated": "2026-06-10T05:05:32.519Z",
-    "lastUpdated": "2026-06-10T05:05:32.519Z",
+    "generated": "2026-06-10T19:19:44.206Z",
+    "lastUpdated": "2026-06-10T19:19:44.206Z",
     "total_hooks": 76,
     "total_lib_modules": 18,
     "registered_hooks": 66,
@@ -277,7 +277,7 @@
       "registered": true,
       "exists": true,
       "size": 16777,
-      "modified": "2026-06-10T02:39:09.386Z"
+      "modified": "2026-06-10T13:54:45.222Z"
     },
     {
       "id": "hook:ownership-guard",
@@ -421,7 +421,7 @@
       "registered": true,
       "exists": true,
       "size": 2782,
-      "modified": "2026-06-10T02:39:09.518Z"
+      "modified": "2026-06-10T13:54:45.232Z"
     },
     {
       "id": "hook:session-start-teaminit.test",
@@ -610,7 +610,7 @@
       "registered": true,
       "exists": true,
       "size": 25885,
-      "modified": "2026-06-10T02:39:09.211Z"
+      "modified": "2026-06-10T13:54:45.232Z"
     },
     {
       "id": "hook:template-fillability",
@@ -801,7 +801,7 @@
       "type": "lib",
       "exists": true,
       "size": 11004,
-      "modified": "2026-06-10T04:48:35.555Z"
+      "modified": "2026-06-10T13:54:45.222Z"
     },
     {
       "id": "hook-lib:paths",

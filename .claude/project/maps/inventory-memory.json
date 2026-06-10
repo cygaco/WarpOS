@@ -1,7 +1,7 @@
 {
   "metadata": {
-    "generated": "2026-06-10T05:05:32.519Z",
-    "lastUpdated": "2026-06-10T05:05:32.519Z",
+    "generated": "2026-06-10T19:19:44.206Z",
+    "lastUpdated": "2026-06-10T19:19:44.206Z",
     "total_stores": 9,
     "tiers": 3,
     "regenerated_by": "scripts/regen-maps.js"
@@ -13,40 +13,40 @@
         "path": ".claude/project/events/events.jsonl",
         "category": "events",
         "tier": "centralized",
-        "entryCount": 32587,
+        "entryCount": 34883,
         "exists": true,
-        "size": 10534113,
-        "modified": "2026-06-10T05:05:28.896Z"
+        "size": 11306506,
+        "modified": "2026-06-10T19:19:39.228Z"
       },
       {
         "id": "manager-consult",
         "path": ".claude/project/events/manager-consult.jsonl",
         "category": "events",
         "tier": "centralized",
-        "entryCount": 93,
+        "entryCount": 222,
         "exists": true,
-        "size": 26002,
-        "modified": "2026-06-09T22:18:58.368Z"
+        "size": 63268,
+        "modified": "2026-06-10T16:55:56.248Z"
       },
       {
         "id": "requirements",
         "path": ".claude/project/events/requirements.jsonl",
         "category": "events",
         "tier": "centralized",
-        "entryCount": 693,
+        "entryCount": 695,
         "exists": true,
-        "size": 379756,
-        "modified": "2026-06-10T04:30:01.423Z"
+        "size": 381017,
+        "modified": "2026-06-10T19:18:29.823Z"
       },
       {
         "id": "tools",
         "path": ".claude/project/events/tools.jsonl",
         "category": "events",
         "tier": "centralized",
-        "entryCount": 17250,
+        "entryCount": 18244,
         "exists": true,
-        "size": 5470593,
-        "modified": "2026-06-10T05:05:16.845Z"
+        "size": 5793292,
+        "modified": "2026-06-10T19:19:39.228Z"
       }
     ],
     "semantic": [
@@ -75,10 +75,10 @@
         "path": ".claude/project/memory/recurring-issues.jsonl",
         "category": "memory",
         "tier": "semantic",
-        "entryCount": 6,
+        "entryCount": 7,
         "exists": true,
-        "size": 6947,
-        "modified": "2026-06-08T17:55:50.992Z"
+        "size": 8176,
+        "modified": "2026-06-10T17:00:20.688Z"
       },
       {
         "id": "systems",
@@ -104,7 +104,7 @@
     "beta": []
   },
   "totals": {
-    "total_lines": 50837,
-    "total_size": 16626330
+    "total_lines": 54259,
+    "total_size": 17761178
   }
 }

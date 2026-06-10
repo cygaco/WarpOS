@@ -1,7 +1,7 @@
 {
   "metadata": {
-    "generated": "2026-06-10T05:05:32.519Z",
-    "lastUpdated": "2026-06-10T05:05:32.519Z",
+    "generated": "2026-06-10T19:19:44.206Z",
+    "lastUpdated": "2026-06-10T19:19:44.206Z",
     "total_tools": 181,
     "categories": 4,
     "regenerated_by": "scripts/regen-maps.js"
@@ -520,8 +520,8 @@
           "path": "scripts/generate-framework-manifest.js",
           "type": "script",
           "exists": true,
-          "size": 25384,
-          "modified": "2026-06-10T04:17:56.702Z"
+          "size": 26450,
+          "modified": "2026-06-10T16:09:05.298Z"
         },
         {
           "id": "tool:generate-maps",
@@ -1538,7 +1538,7 @@
           "type": "script",
           "exists": true,
           "size": 42488,
-          "modified": "2026-06-10T04:48:35.555Z"
+          "modified": "2026-06-10T13:54:45.235Z"
         },
         {
           "id": "tool:warpos-sync-run09",

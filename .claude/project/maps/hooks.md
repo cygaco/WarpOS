@@ -1,6 +1,6 @@
 # Hooks Map
 
-Generated: 2026-06-10T05:05:32.519Z
+Generated: 2026-06-10T19:19:44.206Z
 
 **76** hook scripts (66 registered, 10 orphan), **18** lib modules, **77** wiring entries.
 
@@ -143,7 +143,7 @@ Generated: 2026-06-10T05:05:32.519Z
 | memory-enforcement-guard.js | yes | 3339 | 2026-05-30T01:25:39.594Z |
 | memory-guard.js | yes | 14402 | 2026-06-07T03:35:59.239Z |
 | merge-guard.js | yes | 25427 | 2026-06-09T00:41:40.597Z |
-| mode-lifecycle-guard.js | yes | 16777 | 2026-06-10T02:39:09.386Z |
+| mode-lifecycle-guard.js | yes | 16777 | 2026-06-10T13:54:45.222Z |
 | ownership-guard.js | yes | 4504 | 2026-06-04T22:57:14.000Z |
 | path-guard.js | yes | 8945 | 2026-06-08T20:28:50.013Z |
 | path-registry-guard.js | yes | 5451 | 2026-05-30T01:25:39.597Z |
@@ -159,7 +159,7 @@ Generated: 2026-06-10T05:05:32.519Z
 | scope-contract-guard.js | yes | 4536 | 2026-06-04T22:57:14.001Z |
 | secret-guard.js | yes | 2786 | 2026-05-30T01:25:39.600Z |
 | self-mod-governance.js | yes | 923 | 2026-05-30T01:25:39.601Z |
-| session-end-team-teardown.js | yes | 2782 | 2026-06-10T02:39:09.518Z |
+| session-end-team-teardown.js | yes | 2782 | 2026-06-10T13:54:45.232Z |
 | session-start-teaminit.test.js | no | 4665 | 2026-06-08T19:49:48.192Z |
 | session-start.js | yes | 30063 | 2026-06-10T00:04:52.691Z |
 | session-stop-sentinel.test.js | no | 5847 | 2026-06-08T22:03:39.609Z |
@@ -180,7 +180,7 @@ Generated: 2026-06-10T05:05:32.519Z
 | systems-sync.js | yes | 7605 | 2026-05-30T01:25:39.607Z |
 | team-guard-gate.test.js | no | 11806 | 2026-06-09T00:41:40.599Z |
 | team-guard-sprint.test.js | no | 6605 | 2026-06-09T00:41:40.599Z |
-| team-guard.js | yes | 25885 | 2026-06-10T02:39:09.211Z |
+| team-guard.js | yes | 25885 | 2026-06-10T13:54:45.232Z |
 | template-fillability.js | yes | 2939 | 2026-05-30T01:25:39.607Z |
 | test.js | no | 11730 | 2026-05-30T01:25:39.608Z |
 | tracker-completion-gate.js | yes | 3400 | 2026-06-07T03:35:59.240Z |
@@ -205,7 +205,7 @@ Generated: 2026-06-10T05:05:32.519Z
 | mode-lifecycle.js | 6175 | 2026-06-10T00:04:52.690Z |
 | mode.js | 2944 | 2026-06-10T00:04:52.691Z |
 | oneshot-store.js | 2337 | 2026-06-08T21:07:45.656Z |
-| paths.generated.js | 11004 | 2026-06-10T04:48:35.555Z |
+| paths.generated.js | 11004 | 2026-06-10T13:54:45.222Z |
 | paths.js | 6608 | 2026-06-05T01:45:08.446Z |
 | project-config.js | 4488 | 2026-05-30T01:25:39.591Z |
 | provider-health.js | 10306 | 2026-05-30T01:25:39.592Z |

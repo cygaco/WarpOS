@@ -1,0 +1,50 @@
+schema: warpos/sprint/ticket/v1
+id: T-20260610-302
+title: "G1: truthful builder advisory — wrapper maps generic build id to build_chain_worker class + contract agreement + planted test"
+type: bug
+status: done
+sprint: SP-20260610-006
+created_at: "2026-06-10T20:02:48.423Z"
+updated_at: "2026-06-10T21:00:22.673Z"
+owner: null
+owner_agent: null
+risk_level: high
+unit_type: backend
+domain: null
+approval_required: false
+approval_state: not_required
+source_request: "Conduct W0 of E-DISPATCH-SHAPE-001 (the dispatch-shape decision spine). Three tickets, all in scripts/dispatch/* + the wrappers + full.js/epsilon-runtime, per NOTAGAIN.md §7 W0 + runtime/notes/notagain-stack-audit.md gaps G1, N8, G8/N1."
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260610-0070.yaml"
+linked_requirements:
+  - R-1
+linked_high_level_story: null
+linked_granular_story: S-1
+linked_prd: null
+linked_copy: []
+linked_inputs: []
+linked_trace: []
+linked_acceptance_criteria: []
+linked_issues: []
+linked_decisions: []
+linked_external_services: []
+linked_files: []
+linked_tests: []
+linked_commits:
+  - "30a5ea0"
+linked_prs: []
+linked_release: null
+description: ""
+user_value: ""
+business_value: ""
+acceptance_criteria: []
+non_goals: []
+implementation_notes: "G1 done: truthful builder advisory via build_chain_worker class mapping (β option c); dispatch-claude 10/10 + dispatch-contract 19/19; unknown-id still fails closed; no REFUSE flip."
+qa_notes: ""
+redteam_notes: ""
+trace_notes: ""
+blocked_by: []
+blocks: []
+fix_attempts: []
+ralph_progress: null
+completion_evidence: []
+reopen_history: []
