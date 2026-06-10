@@ -131,6 +131,31 @@ const stub = (verdict) => () => verdict;
   ok("G: full.js phase 4 emits a regression_seed_failed halt_reason", namesHalt);
 }
 
+// H. product repo (no injection) no-ops BEFORE require → gate 0
+//    Exercises the new product-repo guard: when WARPOS_REPO_ROLE=consumer the gate
+//    must return 0 WITHOUT requiring ../testsuite/enforce (which is absent in
+//    product repos). Uses the env override that resolveRepoRole() honors.
+//    Saves/restores the env var so it cannot leak into F (which already ran) or
+//    any downstream test.
+{
+  const prev = process.env.WARPOS_REPO_ROLE;
+  let ex;
+  let threw = false;
+  try {
+    process.env.WARPOS_REPO_ROLE = "consumer";
+    ex = quiet(() => release.regressionSeedGate()); // NO injection — production path
+  } catch (e) {
+    threw = true;
+  } finally {
+    if (prev === undefined) {
+      delete process.env.WARPOS_REPO_ROLE;
+    } else {
+      process.env.WARPOS_REPO_ROLE = prev;
+    }
+  }
+  ok("H: product repo (no injection) no-ops before require → gate 0", !threw && ex === 0, `threw=${threw} exit=${ex}`);
+}
+
 // ── Summary ─────────────────────────────────────────────────────────
 
 process.stdout.write(`\n${pass} pass / ${fail} fail\n`);
