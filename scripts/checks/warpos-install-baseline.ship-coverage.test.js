@@ -206,6 +206,32 @@ console.log("\n[G] multi-kind — mandated paths across different asset kinds");
   ok("(G) shippedPathSet.size === 4", s.size === 4, `got ${s.size}`);
 }
 
+// ── (H) CLI smoke test — the --ship-coverage MODE actually runs end-to-end ──────
+// The hermetic cases above drive the pure helpers only. A gauntlet reviewer (S-LC-12)
+// reading the diff in isolation hallucinated that runShipCoverageCheck() references an
+// undeclared REPO_ROOT and crashes on invocation — a FALSE POSITIVE (REPO_ROOT is
+// declared at module top-level and the live mode runs green). This case spawns the
+// real CLI so the glue is exercised: the process must exit cleanly (0 green or 1 red),
+// must NOT throw a ReferenceError / crash with a non-{0,1} code, and must emit the
+// mode's own result line — proving the CLI dispatch + variable scope are sound.
+{
+  const { spawnSync } = require("child_process");
+  const script = path.join(__dirname, "warpos-install-baseline.js");
+  const r = spawnSync(process.execPath, [script, "--ship-coverage", "--json"], {
+    encoding: "utf8",
+    cwd: path.resolve(__dirname, "..", ".."),
+    timeout: 30000,
+  });
+  const noCrash = !r.error && (r.status === 0 || r.status === 1);
+  const noRefError = !/ReferenceError/.test((r.stderr || "") + (r.stdout || ""));
+  let parsed = null;
+  try { parsed = JSON.parse(r.stdout); } catch { /* non-JSON = a crash, caught by noCrash */ }
+  const emittedResult = parsed && parsed.name === "warpos-install-baseline:ship-coverage";
+  ok("(H) --ship-coverage CLI runs without crash (exit 0|1, no spawn error)", noCrash, `status=${r.status} err=${r.error && r.error.message}`);
+  ok("(H) --ship-coverage CLI does not throw ReferenceError", noRefError, (r.stderr || "").slice(0, 200));
+  ok("(H) --ship-coverage CLI emits its result envelope", Boolean(emittedResult), `stdout=${(r.stdout || "").slice(0, 200)}`);
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Summary
 // ─────────────────────────────────────────────────────────────────────────────

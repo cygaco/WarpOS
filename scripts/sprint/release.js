@@ -96,22 +96,27 @@ function emitGate(kind, data) {
 // `runEnforcer` is injectable for focused tests of the verdict→exit-code
 // mapping; production calls pass nothing and the real enforcer is used.
 function regressionSeedGate(runEnforcer) {
-  // Product-repo guard: resolve role BEFORE the default closure reaches
-  // require("../testsuite/enforce") — that module is not shipped to product repos
-  // (absent from ASSET_DIRS in generate-framework-manifest.js), so its
+  // Product-repo guard: detect product-vs-canonical BEFORE the default closure
+  // reaches require("../testsuite/enforce") — that module is not shipped to product
+  // repos (absent from ASSET_DIRS in generate-framework-manifest.js), so its
   // MODULE_NOT_FOUND would be caught as runner_error → exit 3 (BLOCK), making it
-  // impossible to close a sprint in a product repo.  The intended behavior is
+  // impossible to close a sprint in a product repo. The intended behavior is
   // "product repos no-op exit 0", and the role-awareness that would have achieved
   // that lived INSIDE the missing module — a closed trap this guard breaks open.
   //
-  // resolveRepoRole() IS shipped (warpos_script in ASSET_DIRS) and does NOT depend
-  // on testsuite/.  Only applied on the production (non-injected) path so that
-  // injected test stubs (A-G) continue to exercise the verdict→exit mapping.
+  // We detect "product" by the PHYSICAL ABSENCE of the enforcer module on disk,
+  // NOT a role oracle. The earlier resolveRepoRole() approach honored the
+  // WARPOS_REPO_ROLE env var, which let `WARPOS_REPO_ROLE=consumer` spoof a product
+  // role on canonical and silently skip this MANDATORY gate (gauntlet S-LC-12
+  // security+backend FAIL). A filesystem check is unspoofable and strictly more
+  // precise: the gate's whole premise is "the enforcer module isn't shipped here",
+  // so test exactly that. If testsuite/enforce.js IS on disk, the gate MUST run
+  // regardless of any env var. Only applied on the production (non-injected) path
+  // so injected test stubs (A-G) continue to exercise the verdict→exit mapping.
   if (!runEnforcer) {
-    const { resolveRepoRole } = require("../warpos/repo-role");
-    const { role } = resolveRepoRole();
-    if (role !== "canonical") {
-      emitGate("sprint_release_regression_gate", { result: "opt-in-noop", role });
+    const enforcerPath = path.join(__dirname, "..", "testsuite", "enforce.js");
+    if (!fs.existsSync(enforcerPath)) {
+      emitGate("sprint_release_regression_gate", { result: "opt-in-noop", role: "product", reason: "testsuite/enforce.js not present (product install)" });
       return 0;
     }
   }

@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-10T15:32:17.690Z",
+  "generatedAt": "2026-06-10T15:44:04.517Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.15.4",
   "migrations": [],
@@ -4098,8 +4098,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/sprint/release.js",
-      "sha256": "437de11452c43ddc68c9a8454dc5620bf11b094a3fa3fefdb90abde2c91ba5f8",
-      "installedSha": "437de11452c43ddc68c9a8454dc5620bf11b094a3fa3fefdb90abde2c91ba5f8"
+      "sha256": "56582f8a27819feb6406dca0c08b9713812a6e77ce891816b1d8ce3386df57f8",
+      "installedSha": "56582f8a27819feb6406dca0c08b9713812a6e77ce891816b1d8ce3386df57f8"
     },
     "scripts/sprint/retrospective.js": {
       "owner": "framework",
@@ -4154,8 +4154,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/sprint/test-regression-seed-gate.js",
-      "sha256": "761aa481f885f7c0bfe4423f37faf8b63784f2db5157859e9206ab42c0f8ef8f",
-      "installedSha": "761aa481f885f7c0bfe4423f37faf8b63784f2db5157859e9206ab42c0f8ef8f"
+      "sha256": "18c0673b3bdb3b957ba49665cfee9c7765a2759d46be29f10f22ceb9522463bc",
+      "installedSha": "18c0673b3bdb3b957ba49665cfee9c7765a2759d46be29f10f22ceb9522463bc"
     },
     "scripts/sprint/test-sprint-full.js": {
       "owner": "framework",
@@ -6408,8 +6408,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/warpos-install-baseline.ship-coverage.test.js",
-      "sha256": "9f75cf1a11b5873f67119c5c148d10c5e6b8c3930ba989bdc62421a21e589c0d",
-      "installedSha": "9f75cf1a11b5873f67119c5c148d10c5e6b8c3930ba989bdc62421a21e589c0d"
+      "sha256": "5e4a3c12623fc12c53106fc8052990d9ba1993013f74088fa009e31ed9f86fc5",
+      "installedSha": "5e4a3c12623fc12c53106fc8052990d9ba1993013f74088fa009e31ed9f86fc5"
     },
     "scripts/checks/warpos-layer-diff.js": {
       "owner": "framework",
@@ -16619,6 +16619,10 @@
       "managed": false
     },
     ".claude/project/maps/tools.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/events/events.jsonl": {
       "owner": "runtime",
       "managed": false
     },
