@@ -1,7 +1,7 @@
 {
   "metadata": {
-    "generated": "2026-06-10T03:46:56.441Z",
-    "lastUpdated": "2026-06-10T03:46:56.441Z",
+    "generated": "2026-06-10T04:24:09.691Z",
+    "lastUpdated": "2026-06-10T04:24:09.691Z",
     "total_systems": 77,
     "categories": 2,
     "total_files_referenced": 76,
@@ -743,7 +743,7 @@
       "id": "skills",
       "name": "Skills",
       "category": "capability",
-      "count": 207
+      "count": 218
     },
     {
       "id": "hooks",

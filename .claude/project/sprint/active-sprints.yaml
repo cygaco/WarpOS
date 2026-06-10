@@ -1,5 +1,5 @@
 schema: warpos/sprint/active-sprints/v1
-primary: S-LC-07
+primary: S-LC-09
 sprints:
   - id: SP-20260512-001
     title: Multi-sprint parallelism for Sprint Workflow
@@ -826,5 +826,27 @@ sprints:
     pointer: ".claude/project/sprint/sprints/S-LC-07"
     created_at: "2026-06-10T02:56:29.572Z"
     updated_at: "2026-06-10T03:39:02.000Z"
+  - id: S-LC-08
+    title: "Planning-context binding — _planning lifecycle store + principles canonicalization"
+    status: closed
+    lane:
+      type: default
+      value: null
+      isolation_notes: ""
+    layout: per_sprint_subdir
+    pointer: ".claude/project/sprint/sprints/S-LC-08"
+    created_at: "2026-06-10T03:50:41.342Z"
+    updated_at: "2026-06-10T04:05:00.000Z"
+  - id: S-LC-09
+    title: "Epic-command suite — design 10, build /epic:plan + /epic:fold"
+    status: closed
+    lane:
+      type: default
+      value: null
+      isolation_notes: ""
+    layout: per_sprint_subdir
+    pointer: ".claude/project/sprint/sprints/S-LC-09"
+    created_at: "2026-06-10T03:50:41.417Z"
+    updated_at: "2026-06-10T04:05:00.000Z"
 created_at: "2026-05-12T22:57:35.667Z"
-updated_at: "2026-06-10T03:39:02.000Z"
+updated_at: "2026-06-10T03:50:41.417Z"

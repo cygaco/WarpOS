@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "generated": "2026-06-10T03:46:56.441Z",
-    "lastUpdated": "2026-06-10T03:46:56.441Z",
-    "total_skills": 205,
-    "namespaces": 43,
-    "user_invocable": 77,
+    "generated": "2026-06-10T04:24:09.691Z",
+    "lastUpdated": "2026-06-10T04:24:09.691Z",
+    "total_skills": 216,
+    "namespaces": 44,
+    "user_invocable": 87,
     "regenerated_by": "scripts/regen-maps.js"
   },
   "namespaces": {
@@ -426,6 +426,157 @@
             "calls": [
               "/enforcement:list"
             ]
+          }
+        }
+      ]
+    },
+    "epic": {
+      "namespace": "epic",
+      "count": 10,
+      "skills": [
+        {
+          "id": "epic:acceptance",
+          "name": "acceptance",
+          "description": "Manage an epic's acceptance criteria — ensure all 20 AC categories are present, each names its proof, and report AC coverage. Wraps /scan:ac-coverage at the epic grain. (Designed; build deferred.)",
+          "file": ".claude/commands/epic/acceptance.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/scan:ac-coverage"
+            ]
+          }
+        },
+        {
+          "id": "epic:close",
+          "name": "close",
+          "description": "Close a completed epic — verify every DoD item is satisfied + evidenced, fill the Completion record, set state to Completed at 100%, and reconcile ROADMAP/TRACKER. Refuses to close on unmet/un-evidenced DoD. (Designed; build deferred.)",
+          "file": ".claude/commands/epic/close.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        },
+        {
+          "id": "epic:fold",
+          "name": "fold",
+          "description": "Fold new information, constraints, bugs, or scope into an EXISTING epic intelligently — classify the item against the 14-class taxonomy, detect conflicts with stable commitments (flag, never silently overwrite), and append a provenance Change Log entry. Idempotent.",
+          "file": ".claude/commands/epic/fold.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        },
+        {
+          "id": "epic:link",
+          "name": "link",
+          "description": "Establish and verify an epic's linkages — its companion plan artifact, ROADMAP § Epics entry, TRACKER header, child sprints, and dependency edges to sibling epics — repairing the round-trip pointers. (Designed; build deferred.)",
+          "file": ".claude/commands/epic/link.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": []
+          }
+        },
+        {
+          "id": "epic:plan",
+          "name": "plan",
+          "description": "Turn a messy plain-language epic request into a durable, validate-shape epic tracker file plus a companion plan artifact (AC, sprint candidates, dependency/risk maps, tracker linkage). The epic equivalent of /sprint:plan.",
+          "file": ".claude/commands/epic/plan.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/epic:fold",
+              "/sprint:plan"
+            ]
+          }
+        },
+        {
+          "id": "epic:repair",
+          "name": "repair",
+          "description": "Detect and repair a drifted or malformed epic file — missing §-sections, blank required sections, broken links, percent/state inconsistencies, and tracker/roadmap reconciliation drift — fail-closed, additive, with a repair report. (Designed; build deferred.)",
+          "file": ".claude/commands/epic/repair.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/epic:plan"
+            ]
+          }
+        },
+        {
+          "id": "epic:review",
+          "name": "review",
+          "description": "Run an independent, cross-provider review of an epic plan — feasibility, overclaims, missing enforcers, blast-radius gaps, sequencing — and record the verdict + findings against the epic. (Designed; build deferred.)",
+          "file": ".claude/commands/epic/review.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/enforcement:log"
+            ]
+          }
+        },
+        {
+          "id": "epic:split",
+          "name": "split",
+          "description": "Split an over-large epic into two or more coherent epics — partition scope/sprints/DoD/AC, preserve provenance and dependencies, and create the child epic files with cross-links. (Designed; build deferred.)",
+          "file": ".claude/commands/epic/split.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/epic:plan"
+            ]
+          }
+        },
+        {
+          "id": "epic:start",
+          "name": "start",
+          "description": "Transition a planned epic into active execution — mint its first wave of sprints, set state to Active, and stand up the required mode/team. (Designed; build deferred.)",
+          "file": ".claude/commands/epic/start.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/epic:fold",
+              "/epic:plan",
+              "/sprint:plan"
+            ]
+          }
+        },
+        {
+          "id": "epic:status",
+          "name": "status",
+          "description": "Report an epic's true, evidence-based status — percent completion, sprint roll-up, DoD progress, blockers, and tracker/roadmap reconciliation drift. Read-only. (Designed; build deferred.)",
+          "file": ".claude/commands/epic/status.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": []
           }
         }
       ]
@@ -2079,7 +2230,7 @@
     },
     "scan": {
       "namespace": "scan",
-      "count": 49,
+      "count": 50,
       "skills": [
         {
           "id": "scan:ac-coverage",
@@ -2330,6 +2481,7 @@
               "/scan:issues",
               "/scan:node-procs",
               "/scan:patterns",
+              "/scan:planning-principles",
               "/scan:privacy",
               "/scan:references",
               "/scan:regressions",
@@ -2452,6 +2604,24 @@
               "/maps:enforcements",
               "/oneshot:retro",
               "/sleep:deep"
+            ]
+          }
+        },
+        {
+          "id": "scan:planning-principles",
+          "name": "planning-principles",
+          "description": "Report-only plan-lint — flags any plan artifact under _planning/epics/** (optionally _planning/plans/**) that omits a principle-required section: a named enforcer, proof/acceptance, or a blast-radius assessment. The named enforcer for the planning principles (_planning/principle.md), E-LIFECYCLE-001 §8.11. Fail-open; never blocks.",
+          "file": ".claude/commands/scan/planning-principles.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/epic:plan",
+              "/scan:coverage-gate",
+              "/scan:full",
+              "/sprint:plan"
             ]
           }
         },
@@ -3365,6 +3535,7 @@
               "scripts/hooks/sprint-routing-guard.js"
             ],
             "calls": [
+              "/scan:planning-principles",
               "/sprint:design",
               "/sprint:execute",
               "/sprint:release"
@@ -3754,13 +3925,13 @@
   },
   "summary": {
     "by_invocability": {
-      "user_invocable": 77,
-      "system_only": 128
+      "user_invocable": 87,
+      "system_only": 129
     },
     "most_referenced_namespaces": [
       {
         "namespace": "scan",
-        "count": 49
+        "count": 50
       },
       {
         "namespace": "warp",
@@ -3771,12 +3942,12 @@
         "count": 11
       },
       {
-        "namespace": "maps",
+        "namespace": "epic",
         "count": 10
       },
       {
-        "namespace": "growth",
-        "count": 8
+        "namespace": "maps",
+        "count": 10
       }
     ]
   }

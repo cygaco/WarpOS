@@ -1,7 +1,7 @@
 {
   "metadata": {
-    "generated": "2026-06-10T03:46:56.441Z",
-    "lastUpdated": "2026-06-10T03:46:56.441Z",
+    "generated": "2026-06-10T04:24:09.691Z",
+    "lastUpdated": "2026-06-10T04:24:09.691Z",
     "total_tools": 181,
     "categories": 4,
     "regenerated_by": "scripts/regen-maps.js"
@@ -520,8 +520,8 @@
           "path": "scripts/generate-framework-manifest.js",
           "type": "script",
           "exists": true,
-          "size": 24747,
-          "modified": "2026-06-08T20:28:50.013Z"
+          "size": 25384,
+          "modified": "2026-06-10T04:17:56.702Z"
         },
         {
           "id": "tool:generate-maps",
@@ -1639,7 +1639,7 @@
           "id": "xref:skills",
           "type": "xref",
           "note": "skills inventory lives in .claude/project/maps/inventory-skills.json",
-          "count": 207
+          "count": 218
         },
         {
           "id": "xref:hooks",

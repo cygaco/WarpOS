@@ -1,8 +1,8 @@
-{"_meta":true,"name":"Memory Stores Map","description":"Centralized event log + semantic memory + beta events. Counts by line.","version":"2026-06-10","total_stores":9,"last_regenerated":"2026-06-10T03:46:56.441Z"}
-{"id":"events","path":".claude/project/events/events.jsonl","category":"events","tier":"centralized","entryCount":32306,"exists":true,"size":10441051,"modified":"2026-06-10T03:46:54.177Z"}
+{"_meta":true,"name":"Memory Stores Map","description":"Centralized event log + semantic memory + beta events. Counts by line.","version":"2026-06-10","total_stores":9,"last_regenerated":"2026-06-10T04:24:09.691Z"}
+{"id":"events","path":".claude/project/events/events.jsonl","category":"events","tier":"centralized","entryCount":32459,"exists":true,"size":10493203,"modified":"2026-06-10T04:24:07.177Z"}
 {"id":"manager-consult","path":".claude/project/events/manager-consult.jsonl","category":"events","tier":"centralized","entryCount":93,"exists":true,"size":26002,"modified":"2026-06-09T22:18:58.368Z"}
-{"id":"requirements","path":".claude/project/events/requirements.jsonl","category":"events","tier":"centralized","entryCount":690,"exists":true,"size":377928,"modified":"2026-06-10T03:35:24.202Z"}
-{"id":"tools","path":".claude/project/events/tools.jsonl","category":"events","tier":"centralized","entryCount":17076,"exists":true,"size":5411140,"modified":"2026-06-10T03:46:48.718Z"}
+{"id":"requirements","path":".claude/project/events/requirements.jsonl","category":"events","tier":"centralized","entryCount":691,"exists":true,"size":378561,"modified":"2026-06-10T03:55:10.871Z"}
+{"id":"tools","path":".claude/project/events/tools.jsonl","category":"events","tier":"centralized","entryCount":17174,"exists":true,"size":5444122,"modified":"2026-06-10T04:23:40.117Z"}
 {"id":"enforcement-debt","path":".claude/project/memory/enforcement-debt.jsonl","category":"memory","tier":"semantic","entryCount":34,"exists":true,"size":50052,"modified":"2026-06-10T03:07:59.573Z"}
 {"id":"learnings","path":".claude/project/memory/learnings.jsonl","category":"memory","tier":"semantic","entryCount":87,"exists":true,"size":73820,"modified":"2026-06-09T04:18:32.054Z"}
 {"id":"recurring-issues","path":".claude/project/memory/recurring-issues.jsonl","category":"memory","tier":"semantic","entryCount":6,"exists":true,"size":6947,"modified":"2026-06-08T17:55:50.992Z"}

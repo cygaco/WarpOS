@@ -1,4 +1,4 @@
-{"_meta":true,"name":"Hooks Map","description":"All hook scripts under scripts/hooks/ + lib modules + settings.json wiring.","version":"2026-06-10","total_hooks":76,"total_lib_modules":18,"registered_hooks":66,"orphan_hooks":10,"wiring_count":77,"last_regenerated":"2026-06-10T03:46:56.441Z"}
+{"_meta":true,"name":"Hooks Map","description":"All hook scripts under scripts/hooks/ + lib modules + settings.json wiring.","version":"2026-06-10","total_hooks":76,"total_lib_modules":18,"registered_hooks":66,"orphan_hooks":10,"wiring_count":77,"last_regenerated":"2026-06-10T04:24:09.691Z"}
 {"id":"hook:authorization-gate","name":"authorization-gate.js","path":"scripts/hooks/authorization-gate.js","registered":true,"exists":true,"size":8520,"modified":"2026-05-30T01:25:39.579Z"}
 {"id":"hook:beta-gate","name":"beta-gate.js","path":"scripts/hooks/beta-gate.js","registered":true,"exists":true,"size":9095,"modified":"2026-06-08T20:28:50.013Z"}
 {"id":"hook:boss-boundary","name":"boss-boundary.js","path":"scripts/hooks/boss-boundary.js","registered":true,"exists":true,"size":3145,"modified":"2026-06-04T22:57:13.997Z"}

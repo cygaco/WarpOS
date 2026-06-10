@@ -238,6 +238,14 @@ const ASSET_DIRS = [
   { src: "scripts/schemas", kind: "schema_tool" },
   { src: "scripts/system", kind: "system_tool" },
   { src: "scripts/turbo", kind: "turbo_tool" },
+  // 2026-06-10 fix-forward (E-LIFECYCLE-001 Wave 1 tail): scripts/teams/ (the
+  // S-LC-05 persistent-team lifecycle manager, lifecycle.js) was added without
+  // being classified — so the SHIPPED SessionEnd teardown hook
+  // (session-end-team-teardown.js) would have had no backing lifecycle.js
+  // downstream. ship-coverage caught it (framework-owned, unshipped, unallowlisted)
+  // during the Wave 3 build. It must ship.
+  { src: "scripts/teams", kind: "team_tool" },
+  { src: "scripts/epic", kind: "epic_tool" }, // S-LC-09 epic-suite backing (plan.js/fold.js/lib.js) for /epic:plan + /epic:fold; must ship (Wave-3, 2026-06-10)
   // 2026-05-30 reconcile (gap E3, multiple downstream registers): bootstrap:spinup
   // + canon skills shipped their .md but NOT their backing scripts (spinup-orchestrate.js,
   // phases/onscreen.js, canon/generate.js) — so every consumer got DEAD skills. These

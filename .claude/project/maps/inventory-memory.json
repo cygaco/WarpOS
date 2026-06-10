@@ -1,7 +1,7 @@
 {
   "metadata": {
-    "generated": "2026-06-10T03:46:56.441Z",
-    "lastUpdated": "2026-06-10T03:46:56.441Z",
+    "generated": "2026-06-10T04:24:09.691Z",
+    "lastUpdated": "2026-06-10T04:24:09.691Z",
     "total_stores": 9,
     "tiers": 3,
     "regenerated_by": "scripts/regen-maps.js"
@@ -13,10 +13,10 @@
         "path": ".claude/project/events/events.jsonl",
         "category": "events",
         "tier": "centralized",
-        "entryCount": 32306,
+        "entryCount": 32459,
         "exists": true,
-        "size": 10441051,
-        "modified": "2026-06-10T03:46:54.177Z"
+        "size": 10493203,
+        "modified": "2026-06-10T04:24:07.177Z"
       },
       {
         "id": "manager-consult",
@@ -33,20 +33,20 @@
         "path": ".claude/project/events/requirements.jsonl",
         "category": "events",
         "tier": "centralized",
-        "entryCount": 690,
+        "entryCount": 691,
         "exists": true,
-        "size": 377928,
-        "modified": "2026-06-10T03:35:24.202Z"
+        "size": 378561,
+        "modified": "2026-06-10T03:55:10.871Z"
       },
       {
         "id": "tools",
         "path": ".claude/project/events/tools.jsonl",
         "category": "events",
         "tier": "centralized",
-        "entryCount": 17076,
+        "entryCount": 17174,
         "exists": true,
-        "size": 5411140,
-        "modified": "2026-06-10T03:46:48.718Z"
+        "size": 5444122,
+        "modified": "2026-06-10T04:23:40.117Z"
       }
     ],
     "semantic": [
@@ -104,7 +104,7 @@
     "beta": []
   },
   "totals": {
-    "total_lines": 50379,
-    "total_size": 16471987
+    "total_lines": 50631,
+    "total_size": 16557754
   }
 }

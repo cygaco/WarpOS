@@ -1,6 +1,6 @@
 {
   "schema": "warpos/spec-graph/v1",
-  "generatedAt": "2026-06-10T03:46:56.553Z",
+  "generatedAt": "2026-06-10T04:24:09.800Z",
   "sources": {
     "sprintRequirements": ".claude/project/sprint/requirements",
     "canonicalSpecs": "_requirements/04-features",

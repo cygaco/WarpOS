@@ -1,0 +1,84 @@
+schema: warpos/sprint/current-sprint/v1
+id: "S-LC-09"
+title: "Epic-command suite — design 10, build /epic:plan + /epic:fold"
+objective: "Design all 10 /epic:* skills; build /epic:plan (emits a section-complete epic file + _planning/epics companion with round-trip linkage) + /epic:fold (14-class taxonomy + provenance + conflict-flag). Wave 3 of E-LIFECYCLE-001."
+status: done
+created_at: "2026-06-10T03:50:41.417Z"
+updated_at: "2026-06-10T04:05:00.000Z"
+source_request: "Wave 3: epic-command suite, design-10-build-2. Engine sprint, ff-merge close, defer retro to epic close (RI-001)."
+interpreted_intent: "Give epics the same planning/folding discipline sprints have, without over-building: 8 specs design-only, /epic:plan + /epic:fold fully built. Gauntlet: backend+qa PASS (gemini, α-verified)."
+plan_contract: null
+risk_level: medium
+approval_state: none_required
+current_phase: done
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+external_services:
+  identified: []
+  blocked: []
+  ready: []
+  mocked: []
+  deferred: []
+tickets:
+  proposed: []
+  planned: []
+  designed: []
+  ready_for_execution: []
+  in_progress: []
+  blocked: []
+  waiting_on_human: []
+  waiting_on_external_service: []
+  in_review: []
+  qa_failed: []
+  redteam_failed: []
+  done: []
+  released: []
+  deferred: []
+  abandoned: []
+  reopened: []
+  superseded: []
+requirements:
+  prd: null
+  high_level_stories: null
+  granular_stories: null
+  copy: null
+  inputs: null
+  trace: null
+  acceptance_criteria: null
+  qa_plan: null
+  redteam_plan: null
+  release_plan: null
+checks:
+  lint: { status: not_run, last_run: null, evidence: "" }
+  typecheck: { status: not_run, last_run: null, evidence: "" }
+  tests: { status: not_run, last_run: null, evidence: "" }
+  build: { status: not_run, last_run: null, evidence: "" }
+  qa: { status: not_run, last_run: null, evidence: "" }
+  redteam: { status: not_run, last_run: null, evidence: "" }
+approvals:
+  plan: { required: false, state: not_required, ref: null }
+  design: { required: false, state: not_required, ref: null }
+  execution: { required: false, state: not_required, ref: null }
+  release: { required: false, state: not_required, ref: null }
+  external_services: { required: false, state: not_required, ref: null }
+reports:
+  plan: null
+  design: null
+  execution: null
+  release: null
+ralph:
+  active: false
+  current_ticket: null
+  current_loop: null
+  status: idle
+  last_checkpoint: null
+  next_action: null
+crash_recovery:
+  last_checkpoint: ".claude/project/sprint/sprint-progress.yaml"
+  resume_command: "none — merged @db42f9a"
+  resume_summary: "S-LC-09 (epic-command suite, design-10-build-2, Wave 3 of E-LIFECYCLE-001) merged on june-9 @db42f9a, gauntlet-clean (backend+qa PASS). No resume needed."
+  active_files: []
+  dirty_state: false
+  blockers: []
+  safe_to_continue: true
+lane: engine

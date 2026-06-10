@@ -1,0 +1,84 @@
+schema: warpos/sprint/current-sprint/v1
+id: "S-LC-08"
+title: "Planning-context binding — _planning lifecycle store + principles canonicalization"
+objective: "Scaffold _planning/{epics,sprints,playbooks,decisions,research,archive}/ as a tracker-linked lifecycle store (ship-boundary preserved) + /scan:planning-principles report-only enforcer + reference _planning/principle.md from /sprint:plan. Wave 3 of E-LIFECYCLE-001."
+status: done
+created_at: "2026-06-10T03:50:41.342Z"
+updated_at: "2026-06-10T04:05:00.000Z"
+source_request: "Wave 3: bind _planning as a lifecycle store + canonicalize planning principles. Engine sprint, ff-merge close, defer retro to epic close (RI-001)."
+interpreted_intent: "Make _planning a tracker-linked lifecycle store WITHOUT breaking its MUST_NOT_SHIP/walk-skip boundary (additive-beside), and add a report-only principles enforcer. Gauntlet: backend+security+qa all PASS (gemini, α-verified)."
+plan_contract: null
+risk_level: medium
+approval_state: none_required
+current_phase: done
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+external_services:
+  identified: []
+  blocked: []
+  ready: []
+  mocked: []
+  deferred: []
+tickets:
+  proposed: []
+  planned: []
+  designed: []
+  ready_for_execution: []
+  in_progress: []
+  blocked: []
+  waiting_on_human: []
+  waiting_on_external_service: []
+  in_review: []
+  qa_failed: []
+  redteam_failed: []
+  done: []
+  released: []
+  deferred: []
+  abandoned: []
+  reopened: []
+  superseded: []
+requirements:
+  prd: null
+  high_level_stories: null
+  granular_stories: null
+  copy: null
+  inputs: null
+  trace: null
+  acceptance_criteria: null
+  qa_plan: null
+  redteam_plan: null
+  release_plan: null
+checks:
+  lint: { status: not_run, last_run: null, evidence: "" }
+  typecheck: { status: not_run, last_run: null, evidence: "" }
+  tests: { status: not_run, last_run: null, evidence: "" }
+  build: { status: not_run, last_run: null, evidence: "" }
+  qa: { status: not_run, last_run: null, evidence: "" }
+  redteam: { status: not_run, last_run: null, evidence: "" }
+approvals:
+  plan: { required: false, state: not_required, ref: null }
+  design: { required: false, state: not_required, ref: null }
+  execution: { required: false, state: not_required, ref: null }
+  release: { required: false, state: not_required, ref: null }
+  external_services: { required: false, state: not_required, ref: null }
+reports:
+  plan: null
+  design: null
+  execution: null
+  release: null
+ralph:
+  active: false
+  current_ticket: null
+  current_loop: null
+  status: idle
+  last_checkpoint: null
+  next_action: null
+crash_recovery:
+  last_checkpoint: ".claude/project/sprint/sprint-progress.yaml"
+  resume_command: "none — merged @1a6d638"
+  resume_summary: "S-LC-08 (_planning lifecycle store + planning-principles enforcer, Wave 3 of E-LIFECYCLE-001) merged on june-9 @1a6d638, gauntlet-clean (3-lane all PASS). Ship-boundary preserved. No resume needed."
+  active_files: []
+  dirty_state: false
+  blockers: []
+  safe_to_continue: true
+lane: engine

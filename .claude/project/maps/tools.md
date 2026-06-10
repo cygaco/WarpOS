@@ -1,6 +1,6 @@
 # Tools Map
 
-Generated: 2026-06-10T03:46:56.441Z
+Generated: 2026-06-10T04:24:09.691Z
 
 Scripts: **176** | npm scripts: **0** | External CLIs: **3**
 
@@ -64,7 +64,7 @@ Scripts: **176** | npm scripts: **0** | External CLIs: **3**
 | drift-verify.js | 5846 | 2026-05-30T01:25:39.574Z |
 | drift-write-decisions.js | 1743 | 2026-05-30T01:25:39.574Z |
 | fix-deep-trace-run09-cleanup.js | 3626 | 2026-05-30T01:25:39.575Z |
-| generate-framework-manifest.js | 24747 | 2026-06-08T20:28:50.013Z |
+| generate-framework-manifest.js | 25384 | 2026-06-10T04:17:56.702Z |
 | generate-maps.js | 12732 | 2026-05-30T01:25:39.577Z |
 | generate-skill-catalog.js | 9320 | 2026-05-30T01:25:39.577Z |
 | generate-steps-maps.js | 8346 | 2026-05-30T01:25:39.578Z |
