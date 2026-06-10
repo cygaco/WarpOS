@@ -114,14 +114,61 @@ function detectAuthTier(provider) {
   }
 
   if (provider === "openai") {
-    // codex login writes ~/.codex/auth.json; env key also works.
+    // codex login --with-api-key AND codex login (OAuth) both write auth.json.
+    // We MUST parse the CONTENT to distinguish them — a metered key written by
+    // `codex login --with-api-key` must NOT be reported as oauth/funded.
+    // VALUE-FREE: we read only the PRESENCE of fields, never field values.
     const authFiles = [
       path.join(os.homedir(), ".codex", "auth.json"),
       path.join(os.homedir(), ".config", "codex", "auth.json"),
     ];
-    const loggedIn = authFiles.some((f) => readFileSafe(f) !== null);
+    for (const f of authFiles) {
+      const raw = readFileSafe(f);
+      if (raw === null) continue; // file absent — try next
+      let parsed = null;
+      try { parsed = JSON.parse(raw); } catch { /* unparseable */ }
+      if (parsed !== null && typeof parsed === "object") {
+        // Metered-key signal: `codex login --with-api-key` writes auth_mode or OPENAI_API_KEY.
+        // Check PRESENCE only — VALUE-FREE (never log the key value).
+        const isMetered =
+          Object.prototype.hasOwnProperty.call(parsed, "auth_mode") ||
+          Object.prototype.hasOwnProperty.call(parsed, "OPENAI_API_KEY");
+        if (isMetered) {
+          return {
+            tier: "key",
+            detail:
+              "key (metered) — codex login --with-api-key (auth.json carries a metered API key, NOT an OAuth session)",
+          };
+        }
+        // OAuth signal: refresh_token / access_token / tokens / id_token present.
+        const isOAuth =
+          Object.prototype.hasOwnProperty.call(parsed, "access_token") ||
+          Object.prototype.hasOwnProperty.call(parsed, "refresh_token") ||
+          Object.prototype.hasOwnProperty.call(parsed, "tokens") ||
+          Object.prototype.hasOwnProperty.call(parsed, "id_token");
+        if (isOAuth) {
+          return {
+            tier: "oauth",
+            detail: "oauth (plan) — codex login OAuth session",
+          };
+        }
+        // auth.json present but neither metered nor OAuth signal detected.
+        // Do NOT default to oauth — the whole bug is that default. Be honest.
+        return {
+          tier: "key",
+          detail:
+            "key (unknown posture) — auth.json present but auth_mode/token fields absent; treat as metered until posture is confirmed",
+        };
+      }
+      // auth.json present but could not be parsed (empty / malformed).
+      return {
+        tier: "key",
+        detail:
+          "key (unknown posture) — auth.json present but unreadable; treat as metered until posture is confirmed",
+      };
+    }
+    // No auth file found — fall through to env key check.
     const key = !!(process.env.OPENAI_API_KEY || process.env.CODEX_API_KEY);
-    if (loggedIn) return { tier: "oauth", detail: "codex login session present" };
     if (key) return { tier: "key", detail: "OPENAI_API_KEY in env" };
     return { tier: "none", detail: "no codex login and no OPENAI_API_KEY — run `codex login`" };
   }

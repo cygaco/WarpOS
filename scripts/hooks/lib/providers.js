@@ -55,6 +55,58 @@ try {
   /* fail-open: breaker unavailable, dispatch proceeds normally */
 }
 
+// ── Auth mode label (value-free, inline — importing dispatch-readiness would be circular) ──
+// Returns a SHORT label: "key (metered)" | "oauth (plan)" | "key (unknown posture)" | "none" | "harness" | "unknown"
+// VALUE-FREE: reads only field PRESENCE, never field values.
+const os_mod = require("os");
+function readFileSafeLocal(p) {
+  try { return fs.readFileSync(p, "utf8"); } catch { return null; }
+}
+function detectAuthModeLabel(provider) {
+  try {
+    if (provider === "claude") return "harness";
+    if (provider === "openai") {
+      const authFiles = [
+        path.join(os_mod.homedir(), ".codex", "auth.json"),
+        path.join(os_mod.homedir(), ".config", "codex", "auth.json"),
+      ];
+      for (const f of authFiles) {
+        const raw = readFileSafeLocal(f);
+        if (raw === null) continue;
+        let parsed = null;
+        try { parsed = JSON.parse(raw); } catch { /* unparseable */ }
+        if (parsed !== null && typeof parsed === "object") {
+          if (
+            Object.prototype.hasOwnProperty.call(parsed, "auth_mode") ||
+            Object.prototype.hasOwnProperty.call(parsed, "OPENAI_API_KEY")
+          ) return "key (metered)";
+          if (
+            Object.prototype.hasOwnProperty.call(parsed, "access_token") ||
+            Object.prototype.hasOwnProperty.call(parsed, "refresh_token") ||
+            Object.prototype.hasOwnProperty.call(parsed, "tokens") ||
+            Object.prototype.hasOwnProperty.call(parsed, "id_token")
+          ) return "oauth (plan)";
+          return "key (unknown posture)";
+        }
+        return "key (unknown posture)";
+      }
+      if (process.env.OPENAI_API_KEY || process.env.CODEX_API_KEY) return "key (env)";
+      return "none";
+    }
+    if (provider === "gemini") {
+      // Mirror gemini OAuth check without importing dispatch-readiness.
+      const credsPath = path.join(os_mod.homedir(), ".gemini", "oauth_creds.json");
+      const raw = readFileSafeLocal(credsPath);
+      if (raw && /(refresh|access)_token/.test(raw)) return "oauth (plan)";
+      if (process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY) return "key (env)";
+      return "none";
+    }
+    return "unknown";
+  } catch {
+    return "unknown";
+  }
+}
+
 // ── Config resolution ───────────────────────────────────────
 function loadManifest() {
   try {
@@ -925,6 +977,10 @@ function runProvider(role, prompt, opts = {}) {
               // failure); the caller decides, with this flag making it loud.
               suggestFallbackProvider:
                 providerName === "gemini" ? "openai" : cfg.fallback || "claude",
+              // Auth mode label — VALUE-FREE (mode label only, never key value).
+              // Surfaces "key (metered)" vs "oauth (plan)" so a quota error
+              // envelope is self-diagnosing: one read and the posture is clear.
+              auth_mode: detectAuthModeLabel(providerName),
             },
           }
         : {}),
