@@ -1,7 +1,7 @@
 {
   "metadata": {
-    "generated": "2026-06-10T02:45:52.880Z",
-    "lastUpdated": "2026-06-10T02:45:52.880Z",
+    "generated": "2026-06-10T03:46:56.441Z",
+    "lastUpdated": "2026-06-10T03:46:56.441Z",
     "total_stores": 9,
     "tiers": 3,
     "regenerated_by": "scripts/regen-maps.js"
@@ -13,10 +13,10 @@
         "path": ".claude/project/events/events.jsonl",
         "category": "events",
         "tier": "centralized",
-        "entryCount": 31987,
+        "entryCount": 32306,
         "exists": true,
-        "size": 10329152,
-        "modified": "2026-06-10T02:45:51.194Z"
+        "size": 10441051,
+        "modified": "2026-06-10T03:46:54.177Z"
       },
       {
         "id": "manager-consult",
@@ -33,20 +33,20 @@
         "path": ".claude/project/events/requirements.jsonl",
         "category": "events",
         "tier": "centralized",
-        "entryCount": 689,
+        "entryCount": 690,
         "exists": true,
-        "size": 377392,
-        "modified": "2026-06-09T22:08:17.129Z"
+        "size": 377928,
+        "modified": "2026-06-10T03:35:24.202Z"
       },
       {
         "id": "tools",
         "path": ".claude/project/events/tools.jsonl",
         "category": "events",
         "tier": "centralized",
-        "entryCount": 16884,
+        "entryCount": 17076,
         "exists": true,
-        "size": 5345518,
-        "modified": "2026-06-10T02:45:35.738Z"
+        "size": 5411140,
+        "modified": "2026-06-10T03:46:48.718Z"
       }
     ],
     "semantic": [
@@ -55,10 +55,10 @@
         "path": ".claude/project/memory/enforcement-debt.jsonl",
         "category": "memory",
         "tier": "semantic",
-        "entryCount": 32,
+        "entryCount": 34,
         "exists": true,
-        "size": 48435,
-        "modified": "2026-06-09T04:20:16.838Z"
+        "size": 50052,
+        "modified": "2026-06-10T03:07:59.573Z"
       },
       {
         "id": "learnings",
@@ -104,7 +104,7 @@
     "beta": []
   },
   "totals": {
-    "total_lines": 49865,
-    "total_size": 16292313
+    "total_lines": 50379,
+    "total_size": 16471987
   }
 }

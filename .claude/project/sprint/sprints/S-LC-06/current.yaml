@@ -1,17 +1,17 @@
 schema: warpos/sprint/current-sprint/v1
 id: S-LC-06
 title: "Dispatch matrix + parallelism axis + coverage-gate live wiring"
-objective: "Run /sprint:plan to set this."
-status: not_started
+objective: "Add a mode-scoped permission profile to dispatch-contract.json (narrow-only, class∩mode; alpha_only_shapes for in-process-agent, ED-041), a parallelism axis to dispatch-shape.js (under/over-dispatch advisory findings), and wire coverage-gate.js evaluate() to a live caller (coverage-gate-scan.js, report-only into /scan:full). Wave 2 of E-LIFECYCLE-001."
+status: done
 created_at: "2026-06-10T02:56:29.530Z"
-updated_at: "2026-06-10T03:00:37.897Z"
-source_request: ""
-interpreted_intent: ""
+updated_at: "2026-06-10T03:39:02.000Z"
+source_request: "Wave 2 dispatch sprint: dispatch mode_profiles (narrow-only permission surface) + parallelism axis + coverage-gate live wiring. Engine/tooling sprint, ff-merge close, defer retro to epic close (RI-001)."
+interpreted_intent: "Make dispatch shape mode-aware (a mode profile can only NARROW a role's class shapes, never widen — a real ceiling enforced by the validator) and surface under/over-dispatch as advisory parallelism findings, plus give coverage-gate.js a live report-only caller. FINDING-1 fold added alpha_only_shapes:[in-process-agent] to sprint mode + corrected the false ε-via-Agent-tool premise (ED-041). Gauntlet: all 3 lanes PASS first pass (α-verified)."
 plan_contract: null
-risk_level: low
+risk_level: medium
 approval_state: none_required
-current_phase: idle
-recommended_mode: no_recommendation
+current_phase: done
+recommended_mode: adhoc
 mode_invocation_required_by_user: true
 external_services:
   identified: []
@@ -20,8 +20,7 @@ external_services:
   mocked: []
   deferred: []
 tickets:
-  proposed:
-    - T-20260610-285
+  proposed: []
   planned: []
   designed: []
   ready_for_execution: []
@@ -32,7 +31,8 @@ tickets:
   in_review: []
   qa_failed: []
   redteam_failed: []
-  done: []
+  done:
+    - T-20260610-285
   released: []
   deferred: []
   abandoned: []
@@ -108,10 +108,11 @@ ralph:
   last_checkpoint: null
   next_action: null
 crash_recovery:
-  last_checkpoint: null
-  resume_command: "/sprint:plan"
-  resume_summary: "Tracker initialized. No sprint started yet. Run /sprint:plan to begin."
+  last_checkpoint: ".claude/project/sprint/sprint-progress.yaml"
+  resume_command: "none — merged @975ed5c"
+  resume_summary: "S-LC-06 (dispatch mode_profiles + parallelism axis + coverage-gate live wiring, Wave 2 of E-LIFECYCLE-001) merged on branch june-9 @975ed5c, gauntlet-clean (all 3 lanes PASS, α-verified). FINDING-1 fold (alpha_only_shapes + ED-041 honesty) folded pre-gauntlet. Wired report-only. No resume needed."
   active_files: []
   dirty_state: false
   blockers: []
   safe_to_continue: true
+lane: engine

@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-10T02:53:28.129Z",
+  "generatedAt": "2026-06-10T03:46:56.179Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.15.4",
   "migrations": [],
@@ -48,8 +48,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "3bbfa61cb6ea7842f92a9cb83930f9b7d4f0cb380fde712cd8b9366a8733b22b",
-      "installedSha": "3bbfa61cb6ea7842f92a9cb83930f9b7d4f0cb380fde712cd8b9366a8733b22b"
+      "sha256": "993fe4ac27a6edbfa90e209cc720e265bdd2fdd02821302a53897686c754a7de",
+      "installedSha": "993fe4ac27a6edbfa90e209cc720e265bdd2fdd02821302a53897686c754a7de"
     },
     "DICTIONARY.md": {
       "owner": "framework",
@@ -113,8 +113,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "fb165a02a2d6d51183041c7d93a2ee89da8ea080b34db990bef61752dc5a4058",
-      "installedSha": "fb165a02a2d6d51183041c7d93a2ee89da8ea080b34db990bef61752dc5a4058"
+      "sha256": "05956041f29c7e4194937e0994125c3551e574411990c013cef072b5b636865f",
+      "installedSha": "05956041f29c7e4194937e0994125c3551e574411990c013cef072b5b636865f"
     },
     "TRACKER.md": {
       "owner": "runtime",
@@ -1881,6 +1881,48 @@
       "source": null,
       "sha256": "f8db2e89becfc27ed92361a3760aa110ff323a8cd2656a3064968b8df1c8af8b",
       "installedSha": "f8db2e89becfc27ed92361a3760aa110ff323a8cd2656a3064968b8df1c8af8b"
+    },
+    "tests/regression/S-LC-07/permission-profile.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": null,
+      "sha256": "f05afb3f7bb2969b645b37d2fcd77b0f2efdf8e6568a152c471519736048df05",
+      "installedSha": "f05afb3f7bb2969b645b37d2fcd77b0f2efdf8e6568a152c471519736048df05"
+    },
+    "tests/regression/S-LC-07/scan-turbo-spend.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": null,
+      "sha256": "6c34804d64f7a71723d577723ef0ee6834b94bf0d1ca35d7bc513e9f7e1cd942",
+      "installedSha": "6c34804d64f7a71723d577723ef0ee6834b94bf0d1ca35d7bc513e9f7e1cd942"
+    },
+    "tests/regression/S-LC-07/spend-ledger.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": null,
+      "sha256": "a74b3f5a83ef0541a66a572d23ac3a3f5ec39a8c2183207cc23417453b4aaaa3",
+      "installedSha": "a74b3f5a83ef0541a66a572d23ac3a3f5ec39a8c2183207cc23417453b4aaaa3"
+    },
+    "tests/regression/S-LC-06/coverage-gate-caller.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": null,
+      "sha256": "0a0bcda073472e3bda7e2e989bc2e315cc7249158b5eb89dea0c618dfccdecd9",
+      "installedSha": "0a0bcda073472e3bda7e2e989bc2e315cc7249158b5eb89dea0c618dfccdecd9"
+    },
+    "tests/regression/S-LC-06/mode-profile.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": null,
+      "sha256": "729959e9bba0c1498eac0ae8fd209edb43db5fa7ea76e505fcf6d87e5095786e",
+      "installedSha": "729959e9bba0c1498eac0ae8fd209edb43db5fa7ea76e505fcf6d87e5095786e"
+    },
+    "tests/regression/S-LC-06/parallelism.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": null,
+      "sha256": "f5695c112374cdff8937de782e74650f063fb1e2ad8fc648869a6540ab790c2b",
+      "installedSha": "f5695c112374cdff8937de782e74650f063fb1e2ad8fc648869a6540ab790c2b"
     },
     "tests/regression/S-LC-05/adhoc-team-hygiene-extension.test.js": {
       "owner": "framework",
@@ -3706,8 +3748,15 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/turbo/apply.js",
-      "sha256": "ed4310b609f031928c93cd3ea754e46e63cbbd4e0b1f0ac13b5aa5abd3e4f184",
-      "installedSha": "ed4310b609f031928c93cd3ea754e46e63cbbd4e0b1f0ac13b5aa5abd3e4f184"
+      "sha256": "6472496d58530ba259327422c0c1bd1314cf85106df87faee602ccbbedde8f00",
+      "installedSha": "6472496d58530ba259327422c0c1bd1314cf85106df87faee602ccbbedde8f00"
+    },
+    "scripts/turbo/classifier-preflight.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/turbo/classifier-preflight.js",
+      "sha256": "7e47463a918a2d15ecea79e6297dfac4dde88419684df98f38ae1272f87c7a8a",
+      "installedSha": "7e47463a918a2d15ecea79e6297dfac4dde88419684df98f38ae1272f87c7a8a"
     },
     "scripts/turbo/install-hook.js": {
       "owner": "framework",
@@ -3715,6 +3764,20 @@
       "source": "scripts/turbo/install-hook.js",
       "sha256": "54295b80e3264199d9e45aad8843aa488a385d5ae49bc7f6cf98d73f86ef18e6",
       "installedSha": "54295b80e3264199d9e45aad8843aa488a385d5ae49bc7f6cf98d73f86ef18e6"
+    },
+    "scripts/turbo/permission-profile.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/turbo/permission-profile.js",
+      "sha256": "6f5ca7bc7c3e2fc61617915bf07a004d7b0572e46e21d441c4280a42abc81f63",
+      "installedSha": "6f5ca7bc7c3e2fc61617915bf07a004d7b0572e46e21d441c4280a42abc81f63"
+    },
+    "scripts/turbo/spend-ledger.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/turbo/spend-ledger.js",
+      "sha256": "f6b101b59474cf62712c3f3970464ecdabe17f9ae75b5e1f56232bf8188a1771",
+      "installedSha": "f6b101b59474cf62712c3f3970464ecdabe17f9ae75b5e1f56232bf8188a1771"
     },
     "scripts/trackers/init.js": {
       "owner": "framework",
@@ -5421,8 +5484,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/dispatch/dispatch-contract.js",
-      "sha256": "4321e3303e634f63bc90b4843b02b91ed08475014474eac7922667df53697077",
-      "installedSha": "4321e3303e634f63bc90b4843b02b91ed08475014474eac7922667df53697077"
+      "sha256": "7d3bff7beabd7d5a26266f6a0306228153444d162937c737f428bc73b7f00615",
+      "installedSha": "7d3bff7beabd7d5a26266f6a0306228153444d162937c737f428bc73b7f00615"
     },
     "scripts/dispatch/dispatch-contract.test.js": {
       "owner": "framework",
@@ -5435,8 +5498,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/dispatch/dispatch-shape.js",
-      "sha256": "cc14e10a6ba13d03816a01ac873ff06e5603be0ca9efbc5d002deea0a92e4fe7",
-      "installedSha": "cc14e10a6ba13d03816a01ac873ff06e5603be0ca9efbc5d002deea0a92e4fe7"
+      "sha256": "38110be1b0c498b3e39367d275cd120177fcb3679f4034100056db651dfc60a6",
+      "installedSha": "38110be1b0c498b3e39367d275cd120177fcb3679f4034100056db651dfc60a6"
     },
     "scripts/dispatch/dispatch-shape.test.js": {
       "owner": "framework",
@@ -5710,6 +5773,13 @@
       "source": "scripts/checks/contract-versioning.js",
       "sha256": "1aeecdc76f69c9a64d87b24a518dc90c3037aa9d13c6047a7002a9dea0d427e8",
       "installedSha": "1aeecdc76f69c9a64d87b24a518dc90c3037aa9d13c6047a7002a9dea0d427e8"
+    },
+    "scripts/checks/coverage-gate-scan.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/coverage-gate-scan.js",
+      "sha256": "db53d9fc207987ba6abf7942cb20e4253727e9a65452daa1261ed75a4e31595d",
+      "installedSha": "db53d9fc207987ba6abf7942cb20e4253727e9a65452daa1261ed75a4e31595d"
     },
     "scripts/checks/cutover-completeness.allowlist.json": {
       "owner": "framework",
@@ -6200,6 +6270,13 @@
       "source": "scripts/checks/test-warpos-ship-coverage.js",
       "sha256": "b82d40fe76832344cb801f636e77c3b3341ecb6c0af414f96985a129f91163ed",
       "installedSha": "b82d40fe76832344cb801f636e77c3b3341ecb6c0af414f96985a129f91163ed"
+    },
+    "scripts/checks/turbo-spend.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/turbo-spend.js",
+      "sha256": "ca882667ab242cd1209080d93323c6e4d24ae53f551e4053952ec6a1fd46bf2a",
+      "installedSha": "ca882667ab242cd1209080d93323c6e4d24ae53f551e4053952ec6a1fd46bf2a"
     },
     "scripts/checks/version-coherence.js": {
       "owner": "framework",
@@ -10207,6 +10284,14 @@
       "owner": "runtime",
       "managed": false
     },
+    ".claude/project/sprint/tickets/T-20260610-285.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/tickets/T-20260610-286.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
     ".claude/project/sprint/sprints/_no-active-sprint/reasoning-auto-approval.md": {
       "owner": "runtime",
       "managed": false
@@ -10764,6 +10849,22 @@
       "managed": false
     },
     ".claude/project/sprint/sprints/SP-20260512-001/progress.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/sprints/S-LC-07/current.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/sprints/S-LC-07/progress.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/sprints/S-LC-06/current.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/sprints/S-LC-06/progress.yaml": {
       "owner": "runtime",
       "managed": false
     },
@@ -16976,8 +17077,8 @@
       "managed": true,
       "source": ".claude/commands/scan/full.md",
       "kind": "md",
-      "sha256": "450175373c72f330fbc5dd34b29446a526c09842a94edc20d36440502e3b4d08",
-      "installedSha": "450175373c72f330fbc5dd34b29446a526c09842a94edc20d36440502e3b4d08"
+      "sha256": "b854153483fda1f61c98992cdcf958f7ba592826487796662ff1688671288d4a",
+      "installedSha": "b854153483fda1f61c98992cdcf958f7ba592826487796662ff1688671288d4a"
     },
     ".claude/commands/scan/ingest-firewall.md": {
       "owner": "framework",
@@ -17130,6 +17231,14 @@
       "kind": "md",
       "sha256": "642d8c2f7a382560000a68780f140f46276fa268c6e062ea4851f65e71205f42",
       "installedSha": "642d8c2f7a382560000a68780f140f46276fa268c6e062ea4851f65e71205f42"
+    },
+    ".claude/commands/scan/turbo-spend.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/commands/scan/turbo-spend.md",
+      "kind": "md",
+      "sha256": "60b86e712bea72a9386ae20d0fc3c4decdac09dae6397ffee5e317fea2b37906",
+      "installedSha": "60b86e712bea72a9386ae20d0fc3c4decdac09dae6397ffee5e317fea2b37906"
     },
     ".claude/commands/scan/version-coherence.md": {
       "owner": "framework",
@@ -17592,8 +17701,8 @@
       "managed": true,
       "source": ".claude/commands/mode/sprint.md",
       "kind": "md",
-      "sha256": "4357f928ce67bc977016cd5c200f8ce08e1493b2b070dc9ad85b02142413a9d6",
-      "installedSha": "4357f928ce67bc977016cd5c200f8ce08e1493b2b070dc9ad85b02142413a9d6"
+      "sha256": "4fc1f4253715fc7df4f73f7e755d33ab744c1b44c3c7b378d43cdfe25e3a3d05",
+      "installedSha": "4fc1f4253715fc7df4f73f7e755d33ab744c1b44c3c7b378d43cdfe25e3a3d05"
     },
     ".claude/commands/maps/all.md": {
       "owner": "framework",
@@ -18232,8 +18341,8 @@
       "managed": true,
       "source": ".claude/agents/_org/dispatch-contract.json",
       "kind": "json",
-      "sha256": "cbe85f3d5a1e8c17f0c6bbb54fdd0302517ac0690d56e5bbcf60b362ab39520a",
-      "installedSha": "cbe85f3d5a1e8c17f0c6bbb54fdd0302517ac0690d56e5bbcf60b362ab39520a"
+      "sha256": "26f7cca65eadc6a0a6c50779f4c9d565af6dba52a81d31e8ed2b30b55f32d8b6",
+      "installedSha": "26f7cca65eadc6a0a6c50779f4c9d565af6dba52a81d31e8ed2b30b55f32d8b6"
     },
     ".claude/agents/_org/mode-lifecycle-hooks.json": {
       "owner": "framework",
@@ -18584,6 +18693,14 @@
       "kind": "md",
       "sha256": "171a87d36dfcb7f3c581f1680a62650b888fcb022caebf37793e1039146f80d0",
       "installedSha": "171a87d36dfcb7f3c581f1680a62650b888fcb022caebf37793e1039146f80d0"
+    },
+    ".claude/agents/president/_system/policy/adr/0011-turbo-spend-ceiling-and-push-honesty.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/president/_system/policy/adr/0011-turbo-spend-ceiling-and-push-honesty.md",
+      "kind": "md",
+      "sha256": "230740e305038142e2a18d6be5d707a1c9c3ef2a99f7cd5e4e28831e5be59551",
+      "installedSha": "230740e305038142e2a18d6be5d707a1c9c3ef2a99f7cd5e4e28831e5be59551"
     },
     ".claude/agents/president/_system/policy/adr/INDEX.md": {
       "owner": "framework",

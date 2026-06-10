@@ -1,8 +1,8 @@
 {
   "metadata": {
-    "generated": "2026-06-10T02:45:52.880Z",
-    "lastUpdated": "2026-06-10T02:45:52.880Z",
-    "total_skills": 204,
+    "generated": "2026-06-10T03:46:56.441Z",
+    "lastUpdated": "2026-06-10T03:46:56.441Z",
+    "total_skills": 205,
     "namespaces": 43,
     "user_invocable": 77,
     "regenerated_by": "scripts/regen-maps.js"
@@ -2079,7 +2079,7 @@
     },
     "scan": {
       "namespace": "scan",
-      "count": 48,
+      "count": 49,
       "skills": [
         {
           "id": "scan:ac-coverage",
@@ -2690,6 +2690,23 @@
             "writes": [],
             "references": [],
             "calls": []
+          }
+        },
+        {
+          "id": "scan:turbo-spend",
+          "name": "turbo-spend",
+          "description": "Report the turbo session's REAL cross-provider API spend against the operator-set ceiling (framework default $100, runtime-raisable), and assert the turbo permission-profile honesty invariant (push-to-main = confirm, never auto/notice). Report-only for spend; fail-open on a ledger fault. A NEW scan, separate from /scan:full.",
+          "file": ".claude/commands/scan/turbo-spend.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [
+              "scripts/hooks/authorization-gate.js"
+            ],
+            "calls": [
+              "/scan:full"
+            ]
           }
         },
         {
@@ -3738,12 +3755,12 @@
   "summary": {
     "by_invocability": {
       "user_invocable": 77,
-      "system_only": 127
+      "system_only": 128
     },
     "most_referenced_namespaces": [
       {
         "namespace": "scan",
-        "count": 48
+        "count": 49
       },
       {
         "namespace": "warp",

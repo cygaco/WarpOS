@@ -1,8 +1,8 @@
 # Skills Map
 
-Generated: 2026-06-10T02:45:52.880Z
+Generated: 2026-06-10T03:46:56.441Z
 
-Total: **204** skills across **43** namespaces. 77 user-invocable.
+Total: **205** skills across **43** namespaces. 77 user-invocable.
 
 ## By namespace
 
@@ -295,7 +295,7 @@ Total: **204** skills across **43** namespaces. 77 user-invocable.
 | next | The 1-idea alternative to /roadmap:ideas — the single highest-leverage next roadmap entry (the role- | 2 | 2 |
 | prioritize | Role-aware roadmap prioritization — runs /roadmap:cleanup first, then consults the Product Lead (sin | 4 | 0 |
 
-### scan (48)
+### scan (49)
 
 | Name | Description | Calls | Called by |
 |---|---|---|---|
@@ -312,7 +312,7 @@ Total: **204** skills across **43** namespaces. 77 user-invocable.
 | etc-harness | Audit the /etc authoring+eval harness — fail-closed enforcer that rejects an invented authoring form | 2 | 1 |
 | framework-purity | Refuse product-content leaks in canonical — scans for client slugs, maintainer abs paths, root-level | 2 | 4 |
 | framework-views-fresh | Verify .claude/commands and .claude/agents are byte-identical regenerations of their _warpos/ source | 2 | 3 |
-| full | Run every scan in parallel — a full system scan across project health, governance, and WarpOS distri | 55 | 22 |
+| full | Run every scan in parallel — a full system scan across project health, governance, and WarpOS distri | 55 | 23 |
 | ingest-firewall | Audit the ingest stores (_docs/research, _docs/imports, _docs/briefs, _docs/clones) for un-firewalle | 0 | 1 |
 | install | Verify a fresh WarpOS install — manifest, paths, agents, hooks, version, settings. | 1 | 4 |
 | issues | Pattern-mine events.jsonl for repeat audit-block signatures — surface candidates for /issues:log | 5 | 2 |
@@ -332,6 +332,7 @@ Total: **204** skills across **43** namespaces. 77 user-invocable.
 | sprint-manager-consult | Audits manager-consult coverage across post-cutoff /sprint:full runs — asserts the design-quality au | 3 | 2 |
 | system | System inventory — enumerate every active WarpOS system, diff against manifest, report drift and gap | 6 | 2 |
 | timeline | Reconstruct a build timeline from transaction, event, and provider logs. | 0 | 1 |
+| turbo-spend | Report the turbo session's REAL cross-provider API spend against the operator-set ceiling (framework | 1 | 0 |
 | version-coherence | Verify version + schema-label coherence — product version agrees across ALL manifests (incl. the one | 2 | 1 |
 | warpos-applied-migrations | Detect already-applied WarpOS migration scripts left on disk in consumer projects | 0 | 1 |
 | warpos-capsule-resolvable | Verify the capsule for /warp:update --to <v> is resolvable from REPO_ROOT, sibling clones, manifest. | 1 | 1 |
@@ -442,7 +443,7 @@ Top callers (skills that invoke the most others):
 
 Top called (skills others invoke the most):
 
-- `/scan:full` ← /bootstrap:ponder, /check:all, /commit:land, /guides:coverage, /karpathy:run, /knowledge:coverage, /learn:integrate, /maps:coverage, /scan:ac-coverage, /scan:cutover-completeness, /scan:dispatch-routing-parity, /scan:node-procs, /scan:regressions, /scan:roadmap-trace, /scan:scan-coverage, /scan:system, /scan:version-coherence, /scan:warpos-install-baseline, /scan:warpos-ship-coverage, /sprint:full, /warp:doctor, /warp:reconcile
+- `/scan:full` ← /bootstrap:ponder, /check:all, /commit:land, /guides:coverage, /karpathy:run, /knowledge:coverage, /learn:integrate, /maps:coverage, /scan:ac-coverage, /scan:cutover-completeness, /scan:dispatch-routing-parity, /scan:node-procs, /scan:regressions, /scan:roadmap-trace, /scan:scan-coverage, /scan:system, /scan:turbo-spend, /scan:version-coherence, /scan:warpos-install-baseline, /scan:warpos-ship-coverage, /sprint:full, /warp:doctor, /warp:reconcile
 - `/sleep:deep` ← /beta:integrate, /beta:mine, /bootstrap:ponder, /learn:deep, /reasoning:score, /scan:architecture, /scan:environment, /scan:full, /scan:patterns, /scan:references, /scan:requirements, /scan:system, /session:end, /sleep:quick
 - `/warp:update` ← /commit:both, /guides:write, /portfolio:sync, /scan:warpos-capsule-resolvable, /scan:warpos-install-baseline, /scan:warpos-layer-diff, /scan:warpos-manifest-coverage, /scan:warpos-migration-presence, /scan:warpos-staleness, /scan:warpos-structure-parity, /warp:diff, /warp:doctor, /warp:reconcile, /warp:sync
 - `/warp:health` ← /agents:test, /mode:adhoc, /mode:sprint, /scan:adhoc-team-hygiene, /scan:architecture, /scan:environment, /scan:full, /scan:system, /warp:doctor, /warp:setup, /warp:tour, /warp:uninstall, /warp:update

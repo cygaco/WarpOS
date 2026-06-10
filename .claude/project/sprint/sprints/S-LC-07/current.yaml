@@ -1,17 +1,17 @@
 schema: warpos/sprint/current-sprint/v1
 id: S-LC-07
 title: "Turbo hardening — spend ceiling + permission profile + push arc-line"
-objective: "Run /sprint:plan to set this."
-status: not_started
+objective: "Harden the turbo session layer: a spend-ledger with source-vs-instance ceiling resolution ($100 framework default, runtime override from authorization.json — never hardcodes the per-session value), a permission profile pinning push-to-main to confirm (P-061 — the classifier sits above permissions.allow), a classifier-preflight, and a /scan:turbo-spend consumer. Wave 2 of E-LIFECYCLE-001. ADR-0011."
+status: done
 created_at: "2026-06-10T02:56:29.572Z"
-updated_at: "2026-06-10T03:00:37.967Z"
-source_request: ""
-interpreted_intent: ""
+updated_at: "2026-06-10T03:39:02.000Z"
+source_request: "Wave 2 turbo sprint: spend ceiling (source-vs-instance) + safe commit/push/merge permission profile + classifier-preflight + spend-scan consumer. Engine/tooling sprint, ff-merge close, defer retro to epic close (RI-001)."
+interpreted_intent: "Make turbo's autonomy boundary honest: the spend ceiling resolves from operator state (never hardcoded), push-to-main stays per-action (confirm-pinned; a profile that advertised auto-push would lie because the harness classifier overrides permissions.allow). Gauntlet: backend+security PASS; qa/integrity caught 2 spend-ledger spoof blockers (prototype-key model→NaN ceiling bypass + negative-byte under-report) — fixed @f4eb8d7 (Object.hasOwn guard + clampBytes + 5 regression assertions), re-reviewed qa+security PASS (α-verified)."
 plan_contract: null
-risk_level: low
+risk_level: medium
 approval_state: none_required
-current_phase: idle
-recommended_mode: no_recommendation
+current_phase: done
+recommended_mode: adhoc
 mode_invocation_required_by_user: true
 external_services:
   identified: []
@@ -20,8 +20,7 @@ external_services:
   mocked: []
   deferred: []
 tickets:
-  proposed:
-    - T-20260610-286
+  proposed: []
   planned: []
   designed: []
   ready_for_execution: []
@@ -32,7 +31,8 @@ tickets:
   in_review: []
   qa_failed: []
   redteam_failed: []
-  done: []
+  done:
+    - T-20260610-286
   released: []
   deferred: []
   abandoned: []
@@ -108,10 +108,11 @@ ralph:
   last_checkpoint: null
   next_action: null
 crash_recovery:
-  last_checkpoint: null
-  resume_command: "/sprint:plan"
-  resume_summary: "Tracker initialized. No sprint started yet. Run /sprint:plan to begin."
+  last_checkpoint: ".claude/project/sprint/sprint-progress.yaml"
+  resume_command: "none — merged @95544ac"
+  resume_summary: "S-LC-07 (turbo spend-ceiling + permission-profile + classifier-preflight, Wave 2 of E-LIFECYCLE-001) merged on branch june-9 @95544ac, gauntlet-clean (1 fix-cycle: qa caught 2 spend-ledger spoof blockers, fixed @f4eb8d7 + re-reviewed PASS). ADR-0011. Wired report-only. No resume needed."
   active_files: []
   dirty_state: false
   blockers: []
   safe_to_continue: true
+lane: engine
