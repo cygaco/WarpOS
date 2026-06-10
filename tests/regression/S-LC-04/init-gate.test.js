@@ -72,8 +72,12 @@ function baseRegistry() {
 //             "UNREADABLE" => plant the registry PATH as a directory (read throws)
 //             object => plant JSON.stringify(object)
 function runGuard(opts = {}) {
-  const proj = fs.mkdtempSync(path.join(os.tmpdir(), "lc04-proj-"));
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), "lc04-home-"));
+  // opts.proj / opts.home REUSE an existing sealed dir across calls — this is how
+  // the COLD-START test runs dispatch #1 then #2 against the SAME project so the
+  // counter file written by #1 actually persists to #2 (a fresh mkdtemp per call
+  // would never exercise the no-file→file→increment sequence).
+  const proj = opts.proj || fs.mkdtempSync(path.join(os.tmpdir(), "lc04-proj-"));
+  const home = opts.home || fs.mkdtempSync(path.join(os.tmpdir(), "lc04-home-"));
   fs.mkdirSync(path.join(proj, ".claude", "runtime"), { recursive: true });
   fs.mkdirSync(path.join(home, ".claude", "runtime"), { recursive: true });
 
@@ -107,8 +111,12 @@ function runGuard(opts = {}) {
     );
   }
   if (typeof opts.seedInitgateCount === "number") {
+    // Per-mode counter filename (S-LC-04 FIX 2): seed the SAME file the hook reads.
+    const safeMode = String(opts.mode || "")
+      .toLowerCase()
+      .replace(/[^a-z0-9-]/g, "");
     fs.writeFileSync(
-      path.join(proj, ".claude", "runtime", ".initgate-oneoff-count"),
+      path.join(proj, ".claude", "runtime", `.initgate-${safeMode}-oneoff-count`),
       String(opts.seedInitgateCount),
     );
   }
@@ -332,6 +340,57 @@ ok("B7) adhoc + research one-off (explore) => NO advisory", () => {
   assert.ok(!advises(stdout), "research one-offs are legitimate — no advisory");
 });
 
+// B8) COLD START — NO pre-seed. This exercises the no-file path that every other
+// test masked by pre-seeding the counter. It FAILS against the dead-counter code
+// (where a cold-start ENOENT on read skipped the write, the file was never created,
+// n stayed 1, and the advisory never fired) and PASSES after FIX 1. dispatch #1 in
+// a fresh project must CREATE the per-mode counter file = "1" with NO advisory
+// (ramp); dispatch #2 against the SAME project must read 1 → write "2" → the
+// advisory FIRES. Reuses one sealed proj/home across both dispatches.
+ok("B8) COLD START adhoc: #1 creates file=1 + NO advisory; #2 => file=2 + advisory FIRES", () => {
+  const proj = fs.mkdtempSync(path.join(os.tmpdir(), "lc04-cold-proj-"));
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), "lc04-cold-home-"));
+  fs.mkdirSync(path.join(proj, ".claude", "runtime"), { recursive: true });
+  const cPath = path.join(
+    proj,
+    ".claude",
+    "runtime",
+    ".initgate-adhoc-oneoff-count",
+  );
+  // PRECONDITION: genuine cold start — the per-mode counter file does NOT exist.
+  assert.ok(
+    !fs.existsSync(cPath),
+    "cold-start precondition: no counter file pre-seeded",
+  );
+
+  // dispatch #1 — ramp: the hook must CREATE the file = "1" and NOT advise.
+  const r1 = runGuard({ proj, home, mode: "adhoc", agentType: "general-purpose" });
+  assert.ok(
+    fs.existsSync(cPath),
+    "dispatch #1 must CREATE the per-mode counter file on cold start (FIX 1)",
+  );
+  assert.strictEqual(
+    fs.readFileSync(cPath, "utf8").trim(),
+    "1",
+    "cold-start dispatch #1 => counter file = 1",
+  );
+  assert.ok(!advises(r1.stdout), "dispatch #1 ramps — no advisory yet");
+  assert.ok(!blocks(r1.stdout), "non-sprint stays REPORT-ONLY — never blocks");
+
+  // dispatch #2 — SAME proj: read 1 → write 2 → the advisory FIRES.
+  const r2 = runGuard({ proj, home, mode: "adhoc", agentType: "general-purpose" });
+  assert.strictEqual(
+    fs.readFileSync(cPath, "utf8").trim(),
+    "2",
+    "cold-start dispatch #2 => counter file = 2",
+  );
+  assert.ok(
+    advises(r2.stdout),
+    "dispatch #2 from cold start => the generalized init-gate advisory FIRES",
+  );
+  assert.ok(!blocks(r2.stdout), "still never blocks in adhoc");
+});
+
 // ════════════════════════════════════════════════════════════════════════════
 // C. FAIL-OPEN — a malformed/unreadable registry must never throw, and the
 //    non-sprint gate must fail OPEN (allow).
@@ -419,7 +478,7 @@ ok("D2) adhoc + ready team, repeated => counter RESETS to 0 (no accumulation)", 
     r.proj,
     ".claude",
     "runtime",
-    ".initgate-oneoff-count",
+    ".initgate-adhoc-oneoff-count",
   );
   const val = fs.readFileSync(cPath, "utf8").trim();
   assert.strictEqual(val, "0", "a ready team resets the ramp counter to 0");

@@ -509,20 +509,40 @@ process.stdin.on("end", () => {
           // Per-mode ramp counter (mirrors the sprint advisory): advise on the
           // 2nd+ worker when no ready team is live; reset to 0 once ready — so a
           // repeated init for the SAME mode never duplicates/escalates work.
-          let n = 1;
+          // FIX (S-LC-04 security false-green): the READ lives in its OWN try so a
+          // missing/unreadable file (COLD START — first dispatch in a fresh proj)
+          // defaults the prior count to 0 instead of aborting before the WRITE.
+          // Previously read+write shared one try: a cold-start ENOENT on read
+          // skipped the write, the file was NEVER created, every run re-hit ENOENT,
+          // n stayed 1 forever, and the n>=2 advisory was DEAD in production.
+          // Per-mode filename so alternating non-sprint requires_team modes ramp
+          // independently (no cross-mode counter pollution).
+          const safeMode = String(currentMode)
+            .toLowerCase()
+            .replace(/[^a-z0-9-]/g, "");
+          const cPath = path.join(
+            projectDir,
+            ".claude",
+            "runtime",
+            `.initgate-${safeMode}-oneoff-count`,
+          );
+          let prev = 0;
           try {
-            const cPath = path.join(
-              projectDir,
-              ".claude",
-              "runtime",
-              ".initgate-oneoff-count",
-            );
-            n = (parseInt(fs.readFileSync(cPath, "utf8"), 10) || 0) + 1;
-            fs.writeFileSync(cPath, ready ? "0" : String(n));
+            prev = parseInt(fs.readFileSync(cPath, "utf8"), 10) || 0;
           } catch {
-            /* counter is best-effort */
+            /* cold start / unreadable => prior count defaults to 0 */
           }
-          if (!ready && n >= 2) {
+          const n = prev + 1;
+          // ALWAYS persist (creating the file on cold start). Wrap the WRITE so a
+          // failure degrades to "no advisory" — fail-open, never throw/block.
+          let wrote = false;
+          try {
+            fs.writeFileSync(cPath, ready ? "0" : String(n));
+            wrote = true;
+          } catch {
+            /* write failure => degrade to no advisory; never crash the dispatch */
+          }
+          if (wrote && !ready && n >= 2) {
             const sym = conductor ? conductor.symbol : "the lead face";
             process.stdout.write(
               JSON.stringify({
