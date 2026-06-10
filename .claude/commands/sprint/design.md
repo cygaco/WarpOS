@@ -67,7 +67,13 @@ real content:
 - `trace.md` — `TR-N` observability hooks linking request →
   requirement → code → test → release → learning.
 - `acceptance-criteria.md` — testable Given/When/Then per granular
-  story.
+  story. **For E-LIFECYCLE-001 sprints (and any sprint touching modes /
+  teams / dispatch / lifecycle), also carry AC for the 20
+  enforcement-criteria categories (S-LC-11, PLAN §11)** — the required
+  headings/checklist read from the single source
+  `scripts/sprint/ac-categories.js` (do NOT hand-retype the list).
+  Audit both axes with `node scripts/sprint/check-ac-coverage.js
+  --categories --sprint <SP-id>` (report-only ramp; `--enforce` to block).
 - `qa-plan.md` — sprint-scope QA gate.
 - `redteam-plan.md` — adversarial review checklist (skipped at xs/s).
 - `release-plan.md` — ship-gate checklist (skipped at xs/s).
@@ -242,6 +248,14 @@ linkage and re-run. When `goal_verification` is absent or
 `reproduction = not_applicable` with a non-empty justification, the
 gate is a no-op (backward-compat with pre-Sprint-A contracts). See
 `paths.sprintReference#sprint-goal-verification-sp-20260518-007`.
+
+**20-category coverage (axis 2, S-LC-11).** Separate from the per-AC
+`verified_by:` linkage above, lifecycle/mode/team/dispatch sprints must
+carry AC for the 20 enforcement-criteria categories (PLAN §11), single-
+sourced from `scripts/sprint/ac-categories.js`. This axis is **report-only**
+today — `node scripts/sprint/check-ac-coverage.js --categories --sprint
+<SP-id>` FLAGS uncovered categories (exit 0) without blocking; `--enforce`
+opts into a non-zero exit once the operator flips the ramp.
 
 ## Reference
 
