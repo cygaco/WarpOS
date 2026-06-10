@@ -16,7 +16,7 @@ const path = require("path");
 const { spawnSync } = require("child_process");
 const { harness, sealedDir } = require("../checks/lib/fixture-harness");
 const {
-  validateDispatch, contractForRole, classForRole, skillExecution, validateContractFile, CONTRACT_PATH,
+  validateDispatch, validateDispatchForClass, contractForRole, classForRole, skillExecution, validateContractFile, CONTRACT_PATH,
 } = require("./dispatch-contract");
 
 const h = harness("dispatch-contract");
@@ -112,6 +112,45 @@ h.violation("a build-chain role via in-process-agent is rejected EVEN with a con
   } finally {
     fx.cleanup();
   }
+});
+
+// ── G1 / β option (c): generic build id 'builder' → build_chain_worker ─────────
+// validateDispatch still returns ok:false for 'builder' (not in role-registry — correct);
+// validateDispatchForClass resolves build_chain_worker directly — the TRUTHFUL path.
+
+// NEW: the class-level helper resolves build_chain_worker + subprocess-claude → OK.
+// A non-canonical cwd satisfies the worktree-required policy.
+h.pass("G1: validateDispatchForClass(build_chain_worker, subprocess-claude, worktree cwd) → contract-OK (truthful advisory)", () =>
+  validateDispatchForClass({
+    class: "build_chain_worker",
+    shape: "subprocess-claude",
+    toolId: "claude",
+    cwd: path.join(__dirname, "..", "..", "wt-fixture"),
+  }));
+
+// (planted-G1) The OLD path: validateDispatch alone returns ok:false with "(fail-closed)"
+// for 'builder' — that is the LIE G1 eliminates. We assert this explicitly so any
+// revert that drops the GENERIC_BUILD_IDS re-route is immediately detectable.
+h.violation("(planted-G1) validateDispatch for 'builder' still returns fail-closed — the lying advisory the G1 fix eliminates", () =>
+  validateDispatch({
+    role: "builder",
+    shape: "subprocess-claude",
+    toolId: "claude",
+    cwd: path.join(__dirname, "..", "..", "wt-fixture"),
+  }));
+
+// (planted-G1) validateDispatchForClass MUST NOT produce '(fail-closed)' for the
+// build_chain_worker class — if it did, the fix is broken (it would just move the lie).
+h.test("(planted-G1) validateDispatchForClass must NOT produce '(fail-closed)' wording for build_chain_worker + subprocess-claude", () => {
+  const v = validateDispatchForClass({
+    class: "build_chain_worker",
+    shape: "subprocess-claude",
+    toolId: "claude",
+    cwd: path.join(__dirname, "..", "..", "wt-fixture"),
+  });
+  assert.strictEqual(v.ok, true, `expected ok:true from validateDispatchForClass, got violations: ${JSON.stringify(v.violations)}`);
+  const hasFailClosed = (v.violations || []).some((viol) => viol.includes("fail-closed"));
+  assert.strictEqual(hasFailClosed, false, `validateDispatchForClass must NOT produce '(fail-closed)' wording — if it does, the G1 fix is broken: ${JSON.stringify(v.violations)}`);
 });
 
 h.done();
