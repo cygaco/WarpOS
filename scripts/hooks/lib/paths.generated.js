@@ -110,6 +110,7 @@ const PATHS = {
   "sprintRouting": path.join(PROJECT, ".claude", "agents", "president", "_system", "policy", "sprint-routing.json"),
   "orgRoleRegistry": path.join(PROJECT, ".claude", "agents", "_org", "role-registry.json"),
   "sprintHookPoints": path.join(PROJECT, ".claude", "agents", "_org", "sprint-hook-points.json"),
+  "modeLifecycleHooks": path.join(PROJECT, ".claude", "agents", "_org", "mode-lifecycle-hooks.json"),
   "skillHookPoints": path.join(PROJECT, ".claude", "agents", "_org", "skill-hook-points.json"),
   "briefs": path.join(PROJECT, "_docs", "briefs"),
   "briefsCurrent": path.join(PROJECT, "_docs", "briefs"),

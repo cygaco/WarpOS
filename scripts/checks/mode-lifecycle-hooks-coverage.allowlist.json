@@ -1,0 +1,28 @@
+{
+  "_doc": "Wiring-pending allowlist for scripts/checks/mode-lifecycle-hooks-coverage.js (E-LIFECYCLE-001 / S-LC-02). A declared virtual lifecycle event with NO emitter yet (no `lifecycle-events.emit(\"<event>\")` reference and no runtime `lifecycle-event` record) is reported as INFO — not a gap — IF it is listed here with a reason. This is the RAMP seam: S-LC-02 builds the registry + logger + enforcer but NOT the emitters (the 2 REAL PreToolUse guards + the mode-switch/teardown/init/session wiring are S-LC-03/04). As each emit-site lands, PRUNE its entry here; once an event has a real emitter the enforcer counts it covered and the allowlist entry is redundant. A declared event that is NEITHER emitted NOR listed here is a real coverage GAP (report-only this sprint; --enforce makes it exit 1). Mirrors the MIGRATION_PENDING / flag-don't-fix-known-debt pattern (mode-lifecycle-registry, cutover-completeness).",
+  "wiring_pending": {
+    "mode:switch:requested": "S-LC-03 — mode-switch preflight guard emit-site",
+    "mode:switch:preflight": "S-LC-03 — REAL PreToolUse mode-switch preflight guard",
+    "mode:teardown:before": "S-LC-03 — teardown sequence emit-site",
+    "team:persistent:kill:before": "S-LC-03 — teardown sequence emit-site",
+    "team:persistent:kill:after": "S-LC-03 — teardown sequence emit-site",
+    "mode:state:clear:before": "S-LC-03 — teardown sequence emit-site",
+    "mode:init:before": "S-LC-04 — REAL mode:init:gate guard emit-site",
+    "mode:policy:load": "S-LC-04 — mode-init sequence emit-site",
+    "team:persistent:spawn:before": "S-LC-04 — mode-init sequence emit-site",
+    "team:persistent:spawn:after": "S-LC-04 — mode-init sequence emit-site",
+    "team:persistent:verify": "S-LC-04 — mode-init sequence emit-site",
+    "dispatch:matrix:load": "S-LC-04 — mode-init sequence emit-site",
+    "sprint:binding:verify": "S-LC-04 — binding-verify emit-site",
+    "epic:binding:verify": "S-LC-04 — binding-verify emit-site",
+    "tracker:binding:verify": "S-LC-04 — binding-verify emit-site",
+    "planning:artifact:verify": "S-LC-04 — binding-verify emit-site",
+    "provider:readiness:verify": "S-LC-04 — provider-readiness emit-site",
+    "mode:init:after": "S-LC-04 — mode-init sequence emit-site",
+    "mode:switch:after": "S-LC-03 — mode-switch sequence emit-site",
+    "session:end:before": "S-LC-03/04 — session-end teardown emit-site",
+    "session:end:after": "S-LC-03/04 — session-end teardown emit-site",
+    "session:resume:stale-team-detect": "S-LC-03/04 — session-resume reconcile emit-site",
+    "session:resume:mode-state-reconcile": "S-LC-03/04 — session-resume reconcile emit-site"
+  }
+}

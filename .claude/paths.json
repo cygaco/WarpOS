@@ -99,6 +99,7 @@
   "sprintRouting": ".claude/agents/president/_system/policy/sprint-routing.json",
   "orgRoleRegistry": ".claude/agents/_org/role-registry.json",
   "sprintHookPoints": ".claude/agents/_org/sprint-hook-points.json",
+  "modeLifecycleHooks": ".claude/agents/_org/mode-lifecycle-hooks.json",
   "skillHookPoints": ".claude/agents/_org/skill-hook-points.json",
   "briefs": "_docs/briefs",
   "briefsCurrent": "_docs/briefs",

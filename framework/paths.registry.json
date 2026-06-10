@@ -849,6 +849,15 @@
       "introducedIn": "0.13.0",
       "docsToken": "paths.sprintHookPoints"
     },
+    "modeLifecycleHooks": {
+      "path": ".claude/agents/_org/mode-lifecycle-hooks.json",
+      "kind": "json",
+      "owner": "framework",
+      "mutable": false,
+      "introducedIn": "0.15.4",
+      "docsToken": "paths.modeLifecycleHooks",
+      "_note": "The VIRTUAL mode-lifecycle EVENT registry (E-LIFECYCLE-001 / S-LC-02) — sibling of mode-lifecycle.json (the mode→contract keystone). Declares the ~23 logged (harness_fires:false) lifecycle events; emitted via scripts/hooks/lib/lifecycle-events.js#emit to paths.eventsFile; coverage asserted by scripts/checks/mode-lifecycle-hooks-coverage.js (report-only). Single-sourced here so the registry path is referenced via paths.modeLifecycleHooks, not a literal."
+    },
     "skillHookPoints": {
       "path": ".claude/agents/_org/skill-hook-points.json",
       "kind": "json",

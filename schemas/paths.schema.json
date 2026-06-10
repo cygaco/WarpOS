@@ -507,6 +507,11 @@
       "const": ".claude/agents/_org/sprint-hook-points.json",
       "description": "json (framework) — paths.sprintHookPoints"
     },
+    "modeLifecycleHooks": {
+      "type": "string",
+      "const": ".claude/agents/_org/mode-lifecycle-hooks.json",
+      "description": "json (framework) — paths.modeLifecycleHooks"
+    },
     "skillHookPoints": {
       "type": "string",
       "const": ".claude/agents/_org/skill-hook-points.json",
