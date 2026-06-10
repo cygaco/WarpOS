@@ -34,6 +34,18 @@ const hookPoints = require("../sprint/hook-points");
 // The F3b manager_consult emitter wiring date — sprints before predate the mechanism.
 const WIRE_DATE = "2026-06-05";
 
+/**
+ * ISO date after which a matching manager_consult telemetry record alone is insufficient
+ * for block-row coverage — a backing ok:true dispatch completion record is ALSO required,
+ * correlated by role + sprint event time window. Sprints before this date keep the old
+ * telemetry-only predicate (no retroactive reds).
+ * Citing E-DISPATCH-INTEGRITY-001 F-1 (RC-2 sprint-theater prevention).
+ */
+const RECORD_BACKED_CUTOFF = "2026-06-10";
+
+/** Buffer (ms) around the sprint event time window when correlating dispatch records. */
+const SPRINT_WINDOW_BUFFER_MS = 2 * 60 * 60 * 1000; // 2 hours
+
 // Synthetic/test sprint prefixes — exempt from the LIVE corpus audit.
 const SYNTHETIC_SPRINT_PREFIXES = ["SP-J", "SP-TEST"];
 function isSyntheticSprint(sprintId) {
@@ -63,6 +75,30 @@ function validateIsoDate(val) {
   if (typeof val !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(val)) return false;
   const d = new Date(val + "T00:00:00Z");
   return !isNaN(d.getTime()) && d.toISOString().slice(0, 10) === val;
+}
+
+function parseTs(v) {
+  if (!v) return null;
+  const t = Date.parse(String(v));
+  return isNaN(t) ? null : t;
+}
+
+// F-1: check whether a backing ok:true dispatch record exists for `role` within the
+// sprint event time window ± SPRINT_WINDOW_BUFFER_MS.
+function hasBackingDispatchRecord(dispatchRecords, role, minTsMs, maxTsMs) {
+  if (!Array.isArray(dispatchRecords) || dispatchRecords.length === 0) return false;
+  // Defense-in-depth (claude qa lane 2026-06-10): no parseable sprint window →
+  // no record can be correlated → fail closed (mirror of sprint-manager-consult).
+  if (minTsMs === null && maxTsMs === null) return false;
+  return dispatchRecords.some((rec) => {
+    if (!rec || rec.ok !== true) return false;
+    if (typeof rec.role !== "string" || rec.role.trim() !== role) return false;
+    const t = parseTs(rec.completed_at) ?? parseTs(rec.started_at);
+    if (t === null) return false;
+    if (minTsMs !== null && t < minTsMs - SPRINT_WINDOW_BUFFER_MS) return false;
+    if (maxTsMs !== null && t > maxTsMs + SPRINT_WINDOW_BUFFER_MS) return false;
+    return true;
+  });
 }
 
 function extractYamlDate(text) {
@@ -129,18 +165,20 @@ function ticketFieldsFor(sprintId) {
 // ── Core compute (exported, pure given its inputs) ────────────────────────────
 
 /**
- * @param {object[]} events             parsed event records
- * @param {object}   registry           the hook-point registry
+ * @param {object[]} events              parsed event records
+ * @param {object}   registry            the hook-point registry
  * @param {object}   compositionBySprint map sprint_id -> { unit_types, max_risk, domains }
- * @param {object}   sprintDates        map sprint_id -> "YYYY-MM-DD"
- * @param {string}   cutoff             ISO date — sprints before are exempt
+ * @param {object}   sprintDates         map sprint_id -> "YYYY-MM-DD"
+ * @param {string}   cutoff              ISO date — sprints before are exempt
+ * @param {object[]} dispatchRecords     completion records from dispatch-completions.jsonl
+ *                                        (F-1 record-backed check, post-RECORD_BACKED_CUTOFF only)
  * @returns {{ findings, info, applicable, checked, undatedExempt }}
  */
-function computeFindings(events, registry, compositionBySprint = {}, sprintDates = {}, cutoff = WIRE_DATE) {
+function computeFindings(events, registry, compositionBySprint = {}, sprintDates = {}, cutoff = WIRE_DATE, dispatchRecords = []) {
   const findings = [];
   const info = [];
 
-  // bucket: per sprint — was there a run, and which managers were consulted.
+  // bucket: per sprint — was there a run, which managers were consulted, and event time window.
   const bySprint = Object.create(null);
   for (const rec of events) {
     const f = getEventFields(rec);
@@ -149,9 +187,15 @@ function computeFindings(events, registry, compositionBySprint = {}, sprintDates
     const isConsult = f.cat === "manager_consult" || (f.manager && !f.kind);
     const isRun = typeof f.kind === "string" && f.kind.startsWith("sprint_full");
     if (!isConsult && !isRun) continue;
-    if (!bySprint[sid]) bySprint[sid] = { run: false, consulted: new Set() };
+    if (!bySprint[sid]) bySprint[sid] = { run: false, consulted: new Set(), minTsMs: null, maxTsMs: null };
     if (isRun) bySprint[sid].run = true;
     if (isConsult && f.manager) bySprint[sid].consulted.add(String(f.manager));
+    // F-1: track sprint event time window for backing-record correlation
+    const evTs = parseTs(f.ts);
+    if (evTs !== null) {
+      if (bySprint[sid].minTsMs === null || evTs < bySprint[sid].minTsMs) bySprint[sid].minTsMs = evTs;
+      if (bySprint[sid].maxTsMs === null || evTs > bySprint[sid].maxTsMs) bySprint[sid].maxTsMs = evTs;
+    }
   }
 
   const applicable = [];
@@ -170,17 +214,33 @@ function computeFindings(events, registry, compositionBySprint = {}, sprintDates
     applicable.push(sid);
     checked++;
     const composition = compositionBySprint[sid] || {};
+    const isPostRecordBacked = date >= RECORD_BACKED_CUTOFF;
     for (const step of STEPS) {
       for (const row of hookPoints.agentsForStep(step, composition, registry)) {
-        if (sd.consulted.has(row.role)) continue;
-        const finding = { sprint_id: sid, role: row.role, step, mode: row.mode, finding_type: "missing_block_agent" };
+        const hasTelemetry = sd.consulted.has(row.role);
         if (row.mode === "block") {
-          finding.evidence = `block-row ${row.role}@${step} matched the composition but no manager_consult record exists for this run`;
-          findings.push(finding);
+          // F-1: post-RECORD_BACKED_CUTOFF block rows require BOTH telemetry AND backing record.
+          let covered = hasTelemetry;
+          if (hasTelemetry && isPostRecordBacked) {
+            covered = hasBackingDispatchRecord(dispatchRecords, row.role, sd.minTsMs, sd.maxTsMs);
+          }
+          if (!covered) {
+            findings.push({
+              sprint_id: sid, role: row.role, step, mode: row.mode,
+              finding_type: "missing_block_agent",
+              evidence: hasTelemetry
+                ? `block-row ${row.role}@${step} has a manager_consult record but no backing ok:true dispatch record in the sprint window (E-DISPATCH-INTEGRITY-001 F-1, post-${RECORD_BACKED_CUTOFF})`
+                : `block-row ${row.role}@${step} matched the composition but no manager_consult record exists for this run`,
+            });
+          }
         } else {
-          finding.finding_type = "missing_advisory_agent";
-          finding.evidence = `advisory-row ${row.role}@${step} matched but did not run (informational)`;
-          info.push(finding);
+          if (!hasTelemetry) {
+            info.push({
+              sprint_id: sid, role: row.role, step, mode: row.mode,
+              finding_type: "missing_advisory_agent",
+              evidence: `advisory-row ${row.role}@${step} matched but did not run (informational)`,
+            });
+          }
         }
       }
     }
@@ -234,6 +294,19 @@ function main() {
     }
   } catch { /* missing events -> graceful empty */ }
 
+  // Load dispatch completion records for F-1 backing-record check (post-RECORD_BACKED_CUTOFF)
+  let dispatchRecords = [];
+  const dispatchPath =
+    process.env.WARPOS_DISPATCH_COMPLETIONS_FILE ||
+    PATHS.dispatchCompletionsFile ||
+    path.join(PATHS.runtime || "", "dispatch-completions.jsonl");
+  try {
+    for (const line of fs.readFileSync(dispatchPath, "utf8").split(/\r?\n/)) {
+      if (!line.trim()) continue;
+      try { dispatchRecords.push(JSON.parse(line)); } catch { /* skip malformed */ }
+    }
+  } catch { /* missing or unreadable — graceful empty */ }
+
   const sprintDates = loadSprintDates();
   // Build composition per sprint that appears in events (cheap; only seen sprints).
   const compositionBySprint = {};
@@ -242,7 +315,7 @@ function main() {
     compositionBySprint[sid] = hookPoints.compositionFromTickets(ticketFieldsFor(sid));
   }
 
-  const res = computeFindings(rawEvents, registry, compositionBySprint, sprintDates, CUTOFF);
+  const res = computeFindings(rawEvents, registry, compositionBySprint, sprintDates, CUTOFF, dispatchRecords);
 
   if (res.applicable === 0) {
     if (JSON_OUT) console.log(JSON.stringify({ ok: true, applicable: 0, reason: "no_applicable_sprints", cutoff: CUTOFF }));
@@ -265,4 +338,4 @@ function main() {
 
 if (require.main === module) process.exit(main());
 
-module.exports = { computeFindings, reverseCoverage, getEventFields, validateIsoDate, WIRE_DATE };
+module.exports = { computeFindings, reverseCoverage, getEventFields, validateIsoDate, WIRE_DATE, RECORD_BACKED_CUTOFF };

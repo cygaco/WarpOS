@@ -201,6 +201,9 @@ function readCompletions(file) {
  * @param {object}   args
  * @param {string}   args.runId          - label for the run (telemetry/printing only)
  * @param {string[]} args.roles          - expected gauntlet roles (legacy names ok; normalized)
+ * @param {string}   [args.sprintId]     - F-3 correlation: sprint id to match against record's
+ *   sprint_id field. Records with a non-matching sprint_id are excluded; records without a
+ *   sprint_id fall through to time-window correlation (backwards compat for pre-F-3 ledgers).
  * @param {string|number} [args.since]   - window start (ISO or epoch ms); records before are ignored
  * @param {string|number} [args.until]   - window end (ISO or epoch ms); records after are ignored
  * @param {string}   [args.completionsFile] - override ledger path (default: paths.dispatchCompletionsFile)
@@ -213,6 +216,7 @@ function readCompletions(file) {
  * @returns {{
  *   ok: boolean,
  *   runId: string,
+ *   sprintId: string|undefined,
  *   window: { sinceMs: number|null, untilMs: number|null },
  *   completionsFile: string|null,
  *   ledgerMissing: boolean,
@@ -233,6 +237,9 @@ function readCompletions(file) {
  */
 function verifyGauntlet(args = {}) {
   const runId = args.runId || "(unlabeled)";
+  // F-3: sprint correlation — records with a non-matching sprint_id are excluded.
+  // Records without sprint_id fall through to time-window correlation (backwards compat).
+  const sprintId = args.sprintId ? String(args.sprintId).trim() : null;
   const allowFailed = !!args.allowFailed;
   const strictFallback = !!args.strictFallback;
 
@@ -257,6 +264,7 @@ function verifyGauntlet(args = {}) {
     return {
       ok: false,
       runId,
+      sprintId: sprintId || undefined,
       window: { sinceMs: sinceMs0, untilMs: untilMs0 },
       completionsFile: null,
       ledgerMissing: false,
@@ -315,7 +323,18 @@ function verifyGauntlet(args = {}) {
   // sees the whole ledger); when a window IS specified, unknown-time records are
   // dropped (they can't be proven to belong to this run).
   // FIX1: future-dated records are excluded via effectiveUntilMs + hardCeilingMs.
+  // F-3: sprint-ID correlation — if a record carries sprint_id and it doesn't match
+  //   the requested sprintId, exclude it. Records without sprint_id fall through to
+  //   time-window correlation (backwards compat for pre-F-3 ledgers).
   const inWindow = (rec) => {
+    // F-3: sprint-ID mismatch filter (additive on top of time-window).
+    if (sprintId && rec.sprint_id !== undefined && rec.sprint_id !== sprintId) return false;
+    // F-3 fix-cycle (claude backend lane, 2026-06-10, CONFIRMED via live CLI):
+    // when sprint correlation is the SOLE bound (no time window), a record
+    // LACKING sprint_id must NOT count — otherwise any historic pre-F-3 ok:true
+    // record greens a never-ran lane (exactly the T3 class F-3 exists to close).
+    // Pre-F-3 sprint_id-less ledgers are verified via window mode (--since/--until).
+    if (sprintId && rec.sprint_id === undefined && sinceMs === null && untilMs === null) return false;
     const t = recordCompletedMs(rec);
     if (sinceMs === null && untilMs === null) return true; // whole-ledger view
     if (t === null) return false; // unknown timestamp: cannot prove in-window
@@ -472,6 +491,7 @@ function verifyGauntlet(args = {}) {
   return {
     ok: missingRoles.length === 0 && !malformedTainted,
     runId,
+    sprintId: sprintId || undefined,
     window: { sinceMs, untilMs },
     completionsFile,
     ledgerMissing,
@@ -512,14 +532,21 @@ if (require.main === module) {
           "role IS the death signal. Malformed/ill-typed/no-record all fail-CLOSED.",
           "Never trust orchestrator narration; trust the ledger.",
           "",
+          "F-3 (E-DISPATCH-INTEGRITY-001): unbounded whole-ledger verification is REFUSED.",
+          "Pass --sprint <id> or a time window (--since/--until) to correlate records to the",
+          "current sprint/run. A historic ok:true must never green a never-ran lane.",
+          "",
           "Usage:",
           "  node scripts/dispatch/gauntlet-verify.js --run <id> --roles a,b,c \\",
-          "    [--since <iso|ms>] [--until <iso|ms>] [--completions <path>] \\",
-          "    [--allow-failed] [--strict-fallback] [--json]",
+          "    [--sprint <sprint-id>] [--since <iso|ms>] [--until <iso|ms>] \\",
+          "    [--completions <path>] [--allow-failed] [--strict-fallback] [--json]",
           "",
           "Exit: 0 = all roles have a well-formed record; 1 = no-record/ill-typed/malformed-tainted; 2 = usage/internal error.",
           "",
           "Flags:",
+          "  --sprint <id>       F-3 correlation: records with a non-matching sprint_id are excluded.",
+          "                      Records without sprint_id fall through to time-window correlation.",
+          "                      Required when --since/--until are not provided.",
           "  --allow-failed      Accepted for backward compat; no longer greens a pure-failed role (BC-16 FIX3).",
           "                      A role whose only record is ok:false is never satisfied regardless of this flag.",
           "  --strict-fallback   Fail when any role only fell back to Claude (default: fell-back counts as ran).",
@@ -529,6 +556,7 @@ if (require.main === module) {
     }
 
     const runId = getFlag("run") || getFlag("run-id");
+    const sprintIdArg = getFlag("sprint");
     const rolesArg = getFlag("roles");
     const since = getFlag("since");
     const until = getFlag("until");
@@ -552,8 +580,38 @@ if (require.main === module) {
       process.exit(2);
     }
 
+    // F-3 (E-DISPATCH-INTEGRITY-001): refuse unbounded whole-ledger verification.
+    // A historic ok:true record must never satisfy a never-ran lane for the current sprint.
+    // Callers MUST supply either --sprint <id> or a time window (--since/--until).
+    const hasSprintCorrelation = sprintIdArg && sprintIdArg !== true;
+    const hasWindow = (since !== undefined && since !== true) || (until !== undefined && until !== true);
+    if (!hasSprintCorrelation && !hasWindow) {
+      process.stderr.write(
+        "Usage error (F-3): gauntlet-verify requires --sprint <id> or a time window " +
+        "(--since and/or --until) to prevent a historic ok:true record from satisfying " +
+        "a never-ran lane. Unbounded whole-ledger verification is refused. " +
+        "See E-DISPATCH-INTEGRITY-001 F-3.\n",
+      );
+      process.exit(2);
+    }
+    // F-3 fix-cycle (claude qa lane 2026-06-10, REPRODUCED on the real ledger): a
+    // PRESENT-but-UNPARSEABLE --since/--until value passed the presence-based refusal
+    // above while parsing to null inside verifyGauntlet — silently widening to a
+    // whole-ledger scan (the exact T3 class). Validate parseability HERE; refuse loud.
+    for (const [flagName, flagVal] of [["--since", since], ["--until", until]]) {
+      if (flagVal !== undefined && flagVal !== true && toMs(flagVal) === null) {
+        process.stderr.write(
+          `Usage error (F-3): ${flagName} value "${flagVal}" is not a parseable timestamp ` +
+          "(ISO 8601 or epoch ms). Refusing — an unparseable window would silently widen " +
+          "to an unbounded whole-ledger scan.\n",
+        );
+        process.exit(2);
+      }
+    }
+
     const result = verifyGauntlet({
       runId: runId && runId !== true ? runId : undefined,
+      sprintId: hasSprintCorrelation ? String(sprintIdArg) : undefined,
       roles,
       since: since === true ? undefined : since,
       until: until === true ? undefined : until,

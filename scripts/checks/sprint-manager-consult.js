@@ -46,6 +46,18 @@ const { PATHS } = require("../hooks/lib/paths");
  */
 const WIRE_DATE = "2026-06-04";
 
+/**
+ * ISO date after which a matching manager_consult telemetry record alone is insufficient —
+ * a backing ok:true dispatch completion record in dispatch-completions.jsonl is ALSO
+ * required, correlated to the sprint via role + time window. Sprints started before this
+ * date keep the old telemetry-only predicate (no retroactive reds).
+ * Citing E-DISPATCH-INTEGRITY-001 F-1 (RC-2 sprint-theater prevention).
+ */
+const RECORD_BACKED_CUTOFF = "2026-06-10";
+
+/** Buffer (ms) around the sprint event time window when correlating dispatch records. */
+const SPRINT_WINDOW_BUFFER_MS = 2 * 60 * 60 * 1000; // 2 hours
+
 /** The named manager this check enforces coverage for. */
 const REQUIRED_MANAGER = "design-quality";
 
@@ -115,6 +127,37 @@ function extractYamlDate(text) {
   return m ? m[1] : null;
 }
 
+// ── Timestamp parser ──────────────────────────────────────────────────────────
+
+function parseTs(v) {
+  if (!v) return null;
+  const t = Date.parse(String(v));
+  return isNaN(t) ? null : t;
+}
+
+// ── Backing dispatch-record check (F-1) ───────────────────────────────────────
+// A record is correlated when: role matches AND completed_at (or started_at)
+// falls within the sprint's event time window ± SPRINT_WINDOW_BUFFER_MS.
+// Records with no timestamp cannot be correlated and are excluded.
+function hasBackingDispatchRecord(dispatchRecords, role, minTsMs, maxTsMs) {
+  if (!Array.isArray(dispatchRecords) || dispatchRecords.length === 0) return false;
+  // Defense-in-depth (claude qa lane 2026-06-10, minor): if the sprint has NO
+  // parseable event window at all, no record can be correlated to it — fail
+  // closed rather than letting ANY historic ok:true record green the sprint.
+  // (Not live-reachable today — the logger always writes top-level ts — but
+  // the guard costs one line and closes the shape.)
+  if (minTsMs === null && maxTsMs === null) return false;
+  return dispatchRecords.some((rec) => {
+    if (!rec || rec.ok !== true) return false;
+    if (typeof rec.role !== "string" || rec.role.trim() !== role) return false;
+    const t = parseTs(rec.completed_at) ?? parseTs(rec.started_at);
+    if (t === null) return false;
+    if (minTsMs !== null && t < minTsMs - SPRINT_WINDOW_BUFFER_MS) return false;
+    if (maxTsMs !== null && t > maxTsMs + SPRINT_WINDOW_BUFFER_MS) return false;
+    return true;
+  });
+}
+
 // ── ISO date validator (round-trip; rejects V8 calendar rollovers) ───────────
 
 function validateIsoDate(val) {
@@ -176,12 +219,14 @@ function loadSprintDates() {
 /**
  * Compute findings from an array of event records.
  *
- * @param {object[]} events      Parsed event records (as read from events.jsonl)
- * @param {Object}   sprintDates  Map of sprint_id → "YYYY-MM-DD" start date
- * @param {string}   cutoff      ISO date string — sprints before this are exempt
+ * @param {object[]} events          Parsed event records (as read from events.jsonl)
+ * @param {Object}   sprintDates     Map of sprint_id → "YYYY-MM-DD" start date
+ * @param {string}   cutoff          ISO date string — sprints before this are exempt
+ * @param {object[]} dispatchRecords Parsed completion records from dispatch-completions.jsonl
+ *                                   (F-1 record-backed check, post-RECORD_BACKED_CUTOFF only)
  * @returns {{ findings, applicable, checked, undatedExempt, malformedLines }}
  */
-function computeFindings(events, sprintDates = {}, cutoff = WIRE_DATE) {
+function computeFindings(events, sprintDates = {}, cutoff = WIRE_DATE, dispatchRecords = []) {
   const findings = [];
   let malformedLines = 0;
 
@@ -211,9 +256,18 @@ function computeFindings(events, sprintDates = {}, cutoff = WIRE_DATE) {
         designTouch: false,      // independent "touched UI" signal
         hasDesignQuality: false, // a design-quality manager_consult exists
         designTouchEvidence: null,
+        minTsMs: null,           // F-1: min event timestamp for sprint window correlation
+        maxTsMs: null,           // F-1: max event timestamp for sprint window correlation
       };
     }
     const sd = sprintData[sprintId];
+
+    // F-1: track sprint event time window (used to correlate dispatch completion records)
+    const evTs = parseTs(f.ts);
+    if (evTs !== null) {
+      if (sd.minTsMs === null || evTs < sd.minTsMs) sd.minTsMs = evTs;
+      if (sd.maxTsMs === null || evTs > sd.maxTsMs) sd.maxTsMs = evTs;
+    }
 
     if (isSprintFull) {
       sd.sawSprintFull = true;
@@ -271,6 +325,20 @@ function computeFindings(events, sprintDates = {}, cutoff = WIRE_DATE) {
         evidence: `sprint shows a design-touch signal (${sd.designTouchEvidence || "design work"}) but no manager_consult record for '${REQUIRED_MANAGER}' was found for this sprint`,
         finding_type: "missing_design_consult",
       });
+    } else if (sprintDate >= RECORD_BACKED_CUTOFF) {
+      // F-1: post-cutoff sprint — telemetry record present but ALSO require a backing
+      // ok:true completion record correlated by role + sprint event time window.
+      const hasBacking = hasBackingDispatchRecord(
+        dispatchRecords, REQUIRED_MANAGER, sd.minTsMs, sd.maxTsMs,
+      );
+      if (!hasBacking) {
+        findings.push({
+          sprint_id: sprintId,
+          manager: REQUIRED_MANAGER,
+          evidence: `sprint has a manager_consult event for '${REQUIRED_MANAGER}' but no backing ok:true dispatch record in the sprint window (E-DISPATCH-INTEGRITY-001 F-1; post-${RECORD_BACKED_CUTOFF} record-backed coverage required)`,
+          finding_type: "missing_design_consult",
+        });
+      }
     }
   }
 
@@ -330,8 +398,9 @@ if (require.main === module) {
   }
 
   // Env overrides for testing (production uses PATHS defaults).
-  //   WARPOS_EVENTS_FILE       — override path to events.jsonl
-  //   WARPOS_SPRINT_DATES_JSON — override sprint dates as a JSON string
+  //   WARPOS_EVENTS_FILE                  — override path to events.jsonl
+  //   WARPOS_SPRINT_DATES_JSON            — override sprint dates as a JSON string
+  //   WARPOS_DISPATCH_COMPLETIONS_FILE    — override path to dispatch-completions.jsonl (F-1)
 
   // 1. Read and parse events.jsonl (missing file → graceful empty)
   let rawEvents = [];
@@ -351,7 +420,21 @@ if (require.main === module) {
     // Missing or unreadable events file → treat as empty (graceful)
   }
 
-  // 2. Load sprint start dates
+  // 2. Load dispatch completion records for F-1 backing-record check
+  let dispatchRecords = [];
+  const dispatchPath =
+    process.env.WARPOS_DISPATCH_COMPLETIONS_FILE ||
+    PATHS.dispatchCompletionsFile ||
+    path.join(PATHS.runtime || "", "dispatch-completions.jsonl");
+  try {
+    const raw = fs.readFileSync(dispatchPath, "utf8");
+    for (const line of raw.split(/\r?\n/)) {
+      if (!line.trim()) continue;
+      try { dispatchRecords.push(JSON.parse(line)); } catch { /* skip malformed */ }
+    }
+  } catch { /* missing or unreadable — graceful empty (some post-cutoff sprints may red) */ }
+
+  // 3. Load sprint start dates
   let sprintDates;
   if (process.env.WARPOS_SPRINT_DATES_JSON) {
     try {
@@ -363,11 +446,11 @@ if (require.main === module) {
     sprintDates = loadSprintDates();
   }
 
-  // 3. Compute findings
-  const result = computeFindings(rawEvents, sprintDates, CUTOFF);
+  // 4. Compute findings
+  const result = computeFindings(rawEvents, sprintDates, CUTOFF, dispatchRecords);
   result.malformedLines = (result.malformedLines || 0) + malformedCount;
 
-  // 4. Graceful empty — no applicable post-cutoff design-touching sprints
+  // 5. Graceful empty — no applicable post-cutoff design-touching sprints
   if (result.applicable === 0) {
     if (JSON_OUT) {
       console.log(
@@ -387,7 +470,7 @@ if (require.main === module) {
     process.exit(0);
   }
 
-  // 5. Emit results
+  // 6. Emit results
   const ok = result.findings.length === 0;
   if (JSON_OUT) {
     const jsonOut = {
@@ -426,6 +509,7 @@ module.exports = {
   computeFindings,
   validateIsoDate,
   WIRE_DATE,
+  RECORD_BACKED_CUTOFF,
   REQUIRED_MANAGER,
   DESIGN_TOUCH_MANAGERS,
 };
