@@ -768,6 +768,7 @@ Every sprint that has been planned, executed, released, or retrospected — one 
 
 | Sprint | Title | Status | Started | Closed | Release |
 |---|---|---|---|---|---|
+| [SP-20260610-005](.claude/project/sprint/sprints/SP-20260610-005/) | E-DISPATCH-INTEGRITY F-1+F-3 coverage-honesty | retrospected | 2026-06-10T16:12:06.947Z | 2026-06-10T16:55:56.095Z |  |
 | [SP-20260610-001](.claude/project/sprint/sprints/SP-20260610-001/) | Lane A - ship/install integrity (WARPOS.md sweep) | planning | 2026-06-10T15:51:46.173Z |  |  |
 | [SP-20260610-003](.claude/project/sprint/sprints/SP-20260610-003/) | Lanes C+D - sprint-pipeline truth + research:deep runnability (WARPOS.md sweep) | retrospected | 2026-06-10T15:32:08.947Z | 2026-06-10T16:05:02.123Z |  |
 | [SP-20260610-002](.claude/project/sprint/sprints/SP-20260610-002/) | Lane B - dispatch/registry coherence (WARPOS.md sweep) | retrospected | 2026-06-10T14:46:17.762Z | 2026-06-10T15:30:02.283Z |  |

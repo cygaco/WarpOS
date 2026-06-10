@@ -21,9 +21,9 @@
 - **Percent completion:** 0% — diagnosed cross-provider + fixes scoped; no fix built yet. (The diagnosis itself + this epic are the deliverables of the 2026-06-07 session.)
 
 ## Definition of Done
-- [ ] F-1: a `manager_consult` coverage record alone no longer satisfies `scan:sprint-manager-consult`/`scan:sprint-hook-coverage` — a backing `ok:true` completion record is required (test: a coverage-only sprint FAILS the enforcer).
-- [ ] F-2: `/sprint:full` (or its successor conduct path) dispatches the in-process roster via a World-A conductor with real `record-inprocess` records; `full.js` emits no dispatch-telemetry it didn't perform.
-- [ ] F-3: `gauntlet-verify` requires a window / correlates by `sprint_id`; the T3 historic-green false-positive no longer passes.
+- [x] F-1: DONE 2026-06-10 (sprint SP-20260610-005, T-20260610-300) — both scans require a correlated `ok:true` completion record for post-`RECORD_BACKED_CUTOFF`(2026-06-10) sprints; legacy exemption keeps historic sprints green; planted telemetry-only fixture FAILS (tests 39/39 + 16/16, claude 2-lane gauntlet + re-review PASS, fix-cycles made the predicate fail-closed on null windows).
+- [~] F-2: SUBSTANTIALLY DONE 2026-06-10 (sprint SP-20260610-003, T-20260610-297, doogle WG-3) — `/sprint:full` defaults `--epsilon-dispatch` ON under `isSprint()` (explicit `--no-epsilon`/`--no-epsilon-dispatch` opt-outs win; planted tests M-1..M-7) + org-era skill rewrite + report-only `design_without_roster` enforcer. RESIDUAL: live sprint-mode ε-dispatch run evidence (accrues from the next real sprint-mode roster run) + the enforcer's blocking ramp.
+- [x] F-3: DONE 2026-06-10 (sprint SP-20260610-005, T-20260610-301) — `gauntlet-verify` requires `--sprint` or a parseable window; whole-ledger verify REFUSED (exit 2); sprint-only correlation excludes `sprint_id`-less records (fix-cycle: two live-reproduced false-greens closed — historic un-stamped record + unparseable-window bypass); T3 historic-green fixture FAILS (47/47).
 - [ ] F-4: agents folder de-dotted to one visible convention; one dispatch-guide copy; `scan:references` green; `scan:role-parity` + `test-dispatch-config.js` green after the both-layers rename.
 - [ ] F-5: provider-unavailable + reap leave a ledger trace; `cli.js` no longer drops dot-named specs silently.
 
@@ -90,11 +90,11 @@
 | Hidden-`.` skips instructions | No (hypothesis) | Verified Nonexistent (as a cause) | manifest walker + spec-resolver + Glob/Grep all traverse dot-dirs | 0/24,433 log evidence; 4-way test | 2026-06-07 | Claude diagnostic |
 
 ## Current next action
-F-1 — Kill the telemetry-only false-green: make a backing `ok:true` completion record (the `gauntlet-verify` predicate) the precondition for any phase to count as covered. Touch `scripts/sprint/full.js:95-116`, `.claude/commands/sprint/full.md:93`, `scripts/checks/sprint-manager-consult.js`, `scripts/checks/sprint-hook-coverage.js`. Decide at design: default `/sprint:full` to `--epsilon-dispatch` vs. reject the non-dispatch coverage path at the enforcer (prefer the enforcer-side, more fail-closed).
+F-1 + F-3 DONE 2026-06-10 (SP-20260610-005, landed via the june-9 arc; both decided enforcer-side AND engine-side: the scans demand records, and `/sprint:full` defaults to `--epsilon-dispatch` under sprint mode per F-2/SP-20260610-003). Remaining (open as of 2026-06-10): F-2 residual — a live sprint-mode ε-dispatch roster run as DoD evidence + the `design_without_roster` blocking ramp. F-4/F-5 remain consolidated under E-SYSTEM-ORG-001.
 
 ## Completion record
-- Final state: Not yet complete (Active, 0%)
-- Percent completion: n/a
+- Final state: Not yet complete (Active, ~75% — F-1 + F-3 done 2026-06-10; F-2 substantially done with a live-run residual; F-4/F-5 owned by E-SYSTEM-ORG-001)
+- Percent completion: ~75%
 - Completion timestamp: n/a
 - Definition of done used: see Definition of Done above (spec §37)
 - Evidence of completion: n/a — diagnosed only; no fix built yet

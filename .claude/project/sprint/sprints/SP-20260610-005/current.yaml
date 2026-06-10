@@ -1,0 +1,119 @@
+schema: warpos/sprint/current-sprint/v1
+id: SP-20260610-005
+title: "E-DISPATCH-INTEGRITY-001 F-1+F-3 — coverage-honesty (kill telemetry-only false-greens)"
+objective: "F-1: a sprint phase counts as 'covered' ONLY with a backing ok:true completion record — a manager_consult telemetry record alone no longer satisfies scan:sprint-manager-consult / scan:sprint-hook-coverage (kills RC-2 'sprint theater'). F-3: gauntlet-verify must correlate by sprint_id / bounded window and REFUSE a whole-ledger verify, so a historic ok:true can never green a never-ran lane (closes RC-4/G4, the T3 historic-green false-positive)."
+status: releasing
+created_at: "2026-06-10T16:12:06.947Z"
+updated_at: "2026-06-10T16:54:28.926Z"
+source_request: "E-DISPATCH-INTEGRITY-001 F-1 + F-3 per the epic tracker (F-2 substantially delivered 2026-06-10 by SP-20260610-003's WG-3 work: epsilon-dispatch default-ON in sprint mode + design_without_roster enforcer; F-2's residual DoD evidence = the next real sprint-mode run). β pre-cleared epic chaining (EVT-warpos-sprint-2026-06-10-batched-001 DECIDE 0.88). Engine sprint, RI-001 fast-close."
+interpreted_intent: "Apply the record-or-it-didn't-happen predicate uniformly: coverage scans and gauntlet-verify must demand fresh, sprint-correlated ok:true completion records instead of accepting presence-of-telemetry or any-historic-record."
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260610-0069.yaml"
+risk_level: medium
+approval_state: none_required
+current_phase: release
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+external_services:
+  identified: []
+  blocked: []
+  ready: []
+  mocked: []
+  deferred: []
+tickets:
+  proposed: []
+  planned: []
+  designed: []
+  ready_for_execution: []
+  in_progress: []
+  blocked: []
+  waiting_on_human: []
+  waiting_on_external_service: []
+  in_review: []
+  qa_failed: []
+  redteam_failed: []
+  done:
+    - T-20260610-300
+    - T-20260610-301
+  released: []
+  deferred: []
+  abandoned: []
+  reopened: []
+  superseded: []
+requirements:
+  prd: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260610-005\\prd.md"
+  high_level_stories: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260610-005\\high-level-stories.md"
+  granular_stories: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260610-005\\granular-stories.md"
+  copy: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260610-005\\copy.md"
+  inputs: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260610-005\\inputs.md"
+  trace: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260610-005\\trace.md"
+  acceptance_criteria: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260610-005\\acceptance-criteria.md"
+  qa_plan: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260610-005\\qa-plan.md"
+  redteam_plan: null
+  release_plan: null
+checks:
+  lint:
+    status: not_run
+    last_run: null
+    evidence: ""
+  typecheck:
+    status: not_run
+    last_run: null
+    evidence: ""
+  tests:
+    status: not_run
+    last_run: null
+    evidence: ""
+  build:
+    status: not_run
+    last_run: null
+    evidence: ""
+  qa:
+    status: not_run
+    last_run: null
+    evidence: ""
+  redteam:
+    status: not_run
+    last_run: null
+    evidence: ""
+approvals:
+  plan:
+    required: false
+    state: not_required
+    ref: null
+  design:
+    required: false
+    state: not_required
+    ref: null
+  execution:
+    required: false
+    state: not_required
+    ref: null
+  release:
+    required: false
+    state: not_required
+    ref: null
+  external_services:
+    required: false
+    state: not_required
+    ref: null
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260610-0069.report.md"
+  design: null
+  execution: null
+  release: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\releases\\RL-20260610-040.yaml"
+ralph:
+  active: false
+  current_ticket: null
+  current_loop: null
+  status: idle
+  last_checkpoint: null
+  next_action: null
+crash_recovery:
+  last_checkpoint: ".claude/project/sprint/sprint-progress.yaml"
+  resume_command: "/sprint:release"
+  resume_summary: "Release RL-20260610-040 in preparing state. Run /sprint:release with --id RL-20260610-040."
+  active_files: []
+  dirty_state: false
+  blockers: []
+  safe_to_continue: true
+lane: engine

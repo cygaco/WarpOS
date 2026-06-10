@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-10T16:06:17.174Z",
+  "generatedAt": "2026-06-10T16:56:38.550Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.15.4",
   "migrations": [],
@@ -105,16 +105,16 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "a43c63eb6441aa069ea21315e9cf1d82ba599636133937e576dee131cce61b95",
-      "installedSha": "a43c63eb6441aa069ea21315e9cf1d82ba599636133937e576dee131cce61b95"
+      "sha256": "e9f86c0c5eb23d66ee392c1d482e48486756b09d88b095864cc557b9ce40ee62",
+      "installedSha": "e9f86c0c5eb23d66ee392c1d482e48486756b09d88b095864cc557b9ce40ee62"
     },
     "ROADMAP.md": {
       "owner": "framework",
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "f294b4728fd6f519d2414e0e5fbb70f2a3687e6631393df405325ef717d83b04",
-      "installedSha": "f294b4728fd6f519d2414e0e5fbb70f2a3687e6631393df405325ef717d83b04"
+      "sha256": "2aa4aec9995fcfc1bc0da9e9f75101d5f50b3cddbcdc9cc21a5508e343a17d36",
+      "installedSha": "2aa4aec9995fcfc1bc0da9e9f75101d5f50b3cddbcdc9cc21a5508e343a17d36"
     },
     "TRACKER.md": {
       "owner": "runtime",
@@ -5617,15 +5617,15 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/dispatch/gauntlet-verify.js",
-      "sha256": "ca055c045ba00b2d9c5a7d5a66c129d198daca979d9675213c625425a22578f2",
-      "installedSha": "ca055c045ba00b2d9c5a7d5a66c129d198daca979d9675213c625425a22578f2"
+      "sha256": "49051d7eb6533284b728a06dad57cb24a739b0798bfa5f1573c2f4c6d390dc4a",
+      "installedSha": "49051d7eb6533284b728a06dad57cb24a739b0798bfa5f1573c2f4c6d390dc4a"
     },
     "scripts/dispatch/gauntlet-verify.test.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/dispatch/gauntlet-verify.test.js",
-      "sha256": "6561919b8029246b3b48e1e18246ee9f7e3da17c181b43dbcd377d60da5a6432",
-      "installedSha": "6561919b8029246b3b48e1e18246ee9f7e3da17c181b43dbcd377d60da5a6432"
+      "sha256": "929df3613b30effa4ce10bd6b997090bac8910874a380de80486938860e984f0",
+      "installedSha": "929df3613b30effa4ce10bd6b997090bac8910874a380de80486938860e984f0"
     },
     "scripts/dispatch/gui.js": {
       "owner": "framework",
@@ -6317,15 +6317,15 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/sprint-hook-coverage.js",
-      "sha256": "b83b521e3ad063d0598cd3688db9b0ce8e0f387225e78ea7907806a6cf60b11f",
-      "installedSha": "b83b521e3ad063d0598cd3688db9b0ce8e0f387225e78ea7907806a6cf60b11f"
+      "sha256": "d424df92720e718cfa83c16e86f0a897dd7f69845bbf5e466181edb4d6ffe376",
+      "installedSha": "d424df92720e718cfa83c16e86f0a897dd7f69845bbf5e466181edb4d6ffe376"
     },
     "scripts/checks/sprint-manager-consult.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/sprint-manager-consult.js",
-      "sha256": "eaf5d27c124fd6cca1033f21b603921696c33ec7021c9e7629137a17f0e196f3",
-      "installedSha": "eaf5d27c124fd6cca1033f21b603921696c33ec7021c9e7629137a17f0e196f3"
+      "sha256": "2177998771a13da357e49afb9a879935d951136a07592b2a4bafced6bf608388",
+      "installedSha": "2177998771a13da357e49afb9a879935d951136a07592b2a4bafced6bf608388"
     },
     "scripts/checks/test-adhoc-fail-override.js": {
       "owner": "framework",
@@ -6366,15 +6366,15 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/test-sprint-hook-coverage.js",
-      "sha256": "2ac727a6a49069ca5acf4f8b6bb8f135786cb72ddc911a11d2d9e05ff2f7b9cf",
-      "installedSha": "2ac727a6a49069ca5acf4f8b6bb8f135786cb72ddc911a11d2d9e05ff2f7b9cf"
+      "sha256": "a44070cf0893f72e645bbfb18a81b062f144485c1316777d047d4d0459ecbda1",
+      "installedSha": "a44070cf0893f72e645bbfb18a81b062f144485c1316777d047d4d0459ecbda1"
     },
     "scripts/checks/test-sprint-manager-consult.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/test-sprint-manager-consult.js",
-      "sha256": "13fe538e6146dbb8d08ff93133208fc3ed558d695baedc8430dbf0af1853018c",
-      "installedSha": "13fe538e6146dbb8d08ff93133208fc3ed558d695baedc8430dbf0af1853018c"
+      "sha256": "5824c6c4751207531b6e64eddfc7b069e1cecbf1dcc80758d59b0611cca9bdda",
+      "installedSha": "5824c6c4751207531b6e64eddfc7b069e1cecbf1dcc80758d59b0611cca9bdda"
     },
     "scripts/checks/test-untrusted-content.js": {
       "owner": "framework",
@@ -10470,7 +10470,23 @@
       "owner": "runtime",
       "managed": false
     },
+    ".claude/project/sprint/tickets/T-20260610-300.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/tickets/T-20260610-301.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
     ".claude/project/sprint/sprints/_no-active-sprint/reasoning-auto-approval.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/sprints/SP-20260610-005/current.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/sprints/SP-20260610-005/progress.yaml": {
       "owner": "runtime",
       "managed": false
     },
@@ -11131,6 +11147,46 @@
       "managed": false
     },
     ".claude/project/sprint/sprints/S-LC-01/progress.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/SP-20260610-005/acceptance-criteria.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/SP-20260610-005/copy.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/SP-20260610-005/granular-stories.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/SP-20260610-005/high-level-stories.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/SP-20260610-005/inputs.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/SP-20260610-005/prd.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/SP-20260610-005/qa-plan.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/SP-20260610-005/redteam-plan.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/SP-20260610-005/release-plan.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/SP-20260610-005/trace.md": {
       "owner": "runtime",
       "managed": false
     },
@@ -13598,6 +13654,10 @@
       "owner": "runtime",
       "managed": false
     },
+    ".claude/project/sprint/releases/RL-20260610-040.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
     ".claude/project/sprint/ralph/SP-20260521-001/T-20260521-168.yaml": {
       "owner": "runtime",
       "managed": false
@@ -14314,7 +14374,23 @@
       "owner": "runtime",
       "managed": false
     },
+    ".claude/project/sprint/plan-contracts/PC-20260610-0069.report.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/plan-contracts/PC-20260610-0069.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
     ".claude/project/sprint/issues/I-20260513-001.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/history/SP-20260610-005/retro.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/history/SP-20260610-005/retro.yaml": {
       "owner": "runtime",
       "managed": false
     },
@@ -14551,6 +14627,30 @@
       "managed": false
     },
     ".claude/project/sprint/full-reports/.gitkeep": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/full-reports/SP-20260610-005/beta-boundaries.json": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/full-reports/SP-20260610-005/halt-2026-06-10T16-12-07-251Z.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/full-reports/SP-20260610-005/halt-2026-06-10T16-12-07-883Z.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/full-reports/SP-20260610-005/halt-2026-06-10T16-53-32-703Z.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/full-reports/SP-20260610-005/halt-2026-06-10T16-54-51-055Z.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/full-reports/SP-20260610-005/sprint-full-report.md": {
       "owner": "runtime",
       "managed": false
     },
@@ -16691,6 +16791,46 @@
       "managed": false
     },
     ".claude/project/sprint/checkpoints/SP-20260610-003-0013.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/checkpoints/SP-20260610-005-0001.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/checkpoints/SP-20260610-005-0002.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/checkpoints/SP-20260610-005-0003.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/checkpoints/SP-20260610-005-0004.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/checkpoints/SP-20260610-005-0005.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/checkpoints/SP-20260610-005-0006.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/checkpoints/SP-20260610-005-0007.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/checkpoints/SP-20260610-005-0008.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/checkpoints/SP-20260610-005-0009.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/checkpoints/SP-20260610-005-0010.yaml": {
       "owner": "runtime",
       "managed": false
     },

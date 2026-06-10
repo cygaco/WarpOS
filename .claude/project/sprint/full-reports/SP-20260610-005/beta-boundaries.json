@@ -1,0 +1,11 @@
+{
+  "schema": "warpos/sprint-full/beta-boundaries/v1",
+  "sprint": "SP-20260610-005",
+  "cleared": [
+    "before_design",
+    "before_execute",
+    "before_release-prep",
+    "before_retro"
+  ],
+  "updated_at": "2026-06-10T16:55:56.003Z"
+}

@@ -1,5 +1,5 @@
 schema: warpos/sprint/active-sprints/v1
-primary: SP-20260610-001
+primary: SP-20260610-005
 sprints:
   - id: SP-20260512-001
     title: Multi-sprint parallelism for Sprint Workflow
@@ -892,5 +892,16 @@ sprints:
     pointer: ".claude/project/sprint/sprints/SP-20260610-001"
     created_at: "2026-06-10T15:51:46.173Z"
     updated_at: "2026-06-10T15:51:46.173Z"
+  - id: SP-20260610-005
+    title: "E-DISPATCH-INTEGRITY F-1+F-3 coverage-honesty"
+    status: retrospected
+    lane:
+      type: default
+      value: null
+      isolation_notes: ""
+    layout: per_sprint_subdir
+    pointer: ".claude/project/sprint/sprints/SP-20260610-005"
+    created_at: "2026-06-10T16:12:06.947Z"
+    updated_at: "2026-06-10T16:55:56.104Z"
 created_at: "2026-05-12T22:57:35.667Z"
-updated_at: "2026-06-10T16:05:02.132Z"
+updated_at: "2026-06-10T16:55:56.104Z"

@@ -1,0 +1,93 @@
+schema: warpos/sprint/plan-contract/v1
+id: PC-20260610-0069
+created_at: "2026-06-10T16:12:07.518Z"
+updated_at: "2026-06-10T16:12:07.518Z"
+sprint: SP-20260610-005
+source_request: "E-DISPATCH-INTEGRITY-001 F-1 + F-3 per the epic tracker (F-2 substantially delivered 2026-06-10 by SP-20260610-003's WG-3 work: epsilon-dispatch default-ON in sprint mode + design_without_roster enforcer; F-2's residual DoD evidence = the next real sprint-mode run). β pre-cleared epic chaining (EVT-warpos-sprint-2026-06-10-batched-001 DECIDE 0.88). Engine sprint, RI-001 fast-close."
+source_request_verbatim: "F-1 — Kill the telemetry-only false-green: a phase counts as covered only with a backing ok:true completion record (the gauntlet-verify predicate applied to coverage scans). DoD: a manager_consult coverage record alone no longer satisfies scan:sprint-manager-consult/scan:sprint-hook-coverage — a backing ok:true record is required. Risk mitigation: date-cutoff legacy exemption so historic sprints aren't retroactively uncovered. F-3 — gauntlet-verify runId/--since correlation: filter by sprint_id; refuse a whole-ledger verify so a historic ok:true cannot green a never-ran lane. DoD: gauntlet-verify requires a window / correlates by sprint_id; the T3 historic-green false-positive no longer passes."
+request_type: bug_fix_batch
+interpreted_intent: "Apply the record-or-it-didn't-happen predicate uniformly: coverage scans and gauntlet-verify must demand fresh, sprint-correlated ok:true completion records instead of accepting presence-of-telemetry or any-historic-record."
+user_or_business_outcome: "Sprint phases can no longer read green while no agent actually ran — the recurring fake-green class (RC-2/RC-4) becomes mechanically impossible instead of policed by memory."
+affected_surfaces:
+  - surface: "scripts/checks/sprint-manager-consult.js (+ test-sprint-manager-consult.js)"
+    evidence_level: verified_from_repo
+    notes: "F-1: require backing ok:true completion record per consult; date-cutoff legacy exemption for pre-cutoff sprints."
+  - surface: "scripts/checks/sprint-hook-coverage.js (+ test-sprint-hook-coverage.js)"
+    evidence_level: verified_from_repo
+    notes: "F-1: same predicate for hook-point coverage."
+  - surface: "scripts/dispatch/gauntlet-verify.js (+ gauntlet-verify.test.js)"
+    evidence_level: verified_from_repo
+    notes: "F-3: sprint_id correlation + bounded window mandatory; whole-ledger verify REFUSED (exit non-zero with usage guidance); planted historic-green fixture must fail."
+current_behavior:
+  evidence_level: verified_from_repo
+  notes: "Per the epic (created 2026-06-07, grounded in the T3 incident): consult-presence checks accept telemetry-only manager_consult records emitted on BOTH full.js paths (doogle WG-3 aggravator, full.js:84-92,1833); gauntlet-verify can match any historic ok:true record absent a window/sprint filter."
+desired_behavior: "Both coverage scans demand a correlated ok:true completion record (legacy exemption for sprints before the cutoff date); gauntlet-verify refuses unbounded verification and correlates by sprint_id; planted fixtures prove each bites."
+scope:
+  size: s
+  risk_level: medium
+  complexity_drivers:
+    - "the legacy exemption cutoff must not retroactively red historic sprints (date-cutoff per epic risk note)"
+    - "gauntlet-verify is consumed by epsilon-runtime + sprint close paths — its CLI contract change needs caller audit (grep callers, keep compat or update them in the same commit)"
+scope_variants:
+  minimal_safe: "F-3 only (gauntlet-verify window/sprint_id)."
+  recommended: "F-1 + F-3 with planted fixtures + caller audit + legacy cutoff."
+  expanded: "Above + wire the strengthened predicate into /scan:full report lines (no new gate flips)."
+assumptions:
+  - "F-2's remaining DoD evidence (a live sprint-mode ε-dispatch run) accrues from the NEXT sprint-mode run now that SP-20260610-003 flipped the default — not built here."
+  - "Concurrent sprint SP-20260610-004 (ε) touches scripts/dispatch/dispatch-skill.js + safe-spawn tests — disjoint from these surfaces (gauntlet-verify.js is mine, dispatch-skill.js is ε's)."
+open_questions:
+  - "Cutoff date value: default 2026-06-10 (this sprint) unless a dated constant already exists in the checks — builder follows existing idiom."
+non_goals:
+  - "F-2 live-run evidence (accrues naturally)."
+  - Flipping any report-only gate to blocking.
+  - "Touching dispatch-skill.js / safe-spawn (SP-20260610-004's lane)."
+  - "Pushing (α merges + pushes at arc close)."
+requirement_areas:
+  - "manager-consult record-backed coverage (F-1)"
+  - "hook-coverage record-backed predicate (F-1)"
+  - "gauntlet-verify sprint_id/window correlation + whole-ledger refusal (F-3)"
+  - "legacy cutoff exemption + caller compatibility"
+high_level_story_candidates:
+  - "As an auditor, a green consult scan PROVES a manager actually ran (ok:true record), not merely that telemetry was emitted."
+  - "As the gauntlet, I can never be greened by someone else's old success record."
+granular_story_candidates:
+  - "TICKET-1: F-1 — both coverage scans require a correlated ok:true completion record; legacy date-cutoff; planted telemetry-only fixture goes RED post-cutoff, GREEN pre-cutoff; existing tests stay green."
+  - "TICKET-2: F-3 — gauntlet-verify mandatory sprint_id + bounded window; whole-ledger invocation refused with usage error; planted historic-green fixture fails; caller audit (epsilon-runtime, sprint close) updated in-commit."
+workstream_candidates:
+  - "coverage scans (TICKET-1)"
+  - "gauntlet-verify (TICKET-2)"
+preliminary_ticket_candidates:
+  - title: "F-1: record-backed coverage predicate in sprint-manager-consult + sprint-hook-coverage (legacy cutoff, planted fixtures)"
+    type: feature
+    risk: medium
+    order: 1
+  - title: "F-3: gauntlet-verify sprint_id/window correlation + whole-ledger refusal (caller audit)"
+    type: feature
+    risk: medium
+    order: 2
+external_service_dependencies: []
+approval_boundaries:
+  - "local merge only; push at arc close (operator-authorized)."
+  - gauntlet on gemini.
+design_required: false
+execution_allowed_without_design: true
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+lane: engine
+beta_review:
+  before_plan:
+    verdict: DECIDE
+    summary: "Epic chaining pre-cleared in batched consult EVT-warpos-sprint-2026-06-10-batched-001 (DECIDE 0.88): 'If codex remains quota_exhausted at fix-lane completion, proceed to E-DISPATCH-INTEGRITY F-1/F-2/F-3 — do not block the session.' Codex re-probed quota_exhausted 15:40Z. Silence=proceed boundaries."
+plan_quality:
+  confidence: high
+  notes: "Grounded in the epic tracker's DoD + the T3 incident; surfaces located on disk 2026-06-10."
+next_recommended_command: "/sprint:design"
+resume_instructions: "Sprint SP-20260610-005 has Plan Contract PC-20260610-0069. Run the next_recommended_command. If interrupted, read .claude/project/sprint/sprint-progress.yaml#resume_command."
+tracker_paths:
+  current_sprint: ".claude/project/sprint/current-sprint.yaml"
+  sprint_progress: ".claude/project/sprint/sprint-progress.yaml"
+  plan_contract: ".claude/project/sprint/plan-contracts/PC-20260610-0069.yaml"
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260610-0069.report.md"
+created_by: alpha
+updated_by: alpha
