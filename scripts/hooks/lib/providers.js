@@ -44,6 +44,16 @@ try {
 } catch {
   /* fail-open: loadGeminiApiKey fallback below */
 }
+// T-20260610-306: TTL'd circuit breaker — marks a provider down after a quota
+// failure so subsequent dispatches skip it instead of re-burning the quota window.
+// Guarded require: if the module is missing or broken the breaker is simply absent
+// (fail-open; providerAvailable falls through to its normal CLI check).
+let providerBreaker = null;
+try {
+  providerBreaker = require("../../dispatch/provider-breaker");
+} catch {
+  /* fail-open: breaker unavailable, dispatch proceeds normally */
+}
 
 // ── Config resolution ───────────────────────────────────────
 function loadManifest() {
@@ -457,6 +467,18 @@ function cliAvailable(cmd) {
 
 function providerAvailable(providerName) {
   if (providerName === "claude") return true; // always available — it's the harness
+  // ── Circuit-breaker consult — SINGLE chokepoint for every provider ──────
+  // Every caller that reaches here (dispatch-shape, dispatch-claude, dispatch-agent,
+  // provider-health checks) inherits this gate. No per-wrapper consults needed.
+  // FAIL-OPEN: if providerBreaker failed to load OR isDown throws, fall through
+  // to the normal CLI check — a broken breaker NEVER blocks a healthy provider.
+  if (providerBreaker) {
+    try {
+      if (providerBreaker.isDown(providerName)) return false;
+    } catch {
+      // Fail-open: breaker error must never block a healthy provider
+    }
+  }
   const cfg = getProviderConfig(providerName);
   if (!cfg) return false;
   return cliAvailable(cfg.cli);
@@ -855,6 +877,25 @@ function runProvider(role, prompt, opts = {}) {
     );
     const quota = classifyQuotaFailure(errText);
     if (quota) {
+      // T-20260610-306: mark the provider down in the circuit breaker so the NEXT
+      // dispatch skips it instead of re-burning the quota window. Only for
+      // quota_exhausted (recoverable=true) — the recoverable case the breaker
+      // is designed for. Best-effort (providerBreaker is already fail-open).
+      if (quota.kind === "quota_exhausted" && providerBreaker) {
+        try {
+          providerBreaker.markDown(providerName, {
+            kind: quota.kind,
+            untilMs: providerBreaker.computeUntil(
+              providerName,
+              errText,
+              Date.now(),
+            ),
+            evidence: `${quota.kind} on model=${model}`.slice(0, 200),
+          });
+        } catch {
+          /* fail-open: breaker write failure must not block the error return */
+        }
+      }
       try {
         process.stderr.write(
           `[providers.js] QUOTA: ${providerName} (${model}) hit ${quota.kind}` +
