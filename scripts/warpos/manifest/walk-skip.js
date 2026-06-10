@@ -46,6 +46,9 @@ const WALK_SKIP_FILES = new Set([
   // WARPOS-ISSUES.md is a session issue log; the *-PROMPT.md files are operator input.
   "WARPOS.md",
   "WARPOS-ISSUES.md",
+  // NOTAGAIN.md — operator-facing dispatch-failure diagnostic (2026-06-10), same
+  // per-repo-operator-doc class as DUMP.md/WARPOS.md; never framework content.
+  "NOTAGAIN.md",
   "WARPOS-PROMPT.md",
   "MASTERCONSOLE-PROMPT.md",
   ".DS_Store",

@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-10T16:56:38.550Z",
+  "generatedAt": "2026-06-10T19:35:09.954Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.15.4",
   "migrations": [],
@@ -113,8 +113,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "2aa4aec9995fcfc1bc0da9e9f75101d5f50b3cddbcdc9cc21a5508e343a17d36",
-      "installedSha": "2aa4aec9995fcfc1bc0da9e9f75101d5f50b3cddbcdc9cc21a5508e343a17d36"
+      "sha256": "85bbed8d89c288367df7c5bbeb208bf355e0c2d94f28dcfeef66ae48f0737662",
+      "installedSha": "85bbed8d89c288367df7c5bbeb208bf355e0c2d94f28dcfeef66ae48f0737662"
     },
     "TRACKER.md": {
       "owner": "runtime",
@@ -1942,8 +1942,8 @@
       "owner": "framework",
       "managed": true,
       "source": null,
-      "sha256": "37ab0a41d951bb378d326ddb409acd9401a704566e747a8a3181e327cb6b5153",
-      "installedSha": "37ab0a41d951bb378d326ddb409acd9401a704566e747a8a3181e327cb6b5153"
+      "sha256": "4a9d4a1dd536ed64dabd7567795e7f27532ce4144af6588c01364b3708619030",
+      "installedSha": "4a9d4a1dd536ed64dabd7567795e7f27532ce4144af6588c01364b3708619030"
     },
     "tests/regression/S-LC-06/coverage-gate-caller.test.js": {
       "owner": "framework",
@@ -3762,8 +3762,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/warpos/manifest/walk-skip.js",
-      "sha256": "238c3f3f58d323e25b5e1b6296a5e6f8164a27b26c5484812f9ac2369dcf732f",
-      "installedSha": "238c3f3f58d323e25b5e1b6296a5e6f8164a27b26c5484812f9ac2369dcf732f"
+      "sha256": "7abf7d2fecc60af85a776b417f7310b3f4f1e0b9c204c8277e080c9fa3dc2b73",
+      "installedSha": "7abf7d2fecc60af85a776b417f7310b3f4f1e0b9c204c8277e080c9fa3dc2b73"
     },
     "scripts/warpos/lib/content-hash.js": {
       "owner": "framework",
