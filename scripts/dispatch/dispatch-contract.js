@@ -167,6 +167,17 @@ function validateDispatch(req) {
       violations.push(`tool '${req.toolId}' does not match the contract tool_id (${JSON.stringify(c.tool_id)}) for role '${role}'.`);
     }
   }
+  // Mode-scoped NARROWING (S-LC-06): when a `mode` is supplied, the shape must
+  // ALSO survive the mode profile's narrowing. The class allowed_shapes check
+  // above is the hard ceiling (a mode can never widen past it); this only flags a
+  // shape the class allows but the MODE has removed for that mode. REPORT-ONLY
+  // ramp: callers opt in by passing `mode`; absent a mode, dispatch is unchanged.
+  if (req && req.mode && shape && !violations.length) {
+    const inMode = allowedShapesForRoleInMode(role, req.mode);
+    if (!inMode.includes(shape)) {
+      violations.push(`shape '${shape}' is class-allowed for role '${role}' but NARROWED OUT by mode '${req.mode}' (mode allows: ${inMode.join(", ") || "<none>"}).`);
+    }
+  }
   if (c.cwd_policy === "worktree-required") {
     // GPT-5.5 review R2 MEDIUM: omitting cwd is NOT a bypass — a worktree-required
     // dispatch MUST name its isolated worktree. Absent OR canonical-root => violation.
@@ -177,6 +188,40 @@ function validateDispatch(req) {
     }
   }
   return { ok: violations.length === 0, violations, contract: c };
+}
+
+/**
+ * The mode-scoped dispatch profile (S-LC-06 / PLAN §8.7) for a mode, or null.
+ * A profile NARROWS (never widens) which shapes a class/role may use in that mode.
+ */
+function modeProfile(mode) {
+  const contract = loadContract();
+  const mp = contract.mode_profiles && contract.mode_profiles[mode];
+  if (!mp || mode.startsWith("_")) return null;
+  return mp;
+}
+
+/**
+ * The shapes a role may use WHILE IN `mode`: the intersection of the role's
+ * class allowed_shapes (the HARD ceiling) with the mode profile's narrowing for
+ * that role (role_shapes) or its class (class_shapes). Absent a profile entry,
+ * the class allowed_shapes apply unchanged. The intersection guarantees a mode
+ * can only REMOVE a shape, never add one the class forbids — the β invariant
+ * holds even if the profile were mis-authored (the static validator catches the
+ * mis-authoring; this is the runtime backstop).
+ */
+function allowedShapesForRoleInMode(role, mode) {
+  const c = contractForRole(role);
+  const classAllowed = (c && c.allowed_shapes) || [];
+  const mp = mode ? modeProfile(mode) : null;
+  if (!mp) return classAllowed.slice();
+  let narrow = null;
+  if (mp.role_shapes && Array.isArray(mp.role_shapes[role])) narrow = mp.role_shapes[role];
+  else if (mp.class_shapes && c && c.class && Array.isArray(mp.class_shapes[c.class])) narrow = mp.class_shapes[c.class];
+  if (!narrow) return classAllowed.slice();
+  // INTERSECTION — never a union. A shape only survives if it is BOTH class-allowed
+  // AND mode-listed. This is the structural guarantee the profile cannot widen.
+  return classAllowed.filter((s) => narrow.includes(s));
 }
 
 /**
@@ -255,13 +300,86 @@ function validateContractFile() {
       else violations.push(`role_override '${role}' is not a role in role-registry.json`);
     }
   }
+
+  // ── mode_profiles: the β SECURITY INVARIANT — narrow-only, never widen ──────
+  // A mode profile may NARROW a class/role's allowed_shapes but MUST NOT widen
+  // past the CLASS constraint. Every shape a profile lists for a class/role must
+  // be a SUBSET of that class/role's own allowed_shapes; a shape the class does
+  // NOT allow is a WIDENING and is REJECTED. This is the load-bearing check the
+  // planted-widen test asserts — the class_derivation + role-registry ceiling can
+  // never be relaxed by a mode "granting" a shape.
+  for (const [mode, profile] of Object.entries(contract.mode_profiles || {})) {
+    if (mode.startsWith("_")) continue;
+    if (!profile || typeof profile !== "object") {
+      violations.push(`mode_profile '${mode}' is not an object`);
+      continue;
+    }
+    const cs = profile.class_shapes || {};
+    for (const [cls, shapes] of Object.entries(cs)) {
+      if (cls.startsWith("_")) continue;
+      const classDef = contract.role_classes && contract.role_classes[cls];
+      if (!classDef) {
+        violations.push(`mode_profile '${mode}' references unknown class '${cls}'`);
+        continue;
+      }
+      if (!Array.isArray(shapes)) {
+        violations.push(`mode_profile '${mode}'.class_shapes['${cls}'] must be an array of shapes`);
+        continue;
+      }
+      const ceiling = classDef.allowed_shapes || (contract.defaults && contract.defaults.allowed_shapes) || [];
+      for (const s of shapes) {
+        if (!shapeNames.has(s)) violations.push(`mode_profile '${mode}' grants class '${cls}' the unknown shape '${s}'`);
+        else if (!ceiling.includes(s)) {
+          violations.push(`mode_profile '${mode}' WIDENS class '${cls}' to shape '${s}' which is NOT in the class allowed_shapes [${ceiling.join(", ")}] — a mode profile may only NARROW, never widen past the class ceiling (β security invariant).`);
+        }
+      }
+    }
+    const rs = profile.role_shapes || {};
+    for (const [role, shapes] of Object.entries(rs)) {
+      if (role.startsWith("_")) continue;
+      if (!reg.roles || !reg.roles[role]) {
+        violations.push(`mode_profile '${mode}'.role_shapes references '${role}' which is not a role in role-registry.json`);
+        continue;
+      }
+      if (!Array.isArray(shapes)) {
+        violations.push(`mode_profile '${mode}'.role_shapes['${role}'] must be an array of shapes`);
+        continue;
+      }
+      const ceiling = (contractForRole(role).allowed_shapes) || [];
+      for (const s of shapes) {
+        if (!shapeNames.has(s)) violations.push(`mode_profile '${mode}' grants role '${role}' the unknown shape '${s}'`);
+        else if (!ceiling.includes(s)) {
+          violations.push(`mode_profile '${mode}' WIDENS role '${role}' to shape '${s}' which is NOT in its allowed_shapes [${ceiling.join(", ")}] — a mode profile may only NARROW, never widen past the role ceiling (β security invariant).`);
+        }
+      }
+    }
+    // ── alpha_only_shapes (ED-041): a RECOGNIZED annotation naming which of a
+    // mode's listed shapes are α-ONLY — only the TOP-LEVEL orchestrator (α, the ε
+    // conductor face) may spawn them (a teammate-spawned ε cannot call the Agent
+    // tool: "Agent is not available inside subagents"). It does NOT narrow class_shapes;
+    // it records WHO may use the shape. It must be an ARRAY whose entries are all
+    // KNOWN shapes (the same shape vocabulary as allowed_shapes); an unknown shape
+    // is a typo'd annotation and is REJECTED. Recognizing the key here keeps it from
+    // being silently ignored and lets the validator FAIL a malformed annotation.
+    if ("alpha_only_shapes" in profile) {
+      const aos = profile.alpha_only_shapes;
+      if (!Array.isArray(aos)) {
+        violations.push(`mode_profile '${mode}'.alpha_only_shapes must be an array of shapes`);
+      } else {
+        for (const s of aos) {
+          if (!shapeNames.has(s)) violations.push(`mode_profile '${mode}'.alpha_only_shapes lists the unknown shape '${s}' (must be a known dispatch shape)`);
+        }
+      }
+    }
+  }
+
   return { ok: violations.length === 0, violations };
 }
 
 module.exports = {
   loadContract, loadRegistry, classForRole, contractForRole, validateDispatch,
   skillExecution, validateContractFile, registryAttrs, CONTRACT_PATH, REGISTRY_PATH,
-  ARGV_SCHEMA_VERSION,
+  ARGV_SCHEMA_VERSION, modeProfile, allowedShapesForRoleInMode,
 };
 
 // ── CLI ─────────────────────────────────────────────────────
