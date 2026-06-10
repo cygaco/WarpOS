@@ -1,17 +1,17 @@
 schema: warpos/sprint/current-sprint/v1
-id: "S-LC-01"
-title: "Mode-Lifecycle Registry keystone"
-objective: "Run /sprint:plan to set this."
-status: not_started
+id: S-LC-01
+title: Mode-Lifecycle Registry keystone
+objective: "Establish .claude/agents/_org/mode-lifecycle.json as the SINGLE source of truth for mode -> required-team/roster + bindings (sprint/epic/tracker/planning) + provider-tier + dispatch-profile + teardown, de-duplicating the hardcoded required-team-by-mode sites to READ it, fixing the confirmed getMode() sprint-case drift, registering mode.json as a paths.* key, and adding a validator that fails on registry drift. Wave 0 of E-LIFECYCLE-001 - every downstream Wave-1 gate reads this registry, so it must land first and be the sole SoT."
+status: done
 created_at: "2026-06-09T22:12:08.707Z"
-updated_at: "2026-06-09T22:12:08.707Z"
-source_request: ""
-interpreted_intent: ""
-plan_contract: null
-risk_level: low
+updated_at: "2026-06-10T00:30:00.000Z"
+source_request: "Build the Mode-Lifecycle Registry keystone (Wave 0 of E-LIFECYCLE-001): one SoT for mode->team/bindings/tier/dispatch, de-dup the hardcoded sites to read it, fix getMode() sprint case + add isSprint(), register mode.json as a paths.* key, add a registry-drift validator, reconcile the DEFAULT-ON drift. mode-set.js is the single lifecycle-transaction writer reading the registry; the PreToolUse guard is backstop-only (built in S-LC-03, not here). Engine/tooling sprint, ff-merge close, defer retro to epic close (RI-001)."
+interpreted_intent: "Convert mode->team/bindings correctness from 'remembered by hardcoded sites + prose' into ONE declarative registry that every reader resolves from, so the recurring mode/team drift becomes mechanically self-detecting. Fix the confirmed getMode() sprint->solo fallthrough and add isSprint(). Register mode.json as a paths.* key (source-vs-generated discipline). Establish mode-set.js as the single transaction writer that READS the registry; the gates that consume it (mode:switch preflight, mode:init:gate) are S-LC-03/04 and explicitly out of scope here."
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260609-0065.yaml"
+risk_level: high
 approval_state: none_required
-current_phase: idle
-recommended_mode: no_recommendation
+current_phase: done
+recommended_mode: adhoc
 mode_invocation_required_by_user: true
 external_services:
   identified: []
@@ -31,38 +31,76 @@ tickets:
   in_review: []
   qa_failed: []
   redteam_failed: []
-  done: []
+  done:
+    - T-20260609-274
+    - T-20260609-275
+    - T-20260609-276
+    - T-20260609-277
+    - T-20260609-278
   released: []
   deferred: []
   abandoned: []
   reopened: []
   superseded: []
 requirements:
-  prd: null
-  high_level_stories: null
-  granular_stories: null
-  copy: null
-  inputs: null
-  trace: null
-  acceptance_criteria: null
-  qa_plan: null
-  redteam_plan: null
-  release_plan: null
+  prd: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\S-LC-01\\prd.md"
+  high_level_stories: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\S-LC-01\\high-level-stories.md"
+  granular_stories: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\S-LC-01\\granular-stories.md"
+  copy: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\S-LC-01\\copy.md"
+  inputs: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\S-LC-01\\inputs.md"
+  trace: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\S-LC-01\\trace.md"
+  acceptance_criteria: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\S-LC-01\\acceptance-criteria.md"
+  qa_plan: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\S-LC-01\\qa-plan.md"
+  redteam_plan: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\S-LC-01\\redteam-plan.md"
+  release_plan: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\S-LC-01\\release-plan.md"
 checks:
-  lint: { status: not_run, last_run: null, evidence: "" }
-  typecheck: { status: not_run, last_run: null, evidence: "" }
-  tests: { status: not_run, last_run: null, evidence: "" }
-  build: { status: not_run, last_run: null, evidence: "" }
-  qa: { status: not_run, last_run: null, evidence: "" }
-  redteam: { status: not_run, last_run: null, evidence: "" }
+  lint:
+    status: not_run
+    last_run: null
+    evidence: ""
+  typecheck:
+    status: not_run
+    last_run: null
+    evidence: ""
+  tests:
+    status: not_run
+    last_run: null
+    evidence: ""
+  build:
+    status: not_run
+    last_run: null
+    evidence: ""
+  qa:
+    status: not_run
+    last_run: null
+    evidence: ""
+  redteam:
+    status: not_run
+    last_run: null
+    evidence: ""
 approvals:
-  plan: { required: false, state: not_required, ref: null }
-  design: { required: false, state: not_required, ref: null }
-  execution: { required: false, state: not_required, ref: null }
-  release: { required: false, state: not_required, ref: null }
-  external_services: { required: false, state: not_required, ref: null }
+  plan:
+    required: false
+    state: not_required
+    ref: null
+  design:
+    required: false
+    state: not_required
+    ref: null
+  execution:
+    required: false
+    state: not_required
+    ref: null
+  release:
+    required: false
+    state: not_required
+    ref: null
+  external_services:
+    required: false
+    state: not_required
+    ref: null
 reports:
-  plan: null
+  plan: ".claude/project/sprint/plan-contracts/PC-20260609-0065.report.md"
   design: null
   execution: null
   release: null
@@ -74,10 +112,11 @@ ralph:
   last_checkpoint: null
   next_action: null
 crash_recovery:
-  last_checkpoint: null
-  resume_command: "/sprint:plan"
-  resume_summary: "Tracker initialized. No sprint started yet. Run /sprint:plan to begin."
+  last_checkpoint: ".claude/project/sprint/sprint-progress.yaml"
+  resume_command: "/sprint:design"
+  resume_summary: "Sprint S-LC-01 design scaffolded (scale=m). Next: mint tickets from granular-stories, then run /sprint:execute."
   active_files: []
   dirty_state: false
   blockers: []
   safe_to_continue: true
+lane: engine

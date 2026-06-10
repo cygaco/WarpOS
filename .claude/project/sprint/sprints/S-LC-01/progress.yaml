@@ -1,14 +1,14 @@
 schema: warpos/sprint/sprint-progress/v1
-sprint: "S-LC-01"
-updated_at: "2026-06-09T22:12:08.707Z"
-current_phase: idle
-current_command: none
+sprint: S-LC-01
+updated_at: "2026-06-10T00:30:00.000Z"
+current_phase: done
+current_command: "/sprint:full"
 current_ticket: null
 current_task: null
 current_loop: null
-status: starting
-last_completed_step: "tracker_initialized"
-next_action: "Run /sprint:plan with a brief plain-language request to begin the sprint workflow."
+status: done
+last_completed_step: sprint_full_closed
+next_action: "S-LC-01 (Mode-Lifecycle Registry keystone, Wave 0 of E-LIFECYCLE-001) landed on branch june-9 @ 76da472, gauntlet-clean (backend-reviewer + qa-reviewer PASS; 6 findings across 3 fix-cycles resolved). No further action on this sprint. Next epic step: S-LC-02 (Lifecycle-Event Registry) or the Wave-1 gates."
 active_files: []
 modified_files: []
 checks_last_run: null
@@ -20,7 +20,7 @@ external_services_needed: []
 issues_opened: []
 tickets_updated: []
 ralph_checkpoint: null
-resume_command: "/sprint:plan"
-resume_notes: "Fresh sprint tracker. Provide a brief plain-language request and the planner will produce a Plan Contract."
+resume_command: "/sprint:full --sprint S-LC-01 --resume"
+resume_notes: "closed=2026-06-09 @76da472 (gauntlet-clean); no resume needed"
 safe_to_continue: true
-stop_reason: null
+stop_reason: closed

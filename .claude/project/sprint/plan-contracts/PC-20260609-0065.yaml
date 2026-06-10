@@ -1,0 +1,148 @@
+schema: warpos/sprint/plan-contract/v1
+id: PC-20260609-0065
+created_at: "2026-06-09T22:18:39.705Z"
+updated_at: "2026-06-09T22:18:39.705Z"
+sprint: S-LC-01
+source_request: "Build the Mode-Lifecycle Registry keystone (Wave 0 of E-LIFECYCLE-001): one SoT for mode->team/bindings/tier/dispatch, de-dup the hardcoded sites to read it, fix getMode() sprint case + add isSprint(), register mode.json as a paths.* key, add a registry-drift validator, reconcile the DEFAULT-ON drift. mode-set.js is the single lifecycle-transaction writer reading the registry; the PreToolUse guard is backstop-only (built in S-LC-03, not here). Engine/tooling sprint, ff-merge close, defer retro to epic close (RI-001)."
+source_request_verbatim: "S-LC-01 - Mode-Lifecycle Registry keystone (Wave 0 of E-LIFECYCLE-001). Create .claude/agents/_org/mode-lifecycle.json (per-mode: roster, requires_team, bindings [sprint/epic/tracker/planning], provider tier, dispatch-profile ref, teardown policy). De-duplicate the 3 hardcoded required-team-by-mode sites (session-start.js TEAM_MODES, team-guard.js inline epsilon-check, mode-skill prose) to READ the registry. Fix scripts/hooks/lib/mode.js getMode() to handle the sprint case + add isSprint() (audit all getMode callers first). Register .claude/runtime/mode.json as a paths.* key (edit framework/paths.registry.json SOURCE then run scripts/paths/build.js). Add a mode-lifecycle-registry validator (every reader resolves from the registry; planted wrong-roster fails). Reconcile the DEFAULT-ON drift in TRACKER.md + E-SYSTEM-ORG-001 (shipped code is DEFAULT-ON; reconcile as a logged Change Log entry, not a silent edit). Architecture directive (GPT-5.5 correction, operator-confirmed 2026-06-09): mode-set.js is the single lifecycle-transaction writer that reads this registry; the PreToolUse guard is backstop-only (built in S-LC-03, not here). Gates: new validator green + team-guard-gate.test.js stays green (golden-snapshot first) + regen BOTH manifests last. Engine/tooling sprint - fast-close via ff-merge to main, defer retro to epic close (RI-001)."
+request_type: architecture_change
+interpreted_intent: "Convert mode->team/bindings correctness from 'remembered by hardcoded sites + prose' into ONE declarative registry that every reader resolves from, so the recurring mode/team drift becomes mechanically self-detecting. Fix the confirmed getMode() sprint->solo fallthrough and add isSprint(). Register mode.json as a paths.* key (source-vs-generated discipline). Establish mode-set.js as the single transaction writer that READS the registry; the gates that consume it (mode:switch preflight, mode:init:gate) are S-LC-03/04 and explicitly out of scope here."
+user_or_business_outcome: "Mode/team correctness stops depending on the model remembering prose: one registry is the SoT, a validator fails closed on drift, and sprint mode is correctly detected (not silently 'solo'). This is the foundation every Wave-1 gate in E-LIFECYCLE-001 reads - without it the gates would re-encode the same drift this epic is curing."
+affected_surfaces:
+  - surface: ".claude/agents/_org/mode-lifecycle.json (NEW keystone registry)"
+    evidence_level: verified_from_repo
+    notes: "per-mode SoT: roster, requires_team, bindings, provider tier, dispatch-profile ref, teardown policy; matches the _org/*.json registry idiom (role-registry, dispatch-contract, sprint-hook-points)."
+  - surface: "scripts/hooks/lib/mode.js getMode() (+ NEW isSprint export)"
+    evidence_level: verified_from_repo
+    notes: "CONFIRMED bug L60-67: no sprint case -> sprint falls through oneshot/solo/adhoc -> heartbeat -> returns 'solo'. Add sprint case + isSprint()."
+  - surface: "scripts/hooks/higgsfield-spend-gate.js:65-66 (the ONLY confirmed external lib/mode#getMode consumer - beta-verified)"
+    evidence_level: verified_from_repo
+    notes: "today returns 'solo' under sprint; after fix returns 'sprint'. AUDIT: verify the spend-gate handles 'sprint' (likely gates on 'oneshot' / mode-insensitive) before flipping."
+  - surface: "scripts/hooks/session-start.js TEAM_MODES (~L535)"
+    evidence_level: verified_from_repo
+    notes: "de-dup required-team-by-mode -> read the registry."
+  - surface: "scripts/hooks/team-guard.js (reads mode.json directly ~L529; inline sprint/epsilon roster check ~L166/L264)"
+    evidence_level: verified_from_repo
+    notes: "de-dup required-team-by-mode + roster -> read the registry; PRESERVE gate behavior (golden-snapshot team-guard-gate.test.js 13/13 + team-guard-sprint advisory). NOT a lib/mode#getMode caller."
+  - surface: "scripts/hooks/edit-watcher.js:199 (FALSE COGNATE - do NOT touch)"
+    evidence_level: verified_from_repo
+    notes: "has its OWN local getMode() returning .mode||'light'; NOT lib/mode.js. Beta flagged the false-cognate trap; excluded from the fix."
+  - surface: "framework/paths.registry.json (SOURCE) + generated .claude/paths.json + lib/paths.generated.js"
+    evidence_level: verified_from_repo
+    notes: "register .claude/runtime/mode.json as a paths.* key; edit SOURCE, run scripts/paths/build.js, VERIFY the key survived (source-vs-generated discipline, P-058)."
+  - surface: "NEW scripts/checks/mode-lifecycle-registry.js validator + /scan:full wiring"
+    evidence_level: inferred_from_repo
+    notes: "every reader resolves from the registry; a planted wrong-roster fails (earn-it). Shape mirrors dispatch-contract.js validate wired into /scan:full."
+  - surface: "TRACKER.md + trackers/epics/E-SYSTEM-ORG-001-agent-system-org-cleanup.md (DEFAULT-ON reconcile - BOTH surfaces)"
+    evidence_level: verified_from_repo
+    notes: "code/test/marker say DEFAULT-ON; prose said DEFAULT-OFF. Logged Change Log entry citing code line + test + marker, on BOTH surfaces (P-057), not a silent re-date."
+  - surface: "scripts/hooks/lib/mode.js consumers via isAdhoc/isOneshot/isSolo + mode-set.js (reads registry)"
+    evidence_level: inferred_from_repo
+    notes: "mode-set.js reads the registry as the single transaction writer; no gate built here."
+  - surface: "_warpos/MANIFEST.json + .claude/framework-manifest.json (regen BOTH last)"
+    evidence_level: verified_from_repo
+    notes: "new scripts + registry are hash-tracked; regen BOTH before commit (BC-02/BC-05)."
+current_behavior:
+  evidence_level: verified_from_repo
+  notes: "Required-team-by-mode is HARDCODED + duplicated across session-start.js TEAM_MODES (~L535), team-guard.js inline check (~L166), and mode-skill prose - and already drifting (shipped code DEFAULT-ON vs E-SYSTEM-ORG-001 prose DEFAULT-OFF). getMode() in lib/mode.js has no sprint case -> sprint resolves to 'solo' (re-confirmed live this session). mode.json is referenced as a literal string, not a paths.* key. No mode-lifecycle registry, no drift validator. team-guard-gate.test.js golden baseline = 13/13 pass, exit 0 (captured 2026-06-09)."
+desired_behavior: "One .claude/agents/_org/mode-lifecycle.json that all readers resolve from; getMode() returns 'sprint' for sprint mode + isSprint() exists; higgsfield-spend-gate verified correct under 'sprint'; mode.json is a paths.* key; a validator exits non-zero when any reader drifts from the registry or a planted wrong-roster is present; the DEFAULT-ON drift reconciled with a logged Change Log entry on BOTH tracker surfaces; mode-set.js reads the registry. No gate is built here (S-LC-03/04). team-guard-gate.test.js stays 13/13; both manifests regenerated."
+scope:
+  size: m
+  risk_level: high
+  complexity_drivers:
+    - "hot-path: getMode/team-guard/session-start underlie every session's team-routing + gate logic - a regression blocks all work (Beta: HIGH justified, full gauntlet, no skip)"
+    - "the de-dup must be atomic + behavior-preserving - golden-snapshot BOTH team-guard-gate.test.js AND team-guard-sprint advisory before touching FACE_TYPES/TEAM_MODES literals (Beta P-059 strengthening)"
+    - "getMode sprint fix is behavior-affecting - caller-audit-first (Beta verified: higgsfield-spend-gate is the only real lib/mode#getMode consumer; edit-watcher is a false cognate)"
+    - "source-vs-generated discipline on the paths key (edit registry SOURCE, regen, verify the key survived - P-058)"
+    - "DEFAULT-ON spec-vs-code drift reconciled across TWO tracker surfaces (P-057), code-authoritative"
+scope_variants:
+  minimal_safe: "Registry + getMode sprint fix + caller audit + isSprint + validator only; defer the multi-site de-dup + DEFAULT-ON reconcile."
+  recommended: "Registry (SoT) + de-dup the hardcoded sites to read it + getMode sprint fix + isSprint + higgsfield audit + mode.json paths key + registry-drift validator (planted wrong-roster fails) + DEFAULT-ON reconcile (both surfaces) + mode-set.js reads registry. Gates green + team-guard tests stay green + regen both manifests."
+  expanded: "Above + a no-op mode-set.js transaction skeleton (preflight/teardown/init stubs reading the registry) to smooth S-LC-03 - ONLY if additive + report-only (no behavior change this sprint)."
+assumptions:
+  - "The hardcoded required-team-by-mode sites named in Phase-0 (session-start TEAM_MODES, team-guard inline check, mode-skill prose) are the complete set (Phase-0 verified two ways)."
+  - "DEFAULT-ON is the correct reconciliation target - shipped code (team-guard.js:249) + test (team-guard-gate.test.js:112) + live .team-gate-hard marker agree; the E-SYSTEM-ORG-001 prose is the stale side."
+  - "The _org/*.json registry idiom (read by a lib + a /scan:full validator) is the right shape (matches role-registry, dispatch-contract, sprint-hook-points)."
+  - "higgsfield-spend-gate is the only external lib/mode#getMode consumer (Beta-verified by grep); to be RE-CONFIRMED by the explicit audit sweep before flipping, not assumed."
+open_questions:
+  - "Does higgsfield-spend-gate treat 'sprint' correctly (it likely gates on 'oneshot' or is mode-insensitive) - the audit answers this before flipping."
+  - "Validator home: standalone scripts/checks/mode-lifecycle-registry.js wired into /scan:full (lean, like dispatch-contract.js) vs inside validate.js - default to standalone + /scan:full."
+non_goals:
+  - "Building the mode-switch PreToolUse guard or the mode:init:gate (S-LC-03/04)."
+  - "Building the lifecycle-event registry (S-LC-02, parallel - worktree-isolated)."
+  - "Team teardown / lifecycle manager (S-LC-05)."
+  - "Flipping any gate to blocking; changing the DEFAULT-ON gate behavior."
+  - "Touching edit-watcher.js (false-cognate local getMode)."
+  - "Pushing to remote (operator-gated, per-action)."
+requirement_areas:
+  - "mode-lifecycle.json registry schema + per-mode content"
+  - de-dup the hardcoded required-team-by-mode sites to read the registry
+  - "getMode sprint-case fix + isSprint + caller audit (higgsfield) "
+  - "mode.json paths.* key (source-vs-generated)"
+  - "registry-drift validator (planted wrong-roster fails) wired into /scan:full"
+  - "DEFAULT-ON drift reconciliation (logged, both surfaces)"
+  - "manifest regen + keep team-guard tests green (both suites)"
+high_level_story_candidates:
+  - "As the orchestrator, every mode reader resolves required-team/bindings from ONE registry, so the 3-site drift can't recur."
+  - "As the system, sprint mode is correctly detected (getMode returns 'sprint'), so sprint gates/routing stop silently behaving as 'solo'."
+  - "As the maintainer, a validator fails closed when any reader drifts from the registry or a wrong roster is planted, so drift is self-detecting."
+  - "As the maintainer, the DEFAULT-ON state is honestly documented across both tracker surfaces, ending the spec-vs-code conflict."
+granular_story_candidates:
+  - "TICKET-1 (FIRST, Beta): audit lib/mode#getMode callers (confirm higgsfield-spend-gate is the only external consumer; edit-watcher excluded as false cognate); add the sprint case + isSprint(); verify higgsfield behaves correctly under 'sprint'; re-run affected tests."
+  - "TICKET-2: create .claude/agents/_org/mode-lifecycle.json (per-mode roster/requires_team/bindings/tier/dispatch-profile/teardown) + register .claude/runtime/mode.json as a paths.* key in framework/paths.registry.json SOURCE, run build.js, VERIFY the key survived."
+  - "TICKET-3: golden-snapshot BOTH team-guard suites; de-dup the hardcoded required-team-by-mode sites (session-start TEAM_MODES, team-guard inline check, mode-skill prose) to READ the registry; re-run both suites = identical pass."
+  - "TICKET-4: build scripts/checks/mode-lifecycle-registry.js validator (every reader resolves from registry; planted wrong-roster fails) + wire report-only into /scan:full."
+  - "TICKET-5 (close-out): reconcile DEFAULT-ON drift (logged Change Log entry on TRACKER + E-SYSTEM-ORG-001, code-authoritative); regen BOTH manifests; ff-merge to main; defer retro to epic close."
+workstream_candidates:
+  - "getMode sprint fix + caller audit (the behavior fix)"
+  - "mode-lifecycle registry + paths key (the keystone SoT)"
+  - "3-site de-dup to read the registry (golden-snapshot guarded)"
+  - "registry-drift validator + DEFAULT-ON reconcile + manifest regen"
+preliminary_ticket_candidates:
+  - title: "Audit lib/mode#getMode callers + add sprint case + isSprint() + verify higgsfield"
+    type: bug
+    risk: high
+    order: 1
+  - title: "Create mode-lifecycle.json registry + register mode.json paths.* key (source->build->verify)"
+    type: feature
+    risk: medium
+    order: 2
+  - title: "Golden-snapshot both team-guard suites + de-dup 3 hardcoded sites to read the registry"
+    type: refactor
+    risk: high
+    order: 3
+  - title: "mode-lifecycle-registry validator (planted wrong-roster fails) + wire /scan:full"
+    type: feature
+    risk: medium
+    order: 4
+  - title: "Reconcile DEFAULT-ON drift (logged, both surfaces) + regen both manifests + ff-merge"
+    type: chore
+    risk: low
+    order: 5
+external_service_dependencies: []
+approval_boundaries:
+  - "ff-merge to main is LOCAL only; push to remote is operator-gated (per-action - classifier above permissions.allow)."
+  - "single gauntlet halt before ff-merge (HIGH risk, full gauntlet, no skip)."
+  - "no paid spend expected (no cross-provider calls planned beyond the gauntlet reviewers)."
+design_required: false
+execution_allowed_without_design: true
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+lane: engine
+beta_review:
+  before_plan:
+    verdict: DECIDE
+    summary: "Class B, conf 0.88, OPEN_ADR false, no separate halt at plan->design or design->build (batched pre-clear). All 5 decisions approved: (a) caller-audit-first APPROVED + Beta verified the surface is NARROWER than claimed - higgsfield-spend-gate.js is the ONLY confirmed lib/mode#getMode consumer; edit-watcher.js has its own local getMode (false cognate, exclude); team-guard reads mode.json directly (not a getMode caller); dispatch/catalog is getModel (substring false match); sequence audit->fix->verify-higgsfield. (b) risk=HIGH/full-gauntlet/no-skip APPROVED (hot-path + shared-lib). (c) DEFAULT-ON = Change Log entry only (Class A, code-authoritative), reconcile BOTH surfaces (P-057). (d) worktree-isolate S-LC-02 APPROVED, sequencing caveat: S-LC-01 must finish build.js regen + verify-key BEFORE S-LC-02 reads paths.json. (e) golden-snapshot APPROVED + STRENGTHENED: snapshot BOTH team-guard-gate.test.js AND team-guard-sprint advisory (de-dup touches FACE_TYPES/TEAM_MODES both exercise)."
+plan_quality:
+  confidence: high
+  notes: "Grounded in E-LIFECYCLE-001 plan section 10 Wave 0 (S-LC-01 spec verbatim) + Phase-0 evidence (2.2/2.4 confirmed the hardcoded sites + getMode drift + DEFAULT-ON conflict) + a live re-confirm of the getMode bug this session + Beta's caller-surface correction. Parent epic cleared a GPT-5.5 cross-provider review (P-060 satisfied). Beta DECIDE 0.88 batched-precleared both boundaries."
+next_recommended_command: "/sprint:design"
+resume_instructions: "Sprint S-LC-01 has Plan Contract PC-20260609-0065. Run the next_recommended_command. If interrupted, read .claude/project/sprint/sprint-progress.yaml#resume_command."
+tracker_paths:
+  current_sprint: ".claude/project/sprint/current-sprint.yaml"
+  sprint_progress: ".claude/project/sprint/sprint-progress.yaml"
+  plan_contract: ".claude/project/sprint/plan-contracts/PC-20260609-0065.yaml"
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260609-0065.report.md"
+created_by: alpha
+updated_by: alpha

@@ -11,8 +11,8 @@
 - **Background:** WarpOS keeps re-living one failure class — sprint/adhoc modes "forget" to stand up the persistent team, `/mode:` switches leak the old team, dispatch shape is chosen by recall not by a gate (root-caused as RT-2026-06-08-dispatch-class-rca; operator corrections "where's the team?"/"where's epsilon?" on 2026-06-06 + 2026-06-08). The cure is mechanical enforcement, not more prose. The full plan + the grounded Phase-0 investigation (6 read-only surfaces) live at [../../_planning/warpos-lifecycle-plan.md](../../_planning/warpos-lifecycle-plan.md); the source prompt is [../../_planning/ingest/warpos-lifecycle.md](../../_planning/ingest/warpos-lifecycle.md).
 - **Scope:** (1) Mode-Lifecycle Registry (`.claude/agents/_org/mode-lifecycle.json`) — per-mode roster/bindings/tier/dispatch-profile/teardown, de-duplicating the 3 hardcoded sites; (2) Lifecycle-event registry + logger + coverage enforcer (2 real PreToolUse guards + ~23 virtual events to `paths.eventsFile`); (3) generalized fail-closed `mode:init:gate` + mode-switch preflight guard; (4) project-scoped persistent-team lifecycle manager (spawn/verify/kill/teardown/orphan/resume) + a SessionEnd hook backstop; (5) dispatch parallelism axis (under/over-dispatch detection) + coverage-gate live wiring; (6) turbo hardening (spend ceiling + safe commit/push/merge profile); (7) provider-tier (T1/T2/T3) readiness + preferred-tier config layered on the existing health stack; (8) `_planning` lifecycle integration + an `epic:` suite (design 10, build `/epic:plan`+`/epic:fold`) + canonicalized planning principles + an acceptance-criteria enforcement system.
 - **Out of scope:** inventing new harness hook events (the set is closed at 8); rebuilding the dispatch matrix / provider health stack / tracker validator (all are EXTENDED, not replaced); the org/GTM "product-studio" expansion (the separate `_planning/plans/*` epic — the cast, not the stage); building all 10 `epic:` commands now; any live provider auth/funding/trust mutation during planning; replacing `/session:end`'s rich teardown (a mechanical backstop is added, not a replacement).
-- **Current state:** Planned
-- **Percent completion:** 0% — plan authored + Phase-0 grounded 2026-06-08; no execution work started.
+- **Current state:** Active
+- **Percent completion:** ~10% — plan authored + Phase-0 grounded 2026-06-08; Wave-0 keystone S-LC-01 (Mode-Lifecycle Registry) LANDED 2026-06-09 @76da472 (1 of 12 planned sprints), gauntlet-clean. Conservative — the remaining 11 sprints (lifecycle-event registry, the Wave-1 mechanical gates, team manager, dispatch/turbo, planning+epic-suite, provider readiness, AC enforcement) carry the bulk of the DoD.
 
 ## Definition of Done
 - [ ] Mode-Lifecycle Registry is the SOLE source of truth (all readers resolve from it; the `mode-lifecycle-registry` validator is green; the DEFAULT-ON drift reconciled) — proven by a planted wrong-roster fixture failing.
@@ -32,7 +32,8 @@
 - Dispatch, Wiring, Verification, Evidence, Completion — see ../../TRACKER.md.
 
 ## Related sprints
-- None currently minted. 12 sprint candidates are defined in the plan (S-LC-01 … S-LC-12 across 6 waves); each is minted via `/sprint:plan` at execution time. See [../../_planning/warpos-lifecycle-plan.md](../../_planning/warpos-lifecycle-plan.md) § "Proposed Sprint Breakdown".
+- **S-LC-01 — Mode-Lifecycle Registry keystone (Wave 0)** — Completed 2026-06-09 @76da472 (gauntlet-clean). Sprint dir: `.claude/project/sprint/sprints/S-LC-01/`.
+- The remaining 11 sprint candidates (S-LC-02 … S-LC-12 across 6 waves) are minted via `/sprint:plan` at execution time. See [../../_planning/warpos-lifecycle-plan.md](../../_planning/warpos-lifecycle-plan.md) § "Proposed Sprint Breakdown".
 
 ## Dependencies
 - E-SYSTEM-ORG-001 (dispatch-shape north star, ~99%) — prerequisite; this epic builds on `dispatch-contract.json`, `dispatch-shape.js`, `safe-spawn.js`, `coverage-gate.js`. State: near-complete on `main`.
@@ -40,7 +41,7 @@
 - Operator decisions on the § Human Approval Points (turbo push/spend default; provider funding/subscription detection method; mode-behavior backward-compat) before the affected waves flip to blocking. **RESOLVED 2026-06-09 (operator) — see Change log: all 6 §22 points ruled (turbo spend = $100 framework default, push per-action; provider = self-attestation + opt-in probe; mode-behavior backward-compat DEFERRED to the Wave-1 gate-flip).**
 
 ## Blockers
-- None currently recorded (Planned; execution is approval-gated per the plan's § Implementation-Phase Preflight Checklist).
+- None currently recorded (Active; Wave-0 keystone landed 2026-06-09 @76da472. The Wave-1 gate-flips remain operator-gated per the § Human Approval Points resolutions, but no blocker prevents S-LC-02 or the Wave-1 build work from starting).
 
 ## Risks
 - Fail-closed bug bricks mode entry/dispatch — mitigate with the global fail-OPEN posture + kill-switch env/markers + bootstrap allow-list + canary report-only + the dry-run simulation plan.
@@ -89,6 +90,13 @@
 - Previous state: Planned, 0%, §22 approval points open (3 RESOLVED-2026-06-08 + 3 open); 5 β recs LEFT STAGED for operator ruling.
 - New state: Planned, 0%, all §22 approval points resolved (4 APPROVED, #3 partial-defer of the T3 sub-call, #4 DEFERRED to Wave-1 gate-flip); 5 β recs promoted. Execution remains approval-gated (no code work started).
 
+### 2026-06-09 — S-LC-01 (Wave-0 keystone) LANDED — epic Activated
+- Changed: Wave-0 keystone sprint **S-LC-01 — Mode-Lifecycle Registry** executed and landed on branch `june-9` @ `76da472`, gauntlet-clean. Deliverables: new `.claude/agents/_org/mode-lifecycle.json` (per-mode SoT registry) + `scripts/hooks/lib/mode-lifecycle.js` (shape-validated reader, fail-open) + `scripts/checks/mode-lifecycle-registry.js` (fail-closed drift validator, wired report-only into `/scan:full`); `lib/mode.js#getMode()` sprint-case fix + new `isSprint()`; de-dup of `session-start.js` TEAM_MODES + `team-guard.js` FACE_TYPES to READ the registry (golden suites unchanged — team-guard-gate 13/13, team-guard-sprint 8/8); `mode.json` registered as the `modeMarker` paths key; the S-12c DEFAULT-ON drift reconciled in `TRACKER.md` + E-SYSTEM-ORG-001. Tests: mode-getmode 3/3, mode-lifecycle-registry 18/18. Gauntlet: backend-reviewer + qa-reviewer both PASS (gemini failover after a codex transient reap); 6 findings across 3 fix-cycles all resolved.
+- Reason: operator-confirmed execution session for the Wave-0 keystone (the registry every downstream Wave-1 gate reads — it had to land first as the sole SoT).
+- Affected: `.claude/agents/_org/mode-lifecycle.json` (new), `scripts/hooks/lib/mode-lifecycle.js` (new), `scripts/checks/mode-lifecycle-registry.js` (new), `lib/mode.js`, `scripts/hooks/session-start.js`, `scripts/hooks/team-guard.js`, the paths registry (`modeMarker` key); this file (Current state, Percent completion, Current next action), `.claude/project/sprint/sprints/S-LC-01/{current,progress}.yaml` (status→done), `ROADMAP.md` (epic Activated + S-LC-01 ledger row), `TRACKER.md` (Active reconciliation).
+- Previous state: Planned, 0%, execution approval-gated (no code work started).
+- New state: **Active, ~10%** — 1 of 12 planned sprints landed (the Wave-0 keystone); Wave-0 S-LC-02 + the Wave-1 gates are the open next steps.
+
 ## Evidence log
 ### 2026-06-08 — Epic plan authored + Phase-0 grounded
 - Evidence type: File changed.
@@ -106,7 +114,7 @@
 | Harness hook events = closed set of 8 | Yes | Verified Exists | `.claude/settings.json` | grep -o two ways | 2026-06-08 | Phase-0 investigators |
 
 ## Current next action
-Execution is approval-gated. The first execution step is **S-LC-01 — Mode-Lifecycle Registry (keystone)**: create `.claude/agents/_org/mode-lifecycle.json`, de-duplicate the 3 hardcoded required-team-by-mode sites to read it, fix `lib/mode.js#getMode()`'s missing sprint case, register `mode.json` as a `paths.*` key, add the `mode-lifecycle-registry` validator, and reconcile the DEFAULT-ON drift — minted via `/sprint:plan` after the operator resolves the plan's § Human Approval Points and confirms a new execution session. Until then: review the plan at `../../_planning/warpos-lifecycle-plan.md`.
+S-LC-01 (Mode-Lifecycle Registry keystone, Wave 0) is DONE — landed 2026-06-09 @76da472, gauntlet-clean. Next execution step: **S-LC-02 — Lifecycle-Event Registry + logger + coverage enforcer** (the other Wave-0 sprint; parallel-safe with S-LC-01 and now unblocked since the registry keystone it pairs with has landed) **OR** open the **Wave-1 mechanical gates** (S-LC-03 mode-switch preflight guard · S-LC-04 generalized fail-closed `mode:init:gate` · S-LC-05 persistent-team lifecycle manager), each minted via `/sprint:plan`. The full plan remains at `../../_planning/warpos-lifecycle-plan.md` § "Proposed Sprint Breakdown".
 
 ## Completion record
 - Final state: Not yet complete.

@@ -1,0 +1,9 @@
+{
+  "schema": "warpos/sprint-full/beta-boundaries/v1",
+  "sprint": "S-LC-01",
+  "cleared": [
+    "before_plan",
+    "before_design"
+  ],
+  "updated_at": "2026-06-09T22:18:58.369Z"
+}
