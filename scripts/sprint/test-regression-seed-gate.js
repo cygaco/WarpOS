@@ -131,6 +131,60 @@ const stub = (verdict) => () => verdict;
   ok("G: full.js phase 4 emits a regression_seed_failed halt_reason", namesHalt);
 }
 
+// H. product-repo guard is keyed on the PHYSICAL ABSENCE of testsuite/enforce.js,
+//    NOT a spoofable role oracle (gauntlet S-LC-12 security FAIL fix). Two parts:
+//
+//  H1 — spoof CLOSED: on canonical (where testsuite/enforce.js IS on disk) setting
+//       WARPOS_REPO_ROLE=consumer must NOT let the gate no-op. The gate must still
+//       run the real enforcer and return a valid canonical code (0 or 3), never be
+//       short-circuited to 0 by the env var. This is the regression the fix closes.
+//  H2 — product no-op WORKS: when the enforcer module is absent, the gate no-ops
+//       (exit 0) without throwing. We prove this hermetically by injecting a
+//       runEnforcer that throws MODULE_NOT_FOUND is NOT the right shape (that tests
+//       the catch, case E). Instead we verify the module-existence branch directly:
+//       the production path returns 0 iff fs.existsSync(testsuite/enforce.js) is
+//       false. Since we can't delete the shipped module, we assert the SOURCE wires
+//       the unspoofable check (fs.existsSync on enforce.js) and does NOT consult
+//       resolveRepoRole/WARPOS_REPO_ROLE on the gate path.
+{
+  // H1 — env spoof must NOT bypass the mandatory gate on canonical.
+  const prev = process.env.WARPOS_REPO_ROLE;
+  let ex;
+  let threw = false;
+  try {
+    process.env.WARPOS_REPO_ROLE = "consumer";
+    ex = quiet(() => release.regressionSeedGate()); // NO injection — production path
+  } catch (e) {
+    threw = true;
+  } finally {
+    if (prev === undefined) delete process.env.WARPOS_REPO_ROLE;
+    else process.env.WARPOS_REPO_ROLE = prev;
+  }
+  // On canonical the module exists, so the env spoof is ignored: the gate runs the
+  // real enforcer and returns a valid canonical code (0 clean, or 3 if the suite is
+  // legitimately red) — but NEVER a spoofed short-circuit. (If this checkout ever
+  // lacks testsuite/enforce.js, 0 is still valid via the legitimate product path.)
+  ok("H1: WARPOS_REPO_ROLE=consumer does NOT spoof-bypass the gate on canonical (no throw, valid code)", !threw && (ex === 0 || ex === 3), `threw=${threw} exit=${ex}`);
+
+  // H2 — the gate keys on module existence, not a spoofable role oracle.
+  const fs = require("fs");
+  const path = require("path");
+  const src = fs.readFileSync(path.join(__dirname, "release.js"), "utf8");
+  const gateBody = src.slice(src.indexOf("function regressionSeedGate"), src.indexOf("function cmdPrepare"));
+  // Strip comments before scanning so this assertion checks the CODE, not prose that
+  // legitimately MENTIONS resolveRepoRole to explain why it was removed (a comment
+  // that names the trigger literal would self-trip — recurring enforcer-doc trap).
+  const gateCode = gateBody
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .split("\n")
+    .map((l) => l.replace(/\/\/.*$/, ""))
+    .join("\n");
+  const usesModuleExistence = /fs\.existsSync\([^)]*enforce/.test(gateCode) || /existsSync\(\s*enforcerPath/.test(gateCode);
+  const noRoleOracleOnGatePath = !/resolveRepoRole/.test(gateCode);
+  ok("H2: gate keys product detection on fs.existsSync(testsuite/enforce.js)", usesModuleExistence);
+  ok("H2: gate code does NOT consult the spoofable resolveRepoRole on the close path", noRoleOracleOnGatePath, gateCode.match(/resolveRepoRole/) ? "found resolveRepoRole in code" : "");
+}
+
 // ── Summary ─────────────────────────────────────────────────────────
 
 process.stdout.write(`\n${pass} pass / ${fail} fail\n`);

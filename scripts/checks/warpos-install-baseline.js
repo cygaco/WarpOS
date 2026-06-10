@@ -24,11 +24,27 @@
  *   mode scans scripts/hooks/*.js, extracts remediation script paths, and fails
  *   if any is missing. It does NOT touch a target's framework-installed.json.
  *
+ * --ship-coverage MODE (S-LC-12 / T-296 / class-closer):
+ *   Closes the WG-1/WG-9 defect CLASS: on-disk existence (what --guard-remediation
+ *   checks) is NOT the same as SHIPPED. A file can exist on canonical disk and
+ *   pass --guard-remediation while being absent from .claude/framework-manifest.json
+ *   — meaning it never reaches a product install. This mode asserts that every
+ *   guard-mandated remediation path is present in the SHIP PAYLOAD (the manifest
+ *   assets), not just on disk. Fails-closed if the manifest is missing, unparseable,
+ *   or has no assets. Reuses extractRemediationPaths so the mandated-path set is
+ *   always consistent with --guard-remediation.
+ *
+ *   Scope: guard remediation paths (paths a guard tells a user to RUN). These are
+ *   paths that a guard mandates — if mandated, they must ship. Additional sources
+ *   (e.g. hard-require() chains) are out of scope to avoid over-reach; the
+ *   remediation set is the concrete, well-bounded signal that closes WG-1/WG-9.
+ *
  * Usage:
  *   node scripts/checks/warpos-install-baseline.js [--target <path>] [--force-fresh] [--json]
  *   node scripts/checks/warpos-install-baseline.js --guard-remediation [--json]
+ *   node scripts/checks/warpos-install-baseline.js --ship-coverage [--json]
  *
- * Linked: SP-20260513-005 / S-4 / AC-S-4.2 / R-4 / C-1 / F-4 / C-8 / doogle WG-1
+ * Linked: SP-20260513-005 / S-4 / AC-S-4.2 / R-4 / C-1 / F-4 / C-8 / doogle WG-1 / S-LC-12 / T-296
  */
 
 const fs = require("fs");
@@ -45,6 +61,7 @@ function arg(flag) {
 const JSON_OUT = process.argv.includes("--json");
 const FORCE_FRESH = process.argv.includes("--force-fresh");
 const GUARD_REMEDIATION = process.argv.includes("--guard-remediation");
+const SHIP_COVERAGE = process.argv.includes("--ship-coverage");
 const TARGET_ROOT = path.resolve(
   arg("--target") || process.env.CLAUDE_PROJECT_DIR || process.cwd(),
 );
@@ -262,13 +279,222 @@ emit({
 });
 }
 
+// ── C-8 extension: ship-payload coverage (--ship-coverage / T-296 class-closer) ──
+//
+// SCOPE: guard remediation paths — the same set --guard-remediation checks against
+// disk. These are paths a guard TELLS the user to run; a mandated path must ship.
+// We do NOT reach into every require() in the tree (a require is not a ship mandate).
+//
+// FAIL-CLOSED rules mirror runGuardRemediationCheck:
+//   - manifest file missing or unparseable → red
+//   - manifest.assets absent or empty → red
+//   - any mandated path not in the shipped Set → red with list
+//
+// The shipped Set is built from BOTH src and dest across every asset kind, so
+// a file covered by either field matches. Backslashes are normalized to forward
+// slashes before comparison (Windows path safety).
+
+/**
+ * Pure helper: build a Set of all shipped src/dest paths from a parsed manifest.
+ * Normalizes backslashes to forward slashes.
+ * Returns an empty Set if manifest.assets is absent (caller checks for fail-closed).
+ *
+ * @param {object} manifest - parsed .claude/framework-manifest.json
+ * @returns {Set<string>}
+ */
+function shippedPathSet(manifest) {
+  const set = new Set();
+  if (!manifest || !manifest.assets) return set;
+  function addEntry(e) {
+    if (e && typeof e === "object") {
+      if (e.src) set.add(e.src.split("\\").join("/"));
+      if (e.dest) set.add(e.dest.split("\\").join("/"));
+    }
+  }
+  function walk(v) {
+    if (Array.isArray(v)) {
+      v.forEach(walk);
+    } else if (v && typeof v === "object") {
+      if (v.src || v.dest) {
+        addEntry(v);
+      } else {
+        for (const k of Object.keys(v)) walk(v[k]);
+      }
+    }
+  }
+  walk(manifest.assets);
+  return set;
+}
+
+/**
+ * Pure helper: compute ship-coverage for a given manifest + mandated path list.
+ * Returns a result object consumable by emitShipCoverageResult (or test assertions).
+ *
+ * FAIL-CLOSED: manifest null, missing assets, or empty assets → red.
+ *
+ * @param {object|null} manifest - parsed manifest (or null)
+ * @param {string[]} mandatedPaths - paths that must appear in the ship payload
+ * @returns {{ status: "green"|"red", missing: string[], reason: string, checkedPaths: number }}
+ */
+function computeShipCoverage(manifest, mandatedPaths) {
+  if (
+    !manifest ||
+    !manifest.assets ||
+    typeof manifest.assets !== "object" ||
+    Object.keys(manifest.assets).length === 0
+  ) {
+    return {
+      status: "red",
+      missing: [],
+      reason:
+        "manifest is missing or has no assets section — enforcer cannot proceed (fail-closed)",
+      checkedPaths: 0,
+    };
+  }
+  const shipped = shippedPathSet(manifest);
+  const missing = [];
+  for (const p of mandatedPaths) {
+    const normalized = p.split("\\").join("/");
+    if (!shipped.has(normalized) && !shipped.has(p)) {
+      missing.push(p);
+    }
+  }
+  const count = mandatedPaths.length;
+  if (missing.length > 0) {
+    return {
+      status: "red",
+      missing,
+      reason: `${missing.length} of ${count} mandated path(s) absent from ship payload`,
+      checkedPaths: count,
+    };
+  }
+  return {
+    status: "green",
+    missing: [],
+    reason: `all ${count} guard-mandated path(s) present in ship payload`,
+    checkedPaths: count,
+  };
+}
+
+function runShipCoverageCheck() {
+  // Load the manifest. FAIL-CLOSED on any read/parse failure.
+  const manifestPath = path.join(REPO_ROOT, ".claude", "framework-manifest.json");
+  let manifest = null;
+  try {
+    manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+  } catch (e) {
+    emitShipCoverageResult({
+      status: "red",
+      reason: `cannot read/parse .claude/framework-manifest.json: ${e.message}`,
+      missing: [],
+      checkedPaths: 0,
+      guardCount: 0,
+    });
+    return;
+  }
+
+  // Collect guard-mandated remediation paths via the same scan as --guard-remediation.
+  // WARPOS_GUARD_REMEDIATION_ROOT is the test-only seam (same as --guard-remediation).
+  const scanRoot = process.env.WARPOS_GUARD_REMEDIATION_ROOT
+    ? path.resolve(process.env.WARPOS_GUARD_REMEDIATION_ROOT)
+    : REPO_ROOT;
+  const hooksDir = path.join(scanRoot, "scripts", "hooks");
+  let files = [];
+  try {
+    files = fs
+      .readdirSync(hooksDir)
+      .filter((f) => f.endsWith(".js"))
+      .map((f) => path.join(hooksDir, f));
+  } catch (e) {
+    emitShipCoverageResult({
+      status: "red",
+      reason: `cannot read guard dir ${hooksDir}: ${e.message}`,
+      missing: [],
+      checkedPaths: 0,
+      guardCount: 0,
+    });
+    return;
+  }
+
+  const allMandated = [];
+  const byGuard = {};
+  for (const file of files) {
+    let src;
+    try {
+      src = fs.readFileSync(file, "utf8");
+    } catch {
+      continue;
+    }
+    const paths = extractRemediationPaths(src);
+    if (paths.length > 0) {
+      const rel = path.relative(scanRoot, file).split("\\").join("/");
+      byGuard[rel] = paths;
+      allMandated.push(...paths);
+    }
+  }
+
+  const result = computeShipCoverage(manifest, allMandated);
+
+  // Annotate missing entries with their source guard for better diagnostics.
+  const missingWithGuard = [];
+  if (result.missing.length > 0) {
+    for (const [guard, paths] of Object.entries(byGuard)) {
+      for (const p of paths) {
+        if (result.missing.includes(p)) {
+          missingWithGuard.push({ guard, path: p });
+        }
+      }
+    }
+  }
+
+  emitShipCoverageResult({
+    status: result.status,
+    reason: result.reason,
+    missing: missingWithGuard,
+    checkedPaths: result.checkedPaths,
+    guardCount: files.length,
+  });
+}
+
+function emitShipCoverageResult(r) {
+  const out = {
+    name: NAME + ":ship-coverage",
+    status: r.status,
+    reason: r.reason,
+    missing: r.missing,
+    checkedPaths: r.checkedPaths,
+    guardCount: r.guardCount || 0,
+    durationMs: Date.now() - START,
+  };
+  if (JSON_OUT) {
+    console.log(JSON.stringify(out));
+  } else if (r.status === "green") {
+    console.log(`OK   [${NAME}:ship-coverage] ${r.reason}`);
+  } else {
+    console.error(`FAIL [${NAME}:ship-coverage] ${r.reason}`);
+    for (const m of r.missing) {
+      if (typeof m === "object" && m.guard) {
+        console.error(`     - ${m.guard} → ${m.path} (MISSING-FROM-SHIP-PAYLOAD)`);
+      } else {
+        console.error(`     - ${m} (MISSING-FROM-SHIP-PAYLOAD)`);
+      }
+    }
+    console.error(
+      "     fix: add the referenced script to ASSET_DIRS in scripts/generate-framework-manifest.js and regenerate the manifest.",
+    );
+  }
+  process.exit(r.status === "red" ? 1 : 0);
+}
+
 // ── Dispatch (only when run directly; require() exposes the pure helpers) ──
 if (require.main === module) {
   if (GUARD_REMEDIATION) {
     runGuardRemediationCheck();
+  } else if (SHIP_COVERAGE) {
+    runShipCoverageCheck();
   } else {
     runBaselineCheck();
   }
 }
 
-module.exports = { extractRemediationPaths };
+module.exports = { extractRemediationPaths, shippedPathSet, computeShipCoverage };
