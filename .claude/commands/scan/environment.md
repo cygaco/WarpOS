@@ -82,6 +82,7 @@ Read `manifest.agentProviders` to determine which providers this project uses. F
   - Auth: set `GEMINI_API_KEY` env var OR run `gemini auth login` (OAuth → `~/.gemini/oauth_creds.json`)
 - **E27 Provider config in store** — verify `paths.store.providers` (if present) has matching entries for every provider referenced in `manifest.agentProviders`.
 - **E28 Provider fallback chain** — every non-Claude provider in `manifest.providers` must declare a `fallback`. If any is missing → WARN (loss of fallback safety).
+- **E28.5 Provider tier readiness (report-only)** — run `node scripts/warpos/provider-tier-check.js --json`. This layers a **T1/T2/T3 tier grade** over the health stack (T1 = CLI+auth reachable · T2 = funded/keyed for paid models · T3 = subscription floor met) — **value-free** (reads only key NAMEs, never values) and **report-only**. Surface each provider's `verdict` (`tier_met` / `tier_short` / `unknown-self-attested`) and the `t3_floor` (operator-tunable, default `max_5x`). Severity: **INFO** — never blocks (the check itself exits 0; T3 funding/subscription is undetectable value-free, so an unmet T3 reports `unknown-self-attested`, not an error). To raise a provider's selected tier the operator runs the confirm-class `node scripts/warpos/provider-tier-check.js --set-tier <provider> <t1|t2|t3> --sub <subscription>`. Rationale: S-LC-10 — health checks reachability but not tier; this surfaces whether each provider meets the selected funding/subscription floor without spending a token.
 
 ### Platform
 

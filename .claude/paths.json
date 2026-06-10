@@ -72,6 +72,7 @@
   "dispatchDeathsFile": ".claude/runtime/dispatch-deaths.jsonl",
   "dispatchCompletionsFile": ".claude/runtime/dispatch-completions.jsonl",
   "providerTmp": ".claude/runtime/.provider-tmp",
+  "providerTierConfig": ".claude/runtime/provider-tier-config.json",
   "providerFallbackPolicy": ".claude/agents/president/_system/policy/provider-fallback.json",
   "sprintRoot": ".claude/project/sprint",
   "sprintCurrent": ".claude/project/sprint/current-sprint.yaml",
