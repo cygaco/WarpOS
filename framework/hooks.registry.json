@@ -778,6 +778,34 @@
         { "event": "PostToolUse", "matcher": "WebFetch|WebSearch|mcp__.*|ListMcpResourcesTool|ReadMcpResourceTool" }
       ],
       "testFixtures": ["fixtures/hooks/default/post-edit.json"]
+    },
+    {
+      "id": "mode-lifecycle-guard",
+      "script": "scripts/hooks/mode-lifecycle-guard.js",
+      "owner": "framework",
+      "enabled": true,
+      "failMode": "fail-open",
+      "fixturesRequired": false,
+      "purpose": "REAL PreToolUse guard #1 (S-LC-03 / E-LIFECYCLE-001). On a /mode:* SlashCommand|Skill invocation, runs the mode-switch preflight: detects the active project-scoped persistent team, resolves prev→target mode, emits the mode:switch:requested → mode:switch:preflight virtual lifecycle events (labels-only), and surfaces a non-blocking advisory. REPORT-ONLY + FAIL-OPEN — never blocks; backstop to the mode-set.js transaction writer (flip-to-block gated on §22 #4).",
+      "registrations": [
+        { "event": "PreToolUse", "matcher": "SlashCommand|Skill" }
+      ],
+      "blocks": [],
+      "testFixtures": ["fixtures/hooks/default/bash-safe.json"]
+    },
+    {
+      "id": "session-end-team-teardown",
+      "script": "scripts/hooks/session-end-team-teardown.js",
+      "owner": "framework",
+      "enabled": true,
+      "failMode": "fail-open",
+      "fixturesRequired": false,
+      "purpose": "SessionEnd BACKSTOP (S-LC-05 / E-LIFECYCLE-001). Requests best-effort, project-slug-scoped teardown of THIS project's persistent team when a session ends without a clean /session:end. REQUEST-ONLY (records shutdown request, never force-kills a live in-process teammate), foreign-team-protected, FAIL-OPEN — never throws or blocks session end.",
+      "registrations": [
+        { "event": "SessionEnd", "matcher": "" }
+      ],
+      "blocks": [],
+      "testFixtures": ["fixtures/hooks/default/stop.json"]
     }
   ]
 }

@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "generated": "2026-06-10T00:53:42.728Z",
-    "lastUpdated": "2026-06-10T00:53:42.728Z",
-    "total_hooks": 72,
+    "generated": "2026-06-10T02:45:52.880Z",
+    "lastUpdated": "2026-06-10T02:45:52.880Z",
+    "total_hooks": 74,
     "total_modules": 18,
-    "uncurated": 0,
+    "uncurated": 2,
     "total_gaps": 83,
     "gaps_closed": 75,
     "gaps_open": 8,
@@ -873,6 +873,24 @@
       "note": "Escalated 2026-05-13: cd-prefix coverage widened from git-only tails to ANY trailing command (`cd <project> && <anything>`, `cd . && <anything>`) and promoted from advisory warn to transparent auto-strip via hookSpecificOutput.updatedInput.command. Addresses 16x/day cd-prefix repeat (LRN-2026-05-13-cd-prefix-repeat) with merge-safe semantics (LRN-2026-05-13-merge-safe-cd-strip). PreToolUse Bash transform; never re-runs the command — only rewrites it."
     },
     {
+      "id": "mode-lifecycle-guard",
+      "type": "hook",
+      "matcher": "?",
+      "phase": "?",
+      "mode": "?",
+      "file": "scripts/hooks/mode-lifecycle-guard.js",
+      "file_size": 16777,
+      "file_modified": "2026-06-10T02:39:09.386Z",
+      "registered": true,
+      "gates": [],
+      "blocks": [],
+      "warns": [],
+      "allows": [],
+      "gaps_closed": [],
+      "uncurated": true,
+      "uncurated_note": "added since last hand-curated regen — fields ?, ?, ? need a /maps:enforcements review"
+    },
+    {
       "id": "ownership-guard",
       "type": "hook",
       "matcher": "Edit|Write",
@@ -1356,6 +1374,24 @@
       "file_size": 923,
       "file_modified": "2026-05-30T01:25:39.601Z",
       "note": "Advisory reminder for framework surface edits. Real enforcement lives in CI / commit gates; this hook just surfaces what those gates are at edit-time."
+    },
+    {
+      "id": "session-end-team-teardown",
+      "type": "hook",
+      "matcher": "?",
+      "phase": "?",
+      "mode": "?",
+      "file": "scripts/hooks/session-end-team-teardown.js",
+      "file_size": 2782,
+      "file_modified": "2026-06-10T02:39:09.518Z",
+      "registered": true,
+      "gates": [],
+      "blocks": [],
+      "warns": [],
+      "allows": [],
+      "gaps_closed": [],
+      "uncurated": true,
+      "uncurated_note": "added since last hand-curated regen — fields ?, ?, ? need a /maps:enforcements review"
     },
     {
       "id": "session-start-teaminit.test",
@@ -1983,8 +2019,8 @@
         "logger",
         "role-aliases"
       ],
-      "file_size": 17839,
-      "file_modified": "2026-06-10T00:04:52.692Z"
+      "file_size": 25885,
+      "file_modified": "2026-06-10T02:39:09.211Z"
     },
     {
       "id": "template-fillability",

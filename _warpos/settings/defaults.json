@@ -210,6 +210,10 @@
           {
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/skill-invocation-tracker.js\""
+          },
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/mode-lifecycle-guard.js\""
           }
         ],
         "matcher": "SlashCommand|Skill"
@@ -382,6 +386,10 @@
           {
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/session-stop.js\""
+          },
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/session-end-team-teardown.js\""
           }
         ],
         "matcher": ""

@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-10T00:53:43.051Z",
+  "generatedAt": "2026-06-10T02:53:28.129Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.15.4",
   "migrations": [],
@@ -113,8 +113,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "0cdf30223acdd877a659e771ead1860a1d87e7f721212bff7e685106e168a2c4",
-      "installedSha": "0cdf30223acdd877a659e771ead1860a1d87e7f721212bff7e685106e168a2c4"
+      "sha256": "fb165a02a2d6d51183041c7d93a2ee89da8ea080b34db990bef61752dc5a4058",
+      "installedSha": "fb165a02a2d6d51183041c7d93a2ee89da8ea080b34db990bef61752dc5a4058"
     },
     "TRACKER.md": {
       "owner": "runtime",
@@ -159,8 +159,8 @@
       "managed": true,
       "source": "_warpos/settings/defaults.json",
       "_note": "_warpos/ is the framework source-of-truth zone in installed products (post-SP-20260522-001).",
-      "sha256": "ef964c59d2ec13f10abb52ef7aec4c7cf222e8582d3ec59dd97ae76a31570a15",
-      "installedSha": "ef964c59d2ec13f10abb52ef7aec4c7cf222e8582d3ec59dd97ae76a31570a15"
+      "sha256": "b19e916702aca54c7e99af11c673d4607285fe6eb6ce8fcda2bbc15e769c4b2e",
+      "installedSha": "b19e916702aca54c7e99af11c673d4607285fe6eb6ce8fcda2bbc15e769c4b2e"
     },
     "_requirements/README.md": {
       "owner": "project",
@@ -1881,6 +1881,34 @@
       "source": null,
       "sha256": "f8db2e89becfc27ed92361a3760aa110ff323a8cd2656a3064968b8df1c8af8b",
       "installedSha": "f8db2e89becfc27ed92361a3760aa110ff323a8cd2656a3064968b8df1c8af8b"
+    },
+    "tests/regression/S-LC-05/adhoc-team-hygiene-extension.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": null,
+      "sha256": "9df4213f13e2a2161d4f13ae2edd348bf0951e8a97fc842308fefed4624043f3",
+      "installedSha": "9df4213f13e2a2161d4f13ae2edd348bf0951e8a97fc842308fefed4624043f3"
+    },
+    "tests/regression/S-LC-05/team-lifecycle.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": null,
+      "sha256": "52b0448cbf07e9409f5f74715ad5798d4b31f190602445491870d3e200abc050",
+      "installedSha": "52b0448cbf07e9409f5f74715ad5798d4b31f190602445491870d3e200abc050"
+    },
+    "tests/regression/S-LC-04/init-gate.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": null,
+      "sha256": "c022655ed65efc19d4abbefd1175dca3bbe25bb994344a9f3f8c699e0e077c2b",
+      "installedSha": "c022655ed65efc19d4abbefd1175dca3bbe25bb994344a9f3f8c699e0e077c2b"
+    },
+    "tests/regression/S-LC-03/mode-lifecycle-guard.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": null,
+      "sha256": "3d52a54c8843b93c28cd11b06e2b85bdc1364846f1ef3fb414e7082bc058b53b",
+      "installedSha": "3d52a54c8843b93c28cd11b06e2b85bdc1364846f1ef3fb414e7082bc058b53b"
     },
     "tests/regression/S-LC-02/lifecycle-events.test.js": {
       "owner": "framework",
@@ -3744,6 +3772,13 @@
       "sha256": "31e0c343a5bf2bf721bf1539675e55581c9ba4246c6fbfc19b20ed0b329d6839",
       "installedSha": "31e0c343a5bf2bf721bf1539675e55581c9ba4246c6fbfc19b20ed0b329d6839"
     },
+    "scripts/teams/lifecycle.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/teams/lifecycle.js",
+      "sha256": "9dd5e62a310b9d635f1617e432bf20b409128a6be1f14b779c85615486e564cb",
+      "installedSha": "9dd5e62a310b9d635f1617e432bf20b409128a6be1f14b779c85615486e564cb"
+    },
     "scripts/system/coherence.js": {
       "owner": "framework",
       "managed": true,
@@ -4728,8 +4763,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/hook-manifest.json",
-      "sha256": "bfeed1202dcc8362d38e0039309b6a435f5206007168739e1104cbe6e7a53ffb",
-      "installedSha": "bfeed1202dcc8362d38e0039309b6a435f5206007168739e1104cbe6e7a53ffb"
+      "sha256": "d75d7cff6be26c7a427c1113d98d9fd7dbf6091d45d63935bb8c0c602bda1efe",
+      "installedSha": "d75d7cff6be26c7a427c1113d98d9fd7dbf6091d45d63935bb8c0c602bda1efe"
     },
     "scripts/hooks/learning-validator.js": {
       "owner": "framework",
@@ -4779,6 +4814,13 @@
       "source": "scripts/hooks/merge-guard.js",
       "sha256": "620beb9ba9329f5d5ca04dcaa023d36ecd02409dd472df0a8c203ccc86bd6ffb",
       "installedSha": "620beb9ba9329f5d5ca04dcaa023d36ecd02409dd472df0a8c203ccc86bd6ffb"
+    },
+    "scripts/hooks/mode-lifecycle-guard.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/hooks/mode-lifecycle-guard.js",
+      "sha256": "558677825e41e73ca03215cea5c35b6a80d3c667d59ed1cd9b1e90bd0700b5dc",
+      "installedSha": "558677825e41e73ca03215cea5c35b6a80d3c667d59ed1cd9b1e90bd0700b5dc"
     },
     "scripts/hooks/ownership-guard.js": {
       "owner": "framework",
@@ -4884,6 +4926,13 @@
       "source": "scripts/hooks/self-mod-governance.js",
       "sha256": "310118465d1cf2720e2ab3a91879fb8a1be851ef0f75c9008652340864e0d8e8",
       "installedSha": "310118465d1cf2720e2ab3a91879fb8a1be851ef0f75c9008652340864e0d8e8"
+    },
+    "scripts/hooks/session-end-team-teardown.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/hooks/session-end-team-teardown.js",
+      "sha256": "69a634b241a35be21e5a60a5c87cdfdb61cc9b1aedc6ad6906bc23f370e67386",
+      "installedSha": "69a634b241a35be21e5a60a5c87cdfdb61cc9b1aedc6ad6906bc23f370e67386"
     },
     "scripts/hooks/session-start-teaminit.test.js": {
       "owner": "framework",
@@ -5029,8 +5078,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/team-guard.js",
-      "sha256": "b88db552727fdd2a68538f1278b60d78f06a5751daafed280cecb10b625d1b71",
-      "installedSha": "b88db552727fdd2a68538f1278b60d78f06a5751daafed280cecb10b625d1b71"
+      "sha256": "161787810116a4f13aa18a8d1012903014371afd7a6153a3a9833ce5f5b86fea",
+      "installedSha": "161787810116a4f13aa18a8d1012903014371afd7a6153a3a9833ce5f5b86fea"
     },
     "scripts/hooks/template-fillability.js": {
       "owner": "framework",
@@ -5624,8 +5673,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/adhoc-team-hygiene.js",
-      "sha256": "07057c0fd66ee8430d1508ce825d5f838222b15308226edbfee7fcc7cb91aec3",
-      "installedSha": "07057c0fd66ee8430d1508ce825d5f838222b15308226edbfee7fcc7cb91aec3"
+      "sha256": "dbb7be96679cfe3bbcf5577a42d8cd05f2d7085e147010713ba18230c1c66cd2",
+      "installedSha": "dbb7be96679cfe3bbcf5577a42d8cd05f2d7085e147010713ba18230c1c66cd2"
     },
     "scripts/checks/canon-no-unfilled-tokens.js": {
       "owner": "framework",
@@ -5736,8 +5785,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/doc-ref-integrity.allowlist.json",
-      "sha256": "e1c4eaebcba8963d0ef7de921a83f3dfc1143a01096047931a9b1724e30e42e6",
-      "installedSha": "e1c4eaebcba8963d0ef7de921a83f3dfc1143a01096047931a9b1724e30e42e6"
+      "sha256": "aac9e61a18dfe106cbbbec249429dd2d1fdeb1818ed66706cd953e6935d2592a",
+      "installedSha": "aac9e61a18dfe106cbbbec249429dd2d1fdeb1818ed66706cd953e6935d2592a"
     },
     "scripts/checks/doc-ref-integrity.js": {
       "owner": "framework",
@@ -6926,8 +6975,8 @@
       "owner": "framework",
       "managed": true,
       "source": "framework/hooks.registry.json",
-      "sha256": "15cd4aed89f783b4d767f810f3f230f0884c7b0a9271b8b8467baff6e7dc4abc",
-      "installedSha": "15cd4aed89f783b4d767f810f3f230f0884c7b0a9271b8b8467baff6e7dc4abc"
+      "sha256": "6e5fd54a4966789079f8b69b51ec64bcd572fd5dc1fa1718b8c9ca53c3e163fe",
+      "installedSha": "6e5fd54a4966789079f8b69b51ec64bcd572fd5dc1fa1718b8c9ca53c3e163fe"
     },
     "framework/paths.registry.json": {
       "owner": "framework",
@@ -10146,6 +10195,18 @@
       "owner": "runtime",
       "managed": false
     },
+    ".claude/project/sprint/tickets/T-20260610-282.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/tickets/T-20260610-283.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/tickets/T-20260610-284.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
     ".claude/project/sprint/sprints/_no-active-sprint/reasoning-auto-approval.md": {
       "owner": "runtime",
       "managed": false
@@ -10703,6 +10764,30 @@
       "managed": false
     },
     ".claude/project/sprint/sprints/SP-20260512-001/progress.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/sprints/S-LC-05/current.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/sprints/S-LC-05/progress.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/sprints/S-LC-04/current.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/sprints/S-LC-04/progress.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/sprints/S-LC-03/current.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/sprints/S-LC-03/progress.yaml": {
       "owner": "runtime",
       "managed": false
     },

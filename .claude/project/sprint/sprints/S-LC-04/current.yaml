@@ -1,0 +1,118 @@
+schema: warpos/sprint/current-sprint/v1
+id: S-LC-04
+title: "mode:init:gate generalization (REAL guard #2)"
+objective: "Generalize the working sprint-mode team-guard into a per-mode fail-closed mode:init:gate (REAL guard #2) that reads the Mode-Lifecycle Registry, blocks dispatch/tool-use until the init checklist passes for every mode, idempotent — golden-snapshotting the current team-guard behavior so team-guard-gate.test.js + team-guard-sprint.test.js stay green. Wired REPORT-ONLY this wave (per-mode report->block ramp gated on §22 #4). Wave 1 of E-LIFECYCLE-001."
+status: done
+created_at: "2026-06-10T01:54:21.491Z"
+updated_at: "2026-06-10T03:00:00.000Z"
+source_request: "Build the mode:init:gate generalization (Wave 1 of E-LIFECYCLE-001, REAL guard #2): generalize team-guard into a per-mode init gate reading the Mode-Lifecycle Registry, fail-closed in principle but wired report-only this wave, idempotent, with the golden team-guard suites kept green. Engine/tooling sprint, ff-merge close, defer retro to epic close (RI-001)."
+interpreted_intent: "Turn the mode-init checklist from per-mode hardcoded recall into a registry-driven gate that every mode passes through, without regressing the working sprint gate (golden snapshot + green suites). Report-only this wave; the flip-to-block is a later operator-gated ramp (§22 #4). A dead-counter false-green was caught + fixed in gauntlet. Settings wiring + hooks-registry registration are integration-finished by Alpha."
+plan_contract: null
+risk_level: low
+approval_state: none_required
+current_phase: done
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+external_services:
+  identified: []
+  blocked: []
+  ready: []
+  mocked: []
+  deferred: []
+tickets:
+  proposed: []
+  planned: []
+  designed: []
+  ready_for_execution: []
+  in_progress: []
+  blocked: []
+  waiting_on_human: []
+  waiting_on_external_service: []
+  in_review: []
+  qa_failed: []
+  redteam_failed: []
+  done:
+    - T-20260610-282
+  released: []
+  deferred: []
+  abandoned: []
+  reopened: []
+  superseded: []
+requirements:
+  prd: null
+  high_level_stories: null
+  granular_stories: null
+  copy: null
+  inputs: null
+  trace: null
+  acceptance_criteria: null
+  qa_plan: null
+  redteam_plan: null
+  release_plan: null
+checks:
+  lint:
+    status: not_run
+    last_run: null
+    evidence: ""
+  typecheck:
+    status: not_run
+    last_run: null
+    evidence: ""
+  tests:
+    status: not_run
+    last_run: null
+    evidence: ""
+  build:
+    status: not_run
+    last_run: null
+    evidence: ""
+  qa:
+    status: not_run
+    last_run: null
+    evidence: ""
+  redteam:
+    status: not_run
+    last_run: null
+    evidence: ""
+approvals:
+  plan:
+    required: false
+    state: not_required
+    ref: null
+  design:
+    required: false
+    state: not_required
+    ref: null
+  execution:
+    required: false
+    state: not_required
+    ref: null
+  release:
+    required: false
+    state: not_required
+    ref: null
+  external_services:
+    required: false
+    state: not_required
+    ref: null
+reports:
+  plan: null
+  design: null
+  execution: null
+  release: null
+ralph:
+  active: false
+  current_ticket: null
+  current_loop: null
+  status: idle
+  last_checkpoint: null
+  next_action: null
+crash_recovery:
+  last_checkpoint: ".claude/project/sprint/sprint-progress.yaml"
+  resume_command: "/sprint:full --sprint S-LC-04 --resume"
+  resume_summary: "S-LC-04 (mode:init:gate generalization, Wave 1 of E-LIFECYCLE-001) merged on branch june-9, gauntlet-clean (1 fix-cycle: dead-counter false-green fixed + re-reviewed PASS). Wired report-only by Alpha. No resume needed."
+  active_files: []
+  dirty_state: false
+  blockers: []
+  safe_to_continue: true
+lane: engine

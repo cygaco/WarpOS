@@ -1,7 +1,7 @@
 {
   "metadata": {
-    "generated": "2026-06-10T00:53:42.728Z",
-    "lastUpdated": "2026-06-10T00:53:42.728Z",
+    "generated": "2026-06-10T02:45:52.880Z",
+    "lastUpdated": "2026-06-10T02:45:52.880Z",
     "total_stores": 9,
     "tiers": 3,
     "regenerated_by": "scripts/regen-maps.js"
@@ -13,10 +13,10 @@
         "path": ".claude/project/events/events.jsonl",
         "category": "events",
         "tier": "centralized",
-        "entryCount": 31679,
+        "entryCount": 31987,
         "exists": true,
-        "size": 10229611,
-        "modified": "2026-06-10T00:53:39.425Z"
+        "size": 10329152,
+        "modified": "2026-06-10T02:45:51.194Z"
       },
       {
         "id": "manager-consult",
@@ -43,10 +43,10 @@
         "path": ".claude/project/events/tools.jsonl",
         "category": "events",
         "tier": "centralized",
-        "entryCount": 16720,
+        "entryCount": 16884,
         "exists": true,
-        "size": 5290675,
-        "modified": "2026-06-10T00:53:22.083Z"
+        "size": 5345518,
+        "modified": "2026-06-10T02:45:35.738Z"
       }
     ],
     "semantic": [
@@ -104,7 +104,7 @@
     "beta": []
   },
   "totals": {
-    "total_lines": 49393,
-    "total_size": 16137929
+    "total_lines": 49865,
+    "total_size": 16292313
   }
 }

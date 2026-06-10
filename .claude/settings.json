@@ -211,6 +211,10 @@
           {
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/skill-invocation-tracker.js\""
+          },
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/mode-lifecycle-guard.js\""
           }
         ]
       }
@@ -383,6 +387,10 @@
           {
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/session-stop.js\""
+          },
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/session-end-team-teardown.js\""
           }
         ]
       }
@@ -430,7 +438,7 @@
     ]
   },
   "_compiledBy": "warpos/settings-compiler/v1",
-  "_compiledAt": "2026-06-08T18:37:30.438Z",
-  "_defaultsSha": "ef964c59d2ec13f10abb52ef7aec4c7cf222e8582d3ec59dd97ae76a31570a15",
+  "_compiledAt": "2026-06-10T02:45:26.217Z",
+  "_defaultsSha": "b19e916702aca54c7e99af11c673d4607285fe6eb6ce8fcda2bbc15e769c4b2e",
   "_localSha": "6d12f563441d4a8271a5d2c85c92c0b58ece50d84e6abfd756ee52543568f0f2"
 }

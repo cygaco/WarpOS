@@ -1,8 +1,8 @@
 # Enforcements Map
 
-Generated: 2026-06-10T00:53:42.728Z
+Generated: 2026-06-10T02:45:52.880Z
 
-**72** hooks, **18** lib modules. **0** uncurated (added since last hand-curation on 2026-06-10T00:19:58.299Z).
+**74** hooks, **18** lib modules. **2** uncurated (added since last hand-curation on 2026-06-10T00:53:42.728Z).
 
 ## Coverage
 
@@ -43,6 +43,7 @@ Generated: 2026-06-10T00:53:42.728Z
 | memory-enforcement-guard | Edit|Write | PostToolUse | advisory | yes |  |
 | memory-guard | Bash+Edit|Write | PreToolUse+PostToolUse | fail-closed | yes |  |
 | merge-guard | Bash | PreToolUse+PostToolUse | fail-closed | yes |  |
+| mode-lifecycle-guard | ? | ? | ? | yes | yes |
 | ownership-guard | Edit|Write | PreToolUse | fail-closed | yes |  |
 | path-guard | Edit|Write | PreToolUse+PostToolUse | advisory | yes |  |
 | path-registry-guard | Bash (git commit) | PreToolUse | fail-closed | yes |  |
@@ -58,6 +59,7 @@ Generated: 2026-06-10T00:53:42.728Z
 | scope-contract-guard | Agent | PreToolUse | fail-closed | yes |  |
 | secret-guard | Edit|Write | PreToolUse | fail-closed | yes |  |
 | self-mod-governance | Edit|Write | PreToolUse | advisory | yes |  |
+| session-end-team-teardown | ? | ? | ? | yes | yes |
 | session-start-teaminit.test | ? | ? | ? | no | yes |
 | session-start | (universal) | SessionStart | fail-open | yes |  |
 | session-stop-sentinel.test | ? | ? | ? | no | yes |

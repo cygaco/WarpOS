@@ -1,8 +1,8 @@
-{"_meta":true,"name":"Memory Stores Map","description":"Centralized event log + semantic memory + beta events. Counts by line.","version":"2026-06-10","total_stores":9,"last_regenerated":"2026-06-10T00:53:42.728Z"}
-{"id":"events","path":".claude/project/events/events.jsonl","category":"events","tier":"centralized","entryCount":31679,"exists":true,"size":10229611,"modified":"2026-06-10T00:53:39.425Z"}
+{"_meta":true,"name":"Memory Stores Map","description":"Centralized event log + semantic memory + beta events. Counts by line.","version":"2026-06-10","total_stores":9,"last_regenerated":"2026-06-10T02:45:52.880Z"}
+{"id":"events","path":".claude/project/events/events.jsonl","category":"events","tier":"centralized","entryCount":31987,"exists":true,"size":10329152,"modified":"2026-06-10T02:45:51.194Z"}
 {"id":"manager-consult","path":".claude/project/events/manager-consult.jsonl","category":"events","tier":"centralized","entryCount":93,"exists":true,"size":26002,"modified":"2026-06-09T22:18:58.368Z"}
 {"id":"requirements","path":".claude/project/events/requirements.jsonl","category":"events","tier":"centralized","entryCount":689,"exists":true,"size":377392,"modified":"2026-06-09T22:08:17.129Z"}
-{"id":"tools","path":".claude/project/events/tools.jsonl","category":"events","tier":"centralized","entryCount":16720,"exists":true,"size":5290675,"modified":"2026-06-10T00:53:22.083Z"}
+{"id":"tools","path":".claude/project/events/tools.jsonl","category":"events","tier":"centralized","entryCount":16884,"exists":true,"size":5345518,"modified":"2026-06-10T02:45:35.738Z"}
 {"id":"enforcement-debt","path":".claude/project/memory/enforcement-debt.jsonl","category":"memory","tier":"semantic","entryCount":32,"exists":true,"size":48435,"modified":"2026-06-09T04:20:16.838Z"}
 {"id":"learnings","path":".claude/project/memory/learnings.jsonl","category":"memory","tier":"semantic","entryCount":87,"exists":true,"size":73820,"modified":"2026-06-09T04:18:32.054Z"}
 {"id":"recurring-issues","path":".claude/project/memory/recurring-issues.jsonl","category":"memory","tier":"semantic","entryCount":6,"exists":true,"size":6947,"modified":"2026-06-08T17:55:50.992Z"}

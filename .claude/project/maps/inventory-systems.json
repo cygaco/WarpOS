@@ -1,7 +1,7 @@
 {
   "metadata": {
-    "generated": "2026-06-10T00:53:42.728Z",
-    "lastUpdated": "2026-06-10T00:53:42.728Z",
+    "generated": "2026-06-10T02:45:52.880Z",
+    "lastUpdated": "2026-06-10T02:45:52.880Z",
     "total_systems": 77,
     "categories": 2,
     "total_files_referenced": 76,
@@ -749,7 +749,7 @@
       "id": "hooks",
       "name": "Hooks",
       "category": "automation",
-      "count": 74
+      "count": 76
     },
     {
       "id": "memory",

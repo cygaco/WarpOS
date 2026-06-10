@@ -1,8 +1,8 @@
 # Hooks Map
 
-Generated: 2026-06-10T00:53:42.728Z
+Generated: 2026-06-10T02:45:52.880Z
 
-**74** hook scripts (64 registered, 10 orphan), **18** lib modules, **75** wiring entries.
+**76** hook scripts (66 registered, 10 orphan), **18** lib modules, **77** wiring entries.
 
 ## Wiring (event → matcher → hook)
 
@@ -76,11 +76,13 @@ Generated: 2026-06-10T00:53:42.728Z
 - `mcp__claude_ai_Excalidraw__*` → `excalidraw-guard.js`
 - `AskUserQuestion` → `beta-gate.js`
 - `SlashCommand|Skill` → `skill-invocation-tracker.js`
+- `SlashCommand|Skill` → `mode-lifecycle-guard.js`
 
 ### SessionEnd
 
 - `*` → `handoff-live.js`
 - `*` → `session-stop.js`
+- `*` → `session-end-team-teardown.js`
 
 ### SessionStart
 
@@ -141,6 +143,7 @@ Generated: 2026-06-10T00:53:42.728Z
 | memory-enforcement-guard.js | yes | 3339 | 2026-05-30T01:25:39.594Z |
 | memory-guard.js | yes | 14402 | 2026-06-07T03:35:59.239Z |
 | merge-guard.js | yes | 25427 | 2026-06-09T00:41:40.597Z |
+| mode-lifecycle-guard.js | yes | 16777 | 2026-06-10T02:39:09.386Z |
 | ownership-guard.js | yes | 4504 | 2026-06-04T22:57:14.000Z |
 | path-guard.js | yes | 8945 | 2026-06-08T20:28:50.013Z |
 | path-registry-guard.js | yes | 5451 | 2026-05-30T01:25:39.597Z |
@@ -156,6 +159,7 @@ Generated: 2026-06-10T00:53:42.728Z
 | scope-contract-guard.js | yes | 4536 | 2026-06-04T22:57:14.001Z |
 | secret-guard.js | yes | 2786 | 2026-05-30T01:25:39.600Z |
 | self-mod-governance.js | yes | 923 | 2026-05-30T01:25:39.601Z |
+| session-end-team-teardown.js | yes | 2782 | 2026-06-10T02:39:09.518Z |
 | session-start-teaminit.test.js | no | 4665 | 2026-06-08T19:49:48.192Z |
 | session-start.js | yes | 30063 | 2026-06-10T00:04:52.691Z |
 | session-stop-sentinel.test.js | no | 5847 | 2026-06-08T22:03:39.609Z |
@@ -176,7 +180,7 @@ Generated: 2026-06-10T00:53:42.728Z
 | systems-sync.js | yes | 7605 | 2026-05-30T01:25:39.607Z |
 | team-guard-gate.test.js | no | 11806 | 2026-06-09T00:41:40.599Z |
 | team-guard-sprint.test.js | no | 6605 | 2026-06-09T00:41:40.599Z |
-| team-guard.js | yes | 17839 | 2026-06-10T00:04:52.692Z |
+| team-guard.js | yes | 25885 | 2026-06-10T02:39:09.211Z |
 | template-fillability.js | yes | 2939 | 2026-05-30T01:25:39.607Z |
 | test.js | no | 11730 | 2026-05-30T01:25:39.608Z |
 | tracker-completion-gate.js | yes | 3400 | 2026-06-07T03:35:59.240Z |

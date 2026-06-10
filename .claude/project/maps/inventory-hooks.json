@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "generated": "2026-06-10T00:53:42.728Z",
-    "lastUpdated": "2026-06-10T00:53:42.728Z",
-    "total_hooks": 74,
+    "generated": "2026-06-10T02:45:52.880Z",
+    "lastUpdated": "2026-06-10T02:45:52.880Z",
+    "total_hooks": 76,
     "total_lib_modules": 18,
-    "registered_hooks": 64,
+    "registered_hooks": 66,
     "orphan_hooks": 10,
     "regenerated_by": "scripts/regen-maps.js"
   },
@@ -271,6 +271,15 @@
       "modified": "2026-06-09T00:41:40.597Z"
     },
     {
+      "id": "hook:mode-lifecycle-guard",
+      "name": "mode-lifecycle-guard.js",
+      "path": "scripts/hooks/mode-lifecycle-guard.js",
+      "registered": true,
+      "exists": true,
+      "size": 16777,
+      "modified": "2026-06-10T02:39:09.386Z"
+    },
+    {
       "id": "hook:ownership-guard",
       "name": "ownership-guard.js",
       "path": "scripts/hooks/ownership-guard.js",
@@ -404,6 +413,15 @@
       "exists": true,
       "size": 923,
       "modified": "2026-05-30T01:25:39.601Z"
+    },
+    {
+      "id": "hook:session-end-team-teardown",
+      "name": "session-end-team-teardown.js",
+      "path": "scripts/hooks/session-end-team-teardown.js",
+      "registered": true,
+      "exists": true,
+      "size": 2782,
+      "modified": "2026-06-10T02:39:09.518Z"
     },
     {
       "id": "hook:session-start-teaminit.test",
@@ -591,8 +609,8 @@
       "path": "scripts/hooks/team-guard.js",
       "registered": true,
       "exists": true,
-      "size": 17839,
-      "modified": "2026-06-10T00:04:52.692Z"
+      "size": 25885,
+      "modified": "2026-06-10T02:39:09.211Z"
     },
     {
       "id": "hook:template-fillability",
@@ -1063,6 +1081,11 @@
       "hook": "skill-invocation-tracker.js"
     },
     {
+      "event": "PreToolUse",
+      "matcher": "SlashCommand|Skill",
+      "hook": "mode-lifecycle-guard.js"
+    },
+    {
       "event": "PostToolUse",
       "matcher": "Bash",
       "hook": "merge-guard.js"
@@ -1216,6 +1239,11 @@
       "event": "SessionEnd",
       "matcher": "*",
       "hook": "session-stop.js"
+    },
+    {
+      "event": "SessionEnd",
+      "matcher": "*",
+      "hook": "session-end-team-teardown.js"
     },
     {
       "event": "StopFailure",
