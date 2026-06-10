@@ -131,9 +131,20 @@ function estimateRecordCost(rec) {
   // best treated as no-charge for a report-only ledger.
   if (rec.exit_code != null && rec.exit_code !== 0) return null;
   const model = String(rec.model || "").toLowerCase();
-  const price = PRICE_TABLE[model] || PRICE_TABLE._default;
-  const inBytes = Number(rec.prompt_bytes) || 0;
-  const outBytes = Number(rec.stdout_bytes) || 0;
+  // SPOOF GUARD (S-LC-07 BLOCKER 1): match `model` ONLY against OWN data keys of
+  // PRICE_TABLE. A plain object literal exposes its prototype chain, so a record
+  // with `model:"constructor"` / `"hasOwnProperty"` / `"__proto__"` / `"valueOf"`
+  // would otherwise resolve to a truthy native member, skip the `_default`
+  // fallback, and read `.inUsdPerM` = undefined → usd = NaN → ceiling bypass.
+  const price = Object.hasOwn(PRICE_TABLE, model)
+    ? PRICE_TABLE[model]
+    : PRICE_TABLE._default;
+  // SPOOF GUARD (S-LC-07 BLOCKER 2): clamp byte counts to non-negative finite
+  // integers. A negative `prompt_bytes` is truthy, so `Number(-1e6) || 0` would
+  // yield negative tokens → negative usd → SUBTRACTS from the running total and
+  // masks real spend. `Number.isFinite` gating also maps NaN/±Infinity → 0.
+  const inBytes = clampBytes(rec.prompt_bytes);
+  const outBytes = clampBytes(rec.stdout_bytes);
   const inTokens = inBytes / BYTES_PER_TOKEN;
   const outTokens = outBytes / BYTES_PER_TOKEN;
   const usd =
@@ -277,6 +288,13 @@ function computeLedger(opts = {}) {
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
+// Coerce a recorded byte count to a non-negative finite number. Negative,
+// NaN, ±Infinity, and non-numeric inputs all clamp to 0 so a spoofed record
+// can neither subtract from nor poison (NaN/Infinity) the running spend total.
+function clampBytes(v) {
+  const n = Number(v);
+  return Number.isFinite(n) && n > 0 ? n : 0;
+}
 function round2(n) {
   return Math.round(n * 100) / 100;
 }
