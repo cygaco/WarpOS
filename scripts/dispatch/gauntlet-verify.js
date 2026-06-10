@@ -594,6 +594,20 @@ if (require.main === module) {
       );
       process.exit(2);
     }
+    // F-3 fix-cycle (claude qa lane 2026-06-10, REPRODUCED on the real ledger): a
+    // PRESENT-but-UNPARSEABLE --since/--until value passed the presence-based refusal
+    // above while parsing to null inside verifyGauntlet — silently widening to a
+    // whole-ledger scan (the exact T3 class). Validate parseability HERE; refuse loud.
+    for (const [flagName, flagVal] of [["--since", since], ["--until", until]]) {
+      if (flagVal !== undefined && flagVal !== true && toMs(flagVal) === null) {
+        process.stderr.write(
+          `Usage error (F-3): ${flagName} value "${flagVal}" is not a parseable timestamp ` +
+          "(ISO 8601 or epoch ms). Refusing — an unparseable window would silently widen " +
+          "to an unbounded whole-ledger scan.\n",
+        );
+        process.exit(2);
+      }
+    }
 
     const result = verifyGauntlet({
       runId: runId && runId !== true ? runId : undefined,

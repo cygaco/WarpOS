@@ -141,6 +141,12 @@ function parseTs(v) {
 // Records with no timestamp cannot be correlated and are excluded.
 function hasBackingDispatchRecord(dispatchRecords, role, minTsMs, maxTsMs) {
   if (!Array.isArray(dispatchRecords) || dispatchRecords.length === 0) return false;
+  // Defense-in-depth (claude qa lane 2026-06-10, minor): if the sprint has NO
+  // parseable event window at all, no record can be correlated to it — fail
+  // closed rather than letting ANY historic ok:true record green the sprint.
+  // (Not live-reachable today — the logger always writes top-level ts — but
+  // the guard costs one line and closes the shape.)
+  if (minTsMs === null && maxTsMs === null) return false;
   return dispatchRecords.some((rec) => {
     if (!rec || rec.ok !== true) return false;
     if (typeof rec.role !== "string" || rec.role.trim() !== role) return false;

@@ -87,6 +87,9 @@ function parseTs(v) {
 // sprint event time window ± SPRINT_WINDOW_BUFFER_MS.
 function hasBackingDispatchRecord(dispatchRecords, role, minTsMs, maxTsMs) {
   if (!Array.isArray(dispatchRecords) || dispatchRecords.length === 0) return false;
+  // Defense-in-depth (claude qa lane 2026-06-10): no parseable sprint window →
+  // no record can be correlated → fail closed (mirror of sprint-manager-consult).
+  if (minTsMs === null && maxTsMs === null) return false;
   return dispatchRecords.some((rec) => {
     if (!rec || rec.ok !== true) return false;
     if (typeof rec.role !== "string" || rec.role.trim() !== role) return false;

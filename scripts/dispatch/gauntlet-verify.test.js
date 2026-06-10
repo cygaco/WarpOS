@@ -952,6 +952,31 @@ test("F3-fix: --sprint alone (no window) + MATCHING stamped record -> counted ->
   assert.strictEqual(res.roles[0].status, "ran");
 });
 
+// F-3 fix-cycle (claude qa lane 2026-06-10, REPRODUCED on real ledger): a present-but-
+// UNPARSEABLE --since/--until passed the presence refusal while parsing to null →
+// silent whole-ledger scan. The CLI must refuse garbage window values loudly.
+test("F3-fix: garbage --since value (no --sprint) -> exit 2, not whole-ledger scan", () => {
+  const r = cp.spawnSync(
+    process.execPath,
+    [SCRIPT, "--roles", "reviewer", "--since", "not-a-date"],
+    { encoding: "utf8" },
+  );
+  assert.strictEqual(r.status, 2, `Expected exit 2 on garbage --since, got ${r.status}. stderr: ${r.stderr}`);
+  assert.ok(
+    /not a parseable timestamp/i.test(r.stderr),
+    `Expected parseability refusal message, got: ${r.stderr}`,
+  );
+});
+
+test("F3-fix: garbage --until value (no --sprint) -> exit 2, not whole-ledger scan", () => {
+  const r = cp.spawnSync(
+    process.execPath,
+    [SCRIPT, "--roles", "reviewer", "--until", "garbage-2026"],
+    { encoding: "utf8" },
+  );
+  assert.strictEqual(r.status, 2, `Expected exit 2 on garbage --until, got ${r.status}. stderr: ${r.stderr}`);
+});
+
 // F-3 CLI: refuse unbounded -- no --sprint, no --since, no --until -> exit 2
 test("F3-CLI: no --sprint, no --since, no --until -> exit 2 (refuse unbounded)", () => {
   const r = cp.spawnSync(
