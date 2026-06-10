@@ -294,6 +294,24 @@ test("node dispatch-timeout-sanity.js --json output is valid JSON with checks ar
     "Each check must have name, status, and reason");
 });
 
+// ── Fix-cycle pin (claude backend lane, 2026-06-10): runProvider was the FOURTH
+// G8 wrapper and the original W0 build missed it. Pin its presence so a silent
+// removal from WRAPPER_DEFAULTS (which would drop it from the sanity sweep
+// without any red) is caught here.
+console.log("\n(7) fix-cycle pin — runProvider (providers.js) is a covered wrapper:");
+test("WRAPPER_DEFAULTS includes 'run-provider' (the cross-provider runProvider route)", () => {
+  assert(Object.prototype.hasOwnProperty.call(WRAPPER_DEFAULTS, "run-provider"),
+    "run-provider must stay in WRAPPER_DEFAULTS — removing it silently drops the 4th G8 wrapper from the sanity sweep");
+  assert(
+    foregroundAwareTimeout(WRAPPER_DEFAULTS["run-provider"], {}) <= FOREGROUND_CEILING_MS,
+    "run-provider foreground bound must clamp to the ceiling",
+  );
+});
+test("providers.js loads and reaches timeout-policy (no broken require path)", () => {
+  const providers = require("../hooks/lib/providers.js");
+  assert(typeof providers.runProvider === "function", "runProvider export intact");
+});
+
 // ── Final ─────────────────────────────────────────────────────────────────────
 console.log(`\ndispatch-timeout-sanity.test.js — ${passed} passed, ${failed} failed`);
 process.exit(failed > 0 ? 1 : 0);

@@ -54,6 +54,12 @@ const WRAPPER_DEFAULTS = {
   "dispatch-skill":  15 * 60 * 1000, // 15 min
   "epsilon-agent":   15 * 60 * 1000, // 15 min — spawnAgent DISPATCH_AGENT route
   "epsilon-claude":  20 * 60 * 1000, // 20 min — spawnAgent DISPATCH_CLAUDE route
+  // Gauntlet fix-cycle (claude backend lane, 2026-06-10): runProvider — the
+  // cross-provider spawn in scripts/hooks/lib/providers.js — was the FOURTH
+  // wrapper named by NOTAGAIN audit G8 and the W0 build missed it (the exact
+  // fix-all-callers law this epic exists to mechanize). Same 15-min raw bound,
+  // same foreground clamp.
+  "run-provider":    15 * 60 * 1000, // 15 min — providers.js runProvider (cross-provider route)
 };
 
 /**
