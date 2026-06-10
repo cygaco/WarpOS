@@ -89,7 +89,15 @@ ok("computeLedger uses the $500 runtime override (NOT hardcoded)", () => {
 
 ok("computeLedger uses the $100 framework default when no override granted", () => {
   const file = tmpCompletions([paidRecord({ stdoutBytes: 4000 })]);
-  const led = ledger.computeLedger({ completionsFile: file, authOverride: null });
+  // HERMETIC (claude 2nd-pass 2026-06-10, MAJOR): authOverride:null falls through
+  // to reading the LIVE authorization.json — the test flapped whenever a turbo
+  // session raised the ceiling. Point authFile at a non-existent path so the
+  // framework default is exercised regardless of live session state.
+  const led = ledger.computeLedger({
+    completionsFile: file,
+    authFile: file + ".no-such-auth.json",
+    authOverride: null,
+  });
   assert.strictEqual(led.ceilingUsd, 100);
   assert.strictEqual(led.ceilingSource, "framework-default");
 });
