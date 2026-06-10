@@ -86,8 +86,16 @@ try {
   safeSpawn = null;
 }
 
+// T-20260610-304 (G8/N1): foreground-aware timeout clamp. The raw default is 20m but
+// the harness FOREGROUND Bash ceiling is 600s — a foreground wrapper is killed by the
+// harness BEFORE its own bound fires, so it never writes its death record. The shared
+// policy helper clamps to 540s (FOREGROUND_CEILING_MS) unless an explicit background
+// signal (WARPOS_DISPATCH_BACKGROUND=1 / opts.background) is present. FAIL-CLOSED:
+// absence of the signal ⇒ clamp, never the longer default.
+const { foregroundAwareTimeout, WRAPPER_DEFAULTS } = require("./dispatch/timeout-policy");
+
 const PROVIDER = "claude";
-const DEFAULT_TIMEOUT_MS = 20 * 60 * 1000; // 20 min — builders are heavier than the 15-min review ceiling
+const DEFAULT_TIMEOUT_MS = WRAPPER_DEFAULTS["dispatch-claude"]; // 20 min — sourced from canonical policy
 const MAX_BUFFER = 32 * 1024 * 1024; // 32 MB
 
 // Build-chain roles edit a repo — they MUST run isolated (a worktree), never in
@@ -227,9 +235,12 @@ if (model) claudeArgs.push("--model", model);
 if (effort) claudeArgs.push("--effort", effort);
 if (passW) claudeArgs.push("-w"); // forward worktree-creation to claude (preserve isolation)
 
-const TIMEOUT_MS = parseInt(
-  process.env.DISPATCH_BUILDER_TIMEOUT_MS || `${DEFAULT_TIMEOUT_MS}`,
-  10,
+// T-20260610-304: clamp requested bound to foreground ceiling (540s). An env override
+// sets the *requested* bound but the foreground ceiling is the hard cap. Background
+// signal (WARPOS_DISPATCH_BACKGROUND=1) passes through the full requested bound.
+const TIMEOUT_MS = foregroundAwareTimeout(
+  parseInt(process.env.DISPATCH_BUILDER_TIMEOUT_MS || `${DEFAULT_TIMEOUT_MS}`, 10),
+  {}, // opts — WARPOS_DISPATCH_BACKGROUND env var is checked inside the helper
 );
 
 // cwd = the VALIDATED worktree (builder edits there); else canonical root. When
