@@ -1,7 +1,7 @@
 {
   "metadata": {
-    "generated": "2026-06-10T04:24:09.691Z",
-    "lastUpdated": "2026-06-10T04:24:09.691Z",
+    "generated": "2026-06-10T05:05:32.519Z",
+    "lastUpdated": "2026-06-10T05:05:32.519Z",
     "total_tools": 181,
     "categories": 4,
     "regenerated_by": "scripts/regen-maps.js"
@@ -1537,8 +1537,8 @@
           "path": "scripts/warp-setup.js",
           "type": "script",
           "exists": true,
-          "size": 41715,
-          "modified": "2026-05-30T15:13:30.581Z"
+          "size": 42488,
+          "modified": "2026-06-10T04:48:35.555Z"
         },
         {
           "id": "tool:warpos-sync-run09",

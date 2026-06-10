@@ -1,6 +1,6 @@
 # Hooks Map
 
-Generated: 2026-06-10T04:24:09.691Z
+Generated: 2026-06-10T05:05:32.519Z
 
 **76** hook scripts (66 registered, 10 orphan), **18** lib modules, **77** wiring entries.
 
@@ -205,7 +205,7 @@ Generated: 2026-06-10T04:24:09.691Z
 | mode-lifecycle.js | 6175 | 2026-06-10T00:04:52.690Z |
 | mode.js | 2944 | 2026-06-10T00:04:52.691Z |
 | oneshot-store.js | 2337 | 2026-06-08T21:07:45.656Z |
-| paths.generated.js | 10909 | 2026-06-10T00:49:53.712Z |
+| paths.generated.js | 11004 | 2026-06-10T04:48:35.555Z |
 | paths.js | 6608 | 2026-06-05T01:45:08.446Z |
 | project-config.js | 4488 | 2026-05-30T01:25:39.591Z |
 | provider-health.js | 10306 | 2026-05-30T01:25:39.592Z |

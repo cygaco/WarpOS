@@ -1,0 +1,84 @@
+schema: warpos/sprint/current-sprint/v1
+id: "S-LC-12"
+title: "Playbook design + dry-run simulation pilot + e2e validation (Wave 5 capstone)"
+objective: "Capstone: playbook-suite DESIGN (reference-only, §22 #6) + full dry-run simulation across all epic gates + e2e mode-lifecycle pilot + defect reconcile. Wave 5 of E-LIFECYCLE-001."
+status: done
+created_at: "2026-06-10T04:57:03.610Z"
+updated_at: "2026-06-10T05:05:00.000Z"
+source_request: "Wave 5 capstone: validate the whole epic end-to-end + design the playbook suite. α-led (validation + design synthesis). Engine sprint, ff-merge close."
+interpreted_intent: "Prove the mode-lifecycle machine works end-to-end (21 regression suites + 8 live enforcers + 5 e2e pilot probes, 0 defects) and design the reference-playbook suite (executable /playbook:run deferred). Deliverables: _planning/playbooks/SUITE-DESIGN.md + _reports/E-LIFECYCLE-001-capstone-validation.md."
+plan_contract: null
+risk_level: low
+approval_state: none_required
+current_phase: done
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+external_services:
+  identified: []
+  blocked: []
+  ready: []
+  mocked: []
+  deferred: []
+tickets:
+  proposed: []
+  planned: []
+  designed: []
+  ready_for_execution: []
+  in_progress: []
+  blocked: []
+  waiting_on_human: []
+  waiting_on_external_service: []
+  in_review: []
+  qa_failed: []
+  redteam_failed: []
+  done: []
+  released: []
+  deferred: []
+  abandoned: []
+  reopened: []
+  superseded: []
+requirements:
+  prd: null
+  high_level_stories: null
+  granular_stories: null
+  copy: null
+  inputs: null
+  trace: null
+  acceptance_criteria: null
+  qa_plan: null
+  redteam_plan: null
+  release_plan: null
+checks:
+  lint: { status: not_run, last_run: null, evidence: "" }
+  typecheck: { status: not_run, last_run: null, evidence: "" }
+  tests: { status: not_run, last_run: null, evidence: "" }
+  build: { status: not_run, last_run: null, evidence: "" }
+  qa: { status: not_run, last_run: null, evidence: "" }
+  redteam: { status: not_run, last_run: null, evidence: "" }
+approvals:
+  plan: { required: false, state: not_required, ref: null }
+  design: { required: false, state: not_required, ref: null }
+  execution: { required: false, state: not_required, ref: null }
+  release: { required: false, state: not_required, ref: null }
+  external_services: { required: false, state: not_required, ref: null }
+reports:
+  plan: null
+  design: null
+  execution: null
+  release: null
+ralph:
+  active: false
+  current_ticket: null
+  current_loop: null
+  status: idle
+  last_checkpoint: null
+  next_action: null
+crash_recovery:
+  last_checkpoint: ".claude/project/sprint/sprint-progress.yaml"
+  resume_command: "none — capstone done (α-led validation)"
+  resume_summary: "S-LC-12 (capstone: playbook design + dry-run sim + e2e pilot, Wave 5 of E-LIFECYCLE-001) done on june-9. 21 regression suites + 8 live enforcers + 5 e2e pilot probes, 0 defects. Deliverables: _planning/playbooks/SUITE-DESIGN.md + _reports/E-LIFECYCLE-001-capstone-validation.md. No resume needed."
+  active_files: []
+  dirty_state: false
+  blockers: []
+  safe_to_continue: true
+lane: engine

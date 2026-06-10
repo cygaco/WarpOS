@@ -1,6 +1,6 @@
 # Skills Map
 
-Generated: 2026-06-10T04:24:09.691Z
+Generated: 2026-06-10T05:05:32.519Z
 
 Total: **216** skills across **44** namespaces. 87 user-invocable.
 
@@ -81,7 +81,7 @@ Total: **216** skills across **44** namespaces. 87 user-invocable.
 | close | Close a completed epic — verify every DoD item is satisfied + evidenced, fill the Completion record, | 0 | 0 |
 | fold | Fold new information, constraints, bugs, or scope into an EXISTING epic intelligently — classify the | 0 | 2 |
 | link | Establish and verify an epic's linkages — its companion plan artifact, ROADMAP § Epics entry, TRACKE | 0 | 0 |
-| plan | Turn a messy plain-language epic request into a durable, validate-shape epic tracker file plus a com | 2 | 4 |
+| plan | Turn a messy plain-language epic request into a durable, validate-shape epic tracker file plus a com | 3 | 5 |
 | repair | Detect and repair a drifted or malformed epic file — missing §-sections, blank required sections, br | 1 | 0 |
 | review | Run an independent, cross-provider review of an epic plan — feasibility, overclaims, missing enforce | 1 | 0 |
 | split | Split an over-large epic into two or more coherent epics — partition scope/sprints/DoD/AC, preserve  | 1 | 0 |
@@ -314,7 +314,7 @@ Total: **216** skills across **44** namespaces. 87 user-invocable.
 
 | Name | Description | Calls | Called by |
 |---|---|---|---|
-| ac-coverage | Read-only audit of acceptance-criteria.md verified_by:- linkage across active sprints. | 2 | 2 |
+| ac-coverage | Read-only audit of acceptance-criteria.md verified_by:- linkage across active sprints. | 3 | 3 |
 | adhoc-fail-override | Reject an adhoc dispatcher that overrode a binding reviewer FAIL — verdict-content check (the blind  | 0 | 2 |
 | adhoc-team-hygiene | Read-only probe for adhoc-team accretion — flags teams whose members carry a -N de-dup suffix or a s | 2 | 1 |
 | architecture | Architecture integrity — do the layers connect? agent system, cross-layer seams, documentation healt | 6 | 7 |

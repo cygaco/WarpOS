@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-10T04:24:09.416Z",
+  "generatedAt": "2026-06-10T05:05:32.263Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.15.4",
   "migrations": [],
@@ -113,8 +113,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "dcf072dcabcfef0d155b782dc33b6dd53d9968afb1fe0d459b0512fb5c84b2b6",
-      "installedSha": "dcf072dcabcfef0d155b782dc33b6dd53d9968afb1fe0d459b0512fb5c84b2b6"
+      "sha256": "db4c8d5f22d805427a86c4117b33272edc4e1fe412ee88cfe33de677a25adb38",
+      "installedSha": "db4c8d5f22d805427a86c4117b33272edc4e1fe412ee88cfe33de677a25adb38"
     },
     "TRACKER.md": {
       "owner": "runtime",
@@ -1882,6 +1882,20 @@
       "sha256": "f8db2e89becfc27ed92361a3760aa110ff323a8cd2656a3064968b8df1c8af8b",
       "installedSha": "f8db2e89becfc27ed92361a3760aa110ff323a8cd2656a3064968b8df1c8af8b"
     },
+    "tests/regression/S-LC-11/ac-category-coverage.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": null,
+      "sha256": "00c3e437cffa4a37659fd76673c5fbd99fd4480aa9ff699f8af818fc90d89e9c",
+      "installedSha": "00c3e437cffa4a37659fd76673c5fbd99fd4480aa9ff699f8af818fc90d89e9c"
+    },
+    "tests/regression/S-LC-10/provider-tier-check.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": null,
+      "sha256": "8ef2146ff47eeea33205e82f7a8d031fa193c436acaa1eb6d54caf7c5c599b4d",
+      "installedSha": "8ef2146ff47eeea33205e82f7a8d031fa193c436acaa1eb6d54caf7c5c599b4d"
+    },
     "tests/regression/S-LC-09/design-10-build-2.test.js": {
       "owner": "framework",
       "managed": true,
@@ -3342,8 +3356,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/warp-setup.js",
-      "sha256": "7386b8749928be730f86b6b9cf4f4e6c376e65a9325ba88e0fcca0076e936d23",
-      "installedSha": "7386b8749928be730f86b6b9cf4f4e6c376e65a9325ba88e0fcca0076e936d23"
+      "sha256": "dfd9551b0b73c044ede937f0abad5336a7799b1e2403bd9df438fa8d1f82ea68",
+      "installedSha": "dfd9551b0b73c044ede937f0abad5336a7799b1e2403bd9df438fa8d1f82ea68"
     },
     "scripts/warpos-sync-run09.js": {
       "owner": "framework",
@@ -3470,6 +3484,13 @@
       "source": "scripts/warpos/provider-smoke.js",
       "sha256": "5b57e02519c9d1cb8181c607fa3341be9a34f25e10e9ea1196e0f2a1fdbddf11",
       "installedSha": "5b57e02519c9d1cb8181c607fa3341be9a34f25e10e9ea1196e0f2a1fdbddf11"
+    },
+    "scripts/warpos/provider-tier-check.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/warpos/provider-tier-check.js",
+      "sha256": "84dc20aa8328fc649781e37e369adc2c1957006a1990e2ea6a9f9754a64a44f8",
+      "installedSha": "84dc20aa8328fc649781e37e369adc2c1957006a1990e2ea6a9f9754a64a44f8"
     },
     "scripts/warpos/prune-installed-assets.js": {
       "owner": "framework",
@@ -3765,6 +3786,13 @@
       "sha256": "26bd58b2773816549bfea836a4f22a251f8621cc107e70e182ba537aceb7ee66",
       "installedSha": "26bd58b2773816549bfea836a4f22a251f8621cc107e70e182ba537aceb7ee66"
     },
+    "scripts/warpos/lib/provider-tier-config.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/warpos/lib/provider-tier-config.js",
+      "sha256": "441bb548f7a467ea17b3c3413ec4f5afafa1a6904d42f81bb572d3e92d720a29",
+      "installedSha": "441bb548f7a467ea17b3c3413ec4f5afafa1a6904d42f81bb572d3e92d720a29"
+    },
     "scripts/warpos/lib/update-events.js": {
       "owner": "framework",
       "managed": true,
@@ -3877,6 +3905,13 @@
       "sha256": "aed0c4d3801d910f33b2022793d10b9ee01c89d0f8f0139eee891ba28877bf1c",
       "installedSha": "aed0c4d3801d910f33b2022793d10b9ee01c89d0f8f0139eee891ba28877bf1c"
     },
+    "scripts/sprint/ac-categories.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/sprint/ac-categories.js",
+      "sha256": "b6fba8180e2045761ed29df89fec375676b1d10014b0f5afd0de76e9b55fa59a",
+      "installedSha": "b6fba8180e2045761ed29df89fec375676b1d10014b0f5afd0de76e9b55fa59a"
+    },
     "scripts/sprint/add-sprint.js": {
       "owner": "framework",
       "managed": true,
@@ -3909,8 +3944,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/sprint/check-ac-coverage.js",
-      "sha256": "f3f1486e33c1b15e0b2f0ea8fe6c88bab9b7bfb59fe199fc48187155853b2db0",
-      "installedSha": "f3f1486e33c1b15e0b2f0ea8fe6c88bab9b7bfb59fe199fc48187155853b2db0"
+      "sha256": "49198e350b3653b4b52a61f593621fac7c89f2f5ea3f39064b879b1dadbf56da",
+      "installedSha": "49198e350b3653b4b52a61f593621fac7c89f2f5ea3f39064b879b1dadbf56da"
     },
     "scripts/sprint/checkpoint.js": {
       "owner": "framework",
@@ -5309,8 +5344,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/lib/paths.generated.js",
-      "sha256": "163a5e46e1cf9d3d93d05af8cb170d0b2b12031a0ee630fb18f3f9985827e2fa",
-      "installedSha": "163a5e46e1cf9d3d93d05af8cb170d0b2b12031a0ee630fb18f3f9985827e2fa"
+      "sha256": "6ceb59e14a96268d72389983c174595e4b66a223a3e572aa4ffef5cc9c3deff9",
+      "installedSha": "6ceb59e14a96268d72389983c174595e4b66a223a3e572aa4ffef5cc9c3deff9"
     },
     "scripts/hooks/lib/paths.js": {
       "owner": "framework",
@@ -5442,8 +5477,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/epic/plan.js",
-      "sha256": "4ff8d2d7494b5f440960d505bbfa86dca7c6a7bd12aecf9ea84dd93c63a3b453",
-      "installedSha": "4ff8d2d7494b5f440960d505bbfa86dca7c6a7bd12aecf9ea84dd93c63a3b453"
+      "sha256": "46d849268bc07a13b931e45863b57e38923c424560ab2fefd8ca0f50eec3602c",
+      "installedSha": "46d849268bc07a13b931e45863b57e38923c424560ab2fefd8ca0f50eec3602c"
     },
     "scripts/docs/catalog.js": {
       "owner": "framework",
@@ -6786,8 +6821,8 @@
       "owner": "framework",
       "managed": true,
       "source": "schemas/paths.schema.json",
-      "sha256": "64df697cb04df302c37e539f8254bc2e29de579af191878d702e92e15d7e3b26",
-      "installedSha": "64df697cb04df302c37e539f8254bc2e29de579af191878d702e92e15d7e3b26"
+      "sha256": "8e9a5b5e47a3d6b60b479a7bcc3108e22270b56d6eeb210ff2d3df805675117e",
+      "installedSha": "8e9a5b5e47a3d6b60b479a7bcc3108e22270b56d6eeb210ff2d3df805675117e"
     },
     "schemas/provider-failure-modes.schema.json": {
       "owner": "framework",
@@ -7115,8 +7150,8 @@
       "owner": "framework",
       "managed": true,
       "source": "framework/paths.registry.json",
-      "sha256": "6845016d7aea36d977a6611ae594dc7adfbed42154b01f33a931b9f22b121dd4",
-      "installedSha": "6845016d7aea36d977a6611ae594dc7adfbed42154b01f33a931b9f22b121dd4"
+      "sha256": "7bfc64e3fbd1d1ca59d1dec0c5bf6856ab70b2152780775e90a1a4d7e61df0dc",
+      "installedSha": "7bfc64e3fbd1d1ca59d1dec0c5bf6856ab70b2152780775e90a1a4d7e61df0dc"
     },
     "framework/templates/sprint/README.md": {
       "owner": "framework",
@@ -10905,6 +10940,14 @@
       "managed": false
     },
     ".claude/project/sprint/sprints/SP-20260512-001/progress.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/sprints/S-LC-12/current.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/sprints/S-LC-12/progress.yaml": {
       "owner": "runtime",
       "managed": false
     },
@@ -16749,8 +16792,8 @@
       "managed": true,
       "source": ".claude/commands/warp/health.md",
       "kind": "md",
-      "sha256": "5b183fb11a1727cea79610870de7ac422060d560c8ef2e69b9cdc06ed5acc94c",
-      "installedSha": "5b183fb11a1727cea79610870de7ac422060d560c8ef2e69b9cdc06ed5acc94c"
+      "sha256": "60bca735a95f70a06918b4ddd8e67136bb996bf4c39b1ffa78390d6a4285afb1",
+      "installedSha": "60bca735a95f70a06918b4ddd8e67136bb996bf4c39b1ffa78390d6a4285afb1"
     },
     ".claude/commands/warp/md.md": {
       "owner": "framework",
@@ -16853,8 +16896,8 @@
       "managed": true,
       "source": ".claude/commands/sprint/design.md",
       "kind": "md",
-      "sha256": "b5312c341ea574837cbe5905646d2ae5d1247864109c217f0c0b7846b8ccd86c",
-      "installedSha": "b5312c341ea574837cbe5905646d2ae5d1247864109c217f0c0b7846b8ccd86c"
+      "sha256": "9bb725cf2489c7693e9197f2a473ea72cc1d77ddcd6e6b39f98d1d7125302875",
+      "installedSha": "9bb725cf2489c7693e9197f2a473ea72cc1d77ddcd6e6b39f98d1d7125302875"
     },
     ".claude/commands/sprint/execute.md": {
       "owner": "framework",
@@ -17045,8 +17088,8 @@
       "managed": true,
       "source": ".claude/commands/scan/ac-coverage.md",
       "kind": "md",
-      "sha256": "c81eda31813d144e0057857b8a479e11570912daaeed697eb0bd82aa4f19087d",
-      "installedSha": "c81eda31813d144e0057857b8a479e11570912daaeed697eb0bd82aa4f19087d"
+      "sha256": "ef6e396b7c2048308994ee24cfa69ec16fac18705854faa52acd83b5c91f9e2a",
+      "installedSha": "ef6e396b7c2048308994ee24cfa69ec16fac18705854faa52acd83b5c91f9e2a"
     },
     ".claude/commands/scan/adhoc-fail-override.md": {
       "owner": "framework",
@@ -17117,8 +17160,8 @@
       "managed": true,
       "source": ".claude/commands/scan/environment.md",
       "kind": "md",
-      "sha256": "a62405b80cf803ce558276b2577d4d45d94960dc769710a8901355af51462019",
-      "installedSha": "a62405b80cf803ce558276b2577d4d45d94960dc769710a8901355af51462019"
+      "sha256": "cddef12d99e9b2a74520dbc0cbe3d960862bab3cd6bfe6bd87cddfa78a3ec990",
+      "installedSha": "cddef12d99e9b2a74520dbc0cbe3d960862bab3cd6bfe6bd87cddfa78a3ec990"
     },
     ".claude/commands/scan/etc-harness.md": {
       "owner": "framework",
@@ -18213,8 +18256,8 @@
       "managed": true,
       "source": ".claude/commands/epic/plan.md",
       "kind": "md",
-      "sha256": "b7bb74c0e61702cc9e3d2412596ce461669a2a8f8bf33322a654cf3a7267ad7e",
-      "installedSha": "b7bb74c0e61702cc9e3d2412596ce461669a2a8f8bf33322a654cf3a7267ad7e"
+      "sha256": "f5490e2fdd47c792068fdd160cb56deec0827d4ce35fdc3a2bb9e32c151d1869",
+      "installedSha": "f5490e2fdd47c792068fdd160cb56deec0827d4ce35fdc3a2bb9e32c151d1869"
     },
     ".claude/commands/epic/repair.md": {
       "owner": "framework",
