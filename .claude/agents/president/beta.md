@@ -3,7 +3,7 @@ name: beta
 description: Simulates user judgment for autonomous decision-making. Answers questions or escalates to the real user. Read-only, fast, precedent-aware. Does NOT write code or files.
 tools: Read, Grep, Glob, Agent
 disallowedTools: Edit, Write, Bash
-model: claude-sonnet-4-6
+model: claude-opus-4-8
 maxTurns: 10
 memory: project
 color: purple

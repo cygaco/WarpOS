@@ -352,6 +352,9 @@ function validateRegistry(root, catalog) {
   // ED-024 independent witness: registry reporting structure ↔ on-disk spec tree.
   const specTree = scanSpecTree(root);
   errors.push(...evaluateReportingStructure({ reg, specTree }));
+  // T-288 model-pin check: spec frontmatter model must match registry.
+  const specFm = readAllSpecFm(root, reg);
+  errors.push(...evaluateModelPins({ reg, specFm }));
   return { errors, fatal: false };
 }
 
@@ -410,6 +413,129 @@ function evaluateRegistry(reg, catalog) {
           errors.push(`[CRITICAL] reviewer "${name}" is dispatchable_by doer "${d}" (kind="${manager.kind}"${manager.build_chain ? ", build_chain" : ""}) — reviewers CANNOT report to doers (ADR-0007 reporting-line invariant)`);
         }
       }
+    }
+  }
+  return errors;
+}
+
+// ── T-288: registry model-pin check ─────────────────────────────────────────
+// For every registry role that has a `spec` path, parse the spec's frontmatter
+// `model:`. FAIL when:
+//   (a) model is "inherit" — FORBIDDEN for registry-routed roles (ADR-0008);
+//       the registry is the routing SoT and inherit silently bypasses it by
+//       inheriting the caller's session model.
+//   (b) provider is claude/absent AND frontmatter model ≠ registry model —
+//       the spec is pinning the wrong model; a reviewer/lead spawned via the
+//       Agent tool would run on a different model than the registry declares.
+// Cross-provider roles (openai/gemini): the frontmatter model: governs the
+// claude-fallback spawn path only — any concrete model is acceptable; only
+// "inherit" is rejected (condition a still applies).
+//
+// Injectable seam: specFm = { [specPath]: modelString } — callers build it via
+// readAllSpecFm(); tests inject a stub map.
+
+function readAllSpecFm(root, reg) {
+  const specFm = {};
+  for (const r of Object.values((reg && reg.roles) || {})) {
+    if (!r || !r.spec) continue;
+    try {
+      const body = fs.readFileSync(path.join(root, r.spec), "utf8");
+      const fm = body.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+      if (!fm) continue;
+      const m = fm[1].match(/^model:\s*(\S+)/m);
+      if (m) specFm[r.spec] = m[1];
+    } catch { /* spec not readable — evaluateModelPins skips undefined keys */ }
+  }
+  return specFm;
+}
+
+function evaluateModelPins({ reg, specFm }) {
+  const errors = [];
+  const roles = (reg && reg.roles) || {};
+  for (const [name, r] of Object.entries(roles)) {
+    if (!r || typeof r !== "object" || !r.spec) continue;
+    const fm = specFm && specFm[r.spec];
+    if (fm === undefined) continue; // spec not readable → skip
+    if (fm === "inherit") {
+      errors.push(
+        `model-pin: registry role "${name}" spec "${r.spec}" has model: inherit — ` +
+        `inherit is FORBIDDEN for registry-routed roles (the registry is the routing SoT; ` +
+        `inherit silently bypasses it by inheriting the caller session model)`
+      );
+      continue;
+    }
+    const provider = r.provider || "claude";
+    if (provider === "claude" && r.model && fm !== r.model) {
+      errors.push(
+        `model-pin: registry role "${name}" spec "${r.spec}" frontmatter model "${fm}" ` +
+        `≠ registry model "${r.model}" — the spec must pin the registry model for Claude roles`
+      );
+    }
+    // cross-provider: any concrete model acceptable (governs claude-fallback spawn only)
+  }
+  return errors;
+}
+
+// ── T-289: dispatch-contract shape-vs-route parity check ────────────────────
+// For each registry role, derive its class via class_derivation (first-match,
+// as in the contract _doc) and FAIL when the derived class's allowed_shapes
+// cannot express the registry route.
+//
+// Scope: cross-provider roles (provider: openai/gemini). These roles MUST be
+// dispatched via subprocess-cross-provider (provider diversity invariant). If
+// the first-match derivation produces a class whose allowed_shapes does NOT
+// include "subprocess-cross-provider", the contract has a hole — the role will
+// be silently routed via the class default (e.g. in-process-agent for "manager")
+// rather than the subprocess path.
+//
+// The canonical failing case (doogle WG-5): design-lead has tier:lead and
+// provider:openai. Without a specific cross-provider-lead rule the catch-all
+// {tier:lead → manager} fires, and manager only allows in-process-agent — but
+// design-lead MUST route via subprocess (dispatch_path is subprocess-consult).
+// The fix is a specific rule inserted BEFORE the tier:lead catch-all.
+//
+// Injectable seam: reg + contract — tests inject stub objects.
+
+function matchesClassRule(roleAttrs, when) {
+  for (const [k, v] of Object.entries(when || {})) {
+    if (roleAttrs[k] !== v) return false;
+  }
+  return true;
+}
+
+function deriveClass(roleAttrs, rules, fallback) {
+  for (const rule of (rules || [])) {
+    if (matchesClassRule(roleAttrs, rule.when)) return rule.class;
+  }
+  return fallback;
+}
+
+function evaluateShapeRouteConflicts({ reg, contract }) {
+  const errors = [];
+  const roles = (reg && reg.roles) || {};
+  const rules = (contract && contract.class_derivation && contract.class_derivation.rules) || [];
+  const fallbackClass = (contract && contract.class_derivation && contract.class_derivation.fallback_class) || "manager";
+  const roleClasses = (contract && contract.role_classes) || {};
+
+  for (const [name, r] of Object.entries(roles)) {
+    if (!r || typeof r !== "object") continue;
+    const provider = r.provider || "claude";
+    // Only cross-provider roles require subprocess-cross-provider routing
+    if (provider !== "openai" && provider !== "gemini") continue;
+
+    const derivedClass = deriveClass(r, rules, fallbackClass);
+    const classEntry = roleClasses[derivedClass];
+    if (!classEntry) continue; // unknown class — class_derivation will fail separately
+
+    const allowedShapes = classEntry.allowed_shapes || [];
+    if (!allowedShapes.includes("subprocess-cross-provider")) {
+      errors.push(
+        `shape-route-conflict: registry role "${name}" has provider="${provider}" ` +
+        `(requires subprocess-cross-provider dispatch for provider-diversity) but ` +
+        `derived class "${derivedClass}" allowed_shapes [${allowedShapes.join(", ")}] ` +
+        `cannot express it — add a specific class_derivation rule before the catch-all ` +
+        `(e.g. {tier:"lead",provider:"openai"} → cross_provider_consult_lead)`
+      );
     }
   }
   return errors;
@@ -529,6 +655,13 @@ function main(argv) {
       return 2;
     }
     errors.push(...regResult.errors);
+    // T-289: shape-vs-route parity — cross-provider roles must derive a class
+    // whose allowed_shapes includes subprocess-cross-provider.
+    try {
+      const regForShape = readJSON(path.join(ROOT, ".claude/agents/_org/role-registry.json"));
+      const contractForShape = readJSON(path.join(ROOT, ".claude/agents/_org/dispatch-contract.json"));
+      errors.push(...evaluateShapeRouteConflicts({ reg: regForShape, contract: contractForShape }));
+    } catch { /* unreadable files are surfaced by validateRegistry; skip silently here */ }
     // ADR-0007 R4: scan the gate hooks for unguarded scrapped-role literals
     // (the silent-no-op-on-rename false-green class).
     errors.push(...evaluateHooks({ hookSources: readHookSources(ROOT) }));
@@ -550,4 +683,4 @@ function main(argv) {
 
 if (require.main === module) process.exit(main(process.argv));
 
-module.exports = { evaluate, evaluateRegistry, validateRegistry, evaluateReportingStructure, scanSpecTree, evaluateHooks, readHookSources, referencesScrappedLiteral, HOOK_SCRAPPED_LITERALS, parseGammaOnlyTypes, collectOrgRoles, makeRealAgentResolver, isDoerRole };
+module.exports = { evaluate, evaluateRegistry, validateRegistry, evaluateReportingStructure, scanSpecTree, evaluateHooks, readHookSources, referencesScrappedLiteral, HOOK_SCRAPPED_LITERALS, parseGammaOnlyTypes, collectOrgRoles, makeRealAgentResolver, isDoerRole, evaluateModelPins, readAllSpecFm, evaluateShapeRouteConflicts, matchesClassRule, deriveClass };

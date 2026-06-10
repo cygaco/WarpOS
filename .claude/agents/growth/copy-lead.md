@@ -7,7 +7,7 @@ description: >-
   advises and critiques, does not write the final copy or approve its own work. Carries
   a PROGRAMMABLE principles field; owns argument-not-copy · hooks-are-90 · chief-coherence.
 tools: [Read, Grep, Glob]
-model: inherit
+model: claude-opus-4-8
 layer: growth
 ---
 

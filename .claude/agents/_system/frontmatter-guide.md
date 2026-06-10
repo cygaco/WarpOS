@@ -31,7 +31,7 @@ name: reviewer
 description: "Reviews builder output against spec AND holdout golden fixtures. Runs 6-check protocol. Produces ReviewResult JSON. Does NOT write code."
 tools: Read, Grep, Glob, Bash
 disallowedTools: Agent, Edit, Write
-model: inherit
+model: claude-opus-4-8
 provider: openai
 provider_model: gpt-5.5
 provider_fallback: claude
@@ -108,7 +108,7 @@ Allowed values:
 
 | Value | Meaning |
 |---|---|
-| `inherit` | Use the parent session's model. Reasonable default when this agent is dispatched as a Claude subagent. |
+| ~~`inherit`~~ | **FORBIDDEN for registry-routed roles.** See note below. |
 | `sonnet` | Alias → `claude-sonnet-4-6` |
 | `opus` | Alias → `claude-opus-4-8` |
 | `haiku` | Alias → `claude-haiku-4-5` |
@@ -116,7 +116,15 @@ Allowed values:
 | `claude-sonnet-4-6` | Explicit ID |
 | `claude-haiku-4-5-20251001` | Explicit ID with snapshot |
 
-When `provider` is set to a non-Anthropic value, `model` is ignored and `provider_model` is used instead.
+When `provider` is set to a non-Anthropic value, `model` is ignored for routing and `provider_model` is used instead; however the `model:` key still governs Agent-tool / claude-fallback spawns and MUST be set (see below).
+
+> **`model: inherit` is FORBIDDEN for roles present in `role-registry.json`.**
+> The registry is the single routing source of truth (ADR-0008). Frontmatter `model:` must be kept in sync with the registry entry:
+>
+> - **Claude roles** (`provider: claude` or absent): set `model:` to the registry's `model` value (e.g. `claude-opus-4-8`).
+> - **Cross-provider roles** (`provider: openai` or `gemini`): the role is subprocess-dispatched; frontmatter `model:` only governs the Agent-tool / claude-fallback spawn path. Set it to the claude-fallback pin — `claude-opus-4-8` — not `inherit`.
+>
+> `inherit` silently causes the in-process Agent-tool spawn to inherit the caller's session model, bypassing registry routing. Enforcer: `scripts/checks/role-parity-scan.js` (model-pin check).
 
 See `_requirements/09-integrations/PROVIDER/01-anthropic.md` for the full model table.
 
@@ -218,7 +226,7 @@ name: reviewer
 description: Reviews builder output against spec AND holdout golden fixtures.
 tools: Read, Grep, Glob, Bash
 disallowedTools: Agent, Edit, Write
-model: inherit
+model: claude-opus-4-8
 provider: openai
 provider_model: gpt-5.5
 provider_fallback: claude

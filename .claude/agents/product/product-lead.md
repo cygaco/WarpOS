@@ -9,7 +9,7 @@ description: >-
   principles and ADDS execution principles (FTUE/NUX, Cold-vs-Warm-Start). Sub-owner
   under the Director of Product (S2.1).
 tools: [Read, Grep, Glob]
-model: inherit
+model: claude-opus-4-8
 layer: product
 ---
 
