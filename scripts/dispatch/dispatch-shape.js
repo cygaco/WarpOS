@@ -237,7 +237,109 @@ function shapeMismatch(actualShape, unit) {
   };
 }
 
-module.exports = { resolveShape, shapeMismatch, resolveAgent, resolveSkill, resolveAdhoc, SHAPES };
+// ── Public: the PARALLELISM AXIS (S-LC-06 / PLAN §8.7) ───────────────────────
+// The self-detection family extends from "is THIS unit's shape right?" (shapeMismatch)
+// to "is this BATCH dispatched with the right PARALLELISM?". Two advisory findings,
+// REPORT-ONLY this sprint (no block):
+//
+//   UNDER-dispatch — safe-parallel work run SERIALLY. A batch whose units are
+//     pairwise DISJOINT (no shared file/worktree) but arranged serially could fan
+//     out. Surfaced so the orchestrator parallelizes by default (the operator's
+//     standing "default to parallel when the primitive exists").
+//   OVER-dispatch — two units targeting the SAME file/worktree dispatched in
+//     PARALLEL → collision risk (two builders racing one file / one worktree).
+//
+// A "unit" = { id, files?: string[], worktree?: string }. The batch plan =
+//   { units: [...], arrangement: "parallel" | "serial" }.
+// Resource scope of a unit = its files ∪ (worktree as a pseudo-resource). Two
+// units OVERLAP iff they share any file or the same worktree.
+//
+// FAIL-OPEN: any detector error → [] (no finding), NEVER throws. An advisory axis
+// must never break a dispatch; a missing/garbled plan simply yields no advice.
+function _resourcesOf(unit) {
+  const set = new Set();
+  if (unit && Array.isArray(unit.files)) {
+    for (const f of unit.files) if (typeof f === "string" && f) set.add("file:" + f);
+  }
+  if (unit && typeof unit.worktree === "string" && unit.worktree) set.add("wt:" + unit.worktree);
+  return set;
+}
+
+function _overlap(a, b) {
+  for (const r of a) if (b.has(r)) return r;
+  return null;
+}
+
+function parallelismFindings(plan) {
+  try {
+    const p = plan || {};
+    const units = Array.isArray(p.units) ? p.units.filter((u) => u && (u.id != null)) : [];
+    if (units.length < 2) return []; // parallelism only meaningful for ≥2 units
+    const arrangement = p.arrangement === "parallel" ? "parallel" : "serial";
+    const findings = [];
+    const resources = units.map(_resourcesOf);
+
+    // Pairwise overlap scan → both the collision pairs and the disjoint graph.
+    const collisions = [];
+    // Union-Find over units to count independent (disjoint) groups.
+    const parent = units.map((_, i) => i);
+    const find = (x) => { while (parent[x] !== x) { parent[x] = parent[parent[x]]; x = parent[x]; } return x; };
+    const union = (x, y) => { const rx = find(x), ry = find(y); if (rx !== ry) parent[rx] = ry; };
+    for (let i = 0; i < units.length; i++) {
+      for (let j = i + 1; j < units.length; j++) {
+        const shared = _overlap(resources[i], resources[j]);
+        if (shared) {
+          collisions.push({ a: units[i].id, b: units[j].id, resource: shared });
+          union(i, j);
+        }
+      }
+    }
+
+    if (arrangement === "parallel" && collisions.length) {
+      // OVER-dispatch: parallel units sharing a resource → collision risk.
+      findings.push({
+        axis: "parallelism",
+        kind: "over-dispatch",
+        severity: "high",
+        advisory: true,
+        arrangement,
+        collisions,
+        reason: `${collisions.length} unit-pair(s) target the SAME file/worktree but are dispatched in parallel — collision risk (two units racing one resource). Serialize the colliding pairs or split their scope.`,
+      });
+    }
+
+    if (arrangement === "serial") {
+      // UNDER-dispatch: serial batch that partitions into ≥2 disjoint groups → safe
+      // to parallelize the independent lanes.
+      const groups = new Set(units.map((_, i) => find(i)));
+      if (groups.size >= 2) {
+        // Map each disjoint group to its unit ids for the advice payload.
+        const byRoot = new Map();
+        units.forEach((u, i) => {
+          const r = find(i);
+          if (!byRoot.has(r)) byRoot.set(r, []);
+          byRoot.get(r).push(u.id);
+        });
+        findings.push({
+          axis: "parallelism",
+          kind: "under-dispatch",
+          severity: "low",
+          advisory: true,
+          arrangement,
+          lanes: [...byRoot.values()],
+          reason: `${groups.size} disjoint unit-group(s) are dispatched serially but share NO file/worktree — safe to fan out into ${groups.size} parallel lanes (default-to-parallel).`,
+        });
+      }
+    }
+
+    return findings;
+  } catch {
+    // FAIL-OPEN: an advisory axis must never throw or block a dispatch.
+    return [];
+  }
+}
+
+module.exports = { resolveShape, shapeMismatch, resolveAgent, resolveSkill, resolveAdhoc, parallelismFindings, SHAPES };
 
 // ── CLI: `node dispatch-shape.js --agent backend-builder` etc. ────────────────
 if (require.main === module) {

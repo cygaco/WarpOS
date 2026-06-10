@@ -180,6 +180,38 @@
     "epsilon": { "allowed_shapes": ["inline"], "_note": "sprint conductor: runs inline as the session AND dispatches the roster via the Agent tool + the ε runtime; its own shape is inline." }
   },
 
+  "mode_profiles": {
+    "_doc": "PLAN §8.7 / S-LC-06 — per-mode dispatch permission profiles. A mode profile NARROWS which dispatch shapes a role-CLASS (`class_shapes`) or a specific role (`role_shapes`) may use WHILE IN THAT MODE. β SECURITY INVARIANT (load-bearing): the class_derivation + role-registry constraint is the HARD CEILING — a mode profile can ONLY REMOVE a shape, NEVER ADD one the class/role does not already allow. A role gated to `subprocess-claude` MUST NOT resolve to `subprocess-cross-provider` just because a mode 'grants' it. Every shape a profile lists for a class/role MUST be a SUBSET of that class/role's own `allowed_shapes`; `dispatch-contract.js validate` FAILS a profile that widens past the class (the planted-widen test asserts this). Omitting a class/role = the class default applies (no narrowing). REPORT-ONLY ramp this sprint — additive; no dispatch is blocked on a mode profile yet (the runtime narrowing in validateDispatch is defense-in-depth, gated on an explicit `mode`).",
+    "adhoc": {
+      "_doc": "α+β+γ. Build-chain is Gamma-only; teammates β/γ only (team-guard). Builders → subprocess-claude; reviewers → cross-provider; managers/leads/visual → in-process. Each is the class default (identity narrowing — a valid subset).",
+      "class_shapes": {
+        "build_chain_worker": ["subprocess-claude"],
+        "cross_provider_reviewer": ["subprocess-cross-provider"],
+        "claude_pinned_reviewer": ["in-process-agent"],
+        "manager": ["in-process-agent"]
+      }
+    },
+    "sprint": {
+      "_doc": "ε conducts the full lifecycle; REAL dispatch on both route classes (CLI builders + cross-provider reviewers) + the in-process roster (managers/leads/visual-review).",
+      "class_shapes": {
+        "build_chain_worker": ["subprocess-claude"],
+        "cross_provider_reviewer": ["subprocess-cross-provider"],
+        "claude_pinned_reviewer": ["in-process-agent"],
+        "manager": ["in-process-agent"]
+      }
+    },
+    "oneshot": {
+      "_doc": "δ standalone skeleton build. Build-chain via subprocess-claude (isolated worktree); no cross-provider reviewers required for a skeleton run.",
+      "class_shapes": {
+        "build_chain_worker": ["subprocess-claude"]
+      }
+    },
+    "solo": {
+      "_doc": "Alpha builds directly, agents-when-helpful — flexible but still INSIDE every class ceiling. No extra narrowing beyond the class defaults.",
+      "class_shapes": {}
+    }
+  },
+
   "skills": {
     "_doc": "SEEDED for skill-execution-routing (PLAN §13) — NOT yet earned. A skill is `inline` until it PASSES §13.6 (runs headless) AND §13.7 (pays + good). `subprocess` entries below are CANDIDATES (classified by weight) carrying subprocess_verified:false until a real smoke run stamps them. The reader treats an unverified `subprocess` skill as `inline` (fail-closed: never trust an unverified subprocess classification). REPORT-ONLY this release.",
     "classification": "seeded-candidates",
