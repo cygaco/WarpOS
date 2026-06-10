@@ -924,6 +924,34 @@ test("F3-planted: historic-only record (outside window+wrong sprint) fails; fres
   assert.strictEqual(resPass.roles[0].status, "ran");
 });
 
+// F-3 fix-cycle (claude backend lane 2026-06-10, CONFIRMED via live CLI): --sprint as the
+// SOLE bound (no window) must NOT be greened by a historic record LACKING sprint_id —
+// that was the exact T3 false-green resurfacing through the sanctioned --sprint-only path.
+test("F3-fix: --sprint alone (no window) + sprint_id-less historic record -> NOT counted -> fail", () => {
+  const historicMs = Date.now() - 90 * 24 * 60 * 60 * 1000; // months old
+  const rec = makeRecord({ completed_at: new Date(historicMs).toISOString() });
+  delete rec.sprint_id; // pre-F-3 record, no stamp
+  const res = verifyGauntlet({
+    roles: ["reviewer"],
+    sprintId: "SP-NEW-NEVER-RAN",
+    records: [rec], // no since/until — sprint correlation is the sole bound
+  });
+  assert.strictEqual(res.ok, false, "sprint-only correlation must NOT count sprint_id-less records");
+  assert.strictEqual(res.roles[0].status, "no-record");
+});
+
+test("F3-fix: --sprint alone (no window) + MATCHING stamped record -> counted -> pass", () => {
+  const res = verifyGauntlet({
+    roles: ["reviewer"],
+    sprintId: "SP-NEW-003",
+    records: [
+      makeRecord({ sprint_id: "SP-NEW-003", completed_at: new Date(Date.now()).toISOString() }),
+    ],
+  });
+  assert.strictEqual(res.ok, true, "sprint-only correlation counts records stamped with the matching sprint_id");
+  assert.strictEqual(res.roles[0].status, "ran");
+});
+
 // F-3 CLI: refuse unbounded -- no --sprint, no --since, no --until -> exit 2
 test("F3-CLI: no --sprint, no --since, no --until -> exit 2 (refuse unbounded)", () => {
   const r = cp.spawnSync(

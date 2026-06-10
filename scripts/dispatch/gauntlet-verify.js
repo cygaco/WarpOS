@@ -329,6 +329,12 @@ function verifyGauntlet(args = {}) {
   const inWindow = (rec) => {
     // F-3: sprint-ID mismatch filter (additive on top of time-window).
     if (sprintId && rec.sprint_id !== undefined && rec.sprint_id !== sprintId) return false;
+    // F-3 fix-cycle (claude backend lane, 2026-06-10, CONFIRMED via live CLI):
+    // when sprint correlation is the SOLE bound (no time window), a record
+    // LACKING sprint_id must NOT count — otherwise any historic pre-F-3 ok:true
+    // record greens a never-ran lane (exactly the T3 class F-3 exists to close).
+    // Pre-F-3 sprint_id-less ledgers are verified via window mode (--since/--until).
+    if (sprintId && rec.sprint_id === undefined && sinceMs === null && untilMs === null) return false;
     const t = recordCompletedMs(rec);
     if (sinceMs === null && untilMs === null) return true; // whole-ledger view
     if (t === null) return false; // unknown timestamp: cannot prove in-window
