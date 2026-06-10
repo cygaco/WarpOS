@@ -390,6 +390,52 @@ function resolveSid(opts = {}) {
   }
 }
 
+// ── Verify-terminated gate (HONEST: fail-safe to "not verified") ─────────────
+/** Can we POSITIVELY confirm this team's members are NOT live? This gates handle
+ *  removal under `apply` so we NEVER orphan a possibly-live team by blind-removing
+ *  its config.json. The harness cannot force-kill a live in-process teammate, so
+ *  this is deliberately CONSERVATIVE: it returns TRUE only on a positive not-live
+ *  signal and DEFAULTS to FALSE ("not verified") whenever it cannot confirm.
+ *
+ *  Returns FALSE (cannot confirm → fail-safe) when:
+ *    • team is missing/nameless, or
+ *    • the config is UNREADABLE (roster unverifiable → termination unverifiable), or
+ *    • there is a LIVE-member indicator: a FRESH heartbeat (config mtime within the
+ *      STALE_HOURS freshness window) means a member MAY still be touching the
+ *      handle — a fresh heartbeat OVERRIDES any stale shutdown record.
+ *  Returns TRUE (positively confirmed not-live) when there is NO live-member
+ *  indicator AND either:
+ *    • the heartbeat is STALE beyond STALE_HOURS (the same staleness signal
+ *      detectOrphansStale + verify already use — no live member is touching it), or
+ *    • an explicit shutdown/termination was already recorded for THIS exact team. */
+function verifyTerminated(team, opts = {}) {
+  try {
+    if (!team || !team.name) return false;
+    // Unreadable handle → roster (and therefore termination) cannot be verified.
+    if (team.unreadable) return false;
+    // LIVE-member indicator: a fresh heartbeat → cannot confirm termination.
+    const fresh =
+      typeof team.ageHours === "number" && team.ageHours < STALE_HOURS;
+    if (fresh) return false;
+    // No live indicator. Positive not-live signal #1: stale beyond threshold.
+    const staleBeyondThreshold =
+      typeof team.ageHours === "number" && team.ageHours >= STALE_HOURS;
+    // Positive not-live signal #2: an explicit shutdown/termination on record.
+    let shutdownRecorded = false;
+    try {
+      const state = readState(opts);
+      shutdownRecorded = (state.teardownRequests || []).some(
+        (r) => r && Array.isArray(r.teams) && r.teams.includes(team.name),
+      );
+    } catch {
+      shutdownRecorded = false;
+    }
+    return staleBeyondThreshold || shutdownRecorded;
+  } catch {
+    return false; // any verification error → NOT verified (fail-safe)
+  }
+}
+
 // ── BEST-EFFORT teardown (slug-scoped; honest; never a claimed kill) ─────────
 /** Request teardown of THIS PROJECT's team(s). FOREIGN teams are never touched.
  *  Sequence (mirrors the harness primitive flow, recorded honestly):
@@ -419,16 +465,36 @@ function teardown(opts = {}) {
       killedGuaranteed: false, // step 3 — NEVER claimed true
     };
     if (apply) {
-      try {
-        // Surrogate for TeamDelete: remove the durable HANDLE (config.json) so
-        // the team is no longer the freshest-by-mtime live identity. We leave
-        // the dir + inboxes and do NOT rm-rf. This does NOT kill a live process.
-        if (fs.existsSync(t.file)) {
-          fs.rmSync(t.file, { force: true });
-          entry.handleRemoved = true;
+      // VERIFY-TERMINATED GATE (load-bearing): only remove the durable handle
+      // once we can POSITIVELY confirm the team is not live. If termination is
+      // unverified (fresh heartbeat / live indicator) we SKIP — leaving the
+      // handle — rather than blind-remove and ORPHAN possibly-live members.
+      const terminated = verifyTerminated(t, opts);
+      entry.terminationVerified = terminated;
+      if (terminated) {
+        try {
+          // Surrogate for TeamDelete: remove the durable HANDLE (config.json) so
+          // the team is no longer the freshest-by-mtime live identity. We leave
+          // the dir + inboxes and do NOT rm-rf. This does NOT kill a live process.
+          if (fs.existsSync(t.file)) {
+            fs.rmSync(t.file, { force: true });
+            entry.handleRemoved = true;
+          }
+        } catch (e) {
+          entry.handleError = e.message; // best-effort: record, never throw
         }
-      } catch (e) {
-        entry.handleError = e.message; // best-effort: record, never throw
+      } else {
+        // Termination not confirmed → DO NOT remove the handle. Record a residual
+        // skip; never blind-remove, never throw.
+        entry.handleRemoved = false;
+        entry.skippedReason = "termination-unverified";
+        entry.residual = "skip: termination unverified — handle left in place";
+        logVirtual("team:persistent:kill:skip", {
+          slug,
+          team: t.name,
+          reason: "termination-unverified",
+          killedGuaranteed: false,
+        });
       }
     }
     requested.push(entry);
@@ -579,6 +645,7 @@ module.exports = {
   writeState,
   writeReadinessRecord,
   resolveSid,
+  verifyTerminated,
   teardown,
   reconcile,
   status,

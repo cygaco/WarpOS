@@ -79,7 +79,12 @@ ok("AC-5.1 wrong-project team survives a slug-scoped teardown --apply", () => {
   const { teamsRoot, stateDir } = freshDirs();
   // This project = slug "warpos". Plant OUR team + a FOREIGN team (doogle —
   // mirrors the real machine's live `doogle-sprint` that MUST NOT be killed).
-  plantTeam(teamsRoot, "warpos-adhoc", ["team-lead", "beta", "gamma"]);
+  // OUR team is STALE (48h) so verifyTerminated() positively confirms it is not
+  // live — only then is the handle eligible for removal under --apply. (A fresh,
+  // possibly-live team is NOT removed; that is AC-5.9.)
+  plantTeam(teamsRoot, "warpos-adhoc", ["team-lead", "beta", "gamma"], {
+    ageHours: 48,
+  });
   const foreign = plantTeam(teamsRoot, "doogle-sprint", [
     "team-lead",
     "beta",
@@ -317,6 +322,98 @@ ok("AC-5.5d reconcile records a reconciliation, never blind-kills", () => {
     rec.staleFindings.some((f) => f.type === "stale-team"),
     "reconcile did not surface the stale finding",
   );
+});
+
+// ── AC-5.9 — verify-terminated gate: never blind-remove a possibly-live handle ─
+ok("AC-5.9 apply + verifyTerminated()=FALSE (fresh) → handle NOT removed, residual logged", () => {
+  const { teamsRoot, stateDir } = freshDirs();
+  // FRESH heartbeat → a member may still be live → termination unverified.
+  const mine = plantTeam(teamsRoot, "warpos-adhoc", ["team-lead", "beta", "gamma"]);
+  const opts = { teamsRoot, stateDir, slug: "warpos", mode: "adhoc" };
+  const res = lifecycle.teardown({ ...opts, apply: true });
+  const entry = res.requested.find((r) => r.team === "warpos-adhoc");
+  assert.ok(entry, "our team must still appear in the request set");
+  assert.strictEqual(entry.handleRemoved, false, "fresh/unverified handle must NOT be removed");
+  assert.strictEqual(
+    entry.skippedReason,
+    "termination-unverified",
+    "skip reason must be recorded",
+  );
+  assert.ok(
+    fs.existsSync(mine.file),
+    "config.json (the handle) must SURVIVE when termination is unverified",
+  );
+  // Honest ceiling preserved at every exit.
+  assert.strictEqual(res.killedGuaranteed, false);
+});
+
+ok("AC-5.9b apply + verifyTerminated()=TRUE (stale) → handle removed", () => {
+  const { teamsRoot, stateDir } = freshDirs();
+  // STALE heartbeat (48h ≥ STALE_HOURS) → positively confirmed not-live.
+  const mine = plantTeam(teamsRoot, "warpos-adhoc", ["team-lead", "beta"], {
+    ageHours: 48,
+  });
+  const opts = { teamsRoot, stateDir, slug: "warpos", mode: "adhoc" };
+  const res = lifecycle.teardown({ ...opts, apply: true });
+  const entry = res.requested.find((r) => r.team === "warpos-adhoc");
+  assert.strictEqual(entry.handleRemoved, true, "verified-stale handle should be removed");
+  assert.strictEqual(entry.terminationVerified, true);
+  assert.ok(
+    !fs.existsSync(mine.file),
+    "config.json should be removed once termination is verified",
+  );
+  assert.strictEqual(res.killedGuaranteed, false);
+});
+
+ok("AC-5.9c verifyTerminated unit: fresh=false, stale=true, unreadable=false", () => {
+  const { teamsRoot, stateDir } = freshDirs();
+  const opts = { teamsRoot, stateDir, slug: "warpos" };
+  // Fresh (mtime ≈ now) → not verified.
+  assert.strictEqual(
+    lifecycle.verifyTerminated({ name: "warpos-adhoc", ageHours: 0 }, opts),
+    false,
+    "fresh heartbeat must be treated as possibly-live",
+  );
+  // Stale beyond STALE_HOURS → confirmed not-live.
+  assert.strictEqual(
+    lifecycle.verifyTerminated(
+      { name: "warpos-adhoc", ageHours: lifecycle.STALE_HOURS + 1 },
+      opts,
+    ),
+    true,
+    "stale-beyond-threshold heartbeat must confirm not-live",
+  );
+  // Unreadable handle → roster unverifiable → fail-safe false.
+  assert.strictEqual(
+    lifecycle.verifyTerminated(
+      { name: "warpos-adhoc", ageHours: Infinity, unreadable: true },
+      opts,
+    ),
+    false,
+    "unreadable handle must default to NOT verified",
+  );
+  // Missing/nameless → fail-safe false.
+  assert.strictEqual(lifecycle.verifyTerminated(null, opts), false);
+});
+
+ok("AC-5.9d unverified skip is honest: foreign STILL protected, never a guaranteed kill", () => {
+  const { teamsRoot, stateDir } = freshDirs();
+  // Our team is fresh (unverified) AND a foreign team is present — both must be
+  // left intact: the foreign one by the slug filter, ours by the verify gate.
+  const mine = plantTeam(teamsRoot, "warpos-adhoc", ["team-lead", "beta"]);
+  const foreign = plantTeam(teamsRoot, "doogle-sprint", ["team-lead", "epsilon"]);
+  const res = lifecycle.teardown({
+    teamsRoot,
+    stateDir,
+    slug: "warpos",
+    mode: "adhoc",
+    apply: true,
+  });
+  assert.ok(fs.existsSync(mine.file), "unverified own handle must survive");
+  assert.ok(fs.existsSync(foreign.file), "foreign handle must survive");
+  assert.ok(res.foreignProtected.includes("doogle-sprint"));
+  assert.ok(!res.requested.some((r) => r.team === "doogle-sprint"));
+  assert.strictEqual(res.killedGuaranteed, false);
 });
 
 // ── Summary ──────────────────────────────────────────────────────────────────
