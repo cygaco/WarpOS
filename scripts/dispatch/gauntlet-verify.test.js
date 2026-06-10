@@ -971,7 +971,9 @@ test("F3-fix: garbage --since value (no --sprint) -> exit 2, not whole-ledger sc
 test("F3-fix: garbage --until value (no --sprint) -> exit 2, not whole-ledger scan", () => {
   const r = cp.spawnSync(
     process.execPath,
-    [path.join(__dirname, "gauntlet-verify.js"), "--roles", "reviewer", "--until", "garbage-2026"],
+    // NOTE: a value like "garbage-2026" is NOT a valid fixture here — V8's lenient
+    // Date parser reads it as the year 2026, which is a parseable (bounded) window.
+    [path.join(__dirname, "gauntlet-verify.js"), "--roles", "reviewer", "--until", "definitely!!unparseable"],
     { encoding: "utf8" },
   );
   assert.strictEqual(r.status, 2, `Expected exit 2 on garbage --until, got ${r.status}. stderr: ${r.stderr}`);
