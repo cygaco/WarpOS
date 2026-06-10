@@ -426,6 +426,20 @@ test("shape-route-conflict: claude leads (product-lead/quality-lead) not flagged
   );
 });
 
+test("model-pin: registry role with NO resolvable model frontmatter → rejected (fail-closed)", () => {
+  // Gauntlet 2026-06-10 (both lanes): a dropped pin / unreadable spec / missing
+  // frontmatter must ERROR, never silently skip — silent skip false-greens.
+  const errs = evaluateModelPins({ reg: mpReg, specFm: {} });
+  assert.ok(
+    errs.some((e) => /model-pin.*director-of-engineering.*NO resolvable model/.test(e)),
+    `expected fail-closed error for missing frontmatter (claude role), got: ${errs.join("; ")}`
+  );
+  assert.ok(
+    errs.some((e) => /model-pin.*cabinet.*NO resolvable model/.test(e)),
+    `expected fail-closed error for missing frontmatter (cross-provider role), got: ${errs.join("; ")}`
+  );
+});
+
 if (failures.length) {
   process.stderr.write(`role-parity bite-test: ${passed} passed, ${failures.length} FAILED\n`);
   for (const f of failures) process.stderr.write(`  - ${f}\n`);

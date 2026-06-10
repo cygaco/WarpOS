@@ -3,6 +3,7 @@ name: security-reviewer
 description: Security Reviewer — dispatched by the Security Lead; replaces the redteam agent. Binding verdict (the Lead cannot override a FAIL). Read-only; does NOT write code. Collapses adhoc + oneshot redteam variants into one mode-agnostic spec. Mode (quick/full) is context the orchestrator passes, not part of this agent.
 tools: Read, Grep, Glob, Bash, Agent
 disallowedTools: Edit, Write
+model: claude-opus-4-8
 provider: gemini
 provider_model: gemini-3.1-pro-preview
 provider_fallback: claude

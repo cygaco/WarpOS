@@ -455,7 +455,17 @@ function evaluateModelPins({ reg, specFm }) {
   for (const [name, r] of Object.entries(roles)) {
     if (!r || typeof r !== "object" || !r.spec) continue;
     const fm = specFm && specFm[r.spec];
-    if (fm === undefined) continue; // spec not readable → skip
+    if (fm === undefined) {
+      // FAIL-CLOSED (gauntlet 2026-06-10, both lanes): undefined collapses three
+      // cases — spec file unreadable, frontmatter block missing, or no model: line.
+      // Silently skipping any of them would false-green a role that DROPPED its pin.
+      errors.push(
+        `model-pin: registry role "${name}" spec "${r.spec}" has NO resolvable model ` +
+        `frontmatter (missing file, missing frontmatter block, or no model: line) — ` +
+        `every registry-routed role must carry an explicit pin`
+      );
+      continue;
+    }
     if (fm === "inherit") {
       errors.push(
         `model-pin: registry role "${name}" spec "${r.spec}" has model: inherit — ` +

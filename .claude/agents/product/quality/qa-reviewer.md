@@ -3,6 +3,7 @@ name: qa-reviewer
 description: "Parameterized QA Reviewer — three review scopes dispatched by the Quality Lead: functional (13 failure-mode personas, parallel scan+analyze sub-agents), traceability (6 req-reviewer checks + blocking rule), integrity (compliance COPY.md exact-match + hallucinated_dep + 5 violation types). Binding verdict. Does NOT write code."
 tools: Read, Grep, Glob, Bash, Agent
 disallowedTools: Edit, Write
+model: claude-opus-4-8
 provider: openai
 provider_model: gpt-5.5
 provider_reasoning_effort: xhigh

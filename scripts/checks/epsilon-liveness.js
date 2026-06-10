@@ -105,6 +105,18 @@ function evaluate({ evidenceFiles, ledgerLines, nowMs }) {
 
   const findings = [];
   for (const ef of evidenceFiles) {
+    // FAIL-CLOSED (gauntlet 2026-06-10 qa lane): unreadable evidence cannot be
+    // matched — always a finding, never a silent skip.
+    if (ef.unreadable) {
+      findings.push({
+        type: "epsilon-stalled",
+        evidenceFile: ef.path,
+        reason: ef.mtimeMs === null
+          ? "evidence file is un-stat-able — cannot verify freshness or completion (fail-closed)"
+          : `evidence file aged ${Math.round((nowMs - ef.mtimeMs) / 60000)}m is unreadable — cannot verify completion (fail-closed)`,
+      });
+      continue;
+    }
     const ageMins = Math.round((nowMs - ef.mtimeMs) / 60000);
 
     // Primary: sha256-based match — the ledger records evidence_sha for in-process spawns.
@@ -153,6 +165,9 @@ function collectEvidence(evidenceDir, staleMs, nowMs) {
     try {
       stat = fs.statSync(full);
     } catch {
+      // FAIL-CLOSED (gauntlet 2026-06-10 qa lane): an un-stat-able evidence file
+      // can prove neither freshness nor a ledger match — surface it, don't hide it.
+      files.push({ path: full, mtimeMs: null, sha256: null, unreadable: true });
       continue;
     }
     const mtimeMs = stat.mtimeMs;
@@ -161,6 +176,8 @@ function collectEvidence(evidenceDir, staleMs, nowMs) {
     try {
       buf = fs.readFileSync(full);
     } catch {
+      // FAIL-CLOSED: stale AND unreadable — cannot be matched against the ledger.
+      files.push({ path: full, mtimeMs, sha256: null, unreadable: true });
       continue;
     }
     files.push({ path: full, mtimeMs, sha256: sha256ofFile(buf) });

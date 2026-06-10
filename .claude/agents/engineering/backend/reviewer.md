@@ -3,6 +3,7 @@ name: backend-reviewer
 description: Reviews backend builder output for code quality only (Check-7 7A-7G + holdout-fixture + CWD/branch pre-check). Traceability and integrity are the qa-reviewer's scopes. Produces ReviewResult JSON. Does NOT write code.
 tools: Read, Grep, Glob, Bash
 disallowedTools: Edit, Write
+model: claude-opus-4-8
 provider: openai
 provider_model: gpt-5.5
 provider_reasoning_effort: xhigh

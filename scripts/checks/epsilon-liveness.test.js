@@ -157,4 +157,14 @@ h.pass("green when evidenceFiles is empty (caller filtered out fresh files)", ()
     nowMs: NOW_MS,
   }));
 
+// ── Case 8: red — unreadable evidence file (fail-closed, gauntlet 2026-06-10) ──
+h.violation("red when evidence file is unreadable/un-stat-able (fail-closed)", () =>
+  evaluate({
+    evidenceFiles: [
+      { path: "/tmp/SP-x-build-builder.return.txt", mtimeMs: null, sha256: null, unreadable: true },
+    ],
+    ledgerLines: ["{}"],
+    nowMs: NOW_MS,
+  }));
+
 h.done();
