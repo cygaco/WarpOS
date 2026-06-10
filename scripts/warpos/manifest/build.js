@@ -377,6 +377,32 @@ function buildRules(sourcePrefix) {
         kind: rel.endsWith(".json") ? "json" : "md",
       }),
     },
+    {
+      // Agent `_system/` machine-readable data: policy/*.json + *.schema.json
+      // under .claude/agents/**/_system/ (e.g. president/_system/policy/
+      // sprint-routing.json, provider-fallback.json, skill-frontmatter.schema.json).
+      // Framework source — canonical defines them and they ship to products,
+      // analogous to framework-manager-data for _org/_principles/_evals. The
+      // framework-claude-agent rule above is .md-only, and project-decision-policy
+      // carves out ONLY decision-policy.md (project/fillable — the user's policy);
+      // these .json data files would otherwise be unclassified (RI-003 fix,
+      // 2026-06-09). `_system/events.jsonl` is already caught by runtime-agent-events
+      // above (first-match-wins). NOTE: sprint-routing/sprint-full-autonomy are
+      // operator-tunable; if a product needs them preserved across /warp:update,
+      // reclassify those two as project/fillable (a later refinement).
+      name: "framework-agent-system-data",
+      match: (rel) =>
+        /^\.claude\/agents\/.+\/_system\//.test(rel) && rel.endsWith(".json"),
+      entry: (rel) => ({
+        owner: "framework",
+        managed: true,
+        source:
+          sourcePrefix === "framework"
+            ? rel
+            : `${sourcePrefix}/${rel.replace(/^\.claude\//, "")}`,
+        kind: "json",
+      }),
+    },
 
     // FRAMEWORK — source tree itself
     {

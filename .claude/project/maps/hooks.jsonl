@@ -1,4 +1,4 @@
-{"_meta":true,"name":"Hooks Map","description":"All hook scripts under scripts/hooks/ + lib modules + settings.json wiring.","version":"2026-06-09","total_hooks":74,"total_lib_modules":16,"registered_hooks":64,"orphan_hooks":10,"wiring_count":75,"last_regenerated":"2026-06-09T04:27:35.568Z"}
+{"_meta":true,"name":"Hooks Map","description":"All hook scripts under scripts/hooks/ + lib modules + settings.json wiring.","version":"2026-06-10","total_hooks":74,"total_lib_modules":17,"registered_hooks":64,"orphan_hooks":10,"wiring_count":75,"last_regenerated":"2026-06-10T00:19:58.299Z"}
 {"id":"hook:authorization-gate","name":"authorization-gate.js","path":"scripts/hooks/authorization-gate.js","registered":true,"exists":true,"size":8520,"modified":"2026-05-30T01:25:39.579Z"}
 {"id":"hook:beta-gate","name":"beta-gate.js","path":"scripts/hooks/beta-gate.js","registered":true,"exists":true,"size":9095,"modified":"2026-06-08T20:28:50.013Z"}
 {"id":"hook:boss-boundary","name":"boss-boundary.js","path":"scripts/hooks/boss-boundary.js","registered":true,"exists":true,"size":3145,"modified":"2026-06-04T22:57:13.997Z"}
@@ -44,7 +44,7 @@
 {"id":"hook:secret-guard","name":"secret-guard.js","path":"scripts/hooks/secret-guard.js","registered":true,"exists":true,"size":2786,"modified":"2026-05-30T01:25:39.600Z"}
 {"id":"hook:self-mod-governance","name":"self-mod-governance.js","path":"scripts/hooks/self-mod-governance.js","registered":true,"exists":true,"size":923,"modified":"2026-05-30T01:25:39.601Z"}
 {"id":"hook:session-start-teaminit.test","name":"session-start-teaminit.test.js","path":"scripts/hooks/session-start-teaminit.test.js","registered":false,"exists":true,"size":4665,"modified":"2026-06-08T19:49:48.192Z"}
-{"id":"hook:session-start","name":"session-start.js","path":"scripts/hooks/session-start.js","registered":true,"exists":true,"size":29099,"modified":"2026-06-09T00:41:40.598Z"}
+{"id":"hook:session-start","name":"session-start.js","path":"scripts/hooks/session-start.js","registered":true,"exists":true,"size":30063,"modified":"2026-06-10T00:04:52.691Z"}
 {"id":"hook:session-stop-sentinel.test","name":"session-stop-sentinel.test.js","path":"scripts/hooks/session-stop-sentinel.test.js","registered":false,"exists":true,"size":5847,"modified":"2026-06-08T22:03:39.609Z"}
 {"id":"hook:session-stop","name":"session-stop.js","path":"scripts/hooks/session-stop.js","registered":true,"exists":true,"size":19907,"modified":"2026-06-08T22:01:59.750Z"}
 {"id":"hook:session-tracker","name":"session-tracker.js","path":"scripts/hooks/session-tracker.js","registered":true,"exists":true,"size":9491,"modified":"2026-05-30T01:25:39.602Z"}
@@ -63,7 +63,7 @@
 {"id":"hook:systems-sync","name":"systems-sync.js","path":"scripts/hooks/systems-sync.js","registered":true,"exists":true,"size":7605,"modified":"2026-05-30T01:25:39.607Z"}
 {"id":"hook:team-guard-gate.test","name":"team-guard-gate.test.js","path":"scripts/hooks/team-guard-gate.test.js","registered":false,"exists":true,"size":11806,"modified":"2026-06-09T00:41:40.599Z"}
 {"id":"hook:team-guard-sprint.test","name":"team-guard-sprint.test.js","path":"scripts/hooks/team-guard-sprint.test.js","registered":false,"exists":true,"size":6605,"modified":"2026-06-09T00:41:40.599Z"}
-{"id":"hook:team-guard","name":"team-guard.js","path":"scripts/hooks/team-guard.js","registered":true,"exists":true,"size":17162,"modified":"2026-06-09T00:41:40.600Z"}
+{"id":"hook:team-guard","name":"team-guard.js","path":"scripts/hooks/team-guard.js","registered":true,"exists":true,"size":17839,"modified":"2026-06-10T00:04:52.692Z"}
 {"id":"hook:template-fillability","name":"template-fillability.js","path":"scripts/hooks/template-fillability.js","registered":true,"exists":true,"size":2939,"modified":"2026-05-30T01:25:39.607Z"}
 {"id":"hook:test","name":"test.js","path":"scripts/hooks/test.js","registered":false,"exists":true,"size":11730,"modified":"2026-05-30T01:25:39.608Z"}
 {"id":"hook:tracker-completion-gate","name":"tracker-completion-gate.js","path":"scripts/hooks/tracker-completion-gate.js","registered":true,"exists":true,"size":3400,"modified":"2026-06-07T03:35:59.240Z"}
@@ -79,9 +79,10 @@
 {"id":"hook-lib:gate-schema","name":"gate-schema.js","path":"scripts/hooks/lib/gate-schema.js","registered":false,"type":"lib","exists":true,"size":3894,"modified":"2026-05-30T01:25:39.589Z"}
 {"id":"hook-lib:injection-patterns","name":"injection-patterns.js","path":"scripts/hooks/lib/injection-patterns.js","registered":false,"type":"lib","exists":true,"size":2949,"modified":"2026-05-31T00:23:04.879Z"}
 {"id":"hook-lib:logger","name":"logger.js","path":"scripts/hooks/lib/logger.js","registered":false,"type":"lib","exists":true,"size":16632,"modified":"2026-06-08T20:28:50.013Z"}
-{"id":"hook-lib:mode","name":"mode.js","path":"scripts/hooks/lib/mode.js","registered":false,"type":"lib","exists":true,"size":2540,"modified":"2026-05-30T01:25:39.590Z"}
+{"id":"hook-lib:mode-lifecycle","name":"mode-lifecycle.js","path":"scripts/hooks/lib/mode-lifecycle.js","registered":false,"type":"lib","exists":true,"size":6175,"modified":"2026-06-10T00:04:52.690Z"}
+{"id":"hook-lib:mode","name":"mode.js","path":"scripts/hooks/lib/mode.js","registered":false,"type":"lib","exists":true,"size":2944,"modified":"2026-06-10T00:04:52.691Z"}
 {"id":"hook-lib:oneshot-store","name":"oneshot-store.js","path":"scripts/hooks/lib/oneshot-store.js","registered":false,"type":"lib","exists":true,"size":2337,"modified":"2026-06-08T21:07:45.656Z"}
-{"id":"hook-lib:paths.generated","name":"paths.generated.js","path":"scripts/hooks/lib/paths.generated.js","registered":false,"type":"lib","exists":true,"size":10736,"modified":"2026-06-08T20:28:50.013Z"}
+{"id":"hook-lib:paths.generated","name":"paths.generated.js","path":"scripts/hooks/lib/paths.generated.js","registered":false,"type":"lib","exists":true,"size":10807,"modified":"2026-06-10T00:04:52.691Z"}
 {"id":"hook-lib:paths","name":"paths.js","path":"scripts/hooks/lib/paths.js","registered":false,"type":"lib","exists":true,"size":6608,"modified":"2026-06-05T01:45:08.446Z"}
 {"id":"hook-lib:project-config","name":"project-config.js","path":"scripts/hooks/lib/project-config.js","registered":false,"type":"lib","exists":true,"size":4488,"modified":"2026-05-30T01:25:39.591Z"}
 {"id":"hook-lib:provider-health","name":"provider-health.js","path":"scripts/hooks/lib/provider-health.js","registered":false,"type":"lib","exists":true,"size":10306,"modified":"2026-05-30T01:25:39.592Z"}

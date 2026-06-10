@@ -1,9 +1,9 @@
 {
   "metadata": {
-    "generated": "2026-06-09T04:27:35.568Z",
-    "lastUpdated": "2026-06-09T04:27:35.568Z",
+    "generated": "2026-06-10T00:19:58.299Z",
+    "lastUpdated": "2026-06-10T00:19:58.299Z",
     "total_hooks": 74,
-    "total_lib_modules": 16,
+    "total_lib_modules": 17,
     "registered_hooks": 64,
     "orphan_hooks": 10,
     "regenerated_by": "scripts/regen-maps.js"
@@ -420,8 +420,8 @@
       "path": "scripts/hooks/session-start.js",
       "registered": true,
       "exists": true,
-      "size": 29099,
-      "modified": "2026-06-09T00:41:40.598Z"
+      "size": 30063,
+      "modified": "2026-06-10T00:04:52.691Z"
     },
     {
       "id": "hook:session-stop-sentinel.test",
@@ -591,8 +591,8 @@
       "path": "scripts/hooks/team-guard.js",
       "registered": true,
       "exists": true,
-      "size": 17162,
-      "modified": "2026-06-09T00:41:40.600Z"
+      "size": 17839,
+      "modified": "2026-06-10T00:04:52.692Z"
     },
     {
       "id": "hook:template-fillability",
@@ -736,14 +736,24 @@
       "modified": "2026-06-08T20:28:50.013Z"
     },
     {
+      "id": "hook-lib:mode-lifecycle",
+      "name": "mode-lifecycle.js",
+      "path": "scripts/hooks/lib/mode-lifecycle.js",
+      "registered": false,
+      "type": "lib",
+      "exists": true,
+      "size": 6175,
+      "modified": "2026-06-10T00:04:52.690Z"
+    },
+    {
       "id": "hook-lib:mode",
       "name": "mode.js",
       "path": "scripts/hooks/lib/mode.js",
       "registered": false,
       "type": "lib",
       "exists": true,
-      "size": 2540,
-      "modified": "2026-05-30T01:25:39.590Z"
+      "size": 2944,
+      "modified": "2026-06-10T00:04:52.691Z"
     },
     {
       "id": "hook-lib:oneshot-store",
@@ -762,8 +772,8 @@
       "registered": false,
       "type": "lib",
       "exists": true,
-      "size": 10736,
-      "modified": "2026-06-08T20:28:50.013Z"
+      "size": 10807,
+      "modified": "2026-06-10T00:04:52.691Z"
     },
     {
       "id": "hook-lib:paths",

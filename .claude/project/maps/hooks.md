@@ -1,8 +1,8 @@
 # Hooks Map
 
-Generated: 2026-06-09T04:27:35.568Z
+Generated: 2026-06-10T00:19:58.299Z
 
-**74** hook scripts (64 registered, 10 orphan), **16** lib modules, **75** wiring entries.
+**74** hook scripts (64 registered, 10 orphan), **17** lib modules, **75** wiring entries.
 
 ## Wiring (event → matcher → hook)
 
@@ -157,7 +157,7 @@ Generated: 2026-06-09T04:27:35.568Z
 | secret-guard.js | yes | 2786 | 2026-05-30T01:25:39.600Z |
 | self-mod-governance.js | yes | 923 | 2026-05-30T01:25:39.601Z |
 | session-start-teaminit.test.js | no | 4665 | 2026-06-08T19:49:48.192Z |
-| session-start.js | yes | 29099 | 2026-06-09T00:41:40.598Z |
+| session-start.js | yes | 30063 | 2026-06-10T00:04:52.691Z |
 | session-stop-sentinel.test.js | no | 5847 | 2026-06-08T22:03:39.609Z |
 | session-stop.js | yes | 19907 | 2026-06-08T22:01:59.750Z |
 | session-tracker.js | yes | 9491 | 2026-05-30T01:25:39.602Z |
@@ -176,7 +176,7 @@ Generated: 2026-06-09T04:27:35.568Z
 | systems-sync.js | yes | 7605 | 2026-05-30T01:25:39.607Z |
 | team-guard-gate.test.js | no | 11806 | 2026-06-09T00:41:40.599Z |
 | team-guard-sprint.test.js | no | 6605 | 2026-06-09T00:41:40.599Z |
-| team-guard.js | yes | 17162 | 2026-06-09T00:41:40.600Z |
+| team-guard.js | yes | 17839 | 2026-06-10T00:04:52.692Z |
 | template-fillability.js | yes | 2939 | 2026-05-30T01:25:39.607Z |
 | test.js | no | 11730 | 2026-05-30T01:25:39.608Z |
 | tracker-completion-gate.js | yes | 3400 | 2026-06-07T03:35:59.240Z |
@@ -197,9 +197,10 @@ Generated: 2026-06-09T04:27:35.568Z
 | gate-schema.js | 3894 | 2026-05-30T01:25:39.589Z |
 | injection-patterns.js | 2949 | 2026-05-31T00:23:04.879Z |
 | logger.js | 16632 | 2026-06-08T20:28:50.013Z |
-| mode.js | 2540 | 2026-05-30T01:25:39.590Z |
+| mode-lifecycle.js | 6175 | 2026-06-10T00:04:52.690Z |
+| mode.js | 2944 | 2026-06-10T00:04:52.691Z |
 | oneshot-store.js | 2337 | 2026-06-08T21:07:45.656Z |
-| paths.generated.js | 10736 | 2026-06-08T20:28:50.013Z |
+| paths.generated.js | 10807 | 2026-06-10T00:04:52.691Z |
 | paths.js | 6608 | 2026-06-05T01:45:08.446Z |
 | project-config.js | 4488 | 2026-05-30T01:25:39.591Z |
 | provider-health.js | 10306 | 2026-05-30T01:25:39.592Z |

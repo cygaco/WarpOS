@@ -1,34 +1,34 @@
 {
   "schema": "warpos/spec-graph/v1",
-  "generatedAt": "2026-06-09T04:27:35.677Z",
+  "generatedAt": "2026-06-10T00:19:58.436Z",
   "sources": {
     "sprintRequirements": ".claude/project/sprint/requirements",
     "canonicalSpecs": "_requirements/04-features",
     "canonicalSteps": "_requirements/00-canonical/STEPS.json"
   },
   "counts": {
-    "nodes": 1960,
-    "edges": 2608,
+    "nodes": 1983,
+    "edges": 2634,
     "byKind": {
       "feature": 7,
       "phase": 2,
-      "ac": 270,
-      "copy": 225,
-      "story-hl": 157,
-      "input": 185,
-      "story": 463,
-      "requirement": 447,
-      "trace": 169,
+      "ac": 275,
+      "copy": 227,
+      "story-hl": 159,
+      "input": 187,
+      "requirement": 452,
+      "story": 468,
+      "trace": 171,
       "other": 23,
       "external-service": 1,
       "step": 10,
       "ticket": 1
     },
     "byEdgeKind": {
-      "references": 1128,
-      "implements": 376,
-      "satisfies": 713,
-      "traces": 367,
+      "implements": 381,
+      "satisfies": 720,
+      "references": 1138,
+      "traces": 371,
       "implements-feature": 10,
       "belongs-to": 10,
       "precedes": 4
@@ -79,6 +79,144 @@
       "id": "PHASE-ONBOARDING",
       "source": "_requirements/00-canonical/STEPS.json",
       "kind": "phase"
+    },
+    {
+      "id": "S-LC-01:AC-1",
+      "source": ".claude/project/sprint/requirements/S-LC-01/acceptance-criteria.md",
+      "kind": "ac",
+      "sprint": "S-LC-01"
+    },
+    {
+      "id": "S-LC-01:AC-2",
+      "source": ".claude/project/sprint/requirements/S-LC-01/acceptance-criteria.md",
+      "kind": "ac",
+      "sprint": "S-LC-01"
+    },
+    {
+      "id": "S-LC-01:AC-3",
+      "source": ".claude/project/sprint/requirements/S-LC-01/acceptance-criteria.md",
+      "kind": "ac",
+      "sprint": "S-LC-01"
+    },
+    {
+      "id": "S-LC-01:AC-4",
+      "source": ".claude/project/sprint/requirements/S-LC-01/acceptance-criteria.md",
+      "kind": "ac",
+      "sprint": "S-LC-01"
+    },
+    {
+      "id": "S-LC-01:AC-5",
+      "source": ".claude/project/sprint/requirements/S-LC-01/acceptance-criteria.md",
+      "kind": "ac",
+      "sprint": "S-LC-01"
+    },
+    {
+      "id": "S-LC-01:C-1",
+      "source": ".claude/project/sprint/requirements/S-LC-01/copy.md",
+      "kind": "copy",
+      "sprint": "S-LC-01"
+    },
+    {
+      "id": "S-LC-01:C-2",
+      "source": ".claude/project/sprint/requirements/S-LC-01/copy.md",
+      "kind": "copy",
+      "sprint": "S-LC-01"
+    },
+    {
+      "id": "S-LC-01:H-1",
+      "source": ".claude/project/sprint/requirements/S-LC-01/granular-stories.md",
+      "kind": "story-hl",
+      "sprint": "S-LC-01"
+    },
+    {
+      "id": "S-LC-01:H-2",
+      "source": ".claude/project/sprint/requirements/S-LC-01/high-level-stories.md",
+      "kind": "story-hl",
+      "sprint": "S-LC-01"
+    },
+    {
+      "id": "S-LC-01:IN-1",
+      "source": ".claude/project/sprint/requirements/S-LC-01/inputs.md",
+      "kind": "input",
+      "sprint": "S-LC-01"
+    },
+    {
+      "id": "S-LC-01:IN-2",
+      "source": ".claude/project/sprint/requirements/S-LC-01/inputs.md",
+      "kind": "input",
+      "sprint": "S-LC-01"
+    },
+    {
+      "id": "S-LC-01:R-1",
+      "source": ".claude/project/sprint/requirements/S-LC-01/granular-stories.md",
+      "kind": "requirement",
+      "sprint": "S-LC-01"
+    },
+    {
+      "id": "S-LC-01:R-2",
+      "source": ".claude/project/sprint/requirements/S-LC-01/granular-stories.md",
+      "kind": "requirement",
+      "sprint": "S-LC-01"
+    },
+    {
+      "id": "S-LC-01:R-3",
+      "source": ".claude/project/sprint/requirements/S-LC-01/granular-stories.md",
+      "kind": "requirement",
+      "sprint": "S-LC-01"
+    },
+    {
+      "id": "S-LC-01:R-4",
+      "source": ".claude/project/sprint/requirements/S-LC-01/granular-stories.md",
+      "kind": "requirement",
+      "sprint": "S-LC-01"
+    },
+    {
+      "id": "S-LC-01:R-5",
+      "source": ".claude/project/sprint/requirements/S-LC-01/granular-stories.md",
+      "kind": "requirement",
+      "sprint": "S-LC-01"
+    },
+    {
+      "id": "S-LC-01:S-1",
+      "source": ".claude/project/sprint/requirements/S-LC-01/acceptance-criteria.md",
+      "kind": "story",
+      "sprint": "S-LC-01"
+    },
+    {
+      "id": "S-LC-01:S-2",
+      "source": ".claude/project/sprint/requirements/S-LC-01/acceptance-criteria.md",
+      "kind": "story",
+      "sprint": "S-LC-01"
+    },
+    {
+      "id": "S-LC-01:S-3",
+      "source": ".claude/project/sprint/requirements/S-LC-01/acceptance-criteria.md",
+      "kind": "story",
+      "sprint": "S-LC-01"
+    },
+    {
+      "id": "S-LC-01:S-4",
+      "source": ".claude/project/sprint/requirements/S-LC-01/acceptance-criteria.md",
+      "kind": "story",
+      "sprint": "S-LC-01"
+    },
+    {
+      "id": "S-LC-01:S-5",
+      "source": ".claude/project/sprint/requirements/S-LC-01/acceptance-criteria.md",
+      "kind": "story",
+      "sprint": "S-LC-01"
+    },
+    {
+      "id": "S-LC-01:TR-1",
+      "source": ".claude/project/sprint/requirements/S-LC-01/trace.md",
+      "kind": "trace",
+      "sprint": "S-LC-01"
+    },
+    {
+      "id": "S-LC-01:TR-2",
+      "source": ".claude/project/sprint/requirements/S-LC-01/trace.md",
+      "kind": "trace",
+      "sprint": "S-LC-01"
     },
     {
       "id": "SP-20260512-001:AC-1",
@@ -11778,6 +11916,162 @@
     }
   ],
   "edges": [
+    {
+      "from": "S-LC-01:AC-1",
+      "to": "S-LC-01:S-1",
+      "kind": "implements",
+      "source": ".claude/project/sprint/requirements/S-LC-01/granular-stories.md"
+    },
+    {
+      "from": "S-LC-01:AC-1",
+      "to": "S-LC-01:S-2",
+      "kind": "implements",
+      "source": ".claude/project/sprint/requirements/S-LC-01/granular-stories.md"
+    },
+    {
+      "from": "S-LC-01:AC-1",
+      "to": "S-LC-01:S-3",
+      "kind": "implements",
+      "source": ".claude/project/sprint/requirements/S-LC-01/granular-stories.md"
+    },
+    {
+      "from": "S-LC-01:AC-1",
+      "to": "S-LC-01:S-4",
+      "kind": "implements",
+      "source": ".claude/project/sprint/requirements/S-LC-01/granular-stories.md"
+    },
+    {
+      "from": "S-LC-01:AC-1",
+      "to": "S-LC-01:S-5",
+      "kind": "implements",
+      "source": ".claude/project/sprint/requirements/S-LC-01/granular-stories.md"
+    },
+    {
+      "from": "S-LC-01:H-1",
+      "to": "S-LC-01:R-1",
+      "kind": "satisfies",
+      "source": ".claude/project/sprint/requirements/S-LC-01/high-level-stories.md"
+    },
+    {
+      "from": "S-LC-01:H-2",
+      "to": "S-LC-01:R-2",
+      "kind": "satisfies",
+      "source": ".claude/project/sprint/requirements/S-LC-01/high-level-stories.md"
+    },
+    {
+      "from": "S-LC-01:S-1",
+      "to": "S-LC-01:AC-1",
+      "kind": "references",
+      "source": ".claude/project/sprint/requirements/S-LC-01/acceptance-criteria.md"
+    },
+    {
+      "from": "S-LC-01:S-1",
+      "to": "S-LC-01:H-1",
+      "kind": "references",
+      "source": ".claude/project/sprint/requirements/S-LC-01/granular-stories.md"
+    },
+    {
+      "from": "S-LC-01:S-1",
+      "to": "S-LC-01:R-1",
+      "kind": "satisfies",
+      "source": ".claude/project/sprint/requirements/S-LC-01/granular-stories.md"
+    },
+    {
+      "from": "S-LC-01:S-2",
+      "to": "S-LC-01:AC-2",
+      "kind": "references",
+      "source": ".claude/project/sprint/requirements/S-LC-01/acceptance-criteria.md"
+    },
+    {
+      "from": "S-LC-01:S-2",
+      "to": "S-LC-01:H-1",
+      "kind": "references",
+      "source": ".claude/project/sprint/requirements/S-LC-01/granular-stories.md"
+    },
+    {
+      "from": "S-LC-01:S-2",
+      "to": "S-LC-01:R-2",
+      "kind": "satisfies",
+      "source": ".claude/project/sprint/requirements/S-LC-01/granular-stories.md"
+    },
+    {
+      "from": "S-LC-01:S-3",
+      "to": "S-LC-01:AC-3",
+      "kind": "references",
+      "source": ".claude/project/sprint/requirements/S-LC-01/acceptance-criteria.md"
+    },
+    {
+      "from": "S-LC-01:S-3",
+      "to": "S-LC-01:H-1",
+      "kind": "references",
+      "source": ".claude/project/sprint/requirements/S-LC-01/granular-stories.md"
+    },
+    {
+      "from": "S-LC-01:S-3",
+      "to": "S-LC-01:R-3",
+      "kind": "satisfies",
+      "source": ".claude/project/sprint/requirements/S-LC-01/granular-stories.md"
+    },
+    {
+      "from": "S-LC-01:S-4",
+      "to": "S-LC-01:AC-4",
+      "kind": "references",
+      "source": ".claude/project/sprint/requirements/S-LC-01/acceptance-criteria.md"
+    },
+    {
+      "from": "S-LC-01:S-4",
+      "to": "S-LC-01:H-1",
+      "kind": "references",
+      "source": ".claude/project/sprint/requirements/S-LC-01/granular-stories.md"
+    },
+    {
+      "from": "S-LC-01:S-4",
+      "to": "S-LC-01:R-4",
+      "kind": "satisfies",
+      "source": ".claude/project/sprint/requirements/S-LC-01/granular-stories.md"
+    },
+    {
+      "from": "S-LC-01:S-5",
+      "to": "S-LC-01:AC-5",
+      "kind": "references",
+      "source": ".claude/project/sprint/requirements/S-LC-01/acceptance-criteria.md"
+    },
+    {
+      "from": "S-LC-01:S-5",
+      "to": "S-LC-01:H-1",
+      "kind": "references",
+      "source": ".claude/project/sprint/requirements/S-LC-01/granular-stories.md"
+    },
+    {
+      "from": "S-LC-01:S-5",
+      "to": "S-LC-01:R-5",
+      "kind": "satisfies",
+      "source": ".claude/project/sprint/requirements/S-LC-01/granular-stories.md"
+    },
+    {
+      "from": "S-LC-01:TR-1",
+      "to": "S-LC-01:R-1",
+      "kind": "traces",
+      "source": ".claude/project/sprint/requirements/S-LC-01/trace.md"
+    },
+    {
+      "from": "S-LC-01:TR-1",
+      "to": "S-LC-01:S-1",
+      "kind": "traces",
+      "source": ".claude/project/sprint/requirements/S-LC-01/trace.md"
+    },
+    {
+      "from": "S-LC-01:TR-2",
+      "to": "S-LC-01:R-2",
+      "kind": "traces",
+      "source": ".claude/project/sprint/requirements/S-LC-01/trace.md"
+    },
+    {
+      "from": "S-LC-01:TR-2",
+      "to": "S-LC-01:S-2",
+      "kind": "traces",
+      "source": ".claude/project/sprint/requirements/S-LC-01/trace.md"
+    },
     {
       "from": "SP-20260512-001:IN-1",
       "to": "SP-20260512-001:C-10",

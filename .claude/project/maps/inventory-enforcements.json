@@ -1,9 +1,9 @@
 {
   "metadata": {
-    "generated": "2026-06-09T04:27:35.568Z",
-    "lastUpdated": "2026-06-09T04:27:35.568Z",
+    "generated": "2026-06-10T00:19:58.299Z",
+    "lastUpdated": "2026-06-10T00:19:58.299Z",
     "total_hooks": 72,
-    "total_modules": 16,
+    "total_modules": 17,
     "uncurated": 0,
     "total_gaps": 83,
     "gaps_closed": 75,
@@ -1398,8 +1398,8 @@
         "context-sources",
         "paths"
       ],
-      "file_size": 29099,
-      "file_modified": "2026-06-09T00:41:40.598Z"
+      "file_size": 30063,
+      "file_modified": "2026-06-10T00:04:52.691Z"
     },
     {
       "id": "session-stop-sentinel.test",
@@ -1983,8 +1983,8 @@
         "logger",
         "role-aliases"
       ],
-      "file_size": 17162,
-      "file_modified": "2026-06-09T00:41:40.600Z"
+      "file_size": 17839,
+      "file_modified": "2026-06-10T00:04:52.692Z"
     },
     {
       "id": "template-fillability",
@@ -2332,6 +2332,14 @@
       "file_modified": "2026-06-08T20:28:50.013Z"
     },
     {
+      "id": "mode-lifecycle",
+      "type": "module",
+      "file": "scripts/hooks/lib/mode-lifecycle.js",
+      "file_size": 6175,
+      "file_modified": "2026-06-10T00:04:52.690Z",
+      "uncurated": true
+    },
+    {
       "id": "mode",
       "type": "module",
       "kind": "lib",
@@ -2342,8 +2350,8 @@
         "session-start.js"
       ],
       "file": "scripts/hooks/lib/mode.js",
-      "file_size": 2540,
-      "file_modified": "2026-05-30T01:25:39.590Z"
+      "file_size": 2944,
+      "file_modified": "2026-06-10T00:04:52.691Z"
     },
     {
       "id": "oneshot-store",
@@ -2364,8 +2372,8 @@
       ],
       "generated_from": "framework/paths.registry.json",
       "file": "scripts/hooks/lib/paths.generated.js",
-      "file_size": 10736,
-      "file_modified": "2026-06-08T20:28:50.013Z"
+      "file_size": 10807,
+      "file_modified": "2026-06-10T00:04:52.691Z"
     },
     {
       "id": "paths",
