@@ -234,6 +234,57 @@ ok("BLOCKER 2: NaN / Infinity / non-numeric bytes clamp to 0 (no Infinity, no Na
   }
 });
 
+// ── BLOCKER 3: exit_code type-spoof → unmetered → under-report ────────────────
+// `"0" !== 0` is true, so a strict `!== 0` skip lets a crafted STRING "0" spoof a
+// real success into an UNMETERED skip → spend under-reported → ceiling silently
+// exceeded. A naive `Number(ec) !== 0` fixes the string-0 case but re-opens it for
+// garbage (`Number("abc")` → NaN, `NaN !== 0` true). A spend ledger must NEVER
+// UNDER-report: meter unless the exit_code parses to a finite, non-zero number.
+
+ok('BLOCKER 3: exit_code:"0" (STRING success) is METERED — not spoofed into a skip', () => {
+  const cost = ledger.estimateRecordCost({
+    provider: "gemini", model: "gemini-3.1-pro-preview",
+    prompt_bytes: 1000, stdout_bytes: 1000, exit_code: "0",
+  });
+  assert.ok(cost, 'exit_code:"0" (string success) must produce a metered record, not null');
+  assert.ok(cost.usd > 0, `metered usd must be > 0, got ${cost && cost.usd}`);
+});
+
+ok('BLOCKER 3: a garbage exit_code ("abc", unparseable) is METERED — no under-report', () => {
+  const cost = ledger.estimateRecordCost({
+    provider: "gemini", model: "gemini-3.1-pro-preview",
+    prompt_bytes: 1000, stdout_bytes: 1000, exit_code: "abc",
+  });
+  assert.ok(cost, 'a present-but-unparseable exit_code (Number("abc")=NaN) must NOT skip metering');
+  assert.ok(cost.usd > 0, `garbage-exit_code spend must still be counted, got ${cost && cost.usd}`);
+});
+
+ok("BLOCKER 3: a real numeric non-zero exit_code (1) stays NO-CHARGE (failure preserved)", () => {
+  const cost = ledger.estimateRecordCost({
+    provider: "gemini", model: "gemini-3.1-pro-preview",
+    prompt_bytes: 1000, stdout_bytes: 1000, exit_code: 1,
+  });
+  assert.strictEqual(cost, null, "a genuine non-zero exit_code is still treated as a failed, no-charge call");
+});
+
+ok("BLOCKER 3: an absent exit_code is METERED (preserved)", () => {
+  const cost = ledger.estimateRecordCost({
+    provider: "gemini", model: "gemini-3.1-pro-preview",
+    prompt_bytes: 1000, stdout_bytes: 1000, // no exit_code field at all
+  });
+  assert.ok(cost && cost.usd > 0, "an absent exit_code must be metered exactly as before");
+});
+
+ok('BLOCKER 3 (ledger level): a crafted exit_code:"0" record does NOT under-report the total', () => {
+  const numeric = tmpCompletions([paidRecord({ provider: "gemini", model: "gpt-5", stdoutBytes: 4000, exitCode: 0 })]);
+  const spoofed = tmpCompletions([paidRecord({ provider: "gemini", model: "gpt-5", stdoutBytes: 4000, exitCode: "0" })]);
+  const numLed = ledger.computeLedger({ completionsFile: numeric, authOverride: { spend_ceiling_usd: 500 } });
+  const spoofLed = ledger.computeLedger({ completionsFile: spoofed, authOverride: { spend_ceiling_usd: 500 } });
+  assert.strictEqual(spoofLed.calls, 1, 'the "0"-string record is counted as a real metered call');
+  assert.strictEqual(spoofLed.spentUsd, numLed.spentUsd, "the string-0 total must EQUAL the numeric-0 total — no under-report");
+  assert.ok(spoofLed.spentUsd > 0, "spend is actually metered");
+});
+
 ok("happy path intact: a real model with positive bytes prices exactly as before", () => {
   const price = ledger.PRICE_TABLE["gemini-3.1-pro-preview"];
   const inTok = 4000 / 4, outTok = 4000 / 4; // BYTES_PER_TOKEN = 4

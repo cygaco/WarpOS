@@ -127,9 +127,17 @@ function resolveCeiling(auth) {
 function estimateRecordCost(rec) {
   const provider = String(rec.provider || "").toLowerCase();
   if (!PAID_PROVIDERS.has(provider)) return null; // claude / unknown → not metered
-  // exit_code 0 (ok) only — a failed call that produced no provider output is
-  // best treated as no-charge for a report-only ledger.
-  if (rec.exit_code != null && rec.exit_code !== 0) return null;
+  // SPOOF GUARD (S-LC-07 BLOCKER 3): skip metering ONLY for a clearly-FAILED
+  // call — exit_code present AND parsing to a finite, NON-ZERO number. A "0"/0
+  // success, an absent exit_code, OR an unparseable/garbage exit_code ("abc")
+  // all fall through and ARE metered. A spend ledger must NEVER UNDER-report:
+  // a strict `!== 0` lets `exit_code:"0"` (STRING) spoof a real success into an
+  // unmetered skip, and a naive `Number(ec) !== 0` lets garbage→NaN do the same
+  // (`NaN !== 0` is true). Only a parseable, finite, non-zero code is no-charge.
+  if (rec.exit_code != null) {
+    const ec = Number(rec.exit_code);
+    if (Number.isFinite(ec) && ec !== 0) return null;
+  }
   const model = String(rec.model || "").toLowerCase();
   // SPOOF GUARD (S-LC-07 BLOCKER 1): match `model` ONLY against OWN data keys of
   // PRICE_TABLE. A plain object literal exposes its prototype chain, so a record
