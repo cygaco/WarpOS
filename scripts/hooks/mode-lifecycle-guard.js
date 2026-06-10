@@ -64,6 +64,11 @@ function readStdinJson() {
         resolve(null);
       }
     });
+    // fail-open (security-reviewer S-LC-03): a stream-level 'error' (e.g. broken
+    // pipe) on a listener-less stream throws an UNHANDLED exception that bypasses
+    // the await chain + the top-level finally{exit(0)} → process would exit 1,
+    // violating the "exit 0 on ANY internal error" report-only contract. Resolve null.
+    process.stdin.on("error", () => resolve(null));
     if (process.stdin.isTTY) resolve(null);
   });
 }
