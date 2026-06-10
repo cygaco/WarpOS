@@ -768,6 +768,9 @@ Every sprint that has been planned, executed, released, or retrospected — one 
 
 | Sprint | Title | Status | Started | Closed | Release |
 |---|---|---|---|---|---|
+| [SP-20260610-001](.claude/project/sprint/sprints/SP-20260610-001/) | Lane A - ship/install integrity (WARPOS.md sweep) | planning | 2026-06-10T15:51:46.173Z |  |  |
+| [SP-20260610-003](.claude/project/sprint/sprints/SP-20260610-003/) | Lanes C+D - sprint-pipeline truth + research:deep runnability (WARPOS.md sweep) | planning | 2026-06-10T15:32:08.947Z |  |  |
+| [SP-20260610-002](.claude/project/sprint/sprints/SP-20260610-002/) | Lane B - dispatch/registry coherence (WARPOS.md sweep) | retrospected | 2026-06-10T14:46:17.762Z | 2026-06-10T15:30:02.283Z |  |
 | [S-LC-12](.claude/project/sprint/sprints/S-LC-12/) | Playbook design + dry-run simulation pilot + e2e validation (Wave 5 capstone of E-LIFECYCLE-001) | done | 2026-06-10T04:57:03.610Z | 2026-06-10 | branch june-9 (capstone; α-led validation — 21 suites + 8 enforcers + 5 e2e pilot probes, 0 defects; playbook design reference-only; epic CODE-COMPLETE) |
 | [S-LC-11](.claude/project/sprint/sprints/S-LC-11/) | Acceptance-criteria 20-category enforcement (Wave 5 of E-LIFECYCLE-001) | done | 2026-06-10T03:50:41.417Z | 2026-06-10 | branch june-9 @d946f43 (engine sprint; gauntlet — qa PASS, backend FAIL idempotency→fixed @795123c→PASS; report-only; ff-merge close, retro deferred to epic close) |
 | [S-LC-10](.claude/project/sprint/sprints/S-LC-10/) | Provider-tier readiness — value-free T1/T2/T3 over the health stack (Wave 4 of E-LIFECYCLE-001) | done | 2026-06-10T03:50:41.342Z | 2026-06-10 | branch june-9 @4a5e508 (engine sprint; gauntlet-clean — 3-lane all PASS incl. β's 3 security flags; report-only; ff-merge close, retro deferred to epic close) |

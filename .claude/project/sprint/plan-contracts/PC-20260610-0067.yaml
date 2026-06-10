@@ -1,0 +1,138 @@
+schema: warpos/sprint/plan-contract/v1
+id: PC-20260610-0067
+created_at: "2026-06-10T14:47:11.605Z"
+updated_at: "2026-06-10T14:47:11.605Z"
+sprint: SP-20260610-001
+source_request: "Lane A — ship/install integrity fixes from the 2026-06-10 WARPOS.md sweep (runtime/notes/warpos-md-sweep-2026-06-10.md, §Lane A). Five items, all verified reproducing at canonical @75cd7e5, plus the class-closing enforcer extension."
+source_request_verbatim: "Lane A — ship/install integrity fixes from the 2026-06-10 WARPOS.md sweep (runtime/notes/warpos-md-sweep-2026-06-10.md, §Lane A). Five items, all verified reproducing: (1) doogle WG-1: ship scripts/dispatch-claude.js + scripts/dispatch/dispatch-claude.test.js in the framework manifest generator (scripts/generate-framework-manifest.js top_script entries) so products receive the mandatory build-chain wrapper; (2) doogle WG-9: scripts/sprint/release.js regressionSeedGate must detect product-vs-canonical BEFORE require('../testsuite/enforce') — product repos no-op exit 0 without the module existing; canonical unchanged mandatory; add a product-role fixture to scripts/sprint/test-regression-seed-gate.js; (3) almanac AL-W-007: ship .claude/runtime/package.json {\"type\":\"commonjs\"} in the scaffold/install payload (same pattern as the existing scripts/package.json WG-9 pin); (4) almanac AL-W-004: add the scaffolded-brief-location pointer to the scaffold's PROJECT.md template; (5) E-LIFECYCLE-001 step 4 (operator pre-authorized): fix pre-existing broken test tests/regression/SP-20260518-007/check-ac-coverage.test.js (stale check/->scan/ path from SP-20260528-001 + missing real-tree fixture) — repoint + restore fixture, or retire with evidence if superseded. PLUS the class-closing enforcer: extend scripts/checks/warpos-install-baseline.js (fail-closed, non-zero exit per beta) to assert every script path mandated by a guard's remediation message / required by a shipped gate exists in the ship payload."
+request_type: bug_fix_batch
+interpreted_intent: "Convert four ship/install-integrity defects + one silently-broken regression test from 'present in canonical but never reaching products / failing closed wrongly / crashing the suite' into shipped, honest, gated state — and close the underlying closed-trap CLASS once via a ship-payload enforcer so the same gap can't recur silently. Each fix is file-disjoint from Lane B (no .claude/agents/** specs, no dispatch-contract.json, no role-parity-scan.js, no epsilon.md)."
+user_or_business_outcome: "Products that install/update WarpOS receive the mandatory build-chain wrapper (dispatch-claude.js) the dispatch guides tell them to use; product repos can close sprints without the regression-seed gate falsely blocking on a canonical-only module; scaffolded products get the CommonJS runtime pin (no ESM-inherit breakage of ad-hoc runtime .js) and a PROJECT.md that points to the scaffolded brief; the test suite is honestly green (no top-level ENOENT crash masquerading as a pass); and the closed-trap class is mechanically self-detecting at /scan:full going forward."
+affected_surfaces:
+  - surface: "scripts/generate-framework-manifest.js TOP_LEVEL_SCRIPTS (WG-1)"
+    evidence_level: verified_from_repo
+    notes: "CONFIRMED: only dispatch-agent.js is in TOP_LEVEL_SCRIPTS (L293); scripts/dispatch-claude.js (top-level, 22296 bytes) has NO path to inclusion (generator only walks scripts/<subdir> + the explicit top-level list). The .test.js lives under scripts/dispatch/ which DOES ship via the dispatch_engine ASSET_DIR (L208) — verify it's actually emitted; the load-bearing add is the top-level wrapper itself."
+  - surface: "scripts/sprint/release.js regressionSeedGate (WG-9, L98-147)"
+    evidence_level: verified_from_repo
+    notes: "CONFIRMED: run() calls require('../testsuite/enforce').run(opts) INSIDE the try; in a product repo where testsuite/enforce.js was never shipped, the require throws and is caught as runner_error -> exit 3 (BLOCK), not the intended product no-op exit 0. The product-vs-canonical role detection must precede the require. Canonical behavior MUST be unchanged (still mandatory, still fail-closed on real regression/runner-error)."
+  - surface: "scripts/sprint/test-regression-seed-gate.js (WG-9 fixture)"
+    evidence_level: verified_from_repo
+    notes: "Add a product-role fixture asserting the BEFORE-require product no-op path: when role=product and the module is absent, gate returns 0 (no throw, no exit 3). Tests A-G already exist; B stubs product opt-in but does not exercise the missing-module require path. Keep A-G green."
+  - surface: ".claude/runtime/package.json (NEW — AL-W-007) + its inclusion in the ship/install payload"
+    evidence_level: verified_from_repo
+    notes: "CONFIRMED absent. Mirror scripts/package.json ({\"type\":\"commonjs\"} + the WG-9 rationale comment). Must SHIP: the generator currently EXCLUDES .claude/runtime/ wholesale (EXCLUDE_RELATIVE_PREFIXES L65). Ship it via a narrow allowlist (TOP_LEVEL_FRAMEWORK_FILES-style single-file entry or a targeted exclude carve-out) OR the scaffold/install payload path — DoE picks the mechanism; the test is that an installed/scaffolded product has .claude/runtime/package.json = type:commonjs."
+  - surface: "scaffold PROJECT.md template (AL-W-004)"
+    evidence_level: inferred_from_repo
+    notes: "setup.js findExistingBrief() auto-detects but the PROJECT.md template lacks the brief-location pointer line. Locate the actual scaffold template (framework/templates/** likely) and add a docs line pointing at the scaffolded brief location. Verify the template is the one the scaffolder renders."
+  - surface: "tests/regression/SP-20260518-007/check-ac-coverage.test.js (E-LIFECYCLE step 4)"
+    evidence_level: verified_from_repo
+    notes: "CONFIRMED two defects: (a) L147 reads .claude/commands/check/ac-coverage.md but SP-20260528-001 moved it to .claude/commands/scan/ac-coverage.md -> top-level ENOENT throw (process crashes AFTER prose test 'passes', so the suite is silently broken — a real fail-closed hole); (b) test_check_ac_coverage_json_output_shape expects total_acs etc., but check-ac-coverage.js --json returns {gate_applicable:false, error:'acceptance-criteria.md missing'} because the SP-20260518-007 requirements fixture isn't on the real tree. Repoint check/->scan/ AND restore/point a real-tree fixture so --json returns the populated shape, OR retire with evidence if superseded. check-ac-coverage.js EXISTS at scripts/sprint/ (the require at L20-22 resolves)."
+  - surface: "scripts/checks/warpos-install-baseline.js --guard-remediation (the class-closing enforcer)"
+    evidence_level: verified_from_repo
+    notes: "Today --guard-remediation scans scripts/hooks/*.js remediation strings and asserts the named script exists on canonical DISK (fs.existsSync against REPO_ROOT). The Lane A extension: assert every guard-mandated path (and every script path a SHIPPED gate requires) exists in the SHIP PAYLOAD (.claude/framework-manifest.json assets), not merely on disk — that is what catches WG-1/WG-9 (file present in canonical, absent from the install). Fail-closed, non-zero exit per beta. Keep the existing on-disk check; ADD the manifest-coverage assertion."
+  - surface: "_warpos/MANIFEST.json + .claude/framework-manifest.json (regen BOTH last)"
+    evidence_level: verified_from_repo
+    notes: "WG-1 + AL-W-007 add hash-tracked ship entries; the new enforcer + restored fixture are hash-tracked scripts/tests. Regen BOTH manifests as the LAST step before commit (BC-02/BC-05/sprint-close)."
+current_behavior:
+  evidence_level: verified_from_repo
+  notes: "All five reproduce at canonical @75cd7e5 (verified this session by reading each file): WG-1 dispatch-claude.js not in TOP_LEVEL_SCRIPTS; WG-9 require() inside the gate try -> product repos block at exit 3; AL-W-007 .claude/runtime/package.json absent + .claude/runtime/ wholesale-excluded from the manifest; AL-W-004 PROJECT.md template lacks the brief pointer; E-LIFECYCLE step4 test crashes with ENOENT on the stale check/ path + expects a fixture-backed --json shape that isn't on the tree. The enforcer asserts on-disk existence only, so it cannot catch a canonical-present/install-absent file."
+desired_behavior: "dispatch-claude.js + its test ship to products via the manifest generator; regressionSeedGate detects product-vs-canonical BEFORE the require so product repos no-op exit 0 (canonical unchanged: mandatory + fail-closed on real regression/runner-error); .claude/runtime/package.json = type:commonjs ships in the scaffold/install payload; the scaffold PROJECT.md template carries the brief-location pointer; tests/regression/SP-20260518-007/check-ac-coverage.test.js passes cleanly (scan/ path + real fixture) with no top-level throw; warpos-install-baseline.js fails closed (non-zero) when any guard-mandated or shipped-gate-required script path is absent from the ship payload. Both manifests regenerated; Lane B files untouched."
+scope:
+  size: m
+  risk_level: high
+  complexity_drivers:
+    - "ship-boundary edits (manifest generator) are high-blast-radius: a wrong entry leaks maintainer content or breaks install — additive top_script entries only, regen + verify the entry lands in framework-manifest.json"
+    - "the .claude/runtime/ exclude carve-out for one file must NOT re-admit per-project runtime state (the exclude exists for a reason — Phase 4J) — narrow single-file allowlist, verify no other runtime artifact is swept in"
+    - "WG-9 must preserve canonical mandatory-fail-closed behavior EXACTLY while adding the product no-op-before-require path — golden the A-G test verdicts before, identical after + 1 new fixture"
+    - "the enforcer extension reads the generated manifest — it must fail-closed if the manifest is missing/stale (an enforcer that can't read its input must not read green), mirroring the existing runGuardRemediationCheck fail-closed pattern"
+    - "the AC-coverage test fix must make the suite HONESTLY green (no silent top-level crash) — the ENOENT currently exits 0 by luck of ordering; the fix must surface a real fail if the path is wrong"
+scope_variants:
+  minimal_safe: "WG-1 + WG-9 + the enforcer extension only (the closed-trap class + its class-closer); defer AL-W-007/AL-W-004/step4 to a follow-up."
+  recommended: "All five items + the enforcer extension. WG-1 ship dispatch-claude.js + test; WG-9 product-vs-canonical before require + product-role fixture; AL-W-007 ship runtime package.json; AL-W-004 PROJECT.md brief pointer; step4 fix the broken AC-coverage test; extend warpos-install-baseline.js to ship-payload coverage. Regen both manifests, ff-merge close, defer retro to milestone."
+  expanded: "Above + audit the full TOP_LEVEL_FRAMEWORK_FILES / TOP_LEVEL_SCRIPTS set against the manifest for any OTHER canonical-present/install-absent script the new enforcer would now flag (close the whole class, not just the two named instances) — ONLY if the enforcer surfaces additional offenders within scope."
+assumptions:
+  - "scripts/dispatch/dispatch-claude.test.js already ships via the dispatch_engine ASSET_DIR; only the top-level dispatch-claude.js needs a new TOP_LEVEL_SCRIPTS entry (to be re-confirmed by running the generator + grepping the manifest in the build ticket)."
+  - "The product-vs-canonical role signal already exists in testsuite/enforce.run() return (it returns {role, enforced}); WG-9's fix is to determine product-vs-canonical WITHOUT requiring the module — via a role detector that doesn't depend on testsuite/enforce existing."
+  - The .claude/runtime/ exclude can be safely carved out for a single static package.json without re-admitting per-project runtime state.
+  - "The scaffold PROJECT.md template lives under framework/templates/** (the generic-template ship dir); to be located precisely in the build ticket."
+open_questions:
+  - "WG-9 product-vs-canonical detection mechanism: a standalone role detector (read .claude/framework-installed.json presence / a marker) that does NOT require testsuite/enforce — DoE to specify the exact signal so canonical stays mandatory and products no-op."
+  - "AL-W-007 ship mechanism: narrow exclude carve-out in generate-framework-manifest.js vs a scaffold/install-payload entry — DoE picks; the acceptance test is identical either way (installed product has the file)."
+non_goals:
+  - "Any Lane B surface: .claude/agents/** specs, _org/dispatch-contract.json, scripts/checks/role-parity*, epsilon.md (file-disjoint by design)."
+  - "Lane C / Lane D items (sprint-pipeline truth, research:deep runnability)."
+  - "Changing canonical regression-seed gate behavior (it stays mandatory + fail-closed)."
+  - "Pushing to remote (α owns the final merge to june-9/main; ε commits locally only)."
+requirement_areas:
+  - "WG-1: ship dispatch-claude.js + test via manifest generator top_script"
+  - "WG-9: product-vs-canonical before require + product-role fixture"
+  - "AL-W-007: ship .claude/runtime/package.json commonjs in scaffold/install payload"
+  - "AL-W-004: scaffolded-brief-location pointer in PROJECT.md template"
+  - "E-LIFECYCLE step4: fix the broken AC-coverage regression test"
+  - "class-closer: warpos-install-baseline.js ship-payload coverage assertion"
+  - "regen BOTH manifests + keep the regression suite green"
+high_level_story_candidates:
+  - "As a product installing WarpOS, I receive the mandatory build-chain wrapper (dispatch-claude.js) the dispatch guides require, so build-chain dispatch isn't a closed trap."
+  - "As a product repo, I can close a sprint without the regression-seed gate falsely blocking on a canonical-only module, while canonical stays mandatory."
+  - "As a scaffolded product, my ad-hoc runtime .js runs as CommonJS and my PROJECT.md points to the scaffolded brief."
+  - "As the maintainer, the test suite is honestly green (no silent top-level ENOENT crash), and the closed-trap class is mechanically self-detecting at /scan:full."
+granular_story_candidates:
+  - "TICKET-1 (BACKEND): WG-1 — add scripts/dispatch-claude.js (+ confirm/add scripts/dispatch/dispatch-claude.test.js) to generate-framework-manifest.js TOP_LEVEL_SCRIPTS; run the generator; assert both land in .claude/framework-manifest.json."
+  - "TICKET-2 (BACKEND): WG-9 — refactor regressionSeedGate so product-vs-canonical is determined BEFORE require('../testsuite/enforce'); product repos no-op exit 0; canonical unchanged (mandatory, fail-closed); add a product-role fixture to test-regression-seed-gate.js; A-G stay green."
+  - "TICKET-3 (BACKEND): AL-W-007 + AL-W-004 — create .claude/runtime/package.json (type:commonjs, mirror scripts/package.json) + ship it in the scaffold/install payload; add the brief-location pointer to the scaffold PROJECT.md template; verify an install/scaffold materializes both."
+  - "TICKET-4 (BACKEND): E-LIFECYCLE step4 — fix tests/regression/SP-20260518-007/check-ac-coverage.test.js (repoint check/->scan/, restore/point a real-tree fixture so --json returns the populated shape); run it green with no top-level throw."
+  - "TICKET-5 (BACKEND, close-out): extend scripts/checks/warpos-install-baseline.js with a ship-payload (manifest) coverage assertion (guard-mandated + shipped-gate-required script paths exist in the manifest), fail-closed; regen BOTH manifests; ff-merge to main; defer retro to milestone close."
+workstream_candidates:
+  - "manifest-generator ship entries (WG-1) + the enforcer that guards them (ship-payload coverage)"
+  - "release.js product-vs-canonical gate refactor (WG-9) + fixture"
+  - "scaffold/install payload additions (AL-W-007 runtime pin + AL-W-004 brief pointer)"
+  - "regression-test restoration (E-LIFECYCLE step4)"
+preliminary_ticket_candidates:
+  - title: "WG-1: ship dispatch-claude.js + test via manifest generator top_script"
+    type: bug
+    risk: high
+    order: 1
+  - title: "WG-9: product-vs-canonical before require + product-role fixture"
+    type: bug
+    risk: high
+    order: 2
+  - title: "AL-W-007 + AL-W-004: ship runtime commonjs pin + PROJECT.md brief pointer"
+    type: bug
+    risk: medium
+    order: 3
+  - title: "E-LIFECYCLE step4: fix broken check-ac-coverage regression test"
+    type: bug
+    risk: medium
+    order: 4
+  - title: "Class-closer: warpos-install-baseline.js ship-payload coverage + regen both manifests + ff-merge"
+    type: feature
+    risk: high
+    order: 5
+external_service_dependencies: []
+approval_boundaries:
+  - "ff-merge to main is LOCAL only; push to remote is operator-gated (α owns final merge to june-9/main)."
+  - "single gauntlet halt before merge (HIGH risk — ship-boundary edits, full gauntlet, no skip)."
+  - "GPT/codex QUOTA_EXHAUSTED 2026-06-10 — route reviewer lanes to gemini (cross-provider mandatory) or claude fallback; at least one gemini lane."
+  - no paid spend expected beyond gauntlet reviewers.
+design_required: false
+execution_allowed_without_design: true
+recommended_mode: sprint
+mode_invocation_required_by_user: true
+lane: engine
+beta_review:
+  before_plan:
+    verdict: DECIDE
+    summary: "Pre-cleared batched consult EVT-warpos-sprint-2026-06-10-batched-001 (DECIDE 0.90, silence=proceed). All four phase boundaries (plan->design, design->build, gauntlet->release, release->retro) batch-pre-cleared for Lane A. Class B, OPEN_ADR false. Conditions carried forward: ship-boundary edits are additive top_script entries only (regen + verify the entry lands in the manifest); the .claude/runtime/ exclude carve-out is a narrow single-file allowlist (no per-project runtime state re-admitted); WG-9 preserves canonical mandatory-fail-closed EXACTLY (golden A-G before, identical after + 1 fixture); the enforcer extension fails-closed if the manifest is missing/stale; HIGH risk -> full gauntlet, no skip; gemini cross-provider lane mandatory (GPT quota exhausted). Resume each full.js β-halt with --beta-verdict DECIDE --beta-message referencing this event id."
+plan_quality:
+  confidence: high
+  notes: "Grounded in runtime/notes/warpos-md-sweep-2026-06-10.md §Lane A + a live per-file re-confirm this session (read generate-framework-manifest.js, release.js, warpos-install-baseline.js, the broken test, scripts/package.json; reproduced the test failure). All five verified reproducing at canonical @75cd7e5 (the WARPOS.md memory: downstream registers reflect their installed version, so verify-in-canonical — done). Beta DECIDE 0.90 batched-precleared all four boundaries."
+next_recommended_command: "/sprint:design"
+resume_instructions: "Sprint SP-20260610-001 has Plan Contract PC-20260610-0067. Run the next_recommended_command. If interrupted, read .claude/project/sprint/sprint-progress.yaml#resume_command."
+tracker_paths:
+  current_sprint: ".claude/project/sprint/current-sprint.yaml"
+  sprint_progress: ".claude/project/sprint/sprint-progress.yaml"
+  plan_contract: ".claude/project/sprint/plan-contracts/PC-20260610-0067.yaml"
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260610-0067.report.md"
+created_by: epsilon
+updated_by: epsilon

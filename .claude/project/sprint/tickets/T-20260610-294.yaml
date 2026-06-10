@@ -1,0 +1,52 @@
+schema: warpos/sprint/ticket/v1
+id: T-20260610-294
+title: "AL-W-007 + AL-W-004: ship runtime commonjs pin + PROJECT.md brief pointer in scaffold"
+type: bug
+status: done
+sprint: SP-20260610-001
+created_at: "2026-06-10T14:48:57.456Z"
+updated_at: "2026-06-10T15:48:20.898Z"
+owner: null
+owner_agent: alpha
+risk_level: medium
+unit_type: backend
+domain: null
+approval_required: false
+approval_state: not_required
+source_request: "Lane A — ship/install integrity fixes from the 2026-06-10 WARPOS.md sweep (runtime/notes/warpos-md-sweep-2026-06-10.md, §Lane A). Five items, all verified reproducing at canonical @75cd7e5, plus the class-closing enforcer extension."
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260610-0067.yaml"
+linked_requirements:
+  - R-3
+linked_high_level_story: null
+linked_granular_story: S-3
+linked_prd: null
+linked_copy: []
+linked_inputs: []
+linked_trace: []
+linked_acceptance_criteria: []
+linked_issues: []
+linked_decisions: []
+linked_external_services: []
+linked_files: []
+linked_tests: []
+linked_commits:
+  - "5d07115"
+linked_prs: []
+linked_release: null
+description: ""
+user_value: ""
+business_value: ""
+acceptance_criteria: []
+non_goals: []
+implementation_notes: |
+  AL-W-007 VERIFIED ALREADY FIXED in canonical: scaffold-core.js §5f (L293-309) writes .claude/runtime/package.json {type:commonjs} at scaffold time, idempotent. .claude/runtime/ is gitignored so scaffold-time write is the CORRECT mechanism (a manifest carve-out would be wrong). Sweep marked LIKELY-REPRODUCES based on almanac@0.10.0 install, not canonical@current (ED-008 downstream-version drift). Ticket scope reduces to AL-W-004 only (PROJECT.md brief pointer).
+  AL-W-004 done: PROJECT.md brief pointer. AL-W-007 verified already-fixed in canonical (scaffold-core §5f). Gauntlet PASS.
+qa_notes: ""
+redteam_notes: ""
+trace_notes: ""
+blocked_by: []
+blocks: []
+fix_attempts: []
+ralph_progress: null
+completion_evidence: []
+reopen_history: []

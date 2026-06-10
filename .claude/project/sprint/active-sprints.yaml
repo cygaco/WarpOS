@@ -1,5 +1,5 @@
 schema: warpos/sprint/active-sprints/v1
-primary: S-LC-12
+primary: SP-20260610-001
 sprints:
   - id: SP-20260512-001
     title: Multi-sprint parallelism for Sprint Workflow
@@ -859,5 +859,38 @@ sprints:
     pointer: ".claude/project/sprint/sprints/S-LC-12"
     created_at: "2026-06-10T04:57:03.610Z"
     updated_at: "2026-06-10T05:05:00.000Z"
+  - id: SP-20260610-002
+    title: "Lane B - dispatch/registry coherence (WARPOS.md sweep)"
+    status: retrospected
+    lane:
+      type: default
+      value: null
+      isolation_notes: ""
+    layout: per_sprint_subdir
+    pointer: ".claude/project/sprint/sprints/SP-20260610-002"
+    created_at: "2026-06-10T14:46:17.762Z"
+    updated_at: "2026-06-10T15:30:02.301Z"
+  - id: SP-20260610-003
+    title: "Lanes C+D - sprint-pipeline truth + research:deep runnability (WARPOS.md sweep)"
+    status: planning
+    lane:
+      type: default
+      value: null
+      isolation_notes: ""
+    layout: per_sprint_subdir
+    pointer: ".claude/project/sprint/sprints/SP-20260610-003"
+    created_at: "2026-06-10T15:32:08.947Z"
+    updated_at: "2026-06-10T15:32:08.947Z"
+  - id: SP-20260610-001
+    title: "Lane A - ship/install integrity (WARPOS.md sweep)"
+    status: planning
+    lane:
+      type: default
+      value: null
+      isolation_notes: ""
+    layout: per_sprint_subdir
+    pointer: ".claude/project/sprint/sprints/SP-20260610-001"
+    created_at: "2026-06-10T15:51:46.173Z"
+    updated_at: "2026-06-10T15:51:46.173Z"
 created_at: "2026-05-12T22:57:35.667Z"
-updated_at: "2026-06-10T04:57:03.610Z"
+updated_at: "2026-06-10T15:51:46.173Z"
