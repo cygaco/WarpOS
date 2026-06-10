@@ -3,7 +3,10 @@
   "sprint": "SP-20260610-003",
   "cleared": [
     "before_design",
-    "before_execute"
+    "before_execute",
+    "before_release-prep",
+    "before_plan",
+    "before_retro"
   ],
-  "updated_at": "2026-06-10T15:33:04.017Z"
+  "updated_at": "2026-06-10T16:05:02.018Z"
 }

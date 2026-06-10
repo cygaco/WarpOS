@@ -54,6 +54,9 @@ Every `RL-*` at status=prepared OR =deployed. Each row links to the full `RL-*.y
 
 | Release | Sprint | Status | Target | Deployed | Notes |
 |---|---|---|---|---|---|
+| [RL-20260610-039](.claude/project/sprint/releases/RL-20260610-039.yaml) | [SP-20260610-001](.claude/project/sprint/sprints/SP-20260610-001/) | prepared | staging |  | Lanes C+D — sprint-pipeline truth + research:deep runnability (WARPOS.md sweep 2026-06-10) |
+| [RL-20260610-038](.claude/project/sprint/releases/RL-20260610-038.yaml) | [SP-20260610-001](.claude/project/sprint/sprints/SP-20260610-001/) | prepared | staging |  | Lanes C+D — sprint-pipeline truth + research:deep runnability (WARPOS.md sweep 2026-06-10) |
+| [RL-20260610-037](.claude/project/sprint/releases/RL-20260610-037.yaml) | [SP-20260610-001](.claude/project/sprint/sprints/SP-20260610-001/) | prepared | staging |  | Lanes C+D — sprint-pipeline truth + research:deep runnability (WARPOS.md sweep 2026-06-10) |
 | [RL-20260610-036](.claude/project/sprint/releases/RL-20260610-036.yaml) | [SP-20260610-002](.claude/project/sprint/sprints/SP-20260610-002/) | prepared | staging |  | Lane B — dispatch/registry coherence (WARPOS.md sweep 2026-06-10) |
 | [RL-20260602-035](.claude/project/sprint/releases/RL-20260602-035.yaml) | [SP-20260602-001](.claude/project/sprint/sprints/SP-20260602-001/) | prepared | staging |  | Sealed-capsule executable consumer-contract gate (keystone) |
 | [RL-20260531-034](.claude/project/sprint/releases/RL-20260531-034.yaml) | [SP-20260531-003](.claude/project/sprint/sprints/SP-20260531-003/) | prepared | staging |  | scan:warpos-layer-diff — product-vs-dev-tooling layer diff report |

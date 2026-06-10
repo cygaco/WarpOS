@@ -4,7 +4,7 @@ title: "Lanes C+D — sprint-pipeline truth + research:deep runnability (WARPOS.
 objective: "Lane C: make /sprint:full honest about the org roster — the skill body bypasses ε/the design roster (doogle WG-3, observed live: α authored design artifacts itself), the scaffold mints PRD R-ids inconsistent with stories/trace (WG-7, reproduced TODAY in canonical: the SP-20260610-002 scaffold needed a sub-agent to fix orphan R-ids), and status.js/checkpoint.js field schemas drifted (almanac AL-W-006). Lane D: /research:deep is structurally unrunnable in the harness (masterconsole MC-WG-2: foreground sleeps + node -e fs-writes are classifier-blocked) and its Phase 0 checks model access but not credit (MC-WG-3)."
 status: designing
 created_at: "2026-06-10T15:32:08.947Z"
-updated_at: "2026-06-10T15:33:04.165Z"
+updated_at: "2026-06-10T16:02:05.359Z"
 source_request: "Lanes C+D of the 2026-06-10 WARPOS.md sweep fix arc. β batched-precleared (EVT-warpos-sprint-2026-06-10-batched-001): Lane C DECIDE 0.82 with ONE gate — the epsilon-dispatch default flip commits only after Lane B's WG-6 stall rules land (SATISFIED: landed @d13254d on sprint/SP-20260610-002); Lane D DECIDE 0.91. Engine sprint, ff-merge close, defer retro (RI-001)."
 interpreted_intent: "Close the aspirational-vs-enforced gap in the sprint pipeline (the org roster is policy without an enforcer on the default path) and make the deep-research skill actually runnable under the harness security model."
 plan_contract: ".claude/project/sprint/plan-contracts/PC-20260610-0068.yaml"
@@ -24,17 +24,17 @@ tickets:
   planned: []
   designed: []
   ready_for_execution: []
-  in_progress:
-    - T-20260610-297
-    - T-20260610-298
-    - T-20260610-299
+  in_progress: []
   blocked: []
   waiting_on_human: []
   waiting_on_external_service: []
   in_review: []
   qa_failed: []
   redteam_failed: []
-  done: []
+  done:
+    - T-20260610-297
+    - T-20260610-298
+    - T-20260610-299
   released: []
   deferred: []
   abandoned: []

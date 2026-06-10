@@ -1,16 +1,16 @@
 schema: warpos/sprint/current-sprint/v1
-id: "SP-20260610-001"
+id: SP-20260610-001
 title: "Lane A - ship/install integrity (WARPOS.md sweep)"
 objective: "Lane A ship/install integrity fixes from the 2026-06-10 WARPOS.md sweep: WG-1 (ship dispatch-claude.js), WG-9 (regressionSeedGate product-vs-canonical), AL-W-004 (PROJECT.md brief pointer), E-LIFECYCLE step4 (check-ac-coverage test), + the ship-payload coverage class-closer enforcer. Engine sprint, ff-merge close, retro deferred to milestone (RI-001)."
-status: in_review
+status: releasing
 created_at: "2026-06-10T15:51:46.173Z"
-updated_at: "2026-06-10T15:51:46.173Z"
+updated_at: "2026-06-10T16:04:48.987Z"
 source_request: "Lane A — ship/install integrity fixes from the 2026-06-10 WARPOS.md sweep (runtime/notes/warpos-md-sweep-2026-06-10.md, §Lane A). Five items + the class-closing enforcer extension."
 interpreted_intent: "Convert four ship/install-integrity defects + one silently-broken regression test into shipped, honest, gated state, and close the closed-trap CLASS via a ship-payload enforcer. File-disjoint from Lane B."
 plan_contract: ".claude/project/sprint/plan-contracts/PC-20260610-0067.yaml"
 risk_level: high
 approval_state: none_required
-current_phase: gauntlet
+current_phase: release
 recommended_mode: sprint
 mode_invocation_required_by_user: true
 external_services:
@@ -54,23 +54,56 @@ requirements:
   redteam_plan: ".claude/project/sprint/requirements/SP-20260610-001/redteam-plan.md"
   release_plan: ".claude/project/sprint/requirements/SP-20260610-001/release-plan.md"
 checks:
-  lint: { status: not_run, last_run: null, evidence: "" }
-  typecheck: { status: not_run, last_run: null, evidence: "" }
-  tests: { status: not_run, last_run: null, evidence: "" }
-  build: { status: not_run, last_run: null, evidence: "" }
-  qa: { status: not_run, last_run: null, evidence: "" }
-  redteam: { status: not_run, last_run: null, evidence: "" }
+  lint:
+    status: not_run
+    last_run: null
+    evidence: ""
+  typecheck:
+    status: not_run
+    last_run: null
+    evidence: ""
+  tests:
+    status: not_run
+    last_run: null
+    evidence: ""
+  build:
+    status: not_run
+    last_run: null
+    evidence: ""
+  qa:
+    status: not_run
+    last_run: null
+    evidence: ""
+  redteam:
+    status: not_run
+    last_run: null
+    evidence: ""
 approvals:
-  plan: { required: false, state: not_required, ref: null }
-  design: { required: false, state: not_required, ref: null }
-  execution: { required: false, state: not_required, ref: null }
-  release: { required: false, state: not_required, ref: null }
-  external_services: { required: false, state: not_required, ref: null }
+  plan:
+    required: false
+    state: not_required
+    ref: null
+  design:
+    required: false
+    state: not_required
+    ref: null
+  execution:
+    required: false
+    state: not_required
+    ref: null
+  release:
+    required: false
+    state: not_required
+    ref: null
+  external_services:
+    required: false
+    state: not_required
+    ref: null
 reports:
   plan: null
   design: null
   execution: null
-  release: null
+  release: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\releases\\RL-20260610-039.yaml"
 ralph:
   active: false
   current_ticket: null
@@ -80,8 +113,8 @@ ralph:
   next_action: null
 crash_recovery:
   last_checkpoint: null
-  resume_command: "/sprint:plan"
-  resume_summary: "Tracker initialized. No sprint started yet. Run /sprint:plan to begin."
+  resume_command: "/sprint:release"
+  resume_summary: "Release RL-20260610-039 in preparing state. Run /sprint:release with --id RL-20260610-039."
   active_files: []
   dirty_state: false
   blockers: []
