@@ -316,6 +316,9 @@ function telemetry() {
       makeDispatchId: da.makeDispatchId,
       cmdlineChecksum: da.cmdlineChecksum,
       AGENT_ROOT: da.AGENT_ROOT,
+      // T-303 (N8): single-source runContext() for run/phase/sprint env reads.
+      // in-process recordAgentDispatch uses this to stamp run_id + sprint_id.
+      runContext: da.runContext,
       ok: true,
     };
   } catch (e) {
@@ -371,6 +374,15 @@ function recordAgentDispatch(
     stderr_bytes: 0,
     fallback: false,
     ok,
+    // T-303 (N8): run-context for §17.4 coverage-gate run-scoped filtering.
+    // run_id from env (set by full.js or inherited — null when dispatched standalone).
+    // phase_id derived from agentPlan.step (authoritative for in-process records;
+    // also set on process.env.WARPOS_PHASE_ID by full.js before each phase entry so
+    // runContext() would agree, but we use the explicit value for reliability).
+    // sprint_id: use the explicit sprintId arg (reliable even when env not set);
+    //   the runContext() single-source reads env, but the arg is always present here.
+    run_id: process.env.WARPOS_RUN_ID || null,
+    phase_id: agentPlan.step,
     // ε-conductor provenance (extra fields are ignored by gauntlet-verify's typed check):
     sprint_id: sprintId,
     via,
@@ -437,6 +449,18 @@ function spawnAgent(agentPlan, sprintId, opts = {}) {
   const run = opts.run || _spawnSync;
   const root = agentRoot();
   const env = { ...process.env, ...(opts.env || {}) };
+  // T-303 (N8): stamp run-context vars on the child env so CLI-routed wrappers'
+  // runContext() picks them up and stamps run_id/phase_id/sprint_id onto every
+  // completion record. Respect an inherited WARPOS_RUN_ID — only generate when
+  // absent (parent orchestrator's run_id wins over per-dispatch generation; if full.js
+  // set it on process.env it is already in the spread above, but guard anyway for
+  // standalone invocations where process.env.WARPOS_RUN_ID may be absent).
+  if (!env.WARPOS_RUN_ID) {
+    env.WARPOS_RUN_ID =
+      "run-" + Date.now().toString(36) + "-" + crypto.randomBytes(4).toString("hex");
+  }
+  env.WARPOS_PHASE_ID = agentPlan.step;
+  env.WARPOS_SPRINT_ID = sprintId;
   const common = { encoding: "utf8", env, timeout: opts.timeoutMs || 15 * 60 * 1000, maxBuffer: 32 * 1024 * 1024 };
 
   // In-process Claude teammates — a node script CANNOT spawn these (harness Agent tool only).

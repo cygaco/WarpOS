@@ -128,11 +128,16 @@ function cmdlineChecksum(role, provider, promptBytes) {
 // coverage row with no backing dispatch). Sourced from the orchestrator's env;
 // null when dispatched ad-hoc (a null run_id simply can't satisfy a run-scoped
 // coverage check, which is the correct fail-closed behavior).
+// T-303 (N8): sprint_id added as the SINGLE SOURCE for env-read — all three
+// wrappers (dispatch-agent, dispatch-claude, dispatch-skill) already spread
+// ...runContext() into the completion record, so extending this function is
+// enough to propagate sprint_id uniformly with no per-wrapper duplication.
 function runContext() {
   return {
     run_id: process.env.WARPOS_RUN_ID || null,
     phase_id: process.env.WARPOS_PHASE_ID || null,
     plan_item_id: process.env.WARPOS_PLAN_ITEM_ID || null,
+    sprint_id: process.env.WARPOS_SPRINT_ID || null,
   };
 }
 

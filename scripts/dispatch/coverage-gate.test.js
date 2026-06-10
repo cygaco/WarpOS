@@ -141,4 +141,43 @@ h.test("parseExpect parses role:shape pairs", () => {
   }
 });
 
+// ── T-303 (N8): run_id + sprint_id on records ───────────────
+// A record stamped with run_id + sprint_id (via extended runContext()) passes
+// when the coverage gate's runId scopes to that run_id.
+h.pass("T-303 N8: record with run_id + sprint_id satisfies runId-scoped coverage", () =>
+  evaluate({
+    runId: RUN,
+    records: [
+      rec({
+        role: "security-reviewer",
+        provider: "gemini",
+        dispatch_id: "d-n8",
+        sprint_id: "SP-20260610-006",
+        phase_id: "gauntlet",
+      }),
+    ],
+    expected: [{ role: "security-reviewer" }],
+  })
+);
+
+// PLANTED (N8): a record with run_id=null cannot satisfy a run-scoped check.
+// This is the §17.4 fail-closed: null run_id means the dispatcher never exported
+// WARPOS_RUN_ID — the coverage gate must REJECT it under a live runId-scoped eval.
+h.violation(
+  "PLANTED T-303 N8: run_id=null under runId-scoped evaluate is filtered out (UNBACKED)",
+  () =>
+    evaluate({
+      runId: RUN,
+      records: [
+        rec({
+          role: "security-reviewer",
+          provider: "gemini",
+          dispatch_id: "d-nullrun",
+          run_id: null,
+        }),
+      ],
+      expected: [{ role: "security-reviewer" }],
+    })
+);
+
 h.done();
