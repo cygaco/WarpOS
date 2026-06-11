@@ -1,0 +1,50 @@
+schema: warpos/sprint/ticket/v1
+id: T-20260611-309
+title: "W-14: portfolioRegistry SOURCE repoint to ~/.warpos/portfolio.json + build.js + P-058 verify + consumer audit + planted test"
+type: bug
+status: done
+sprint: SP-20260610-008
+created_at: "2026-06-11T00:01:47.178Z"
+updated_at: "2026-06-11T00:28:03.256Z"
+owner: null
+owner_agent: null
+risk_level: medium
+unit_type: backend
+domain: null
+approval_required: false
+approval_state: not_required
+source_request: "Conduct the dreamteam verified-open guard batch as SP-20260610-008. After execution-verification, the actionable set REDUCED to 2 of 5: W-26 (scope-contract-guard empty allowedFiles) + W-14 (portfolioRegistry dead path). W-5/W-13/W-28 closed as already-fixed (lead reconciled to option b: execution evidence > reading inference)."
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260611-0072.yaml"
+linked_requirements:
+  - R-2
+linked_high_level_story: null
+linked_granular_story: S-2
+linked_prd: null
+linked_copy: []
+linked_inputs: []
+linked_trace: []
+linked_acceptance_criteria: []
+linked_issues: []
+linked_decisions: []
+linked_external_services: []
+linked_files: []
+linked_tests: []
+linked_commits:
+  - f9927cd
+linked_prs: []
+linked_release: null
+description: ""
+user_value: ""
+business_value: ""
+acceptance_criteria: []
+non_goals: []
+implementation_notes: "W-14 done: dead portfolioRegistry key removed (removedIn 0.21.0 + lint-critical); consumer registry.js already home-resolved ~/.warpos/portfolio.json; P-058 verified (0 refs in both generated views, build --check exit 0); 4/4. CLOSED already-fixed: W-5/W-13/W-28 (cited)."
+qa_notes: ""
+redteam_notes: ""
+trace_notes: ""
+blocked_by: []
+blocks: []
+fix_attempts: []
+ralph_progress: null
+completion_evidence: []
+reopen_history: []

@@ -266,6 +266,12 @@ const SKIP_DIRS = new Set([
 ]);
 const SKIP_SUBSTRINGS = [
   ".claude/runtime/", // all runtime is historical/ephemeral
+  // Root runtime/ per-run scratch (review prompts quote diffs incl. banned
+  // literals; notes quote findings verbatim). Anchored subdirs — NOT a bare
+  // "runtime/" which would also skip the SHIPPED scripts/runtime/ tools.
+  "runtime/epsilon-prompts/",
+  "runtime/notes/",
+  "runtime/probes/",
   ".claude/project/events/",
   ".claude/project/memory/",
   ".claude/project/maps/",
@@ -274,10 +280,13 @@ const SKIP_SUBSTRINGS = [
   // by schema) and the lint-rule patterns themselves — lint targets CONSUMERS,
   // never the registry that defines the rules.
   "framework/paths.registry.json",
-  // Append-only sprint history may cite paths that were correct at write time;
-  // history is never edited to satisfy a later rename (same class as CHANGELOG).
-  ".claude/project/sprint/ralph/",
-  ".claude/project/sprint/approvals/",
+  // Append-only sprint records may cite paths that were correct at write time —
+  // requests/objectives/requirements quote the very literals a sprint is killing.
+  // Records are quotes of work, never path CONSUMERS; they are not edited to
+  // satisfy a later rename (same class as CHANGELOG). Broadened from ralph/ +
+  // approvals/ to the whole records tree after SP-20260610-008's own bookkeeping
+  // tripped the rule it shipped (2026-06-11).
+  ".claude/project/sprint/",
   "_requirements/_audits/",
   "_docs/",
   ".claude/paths.json",

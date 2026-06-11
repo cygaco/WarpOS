@@ -1,0 +1,119 @@
+schema: warpos/sprint/current-sprint/v1
+id: SP-20260610-008
+title: "Dreamteam verified-open guard batch — W-26 + W-14 (3 closed already-fixed)"
+objective: "Fix the TWO dreamteam register items that EXECUTION-verified as genuinely reproducing against canonical @ba61a2f, and close the three that EXECUTION-verified as already-fixed: (W-26) scope-contract-guard's hasScopeContract() substring-matches 'allowedFiles' in the prompt WITHOUT parsing the JSON — so a scopeContract carrying an EMPTY allowedFiles:[] passes the guard, and the empty array then silently blocks ALL builder writes downstream; the fix makes that a LOUD dispatch-time error. (W-14) paths.portfolioRegistry points at the dead project-local '.claude/portfolio/registry.yaml' while the REAL registry lives at ~/.warpos/portfolio.json; fix the SOURCE (framework/paths.registry.json), regen, verify the key survived (P-058), and confirm every consumer handles the HOME-anchored path. CLOSED as already-fixed-in-canonical (execution-verified, citing lines): W-5 (memory-guard L217 'Allow read-only and safe operations' + writeTargetsText already pass a read-only node -e), W-13 (memory-guard#stripNonTargetText L57-85/L78 already strips -m/--message commit-message args), W-28 (version-coherence L53-54 already REDs a stale install.ps1 $Script:WARPOS_VERSION). Engine sprint, RI-001 fast-close. These guards fire every turn — HIGH blast (a regression bricks the session)."
+status: releasing
+created_at: "2026-06-10T22:37:26.823Z"
+updated_at: "2026-06-11T00:32:32.278Z"
+source_request: "Conduct the dreamteam verified-open guard batch as SP-20260610-008. After execution-verification, the actionable set REDUCED to 2 of 5: W-26 (scope-contract-guard empty allowedFiles) + W-14 (portfolioRegistry dead path). W-5/W-13/W-28 closed as already-fixed (lead reconciled to option b: execution evidence > reading inference)."
+interpreted_intent: "Close two real, execution-verified guard/path defects: a scope-contract guard that can't see an empty allowedFiles array (so it silently bricks builder writes), and a paths key pointing at a dead registry file. Do it without regressing the every-turn guards (golden-first). The other three register items are already-fixed-in-canonical — close them with citations, don't rebuild."
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260611-0072.yaml"
+risk_level: high
+approval_state: none_required
+current_phase: release
+recommended_mode: sprint
+mode_invocation_required_by_user: true
+external_services:
+  identified: []
+  blocked: []
+  ready: []
+  mocked: []
+  deferred: []
+tickets:
+  proposed: []
+  planned: []
+  designed: []
+  ready_for_execution: []
+  in_progress: []
+  blocked: []
+  waiting_on_human: []
+  waiting_on_external_service: []
+  in_review: []
+  qa_failed: []
+  redteam_failed: []
+  done:
+    - T-20260611-308
+    - T-20260611-309
+  released: []
+  deferred: []
+  abandoned: []
+  reopened: []
+  superseded: []
+requirements:
+  prd: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260610-008\\prd.md"
+  high_level_stories: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260610-008\\high-level-stories.md"
+  granular_stories: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260610-008\\granular-stories.md"
+  copy: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260610-008\\copy.md"
+  inputs: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260610-008\\inputs.md"
+  trace: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260610-008\\trace.md"
+  acceptance_criteria: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260610-008\\acceptance-criteria.md"
+  qa_plan: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260610-008\\qa-plan.md"
+  redteam_plan: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260610-008\\redteam-plan.md"
+  release_plan: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260610-008\\release-plan.md"
+checks:
+  lint:
+    status: not_run
+    last_run: null
+    evidence: ""
+  typecheck:
+    status: not_run
+    last_run: null
+    evidence: ""
+  tests:
+    status: not_run
+    last_run: null
+    evidence: ""
+  build:
+    status: not_run
+    last_run: null
+    evidence: ""
+  qa:
+    status: not_run
+    last_run: null
+    evidence: ""
+  redteam:
+    status: not_run
+    last_run: null
+    evidence: ""
+approvals:
+  plan:
+    required: false
+    state: not_required
+    ref: null
+  design:
+    required: false
+    state: not_required
+    ref: null
+  execution:
+    required: false
+    state: not_required
+    ref: null
+  release:
+    required: false
+    state: not_required
+    ref: null
+  external_services:
+    required: false
+    state: not_required
+    ref: null
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260611-0072.report.md"
+  design: null
+  execution: null
+  release: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\releases\\RL-20260611-043.yaml"
+ralph:
+  active: false
+  current_ticket: null
+  current_loop: null
+  status: idle
+  last_checkpoint: null
+  next_action: null
+crash_recovery:
+  last_checkpoint: ".claude/project/sprint/sprint-progress.yaml"
+  resume_command: "/sprint:release"
+  resume_summary: "Release RL-20260611-043 in preparing state. Run /sprint:release with --id RL-20260611-043."
+  active_files: []
+  dirty_state: false
+  blockers: []
+  safe_to_continue: true
+lane: engine

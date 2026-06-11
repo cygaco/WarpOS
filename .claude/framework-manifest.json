@@ -6,7 +6,7 @@
     "agent": 84,
     "skill": 218,
     "reference": 27,
-    "maps_baseline": 25,
+    "maps_baseline": 26,
     "hook": 79,
     "hook_lib": 18,
     "tool": 2,
@@ -62,7 +62,7 @@
     "module_scope": 1,
     "framework_doc": 3
   },
-  "total": 1217,
+  "total": 1218,
   "assets": {
     "agent": [
       {
@@ -4272,6 +4272,18 @@
         "replaces": null
       },
       {
+        "id": "maps_baseline.system-coherence.graph.json",
+        "src": ".claude/project/maps/system-coherence.graph.json",
+        "dest": ".claude/project/maps/system-coherence.graph.json",
+        "kind": "maps_baseline",
+        "sha256": "8c9189ca1564ff1a3b97dac84023882e1d09e83921e11253f496beee0bbdb924",
+        "owner": "generated",
+        "mergeStrategy": "regenerate",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
         "id": "maps_baseline.systems-inventory.jsonl",
         "src": ".claude/project/maps/systems-inventory.jsonl",
         "dest": ".claude/project/maps/systems-inventory.jsonl",
@@ -4854,7 +4866,7 @@
         "src": "scripts/hooks/scope-contract-guard.js",
         "dest": "scripts/hooks/scope-contract-guard.js",
         "kind": "hook",
-        "sha256": "c83996987ab814da8daf43eaaaf409762e38cfdefc96a14db34b155e473330c6",
+        "sha256": "4d73f4c34ef1ee55266dbba967ee609439bd8965b36dd749744d6286c541d679",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -4866,7 +4878,7 @@
         "src": "scripts/hooks/scope-contract-guard.test.js",
         "dest": "scripts/hooks/scope-contract-guard.test.js",
         "kind": "hook",
-        "sha256": "fdc6810615f90f9a485133eb72aa4d189a00413d587aaf6a161eece91563e681",
+        "sha256": "7e8805de18fa740a5a80b754b74dd99e275b4868916047a3f4c35c79fcf8722b",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -9588,7 +9600,7 @@
         "src": "scripts/portfolio/registry-path.test.js",
         "dest": "scripts/portfolio/registry-path.test.js",
         "kind": "portfolio_tool",
-        "sha256": "6991653eaad939d50eeaeed3b18dd9f79822628786d8ed4153231150fc45b933",
+        "sha256": "91628f0de059116b17efae4f30e4403c75b1cb45f5a29285f51ec04d724b788c",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -14696,7 +14708,7 @@
         "src": "scripts/path-lint.js",
         "dest": "scripts/path-lint.js",
         "kind": "top_script",
-        "sha256": "6b2f00265433782ee1ef989e9a0bdaf7c4a2f2df8a9b8029c2e20ff961bcfecc",
+        "sha256": "42f029c1965e6964e8294aeba95bbd31754f4fcc04fc4884b0cd7cb4931aca57",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
