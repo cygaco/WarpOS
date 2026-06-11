@@ -1,0 +1,34 @@
+{
+  "$schema": "warpos/tech-stack-selection-knowledge/v0.1",
+  "version": "v0.1",
+  "guides": [
+    {
+      "guide": "BAAS_DECISION_MATRIX",
+      "path": "_knowledge/tech-stack-selection/BAAS_DECISION_MATRIX.md",
+      "tier": "core",
+      "rule_prefix": "STACK-BAAS",
+      "anchor": "none",
+      "trains": ["product-lead", "backend-builder", "backend-reviewer"],
+      "maps_to": ["provider-choice", "database-auth-storage"]
+    },
+    {
+      "guide": "STACK_DRIFT_AND_REVERSIBILITY",
+      "path": "_knowledge/tech-stack-selection/STACK_DRIFT_AND_REVERSIBILITY.md",
+      "tier": "core",
+      "rule_prefix": "STACK-REV",
+      "anchor": "none",
+      "trains": ["product-lead", "backend-builder", "backend-reviewer"],
+      "maps_to": ["stack-drift", "reversibility", "vendor-lock-in"]
+    }
+  ],
+  "coverage": {
+    "axes": {
+      "provider-choice": ["BAAS_DECISION_MATRIX"],
+      "database-auth-storage": ["BAAS_DECISION_MATRIX"],
+      "stack-drift": ["STACK_DRIFT_AND_REVERSIBILITY"],
+      "reversibility": ["STACK_DRIFT_AND_REVERSIBILITY"],
+      "vendor-lock-in": ["STACK_DRIFT_AND_REVERSIBILITY"]
+    },
+    "complete": true
+  }
+}

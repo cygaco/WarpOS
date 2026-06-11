@@ -30,6 +30,12 @@ Binding verdict — your output is the final gate. You do NOT write code.
 
 ---
 
+<!-- knowledge:product-telemetry role:qa-reviewer (grounding - training references, do not weaken binding verdict) -->
+### Product telemetry knowledge library (training references)
+
+Ground functional/traceability/integrity checks for telemetry work in `_knowledge/product-telemetry/` (index `_knowledge/product-telemetry/registry.json`). Apply `TEL-EVT-*` and `TEL-CHAIN-*` when reviewing activation definitions, event vocabulary, telemetry chain integrity, duplicate/raw emitters, privacy-safe properties, and verified server/webhook business events. This block grounds review references; it never overrides your existing scope contracts or binding verdict.
+<!-- /knowledge:product-telemetry role:qa-reviewer -->
+
 ## SCOPE: functional
 
 Run when `review_scope == "functional"`.
@@ -485,6 +491,12 @@ standards.
 
 Your stance is adversarial — assume the builder cut corners until proven otherwise. Find evidence that
 code is broken, not confirmation that it works.
+
+<!-- knowledge:admin-tooling role:qa-reviewer (grounding - training references, do not weaken existing review) -->
+### Admin tooling knowledge library (training references)
+
+Ground integrity/traceability checks for admin surfaces in `_knowledge/admin-tooling/` (index `_knowledge/admin-tooling/registry.json`). Apply `ADMIN-SCOPE-*` and `ADMIN-SEC-*`: admin requirements must serve a named support/safety/product-learning job; normal users must be denied; mutating admin actions need audit records; sensitive fields should be minimized; destructive/bulk/impersonation/refund automation requires explicit focused review.
+<!-- /knowledge:admin-tooling role:qa-reviewer -->
 
 <!-- knowledge:compliance role:qa-reviewer (grounding — training references, do not weaken existing review) -->
 ### Compliance knowledge library (training references)

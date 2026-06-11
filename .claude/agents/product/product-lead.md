@@ -172,6 +172,24 @@ Never opine from generic best-practice. Ground every call in the real project:
 If the evidence isn't there, say what you'd need rather than inventing it
 (`evidence-over-invention`, inherited).
 
+<!-- knowledge:tech-stack-selection role:product-lead (grounding - training references, do not weaken existing authority) -->
+### Tech-stack selection knowledge library (training references)
+
+Ground scaffold-time stack decisions in `_knowledge/tech-stack-selection/` (index `_knowledge/tech-stack-selection/registry.json`). When a build spec chooses database/auth/storage/deployment foundations, declare the provider ownership, rationale, reversibility notes, and revisit trigger. Apply `STACK-BAAS-*` and `STACK-REV-*` as Product Lead scoping rules; this block grounds judgment and does not override the Director of Product's principles or the build_spec contract.
+<!-- /knowledge:tech-stack-selection role:product-lead -->
+
+<!-- knowledge:product-telemetry role:product-lead (grounding - training references, do not weaken existing authority) -->
+### Product telemetry knowledge library (training references)
+
+Ground activation and event-vocabulary decisions in `_knowledge/product-telemetry/` (index `_knowledge/product-telemetry/registry.json`). A build spec that instruments product telemetry must define activation in product language, name the minimum event chain, state privacy boundaries, and distinguish verified business events from client claims. Apply `TEL-EVT-*` and `TEL-CHAIN-*` as scoping rules.
+<!-- /knowledge:product-telemetry role:product-lead -->
+
+<!-- knowledge:admin-tooling role:product-lead (grounding - training references, do not weaken existing authority) -->
+### Admin tooling knowledge library (training references)
+
+Ground pre-PMF admin requirements in `_knowledge/admin-tooling/` (index `_knowledge/admin-tooling/registry.json`). Scope admin surfaces to founder support, safety, and product learning: allowlist, user lookup, entitlement read view, event feed, feature kill switch, and audit trail. Apply `ADMIN-SCOPE-*` and `ADMIN-SEC-*`; refuse broad RBAC, bulk ops, impersonation, or destructive automation unless the product need is explicit and review-gated.
+<!-- /knowledge:admin-tooling role:product-lead -->
+
 ## Decision lenses
 
 Apply, in addition to the must-follow principles:

@@ -12,16 +12,16 @@
 - **Background:** Operator-directed 2026-06-11 (six-topic message). Landscape verified 2026-06-11 by three Explore agents: bootstrap:lastmile is a 5-phase/8-module pipeline that already leans BaaS (Supabase/Neon/Clerk/Stripe/Vercel/PostHog) but only AT LASTMILE TIME — the stack is inferred by detection, never declared at scaffold; the launch checklist is minted per-sprint in inject.js, not durable; product admin panels and product telemetry have NO scaffold/module/guide coverage; _guides has 11 anchored guides but none for analytics/deployment-infra/admin-tooling; the playbook system has 1 live doctrine play and 0 of 5 designed situational playbooks authored; _knowledge has 5 domains with tech-stack/BaaS, product-telemetry, and admin-tooling all absent. Shape ratified by β (DECIDE 0.88/0.89, EVT-product-foundation-epic-shape-2026-06-11): one epic owning the net-new substance, LINKING E-DISPATCH-SHAPE-001 and E-LIFECYCLE-001 close-out as dependencies, never absorbing them (anti-rebuild guard). Product substance shaped by Director-of-Product consult (agentId a702d48a30568cb90): telemetry-first sequencing, admin-minimalism for pre-PMF (allowlist not RBAC; Stripe dashboard owns refunds), advisory-with-teeth stack binding, founders checklist at product root pre-populated from the declared stack. Plan artifact: [_planning/epics/E-PRODUCT-FOUNDATION-001.md](../../_planning/epics/E-PRODUCT-FOUNDATION-001.md). Plan artifact: [../../_planning/epics/E-PRODUCT-FOUNDATION-001.md](../../_planning/epics/E-PRODUCT-FOUNDATION-001.md).
 - **Scope:** W0 telemetry seam: every scaffold ships track(event,props) over a local event buffer with a pluggable sink — PostHog default sink, no-op sink when unconfigured, fail-open (never blocks app boot); 6 canonical lifecycle events seeded (signup, onboarding_complete, activation [product-specific, marked TODO not guessed], core_action, retention_return D1/D7, checkout); lastmile's analytics module ENRICHES (funnel/A-B) instead of installing.; W1 tech-stack declaration: spinup/portfolio intake captures db/auth/payments/hosting/analytics/framework; home = a new '## Tech Stack' block in the EXISTING DATA_AND_ACCOUNTS.md canonical doc (not a new artifact); advisory-with-teeth binding — declared stack picks the lastmile profile default and pre-fills roadmap/epic infra entries; downstream override allowed but logged as a visible stack-drift event.; W2 admin surface (pre-PMF minimum): single /admin route gated by founder-email allowlist; user list+search, account-state toggle, manual entitlement grant/revoke, read-only event feed consuming W0; feature flags as a trivial config seam.; W3 founders checklist: durable machine-readable FOUNDERS_CHECKLIST.md at product root (same shelf as DEV_SETUP_GUIDE), checkbox state, PRE-POPULATED from the declared stack; contents = human-only slow-clock work (dev accounts, DNS/domain, legal entity, privacy/terms, store listings, live-mode gates); lastmile audit reads checklist state instead of re-deriving.; Track T-G: author ANALYTICS/TELEMETRY, DEPLOYMENT-INFRA, ADMIN-TOOLING guides into _guides with the guide-anchor contract, BaaS-leaning as RECOMMENDATIONS (Supabase/Clerk), wired via /guides:integrate.; Track T-K: new _knowledge LIBRARY domains — tech-stack-selection (BaaS), product-telemetry, admin-tooling — wired via /knowledge:integrate.; Track T-P: author the 5 designed situational playbooks (launch-readiness + provider-setup first) from _planning/playbooks/SUITE-DESIGN.md.
 - **Out of scope:** The gemini→agy provider cutover, the CLI-auth-mode install gate, the Dispatch-Console/model-router refresh (Fable missing, not ADR-0007-mapped), and NOTAGAIN W2/W3 residuals — all owned by E-DISPATCH-SHAPE-001 (folded there 2026-06-11 with provenance; linked as a dependency).; E-LIFECYCLE-001 close-out (GPT 2nd-pass, flip ramp, retro) — its own epic, unblocked 2026-06-11 by the codex ChatGPT-OAuth restore.; Re-fixing anything in NOTAGAIN §6 receipts (anti-rebuild guard).; Scale-stage admin features (RBAC, refund/cancel automation, role matrices, audit logs, bulk ops, analytics dashboards) — DoP-refused as pre-PMF overbuild; Stripe/PostHog own them.; User-acquisition guides (later batch); hard-binding the declared stack (pre-PMF pivot freedom preserved unless downstream evidence flips the call).
-- **Current state:** Planned
-- **Percent completion:** 0% — conservative; plan authored, no sprints landed.
+- **Current state:** Active
+- **Percent completion:** ~43% — W0 telemetry seam landed locally in S-PF-01 with release approval still pending; T-G guides and T-K knowledge domains are now implemented and coverage-green. W1/W2/W3/T-P remain.
 
 ## Definition of Done
-- [ ] W0: a fresh scaffold contains the track(event,props) seam with pluggable sink (no-op when unconfigured, fail-open) + the 6 canonical lifecycle events; ENFORCER = scaffold-coverage check with a planted seam-missing fixture that FAILS; lastmile analytics module verified to enrich, not reinstall.
+- [x] W0: a fresh scaffold contains the track(event,props) seam with pluggable sink (no-op when unconfigured, fail-open) + the 6 canonical lifecycle events; ENFORCER = scaffold-coverage check with a planted seam-missing fixture that FAILS; lastmile analytics module verified to enrich, not reinstall. Landed locally in S-PF-01 through `78770a4`; `RL-20260611-045` remains prepared/not deployed pending explicit approval.
 - [ ] W1: intake captures the 6 stack fields; DATA_AND_ACCOUNTS.md carries a parseable '## Tech Stack' block; declared stack demonstrably pre-fills the lastmile profile + roadmap infra entries; a downstream stack override emits a visible stack-drift event (planted override fixture); ENFORCER = canon gate on block presence + parseability. β second-eye taken at spec-lock on binding-vs-advisory BEFORE W1 builds (OPEN_ADR if Supabase becomes a committed default dependency).
 - [ ] W2: a fresh scaffold serves a founder-email-allowlist-gated /admin route with user list+search, account-state toggle, entitlement grant/revoke, and the W0 event feed; ENFORCER = scaffold-coverage asserting the gated route + allowlist, with a planted ungated-admin fixture that FAILS; security-reviewer lane run on the W2 diff (admin route = security surface).
 - [ ] W3: FOUNDERS_CHECKLIST.md exists at product root in a fresh scaffold, machine-readable checkbox state, stack-conditional items render from the W1 declaration (planted: Stripe declared → 'verify Stripe identity' appears); lastmile audit consumes checklist state; ENFORCER = scaffold-coverage presence + render assertion.
-- [ ] T-G: the 3 new guides exist with guide-anchor contracts and registry entries; ENFORCER = /guides:coverage green.
-- [ ] T-K: the 3 new _knowledge LIBRARY domains exist with _domain.json + consumer marker blocks; ENFORCER = /knowledge:coverage green.
+- [x] T-G: the 3 new guides exist with guide-anchor contracts and registry entries; ENFORCER = /guides:coverage green.
+- [x] T-K: the 3 new _knowledge LIBRARY domains exist with _domain.json + consumer marker blocks; ENFORCER = /knowledge:coverage green.
 - [ ] T-P: ≥2 situational playbooks authored (launch-readiness, provider-setup) per SUITE-DESIGN.md; ENFORCER = a playbook-suite presence check wired into a scan, or an /enforcement:log debt entry if deferred.
 - [ ] Downstream integrity: both manifests regenerated; warpos-ship-coverage green through every scaffold-layer change; no NOTAGAIN §6 receipt re-fixed.
 - [ ] Tracker hygiene: ROADMAP § Epics + TRACKER.md reconciled; every sprint id minted explicitly via add-sprint.js (RI-007).
@@ -30,12 +30,12 @@
 - None currently recorded.
 
 ## Related sprints
-- **S-PF-01** — Planned — W0 telemetry seam — track() + buffer + pluggable sink + 6 lifecycle events into the scaffold; lastmile analytics module re-pointed to enrich; scaffold-coverage enforcer + planted fixture
+- **S-PF-01** — Local release prepared — W0 telemetry seam — track() + buffer + pluggable sink + 6 lifecycle events into the scaffold; lastmile analytics module re-pointed to enrich; scaffold-coverage enforcer + planted fixture. `RL-20260611-045` awaits explicit approval.
 - **S-PF-02** — Planned — W1 tech-stack declaration — intake fields, DATA_AND_ACCOUNTS '## Tech Stack' block, profile/roadmap trickle-down, stack-drift event, canon gate enforcer; β spec-lock consult on binding-vs-advisory first
 - **S-PF-03** — Planned — W2 admin surface — allowlist-gated /admin route (list/search, state toggle, entitlement, event feed), feature-flag config seam, scaffold-coverage enforcer + ungated fixture, security-reviewer lane
 - **S-PF-04** — Planned — W3 founders checklist — FOUNDERS_CHECKLIST.md generator (stack-conditional, machine-readable), lastmile audit consumes it, scaffold-coverage enforcer
-- **S-PF-05** — Planned — T-G guides gap closure — ANALYTICS/TELEMETRY + DEPLOYMENT-INFRA + ADMIN-TOOLING guides authored + anchored; /guides:coverage green
-- **S-PF-06** — Planned — T-K _knowledge domains — tech-stack-selection/BaaS + product-telemetry + admin-tooling LIBRARY domains created + integrated; /knowledge:coverage green
+- **S-PF-05** — Done — T-G guides gap closure — ANALYTICS/TELEMETRY + DEPLOYMENT-INFRA + ADMIN-TOOLING guides authored + anchored; /guides:coverage green
+- **S-PF-06** — Done — T-K _knowledge domains — tech-stack-selection/BaaS + product-telemetry + admin-tooling LIBRARY domains created + integrated; /knowledge:coverage green
 - **S-PF-07** — Planned — T-P playbook authoring — launch-readiness + provider-setup situational playbooks from SUITE-DESIGN.md (+ remaining 3 as capacity allows)
 
 ## Dependencies
@@ -72,6 +72,15 @@
 - Next action: see § Current next action.
 - Evidence/references: ../../_planning/epics/E-PRODUCT-FOUNDATION-001.md.
 
+### 2026-06-11 - S-PF-05/S-PF-06 guide and knowledge batch
+- Agent(s): Codex (GPT executor) · Mode: adhoc continuation on `sprint/S-PF-01`
+- Work performed: ran the planned guide/knowledge sprint tracks for E-PRODUCT-FOUNDATION-001.
+- Files changed: `_guides/ANALYTICS_TELEMETRY_GUIDE.md`, `_guides/DEPLOYMENT_INFRA_GUIDE.md`, `_guides/ADMIN_TOOLING_GUIDE.md`, `_guides/README.md`, `_guides/registry.json`, `.claude/commands/bootstrap/lastmile.md`, `.claude/project/maps/guide-integration.jsonl`, `_knowledge/tech-stack-selection/**`, `_knowledge/product-telemetry/**`, `_knowledge/admin-tooling/**`, `_knowledge/registry.json`, `.claude/project/maps/knowledge-integration.jsonl`, and consumer agent specs for product/backend/QA/security grounding markers.
+- State change: Planned -> Active · Completion change: 0% -> ~43%.
+- Verification performed: `node scripts/checks/guides-coverage.js --json`; `node scripts/checks/knowledge-coverage.js --json`.
+- Validation result: guides coverage PASS (`14 guide files · 13 anchored · 13 active integration record(s) · 13 pipeline marker(s)`); knowledge coverage PASS (`8 domain(s) (6 library · 2 store) · 20 active record(s) · 18 marker(s)`).
+- Evidence/references: `CODEX-LOG.md` 2026-06-11 E-PRODUCT-FOUNDATION guide/knowledge batch entries.
+
 ## Change log
 ### 2026-06-11 — Session fe8e8193-5743-4767-8e0e-acec8ecd6525
 - Changed: created E-PRODUCT-FOUNDATION-001 (epic file + companion plan artifact) from the /epic:plan payload.
@@ -96,29 +105,44 @@
 - Classification: clarification
 - Provenance: 2026-06-11 · source: operator (in-session directive) · <!-- fold:4725e875 -->
 
+### 2026-06-11 - S-PF-05/S-PF-06 guide and knowledge batch
+- Changed: added the three Product Foundation launch guides and three Product Foundation knowledge libraries, then wired them into bootstrap and consumer-agent marker contracts.
+- Reason: user asked to run the sprint for adding to `_guides/` and `_knowledge/`; this maps to planned tracks T-G/S-PF-05 and T-K/S-PF-06.
+- Affected: `_guides/`, `_knowledge/`, guide/knowledge integration maps, lastmile bootstrap docs, product/backend/QA/security agent specs, generated registries.
+- Previous state: S-PF-05 and S-PF-06 Planned.
+- New state: S-PF-05 and S-PF-06 Done with coverage evidence.
+
 ## Evidence log
 ### 2026-06-11 — Epic plan authored
 - Evidence type: File changed.
 - Detail/location: trackers/epics/E-PRODUCT-FOUNDATION-001-product-foundation-seams.md; _planning/epics/E-PRODUCT-FOUNDATION-001.md.
 - Verified by: Alex α (President) · Supports: § Definition of Done scoping (the plan exists + links round-trip).
 
+### 2026-06-11 - S-PF-05/S-PF-06 guide and knowledge batch
+- Evidence type: Coverage checks.
+- Detail/location: `node scripts/checks/guides-coverage.js --json` PASS; `node scripts/checks/knowledge-coverage.js --json` PASS.
+- Verified by: Codex · Supports: Definition of Done T-G and T-K.
+
 ## Verification log
 | Item | Should exist? | State | Where / wired where | Proof (cmd/inspection) | Checked | By |
 | --- | --- | --- | --- | --- | --- | --- |
 | _planning/epics/E-PRODUCT-FOUNDATION-001.md (plan artifact) | Yes | Verified Exists | _planning/epics/ | written by /epic:plan | 2026-06-11 | Alex α (President) |
-| ROADMAP § Epics entry for E-PRODUCT-FOUNDATION-001 | Yes | Missing But Required | ROADMAP.md | pending α integration | 2026-06-11 | Alex α (President) |
+| ROADMAP § Epics entry for E-PRODUCT-FOUNDATION-001 | Yes | Verified Exists | ROADMAP.md | `rg -n "E-PRODUCT-FOUNDATION-001" ROADMAP.md` shows the epic entry | 2026-06-11 | Codex |
+
+| S-PF-05 guide coverage | Yes | Verified Wired | _guides/ + .claude/commands/bootstrap/lastmile.md + .claude/project/maps/guide-integration.jsonl | `node scripts/checks/guides-coverage.js --json` PASS: 14 guide files, 13 anchored, 13 active records, 13 markers | 2026-06-11 | Codex |
+| S-PF-06 knowledge coverage | Yes | Verified Wired | _knowledge/ + consumer agent specs + .claude/project/maps/knowledge-integration.jsonl | `node scripts/checks/knowledge-coverage.js --json` PASS: 8 domains, 20 active records, 18 markers | 2026-06-11 | Codex |
 
 ## Current next action
-Mint the Wave-0 sprint candidate(s) via /sprint:plan, then wire E-PRODUCT-FOUNDATION-001 into ROADMAP § Epics + the TRACKER header (α at integration).
+Next Product Foundation build target: S-PF-02 (W1 tech-stack declaration), unless the operator first wants to approve/close the prepared S-PF-01 release `RL-20260611-045`. S-PF-05 and S-PF-06 are done locally; S-PF-03, S-PF-04, and S-PF-07 remain planned.
 
 ## Completion record
-- Final state: Not yet complete.
-- Percent completion: n/a
+- Final state: Active, not complete.
+- Percent completion: ~43%
 - Completion timestamp: n/a
 - Definition of done used: the § Definition of Done above.
-- Evidence of completion: n/a (Planned).
+- Evidence of completion: partial completion evidence for W0, T-G, and T-K is recorded above; full-epic completion remains n/a.
 - Session IDs / dates / agents: n/a.
-- Related completed sprints: None.
-- Remaining follow-up items: all sprint candidates listed in § Related sprints.
-- Related untracked work: None.
-- ../../TRACKER.md updated: No (pending α integration) · Roadmap reconciled: No (pending α integration).
+- Related completed sprints: S-PF-05, S-PF-06; S-PF-01 is locally prepared pending release approval.
+- Remaining follow-up items: S-PF-02, S-PF-03, S-PF-04, and S-PF-07.
+- Related untracked work: CODEX-LOG.md and runtime review/evidence artifacts remain intentionally local.
+- ../../TRACKER.md updated: Not directly in this batch · Roadmap reconciled: Yes, E-PRODUCT-FOUNDATION-001 entry exists and is updated for S-PF-05/S-PF-06 progress.

@@ -2,6 +2,24 @@
   "schema": "warpos/guides/registry/v1",
   "guides": [
     {
+      "guide": "ADMIN_TOOLING",
+      "file": "_guides/ADMIN_TOOLING_GUIDE.md",
+      "anchor": "lastmile:module/admin",
+      "shape": "walkthrough",
+      "timing": "at-module",
+      "lead_time": "none",
+      "title": "ADMIN_TOOLING_GUIDE.md - The Founder Control Room (for Total Newbies)"
+    },
+    {
+      "guide": "ANALYTICS_TELEMETRY",
+      "file": "_guides/ANALYTICS_TELEMETRY_GUIDE.md",
+      "anchor": "lastmile:module/analytics",
+      "shape": "walkthrough",
+      "timing": "at-module",
+      "lead_time": "none",
+      "title": "ANALYTICS_TELEMETRY_GUIDE.md - Know If Your Product Is Working (for Total Newbies)"
+    },
+    {
       "guide": "API_LIMITS",
       "file": "_guides/API_LIMITS_GUIDE.md",
       "anchor": "spinup:preflight",
@@ -36,6 +54,15 @@
       "timing": "at-module",
       "lead_time": "none",
       "title": "DATABASE_GUIDE.md — Where Your App Remembers Things (for Total Newbies)"
+    },
+    {
+      "guide": "DEPLOYMENT_INFRA",
+      "file": "_guides/DEPLOYMENT_INFRA_GUIDE.md",
+      "anchor": "lastmile:module/deployment",
+      "shape": "checklist",
+      "timing": "at-module",
+      "lead_time": "domain/DNS, provider verification, production smoke tests, rollback setup, and app-store or mobile build pipelines can take hours-days; start before launch week",
+      "title": "DEPLOYMENT_INFRA_GUIDE.md - Put Your App Online Without Drama (for Total Newbies)"
     },
     {
       "guide": "DEV_SETUP",

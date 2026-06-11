@@ -136,6 +136,12 @@ Each module: **detect → recommend (default) → plan (shortest safe path)**.
 > - **Email** (transactional + deliverability, under CRM/Lifecycle) → [`_guides/EMAIL_GUIDE.md`](../../../_guides/EMAIL_GUIDE.md) — sending-domain DNS (SPF/DKIM/DMARC) has propagation lead time.
 > <!-- guide-anchor:SECURITY anchor:lastmile:module/security shape:checklist -->
 > - **Security + Privacy** (don't get hacked) → [`_guides/SECURITY_GUIDE.md`](../../../_guides/SECURITY_GUIDE.md) — database/RLS lockdown, secrets hygiene, rate limits + AI usage caps, prompt injection, input validation.
+> <!-- guide-anchor:ANALYTICS_TELEMETRY anchor:lastmile:module/analytics shape:walkthrough -->
+> - **Analytics / Instrumentation** → [`_guides/ANALYTICS_TELEMETRY_GUIDE.md`](../../../_guides/ANALYTICS_TELEMETRY_GUIDE.md) - activation, funnels, core product events, privacy-safe telemetry payloads.
+> <!-- guide-anchor:DEPLOYMENT_INFRA anchor:lastmile:module/deployment shape:checklist -->
+> - **Platform / Deployment** → [`_guides/DEPLOYMENT_INFRA_GUIDE.md`](../../../_guides/DEPLOYMENT_INFRA_GUIDE.md) - host choice, env vars, production smoke test, domain/DNS, rollback.
+> <!-- guide-anchor:ADMIN_TOOLING anchor:lastmile:module/admin shape:walkthrough -->
+> - **Admin tooling / founder support surface** → [`_guides/ADMIN_TOOLING_GUIDE.md`](../../../_guides/ADMIN_TOOLING_GUIDE.md) - founder allowlist, user lookup, entitlement view, event feed, audit trail.
 
 ## Launch-Readiness Score
 

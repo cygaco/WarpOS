@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-11T22:47:55.800Z",
+  "generatedAt": "2026-06-11T23:31:20.001Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.15.4",
   "migrations": [],
@@ -121,8 +121,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "c4a816c463e2472773ed78d5cc218904bd4a899797f4dede3b4b0db26843937b",
-      "installedSha": "c4a816c463e2472773ed78d5cc218904bd4a899797f4dede3b4b0db26843937b"
+      "sha256": "742fa7dd3b0c2ae4b53b21b867ee8aab90a046f5171ca78f484f87d2a2d70375",
+      "installedSha": "742fa7dd3b0c2ae4b53b21b867ee8aab90a046f5171ca78f484f87d2a2d70375"
     },
     "TRACKER.md": {
       "owner": "runtime",
@@ -768,8 +768,43 @@
       "owner": "framework",
       "managed": true,
       "source": "_knowledge/registry.json",
-      "sha256": "c5d50da3c3373a32464a26c635a36365bf94e5062b3b25662743c213fe082fab",
-      "installedSha": "c5d50da3c3373a32464a26c635a36365bf94e5062b3b25662743c213fe082fab"
+      "sha256": "4db7ea6bb75be5da6a33767384bd0bcec0ebe16ee6155bb136e26c2124d621ed",
+      "installedSha": "4db7ea6bb75be5da6a33767384bd0bcec0ebe16ee6155bb136e26c2124d621ed"
+    },
+    "_knowledge/tech-stack-selection/BAAS_DECISION_MATRIX.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_knowledge/tech-stack-selection/BAAS_DECISION_MATRIX.md",
+      "sha256": "9bfe94a1a19bc94e83fbb6f833a2d4a15eebcc18f7aa34a190a4638356747865",
+      "installedSha": "9bfe94a1a19bc94e83fbb6f833a2d4a15eebcc18f7aa34a190a4638356747865"
+    },
+    "_knowledge/tech-stack-selection/README.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_knowledge/tech-stack-selection/README.md",
+      "sha256": "fb7475676629de5fe64e102edcb2b599723bffb49edf963ec043907060dbe2f9",
+      "installedSha": "fb7475676629de5fe64e102edcb2b599723bffb49edf963ec043907060dbe2f9"
+    },
+    "_knowledge/tech-stack-selection/registry.json": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_knowledge/tech-stack-selection/registry.json",
+      "sha256": "579fdb113e1ae46148eae3a2b4f69c9854a65a121e36bf1686e28ff1f9d6fa56",
+      "installedSha": "579fdb113e1ae46148eae3a2b4f69c9854a65a121e36bf1686e28ff1f9d6fa56"
+    },
+    "_knowledge/tech-stack-selection/STACK_DRIFT_AND_REVERSIBILITY.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_knowledge/tech-stack-selection/STACK_DRIFT_AND_REVERSIBILITY.md",
+      "sha256": "dd20a9c989290dcfa5d546b61790e4892e66bb7084eee85ceeda3cb655932df8",
+      "installedSha": "dd20a9c989290dcfa5d546b61790e4892e66bb7084eee85ceeda3cb655932df8"
+    },
+    "_knowledge/tech-stack-selection/_domain.json": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_knowledge/tech-stack-selection/_domain.json",
+      "sha256": "6e7f94166ddd4dc61658df20491b7c42f6aa375e4bf1ab55ccc4efae500fc68d",
+      "installedSha": "6e7f94166ddd4dc61658df20491b7c42f6aa375e4bf1ab55ccc4efae500fc68d"
     },
     "_knowledge/security/AUTHENTICATION_AND_SESSION.md": {
       "owner": "framework",
@@ -854,6 +889,41 @@
       "source": "_knowledge/security/_domain.json",
       "sha256": "80633890a89ecde086614d1a8ff4c0541d8021d03698c4e1d8d3d0a54398dc0b",
       "installedSha": "80633890a89ecde086614d1a8ff4c0541d8021d03698c4e1d8d3d0a54398dc0b"
+    },
+    "_knowledge/product-telemetry/ACTIVATION_AND_CHAIN_INTEGRITY.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_knowledge/product-telemetry/ACTIVATION_AND_CHAIN_INTEGRITY.md",
+      "sha256": "6e8fe1f3d1616fe931d4b0cc06feeeb107fe0ef3f75e15f6daf3f9d73b759b71",
+      "installedSha": "6e8fe1f3d1616fe931d4b0cc06feeeb107fe0ef3f75e15f6daf3f9d73b759b71"
+    },
+    "_knowledge/product-telemetry/PMF_EVENT_VOCABULARY.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_knowledge/product-telemetry/PMF_EVENT_VOCABULARY.md",
+      "sha256": "2921e6c2e927b0b3efc1be07167d46e4772dcd35fd95e5054220abb8a3394d12",
+      "installedSha": "2921e6c2e927b0b3efc1be07167d46e4772dcd35fd95e5054220abb8a3394d12"
+    },
+    "_knowledge/product-telemetry/README.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_knowledge/product-telemetry/README.md",
+      "sha256": "23a95a07a2a078d520897d12780869bacad8e51483ca5a57889af3607e4faf4b",
+      "installedSha": "23a95a07a2a078d520897d12780869bacad8e51483ca5a57889af3607e4faf4b"
+    },
+    "_knowledge/product-telemetry/registry.json": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_knowledge/product-telemetry/registry.json",
+      "sha256": "4a1d6b53863c7714c9ab5ce73f336ed49e0ec3aa58bcd009c4155ca6546c5b12",
+      "installedSha": "4a1d6b53863c7714c9ab5ce73f336ed49e0ec3aa58bcd009c4155ca6546c5b12"
+    },
+    "_knowledge/product-telemetry/_domain.json": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_knowledge/product-telemetry/_domain.json",
+      "sha256": "0f33744b145882e3a546b0afab7974b55af4c4deab5cbf8407ddb624b56e85c8",
+      "installedSha": "0f33744b145882e3a546b0afab7974b55af4c4deab5cbf8407ddb624b56e85c8"
     },
     "_knowledge/design/ACCESSIBILITY_WCAG.md": {
       "owner": "framework",
@@ -1086,6 +1156,55 @@
       "sha256": "85ea174b097eca8757690d99fb16d0cce75f1cde8a974de57db9386329c6260c",
       "installedSha": "85ea174b097eca8757690d99fb16d0cce75f1cde8a974de57db9386329c6260c"
     },
+    "_knowledge/admin-tooling/ADMIN_SECURITY_AND_AUDIT.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_knowledge/admin-tooling/ADMIN_SECURITY_AND_AUDIT.md",
+      "sha256": "9c0b7546f4d644e055ec563138faa6eddf57b727793f77add733cfedc022e5b0",
+      "installedSha": "9c0b7546f4d644e055ec563138faa6eddf57b727793f77add733cfedc022e5b0"
+    },
+    "_knowledge/admin-tooling/PRE_PMF_ADMIN_SURFACE.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_knowledge/admin-tooling/PRE_PMF_ADMIN_SURFACE.md",
+      "sha256": "6fbb7eb24b1a0c1a58a261ee8ff7d46d8964e504682bce0caa7afd65c0af58bb",
+      "installedSha": "6fbb7eb24b1a0c1a58a261ee8ff7d46d8964e504682bce0caa7afd65c0af58bb"
+    },
+    "_knowledge/admin-tooling/README.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_knowledge/admin-tooling/README.md",
+      "sha256": "c7ca69003287dfe9288f4a11b7f4e6d85d557c12d14025010541533d5695aeaa",
+      "installedSha": "c7ca69003287dfe9288f4a11b7f4e6d85d557c12d14025010541533d5695aeaa"
+    },
+    "_knowledge/admin-tooling/registry.json": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_knowledge/admin-tooling/registry.json",
+      "sha256": "42cf2121265ff653d1b7434279c440f141c9d97d77b9971e8de01ee5ce8d6238",
+      "installedSha": "42cf2121265ff653d1b7434279c440f141c9d97d77b9971e8de01ee5ce8d6238"
+    },
+    "_knowledge/admin-tooling/_domain.json": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_knowledge/admin-tooling/_domain.json",
+      "sha256": "45645b324b2e2901a7c4936177afbfc5a47e837872708db4dfb3a1863e2e8520",
+      "installedSha": "45645b324b2e2901a7c4936177afbfc5a47e837872708db4dfb3a1863e2e8520"
+    },
+    "_guides/ADMIN_TOOLING_GUIDE.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_guides/ADMIN_TOOLING_GUIDE.md",
+      "sha256": "fcf1b8be0f6243e503b99ca9ab328c63768dbfc5ea5858ad1134c5c1a6b4612d",
+      "installedSha": "fcf1b8be0f6243e503b99ca9ab328c63768dbfc5ea5858ad1134c5c1a6b4612d"
+    },
+    "_guides/ANALYTICS_TELEMETRY_GUIDE.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_guides/ANALYTICS_TELEMETRY_GUIDE.md",
+      "sha256": "738a44b95c8f0dcefcce79d06ef7d88c578fe2cf4993947491bbd0f8740d23e4",
+      "installedSha": "738a44b95c8f0dcefcce79d06ef7d88c578fe2cf4993947491bbd0f8740d23e4"
+    },
     "_guides/API_LIMITS_GUIDE.md": {
       "owner": "framework",
       "managed": true,
@@ -1113,6 +1232,13 @@
       "source": "_guides/DATABASE_GUIDE.md",
       "sha256": "ab80f8df9e4a57b6c763a3dbfac9d86af0461819039bdb5cc3824d7afa8a3f28",
       "installedSha": "ab80f8df9e4a57b6c763a3dbfac9d86af0461819039bdb5cc3824d7afa8a3f28"
+    },
+    "_guides/DEPLOYMENT_INFRA_GUIDE.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_guides/DEPLOYMENT_INFRA_GUIDE.md",
+      "sha256": "0213cf09d201079a29cdb092ba6d62269608809185ddb6695c4e187b64ddfc01",
+      "installedSha": "0213cf09d201079a29cdb092ba6d62269608809185ddb6695c4e187b64ddfc01"
     },
     "_guides/DEV_SETUP_GUIDE.md": {
       "owner": "framework",
@@ -1153,15 +1279,15 @@
       "owner": "framework",
       "managed": true,
       "source": "_guides/README.md",
-      "sha256": "47a040b83ca24c7b025d0a29e79d0f3d1e01c954d035d8b63170f0a0f081918b",
-      "installedSha": "47a040b83ca24c7b025d0a29e79d0f3d1e01c954d035d8b63170f0a0f081918b"
+      "sha256": "7a69570fcd5b20b15c401f1d7693f3c9a26f7e0e1e40f24f02291c8508963b34",
+      "installedSha": "7a69570fcd5b20b15c401f1d7693f3c9a26f7e0e1e40f24f02291c8508963b34"
     },
     "_guides/registry.json": {
       "owner": "framework",
       "managed": true,
       "source": "_guides/registry.json",
-      "sha256": "2c1247d0f6912b98ac48f95394a636369bbe701d78b455a05413030313c2c1c9",
-      "installedSha": "2c1247d0f6912b98ac48f95394a636369bbe701d78b455a05413030313c2c1c9"
+      "sha256": "54b91e6cca6953f74dae7b843f182bb6bc10176e8df80193b5285a240d65d451",
+      "installedSha": "54b91e6cca6953f74dae7b843f182bb6bc10176e8df80193b5285a240d65d451"
     },
     "_guides/SECURITY_GUIDE.md": {
       "owner": "framework",
@@ -20279,8 +20405,8 @@
       "managed": true,
       "source": ".claude/commands/bootstrap/lastmile.md",
       "kind": "md",
-      "sha256": "75c07a9c0584f90ec7b0276207611ca0c678b177e501f3aa4b7d69a07f924310",
-      "installedSha": "75c07a9c0584f90ec7b0276207611ca0c678b177e501f3aa4b7d69a07f924310"
+      "sha256": "b8046ed7f5194576b8847dfe71989295a37b02eba56909923bf878dd2009e9cb",
+      "installedSha": "b8046ed7f5194576b8847dfe71989295a37b02eba56909923bf878dd2009e9cb"
     },
     ".claude/commands/bootstrap/ponder.md": {
       "owner": "framework",
@@ -20479,8 +20605,8 @@
       "managed": true,
       "source": ".claude/agents/product/product-lead.md",
       "kind": "md",
-      "sha256": "d66e37619dc9f4a651103047ee359eb1b70e7cecd134dff0b0bba1ccfc72e558",
-      "installedSha": "d66e37619dc9f4a651103047ee359eb1b70e7cecd134dff0b0bba1ccfc72e558"
+      "sha256": "77584ec15c9dc84ba2c315be0d2b8ba4f0f45dd105ebb730d24de4263fa91a06",
+      "installedSha": "77584ec15c9dc84ba2c315be0d2b8ba4f0f45dd105ebb730d24de4263fa91a06"
     },
     ".claude/agents/product/quality-lead.md": {
       "owner": "framework",
@@ -20503,8 +20629,8 @@
       "managed": true,
       "source": ".claude/agents/product/quality/qa-reviewer.md",
       "kind": "md",
-      "sha256": "f0f71023528e8b4035b4d0506588c8593be48d93b4bcba0db073eee0e10df0a7",
-      "installedSha": "f0f71023528e8b4035b4d0506588c8593be48d93b4bcba0db073eee0e10df0a7"
+      "sha256": "699bb665d079ad2880803bb8625d49830f8c761b4a2839e670802bc4af30d13a",
+      "installedSha": "699bb665d079ad2880803bb8625d49830f8c761b4a2839e670802bc4af30d13a"
     },
     ".claude/agents/product/quality/test-runner.md": {
       "owner": "framework",
@@ -20940,8 +21066,8 @@
       "managed": true,
       "source": ".claude/agents/engineering/security/reviewer.md",
       "kind": "md",
-      "sha256": "4e4ad0eee58abba1007b9a316b69249b49a92cbf109d8a9e60b872b8e22e6eba",
-      "installedSha": "4e4ad0eee58abba1007b9a316b69249b49a92cbf109d8a9e60b872b8e22e6eba"
+      "sha256": "9a20af87c95f86a67025005bfc6711ddff6d2b960d74585bae8b47186138fd92",
+      "installedSha": "9a20af87c95f86a67025005bfc6711ddff6d2b960d74585bae8b47186138fd92"
     },
     ".claude/agents/engineering/security/security-lead.md": {
       "owner": "framework",
@@ -20996,8 +21122,8 @@
       "managed": true,
       "source": ".claude/agents/engineering/backend/builder.md",
       "kind": "md",
-      "sha256": "28546dad7e1b9cb2992692c1c5f6c37473db4cc1ee389352e695b6310124b3e5",
-      "installedSha": "28546dad7e1b9cb2992692c1c5f6c37473db4cc1ee389352e695b6310124b3e5"
+      "sha256": "c9a1c11413285b36572e875135e305438323038d3cf02fc1374240be05af9e45",
+      "installedSha": "c9a1c11413285b36572e875135e305438323038d3cf02fc1374240be05af9e45"
     },
     ".claude/agents/engineering/backend/fixer.md": {
       "owner": "framework",
@@ -21012,8 +21138,8 @@
       "managed": true,
       "source": ".claude/agents/engineering/backend/reviewer.md",
       "kind": "md",
-      "sha256": "39276e7d84a9885e1a9d614f366c04420cef1674dfb027961ff5240447b9abd4",
-      "installedSha": "39276e7d84a9885e1a9d614f366c04420cef1674dfb027961ff5240447b9abd4"
+      "sha256": "3907b694e4980f41be7b34190f50c0082ece1f4715bda700657e9ccee561e313",
+      "installedSha": "3907b694e4980f41be7b34190f50c0082ece1f4715bda700657e9ccee561e313"
     }
   }
 }

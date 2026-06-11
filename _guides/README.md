@@ -28,6 +28,9 @@ lead_time: "none"
 | **[APP_STORE_GUIDE](APP_STORE_GUIDE.md)** | Getting an iOS app approved — privacy labels, TestFlight, Sign in with Apple, In-App Purchase rules | Before you submit to the App Store |
 | **[LEGAL_GUIDE](LEGAL_GUIDE.md)** | Legal protection — Terms of Service, subscription-cancel law, data declarations, trademark/IP, your LLC | Before launch (a legal gate) |
 | **[API_LIMITS_GUIDE](API_LIMITS_GUIDE.md)** | Third-party API limits & capacity prep — provider rate/usage tiers ramp over time, so you can't just launch on their API for unlimited users | Day zero (tiers ramp over weeks/months) |
+| **[ANALYTICS_TELEMETRY_GUIDE](ANALYTICS_TELEMETRY_GUIDE.md)** | Product analytics and telemetry - activation, funnels, core events, privacy-safe event payloads | When you instrument the product |
+| **[DEPLOYMENT_INFRA_GUIDE](DEPLOYMENT_INFRA_GUIDE.md)** | Deployment and infrastructure - host choice, env vars, domains, smoke tests, rollback | Before launch week |
+| **[ADMIN_TOOLING_GUIDE](ADMIN_TOOLING_GUIDE.md)** | Founder/admin tooling - allowlist, user lookup, entitlement view, event feed, audit trail | When you need support/admin access |
 
 ---
 

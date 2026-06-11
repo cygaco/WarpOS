@@ -103,6 +103,18 @@ without flagging it breaks consumers — flag it for the Gamma integration phase
 and FE/BE merge.
 
 ═══════════════════════════════════════════════════════════════════════════
+<!-- knowledge:tech-stack-selection role:backend-builder (grounding - training references, do not weaken scope) -->
+### Tech-stack selection knowledge library (training references)
+
+When backend work touches database/auth/storage/provider foundations, ground the implementation in `_knowledge/tech-stack-selection/` (index `_knowledge/tech-stack-selection/registry.json`). Apply `STACK-BAAS-*` and `STACK-REV-*`: use the declared provider ownership, avoid duplicate sources of truth, keep provider SDK calls bounded to integration seams where practical, and flag any provider drift as a scope issue.
+<!-- /knowledge:tech-stack-selection role:backend-builder -->
+
+<!-- knowledge:admin-tooling role:backend-builder (grounding - training references, do not weaken security checklist) -->
+### Admin tooling knowledge library (training references)
+
+When backend work touches admin/support surfaces, ground the implementation in `_knowledge/admin-tooling/` (index `_knowledge/admin-tooling/registry.json`). Apply `ADMIN-SCOPE-*` and `ADMIN-SEC-*`: server-side admin checks on every admin route/action, normal-user denial tests, read-only defaults, audit records for mutating actions, redaction of sensitive fields, and no destructive/bulk/impersonation automation without focused review.
+<!-- /knowledge:admin-tooling role:backend-builder -->
+
 READ ORDER — before writing code
 ═══════════════════════════════════════════════════════════════════════════
 
