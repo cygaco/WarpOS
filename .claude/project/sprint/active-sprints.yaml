@@ -1,5 +1,5 @@
 schema: warpos/sprint/active-sprints/v1
-primary: SP-20260610-008
+primary: SP-20260611-002
 sprints:
   - id: SP-20260512-001
     title: Multi-sprint parallelism for Sprint Workflow
@@ -936,5 +936,27 @@ sprints:
     pointer: ".claude/project/sprint/sprints/SP-20260610-008"
     created_at: "2026-06-10T22:37:26.823Z"
     updated_at: "2026-06-11T00:33:59.711Z"
+  - id: SP-20260611-001
+    title: "Cross-family findings fix sprint — 6 gemini re-review findings (epsilon-runtime spawn race, fallback ENFORCE brick, hardcoded BUILD_CHAIN_ROLES, spoofed-ts window, sprint_id correlation, verifyGauntlet parse refusal)"
+    status: planning
+    lane:
+      type: default
+      value: null
+      isolation_notes: ""
+    layout: per_sprint_subdir
+    pointer: ".claude/project/sprint/sprints/SP-20260611-001"
+    created_at: "2026-06-11T03:42:00.813Z"
+    updated_at: "2026-06-11T03:42:00.813Z"
+  - id: SP-20260611-002
+    title: "E-LIFECYCLE-001 close-out fix sprint — 17 REAL + 4 PARTIAL GPT 2nd-pass findings (team-guard/mode-guard bypass classes, turbo spend/auth integrity, coverage-gate waiver+expected-source, provider-tier false-green, planning-principles enforce path, ac-coverage fail-closed) + NOTAGAIN §8.3 legacy scoping"
+    status: planning
+    lane:
+      type: default
+      value: null
+      isolation_notes: ""
+    layout: per_sprint_subdir
+    pointer: ".claude/project/sprint/sprints/SP-20260611-002"
+    created_at: "2026-06-11T04:31:36.180Z"
+    updated_at: "2026-06-11T04:31:36.180Z"
 created_at: "2026-05-12T22:57:35.667Z"
-updated_at: "2026-06-11T00:33:59.711Z"
+updated_at: "2026-06-11T04:31:36.180Z"

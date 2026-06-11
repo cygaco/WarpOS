@@ -1,0 +1,160 @@
+schema: warpos/sprint/plan-contract/v1
+id: PC-20260611-0074
+created_at: "2026-06-11T04:35:21.788Z"
+updated_at: "2026-06-11T04:35:21.788Z"
+sprint: SP-20260611-002
+source_request: "E-LIFECYCLE-001 close-out fix sprint: fix the 17 REAL + 4 PARTIAL findings from the GPT 2nd-pass security review of the gemini-only W1/W2/W3-5 lanes (triage: runtime/notes/elc-gpt2p-triage-2026-06-11.md), fold in the NOTAGAIN §8.3 legacy-scoping prep, re-gauntlet cross-family, then complete the epic."
+source_request_verbatim: "DUMP Actionable #2: (a) GPT 2nd-pass batch on the W1+W2+W3 gemini-only security lanes (§H list in the epic). (b) Flip ramp prep. (c) Epic → Completed + reconcile. Epic next-action #1: GPT 2nd-pass ... Fix any new findings."
+request_type: bug_fix
+interpreted_intent: "Clear the §H debt PROPERLY: the GPT 2nd-pass ran (3 lanes, all FAIL — 12 blockers/9 majors), every blocker verified REAL by live probes. Fix the verified findings so the report-only→blocking flip ramp becomes actually safe, the two 'READY' gates become genuinely flippable, and E-LIFECYCLE-001 can complete honestly."
+user_or_business_outcome: "The lifecycle/turbo/coverage enforcement layer stops being bypassable-by-design-gap: no planted-marker/team/mode spoofs, no silent kill-switches, no turbo auth widening or spend-ledger resets, no provenance-free waivers, no false-green enforcers (provider-tier, planning-principles, ac-coverage) — so the operator can flip gates to blocking with real confidence."
+affected_surfaces:
+  - surface: "scripts/hooks/team-guard.js (findings #1,#2,#4,#5)"
+    evidence_level: verified_from_repo
+    notes: "worker bypass via nonempty team_name; presence-only .team-live marker; planted mode.json disables Agent gate; silent kill-switches"
+  - surface: "scripts/hooks/mode-lifecycle-guard.js + .claude/settings.json matcher (findings #3,#6)"
+    evidence_level: verified_from_repo
+    notes: "Bash-direct mode-set.js writes mode.json outside the SlashCommand|Skill matcher; silent disable env/file"
+  - surface: "scripts/teams/lifecycle.js (#7)"
+    evidence_level: verified_from_repo
+    notes: substring roster verify spoofable
+  - surface: "scripts/turbo/apply.js + spend-ledger.js (#8,#9,#14-partial)"
+    evidence_level: verified_from_repo
+    notes: "repeat apply widens auth without provenance; granted_at reset hides prior spend; nonfinite bytes clamp to 0"
+  - surface: "scripts/hooks/authorization-gate.js (#10)"
+    evidence_level: verified_from_repo
+    notes: "node-e-fs scope approves rmSync/unlinkSync; safety floor only checks git patterns — tracked-work delete floor is prose-only"
+  - surface: "scripts/dispatch/coverage-gate.js + scripts/checks/coverage-gate-scan.js (#11,#12-partial + NOTAGAIN §8.3 legacy scoping)"
+    evidence_level: verified_from_repo
+    notes: "waiver needs only non-empty reason, zero provenance; scan derives expected only from ok:true records (self-audit)"
+  - surface: "scripts/warpos/provider-tier-check.js + lib/provider-tier-config.js (#15,#16,#21)"
+    evidence_level: verified_from_repo
+    notes: "down+t3 → unknown-self-attested exits 0 under --enforce; malformed config erases raised floors; envelope ok:true on tier_short"
+  - surface: "scripts/checks/planning-principles.js (#17,#19-partial)"
+    evidence_level: verified_from_repo
+    notes: "--enforce is a silent no-op (no enforce path exists); scans only _planning/epics"
+  - surface: "scripts/sprint/check-ac-coverage.js (#18 + minor + §8.3 legacy scoping)"
+    evidence_level: verified_from_repo
+    notes: "missing/unreadable categories artifact → ok:true/exit 0 under --enforce"
+  - surface: "scripts/checks/mode-lifecycle-hooks-coverage.js allowlist (#20-partial)"
+    evidence_level: verified_from_repo
+    notes: allowlist entries lack expiry/owner/review schema
+  - surface: "dispatch wrappers mode binding (#13) — dispatch-agent.js:508 + dispatch-claude.js"
+    evidence_level: verified_from_repo
+    notes: "wrappers do not pass mode → mode_profiles/alpha_only_shapes dead. FILE-OVERLAP with SP-20260611-001 WS-A: build AFTER SP-001 merges."
+current_behavior:
+  evidence_level: verified_from_repo
+  notes: "All 12 blockers live-probed REAL by the verification agent 2026-06-11 (runtime/notes/elc-gpt2p-triage-2026-06-11.md): planted-state spoofing works, kill-switches are silent, turbo re-apply widens + resets spend window, waiver is provenance-free, provider-tier/planning-principles/ac-coverage all false-green under --enforce. 4 PARTIALs have verified residue (#12 expected-source, #14 nonfinite-only, #19 scan scope, #20 allowlist schema)."
+desired_behavior: "Per-surface: (W1) team-guard verifies the named team really exists + readiness (config.json lookup, not presence markers); planted mode.json cannot disable gates (mode reads validated/cross-checked); kill-switch use is LOGGED loudly with operator attestation fields; lifecycle roster verify uses exact member-name matching; mode-set.js path covered (hook matcher extended or mode-set emits the lifecycle events + an enforcer detects out-of-band mode.json writes). (W2) turbo re-apply is monotonic-or-attested (scope/ceiling can only widen with fresh operator provenance recorded; granted_at preserved across re-applies so spend accrues per session); spend parsing fails HIGH on nonfinite/overflow; node-e-fs scope excludes rm/unlink destructive fs ops or the safety floor gains real non-git tracked-work-delete patterns. (Coverage) waiver requires provenance (operator/source + ts + auditable trail) and is surfaced in scan output; coverage-gate-scan gains an external expected-roles source (registry/sprint-composition derived) with legacy scoping (RECORD_BACKED_CUTOFF-style) so the flip doesn't red historic records. (W4/5) provider-tier --enforce fails on selected-tier-unmet incl. unknown-self-attested for t3-selected; malformed config FAILS CLOSED (never erases raised floors); envelope ok mirrors verdict. planning-principles gains a REAL --enforce path (exit non-zero on findings, internal errors fail closed under enforce) + scan scope extended to _planning/sprints + root plans; check-ac-coverage --enforce fails on missing/unreadable artifact; hooks-coverage allowlist entries gain owner/expiry/reason schema (stale entries flagged). (#13) wrappers pass mode to validateDispatchForClass — built AFTER SP-001 lands. Each fix exploit-tested; all existing suites green."
+scope:
+  size: l
+  risk_level: high
+  complexity_drivers:
+    - "21 findings across 11 enforcement surfaces — the largest single hardening batch this month"
+    - "Every surface is an enforcer: wrong fixes are enforcement regressions (BC-16)"
+    - "#13 file-overlaps SP-20260611-001 WS-A (dispatch wrappers) — strict build sequencing required"
+    - "Turbo/authorization-gate changes touch the session's own live authorization machinery — fixes must not lock the current session out"
+    - "Legacy scoping must not weaken the new enforce paths (scope-then-flip, not scope-as-loophole)"
+scope_variants:
+  minimal_safe:
+    summary: "Blockers only (12), no PARTIALs, no legacy scoping."
+    tradeoffs:
+      - "Leaves the flip still unsafe on majors (#5,#6,#7,#13,#21) and the §8.3 prep undone — close-out still blocked"
+  recommended:
+    summary: "All 17 REAL + the 4 PARTIAL residues + §8.3 legacy scoping, grouped into 6 surface tickets; #13 sequenced after SP-001 merge; cross-family re-gauntlet."
+    tradeoffs:
+      - "Large sprint; mitigated by disjoint surface tickets + per-fix exploit tests"
+  expanded:
+    summary: "Recommended + flip execution for the newly-safe gates in the same sprint."
+    tradeoffs:
+      - "Flips need the operator's in-session words (classifier) — stays in the end-of-session batch, not in this sprint"
+assumptions:
+  safe:
+    - "The triage table (runtime/notes/elc-gpt2p-triage-2026-06-11.md) is probe-verified ground truth (live exploits reproduced for #13,#15,#17,#18,#21)"
+    - "SP-20260611-001 lands before this sprint's #13 ticket builds (sequencing owned by the orchestrator)"
+    - "Turbo session continuity: fixing apply.js/spend-ledger.js does not retroactively invalidate the current session's grant (the fix governs FUTURE applies)"
+  unsafe: []
+  needs_user_or_beta_review:
+    - "#10 remedy choice: narrow the node-e-fs scope (drop rmSync/unlinkSync) vs extend the safety floor with non-git tracked-file-delete detection — β should pick at design"
+    - "#3 remedy choice: extend the hook matcher to cover Bash mode-set.js invocations vs make mode-set.js itself emit lifecycle events + an out-of-band-write detector — β should pick at design"
+open_questions:
+  blocking: []
+  non_blocking:
+    - "Whether the W1 HIGH-risk flip escalation answer (operator batch) should wait for these fixes to land first (recommended: yes — the findings sharpen the escalation context)"
+non_goals:
+  - "Do NOT execute any report-only→blocking flip in this sprint (operator words required; end-of-session batch)"
+  - "Do NOT redesign ADR-0011 turbo (spend stays report-only BY DESIGN — NOTAGAIN §8.4); fixes harden the ledger/auth integrity, not the ramp posture"
+  - "Do NOT rebuild E-LIFECYCLE's 12 sprints or re-fix NOTAGAIN §6 receipts"
+  - "Do NOT touch SP-20260611-001's six fixes (separate sprint, in flight)"
+requirement_areas:
+  - "R-1 W1 gate integrity (findings #1,#2,#4,#5,#7): team-guard verifies real team existence + readiness via config lookup (no presence-marker trust, no nonempty-team_name early-exit bypass); planted mode.json cannot disable the Agent gate; kill-switch use logged loudly; lifecycle roster verify exact-match"
+  - "R-2 mode-write coverage (findings #3,#6): out-of-band mode.json writes (Bash-direct mode-set.js) become covered — matcher extension or mode-set lifecycle-event emission + out-of-band-write detector; mode-guard kill-switch use logged"
+  - "R-3 turbo auth + spend integrity (findings #8,#9,#14): re-apply monotonic-or-attested with operator provenance; granted_at preserved (spend accrues per session); nonfinite/overflow bytes fail HIGH"
+  - "R-4 authorization safety floor (finding #10): the tracked-work-delete floor becomes code — node-e-fs scope narrowed or floor gains non-git destructive-fs patterns"
+  - "R-5 coverage-gate waiver provenance + expected-source + legacy scoping (findings #11,#12; NOTAGAIN §8.3): waiver requires provenance fields + surfaces in scan output; coverage-gate-scan derives expected roles from an external source (registry/sprint composition) with RECORD_BACKED_CUTOFF-style legacy scoping"
+  - "R-6 provider-tier truthfulness (findings #15,#16,#21): --enforce fails on selected-tier-unmet incl. t3-selected unknown-self-attested; malformed config fails closed preserving raised floors; envelope ok mirrors verdict"
+  - "R-7 planning-principles real enforce (findings #17,#19): a real --enforce path (findings → exit non-zero; internal errors fail closed under enforce); scan scope extended beyond _planning/epics"
+  - "R-8 ac-coverage fail-closed + scoping (finding #18 + minor; §8.3): --enforce fails on missing/unreadable categories artifact; legacy scoping for historic sprints; proof-syntax note carried as documented residue"
+  - "R-9 hooks-coverage allowlist schema (finding #20): allowlist entries carry owner/expiry/reason; stale entries flagged by the coverage check"
+  - "R-10 wrapper mode binding (finding #13 — SEQUENCED AFTER SP-20260611-001 MERGE): dispatch-agent.js + dispatch-claude.js pass the live mode to validateDispatchForClass so mode_profiles/alpha_only_shapes enforce"
+high_level_story_candidates:
+  - "As the lifecycle gates, I cannot be disarmed by planted files, fake team names, or silent kill-switches"
+  - "As the turbo/authorization layer, my grants are monotonic-or-attested and my spend ledger cannot be reset or underfed"
+  - "As the coverage/tier/planning enforcers, my --enforce mode is real, fail-closed, and legacy-scoped so the flip is safe"
+granular_story_candidates:
+  - "team-guard consults ~/.claude/teams/<team>/config.json for real membership before any early exit"
+  - "mode-set.js emits mode lifecycle events; an enforcer detects mode.json mtime/content changes without a matching event"
+  - "turbo apply records operator provenance on every widening; spend window keyed to session start, not granted_at"
+  - "coverage-gate waiver schema gains source+operator+ts; scan prints active waivers"
+  - "provider-tier --enforce exit-2 matrix covers t3-selected+down; config parse failure → exit 2 under enforce"
+  - planning-principles --enforce implemented with planted-violation fixture proving exit non-zero
+  - "check-ac-coverage --enforce exits non-zero on unreadable artifact; legacy cutoff documented"
+  - "wrappers thread mode into validateDispatchForClass (post-SP-001)"
+workstream_candidates:
+  - "WS-G1 lifecycle gates (R-1, R-2) — team-guard, mode-lifecycle-guard, lifecycle.js, settings matcher/mode-set"
+  - "WS-G2 turbo + authorization (R-3, R-4) — apply.js, spend-ledger.js, authorization-gate.js"
+  - "WS-G3 coverage + enforcers (R-5..R-9) — coverage-gate, coverage-gate-scan, provider-tier, planning-principles, check-ac-coverage, hooks-coverage allowlist"
+  - "WS-G4 wrapper mode binding (R-10) — gated on SP-20260611-001 merge"
+preliminary_ticket_candidates:
+  allowed: false
+  candidates: []
+  notes: "Tickets at design; ~6 surface-grouped tickets expected."
+external_service_dependencies:
+  status: none_expected
+  notes: "Local enforcement scripts; gauntlet uses live provider CLIs."
+approval_boundaries:
+  - "No report-only→blocking flips (operator words, end-of-session batch)"
+  - "No push from the sprint pipeline (session land separately authorized)"
+  - "API spend < $5 total session budget respected"
+design_required: true
+execution_allowed_without_design: false
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+lane:
+  type: branch
+  value: sprint/SP-20260611-001
+  isolation_notes: "Shares the session sprint branch; builds in per-lane worktrees like SP-001; WS-G4 strictly after SP-001 merge (file overlap on dispatch wrappers)."
+beta_review:
+  required: true
+  likely_founder_rejection_risks: []
+  overbuild_risks:
+    - "R-1 could balloon into a team-system redesign — hold to verify-don't-trust on the existing markers/config"
+    - "R-3 monotonicity could over-restrict legitimate same-session re-grants — attested widening must stay possible"
+  missing_context_risks:
+    - "Turbo fixes interact with the LIVE session grant — must not invalidate the current session's authorization mid-flight"
+    - "#13 file overlap with SP-001 WS-A"
+plan_quality:
+  status: pass
+  confidence: high
+  evidence_gaps:
+    - "#14 PARTIAL: exact overflow semantics of clampBytes under huge finite values re-verified at build time"
+next_recommended_command: "/sprint:full --sprint SP-20260611-002 --resume"
+resume_instructions: "Findings: runtime/notes/elc-gpt2p-findings-2026-06-11.md; probe-verified triage: runtime/notes/elc-gpt2p-triage-2026-06-11.md; raw envelopes .warpos/g-elc-w*.json. WS-G4 (#13) builds only after SP-20260611-001 merges."
+tracker_paths:
+  current_sprint: ".claude/project/sprint/current-sprint.yaml"
+  sprint_progress: ".claude/project/sprint/sprint-progress.yaml"
+  plan_contract: ".claude/project/sprint/plan-contracts/PC-20260611-0074.yaml"
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260611-0074.report.md"
+created_by: alpha
+updated_by: alpha

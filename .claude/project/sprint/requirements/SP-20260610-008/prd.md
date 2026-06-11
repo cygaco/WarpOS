@@ -14,7 +14,7 @@ A builder dispatched with an empty allowedFiles:[] gets a LOUD, actionable error
 
 ### Original Request
 
-> Dreamteam verified-open guard batch. ACTIONABLE (execution-verified reproducing): W-26 — scope-contract-guard: an EMPTY allowedFiles:[] silently blocks ALL builder writes; the guard's hasScopeContract substring-matches the prompt without parsing the JSON so it can't even SEE the empty array. Fix: parse when parseable, LOUD error on empty allowedFiles ('empty allowedFiles blocks everything — declare files or use forbiddenFiles'), fail-closed wording when unparseable. W-14 — paths.portfolioRegistry points at the dead project-local file; the REAL registry lives at ~/.warpos/portfolio.json. Fix in the SOURCE framework/paths.registry.json, run scripts/paths/build.js, VERIFY the key survived in .claude/paths.json + lib/paths.generated.js (P-058), then grep ALL portfolioRegistry consumers and confirm they handle the HOME-anchored path. CLOSED already-fixed: W-5 (read-only node -e already allowed), W-13 (commit-message args already stripped), W-28 (install.ps1 header already checked). PLANTED tests per fix; goldens before/after on every touched GUARD (HIGH blast — fires every turn).
+> Dreamteam verified-open guard batch. ACTIONABLE (execution-verified reproducing): W-26 — scope-contract-guard: an EMPTY allowedFiles:[] silently blocks ALL builder writes; the guard's hasScopeContract substring-matches the prompt without parsing the JSON so it can't even SEE the empty array. Fix: parse when parseable, LOUD error on empty allowedFiles ('empty allowedFiles blocks everything — declare files or use forbiddenFiles'), fail-closed wording when unparseable. W-14 — portfolioRegistry (removed paths key) points at the dead project-local file; the REAL registry lives at ~/.warpos/portfolio.json. Fix in the SOURCE framework/paths.registry.json, run scripts/paths/build.js, VERIFY the key survived in .claude/paths.json + lib/paths.generated.js (P-058), then grep ALL portfolioRegistry consumers and confirm they handle the HOME-anchored path. CLOSED already-fixed: W-5 (read-only node -e already allowed), W-13 (commit-message args already stripped), W-28 (install.ps1 header already checked). PLANTED tests per fix; goldens before/after on every touched GUARD (HIGH blast — fires every turn).
 
 ### Interpreted Intent
 
@@ -22,11 +22,11 @@ Close two real, execution-verified guard/path defects: a scope-contract guard th
 
 ### Current Behavior
 
-W-26: hasScopeContract substring-matches the prompt; an empty allowedFiles:[] passes the guard then silently blocks all builder writes. W-14: portfolioRegistry → dead '.claude/portfolio/registry.yaml'; real registry at ~/.warpos/portfolio.json. (W-5/W-13/W-28 already fixed — see citations.)
+W-26: hasScopeContract substring-matches the prompt; an empty allowedFiles:[] passes the guard then silently blocks all builder writes. W-14: portfolioRegistry → dead '.claude/portfolio/registry.yaml <!-- path-literal-allowed: archived artifact quoting the removed dead path -->'; real registry at ~/.warpos/portfolio.json. (W-5/W-13/W-28 already fixed — see citations.)
 
 ### Desired Behavior
 
-W-26: an empty allowedFiles:[] (with no forbiddenFiles) is LOUD-blocked at dispatch with an actionable reason; a present-but-unparseable scopeContract fail-closes; a normal non-empty allowedFiles passes. W-14: paths.portfolioRegistry resolves to ~/.warpos/portfolio.json (home-anchored), consumers read the real registry, the dead path is gone, the key survives regen (P-058). The every-turn guards stay green. W-5/W-13/W-28 closed with citations.
+W-26: an empty allowedFiles:[] (with no forbiddenFiles) is LOUD-blocked at dispatch with an actionable reason; a present-but-unparseable scopeContract fail-closes; a normal non-empty allowedFiles passes. W-14: portfolioRegistry (removed paths key) resolves to ~/.warpos/portfolio.json (home-anchored), consumers read the real registry, the dead path is gone, the key survives regen (P-058). The every-turn guards stay green. W-5/W-13/W-28 closed with citations.
 
 ## Requirements
 

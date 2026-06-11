@@ -7,7 +7,7 @@
 
 ## S-1 — Add portfolio paths keys + propagate
 
-Add `paths.portfolioRegistry`, `paths.portfolioHome`, `paths.briefsRoot`, `paths.clonesRoot` to `framework/paths.registry.json` and propagate to canonical `.claude/paths.json`. Bump path schema version if needed.
+Add `portfolioRegistry (removed paths key)`, `paths.portfolioHome`, `paths.briefsRoot`, `paths.clonesRoot` to `framework/paths.registry.json` and propagate to canonical `.claude/paths.json`. Bump path schema version if needed.
 
 Linked: H-1, R-1
 COPY: C-1
@@ -16,7 +16,7 @@ TRACE: TR-1
 
 ## S-2 — Registry schema + library
 
-Define `warpos/portfolio-registry/v1` at `schemas/portfolio/registry.schema.json`. Build `scripts/portfolio/registry.js` exposing `load`, `save` (atomic write to `paths.portfolioRegistry`), `list`, `findBySlug`, `validate`.
+Define `warpos/portfolio-registry/v1` at `schemas/portfolio/registry.schema.json`. Build `scripts/portfolio/registry.js` exposing `load`, `save` (atomic write to `portfolioRegistry (removed paths key)`), `list`, `findBySlug`, `validate`.
 
 Linked: H-1, R-2
 COPY: C-2

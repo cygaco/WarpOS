@@ -43,7 +43,7 @@ cluster).
 
 ### Phase 1 — Discover
 Read the portfolio registry at `~/.warpos/portfolio.json` (the real registry the portfolio
-scripts use — `scripts/portfolio/registry.js#registryPath()`; note `paths.portfolioRegistry`
+scripts use — `scripts/portfolio/registry.js#registryPath()`; note `portfolioRegistry (removed paths key)`
 historically pointed elsewhere). For each product `repo_path`, read (read-only):
 - the root `WARPOS.md` (the primary register),
 - known siblings: `.claude/runtime/notes/warpos-issues-found.md`, any `warpos-*.md` gap

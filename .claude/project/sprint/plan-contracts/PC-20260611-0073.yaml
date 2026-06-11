@@ -1,0 +1,133 @@
+schema: warpos/sprint/plan-contract/v1
+id: PC-20260611-0073
+created_at: "2026-06-11T03:49:12.802Z"
+updated_at: "2026-06-11T03:49:12.802Z"
+sprint: SP-20260611-001
+source_request: "Cross-family findings fix sprint — build the 6 fixes from the gemini re-review debt-clearance round (runtime/notes/crossfam-findings-2026-06-10.md), then re-gauntlet on gemini + claude execution-access + GPT (all three families live)."
+source_request_verbatim: "execute DUMP Actionable #1: mint the cross-family findings fix sprint explicitly (RI-007) and conduct it via ε with a gemini + claude execution-access + GPT gauntlet. Build the 6 fixes in runtime/notes/crossfam-findings-2026-06-10.md (fix shapes included). Item 2 also appends to the W2 entry gate (_planning/epics/E-DISPATCH-SHAPE-001.md §12.2)."
+request_type: bug_fix
+interpreted_intent: "Close the six real findings from the 2026-06-10 cross-family (gemini) re-reviews of W0+W1 (diff 4d7301f...ba61a2f) and SP-20260610-005 (diff a05b1ef...d85e9a9) — dispatch-layer correctness and enforcement-integrity fixes — and prove them with a three-family gauntlet (gemini diff lanes + claude execution-access lanes + GPT 2nd pass)."
+user_or_business_outcome: "The dispatch/enforcement layer stops lying: the epsilon spawn timeout headroom actually works, the sanctioned review-fallback lane survives the W2 ENFORCE flip, build-chain role gating derives from the registry (no unregistered-role bypass), and the F-1/F-3 coverage predicates cannot be spoofed by planted timestamps, concurrent sprints, or garbage windows."
+affected_surfaces:
+  - surface: "scripts/sprint/epsilon-runtime.js (spawnAgent parent timeout, lines ~476/500)"
+    evidence_level: verified_from_repo
+    notes: "foregroundAwareTimeout passed as spawnSync's own timeout while the child wrapper self-bounds at the same 540s — parent SIGTERM races the child's graceful death-record write."
+  - surface: "scripts/dispatch-claude.js (--review-fallback lane + BUILD_CHAIN_ROLES set, lines ~103/182/225/358)"
+    evidence_level: verified_from_repo
+    notes: "Fallback shape-mismatch advisory suppressed only when !blocking (bricks under future ENFORCE); BUILD_CHAIN_ROLES is a hardcoded literal set, not registry-derived."
+  - surface: "scripts/checks/sprint-hook-coverage.js (window derivation ~191, hasBackingDispatchRecord ~88)"
+    evidence_level: verified_from_repo
+    notes: "Window from untrusted events.jsonl ts (no clamp); correlation by time window only, ignores rec.sprint_id."
+  - surface: "scripts/checks/sprint-manager-consult.js (same correlation shape)"
+    evidence_level: verified_from_repo
+    notes: Same time-window-only correlation as sprint-hook-coverage.
+  - surface: "scripts/dispatch/gauntlet-verify.js (verifyGauntlet programmatic API, CLI guard ~233)"
+    evidence_level: verified_from_repo
+    notes: "Unparseable-window refusal is CLI-only; programmatic callers passing garbage since/until silently degrade to the forbidden whole-ledger scan."
+  - surface: "_planning/epics/E-DISPATCH-SHAPE-001.md §12.2 (W2 entry gate)"
+    evidence_level: verified_from_repo
+    notes: "Gains: 'the sanctioned fallback lane is shape-registered before ENFORCE flips'."
+current_behavior:
+  evidence_level: verified_from_repo
+  notes: "All six findings re-verified live in canonical on 2026-06-11 (post-mint grounding pass): (1) parent timeout == child bound at both spawn sites; (2) fallback advisory suppressed only when !blocking; (3) BUILD_CHAIN_ROLES literal Set at dispatch-claude.js:103; (4) no ts clamp on window derivation; (5) hasBackingDispatchRecord(dispatchRecords, role, minTsMs, maxTsMs) has no sprint_id param; (6) parse refusal in CLI block only."
+desired_behavior: "(1) Parent spawn bound = child bound + 30-60s grace (or backstop-only when child self-bounds) at BOTH epsilon-runtime spawn sites. (2) The sanctioned --review-fallback lane is registered/exempted as a valid shape so the W2 ENFORCE flip cannot exit-1 it; W2 entry gate text appended to E-DISPATCH-SHAPE-001 §12.2. (3) Worktree-isolation gate + fallback refusal derive build-chain membership from the registry class (validateDispatchForClass/build_chain_worker), with the literal set at most a fallback. (4) Sprint window bounds clamped to sane horizons (sprint created_at ± hard cap; outlier ts discarded). (5) hasBackingDispatchRecord prefers sprint_id match when the record carries one (post-W0 records do) in BOTH sprint-hook-coverage.js and sprint-manager-consult.js. (6) verifyGauntlet() itself refuses unparseable since/until (throw/refuse), CLI message preserved. Each fix lands with regression tests; existing suites stay green."
+scope:
+  size: m
+  risk_level: medium
+  complexity_drivers:
+    - "All six fixes live in the dispatch/enforcement layer — the code that itself polices dispatch honesty (false-green hazard if a fix is wrong)"
+    - "Fix 2 interacts with the future W2 ENFORCE flip (must be registered BEFORE the flip, not after)"
+    - "Fix 3 changes gate membership derivation — must not widen or narrow the gate for existing roles"
+    - "Fixes 4-6 alter fail-closed predicates consumed by /scan:full — regressions would be enforcement regressions"
+scope_variants:
+  minimal_safe:
+    summary: "Fixes 1, 4, 6 only (pure-local, no contract surface change): parent-timeout grace, ts clamp, programmatic parse refusal."
+    tradeoffs:
+      - "Leaves the ENFORCE-flip brick (2) and registry-bypass (3) live — both are W2 entry-gate blockers"
+      - "Leaves cross-sprint false-green (5) live"
+  recommended:
+    summary: "All 6 fixes + regression tests + the §12.2 W2 entry-gate addition + 3-family re-gauntlet."
+    tradeoffs:
+      - "Touches two enforcer scripts and two dispatch wrappers in one sprint — mitigated by per-fix regression tests and the gauntlet"
+  expanded:
+    summary: "Recommended + codify the W3 meta-lesson (claude execution-access lanes vs gemini diff lanes — neither alone suffices for dispatch-layer code) into the gauntlet contract doc."
+    tradeoffs:
+      - "W3 codification belongs to E-DISPATCH-SHAPE W3 per the findings doc disposition — scope creep here"
+assumptions:
+  safe:
+    - "All three provider families are live (verified 2026-06-11 ~02:30Z: codex ChatGPT OAuth wrapper probe ok:true; gemini OAuth re-auth 2026-06-10 19:18; claude harness) and breakers are clear (isDown:false x3, checked post-mint)"
+    - "The six findings are real and current — each was re-grounded against canonical on 2026-06-11 before this payload was written (ED-008 verify-canonical discipline)"
+    - "The W0 T-302 registry helper (validateDispatchForClass) exists and exposes the build_chain_worker class needed for fix 3"
+  unsafe: []
+  needs_user_or_beta_review:
+    - "Fix 1 shape choice: parent bound = child + grace vs no-parent-bound-with-backstop (the findings doc allows either; builder should pick child+grace as the conservative default)"
+open_questions:
+  blocking: []
+  non_blocking:
+    - "Whether sprint-manager-consult.js needs its own window clamp too (same shape as fix 4) — builder should check and apply if the same derivation exists there"
+non_goals:
+  - "Do NOT re-fix NOTAGAIN §6 receipts or fold-20cf3bcf's 'closed by W0+W1' list (rebuild reflex = RCA symptom #3)"
+  - "Do NOT flip any gate to ENFORCE/blocking in this sprint (fix 2 only REGISTERS the lane; the flip is W2's, operator-gated)"
+  - "Do NOT codify the W3 gauntlet meta-lesson here (rides E-DISPATCH-SHAPE W3)"
+  - "No production deploy, no push as part of the sprint itself (session-level land happens after)"
+requirement_areas:
+  - "R-1 epsilon-runtime parent-timeout grace: parent spawnSync bound exceeds the child wrapper's internal bound by 30-60s at both spawn sites so the child's graceful death-record write wins the race"
+  - "R-2 review-fallback shape registration: the sanctioned --review-fallback lane is a registered/exempted valid shape under the resolver so a future blocking/ENFORCE flip does not exit-1 it; E-DISPATCH-SHAPE-001 plan §12.2 W2 entry gate gains the corresponding precondition line"
+  - "R-3 registry-derived build-chain gating: dispatch-claude.js worktree-isolation gate + fallback refusal consult the registry class (validateDispatchForClass / build_chain_worker), not only the hardcoded BUILD_CHAIN_ROLES literal"
+  - "R-4 spoofed-ts window clamp (TWO-SITE, β design directive 2026-06-11): BOTH sprint-hook-coverage.js AND sprint-manager-consult.js window derivations clamp bounds to sane horizons (sprint created_at ± hard cap, outlier/extreme timestamps discarded) so a planted 1970/2099 ts cannot widen the window in either checker"
+  - "R-5 sprint_id-preferring correlation: hasBackingDispatchRecord (sprint-hook-coverage.js) and the equivalent in sprint-manager-consult.js prefer rec.sprint_id match when present, falling back to time-window only for legacy records"
+  - "R-6 programmatic window-parse refusal: verifyGauntlet() refuses unparseable since/until inside the library function (throw/refuse, never silent whole-ledger degrade); CLI behavior preserved"
+high_level_story_candidates:
+  - "As the dispatch layer, parent and child timeout bounds are coordinated so graceful death records always win the race"
+  - "As the W2 ENFORCE flip, I can flip blocking knowing the sanctioned fallback lane is shape-registered"
+  - "As the coverage enforcers, I correlate records by sprint_id and clamped windows so planted or concurrent records cannot false-green a sprint"
+granular_story_candidates:
+  - "epsilon-runtime spawnAgent passes child-bound+grace to spawnSync at line ~476 (epsilon-agent) and ~500 (epsilon-claude)"
+  - "dispatch-shape resolver (or dispatch-contract) carries a sanctioned-lane registration for review-fallback; dispatch-claude.js consults it instead of the !blocking suppression"
+  - dispatch-claude.js derives build-chain membership via validateDispatchForClass
+  - "sprint-hook-coverage.js clamps minTsMs/maxTsMs to sprint created_at ± cap"
+  - "hasBackingDispatchRecord signature gains the sprint id; both checkers pass it"
+  - "verifyGauntlet throws on unparseable since/until; new unit cases in the gauntlet-verify test"
+workstream_candidates:
+  - "WS-A dispatch wrappers (fixes 1-3): epsilon-runtime + dispatch-claude + shape registration + §12.2 gate text"
+  - "WS-B enforcement predicates (fixes 4-6): sprint-hook-coverage + sprint-manager-consult + gauntlet-verify + regression tests"
+preliminary_ticket_candidates:
+  allowed: false
+  candidates: []
+  notes: "Tickets minted at design phase per the standard flow; six fixes map to ~4-6 tickets across the two workstreams."
+external_service_dependencies:
+  status: none_expected
+  notes: "All work is local scripts + docs; gauntlet uses the already-live provider CLIs."
+approval_boundaries:
+  - "No push to remote from the sprint pipeline (session-level land is separately operator-authorized 2026-06-11)"
+  - No gate flips to blocking/ENFORCE
+  - "API spend < $5 total"
+design_required: true
+execution_allowed_without_design: false
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+lane:
+  type: branch
+  value: sprint/SP-20260611-001
+  isolation_notes: "Light isolation on a sprint branch; merges to main after gauntlet PASS (operator authorized merges/pushes for the 2026-06-11 session)."
+beta_review:
+  required: true
+  likely_founder_rejection_risks: []
+  overbuild_risks:
+    - "Fix 3 could balloon into a full registry refactor — keep it to derivation-at-the-two-consult-sites"
+  missing_context_risks:
+    - "Fix 2 must align with how the W2 resolver-as-only-door plans to enumerate valid shapes (E-DISPATCH-SHAPE-001 §12)"
+plan_quality:
+  status: pass
+  confidence: high
+  evidence_gaps: []
+next_recommended_command: "/sprint:full --sprint SP-20260611-001 --resume"
+resume_instructions: "Resume via node scripts/sprint/full.js --sprint SP-20260611-001 --resume; findings source runtime/notes/crossfam-findings-2026-06-10.md; fix shapes are in the findings doc."
+tracker_paths:
+  current_sprint: ".claude/project/sprint/current-sprint.yaml"
+  sprint_progress: ".claude/project/sprint/sprint-progress.yaml"
+  plan_contract: ".claude/project/sprint/plan-contracts/PC-20260611-0073.yaml"
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260611-0073.report.md"
+created_by: alpha
+updated_by: alpha

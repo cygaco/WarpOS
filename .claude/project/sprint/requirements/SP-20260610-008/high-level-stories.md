@@ -16,10 +16,10 @@
 Linked granular stories: see `granular-stories.md`.
 Linked requirements: `R-1`.
 
-## H-2 — As a /portfolio:* skill, paths.portfolioRegistry resolves to the REAL registry at ~/.warpos/portfolio.json, not a dead project-local path.
+## H-2 — As a /portfolio:* skill, portfolioRegistry (removed paths key) resolves to the REAL registry at ~/.warpos/portfolio.json, not a dead project-local path.
 
 **As** the user
-**I want** As a /portfolio:* skill, paths.portfolioRegistry resolves to the REAL registry at ~/.warpos/portfolio.json, not a dead project-local path.
+**I want** As a /portfolio:* skill, portfolioRegistry (removed paths key) resolves to the REAL registry at ~/.warpos/portfolio.json, not a dead project-local path.
 **So that** A builder dispatched with an empty allowedFiles:[] gets a LOUD, actionable error at dispatch time instead of silently failing every write; and /portfolio:* skills read the REAL registry at ~/.warpos/portfolio.json instead of a dead project-local path. Each guarded by a planted-violation test; the every-turn guards stay green (golden-first).
 
 Linked granular stories: see `granular-stories.md`.
