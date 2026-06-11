@@ -213,8 +213,16 @@ const Module = require("module");
 const ROOT = ${JSON.stringify(ROOT)};
 const lockPath = require.resolve(path.join(ROOT, "scripts/hooks/lib/concurrency-lock"));
 const provPath = require.resolve(path.join(ROOT, "scripts/hooks/lib/providers"));
-const out = { slotTimeoutMs: null, runProviderTimeoutMs: null };
+// runProviderCallTimeoutMs[0] = main call's opts.timeoutMs; [1] = WI-18 quota-retry's.
+const out = { slotTimeoutMs: null, runProviderTimeoutMs: null, runProviderRetryTimeoutMs: null };
 function emit() { process.stdout.write("__PROBE__" + JSON.stringify(out) + "\\n"); }
+// T322_DRIVE_RETRY=1: make the FIRST runProvider return a gemini quota-exhaustion result
+// (ok:false, quota set) — WITHOUT exiting — so dispatch-agent.js's WI-18 quota-fallback
+// FIRES and calls runProvider a SECOND time (the retry). We then capture the RETRY's
+// opts.timeoutMs and exit. This drives the exact layer attempt #2's shim never reached
+// (it exited on the first call). Default mode (unset): exit on the first call as before.
+const DRIVE_RETRY = process.env.T322_DRIVE_RETRY === "1";
+let runProviderCalls = 0;
 const origLoad = Module._load;
 Module._load = function (request, parent, isMain) {
   const resolved = (() => { try { return require.resolve(request, { paths: parent ? [path.dirname(parent.filename)] : undefined }); } catch { return null; } })();
@@ -233,9 +241,23 @@ Module._load = function (request, parent, isMain) {
       providerAvailable: () => true,
       getProviderForRole: () => "gemini",
       runProvider: (role, prompt, opts) => {
+        runProviderCalls++;
+        if (DRIVE_RETRY && runProviderCalls === 1) {
+          // First call: capture the MAIN bound, then return a quota-exhaustion result so
+          // the WI-18 fallback retries on openai (suggestFallbackProvider) — do NOT exit.
+          out.runProviderTimeoutMs = opts && opts.timeoutMs;
+          return { ok: false, provider: "gemini", model: "gemini-3.1-pro-preview", output: "", quota: { kind: "exhausted", suggestFallbackProvider: "openai" } };
+        }
+        if (DRIVE_RETRY && runProviderCalls === 2) {
+          // Second call = the quota-fallback RETRY. Capture ITS bound and stop.
+          out.runProviderRetryTimeoutMs = opts && opts.timeoutMs;
+          emit();
+          process.exit(0);
+        }
+        // Default (non-retry) mode: capture the main bound and stop before real work.
         out.runProviderTimeoutMs = opts && opts.timeoutMs;
         emit();
-        process.exit(0); // stop before any real provider work
+        process.exit(0);
       },
     });
   }
@@ -243,7 +265,7 @@ Module._load = function (request, parent, isMain) {
 };
 `;
 
-function runChildAndCaptureBounds(setEnv = {}, deleteEnv = [], background = false) {
+function runChildAndCaptureBounds(setEnv = {}, deleteEnv = [], background = false, driveRetry = false) {
   const tmpShim = path.join(os.tmpdir(), `t322-shim-${process.pid}-${Math.random().toString(36).slice(2)}.js`);
   const tmpPrompt = path.join(os.tmpdir(), `t322-prompt-${process.pid}-${Math.random().toString(36).slice(2)}.txt`);
   fs.writeFileSync(tmpShim, SHIM);
@@ -259,13 +281,21 @@ function runChildAndCaptureBounds(setEnv = {}, deleteEnv = [], background = fals
     // inherited background signal — the harness may set it for long subprocesses).
     // background=true: keep the explicit signal so the child's foregroundAwareTimeout
     // does NOT clamp (exercises the long-lane no-shrink case).
+    // EXCEPTION: if the caller explicitly supplied WARPOS_DISPATCH_BACKGROUND via setEnv,
+    // it is intentional (FIX-3c end-to-end feeds the spawn-path-SET signal) — respect it.
+    const callerSuppliedBgSignal = Object.prototype.hasOwnProperty.call(setEnv, "WARPOS_DISPATCH_BACKGROUND");
     if (background) env.WARPOS_DISPATCH_BACKGROUND = "1";
-    else delete env.WARPOS_DISPATCH_BACKGROUND;
-    const r = spawnSync(
-      process.execPath,
-      [DISPATCH_AGENT, "security-reviewer", tmpPrompt, "--provider", "gemini"],
-      { encoding: "utf8", env, timeout: 60000 }
-    );
+    else if (!callerSuppliedBgSignal) delete env.WARPOS_DISPATCH_BACKGROUND;
+    // driveRetry: trigger the WI-18 quota fallback in the child. The retry guard is
+    // `!providerOverride && !modelOverride`, so we must NOT pass --provider here — the
+    // shim's getProviderForRole() => "gemini" makes the role resolve to gemini natively,
+    // satisfying the WI-18 (provider === "gemini") condition without an override.
+    const args = driveRetry
+      ? [DISPATCH_AGENT, "security-reviewer", tmpPrompt]
+      : [DISPATCH_AGENT, "security-reviewer", tmpPrompt, "--provider", "gemini"];
+    if (driveRetry) env.T322_DRIVE_RETRY = "1";
+    else delete env.T322_DRIVE_RETRY;
+    const r = spawnSync(process.execPath, args, { encoding: "utf8", env, timeout: 60000 });
     const line = String(r.stdout || "").split(/\r?\n/).find((l) => l.startsWith("__PROBE__"));
     if (!line) return { error: `no probe line; stdout=${(r.stdout || "").slice(0, 200)} stderr=${(r.stderr || "").slice(0, 200)}` };
     return JSON.parse(line.slice("__PROBE__".length));
@@ -347,6 +377,67 @@ console.log("\n(5) epsilon-agent-parent-strictly-exceeds-child-REAL-bounds (T-32
   }
 }
 
+// ── (5b) THE attempt-#3 FIX: the WI-18 QUOTA-RETRY runProvider ALSO consumes the bound ──
+//
+// Attempt #2's binding FAIL: the prior shim exited on the FIRST runProvider, so the
+// WI-18 quota-fallback retry layer (dispatch-agent.js, retry = runProvider(...)) was
+// NEVER driven — and the retry passed { provider: fbProvider } with NO timeoutMs, so for
+// a small opts.timeoutMs the parent bound (childBaseMs+grace) fell below the retry's 540s
+// run-provider default → the death-record race RE-OPENED on the quota-fallback path.
+// FIX-3a routes EVERY runProvider call (main + retry) through one withPropagatedTimeout
+// helper. This section DRIVES the retry (shim returns a gemini quota-exhaustion result on
+// the first call → the WI-18 fallback fires → the retry runProvider is captured) and
+// asserts the RETRY's resolved timeoutMs is single-sourced from childBaseMs and the parent
+// strictly exceeds it — for the SAME small/huge/unset cases. MUTATION CHECK (AC-322.5):
+// reverting FIX-3a on the retry (retry without timeoutMs) REDs the "<= childBaseMs" / "parent
+// strictly exceeds" assertions below (runProviderRetryTimeoutMs becomes undefined).
+console.log("\n(5b) quota-retry-runProvider-also-bound-by-childBaseMs (T-322 attempt#3 — WI-18 retry path):");
+{
+  const cases = [
+    { label: "small (1000)", childBaseMs: foregroundAwareTimeout(1000, {}) },
+    { label: "huge (9_000_000)", childBaseMs: foregroundAwareTimeout(9000000, {}) },
+    { label: "unset (epsilon-agent default)", childBaseMs: foregroundAwareTimeout(WRAPPER_DEFAULTS["epsilon-agent"], {}) },
+  ];
+  for (const c of cases) {
+    const parent = c.childBaseMs + GRACE;
+    const bounds = runChildAndCaptureBounds(
+      { DISPATCH_BUILDER_TIMEOUT_MS: String(c.childBaseMs) },
+      ["DISPATCH_SLOT_TIMEOUT_MS"],
+      /*background=*/ false,
+      /*driveRetry=*/ true,
+    );
+    if (bounds.error) {
+      ok(`quota-retry / ${c.label}: child probe ran (retry path fired)`, false, bounds.error);
+      continue;
+    }
+    // The retry path actually fired (second runProvider captured).
+    ok(
+      `quota-retry / ${c.label}: WI-18 retry runProvider was reached (second call captured)`,
+      bounds.runProviderRetryTimeoutMs != null,
+      `retry=${bounds.runProviderRetryTimeoutMs}`,
+    );
+    // The retry's resolved timeoutMs single-sources from childBaseMs (NOT run-provider's 540s default).
+    ok(
+      `quota-retry / ${c.label}: retry runProvider timeoutMs <= childBaseMs (single-sourced via withPropagatedTimeout)`,
+      bounds.runProviderRetryTimeoutMs != null && bounds.runProviderRetryTimeoutMs <= c.childBaseMs,
+      `retry=${bounds.runProviderRetryTimeoutMs} childBaseMs=${c.childBaseMs}`,
+    );
+    // The retry inherits the SAME bound as the main call (one propagation point).
+    ok(
+      `quota-retry / ${c.label}: retry bound == main bound (both via the single helper)`,
+      bounds.runProviderRetryTimeoutMs === bounds.runProviderTimeoutMs,
+      `retry=${bounds.runProviderRetryTimeoutMs} main=${bounds.runProviderTimeoutMs}`,
+    );
+    // Parent (childBaseMs + grace) STRICTLY exceeds the retry bound — the race is closed on
+    // the quota-fallback path too.
+    ok(
+      `quota-retry / ${c.label}: parent (childBaseMs+grace) STRICTLY exceeds retry runProvider bound`,
+      parent > bounds.runProviderRetryTimeoutMs,
+      `parent=${parent} retry=${bounds.runProviderRetryTimeoutMs}`,
+    );
+  }
+}
+
 // ── (6) β BUILD-CONSTRAINT (DECIDE 0.90): the accepted foreground slot-wait shrink ──
 //
 // CHOICE (b): when childBaseMs is FOREGROUND-clamped (540s), the derived slot wait is
@@ -396,6 +487,62 @@ console.log("\n(6) β build-constraint — foreground slot-wait shrink ACCEPTED,
       bg.slotTimeoutMs === bgBase && bg.slotTimeoutMs >= 10 * 60 * 1000,
       `slot=${bg.slotTimeoutMs} bgBase=${bgBase}`,
     );
+  }
+}
+
+// ── (6b) FIX-3c: the ε SPAWN PATH ITSELF propagates the background signal ──
+//
+// Section (6)'s background case hand-sets WARPOS_DISPATCH_BACKGROUND in the test harness.
+// FIX-3c moves that guarantee INTO spawnAgent: opts.background === true must stamp
+// env.WARPOS_DISPATCH_BACKGROUND="1" on the child so the full 900s bound holds via the ε
+// spawn path's OWN construction (not an externally-set env). Without the stamp, the child's
+// foregroundAwareTimeout(n, {}) re-clamp reads no background signal → re-clamps the
+// propagated 900s back to the 540s foreground ceiling, silently shrinking the long lane.
+console.log("\n(6b) FIX-3c — spawnAgent stamps the background signal on the child env (no hand-set env):");
+{
+  // Drive the ε spawn path with opts.background:true (NOT a hand-set env). Capture the child
+  // env spawnAgent built.
+  const cap = captureSpawn(rt.ROUTE.DISPATCH_AGENT, "security-reviewer", { background: true });
+  const childBg = foregroundAwareTimeout(WRAPPER_DEFAULTS["epsilon-agent"], { background: true }); // 900000, no clamp
+  ok(
+    "spawnAgent: opts.background:true sets child env WARPOS_DISPATCH_BACKGROUND='1' (signal propagated by construction)",
+    cap && cap.env && cap.env.WARPOS_DISPATCH_BACKGROUND === "1",
+    `WARPOS_DISPATCH_BACKGROUND=${cap && cap.env ? cap.env.WARPOS_DISPATCH_BACKGROUND : "<no env>"}`,
+  );
+  ok(
+    "spawnAgent: background childBaseMs is the full bound (900s, NOT foreground-clamped to 540s)",
+    cap && cap.env && Number(cap.env.DISPATCH_BUILDER_TIMEOUT_MS) === childBg && childBg === 900000,
+    `propagated=${cap && cap.env ? cap.env.DISPATCH_BUILDER_TIMEOUT_MS : "?"} childBg=${childBg}`,
+  );
+  ok(
+    "spawnAgent: parent timeout = full childBaseMs + grace (background lane keeps the race closed at 900s)",
+    cap && cap.timeout === childBg + GRACE,
+    `parent=${cap ? cap.timeout : "?"} childBg=${childBg} grace=${GRACE}`,
+  );
+
+  // End-to-end: feed the child the env spawnAgent built (incl. the spawn-path-set background
+  // signal) WITHOUT the test harness setting the signal itself (background=false). The child
+  // must keep the full 900s bound BECAUSE spawnAgent stamped the signal — proving the
+  // guarantee holds via the ε spawn path, not an ambient env. If FIX-3c is reverted, cap.env
+  // carries no signal → the child re-clamps to 540s and this REDs.
+  if (cap && cap.env && cap.env.WARPOS_DISPATCH_BACKGROUND === "1") {
+    const e2e = runChildAndCaptureBounds(
+      {
+        DISPATCH_BUILDER_TIMEOUT_MS: cap.env.DISPATCH_BUILDER_TIMEOUT_MS,
+        WARPOS_DISPATCH_BACKGROUND: cap.env.WARPOS_DISPATCH_BACKGROUND,
+      },
+      ["DISPATCH_SLOT_TIMEOUT_MS"],
+      /*background=*/ false, // harness does NOT set the signal — only the spawn-path-set value carries it
+    );
+    if (e2e.error) {
+      ok("FIX-3c end-to-end: child probe ran", false, e2e.error);
+    } else {
+      ok(
+        "FIX-3c end-to-end: spawn-path-set background signal keeps the child's full 900s bound (no re-clamp)",
+        e2e.slotTimeoutMs === 900000,
+        `slot=${e2e.slotTimeoutMs} (expected 900000 — would be 540000 if FIX-3c reverted)`,
+      );
+    }
   }
 }
 

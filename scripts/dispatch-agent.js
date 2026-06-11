@@ -678,6 +678,17 @@ try {
   // belongs to the WRONG provider — ignore it and use --model (or let runProvider
   // pick the override provider's default).
   const roleModel = getRoleModel(role);
+  // T-322 (attempt #3): single-source the propagated child bound for EVERY runProvider
+  // call site BY CONSTRUCTION. When ε propagates childBaseMs, the provider-exec must
+  // single-source from it too — runProvider otherwise uses its own run-provider default
+  // (540s), INDEPENDENT of the parent's propagated value, leaving the cross-provider
+  // site's death-record race open. Routing every runProvider opts object through this
+  // ONE helper means any present-or-future call site (main + the WI-18 quota-retry)
+  // inherits the bound automatically — closing the bug class, not the third instance.
+  // runProvider re-clamps idempotently via foregroundAwareTimeout; non-ε callers (env
+  // absent → propagatedChildBaseMs null) keep runProvider's own default, byte-identical.
+  const withPropagatedTimeout = (opts) =>
+    propagatedChildBaseMs != null ? { ...opts, timeoutMs: propagatedChildBaseMs } : opts;
   const runOpts = {};
   if (providerOverride) {
     runOpts.provider = providerOverride;
@@ -687,14 +698,7 @@ try {
   } else if (roleModel) {
     runOpts.model = roleModel;
   }
-  // T-322: when ε propagates the child bound, the provider-exec must single-source
-  // from it too — runProvider otherwise uses its own run-provider default (540s),
-  // INDEPENDENT of the parent's propagated value, leaving the cross-provider site's
-  // death-record race open. Setting timeoutMs from the ε-propagated childBaseMs
-  // makes runProvider bound by childBaseMs (runProvider re-clamps idempotently via
-  // foregroundAwareTimeout). Non-ε callers (env absent) keep runProvider's default.
-  if (propagatedChildBaseMs != null) runOpts.timeoutMs = propagatedChildBaseMs;
-  result = runProvider(role, prompt, runOpts);
+  result = runProvider(role, prompt, withPropagatedTimeout(runOpts));
 
   // WI-18: quota-aware fallback. When a gemini-routed role (e.g. redteam) 429s /
   // exhausts quota, runProvider surfaces it loudly via result.quota and still
@@ -719,7 +723,12 @@ try {
           ` (${result.quota.kind}) → retrying on ${fbProvider} for cross-family` +
           ` security coverage (1 attempt).\n`,
       );
-      const retry = runProvider(role, prompt, { provider: fbProvider });
+      // T-322 (attempt #3): the retry runs the provider-exec layer just like the main
+      // call — it MUST inherit the same propagated childBaseMs (else for a small
+      // opts.timeoutMs the parent bound falls below the retry's 540s run-provider
+      // default, re-opening the death-record race on the quota-fallback path). Route
+      // it through the same withPropagatedTimeout helper — the single propagation point.
+      const retry = runProvider(role, prompt, withPropagatedTimeout({ provider: fbProvider }));
       if (retry && retry.ok) {
         retry.quotaFallbackFrom = {
           provider: result.provider,

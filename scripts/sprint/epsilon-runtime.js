@@ -478,6 +478,15 @@ function spawnAgent(agentPlan, sprintId, opts = {}) {
   }
   env.WARPOS_PHASE_ID = agentPlan.step;
   env.WARPOS_SPRINT_ID = sprintId;
+  // T-322 (attempt #3): when ε computes a BACKGROUND bound (opts.background === true),
+  // propagate the background SIGNAL to the child env. The child wrappers re-clamp the
+  // propagated childBaseMs via foregroundAwareTimeout(n, {}) (empty opts → it reads
+  // process.env.WARPOS_DISPATCH_BACKGROUND), so without this stamp a background childBaseMs
+  // (900s) would be silently re-clamped back to the 540s foreground ceiling on the child —
+  // the "background unaffected" guarantee would hold only when the signal happened to be in
+  // the ambient env. Setting it here makes the guarantee hold via the ε spawn path's OWN
+  // construction. (process.env passthrough above is preserved; we only ADD the signal.)
+  if (opts.background === true) env.WARPOS_DISPATCH_BACKGROUND = "1";
   // T-20260610-304: clamp to FOREGROUND_CEILING_MS (540s) when not explicitly backgrounded.
   // opts.background === true or WARPOS_DISPATCH_BACKGROUND=1 passes through the full bound.
   // The per-route child base (childBaseMs) + the env-propagation that single-sources it on
