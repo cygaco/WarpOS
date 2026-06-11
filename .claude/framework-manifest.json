@@ -526,7 +526,7 @@
         "src": ".claude/agents/president/_system/beta/judgement-model-recommendations.md",
         "dest": ".claude/agents/president/_system/beta/judgement-model-recommendations.md",
         "kind": "agent",
-        "sha256": "6a9e999a1537858a4d5c10f6730a4d8af4de578217ee37fd54a47768f4ce8616",
+        "sha256": "1414198aa73c0131c5e1d02d73d97db3f06fc75715f9e81228508a2b06de2447",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",

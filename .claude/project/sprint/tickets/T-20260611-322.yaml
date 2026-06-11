@@ -1,0 +1,82 @@
+schema: warpos/sprint/ticket/v1
+id: T-20260611-322
+title: "Fix-cycle residual (epsilon-agent timer seam): dispatch-agent.js must honor the ε-propagated child bound so parent=child+grace holds at the cross-provider site, not just parent arithmetic"
+type: bug
+status: proposed
+sprint: SP-20260611-001
+created_at: "2026-06-11T05:55:00.000Z"
+updated_at: "2026-06-11T05:55:00.000Z"
+owner: null
+owner_agent: epsilon
+risk_level: medium
+unit_type: backend
+domain: null
+approval_required: false
+approval_state: not_required
+source_request: "Operator directive 2026-06-11 (relayed via team-lead): the WS-A timeout residual is fixed UNCONDITIONALLY regardless of how the re-gauntlet backend lane judged it — 'epsilon must definitely read the right timer'. The epsilon-agent child (dispatch-agent.js) must honor the propagated bound so parent=child+grace holds at EVERY site with the CHILD actually bound by it, not just parent arithmetic. α sequencing: minted as a scoped follow-up (the file was forbidden to the WS-A fixer to isolate the parallel fixers), NOT folded into the in-flight re-gauntlet."
+plan_contract: ""
+linked_requirements: [".claude/project/sprint/requirements/SP-20260611-001/acceptance-criteria.md"]
+linked_high_level_story: null
+linked_granular_story: null
+linked_prd: null
+linked_copy: []
+linked_inputs: []
+linked_trace: []
+linked_acceptance_criteria: []
+linked_issues: []
+linked_decisions: []
+linked_external_services: []
+linked_files:
+  - scripts/dispatch-agent.js
+  - scripts/sprint/epsilon-runtime.js
+  - tests/regression/SP-20260611-001/epsilon-spawn-grace.test.js
+linked_tests:
+  - tests/regression/SP-20260611-001/epsilon-spawn-grace.test.js
+linked_commits: []
+linked_prs: []
+linked_release: null
+description: |
+  Re-gauntlet attempt #1 (2026-06-11) returned a binding backend-reviewer FAIL on FIX-A1
+  (T-310). FIX-A1 fixed the epsilon-CLAUDE site genuinely (dispatch-claude.js reads
+  DISPATCH_BUILDER_TIMEOUT_MS, so parent=childBaseMs+grace by construction), but the
+  epsilon-AGENT site's env propagation is DEAD: dispatch-agent.js does NOT read
+  DISPATCH_BUILDER_TIMEOUT_MS — it uses DISPATCH_SLOT_TIMEOUT_MS (slot-acquire, 600s
+  default, dispatch-agent.js:601) plus runProvider's own foregroundAwareTimeout
+  (providers.js:657, 540s), both independent of the parent.
+
+  QUANTIFIED (α-verified at source): epsilon-agent parent SIGTERM = foreground-clamped
+  540s + 45s grace = 585s; child slot default = 600s. Parent (585s) < child slot (600s) →
+  a saturated provider slot is parent-killed BEFORE the child reaches its graceful fallback
+  / writes its record. The same death-record race the +grace was meant to close, still open
+  at the cross-provider site.
+
+  This is the operator-confirmed UNCONDITIONAL fix ("epsilon must definitely read the right
+  timer"). The fix is now independent of any verdict; the backend lane's verdict only
+  informs the fix shape.
+user_value: ""
+business_value: "Closes the last binding FAIL blocking SP-20260611-001 from going green; eliminates a real silent-reap window at the cross-provider dispatch site that defeats the loud-death-record contract the whole E-DISPATCH-SHAPE epic exists to guarantee."
+acceptance_criteria:
+  - "AC-322.1: dispatch-agent.js derives BOTH its slot-acquire bound AND the runProvider opts.timeoutMs from DISPATCH_BUILDER_TIMEOUT_MS when ε sets it (the propagated childBaseMs), so all three timeout layers (parent SIGTERM / child slot / child provider-exec) single-source from childBaseMs and parent = childBaseMs + grace STRICTLY EXCEEDS every child layer BY CONSTRUCTION — mirroring the epsilon-claude site."
+  - "AC-322.2: non-ε callers (DISPATCH_BUILDER_TIMEOUT_MS unset) keep their CURRENT defaults (DISPATCH_SLOT_TIMEOUT_MS 600s, run-provider 540s) — no cross-caller regression. Verify only ε sets that env."
+  - "AC-322.3: the epsilon-spawn-grace regression test asserts REAL-BOUND ORDERING — parent spawnSync timeout > child slot bound AND parent > child provider-exec bound — at the epsilon-AGENT site, for opts.timeoutMs in {small, huge, unset}. NOT merely that the env var is present in the spawn options (the MAJOR the backend lane flagged: the old test false-greened the residual by checking presence, not consumption/ordering)."
+  - "AC-322.4: MUTATION check — reverting the dispatch-agent.js read REDs the new ordering test (proves it catches the attack, not a happy path)."
+non_goals:
+  - "Raising the timeout bounds themselves (that is T-20260611-323, a W0 design-constant change with its own blast radius + liveness-ping pairing)."
+  - "Touching the WS-B window-clamp surface (marquee — confirmed PASS by qa + security on attempt #1; needs no further work)."
+implementation_notes: |
+  Fix shape (ε lean, pending β DECIDE/DIRECTIVE on scope+shape — consult sent 2026-06-11):
+  CHILD-SIDE single-sourcing. dispatch-agent.js reads DISPATCH_BUILDER_TIMEOUT_MS when set
+  and uses it as the basis for slotTimeoutMs AND the runProvider opts.timeoutMs, so the
+  child is ACTUALLY bound by childBaseMs (not just the parent). Preferred over a parent-side
+  bound-raise (fragile: leaves child bounds independent, re-diverges if the slot default
+  changes). Apply the foreground clamp consistently. Confirm DISPATCH_BUILDER_TIMEOUT_MS is
+  ε-only so non-ε callers are unaffected.
+qa_notes: "Binding re-review on the SAME GPT-backend family that FAILed attempt #1 (d-mq90qrop family) is required before this can clear — the lane that caught it must judge it fixed."
+redteam_notes: ""
+trace_notes: "Surfaced by re-gauntlet attempt #1, runtime/notes/sp001-regauntlet-verdicts-2026-06-11.md (backend-reviewer FAIL). Original fix: T-20260611-310 (FIX-A1)."
+blocked_by: []
+blocks: []
+fix_attempts: []
+ralph_progress: null
+completion_evidence: []
+reopen_history: []

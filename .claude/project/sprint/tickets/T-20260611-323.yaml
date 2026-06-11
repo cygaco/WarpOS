@@ -1,0 +1,85 @@
+schema: warpos/sprint/ticket/v1
+id: T-20260611-323
+title: "Sprint-task timeout-raise (W0 design-constant): substantially higher bounds for long-running sprint build/fix tasks, PAIRED with periodic liveness pings as the new hang defense"
+type: design
+status: proposed
+sprint: SP-20260611-001
+created_at: "2026-06-11T05:56:00.000Z"
+updated_at: "2026-06-11T05:56:00.000Z"
+owner: null
+owner_agent: epsilon
+risk_level: high
+unit_type: backend
+domain: null
+approval_required: true
+approval_state: pending
+source_request: "Operator directive 2026-06-11 (relayed via team-lead): sprint-task timeouts should be WAY HIGHER — the 540s-class clamps are too tight for sprint build/fix tasks. Policy direction: long-running sprint tasks get substantially higher bounds, PAIRED with periodic liveness checks while waiting (roadmap item 11, interval pings, is the companion). Long timer + active probing replaces short kill-timer as the hang defense. α sequencing: scope as its own ticket with the liveness-ping pairing — do NOT hand-patch."
+plan_contract: ""
+linked_requirements: []
+linked_high_level_story: null
+linked_granular_story: null
+linked_prd: null
+linked_copy: []
+linked_inputs: []
+linked_trace: []
+linked_acceptance_criteria: []
+linked_issues: []
+linked_decisions: []
+linked_external_services: []
+linked_files:
+  - scripts/dispatch/timeout-policy.js
+  - scripts/dispatch-claude.js
+  - scripts/dispatch-skill.js
+  - scripts/sprint/epsilon-runtime.js
+  - scripts/dispatch-agent.js
+  - scripts/hooks/lib/providers.js
+  - scripts/checks/dispatch-timeout-sanity.js
+linked_tests:
+  - scripts/checks/dispatch-timeout-sanity.test.js
+linked_commits: []
+linked_prs: []
+linked_release: null
+description: |
+  The 540s FOREGROUND_CEILING_MS clamp (timeout-policy.js:42) is NOT arbitrary tightness —
+  it is deliberately 60s under the 600s harness Bash-tool kill ceiling, so a foreground
+  wrapper's OWN bound fires BEFORE the harness kills it and it can write its death record
+  (the doogle-class G8/N1 fix). Raising the foreground clamp above 540s re-opens that exact
+  bug class UNLESS the hang-defense model changes.
+
+  The operator's framing resolves this: long timer + ACTIVE PROBING (periodic liveness
+  pings, roadmap item 11) REPLACES the short kill-timer as the hang defense. The existing
+  seam for "higher bound" is already present: WARPOS_DISPATCH_BACKGROUND=1 / opts.background
+  bypasses the clamp and grants the full WRAPPER_DEFAULTS bound (15–20 min). But background
+  dispatches reap silently with NO wake event (RI-004 / teammate-stall) — which is precisely
+  why the liveness-ping pairing is load-bearing: a long background bound is only safe if
+  something actively probes liveness, because the kill-timer is no longer the defense.
+
+  BLAST RADIUS (ε read, matches α's): this is a W0 design-constant change touching all 5
+  wrapper bounds + the foreground-clamp semantics + the death-record-on-bound contract +
+  the new liveness-ping mechanism — they MOVE TOGETHER. Not a one-line constant bump. The
+  raise should work THROUGH the existing background-signal seam (grant full bound when a
+  liveness-ping watchdog is attached), not by lifting the foreground clamp blind.
+user_value: ""
+business_value: "Lets real sprint build/fix tasks (which legitimately exceed 540s) run to completion instead of being clamped/reaped mid-work, WITHOUT re-opening the silent-death class — the liveness-ping pairing keeps hang detection while removing the premature kill."
+acceptance_criteria:
+  - "AC-323.1: long-running sprint build/fix tasks get a substantially higher bound than the current 540s foreground clamp, granted ONLY when a liveness-ping watchdog is attached (the higher bound and the active probe are coupled — one never ships without the other)."
+  - "AC-323.2: the doogle-class invariant is preserved — no dispatch runs with a bound above the harness kill ceiling WITHOUT an active liveness probe that can detect a hang and reap loudly (death record written). dispatch-timeout-sanity must enforce the new coupled invariant, not just the old <ceiling rule."
+  - "AC-323.3: periodic liveness pings (roadmap item 11) are implemented and wired as the hang defense for the raised-bound path — a hung long-task is detected by a missed ping, not by the kill-timer."
+  - "AC-323.4: backward-compat — the foreground (non-watchdog) path keeps the 540s clamp + death-record-on-bound behavior unchanged for callers that don't opt into the watchdog."
+non_goals:
+  - "The epsilon-agent timer-seam fix (T-20260611-322 — that is the CHILD honoring the propagated bound; this ticket is about RAISING the bounds, a separate concern)."
+implementation_notes: |
+  Depends on / pairs with roadmap item 11 (interval liveness pings). Do NOT lift
+  FOREGROUND_CEILING_MS globally — couple the raised bound to an attached watchdog via the
+  existing WARPOS_DISPATCH_BACKGROUND / opts.background seam (extended to require a real
+  liveness probe, not just the honesty flag). Requires operator approval (approval_required:
+  true) — W0 design-constant with wide blast radius + a hang-defense model shift.
+qa_notes: "The dispatch-timeout-sanity enforcer must be rewritten to the coupled invariant (higher-bound ⟺ watchdog-attached). A planted high-bound-without-watchdog must RED."
+redteam_notes: "Attack to test: a caller sets the high bound but no watchdog → must be refused/clamped, never silently granted (the fail-closed posture the current clamp guarantees must survive the raise)."
+trace_notes: "Operator directive 2026-06-11. Companion: roadmap item 11 (interval pings). Foundation: scripts/dispatch/timeout-policy.js (doogle-class G8/N1 fix context)."
+blocked_by: []
+blocks: []
+fix_attempts: []
+ralph_progress: null
+completion_evidence: []
+reopen_history: []
