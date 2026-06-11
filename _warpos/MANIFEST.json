@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-11T00:37:52.899Z",
+  "generatedAt": "2026-06-11T03:30:42.137Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.15.4",
   "migrations": [],
@@ -113,8 +113,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "0e256ad49f53095eac143a5887ea897f69716f3c216446f07e84446e89e0f755",
-      "installedSha": "0e256ad49f53095eac143a5887ea897f69716f3c216446f07e84446e89e0f755"
+      "sha256": "780f493503d24e20f87c1514ac49922e2f567e54e4509353af10eb62cb2426ab",
+      "installedSha": "780f493503d24e20f87c1514ac49922e2f567e54e4509353af10eb62cb2426ab"
     },
     "TRACKER.md": {
       "owner": "runtime",
@@ -1761,6 +1761,10 @@
       "managed": false
     },
     "trackers/epics/E-MULTIPRODUCT-001-multi-product-distribution.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    "trackers/epics/E-PRODUCT-FOUNDATION-001-product-foundation-seams.md": {
       "owner": "runtime",
       "managed": false
     },
@@ -20138,16 +20142,16 @@
       "managed": true,
       "source": ".claude/agents/president/_system/beta/judgement-model-recommendations.md",
       "kind": "md",
-      "sha256": "04840a4939067635b3c981877cd7fad88bafc2506978a00ca7acf22588471799",
-      "installedSha": "04840a4939067635b3c981877cd7fad88bafc2506978a00ca7acf22588471799"
+      "sha256": "6a9e999a1537858a4d5c10f6730a4d8af4de578217ee37fd54a47768f4ce8616",
+      "installedSha": "6a9e999a1537858a4d5c10f6730a4d8af4de578217ee37fd54a47768f4ce8616"
     },
     ".claude/agents/president/_system/beta/judgement-model.md": {
       "owner": "framework",
       "managed": true,
       "source": ".claude/agents/president/_system/beta/judgement-model.md",
       "kind": "md",
-      "sha256": "77543c52ff0f7c0b7674fa31e6fc0b6eed8946d53268d9b74014640e29ac5ce7",
-      "installedSha": "77543c52ff0f7c0b7674fa31e6fc0b6eed8946d53268d9b74014640e29ac5ce7"
+      "sha256": "0c7766fe56882e055160c323669a7da3170048c54b00033b28de0595ca715be4",
+      "installedSha": "0c7766fe56882e055160c323669a7da3170048c54b00033b28de0595ca715be4"
     },
     ".claude/agents/president/_system/alpha/events.jsonl": {
       "owner": "runtime",

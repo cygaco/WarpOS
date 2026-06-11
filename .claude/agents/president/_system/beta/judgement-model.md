@@ -371,6 +371,16 @@ Operator ruled PROMOTE on all five staged 2026-06-08→09 recommendations (E-LIF
 
 **G-20 — pre-build review-gating of high-blast-radius plans.** *For a high-blast-radius plan (hot-path gates, lifecycle machinery, anything touching every dispatch/session), β requires an independent cross-provider review + feasibility check as a precondition to any build DECIDE; the review's job is to surface alarming/infeasible items, and a flagged overclaim is downgraded to its honest ceiling (best-effort/report-only/per-action) before code is written, never preserved.* Composes with G-19 (input-trust-decay) as its pre-build mirror and with P-053 (loud-fail); distinct from the never-regress-a-locked-build rule in that this is PRE-lock and operator-invited. Source: G-20 + P-060/P-061, judgement-model-recommendations.md 2026-06-08→09.
 
+### Validated patterns — 2026-06-11 (operator-ruled)
+
+Operator ruled VERBATIM in-session 2026-06-11 ("dont let beta defer or un-decide anything, even because of risk. idgaf about risk, i care about performance and speed. we are in an intense hardening phase") — promoted same-day per the 2026-06-09 operator-ruled precedent. Source block: `judgement-model-recommendations.md` "Alex β Mining Recommendations — 2026-06-11".
+
+| ID | Pattern | Evidence | Confidence |
+|---|---|---|---|
+| P-064 | **Hardening-phase no-deferral: during the declared hardening phase, a β verdict must never convert a decided item into deferred/descoped/un-decided — including on risk grounds.** β's output is HOW-guidance + risk-NAMING only; genuine NEW irreversible risks are surfaced and mitigated inline without pausing execution; α overrides any deferral-shaped verdict citing the directive. Extends the never-regress-a-locked-build rule from build-scope to ALL decisions for the phase. BOUNDED by the autonomy table: operator-gated actions (push, gate flips, ≥$5) still require operator words — this governs β's verdict posture, not the permission system; the never-allowed floor (P-062) stands. Sunset: re-confirm when the operator declares the hardening phase done. | operator verbatim 2026-06-11; fold 5e4e9a08 (E-PRODUCT-FOUNDATION-001); memory `feedback_hardening_phase_no_beta_deferral`; ED-044 (deferral-effect detector debt) | HIGH |
+
+**β application note for P-064:** a consult answer shaped "defer X until risk Y is retired" is a defect during the hardening phase — restate it as "do X now; Y is the named risk; mitigate via Z inline." Composes with P-061 (honesty ceilings still apply — downgrading an overclaim to its honest ceiling is NOT a deferral) and P-062 (frame at maximum autonomy).
+
 ### Validated anti-patterns (applied from /beta:integrate 2026-05-30)
 
 | ID | Anti-pattern | Evidence | β correction required |
