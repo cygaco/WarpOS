@@ -170,6 +170,11 @@ function isUndefinedActivationPredicate(value) {
   return /\{\{[^}]+\}\}|TODO|TBD|PLACEHOLDER|DEFINE|UNDEFINED|REPLACE_ME|SENTINEL/i.test(value);
 }
 
+function isUnresolvedTemplateValue(value) {
+  if (!value || !value.trim()) return true;
+  return /\{\{[^}]+\}\}|TODO|TBD|PLACEHOLDER|DEFINE|UNDEFINED|REPLACE_ME|SENTINEL/i.test(value);
+}
+
 function evaluateScaffold(dir = scaffoldDir()) {
   const errors = [];
   if (!fs.existsSync(dir)) {
@@ -283,8 +288,19 @@ function addTelemetryChecks(dir, errors) {
         errors.push("activation definition present but undefined");
       }
       const provenance = stringLiteralValue(activation.provenance);
+      if (isUnresolvedTemplateValue(provenance)) {
+        errors.push("activation definition provenance present but undefined");
+      }
       if (!["derived-at-canon", "founder-named-at-intake", "revised-at-lastmile"].includes(provenance)) {
         errors.push("activation definition provenance must be derived-at-canon, founder-named-at-intake, or revised-at-lastmile");
+      }
+      const derivedFrom = stringLiteralValue(activation.derivedFrom);
+      if (isUnresolvedTemplateValue(derivedFrom)) {
+        errors.push("activation definition derivedFrom present but undefined");
+      }
+      const confidence = Number(activation.confidence);
+      if (!Number.isFinite(confidence) || confidence < 0 || confidence > 1) {
+        errors.push("activation definition confidence must be numeric between 0 and 1");
       }
     }
     if (!/function\s+deriveActivationDefinition\b/.test(events) || !/requires core-loop action, subject, and source/.test(events)) {
@@ -338,7 +354,7 @@ function addTelemetryChecks(dir, errors) {
     const rel = path.relative(dir, file).replace(/\\/g, "/");
     if (rel === "src/lib/telemetry/sink.ts.tmpl") continue;
     const text = fs.readFileSync(file, "utf8");
-    if (/\b(posthog|gtag|plausible|mixpanel)\b|\.capture\s*\(/i.test(text)) {
+    if (/\b(posthog|gtag|plausible|mixpanel)\b|\.capture\s*\(|\banalytics\s*\.\s*track\s*\(|\btracker\s*\.\s*track\s*\(|\bnavigator\s*\.\s*sendBeacon\s*\(|\bXMLHttpRequest\s*\(|\bfetch\s*\([^)]*(analytics|track|event|posthog|plausible|mixpanel|gtag)/i.test(text)) {
       errors.push(`duplicate telemetry sink/raw emit outside sink.ts: ${rel}`);
     }
   }

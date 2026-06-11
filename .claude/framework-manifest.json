@@ -7386,7 +7386,7 @@
         "src": "scripts/checks/scaffold-coverage-scan.js",
         "dest": "scripts/checks/scaffold-coverage-scan.js",
         "kind": "check_tool",
-        "sha256": "6842d25b5ee5024d385389064ec84f53055d3a2ba68a580a9e7d6fd9034596ac",
+        "sha256": "f5cced0007e58c1c6ec9bb2e3470b890c449f6bb3f48d2d4ab34c3b9a019e4a6",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",

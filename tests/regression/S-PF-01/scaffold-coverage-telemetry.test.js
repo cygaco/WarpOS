@@ -102,6 +102,42 @@ test("duplicate-sink-fixture-fails", () => {
   }
 });
 
+test("analytics-track-fixture-fails", () => {
+  const dir = fixture((fx) => {
+    const rel = "src/app/page.tsx.tmpl";
+    write(rel, read(rel, fx) + "\nanalytics.track(\"signup\", {});\n", fx);
+  });
+  try {
+    expectError(dir, /duplicate telemetry sink\/raw emit outside sink\.ts/);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("sendbeacon-fixture-fails", () => {
+  const dir = fixture((fx) => {
+    const rel = "src/app/page.tsx.tmpl";
+    write(rel, read(rel, fx) + "\nnavigator.sendBeacon(\"/analytics\", \"signup\");\n", fx);
+  });
+  try {
+    expectError(dir, /duplicate telemetry sink\/raw emit outside sink\.ts/);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("fetch-analytics-fixture-fails", () => {
+  const dir = fixture((fx) => {
+    const rel = "src/app/page.tsx.tmpl";
+    write(rel, read(rel, fx) + "\nfetch(\"/analytics/events\", { method: \"POST\" });\n", fx);
+  });
+  try {
+    expectError(dir, /duplicate telemetry sink\/raw emit outside sink\.ts/);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 test("event-name-drift-fixture-fails", () => {
   const dir = fixture((fx) => {
     const rel = "src/lib/telemetry/events.ts.tmpl";
@@ -128,6 +164,56 @@ test("unfilled-activation-fixture-fails", () => {
   });
   try {
     expectError(dir, /activation definition present but undefined/);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("unfilled-activation-source-fixture-fails", () => {
+  const dir = fixture((fx) => {
+    const rel = "src/lib/telemetry/events.ts.tmpl";
+    write(
+      rel,
+      read(rel, fx).replace(
+        '"framework/templates/app-scaffold/src/app/page.tsx.tmpl"',
+        '"{{ACTIVATION_SOURCE}}"',
+      ),
+      fx,
+    );
+  });
+  try {
+    expectError(dir, /activation definition derivedFrom present but undefined/);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("unfilled-activation-provenance-fixture-fails", () => {
+  const dir = fixture((fx) => {
+    const rel = "src/lib/telemetry/events.ts.tmpl";
+    write(
+      rel,
+      read(rel, fx).replace(
+        'provenance: "derived-at-canon",\n  confidence: 0.65,',
+        'provenance: "{{ACTIVATION_PROVENANCE}}",\n  confidence: 0.65,',
+      ),
+      fx,
+    );
+  });
+  try {
+    expectError(dir, /activation definition provenance present but undefined/);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("activation-confidence-range-fixture-fails", () => {
+  const dir = fixture((fx) => {
+    const rel = "src/lib/telemetry/events.ts.tmpl";
+    write(rel, read(rel, fx).replace("confidence: 0.65", "confidence: 2"), fx);
+  });
+  try {
+    expectError(dir, /activation definition confidence must be numeric between 0 and 1/);
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
   }

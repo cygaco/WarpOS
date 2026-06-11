@@ -76,9 +76,9 @@ checks:
     last_run: "2026-06-11T21:35:00.000Z"
     evidence: "Focused QA regression sweep and scaffold-coverage-scan --json passed; routing trace recorded as single_vendor_session."
   redteam:
-    status: passing
-    last_run: "2026-06-11T21:35:00.000Z"
-    evidence: "Planted false-green fixtures for missing seam, duplicate sink, event drift, and unresolved activation all fail; routing trace recorded as single_vendor_session, no independent redteam dispatched yet."
+    status: failing
+    last_run: "2026-06-11T21:54:00.000Z"
+    evidence: "OpenAI security-reviewer failed initial S-PF review with duplicate-sink, activation-provenance, release-honesty, and contract-chain robustness findings. Fix cycle applied; re-review pending."
 approvals:
   plan:
     required: false
