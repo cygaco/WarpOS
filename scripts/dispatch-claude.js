@@ -121,6 +121,31 @@ const BUILD_CHAIN_ROLES = new Set([
 // the isolation gate). The wrapper and the contract then AGREE on the truthful result.
 const GENERIC_BUILD_IDS = new Set(["builder"]);
 
+// T-20260611-312 (R-3): build-chain membership is DERIVED from the registry class
+// (build_chain_worker) — the literal BUILD_CHAIN_ROLES Set above is the EXPLICIT
+// FALLBACK, never the sole source. The bug: a NEW build-chain-class role registered in
+// role-registry.json but absent from the Set bypassed BOTH gates below (review-fallback
+// refusal + the worktree-isolation gate). Deriving from the class closes that gap while
+// the Set still gates the GENERIC ids (e.g. "builder") that are intentionally NOT in the
+// registry. FAIL-CLOSED: if the registry/contract is unreadable, the Set still gates — we
+// NEVER degrade to "no gate". Membership parity for every existing role is the key
+// regression (a role already in the Set stays gated; the union can only WIDEN to catch a
+// newly-registered build-chain role).
+function isBuildChainRole(role) {
+  if (!role) return false;
+  const lower = role.toLowerCase();
+  if (BUILD_CHAIN_ROLES.has(lower)) return true; // generic ids + known builders (registry-independent)
+  try {
+    const { classForRole } = require("./dispatch/dispatch-contract");
+    // classForRole reads role-registry identity; case-sensitive role ids there.
+    return classForRole(role) === "build_chain_worker";
+  } catch {
+    // registry/contract unreadable → fall back to the literal Set only (fail-closed:
+    // a known build-chain role is still gated; we never open the gate on a read error).
+    return false;
+  }
+}
+
 function usage(msg) {
   console.error(
     JSON.stringify({
@@ -179,9 +204,11 @@ if (effort && !/^[a-z]+$/i.test(effort)) {
 // --review-fallback guard: build-chain roles write code and MUST use -w/--worktree
 // isolation — they are never allowed via the review-fallback read-only path.
 // This check fires BEFORE the isolation gate so the error message is specific.
-if (reviewFallback && BUILD_CHAIN_ROLES.has(role.toLowerCase())) {
+// T-312: membership is registry-derived (build_chain_worker class) with the literal Set
+// as fallback, so a NEW build-chain-class role can't bypass this refusal.
+if (reviewFallback && isBuildChainRole(role)) {
   usage(
-    `--review-fallback cannot be used with build-chain role '${role}'. ` +
+    `--review-fallback cannot be used with build-chain role '${role}' (registry class: build_chain_worker). ` +
     `review-fallback is for READ-ONLY review roles only (e.g. backend-reviewer, ` +
     `qa-reviewer, frontend-reviewer, security-reviewer). Build-chain roles write ` +
     `code and MUST use -w or --worktree isolation. (T-305 G2)`,
@@ -222,11 +249,13 @@ if (worktree && fs.existsSync(worktree)) {
     worktreeValid = false;
   }
 }
-if (BUILD_CHAIN_ROLES.has(role.toLowerCase()) && !passW && !worktreeValid) {
+// T-312: registry-derived membership (build_chain_worker class) + literal Set fallback,
+// so a NEW build-chain-class role can't bypass the worktree-isolation gate either.
+if (isBuildChainRole(role) && !passW && !worktreeValid) {
   usage(
-    `Build-chain role '${role}' requires isolation: pass -w (claude creates the worktree) ` +
-      `or --worktree <distinct-git-worktree>. A missing, canonical, or non-worktree path is ` +
-      `refused so a builder never edits canonical.`,
+    `Build-chain role '${role}' (registry class: build_chain_worker) requires isolation: pass -w ` +
+      `(claude creates the worktree) or --worktree <distinct-git-worktree>. A missing, canonical, ` +
+      `or non-worktree path is refused so a builder never edits canonical.`,
   );
 }
 
@@ -311,7 +340,7 @@ const cmdChecksum = cmdlineChecksum(role, PROVIDER, promptBytes);
 // set WARPOS_DISPATCH_CONTRACT_ENFORCE=block to make a violation fatal. Fail-OPEN
 // on any contract-read error — the contract must never crash a working dispatch.
 try {
-  const { validateDispatch, validateDispatchForClass } = require("./dispatch/dispatch-contract");
+  const { validateDispatch, validateDispatchForClass, sanctionedLane } = require("./dispatch/dispatch-contract");
   const verdict = validateDispatch({
     role,
     shape: "subprocess-claude",
@@ -350,14 +379,21 @@ try {
     // Genuinely unknown id (not in role-registry, not a GENERIC_BUILD_ID), or a real
     // violation for a registered role. Keep the honest fail-closed wording unchanged.
     const blocking = process.env.WARPOS_DISPATCH_CONTRACT_ENFORCE === "block";
-    if (reviewFallback && !blocking) {
-      // --review-fallback: the shape mismatch (subprocess-claude for a cross-provider
-      // reviewer role) is INTENTIONAL — the normal provider is quota-exhausted. Suppress
-      // the advisory and emit a clear informational note instead.
+    // T-311 (crossfam A.2): consult the REGISTERED sanctioned lane instead of suppressing
+    // via a wrapper-local `!blocking` conditional. A registered review-fallback lane
+    // resolves valid in BOTH report-only AND blocking (ENFORCE) modes, so the W2 flip can
+    // never BRICK the fallback — the lane NEVER exits 1. A non-sanctioned mismatch still refuses.
+    const lane = reviewFallback
+      ? sanctionedLane({ role, shape: "subprocess-claude", lane: "review_fallback" })
+      : { sanctioned: false };
+    if (lane.sanctioned) {
+      // Distinguish "sanctioned lane allowed" from "mismatch suppressed" (C-2): the note
+      // names the lane + class and prints regardless of mode; the dispatch proceeds.
       process.stderr.write(
-        `[dispatch-claude] review-fallback: role '${role}' routed through subprocess-claude ` +
-          `intentionally (cross-provider quota exhausted; fallback origin: ` +
-          `${quotaFallbackFrom && quotaFallbackFrom.provider || "unknown"}).\n`,
+        `[dispatch-shape] review-fallback: sanctioned lane (registered shape) — allowed under ` +
+          `${blocking ? "ENFORCE" : "report-only"} (role '${role}', class '${lane.class}'; ` +
+          `cross-provider quota exhausted, fallback origin: ` +
+          `${(quotaFallbackFrom && quotaFallbackFrom.provider) || "unknown"}).\n`,
       );
     } else {
       process.stderr.write(
@@ -395,8 +431,9 @@ try {
       // contract consult block above already emitted the truthful note.
     } else if (reviewFallback) {
       // --review-fallback: shape mismatch (subprocess-claude for a cross-provider reviewer)
-      // is intentional. Suppress the advisory — the contract-consult block above already
-      // emitted the informational note about the fallback origin.
+      // is intentional and REGISTERED as a sanctioned lane (T-311). Suppress the advisory —
+      // the contract-consult block above already emitted the sanctioned-lane note. This
+      // branch already suppresses in BOTH modes (no `!blocking`), so it never bricks the lane.
     } else {
       const blocking = process.env.WARPOS_DISPATCH_CONTRACT_ENFORCE === "block" && mm.severity === "high";
       process.stderr.write(

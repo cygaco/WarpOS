@@ -108,6 +108,7 @@ W2 = the HIGH-blast wave: the resolver becomes the only door. Design decisions d
 - Advisory-noise-zero evidence: one full sprint (SP-008 candidate) with 0 contract-resolution advisories on the ledger.
 - resolveShape distinguishing-signal fix designed (12.1.1) — without it, enforce-mode would refuse LEGITIMATE subprocess builders.
 - Provider health: at least 2 of 3 families live (the breaker + auth-posture from W1 make this checkable mechanically: provider-down.json empty + auth modes sane).
+- The sanctioned --review-fallback lane is shape-registered in the dispatch-contract layer before ENFORCE flips (SP-20260611-001 fix 2 — crossfam finding A.2).
 
 ### 12.3 Rollback
 Every W2 component carries its own kill-switch env + report-only fallback; the wrapper refusal is 4 independent flips (one per wrapper), never a big bang. A false-refusal in production = set the kill-switch, file the planted-test gap, fix, re-flip.

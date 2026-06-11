@@ -229,6 +229,17 @@
     }
   },
 
+  "sanctioned_lanes": {
+    "_doc": "SP-20260611-001 fix 2 (T-311 / crossfam finding A.2): a sanctioned lane is a NAMED, NARROWLY-SCOPED dispatch that is INTENTIONALLY off the class default shape — registered HERE (registry-as-SoT) rather than suppressed by a wrapper-local `!blocking` conditional. The dispatch-contract reader's `sanctionedLane({role, shape, lane})` returns sanctioned:true ONLY when ALL of: (a) the lane name is registered here, (b) the role's DERIVED class is in the lane's applies_to_classes, AND (c) the proposed shape equals the lane's shape. A sanctioned lane is ADDITIVE and REGISTER-ONLY: it changes NO validateDispatch exit path and grants NO new shape to validateDispatch — it is a separate consult the wrapper makes so the informational note prints in BOTH report-only and blocking (ENFORCE) modes and the sanctioned lane NEVER exits 1. A genuinely-mismatched NON-sanctioned shape under blocking still refuses exactly as before. NO wildcard (redteam: sanctioned-lane over-breadth) — each lane enumerates its exact classes + the one shape it sanctions.",
+    "review_fallback": {
+      "_doc": "The --review-fallback lane (dispatch-claude.js): a cross-provider REVIEW role is routed through subprocess-claude (a Claude clone) INTENTIONALLY when its normal provider (openai/gemini) is quota-dead. Honest visible debt — the completion record still stamps fallback:true + provider:claude + quota_fallback_from so coverage-gate sees the cross-provider debt; this lane only stops the W2 ENFORCE flip from BRICKING the fallback exactly when it is most needed. READ-ONLY review roles only — build-chain roles are refused this lane upstream (dispatch-claude.js guard, T-305 G2).",
+      "flag": "--review-fallback",
+      "shape": "subprocess-claude",
+      "applies_to_classes": ["cross_provider_reviewer"],
+      "completion_record": { "fallback": true, "provider": "claude", "requires": ["quota_fallback_from"] }
+    }
+  },
+
   "skills": {
     "_doc": "SEEDED for skill-execution-routing (PLAN §13) — NOT yet earned. A skill is `inline` until it PASSES §13.6 (runs headless) AND §13.7 (pays + good). `subprocess` entries below are CANDIDATES (classified by weight) carrying subprocess_verified:false until a real smoke run stamps them. The reader treats an unverified `subprocess` skill as `inline` (fail-closed: never trust an unverified subprocess classification). REPORT-ONLY this release.",
     "classification": "seeded-candidates",

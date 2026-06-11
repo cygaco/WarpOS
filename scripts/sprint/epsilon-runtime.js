@@ -71,6 +71,16 @@ const registryRoles = require("../dispatch/registry-roles"); // role-registry fi
 // (opts.background === true or WARPOS_DISPATCH_BACKGROUND=1). FAIL-CLOSED.
 const { foregroundAwareTimeout, WRAPPER_DEFAULTS } = require("../dispatch/timeout-policy");
 
+// T-20260611-310 (R-1): parent spawnSync grace over the CHILD wrapper's own bound.
+// spawnAgent passes foregroundAwareTimeout(...) as spawnSync's `timeout` — but the child
+// wrapper (dispatch-claude.js / dispatch-agent.js) self-bounds at the SAME value, so the
+// parent's hard SIGTERM fired at the exact instant the child started writing its graceful
+// death record, racing (and often killing) that write. The parent bound must EXCEED the
+// child bound so the child's death-record write wins; we keep a parent bound (NOT
+// backstop-only — β plan-phase HOW) so a genuinely-hung child is still reaped, just with
+// PARENT_GRACE_MS of headroom. Both spawn sites read this SAME constant.
+const PARENT_GRACE_MS = 45000; // 45s grace (β-decided window: 30–60s)
+
 // The six canonical lifecycle steps ε conducts, in order (epsilon.md "The Six Steps").
 const LIFECYCLE = Object.freeze(["plan", "design", "build", "gauntlet", "release", "retro"]);
 
@@ -473,7 +483,9 @@ function spawnAgent(agentPlan, sprintId, opts = {}) {
   const common = {
     encoding: "utf8",
     env,
-    timeout: foregroundAwareTimeout(opts.timeoutMs || WRAPPER_DEFAULTS["epsilon-agent"], opts),
+    // Parent SIGTERM bound = CHILD wrapper bound + PARENT_GRACE_MS so the child's
+    // graceful death-record write wins the race (T-310/R-1). Still bounded — not backstop-only.
+    timeout: foregroundAwareTimeout(opts.timeoutMs || WRAPPER_DEFAULTS["epsilon-agent"], opts) + PARENT_GRACE_MS,
     maxBuffer: 32 * 1024 * 1024,
   };
 
@@ -495,9 +507,11 @@ function spawnAgent(agentPlan, sprintId, opts = {}) {
     const args = [path.join(root, "scripts/dispatch-claude.js"), agentPlan.role, promptFile];
     if (opts.worktree) args.push("--worktree", opts.worktree);
     // T-20260610-304: DISPATCH_CLAUDE uses the longer 20m default but still clamps to 540s foreground.
+    // T-310/R-1: parent SIGTERM bound = child wrapper bound + PARENT_GRACE_MS (same constant as the
+    // epsilon-agent site) so the child's graceful death-record write wins the race here too.
     const r = run(process.execPath, args, {
       ...common,
-      timeout: foregroundAwareTimeout(opts.timeoutMs || WRAPPER_DEFAULTS["epsilon-claude"], opts),
+      timeout: foregroundAwareTimeout(opts.timeoutMs || WRAPPER_DEFAULTS["epsilon-claude"], opts) + PARENT_GRACE_MS,
     });
     return interpretSpawn(r, agentPlan, /*recordedByCli=*/ true);
   }
@@ -741,6 +755,7 @@ if (require.main === module) process.exit(main(process.argv));
 module.exports = {
   LIFECYCLE,
   BETA_BOUNDARIES,
+  PARENT_GRACE_MS,
   ROUTE,
   resolveRoute,
   canDispatchBuilders,

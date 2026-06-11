@@ -252,6 +252,55 @@ function validateDispatchForClass(req) {
 }
 
 /**
+ * Sanctioned-lane consult (SP-20260611-001 fix 2 / T-311). Returns
+ *   { sanctioned, lane, shape, reason, classes } .
+ *
+ * A sanctioned lane is a NAMED, NARROWLY-SCOPED dispatch that is INTENTIONALLY off the
+ * class default shape (e.g. --review-fallback routing a cross-provider reviewer through
+ * subprocess-claude when its provider is quota-dead). It is registered in the contract's
+ * `sanctioned_lanes` block (registry-as-SoT) rather than suppressed by a wrapper-local
+ * `!blocking` conditional — so the lane resolves valid in BOTH report-only and blocking
+ * (ENFORCE) modes and a future ENFORCE flip never BRICKS the fallback.
+ *
+ * REGISTER-ONLY + ADDITIVE: this function does NOT touch validateDispatch's exit paths
+ * and grants no new shape there. sanctioned:true requires ALL of:
+ *   (a) `lane` is a registered lane in `sanctioned_lanes`,
+ *   (b) the proposed `shape` equals that lane's `shape`,
+ *   (c) the role's DERIVED class is in the lane's `applies_to_classes` (NO wildcard —
+ *       a non-matching class is NOT sanctioned, so the over-breadth redteam case fails closed).
+ * Any miss returns sanctioned:false with a reason — the caller then falls through to its
+ * normal (unchanged) validation/refusal path.
+ *
+ *   { role, shape, lane } -> { sanctioned, lane, shape, reason, classes }
+ */
+function sanctionedLane(req) {
+  const role = req && req.role;
+  const shape = req && req.shape;
+  const laneName = req && req.lane;
+  if (!role || !shape || !laneName) {
+    return { sanctioned: false, lane: laneName || null, shape: shape || null, reason: "role, shape, and lane are all required", classes: [] };
+  }
+  const contract = loadContract();
+  const lanes = contract.sanctioned_lanes || {};
+  const lane = lanes[laneName];
+  if (!lane || typeof lane !== "object" || laneName.startsWith("_")) {
+    return { sanctioned: false, lane: laneName, shape, reason: `no sanctioned lane '${laneName}' is registered in the dispatch contract`, classes: [] };
+  }
+  const classes = Array.isArray(lane.applies_to_classes) ? lane.applies_to_classes : [];
+  if (lane.shape !== shape) {
+    return { sanctioned: false, lane: laneName, shape, reason: `lane '${laneName}' sanctions shape '${lane.shape}', not '${shape}'`, classes };
+  }
+  const cls = classForRole(role);
+  if (!cls) {
+    return { sanctioned: false, lane: laneName, shape, reason: `role '${role}' does not resolve to a class — cannot match a sanctioned lane (fail-closed)`, classes };
+  }
+  if (!classes.includes(cls)) {
+    return { sanctioned: false, lane: laneName, shape, reason: `role '${role}' (class '${cls}') is not in lane '${laneName}' applies_to_classes [${classes.join(", ")}] — not sanctioned`, classes };
+  }
+  return { sanctioned: true, lane: laneName, shape, reason: `sanctioned lane '${laneName}': shape '${shape}' registered for class '${cls}'`, classes, class: cls };
+}
+
+/**
  * The mode-scoped dispatch profile (S-LC-06 / PLAN §8.7) for a mode, or null.
  * A profile NARROWS (never widens) which shapes a class/role may use in that mode.
  */
@@ -353,6 +402,29 @@ function validateContractFile() {
       if (!(c.forbidden_shapes || []).includes("in-process-agent")) violations.push(`cross-provider reviewer '${role}' must FORBID in-process-agent (provider diversity)`);
     }
   }
+  // ── sanctioned_lanes: registered lanes must be well-formed (T-311) ──────────
+  // Every lane's `shape` must be a known dispatch shape and every entry in its
+  // `applies_to_classes` must be a defined role-class — a typo'd shape or class
+  // would silently never match (sanctionedLane fails closed), so the validator
+  // FAILS a malformed lane loudly rather than letting it rot. NO wildcard is
+  // permitted: applies_to_classes must be a non-empty array of real classes.
+  for (const [laneName, lane] of Object.entries(contract.sanctioned_lanes || {})) {
+    if (laneName.startsWith("_")) continue;
+    if (!lane || typeof lane !== "object") {
+      violations.push(`sanctioned_lane '${laneName}' is not an object`);
+      continue;
+    }
+    if (!shapeNames.has(lane.shape)) violations.push(`sanctioned_lane '${laneName}' sanctions the unknown shape '${lane.shape}'`);
+    const laneClasses = lane.applies_to_classes;
+    if (!Array.isArray(laneClasses) || laneClasses.length === 0) {
+      violations.push(`sanctioned_lane '${laneName}' must list a NON-EMPTY applies_to_classes array (no wildcard — sanctioned-lane over-breadth is a redteam case)`);
+    } else {
+      for (const cls of laneClasses) {
+        if (!classNames.has(cls)) violations.push(`sanctioned_lane '${laneName}' references unknown class '${cls}'`);
+      }
+    }
+  }
+
   // role_overrides reference real, non-scrapped roles
   for (const role of Object.keys(contract.role_overrides || {})) {
     if (role.startsWith("_")) continue;
@@ -439,7 +511,7 @@ function validateContractFile() {
 
 module.exports = {
   loadContract, loadRegistry, classForRole, contractForRole, validateDispatch,
-  validateDispatchForClass,
+  validateDispatchForClass, sanctionedLane,
   skillExecution, validateContractFile, registryAttrs, CONTRACT_PATH, REGISTRY_PATH,
   ARGV_SCHEMA_VERSION, modeProfile, allowedShapesForRoleInMode,
 };
