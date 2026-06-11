@@ -205,8 +205,15 @@ function resolveSessionId(projectDir) {
 // ── project-slug-scoped active-team detection ────────────────────────────────
 // Reads ~/.claude/teams/*/config.json and returns the freshest team id that
 // belongs to THIS project. Belonging = team name starts with "<slug>-"/equals
-// slug, OR a member's cwd resolves under the canonical project dir. Every read
-// is guarded — a malformed config skips that team, never throws.
+// slug, OR a member's cwd is the project root EXACTLY or strictly UNDER it.
+// SECURITY (T-20260611-325 / W1 MINOR): membership must NOT use parent
+// containment. The prior test also accepted `normProject.startsWith(c + "/")`,
+// which is true when the member cwd `c` is an ANCESTOR (parent) of the project —
+// so a broad/foreign team rooted ABOVE this project (e.g. a member cwd of the
+// home dir, or another project's parent) was mislabeled as THIS project's active
+// team. A team's cwd being a parent of the project does NOT make it ours; only an
+// EXACT project cwd or a member cwd strictly under the project root does. Every
+// read is guarded — a malformed config skips that team, never throws.
 function findActiveTeamForProject(slug, projectDir, homeDir) {
   try {
     const home = homeDir || process.env.HOME || process.env.USERPROFILE || "";
@@ -235,8 +242,10 @@ function findActiveTeamForProject(slug, projectDir, homeDir) {
         if (!belongs && Array.isArray(doc.members) && normProject) {
           belongs = doc.members.some((mem) => {
             const c = String((mem && mem.cwd) || "").replace(/\\/g, "/").toLowerCase();
-            return c && (c === normProject || c.startsWith(normProject + "/") ||
-              normProject.startsWith(c + "/"));
+            // EXACT project cwd OR member-cwd strictly UNDER the project root.
+            // NOT parent-containment (`normProject.startsWith(c + "/")`) — an
+            // ancestor cwd does not make a foreign/broad team ours (T-325).
+            return c && (c === normProject || c.startsWith(normProject + "/"));
           });
         }
         if (belongs && mtime > bestMtime) {

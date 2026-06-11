@@ -14,13 +14,37 @@
 //     lifecycle.js and the request record carries `foreignProtected` as proof.
 //   • FAIL-OPEN — wrapped end-to-end in try/catch; a teardown-request failure
 //     must never throw or block session end.
-//
-// NOT wired into settings.json by this build (settings wiring is deferred to
-// Alpha — see the build envelope for the exact SessionEnd entry to add).
+//   • ANCHORED — projectDir (the require() base) is derived from this hook file's
+//     OWN location, NEVER from hook input (event.cwd) or an env var. See the
+//     anchoredProjectDir() note below (T-20260611-324 / W1 BLOCKER).
 
 "use strict";
 
+const fs = require("fs");
 const path = require("path");
+
+// ── projectDir ANCHORING (T-20260611-324 / W1 BLOCKER) ───────────────────────
+// SECURITY: this hook MUST NOT trust hook-input (`event.cwd`) — nor an
+// attacker-controllable env var — as the base it `require()`s its manager from.
+// The prior code used `process.env.CLAUDE_PROJECT_DIR || event.cwd || cwd()`,
+// so an absent CLAUDE_PROJECT_DIR + an attacker-supplied `event.cwd` could
+// redirect module loading + the teardown request to a FOREIGN project
+// (require-redirection). The ONLY trustworthy anchor is the hook file's OWN
+// location: this file lives at <repo>/scripts/hooks/session-end-team-teardown.js,
+// so the repo root is two levels up from __dirname. We canonicalize it (realpath)
+// so a symlinked/relative path resolves to its true on-disk location, and that
+// canonical repo root is the require() base — full stop. `event.cwd` / the env
+// var are CORROBORATING context only (recorded, never load-bearing). Fail-open:
+// if realpath fails (it should not for our own dir), fall back to the lexical
+// __dirname-anchored path — still hook-derived, never hook-input-derived.
+function anchoredProjectDir() {
+  const lexical = path.resolve(__dirname, "..", "..");
+  try {
+    return fs.realpathSync(lexical);
+  } catch {
+    return lexical; // realpath unavailable — still the hook-own anchor, not input
+  }
+}
 
 let input = "";
 process.stdin.on("data", (c) => (input += c));
@@ -32,8 +56,22 @@ process.stdin.on("end", () => {
     } catch {
       /* malformed payload — proceed with env defaults (fail-open) */
     }
-    const projectDir =
-      process.env.CLAUDE_PROJECT_DIR || event.cwd || process.cwd();
+    // ANCHORED to the hook's own repo root — NEVER event.cwd / env (see above).
+    const projectDir = anchoredProjectDir();
+    // event.cwd + CLAUDE_PROJECT_DIR are CORROBORATING context only: recorded so
+    // a mismatch is visible in the audit trail, but they NEVER drive require().
+    const corroboratingCwd =
+      (event && typeof event.cwd === "string" && event.cwd) ||
+      process.env.CLAUDE_PROJECT_DIR ||
+      null;
+    const cwdMatchesAnchor = (() => {
+      try {
+        if (!corroboratingCwd) return null; // nothing to corroborate
+        return fs.realpathSync(corroboratingCwd) === projectDir;
+      } catch {
+        return false; // unresolvable corroborating path → does not corroborate
+      }
+    })();
 
     let lifecycle;
     try {
@@ -69,6 +107,10 @@ process.stdin.on("end", () => {
           foreignProtected: result.foreignProtected || [],
           killedGuaranteed: false,
           residual: result.residual,
+          // Corroborating context only — proves the anchor was hook-derived and
+          // surfaces a hook-input/env cwd that disagrees with the real anchor.
+          anchoredProjectDir: projectDir,
+          corroboratingCwdMatches: cwdMatchesAnchor,
         },
         { actor: "session-end-team-teardown" },
       );
