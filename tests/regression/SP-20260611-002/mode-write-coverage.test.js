@@ -33,6 +33,7 @@ const ROOT = path.resolve(__dirname, "..", "..", "..");
 const MODE_SET = path.join(ROOT, "scripts", "mode-set.js");
 const DETECTOR = path.join(ROOT, "scripts", "checks", "mode-write-coverage.js");
 const guard = require(path.join(ROOT, "scripts", "hooks", "mode-lifecycle-guard.js"));
+const detector = require(DETECTOR);
 
 let pass = 0;
 let fail = 0;
@@ -156,6 +157,30 @@ ok("out-of-band-write-report-only-prints-finding-but-exits-0", () => {
   const out = JSON.parse(det.stdout);
   assert.strictEqual(out.status, "red", "the finding is still RED (reported, not blocked)");
   assert.strictEqual(out.report_only, true);
+});
+
+ok("finding-4-pre-mtime-lifecycle-event-does-not-corroborate-later-mode-json-rewrite", () => {
+  // The gauntlet bypass: a legitimate mode switch at T0 emitted a lifecycle event;
+  // an out-of-band rewrite at T0+5m gave mode.json a newer mtime. The old ±window
+  // logic accepted the pre-mtime event. The fix requires event.ts >= mode mtime.
+  const t0 = Date.parse("2026-06-11T00:00:00.000Z");
+  const modeMtime = t0 + 5 * 60 * 1000;
+  const result = detector.evaluate({
+    modeState: { mode: "sprint", mtimeMs: modeMtime },
+    modeUnreadable: false,
+    lifecycleEvents: [
+      {
+        event: "mode:switch:after",
+        payload: { target_mode: "sprint" },
+        tsMs: t0,
+      },
+    ],
+    windowMs: 120 * 60 * 1000,
+    nowMs: t0 + 10 * 60 * 1000,
+  });
+  assert.strictEqual(result.ok, false, "pre-mtime event must not green a later out-of-band rewrite");
+  assert.strictEqual(result.finding.type, "out-of-band-mode-write");
+  assert.strictEqual(result.corroboratingEvent, null);
 });
 
 ok("events-log-unreadable-with-present-mode-fails-closed", () => {

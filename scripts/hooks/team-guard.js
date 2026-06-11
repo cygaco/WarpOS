@@ -182,6 +182,49 @@ function teamCarriesConductor(conductor) {
   return false;
 }
 
+// ── PROJECT-SCOPE helpers (findings 1+2, FIX1-G1) ─────────────────────────────
+// A team satisfies the gate ONLY if it binds to THIS project — by slug AND/OR a
+// member cwd that is the project root exactly or strictly under it. A foreign
+// team (different project slug, no member cwd under this project) must NOT be
+// able to bypass the readiness gate, even if it carries the right conductor and
+// has a fresh config. The scope predicate mirrors findActiveTeamForProject in
+// mode-lifecycle-guard.js (the existing project-scope authority). FAIL-CLOSED to
+// false when we CAN determine scope but it doesn't match; callers decide whether
+// to fail-open when no scope evidence is available (empty slug + no member cwd).
+function resolveProjectSlug(projectDir) {
+  try {
+    const manifestPath = path.join(projectDir, ".claude", "manifest.json");
+    const doc = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+    return String((doc.project && doc.project.slug) || "").toLowerCase();
+  } catch {
+    return ""; // no manifest / unreadable — caller applies fail-open
+  }
+}
+
+/** Does `doc` (a team config) belong to the project identified by `slug` and
+ *  `projectDir`? Two arms (either is sufficient):
+ *    (a) name-slug: team name equals slug OR starts with "<slug>-" (exact normalize)
+ *    (b) member-cwd: any member's cwd is the project root EXACTLY, or strictly
+ *        UNDER it — NOT parent-containment (a broad/foreign team rooted ABOVE the
+ *        project is not ours). Returns false when neither arm matches. */
+function isProjectScopedTeam(doc, teamDirName, slug, projectDir) {
+  const name = String((doc && (doc.name || doc.team_name || teamDirName)) || "")
+    .trim()
+    .toLowerCase();
+  const s = String(slug || "").toLowerCase();
+  // (a) slug-based name arm
+  if (s && (name === s || name.startsWith(s + "-"))) return true;
+  // (b) member-cwd arm
+  const normProject = String(projectDir || "").replace(/\\/g, "/").toLowerCase();
+  if (!normProject) return false;
+  const members = Array.isArray(doc && doc.members) ? doc.members : [];
+  return members.some((mem) => {
+    const c = String((mem && mem.cwd) || "").replace(/\\/g, "/").toLowerCase();
+    // EXACT project cwd OR member-cwd strictly UNDER it (NOT parent-containment).
+    return c && (c === normProject || c.startsWith(normProject + "/"));
+  });
+}
+
 // ── S-1 / AC-1.1: VERIFY a passed team_name really exists + is fresh + carries
 //    the conductor, by a REAL config lookup — never trust the bare string. The
 //    `if (hasTeamName || ...) exit(0)` short-circuit was a worker-bypass: ANY
@@ -190,7 +233,12 @@ function teamCarriesConductor(conductor) {
 //    (reuses the same EXACT-match identity as the gate). FAIL-CLOSED to false
 //    (not verified) on any error — a verify failure must NOT open the gate. The
 //    config-mtime freshness window mirrors teamCarriesConductor (24h).
-function namedTeamVerified(teamName, conductor) {
+//    FINDING 1 FIX (FIX1-G1): also verify the team belongs to THIS project (slug
+//    or member cwd — isProjectScopedTeam). A foreign team with the right name and
+//    conductor (e.g. "doogle-sprint") must NOT bypass the gate for this project.
+//    When the project slug is unknown (no manifest), scope can't be determined →
+//    fail-open on scope only (the team still must verify name + freshness + ε).
+function namedTeamVerified(teamName, conductor, slug, projectDir) {
   if (!conductor) return false;
   const want = String(teamName == null ? "" : teamName).trim().toLowerCase();
   if (!want) return false;
@@ -209,8 +257,15 @@ function namedTeamVerified(teamName, conductor) {
         const doc = JSON.parse(fs.readFileSync(cfg, "utf8"));
         const nm = String((doc.name || doc.team_name || d) || "").trim().toLowerCase();
         if (nm !== want) continue; // a DIFFERENT real team is not THIS team_name
-        // The named team exists + is fresh: honor it only if it carries ε.
-        return docCarriesConductor(doc, conductor);
+        // The named team exists + is fresh: honor it only if it carries ε...
+        if (!docCarriesConductor(doc, conductor)) return false;
+        // ...AND belongs to THIS project (finding 1 fix: slug+cwd scope). When the
+        // project slug is unknown (no manifest, slug=""), scope is indeterminate —
+        // fail-open (the name+freshness+conductor check is still the guard). When the
+        // slug IS known, a foreign team (different slug, no matching member cwd)
+        // must NOT satisfy the named-team verification.
+        if (slug && !isProjectScopedTeam(doc, d, slug, projectDir)) return false;
+        return true;
       } catch {
         /* skip this unreadable team dir */
       }
@@ -465,12 +520,16 @@ process.stdin.on("end", () => {
         id: "epsilon",
         symbol: "ε",
       };
+      // PROJECT-SCOPE slug (finding 1+2 fix): resolved here so namedTeamVerified
+      // and the readiness selection can both scope teams to THIS project.
+      const projectSlug = resolveProjectSlug(projectDir);
       // AC-1.1: a passed team_name no longer short-circuits the readiness gate on
       // its bare presence. A fabricated/foreign team_name (no fresh config.json
       // carrying ε) is NOT honored — only a team_name that VERIFIES (the named
-      // team exists + is fresh + carries the conductor) counts as an into-team
-      // dispatch. A non-worker (face / research one-off) still exits early.
-      const teamNameVerified = hasTeamName && namedTeamVerified(toolInput.team_name, conductor);
+      // team exists + is fresh + carries the conductor + belongs to THIS project)
+      // counts as an into-team dispatch. A non-worker (face / research one-off)
+      // still exits early.
+      const teamNameVerified = hasTeamName && namedTeamVerified(toolInput.team_name, conductor, projectSlug, projectDir);
       if (teamNameVerified || !isWorker) {
         // VERIFIED into-team dispatch, a face (bootstrap), or a research one-off.
         process.exit(0);
@@ -499,6 +558,12 @@ process.stdin.on("end", () => {
       // — a team of only generic workers with NO ε is the 2nd miss the operator
       // caught 2026-06-08 ("this isn't the persistent team I imagined — where's
       // epsilon?"). Read the freshest active team config + check members for ε.
+      // FINDING 2 FIX (FIX1-G1): select the freshest PROJECT-SCOPED team first,
+      // then check for ε. A globally-fresher foreign ε-team (belonging to another
+      // project) must NOT satisfy readiness for THIS project. When the project slug
+      // is unknown (no manifest, projectSlug=""), scope can't be determined → fail-
+      // open (old global-freshest behavior) to avoid false-blocking real teams in
+      // environments without manifests. In production the manifest always exists.
       let activeCfg = null;
       let activeMtime = 0;
       try {
@@ -512,7 +577,15 @@ process.stdin.on("end", () => {
             const cfg = path.join(teamsRoot, d, "config.json");
             try {
               const m = fs.statSync(cfg).mtimeMs;
-              if ((Date.now() - m) / 3600000 < 24 && m > activeMtime) {
+              if ((Date.now() - m) / 3600000 >= 24) continue; // stale
+              // PROJECT-SCOPE filter: when slug is known, only consider teams
+              // that belong to THIS project (slug+cwd). Read the doc to check.
+              // When slug is unknown, skip filter (fail-open — old behavior).
+              if (projectSlug) {
+                const doc = JSON.parse(fs.readFileSync(cfg, "utf8"));
+                if (!isProjectScopedTeam(doc, d, projectSlug, projectDir)) continue;
+              }
+              if (m > activeMtime) {
                 activeCfg = cfg;
                 activeMtime = m;
               }
