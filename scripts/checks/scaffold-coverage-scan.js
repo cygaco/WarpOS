@@ -116,9 +116,14 @@ function* walkTemplates(dir) {
 
 function collectImports(text) {
   const specs = new Set();
+  const scanText = stripTsComments(text);
   const re = /(?:import|export)\s+(?:[^"';]*?\s+from\s+)?["']([^"']+)["']/g;
   let m;
-  while ((m = re.exec(text)) !== null) specs.add(m[1]);
+  while ((m = re.exec(scanText)) !== null) specs.add(m[1]);
+  const dynamicImportRe = /\bimport\s*\(\s*["']([^"']+)["']\s*\)/g;
+  while ((m = dynamicImportRe.exec(scanText)) !== null) specs.add(m[1]);
+  const requireRe = /\brequire\s*\(\s*["']([^"']+)["']\s*\)/g;
+  while ((m = requireRe.exec(scanText)) !== null) specs.add(m[1]);
   return [...specs];
 }
 
@@ -134,9 +139,76 @@ function countMatches(text, re) {
   return (text.match(re) || []).length;
 }
 
+function stripTsComments(text) {
+  let out = "";
+  let quote = null;
+  let escaped = false;
+  let lineComment = false;
+  let blockComment = false;
+
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    const next = text[i + 1];
+
+    if (lineComment) {
+      if (ch === "\n" || ch === "\r") {
+        lineComment = false;
+        out += ch;
+      } else {
+        out += " ";
+      }
+      continue;
+    }
+
+    if (blockComment) {
+      if (ch === "*" && next === "/") {
+        blockComment = false;
+        out += "  ";
+        i++;
+      } else {
+        out += ch === "\n" || ch === "\r" ? ch : " ";
+      }
+      continue;
+    }
+
+    if (quote) {
+      out += ch;
+      if (escaped) {
+        escaped = false;
+      } else if (ch === "\\") {
+        escaped = true;
+      } else if (ch === quote) {
+        quote = null;
+      }
+      continue;
+    }
+
+    if (ch === "/" && next === "/") {
+      lineComment = true;
+      out += "  ";
+      i++;
+      continue;
+    }
+
+    if (ch === "/" && next === "*") {
+      blockComment = true;
+      out += "  ";
+      i++;
+      continue;
+    }
+
+    if (ch === "'" || ch === '"' || ch === "`") {
+      quote = ch;
+    }
+    out += ch;
+  }
+
+  return out;
+}
+
 function parseConstStringArray(text, constName) {
   const re = new RegExp(`export\\s+const\\s+${constName}\\s*=\\s*\\[([\\s\\S]*?)\\]\\s+as\\s+const`);
-  const m = text.match(re);
+  const m = stripTsComments(text).match(re);
   if (!m) return null;
   return [...m[1].matchAll(/["']([^"']+)["']/g)].map((x) => x[1]);
 }
@@ -150,7 +222,7 @@ function sameArray(actual, expected) {
 }
 
 function activationFields(text) {
-  const body = text.match(/export\s+const\s+ACTIVATION_DEFINITION(?:\s*:\s*[A-Za-z0-9_]+)?\s*=\s*\{([\s\S]*?)\}\s*;?/);
+  const body = stripTsComments(text).match(/export\s+const\s+ACTIVATION_DEFINITION(?:\s*:\s*[A-Za-z0-9_]+)?\s*=\s*\{([\s\S]*?)\}\s*;?/);
   if (!body) return null;
   const fields = {};
   for (const key of ["predicate", "provenance", "confidence", "derivedFrom"]) {
@@ -158,6 +230,20 @@ function activationFields(text) {
     if (m) fields[key] = m[1].trim();
   }
   return fields;
+}
+
+function hasNamedExport(text, name) {
+  const scanText = stripTsComments(text);
+  return (
+    new RegExp(`export\\s+(?:async\\s+)?(?:const|let|var|function|type|interface)\\s+${name}\\b`).test(scanText) ||
+    new RegExp(`export\\s*\\{[^}]*\\b${name}\\b[^}]*\\}`).test(scanText)
+  );
+}
+
+function requireNamedExport(errors, text, rel, name) {
+  if (text !== null && !hasNamedExport(text, name)) {
+    errors.push(`${rel} missing named export: ${name}`);
+  }
 }
 
 function stringLiteralValue(raw) {
@@ -266,6 +352,11 @@ function addTelemetryChecks(dir, errors) {
   const layout = readIf(path.join(dir, "src/app/layout.tsx.tmpl"));
 
   if (events !== null) {
+    requireNamedExport(errors, events, "src/lib/telemetry/events.ts", "LIFECYCLE_EVENTS");
+    requireNamedExport(errors, events, "src/lib/telemetry/events.ts", "SUPPLY_CHAIN_STAGES");
+    requireNamedExport(errors, events, "src/lib/telemetry/events.ts", "ACTIVATION_DEFINITION");
+    requireNamedExport(errors, events, "src/lib/telemetry/events.ts", "deriveActivationDefinition");
+
     const lifecycleEvents = parseConstStringArray(events, "LIFECYCLE_EVENTS");
     if (!sameArray(lifecycleEvents, CANONICAL_EVENTS)) {
       errors.push(`event vocabulary drift: LIFECYCLE_EVENTS must be exactly ${CANONICAL_EVENTS.join(", ")}`);
@@ -309,6 +400,7 @@ function addTelemetryChecks(dir, errors) {
   }
 
   if (sink !== null) {
+    requireNamedExport(errors, sink, "src/lib/telemetry/sink.ts", "resolveTelemetrySink");
     if (countMatches(sink, /function\s+resolveTelemetrySink\b/g) !== 1) {
       errors.push("telemetry sink must expose exactly one resolveTelemetrySink function");
     }
@@ -317,6 +409,7 @@ function addTelemetryChecks(dir, errors) {
   }
 
   if (track !== null) {
+    requireNamedExport(errors, track, "src/lib/telemetry/track.ts", "track");
     if (!/event\s*:\s*LifecycleEvent/.test(track)) {
       errors.push("track.ts event parameter must derive from LifecycleEvent");
     }
@@ -329,6 +422,7 @@ function addTelemetryChecks(dir, errors) {
   }
 
   if (chain !== null) {
+    requireNamedExport(errors, chain, "src/lib/telemetry/chain.ts", "evaluateTelemetryChain");
     if (!/SUPPLY_CHAIN_STAGES/.test(chain) || !/brokenAtStage/.test(chain) || !/failureEvent/.test(chain)) {
       errors.push("chain helper missing broken-chain failure event");
     }

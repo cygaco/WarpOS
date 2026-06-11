@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-11T22:13:55.468Z",
+  "generatedAt": "2026-06-11T22:22:17.905Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.15.4",
   "migrations": [],
@@ -2112,8 +2112,8 @@
       "owner": "framework",
       "managed": true,
       "source": null,
-      "sha256": "e0be7937b15f8603e63497f3ae5bee7f3c03a22fb214ce3f7b137e902cf945f2",
-      "installedSha": "e0be7937b15f8603e63497f3ae5bee7f3c03a22fb214ce3f7b137e902cf945f2"
+      "sha256": "c403a850acfc7c78020279b5ae246f85eea6e37499c23ce56b6d38b1a1501f7e",
+      "installedSha": "c403a850acfc7c78020279b5ae246f85eea6e37499c23ce56b6d38b1a1501f7e"
     },
     "tests/regression/S-PF-01/telemetry-chain.test.js": {
       "owner": "framework",
@@ -6592,8 +6592,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/scaffold-coverage-scan.js",
-      "sha256": "0500624616eede247d56d362b9bab3930276a8cec2f1d095cf7685394e2eaf37",
-      "installedSha": "0500624616eede247d56d362b9bab3930276a8cec2f1d095cf7685394e2eaf37"
+      "sha256": "83980765322ad0c98acd11e2bdb812a7fcdc46e5ecc59bdb63bb82a643f0fd46",
+      "installedSha": "83980765322ad0c98acd11e2bdb812a7fcdc46e5ecc59bdb63bb82a643f0fd46"
     },
     "scripts/checks/scan-coverage.allowlist.json": {
       "owner": "framework",

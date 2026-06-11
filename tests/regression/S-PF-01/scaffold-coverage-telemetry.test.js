@@ -190,6 +190,82 @@ test("event-name-drift-fixture-fails", () => {
   }
 });
 
+test("commented-event-fixture-fails", () => {
+  const dir = fixture((fx) => {
+    const rel = "src/lib/telemetry/events.ts.tmpl";
+    write(rel, read(rel, fx).replace('  "checkout",', '  // "checkout",'), fx);
+  });
+  try {
+    expectError(dir, /event vocabulary drift/);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("commented-stage-fixture-fails", () => {
+  const dir = fixture((fx) => {
+    const rel = "src/lib/telemetry/events.ts.tmpl";
+    write(rel, read(rel, fx).replace('  "observed",', '  // "observed",'), fx);
+  });
+  try {
+    expectError(dir, /chain stage vocabulary drift/);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("missing-track-export-fixture-fails", () => {
+  const dir = fixture((fx) => {
+    const rel = "src/lib/telemetry/track.ts.tmpl";
+    write(rel, read(rel, fx).replace("export function track", "function track"), fx);
+  });
+  try {
+    expectError(dir, /src\/lib\/telemetry\/track\.ts missing named export: track/);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("missing-sink-export-fixture-fails", () => {
+  const dir = fixture((fx) => {
+    const rel = "src/lib/telemetry/sink.ts.tmpl";
+    write(
+      rel,
+      read(rel, fx).replace("export function resolveTelemetrySink", "function resolveTelemetrySink"),
+      fx,
+    );
+  });
+  try {
+    expectError(dir, /src\/lib\/telemetry\/sink\.ts missing named export: resolveTelemetrySink/);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("dynamic-import-drift-fixture-fails", () => {
+  const dir = fixture((fx) => {
+    const rel = "src/app/page.tsx.tmpl";
+    write(rel, read(rel, fx) + "\nawait import(\"missing-package\");\n", fx);
+  });
+  try {
+    expectError(dir, /import->dep drift: src\/app\/page\.tsx\.tmpl imports "missing-package"/);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("require-drift-fixture-fails", () => {
+  const dir = fixture((fx) => {
+    const rel = "src/app/page.tsx.tmpl";
+    write(rel, read(rel, fx) + "\nconst missing = require(\"missing-package\");\n", fx);
+  });
+  try {
+    expectError(dir, /import->dep drift: src\/app\/page\.tsx\.tmpl imports "missing-package"/);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 test("unfilled-activation-fixture-fails", () => {
   const dir = fixture((fx) => {
     const rel = "src/lib/telemetry/events.ts.tmpl";
