@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-11T07:48:21.640Z",
+  "generatedAt": "2026-06-11T08:00:08.840Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.15.4",
   "migrations": [],
@@ -1911,12 +1911,26 @@
       "sha256": "3a8a63d66d4cd8110784ded836dfb3132821f0ebbd60f04f3b0390ca6f582021",
       "installedSha": "3a8a63d66d4cd8110784ded836dfb3132821f0ebbd60f04f3b0390ca6f582021"
     },
+    "tests/regression/SP-20260611-002/team-cwd-scope-under-project.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": null,
+      "sha256": "8672514fa62183eb485e0b84cdb1b78100f5575e9b266880a307b6d17d21aef0",
+      "installedSha": "8672514fa62183eb485e0b84cdb1b78100f5575e9b266880a307b6d17d21aef0"
+    },
     "tests/regression/SP-20260611-002/team-guard-verify.test.js": {
       "owner": "framework",
       "managed": true,
       "source": null,
       "sha256": "58b2ded99e5df18923f333d6dc8960fba82ab8355227b3d3cc2eb814d7a6ace7",
       "installedSha": "58b2ded99e5df18923f333d6dc8960fba82ab8355227b3d3cc2eb814d7a6ace7"
+    },
+    "tests/regression/SP-20260611-002/teardown-projectdir-anchor.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": null,
+      "sha256": "c4fb3c79dc2c8976dadde868eb574d0f4b13733a9a8a58cb306c00b77acccc6e",
+      "installedSha": "c4fb3c79dc2c8976dadde868eb574d0f4b13733a9a8a58cb306c00b77acccc6e"
     },
     "tests/regression/SP-20260611-002/turbo-auth-monotonic.test.js": {
       "owner": "framework",
@@ -5114,8 +5128,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/mode-lifecycle-guard.js",
-      "sha256": "552a934a4f48ee0d9b01aad90b20a6a16d9db9cce59446e63e2e93d32fb8ef33",
-      "installedSha": "552a934a4f48ee0d9b01aad90b20a6a16d9db9cce59446e63e2e93d32fb8ef33"
+      "sha256": "69c59e3780247ffdd1ab145959b07ec3153d0a142343a06be7666f72acc410d8",
+      "installedSha": "69c59e3780247ffdd1ab145959b07ec3153d0a142343a06be7666f72acc410d8"
     },
     "scripts/hooks/ownership-guard.js": {
       "owner": "framework",
@@ -5233,8 +5247,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/session-end-team-teardown.js",
-      "sha256": "69a634b241a35be21e5a60a5c87cdfdb61cc9b1aedc6ad6906bc23f370e67386",
-      "installedSha": "69a634b241a35be21e5a60a5c87cdfdb61cc9b1aedc6ad6906bc23f370e67386"
+      "sha256": "b11583be2d475742a1e5186ef9a827fc2f6928c44ebabe103670c56e6ad48036",
+      "installedSha": "b11583be2d475742a1e5186ef9a827fc2f6928c44ebabe103670c56e6ad48036"
     },
     "scripts/hooks/session-start-teaminit.test.js": {
       "owner": "framework",
