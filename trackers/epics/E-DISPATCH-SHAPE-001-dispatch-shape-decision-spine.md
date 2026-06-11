@@ -112,6 +112,11 @@
 - Classification: scope-addition
 - Provenance: 2026-06-11 · source: operator (in-session directive) · <!-- fold:d1fc756f -->
 
+### 2026-06-11 — fold (clarification) — source: operator (in-session FYI)
+- Folded: AUTH-CHECK SCOPING — MACHINE-LEVEL ONCE, PROJECT-LEVEL CHEAP (operator-flagged 2026-06-11, refines folds 4ec869e3 + 110ed873): auth checks likely only need to run ONCE PER MACHINE, not per project — to be confirmed at design time. Evidence as of 2026-06-11: provider auth state is machine-scoped (~/.codex/auth.json, ~/.gemini/oauth_creds.json, agy under %LOCALAPPDATA%) and is shared by every project on the machine. BUT two things ARE project-scoped and must stay in the per-project check: (a) workspace TRUST (gemini GEMINI_CLI_TRUST_WORKSPACE / trusted-folders; agy config.toml [projects] trust_level rows — verified: WarpOS + every product dir has its own row); (b) per-project env-key overrides (.env.local OPENAI_API_KEY etc.) which can silently flip a project's effective billing surface away from the machine-level login. Design shape to evaluate: a MACHINE-LEVEL auth-posture registry (e.g. ~/.warpos/auth-posture.json) caching per-provider verified auth-mode verdicts with a TTL + invalidation triggers (auth.json mtime change, codex login event, quota_exhausted with auth_mode mismatch), so scaffold/install/update gates READ the cached machine verdict (fast, no probe) and only re-probe on stale/invalidated; the per-project slice checks trust + env-override divergence only (cheap, every install). Per the single-authoritative-writer learning (2026-06-09): ONE writer owns the machine registry (the probe/refresh path), gates are readers. Enforcer addition: a planted .env.local-override fixture must flag 'project billing surface diverges from machine login' at the project gate.
+- Classification: clarification
+- Provenance: 2026-06-11 · source: operator (in-session FYI) · <!-- fold:dff8cad7 -->
+
 ## Evidence log
 ### 2026-06-10 — Epic plan authored
 - Evidence type: File changed.
