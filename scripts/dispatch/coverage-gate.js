@@ -45,6 +45,48 @@ function isBackedRecord(r) {
   return !!(r && typeof r.dispatch_id === "string" && r.dispatch_id && typeof r.cmdline_checksum === "string" && r.cmdline_checksum);
 }
 
+/**
+ * A waiver is PROVENANCED iff it carries an accountable trail, not just free text
+ * (R-5 AC-5.1). A provenance-free `{ reason: "..." }` waiver is REJECTED the same
+ * way an unbacked coverage record is — a silenced role must name WHO silenced it,
+ * WHEN, and against WHAT auditable trail, so the flip-to-blocking gate's escape is
+ * accountable instead of a free-text loophole. Required:
+ *   - reason     : non-empty free text (WHY the role is skipped),
+ *   - operator   : an operator / source id (WHO authorized the waiver) — accepted
+ *                  under `operator` or `source` (either names the authorizer),
+ *   - ts         : a timestamp (WHEN), and
+ *   - a backing trail: a `record` / `dispatch_id` / `ticket` / `audit_ref` — SOME
+ *                  pointer to where the waiver is recorded (the auditable trail).
+ * Returns { ok, provenance?, missing[] } — `provenance` is the normalized,
+ * scan-surfaceable shape (so AC-5.2 can render the silenced role at /scan).
+ */
+function waiverProvenance(waiver) {
+  const w = waiver && typeof waiver === "object" ? waiver : {};
+  const reason = typeof w.reason === "string" ? w.reason.trim() : "";
+  const operator =
+    (typeof w.operator === "string" && w.operator.trim()) ||
+    (typeof w.source === "string" && w.source.trim()) ||
+    "";
+  const ts = typeof w.ts === "string" && w.ts.trim() ? w.ts.trim() : "";
+  // The auditable trail: any one of these names where the waiver is recorded.
+  const trail =
+    (typeof w.record === "string" && w.record.trim()) ||
+    (typeof w.dispatch_id === "string" && w.dispatch_id.trim()) ||
+    (typeof w.ticket === "string" && w.ticket.trim()) ||
+    (typeof w.audit_ref === "string" && w.audit_ref.trim()) ||
+    "";
+  const missing = [];
+  if (!reason) missing.push("reason");
+  if (!operator) missing.push("operator/source");
+  if (!ts) missing.push("ts");
+  if (!trail) missing.push("record/dispatch_id/ticket/audit_ref");
+  return {
+    ok: missing.length === 0,
+    missing,
+    provenance: missing.length === 0 ? { reason, operator, ts, trail } : null,
+  };
+}
+
 // §17.4 "a record's existence ≠ covered" — a coverage record must prove it produced
 // SOMETHING: a non-empty output_digest (the universal proof for reviewer/skill/build
 // stdout) OR at least one artifacts[] entry carrying a digest. A backed ok:true
@@ -106,14 +148,21 @@ function evaluate(input) {
     }
 
     // Waiver: a role may be explicitly, AUDITABLY excused (a known skip / tolerated
-    // failure) instead of silently missing — but ONLY with a reason, so the
-    // flip-to-blocking gate has an accountable escape, never a silent loophole.
+    // failure) instead of silently missing — but ONLY with full PROVENANCE (R-5
+    // AC-5.1): WHO (operator/source), WHEN (ts), WHY (reason), and an auditable
+    // trail (record/dispatch_id/ticket/audit_ref). A provenance-free free-text
+    // waiver is REJECTED the same way an unbacked coverage record is, so the
+    // flip-to-blocking gate's escape is accountable, never a silent loophole. The
+    // honored waiver's provenance is SURFACED in `waived[]` (AC-5.2) so a silenced
+    // role is VISIBLE at /scan, not hidden.
     if (exp.waiver) {
-      const reason = exp.waiver && typeof exp.waiver.reason === "string" ? exp.waiver.reason.trim() : "";
-      if (!reason) {
-        violations.push(`role '${role}' is waived but the waiver carries no reason — an unauditable waiver is REJECTED (name why the role is skipped).`);
+      const p = waiverProvenance(exp.waiver);
+      if (!p.ok) {
+        violations.push(
+          `role '${role}' is waived but the waiver lacks provenance (missing: ${p.missing.join(", ")}) — an unaccountable waiver is REJECTED. A waiver must name WHO (operator/source), WHEN (ts), WHY (reason), and an auditable trail (record/dispatch_id/ticket/audit_ref).`,
+        );
       } else {
-        waived.push({ role, reason });
+        waived.push({ role, reason: p.provenance.reason, provenance: p.provenance });
       }
       continue;
     }
@@ -222,7 +271,7 @@ function parseExpect(spec) {
     });
 }
 
-module.exports = { evaluate, readLedger, isBackedRecord, hasArtifactProof, sha256File, parseExpect };
+module.exports = { evaluate, readLedger, isBackedRecord, hasArtifactProof, waiverProvenance, sha256File, parseExpect };
 
 // ── CLI ─────────────────────────────────────────────────────
 if (require.main === module) {

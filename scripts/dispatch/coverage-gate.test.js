@@ -107,6 +107,12 @@ h.violation("a record with no argv_schema_version is stale/backfilled (rejected)
 h.violation("a waiver with no reason is rejected (unauditable)", () =>
   evaluate({ runId: RUN, records: [], expected: [{ role: "security-reviewer", waiver: {} }] }));
 
+// ── PLANTED (R-5 AC-5.1): a free-text reason WITHOUT provenance is rejected ──
+// (provenance — operator/source + ts + auditable trail — is now REQUIRED; a
+// reason-only waiver is the loophole this sprint closes.)
+h.violation("a reason-only waiver (no operator/ts/trail) is rejected (provenance required)", () =>
+  evaluate({ runId: RUN, records: [], expected: [{ role: "security-reviewer", waiver: { reason: "skip it" } }] }));
+
 // ── PLANTED (§17.4): a named artifact the record does not carry ──
 h.violation("a named artifact with no matching record digest is flagged", () =>
   evaluate({
@@ -115,12 +121,23 @@ h.violation("a named artifact with no matching record digest is flagged", () =>
     expected: [{ role: "frontend-builder", artifact: "runtime/x/out.md" }],
   }));
 
-// ── known-answer (§17.4): an AUDITABLE waiver (reason given) → waived, not missing ──
-h.pass("a waiver WITH a reason covers the role as waived", () =>
+// ── known-answer (§17.4 + R-5 AC-5.1): a PROVENANCED waiver → waived, not missing ──
+// (operator/source + ts + auditable trail required; reason alone no longer suffices.)
+h.pass("a waiver WITH full provenance covers the role as waived", () =>
   evaluate({
     runId: RUN,
     records: [],
-    expected: [{ role: "security-reviewer", waiver: { reason: "no UI this sprint; design-quality N/A" } }],
+    expected: [
+      {
+        role: "security-reviewer",
+        waiver: {
+          reason: "no UI this sprint; design-quality N/A",
+          operator: "alex",
+          ts: "2026-06-11T12:00:00Z",
+          ticket: "T-20260611-318",
+        },
+      },
+    ],
   }));
 
 // ── known-answer (§17.4): a named artifact whose digest is in the record → covered ──
