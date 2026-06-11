@@ -14,7 +14,7 @@ This is an **orchestration skill** — it chains existing skills in dependency o
 
 - `--fast` — **minimum-unit wrap to a recoverable, zero-progress-loss state.** SKIPS the cognitive-maintenance chain (Phases 1–4: `/learn:deep`, `/beta:mine`, `/sleep:*`, integrators) entirely and runs only the recoverability core: Phase 5 (TRACKER green — light reconcile, full re-narration may defer to the DUMP), Phase 6 (DUMP handoff — the load-bearing artifact), Phase 7 (commit EVERYTHING so nothing is lost; land/merge only if clean — see Fast mode below), Phase 8–10 (branch/teardown/report, best-effort). Use when you want to stop NOW and have the next session pick up with no loss. See **## Fast mode** for the exact contract.
 - `--quick` — use `/sleep:quick` (NREM + cleanup, ~5 min) instead of `/sleep:deep` (~15-30 min). Default: deep. (Ignored under `--fast`, which skips sleep entirely.)
-- `--no-push` — stop at a LOCAL commit+merge; do not push (use when push isn't operator-authorized this session).
+- `--no-push` — stop at a LOCAL commit+merge; do not push (use when the operator has not authorized a push in the current, ending session).
 - `--keep-teams` — skip the team-teardown phase (Phase 9).
 - `--branch <name>` — name for the fresh post-land branch. Default: `session/<YYYY-MM-DD>` (or `work/<YYYY-MM-DD>`).
 
@@ -61,12 +61,14 @@ Both run AFTER sleep (Phase 3) so they act on the **consolidated + reviewed** se
 3. **Why fail-closed (unlike the cleanup phases):** a red/stale tracker at session end is the exact "state drifts silently from the contract" / "felt-done-but-wasn't" failure the enforced tracker exists to prevent — and the next session resumes from it. If the validator cannot be made green, **STOP and surface it**; do NOT proceed to Handoff/Land on a lying tracker. (This is the PROACTIVE counterpart to the `scripts/hooks/tracker-completion-gate.js` Stop hook, which catches a red tracker at the actual session Stop — reconcile here so that hook stays silent.)
 
 ### Phase 6 — Handoff (`/session:dump`)
-Run `/session:dump` to write a fresh prescriptive `DUMP.md` at project root. MUST include: (a) what shipped this session (commits, verified), (b) the **next-session pickup** (ranked, role-aware — consult `director-of-product`/`product-lead` for the top pick), (c) **immediate issues found** this session, (d) anti-instructions / coordination lessons, (e) state + spend notes. `DUMP.md` is gitignored/local — it does not get committed; it's read once by the next session.
+Run `/session:dump` to write a fresh prescriptive `DUMP.md` at project root. MUST include: (a) what shipped in the ending session (commits + ISO date, verified), (b) the **next-session pickup** (ranked, role-aware — consult `director-of-product`/`product-lead` for the top pick), (c) **immediate issues found** during the ending session, (d) anti-instructions / coordination lessons, (e) state + spend notes. `DUMP.md` is gitignored/local — it does not get committed; it's read once by the next session.
+
+> **Anti-deixis writing discipline (S-10, applies to the DUMP content):** the reader's "this session" is NOT the writer's — a bare deictic written today reads as a present-tense instruction tomorrow. In the DUMP: anchor every status to an ISO date and (where one exists) a commit hash; give every imperative an explicit actor and scope ("the next session must X", "do NOT merge SP-X to main until <condition>"), never a bare "in this session, do not execute" / "don't do this now"; write negatives past-tense + dated ("push authorization was NOT given in the 2026-06-11 session"), not "no push this session". Same convention as the tracker's `session-relative-language` advisory.
 
 ### Phase 7 — Land (`/commit:land`)
 Regenerate BOTH manifests first if any hash-tracked file changed (`node scripts/generate-framework-manifest.js` + `node scripts/warpos/manifest/build.js`) — else BC-02/BC-05 go red. Then run `/commit:land` (commit → push branch → ff-merge to default → push default).
 
-> **AUTONOMY CEILING (hard):** pushing to remote requires operator authorization (CLAUDE.md `## Autonomy`). `/session:end` does NOT auto-push unless the operator has authorized a push this session OR turbo `push-to-main` scope is active. With `--no-push` (or no authorization), stop at the LOCAL commit + ff-merge to `main` and surface "ready to push — confirm." NEVER force-push; never bypass the safety floor.
+> **AUTONOMY CEILING (hard):** pushing to remote requires operator authorization (CLAUDE.md `## Autonomy`). `/session:end` does NOT auto-push unless the operator has authorized a push in the current session OR turbo `push-to-main` scope is active. With `--no-push` (or no authorization), stop at the LOCAL commit + ff-merge to `main` and surface "ready to push — confirm." NEVER force-push; never bypass the safety floor.
 
 ### Phase 8 — Fresh branch
 After the land, create a clean working branch off `main` so the next session doesn't start on a dirty/merged branch:

@@ -47,6 +47,15 @@ Required sections, in this order:
 6. **Anti-instructions** — what NOT to do. Deferred workstreams, re-investigations to avoid, parked roadmap items. Without this section the fresh session will redo work you already settled.
 7. **Escape hatch** — what to do if reality diverges from the document (trust the repo; flag the divergence in `assumptions.unsafe`; never paper over drift).
 
+### Step 3.5: Anti-deixis discipline (mandatory — the reader's "this session" is not yours)
+
+The DUMP is read by a DIFFERENT session, later. A bare session-relative deictic written today reads as a present-tense fact or instruction in the reader's frame — "in this session, do not execute" is ambiguous about WHOSE session, and "no push this session" reads as a standing prohibition. Rules (same convention as the tracker's S-10 `session-relative-language` advisory):
+
+- **Anchor every status** to an ISO date (`YYYY-MM-DD`) and, where one exists, a commit hash — "merged 2026-06-11 @58eefc2", not "merged this session".
+- **Give every imperative an explicit actor + scope/condition** — "the fresh session must verify X before Y", "do NOT merge SP-X to main until <condition> PASSes" — never a bare "do not execute" or "don't do this now".
+- **Write negatives past-tense + dated** — "push authorization was NOT given in the 2026-06-11 session", not "no push authorization this session".
+- **Banned unanchored:** bare `this session`, `next session` as a subject without "the next session reading this", `currently`, bare `now`, `today`.
+
 ### Step 4: Verbatim discipline
 
 When the fresh session will feed text into a schema-validated skill (e.g. `source_request_verbatim` for `/sprint:plan`), preserve the exact string in a fenced code block. **Do not paraphrase, shorten, or "clean up" the user's wording.** The fresh session must be able to copy-paste verbatim.
@@ -70,6 +79,7 @@ When the dump references project paths, use `paths.X` keys (e.g. `paths.sprintAc
 - **Hand-waving scope.** "Plan a sprint about X" is useless. Either include the full verbatim payload + structured fields, or don't include the item at all.
 - **Forgetting anti-instructions.** A fresh session without anti-instructions will re-investigate everything you already settled. Always include "what NOT to do."
 - **Paraphrased verbatims.** The user's exact wording carries semantic load. If you rewrite it, schema-driven skills downstream will record the rewrite as the "original request" — a quiet integrity loss.
+- **Ambiguous deixis.** "In this session, do not execute X" — whose session? The writer's frame and the reader's frame differ, and the reader resolves "this session" to ITSELF. Anchor to dates/commits and name the actor per Step 3.5; an unanchored deictic in a prescriptive handoff is a defect, not style.
 
 ## Relationship to other session skills
 
