@@ -1,0 +1,56 @@
+schema: warpos/sprint/ticket/v1
+id: T-20260611-324
+title: "W1-fold #1 (BLOCKER): session-end-team-teardown.js trusts event.cwd as projectDir → require()-redirection; anchor projectDir to the hook's repo root, canonicalize, event.cwd corroborating-only"
+type: bug
+status: ready_for_execution
+sprint: SP-20260611-002
+created_at: "2026-06-11T07:55:00.000Z"
+updated_at: "2026-06-11T07:55:00.000Z"
+owner: null
+owner_agent: alpha
+risk_level: high
+unit_type: security
+domain: null
+approval_required: false
+approval_state: not_required
+source_request: "W1 GPT 2nd-pass FAIL (E-LIFECYCLE-001 §H owed lane re-review, dispatched 2026-06-11 by epsilon). Folded into SP-20260611-002 per β DECIDE B 0.86 (w1-2ndpass-fold): one security-builder unit on the integrated branch, post-merge, pre-gauntlet."
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260611-0074.yaml"
+linked_requirements: []
+linked_high_level_story: null
+linked_granular_story: null
+linked_prd: null
+linked_copy: []
+linked_inputs: []
+linked_trace: ["runtime/notes/elc-gpt2p-batch-verdicts-2026-06-11.md"]
+linked_acceptance_criteria: []
+linked_issues: []
+linked_decisions: []
+linked_external_services: []
+linked_files:
+  - scripts/hooks/session-end-team-teardown.js
+linked_tests: []
+linked_commits: []
+linked_prs: []
+linked_release: null
+description: |
+  W1 GPT 2nd-pass BLOCKER. session-end-team-teardown.js:35 trusts `event.cwd` as
+  `projectDir`, then `require(<projectDir>/scripts/teams/lifecycle.js)` from that path and
+  calls `teardown`. If CLAUDE_PROJECT_DIR is absent or attacker-controlled, hook input can
+  redirect MODULE LOADING + teardown requests to a foreign project (require-redirection).
+acceptance_criteria:
+  - "AC-324.1: projectDir is ANCHORED to the hook's own repo root (derived from __dirname / the hook file location), canonicalized (realpath); event.cwd is treated as CORROBORATING context only, never as the require() base."
+  - "AC-324.2: an exploit fixture supplying a foreign/attacker event.cwd (with CLAUDE_PROJECT_DIR absent) must NOT cause require() or teardown to target the foreign path — the hook resolves to its own repo root. Fixture namespaced under tests/regression/SP-20260611-002/."
+  - "AC-324.3: the legitimate same-project teardown path still works (no happy-path regression); fail-open preserved (a teardown-request failure never throws/blocks session end)."
+non_goals:
+  - "Settings-wiring of the hook into settings.json — OUT of scope (separate α decision per β constraint #3), NOT this ticket."
+  - "Signing/auth marker infrastructure (β constraint #4)."
+implementation_notes: "β DECIDE B 0.86 fold. Path-anchoring ONLY. Re-reviewed in the integrated gauntlet by the security lane PINNED to GPT (--provider openai), the same family that found it (anti-false-green precedent L-2026-06-11-rereview-must-match-prior-fail-family)."
+qa_notes: "Binding re-review on GPT (the finding's family) required before clear."
+redteam_notes: ""
+trace_notes: "W1 lane (S-LC-03/04/05) GPT 2nd-pass, runtime/notes/elc-gpt2p-batch-verdicts-2026-06-11.md (BLOCKER)."
+blocked_by: []
+blocks: []
+fix_attempts: []
+ralph_progress: null
+completion_evidence: []
+reopen_history: []
