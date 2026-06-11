@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-11T05:09:04.498Z",
+  "generatedAt": "2026-06-11T05:15:49.108Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.15.4",
   "migrations": [],
@@ -15159,6 +15159,10 @@
       "owner": "runtime",
       "managed": false
     },
+    ".claude/project/sprint/full-reports/SP-20260611-002/halt-2026-06-11T05-11-00-940Z.md": {
+      "owner": "runtime",
+      "managed": false
+    },
     ".claude/project/sprint/full-reports/SP-20260611-001/beta-boundaries.json": {
       "owner": "runtime",
       "managed": false
@@ -17659,6 +17663,14 @@
       "owner": "runtime",
       "managed": false
     },
+    ".claude/project/sprint/checkpoints/SP-20260611-002-0007.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/checkpoints/SP-20260611-002-0008.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
     ".claude/project/sprint/approvals/AP-20260512-001.yaml": {
       "owner": "runtime",
       "managed": false
@@ -18476,8 +18488,8 @@
       "managed": true,
       "source": ".claude/commands/session/end.md",
       "kind": "md",
-      "sha256": "52bd62f3fdc4d44d63b6412c90cff2cbe4e4af2a63da8074d3148b93ca0a69d0",
-      "installedSha": "52bd62f3fdc4d44d63b6412c90cff2cbe4e4af2a63da8074d3148b93ca0a69d0"
+      "sha256": "7e17f334c0681a83c0b0eb71ac92c593df51b5541412cdc0c38a6b9c7d467a50",
+      "installedSha": "7e17f334c0681a83c0b0eb71ac92c593df51b5541412cdc0c38a6b9c7d467a50"
     },
     ".claude/commands/session/handoff.md": {
       "owner": "framework",
@@ -18516,8 +18528,8 @@
       "managed": true,
       "source": ".claude/commands/session/resume.md",
       "kind": "md",
-      "sha256": "42a20cdacdc27efa1aa8f85c8e5db6a50289633050c7e62f49ee361c15adf3f0",
-      "installedSha": "42a20cdacdc27efa1aa8f85c8e5db6a50289633050c7e62f49ee361c15adf3f0"
+      "sha256": "af246aa554c7b09cbd395b5f5b506f8a7ae928ad71e62d20643588a7c595f46b",
+      "installedSha": "af246aa554c7b09cbd395b5f5b506f8a7ae928ad71e62d20643588a7c595f46b"
     },
     ".claude/commands/session/takenotes.md": {
       "owner": "framework",

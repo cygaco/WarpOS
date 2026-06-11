@@ -2,12 +2,12 @@ schema: warpos/sprint/ticket/v1
 id: T-20260611-319
 title: "WS-G3b provider-tier truthfulness ONE TICKET (R-6, findings #15,#16,#21): literal verdict-matrix AC cells — t3+t1-down+readable→tier_short RED, corrupt-config→fail-closed, envelope ok mirrors verdict"
 type: bug
-status: ready_for_execution
+status: in_progress
 sprint: SP-20260611-002
 created_at: "2026-06-11T04:50:52.278Z"
-updated_at: "2026-06-11T04:51:02.068Z"
+updated_at: "2026-06-11T05:11:00.792Z"
 owner: null
-owner_agent: null
+owner_agent: alpha
 risk_level: high
 unit_type: null
 domain: null

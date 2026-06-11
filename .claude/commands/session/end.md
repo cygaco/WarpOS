@@ -1,5 +1,5 @@
 ---
-description: Full session wrap-up — cognitive maintenance (learn/mine/sleep → integrate learnings + β recs) → reconcile + validate TRACKER.md (fail-closed) → fresh handoff → land to main → fresh branch → tear down teams. The one "we're done, tee up next session" command.
+description: Full session wrap-up — cognitive maintenance (learn/mine/sleep → integrate learnings + β recs) → reconcile + validate TRACKER.md (fail-closed) → fresh handoff → land to main → fresh branch → tear down teams. The one "we're done, tee up next session" command. Use --fast to skip the cognitive chain and wrap to a recoverable, zero-loss state in the fewest steps.
 ---
 
 # /session:end — Full Session Wrap-Up
@@ -10,14 +10,33 @@ This is an **orchestration skill** — it chains existing skills in dependency o
 
 ## Input
 
-`/session:end [--quick] [--no-push] [--keep-teams] [--branch <name>]`
+`/session:end [--fast] [--quick] [--no-push] [--keep-teams] [--branch <name>]`
 
-- `--quick` — use `/sleep:quick` (NREM + cleanup, ~5 min) instead of `/sleep:deep` (~15-30 min). Default: deep.
+- `--fast` — **minimum-unit wrap to a recoverable, zero-progress-loss state.** SKIPS the cognitive-maintenance chain (Phases 1–4: `/learn:deep`, `/beta:mine`, `/sleep:*`, integrators) entirely and runs only the recoverability core: Phase 5 (TRACKER green — light reconcile, full re-narration may defer to the DUMP), Phase 6 (DUMP handoff — the load-bearing artifact), Phase 7 (commit EVERYTHING so nothing is lost; land/merge only if clean — see Fast mode below), Phase 8–10 (branch/teardown/report, best-effort). Use when you want to stop NOW and have the next session pick up with no loss. See **## Fast mode** for the exact contract.
+- `--quick` — use `/sleep:quick` (NREM + cleanup, ~5 min) instead of `/sleep:deep` (~15-30 min). Default: deep. (Ignored under `--fast`, which skips sleep entirely.)
 - `--no-push` — stop at a LOCAL commit+merge; do not push (use when push isn't operator-authorized this session).
 - `--keep-teams` — skip the team-teardown phase (Phase 9).
 - `--branch <name>` — name for the fresh post-land branch. Default: `session/<YYYY-MM-DD>` (or `work/<YYYY-MM-DD>`).
 
+## Fast mode (`--fast`) — the recoverability core
+
+The contract: **reach a state the next session can resume from with ZERO progress loss, in the fewest steps.** Skip everything that's about *learning from* the session; keep everything that's about *not losing* it.
+
+| Phase | `--fast` |
+|---|---|
+| 1–4 cognitive (learn/mine/sleep/integrate) | **SKIP** (note "deferred to a full `/session:end`" in the report; capture any one-line durable insight as a memory + an `/enforcement:log` gap instead of the full chain) |
+| 5 TRACKER reconcile (fail-CLOSED) | **KEEP** — `node scripts/trackers/validate.js` MUST exit 0. Light reconcile only: if green and not *lying*, the rich per-item state can live in the DUMP (Phase 6) instead of a full header re-narration. If RED, fix to green before proceeding (still fail-closed). |
+| 6 DUMP handoff | **KEEP — this is the load-bearing artifact.** It must carry the next-action, in-flight state, and any operating-model/directive changes so a fresh session needs nothing else. |
+| 7 Land | **KEEP commit (no loss); CONDITIONAL merge.** Commit ALL working state so nothing is lost. Then: **merge/land to `main` ONLY if the work is genuinely done** (e.g. a sprint whose gauntlet is GREEN). If a sprint is mid-fix-cycle / gauntlet-RED / otherwise unfinished, **commit + push the working branch for backup but do NOT merge to main** — landing unfinished work is a progress-*corruption*, not progress-saving. Surface the judgment. |
+| 8 Fresh branch | **CONDITIONAL.** If the work landed to main, branch fresh off main. If the work is intentionally unmerged (Phase 7 conditional), **STAY on the working branch** — it IS the resume point; forcing a fresh branch off a stale main just makes the next session switch back. |
+| 9 Teardown | **KEEP, best-effort.** `shutdown_request` all members → `TeamDelete`. A straggler that won't drain (e.g. an ε mid-blocking-subprocess) is acceptable — the next session's `/mode:sprint` step 1.75 reconciles stale members. Don't poll indefinitely. |
+| 10 Report | **KEEP.** State what was skipped (cognitive chain), the TRACKER result, the DUMP next-pick, what committed/pushed/landed-or-not (with the merge judgment), teardown state, and "clear to start fresh." |
+
+`--fast` still honors every hard ceiling (push autonomy-gate, safety floor, no force-push) and stays fail-closed on Phase 5.
+
 ## Procedure
+
+> **`--fast`?** Skip Phases 1–4 entirely and run only Phases 5–10 per the **## Fast mode** table above (commit-everything + DUMP + tracker-green = recoverable, no loss). The phases below are the FULL flow.
 
 ### Phase 1 — Extract learnings (`/learn:deep`)
 Run `/learn:deep`. It mines THREE sources in parallel: conversation, event log, and retro/report files (oneshot retros + **sprint retros** `paths.sprintHistory` + **`_reports/`**). Subagents can't read the transcript — do the conversation phase yourself; fan out events + retros as read-only subagents that RETURN candidates (write centrally to avoid concurrent-write conflicts on `paths.learningsFile`).

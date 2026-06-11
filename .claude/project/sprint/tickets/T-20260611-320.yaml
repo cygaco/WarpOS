@@ -2,12 +2,12 @@ schema: warpos/sprint/ticket/v1
 id: T-20260611-320
 title: "WS-G3c enforcer enforce-paths (R-7/R-8/R-9, findings #17,#18,#19,#20,minor): planning-principles REAL --enforce + scan scope; check-ac-coverage --enforce fail-closed + shared legacy cutoff; hooks-coverage allowlist owner/expiry/reason schema (per-surface exploit isolation)"
 type: bug
-status: ready_for_execution
+status: in_progress
 sprint: SP-20260611-002
 created_at: "2026-06-11T04:50:52.331Z"
-updated_at: "2026-06-11T04:51:02.118Z"
+updated_at: "2026-06-11T05:11:00.828Z"
 owner: null
-owner_agent: null
+owner_agent: alpha
 risk_level: high
 unit_type: null
 domain: null
