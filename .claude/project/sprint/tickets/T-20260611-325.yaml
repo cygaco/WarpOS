@@ -2,10 +2,10 @@ schema: warpos/sprint/ticket/v1
 id: T-20260611-325
 title: "W1-fold #3 (MINOR): mode-lifecycle-guard.js:199 parent-containment cwd scoping (normProject.startsWith(c+'/')) mislabels a foreign/broad team as this project's — use exact project cwd or member-cwd-under-project"
 type: bug
-status: ready_for_execution
+status: done
 sprint: SP-20260611-002
 created_at: "2026-06-11T07:55:00.000Z"
-updated_at: "2026-06-11T07:55:00.000Z"
+updated_at: "2026-06-11T20:42:29.517Z"
 owner: null
 owner_agent: alpha
 risk_level: medium
@@ -21,7 +21,8 @@ linked_granular_story: null
 linked_prd: null
 linked_copy: []
 linked_inputs: []
-linked_trace: ["runtime/notes/elc-gpt2p-batch-verdicts-2026-06-11.md"]
+linked_trace:
+  - runtime/notes/elc-gpt2p-batch-verdicts-2026-06-11.md
 linked_acceptance_criteria: []
 linked_issues: []
 linked_decisions: []
@@ -29,7 +30,8 @@ linked_external_services: []
 linked_files:
   - scripts/hooks/mode-lifecycle-guard.js
 linked_tests: []
-linked_commits: []
+linked_commits:
+  - "6b21073"
 linked_prs: []
 linked_release: null
 description: |
@@ -49,7 +51,9 @@ acceptance_criteria:
 non_goals:
   - "Re-touching the AC-2.4 kill-switch attestation (already landed by G1/T-316)."
   - "Signing/auth marker infrastructure (β constraint #4)."
-implementation_notes: "β DECIDE B 0.86 fold. Same file as G1's AC-2.4 work — the fix unit runs on the INTEGRATED branch (post G1 merge), so it builds on G1's mode-lifecycle-guard.js, not the pre-SP-002 W1 version. Re-reviewed in the integrated gauntlet by the security lane PINNED to GPT (--provider openai)."
+implementation_notes: |
+  β DECIDE B 0.86 fold. Same file as G1's AC-2.4 work — the fix unit runs on the INTEGRATED branch (post G1 merge), so it builds on G1's mode-lifecycle-guard.js, not the pre-SP-002 W1 version. Re-reviewed in the integrated gauntlet by the security lane PINNED to GPT (--provider openai).
+  Closed during SP-20260611-002 release-boundary reconciliation after affected-lane re-review GREEN.
 qa_notes: "Binding re-review on GPT (the finding's family) required before clear."
 redteam_notes: ""
 trace_notes: "W1 lane (S-LC-03/04/05) GPT 2nd-pass, runtime/notes/elc-gpt2p-batch-verdicts-2026-06-11.md (MINOR)."
@@ -57,5 +61,6 @@ blocked_by: []
 blocks: []
 fix_attempts: []
 ralph_progress: null
-completion_evidence: []
+completion_evidence:
+  - "W1-fold fix completed before gauntlet; attempt-1 security lane confirmed T-325 fixed."
 reopen_history: []

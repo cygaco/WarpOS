@@ -2,10 +2,10 @@ schema: warpos/sprint/ticket/v1
 id: T-20260611-321
 title: "WS-G4 wrapper mode binding (R-10, finding #13) — BLOCKED-BY SP-20260611-001 WS-A merge: dispatch-agent.js + dispatch-claude.js pass live mode to validateDispatchForClass so mode_profiles/alpha_only_shapes enforce. RE-LOCATE call sites post-merge (SP-001 WS-A moved these lines — do NOT pin stale line numbers)"
 type: bug
-status: blocked
+status: deferred
 sprint: SP-20260611-002
 created_at: "2026-06-11T04:51:01.867Z"
-updated_at: "2026-06-11T04:51:18.178Z"
+updated_at: "2026-06-11T20:42:56.854Z"
 owner: null
 owner_agent: null
 risk_level: medium
@@ -36,7 +36,10 @@ user_value: ""
 business_value: ""
 acceptance_criteria: []
 non_goals: []
-implementation_notes: "BLOCKED-BY SP-20260611-001 WS-A merge (file overlap on dispatch wrappers). Note: WS-A is NOW MERGED (6a57aac) — this can move to ready_for_execution, but the builder MUST re-locate validateDispatch call sites against the merged HEAD, not the stale finding line numbers (dispatch-agent.js:508/dispatch-claude.js:315 have moved post-merge)."
+implementation_notes: |
+  BLOCKED-BY SP-20260611-001 WS-A merge (file overlap on dispatch wrappers). Note: WS-A is NOW MERGED (6a57aac) — this can move to ready_for_execution, but the builder MUST re-locate validateDispatch call sites against the merged HEAD, not the stale finding line numbers (dispatch-agent.js:508/dispatch-claude.js:315 have moved post-merge).
+  Unblocked as follow-on dispatch-shape work after SP-002 close; do not build inside SP-002 release close.
+  Status changed from ready_for_execution to deferred for SP-002 close. It is unblocked for later dispatch-shape work, not built in this sprint.
 qa_notes: ""
 redteam_notes: ""
 trace_notes: ""
@@ -44,5 +47,7 @@ blocked_by: []
 blocks: []
 fix_attempts: []
 ralph_progress: null
-completion_evidence: []
+completion_evidence:
+  - "Unblocked by SP-20260611-001 merge; Beta release-boundary directive says follow-on work, not SP-002 release prerequisite."
+  - "Deferred follow-on per Beta release-boundary directive and DUMP next-actions; SP-001 merge unblocks it, but it is not an SP-002 close prerequisite."
 reopen_history: []

@@ -1,0 +1,64 @@
+schema: warpos/sprint/sprint-history/v1
+id: SP-20260611-002
+title: "E-LIFECYCLE-001 close-out fix sprint — 17 REAL + 4 PARTIAL GPT 2nd-pass findings (team-guard/mode-guard bypass classes, turbo spend/auth integrity, coverage-gate waiver+expected-source, provider-tier false-green, planning-principles enforce path, ac-coverage fail-closed) + NOTAGAIN §8.3 legacy scoping"
+objective: "Close the 17 REAL + 4 PARTIAL GPT-2nd-pass findings; integrate; gauntlet; complete the epic."
+source_request: "E-LIFECYCLE-001 close-out fix sprint: fix the 17 REAL + 4 PARTIAL findings from the GPT 2nd-pass security review of the gemini-only W1/W2/W3-5 lanes (triage: runtime/notes/elc-gpt2p-triage-2026-06-11.md), fold in the NOTAGAIN §8.3 legacy-scoping prep, re-gauntlet cross-family, then complete the epic."
+interpreted_intent: "Clear the §H debt PROPERLY: the GPT 2nd-pass ran (3 lanes, all FAIL — 12 blockers/9 majors), every blocker verified REAL by live probes. Fix the verified findings so the report-only→blocking flip ramp becomes actually safe, the two 'READY' gates become genuinely flippable, and E-LIFECYCLE-001 can complete honestly."
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260611-0074.yaml"
+final_scope: "FIX1 G1/G2/G3a/G3b/G3c plus W1-fold T-324/T-325; FIX2 closed remaining security finding 3 and backend finding 5; T-321 deferred as follow-on per Beta release-boundary directive."
+outcome: closed_local_release
+tickets_completed:
+  - T-20260611-316
+  - T-20260611-317
+  - T-20260611-318
+  - T-20260611-319
+  - T-20260611-320
+  - T-20260611-324
+  - T-20260611-325
+tickets_deferred:
+  - T-20260611-321
+tickets_abandoned: []
+tickets_reopened: []
+issues_found:
+  - security-reviewer findings 1-4
+  - backend-reviewer findings 5-8
+issues_fixed:
+  - "security findings 1,2,3,4"
+  - "backend findings 5,6,7,8"
+issues_deferred:
+  - T-20260611-321 wrapper mode binding follow-on
+external_services_resolved: []
+external_services_deferred: []
+requirements_changed: []
+copy_changed: []
+inputs_changed: []
+trace_changed:
+  - "routing traces recorded for execution, qa, redteam, release"
+tests_run:
+  - auth-floor-rm-with-write 17/17
+  - auth-floor-tracked-delete 10/10
+  - coverage-gate-scan-live-cli 7/7
+  - coverage-gate-scan-source 6/6
+  - coverage-gate 17/17
+  - coverage-gate-waiver 7/7
+  - legacy-cutoff-shared 8/8
+  - S-LC-06 coverage-gate-caller 8/8
+  - dispatch-contract 19/19
+  - generate-framework-manifest --check PASS
+  - warpos manifest validate --strict PASS
+  - trackers validate 20/20 PASS
+releases:
+  - RL-20260611-044
+beta_decisions:
+  - runtime/sp002-release/beta-release-boundary.out.json
+human_approvals:
+  - AP-20260611-028 waived local-only close
+key_tradeoffs:
+  - "No push performed; local release close only. T-321 unblocked/deferred as follow-on, not built inside SP-002 close."
+final_outcome_notes: "Affected-lane re-review green; release checklist true; local target marked deployed; branch remains unpushed per current user instruction."
+should_be_remembered:
+  - coverage-gate-scan live no-flag path now derives expected roles from sprint registry/composition
+  - authorization-gate node-e-fs approval now rejects destructive fs aliases before write approval
+crash_recovery_events: []
+started_at: "2026-06-11T04:31:36.180Z"
+closed_at: "2026-06-11T20:47:58.648Z"

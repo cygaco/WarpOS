@@ -1,0 +1,21 @@
+schema: warpos/sprint/approval/v1
+id: AP-20260611-028
+sprint: SP-20260611-002
+level: no_approval_needed
+required_for: "local-only close of engine sprint RL-20260611-044; no production deploy, no push, no report-only-to-blocking flip"
+linked_ticket: null
+linked_external_service: null
+linked_release: RL-20260611-044
+linked_decision: "beta:runtime/sp002-release/beta-release-boundary.out.json"
+state: waived
+requested_by: codex
+decided_by: beta-release-boundary
+decided_at: "2026-06-11T20:46:26.659Z"
+reason: "Beta directed SP-002 local release close now. Current user forbids push without explicit approval; this approval records that no production deploy approval is needed for local tracker close."
+evidence:
+  - "ab93c00 fix(SP-20260611-002): close affected re-review gaps"
+  - runtime/sp002-rereview-fix2/backend-reviewer.out.json PASS score 100
+  - runtime/sp002-rereview-fix2/security-reviewer-round2.out.json PASS confidence 0.94
+  - "runtime/sp002-release/beta-release-boundary.out.json DIRECTIVE proceed local close; do not push"
+created_at: "2026-06-11T20:46:26.659Z"
+updated_at: "2026-06-11T20:46:26.659Z"

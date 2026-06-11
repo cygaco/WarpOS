@@ -2,10 +2,10 @@ schema: warpos/sprint/ticket/v1
 id: T-20260611-317
 title: "WS-G2 turbo+authorization (R-3/R-4, findings #8,#9,#14,#10): monotonic-or-attested re-apply w/ provenance + session-anchored spend (not granted_at) + nonfinite-bytes-fail-HIGH + SELF-LOCKOUT hard AC (future-applies-only, throwaway fixture); node-e-fs drop rmSync/unlinkSync + executable tracked-work-delete safety floor"
 type: bug
-status: in_progress
+status: done
 sprint: SP-20260611-002
 created_at: "2026-06-11T04:50:41.188Z"
-updated_at: "2026-06-11T05:11:00.718Z"
+updated_at: "2026-06-11T20:42:29.322Z"
 owner: null
 owner_agent: alpha
 risk_level: high
@@ -28,7 +28,8 @@ linked_decisions: []
 linked_external_services: []
 linked_files: []
 linked_tests: []
-linked_commits: []
+linked_commits:
+  - ab93c00
 linked_prs: []
 linked_release: null
 description: ""
@@ -36,7 +37,9 @@ user_value: ""
 business_value: ""
 acceptance_criteria: []
 non_goals: []
-implementation_notes: "Design complete; β before_design DECIDE 0.90 + 4 mint adds encoded; ACs exploit-shaped in acceptance-criteria.md. Build in per-lane worktrees (git -C pattern). G3 surfaces independently exploit-isolated."
+implementation_notes: |
+  Design complete; β before_design DECIDE 0.90 + 4 mint adds encoded; ACs exploit-shaped in acceptance-criteria.md. Build in per-lane worktrees (git -C pattern). G3 surfaces independently exploit-isolated.
+  Closed during SP-20260611-002 release-boundary reconciliation after affected-lane re-review GREEN.
 qa_notes: ""
 redteam_notes: ""
 trace_notes: ""
@@ -44,5 +47,6 @@ blocked_by: []
 blocks: []
 fix_attempts: []
 ralph_progress: null
-completion_evidence: []
+completion_evidence:
+  - "FIX1 G2 plus FIX2 completed: security round-2 re-review PASS closed finding 3; auth-floor-rm-with-write 17/17 and auth-floor-tracked-delete 10/10."
 reopen_history: []
