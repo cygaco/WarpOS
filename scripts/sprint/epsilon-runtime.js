@@ -478,14 +478,23 @@ function spawnAgent(agentPlan, sprintId, opts = {}) {
   }
   env.WARPOS_PHASE_ID = agentPlan.step;
   env.WARPOS_SPRINT_ID = sprintId;
+  // T-322 (attempt #3): when ε computes a BACKGROUND bound (opts.background === true),
+  // propagate the background SIGNAL to the child env. The child wrappers re-clamp the
+  // propagated childBaseMs via foregroundAwareTimeout(n, {}) (empty opts → it reads
+  // process.env.WARPOS_DISPATCH_BACKGROUND), so without this stamp a background childBaseMs
+  // (900s) would be silently re-clamped back to the 540s foreground ceiling on the child —
+  // the "background unaffected" guarantee would hold only when the signal happened to be in
+  // the ambient env. Setting it here makes the guarantee hold via the ε spawn path's OWN
+  // construction. (process.env passthrough above is preserved; we only ADD the signal.)
+  if (opts.background === true) env.WARPOS_DISPATCH_BACKGROUND = "1";
   // T-20260610-304: clamp to FOREGROUND_CEILING_MS (540s) when not explicitly backgrounded.
   // opts.background === true or WARPOS_DISPATCH_BACKGROUND=1 passes through the full bound.
+  // The per-route child base (childBaseMs) + the env-propagation that single-sources it on
+  // the child are computed at each spawn site below — they differ per route (epsilon-agent vs
+  // epsilon-claude defaults), so `timeout`/env are NOT set here in `common`.
   const common = {
     encoding: "utf8",
     env,
-    // Parent SIGTERM bound = CHILD wrapper bound + PARENT_GRACE_MS so the child's
-    // graceful death-record write wins the race (T-310/R-1). Still bounded — not backstop-only.
-    timeout: foregroundAwareTimeout(opts.timeoutMs || WRAPPER_DEFAULTS["epsilon-agent"], opts) + PARENT_GRACE_MS,
     maxBuffer: 32 * 1024 * 1024,
   };
 
@@ -500,26 +509,47 @@ function spawnAgent(agentPlan, sprintId, opts = {}) {
   const promptFile = opts.promptFile || writeStepPrompt(agentPlan, sprintId);
 
   if (agentPlan.route === ROUTE.DISPATCH_AGENT) {
-    const r = run(process.execPath, [path.join(root, "scripts/dispatch-agent.js"), agentPlan.role, promptFile], common);
+    // T-310/R-1 (FIX-A1): single-source the child bound BY CONSTRUCTION. Compute the child
+    // base ONCE, PROPAGATE it to the child via DISPATCH_BUILDER_TIMEOUT_MS, and set the parent
+    // SIGTERM bound = childBaseMs + PARENT_GRACE_MS. This holds parent = child + grace for EVERY
+    // opts.timeoutMs (small/huge/unset), closing the death-record race the old code only closed
+    // on the happy path (opts.timeoutMs unset). foregroundAwareTimeout is idempotent, so the
+    // child re-clamp of the propagated value can never lift it above childBaseMs.
+    const childBaseMs = foregroundAwareTimeout(opts.timeoutMs || WRAPPER_DEFAULTS["epsilon-agent"], opts);
+    env.DISPATCH_BUILDER_TIMEOUT_MS = String(childBaseMs);
+    const r = run(process.execPath, [path.join(root, "scripts/dispatch-agent.js"), agentPlan.role, promptFile], {
+      ...common,
+      timeout: childBaseMs + PARENT_GRACE_MS,
+    });
     return interpretSpawn(r, agentPlan, /*recordedByCli=*/ true);
   }
   if (agentPlan.route === ROUTE.DISPATCH_CLAUDE) {
     const args = [path.join(root, "scripts/dispatch-claude.js"), agentPlan.role, promptFile];
     if (opts.worktree) args.push("--worktree", opts.worktree);
     // T-20260610-304: DISPATCH_CLAUDE uses the longer 20m default but still clamps to 540s foreground.
-    // T-310/R-1: parent SIGTERM bound = child wrapper bound + PARENT_GRACE_MS (same constant as the
-    // epsilon-agent site) so the child's graceful death-record write wins the race here too.
+    // T-310/R-1 (FIX-A1): single-source the child bound BY CONSTRUCTION — identical discipline to
+    // the epsilon-agent site (the two-site rename-hygiene bug class: fix both, miss neither).
+    // Compute childBaseMs ONCE, PROPAGATE it via DISPATCH_BUILDER_TIMEOUT_MS — dispatch-claude.js
+    // reads exactly this env for its own bound (TIMEOUT_MS at ~line 313) — and set the parent
+    // SIGTERM bound = childBaseMs + PARENT_GRACE_MS so parent = child + grace for EVERY
+    // opts.timeoutMs value, not only when opts.timeoutMs is unset.
+    const childBaseMs = foregroundAwareTimeout(opts.timeoutMs || WRAPPER_DEFAULTS["epsilon-claude"], opts);
+    env.DISPATCH_BUILDER_TIMEOUT_MS = String(childBaseMs);
     const r = run(process.execPath, args, {
       ...common,
-      timeout: foregroundAwareTimeout(opts.timeoutMs || WRAPPER_DEFAULTS["epsilon-claude"], opts) + PARENT_GRACE_MS,
+      timeout: childBaseMs + PARENT_GRACE_MS,
     });
     return interpretSpawn(r, agentPlan, /*recordedByCli=*/ true);
   }
   // CLAUDE_RAW — `claude -p --agent` writes NO completion record (ED-018) → ε records the REAL outcome.
+  // No child wrapper here (raw claude), so nothing reads DISPATCH_BUILDER_TIMEOUT_MS — but the parent
+  // must still be BOUNDED (the `timeout` no longer lives in `common`). Use the epsilon-claude base +
+  // grace so the raw route keeps the same bound it had before FIX-A1.
   const bin = env.DISPATCH_CLAUDE_BIN || "claude";
   const binArgs = env.DISPATCH_CLAUDE_BIN_ARGS ? JSON.parse(env.DISPATCH_CLAUDE_BIN_ARGS) : [];
   const prompt = fs.readFileSync(promptFile, "utf8");
-  const r = run(bin, [...binArgs, "-p", "--agent", agentPlan.role], { ...common, input: prompt });
+  const rawBaseMs = foregroundAwareTimeout(opts.timeoutMs || WRAPPER_DEFAULTS["epsilon-claude"], opts);
+  const r = run(bin, [...binArgs, "-p", "--agent", agentPlan.role], { ...common, input: prompt, timeout: rawBaseMs + PARENT_GRACE_MS });
   const out = interpretSpawn(r, agentPlan, /*recordedByCli=*/ false);
   if (out.spawned) {
     recordAgentDispatch(agentPlan, sprintId, { ok: out.ok, promptBytes: Buffer.byteLength(prompt) });

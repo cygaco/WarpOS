@@ -100,11 +100,26 @@ const MAX_BUFFER = 32 * 1024 * 1024; // 32 MB
 
 // Build-chain roles edit a repo — they MUST run isolated (a worktree), never in
 // canonical. Mirrors BUILD_CHAIN_ROLES in dispatch-route-guard.js.
+//
+// FIX-A2 (T-312 fail-closed completion): this Set is the EXPLICIT FALLBACK for
+// isBuildChainRole when the registry/contract is UNREADABLE (the catch below returns
+// the Set-membership result, never "no gate"). So the Set MUST cover EVERY real
+// build_chain_worker role in role-registry.json — otherwise a real build role absent
+// from the Set falls OPEN on a registry read-error (the W0 fail-closed violation gemini
+// + GPT both flagged). The complete build_chain_worker class (audited against the
+// registry) = frontend/backend/security ×(builder/fixer) + skeleton-builder. The two
+// generic sentinels (builder/fixer) + the stub-scaffold legacy id are NOT in the
+// registry on purpose (the FE/BE split is contextual) and are kept here as the only
+// registry-independent members.
 const BUILD_CHAIN_ROLES = new Set([
-  "builder",
-  "backend-builder",
+  "builder", // generic sentinel — intentionally NOT in role-registry
+  "fixer", // generic sentinel — intentionally NOT in role-registry
   "frontend-builder",
-  "fixer",
+  "frontend-fixer",
+  "backend-builder",
+  "backend-fixer",
+  "security-builder",
+  "security-fixer",
   "skeleton-builder", // S-7: was `stub-scaffold` (this set is matched WITHOUT normalize)
   "stub-scaffold", // S-7 legacy id (back-compat)
 ]);
@@ -140,8 +155,13 @@ function isBuildChainRole(role) {
     // classForRole reads role-registry identity; case-sensitive role ids there.
     return classForRole(role) === "build_chain_worker";
   } catch {
-    // registry/contract unreadable → fall back to the literal Set only (fail-closed:
-    // a known build-chain role is still gated; we never open the gate on a read error).
+    // registry/contract unreadable → the Set-membership check (line 1) already ran and
+    // gated every real build-chain role, because the literal Set is the COMPLETE
+    // build_chain_worker class (FIX-A2). So reaching here means the role is NOT a real
+    // build-chain role under the fallback — returning false is correct fail-closed (NOT a
+    // blanket `return true`, which would over-gate reviewers/leads on a transient read
+    // error). The registry class only WIDENS to catch a brand-new role added to the
+    // registry but not yet to the Set; the Set guarantees no real role falls open here.
     return false;
   }
 }
@@ -422,18 +442,29 @@ try {
 // high-severity mismatch fatal. Fail-OPEN on any resolver error.
 try {
   const { shapeMismatch } = require("./dispatch/dispatch-shape");
+  const { sanctionedLane } = require("./dispatch/dispatch-contract");
   const mm = shapeMismatch("subprocess-claude", { kind: "agent", id: role });
+  // FIX-A3: suppression is keyed on the SANCTIONED VERDICT, not the bare flag. A
+  // --review-fallback dispatch only earns the suppression when the contract layer actually
+  // sanctions this role/shape on the review_fallback lane (the same sanctionedLane the
+  // contract-consult block above consults). A --review-fallback on a NON-sanctioned role
+  // (e.g. a build-chain role, or a reviewer whose shape isn't lane-registered) must STILL
+  // emit the advisory (and refuse under ENFORCE) — the flag alone never silences a real
+  // mismatch.
+  const fallbackSanctioned =
+    reviewFallback && sanctionedLane({ role, shape: "subprocess-claude", lane: "review_fallback" }).sanctioned === true;
   if (mm && mm.mismatch) {
     if (GENERIC_BUILD_IDS.has(role.toLowerCase())) {
       // G1: the resolver falls back to adhoc/inline for 'builder' because it isn't
       // in role-registry — but we KNOW it's a build-chain sentinel (class-resolved
       // above). Suppress the misleading "resolver picks 'inline'" advisory; the
       // contract consult block above already emitted the truthful note.
-    } else if (reviewFallback) {
-      // --review-fallback: shape mismatch (subprocess-claude for a cross-provider reviewer)
-      // is intentional and REGISTERED as a sanctioned lane (T-311). Suppress the advisory —
-      // the contract-consult block above already emitted the sanctioned-lane note. This
-      // branch already suppresses in BOTH modes (no `!blocking`), so it never bricks the lane.
+    } else if (fallbackSanctioned) {
+      // --review-fallback on a SANCTIONED lane: shape mismatch (subprocess-claude for a
+      // cross-provider reviewer) is intentional and REGISTERED as a sanctioned lane (T-311).
+      // Suppress the advisory — the contract-consult block above already emitted the
+      // sanctioned-lane note. This branch suppresses in BOTH modes (no `!blocking`), so it
+      // never bricks the lane. A NON-sanctioned --review-fallback falls through to the else.
     } else {
       const blocking = process.env.WARPOS_DISPATCH_CONTRACT_ENFORCE === "block" && mm.severity === "high";
       process.stderr.write(

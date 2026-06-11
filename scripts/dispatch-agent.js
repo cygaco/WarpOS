@@ -592,15 +592,52 @@ if (!providerAvailable(provider)) {
   process.exit(1);
 }
 
+// T-322: the ε-propagated child bound, single-sourced. When epsilon-runtime's
+// DISPATCH_AGENT spawn site sets DISPATCH_BUILDER_TIMEOUT_MS = String(childBaseMs),
+// BOTH child timeout layers (slot-acquire below + runProvider's exec) MUST derive
+// from it, so the parent's spawnSync bound (childBaseMs + grace) strictly exceeds
+// every child layer BY CONSTRUCTION (mirrors the epsilon-claude/dispatch-claude.js
+// site, which already reads this env). NULL for non-ε callers — env absent →
+// behaviour is byte-identical to before (DISPATCH_SLOT_TIMEOUT_MS / runProvider's
+// own default). The foregroundAwareTimeout re-clamp is idempotent: an already-clamped
+// childBaseMs cannot be lifted above the foreground ceiling here.
+const propagatedBoundRaw = process.env.DISPATCH_BUILDER_TIMEOUT_MS;
+const propagatedChildBaseMs =
+  propagatedBoundRaw != null && propagatedBoundRaw !== ""
+    ? (() => {
+        const { foregroundAwareTimeout } = require("./dispatch/timeout-policy");
+        const n = parseInt(propagatedBoundRaw, 10);
+        return Number.isFinite(n) ? foregroundAwareTimeout(n, {}) : null;
+      })()
+    : null;
+
 // Acquire a per-provider concurrency slot. Caps protect against API rate
 // limits and concurrency-induced failures (e.g. gemini reliably errors on
 // 15+ parallel calls but is fine 1-by-1 — observed during run-12 redteam
 // gauntlet, retro 2026-04-29). On slot-acquire timeout, return fallback:true
 // so the orchestrator routes to claude instead of waiting indefinitely.
-const slotTimeoutMs = parseInt(
-  process.env.DISPATCH_SLOT_TIMEOUT_MS || `${10 * 60 * 1000}`,
-  10,
-);
+// T-322: when ε propagates the child bound, the slot bound must be ≤ childBaseMs
+// so the parent's childBaseMs+grace strictly exceeds it; else keep the standalone
+// DISPATCH_SLOT_TIMEOUT_MS default (600s) unchanged for non-ε callers.
+//
+// T-322 / β build-constraint (DECIDE 0.90), CHOICE (b) — DOCUMENTED-ACCEPT, not floored:
+// when ε's propagated childBaseMs is FOREGROUND-CLAMPED (540s), this INTENTIONALLY
+// shortens the slot-acquire wait below the 600s DISPATCH_SLOT_TIMEOUT_MS default. The
+// invariant is slot ≤ childBaseMs ≤ the dispatch's TOTAL budget (540s foreground): a slot
+// the dispatch would have NO TIME LEFT to use is not worth waiting for, so falling back to
+// the claude lane EARLIER (high concurrency cap, no rate-limit) is the correct behavior —
+// strictly better than waiting up to 600s for a slot we could never actually run on.
+// A FLOOR at 600s (e.g. Math.max(propagatedChildBaseMs, 600s)) is NOT an option: it would
+// make slot (600s) > parent's foreground SIGTERM bound (childBaseMs 540s + 45s grace = 585s)
+// → parent(585s) < slot(600s), RE-CREATING the exact parent-kills-child-before-it-writes-its
+// -record race this fix closes. BACKGROUND dispatches keep the full wait (childBaseMs=900s >
+// 600s), so a saturated provider that genuinely needs ~600s to free a slot is UNAFFECTED —
+// only the foreground (can't-run-long-anyway) lane shortens. Pinned by epsilon-spawn-grace
+// section (6); a "restore the 600s floor" change REDs there.
+const slotTimeoutMs =
+  propagatedChildBaseMs != null
+    ? propagatedChildBaseMs
+    : parseInt(process.env.DISPATCH_SLOT_TIMEOUT_MS || `${10 * 60 * 1000}`, 10);
 const slot = acquireSlotSync(provider, {
   timeoutMs: slotTimeoutMs,
   meta: {
@@ -641,6 +678,17 @@ try {
   // belongs to the WRONG provider — ignore it and use --model (or let runProvider
   // pick the override provider's default).
   const roleModel = getRoleModel(role);
+  // T-322 (attempt #3): single-source the propagated child bound for EVERY runProvider
+  // call site BY CONSTRUCTION. When ε propagates childBaseMs, the provider-exec must
+  // single-source from it too — runProvider otherwise uses its own run-provider default
+  // (540s), INDEPENDENT of the parent's propagated value, leaving the cross-provider
+  // site's death-record race open. Routing every runProvider opts object through this
+  // ONE helper means any present-or-future call site (main + the WI-18 quota-retry)
+  // inherits the bound automatically — closing the bug class, not the third instance.
+  // runProvider re-clamps idempotently via foregroundAwareTimeout; non-ε callers (env
+  // absent → propagatedChildBaseMs null) keep runProvider's own default, byte-identical.
+  const withPropagatedTimeout = (opts) =>
+    propagatedChildBaseMs != null ? { ...opts, timeoutMs: propagatedChildBaseMs } : opts;
   const runOpts = {};
   if (providerOverride) {
     runOpts.provider = providerOverride;
@@ -650,7 +698,7 @@ try {
   } else if (roleModel) {
     runOpts.model = roleModel;
   }
-  result = runProvider(role, prompt, runOpts);
+  result = runProvider(role, prompt, withPropagatedTimeout(runOpts));
 
   // WI-18: quota-aware fallback. When a gemini-routed role (e.g. redteam) 429s /
   // exhausts quota, runProvider surfaces it loudly via result.quota and still
@@ -675,7 +723,12 @@ try {
           ` (${result.quota.kind}) → retrying on ${fbProvider} for cross-family` +
           ` security coverage (1 attempt).\n`,
       );
-      const retry = runProvider(role, prompt, { provider: fbProvider });
+      // T-322 (attempt #3): the retry runs the provider-exec layer just like the main
+      // call — it MUST inherit the same propagated childBaseMs (else for a small
+      // opts.timeoutMs the parent bound falls below the retry's 540s run-provider
+      // default, re-opening the death-record race on the quota-fallback path). Route
+      // it through the same withPropagatedTimeout helper — the single propagation point.
+      const retry = runProvider(role, prompt, withPropagatedTimeout({ provider: fbProvider }));
       if (retry && retry.ok) {
         retry.quotaFallbackFrom = {
           provider: result.provider,

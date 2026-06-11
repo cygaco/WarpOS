@@ -35,7 +35,21 @@ const DISPATCH_CLAUDE = path.join(ROOT, "scripts", "dispatch-claude.js");
 const dc = require(path.join(ROOT, "scripts", "dispatch", "dispatch-contract"));
 
 // The literal Set as it stands in dispatch-claude.js (mirror — kept in sync by the parity test).
-const BUILD_CHAIN_ROLES = new Set(["builder", "backend-builder", "frontend-builder", "fixer", "skeleton-builder", "stub-scaffold"]);
+// FIX-A2: the Set is now the COMPLETE build_chain_worker class (so the registry-unreadable
+// fallback gates every real build role) PLUS the two generic sentinels + the legacy id that are
+// intentionally NOT in the registry.
+const BUILD_CHAIN_ROLES = new Set([
+  "builder",
+  "fixer",
+  "frontend-builder",
+  "frontend-fixer",
+  "backend-builder",
+  "backend-fixer",
+  "security-builder",
+  "security-fixer",
+  "skeleton-builder",
+  "stub-scaffold",
+]);
 
 // Local mirror of the SHIPPED isBuildChainRole derivation (Set ∪ registry-class), so the
 // parity test reasons about the exact gate predicate without re-spawning for every role.
@@ -81,14 +95,31 @@ function runWrapper({ role, extraArgs = [], ledgerName }) {
 
 console.log("(1) membership-derives-from-registry-class:");
 {
-  // A REAL registry role with class build_chain_worker that is NOT in the literal Set.
-  // (security-builder serves as the 'registered-but-not-in-Set' case the bug let bypass.)
+  // FIX-A2 made the literal Set the COMPLETE build_chain_worker class, so every CURRENT real
+  // build role is now IN the Set (the fail-closed posture). The registry-class derivation is
+  // still load-bearing for the WIDENING case: a BRAND-NEW build_chain_worker role registered
+  // but not yet added to the Set must STILL be gated via the class. Demonstrate that with a
+  // simulated new role (the derived predicate catches it through classForRole, not the Set).
+  const newRole = "data-pipeline-builder"; // not in the Set, simulated registry build_chain_worker
+  ok(`'${newRole}' is NOT in the literal BUILD_CHAIN_ROLES Set (simulated new role)`, !BUILD_CHAIN_ROLES.has(newRole));
+  const origClassForRole = dc.classForRole;
+  dc.classForRole = (r) => (r === newRole ? "build_chain_worker" : origClassForRole(r));
+  try {
+    ok(
+      `'${newRole}' (new registry build role, not in Set) is gated by the DERIVED predicate (registry class WIDENS)`,
+      isBuildChainRoleDerived(newRole) === true,
+    );
+  } finally {
+    dc.classForRole = origClassForRole;
+  }
+
+  // And a REAL build role: it is class build_chain_worker AND now in the complete Set, gated
+  // by BOTH paths. End-to-end at the WORKTREE gate: no -w/--worktree → refused (exit 2).
   const role = "security-builder";
   ok(`${role} is class build_chain_worker in the registry`, dc.classForRole(role) === "build_chain_worker");
-  ok(`${role} is NOT in the literal BUILD_CHAIN_ROLES Set`, !BUILD_CHAIN_ROLES.has(role.toLowerCase()));
-  ok(`${role} is gated by the DERIVED predicate (Set-only would miss it)`, isBuildChainRoleDerived(role) === true);
+  ok(`${role} is in the now-complete literal Set (fail-closed coverage)`, BUILD_CHAIN_ROLES.has(role.toLowerCase()));
+  ok(`${role} is gated by the DERIVED predicate`, isBuildChainRoleDerived(role) === true);
 
-  // End-to-end at the WORKTREE gate: no -w/--worktree → refused (exit 2).
   const wt = runWrapper({ role, ledgerName: "g1-wt" });
   ok(
     `${role} w/o -w → worktree gate REFUSES (exit 2) [bypass closed at the shipped wrapper]`,
@@ -166,6 +197,65 @@ console.log("\n(3) new-registry-role-cannot-bypass:");
     ? fs.readFileSync(path.join(scratch, "g3-rf", "dispatch-completions.jsonl"), "utf8").split(/\r?\n/).filter(Boolean)
     : [];
   ok("no completion record written for the refused build-chain dispatch", comps.length === 0);
+}
+
+console.log("\n(4) registry-unreadable-still-gates-every-real-build-chain-role (FIX-A2 fail-closed):");
+{
+  // The blocker gemini + GPT flagged: when classForRole THROWS (registry/contract unreadable),
+  // isBuildChainRole's catch returns the Set-membership result — so the Set MUST contain every
+  // real build_chain_worker role or that role falls OPEN (no gate) on a read error. We force the
+  // throw by preloading a stub that overrides the dispatch-contract module's classForRole, then
+  // assert the SHIPPED wrapper's worktree gate STILL refuses every real build-chain role.
+  const throwStub = path.join(scratch, "throw-classForRole.js");
+  fs.writeFileSync(
+    throwStub,
+    [
+      "// Preloaded with --require: make classForRole throw, simulating an unreadable registry.",
+      "const Module = require('module');",
+      "const orig = Module.prototype.require;",
+      "Module.prototype.require = function (id) {",
+      "  const m = orig.apply(this, arguments);",
+      "  if (typeof id === 'string' && id.indexOf('dispatch-contract') !== -1 && m && typeof m.classForRole === 'function') {",
+      "    return Object.assign({}, m, { classForRole: function () { throw new Error('registry unreadable (test stub)'); } });",
+      "  }",
+      "  return m;",
+      "};",
+      "",
+    ].join("\n"),
+  );
+
+  // Enumerate every role the registry CURRENTLY classes build_chain_worker — the exact set the
+  // Set fallback must cover. (Computed live so a new registry build role makes this test fail
+  // until the Set is updated — the fail-closed contract is self-policing.)
+  const reg = dc.loadRegistry();
+  const realBuildRoles = Object.keys(reg.roles || {}).filter((r) => {
+    try { return dc.classForRole(r) === "build_chain_worker"; } catch { return false; }
+  });
+  ok("registry has ≥1 build_chain_worker role to test", realBuildRoles.length > 0, `roles=${JSON.stringify(realBuildRoles)}`);
+
+  for (const role of realBuildRoles) {
+    const ledgerDir = path.join(scratch, `g4-${role}`);
+    fs.mkdirSync(ledgerDir, { recursive: true });
+    const env = {
+      ...process.env,
+      DISPATCH_LEDGER_DIR: ledgerDir,
+      DISPATCH_CLAUDE_BIN: process.execPath,
+      DISPATCH_CLAUDE_BIN_ARGS: JSON.stringify([fakeHappy]),
+    };
+    // --require the throw-stub BEFORE dispatch-claude.js loads → classForRole throws inside
+    // isBuildChainRole's try → the catch falls back to the literal Set. No -w/--worktree → the
+    // worktree gate must STILL refuse (exit 2), proving the Set fallback gated this real role.
+    const res = spawnSync(
+      process.execPath,
+      ["--require", throwStub, DISPATCH_CLAUDE, role, promptFile, "--model", "sonnet"],
+      { env, encoding: "utf8", timeout: 60000 },
+    );
+    ok(
+      `registry-unreadable: '${role}' STILL gated by the Set fallback (worktree gate exit 2, no fall-open)`,
+      res.status === 2 && /requires isolation/i.test(res.stderr || ""),
+      `status=${res.status} stderr=${(res.stderr || "").slice(0, 300)}`,
+    );
+  }
 }
 
 console.log(`\n${failed === 0 ? "PASS" : "FAIL"} — build-chain-registry-gate: ${passed} passed, ${failed} failed`);

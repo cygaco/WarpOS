@@ -160,5 +160,57 @@ console.log("\n(3) w2-entry-gate-text-present:");
   );
 }
 
+console.log("\n(4) advisory-suppression-keyed-on-sanctioned-verdict-not-the-flag (FIX-A3):");
+{
+  // FIX-A3: the shape-mismatch advisory suppression was keyed on the bare --review-fallback
+  // FLAG — any --review-fallback dispatch silenced the advisory, even for a role the contract
+  // does NOT sanction on the review_fallback lane. Narrowed: suppress ONLY when
+  // sanctionedLane(...).sanctioned === true. A NON-sanctioned --review-fallback must STILL emit
+  // the advisory.
+  //
+  // 'design-lead' (class cross_provider_consult_lead) is a NON-build, NON-sanctioned role whose
+  // expected shape is subprocess-cross-provider — so subprocess-claude is a genuine shape
+  // mismatch, it is NOT refused by the build-chain guard, and it is NOT in the review_fallback
+  // lane's applies_to_classes. It is the exact case the bare-flag suppression wrongly silenced.
+  const nonSanctioned = sanctionedLane({ role: "design-lead", shape: "subprocess-claude", lane: "review_fallback" });
+  ok("design-lead is NOT sanctioned on review_fallback (precondition)", nonSanctioned.sanctioned === false, JSON.stringify(nonSanctioned));
+
+  // Non-sanctioned --review-fallback → advisory STILL emitted (report-only, so it does not exit 1).
+  const nonSanc = runWrapper({ role: "design-lead", extraArgs: ["--review-fallback"], enforce: false, ledgerName: "rf-nonsanc" });
+  ok(
+    "non-sanctioned --review-fallback STILL emits the shape-resolver advisory (not silenced by the flag)",
+    /shape-resolver (advisory|VIOLATION)/i.test(nonSanc.stderr || ""),
+    `status=${nonSanc.status} stderr=${(nonSanc.stderr || "").slice(0, 400)}`,
+  );
+  ok(
+    "non-sanctioned --review-fallback does NOT print the sanctioned-lane note (it is not sanctioned)",
+    !/sanctioned lane/i.test(nonSanc.stderr || ""),
+    `stderr=${(nonSanc.stderr || "").slice(0, 400)}`,
+  );
+
+  // The sanctioned reviewer lane: advisory IS suppressed (the sanctioned-lane note prints instead).
+  const sanc = runWrapper({ role: "backend-reviewer", extraArgs: ["--review-fallback"], enforce: false, ledgerName: "rf-sanc-a3" });
+  ok(
+    "sanctioned --review-fallback reviewer does NOT emit the shape-resolver advisory",
+    !/shape-resolver advisory/i.test(sanc.stderr || ""),
+    `stderr=${(sanc.stderr || "").slice(0, 400)}`,
+  );
+  ok(
+    "sanctioned --review-fallback reviewer prints the sanctioned-lane note instead",
+    /sanctioned lane/i.test(sanc.stderr || ""),
+    `stderr=${(sanc.stderr || "").slice(0, 400)}`,
+  );
+
+  // Under ENFORCE, a non-sanctioned high-severity mismatch via --review-fallback must REFUSE
+  // (the flag no longer rescues it). design-lead's mismatch severity governs whether it exits 1;
+  // assert at minimum that the advisory is NOT suppressed under ENFORCE either.
+  const nonSancEnforce = runWrapper({ role: "design-lead", extraArgs: ["--review-fallback"], enforce: true, ledgerName: "rf-nonsanc-enf" });
+  ok(
+    "non-sanctioned --review-fallback under ENFORCE is NOT silenced by the flag (advisory or violation present)",
+    /shape-resolver (advisory|VIOLATION)/i.test(nonSancEnforce.stderr || "") || /dispatch_contract_violation/.test(nonSancEnforce.stdout || ""),
+    `status=${nonSancEnforce.status} stderr=${(nonSancEnforce.stderr || "").slice(0, 400)} stdout=${(nonSancEnforce.stdout || "").slice(0, 200)}`,
+  );
+}
+
 console.log(`\n${failed === 0 ? "PASS" : "FAIL"} — review-fallback-shape: ${passed} passed, ${failed} failed`);
 process.exit(failed === 0 ? 0 : 1);
