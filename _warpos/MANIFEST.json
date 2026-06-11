@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-11T21:35:34.627Z",
+  "generatedAt": "2026-06-11T21:42:42.873Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.15.4",
   "migrations": [],
@@ -113,8 +113,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "9291bdb4b45c52194d56f0939901fd5a6571fced06158092be54531e08451597",
-      "installedSha": "9291bdb4b45c52194d56f0939901fd5a6571fced06158092be54531e08451597"
+      "sha256": "80810e8aac22bd1f7f965ae320740ff09d047874295580f394a75a9c86d92be2",
+      "installedSha": "80810e8aac22bd1f7f965ae320740ff09d047874295580f394a75a9c86d92be2"
     },
     "ROADMAP.md": {
       "owner": "framework",
@@ -10926,6 +10926,30 @@
       "owner": "runtime",
       "managed": false
     },
+    ".claude/project/sprint/tickets/T-20260611-326.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/tickets/T-20260611-327.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/tickets/T-20260611-328.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/tickets/T-20260611-329.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/tickets/T-20260611-330.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/tickets/T-20260611-331.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
     ".claude/project/sprint/sprints/_no-active-sprint/reasoning-auto-approval.md": {
       "owner": "runtime",
       "managed": false
@@ -14419,6 +14443,14 @@
       "managed": false
     },
     ".claude/project/sprint/releases/RL-20260611-044.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/releases/RL-20260611-045.report.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/releases/RL-20260611-045.yaml": {
       "owner": "runtime",
       "managed": false
     },

@@ -2,15 +2,15 @@ schema: warpos/sprint/current-sprint/v1
 id: S-PF-01
 title: E-PRODUCT-FOUNDATION-001 W0 telemetry seam
 objective: "Ship the scaffold-time telemetry seam so every new product starts with one fail-open tracking entry point, six canonical lifecycle events, activation definition provenance, lastmile enrichment, and a fail-closed scaffold enforcer."
-status: designing
+status: releasing
 created_at: "2026-06-11T21:15:12.314Z"
-updated_at: "2026-06-11T21:18:19.673Z"
+updated_at: "2026-06-11T21:40:42.348Z"
 source_request: "E-PRODUCT-FOUNDATION-001 W0 telemetry seam: mint S-PF-01 and build the scaffold-time telemetry seam from the approved Product Lead build_spec plus Director-of-Product activation ruling."
 interpreted_intent: "Make the W0 product-foundation sprint executable: every future app scaffold gets a real track(event, props) seam, no-op fail-open sink, canonical event vocabulary, supply-chain correlation/stage vocabulary, activation definition that is derived before launch and explicitly confirmed or revised at lastmile, and an extended scaffold-coverage enforcer with planted false-green fixtures."
 plan_contract: ".claude/project/sprint/plan-contracts/PC-20260611-0075.yaml"
 risk_level: medium
 approval_state: none_required
-current_phase: design
+current_phase: release
 recommended_mode: adhoc
 mode_invocation_required_by_user: true
 external_services:
@@ -31,7 +31,13 @@ tickets:
   in_review: []
   qa_failed: []
   redteam_failed: []
-  done: []
+  done:
+    - T-20260611-326
+    - T-20260611-327
+    - T-20260611-328
+    - T-20260611-329
+    - T-20260611-330
+    - T-20260611-331
   released: []
   deferred: []
   abandoned: []
@@ -50,29 +56,29 @@ requirements:
   release_plan: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\S-PF-01\\release-plan.md"
 checks:
   lint:
-    status: not_run
-    last_run: null
-    evidence: ""
+    status: passing
+    last_run: "2026-06-11T21:35:00.000Z"
+    evidence: "node --check scripts/checks/scaffold-coverage-scan.js; node --check scripts/bootstrap/lastmile/modules/analytics.js"
   typecheck:
-    status: not_run
-    last_run: null
-    evidence: ""
+    status: skipped
+    last_run: "2026-06-11T21:35:00.000Z"
+    evidence: "No root package.json/tsc install in canonical repo; scaffold TS templates are covered by scaffold-coverage scan and render smoke."
   tests:
-    status: not_run
-    last_run: null
-    evidence: ""
+    status: passing
+    last_run: "2026-06-11T21:35:00.000Z"
+    evidence: "S-PF-01 focused tests passed: scaffold-coverage-telemetry 9/9, telemetry-seam 3/3, telemetry-chain 2/2, activation-definition 1/1, lastmile-analytics-seam 3/3, contract-chain 1/1, manifest-shipping 1/1, named-sprint-id 3/3; scaffold/app.test 7/7; lastmile/test-orchestrate 55/55."
   build:
-    status: not_run
-    last_run: null
-    evidence: ""
+    status: passing
+    last_run: "2026-06-11T21:35:00.000Z"
+    evidence: "scaffoldApp() materialization smoke rendered telemetry files into a temp repo; manifests regenerated and strict-validated."
   qa:
-    status: not_run
-    last_run: null
-    evidence: ""
+    status: passing
+    last_run: "2026-06-11T21:35:00.000Z"
+    evidence: "Focused QA regression sweep and scaffold-coverage-scan --json passed; routing trace recorded as single_vendor_session."
   redteam:
-    status: not_run
-    last_run: null
-    evidence: ""
+    status: passing
+    last_run: "2026-06-11T21:35:00.000Z"
+    evidence: "Planted false-green fixtures for missing seam, duplicate sink, event drift, and unresolved activation all fail; routing trace recorded as single_vendor_session, no independent redteam dispatched yet."
 approvals:
   plan:
     required: false
@@ -98,7 +104,7 @@ reports:
   plan: ".claude/project/sprint/plan-contracts/PC-20260611-0075.report.md"
   design: null
   execution: null
-  release: null
+  release: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\releases\\RL-20260611-045.yaml"
 ralph:
   active: false
   current_ticket: null
@@ -108,8 +114,8 @@ ralph:
   next_action: null
 crash_recovery:
   last_checkpoint: ".claude/project/sprint/sprint-progress.yaml"
-  resume_command: "/sprint:design"
-  resume_summary: "Sprint S-PF-01 design scaffolded (scale=m). Next: mint tickets from granular-stories, then run /sprint:execute."
+  resume_command: "/sprint:release"
+  resume_summary: "Release RL-20260611-045 in preparing state. Run /sprint:release with --id RL-20260611-045."
   active_files: []
   dirty_state: false
   blockers: []
