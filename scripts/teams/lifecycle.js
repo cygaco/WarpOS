@@ -101,6 +101,37 @@ function requiredFaces(mode) {
   }
 }
 
+// ── AC-1.5: EXACT per-member face matching (spoof-safe) ──────────────────────
+// Face symbols mirror team-guard.js's FACE_SYMBOL so a face id can be matched by
+// its symbol too (a config may carry either). A member SATISFIES a face only when
+// a normalized identity field (agentType / role / name) EQUALS the face id or its
+// symbol — never a substring. The old `blob.includes(f)` substring match let a
+// member named/typed to merely CONTAIN a face token (e.g. `epsilon-helper`, or
+// any field whose JSON contains `beta`) false-satisfy that face.
+const FACE_SYMBOL = { alpha: "α", beta: "β", gamma: "γ", delta: "δ", epsilon: "ε" };
+
+/** Does `members` cover EVERY required face by exact per-member identity? */
+function membersCoverFaces(members, faces) {
+  if (!Array.isArray(faces) || faces.length === 0) return false;
+  const roster = Array.isArray(members) ? members : [];
+  const norm = (v) => String(v == null ? "" : v).trim().toLowerCase();
+  return faces.every((face) => {
+    const f = norm(face);
+    const sym = FACE_SYMBOL[f] || f;
+    return roster.some((mem) => {
+      if (!mem) return false;
+      const at = norm(mem.agentType);
+      const role = norm(mem.role);
+      const nm = norm(mem.name);
+      return (
+        at === f || at === sym ||
+        role === f || role === sym ||
+        nm === f || nm === sym
+      );
+    });
+  });
+}
+
 // ── Team enumeration ────────────────────────────────────────────────────────
 /** Every team dir carrying a readable config.json. UUID inbox-only dirs (no
  *  config.json) are NOT teams and are skipped. Malformed config → recorded as
@@ -181,13 +212,15 @@ function verify(opts = {}) {
   const faces = requiredFaces(mode);
   const mine = projectTeams(opts);
 
-  // Live = a fresh project team whose members cover every required face.
+  // Live = a fresh project team whose members cover every required face. AC-1.5:
+  // EXACT per-member identity matching (membersCoverFaces) — NOT a substring
+  // `blob.includes(f)` (which let `epsilon-helper` / any field containing a face
+  // token false-satisfy a face). Matches team-guard's isConductor `===` posture.
   let live = null;
   for (const t of mine) {
     if (t.unreadable) continue;
     if (t.ageHours >= STALE_HOURS) continue;
-    const blob = JSON.stringify(t.members || []).toLowerCase();
-    if (faces.length && faces.every((f) => blob.includes(f))) {
+    if (faces.length && membersCoverFaces(t.members, faces)) {
       live = t;
       break;
     }
@@ -633,6 +666,7 @@ module.exports = {
   projectSlug,
   currentMode,
   requiredFaces,
+  membersCoverFaces,
   listTeams,
   teamBelongsToProject,
   projectTeams,

@@ -52,6 +52,103 @@ const path = require("path");
 const PROJECT_DIR = process.env.CLAUDE_PROJECT_DIR || process.cwd();
 const MARKER_PATH = path.join(PROJECT_DIR, ".claude", "runtime", "mode.json");
 
+// AC-2.1 (SP-20260611-002): mode-set.js is the single-writer chokepoint for
+// mode.json. A `node scripts/mode-set.js <mode>` invocation via Bash runs OUTSIDE
+// the settings.json `SlashCommand|Skill` PreToolUse matcher, so the mode-lifecycle
+// guard never observes it. The coverage fix is to make the WRITER itself emit the
+// lifecycle events (the matcher-extension remedy was REJECTED as brittle —
+// re-creating the matcher-gap class). Emission is BEST-EFFORT + fail-open: a
+// logging fault must never break the mode write (the marker is the source of
+// truth; the events are the audit trail the out-of-band detector correlates).
+function lifecycleEmitter() {
+  try {
+    return require("./hooks/lib/lifecycle-events");
+  } catch {
+    return null; // no emitter available — degrade silently (write still happens)
+  }
+}
+
+function resolveSessionId() {
+  try {
+    const p = path.join(PROJECT_DIR, ".claude", "runtime", ".session-id");
+    return fs.readFileSync(p, "utf8").trim() || null;
+  } catch {
+    return null;
+  }
+}
+
+function resolveSlug() {
+  try {
+    return (
+      String(require("./hooks/lib/project-config").getWarpProduct() || "")
+        .toLowerCase() || null
+    );
+  } catch {
+    return null;
+  }
+}
+
+// Emit the mode-switch lifecycle events for THIS write (requested → preflight →
+// after). Payloads carry status LABELS only (the emitter whitelists to declared
+// fields + scrubs secrets). Returns the list of emitted event ids (best-effort).
+function emitModeLifecycleEvents(prevMode, targetMode, opts) {
+  const lc = lifecycleEmitter();
+  if (!lc || typeof lc.emit !== "function") return [];
+  const emitted = [];
+  const sessionId = resolveSessionId();
+  const slug = resolveSlug();
+  const actor = (opts && opts.by) || "alpha";
+  const ts = new Date().toISOString();
+  const correlation_id = `modeset-${Date.now().toString(36)}-${Math.random()
+    .toString(16)
+    .slice(2, 6)}`;
+  const requiredTeam =
+    targetMode === "sprint" || targetMode === "adhoc"
+      ? slug
+        ? `${slug}-${targetMode}`
+        : targetMode
+      : null;
+  const tryEmit = (event, payload) => {
+    try {
+      if (lc.emit(event, payload, { actor })) emitted.push(event);
+    } catch {
+      /* fail-open: emit must never throw, but double-guard the call site */
+    }
+  };
+  tryEmit("mode:switch:requested", {
+    project_slug: slug,
+    session_id: sessionId,
+    prev_mode: prevMode,
+    target_mode: targetMode,
+    actor,
+    timestamp: ts,
+    correlation_id,
+  });
+  tryEmit("mode:switch:preflight", {
+    session_id: sessionId,
+    prev_mode: prevMode,
+    target_mode: targetMode,
+    existing_team_id: null,
+    required_team_id: requiredTeam,
+    branch: null,
+    worktree: null,
+    turbo_perms_state: "off",
+    actor,
+    timestamp: ts,
+    dry_run: false, // mode-set.js is the REAL transaction writer (not the backstop)
+    correlation_id,
+  });
+  tryEmit("mode:switch:after", {
+    session_id: sessionId,
+    prev_mode: prevMode,
+    target_mode: targetMode,
+    actor,
+    timestamp: ts,
+    correlation_id,
+  });
+  return emitted;
+}
+
 const VALID_MODES = ["solo", "adhoc", "oneshot", "sprint"];
 
 const ALLOWED_TRANSITIONS = {
@@ -192,6 +289,12 @@ function main() {
 
   fs.mkdirSync(path.dirname(MARKER_PATH), { recursive: true });
   fs.writeFileSync(MARKER_PATH, JSON.stringify(marker, null, 2) + "\n");
+
+  // AC-2.1: emit the mode lifecycle events for THIS write so a Bash-direct
+  // `node scripts/mode-set.js <mode>` is COVERED (preflight + event trail)
+  // without depending on the PreToolUse hook matcher. Best-effort + fail-open:
+  // never let a logging fault break a successful mode write.
+  emitModeLifecycleEvents(current ? current.mode : null, args.mode, { by: args.by });
 
   console.log(
     `mode-set: ${current ? current.mode : "(none)"} → ${args.mode} (by ${args.by}${args.lockOwner ? ", lockOwner=" + args.lockOwner : ""}${args.activeBuild ? ", activeBuild=" + args.activeBuild : ""})`,
