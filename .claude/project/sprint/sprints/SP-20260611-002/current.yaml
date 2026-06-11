@@ -122,5 +122,5 @@ crash_recovery:
   safe_to_continue: true
 lane:
   type: branch
-  value: sprint/SP-20260611-001
-  isolation_notes: "Shares the session sprint branch; builds in per-lane worktrees like SP-001; WS-G4 strictly after SP-001 merge (file overlap on dispatch wrappers)."
+  value: sprint/SP-20260611-002
+  isolation_notes: "Own sprint branch off main@cad7249 (SP-001 landed); builds in per-lane worktrees (WS-G1/G2/G3a/G3b/G3c). G3a authors the shared legacy-cutoff helper before G3c consumes it. WS-G4 (T-321) unblocked by SP-001 merge but out of the 5-brief execute scope — surfaced to α."
