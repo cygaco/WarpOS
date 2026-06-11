@@ -64,8 +64,9 @@ const SPRINT_WINDOW_BUFFER_MS = 2 * 60 * 60 * 1000; // 2 hours
  * to ~infinity, capturing any historic ok:true record. The window is therefore clamped
  * to a sane horizon anchored on the sprint's TRUSTED created_at (from the sprint dates
  * map): event ts outside [created_at - cap, created_at + cap] are DISCARDED from window
- * derivation. If no trusted anchor exists for a sprint, the derivation falls back to the
- * raw ts (and the existing all-outlier → no-window → fail-closed path still holds).
+ * derivation. If no trusted anchor exists for a sprint, EVERY ts is DISCARDED (fail
+ * closed) — an unverifiable ts must never widen the window, so an all-outlier / no-anchor
+ * set derives an empty window and the downstream null-window guard fails closed.
  *
  * NOTE (AC-X.2, β design HOW): this clamp is DUPLICATED byte-for-byte in
  * scripts/checks/sprint-hook-coverage.js (the same exploit, two sites). No shared-lib
@@ -87,11 +88,14 @@ function sprintAnchorMs(sprintDates, sprintId) {
 
 /**
  * R-4 clamp predicate: is `evTs` inside the sane sprint horizon (anchor ± hard cap)?
- * With no trusted anchor, every ts is kept (existing behavior preserved — the all-outlier
- * fail-closed path lives downstream in hasBackingDispatchRecord's null-window guard).
+ * With NO trusted anchor the ts cannot be validated against a sane window, so it is
+ * UNTRUSTED and DISCARDED (fail closed). Keeping it (the old fail-OPEN) let a planted
+ * extreme ts widen the window to ~infinity and neutralize the clamp — the very exploit
+ * R-4 closes. An all-outlier / no-anchor set therefore derives an EMPTY window, and the
+ * downstream `minTsMs === null` fail-closed guard correctly fires (no false-green).
  */
 function tsWithinHorizon(evTs, anchorMs) {
-  if (anchorMs === null) return true; // no trusted anchor — keep (fail-closed lives downstream)
+  if (anchorMs === null) return false; // no trusted anchor — DISCARD (an unverifiable ts must never widen the window)
   return evTs >= anchorMs - WINDOW_HARD_CAP_MS && evTs <= anchorMs + WINDOW_HARD_CAP_MS;
 }
 
@@ -161,7 +165,11 @@ function getEventFields(rec) {
 function extractYamlDate(text) {
   if (!text) return null;
   const m = text.match(/(?:created_at|start_date|start)\s*:\s*["']?([0-9]{4}-[0-9]{2}-[0-9]{2})/);
-  return m ? m[1] : null;
+  // R-4 (B4c): the regex matches a structurally-shaped string, NOT a real date —
+  // "9999-99-99" / "2026-13-45" pass the shape but are not valid calendar dates.
+  // Round-trip validate so an unparseable date never becomes a candidate anchor; an
+  // invalid match → null (no anchor → fail closed) rather than a NaN anchor.
+  return m && validateIsoDate(m[1]) ? m[1] : null;
 }
 
 // ── Timestamp parser ──────────────────────────────────────────────────────────
@@ -592,8 +600,12 @@ if (require.main === module) {
 module.exports = {
   computeFindings,
   validateIsoDate,
+  tsWithinHorizon,
+  sprintAnchorMs,
+  extractYamlDate,
   WIRE_DATE,
   RECORD_BACKED_CUTOFF,
   REQUIRED_MANAGER,
   DESIGN_TOUCH_MANAGERS,
+  WINDOW_HARD_CAP_MS,
 };
