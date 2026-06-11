@@ -30,6 +30,7 @@
 
 const path = require("path");
 const { evaluate, readLedger } = require("../dispatch/coverage-gate");
+const { LEGACY_CUTOFF, cutoffFor, isLegacyDate } = require("../dispatch/legacy-cutoff");
 
 const NAME = "coverage-gate-scan";
 
@@ -41,13 +42,76 @@ function flagVal(flag, dflt) {
 }
 
 /**
- * Audit a ledger's records run-by-run. Pure given `records`. Returns
- *   { runs: [{ runId, ok, violations[], covered[], missing[], waived[] }],
- *     totalViolations, totalCovered, runCount }
- * Records lacking a run_id are bucketed under "(no-run-id)" and evaluated as a pool.
+ * AC-5.3 — EXTERNAL expected-roles source. The old self-audit derived `expected`
+ * ONLY from the roles that CLAIM ok:true in the run, so a role that produced NO
+ * record was never expected and its omission read clean (the "omitted-role slip").
+ * The expected set must come from an EXTERNAL source (registry / sprint composition)
+ * so a role that ran NOTHING is still expected → still a gap.
+ *
+ * `expectedSource` is resolved per-run as one of:
+ *   - a function (runId, runRecs) => [roleString | {role,...}]   (caller-supplied),
+ *   - a plain map { [runId]: [...] }  (e.g. sprint-composition derived), or
+ *   - an array  [...]                 (one external set for ALL runs).
+ * When NO external source is supplied, the legacy self-derive (roles that claim
+ * ok:true) is the FALLBACK — but it is UNION'd with any external set so a supplied
+ * source can only ADD expectations, never shrink them below the claimed set.
  */
-function auditLedger(records) {
+function resolveExpected(expectedSource, runId, runRecs) {
+  let external = null;
+  if (typeof expectedSource === "function") {
+    external = expectedSource(runId, runRecs);
+  } else if (expectedSource && typeof expectedSource === "object" && !Array.isArray(expectedSource)) {
+    external = expectedSource[runId] != null ? expectedSource[runId] : expectedSource["*"];
+  } else if (Array.isArray(expectedSource)) {
+    external = expectedSource;
+  }
+  // claimed = the legacy self-derive (distinct ok:true roles in this run).
+  const claimed = [...new Set(runRecs.filter((r) => r && r.ok === true && r.role).map((r) => r.role))];
+  const normExternal = Array.isArray(external)
+    ? external.map((e) => (typeof e === "string" ? { role: e } : e)).filter((e) => e && e.role)
+    : [];
+  // UNION external ∪ claimed, external entries (which may carry shape/plan_item/waiver)
+  // taking precedence over a bare claimed role of the same name.
+  const byRole = new Map();
+  for (const role of claimed) byRole.set(role, { role });
+  for (const e of normExternal) byRole.set(e.role, e);
+  return [...byRole.values()];
+}
+
+/**
+ * Audit a ledger's records run-by-run. Pure given `records`. Returns
+ *   { runs: [{ runId, ok, violations[], covered[], missing[], waived[], legacyExempt }],
+ *     totalViolations, totalCovered, runCount, cutoff, legacyExemptRuns }
+ * Records lacking a run_id are bucketed under "(no-run-id)" and evaluated as a pool.
+ *
+ * opts:
+ *   expectedSource : AC-5.3 external expected-roles source (see resolveExpected).
+ *   cutoff         : AC-5.5 legacy-scoping cutoff (default the SHARED LEGACY_CUTOFF
+ *                    for this consumer). A run whose date is STRICTLY BEFORE the
+ *                    cutoff is LEGACY — its violations are reported as INFO, not
+ *                    counted as gaps. A run dated ON/AFTER the cutoff (or undated)
+ *                    still REDS — scope-then-flip, never scope-as-loophole.
+ *   runDateOf      : (runId, runRecs) => ISO date | null — how to date a run. Default
+ *                    = the max record `ts`/`date` in the run (an undatable run is NOT
+ *                    legacy → still in scope, fail-closed).
+ */
+function auditLedger(records, opts = {}) {
   const recs = Array.isArray(records) ? records.filter(Boolean) : [];
+  const expectedSource = opts.expectedSource || null;
+  const cutoff = opts.cutoff || cutoffFor("coverage-gate-scan");
+  const runDateOf =
+    typeof opts.runDateOf === "function"
+      ? opts.runDateOf
+      : (_runId, runRecs) => {
+          // Default run date = the newest record date in the run (so a single
+          // post-cutoff record keeps the whole run in scope — the safe direction).
+          let newest = null;
+          for (const r of runRecs) {
+            const d = r && (r.ts || r.date || r.created_at);
+            if (d && (newest === null || String(d) > String(newest))) newest = d;
+          }
+          return newest;
+        };
   const buckets = new Map();
   for (const r of recs) {
     const id = r && typeof r.run_id === "string" && r.run_id ? r.run_id : "(no-run-id)";
@@ -57,24 +121,34 @@ function auditLedger(records) {
   const runs = [];
   let totalViolations = 0;
   let totalCovered = 0;
+  let legacyExemptRuns = 0;
   for (const [id, runRecs] of buckets) {
-    // expected = distinct roles that CLAIM coverage (an ok:true record) in this run.
-    const expected = [...new Set(runRecs.filter((r) => r && r.ok === true && r.role).map((r) => r.role))]
-      .map((role) => ({ role }));
-    // runId only narrows when these records actually carry that id (the no-run-id
-    // bucket evaluates as a flat pool — runId:null means "use all records").
     const runId = id === "(no-run-id)" ? null : id;
     let res;
     try {
+      // AC-5.3: expected derives from the EXTERNAL source (∪ the claimed-roles
+      // fallback). A throwing external source must FAIL-CLOSED to a per-run
+      // violation — never a silent green, never a whole-audit crash.
+      const expected = resolveExpected(expectedSource, id, runRecs);
       res = evaluate({ records: runRecs, expected, runId });
     } catch (e) {
-      res = { ok: false, violations: [`evaluate() threw for run ${id}: ${e && e.message ? e.message : e}`], covered: [], missing: [], waived: [] };
+      res = { ok: false, violations: [`coverage audit FAILED-CLOSED for run ${id}: ${e && e.message ? e.message : e}`], covered: [], missing: [], waived: [] };
     }
-    totalViolations += res.violations.length;
+    // AC-5.5: legacy scoping. A run dated STRICTLY BEFORE the cutoff is historic —
+    // its violations are INFO, not gaps (so the flip doesn't red genuinely old runs).
+    // An undated/on-after run still REDS (scope-then-flip).
+    const runDate = runDateOf(id, runRecs);
+    const legacyExempt = isLegacyDate(runDate, cutoff);
+    if (legacyExempt) {
+      legacyExemptRuns++;
+      runs.push({ runId: id, ...res, legacyExempt: true, legacyViolations: res.violations, violations: [] });
+    } else {
+      totalViolations += res.violations.length;
+      runs.push({ runId: id, ...res, legacyExempt: false });
+    }
     totalCovered += res.covered.length;
-    runs.push({ runId: id, ...res });
   }
-  return { runs, totalViolations, totalCovered, runCount: runs.length };
+  return { runs, totalViolations, totalCovered, runCount: runs.length, cutoff, legacyExemptRuns };
 }
 
 function main() {
@@ -110,6 +184,12 @@ function main() {
   }
 
   const gaps = audit.totalViolations;
+  // AC-5.2: every ACTIVE waiver (a silenced role) is SURFACED — visible at /scan,
+  // not hidden — with its provenance, so an operator can see WHO silenced WHAT.
+  const allWaived = [];
+  for (const run of audit.runs) {
+    for (const w of run.waived || []) allWaived.push({ runId: run.runId, ...w });
+  }
   if (asJson) {
     process.stdout.write(
       JSON.stringify(
@@ -117,7 +197,15 @@ function main() {
           ok: gaps === 0,
           check: NAME,
           reportOnly: !enforce,
-          counts: { runs: audit.runCount, covered: audit.totalCovered, gaps },
+          cutoff: audit.cutoff,
+          counts: {
+            runs: audit.runCount,
+            covered: audit.totalCovered,
+            gaps,
+            waived: allWaived.length,
+            legacyExemptRuns: audit.legacyExemptRuns,
+          },
+          waived: allWaived,
           runs: audit.runs.filter((r) => r.violations.length),
         },
         null,
@@ -128,6 +216,7 @@ function main() {
     process.stdout.write(
       `OK   [${NAME}] ${audit.runCount} run(s), ${audit.totalCovered} role(s) covered, 0 coverage gaps (ledger self-audit)\n`,
     );
+    surfaceWaivers(allWaived);
   } else {
     process.stdout.write(
       `WARN [${NAME}] ${gaps} coverage gap(s) across ${audit.runCount} run(s)` +
@@ -142,6 +231,7 @@ function main() {
       if (shown >= 25) break;
     }
     if (gaps > 25) process.stdout.write(`  ... and ${gaps - 25} more\n`);
+    surfaceWaivers(allWaived);
   }
 
   // REPORT-ONLY: exit 0 unless --enforce (the ramp tail). Fail-open already
@@ -150,6 +240,25 @@ function main() {
   return enforce ? 1 : 0;
 }
 
+// AC-5.2: render the active waivers (silenced roles) so they are VISIBLE at /scan.
+// A provenance-backed waiver is legitimate — but it must never be HIDDEN, so the
+// operator can audit WHO silenced WHAT, WHEN, and against WHAT trail.
+function surfaceWaivers(allWaived) {
+  if (!allWaived || !allWaived.length) return;
+  process.stdout.write(
+    `INFO [${NAME}] ${allWaived.length} active waiver(s) (silenced role(s), surfaced — not hidden):\n`,
+  );
+  for (const w of allWaived) {
+    const p = w.provenance || {};
+    const who = p.operator || "?";
+    const when = p.ts || "?";
+    const trail = p.trail || "?";
+    process.stdout.write(
+      `  - [run ${w.runId}] role '${w.role}' WAIVED by ${who} @ ${when} (trail ${trail}): ${w.reason || p.reason || ""}\n`,
+    );
+  }
+}
+
 if (require.main === module) process.exit(main());
 
-module.exports = { auditLedger };
+module.exports = { auditLedger, resolveExpected, surfaceWaivers, LEGACY_CUTOFF };
