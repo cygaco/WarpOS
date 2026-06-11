@@ -157,6 +157,36 @@ assert(
   null,
 );
 
+// ─── Fix-cycle (gemini lane 2026-06-11): string-aware brace walker ──────────
+// Braces inside JSON string values (brace-globs) must NOT truncate extraction —
+// the naive walker false-blocked this legitimate contract fail-closed.
+assert(
+  "brace-glob in allowedFiles → ALLOW (string-aware walker)",
+  run(
+    makeDispatch(
+      "builder",
+      'Build this.\n\nscopeContract: {"allowedFiles":["{engineering,product}/**/*.ts","src/x.ts"],"forbiddenFiles":[]}\n',
+    ),
+  ),
+  0,
+  null,
+);
+
+// ─── Fix-cycle (gemini lane 2026-06-11): equals separator is FOUND ──────────
+// `scopeContract={...}` used to return found:false (absent-case fallthrough);
+// the empty-check must apply to it like the colon form.
+assert(
+  "equals-separator empty allowedFiles → LOUD BLOCK",
+  run(
+    makeDispatch(
+      "builder",
+      'Build this.\n\nscopeContract={"allowedFiles":[]}\n',
+    ),
+  ),
+  2,
+  "EMPTY allowedFiles",
+);
+
 // ─── Summary ────────────────────────────────────────────────────────────────
 console.log(`\nResults: ${passed} passed, ${failed} failed`);
 process.exit(failed > 0 ? 1 : 0);

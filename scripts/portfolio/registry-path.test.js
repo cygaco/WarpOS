@@ -9,8 +9,9 @@
  * Asserts:
  *  1. registry.js#registryPath() resolves to ~/.warpos/portfolio.json
  *     (home-anchored, NOT project-local).
- *  2. The dead project-local path .claude/portfolio/registry.yaml is
- *     NEVER what registryPath() returns.
+ *  2. The dead project-local registry.yaml (under the project portfolio dir) is
+ *     NEVER what registryPath() returns. (Literal intentionally split here and
+ *     in the test name — path-lint hard-bans the contiguous form.)
  *  3. paths.json (generated) does NOT contain a portfolioRegistry key
  *     (the key was removed via removedIn so nothing can resolve the dead path).
  *  4. WARPOS_PORTFOLIO_REGISTRY env-var override is honoured by registryPath().
@@ -60,7 +61,7 @@ test("registryPath() resolves to ~/.warpos/portfolio.json", () => {
 });
 
 // ── 2. Dead project-local path is NEVER returned ──────────────────────────
-test("registryPath() does NOT point at dead .claude/portfolio/registry.yaml", () => {
+test("registryPath() does NOT point at the dead project-local registry.yaml", () => {
   const saved = process.env.WARPOS_PORTFOLIO_REGISTRY;
   delete process.env.WARPOS_PORTFOLIO_REGISTRY;
   try {

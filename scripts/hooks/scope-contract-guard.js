@@ -96,16 +96,31 @@ function hasScopeContract(prompt) {
  */
 function extractScopeContract(prompt) {
   const p = prompt || "";
-  // Match "scopeContract" followed by optional whitespace/colon and then an opening brace.
-  const m = /scopeContract[\s:]*(\{)/i.exec(p);
+  // Match "scopeContract" followed by whitespace/colon/equals and an opening brace.
+  // Gauntlet fix-cycle (gemini lane 2026-06-11): `=` separator added so
+  // `scopeContract={...}` is FOUND (a missed parse used to fall to the absent
+  // case — fail-closed for build-chain, but the empty-check was skipped).
+  const m = /scopeContract[\s:=]*(\{)/i.exec(p);
   if (!m) return { found: false };
 
-  // Walk forward from the opening brace, tracking brace depth to find the closing brace.
+  // Walk forward from the opening brace, tracking brace depth to find the closing
+  // brace. STRING-AWARE (gemini lane 2026-06-11): braces inside JSON string
+  // literals (e.g. brace-globs like "{a,b}/**" in allowedFiles) must not move
+  // the depth counter — the naive walker truncated early and false-blocked a
+  // legitimate contract fail-closed on an every-dispatch guard.
   const start = m.index + m[0].length - 1; // position of '{'
   let depth = 0;
+  let inString = false;
   for (let i = start; i < p.length; i++) {
-    if (p[i] === "{") depth++;
-    else if (p[i] === "}") {
+    const ch = p[i];
+    if (inString) {
+      if (ch === "\\") { i++; continue; } // skip escaped char inside string
+      if (ch === '"') inString = false;
+      continue;
+    }
+    if (ch === '"') { inString = true; continue; }
+    if (ch === "{") depth++;
+    else if (ch === "}") {
       depth--;
       if (depth === 0) {
         const json = p.slice(start, i + 1);
