@@ -1,0 +1,1227 @@
+# backend-reviewer — SP-20260611-002 backend/enforcer surfaces (G3a coverage-gate, G3b provider-tier, G3c enforce-paths)
+
+You are a BACKEND CODE REVIEWER. Review the diff below for: correctness, fail-closed-where-it-should, the provider-tier verdict-matrix soundness (tier_short on t1-down, fail-closed corrupt config, envelope ok mirrors verdict), the shared legacy-cutoff helper single-sourcing (one cutoff, consumers import not redefine), coverage-gate waiver provenance + external expected-source, the --enforce paths being genuinely capable (exit non-zero on a planted violation, fail-closed on internal error), error handling, edge cases.
+
+
+This is the SP-20260611-002 E-LIFECYCLE-001 close-out sprint: fixes to 17 REAL + 4 PARTIAL GPT-2nd-pass security findings on the mode-lifecycle / turbo-auth / coverage-gate / provider-tier / enforcer surfaces, PLUS a W1-fold fix (T-324 teardown projectDir anchoring, T-325 cwd scoping). All enforcement stays REPORT-ONLY by design (no blocking flip this sprint — do NOT flag report-only as a defect). Fixtures are namespaced under tests/regression/SP-20260611-002/.
+
+VERDICT: end with a single line `VERDICT: PASS` or `VERDICT: FAIL`, then findings tagged BLOCKER / MAJOR / MINOR with file:line. If PASS, state briefly why the changes are sound.
+
+===== BACKEND/ENFORCER SURFACES DIFF (cad7249..integrated) =====
+diff --git a/scripts/checks/coverage-gate-scan.js b/scripts/checks/coverage-gate-scan.js
+index 088385c..7ffbb44 100644
+--- a/scripts/checks/coverage-gate-scan.js
++++ b/scripts/checks/coverage-gate-scan.js
+@@ -30,6 +30,7 @@
+ 
+ const path = require("path");
+ const { evaluate, readLedger } = require("../dispatch/coverage-gate");
++const { LEGACY_CUTOFF, cutoffFor, isLegacyDate } = require("../dispatch/legacy-cutoff");
+ 
+ const NAME = "coverage-gate-scan";
+ 
+@@ -40,14 +41,77 @@ function flagVal(flag, dflt) {
+     : dflt;
+ }
+ 
++/**
++ * AC-5.3 — EXTERNAL expected-roles source. The old self-audit derived `expected`
++ * ONLY from the roles that CLAIM ok:true in the run, so a role that produced NO
++ * record was never expected and its omission read clean (the "omitted-role slip").
++ * The expected set must come from an EXTERNAL source (registry / sprint composition)
++ * so a role that ran NOTHING is still expected → still a gap.
++ *
++ * `expectedSource` is resolved per-run as one of:
++ *   - a function (runId, runRecs) => [roleString | {role,...}]   (caller-supplied),
++ *   - a plain map { [runId]: [...] }  (e.g. sprint-composition derived), or
++ *   - an array  [...]                 (one external set for ALL runs).
++ * When NO external source is supplied, the legacy self-derive (roles that claim
++ * ok:true) is the FALLBACK — but it is UNION'd with any external set so a supplied
++ * source can only ADD expectations, never shrink them below the claimed set.
++ */
++function resolveExpected(expectedSource, runId, runRecs) {
++  let external = null;
++  if (typeof expectedSource === "function") {
++    external = expectedSource(runId, runRecs);
++  } else if (expectedSource && typeof expectedSource === "object" && !Array.isArray(expectedSource)) {
++    external = expectedSource[runId] != null ? expectedSource[runId] : expectedSource["*"];
++  } else if (Array.isArray(expectedSource)) {
++    external = expectedSource;
++  }
++  // claimed = the legacy self-derive (distinct ok:true roles in this run).
++  const claimed = [...new Set(runRecs.filter((r) => r && r.ok === true && r.role).map((r) => r.role))];
++  const normExternal = Array.isArray(external)
++    ? external.map((e) => (typeof e === "string" ? { role: e } : e)).filter((e) => e && e.role)
++    : [];
++  // UNION external ∪ claimed, external entries (which may carry shape/plan_item/waiver)
++  // taking precedence over a bare claimed role of the same name.
++  const byRole = new Map();
++  for (const role of claimed) byRole.set(role, { role });
++  for (const e of normExternal) byRole.set(e.role, e);
++  return [...byRole.values()];
++}
++
+ /**
+  * Audit a ledger's records run-by-run. Pure given `records`. Returns
+- *   { runs: [{ runId, ok, violations[], covered[], missing[], waived[] }],
+- *     totalViolations, totalCovered, runCount }
++ *   { runs: [{ runId, ok, violations[], covered[], missing[], waived[], legacyExempt }],
++ *     totalViolations, totalCovered, runCount, cutoff, legacyExemptRuns }
+  * Records lacking a run_id are bucketed under "(no-run-id)" and evaluated as a pool.
++ *
++ * opts:
++ *   expectedSource : AC-5.3 external expected-roles source (see resolveExpected).
++ *   cutoff         : AC-5.5 legacy-scoping cutoff (default the SHARED LEGACY_CUTOFF
++ *                    for this consumer). A run whose date is STRICTLY BEFORE the
++ *                    cutoff is LEGACY — its violations are reported as INFO, not
++ *                    counted as gaps. A run dated ON/AFTER the cutoff (or undated)
++ *                    still REDS — scope-then-flip, never scope-as-loophole.
++ *   runDateOf      : (runId, runRecs) => ISO date | null — how to date a run. Default
++ *                    = the max record `ts`/`date` in the run (an undatable run is NOT
++ *                    legacy → still in scope, fail-closed).
+  */
+-function auditLedger(records) {
++function auditLedger(records, opts = {}) {
+   const recs = Array.isArray(records) ? records.filter(Boolean) : [];
++  const expectedSource = opts.expectedSource || null;
++  const cutoff = opts.cutoff || cutoffFor("coverage-gate-scan");
++  const runDateOf =
++    typeof opts.runDateOf === "function"
++      ? opts.runDateOf
++      : (_runId, runRecs) => {
++          // Default run date = the newest record date in the run (so a single
++          // post-cutoff record keeps the whole run in scope — the safe direction).
++          let newest = null;
++          for (const r of runRecs) {
++            const d = r && (r.ts || r.date || r.created_at);
++            if (d && (newest === null || String(d) > String(newest))) newest = d;
++          }
++          return newest;
++        };
+   const buckets = new Map();
+   for (const r of recs) {
+     const id = r && typeof r.run_id === "string" && r.run_id ? r.run_id : "(no-run-id)";
+@@ -57,24 +121,34 @@ function auditLedger(records) {
+   const runs = [];
+   let totalViolations = 0;
+   let totalCovered = 0;
++  let legacyExemptRuns = 0;
+   for (const [id, runRecs] of buckets) {
+-    // expected = distinct roles that CLAIM coverage (an ok:true record) in this run.
+-    const expected = [...new Set(runRecs.filter((r) => r && r.ok === true && r.role).map((r) => r.role))]
+-      .map((role) => ({ role }));
+-    // runId only narrows when these records actually carry that id (the no-run-id
+-    // bucket evaluates as a flat pool — runId:null means "use all records").
+     const runId = id === "(no-run-id)" ? null : id;
+     let res;
+     try {
++      // AC-5.3: expected derives from the EXTERNAL source (∪ the claimed-roles
++      // fallback). A throwing external source must FAIL-CLOSED to a per-run
++      // violation — never a silent green, never a whole-audit crash.
++      const expected = resolveExpected(expectedSource, id, runRecs);
+       res = evaluate({ records: runRecs, expected, runId });
+     } catch (e) {
+-      res = { ok: false, violations: [`evaluate() threw for run ${id}: ${e && e.message ? e.message : e}`], covered: [], missing: [], waived: [] };
++      res = { ok: false, violations: [`coverage audit FAILED-CLOSED for run ${id}: ${e && e.message ? e.message : e}`], covered: [], missing: [], waived: [] };
++    }
++    // AC-5.5: legacy scoping. A run dated STRICTLY BEFORE the cutoff is historic —
++    // its violations are INFO, not gaps (so the flip doesn't red genuinely old runs).
++    // An undated/on-after run still REDS (scope-then-flip).
++    const runDate = runDateOf(id, runRecs);
++    const legacyExempt = isLegacyDate(runDate, cutoff);
++    if (legacyExempt) {
++      legacyExemptRuns++;
++      runs.push({ runId: id, ...res, legacyExempt: true, legacyViolations: res.violations, violations: [] });
++    } else {
++      totalViolations += res.violations.length;
++      runs.push({ runId: id, ...res, legacyExempt: false });
+     }
+-    totalViolations += res.violations.length;
+     totalCovered += res.covered.length;
+-    runs.push({ runId: id, ...res });
+   }
+-  return { runs, totalViolations, totalCovered, runCount: runs.length };
++  return { runs, totalViolations, totalCovered, runCount: runs.length, cutoff, legacyExemptRuns };
+ }
+ 
+ function main() {
+@@ -110,6 +184,12 @@ function main() {
+   }
+ 
+   const gaps = audit.totalViolations;
++  // AC-5.2: every ACTIVE waiver (a silenced role) is SURFACED — visible at /scan,
++  // not hidden — with its provenance, so an operator can see WHO silenced WHAT.
++  const allWaived = [];
++  for (const run of audit.runs) {
++    for (const w of run.waived || []) allWaived.push({ runId: run.runId, ...w });
++  }
+   if (asJson) {
+     process.stdout.write(
+       JSON.stringify(
+@@ -117,7 +197,15 @@ function main() {
+           ok: gaps === 0,
+           check: NAME,
+           reportOnly: !enforce,
+-          counts: { runs: audit.runCount, covered: audit.totalCovered, gaps },
++          cutoff: audit.cutoff,
++          counts: {
++            runs: audit.runCount,
++            covered: audit.totalCovered,
++            gaps,
++            waived: allWaived.length,
++            legacyExemptRuns: audit.legacyExemptRuns,
++          },
++          waived: allWaived,
+           runs: audit.runs.filter((r) => r.violations.length),
+         },
+         null,
+@@ -128,6 +216,7 @@ function main() {
+     process.stdout.write(
+       `OK   [${NAME}] ${audit.runCount} run(s), ${audit.totalCovered} role(s) covered, 0 coverage gaps (ledger self-audit)\n`,
+     );
++    surfaceWaivers(allWaived);
+   } else {
+     process.stdout.write(
+       `WARN [${NAME}] ${gaps} coverage gap(s) across ${audit.runCount} run(s)` +
+@@ -142,6 +231,7 @@ function main() {
+       if (shown >= 25) break;
+     }
+     if (gaps > 25) process.stdout.write(`  ... and ${gaps - 25} more\n`);
++    surfaceWaivers(allWaived);
+   }
+ 
+   // REPORT-ONLY: exit 0 unless --enforce (the ramp tail). Fail-open already
+@@ -150,6 +240,25 @@ function main() {
+   return enforce ? 1 : 0;
+ }
+ 
++// AC-5.2: render the active waivers (silenced roles) so they are VISIBLE at /scan.
++// A provenance-backed waiver is legitimate — but it must never be HIDDEN, so the
++// operator can audit WHO silenced WHAT, WHEN, and against WHAT trail.
++function surfaceWaivers(allWaived) {
++  if (!allWaived || !allWaived.length) return;
++  process.stdout.write(
++    `INFO [${NAME}] ${allWaived.length} active waiver(s) (silenced role(s), surfaced — not hidden):\n`,
++  );
++  for (const w of allWaived) {
++    const p = w.provenance || {};
++    const who = p.operator || "?";
++    const when = p.ts || "?";
++    const trail = p.trail || "?";
++    process.stdout.write(
++      `  - [run ${w.runId}] role '${w.role}' WAIVED by ${who} @ ${when} (trail ${trail}): ${w.reason || p.reason || ""}\n`,
++    );
++  }
++}
++
+ if (require.main === module) process.exit(main());
+ 
+-module.exports = { auditLedger };
++module.exports = { auditLedger, resolveExpected, surfaceWaivers, LEGACY_CUTOFF };
+diff --git a/scripts/checks/mode-lifecycle-hooks-coverage.js b/scripts/checks/mode-lifecycle-hooks-coverage.js
+index 9c3b016..77285e5 100644
+--- a/scripts/checks/mode-lifecycle-hooks-coverage.js
++++ b/scripts/checks/mode-lifecycle-hooks-coverage.js
+@@ -183,6 +183,67 @@ function findRuntimeEmitters(eventsPath) {
+   return emitted;
+ }
+ 
++/**
++ * Validate the wiring-pending allowlist SCHEMA (SP-20260611-002 R-9 / S-9).
++ * Each entry MUST be an object `{ owner, review_by|expiry, reason }`:
++ *   AC-9.1: a schemaless entry (bare string, or missing owner/expiry/reason) is
++ *           REJECTED — NOT honored as pending → it falls through to a coverage gap.
++ *   AC-9.2: an entry whose review_by/expiry is in the PAST is FLAGGED — also NOT
++ *           honored as pending → falls through to a gap (so --enforce fails on it).
++ *           An UNPARSEABLE expiry is treated as expired (fail-closed — a malformed
++ *           date can never silently extend an allowlist).
++ *   AC-9.3: a well-formed, in-date entry (owner + future expiry + reason) is honored
++ *           as pending → reported as INFO, never over-flagged.
++ *
++ * Pure. @returns {{ pending:Set<string>, flagged:Array<{event,problem}> }}
++ *   pending = the events the allowlist legitimately suppresses (honored INFO).
++ *   flagged = the events whose entry was rejected (schemaless / expired) — surfaced
++ *             so the downgrade-to-gap is visible, not silent.
++ */
++function loadAllowlistSchema(al, now = new Date()) {
++  const pending = new Set();
++  const flagged = [];
++  const wp = al && al.wiring_pending;
++  if (!wp || typeof wp !== "object") return { pending, flagged };
++  const todayIso = (now instanceof Date && !Number.isNaN(now.getTime()) ? now : new Date())
++    .toISOString()
++    .slice(0, 10);
++  for (const [event, entry] of Object.entries(wp)) {
++    // AC-9.1: a bare string (legacy) or non-object is schemaless → reject.
++    if (!entry || typeof entry !== "object" || Array.isArray(entry)) {
++      flagged.push({ event, problem: "schemaless (not an object; needs { owner, review_by|expiry, reason })" });
++      continue;
++    }
++    const owner = typeof entry.owner === "string" ? entry.owner.trim() : "";
++    const reason = typeof entry.reason === "string" ? entry.reason.trim() : "";
++    const rawExpiry = entry.review_by != null ? entry.review_by : entry.expiry;
++    const expiry = typeof rawExpiry === "string" ? rawExpiry.trim() : "";
++    const missing = [];
++    if (!owner) missing.push("owner");
++    if (!expiry) missing.push("review_by/expiry");
++    if (!reason) missing.push("reason");
++    if (missing.length) {
++      flagged.push({ event, problem: `schemaless (missing ${missing.join(", ")})` });
++      continue;
++    }
++    // AC-9.2: the expiry must parse to a YYYY-MM-DD and be >= today. An unparseable
++    // date is treated as expired (fail-closed). A PAST date is flagged.
++    const m = expiry.match(/^(\d{4}-\d{2}-\d{2})/);
++    const expiryDay = m ? m[1] : null;
++    if (!expiryDay) {
++      flagged.push({ event, problem: `unparseable review_by/expiry '${expiry}' (treated as expired — fail-closed)` });
++      continue;
++    }
++    if (expiryDay < todayIso) {
++      flagged.push({ event, problem: `EXPIRED review_by/expiry ${expiryDay} (past ${todayIso}) — downgraded to a gap` });
++      continue;
++    }
++    // AC-9.3: well-formed + in-date → honored as pending (INFO).
++    pending.add(event);
++  }
++  return { pending, flagged };
++}
++
+ /**
+  * Core coverage compute. Pure given its inputs.
+  * @param {object} registry     the parsed registry
+@@ -228,13 +289,17 @@ function main() {
+   }
+ 
+   // Wiring-pending allowlist (a missing/broken allowlist is non-fatal — treat as empty,
+-  // which only makes the check STRICTER, never a false-green).
++  // which only makes the check STRICTER, never a false-green). R-9: each entry is
++  // SCHEMA-VALIDATED ({ owner, review_by|expiry, reason }); a schemaless or expired
++  // entry is NOT honored as pending — it is flagged and falls through to a coverage
++  // gap (AC-9.1/9.2), so a permanent silent allowlist cannot suppress an emitter-gap.
+   let pending = new Set();
++  let allowlistFlagged = [];
+   try {
+     const al = readJson(allowlistPath);
+-    if (al && al.wiring_pending && typeof al.wiring_pending === "object") {
+-      pending = new Set(Object.keys(al.wiring_pending));
+-    }
++    const loaded = loadAllowlistSchema(al);
++    pending = loaded.pending;
++    allowlistFlagged = loaded.flagged;
+   } catch {
+     /* no allowlist -> stricter, not a false-green */
+   }
+@@ -251,6 +316,9 @@ function main() {
+       covered: res.covered.length,
+       pending: res.pending.length,
+       gaps: res.gaps,
++      // R-9: schemaless/expired allowlist entries that were rejected (downgraded to a
++      // gap if the event has no emitter) — surfaced so the downgrade is never silent.
++      allowlistFlagged,
+       enforce: ENFORCE,
+     }));
+   } else if (ok) {
+@@ -268,6 +336,17 @@ function main() {
+     for (const g of res.gaps.slice(0, 25)) sink.write(`  - ${g}\n`);
+     if (res.gaps.length > 25) sink.write(`  ... and ${res.gaps.length - 25} more\n`);
+   }
++  // R-9: always surface a rejected (schemaless/expired) allowlist entry — even when
++  // the event happens to be covered by an emitter — so a malformed allowlist row is
++  // visible, not silently ignored.
++  if (!JSON_OUT && allowlistFlagged.length) {
++    const sink = ENFORCE && !ok ? process.stderr : process.stdout;
++    sink.write(
++      `note [mode-lifecycle-hooks-coverage] ${allowlistFlagged.length} allowlist entry(ies) REJECTED ` +
++        `(schemaless/expired — not honored as wiring-pending; an uncovered such event is a GAP):\n`,
++    );
++    for (const f of allowlistFlagged.slice(0, 25)) sink.write(`  - ${f.event}: ${f.problem}\n`);
++  }
+ 
+   // REPORT-ONLY: gaps exit 0 unless --enforce. Parse/unreadable already returned 2 above.
+   if (ok) return 0;
+@@ -279,6 +358,7 @@ if (require.main === module) process.exit(main());
+ module.exports = {
+   validateRegistry,
+   computeCoverage,
++  loadAllowlistSchema,
+   findStaticEmitters,
+   findRuntimeEmitters,
+   readJson,
+diff --git a/scripts/checks/planning-principles.js b/scripts/checks/planning-principles.js
+index 935deb5..1bf2408 100644
+--- a/scripts/checks/planning-principles.js
++++ b/scripts/checks/planning-principles.js
+@@ -24,9 +24,23 @@
+  * Mirrors the envelope/--json shape of scripts/checks/coverage-gate-scan.js +
+  * scripts/checks/turbo-spend.js (the other report-only / fail-open scans).
+  *
+- *   node scripts/checks/planning-principles.js [--json] [--include-plans] [--planning-dir <path>]
++ *   node scripts/checks/planning-principles.js [--json] [--include-plans]
++ *       [--include-sprints] [--include-root] [--all] [--enforce] [--planning-dir <path>]
+  *
+- * Exit: ALWAYS 0 (report-only + fail-open). Findings are printed, never blocking.
++ * Exit (default, report-only + fail-open): ALWAYS 0. Findings are printed, never blocking.
++ *
++ * --enforce (S-7, SP-20260611-002 R-7 / finding #17/#18/#19): the report-only ramp
++ * grows a REAL enforce tail. The flow is the same scan, but the EXIT changes:
++ *   - clean (0 gaps)                      -> exit 0
++ *   - gaps present                        -> exit 1  (reportOnly was the only thing
++ *                                            holding it at 0; --enforce flips it)
++ *   - internal runner error during scan   -> exit 2  (FAIL-CLOSED — an internal error
++ *                                            under --enforce can NEVER read as a clean
++ *                                            ok:true/exit 0; that is exactly the #18
++ *                                            false-green this ticket closes)
++ * Without --enforce the historic report-only contract is unchanged: ALWAYS exit 0,
++ * fail-open on any error. --enforce is proven-capable here but NOT wired into
++ * /scan:full this sprint (AC-X.4 no report-only→blocking flip).
+  */
+ 
+ const fs = require("fs");
+@@ -37,37 +51,90 @@ const NAME = "planning-principles";
+ // ── The three principle-required sections (the machine-checkable subset of
+ //    _planning/principle.md). Each is matched case-insensitively against the doc
+ //    body; a doc that satisfies all three is well-formed. ───────────────────────
++//
++// AC-7.3 (close the loose-regex weakness, finding #17): a section is satisfied only
++// when the principle term appears in a STRUCTURAL form — a markdown heading
++// (`## Enforcer`), a bold/label run (`**Enforcer**`, `Enforcer:`), a list-item
++// label (`- Enforcer:` / `- [x] **Proof**`), or a recognized verbed phrase
++// (`enforced by`, `verified by`). BARE WORD PRESENCE in prose ("there is no
++// enforcer", "this needs proof") does NOT satisfy the section — the term has to be
++// LABELLING content, not merely occurring. The labelled-form matchers are built by
++// `labelForm()` so the three sections share one definition of "a heading/label".
++//
++// `wordMatcher(term)` => RegExp that fires only when `term` is used as a section
++// label/heading, not as an incidental word:
++//   ^### Enforcer            heading (1-6 #), term leads the heading text
++//   - [x] **Enforcer** …     list item with a bold/plain label
++//   **Enforcer**             a bold run naming the section
++//   Enforcer:                an inline label (term immediately followed by a colon)
++// The leading anchor (start-of-line / `**` / `- ` / `[x] `) is what separates a
++// LABEL from prose — "no enforcer" has no such anchor, so it no longer satisfies.
++function labelForm(term) {
++  // term may itself be a small alternation (e.g. "proof|acceptance").
++  const t = `(?:${term})`;
++  return new RegExp(
++    // heading: line-start, 1-6 '#', optional list/number prefix, then the term
++    String.raw`(?:^|\n)\s{0,3}#{1,6}\s+(?:[-*\d.)\s]*)?` + t + String.raw`\b` +
++      "|" +
++      // bold/label run: **Term** or __Term__ (optionally inside a list/checkbox item)
++      String.raw`(?:\*\*|__)\s*` + t + String.raw`\b[^\n*_]*(?:\*\*|__)` +
++      "|" +
++      // inline label: line-start (optionally `- ` / `- [x] `) then Term immediately
++      // followed by a ':' — "Enforcer:" / "- Proof:" — a labelling colon, not prose
++      String.raw`(?:^|\n)\s{0,3}(?:[-*+]\s+(?:\[[ xX]\]\s+)?)?(?:\*\*|__)?` + t +
++      String.raw`(?:\*\*|__)?\s*:`,
++    "i",
++  );
++}
++
+ const REQUIRED_SECTIONS = [
+   {
+     key: "enforcer",
+     label: "named enforcer (principle #7)",
+-    // "## Enforcer", "named enforcer", "enforced by", "enforcer:"
+-    test: (text) => /\benforcer\b/i.test(text) || /\benforced\s+by\b/i.test(text),
++    // a labelled Enforcer section/heading, OR the verbed phrase "enforced by".
++    enforce: labelForm("enforcer"),
++    test: (text) => labelForm("enforcer").test(text) || /\benforced\s+by\b/i.test(text),
+   },
+   {
+     key: "proof",
+     label: "proof / acceptance (principles #6/#15)",
+-    // "proof", "required-proof", "acceptance [criteria]", "verified by"
++    // a labelled Proof / Acceptance / Required-proof section, OR "verified by".
+     test: (text) =>
+-      /\bproof\b/i.test(text) ||
+-      /required[-\s]proof/i.test(text) ||
+-      /\bacceptance\b/i.test(text) ||
++      labelForm("proof|required[-\\s]?proof|acceptance(?:\\s+criteria)?").test(text) ||
+       /\bverified[_\s-]?by\b/i.test(text),
+   },
+   {
+     key: "blast-radius",
+     label: "blast-radius assessment (principle #5)",
+-    test: (text) => /blast[-\s]?radius/i.test(text),
++    // a labelled Blast-radius / Blast radius section (the term IS already
++    // distinctive, but require the label form for parity with #17 hardening).
++    test: (text) => labelForm("blast[-\\s]?radius").test(text),
+   },
+ ];
+ 
+ function parseArgs(argv) {
+-  const out = { json: false, includePlans: false, planningDir: null };
++  const out = {
++    json: false,
++    includePlans: false,
++    includeSprints: false,
++    includeRoot: false,
++    enforce: false,
++    planningDir: null,
++  };
+   for (let i = 0; i < argv.length; i++) {
+     const a = argv[i];
+     if (a === "--json") out.json = true;
+     else if (a === "--include-plans") out.includePlans = true;
+-    else if (a === "--planning-dir") out.planningDir = String(argv[++i] || "");
++    else if (a === "--include-sprints") out.includeSprints = true;
++    else if (a === "--include-root") out.includeRoot = true;
++    else if (a === "--enforce") out.enforce = true;
++    else if (a === "--all") {
++      // --all = the widest default scan scope (epics + plans + sprints + root
++      // lifecycle plans), so a single flag closes finding #19 without naming each.
++      out.includePlans = true;
++      out.includeSprints = true;
++      out.includeRoot = true;
++    } else if (a === "--planning-dir") out.planningDir = String(argv[++i] || "");
+   }
+   return out;
+ }
+@@ -106,6 +173,34 @@ function collectPlanDocs(dir, notices) {
+   return docs;
+ }
+ 
++// Collect TOP-LEVEL plan `.md` files directly under `dir` (NOT recursive — the
++// epics/plans/sprints subtrees are scanned separately). Skips README.md, dotfiles,
++// and any directory. Fail-open like collectPlanDocs. Used for AC-7.4 root-plan scope.
++function collectRootPlanDocs(dir, notices) {
++  const docs = [];
++  let entries;
++  try {
++    if (!fs.existsSync(dir)) return docs;
++    entries = fs.readdirSync(dir, { withFileTypes: true });
++  } catch (e) {
++    notices.push(`could not read dir ${dir} (fail-open): ${String(e.message || e)}`);
++    return docs;
++  }
++  for (const ent of entries) {
++    let isFile = false;
++    try {
++      isFile = ent.isFile();
++    } catch {
++      continue;
++    }
++    if (!isFile) continue; // directories handled by the dedicated subtree scans
++    if (ent.name === "README.md") continue; // dir contract, not a plan
++    if (ent.name.startsWith(".")) continue;
++    if (/\.md$/i.test(ent.name)) docs.push(path.join(dir, ent.name));
++  }
++  return docs;
++}
++
+ /**
+  * Scan the planning lifecycle store for principle-omitting plan docs.
+  * Pure given the filesystem. Returns:
+@@ -129,14 +224,27 @@ function scanPlanningPrinciples(opts = {}) {
+ 
+   // Default scan = epics/ only (the lifecycle-store epic plans). plans/ is the
+   // separate org/GTM expansion corpus — opt-in via --include-plans.
++  //
++  // AC-7.4 (finding #19): the historic default missed violations living OUTSIDE
++  // _planning/epics — specifically _planning/sprints (sprint plan artifacts) and
++  // ROOT lifecycle plans. --include-sprints / --include-root (or --all) extend the
++  // scan scope so such a violation is now FOUND. The default stays epics-only so the
++  // historic report-only behavior and the S-LC-08 fixtures do not change.
+   const dirs = [path.join(planningDir, "epics")];
+   if (opts.includePlans) dirs.push(path.join(planningDir, "plans"));
++  if (opts.includeSprints) dirs.push(path.join(planningDir, "sprints"));
+ 
+   let docs = [];
+   for (const d of dirs) {
+     result.scannedDirs.push(d);
+     docs = docs.concat(collectPlanDocs(d, result.notices));
+   }
++  // ROOT lifecycle plans live directly under _planning/ (NOT recursing into the
++  // epics/plans/sprints subtrees already scanned). Only the top-level plan `.md`s.
++  if (opts.includeRoot) {
++    result.scannedDirs.push(planningDir);
++    docs = docs.concat(collectRootPlanDocs(planningDir, result.notices));
++  }
+   result.counts.docs = docs.length;
+ 
+   for (const file of docs) {
+@@ -166,8 +274,11 @@ function scanPlanningPrinciples(opts = {}) {
+ }
+ 
+ function render(r) {
++  // reportOnly defaults true (the scan result) unless the CLI set --enforce.
++  const reportOnly = r.reportOnly !== false;
++  const modeNote = reportOnly ? "report-only" : "ENFORCE (gaps exit non-zero)";
+   const lines = [
+-    `/scan:${NAME} — ${r.counts.gaps ? "FINDINGS" : "OK"} (report-only; plans must obey _planning/principle.md)`,
++    `/scan:${NAME} — ${r.counts.gaps ? "FINDINGS" : "OK"} (${modeNote}; plans must obey _planning/principle.md)`,
+     "",
+   ];
+   lines.push(`  scanned: ${r.scannedDirs.length} dir(s), ${r.counts.docs} plan doc(s)`);
+@@ -175,7 +286,7 @@ function render(r) {
+     lines.push("  result:  every scanned plan names an enforcer, proof/acceptance, and a blast-radius");
+   } else {
+     lines.push(
+-      `  result:  ${r.counts.gaps} plan doc(s) OMIT a principle-required section (REPORT-ONLY — not blocking):`,
++      `  result:  ${r.counts.gaps} plan doc(s) OMIT a principle-required section (${reportOnly ? "REPORT-ONLY — not blocking" : "ENFORCE — blocking"}):`,
+     );
+     for (const f of r.findings) {
+       lines.push(`    ! ${f.file}`);
+@@ -198,11 +309,29 @@ if (require.main === module) {
+   try {
+     r = scanPlanningPrinciples({
+       includePlans: args.includePlans,
++      includeSprints: args.includeSprints,
++      includeRoot: args.includeRoot,
+       planningDir: args.planningDir,
+     });
+   } catch (e) {
+-    // Ultimate fail-open: never crash the scan harness. Report-only ⇒ exit 0.
++    // An internal runner error. The posture DIVERGES by mode:
++    //   default (report-only)  -> FAIL-OPEN: exit 0 with a note (advisory plan-lint
++    //                             must never break the scan/build — §8.11).
++    //   --enforce              -> FAIL-CLOSED: exit 2 (AC-7.2). An internal error can
++    //                             NEVER read as a clean ok:true/exit 0 under --enforce
++    //                             — that is the #18 false-green this ticket closes.
+     const msg = String((e && e.message) || e);
++    if (args.enforce) {
++      if (args.json) {
++        process.stdout.write(
++          JSON.stringify({ ok: false, check: NAME, reportOnly: false, enforce: true, failClosed: true, error: msg }) +
++            "\n",
++        );
++      } else {
++        process.stderr.write(`FAIL [${NAME}] internal error under --enforce — FAIL-CLOSED (exit 2): ${msg}\n`);
++      }
++      process.exit(2);
++    }
+     if (args.json) {
+       process.stdout.write(
+         JSON.stringify({ ok: true, check: NAME, reportOnly: true, note: `fail-open: ${msg}` }) + "\n",
+@@ -212,11 +341,16 @@ if (require.main === module) {
+     }
+     process.exit(0);
+   }
++  // reportOnly is true unless --enforce is set: this is what flips the exit at the
++  // bottom while leaving the scan output identical.
++  r.reportOnly = !args.enforce;
++  r.enforce = Boolean(args.enforce);
+   if (args.json) {
+     process.stdout.write(JSON.stringify(r, null, 2) + "\n");
+   } else {
+     process.stdout.write(render(r) + "\n");
+   }
+-  // REPORT-ONLY: ALWAYS exit 0. Gaps are surfaced, never blocking (§8.11).
+-  process.exit(0);
++  // AC-7.1: the REAL enforce flip. reportOnly || ok ? 0 : 1 — default stays exit 0
++  // ALWAYS (reportOnly true); under --enforce a gap (ok:false) exits 1.
++  process.exit(r.reportOnly || r.ok ? 0 : 1);
+ }
+diff --git a/scripts/dispatch/coverage-gate.js b/scripts/dispatch/coverage-gate.js
+index 3bc68b3..9f70206 100644
+--- a/scripts/dispatch/coverage-gate.js
++++ b/scripts/dispatch/coverage-gate.js
+@@ -45,6 +45,48 @@ function isBackedRecord(r) {
+   return !!(r && typeof r.dispatch_id === "string" && r.dispatch_id && typeof r.cmdline_checksum === "string" && r.cmdline_checksum);
+ }
+ 
++/**
++ * A waiver is PROVENANCED iff it carries an accountable trail, not just free text
++ * (R-5 AC-5.1). A provenance-free `{ reason: "..." }` waiver is REJECTED the same
++ * way an unbacked coverage record is — a silenced role must name WHO silenced it,
++ * WHEN, and against WHAT auditable trail, so the flip-to-blocking gate's escape is
++ * accountable instead of a free-text loophole. Required:
++ *   - reason     : non-empty free text (WHY the role is skipped),
++ *   - operator   : an operator / source id (WHO authorized the waiver) — accepted
++ *                  under `operator` or `source` (either names the authorizer),
++ *   - ts         : a timestamp (WHEN), and
++ *   - a backing trail: a `record` / `dispatch_id` / `ticket` / `audit_ref` — SOME
++ *                  pointer to where the waiver is recorded (the auditable trail).
++ * Returns { ok, provenance?, missing[] } — `provenance` is the normalized,
++ * scan-surfaceable shape (so AC-5.2 can render the silenced role at /scan).
++ */
++function waiverProvenance(waiver) {
++  const w = waiver && typeof waiver === "object" ? waiver : {};
++  const reason = typeof w.reason === "string" ? w.reason.trim() : "";
++  const operator =
++    (typeof w.operator === "string" && w.operator.trim()) ||
++    (typeof w.source === "string" && w.source.trim()) ||
++    "";
++  const ts = typeof w.ts === "string" && w.ts.trim() ? w.ts.trim() : "";
++  // The auditable trail: any one of these names where the waiver is recorded.
++  const trail =
++    (typeof w.record === "string" && w.record.trim()) ||
++    (typeof w.dispatch_id === "string" && w.dispatch_id.trim()) ||
++    (typeof w.ticket === "string" && w.ticket.trim()) ||
++    (typeof w.audit_ref === "string" && w.audit_ref.trim()) ||
++    "";
++  const missing = [];
++  if (!reason) missing.push("reason");
++  if (!operator) missing.push("operator/source");
++  if (!ts) missing.push("ts");
++  if (!trail) missing.push("record/dispatch_id/ticket/audit_ref");
++  return {
++    ok: missing.length === 0,
++    missing,
++    provenance: missing.length === 0 ? { reason, operator, ts, trail } : null,
++  };
++}
++
+ // §17.4 "a record's existence ≠ covered" — a coverage record must prove it produced
+ // SOMETHING: a non-empty output_digest (the universal proof for reviewer/skill/build
+ // stdout) OR at least one artifacts[] entry carrying a digest. A backed ok:true
+@@ -106,14 +148,21 @@ function evaluate(input) {
+     }
+ 
+     // Waiver: a role may be explicitly, AUDITABLY excused (a known skip / tolerated
+-    // failure) instead of silently missing — but ONLY with a reason, so the
+-    // flip-to-blocking gate has an accountable escape, never a silent loophole.
++    // failure) instead of silently missing — but ONLY with full PROVENANCE (R-5
++    // AC-5.1): WHO (operator/source), WHEN (ts), WHY (reason), and an auditable
++    // trail (record/dispatch_id/ticket/audit_ref). A provenance-free free-text
++    // waiver is REJECTED the same way an unbacked coverage record is, so the
++    // flip-to-blocking gate's escape is accountable, never a silent loophole. The
++    // honored waiver's provenance is SURFACED in `waived[]` (AC-5.2) so a silenced
++    // role is VISIBLE at /scan, not hidden.
+     if (exp.waiver) {
+-      const reason = exp.waiver && typeof exp.waiver.reason === "string" ? exp.waiver.reason.trim() : "";
+-      if (!reason) {
+-        violations.push(`role '${role}' is waived but the waiver carries no reason — an unauditable waiver is REJECTED (name why the role is skipped).`);
++      const p = waiverProvenance(exp.waiver);
++      if (!p.ok) {
++        violations.push(
++          `role '${role}' is waived but the waiver lacks provenance (missing: ${p.missing.join(", ")}) — an unaccountable waiver is REJECTED. A waiver must name WHO (operator/source), WHEN (ts), WHY (reason), and an auditable trail (record/dispatch_id/ticket/audit_ref).`,
++        );
+       } else {
+-        waived.push({ role, reason });
++        waived.push({ role, reason: p.provenance.reason, provenance: p.provenance });
+       }
+       continue;
+     }
+@@ -222,7 +271,7 @@ function parseExpect(spec) {
+     });
+ }
+ 
+-module.exports = { evaluate, readLedger, isBackedRecord, hasArtifactProof, sha256File, parseExpect };
++module.exports = { evaluate, readLedger, isBackedRecord, hasArtifactProof, waiverProvenance, sha256File, parseExpect };
+ 
+ // ── CLI ─────────────────────────────────────────────────────
+ if (require.main === module) {
+diff --git a/scripts/dispatch/legacy-cutoff.js b/scripts/dispatch/legacy-cutoff.js
+new file mode 100644
+index 0000000..24abb4b
+--- /dev/null
++++ b/scripts/dispatch/legacy-cutoff.js
+@@ -0,0 +1,153 @@
++#!/usr/bin/env node
++"use strict";
++
++/**
++ * legacy-cutoff.js — the ONE shared "legacy scoping" cutoff for the coverage
++ * enforce paths (SP-20260611-002 R-5 / R-8, AC-5.4 SHARED CUTOFF — Hard AC #3).
++ *
++ * THE PROBLEM THIS CLOSES: two enforce paths — coverage-gate-scan (R-5) and
++ * check-ac-coverage (R-8) — each need a "records before the new enforce path was
++ * wired are LEGACY and exempt; records after it still RED" rule (scope-then-flip,
++ * not scope-as-loophole). If each ticket hardcodes its own date string, the two
++ * cutoffs DRIFT independently — exactly the failure shape the sibling enforcers
++ * already exhibit (`sprint-hook-coverage.js` and `sprint-manager-consult.js` each
++ * declare their OWN `RECORD_BACKED_CUTOFF = "2026-06-10"` literal, so a change to
++ * one silently leaves the other behind). This module is the single source the new
++ * consumers import, so a cutoff change is ONE edit, not N.
++ *
++ * SHARED-CUTOFF CONTRACT (stable export surface — R-8/WS-G3c consumes this, do not
++ * fork it):
++ *
++ *   const { LEGACY_CUTOFF, cutoffFor, isLegacyDate, recordIsLegacy }
++ *     = require("./legacy-cutoff");
++ *
++ *   - LEGACY_CUTOFF                 : ISO date (YYYY-MM-DD). The default cutoff:
++ *                                     records dated STRICTLY BEFORE it are legacy
++ *                                     (exempt); records dated >= it are in scope of
++ *                                     the new enforce path and still RED.
++ *   - cutoffFor(consumer?)          : the cutoff for a named consumer. Returns the
++ *                                     shared LEGACY_CUTOFF unless that consumer's
++ *                                     enforce path was GENUINELY wired on a different
++ *                                     date — in which case the divergence is declared
++ *                                     EXPLICITLY in CONSUMER_OVERRIDES below WITH a
++ *                                     written rationale (never a silent second drift).
++ *   - isLegacyDate(date, cutoff?)   : true iff `date` (ISO string or Date) is
++ *                                     strictly before the cutoff → exempt. An
++ *                                     UNDATED / unparseable input is NOT legacy
++ *                                     (fail-CLOSED — an undatable record is never
++ *                                     auto-exempted; the new enforce path still
++ *                                     applies, per AC-5.5 scope-then-flip).
++ *   - recordIsLegacy(rec, opts?)    : convenience for a ledger/AC record — pulls a
++ *                                     date field (ts / created_at / date / sprint
++ *                                     start) and applies isLegacyDate. Same
++ *                                     fail-closed posture: no extractable date ⇒ NOT
++ *                                     legacy.
++ *
++ * Zero runtime deps (Node core only). PURE + side-effect-free so it is safe to
++ * require from a hook or a /scan check.
++ */
++
++/**
++ * The shared cutoff. Records dated STRICTLY BEFORE this are legacy (exempt from the
++ * new coverage-enforce path); records on or after it are in scope and still RED.
++ *
++ * Chosen as the date the NEW coverage-enforce paths in this sprint (R-5 + R-8) were
++ * wired: 2026-06-11 (SP-20260611-002). Matches the sibling enforcers' record-backed
++ * convention (`RECORD_BACKED_CUTOFF`) — a single literal both new consumers share so
++ * legacy scoping cannot become a per-ticket loophole. To move the cutoff, edit HERE
++ * ONLY; both consumers follow.
++ */
++const LEGACY_CUTOFF = "2026-06-11";
++
++/**
++ * Per-consumer cutoff overrides — the ESCAPE HATCH AC-5.4 mandates be EXPLICIT.
++ * EMPTY by design: R-5 (coverage-gate-scan) and R-8 (check-ac-coverage) had their
++ * enforce paths wired in the SAME sprint on the SAME date, so they share
++ * LEGACY_CUTOFF with no divergence. If a future consumer's enforce path is wired on
++ * a genuinely different date, add an entry here as:
++ *
++ *   "consumer-name": { cutoff: "YYYY-MM-DD", rationale: "<why this date differs>" }
++ *
++ * — so the divergence is declared per-ticket with a written rationale, NEVER two
++ * independently-drifting hardcoded literals. `cutoffFor` returns the shared default
++ * for any consumer NOT listed here.
++ */
++const CONSUMER_OVERRIDES = Object.freeze({
++  // (empty — R-5 + R-8 share LEGACY_CUTOFF; no genuine wiring-date divergence)
++});
++
++/** The known consumers of this shared cutoff (documentation + a stable surface for tests). */
++const CONSUMERS = Object.freeze(["coverage-gate-scan", "check-ac-coverage"]);
++
++/**
++ * The cutoff for a named consumer. Returns the shared LEGACY_CUTOFF unless the
++ * consumer is declared in CONSUMER_OVERRIDES with an explicit rationale.
++ *   cutoffFor()                       -> LEGACY_CUTOFF
++ *   cutoffFor("coverage-gate-scan")   -> LEGACY_CUTOFF (no override)
++ *   cutoffFor("check-ac-coverage")    -> LEGACY_CUTOFF (no override)
++ */
++function cutoffFor(consumer) {
++  const o = consumer && CONSUMER_OVERRIDES[consumer];
++  return o && typeof o.cutoff === "string" && o.cutoff ? o.cutoff : LEGACY_CUTOFF;
++}
++
++/** Normalize an ISO date / Date to the leading YYYY-MM-DD, or null if unparseable. */
++function toIsoDay(date) {
++  if (date == null) return null;
++  if (date instanceof Date) {
++    if (Number.isNaN(date.getTime())) return null;
++    return date.toISOString().slice(0, 10);
++  }
++  const s = String(date).trim();
++  // Accept a bare YYYY-MM-DD or a full ISO timestamp; reject anything without a
++  // leading date. A lexical compare of YYYY-MM-DD strings is a valid chronological
++  // compare, so we don't need Date parsing for the common case.
++  const m = s.match(/^(\d{4}-\d{2}-\d{2})/);
++  if (m) return m[1];
++  // Last resort: let Date try (handles e.g. RFC-2822). Still fail-closed on NaN.
++  const d = new Date(s);
++  return Number.isNaN(d.getTime()) ? null : d.toISOString().slice(0, 10);
++}
++
++/**
++ * isLegacyDate(date, cutoff?) -> boolean
++ *   true  iff `date` is strictly BEFORE the cutoff (legacy/exempt).
++ *   false if `date` is on/after the cutoff (in scope of the new enforce path → RED),
++ *         OR if `date` is undated/unparseable (FAIL-CLOSED: an undatable record is
++ *         never auto-exempted — the scope-then-flip posture of AC-5.5).
++ */
++function isLegacyDate(date, cutoff = LEGACY_CUTOFF) {
++  const day = toIsoDay(date);
++  if (day === null) return false; // fail-closed: undatable ⇒ NOT legacy
++  const cut = toIsoDay(cutoff) || LEGACY_CUTOFF;
++  return day < cut;
++}
++
++/**
++ * recordIsLegacy(rec, { cutoff?, dateFields? }) -> boolean
++ * Convenience for a ledger/AC record: extracts a date from the first present of
++ * `dateFields` (default ts/created_at/date/started_at/sprint_date) and applies
++ * isLegacyDate. Same fail-closed posture — a record with no extractable date is NOT
++ * legacy (the new enforce path still applies).
++ */
++function recordIsLegacy(rec, opts = {}) {
++  const cutoff = opts.cutoff || LEGACY_CUTOFF;
++  const fields = opts.dateFields || ["ts", "created_at", "date", "started_at", "sprint_date"];
++  if (!rec || typeof rec !== "object") return false; // fail-closed
++  for (const f of fields) {
++    if (rec[f] != null && toIsoDay(rec[f]) !== null) {
++      return isLegacyDate(rec[f], cutoff);
++    }
++  }
++  return false; // no extractable date ⇒ NOT legacy (fail-closed)
++}
++
++module.exports = {
++  LEGACY_CUTOFF,
++  CONSUMER_OVERRIDES,
++  CONSUMERS,
++  cutoffFor,
++  isLegacyDate,
++  recordIsLegacy,
++  toIsoDay,
++};
+diff --git a/scripts/sprint/check-ac-coverage.js b/scripts/sprint/check-ac-coverage.js
+index 2287b22..86dc5cf 100644
+--- a/scripts/sprint/check-ac-coverage.js
++++ b/scripts/sprint/check-ac-coverage.js
+@@ -32,6 +32,14 @@ const path = require("path");
+ const SPRINT = require("./paths");
+ const { readYamlMaybe } = require("./fs");
+ const { AC_CATEGORIES } = require("./ac-categories");
++// SHARED legacy-scoping cutoff (AC-8.3 / Hard AC #3) — IMPORTED from WS-G3a's
++// authored helper (R-5 AC-5.4), NOT re-defined. The SAME single source coverage-
++// gate-scan (R-5) consumes; `cutoffFor("check-ac-coverage")` resolves the shared
++// LEGACY_CUTOFF (this consumer declares no override — its enforce path was wired in
++// the SAME sprint, same date as R-5). A divergent date would be an explicit
++// CONSUMER_OVERRIDES entry in legacy-cutoff.js with a written rationale, never a
++// second hardcoded literal here.
++const { cutoffFor, isLegacyDate } = require("../dispatch/legacy-cutoff");
+ 
+ function parseArgs(argv) {
+   const out = {
+@@ -158,6 +166,15 @@ function isStubProof(v) {
+ // Does this window of text carry a real proof for the category named in it?
+ // Reuses classifyVerifiedByRest so verified_by linkage is recognized identically
+ // to axis 1; also accepts a non-stub `proof:` / `proven by` clause.
++//
++// AC-8.4 — DOCUMENTED RESIDUE (SP-20260611-002 R-8, finding #18 minor; verified_by:
++// not_applicable): the proof-syntax acceptance here is LENIENT — a non-stub clause
++// like `proof: yes` is accepted as a covered category even though "yes" is not real
++// evidence. This is a KNOWN weakness, explicitly OUT OF SCOPE for this sprint (the
++// R-8 fix is the missing-artifact fail-closed path + legacy scoping; the proof-syntax
++// minor is carried, not fixed, so it is not silently dropped). A future ticket would
++// tighten isStubProof / require an executable verified_by here. DO NOT silently treat
++// this as resolved.
+ function chunkHasProof(chunk) {
+   const vb = chunk.match(/verified_by\s*:\s*([^\n]+)/i);
+   if (vb) {
+@@ -261,9 +278,29 @@ function resolveAcPath(sprintId) {
+   }
+ }
+ 
++// Parse the YYYY-MM-DD a sprint id encodes (SP-YYYYMMDD-NNN). Returns the ISO day or
++// null. Used for AC-8.3 legacy scoping: a historic sprint (id-date before the shared
++// cutoff) is legacy-exempt; an undatable id is NOT legacy (fail-closed).
++function sprintIsoDate(sprintId) {
++  const m = typeof sprintId === "string" && sprintId.match(/(\d{4})(\d{2})(\d{2})/);
++  return m ? `${m[1]}-${m[2]}-${m[3]}` : null;
++}
++
++// A `target` carries `named:true` when it names a concrete artifact (a `--file` path,
++// or a sprint's resolved acceptance-criteria.md). The AC-8.1 fail-closed change keys
++// on `named` + an `error` (unreadable NAMED artifact). The AC-8.2 greenfield case is
++// `targets.length === 0` — NO named artifact resolved at all — and stays fail-open.
+ function categoryTargets(args) {
+   if (args.file) {
+-    return [{ label: args.file, path: path.resolve(SPRINT.PROJECT, args.file) }];
++    return [
++      {
++        label: args.file,
++        path: path.resolve(SPRINT.PROJECT, args.file),
++        named: true,
++        // a --file target is not sprint-scoped → no legacy date (undatable ⇒ in scope).
++        date: null,
++      },
++    ];
+   }
+   const ids = args.sprint
+     ? [args.sprint]
+@@ -273,16 +310,38 @@ function categoryTargets(args) {
+   const targets = [];
+   for (const id of ids) {
+     const acPath = resolveAcPath(id);
+-    if (acPath && fs.existsSync(acPath)) targets.push({ label: id, path: acPath });
++    // A sprint whose AC artifact resolves but is MISSING/unreadable is still a NAMED
++    // target (we resolved a concrete expected path for it) — under --enforce that is a
++    // fail-closed failure (AC-8.1), not the greenfield no-target case.
++    if (acPath) {
++      targets.push({
++        label: id,
++        path: acPath,
++        named: true,
++        date: sprintIsoDate(id),
++        exists: fs.existsSync(acPath),
++      });
++    }
+   }
+   return targets;
+ }
+ 
+ function renderCategoryProse(r) {
+   if (r.error) {
+-    return `ac-coverage (categories) — ${r.label}: SKIP (${r.error}; fail-open)`;
++    if (r.enforceError) {
++      // NAMED + in-scope unreadable artifact → fail-closed under --enforce (AC-8.1).
++      return `ac-coverage (categories) — ${r.label}: FAIL (NAMED artifact unreadable: ${r.error} — fail-CLOSED under --enforce)`;
++    }
++    const why = r.legacyExempt ? "legacy-exempt, historic" : "fail-open";
++    return `ac-coverage (categories) — ${r.label}: SKIP (${r.error}; ${why})`;
+   }
+   const lines = [];
++  if (r.legacyExempt && Array.isArray(r.uncovered) && r.uncovered.length) {
++    lines.push(
++      `ac-coverage (categories) — ${r.label}: ${r.covered}/${r.total} covered (LEGACY-EXEMPT — historic, gaps are INFO not blocking)`,
++    );
++    return lines.join("\n");
++  }
+   lines.push(
+     `ac-coverage (categories) — ${r.label}: ${r.covered}/${r.total} covered, ${r.missing.length} missing, ${r.named_no_proof.length} named-but-unproven`,
+   );
+@@ -300,17 +359,41 @@ function renderCategoryProse(r) {
+   return lines.join("\n");
+ }
+ 
+-function runCategoryMode(args) {
+-  const targets = categoryTargets(args);
++function runCategoryMode(args, inject = {}) {
++  // `inject.targets` is a test seam (per-surface exploit isolation, Hard AC #4): a
++  // fixture passes an explicit, dated target list so the legacy-scoping + fail-closed
++  // branches are exercised deterministically without a real sprint registry. Prod
++  // callers pass no inject → the real categoryTargets resolution runs.
++  const targets = inject.targets || categoryTargets(args);
++  const cutoff = cutoffFor("check-ac-coverage"); // SHARED — see import note.
+   const reports = targets.map((t) => {
++    // AC-8.3: a target dated STRICTLY BEFORE the shared cutoff is historic (legacy-
++    // exempt) — an unreadable/gappy historic artifact does NOT red the new enforce
++    // path. An undatable target (e.g. a --file path, or an unparsable sprint id) is
++    // NOT legacy (fail-closed) → in scope of the enforce path (scope-then-flip).
++    const legacyExempt = isLegacyDate(t.date, cutoff);
+     let md;
+     try {
+       md = fs.readFileSync(t.path, "utf8");
+-    } catch {
++    } catch (e) {
++      // A NAMED artifact that is missing/unreadable. Under --enforce this is a
++      // FAILURE (AC-8.1) UNLESS the target is legacy-exempt; in report-only it stays
++      // ok:true (historic fail-open). The `enforceError` flag is what runCategoryMode
++      // keys the exit on — distinct from a content `error` that the old anyGap
++      // filtered away (the #18 false-green).
++      const enforceError = Boolean(t.named) && !legacyExempt;
+       return {
+         label: t.label,
+         error: "unreadable",
+-        ok: true,
++        named: Boolean(t.named),
++        legacyExempt,
++        // enforceError marks "a NAMED artifact failed to read, and it is in scope":
++        // a fail-closed condition the enforce gate must NOT pass.
++        enforceError,
++        // ok mirrors the gate posture: under --enforce a named+in-scope unreadable
++        // artifact is NOT ok; otherwise the historic report-only ok:true is kept.
++        ok: !(args.enforce && enforceError),
++        errorDetail: String((e && e.message) || e),
+         total: AC_CATEGORIES.length,
+         covered: 0,
+         missing: [],
+@@ -318,27 +401,34 @@ function runCategoryMode(args) {
+         uncovered: [],
+       };
+     }
+-    return { label: t.label, ...checkCategoryCoverage(md) };
++    return { label: t.label, legacyExempt, named: Boolean(t.named), ...checkCategoryCoverage(md) };
+   });
+ 
+   if (args.json) {
+     process.stdout.write(JSON.stringify(reports, null, 2) + "\n");
+   } else {
+     if (!reports.length) {
++      // AC-8.2: NO named artifact resolved at all (greenfield) → fail-open, exit 0,
++      // even under --enforce. The fail-closed change is for a NAMED-but-unreadable
++      // artifact, never the absence of any target.
+       process.stdout.write(
+-        "ac-coverage (categories) — no AC artifact to audit (fail-open, exit 0)\n",
++        "ac-coverage (categories) — no AC artifact to audit (greenfield: fail-open, exit 0)\n",
+       );
+     }
+     for (const r of reports) process.stdout.write(renderCategoryProse(r) + "\n");
+     process.stdout.write(
+-      `\nmode: report-only (${args.enforce ? "--enforce: exit non-zero on gaps" : "default: gaps are FLAGGED, exit 0"}) · single source: scripts/sprint/ac-categories.js (${AC_CATEGORIES.length} categories)\n`,
++      `\nmode: report-only (${args.enforce ? "--enforce: exit non-zero on gaps + unreadable NAMED artifacts" : "default: gaps are FLAGGED, exit 0"}) · cutoff: ${cutoff} · single source: scripts/sprint/ac-categories.js (${AC_CATEGORIES.length} categories)\n`,
+     );
+   }
+ 
++  // A real coverage gap on a readable, in-scope (non-legacy) artifact.
+   const anyGap = reports.some(
+-    (r) => !r.error && Array.isArray(r.uncovered) && r.uncovered.length > 0,
++    (r) => !r.error && !r.legacyExempt && Array.isArray(r.uncovered) && r.uncovered.length > 0,
+   );
+-  return args.enforce && anyGap ? 1 : 0;
++  // AC-8.1: a NAMED artifact that failed to read AND is in scope (not legacy) is a
++  // fail-closed failure under --enforce — closing the {error, ok:true} false-green.
++  const anyEnforceError = reports.some((r) => r.enforceError);
++  return args.enforce && (anyGap || anyEnforceError) ? 1 : 0;
+ }
+ 
+ function checkSprint(sprintId) {
+@@ -502,5 +592,7 @@ module.exports = {
+   isStubProof,
+   resolveAcPath,
+   runCategoryMode,
++  categoryTargets,
++  sprintIsoDate,
+   AC_CATEGORIES,
+ };
+diff --git a/scripts/warpos/lib/provider-tier-config.js b/scripts/warpos/lib/provider-tier-config.js
+index c7a0a0c..10953b3 100644
+--- a/scripts/warpos/lib/provider-tier-config.js
++++ b/scripts/warpos/lib/provider-tier-config.js
+@@ -109,33 +109,54 @@ function configPath() {
+  * Read the preferred-tier config. Returns the INSTANCE file when present+valid,
+  * else the FRAMEWORK defaults. Never throws; never hardcodes an instance value.
+  *
++ * ── ABSENT vs PRESENT-BUT-CORRUPT (R-6 / AC-6.2, AC-6.5) ──
++ *   Both still return the framework defaults as the resolved `config` (so a caller
++ *   that only reads `config` is unchanged), but they are DISTINGUISHED by a new
++ *   `corrupt` flag:
++ *     - ABSENT (no file)            → corrupt:false → greenfield, defaults are
++ *                                     authoritative, the check may pass (AC-6.5).
++ *     - PRESENT-but-unparseable     → corrupt:true  → the instance file existed and
++ *                                     may have carried an operator-RAISED floor we
++ *                                     can no longer read. The engine FAILS CLOSED on
++ *                                     this flag rather than silently relaxing to the
++ *                                     framework-default t1 (the false-green of #16).
++ *   `source` stays "framework-default" in both cases (the resolved config IS the
++ *   defaults); `corrupt` is the orthogonal trust signal the engine reads.
++ *
+  * @param {object} [opts]
+  * @param {string} [opts.configPath]  override the file location (tests)
+  * @param {object} [opts.configOverride]  inject a parsed config (tests)
+- * @returns {{ config:object, source:"instance-file"|"framework-default", path:string }}
++ * @returns {{ config:object, source:"instance-file"|"framework-default", corrupt:boolean, path:string }}
+  */
+ function readConfig(opts = {}) {
+   if (opts.configOverride) {
+-    return { config: normalize(opts.configOverride), source: "instance-file", path: opts.configPath || configPath() };
++    return { config: normalize(opts.configOverride), source: "instance-file", corrupt: false, path: opts.configPath || configPath() };
+   }
+   const file = opts.configPath || configPath();
+   let raw;
+   try {
+     raw = fs.readFileSync(file, "utf8");
+   } catch {
+-    return { config: FRAMEWORK_DEFAULTS(), source: "framework-default", path: file };
++    // ABSENT (greenfield): no instance file → framework defaults, NOT corrupt.
++    return { config: FRAMEWORK_DEFAULTS(), source: "framework-default", corrupt: false, path: file };
+   }
+   let parsed;
+   try {
+     parsed = JSON.parse(raw);
+   } catch {
+-    // Garbage instance file → framework defaults (fail-open, never block).
+-    return { config: FRAMEWORK_DEFAULTS(), source: "framework-default", path: file };
++    // PRESENT-but-unparseable → FAIL CLOSED (corrupt:true). The file existed and
++    // may have carried a raised floor we can no longer read — never silently
++    // degrade to the framework-default green (AC-6.2 / #16).
++    return { config: FRAMEWORK_DEFAULTS(), source: "framework-default", corrupt: true, path: file };
+   }
+-  if (!parsed || typeof parsed !== "object") {
+-    return { config: FRAMEWORK_DEFAULTS(), source: "framework-default", path: file };
++  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
++    // Present but structurally invalid (JSON `null`, a bare array, a number/string)
++    // → same fail-closed posture: the file is there but unusable as a config
++    // object. Array.isArray is explicit because `typeof [] === "object"` in JS, so
++    // a bare array would otherwise slip through as a usable instance file.
++    return { config: FRAMEWORK_DEFAULTS(), source: "framework-default", corrupt: true, path: file };
+   }
+-  return { config: normalize(parsed), source: "instance-file", path: file };
++  return { config: normalize(parsed), source: "instance-file", corrupt: false, path: file };
+ }
+ 
+ // Merge a partial instance config over the framework defaults so a sparse file
+diff --git a/scripts/warpos/provider-tier-check.js b/scripts/warpos/provider-tier-check.js
+index 929d38d..ada2e0d 100644
+--- a/scripts/warpos/provider-tier-check.js
++++ b/scripts/warpos/provider-tier-check.js
+@@ -266,11 +266,18 @@ function verdictFor(provider, signals, config, opts = {}) {
+   let verdict;
+   if (tierRank(eff.tier) >= tierRank(selected)) {
+     verdict = "tier_met";
+-  } else if (tierRank(selected) >= tierRank("t3") && !eff.t3Judged) {
+-    // Selected tier needs the value-free-UNDETECTABLE T3 floor and nothing
+-    // attested/probed it → we cannot know → fail-open to unknown (never block).
++  } else if (signals.t1Met && tierRank(selected) >= tierRank("t3") && !eff.t3Judged) {
++    // unknown-self-attested is RESERVED for the genuinely-undetectable case: T1 (and
++    // the value-free funded signal) ARE detectable and only the T3 sub-floor needs a
++    // self-attestation/probe nobody provided → we cannot know → fail-open (never
++    // block). It is NOT used when T1 is DETECTABLY down — a down provider is a
++    // confident, value-free-detectable shortfall (AC-6.1 / AC-6.4 / #15). Gating on
++    // signals.t1Met is what keeps the `!t1Met` t3-selected case out of this branch
++    // and in `tier_short` below.
+     verdict = "unknown-self-attested";
+   } else {
++    // Confident, value-free-detectable shortfall — incl. T1 down for any selected
++    // tier (CLI/auth is detectable, so a down provider is NEVER "unknown").
+     verdict = "tier_short";
+   }
+ 
+@@ -312,7 +319,7 @@ function verdictFor(provider, signals, config, opts = {}) {
+  * NEVER throws. Returns a value-free, report-only envelope.
+  */
+ function buildReport(opts = {}) {
+-  const { config, source: configSource, path: cfgPath } = cfgLib.readConfig(opts);
++  const { config, source: configSource, corrupt: configCorrupt, path: cfgPath } = cfgLib.readConfig(opts);
+   const providers =
+     opts.providers || Array.from(new Set([...cfgLib.KNOWN_PROVIDERS, ...Object.keys(config.providers || {})]));
+ 
+@@ -327,7 +334,12 @@ function buildReport(opts = {}) {
+     return verdictFor(p, signals, config, opts);
+   });
+ 
+-  const anyShort = rows.some((r) => r.verdict === "tier_short");
++  // FAIL-CLOSED on a PRESENT-but-CORRUPT instance file (AC-6.2 / #16): the file
++  // existed and may have carried an operator-RAISED floor we can no longer read.
++  // We must NOT relax to the framework-default green — hold (tier_short) so an
++  // --enforce REDS and the envelope `ok` is false. An ABSENT config (corrupt:false)
++  // is the normal greenfield case and is left to its real per-provider verdicts.
++  const anyShort = configCorrupt || rows.some((r) => r.verdict === "tier_short");
+   const summary = anyShort
+     ? "tier_short"
+     : rows.some((r) => r.verdict === "unknown-self-attested")
+@@ -335,11 +347,14 @@ function buildReport(opts = {}) {
+       : "tier_met";
+ 
+   return {
+-    ok: true,
++    // ok MIRRORS the verdict (AC-6.3): an `ok`-only consumer can no longer
++    // false-green a tier_short (incl. the corrupt-config hold).
++    ok: summary !== "tier_short",
+     report_only: true,
+     detection: "self-attestation (default)" + (opts.probe ? " + opt-in billing probe (stub)" : ""),
+     infer_from_dispatch: false, // structurally absent — no dispatch/spend path exists
+     config_source: configSource,
++    config_corrupt: !!configCorrupt, // PRESENT-but-unreadable → fail-closed hold
+     config_path: cfgPath,
+     t3_floor: cfgLib.resolveT3Floor(config),
+     providers: rows,
+@@ -359,6 +374,13 @@ function renderHuman(report) {
+   out.push("Provider Tier Readiness (report-only — value-free, no token spend)");
+   out.push("─".repeat(66));
+   out.push(`  config: ${report.config_source}   T3 floor: ${report.t3_floor} (operator-tunable)`);
++  if (report.config_corrupt) {
++    out.push(
++      "  WARNING: the instance config file is PRESENT but UNREADABLE — failing closed " +
++        "(holding tier_short).\n           A raised floor may be hidden; --enforce REDS. " +
++        "Repair or re-run --set-tier to restore it.",
++    );
++  }
+   out.push("");
+   out.push("  " + "PROVIDER".padEnd(9) + "EFF".padEnd(6) + "SELECTED".padEnd(10) + "VERDICT".padEnd(24) + "CONF");
+   out.push("  " + "─".repeat(62));
+@@ -459,8 +481,11 @@ function main(argv) {
+   else process.stdout.write(renderHuman(report));
+ 
+   // Exit contract: report-only exit 0 by default. --enforce exits 2 ONLY on a
+-  // confident tier_short (unknown-self-attested NEVER trips it — fail-open).
+-  if (args.enforce && report.providers.some((r) => r.verdict === "tier_short")) {
++  // confident tier_short — driven by verdict_summary so it covers BOTH a row-level
++  // shortfall (incl. T1 down, AC-6.1) AND the present-but-corrupt config fail-closed
++  // hold (AC-6.2). unknown-self-attested NEVER trips it (fail-open). This mirrors the
++  // envelope `ok` (AC-6.3) so the exit code and `ok` can never disagree.
++  if (args.enforce && report.verdict_summary === "tier_short") {
+     return 2;
+   }
+   return 0;
+
+===== END DIFF =====

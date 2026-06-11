@@ -1,0 +1,11 @@
+W1-FOLD FIX (T-324 BLOCKER + T-325 MINOR) — security-builder — STATUS: DONE
+AC-324.1 DONE: projectDir anchored to hook repo root (path.resolve(__dirname,'..','..') + realpath); event.cwd/env = corroborating-only, logged not load-bearing.
+AC-324.2 DONE: exploit fixture (attacker event.cwd -> planted foreign lifecycle.js dropping a sentinel) — sentinel NEVER written; env+cwd-poison variant also anchored.
+AC-324.3 DONE: legitimate same-project teardown still exits 0; fail-open preserved (end-to-end try/catch unchanged).
+AC-325.1/.2/.3 DONE: dropped parent-containment clause (normProject.startsWith(c+'/')); membership = exact project cwd OR member-cwd strictly UNDER project. parent+grandparent cwd no longer match; exact/under/slug-name still match.
+TESTS (all RUN green): teardown-projectdir-anchor 4/4, team-cwd-scope-under-project 5/5, mode-write-coverage 8/8, team-guard-verify 12/12, lifecycle-roster-exact-match 7/7 — 0 failed suites.
+MUTATION-VERIFY: T-324 revert (event.cwd chain) -> exploit test RED (foreign lifecycle.js require()d, sentinel dropped), 1/4. T-325 revert (parent-containment) -> parent+grandparent tests RED, 3/5. Fixes restored, all green.
+FILES: scripts/hooks/session-end-team-teardown.js, scripts/hooks/mode-lifecycle-guard.js, tests/regression/SP-20260611-002/teardown-projectdir-anchor.test.js, tests/regression/SP-20260611-002/team-cwd-scope-under-project.test.js
+FENCES HONORED: path-anchoring only; NO settings-wiring; NO signing/auth markers; fixtures namespaced under tests/regression/SP-20260611-002/; did NOT re-touch the G1/T-316 kill-switch attestation.
+NOTE for α: the teardown hook is ALREADY wired into .claude/settings.json SessionEnd on this integrated branch (the in-file 'NOT wired' comment was stale — I corrected the comment, did NOT touch settings.json, which is forbiddenFiles). The anchoring fix is correct regardless of wiring.
+COMMIT: 44b17de (branch wt/SP-20260611-002-W1FIX). Tree clean, not pushed.

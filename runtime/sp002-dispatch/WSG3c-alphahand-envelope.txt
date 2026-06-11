@@ -1,0 +1,9 @@
+WS-G3c (T-320) backend-builder — DONE. commit 8d734f3 on wt/SP-20260611-002-WSG3c.
+R-7 planning-principles --enforce: DONE — fixture 11/11 (3 planted), S-LC-08 9/9.
+R-8 check-ac-coverage fail-closed + legacy: DONE — fixture 11/11 (3 planted), S-LC-11 12/12, SP-20260518-007 4/4.
+R-9 hooks-coverage allowlist schema: DONE — fixture 10/10 (4 planted), S-LC-02 15/15.
+SHARED CUTOFF: IMPORTED (require ../dispatch/legacy-cutoff, cutoffFor("check-ac-coverage")), NOT re-defined; no CONSUMER_OVERRIDES needed (same wiring date as R-5).
+AC-8.4 = DOCUMENTED RESIDUE (proof-syntax minor carried, not fixed) — note in source + asserted present.
+AC-X.4: every --enforce path proven-capable (reds exit 1 on a planted violation) but NOT wired into /scan:full (full.md still invokes all three without --enforce).
+Files changed: scripts/checks/planning-principles.js, scripts/sprint/check-ac-coverage.js, scripts/checks/mode-lifecycle-hooks-coverage.js, scripts/checks/mode-lifecycle-hooks-coverage.allowlist.json, +3 namespaced fixtures under tests/regression/SP-20260611-002/.
+Scope clean (no forbidden files; legacy-cutoff.js untouched). node --check green on all 4 prod files.

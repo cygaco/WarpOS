@@ -1,0 +1,10 @@
+WS-G3b (T-319, R-6) provider-tier truthfulness — DONE. Commit 8645299 on wt/SP-20260611-002-WSG3b.
+AC-6.1 DONE: t1-down + selected t3 → verdict tier_short (not unknown); --enforce REDS via verdict_summary.
+AC-6.2 DONE: readConfig corrupt:true on present-but-unparseable (incl. bare array/null) → fail-closed HOLD tier_short, never framework-default green.
+AC-6.3 DONE: buildReport ok=(verdict_summary!==tier_short) → ok:false on tier_short; exit code mirrors ok.
+AC-6.4 DONE: unknown-self-attested gated on signals.t1Met — reserved for T1+T2 met & T3 undetectable only.
+AC-6.5 DONE: absent config → corrupt:false, framework defaults (greenfield); --enforce exit 0; distinguished from corrupt.
+AC-6.6 DONE: selected t1 + T1 met + readable → tier_met, --enforce exit 0, ok:true (no regression).
+Matrix: 18/18 cells green (tests/regression/SP-20260611-002/provider-tier-matrix.test.js). No-regress: S-LC-10 22/22.
+Files: scripts/warpos/provider-tier-check.js, scripts/warpos/lib/provider-tier-config.js, tests/regression/SP-20260611-002/provider-tier-matrix.test.js.
+NO blocking flip: enforcement stays behind --enforce; corrupt fixtures namespaced under tests/regression/SP-20260611-002/.

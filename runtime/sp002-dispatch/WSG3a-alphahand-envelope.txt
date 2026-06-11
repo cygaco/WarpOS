@@ -1,0 +1,11 @@
+WS-G3a (R-5, T-318) security-builder — coverage-gate provenance/expected-source/legacy-cutoff
+AC-5.1 DONE — reason-only waiver REJECTED; provenance (operator/source+ts+trail) now REQUIRED (coverage-gate.js waiverProvenance + evaluate waiver branch)
+AC-5.2 DONE — provenanced waiver honored AND surfaced on waived[].provenance; coverage-gate-scan surfaceWaivers() prints silenced roles (JSON+prose)
+AC-5.3 DONE — coverage-gate-scan expected now derives from EXTERNAL source (resolveExpected, ∪ claimed-fallback); omitted no-record role still a gap
+AC-5.4 DONE — ONE shared cutoff scripts/dispatch/legacy-cutoff.js; both consumers via cutoffFor(); divergence only via explicit CONSUMER_OVERRIDES w/ rationale (empty)
+AC-5.5 DONE — post-cutoff/undated violation still REDS (fail-closed); pre-cutoff exempt but finding preserved as legacyViolations (scope-then-flip, no silent drop)
+TESTS: coverage-gate.test.js 17/17 · waiver 7/7 · scan-source 6/6 · legacy-cutoff-shared 8/8 · dispatch-contract 19/19 · all node -c clean (plain-JS repo: no tsc/tsconfig in worktree or canonical)
+RAMP: NO blocking flip (AC-X.4) — scan stays report-only/exit-0 on live ledger; --enforce capability PROVEN (post-cutoff planted violation -> totalViolations=1 -> exit 1 in harness)
+FILES: scripts/dispatch/legacy-cutoff.js (NEW), scripts/dispatch/coverage-gate.js, scripts/dispatch/coverage-gate.test.js, scripts/checks/coverage-gate-scan.js, tests/regression/SP-20260611-002/{coverage-gate-waiver,coverage-gate-scan-source,legacy-cutoff-shared}.test.js
+SHARED-CUTOFF EXPORT (R-8/WS-G3c consumes): scripts/dispatch/legacy-cutoff.js -> { LEGACY_CUTOFF="2026-06-11", cutoffFor(consumer), isLegacyDate(date,cutoff?), recordIsLegacy(rec,opts?), CONSUMER_OVERRIDES, CONSUMERS } · check-ac-coverage cutoffFor("check-ac-coverage")
+COMMIT: 21f38b5 on wt/SP-20260611-002-WSG3a (7 files, +712/-24)
