@@ -28,6 +28,7 @@
  *   node scripts/checks/coverage-gate-scan.js [--json] [--enforce] [--ledger <path>]
  */
 
+const fs = require("fs");
 const path = require("path");
 const { evaluate, readLedger } = require("../dispatch/coverage-gate");
 const { LEGACY_CUTOFF, cutoffFor, isLegacyDate } = require("../dispatch/legacy-cutoff");
@@ -155,6 +156,7 @@ function main() {
   const asJson = process.argv.includes("--json");
   const enforce = process.argv.includes("--enforce");
   const ledgerPath = flagVal("--ledger", null);
+  const expectedSourcePath = flagVal("--expected-source", null);
 
   let records;
   try {
@@ -171,9 +173,38 @@ function main() {
     return 0;
   }
 
+  // AC-5.3 (LIVE PATH) — resolve expectedSource from the external registry /
+  // sprint-composition file supplied via --expected-source <path>. Without this,
+  // the audit self-derives expected from the ledger's own ok:true records, so a
+  // role that produced NO record is never expected and its omission reads clean
+  // (the "omitted-role slip"). An external source breaks the self-reference: roles
+  // named there but absent from the ledger are gaps even in production /scan.
+  //
+  // Format of the JSON file (same shape as the `expectedSource` the pure seam takes):
+  //   ["role1", "role2"]                  — applies to ALL runs as a universal set
+  //   { "run-id": ["role1","role2"], ... } — per-run sets (wildcard key "*" for all)
+  //
+  // FAIL-OPEN: an unreadable / malformed expected-source file is warned and
+  // proceeds without — never breaks /scan:full, falls back to self-derive only.
+  let liveExpectedSource = null;
+  if (expectedSourcePath) {
+    try {
+      const raw = fs.readFileSync(expectedSourcePath, "utf8").replace(/^﻿/, "");
+      liveExpectedSource = JSON.parse(raw);
+    } catch (e) {
+      const msg = String((e && e.message) || e);
+      process.stdout.write(
+        (asJson
+          ? JSON.stringify({ ok: true, check: NAME, reportOnly: true, note: `expected-source unreadable (fail-open, self-derive fallback): ${msg}` })
+          : `WARN [${NAME}] --expected-source unreadable — proceeding with self-derive fallback (${msg})`) + "\n",
+      );
+      // liveExpectedSource stays null → self-derive fallback
+    }
+  }
+
   let audit;
   try {
-    audit = auditLedger(records);
+    audit = auditLedger(records, { expectedSource: liveExpectedSource });
   } catch (e) {
     const msg = String((e && e.message) || e);
     process.stdout.write(
