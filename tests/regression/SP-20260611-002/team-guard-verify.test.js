@@ -57,12 +57,21 @@ function ok(name, fn) {
 //   plantHeartbeat  — write a bare `.team-live-<sid>` marker (the AC-1.2 spoof)
 //   killEnv         — set WARPOS_DISABLE_TEAM_GATE=1
 //   killMarker      — touch .team-gate-off
+//   manifestSlug    — write .claude/manifest.json with project.slug (project-scope fixtures)
+//   memberCwd       — include a member cwd in the backing team config
 // Returns { stdout, stderr, status }.
 function runGuard(opts = {}) {
   const proj = fs.mkdtempSync(path.join(os.tmpdir(), "tgv-proj-"));
   const home = fs.mkdtempSync(path.join(os.tmpdir(), "tgv-home-"));
   fs.mkdirSync(path.join(proj, ".claude", "runtime"), { recursive: true });
   fs.mkdirSync(path.join(home, ".claude", "runtime"), { recursive: true });
+  if (opts.manifestSlug) {
+    fs.mkdirSync(path.join(proj, ".claude"), { recursive: true });
+    fs.writeFileSync(
+      path.join(proj, ".claude", "manifest.json"),
+      JSON.stringify({ project: { slug: opts.manifestSlug } }),
+    );
+  }
   const sid = "s-tgv";
   fs.writeFileSync(
     path.join(proj, ".claude", "runtime", "mode.json"),
@@ -79,7 +88,10 @@ function runGuard(opts = {}) {
     fs.mkdirSync(cfgDir, { recursive: true });
     const members =
       opts.backingTeam === "epsilon"
-        ? [{ name: "epsilon", agentType: "epsilon" }, { name: "beta", agentType: "beta" }]
+        ? [
+            { name: "epsilon", agentType: "epsilon", ...(opts.memberCwd ? { cwd: opts.memberCwd === true ? proj : opts.memberCwd } : {}) },
+            { name: "beta", agentType: "beta" },
+          ]
         : [{ name: "reviewer", agentType: "general-purpose" }, { name: "builder", agentType: "general-purpose" }];
     const cfgPath = path.join(cfgDir, "config.json");
     fs.writeFileSync(cfgPath, JSON.stringify({ name: teamName, members }));
@@ -140,6 +152,43 @@ ok("foreign-team-name-does-not-borrow-a-different-stale-teams-readiness", () => 
     staleConfig: true,
   });
   assert.ok(isGateBlock(stdout), "a foreign team_name fails closed when no team is actually ready/live");
+});
+
+ok("finding-1-real-foreign-team-name-doogle-sprint-does-not-bypass-project-scope", () => {
+  // The gauntlet bypass: a worker passes a REAL team_name from a sibling project
+  // (doogle-sprint) that is fresh and carries epsilon. With a known WarpOS slug,
+  // named-team verification must reject it because it has neither the warpos slug
+  // nor a member cwd under this project.
+  const { stdout } = runGuard({
+    manifestSlug: "warpos",
+    teamName: "doogle-sprint",
+    backingTeam: "epsilon",
+    backingTeamName: "doogle-sprint",
+  });
+  assert.ok(isGateBlock(stdout), "a fresh foreign doogle-sprint team must not verify for the WarpOS project");
+});
+
+ok("finding-2-globally-freshest-foreign-epsilon-team-is-filtered-before-readiness", () => {
+  // The gauntlet bypass: readiness used the globally freshest team under
+  // ~/.claude/teams. A fresh foreign epsilon team therefore opened the gate even
+  // when THIS project had no correct team. With project scope, it is filtered out.
+  const { stdout } = runGuard({
+    manifestSlug: "warpos",
+    backingTeam: "epsilon",
+    backingTeamName: "doogle-sprint",
+  });
+  assert.ok(isGateBlock(stdout), "a globally freshest foreign epsilon team must not satisfy this project's readiness");
+});
+
+ok("project-scoped-team-by-member-cwd-still-passes", () => {
+  const { stdout } = runGuard({
+    manifestSlug: "warpos",
+    teamName: "custom-sprint",
+    backingTeam: "epsilon",
+    backingTeamName: "custom-sprint",
+    memberCwd: true,
+  });
+  assert.ok(!blocks(stdout), "a non-slug team with an epsilon member cwd under the project still verifies");
 });
 
 // ── AC-1.2 — a planted `.team-live-<sid>` marker must NOT flip teamLive alone ──

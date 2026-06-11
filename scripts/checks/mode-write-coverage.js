@@ -126,8 +126,17 @@ function evaluate({ modeState, modeUnreadable, lifecycleEvents, windowMs, nowMs 
   const mtimeMs = modeState.mtimeMs;
 
   // Find a corroborating lifecycle event: a CORROBORATING_EVENTS record whose
-  // payload.target_mode === the file's mode AND whose timestamp is within the
-  // window of the file's mtime (the sanctioned write emitted it ~at write time).
+  // payload.target_mode === the file's mode AND whose timestamp is POST-mtime
+  // within the window (the sanctioned write emitted it AT OR AFTER the file
+  // was written — never before).
+  //
+  // FINDING 4 FIX (FIX1-G1): the window is POST-mtime only — a lifecycle event
+  // that predates the mode.json mtime CANNOT corroborate it. The attack: a
+  // legitimate mode switch at T₀ emits an event; an attacker does an out-of-band
+  // rewrite at T₀+5min (mtime = T₀+5min). The old ±window check accepted the
+  // pre-mtime event (|T₀ − (T₀+5min)| = 5min ≤ 120min) → false green. The fix:
+  // require evMs ≥ mtimeMs (event happened AT OR AFTER the file write) AND
+  // evMs − mtimeMs ≤ windowMs (upper bound — emit-after-write latency tolerance).
   let corroborating = null;
   for (const ev of lifecycleEvents) {
     if (!ev || ev.event == null) continue;
@@ -136,7 +145,9 @@ function evaluate({ modeState, modeUnreadable, lifecycleEvents, windowMs, nowMs 
     if (target !== wantMode) continue;
     const evMs = ev.tsMs;
     if (typeof evMs !== "number" || isNaN(evMs)) continue;
-    if (Math.abs(evMs - mtimeMs) <= windowMs) {
+    // POST-mtime lower bound: event must be AT OR AFTER the file write.
+    // Upper bound: event must be within windowMs of the mtime.
+    if (evMs >= mtimeMs && evMs - mtimeMs <= windowMs) {
       corroborating = ev;
       break;
     }
@@ -158,8 +169,9 @@ function evaluate({ modeState, modeUnreadable, lifecycleEvents, windowMs, nowMs 
       ageMinutes: Math.round((nowMs - mtimeMs) / 60000),
       reason:
         `mode.json is "${wantMode}" but NO mode-switch lifecycle event corroborates ` +
-        `it within ${Math.round(windowMs / 60000)}m of the file mtime — an out-of-band ` +
-        `write that bypassed scripts/mode-set.js (the single-writer chokepoint)`,
+        `it within ${Math.round(windowMs / 60000)}m POST-mtime (event must be at or ` +
+        `after the file write, not before) — an out-of-band write that bypassed ` +
+        `scripts/mode-set.js (the single-writer chokepoint)`,
     },
     corroboratingEvent: null,
   };
