@@ -142,13 +142,16 @@ function parseArgs(argv) {
 // Recursively collect plan `.md` files under `dir`, skipping README.md (the dir
 // contract) and dotfiles. Fail-open: a missing dir yields []; an unreadable entry
 // is skipped (recorded as a notice by the caller).
-function collectPlanDocs(dir, notices) {
+// Under --enforce (`enforce` truthy): a dir-read error is re-thrown (fail-closed)
+// rather than downgraded to a notice.
+function collectPlanDocs(dir, notices, enforce) {
   const docs = [];
   let entries;
   try {
     if (!fs.existsSync(dir)) return docs; // missing dir → nothing to scan
     entries = fs.readdirSync(dir, { withFileTypes: true });
   } catch (e) {
+    if (enforce) throw e; // fail-closed under --enforce: unreadable dir must not be silenced
     notices.push(`could not read dir ${dir} (fail-open): ${String(e.message || e)}`);
     return docs;
   }
@@ -163,7 +166,7 @@ function collectPlanDocs(dir, notices) {
       continue;
     }
     if (isDir) {
-      docs.push(...collectPlanDocs(full, notices));
+      docs.push(...collectPlanDocs(full, notices, enforce));
     } else if (isFile) {
       if (ent.name === "README.md") continue; // dir contract, not a plan
       if (ent.name.startsWith(".")) continue; // .gitkeep etc.
@@ -176,13 +179,15 @@ function collectPlanDocs(dir, notices) {
 // Collect TOP-LEVEL plan `.md` files directly under `dir` (NOT recursive — the
 // epics/plans/sprints subtrees are scanned separately). Skips README.md, dotfiles,
 // and any directory. Fail-open like collectPlanDocs. Used for AC-7.4 root-plan scope.
-function collectRootPlanDocs(dir, notices) {
+// Under --enforce (`enforce` truthy): a dir-read error is re-thrown (fail-closed).
+function collectRootPlanDocs(dir, notices, enforce) {
   const docs = [];
   let entries;
   try {
     if (!fs.existsSync(dir)) return docs;
     entries = fs.readdirSync(dir, { withFileTypes: true });
   } catch (e) {
+    if (enforce) throw e; // fail-closed under --enforce: unreadable dir must not be silenced
     notices.push(`could not read dir ${dir} (fail-open): ${String(e.message || e)}`);
     return docs;
   }
@@ -237,13 +242,13 @@ function scanPlanningPrinciples(opts = {}) {
   let docs = [];
   for (const d of dirs) {
     result.scannedDirs.push(d);
-    docs = docs.concat(collectPlanDocs(d, result.notices));
+    docs = docs.concat(collectPlanDocs(d, result.notices, opts.enforce));
   }
   // ROOT lifecycle plans live directly under _planning/ (NOT recursing into the
   // epics/plans/sprints subtrees already scanned). Only the top-level plan `.md`s.
   if (opts.includeRoot) {
     result.scannedDirs.push(planningDir);
-    docs = docs.concat(collectRootPlanDocs(planningDir, result.notices));
+    docs = docs.concat(collectRootPlanDocs(planningDir, result.notices, opts.enforce));
   }
   result.counts.docs = docs.length;
 
@@ -252,14 +257,25 @@ function scanPlanningPrinciples(opts = {}) {
     try {
       text = fs.readFileSync(file, "utf8");
     } catch (e) {
-      // Unreadable plan doc → fail-open: skip with a notice, do not flag/throw.
+      // Unreadable plan doc: posture diverges by mode.
+      //   report-only (default) → fail-open: skip with a notice, do not flag/throw.
+      //   --enforce             → fail-closed: an unreadable file must not be silenced
+      //                          into a notice (finding 8). Re-throw so the CLI catch
+      //                          exits 2 (AC-7.2 internal-error-fails-closed contract).
+      if (opts.enforce) throw e;
       result.notices.push(`could not read ${file} (fail-open): ${String(e.message || e)}`);
       continue;
     }
     const missing = REQUIRED_SECTIONS.filter((s) => {
       try {
         return !s.test(text);
-      } catch {
+      } catch (e) {
+        // Section-matcher error: posture diverges by mode (finding 8).
+        //   report-only → fail-open: swallow to false (section appears present).
+        //   --enforce   → fail-closed: a section-matcher throw returning false
+        //                 (= "not missing") can mask a real violation → ok:true.
+        //                 Re-throw so the CLI catch exits 2 (AC-7.2 contract).
+        if (opts.enforce) throw e;
         return false; // a regex fault must not flag a doc — fail-open
       }
     }).map((s) => s.label);
@@ -312,6 +328,7 @@ if (require.main === module) {
       includeSprints: args.includeSprints,
       includeRoot: args.includeRoot,
       planningDir: args.planningDir,
+      enforce: args.enforce, // finding 8: inner catches re-throw under --enforce (fail-closed)
     });
   } catch (e) {
     // An internal runner error. The posture DIVERGES by mode:

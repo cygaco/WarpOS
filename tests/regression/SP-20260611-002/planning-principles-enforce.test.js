@@ -236,4 +236,219 @@ function makePlanningTreeEphemeral(files) {
   return makePlanningTree(files);
 }
 
+// ── Finding-8: scan-time exceptions must FAIL CLOSED under --enforce ───────────
+//
+// Context: the AC-7.2 cells above prove an *unhandled* exception from
+// scanPlanningPrinciples exits 2. Finding 8 is about exceptions that were
+// HANDLED INCORRECTLY *inside* the scan:
+//
+//   (A) Section-matcher throw (lines ~262-263 pre-fix): caught and returned `false`
+//       (= "not missing"), which made a BAD doc appear ok:true — a FALSE-GREEN.
+//   (B) Unreadable file: silently added to notices and skipped — NOT counted as a
+//       finding, so the doc disappears from the report entirely.
+//   (C) Unreadable dir: readdirSync error silently demoted to a notice.
+//
+// Fix: under --enforce, each inner catch re-throws so the CLI's outer catch (which
+// already correctly exits 2) actually sees the error.
+//
+// Mutation-verify contract:
+//   REVERT the fix (inner catch returns false / notices instead of re-throwing)
+//   → each h.failClosed cell below must RED (the scan returns ok:true or exit 0,
+//     which isPass treats as a false-green → the test fails).
+
+// Exploit fixture: a doc with ALL THREE principle sections labelled — EXCEPT
+// blast-radius. When the blast-radius section test is patched to THROW:
+//   - pre-fix: throw swallowed to false (not-missing) → doc appears ok:true  [BUG]
+//   - post-fix: throw propagates under --enforce → scan throws → CLI exits 2  [FIX]
+const PARTIAL_NO_BLAST_RADIUS = `# E-PARTIAL-F8-001 — enforcer + proof present; blast-radius ABSENT
+## Enforcer
+Enforced by scripts/checks/example.js (report-only ramp).
+## Proof
+Verified by the regression test run.
+## Notes
+No blast-radius assessment is present in this document (the intentional gap for Finding-8).
+`;
+
+// ── (A) Section-matcher throw ────────────────────────────────────────────────
+
+// API-level: the CORE mutation-verify cell.
+//   Without fix: scanPlanningPrinciples returns {ok:true} — blast-radius throw is
+//   swallowed to false (not-missing) so the doc appears well-formed.
+//   isPass({ok:true}) = true → h.failClosed flags it as FALSE-GREEN → test FAILS (RED).
+//   With fix: scan re-throws → h.failClosed catches the throw and counts it as
+//   fail-closed → test PASSES (GREEN).
+h.failClosed(
+  "Finding-8(A) section-matcher throw under --enforce FAILS CLOSED (API: must not be swallowed to ok:true)",
+  () => {
+    const dir = makePlanningTree({ "epics/E-PARTIAL-F8-001.md": PARTIAL_NO_BLAST_RADIUS });
+    const blastSec = mod.REQUIRED_SECTIONS.find((s) => s.key === "blast-radius");
+    const origTest = blastSec.test;
+    blastSec.test = () => {
+      throw new Error("section matcher BOOM — blast-radius (Finding-8 exploit)");
+    };
+    try {
+      // Under --enforce, the throw must propagate (not be swallowed to ok:true).
+      return mod.scanPlanningPrinciples({ planningDir: dir, enforce: true });
+    } finally {
+      blastSec.test = origTest;
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  },
+);
+
+// Without --enforce the historic fail-open contract must be unchanged: the throw
+// is caught and returned false (section appears present), the scan returns a result.
+h.pass(
+  "Finding-8(A) section-matcher throw WITHOUT --enforce is still fail-open (API: returns result, no throw)",
+  () => {
+    const dir = makePlanningTree({ "epics/E-PARTIAL-F8-001.md": PARTIAL_NO_BLAST_RADIUS });
+    const blastSec = mod.REQUIRED_SECTIONS.find((s) => s.key === "blast-radius");
+    const origTest = blastSec.test;
+    blastSec.test = () => {
+      throw new Error("section matcher BOOM — blast-radius (Finding-8 exploit)");
+    };
+    try {
+      // Without enforce: the throw is swallowed → ok:true (blast-radius appears present).
+      // isPass({ok:true}) = true → h.pass counts it as PASS (no over-block). ✓
+      return mod.scanPlanningPrinciples({ planningDir: dir, enforce: false });
+    } finally {
+      blastSec.test = origTest;
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  },
+);
+
+// CLI-level (child process injection): section-matcher throw → exit 2 under --enforce.
+// Mirrors the AC-7.2 pattern: inlines the CLI contract in a child, patches the
+// blast-radius test to throw, and asserts the exit code.
+function spawnSectionThrowCLITest(enforceFlag) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "wsg3c-pp-f8st-"));
+  fs.mkdirSync(path.join(dir, "epics"), { recursive: true });
+  fs.writeFileSync(path.join(dir, "epics", "E-PARTIAL-F8-001.md"), PARTIAL_NO_BLAST_RADIUS, "utf8");
+  const child = `
+    const mod = require(${JSON.stringify(CHECK)});
+    const blastSec = mod.REQUIRED_SECTIONS.find(s => s.key === "blast-radius");
+    blastSec.test = function() { throw new Error("section matcher BOOM (CLI-level F8 exploit)"); };
+    const enforce = ${enforceFlag ? "true" : "false"};
+    let r;
+    try {
+      r = mod.scanPlanningPrinciples({ planningDir: ${JSON.stringify(dir)}, enforce });
+    } catch (e) {
+      if (enforce) { process.stderr.write("FAIL fail-closed: " + e.message + "\\n"); process.exit(2); }
+      process.exit(0); // fail-open without enforce
+    }
+    r.reportOnly = !enforce;
+    process.exit(r.reportOnly || r.ok ? 0 : 1);
+  `;
+  const result = spawnSync(process.execPath, ["-e", child], { encoding: "utf8" });
+  fs.rmSync(dir, { recursive: true, force: true });
+  return result;
+}
+
+h.failClosed(
+  "Finding-8(A) section-matcher throw → fail-closed under --enforce (CLI: exit 2)",
+  () => spawnSectionThrowCLITest(true).status,
+);
+
+h.pass(
+  "Finding-8(A) section-matcher throw without --enforce (CLI: exit 0, fail-open preserved)",
+  () => spawnSectionThrowCLITest(false).status,
+);
+
+// ── (B) Unreadable file ──────────────────────────────────────────────────────
+
+// CLI-level: readFileSync EACCES during scan under --enforce → exit 2.
+// Stubs fs.readFileSync inside a child so .md reads throw — cross-platform
+// (no chmod required, which doesn't protect on Windows).
+function spawnUnreadableFileCLITest(enforceFlag) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "wsg3c-pp-f8uf-"));
+  fs.mkdirSync(path.join(dir, "epics"), { recursive: true });
+  // The file exists (so it appears in readdirSync) but readFileSync is stubbed to throw.
+  fs.writeFileSync(path.join(dir, "epics", "E-UNREADABLE.md"), PLANTED_BAD, "utf8");
+  const child = `
+    const fs = require("fs");
+    // Stub readFileSync: any .md plan file → EACCES (simulate unreadable plan doc)
+    const origRead = fs.readFileSync.bind(fs);
+    fs.readFileSync = function(p, enc) {
+      if (typeof p === "string" && /\\.md$/i.test(p)) {
+        throw Object.assign(new Error("EACCES: permission denied, open '" + p + "'"), { code: "EACCES" });
+      }
+      return origRead(p, enc);
+    };
+    const mod = require(${JSON.stringify(CHECK)});
+    const enforce = ${enforceFlag ? "true" : "false"};
+    let r;
+    try {
+      r = mod.scanPlanningPrinciples({ planningDir: ${JSON.stringify(dir)}, enforce });
+    } catch (e) {
+      if (enforce) { process.stderr.write("FAIL fail-closed: " + e.message + "\\n"); process.exit(2); }
+      process.exit(0); // fail-open without enforce
+    }
+    r.reportOnly = !enforce;
+    // Without enforce: unreadable file → notice + skip → ok:true (0 gaps). Exit 0.
+    process.exit(r.reportOnly || r.ok ? 0 : 1);
+  `;
+  const result = spawnSync(process.execPath, ["-e", child], { encoding: "utf8" });
+  fs.rmSync(dir, { recursive: true, force: true });
+  return result;
+}
+
+h.failClosed(
+  "Finding-8(B) unreadable file under --enforce FAILS CLOSED (CLI: exit 2)",
+  () => spawnUnreadableFileCLITest(true).status,
+);
+
+h.pass(
+  "Finding-8(B) unreadable file without --enforce stays fail-open (CLI: exit 0)",
+  () => spawnUnreadableFileCLITest(false).status,
+);
+
+// ── (C) Unreadable dir ───────────────────────────────────────────────────────
+
+// CLI-level: readdirSync EACCES on the epics dir under --enforce → exit 2.
+// The epics dir is pre-created so existsSync passes; readdirSync is then stubbed.
+function spawnUnreadableDirCLITest(enforceFlag) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "wsg3c-pp-f8ud-"));
+  // Pre-create the epics subdir so existsSync returns true in collectPlanDocs,
+  // then the stubbed readdirSync throws before any doc is collected.
+  fs.mkdirSync(path.join(dir, "epics"), { recursive: true });
+  const child = `
+    const nodePath = require("path");
+    const nodeFs = require("fs");
+    // Stub readdirSync: the epics dir basename → EACCES
+    const origReaddir = nodeFs.readdirSync.bind(nodeFs);
+    nodeFs.readdirSync = function(p, opts) {
+      if (typeof p === "string" && nodePath.basename(p) === "epics") {
+        throw Object.assign(new Error("EACCES: permission denied, scandir '" + p + "'"), { code: "EACCES" });
+      }
+      return origReaddir(p, opts);
+    };
+    const mod = require(${JSON.stringify(CHECK)});
+    const enforce = ${enforceFlag ? "true" : "false"};
+    let r;
+    try {
+      r = mod.scanPlanningPrinciples({ planningDir: ${JSON.stringify(dir)}, enforce });
+    } catch (e) {
+      if (enforce) { process.exit(2); }
+      process.exit(0); // fail-open without enforce
+    }
+    r.reportOnly = !enforce;
+    // Without enforce: unreadable dir → notice + empty docs → ok:true (0 gaps). Exit 0.
+    process.exit(r.reportOnly || r.ok ? 0 : 1);
+  `;
+  const result = spawnSync(process.execPath, ["-e", child], { encoding: "utf8" });
+  fs.rmSync(dir, { recursive: true, force: true });
+  return result;
+}
+
+h.failClosed(
+  "Finding-8(C) unreadable dir under --enforce FAILS CLOSED (CLI: exit 2)",
+  () => spawnUnreadableDirCLITest(true).status,
+);
+
+h.pass(
+  "Finding-8(C) unreadable dir without --enforce stays fail-open (CLI: exit 0)",
+  () => spawnUnreadableDirCLITest(false).status,
+);
+
 h.done();
