@@ -2,29 +2,48 @@
 "use strict";
 
 /**
- * epsilon-spawn-grace.test.js — regression for SP-20260611-001 fix 1 (T-310, R-1).
+ * epsilon-spawn-grace.test.js — regression for SP-20260611-001 (T-310/R-1 + T-322).
  *
- * Finding (crossfam-findings-2026-06-10 §A.1): spawnAgent passed
- * foregroundAwareTimeout(...) — the CHILD wrapper's OWN bound — as spawnSync's parent
- * `timeout`. The child wrapper (dispatch-claude.js / dispatch-agent.js) self-bounds at
- * the SAME value, so the parent's hard SIGTERM fired at the exact instant the child
- * started writing its graceful death record, racing (and often killing) that write.
+ * Two findings, two layers — both about the parent SIGTERM bound STRICTLY exceeding
+ * EVERY child timeout layer so a graceful child death-record wins the race:
  *
- * The fix: parent bound = child bound + PARENT_GRACE_MS (45s, β-decided 30–60s window),
- * at BOTH spawn sites (epsilon-agent ~476, epsilon-claude ~500), reading the SAME named
- * constant. The parent bound is RETAINED (not backstop-only) so a genuinely-hung child is
- * still reaped — just with grace headroom.
+ *  T-310/R-1 (parent side): spawnAgent passed foregroundAwareTimeout(...) — the child
+ *  wrapper's OWN bound — as spawnSync's parent `timeout`, so the parent's hard SIGTERM
+ *  fired the instant the child began its graceful death-record write. Fix: parent bound
+ *  = childBaseMs + PARENT_GRACE_MS (45s) at BOTH spawn sites (epsilon-agent, epsilon-claude),
+ *  PROPAGATING childBaseMs to the child via env DISPATCH_BUILDER_TIMEOUT_MS.
  *
- * Exploit-shaped (BC-16): asserts the OLD race condition (parent ≤ child) is now closed at
- * BOTH sites — the missed second site is the rename-hygiene bug class.
+ *  T-322 (child side — the binding FAIL the GPT backend lane proved): propagation alone
+ *  is DEAD at the epsilon-AGENT site — dispatch-agent.js NEVER read DISPATCH_BUILDER_TIMEOUT_MS.
+ *  Its REAL child bounds were INDEPENDENT of the propagated value: slot-acquire defaulted to
+ *  DISPATCH_SLOT_TIMEOUT_MS (600s) and runProvider used its own run-provider default (540s).
+ *  Quantified: epsilon-agent parent = 540 (fg-clamp) + 45 grace = 585s; child slot = 600s →
+ *  parent (585) < child slot (600), so a saturated slot is parent-killed BEFORE the child
+ *  writes its record. Fix (β shape #1): dispatch-agent.js, when the propagated bound is set,
+ *  derives BOTH the slot bound AND runProvider's opts.timeoutMs from it, so all child layers
+ *  single-source from childBaseMs and parent > every child layer BY CONSTRUCTION.
+ *
+ * Section (5) asserts the CHILD's REAL bounds (slot + runProvider) by running the ACTUAL
+ * dispatch-agent.js with a preload shim that captures the bounds the child computed — NOT
+ * env-var presence. A mutation that reverts the dispatch-agent.js read REDs section (5)
+ * (mutation check, AC-322.4).
+ *
+ * Exploit-shaped (BC-16): asserts the OLD races (parent ≤ child, child ignores propagation)
+ * are now closed at the cross-provider site — the missed second site / dead propagation link
+ * is the rename-hygiene / fix-all-callers bug class.
  *
  *   node tests/regression/SP-20260611-001/epsilon-spawn-grace.test.js
  */
 
 const path = require("path");
+const fs = require("fs");
+const os = require("os");
+const { spawnSync } = require("child_process");
 
-const RT = path.resolve(__dirname, "../../../scripts/sprint/epsilon-runtime");
-const TP = path.resolve(__dirname, "../../../scripts/dispatch/timeout-policy");
+const ROOT = path.resolve(__dirname, "../../..");
+const RT = path.join(ROOT, "scripts/sprint/epsilon-runtime");
+const TP = path.join(ROOT, "scripts/dispatch/timeout-policy");
+const DISPATCH_AGENT = path.join(ROOT, "scripts/dispatch-agent.js");
 const rt = require(RT);
 const { foregroundAwareTimeout, WRAPPER_DEFAULTS } = require(TP);
 
@@ -172,6 +191,156 @@ console.log("\n(4) parent-strictly-exceeds-child-under-opts-override-both-sites 
         `parent=${parent} childBaseMs=${childBaseMs}`,
       );
     }
+  }
+}
+
+// ── (5) THE T-322 FIX: the CHILD (dispatch-agent.js) actually CONSUMES the propagated bound ──
+//
+// Sections (2)-(4) prove the PARENT propagates DISPATCH_BUILDER_TIMEOUT_MS and sizes its own
+// SIGTERM bound. They do NOT prove the CHILD reads it. The binding GPT-backend FAIL was exactly
+// that gap: dispatch-agent.js ignored the env, so its REAL slot bound (600s) and runProvider
+// bound (540s) were independent of the parent (585s) — parent < child slot, race OPEN.
+//
+// We assert the child's REAL bounds by RUNNING the actual dispatch-agent.js with a preload shim
+// that intercepts acquireSlotSync (captures the slot timeoutMs) and runProvider (captures
+// opts.timeoutMs), prints both, and exits before any real provider call. This exercises the
+// REAL env read — reverting it changes the captured bounds (the mutation check, AC-322.4).
+
+const SHIM = `
+"use strict";
+const path = require("path");
+const Module = require("module");
+const ROOT = ${JSON.stringify(ROOT)};
+const lockPath = require.resolve(path.join(ROOT, "scripts/hooks/lib/concurrency-lock"));
+const provPath = require.resolve(path.join(ROOT, "scripts/hooks/lib/providers"));
+const out = { slotTimeoutMs: null, runProviderTimeoutMs: null };
+function emit() { process.stdout.write("__PROBE__" + JSON.stringify(out) + "\\n"); }
+const origLoad = Module._load;
+Module._load = function (request, parent, isMain) {
+  const resolved = (() => { try { return require.resolve(request, { paths: parent ? [path.dirname(parent.filename)] : undefined }); } catch { return null; } })();
+  if (resolved === lockPath) {
+    return {
+      acquireSlotSync: (provider, opts) => { out.slotTimeoutMs = opts && opts.timeoutMs; return { provider, fake: true }; },
+      releaseSlot: () => {},
+    };
+  }
+  if (resolved === provPath) {
+    const real = origLoad.apply(this, arguments);
+    return Object.assign({}, real, {
+      // Force the cross-provider lane reachable regardless of whether the gemini
+      // CLI is installed in this environment — the probe is about the BOUND the
+      // child computes, not a real provider call.
+      providerAvailable: () => true,
+      getProviderForRole: () => "gemini",
+      runProvider: (role, prompt, opts) => {
+        out.runProviderTimeoutMs = opts && opts.timeoutMs;
+        emit();
+        process.exit(0); // stop before any real provider work
+      },
+    });
+  }
+  return origLoad.apply(this, arguments);
+};
+`;
+
+function runChildAndCaptureBounds(setEnv = {}, deleteEnv = []) {
+  const tmpShim = path.join(os.tmpdir(), `t322-shim-${process.pid}-${Math.random().toString(36).slice(2)}.js`);
+  const tmpPrompt = path.join(os.tmpdir(), `t322-prompt-${process.pid}-${Math.random().toString(36).slice(2)}.txt`);
+  fs.writeFileSync(tmpShim, SHIM);
+  fs.writeFileSync(tmpPrompt, "probe prompt for T-322 bound capture\n");
+  try {
+    const env = {
+      ...process.env,
+      NODE_OPTIONS: `${process.env.NODE_OPTIONS ? process.env.NODE_OPTIONS + " " : ""}--require ${tmpShim}`,
+      ...setEnv,
+    };
+    // Foreground so the child clamps like the live ε-agent site; clear any inherited
+    // bound that would contaminate the probe (the harness may set these for subprocesses).
+    delete env.WARPOS_DISPATCH_BACKGROUND;
+    for (const k of deleteEnv) delete env[k];
+    const r = spawnSync(
+      process.execPath,
+      [DISPATCH_AGENT, "security-reviewer", tmpPrompt, "--provider", "gemini"],
+      { encoding: "utf8", env, timeout: 60000 }
+    );
+    const line = String(r.stdout || "").split(/\r?\n/).find((l) => l.startsWith("__PROBE__"));
+    if (!line) return { error: `no probe line; stdout=${(r.stdout || "").slice(0, 200)} stderr=${(r.stderr || "").slice(0, 200)}` };
+    return JSON.parse(line.slice("__PROBE__".length));
+  } finally {
+    try { fs.unlinkSync(tmpShim); } catch {}
+    try { fs.unlinkSync(tmpPrompt); } catch {}
+  }
+}
+
+console.log("\n(5) epsilon-agent-parent-strictly-exceeds-child-REAL-bounds (T-322 — child CONSUMES the propagated bound):");
+{
+  // For each opts.timeoutMs the parent might pass, compute what the parent would do
+  // (childBaseMs = clamp; parent = childBaseMs + grace) and assert the REAL child bounds
+  // (slot + runProvider), captured from the actual dispatch-agent.js, are both ≤ childBaseMs
+  // and STRICTLY below the parent — closing the cross-provider death-record race.
+  const cases = [
+    { label: "small (1000)", childBaseMs: foregroundAwareTimeout(1000, {}) },
+    { label: "huge (9_000_000)", childBaseMs: foregroundAwareTimeout(9000000, {}) },
+    { label: "unset (epsilon-agent default)", childBaseMs: foregroundAwareTimeout(WRAPPER_DEFAULTS["epsilon-agent"], {}) },
+  ];
+  for (const c of cases) {
+    const parent = c.childBaseMs + GRACE; // what epsilon-runtime sizes its SIGTERM bound to
+    const bounds = runChildAndCaptureBounds(
+      { DISPATCH_BUILDER_TIMEOUT_MS: String(c.childBaseMs) },
+      ["DISPATCH_SLOT_TIMEOUT_MS"], // the propagated bound must be the ONLY slot source
+    );
+    if (bounds.error) {
+      ok(`epsilon-agent / ${c.label}: child probe ran`, false, bounds.error);
+      continue;
+    }
+    // (a) propagation present (sanity — same as section 4 but proven via the real child).
+    ok(
+      `epsilon-agent / ${c.label}: child slot bound is set (consumed, not defaulted)`,
+      bounds.slotTimeoutMs != null,
+      `slot=${bounds.slotTimeoutMs}`,
+    );
+    // (b) the child's EFFECTIVE slot bound (derived from the propagated value) <= childBaseMs.
+    ok(
+      `epsilon-agent / ${c.label}: child slot bound <= childBaseMs (single-sourced, not 600s default)`,
+      bounds.slotTimeoutMs <= c.childBaseMs,
+      `slot=${bounds.slotTimeoutMs} childBaseMs=${c.childBaseMs}`,
+    );
+    // (c) the child's EFFECTIVE runProvider timeoutMs (derived) <= childBaseMs.
+    ok(
+      `epsilon-agent / ${c.label}: child runProvider timeoutMs <= childBaseMs (single-sourced, not run-provider default)`,
+      bounds.runProviderTimeoutMs != null && bounds.runProviderTimeoutMs <= c.childBaseMs,
+      `runProvider=${bounds.runProviderTimeoutMs} childBaseMs=${c.childBaseMs}`,
+    );
+    // (d) parent (childBaseMs + grace) STRICTLY exceeds BOTH child bounds.
+    ok(
+      `epsilon-agent / ${c.label}: parent (childBaseMs+grace) STRICTLY exceeds child slot bound`,
+      parent > bounds.slotTimeoutMs,
+      `parent=${parent} slot=${bounds.slotTimeoutMs}`,
+    );
+    ok(
+      `epsilon-agent / ${c.label}: parent (childBaseMs+grace) STRICTLY exceeds child runProvider bound`,
+      parent > bounds.runProviderTimeoutMs,
+      `parent=${parent} runProvider=${bounds.runProviderTimeoutMs}`,
+    );
+  }
+
+  // Non-ε caller (env ABSENT): behaviour unchanged — the slot keeps the 600s default and
+  // runProvider gets NO opts.timeoutMs (its own default applies). This guards the
+  // default-preservation clause: only ε's propagation single-sources the child.
+  const noEnv = runChildAndCaptureBounds({}, ["DISPATCH_BUILDER_TIMEOUT_MS", "DISPATCH_SLOT_TIMEOUT_MS"]);
+  if (noEnv.error) {
+    ok("non-ε caller: child probe ran", false, noEnv.error);
+  } else {
+    ok(
+      "non-ε caller (no DISPATCH_BUILDER_TIMEOUT_MS): slot keeps 600s default (no regression)",
+      noEnv.slotTimeoutMs === 10 * 60 * 1000,
+      `slot=${noEnv.slotTimeoutMs}`,
+    );
+    ok(
+      "non-ε caller: runProvider gets no opts.timeoutMs (its own default applies)",
+      noEnv.runProviderTimeoutMs === undefined,
+      `runProvider=${noEnv.runProviderTimeoutMs}`,
+    );
   }
 }
 

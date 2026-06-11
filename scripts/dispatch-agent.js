@@ -592,15 +592,37 @@ if (!providerAvailable(provider)) {
   process.exit(1);
 }
 
+// T-322: the ε-propagated child bound, single-sourced. When epsilon-runtime's
+// DISPATCH_AGENT spawn site sets DISPATCH_BUILDER_TIMEOUT_MS = String(childBaseMs),
+// BOTH child timeout layers (slot-acquire below + runProvider's exec) MUST derive
+// from it, so the parent's spawnSync bound (childBaseMs + grace) strictly exceeds
+// every child layer BY CONSTRUCTION (mirrors the epsilon-claude/dispatch-claude.js
+// site, which already reads this env). NULL for non-ε callers — env absent →
+// behaviour is byte-identical to before (DISPATCH_SLOT_TIMEOUT_MS / runProvider's
+// own default). The foregroundAwareTimeout re-clamp is idempotent: an already-clamped
+// childBaseMs cannot be lifted above the foreground ceiling here.
+const propagatedBoundRaw = process.env.DISPATCH_BUILDER_TIMEOUT_MS;
+const propagatedChildBaseMs =
+  propagatedBoundRaw != null && propagatedBoundRaw !== ""
+    ? (() => {
+        const { foregroundAwareTimeout } = require("./dispatch/timeout-policy");
+        const n = parseInt(propagatedBoundRaw, 10);
+        return Number.isFinite(n) ? foregroundAwareTimeout(n, {}) : null;
+      })()
+    : null;
+
 // Acquire a per-provider concurrency slot. Caps protect against API rate
 // limits and concurrency-induced failures (e.g. gemini reliably errors on
 // 15+ parallel calls but is fine 1-by-1 — observed during run-12 redteam
 // gauntlet, retro 2026-04-29). On slot-acquire timeout, return fallback:true
 // so the orchestrator routes to claude instead of waiting indefinitely.
-const slotTimeoutMs = parseInt(
-  process.env.DISPATCH_SLOT_TIMEOUT_MS || `${10 * 60 * 1000}`,
-  10,
-);
+// T-322: when ε propagates the child bound, the slot bound must be ≤ childBaseMs
+// so the parent's childBaseMs+grace strictly exceeds it; else keep the standalone
+// DISPATCH_SLOT_TIMEOUT_MS default (600s) unchanged for non-ε callers.
+const slotTimeoutMs =
+  propagatedChildBaseMs != null
+    ? propagatedChildBaseMs
+    : parseInt(process.env.DISPATCH_SLOT_TIMEOUT_MS || `${10 * 60 * 1000}`, 10);
 const slot = acquireSlotSync(provider, {
   timeoutMs: slotTimeoutMs,
   meta: {
@@ -650,6 +672,13 @@ try {
   } else if (roleModel) {
     runOpts.model = roleModel;
   }
+  // T-322: when ε propagates the child bound, the provider-exec must single-source
+  // from it too — runProvider otherwise uses its own run-provider default (540s),
+  // INDEPENDENT of the parent's propagated value, leaving the cross-provider site's
+  // death-record race open. Setting timeoutMs from the ε-propagated childBaseMs
+  // makes runProvider bound by childBaseMs (runProvider re-clamps idempotently via
+  // foregroundAwareTimeout). Non-ε callers (env absent) keep runProvider's default.
+  if (propagatedChildBaseMs != null) runOpts.timeoutMs = propagatedChildBaseMs;
   result = runProvider(role, prompt, runOpts);
 
   // WI-18: quota-aware fallback. When a gemini-routed role (e.g. redteam) 429s /
