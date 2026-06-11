@@ -2,21 +2,9 @@
 "use strict";
 
 /**
- * /scan:scaffold-coverage (S0.3) — the standing fail-closed enforcer that keeps
- * the WarpOS app scaffold COMPLETE and COHERENT, so every scaffolded product
- * ships a real component library instead of vibe-coded raw elements.
- *
- * REJECTS (exit 1), never lints, when ANY of:
- *   - a required scaffold file is missing;
- *   - package.json.tmpl lacks a required stack dependency;
- *   - IMPORT↔DEP DRIFT: a .ts/.tsx template imports an external package that is
- *     NOT declared in package.json.tmpl deps/devDeps (the #1 "half-wired" failure —
- *     a component that imports a lib nobody installs is broken-on-arrival);
- *   - tsconfig is missing the `@/*` path alias;
- *   - next.config is missing the security-header baseline;
- *   - globals.css is missing the Tailwind-v4 token bridge;
- *   - lib/utils is missing the `cn` export.
- * Internal error => exit 2 (fail-closed: a scan that errors must never read green).
+ * /scan:scaffold-coverage (S0.3) - fail-closed enforcer for the WarpOS app
+ * scaffold. It keeps the scaffold complete, coherent, and wired with the
+ * day-zero telemetry seam required by S-PF-01.
  *
  *   node scripts/checks/scaffold-coverage-scan.js [--json]
  */
@@ -25,6 +13,23 @@ const fs = require("fs");
 const path = require("path");
 
 const REPO_ROOT = path.resolve(__dirname, "..", "..");
+
+const CANONICAL_EVENTS = [
+  "signup",
+  "onboarding_complete",
+  "activation",
+  "core_action",
+  "retention_return",
+  "checkout",
+];
+
+const CANONICAL_STAGES = [
+  "intent",
+  "executed",
+  "committed",
+  "delivered",
+  "observed",
+];
 
 function scaffoldDir() {
   const fallback = path.join(REPO_ROOT, "framework", "templates", "app-scaffold");
@@ -44,7 +49,12 @@ const REQUIRED_FILES = [
   "postcss.config.mjs.tmpl",
   "components.json.tmpl",
   "DESIGN_SYSTEM.md.tmpl",
+  ".env.local.example.tmpl",
   "src/lib/utils.ts.tmpl",
+  "src/lib/telemetry/events.ts.tmpl",
+  "src/lib/telemetry/sink.ts.tmpl",
+  "src/lib/telemetry/track.ts.tmpl",
+  "src/lib/telemetry/chain.ts.tmpl",
   "src/app/layout.tsx.tmpl",
   "src/app/page.tsx.tmpl",
   "src/app/globals.css.tmpl",
@@ -73,7 +83,6 @@ const REQUIRED_DEPS = [
   "@playwright/test",
 ];
 
-// External imports that are Node/Next builtins or local — never need a dep entry.
 function isLocalOrBuiltin(spec) {
   return (
     spec.startsWith("@/") ||
@@ -83,8 +92,6 @@ function isLocalOrBuiltin(spec) {
   );
 }
 
-// Normalize an import specifier to its package name: `@scope/pkg/sub` => `@scope/pkg`;
-// `pkg/sub` => `pkg`. `next/link` => `next`.
 function pkgName(spec) {
   if (spec.startsWith("@")) {
     const parts = spec.split("/");
@@ -109,92 +116,10 @@ function* walkTemplates(dir) {
 
 function collectImports(text) {
   const specs = new Set();
-  // import ... from "x"  |  import "x"  |  export ... from "x"
   const re = /(?:import|export)\s+(?:[^"';]*?\s+from\s+)?["']([^"']+)["']/g;
   let m;
   while ((m = re.exec(text)) !== null) specs.add(m[1]);
   return [...specs];
-}
-
-function main(argv) {
-  const json = argv.includes("--json");
-  const errors = [];
-  try {
-    const dir = scaffoldDir();
-    if (!fs.existsSync(dir)) {
-      errors.push(`scaffold dir missing: ${path.relative(REPO_ROOT, dir)}`);
-      return emit(json, errors);
-    }
-
-    // 1. required files present
-    for (const rel of REQUIRED_FILES) {
-      if (!fs.existsSync(path.join(dir, rel))) errors.push(`missing required file: ${rel}`);
-    }
-
-    // 2. package.json.tmpl parses + has required deps
-    let allDeps = {};
-    const pkgPath = path.join(dir, "package.json.tmpl");
-    if (fs.existsSync(pkgPath)) {
-      let pkg;
-      try {
-        pkg = JSON.parse(fs.readFileSync(pkgPath, "utf8"));
-      } catch (e) {
-        errors.push(`package.json.tmpl is not valid JSON: ${e.message}`);
-      }
-      if (pkg) {
-        allDeps = { ...(pkg.dependencies || {}), ...(pkg.devDependencies || {}) };
-        for (const d of REQUIRED_DEPS) {
-          if (!(d in allDeps)) errors.push(`package.json missing required dep: ${d}`);
-        }
-      }
-    }
-
-    // 3. import↔dep coherence — every external import resolves to a declared dep
-    const declared = new Set(Object.keys(allDeps));
-    for (const file of walkTemplates(dir)) {
-      const rel = path.relative(dir, file);
-      const text = fs.readFileSync(file, "utf8");
-      for (const spec of collectImports(text)) {
-        if (isLocalOrBuiltin(spec)) continue;
-        const name = pkgName(spec);
-        if (!declared.has(name)) {
-          errors.push(`import↔dep drift: ${rel} imports "${spec}" but "${name}" is not in package.json`);
-        }
-      }
-    }
-
-    // 4. tsconfig @/* alias
-    const tsconfig = readIf(path.join(dir, "tsconfig.json.tmpl"));
-    if (tsconfig !== null && !/"@\/\*"\s*:/.test(tsconfig)) {
-      errors.push("tsconfig.json missing the `@/*` path alias");
-    }
-
-    // 5. next.config security-header baseline
-    const nextcfg = readIf(path.join(dir, "next.config.ts.tmpl"));
-    if (nextcfg !== null) {
-      for (const h of ["X-Frame-Options", "X-Content-Type-Options", "Strict-Transport-Security"]) {
-        if (!nextcfg.includes(h)) errors.push(`next.config.ts missing security header: ${h}`);
-      }
-    }
-
-    // 6. globals.css Tailwind-v4 token bridge
-    const css = readIf(path.join(dir, "src/app/globals.css.tmpl"));
-    if (css !== null) {
-      if (!/@import\s+["']tailwindcss["']/.test(css)) errors.push("globals.css missing `@import \"tailwindcss\"`");
-      if (!/@theme\s+inline/.test(css)) errors.push("globals.css missing `@theme inline` token bridge");
-      if (!/--color-primary\s*:/.test(css)) errors.push("globals.css missing the --color-primary token");
-    }
-
-    // 7. lib/utils cn export
-    const utils = readIf(path.join(dir, "src/lib/utils.ts.tmpl"));
-    if (utils !== null && !/export\s+function\s+cn\b/.test(utils)) {
-      errors.push("src/lib/utils.ts missing the `cn` export");
-    }
-  } catch (e) {
-    process.stderr.write(`scaffold-coverage-scan error: ${e.message}\n`);
-    return 2; // fail-closed
-  }
-  return emit(json, errors);
 }
 
 function readIf(p) {
@@ -205,17 +130,251 @@ function readIf(p) {
   }
 }
 
+function countMatches(text, re) {
+  return (text.match(re) || []).length;
+}
+
+function parseConstStringArray(text, constName) {
+  const re = new RegExp(`export\\s+const\\s+${constName}\\s*=\\s*\\[([\\s\\S]*?)\\]\\s+as\\s+const`);
+  const m = text.match(re);
+  if (!m) return null;
+  return [...m[1].matchAll(/["']([^"']+)["']/g)].map((x) => x[1]);
+}
+
+function sameArray(actual, expected) {
+  return (
+    Array.isArray(actual) &&
+    actual.length === expected.length &&
+    actual.every((value, idx) => value === expected[idx])
+  );
+}
+
+function activationFields(text) {
+  const body = text.match(/export\s+const\s+ACTIVATION_DEFINITION(?:\s*:\s*[A-Za-z0-9_]+)?\s*=\s*\{([\s\S]*?)\}\s*;?/);
+  if (!body) return null;
+  const fields = {};
+  for (const key of ["predicate", "provenance", "confidence", "derivedFrom"]) {
+    const m = body[1].match(new RegExp(`${key}\\s*:\\s*([^,\\n]+)`));
+    if (m) fields[key] = m[1].trim();
+  }
+  return fields;
+}
+
+function stringLiteralValue(raw) {
+  const m = typeof raw === "string" ? raw.match(/^["']([\s\S]*)["']$/) : null;
+  return m ? m[1] : null;
+}
+
+function isUndefinedActivationPredicate(value) {
+  if (!value || !value.trim()) return true;
+  return /\{\{[^}]+\}\}|TODO|TBD|PLACEHOLDER|DEFINE|UNDEFINED|REPLACE_ME|SENTINEL/i.test(value);
+}
+
+function evaluateScaffold(dir = scaffoldDir()) {
+  const errors = [];
+  if (!fs.existsSync(dir)) {
+    return {
+      ok: false,
+      errors: [`scaffold dir missing: ${path.relative(REPO_ROOT, dir)}`],
+      dir,
+    };
+  }
+
+  for (const rel of REQUIRED_FILES) {
+    if (!fs.existsSync(path.join(dir, rel))) errors.push(`missing required file: ${rel}`);
+  }
+
+  let allDeps = {};
+  const pkgPath = path.join(dir, "package.json.tmpl");
+  if (fs.existsSync(pkgPath)) {
+    let pkg;
+    try {
+      pkg = JSON.parse(fs.readFileSync(pkgPath, "utf8"));
+    } catch (e) {
+      errors.push(`package.json.tmpl is not valid JSON: ${e.message}`);
+    }
+    if (pkg) {
+      allDeps = { ...(pkg.dependencies || {}), ...(pkg.devDependencies || {}) };
+      for (const d of REQUIRED_DEPS) {
+        if (!(d in allDeps)) errors.push(`package.json missing required dep: ${d}`);
+      }
+    }
+  }
+
+  const declared = new Set(Object.keys(allDeps));
+  for (const file of walkTemplates(dir)) {
+    const rel = path.relative(dir, file).replace(/\\/g, "/");
+    const text = fs.readFileSync(file, "utf8");
+    for (const spec of collectImports(text)) {
+      if (isLocalOrBuiltin(spec)) continue;
+      const name = pkgName(spec);
+      if (!declared.has(name)) {
+        errors.push(`import->dep drift: ${rel} imports "${spec}" but "${name}" is not in package.json`);
+      }
+    }
+  }
+
+  const tsconfig = readIf(path.join(dir, "tsconfig.json.tmpl"));
+  if (tsconfig !== null && !/"@\/\*"\s*:/.test(tsconfig)) {
+    errors.push("tsconfig.json missing the `@/*` path alias");
+  }
+
+  const nextcfg = readIf(path.join(dir, "next.config.ts.tmpl"));
+  if (nextcfg !== null) {
+    for (const h of ["X-Frame-Options", "X-Content-Type-Options", "Strict-Transport-Security"]) {
+      if (!nextcfg.includes(h)) errors.push(`next.config.ts missing security header: ${h}`);
+    }
+  }
+
+  const css = readIf(path.join(dir, "src/app/globals.css.tmpl"));
+  if (css !== null) {
+    if (!/@import\s+["']tailwindcss["']/.test(css)) errors.push("globals.css missing `@import \"tailwindcss\"`");
+    if (!/@theme\s+inline/.test(css)) errors.push("globals.css missing `@theme inline` token bridge");
+    if (!/--color-primary\s*:/.test(css)) errors.push("globals.css missing the --color-primary token");
+  }
+
+  const utils = readIf(path.join(dir, "src/lib/utils.ts.tmpl"));
+  if (utils !== null && !/export\s+function\s+cn\b/.test(utils)) {
+    errors.push("src/lib/utils.ts missing the `cn` export");
+  }
+
+  addTelemetryChecks(dir, errors);
+
+  return { ok: errors.length === 0, errors, dir };
+}
+
+function addTelemetryChecks(dir, errors) {
+  const env = readIf(path.join(dir, ".env.local.example.tmpl"));
+  if (env !== null) {
+    for (const name of ["NEXT_PUBLIC_POSTHOG_KEY", "NEXT_PUBLIC_POSTHOG_HOST"]) {
+      if (!new RegExp(`^${name}=`, "m").test(env)) {
+        errors.push(`env example missing telemetry name: ${name}`);
+      }
+    }
+  }
+
+  const events = readIf(path.join(dir, "src/lib/telemetry/events.ts.tmpl"));
+  const sink = readIf(path.join(dir, "src/lib/telemetry/sink.ts.tmpl"));
+  const track = readIf(path.join(dir, "src/lib/telemetry/track.ts.tmpl"));
+  const chain = readIf(path.join(dir, "src/lib/telemetry/chain.ts.tmpl"));
+  const page = readIf(path.join(dir, "src/app/page.tsx.tmpl"));
+  const layout = readIf(path.join(dir, "src/app/layout.tsx.tmpl"));
+
+  if (events !== null) {
+    const lifecycleEvents = parseConstStringArray(events, "LIFECYCLE_EVENTS");
+    if (!sameArray(lifecycleEvents, CANONICAL_EVENTS)) {
+      errors.push(`event vocabulary drift: LIFECYCLE_EVENTS must be exactly ${CANONICAL_EVENTS.join(", ")}`);
+    }
+
+    const stages = parseConstStringArray(events, "SUPPLY_CHAIN_STAGES");
+    if (!sameArray(stages, CANONICAL_STAGES)) {
+      errors.push(`chain stage vocabulary drift: SUPPLY_CHAIN_STAGES must be exactly ${CANONICAL_STAGES.join(", ")}`);
+    }
+
+    const activation = activationFields(events);
+    if (!activation) {
+      errors.push("activation definition missing");
+    } else {
+      for (const field of ["predicate", "provenance", "confidence", "derivedFrom"]) {
+        if (!(field in activation)) errors.push(`activation definition missing field: ${field}`);
+      }
+      const predicate = stringLiteralValue(activation.predicate);
+      if (isUndefinedActivationPredicate(predicate)) {
+        errors.push("activation definition present but undefined");
+      }
+      const provenance = stringLiteralValue(activation.provenance);
+      if (!["derived-at-canon", "founder-named-at-intake", "revised-at-lastmile"].includes(provenance)) {
+        errors.push("activation definition provenance must be derived-at-canon, founder-named-at-intake, or revised-at-lastmile");
+      }
+    }
+    if (!/function\s+deriveActivationDefinition\b/.test(events) || !/requires core-loop action, subject, and source/.test(events)) {
+      errors.push("activation derivation must fail closed on thin core-loop input");
+    }
+  }
+
+  if (sink !== null) {
+    if (countMatches(sink, /function\s+resolveTelemetrySink\b/g) !== 1) {
+      errors.push("telemetry sink must expose exactly one resolveTelemetrySink function");
+    }
+    if (!/noopTelemetrySink/.test(sink)) errors.push("telemetry sink missing no-op fallback");
+    if (!/NEXT_PUBLIC_POSTHOG_KEY/.test(sink)) errors.push("telemetry sink missing NEXT_PUBLIC_POSTHOG_KEY env gate");
+  }
+
+  if (track !== null) {
+    if (!/event\s*:\s*LifecycleEvent/.test(track)) {
+      errors.push("track.ts event parameter must derive from LifecycleEvent");
+    }
+    if (!/resolveTelemetrySink\(\)/.test(track)) {
+      errors.push("track.ts must call the single sink resolver");
+    }
+    if (!/catch\s*\(/.test(track) || !/catch\s*\{/.test(track)) {
+      errors.push("track.ts must catch sink failures at the telemetry boundary");
+    }
+  }
+
+  if (chain !== null) {
+    if (!/SUPPLY_CHAIN_STAGES/.test(chain) || !/brokenAtStage/.test(chain) || !/failureEvent/.test(chain)) {
+      errors.push("chain helper missing broken-chain failure event");
+    }
+  }
+
+  if (page !== null) {
+    if (countMatches(page, /const\s+CORE_LOOP_EXAMPLE_ID\b/g) !== 1) {
+      errors.push("page must contain exactly one core-loop telemetry example");
+    }
+    if (!/handleCoreLoopExample/.test(page) || !/track\("core_action"/.test(page) || !/track\("activation"/.test(page)) {
+      errors.push("page core-loop example must emit core_action and activation through track()");
+    }
+    if (/document\.addEventListener\s*\(\s*["']click["']|window\.addEventListener\s*\(\s*["']click["']/.test(page)) {
+      errors.push("page must not install a global click telemetry wrapper");
+    }
+  }
+
+  if (layout !== null && !/ACTIVATION_DEFINITION/.test(layout)) {
+    errors.push("layout must carry activation definition provenance wiring");
+  }
+
+  for (const file of walkTemplates(dir)) {
+    const rel = path.relative(dir, file).replace(/\\/g, "/");
+    if (rel === "src/lib/telemetry/sink.ts.tmpl") continue;
+    const text = fs.readFileSync(file, "utf8");
+    if (/\b(posthog|gtag|plausible|mixpanel)\b|\.capture\s*\(/i.test(text)) {
+      errors.push(`duplicate telemetry sink/raw emit outside sink.ts: ${rel}`);
+    }
+  }
+}
+
+function main(argv) {
+  const json = argv.includes("--json");
+  try {
+    return emit(json, evaluateScaffold().errors);
+  } catch (e) {
+    process.stderr.write(`scaffold-coverage-scan error: ${e.message}\n`);
+    return 2;
+  }
+}
+
 function emit(json, errors) {
   if (json) {
     process.stdout.write(JSON.stringify({ ok: errors.length === 0, errors }, null, 2) + "\n");
     return errors.length ? 1 : 0;
   }
   if (errors.length === 0) {
-    process.stdout.write("OK scaffold-coverage: app scaffold complete + coherent (deps↔imports aligned)\n");
+    process.stdout.write("OK scaffold-coverage: app scaffold complete + coherent (deps->imports aligned, telemetry seam wired)\n");
     return 0;
   }
   process.stderr.write(`FAIL scaffold-coverage (${errors.length}):\n${errors.map((e) => `  - ${e}`).join("\n")}\n`);
   return 1;
 }
 
-process.exit(main(process.argv));
+if (require.main === module) {
+  process.exit(main(process.argv));
+}
+
+module.exports = {
+  CANONICAL_EVENTS,
+  CANONICAL_STAGES,
+  REQUIRED_FILES,
+  evaluateScaffold,
+  parseConstStringArray,
+};

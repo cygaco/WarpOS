@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-11T21:25:04.021Z",
+  "generatedAt": "2026-06-11T21:35:34.627Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.15.4",
   "migrations": [],
@@ -2073,12 +2073,61 @@
       "sha256": "f8db2e89becfc27ed92361a3760aa110ff323a8cd2656a3064968b8df1c8af8b",
       "installedSha": "f8db2e89becfc27ed92361a3760aa110ff323a8cd2656a3064968b8df1c8af8b"
     },
+    "tests/regression/S-PF-01/activation-definition.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": null,
+      "sha256": "38f8320c2e462bad69fce04d6122f95f54b25f0fea59bf47e26d80ab41d3c026",
+      "installedSha": "38f8320c2e462bad69fce04d6122f95f54b25f0fea59bf47e26d80ab41d3c026"
+    },
+    "tests/regression/S-PF-01/contract-chain.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": null,
+      "sha256": "0d9684824df04ff8757b8f731ccbc45a90fbe9a5e0a139b46cd6e6b66ad2c6b6",
+      "installedSha": "0d9684824df04ff8757b8f731ccbc45a90fbe9a5e0a139b46cd6e6b66ad2c6b6"
+    },
+    "tests/regression/S-PF-01/lastmile-analytics-seam.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": null,
+      "sha256": "de59a96c9db072049588742d2d6339e7c2852deb4a9657de3dae8dbe98739d09",
+      "installedSha": "de59a96c9db072049588742d2d6339e7c2852deb4a9657de3dae8dbe98739d09"
+    },
+    "tests/regression/S-PF-01/manifest-shipping.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": null,
+      "sha256": "586601c70db6ee6de8747bf4633ca1647d3c3fd47766c3a05e86050ab409349c",
+      "installedSha": "586601c70db6ee6de8747bf4633ca1647d3c3fd47766c3a05e86050ab409349c"
+    },
     "tests/regression/S-PF-01/named-sprint-id.test.js": {
       "owner": "framework",
       "managed": true,
       "source": null,
       "sha256": "6077d51cb380634e7a4f241b1fd6f632d0d3e0957f73cd146c02926ed50a5b45",
       "installedSha": "6077d51cb380634e7a4f241b1fd6f632d0d3e0957f73cd146c02926ed50a5b45"
+    },
+    "tests/regression/S-PF-01/scaffold-coverage-telemetry.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": null,
+      "sha256": "06ed34b11eac3e55fc9a8c9385044470309c8f38e32022d6f06cdd473615ef63",
+      "installedSha": "06ed34b11eac3e55fc9a8c9385044470309c8f38e32022d6f06cdd473615ef63"
+    },
+    "tests/regression/S-PF-01/telemetry-chain.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": null,
+      "sha256": "f5e247ed5459de5e254d1f43a69c802004308e907a0f11bd3c803111c1bbf19b",
+      "installedSha": "f5e247ed5459de5e254d1f43a69c802004308e907a0f11bd3c803111c1bbf19b"
+    },
+    "tests/regression/S-PF-01/telemetry-seam.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": null,
+      "sha256": "e5cff4b7d4f6d81fbc048634859539532decef3546a4694c8db27800bf0ee12d",
+      "installedSha": "e5cff4b7d4f6d81fbc048634859539532decef3546a4694c8db27800bf0ee12d"
     },
     "tests/regression/S-LC-11/ac-category-coverage.test.js": {
       "owner": "framework",
@@ -6543,8 +6592,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/scaffold-coverage-scan.js",
-      "sha256": "0bfea337ebb06439560a683120a97009398cfb993886de7fc454ce7babfb2889",
-      "installedSha": "0bfea337ebb06439560a683120a97009398cfb993886de7fc454ce7babfb2889"
+      "sha256": "6842d25b5ee5024d385389064ec84f53055d3a2ba68a580a9e7d6fd9034596ac",
+      "installedSha": "6842d25b5ee5024d385389064ec84f53055d3a2ba68a580a9e7d6fd9034596ac"
     },
     "scripts/checks/scan-coverage.allowlist.json": {
       "owner": "framework",
@@ -6984,8 +7033,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/bootstrap/lastmile/modules/analytics.js",
-      "sha256": "9e5f1980eb6c4c9f7f6831346e2d0a0e2cef52da9da08047ddae502c00223967",
-      "installedSha": "9e5f1980eb6c4c9f7f6831346e2d0a0e2cef52da9da08047ddae502c00223967"
+      "sha256": "929df685ed1503134eb8e6418bbf3b453ca247d7a8c76d2f65ddc0c20375869b",
+      "installedSha": "929df685ed1503134eb8e6418bbf3b453ca247d7a8c76d2f65ddc0c20375869b"
     },
     "scripts/bootstrap/lastmile/modules/auth.js": {
       "owner": "framework",
@@ -7908,8 +7957,8 @@
       "owner": "framework",
       "managed": true,
       "source": "framework/templates/app-scaffold/.env.local.example.tmpl",
-      "sha256": "c979866ef8451d2239bfaa7f89911ed7bdefe471ffc5e21bbc35f43dcf1ade44",
-      "installedSha": "c979866ef8451d2239bfaa7f89911ed7bdefe471ffc5e21bbc35f43dcf1ade44"
+      "sha256": "07a31098192e7850096e3d3ff1637f351c8aaf9b0c3338b9b436c6d945bef0bc",
+      "installedSha": "07a31098192e7850096e3d3ff1637f351c8aaf9b0c3338b9b436c6d945bef0bc"
     },
     "framework/templates/app-scaffold/components.json.tmpl": {
       "owner": "framework",
@@ -7981,6 +8030,34 @@
       "sha256": "2354079eadc7b870fb100bb70b7461d340c32b250a0ac81a151d1aff2c1ef6a2",
       "installedSha": "2354079eadc7b870fb100bb70b7461d340c32b250a0ac81a151d1aff2c1ef6a2"
     },
+    "framework/templates/app-scaffold/src/lib/telemetry/chain.ts.tmpl": {
+      "owner": "framework",
+      "managed": true,
+      "source": "framework/templates/app-scaffold/src/lib/telemetry/chain.ts.tmpl",
+      "sha256": "8d43bfb78904376818db0862f7d22c4ba907862ef15aaaecd7494d2d4ffbfcc0",
+      "installedSha": "8d43bfb78904376818db0862f7d22c4ba907862ef15aaaecd7494d2d4ffbfcc0"
+    },
+    "framework/templates/app-scaffold/src/lib/telemetry/events.ts.tmpl": {
+      "owner": "framework",
+      "managed": true,
+      "source": "framework/templates/app-scaffold/src/lib/telemetry/events.ts.tmpl",
+      "sha256": "18861c2f14abc4883527b5aeadca5a7d9fb1ea2689a0a004ccac30f486c89199",
+      "installedSha": "18861c2f14abc4883527b5aeadca5a7d9fb1ea2689a0a004ccac30f486c89199"
+    },
+    "framework/templates/app-scaffold/src/lib/telemetry/sink.ts.tmpl": {
+      "owner": "framework",
+      "managed": true,
+      "source": "framework/templates/app-scaffold/src/lib/telemetry/sink.ts.tmpl",
+      "sha256": "674010b423ea14b31f895a1a24562f09912072a1885856fea73606180a85af14",
+      "installedSha": "674010b423ea14b31f895a1a24562f09912072a1885856fea73606180a85af14"
+    },
+    "framework/templates/app-scaffold/src/lib/telemetry/track.ts.tmpl": {
+      "owner": "framework",
+      "managed": true,
+      "source": "framework/templates/app-scaffold/src/lib/telemetry/track.ts.tmpl",
+      "sha256": "889341ee3ccd4679398aafd6d1281bb6cc849be41711215035f82c93f152d161",
+      "installedSha": "889341ee3ccd4679398aafd6d1281bb6cc849be41711215035f82c93f152d161"
+    },
     "framework/templates/app-scaffold/src/components/ui/button.tsx.tmpl": {
       "owner": "framework",
       "managed": true,
@@ -8027,8 +8104,8 @@
       "owner": "framework",
       "managed": true,
       "source": "framework/templates/app-scaffold/src/app/layout.tsx.tmpl",
-      "sha256": "7d9687e02b185b38471dabb426f82a33decc2feebdda47aae71c9ca15526b4f0",
-      "installedSha": "7d9687e02b185b38471dabb426f82a33decc2feebdda47aae71c9ca15526b4f0"
+      "sha256": "332ae5ccbe77e200b5a20384a6133c8ffa2206baa602f38a7991f48691033ba8",
+      "installedSha": "332ae5ccbe77e200b5a20384a6133c8ffa2206baa602f38a7991f48691033ba8"
     },
     "framework/templates/app-scaffold/src/app/not-found.tsx.tmpl": {
       "owner": "framework",
@@ -8041,8 +8118,8 @@
       "owner": "framework",
       "managed": true,
       "source": "framework/templates/app-scaffold/src/app/page.tsx.tmpl",
-      "sha256": "d472021e116acf5af7197f99c898a293391f1b414710f76d4579e8736bc814dc",
-      "installedSha": "d472021e116acf5af7197f99c898a293391f1b414710f76d4579e8736bc814dc"
+      "sha256": "faa4e39a0758cd2ced931b71a324bb4b73e23cfa0e6b5b96183026530619265b",
+      "installedSha": "faa4e39a0758cd2ced931b71a324bb4b73e23cfa0e6b5b96183026530619265b"
     },
     "framework/releases/0.9.0/changelog.md": {
       "owner": "framework",

@@ -1,0 +1,150 @@
+#!/usr/bin/env node
+"use strict";
+
+const assert = require("assert");
+const fs = require("fs");
+const os = require("os");
+const path = require("path");
+
+const {
+  CANONICAL_EVENTS,
+  evaluateScaffold,
+  parseConstStringArray,
+} = require("../../../scripts/checks/scaffold-coverage-scan");
+
+const REPO_ROOT = path.resolve(__dirname, "..", "..", "..");
+const REAL_SCAFFOLD = path.join(REPO_ROOT, "framework", "templates", "app-scaffold");
+
+const tests = [];
+function test(name, fn) {
+  tests.push({ name, fn });
+}
+
+function fixture(mutator) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "warpos-spf01-scaffold-"));
+  fs.cpSync(REAL_SCAFFOLD, dir, { recursive: true });
+  if (mutator) mutator(dir);
+  return dir;
+}
+
+function read(rel, dir = REAL_SCAFFOLD) {
+  return fs.readFileSync(path.join(dir, rel), "utf8");
+}
+
+function write(rel, body, dir) {
+  fs.writeFileSync(path.join(dir, rel), body, "utf8");
+}
+
+function expectError(dir, pattern) {
+  const result = evaluateScaffold(dir);
+  assert.strictEqual(result.ok, false, "fixture unexpectedly passed");
+  assert(
+    result.errors.some((error) => pattern.test(error)),
+    `missing error ${pattern}; got ${JSON.stringify(result.errors)}`,
+  );
+}
+
+test("real-scaffold-telemetry-tree-passes", () => {
+  const result = evaluateScaffold(REAL_SCAFFOLD);
+  assert.deepStrictEqual(result.errors, []);
+  assert.strictEqual(result.ok, true);
+});
+
+test("lifecycle-events-exact-set", () => {
+  const events = parseConstStringArray(
+    read("src/lib/telemetry/events.ts.tmpl"),
+    "LIFECYCLE_EVENTS",
+  );
+  assert.deepStrictEqual(events, CANONICAL_EVENTS);
+});
+
+test("track-event-type-derives-from-events", () => {
+  const track = read("src/lib/telemetry/track.ts.tmpl");
+  assert.match(track, /import type \{ LifecycleEvent, TelemetryProps \} from "\.\/events"/);
+  assert.match(track, /event\s*:\s*LifecycleEvent/);
+  assert.doesNotMatch(track, /event\s*:\s*["'][^"']+["']\s*\|/);
+});
+
+test("activation-definition-shape-required", () => {
+  const events = read("src/lib/telemetry/events.ts.tmpl");
+  for (const field of ["predicate", "provenance", "confidence", "derivedFrom"]) {
+    assert.match(events, new RegExp(`${field}\\s*:`));
+  }
+});
+
+test("no-global-click-wrapper", () => {
+  const page = read("src/app/page.tsx.tmpl");
+  assert.doesNotMatch(page, /document\.addEventListener\s*\(\s*["']click["']/);
+  assert.doesNotMatch(page, /window\.addEventListener\s*\(\s*["']click["']/);
+  assert.strictEqual((page.match(/const\s+CORE_LOOP_EXAMPLE_ID\b/g) || []).length, 1);
+});
+
+test("seam-missing-fixture-fails", () => {
+  const dir = fixture((fx) => {
+    fs.rmSync(path.join(fx, "src/lib/telemetry/track.ts.tmpl"));
+  });
+  try {
+    expectError(dir, /missing required file: src\/lib\/telemetry\/track\.ts\.tmpl/);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("duplicate-sink-fixture-fails", () => {
+  const dir = fixture((fx) => {
+    const rel = "src/app/page.tsx.tmpl";
+    write(rel, read(rel, fx) + "\nwindow.posthog?.capture(\"signup\", {});\n", fx);
+  });
+  try {
+    expectError(dir, /duplicate telemetry sink\/raw emit outside sink\.ts/);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("event-name-drift-fixture-fails", () => {
+  const dir = fixture((fx) => {
+    const rel = "src/lib/telemetry/events.ts.tmpl";
+    write(rel, read(rel, fx).replace('"checkout"', '"payment"'), fx);
+  });
+  try {
+    expectError(dir, /event vocabulary drift/);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("unfilled-activation-fixture-fails", () => {
+  const dir = fixture((fx) => {
+    const rel = "src/lib/telemetry/events.ts.tmpl";
+    write(
+      rel,
+      read(rel, fx).replace(
+        '"user completes the scaffolded core action example"',
+        '"{{ACTIVATION_PREDICATE}}"',
+      ),
+      fx,
+    );
+  });
+  try {
+    expectError(dir, /activation definition present but undefined/);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+let pass = 0;
+let fail = 0;
+for (const t of tests) {
+  try {
+    t.fn();
+    console.log(`PASS ${t.name}`);
+    pass++;
+  } catch (err) {
+    console.error(`FAIL ${t.name}: ${err.stack || err.message}`);
+    fail++;
+  }
+}
+
+console.log(`scaffold-coverage-telemetry: ${pass} passed, ${fail} failed`);
+process.exit(fail ? 1 : 0);
