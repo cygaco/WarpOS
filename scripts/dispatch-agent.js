@@ -620,16 +620,20 @@ const propagatedChildBaseMs =
 // so the parent's childBaseMs+grace strictly exceeds it; else keep the standalone
 // DISPATCH_SLOT_TIMEOUT_MS default (600s) unchanged for non-ε callers.
 //
-// T-322 / β build-constraint (DECIDE 0.90), CHOICE (b) — ACCEPTED, not floored:
-// when childBaseMs is foreground-CLAMPED (540s), this slot bound shrinks below the
-// old 600s default. That is CORRECT fallback behavior, not a regression: a foreground
-// dispatch's TOTAL budget is already ≤540s, so a slot wait approaching that leaves no
-// room to run the provider call anyway — failing over to claude sooner (high cap, no
-// rate-limit) is the right move, not waiting out a 600s saturated slot we could never
-// use. A FLOOR of 600s is not an option here: it would make slot > childBaseMs and
-// re-open the parent-kills-child race this ticket closes. BACKGROUND dispatches keep
-// the full wait (childBaseMs=900s > 600s), so a saturated provider that genuinely needs
-// ~600s to free a slot is UNAFFECTED — only the foreground (can't-run-long) lane shortens.
+// T-322 / β build-constraint (DECIDE 0.90), CHOICE (b) — DOCUMENTED-ACCEPT, not floored:
+// when ε's propagated childBaseMs is FOREGROUND-CLAMPED (540s), this INTENTIONALLY
+// shortens the slot-acquire wait below the 600s DISPATCH_SLOT_TIMEOUT_MS default. The
+// invariant is slot ≤ childBaseMs ≤ the dispatch's TOTAL budget (540s foreground): a slot
+// the dispatch would have NO TIME LEFT to use is not worth waiting for, so falling back to
+// the claude lane EARLIER (high concurrency cap, no rate-limit) is the correct behavior —
+// strictly better than waiting up to 600s for a slot we could never actually run on.
+// A FLOOR at 600s (e.g. Math.max(propagatedChildBaseMs, 600s)) is NOT an option: it would
+// make slot (600s) > parent's foreground SIGTERM bound (childBaseMs 540s + 45s grace = 585s)
+// → parent(585s) < slot(600s), RE-CREATING the exact parent-kills-child-before-it-writes-its
+// -record race this fix closes. BACKGROUND dispatches keep the full wait (childBaseMs=900s >
+// 600s), so a saturated provider that genuinely needs ~600s to free a slot is UNAFFECTED —
+// only the foreground (can't-run-long-anyway) lane shortens. Pinned by epsilon-spawn-grace
+// section (6); a "restore the 600s floor" change REDs there.
 const slotTimeoutMs =
   propagatedChildBaseMs != null
     ? propagatedChildBaseMs
