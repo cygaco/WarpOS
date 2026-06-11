@@ -241,6 +241,12 @@ function validateDispatchForClass(req) {
       violations.push(`tool '${req.toolId}' does not match the contract tool_id (${JSON.stringify(resolved.tool_id)}) for class '${className}'.`);
     }
   }
+  if (req && req.mode && shape && !violations.length) {
+    const inMode = allowedShapesForClassInMode(className, req.mode);
+    if (!inMode.includes(shape)) {
+      violations.push(`shape '${shape}' is class-allowed for class '${className}' but NARROWED OUT by mode '${req.mode}' (mode allows: ${inMode.join(", ") || "<none>"}).`);
+    }
+  }
   if (resolved.cwd_policy === "worktree-required") {
     if (!req.cwd) {
       violations.push(`class '${className}' has cwd_policy 'worktree-required' but NO cwd was supplied — a build-chain dispatch must name its isolated worktree (omitting cwd is not a bypass).`);
@@ -331,6 +337,21 @@ function allowedShapesForRoleInMode(role, mode) {
   if (!narrow) return classAllowed.slice();
   // INTERSECTION — never a union. A shape only survives if it is BOTH class-allowed
   // AND mode-listed. This is the structural guarantee the profile cannot widen.
+  return classAllowed.filter((s) => narrow.includes(s));
+}
+
+function allowedShapesForClassInMode(className, mode) {
+  const contract = loadContract();
+  const classContract = contract.role_classes && contract.role_classes[className];
+  const resolved = mergeContract(contract.defaults || {}, classContract || {});
+  const classAllowed = resolved.allowed_shapes || [];
+  const mp = mode ? modeProfile(mode) : null;
+  if (!mp) return classAllowed.slice();
+  const narrow =
+    mp.class_shapes && Array.isArray(mp.class_shapes[className])
+      ? mp.class_shapes[className]
+      : null;
+  if (!narrow) return classAllowed.slice();
   return classAllowed.filter((s) => narrow.includes(s));
 }
 
@@ -513,7 +534,7 @@ module.exports = {
   loadContract, loadRegistry, classForRole, contractForRole, validateDispatch,
   validateDispatchForClass, sanctionedLane,
   skillExecution, validateContractFile, registryAttrs, CONTRACT_PATH, REGISTRY_PATH,
-  ARGV_SCHEMA_VERSION, modeProfile, allowedShapesForRoleInMode,
+  ARGV_SCHEMA_VERSION, modeProfile, allowedShapesForRoleInMode, allowedShapesForClassInMode,
 };
 
 // ── CLI ─────────────────────────────────────────────────────

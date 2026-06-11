@@ -61,6 +61,7 @@ const {
   makeDispatchId,
   cmdlineChecksum,
   AGENT_ROOT,
+  detectMode,
   // N-1 (§17.4): same run-context + prompt-digest stampers as the cross-provider
   // wrapper, so both write a uniformly coverage-gradeable record.
   runContext,
@@ -351,6 +352,7 @@ const dispatchId = makeDispatchId();
 const startedAt = new Date().toISOString();
 const startedMs = Date.now();
 const cmdChecksum = cmdlineChecksum(role, PROVIDER, promptBytes);
+const currentMode = detectMode();
 
 // ── Dispatch-contract consult (§17.1 keystone) ──────────────
 // Every dispatcher READS FROM the contract. This wrapper owns the subprocess-claude
@@ -366,6 +368,7 @@ try {
     shape: "subprocess-claude",
     toolId: "claude",
     cwd: runCwd,
+    mode: currentMode,
   });
   if (!verdict.ok && GENERIC_BUILD_IDS.has(role.toLowerCase())) {
     // G1 / β option (c): re-validate against build_chain_worker class directly.
@@ -381,6 +384,7 @@ try {
       shape: "subprocess-claude",
       toolId: "claude",
       cwd: runCwd,
+      mode: currentMode,
     });
     if (classVerdict.ok) {
       // Truthful informational: generic id resolved to a real class, shape OK.
@@ -390,11 +394,19 @@ try {
     } else {
       // A real violation (e.g. worktree-required + canonical cwd when using -w).
       // Report it honestly — still NOT "(fail-closed)", since the shape/tool are correct.
+      const blocking = process.env.WARPOS_DISPATCH_CONTRACT_ENFORCE === "block";
       process.stderr.write(
-        `[dispatch-claude] dispatch-contract advisory: ${classVerdict.violations.join("; ")}\n`,
+        `[dispatch-claude] dispatch-contract ${blocking ? "VIOLATION" : "advisory"}: ${classVerdict.violations.join("; ")}\n`,
       );
+      if (blocking) {
+        console.log(
+          JSON.stringify({ ok: false, provider: PROVIDER, role, reaped: false, reason: "dispatch_contract_violation", violations: classVerdict.violations }),
+        );
+        process.exit(1);
+      }
     }
-    // Proceed-on-advisory default unchanged (W0 scope; no REFUSE flip).
+    // Report-only default unchanged; explicit ENFORCE blocks class-level
+    // violations just like registered-role violations.
   } else if (!verdict.ok) {
     // Genuinely unknown id (not in role-registry, not a GENERIC_BUILD_ID), or a real
     // violation for a registered role. Keep the honest fail-closed wording unchanged.

@@ -2,10 +2,10 @@ schema: warpos/sprint/ticket/v1
 id: T-20260611-321
 title: "WS-G4 wrapper mode binding (R-10, finding #13) — BLOCKED-BY SP-20260611-001 WS-A merge: dispatch-agent.js + dispatch-claude.js pass live mode to validateDispatchForClass so mode_profiles/alpha_only_shapes enforce. RE-LOCATE call sites post-merge (SP-001 WS-A moved these lines — do NOT pin stale line numbers)"
 type: bug
-status: deferred
+status: done
 sprint: SP-20260611-002
 created_at: "2026-06-11T04:51:01.867Z"
-updated_at: "2026-06-11T20:42:56.854Z"
+updated_at: "2026-06-11T21:02:12.582Z"
 owner: null
 owner_agent: null
 risk_level: medium
@@ -26,8 +26,17 @@ linked_acceptance_criteria: []
 linked_issues: []
 linked_decisions: []
 linked_external_services: []
-linked_files: []
-linked_tests: []
+linked_files:
+  - scripts/dispatch-agent.js
+  - scripts/dispatch-claude.js
+  - scripts/dispatch/dispatch-contract.js
+  - scripts/test-dispatch-agent-resolution.js
+linked_tests:
+  - tests/regression/SP-20260611-002/wrapper-mode-binding.test.js
+  - scripts/dispatch/dispatch-contract.test.js
+  - scripts/test-dispatch-agent-resolution.js
+  - tests/regression/SP-20260611-001/review-fallback-shape.test.js
+  - tests/regression/SP-20260611-001/build-chain-registry-gate.test.js
 linked_commits: []
 linked_prs: []
 linked_release: null
@@ -40,6 +49,7 @@ implementation_notes: |
   BLOCKED-BY SP-20260611-001 WS-A merge (file overlap on dispatch wrappers). Note: WS-A is NOW MERGED (6a57aac) — this can move to ready_for_execution, but the builder MUST re-locate validateDispatch call sites against the merged HEAD, not the stale finding line numbers (dispatch-agent.js:508/dispatch-claude.js:315 have moved post-merge).
   Unblocked as follow-on dispatch-shape work after SP-002 close; do not build inside SP-002 release close.
   Status changed from ready_for_execution to deferred for SP-002 close. It is unblocked for later dispatch-shape work, not built in this sprint.
+  Post-close follow-on completion: implemented after SP-002 local release close per checkpoint next-action; not part of RL-20260611-044 release-close prerequisite set.
 qa_notes: ""
 redteam_notes: ""
 trace_notes: ""
@@ -50,4 +60,5 @@ ralph_progress: null
 completion_evidence:
   - "Unblocked by SP-20260611-001 merge; Beta release-boundary directive says follow-on work, not SP-002 release prerequisite."
   - "Deferred follow-on per Beta release-boundary directive and DUMP next-actions; SP-001 merge unblocks it, but it is not an SP-002 close prerequisite."
+  - "Post-close follow-on built on main: wrappers thread live mode into dispatch contract; wrapper-mode-binding 3/3; dispatch-contract 19/19; dispatch-agent resolution 26/26; review-fallback-shape 21/21; build-chain-registry-gate 29/29."
 reopen_history: []

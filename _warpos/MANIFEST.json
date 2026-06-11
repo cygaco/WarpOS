@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-11T20:48:44.896Z",
+  "generatedAt": "2026-06-11T21:03:21.633Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.15.4",
   "migrations": [],
@@ -1975,6 +1975,13 @@
       "sha256": "f7518c606b58a35543bd4744683fcb8a60c99fb624575482077441630348691c",
       "installedSha": "f7518c606b58a35543bd4744683fcb8a60c99fb624575482077441630348691c"
     },
+    "tests/regression/SP-20260611-002/wrapper-mode-binding.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": null,
+      "sha256": "11b5df2291c338d9fb8df30c46cde991d1248b8755284fd10ba5cca11daa8484",
+      "installedSha": "11b5df2291c338d9fb8df30c46cde991d1248b8755284fd10ba5cca11daa8484"
+    },
     "tests/regression/SP-20260611-001/build-chain-registry-gate.test.js": {
       "owner": "framework",
       "managed": true,
@@ -2595,15 +2602,15 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/dispatch-agent.js",
-      "sha256": "d4bf7f1af4b9fcc3292657662ea9e57649d3fe330abf2188fc683d9978f69013",
-      "installedSha": "d4bf7f1af4b9fcc3292657662ea9e57649d3fe330abf2188fc683d9978f69013"
+      "sha256": "9dac42783f4a688527b1a4b778990abaf7d257a00627523a9cd3ce97092e1245",
+      "installedSha": "9dac42783f4a688527b1a4b778990abaf7d257a00627523a9cd3ce97092e1245"
     },
     "scripts/dispatch-claude.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/dispatch-claude.js",
-      "sha256": "37355094547947a5a56dfdf967ff6fdb0e38a6862233fcbb81f98d934e4587f6",
-      "installedSha": "37355094547947a5a56dfdf967ff6fdb0e38a6862233fcbb81f98d934e4587f6"
+      "sha256": "9ddbaa6f1cd89342399ca4eaffd190a0d98648a9cc7f85285869d0f30001f05d",
+      "installedSha": "9ddbaa6f1cd89342399ca4eaffd190a0d98648a9cc7f85285869d0f30001f05d"
     },
     "scripts/dispatch-skill.js": {
       "owner": "framework",
@@ -3337,8 +3344,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/test-dispatch-agent-resolution.js",
-      "sha256": "bcacccd9fc11b7091bfb7681e2ab69b2fb6cae2f89ceed0b984d8a63617eec7e",
-      "installedSha": "bcacccd9fc11b7091bfb7681e2ab69b2fb6cae2f89ceed0b984d8a63617eec7e"
+      "sha256": "e6bd5f1c83b713edab542c2c2da4f144a2eaf129bcf8da460540ca657115a32d",
+      "installedSha": "e6bd5f1c83b713edab542c2c2da4f144a2eaf129bcf8da460540ca657115a32d"
     },
     "scripts/test-dispatch-config.js": {
       "owner": "framework",
@@ -5780,8 +5787,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/dispatch/dispatch-contract.js",
-      "sha256": "5df471a68eeee4c34d9c36c463727183b8284740b85ad423945a8b702a8b2423",
-      "installedSha": "5df471a68eeee4c34d9c36c463727183b8284740b85ad423945a8b702a8b2423"
+      "sha256": "56058fc3f3e8c8b047e337ff24cfd6ab27e3969f5577363f7264b436731a2067",
+      "installedSha": "56058fc3f3e8c8b047e337ff24cfd6ab27e3969f5577363f7264b436731a2067"
     },
     "scripts/dispatch/dispatch-contract.test.js": {
       "owner": "framework",

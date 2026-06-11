@@ -13,6 +13,8 @@
 
 "use strict";
 
+const fs = require("fs");
+const os = require("os");
 const path = require("path");
 
 const projectDir = path.resolve(__dirname, "..");
@@ -98,8 +100,22 @@ process.env.WARPOS_MODE = "oneshot";
 check("detectMode honours WARPOS_MODE=oneshot", dispatch.detectMode() === "oneshot");
 process.env.WARPOS_MODE = "adhoc";
 check("detectMode honours WARPOS_MODE=adhoc", dispatch.detectMode() === "adhoc");
+process.env.WARPOS_MODE = "sprint";
+check("detectMode honours WARPOS_MODE=sprint", dispatch.detectMode() === "sprint");
 if (prev === undefined) delete process.env.WARPOS_MODE;
 else process.env.WARPOS_MODE = prev;
+
+const prevProjectDir = process.env.CLAUDE_PROJECT_DIR;
+const modeProject = fs.mkdtempSync(path.join(os.tmpdir(), "dispatch-agent-mode-"));
+fs.mkdirSync(path.join(modeProject, ".claude", "runtime"), { recursive: true });
+fs.writeFileSync(
+  path.join(modeProject, ".claude", "runtime", "mode.json"),
+  JSON.stringify({ mode: "sprint" }),
+);
+process.env.CLAUDE_PROJECT_DIR = modeProject;
+check("detectMode reads CLAUDE_PROJECT_DIR mode.json=sprint", dispatch.detectMode() === "sprint");
+if (prevProjectDir === undefined) delete process.env.CLAUDE_PROJECT_DIR;
+else process.env.CLAUDE_PROJECT_DIR = prevProjectDir;
 
 if (failed > 0) {
   console.error(`FAIL — ${failed} of ${passed + failed} cases failed:`);

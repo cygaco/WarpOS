@@ -4,7 +4,7 @@ title: "E-LIFECYCLE-001 close-out fix sprint — 17 REAL + 4 PARTIAL GPT 2nd-pas
 objective: "Close the 17 REAL + 4 PARTIAL GPT-2nd-pass findings; integrate; gauntlet; complete the epic."
 status: closed
 created_at: "2026-06-11T04:31:36.180Z"
-updated_at: "2026-06-11T20:47:58.648Z"
+updated_at: "2026-06-11T21:02:02.732Z"
 source_request: "E-LIFECYCLE-001 close-out fix sprint: fix the 17 REAL + 4 PARTIAL findings from the GPT 2nd-pass security review of the gemini-only W1/W2/W3-5 lanes (triage: runtime/notes/elc-gpt2p-triage-2026-06-11.md), fold in the NOTAGAIN §8.3 legacy-scoping prep, re-gauntlet cross-family, then complete the epic."
 interpreted_intent: "Clear the §H debt PROPERLY: the GPT 2nd-pass ran (3 lanes, all FAIL — 12 blockers/9 majors), every blocker verified REAL by live probes. Fix the verified findings so the report-only→blocking flip ramp becomes actually safe, the two 'READY' gates become genuinely flippable, and E-LIFECYCLE-001 can complete honestly."
 plan_contract: ".claude/project/sprint/plan-contracts/PC-20260611-0074.yaml"
@@ -39,9 +39,9 @@ tickets:
     - T-20260611-320
     - T-20260611-324
     - T-20260611-325
-  released: []
-  deferred:
     - T-20260611-321
+  released: []
+  deferred: []
   abandoned: []
   reopened: []
   superseded: []

@@ -69,6 +69,7 @@ const { validate: validateAgentOutput } = require("./agents/output-validator");
 
 const AGENT_ROOT = path.resolve(__dirname, "..");
 const AGENT_ROOT_NORM = path.normalize(AGENT_ROOT);
+const VALID_MODES = new Set(["adhoc", "oneshot", "sprint", "solo"]);
 
 /**
  * Resolve a telemetry file path, anchored to AGENT_ROOT.
@@ -247,25 +248,46 @@ function recordDeath(record) {
  *      unambiguous.
  */
 
+function readModeFromProjectRoot(root) {
+  try {
+    const p = path.join(root, ".claude", "runtime", "mode.json");
+    if (!fs.existsSync(p)) return null;
+    const doc = JSON.parse(fs.readFileSync(p, "utf8"));
+    const mode = String((doc && doc.mode) || "").toLowerCase();
+    return VALID_MODES.has(mode) ? mode : null;
+  } catch {
+    return null;
+  }
+}
+
 function detectMode() {
   const explicit = process.env.WARPOS_MODE;
-  if (explicit && /^(adhoc|oneshot|solo)$/i.test(explicit))
-    return explicit.toLowerCase();
+  if (explicit && VALID_MODES.has(String(explicit).toLowerCase()))
+    return String(explicit).toLowerCase();
+  const envRoot = process.env.CLAUDE_PROJECT_DIR
+    ? path.resolve(process.env.CLAUDE_PROJECT_DIR)
+    : null;
+  const roots = [];
+  if (envRoot) roots.push(envRoot);
+  roots.push(AGENT_ROOT);
+  for (const root of roots) {
+    const mode = readModeFromProjectRoot(root);
+    if (mode) return mode;
+  }
   try {
     // oneshotStore now resolves (via the paths registry) to
-    // president/_system/oneshot/store.json. The literal fallback mirrors it.
-    const storePath =
-      PATHS.oneshotStore ||
-      path.join(
-        PATHS.agents || ".claude/agents",
-        "president",
-        ".system",
-        "oneshot",
-        "store.json",
-      );
-    if (fs.existsSync(storePath)) {
-      const store = JSON.parse(fs.readFileSync(storePath, "utf8"));
-      if (store && store.status === "running") return "oneshot";
+    // president/_system/oneshot/store.json. Keep the legacy .system fallback for
+    // old installs, but anchor literal fallbacks to this script's repo root.
+    const storePaths = [
+      PATHS.oneshotStore,
+      path.join(AGENT_ROOT, ".claude", "agents", "president", "_system", "oneshot", "store.json"),
+      path.join(AGENT_ROOT, ".claude", "agents", "president", ".system", "oneshot", "store.json"),
+    ].filter(Boolean);
+    for (const storePath of storePaths) {
+      if (fs.existsSync(storePath)) {
+        const store = JSON.parse(fs.readFileSync(storePath, "utf8"));
+        if (store && store.status === "running") return "oneshot";
+      }
     }
   } catch {
     /* fall through */
@@ -385,6 +407,7 @@ if (require.main !== module) {
     findAgentSpec,
     getRoleModel,
     detectMode,
+    readModeFromProjectRoot,
     modeSubdir,
     // AC2 / ED-016 fix: exported for unit testing the canonical-path resolution.
     // Tests can call canonicalFile(fakeWorktreePath, relFallback) directly to
@@ -505,10 +528,12 @@ if (provider === "claude") {
 // contract-read error so the contract never crashes a working cross-provider dispatch.
 try {
   const { validateDispatch } = require("./dispatch/dispatch-contract");
+  const currentMode = detectMode();
   const verdict = validateDispatch({
     role,
     shape: "subprocess-cross-provider",
     toolId: provider === "openai" ? "codex" : provider === "gemini" ? "gemini" : provider,
+    mode: currentMode,
   });
   if (!verdict.ok) {
     const blocking = process.env.WARPOS_DISPATCH_CONTRACT_ENFORCE === "block";
