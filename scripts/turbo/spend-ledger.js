@@ -151,8 +151,11 @@ function estimateRecordCost(rec) {
   // integers. A negative `prompt_bytes` is truthy, so `Number(-1e6) || 0` would
   // yield negative tokens → negative usd → SUBTRACTS from the running total and
   // masks real spend. `Number.isFinite` gating also maps NaN/±Infinity → 0.
-  const inBytes = clampBytes(rec.prompt_bytes);
-  const outBytes = clampBytes(rec.stdout_bytes);
+  // AC-3.4: a PRESENT nonfinite/overflow/negative value is collected as SUSPECT
+  // so the ledger can fail HIGH instead of silently metering it as $0.
+  const suspectBytes = [];
+  const inBytes = clampBytes(rec.prompt_bytes, suspectBytes);
+  const outBytes = clampBytes(rec.stdout_bytes, suspectBytes);
   const inTokens = inBytes / BYTES_PER_TOKEN;
   const outTokens = outBytes / BYTES_PER_TOKEN;
   const usd =
@@ -163,6 +166,8 @@ function estimateRecordCost(rec) {
     usd: round4(usd),
     inBytes,
     outBytes,
+    suspect: suspectBytes.length > 0,
+    suspectValues: suspectBytes,
   };
 }
 
@@ -195,9 +200,19 @@ function computeLedger(opts = {}) {
     }
     const { ceilingUsd, source: ceilingSource } = resolveCeiling(auth);
 
-    // 2. Session-scope: count records since the turbo grant when present.
+    // 2. Session-scope: count records since the SESSION START (AC-3.3), NOT
+    //    granted_at. granted_at resets on every re-apply (apply.js writes a fresh
+    //    granted_at each time), which silently dropped prior same-session paid
+    //    calls below the cutoff. The session anchor (`session_started_at`) is
+    //    persisted once and preserved across re-applies, so the window covers the
+    //    whole session. Fallback to granted_at keeps legacy/pre-upgrade auth
+    //    records (and an in-flight session that predates this field) working.
     const sinceIso =
-      auth && typeof auth.granted_at === "string" ? auth.granted_at : null;
+      auth && typeof auth.session_started_at === "string"
+        ? auth.session_started_at
+        : auth && typeof auth.granted_at === "string"
+          ? auth.granted_at
+          : null;
     const sinceMs = sinceIso ? new Date(sinceIso).getTime() : null;
 
     // 3. Sum metered spend from real completion records (fail-open per line).
@@ -211,6 +226,7 @@ function computeLedger(opts = {}) {
     const byProvider = {};
     let spentUsd = 0;
     let calls = 0;
+    const suspectRecords = []; // AC-3.4 — nonfinite/overflow byte counts, fail HIGH
     if (raw) {
       for (const line of raw.split("\n")) {
         if (!line.trim()) continue;
@@ -226,6 +242,17 @@ function computeLedger(opts = {}) {
         }
         const cost = estimateRecordCost(rec);
         if (!cost) continue;
+        if (cost.suspect) {
+          // AC-3.4: a present nonfinite/overflow byte count cannot be metered — it
+          // would have silently contributed $0 and UNDER-reported spend. Record it
+          // so the ledger fails HIGH (loud notice + stderr + event), never silent.
+          suspectRecords.push({
+            provider: cost.provider,
+            model: cost.model,
+            values: cost.suspectValues,
+            dispatch_id: rec.dispatch_id || null,
+          });
+        }
         spentUsd = round4(spentUsd + cost.usd);
         calls++;
         const key = cost.provider;
@@ -241,6 +268,44 @@ function computeLedger(opts = {}) {
     // 4. Report-only warnings + notices.
     const warnings = [];
     const notices = [];
+    // AC-3.4 — FAIL HIGH on suspect (nonfinite/overflow) byte counts: a loud
+    // warning + stderr + an emitted event. A spend ledger must never silently
+    // treat an un-meterable record as $0 — that is the under-report bypass.
+    if (suspectRecords.length) {
+      const summary = suspectRecords
+        .map(
+          (s) =>
+            `${s.provider}/${s.model || "?"}${
+              s.dispatch_id ? "#" + s.dispatch_id : ""
+            }[${s.values.join(",")}]`,
+        )
+        .join("; ");
+      warnings.push(
+        `SUSPECT RECORD(S) (fail-high): ${suspectRecords.length} dispatch record(s) carried a NONFINITE/overflow byte count (${summary}) that cannot be metered — spend may be UNDER-reported. Investigate the record source.`,
+      );
+      try {
+        process.stderr.write(
+          `[spend-ledger] SUSPECT: ${suspectRecords.length} record(s) with nonfinite/overflow byte counts — ${summary}\n`,
+        );
+      } catch {
+        /* stderr best-effort */
+      }
+      try {
+        const { logEvent } = require(
+          path.join(project, "scripts", "hooks", "lib", "logger.js"),
+        );
+        logEvent(
+          "audit",
+          "turbo",
+          "spend-suspect-record",
+          "",
+          summary,
+          { suspectRecords },
+        );
+      } catch {
+        /* logger best-effort — the warning + stderr already surface it */
+      }
+    }
     if (overCeiling) {
       warnings.push(
         `OVER CEILING (report-only): est $${spentUsd.toFixed(2)} ≥ $${ceilingUsd.toFixed(
@@ -274,6 +339,7 @@ function computeLedger(opts = {}) {
       byProvider,
       warnings,
       notices,
+      suspectRecords,
       sinceIso,
     };
   } catch (e) {
@@ -289,6 +355,7 @@ function computeLedger(opts = {}) {
       byProvider: {},
       warnings: [],
       notices: [`ledger fault (fail-open): ${String(e.message || e)}`],
+      suspectRecords: [],
       sinceIso: null,
       error: String(e.message || e),
     };
@@ -299,9 +366,26 @@ function computeLedger(opts = {}) {
 // Coerce a recorded byte count to a non-negative finite number. Negative,
 // NaN, ±Infinity, and non-numeric inputs all clamp to 0 so a spoofed record
 // can neither subtract from nor poison (NaN/Infinity) the running spend total.
-function clampBytes(v) {
+//
+// AC-3.4 — FAIL HIGH on a NONFINITE/overflow PRESENT value. A clamp-to-0 is the
+// SAFE direction for an absent field (undefined/null/"") — that is normal and
+// silent. But a PRESENT value that coerces to NaN or ±Infinity (e.g. `1e400`
+// JSON-parses to Infinity, an explicit `NaN`, a negative count) is SUSPECT:
+// silently treating it as $0 lets a crafted record UNDER-report spend. Such a
+// value is flagged (suspect:true) so the caller emits a loud notice instead of
+// silently contributing $0. A huge FINITE count is NOT suspect — it over-reports
+// (the safe direction) and passes through unchanged.
+function clampBytes(v, sink) {
+  // Absent / empty → normal zero, never suspect.
+  if (v == null || v === "") return 0;
   const n = Number(v);
-  return Number.isFinite(n) && n > 0 ? n : 0;
+  if (Number.isFinite(n) && n >= 0) return n; // finite (incl. huge) → pass through
+  // Present but nonfinite/negative → SUSPECT. Clamp to 0 (cannot meter it) but
+  // signal up so the ledger fails HIGH rather than silently dropping the record.
+  if (sink && typeof sink.push === "function") {
+    sink.push(String(v));
+  }
+  return 0;
 }
 function round2(n) {
   return Math.round(n * 100) / 100;
