@@ -27,6 +27,7 @@ const WALK_SKIP_DIRS = new Set([
   "WarpOS-Update", // gitignored operator scratch (parallels .warpos); not framework
   ".vscode",
   ".idea",
+  ".codex", // Codex local project config/handoff state; not shipped framework content
   "runtime",
   "worktrees", // .claude/worktrees/ — agent scratch clones; not framework
   ".worktrees", // repo-root builder isolation worktrees (.worktrees/wt-*) — agent scratch; never framework, must never enter the shipping manifest nor break its build
@@ -40,6 +41,7 @@ const WALK_SKIP_FILES = new Set([
   ".env",
   ".env.local",
   "DUMP.md",
+  "CODEX-LOG.md",
   // Transient/local root docs — operator input specs + per-repo registers, NOT
   // shipped framework (same class as DUMP.md). WARPOS.md is a per-repo gap register
   // (products generate their own via /warp:flag; canonical's is local, never shipped);

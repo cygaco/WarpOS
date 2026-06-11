@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-11T18:41:20.444Z",
+  "generatedAt": "2026-06-11T19:17:33.860Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.15.4",
   "migrations": [],
@@ -1856,12 +1856,26 @@
       "sha256": "6e3627217b514aca80153d614ea3a420eb6df476676ef6366bd523f81f2de4ae",
       "installedSha": "6e3627217b514aca80153d614ea3a420eb6df476676ef6366bd523f81f2de4ae"
     },
+    "tests/regression/SP-20260611-002/auth-floor-rm-with-write.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": null,
+      "sha256": "0db74fbc3e7c45533a766bfb185ecfa22c1745687beafc206b58781f00fc7d1a",
+      "installedSha": "0db74fbc3e7c45533a766bfb185ecfa22c1745687beafc206b58781f00fc7d1a"
+    },
     "tests/regression/SP-20260611-002/auth-floor-tracked-delete.test.js": {
       "owner": "framework",
       "managed": true,
       "source": null,
       "sha256": "7ae0c89d046a587001ff9ce87a958992bb292719adc6525bac60ae3fcc6686eb",
       "installedSha": "7ae0c89d046a587001ff9ce87a958992bb292719adc6525bac60ae3fcc6686eb"
+    },
+    "tests/regression/SP-20260611-002/coverage-gate-scan-live-cli.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": null,
+      "sha256": "97ef0264daec18a6510a3434df325345e66af3e205354ac737b75efe9a63b684",
+      "installedSha": "97ef0264daec18a6510a3434df325345e66af3e205354ac737b75efe9a63b684"
     },
     "tests/regression/SP-20260611-002/coverage-gate-scan-source.test.js": {
       "owner": "framework",
@@ -1902,22 +1916,22 @@
       "owner": "framework",
       "managed": true,
       "source": null,
-      "sha256": "37eca873c0de08ad7714d94b623ef8932552bb1d12e349495d1602b168caf2af",
-      "installedSha": "37eca873c0de08ad7714d94b623ef8932552bb1d12e349495d1602b168caf2af"
+      "sha256": "902859774543dc6ec98bc8bc0913f09803808d159f76fcb4a2679ee09b44b663",
+      "installedSha": "902859774543dc6ec98bc8bc0913f09803808d159f76fcb4a2679ee09b44b663"
     },
     "tests/regression/SP-20260611-002/planning-principles-enforce.test.js": {
       "owner": "framework",
       "managed": true,
       "source": null,
-      "sha256": "1e8005d8a8c582c7a1ff7f4d9e76b7281ed57de2acc4bd9391c2998165194889",
-      "installedSha": "1e8005d8a8c582c7a1ff7f4d9e76b7281ed57de2acc4bd9391c2998165194889"
+      "sha256": "e2116fcd77da5e92198b7e3ef6efad10be8dc8426a27309bf8a0522b43cd1b04",
+      "installedSha": "e2116fcd77da5e92198b7e3ef6efad10be8dc8426a27309bf8a0522b43cd1b04"
     },
     "tests/regression/SP-20260611-002/provider-tier-matrix.test.js": {
       "owner": "framework",
       "managed": true,
       "source": null,
-      "sha256": "3a8a63d66d4cd8110784ded836dfb3132821f0ebbd60f04f3b0390ca6f582021",
-      "installedSha": "3a8a63d66d4cd8110784ded836dfb3132821f0ebbd60f04f3b0390ca6f582021"
+      "sha256": "cbbefb8f1747e108158e67b6a694c47ce8689d7b4e770cee689c473c7d3d3d64",
+      "installedSha": "cbbefb8f1747e108158e67b6a694c47ce8689d7b4e770cee689c473c7d3d3d64"
     },
     "tests/regression/SP-20260611-002/team-cwd-scope-under-project.test.js": {
       "owner": "framework",
@@ -1930,8 +1944,8 @@
       "owner": "framework",
       "managed": true,
       "source": null,
-      "sha256": "58b2ded99e5df18923f333d6dc8960fba82ab8355227b3d3cc2eb814d7a6ace7",
-      "installedSha": "58b2ded99e5df18923f333d6dc8960fba82ab8355227b3d3cc2eb814d7a6ace7"
+      "sha256": "6544177ecb706b85edd7b6c03bc4f528c7a1573e11e9958f59179a5cacc340f6",
+      "installedSha": "6544177ecb706b85edd7b6c03bc4f528c7a1573e11e9958f59179a5cacc340f6"
     },
     "tests/regression/SP-20260611-002/teardown-projectdir-anchor.test.js": {
       "owner": "framework",
@@ -2063,8 +2077,8 @@
       "owner": "framework",
       "managed": true,
       "source": null,
-      "sha256": "8ef2146ff47eeea33205e82f7a8d031fa193c436acaa1eb6d54caf7c5c599b4d",
-      "installedSha": "8ef2146ff47eeea33205e82f7a8d031fa193c436acaa1eb6d54caf7c5c599b4d"
+      "sha256": "b7b338cb3a34c63e99ea349ecf5c146ac582a840b9f36ec994190c0a6faf3f10",
+      "installedSha": "b7b338cb3a34c63e99ea349ecf5c146ac582a840b9f36ec994190c0a6faf3f10"
     },
     "tests/regression/S-LC-09/design-10-build-2.test.js": {
       "owner": "framework",
@@ -3659,8 +3673,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/warpos/provider-tier-check.js",
-      "sha256": "e7e6e3d3a4012be4801a8bfcec7f7ce0ac2856348294abe2dfba4c8f2dedc6a6",
-      "installedSha": "e7e6e3d3a4012be4801a8bfcec7f7ce0ac2856348294abe2dfba4c8f2dedc6a6"
+      "sha256": "a5c41668858db1bf5cac1152b3c63a0979ec41f362459bcbc5df199254a9e548",
+      "installedSha": "a5c41668858db1bf5cac1152b3c63a0979ec41f362459bcbc5df199254a9e548"
     },
     "scripts/warpos/prune-installed-assets.js": {
       "owner": "framework",
@@ -3932,8 +3946,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/warpos/manifest/walk-skip.js",
-      "sha256": "6dfac546c1ea48a039a7fc1bd57f4e18c10bfbdcb5ce3da78cc6e6e2cc038b97",
-      "installedSha": "6dfac546c1ea48a039a7fc1bd57f4e18c10bfbdcb5ce3da78cc6e6e2cc038b97"
+      "sha256": "2d07cd3525923e4818e0d0e95ef280a3d244dadf0d868f17fbb505ae7d5621c3",
+      "installedSha": "2d07cd3525923e4818e0d0e95ef280a3d244dadf0d868f17fbb505ae7d5621c3"
     },
     "scripts/warpos/lib/content-hash.js": {
       "owner": "framework",
@@ -3960,8 +3974,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/warpos/lib/provider-tier-config.js",
-      "sha256": "4d4b864d86452a63c7b5a082e1258f448aefde44d53c2adf90f8578668ad9eb1",
-      "installedSha": "4d4b864d86452a63c7b5a082e1258f448aefde44d53c2adf90f8578668ad9eb1"
+      "sha256": "e36d55897b798727bd848d68341642effcd69f9b536737d72ff4d6c8fd6e3b42",
+      "installedSha": "e36d55897b798727bd848d68341642effcd69f9b536737d72ff4d6c8fd6e3b42"
     },
     "scripts/warpos/lib/update-events.js": {
       "owner": "framework",
@@ -4919,8 +4933,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/authorization-gate.js",
-      "sha256": "9a1a02804628c7ab279c77e3341b5dc7de38f2263c5fb57fed54b05960c68248",
-      "installedSha": "9a1a02804628c7ab279c77e3341b5dc7de38f2263c5fb57fed54b05960c68248"
+      "sha256": "24eb715d935dd386abd887e77aa2c349e30c7e6defddeef449b260ffcc6c98cc",
+      "installedSha": "24eb715d935dd386abd887e77aa2c349e30c7e6defddeef449b260ffcc6c98cc"
     },
     "scripts/hooks/beta-gate.js": {
       "owner": "framework",
@@ -5402,8 +5416,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/team-guard.js",
-      "sha256": "0b0cccf44b19d12f22700d34ff52b6f72d99dc9a9121033c9f26348717035468",
-      "installedSha": "0b0cccf44b19d12f22700d34ff52b6f72d99dc9a9121033c9f26348717035468"
+      "sha256": "3b33c2bf43b23078a9cbf69149bea3152cb8b7f74d9a1be1daacb3a816443723",
+      "installedSha": "3b33c2bf43b23078a9cbf69149bea3152cb8b7f74d9a1be1daacb3a816443723"
     },
     "scripts/hooks/template-fillability.js": {
       "owner": "framework",
@@ -6095,8 +6109,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/coverage-gate-scan.js",
-      "sha256": "fb2b039c072b3c671d332df52dcd8b59ea2a59e573e33922b39a69c14b47108a",
-      "installedSha": "fb2b039c072b3c671d332df52dcd8b59ea2a59e573e33922b39a69c14b47108a"
+      "sha256": "b094e190db3997f2ccd12c65a424b8d5f12421ba2ae455d1c222024366ec4192",
+      "installedSha": "b094e190db3997f2ccd12c65a424b8d5f12421ba2ae455d1c222024366ec4192"
     },
     "scripts/checks/cutover-completeness.allowlist.json": {
       "owner": "framework",
@@ -6396,8 +6410,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/mode-write-coverage.js",
-      "sha256": "6acf009c02ccda3760778ed352f4dc8a957be014dc2846313bd0205b7ea35ea1",
-      "installedSha": "6acf009c02ccda3760778ed352f4dc8a957be014dc2846313bd0205b7ea35ea1"
+      "sha256": "b984dc5ac43f3c4a9583e2b9c79cd5825eec736db353948eca4ba82f972d9aee",
+      "installedSha": "b984dc5ac43f3c4a9583e2b9c79cd5825eec736db353948eca4ba82f972d9aee"
     },
     "scripts/checks/no-nul-bytes.js": {
       "owner": "framework",
@@ -6438,8 +6452,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/planning-principles.js",
-      "sha256": "b8affad0df1edb77ee4a05c6908d8976948689dce157ab2570fd41e5080b78a0",
-      "installedSha": "b8affad0df1edb77ee4a05c6908d8976948689dce157ab2570fd41e5080b78a0"
+      "sha256": "eec67608a4a6fc86abbdb5bf87b95cee860b3b24edae5dfbd9863cf25bda1c8f",
+      "installedSha": "eec67608a4a6fc86abbdb5bf87b95cee860b3b24edae5dfbd9863cf25bda1c8f"
     },
     "scripts/checks/portfolio-installer-loud.js": {
       "owner": "framework",
