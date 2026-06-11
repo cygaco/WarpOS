@@ -266,11 +266,18 @@ function verdictFor(provider, signals, config, opts = {}) {
   let verdict;
   if (tierRank(eff.tier) >= tierRank(selected)) {
     verdict = "tier_met";
-  } else if (tierRank(selected) >= tierRank("t3") && !eff.t3Judged) {
-    // Selected tier needs the value-free-UNDETECTABLE T3 floor and nothing
-    // attested/probed it → we cannot know → fail-open to unknown (never block).
+  } else if (signals.t1Met && tierRank(selected) >= tierRank("t3") && !eff.t3Judged) {
+    // unknown-self-attested is RESERVED for the genuinely-undetectable case: T1 (and
+    // the value-free funded signal) ARE detectable and only the T3 sub-floor needs a
+    // self-attestation/probe nobody provided → we cannot know → fail-open (never
+    // block). It is NOT used when T1 is DETECTABLY down — a down provider is a
+    // confident, value-free-detectable shortfall (AC-6.1 / AC-6.4 / #15). Gating on
+    // signals.t1Met is what keeps the `!t1Met` t3-selected case out of this branch
+    // and in `tier_short` below.
     verdict = "unknown-self-attested";
   } else {
+    // Confident, value-free-detectable shortfall — incl. T1 down for any selected
+    // tier (CLI/auth is detectable, so a down provider is NEVER "unknown").
     verdict = "tier_short";
   }
 
@@ -312,7 +319,7 @@ function verdictFor(provider, signals, config, opts = {}) {
  * NEVER throws. Returns a value-free, report-only envelope.
  */
 function buildReport(opts = {}) {
-  const { config, source: configSource, path: cfgPath } = cfgLib.readConfig(opts);
+  const { config, source: configSource, corrupt: configCorrupt, path: cfgPath } = cfgLib.readConfig(opts);
   const providers =
     opts.providers || Array.from(new Set([...cfgLib.KNOWN_PROVIDERS, ...Object.keys(config.providers || {})]));
 
@@ -327,7 +334,12 @@ function buildReport(opts = {}) {
     return verdictFor(p, signals, config, opts);
   });
 
-  const anyShort = rows.some((r) => r.verdict === "tier_short");
+  // FAIL-CLOSED on a PRESENT-but-CORRUPT instance file (AC-6.2 / #16): the file
+  // existed and may have carried an operator-RAISED floor we can no longer read.
+  // We must NOT relax to the framework-default green — hold (tier_short) so an
+  // --enforce REDS and the envelope `ok` is false. An ABSENT config (corrupt:false)
+  // is the normal greenfield case and is left to its real per-provider verdicts.
+  const anyShort = configCorrupt || rows.some((r) => r.verdict === "tier_short");
   const summary = anyShort
     ? "tier_short"
     : rows.some((r) => r.verdict === "unknown-self-attested")
@@ -335,11 +347,14 @@ function buildReport(opts = {}) {
       : "tier_met";
 
   return {
-    ok: true,
+    // ok MIRRORS the verdict (AC-6.3): an `ok`-only consumer can no longer
+    // false-green a tier_short (incl. the corrupt-config hold).
+    ok: summary !== "tier_short",
     report_only: true,
     detection: "self-attestation (default)" + (opts.probe ? " + opt-in billing probe (stub)" : ""),
     infer_from_dispatch: false, // structurally absent — no dispatch/spend path exists
     config_source: configSource,
+    config_corrupt: !!configCorrupt, // PRESENT-but-unreadable → fail-closed hold
     config_path: cfgPath,
     t3_floor: cfgLib.resolveT3Floor(config),
     providers: rows,
@@ -359,6 +374,13 @@ function renderHuman(report) {
   out.push("Provider Tier Readiness (report-only — value-free, no token spend)");
   out.push("─".repeat(66));
   out.push(`  config: ${report.config_source}   T3 floor: ${report.t3_floor} (operator-tunable)`);
+  if (report.config_corrupt) {
+    out.push(
+      "  WARNING: the instance config file is PRESENT but UNREADABLE — failing closed " +
+        "(holding tier_short).\n           A raised floor may be hidden; --enforce REDS. " +
+        "Repair or re-run --set-tier to restore it.",
+    );
+  }
   out.push("");
   out.push("  " + "PROVIDER".padEnd(9) + "EFF".padEnd(6) + "SELECTED".padEnd(10) + "VERDICT".padEnd(24) + "CONF");
   out.push("  " + "─".repeat(62));
@@ -459,8 +481,11 @@ function main(argv) {
   else process.stdout.write(renderHuman(report));
 
   // Exit contract: report-only exit 0 by default. --enforce exits 2 ONLY on a
-  // confident tier_short (unknown-self-attested NEVER trips it — fail-open).
-  if (args.enforce && report.providers.some((r) => r.verdict === "tier_short")) {
+  // confident tier_short — driven by verdict_summary so it covers BOTH a row-level
+  // shortfall (incl. T1 down, AC-6.1) AND the present-but-corrupt config fail-closed
+  // hold (AC-6.2). unknown-self-attested NEVER trips it (fail-open). This mirrors the
+  // envelope `ok` (AC-6.3) so the exit code and `ok` can never disagree.
+  if (args.enforce && report.verdict_summary === "tier_short") {
     return 2;
   }
   return 0;
