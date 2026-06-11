@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "generated": "2026-06-10T19:19:44.206Z",
-    "lastUpdated": "2026-06-10T19:19:44.206Z",
-    "total_hooks": 74,
+    "generated": "2026-06-11T03:38:25.448Z",
+    "lastUpdated": "2026-06-11T03:38:25.448Z",
+    "total_hooks": 75,
     "total_modules": 18,
-    "uncurated": 0,
+    "uncurated": 1,
     "total_gaps": 83,
     "gaps_closed": 75,
     "gaps_open": 8,
@@ -303,8 +303,8 @@
       "depends_on": [
         "logger"
       ],
-      "file_size": 26061,
-      "file_modified": "2026-06-08T05:38:13.758Z",
+      "file_size": 28003,
+      "file_modified": "2026-06-10T22:27:30.681Z",
       "note": "Prevents binding-gap regressions (LRN-2026-04-17 Windows stdin; LRN-2026-04-30 binding-gap) by forcing all cross-provider CLI prompt calls through the canonical wrapper that carries runProvider+concurrency-lock fixes. Heavy-skill advisory (findHeavySkillAdvisory) closes ED-021's §2.5 coverage for in-process heavy-skill dispatch. Residual: ED-019 (quoted command-substitution evasion, out-of-threat-model)."
     },
     {
@@ -1312,9 +1312,27 @@
       "pre_check": "On Agent PreToolUse: resolve role from subagent_type or prompt heuristics; if build-chain, scan prompt for scope contract markers; block on absence.",
       "post_check": "none",
       "depends_on": [],
-      "file_size": 4536,
-      "file_modified": "2026-06-04T22:57:14.001Z",
+      "file_size": 8423,
+      "file_modified": "2026-06-11T00:39:18.503Z",
       "note": "Companion to ownership-guard. Forces builders/fixers to declare their write scope up front rather than discovering ownership violations at write-time."
+    },
+    {
+      "id": "scope-contract-guard.test",
+      "type": "hook",
+      "matcher": "?",
+      "phase": "?",
+      "mode": "?",
+      "file": "scripts/hooks/scope-contract-guard.test.js",
+      "file_size": 5856,
+      "file_modified": "2026-06-11T00:39:18.503Z",
+      "registered": false,
+      "gates": [],
+      "blocks": [],
+      "warns": [],
+      "allows": [],
+      "gaps_closed": [],
+      "uncurated": true,
+      "uncurated_note": "added since last hand-curated regen — fields ?, ?, ? need a /maps:enforcements review"
     },
     {
       "id": "secret-guard",
@@ -2416,8 +2434,8 @@
       ],
       "generated_from": "framework/paths.registry.json",
       "file": "scripts/hooks/lib/paths.generated.js",
-      "file_size": 11004,
-      "file_modified": "2026-06-10T13:54:45.222Z"
+      "file_size": 10920,
+      "file_modified": "2026-06-11T00:39:18.503Z"
     },
     {
       "id": "paths",
@@ -2467,8 +2485,8 @@
         "scripts/dispatch-agent.js"
       ],
       "file": "scripts/hooks/lib/providers.js",
-      "file_size": 41222,
-      "file_modified": "2026-06-08T05:23:57.530Z",
+      "file_size": 46285,
+      "file_modified": "2026-06-10T22:27:30.681Z",
       "note": "Source of binding-gap fixes. dispatch-route-guard hook exists to force every caller through this module."
     },
     {

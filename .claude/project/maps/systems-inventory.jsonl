@@ -1,7 +1,7 @@
 {"id":"identity","name":"Alex identity","category":"identity","files":["CLAUDE.md","AGENTS.md"]}
 {"id":"agents","name":"Agent team + build chains","category":"agents","count":68}
 {"id":"skills","name":"Skills","category":"capability","count":218}
-{"id":"hooks","name":"Hooks","category":"automation","count":76}
+{"id":"hooks","name":"Hooks","category":"automation","count":77}
 {"id":"memory","name":"Memory stores","category":"memory","count":8}
 {"id":"maps","name":"Relationship maps","category":"infrastructure","dir":".claude/project/maps"}
 {"id":"paths-registry","name":"Paths registry","category":"infrastructure","path":".claude/paths.json"}

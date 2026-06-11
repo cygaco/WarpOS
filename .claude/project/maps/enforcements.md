@@ -1,8 +1,8 @@
 # Enforcements Map
 
-Generated: 2026-06-10T19:19:44.206Z
+Generated: 2026-06-11T03:38:25.448Z
 
-**74** hooks, **18** lib modules. **0** uncurated (added since last hand-curation on 2026-06-10T05:05:32.519Z).
+**75** hooks, **18** lib modules. **1** uncurated (added since last hand-curation on 2026-06-10T19:19:44.206Z).
 
 ## Coverage
 
@@ -57,6 +57,7 @@ Generated: 2026-06-10T19:19:44.206Z
 | retro-presence-check | (universal) | Stop | advisory | yes |  |
 | save-session-lint | Edit|Write | PostToolUse | fail-open | yes |  |
 | scope-contract-guard | Agent | PreToolUse | fail-closed | yes |  |
+| scope-contract-guard.test | ? | ? | ? | no | yes |
 | secret-guard | Edit|Write | PreToolUse | fail-closed | yes |  |
 | self-mod-governance | Edit|Write | PreToolUse | advisory | yes |  |
 | session-end-team-teardown | ? | ? | ? | yes | yes |

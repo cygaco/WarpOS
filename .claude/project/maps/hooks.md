@@ -1,8 +1,8 @@
 # Hooks Map
 
-Generated: 2026-06-10T19:19:44.206Z
+Generated: 2026-06-11T03:38:25.448Z
 
-**76** hook scripts (66 registered, 10 orphan), **18** lib modules, **77** wiring entries.
+**77** hook scripts (66 registered, 11 orphan), **18** lib modules, **77** wiring entries.
 
 ## Wiring (event → matcher → hook)
 
@@ -123,7 +123,7 @@ Generated: 2026-06-10T19:19:44.206Z
 | create-worktree-from-head.js | no | 4250 | 2026-05-30T01:25:39.581Z |
 | cycle-enforcer.js | yes | 7071 | 2026-05-30T01:25:39.582Z |
 | dependency-admission-guard.js | yes | 1300 | 2026-05-30T01:25:39.583Z |
-| dispatch-route-guard.js | yes | 26061 | 2026-06-08T05:38:13.758Z |
+| dispatch-route-guard.js | yes | 28003 | 2026-06-10T22:27:30.681Z |
 | edit-watcher.js | yes | 29693 | 2026-05-30T01:25:39.583Z |
 | event-contract.js | yes | 4048 | 2026-05-30T01:25:39.585Z |
 | excalidraw-guard.js | yes | 920 | 2026-05-30T01:25:39.585Z |
@@ -156,7 +156,8 @@ Generated: 2026-06-10T19:19:44.206Z
 | response-size-guard.js | yes | 5564 | 2026-06-08T05:38:13.758Z |
 | retro-presence-check.js | yes | 2833 | 2026-06-05T01:45:08.447Z |
 | save-session-lint.js | yes | 2487 | 2026-05-30T01:25:39.600Z |
-| scope-contract-guard.js | yes | 4536 | 2026-06-04T22:57:14.001Z |
+| scope-contract-guard.js | yes | 8423 | 2026-06-11T00:39:18.503Z |
+| scope-contract-guard.test.js | no | 5856 | 2026-06-11T00:39:18.503Z |
 | secret-guard.js | yes | 2786 | 2026-05-30T01:25:39.600Z |
 | self-mod-governance.js | yes | 923 | 2026-05-30T01:25:39.601Z |
 | session-end-team-teardown.js | yes | 2782 | 2026-06-10T13:54:45.232Z |
@@ -205,11 +206,11 @@ Generated: 2026-06-10T19:19:44.206Z
 | mode-lifecycle.js | 6175 | 2026-06-10T00:04:52.690Z |
 | mode.js | 2944 | 2026-06-10T00:04:52.691Z |
 | oneshot-store.js | 2337 | 2026-06-08T21:07:45.656Z |
-| paths.generated.js | 11004 | 2026-06-10T13:54:45.222Z |
+| paths.generated.js | 10920 | 2026-06-11T00:39:18.503Z |
 | paths.js | 6608 | 2026-06-05T01:45:08.446Z |
 | project-config.js | 4488 | 2026-05-30T01:25:39.591Z |
 | provider-health.js | 10306 | 2026-05-30T01:25:39.592Z |
-| providers.js | 41222 | 2026-06-08T05:23:57.530Z |
+| providers.js | 46285 | 2026-06-10T22:27:30.681Z |
 | role-aliases.js | 3333 | 2026-06-08T05:23:57.530Z |
 | skill-telemetry.js | 5275 | 2026-05-30T01:25:39.593Z |
 | untrusted-content.js | 2482 | 2026-05-31T00:20:08.687Z |

@@ -1,6 +1,6 @@
 # Tool Inventory — Project Ecosystem
 
-**Generated:** 2026-06-10T19:19:44.206Z
+**Generated:** 2026-06-11T03:38:25.448Z
 **Source:** `scripts/regen-maps.js` (deterministic file walks; no LLM synthesis).
 
 ## Headline counts
@@ -9,19 +9,19 @@
 |---|---|
 | Skills (.claude/commands/**/*.md) | 216 |
 | Skill namespaces | 44 |
-| Hook scripts (scripts/hooks/*.js) | 76 |
+| Hook scripts (scripts/hooks/*.js) | 77 |
 | Hook lib modules (scripts/hooks/lib/*.js) | 18 |
 | Registered hooks (in settings.json) | 66 |
-| Orphan hooks (on disk, not registered) | 10 |
+| Orphan hooks (on disk, not registered) | 11 |
 | Utility scripts (scripts/*.js) | 176 |
 | npm scripts (package.json) | 0 |
 | External CLIs | 3 |
 | Memory stores | 9 |
-| Memory total lines | 54259 |
+| Memory total lines | 57239 |
 | Systems (systems.jsonl entries) | 77 |
 | System categories | 2 |
 | Enforcement hooks (curated) | 74 |
-| Enforcement hooks (uncurated, new) | 0 |
+| Enforcement hooks (uncurated, new) | 1 |
 | Architecture: pages | 0 |
 | Architecture: steps | 0 |
 | Architecture: UI atoms | 0 |
