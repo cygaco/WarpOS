@@ -65,16 +65,16 @@ checks:
     evidence: "No root package.json/tsc install in canonical repo; scaffold TS templates are covered by scaffold-coverage scan and render smoke."
   tests:
     status: passing
-    last_run: "2026-06-11T21:35:00.000Z"
-    evidence: "S-PF-01 focused tests passed: scaffold-coverage-telemetry 9/9, telemetry-seam 3/3, telemetry-chain 2/2, activation-definition 1/1, lastmile-analytics-seam 3/3, contract-chain 1/1, manifest-shipping 1/1, named-sprint-id 3/3; scaffold/app.test 7/7; lastmile/test-orchestrate 55/55."
+    last_run: "2026-06-11T22:31:00.000Z"
+    evidence: "S-PF-01 focused tests passed: scaffold-coverage-telemetry 25/25, lastmile-analytics-seam 8/8, telemetry-seam 3/3, telemetry-chain 2/2, activation-definition 1/1, contract-chain 1/1, manifest-shipping 1/1, named-sprint-id 3/3; scaffold/app.test 7/7; test-suite enforce 18/20 with only known baseline reds BC-17 and BC-26."
   build:
     status: passing
     last_run: "2026-06-11T21:35:00.000Z"
     evidence: "scaffoldApp() materialization smoke rendered telemetry files into a temp repo; manifests regenerated and strict-validated."
   qa:
     status: passing
-    last_run: "2026-06-11T21:35:00.000Z"
-    evidence: "Focused QA regression sweep and scaffold-coverage-scan --json passed; routing trace recorded as single_vendor_session."
+    last_run: "2026-06-11T22:38:00.000Z"
+    evidence: "Focused QA regression sweep and scaffold-coverage-scan --json passed; OpenAI backend-reviewer focused re-review PASS confidence 0.94 after 0a29bc1; routing traces recorded as single_vendor_session."
   redteam:
     status: passing
     last_run: "2026-06-11T22:13:00.000Z"
