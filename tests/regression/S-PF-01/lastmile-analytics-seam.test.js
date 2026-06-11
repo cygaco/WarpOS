@@ -69,6 +69,69 @@ test("activation-revision-emits-change-event", () => {
   ]);
 });
 
+test("activation-revision-rejects-placeholder-derived-from", () => {
+  const emitted = [];
+  assert.throws(
+    () =>
+      analytics.confirmOrReviseActivationDefinition(
+        {
+          predicate: "old core action",
+          provenance: "derived-at-canon",
+          confidence: 0.6,
+          derivedFrom: "canon",
+        },
+        {
+          revision: { predicate: "new core action", derivedFrom: "{{ACTIVATION_SOURCE}}" },
+          emit: (event, props) => emitted.push({ event, props }),
+        },
+      ),
+    /invalid activation definition: derivedFrom must be resolved/,
+  );
+  assert.deepStrictEqual(emitted, []);
+});
+
+test("activation-revision-rejects-placeholder-provenance", () => {
+  const emitted = [];
+  assert.throws(
+    () =>
+      analytics.confirmOrReviseActivationDefinition(
+        {
+          predicate: "old core action",
+          provenance: "derived-at-canon",
+          confidence: 0.6,
+          derivedFrom: "canon",
+        },
+        {
+          revision: { predicate: "new core action", provenance: "{{ACTIVATION_PROVENANCE}}" },
+          emit: (event, props) => emitted.push({ event, props }),
+        },
+      ),
+    /invalid activation definition: provenance must be one of the known activation sources/,
+  );
+  assert.deepStrictEqual(emitted, []);
+});
+
+test("activation-revision-rejects-confidence-out-of-range", () => {
+  const emitted = [];
+  assert.throws(
+    () =>
+      analytics.confirmOrReviseActivationDefinition(
+        {
+          predicate: "old core action",
+          provenance: "derived-at-canon",
+          confidence: 0.6,
+          derivedFrom: "canon",
+        },
+        {
+          revision: { predicate: "new core action", confidence: 2 },
+          emit: (event, props) => emitted.push({ event, props }),
+        },
+      ),
+    /invalid activation definition: confidence must be numeric between 0 and 1/,
+  );
+  assert.deepStrictEqual(emitted, []);
+});
+
 let pass = 0;
 let fail = 0;
 for (const t of tests) {

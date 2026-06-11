@@ -37,6 +37,55 @@ const ENV_BY_PROVIDER = {
   ga4: ["NEXT_PUBLIC_GA_ID"],
 };
 
+const VALID_ACTIVATION_PROVENANCE = new Set([
+  "derived-at-canon",
+  "founder-named-at-intake",
+  "revised-at-lastmile",
+]);
+
+function isUnresolvedActivationValue(value) {
+  return (
+    typeof value !== "string" ||
+    !value.trim() ||
+    /\{\{[^}]+\}\}|TODO|TBD|PLACEHOLDER|FIXME|your activation/i.test(value)
+  );
+}
+
+function activationDefinitionErrors(definition) {
+  const errors = [];
+  if (!definition || typeof definition !== "object") {
+    return ["activation definition is required"];
+  }
+  if (isUnresolvedActivationValue(definition.predicate)) {
+    errors.push("predicate must be resolved");
+  }
+  if (isUnresolvedActivationValue(definition.derivedFrom)) {
+    errors.push("derivedFrom must be resolved");
+  }
+  if (
+    isUnresolvedActivationValue(definition.provenance) ||
+    !VALID_ACTIVATION_PROVENANCE.has(definition.provenance)
+  ) {
+    errors.push("provenance must be one of the known activation sources");
+  }
+  if (
+    typeof definition.confidence !== "number" ||
+    !Number.isFinite(definition.confidence) ||
+    definition.confidence < 0 ||
+    definition.confidence > 1
+  ) {
+    errors.push("confidence must be numeric between 0 and 1");
+  }
+  return errors;
+}
+
+function assertValidActivationDefinition(definition) {
+  const errors = activationDefinitionErrors(definition);
+  if (errors.length) {
+    throw new Error(`invalid activation definition: ${errors.join("; ")}`);
+  }
+}
+
 function detect(state) {
   const a = (state && state.analytics) || {};
   return {
@@ -70,10 +119,12 @@ function confirmOrReviseActivationDefinition(current, opts = {}) {
   const emit = typeof opts.emit === "function" ? opts.emit : () => {};
   const revision = opts.revision || null;
   if (!revision) {
-    return {
+    const next = {
       ...current,
       lastmileConfirmed: true,
     };
+    assertValidActivationDefinition(next);
+    return next;
   }
 
   const next = {
@@ -83,6 +134,8 @@ function confirmOrReviseActivationDefinition(current, opts = {}) {
     confidence: revision.confidence == null ? current.confidence : revision.confidence,
     lastmileConfirmed: true,
   };
+
+  assertValidActivationDefinition(next);
 
   if (revision.predicate && revision.predicate !== current.predicate) {
     emit("activation_definition_change", {

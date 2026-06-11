@@ -138,6 +138,46 @@ test("fetch-analytics-fixture-fails", () => {
   }
 });
 
+test("fetch-telemetry-fixture-fails", () => {
+  const dir = fixture((fx) => {
+    const rel = "src/app/page.tsx.tmpl";
+    write(rel, read(rel, fx) + "\nfetch(\"/telemetry\", { method: \"POST\", body: payload });\n", fx);
+  });
+  try {
+    expectError(dir, /duplicate telemetry sink\/raw emit outside sink\.ts/);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("fetch-collect-fixture-fails", () => {
+  const dir = fixture((fx) => {
+    const rel = "src/app/page.tsx.tmpl";
+    write(rel, read(rel, fx) + "\nfetch(\"/collect\", { method: \"POST\" });\n", fx);
+  });
+  try {
+    expectError(dir, /duplicate telemetry sink\/raw emit outside sink\.ts/);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("fetch-variable-endpoint-fixture-fails", () => {
+  const dir = fixture((fx) => {
+    const rel = "src/app/page.tsx.tmpl";
+    write(
+      rel,
+      read(rel, fx) + "\nconst endpoint = \"/collect\";\nfetch(endpoint, { method: \"POST\" });\n",
+      fx,
+    );
+  });
+  try {
+    expectError(dir, /duplicate telemetry sink\/raw emit outside sink\.ts/);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 test("event-name-drift-fixture-fails", () => {
   const dir = fixture((fx) => {
     const rel = "src/lib/telemetry/events.ts.tmpl";

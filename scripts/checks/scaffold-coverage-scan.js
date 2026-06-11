@@ -354,7 +354,7 @@ function addTelemetryChecks(dir, errors) {
     const rel = path.relative(dir, file).replace(/\\/g, "/");
     if (rel === "src/lib/telemetry/sink.ts.tmpl") continue;
     const text = fs.readFileSync(file, "utf8");
-    if (/\b(posthog|gtag|plausible|mixpanel)\b|\.capture\s*\(|\banalytics\s*\.\s*track\s*\(|\btracker\s*\.\s*track\s*\(|\bnavigator\s*\.\s*sendBeacon\s*\(|\bXMLHttpRequest\s*\(|\bfetch\s*\([^)]*(analytics|track|event|posthog|plausible|mixpanel|gtag)/i.test(text)) {
+    if (/\b(posthog|gtag|plausible|mixpanel)\b|\.capture\s*\(|\banalytics\s*\.\s*track\s*\(|\btracker\s*\.\s*track\s*\(|\bnavigator\s*\.\s*sendBeacon\s*\(|\bXMLHttpRequest\s*\(|\bfetch\s*\(/i.test(text)) {
       errors.push(`duplicate telemetry sink/raw emit outside sink.ts: ${rel}`);
     }
   }
