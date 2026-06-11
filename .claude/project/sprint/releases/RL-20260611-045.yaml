@@ -13,7 +13,7 @@ checklist:
   trace_satisfied: true
   acceptance_criteria_satisfied: true
   qa_passed: true
-  redteam_passed: false
+  redteam_passed: true
   external_services_ready: true
   credentials_present: true
   release_notes_written: true
@@ -44,4 +44,4 @@ rollback_reason: null
 retrospective_ref: null
 learning_candidates: []
 created_at: "2026-06-11T21:40:42.348Z"
-updated_at: "2026-06-11T22:00:15.293Z"
+updated_at: "2026-06-11T22:14:11.105Z"
