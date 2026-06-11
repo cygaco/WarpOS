@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-11T06:41:12.378Z",
+  "generatedAt": "2026-06-11T07:00:39.337Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.15.4",
   "migrations": [],
@@ -1845,22 +1845,22 @@
       "owner": "framework",
       "managed": true,
       "source": null,
-      "sha256": "4c39da2c68d505312702e812ea1c342db5e66f69f67b45dbc87a6b463162d9d1",
-      "installedSha": "4c39da2c68d505312702e812ea1c342db5e66f69f67b45dbc87a6b463162d9d1"
+      "sha256": "53299e4daedef3edc2769606df6314076becefb27cc0b89c3c6e410c0b72304f",
+      "installedSha": "53299e4daedef3edc2769606df6314076becefb27cc0b89c3c6e410c0b72304f"
     },
     "tests/regression/SP-20260611-001/epsilon-spawn-grace.test.js": {
       "owner": "framework",
       "managed": true,
       "source": null,
-      "sha256": "0877fe736670d6c267f0c0965d2d521a0bcb96e5d68b9f76e4fac9b4d2927693",
-      "installedSha": "0877fe736670d6c267f0c0965d2d521a0bcb96e5d68b9f76e4fac9b4d2927693"
+      "sha256": "97b6b8a96aba6528d97577ea3524a9b7dfccabb27f58d1490e370da24fae5508",
+      "installedSha": "97b6b8a96aba6528d97577ea3524a9b7dfccabb27f58d1490e370da24fae5508"
     },
     "tests/regression/SP-20260611-001/review-fallback-shape.test.js": {
       "owner": "framework",
       "managed": true,
       "source": null,
-      "sha256": "01cc41dc8c4552d2f7dcac2ed7b5c8724a101ecd8fa99ac04650b84b680f225c",
-      "installedSha": "01cc41dc8c4552d2f7dcac2ed7b5c8724a101ecd8fa99ac04650b84b680f225c"
+      "sha256": "adffa546a177e45e2f8e886ca160aa567e73dc65748e7fdc1b49c0f8841b7da1",
+      "installedSha": "adffa546a177e45e2f8e886ca160aa567e73dc65748e7fdc1b49c0f8841b7da1"
     },
     "tests/regression/SP-20260611-001/sprint-id-correlation.test.js": {
       "owner": "framework",
@@ -1880,8 +1880,8 @@
       "owner": "framework",
       "managed": true,
       "source": null,
-      "sha256": "39475e7eb1a460da51c1cf9ef3c6079146feb0529a8b738bfac5f3356d2bbbda",
-      "installedSha": "39475e7eb1a460da51c1cf9ef3c6079146feb0529a8b738bfac5f3356d2bbbda"
+      "sha256": "b349851299d6e8b5f8287c70a7ea42b7c44f818effa6f503f09baea10ddb2731",
+      "installedSha": "b349851299d6e8b5f8287c70a7ea42b7c44f818effa6f503f09baea10ddb2731"
     },
     "tests/regression/SP-20260518-008/hooks-and-diagnostics.test.js": {
       "owner": "framework",
@@ -2461,15 +2461,15 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/dispatch-agent.js",
-      "sha256": "b1696007fdb91d4f18a3837ce91f398df8177858b55d31b261c4988eaae88217",
-      "installedSha": "b1696007fdb91d4f18a3837ce91f398df8177858b55d31b261c4988eaae88217"
+      "sha256": "d4bf7f1af4b9fcc3292657662ea9e57649d3fe330abf2188fc683d9978f69013",
+      "installedSha": "d4bf7f1af4b9fcc3292657662ea9e57649d3fe330abf2188fc683d9978f69013"
     },
     "scripts/dispatch-claude.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/dispatch-claude.js",
-      "sha256": "622999fcc6b0371f8b0720b5cfd51c5f27cefacb21e3b6d25898d9e40d2e715c",
-      "installedSha": "622999fcc6b0371f8b0720b5cfd51c5f27cefacb21e3b6d25898d9e40d2e715c"
+      "sha256": "37355094547947a5a56dfdf967ff6fdb0e38a6862233fcbb81f98d934e4587f6",
+      "installedSha": "37355094547947a5a56dfdf967ff6fdb0e38a6862233fcbb81f98d934e4587f6"
     },
     "scripts/dispatch-skill.js": {
       "owner": "framework",
@@ -4029,8 +4029,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/sprint/epsilon-runtime.js",
-      "sha256": "76d55c371b1dd14a0d3e248b7a69ae5797a2eca1484a158edef468103bd989bd",
-      "installedSha": "76d55c371b1dd14a0d3e248b7a69ae5797a2eca1484a158edef468103bd989bd"
+      "sha256": "7ccb1395a761a791eb8a2d84975fd585d082af7494fb763892f66750dbf2104a",
+      "installedSha": "7ccb1395a761a791eb8a2d84975fd585d082af7494fb763892f66750dbf2104a"
     },
     "scripts/sprint/epsilon-runtime.test.js": {
       "owner": "framework",
@@ -6430,15 +6430,15 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/sprint-hook-coverage.js",
-      "sha256": "df3cab7de3bd9f81e300083267294fd60336ba5d638e8f0a0c26befd699e54fc",
-      "installedSha": "df3cab7de3bd9f81e300083267294fd60336ba5d638e8f0a0c26befd699e54fc"
+      "sha256": "be36521a03eef247bb6914eeaf823ce61ad37d23dc489a80efda4d65ef9e0ea8",
+      "installedSha": "be36521a03eef247bb6914eeaf823ce61ad37d23dc489a80efda4d65ef9e0ea8"
     },
     "scripts/checks/sprint-manager-consult.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/sprint-manager-consult.js",
-      "sha256": "c1228c6d3307789fab792a9e4b8c95917281296933e8c659393b31d9552f8c84",
-      "installedSha": "c1228c6d3307789fab792a9e4b8c95917281296933e8c659393b31d9552f8c84"
+      "sha256": "98d94550fea1cce43f2e0eaefab68c5ced2e8aaa655115a891d5692607253a04",
+      "installedSha": "98d94550fea1cce43f2e0eaefab68c5ced2e8aaa655115a891d5692607253a04"
     },
     "scripts/checks/test-adhoc-fail-override.js": {
       "owner": "framework",

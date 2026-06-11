@@ -2,10 +2,10 @@ schema: warpos/sprint/ticket/v1
 id: T-20260611-322
 title: "Fix-cycle residual (epsilon-agent timer seam): dispatch-agent.js must honor the ε-propagated child bound so parent=child+grace holds at the cross-provider site, not just parent arithmetic"
 type: bug
-status: proposed
+status: done
 sprint: SP-20260611-001
 created_at: "2026-06-11T05:55:00.000Z"
-updated_at: "2026-06-11T05:55:00.000Z"
+updated_at: "2026-06-11T06:50:00.000Z"
 owner: null
 owner_agent: epsilon
 risk_level: medium
@@ -32,7 +32,7 @@ linked_files:
   - tests/regression/SP-20260611-001/epsilon-spawn-grace.test.js
 linked_tests:
   - tests/regression/SP-20260611-001/epsilon-spawn-grace.test.js
-linked_commits: []
+linked_commits: ["76d8911", "ce8fc96", "5cda511", "d4b5052"]
 linked_prs: []
 linked_release: null
 description: |
@@ -76,7 +76,47 @@ redteam_notes: ""
 trace_notes: "Surfaced by re-gauntlet attempt #1, runtime/notes/sp001-regauntlet-verdicts-2026-06-11.md (backend-reviewer FAIL). Original fix: T-20260611-310 (FIX-A1)."
 blocked_by: []
 blocks: []
-fix_attempts: []
+fix_attempts:
+  - attempt: 1
+    commit: "76d8911"
+    summary: "epsilon-agent child honors the ε-propagated timeout bound — slot-acquire + runProvider opts.timeoutMs single-sourced from childBaseMs; added the real-bound-ordering test (parent spawnSync timeout > child slot AND > child provider-exec, vs the old presence-only check the backend lane flagged as the MAJOR)."
+    outcome: "build-constraint raised by β: the foreground-clamped childBaseMs (540s) shortens the slot-acquire wait below the 600s DISPATCH_SLOT_TIMEOUT_MS default."
+  - attempt: 2
+    commit: "ce8fc96 (+ doc-accept 5cda511)"
+    summary: "Addressed the β build-constraint via CHOICE (b) — DOCUMENT-ACCEPT the foreground slot-wait shrink (slot ≤ childBaseMs ≤ total foreground budget). A 600s floor was rejected because it would make slot(600s) > parent SIGTERM(585s), re-creating the parent-kills-child-before-record race. Background lane keeps the full 900s wait, unaffected. Doc-accepted at the derivation site (5cda511) + test-pinned in epsilon-spawn-grace section (6)."
+    outcome: "Residual found: the WI-18 quota-retry runProvider call site did NOT inherit the propagated childBaseMs, leaving the cross-provider quota-fallback path's death-record race open for a small opts.timeoutMs."
+  - attempt: 3
+    commit: "d4b5052"
+    summary: "Propagate childBaseMs to EVERY runProvider call site (main + the WI-18 quota-retry) via the single withPropagatedTimeout helper — the one propagation point, so any present/future call site inherits the bound BY CONSTRUCTION. spawnAgent stamps the background signal on the child env (FIX-3c). Tests drive the retry layer directly (FIX-3a..c)."
+    outcome: "PASS — final GPT-backend re-review cleared it (see completion_evidence)."
 ralph_progress: null
-completion_evidence: []
+completion_evidence:
+  - kind: commit
+    ref: "d4b5052"
+    note: "Final fix landed on the WS-A worktree; merged to sprint/SP-20260611-001 via c3d7cf0."
+  - kind: gauntlet-verdict
+    lane: backend-reviewer
+    provider: openai
+    model: gpt-5.5
+    verdict: PASS
+    note: "Binding re-review on the SAME GPT-backend family thread that returned the attempt-#1 FAIL that minted this ticket (d-mq90qrop family). The lane that caught it judged it fixed (per qa_notes / AC-322 gating requirement)."
+    ledger_record: "d-mq94f8w6-454bf272"
+    ledger_window: "2026-06-11T06:32:56.262Z..2026-06-11T06:37:09.301Z"
+    ledger_ok: true
+    ledger_stdout_bytes: 2303
+    ledger_file: ".claude/runtime/dispatch-completions.jsonl"
+  - kind: test-suite
+    ref: "tests/regression/SP-20260611-001/epsilon-spawn-grace.test.js"
+    result: "65 passed, 0 failed"
+    note: "Real-bound-ordering assertions at the epsilon-AGENT site for opts.timeoutMs in {small, huge, unset}, main + WI-18 quota-retry call sites (AC-322.1/.2/.3)."
+  - kind: test-suite
+    ref: "scripts/checks/dispatch-timeout-sanity.test.js"
+    result: "21 passed, 0 failed"
+    note: "Wrapper-bound ceiling sanity incl. the run-provider (cross-provider runProvider) route pin."
+  - kind: mutation-check
+    ac: "AC-322.4"
+    result: "RED on revert"
+    note: "Reverting the dispatch-agent.js read of the ε-propagated DISPATCH_BUILDER_TIMEOUT_MS REDs the ordering test (25 of 65 assertions fail — exactly the slot-bound + parent-exceeds-child-bound checks), proving the test catches the attack and not a happy path. Source restored; tree clean."
+  - kind: single-source
+    note: "All three timeout layers (parent SIGTERM / child slot-acquire / child provider-exec) single-source from childBaseMs via withPropagatedTimeout (scripts/dispatch-agent.js:690-691,701,731), so parent = childBaseMs + grace STRICTLY EXCEEDS every child layer by construction (AC-322.1)."
 reopen_history: []

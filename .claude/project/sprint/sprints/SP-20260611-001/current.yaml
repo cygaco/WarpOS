@@ -1,16 +1,16 @@
 schema: warpos/sprint/current-sprint/v1
 id: SP-20260611-001
 title: "Cross-family findings fix sprint — 6 gemini re-review findings (epsilon-runtime spawn race, fallback ENFORCE brick, hardcoded BUILD_CHAIN_ROLES, spoofed-ts window, sprint_id correlation, verifyGauntlet parse refusal)"
-objective: "Run /sprint:plan to set this."
-status: designing
+objective: "Close the six cross-family findings (dispatch-layer correctness + enforcement-integrity) and prove them with a three-family gauntlet."
+status: releasing
 created_at: "2026-06-11T03:42:00.813Z"
-updated_at: "2026-06-11T04:01:22.093Z"
+updated_at: "2026-06-11T06:50:00.000Z"
 source_request: "Cross-family findings fix sprint — build the 6 fixes from the gemini re-review debt-clearance round (runtime/notes/crossfam-findings-2026-06-10.md), then re-gauntlet on gemini + claude execution-access + GPT (all three families live)."
 interpreted_intent: "Close the six real findings from the 2026-06-10 cross-family (gemini) re-reviews of W0+W1 (diff 4d7301f...ba61a2f) and SP-20260610-005 (diff a05b1ef...d85e9a9) — dispatch-layer correctness and enforcement-integrity fixes — and prove them with a three-family gauntlet (gemini diff lanes + claude execution-access lanes + GPT 2nd pass)."
 plan_contract: ".claude/project/sprint/plan-contracts/PC-20260611-0073.yaml"
 risk_level: medium
 approval_state: none_required
-current_phase: design
+current_phase: release
 recommended_mode: adhoc
 mode_invocation_required_by_user: true
 external_services:
@@ -24,20 +24,21 @@ tickets:
   planned: []
   designed: []
   ready_for_execution: []
-  in_progress:
-    - T-20260611-310
-    - T-20260611-311
-    - T-20260611-312
-    - T-20260611-313
-    - T-20260611-314
-    - T-20260611-315
+  in_progress: []
   blocked: []
   waiting_on_human: []
   waiting_on_external_service: []
   in_review: []
   qa_failed: []
   redteam_failed: []
-  done: []
+  done:
+    - T-20260611-310
+    - T-20260611-311
+    - T-20260611-312
+    - T-20260611-313
+    - T-20260611-314
+    - T-20260611-315
+    - T-20260611-322
   released: []
   deferred: []
   abandoned: []
@@ -64,21 +65,21 @@ checks:
     last_run: null
     evidence: ""
   tests:
-    status: not_run
-    last_run: null
-    evidence: ""
+    status: passed
+    last_run: "2026-06-11T06:50:00.000Z"
+    evidence: "epsilon-spawn-grace 65/65 + dispatch-timeout-sanity 21/21; full SP-20260611-001 regression suite landed in merges c3d7cf0 (WS-A) + 58eefc2 (WS-B). Mutation-verified AC-322.4 (revert REDs the ordering test)."
   build:
     status: not_run
     last_run: null
     evidence: ""
   qa:
-    status: not_run
-    last_run: null
-    evidence: ""
+    status: passed
+    last_run: "2026-06-11T06:37:09.301Z"
+    evidence: "Gauntlet GREEN. qa-reviewer PASS on WS-B (346af83). GPT backend-reviewer PASS on WS-A (d4b5052) — ledger record d-mq94f8w6-454bf272, window 2026-06-11T06:32:56.262Z..06:37:09.301Z, ok:true, 2303 bytes. Same GPT-backend family (d-mq90qrop) that returned the binding attempt-#1 FAIL that minted T-322."
   redteam:
-    status: not_run
-    last_run: null
-    evidence: ""
+    status: passed
+    last_run: "2026-06-11T06:37:09.301Z"
+    evidence: "security-reviewer PASS on WS-B (346af83) — window-clamp fail-closed hardening (FIX-B4a..c). Cross-provider 2nd pass clean. Merged in 58eefc2."
 approvals:
   plan:
     required: false
@@ -114,8 +115,8 @@ ralph:
   next_action: null
 crash_recovery:
   last_checkpoint: ".claude/project/sprint/sprint-progress.yaml"
-  resume_command: "/sprint:design"
-  resume_summary: "Sprint SP-20260611-001 design scaffolded (scale=m). Next: mint tickets from granular-stories, then run /sprint:execute."
+  resume_command: "(release close — α ff-merge to main + worktree cleanup pending; push operator-gated)"
+  resume_summary: "Gauntlet GREEN; all 7 tickets done (T-310..315 + T-322). Release-close committed on sprint/SP-20260611-001. Next: α ff-merges to main and removes WS-A/WS-B worktrees; push held for operator."
   active_files: []
   dirty_state: false
   blockers: []

@@ -2,10 +2,10 @@ schema: warpos/sprint/ticket/v1
 id: T-20260611-312
 title: "Fix 3 (R-3/S-3): dispatch-claude.js build-chain membership derives from registry class (validateDispatchForClass/build_chain_worker), literal Set as fallback only; byte-identical membership parity for existing roles + build-chain-registry-gate regression test"
 type: bug
-status: in_progress
+status: done
 sprint: SP-20260611-001
 created_at: "2026-06-11T03:59:03.021Z"
-updated_at: "2026-06-11T04:01:21.978Z"
+updated_at: "2026-06-11T06:50:00.000Z"
 owner: null
 owner_agent: alpha
 risk_level: medium
@@ -28,7 +28,7 @@ linked_decisions: []
 linked_external_services: []
 linked_files: []
 linked_tests: []
-linked_commits: []
+linked_commits: ["b0d00ee"]
 linked_prs: []
 linked_release: null
 description: ""

@@ -2,10 +2,10 @@ schema: warpos/sprint/ticket/v1
 id: T-20260611-311
 title: "Fix 2 (R-2/S-2): register --review-fallback as sanctioned valid shape in the dispatch-shape/contract layer (consulted instead of !blocking suppression) + E-DISPATCH-SHAPE-001 §12.2 entry-gate line + review-fallback-shape regression test"
 type: bug
-status: in_progress
+status: done
 sprint: SP-20260611-001
 created_at: "2026-06-11T03:59:02.968Z"
-updated_at: "2026-06-11T04:01:21.947Z"
+updated_at: "2026-06-11T06:50:00.000Z"
 owner: null
 owner_agent: alpha
 risk_level: medium
@@ -28,7 +28,7 @@ linked_decisions: []
 linked_external_services: []
 linked_files: []
 linked_tests: []
-linked_commits: []
+linked_commits: ["b0d00ee"]
 linked_prs: []
 linked_release: null
 description: ""
