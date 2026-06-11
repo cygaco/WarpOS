@@ -6040,7 +6040,7 @@
         "src": "scripts/warpos/manifest/build.js",
         "dest": "scripts/warpos/manifest/build.js",
         "kind": "warpos_script",
-        "sha256": "999ea00fbce5b5d2f083bd38ea91dfe806349f67c3b4c74f14d54083646656da",
+        "sha256": "000ac6a1c24dde06a8135761d612c81ea64c61db07a8d1b55fd977f5dd00ba52",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",

@@ -487,6 +487,11 @@ function buildRules(sourcePrefix) {
         // ADR-0007: org-structure companion doc to AGENTS.md, referenced from
         // CLAUDE.md. Framework root doc — same class as AGENTS.md.
         rel === "AGENT-STRUCTURE.md" ||
+        // Provider-entrypoint shims (TRACKER fold 72801243): thin per-executor
+        // entrypoints that point at the canonical docs. Same framework-root-doc
+        // class as CLAUDE.md/AGENTS.md.
+        rel === "CODEX.md" ||
+        rel === "ANTIGRAVITY.md" ||
         rel === "PROJECT.md" ||
         rel === "README.md" ||
         rel === "USER_GUIDE.md" ||

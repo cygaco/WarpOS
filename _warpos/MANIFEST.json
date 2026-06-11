@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-11T17:38:55.235Z",
+  "generatedAt": "2026-06-11T18:41:20.444Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.15.4",
   "migrations": [],
@@ -50,6 +50,14 @@
       "_note": "Root document — source path same as destination (canonical-side).",
       "sha256": "993fe4ac27a6edbfa90e209cc720e265bdd2fdd02821302a53897686c754a7de",
       "installedSha": "993fe4ac27a6edbfa90e209cc720e265bdd2fdd02821302a53897686c754a7de"
+    },
+    "CODEX.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": null,
+      "_note": "Root document — source path same as destination (canonical-side).",
+      "sha256": "8850af45ed00820c2cca77939e5479f096f19fe11d3f50ff98e77b36da03f1b5",
+      "installedSha": "8850af45ed00820c2cca77939e5479f096f19fe11d3f50ff98e77b36da03f1b5"
     },
     "DICTIONARY.md": {
       "owner": "framework",
@@ -3882,8 +3890,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/warpos/manifest/build.js",
-      "sha256": "999ea00fbce5b5d2f083bd38ea91dfe806349f67c3b4c74f14d54083646656da",
-      "installedSha": "999ea00fbce5b5d2f083bd38ea91dfe806349f67c3b4c74f14d54083646656da"
+      "sha256": "000ac6a1c24dde06a8135761d612c81ea64c61db07a8d1b55fd977f5dd00ba52",
+      "installedSha": "000ac6a1c24dde06a8135761d612c81ea64c61db07a8d1b55fd977f5dd00ba52"
     },
     "scripts/warpos/manifest/test-bootstrap.js": {
       "owner": "framework",
