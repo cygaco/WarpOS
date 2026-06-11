@@ -184,6 +184,67 @@ function findRuntimeEmitters(eventsPath) {
 }
 
 /**
+ * Validate the wiring-pending allowlist SCHEMA (SP-20260611-002 R-9 / S-9).
+ * Each entry MUST be an object `{ owner, review_by|expiry, reason }`:
+ *   AC-9.1: a schemaless entry (bare string, or missing owner/expiry/reason) is
+ *           REJECTED — NOT honored as pending → it falls through to a coverage gap.
+ *   AC-9.2: an entry whose review_by/expiry is in the PAST is FLAGGED — also NOT
+ *           honored as pending → falls through to a gap (so --enforce fails on it).
+ *           An UNPARSEABLE expiry is treated as expired (fail-closed — a malformed
+ *           date can never silently extend an allowlist).
+ *   AC-9.3: a well-formed, in-date entry (owner + future expiry + reason) is honored
+ *           as pending → reported as INFO, never over-flagged.
+ *
+ * Pure. @returns {{ pending:Set<string>, flagged:Array<{event,problem}> }}
+ *   pending = the events the allowlist legitimately suppresses (honored INFO).
+ *   flagged = the events whose entry was rejected (schemaless / expired) — surfaced
+ *             so the downgrade-to-gap is visible, not silent.
+ */
+function loadAllowlistSchema(al, now = new Date()) {
+  const pending = new Set();
+  const flagged = [];
+  const wp = al && al.wiring_pending;
+  if (!wp || typeof wp !== "object") return { pending, flagged };
+  const todayIso = (now instanceof Date && !Number.isNaN(now.getTime()) ? now : new Date())
+    .toISOString()
+    .slice(0, 10);
+  for (const [event, entry] of Object.entries(wp)) {
+    // AC-9.1: a bare string (legacy) or non-object is schemaless → reject.
+    if (!entry || typeof entry !== "object" || Array.isArray(entry)) {
+      flagged.push({ event, problem: "schemaless (not an object; needs { owner, review_by|expiry, reason })" });
+      continue;
+    }
+    const owner = typeof entry.owner === "string" ? entry.owner.trim() : "";
+    const reason = typeof entry.reason === "string" ? entry.reason.trim() : "";
+    const rawExpiry = entry.review_by != null ? entry.review_by : entry.expiry;
+    const expiry = typeof rawExpiry === "string" ? rawExpiry.trim() : "";
+    const missing = [];
+    if (!owner) missing.push("owner");
+    if (!expiry) missing.push("review_by/expiry");
+    if (!reason) missing.push("reason");
+    if (missing.length) {
+      flagged.push({ event, problem: `schemaless (missing ${missing.join(", ")})` });
+      continue;
+    }
+    // AC-9.2: the expiry must parse to a YYYY-MM-DD and be >= today. An unparseable
+    // date is treated as expired (fail-closed). A PAST date is flagged.
+    const m = expiry.match(/^(\d{4}-\d{2}-\d{2})/);
+    const expiryDay = m ? m[1] : null;
+    if (!expiryDay) {
+      flagged.push({ event, problem: `unparseable review_by/expiry '${expiry}' (treated as expired — fail-closed)` });
+      continue;
+    }
+    if (expiryDay < todayIso) {
+      flagged.push({ event, problem: `EXPIRED review_by/expiry ${expiryDay} (past ${todayIso}) — downgraded to a gap` });
+      continue;
+    }
+    // AC-9.3: well-formed + in-date → honored as pending (INFO).
+    pending.add(event);
+  }
+  return { pending, flagged };
+}
+
+/**
  * Core coverage compute. Pure given its inputs.
  * @param {object} registry     the parsed registry
  * @param {Set<string>} emitted the union of static + runtime emitters
@@ -228,13 +289,17 @@ function main() {
   }
 
   // Wiring-pending allowlist (a missing/broken allowlist is non-fatal — treat as empty,
-  // which only makes the check STRICTER, never a false-green).
+  // which only makes the check STRICTER, never a false-green). R-9: each entry is
+  // SCHEMA-VALIDATED ({ owner, review_by|expiry, reason }); a schemaless or expired
+  // entry is NOT honored as pending — it is flagged and falls through to a coverage
+  // gap (AC-9.1/9.2), so a permanent silent allowlist cannot suppress an emitter-gap.
   let pending = new Set();
+  let allowlistFlagged = [];
   try {
     const al = readJson(allowlistPath);
-    if (al && al.wiring_pending && typeof al.wiring_pending === "object") {
-      pending = new Set(Object.keys(al.wiring_pending));
-    }
+    const loaded = loadAllowlistSchema(al);
+    pending = loaded.pending;
+    allowlistFlagged = loaded.flagged;
   } catch {
     /* no allowlist -> stricter, not a false-green */
   }
@@ -251,6 +316,9 @@ function main() {
       covered: res.covered.length,
       pending: res.pending.length,
       gaps: res.gaps,
+      // R-9: schemaless/expired allowlist entries that were rejected (downgraded to a
+      // gap if the event has no emitter) — surfaced so the downgrade is never silent.
+      allowlistFlagged,
       enforce: ENFORCE,
     }));
   } else if (ok) {
@@ -268,6 +336,17 @@ function main() {
     for (const g of res.gaps.slice(0, 25)) sink.write(`  - ${g}\n`);
     if (res.gaps.length > 25) sink.write(`  ... and ${res.gaps.length - 25} more\n`);
   }
+  // R-9: always surface a rejected (schemaless/expired) allowlist entry — even when
+  // the event happens to be covered by an emitter — so a malformed allowlist row is
+  // visible, not silently ignored.
+  if (!JSON_OUT && allowlistFlagged.length) {
+    const sink = ENFORCE && !ok ? process.stderr : process.stdout;
+    sink.write(
+      `note [mode-lifecycle-hooks-coverage] ${allowlistFlagged.length} allowlist entry(ies) REJECTED ` +
+        `(schemaless/expired — not honored as wiring-pending; an uncovered such event is a GAP):\n`,
+    );
+    for (const f of allowlistFlagged.slice(0, 25)) sink.write(`  - ${f.event}: ${f.problem}\n`);
+  }
 
   // REPORT-ONLY: gaps exit 0 unless --enforce. Parse/unreadable already returned 2 above.
   if (ok) return 0;
@@ -279,6 +358,7 @@ if (require.main === module) process.exit(main());
 module.exports = {
   validateRegistry,
   computeCoverage,
+  loadAllowlistSchema,
   findStaticEmitters,
   findRuntimeEmitters,
   readJson,

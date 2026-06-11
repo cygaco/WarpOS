@@ -32,6 +32,14 @@ const path = require("path");
 const SPRINT = require("./paths");
 const { readYamlMaybe } = require("./fs");
 const { AC_CATEGORIES } = require("./ac-categories");
+// SHARED legacy-scoping cutoff (AC-8.3 / Hard AC #3) — IMPORTED from WS-G3a's
+// authored helper (R-5 AC-5.4), NOT re-defined. The SAME single source coverage-
+// gate-scan (R-5) consumes; `cutoffFor("check-ac-coverage")` resolves the shared
+// LEGACY_CUTOFF (this consumer declares no override — its enforce path was wired in
+// the SAME sprint, same date as R-5). A divergent date would be an explicit
+// CONSUMER_OVERRIDES entry in legacy-cutoff.js with a written rationale, never a
+// second hardcoded literal here.
+const { cutoffFor, isLegacyDate } = require("../dispatch/legacy-cutoff");
 
 function parseArgs(argv) {
   const out = {
@@ -158,6 +166,15 @@ function isStubProof(v) {
 // Does this window of text carry a real proof for the category named in it?
 // Reuses classifyVerifiedByRest so verified_by linkage is recognized identically
 // to axis 1; also accepts a non-stub `proof:` / `proven by` clause.
+//
+// AC-8.4 — DOCUMENTED RESIDUE (SP-20260611-002 R-8, finding #18 minor; verified_by:
+// not_applicable): the proof-syntax acceptance here is LENIENT — a non-stub clause
+// like `proof: yes` is accepted as a covered category even though "yes" is not real
+// evidence. This is a KNOWN weakness, explicitly OUT OF SCOPE for this sprint (the
+// R-8 fix is the missing-artifact fail-closed path + legacy scoping; the proof-syntax
+// minor is carried, not fixed, so it is not silently dropped). A future ticket would
+// tighten isStubProof / require an executable verified_by here. DO NOT silently treat
+// this as resolved.
 function chunkHasProof(chunk) {
   const vb = chunk.match(/verified_by\s*:\s*([^\n]+)/i);
   if (vb) {
@@ -261,9 +278,29 @@ function resolveAcPath(sprintId) {
   }
 }
 
+// Parse the YYYY-MM-DD a sprint id encodes (SP-YYYYMMDD-NNN). Returns the ISO day or
+// null. Used for AC-8.3 legacy scoping: a historic sprint (id-date before the shared
+// cutoff) is legacy-exempt; an undatable id is NOT legacy (fail-closed).
+function sprintIsoDate(sprintId) {
+  const m = typeof sprintId === "string" && sprintId.match(/(\d{4})(\d{2})(\d{2})/);
+  return m ? `${m[1]}-${m[2]}-${m[3]}` : null;
+}
+
+// A `target` carries `named:true` when it names a concrete artifact (a `--file` path,
+// or a sprint's resolved acceptance-criteria.md). The AC-8.1 fail-closed change keys
+// on `named` + an `error` (unreadable NAMED artifact). The AC-8.2 greenfield case is
+// `targets.length === 0` — NO named artifact resolved at all — and stays fail-open.
 function categoryTargets(args) {
   if (args.file) {
-    return [{ label: args.file, path: path.resolve(SPRINT.PROJECT, args.file) }];
+    return [
+      {
+        label: args.file,
+        path: path.resolve(SPRINT.PROJECT, args.file),
+        named: true,
+        // a --file target is not sprint-scoped → no legacy date (undatable ⇒ in scope).
+        date: null,
+      },
+    ];
   }
   const ids = args.sprint
     ? [args.sprint]
@@ -273,16 +310,38 @@ function categoryTargets(args) {
   const targets = [];
   for (const id of ids) {
     const acPath = resolveAcPath(id);
-    if (acPath && fs.existsSync(acPath)) targets.push({ label: id, path: acPath });
+    // A sprint whose AC artifact resolves but is MISSING/unreadable is still a NAMED
+    // target (we resolved a concrete expected path for it) — under --enforce that is a
+    // fail-closed failure (AC-8.1), not the greenfield no-target case.
+    if (acPath) {
+      targets.push({
+        label: id,
+        path: acPath,
+        named: true,
+        date: sprintIsoDate(id),
+        exists: fs.existsSync(acPath),
+      });
+    }
   }
   return targets;
 }
 
 function renderCategoryProse(r) {
   if (r.error) {
-    return `ac-coverage (categories) — ${r.label}: SKIP (${r.error}; fail-open)`;
+    if (r.enforceError) {
+      // NAMED + in-scope unreadable artifact → fail-closed under --enforce (AC-8.1).
+      return `ac-coverage (categories) — ${r.label}: FAIL (NAMED artifact unreadable: ${r.error} — fail-CLOSED under --enforce)`;
+    }
+    const why = r.legacyExempt ? "legacy-exempt, historic" : "fail-open";
+    return `ac-coverage (categories) — ${r.label}: SKIP (${r.error}; ${why})`;
   }
   const lines = [];
+  if (r.legacyExempt && Array.isArray(r.uncovered) && r.uncovered.length) {
+    lines.push(
+      `ac-coverage (categories) — ${r.label}: ${r.covered}/${r.total} covered (LEGACY-EXEMPT — historic, gaps are INFO not blocking)`,
+    );
+    return lines.join("\n");
+  }
   lines.push(
     `ac-coverage (categories) — ${r.label}: ${r.covered}/${r.total} covered, ${r.missing.length} missing, ${r.named_no_proof.length} named-but-unproven`,
   );
@@ -300,17 +359,41 @@ function renderCategoryProse(r) {
   return lines.join("\n");
 }
 
-function runCategoryMode(args) {
-  const targets = categoryTargets(args);
+function runCategoryMode(args, inject = {}) {
+  // `inject.targets` is a test seam (per-surface exploit isolation, Hard AC #4): a
+  // fixture passes an explicit, dated target list so the legacy-scoping + fail-closed
+  // branches are exercised deterministically without a real sprint registry. Prod
+  // callers pass no inject → the real categoryTargets resolution runs.
+  const targets = inject.targets || categoryTargets(args);
+  const cutoff = cutoffFor("check-ac-coverage"); // SHARED — see import note.
   const reports = targets.map((t) => {
+    // AC-8.3: a target dated STRICTLY BEFORE the shared cutoff is historic (legacy-
+    // exempt) — an unreadable/gappy historic artifact does NOT red the new enforce
+    // path. An undatable target (e.g. a --file path, or an unparsable sprint id) is
+    // NOT legacy (fail-closed) → in scope of the enforce path (scope-then-flip).
+    const legacyExempt = isLegacyDate(t.date, cutoff);
     let md;
     try {
       md = fs.readFileSync(t.path, "utf8");
-    } catch {
+    } catch (e) {
+      // A NAMED artifact that is missing/unreadable. Under --enforce this is a
+      // FAILURE (AC-8.1) UNLESS the target is legacy-exempt; in report-only it stays
+      // ok:true (historic fail-open). The `enforceError` flag is what runCategoryMode
+      // keys the exit on — distinct from a content `error` that the old anyGap
+      // filtered away (the #18 false-green).
+      const enforceError = Boolean(t.named) && !legacyExempt;
       return {
         label: t.label,
         error: "unreadable",
-        ok: true,
+        named: Boolean(t.named),
+        legacyExempt,
+        // enforceError marks "a NAMED artifact failed to read, and it is in scope":
+        // a fail-closed condition the enforce gate must NOT pass.
+        enforceError,
+        // ok mirrors the gate posture: under --enforce a named+in-scope unreadable
+        // artifact is NOT ok; otherwise the historic report-only ok:true is kept.
+        ok: !(args.enforce && enforceError),
+        errorDetail: String((e && e.message) || e),
         total: AC_CATEGORIES.length,
         covered: 0,
         missing: [],
@@ -318,27 +401,34 @@ function runCategoryMode(args) {
         uncovered: [],
       };
     }
-    return { label: t.label, ...checkCategoryCoverage(md) };
+    return { label: t.label, legacyExempt, named: Boolean(t.named), ...checkCategoryCoverage(md) };
   });
 
   if (args.json) {
     process.stdout.write(JSON.stringify(reports, null, 2) + "\n");
   } else {
     if (!reports.length) {
+      // AC-8.2: NO named artifact resolved at all (greenfield) → fail-open, exit 0,
+      // even under --enforce. The fail-closed change is for a NAMED-but-unreadable
+      // artifact, never the absence of any target.
       process.stdout.write(
-        "ac-coverage (categories) — no AC artifact to audit (fail-open, exit 0)\n",
+        "ac-coverage (categories) — no AC artifact to audit (greenfield: fail-open, exit 0)\n",
       );
     }
     for (const r of reports) process.stdout.write(renderCategoryProse(r) + "\n");
     process.stdout.write(
-      `\nmode: report-only (${args.enforce ? "--enforce: exit non-zero on gaps" : "default: gaps are FLAGGED, exit 0"}) · single source: scripts/sprint/ac-categories.js (${AC_CATEGORIES.length} categories)\n`,
+      `\nmode: report-only (${args.enforce ? "--enforce: exit non-zero on gaps + unreadable NAMED artifacts" : "default: gaps are FLAGGED, exit 0"}) · cutoff: ${cutoff} · single source: scripts/sprint/ac-categories.js (${AC_CATEGORIES.length} categories)\n`,
     );
   }
 
+  // A real coverage gap on a readable, in-scope (non-legacy) artifact.
   const anyGap = reports.some(
-    (r) => !r.error && Array.isArray(r.uncovered) && r.uncovered.length > 0,
+    (r) => !r.error && !r.legacyExempt && Array.isArray(r.uncovered) && r.uncovered.length > 0,
   );
-  return args.enforce && anyGap ? 1 : 0;
+  // AC-8.1: a NAMED artifact that failed to read AND is in scope (not legacy) is a
+  // fail-closed failure under --enforce — closing the {error, ok:true} false-green.
+  const anyEnforceError = reports.some((r) => r.enforceError);
+  return args.enforce && (anyGap || anyEnforceError) ? 1 : 0;
 }
 
 function checkSprint(sprintId) {
@@ -502,5 +592,7 @@ module.exports = {
   isStubProof,
   resolveAcPath,
   runCategoryMode,
+  categoryTargets,
+  sprintIsoDate,
   AC_CATEGORIES,
 };
