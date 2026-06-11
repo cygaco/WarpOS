@@ -283,15 +283,22 @@ ok("CLI: default check exits 0 (report-only) on the real tree", () => {
 });
 
 ok("CLI --enforce: unknown-self-attested NEVER trips the gate (fail-open exit 0)", () => {
-  // Point at a temp config that selects t3 for claude with NO attestation →
-  // unknown-self-attested → --enforce must still exit 0.
+  // Point at a temp config that selects t3 for claude with T2 funded but NO
+  // attestation -> unknown-self-attested -> --enforce must still exit 0.
+  // Finding-6 tightened this reserved branch: T2 must be funded, otherwise the
+  // value-free-detectable shortfall is tier_short.
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "slc10-enf-"));
   const cp = path.join(dir, "cfg.json");
   fs.writeFileSync(cp, JSON.stringify({ version: 1, t3_floor: "max_5x", providers: { claude: { selected_tier: "t3" } } }));
   // execFileSync throws if exit != 0; success here = exit 0.
-  const out = execFileSync("node", [ENGINE, "--json", "--enforce", "--config-path", cp], { cwd: ROOT, encoding: "utf8" });
+  const out = execFileSync("node", [ENGINE, "--json", "--enforce", "--config-path", cp], {
+    cwd: ROOT,
+    encoding: "utf8",
+    env: { ...process.env, ANTHROPIC_API_KEY: "fixture-value" },
+  });
   const r = JSON.parse(out);
   const claude = r.providers.find((p) => p.provider === "claude");
+  assert.strictEqual(claude.t2_funded, true, "fixture must represent T2 funded; otherwise finding-6 correctly returns tier_short");
   assert.strictEqual(claude.verdict, "unknown-self-attested", "undetectable T3 → unknown");
 });
 
