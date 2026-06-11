@@ -64,6 +64,79 @@ test("activation-revision-emits-change-event", () => {
         newPredicate: "new core action",
         oldProvenance: "derived-at-canon",
         newProvenance: "revised-at-lastmile",
+        oldConfidence: 0.6,
+        newConfidence: 0.8,
+        oldDerivedFrom: "canon",
+        newDerivedFrom: "canon",
+        changedFields: ["predicate", "provenance", "confidence"],
+      },
+    },
+  ]);
+});
+
+test("activation-revision-emits-confidence-only-change", () => {
+  const emitted = [];
+  const next = analytics.confirmOrReviseActivationDefinition(
+    {
+      predicate: "core action",
+      provenance: "revised-at-lastmile",
+      confidence: 0.6,
+      derivedFrom: "canon",
+    },
+    {
+      revision: { confidence: 0.8 },
+      emit: (event, props) => emitted.push({ event, props }),
+    },
+  );
+
+  assert.strictEqual(next.confidence, 0.8);
+  assert.deepStrictEqual(emitted, [
+    {
+      event: "activation_definition_change",
+      props: {
+        oldPredicate: "core action",
+        newPredicate: "core action",
+        oldProvenance: "revised-at-lastmile",
+        newProvenance: "revised-at-lastmile",
+        oldConfidence: 0.6,
+        newConfidence: 0.8,
+        oldDerivedFrom: "canon",
+        newDerivedFrom: "canon",
+        changedFields: ["confidence"],
+      },
+    },
+  ]);
+});
+
+test("activation-revision-emits-source-only-change", () => {
+  const emitted = [];
+  const next = analytics.confirmOrReviseActivationDefinition(
+    {
+      predicate: "core action",
+      provenance: "founder-named-at-intake",
+      confidence: 0.6,
+      derivedFrom: "founder interview",
+    },
+    {
+      revision: { derivedFrom: "lastmile interview" },
+      emit: (event, props) => emitted.push({ event, props }),
+    },
+  );
+
+  assert.strictEqual(next.derivedFrom, "lastmile interview");
+  assert.deepStrictEqual(emitted, [
+    {
+      event: "activation_definition_change",
+      props: {
+        oldPredicate: "core action",
+        newPredicate: "core action",
+        oldProvenance: "founder-named-at-intake",
+        newProvenance: "revised-at-lastmile",
+        oldConfidence: 0.6,
+        newConfidence: 0.6,
+        oldDerivedFrom: "founder interview",
+        newDerivedFrom: "lastmile interview",
+        changedFields: ["provenance", "derivedFrom"],
       },
     },
   ]);

@@ -242,6 +242,27 @@ test("missing-sink-export-fixture-fails", () => {
   }
 });
 
+test("comment-spoofed-track-boundary-fixture-fails", () => {
+  const dir = fixture((fx) => {
+    const rel = "src/lib/telemetry/track.ts.tmpl";
+    write(
+      rel,
+      read(rel, fx)
+        .replace("event: LifecycleEvent", "event: string")
+        .replace(
+          "const sink = resolveTelemetrySink();",
+          "// event: LifecycleEvent\n    // resolveTelemetrySink()\n    const sink = () => undefined;",
+        ),
+      fx,
+    );
+  });
+  try {
+    expectError(dir, /track\.ts event parameter must derive from LifecycleEvent|track\.ts must call the single sink resolver/);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 test("dynamic-import-drift-fixture-fails", () => {
   const dir = fixture((fx) => {
     const rel = "src/app/page.tsx.tmpl";

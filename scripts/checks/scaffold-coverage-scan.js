@@ -350,6 +350,12 @@ function addTelemetryChecks(dir, errors) {
   const chain = readIf(path.join(dir, "src/lib/telemetry/chain.ts.tmpl"));
   const page = readIf(path.join(dir, "src/app/page.tsx.tmpl"));
   const layout = readIf(path.join(dir, "src/app/layout.tsx.tmpl"));
+  const eventsScan = events === null ? null : stripTsComments(events);
+  const sinkScan = sink === null ? null : stripTsComments(sink);
+  const trackScan = track === null ? null : stripTsComments(track);
+  const chainScan = chain === null ? null : stripTsComments(chain);
+  const pageScan = page === null ? null : stripTsComments(page);
+  const layoutScan = layout === null ? null : stripTsComments(layout);
 
   if (events !== null) {
     requireNamedExport(errors, events, "src/lib/telemetry/events.ts", "LIFECYCLE_EVENTS");
@@ -394,53 +400,53 @@ function addTelemetryChecks(dir, errors) {
         errors.push("activation definition confidence must be numeric between 0 and 1");
       }
     }
-    if (!/function\s+deriveActivationDefinition\b/.test(events) || !/requires core-loop action, subject, and source/.test(events)) {
+    if (!/function\s+deriveActivationDefinition\b/.test(eventsScan) || !/requires core-loop action, subject, and source/.test(eventsScan)) {
       errors.push("activation derivation must fail closed on thin core-loop input");
     }
   }
 
   if (sink !== null) {
     requireNamedExport(errors, sink, "src/lib/telemetry/sink.ts", "resolveTelemetrySink");
-    if (countMatches(sink, /function\s+resolveTelemetrySink\b/g) !== 1) {
+    if (countMatches(sinkScan, /function\s+resolveTelemetrySink\b/g) !== 1) {
       errors.push("telemetry sink must expose exactly one resolveTelemetrySink function");
     }
-    if (!/noopTelemetrySink/.test(sink)) errors.push("telemetry sink missing no-op fallback");
-    if (!/NEXT_PUBLIC_POSTHOG_KEY/.test(sink)) errors.push("telemetry sink missing NEXT_PUBLIC_POSTHOG_KEY env gate");
+    if (!/noopTelemetrySink/.test(sinkScan)) errors.push("telemetry sink missing no-op fallback");
+    if (!/NEXT_PUBLIC_POSTHOG_KEY/.test(sinkScan)) errors.push("telemetry sink missing NEXT_PUBLIC_POSTHOG_KEY env gate");
   }
 
   if (track !== null) {
     requireNamedExport(errors, track, "src/lib/telemetry/track.ts", "track");
-    if (!/event\s*:\s*LifecycleEvent/.test(track)) {
+    if (!/event\s*:\s*LifecycleEvent/.test(trackScan)) {
       errors.push("track.ts event parameter must derive from LifecycleEvent");
     }
-    if (!/resolveTelemetrySink\(\)/.test(track)) {
+    if (!/resolveTelemetrySink\(\)/.test(trackScan)) {
       errors.push("track.ts must call the single sink resolver");
     }
-    if (!/catch\s*\(/.test(track) || !/catch\s*\{/.test(track)) {
+    if (!/catch\s*\(/.test(trackScan) || !/catch\s*\{/.test(trackScan)) {
       errors.push("track.ts must catch sink failures at the telemetry boundary");
     }
   }
 
   if (chain !== null) {
     requireNamedExport(errors, chain, "src/lib/telemetry/chain.ts", "evaluateTelemetryChain");
-    if (!/SUPPLY_CHAIN_STAGES/.test(chain) || !/brokenAtStage/.test(chain) || !/failureEvent/.test(chain)) {
+    if (!/SUPPLY_CHAIN_STAGES/.test(chainScan) || !/brokenAtStage/.test(chainScan) || !/failureEvent/.test(chainScan)) {
       errors.push("chain helper missing broken-chain failure event");
     }
   }
 
   if (page !== null) {
-    if (countMatches(page, /const\s+CORE_LOOP_EXAMPLE_ID\b/g) !== 1) {
+    if (countMatches(pageScan, /const\s+CORE_LOOP_EXAMPLE_ID\b/g) !== 1) {
       errors.push("page must contain exactly one core-loop telemetry example");
     }
-    if (!/handleCoreLoopExample/.test(page) || !/track\("core_action"/.test(page) || !/track\("activation"/.test(page)) {
+    if (!/handleCoreLoopExample/.test(pageScan) || !/track\("core_action"/.test(pageScan) || !/track\("activation"/.test(pageScan)) {
       errors.push("page core-loop example must emit core_action and activation through track()");
     }
-    if (/document\.addEventListener\s*\(\s*["']click["']|window\.addEventListener\s*\(\s*["']click["']/.test(page)) {
+    if (/document\.addEventListener\s*\(\s*["']click["']|window\.addEventListener\s*\(\s*["']click["']/.test(pageScan)) {
       errors.push("page must not install a global click telemetry wrapper");
     }
   }
 
-  if (layout !== null && !/ACTIVATION_DEFINITION/.test(layout)) {
+  if (layout !== null && !/ACTIVATION_DEFINITION/.test(layoutScan)) {
     errors.push("layout must carry activation definition provenance wiring");
   }
 

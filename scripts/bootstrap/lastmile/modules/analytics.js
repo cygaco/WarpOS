@@ -43,6 +43,8 @@ const VALID_ACTIVATION_PROVENANCE = new Set([
   "revised-at-lastmile",
 ]);
 
+const ACTIVATION_CHANGE_FIELDS = ["predicate", "provenance", "confidence", "derivedFrom"];
+
 function isUnresolvedActivationValue(value) {
   return (
     typeof value !== "string" ||
@@ -84,6 +86,20 @@ function assertValidActivationDefinition(definition) {
   if (errors.length) {
     throw new Error(`invalid activation definition: ${errors.join("; ")}`);
   }
+}
+
+function activationChangeProps(current, next, changedFields) {
+  return {
+    oldPredicate: current.predicate,
+    newPredicate: next.predicate,
+    oldProvenance: current.provenance,
+    newProvenance: next.provenance,
+    oldConfidence: current.confidence,
+    newConfidence: next.confidence,
+    oldDerivedFrom: current.derivedFrom,
+    newDerivedFrom: next.derivedFrom,
+    changedFields,
+  };
 }
 
 function detect(state) {
@@ -137,13 +153,9 @@ function confirmOrReviseActivationDefinition(current, opts = {}) {
 
   assertValidActivationDefinition(next);
 
-  if (revision.predicate && revision.predicate !== current.predicate) {
-    emit("activation_definition_change", {
-      oldPredicate: current.predicate,
-      newPredicate: revision.predicate,
-      oldProvenance: current.provenance,
-      newProvenance: next.provenance,
-    });
+  const changedFields = ACTIVATION_CHANGE_FIELDS.filter((field) => next[field] !== current[field]);
+  if (changedFields.length) {
+    emit("activation_definition_change", activationChangeProps(current, next, changedFields));
   }
 
   return next;

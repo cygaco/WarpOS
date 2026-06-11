@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-11T22:22:17.905Z",
+  "generatedAt": "2026-06-11T22:31:31.110Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.15.4",
   "migrations": [],
@@ -2091,8 +2091,8 @@
       "owner": "framework",
       "managed": true,
       "source": null,
-      "sha256": "4addf42370ba743099a8e2ea59c59a79862da7dcb91d9dfdb794c54c6f32e6fb",
-      "installedSha": "4addf42370ba743099a8e2ea59c59a79862da7dcb91d9dfdb794c54c6f32e6fb"
+      "sha256": "7f53b537327b548373defb81c5b7830a269406a773bfb688e73501170569b211",
+      "installedSha": "7f53b537327b548373defb81c5b7830a269406a773bfb688e73501170569b211"
     },
     "tests/regression/S-PF-01/manifest-shipping.test.js": {
       "owner": "framework",
@@ -2112,8 +2112,8 @@
       "owner": "framework",
       "managed": true,
       "source": null,
-      "sha256": "c403a850acfc7c78020279b5ae246f85eea6e37499c23ce56b6d38b1a1501f7e",
-      "installedSha": "c403a850acfc7c78020279b5ae246f85eea6e37499c23ce56b6d38b1a1501f7e"
+      "sha256": "86b53cf3ad7fe0c632dc95dcb98e56d8d8c6e3849a8e4bd16ddb86b5ce9265e2",
+      "installedSha": "86b53cf3ad7fe0c632dc95dcb98e56d8d8c6e3849a8e4bd16ddb86b5ce9265e2"
     },
     "tests/regression/S-PF-01/telemetry-chain.test.js": {
       "owner": "framework",
@@ -6592,8 +6592,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/scaffold-coverage-scan.js",
-      "sha256": "83980765322ad0c98acd11e2bdb812a7fcdc46e5ecc59bdb63bb82a643f0fd46",
-      "installedSha": "83980765322ad0c98acd11e2bdb812a7fcdc46e5ecc59bdb63bb82a643f0fd46"
+      "sha256": "b1dd5371a5f0a2b94873c57e5b987f82e479e1b6bf93968d3514f8a38de9ba57",
+      "installedSha": "b1dd5371a5f0a2b94873c57e5b987f82e479e1b6bf93968d3514f8a38de9ba57"
     },
     "scripts/checks/scan-coverage.allowlist.json": {
       "owner": "framework",
@@ -7033,8 +7033,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/bootstrap/lastmile/modules/analytics.js",
-      "sha256": "7624ca45f02c686aefea8d23f282b85716050b203c2cd266a945b3d6c069376a",
-      "installedSha": "7624ca45f02c686aefea8d23f282b85716050b203c2cd266a945b3d6c069376a"
+      "sha256": "9909362467453df380ba163b0167f2405d191c8fe343990f1586f4cd557cac6d",
+      "installedSha": "9909362467453df380ba163b0167f2405d191c8fe343990f1586f4cd557cac6d"
     },
     "scripts/bootstrap/lastmile/modules/auth.js": {
       "owner": "framework",
