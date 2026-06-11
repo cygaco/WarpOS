@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-11T23:31:20.001Z",
+  "generatedAt": "2026-06-11T23:52:35.944Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.15.4",
   "migrations": [],
@@ -121,8 +121,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "742fa7dd3b0c2ae4b53b21b867ee8aab90a046f5171ca78f484f87d2a2d70375",
-      "installedSha": "742fa7dd3b0c2ae4b53b21b867ee8aab90a046f5171ca78f484f87d2a2d70375"
+      "sha256": "009124378b9199b816f08afc6987a18d2cf9cd2b76fca1229fac16a9080bcff2",
+      "installedSha": "009124378b9199b816f08afc6987a18d2cf9cd2b76fca1229fac16a9080bcff2"
     },
     "TRACKER.md": {
       "owner": "runtime",
@@ -2199,6 +2199,13 @@
       "sha256": "f8db2e89becfc27ed92361a3760aa110ff323a8cd2656a3064968b8df1c8af8b",
       "installedSha": "f8db2e89becfc27ed92361a3760aa110ff323a8cd2656a3064968b8df1c8af8b"
     },
+    "tests/regression/S-PF-02/tech-stack-declaration.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": null,
+      "sha256": "3de609597b8006df3112768123bfd7e3d8ad2a506f7d472ec98a75709357f252",
+      "installedSha": "3de609597b8006df3112768123bfd7e3d8ad2a506f7d472ec98a75709357f252"
+    },
     "tests/regression/S-PF-01/activation-definition.test.js": {
       "owner": "framework",
       "managed": true,
@@ -2896,8 +2903,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/generate-framework-manifest.js",
-      "sha256": "1f7eb6523dd3991de86c41702069424262cf4d54d6ad882d5a871b039adcdda6",
-      "installedSha": "1f7eb6523dd3991de86c41702069424262cf4d54d6ad882d5a871b039adcdda6"
+      "sha256": "6cf40216cb6cb7ce6bb39f3fa9d3abbb794ad82167111dc0cdb111dd1b1526c2",
+      "installedSha": "6cf40216cb6cb7ce6bb39f3fa9d3abbb794ad82167111dc0cdb111dd1b1526c2"
     },
     "scripts/generate-maps.js": {
       "owner": "framework",
@@ -6266,6 +6273,13 @@
       "sha256": "3270ae42c948305f93a7e506215682cf91b4cc5b93025de72ca633b4ced6597b",
       "installedSha": "3270ae42c948305f93a7e506215682cf91b4cc5b93025de72ca633b4ced6597b"
     },
+    "scripts/checks/canon-tech-stack.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/canon-tech-stack.js",
+      "sha256": "621f4011f38477fa37652f054dff82765702b92fcc5d62a7d09b4ea02e62f359",
+      "installedSha": "621f4011f38477fa37652f054dff82765702b92fcc5d62a7d09b4ea02e62f359"
+    },
     "scripts/checks/canon-type-coverage.js": {
       "owner": "framework",
       "managed": true,
@@ -7012,8 +7026,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/canon/generate.js",
-      "sha256": "7b6124f0af4c688c29b185d0aba73daf383373b2ae3f1bace6bcb6b01b813733",
-      "installedSha": "7b6124f0af4c688c29b185d0aba73daf383373b2ae3f1bace6bcb6b01b813733"
+      "sha256": "b90771fb196fb41daa65ffe57a722ef21f8a37ca03cf1f7d854e344f92070e31",
+      "installedSha": "b90771fb196fb41daa65ffe57a722ef21f8a37ca03cf1f7d854e344f92070e31"
     },
     "scripts/canon/research.js": {
       "owner": "framework",
@@ -7022,12 +7036,19 @@
       "sha256": "327f461be85c69e1aa47a65db5fd8e28aa7cfae74feaa13298c732f23cb2ca56",
       "installedSha": "327f461be85c69e1aa47a65db5fd8e28aa7cfae74feaa13298c732f23cb2ca56"
     },
+    "scripts/canon/tech-stack.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/canon/tech-stack.js",
+      "sha256": "274544d131713b9c486a82ad511297d67db2ac9fc0132d2116d3ff25a1dd2db0",
+      "installedSha": "274544d131713b9c486a82ad511297d67db2ac9fc0132d2116d3ff25a1dd2db0"
+    },
     "scripts/canon/test-generate.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/canon/test-generate.js",
-      "sha256": "7d89ec126b703805d8c6d05827a898f2ee9e6e4d62911fd785928def6320920e",
-      "installedSha": "7d89ec126b703805d8c6d05827a898f2ee9e6e4d62911fd785928def6320920e"
+      "sha256": "8ac33f2a41909fc1ca265764bfdc30fa12dba6fc666dc89385c0c4d73a1bc621",
+      "installedSha": "8ac33f2a41909fc1ca265764bfdc30fa12dba6fc666dc89385c0c4d73a1bc621"
     },
     "scripts/canon/validate.js": {
       "owner": "framework",
@@ -7040,8 +7061,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/canon/fixtures/acme-intent.md",
-      "sha256": "07c677ae9cea04fe7a01dc632662f30e26e8146f83b886d754d2e69e310300ff",
-      "installedSha": "07c677ae9cea04fe7a01dc632662f30e26e8146f83b886d754d2e69e310300ff"
+      "sha256": "c1233f7e07e7cfef032d7eea6850abc3ffef41525b8fdbcfd65f3fe6d3859b99",
+      "installedSha": "c1233f7e07e7cfef032d7eea6850abc3ffef41525b8fdbcfd65f3fe6d3859b99"
     },
     "scripts/budgets/check.js": {
       "owner": "framework",
@@ -7054,22 +7075,22 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/bootstrap/spinup-orchestrate.js",
-      "sha256": "cbd49b2efbf3c4c92ff26e482fe3c1a8faed3999b86cdcf0b557593915ea797b",
-      "installedSha": "cbd49b2efbf3c4c92ff26e482fe3c1a8faed3999b86cdcf0b557593915ea797b"
+      "sha256": "339a24c89a421c50f111726cb3761133b7182c8c8b4efb37d1a8ba591737a5e3",
+      "installedSha": "339a24c89a421c50f111726cb3761133b7182c8c8b4efb37d1a8ba591737a5e3"
     },
     "scripts/bootstrap/test-spinup-orchestrate.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/bootstrap/test-spinup-orchestrate.js",
-      "sha256": "b9e43c25861448a35335a9b2eb7d189feffdebe79c717b8264946fbeb02dbf4a",
-      "installedSha": "b9e43c25861448a35335a9b2eb7d189feffdebe79c717b8264946fbeb02dbf4a"
+      "sha256": "75e0792e515361134265583dcf3e31214e10f670d18b0c05cf6ba83a5ebcaf51",
+      "installedSha": "75e0792e515361134265583dcf3e31214e10f670d18b0c05cf6ba83a5ebcaf51"
     },
     "scripts/bootstrap/phases/canon.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/bootstrap/phases/canon.js",
-      "sha256": "0dad534b48f0581dff8611e12dfffb914f0de0f37d0ae495e3b568ead1f68d68",
-      "installedSha": "0dad534b48f0581dff8611e12dfffb914f0de0f37d0ae495e3b568ead1f68d68"
+      "sha256": "382f190fdf988c58689236455e76d853552a96054d67f601dcbe0ad4a44f2f7e",
+      "installedSha": "382f190fdf988c58689236455e76d853552a96054d67f601dcbe0ad4a44f2f7e"
     },
     "scripts/bootstrap/phases/paint.js": {
       "owner": "framework",
@@ -7089,8 +7110,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/bootstrap/phases/setup.js",
-      "sha256": "2aae5586e0a42d271bec276d714249e95ce47c87ea485385a7d35a0823b1e125",
-      "installedSha": "2aae5586e0a42d271bec276d714249e95ce47c87ea485385a7d35a0823b1e125"
+      "sha256": "c939e045b190b2cb4fc7948e13daf98a704c11ea31b60e21f11532f2a5cfb9ee",
+      "installedSha": "c939e045b190b2cb4fc7948e13daf98a704c11ea31b60e21f11532f2a5cfb9ee"
     },
     "scripts/bootstrap/lastmile/fixtures.js": {
       "owner": "framework",
@@ -7110,8 +7131,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/bootstrap/lastmile/test-orchestrate.js",
-      "sha256": "17f50f692d4ab325b9bfa21f75f4d9a1794cdb1cd92b92cfd7def7de731c4a30",
-      "installedSha": "17f50f692d4ab325b9bfa21f75f4d9a1794cdb1cd92b92cfd7def7de731c4a30"
+      "sha256": "7826cf08b29f6e31f05e47bbb80f8813c80f2a2cedc1715c09e85f7b751f6391",
+      "installedSha": "7826cf08b29f6e31f05e47bbb80f8813c80f2a2cedc1715c09e85f7b751f6391"
     },
     "scripts/bootstrap/lastmile/phases/audit.js": {
       "owner": "framework",
@@ -7145,8 +7166,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/bootstrap/lastmile/phases/plan.js",
-      "sha256": "79648f4b313a1f27cdd67ea33a975c9e07221bb2cb2470d0ab93b8f6d6de36f7",
-      "installedSha": "79648f4b313a1f27cdd67ea33a975c9e07221bb2cb2470d0ab93b8f6d6de36f7"
+      "sha256": "8425f70c891955c5d740135a3bb957906553f3de45203f0b42d7ce895e429fe9",
+      "installedSha": "8425f70c891955c5d740135a3bb957906553f3de45203f0b42d7ce895e429fe9"
     },
     "scripts/bootstrap/lastmile/phases/preflight.js": {
       "owner": "framework",
@@ -7229,15 +7250,15 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/bootstrap/lastmile/lib/detect.js",
-      "sha256": "342a68b09bdfd3573bfdaaa32c66f562553703fb7ea81764d63c6a52886d2c40",
-      "installedSha": "342a68b09bdfd3573bfdaaa32c66f562553703fb7ea81764d63c6a52886d2c40"
+      "sha256": "bfd774f800b8a03cd2410c8969407dcb1f4058b4e2ed3ad968773f458b3675f8",
+      "installedSha": "bfd774f800b8a03cd2410c8969407dcb1f4058b4e2ed3ad968773f458b3675f8"
     },
     "scripts/bootstrap/lastmile/lib/profiles.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/bootstrap/lastmile/lib/profiles.js",
-      "sha256": "198c40422cac2f8f73fb24d45569f14318c7de37f15a51aba57f92d2df95df02",
-      "installedSha": "198c40422cac2f8f73fb24d45569f14318c7de37f15a51aba57f92d2df95df02"
+      "sha256": "4fd18e90df3da0541cee5b88caf91fad204eaee34501da999af1775fe49461ee",
+      "installedSha": "4fd18e90df3da0541cee5b88caf91fad204eaee34501da999af1775fe49461ee"
     },
     "scripts/bootstrap/lastmile/lib/render.js": {
       "owner": "framework",
@@ -8006,8 +8027,8 @@
       "owner": "framework",
       "managed": true,
       "source": "framework/templates/canonical/DATA_AND_ACCOUNTS.md.tmpl",
-      "sha256": "e6158ff39409acc1fd22652b38b805817b5d445012904fa70cbdb617efd0e964",
-      "installedSha": "e6158ff39409acc1fd22652b38b805817b5d445012904fa70cbdb617efd0e964"
+      "sha256": "9e4b5bf2e1085bb18a21131430f1e3e1e59507ee7730811916374d5c5d09a16f",
+      "installedSha": "9e4b5bf2e1085bb18a21131430f1e3e1e59507ee7730811916374d5c5d09a16f"
     },
     "framework/templates/canonical/EVOLUTION.md.tmpl": {
       "owner": "framework",

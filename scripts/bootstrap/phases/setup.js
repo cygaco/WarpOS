@@ -95,11 +95,29 @@ function findExistingBrief(repoRoot, product) {
 // Write a deterministic founding brief from the structured intake (raw → intent).
 // Returns the repo-relative POSIX path. Idempotent: a 2nd run with the same slug
 // rewrites the same path with the same content.
+function stackFromCtx(ctx) {
+  const s = (ctx && ctx.stack) || {};
+  const args = (ctx && ctx.args) || {};
+  return {
+    framework: ctx.framework || args.framework || args.stackFramework || s.framework || "",
+    database: ctx.database || args.database || args.stackDatabase || s.database || "",
+    auth: ctx.auth || args.auth || args.stackAuth || s.auth || "",
+    payments: ctx.payments || args.payments || args.stackPayments || s.payments || "",
+    hosting: ctx.hosting || args.hosting || args.stackHosting || s.hosting || "",
+    analytics: ctx.analytics || args.analytics || args.stackAnalytics || s.analytics || "",
+  };
+}
+
+function stackLine(value, field) {
+  return value && String(value).trim() ? String(value).trim() : `*needs input: ${field}*`;
+}
+
 function writeStructuredBrief(ctx, slug) {
   const rel = path.posix.join(briefsRootRel(ctx.repoRoot), slug, `${slug}.brief.md`);
   const abs = path.join(ctx.repoRoot, rel);
   const name = ctx.name || ctx.product || slug;
   const platform = resolvePlatform(ctx);
+  const stack = stackFromCtx(ctx);
   const body = [
     `# ${name} — Founding brief`,
     "",
@@ -109,6 +127,15 @@ function writeStructuredBrief(ctx, slug) {
     "",
     `- **Slug:** ${slug}`,
     `- **Platform target:** ${platform}${NATIVE_PLATFORMS.has(platform) ? " (v1 ships the web/PWA baseline; native packaging is a follow-on)" : ""}`,
+    "",
+    "## Tech Stack",
+    "",
+    `- Framework: ${stackLine(stack.framework, "tech_stack_framework")}`,
+    `- Database: ${stackLine(stack.database, "tech_stack_database")}`,
+    `- Authentication: ${stackLine(stack.auth, "tech_stack_auth")}`,
+    `- Payments: ${stackLine(stack.payments, "tech_stack_payments")}`,
+    `- Hosting: ${stackLine(stack.hosting, "tech_stack_hosting")}`,
+    `- Analytics: ${stackLine(stack.analytics, "tech_stack_analytics")}`,
     "",
     "## What (problem / JTBD — raw)",
     "",
@@ -266,8 +293,8 @@ async function run(ctx) {
     ok: true,
     status: "done",
     message: `setup complete (intake mode=${mode}, platform=${platform}) → ${intentFile}`,
-    data: { intentFile, platform, mode, repoRoot: effectiveRoot, slug: deriveSlug(effectiveRoot, ctx.product || ctx.name) },
+    data: { intentFile, platform, mode, repoRoot: effectiveRoot, slug: deriveSlug(effectiveRoot, ctx.product || ctx.name), stack: stackFromCtx(ctx) },
   };
 }
 
-module.exports = { name: "setup", run, defaultRunCheck, planClone, findExistingBrief, writeStructuredBrief, resolvePlatform, PLATFORMS, DEFAULT_PLATFORM, NATIVE_PLATFORMS };
+module.exports = { name: "setup", run, defaultRunCheck, planClone, findExistingBrief, writeStructuredBrief, resolvePlatform, stackFromCtx, PLATFORMS, DEFAULT_PLATFORM, NATIVE_PLATFORMS };

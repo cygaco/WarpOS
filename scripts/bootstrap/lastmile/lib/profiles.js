@@ -102,10 +102,102 @@ const DEFAULT_STACKS = {
   unknown: SIMPLE_MVP,
 };
 
+function declaredValues(state) {
+  const d = state && state.declaredStack;
+  if (!d || !d.present || !d.values) return {};
+  return d.values;
+}
+
+function declaredProfile(values) {
+  const v = values || {};
+  const hay = [v.framework, v.database, v.auth, v.payments, v.hosting, v.analytics]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+  if (!hay) return null;
+  if (/\b(expo|react native|ios|android|eas)\b/.test(hay)) return "mobile-app";
+  if (/\b(electron|tauri|desktop)\b/.test(hay)) return "desktop-app";
+  if (/\b(stripe connect|marketplace|seller|vendor)\b/.test(hay)) return "marketplace";
+  if (/\b(openai|llm|ai sdk|agents sdk|anthropic|gemini)\b/.test(hay)) return "ai-tool";
+  if (/\b(self hosted|self-hosted|docker|vps|compose)\b/.test(hay)) return "self-hosted";
+  if (/\b(next|remix|svelte|vue|react|web|vercel|netlify)\b/.test(hay)) return "web-saas";
+  return null;
+}
+
+function applyDeclaredStack(stack, values) {
+  const out = Object.assign({}, stack);
+  const applied = [];
+  const map = {
+    framework: "framework",
+    database: "db",
+    auth: "auth",
+    payments: "payments",
+    hosting: "hosting",
+    analytics: "analytics",
+  };
+  for (const [declaredKey, stackKey] of Object.entries(map)) {
+    const value = values && values[declaredKey];
+    if (!value) continue;
+    out[stackKey] = `${value} (declared)`;
+    applied.push(`${stackKey}:${value}`);
+  }
+  return { stack: out, applied };
+}
+
+function normProvider(value) {
+  return String(value || "").toLowerCase().replace(/[^a-z0-9]+/g, "");
+}
+
+function includesProvider(declared, detected) {
+  const a = normProvider(declared);
+  const b = normProvider(detected);
+  return !!(a && b && (a.includes(b) || b.includes(a)));
+}
+
+function stackDriftEvents(state, values, effectiveProfile, inferredFromDeclared, explicitProfile) {
+  const events = [];
+  if (explicitProfile && inferredFromDeclared && explicitProfile !== inferredFromDeclared) {
+    events.push({
+      type: "stack_drift",
+      layer: "profile",
+      declared: inferredFromDeclared,
+      detected: explicitProfile,
+      severity: "advisory",
+      action: "Explicit --profile override is controlling the last-mile plan.",
+    });
+  }
+  const pairs = [
+    ["framework", values.framework, state && state.framework],
+    ["database", values.database, state && state.persistence && state.persistence.provider],
+    ["auth", values.auth, state && state.auth && state.auth.provider],
+    ["payments", values.payments, state && state.payments && state.payments.provider],
+    ["hosting", values.hosting, state && state.deploy && state.deploy.target],
+    ["analytics", values.analytics, state && state.analytics && state.analytics.provider],
+  ];
+  for (const [layer, declared, detected] of pairs) {
+    if (declared && detected && detected !== "unknown" && !includesProvider(declared, detected)) {
+      events.push({
+        type: "stack_drift",
+        layer,
+        declared,
+        detected,
+        severity: "warning",
+        action: "Review the implementation or revise the canonical Tech Stack declaration.",
+      });
+    }
+  }
+  if (events.length && effectiveProfile) {
+    for (const e of events) e.profile = effectiveProfile;
+  }
+  return events;
+}
+
 // Map a detected framework/platform to the most likely profile when the operator
 // doesn't supply one. Conservative — returns "unknown" if it can't tell.
 function inferProfile(state) {
   if (!state) return "unknown";
+  const fromDeclared = declaredProfile(declaredValues(state));
+  if (fromDeclared) return fromDeclared;
   if (state.platform === "mobile") return "mobile-app";
   if (state.platform === "desktop") return "desktop-app";
   // Self-hosted (WG-29): the persistence is self-hosted (own server/DB) AND there
@@ -132,11 +224,15 @@ function inferProfile(state) {
  * recommend KEEPING it (don't force a rewrite) and note it under `kept`.
  */
 function recommendStack(profile, state) {
+  const declared = declaredValues(state);
+  const inferredFromDeclared = declaredProfile(declared);
   const p = PROFILES.includes(profile) ? profile : inferProfile(state);
   const base = DEFAULT_STACKS[p] || SIMPLE_MVP;
-  const stack = Object.assign({}, base);
+  const declaredApplied = applyDeclaredStack(base, declared);
+  const stack = Object.assign({}, declaredApplied.stack);
   const kept = [];
   const assumptions = [];
+  const declaredStack = declaredApplied.applied;
 
   if (state) {
     if (state.persistence && state.persistence.provider) {
@@ -168,13 +264,21 @@ function recommendStack(profile, state) {
   if (!profile || !PROFILES.includes(profile)) {
     assumptions.push(`profile inferred as "${p}" from repo state (no --profile given)`);
   }
+  if (inferredFromDeclared && (!profile || !PROFILES.includes(profile))) {
+    assumptions.push(`profile inference used declared Tech Stack (${state.declaredStack.source})`);
+  }
+  if (state && state.declaredStack && state.declaredStack.present && !state.declaredStack.ok) {
+    assumptions.push(`declared Tech Stack is present but invalid: ${(state.declaredStack.errors || []).join("; ")}`);
+  }
 
   const rationale =
     `Profile "${p}": shortest safe path to paid launch. ` +
     `Defaults bias to easy setup, strong docs, low ops. ` +
+    (declaredStack.length ? `Declared stack: ${declaredStack.join(", ")}. ` : "") +
     (kept.length ? `Keeping existing: ${kept.join(", ")}.` : "Greenfield last-mile stack.");
 
-  return { profile: p, stack, kept, rationale, assumptions };
+  const drift = stackDriftEvents(state, declared, p, inferredFromDeclared, PROFILES.includes(profile) ? profile : null);
+  return { profile: p, stack, kept, declaredStack, stackDrift: drift, rationale, assumptions };
 }
 
-module.exports = { PROFILES, DEFAULT_STACKS, SIMPLE_MVP, inferProfile, recommendStack };
+module.exports = { PROFILES, DEFAULT_STACKS, SIMPLE_MVP, inferProfile, recommendStack, declaredProfile, stackDriftEvents };

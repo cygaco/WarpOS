@@ -98,10 +98,30 @@ async function testSetup() {
   fs.writeFileSync(path.join(tmp, "package.json"), "{}\n");
 
   const passCheck = () => ({ code: 0, stdout: "", stderr: "" });
-  const r1 = await setup.run(mkctx({ repoRoot: tmp, product: "Acme", name: "Acme", what: "do X", who: "people", args: { _runCheck: passCheck } }));
+  const r1 = await setup.run(mkctx({
+    repoRoot: tmp,
+    product: "Acme",
+    name: "Acme",
+    what: "do X",
+    who: "people",
+    framework: "Next.js",
+    database: "Supabase",
+    auth: "Clerk",
+    payments: "Stripe",
+    hosting: "Vercel",
+    analytics: "PostHog",
+    args: { _runCheck: passCheck },
+  }));
   if (r1.ok && r1.status === "done" && r1.data && r1.data.intentFile && r1.data.mode === "structured")
     ok("setup: structured --name/--what/--who → done (no interactive prompt)");
   else fail("setup structured", JSON.stringify(r1));
+
+  const briefText = r1.data && r1.data.intentFile
+    ? fs.readFileSync(path.join(tmp, r1.data.intentFile), "utf8")
+    : "";
+  if (/## Tech Stack/.test(briefText) && /Framework: Next\.js/.test(briefText) && /Analytics: PostHog/.test(briefText))
+    ok("setup: structured stack intake captured in founding brief");
+  else fail("setup stack intake", briefText.slice(0, 400));
 
   // idempotent: 2nd run reuses the brief, still done
   const r2 = await setup.run(mkctx({ repoRoot: tmp, product: "Acme", args: { _runCheck: passCheck } }));
@@ -182,6 +202,13 @@ async function testCanon() {
   if (g.code === 2) ok("canon gate: empty dir → fail-closed (exit 2)");
   else fail("canon gate empty", JSON.stringify(g));
   fs.rmSync(empty, { recursive: true, force: true });
+
+  const noStack = fs.mkdtempSync(path.join(os.tmpdir(), "spinup-canon-no-stack-"));
+  fs.writeFileSync(path.join(noStack, "DATA_AND_ACCOUNTS.md"), "# Acme\n\n## Data Model\nx\n", "utf8");
+  const sg = canon.runTechStackGate(REPO, noStack);
+  if (sg.code === 1 && sg.errors.some((e) => /Tech Stack/.test(e))) ok("canon tech-stack gate: missing block => failed");
+  else fail("canon tech-stack missing", JSON.stringify(sg));
+  fs.rmSync(noStack, { recursive: true, force: true });
 
   // --allow-needs-input audits a single field: full canon, all synthesized EXCEPT
   // one genuinely-external field, allow-listed → done (artifacts present → no re-render).

@@ -143,6 +143,17 @@ function e2e() {
   else fail("canon-type-coverage missing artifact => exit 1", `got exit ${crMissing.status} ${crMissing.stderr || crMissing.stdout}`);
   fs.rmSync(missingTestDir, { recursive: true, force: true });
 
+  // S-PF-02: DATA_AND_ACCOUNTS.md carries a parseable Tech Stack block. The
+  // fixture declares all six values, so the stricter value check should pass too.
+  const stackScript = path.join(REPO, "scripts", "checks", "canon-tech-stack.js");
+  const sr = spawnSync(
+    process.execPath,
+    [stackScript, "--dir", out, "--strict-values", "--json"],
+    { encoding: "utf8" },
+  );
+  if (sr.status === 0) ok("canon-tech-stack: DATA_AND_ACCOUNTS Tech Stack parses with declared values");
+  else fail("canon-tech-stack strict", `status=${sr.status} ${sr.stderr || sr.stdout}`);
+
   // each JSON parses
   let jsonOk = true;
   for (const name of STRUCTURED) {

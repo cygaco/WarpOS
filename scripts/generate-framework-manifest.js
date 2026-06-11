@@ -330,6 +330,9 @@ const TOP_LEVEL_FRAMEWORK_FILES = [
 const FRAMEWORK_DOCS = [
   { src: "CLAUDE.md", dest: "CLAUDE.md", merge: "append-if-exists" },
   { src: "AGENTS.md", dest: "AGENTS.md", merge: "append-if-exists" },
+  // Provider-entrypoint shim for Codex/GPT executors. Ownership manifest treats
+  // it as the same root-doc class as CLAUDE.md/AGENTS.md, so it must ship too.
+  { src: "CODEX.md", dest: "CODEX.md", merge: "append-if-exists" },
   // ADR-0007: org-structure companion to AGENTS.md, referenced from CLAUDE.md.
   // Ships to consumer roots like AGENTS.md so the agent-tree doc travels with
   // the org doc it complements.

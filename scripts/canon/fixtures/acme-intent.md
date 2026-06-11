@@ -11,3 +11,11 @@ The system of record for job-site documentation.
 
 ## 09 — MVP
 Capture, auto-tag, list, share.
+
+## Tech Stack
+- Framework: Next.js
+- Database: Supabase
+- Authentication: Clerk
+- Payments: Stripe
+- Hosting: Vercel
+- Analytics: PostHog

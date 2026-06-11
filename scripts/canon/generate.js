@@ -41,6 +41,7 @@ const fs = require("fs");
 const path = require("path");
 const research = require("./research");
 const { validateArtifacts } = require("./validate");
+const { parseStackIntent } = require("./tech-stack");
 
 const REPO_ROOT = path.resolve(__dirname, "..", "..");
 const TMPL_DIR = path.join(REPO_ROOT, "framework", "templates", "canonical");
@@ -134,9 +135,14 @@ function pick(sections, ...keywords) {
   return "";
 }
 
+function stackFallbackRationale(layer) {
+  return `Declared during product intake for the ${layer} layer; revise if implementation evidence drifts.`;
+}
+
 // Map intent sections -> canonical template fields. Heuristic; thin fields
 // (empty) are surfaced for the research phase (T4) + validation (T5).
 function buildFieldMap(product, sections) {
+  const stackIntent = parseStackIntent(pick(sections, "tech stack", "stack")).stack;
   return {
     product_name: product,
     one_liner: pick(sections, "one-liner", "problem", "summary"),
@@ -162,6 +168,39 @@ function buildFieldMap(product, sections) {
     authentication: pick(sections, "authentication", "auth", "login", "signin", "sso", "oauth"),
     permissions_roles: pick(sections, "permission", "role", "access control", "rbac", "acl"),
     data_retention: pick(sections, "retention", "privacy", "gdpr", "data retention", "deletion"),
+    // Tech-stack declaration fields. These deliberately come from a dedicated
+    // Tech Stack section first, then explicit provider/layer sections. Generic
+    // data/auth prose should not masquerade as a stack choice.
+    tech_stack_framework: firstNonEmpty(
+      stackIntent.framework,
+      pick(sections, "framework", "frontend stack", "app stack", "runtime stack"),
+    ),
+    tech_stack_database: firstNonEmpty(
+      stackIntent.database,
+      pick(sections, "database", "persistence", "data store", "storage provider"),
+    ),
+    tech_stack_auth: firstNonEmpty(
+      stackIntent.auth,
+      pick(sections, "auth provider", "authentication provider", "identity provider"),
+    ),
+    tech_stack_payments: firstNonEmpty(
+      stackIntent.payments,
+      pick(sections, "payments", "billing", "monetization provider", "checkout provider"),
+    ),
+    tech_stack_hosting: firstNonEmpty(
+      stackIntent.hosting,
+      pick(sections, "hosting", "deployment", "deploy target", "infrastructure"),
+    ),
+    tech_stack_analytics: firstNonEmpty(
+      stackIntent.analytics,
+      pick(sections, "analytics", "telemetry provider", "event sink", "product analytics"),
+    ),
+    tech_stack_framework_rationale: stackFallbackRationale("framework"),
+    tech_stack_database_rationale: stackFallbackRationale("database"),
+    tech_stack_auth_rationale: stackFallbackRationale("auth"),
+    tech_stack_payments_rationale: stackFallbackRationale("payments"),
+    tech_stack_hosting_rationale: stackFallbackRationale("hosting"),
+    tech_stack_analytics_rationale: stackFallbackRationale("analytics"),
     // Fields still empty here are handled by briefExpand() (intent-derived) and,
     // if still source-less, the degrade step (-> `*needs input:*` marker).
   };

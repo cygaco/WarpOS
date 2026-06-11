@@ -78,6 +78,24 @@ function runGate(repoRoot, outAbs) {
   };
 }
 
+function runTechStackGate(repoRoot, outAbs) {
+  const gate = path.join(repoRoot, "scripts", "checks", "canon-tech-stack.js");
+  const r = spawnSync(process.execPath, [gate, "--dir", outAbs, "--json"], {
+    cwd: repoRoot, encoding: "utf8", windowsHide: true,
+  });
+  const code = r.status == null ? 2 : r.status;
+  let parsed = null;
+  try { parsed = JSON.parse(r.stdout); } catch { /* unparseable -> treat via code */ }
+  return {
+    code,
+    ok: parsed ? parsed.ok === true : code === 0,
+    errors: (parsed && parsed.errors) || [],
+    unresolved: (parsed && parsed.unresolved) || [],
+    stack: (parsed && parsed.stack) || {},
+    raw: (r.stderr || r.stdout || "").trim().split(/\r?\n/).slice(-4).join(" | "),
+  };
+}
+
 async function run(ctx) {
   const { repoRoot, product, intentFile, outDir, research, dryRun, log } = ctx;
   const allow = new Set((ctx.allowNeedsInput || (ctx.args && ctx.args.allowNeedsInput) || []).map(String));
@@ -143,6 +161,18 @@ async function run(ctx) {
 
   // ── 3. SYNTHESIS HANDOFF — un-synthesized substantive fields ─────────────
   // needs_input entries are "FILE:field"; the field is the part after the last ':'.
+  const stackGate = runTechStackGate(repoRoot, outAbs);
+  if (stackGate.code === 2) {
+    return { ok: false, status: "failed", message: `canon tech-stack gate fail-closed (${outDir}): ${stackGate.raw}` };
+  }
+  if (stackGate.errors.length) {
+    return { ok: false, status: "failed", message: `canon tech-stack gate FAILED: ${stackGate.errors.slice(0, 8).join("; ")}` };
+  }
+  log(
+    `canon tech-stack gate PASS - Tech Stack block parseable` +
+      (stackGate.unresolved.length ? ` (${stackGate.unresolved.length} unresolved choice(s))` : ""),
+  );
+
   const remaining = gate.needsInput.filter((ni) => {
     const field = String(ni).split(":").pop();
     return !allow.has(field) && !allow.has(String(ni));
@@ -179,4 +209,4 @@ async function run(ctx) {
   };
 }
 
-module.exports = { name: "canon", run, runGate, canonArtifactsPresent, EXPECTED_ARTIFACTS };
+module.exports = { name: "canon", run, runGate, runTechStackGate, canonArtifactsPresent, EXPECTED_ARTIFACTS };

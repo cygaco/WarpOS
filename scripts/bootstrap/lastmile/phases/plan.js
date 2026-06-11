@@ -39,6 +39,17 @@ function moduleSection(title, p) {
     .join("\n");
 }
 
+function stackDriftSection(events) {
+  if (!events || !events.length) return "";
+  const rows = events
+    .map(
+      (e) =>
+        `- \`stack_drift\`: layer=${e.layer}; declared=${e.declared}; detected=${e.detected}; severity=${e.severity}; action=${e.action}`,
+    )
+    .join("\n");
+  return `\n## Stack Drift Events\n\n${rows}`;
+}
+
 module.exports = {
   name: "plan",
   ARTIFACT_BY_MODULE,
@@ -75,7 +86,11 @@ module.exports = {
         Object.entries(rec.stack)
           .map(([k, v]) => `${k}=${v}`)
           .join(", "),
+      rec.declaredStack && rec.declaredStack.length
+        ? `\n**Declared stack source**: ${rec.declaredStack.join(", ")}`
+        : "",
       gates.length ? `\n**Human-approval gates before launch**: ${gates.join(", ")}` : "",
+      stackDriftSection(rec.stackDrift),
       `\n## Modules\n`,
       ...plans.map((p) => moduleSection(p.title, p.plan)),
       `\n## Do not overbuild\n\nShortest *safe* path to a paid launch wins. Anything beyond the gaps above is deferred unless a named, evidence-backed need justifies it.`,
@@ -96,7 +111,7 @@ module.exports = {
       ok: true,
       status: "done",
       message: `plan complete — ${artifacts.length} artifact(s)`,
-      data: { profile: rec.profile, stack: rec.stack, gates, modules: plans.map((p) => p.name), artifacts },
+      data: { profile: rec.profile, stack: rec.stack, declared_stack: rec.declaredStack || [], stack_drift: rec.stackDrift || [], gates, modules: plans.map((p) => p.name), artifacts },
     };
   },
 };

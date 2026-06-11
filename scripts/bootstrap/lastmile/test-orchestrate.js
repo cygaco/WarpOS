@@ -24,6 +24,7 @@ const { spawnSync } = require("child_process");
 
 const driver = require("./orchestrate");
 const { detectRepoState } = require("./lib/detect");
+const { recommendStack } = require("./lib/profiles");
 const { scoreReadiness } = require("./lib/score");
 const { validateAdapter } = require("./lib/adapter-contract");
 const { CASES, materialize, getByPath } = require("./fixtures");
@@ -103,6 +104,61 @@ function testFixtures() {
     else fail(`fixture ${c.name}`, misses.join(", "));
     fs.rmSync(dir, { recursive: true, force: true });
   }
+}
+
+function writeDeclaredStack(repo, paymentsChoice) {
+  const dir = path.join(repo, "_requirements", "00-canonical");
+  fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(
+    path.join(dir, "DATA_AND_ACCOUNTS.md"),
+    [
+      "# Acme - Data & Accounts",
+      "",
+      "## Tech Stack",
+      "| Layer | Declared Choice | Rationale |",
+      "| --- | --- | --- |",
+      "| Framework | Next.js | intake |",
+      "| Database | Supabase | intake |",
+      "| Authentication | Clerk | intake |",
+      `| Payments | ${paymentsChoice} | intake |`,
+      "| Hosting | Vercel | intake |",
+      "| Analytics | PostHog | intake |",
+      "",
+    ].join("\n"),
+    "utf8",
+  );
+}
+
+async function testDeclaredStack() {
+  process.stdout.write("\nUNIT - declared Tech Stack prefill + drift\n");
+  const repo = fs.mkdtempSync(path.join(os.tmpdir(), "lastmile-declared-stack-"));
+  fs.writeFileSync(
+    path.join(repo, "package.json"),
+    JSON.stringify({ dependencies: { next: "latest", stripe: "latest" } }, null, 2),
+    "utf8",
+  );
+  writeDeclaredStack(repo, "Paddle");
+  const st = detectRepoState(repo);
+  if (st.declaredStack && st.declaredStack.present && st.declaredStack.values.database === "Supabase")
+    ok("detectRepoState loads declared Tech Stack from canonical DATA_AND_ACCOUNTS");
+  else fail("declared stack detect", JSON.stringify(st.declaredStack));
+
+  const rec = recommendStack(null, st);
+  if (rec.stack.db === "Supabase (declared)" && rec.stack.auth === "Clerk (declared)")
+    ok("recommendStack pre-fills missing providers from declared stack");
+  else fail("declared stack prefill", JSON.stringify(rec.stack));
+  if (rec.stack.payments === "stripe (existing)" && rec.stackDrift.some((e) => e.layer === "payments" && e.detected === "stripe"))
+    ok("recommendStack keeps detected implementation provider and emits stack_drift");
+  else fail("stack drift", JSON.stringify({ stack: rec.stack, drift: rec.stackDrift }));
+
+  const rp = await plan.run(mkctx({ repoRoot: repo, dryRun: false }));
+  const launch = path.join(repo, "_docs", "last-mile", "launch-plan.md");
+  const launchText = fs.existsSync(launch) ? fs.readFileSync(launch, "utf8") : "";
+  if (rp.data && rp.data.stack_drift.length && /Stack Drift Events/.test(launchText) && /stack_drift/.test(launchText))
+    ok("plan: stack_drift is visible in launch-plan artifact and JSON data");
+  else fail("plan stack_drift visibility", JSON.stringify({ data: rp.data && rp.data.stack_drift, launch: launchText.slice(0, 300) }));
+
+  fs.rmSync(repo, { recursive: true, force: true });
 }
 
 // ---------------------------------------------------------- score
@@ -359,6 +415,7 @@ function testMainArgOrder() {
   testDriver();
   await testPreflight();
   testFixtures();
+  await testDeclaredStack();
   testScore();
   testScoredGaps();
   testAdapters();

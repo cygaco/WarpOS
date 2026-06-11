@@ -10,6 +10,7 @@
  * INVOCATION CONTRACT (positional subcommand, like `git commit`):
  *   node scripts/bootstrap/spinup-orchestrate.js [<step>] [--clone <url>]
  *     [--name <n>] [--what <w>] [--who <c>] [--where android|ios|web|desktop-pc|desktop-mac]
+ *     [--framework <f>] [--database <d>] [--auth <a>] [--payments <p>] [--hosting <h>] [--analytics <a>]
  *     [--product <name>] [--intent <file>] [--out <dir>] [--research simple|deep]
  *     [--research-in <file>] [--allow-needs-input <field>]... [--repo-root <dir>]
  *     [--resume] [--json] [--dry-run] [--force]
@@ -50,6 +51,12 @@ function parseArgs(argv) {
     what: null,
     who: null,
     where: null,
+    framework: null,
+    database: null,
+    auth: null,
+    payments: null,
+    hosting: null,
+    analytics: null,
     intent: null,
     clone: null,
     resume: false,
@@ -71,6 +78,12 @@ function parseArgs(argv) {
     else if (a === "--what") out.what = argv[++i];
     else if (a === "--who") out.who = argv[++i];
     else if (a === "--where") out.where = argv[++i];
+    else if (a === "--framework" || a === "--stack-framework") out.framework = argv[++i];
+    else if (a === "--database" || a === "--stack-database") out.database = argv[++i];
+    else if (a === "--auth" || a === "--stack-auth") out.auth = argv[++i];
+    else if (a === "--payments" || a === "--stack-payments") out.payments = argv[++i];
+    else if (a === "--hosting" || a === "--stack-hosting") out.hosting = argv[++i];
+    else if (a === "--analytics" || a === "--stack-analytics") out.analytics = argv[++i];
     else if (a === "--intent") out.intent = argv[++i];
     else if (a === "--clone") out.clone = argv[++i];
     else if (a === "--resume") out.resume = true;
@@ -155,6 +168,20 @@ function buildCtx(args, research, carry) {
     what: args.what,
     who: args.who,
     where: args.where || carry.platform || null,
+    framework: args.framework || (carry.stack && carry.stack.framework) || null,
+    database: args.database || (carry.stack && carry.stack.database) || null,
+    auth: args.auth || (carry.stack && carry.stack.auth) || null,
+    payments: args.payments || (carry.stack && carry.stack.payments) || null,
+    hosting: args.hosting || (carry.stack && carry.stack.hosting) || null,
+    analytics: args.analytics || (carry.stack && carry.stack.analytics) || null,
+    stack: {
+      framework: args.framework || (carry.stack && carry.stack.framework) || "",
+      database: args.database || (carry.stack && carry.stack.database) || "",
+      auth: args.auth || (carry.stack && carry.stack.auth) || "",
+      payments: args.payments || (carry.stack && carry.stack.payments) || "",
+      hosting: args.hosting || (carry.stack && carry.stack.hosting) || "",
+      analytics: args.analytics || (carry.stack && carry.stack.analytics) || "",
+    },
     intentFile: args.intent || carry.intentFile || null,
     cloneTarget: args.clone,
     outDir: args.out,
