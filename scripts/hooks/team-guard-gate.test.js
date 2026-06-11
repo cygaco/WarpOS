@@ -142,10 +142,21 @@ ok("(3) sprint + no team + explore => ALLOW (research)", () => {
   assert.ok(!blocks(stdout), "research one-offs are legitimate");
 });
 
-// (4) into-team dispatch — allowed (this is the desired end state).
-ok("(4) sprint + dispatch WITH team_name => ALLOW (into team)", () => {
-  const { stdout } = runGuard({ mode: "sprint", hardGate: true, agentType: "general-purpose", teamName: "warpos-sprint" });
-  assert.ok(!blocks(stdout), "dispatching a worker INTO the team is the goal");
+// (4) into-team dispatch — allowed (this is the desired end state). AC-1.1
+// (SP-20260611-002): a team_name is honored ONLY when it VERIFIES against a real
+// fresh ε-team config — so the fixture now stands up that backing team. A bare
+// unbacked team_name no longer short-circuits the gate (covered by
+// team-guard-verify.test.js::fabricated-team-name-does-not-bypass-readiness).
+ok("(4) sprint + dispatch WITH verified team_name => ALLOW (into team)", () => {
+  const { stdout } = runGuard({
+    mode: "sprint",
+    hardGate: true,
+    agentType: "general-purpose",
+    teamName: "warpos-sprint",
+    activeTeam: true,
+    teamHasEpsilon: true,
+  });
+  assert.ok(!blocks(stdout), "dispatching a worker INTO a verified ε-team is the goal");
 });
 
 // (5) correct roster live — worker allowed.

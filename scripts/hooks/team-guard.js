@@ -129,6 +129,29 @@ function requiresTeamMode(mode) {
   }
 }
 
+/** EXACT per-member conductor-identity predicate (id or symbol; normalized).
+ *  Shared by every readiness check so a substring spoof (`epsilon-helper`) can
+ *  never false-satisfy a face. */
+function makeIsConductor(conductor) {
+  return (v) => {
+    const s = String(v == null ? "" : v).trim().toLowerCase();
+    return s === conductor.id || s === conductor.symbol;
+  };
+}
+
+/** Does a team config doc carry the conductor face by EXACT member identity? */
+function docCarriesConductor(doc, conductor) {
+  if (!doc || !conductor) return false;
+  const isConductor = makeIsConductor(conductor);
+  return (doc.members || []).some(
+    (mem) =>
+      mem &&
+      (isConductor(mem.agentType) ||
+        isConductor(mem.role) ||
+        isConductor(mem.name)),
+  );
+}
+
 /** Does any FRESH (<24h) active team under ~/.claude/teams carry the given
  *  conductor face? EXACT identity match (id or symbol) — spoof-safe like the
  *  sprint path. FAIL-OPEN to false (caller treats false as "not ready"; for a
@@ -142,30 +165,156 @@ function teamCarriesConductor(conductor) {
       "teams",
     );
     if (!fs.existsSync(teamsRoot)) return false;
-    const isConductor = (v) => {
-      const s = String(v == null ? "" : v).trim().toLowerCase();
-      return s === conductor.id || s === conductor.symbol;
-    };
     for (const d of fs.readdirSync(teamsRoot)) {
       const cfg = path.join(teamsRoot, d, "config.json");
       try {
         const m = fs.statSync(cfg).mtimeMs;
         if ((Date.now() - m) / 3600000 >= 24) continue;
         const doc = JSON.parse(fs.readFileSync(cfg, "utf8"));
-        const has = (doc.members || []).some(
-          (mem) =>
-            mem &&
-            (isConductor(mem.agentType) ||
-              isConductor(mem.role) ||
-              isConductor(mem.name)),
-        );
-        if (has) return true;
+        if (docCarriesConductor(doc, conductor)) return true;
       } catch {
         /* skip this unreadable team dir */
       }
     }
   } catch {
     /* no teams dir / unreadable — not ready */
+  }
+  return false;
+}
+
+// ── S-1 / AC-1.1: VERIFY a passed team_name really exists + is fresh + carries
+//    the conductor, by a REAL config lookup — never trust the bare string. The
+//    `if (hasTeamName || ...) exit(0)` short-circuit was a worker-bypass: ANY
+//    nonempty team_name skipped the readiness gate. Now a team_name is honored
+//    ONLY when a fresh config.json for that exact team name exists AND carries ε
+//    (reuses the same EXACT-match identity as the gate). FAIL-CLOSED to false
+//    (not verified) on any error — a verify failure must NOT open the gate. The
+//    config-mtime freshness window mirrors teamCarriesConductor (24h).
+function namedTeamVerified(teamName, conductor) {
+  if (!conductor) return false;
+  const want = String(teamName == null ? "" : teamName).trim().toLowerCase();
+  if (!want) return false;
+  try {
+    const teamsRoot = path.join(
+      process.env.HOME || process.env.USERPROFILE || "",
+      ".claude",
+      "teams",
+    );
+    if (!fs.existsSync(teamsRoot)) return false;
+    for (const d of fs.readdirSync(teamsRoot)) {
+      const cfg = path.join(teamsRoot, d, "config.json");
+      try {
+        const m = fs.statSync(cfg).mtimeMs;
+        if ((Date.now() - m) / 3600000 >= 24) continue; // stale handle — not live
+        const doc = JSON.parse(fs.readFileSync(cfg, "utf8"));
+        const nm = String((doc.name || doc.team_name || d) || "").trim().toLowerCase();
+        if (nm !== want) continue; // a DIFFERENT real team is not THIS team_name
+        // The named team exists + is fresh: honor it only if it carries ε.
+        return docCarriesConductor(doc, conductor);
+      } catch {
+        /* skip this unreadable team dir */
+      }
+    }
+  } catch {
+    /* no teams dir / unreadable — fail-closed (not verified) */
+  }
+  return false;
+}
+
+// ── S-1 / AC-1.2: does a config-present team carry the conductor, REGARDLESS of
+//    the config-mtime freshness window? This is the corroboration the heartbeat
+//    marker needs: the marker exists precisely to survive the 24h config-mtime
+//    window (a long-idle but real team), so corroboration cannot itself require
+//    freshness — it requires a REAL config-backed team IDENTITY carrying ε to
+//    exist. A bare planted `.team-live-<sid>` marker with NO backing config (the
+//    spoof) finds no such team → not corroborated → does not open the gate.
+//    FAIL-CLOSED to false on any error.
+function configTeamCarriesConductor(conductor) {
+  if (!conductor) return false;
+  try {
+    const teamsRoot = path.join(
+      process.env.HOME || process.env.USERPROFILE || "",
+      ".claude",
+      "teams",
+    );
+    if (!fs.existsSync(teamsRoot)) return false;
+    for (const d of fs.readdirSync(teamsRoot)) {
+      const cfg = path.join(teamsRoot, d, "config.json");
+      try {
+        const doc = JSON.parse(fs.readFileSync(cfg, "utf8"));
+        if (docCarriesConductor(doc, conductor)) return true; // no mtime gate
+      } catch {
+        /* skip this unreadable team dir */
+      }
+    }
+  } catch {
+    /* no teams dir / unreadable — fail-closed */
+  }
+  return false;
+}
+
+// ── S-1 / AC-1.4: LOUD kill-switch attestation. When the team-gate kill-switch
+//    fires (env WARPOS_DISABLE_TEAM_GATE or the .team-gate-off marker), the
+//    bypass must NEVER be silent — emit a paths.eventsFile audit record AND a
+//    stderr attestation line carrying which switch fired + the reason, so a
+//    silenced gate is visible at /scan. Best-effort + fail-open: the attestation
+//    must never itself crash the guard or change its allow/block decision.
+function attestTeamGateKillSwitch(which, projectDir) {
+  const attestation = {
+    guard: "team-guard",
+    bypass: "team-gate-kill-switch",
+    switch: which, // "env:WARPOS_DISABLE_TEAM_GATE" | "marker:.team-gate-off"
+    reason: "operator kill-switch active — readiness gate bypassed",
+    ts: new Date().toISOString(),
+  };
+  try {
+    const { log } = require("./lib/logger");
+    log("audit", { type: "warn", action: "team-gate-kill-switch", ...attestation });
+  } catch {
+    /* logging is best-effort — the stderr line below is the fallback signal */
+  }
+  try {
+    process.stderr.write(
+      `[team-guard] ⚠ KILL-SWITCH BYPASS: the readiness gate was DISABLED via ` +
+        `${which} — ${attestation.reason}. (E-LIFECYCLE-001 AC-1.4)\n`,
+    );
+  } catch {
+    /* stderr unavailable — never throw */
+  }
+}
+
+// ── S-1 / AC-1.3: harness-team cross-check for the mode.json early-exit. A
+//    planted `mode.json {mode:"solo"|"oneshot"}` must NOT disable the Agent gate
+//    when the REAL harness state shows an active multi-agent team. The gate must
+//    not trust mode.json content to decide whether to trust mode.json — so we
+//    cross-check the file against the live team store: a fresh (<24h) team config
+//    carrying ≥2 members is "an active multi-agent team". When one is live, the
+//    file's solo/oneshot claim is treated as UNTRUSTED for the purpose of
+//    disabling the gate (it falls through to the sprint readiness path instead of
+//    short-circuiting). FAIL-OPEN to false (no active team) on any error: a
+//    cross-check fault must never spuriously keep the gate on for a legit solo.
+function activeMultiAgentTeamPresent() {
+  try {
+    const teamsRoot = path.join(
+      process.env.HOME || process.env.USERPROFILE || "",
+      ".claude",
+      "teams",
+    );
+    if (!fs.existsSync(teamsRoot)) return false;
+    for (const d of fs.readdirSync(teamsRoot)) {
+      const cfg = path.join(teamsRoot, d, "config.json");
+      try {
+        const m = fs.statSync(cfg).mtimeMs;
+        if ((Date.now() - m) / 3600000 >= 24) continue; // stale handle — not active
+        const doc = JSON.parse(fs.readFileSync(cfg, "utf8"));
+        const members = Array.isArray(doc.members) ? doc.members : [];
+        if (members.length >= 2) return true; // a real multi-agent team is live
+      } catch {
+        /* skip this unreadable team dir */
+      }
+    }
+  } catch {
+    /* no teams dir / unreadable — no active team */
   }
   return false;
 }
@@ -241,16 +390,47 @@ process.stdin.on("end", () => {
       // Malformed mode.json = fall through to adhoc heartbeat check
     }
 
-    // Oneshot mode: Delta IS the orchestrator and must dispatch the full
-    // build chain. Allow everything. Context-overfill protection is a
-    // prompt-shape concern (JSON envelope constraint in builder prompts),
-    // not a dispatch-permission concern — enforced elsewhere.
-    if (currentMode === "oneshot") {
-      process.exit(0);
-    }
-
-    // Solo mode: explicit opt-out of restrictions.
-    if (currentMode === "solo") {
+    // S-1 / AC-1.3: a solo/oneshot mode.json disables the Agent gate — but the
+    // gate must not trust the file's say-so when the REAL harness state shows an
+    // active multi-agent team. Cross-check ONCE for both disabling modes: if a
+    // fresh multi-member team is live, the planted solo/oneshot claim is
+    // UNTRUSTED — do NOT short-circuit; fall through to the readiness path (and
+    // emit a loud cross-check finding so the spoof is visible at /scan). A
+    // legitimate solo/oneshot (no active multi-agent team) still exits early.
+    const modeDisablesGate =
+      currentMode === "oneshot" || currentMode === "solo";
+    const modeContradictsHarness =
+      modeDisablesGate && activeMultiAgentTeamPresent();
+    if (modeContradictsHarness) {
+      try {
+        const { log } = require("./lib/logger");
+        log("audit", {
+          type: "warn",
+          action: "mode-json-harness-mismatch",
+          guard: "team-guard",
+          mode_claimed: currentMode,
+          harness_state: "active-multi-agent-team",
+          detail:
+            "mode.json claims a gate-disabling mode but a live multi-agent team " +
+            "is present — the file's say-so is NOT trusted to disable the Agent gate",
+        });
+      } catch {
+        /* best-effort attestation */
+      }
+      try {
+        process.stderr.write(
+          `[team-guard] ⚠ mode.json claims "${currentMode}" but a live ` +
+            `multi-agent team is active — NOT disabling the Agent gate on the ` +
+            `file's say-so. (E-LIFECYCLE-001 AC-1.3)\n`,
+        );
+      } catch {
+        /* never throw */
+      }
+      // Fall through (do NOT exit 0): the gate stays active and re-evaluates
+      // via the readiness path below as if the disabling claim were absent.
+    } else if (modeDisablesGate) {
+      // Legitimate solo/oneshot: Delta IS the orchestrator (oneshot) / explicit
+      // opt-out (solo). No contradicting harness state → honor the early exit.
       process.exit(0);
     }
 
@@ -279,9 +459,40 @@ process.stdin.on("end", () => {
       const RESEARCH_TYPES = new Set(["explore", "plan"]);
       const isWorker =
         agentType && !FACE_TYPES.has(agentType) && !RESEARCH_TYPES.has(agentType);
-      if (hasTeamName || !isWorker) {
-        // into-team dispatch, a face (bootstrap), or a legit research one-off
+      // The required CONDUCTOR face (registry-driven; fail-open to ε for sprint).
+      // Resolved BEFORE the short-circuit so team_name verification can reuse it.
+      const conductor = requiredConductor(currentMode) || {
+        id: "epsilon",
+        symbol: "ε",
+      };
+      // AC-1.1: a passed team_name no longer short-circuits the readiness gate on
+      // its bare presence. A fabricated/foreign team_name (no fresh config.json
+      // carrying ε) is NOT honored — only a team_name that VERIFIES (the named
+      // team exists + is fresh + carries the conductor) counts as an into-team
+      // dispatch. A non-worker (face / research one-off) still exits early.
+      const teamNameVerified = hasTeamName && namedTeamVerified(toolInput.team_name, conductor);
+      if (teamNameVerified || !isWorker) {
+        // VERIFIED into-team dispatch, a face (bootstrap), or a research one-off.
         process.exit(0);
+      }
+      if (hasTeamName && !teamNameVerified) {
+        // A worker arrived carrying a team_name that did NOT verify — log the
+        // rejected spoof so the bypass attempt is visible at /scan, then fall
+        // through to the readiness gate (the team_name is treated as absent).
+        try {
+          const { log } = require("./lib/logger");
+          log("audit", {
+            type: "warn",
+            action: "team-name-unverified",
+            guard: "team-guard",
+            team_name: String(toolInput.team_name).slice(0, 80),
+            detail:
+              "worker dispatched with a team_name that does not verify (no fresh " +
+              "config-backed team carrying ε) — not honored as an into-team dispatch",
+          });
+        } catch {
+          /* best-effort attestation */
+        }
       }
       // Is a persistent team active, AND does it carry ε (the sprint conductor /
       // quality-gate)? The persistent SPRINT team is the named company faces α+ε+β
@@ -314,37 +525,16 @@ process.stdin.on("end", () => {
         /* no teams dir — treat as no active team */
       }
       const teamActive = !!activeCfg;
-      // S-LC-04: the required CONDUCTOR face is now REGISTRY-DRIVEN (resolved from
-      // mode-lifecycle.json via lib/mode-lifecycle → faces(mode)[0]), NOT a
-      // hardcoded "epsilon" literal. For sprint the registry/FALLBACK yields ε, so
-      // this is BEHAVIOR-IDENTICAL to the prior hardcoded check (golden-preserved);
-      // a registry that names a different sprint conductor re-points the gate with
-      // no code change. FAIL-OPEN: requiredConductor() falls back to ε for sprint
-      // if the reader is unavailable, so a read failure can never widen the gate.
-      const conductor = requiredConductor(currentMode) || {
-        id: "epsilon",
-        symbol: "ε",
-      };
+      // S-LC-04: `conductor` is resolved above (registry-driven, fail-open to ε).
+      // EXACT role/type/name match via docCarriesConductor — never a substring
+      // (cross-provider review 2026-06-08 HIGH: `/epsilon/` matched a spoof worker
+      // `epsilon-helper`). A member counts as the conductor only if a normalized
+      // identity field EQUALS the registry conductor id or its symbol.
       let teamHasEpsilon = false;
       if (activeCfg) {
         try {
           const doc = JSON.parse(fs.readFileSync(activeCfg, "utf8"));
-          // EXACT role/type/name match, not a substring (cross-provider review
-          // 2026-06-08 HIGH: `/epsilon/` matched a spoof worker `epsilon-helper`;
-          // also check mem.role, the schema's real authority). A member counts as
-          // the conductor only if a normalized identity field EQUALS the registry
-          // conductor id or its symbol.
-          const isConductor = (v) => {
-            const s = String(v == null ? "" : v).trim().toLowerCase();
-            return s === conductor.id || s === conductor.symbol;
-          };
-          teamHasEpsilon = (doc.members || []).some(
-            (mem) =>
-              mem &&
-              (isConductor(mem.agentType) ||
-                isConductor(mem.role) ||
-                isConductor(mem.name)),
-          );
+          teamHasEpsilon = docCarriesConductor(doc, conductor);
         } catch {
           /* malformed config — treat the conductor as absent */
         }
@@ -367,14 +557,34 @@ process.stdin.on("end", () => {
       // The old WARPOS_TEAM_GATE_HARD / .team-gate-hard opt-IN is retained as a
       // belt-and-suspenders force-on, but absence no longer disables the gate.
       const hardGate = process.env.WARPOS_TEAM_GATE_SOFT !== "1";
-      const killSwitch =
-        process.env.WARPOS_DISABLE_TEAM_GATE === "1" ||
-        fs.existsSync(
-          path.join(projectDir, ".claude", "runtime", ".team-gate-off"),
+      // AC-1.4: resolve WHICH kill-switch fired (for the loud attestation) — not
+      // just a boolean. A bypass must never be silent.
+      const killSwitchEnv = process.env.WARPOS_DISABLE_TEAM_GATE === "1";
+      const killSwitchMarker = fs.existsSync(
+        path.join(projectDir, ".claude", "runtime", ".team-gate-off"),
+      );
+      const killSwitch = killSwitchEnv || killSwitchMarker;
+      // AC-1.2: the sid-keyed `.team-live-<sid>` heartbeat marker is a
+      // freshness-SUPPLEMENT, not a standalone liveness grant. A planted marker
+      // (content-free, operator-unauthenticated) must NOT flip teamLive on
+      // presence alone — it is honored ONLY when corroborated by a config-verified
+      // team IDENTITY: a real config-backed team carrying ε exists. Crucially the
+      // corroboration is STALE-TOLERANT (configTeamCarriesConductor ignores the
+      // 24h mtime window) — that window is exactly what the marker exists to
+      // bypass for a long-idle but real team. A bare planted marker with NO
+      // backing config finds no such identity → not corroborated → gate stays on.
+      const heartbeatCorroborated =
+        configTeamCarriesConductor(conductor) && teamHeartbeatFresh(projectDir);
+      const teamLive = teamReady || heartbeatCorroborated;
+      // AC-1.4: a kill-switch bypass emits a LOUD attestation (event + stderr)
+      // BEFORE the gate is skipped — fired only on the path where the kill-switch
+      // actually causes a bypass (the gate would otherwise have evaluated).
+      if (hardGate && killSwitch && !teamLive) {
+        attestTeamGateKillSwitch(
+          killSwitchEnv ? "env:WARPOS_DISABLE_TEAM_GATE" : "marker:.team-gate-off",
+          projectDir,
         );
-      // Liveness = the correct team is ready by config (fresh + ε) OR a sid-keyed
-      // heartbeat confirms it up independent of the 24h config-mtime window.
-      const teamLive = teamReady || teamHeartbeatFresh(projectDir);
+      }
       if (hardGate && !killSwitch && !teamLive) {
         const why = !teamActive
           ? "no active persistent team"
@@ -435,7 +645,10 @@ process.stdin.on("end", () => {
     // Directory existence alone is insufficient — it persists after crashes.
     // smart-context.js writes heartbeat.json with the current session ID.
     // If the session ID doesn't match, this is a stale team from a crash.
-    let inAdhocMode = currentMode === "adhoc";
+    // AC-1.3: a contradicted disabling-mode (planted solo/oneshot + a live
+    // multi-agent team) forces the gate ACTIVE — the planted file must not let a
+    // build-chain worker through, so we treat it like an active team session.
+    let inAdhocMode = currentMode === "adhoc" || modeContradictsHarness;
     if (!inAdhocMode) {
       const adhocDir = path.join(
         process.env.HOME || process.env.USERPROFILE || "",

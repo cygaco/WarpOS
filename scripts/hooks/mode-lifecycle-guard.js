@@ -125,6 +125,42 @@ function safeExists(p) {
   }
 }
 
+// AC-2.4 (SP-20260611-002): when the mode-guard no-ops on a DELIBERATE kill-switch
+// (env WARPOS_DISABLE_MODE_GUARD or the .mode-guard-off marker), the suppression
+// must NOT be silent (#6, the same silent-suppression class as the team-gate #5).
+// Emit a loud audit record (event + stderr attestation) so a silenced mode-guard
+// is visible at /scan. Bootstrap reasons (initial setup / no-manifest) are routine
+// greenfield behavior, NOT a suppression — they stay quiet (no noise). Best-effort
+// + fail-open: the attestation must never crash the guard or change its no-op.
+function attestModeGuardKillSwitch(reason, target) {
+  // Only the deliberate operator kill-switches are loud; bootstrap is routine.
+  if (reason !== "env" && reason !== "marker") return;
+  const which =
+    reason === "env" ? "env:WARPOS_DISABLE_MODE_GUARD" : "marker:.mode-guard-off";
+  const attestation = {
+    guard: "mode-lifecycle-guard",
+    bypass: "mode-guard-kill-switch",
+    switch: which,
+    target_mode: target || null,
+    reason: "operator kill-switch active — mode-guard preflight/emit suppressed",
+    ts: new Date().toISOString(),
+  };
+  try {
+    const { log } = require("./lib/logger");
+    log("audit", { type: "warn", action: "mode-guard-kill-switch", ...attestation });
+  } catch {
+    /* logging is best-effort — the stderr line below is the fallback signal */
+  }
+  try {
+    process.stderr.write(
+      `[mode-lifecycle-guard] ⚠ KILL-SWITCH BYPASS: the mode-guard was DISABLED ` +
+        `via ${which} — ${attestation.reason}. (E-LIFECYCLE-001 AC-2.4)\n`,
+    );
+  } catch {
+    /* stderr unavailable — never throw */
+  }
+}
+
 // ── current (prev) mode resolution ───────────────────────────────────────────
 function resolvePrevMode(projectDir) {
   // Prefer the shared reader; fall back to a direct mode.json read; default solo.
@@ -306,9 +342,20 @@ function run(event, opts) {
   const target = typeof o.target === "string" ? o.target : extractModeTarget(event);
   if (!target) return { action: "noop", decision: null };
 
-  // 2. Kill-switch / bootstrap allow-list — no-op (emit nothing).
+  // 2. Kill-switch / bootstrap allow-list — no-op (emit no lifecycle events).
+  //    AC-2.4: a DELIBERATE kill-switch (env/marker) no-op is attested LOUDLY so
+  //    the silent-suppression class (#6) is closed; bootstrap stays quiet.
   const kr = o.forceKill || killReason(projectDir, env);
-  if (kr) return { action: "killed", decision: null, reason: kr };
+  if (kr) {
+    const attest =
+      typeof o.attest === "function" ? o.attest : attestModeGuardKillSwitch;
+    try {
+      attest(kr, target);
+    } catch {
+      /* attestation is best-effort — never disturb the no-op */
+    }
+    return { action: "killed", decision: null, reason: kr };
+  }
 
   // 3. Gather labels (each resolver is independently fail-open).
   const slug = o.slug != null ? o.slug : resolveSlug();
@@ -412,6 +459,7 @@ module.exports = {
   run,
   extractModeTarget,
   killReason,
+  attestModeGuardKillSwitch,
   findActiveTeamForProject,
   resolvePrevMode,
   gitLabels,

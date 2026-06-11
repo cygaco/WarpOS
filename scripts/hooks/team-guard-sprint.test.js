@@ -102,9 +102,18 @@ ok("PLANTED: sprint + 2nd one-off worker + no team => advisory FIRES (non-blocki
   assert.ok(!blocks(stdout), "advisory must NEVER block");
 });
 
-ok("sprint + team_name present => NO advisory (flowing through a team)", () => {
-  const { stdout } = runGuard({ mode: "sprint", seedCount: 5, teamName: "warpos-sprint" });
-  assert.ok(!fires(stdout), "should not advise when dispatching into a team");
+ok("sprint + verified team_name present => NO advisory (flowing through a team)", () => {
+  // AC-1.1 (SP-20260611-002): a team_name suppresses the advisory ONLY when it
+  // VERIFIES against a real fresh ε-team — so the fixture stands one up. A bare
+  // unbacked team_name no longer short-circuits (covered by team-guard-verify).
+  const { stdout } = runGuard({
+    mode: "sprint",
+    seedCount: 5,
+    teamName: "warpos-sprint",
+    activeTeam: true,
+    teamHasEpsilon: true,
+  });
+  assert.ok(!fires(stdout), "should not advise when dispatching into a verified ε-team");
 });
 
 ok("sprint + research one-off (Explore) => NO advisory", () => {
