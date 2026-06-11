@@ -106,6 +106,22 @@ function matchWriteJsonl(toolName, ti) {
   return null;
 }
 
+function containsNodeEDestructiveFs(cmd) {
+  const norm = String(cmd || "").replace(/\\(['"])/g, "$1");
+  const destructive = "(?:rmSync|unlinkSync|rmdirSync)";
+  const fsRequire = "require\\s*\\(\\s*['\"](?:fs|node:fs)['\"]\\s*\\)";
+  const fsMember = new RegExp(`\\bfs\\s*(?:\\.\\s*${destructive}\\b|\\[\\s*['"]${destructive}['"]\\s*\\])`);
+  const directCall = new RegExp(`(?:^|[^\\w$])${destructive}\\s*\\(`);
+  const destructuredFs = new RegExp(`\\{[^}]*\\b${destructive}\\b[^}]*\\}\\s*=\\s*${fsRequire}`);
+  const requireFsMember = new RegExp(`${fsRequire}\\s*(?:\\.\\s*${destructive}\\b|\\[\\s*['"]${destructive}['"]\\s*\\])`);
+  return (
+    fsMember.test(norm) ||
+    directCall.test(norm) ||
+    destructuredFs.test(norm) ||
+    requireFsMember.test(norm)
+  );
+}
+
 function matchNodeEFs(toolName, ti) {
   if (toolName !== "Bash") return null;
   const cmd = String(ti.command || "");
@@ -118,14 +134,14 @@ function matchNodeEFs(toolName, ti) {
   // is the gate side of that contract.
   //
   // ALL-OR-NOTHING (gauntlet finding 3 — AC-4.1 extension): if the node -e body
-  // contains ANY rmSync / unlinkSync / rmdirSync call — even alongside an allowed
-  // write/append/mkdir — the ENTIRE command is NOT approvable. A co-present delete
-  // call POISONS the command; it falls through to pass-through / downstream guards.
-  // This closes the bypass where fs.writeFileSync(...); fs.rmSync(variable) was
-  // approved because the write regex fired first and the variable-form delete target
-  // could not be extracted by extractDeleteTargets (so the tracked-delete floor
-  // AC-4.2 also missed it).
-  if (/fs\.(rmSync|unlinkSync|rmdirSync)\b/.test(cmd)) {
+  // contains ANY rmSync / unlinkSync / rmdirSync surface — even via bracket access,
+  // direct identifier calls, or destructured require("fs") aliases — the ENTIRE
+  // command is NOT approvable. A co-present delete poisons the command; it falls
+  // through to pass-through / downstream guards. This closes the same-class bypass
+  // where fs.writeFileSync(...); { rmSync } = require("fs"); rmSync(variable) was
+  // approved because the write regex fired and the variable-form delete target could
+  // not be extracted by extractDeleteTargets.
+  if (containsNodeEDestructiveFs(cmd)) {
     return null; // delete call present — poisoned, not auto-approvable
   }
   if (/fs\.(writeFileSync|appendFileSync|mkdirSync)\b/.test(cmd)) {

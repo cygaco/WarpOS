@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-11T19:17:33.860Z",
+  "generatedAt": "2026-06-11T20:36:24.093Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.15.4",
   "migrations": [],
@@ -1860,8 +1860,8 @@
       "owner": "framework",
       "managed": true,
       "source": null,
-      "sha256": "0db74fbc3e7c45533a766bfb185ecfa22c1745687beafc206b58781f00fc7d1a",
-      "installedSha": "0db74fbc3e7c45533a766bfb185ecfa22c1745687beafc206b58781f00fc7d1a"
+      "sha256": "f3f99ed66c5f1152679a706e22c6558422374833e3bc43b022f0d682592ec59b",
+      "installedSha": "f3f99ed66c5f1152679a706e22c6558422374833e3bc43b022f0d682592ec59b"
     },
     "tests/regression/SP-20260611-002/auth-floor-tracked-delete.test.js": {
       "owner": "framework",
@@ -1874,8 +1874,8 @@
       "owner": "framework",
       "managed": true,
       "source": null,
-      "sha256": "97ef0264daec18a6510a3434df325345e66af3e205354ac737b75efe9a63b684",
-      "installedSha": "97ef0264daec18a6510a3434df325345e66af3e205354ac737b75efe9a63b684"
+      "sha256": "28f2a84e46dcc62d968783bd87b7d2391dbac67658080e383f56dccbc3a8eb21",
+      "installedSha": "28f2a84e46dcc62d968783bd87b7d2391dbac67658080e383f56dccbc3a8eb21"
     },
     "tests/regression/SP-20260611-002/coverage-gate-scan-source.test.js": {
       "owner": "framework",
@@ -4933,8 +4933,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/authorization-gate.js",
-      "sha256": "24eb715d935dd386abd887e77aa2c349e30c7e6defddeef449b260ffcc6c98cc",
-      "installedSha": "24eb715d935dd386abd887e77aa2c349e30c7e6defddeef449b260ffcc6c98cc"
+      "sha256": "bfff9c27200949df3c8d0ea73d7c95c21681a8572368e62b104b7204e33c1896",
+      "installedSha": "bfff9c27200949df3c8d0ea73d7c95c21681a8572368e62b104b7204e33c1896"
     },
     "scripts/hooks/beta-gate.js": {
       "owner": "framework",
@@ -6109,8 +6109,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/coverage-gate-scan.js",
-      "sha256": "b094e190db3997f2ccd12c65a424b8d5f12421ba2ae455d1c222024366ec4192",
-      "installedSha": "b094e190db3997f2ccd12c65a424b8d5f12421ba2ae455d1c222024366ec4192"
+      "sha256": "18fd09815120ab2227ba29a3d8fe07ebd5863bb91571ade726cbca7c1dc96a71",
+      "installedSha": "18fd09815120ab2227ba29a3d8fe07ebd5863bb91571ade726cbca7c1dc96a71"
     },
     "scripts/checks/cutover-completeness.allowlist.json": {
       "owner": "framework",
@@ -18828,8 +18828,8 @@
       "managed": true,
       "source": ".claude/commands/scan/full.md",
       "kind": "md",
-      "sha256": "8fcd4813cb83c34e85bcaa1fc9ca80a9e090bb56697b059f36ba470c3605c3e6",
-      "installedSha": "8fcd4813cb83c34e85bcaa1fc9ca80a9e090bb56697b059f36ba470c3605c3e6"
+      "sha256": "ab94421ff38e58e76da67cccc2e94637a3e1e1e240ceebab2a5422d833ec2642",
+      "installedSha": "ab94421ff38e58e76da67cccc2e94637a3e1e1e240ceebab2a5422d833ec2642"
     },
     ".claude/commands/scan/ingest-firewall.md": {
       "owner": "framework",

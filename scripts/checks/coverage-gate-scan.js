@@ -79,6 +79,81 @@ function resolveExpected(expectedSource, runId, runRecs) {
   return [...byRole.values()];
 }
 
+const CANONICAL_STEPS = Object.freeze(["plan", "design", "build", "gauntlet", "release", "retro"]);
+
+let _runtimeDeps = null;
+function runtimeDeps() {
+  if (_runtimeDeps) return _runtimeDeps;
+  _runtimeDeps = {
+    hookPoints: require("../sprint/hook-points"),
+    sprintPaths: require("../sprint/paths"),
+    sprintFs: require("../sprint/fs"),
+  };
+  return _runtimeDeps;
+}
+
+function stepsForPhaseId(phaseId, registry) {
+  const phase = String(phaseId || "").trim();
+  if (!phase) return [];
+  if (CANONICAL_STEPS.includes(phase)) return [phase];
+  const phaseMap = registry && registry.phase_map && typeof registry.phase_map === "object"
+    ? registry.phase_map
+    : {};
+  const out = [];
+  for (const [step, mappedPhase] of Object.entries(phaseMap)) {
+    if (String(mappedPhase) === phase && CANONICAL_STEPS.includes(step)) out.push(step);
+  }
+  return out;
+}
+
+function compositionForSprintId(sprintId, opts = {}) {
+  const deps = opts.deps || runtimeDeps();
+  const ticketsDir = opts.ticketsDir || deps.sprintPaths.tickets;
+  const tickets = [];
+  for (const f of fs.readdirSync(ticketsDir)) {
+    if (!/\.(ya?ml|json)$/.test(f)) continue;
+    const t = deps.sprintFs.readYamlMaybe(path.join(ticketsDir, f));
+    if (t && t.sprint === sprintId) tickets.push(t);
+  }
+  return deps.hookPoints.compositionFromTickets(tickets);
+}
+
+function runtimeExpectedForRun(_runId, runRecs, opts = {}) {
+  const recs = Array.isArray(runRecs) ? runRecs.filter(Boolean) : [];
+  const sprintIds = new Set();
+  const phases = new Set();
+  for (const r of recs) {
+    if (r.sprint_id) sprintIds.add(String(r.sprint_id));
+    if (r.phase_id) phases.add(String(r.phase_id));
+    if (r.step) phases.add(String(r.step));
+  }
+  if (!sprintIds.size && process.env.WARPOS_SPRINT_ID) sprintIds.add(process.env.WARPOS_SPRINT_ID);
+  if (!phases.size && process.env.WARPOS_PHASE_ID) phases.add(process.env.WARPOS_PHASE_ID);
+  if (!sprintIds.size || !phases.size) return [];
+
+  const deps = opts.deps || runtimeDeps();
+  const registry = opts.registry || deps.hookPoints.load();
+  const byRole = new Map();
+  for (const sprintId of sprintIds) {
+    const composition = compositionForSprintId(sprintId, { ...opts, deps });
+    for (const phase of phases) {
+      for (const step of stepsForPhaseId(phase, registry)) {
+        const rows = deps.hookPoints.agentsForStep(step, composition, registry);
+        for (const row of rows) {
+          if (!row || !row.role) continue;
+          if (row.mode !== "block" && !opts.includeAdvisory) continue;
+          byRole.set(row.role, { role: row.role });
+        }
+      }
+    }
+  }
+  return [...byRole.values()];
+}
+
+function defaultRuntimeExpectedSource(opts = {}) {
+  return (runId, runRecs) => runtimeExpectedForRun(runId, runRecs, opts);
+}
+
 /**
  * Audit a ledger's records run-by-run. Pure given `records`. Returns
  *   { runs: [{ runId, ok, violations[], covered[], missing[], waived[], legacyExempt }],
@@ -174,11 +249,12 @@ function main() {
   }
 
   // AC-5.3 (LIVE PATH) — resolve expectedSource from the external registry /
-  // sprint-composition file supplied via --expected-source <path>. Without this,
-  // the audit self-derives expected from the ledger's own ok:true records, so a
-  // role that produced NO record is never expected and its omission reads clean
-  // (the "omitted-role slip"). An external source breaks the self-reference: roles
-  // named there but absent from the ledger are gaps even in production /scan.
+  // sprint-composition file. If --expected-source <path> is supplied, that file is
+  // authoritative. Otherwise production /scan derives expected roles from the
+  // ledger's sprint_id + phase_id/step fields through the sprint hook-point registry
+  // and ticket composition. Without that default, the audit self-derives expected
+  // from the ledger's own ok:true records, so a role that produced NO record is
+  // never expected and its omission reads clean (the "omitted-role slip").
   //
   // Format of the JSON file (same shape as the `expectedSource` the pure seam takes):
   //   ["role1", "role2"]                  — applies to ALL runs as a universal set
@@ -200,6 +276,8 @@ function main() {
       );
       // liveExpectedSource stays null → self-derive fallback
     }
+  } else {
+    liveExpectedSource = defaultRuntimeExpectedSource();
   }
 
   let audit;
@@ -292,4 +370,13 @@ function surfaceWaivers(allWaived) {
 
 if (require.main === module) process.exit(main());
 
-module.exports = { auditLedger, resolveExpected, surfaceWaivers, LEGACY_CUTOFF };
+module.exports = {
+  auditLedger,
+  resolveExpected,
+  runtimeExpectedForRun,
+  defaultRuntimeExpectedSource,
+  stepsForPhaseId,
+  compositionForSprintId,
+  surfaceWaivers,
+  LEGACY_CUTOFF,
+};

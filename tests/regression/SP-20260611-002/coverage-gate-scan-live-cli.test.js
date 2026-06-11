@@ -43,7 +43,7 @@ const RUN_ID = "run-live-cli-exploit-g3a";
 const TS_POST = "2026-06-11T14:00:00Z";
 
 // A realistic BACKED dispatch-completions record (same shape as the source-suite uses).
-function makeRecord(role, provider) {
+function makeRecord(role, provider, over = {}) {
   return JSON.stringify({
     dispatch_id: `d-${role}-live`,
     cmdline_checksum: "sha256:deadbeef00001",
@@ -54,6 +54,7 @@ function makeRecord(role, provider) {
     argv_schema_version: ARGV_SCHEMA_VERSION,
     output_digest: "sha256:feedface00000000000000000001",
     ts: TS_POST,
+    ...over,
   });
 }
 
@@ -61,15 +62,42 @@ function makeRecord(role, provider) {
  * Run the REAL CLI via spawnSync. Returns { status, out, raw, stderr }.
  * `out` is the parsed JSON (or null if parse fails).
  */
-function runCLI(ledgerPath, extraArgs = []) {
+function runCLI(ledgerPath, extraArgs = [], extraEnv = {}) {
   const r = spawnSync(
     process.execPath,
     [CLI, "--json", "--ledger", ledgerPath, ...extraArgs],
-    { cwd: ROOT, encoding: "utf8" },
+    { cwd: ROOT, encoding: "utf8", env: { ...process.env, ...extraEnv } },
   );
   let out = null;
   try { out = r.stdout ? JSON.parse(r.stdout) : null; } catch { /* raw below */ }
   return { status: r.status, out, raw: r.stdout || "", stderr: r.stderr || "" };
+}
+
+function makeSealedSprintProject() {
+  const project = fs.mkdtempSync(path.join(os.tmpdir(), "warpos-livecli-prod-"));
+  fs.mkdirSync(path.join(project, ".claude", "agents", "_org"), { recursive: true });
+  fs.mkdirSync(path.join(project, ".claude", "project", "sprint", "tickets"), { recursive: true });
+  fs.writeFileSync(
+    path.join(project, ".claude", "agents", "_org", "sprint-hook-points.json"),
+    JSON.stringify({
+      schema: "warpos/sprint-hook-points/test",
+      lifecycle: ["plan", "design", "build", "gauntlet", "release", "retro"],
+      phase_map: { plan: "plan", design: "design", build: "execute", gauntlet: "execute", release: "release-prep", retro: "retro" },
+      rows: [
+        { role: "backend-builder", step: "build", condition: { unit_type: ["backend"] }, mode: "block", order: 10 },
+        { role: "backend-reviewer", step: "gauntlet", condition: { unit_type: ["backend"] }, mode: "block", order: 20 },
+        { role: "qa-reviewer", step: "gauntlet", condition: "always", mode: "block", order: 30 },
+        { role: "security-reviewer", step: "gauntlet", condition: "always", mode: "block", order: 40 },
+      ],
+    }),
+    "utf8",
+  );
+  fs.writeFileSync(
+    path.join(project, ".claude", "project", "sprint", "tickets", "T-FIX2.json"),
+    JSON.stringify({ id: "T-FIX2", sprint: "SP-FIX2", unit_type: "backend", risk_level: "high" }),
+    "utf8",
+  );
+  return project;
 }
 
 // ── Set up temp fixture files ────────────────────────────────────────────────
@@ -135,6 +163,61 @@ h.test("LIVE CLI gap output explicitly names security-reviewer as the missing ro
     /security-reviewer/.test(violationText),
     `Expected the violation to name security-reviewer; got runs:\n${violationText}`,
   );
+});
+
+// PRODUCTION SHAPE (FIX2): no manual --expected-source flag. The scanner must
+// derive expected roles from sprint_id + phase_id in the ledger and the sealed
+// sprint hook registry/tickets under CLAUDE_PROJECT_DIR. This is the exact gap the
+// re-review caught: /scan:full invoked coverage-gate-scan.js with no flag.
+h.test("FIX2 production /scan shape with no --expected-source still catches omitted hook-point roles", () => {
+  const project = makeSealedSprintProject();
+  const prodDir = fs.mkdtempSync(path.join(os.tmpdir(), "warpos-livecli-prod-ledger-"));
+  const ledger = path.join(prodDir, "prod.jsonl");
+  fs.writeFileSync(
+    ledger,
+    makeRecord("backend-builder", "claude", {
+      run_id: "run-prod-default-g3a",
+      sprint_id: "SP-FIX2",
+      phase_id: "execute",
+      dispatch_id: "d-backend-builder-prod",
+    }) + "\n",
+    "utf8",
+  );
+  try {
+    const r = runCLI(ledger, [], { CLAUDE_PROJECT_DIR: project });
+    assert.ok(r.out !== null, `CLI produced non-JSON:\n${r.raw}\n${r.stderr}`);
+    assert.strictEqual(r.out.ok, false, `expected production default source to report gaps:\n${JSON.stringify(r.out, null, 2)}`);
+    const text = JSON.stringify(r.out.runs || []);
+    assert.ok(/backend-reviewer/.test(text), `expected missing backend-reviewer in production default gaps:\n${text}`);
+    assert.ok(/security-reviewer/.test(text), `expected missing security-reviewer in production default gaps:\n${text}`);
+  } finally {
+    fs.rmSync(project, { recursive: true, force: true });
+    fs.rmSync(prodDir, { recursive: true, force: true });
+  }
+});
+
+h.pass("FIX2 production /scan shape with no --expected-source reports no gap when all block roles have records", () => {
+  const project = makeSealedSprintProject();
+  const prodDir = fs.mkdtempSync(path.join(os.tmpdir(), "warpos-livecli-prod-clean-"));
+  const ledger = path.join(prodDir, "prod-clean.jsonl");
+  const base = { run_id: "run-prod-clean-g3a", sprint_id: "SP-FIX2", phase_id: "execute" };
+  fs.writeFileSync(
+    ledger,
+    [
+      makeRecord("backend-builder", "claude", { ...base, dispatch_id: "d-backend-builder-clean" }),
+      makeRecord("backend-reviewer", "openai", { ...base, dispatch_id: "d-backend-reviewer-clean" }),
+      makeRecord("qa-reviewer", "openai", { ...base, dispatch_id: "d-qa-reviewer-clean" }),
+      makeRecord("security-reviewer", "openai", { ...base, dispatch_id: "d-security-reviewer-clean" }),
+    ].join("\n") + "\n",
+    "utf8",
+  );
+  try {
+    const r = runCLI(ledger, [], { CLAUDE_PROJECT_DIR: project });
+    return r.out || { ok: false };
+  } finally {
+    fs.rmSync(project, { recursive: true, force: true });
+    fs.rmSync(prodDir, { recursive: true, force: true });
+  }
 });
 
 // No false positive: when the ledger has records for BOTH roles, the live CLI

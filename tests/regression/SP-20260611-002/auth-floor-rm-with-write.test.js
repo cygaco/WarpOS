@@ -145,6 +145,60 @@ ok("Poison variant: append+rmSync(variable) is also NOT approvable", () => {
   );
 });
 
+ok("FIX2 same-class: destructured rmSync(variable) with a write is also NOT approvable", () => {
+  const cmd = `node -e "const fs=require('fs'); const { rmSync } = require('fs'); fs.writeFileSync('out.js','x'); rmSync(targetVar)"`;
+  assert.strictEqual(
+    gate.matchNodeEFs("Bash", bash(cmd)),
+    null,
+    "destructured rmSync with a co-present write must poison node-e-fs",
+  );
+});
+
+ok("FIX2 same-class: renamed destructured rmSync alias with a write is also NOT approvable", () => {
+  const cmd = `node -e "const fs=require('fs'); const { rmSync: remove } = require('fs'); fs.writeFileSync('out.js','x'); remove(targetVar)"`;
+  assert.strictEqual(
+    gate.matchNodeEFs("Bash", bash(cmd)),
+    null,
+    "a renamed destructive fs import must poison node-e-fs even when the call uses the alias",
+  );
+});
+
+ok("FIX2 same-class: bracket fs['unlinkSync'] with a write is also NOT approvable", () => {
+  const cmd = `node -e "fs.writeFileSync('a.js','b'); fs['unlinkSync'](pathVar)"`;
+  assert.strictEqual(
+    gate.matchNodeEFs("Bash", bash(cmd)),
+    null,
+    "bracket access to destructive fs methods must poison node-e-fs",
+  );
+});
+
+ok("FIX2 same-class: require('fs').rmSync assigned to an alias with a write is also NOT approvable", () => {
+  const cmd = `node -e "const fs=require('fs'); const remove=require('fs').rmSync; fs.writeFileSync('out.js','x'); remove(targetVar)"`;
+  assert.strictEqual(
+    gate.matchNodeEFs("Bash", bash(cmd)),
+    null,
+    "require-bound destructive fs aliases must poison node-e-fs",
+  );
+});
+
+ok("FIX2 same-class: require('fs')['unlinkSync'] assigned to an alias with a write is also NOT approvable", () => {
+  const cmd = `node -e "const fs=require('fs'); const unlink=require('fs')['unlinkSync']; fs.writeFileSync('out.js','x'); unlink(pathVar)"`;
+  assert.strictEqual(
+    gate.matchNodeEFs("Bash", bash(cmd)),
+    null,
+    "bracket require-bound destructive fs aliases must poison node-e-fs",
+  );
+});
+
+ok("FIX2 same-class: destructured node:fs rmSync alias with a write is also NOT approvable", () => {
+  const cmd = `node -e "const fs=require('fs'); const { rmSync: remove } = require('node:fs'); fs.writeFileSync('out.js','x'); remove(targetVar)"`;
+  assert.strictEqual(
+    gate.matchNodeEFs("Bash", bash(cmd)),
+    null,
+    "node:fs destructive aliases must poison node-e-fs",
+  );
+});
+
 // ── No-over-block: pure write/append/mkdir are still approved ─────────────────
 ok("No-over-block: writeFileSync-only node -e is still approvable", () => {
   const m = gate.matchNodeEFs("Bash", bash(`node -e "fs.writeFileSync('out.js','x')"`));
