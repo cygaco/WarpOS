@@ -266,14 +266,20 @@ function verdictFor(provider, signals, config, opts = {}) {
   let verdict;
   if (tierRank(eff.tier) >= tierRank(selected)) {
     verdict = "tier_met";
-  } else if (signals.t1Met && tierRank(selected) >= tierRank("t3") && !eff.t3Judged) {
-    // unknown-self-attested is RESERVED for the genuinely-undetectable case: T1 (and
-    // the value-free funded signal) ARE detectable and only the T3 sub-floor needs a
-    // self-attestation/probe nobody provided → we cannot know → fail-open (never
-    // block). It is NOT used when T1 is DETECTABLY down — a down provider is a
-    // confident, value-free-detectable shortfall (AC-6.1 / AC-6.4 / #15). Gating on
-    // signals.t1Met is what keeps the `!t1Met` t3-selected case out of this branch
-    // and in `tier_short` below.
+  } else if (
+    signals.t1Met &&
+    !!(signals.keyCheck.present || signals.oauthFunded) && // T2 funded — value-free detectable
+    tierRank(selected) >= tierRank("t3") &&
+    !eff.t3Judged
+  ) {
+    // unknown-self-attested is RESERVED for the genuinely-undetectable case: BOTH T1
+    // AND T2 (the value-free funded signal) ARE confirmed, and ONLY the T3 sub-floor
+    // still needs a self-attestation/probe that nobody provided → we cannot know →
+    // fail-open (never block). T1 DOWN or T2 UNFUNDED are BOTH value-free-detectable
+    // shortfalls → they route to tier_short below (AC-6.1, finding 6). Gating on
+    // BOTH signals.t1Met AND t2_funded ensures neither detectably-short case leaks
+    // into the unknown branch. (Finding 6 — gauntlet attempt-1: before this fix, a
+    // T2-unfunded t3-selected cell produced unknown-self-attested+ok:true.)
     verdict = "unknown-self-attested";
   } else {
     // Confident, value-free-detectable shortfall — incl. T1 down for any selected

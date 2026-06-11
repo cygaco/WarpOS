@@ -134,11 +134,22 @@ function readConfig(opts = {}) {
   }
   const file = opts.configPath || configPath();
   let raw;
+  let readErr;
   try {
     raw = fs.readFileSync(file, "utf8");
-  } catch {
-    // ABSENT (greenfield): no instance file → framework defaults, NOT corrupt.
-    return { config: FRAMEWORK_DEFAULTS(), source: "framework-default", corrupt: false, path: file };
+  } catch (e) {
+    readErr = e;
+  }
+  if (readErr) {
+    // TRUE ABSENCE (ENOENT only) → greenfield; framework defaults are authoritative,
+    // corrupt:false. ALL OTHER read failures (EISDIR — a directory sits at the path,
+    // EACCES — permission denied, EPERM, etc.) mean the path EXISTS or is blocked for
+    // a non-absence reason → corrupt:true → fail-closed hold. Only ENOENT is genuine
+    // absence; any other error code must NOT silently degrade to the framework-default
+    // t1 green (the false-green of #16, finding 7 — gauntlet attempt-1: before this
+    // fix, EISDIR returned corrupt:false and the fail-closed hold never applied).
+    const isAbsent = readErr.code === "ENOENT";
+    return { config: FRAMEWORK_DEFAULTS(), source: "framework-default", corrupt: !isAbsent, path: file };
   }
   let parsed;
   try {

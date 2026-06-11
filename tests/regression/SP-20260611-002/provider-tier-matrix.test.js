@@ -119,9 +119,16 @@ ok("AC-6.1 CLI: t3-selected + T1 down (real claude harness is up, so plant a DOW
     assert.strictEqual(res.status, 2, "--enforce REDS (exit 2) on a confident tier_short — never exit 0");
     assert.strictEqual(r.ok, false, "envelope ok:false mirrors the tier_short");
   } else {
-    // Document the branch so a CI where the CLI is installed still asserts
-    // SOMETHING real rather than silently passing.
-    assert.notStrictEqual(openai.verdict, "tier_short", "if T1 is up, this is not the AC-6.1 cell");
+    // T1 is up. Two valid sub-cases after finding-6 fix (T2 unfunded is now a
+    // detectable shortfall, not unknown):
+    // (a) T2 not funded + t3 selected → tier_short (finding 6), --enforce REDS.
+    // (b) T1+T2 met + no T3 attestation → unknown-self-attested + exit 0 (fail-open).
+    if (!openai.t2_funded) {
+      assert.strictEqual(openai.verdict, "tier_short", "T1 up but T2 unfunded → tier_short (finding 6 fix)");
+    } else {
+      // T1+T2 both met, only T3 undetectable → unknown-self-attested (fail-open, not the T1-down cell).
+      assert.notStrictEqual(openai.verdict, "tier_short", "T1+T2 met — this is the unknown-self-attested cell, not the T1-down cell");
+    }
   }
 });
 
@@ -355,6 +362,74 @@ ok("MATRIX: the {selected_tier × t1_met × config_readable → verdict} grid is
   // config_readable=false cell (corrupt) is its own fail-closed row (AC-6.2 above):
   const corrupt = cfgLib.readConfig({ configPath: writeFixture("matrix-corrupt", "{ ]]]") });
   assert.strictEqual(corrupt.corrupt, true, "config_readable=false (corrupt) → fail-closed signal present");
+});
+
+// ═════════════════════════════════════════════════════════════
+// FINDING-6 (gauntlet, attempt-1) — unknown-self-attested must require T2 funded
+// When T2 is detectably unfunded and t3 is selected, verdict is tier_short,
+// NOT unknown-self-attested. T2 funding is value-free detectable (key name /
+// oauth) — it is NOT in the "genuinely undetectable" class.
+// ═════════════════════════════════════════════════════════════
+ok("FINDING-6: t3 selected + T1 met + T2 UNFUNDED + no T3 attestation → tier_short + ok:false; T2 unfunded is value-free detectable (NOT unknown-self-attested)", () => {
+  // This cell was unknown-self-attested+ok:true before the fix. The reserved case
+  // for unknown-self-attested requires BOTH T1 AND T2 to be confirmed; a missing
+  // T2 funded signal is a confident, value-free-detectable shortfall → tier_short.
+  const r = tier.buildReport({
+    providers: ["claude"],
+    configOverride: cfg({ providers: { claude: { selected_tier: "t3" } } }),
+    signalsOverride: { claude: { t1Met: true, authTier: "harness", t2KeyPresent: false } }, // T1 met, T2 NOT funded
+  });
+  const row = rowFor(r, "claude");
+  assert.strictEqual(row.t1_met, true, "T1 IS met");
+  assert.strictEqual(row.t2_funded, false, "T2 is NOT funded");
+  assert.strictEqual(row.verdict, "tier_short", "T2 unfunded is detectable → tier_short, NOT unknown-self-attested");
+  assert.notStrictEqual(row.verdict, "unknown-self-attested", "unknown-self-attested requires BOTH T1 and T2 met (finding 6)");
+  assert.strictEqual(r.verdict_summary, "tier_short");
+  assert.strictEqual(r.ok, false, "envelope ok:false — false-green impossible");
+  // --enforce contract: this cell must RED (exit 2) under --enforce
+  const wouldExit = r.verdict_summary === "tier_short" ? 2 : 0;
+  assert.strictEqual(wouldExit, 2, "--enforce must RED (exit 2) on T2-unfunded t3-selected cell");
+});
+
+ok("FINDING-6 MATRIX extension: MATRIX grid includes {sel:t3, t1:true, key:false, sub:null} → tier_short (the previously-missing T2-unfunded cell)", () => {
+  // Extends the existing 9-cell matrix with the cell the gauntlet identified as missing.
+  const r = tier.buildReport({
+    providers: ["openai"],
+    configOverride: cfg({ providers: { openai: { selected_tier: "t3" } } }),
+    signalsOverride: { openai: { t1Met: true, authTier: "key", t2KeyPresent: false } }, // T1 met, T2 NOT funded
+  });
+  const row = rowFor(r, "openai");
+  assert.strictEqual(row.verdict, "tier_short", "{sel:t3, t1:true, key:false} → tier_short (not unknown-self-attested)");
+  assert.strictEqual(r.ok, false);
+});
+
+// ═════════════════════════════════════════════════════════════
+// FINDING-7 (gauntlet, attempt-1) — EISDIR / EACCES is corrupt:true, not greenfield
+// Only TRUE ABSENCE (ENOENT) is the greenfield case. Any other read failure
+// (a directory at the path, permission denial) means the path EXISTS or is
+// otherwise blocked — it must be corrupt:true → fail-closed hold.
+// ═════════════════════════════════════════════════════════════
+ok("FINDING-7: EISDIR (directory at --config-path) → corrupt:true + fail-closed hold; NOT corrupt:false greenfield", () => {
+  // Create a DIRECTORY at the config path (not a file). readFileSync throws EISDIR,
+  // which is NOT ENOENT. Before the fix this returned corrupt:false (treated as
+  // absent/greenfield); after the fix it returns corrupt:true (fail-closed).
+  const dirPath = path.join(nsTmpdir("f7-eisdir"), "config-is-a-directory");
+  fs.mkdirSync(dirPath, { recursive: true });
+
+  // Layer 1: readConfig distinguishes EISDIR from ENOENT
+  const read = cfgLib.readConfig({ configPath: dirPath });
+  assert.strictEqual(read.corrupt, true, "EISDIR is not ENOENT — a directory at the path is present-but-unreadable → corrupt:true (finding 7)");
+  assert.strictEqual(read.source, "framework-default", "resolved config is still framework defaults");
+
+  // Layer 2: the engine fails closed on corrupt:true
+  const r = tier.buildReport({
+    providers: ["claude"],
+    configPath: dirPath,
+    signalsOverride: { claude: { t1Met: true, authTier: "harness", t2KeyPresent: true } },
+  });
+  assert.strictEqual(r.config_corrupt, true, "report flags the EISDIR as corrupt");
+  assert.strictEqual(r.verdict_summary, "tier_short", "fail-closed HOLD — never degrades to greenfield t1 green");
+  assert.strictEqual(r.ok, false, "envelope ok:false on the corrupt-config hold");
 });
 
 console.log(`\nSP-20260611-002 WS-G3b provider-tier-matrix: ${pass} passed, ${fail} failed`);
