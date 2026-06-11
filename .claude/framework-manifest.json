@@ -6,8 +6,8 @@
     "agent": 84,
     "skill": 218,
     "reference": 27,
-    "maps_baseline": 26,
-    "hook": 78,
+    "maps_baseline": 25,
+    "hook": 79,
     "hook_lib": 18,
     "tool": 2,
     "pattern": 6,
@@ -40,7 +40,7 @@
     "linter_tool": 1,
     "manifest_tool": 1,
     "maps_tool": 2,
-    "portfolio_tool": 15,
+    "portfolio_tool": 16,
     "research_tool": 7,
     "schema_tool": 1,
     "system_tool": 1,
@@ -62,7 +62,7 @@
     "module_scope": 1,
     "framework_doc": 3
   },
-  "total": 1216,
+  "total": 1217,
   "assets": {
     "agent": [
       {
@@ -4272,18 +4272,6 @@
         "replaces": null
       },
       {
-        "id": "maps_baseline.system-coherence.graph.json",
-        "src": ".claude/project/maps/system-coherence.graph.json",
-        "dest": ".claude/project/maps/system-coherence.graph.json",
-        "kind": "maps_baseline",
-        "sha256": "8c9189ca1564ff1a3b97dac84023882e1d09e83921e11253f496beee0bbdb924",
-        "owner": "generated",
-        "mergeStrategy": "regenerate",
-        "introducedIn": "0.0.0",
-        "removedIn": null,
-        "replaces": null
-      },
-      {
         "id": "maps_baseline.systems-inventory.jsonl",
         "src": ".claude/project/maps/systems-inventory.jsonl",
         "dest": ".claude/project/maps/systems-inventory.jsonl",
@@ -4866,7 +4854,19 @@
         "src": "scripts/hooks/scope-contract-guard.js",
         "dest": "scripts/hooks/scope-contract-guard.js",
         "kind": "hook",
-        "sha256": "5876576b8ae2e76e71dfa640e4f6936eec258b88922fbfdd289f17c7f585979b",
+        "sha256": "c83996987ab814da8daf43eaaaf409762e38cfdefc96a14db34b155e473330c6",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "hook.scope-contract-guard.test.js",
+        "src": "scripts/hooks/scope-contract-guard.test.js",
+        "dest": "scripts/hooks/scope-contract-guard.test.js",
+        "kind": "hook",
+        "sha256": "fdc6810615f90f9a485133eb72aa4d189a00413d587aaf6a161eece91563e681",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -5396,7 +5396,7 @@
         "src": "scripts/hooks/lib/paths.generated.js",
         "dest": "scripts/hooks/lib/paths.generated.js",
         "kind": "hook_lib",
-        "sha256": "6ceb59e14a96268d72389983c174595e4b66a223a3e572aa4ffef5cc9c3deff9",
+        "sha256": "9946edd66bdf4c912588e2a8db06d343e2565bde7497ae2f5ea5f85592cdd80d",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -9584,6 +9584,18 @@
         "replaces": null
       },
       {
+        "id": "portfolio_tool.registry-path.test.js",
+        "src": "scripts/portfolio/registry-path.test.js",
+        "dest": "scripts/portfolio/registry-path.test.js",
+        "kind": "portfolio_tool",
+        "sha256": "6991653eaad939d50eeaeed3b18dd9f79822628786d8ed4153231150fc45b933",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
         "id": "portfolio_tool.registry.js",
         "src": "scripts/portfolio/registry.js",
         "dest": "scripts/portfolio/registry.js",
@@ -10422,7 +10434,7 @@
         "src": "schemas/paths.schema.json",
         "dest": "schemas/paths.schema.json",
         "kind": "schema",
-        "sha256": "8e9a5b5e47a3d6b60b479a7bcc3108e22270b56d6eeb210ff2d3df805675117e",
+        "sha256": "e9d399b867afb2da1eb160d3df4dd2587d8c12c4c51a248aeca93e994b91e38c",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -12766,7 +12778,7 @@
         "src": "framework/paths.registry.json",
         "dest": "framework/paths.registry.json",
         "kind": "paths_registry",
-        "sha256": "7bfc64e3fbd1d1ca59d1dec0c5bf6856ab70b2152780775e90a1a4d7e61df0dc",
+        "sha256": "9ea6730fa3acff660a693878f8accff94f30fa357605666b4c6df40868777bc9",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
