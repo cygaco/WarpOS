@@ -116,6 +116,18 @@ function matchNodeEFs(toolName, ti) {
   // guards / the tracked-work-delete floor below). The scope vocabulary in
   // apply.js#SCOPE_PERMISSIONS already lists only write/append/mkdir; this matcher
   // is the gate side of that contract.
+  //
+  // ALL-OR-NOTHING (gauntlet finding 3 — AC-4.1 extension): if the node -e body
+  // contains ANY rmSync / unlinkSync / rmdirSync call — even alongside an allowed
+  // write/append/mkdir — the ENTIRE command is NOT approvable. A co-present delete
+  // call POISONS the command; it falls through to pass-through / downstream guards.
+  // This closes the bypass where fs.writeFileSync(...); fs.rmSync(variable) was
+  // approved because the write regex fired first and the variable-form delete target
+  // could not be extracted by extractDeleteTargets (so the tracked-delete floor
+  // AC-4.2 also missed it).
+  if (/fs\.(rmSync|unlinkSync|rmdirSync)\b/.test(cmd)) {
+    return null; // delete call present — poisoned, not auto-approvable
+  }
   if (/fs\.(writeFileSync|appendFileSync|mkdirSync)\b/.test(cmd)) {
     return { scope: "node-e-fs", pattern: "Bash(node -e *fs.{write,append,mkdir}Sync*)" };
   }
