@@ -5,7 +5,7 @@ objective: "Close the 17 REAL + 4 PARTIAL GPT-2nd-pass findings; integrate; gaun
 source_request: "E-LIFECYCLE-001 close-out fix sprint: fix the 17 REAL + 4 PARTIAL findings from the GPT 2nd-pass security review of the gemini-only W1/W2/W3-5 lanes (triage: runtime/notes/elc-gpt2p-triage-2026-06-11.md), fold in the NOTAGAIN §8.3 legacy-scoping prep, re-gauntlet cross-family, then complete the epic."
 interpreted_intent: "Clear the §H debt PROPERLY: the GPT 2nd-pass ran (3 lanes, all FAIL — 12 blockers/9 majors), every blocker verified REAL by live probes. Fix the verified findings so the report-only→blocking flip ramp becomes actually safe, the two 'READY' gates become genuinely flippable, and E-LIFECYCLE-001 can complete honestly."
 plan_contract: ".claude/project/sprint/plan-contracts/PC-20260611-0074.yaml"
-final_scope: "FIX1 G1/G2/G3a/G3b/G3c plus W1-fold T-324/T-325; FIX2 closed remaining security finding 3 and backend finding 5; T-321 deferred as follow-on per Beta release-boundary directive."
+final_scope: "FIX1 G1/G2/G3a/G3b/G3c plus W1-fold T-324/T-325; FIX2 closed remaining security finding 3 and backend finding 5; T-321 excluded from RL-20260611-044 release close per Beta boundary, then completed as post-close follow-on on main."
 outcome: closed_local_release
 tickets_completed:
   - T-20260611-316
@@ -13,10 +13,10 @@ tickets_completed:
   - T-20260611-318
   - T-20260611-319
   - T-20260611-320
+  - T-20260611-321
   - T-20260611-324
   - T-20260611-325
-tickets_deferred:
-  - T-20260611-321
+tickets_deferred: []
 tickets_abandoned: []
 tickets_reopened: []
 issues_found:
@@ -25,8 +25,7 @@ issues_found:
 issues_fixed:
   - "security findings 1,2,3,4"
   - "backend findings 5,6,7,8"
-issues_deferred:
-  - T-20260611-321 wrapper mode binding follow-on
+issues_deferred: []
 external_services_resolved: []
 external_services_deferred: []
 requirements_changed: []
@@ -47,6 +46,9 @@ tests_run:
   - generate-framework-manifest --check PASS
   - warpos manifest validate --strict PASS
   - trackers validate 20/20 PASS
+  - wrapper-mode-binding 3/3
+  - review-fallback-shape 21/21
+  - build-chain-registry-gate 29/29
 releases:
   - RL-20260611-044
 beta_decisions:
@@ -54,11 +56,12 @@ beta_decisions:
 human_approvals:
   - AP-20260611-028 waived local-only close
 key_tradeoffs:
-  - "No push performed; local release close only. T-321 unblocked/deferred as follow-on, not built inside SP-002 close."
-final_outcome_notes: "Affected-lane re-review green; release checklist true; local target marked deployed; branch remains unpushed per current user instruction."
+  - "No push performed; local release close only. T-321 was not built inside SP-002 release close, then completed as post-close follow-on after explicit continuation."
+final_outcome_notes: "Affected-lane re-review green; release checklist true; local target marked deployed; T-321 follow-on completed; branch remains unpushed per current user instruction."
 should_be_remembered:
   - coverage-gate-scan live no-flag path now derives expected roles from sprint registry/composition
   - authorization-gate node-e-fs approval now rejects destructive fs aliases before write approval
+  - dispatch wrappers now thread live mode into dispatch-contract validation, including the generic build-class helper path
 crash_recovery_events: []
 started_at: "2026-06-11T04:31:36.180Z"
 closed_at: "2026-06-11T20:47:58.648Z"
