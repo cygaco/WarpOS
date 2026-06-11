@@ -41,8 +41,10 @@ function ok(name, cond, detail) {
 }
 
 // Inject a runner that captures the spawnSync options (so we read the parent `timeout`
-// the runtime actually computed) and returns a benign ok outcome so spawnAgent completes.
-function captureTimeout(route, role, opts = {}) {
+// AND the child env the runtime actually computed) and returns a benign ok outcome so
+// spawnAgent completes. We need the FULL options object — FIX-A1's propagation link is the
+// child env DISPATCH_BUILDER_TIMEOUT_MS, which the old test never inspected.
+function captureSpawn(route, role, opts = {}) {
   let captured = null;
   const run = (_bin, _args, options) => {
     captured = options;
@@ -53,6 +55,10 @@ function captureTimeout(route, role, opts = {}) {
     "SP-T",
     { run, promptFile: __filename, ...opts }
   );
+  return captured;
+}
+function captureTimeout(route, role, opts = {}) {
+  const captured = captureSpawn(route, role, opts);
   return captured ? captured.timeout : null;
 }
 
@@ -121,6 +127,52 @@ console.log("\n(3) graceful-death-record-wins-race-both-sites:");
     parentBg === childBg + GRACE,
     `parent=${parentBg} child=${childBg}`
   );
+}
+
+console.log("\n(4) parent-strictly-exceeds-child-under-opts-override-both-sites (FIX-A1 propagation link):");
+{
+  // The blocker the old test missed: when opts.timeoutMs is SET, the parent was computed from
+  // opts.timeoutMs but the value was NEVER propagated to the child — the child read its own
+  // env/default bound, so parent and child DIVERGED and the parent could end up ≤ child,
+  // re-opening the death-record race. FIX-A1 single-sources the child bound BY CONSTRUCTION:
+  // childBaseMs = foregroundAwareTimeout(opts.timeoutMs || default, opts); the child env
+  // DISPATCH_BUILDER_TIMEOUT_MS == childBaseMs AND parent == childBaseMs + grace, for EVERY
+  // opts.timeoutMs value, at BOTH sites.
+  const cases = [
+    { label: "small (1000)", timeoutMs: 1000 },
+    { label: "huge (9_000_000)", timeoutMs: 9000000 },
+    { label: "unset", timeoutMs: undefined },
+  ];
+  const sites = [
+    { name: "epsilon-agent", route: rt.ROUTE.DISPATCH_AGENT, role: "security-reviewer", def: WRAPPER_DEFAULTS["epsilon-agent"], extra: {} },
+    { name: "epsilon-claude", route: rt.ROUTE.DISPATCH_CLAUDE, role: "frontend-builder", def: WRAPPER_DEFAULTS["epsilon-claude"], extra: { worktree: __dirname } },
+  ];
+  for (const site of sites) {
+    for (const c of cases) {
+      // childBaseMs is what the runtime SHOULD compute for this opts.timeoutMs (idempotent clamp).
+      const childBaseMs = foregroundAwareTimeout(c.timeoutMs || site.def, {});
+      const opts = c.timeoutMs === undefined ? { ...site.extra } : { timeoutMs: c.timeoutMs, ...site.extra };
+      const cap = captureSpawn(site.route, site.role, opts);
+      const propagated = cap && cap.env ? Number(cap.env.DISPATCH_BUILDER_TIMEOUT_MS) : NaN;
+      const parent = cap ? cap.timeout : null;
+
+      ok(
+        `${site.name} / ${c.label}: child env DISPATCH_BUILDER_TIMEOUT_MS == childBaseMs (propagation link present)`,
+        propagated === childBaseMs,
+        `propagated=${propagated} childBaseMs=${childBaseMs}`,
+      );
+      ok(
+        `${site.name} / ${c.label}: parent timeout == childBaseMs + PARENT_GRACE_MS (by construction)`,
+        parent === childBaseMs + GRACE,
+        `parent=${parent} childBaseMs=${childBaseMs} grace=${GRACE}`,
+      );
+      ok(
+        `${site.name} / ${c.label}: parent STRICTLY exceeds child (race closed for this opts override)`,
+        parent > childBaseMs,
+        `parent=${parent} childBaseMs=${childBaseMs}`,
+      );
+    }
+  }
 }
 
 console.log(`\n${failed === 0 ? "PASS" : "FAIL"} — epsilon-spawn-grace: ${passed} passed, ${failed} failed`);
