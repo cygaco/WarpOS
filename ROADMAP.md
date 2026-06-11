@@ -803,6 +803,7 @@ Every sprint that has been planned, executed, released, or retrospected — one 
 
 | Sprint | Title | Status | Started | Closed | Release |
 |---|---|---|---|---|---|
+| [S-PF-01](.claude/project/sprint/sprints/S-PF-01/) | E-PRODUCT-FOUNDATION-001 W0 telemetry seam | planning | 2026-06-11T21:18:08.864Z |  |  |
 | [SP-20260611-002](.claude/project/sprint/sprints/SP-20260611-002/) | E-LIFECYCLE-001 close-out fix sprint — 17 REAL + 4 PARTIAL GPT 2nd-pass findings (team-guard/mode-guard bypass classes, turbo spend/auth integrity, coverage-gate waiver+expected-source, provider-tier false-green, planning-principles enforce path, ac-coverage fail-closed) + NOTAGAIN §8.3 legacy scoping | retrospected | 2026-06-11T04:31:36.180Z | 2026-06-11T21:07:05.931Z |  |
 | [SP-20260611-001](.claude/project/sprint/sprints/SP-20260611-001/) | Cross-family findings fix sprint — 6 gemini re-review findings (epsilon-runtime spawn race, fallback ENFORCE brick, hardcoded BUILD_CHAIN_ROLES, spoofed-ts window, sprint_id correlation, verifyGauntlet parse refusal) | planning | 2026-06-11T03:42:00.813Z |  |  |
 | [SP-20260610-008](.claude/project/sprint/sprints/SP-20260610-008/) | Dreamteam verified-open guard batch (W-26 W-5 W-13 W-14 W-28) | retrospected | 2026-06-10T22:37:26.823Z | 2026-06-11T00:33:59.701Z |  |

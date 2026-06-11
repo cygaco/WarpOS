@@ -86,11 +86,11 @@ const SCHEMA_KIND_RULES = [
   },
   // per-sprint subdir layout (v0.2)
   {
-    re: /^\.claude\/project\/sprint\/sprints\/SP-[0-9]{8}-[0-9]{3}\/current\.yaml$/,
+    re: /^\.claude\/project\/sprint\/sprints\/(?:SP-[0-9]{8}-[0-9]{3,4}|S-[A-Z0-9]+-[0-9]{2,3})\/current\.yaml$/,
     kind: "current-sprint",
   },
   {
-    re: /^\.claude\/project\/sprint\/sprints\/SP-[0-9]{8}-[0-9]{3}\/progress\.yaml$/,
+    re: /^\.claude\/project\/sprint\/sprints\/(?:SP-[0-9]{8}-[0-9]{3,4}|S-[A-Z0-9]+-[0-9]{2,3})\/progress\.yaml$/,
     kind: "sprint-progress",
   },
   // legacy v0.1 layout (paths.sprintCurrent / paths.sprintProgress)
@@ -129,22 +129,22 @@ const SCHEMA_KIND_RULES = [
   },
   // checkpoint filename is "<SP-id>-NNNN.yaml" — checkpoints are sprint-progress shape
   {
-    re: /^\.claude\/project\/sprint\/checkpoints\/SP-[0-9]{8}-[0-9]{3}-[0-9]{4}\.yaml$/,
+    re: /^\.claude\/project\/sprint\/checkpoints\/(?:SP-[0-9]{8}-[0-9]{3,4}|S-[A-Z0-9]+-[0-9]{2,3})-[0-9]{4}\.yaml$/,
     kind: "sprint-progress",
   },
   // ralph per-sprint subdir holds ralph-progress
   {
-    re: /^\.claude\/project\/sprint\/ralph\/SP-[0-9]{8}-[0-9]{3}\/.*\.yaml$/,
+    re: /^\.claude\/project\/sprint\/ralph\/(?:SP-[0-9]{8}-[0-9]{3,4}|S-[A-Z0-9]+-[0-9]{2,3})\/.*\.yaml$/,
     kind: "ralph-progress",
   },
   // history archive (also caught by Protection 2, but harmless to mention)
   {
-    re: /^\.claude\/project\/sprint\/history\/SP-[0-9]{8}-[0-9]{3}\/sprint-history\.yaml$/,
+    re: /^\.claude\/project\/sprint\/history\/(?:SP-[0-9]{8}-[0-9]{3,4}|S-[A-Z0-9]+-[0-9]{2,3})\/sprint-history\.yaml$/,
     kind: "sprint-history",
   },
   // retrospective lives under sprint dir (free-form naming)
   {
-    re: /^\.claude\/project\/sprint\/sprints\/SP-[0-9]{8}-[0-9]{3}\/retrospective\.yaml$/,
+    re: /^\.claude\/project\/sprint\/sprints\/(?:SP-[0-9]{8}-[0-9]{3,4}|S-[A-Z0-9]+-[0-9]{2,3})\/retrospective\.yaml$/,
     kind: "sprint-retrospective",
   },
 ];

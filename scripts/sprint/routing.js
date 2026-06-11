@@ -134,6 +134,8 @@ function appendDecisionLedgerRow(row) {
   fs.appendFileSync(lp, JSON.stringify(row) + "\n");
 }
 
+const SPRINT_ID_RE = /^(?:SP-\d{8}-\d{3,4}|S-[A-Z0-9]+-\d{2,3})$/;
+
 // ── Validation ─────────────────────────────────────────
 
 function validateTraceRow(row) {
@@ -141,7 +143,7 @@ function validateTraceRow(row) {
   if (row.schema !== "warpos/sprint/routing-trace/v1") {
     errors.push(`schema must be warpos/sprint/routing-trace/v1`);
   }
-  if (!row.sprint_id || !/^SP-\d{8}-\d{3}$/.test(row.sprint_id)) {
+  if (!row.sprint_id || !SPRINT_ID_RE.test(row.sprint_id)) {
     errors.push(`sprint_id missing or malformed: ${row.sprint_id}`);
   }
   if (!row.phase) errors.push("phase required");
@@ -384,7 +386,7 @@ function cmdRecord(argv) {
     return 2;
   }
   // Sprint registered?
-  if (!/^SP-\d{8}-\d{3}$/.test(f.sprint)) {
+  if (!SPRINT_ID_RE.test(f.sprint)) {
     process.stderr.write(`malformed sprint id: ${f.sprint}\n`);
     return 2;
   }
@@ -587,7 +589,7 @@ function cmdCoverage(argv) {
     process.stderr.write("coverage requires --sprint\n");
     return 2;
   }
-  if (!/^SP-\d{8}-\d{3}$/.test(f.sprint)) {
+  if (!SPRINT_ID_RE.test(f.sprint)) {
     process.stderr.write(`malformed sprint id: ${f.sprint}\n`);
     return 2;
   }
@@ -766,7 +768,7 @@ function recordTrace(opts) {
       message: `unknown phase ${opts.phase}`,
     };
   }
-  if (!/^SP-\d{8}-\d{3}$/.test(opts.sprint)) {
+  if (!SPRINT_ID_RE.test(opts.sprint)) {
     return {
       ok: false,
       exitCode: 2,
@@ -917,7 +919,7 @@ function coverageReport(sprintId) {
   if (!policy) {
     return { ok: false, error: `policy missing: ${SPRINT.routing}` };
   }
-  if (!/^SP-\d{8}-\d{3}$/.test(sprintId)) {
+  if (!SPRINT_ID_RE.test(sprintId)) {
     return { ok: false, error: `malformed sprint id: ${sprintId}` };
   }
   const rows = readTraceRows().filter((r) => r && r.sprint_id === sprintId);

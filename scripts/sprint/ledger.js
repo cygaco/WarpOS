@@ -96,7 +96,7 @@ const RELEASE_STATUS_ENUM = new Set([
   "rolled_back",
 ]);
 
-const SPRINT_ID_RE = /^SP-\d{8}-\d{3,4}$/;
+const SPRINT_ID_RE = /^(?:SP-\d{8}-\d{3,4}|S-[A-Z0-9]+-\d{2,3})$/;
 const RELEASE_ID_RE = /^RL-\d{8}-\d{3,4}$/;
 const VERSION_RE = /^\d+\.\d+\.\d+$/;
 

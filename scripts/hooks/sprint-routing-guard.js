@@ -187,7 +187,7 @@ function classify(rel, event) {
   rel = rel.replace(/\\/g, "/");
 
   // requirements/<SP-id>/*.md
-  const reqMatch = rel.match(/^requirements\/(SP-\d{8}-\d{3})\/[^/]+\.md$/);
+  const reqMatch = rel.match(/^requirements\/((?:SP-\d{8}-\d{3,4}|S-[A-Z0-9]+-\d{2,3}))\/[^/]+\.md$/);
   if (reqMatch) {
     return {
       sprint: reqMatch[1],
@@ -197,7 +197,7 @@ function classify(rel, event) {
   }
 
   // history/<SP-id>/retro.yaml
-  const retroMatch = rel.match(/^history\/(SP-\d{8}-\d{3})\/retro\.yaml$/);
+  const retroMatch = rel.match(/^history\/((?:SP-\d{8}-\d{3,4}|S-[A-Z0-9]+-\d{2,3}))\/retro\.yaml$/);
   if (retroMatch) {
     return {
       sprint: retroMatch[1],
@@ -225,7 +225,7 @@ function classify(rel, event) {
 function sprintFromReleaseContent(event) {
   const ti = event.tool_input || {};
   const body = (ti.content || "") + "\n" + (ti.new_string || "");
-  const m = body.match(/(?:^|\n)\s*sprint:\s*["']?(SP-\d{8}-\d{3})["']?/);
+  const m = body.match(/(?:^|\n)\s*sprint:\s*["']?((?:SP-\d{8}-\d{3,4}|S-[A-Z0-9]+-\d{2,3}))["']?/);
   return m ? m[1] : null;
 }
 

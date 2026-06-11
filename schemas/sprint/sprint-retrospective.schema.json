@@ -25,7 +25,7 @@
     },
     "sprint_id": {
       "type": "string",
-      "pattern": "^SP-[0-9]{8}-[0-9]{3}$",
+      "pattern": "^(SP-[0-9]{8}-[0-9]{3,4}|S-[A-Z0-9]+-[0-9]{2,3})$",
       "description": "Sprint this retro belongs to. Must match an entry in paths.sprintActiveRegistry or a sprint already moved to paths.sprintHistory."
     },
     "plan_contract_id": {

@@ -1,0 +1,150 @@
+schema: warpos/sprint/plan-contract/v1
+id: PC-20260611-0075
+created_at: "2026-06-11T21:15:18.586Z"
+updated_at: "2026-06-11T21:15:18.586Z"
+sprint: S-PF-01
+source_request: "E-PRODUCT-FOUNDATION-001 W0 telemetry seam: mint S-PF-01 and build the scaffold-time telemetry seam from the approved Product Lead build_spec plus Director-of-Product activation ruling."
+source_request_verbatim: "Continue after SP-20260611-002: run E-PRODUCT-FOUNDATION-001 W0. Approved Product Lead artifact is build_spec-S-PF-01-w0-telemetry-seam and the Director of Product ruling is early-derived, lastmile-confirmed activation."
+request_type: feature_add
+interpreted_intent: "Make the W0 product-foundation sprint executable: every future app scaffold gets a real track(event, props) seam, no-op fail-open sink, canonical event vocabulary, supply-chain correlation/stage vocabulary, activation definition that is derived before launch and explicitly confirmed or revised at lastmile, and an extended scaffold-coverage enforcer with planted false-green fixtures."
+user_or_business_outcome: "A founder can scaffold a product and launch with activation, retention, core action, checkout, and chain-integrity telemetry available from day zero without waiting for lastmile analytics work or risking a tracker that breaks app boot."
+affected_surfaces:
+  - surface: "framework/templates/app-scaffold/src/lib/telemetry/*.ts.tmpl"
+    evidence_level: verified_from_repo
+    notes: "New scaffold template files are copied automatically by scripts/scaffold/app.js materialize(); no scaffold engine change is required for new templates."
+  - surface: framework/templates/app-scaffold/src/app/layout.tsx.tmpl and page.tsx.tmpl
+    evidence_level: verified_from_repo
+    notes: "layout.tsx is the app-wide wire point; page.tsx can demonstrate one opt-in core-loop telemetry chain."
+  - surface: framework/templates/app-scaffold/.env.local.example.tmpl
+    evidence_level: verified_from_repo
+    notes: "Names only; add PostHog key/host names without creating a live provider dependency in W0."
+  - surface: scripts/checks/scaffold-coverage-scan.js
+    evidence_level: verified_from_repo
+    notes: "Existing fail-closed scaffold enforcer with REQUIRED_FILES and import/dependency checks; W0 extends it rather than adding a parallel scan."
+  - surface: scripts/bootstrap/lastmile/modules/analytics.js
+    evidence_level: verified_from_repo
+    notes: "Existing lastmile analytics adapter has its own event list; W0 re-points it to enrich the seam and hosts activation confirm/revise."
+  - surface: _requirements/00-canonical core-loop artifacts
+    evidence_level: verified_from_repo
+    notes: DoP ruling requires activation to be derived from canon/core-loop entities at product creation or fail closed to founder-named intake.
+  - surface: schemas/contracts/message_brief.schema.json and build_spec.schema.json
+    evidence_level: verified_from_repo
+    notes: "The Product Lead build_spec cites message_brief-E-PRODUCT-FOUNDATION-001-w0; S-PF-01 must mint a real message_brief artifact before build."
+current_behavior:
+  evidence_level: verified_from_repo
+  notes: "The scaffold currently has no telemetry seam, no canonical event union, no activation definition object, and no supply-chain correlation/stage helper. Lastmile analytics exists as a later adapter with its own vocabulary. The approved build_spec intentionally points at a message_brief id that did not yet exist on disk."
+desired_behavior: "New app scaffolds contain a single telemetry seam: track(event, props) resolves exactly one sink, defaults to no-op when unconfigured, catches sink failures, and imports its event type from a single events.ts source. The event set is exactly signup, onboarding_complete, activation, core_action, retention_return, and checkout. Activation carries predicate, provenance, confidence, and derivedFrom; unresolved placeholders/TODOs are hard failures. Lastmile analytics enriches that vocabulary, forces confirm/revise of activation, and emits activation_definition_change on revision. Scaffold coverage fails on missing seam, duplicate sink, broken-chain false-green, and activation-present-but-undefined fixtures. New templates are shipped through both manifests."
+scope:
+  size: m
+  risk_level: medium
+  complexity_drivers:
+    - Scaffold-layer templates ship to every future product.
+    - Telemetry lives near app boot and must be fail-open.
+    - Activation definition crosses canon/product/lastmile boundaries.
+    - The enforcer is itself the false-green guard and needs planted negative fixtures.
+    - The build_spec spine reference must be made real before execution.
+scope_variants:
+  minimal_safe:
+    summary: "Ship only track(), no-op sink, six events, and presence checks."
+    tradeoffs:
+      - Leaves activation undefined and lastmile still able to fork analytics vocabulary.
+      - Does not close the supply-chain telemetry false-green class.
+  recommended:
+    summary: "Ship the full W0 seam: track/sink/events/chain, early-derived activation contract, lastmile enrich-not-reinstall, planted fixtures, and manifest regeneration."
+    tradeoffs:
+      - "Medium scaffold blast radius, mitigated by keeping W0 provider-free and fail-open."
+  expanded:
+    summary: Recommended plus a real PostHog adapter and admin feed preview.
+    tradeoffs:
+      - "Rejected for W0 as pre-PMF overbuild; provider adapter and admin feed belong to later waves."
+assumptions:
+  safe:
+    - scripts/scaffold/app.js materializes new app-scaffold template files recursively without engine changes.
+    - "PostHog remains a named future sink target only; W0 writes env names and a no-op sink, not provider code."
+    - "The Director-of-Product ruling is binding: activation is early-derived at canon and lastmile-confirmed, not deferred empty."
+    - The contract validator can validate the S-PF-01 message_brief and build_spec together as a chain.
+  unsafe: []
+  needs_user_or_beta_review:
+    - "If the exact canon derivation host is not testable in this sprint, record enforcement debt rather than silently shipping an aspirational fail-closed rule."
+    - Any move from provider-name placeholders to a committed live analytics provider requires separate approval.
+open_questions:
+  blocking: []
+  non_blocking:
+    - Whether existing portfolio products are retrofitted remains out of scope for W0.
+    - The builder must ground the exact canon derivation host before implementing AC-3.2.
+non_goals:
+  - No real analytics provider integration.
+  - No per-click auto-instrumentation or global click wrapper.
+  - No admin event-feed UI in W0.
+  - No retrofit of existing portfolio products.
+  - "No batching, transport, retry, or delivery guarantees in the no-op sink."
+  - No push to remote without explicit in-session approval.
+requirement_areas:
+  - "R-1 telemetry seam and sink contract: add track(event, props), one sink resolver, no-op unconfigured sink, sink error boundary, env names only, and layout/page wiring without blocking app boot"
+  - "R-2 canonical lifecycle event vocabulary: define exactly signup, onboarding_complete, activation, core_action, retention_return, checkout as the typed single source consumed by track and downstream analytics"
+  - "R-3 activation definition contract: derive activation at canon time, fail closed if core-loop entities are too thin, carry predicate/provenance/confidence/derivedFrom, force lastmile confirm-or-revise, and emit activation_definition_change on revision"
+  - "R-4 lastmile analytics enrichment: re-point analytics.js so the six seam events are the canonical base and funnel/A-B events are enrichment, never a parallel tracker or duplicate sink install"
+  - "R-5 supply-chain telemetry chain: carry correlationId and a fixed stage vocabulary intent -> executed -> committed/sent -> delivered -> observed/read, with helpers that surface broken chains as first-class failure events"
+  - "R-6 enforcer and shipping integrity: extend scaffold-coverage-scan with telemetry assertions, add planted seam-missing/broken-chain/duplicate-sink/unfilled-activation fixtures, validate the message_brief/build_spec chain, and regenerate both manifests"
+high_level_story_candidates:
+  - "As a scaffolded product, I have one boot-safe telemetry entry point before any live analytics provider is configured"
+  - "As a founder chasing PMF, I can measure activation, retention, core action, and checkout from day zero with a revisable activation definition"
+  - "As QA and lastmile, I can enrich and verify the same telemetry vocabulary instead of installing competing trackers"
+granular_story_candidates:
+  - "Add the track(event, props) seam, sink resolver, no-op sink, env names, and boot-safe wiring"
+  - Add events.ts with the exact six canonical lifecycle events and typed event union
+  - Add ACTIVATION_DEFINITION with provenance/confidence and canon-derived/founder-named fail-closed behavior
+  - Re-point lastmile analytics.js to enrich the seam and emit activation_definition_change on revision
+  - "Add chain.ts with correlation id, stage vocabulary, and broken-chain detection over one opt-in core-loop example"
+  - Extend scaffold-coverage-scan and its tests with telemetry assertions and planted false-green fixtures
+workstream_candidates:
+  - "WS-1 seam templates: track.ts, sink.ts, env example, layout/page boot-safe usage"
+  - "WS-2 vocabulary and chain templates: events.ts, activation definition, chain.ts"
+  - "WS-3 lastmile re-point: analytics.js enrich-not-reinstall plus activation confirm/revise"
+  - "WS-4 enforcer and manifests: scaffold-coverage-scan, planted fixtures, contract validation, manifest regen"
+preliminary_ticket_candidates:
+  allowed: false
+  candidates: []
+  notes: "Tickets are minted after the requirement bundle is populated; expected tickets map to the four W0 workstreams."
+external_service_dependencies:
+  status: none_expected
+  required: []
+  possible: []
+  notes: "W0 is provider-free. PostHog appears only as future sink target env names; no signup, credentials, network calls, or billing are required."
+approval_boundaries:
+  - Do not add a live analytics provider dependency in W0.
+  - Do not retrofit existing portfolio products without a separate operator decision.
+  - Do not flip any new enforcer from report-only to blocking outside its existing command semantics without operator approval.
+  - Do not push to remote without explicit in-session approval.
+design_required: true
+execution_allowed_without_design: false
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+lane:
+  type: branch
+  value: sprint/S-PF-01
+  isolation_notes: "Local sprint branch created from main after SP-002 retrospective commit; no remote push without explicit approval."
+beta_review:
+  required: true
+  likely_founder_rejection_risks: []
+  overbuild_risks:
+    - "A real analytics SDK adapter in W0 would be premature; keep W0 to a provider-free seam."
+    - "Per-click instrumentation would violate the lean boundary; only demonstrate one opt-in core-loop chain."
+  missing_context_risks:
+    - Canon activation derivation host must be grounded before execution.
+plan_quality:
+  status: pass
+  confidence: high
+  evidence_gaps:
+    - Exact canon derivation host to be grounded during design/execution.
+  fail_reasons: []
+next_recommended_command: "/sprint:design --sprint S-PF-01 --documentation-scale m"
+resume_instructions: "Read _planning/epics/E-PRODUCT-FOUNDATION-001.md, trackers/epics/E-PRODUCT-FOUNDATION-001-product-foundation-seams.md, .claude/runtime/epsilon-prompts/S-PF-01-plan-product-lead.return.txt, and .claude/runtime/epsilon-prompts/S-PF-01-plan-director-of-product.return.txt. Then run /sprint:design for S-PF-01, create the message_brief/build_spec chain under the requirements bundle, and dispatch qa-reviewer traceability before execution."
+tracker_paths:
+  current_sprint: ".claude/project/sprint/current-sprint.yaml"
+  sprint_progress: ".claude/project/sprint/sprint-progress.yaml"
+  plan_contract: ".claude/project/sprint/plan-contracts/PC-20260611-0075.yaml"
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260611-0075.report.md"
+created_by: codex
+updated_by: codex

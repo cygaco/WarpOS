@@ -1,0 +1,57 @@
+{
+  "chain": [
+    {
+      "type": "message_brief",
+      "id": "message_brief-E-PRODUCT-FOUNDATION-001-w0",
+      "audience_ref": "E-PRODUCT-FOUNDATION-001-founder-scaffold-audience",
+      "core_message": "Every new scaffold starts with the PMF telemetry seam already present, fail-open, and ready to enrich.",
+      "proof_points": [
+        "Product Lead build_spec requires a single track(event, props) seam with no-op fail-open sink.",
+        "Director of Product ruled activation must be early-derived at canon and lastmile-confirmed.",
+        "W0 enforcer extends scaffold coverage with planted seam-missing, broken-chain, duplicate-sink, and unfilled-activation fixtures."
+      ],
+      "market_promise": "Founders get day-zero activation, retention, core-action, checkout, and chain-integrity signal without waiting for late analytics installation."
+    },
+    {
+      "type": "build_spec",
+      "id": "build_spec-S-PF-01-w0-telemetry-seam",
+      "derived_from_message_brief": "message_brief-E-PRODUCT-FOUNDATION-001-w0",
+      "components": [
+        "framework/templates/app-scaffold/src/lib/telemetry/track.ts.tmpl",
+        "framework/templates/app-scaffold/src/lib/telemetry/sink.ts.tmpl",
+        "framework/templates/app-scaffold/src/lib/telemetry/events.ts.tmpl",
+        "framework/templates/app-scaffold/src/lib/telemetry/chain.ts.tmpl",
+        "framework/templates/app-scaffold/src/app/layout.tsx.tmpl",
+        "framework/templates/app-scaffold/src/app/page.tsx.tmpl",
+        "framework/templates/app-scaffold/.env.local.example.tmpl",
+        "scripts/bootstrap/lastmile/modules/analytics.js",
+        "scripts/checks/scaffold-coverage-scan.js",
+        "scripts/checks/scaffold-coverage-scan.test.js",
+        "tests/regression/S-PF-01"
+      ],
+      "acceptance_criteria": [
+        "track() no-ops and never throws when no sink is configured.",
+        "track() uses exactly one sink resolver and swallows sink errors.",
+        "LIFECYCLE_EVENTS is exactly signup, onboarding_complete, activation, core_action, retention_return, checkout.",
+        "ACTIVATION_DEFINITION is filled, provenance/confidence-marked, and placeholders fail closed.",
+        "Lastmile analytics enriches the seam vocabulary and emits activation_definition_change on revision.",
+        "Chain helper reports sent/committed without delivered/observed as broken, not complete.",
+        "Scaffold coverage fails planted seam-missing, duplicate-sink, broken-chain, and unfilled-activation fixtures.",
+        "New telemetry template files ship through regenerated framework and WarpOS manifests."
+      ],
+      "implementation_sequence": [
+        "R-1 seam templates and env names",
+        "R-2/R-5 event vocabulary and chain helper",
+        "R-3 activation definition and canon/lastmile behavior",
+        "R-6 scaffold coverage fixtures and manifest shipping proof",
+        "R-4 lastmile analytics enrich-not-reinstall re-point"
+      ],
+      "non_goals": [
+        "No live analytics provider integration.",
+        "No global click wrapper.",
+        "No admin event feed UI.",
+        "No existing-product retrofit."
+      ]
+    }
+  ]
+}

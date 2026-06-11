@@ -161,15 +161,15 @@ function yamlDump(value, indent = 0) {
 const SPRINT_SCHEMA_KIND_RULES = [
   { re: /[/\\]sprint[/\\]active-sprints\.yaml$/, kind: "active-sprints" },
   {
-    re: /[/\\]sprint[/\\]sprints[/\\]SP-\d{8}-\d{3}[/\\]current\.yaml$/,
+    re: /[/\\]sprint[/\\]sprints[/\\](?:SP-\d{8}-\d{3,4}|S-[A-Z0-9]+-\d{2,3})[/\\]current\.yaml$/,
     kind: "current-sprint",
   },
   {
-    re: /[/\\]sprint[/\\]sprints[/\\]SP-\d{8}-\d{3}[/\\]progress\.yaml$/,
+    re: /[/\\]sprint[/\\]sprints[/\\](?:SP-\d{8}-\d{3,4}|S-[A-Z0-9]+-\d{2,3})[/\\]progress\.yaml$/,
     kind: "sprint-progress",
   },
   {
-    re: /[/\\]sprint[/\\]sprints[/\\]SP-\d{8}-\d{3}[/\\]retrospective\.yaml$/,
+    re: /[/\\]sprint[/\\]sprints[/\\](?:SP-\d{8}-\d{3,4}|S-[A-Z0-9]+-\d{2,3})[/\\]retrospective\.yaml$/,
     kind: "sprint-retrospective",
   },
   { re: /[/\\]sprint[/\\]current-sprint\.yaml$/, kind: "current-sprint" },
@@ -193,15 +193,15 @@ const SPRINT_SCHEMA_KIND_RULES = [
     kind: "external-service-dependency",
   },
   {
-    re: /[/\\]sprint[/\\]checkpoints[/\\]SP-\d{8}-\d{3}-\d{4}\.yaml$/,
+    re: /[/\\]sprint[/\\]checkpoints[/\\](?:SP-\d{8}-\d{3,4}|S-[A-Z0-9]+-\d{2,3})-\d{4}\.yaml$/,
     kind: "sprint-progress",
   },
   {
-    re: /[/\\]sprint[/\\]ralph[/\\]SP-\d{8}-\d{3}[/\\].*\.yaml$/,
+    re: /[/\\]sprint[/\\]ralph[/\\](?:SP-\d{8}-\d{3,4}|S-[A-Z0-9]+-\d{2,3})[/\\].*\.yaml$/,
     kind: "ralph-progress",
   },
   {
-    re: /[/\\]sprint[/\\]history[/\\]SP-\d{8}-\d{3}[/\\]sprint-history\.yaml$/,
+    re: /[/\\]sprint[/\\]history[/\\](?:SP-\d{8}-\d{3,4}|S-[A-Z0-9]+-\d{2,3})[/\\]sprint-history\.yaml$/,
     kind: "sprint-history",
   },
 ];
