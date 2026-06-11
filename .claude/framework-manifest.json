@@ -6112,7 +6112,7 @@
         "src": "scripts/warpos/manifest/walk-skip.js",
         "dest": "scripts/warpos/manifest/walk-skip.js",
         "kind": "warpos_script",
-        "sha256": "7abf7d2fecc60af85a776b417f7310b3f4f1e0b9c204c8277e080c9fa3dc2b73",
+        "sha256": "6dfac546c1ea48a039a7fc1bd57f4e18c10bfbdcb5ce3da78cc6e6e2cc038b97",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",

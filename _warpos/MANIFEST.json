@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-11T07:08:12.685Z",
+  "generatedAt": "2026-06-11T07:35:29.997Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.15.4",
   "migrations": [],
@@ -3812,8 +3812,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/warpos/manifest/walk-skip.js",
-      "sha256": "7abf7d2fecc60af85a776b417f7310b3f4f1e0b9c204c8277e080c9fa3dc2b73",
-      "installedSha": "7abf7d2fecc60af85a776b417f7310b3f4f1e0b9c204c8277e080c9fa3dc2b73"
+      "sha256": "6dfac546c1ea48a039a7fc1bd57f4e18c10bfbdcb5ce3da78cc6e6e2cc038b97",
+      "installedSha": "6dfac546c1ea48a039a7fc1bd57f4e18c10bfbdcb5ce3da78cc6e6e2cc038b97"
     },
     "scripts/warpos/lib/content-hash.js": {
       "owner": "framework",

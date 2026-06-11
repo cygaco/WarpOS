@@ -49,6 +49,9 @@ const WALK_SKIP_FILES = new Set([
   // NOTAGAIN.md — operator-facing dispatch-failure diagnostic (2026-06-10), same
   // per-repo-operator-doc class as DUMP.md/WARPOS.md; never framework content.
   "NOTAGAIN.md",
+  // DISPATCH-ERRORS.md — operator-directed dispatch-failure census + redesigns
+  // (2026-06-11), companion to NOTAGAIN.md; same per-repo-operator-doc class.
+  "DISPATCH-ERRORS.md",
   "WARPOS-PROMPT.md",
   "MASTERCONSOLE-PROMPT.md",
   ".DS_Store",
