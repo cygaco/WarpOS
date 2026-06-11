@@ -109,33 +109,54 @@ function configPath() {
  * Read the preferred-tier config. Returns the INSTANCE file when present+valid,
  * else the FRAMEWORK defaults. Never throws; never hardcodes an instance value.
  *
+ * ── ABSENT vs PRESENT-BUT-CORRUPT (R-6 / AC-6.2, AC-6.5) ──
+ *   Both still return the framework defaults as the resolved `config` (so a caller
+ *   that only reads `config` is unchanged), but they are DISTINGUISHED by a new
+ *   `corrupt` flag:
+ *     - ABSENT (no file)            → corrupt:false → greenfield, defaults are
+ *                                     authoritative, the check may pass (AC-6.5).
+ *     - PRESENT-but-unparseable     → corrupt:true  → the instance file existed and
+ *                                     may have carried an operator-RAISED floor we
+ *                                     can no longer read. The engine FAILS CLOSED on
+ *                                     this flag rather than silently relaxing to the
+ *                                     framework-default t1 (the false-green of #16).
+ *   `source` stays "framework-default" in both cases (the resolved config IS the
+ *   defaults); `corrupt` is the orthogonal trust signal the engine reads.
+ *
  * @param {object} [opts]
  * @param {string} [opts.configPath]  override the file location (tests)
  * @param {object} [opts.configOverride]  inject a parsed config (tests)
- * @returns {{ config:object, source:"instance-file"|"framework-default", path:string }}
+ * @returns {{ config:object, source:"instance-file"|"framework-default", corrupt:boolean, path:string }}
  */
 function readConfig(opts = {}) {
   if (opts.configOverride) {
-    return { config: normalize(opts.configOverride), source: "instance-file", path: opts.configPath || configPath() };
+    return { config: normalize(opts.configOverride), source: "instance-file", corrupt: false, path: opts.configPath || configPath() };
   }
   const file = opts.configPath || configPath();
   let raw;
   try {
     raw = fs.readFileSync(file, "utf8");
   } catch {
-    return { config: FRAMEWORK_DEFAULTS(), source: "framework-default", path: file };
+    // ABSENT (greenfield): no instance file → framework defaults, NOT corrupt.
+    return { config: FRAMEWORK_DEFAULTS(), source: "framework-default", corrupt: false, path: file };
   }
   let parsed;
   try {
     parsed = JSON.parse(raw);
   } catch {
-    // Garbage instance file → framework defaults (fail-open, never block).
-    return { config: FRAMEWORK_DEFAULTS(), source: "framework-default", path: file };
+    // PRESENT-but-unparseable → FAIL CLOSED (corrupt:true). The file existed and
+    // may have carried a raised floor we can no longer read — never silently
+    // degrade to the framework-default green (AC-6.2 / #16).
+    return { config: FRAMEWORK_DEFAULTS(), source: "framework-default", corrupt: true, path: file };
   }
-  if (!parsed || typeof parsed !== "object") {
-    return { config: FRAMEWORK_DEFAULTS(), source: "framework-default", path: file };
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+    // Present but structurally invalid (JSON `null`, a bare array, a number/string)
+    // → same fail-closed posture: the file is there but unusable as a config
+    // object. Array.isArray is explicit because `typeof [] === "object"` in JS, so
+    // a bare array would otherwise slip through as a usable instance file.
+    return { config: FRAMEWORK_DEFAULTS(), source: "framework-default", corrupt: true, path: file };
   }
-  return { config: normalize(parsed), source: "instance-file", path: file };
+  return { config: normalize(parsed), source: "instance-file", corrupt: false, path: file };
 }
 
 // Merge a partial instance config over the framework defaults so a sparse file
