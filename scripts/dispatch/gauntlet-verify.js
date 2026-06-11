@@ -115,6 +115,16 @@ function toMs(v) {
   return Number.isNaN(t) ? null : t;
 }
 
+// R-6 (SP-20260611-001) — a window bound is "PROVIDED" when it is a non-empty value
+// the caller actually passed (not undefined/null/empty). Absent bounds keep the
+// existing whole-ledger semantics; a PROVIDED-but-unparseable bound is a hard error
+// (it would otherwise silently degrade to null → the forbidden whole-ledger scan).
+function isProvidedBound(v) {
+  if (v === undefined || v === null) return false;
+  if (typeof v === "number") return true; // a number (even NaN/Infinity) is a provided bound
+  return String(v).trim() !== ""; // non-empty string is provided; "" / whitespace is absent
+}
+
 function recordCompletedMs(rec) {
   // Prefer completed_at; fall back to started_at; then null (unknown time).
   return toMs(rec.completed_at) ?? toMs(rec.started_at);
@@ -237,6 +247,23 @@ function readCompletions(file) {
  */
 function verifyGauntlet(args = {}) {
   const runId = args.runId || "(unlabeled)";
+
+  // R-6 (SP-20260611-001) — programmatic parse refusal. The CLI already refuses an
+  // unparseable --since/--until (with its own message) BEFORE calling here, but a
+  // PROGRAMMATIC caller passing garbage since/until previously degraded silently:
+  // toMs() → null → no window → the forbidden whole-ledger scan. The enforcement point
+  // belongs in the library. When since/until is PROVIDED (a non-empty value the caller
+  // passed) but unparseable, THROW — never silently widen. Absent/null/empty bounds keep
+  // the existing whole-ledger semantics. (ED-043 class: refusals self-identify.)
+  for (const [name, val] of [["since", args.since], ["until", args.until]]) {
+    if (isProvidedBound(val) && toMs(val) === null) {
+      throw new Error(
+        `verifyGauntlet: unparseable window (${name}=${JSON.stringify(val)}) — refusing ` +
+        "(whole-ledger scan is forbidden); pass valid ISO timestamps or epoch ms",
+      );
+    }
+  }
+
   // F-3: sprint correlation — records with a non-matching sprint_id are excluded.
   // Records without sprint_id fall through to time-window correlation (backwards compat).
   const sprintId = args.sprintId ? String(args.sprintId).trim() : null;

@@ -46,6 +46,43 @@ const RECORD_BACKED_CUTOFF = "2026-06-10";
 /** Buffer (ms) around the sprint event time window when correlating dispatch records. */
 const SPRINT_WINDOW_BUFFER_MS = 2 * 60 * 60 * 1000; // 2 hours
 
+/**
+ * R-4 (SP-20260611-001) — spoofed-ts window clamp. events.jsonl `f.ts` is UNTRUSTED
+ * (spoofable). A planted extreme ts (1970/2099) would widen the derived sprint window
+ * to ~infinity, capturing any historic ok:true record. The window is therefore clamped
+ * to a sane horizon anchored on the sprint's TRUSTED created_at (from the sprint dates
+ * map): event ts outside [created_at - cap, created_at + cap] are DISCARDED from window
+ * derivation. If no trusted anchor exists for a sprint, the derivation falls back to the
+ * raw ts (and the existing all-outlier → no-window → fail-closed path still holds).
+ *
+ * NOTE (AC-X.2, β design HOW): this clamp is DUPLICATED byte-for-byte in
+ * scripts/checks/sprint-manager-consult.js (the same exploit, two sites). No shared-lib
+ * extraction this sprint (blast-radius bound); the duplication is a logged follow-up.
+ */
+const WINDOW_HARD_CAP_MS = 14 * 24 * 60 * 60 * 1000; // 14 days each side of created_at
+
+/**
+ * Resolve a sprint's TRUSTED horizon anchor (created_at) to epoch ms, or null when no
+ * trusted date is known. sprintDates carries "YYYY-MM-DD" (date-only) per sprint id.
+ */
+function sprintAnchorMs(sprintDates, sprintId) {
+  if (!sprintDates || !Object.hasOwn(sprintDates, sprintId)) return null;
+  const d = sprintDates[sprintId];
+  if (typeof d !== "string") return null;
+  const t = Date.parse(d + "T00:00:00Z");
+  return isNaN(t) ? null : t;
+}
+
+/**
+ * R-4 clamp predicate: is `evTs` inside the sane sprint horizon (anchor ± hard cap)?
+ * With no trusted anchor, every ts is kept (existing behavior preserved — the all-outlier
+ * fail-closed path lives downstream in hasBackingDispatchRecord's null-window guard).
+ */
+function tsWithinHorizon(evTs, anchorMs) {
+  if (anchorMs === null) return true; // no trusted anchor — keep (fail-closed lives downstream)
+  return evTs >= anchorMs - WINDOW_HARD_CAP_MS && evTs <= anchorMs + WINDOW_HARD_CAP_MS;
+}
+
 // Synthetic/test sprint prefixes — exempt from the LIVE corpus audit.
 const SYNTHETIC_SPRINT_PREFIXES = ["SP-J", "SP-TEST"];
 function isSyntheticSprint(sprintId) {
@@ -85,14 +122,35 @@ function parseTs(v) {
 
 // F-1: check whether a backing ok:true dispatch record exists for `role` within the
 // sprint event time window ± SPRINT_WINDOW_BUFFER_MS.
-function hasBackingDispatchRecord(dispatchRecords, role, minTsMs, maxTsMs) {
+//
+// R-5 (SP-20260611-001) — sprint_id-preferring correlation. The time window alone lets
+// a CONCURRENT sprint's record (overlapping window, DIFFERENT sprint_id) falsely green
+// this sprint. So sprint_id NARROWS the match (never widens it):
+//   - rec carries sprint_id → it MUST equal `sprintId` (a different sprint_id NEVER
+//     correlates, even inside the window) — this is the preferred correlation.
+//   - rec lacks sprint_id (legacy/pre-W0) → time-window fallback, on the R-4 CLAMPED
+//     window passed in (the fallback does not re-open the spoof-widening leak).
+//   - In BOTH cases the (clamped) time-window check still applies — a sprint_id match
+//     OUTSIDE the window does NOT correlate (defense-in-depth, redteam case).
+// `sprintId` is optional: when absent (legacy callers), behavior is the original
+// time-window-only correlation.
+function hasBackingDispatchRecord(dispatchRecords, role, minTsMs, maxTsMs, sprintId) {
   if (!Array.isArray(dispatchRecords) || dispatchRecords.length === 0) return false;
   // Defense-in-depth (claude qa lane 2026-06-10): no parseable sprint window →
   // no record can be correlated → fail closed (mirror of sprint-manager-consult).
   if (minTsMs === null && maxTsMs === null) return false;
+  const wantSprint = sprintId !== undefined && sprintId !== null ? String(sprintId).trim() : null;
   return dispatchRecords.some((rec) => {
     if (!rec || rec.ok !== true) return false;
     if (typeof rec.role !== "string" || rec.role.trim() !== role) return false;
+    // R-5: sprint_id narrows. A record STAMPED for a sprint (a non-empty string id)
+    // must match — a different stamped id never correlates. A record with NO stamp
+    // (field absent, null, or empty — the pre-W0/unstamped sentinel) falls through to
+    // the time-window fallback below (the dispatcher writes sprint_id:null when
+    // WARPOS_SPRINT_ID is unset; null is "unstamped", NOT "stamped for sprint null").
+    const recSprint =
+      typeof rec.sprint_id === "string" && rec.sprint_id.trim() ? rec.sprint_id.trim() : null;
+    if (wantSprint !== null && recSprint !== null && recSprint !== wantSprint) return false;
     const t = parseTs(rec.completed_at) ?? parseTs(rec.started_at);
     if (t === null) return false;
     if (minTsMs !== null && t < minTsMs - SPRINT_WINDOW_BUFFER_MS) return false;
@@ -187,14 +245,22 @@ function computeFindings(events, registry, compositionBySprint = {}, sprintDates
     const isConsult = f.cat === "manager_consult" || (f.manager && !f.kind);
     const isRun = typeof f.kind === "string" && f.kind.startsWith("sprint_full");
     if (!isConsult && !isRun) continue;
-    if (!bySprint[sid]) bySprint[sid] = { run: false, consulted: new Set(), minTsMs: null, maxTsMs: null };
+    if (!bySprint[sid]) bySprint[sid] = { run: false, consulted: new Set(), minTsMs: null, maxTsMs: null, discardedTs: [] };
     if (isRun) bySprint[sid].run = true;
     if (isConsult && f.manager) bySprint[sid].consulted.add(String(f.manager));
-    // F-1: track sprint event time window for backing-record correlation
+    // F-1: track sprint event time window for backing-record correlation.
+    // R-4: clamp to the sane sprint horizon (trusted created_at ± hard cap) so an
+    // UNTRUSTED spoofed ts (1970/2099) cannot widen the window. Out-of-horizon ts are
+    // DISCARDED from window derivation (recorded for the C-4 note) rather than fail-open.
     const evTs = parseTs(f.ts);
     if (evTs !== null) {
-      if (bySprint[sid].minTsMs === null || evTs < bySprint[sid].minTsMs) bySprint[sid].minTsMs = evTs;
-      if (bySprint[sid].maxTsMs === null || evTs > bySprint[sid].maxTsMs) bySprint[sid].maxTsMs = evTs;
+      const anchorMs = sprintAnchorMs(sprintDates, sid);
+      if (!tsWithinHorizon(evTs, anchorMs)) {
+        bySprint[sid].discardedTs.push(new Date(evTs).toISOString());
+      } else {
+        if (bySprint[sid].minTsMs === null || evTs < bySprint[sid].minTsMs) bySprint[sid].minTsMs = evTs;
+        if (bySprint[sid].maxTsMs === null || evTs > bySprint[sid].maxTsMs) bySprint[sid].maxTsMs = evTs;
+      }
     }
   }
 
@@ -213,6 +279,17 @@ function computeFindings(events, registry, compositionBySprint = {}, sprintDates
 
     applicable.push(sid);
     checked++;
+    // R-4 (C-4): surface any event ts the horizon clamp discarded, so a spoof attempt
+    // is diagnosable rather than silent.
+    if (sd.discardedTs.length) {
+      for (const iso of sd.discardedTs) {
+        info.push({
+          sprint_id: sid,
+          finding_type: "window_ts_discarded",
+          evidence: `event ts ${iso} outside sane sprint horizon (created_at ± cap) — discarded from window derivation`,
+        });
+      }
+    }
     const composition = compositionBySprint[sid] || {};
     const isPostRecordBacked = date >= RECORD_BACKED_CUTOFF;
     for (const step of STEPS) {
@@ -220,16 +297,18 @@ function computeFindings(events, registry, compositionBySprint = {}, sprintDates
         const hasTelemetry = sd.consulted.has(row.role);
         if (row.mode === "block") {
           // F-1: post-RECORD_BACKED_CUTOFF block rows require BOTH telemetry AND backing record.
+          // R-5: correlate by sprint_id first (a different sprint_id never counts), then
+          // the R-4 clamped time-window fallback for legacy records.
           let covered = hasTelemetry;
           if (hasTelemetry && isPostRecordBacked) {
-            covered = hasBackingDispatchRecord(dispatchRecords, row.role, sd.minTsMs, sd.maxTsMs);
+            covered = hasBackingDispatchRecord(dispatchRecords, row.role, sd.minTsMs, sd.maxTsMs, sid);
           }
           if (!covered) {
             findings.push({
               sprint_id: sid, role: row.role, step, mode: row.mode,
               finding_type: "missing_block_agent",
               evidence: hasTelemetry
-                ? `block-row ${row.role}@${step} has a manager_consult record but no backing ok:true dispatch record in the sprint window (E-DISPATCH-INTEGRITY-001 F-1, post-${RECORD_BACKED_CUTOFF})`
+                ? `block-row ${row.role}@${step} has a manager_consult record but no backing ok:true dispatch record correlated by sprint_id (or legacy clamped window) for this sprint (E-DISPATCH-INTEGRITY-001 F-1, post-${RECORD_BACKED_CUTOFF})`
                 : `block-row ${row.role}@${step} matched the composition but no manager_consult record exists for this run`,
             });
           }
