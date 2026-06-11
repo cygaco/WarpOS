@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-11T06:36:56.973Z",
+  "generatedAt": "2026-06-11T06:41:12.378Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.15.4",
   "migrations": [],
@@ -18496,8 +18496,8 @@
       "managed": true,
       "source": ".claude/commands/session/end.md",
       "kind": "md",
-      "sha256": "7e17f334c0681a83c0b0eb71ac92c593df51b5541412cdc0c38a6b9c7d467a50",
-      "installedSha": "7e17f334c0681a83c0b0eb71ac92c593df51b5541412cdc0c38a6b9c7d467a50"
+      "sha256": "439460df2a70fabfb94543b9b573d86a1661bdd114b0c0caf2370cfe21eec9ac",
+      "installedSha": "439460df2a70fabfb94543b9b573d86a1661bdd114b0c0caf2370cfe21eec9ac"
     },
     ".claude/commands/session/handoff.md": {
       "owner": "framework",

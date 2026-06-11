@@ -29,7 +29,7 @@ The contract: **reach a state the next session can resume from with ZERO progres
 | 6 DUMP handoff | **KEEP — this is the load-bearing artifact.** It must carry the next-action, in-flight state, and any operating-model/directive changes so a fresh session needs nothing else. |
 | 7 Land | **KEEP commit (no loss); CONDITIONAL merge.** Commit ALL working state so nothing is lost. Then: **merge/land to `main` ONLY if the work is genuinely done** (e.g. a sprint whose gauntlet is GREEN). If a sprint is mid-fix-cycle / gauntlet-RED / otherwise unfinished, **commit + push the working branch for backup but do NOT merge to main** — landing unfinished work is a progress-*corruption*, not progress-saving. Surface the judgment. |
 | 8 Fresh branch | **CONDITIONAL.** If the work landed to main, branch fresh off main. If the work is intentionally unmerged (Phase 7 conditional), **STAY on the working branch** — it IS the resume point; forcing a fresh branch off a stale main just makes the next session switch back. |
-| 9 Teardown | **KEEP, best-effort.** `shutdown_request` all members → `TeamDelete`. A straggler that won't drain (e.g. an ε mid-blocking-subprocess) is acceptable — the next session's `/mode:sprint` step 1.75 reconciles stale members. Don't poll indefinitely. |
+| 9 Teardown | **KEEP, best-effort — but NEVER purposefully reap working agents to finish the wrap (operator rule 2026-06-11).** Classify each member FIRST: **idle** → `shutdown_request`; **mid-work** (building, mining, mid-append, mid-subprocess) → do NOT kill it to complete `--fast` — either give it one short drain window to reach a natural boundary, or LEAVE it as a straggler and say so in the report. Then `TeamDelete` (it will refuse while stragglers live — that refusal is fine; the next session's `/mode:sprint` step 1.75 reconciles stale members). Speed never justifies discarding in-flight work; "fast" bounds the *waiting*, not the agents' right to finish. Don't poll indefinitely. |
 | 10 Report | **KEEP.** State what was skipped (cognitive chain), the TRACKER result, the DUMP next-pick, what committed/pushed/landed-or-not (with the merge judgment), teardown state, and "clear to start fresh." |
 
 `--fast` still honors every hard ceiling (push autonomy-gate, safety floor, no force-push) and stays fail-closed on Phase 5.
@@ -77,9 +77,10 @@ git -C "$CLAUDE_PROJECT_DIR" switch -c <--branch | session/$(date -u +%F)>
 (Skip if the operator wants to stay on `main`.)
 
 ### Phase 9 — Tear down teams (`--keep-teams` to skip)
-Kill ALL persistent teams + members for this project so the next session spawns fresh (avoids W-21 cross-session accretion + zombie in-process teammates):
-1. For each member of the current team, `SendMessage {type:"shutdown_request"}` and wait for `shutdown_approved` — this reaps **live in-process** agents (TeamDelete alone CANNOT kill a live in-process process; it only cleans config/dirs — a zombie from a dead session stays addressable and reappears).
-2. `TeamDelete` to clear the team + task dirs + the current session's lead binding.
+Tear down ALL persistent teams + members for this project so the next session spawns fresh (avoids W-21 cross-session accretion + zombie in-process teammates) — **without purposefully reaping in-flight work** (operator rule 2026-06-11: never kill a working agent just to finish the wrap; speed bounds the waiting, not the agents' right to finish):
+0. **Classify each member before any shutdown:** idle (last signal = idle_notification / task completed, no outstanding work) vs **mid-work** (building, mining, mid-file-append, mid-subprocess — check its task status + recent activity). A `shutdown_request` to a mid-work teammate is processed at its next message boundary, which can interrupt a multi-turn plan — treat it as a reap.
+1. For each **idle** member, `SendMessage {type:"shutdown_request"}` and wait for `shutdown_approved` — this reaps **live in-process** agents (TeamDelete alone CANNOT kill a live in-process process; it only cleans config/dirs — a zombie from a dead session stays addressable and reappears). For each **mid-work** member: give ONE short drain window (let it reach a natural boundary and commit/flush), and if it hasn't drained, **leave it as a straggler** — report it, don't kill it. The next session's `/mode:sprint` step 1.75 reconciles stragglers.
+2. `TeamDelete` to clear the team + task dirs + the current session's lead binding. (It refuses while stragglers live — acceptable; report the refusal instead of escalating to kills.)
 3. Remove any stale on-disk team dirs for THIS project's `*-adhoc` under `~/.claude/teams/` + `~/.claude/tasks/` (only this project's — NEVER touch sibling-project teams).
 4. Verify with `node scripts/checks/adhoc-team-hygiene.js` (clean for this project).
 
@@ -93,6 +94,7 @@ Tell the operator: what consolidated (learnings/recs/integrations), **the TRACKE
 - **Push is autonomy-gated** — default to local-only unless authorized.
 - **First real run of a new orchestration skill should be operator-supervised** — don't trust an untested wrap-up on a critical push; hand-drive once, then rely on it.
 - **Don't `node -e` fs-writes** (merge-guard blocks) — use Write/Edit or a one-shot `scripts/*.js`.
+- **Never purposefully reap working agents to finish a wrap** (operator rule 2026-06-11, set during a `--fast` wrap that shutdown-requested still-running miners/fixers to complete teardown). Stragglers + an honest report beat a fast-but-lossy teardown; the wrap is complete WITH stragglers noted. The mechanical counterpart (`scripts/hooks/session-end-team-teardown.js`, S-LC-05) should carry the same idle-vs-mid-work classification — gap candidate for `/enforcement:log` if not yet wired.
 
 ## Related
 - `/learn:deep`, `/beta:mine`, `/sleep:deep`, `/sleep:quick`, `/learn:integrate`, `/beta:integrate` — the cognitive-maintenance chain (mine+integrate and deep+integrate are PAIRS — run both halves).

@@ -3204,7 +3204,7 @@
         "src": ".claude/commands/session/end.md",
         "dest": ".claude/commands/session/end.md",
         "kind": "skill",
-        "sha256": "7e17f334c0681a83c0b0eb71ac92c593df51b5541412cdc0c38a6b9c7d467a50",
+        "sha256": "439460df2a70fabfb94543b9b573d86a1661bdd114b0c0caf2370cfe21eec9ac",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
