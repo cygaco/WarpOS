@@ -269,12 +269,22 @@ const SKIP_SUBSTRINGS = [
   ".claude/project/events/",
   ".claude/project/memory/",
   ".claude/project/maps/",
+  // T-20260611-309 fix-cycle (gemini lane): the registry SOURCE necessarily
+  // contains tombstoned literals (removedIn entries keep the old `path` value
+  // by schema) and the lint-rule patterns themselves — lint targets CONSUMERS,
+  // never the registry that defines the rules.
+  "framework/paths.registry.json",
+  // Append-only sprint history may cite paths that were correct at write time;
+  // history is never edited to satisfy a later rename (same class as CHANGELOG).
+  ".claude/project/sprint/ralph/",
+  ".claude/project/sprint/approvals/",
   "_requirements/_audits/",
   "_docs/",
   ".claude/paths.json",
   "scripts/path-lint.js",
   "scripts/hooks/path-guard.js", // holds the patterns by design
   "/scan/references.md", // rename catalog lives here (was /check/references.md before the check:→scan: rename; 2026-05-30 fix — the rename missed this exempt → 8 false criticals)
+  "_requirements/03-architecture/PATH_KEYS.md", // the removed-keys catalog — documents dead paths BY PURPOSE (same class as the rename catalog above)
   ".claude/dreams/",
   ".claude/agents/president/_system/oneshot/retros/", // historical retros
   ".claude/agents/.system/dispatch-backups/", // dispatch snapshots

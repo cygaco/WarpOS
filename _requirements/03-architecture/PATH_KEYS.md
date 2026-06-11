@@ -78,7 +78,6 @@ Markdown convention: reference paths as `paths.X` in prose. Code: `const { PATHS
 | `policy` | `.claude/agents/president/_system/policy` | dir | project | yes | 0.0.0 |  |
 | `portfolioCommands` | `.claude/commands/portfolio` | dir | framework | no | 0.8.3 | Portfolio skill suite (/portfolio:* — bootstrap, clone, impo |
 | `portfolioHome` | `.claude/portfolio` | dir | project | yes | 0.9.0 | Portfolio root directory holding the registry (paths.portfol |
-| `portfolioRegistry` | `.claude/portfolio/registry.yaml` | yaml | project | yes | 0.9.0 | Canonical product registry (warpos/portfolio-registry/v1). O |
 | `portfolioScripts` | `scripts/portfolio` | dir | framework | no | 0.8.3 | Portfolio skill backing scripts (bootstrap.js, clone.js, dis |
 | `portfolioTemplates` | `framework/templates/portfolio` | dir | framework | no | 0.8.3 | Portfolio skill templates (README.md.tmpl etc). Documented i |
 | `providerAutofixLib` | `scripts/warpos/lib/provider-autofix.js` | js | framework | no | 0.5.1 |  |
@@ -137,6 +136,12 @@ Markdown convention: reference paths as `paths.X` in prose. Code: `const { PATHS
 | `testInstallMatrix` | `scripts/warpos/test-install-matrix.js` | file | framework | no | 0.9.0 | Install fixture CI matrix runner — 5-scenario regression sui |
 | `toolsFile` | `.claude/project/events/tools.jsonl` | jsonl | runtime | yes | 0.0.0 |  |
 | `tracesFile` | `.claude/project/memory/traces.jsonl` | jsonl | runtime | yes | 0.0.0 |  |
+
+## Removed path keys
+
+| Key | Path | Removed in | Replaces |
+|---|---|---|---|
+| `portfolioRegistry` | `.claude/portfolio/registry.yaml` | 0.21.0 | — |
 
 ## Owner classification
 

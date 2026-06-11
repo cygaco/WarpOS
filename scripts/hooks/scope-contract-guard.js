@@ -81,6 +81,61 @@ function hasScopeContract(prompt) {
   return /scopeContract|allowedFiles|forbiddenFiles|File Scope|In-scope files/i.test(prompt || "");
 }
 
+/**
+ * extractScopeContract — locate + parse the scopeContract JSON block from a prompt.
+ *
+ * Supported embedding shapes:
+ *   ## scopeContract\n{...}
+ *   scopeContract: {...}
+ *   scopeContract\n{...}
+ *
+ * Returns:
+ *   { found: false }                  — "scopeContract" keyword not present in prompt
+ *   { found: true, parsed: <object> } — located + JSON.parsed successfully
+ *   { found: true, parsed: null }     — located but JSON is malformed/unbalanced
+ */
+function extractScopeContract(prompt) {
+  const p = prompt || "";
+  // Match "scopeContract" followed by whitespace/colon/equals and an opening brace.
+  // Gauntlet fix-cycle (gemini lane 2026-06-11): `=` separator added so
+  // `scopeContract={...}` is FOUND (a missed parse used to fall to the absent
+  // case — fail-closed for build-chain, but the empty-check was skipped).
+  const m = /scopeContract[\s:=]*(\{)/i.exec(p);
+  if (!m) return { found: false };
+
+  // Walk forward from the opening brace, tracking brace depth to find the closing
+  // brace. STRING-AWARE (gemini lane 2026-06-11): braces inside JSON string
+  // literals (e.g. brace-globs like "{a,b}/**" in allowedFiles) must not move
+  // the depth counter — the naive walker truncated early and false-blocked a
+  // legitimate contract fail-closed on an every-dispatch guard.
+  const start = m.index + m[0].length - 1; // position of '{'
+  let depth = 0;
+  let inString = false;
+  for (let i = start; i < p.length; i++) {
+    const ch = p[i];
+    if (inString) {
+      if (ch === "\\") { i++; continue; } // skip escaped char inside string
+      if (ch === '"') inString = false;
+      continue;
+    }
+    if (ch === '"') { inString = true; continue; }
+    if (ch === "{") depth++;
+    else if (ch === "}") {
+      depth--;
+      if (depth === 0) {
+        const json = p.slice(start, i + 1);
+        try {
+          return { found: true, parsed: JSON.parse(json) };
+        } catch {
+          return { found: true, parsed: null };
+        }
+      }
+    }
+  }
+  // Unbalanced / truncated — malformed.
+  return { found: true, parsed: null };
+}
+
 let input = "";
 process.stdin.setEncoding("utf8");
 process.stdin.on("data", (c) => (input += c));
@@ -100,10 +155,44 @@ process.stdin.on("end", () => {
       );
       process.exit(2);
     }
+
+    // hasScopeContract matched — now parse the scopeContract block if present.
+    // Only inspect the structured scopeContract block (not bare allowedFiles/forbiddenFiles
+    // tokens); if the keyword wasn't found, keep existing pass-through behavior.
+    const sc = extractScopeContract(prompt);
+    if (sc.found) {
+      if (sc.parsed === null) {
+        // Located but JSON is malformed — fail-closed (contract problem, not a guard bug).
+        console.log(
+          JSON.stringify({
+            decision: "block",
+            reason: "scope-contract-guard: scopeContract present but unparseable — refusing (declare a parseable allowedFiles/forbiddenFiles).",
+          }),
+        );
+        process.exit(2);
+      }
+      const allowedFiles = sc.parsed.allowedFiles;
+      const forbiddenFiles = sc.parsed.forbiddenFiles;
+      const hasEmptyAllowed = Array.isArray(allowedFiles) && allowedFiles.length === 0;
+      const hasForbidden = Array.isArray(forbiddenFiles) && forbiddenFiles.length > 0;
+      if (hasEmptyAllowed && !hasForbidden) {
+        // Empty allowedFiles with no forbiddenFiles — this silently blocks ALL writes.
+        console.log(
+          JSON.stringify({
+            decision: "block",
+            reason: "scope-contract-guard: scopeContract has an EMPTY allowedFiles:[] — this blocks ALL builder writes. Declare the file(s) you intend to write in allowedFiles, or use forbiddenFiles to blocklist instead.",
+          }),
+        );
+        process.exit(2);
+      }
+      // Non-empty allowedFiles OR non-empty forbiddenFiles (blocklist mode) → pass.
+    }
+    // If !sc.found: hasScopeContract matched on a non-scopeContract token
+    // (e.g. bare "allowedFiles", "File Scope") — keep existing pass-through behavior.
   } catch {
     process.exit(0);
   }
   process.exit(0);
 });
 
-module.exports = { hasScopeContract, resolveRole, isBuildChain, BUILD_CHAIN };
+module.exports = { hasScopeContract, extractScopeContract, resolveRole, isBuildChain, BUILD_CHAIN };

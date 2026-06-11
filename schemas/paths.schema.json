@@ -602,11 +602,6 @@
       "const": ".claude/portfolio",
       "description": "dir (project) — paths.portfolioHome"
     },
-    "portfolioRegistry": {
-      "type": "string",
-      "const": ".claude/portfolio/registry.yaml",
-      "description": "yaml (project) — paths.portfolioRegistry"
-    },
     "briefsRoot": {
       "type": "string",
       "const": "_docs/briefs",

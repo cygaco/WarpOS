@@ -129,7 +129,6 @@ const PATHS = {
   "providerAutofixLib": path.join(PROJECT, "scripts", "warpos", "lib", "provider-autofix.js"),
   "reasoningFrameworks": path.join(PROJECT, ".claude", "project", "reference", "reasoning-frameworks.md"),
   "portfolioHome": path.join(PROJECT, ".claude", "portfolio"),
-  "portfolioRegistry": path.join(PROJECT, ".claude", "portfolio", "registry.yaml"),
   "briefsRoot": path.join(PROJECT, "_docs", "briefs"),
   "clonesRoot": path.join(PROJECT, "_docs", "clones"),
   "testInstallMatrix": path.join(PROJECT, "scripts", "warpos", "test-install-matrix.js"),

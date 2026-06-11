@@ -1021,8 +1021,9 @@
       "owner": "project",
       "mutable": true,
       "introducedIn": "0.9.0",
+      "removedIn": "0.21.0",
       "docsToken": "paths.portfolioRegistry",
-      "_note": "Canonical product registry (warpos/portfolio-registry/v1). One entry per portfolio product. Consumed by every /portfolio:* skill via scripts/portfolio/registry.js. Sprint SP-20260521-001 / S-1 + S-2."
+      "_note": "DEPRECATED (T-20260611-309): this project-local path was always dead — the real registry is HOME-anchored at ~/.warpos/portfolio.json. The consumer (scripts/portfolio/registry.js#registryPath()) resolves via os.homedir() and does NOT use this paths key. Removed from generated output so nothing can resolve to the dead .claude/portfolio/registry.yaml. Sprint SP-20260521-001 / S-1 + S-2."
     },
     "briefsRoot": {
       "path": "_docs/briefs",
@@ -1268,6 +1269,11 @@
         "match": "docs\\/03-requirement-standards\\/",
         "suggestion": "requirements/_standards/ (or paths.requirementsRoot)",
         "why": "Phase 1 final-A: docs/03-requirement-standards → requirements/_standards"
+      },
+      {
+        "match": "\\.claude\\/portfolio\\/registry\\.yaml",
+        "suggestion": "~/.warpos/portfolio.json (HOME-anchored); consumer: scripts/portfolio/registry.js#registryPath()",
+        "why": "T-20260611-309: this project-local path was always dead; real registry is home-anchored, resolved by the consumer via os.homedir()"
       }
     ],
     "_critical_doc": "Above are paths that resolve to NOTHING in the current layout (or to-be-current after Phase 1 final-A). Lint exits 1 on any hit.",

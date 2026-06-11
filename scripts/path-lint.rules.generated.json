@@ -141,6 +141,11 @@
       "match": "docs\\/03-requirement-standards\\/",
       "suggestion": "requirements/_standards/ (or paths.requirementsRoot)",
       "why": "Phase 1 final-A: docs/03-requirement-standards → requirements/_standards"
+    },
+    {
+      "match": "\\.claude\\/portfolio\\/registry\\.yaml",
+      "suggestion": "~/.warpos/portfolio.json (HOME-anchored); consumer: scripts/portfolio/registry.js#registryPath()",
+      "why": "T-20260611-309: this project-local path was always dead; real registry is home-anchored, resolved by the consumer via os.homedir()"
     }
   ],
   "warn": [
