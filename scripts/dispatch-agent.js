@@ -619,6 +619,17 @@ const propagatedChildBaseMs =
 // T-322: when ε propagates the child bound, the slot bound must be ≤ childBaseMs
 // so the parent's childBaseMs+grace strictly exceeds it; else keep the standalone
 // DISPATCH_SLOT_TIMEOUT_MS default (600s) unchanged for non-ε callers.
+//
+// T-322 / β build-constraint (DECIDE 0.90), CHOICE (b) — ACCEPTED, not floored:
+// when childBaseMs is foreground-CLAMPED (540s), this slot bound shrinks below the
+// old 600s default. That is CORRECT fallback behavior, not a regression: a foreground
+// dispatch's TOTAL budget is already ≤540s, so a slot wait approaching that leaves no
+// room to run the provider call anyway — failing over to claude sooner (high cap, no
+// rate-limit) is the right move, not waiting out a 600s saturated slot we could never
+// use. A FLOOR of 600s is not an option here: it would make slot > childBaseMs and
+// re-open the parent-kills-child race this ticket closes. BACKGROUND dispatches keep
+// the full wait (childBaseMs=900s > 600s), so a saturated provider that genuinely needs
+// ~600s to free a slot is UNAFFECTED — only the foreground (can't-run-long) lane shortens.
 const slotTimeoutMs =
   propagatedChildBaseMs != null
     ? propagatedChildBaseMs

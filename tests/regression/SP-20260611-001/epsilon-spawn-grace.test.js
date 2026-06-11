@@ -243,7 +243,7 @@ Module._load = function (request, parent, isMain) {
 };
 `;
 
-function runChildAndCaptureBounds(setEnv = {}, deleteEnv = []) {
+function runChildAndCaptureBounds(setEnv = {}, deleteEnv = [], background = false) {
   const tmpShim = path.join(os.tmpdir(), `t322-shim-${process.pid}-${Math.random().toString(36).slice(2)}.js`);
   const tmpPrompt = path.join(os.tmpdir(), `t322-prompt-${process.pid}-${Math.random().toString(36).slice(2)}.txt`);
   fs.writeFileSync(tmpShim, SHIM);
@@ -254,10 +254,13 @@ function runChildAndCaptureBounds(setEnv = {}, deleteEnv = []) {
       NODE_OPTIONS: `${process.env.NODE_OPTIONS ? process.env.NODE_OPTIONS + " " : ""}--require ${tmpShim}`,
       ...setEnv,
     };
-    // Foreground so the child clamps like the live ε-agent site; clear any inherited
-    // bound that would contaminate the probe (the harness may set these for subprocesses).
-    delete env.WARPOS_DISPATCH_BACKGROUND;
     for (const k of deleteEnv) delete env[k];
+    // Default: FOREGROUND so the child clamps like the live ε-agent site (clear any
+    // inherited background signal — the harness may set it for long subprocesses).
+    // background=true: keep the explicit signal so the child's foregroundAwareTimeout
+    // does NOT clamp (exercises the long-lane no-shrink case).
+    if (background) env.WARPOS_DISPATCH_BACKGROUND = "1";
+    else delete env.WARPOS_DISPATCH_BACKGROUND;
     const r = spawnSync(
       process.execPath,
       [DISPATCH_AGENT, "security-reviewer", tmpPrompt, "--provider", "gemini"],
@@ -340,6 +343,58 @@ console.log("\n(5) epsilon-agent-parent-strictly-exceeds-child-REAL-bounds (T-32
       "non-ε caller: runProvider gets no opts.timeoutMs (its own default applies)",
       noEnv.runProviderTimeoutMs === undefined,
       `runProvider=${noEnv.runProviderTimeoutMs}`,
+    );
+  }
+}
+
+// ── (6) β BUILD-CONSTRAINT (DECIDE 0.90): the accepted foreground slot-wait shrink ──
+//
+// CHOICE (b): when childBaseMs is FOREGROUND-clamped (540s), the derived slot wait is
+// intentionally BELOW the old 600s DISPATCH_SLOT_TIMEOUT_MS default — accepted as correct
+// fallback (a foreground dispatch can't run long, so failing over to claude sooner beats
+// burning the budget on a slot it could never use). A 600s FLOOR was rejected because it
+// would make slot > childBaseMs and re-open the race. This section PINS that decision so a
+// future "restore the 600s floor" change (which would silently re-open the race) REDs here.
+const FG_CEILING = foregroundAwareTimeout(9000000, {}); // 540000
+console.log("\n(6) β build-constraint — foreground slot-wait shrink ACCEPTED, background unaffected:");
+{
+  // Foreground ε dispatch: slot wait == childBaseMs (540s) < old 600s default — the accepted
+  // shrink — AND parent (585s) still strictly exceeds it.
+  const fg = runChildAndCaptureBounds(
+    { DISPATCH_BUILDER_TIMEOUT_MS: String(FG_CEILING) },
+    ["DISPATCH_SLOT_TIMEOUT_MS"],
+  );
+  if (fg.error) {
+    ok("foreground ε: child probe ran", false, fg.error);
+  } else {
+    ok(
+      "foreground ε: slot wait is the accepted shrink (== 540s clamp, < old 600s default)",
+      fg.slotTimeoutMs === FG_CEILING && fg.slotTimeoutMs < 10 * 60 * 1000,
+      `slot=${fg.slotTimeoutMs} ceiling=${FG_CEILING}`,
+    );
+    ok(
+      "foreground ε: parent (childBaseMs+grace) STILL strictly exceeds the shrunk slot wait",
+      FG_CEILING + GRACE > fg.slotTimeoutMs,
+      `parent=${FG_CEILING + GRACE} slot=${fg.slotTimeoutMs}`,
+    );
+  }
+
+  // BACKGROUND ε dispatch: childBaseMs = full 900s (> 600s) → NO shrink. A saturated provider
+  // that genuinely needs ~600s to free a slot is unaffected. Drive the child with the explicit
+  // background signal so its own foregroundAwareTimeout does NOT clamp.
+  const bgBase = WRAPPER_DEFAULTS["epsilon-agent"]; // 900000 raw
+  const bg = runChildAndCaptureBounds(
+    { DISPATCH_BUILDER_TIMEOUT_MS: String(bgBase) },
+    ["DISPATCH_SLOT_TIMEOUT_MS"],
+    /*background=*/ true,
+  );
+  if (bg.error) {
+    ok("background ε: child probe ran", false, bg.error);
+  } else {
+    ok(
+      "background ε: slot wait keeps the full bound (>= old 600s — no shrink for the long lane)",
+      bg.slotTimeoutMs === bgBase && bg.slotTimeoutMs >= 10 * 60 * 1000,
+      `slot=${bg.slotTimeoutMs} bgBase=${bgBase}`,
     );
   }
 }
