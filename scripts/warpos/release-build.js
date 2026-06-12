@@ -113,8 +113,11 @@ function betaHonestyGate(opts, runChecker) {
     "release-build refuses to build: Beta-consultation honesty findings in recent sprints\n" +
     "(missing_consult / placeholder_verdict / escalate_without_halt / canned_* non-substantive verdicts):\n" +
     (detail ? "  " + detail.split("\n").join("\n  ") + "\n" : "") +
-    "Remediation: resolve the findings (run `node scripts/checks/sprint-beta-honesty.js`), then re-run release-build.\n" +
-    "Bypass (emergencies only): re-run with --skip-beta-honesty-check.";
+    "Remediation: resolve NEW findings (run `node scripts/checks/sprint-beta-honesty.js`), then re-run release-build.\n" +
+    "Sanctioned triage (ED-049): for immutable/historical findings, waive them with an approver + reason —\n" +
+    "  `node scripts/checks/beta-honesty-triage.js list` then `... waive --sprint <id>|--all --expect <N> --reason \"…\" --approver \"…\"`.\n" +
+    "  The audit then blocks only on NEW (un-waived) findings — no source edit, no blanket bypass.\n" +
+    "Bypass (true emergencies only, leaves NO audit trail): re-run with --skip-beta-honesty-check.";
   return { blocked: true, message };
 }
 

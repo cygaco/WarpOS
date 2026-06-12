@@ -287,6 +287,11 @@
       "const": ".claude/project/memory/enforcement-debt.jsonl",
       "description": "jsonl (runtime) — paths.enforcementDebt"
     },
+    "betaHonestyWaivers": {
+      "type": "string",
+      "const": ".claude/project/memory/beta-honesty-waivers.jsonl",
+      "description": "jsonl (runtime) — paths.betaHonestyWaivers"
+    },
     "reportsDir": {
       "type": "string",
       "const": "_reports",

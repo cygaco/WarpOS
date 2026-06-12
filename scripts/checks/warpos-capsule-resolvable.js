@@ -73,6 +73,20 @@ if (!VERSION) {
   });
 }
 
+// Semver-aware ascending compare. A bare String#sort() orders version dir
+// names LEXICALLY, which puts "0.9.0" AFTER "0.16.0" (and makes a consumer
+// reading the last element believe 0.9.0 is the latest release). Compare the
+// numeric release triple instead so the max element is the true latest capsule.
+function compareSemverDir(a, b) {
+  const pa = String(a).split(".").map((n) => parseInt(n, 10) || 0);
+  const pb = String(b).split(".").map((n) => parseInt(n, 10) || 0);
+  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+    const d = (pa[i] || 0) - (pb[i] || 0);
+    if (d !== 0) return d < 0 ? -1 : 1;
+  }
+  return 0;
+}
+
 function listAvailableVersions(releasesDir) {
   if (!fs.existsSync(releasesDir)) return null;
   try {
@@ -80,7 +94,7 @@ function listAvailableVersions(releasesDir) {
       .readdirSync(releasesDir)
       .filter((d) => /^\d/.test(d))
       .filter((d) => fs.existsSync(path.join(releasesDir, d, "release.json")))
-      .sort();
+      .sort(compareSemverDir);
   } catch {
     return null;
   }

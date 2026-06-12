@@ -55,6 +55,7 @@
   "systemsFile": ".claude/project/memory/systems.jsonl",
   "recurringIssuesFile": ".claude/project/memory/recurring-issues.jsonl",
   "enforcementDebt": ".claude/project/memory/enforcement-debt.jsonl",
+  "betaHonestyWaivers": ".claude/project/memory/beta-honesty-waivers.jsonl",
   "reportsDir": "_reports",
   "roadmap": "ROADMAP.md",
   "releases": "RELEASES.md",

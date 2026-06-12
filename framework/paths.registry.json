@@ -484,6 +484,15 @@
       "docsToken": "paths.enforcementDebt",
       "_note": "Append-only ledger of policies that exist without a named enforcer. Logged via /enforcement:log; surfaced at /enforcement:list and /scan:full."
     },
+    "betaHonestyWaivers": {
+      "path": ".claude/project/memory/beta-honesty-waivers.jsonl",
+      "kind": "jsonl",
+      "owner": "runtime",
+      "mutable": true,
+      "introducedIn": "0.17.0",
+      "docsToken": "paths.betaHonestyWaivers",
+      "_note": "Append-only triage ledger for scan:sprint-beta-honesty findings (ED-049). Each line waives ONE finding by stable fingerprint + reason + approver; the audit drops waived findings so release-build blocks only on NEW findings. Written by scripts/checks/beta-honesty-triage.js; consumed by scripts/checks/sprint-beta-honesty.js."
+    },
     "reportsDir": {
       "path": "_reports",
       "kind": "dir",

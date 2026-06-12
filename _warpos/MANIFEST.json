@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-12T05:19:36.276Z",
+  "generatedAt": "2026-06-12T14:54:29.176Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.16.0",
   "migrations": [],
@@ -3904,8 +3904,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/warpos/release-build.js",
-      "sha256": "5e0bc7d1301ae611d944aa25563962beaf0201bf5e9c5acc4a48c3e9749bd796",
-      "installedSha": "5e0bc7d1301ae611d944aa25563962beaf0201bf5e9c5acc4a48c3e9749bd796"
+      "sha256": "e9cdde0b3c094961490ba18eba7fcbf458f2d1b52ba585b347b7890a12857ffe",
+      "installedSha": "e9cdde0b3c094961490ba18eba7fcbf458f2d1b52ba585b347b7890a12857ffe"
     },
     "scripts/warpos/release-canonical.js": {
       "owner": "framework",
@@ -5780,8 +5780,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/lib/paths.generated.js",
-      "sha256": "9946edd66bdf4c912588e2a8db06d343e2565bde7497ae2f5ea5f85592cdd80d",
-      "installedSha": "9946edd66bdf4c912588e2a8db06d343e2565bde7497ae2f5ea5f85592cdd80d"
+      "sha256": "e371be2ac8db6104ba56c54cd0b74fd950b666924dbc40b1b926b442a51305ef",
+      "installedSha": "e371be2ac8db6104ba56c54cd0b74fd950b666924dbc40b1b926b442a51305ef"
     },
     "scripts/hooks/lib/paths.js": {
       "owner": "framework",
@@ -6293,6 +6293,13 @@
       "source": "scripts/checks/adhoc-team-hygiene.js",
       "sha256": "dbb7be96679cfe3bbcf5577a42d8cd05f2d7085e147010713ba18230c1c66cd2",
       "installedSha": "dbb7be96679cfe3bbcf5577a42d8cd05f2d7085e147010713ba18230c1c66cd2"
+    },
+    "scripts/checks/beta-honesty-triage.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/beta-honesty-triage.js",
+      "sha256": "23e923b2b37f81f73ec07223333a4a8992b6e6495eeb7088eed001b5e6074849",
+      "installedSha": "23e923b2b37f81f73ec07223333a4a8992b6e6495eeb7088eed001b5e6074849"
     },
     "scripts/checks/canon-no-unfilled-tokens.js": {
       "owner": "framework",
@@ -6816,8 +6823,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/sprint-beta-honesty.js",
-      "sha256": "3cb30dc8d9a3a024a9e3a7fd8bb833fe268dd0d69aae892cfa27fc841a0a8d26",
-      "installedSha": "3cb30dc8d9a3a024a9e3a7fd8bb833fe268dd0d69aae892cfa27fc841a0a8d26"
+      "sha256": "293058f1d836ed07a1095b1ad4d7498958dc3620bef3926095c537b7db01614d",
+      "installedSha": "293058f1d836ed07a1095b1ad4d7498958dc3620bef3926095c537b7db01614d"
     },
     "scripts/checks/sprint-hook-coverage.js": {
       "owner": "framework",
@@ -6865,8 +6872,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/test-sprint-beta-honesty.js",
-      "sha256": "28e7a227dacd508e09fc5e62ac2892fbaa3041e5e5523769a9e04af685fdb71a",
-      "installedSha": "28e7a227dacd508e09fc5e62ac2892fbaa3041e5e5523769a9e04af685fdb71a"
+      "sha256": "62e9abbb8829c8132a22f4e3696fbb5864393c051234c747a8f73165cdbd94b4",
+      "installedSha": "62e9abbb8829c8132a22f4e3696fbb5864393c051234c747a8f73165cdbd94b4"
     },
     "scripts/checks/test-sprint-hook-coverage.js": {
       "owner": "framework",
@@ -6921,8 +6928,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/warpos-capsule-resolvable.js",
-      "sha256": "d37955189c982af1a2611d240a6998d0ad165cf720962c7861e4fbfc41b2fe41",
-      "installedSha": "d37955189c982af1a2611d240a6998d0ad165cf720962c7861e4fbfc41b2fe41"
+      "sha256": "39f67e8175aac4fe6f4e482f523d81db2f561133558d36a7fcedaec8b3141815",
+      "installedSha": "39f67e8175aac4fe6f4e482f523d81db2f561133558d36a7fcedaec8b3141815"
     },
     "scripts/checks/warpos-enforcer-shippability.js": {
       "owner": "framework",
@@ -7369,8 +7376,8 @@
       "owner": "framework",
       "managed": true,
       "source": "schemas/paths.schema.json",
-      "sha256": "e9d399b867afb2da1eb160d3df4dd2587d8c12c4c51a248aeca93e994b91e38c",
-      "installedSha": "e9d399b867afb2da1eb160d3df4dd2587d8c12c4c51a248aeca93e994b91e38c"
+      "sha256": "dc685582a9c68bc12f7a8880ac99df0d18d1948d08fcd79f09719e992e78ffaa",
+      "installedSha": "dc685582a9c68bc12f7a8880ac99df0d18d1948d08fcd79f09719e992e78ffaa"
     },
     "schemas/provider-failure-modes.schema.json": {
       "owner": "framework",
@@ -7698,8 +7705,8 @@
       "owner": "framework",
       "managed": true,
       "source": "framework/paths.registry.json",
-      "sha256": "9ea6730fa3acff660a693878f8accff94f30fa357605666b4c6df40868777bc9",
-      "installedSha": "9ea6730fa3acff660a693878f8accff94f30fa357605666b4c6df40868777bc9"
+      "sha256": "64a3a304629c962f58de8ed19305368046637e023e256503ee87bd579cf89f3a",
+      "installedSha": "64a3a304629c962f58de8ed19305368046637e023e256503ee87bd579cf89f3a"
     },
     "framework/templates/sprint/README.md": {
       "owner": "framework",
@@ -8993,8 +9000,8 @@
       "owner": "framework",
       "managed": true,
       "source": "framework/releases/0.16.0/checksums.json",
-      "sha256": "ae3588e82d7d5f062f9eec6bf46863c7b5cffc5e9c524ffc4bf4e01d7c9690f1",
-      "installedSha": "ae3588e82d7d5f062f9eec6bf46863c7b5cffc5e9c524ffc4bf4e01d7c9690f1"
+      "sha256": "707365e1b20054f42db8af5b40b7cd99fabc8bdad50fad6881a1b540f9468854",
+      "installedSha": "707365e1b20054f42db8af5b40b7cd99fabc8bdad50fad6881a1b540f9468854"
     },
     "framework/releases/0.16.0/framework-manifest.json": {
       "owner": "framework",
@@ -18660,6 +18667,10 @@
       "sha256": "264e46f1b55b145cdcc54bf8c91294f060cd297ee367e0d28a275a91e5b0bdc1",
       "installedSha": "264e46f1b55b145cdcc54bf8c91294f060cd297ee367e0d28a275a91e5b0bdc1"
     },
+    ".claude/project/memory/beta-honesty-waivers.jsonl": {
+      "owner": "runtime",
+      "managed": false
+    },
     ".claude/project/memory/enforcement-debt.jsonl": {
       "owner": "runtime",
       "managed": false
@@ -19457,8 +19468,8 @@
       "managed": true,
       "source": ".claude/commands/scan/sprint-beta-honesty.md",
       "kind": "md",
-      "sha256": "6f74de8bffefc92ded067bf39d98925330a8d0089ebda89321ff5f6062f7e9d7",
-      "installedSha": "6f74de8bffefc92ded067bf39d98925330a8d0089ebda89321ff5f6062f7e9d7"
+      "sha256": "f8701722ba11a5915d07aff9e7218c14aa3a9bb66dd4697a40bd0f0aff99228a",
+      "installedSha": "f8701722ba11a5915d07aff9e7218c14aa3a9bb66dd4697a40bd0f0aff99228a"
     },
     ".claude/commands/scan/sprint-hook-coverage.md": {
       "owner": "framework",

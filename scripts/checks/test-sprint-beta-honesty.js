@@ -31,6 +31,9 @@ const {
   loadFullReportsData,
   validateIsoDate,
   classifyCanned,
+  fingerprintFinding,
+  isValidWaiver,
+  loadWaivers,
   EXPECTED_BOUNDARIES,
   SP003_SHIP_DATE,
   PHASE_TO_BOUNDARY,
@@ -978,6 +981,105 @@ console.log("\n(o5) CANNED — pre-cutoff sprint with a canned verdict is EXEMPT
     r.findings.length === 0,
     `got ${JSON.stringify(r.findings)}`,
   );
+}
+
+// ── (ED-049) Fingerprint stability + waiver ledger ────────────────────────────
+
+console.log("\n(w1) FINGERPRINT — deterministic for identical record fields:");
+{
+  const a = fingerprintFinding({ sprint_id: "SP-X", finding_type: "canned_too_short", phase_boundary: "before_design", beta_message: "ok", actual_event: "sprint_full_beta_consult" });
+  const b = fingerprintFinding({ sprint_id: "SP-X", finding_type: "canned_too_short", phase_boundary: "before_design", beta_message: "ok", actual_event: "sprint_full_beta_consult" });
+  ok("FP-DETERMINISTIC: same inputs → same 64-hex fingerprint", a === b && /^[0-9a-f]{64}$/.test(a), a);
+  const c = fingerprintFinding({ sprint_id: "SP-Y", finding_type: "canned_too_short", phase_boundary: "before_design", beta_message: "ok", actual_event: "sprint_full_beta_consult" });
+  ok("FP-DISTINCT: different sprint → different fingerprint", a !== c);
+}
+
+console.log("\n(w2) FINGERPRINT — INVARIANT to corpus growth (β's HOW-fix):");
+{
+  // The cross_sprint_template evidence embeds "across N sprints" — a corpus-derived
+  // count. β's catch: the fingerprint must NOT move when N grows, or a waiver would
+  // silently stop matching and the finding would re-block. Build the SAME finding in a
+  // 3-sprint corpus and a 4-sprint corpus; the fingerprint for SP-T1 must be identical.
+  const MSG = "DECIDE 0.9 — proceed; reversible per SP rubric, blast-radius small.";
+  function corpus(ids) {
+    const events = [];
+    const dates = {};
+    for (const id of ids) {
+      events.push(makeConsultRec(id, "before_design", { beta_message: MSG }));
+      events.push(makePhaseStartedRec(id, "design"));
+      dates[id] = POST_CUTOFF_DATE;
+    }
+    return { events, dates };
+  }
+  const a = corpus(["SP-T1", "SP-T2", "SP-T3"]);
+  const b = corpus(["SP-T1", "SP-T2", "SP-T3", "SP-T4"]);
+  const fa = computeFindings(a.events, a.dates).findings.find(
+    (f) => f.sprint_id === "SP-T1" && f.finding_type === "canned_cross_sprint_template",
+  );
+  const fb = computeFindings(b.events, b.dates).findings.find(
+    (f) => f.sprint_id === "SP-T1" && f.finding_type === "canned_cross_sprint_template",
+  );
+  ok("FP-CORPUS: cross_sprint_template finding exists in both corpora", !!fa && !!fb, `fa=${!!fa} fb=${!!fb}`);
+  ok(
+    "FP-INVARIANT: fingerprint identical across 3-sprint vs 4-sprint corpus (count not hashed)",
+    fa && fb && fa.fingerprint === fb.fingerprint,
+    fa && fb ? `${fa.fingerprint.slice(0, 12)} vs ${fb.fingerprint.slice(0, 12)} | evidence differs: "${fa.evidence}" / "${fb.evidence}"` : "missing finding",
+  );
+}
+
+console.log("\n(w3) WAIVER — a valid waiver drops ONLY its finding; others still block:");
+{
+  // Two sprints, each a missing_consult. Waive finding #1 → it drops, #2 still blocks.
+  const events = [
+    makePhaseStartedRec("SP-W1", "design"),
+    makePhaseStartedRec("SP-W2", "design"),
+  ];
+  const dates = { "SP-W1": POST_CUTOFF_DATE, "SP-W2": POST_CUTOFF_DATE };
+  const raw = computeFindings(events, dates);
+  ok("WAIVER-SETUP: 2 raw findings before any waiver", raw.findings.length === 2, `got ${raw.findings.length}`);
+  const fp1 = raw.findings.find((f) => f.sprint_id === "SP-W1").fingerprint;
+  const waived = computeFindings(events, dates, SP003_SHIP_DATE, null, new Set([fp1.toLowerCase()]));
+  ok("WAIVER-DROP: waived finding removed (1 remains)", waived.findings.length === 1, `got ${waived.findings.length}`);
+  ok("WAIVER-COUNT: waived count reported as 1", waived.waived === 1, `got ${waived.waived}`);
+  ok(
+    "WAIVER-NEW-STILL-BLOCKS: the un-waived sprint still appears",
+    waived.findings.length === 1 && waived.findings[0].sprint_id === "SP-W2",
+    JSON.stringify(waived.findings.map((f) => f.sprint_id)),
+  );
+}
+
+console.log("\n(w4) isValidWaiver — fail-closed on incomplete/malformed waivers:");
+{
+  const goodFp = "a".repeat(64);
+  ok("VALID: fingerprint+reason+approver → valid", isValidWaiver({ fingerprint: goodFp, reason: "r", approver: "op" }) === true);
+  ok("INVALID: missing reason → invalid", isValidWaiver({ fingerprint: goodFp, approver: "op" }) === false);
+  ok("INVALID: blank approver → invalid", isValidWaiver({ fingerprint: goodFp, reason: "r", approver: "  " }) === false);
+  ok("INVALID: non-hex fingerprint → invalid", isValidWaiver({ fingerprint: "not-hex", reason: "r", approver: "op" }) === false);
+  ok("INVALID: null → invalid", isValidWaiver(null) === false);
+}
+
+console.log("\n(w5) loadWaivers — per-line fail-closed parse (corrupt line dropped, no throw):");
+{
+  const tmp = path.join(os.tmpdir(), `bhw-test-${Date.now()}-${Math.random().toString(36).slice(2)}.jsonl`);
+  const fpA = "a".repeat(64);
+  const fpB = "b".repeat(64);
+  fs.writeFileSync(
+    tmp,
+    [
+      JSON.stringify({ fingerprint: fpA, reason: "r", approver: "op" }), // valid
+      "{ this is not json",                                              // corrupt → dropped
+      JSON.stringify({ fingerprint: fpB, reason: "r" }),                 // missing approver → invalid
+      "",                                                                // blank → skipped
+      JSON.stringify({ fingerprint: fpB, reason: "r", approver: "op" }), // valid
+    ].join("\n") + "\n",
+  );
+  let threw = false;
+  let set;
+  try { set = loadWaivers(tmp); } catch { threw = true; }
+  fs.rmSync(tmp, { force: true });
+  ok("LOADW-NOTHROW: corrupt line does not throw", threw === false);
+  ok("LOADW-VALID-ONLY: only the 2 valid fingerprints loaded", set && set.size === 2 && set.has(fpA) && set.has(fpB), set ? `size ${set.size}` : "no set");
+  ok("LOADW-MISSING: missing ledger file → empty set", loadWaivers(path.join(os.tmpdir(), "does-not-exist-bhw.jsonl")).size === 0);
 }
 
 // ── Results ───────────────────────────────────────────────────────────────────

@@ -8,7 +8,7 @@ Audits the Beta consultation cadence enforced by `/sprint:full` (SP-20260525-003
 
 ## What it detects
 
-Seven finding types, each with shape `{ sprint_id, phase, expected_consult, actual_event, verdict, evidence, finding_type }`:
+Seven finding types, each with shape `{ sprint_id, phase, expected_consult, actual_event, verdict, evidence, finding_type, fingerprint }` (the `fingerprint` keys the ED-049 waiver ledger — see Triage / waivers below):
 
 1. **`missing_consult`** — a phase boundary was reached (`sprint_full_phase_started` for that phase) but no `sprint_full_beta_consult` event was recorded for the sprint + boundary. The four expected boundaries are `before_design`, `before_execute`, `before_release-prep`, `before_retro` (corresponding to transitions into phases 2–5). `before_plan` is not a check boundary.
 
@@ -54,8 +54,28 @@ node scripts/checks/sprint-beta-honesty.js [--json] [--since <ISO-date>]
 |------|---------|-------------|
 | `--json` | off | Emit machine-readable JSON instead of human text |
 | `--since <ISO-date>` | `2026-05-25` | Override the legacy-exempt cutoff date |
+| `--no-waivers` | off | Audit the RAW findings, ignoring the ED-049 waiver ledger (used by the triage tool to enumerate everything before waiving) |
 
 **Exit codes:** `0` = clean (no findings or no applicable sprints); `1` = one or more findings.
+
+## Triage / waivers (ED-049)
+
+Historical β-consultation records are **immutable** — once a sprint recorded a canned/short verdict, that finding exists forever. Without a triage path, the first such finding past the cutoff hard-blocks **every** future release (the only escape being the emergencies-only `--skip-beta-honesty-check`), so the gate decays into ritual bypass.
+
+The fix is a precise, auditable **waiver ledger** (`paths.betaHonestyWaivers` → `.claude/project/memory/beta-honesty-waivers.jsonl`). Each line waives **one** finding by a stable **fingerprint** + a `reason` + an `approver`. The audit drops waived findings, so release-build blocks only on **NEW** (un-waived) findings — a genuinely-new canned verdict has no matching waiver and still hard-blocks.
+
+**Fingerprint stability.** The fingerprint hashes **immutable record fields only** — `sha256(sprint_id | finding_type | phase_boundary | normalizeMessage(raw beta_message) | actual_event)` — never the checker-*rendered* `evidence` string. The rendered evidence embeds corpus-derived counts (`across N sprints`) and threshold literals (`< 40`) that move when the corpus grows or thresholds retune; hashing those would silently un-match a waiver and re-block the finding. (β HOW-fix, DECIDE B 0.88, 2026-06-12.)
+
+**Fail-closed.** A waiver missing `fingerprint`/`reason`/`approver`, or a corrupt JSONL line, is **ignored** — the finding still blocks (malformed → fail-closed, never fail-open). The per-line parse never throws; a bad line drops only that waiver. The `waived` count is reported in `--json` so an audit can see the gate is doing something (an invisible waiver count is its own false-green).
+
+```bash
+# Inspect: every finding the gate sees, with its fingerprint + waived/blocking status
+node scripts/checks/beta-honesty-triage.js list [--since <ISO>] [--json]
+
+# Waive (requires an approver + reason; --all needs a --expect count guard)
+node scripts/checks/beta-honesty-triage.js waive --reason "<why>" --approver "<who>" \
+     ( --sprint <SP-id> | --fingerprint <hex> | --all --expect <N> ) [--batch <id>] [--dry-run]
+```
 
 ## JSON output shape
 
@@ -78,7 +98,8 @@ node scripts/checks/sprint-beta-honesty.js [--json] [--since <ISO-date>]
   "totalFindings": 1,
   "cutoff": "2026-05-25",
   "undatedExempt": 0,
-  "malformedLines": 0
+  "malformedLines": 0,
+  "waived": 0
 }
 ```
 
