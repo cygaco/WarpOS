@@ -301,6 +301,9 @@ function checkDeprecatedAliases() {
     ".claude/.session-checkpoint.json",
     ".claude/.last-checkpoint",
     ".claude/.session-prompts.log",
+    // Per-run sprint prompt artifacts — frozen dispatch prompts/diff evidence,
+    // not live docs (same class as runtime/canonical-skeleton/)
+    "runtime/epsilon-prompts/",
   ];
   const accept = (f) => {
     const rel = path.relative(ROOT, f).replace(/\\/g, "/");
@@ -386,6 +389,9 @@ function checkDocsTokens() {
     // Transaction backups snapshot superseded files verbatim; they are
     // append-only records, not live docs (same rationale as deprecated-alias).
     ".warpos/",
+    // Per-run sprint prompt artifacts — frozen dispatch prompts/diff evidence,
+    // not live docs (same class as the deprecated-alias skip)
+    "runtime/epsilon-prompts/",
   ];
   const accept = (f) => {
     const rel = path.relative(ROOT, f).replace(/\\/g, "/");

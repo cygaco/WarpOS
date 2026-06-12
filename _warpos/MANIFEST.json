@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-12T05:05:07.405Z",
+  "generatedAt": "2026-06-12T05:09:42.949Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.15.4",
   "migrations": [],
@@ -4968,8 +4968,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/paths/gate.js",
-      "sha256": "45c3b1155ebe55927365e3325bfb9dc5d5f9382b4c67930e93bf0811c516ddb6",
-      "installedSha": "45c3b1155ebe55927365e3325bfb9dc5d5f9382b4c67930e93bf0811c516ddb6"
+      "sha256": "066307bf5473f492231df5894c808d0467902c79f7cf213b433b0164e346567d",
+      "installedSha": "066307bf5473f492231df5894c808d0467902c79f7cf213b433b0164e346567d"
     },
     "scripts/paths/lib/registry.js": {
       "owner": "framework",

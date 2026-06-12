@@ -266,6 +266,6 @@ into the release gates so attempt #3 self-detects. This is itself an instance of
 - Release/update: `.claude/commands/warp/release.md`, `.claude/commands/warp/update.md`, `.claude/commands/portfolio/sync.md`
 - Pre-auth + floor: `scripts/turbo/apply.js`, `scripts/hooks/authorization-gate.js`, `.claude/commands/session/turbo.md`
 - Autonomy preset: `paths.sprintFullAutonomy`
-- Portfolio registry: `~/.warpos/portfolio.json` (`paths.portfolioRegistry`)
+- Portfolio registry: `~/.warpos/portfolio.json` (HOME-anchored; resolver `scripts/portfolio/registry.js` — the old project-local paths key was removed in T-20260611-309)
 - The motivating gap: `scripts/trackers/validate.js`, `framework/releases/0.15.1/release.json`, `trackers/templates/*`
 - Productization shape (memory): closed local engine + hosted cockpit + cloud brain; engine = moat
