@@ -54,7 +54,7 @@
     "paths_registry": 1,
     "template": 103,
     "hooks_registry": 1,
-    "guide": 15,
+    "guide": 16,
     "knowledge": 61,
     "top_script": 7,
     "version_file": 1,
@@ -62,7 +62,7 @@
     "module_scope": 1,
     "framework_doc": 4
   },
-  "total": 1259,
+  "total": 1260,
   "assets": {
     "agent": [
       {
@@ -1128,7 +1128,7 @@
         "src": ".claude/commands/bootstrap/lastmile.md",
         "dest": ".claude/commands/bootstrap/lastmile.md",
         "kind": "skill",
-        "sha256": "01030e85df3117d050e7466572dce2abeac3c1c366efc97ae1b4e62b57a85afb",
+        "sha256": "f977f4c58e6125c1f7b76b3235ff02d24df4a0eb53eb8fc1f2376cf599c2bafa",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
@@ -4072,7 +4072,7 @@
         "src": ".claude/project/maps/guide-integration.jsonl",
         "dest": ".claude/project/maps/guide-integration.jsonl",
         "kind": "maps_baseline",
-        "sha256": "60b68bb0ec6c21e13827cb4fa5480a15fd2aae5c754f84ee229dfe530fceb668",
+        "sha256": "067822eefbe0f27a72a7d08632b76b7e14adced310a504879ab3db3e9d2ebb38",
         "owner": "generated",
         "mergeStrategy": "regenerate",
         "introducedIn": "0.0.0",
@@ -14340,6 +14340,18 @@
         "replaces": null
       },
       {
+        "id": "guide.PUSH_NOTIFICATIONS_GUIDE.md",
+        "src": "_guides/PUSH_NOTIFICATIONS_GUIDE.md",
+        "dest": "_guides/PUSH_NOTIFICATIONS_GUIDE.md",
+        "kind": "guide",
+        "sha256": "90bd4e12ddeee3f2032b55bf50901439b3ade2b80e8aa09fbb39cb66140a3ac2",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
         "id": "guide.README.md",
         "src": "_guides/README.md",
         "dest": "_guides/README.md",
@@ -14356,7 +14368,7 @@
         "src": "_guides/registry.json",
         "dest": "_guides/registry.json",
         "kind": "guide",
-        "sha256": "54b91e6cca6953f74dae7b843f182bb6bc10176e8df80193b5285a240d65d451",
+        "sha256": "61b055ebc5d50c3be0fb5907bac1d2b3956280c90df7d89e2536500833ee8951",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",

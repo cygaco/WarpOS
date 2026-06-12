@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-12T14:54:29.176Z",
+  "generatedAt": "2026-06-12T23:16:51.359Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.16.0",
   "migrations": [],
@@ -121,8 +121,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "f5e1f03295724b84ccbf92e8ebc415790e9e88307c42280dc0eea7842a98d89b",
-      "installedSha": "f5e1f03295724b84ccbf92e8ebc415790e9e88307c42280dc0eea7842a98d89b"
+      "sha256": "fd9b164d9e9fdaf9a6b7376fd82af44132171498b797459acd7b063b5f691aed",
+      "installedSha": "fd9b164d9e9fdaf9a6b7376fd82af44132171498b797459acd7b063b5f691aed"
     },
     "TRACKER.md": {
       "owner": "runtime",
@@ -1275,6 +1275,13 @@
       "sha256": "443d587fc1e947df3aa8e74f6384f5f092a7f98d17a8efc46561bf58d9ada665",
       "installedSha": "443d587fc1e947df3aa8e74f6384f5f092a7f98d17a8efc46561bf58d9ada665"
     },
+    "_guides/PUSH_NOTIFICATIONS_GUIDE.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_guides/PUSH_NOTIFICATIONS_GUIDE.md",
+      "sha256": "90bd4e12ddeee3f2032b55bf50901439b3ade2b80e8aa09fbb39cb66140a3ac2",
+      "installedSha": "90bd4e12ddeee3f2032b55bf50901439b3ade2b80e8aa09fbb39cb66140a3ac2"
+    },
     "_guides/README.md": {
       "owner": "framework",
       "managed": true,
@@ -1286,8 +1293,8 @@
       "owner": "framework",
       "managed": true,
       "source": "_guides/registry.json",
-      "sha256": "54b91e6cca6953f74dae7b843f182bb6bc10176e8df80193b5285a240d65d451",
-      "installedSha": "54b91e6cca6953f74dae7b843f182bb6bc10176e8df80193b5285a240d65d451"
+      "sha256": "61b055ebc5d50c3be0fb5907bac1d2b3956280c90df7d89e2536500833ee8951",
+      "installedSha": "61b055ebc5d50c3be0fb5907bac1d2b3956280c90df7d89e2536500833ee8951"
     },
     "_guides/SECURITY_GUIDE.md": {
       "owner": "framework",
@@ -11227,6 +11234,14 @@
       "owner": "runtime",
       "managed": false
     },
+    ".claude/project/sprint/sprints/SP-20260612-001/current.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/sprints/SP-20260612-001/progress.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
     ".claude/project/sprint/sprints/SP-20260611-002/current.yaml": {
       "owner": "runtime",
       "managed": false
@@ -20572,8 +20587,8 @@
       "managed": true,
       "source": ".claude/commands/bootstrap/lastmile.md",
       "kind": "md",
-      "sha256": "01030e85df3117d050e7466572dce2abeac3c1c366efc97ae1b4e62b57a85afb",
-      "installedSha": "01030e85df3117d050e7466572dce2abeac3c1c366efc97ae1b4e62b57a85afb"
+      "sha256": "f977f4c58e6125c1f7b76b3235ff02d24df4a0eb53eb8fc1f2376cf599c2bafa",
+      "installedSha": "f977f4c58e6125c1f7b76b3235ff02d24df4a0eb53eb8fc1f2376cf599c2bafa"
     },
     ".claude/commands/bootstrap/ponder.md": {
       "owner": "framework",

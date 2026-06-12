@@ -138,6 +138,8 @@ Each module: **detect → recommend (default) → plan (shortest safe path)**.
 > - **Security + Privacy** (don't get hacked) → [`_guides/SECURITY_GUIDE.md`](../../../_guides/SECURITY_GUIDE.md) — database/RLS lockdown, secrets hygiene, rate limits + AI usage caps, prompt injection, input validation.
 > <!-- guide-anchor:ANALYTICS_TELEMETRY anchor:lastmile:module/analytics shape:walkthrough -->
 > - **Analytics / Instrumentation** → [`_guides/ANALYTICS_TELEMETRY_GUIDE.md`](../../../_guides/ANALYTICS_TELEMETRY_GUIDE.md) - activation, funnels, core product events, privacy-safe telemetry payloads.
+> <!-- guide-anchor:PUSH_NOTIFICATIONS anchor:lastmile:module/analytics shape:walkthrough -->
+> - **Push notifications** (bring users back without getting muted) → [`_guides/PUSH_NOTIFICATIONS_GUIDE.md`](../../../_guides/PUSH_NOTIFICATIONS_GUIDE.md) - earn the opt-in (soft-ask + iOS provisional auth), token hygiene, frequency caps + deep-linking, store/GDPR consent.
 > <!-- guide-anchor:DEPLOYMENT_INFRA anchor:lastmile:module/deployment shape:checklist -->
 > - **Platform / Deployment** → [`_guides/DEPLOYMENT_INFRA_GUIDE.md`](../../../_guides/DEPLOYMENT_INFRA_GUIDE.md) - host choice, env vars, production smoke test, domain/DNS, rollback.
 > <!-- guide-anchor:ADMIN_TOOLING anchor:lastmile:module/admin shape:walkthrough -->

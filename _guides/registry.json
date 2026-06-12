@@ -110,6 +110,15 @@
       "title": "PRIVACY_GDPR_GUIDE.md — Privacy & GDPR for Total Newbies"
     },
     {
+      "guide": "PUSH_NOTIFICATIONS",
+      "file": "_guides/PUSH_NOTIFICATIONS_GUIDE.md",
+      "anchor": "lastmile:module/analytics",
+      "shape": "walkthrough",
+      "timing": "at-module",
+      "lead_time": "none",
+      "title": "PUSH_NOTIFICATIONS_GUIDE.md - Get Users to Come Back (Without Getting Muted) (for Total Newbies)"
+    },
+    {
       "guide": "README",
       "file": "_guides/README.md",
       "anchor": "none",
