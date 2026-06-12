@@ -13,13 +13,14 @@
 - **Scope:** W0 telemetry seam: every scaffold ships track(event,props) over a local event buffer with a pluggable sink — PostHog default sink, no-op sink when unconfigured, fail-open (never blocks app boot); 6 canonical lifecycle events seeded (signup, onboarding_complete, activation [product-specific, marked TODO not guessed], core_action, retention_return D1/D7, checkout); lastmile's analytics module ENRICHES (funnel/A-B) instead of installing.; W1 tech-stack declaration: spinup/portfolio intake captures db/auth/payments/hosting/analytics/framework; home = a new '## Tech Stack' block in the EXISTING DATA_AND_ACCOUNTS.md canonical doc (not a new artifact); advisory-with-teeth binding — declared stack picks the lastmile profile default and pre-fills roadmap/epic infra entries; downstream override allowed but logged as a visible stack-drift event.; W2 admin surface (pre-PMF minimum): single /admin route gated by founder-email allowlist; user list+search, account-state toggle, manual entitlement grant/revoke, read-only event feed consuming W0; feature flags as a trivial config seam.; W3 founders checklist: durable machine-readable FOUNDERS_CHECKLIST.md at product root (same shelf as DEV_SETUP_GUIDE), checkbox state, PRE-POPULATED from the declared stack; contents = human-only slow-clock work (dev accounts, DNS/domain, legal entity, privacy/terms, store listings, live-mode gates); lastmile audit reads checklist state instead of re-deriving.; Track T-G: author ANALYTICS/TELEMETRY, DEPLOYMENT-INFRA, ADMIN-TOOLING guides into _guides with the guide-anchor contract, BaaS-leaning as RECOMMENDATIONS (Supabase/Clerk), wired via /guides:integrate.; Track T-K: new _knowledge LIBRARY domains — tech-stack-selection (BaaS), product-telemetry, admin-tooling — wired via /knowledge:integrate.; Track T-P: author the 5 designed situational playbooks (launch-readiness + provider-setup first) from _planning/playbooks/SUITE-DESIGN.md.
 - **Out of scope:** The gemini→agy provider cutover, the CLI-auth-mode install gate, the Dispatch-Console/model-router refresh (Fable missing, not ADR-0007-mapped), and NOTAGAIN W2/W3 residuals — all owned by E-DISPATCH-SHAPE-001 (folded there 2026-06-11 with provenance; linked as a dependency).; E-LIFECYCLE-001 close-out (GPT 2nd-pass, flip ramp, retro) — its own epic, unblocked 2026-06-11 by the codex ChatGPT-OAuth restore.; Re-fixing anything in NOTAGAIN §6 receipts (anti-rebuild guard).; Scale-stage admin features (RBAC, refund/cancel automation, role matrices, audit logs, bulk ops, analytics dashboards) — DoP-refused as pre-PMF overbuild; Stripe/PostHog own them.; User-acquisition guides (later batch); hard-binding the declared stack (pre-PMF pivot freedom preserved unless downstream evidence flips the call).
 - **Current state:** Active
-- **Percent completion:** ~96% — W0 telemetry seam landed locally in S-PF-01 with release approval still pending; W1 tech-stack declaration is implemented and regression-green; W2 admin surface is implemented, scaffold-coverage-enforced, and security-reviewer PASS; W3 founders checklist is implemented and lastmile-consumed; T-G guides and T-K knowledge domains are implemented and coverage-green; T-P playbook suite is authored and coverage-green. Remaining action is operator decision on the prepared S-PF-01 release.
+- **Percent completion:** ~98% — W0 telemetry seam landed locally in S-PF-01 with release approval still pending; W1 tech-stack declaration is implemented and regression-green; W2 admin surface is implemented, scaffold-coverage-enforced, and security-reviewer PASS; W3 founders checklist is implemented and lastmile-consumed; T-G guides and T-K knowledge domains are implemented and coverage-green; T-P playbook suite is authored and coverage-green; S-PF-08 mobile billing policy seam is implemented and regression-green. Remaining action is operator decision on the prepared S-PF-01 release.
 
 ## Definition of Done
 - [x] W0: a fresh scaffold contains the track(event,props) seam with pluggable sink (no-op when unconfigured, fail-open) + the 6 canonical lifecycle events; ENFORCER = scaffold-coverage check with a planted seam-missing fixture that FAILS; lastmile analytics module verified to enrich, not reinstall. Landed locally in S-PF-01 through `78770a4`; `RL-20260611-045` remains prepared/not deployed pending explicit approval.
 - [x] W1: intake captures the 6 stack fields; DATA_AND_ACCOUNTS.md carries a parseable '## Tech Stack' block; declared stack demonstrably pre-fills the lastmile profile + roadmap infra entries; a downstream stack override emits a visible stack-drift event (planted override fixture); ENFORCER = canon gate on block presence + parseability. Landed locally in S-PF-02; implementation preserves advisory-with-teeth (declared stack pre-fills defaults, detected implementation wins with visible `stack_drift`). No committed default dependency introduced.
 - [x] W2: a fresh scaffold serves a founder-email-allowlist-gated /admin route with user list+search, account-state toggle, entitlement grant/revoke, and the W0 event feed; ENFORCER = scaffold-coverage asserting the gated route + allowlist, with a planted ungated-admin fixture that FAILS; security-reviewer lane run on the W2 diff (admin route = security surface). Landed locally in S-PF-03 with signed-session-cookie admin gate, explicit entitlement allowlist, mutation audit writes, project-derived sections, 14/14 planted regression suite, and OpenAI security-reviewer PASS.
 - [x] W3: FOUNDERS_CHECKLIST.md exists at product root in a fresh scaffold, machine-readable checkbox state, stack-conditional items render from the W1 declaration (planted: Stripe declared -> 'verify Stripe identity' appears); lastmile audit consumes checklist state; ENFORCER = scaffold-coverage presence + render assertion. Landed locally in S-PF-04 with deterministic renderer/parser, scaffold materialization from declared stack, lastmile detect/score/audit consumption, and 6/6 focused regression suite.
+- [x] Mobile billing follow-up: mobile in-app digital goods/subscriptions route to Apple StoreKit / Google Play Billing by default, while Stripe remains the path for web/desktop/physical/outside-app purchases; ENFORCER = S-PF-08 planted mobile-billing regression plus scaffold-coverage render assertions.
 - [x] T-G: the 3 new guides exist with guide-anchor contracts and registry entries; ENFORCER = /guides:coverage green.
 - [x] T-K: the 3 new _knowledge LIBRARY domains exist with _domain.json + consumer marker blocks; ENFORCER = /knowledge:coverage green.
 - [x] T-P: >=2 situational playbooks authored (launch-readiness, provider-setup) per SUITE-DESIGN.md; ENFORCER = a playbook-suite presence check wired into a scan, or an /enforcement:log debt entry if deferred. Landed locally in S-PF-07 with all five designed playbooks authored (`launch-readiness`, `provider-setup`, `mode-switch`, `incident-response`, `retro-loop`) and `scripts/checks/playbook-suite-coverage.js` wired into `/scan:full`.
@@ -37,6 +38,7 @@
 - **S-PF-05** — Done — T-G guides gap closure — ANALYTICS/TELEMETRY + DEPLOYMENT-INFRA + ADMIN-TOOLING guides authored + anchored; /guides:coverage green
 - **S-PF-06** — Done — T-K _knowledge domains — tech-stack-selection/BaaS + product-telemetry + admin-tooling LIBRARY domains created + integrated; /knowledge:coverage green
 - **S-PF-07** — Done — T-P playbook authoring — launch-readiness + provider-setup + mode-switch + incident-response + retro-loop situational reference playbooks from SUITE-DESIGN.md; playbook-suite coverage enforcer wired into `/scan:full`
+- **S-PF-08** — Done — mobile billing policy seam — lastmile payments branches mobile in-app digital goods/subscriptions to StoreKit / Play Billing, founders checklist emits platform-billing gates, guides/knowledge cite current platform rules, planted regression coverage
 
 ## Dependencies
 - None currently recorded.
@@ -117,6 +119,15 @@
 - Validation result: PASS (playbook-suite coverage `5 authored / 5 required`; bite-test `7/7`; scan-coverage green; manifests current; ship-coverage green; tracker validation 20/20).
 - Evidence/references: `CODEX-LOG.md` 2026-06-11 S-PF-07 entries.
 
+### 2026-06-11 - S-PF-08 mobile billing policy seam
+- Agent(s): Codex (GPT executor) - Mode: adhoc continuation on `sprint/S-PF-01`
+- Work performed: routed mobile in-app digital goods/subscriptions to platform billing by default, preserved Stripe for web/desktop/physical/outside-app purchase paths, added founders-checklist platform-billing gates, and updated launch guides/knowledge references.
+- Files changed: `scripts/bootstrap/lastmile/modules/payments.js`, `scripts/scaffold/founders-checklist.js`, `scripts/checks/scaffold-coverage-scan.js`, `scripts/bootstrap/lastmile/test-orchestrate.js`, `tests/regression/S-PF-08/mobile-billing.test.js`, `_guides/{PAYMENTS_GUIDE.md,APP_STORE_GUIDE.md,README.md}`, `_knowledge/compliance/APP_STORE_AND_PLATFORM_POLICY.md`.
+- State change: Active -> Active - Completion change: ~96% -> ~98%.
+- Verification performed: `node tests/regression/S-PF-08/mobile-billing.test.js`; `node scripts/checks/scaffold-coverage-scan.js --json`; `node scripts/bootstrap/lastmile/test-orchestrate.js`.
+- Validation result: PASS (`S-PF-08` regression `4/4`; scaffold coverage ok; lastmile orchestrate `61/61`; manifests current; tracker validation `20/20`; testsuite enforce `0 NEW regressions`).
+- Evidence/references: `CODEX-LOG.md` 2026-06-11 S-PF-08 entries.
+
 ## Change log
 ### 2026-06-11 — Session fe8e8193-5743-4767-8e0e-acec8ecd6525
 - Changed: created E-PRODUCT-FOUNDATION-001 (epic file + companion plan artifact) from the /epic:plan payload.
@@ -176,6 +187,13 @@
 - Previous state: S-PF-07 Planned.
 - New state: S-PF-07 Done with coverage evidence.
 
+### 2026-06-11 - S-PF-08 mobile billing policy seam
+- Changed: lastmile payment planning, founders-checklist conditionals, guide/knowledge payment policy references, and planted regressions now distinguish mobile in-app digital billing from Stripe web/physical/outside-app billing.
+- Reason: mobile app scaffolds must not tell a founder to sell in-app digital goods/subscriptions through embedded Stripe when platform billing is the default app-store path.
+- Affected: lastmile payments adapter, founders checklist renderer, scaffold coverage scan, lastmile orchestrate gate coverage, launch guides, app-store compliance knowledge, S-PF-08 regression suite.
+- Previous state: S-PF-08 untracked follow-up gap.
+- New state: S-PF-08 Done with regression evidence.
+
 ## Evidence log
 ### 2026-06-11 — Epic plan authored
 - Evidence type: File changed.
@@ -207,6 +225,11 @@
 - Detail/location: `node scripts/checks/playbook-suite-coverage.js --json` PASS (`5 authored playbook(s)`, `5 required`, `6 required section(s)`); `node scripts/checks/playbook-suite-coverage.test.js` PASS (`7/7`); `node scripts/checks/scan-coverage.js --json` PASS; `node scripts/checks/warpos-ship-coverage.js --json` PASS.
 - Verified by: Codex - Supports: Definition of Done T-P.
 
+### 2026-06-11 - S-PF-08 mobile billing policy seam
+- Evidence type: Regression + enforcer checks.
+- Detail/location: `node tests/regression/S-PF-08/mobile-billing.test.js` PASS (`4/4`); `node scripts/checks/scaffold-coverage-scan.js --json` PASS; `node scripts/bootstrap/lastmile/test-orchestrate.js` PASS (`61/61`); `node scripts/warpos/manifest/validate.js --strict` PASS; `node scripts/trackers/validate.js` PASS (`20/20`); `node scripts/testsuite/enforce.js` PASS (`0 NEW regressions`, known baseline reds `BC-17`, `BC-26`).
+- Verified by: Codex - Supports: mobile billing follow-up DoD.
+
 ## Verification log
 | Item | Should exist? | State | Where / wired where | Proof (cmd/inspection) | Checked | By |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -219,18 +242,19 @@
 | S-PF-03 admin surface | Yes | Verified Wired | app scaffold /admin templates + admin lib + scaffold-coverage enforcer | `node tests/regression/S-PF-03/admin-surface.test.js` PASS: 14 passed, 0 failed; security-reviewer PASS | 2026-06-11 | Codex |
 | S-PF-04 founders checklist | Yes | Verified Wired | app scaffold root checklist template + scaffold materializer + lastmile detect/score/audit | `node tests/regression/S-PF-04/founders-checklist.test.js` PASS: 6 passed, 0 failed; lastmile orchestrate PASS 59/59 | 2026-06-11 | Codex |
 | S-PF-07 playbook suite | Yes | Verified Wired | _planning/playbooks/ + playbook-suite coverage enforcer + /scan:full direct invocation | `node scripts/checks/playbook-suite-coverage.js --json` PASS: 5 authored, 5 required; bite-test PASS 7/7 | 2026-06-11 | Codex |
+| S-PF-08 mobile billing policy seam | Yes | Verified Wired | lastmile payments adapter + founders checklist conditionals + scaffold coverage + S-PF-08 regression suite | `node tests/regression/S-PF-08/mobile-billing.test.js` PASS: 4 passed, 0 failed | 2026-06-11 | Codex |
 
 ## Current next action
-Next Product Foundation action: operator decision on the prepared S-PF-01 release `RL-20260611-045`. S-PF-02, S-PF-03, S-PF-04, S-PF-05, S-PF-06, and S-PF-07 are done locally.
+Next Product Foundation action: operator decision on the prepared S-PF-01 release `RL-20260611-045`. S-PF-02, S-PF-03, S-PF-04, S-PF-05, S-PF-06, S-PF-07, and S-PF-08 are done locally.
 
 ## Completion record
 - Final state: Active, not complete.
-- Percent completion: ~96%
+- Percent completion: ~98%
 - Completion timestamp: n/a
 - Definition of done used: the § Definition of Done above.
-- Evidence of completion: partial completion evidence for W0, W1, W2, W3, T-G, T-K, and T-P is recorded above; full-epic completion remains n/a pending release approval.
+- Evidence of completion: partial completion evidence for W0, W1, W2, W3, T-G, T-K, T-P, and the S-PF-08 mobile billing follow-up is recorded above; full-epic completion remains n/a pending release approval.
 - Session IDs / dates / agents: n/a.
-- Related completed sprints: S-PF-02, S-PF-03, S-PF-04, S-PF-05, S-PF-06, S-PF-07; S-PF-01 is locally prepared pending release approval.
+- Related completed sprints: S-PF-02, S-PF-03, S-PF-04, S-PF-05, S-PF-06, S-PF-07, S-PF-08; S-PF-01 is locally prepared pending release approval.
 - Remaining follow-up items: operator decision on `RL-20260611-045`.
 - Related untracked work: CODEX-LOG.md and runtime review/evidence artifacts remain intentionally local.
-- ../../TRACKER.md updated: Not directly in this batch - Product Foundation source of truth is this epic tracker plus ROADMAP entry. Roadmap reconciled: Yes, E-PRODUCT-FOUNDATION-001 entry updated for S-PF-07 progress.
+- ../../TRACKER.md updated: Not directly in this batch - Product Foundation source of truth is this epic tracker plus ROADMAP entry. Roadmap reconciled: Yes, E-PRODUCT-FOUNDATION-001 entry updated for S-PF-08 progress.

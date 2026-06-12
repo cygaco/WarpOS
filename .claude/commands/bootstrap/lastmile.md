@@ -103,7 +103,7 @@ unless justified** by a named, evidence-backed need.
 | Profile | Easy-default stack (vibe-coder bias) |
 |---|---|
 | `web-saas` | Next.js + Supabase **or** Neon/Postgres + Clerk/Supabase Auth + Stripe + Vercel + PostHog/Plausible + Resend/Loops |
-| `mobile-app` | Expo / React Native + Supabase (db/auth) + Stripe where supported (else IAP) + EAS build/submit |
+| `mobile-app` | Expo / React Native + Supabase (db/auth) + platform billing for in-app digital goods (Apple StoreKit / Google Play Billing), Stripe only where supported + EAS build/submit |
 | `desktop-app` | existing stack + Stripe/license keys + auto-update + signed builds |
 | `ai-tool` | Next.js + Supabase + Clerk/Supabase Auth + Stripe (usage/credit-based) + PostHog + Resend |
 | `marketplace` | Next.js + Postgres + Stripe Connect + Clerk/Supabase Auth + Vercel + PostHog |
@@ -117,7 +117,7 @@ Each module: **detect → recommend (default) → plan (shortest safe path)**.
 
 1. **Database** — detect persistence; recommend Supabase / Neon-Postgres / SQLite-Turso / Firebase / existing (easy setup, strong docs, low ops, compatible). Plan: schema, migrations, seed strategy, backup/export, env-var checklist, **data ownership & portability** notes.
 2. **Auth / Accounts** — detect auth; recommend Clerk / Supabase Auth / Auth.js / Firebase Auth (custom only when justified). Cover: email/password, OAuth, magic links, password reset, session handling, **account deletion**, profile, admin access; role/permission model **only if needed**. Account-lifecycle tests.
-3. **Payments / Monetization** — **Stripe by default**. Models: one-time, subscription, freemium, trial, usage-based, credit-based, waitlist/preorder. Build the **funnel, not just checkout**: pricing page → upgrade prompts → checkout → success/cancel → billing portal → **entitlement checks** → **webhook handling (signature-verified)** → refund/cancellation policy copy. Produce a **pricing hypothesis + test plan**. **Test-mode verification required before any live-mode instructions.**
+3. **Payments / Monetization** — **Stripe by default for web/desktop/physical/outside-app purchases; Apple StoreKit / Google Play Billing by default for mobile in-app digital goods and subscriptions.** Models: one-time, subscription, freemium, trial, usage-based, credit-based, waitlist/preorder. Build the **funnel, not just checkout**: pricing page → upgrade prompts → checkout/IAP → success/cancel → billing portal or platform subscription management → **entitlement checks** → **webhook / server-notification handling (signature-verified)** → refund/cancellation policy copy. Produce a **pricing hypothesis + test plan**. **Test-mode / sandbox verification required before any live-mode or store-submit instructions.**
 4. **CRM / Support / Lifecycle** — decide relevance first. Lightweight defaults: Resend / Loops / Buttondown / Customer.io / HubSpot / Airtable / Notion by maturity. Capture: leads, waitlist, onboarding emails, payment events, support route, feedback route, churn signals. **No heavy CRM unless justified.**
 5. **Website + Conversion Funnel** — homepage/landing, hero, proof/trust, features/benefits, pricing, FAQ, privacy/terms links, onboarding CTA, waitlist/checkout CTA. **Clear conversion over trendy aesthetics.** Analytics event per funnel step. Optionally enriched by `/research:deep` + `/learn:ingest` (see Research).
 6. **Platform / Deployment** — detect target (web / iOS / Android / desktop / API-only / extension). Web → Vercel/Netlify/Cloudflare/Render/Railway/Fly/existing. Mobile → Expo/native/EAS (wrapper only if appropriate). Include env vars, build commands, CI checks, deploy previews, **rollback plan**, domain setup, **production smoke test**. **Boring + reliable over clever infra.**
@@ -131,7 +131,7 @@ Each module: **detect → recommend (default) → plan (shortest safe path)**.
 > <!-- guide-anchor:AUTH anchor:lastmile:module/auth shape:walkthrough -->
 > - **Auth / Accounts** → [`_guides/AUTH_GUIDE.md`](../../../_guides/AUTH_GUIDE.md) — day-zero note: Google sensitive-scope OAuth verification can take days–weeks.
 > <!-- guide-anchor:PAYMENTS anchor:lastmile:module/payments shape:walkthrough -->
-> - **Payments / Monetization** → [`_guides/PAYMENTS_GUIDE.md`](../../../_guides/PAYMENTS_GUIDE.md) — Stripe identity + bank verification has lead time before live mode.
+> - **Payments / Monetization** → [`_guides/PAYMENTS_GUIDE.md`](../../../_guides/PAYMENTS_GUIDE.md) — Stripe identity + bank verification has lead time before live mode; mobile in-app digital goods use StoreKit / Play Billing by default.
 > <!-- guide-anchor:EMAIL anchor:lastmile:module/email shape:walkthrough -->
 > - **Email** (transactional + deliverability, under CRM/Lifecycle) → [`_guides/EMAIL_GUIDE.md`](../../../_guides/EMAIL_GUIDE.md) — sending-domain DNS (SPF/DKIM/DMARC) has propagation lead time.
 > <!-- guide-anchor:SECURITY anchor:lastmile:module/security shape:checklist -->

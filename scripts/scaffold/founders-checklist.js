@@ -51,6 +51,7 @@ const CONDITIONAL_ITEMS = [
   {
     layer: "payments",
     match: /stripe/i,
+    unless: /\biap\b|storekit|play billing|platform billing|platform-billing/i,
     items: [
       {
         id: "payments.stripe.identity",
@@ -61,6 +62,32 @@ const CONDITIONAL_ITEMS = [
         id: "payments.stripe.webhook",
         dim: "security",
         label: "Create Stripe live webhook endpoint and signing secret",
+      },
+    ],
+  },
+  {
+    layer: "payments",
+    match: /\biap\b|storekit|play billing|platform billing|platform-billing/i,
+    items: [
+      {
+        id: "payments.mobile.classification",
+        dim: "monetization",
+        label: "Classify mobile monetization as in-app digital vs physical or outside-app purchase",
+      },
+      {
+        id: "payments.apple.iap",
+        dim: "monetization",
+        label: "Create Apple In-App Purchase or StoreKit products for iOS digital goods",
+      },
+      {
+        id: "payments.google.play_billing",
+        dim: "monetization",
+        label: "Create Google Play Billing products for Android digital goods",
+      },
+      {
+        id: "payments.mobile.server_verification",
+        dim: "security",
+        label: "Verify App Store and Play purchase state server-side before granting entitlements",
       },
     ],
   },
@@ -155,6 +182,7 @@ function selectedConditionalItems(declaredStack) {
   for (const rule of CONDITIONAL_ITEMS) {
     const value = values[rule.layer];
     if (!isResolved(value) || !rule.match.test(String(value))) continue;
+    if (rule.unless && rule.unless.test(String(value))) continue;
     for (const item of rule.items) {
       items.push({
         ...item,

@@ -44,7 +44,9 @@ A **payment processor** (Stripe, Paddle, etc.) is a company whose entire job is 
 | Control / flexibility | High | Lower (you live inside their checkout) |
 | Best for | Most apps; anyone who wants control + the smoothest AI-assisted build | Solo devs selling globally who never want to think about tax |
 
-**Default to Stripe** in this guide: it has the best documentation, the friendliest tooling for AI-assisted ("vibe") coding, and the widest support.
+**Default to Stripe** in this guide for web apps, desktop apps, physical goods, real-world services, and outside-app checkout: it has the best documentation, the friendliest tooling for AI-assisted ("vibe") coding, and the widest support.
+
+**Mobile app exception:** if an iOS or Android app sells digital goods, subscriptions, feature unlocks, credits, coins, or premium access that are consumed inside the app, default to the platform billing path instead: **Apple In-App Purchase / StoreKit** on iOS and **Google Play Billing** on Android. Do **not** build embedded Stripe checkout for in-app digital goods unless a region-specific external-payment rule has been checked by a human for the exact storefront and date. Stripe is still fine for physical goods, real-world services, and confirmed outside-app/web-only purchase paths.
 
 **The one real reason to pick a merchant-of-record instead:** **tax.** A merchant of record (Paddle, Lemon Squeezy) becomes the legal seller, so *they* are responsible for collecting and remitting sales tax / VAT in every country — a genuine headache they make disappear. The trade-off: higher fees, less control, and you're inside their box. If selling worldwide and never touching a tax form is worth a few extra percent to you, choose an MoR. Otherwise, Stripe.
 
@@ -340,6 +342,10 @@ GO LIVE (deliberate 🔴 action)
 - Stripe — Stripe Tax: https://docs.stripe.com/tax
 - Stripe — Testing & test cards: https://docs.stripe.com/testing
 - Stripe — Pricing: https://stripe.com/pricing
+- Apple — App Store Review Guidelines (In-App Purchase): https://developer.apple.com/app-store/review/guidelines/
+- Apple — In-App Purchase / StoreKit: https://developer.apple.com/in-app-purchase/
+- Google Play — Payments policy: https://support.google.com/googleplay/android-developer/answer/10281818
+- Google Play — Billing system: https://support.google.com/googleplay/android-developer/answer/1072599
 - Paddle (merchant of record): https://www.paddle.com
 - Lemon Squeezy (merchant of record): https://www.lemonsqueezy.com
 

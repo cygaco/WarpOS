@@ -336,6 +336,7 @@ function testGateCoverage() {
   const checks = [
     ["prod-db-migration", G("database", base)],
     ["stripe-live", G("payments", base)],
+    ["app-store-submit", G("payments", mobile, "mobile-app")],
     ["email-real-users", G("crm", base)],
     ["domain-dns", G("deployment", base)],
     ["app-store-submit", G("deployment", mobile, "mobile-app")],
@@ -349,6 +350,9 @@ function testGateCoverage() {
   const secSteps = require("./modules/security").plan(sensitive, "web-saas").steps;
   if (secSteps.some((s) => /HARD STOP/i.test(s))) ok("security.plan() emits the HARD STOP step on sensitive data");
   else fail("HARD STOP step", JSON.stringify(secSteps.slice(0, 1)));
+  const mobilePaymentGates = G("payments", mobile, "mobile-app");
+  if (!mobilePaymentGates.includes("stripe-live")) ok("mobile payments do not surface stripe-live for platform billing");
+  else fail("mobile payment gates", JSON.stringify(mobilePaymentGates));
 }
 
 // ---------------------------------------------------------- arg validation (LM-NEW-2)

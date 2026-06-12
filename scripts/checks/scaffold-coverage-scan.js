@@ -390,6 +390,40 @@ function addFoundersChecklistChecks(dir, errors) {
   if (!/Verify Stripe identity/.test(stripeRendered)) {
     errors.push("founders checklist must render Stripe declared-stack launch gate");
   }
+
+  const mobileRendered = renderFoundersChecklist({
+    declaredStack: {
+      source: "_requirements/00-canonical/DATA_AND_ACCOUNTS.md",
+      values: {
+        framework: "Expo",
+        database: "Supabase",
+        auth: "Supabase",
+        payments: "Stripe where supported else IAP",
+        hosting: "EAS Build Submit",
+        analytics: "PostHog",
+      },
+    },
+  });
+  const mobileParsed = parseFoundersChecklist(mobileRendered);
+  if (!mobileParsed.ok) {
+    errors.push(`mobile founders checklist renderer produced invalid output: ${mobileParsed.errors.join("; ")}`);
+  }
+  for (const requiredId of [
+    "payments.mobile.classification",
+    "payments.apple.iap",
+    "payments.google.play_billing",
+    "payments.mobile.server_verification",
+  ]) {
+    if (!mobileParsed.items.some((item) => item.id === requiredId)) {
+      errors.push(`mobile founders checklist missing platform-billing item: ${requiredId}`);
+    }
+  }
+  if (mobileParsed.items.some((item) => item.id === "payments.stripe.identity")) {
+    errors.push("mobile platform-billing checklist must not render Stripe live-mode identity gate");
+  }
+  if (!/Google Play Billing/.test(mobileRendered)) {
+    errors.push("mobile founders checklist must render Google Play Billing launch gate");
+  }
 }
 
 function addAdminSurfaceChecks(dir, errors) {

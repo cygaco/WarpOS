@@ -11,6 +11,7 @@ sources:
   - "https://developer.apple.com/app-store/review/guidelines/"
   - "https://developer.apple.com/documentation/bundleresources/privacy-manifest-files"
   - "https://support.google.com/googleplay/android-developer/answer/14151465"
+  - "https://support.google.com/googleplay/android-developer/answer/10281818"
 ---
 
 # App Store & Platform Policy
@@ -192,4 +193,5 @@ Each rule is a PASS/FAIL (or FLAG) assertion the `qa-reviewer` integrity scope c
 - Apple — *App Store Review Guidelines* — https://developer.apple.com/app-store/review/guidelines/ (normative; §2.1 completeness, §4.2 minimum functionality, §4.3 spam, §4.8 Sign in with Apple, §5.1.1 + 5.1.1(v) privacy policy / account deletion, §5.1.2(i) data sharing & consent incl. third-party AI, §3.1.1 In-App Purchase, §2.3 accurate metadata)
 - Apple — *Privacy Manifest Files (`PrivacyInfo.xcprivacy`) & Required Reason APIs* — https://developer.apple.com/documentation/bundleresources/privacy-manifest-files (enforcement began May 1, 2024)
 - Google — *Prepare your app for review / closed testing access requirement* (new personal accounts post Nov-13-2023: 12 testers, 14 days) — https://support.google.com/googleplay/android-developer/answer/14151465
+- Google — *Understanding Google Play's Payments policy* — https://support.google.com/googleplay/android-developer/answer/10281818
 - *IAP external-payment status (IN FLUX):* US external purchase links permitted since **May 1, 2025** following the *Epic v. Apple* injunction, Apple barred from commission on those US purchases — **Apple is appealing** (treat as current, not permanent); EU **DMA** permits external payment but Apple charges its own **~10–20%** fees; rest-of-world remains **IAP-only**. A reviewer must qualify any IAP finding by **region + as-of date** — see Apple Review Guidelines §3.1.1 and the current US/EU/RoW posture above.

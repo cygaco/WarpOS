@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-12T00:56:05.137Z",
+  "generatedAt": "2026-06-12T03:33:06.034Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.15.4",
   "migrations": [],
@@ -121,8 +121,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "dc12fed76104d7e1998ecd2036ba2c46ff6179050af84ea3a92bcc15fe9e672d",
-      "installedSha": "dc12fed76104d7e1998ecd2036ba2c46ff6179050af84ea3a92bcc15fe9e672d"
+      "sha256": "f6bcdf8f994eb93bd28355415f7dc0596686587b1a48f2612970f8ec5b715b1b",
+      "installedSha": "f6bcdf8f994eb93bd28355415f7dc0596686587b1a48f2612970f8ec5b715b1b"
     },
     "TRACKER.md": {
       "owner": "runtime",
@@ -1097,8 +1097,8 @@
       "owner": "framework",
       "managed": true,
       "source": "_knowledge/compliance/APP_STORE_AND_PLATFORM_POLICY.md",
-      "sha256": "2824037c656544ab8ed7f6a0b75ac518f8dae14e824d33d0ccdd8b0e731bfbcb",
-      "installedSha": "2824037c656544ab8ed7f6a0b75ac518f8dae14e824d33d0ccdd8b0e731bfbcb"
+      "sha256": "9ba724098866ec2af22420b83de3e2e2046ba71bfc447e9c046546617a932275",
+      "installedSha": "9ba724098866ec2af22420b83de3e2e2046ba71bfc447e9c046546617a932275"
     },
     "_knowledge/compliance/CONSUMER_PROTECTION_AND_SUBSCRIPTIONS.md": {
       "owner": "framework",
@@ -1216,8 +1216,8 @@
       "owner": "framework",
       "managed": true,
       "source": "_guides/APP_STORE_GUIDE.md",
-      "sha256": "5ab949531550604fb130b365bbc8fdc39fbd9960155ca879a8abc4316a080cda",
-      "installedSha": "5ab949531550604fb130b365bbc8fdc39fbd9960155ca879a8abc4316a080cda"
+      "sha256": "2f70cd566886376f170deb909398aa193af1490989147a061ba83975ed419063",
+      "installedSha": "2f70cd566886376f170deb909398aa193af1490989147a061ba83975ed419063"
     },
     "_guides/AUTH_GUIDE.md": {
       "owner": "framework",
@@ -1265,8 +1265,8 @@
       "owner": "framework",
       "managed": true,
       "source": "_guides/PAYMENTS_GUIDE.md",
-      "sha256": "b1609805a9a8839d06491367dfcb3a7665a06639015872bf615efbb1f04e1498",
-      "installedSha": "b1609805a9a8839d06491367dfcb3a7665a06639015872bf615efbb1f04e1498"
+      "sha256": "ab3c97191ddda426e82551bb21d080c6ef3ee6c4549608f12fbd11e331671182",
+      "installedSha": "ab3c97191ddda426e82551bb21d080c6ef3ee6c4549608f12fbd11e331671182"
     },
     "_guides/PRIVACY_GDPR_GUIDE.md": {
       "owner": "framework",
@@ -1279,8 +1279,8 @@
       "owner": "framework",
       "managed": true,
       "source": "_guides/README.md",
-      "sha256": "7a69570fcd5b20b15c401f1d7693f3c9a26f7e0e1e40f24f02291c8508963b34",
-      "installedSha": "7a69570fcd5b20b15c401f1d7693f3c9a26f7e0e1e40f24f02291c8508963b34"
+      "sha256": "97887606f66c0167a3e589e44705f379ace62d7fa7b0fc5fcb8d65e5c03d2e6b",
+      "installedSha": "97887606f66c0167a3e589e44705f379ace62d7fa7b0fc5fcb8d65e5c03d2e6b"
     },
     "_guides/registry.json": {
       "owner": "framework",
@@ -2198,6 +2198,13 @@
       "source": null,
       "sha256": "f8db2e89becfc27ed92361a3760aa110ff323a8cd2656a3064968b8df1c8af8b",
       "installedSha": "f8db2e89becfc27ed92361a3760aa110ff323a8cd2656a3064968b8df1c8af8b"
+    },
+    "tests/regression/S-PF-08/mobile-billing.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": null,
+      "sha256": "2750c4bc004768c30db32a7166152f5d2b0f15324b26e401e9251124911d43ed",
+      "installedSha": "2750c4bc004768c30db32a7166152f5d2b0f15324b26e401e9251124911d43ed"
     },
     "tests/regression/S-PF-04/founders-checklist.test.js": {
       "owner": "framework",
@@ -4653,8 +4660,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/scaffold/founders-checklist.js",
-      "sha256": "7309179889a79903dea4e87e79241cd4694a7b2ac44eb780d1cc87a8e3ba18d2",
-      "installedSha": "7309179889a79903dea4e87e79241cd4694a7b2ac44eb780d1cc87a8e3ba18d2"
+      "sha256": "548a764bf1a2397f42a3f0d3550606463bba0e32ddccd46ae84c731ce774c48d",
+      "installedSha": "548a764bf1a2397f42a3f0d3550606463bba0e32ddccd46ae84c731ce774c48d"
     },
     "scripts/research/deep-run.js": {
       "owner": "framework",
@@ -6767,8 +6774,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/scaffold-coverage-scan.js",
-      "sha256": "444ba275545793bc5850866085a32842808a702f4b10c790370175d66bb23cd9",
-      "installedSha": "444ba275545793bc5850866085a32842808a702f4b10c790370175d66bb23cd9"
+      "sha256": "7577c0764302f576e1ae5983a2df6f92f3b064439a4a480820720792f9ccd5fb",
+      "installedSha": "7577c0764302f576e1ae5983a2df6f92f3b064439a4a480820720792f9ccd5fb"
     },
     "scripts/checks/scan-coverage.allowlist.json": {
       "owner": "framework",
@@ -7166,8 +7173,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/bootstrap/lastmile/test-orchestrate.js",
-      "sha256": "7826cf08b29f6e31f05e47bbb80f8813c80f2a2cedc1715c09e85f7b751f6391",
-      "installedSha": "7826cf08b29f6e31f05e47bbb80f8813c80f2a2cedc1715c09e85f7b751f6391"
+      "sha256": "bc7496e1d0c5dc9d3bfd6f57a5b2a17e71f571219a6da7136bc44b99c2433c80",
+      "installedSha": "bc7496e1d0c5dc9d3bfd6f57a5b2a17e71f571219a6da7136bc44b99c2433c80"
     },
     "scripts/bootstrap/lastmile/phases/audit.js": {
       "owner": "framework",
@@ -7250,8 +7257,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/bootstrap/lastmile/modules/payments.js",
-      "sha256": "1b09f89a8bfcfc7a12a9a3a70197d4e4f9aeb4884572f93a17cae954f3dfc537",
-      "installedSha": "1b09f89a8bfcfc7a12a9a3a70197d4e4f9aeb4884572f93a17cae954f3dfc537"
+      "sha256": "80d38e3a36a4bf6ca9a0b8fa26e2d0fc6e19166914cad1414fb7e4d439b8702c",
+      "installedSha": "80d38e3a36a4bf6ca9a0b8fa26e2d0fc6e19166914cad1414fb7e4d439b8702c"
     },
     "scripts/bootstrap/lastmile/modules/security.js": {
       "owner": "framework",
@@ -20503,8 +20510,8 @@
       "managed": true,
       "source": ".claude/commands/bootstrap/lastmile.md",
       "kind": "md",
-      "sha256": "b8046ed7f5194576b8847dfe71989295a37b02eba56909923bf878dd2009e9cb",
-      "installedSha": "b8046ed7f5194576b8847dfe71989295a37b02eba56909923bf878dd2009e9cb"
+      "sha256": "01030e85df3117d050e7466572dce2abeac3c1c366efc97ae1b4e62b57a85afb",
+      "installedSha": "01030e85df3117d050e7466572dce2abeac3c1c366efc97ae1b4e62b57a85afb"
     },
     ".claude/commands/bootstrap/ponder.md": {
       "owner": "framework",

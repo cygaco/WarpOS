@@ -22,7 +22,7 @@ lead_time: "none"
 | **[AUTH_GUIDE](AUTH_GUIDE.md)** | Letting users sign in — Google/Apple social SSO, email + password, magic links | When you add login (decide the *approach* early) |
 | **[DATABASE_GUIDE](DATABASE_GUIDE.md)** | Data storage — Supabase/Postgres/Firebase/SQLite, schema, migrations, backups | Early (it's architectural) |
 | **[EMAIL_GUIDE](EMAIL_GUIDE.md)** | Sending email — transactional (verify/reset/magic-link) + marketing, deliverability (SPF/DKIM/DMARC) | When you need to send mail (domain DNS has lead time) |
-| **[PAYMENTS_GUIDE](PAYMENTS_GUIDE.md)** | Taking money — Stripe checkout, subscriptions, webhooks, entitlements | When you monetize (Stripe verification has lead time) |
+| **[PAYMENTS_GUIDE](PAYMENTS_GUIDE.md)** | Taking money — Stripe checkout for web/physical/outside-app payments; StoreKit / Play Billing for mobile in-app digital goods; webhooks/server notifications; entitlements | When you monetize (Stripe and store setup have lead time) |
 | **[PRIVACY_GDPR_GUIDE](PRIVACY_GDPR_GUIDE.md)** | Privacy & the law — GDPR/CCPA, consent, cookie banner, data export/delete, privacy policy | Before you collect real user data / before launch |
 | **[SECURITY_GUIDE](SECURITY_GUIDE.md)** | Not getting hacked — database/RLS lockdown, secrets, rate limits + AI usage caps, prompt injection, input validation | As you build → a hardening pass before launch |
 | **[APP_STORE_GUIDE](APP_STORE_GUIDE.md)** | Getting an iOS app approved — privacy labels, TestFlight, Sign in with Apple, In-App Purchase rules | Before you submit to the App Store |
@@ -73,11 +73,11 @@ Throughout the guides: **🔴 YOU MUST DO THIS** = a step the AI can't do for yo
 
 ## Recommended order of operations
 
-1. **Day 1 — fire off the slow signups:** Apple Developer + Google Play (DEV_SETUP), and a Stripe account if you'll charge money (PAYMENTS). Org route? Apply for D-U-N-S first.
+1. **Day 1 — fire off the slow signups:** Apple Developer + Google Play (DEV_SETUP), and a Stripe account if you'll charge web/physical/outside-app purchases (PAYMENTS). Mobile in-app digital goods need StoreKit / Play Billing product setup instead. Org route? Apply for D-U-N-S first.
 2. **Early & architectural:** pick your **database** (DATABASE) and your **auth approach** (AUTH) — these shape everything and are painful to swap later.
 3. **As you build:** wire sign-in (AUTH); set up your **email** sending domain (EMAIL) so verification/magic-link mail isn't in spam.
 4. **Before you collect real user data / launch:** privacy policy + consent + data export/delete (PRIVACY_GDPR).
-5. **When you monetize:** Stripe checkout + subscriptions + webhooks, verified in **test mode** first (PAYMENTS).
+5. **When you monetize:** web/physical/outside-app payments use Stripe checkout + subscriptions + webhooks, verified in **test mode** first; mobile in-app digital goods use StoreKit / Play Billing + server-side entitlement verification (PAYMENTS).
 6. **Launch:** Apple review + Google Play production (after the 14-day test).
 
 ---

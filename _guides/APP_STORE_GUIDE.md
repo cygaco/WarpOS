@@ -266,6 +266,7 @@ GOOGLE PLAY (brief — see DEV_SETUP_GUIDE)
 - **TestFlight:** https://developer.apple.com/testflight/
 - **In-App Purchase / StoreKit:** https://developer.apple.com/in-app-purchase/ and https://developer.apple.com/documentation/storekit/
 - **Google Play — closed-testing requirement (new personal accounts):** https://support.google.com/googleplay/android-developer/answer/14151465
+- **Google Play — Payments policy / Play Billing:** https://support.google.com/googleplay/android-developer/answer/10281818 and https://support.google.com/googleplay/android-developer/answer/1072599
 - **Encryption export compliance (App Store Connect):** https://developer.apple.com/help/app-store-connect/manage-app-information/overview-of-export-compliance
 
 ---
