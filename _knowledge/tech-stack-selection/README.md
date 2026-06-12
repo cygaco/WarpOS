@@ -18,6 +18,7 @@ This is not a launch guide. The founder-facing companion is `_guides/DATABASE_GU
 |---|---|---|
 | [BAAS_DECISION_MATRIX](BAAS_DECISION_MATRIX.md) | `STACK-BAAS-*` | Choose Supabase/Neon/Firebase/SQLite/existing stack with pre-PMF defaults. |
 | [STACK_DRIFT_AND_REVERSIBILITY](STACK_DRIFT_AND_REVERSIBILITY.md) | `STACK-REV-*` | Keep the choice explicit, reversible, and single-sourced. |
+| [MOBILE_DEV_LOOP_ON_WINDOWS](MOBILE_DEV_LOOP_ON_WINDOWS.md) | `STACK-WINMOB-*` | Keep mobile products testable from a Windows PC; the honest iOS-without-a-Mac path. |
 
 ## Wiring
 

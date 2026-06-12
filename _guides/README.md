@@ -31,6 +31,10 @@ lead_time: "none"
 | **[ANALYTICS_TELEMETRY_GUIDE](ANALYTICS_TELEMETRY_GUIDE.md)** | Product analytics and telemetry - activation, funnels, core events, privacy-safe event payloads | When you instrument the product |
 | **[DEPLOYMENT_INFRA_GUIDE](DEPLOYMENT_INFRA_GUIDE.md)** | Deployment and infrastructure - host choice, env vars, domains, smoke tests, rollback | Before launch week |
 | **[ADMIN_TOOLING_GUIDE](ADMIN_TOOLING_GUIDE.md)** | Founder/admin tooling - allowlist, user lookup, entitlement view, event feed, audit trail | When you need support/admin access |
+| **[PUSH_NOTIFICATIONS_GUIDE](PUSH_NOTIFICATIONS_GUIDE.md)** | Push notifications - earn the opt-in (soft-ask, iOS provisional), token hygiene, frequency caps, deep links | When you add re-engagement (after analytics) |
+| **[ONBOARDING_GUIDE](ONBOARDING_GUIDE.md)** | When to ask for signup and what to collect - signup-wall placement, progressive profiling, guest mode + account linking, minors (COPPA) | When you design signup/first-run (with AUTH) |
+| **[GROWTH_LOOPS_GUIDE](GROWTH_LOOPS_GUIDE.md)** | Reviews + referrals - the compliant review prompt (NO "enjoying the app?" gating), native prompt quotas, referral rewards + fraud basics | Review prompt at launch; referrals after retention proves itself |
+| **[TESTING_ON_PC_GUIDE](TESTING_ON_PC_GUIDE.md)** | Testing a mobile app from a Windows PC - Android emulator (WHPX), Expo Go/dev-client, the no-iOS-simulator truth, real-device checklist | Project start (device kit + accounts have lead time) |
 
 ---
 

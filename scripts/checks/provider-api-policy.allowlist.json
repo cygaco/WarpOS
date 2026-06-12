@@ -6,12 +6,16 @@
       "reason": "Deep-research pipeline — OpenAI Responses API (o3/o4-mini-deep-research) has NO CLI equivalent. agent-dispatch-guide §1 whitelist."
     },
     {
+      "path": "scripts/research/gpt-pro-consult.js",
+      "reason": "GPT-Pro consult wrapper — gpt-5.5-pro/gpt-5.4-pro are Responses-API-only (no streaming, deliberately NOT in the codex CLI catalog per scripts/dispatch/catalog.js). agent-dispatch-guide §1 GPT-Pro API-only-model exception."
+    },
+    {
       "path": "scripts/research/gemini-deep-research.js",
       "reason": "Deep-research pipeline — Gemini Interactions API has NO CLI equivalent. agent-dispatch-guide §1 whitelist."
     },
     {
-      "path": ".claude/commands/research/deep.md",
-      "reason": "The /research:deep skill — drives the deep-research pipeline (OpenAI Responses + Gemini Interactions API) via curl; no-CLI capability per agent-dispatch-guide §1."
+      "path": "scripts/research/deep-run.js",
+      "reason": "Consolidated deep-research runner — same no-CLI capability as openai-deep-research.js/gemini-deep-research.js (OpenAI Responses + Gemini Interactions APIs). agent-dispatch-guide §1 whitelist."
     },
     {
       "path": ".claude/agents/_system/guides/agent-dispatch-guide.md",

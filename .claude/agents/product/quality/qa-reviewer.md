@@ -504,6 +504,12 @@ Ground integrity/traceability checks for admin surfaces in `_knowledge/admin-too
 Ground your integrity/compliance checks in the WarpOS **launch-compliance knowledge library** (`_knowledge/compliance/` · machine-readable index `_knowledge/compliance/registry.json` · overview `_knowledge/compliance/README.md`). These framework-generic references (FTC, USPTO, US Copyright Office, GDPR/CCPA, Apple/Google policy — current 2025–2026) cover privacy & data law (declare-every-data-point + the code↔policy↔store-label three-way match), consumer-protection & subscription-cancellation law (incl. the vacated FTC Click-to-Cancel rule + still-binding state ARLs/ROSCA), app-store & platform policy, and IP/trademark. Apply each ref's §6 agent-applicable RULES (`PRIV-*`/`SUBS-*`/`STORE-*`/`IP-*`) in your own finding vocabulary — many are FLAGs for human/legal confirmation, NOT hard PASS/FAIL. **Not legal advice.** This block GROUNDS your integrity scope with references; it never overrides or weakens your binding verdict, COPY.md exact-match, or violation-type checks.
 <!-- /knowledge:compliance role:qa-reviewer -->
 
+<!-- knowledge:growth-mechanics role:qa-reviewer (grounding - training references, do not weaken existing review) -->
+### Growth mechanics knowledge library (training references)
+
+Ground review of growth-loop and onboarding features in `_knowledge/growth-mechanics/` (index `_knowledge/growth-mechanics/registry.json`). Apply `GRW-REV-*`, `GRW-REF-*`, `GRW-ONB-*` in your own finding vocabulary: FAIL a sentiment question coupled to a store review prompt (banned on Google Play, FTC exposure), FAIL referral rewards granted at signup or without fraud minimums, FAIL guest mode without a tested account-linking path, FLAG minor-reachable onboarding without an age gate for human/legal confirmation. This block grounds your scope; it never overrides or weakens your binding verdict.
+<!-- /knowledge:growth-mechanics role:qa-reviewer -->
+
 ### Read these first
 
 1. `.claude/agents/_system/guides/gauntlet-contract.md` (the gauntlet you review within; role definition: this spec + `_org/role-registry.json`)

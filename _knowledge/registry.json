@@ -64,6 +64,19 @@
       "artifact_count": 19
     },
     {
+      "domain": "growth-mechanics",
+      "kind": "library",
+      "producer": "marketing-lead",
+      "consumers": [
+        "marketing-lead",
+        "product-lead",
+        "qa-reviewer"
+      ],
+      "index": "_knowledge/growth-mechanics/registry.json",
+      "overview": "_knowledge/growth-mechanics/README.md",
+      "artifact_count": 3
+    },
+    {
       "domain": "product-telemetry",
       "kind": "library",
       "producer": "product-lead",
@@ -100,7 +113,7 @@
       ],
       "index": "_knowledge/tech-stack-selection/registry.json",
       "overview": "_knowledge/tech-stack-selection/README.md",
-      "artifact_count": 2
+      "artifact_count": 3
     }
   ]
 }

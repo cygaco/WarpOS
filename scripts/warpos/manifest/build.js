@@ -553,6 +553,7 @@ function buildRules(sourcePrefix) {
         rel === "UNTRACKED_WORK.md" ||
         rel === "WARP.md" ||
         rel === "REGRESSIONS.md" ||
+        rel === "GRAPH.md" ||
         rel === "agentic_os_tracker_system_improvements.md",
       entry: () => ({ owner: "runtime", managed: false }),
     },

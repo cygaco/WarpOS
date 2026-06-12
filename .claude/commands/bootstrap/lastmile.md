@@ -130,6 +130,8 @@ Each module: **detect → recommend (default) → plan (shortest safe path)**.
 > - **Database** → [`_guides/DATABASE_GUIDE.md`](../../../_guides/DATABASE_GUIDE.md)
 > <!-- guide-anchor:AUTH anchor:lastmile:module/auth shape:walkthrough -->
 > - **Auth / Accounts** → [`_guides/AUTH_GUIDE.md`](../../../_guides/AUTH_GUIDE.md) — day-zero note: Google sensitive-scope OAuth verification can take days–weeks.
+> <!-- guide-anchor:ONBOARDING anchor:lastmile:module/auth shape:walkthrough -->
+> - **Onboarding** (when to ask for signup, what to collect) → [`_guides/ONBOARDING_GUIDE.md`](../../../_guides/ONBOARDING_GUIDE.md) - signup-wall placement, progressive profiling, guest/anonymous mode + account linking, minors escalation (COPPA).
 > <!-- guide-anchor:PAYMENTS anchor:lastmile:module/payments shape:walkthrough -->
 > - **Payments / Monetization** → [`_guides/PAYMENTS_GUIDE.md`](../../../_guides/PAYMENTS_GUIDE.md) — Stripe identity + bank verification has lead time before live mode; mobile in-app digital goods use StoreKit / Play Billing by default.
 > <!-- guide-anchor:EMAIL anchor:lastmile:module/email shape:walkthrough -->
@@ -140,6 +142,8 @@ Each module: **detect → recommend (default) → plan (shortest safe path)**.
 > - **Analytics / Instrumentation** → [`_guides/ANALYTICS_TELEMETRY_GUIDE.md`](../../../_guides/ANALYTICS_TELEMETRY_GUIDE.md) - activation, funnels, core product events, privacy-safe telemetry payloads.
 > <!-- guide-anchor:PUSH_NOTIFICATIONS anchor:lastmile:module/analytics shape:walkthrough -->
 > - **Push notifications** (bring users back without getting muted) → [`_guides/PUSH_NOTIFICATIONS_GUIDE.md`](../../../_guides/PUSH_NOTIFICATIONS_GUIDE.md) - earn the opt-in (soft-ask + iOS provisional auth), token hygiene, frequency caps + deep-linking, store/GDPR consent.
+> <!-- guide-anchor:GROWTH_LOOPS anchor:lastmile:module/analytics shape:walkthrough -->
+> - **Growth loops** (reviews + referrals) → [`_guides/GROWTH_LOOPS_GUIDE.md`](../../../_guides/GROWTH_LOOPS_GUIDE.md) - NEVER review-gate ("enjoying the app?" yes→store / no→feedback is banned on Play + FTC risk); decoupled feedback/review flows, native prompt quotas, referrals only after retention.
 > <!-- guide-anchor:DEPLOYMENT_INFRA anchor:lastmile:module/deployment shape:checklist -->
 > - **Platform / Deployment** → [`_guides/DEPLOYMENT_INFRA_GUIDE.md`](../../../_guides/DEPLOYMENT_INFRA_GUIDE.md) - host choice, env vars, production smoke test, domain/DNS, rollback.
 > <!-- guide-anchor:ADMIN_TOOLING anchor:lastmile:module/admin shape:walkthrough -->

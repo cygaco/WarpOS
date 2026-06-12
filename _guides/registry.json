@@ -83,6 +83,15 @@
       "title": "EMAIL_GUIDE.md — Email for a Launching App, for Total Newbies"
     },
     {
+      "guide": "GROWTH_LOOPS",
+      "file": "_guides/GROWTH_LOOPS_GUIDE.md",
+      "anchor": "lastmile:module/analytics",
+      "shape": "walkthrough",
+      "timing": "at-module",
+      "lead_time": "none (review prompt ships at launch; build referrals only AFTER retention proves itself)",
+      "title": "GROWTH_LOOPS_GUIDE.md - Reviews & Referrals, the Two Cheapest Growth Loops (for Total Newbies)"
+    },
+    {
       "guide": "LEGAL",
       "file": "_guides/LEGAL_GUIDE.md",
       "anchor": "lastmile:gate/legal",
@@ -90,6 +99,15 @@
       "timing": "at-gate",
       "lead_time": "none (but STOP and hire a lawyer BEFORE launch for health/finance/children/biometric/regulated data, equity/fundraising, or AGPL anywhere in your dependency tree)",
       "title": "LEGAL_GUIDE.md — Legal Protection for Your Launch (for Total Newbies)"
+    },
+    {
+      "guide": "ONBOARDING",
+      "file": "_guides/ONBOARDING_GUIDE.md",
+      "anchor": "lastmile:module/auth",
+      "shape": "walkthrough",
+      "timing": "at-module",
+      "lead_time": "none (but under-13 / teen audiences: STOP — COPPA/parental-consent design needs legal review before launch)",
+      "title": "ONBOARDING_GUIDE.md - From First Open to First Win (for Total Newbies)"
     },
     {
       "guide": "PAYMENTS",
@@ -135,6 +153,15 @@
       "timing": "at-module",
       "lead_time": "none",
       "title": "SECURITY_GUIDE.md — How Not to Get Hacked (for Total Newbies)"
+    },
+    {
+      "guide": "TESTING_ON_PC",
+      "file": "_guides/TESTING_ON_PC_GUIDE.md",
+      "anchor": "spinup:preflight",
+      "shape": "walkthrough",
+      "timing": "project-start",
+      "lead_time": "acquire/borrow a physical test device + create EAS/device-farm accounts EARLY; iOS verification needs a real iPhone you can borrow by launch week",
+      "title": "TESTING_ON_PC_GUIDE.md - Testing a Phone App on Your Windows PC (for Total Newbies)"
     }
   ]
 }

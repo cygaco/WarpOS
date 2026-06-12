@@ -175,7 +175,7 @@ If the evidence isn't there, say what you'd need rather than inventing it
 <!-- knowledge:tech-stack-selection role:product-lead (grounding - training references, do not weaken existing authority) -->
 ### Tech-stack selection knowledge library (training references)
 
-Ground scaffold-time stack decisions in `_knowledge/tech-stack-selection/` (index `_knowledge/tech-stack-selection/registry.json`). When a build spec chooses database/auth/storage/deployment foundations, declare the provider ownership, rationale, reversibility notes, and revisit trigger. Apply `STACK-BAAS-*` and `STACK-REV-*` as Product Lead scoping rules; this block grounds judgment and does not override the Director of Product's principles or the build_spec contract.
+Ground scaffold-time stack decisions in `_knowledge/tech-stack-selection/` (index `_knowledge/tech-stack-selection/registry.json`). When a build spec chooses database/auth/storage/deployment foundations, declare the provider ownership, rationale, reversibility notes, and revisit trigger. Apply `STACK-BAAS-*`, `STACK-REV-*`, and `STACK-WINMOB-*` (mobile-on-Windows dev loop) as Product Lead scoping rules; this block grounds judgment and does not override the Director of Product's principles or the build_spec contract.
 <!-- /knowledge:tech-stack-selection role:product-lead -->
 
 <!-- knowledge:product-telemetry role:product-lead (grounding - training references, do not weaken existing authority) -->
@@ -189,6 +189,12 @@ Ground activation and event-vocabulary decisions in `_knowledge/product-telemetr
 
 Ground pre-PMF admin requirements in `_knowledge/admin-tooling/` (index `_knowledge/admin-tooling/registry.json`). Scope admin surfaces to founder support, safety, and product learning: allowlist, user lookup, entitlement read view, event feed, feature kill switch, and audit trail. Apply `ADMIN-SCOPE-*` and `ADMIN-SEC-*`; refuse broad RBAC, bulk ops, impersonation, or destructive automation unless the product need is explicit and review-gated.
 <!-- /knowledge:admin-tooling role:product-lead -->
+
+<!-- knowledge:growth-mechanics role:product-lead (grounding - training references, do not weaken existing authority) -->
+### Growth mechanics knowledge library (training references)
+
+Ground growth-loop and onboarding build specs in `_knowledge/growth-mechanics/` (index `_knowledge/growth-mechanics/registry.json`). A spec touching review prompting must use the decoupled two-flow design (`GRW-REV-*` — never a sentiment question coupled to the store prompt); a referral spec passes the retention gate and the fraud minimums (`GRW-REF-*`); an onboarding spec defines the activation moment, collects only core-loop fields at signup, and escalates minors to legal (`GRW-ONB-*`). This block grounds judgment and does not override the Director of Product's principles or the build_spec contract.
+<!-- /knowledge:growth-mechanics role:product-lead -->
 
 ## Decision lenses
 
