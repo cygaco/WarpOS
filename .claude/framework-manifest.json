@@ -11804,7 +11804,7 @@
         "src": "framework/releases/0.16.0/checksums.json",
         "dest": "framework/releases/0.16.0/checksums.json",
         "kind": "release_capsule",
-        "sha256": "707365e1b20054f42db8af5b40b7cd99fabc8bdad50fad6881a1b540f9468854",
+        "sha256": "ae3588e82d7d5f062f9eec6bf46863c7b5cffc5e9c524ffc4bf4e01d7c9690f1",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
