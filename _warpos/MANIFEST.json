@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-11T23:52:35.944Z",
+  "generatedAt": "2026-06-12T00:29:33.846Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.15.4",
   "migrations": [],
@@ -121,8 +121,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "009124378b9199b816f08afc6987a18d2cf9cd2b76fca1229fac16a9080bcff2",
-      "installedSha": "009124378b9199b816f08afc6987a18d2cf9cd2b76fca1229fac16a9080bcff2"
+      "sha256": "dfdcc8685aa0c51868bd8bf88b2d0ff19a81aa7fd7212bbc025e9f8af6200bde",
+      "installedSha": "dfdcc8685aa0c51868bd8bf88b2d0ff19a81aa7fd7212bbc025e9f8af6200bde"
     },
     "TRACKER.md": {
       "owner": "runtime",
@@ -2198,6 +2198,13 @@
       "source": null,
       "sha256": "f8db2e89becfc27ed92361a3760aa110ff323a8cd2656a3064968b8df1c8af8b",
       "installedSha": "f8db2e89becfc27ed92361a3760aa110ff323a8cd2656a3064968b8df1c8af8b"
+    },
+    "tests/regression/S-PF-03/admin-surface.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": null,
+      "sha256": "1752565da14a4e726c602e8e526094a0c811edda9b87d7c96a41ac28a0cd7a12",
+      "installedSha": "1752565da14a4e726c602e8e526094a0c811edda9b87d7c96a41ac28a0cd7a12"
     },
     "tests/regression/S-PF-02/tech-stack-declaration.test.js": {
       "owner": "framework",
@@ -4632,8 +4639,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/scaffold/app.test.js",
-      "sha256": "d460a0773b32a35748259a90ea80c3c7a5c2119510009eb33ba38b4e439b16f6",
-      "installedSha": "d460a0773b32a35748259a90ea80c3c7a5c2119510009eb33ba38b4e439b16f6"
+      "sha256": "6d8561fa2dbc48cb7db1d9b0cc3c6a12ed41315612513c58f4b3051c17d1848e",
+      "installedSha": "6d8561fa2dbc48cb7db1d9b0cc3c6a12ed41315612513c58f4b3051c17d1848e"
     },
     "scripts/research/deep-run.js": {
       "owner": "framework",
@@ -6732,8 +6739,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/scaffold-coverage-scan.js",
-      "sha256": "b1dd5371a5f0a2b94873c57e5b987f82e479e1b6bf93968d3514f8a38de9ba57",
-      "installedSha": "b1dd5371a5f0a2b94873c57e5b987f82e479e1b6bf93968d3514f8a38de9ba57"
+      "sha256": "f2294e61a7ba90454169eac4f54f21cc44856962b7fa32a35e957eb033af80fe",
+      "installedSha": "f2294e61a7ba90454169eac4f54f21cc44856962b7fa32a35e957eb033af80fe"
     },
     "scripts/checks/scan-coverage.allowlist.json": {
       "owner": "framework",
@@ -8104,8 +8111,8 @@
       "owner": "framework",
       "managed": true,
       "source": "framework/templates/app-scaffold/.env.local.example.tmpl",
-      "sha256": "07a31098192e7850096e3d3ff1637f351c8aaf9b0c3338b9b436c6d945bef0bc",
-      "installedSha": "07a31098192e7850096e3d3ff1637f351c8aaf9b0c3338b9b436c6d945bef0bc"
+      "sha256": "0957136802d4c48e26222dac059961f41c9adee95d991463702896277c3d86d9",
+      "installedSha": "0957136802d4c48e26222dac059961f41c9adee95d991463702896277c3d86d9"
     },
     "framework/templates/app-scaffold/components.json.tmpl": {
       "owner": "framework",
@@ -8205,6 +8212,27 @@
       "sha256": "889341ee3ccd4679398aafd6d1281bb6cc849be41711215035f82c93f152d161",
       "installedSha": "889341ee3ccd4679398aafd6d1281bb6cc849be41711215035f82c93f152d161"
     },
+    "framework/templates/app-scaffold/src/lib/admin/config.ts.tmpl": {
+      "owner": "framework",
+      "managed": true,
+      "source": "framework/templates/app-scaffold/src/lib/admin/config.ts.tmpl",
+      "sha256": "130ad0b21957c79e0efdd33ae388ab451cd31a068820668f3d02cd2b32587e30",
+      "installedSha": "130ad0b21957c79e0efdd33ae388ab451cd31a068820668f3d02cd2b32587e30"
+    },
+    "framework/templates/app-scaffold/src/lib/admin/project-sections.ts.tmpl": {
+      "owner": "framework",
+      "managed": true,
+      "source": "framework/templates/app-scaffold/src/lib/admin/project-sections.ts.tmpl",
+      "sha256": "57baa12521aa0887e1a976acbd1b9022404e19ae5144ec5fd09f2c80790d00d1",
+      "installedSha": "57baa12521aa0887e1a976acbd1b9022404e19ae5144ec5fd09f2c80790d00d1"
+    },
+    "framework/templates/app-scaffold/src/lib/admin/store.ts.tmpl": {
+      "owner": "framework",
+      "managed": true,
+      "source": "framework/templates/app-scaffold/src/lib/admin/store.ts.tmpl",
+      "sha256": "5b1ea4b02fe2272a010926ea5d8d2a065468d9b78a5d30b5e81f655907d73936",
+      "installedSha": "5b1ea4b02fe2272a010926ea5d8d2a065468d9b78a5d30b5e81f655907d73936"
+    },
     "framework/templates/app-scaffold/src/components/ui/button.tsx.tmpl": {
       "owner": "framework",
       "managed": true,
@@ -8267,6 +8295,20 @@
       "source": "framework/templates/app-scaffold/src/app/page.tsx.tmpl",
       "sha256": "faa4e39a0758cd2ced931b71a324bb4b73e23cfa0e6b5b96183026530619265b",
       "installedSha": "faa4e39a0758cd2ced931b71a324bb4b73e23cfa0e6b5b96183026530619265b"
+    },
+    "framework/templates/app-scaffold/src/app/admin/actions.ts.tmpl": {
+      "owner": "framework",
+      "managed": true,
+      "source": "framework/templates/app-scaffold/src/app/admin/actions.ts.tmpl",
+      "sha256": "3561ef234ad8384c230d9b8ab2be5618d8d286cb0565c24614d620835178d162",
+      "installedSha": "3561ef234ad8384c230d9b8ab2be5618d8d286cb0565c24614d620835178d162"
+    },
+    "framework/templates/app-scaffold/src/app/admin/page.tsx.tmpl": {
+      "owner": "framework",
+      "managed": true,
+      "source": "framework/templates/app-scaffold/src/app/admin/page.tsx.tmpl",
+      "sha256": "ca9626188356dab38d81d27826597ad7aa0f69afd96a17f66a6a5ab80982f7f4",
+      "installedSha": "ca9626188356dab38d81d27826597ad7aa0f69afd96a17f66a6a5ab80982f7f4"
     },
     "framework/releases/0.9.0/changelog.md": {
       "owner": "framework",

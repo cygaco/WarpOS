@@ -1,0 +1,119 @@
+import { createHmac, timingSafeEqual } from "node:crypto";
+import { cookies } from "next/headers";
+
+export type AdminActor = {
+  email: string;
+  allowed: boolean;
+  source: "signed-cookie" | "dev-env" | "missing";
+};
+
+export type AdminFeatureFlag = {
+  key: string;
+  label: string;
+  enabled: boolean;
+};
+
+export const ADMIN_FEATURE_FLAGS: AdminFeatureFlag[] = [
+  {
+    key: "admin.project_sections",
+    label: "Project sections",
+    enabled: true,
+  },
+  {
+    key: "admin.event_feed",
+    label: "Event feed",
+    enabled: true,
+  },
+];
+
+const DEFAULT_ADMIN_SESSION_COOKIE = "warpos_admin_session";
+
+function normalizeEmail(email: string): string {
+  return email.trim().toLowerCase();
+}
+
+function splitEmails(value: string | undefined): string[] {
+  return (value || "")
+    .split(/[,\s]+/)
+    .map(normalizeEmail)
+    .filter(Boolean);
+}
+
+export function founderEmailAllowlist(): string[] {
+  return splitEmails(process.env.ADMIN_FOUNDER_EMAILS);
+}
+
+export function adminSessionCookieName(): string {
+  return (
+    process.env.ADMIN_SESSION_COOKIE || DEFAULT_ADMIN_SESSION_COOKIE
+  ).trim();
+}
+
+export function isFounderEmailAllowed(email: string | null | undefined): boolean {
+  const normalized = normalizeEmail(email || "");
+  return Boolean(normalized && founderEmailAllowlist().includes(normalized));
+}
+
+function adminSessionSecret(): string {
+  return (process.env.ADMIN_SESSION_SECRET || "").trim();
+}
+
+function signAdminEmail(email: string, secret: string): string {
+  return createHmac("sha256", secret).update(email).digest("base64url");
+}
+
+function safeEqual(a: string, b: string): boolean {
+  const left = Buffer.from(a);
+  const right = Buffer.from(b);
+  return left.length === right.length && timingSafeEqual(left, right);
+}
+
+export function verifyAdminSessionCookie(value: string | undefined): string | null {
+  const secret = adminSessionSecret();
+  if (!secret || !value) return null;
+
+  const separatorIndex = value.lastIndexOf(".");
+  if (separatorIndex <= 0) return null;
+
+  const encodedEmail = value.slice(0, separatorIndex);
+  const signature = value.slice(separatorIndex + 1);
+  const email = normalizeEmail(Buffer.from(encodedEmail, "base64url").toString("utf8"));
+  if (!email || !signature) return null;
+
+  const expectedSignature = signAdminEmail(email, secret);
+  return safeEqual(signature, expectedSignature) ? email : null;
+}
+
+export function signAdminSessionEmail(email: string): string | null {
+  const secret = adminSessionSecret();
+  const normalizedEmail = normalizeEmail(email);
+  if (!secret || !normalizedEmail) return null;
+
+  const encodedEmail = Buffer.from(normalizedEmail).toString("base64url");
+  return `${encodedEmail}.${signAdminEmail(normalizedEmail, secret)}`;
+}
+
+export async function resolveAdminActor(): Promise<AdminActor> {
+  const requestCookies = await cookies();
+  const sessionEmail = verifyAdminSessionCookie(
+    requestCookies.get(adminSessionCookieName())?.value,
+  );
+  const devEmail =
+    process.env.NODE_ENV !== "production"
+      ? normalizeEmail(process.env.ADMIN_DEV_EMAIL || "")
+      : "";
+  const email = sessionEmail || devEmail;
+  return {
+    email,
+    allowed: isFounderEmailAllowed(email),
+    source: sessionEmail ? "signed-cookie" : devEmail ? "dev-env" : "missing",
+  };
+}
+
+export async function requireFounderAdmin(): Promise<AdminActor> {
+  const actor = await resolveAdminActor();
+  if (!actor.allowed) {
+    throw new Error("Admin access denied: founder email is not allowlisted");
+  }
+  return actor;
+}

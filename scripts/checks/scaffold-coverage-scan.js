@@ -51,10 +51,15 @@ const REQUIRED_FILES = [
   "DESIGN_SYSTEM.md.tmpl",
   ".env.local.example.tmpl",
   "src/lib/utils.ts.tmpl",
+  "src/lib/admin/config.ts.tmpl",
+  "src/lib/admin/project-sections.ts.tmpl",
+  "src/lib/admin/store.ts.tmpl",
   "src/lib/telemetry/events.ts.tmpl",
   "src/lib/telemetry/sink.ts.tmpl",
   "src/lib/telemetry/track.ts.tmpl",
   "src/lib/telemetry/chain.ts.tmpl",
+  "src/app/admin/actions.ts.tmpl",
+  "src/app/admin/page.tsx.tmpl",
   "src/app/layout.tsx.tmpl",
   "src/app/page.tsx.tmpl",
   "src/app/globals.css.tmpl",
@@ -330,8 +335,160 @@ function evaluateScaffold(dir = scaffoldDir()) {
   }
 
   addTelemetryChecks(dir, errors);
+  addAdminSurfaceChecks(dir, errors);
 
   return { ok: errors.length === 0, errors, dir };
+}
+
+function addAdminSurfaceChecks(dir, errors) {
+  const env = readIf(path.join(dir, ".env.local.example.tmpl"));
+  if (env !== null) {
+    for (const name of ["ADMIN_FOUNDER_EMAILS", "ADMIN_SESSION_SECRET", "ADMIN_SESSION_COOKIE", "ADMIN_DEV_EMAIL"]) {
+      if (!new RegExp(`^${name}=`, "m").test(env)) {
+        errors.push(`env example missing admin name: ${name}`);
+      }
+    }
+    if (/^ADMIN_(?:FOUNDER_EMAILS|SESSION_SECRET|DEV_EMAIL)=\S+/m.test(env)) {
+      errors.push("env example must not seed admin identity or session-secret values");
+    }
+  }
+
+  const config = readIf(path.join(dir, "src/lib/admin/config.ts.tmpl"));
+  const projectSections = readIf(path.join(dir, "src/lib/admin/project-sections.ts.tmpl"));
+  const store = readIf(path.join(dir, "src/lib/admin/store.ts.tmpl"));
+  const actions = readIf(path.join(dir, "src/app/admin/actions.ts.tmpl"));
+  const page = readIf(path.join(dir, "src/app/admin/page.tsx.tmpl"));
+  const configScan = config === null ? null : stripTsComments(config);
+  const projectScan = projectSections === null ? null : stripTsComments(projectSections);
+  const storeScan = store === null ? null : stripTsComments(store);
+  const actionsScan = actions === null ? null : stripTsComments(actions);
+  const pageScan = page === null ? null : stripTsComments(page);
+
+  if (config !== null) {
+    for (const name of [
+      "ADMIN_FEATURE_FLAGS",
+      "adminSessionCookieName",
+      "founderEmailAllowlist",
+      "isFounderEmailAllowed",
+      "verifyAdminSessionCookie",
+      "signAdminSessionEmail",
+      "resolveAdminActor",
+      "requireFounderAdmin",
+    ]) {
+      requireNamedExport(errors, config, "src/lib/admin/config.ts", name);
+    }
+    if (
+      !/process\.env\.ADMIN_FOUNDER_EMAILS/.test(configScan) ||
+      !/process\.env\.ADMIN_SESSION_SECRET/.test(configScan) ||
+      !/process\.env\.ADMIN_SESSION_COOKIE/.test(configScan) ||
+      !/process\.env\.ADMIN_DEV_EMAIL/.test(configScan)
+    ) {
+      errors.push("admin config must read ADMIN_FOUNDER_EMAILS, ADMIN_SESSION_SECRET, ADMIN_SESSION_COOKIE, and ADMIN_DEV_EMAIL");
+    }
+    if (
+      !/cookies\(\)/.test(configScan) ||
+      !/verifyAdminSessionCookie\(/.test(configScan) ||
+      !/createHmac\("sha256"/.test(configScan) ||
+      !/timingSafeEqual\(/.test(configScan)
+    ) {
+      errors.push("admin config must verify a signed request-bound admin session cookie");
+    }
+    if (!/base64url/.test(configScan) || !/lastIndexOf\("\."\)/.test(configScan)) {
+      errors.push("admin signed session cookie must encode the email segment safely");
+    }
+    if (!/NODE_ENV\s*!==\s*"production"/.test(configScan)) {
+      errors.push("admin dev email fallback must fail closed in production");
+    }
+    if (!/isFounderEmailAllowed\(/.test(configScan) || !/throw new Error\("Admin access denied/.test(configScan)) {
+      errors.push("admin config must fail closed when founder email is not allowlisted");
+    }
+  }
+
+  if (actions !== null) {
+    for (const name of [
+      "toggleAccountStateAction",
+      "setEntitlementAction",
+      "setFeatureFlagAction",
+    ]) {
+      requireNamedExport(errors, actions, "src/app/admin/actions.ts", name);
+    }
+    if (countMatches(actionsScan, /await\s+requireFounderAdmin\(\)/g) < 3) {
+      errors.push("admin server actions must call requireFounderAdmin before mutation");
+    }
+    if (countMatches(actionsScan, /recordAdminAudit\(\{/g) < 3) {
+      errors.push("admin server actions must write audit records for every mutation");
+    }
+    if (!/isAdminEntitlement\(/.test(actionsScan)) {
+      errors.push("admin entitlement mutation must use the explicit entitlement allowlist");
+    }
+    if (!/revalidatePath\("\/admin"\)/.test(actionsScan)) {
+      errors.push("admin server actions must revalidate /admin");
+    }
+  }
+
+  if (store !== null) {
+    for (const name of [
+      "searchAdminUsers",
+      "ADMIN_ALLOWED_ENTITLEMENTS",
+      "isAdminEntitlement",
+      "setAdminUserAccountState",
+      "setAdminUserEntitlement",
+      "recordAdminAudit",
+      "listAdminAuditRecords",
+      "listAdminFeatureFlags",
+      "setAdminFeatureFlag",
+      "listAdminEventFeed",
+    ]) {
+      requireNamedExport(errors, store, "src/lib/admin/store.ts", name);
+    }
+    if (!/evaluateTelemetryChain\(/.test(storeScan) || !/SUPPLY_CHAIN_STAGES/.test(storeScan)) {
+      errors.push("admin event feed must consume the W0 telemetry chain seam");
+    }
+    if (!/ADMIN_ALLOWED_ENTITLEMENTS\s*=\s*\[[\s\S]*"beta"/.test(storeScan)) {
+      errors.push("admin store must constrain manual entitlements to an explicit small allowlist");
+    }
+  }
+
+  if (projectSections !== null) {
+    requireNamedExport(errors, projectSections, "src/lib/admin/project-sections.ts", "ADMIN_PROJECT_SECTIONS");
+    requireNamedExport(errors, projectSections, "src/lib/admin/project-sections.ts", "listAdminProjectSections");
+    if (!/_requirements\/00-canonical/.test(projectScan) || !/declared Tech Stack/.test(projectScan)) {
+      errors.push("admin project sections must name canon and declared stack as generation sources");
+    }
+    if (!/basic_moderate/.test(projectScan) || !/CoreLoopEntity/.test(projectScan)) {
+      errors.push("admin project sections must expose a core-loop entity with basic moderation only");
+    }
+  }
+
+  if (page !== null) {
+    for (const needle of [
+      "resolveAdminActor",
+      "founderEmailAllowlist",
+      "searchAdminUsers",
+      "toggleAccountStateAction",
+      "setEntitlementAction",
+      "listAdminEventFeed",
+      "listAdminFeatureFlags",
+      "setFeatureFlagAction",
+      "listAdminProjectSections",
+    ]) {
+      if (!new RegExp(`\\b${needle}\\b`).test(pageScan)) {
+        errors.push(`admin page missing required wiring: ${needle}`);
+      }
+    }
+    if (!/if\s*\(\s*!actor\.allowed\s*\)/.test(pageScan)) {
+      errors.push("admin page must render behind the founder allowlist gate");
+    }
+    if (!/name="q"/.test(pageScan) || !/defaultValue=\{query\}/.test(pageScan)) {
+      errors.push("admin page must include user search input wired to query state");
+    }
+    if (!/name="state"/.test(pageScan) || !/value=\{user\.state === "active" \? "suspended" : "active"\}/.test(pageScan)) {
+      errors.push("admin page must include account-state toggle controls");
+    }
+    if (!/name="entitlement"/.test(pageScan) || !/name="enabled"/.test(pageScan)) {
+      errors.push("admin page must include entitlement grant/revoke controls");
+    }
+  }
 }
 
 function addTelemetryChecks(dir, errors) {

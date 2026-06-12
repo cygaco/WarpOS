@@ -13,12 +13,12 @@
 - **Scope:** W0 telemetry seam: every scaffold ships track(event,props) over a local event buffer with a pluggable sink — PostHog default sink, no-op sink when unconfigured, fail-open (never blocks app boot); 6 canonical lifecycle events seeded (signup, onboarding_complete, activation [product-specific, marked TODO not guessed], core_action, retention_return D1/D7, checkout); lastmile's analytics module ENRICHES (funnel/A-B) instead of installing.; W1 tech-stack declaration: spinup/portfolio intake captures db/auth/payments/hosting/analytics/framework; home = a new '## Tech Stack' block in the EXISTING DATA_AND_ACCOUNTS.md canonical doc (not a new artifact); advisory-with-teeth binding — declared stack picks the lastmile profile default and pre-fills roadmap/epic infra entries; downstream override allowed but logged as a visible stack-drift event.; W2 admin surface (pre-PMF minimum): single /admin route gated by founder-email allowlist; user list+search, account-state toggle, manual entitlement grant/revoke, read-only event feed consuming W0; feature flags as a trivial config seam.; W3 founders checklist: durable machine-readable FOUNDERS_CHECKLIST.md at product root (same shelf as DEV_SETUP_GUIDE), checkbox state, PRE-POPULATED from the declared stack; contents = human-only slow-clock work (dev accounts, DNS/domain, legal entity, privacy/terms, store listings, live-mode gates); lastmile audit reads checklist state instead of re-deriving.; Track T-G: author ANALYTICS/TELEMETRY, DEPLOYMENT-INFRA, ADMIN-TOOLING guides into _guides with the guide-anchor contract, BaaS-leaning as RECOMMENDATIONS (Supabase/Clerk), wired via /guides:integrate.; Track T-K: new _knowledge LIBRARY domains — tech-stack-selection (BaaS), product-telemetry, admin-tooling — wired via /knowledge:integrate.; Track T-P: author the 5 designed situational playbooks (launch-readiness + provider-setup first) from _planning/playbooks/SUITE-DESIGN.md.
 - **Out of scope:** The gemini→agy provider cutover, the CLI-auth-mode install gate, the Dispatch-Console/model-router refresh (Fable missing, not ADR-0007-mapped), and NOTAGAIN W2/W3 residuals — all owned by E-DISPATCH-SHAPE-001 (folded there 2026-06-11 with provenance; linked as a dependency).; E-LIFECYCLE-001 close-out (GPT 2nd-pass, flip ramp, retro) — its own epic, unblocked 2026-06-11 by the codex ChatGPT-OAuth restore.; Re-fixing anything in NOTAGAIN §6 receipts (anti-rebuild guard).; Scale-stage admin features (RBAC, refund/cancel automation, role matrices, audit logs, bulk ops, analytics dashboards) — DoP-refused as pre-PMF overbuild; Stripe/PostHog own them.; User-acquisition guides (later batch); hard-binding the declared stack (pre-PMF pivot freedom preserved unless downstream evidence flips the call).
 - **Current state:** Active
-- **Percent completion:** ~57% — W0 telemetry seam landed locally in S-PF-01 with release approval still pending; W1 tech-stack declaration is implemented and regression-green; T-G guides and T-K knowledge domains are implemented and coverage-green. W2/W3/T-P remain.
+- **Percent completion:** ~71% — W0 telemetry seam landed locally in S-PF-01 with release approval still pending; W1 tech-stack declaration is implemented and regression-green; W2 admin surface is implemented, scaffold-coverage-enforced, and security-reviewer PASS; T-G guides and T-K knowledge domains are implemented and coverage-green. W3/T-P remain.
 
 ## Definition of Done
 - [x] W0: a fresh scaffold contains the track(event,props) seam with pluggable sink (no-op when unconfigured, fail-open) + the 6 canonical lifecycle events; ENFORCER = scaffold-coverage check with a planted seam-missing fixture that FAILS; lastmile analytics module verified to enrich, not reinstall. Landed locally in S-PF-01 through `78770a4`; `RL-20260611-045` remains prepared/not deployed pending explicit approval.
 - [x] W1: intake captures the 6 stack fields; DATA_AND_ACCOUNTS.md carries a parseable '## Tech Stack' block; declared stack demonstrably pre-fills the lastmile profile + roadmap infra entries; a downstream stack override emits a visible stack-drift event (planted override fixture); ENFORCER = canon gate on block presence + parseability. Landed locally in S-PF-02; implementation preserves advisory-with-teeth (declared stack pre-fills defaults, detected implementation wins with visible `stack_drift`). No committed default dependency introduced.
-- [ ] W2: a fresh scaffold serves a founder-email-allowlist-gated /admin route with user list+search, account-state toggle, entitlement grant/revoke, and the W0 event feed; ENFORCER = scaffold-coverage asserting the gated route + allowlist, with a planted ungated-admin fixture that FAILS; security-reviewer lane run on the W2 diff (admin route = security surface).
+- [x] W2: a fresh scaffold serves a founder-email-allowlist-gated /admin route with user list+search, account-state toggle, entitlement grant/revoke, and the W0 event feed; ENFORCER = scaffold-coverage asserting the gated route + allowlist, with a planted ungated-admin fixture that FAILS; security-reviewer lane run on the W2 diff (admin route = security surface). Landed locally in S-PF-03 with signed-session-cookie admin gate, explicit entitlement allowlist, mutation audit writes, project-derived sections, 14/14 planted regression suite, and OpenAI security-reviewer PASS.
 - [ ] W3: FOUNDERS_CHECKLIST.md exists at product root in a fresh scaffold, machine-readable checkbox state, stack-conditional items render from the W1 declaration (planted: Stripe declared → 'verify Stripe identity' appears); lastmile audit consumes checklist state; ENFORCER = scaffold-coverage presence + render assertion.
 - [x] T-G: the 3 new guides exist with guide-anchor contracts and registry entries; ENFORCER = /guides:coverage green.
 - [x] T-K: the 3 new _knowledge LIBRARY domains exist with _domain.json + consumer marker blocks; ENFORCER = /knowledge:coverage green.
@@ -32,7 +32,7 @@
 ## Related sprints
 - **S-PF-01** — Local release prepared — W0 telemetry seam — track() + buffer + pluggable sink + 6 lifecycle events into the scaffold; lastmile analytics module re-pointed to enrich; scaffold-coverage enforcer + planted fixture. `RL-20260611-045` awaits explicit approval.
 - **S-PF-02** — Done — W1 tech-stack declaration — spinup stack intake fields, DATA_AND_ACCOUNTS '## Tech Stack' block, profile/lastmile trickle-down, stack-drift event visibility, canon gate enforcer, planted regression fixture
-- **S-PF-03** — Planned — W2 admin surface — allowlist-gated /admin route (list/search, state toggle, entitlement, event feed), feature-flag config seam, scaffold-coverage enforcer + ungated fixture, security-reviewer lane
+- **S-PF-03** — Done — W2 admin surface — signed-session-cookie founder allowlist /admin route (list/search, state toggle, entitlement, event feed), feature-flag config seam, canon-derived project section, scaffold-coverage enforcer + planted fixtures, OpenAI security-reviewer PASS
 - **S-PF-04** — Planned — W3 founders checklist — FOUNDERS_CHECKLIST.md generator (stack-conditional, machine-readable), lastmile audit consumes it, scaffold-coverage enforcer
 - **S-PF-05** — Done — T-G guides gap closure — ANALYTICS/TELEMETRY + DEPLOYMENT-INFRA + ADMIN-TOOLING guides authored + anchored; /guides:coverage green
 - **S-PF-06** — Done — T-K _knowledge domains — tech-stack-selection/BaaS + product-telemetry + admin-tooling LIBRARY domains created + integrated; /knowledge:coverage green
@@ -57,7 +57,7 @@
 ## Open questions
 - Binding-vs-advisory for the declared stack — β second-eye at W1 spec-lock; evidence question (do founders actually pivot stacks post-scaffold?).
 - Activation event definition is product-specific — scaffold marks it TODO; who fills it (canon step? lastmile audit?) to be decided at W0 design.
-- Feature-flag seam shape (env/config/file) — trivial by design, pick at W2 design.
+- Feature-flag seam shape resolved in S-PF-03 as config-backed scaffold flags with founder-gated server actions and mutation audit writes.
 - Whether the existing 5 portfolio products get the seams retrofitted or only new scaffolds (retrofit = separate decision, not assumed).
 
 ## Session log
@@ -89,6 +89,15 @@
 - Verification performed: `node scripts/canon/test-generate.js`; `node scripts/bootstrap/test-spinup-orchestrate.js`; `node scripts/bootstrap/lastmile/test-orchestrate.js`; `node tests/regression/S-PF-02/tech-stack-declaration.test.js`.
 - Validation result: PASS (`25/25`, `34/34`, `59/59`, `3/3` respectively).
 - Evidence/references: `CODEX-LOG.md` 2026-06-11 S-PF-02 entries.
+
+### 2026-06-11 - S-PF-03 admin surface scaffold
+- Agent(s): Codex (GPT executor) - Mode: adhoc continuation on `sprint/S-PF-01`
+- Work performed: implemented W2 admin surface in the app scaffold: signed-session-cookie founder allowlist gate, dev-only local fallback, `/admin` user list/search, account-state toggle, explicit entitlement grant/revoke, feature-flag controls, W0 telemetry-chain event feed, lightweight mutation audit writes, and one canon/declared-stack-derived project section.
+- Files changed: `framework/templates/app-scaffold/.env.local.example.tmpl`, `framework/templates/app-scaffold/src/app/admin/{page.tsx.tmpl,actions.ts.tmpl}`, `framework/templates/app-scaffold/src/lib/admin/{config.ts.tmpl,store.ts.tmpl,project-sections.ts.tmpl}`, `scripts/checks/scaffold-coverage-scan.js`, `scripts/scaffold/app.test.js`, and `tests/regression/S-PF-03/admin-surface.test.js`.
+- State change: Active -> Active - Completion change: ~57% -> ~71%.
+- Verification performed: `node scripts/checks/scaffold-coverage-scan.js --json`; `node tests/regression/S-PF-03/admin-surface.test.js`; `node scripts/scaffold/app.test.js`; read-only OpenAI security-reviewer lane via ephemeral `codex exec`.
+- Validation result: PASS (`scaffold-coverage` ok; `14/14` S-PF-03 planted regressions; `7/7` scaffold engine; security-reviewer verdict `pass`, confidence 0.90).
+- Evidence/references: `runtime/s-pf-03-security-review.out.json`; `CODEX-LOG.md` 2026-06-11 S-PF-03 entries.
 
 ## Change log
 ### 2026-06-11 — Session fe8e8193-5743-4767-8e0e-acec8ecd6525
@@ -128,6 +137,13 @@
 - Previous state: S-PF-02 Planned.
 - New state: S-PF-02 Done with regression evidence.
 
+### 2026-06-11 - S-PF-03 admin surface scaffold
+- Changed: added the W2 admin scaffold route and support library, extended scaffold coverage to require it, and added planted fixtures for missing/ungated/unsigned/un-audited/admin-env drift.
+- Reason: every scaffolded product needs a minimum per-project founder admin surface at scaffold time, not a lastmile/manual afterthought.
+- Affected: app scaffold templates, scaffold coverage scanner, scaffold engine test, S-PF-03 regression suite.
+- Previous state: S-PF-03 Planned.
+- New state: S-PF-03 Done with security-reviewer PASS evidence.
+
 ## Evidence log
 ### 2026-06-11 — Epic plan authored
 - Evidence type: File changed.
@@ -144,6 +160,11 @@
 - Detail/location: `node scripts/canon/test-generate.js` PASS; `node scripts/bootstrap/test-spinup-orchestrate.js` PASS; `node scripts/bootstrap/lastmile/test-orchestrate.js` PASS; `node tests/regression/S-PF-02/tech-stack-declaration.test.js` PASS.
 - Verified by: Codex - Supports: Definition of Done W1.
 
+### 2026-06-11 - S-PF-03 admin surface scaffold
+- Evidence type: Regression + security review.
+- Detail/location: `node scripts/checks/scaffold-coverage-scan.js --json` PASS; `node tests/regression/S-PF-03/admin-surface.test.js` PASS (`14/14`); `node scripts/scaffold/app.test.js` PASS (`7/7`); `runtime/s-pf-03-security-review.out.json` PASS (`security-reviewer`, confidence 0.90, no findings).
+- Verified by: Codex - Supports: Definition of Done W2.
+
 ## Verification log
 | Item | Should exist? | State | Where / wired where | Proof (cmd/inspection) | Checked | By |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -153,18 +174,19 @@
 | S-PF-05 guide coverage | Yes | Verified Wired | _guides/ + .claude/commands/bootstrap/lastmile.md + .claude/project/maps/guide-integration.jsonl | `node scripts/checks/guides-coverage.js --json` PASS: 14 guide files, 13 anchored, 13 active records, 13 markers | 2026-06-11 | Codex |
 | S-PF-06 knowledge coverage | Yes | Verified Wired | _knowledge/ + consumer agent specs + .claude/project/maps/knowledge-integration.jsonl | `node scripts/checks/knowledge-coverage.js --json` PASS: 8 domains, 20 active records, 18 markers | 2026-06-11 | Codex |
 | S-PF-02 tech-stack declaration | Yes | Verified Wired | spinup setup -> canon DATA_AND_ACCOUNTS -> canon gate -> lastmile profile/plan | `node tests/regression/S-PF-02/tech-stack-declaration.test.js` PASS: 3 passed, 0 failed | 2026-06-11 | Codex |
+| S-PF-03 admin surface | Yes | Verified Wired | app scaffold /admin templates + admin lib + scaffold-coverage enforcer | `node tests/regression/S-PF-03/admin-surface.test.js` PASS: 14 passed, 0 failed; security-reviewer PASS | 2026-06-11 | Codex |
 
 ## Current next action
-Next Product Foundation build target: S-PF-03 (W2 admin surface), unless the operator first wants to approve/close the prepared S-PF-01 release `RL-20260611-045`. S-PF-02, S-PF-05, and S-PF-06 are done locally; S-PF-04 and S-PF-07 remain planned.
+Next Product Foundation build target: S-PF-04 (W3 founders checklist), unless the operator first wants to approve/close the prepared S-PF-01 release `RL-20260611-045`. S-PF-02, S-PF-03, S-PF-05, and S-PF-06 are done locally; S-PF-07 remains planned.
 
 ## Completion record
 - Final state: Active, not complete.
-- Percent completion: ~57%
+- Percent completion: ~71%
 - Completion timestamp: n/a
 - Definition of done used: the § Definition of Done above.
-- Evidence of completion: partial completion evidence for W0, W1, T-G, and T-K is recorded above; full-epic completion remains n/a.
+- Evidence of completion: partial completion evidence for W0, W1, W2, T-G, and T-K is recorded above; full-epic completion remains n/a.
 - Session IDs / dates / agents: n/a.
-- Related completed sprints: S-PF-02, S-PF-05, S-PF-06; S-PF-01 is locally prepared pending release approval.
-- Remaining follow-up items: S-PF-03, S-PF-04, and S-PF-07.
+- Related completed sprints: S-PF-02, S-PF-03, S-PF-05, S-PF-06; S-PF-01 is locally prepared pending release approval.
+- Remaining follow-up items: S-PF-04 and S-PF-07.
 - Related untracked work: CODEX-LOG.md and runtime review/evidence artifacts remain intentionally local.
-- ../../TRACKER.md updated: Not directly in this batch · Roadmap reconciled: Yes, E-PRODUCT-FOUNDATION-001 entry exists and is updated for S-PF-05/S-PF-06 progress.
+- ../../TRACKER.md updated: Not directly in this batch - Product Foundation source of truth is this epic tracker plus ROADMAP entry. Roadmap reconciled: Yes, E-PRODUCT-FOUNDATION-001 entry updated for S-PF-03 progress.
