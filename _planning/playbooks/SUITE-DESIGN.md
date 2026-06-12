@@ -45,17 +45,17 @@ Today's `/playbook:add` writes **doctrine plays** to `playbook.md` — that stay
 
 Each would be authored as `_planning/playbooks/<name>.md` with: Situation → Preconditions (mode/team/bindings) → Ordered steps (each naming its skill or human-gate) → Gates that must pass → Definition of done → Rollback.
 
-1. **launch-readiness** — prototype → monetizable (composes `/bootstrap:lastmile`, `/scan:full`, release gates). Runs in sprint mode.
-2. **provider-setup** — the T1/T2/T3 provider onboarding flow (composes `/warp:health`, `provider-tier-check.js`, the §14 confirm-class steps). The natural consumer of S-LC-10.
-3. **mode-switch** — the safe-mode-transition procedure (the human-readable companion to `mode-set.js` + `mode-lifecycle-guard`): verify-terminate old team → resolve target → spawn → verify → bind. The reference form of the S-LC-01..05 machine.
-4. **incident-response** — a gate/enforcer fired or a reap/false-green was caught: triage → diagnose → fix-cycle → re-review → reconcile. Codifies this session's own loop.
-5. **retro-loop** — sprint/epic close → `/sprint:retrospective` / `/learn:deep` → `/learn:integrate` → reconcile TRACKER. Closes the retro→learning leak noted in the dispatch-shape session.
+1. **launch-readiness** — prototype → monetizable (composes `/bootstrap:lastmile`, `/scan:full`, release gates). Runs in sprint mode. Authored in `launch-readiness-playbook.md`.
+2. **provider-setup** — the T1/T2/T3 provider onboarding flow (composes `/warp:health`, `provider-tier-check.js`, the §14 confirm-class steps). The natural consumer of S-LC-10. Authored in `provider-setup-playbook.md`.
+3. **mode-switch** — the safe-mode-transition procedure (the human-readable companion to `mode-set.js` + `mode-lifecycle-guard`): verify-terminate old team → resolve target → spawn → verify → bind. The reference form of the S-LC-01..05 machine. Authored in `mode-switch-playbook.md`.
+4. **incident-response** — a gate/enforcer fired or a reap/false-green was caught: triage → diagnose → fix-cycle → re-review → reconcile. Codifies this session's own loop. Authored in `incident-response-playbook.md`.
+5. **retro-loop** — sprint/epic close → `/sprint:retrospective` / `/learn:deep` → `/learn:integrate` → reconcile TRACKER. Closes the retro→learning leak noted in the dispatch-shape session. Authored in `retro-loop-playbook.md`.
 
-These are NOT authored here (design-only). `/playbook:add` (doctrine) + this design are the v1 surface; situational-playbook authoring + `/playbook:run` are the fast-follow.
+The playbooks are reference procedures only. `/playbook:add` (doctrine) remains separate; executable `/playbook:run` remains deferred.
 
 ## 5. Enforcer (per the policy-needs-an-enforcer rule)
 
-The reference-playbook layer is low-risk (docs read with judgment), so its "enforcer" is light: when situational playbooks are authored, a `/guides:coverage`-style check could assert each `_planning/playbooks/<name>.md` carries the required sections (Situation/Preconditions/Steps/Gates/DoD/Rollback). Until authored, this is logged as design-debt, not a live gap. The executable `/playbook:run`, when built, inherits `/sprint:full`'s hard-ceiling enforcement.
+The reference-playbook layer is low-risk (docs read with judgment), so its enforcer is light: `scripts/checks/playbook-suite-coverage.js` asserts each authored `_planning/playbooks/*-playbook.md` carries the required sections (Situation/Preconditions/Steps/Gates/DoD/Rollback), states that it is a reference procedure only, and cites this design. It is wired into `/scan:full` as a direct planning-store integrity invocation. The executable `/playbook:run`, when built, inherits `/sprint:full`'s hard-ceiling enforcement.
 
 ## 6. References
 - §8.12 (Playbook Suite), §22 #6 (operator-resolved: reference-procedures), §8.13 (`_planning` integration — where playbooks live).

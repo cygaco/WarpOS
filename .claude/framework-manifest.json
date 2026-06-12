@@ -13,7 +13,7 @@
     "pattern": 6,
     "fixture": 23,
     "warpos_script": 57,
-    "check_tool": 106,
+    "check_tool": 108,
     "agent_tool": 3,
     "decision_tool": 1,
     "runtime_tool": 1,
@@ -62,7 +62,7 @@
     "module_scope": 1,
     "framework_doc": 4
   },
-  "total": 1251,
+  "total": 1253,
   "assets": {
     "agent": [
       {
@@ -2736,7 +2736,7 @@
         "src": ".claude/commands/scan/full.md",
         "dest": ".claude/commands/scan/full.md",
         "kind": "skill",
-        "sha256": "ab94421ff38e58e76da67cccc2e94637a3e1e1e240ceebab2a5422d833ec2642",
+        "sha256": "4e5c102d5b0170683c2cc91d25a108bba7173ae24f521ee10a81d3ed59870a4a",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
@@ -7274,6 +7274,30 @@
         "replaces": null
       },
       {
+        "id": "check_tool.playbook-suite-coverage.js",
+        "src": "scripts/checks/playbook-suite-coverage.js",
+        "dest": "scripts/checks/playbook-suite-coverage.js",
+        "kind": "check_tool",
+        "sha256": "1f78aaf3bf11f8fd476d86d4f1e96e2a2ffa2941cfe676046b7abe5a7ec7e038",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "check_tool.playbook-suite-coverage.test.js",
+        "src": "scripts/checks/playbook-suite-coverage.test.js",
+        "dest": "scripts/checks/playbook-suite-coverage.test.js",
+        "kind": "check_tool",
+        "sha256": "637a7779eb66dc310d42c6417a368e95e65451f7940a3813e321f836653ecfbb",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
         "id": "check_tool.portfolio-installer-loud.js",
         "src": "scripts/checks/portfolio-installer-loud.js",
         "dest": "scripts/checks/portfolio-installer-loud.js",
@@ -7410,7 +7434,7 @@
         "src": "scripts/checks/scan-coverage.allowlist.json",
         "dest": "scripts/checks/scan-coverage.allowlist.json",
         "kind": "check_tool",
-        "sha256": "d8408e62ba7d4d3afad1a4d3a4a21acb591794522d0fb01c9c024945d3add31d",
+        "sha256": "a95f6efa754a8e037c7cce9402ebf21dead7398547cdfa2c4ac20bc3b3623e3a",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",

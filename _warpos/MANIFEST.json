@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-12T00:41:51.487Z",
+  "generatedAt": "2026-06-12T00:56:05.137Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.15.4",
   "migrations": [],
@@ -121,8 +121,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "47ccb42a30ff3fddb29002ea82fa1e02b81df95d5e325d375cfe385a0cad8b38",
-      "installedSha": "47ccb42a30ff3fddb29002ea82fa1e02b81df95d5e325d375cfe385a0cad8b38"
+      "sha256": "dc12fed76104d7e1998ecd2036ba2c46ff6179050af84ea3a92bcc15fe9e672d",
+      "installedSha": "dc12fed76104d7e1998ecd2036ba2c46ff6179050af84ea3a92bcc15fe9e672d"
     },
     "TRACKER.md": {
       "owner": "runtime",
@@ -6679,6 +6679,20 @@
       "sha256": "eec67608a4a6fc86abbdb5bf87b95cee860b3b24edae5dfbd9863cf25bda1c8f",
       "installedSha": "eec67608a4a6fc86abbdb5bf87b95cee860b3b24edae5dfbd9863cf25bda1c8f"
     },
+    "scripts/checks/playbook-suite-coverage.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/playbook-suite-coverage.js",
+      "sha256": "1f78aaf3bf11f8fd476d86d4f1e96e2a2ffa2941cfe676046b7abe5a7ec7e038",
+      "installedSha": "1f78aaf3bf11f8fd476d86d4f1e96e2a2ffa2941cfe676046b7abe5a7ec7e038"
+    },
+    "scripts/checks/playbook-suite-coverage.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/playbook-suite-coverage.test.js",
+      "sha256": "637a7779eb66dc310d42c6417a368e95e65451f7940a3813e321f836653ecfbb",
+      "installedSha": "637a7779eb66dc310d42c6417a368e95e65451f7940a3813e321f836653ecfbb"
+    },
     "scripts/checks/portfolio-installer-loud.js": {
       "owner": "framework",
       "managed": true,
@@ -6760,8 +6774,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/scan-coverage.allowlist.json",
-      "sha256": "d8408e62ba7d4d3afad1a4d3a4a21acb591794522d0fb01c9c024945d3add31d",
-      "installedSha": "d8408e62ba7d4d3afad1a4d3a4a21acb591794522d0fb01c9c024945d3add31d"
+      "sha256": "a95f6efa754a8e037c7cce9402ebf21dead7398547cdfa2c4ac20bc3b3623e3a",
+      "installedSha": "a95f6efa754a8e037c7cce9402ebf21dead7398547cdfa2c4ac20bc3b3623e3a"
     },
     "scripts/checks/scan-coverage.js": {
       "owner": "framework",
@@ -19257,8 +19271,8 @@
       "managed": true,
       "source": ".claude/commands/scan/full.md",
       "kind": "md",
-      "sha256": "ab94421ff38e58e76da67cccc2e94637a3e1e1e240ceebab2a5422d833ec2642",
-      "installedSha": "ab94421ff38e58e76da67cccc2e94637a3e1e1e240ceebab2a5422d833ec2642"
+      "sha256": "4e5c102d5b0170683c2cc91d25a108bba7173ae24f521ee10a81d3ed59870a4a",
+      "installedSha": "4e5c102d5b0170683c2cc91d25a108bba7173ae24f521ee10a81d3ed59870a4a"
     },
     ".claude/commands/scan/ingest-firewall.md": {
       "owner": "framework",

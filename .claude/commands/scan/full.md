@@ -76,6 +76,16 @@ node scripts/checks/knowledge-coverage.js   # E5: registry fresh · every LIBRAR
 
 A non-zero exit is a critical finding (the knowledge brain's wiring drifted — a consumer ungrounded, a marker orphaned, a store uncontracted). Fail-closed (exit 2 = could-not-run = NOT green).
 
+**Playbook-suite integrity — the situational-procedure gate** *(default + `--deep`)*
+
+The situational playbook suite check runs as a direct script invocation. The `_planning/` store is not shipped to products, so the script reports a clean skip when `_planning/` is absent; in canonical WarpOS, where `_planning/playbooks/` exists, it fails closed on missing or malformed playbooks:
+
+```bash
+node scripts/checks/playbook-suite-coverage.js   # S-PF-07: launch-readiness, provider-setup, mode-switch, incident-response, and retro-loop reference playbooks exist; each carries Situation/Preconditions/Ordered Steps/Gates/DoD/Rollback and cites SUITE-DESIGN.md (exit 0/1/2, fail-closed when the planning store exists)
+```
+
+A non-zero exit in canonical is a critical finding: the reference procedure layer has drifted from the suite design or an authored playbook lost its required operating sections.
+
 **Tracker integrity — the enforced-tracker gate** *(default + `--deep`)*
 
 The enforced-tracker validator (`agentic_os_tracker_system_improvements.md` §28.7, epic E-TRACKER-001) runs as a direct script invocation — it is the engine behind the `/trackers:validate` skill (a `/trackers:*` skill, not a `/scan:*` token, so it is referenced by path here like the canon + knowledge enforcers, and is NOT on the `scan-coverage.allowlist.json` skill list):
