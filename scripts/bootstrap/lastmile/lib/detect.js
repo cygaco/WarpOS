@@ -14,6 +14,7 @@
 const fs = require("fs");
 const path = require("path");
 const { readCanonicalStack } = require("../../../canon/tech-stack");
+const { readFoundersChecklist } = require("../../../scaffold/founders-checklist");
 
 // ── bounded source scan ──────────────────────────────────────────────
 const SKIP_DIRS = new Set([
@@ -340,6 +341,7 @@ function detectRepoState(repoRoot) {
     deploy,
     email: detectEmail(deps),
     declaredStack: readCanonicalStack(root),
+    foundersChecklist: readFoundersChecklist(root),
     funnel: detectFunnel(root),
     account: detectAccountLifecycle(root),
     sensitive: detectSensitive(root, deps),
@@ -359,6 +361,7 @@ module.exports = {
   detectFunnel,
   detectAccountLifecycle,
   detectSensitive,
+  readFoundersChecklist,
   envKeyNames,
   allDeps,
   hasAny,

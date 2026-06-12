@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-12T00:29:33.846Z",
+  "generatedAt": "2026-06-12T00:41:51.487Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.15.4",
   "migrations": [],
@@ -121,8 +121,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "dfdcc8685aa0c51868bd8bf88b2d0ff19a81aa7fd7212bbc025e9f8af6200bde",
-      "installedSha": "dfdcc8685aa0c51868bd8bf88b2d0ff19a81aa7fd7212bbc025e9f8af6200bde"
+      "sha256": "47ccb42a30ff3fddb29002ea82fa1e02b81df95d5e325d375cfe385a0cad8b38",
+      "installedSha": "47ccb42a30ff3fddb29002ea82fa1e02b81df95d5e325d375cfe385a0cad8b38"
     },
     "TRACKER.md": {
       "owner": "runtime",
@@ -2198,6 +2198,13 @@
       "source": null,
       "sha256": "f8db2e89becfc27ed92361a3760aa110ff323a8cd2656a3064968b8df1c8af8b",
       "installedSha": "f8db2e89becfc27ed92361a3760aa110ff323a8cd2656a3064968b8df1c8af8b"
+    },
+    "tests/regression/S-PF-04/founders-checklist.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": null,
+      "sha256": "b6312bbb3ed5a6d76266d355172feeb3f00c06de04a6be046a19bc5a709b0bdf",
+      "installedSha": "b6312bbb3ed5a6d76266d355172feeb3f00c06de04a6be046a19bc5a709b0bdf"
     },
     "tests/regression/S-PF-03/admin-surface.test.js": {
       "owner": "framework",
@@ -4632,15 +4639,22 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/scaffold/app.js",
-      "sha256": "24cad5b38cf8bf9ce46a50cb66ac72c78a4446aae47a9627b21ed169a8424910",
-      "installedSha": "24cad5b38cf8bf9ce46a50cb66ac72c78a4446aae47a9627b21ed169a8424910"
+      "sha256": "dd65a60492f8810ee07f3c39d3751f98d11722bb581cebbd527a4939f2a20c9a",
+      "installedSha": "dd65a60492f8810ee07f3c39d3751f98d11722bb581cebbd527a4939f2a20c9a"
     },
     "scripts/scaffold/app.test.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/scaffold/app.test.js",
-      "sha256": "6d8561fa2dbc48cb7db1d9b0cc3c6a12ed41315612513c58f4b3051c17d1848e",
-      "installedSha": "6d8561fa2dbc48cb7db1d9b0cc3c6a12ed41315612513c58f4b3051c17d1848e"
+      "sha256": "b52158d120dc5973afe04610cfcb95be3d80f6f4e95e166fb13630391e5facbd",
+      "installedSha": "b52158d120dc5973afe04610cfcb95be3d80f6f4e95e166fb13630391e5facbd"
+    },
+    "scripts/scaffold/founders-checklist.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/scaffold/founders-checklist.js",
+      "sha256": "7309179889a79903dea4e87e79241cd4694a7b2ac44eb780d1cc87a8e3ba18d2",
+      "installedSha": "7309179889a79903dea4e87e79241cd4694a7b2ac44eb780d1cc87a8e3ba18d2"
     },
     "scripts/research/deep-run.js": {
       "owner": "framework",
@@ -6739,8 +6753,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/scaffold-coverage-scan.js",
-      "sha256": "f2294e61a7ba90454169eac4f54f21cc44856962b7fa32a35e957eb033af80fe",
-      "installedSha": "f2294e61a7ba90454169eac4f54f21cc44856962b7fa32a35e957eb033af80fe"
+      "sha256": "444ba275545793bc5850866085a32842808a702f4b10c790370175d66bb23cd9",
+      "installedSha": "444ba275545793bc5850866085a32842808a702f4b10c790370175d66bb23cd9"
     },
     "scripts/checks/scan-coverage.allowlist.json": {
       "owner": "framework",
@@ -7145,8 +7159,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/bootstrap/lastmile/phases/audit.js",
-      "sha256": "ed36134c56c208991cc480b1513fe544b35a405581ab0d06422ed2c0c31882b2",
-      "installedSha": "ed36134c56c208991cc480b1513fe544b35a405581ab0d06422ed2c0c31882b2"
+      "sha256": "dc358e2fc81a7a47887be018ceeef1c1c4f3746cd2a6eeb8d0877ba07d5685e4",
+      "installedSha": "dc358e2fc81a7a47887be018ceeef1c1c4f3746cd2a6eeb8d0877ba07d5685e4"
     },
     "scripts/bootstrap/lastmile/phases/execute.js": {
       "owner": "framework",
@@ -7257,8 +7271,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/bootstrap/lastmile/lib/detect.js",
-      "sha256": "bfd774f800b8a03cd2410c8969407dcb1f4058b4e2ed3ad968773f458b3675f8",
-      "installedSha": "bfd774f800b8a03cd2410c8969407dcb1f4058b4e2ed3ad968773f458b3675f8"
+      "sha256": "439a66802bf5947ef32696bb78b3f977dd199500d1c21b5635e6f31869f1367a",
+      "installedSha": "439a66802bf5947ef32696bb78b3f977dd199500d1c21b5635e6f31869f1367a"
     },
     "scripts/bootstrap/lastmile/lib/profiles.js": {
       "owner": "framework",
@@ -7278,8 +7292,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/bootstrap/lastmile/lib/score.js",
-      "sha256": "db431cf3642fd4b01b0bb35c8a7d33102b3b7377276c4125215fd70a0cb10e56",
-      "installedSha": "db431cf3642fd4b01b0bb35c8a7d33102b3b7377276c4125215fd70a0cb10e56"
+      "sha256": "c67eee4582ec5a2400d90de647aedbb49a4aa946e630a1324a8af7f4324d82a0",
+      "installedSha": "c67eee4582ec5a2400d90de647aedbb49a4aa946e630a1324a8af7f4324d82a0"
     },
     "scripts/arbitration/arbitration.test.js": {
       "owner": "framework",
@@ -8127,6 +8141,13 @@
       "source": "framework/templates/app-scaffold/DESIGN_SYSTEM.md.tmpl",
       "sha256": "5edcde5f4b1efe723a58e3bcf25db90a37ebeb050f25f64242cbc9728b832f00",
       "installedSha": "5edcde5f4b1efe723a58e3bcf25db90a37ebeb050f25f64242cbc9728b832f00"
+    },
+    "framework/templates/app-scaffold/FOUNDERS_CHECKLIST.md.tmpl": {
+      "owner": "framework",
+      "managed": true,
+      "source": "framework/templates/app-scaffold/FOUNDERS_CHECKLIST.md.tmpl",
+      "sha256": "2c35033e14a076068029ce51fd9a3b6c0f19515e5f0f2288e056777875186a25",
+      "installedSha": "2c35033e14a076068029ce51fd9a3b6c0f19515e5f0f2288e056777875186a25"
     },
     "framework/templates/app-scaffold/next.config.ts.tmpl": {
       "owner": "framework",

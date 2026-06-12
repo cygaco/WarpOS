@@ -11,6 +11,11 @@
 
 const fs = require("fs");
 const path = require("path");
+const {
+  CHECKLIST_SCHEMA,
+  parseFoundersChecklist,
+  renderFoundersChecklist,
+} = require("../scaffold/founders-checklist");
 
 const REPO_ROOT = path.resolve(__dirname, "..", "..");
 
@@ -49,6 +54,7 @@ const REQUIRED_FILES = [
   "postcss.config.mjs.tmpl",
   "components.json.tmpl",
   "DESIGN_SYSTEM.md.tmpl",
+  "FOUNDERS_CHECKLIST.md.tmpl",
   ".env.local.example.tmpl",
   "src/lib/utils.ts.tmpl",
   "src/lib/admin/config.ts.tmpl",
@@ -336,8 +342,54 @@ function evaluateScaffold(dir = scaffoldDir()) {
 
   addTelemetryChecks(dir, errors);
   addAdminSurfaceChecks(dir, errors);
+  addFoundersChecklistChecks(dir, errors);
 
   return { ok: errors.length === 0, errors, dir };
+}
+
+function addFoundersChecklistChecks(dir, errors) {
+  const checklist = readIf(path.join(dir, "FOUNDERS_CHECKLIST.md.tmpl"));
+  if (checklist !== null) {
+    if (!checklist.includes("{{FOUNDERS_CHECKLIST}}")) {
+      errors.push("FOUNDERS_CHECKLIST.md.tmpl must render the deterministic founders checklist token");
+    }
+  }
+
+  const stripeRendered = renderFoundersChecklist({
+    declaredStack: {
+      source: "_requirements/00-canonical/DATA_AND_ACCOUNTS.md",
+      values: {
+        framework: "Next.js",
+        database: "Supabase",
+        auth: "Clerk",
+        payments: "Stripe",
+        hosting: "Vercel",
+        analytics: "PostHog",
+      },
+    },
+  });
+  const parsed = parseFoundersChecklist(stripeRendered);
+  if (!parsed.ok) {
+    errors.push(`founders checklist renderer produced invalid output: ${parsed.errors.join("; ")}`);
+  }
+  for (const requiredId of [
+    "provider.accounts",
+    "domain.dns",
+    "legal.privacy_terms",
+    "production.env",
+    "payments.stripe.identity",
+    "payments.stripe.webhook",
+  ]) {
+    if (!parsed.items.some((item) => item.id === requiredId)) {
+      errors.push(`founders checklist missing required item: ${requiredId}`);
+    }
+  }
+  if (!stripeRendered.includes(CHECKLIST_SCHEMA)) {
+    errors.push(`founders checklist missing schema: ${CHECKLIST_SCHEMA}`);
+  }
+  if (!/Verify Stripe identity/.test(stripeRendered)) {
+    errors.push("founders checklist must render Stripe declared-stack launch gate");
+  }
 }
 
 function addAdminSurfaceChecks(dir, errors) {

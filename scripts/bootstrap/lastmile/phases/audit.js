@@ -27,6 +27,13 @@ function composeBody(data, rec) {
   const gapLines = data.gaps.length
     ? data.gaps.map((g) => `- **${g.dim}** — ${g.gap}`).join("\n")
     : "- (no gaps detected — verify manually)";
+  const checklist = data.foundersChecklist;
+  const checklistLines = !checklist || !checklist.present
+    ? "- FOUNDERS_CHECKLIST.md missing"
+    : [
+        `- Checklist state: ${checklist.completed}/${checklist.total} complete`,
+        ...(checklist.open || []).map((item) => `- [ ] ${item.id} - ${item.label}`),
+      ].join("\n");
   const parts = [
     `## Launch-Readiness Score: ${data.composite}/100`,
     data.escalate
@@ -35,6 +42,7 @@ function composeBody(data, rec) {
     `\n### Dimensions\n\n| Dimension | Score |\n|---|---|\n${dimRows}`,
     `\n### Module readiness\n\n| Module | Status | Evidence |\n|---|---|---|\n${detRows}`,
     `\n### Gaps — shortest safe path to a paid/public launch\n\n${gapLines}`,
+    `\n### Founders checklist\n\n${checklistLines}`,
     rec.assumptions && rec.assumptions.length
       ? `\n### Assumptions\n\n${rec.assumptions.map((a) => `- ${a}`).join("\n")}`
       : "",
@@ -59,6 +67,7 @@ module.exports = {
       escalate: score.sensitiveEscalation,
       detections,
       assumptions: rec.assumptions,
+      foundersChecklist: state.foundersChecklist,
     };
     const content = render.fillTemplate("gap-report", {
       title: "Last-Mile Gap Report",

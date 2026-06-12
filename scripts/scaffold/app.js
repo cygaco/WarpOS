@@ -26,6 +26,8 @@
 const fs = require("fs");
 const path = require("path");
 const { spawnSync } = require("child_process");
+const { readCanonicalStack } = require("../canon/tech-stack");
+const { renderFoundersChecklist } = require("./founders-checklist");
 
 const REPO_ROOT = path.resolve(__dirname, "..", "..");
 
@@ -69,9 +71,23 @@ function defaultSlug(repoRoot) {
   return slug || "app";
 }
 
+function templateContext(repoRoot, slug) {
+  const declaredStack = readCanonicalStack(repoRoot);
+  return {
+    slug,
+    foundersChecklist: renderFoundersChecklist({ declaredStack }),
+  };
+}
+
+function renderTemplate(content, ctx) {
+  return content
+    .replace(/\{\{SLUG\}\}/g, ctx.slug)
+    .replace(/\{\{FOUNDERS_CHECKLIST\}\}/g, ctx.foundersChecklist);
+}
+
 // Recursively materialize srcDir → destDir, stripping .tmpl and interpolating
 // {{SLUG}}. Returns { created:[rel], skipped:[rel] }. Existing files preserved.
-function materialize(srcDir, destDir, slug, created, skipped) {
+function materialize(srcDir, destDir, ctx, created, skipped) {
   const entries = fs.readdirSync(srcDir, { withFileTypes: true });
   for (const entry of entries) {
     const srcPath = path.join(srcDir, entry.name);
@@ -81,7 +97,7 @@ function materialize(srcDir, destDir, slug, created, skipped) {
     const destPath = path.join(destDir, destName);
     if (entry.isDirectory()) {
       fs.mkdirSync(destPath, { recursive: true });
-      materialize(srcPath, destPath, slug, created, skipped);
+      materialize(srcPath, destPath, ctx, created, skipped);
     } else {
       const rel = path.relative(destDir, destPath);
       if (fs.existsSync(destPath)) {
@@ -89,7 +105,7 @@ function materialize(srcDir, destDir, slug, created, skipped) {
         continue;
       }
       let content = fs.readFileSync(srcPath, "utf8");
-      content = content.replace(/\{\{SLUG\}\}/g, slug);
+      content = renderTemplate(content, ctx);
       fs.mkdirSync(path.dirname(destPath), { recursive: true });
       fs.writeFileSync(destPath, content, "utf8");
       created.push(rel);
@@ -174,7 +190,7 @@ function scaffoldApp(opts) {
   const created = [];
   const skipped = [];
   if (!alreadyPresent) {
-    materialize(srcDir, repoRoot, slug, created, skipped);
+    materialize(srcDir, repoRoot, templateContext(repoRoot, slug), created, skipped);
     log(`scaffold: ${created.length} file(s) created, ${skipped.length} preserved`);
   } else {
     log("scaffold: package.json present — already scaffolded (use --force to re-materialize)");

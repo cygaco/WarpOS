@@ -131,6 +131,34 @@ function scoreSupport(s, gaps) {
   return clamp(v);
 }
 
+function applyFoundersChecklist(state, dimensions, gaps) {
+  const checklist = state.foundersChecklist;
+  if (!checklist || !checklist.present) {
+    dimensions.product = Math.min(dimensions.product, 60);
+    gaps.push({
+      dim: "product",
+      gap: "FOUNDERS_CHECKLIST.md missing - human-only launch work is not tracked",
+    });
+    return;
+  }
+  if (!checklist.ok) {
+    dimensions.product = Math.min(dimensions.product, 60);
+    gaps.push({
+      dim: "product",
+      gap: `FOUNDERS_CHECKLIST.md invalid - ${checklist.errors.join("; ")}`,
+    });
+    return;
+  }
+  for (const item of checklist.open || []) {
+    const dim = DIMENSIONS.includes(item.dim) ? item.dim : "product";
+    dimensions[dim] = Math.min(dimensions[dim], 60);
+    gaps.push({
+      dim,
+      gap: `FOUNDERS_CHECKLIST open: ${item.label} (${item.id})`,
+    });
+  }
+}
+
 const SCORERS = {
   product: scoreProduct,
   technical: scoreTechnical,
@@ -153,6 +181,7 @@ function scoreReadiness(state) {
   for (const dim of DIMENSIONS) {
     dimensions[dim] = SCORERS[dim](state, gaps);
   }
+  applyFoundersChecklist(state, dimensions, gaps);
   const composite = clamp(
     DIMENSIONS.reduce((sum, d) => sum + dimensions[d], 0) / DIMENSIONS.length,
   );
@@ -164,4 +193,4 @@ function scoreReadiness(state) {
   };
 }
 
-module.exports = { scoreReadiness, DIMENSIONS, clamp };
+module.exports = { scoreReadiness, DIMENSIONS, clamp, applyFoundersChecklist };

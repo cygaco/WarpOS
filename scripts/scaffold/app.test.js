@@ -33,6 +33,29 @@ function freshRepo() {
   return d;
 }
 
+function writeDeclaredStack(repo, paymentsChoice = "Stripe") {
+  const dir = path.join(repo, "_requirements", "00-canonical");
+  fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(
+    path.join(dir, "DATA_AND_ACCOUNTS.md"),
+    [
+      "# Acme - Data & Accounts",
+      "",
+      "## Tech Stack",
+      "| Layer | Declared Choice | Rationale |",
+      "| --- | --- | --- |",
+      "| Framework | Next.js | intake |",
+      "| Database | Supabase | intake |",
+      "| Authentication | Clerk | intake |",
+      `| Payments | ${paymentsChoice} | intake |`,
+      "| Hosting | Vercel | intake |",
+      "| Analytics | PostHog | intake |",
+      "",
+    ].join("\n"),
+    "utf8",
+  );
+}
+
 try {
   // 1. materialize: core files land + content interpolated
   test("materialize creates the core files with slug interpolation", () => {
@@ -45,6 +68,7 @@ try {
       "tsconfig.json",
       "next.config.ts",
       ".env.local.example",
+      "FOUNDERS_CHECKLIST.md",
       "src/app/admin/page.tsx",
       "src/app/admin/actions.ts",
       "src/app/page.tsx",
@@ -62,8 +86,21 @@ try {
     assert.strictEqual(pkg.name, "acme-app", "package name = slug");
     assert.ok(pkg.dependencies["@radix-ui/react-slot"], "pins radix slot");
     assert.ok(pkg.dependencies["lucide-react"], "pins lucide");
+    const checklist = fs.readFileSync(path.join(repo, "FOUNDERS_CHECKLIST.md"), "utf8");
+    assert.ok(checklist.includes("warpos/founders-checklist/v1"), "founders checklist schema");
     // .tmpl suffix stripped everywhere
     assert.ok(!fs.existsSync(path.join(repo, "package.json.tmpl")), ".tmpl stripped");
+  });
+
+  test("founders checklist renders declared-stack conditional items", () => {
+    const repo = freshRepo();
+    writeDeclaredStack(repo, "Stripe");
+    const r = scaffoldApp({ repoRoot: repo, slug: "acme-app", log: () => {} });
+    assert.ok(r.ok, "scaffoldApp ok");
+    const checklist = fs.readFileSync(path.join(repo, "FOUNDERS_CHECKLIST.md"), "utf8");
+    assert.match(checklist, /Verify Stripe identity/);
+    assert.match(checklist, /Create Clerk production instance/);
+    assert.match(checklist, /Create PostHog project/);
   });
 
   // 2. .gitignore managed block added, and .claude is NOT ignored
