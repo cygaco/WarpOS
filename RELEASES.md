@@ -54,7 +54,7 @@ Every `RL-*` at status=prepared OR =deployed. Each row links to the full `RL-*.y
 
 | Release | Sprint | Status | Target | Deployed | Notes |
 |---|---|---|---|---|---|
-| [RL-20260611-045](.claude/project/sprint/releases/RL-20260611-045.yaml) | [S-PF-01](.claude/project/sprint/sprints/S-PF-01/) | preparing | internal-canary |  | S-PF-01 W0 telemetry seam |
+| [RL-20260611-045](.claude/project/sprint/releases/RL-20260611-045.yaml) | [S-PF-01](.claude/project/sprint/sprints/S-PF-01/) | deployed | internal-canary | 2026-06-12T05:00:00.037Z | S-PF-01 W0 telemetry seam |
 | [RL-20260611-044](.claude/project/sprint/releases/RL-20260611-044.yaml) | [SP-20260611-002](.claude/project/sprint/sprints/SP-20260611-002/) | deployed | local | 2026-06-11T20:46:43.339Z | E-LIFECYCLE-001 close-out fix sprint |
 | [RL-20260611-043](.claude/project/sprint/releases/RL-20260611-043.yaml) | [SP-20260610-008](.claude/project/sprint/sprints/SP-20260610-008/) | prepared | staging |  | Dreamteam verified-open guard batch — W-26 + W-14 (3 closed already-fixed) |
 | [RL-20260610-042](.claude/project/sprint/releases/RL-20260610-042.yaml) | [SP-20260610-007](.claude/project/sprint/sprints/SP-20260610-007/) | prepared | staging |  | E-DISPATCH-SHAPE-001 W1 — make availability and fallback real |

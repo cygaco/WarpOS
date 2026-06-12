@@ -938,15 +938,15 @@ sprints:
     updated_at: "2026-06-11T00:33:59.711Z"
   - id: SP-20260611-001
     title: "Cross-family findings fix sprint — 6 gemini re-review findings (epsilon-runtime spawn race, fallback ENFORCE brick, hardcoded BUILD_CHAIN_ROLES, spoofed-ts window, sprint_id correlation, verifyGauntlet parse refusal)"
-    status: planning
+    status: closed
     lane:
       type: default
       value: null
-      isolation_notes: ""
+      isolation_notes: "Reconciled 2026-06-12: work landed 2026-06-11 (merges c3d7cf0 WS-A + 58eefc2 WS-B, gauntlet GREEN, 7/7 tickets done per current.yaml); ledger status was never advanced past planning. Engine sprint — closed via merge, retro deferred (RI-001)."
     layout: per_sprint_subdir
     pointer: ".claude/project/sprint/sprints/SP-20260611-001"
     created_at: "2026-06-11T03:42:00.813Z"
-    updated_at: "2026-06-11T03:42:00.813Z"
+    updated_at: "2026-06-12T05:30:00.000Z"
   - id: SP-20260611-002
     title: "E-LIFECYCLE-001 close-out fix sprint — 17 REAL + 4 PARTIAL GPT 2nd-pass findings (team-guard/mode-guard bypass classes, turbo spend/auth integrity, coverage-gate waiver+expected-source, provider-tier false-green, planning-principles enforce path, ac-coverage fail-closed) + NOTAGAIN §8.3 legacy scoping"
     status: retrospected
@@ -960,7 +960,7 @@ sprints:
     updated_at: "2026-06-11T21:07:05.940Z"
   - id: S-PF-01
     title: E-PRODUCT-FOUNDATION-001 W0 telemetry seam
-    status: releasing
+    status: retrospected
     lane:
       type: branch
       value: sprint/S-PF-01
@@ -968,6 +968,6 @@ sprints:
     layout: per_sprint_subdir
     pointer: ".claude/project/sprint/sprints/S-PF-01"
     created_at: "2026-06-11T21:15:12.314Z"
-    updated_at: "2026-06-11T22:31:00.000Z"
+    updated_at: "2026-06-12T05:01:37.719Z"
 created_at: "2026-05-12T22:57:35.667Z"
-  updated_at: "2026-06-11T22:31:00.000Z"
+updated_at: "2026-06-12T05:01:37.719Z"

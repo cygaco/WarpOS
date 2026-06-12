@@ -2,9 +2,9 @@ schema: warpos/sprint/current-sprint/v1
 id: S-PF-01
 title: E-PRODUCT-FOUNDATION-001 W0 telemetry seam
 objective: "Ship the scaffold-time telemetry seam so every new product starts with one fail-open tracking entry point, six canonical lifecycle events, activation definition provenance, lastmile enrichment, and a fail-closed scaffold enforcer."
-status: releasing
+status: closed
 created_at: "2026-06-11T21:15:12.314Z"
-updated_at: "2026-06-11T21:40:42.348Z"
+updated_at: "2026-06-12T06:00:00.000Z"
 source_request: "E-PRODUCT-FOUNDATION-001 W0 telemetry seam: mint S-PF-01 and build the scaffold-time telemetry seam from the approved Product Lead build_spec plus Director-of-Product activation ruling."
 interpreted_intent: "Make the W0 product-foundation sprint executable: every future app scaffold gets a real track(event, props) seam, no-op fail-open sink, canonical event vocabulary, supply-chain correlation/stage vocabulary, activation definition that is derived before launch and explicitly confirmed or revised at lastmile, and an extended scaffold-coverage enforcer with planted false-green fixtures."
 plan_contract: ".claude/project/sprint/plan-contracts/PC-20260611-0075.yaml"

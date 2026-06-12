@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-12T03:33:06.034Z",
+  "generatedAt": "2026-06-12T05:05:07.405Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.15.4",
   "migrations": [],
@@ -113,16 +113,16 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "3777e7a549aa61831687166da3253d0c01e2098fcdd3caebccb33428dcaeac21",
-      "installedSha": "3777e7a549aa61831687166da3253d0c01e2098fcdd3caebccb33428dcaeac21"
+      "sha256": "d40783c30f5e85b584ac886f8a9bdf413b807e30dd7abf2bc27326e5d8122850",
+      "installedSha": "d40783c30f5e85b584ac886f8a9bdf413b807e30dd7abf2bc27326e5d8122850"
     },
     "ROADMAP.md": {
       "owner": "framework",
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "f6bcdf8f994eb93bd28355415f7dc0596686587b1a48f2612970f8ec5b715b1b",
-      "installedSha": "f6bcdf8f994eb93bd28355415f7dc0596686587b1a48f2612970f8ec5b715b1b"
+      "sha256": "f5e1f03295724b84ccbf92e8ebc415790e9e88307c42280dc0eea7842a98d89b",
+      "installedSha": "f5e1f03295724b84ccbf92e8ebc415790e9e88307c42280dc0eea7842a98d89b"
     },
     "TRACKER.md": {
       "owner": "runtime",
@@ -4506,8 +4506,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/sprint/retrospective.js",
-      "sha256": "84d4001c66591b689332188e08f8d07ad511a10d70abf0204bfeaeb452c4b739",
-      "installedSha": "84d4001c66591b689332188e08f8d07ad511a10d70abf0204bfeaeb452c4b739"
+      "sha256": "e91d10b6eb7503fe0e17d0b325f58eb25342ac37f73be012ec0522fde55daed4",
+      "installedSha": "e91d10b6eb7503fe0e17d0b325f58eb25342ac37f73be012ec0522fde55daed4"
     },
     "scripts/sprint/routing.js": {
       "owner": "framework",
@@ -15737,6 +15737,14 @@
       "owner": "runtime",
       "managed": false
     },
+    ".claude/project/sprint/history/S-PF-01/retro.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/history/S-PF-01/retro.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
     ".claude/project/sprint/full-reports/.gitkeep": {
       "owner": "runtime",
       "managed": false
@@ -16514,6 +16522,10 @@
       "managed": false
     },
     ".claude/project/sprint/checkpoints/S-LC-01-0005.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/checkpoints/S-PF-01-0001.yaml": {
       "owner": "runtime",
       "managed": false
     },
@@ -18390,6 +18402,10 @@
       "managed": false
     },
     ".claude/project/sprint/approvals/AP-20260611-028.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/approvals/AP-20260612-029.yaml": {
       "owner": "runtime",
       "managed": false
     },

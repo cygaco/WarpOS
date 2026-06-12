@@ -8576,7 +8576,7 @@
         "src": "scripts/sprint/retrospective.js",
         "dest": "scripts/sprint/retrospective.js",
         "kind": "sprint_engine",
-        "sha256": "84d4001c66591b689332188e08f8d07ad511a10d70abf0204bfeaeb452c4b739",
+        "sha256": "e91d10b6eb7503fe0e17d0b325f58eb25342ac37f73be012ec0522fde55daed4",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",

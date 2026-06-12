@@ -3,7 +3,7 @@ id: RL-20260611-045
 sprint: S-PF-01
 title: S-PF-01 W0 telemetry seam
 version: ""
-status: preparing
+status: deployed
 checklist:
   tickets_done_or_deferred: true
   blocking_issues_resolved: true
@@ -21,9 +21,9 @@ checklist:
   analytics_updated: true
   migration_plan: true
   rollback_plan: true
-  approval_recorded: false
+  approval_recorded: true
   post_release_monitoring_plan: true
-approval_ref: null
+approval_ref: AP-20260612-029
 changelog_path: ".claude/project/sprint/releases/RL-20260611-045.report.md"
 release_report_path: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\releases\\RL-20260611-045.report.md"
 linked_tickets:
@@ -37,11 +37,11 @@ linked_issues: []
 linked_external_services: []
 deployment_environment: internal-canary
 deployment_target: internal-canary
-deployed_at: null
-deployed_by: null
+deployed_at: "2026-06-12T05:00:00.037Z"
+deployed_by: "alex-alpha (operator-instructed 2026-06-12)"
 rollback_at: null
 rollback_reason: null
 retrospective_ref: null
 learning_candidates: []
 created_at: "2026-06-11T21:40:42.348Z"
-updated_at: "2026-06-11T22:48:09.445Z"
+updated_at: "2026-06-12T05:00:00.037Z"

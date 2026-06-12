@@ -717,8 +717,9 @@ function main() {
     return 2;
   }
 
-  // Validate sprint id format.
-  if (!/^SP-[0-9]{8}-[0-9]{3}$/.test(sprintId)) {
+  // Validate sprint id format (dated SP ids + named wave-style ids, e.g. S-PF-01 —
+  // same alternation as ledger.js/routing.js SPRINT_ID_RE).
+  if (!/^(?:SP-[0-9]{8}-[0-9]{3,4}|S-[A-Z0-9]+-[0-9]{2,3})$/.test(sprintId)) {
     process.stderr.write(`bad usage: malformed sprint id: ${sprintId}\n`);
     return 2;
   }

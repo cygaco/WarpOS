@@ -1,0 +1,121 @@
+schema: "warpos/sprint/sprint-retrospective/v1"
+sprint_id: "S-PF-01"
+plan_contract_id: "PC-20260611-0075"
+synthesis_mode: "llm"
+summary: "S-PF-01 delivered the E-PRODUCT-FOUNDATION-001 W0 telemetry seam: every scaffolded product now ships a track(event,props) seam with a pluggable PostHog/no-op sink, the six canonical lifecycle events, fail-closed activation-definition derivation, and supply-chain telemetry-chain evaluation. The lastmile analytics module was re-pointed to enrich rather than reinstall. The scaffold-coverage enforcer gained telemetry/security checks hardened across three OpenAI security-review rounds and three OpenAI backend-review rounds (both ultimately PASS). The release RL-20260611-045 was prepared by Codex with approval as the only open gate; the operator-instructed Claude session 2026-06-12 ground-truthed the work (validators green, suites green, cross-family spot-review PASS), recorded approval AP-20260612-029, and deployed to internal-canary. The same branch also carried S-PF-02 through S-PF-08 as epic work items, taking the epic to ~98%."
+outcomes_shipped:
+  - outcome: "Scaffold telemetry seam: events.ts/sink.ts/track.ts/chain.ts templates with exact lifecycle event vocabulary, one sink resolver, fail-open track boundary, and correlation/broken-chain evaluation."
+    evidence:
+      - "commit a404f02 feat(S-PF-01): add scaffold telemetry seam"
+      - tests/regression/S-PF-01/telemetry-seam.test.js 3/3
+      - tests/regression/S-PF-01/telemetry-chain.test.js 2/2
+      - tests/regression/S-PF-01/activation-definition.test.js 1/1
+    planned: true
+  - outcome: "Scaffold-coverage enforcer hardened against raw-emit bypasses (analytics.track, sendBeacon, raw fetch outside sink.ts), comment-spoofing, commented-out vocabulary, missing named exports, and invalid activation metadata — via security/backend review fix-cycles."
+    evidence:
+      - "runtime/s-pf-01-review-security.md lane: FAIL 0.86 -> FAIL 0.91 -> PASS 0.87"
+      - "runtime/s-pf-01-review-backend*.md lane: FAIL 0.88 -> FAIL 0.89 -> PASS 0.94 (focused)"
+      - tests/regression/S-PF-01/scaffold-coverage-telemetry.test.js 25/25
+    planned: true
+  - outcome: "Lastmile analytics module enriches the scaffold seam instead of reinstalling; activation revisions are fail-closed validated and emit activation_definition_change with changedFields."
+    evidence:
+      - tests/regression/S-PF-01/lastmile-analytics-seam.test.js 8/8
+      - scripts/bootstrap/lastmile/test-orchestrate.js 61/61
+    planned: true
+  - outcome: "Release RL-20260611-045 approved (AP-20260612-029, operator-instructed) and deployed to internal-canary; sprint closed."
+    evidence:
+      - "release.js check --id RL-20260611-045 ready=true after approve"
+      - "release.js deploy: sprint S-PF-01 status releasing -> closed"
+      - "routing coverage ok:true (qa x2, redteam x1)"
+    planned: true
+  - outcome: "Named wave-style sprint ids (S-PF-01) accepted across ledger/routing/fs/guards/schemas, with regression proof."
+    evidence:
+      - tests/regression/S-PF-01/named-sprint-id.test.js 3/3
+    planned: false
+outcomes_missed: []
+plan_quality_actual:
+  predicted_status: "W0 telemetry seam per Product Lead build_spec, telemetry-first per DoP ruling"
+  actual_status: held
+  predicted_confidence: high
+  evidence_gaps_predicted: []
+  evidence_gaps_actual:
+    - "build_spec cited message_brief-E-PRODUCT-FOUNDATION-001-w0 before it existed; the artifact had to be minted first because validate-artifact.js rejects dangling references."
+    - Several sprint validators only accepted dated SP-YYYYMMDD-NNN ids and had to be extended for named wave ids.
+    - "Review lanes ran OpenAI-on-OpenAI (GPT executor + GPT reviewers, recorded honestly as single_vendor_session); cross-family assurance arrived later via the Claude audit 2026-06-12."
+  notes: "The plan held; the seam shipped exactly telemetry-first. The fix-cycles were productive — each review round closed real bypass classes in the enforcer rather than cosmetic findings."
+scope_variant_actual:
+  planned_variant: recommended
+  actual_variant: recommended
+  adhered: true
+  drift_notes: "Release approval was deliberately left to the operator; the 2026-06-12 session recorded it from an explicit operator instruction (mint a new WarpOS version) rather than inferring it from older chat."
+surprises:
+  - surprise: "The duplicate raw-sink detector needed three review rounds to cover analytics.track, sendBeacon, and raw fetch variants — each round found a new same-class bypass."
+    impact: Two extra security re-review dispatches before the redteam routing trace could be recorded.
+    evidence:
+      - runtime/s-pf-01-review-security.md lane history in CODEX-LOG.md
+  - surprise: "release.js check mutates the release YAML updated_at as a read side effect, dirtying the working tree."
+    impact: Codex had to restore the committed timestamp twice during wrap.
+    evidence:
+      - CODEX-LOG.md 2026-06-12 session wrap entry
+friction_points:
+  - friction: "Same-family review (GPT reviewing GPT-built work) was the only available lane during the Codex session; honest single_vendor_session labels preserved auditability but cross-family verification had to be retrofitted."
+    category: process
+    evidence:
+      - routing traces recorded single_vendor_session
+      - Claude audit 2026-06-12 provided the cross-family pass
+    severity: medium
+  - friction: "Named sprint ids were rejected by multiple validators (ledger, routing, fs, tracker guards, schemas), requiring a mid-sprint validator extension."
+    category: tooling
+    evidence:
+      - CODEX-LOG.md S-PF-01 W0 intake entry
+      - tests/regression/S-PF-01/named-sprint-id.test.js
+    severity: low
+action_items:
+  - action: Fix release.js check so a read-only gate check does not rewrite updated_at in the release YAML.
+    owner: alpha
+    due_by: next sprint-engine maintenance pass
+    linked_friction: release check write side effect
+  - action: "When the executing family equals the reviewing family, schedule a cross-family audit before ship — encode as a routing-evidence expectation rather than ad-hoc."
+    owner: alpha
+    due_by: next dispatch-shape or lifecycle sprint
+    linked_friction: single_vendor_session review lanes
+tickets_completed:
+  - T-20260611-326
+  - T-20260611-327
+  - T-20260611-328
+  - T-20260611-329
+  - T-20260611-330
+  - T-20260611-331
+tickets_deferred: []
+tickets_abandoned: []
+tickets_reopened: []
+issues_encountered: []
+beta_decisions_reviewed: []
+key_tradeoffs: []
+learning_candidates:
+  - learning: "Enforcer hardening converges fastest when each review round must produce a planted fixture for the bypass it found — the S-PF-01 scanner grew from 9 to 25 fixture cases across three rounds and each new case was a real bypass class."
+    evidence:
+      - "tests/regression/S-PF-01/scaffold-coverage-telemetry.test.js growth 9 -> 25"
+    promote_via: "learn:integrate"
+  - learning: "single_vendor_session routing labels make same-family review debt visible and dischargeable later; the Claude audit could target exactly the lanes that lacked cross-family eyes."
+    evidence:
+      - S-PF-01 routing traces
+      - Claude audit 2026-06-12
+    promote_via: "learn:integrate"
+release_record_ref: "RL-20260611-045"
+synthesis_metadata:
+  model_class: claude
+  provider: anthropic
+  model_id: claude-fable-5
+  duration_ms: 0
+  output_chars: 0
+  fallback_reason: null
+signed_off_by: "alex-alpha"
+signed_off_at: "2026-06-12T05:01:37.711Z"
+retro_metadata:
+  synthesized_at: "2026-06-12T05:01:37.711Z"
+  writer_version: "1.0.0"
+  history_record: ""
+  force_overwrite: false
+created_at: "2026-06-12T05:01:37.711Z"
+updated_at: "2026-06-12T05:01:37.711Z"
