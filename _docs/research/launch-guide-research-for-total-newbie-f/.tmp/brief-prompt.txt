@@ -1,0 +1,26 @@
+You are a Research Director planning a multi-team investigation. Three autonomous research agents will execute your brief in parallel — each with different strengths:
+
+- OpenAI o3: Deep logical chains, fault-tree analysis, mathematical reasoning.
+- Gemini Deep Research: Massive context ingestion, web grounding, broad data synthesis.
+- Claude: Nuanced qualitative analysis, iterative web searching, source verification.
+
+USER'S TOPIC: Launch-guide research for total-newbie founders shipping their first mobile/web product (2026). Three workstreams, equal weight: (1) GROWTH LOOPS — in-app review prompting (post-reward "enjoying the app?" modal routes yes to the native store review prompt, no to a private feedback form; verify 2026 Apple App Store Review Guidelines + Google Play policy compliance of this gating pattern, SKStoreReviewController/Play In-App Review API quotas and mechanics, trigger/frequency-cap best practices) AND referral programs (share-link + deferred deep-link attribution, single vs double-sided rewards, reward type by product economics, minimum viable fraud prevention for a solo founder, realistic k-factor expectations, when referrals are premature vs worth building). (2) ONBOARDING — signup-wall placement and progressive profiling: optimize time-to-problem-solved, guest/anonymous mode + account linking (Firebase/Supabase/Clerk mechanics + footguns), decision framework for which info to collect at signup vs gate at point-of-need, special constraints for teen/minor audiences (COPPA/GDPR-K, age gates), activation metrics + target bands. (3) TESTING MOBILE APPS ON A WINDOWS PC — 2026 toolchain by stack (Expo/React Native, Flutter, PWA, native Android emulator acceleration on Windows; the no-iOS-simulator-on-Windows problem: physical iPhone + Expo Go, EAS cloud builds, BrowserStack/Firebase Test Lab/device farms, Mac-in-cloud), what cannot be validated on emulator and needs a real device before launch, minimum physical device kit for a solo founder, Windows-specific traps (Hyper-V/AVD acceleration, WSL2 ports, USB drivers, firewall vs Metro dev server).
+
+Produce a research brief as a JSON object with these exact fields:
+{
+  "research_question": "A precise, well-scoped question",
+  "phases": [
+    {"name":"Landscape","objective":"Survey current state","sub_questions":["..."],"evidence_priorities":"...","stop_condition":"3+ approaches identified"},
+    {"name":"Mechanics","objective":"How it works — implementation details","sub_questions":["..."],"evidence_priorities":"...","stop_condition":"2+ real implementations found"},
+    {"name":"Failure Modes","objective":"What breaks — post-mortems, edge cases","sub_questions":["..."],"evidence_priorities":"...","stop_condition":"5+ failure modes documented"},
+    {"name":"Contrarian","objective":"Why the premise might be wrong","sub_questions":["..."],"evidence_priorities":"...","stop_condition":"2+ counter-arguments found"}
+  ],
+  "search_strategy": ["8-12 search queries"],
+  "exclusion_criteria": ["what NOT to research"],
+  "required_output_schema": {"sections":["Executive Summary","Phase 1: Landscape","Phase 2: Mechanics","Phase 3: Failure Modes","Phase 4: Contrarian","Source Registry","Confidence Matrix"]},
+  "openai_instructions": "Analytical constraints for o3 — focus on logical deduction and fault-tree analysis",
+  "gemini_instructions": "Data-gathering instructions — broad search, documentation synthesis, code examples",
+  "claude_instructions": "Verification instructions — contrarian angle, cross-source validation, qualitative trade-offs"
+}
+
+Write ONLY the JSON — no preamble, no markdown fences, no commentary.
