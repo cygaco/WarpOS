@@ -117,6 +117,8 @@ A **DSAR** ("Data Subject Access Request") is a user saying *"show me everything
 
 > **🤖 AI CAN DO THIS:** *"Add a 'Download my data' feature that exports everything tied to my account."* Ties directly to **`DATABASE_GUIDE.md`** (the queries that gather a user's rows). Legally you have **~30 days** to fulfill a request — self-serve makes it instant.
 
+> **➡️ The OPERATIONS side** — verifying who's asking (without over-verifying: demanding ID copies is itself a violation), the exact statutory clocks, the request queue + audit log — lives in **`DATA_REQUESTS_GUIDE.md`**.
+
 ### 4.4 Right to Erasure / Delete My Account 🤖 build
 
 Users can demand you **delete them**. You need a real **"Delete my account"** flow that *actually* removes or anonymizes their data — not a flag that hides them while you keep everything.
@@ -129,6 +131,8 @@ Users can demand you **delete them**. You need a real **"Delete my account"** fl
 > **🤖 AI CAN DO THIS:** *"Add a 'Delete my account' flow that removes my user's data across all tables and revokes their login."* **🔴 You decide the policy** (hard delete vs anonymize, grace period, what aggregate data you legitimately keep) — the AI implements it.
 
 > 🧒 *Newbie note:* "Delete" must be honest. A soft `deleted = true` flag where the row still sits in your database with their email is **not** erasure. If you keep anything (e.g. an invoice you're legally required to retain), say so in your policy.
+
+> **➡️ The OPERATIONS side** — the backups answer, store mandates (Google Play requires in-app deletion **plus a web deletion link**; Apple 5.1.1(v) requires in-app), retention schedules, and the request log — lives in **`DATA_REQUESTS_GUIDE.md`**.
 
 ### 4.5 Marketing Consent + Unsubscribe 🤖 build
 

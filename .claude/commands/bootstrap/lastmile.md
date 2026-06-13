@@ -132,12 +132,18 @@ Each module: **detect → recommend (default) → plan (shortest safe path)**.
 > - **Auth / Accounts** → [`_guides/AUTH_GUIDE.md`](../../../_guides/AUTH_GUIDE.md) — day-zero note: Google sensitive-scope OAuth verification can take days–weeks.
 > <!-- guide-anchor:ONBOARDING anchor:lastmile:module/auth shape:walkthrough -->
 > - **Onboarding** (when to ask for signup, what to collect) → [`_guides/ONBOARDING_GUIDE.md`](../../../_guides/ONBOARDING_GUIDE.md) - signup-wall placement, progressive profiling, guest/anonymous mode + account linking, minors escalation (COPPA).
+> <!-- guide-anchor:DATA_REQUESTS anchor:lastmile:module/auth shape:walkthrough -->
+> - **Data-rights operations** (DSAR + deletion + retention) → [`_guides/DATA_REQUESTS_GUIDE.md`](../../../_guides/DATA_REQUESTS_GUIDE.md) - right-sized verification (over-verifying is itself a violation), statutory clocks + request queue, honest deletion + processor cascade + backups, Play web-deletion mandate, retention schedule.
 > <!-- guide-anchor:PAYMENTS anchor:lastmile:module/payments shape:walkthrough -->
 > - **Payments / Monetization** → [`_guides/PAYMENTS_GUIDE.md`](../../../_guides/PAYMENTS_GUIDE.md) — Stripe identity + bank verification has lead time before live mode; mobile in-app digital goods use StoreKit / Play Billing by default.
+> <!-- guide-anchor:SUBSCRIPTION_CANCELLATION anchor:lastmile:module/payments shape:walkthrough -->
+> - **Subscription cancellation** (the cancel path is law) → [`_guides/SUBSCRIPTION_CANCELLATION_GUIDE.md`](../../../_guides/SUBSCRIPTION_CANCELLATION_GUIDE.md) - cancel as easy as subscribe, same medium; Stripe portal / platform-managed IAP cancel; period-end entitlement honesty; pre-charge disclosure + separate auto-renew consent.
 > <!-- guide-anchor:EMAIL anchor:lastmile:module/email shape:walkthrough -->
 > - **Email** (transactional + deliverability, under CRM/Lifecycle) → [`_guides/EMAIL_GUIDE.md`](../../../_guides/EMAIL_GUIDE.md) — sending-domain DNS (SPF/DKIM/DMARC) has propagation lead time.
 > <!-- guide-anchor:SECURITY anchor:lastmile:module/security shape:checklist -->
 > - **Security + Privacy** (don't get hacked) → [`_guides/SECURITY_GUIDE.md`](../../../_guides/SECURITY_GUIDE.md) — database/RLS lockdown, secrets hygiene, rate limits + AI usage caps, prompt injection, input validation.
+> <!-- guide-anchor:INCIDENT_RESPONSE anchor:lastmile:module/security shape:checklist -->
+> - **Incident response** (prepare BEFORE the worst day) → [`_guides/INCIDENT_RESPONSE_GUIDE.md`](../../../_guides/INCIDENT_RESPONSE_GUIDE.md) - one-person runbook, evidence preservation, the GDPR 72-hour clock, state breach notices, processor-breach handling; the notify/don't-notify call is a LAWYER decision.
 > <!-- guide-anchor:ANALYTICS_TELEMETRY anchor:lastmile:module/analytics shape:walkthrough -->
 > - **Analytics / Instrumentation** → [`_guides/ANALYTICS_TELEMETRY_GUIDE.md`](../../../_guides/ANALYTICS_TELEMETRY_GUIDE.md) - activation, funnels, core product events, privacy-safe telemetry payloads.
 > <!-- guide-anchor:PUSH_NOTIFICATIONS anchor:lastmile:module/analytics shape:walkthrough -->
@@ -184,6 +190,9 @@ privacy/security dimensions until review is recorded. WarpOS produces a
 
 <!-- guide-anchor:LEGAL anchor:lastmile:gate/legal shape:notice -->
 > ⚠️ **Launch-gate guide — LEGAL:** before launch, see [`_guides/LEGAL_GUIDE.md`](../../../_guides/LEGAL_GUIDE.md) — Terms of Service + liability shield, subscription-cancellation law (the FTC Click-to-Cancel rule was vacated July 2025, but state ARLs + ROSCA still bind), declaring every data point so disclosures match reality, trademark/IP clearance, and forming an LLC. **NOT legal advice** — hire a lawyer for sensitive/regulated data, equity/fundraising, or AGPL dependencies. (Surfaced here by `/guides:integrate`.)
+
+<!-- guide-anchor:AI_COMPLIANCE anchor:lastmile:gate/legal shape:walkthrough -->
+> 📘 **Launch-gate guide — AI COMPLIANCE:** if the product ships AI features (most factory products do), see [`_guides/AI_COMPLIANCE_GUIDE.md`](../../../_guides/AI_COMPLIANCE_GUIDE.md) — deployer-vs-provider triage (API callers are deployers; prohibited/high-risk lanes = STOP), chatbot disclosure + synthetic-media labeling (EU AI Act Art. 50, applies from Aug 2 2026), FTC AI-claims substantiation, and the no-training-on-user-content-without-consent default. Ship disclosure/labeling WITH the AI feature. (Surfaced here by `/guides:integrate`.)
 
 <!-- guide-anchor:APP_STORE anchor:lastmile:gate/app-store shape:checklist -->
 > 📘 **Launch-gate guide — APP STORE:** before submitting an iOS app, see [`_guides/APP_STORE_GUIDE.md`](../../../_guides/APP_STORE_GUIDE.md) — App Privacy labels + the Privacy Manifest, a complete app with working demo credentials (Guideline 2.1), Sign in with Apple (4.8), and the In-App-Purchase rules (region-split and in active flux). Apple App Review is ~24–48h and first-submit rejections are common, so budget resubmission cycles. (Surfaced here by `/guides:integrate`.)

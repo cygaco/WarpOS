@@ -8,7 +8,7 @@ lead_time: "none"
 
 # WarpOS Launch-Compliance Knowledge Library — agent training references
 
-> This is the **launch-compliance knowledge library**: 4 self-contained, teachable references that **train the `qa-reviewer`'s integrity/compliance scope** — the review lane that asks "is this product *legally and policy* shippable?" alongside its correctness checks. Each ref closes with a §6 **agent-applicable RULES** section; because much of compliance needs human/legal judgment, many rules are written as **FLAGs** (the reviewer surfaces them for human confirmation) rather than hard automated PASS/FAIL.
+> This is the **launch-compliance knowledge library**: 8 self-contained, teachable references that **train the `qa-reviewer`'s integrity/compliance scope** — the review lane that asks "is this product *legally and policy* shippable?" alongside its correctness checks. Each ref closes with a §6 **agent-applicable RULES** section; because much of compliance needs human/legal judgment, many rules are written as **FLAGs** (the reviewer surfaces them for human confirmation) rather than hard automated PASS/FAIL.
 >
 > **⚠️ Not legal advice.** These refs train a reviewer to *spot likely issues + missing artifacts*; they do not make a product compliant and do not replace a lawyer. The hire-a-lawyer triggers live inside the refs.
 >
@@ -28,7 +28,7 @@ Producer/owner: **`quality-lead`** (owns the verdict on quality, dispatches the 
 
 ---
 
-## The 4 references
+## The 8 references
 
 | Ref | Tier | Rule IDs | Maps to |
 |---|---|---|---|
@@ -36,8 +36,14 @@ Producer/owner: **`quality-lead`** (owns the verdict on quality, dispatches the 
 | [CONSUMER_PROTECTION_AND_SUBSCRIPTIONS](CONSUMER_PROTECTION_AND_SUBSCRIPTIONS.md) | core | `SUBS-*` | consumer-subscriptions |
 | [APP_STORE_AND_PLATFORM_POLICY](APP_STORE_AND_PLATFORM_POLICY.md) | core | `STORE-*` | app-store-policy · privacy-data |
 | [IP_AND_TRADEMARK](IP_AND_TRADEMARK.md) | standard | `IP-*` | ip-trademark |
+| [DATA_RIGHTS_OPERATIONS](DATA_RIGHTS_OPERATIONS.md) | core | `DSR-*` | data-rights-ops · privacy-data |
+| [INCIDENT_READINESS](INCIDENT_READINESS.md) | core | `BRCH-*` | breach-incident |
+| [MINORS_AND_AGE_ASSURANCE](MINORS_AND_AGE_ASSURANCE.md) | core | `MINOR-*` | minors · privacy-data |
+| [AI_PRODUCT_COMPLIANCE](AI_PRODUCT_COMPLIANCE.md) | core | `AIACT-*` | ai-compliance · privacy-data |
 
-**Coverage — every compliance axis is owned by ≥1 ref:** `privacy-data` (PRIVACY, STORE) · `consumer-subscriptions` (SUBS) · `app-store-policy` (STORE) · `ip-trademark` (IP). No gap.
+**Coverage — every compliance axis is owned by ≥1 ref:** `privacy-data` (PRIVACY, STORE, DSR, MINOR, AIACT) · `consumer-subscriptions` (SUBS) · `app-store-policy` (STORE) · `ip-trademark` (IP) · `data-rights-ops` (DSR) · `breach-incident` (BRCH) · `minors` (MINOR) · `ai-compliance` (AIACT). No gap.
+
+The founder-facing companions for the new refs: [`_guides/DATA_REQUESTS_GUIDE.md`](../../_guides/DATA_REQUESTS_GUIDE.md), [`_guides/INCIDENT_RESPONSE_GUIDE.md`](../../_guides/INCIDENT_RESPONSE_GUIDE.md), [`_guides/MINORS_GUIDE.md`](../../_guides/MINORS_GUIDE.md), [`_guides/AI_COMPLIANCE_GUIDE.md`](../../_guides/AI_COMPLIANCE_GUIDE.md), [`_guides/SUBSCRIPTION_CANCELLATION_GUIDE.md`](../../_guides/SUBSCRIPTION_CANCELLATION_GUIDE.md), [`_guides/COMPLIANCE_TRIGGERS_GUIDE.md`](../../_guides/COMPLIANCE_TRIGGERS_GUIDE.md). A guardrail by construction: the reviewer FLAGS possible breach-notification duties but never concludes "no notice required" (BRCH-07), and the under-13 line stays a counsel escalation.
 
 ---
 

@@ -11,6 +11,15 @@
       "title": "ADMIN_TOOLING_GUIDE.md - The Founder Control Room (for Total Newbies)"
     },
     {
+      "guide": "AI_COMPLIANCE",
+      "file": "_guides/AI_COMPLIANCE_GUIDE.md",
+      "anchor": "lastmile:gate/legal",
+      "shape": "walkthrough",
+      "timing": "at-gate",
+      "lead_time": "EU AI Act Art. 50 transparency applies from Aug 2 2026 — ship the disclosure/labeling WITH the AI feature, not after",
+      "title": "AI_COMPLIANCE_GUIDE.md — Shipping AI Features Without Getting Fined (for Total Newbies)"
+    },
+    {
       "guide": "ANALYTICS_TELEMETRY",
       "file": "_guides/ANALYTICS_TELEMETRY_GUIDE.md",
       "anchor": "lastmile:module/analytics",
@@ -45,6 +54,24 @@
       "timing": "at-module",
       "lead_time": "Google sensitive-scope OAuth verification: days-weeks (only if you request Gmail/Drive scope)",
       "title": "AUTH_GUIDE.md — Letting users sign in (Google SSO, email signup, magic links)"
+    },
+    {
+      "guide": "COMPLIANCE_TRIGGERS",
+      "file": "_guides/COMPLIANCE_TRIGGERS_GUIDE.md",
+      "anchor": "spinup:preflight",
+      "shape": "notice",
+      "timing": "project-start",
+      "lead_time": "none (answer the trigger questions on DAY ZERO — each yes adds duties that are cheap at design time and expensive after launch)",
+      "title": "COMPLIANCE_TRIGGERS_GUIDE.md - \"Does My App Need Extra Compliance?\" in 10 Questions (for Total Newbies)"
+    },
+    {
+      "guide": "DATA_REQUESTS",
+      "file": "_guides/DATA_REQUESTS_GUIDE.md",
+      "anchor": "lastmile:module/auth",
+      "shape": "walkthrough",
+      "timing": "at-module",
+      "lead_time": "none (but statutory clocks start the moment a request ARRIVES — build the queue + flows BEFORE launch)",
+      "title": "DATA_REQUESTS_GUIDE.md — Handling \"Show Me My Data\" and \"Delete Me\" Requests (for Total Newbies)"
     },
     {
       "guide": "DATABASE",
@@ -92,6 +119,15 @@
       "title": "GROWTH_LOOPS_GUIDE.md - Reviews & Referrals, the Two Cheapest Growth Loops (for Total Newbies)"
     },
     {
+      "guide": "INCIDENT_RESPONSE",
+      "file": "_guides/INCIDENT_RESPONSE_GUIDE.md",
+      "anchor": "lastmile:module/security",
+      "shape": "checklist",
+      "timing": "at-module",
+      "lead_time": "none (but the GDPR 72-hour clock starts at AWARENESS — write the runbook and collect the contacts BEFORE launch)",
+      "title": "INCIDENT_RESPONSE_GUIDE.md — Your Worst Day, on a Checklist Instead of in a Panic (for Total Newbies)"
+    },
+    {
       "guide": "LEGAL",
       "file": "_guides/LEGAL_GUIDE.md",
       "anchor": "lastmile:gate/legal",
@@ -99,6 +135,15 @@
       "timing": "at-gate",
       "lead_time": "none (but STOP and hire a lawyer BEFORE launch for health/finance/children/biometric/regulated data, equity/fundraising, or AGPL anywhere in your dependency tree)",
       "title": "LEGAL_GUIDE.md — Legal Protection for Your Launch (for Total Newbies)"
+    },
+    {
+      "guide": "MINORS",
+      "file": "_guides/MINORS_GUIDE.md",
+      "anchor": "spinup:preflight",
+      "shape": "notice",
+      "timing": "project-start",
+      "lead_time": "none (the audience decision is a day-zero fork: anything under-13 means a lawyer BEFORE you build, not before you launch)",
+      "title": "MINORS_GUIDE.md — Who Is Your App For? (a day-zero risk triage)"
     },
     {
       "guide": "ONBOARDING",
@@ -153,6 +198,15 @@
       "timing": "at-module",
       "lead_time": "none",
       "title": "SECURITY_GUIDE.md — How Not to Get Hacked (for Total Newbies)"
+    },
+    {
+      "guide": "SUBSCRIPTION_CANCELLATION",
+      "file": "_guides/SUBSCRIPTION_CANCELLATION_GUIDE.md",
+      "anchor": "lastmile:module/payments",
+      "shape": "walkthrough",
+      "timing": "at-module",
+      "lead_time": "none (ship the cancel path WITH the subscribe path — ROSCA + state ARLs bind from the FIRST auto-renewing charge)",
+      "title": "SUBSCRIPTION_CANCELLATION_GUIDE.md — Building the Cancel Button (Without Getting Sued) (for Total Newbies)"
     },
     {
       "guide": "TESTING_ON_PC",

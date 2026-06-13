@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-12T23:57:08.585Z",
+  "generatedAt": "2026-06-13T00:50:10.087Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.16.0",
   "migrations": [],
@@ -125,8 +125,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "bf848567e7a1e430b40ecf781ec96ecaa91dc76a9a958809ec39afbdeabd2503",
-      "installedSha": "bf848567e7a1e430b40ecf781ec96ecaa91dc76a9a958809ec39afbdeabd2503"
+      "sha256": "e15e7381e4b06643d4514687a23ad6d6f77002714d775ea2d4069909ab3b70e3",
+      "installedSha": "e15e7381e4b06643d4514687a23ad6d6f77002714d775ea2d4069909ab3b70e3"
     },
     "TRACKER.md": {
       "owner": "runtime",
@@ -772,8 +772,8 @@
       "owner": "framework",
       "managed": true,
       "source": "_knowledge/registry.json",
-      "sha256": "9f56e50dd6b424e3863bea4cd314ded08aedf2aca3ed3aa5638b38aa2331572b",
-      "installedSha": "9f56e50dd6b424e3863bea4cd314ded08aedf2aca3ed3aa5638b38aa2331572b"
+      "sha256": "99f715451c6eefa87b35e2a8638f4a207c23ee90dc23f98fb15c7bb400075b33",
+      "installedSha": "99f715451c6eefa87b35e2a8638f4a207c23ee90dc23f98fb15c7bb400075b33"
     },
     "_knowledge/tech-stack-selection/BAAS_DECISION_MATRIX.md": {
       "owner": "framework",
@@ -1146,6 +1146,13 @@
       "sha256": "ad22715619b36567b7211dca894ca8aa13f6a880818d2a05b9fd505c3aedb30c",
       "installedSha": "ad22715619b36567b7211dca894ca8aa13f6a880818d2a05b9fd505c3aedb30c"
     },
+    "_knowledge/compliance/AI_PRODUCT_COMPLIANCE.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_knowledge/compliance/AI_PRODUCT_COMPLIANCE.md",
+      "sha256": "fa262ec93d6b39730a27e850a2c2a027f859b85926695739a5e15607b154cf0d",
+      "installedSha": "fa262ec93d6b39730a27e850a2c2a027f859b85926695739a5e15607b154cf0d"
+    },
     "_knowledge/compliance/APP_STORE_AND_PLATFORM_POLICY.md": {
       "owner": "framework",
       "managed": true,
@@ -1157,8 +1164,22 @@
       "owner": "framework",
       "managed": true,
       "source": "_knowledge/compliance/CONSUMER_PROTECTION_AND_SUBSCRIPTIONS.md",
-      "sha256": "24ec95e8b047740b5a70033aa4cd6c89cb8549864affc55e405013a88cede00b",
-      "installedSha": "24ec95e8b047740b5a70033aa4cd6c89cb8549864affc55e405013a88cede00b"
+      "sha256": "22a67da194c088d8f66cd169abc2684cd31ad073406b47c8edfe50c0d50f4544",
+      "installedSha": "22a67da194c088d8f66cd169abc2684cd31ad073406b47c8edfe50c0d50f4544"
+    },
+    "_knowledge/compliance/DATA_RIGHTS_OPERATIONS.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_knowledge/compliance/DATA_RIGHTS_OPERATIONS.md",
+      "sha256": "0d2b9c6da06c4157fc70ebccfb1626429de4493219e4f94994132a370e4943df",
+      "installedSha": "0d2b9c6da06c4157fc70ebccfb1626429de4493219e4f94994132a370e4943df"
+    },
+    "_knowledge/compliance/INCIDENT_READINESS.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_knowledge/compliance/INCIDENT_READINESS.md",
+      "sha256": "2815fe650c5a3099d4495da01a73b2bce3a2da5ea6087dd24553883acbcbe82d",
+      "installedSha": "2815fe650c5a3099d4495da01a73b2bce3a2da5ea6087dd24553883acbcbe82d"
     },
     "_knowledge/compliance/IP_AND_TRADEMARK.md": {
       "owner": "framework",
@@ -1166,6 +1187,13 @@
       "source": "_knowledge/compliance/IP_AND_TRADEMARK.md",
       "sha256": "25685dca3882da2479cbad454567f8475a5fe833ebd4ea8e77411ec946e9a292",
       "installedSha": "25685dca3882da2479cbad454567f8475a5fe833ebd4ea8e77411ec946e9a292"
+    },
+    "_knowledge/compliance/MINORS_AND_AGE_ASSURANCE.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_knowledge/compliance/MINORS_AND_AGE_ASSURANCE.md",
+      "sha256": "d1859debc68d74a5e53a0ce8f71efa9cfb106d21a2a8c001f898bc89d65ab666",
+      "installedSha": "d1859debc68d74a5e53a0ce8f71efa9cfb106d21a2a8c001f898bc89d65ab666"
     },
     "_knowledge/compliance/PRIVACY_AND_DATA_COMPLIANCE.md": {
       "owner": "framework",
@@ -1178,22 +1206,22 @@
       "owner": "framework",
       "managed": true,
       "source": "_knowledge/compliance/README.md",
-      "sha256": "ebc7269d8c26e66e7bf6b19d61e79ff469da733662500a949e569c9cec4ca5b7",
-      "installedSha": "ebc7269d8c26e66e7bf6b19d61e79ff469da733662500a949e569c9cec4ca5b7"
+      "sha256": "ab2548a0a34066f25625bc89ca0089f026af598d33a5f862bf57f40f9a595e12",
+      "installedSha": "ab2548a0a34066f25625bc89ca0089f026af598d33a5f862bf57f40f9a595e12"
     },
     "_knowledge/compliance/registry.json": {
       "owner": "framework",
       "managed": true,
       "source": "_knowledge/compliance/registry.json",
-      "sha256": "5f6452732cdbc3fae6f1af7c7d213883b1d03b003dc30fea71fd8c0c7da4ac52",
-      "installedSha": "5f6452732cdbc3fae6f1af7c7d213883b1d03b003dc30fea71fd8c0c7da4ac52"
+      "sha256": "dc7908bfcf0f7403c2bf56f210190fad65a17a2341f47b08e5b2085678f7c3a1",
+      "installedSha": "dc7908bfcf0f7403c2bf56f210190fad65a17a2341f47b08e5b2085678f7c3a1"
     },
     "_knowledge/compliance/_domain.json": {
       "owner": "framework",
       "managed": true,
       "source": "_knowledge/compliance/_domain.json",
-      "sha256": "ff7667c7b7e4f44d1a96336eadf8df2e64c9aee9167d35743e9074b734e1aa95",
-      "installedSha": "ff7667c7b7e4f44d1a96336eadf8df2e64c9aee9167d35743e9074b734e1aa95"
+      "sha256": "eae0aef588b9218f679edc64c27e2e4147fdd652077d35cbe82c05b4fdadd6ce",
+      "installedSha": "eae0aef588b9218f679edc64c27e2e4147fdd652077d35cbe82c05b4fdadd6ce"
     },
     "_knowledge/audience/README.md": {
       "owner": "framework",
@@ -1251,6 +1279,13 @@
       "sha256": "fcf1b8be0f6243e503b99ca9ab328c63768dbfc5ea5858ad1134c5c1a6b4612d",
       "installedSha": "fcf1b8be0f6243e503b99ca9ab328c63768dbfc5ea5858ad1134c5c1a6b4612d"
     },
+    "_guides/AI_COMPLIANCE_GUIDE.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_guides/AI_COMPLIANCE_GUIDE.md",
+      "sha256": "0ac4dfc2f449fc556d06b39a416f26158907e82d57c8f487ce6e691be9076bc1",
+      "installedSha": "0ac4dfc2f449fc556d06b39a416f26158907e82d57c8f487ce6e691be9076bc1"
+    },
     "_guides/ANALYTICS_TELEMETRY_GUIDE.md": {
       "owner": "framework",
       "managed": true,
@@ -1279,12 +1314,26 @@
       "sha256": "a2d3e7e19b34970a702a3f495482ffdfdcb884cb231db76f0c4298d71de42e23",
       "installedSha": "a2d3e7e19b34970a702a3f495482ffdfdcb884cb231db76f0c4298d71de42e23"
     },
+    "_guides/COMPLIANCE_TRIGGERS_GUIDE.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_guides/COMPLIANCE_TRIGGERS_GUIDE.md",
+      "sha256": "a940e6172db3c35f36ad3def30c2341fd1acbc078310dcbd45b27c4757dde304",
+      "installedSha": "a940e6172db3c35f36ad3def30c2341fd1acbc078310dcbd45b27c4757dde304"
+    },
     "_guides/DATABASE_GUIDE.md": {
       "owner": "framework",
       "managed": true,
       "source": "_guides/DATABASE_GUIDE.md",
       "sha256": "ab80f8df9e4a57b6c763a3dbfac9d86af0461819039bdb5cc3824d7afa8a3f28",
       "installedSha": "ab80f8df9e4a57b6c763a3dbfac9d86af0461819039bdb5cc3824d7afa8a3f28"
+    },
+    "_guides/DATA_REQUESTS_GUIDE.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_guides/DATA_REQUESTS_GUIDE.md",
+      "sha256": "c5e1093d9be7a4888c7ab6cac8e8230746228b102c0a6b03dbbd9b98bef4ac18",
+      "installedSha": "c5e1093d9be7a4888c7ab6cac8e8230746228b102c0a6b03dbbd9b98bef4ac18"
     },
     "_guides/DEPLOYMENT_INFRA_GUIDE.md": {
       "owner": "framework",
@@ -1314,12 +1363,26 @@
       "sha256": "3b79f63c728c39635a9eb0deef49e85c71c9d435dc0e3fdbbcb66eace314446c",
       "installedSha": "3b79f63c728c39635a9eb0deef49e85c71c9d435dc0e3fdbbcb66eace314446c"
     },
+    "_guides/INCIDENT_RESPONSE_GUIDE.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_guides/INCIDENT_RESPONSE_GUIDE.md",
+      "sha256": "a1ad8664db0d255d5ede41964320a8e8bdfc84dda31b10dab71cef3120d16984",
+      "installedSha": "a1ad8664db0d255d5ede41964320a8e8bdfc84dda31b10dab71cef3120d16984"
+    },
     "_guides/LEGAL_GUIDE.md": {
       "owner": "framework",
       "managed": true,
       "source": "_guides/LEGAL_GUIDE.md",
       "sha256": "2275774df2a65bb17eeeed3ded0593a9316f0e70f3dd05b7292b2fd7ef6ca7b7",
       "installedSha": "2275774df2a65bb17eeeed3ded0593a9316f0e70f3dd05b7292b2fd7ef6ca7b7"
+    },
+    "_guides/MINORS_GUIDE.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_guides/MINORS_GUIDE.md",
+      "sha256": "25b8d579ad25ba53084642df1f5c3b5411c38d00fcd104b2fcedd8fb535396be",
+      "installedSha": "25b8d579ad25ba53084642df1f5c3b5411c38d00fcd104b2fcedd8fb535396be"
     },
     "_guides/ONBOARDING_GUIDE.md": {
       "owner": "framework",
@@ -1339,8 +1402,8 @@
       "owner": "framework",
       "managed": true,
       "source": "_guides/PRIVACY_GDPR_GUIDE.md",
-      "sha256": "443d587fc1e947df3aa8e74f6384f5f092a7f98d17a8efc46561bf58d9ada665",
-      "installedSha": "443d587fc1e947df3aa8e74f6384f5f092a7f98d17a8efc46561bf58d9ada665"
+      "sha256": "0ef494fc0816f754a7f00bdae58a242860022fb51e033c46a9ff6fcfa3b2f914",
+      "installedSha": "0ef494fc0816f754a7f00bdae58a242860022fb51e033c46a9ff6fcfa3b2f914"
     },
     "_guides/PUSH_NOTIFICATIONS_GUIDE.md": {
       "owner": "framework",
@@ -1353,15 +1416,15 @@
       "owner": "framework",
       "managed": true,
       "source": "_guides/README.md",
-      "sha256": "ce554970708e6ae9bc00f9570a092b3784e09db10cf8a1cf59aece07df64bb93",
-      "installedSha": "ce554970708e6ae9bc00f9570a092b3784e09db10cf8a1cf59aece07df64bb93"
+      "sha256": "e36411cccc240913c06fc931d335058965e1a71fbda31694c425bd9ba9493b9d",
+      "installedSha": "e36411cccc240913c06fc931d335058965e1a71fbda31694c425bd9ba9493b9d"
     },
     "_guides/registry.json": {
       "owner": "framework",
       "managed": true,
       "source": "_guides/registry.json",
-      "sha256": "93dfb4acb0b5e9fccb9a542c7801f7a1a6baa5a1e73ae1a48199fcd45554fa5b",
-      "installedSha": "93dfb4acb0b5e9fccb9a542c7801f7a1a6baa5a1e73ae1a48199fcd45554fa5b"
+      "sha256": "60dbd94ddc0a9348949cafe40a358f1a19b031691eed26fea154ee2c0b035b0d",
+      "installedSha": "60dbd94ddc0a9348949cafe40a358f1a19b031691eed26fea154ee2c0b035b0d"
     },
     "_guides/SECURITY_GUIDE.md": {
       "owner": "framework",
@@ -1369,6 +1432,13 @@
       "source": "_guides/SECURITY_GUIDE.md",
       "sha256": "190da91d6acb073dea1a71e21cac51ee4202b298312bd72c7170ab41e2d4ea78",
       "installedSha": "190da91d6acb073dea1a71e21cac51ee4202b298312bd72c7170ab41e2d4ea78"
+    },
+    "_guides/SUBSCRIPTION_CANCELLATION_GUIDE.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_guides/SUBSCRIPTION_CANCELLATION_GUIDE.md",
+      "sha256": "e40841fd8b1e29faccdd4d1285479e551a1ea98870da0ac6aa77ceea2599bc50",
+      "installedSha": "e40841fd8b1e29faccdd4d1285479e551a1ea98870da0ac6aa77ceea2599bc50"
     },
     "_guides/TESTING_ON_PC_GUIDE.md": {
       "owner": "framework",
@@ -1562,6 +1632,51 @@
       "managed": false,
       "class": "reference"
     },
+    "_docs/research/operational-compliance-for-a-solo-newbie/brief.json": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/operational-compliance-for-a-solo-newbie/BRIEF.md": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/operational-compliance-for-a-solo-newbie/manifest.json": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/operational-compliance-for-a-solo-newbie/openai-report.md": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/operational-compliance-for-a-solo-newbie/.tmp/brief-prompt.txt": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/operational-compliance-for-a-solo-newbie/.tmp/openai-phase-0.md": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/operational-compliance-for-a-solo-newbie/.tmp/openai-phase-1.md": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/operational-compliance-for-a-solo-newbie/.tmp/openai-phase-2.md": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/operational-compliance-for-a-solo-newbie/.tmp/openai-phase-3.md": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
     "_docs/research/launch-guide-research-for-total-newbie-f/brief.json": {
       "owner": "project",
       "managed": false,
@@ -1577,6 +1692,26 @@
       "managed": false,
       "class": "reference"
     },
+    "_docs/research/launch-guide-research-for-total-newbie-f/gptpro-consult.md": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/launch-guide-research-for-total-newbie-f/manifest.json": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/launch-guide-research-for-total-newbie-f/openai-report.md": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/launch-guide-research-for-total-newbie-f/SYNTHESIS.md": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
     "_docs/research/launch-guide-research-for-total-newbie-f/.tmp/brief-prompt.txt": {
       "owner": "project",
       "managed": false,
@@ -1588,6 +1723,16 @@
       "class": "reference"
     },
     "_docs/research/launch-guide-research-for-total-newbie-f/.tmp/openai-phase-1.md": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/launch-guide-research-for-total-newbie-f/.tmp/openai-phase-2.md": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/launch-guide-research-for-total-newbie-f/.tmp/openai-phase-3.md": {
       "owner": "project",
       "managed": false,
       "class": "reference"
@@ -1803,6 +1948,26 @@
       "class": "reference"
     },
     "_docs/research/design-accessibility-wcag/ENGINE-STATUS.md": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/compliance-ops-for-solo-founders/claude-report.md": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/compliance-ops-for-solo-founders/deep-run-manifest.json": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/compliance-ops-for-solo-founders/gptpro-consult.md": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/compliance-ops-for-solo-founders/openai-report.md": {
       "owner": "project",
       "managed": false,
       "class": "reference"
@@ -20698,8 +20863,8 @@
       "managed": true,
       "source": ".claude/commands/bootstrap/lastmile.md",
       "kind": "md",
-      "sha256": "a0e35de7b3941641225b026511fad4d99b096a359392e03260480124182df4b5",
-      "installedSha": "a0e35de7b3941641225b026511fad4d99b096a359392e03260480124182df4b5"
+      "sha256": "c9fee104162f0d0bccd6e79589684940ce247772019344e4841122f95fdb37e3",
+      "installedSha": "c9fee104162f0d0bccd6e79589684940ce247772019344e4841122f95fdb37e3"
     },
     ".claude/commands/bootstrap/ponder.md": {
       "owner": "framework",
@@ -20714,8 +20879,8 @@
       "managed": true,
       "source": ".claude/commands/bootstrap/spinup.md",
       "kind": "md",
-      "sha256": "0a9a61f2a3fa9f252465550469011e977c48d5fb814fb8e7984775acdfe53c4d",
-      "installedSha": "0a9a61f2a3fa9f252465550469011e977c48d5fb814fb8e7984775acdfe53c4d"
+      "sha256": "a1744be71a5839daa198fbd334c7bb904b92447abc9d1142685fc533bb6c6677",
+      "installedSha": "a1744be71a5839daa198fbd334c7bb904b92447abc9d1142685fc533bb6c6677"
     },
     ".claude/commands/beta/integrate.md": {
       "owner": "framework",
@@ -20922,8 +21087,8 @@
       "managed": true,
       "source": ".claude/agents/product/quality/qa-reviewer.md",
       "kind": "md",
-      "sha256": "6d643b80977c78bf1f975a98b874254689a79da1472e2da0511b46707bb083d7",
-      "installedSha": "6d643b80977c78bf1f975a98b874254689a79da1472e2da0511b46707bb083d7"
+      "sha256": "64ad3b45ce1969b13500ea39c8ab7ff01a6237e60cdc731d57955e2f9c437c76",
+      "installedSha": "64ad3b45ce1969b13500ea39c8ab7ff01a6237e60cdc731d57955e2f9c437c76"
     },
     ".claude/agents/product/quality/test-runner.md": {
       "owner": "framework",

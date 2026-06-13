@@ -35,6 +35,12 @@ lead_time: "none"
 | **[ONBOARDING_GUIDE](ONBOARDING_GUIDE.md)** | When to ask for signup and what to collect - signup-wall placement, progressive profiling, guest mode + account linking, minors (COPPA) | When you design signup/first-run (with AUTH) |
 | **[GROWTH_LOOPS_GUIDE](GROWTH_LOOPS_GUIDE.md)** | Reviews + referrals - the compliant review prompt (NO "enjoying the app?" gating), native prompt quotas, referral rewards + fraud basics | Review prompt at launch; referrals after retention proves itself |
 | **[TESTING_ON_PC_GUIDE](TESTING_ON_PC_GUIDE.md)** | Testing a mobile app from a Windows PC - Android emulator (WHPX), Expo Go/dev-client, the no-iOS-simulator truth, real-device checklist | Project start (device kit + accounts have lead time) |
+| **[DATA_REQUESTS_GUIDE](DATA_REQUESTS_GUIDE.md)** | Operating data-rights requests - right-sized verification, statutory clocks + request queue, honest deletion + processor cascade + backups, retention schedule | When you build accounts (the clock starts at the first request) |
+| **[SUBSCRIPTION_CANCELLATION_GUIDE](SUBSCRIPTION_CANCELLATION_GUIDE.md)** | The cancel path - as easy as subscribing, same medium; Stripe portal / platform IAP cancel; period-end entitlement honesty | With the subscribe path (the law binds from the first charge) |
+| **[INCIDENT_RESPONSE_GUIDE](INCIDENT_RESPONSE_GUIDE.md)** | Breach/incident runbook - prepare-now checklist, evidence preservation, GDPR 72h + state notices, processor breaches | Before launch (the 72h clock starts at awareness) |
+| **[AI_COMPLIANCE_GUIDE](AI_COMPLIANCE_GUIDE.md)** | AI features - deployer triage, chatbot disclosure + synthetic-media labeling (AI Act Art. 50), FTC claims substantiation, training-consent posture | When you ship an AI feature (disclosure ships WITH it) |
+| **[MINORS_GUIDE](MINORS_GUIDE.md)** | The audience fork - under-13 = lawyer BEFORE building; teen lane duties; honest age gates for 13+ apps | **Day zero** (it's an audience decision) |
+| **[COMPLIANCE_TRIGGERS_GUIDE](COMPLIANCE_TRIGGERS_GUIDE.md)** | 10 questions that switch on extra duties - sales tax/MoR, SMS/TCPA, UGC/DMCA/CSAM, ad pixels/GPC, sensitive data, sanctions | **Day zero** + whenever you add a feature class |
 
 ---
 
