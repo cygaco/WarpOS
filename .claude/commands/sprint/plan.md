@@ -13,6 +13,26 @@ ticketing, hidden assumptions, and accidental execution.
 (except for explicitly tiny low-risk work). It does not invoke or
 switch modes. It does not start a build.
 
+## Who authors (role routing — the WG-3 rule)
+
+The **product-lead** persona authors the Plan Contract — requirement
+authoring is its registry-owned scope (`_org/role-registry.json`). If you
+are α (or any orchestrator) reading this skill: **dispatch product-lead**
+(in-process Agent tool, lean-return envelope — write the artifact to its
+path, return ≤8 lines) and review the result; do NOT hand-author the
+contract yourself. The ε-conducted path (`/sprint:full` in sprint-mode
+sessions) already routes this through the hook-point roster; this rule
+covers DIRECT invocations and non-sprint sessions, which historically
+steered the orchestrator into self-authoring (the WG-3 failure mode:
+self-authored reqs never get the producer/checker split that catches
+fantasy planning). Solo-mode exception: α may author directly only when
+the operator explicitly chose `/mode:solo` for a quick one-off — say so
+in the contract's provenance line either way (`authored_by: product-lead`
+or `authored_by: alpha-solo`).
+Enforcement: skill-body routing (this section) + provenance line; an
+events-based detector (plan-contract-exists ⇒ product-lead authorship
+record) is logged enforcement debt — see `paths.enforcementDebt`.
+
 > Ledger contract — this skill writes a `ROADMAP.md` sprint row via `scripts/sprint/ledger.js`. See `paths.sprintReference#ledger-discipline` for what qualifies and the fail-open contract.
 
 ## When to use

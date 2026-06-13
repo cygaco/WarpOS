@@ -13,6 +13,26 @@ smallest executable unit — it must link to a granular story, COPY,
 INPUTS, TRACE, acceptance criteria, and (if applicable) an external
 service dependency.
 
+## Who authors (role routing — the WG-3 rule)
+
+The **product-lead** persona authors the design bundle (PRD, stories,
+ACs, COPY/INPUTS/TRACE) and mints the tickets — `/sprint:design` is named
+in its registry-owned scope; **req-reviewer verifies** what product-lead
+authored (producer ≠ checker). If you are α (or any orchestrator) reading
+this skill: **dispatch product-lead** (in-process Agent tool, lean-return
+envelope) per artifact group and review envelopes; do NOT hand-author the
+PRD/stories/ACs yourself. The ε-conducted `/sprint:full` path (sprint-mode
+default since T-297) already routes Phase 2 through the design roster
+(product-lead, design-lead, req-reviewer); this rule covers DIRECT
+invocations and non-sprint sessions — the historical WG-3 gap where the
+skill body silently steered the orchestrator into self-authoring its own
+requirements, which then sailed past review because author == reviewer.
+Carry provenance in the PRD header (`authored_by:`). Solo-mode exception
+as in `/sprint:plan`.
+Enforcement: skill-body routing + provenance + req-reviewer's existing
+verification gate; the events-based authorship detector is logged
+enforcement debt — see `paths.enforcementDebt`.
+
 ## When to use
 
 - The Plan Contract for the current sprint is written and is `pass`

@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-13T00:50:10.087Z",
+  "generatedAt": "2026-06-13T01:27:08.348Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.16.0",
   "migrations": [],
@@ -1968,6 +1968,11 @@
       "class": "reference"
     },
     "_docs/research/compliance-ops-for-solo-founders/openai-report.md": {
+      "owner": "project",
+      "managed": false,
+      "class": "reference"
+    },
+    "_docs/research/compliance-ops-for-solo-founders/SYNTHESIS.md": {
       "owner": "project",
       "managed": false,
       "class": "reference"
@@ -19335,8 +19340,8 @@
       "managed": true,
       "source": ".claude/commands/sprint/design.md",
       "kind": "md",
-      "sha256": "9bb725cf2489c7693e9197f2a473ea72cc1d77ddcd6e6b39f98d1d7125302875",
-      "installedSha": "9bb725cf2489c7693e9197f2a473ea72cc1d77ddcd6e6b39f98d1d7125302875"
+      "sha256": "d29ee818d03376fc2db0fdc8587e54820a63097e8e3ac83190eea7ca2f03fb3b",
+      "installedSha": "d29ee818d03376fc2db0fdc8587e54820a63097e8e3ac83190eea7ca2f03fb3b"
     },
     ".claude/commands/sprint/execute.md": {
       "owner": "framework",
@@ -19359,8 +19364,8 @@
       "managed": true,
       "source": ".claude/commands/sprint/plan.md",
       "kind": "md",
-      "sha256": "9055e9949b59dbb601ed911931f75c9f23aa80911be6332c6bbcc758280f13f1",
-      "installedSha": "9055e9949b59dbb601ed911931f75c9f23aa80911be6332c6bbcc758280f13f1"
+      "sha256": "f02c0f285aaa5836b38d0c55794c8fc71497299ddfb2aa0d116fa6535826e92f",
+      "installedSha": "f02c0f285aaa5836b38d0c55794c8fc71497299ddfb2aa0d116fa6535826e92f"
     },
     ".claude/commands/sprint/release.md": {
       "owner": "framework",
