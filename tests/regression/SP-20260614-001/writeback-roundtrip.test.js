@@ -403,5 +403,44 @@ ok("tmp-cleanup-on-rename-error-no-orphan", () => {
   fs.rmSync(dir, { recursive: true, force: true });
 });
 
+// ── B4 / tmp cleanup FAILURE is SURFACED, not swallowed ──────────────────────
+// If renameSync fails AND the tmp unlink (cleanup) ALSO fails, a possible orphan tmp must be
+// SURFACED in the returned error — never silently swallowed (the hidden-orphan failure mode).
+ok("tmp-cleanup-failure-surfaced-not-swallowed", () => {
+  const { dir, file } = writeFixture();
+  const realRename = fs.renameSync;
+  const realUnlink = fs.unlinkSync;
+  fs.renameSync = () => {
+    const e = new Error("simulated rename failure (EXDEV)");
+    e.code = "EXDEV";
+    throw e;
+  };
+  fs.unlinkSync = () => {
+    throw new Error("simulated cleanup failure (EBUSY)");
+  };
+  let res;
+  try {
+    res = patchChecklistItem(file, "provider.accounts", true);
+  } finally {
+    fs.renameSync = realRename;
+    fs.unlinkSync = realUnlink;
+  }
+  assert.strictEqual(res.ok, false, "failure surfaces an error");
+  assert.ok(/atomic write failed/i.test(res.error), "error explains the failed atomic write");
+  assert.ok(
+    /cleanup also failed|orphan/i.test(res.error),
+    "the cleanup failure is SURFACED in the error, not swallowed",
+  );
+  // The forced-failure left a real orphan tmp — remove it with the real unlink.
+  for (const f of listTmp(dir)) {
+    try {
+      realUnlink(path.join(dir, f));
+    } catch {
+      /* ignore */
+    }
+  }
+  fs.rmSync(dir, { recursive: true, force: true });
+});
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail === 0 ? 0 : 1);

@@ -161,15 +161,19 @@ export function patchChecklistItem(
     //   - writeFileSync error: tmp may be partially written or absent.
     //   - renameSync error: tmp is fully written but NOT moved — it MUST be removed here.
     // existsSync-guard + try/catch makes the removal robust on both paths (and on a partial tmp).
+    let orphanNote = "";
     try {
       if (existsSync(tmpPath)) unlinkSync(tmpPath);
     } catch {
-      /* last-resort: nothing more we can do; never throw out of cleanup */
+      // The tmp removal itself failed — SURFACE the possible orphan in the error rather
+      // than swallowing it (a hidden orphan tmp is the failure mode B4 guards against).
+      // Still never throw out of cleanup.
+      orphanNote = ` (cleanup also failed — possible orphan tmp at ${tmpPath})`;
     }
     return {
       ok: false,
       id,
-      error: `atomic write failed: ${(e as Error).message}`,
+      error: `atomic write failed: ${(e as Error).message}${orphanNote}`,
     };
   }
 

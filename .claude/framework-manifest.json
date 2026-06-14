@@ -13428,7 +13428,7 @@
         "src": "framework/templates/app-scaffold/src/lib/readiness/writeback.ts.tmpl",
         "dest": "framework/templates/app-scaffold/src/lib/readiness/writeback.ts.tmpl",
         "kind": "template",
-        "sha256": "0d571960d5309c4c24b14571450320963d2bf14a980491773df275f47ec3510d",
+        "sha256": "7f05027d7d0f09f8afa70f89746b3d0c9f79ca9c3a4821cc23b9fb4ab22eb4e3",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
