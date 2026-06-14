@@ -1,25 +1,26 @@
 # Systems Manifest
 
-Generated: 2026-06-11T03:38:25.448Z
+Generated: 2026-06-14T21:18:04.745Z
 
-Total: **77** systems across **2** categories. Files referenced: 76, missing on disk: 1.
+Total: **81** systems across **2** categories. Files referenced: 80, missing on disk: 1.
 
 ## By status
 
 | Status | Count |
 |---|---|
 | active | 1 |
-| untested | 76 |
+| untested | 80 |
 
 ## By category
 
-### cognition (76)
+### cognition (80)
 
 | id | name | status | files |
 |---|---|---|---|
 | skill-_report_skill_tmp | File an ELI5 report (sprint \| milestone \| session \| checkpoint) into _reports | untested | 1 |
 | skill-bootstrap-lastmile | "Prototype → monetizable product. Drives the 'last mile': readiness audit → laun | untested | 1 |
 | skill-bootstrap-spinup | "From 'just WarpOS' to something on screen — one in-project command: intent (gui | untested | 1 |
+| skill-cockpit-readiness | The launch-readiness cockpit — show how close every registered product is to lau | untested | 1 |
 | skill-discover-orphaned | Discover orphaned work — find every deferred, forgotten, or abandoned task acros | untested | 1 |
 | skill-etc-author | Author or refine a skill/prompt in standard format, producing a sibling eval-pac | untested | 1 |
 | skill-etc-eval | Evaluate a skill or prompt artifact against its eval-pack, emitting a validated  | untested | 1 |
@@ -84,12 +85,15 @@ Total: **77** systems across **2** categories. Files referenced: 76, missing on 
 | skill-scan-warpos-ship-coverage | Verify every framework-owned path under the consumer-essential roots is actually | untested | 1 |
 | skill-session-dump | Write a prescriptive handoff to DUMP.md at project root — context, session progr | untested | 1 |
 | skill-session-end | Full session wrap-up — cognitive maintenance (learn/mine/sleep/integrate) → fres | untested | 1 |
+| skill-session-resume | Pick up the previous session and KEEP GOING — load the handoff, re-establish mod | untested | 1 |
 | skill-session-turbo | Session speed mode — pre-authorize a batch of high-impact actions (permissions.a | untested | 1 |
 | skill-skills-cleanup | Audit all skills for dead weight, duplicates, broken references, and namespace i | untested | 1 |
 | skill-skills-delete | Remove a skill from .claude/commands with a backup, so it can be restored if the | untested | 1 |
 | skill-sleep-deep | "Full sleep cycle — all 6 phases: NREM consolidation, cleanup, replay, REM dream | untested | 1 |
 | skill-sprint-cost-gate | Toggle the /sprint:full cost-estimate halt on or off — turn off the heuristic sp | untested | 1 |
+| skill-sprint-design | Turn an approved Plan Contract into PRD, stories, COPY, INPUTS, TRACE, acceptanc | untested | 1 |
 | skill-sprint-full | Single-invocation execution of the full sprint pipeline (plan→design→execute→rel | untested | 1 |
+| skill-sprint-plan | Turn a brief plain-language request into a structured sprint plan and durable Pl | untested | 1 |
 | skill-warp-diff | Diff canonical WarpOS against an installed product — version/staleness, framewor | untested | 1 |
 | skill-warp-health | Verify WarpOS installation — checks every system, reports green/yellow/red with  | untested | 1 |
 | skill-warp-reconcile | Reconcile downstream-flagged WarpOS gaps into canonical — discover every product | untested | 1 |

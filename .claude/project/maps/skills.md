@@ -1,10 +1,19 @@
 # Skills Map
 
-Generated: 2026-06-11T03:38:25.448Z
+Generated: 2026-06-14T21:18:04.745Z
 
-Total: **216** skills across **44** namespaces. 87 user-invocable.
+Total: **222** skills across **46** namespaces. 92 user-invocable.
 
 ## By namespace
+
+### admin (4)
+
+| Name | Description | Calls | Called by |
+|---|---|---|---|
+| guides | Open the in-app founder admin panel's guides sub-route in a browser, against a PRODUCT's running Nex | 1 | 2 |
+| preview | Open/preview a PRODUCT's in-app founder admin panel in the browser. Scaffolds (or reuses) a fixed th | 3 | 3 |
+| readiness | Open the in-app founder admin panel's launch-readiness sub-route in a browser, against a PRODUCT's r | 1 | 2 |
+| seed | Seed warm-start data (founder-allowlist session, sample events, FOUNDERS_CHECKLIST.md) into the live | 3 | 1 |
 
 ### agents (2)
 
@@ -36,6 +45,12 @@ Total: **216** skills across **44** namespaces. 87 user-invocable.
 | framework-purity | "[deprecated alias → /scan:framework-purity] Refuse product-content leaks in canonical. Superseded b | 1 | 0 |
 | framework-views-fresh | "[deprecated alias → /scan:framework-views-fresh] Verify .claude views are byte-identical regenerati | 1 | 0 |
 | install | "[deprecated alias → /scan:install] Verify a fresh WarpOS install. Superseded by /scan:install in th | 1 | 0 |
+
+### cockpit (1)
+
+| Name | Description | Calls | Called by |
+|---|---|---|---|
+| readiness | The launch-readiness cockpit — show how close every registered product is to launch (composite %, bl | 2 | 0 |
 
 ### commit (4)
 
@@ -71,7 +86,7 @@ Total: **216** skills across **44** namespaces. 87 user-invocable.
 | Name | Description | Calls | Called by |
 |---|---|---|---|
 | list | List open enforcement-debt entries — policies/conventions without an automated enforcer | 1 | 1 |
-| log | Record a policy/convention that has no automated enforcer — appends to paths.enforcementDebt | 1 | 6 |
+| log | Record a policy/convention that has no automated enforcer — appends to paths.enforcementDebt | 1 | 7 |
 
 ### epic (10)
 
@@ -211,10 +226,10 @@ Total: **216** skills across **44** namespaces. 87 user-invocable.
 
 | Name | Description | Calls | Called by |
 |---|---|---|---|
-| adhoc | Enter adhoc team mode — Alpha + Beta + Gamma for collaborative feature development | 2 | 7 |
-| oneshot | Initiate a oneshot build — launch Delta as standalone orchestrator for full skeleton runs | 1 | 6 |
-| solo | Enter solo mode — just Alpha and the user, no agent team | 0 | 2 |
-| sprint | Enter sprint mode — ε (Alex Epsilon) conducts the full sprint lifecycle (plan→design→build→gauntlet→ | 4 | 1 |
+| adhoc | Enter adhoc team mode — Alpha + Beta + Gamma for collaborative feature development | 2 | 8 |
+| oneshot | Initiate a oneshot build — launch Delta as standalone orchestrator for full skeleton runs | 1 | 7 |
+| solo | Enter solo mode — just Alpha and the user, no agent team | 0 | 3 |
+| sprint | Enter sprint mode — ε (Alex Epsilon) conducts the full sprint lifecycle (plan→design→build→gauntlet→ | 4 | 3 |
 
 ### models (4)
 
@@ -262,9 +277,9 @@ Total: **216** skills across **44** namespaces. 87 user-invocable.
 | Name | Description | Calls | Called by |
 |---|---|---|---|
 | list | List all registered portfolio products — slug, path, WarpOS version, last commit, dirty count, curre | 0 | 6 |
-| new | Scaffold a new product repo (sibling to WarpOS) with the framework installed and committed, then reg | 4 | 5 |
+| new | Scaffold a new product repo (sibling to WarpOS) with the framework installed and committed, then reg | 4 | 6 |
 | open | Open a registered portfolio product — print its path and a cd hint, or spawn a new terminal window w | 0 | 3 |
-| register | Register an existing local repo as a portfolio product in ~/.warpos/portfolio.json. | 0 | 1 |
+| register | Register an existing local repo as a portfolio product in ~/.warpos/portfolio.json. | 0 | 2 |
 | run | Run a skill against another portfolio product in a fresh Claude subprocess — never retargets the cur | 1 | 1 |
 | spinup | "From WarpOS, run the idea→on-screen on-ramp against a registered product: dispatches /bootstrap:spi | 4 | 2 |
 | status | Portfolio dashboard — per-product WarpOS version, last commit, dirty count, current sprint, GitHub r | 1 | 2 |
@@ -310,13 +325,14 @@ Total: **216** skills across **44** namespaces. 87 user-invocable.
 | next | The 1-idea alternative to /roadmap:ideas — the single highest-leverage next roadmap entry (the role- | 2 | 2 |
 | prioritize | Role-aware roadmap prioritization — runs /roadmap:cleanup first, then consults the Product Lead (sin | 4 | 0 |
 
-### scan (50)
+### scan (51)
 
 | Name | Description | Calls | Called by |
 |---|---|---|---|
 | ac-coverage | Read-only audit of acceptance-criteria.md verified_by:- linkage across active sprints. | 3 | 3 |
 | adhoc-fail-override | Reject an adhoc dispatcher that overrode a binding reviewer FAIL — verdict-content check (the blind  | 0 | 2 |
 | adhoc-team-hygiene | Read-only probe for adhoc-team accretion — flags teams whose members carry a -N de-dup suffix or a s | 2 | 1 |
+| admin-suite-coverage | Coverage + freshness enforcer for the admin:* dev-tooling suite — each admin skill resolves, every a | 3 | 1 |
 | architecture | Architecture integrity — do the layers connect? agent system, cross-layer seams, documentation healt | 6 | 7 |
 | coherence | Run the WarpOS system coherence graph across 15 drift types. | 0 | 1 |
 | cutover-completeness | ED-026 cutover gate — greps the IMPERATIVE layer + keystone registries for RAW deleted-old-tree lite | 2 | 1 |
@@ -327,7 +343,7 @@ Total: **216** skills across **44** namespaces. 87 user-invocable.
 | etc-harness | Audit the /etc authoring+eval harness — fail-closed enforcer that rejects an invented authoring form | 2 | 1 |
 | framework-purity | Refuse product-content leaks in canonical — scans for client slugs, maintainer abs paths, root-level | 2 | 4 |
 | framework-views-fresh | Verify .claude/commands and .claude/agents are byte-identical regenerations of their _warpos/ source | 2 | 3 |
-| full | Run every scan in parallel — a full system scan across project health, governance, and WarpOS distri | 56 | 24 |
+| full | Run every scan in parallel — a full system scan across project health, governance, and WarpOS distri | 57 | 25 |
 | ingest-firewall | Audit the ingest stores (_docs/research, _docs/imports, _docs/briefs, _docs/clones) for un-firewalle | 0 | 1 |
 | install | Verify a fresh WarpOS install — manifest, paths, agents, hooks, version, settings. | 1 | 4 |
 | issues | Pattern-mine events.jsonl for repeat audit-block signatures — surface candidates for /issues:log | 5 | 2 |
@@ -342,7 +358,7 @@ Total: **216** skills across **44** namespaces. 87 user-invocable.
 | role-parity | The one check that owns role parity across the org map, the dispatch catalog, and team-guard — fail- | 0 | 2 |
 | scaffold-coverage | Verify the WarpOS app scaffold (Next+Tailwind v4+shadcn/ui+Radix+Lucide) is complete and coherent —  | 2 | 1 |
 | scan-coverage | Scan-suite self-inventory — asserts every /scan:* skill is delegated by /scan:full or explicitly exc | 1 | 6 |
-| skill-hook-coverage | Bidirectional coverage of the skill hook-point registry — REVERSE (registry coherent vs role-registr | 4 | 1 |
+| skill-hook-coverage | Bidirectional coverage of the skill hook-point registry — REVERSE (registry coherent vs role-registr | 4 | 2 |
 | sprint-beta-honesty | Audits Beta consultation honesty across post-cutoff /sprint:full runs (missing consults, placeholder | 1 | 2 |
 | sprint-hook-coverage | Bidirectional coverage of the sprint hook-point registry — FORWARD (every matched block-row has a ma | 2 | 2 |
 | sprint-manager-consult | Audits manager-consult coverage across post-cutoff /sprint:full runs — asserts the design-quality au | 3 | 2 |
@@ -369,16 +385,16 @@ Total: **216** skills across **44** namespaces. 87 user-invocable.
 
 | Name | Description | Calls | Called by |
 |---|---|---|---|
-| checkpoint | Force an immediate session checkpoint save — captures conversation context and tool activity that gi | 0 | 2 |
-| dump | Write a prescriptive handoff to DUMP.md at project root — context, session progression (as fenced co | 7 | 1 |
-| end | Full session wrap-up — cognitive maintenance (learn/mine/sleep → integrate learnings + β recs) → rec | 12 | 0 |
-| handoff | Generate a rich AI-analyzed handoff document (replaces /handoff) | 1 | 3 |
+| checkpoint | Force an immediate session checkpoint save — captures conversation context and tool activity that gi | 0 | 3 |
+| dump | Write a prescriptive handoff to DUMP.md at project root — context, session progression (as fenced co | 7 | 2 |
+| end | Full session wrap-up — cognitive maintenance (learn/mine/sleep → integrate learnings + β recs) → rec | 14 | 1 |
+| handoff | Generate a rich AI-analyzed handoff document (replaces /handoff) | 1 | 4 |
 | history | Browse past session handoff summaries from the handoffs directory — useful for tracking what happene | 1 | 1 |
 | read | Read the cross-session inbox — see what other Alex sessions have been doing | 0 | 2 |
 | recap | Catch up on the last N turns of this session — what you asked, what I did, what's still pending | 3 | 1 |
-| resume | Load and display the last handoff or checkpoint — use after /clear or cold start | 0 | 4 |
+| resume | Pick up the previous session and KEEP GOING — load the handoff, re-establish mode + team + turbo, an | 8 | 4 |
 | takenotes | Append a timestamped note to a per-topic file under runtime/notes/ | 0 | 0 |
-| turbo | Session speed mode — pre-authorize a batch of high-impact actions (permissions.allow) AND switch the | 2 | 1 |
+| turbo | Session speed mode — pre-authorize a batch of high-impact actions (permissions.allow) AND switch the | 2 | 2 |
 | write | Post a message to the cross-session inbox so other Alex sessions can see it. Default is fully automa | 0 | 3 |
 
 ### skills (4)
@@ -402,10 +418,10 @@ Total: **216** skills across **44** namespaces. 87 user-invocable.
 | Name | Description | Calls | Called by |
 |---|---|---|---|
 | cost-gate | Toggle the /sprint:full cost-estimate halt on or off — turn off the heuristic spend gate when an ope | 2 | 0 |
-| design | Turn an approved Plan Contract into PRD, stories, COPY, INPUTS, TRACE, acceptance criteria, QA, red- | 2 | 4 |
+| design | Turn an approved Plan Contract into PRD, stories, COPY, INPUTS, TRACE, acceptance criteria, QA, red- | 3 | 4 |
 | execute | Execute the sprint via Ralph-style plan/act/test/review/record/checkpoint loops per ticket, with cra | 4 | 5 |
-| full | Single-invocation execution of the full sprint pipeline (plan→design→execute→release-prep→retro) und | 9 | 10 |
-| plan | Turn a brief plain-language request into a structured sprint plan and durable Plan Contract. Evidenc | 4 | 9 |
+| full | Single-invocation execution of the full sprint pipeline (plan→design→execute→release-prep→retro) und | 9 | 12 |
+| plan | Turn a brief plain-language request into a structured sprint plan and durable Plan Contract. Evidenc | 6 | 9 |
 | release | Prepare and execute a sprint release — final checks, approval, deploy gate, release notes, rollback  | 4 | 6 |
 | retrospective | Synthesize a post-sprint retrospective from tracker artifacts — outcomes, friction, action items. Id | 3 | 3 |
 | status | Read-only status view of every live sprint — shows id, lane, status, phase, last checkpoint, and the | 3 | 0 |
@@ -446,10 +462,10 @@ Total: **216** skills across **44** namespaces. 87 user-invocable.
 
 Top callers (skills that invoke the most others):
 
-- `/scan:full` → /knowledge:coverage, /maps:all, /oneshot:preflight, /scan:ac-coverage, /scan:adhoc-fail-override, /scan:adhoc-team-hygiene, /scan:architecture, /scan:coherence, /scan:cutover-completeness, /scan:design-system, /scan:dispatch-routing-parity, /scan:docker-secrets, /scan:environment, /scan:etc-harness, /scan:framework-purity, /scan:framework-views-fresh, /scan:ingest-firewall, /scan:install, /scan:issues, /scan:node-procs, /scan:patterns, /scan:planning-principles, /scan:privacy, /scan:references, /scan:regressions, /scan:requirements, /scan:roadmap-trace, /scan:role-parity, /scan:scaffold-coverage, /scan:scan-coverage, /scan:skill-hook-coverage, /scan:sprint-beta-honesty, /scan:sprint-hook-coverage, /scan:sprint-manager-consult, /scan:system, /scan:timeline, /scan:version-coherence, /scan:warpos-applied-migrations, /scan:warpos-capsule-resolvable, /scan:warpos-install-baseline, /scan:warpos-layer-diff, /scan:warpos-manifest-coverage, /scan:warpos-manifest-honesty, /scan:warpos-migration-coverage, /scan:warpos-migration-presence, /scan:warpos-path-resolution, /scan:warpos-ship-coverage, /scan:warpos-staleness, /scan:warpos-structure-parity, /scan:warpos-tracked-transients, /scan:warpos-version-quorum, /sleep:deep, /sprint:full, /trackers:validate, /warp:doctor, /warp:health
+- `/scan:full` → /knowledge:coverage, /maps:all, /oneshot:preflight, /scan:ac-coverage, /scan:adhoc-fail-override, /scan:adhoc-team-hygiene, /scan:admin-suite-coverage, /scan:architecture, /scan:coherence, /scan:cutover-completeness, /scan:design-system, /scan:dispatch-routing-parity, /scan:docker-secrets, /scan:environment, /scan:etc-harness, /scan:framework-purity, /scan:framework-views-fresh, /scan:ingest-firewall, /scan:install, /scan:issues, /scan:node-procs, /scan:patterns, /scan:planning-principles, /scan:privacy, /scan:references, /scan:regressions, /scan:requirements, /scan:roadmap-trace, /scan:role-parity, /scan:scaffold-coverage, /scan:scan-coverage, /scan:skill-hook-coverage, /scan:sprint-beta-honesty, /scan:sprint-hook-coverage, /scan:sprint-manager-consult, /scan:system, /scan:timeline, /scan:version-coherence, /scan:warpos-applied-migrations, /scan:warpos-capsule-resolvable, /scan:warpos-install-baseline, /scan:warpos-layer-diff, /scan:warpos-manifest-coverage, /scan:warpos-manifest-honesty, /scan:warpos-migration-coverage, /scan:warpos-migration-presence, /scan:warpos-path-resolution, /scan:warpos-ship-coverage, /scan:warpos-staleness, /scan:warpos-structure-parity, /scan:warpos-tracked-transients, /scan:warpos-version-quorum, /sleep:deep, /sprint:full, /trackers:validate, /warp:doctor, /warp:health
 - `/warp:tour` → /fix:fast, /learn:deep, /maps:all, /maps:architecture, /mode:adhoc, /mode:oneshot, /mode:solo, /portfolio:list, /portfolio:open, /research:simple, /session:handoff, /session:read, /session:write, /sleep:quick, /warp:health
+- `/session:end` → /beta:integrate, /beta:mine, /commit:land, /enforcement:log, /learn:deep, /learn:integrate, /mode:adhoc, /mode:sprint, /session:checkpoint, /session:dump, /session:handoff, /sleep:deep, /sleep:quick, /trackers:validate
 - `/bootstrap:lastmile` → /guides:integrate, /learn:ingest, /learn:integrate, /qa:audit, /redteam:full, /research:deep, /roadmap:add, /scan:install, /scan:roadmap-trace, /sprint:design, /sprint:execute, /sprint:plan
-- `/session:end` → /beta:integrate, /beta:mine, /commit:land, /learn:deep, /learn:integrate, /mode:adhoc, /session:checkpoint, /session:dump, /session:handoff, /sleep:deep, /sleep:quick, /trackers:validate
 - `/maps:all` → /maps:architecture, /maps:coverage, /maps:enforcements, /maps:hooks, /maps:memory, /maps:skills, /maps:steps, /maps:systems, /maps:tools, /scan:scan-coverage
 - `/oneshot:preflight` → /mode:oneshot, /oneshot:improve, /oneshot:retro, /oneshot:start, /preflight:run, /preflight:setup, /run:sync, /scan:architecture, /scan:environment, /scan:requirements
 - `/warp:reconcile` → /enforcement:log, /fix:deep, /issues:log, /portfolio:status, /roadmap:add, /scan:full, /scan:warpos-staleness, /warp:flag, /warp:release, /warp:update
@@ -459,12 +475,12 @@ Top callers (skills that invoke the most others):
 
 Top called (skills others invoke the most):
 
-- `/scan:full` ← /bootstrap:ponder, /check:all, /commit:land, /guides:coverage, /karpathy:run, /knowledge:coverage, /learn:integrate, /maps:coverage, /scan:ac-coverage, /scan:cutover-completeness, /scan:dispatch-routing-parity, /scan:node-procs, /scan:planning-principles, /scan:regressions, /scan:roadmap-trace, /scan:scan-coverage, /scan:system, /scan:turbo-spend, /scan:version-coherence, /scan:warpos-install-baseline, /scan:warpos-ship-coverage, /sprint:full, /warp:doctor, /warp:reconcile
+- `/scan:full` ← /bootstrap:ponder, /check:all, /commit:land, /guides:coverage, /karpathy:run, /knowledge:coverage, /learn:integrate, /maps:coverage, /scan:ac-coverage, /scan:admin-suite-coverage, /scan:cutover-completeness, /scan:dispatch-routing-parity, /scan:node-procs, /scan:planning-principles, /scan:regressions, /scan:roadmap-trace, /scan:scan-coverage, /scan:system, /scan:turbo-spend, /scan:version-coherence, /scan:warpos-install-baseline, /scan:warpos-ship-coverage, /sprint:full, /warp:doctor, /warp:reconcile
 - `/sleep:deep` ← /beta:integrate, /beta:mine, /bootstrap:ponder, /learn:deep, /reasoning:score, /scan:architecture, /scan:environment, /scan:full, /scan:patterns, /scan:references, /scan:requirements, /scan:system, /session:end, /sleep:quick
 - `/warp:update` ← /commit:both, /guides:write, /portfolio:sync, /scan:warpos-capsule-resolvable, /scan:warpos-install-baseline, /scan:warpos-layer-diff, /scan:warpos-manifest-coverage, /scan:warpos-migration-presence, /scan:warpos-staleness, /scan:warpos-structure-parity, /warp:diff, /warp:doctor, /warp:reconcile, /warp:sync
 - `/warp:health` ← /agents:test, /mode:adhoc, /mode:sprint, /scan:adhoc-team-hygiene, /scan:architecture, /scan:environment, /scan:full, /scan:system, /warp:doctor, /warp:setup, /warp:tour, /warp:uninstall, /warp:update
+- `/sprint:full` ← /learn:deep, /mode:sprint, /roadmap:create, /scan:full, /scan:roadmap-trace, /scan:sprint-beta-honesty, /scan:sprint-hook-coverage, /scan:sprint-manager-consult, /session:turbo, /sprint:cost-gate, /sprint:design, /sprint:plan
 - `/scan:requirements` ← /beta:mine, /discover:orphaned, /oneshot:preflight, /oneshot:retro, /scan:architecture, /scan:full, /session:handoff, /sleep:deep, /sleep:quick, /warp:doctor
-- `/sprint:full` ← /learn:deep, /mode:sprint, /roadmap:create, /scan:full, /scan:roadmap-trace, /scan:sprint-beta-honesty, /scan:sprint-hook-coverage, /scan:sprint-manager-consult, /session:turbo, /sprint:cost-gate
 - `/issues:log` ← /issues:list, /issues:resolve, /oneshot:retro, /scan:issues, /scan:patterns, /scan:regressions, /sleep:deep, /warp:flag, /warp:reconcile
 - `/scan:references` ← /discover:systems, /maps:steps, /roadmap:cleanup, /scan:architecture, /scan:environment, /scan:full, /scan:requirements, /scan:system, /warp:doctor
 - `/sprint:plan` ← /bootstrap:lastmile, /epic:plan, /epic:start, /scan:planning-principles, /session:dump, /sprint:design, /sprint:full, /sprint:release, /sprint:status

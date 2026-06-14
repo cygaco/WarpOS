@@ -1,0 +1,155 @@
+schema: warpos/sprint/plan-contract/v1
+id: PC-20260614-0078
+created_at: "2026-06-14T20:41:11.742Z"
+updated_at: "2026-06-14T20:41:11.742Z"
+sprint: SP-20260614-002
+source_request: "Build the admin:* skill suite per ROADMAP item 24 — session-invocable openers/previewers for the in-app founder admin panel the scaffold ships. Start with the /admin:preview render harness; heed the item-24 guardrails (source-not-generated path keys, cross-provider-review the routing file, single authoritative writer, dispatch invariants, rebuild maps). Run-in-product: open a PRODUCT's panel, not WarpOS."
+source_request_verbatim: "use /sprint:full to bust through the work. [pickup #1, operator-directed 2026-06-14 right after R-2 shipped: \"how does one open it? there has to be a skill\" + \"get us ready to build a 'admin:' skill suite, and let's test this panel on warpos itself.\"]"
+request_type: feature_add
+interpreted_intent: "Close the missing-opener gap for the founder admin panel. The R-2 panel (/admin + /admin/readiness + /admin/guides) is test-proven (8/8) but cannot be OPENED/rendered from a session. Build dev-tooling skills under .claude/commands/admin/ + node helpers under scripts/admin/: (1) /admin:preview — the keystone — resolves-or-scaffolds a throwaway product test-instance (reuse the scaffold/portfolio path), ensures deps, runs `npm run dev`, opens /admin in a browser; idempotent (reuse an existing instance); single authoritative writer for the instance pointer (mode-set.js pattern). (2) /admin:readiness + /admin:guides — thin openers that DELEGATE to the preview harness with a target sub-route (no logic duplication — the /panel:* synonym pattern, item 23 seam). (3) /admin:seed — seeds a founder session + sample events + a FOUNDERS_CHECKLIST so the panel renders warm-start, not cold-start (WarpOS itself has no checklist → cold-start, verified 2026-06-14). A small admin-panel registry (route -> opener -> description) backs the openers and is forward-compatible with item 23 /panel:*; its path keys live in the SOURCE framework/paths.registry.json (build.js regenerates the .claude view); the registry/routing file is cross-provider-reviewed, never a solo alpha draft. The keystone emits the live preview URL so the deferred design-quality Playwright lane can finally target a running Next app."
+user_or_business_outcome: "A founder (or the President testing a product) can open the in-app admin panel with one command — /admin:preview — instead of hand-scaffolding a Next app and remembering the route. The render harness also unblocks the design-quality/visual-review Playwright lane (which needs a running Next app), and makes 'test the panel' real (WarpOS itself can't render it — not a Next app)."
+affected_surfaces:
+  - surface: ".claude/commands/admin/preview.md (new) + scripts/admin/preview.js (new)"
+    evidence_level: inferred_from_repo
+    notes: "The keystone skill + its node harness. Mirrors the opener pattern of /cockpit:readiness (scripts/cockpit/*) and /models:router (scripts/dispatch/gui.js). Resolves-or-scaffolds a test product instance, runs its dev server, opens /admin."
+  - surface: ".claude/commands/admin/{readiness,guides,seed}.md (new)"
+    evidence_level: inferred_from_repo
+    notes: "readiness/guides are thin sub-route openers that delegate to preview.js with a route arg; seed is a skill + scripts/admin/seed.js that seeds founder session + events + FOUNDERS_CHECKLIST into the test instance."
+  - surface: "framework/paths.registry.json (SOURCE) -> .claude/paths.json (generated via scripts/paths/build.js)"
+    evidence_level: verified_from_repo
+    notes: "Guardrail (a): any new path keys (scriptsAdmin, adminPanelRegistry, etc.) go in the SOURCE registry; build.js regenerates the .claude view + paths.generated.js. NEVER hand-edit the generated view (a prior generated-only edit orphaned keys)."
+  - surface: ".claude/agents/_org/admin-panel-registry.json or framework registry (new) — the route->opener->description table"
+    evidence_level: assumed_from_request
+    notes: "Guardrail (b): a load-bearing routing/registry file — wire it explicitly AND cross-provider-review it (dispatch-agent.js reviewer), never ship a solo alpha draft. Forward-compatible with item 23 /panel:* (the synonym layer that will forward to these openers)."
+  - surface: "scripts/checks (new admin-skill-resolution / registry-freshness check) + /scan:full wiring"
+    evidence_level: verified_from_repo
+    notes: "Guardrail: every policy names its enforcer. Assert the admin skills resolve (dispatch-skill --resolve) + the registry has no orphan rows; wire report-only into /scan:full (same shape as skill-hook-coverage)."
+  - surface: "maps (maps:skills / maps:tools) + BOTH manifests (generate-framework-manifest.js + scripts/warpos/manifest/build.js)"
+    evidence_level: verified_from_repo
+    notes: "Guardrail (e): rebuild maps after adding skills. Regen BOTH manifests after framework-file edits (regen-both-manifests discipline) or BC-02/BC-05 go red."
+  - surface: "scripts/checks/design-quality + visual-review lane (enablement, not a full run)"
+    evidence_level: verified_from_repo
+    notes: "The deferred Playwright lane needs a running Next app; /admin:preview is the harness that provides one. This sprint ENABLES + documents that handoff (emit the preview URL); the blocking-flip stays deferred/operator-gated."
+current_behavior:
+  evidence_level: verified_from_repo
+  notes: "The founder admin panel (/admin + /admin/readiness + /admin/guides) shipped in R-2 (SP-20260614-001) via the app scaffold and is test-proven (8/8 regression). But there is NO opener: unlike /cockpit:readiness (operator board) and /models:router (Dispatch Console GUI), which launch their own surfaces, nothing renders the founder panel from a session. WarpOS itself cannot render it (not a Next app, no FOUNDERS_CHECKLIST -> cold-start, error surfaced; verified 2026-06-14). The deferred design-quality/visual-review Playwright lane is blocked precisely because there is no running Next app to point it at."
+desired_behavior: "/admin:preview resolves-or-scaffolds a throwaway product test-instance, ensures deps, runs `npm run dev`, and opens /admin in a browser — idempotent (reuse an existing instance), single authoritative writer for the instance pointer, never targeting WarpOS itself. /admin:readiness + /admin:guides open the sub-routes by delegating to the harness (no logic duplication). /admin:seed seeds a founder session + sample events + a FOUNDERS_CHECKLIST so the panel renders warm-start. A small admin-panel registry backs the openers, its path keys live in the SOURCE paths.registry.json (build.js regenerates the view), and the routing/registry file is cross-provider-reviewed. The skills resolve + the registry is fresh (enforcer wired report-only into /scan:full); maps + both manifests are regenerated; the keystone emits the live preview URL so the design-quality Playwright lane can target it."
+scope:
+  size: m
+  risk_level: medium
+  complexity_drivers:
+    - "Render harness: scaffold-or-reuse a throwaway product instance + run a dev server + open a browser — real integration surface, must be idempotent + fail-clear."
+    - "Single authoritative writer for the test-instance pointer (mode-set.js pattern) — no split-brain state."
+    - "Load-bearing routing/registry file must be cross-provider-reviewed, not a solo alpha draft (guardrail b)."
+    - "Path keys must round-trip through the SOURCE registry + build.js regen, never the generated view (guardrail a)."
+    - "Dev-tooling layer (low product blast radius) but touches paths + maps + both manifests (regen discipline)."
+scope_variants:
+  minimal_safe:
+    summary: "Just /admin:preview (the keystone harness) + the registry + path keys — open /admin in a browser from a session."
+    tradeoffs:
+      - "No sub-route openers or seed; founder still hand-navigates to /admin/readiness and the panel renders cold-start without seeded data."
+  recommended:
+    summary: "Full suite: /admin:preview (keystone) + /admin:readiness + /admin:guides (sub-route openers) + /admin:seed (warm-start data) + the cross-provider-reviewed registry + source path keys + an enforcer wired report-only into /scan:full + maps + both manifests regenerated + the Playwright-lane URL handoff documented."
+    tradeoffs:
+      - "More surface than minimal; mitigated by the sub-route openers being thin delegators (no logic duplication) and the suite being additive dev-tooling (no product blast radius)."
+  expanded:
+    summary: "Recommended + build item 23 /panel:* forwarding so /panel:admin opens these, AND run the design-quality Playwright lane live against the preview URL."
+    tradeoffs:
+      - "/panel:* is its own roadmap item (23) — out of scope here; the live Playwright blocking-flip is operator-gated. Defer both."
+assumptions:
+  safe:
+    - "The scaffold/portfolio path can materialize a throwaway product test-instance (scripts/scaffold/app.js + portfolio:new are the proven create+scaffold callables per the spinup work)."
+    - "/cockpit:readiness (scripts/cockpit/*) and /models:router (scripts/dispatch/gui.js) are the proven opener patterns to mirror — a skill that launches a local surface."
+    - "The R-2 founder panel routes (/admin, /admin/readiness, /admin/guides) exist in the app-scaffold templates and render once the app runs."
+    - "These are dev-tooling-layer skills (.claude/commands/admin/) the operator invokes — NOT product-shipped skills delivered to an end user."
+  unsafe: []
+  needs_user_or_beta_review:
+    - "Where the throwaway test-instance lives (a fixed runtime/ test-dir vs a portfolio sibling) + its lifecycle (reuse vs recreate vs teardown) — design-lock."
+    - "Whether the admin-panel registry shadows or sits beside the eventual item 23 /panel:* registry — pick alias-beside (additive) to avoid forking the synonym layer."
+open_questions:
+  blocking: []
+  non_blocking:
+    - "Browser-open mechanism cross-platform (start/open/xdg-open) — mirror whatever gui.js / cockpit already use."
+    - "Whether /admin:seed writes into the same reused instance /admin:preview manages (yes — single instance, single writer)."
+    - "Dev-server port/ready detection (poll for 'Ready in' before opening the browser)."
+non_goals:
+  - "NOT building item 23 /panel:* itself (admin:* is only forward-compatible with it)."
+  - "NOT modifying the R-2 founder panel or its scaffold templates (that shipped; this suite OPENS it)."
+  - "NOT targeting WarpOS itself as the preview target (it is not a Next app — verified cold-start 2026-06-14); run-in-product only."
+  - "NOT adding a new auth provider (reuse the R-2/S-PF-03 founder allowlist for any seeded session)."
+  - NOT flipping the design-quality gate or the new admin enforcer from report-only to blocking without operator approval.
+  - "NOT a live design-quality Playwright run (this sprint ENABLES it by providing the running app + URL; the run/flip is deferred)."
+  - "No push to remote without explicit in-session approval (operator has standing push/merge freedom; the orchestrator never pushes)."
+requirement_areas:
+  - "R-1 /admin:preview keystone: a dev-tooling skill (.claude/commands/admin/preview.md) + scripts/admin/preview.js that resolves-or-scaffolds a throwaway product test-instance, ensures deps, runs `npm run dev`, waits for ready, and opens /admin in a browser — idempotent (reuse an existing instance), single authoritative writer for the instance pointer (mode-set.js pattern), fail-clear if no product/Next app is resolvable, and NEVER targets WarpOS itself."
+  - "R-2 sub-route openers: /admin:readiness + /admin:guides — thin skills that DELEGATE to preview.js with a target sub-route (/admin/readiness, /admin/guides). No logic duplication — they forward to the canonical opener (the /panel:* synonym pattern). Each is a one-row delegation."
+  - "R-3 /admin:seed: a skill + scripts/admin/seed.js that seeds the reused test-instance with a founder session/allowlist cookie + sample events + a FOUNDERS_CHECKLIST.md so the panel renders WARM-start (real data) instead of cold-start. Idempotent; writes only into the throwaway instance."
+  - "R-4 admin-panel registry + source path keys: a small registry (admin route -> opener command -> one-line description) that backs the openers and is forward-compatible with item 23 /panel:*. New path keys (scriptsAdmin, adminPanelRegistry) go in the SOURCE framework/paths.registry.json; scripts/paths/build.js regenerates .claude/paths.json + paths.generated.js (guardrail a — never hand-edit the generated view; verify the key survived the regen). The registry/routing file is CROSS-PROVIDER-REVIEWED (dispatch-agent.js reviewer), not a solo alpha draft (guardrail b)."
+  - "R-5 enforcer + coverage + regen: an admin-skill-resolution / registry-freshness check (the admin skills resolve via dispatch-skill --resolve; the registry has no orphan rows / phantom openers) wired REPORT-ONLY into /scan:full (same shape as skill-hook-coverage; names its enforcer). Rebuild maps (maps:skills / maps:tools) and regenerate BOTH manifests (generate-framework-manifest.js + scripts/warpos/manifest/build.js) so BC-02/BC-05 stay green."
+  - "R-6 Playwright-lane enablement (documented, not a live run): /admin:preview emits the live preview URL (e.g. http://localhost:PORT/admin) on success so the deferred design-quality/visual-review lane can target a running Next app; document the handoff in the skill. The actual blocking design-quality run stays deferred/operator-gated."
+high_level_story_candidates:
+  - "As the President (or a founder), I run /admin:preview and the in-app founder admin panel opens in a browser — no hand-scaffolding, no remembering the route."
+  - "As a reviewer, I open /admin:readiness or /admin:guides directly to the sub-route I want to inspect."
+  - "As a tester, I run /admin:seed so the panel shows real warm-start data instead of a cold-start empty board."
+  - "As the design-quality lane, I finally have a running Next app + URL to point Playwright at."
+granular_story_candidates:
+  - "Add /admin:preview skill + scripts/admin/preview.js (resolve-or-scaffold instance, run dev, wait-for-ready, open browser, emit URL)."
+  - "Add /admin:readiness + /admin:guides thin sub-route openers that delegate to preview.js."
+  - "Add /admin:seed skill + scripts/admin/seed.js (founder session + events + FOUNDERS_CHECKLIST into the reused instance)."
+  - "Add the admin-panel registry + source path keys (paths.registry.json -> build.js regen) and cross-provider-review the registry file."
+  - "Add the admin-skill-resolution/registry-freshness enforcer wired report-only into /scan:full."
+  - "Rebuild maps + regenerate both manifests; emit the preview URL for the Playwright-lane handoff."
+workstream_candidates:
+  - "WS-1 keystone harness: /admin:preview skill + scripts/admin/preview.js (R-1, R-6) — backend/tooling"
+  - "WS-2 openers + seed: /admin:readiness, /admin:guides, /admin:seed + scripts/admin/seed.js (R-2, R-3)"
+  - "WS-3 registry + source path keys (R-4) — cross-provider-reviewed routing file"
+  - "WS-4 enforcer + maps + manifests (R-5)"
+preliminary_ticket_candidates:
+  allowed: false
+  candidates: []
+  notes: "Tickets minted after design-lock pins the test-instance location/lifecycle + the registry's relationship to item 23 /panel:*; expected tickets map to the four workstreams."
+external_service_dependencies:
+  status: none_expected
+  required: []
+  possible: []
+  notes: "No external services. The harness runs a local Next dev server and opens a local browser; the founder session is the existing R-2/S-PF-03 signed-cookie allowlist mechanism (seeded locally)."
+approval_boundaries:
+  - Do not flip the new admin enforcer or the design-quality gate from report-only to blocking without operator approval.
+  - "Do not hand-edit the generated .claude/paths.json — path keys go in the SOURCE registry + build.js regen."
+  - "Do not ship a solo alpha draft of the routing/registry file — it must be cross-provider-reviewed."
+  - "Do not push to remote without explicit in-session approval (the orchestrator never pushes)."
+design_required: true
+execution_allowed_without_design: false
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+lane:
+  type: branch
+  value: sprint/SP-20260614-002
+  isolation_notes: "Dedicated sprint branch off the local session/main-equivalent; builder dispatch may use isolation worktrees (branch from current HEAD — heed the stale-worktree-base gap); no remote push without explicit approval."
+beta_review:
+  required: true
+  likely_founder_rejection_risks:
+    - "If /admin:preview is slow or flaky (scaffold + npm install + dev boot), the operator reads it as 'doesn't work' — reuse-an-existing-instance + clear progress/ETA are load-bearing."
+  overbuild_risks:
+    - "Building item 23 /panel:* here, or a full live Playwright design-quality run, would over-scope — both are deferred."
+    - A heavy bespoke instance-manager when reusing the proven scaffold/portfolio path suffices.
+  missing_context_risks:
+    - "The routing/registry file is load-bearing — it MUST be cross-provider-reviewed (guardrail b), not shipped as a solo draft."
+    - "Path keys must round-trip through the SOURCE registry + build.js, or the generated view orphans them."
+plan_quality:
+  status: pass
+  confidence: high
+  evidence_gaps:
+    - "Exact test-instance location + lifecycle (reuse/recreate/teardown) pinned at design-lock."
+    - "The admin-panel registry's relationship to the eventual item 23 /panel:* registry (alias-beside vs shadow) pinned at design-lock."
+  fail_reasons: []
+next_recommended_command: "/sprint:design --sprint SP-20260614-002 --documentation-scale m"
+resume_instructions: "Design-lock pins the test-instance location/lifecycle + the registry shape (alias-beside item 23 /panel:*); product-lead owns the requirements; mirror the /cockpit:readiness + /models:router opener patterns. Heed item-24 guardrails: source-not-generated path keys (paths.registry.json -> build.js regen), cross-provider-review the routing/registry file, single authoritative writer for instance state, respect dispatch invariants, rebuild maps + regen both manifests. Then mint tickets for the four workstreams and execute. Seam: forward-compatible with item 23 /panel:*; run-in-product (open a PRODUCT's panel, not WarpOS)."
+tracker_paths:
+  current_sprint: ".claude/project/sprint/current-sprint.yaml"
+  sprint_progress: ".claude/project/sprint/sprint-progress.yaml"
+  plan_contract: ".claude/project/sprint/plan-contracts/PC-20260614-0078.yaml"
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260614-0078.report.md"
+created_by: alpha
+updated_by: alpha

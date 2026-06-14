@@ -1,14 +1,14 @@
 # Hooks Map
 
-Generated: 2026-06-11T03:38:25.448Z
+Generated: 2026-06-14T21:18:04.745Z
 
-**77** hook scripts (66 registered, 11 orphan), **18** lib modules, **77** wiring entries.
+**77** hook scripts (65 registered, 12 orphan), **18** lib modules, **74** wiring entries.
 
 ## Wiring (event → matcher → hook)
 
 ### PostCompact
 
-- `*` → `compact-saver.js`
+- `(no matcher)` → `compact-saver.js`
 
 ### PostToolUse
 
@@ -34,7 +34,7 @@ Generated: 2026-06-11T03:38:25.448Z
 - `Edit|Write` → `memory-enforcement-guard.js`
 - `Agent` → `build-transaction-boundary.js`
 - `Agent` → `response-size-guard.js`
-- `*` → `session-tracker.js`
+- `(no matcher)` → `session-tracker.js`
 - `WebFetch|WebSearch|mcp__.*|ListMcpResourcesTool|ReadMcpResourceTool` → `untrusted-content-firewall.js`
 
 ### PreToolUse
@@ -80,31 +80,28 @@ Generated: 2026-06-11T03:38:25.448Z
 
 ### SessionEnd
 
-- `*` → `handoff-live.js`
-- `*` → `session-stop.js`
-- `*` → `session-end-team-teardown.js`
+- `(no matcher)` → `session-stop.js`
+- `(no matcher)` → `session-end-team-teardown.js`
 
 ### SessionStart
 
-- `*` → `session-start.js`
-- `*` → `tracker-start-of-work.js`
+- `(no matcher)` → `session-start.js`
+- `(no matcher)` → `tracker-start-of-work.js`
 
 ### Stop
 
-- `*` → `retro-presence-check.js`
-- `*` → `handoff-live.js`
-- `*` → `session-stop.js`
-- `*` → `tracker-completion-gate.js`
+- `(no matcher)` → `retro-presence-check.js`
+- `(no matcher)` → `tracker-completion-gate.js`
+- `(no matcher)` → `session-stop.js`
 
 ### StopFailure
 
-- `*` → `handoff-live.js`
-- `*` → `session-stop.js`
+- `(no matcher)` → `session-stop.js`
 
 ### UserPromptSubmit
 
-- `*` → `smart-context.js`
-- `*` → `prompt-logger.js`
+- `(no matcher)` → `smart-context.js`
+- `(no matcher)` → `prompt-logger.js`
 
 ### git-pre-commit
 
@@ -114,7 +111,7 @@ Generated: 2026-06-11T03:38:25.448Z
 
 | Hook | Registered | Size | Modified |
 |---|---|---|---|
-| authorization-gate.js | yes | 8520 | 2026-05-30T01:25:39.579Z |
+| authorization-gate.js | yes | 14829 | 2026-06-11T20:50:28.863Z |
 | beta-gate.js | yes | 9095 | 2026-06-08T20:28:50.013Z |
 | boss-boundary.js | yes | 3145 | 2026-06-04T22:57:13.997Z |
 | build-transaction-boundary.js | yes | 3760 | 2026-05-30T01:25:39.580Z |
@@ -134,7 +131,7 @@ Generated: 2026-06-11T03:38:25.448Z
 | framework-purity-guard.js | yes | 5253 | 2026-06-04T21:24:41.660Z |
 | gate-check.js | yes | 5636 | 2026-06-08T05:38:13.758Z |
 | gauntlet-gate.js | yes | 8464 | 2026-06-05T01:45:08.445Z |
-| handoff-live.js | yes | 10556 | 2026-06-08T18:42:03.651Z |
+| handoff-live.js | no | 10556 | 2026-06-08T18:42:03.651Z |
 | handoff-live.test.js | no | 8603 | 2026-06-08T18:42:17.088Z |
 | learning-validator.js | yes | 6416 | 2026-05-30T01:25:39.587Z |
 | ledger-presence-guard.js | yes | 6991 | 2026-06-05T01:45:08.446Z |
@@ -143,7 +140,7 @@ Generated: 2026-06-11T03:38:25.448Z
 | memory-enforcement-guard.js | yes | 3339 | 2026-05-30T01:25:39.594Z |
 | memory-guard.js | yes | 14402 | 2026-06-07T03:35:59.239Z |
 | merge-guard.js | yes | 25427 | 2026-06-09T00:41:40.597Z |
-| mode-lifecycle-guard.js | yes | 16777 | 2026-06-10T13:54:45.222Z |
+| mode-lifecycle-guard.js | yes | 19603 | 2026-06-11T20:50:28.863Z |
 | ownership-guard.js | yes | 4504 | 2026-06-04T22:57:14.000Z |
 | path-guard.js | yes | 8945 | 2026-06-08T20:28:50.013Z |
 | path-registry-guard.js | yes | 5451 | 2026-05-30T01:25:39.597Z |
@@ -160,7 +157,7 @@ Generated: 2026-06-11T03:38:25.448Z
 | scope-contract-guard.test.js | no | 5856 | 2026-06-11T00:39:18.503Z |
 | secret-guard.js | yes | 2786 | 2026-05-30T01:25:39.600Z |
 | self-mod-governance.js | yes | 923 | 2026-05-30T01:25:39.601Z |
-| session-end-team-teardown.js | yes | 2782 | 2026-06-10T13:54:45.232Z |
+| session-end-team-teardown.js | yes | 5181 | 2026-06-11T20:50:28.863Z |
 | session-start-teaminit.test.js | no | 4665 | 2026-06-08T19:49:48.192Z |
 | session-start.js | yes | 30063 | 2026-06-10T00:04:52.691Z |
 | session-stop-sentinel.test.js | no | 5847 | 2026-06-08T22:03:39.609Z |
@@ -173,15 +170,15 @@ Generated: 2026-06-11T03:38:25.448Z
 | smart-context.js | yes | 34063 | 2026-06-05T01:45:08.448Z |
 | spec-test-staleness.js | yes | 5448 | 2026-05-30T01:25:39.604Z |
 | sprint-approval-guard.js | yes | 6158 | 2026-05-30T01:25:39.604Z |
-| sprint-routing-guard.js | yes | 9608 | 2026-06-08T20:28:50.013Z |
-| sprint-tracker-guard.js | yes | 15870 | 2026-05-30T01:25:39.605Z |
+| sprint-routing-guard.js | yes | 9686 | 2026-06-12T05:24:46.588Z |
+| sprint-tracker-guard.js | yes | 16044 | 2026-06-12T05:24:46.588Z |
 | step-hardcode-suggester.js | yes | 7087 | 2026-05-30T01:25:39.605Z |
 | step-registry-guard.js | yes | 12054 | 2026-05-30T01:25:39.606Z |
 | store-validator.js | yes | 16480 | 2026-05-30T01:25:39.606Z |
 | systems-sync.js | yes | 7605 | 2026-05-30T01:25:39.607Z |
-| team-guard-gate.test.js | no | 11806 | 2026-06-09T00:41:40.599Z |
-| team-guard-sprint.test.js | no | 6605 | 2026-06-09T00:41:40.599Z |
-| team-guard.js | yes | 25885 | 2026-06-10T13:54:45.232Z |
+| team-guard-gate.test.js | no | 12211 | 2026-06-11T20:50:28.863Z |
+| team-guard-sprint.test.js | no | 6934 | 2026-06-11T20:50:28.863Z |
+| team-guard.js | yes | 40737 | 2026-06-11T20:50:28.863Z |
 | template-fillability.js | yes | 2939 | 2026-05-30T01:25:39.607Z |
 | test.js | no | 11730 | 2026-05-30T01:25:39.608Z |
 | tracker-completion-gate.js | yes | 3400 | 2026-06-07T03:35:59.240Z |
@@ -206,7 +203,7 @@ Generated: 2026-06-11T03:38:25.448Z
 | mode-lifecycle.js | 6175 | 2026-06-10T00:04:52.690Z |
 | mode.js | 2944 | 2026-06-10T00:04:52.691Z |
 | oneshot-store.js | 2337 | 2026-06-08T21:07:45.656Z |
-| paths.generated.js | 10920 | 2026-06-11T00:39:18.503Z |
+| paths.generated.js | 11170 | 2026-06-14T21:13:08.438Z |
 | paths.js | 6608 | 2026-06-05T01:45:08.446Z |
 | project-config.js | 4488 | 2026-05-30T01:25:39.591Z |
 | provider-health.js | 10306 | 2026-05-30T01:25:39.592Z |

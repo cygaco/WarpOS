@@ -1,15 +1,16 @@
 # Memory Stores Map
 
-Generated: 2026-06-11T03:38:25.448Z
+Generated: 2026-06-14T21:18:04.745Z
 
 | id | tier | category | path | entryCount | size | modified |
 |---|---|---|---|---|---|---|
-| events | centralized | events | .claude/project/events/events.jsonl | 36764 | 11914512 | 2026-06-11T03:38:00.010Z |
-| manager-consult | centralized | events | .claude/project/events/manager-consult.jsonl | 364 | 104248 | 2026-06-11T00:33:59.835Z |
-| requirements | centralized | events | .claude/project/events/requirements.jsonl | 703 | 385889 | 2026-06-11T03:28:45.114Z |
-| tools | centralized | events | .claude/project/events/tools.jsonl | 19186 | 6097987 | 2026-06-11T03:35:43.028Z |
-| enforcement-debt | semantic | memory | .claude/project/memory/enforcement-debt.jsonl | 36 | 52333 | 2026-06-11T02:46:11.730Z |
-| learnings | semantic | memory | .claude/project/memory/learnings.jsonl | 92 | 79782 | 2026-06-11T03:26:39.976Z |
-| recurring-issues | semantic | memory | .claude/project/memory/recurring-issues.jsonl | 7 | 8176 | 2026-06-10T17:00:20.688Z |
-| systems | semantic | memory | .claude/project/memory/systems.jsonl | 77 | 67780 | 2026-06-09T04:17:22.842Z |
+| events | centralized | events | .claude/project/events/events.jsonl | 43653 | 14088496 | 2026-06-14T21:18:02.416Z |
+| manager-consult | centralized | events | .claude/project/events/manager-consult.jsonl | 487 | 139239 | 2026-06-14T20:52:28.682Z |
+| requirements | centralized | events | .claude/project/events/requirements.jsonl | 740 | 406875 | 2026-06-14T06:04:36.879Z |
+| tools | centralized | events | .claude/project/events/tools.jsonl | 23271 | 7395852 | 2026-06-14T21:18:02.292Z |
+| beta-honesty-waivers | semantic | memory | .claude/project/memory/beta-honesty-waivers.jsonl | 42 | 25676 | 2026-06-12T14:49:03.466Z |
+| enforcement-debt | semantic | memory | .claude/project/memory/enforcement-debt.jsonl | 44 | 62317 | 2026-06-14T03:01:55.905Z |
+| learnings | semantic | memory | .claude/project/memory/learnings.jsonl | 110 | 97310 | 2026-06-13T00:54:10.706Z |
+| recurring-issues | semantic | memory | .claude/project/memory/recurring-issues.jsonl | 7 | 8996 | 2026-06-11T07:21:23.988Z |
+| systems | semantic | memory | .claude/project/memory/systems.jsonl | 81 | 71430 | 2026-06-14T06:04:36.823Z |
 | traces | semantic | memory | .claude/project/memory/traces.jsonl | 10 | 17267 | 2026-06-09T00:32:22.574Z |

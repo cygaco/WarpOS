@@ -1,5 +1,5 @@
 schema: warpos/sprint/active-sprints/v1
-primary: SP-20260614-001
+primary: SP-20260614-002
 sprints:
   - id: SP-20260512-001
     title: Multi-sprint parallelism for Sprint Workflow
@@ -1013,5 +1013,16 @@ sprints:
     pointer: ".claude/project/sprint/sprints/SP-20260614-001"
     created_at: "2026-06-14T06:19:11.283Z"
     updated_at: "2026-06-14T06:19:11.283Z"
+  - id: SP-20260614-002
+    title: "admin:* skill suite — open/preview the in-app founder admin panel"
+    status: planning
+    lane:
+      type: default
+      value: null
+      isolation_notes: ""
+    layout: per_sprint_subdir
+    pointer: ".claude/project/sprint/sprints/SP-20260614-002"
+    created_at: "2026-06-14T20:36:46.804Z"
+    updated_at: "2026-06-14T20:36:46.804Z"
 created_at: "2026-05-12T22:57:35.667Z"
-updated_at: "2026-06-14T06:19:11.283Z"
+updated_at: "2026-06-14T20:36:46.804Z"

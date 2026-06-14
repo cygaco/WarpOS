@@ -1,7 +1,7 @@
 {
   "metadata": {
-    "generated": "2026-06-11T03:38:25.448Z",
-    "lastUpdated": "2026-06-11T03:38:25.448Z",
+    "generated": "2026-06-14T21:18:04.745Z",
+    "lastUpdated": "2026-06-14T21:18:04.745Z",
     "total_tools": 181,
     "categories": 4,
     "regenerated_by": "scripts/regen-maps.js"
@@ -376,8 +376,8 @@
           "path": "scripts/dispatch-agent.js",
           "type": "script",
           "exists": true,
-          "size": 30627,
-          "modified": "2026-06-10T21:04:52.971Z"
+          "size": 35769,
+          "modified": "2026-06-11T20:57:17.824Z"
         },
         {
           "id": "tool:dispatch-claude",
@@ -385,8 +385,8 @@
           "path": "scripts/dispatch-claude.js",
           "type": "script",
           "exists": true,
-          "size": 30062,
-          "modified": "2026-06-10T22:27:30.680Z"
+          "size": 35353,
+          "modified": "2026-06-11T21:00:46.791Z"
         },
         {
           "id": "tool:dispatch-skill",
@@ -520,8 +520,8 @@
           "path": "scripts/generate-framework-manifest.js",
           "type": "script",
           "exists": true,
-          "size": 26450,
-          "modified": "2026-06-10T16:09:05.298Z"
+          "size": 26679,
+          "modified": "2026-06-12T05:24:46.588Z"
         },
         {
           "id": "tool:generate-maps",
@@ -664,8 +664,8 @@
           "path": "scripts/mode-set.js",
           "type": "script",
           "exists": true,
-          "size": 7111,
-          "modified": "2026-06-07T03:35:59.240Z"
+          "size": 10572,
+          "modified": "2026-06-11T20:50:28.863Z"
         },
         {
           "id": "tool:one-off-add-backend-to-store",
@@ -1276,8 +1276,8 @@
           "path": "scripts/test-dispatch-agent-resolution.js",
           "type": "script",
           "exists": true,
-          "size": 4328,
-          "modified": "2026-06-08T05:38:13.758Z"
+          "size": 5113,
+          "modified": "2026-06-11T20:59:26.717Z"
         },
         {
           "id": "tool:test-dispatch-config",
@@ -1639,7 +1639,7 @@
           "id": "xref:skills",
           "type": "xref",
           "note": "skills inventory lives in .claude/project/maps/inventory-skills.json",
-          "count": 218
+          "count": 224
         },
         {
           "id": "xref:hooks",

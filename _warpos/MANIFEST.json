@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-14T20:16:31.223Z",
+  "generatedAt": "2026-06-14T21:38:24.687Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.16.0",
   "migrations": [],
@@ -125,8 +125,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "5788465268ed2c13f123fe66b0b6d7c306cf8e0d1e8769265966a3a8d56be83e",
-      "installedSha": "5788465268ed2c13f123fe66b0b6d7c306cf8e0d1e8769265966a3a8d56be83e"
+      "sha256": "83598146e3bc19f228060788b0a94ba30e14a88609b9ed04b38c21f43bcbe227",
+      "installedSha": "83598146e3bc19f228060788b0a94ba30e14a88609b9ed04b38c21f43bcbe227"
     },
     "TRACKER.md": {
       "owner": "runtime",
@@ -2255,6 +2255,90 @@
       "source": null,
       "sha256": "0412fa28238b6a8fc9bfc55621400bf5f5af741f1a4d6ac2472f2cfc87866064",
       "installedSha": "0412fa28238b6a8fc9bfc55621400bf5f5af741f1a4d6ac2472f2cfc87866064"
+    },
+    "tests/regression/SP-20260614-002/admin-suite-coverage.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": null,
+      "sha256": "0e27027e351bc23f2e41d7f425f9ee10a230fbebdd4b55567514faef87f92779",
+      "installedSha": "0e27027e351bc23f2e41d7f425f9ee10a230fbebdd4b55567514faef87f92779"
+    },
+    "tests/regression/SP-20260614-002/openers-delegate.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": null,
+      "sha256": "470aad969dc14c675780f6646bd2da68c32dabef1d977abc08b93def32dbc59c",
+      "installedSha": "470aad969dc14c675780f6646bd2da68c32dabef1d977abc08b93def32dbc59c"
+    },
+    "tests/regression/SP-20260614-002/pathkey-roundtrip.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": null,
+      "sha256": "02b476fd345df4c6559cd42b0cd18f9cce4b69b029474f081f29ad0d00a391bf",
+      "installedSha": "02b476fd345df4c6559cd42b0cd18f9cce4b69b029474f081f29ad0d00a391bf"
+    },
+    "tests/regression/SP-20260614-002/preview-boot-detection.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": null,
+      "sha256": "566a91fae3ac978d9a7e6cd17aa94856022789c9ce8b550807ec9eb37494c544",
+      "installedSha": "566a91fae3ac978d9a7e6cd17aa94856022789c9ce8b550807ec9eb37494c544"
+    },
+    "tests/regression/SP-20260614-002/preview-emits-url.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": null,
+      "sha256": "e58129401e35572edf5a9923205d97da60e823a9fbfead5cd5d58f3273bc815d",
+      "installedSha": "e58129401e35572edf5a9923205d97da60e823a9fbfead5cd5d58f3273bc815d"
+    },
+    "tests/regression/SP-20260614-002/preview-failclear.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": null,
+      "sha256": "21c53ecd5dc806f6f0c0d37d95f8bc82c69382f5ac5e347c4393d921c27338df",
+      "installedSha": "21c53ecd5dc806f6f0c0d37d95f8bc82c69382f5ac5e347c4393d921c27338df"
+    },
+    "tests/regression/SP-20260614-002/preview-reuse-default.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": null,
+      "sha256": "6136ac0ebed1e51470c410ae9694873adf05820b18eb31c4236cb409b373747b",
+      "installedSha": "6136ac0ebed1e51470c410ae9694873adf05820b18eb31c4236cb409b373747b"
+    },
+    "tests/regression/SP-20260614-002/registry-shape.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": null,
+      "sha256": "2a5c7cb1680a0d73d22631643ddc2adb2db06127f4f561e8bf6b7c3b2824dfc2",
+      "installedSha": "2a5c7cb1680a0d73d22631643ddc2adb2db06127f4f561e8bf6b7c3b2824dfc2"
+    },
+    "tests/regression/SP-20260614-002/seed-idempotent.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": null,
+      "sha256": "26be8c6078b308941cb3b229ce33332635b0607c719d6661f0a8e8c4b0b9995d",
+      "installedSha": "26be8c6078b308941cb3b229ce33332635b0607c719d6661f0a8e8c4b0b9995d"
+    },
+    "tests/regression/SP-20260614-002/seed-reads-pointer.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": null,
+      "sha256": "19f3841e8a7e0d6ed17063fd7cd2ef2d7003de6d845feae25215dfe1ccacb5f5",
+      "installedSha": "19f3841e8a7e0d6ed17063fd7cd2ef2d7003de6d845feae25215dfe1ccacb5f5"
+    },
+    "tests/regression/SP-20260614-002/single-writer-invariant.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": null,
+      "sha256": "8666a15801746e21510f9185aa4524bd9d97345c9ab0fac9615feadc5b287619",
+      "installedSha": "8666a15801746e21510f9185aa4524bd9d97345c9ab0fac9615feadc5b287619"
+    },
+    "tests/regression/SP-20260614-002/fixtures/next-boot-real.log": {
+      "owner": "framework",
+      "managed": true,
+      "source": null,
+      "sha256": "46495543e57c2ff1065fa14976648867ec80e3ca3764be02d8875b1869f7d3c1",
+      "installedSha": "46495543e57c2ff1065fa14976648867ec80e3ca3764be02d8875b1869f7d3c1"
     },
     "tests/regression/SP-20260614-001/brand-leak.test.js": {
       "owner": "framework",
@@ -6145,8 +6229,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/lib/paths.generated.js",
-      "sha256": "e371be2ac8db6104ba56c54cd0b74fd950b666924dbc40b1b926b442a51305ef",
-      "installedSha": "e371be2ac8db6104ba56c54cd0b74fd950b666924dbc40b1b926b442a51305ef"
+      "sha256": "f7e5963b28f026246463b95da43552e69b833087c5c289d21bf9a3a3a271bb79",
+      "installedSha": "f7e5963b28f026246463b95da43552e69b833087c5c289d21bf9a3a3a271bb79"
     },
     "scripts/hooks/lib/paths.js": {
       "owner": "framework",
@@ -6672,6 +6756,13 @@
       "source": "scripts/checks/adhoc-team-hygiene.js",
       "sha256": "dbb7be96679cfe3bbcf5577a42d8cd05f2d7085e147010713ba18230c1c66cd2",
       "installedSha": "dbb7be96679cfe3bbcf5577a42d8cd05f2d7085e147010713ba18230c1c66cd2"
+    },
+    "scripts/checks/admin-suite-coverage.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/admin-suite-coverage.js",
+      "sha256": "815473dc3600aa36c78d148fb92882f57e67862f02374975b32388a422435704",
+      "installedSha": "815473dc3600aa36c78d148fb92882f57e67862f02374975b32388a422435704"
     },
     "scripts/checks/beta-honesty-triage.js": {
       "owner": "framework",
@@ -7751,6 +7842,20 @@
       "sha256": "9176b704baca891ae8a4607ff9f28331e61912e55b98f7446d2c51f5f1304026",
       "installedSha": "9176b704baca891ae8a4607ff9f28331e61912e55b98f7446d2c51f5f1304026"
     },
+    "scripts/admin/preview.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/admin/preview.js",
+      "sha256": "32a18e5cb00cbfd4b6f57071e8ba277aee9f9df58bc7eba2dff837267c74d9db",
+      "installedSha": "32a18e5cb00cbfd4b6f57071e8ba277aee9f9df58bc7eba2dff837267c74d9db"
+    },
+    "scripts/admin/seed.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/admin/seed.js",
+      "sha256": "42ea7e9236c5024c63c09e58dc3773a3fd88b5a281def16ded64d4261522108c",
+      "installedSha": "42ea7e9236c5024c63c09e58dc3773a3fd88b5a281def16ded64d4261522108c"
+    },
     "schemas/change-plan.schema.json": {
       "owner": "framework",
       "managed": true,
@@ -7762,8 +7867,8 @@
       "owner": "framework",
       "managed": true,
       "source": "schemas/paths.schema.json",
-      "sha256": "dc685582a9c68bc12f7a8880ac99df0d18d1948d08fcd79f09719e992e78ffaa",
-      "installedSha": "dc685582a9c68bc12f7a8880ac99df0d18d1948d08fcd79f09719e992e78ffaa"
+      "sha256": "14c6bf01159684e58e045dfd0b1f73e92f7338d1f6c8ffef91f863a6615d3368",
+      "installedSha": "14c6bf01159684e58e045dfd0b1f73e92f7338d1f6c8ffef91f863a6615d3368"
     },
     "schemas/provider-failure-modes.schema.json": {
       "owner": "framework",
@@ -8080,6 +8185,13 @@
       "sha256": "27dabd02b58161eb14674d4394d36c591b5ce38a77afa8dad15324e823a7d6cb",
       "installedSha": "27dabd02b58161eb14674d4394d36c591b5ce38a77afa8dad15324e823a7d6cb"
     },
+    "framework/admin-panel-registry.json": {
+      "owner": "framework",
+      "managed": true,
+      "source": "framework/admin-panel-registry.json",
+      "sha256": "49cc7bf13413ec5688905bd4f9566116082f60387504ef3c98cde124201841bf",
+      "installedSha": "49cc7bf13413ec5688905bd4f9566116082f60387504ef3c98cde124201841bf"
+    },
     "framework/hooks.registry.json": {
       "owner": "framework",
       "managed": true,
@@ -8091,8 +8203,8 @@
       "owner": "framework",
       "managed": true,
       "source": "framework/paths.registry.json",
-      "sha256": "64a3a304629c962f58de8ed19305368046637e023e256503ee87bd579cf89f3a",
-      "installedSha": "64a3a304629c962f58de8ed19305368046637e023e256503ee87bd579cf89f3a"
+      "sha256": "770d5ef04ed23b9380af201e4dc91962e8e6aa25891a8485e6bc2b2dbb637f3c",
+      "installedSha": "770d5ef04ed23b9380af201e4dc91962e8e6aa25891a8485e6bc2b2dbb637f3c"
     },
     "framework/templates/sprint/README.md": {
       "owner": "framework",
@@ -11734,7 +11846,35 @@
       "owner": "runtime",
       "managed": false
     },
+    ".claude/project/sprint/tickets/T-20260614-337.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/tickets/T-20260614-338.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/tickets/T-20260614-339.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/tickets/T-20260614-340.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/tickets/T-20260614-341.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
     ".claude/project/sprint/sprints/_no-active-sprint/reasoning-auto-approval.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/sprints/SP-20260614-002/current.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/sprints/SP-20260614-002/progress.yaml": {
       "owner": "runtime",
       "managed": false
     },
@@ -12487,6 +12627,46 @@
       "managed": false
     },
     ".claude/project/sprint/sprints/S-LC-01/progress.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/SP-20260614-002/acceptance-criteria.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/SP-20260614-002/copy.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/SP-20260614-002/granular-stories.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/SP-20260614-002/high-level-stories.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/SP-20260614-002/inputs.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/SP-20260614-002/prd.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/SP-20260614-002/qa-plan.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/SP-20260614-002/redteam-plan.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/SP-20260614-002/release-plan.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/SP-20260614-002/trace.md": {
       "owner": "runtime",
       "managed": false
     },
@@ -16142,6 +16322,14 @@
       "owner": "runtime",
       "managed": false
     },
+    ".claude/project/sprint/plan-contracts/PC-20260614-0078.report.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/plan-contracts/PC-20260614-0078.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
     ".claude/project/sprint/issues/I-20260513-001.yaml": {
       "owner": "runtime",
       "managed": false
@@ -16431,6 +16619,30 @@
       "managed": false
     },
     ".claude/project/sprint/full-reports/.gitkeep": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/full-reports/SP-20260614-002/beta-boundaries.json": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/full-reports/SP-20260614-002/halt-2026-06-14T20-39-00-094Z.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/full-reports/SP-20260614-002/halt-2026-06-14T20-41-12-037Z.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/full-reports/SP-20260614-002/halt-2026-06-14T20-42-09-922Z.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/full-reports/SP-20260614-002/halt-2026-06-14T20-51-17-365Z.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/full-reports/SP-20260614-002/halt-2026-06-14T20-59-49-680Z.md": {
       "owner": "runtime",
       "managed": false
     },
@@ -19078,6 +19290,38 @@
       "owner": "runtime",
       "managed": false
     },
+    ".claude/project/sprint/checkpoints/SP-20260614-002-0001.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/checkpoints/SP-20260614-002-0002.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/checkpoints/SP-20260614-002-0003.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/checkpoints/SP-20260614-002-0004.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/checkpoints/SP-20260614-002-0005.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/checkpoints/SP-20260614-002-0006.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/checkpoints/SP-20260614-002-0007.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/checkpoints/SP-20260614-002-0008.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
     ".claude/project/sprint/approvals/AP-20260512-001.yaml": {
       "owner": "runtime",
       "managed": false
@@ -19998,6 +20242,14 @@
       "sha256": "6883aa02ff70228642f482d7912384ba4de6c1dc817269166b1959548cf9c8fb",
       "installedSha": "6883aa02ff70228642f482d7912384ba4de6c1dc817269166b1959548cf9c8fb"
     },
+    ".claude/commands/scan/admin-suite-coverage.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/commands/scan/admin-suite-coverage.md",
+      "kind": "md",
+      "sha256": "7022fa4f843f7dfc0a56abb9331791f05055890ed5e2d3214c2b72e7a49a3406",
+      "installedSha": "7022fa4f843f7dfc0a56abb9331791f05055890ed5e2d3214c2b72e7a49a3406"
+    },
     ".claude/commands/scan/architecture.md": {
       "owner": "framework",
       "managed": true,
@@ -20083,8 +20335,8 @@
       "managed": true,
       "source": ".claude/commands/scan/full.md",
       "kind": "md",
-      "sha256": "4e5c102d5b0170683c2cc91d25a108bba7173ae24f521ee10a81d3ed59870a4a",
-      "installedSha": "4e5c102d5b0170683c2cc91d25a108bba7173ae24f521ee10a81d3ed59870a4a"
+      "sha256": "19f5f12ab5e32ec51817c87817bc633002f47c0bed548ae54dbbe843607f1955",
+      "installedSha": "19f5f12ab5e32ec51817c87817bc633002f47c0bed548ae54dbbe843607f1955"
     },
     ".claude/commands/scan/ingest-firewall.md": {
       "owner": "framework",
@@ -21373,6 +21625,38 @@
       "kind": "md",
       "sha256": "02200481f87645c973ee2aca83a10af936ba4883c6870fd36d50386c29ac04ff",
       "installedSha": "02200481f87645c973ee2aca83a10af936ba4883c6870fd36d50386c29ac04ff"
+    },
+    ".claude/commands/admin/guides.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/commands/admin/guides.md",
+      "kind": "md",
+      "sha256": "a4610bb7a952051e2dea46d6e7c087abacf6ae88a20450472568ce0e6ababf95",
+      "installedSha": "a4610bb7a952051e2dea46d6e7c087abacf6ae88a20450472568ce0e6ababf95"
+    },
+    ".claude/commands/admin/preview.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/commands/admin/preview.md",
+      "kind": "md",
+      "sha256": "0570bda6d3b1832a615ce6fb2122eb5de45562b2b42e669f9d956b1b0688211c",
+      "installedSha": "0570bda6d3b1832a615ce6fb2122eb5de45562b2b42e669f9d956b1b0688211c"
+    },
+    ".claude/commands/admin/readiness.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/commands/admin/readiness.md",
+      "kind": "md",
+      "sha256": "365fee62703923bc4be7e5e1f9ac8edd35aca96093e8814024df8c1fe7c552d7",
+      "installedSha": "365fee62703923bc4be7e5e1f9ac8edd35aca96093e8814024df8c1fe7c552d7"
+    },
+    ".claude/commands/admin/seed.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/commands/admin/seed.md",
+      "kind": "md",
+      "sha256": "3713f81fcd39dd75b5d4cdfdd730e8a4a419a280bd12b9e6a56dab0904f11806",
+      "installedSha": "3713f81fcd39dd75b5d4cdfdd730e8a4a419a280bd12b9e6a56dab0904f11806"
     },
     ".claude/agents/_system/agent-system.md": {
       "owner": "framework",

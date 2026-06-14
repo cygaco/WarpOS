@@ -1,11 +1,11 @@
 {
   "metadata": {
-    "generated": "2026-06-11T03:38:25.448Z",
-    "lastUpdated": "2026-06-11T03:38:25.448Z",
+    "generated": "2026-06-14T21:18:04.745Z",
+    "lastUpdated": "2026-06-14T21:18:04.745Z",
     "total_hooks": 77,
     "total_lib_modules": 18,
-    "registered_hooks": 66,
-    "orphan_hooks": 11,
+    "registered_hooks": 65,
+    "orphan_hooks": 12,
     "regenerated_by": "scripts/regen-maps.js"
   },
   "hooks": [
@@ -15,8 +15,8 @@
       "path": "scripts/hooks/authorization-gate.js",
       "registered": true,
       "exists": true,
-      "size": 8520,
-      "modified": "2026-05-30T01:25:39.579Z"
+      "size": 14829,
+      "modified": "2026-06-11T20:50:28.863Z"
     },
     {
       "id": "hook:beta-gate",
@@ -193,7 +193,7 @@
       "id": "hook:handoff-live",
       "name": "handoff-live.js",
       "path": "scripts/hooks/handoff-live.js",
-      "registered": true,
+      "registered": false,
       "exists": true,
       "size": 10556,
       "modified": "2026-06-08T18:42:03.651Z"
@@ -276,8 +276,8 @@
       "path": "scripts/hooks/mode-lifecycle-guard.js",
       "registered": true,
       "exists": true,
-      "size": 16777,
-      "modified": "2026-06-10T13:54:45.222Z"
+      "size": 19603,
+      "modified": "2026-06-11T20:50:28.863Z"
     },
     {
       "id": "hook:ownership-guard",
@@ -429,8 +429,8 @@
       "path": "scripts/hooks/session-end-team-teardown.js",
       "registered": true,
       "exists": true,
-      "size": 2782,
-      "modified": "2026-06-10T13:54:45.232Z"
+      "size": 5181,
+      "modified": "2026-06-11T20:50:28.863Z"
     },
     {
       "id": "hook:session-start-teaminit.test",
@@ -546,8 +546,8 @@
       "path": "scripts/hooks/sprint-routing-guard.js",
       "registered": true,
       "exists": true,
-      "size": 9608,
-      "modified": "2026-06-08T20:28:50.013Z"
+      "size": 9686,
+      "modified": "2026-06-12T05:24:46.588Z"
     },
     {
       "id": "hook:sprint-tracker-guard",
@@ -555,8 +555,8 @@
       "path": "scripts/hooks/sprint-tracker-guard.js",
       "registered": true,
       "exists": true,
-      "size": 15870,
-      "modified": "2026-05-30T01:25:39.605Z"
+      "size": 16044,
+      "modified": "2026-06-12T05:24:46.588Z"
     },
     {
       "id": "hook:step-hardcode-suggester",
@@ -600,8 +600,8 @@
       "path": "scripts/hooks/team-guard-gate.test.js",
       "registered": false,
       "exists": true,
-      "size": 11806,
-      "modified": "2026-06-09T00:41:40.599Z"
+      "size": 12211,
+      "modified": "2026-06-11T20:50:28.863Z"
     },
     {
       "id": "hook:team-guard-sprint.test",
@@ -609,8 +609,8 @@
       "path": "scripts/hooks/team-guard-sprint.test.js",
       "registered": false,
       "exists": true,
-      "size": 6605,
-      "modified": "2026-06-09T00:41:40.599Z"
+      "size": 6934,
+      "modified": "2026-06-11T20:50:28.863Z"
     },
     {
       "id": "hook:team-guard",
@@ -618,8 +618,8 @@
       "path": "scripts/hooks/team-guard.js",
       "registered": true,
       "exists": true,
-      "size": 25885,
-      "modified": "2026-06-10T13:54:45.232Z"
+      "size": 40737,
+      "modified": "2026-06-11T20:50:28.863Z"
     },
     {
       "id": "hook:template-fillability",
@@ -809,8 +809,8 @@
       "registered": false,
       "type": "lib",
       "exists": true,
-      "size": 10920,
-      "modified": "2026-06-11T00:39:18.503Z"
+      "size": 11170,
+      "modified": "2026-06-14T21:13:08.438Z"
     },
     {
       "id": "hook-lib:paths",
@@ -886,22 +886,22 @@
   "wiring": [
     {
       "event": "SessionStart",
-      "matcher": "*",
+      "matcher": "",
       "hook": "session-start.js"
     },
     {
       "event": "SessionStart",
-      "matcher": "*",
+      "matcher": "",
       "hook": "tracker-start-of-work.js"
     },
     {
       "event": "UserPromptSubmit",
-      "matcher": "*",
+      "matcher": "",
       "hook": "smart-context.js"
     },
     {
       "event": "UserPromptSubmit",
-      "matcher": "*",
+      "matcher": "",
       "hook": "prompt-logger.js"
     },
     {
@@ -1206,7 +1206,7 @@
     },
     {
       "event": "PostToolUse",
-      "matcher": "*",
+      "matcher": "",
       "hook": "session-tracker.js"
     },
     {
@@ -1216,52 +1216,37 @@
     },
     {
       "event": "PostCompact",
-      "matcher": "*",
+      "matcher": "",
       "hook": "compact-saver.js"
     },
     {
       "event": "Stop",
-      "matcher": "*",
+      "matcher": "",
       "hook": "retro-presence-check.js"
     },
     {
       "event": "Stop",
-      "matcher": "*",
-      "hook": "handoff-live.js"
-    },
-    {
-      "event": "Stop",
-      "matcher": "*",
-      "hook": "session-stop.js"
-    },
-    {
-      "event": "Stop",
-      "matcher": "*",
+      "matcher": "",
       "hook": "tracker-completion-gate.js"
     },
     {
-      "event": "SessionEnd",
-      "matcher": "*",
-      "hook": "handoff-live.js"
-    },
-    {
-      "event": "SessionEnd",
-      "matcher": "*",
+      "event": "Stop",
+      "matcher": "",
       "hook": "session-stop.js"
     },
     {
       "event": "SessionEnd",
-      "matcher": "*",
+      "matcher": "",
+      "hook": "session-stop.js"
+    },
+    {
+      "event": "SessionEnd",
+      "matcher": "",
       "hook": "session-end-team-teardown.js"
     },
     {
       "event": "StopFailure",
-      "matcher": "*",
-      "hook": "handoff-live.js"
-    },
-    {
-      "event": "StopFailure",
-      "matcher": "*",
+      "matcher": "",
       "hook": "session-stop.js"
     },
     {

@@ -132,6 +132,16 @@
       "const": "scripts/hooks/lib",
       "description": "dir (framework) — paths.hookLib"
     },
+    "scriptsAdmin": {
+      "type": "string",
+      "const": "scripts/admin",
+      "description": "dir (framework) — paths.scriptsAdmin"
+    },
+    "adminPanelRegistry": {
+      "type": "string",
+      "const": "framework/admin-panel-registry.json",
+      "description": "json (framework) — paths.adminPanelRegistry"
+    },
     "patterns": {
       "type": "string",
       "const": "patterns",

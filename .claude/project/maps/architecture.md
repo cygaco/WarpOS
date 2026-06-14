@@ -1,6 +1,6 @@
-# Architecture Map — 2026-06-11
+# Architecture Map — 2026-06-14
 
-Generated: 2026-06-11T03:38:25.448Z
+Generated: 2026-06-14T21:18:04.745Z
 
 Application structure derived from filesystem walk of src/ and extension/.
 

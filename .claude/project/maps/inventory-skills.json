@@ -1,13 +1,83 @@
 {
   "metadata": {
-    "generated": "2026-06-11T03:38:25.448Z",
-    "lastUpdated": "2026-06-11T03:38:25.448Z",
-    "total_skills": 216,
-    "namespaces": 44,
-    "user_invocable": 87,
+    "generated": "2026-06-14T21:18:04.745Z",
+    "lastUpdated": "2026-06-14T21:18:04.745Z",
+    "total_skills": 222,
+    "namespaces": 46,
+    "user_invocable": 92,
     "regenerated_by": "scripts/regen-maps.js"
   },
   "namespaces": {
+    "admin": {
+      "namespace": "admin",
+      "count": 4,
+      "skills": [
+        {
+          "id": "admin:guides",
+          "name": "guides",
+          "description": "Open the in-app founder admin panel's guides sub-route in a browser, against a PRODUCT's running Next app (never WarpOS itself). A thin one-row delegator to the canonical admin:preview harness with the /admin/guides sub-route.",
+          "file": ".claude/commands/admin/guides.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/admin:preview"
+            ]
+          }
+        },
+        {
+          "id": "admin:preview",
+          "name": "preview",
+          "description": "Open/preview a PRODUCT's in-app founder admin panel in the browser. Scaffolds (or reuses) a fixed throwaway Next instance, boots `npm run dev`, waits for the real ready line + parses the actual port, then opens `/admin`. The keystone of the admin:* dev-tooling suite — never targets WarpOS itself.",
+          "file": ".claude/commands/admin/preview.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/admin:guides",
+              "/admin:readiness",
+              "/admin:seed"
+            ]
+          }
+        },
+        {
+          "id": "admin:readiness",
+          "name": "readiness",
+          "description": "Open the in-app founder admin panel's launch-readiness sub-route in a browser, against a PRODUCT's running Next app (never WarpOS itself). A thin one-row delegator to the canonical admin:preview harness with the /admin/readiness sub-route.",
+          "file": ".claude/commands/admin/readiness.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/admin:preview"
+            ]
+          }
+        },
+        {
+          "id": "admin:seed",
+          "name": "seed",
+          "description": "Seed warm-start data (founder-allowlist session, sample events, FOUNDERS_CHECKLIST.md) into the live admin-preview instance so the in-app founder panel renders non-empty. READS the instance pointer written by admin:preview; never scaffolds its own instance and never targets WarpOS itself.",
+          "file": ".claude/commands/admin/seed.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/admin:guides",
+              "/admin:preview",
+              "/admin:readiness"
+            ]
+          }
+        }
+      ]
+    },
     "agents": {
       "namespace": "agents",
       "count": 2,
@@ -218,6 +288,28 @@
             "references": [],
             "calls": [
               "/scan:install"
+            ]
+          }
+        }
+      ]
+    },
+    "cockpit": {
+      "namespace": "cockpit",
+      "count": 1,
+      "skills": [
+        {
+          "id": "cockpit:readiness",
+          "name": "readiness",
+          "description": "The launch-readiness cockpit — show how close every registered product is to launch (composite %, blocked items, owner-action work left), or drill into one product. Read-only across the portfolio. The operator's cross-product readiness board.",
+          "file": ".claude/commands/cockpit/readiness.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/portfolio:new",
+              "/portfolio:register"
             ]
           }
         }
@@ -2231,7 +2323,7 @@
     },
     "scan": {
       "namespace": "scan",
-      "count": 50,
+      "count": 51,
       "skills": [
         {
           "id": "scan:ac-coverage",
@@ -2276,6 +2368,23 @@
             "calls": [
               "/mode:adhoc",
               "/warp:health"
+            ]
+          }
+        },
+        {
+          "id": "scan:admin-suite-coverage",
+          "name": "admin-suite-coverage",
+          "description": "Coverage + freshness enforcer for the admin:* dev-tooling suite — each admin skill resolves, every admin-panel registry row's opener resolves to a real script/skill (no orphan/phantom), and preview.js carries the refuseIfTargetIsWarpOS precondition. Fail-CLOSED on a malformed registry; wired REPORT-ONLY into /scan:full.",
+          "file": ".claude/commands/scan/admin-suite-coverage.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/ns:name",
+              "/scan:full",
+              "/scan:skill-hook-coverage"
             ]
           }
         },
@@ -2468,6 +2577,7 @@
               "/scan:ac-coverage",
               "/scan:adhoc-fail-override",
               "/scan:adhoc-team-hygiene",
+              "/scan:admin-suite-coverage",
               "/scan:architecture",
               "/scan:coherence",
               "/scan:cutover-completeness",
@@ -2790,7 +2900,9 @@
           "file": ".claude/commands/scan/sprint-beta-honesty.md",
           "user_invocable": null,
           "data_flow": {
-            "reads": [],
+            "reads": [
+              ".claude/project/memory/beta-honesty-waivers.jsonl"
+            ],
             "writes": [],
             "references": [],
             "calls": [
@@ -3152,22 +3264,25 @@
         {
           "id": "session:end",
           "name": "end",
-          "description": "Full session wrap-up — cognitive maintenance (learn/mine/sleep → integrate learnings + β recs) → reconcile + validate TRACKER.md (fail-closed) → fresh handoff → land to main → fresh branch → tear down teams. The one \"we're done, tee up next session\" command.",
+          "description": "Full session wrap-up — cognitive maintenance (learn/mine/sleep → integrate learnings + β recs) → reconcile + validate TRACKER.md (fail-closed) → fresh handoff → land to main → fresh branch → tear down teams. The one \"we're done, tee up next session\" command. Use --fast to skip the cognitive chain and wrap to a recoverable, zero-loss state in the fewest steps.",
           "file": ".claude/commands/session/end.md",
           "user_invocable": null,
           "data_flow": {
             "reads": [],
             "writes": [],
             "references": [
+              "scripts/hooks/session-end-team-teardown.js",
               "scripts/hooks/tracker-completion-gate.js"
             ],
             "calls": [
               "/beta:integrate",
               "/beta:mine",
               "/commit:land",
+              "/enforcement:log",
               "/learn:deep",
               "/learn:integrate",
               "/mode:adhoc",
+              "/mode:sprint",
               "/session:checkpoint",
               "/session:dump",
               "/session:handoff",
@@ -3245,14 +3360,23 @@
         {
           "id": "session:resume",
           "name": "resume",
-          "description": "Load and display the last handoff or checkpoint — use after /clear or cold start",
+          "description": "Pick up the previous session and KEEP GOING — load the handoff, re-establish mode + team + turbo, and start executing the next action autonomously. The human shouldn't have to do anything.",
           "file": ".claude/commands/session/resume.md",
           "user_invocable": true,
           "data_flow": {
             "reads": [],
             "writes": [],
             "references": [],
-            "calls": []
+            "calls": [
+              "/mode:adhoc",
+              "/mode:oneshot",
+              "/mode:sprint",
+              "/session:checkpoint",
+              "/session:dump",
+              "/session:end",
+              "/session:handoff",
+              "/session:turbo"
+            ]
           }
         },
         {
@@ -3480,6 +3604,7 @@
             ],
             "calls": [
               "/sprint:execute",
+              "/sprint:full",
               "/sprint:plan"
             ]
           }
@@ -3538,9 +3663,11 @@
               "scripts/hooks/sprint-routing-guard.js"
             ],
             "calls": [
+              "/mode:solo",
               "/scan:planning-principles",
               "/sprint:design",
               "/sprint:execute",
+              "/sprint:full",
               "/sprint:release"
             ]
           }
@@ -3928,13 +4055,13 @@
   },
   "summary": {
     "by_invocability": {
-      "user_invocable": 87,
-      "system_only": 129
+      "user_invocable": 92,
+      "system_only": 130
     },
     "most_referenced_namespaces": [
       {
         "namespace": "scan",
-        "count": 50
+        "count": 51
       },
       {
         "namespace": "warp",

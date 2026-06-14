@@ -1,12 +1,12 @@
 # Systems Inventory (Category Rollup)
 
-Generated: 2026-06-11T03:38:25.448Z
+Generated: 2026-06-14T21:18:04.745Z
 
 | id | name | category | metric |
 |---|---|---|---|
 | identity | Alex identity | identity | files=2 |
 | agents | Agent team + build chains | agents | count=68 |
-| skills | Skills | capability | count=218 |
+| skills | Skills | capability | count=224 |
 | hooks | Hooks | automation | count=77 |
 | memory | Memory stores | memory | count=8 |
 | maps | Relationship maps | infrastructure | .claude/project/maps |

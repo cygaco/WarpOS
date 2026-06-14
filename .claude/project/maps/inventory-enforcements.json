@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "generated": "2026-06-11T03:38:25.448Z",
-    "lastUpdated": "2026-06-11T03:38:25.448Z",
+    "generated": "2026-06-14T21:18:04.745Z",
+    "lastUpdated": "2026-06-14T21:18:04.745Z",
     "total_hooks": 75,
     "total_modules": 18,
-    "uncurated": 1,
+    "uncurated": 0,
     "total_gaps": 83,
     "gaps_closed": 75,
     "gaps_open": 8,
@@ -40,8 +40,8 @@
         "paths.runtime/authorization.json",
         "logger"
       ],
-      "file_size": 8520,
-      "file_modified": "2026-05-30T01:25:39.579Z",
+      "file_size": 14829,
+      "file_modified": "2026-06-11T20:50:28.863Z",
       "note": "Pairs with /turbo (session:turbo). Fail-open: any hook error → no-op pass-through, never blocks. The decision:approve short-circuit is the mechanism that lets a pre-authorized session batch skip repeat guard prompts."
     },
     {
@@ -607,7 +607,7 @@
       "file": "scripts/hooks/handoff-live.js",
       "file_size": 10556,
       "file_modified": "2026-06-08T18:42:03.651Z",
-      "registered": true,
+      "registered": false,
       "gates": [],
       "blocks": [],
       "warns": [],
@@ -879,8 +879,8 @@
       "phase": "?",
       "mode": "?",
       "file": "scripts/hooks/mode-lifecycle-guard.js",
-      "file_size": 16777,
-      "file_modified": "2026-06-10T13:54:45.222Z",
+      "file_size": 19603,
+      "file_modified": "2026-06-11T20:50:28.863Z",
       "registered": true,
       "gates": [],
       "blocks": [],
@@ -1400,8 +1400,8 @@
       "phase": "?",
       "mode": "?",
       "file": "scripts/hooks/session-end-team-teardown.js",
-      "file_size": 2782,
-      "file_modified": "2026-06-10T13:54:45.232Z",
+      "file_size": 5181,
+      "file_modified": "2026-06-11T20:50:28.863Z",
       "registered": true,
       "gates": [],
       "blocks": [],
@@ -1762,8 +1762,8 @@
         "logger",
         "policy/sprint-routing.json"
       ],
-      "file_size": 9608,
-      "file_modified": "2026-06-08T20:28:50.013Z",
+      "file_size": 9686,
+      "file_modified": "2026-06-12T05:24:46.588Z",
       "note": "SP-20260514-002 routing-policy enforcer (the aspirational-vs-enforced fix for sprint routing). Fail-open on any unexpected error. Three finalize artifacts gated; plan + ticket writes recorded by their drivers."
     },
     {
@@ -1806,8 +1806,8 @@
         "paths",
         "logger"
       ],
-      "file_size": 15870,
-      "file_modified": "2026-05-30T01:25:39.605Z",
+      "file_size": 16044,
+      "file_modified": "2026-06-12T05:24:46.588Z",
       "note": "Sprint Workflow v0.1 post-Phase-1. Escalated 2026-05-13: was BLOCK on missing schema; now AUTO-INJECTS schema for 15 known path patterns and only BLOCKS on unknown paths. Addresses 126x/day missing-schema friction (LRN-2026-05-13-sprint-schema-missing) while preserving validation for unmapped paths. Fails OPEN on internal error so non-sprint edits are never broken."
     },
     {
@@ -1976,8 +1976,8 @@
       "phase": "?",
       "mode": "?",
       "file": "scripts/hooks/team-guard-gate.test.js",
-      "file_size": 11806,
-      "file_modified": "2026-06-09T00:41:40.599Z",
+      "file_size": 12211,
+      "file_modified": "2026-06-11T20:50:28.863Z",
       "registered": false,
       "gates": [],
       "blocks": [],
@@ -1994,8 +1994,8 @@
       "phase": "?",
       "mode": "?",
       "file": "scripts/hooks/team-guard-sprint.test.js",
-      "file_size": 6605,
-      "file_modified": "2026-06-09T00:41:40.599Z",
+      "file_size": 6934,
+      "file_modified": "2026-06-11T20:50:28.863Z",
       "registered": false,
       "gates": [],
       "blocks": [],
@@ -2037,8 +2037,8 @@
         "logger",
         "role-aliases"
       ],
-      "file_size": 25885,
-      "file_modified": "2026-06-10T13:54:45.232Z"
+      "file_size": 40737,
+      "file_modified": "2026-06-11T20:50:28.863Z"
     },
     {
       "id": "template-fillability",
@@ -2434,8 +2434,8 @@
       ],
       "generated_from": "framework/paths.registry.json",
       "file": "scripts/hooks/lib/paths.generated.js",
-      "file_size": 10920,
-      "file_modified": "2026-06-11T00:39:18.503Z"
+      "file_size": 11170,
+      "file_modified": "2026-06-14T21:13:08.438Z"
     },
     {
       "id": "paths",

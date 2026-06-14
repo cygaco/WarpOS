@@ -1,6 +1,6 @@
 # Tools Map
 
-Generated: 2026-06-11T03:38:25.448Z
+Generated: 2026-06-14T21:18:04.745Z
 
 Scripts: **176** | npm scripts: **0** | External CLIs: **3**
 
@@ -48,8 +48,8 @@ Scripts: **176** | npm scripts: **0** | External CLIs: **3**
 | delta-store-review.js | 1684 | 2026-06-05T01:45:08.445Z |
 | delta-update-heartbeat.js | 882 | 2026-06-08T21:05:42.942Z |
 | dismiss-drift-entry.js | 647 | 2026-05-30T01:25:39.566Z |
-| dispatch-agent.js | 30627 | 2026-06-10T21:04:52.971Z |
-| dispatch-claude.js | 30062 | 2026-06-10T22:27:30.680Z |
+| dispatch-agent.js | 35769 | 2026-06-11T20:57:17.824Z |
+| dispatch-claude.js | 35353 | 2026-06-11T21:00:46.791Z |
 | dispatch-skill.js | 32106 | 2026-06-10T21:04:52.972Z |
 | dispatch-skill.test.js | 11813 | 2026-06-08T21:08:33.109Z |
 | dispatch.js | 20217 | 2026-06-08T04:56:41.298Z |
@@ -64,7 +64,7 @@ Scripts: **176** | npm scripts: **0** | External CLIs: **3**
 | drift-verify.js | 5846 | 2026-05-30T01:25:39.574Z |
 | drift-write-decisions.js | 1743 | 2026-05-30T01:25:39.574Z |
 | fix-deep-trace-run09-cleanup.js | 3626 | 2026-05-30T01:25:39.575Z |
-| generate-framework-manifest.js | 26450 | 2026-06-10T16:09:05.298Z |
+| generate-framework-manifest.js | 26679 | 2026-06-12T05:24:46.588Z |
 | generate-maps.js | 12732 | 2026-05-30T01:25:39.577Z |
 | generate-skill-catalog.js | 9320 | 2026-05-30T01:25:39.577Z |
 | generate-steps-maps.js | 8346 | 2026-05-30T01:25:39.578Z |
@@ -80,7 +80,7 @@ Scripts: **176** | npm scripts: **0** | External CLIs: **3**
 | lint-stories.js | 17687 | 2026-05-30T01:25:39.616Z |
 | materialize-decisions.js | 4165 | 2026-05-30T01:25:39.617Z |
 | migrate-page-tsx-step-refs.js | 2607 | 2026-05-30T01:25:39.618Z |
-| mode-set.js | 7111 | 2026-06-07T03:35:59.240Z |
+| mode-set.js | 10572 | 2026-06-11T20:50:28.863Z |
 | one-off-add-backend-to-store.js | 3627 | 2026-05-30T01:25:39.619Z |
 | one-off-classify-stubs.js | 2718 | 2026-05-30T01:25:39.620Z |
 | one-off-events-mine.js | 2524 | 2026-05-30T01:25:39.621Z |
@@ -148,7 +148,7 @@ Scripts: **176** | npm scripts: **0** | External CLIs: **3**
 | systems-append-run09.js | 2306 | 2026-05-30T01:25:39.675Z |
 | test-beta-gate-release.js | 6406 | 2026-05-30T01:25:39.675Z |
 | test-concurrency-lock.js | 3129 | 2026-05-30T01:25:39.675Z |
-| test-dispatch-agent-resolution.js | 4328 | 2026-06-08T05:38:13.758Z |
+| test-dispatch-agent-resolution.js | 5113 | 2026-06-11T20:59:26.717Z |
 | test-dispatch-config.js | 9030 | 2026-06-08T20:28:50.029Z |
 | test-dispatch-route-guard.js | 6087 | 2026-06-02T18:17:35.473Z |
 | test-dispatch-telemetry.js | 3750 | 2026-05-30T01:25:39.677Z |

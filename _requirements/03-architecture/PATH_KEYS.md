@@ -8,6 +8,7 @@ Markdown convention: reference paths as `paths.X` in prose. Code: `const { PATHS
 
 | Key | Path | Kind | Owner | Mutable | Introduced | Notes |
 |---|---|---|---|---|---|---|
+| `adminPanelRegistry` | `framework/admin-panel-registry.json` | json | framework | no | 0.19.0 | Generic admin-panel registry (panels map: route -> opener -> |
 | `adrIndex` | `.claude/agents/president/_system/policy/adr/INDEX.md` | md | project | yes | 0.0.0 |  |
 | `agentDispatchGuide` | `.claude/agents/_system/guides/agent-dispatch-guide.md` | md | framework | no | 0.3.0 |  |
 | `agents` | `.claude/agents` | dir | framework | no | 0.0.0 |  |
@@ -101,6 +102,7 @@ Markdown convention: reference paths as `paths.X` in prose. Code: `const { PATHS
 | `research` | `_docs/research` | dir | project | yes | 0.0.0 |  |
 | `roadmap` | `ROADMAP.md` | md | project | yes | 0.0.0 | Repo-root sprint+phase ledger. Auto-managed by scripts/sprin |
 | `runtime` | `.claude/runtime` | dir | runtime | yes | 0.0.0 |  |
+| `scriptsAdmin` | `scripts/admin` | dir | framework | no | 0.19.0 | admin:* dev-tooling suite backing scripts (preview.js keysto |
 | `settings` | `.claude/settings.json` | json | project | yes | 0.0.0 |  |
 | `skillCatalog` | `.claude/runtime/skill-catalog.json` | json | generated | yes | 0.5.1 | Generated compact index of every user-invocable slash comman |
 | `skillHookPoints` | `.claude/agents/_org/skill-hook-points.json` | json | framework | no | 0.13.1 |  |

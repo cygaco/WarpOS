@@ -199,6 +199,24 @@
       "introducedIn": "0.0.0",
       "docsToken": "paths.hookLib"
     },
+    "scriptsAdmin": {
+      "path": "scripts/admin",
+      "kind": "dir",
+      "owner": "framework",
+      "mutable": false,
+      "introducedIn": "0.19.0",
+      "docsToken": "paths.scriptsAdmin",
+      "_note": "admin:* dev-tooling suite backing scripts (preview.js keystone + seed.js). SP-20260614-002."
+    },
+    "adminPanelRegistry": {
+      "path": "framework/admin-panel-registry.json",
+      "kind": "json",
+      "owner": "framework",
+      "mutable": false,
+      "introducedIn": "0.19.0",
+      "docsToken": "paths.adminPanelRegistry",
+      "_note": "Generic admin-panel registry (panels map: route -> opener -> description). Alias-beside the eventual item-23 /panel:* registry. SP-20260614-002."
+    },
     "patterns": {
       "path": "patterns",
       "kind": "dir",

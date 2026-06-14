@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "generated": "2026-06-11T03:38:25.448Z",
-    "lastUpdated": "2026-06-11T03:38:25.448Z",
-    "total_systems": 77,
+    "generated": "2026-06-14T21:18:04.745Z",
+    "lastUpdated": "2026-06-14T21:18:04.745Z",
+    "total_systems": 81,
     "categories": 2,
-    "total_files_referenced": 76,
+    "total_files_referenced": 80,
     "missing_files_on_disk": 1,
     "regenerated_by": "scripts/regen-maps.js"
   },
@@ -16,7 +16,7 @@
       ]
     },
     "untested": {
-      "count": 76,
+      "count": 80,
       "ids": [
         "skill-roadmap-ideas",
         "skill-roadmap-next",
@@ -93,7 +93,11 @@
         "skill-reasoning-run",
         "skill-skills-cleanup",
         "skill-skills-delete",
-        "skill-qa-check"
+        "skill-qa-check",
+        "skill-session-resume",
+        "skill-sprint-plan",
+        "skill-sprint-design",
+        "skill-cockpit-readiness"
       ]
     }
   },
@@ -110,7 +114,7 @@
       ]
     },
     "cognition": {
-      "count": 76,
+      "count": 80,
       "systems": [
         {
           "id": "skill-_report_skill_tmp",
@@ -134,6 +138,14 @@
           "status": "untested",
           "files": [
             ".claude/commands/bootstrap/spinup.md"
+          ]
+        },
+        {
+          "id": "skill-cockpit-readiness",
+          "name": "The launch-readiness cockpit — show how close every registered product is to launch (composite %, blocked items, owner-action work left), or drill into one product. Read-only across the portfolio. The operator's cross-product readiness board.",
+          "status": "untested",
+          "files": [
+            ".claude/commands/cockpit/readiness.md"
           ]
         },
         {
@@ -649,6 +661,14 @@
           ]
         },
         {
+          "id": "skill-session-resume",
+          "name": "Pick up the previous session and KEEP GOING — load the handoff, re-establish mode + team + turbo, and start executing the next action autonomously. The human shouldn't have to do anything.",
+          "status": "untested",
+          "files": [
+            ".claude/commands/session/resume.md"
+          ]
+        },
+        {
           "id": "skill-session-turbo",
           "name": "Session speed mode — pre-authorize a batch of high-impact actions (permissions.allow) AND switch the build cadence to fast levers (parallel builds, batched Beta, skip-gauntlet-when-low-risk, engine-sprint fast-close). The one command to go fast for a work session.",
           "status": "untested",
@@ -689,11 +709,27 @@
           ]
         },
         {
+          "id": "skill-sprint-design",
+          "name": "Turn an approved Plan Contract into PRD, stories, COPY, INPUTS, TRACE, acceptance criteria, QA, red-team, release plan — then mint tickets.",
+          "status": "untested",
+          "files": [
+            ".claude/commands/sprint/design.md"
+          ]
+        },
+        {
           "id": "skill-sprint-full",
           "name": "Single-invocation execution of the full sprint pipeline (plan→design→execute→release-prep→retro) under a bounded autonomy preset. Cannot bypass CLAUDE.md hard ceilings.",
           "status": "untested",
           "files": [
             ".claude/commands/sprint/full.md"
+          ]
+        },
+        {
+          "id": "skill-sprint-plan",
+          "name": "Turn a brief plain-language request into a structured sprint plan and durable Plan Contract. Evidence-labeled, approval-aware, crash-recoverable.",
+          "status": "untested",
+          "files": [
+            ".claude/commands/sprint/plan.md"
           ]
         },
         {
@@ -743,7 +779,7 @@
       "id": "skills",
       "name": "Skills",
       "category": "capability",
-      "count": 218
+      "count": 224
     },
     {
       "id": "hooks",

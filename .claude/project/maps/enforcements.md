@@ -1,8 +1,8 @@
 # Enforcements Map
 
-Generated: 2026-06-11T03:38:25.448Z
+Generated: 2026-06-14T21:18:04.745Z
 
-**75** hooks, **18** lib modules. **1** uncurated (added since last hand-curation on 2026-06-10T19:19:44.206Z).
+**75** hooks, **18** lib modules. **0** uncurated (added since last hand-curation on 2026-06-11T03:38:25.448Z).
 
 ## Coverage
 
@@ -34,7 +34,7 @@ Generated: 2026-06-11T03:38:25.448Z
 | framework-purity-guard | Bash (git commit) | PreToolUse | fail-closed | yes |  |
 | gate-check | Agent | PreToolUse | fail-closed | yes |  |
 | gauntlet-gate | Agent | PreToolUse | fail-closed | yes |  |
-| handoff-live | ? | ? | ? | yes | yes |
+| handoff-live | ? | ? | ? | no | yes |
 | handoff-live.test | ? | ? | ? | no | yes |
 | learning-validator | Edit|Write | PostToolUse | advisory | yes |  |
 | ledger-presence-guard | Bash | PostToolUse | mixed | yes |  |

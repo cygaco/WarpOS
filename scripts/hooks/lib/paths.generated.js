@@ -35,6 +35,8 @@ const PATHS = {
   "favorites": path.join(PROJECT, ".claude", "content", "favorites"),
   "hooks": path.join(PROJECT, "scripts", "hooks"),
   "hookLib": path.join(PROJECT, "scripts", "hooks", "lib"),
+  "scriptsAdmin": path.join(PROJECT, "scripts", "admin"),
+  "adminPanelRegistry": path.join(PROJECT, "framework", "admin-panel-registry.json"),
   "patterns": path.join(PROJECT, "patterns"),
   "requirements": path.join(PROJECT, "_requirements"),
   "requirementsRoot": path.join(PROJECT, "_requirements"),

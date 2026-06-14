@@ -1,0 +1,125 @@
+schema: warpos/sprint/current-sprint/v1
+id: SP-20260614-002
+title: "admin:* skill suite — open/preview the in-app founder admin panel (SP-20260614-002)"
+objective: "Ship the admin:* dev-tooling skill suite that opens/previews the in-app founder admin panel the scaffold ships (R-2 / SP-20260614-001: /admin, /admin/readiness, /admin/guides) — which currently has NO opener (unlike /cockpit:readiness + /models:router). Keystone /admin:preview is a render harness (scaffold-or-reuse a throwaway product test-instance, npm run dev, open /admin in a browser) that ALSO unblocks the deferred design-quality/visual-review Playwright lane; /admin:readiness + /admin:guides forward to sub-routes; /admin:seed seeds real data so the panel renders warm-start. Registry-backed, path-keys-in-source, cross-provider-reviewed routing, run-in-product (never WarpOS itself)."
+status: designing
+created_at: "2026-06-14T20:36:46.804Z"
+updated_at: "2026-06-14T21:40:44.078Z"
+source_request: "Build the admin:* skill suite per ROADMAP item 24 — session-invocable openers/previewers for the in-app founder admin panel the scaffold ships. Start with the /admin:preview render harness; heed the item-24 guardrails (source-not-generated path keys, cross-provider-review the routing file, single authoritative writer, dispatch invariants, rebuild maps). Run-in-product: open a PRODUCT's panel, not WarpOS."
+interpreted_intent: "Close the missing-opener gap for the founder admin panel. The R-2 panel (/admin + /admin/readiness + /admin/guides) is test-proven (8/8) but cannot be OPENED/rendered from a session. Build dev-tooling skills under .claude/commands/admin/ + node helpers under scripts/admin/: (1) /admin:preview — the keystone — resolves-or-scaffolds a throwaway product test-instance (reuse the scaffold/portfolio path), ensures deps, runs `npm run dev`, opens /admin in a browser; idempotent (reuse an existing instance); single authoritative writer for the instance pointer (mode-set.js pattern). (2) /admin:readiness + /admin:guides — thin openers that DELEGATE to the preview harness with a target sub-route (no logic duplication — the /panel:* synonym pattern, item 23 seam). (3) /admin:seed — seeds a founder session + sample events + a FOUNDERS_CHECKLIST so the panel renders warm-start, not cold-start (WarpOS itself has no checklist → cold-start, verified 2026-06-14). A small admin-panel registry (route -> opener -> description) backs the openers and is forward-compatible with item 23 /panel:*; its path keys live in the SOURCE framework/paths.registry.json (build.js regenerates the .claude view); the registry/routing file is cross-provider-reviewed, never a solo alpha draft. The keystone emits the live preview URL so the deferred design-quality Playwright lane can finally target a running Next app."
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260614-0078.yaml"
+risk_level: medium
+approval_state: none_required
+current_phase: design
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+external_services:
+  identified: []
+  blocked: []
+  ready: []
+  mocked: []
+  deferred: []
+tickets:
+  proposed: []
+  planned: []
+  designed: []
+  ready_for_execution: []
+  in_progress: []
+  blocked: []
+  waiting_on_human: []
+  waiting_on_external_service: []
+  in_review: []
+  qa_failed: []
+  redteam_failed: []
+  done:
+    - T-20260614-337
+    - T-20260614-338
+    - T-20260614-339
+    - T-20260614-340
+    - T-20260614-341
+  released: []
+  deferred: []
+  abandoned: []
+  reopened: []
+  superseded: []
+requirements:
+  prd: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260614-002\\prd.md"
+  high_level_stories: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260614-002\\high-level-stories.md"
+  granular_stories: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260614-002\\granular-stories.md"
+  copy: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260614-002\\copy.md"
+  inputs: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260614-002\\inputs.md"
+  trace: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260614-002\\trace.md"
+  acceptance_criteria: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260614-002\\acceptance-criteria.md"
+  qa_plan: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260614-002\\qa-plan.md"
+  redteam_plan: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260614-002\\redteam-plan.md"
+  release_plan: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260614-002\\release-plan.md"
+checks:
+  lint:
+    status: not_run
+    last_run: null
+    evidence: ""
+  typecheck:
+    status: not_run
+    last_run: null
+    evidence: ""
+  tests:
+    status: not_run
+    last_run: null
+    evidence: ""
+  build:
+    status: not_run
+    last_run: null
+    evidence: ""
+  qa:
+    status: not_run
+    last_run: null
+    evidence: ""
+  redteam:
+    status: not_run
+    last_run: null
+    evidence: ""
+approvals:
+  plan:
+    required: false
+    state: not_required
+    ref: null
+  design:
+    required: false
+    state: not_required
+    ref: null
+  execution:
+    required: false
+    state: not_required
+    ref: null
+  release:
+    required: false
+    state: not_required
+    ref: null
+  external_services:
+    required: false
+    state: not_required
+    ref: null
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260614-0078.report.md"
+  design: null
+  execution: null
+  release: null
+ralph:
+  active: false
+  current_ticket: null
+  current_loop: null
+  status: idle
+  last_checkpoint: null
+  next_action: null
+crash_recovery:
+  last_checkpoint: ".claude/project/sprint/sprint-progress.yaml"
+  resume_command: "/sprint:design"
+  resume_summary: "Sprint SP-20260614-002 design scaffolded (scale=m). Next: mint tickets from granular-stories, then run /sprint:execute."
+  active_files: []
+  dirty_state: false
+  blockers: []
+  safe_to_continue: true
+lane:
+  type: branch
+  value: sprint/SP-20260614-002
+  isolation_notes: "Dedicated sprint branch off the local session/main-equivalent; builder dispatch may use isolation worktrees (branch from current HEAD — heed the stale-worktree-base gap); no remote push without explicit approval."
