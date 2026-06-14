@@ -4,7 +4,7 @@
   "generated_by": "scripts/generate-framework-manifest.js",
   "counts": {
     "agent": 84,
-    "skill": 218,
+    "skill": 219,
     "reference": 27,
     "maps_baseline": 26,
     "hook": 79,
@@ -62,7 +62,7 @@
     "module_scope": 1,
     "framework_doc": 4
   },
-  "total": 1281,
+  "total": 1282,
   "assets": {
     "agent": [
       {
@@ -1201,6 +1201,18 @@
         "dest": ".claude/commands/check/install.md",
         "kind": "skill",
         "sha256": "f031cc6db18eeb52ec25953d00ec71fc4c4ae02d0356dbd709b672052b1d9810",
+        "owner": "framework",
+        "mergeStrategy": "three_way_markdown",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "skill.cockpit.readiness.md",
+        "src": ".claude/commands/cockpit/readiness.md",
+        "dest": ".claude/commands/cockpit/readiness.md",
+        "kind": "skill",
+        "sha256": "6e4b54f265dd0b32b173a074333874ffd5cfef1495fd322c18e66318f12d0b75",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",

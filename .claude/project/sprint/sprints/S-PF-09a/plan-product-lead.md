@@ -43,9 +43,9 @@ AC-1 producer `--json` emits `warpos/readiness/v1`; item count = checklist items
 - **OQ-3** (**BLOCKING for 09b only**) cockpit portfolio-discovery source (local sibling product list). Resolve before 09b. Does NOT block 09a.
 - **OQ-4** (non-blocking) LEAD_TIME_MAP seed values. Static seed fine for MVP.
 
-## Escalations to Director of Product (NOT product-lead altitude — OPERATOR/DoP decision)
-- **(a)** Retrofit the existing 5 portfolio products vs new-scaffold-only (the epic's standing OPEN).
-- **(b)** Cockpit namespace: inside the `/models:router` Dispatch-Console family vs its own `/cockpit:*` (touches Master Console product surface).
+## Escalations to Director of Product — RESOLVED (operator 2026-06-14)
+- **(a) RESOLVED → retrofit AND new, via a runnable skill.** Existing products are covered by running a skill against them; new scaffolds get the in-app founder panel natively. The runnable skill is `/cockpit:readiness` (`scripts/cockpit/readiness-board.js`) — read-only, run against any product (registered or `--root <path>`), so a product needs no shipped panel code to be covered.
+- **(b) RESOLVED → own `/cockpit` namespace** (NOT folded into `/models:router`). First skill shipped: `/cockpit:readiness` (the portfolio readiness board). The namespace is the seed of the Master Console cockpit. OQ-3 (portfolio discovery) is thereby resolved — the cockpit reads `~/.warpos/portfolio.json` as the product list.
 
 ## Layer + brand
 Producer + schema = dev-tooling (internal). Founder panel = **PRODUCT layer (brand-clean, R-6 enforces)** — the FIRST net-new product-facing surface this epic ships. Cockpit = dev-tooling (Master Console brand only).
