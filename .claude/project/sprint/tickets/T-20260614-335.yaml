@@ -2,7 +2,7 @@ schema: warpos/sprint/ticket/v1
 id: T-20260614-335
 title: "Enforcers + ship-coverage (R-5) — scaffold-coverage addReadinessSurfaceChecks + brand-leak-scan + WG-23"
 type: feature
-status: ready_for_execution
+status: done
 sprint: SP-20260614-001
 created_at: "2026-06-14T06:33:05.320Z"
 updated_at: "2026-06-14T06:33:05.754Z"

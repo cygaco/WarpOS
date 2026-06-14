@@ -2,7 +2,7 @@ schema: warpos/sprint/ticket/v1
 id: T-20260614-334
 title: "Write-back surgical line-patch (R-4) — id-matched in-place toggle, atomic, patch-on-current"
 type: feature
-status: ready_for_execution
+status: done
 sprint: SP-20260614-001
 created_at: "2026-06-14T06:33:05.243Z"
 updated_at: "2026-06-14T06:33:05.693Z"

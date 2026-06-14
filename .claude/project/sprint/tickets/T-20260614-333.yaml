@@ -2,7 +2,7 @@ schema: warpos/sprint/ticket/v1
 id: T-20260614-333
 title: "Panel route + render (R-1/R-2/R-3) — gated /admin/readiness, actionable deep-links, cold/warm FTUE"
 type: feature
-status: ready_for_execution
+status: done
 sprint: SP-20260614-001
 created_at: "2026-06-14T06:33:05.168Z"
 updated_at: "2026-06-14T06:33:05.630Z"
