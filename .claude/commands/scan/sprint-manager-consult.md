@@ -10,15 +10,17 @@ For every post-cutoff `/sprint:full` run that shows a **design-touch signal**, i
 
 ## What it detects
 
-One finding type, with shape `{ sprint_id, manager, evidence, finding_type }`:
+Two finding types, each with shape `{ sprint_id, manager, evidence, finding_type }`. The first is **blocking** (drives the exit code); the second is **report-only** (surfaced, never flips the exit code).
 
-1. **`missing_design_consult`** — a sprint shows a **design-touch signal** but has **no** `manager_consult` record for `design-quality`. The design-touch signal is established **independently** of the design-quality consult (so the check is not circular):
+1. **`missing_design_consult`** (BLOCKING) — a sprint shows a **design-touch signal** but has **no** `manager_consult` record for `design-quality`. The design-touch signal is established **independently** of the design-quality consult (so the check is not circular):
    - a `manager_consult` event for a design-domain manager **other than** `design-quality` — `visual-review` / `design-lead` / `design-review` (the multimodal review that runs on the same UI-diff condition), **or**
    - an explicit `ui_touched: true` field on any `sprint_full_*` event.
 
    Presence of UI work is proven by the independent marker; absence of the `design-quality` consult is the finding — exactly parallel to `/scan:sprint-beta-honesty`'s (`phase_started` ⇒ independent signal; consult-absence ⇒ finding).
 
-A `design-quality` consult of **any** verdict (`APPROVE` / `REJECT` / `MISSING` / `INVESTIGATE`) satisfies coverage — the question is "did the authority run", not "what did it decide". (Whether a run shipped despite a `REJECT` is a different enforcer's concern — that override is owned by `/scan:adhoc-fail-override` on the adhoc side.)
+2. **`missing_product_lead_authoring`** (REPORT-ONLY, ED-051) — a sprint **produced a plan/design artifact** (emitted a `sprint_full_phase_started`/`_completed` event whose `phase` is exactly `plan` or `design`) but has **no** backing `ok:true` `product-lead` authorship dispatch record correlated by `sprint_id`. This enforces the **WG-3** routing (requirement authoring goes to `product-lead`, not α-self-authored). The in-scope signal is a **plan/design PHASE event** (a whitelist match on `phase ∈ {plan, design}`, NOT a loose substring — `replan`/`design-review` do not widen scope), established **independently** of the authorship record (so the check is not circular). Because solo/adhoc one-offs never invoke `/sprint:full`'s plan/design phases, they never emit these events and are **structurally carved out** — the solo exemption is *not* inferred from record-absence. Cutoff is the **WG-3 commit date (`2026-06-12`)**, so the pre-WG-3 backlog is exempt. This finding is **report-only** (returned on the separate `advisoryFindings` channel; the exit code keys on the blocking `findings` only) — the flip-to-blocking ramp is **operator-gated** and never self-promoted.
+
+A `design-quality` consult of **any** verdict (`APPROVE` / `REJECT` / `MISSING` / `INVESTIGATE`) satisfies `missing_design_consult` coverage — the question is "did the authority run", not "what did it decide". (Whether a run shipped despite a `REJECT` is a different enforcer's concern — that override is owned by `/scan:adhoc-fail-override` on the adhoc side.) Likewise a `product-lead` authorship record of any kind satisfies `missing_product_lead_authoring`.
 
 ## Where the consult records come from
 
@@ -51,7 +53,9 @@ node scripts/checks/sprint-manager-consult.js [--json] [--since <ISO-date>]
 | `--json` | off | Emit machine-readable JSON instead of human text |
 | `--since <ISO-date>` | `2026-06-04` | Override the legacy-exempt cutoff date |
 
-**Exit codes:** `0` = clean (no findings or no applicable sprints); `1` = one or more findings; `2` = usage error (bad/missing `--since`, fail-closed).
+**Exit codes:** `0` = clean (no **blocking** findings, or no applicable sprints); `1` = one or more **blocking** `missing_design_consult` findings; `2` = usage error (bad/missing `--since`, fail-closed). The report-only `missing_product_lead_authoring` advisories (ED-051) **never** affect the exit code — they surface in `--json` (`advisoryFindings`) and as a stderr `INFO` block, and the flip-to-blocking ramp is operator-gated.
+
+`missing_product_lead_authoring` carries its own cutoff, `authoringCutoff` = **`2026-06-12`** (the WG-3 commit date), independent of the `missing_design_consult` `--since`/`WIRE_DATE` cutoff. Sprints before it are exempt.
 
 ## JSON output shape
 
@@ -69,11 +73,23 @@ node scripts/checks/sprint-manager-consult.js [--json] [--since <ISO-date>]
     }
   ],
   "totalFindings": 1,
+  "advisoryFindings": [
+    {
+      "sprint_id": "SP-...",
+      "manager": "product-lead",
+      "evidence": "sprint produced a plan/design artifact (sprint_full_phase_started:plan) but no backing ok:true 'product-lead' authorship dispatch record correlated by sprint_id was found (WG-3/ED-051; post-2026-06-12 product-lead authoring required; report-only ramp)",
+      "finding_type": "missing_product_lead_authoring"
+    }
+  ],
+  "totalAdvisory": 1,
   "cutoff": "2026-06-04",
+  "authoringCutoff": "2026-06-12",
   "undatedExempt": 0,
   "malformedLines": 0
 }
 ```
+
+> `ok` reflects the **blocking** `findings` only — a run with `totalAdvisory > 0` but `totalFindings == 0` still reports `"ok": true` and exits `0`.
 
 ## See also
 

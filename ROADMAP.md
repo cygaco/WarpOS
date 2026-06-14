@@ -814,6 +814,7 @@ Every sprint that has been planned, executed, released, or retrospected — one 
 
 | Sprint | Title | Status | Started | Closed | Release |
 |---|---|---|---|---|---|
+| [SP-20260613-001](.claude/project/sprint/sprints/SP-20260613-001/) | ED-051 enforcer — missing_product_lead_authoring finding | planning | 2026-06-14T01:34:52.870Z |  |  |
 | [SP-20260612-001](.claude/project/sprint/sprints/SP-20260612-001/) | Gauntlet ED-049 + release/dispatch version-resolution + multi-surface billing hardening | planning | 2026-06-12T15:24:35.474Z |  |  |
 | [S-PF-01](.claude/project/sprint/sprints/S-PF-01/) | E-PRODUCT-FOUNDATION-001 W0 telemetry seam | retrospected | 2026-06-11T21:18:08.864Z | 2026-06-12T05:01:37.711Z |  |
 | [SP-20260611-002](.claude/project/sprint/sprints/SP-20260611-002/) | E-LIFECYCLE-001 close-out fix sprint — 17 REAL + 4 PARTIAL GPT 2nd-pass findings (team-guard/mode-guard bypass classes, turbo spend/auth integrity, coverage-gate waiver+expected-source, provider-tier false-green, planning-principles enforce path, ac-coverage fail-closed) + NOTAGAIN §8.3 legacy scoping | retrospected | 2026-06-11T04:31:36.180Z | 2026-06-11T21:07:05.931Z |  |

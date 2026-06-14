@@ -1,0 +1,138 @@
+schema: warpos/sprint/plan-contract/v1
+id: PC-20260614-0076
+created_at: "2026-06-14T01:37:34.906Z"
+updated_at: "2026-06-14T01:37:34.906Z"
+sprint: SP-20260613-001
+source_request: "Build the ED-051 enforcer that completes last session's WG-3 fix — the /sprint:plan + /sprint:design skill-body routing change shipped (authoring routes to product-lead), but no detector enforces it. Add a missing_product_lead_authoring finding mirroring missing_design_consult, and wire it into /scan:full."
+source_request_verbatim: "Build the ED-051 enforcer (completes last session's WG-3 fix — the skill-body routing change shipped, the detector is unbuilt). Extend scripts/checks/sprint-manager-consult.js with a `missing_product_lead_authoring` finding: for a post-cutoff sprint that has a plan-contract or PRD but no product-lead authorship record, flag it; `authored_by: alpha-solo` is valid only when the sprint mode was solo. Wire the finding into /scan:full. Mirror the existing `missing_design_consult` finding's pattern. Engine/tooling sprint — no deploy artifact; fast-close via ff-merge."
+request_type: feature_add
+interpreted_intent: "Close the aspirational-vs-enforced gap on the WG-3 routing change: a sprint that produced a plan-contract or PRD after the enforcer's cutoff must carry a record that product-lead authored those requirements (or have been run in solo mode, where alpha-solo authoring is legitimate). Absence of such a record on a non-solo post-cutoff sprint is a finding. The detector lives beside missing_design_consult in sprint-manager-consult.js, reuses the same record-backed coverage machinery (RECORD_BACKED_CUTOFF, hasBackingDispatchRecord), and surfaces through /scan:full so drift is observable at the same gate as the other manager-consult findings."
+user_or_business_outcome: "The WG-3 routing rule stops being aspirational: any future sprint where alpha silently self-authors product requirements (the exact ED-051 failure) is caught at /scan:full instead of going unnoticed, so the 'who's writing the product reqs?' bug class is self-detecting."
+affected_surfaces:
+  - surface: scripts/checks/sprint-manager-consult.js
+    evidence_level: verified_from_repo
+    notes: "611-line enforcer; computeFindings() at L295 pushes findings such as missing_design_consult (L410/L424) gated by RECORD_BACKED_CUTOFF (L56) and hasBackingDispatchRecord() (L199). The new missing_product_lead_authoring finding mirrors that exact shape; module.exports at L600 must export any new constants for the test harness."
+  - surface: "scripts/checks/sprint-manager-consult.test.js (or its sibling test harness)"
+    evidence_level: assumed_present
+    notes: "computeFindings is exported for tests; the new finding needs planted positive fixtures (post-cutoff non-solo sprint with plan-contract/PRD and NO product-lead record) and negative fixtures (solo-mode sprint, pre-cutoff sprint, sprint WITH a product-lead authorship record) so the detector is fail-closed and not false-green."
+  - surface: "/scan:full aggregation (scan:sprint-manager-consult entry)"
+    evidence_level: verified_from_repo
+    notes: "missing_design_consult already surfaces through scan:sprint-manager-consult which is wired into /scan:full; the new finding rides the same path, so wiring is additive — confirm the scan emits/aggregates the new finding_type."
+  - surface: ".claude/project/decisions/enforcement-debt.jsonl"
+    evidence_level: verified_from_repo
+    notes: "ED-051 is logged as open enforcement debt (43 entries at handoff); this sprint resolves it — the debt entry should be marked closed with the enforcer reference."
+  - surface: "product-lead authorship record source (dispatch-completions.jsonl / epsilon-prompts return files / plan-contract created_by)"
+    evidence_level: needs_design
+    notes: "OPEN: what concretely counts as a 'product-lead authorship record' must be pinned in design — a {role:'product-lead', step:'plan'|'design', ok:true} dispatch-completion correlated by sprint_id is the most consistent with the existing record-backed machinery; created_by:'product-lead' on the plan-contract is a weaker signal. Director-of-engineering + product-lead resolve this at the design boundary."
+current_behavior:
+  evidence_level: verified_from_repo
+  notes: "The WG-3 fix (commit 1e2e6faf) changed /sprint:plan and /sprint:design skill bodies to route authoring to product-lead, but nothing detects a violation: a sprint can produce a plan-contract/PRD with alpha-solo authoring and pass /scan:full clean. ED-051 is logged as open enforcement debt. sprint-manager-consult.js currently emits missing_design_consult but has no product-lead-authoring finding."
+desired_behavior: "scripts/checks/sprint-manager-consult.js emits a missing_product_lead_authoring finding when: a sprint's date is >= the finding's cutoff AND the sprint produced a plan-contract or PRD AND the sprint mode was NOT solo AND there is no backing product-lead authorship record correlated to the sprint. Solo-mode sprints (alpha-solo authoring legitimate), pre-cutoff sprints, and sprints with a valid product-lead record produce no finding. The finding surfaces through /scan:full alongside missing_design_consult. The detector is covered by planted positive and negative fixtures and is fail-closed (a missing/unparseable record source does not silently pass). ED-051 is marked resolved."
+scope:
+  size: s
+  risk_level: low
+  complexity_drivers:
+    - "The 'product-lead authorship record' signal definition is the only real design decision; the rest is a mirror of an existing finding."
+    - Must be fail-closed without producing false-positives on legitimate solo-mode or engine/tooling sprints.
+    - "Cutoff discipline: the finding must not retroactively flag the large backlog of pre-WG-3 sprints."
+scope_variants:
+  minimal_safe:
+    summary: "Add the finding keyed only on dispatch-completion product-lead records, report-only through /scan:full, with positive+negative fixtures."
+    tradeoffs:
+      - Leaves the engine/tooling-sprint exemption question to a follow-up if not pinned in design.
+  recommended:
+    summary: "Add missing_product_lead_authoring mirroring missing_design_consult (cutoff-gated, record-backed, solo-mode-aware), wire into /scan:full, plant positive+negative fixtures, mark ED-051 resolved."
+    tradeoffs:
+      - "Requires pinning the authorship-record definition in design before build (one short design dispatch)."
+  expanded:
+    summary: Recommended plus an engine/tooling-sprint exemption predicate and a flip-to-blocking ramp.
+    tradeoffs:
+      - "Flip-to-blocking is operator-gated (matches the report-only ramp of the sibling findings); defer beyond this sprint."
+assumptions:
+  safe:
+    - "sprint-manager-consult.js computeFindings is exported and unit-testable in isolation (verified: exported at L600)."
+    - "The record-backed coverage pattern (RECORD_BACKED_CUTOFF + hasBackingDispatchRecord) is the right reuse target for the new finding (verified: it backs missing_design_consult)."
+    - "scan:sprint-manager-consult is already wired into /scan:full, so surfacing the new finding is additive."
+  unsafe: []
+  needs_user_or_beta_review:
+    - "The exact definition of a 'product-lead authorship record' (dispatch-completion vs plan-contract created_by vs epsilon-prompts return file) — pin in design, do not guess at build."
+    - "Whether engine/tooling sprints (no product PRD) are exempt or simply never trip the predicate — design must make this explicit so the finding is not aspirational."
+open_questions:
+  blocking: []
+  non_blocking:
+    - "What is the authoritative source-of-truth for a product-lead authorship record? (design)"
+    - "Should the finding's cutoff be the WG-3 ship date (2026-06-12) or the enforcer ship date? (design — must not flag the pre-WG-3 backlog)"
+    - "Are engine/tooling sprints exempt from the product-lead-authoring requirement, or do they simply never satisfy the 'has a product PRD' precondition? (design)"
+non_goals:
+  - "No change to the WG-3 skill-body routing itself (already shipped at 1e2e6faf)."
+  - "No flip of the finding from report-only to blocking (operator-gated, matches the sibling findings' ramp)."
+  - No retroactive flagging of pre-cutoff sprints.
+  - No new manager-consult finding beyond missing_product_lead_authoring.
+  - "No push to remote without explicit in-session approval (the operator has standing push/merge freedom; the orchestrator never pushes)."
+requirement_areas:
+  - "R-1 detector: add a missing_product_lead_authoring finding to computeFindings() — cutoff-gated, record-backed (reuse hasBackingDispatchRecord), solo-mode-aware (alpha-solo legitimate only in solo mode), fail-closed on a missing/unparseable record source; export any new constants for the test harness."
+  - "R-2 authorship-record contract: define and read the authoritative product-lead authorship signal correlated to a sprint (resolved in design), and the precondition that the sprint produced a plan-contract or PRD."
+  - "R-3 scan wiring: surface the new finding_type through scan:sprint-manager-consult / /scan:full alongside missing_design_consult (additive)."
+  - "R-4 fixtures + coverage: plant positive fixtures (post-cutoff non-solo sprint with plan-contract/PRD and no product-lead record) and negative fixtures (solo mode, pre-cutoff, valid product-lead record present) so the detector is proven and false-green-resistant."
+  - "R-5 debt reconciliation: mark ED-051 resolved in enforcement-debt.jsonl with the enforcer reference; regenerate both manifests if any framework-tracked file changed."
+high_level_story_candidates:
+  - "As the President, I am told at /scan:full when a non-solo sprint produced product requirements without a product-lead authorship record, so the WG-3 routing rule is enforced not just documented."
+  - "As an engineer extending the enforcer, the new finding reuses the existing record-backed machinery so it behaves consistently with missing_design_consult."
+  - "As a reviewer, planted fixtures prove the finding fires on the real violation and stays silent on legitimate solo/engine/pre-cutoff sprints."
+granular_story_candidates:
+  - "Add missing_product_lead_authoring to computeFindings with the cutoff + record-backed + solo-aware predicate."
+  - Read the product-lead authorship record source defined in design and the plan-contract/PRD precondition.
+  - "Surface the new finding_type through scan:sprint-manager-consult / /scan:full."
+  - "Add positive + negative planted fixtures and test cases to the enforcer test harness."
+  - Mark ED-051 resolved and regenerate both manifests if needed.
+workstream_candidates:
+  - "WS-1 detector + authorship-record read (R-1, R-2)"
+  - "WS-2 scan wiring (R-3)"
+  - "WS-3 fixtures + coverage (R-4)"
+  - "WS-4 debt reconciliation + manifests (R-5)"
+preliminary_ticket_candidates:
+  allowed: false
+  candidates: []
+  notes: "Tickets are minted after design pins the authorship-record contract; expected tickets map to the four workstreams (detector, scan-wiring, fixtures, debt/manifests)."
+external_service_dependencies:
+  status: none_expected
+  required: []
+  possible: []
+  notes: "Pure dev-tooling/engine sprint — no external services, signups, credentials, network calls, or billing."
+approval_boundaries:
+  - "Do not flip the new finding from report-only to blocking without operator approval (matches the sibling findings' ramp)."
+  - Do not retroactively flag pre-cutoff sprints.
+  - Do not push to remote without explicit in-session approval.
+design_required: true
+execution_allowed_without_design: false
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+lane:
+  type: branch
+  value: session/2026-06-13
+  isolation_notes: "Engine/tooling sprint on the active session branch; no remote push without explicit approval; fast-close via ff-merge to main per engine-sprint cadence (RI-001)."
+beta_review:
+  required: true
+  likely_founder_rejection_risks: []
+  overbuild_risks:
+    - "Flipping to blocking in this sprint would be premature; keep report-only to match missing_design_consult."
+    - Inventing a new authorship-record store instead of reusing dispatch-completions would be overbuild.
+  missing_context_risks:
+    - "The authorship-record definition must be grounded in design before build, else the finding is aspirational."
+    - Cutoff choice must avoid flagging the pre-WG-3 backlog.
+plan_quality:
+  status: pass
+  confidence: high
+  evidence_gaps:
+    - Authoritative product-lead authorship-record source to be pinned in design.
+  fail_reasons: []
+next_recommended_command: "/sprint:design --sprint SP-20260613-001 --documentation-scale s"
+resume_instructions: "Design pins the product-lead authorship-record contract (R-2) and the cutoff/engine-exemption decisions, then mint tickets for the four workstreams and execute. Mirror the missing_design_consult implementation in scripts/checks/sprint-manager-consult.js."
+tracker_paths:
+  current_sprint: ".claude/project/sprint/current-sprint.yaml"
+  sprint_progress: ".claude/project/sprint/sprint-progress.yaml"
+  plan_contract: ".claude/project/sprint/plan-contracts/PC-20260614-0076.yaml"
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260614-0076.report.md"
+created_by: alpha
+updated_by: alpha

@@ -35,6 +35,9 @@ const {
   RECORD_BACKED_CUTOFF,
   REQUIRED_MANAGER,
   DESIGN_TOUCH_MANAGERS,
+  AUTHORING_CUTOFF,
+  AUTHORING_ROLE,
+  AUTHORING_PHASES,
 } = require("./sprint-manager-consult");
 
 let passes = 0;
@@ -466,6 +469,155 @@ console.log("\n(j) CLI EXIT CODES — subprocess tests:");
     try { fs.rmSync(tmpDir, { recursive: true }); } catch { /* ignore */ }
   }
 }
+
+// ── (pl) ED-051 PRODUCT-LEAD AUTHORING COVERAGE (report-only advisory) ──────────
+//   pl1 — post-cutoff plan artifact, NO product-lead record → advisory fires (report-only)
+//   pl2 — design artifact, product-lead record only HISTORIC (out-of-window) → fires
+//   pl3 — plan artifact + in-window product-lead record → GREEN (compliant)
+//   pl4 — NO plan/design phase event (solo shape) → GREEN via in-scope carve-out (non-circular)
+//   pl5 — pre-AUTHORING_CUTOFF plan artifact + no record → exempt
+//   pl6 — sprint_id ISOLATION: A (record) greens, B (no record) fires; no cross-green
+//   pl-wl — whitelist: phase "replan"/"design-review" must NOT trip the signal
+//   pl-nocross — design-touch-only sprint (no plan/design phase event) → 0 authoring advisory
+
+console.log("\n(pl) ED-051 PRODUCT-LEAD AUTHORING COVERAGE (report-only):");
+
+const POST_AUTHORING_DATE = AUTHORING_CUTOFF; // "2026-06-12" — at the cutoff boundary → applicable
+const PRE_AUTHORING_DATE = "2026-06-11"; // before AUTHORING_CUTOFF → exempt
+
+/** A sprint_full PHASE event (the in-scope authoring signal). */
+function makePhaseEventRec(sprintId, phase) {
+  return makeSprintFullRec(sprintId, "sprint_full_phase_started", { phase });
+}
+
+// pl1 — post-cutoff plan artifact, NO product-lead record → advisory fires (NOT blocking)
+{
+  const sprintId = "SP-TEST-PLA-MISS-001";
+  const events = [makePhaseEventRec(sprintId, "plan")];
+  const r = computeFindings(events, { [sprintId]: POST_AUTHORING_DATE }, WIRE_DATE, []);
+  ok(
+    "pl1: post-cutoff plan artifact + no product-lead record → advisory fires",
+    (r.advisoryFindings || []).some((f) => f.finding_type === "missing_product_lead_authoring"),
+    `advisory=${JSON.stringify(r.advisoryFindings)}`,
+  );
+  ok("pl1: applicable=1", r.applicable === 1, `got ${r.applicable}`);
+  ok("pl1: report-only — 0 BLOCKING findings", r.findings.length === 0, `findings=${JSON.stringify(r.findings)}`);
+}
+
+// pl2 — design artifact, product-lead record only HISTORIC (outside sprint window) → fires
+{
+  const sprintId = "SP-TEST-PLA-HIST-001";
+  const events = [makePhaseEventRec(sprintId, "design")];
+  const histRecord = makeDispatchRecord("product-lead", HISTORIC_RECORD_TS, { sprint_id: sprintId, step: "design" });
+  const r = computeFindings(events, { [sprintId]: POST_AUTHORING_DATE }, WIRE_DATE, [histRecord]);
+  ok(
+    "pl2: design artifact + only historic (out-of-window) product-lead record → advisory fires",
+    (r.advisoryFindings || []).some((f) => f.finding_type === "missing_product_lead_authoring"),
+    `advisory=${JSON.stringify(r.advisoryFindings)}`,
+  );
+}
+
+// pl3 — plan artifact + in-window product-lead record → GREEN (β negative (a))
+{
+  const sprintId = "SP-TEST-PLA-OK-001";
+  const events = [makePhaseEventRec(sprintId, "plan")];
+  const record = makeDispatchRecord("product-lead", BASE_TS, { sprint_id: sprintId, step: "plan" });
+  const r = computeFindings(events, { [sprintId]: POST_AUTHORING_DATE }, WIRE_DATE, [record]);
+  ok(
+    "pl3: plan artifact + in-window product-lead record → 0 advisory (compliant greens)",
+    (r.advisoryFindings || []).length === 0,
+    `advisory=${JSON.stringify(r.advisoryFindings)}`,
+  );
+  ok("pl3: applicable=1", r.applicable === 1, `got ${r.applicable}`);
+}
+
+// pl4 — NO plan/design phase event (the solo shape) → GREEN via in-scope carve-out (β negative (b))
+{
+  const sprintId = "SP-TEST-PLA-SOLO-001";
+  // solo α one-offs never run /sprint:full plan/design phases → only an execute event (or none)
+  const events = [makeSprintFullRec(sprintId, "sprint_full_phase_started", { phase: "execute" })];
+  const r = computeFindings(events, { [sprintId]: POST_AUTHORING_DATE }, WIRE_DATE, []);
+  ok(
+    "pl4: no plan/design phase event (solo shape) + no record → 0 advisory via in-scope carve-out (NOT circular)",
+    (r.advisoryFindings || []).length === 0,
+    `advisory=${JSON.stringify(r.advisoryFindings)}`,
+  );
+  ok("pl4: solo sprint NOT counted applicable (out of scope)", r.applicable === 0, `got ${r.applicable}`);
+}
+
+// pl5 — pre-AUTHORING_CUTOFF plan artifact + no record → exempt
+{
+  const sprintId = "SP-TEST-PLA-PRE-001";
+  const events = [makePhaseEventRec(sprintId, "plan")];
+  const r = computeFindings(events, { [sprintId]: PRE_AUTHORING_DATE }, WIRE_DATE, []);
+  ok(
+    "pl5: pre-AUTHORING_CUTOFF plan artifact + no record → exempt, 0 advisory",
+    (r.advisoryFindings || []).length === 0,
+    `advisory=${JSON.stringify(r.advisoryFindings)}`,
+  );
+}
+
+// pl6 — sprint_id ISOLATION: A (record) greens, B (no record) fires; A's record never greens B
+{
+  const sprintA = "SP-TEST-PLA-ISO-A";
+  const sprintB = "SP-TEST-PLA-ISO-B";
+  const events = [makePhaseEventRec(sprintA, "plan"), makePhaseEventRec(sprintB, "plan")];
+  const recordA = makeDispatchRecord("product-lead", BASE_TS, { sprint_id: sprintA, step: "plan" });
+  const r = computeFindings(
+    events,
+    { [sprintA]: POST_AUTHORING_DATE, [sprintB]: POST_AUTHORING_DATE },
+    WIRE_DATE,
+    [recordA],
+  );
+  const advA = (r.advisoryFindings || []).filter((f) => f.sprint_id === sprintA);
+  const advB = (r.advisoryFindings || []).filter((f) => f.sprint_id === sprintB);
+  ok(
+    "pl6: sprint_id isolation — A (has record) greens, B (no record) fires; A's record does NOT green B",
+    advA.length === 0 && advB.length === 1,
+    `advA=${JSON.stringify(advA)} advB=${JSON.stringify(advB)}`,
+  );
+  ok("pl6: applicable=2 (both in-scope)", r.applicable === 2, `got ${r.applicable}`);
+}
+
+// pl-wl — whitelist: phase "replan"/"design-review" must NOT trip the in-scope signal (β rider #1)
+{
+  const sprintId = "SP-TEST-PLA-WL-001";
+  const events = [
+    makeSprintFullRec(sprintId, "sprint_full_phase_started", { phase: "replan" }),
+    makeSprintFullRec(sprintId, "sprint_full_phase_started", { phase: "design-review" }),
+  ];
+  const r = computeFindings(events, { [sprintId]: POST_AUTHORING_DATE }, WIRE_DATE, []);
+  ok(
+    "pl-wl: phase 'replan'/'design-review' does NOT trip the signal (whitelist, not loose substring)",
+    (r.advisoryFindings || []).length === 0,
+    `advisory=${JSON.stringify(r.advisoryFindings)}`,
+  );
+}
+
+// pl-nocross — a design-touch-only sprint (no plan/design phase event) must NOT trip authoring advisory
+{
+  const sprintId = "SP-TEST-PLA-NOCROSS-001";
+  const events = [makeSprintFullRec(sprintId), makeManagerConsultRec(sprintId, "visual-review")];
+  const r = computeFindings(events, { [sprintId]: POST_AUTHORING_DATE }, WIRE_DATE, []);
+  ok(
+    "pl-nocross: design-touch-only sprint (no plan/design phase event) → 0 authoring advisory (no cross-contamination)",
+    (r.advisoryFindings || []).length === 0,
+    `advisory=${JSON.stringify(r.advisoryFindings)}`,
+  );
+}
+
+// pl-shape — module-shape sanity for the new constants
+console.log("\n(pl-shape) ED-051 module exports:");
+ok("AUTHORING_CUTOFF is 2026-06-12", AUTHORING_CUTOFF === "2026-06-12", `got ${AUTHORING_CUTOFF}`);
+ok("AUTHORING_ROLE is product-lead", AUTHORING_ROLE === "product-lead", `got ${AUTHORING_ROLE}`);
+ok(
+  "AUTHORING_PHASES whitelists plan + design",
+  Array.isArray(AUTHORING_PHASES) && AUTHORING_PHASES.includes("plan") && AUTHORING_PHASES.includes("design"),
+);
+ok(
+  "AUTHORING_PHASES excludes execute/replan (bounded whitelist)",
+  !AUTHORING_PHASES.includes("execute") && !AUTHORING_PHASES.includes("replan"),
+);
 
 // ── Results ───────────────────────────────────────────────────────────────────
 

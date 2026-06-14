@@ -1,5 +1,5 @@
 schema: warpos/sprint/active-sprints/v1
-primary: SP-20260612-001
+primary: SP-20260613-001
 sprints:
   - id: SP-20260512-001
     title: Multi-sprint parallelism for Sprint Workflow
@@ -980,5 +980,16 @@ sprints:
     pointer: ".claude/project/sprint/sprints/SP-20260612-001"
     created_at: "2026-06-12T15:24:35.474Z"
     updated_at: "2026-06-12T15:24:35.474Z"
+  - id: SP-20260613-001
+    title: "ED-051 enforcer — missing_product_lead_authoring finding"
+    status: closed
+    lane:
+      type: default
+      value: null
+      isolation_notes: "Engine/tooling sprint — closed via /sprint:full lifecycle (plan→design→build) + engine fast-close (RI-001): ff-merge to main, retro deferred to milestone close. β DECIDE 0.91 at all 4 boundaries; 56/56 tests; report-only finding; ED-051 resolved; self-dogfooded GREEN."
+    layout: per_sprint_subdir
+    pointer: ".claude/project/sprint/sprints/SP-20260613-001"
+    created_at: "2026-06-14T01:34:52.870Z"
+    updated_at: "2026-06-14T02:00:00.000Z"
 created_at: "2026-05-12T22:57:35.667Z"
-updated_at: "2026-06-12T15:24:35.474Z"
+updated_at: "2026-06-14T01:34:52.870Z"

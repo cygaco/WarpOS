@@ -55,6 +55,28 @@ const WIRE_DATE = "2026-06-04";
  */
 const RECORD_BACKED_CUTOFF = "2026-06-10";
 
+/**
+ * ED-051 — product-lead authoring coverage. WG-3 (commit 1e2e6faf, 2026-06-12) routed
+ * /sprint:plan + /sprint:design requirement authoring to the product-lead role (was: no
+ * role owner → the orchestrator self-authored reqs). This enforcer makes that rule
+ * self-detecting: a post-cutoff sprint that ran the plan/design phases but has no backing
+ * product-lead authorship record is surfaced (REPORT-ONLY — see `advisoryFindings`).
+ *
+ * AUTHORING_CUTOFF = the WG-3 commit date, so the pre-WG-3 backlog is exempt exactly as
+ * WIRE_DATE exempts pre-ADR-0007 sprints (no retroactive flags).
+ * AUTHORING_ROLE   = the literal role string product-lead dispatch-completions carry
+ *                    (verified in dispatch-completions.jsonl — NOT assumed).
+ * AUTHORING_PHASES = the WG-3-routed phases; the in-scope signal is a sprint_full PHASE
+ *                    event whose `phase` is EXACTLY one of these (whitelist, NOT a loose
+ *                    substring — "replan"/"design-review" must not widen scope). Solo/adhoc
+ *                    one-offs never invoke /sprint:full's plan/design phases, so they never
+ *                    emit these events → never in-scope (a STRUCTURAL carve-out, not an
+ *                    inference from record-absence — which would be circular).
+ */
+const AUTHORING_CUTOFF = "2026-06-12";
+const AUTHORING_ROLE = "product-lead";
+const AUTHORING_PHASES = Object.freeze(["plan", "design"]);
+
 /** Buffer (ms) around the sprint event time window when correlating dispatch records. */
 const SPRINT_WINDOW_BUFFER_MS = 2 * 60 * 60 * 1000; // 2 hours
 
@@ -325,6 +347,8 @@ function computeFindings(events, sprintDates = {}, cutoff = WIRE_DATE, dispatchR
         minTsMs: null,           // F-1: min event timestamp for sprint window correlation
         maxTsMs: null,           // F-1: max event timestamp for sprint window correlation
         discardedTs: [],         // R-4: event ts the horizon clamp discarded (C-4 note)
+        authoringArtifact: false,// ED-051: a plan/design PHASE event attributed to this sprint
+        authoringEvidence: null, // ED-051: which event established the in-scope signal
       };
     }
     const sd = sprintData[sprintId];
@@ -350,6 +374,14 @@ function computeFindings(events, sprintDates = {}, cutoff = WIRE_DATE, dispatchR
       if (f.ui_touched === true) {
         sd.designTouch = true;
         if (!sd.designTouchEvidence) sd.designTouchEvidence = `ui_touched on ${f.kind}`;
+      }
+      // ED-051: a sprint_full PHASE event whose phase is EXACTLY plan/design is the
+      // INDEPENDENT in-scope signal for product-lead authoring coverage. Whitelist match
+      // (Array.includes on the exact phase value) — a phase like "replan"/"design-review"
+      // is NOT matched, so the signal cannot silently widen scope (β rider).
+      if (AUTHORING_PHASES.includes(f.phase)) {
+        sd.authoringArtifact = true;
+        if (!sd.authoringEvidence) sd.authoringEvidence = `${f.kind}:${f.phase}`;
       }
     }
 
@@ -427,8 +459,47 @@ function computeFindings(events, sprintDates = {}, cutoff = WIRE_DATE, dispatchR
     }
   }
 
+  // ── ED-051: product-lead authoring coverage (REPORT-ONLY advisory pass) ─────────
+  // Separate pass + separate return channel so this NEW finding surfaces WITHOUT flipping
+  // the enforcer's exit code (ramp parity with the report-only E-LIFECYCLE guards; the
+  // flip-to-blocking is operator-gated, never self-promoted). Independent in-scope signal
+  // = a plan/design PHASE event attributed to the sprint (set during bucketing above);
+  // solo/adhoc work never emits these, so it is never evaluated (structural carve-out, not
+  // a circular record-absence inference). Own cutoff (AUTHORING_CUTOFF) exempts the
+  // pre-WG-3 backlog. Each sprint is evaluated in isolation by sprint_id — a different
+  // sprint's plan event can never attribute debt here.
+  const advisoryFindings = [];
+  const applicableSet = new Set(applicableSprintIds);
+  for (const sprintId of Object.keys(sprintData)) {
+    const sd = sprintData[sprintId];
+    if (!sd.authoringArtifact) continue; // out of scope — no plan/design phase event for THIS sprint
+    if (isSyntheticSprint(sprintId)) continue;
+    const sprintDate = Object.hasOwn(sprintDates, sprintId) ? sprintDates[sprintId] : undefined;
+    if (!sprintDate) continue; // unknown date → exempt (fail-safe; mirrors the design-finding path)
+    if (sprintDate < AUTHORING_CUTOFF) continue; // pre-WG-3 backlog — exempt entirely
+    // In-scope for authoring coverage — count it applicable (union with the design-touch set,
+    // deduped so a both-signal sprint is not double-counted).
+    if (!applicableSet.has(sprintId)) {
+      applicableSet.add(sprintId);
+      applicableSprintIds.push(sprintId);
+      checked++;
+    }
+    // Require a backing ok:true product-lead authorship record correlated by sprint_id —
+    // reuse hasBackingDispatchRecord AS-IS (same R-4 horizon clamp + R-5 sprint_id narrowing;
+    // a different sprint's record never greens this one).
+    if (!hasBackingDispatchRecord(dispatchRecords, AUTHORING_ROLE, sd.minTsMs, sd.maxTsMs, sprintId)) {
+      advisoryFindings.push({
+        sprint_id: sprintId,
+        manager: AUTHORING_ROLE,
+        evidence: `sprint produced a plan/design artifact (${sd.authoringEvidence}) but no backing ok:true '${AUTHORING_ROLE}' authorship dispatch record correlated by sprint_id was found (WG-3/ED-051; post-${AUTHORING_CUTOFF} product-lead authoring required; report-only ramp)`,
+        finding_type: "missing_product_lead_authoring",
+      });
+    }
+  }
+
   return {
     findings,
+    advisoryFindings,
     applicable: applicableSprintIds.length,
     checked,
     undatedExempt,
@@ -545,6 +616,9 @@ if (require.main === module) {
           applicable: 0,
           reason: "no_applicable_sprints",
           cutoff: CUTOFF,
+          authoringCutoff: AUTHORING_CUTOFF,
+          advisoryFindings: [],
+          totalAdvisory: 0,
           undatedExempt: result.undatedExempt,
         }),
       );
@@ -557,8 +631,11 @@ if (require.main === module) {
   }
 
   // 6. Emit results
+  // `ok` / exit code key on the BLOCKING `findings` only — `advisoryFindings`
+  // (missing_product_lead_authoring, ED-051) are REPORT-ONLY and never flip the exit code.
   const ok = result.findings.length === 0;
   const windowDiscards = result.windowDiscards || [];
+  const advisoryFindings = result.advisoryFindings || [];
   if (JSON_OUT) {
     const jsonOut = {
       ok,
@@ -566,7 +643,10 @@ if (require.main === module) {
       checked: result.checked,
       findings: result.findings.slice(0, 30),
       totalFindings: result.findings.length,
+      advisoryFindings: advisoryFindings.slice(0, 30),
+      totalAdvisory: advisoryFindings.length,
       cutoff: CUTOFF,
+      authoringCutoff: AUTHORING_CUTOFF,
       undatedExempt: result.undatedExempt,
       malformedLines: result.malformedLines,
       windowDiscards: windowDiscards.slice(0, 30),
@@ -591,6 +671,13 @@ if (require.main === module) {
         process.stderr.write(`\n  ... and ${result.findings.length - 10} more\n`);
       }
     }
+    // ED-051 report-only: surface authoring advisories as INFO (never affects exit code).
+    if (advisoryFindings.length > 0) {
+      process.stderr.write(
+        `\nINFO [sprint-manager-consult] ${advisoryFindings.length} report-only authoring advisory(ies) (missing_product_lead_authoring, ED-051; post-${AUTHORING_CUTOFF}):\n\n`,
+      );
+      process.stderr.write(formatFindingsTable(advisoryFindings.slice(0, 10)) + "\n");
+    }
   }
   process.exit(ok ? 0 : 1);
 }
@@ -608,4 +695,7 @@ module.exports = {
   REQUIRED_MANAGER,
   DESIGN_TOUCH_MANAGERS,
   WINDOW_HARD_CAP_MS,
+  AUTHORING_CUTOFF,
+  AUTHORING_ROLE,
+  AUTHORING_PHASES,
 };
