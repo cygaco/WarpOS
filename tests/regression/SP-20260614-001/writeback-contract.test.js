@@ -13,9 +13,14 @@ const path = require("node:path");
 const ROOT = path.join(__dirname, "..", "..", "..");
 const PAGE = path.join(ROOT, "framework/templates/app-scaffold/src/app/admin/readiness/page.tsx.tmpl");
 const ACTION = path.join(ROOT, "framework/templates/app-scaffold/src/app/admin/readiness/actions.ts.tmpl");
+// The page-side toggle form moved into the "use client" ToggleControl component (the
+// useActionState wrapper + never-swallow error surface). The page-side field emission
+// the action must agree with now lives there — so the contract is sourced from ToggleControl.
+const TOGGLE = path.join(ROOT, "framework/templates/app-scaffold/src/app/admin/readiness/ToggleControl.tsx.tmpl");
 
-const page = fs.readFileSync(PAGE, "utf8");
+const page = fs.readFileSync(TOGGLE, "utf8");
 const action = fs.readFileSync(ACTION, "utf8");
+const pageRow = fs.readFileSync(PAGE, "utf8");
 
 let pass = 0;
 let fail = 0;
@@ -24,7 +29,7 @@ function check(name, cond) {
   else { fail++; console.log("  FAIL " + name); }
 }
 
-// Field names the page emits in the toggle forms (hidden inputs).
+// Field names the page-side toggle form emits (hidden inputs) — now in ToggleControl.
 const pageFields = new Set([...page.matchAll(/name="([a-zA-Z]+)"/g)].map((m) => m[1]));
 // Field names the action reads via formValue(formData, "X").
 const actionReads = new Set([...action.matchAll(/formValue\(formData,\s*"([a-zA-Z]+)"\)/g)].map((m) => m[1]));
@@ -47,8 +52,22 @@ check(
   /buildReadinessReport/.test(action) && /owner_class/.test(action),
 );
 check(
-  "the toggle control is a submit affordance (form action wired)",
-  /action=\{toggleReadinessItemAction\}/.test(page) && /type="submit"/.test(page),
+  "the toggle control is a submit affordance (form action wired via useActionState)",
+  /action=\{formAction\}/.test(page) && /type="submit"/.test(page),
+);
+check(
+  "ToggleControl invokes the (unchanged) toggleReadinessItemAction",
+  /toggleReadinessItemAction/.test(page),
+);
+check(
+  "NEVER-SWALLOW: a { ok:false } toggle result renders inline (role=alert, aria-live)",
+  /state\.ok === false/.test(page) &&
+    /role="alert"/.test(page) &&
+    /aria-live="polite"/.test(page),
+);
+check(
+  "the page wires the toggle via <ToggleControl> (do-first + done rows)",
+  /<ToggleControl\b/.test(pageRow),
 );
 
 console.log(`\nResults: ${pass} passed, ${fail} failed.`);

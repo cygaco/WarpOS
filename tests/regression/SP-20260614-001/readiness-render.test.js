@@ -45,6 +45,17 @@ const GROUP = path.join(
   "readiness",
   "group.ts.tmpl",
 );
+const TOGGLE = path.join(
+  REPO,
+  "framework",
+  "templates",
+  "app-scaffold",
+  "src",
+  "app",
+  "admin",
+  "readiness",
+  "ToggleControl.tsx.tmpl",
+);
 
 const tests = [];
 function test(name, fn) {
@@ -127,6 +138,10 @@ test("in-sprint-display-only-do-first-has-toggle", () => {
     "InSprintItemRow must NOT contain a <form> (no write-back affordance)",
   );
   assert.ok(
+    !/<ToggleControl/.test(inSprintBody),
+    "InSprintItemRow must NOT render a ToggleControl (no write-back affordance)",
+  );
+  assert.ok(
     !/toggleReadinessItemAction/.test(inSprintBody),
     "InSprintItemRow must NOT wire the toggle action",
   );
@@ -144,17 +159,36 @@ test("in-sprint-display-only-do-first-has-toggle", () => {
     "InSprintItemRow must still surface the deep-link CTA",
   );
 
-  // OpenItemRow (do-first) DOES carry the form + submit toggle.
+  // OpenItemRow (do-first) DOES carry the toggle — now via the <ToggleControl> client
+  // component (the submit-button form + error surface moved there). checked={false}.
   const openMatch = src.match(/function OpenItemRow\([\s\S]*?\n}\n/);
   assert.ok(openMatch, "could not isolate OpenItemRow body");
   const openBody = openMatch[0];
   assert.ok(
-    /<form action=\{toggleReadinessItemAction\}>/.test(openBody),
-    "OpenItemRow must carry the toggle <form>",
+    /<ToggleControl\b[\s\S]*?checked=\{false\}/.test(openBody),
+    "OpenItemRow must render <ToggleControl checked={false} />",
+  );
+
+  // The submit-button toggle + form live in ToggleControl.tsx.tmpl now.
+  const toggleSrc = fs.readFileSync(TOGGLE, "utf8");
+  assert.ok(
+    /<form action=\{formAction\}>/.test(toggleSrc),
+    "ToggleControl must carry the toggle <form> (wired to the action via useActionState)",
   );
   assert.ok(
-    /type="submit"/.test(openBody),
-    "OpenItemRow must carry a submit-button toggle",
+    /type="submit"/.test(toggleSrc),
+    "ToggleControl must carry a submit-button toggle",
+  );
+  assert.ok(
+    /toggleReadinessItemAction/.test(toggleSrc),
+    "ToggleControl must invoke the (unchanged) toggleReadinessItemAction",
+  );
+  // NEVER-SWALLOW: a failed toggle renders an inline aria-live error, never dropped.
+  assert.ok(
+    /state\.ok === false/.test(toggleSrc) &&
+      /role="alert"/.test(toggleSrc) &&
+      /aria-live="polite"/.test(toggleSrc),
+    "ToggleControl must render the { ok:false } error inline (role=alert, aria-live)",
   );
 
   // The group.map routes in-sprint → InSprintItemRow and do-first → OpenItemRow.

@@ -17,7 +17,9 @@ import { existsSync, readFileSync, renameSync, unlinkSync, writeFileSync } from 
 //   2. finds the single line whose `id=<id>` marker matches `id`
 //   3. toggles that line's [ ] <-> [x] in place, preserving every other byte
 //   4. writes atomically (write tmp, renameSync over original)
-//   5. if id not found -> NO write (no tmp left), returns { ok: false }
+//   5a. if id not found -> NO write (no tmp left), returns { ok: false }
+//   5b. if id matches MORE THAN ONE line -> corrupt checklist; FAIL CLOSED:
+//       NO write (no tmp left), returns { ok: false } — never patch the first match
 // ---------------------------------------------------------------------------
 
 export type PatchResult =
@@ -99,18 +101,33 @@ export function patchChecklistItem(
   // files — so we never do that.
   const segments = splitLinesPreservingEol(raw);
 
-  // (2) find the single line carrying this id.
+  // (2) find the single line carrying this id. Scan ALL lines (no early break) so a duplicate id
+  // is detected: two lines sharing one id= marker is a corrupt-checklist signal, not a
+  // "patch the first one" situation.
   let targetIndex = -1;
+  let matchCount = 0;
   for (let i = 0; i < segments.length; i += 1) {
     if (lineMatchesId(segments[i].content, id)) {
-      targetIndex = i;
-      break;
+      if (targetIndex === -1) targetIndex = i;
+      matchCount += 1;
     }
   }
 
-  // (5) id not found -> NO write, return error. Never append / render-from-model.
+  // (5a) id not found -> NO write, return error. Never append / render-from-model.
   if (targetIndex === -1) {
     return { ok: false, id, error: `checklist item not found: id=${id}` };
+  }
+
+  // (5b) FAIL CLOSED on a duplicate id. More than one line carries this id= marker, so the
+  // checklist is corrupt and there is no unambiguous line to toggle. Bail BEFORE the atomic-write
+  // block — no tmp is ever created, so the original file is byte-identical and no tmp is left —
+  // and surface an error rather than silently patching the first match.
+  if (matchCount > 1) {
+    return {
+      ok: false,
+      id,
+      error: `duplicate id: ${matchCount} lines carry id=${id} (corrupt checklist)`,
+    };
   }
 
   // (3) toggle ONLY the checkbox glyph on that line's CONTENT; every other byte — including

@@ -31,7 +31,7 @@ import type {
   ReadinessReport,
   ReadinessViewItem,
 } from "@/lib/readiness/types";
-import { toggleReadinessItemAction } from "./actions";
+import { ToggleControl } from "./ToggleControl";
 
 // The readiness producer is a machine-layer Node (CommonJS) module shipped with the
 // scaffold at the product repo root (scripts/scaffold/readiness-report.js). It runs
@@ -125,28 +125,11 @@ function OpenItemRow({
   return (
     <div className="flex flex-col gap-3 rounded-md border p-4">
       <div className="flex items-start gap-3">
-        {/* Progressive-enhancement toggle: a server-action form whose toggle control
-            is a submit BUTTON (works for mouse + keyboard with no client JS — a
-            readOnly checkbox does not submit on click). aria-pressed conveys state.
+        {/* Toggle control is a "use client" component wrapping the (unchanged) server
+            action: a submit-button form (works for mouse + keyboard; aria-pressed conveys
+            state) PLUS the never-swallow inline error surface for a denied/failed toggle.
             Sends id + nextChecked; the action server-derives owner_class for authz. */}
-        <form action={toggleReadinessItemAction}>
-          <input type="hidden" name="id" value={item.id} />
-          <input type="hidden" name="nextChecked" value="true" />
-          <button
-            type="submit"
-            aria-pressed={false}
-            className="flex cursor-pointer items-start gap-3 text-left"
-          >
-            <span
-              aria-hidden
-              className="mt-0.5 size-[18px] shrink-0 rounded-[4px] border border-input"
-            />
-            <span className="text-sm font-medium">{item.label}</span>
-            <span className="sr-only">
-              Mark &ldquo;{item.label}&rdquo; as done
-            </span>
-          </button>
-        </form>
+        <ToggleControl id={item.id} label={item.label} checked={false} />
       </div>
 
       <div className="flex flex-col gap-3 pl-[30px] sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
@@ -199,30 +182,13 @@ function InSprintItemRow({ item }: { item: ReadinessViewItem }) {
 function DoneItemRow({ item }: { item: ReadinessViewItem }) {
   return (
     <div className="flex flex-col gap-2 rounded-md border p-4 opacity-90">
-      <form action={toggleReadinessItemAction} className="flex items-center gap-3">
-        <input type="hidden" name="id" value={item.id} />
-        <input type="hidden" name="nextChecked" value="false" />
-        <button
-          type="submit"
-          aria-pressed={true}
-          className="flex cursor-pointer items-center gap-3 text-left"
-        >
-          <span
-            aria-hidden
-            className="flex size-[18px] shrink-0 items-center justify-center rounded-[4px] border border-primary bg-primary text-primary-foreground"
-          >
-            <CheckCircle2 className="size-3" />
-          </span>
-          <span className="text-sm text-muted-foreground">{item.label}</span>
-          <span className="sr-only">
-            Mark &ldquo;{item.label}&rdquo; as not done
-          </span>
-        </button>
+      <div className="flex items-center gap-3">
+        <ToggleControl id={item.id} label={item.label} checked={true} />
         <span className="inline-flex items-center gap-1 rounded-md border border-primary px-2 py-0.5 text-xs font-medium text-primary">
           <CheckCircle2 className="size-3.5" aria-hidden />
           Done
         </span>
-      </form>
+      </div>
     </div>
   );
 }

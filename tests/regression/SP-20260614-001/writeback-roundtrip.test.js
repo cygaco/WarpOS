@@ -258,6 +258,45 @@ ok("unknown-id-no-write", () => {
   fs.rmSync(dir, { recursive: true, force: true });
 });
 
+// ── B4 — duplicate-id fail-closed ────────────────────────────────────────────
+// A corrupt checklist with TWO lines carrying the SAME id= marker must NOT be silently
+// patched-on-the-first-match. The write-back fails closed: NO write (original byte-identical,
+// no tmp left behind) and an error is returned.
+ok("duplicate-id-fails-closed-no-write", () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "wb-dup-"));
+  const file = path.join(dir, "FOUNDERS_CHECKLIST.md");
+
+  // Two lines share id=provider.accounts — a corrupt-checklist signal.
+  const dup = [
+    "<!-- warpos:founders-checklist v1 -->",
+    "schema: warpos/founders-checklist/v1",
+    "",
+    "## Human-only launch gates",
+    "- [ ] id=provider.accounts dim=product source=core Create production developer accounts",
+    "- [x] id=domain.dns dim=deployment source=core Confirm domain ownership and DNS access",
+    "- [ ] id=provider.accounts dim=product source=core DUPLICATE id — corrupt checklist",
+    "<!-- /warpos:founders-checklist -->",
+    "",
+  ].join("\n");
+  fs.writeFileSync(file, dup, "utf8");
+  const beforeRaw = fs.readFileSync(file, "utf8");
+
+  const res = patchChecklistItem(file, "provider.accounts", true);
+
+  // Error surfaced, fail-closed.
+  assert.strictEqual(res.ok, false, "duplicate id returns an error (fail closed)");
+  assert.ok(/duplicate/i.test(res.error), "error explains the duplicate id");
+
+  // NO write: original byte-identical (the first match was NOT silently patched).
+  const afterRaw = fs.readFileSync(file, "utf8");
+  assert.strictEqual(afterRaw, beforeRaw, "original untouched byte-for-byte — first match not patched");
+
+  // No tmp file left behind.
+  assert.deepStrictEqual(listTmp(dir), [], "no stray .tmp file on duplicate-id bail");
+
+  fs.rmSync(dir, { recursive: true, force: true });
+});
+
 // ── AC-A6 byte-preservation on MIXED / CRLF EOLs ────────────────────────────
 // The producer's .md may be edited on Windows (CRLF), unix (LF), or end up mixed after a
 // cross-platform edit. AC-A6 requires EVERY byte preserved except the one toggled glyph — a

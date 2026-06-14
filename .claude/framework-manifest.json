@@ -52,7 +52,7 @@
     "schema": 32,
     "release_capsule": 180,
     "paths_registry": 1,
-    "template": 117,
+    "template": 118,
     "hooks_registry": 1,
     "guide": 25,
     "knowledge": 72,
@@ -62,7 +62,7 @@
     "module_scope": 1,
     "framework_doc": 4
   },
-  "total": 1297,
+  "total": 1298,
   "assets": {
     "agent": [
       {
@@ -13236,7 +13236,19 @@
         "src": "framework/templates/app-scaffold/src/app/admin/readiness/page.tsx.tmpl",
         "dest": "framework/templates/app-scaffold/src/app/admin/readiness/page.tsx.tmpl",
         "kind": "template",
-        "sha256": "e89d6f869dca7b22bb8b6a3f68ec8cdb857e253d4aba1f08d4e0ea456761c8b0",
+        "sha256": "f7e0601916a3998fd4625691115587199beda5c2169603294dfa8fb514769a52",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "template.app-scaffold.src.app.admin.readiness.ToggleControl.tsx.tmpl",
+        "src": "framework/templates/app-scaffold/src/app/admin/readiness/ToggleControl.tsx.tmpl",
+        "dest": "framework/templates/app-scaffold/src/app/admin/readiness/ToggleControl.tsx.tmpl",
+        "kind": "template",
+        "sha256": "c71cdb9e47dca313b691be14480c5915852b9f393dc6d020bf512abbacb2c657",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -13416,7 +13428,7 @@
         "src": "framework/templates/app-scaffold/src/lib/readiness/writeback.ts.tmpl",
         "dest": "framework/templates/app-scaffold/src/lib/readiness/writeback.ts.tmpl",
         "kind": "template",
-        "sha256": "8ee3ff6b232c574c593cbb10bf5c0f4d797a0d973e0cf5e63bf0c03216826510",
+        "sha256": "0d571960d5309c4c24b14571450320963d2bf14a980491773df275f47ec3510d",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
