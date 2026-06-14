@@ -122,34 +122,29 @@ function OpenItemRow({
   item: ReadinessViewItem;
   startNow: boolean;
 }) {
-  const inputId = `readiness-${item.id}`;
   return (
     <div className="flex flex-col gap-3 rounded-md border p-4">
       <div className="flex items-start gap-3">
-        {/* Progressive-enhancement toggle: a real checkbox inside the server-action form.
-            Submitting flips this owner-action item. Only owner-action items are checkable. */}
-        <form
-          action={toggleReadinessItemAction}
-          className="flex items-start gap-3"
-        >
+        {/* Progressive-enhancement toggle: a server-action form whose toggle control
+            is a submit BUTTON (works for mouse + keyboard with no client JS — a
+            readOnly checkbox does not submit on click). aria-pressed conveys state.
+            Sends id + nextChecked; the action server-derives owner_class for authz. */}
+        <form action={toggleReadinessItemAction}>
           <input type="hidden" name="id" value={item.id} />
-          <input type="hidden" name="checked" value="true" />
-          {/* Server-rendered affordance; the form submit drives the toggle. readOnly
-              keeps React happy without a client handler (progressive enhancement). */}
-          <input
-            id={inputId}
-            type="checkbox"
-            readOnly
-            className="mt-0.5 size-[18px] shrink-0 accent-[var(--primary)]"
-          />
-          <label
-            htmlFor={inputId}
-            className="cursor-pointer text-sm font-medium"
+          <input type="hidden" name="nextChecked" value="true" />
+          <button
+            type="submit"
+            aria-pressed={false}
+            className="flex cursor-pointer items-start gap-3 text-left"
           >
-            {item.label}
-          </label>
-          <button type="submit" className="sr-only">
-            Mark &ldquo;{item.label}&rdquo; as done
+            <span
+              aria-hidden
+              className="mt-0.5 size-[18px] shrink-0 rounded-[4px] border border-input"
+            />
+            <span className="text-sm font-medium">{item.label}</span>
+            <span className="sr-only">
+              Mark &ldquo;{item.label}&rdquo; as done
+            </span>
           </button>
         </form>
       </div>
@@ -172,28 +167,31 @@ function OpenItemRow({
 }
 
 function DoneItemRow({ item }: { item: ReadinessViewItem }) {
-  const inputId = `readiness-${item.id}`;
   return (
     <div className="flex flex-col gap-2 rounded-md border p-4 opacity-90">
       <form action={toggleReadinessItemAction} className="flex items-center gap-3">
         <input type="hidden" name="id" value={item.id} />
-        <input type="hidden" name="checked" value="false" />
-        <input
-          id={inputId}
-          type="checkbox"
-          defaultChecked
-          className="size-[18px] shrink-0 accent-[var(--primary)]"
-        />
-        <label htmlFor={inputId} className="text-sm text-muted-foreground">
-          {item.label}
-        </label>
+        <input type="hidden" name="nextChecked" value="false" />
+        <button
+          type="submit"
+          aria-pressed={true}
+          className="flex cursor-pointer items-center gap-3 text-left"
+        >
+          <span
+            aria-hidden
+            className="flex size-[18px] shrink-0 items-center justify-center rounded-[4px] border border-primary bg-primary text-primary-foreground"
+          >
+            <CheckCircle2 className="size-3" />
+          </span>
+          <span className="text-sm text-muted-foreground">{item.label}</span>
+          <span className="sr-only">
+            Mark &ldquo;{item.label}&rdquo; as not done
+          </span>
+        </button>
         <span className="inline-flex items-center gap-1 rounded-md border border-primary px-2 py-0.5 text-xs font-medium text-primary">
           <CheckCircle2 className="size-3.5" aria-hidden />
           Done
         </span>
-        <button type="submit" className="sr-only">
-          Mark &ldquo;{item.label}&rdquo; as not done
-        </button>
       </form>
     </div>
   );
