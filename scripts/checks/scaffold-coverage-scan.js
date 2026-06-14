@@ -343,8 +343,141 @@ function evaluateScaffold(dir = scaffoldDir()) {
   addTelemetryChecks(dir, errors);
   addAdminSurfaceChecks(dir, errors);
   addFoundersChecklistChecks(dir, errors);
+  addReadinessSurfaceChecks(dir, errors);
+  addReadinessGuideChecks(dir, errors);
 
   return { ok: errors.length === 0, errors, dir };
+}
+
+// ── Readiness surface (S-PF-09a R-5 / AC-ship) ──────────────────────────────────
+// The founders in-app panel is one feature with two halves that must ship together:
+//   - the PRODUCER  : scripts/scaffold/{app.js, readiness-report.js, founders-checklist.js}
+//   - the PANEL     : framework/templates/app-scaffold/src/app/admin/readiness/* + src/lib/readiness/*
+// A producer-present/panel-absent install (or vice versa) is the WG-23 failure that killed
+// doogle's lastmile — so we assert BOTH halves, fail-closed. The producer scripts live in the
+// repo (REPO_ROOT/scripts/scaffold); the panel templates live under the scaffold dir.
+
+// Producer scripts (relative to REPO_ROOT). The readiness panel cannot function without them.
+const READINESS_PRODUCER_FILES = [
+  "scripts/scaffold/app.js",
+  "scripts/scaffold/readiness-report.js",
+  "scripts/scaffold/founders-checklist.js",
+];
+
+// Panel templates (relative to the scaffold dir, .tmpl form). Net-new product-facing surface.
+const READINESS_PANEL_FILES = [
+  "src/app/admin/readiness/page.tsx.tmpl",
+  "src/app/admin/readiness/actions.ts.tmpl",
+];
+
+// The src/lib/readiness/* glob must ship at least one .ts.tmpl (the shared data/render lib).
+const READINESS_LIB_DIR_REL = "src/lib/readiness";
+
+function addReadinessSurfaceChecks(dir, errors, repoRoot = REPO_ROOT) {
+  // Producer half — scripts that emit the readiness report. Resolved from repoRoot, NOT the
+  // scaffold dir (these are framework scripts, not shipped templates). repoRoot is injectable
+  // so fixture tests can plant present/absent producer files in a temp dir.
+  let producerPresent = 0;
+  for (const rel of READINESS_PRODUCER_FILES) {
+    if (fs.existsSync(path.join(repoRoot, rel))) producerPresent++;
+    else errors.push(`readiness producer missing: ${rel}`);
+  }
+
+  // Panel half — the in-app /admin/readiness templates.
+  let panelPresent = 0;
+  for (const rel of READINESS_PANEL_FILES) {
+    if (fs.existsSync(path.join(dir, rel))) panelPresent++;
+    else errors.push(`readiness panel template missing: ${rel}`);
+  }
+
+  // src/lib/readiness/*.ts.tmpl — at least one shared lib template.
+  const libDir = path.join(dir, READINESS_LIB_DIR_REL);
+  let libCount = 0;
+  try {
+    libCount = fs
+      .readdirSync(libDir, { withFileTypes: true })
+      .filter((e) => e.isFile() && /\.ts\.tmpl$/.test(e.name)).length;
+  } catch {
+    libCount = 0;
+  }
+  if (libCount === 0) {
+    errors.push(`readiness shared lib missing: ${READINESS_LIB_DIR_REL}/*.ts.tmpl (expected >=1)`);
+  }
+
+  // Neither half ships orphaned: if EITHER half is fully present while the other is fully
+  // absent, that is a half-shipped feature — flag it explicitly (closes WG-23). This catches
+  // the "producer present but panel absent" (or vice-versa) planted fixture.
+  const producerWhole = producerPresent === READINESS_PRODUCER_FILES.length;
+  const panelWhole = panelPresent === READINESS_PANEL_FILES.length && libCount > 0;
+  const producerAny = producerPresent > 0;
+  const panelAny = panelPresent > 0 || libCount > 0;
+  if (producerWhole && !panelAny) {
+    errors.push("readiness feature half-shipped: producer present but panel/lib absent (WG-23)");
+  }
+  if (panelWhole && !producerAny) {
+    errors.push("readiness feature half-shipped: panel present but producer absent (WG-23)");
+  }
+}
+
+// ── Readiness deep-link guides (AC-A8 / WG-29) ──────────────────────────────────
+// The producer (readiness-report.js) can emit deep_link.ref pointing at any guide basename in
+// its three resolver maps (ID_GUIDE, ID_PREFIX_GUIDE, DIM_GUIDE). Every basename it CAN
+// reference must have a shipped in-app guide content template, AND the [ref] viewer route that
+// renders it must ship — otherwise a panel CTA "points nowhere" and that must be a RED build.
+
+// Glob/route the panel ships to render guide content in-app.
+const GUIDE_CONTENT_DIR_REL = "src/app/admin/guides/_content";
+const GUIDE_VIEWER_ROUTE_REL = "src/app/admin/guides/[ref]/page.tsx.tmpl";
+
+/**
+ * Compute the set of guide basenames the producer is CAPABLE of referencing, by reading the
+ * three deep-link maps out of scripts/scaffold/readiness-report.js source. We parse the source
+ * (the maps are module-private) rather than hardcode, so the enforcer tracks producer drift.
+ * Returns a sorted array of basenames like "PAYMENTS_GUIDE.md".
+ */
+function computeReferenceableGuideBasenames(repoRoot = REPO_ROOT) {
+  const src = readIf(path.join(repoRoot, "scripts", "scaffold", "readiness-report.js"));
+  if (src === null) return [];
+  const scan = stripTsComments(src);
+  const set = new Set();
+  // Restrict to the three resolver-map blocks so we don't sweep unrelated *_GUIDE strings.
+  // The maps are `const NAME = Object.freeze({...})` or `Object.freeze([...])`; capture from
+  // the const decl up to its closing `);` (the maps are the only such freeze-wrapped consts).
+  for (const constName of ["ID_GUIDE", "ID_PREFIX_GUIDE", "DIM_GUIDE"]) {
+    const idx = scan.indexOf(`const ${constName} `);
+    if (idx === -1) continue;
+    // Slice to the next `});` or `]);` (end of an Object.freeze({...}) / Object.freeze([...])).
+    const rest = scan.slice(idx);
+    const endM = rest.match(/\n\}\)\s*;|\n\]\)\s*;|\]\)\s*;|\}\)\s*;/);
+    const block = endM ? rest.slice(0, endM.index + endM[0].length) : rest.slice(0, 2000);
+    for (const bm of block.matchAll(/["']([A-Za-z0-9_]+_GUIDE\.md)["']/g)) {
+      set.add(bm[1]);
+    }
+  }
+  return [...set].sort();
+}
+
+function addReadinessGuideChecks(dir, errors, repoRoot = REPO_ROOT) {
+  const referenceable = computeReferenceableGuideBasenames(repoRoot);
+  if (referenceable.length === 0) {
+    // Producer source unreadable/empty → cannot verify; fail closed.
+    errors.push("readiness guide check: could not compute referenceable guide set from readiness-report.js");
+    return;
+  }
+
+  // (a) Each referenceable basename must have a shipped in-app guide content template.
+  const contentDir = path.join(dir, GUIDE_CONTENT_DIR_REL);
+  for (const base of referenceable) {
+    const tmpl = path.join(contentDir, `${base}.tmpl`); // e.g. PAYMENTS_GUIDE.md.tmpl
+    if (!fs.existsSync(tmpl)) {
+      errors.push(`readiness CTA points nowhere: no shipped guide for referenceable ref "${base}" (expected ${GUIDE_CONTENT_DIR_REL}/${base}.tmpl)`);
+    }
+  }
+
+  // (b) The [ref] viewer route that renders guide content in-app must ship.
+  if (!fs.existsSync(path.join(dir, GUIDE_VIEWER_ROUTE_REL))) {
+    errors.push(`readiness guide viewer route missing: ${GUIDE_VIEWER_ROUTE_REL}`);
+  }
 }
 
 function addFoundersChecklistChecks(dir, errors) {
@@ -730,10 +863,31 @@ if (require.main === module) {
   process.exit(main(process.argv));
 }
 
+/**
+ * Focused, fixture-friendly evaluator for JUST the readiness surface + guide checks.
+ * Tests pass a scaffoldDir (panel/lib/guide templates) and a repoRoot (producer scripts);
+ * both can be temp dirs with planted present/absent files. Returns { ok, errors }.
+ */
+function evaluateReadinessCoverage(scaffoldDir, repoRoot = REPO_ROOT) {
+  const errors = [];
+  addReadinessSurfaceChecks(scaffoldDir, errors, repoRoot);
+  addReadinessGuideChecks(scaffoldDir, errors, repoRoot);
+  return { ok: errors.length === 0, errors };
+}
+
 module.exports = {
   CANONICAL_EVENTS,
   CANONICAL_STAGES,
   REQUIRED_FILES,
+  READINESS_PRODUCER_FILES,
+  READINESS_PANEL_FILES,
+  READINESS_LIB_DIR_REL,
+  GUIDE_CONTENT_DIR_REL,
+  GUIDE_VIEWER_ROUTE_REL,
   evaluateScaffold,
+  evaluateReadinessCoverage,
+  computeReferenceableGuideBasenames,
+  addReadinessSurfaceChecks,
+  addReadinessGuideChecks,
   parseConstStringArray,
 };

@@ -21,6 +21,7 @@
     "block": "a matched row that does NOT run (or whose verdict FAILs) halts/blocks the step",
     "advisory": "a matched row that does not run is a warning, not a halt (e.g. design-quality's W1 ramp)"
   },
+  "_report_only": "An OPTIONAL additive boolean field on a row (NOT a mode value — `mode` stays one of block|advisory so validate() passes). `report_only: true` is the explicit REPORT-ONLY contract: the row is COMPOSED into the step and RUNS, but its verdict can NEVER gate — strictly stronger than plain advisory, which only means 'a no-run is a warning'. A report_only row is always also mode:advisory (belt-and-suspenders: it cannot block even if a future edit flips its mode). The blocking flip (report_only:false + mode:block) is operator-gated. Surfaced by the resolver as agent.report_only so a consumer/test can assert REPORT-ONLY explicitly. SP-20260614-001 / AC-design: design-quality is wired report-only this sprint.",
   "rows": [
     { "role": "director-of-product", "step": "plan", "condition": "always", "mode": "advisory", "order": 10, "_role": "strategy / sequencing" },
     { "role": "product-lead", "step": "plan", "condition": "always", "mode": "advisory", "order": 20, "_role": "milestone -> sprint scope" },
@@ -40,7 +41,7 @@
     { "role": "qa-reviewer", "step": "gauntlet", "condition": "always", "mode": "block", "order": 30, "scope": "functional + traceability + integrity (absorbs req-reviewer + compliance)" },
     { "role": "security-reviewer", "step": "gauntlet", "condition": "always", "mode": "block", "order": 40, "scope": "OWASP/authz/injection/secrets; cross-provider 2nd pass (was redteam)" },
     { "role": "visual-review", "step": "gauntlet", "condition": { "unit_type": ["ui", "frontend"] }, "mode": "block", "order": 50 },
-    { "role": "design-quality", "step": "gauntlet", "condition": { "unit_type": ["ui", "frontend"] }, "mode": "advisory", "order": 60, "_role": "named cross-domain design authority; W1 ramp advisory->baseline->block; emits the design manager_consult ED-022 checks for" },
+    { "role": "design-quality", "step": "gauntlet", "condition": { "unit_type": ["ui", "frontend"] }, "mode": "advisory", "report_only": true, "order": 60, "_role": "named cross-domain design authority; W1 ramp advisory->baseline->block; emits the design manager_consult ED-022 checks for", "_report_only": "SP-20260614-001 AC-design: REPORT-ONLY this sprint — composes into the gauntlet whenever the sprint has a frontend/ui unit, RUNS, but NEVER gates. Blocking flip (report_only:false + mode:block) is operator-gated." },
 
     { "role": "qa-reviewer", "step": "release", "condition": "always", "mode": "block", "order": 10, "scope": "release-diff (integrity/traceability over the cut)", "_note": "release-reviewers are a model-class diff property, not a dedicated role; qa-reviewer carries the integrity lane over the release diff" },
 

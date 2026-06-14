@@ -195,6 +195,12 @@ function planStep(step, composition, opts = {}) {
       role: row.role,
       step,
       mode: row.mode, // block | advisory (the registry row's mode)
+      // REPORT-ONLY contract (SP-20260614-001 AC-design): an additive registry boolean,
+      // surfaced here so a consumer/test can assert REPORT-ONLY explicitly — distinct from
+      // plain advisory. A report_only row is composed + runs but its verdict NEVER gates.
+      // Fail-open: default false; a report_only row is forced advisory-not-block below so a
+      // report-only lane can never block even if a future edit flips its mode (belt + braces).
+      report_only: row.report_only === true,
       order: row.order,
       route: routeInfo.route,
       provider: routeInfo.provider,
@@ -212,8 +218,13 @@ function planStep(step, composition, opts = {}) {
   return {
     step,
     agents,
-    block_roles: agents.filter((a) => a.mode === "block").map((a) => a.role),
+    // A report_only row can NEVER be a blocker, even if its mode were flipped to block by a
+    // future edit (the operator-gated blocking flip must drop report_only first). So exclude
+    // report_only rows from block_roles unconditionally — fail-open toward not-gating.
+    block_roles: agents.filter((a) => a.mode === "block" && !a.report_only).map((a) => a.role),
     advisory_roles: agents.filter((a) => a.mode === "advisory").map((a) => a.role),
+    // REPORT-ONLY roster: composed + runs, never gates. Surfaced for assertability.
+    report_only_roles: agents.filter((a) => a.report_only).map((a) => a.role),
     builder_roles: agents.filter((a) => a.is_builder).map((a) => a.role),
     reviewer_roles: agents.filter((a) => a.is_reviewer).map((a) => a.role),
     // The gauntlet roster is registry-fixed iff it is exactly the matched rows (it always

@@ -9,8 +9,8 @@ updated_at: "2026-06-14T06:33:05.630Z"
 owner: null
 owner_agent: null
 risk_level: medium
-unit_type: null
-domain: null
+unit_type: frontend
+domain: product
 approval_required: false
 approval_state: not_required
 source_request: "S-PF-09a R-2: build the product-shipped founder panel that founders see in their own app, consuming the readiness-report.js keystone shipped this session. Fold in doogle WARPOS.md WG-29 (the panel must walk the actionable click-path via per-item deep-links, not just state goals) + WG-23 (the panel + producer must ship in the scaffold payload)."
