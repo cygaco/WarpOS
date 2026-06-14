@@ -1015,7 +1015,7 @@ sprints:
     updated_at: "2026-06-14T06:19:11.283Z"
   - id: SP-20260614-002
     title: "admin:* skill suite — open/preview the in-app founder admin panel"
-    status: planning
+    status: closed
     lane:
       type: default
       value: null

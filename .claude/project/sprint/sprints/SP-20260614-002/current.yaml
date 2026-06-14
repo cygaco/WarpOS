@@ -2,7 +2,7 @@ schema: warpos/sprint/current-sprint/v1
 id: SP-20260614-002
 title: "admin:* skill suite — open/preview the in-app founder admin panel (SP-20260614-002)"
 objective: "Ship the admin:* dev-tooling skill suite that opens/previews the in-app founder admin panel the scaffold ships (R-2 / SP-20260614-001: /admin, /admin/readiness, /admin/guides) — which currently has NO opener (unlike /cockpit:readiness + /models:router). Keystone /admin:preview is a render harness (scaffold-or-reuse a throwaway product test-instance, npm run dev, open /admin in a browser) that ALSO unblocks the deferred design-quality/visual-review Playwright lane; /admin:readiness + /admin:guides forward to sub-routes; /admin:seed seeds real data so the panel renders warm-start. Registry-backed, path-keys-in-source, cross-provider-reviewed routing, run-in-product (never WarpOS itself)."
-status: designing
+status: closed
 created_at: "2026-06-14T20:36:46.804Z"
 updated_at: "2026-06-14T21:40:44.078Z"
 source_request: "Build the admin:* skill suite per ROADMAP item 24 — session-invocable openers/previewers for the in-app founder admin panel the scaffold ships. Start with the /admin:preview render harness; heed the item-24 guardrails (source-not-generated path keys, cross-provider-review the routing file, single authoritative writer, dispatch invariants, rebuild maps). Run-in-product: open a PRODUCT's panel, not WarpOS."

@@ -1,14 +1,20 @@
 schema: warpos/sprint/sprint-progress/v1
 sprint: SP-20260614-002
-updated_at: "2026-06-14T20:59:49.713Z"
-current_phase: execute
+updated_at: "2026-06-14T21:55:23.698Z"
+current_phase: release-prep
 current_command: "/sprint:full"
 current_ticket: null
 current_task: null
 current_loop: null
 status: halted
-last_completed_step: sprint_full_execute_halted
-next_action: "Beta consultation required at phase boundary 'before_release-prep'. Consult Beta (Alex β) about the upcoming phase, then resume: /sprint:full --sprint SP-20260614-002 --resume --pending-phase before_release-prep --beta-verdict <DECIDE|DIRECTIVE|ESCALATE> --beta-message \"<response from Beta>\""
+last_completed_step: sprint_full_release-prep_halted
+next_action: |
+  Phase 4 (release-prep) blocked by the regression-seed gate for sprint SP-20260614-002.
+  regression-seed gate: 1 NEW regression(s) in covered classes — sprint cannot close.
+    BC-02  Manifest coverage/honesty drift  (exit 1)
+  Fix so `node scripts/testsuite/enforce.js` is green, or mark pre-existing debt baseline:"red" in _requirements/07-testing/recurring-bug-classes.json.
+  
+  Resume after fixing with `/sprint:full --sprint SP-20260614-002 --resume`.
 active_files: []
 modified_files: []
 checks_last_run: null
@@ -21,6 +27,6 @@ issues_opened: []
 tickets_updated: []
 ralph_checkpoint: null
 resume_command: "/sprint:full --sprint SP-20260614-002 --resume"
-resume_notes: "halt_reason=beta_consult_pending"
+resume_notes: "halt_reason=regression_seed_failed"
 safe_to_continue: true
 stop_reason: null
