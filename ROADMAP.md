@@ -816,6 +816,7 @@ Every sprint that has been planned, executed, released, or retrospected — one 
 
 | Sprint | Title | Status | Started | Closed | Release |
 |---|---|---|---|---|---|
+| [SP-20260614-001](.claude/project/sprint/sprints/SP-20260614-001/) | Founders in-app panel — /admin/readiness view (S-PF-09a R-2) | planning | 2026-06-14T06:19:11.283Z |  |  |
 | [SP-20260613-001](.claude/project/sprint/sprints/SP-20260613-001/) | ED-051 enforcer — missing_product_lead_authoring finding | planning | 2026-06-14T01:34:52.870Z |  |  |
 | [SP-20260612-001](.claude/project/sprint/sprints/SP-20260612-001/) | Gauntlet ED-049 + release/dispatch version-resolution + multi-surface billing hardening | planning | 2026-06-12T15:24:35.474Z |  |  |
 | [S-PF-01](.claude/project/sprint/sprints/S-PF-01/) | E-PRODUCT-FOUNDATION-001 W0 telemetry seam | retrospected | 2026-06-11T21:18:08.864Z | 2026-06-12T05:01:37.711Z |  |

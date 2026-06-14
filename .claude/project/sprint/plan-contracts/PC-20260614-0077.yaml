@@ -1,0 +1,153 @@
+schema: warpos/sprint/plan-contract/v1
+id: PC-20260614-0077
+created_at: "2026-06-14T06:22:25.261Z"
+updated_at: "2026-06-14T06:22:25.261Z"
+sprint: SP-20260614-001
+source_request: "S-PF-09a R-2: build the product-shipped founder panel that founders see in their own app, consuming the readiness-report.js keystone shipped this session. Fold in doogle WARPOS.md WG-29 (the panel must walk the actionable click-path via per-item deep-links, not just state goals) + WG-23 (the panel + producer must ship in the scaffold payload)."
+source_request_verbatim: "Sure, proceed [with R-2 + wire the design gate]. Also read the new WARPOS.md items from doogle that are about founder checklists and guides. Remember to use /sprint:full."
+request_type: feature_add
+interpreted_intent: "Complete the third leg of the founders launch-readiness arc (data layer + operator cockpit already shipped): the product-shipped, founder-facing view. It reuses the S-PF-03 signed-cookie founder-allowlist admin pattern for a new /admin/readiness route, consumes scripts/scaffold/readiness-report.js (the warpos/readiness/v1 producer) for its data, and renders an ACTIONABLE board — per doogle's WG-29 real-founder feedback, each item deep-links to its click-path guide so the founder is walked to the fix, not just told the goal. Check/uncheck writes [x] back to FOUNDERS_CHECKLIST.md through a NET-NEW surgical line-patch (id-matched in-place toggle, atomic write, patch-on-current — render-from-model is lossy and CREATE-only), keeping it the single source of truth without clobbering human annotations. The cold-start (0/N, all open) state is a first-class oriented layout, not a blank table (FTUE). The panel templates + the producer must ship via the scaffold payload (WG-23 class). A scaffold-coverage extension + a brand-leak scanner enforce the route's gate + brand cleanliness; the build passes the design-quality gauntlet (which also exercises wiring design-quality into sprint-composition — the un-routed judgment layer)."
+user_or_business_outcome: "A founder opens their own product's /admin/readiness and sees exactly what stands between them and launch — what's done, what's left, who owns each gap, how long the slow-clock items take, and a one-tap link to the guide that walks each fix — compressing time-to-launch and removing the ~10-friction-point stall a real founder hit in doogle (WG-29)."
+affected_surfaces:
+  - surface: "framework/templates/app-scaffold/src/app/admin/readiness/page.tsx.tmpl (+ actions.ts.tmpl)"
+    evidence_level: verified_from_repo
+    notes: "New scaffold route; mirrors the S-PF-03 src/app/admin/ signed-cookie founder-allowlist layout. Materialized into every new product by scripts/scaffold/app.js."
+  - surface: "framework/templates/app-scaffold/src/lib/readiness/*.ts.tmpl"
+    evidence_level: needs_design
+    notes: "Client-side model + resolve-links helpers that consume the readiness object; design-lead specifies the component shape (cold/warm states, actionable deep-links)."
+  - surface: scripts/scaffold/readiness-report.js
+    evidence_level: verified_from_repo
+    notes: "The keystone producer (shipped this session, 28/28 tests). The panel + a thin per-product runtime read consume its warpos/readiness/v1 object. Must SHIP in the scaffold payload (WG-23)."
+  - surface: scripts/checks/scaffold-coverage-scan.js
+    evidence_level: verified_from_repo
+    notes: "Extend: assert the /admin/readiness route + its founder-allowlist gate are present in a fresh scaffold (planted ungated-readiness fixture FAILS, mirroring S-PF-03's ungated-admin fixture) + the brand-leak check."
+  - surface: "scripts/checks/brand-leak-scan.js (new)"
+    evidence_level: needs_design
+    notes: "R-6/brand: no product-facing 'WarpOS' string in the founder panel templates (planted-leak fixture FAILS). Closes the standing branding-boundary enforcement debt."
+  - surface: "the ship payload (framework/MANIFEST.json / _warpos) — scripts/scaffold coverage"
+    evidence_level: needs_verification
+    notes: "WG-23: doogle's install lacked scripts/scaffold/ entirely (lastmile died on a missing founders-checklist require). Confirm scripts/scaffold/{app.js,founders-checklist.js,readiness-report.js} + the new admin/readiness templates are in the ship payload; add a ship-coverage assertion if absent."
+  - surface: "scripts/checks/design-quality-gate.js + sprint composition"
+    evidence_level: verified_from_repo
+    notes: "The design-quality gate exists but sprint-composition never calls it (RT-2026-06-02 un-routed judgment layer). This UI sprint runs the design-quality gauntlet on the panel AND is the moment to wire the gate so UI-touching sprints get mandatory design review."
+current_behavior:
+  evidence_level: verified_from_repo
+  notes: "The readiness data layer (producer, warpos/readiness/v1) and the operator cockpit (/cockpit:readiness) shipped this session. There is NO founder-facing in-app view — a founder can't see their own product's launch readiness inside the app. The scaffold has the S-PF-03 admin pattern + the FOUNDERS_CHECKLIST data, but no readiness route over it. doogle's WG-29 shows the existing checklist/panel states goals, not the click-path."
+desired_behavior: "A new founder-allowlist-gated /admin/readiness route ships in the app scaffold. It renders the warpos/readiness/v1 report: per item — status, owner-class, lead-time, blocker, and a PROMINENT deep-link to the how-to guide (WG-29 actionable). Cold start (0/N) renders an oriented 'start here' layout (not blank); warm start de-emphasizes done items and focuses what's next. Check/uncheck writes [x] back to FOUNDERS_CHECKLIST.md via a NET-NEW surgical line-patch (match id=, toggle in place, atomic tmp+rename, patch-on-current — NOT render-from-model, which is lossy) and survives reload with all human annotations/markers intact. No product-facing 'WarpOS' string. The route + gate are asserted by scaffold-coverage (planted ungated/brand-leak fixtures FAIL); the producer + templates ship in the scaffold payload (WG-23); the build passes the design-quality gauntlet."
+scope:
+  size: m
+  risk_level: medium
+  complexity_drivers:
+    - "UI in the scaffold templates — ships to every future product; cold/warm FTUE states must both be first-class."
+    - Write-back to the machine-readable FOUNDERS_CHECKLIST.md must round-trip without corrupting markers.
+    - "Founder-allowlist gate must be reused from S-PF-03, not re-invented (no new auth)."
+    - "Brand boundary: the first net-new product-facing surface this epic ships — no 'WarpOS' leak."
+    - "WG-23 ship-coverage: the panel + producer must actually reach downstream installs."
+    - "Design-quality gauntlet on a real UI surface (Playwright) + wiring the un-routed design gate."
+scope_variants:
+  minimal_safe:
+    summary: "Read-only gated /admin/readiness board with actionable deep-links + cold/warm states (no write-back)."
+    tradeoffs:
+      - "Founder can see but not check items off in-app; check state stays in the .md only."
+  recommended:
+    summary: "Gated /admin/readiness board + actionable deep-links (WG-29) + cold/warm states + check/uncheck write-back to FOUNDERS_CHECKLIST.md + scaffold-coverage + brand-leak enforcers + ship-coverage (WG-23) + design-quality pass."
+    tradeoffs:
+      - "Write-back round-trip adds correctness surface; mitigated by the parser round-trip + an AC test."
+  expanded:
+    summary: "Recommended + filter/sort + a 'what's next' ranked nudge + the design-gate wired blocking into sprint-composition."
+    tradeoffs:
+      - "Ranked nudge + blocking flip are post-MVP; the design-gate blocking flip is operator-gated."
+assumptions:
+  safe:
+    - "scripts/scaffold/app.js materializes new scaffold template files recursively (verified — S-PF-01 telemetry templates shipped this way)."
+    - "The S-PF-03 signed-cookie founder-allowlist admin pattern is reusable for the readiness route (no new auth)."
+    - "readiness-report.js (the keystone) is the data source; its deep_link field already carries the per-item guide link (WG-29 actionable is a render concern, not new data)."
+  unsafe: []
+  needs_user_or_beta_review:
+    - "Route path /admin/readiness (inherits the S-PF-03 gate) vs a standalone /readiness — design-lock."
+    - "Whether the design-quality gate is wired report-only or blocking into sprint-composition (the blocking flip is operator-gated)."
+open_questions:
+  blocking: []
+  non_blocking:
+    - "WG-23: confirm scripts/scaffold + the new templates are in the ship payload; add a ship-coverage assertion if absent."
+    - "Cold-start copy + the 'start here' affordance — design-lead owns."
+    - "Write-back: client action route vs a server action for the .md edit — design-lock."
+non_goals:
+  - "No new auth provider (reuse the S-PF-03 founder allowlist)."
+  - "No server-persisted check state (FOUNDERS_CHECKLIST.md is the single source)."
+  - "No browser cockpit GUI (that's the /cockpit follow-up; this is the product-shipped founder view)."
+  - "No guides-currency rewrite (updating AUTH/DATABASE/DEPLOYMENT to today's Supabase UI is a separate follow-up — WG-29's other half)."
+  - "No Google-OAuth setup guide (WG-32 — separate /guides:write)."
+  - No flip of the design-quality gate from report-only to blocking without operator approval.
+  - "No retrofit execution of existing products here (the runnable /cockpit:readiness skill already covers run-anywhere)."
+requirement_areas:
+  - "R-1 the panel: a founder-allowlist-gated /admin/readiness scaffold route (reuse S-PF-03 pattern, no new auth) that renders the warpos/readiness/v1 report — per item: status, owner-class, lead-time, blocker."
+  - "R-2 actionable deep-links (doogle WG-29): each item surfaces its deep_link to the how-to/click-path guide PROMINENTLY — the panel walks the founder to the fix, not just states the goal."
+  - "R-3 cold/warm FTUE states: cold start (0/N, all open) renders an oriented 'start here' layout (not a blank table); warm start de-emphasizes done + focuses what's next."
+  - "R-4 write-back (NET-NEW surgical line-patch — NOT a parser round-trip; β corrected the false-reuse claim): check/uncheck locates the item's line by `id=` match (never line index) and toggles `[ ]`<->`[x]` IN PLACE, preserving every other byte. Do NOT render-from-model: parseFoundersChecklist DROPS non-matching lines (human notes/headers/declared_stack) and renderFoundersChecklist regenerates from constants (wipes checked-state) — render-from-model is for CREATE only, lossy for MUTATE. Atomic write (tmp + fs.renameSync); re-read immediately before write (patch-on-current, not write-from-snapshot) since the .md is human-editable + the SoT. Round-trip invariant TESTED (AC-A6): parse->toggle->write->re-parse = same items, exactly ONE flipped checked bit, ZERO other diffs — a planted human note + section header + the declared_stack/markers MUST survive."
+  - "R-5 enforcers + ship-coverage: extend scaffold-coverage-scan (planted ungated-readiness FAILS + planted brand-leak FAILS); add brand-leak-scan.js; confirm the panel + producer ship in the scaffold payload (WG-23) and assert it."
+  - "R-6 design quality: the panel passes the design-quality gauntlet (Playwright); wire design-quality-gate into sprint-composition so UI-touching sprints get mandatory design review (report-only ramp; blocking flip operator-gated)."
+high_level_story_candidates:
+  - "As a founder, I open /admin/readiness in my own product and see what's left before launch, with a one-tap link to the guide that walks each fix."
+  - "As a founder on a fresh install (nothing done yet), I get an oriented 'start here' board, not a blank screen."
+  - "As the framework, the founder panel + readiness producer ship in every new scaffold and are enforced present + gated + brand-clean."
+granular_story_candidates:
+  - "Add the gated /admin/readiness route (reuse S-PF-03 allowlist) rendering the readiness report."
+  - "Render each item with owner-class, lead-time, blocker, and a prominent how-to deep-link (WG-29)."
+  - "Add cold-start oriented empty state + warm-start what's-next focus."
+  - Add check/uncheck write-back to FOUNDERS_CHECKLIST.md via the parser round-trip.
+  - "Extend scaffold-coverage + add brand-leak-scan; assert ship-coverage (WG-23)."
+  - "Run the design-quality gauntlet on the panel; wire the gate into sprint-composition."
+workstream_candidates:
+  - "WS-1 panel route + render (R-1, R-2, R-3) — frontend"
+  - "WS-2 write-back (R-4) — frontend + the parser round-trip"
+  - "WS-3 enforcers + ship-coverage (R-5) — engine"
+  - "WS-4 design-quality gauntlet + gate wiring (R-6)"
+preliminary_ticket_candidates:
+  allowed: false
+  candidates: []
+  notes: "Tickets minted after design-lock pins the route path + write-back mechanism + cold-start copy; expected tickets map to the four workstreams."
+external_service_dependencies:
+  status: none_expected
+  required: []
+  possible: []
+  notes: "No external services — the panel reads local FOUNDERS_CHECKLIST state + the producer; the founder-allowlist gate is the existing S-PF-03 signed-cookie mechanism."
+approval_boundaries:
+  - Do not flip the design-quality gate from report-only to blocking without operator approval.
+  - "Do not add a new auth provider (reuse the founder allowlist)."
+  - "Do not let any product-facing 'WarpOS' string ship (brand boundary)."
+  - "Do not push to remote without explicit in-session approval (operator has standing push/merge freedom; the orchestrator never pushes)."
+design_required: true
+execution_allowed_without_design: false
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+lane:
+  type: branch
+  value: session/2026-06-13
+  isolation_notes: "Product UI sprint on the active session branch; builder dispatch may use isolation worktrees; no remote push without explicit approval."
+beta_review:
+  required: true
+  likely_founder_rejection_risks:
+    - "A blank cold-start board would read as 'product isn't real yet' — the oriented empty state is load-bearing."
+  overbuild_risks:
+    - "Filter/sort + ranked nudge are post-MVP; server-persisted check state is overbuild (the .md is the source)."
+    - Flipping the design-gate to blocking in this sprint is premature.
+  missing_context_risks:
+    - WG-23 ship-coverage must be confirmed or the panel never reaches downstream installs.
+    - Write-back must not corrupt the machine-readable checklist markers.
+plan_quality:
+  status: pass
+  confidence: high
+  evidence_gaps:
+    - "Exact route path + write-back mechanism pinned at design-lock."
+  fail_reasons: []
+next_recommended_command: "/sprint:design --sprint SP-20260614-001 --documentation-scale m"
+resume_instructions: "Design-lock pins the route path (/admin/readiness vs /readiness), the write-back mechanism, and the cold-start copy; product-lead owns the requirements (WG-3); design-lead owns the UX; then mint tickets for the four workstreams and execute. The panel consumes scripts/scaffold/readiness-report.js (warpos/readiness/v1). Fold doogle WG-29 (actionable deep-links) + WG-23 (ship-coverage)."
+tracker_paths:
+  current_sprint: ".claude/project/sprint/current-sprint.yaml"
+  sprint_progress: ".claude/project/sprint/sprint-progress.yaml"
+  plan_contract: ".claude/project/sprint/plan-contracts/PC-20260614-0077.yaml"
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260614-0077.report.md"
+created_by: alpha
+updated_by: alpha

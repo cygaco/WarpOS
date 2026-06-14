@@ -1,0 +1,124 @@
+schema: warpos/sprint/current-sprint/v1
+id: SP-20260614-001
+title: "Founders in-app panel — /admin/readiness view (S-PF-09a R-2)"
+objective: "Ship the product-shipped founder launch-readiness panel: a founder-allowlist-gated /admin/readiness route in the app scaffold that renders the warpos/readiness/v1 report (the keystone producer) as an actionable board — each item showing owner-class, lead-time, blocker, and a prominent deep-link to its how-to guide — with cold-start + warm-start states and check/uncheck write-back to FOUNDERS_CHECKLIST.md. Brand-clean, gated, ship-covered, and design-quality-passed."
+status: designing
+created_at: "2026-06-14T06:19:11.283Z"
+updated_at: "2026-06-14T06:33:05.819Z"
+source_request: "S-PF-09a R-2: build the product-shipped founder panel that founders see in their own app, consuming the readiness-report.js keystone shipped this session. Fold in doogle WARPOS.md WG-29 (the panel must walk the actionable click-path via per-item deep-links, not just state goals) + WG-23 (the panel + producer must ship in the scaffold payload)."
+interpreted_intent: "Complete the third leg of the founders launch-readiness arc (data layer + operator cockpit already shipped): the product-shipped, founder-facing view. It reuses the S-PF-03 signed-cookie founder-allowlist admin pattern for a new /admin/readiness route, consumes scripts/scaffold/readiness-report.js (the warpos/readiness/v1 producer) for its data, and renders an ACTIONABLE board — per doogle's WG-29 real-founder feedback, each item deep-links to its click-path guide so the founder is walked to the fix, not just told the goal. Check/uncheck writes [x] back to FOUNDERS_CHECKLIST.md through a NET-NEW surgical line-patch (id-matched in-place toggle, atomic write, patch-on-current — render-from-model is lossy and CREATE-only), keeping it the single source of truth without clobbering human annotations. The cold-start (0/N, all open) state is a first-class oriented layout, not a blank table (FTUE). The panel templates + the producer must ship via the scaffold payload (WG-23 class). A scaffold-coverage extension + a brand-leak scanner enforce the route's gate + brand cleanliness; the build passes the design-quality gauntlet (which also exercises wiring design-quality into sprint-composition — the un-routed judgment layer)."
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260614-0077.yaml"
+risk_level: medium
+approval_state: none_required
+current_phase: design
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+external_services:
+  identified: []
+  blocked: []
+  ready: []
+  mocked: []
+  deferred: []
+tickets:
+  proposed: []
+  planned: []
+  designed: []
+  ready_for_execution:
+    - T-20260614-333
+    - T-20260614-334
+    - T-20260614-335
+    - T-20260614-336
+  in_progress: []
+  blocked: []
+  waiting_on_human: []
+  waiting_on_external_service: []
+  in_review: []
+  qa_failed: []
+  redteam_failed: []
+  done: []
+  released: []
+  deferred: []
+  abandoned: []
+  reopened: []
+  superseded: []
+requirements:
+  prd: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260614-001\\prd.md"
+  high_level_stories: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260614-001\\high-level-stories.md"
+  granular_stories: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260614-001\\granular-stories.md"
+  copy: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260614-001\\copy.md"
+  inputs: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260614-001\\inputs.md"
+  trace: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260614-001\\trace.md"
+  acceptance_criteria: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260614-001\\acceptance-criteria.md"
+  qa_plan: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260614-001\\qa-plan.md"
+  redteam_plan: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260614-001\\redteam-plan.md"
+  release_plan: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260614-001\\release-plan.md"
+checks:
+  lint:
+    status: not_run
+    last_run: null
+    evidence: ""
+  typecheck:
+    status: not_run
+    last_run: null
+    evidence: ""
+  tests:
+    status: not_run
+    last_run: null
+    evidence: ""
+  build:
+    status: not_run
+    last_run: null
+    evidence: ""
+  qa:
+    status: not_run
+    last_run: null
+    evidence: ""
+  redteam:
+    status: not_run
+    last_run: null
+    evidence: ""
+approvals:
+  plan:
+    required: false
+    state: not_required
+    ref: null
+  design:
+    required: false
+    state: not_required
+    ref: null
+  execution:
+    required: false
+    state: not_required
+    ref: null
+  release:
+    required: false
+    state: not_required
+    ref: null
+  external_services:
+    required: false
+    state: not_required
+    ref: null
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260614-0077.report.md"
+  design: null
+  execution: null
+  release: null
+ralph:
+  active: false
+  current_ticket: null
+  current_loop: null
+  status: idle
+  last_checkpoint: null
+  next_action: null
+crash_recovery:
+  last_checkpoint: ".claude/project/sprint/sprint-progress.yaml"
+  resume_command: "/sprint:design"
+  resume_summary: "Sprint SP-20260614-001 design scaffolded (scale=m). Next: mint tickets from granular-stories, then run /sprint:execute."
+  active_files: []
+  dirty_state: false
+  blockers: []
+  safe_to_continue: true
+lane:
+  type: branch
+  value: session/2026-06-13
+  isolation_notes: "Product UI sprint on the active session branch; builder dispatch may use isolation worktrees; no remote push without explicit approval."

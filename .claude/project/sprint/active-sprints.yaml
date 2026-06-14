@@ -1,5 +1,5 @@
 schema: warpos/sprint/active-sprints/v1
-primary: S-PF-09a
+primary: SP-20260614-001
 sprints:
   - id: SP-20260512-001
     title: Multi-sprint parallelism for Sprint Workflow
@@ -1002,5 +1002,16 @@ sprints:
     pointer: ".claude/project/sprint/sprints/S-PF-09a"
     created_at: "2026-06-14T02:56:34.665Z"
     updated_at: "2026-06-14T02:56:34.665Z"
+  - id: SP-20260614-001
+    title: "Founders in-app panel — /admin/readiness view (S-PF-09a R-2)"
+    status: planning
+    lane:
+      type: default
+      value: null
+      isolation_notes: ""
+    layout: per_sprint_subdir
+    pointer: ".claude/project/sprint/sprints/SP-20260614-001"
+    created_at: "2026-06-14T06:19:11.283Z"
+    updated_at: "2026-06-14T06:19:11.283Z"
 created_at: "2026-05-12T22:57:35.667Z"
-updated_at: "2026-06-14T02:56:34.665Z"
+updated_at: "2026-06-14T06:19:11.283Z"
