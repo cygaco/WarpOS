@@ -202,6 +202,25 @@ test("in-sprint-display-only-do-first-has-toggle", () => {
   );
 });
 
+// ── S1: the DONE path also gates the toggle on owner_class (mirror of the open split) ──
+test("done-sprint-work-waiver-display-only-toggle-gated", () => {
+  const src = fs.readFileSync(PAGE, "utf8");
+  const doneMatch = src.match(/function DoneItemRow\([\s\S]*?\n}\n/);
+  assert.ok(doneMatch, "could not isolate DoneItemRow body");
+  const doneBody = doneMatch[0];
+  // DoneItemRow must gate the ToggleControl on owner_class === "owner-action" — a done
+  // sprint-work/waiver item is the server-rejects class and must NOT show a toggle.
+  assert.ok(
+    /owner_class === "owner-action"/.test(doneBody),
+    "DoneItemRow must gate the toggle on owner_class (done sprint-work/waiver = display-only)",
+  );
+  // The ToggleControl is rendered CONDITIONALLY (ternary), with a non-toggle display branch.
+  assert.ok(
+    /\?\s*\(\s*<ToggleControl/.test(doneBody),
+    "DoneItemRow must render <ToggleControl> only in the checkable branch, else a static row",
+  );
+});
+
 // ── warm phase differs measurably from cold (AC-A5) ─────────────────────────────────
 test("warm-phase-differs-from-cold", () => {
   const cold = { total: 3, completed: 0, open: 3, blocked: 0 };

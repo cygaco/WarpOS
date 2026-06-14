@@ -180,10 +180,26 @@ function InSprintItemRow({ item }: { item: ReadinessViewItem }) {
 }
 
 function DoneItemRow({ item }: { item: ReadinessViewItem }) {
+  // S1: only owner-action done items stay founder-uncheckable via ToggleControl. Done
+  // sprint-work/waiver items are STATUS-DISPLAY-ONLY (the server rejects toggling them) —
+  // no misleading toggle, mirroring InSprintItemRow on the open path.
+  const checkable = item.owner_class === "owner-action";
   return (
     <div className="flex flex-col gap-2 rounded-md border p-4 opacity-90">
       <div className="flex items-center gap-3">
-        <ToggleControl id={item.id} label={item.label} checked={true} />
+        {checkable ? (
+          <ToggleControl id={item.id} label={item.label} checked={true} />
+        ) : (
+          <div className="flex items-center gap-3">
+            <span
+              aria-hidden
+              className="flex size-[18px] shrink-0 items-center justify-center rounded-[4px] border border-primary bg-primary text-primary-foreground"
+            >
+              <CheckCircle2 className="size-3" />
+            </span>
+            <span className="text-sm text-muted-foreground">{item.label}</span>
+          </div>
+        )}
         <span className="inline-flex items-center gap-1 rounded-md border border-primary px-2 py-0.5 text-xs font-medium text-primary">
           <CheckCircle2 className="size-3.5" aria-hidden />
           Done

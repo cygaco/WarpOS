@@ -13236,7 +13236,7 @@
         "src": "framework/templates/app-scaffold/src/app/admin/readiness/page.tsx.tmpl",
         "dest": "framework/templates/app-scaffold/src/app/admin/readiness/page.tsx.tmpl",
         "kind": "template",
-        "sha256": "f7e0601916a3998fd4625691115587199beda5c2169603294dfa8fb514769a52",
+        "sha256": "1f741fe59994d80488ce7be07ff528b2a835ce2d0d9539b982ffe95a84036056",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
