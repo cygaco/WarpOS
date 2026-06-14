@@ -47,7 +47,10 @@ function fullFixture() {
 
   // Panel half (under scaffold dir).
   for (const rel of cov.READINESS_PANEL_FILES) touch(scaffold, rel, "export default function P(){return null}\n");
-  touch(scaffold, `${cov.READINESS_LIB_DIR_REL}/data.ts.tmpl`, "export const x = 1;\n");
+  // ALL required readiness lib templates (types, group, writeback) must ship — plant each.
+  for (const rel of cov.READINESS_LIB_FILES) {
+    touch(scaffold, `${cov.READINESS_LIB_DIR_REL}/${rel}`, "export const x = 1;\n");
+  }
 
   // Guide content for EVERY referenceable basename + the viewer route.
   const referenceable = cov.computeReferenceableGuideBasenames(repo);
@@ -77,6 +80,34 @@ test("producer-present-panel-absent-fails", () => {
       res.errors.some((e) => /half-shipped: producer present but panel/.test(e)),
     `expected half-shipped(WG-23) error, got: ${res.errors.join("; ")}`
   );
+});
+
+test("missing-one-readiness-lib-file-fails", () => {
+  const { scaffold, repo } = fullFixture();
+  // Delete exactly ONE required lib template (writeback) — the panel imports it, so a build that
+  // ships types/group but not writeback must FAIL (the old ">=1 lib file" check passed this).
+  fs.rmSync(path.join(scaffold, `${cov.READINESS_LIB_DIR_REL}/writeback.ts.tmpl`), { force: true });
+  const res = cov.evaluateReadinessCoverage(scaffold, repo);
+  assert.strictEqual(res.ok, false, "missing one required readiness lib file must FAIL");
+  assert.ok(
+    res.errors.some((e) => /readiness shared lib missing/.test(e) && /writeback\.ts\.tmpl/.test(e)),
+    `expected writeback-lib-missing error, got: ${res.errors.join("; ")}`
+  );
+});
+
+test("all-readiness-lib-files-asserted-by-name", () => {
+  // Each required lib file, removed in isolation, must produce its own missing-lib error — proving
+  // the enforcer asserts ALL of them by name, not just count>=1.
+  for (const victim of cov.READINESS_LIB_FILES) {
+    const { scaffold, repo } = fullFixture();
+    fs.rmSync(path.join(scaffold, `${cov.READINESS_LIB_DIR_REL}/${victim}`), { force: true });
+    const res = cov.evaluateReadinessCoverage(scaffold, repo);
+    assert.strictEqual(res.ok, false, `missing ${victim} must FAIL`);
+    assert.ok(
+      res.errors.some((e) => /readiness shared lib missing/.test(e) && e.includes(victim)),
+      `expected missing-lib error for ${victim}, got: ${res.errors.join("; ")}`
+    );
+  }
 });
 
 test("panel-present-producer-absent-fails", () => {

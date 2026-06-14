@@ -370,8 +370,17 @@ const READINESS_PANEL_FILES = [
   "src/app/admin/readiness/actions.ts.tmpl",
 ];
 
-// The src/lib/readiness/* glob must ship at least one .ts.tmpl (the shared data/render lib).
+// The src/lib/readiness/* glob holds the shared data/render lib.
 const READINESS_LIB_DIR_REL = "src/lib/readiness";
+
+// Every readiness lib template the panel depends on MUST ship — the panel imports all three:
+//   types.ts     — the readiness item/report/owner-class types the page + actions consume
+//   group.ts     — owner-class grouping/ordering for the oriented board (AC-A4/A5)
+//   writeback.ts — the load-bearing surgical line-patch write-back (AC-A6)
+// A "ships >=1 lib file" check under-enforced this: a panel that imports group.ts/writeback.ts
+// would still pass with only types.ts present, then break at install. Assert each by name
+// (relative to READINESS_LIB_DIR_REL).
+const READINESS_LIB_FILES = ["types.ts.tmpl", "group.ts.tmpl", "writeback.ts.tmpl"];
 
 function addReadinessSurfaceChecks(dir, errors, repoRoot = REPO_ROOT) {
   // Producer half — scripts that emit the readiness report. Resolved from repoRoot, NOT the
@@ -390,7 +399,9 @@ function addReadinessSurfaceChecks(dir, errors, repoRoot = REPO_ROOT) {
     else errors.push(`readiness panel template missing: ${rel}`);
   }
 
-  // src/lib/readiness/*.ts.tmpl — at least one shared lib template.
+  // src/lib/readiness/*.ts.tmpl — ALL required shared lib templates must ship (not just >=1).
+  // Assert each named file the panel imports; a missing one is a RED build (the panel would
+  // import a template that never shipped).
   const libDir = path.join(dir, READINESS_LIB_DIR_REL);
   let libCount = 0;
   try {
@@ -400,15 +411,18 @@ function addReadinessSurfaceChecks(dir, errors, repoRoot = REPO_ROOT) {
   } catch {
     libCount = 0;
   }
-  if (libCount === 0) {
-    errors.push(`readiness shared lib missing: ${READINESS_LIB_DIR_REL}/*.ts.tmpl (expected >=1)`);
+  let libPresent = 0;
+  for (const rel of READINESS_LIB_FILES) {
+    if (fs.existsSync(path.join(libDir, rel))) libPresent++;
+    else errors.push(`readiness shared lib missing: ${READINESS_LIB_DIR_REL}/${rel}`);
   }
+  const libWhole = libPresent === READINESS_LIB_FILES.length;
 
   // Neither half ships orphaned: if EITHER half is fully present while the other is fully
   // absent, that is a half-shipped feature — flag it explicitly (closes WG-23). This catches
   // the "producer present but panel absent" (or vice-versa) planted fixture.
   const producerWhole = producerPresent === READINESS_PRODUCER_FILES.length;
-  const panelWhole = panelPresent === READINESS_PANEL_FILES.length && libCount > 0;
+  const panelWhole = panelPresent === READINESS_PANEL_FILES.length && libWhole;
   const producerAny = producerPresent > 0;
   const panelAny = panelPresent > 0 || libCount > 0;
   if (producerWhole && !panelAny) {
@@ -882,6 +896,7 @@ module.exports = {
   READINESS_PRODUCER_FILES,
   READINESS_PANEL_FILES,
   READINESS_LIB_DIR_REL,
+  READINESS_LIB_FILES,
   GUIDE_CONTENT_DIR_REL,
   GUIDE_VIEWER_ROUTE_REL,
   evaluateScaffold,

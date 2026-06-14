@@ -122,6 +122,35 @@ test("schema-id-in-machine-layer-comment-is-allowed", () => {
   assert.strictEqual(res.ok, true, `machine-layer schema id must be allowed, got: ${res.errors.join("; ")}`);
 });
 
+// ── FIX-4 / AC-brand — FAIL-CLOSED on a missing/unreadable scan dir ──────────
+// The false-green class WarpOS hardens against (project_enforcer_falsegreen_gauntlet): pointed at
+// a scan dir that does NOT exist, the scanner must FAIL (ok:false, exit1) — never return the
+// vacuous ok:true scanned:0 that would let a brand leak ship undetected because nothing ran.
+test("missing-scan-dir-fails-closed-not-vacuous-pass", () => {
+  const missing = path.join(os.tmpdir(), `sp614-brand-missing-${process.pid}-${Date.now()}`);
+  assert.ok(!fs.existsSync(missing), "precondition: scan dir is absent");
+  const res = brand.evaluateBrandLeak(missing);
+  assert.strictEqual(res.ok, false, "missing scan dir must FAIL (not vacuous pass)");
+  assert.strictEqual(res.scanned, 0, "scanned is 0");
+  assert.ok(
+    res.errors.some((e) => /missing or unreadable/.test(e)),
+    `expected missing-dir fail-closed error, got: ${res.errors.join("; ")}`
+  );
+});
+
+// An EXISTING but EMPTY scan dir (no panel/guide surfaces) must ALSO fail-closed — scanned:0 with
+// the dir present is still a vacuous pass (wrong dir / half-shipped install).
+test("empty-scan-dir-zero-surfaces-fails-closed", () => {
+  const empty = mkdtemp("sp614-brand-empty-");
+  const res = brand.evaluateBrandLeak(empty);
+  assert.strictEqual(res.ok, false, "zero-surface scan must FAIL (not vacuous pass)");
+  assert.strictEqual(res.scanned, 0, "scanned is 0");
+  assert.ok(
+    res.errors.some((e) => /no product-facing surfaces/.test(e)),
+    `expected zero-surface fail-closed error, got: ${res.errors.join("; ")}`
+  );
+});
+
 (async () => {
   let passed = 0;
   const failures = [];

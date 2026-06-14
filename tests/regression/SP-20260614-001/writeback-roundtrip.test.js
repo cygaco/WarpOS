@@ -54,20 +54,37 @@ function loadWriteback() {
 
   // Drop the multi-line `export type PatchResult = ... ;` declaration.
   src = src.replace(/export type PatchResult[\s\S]*?;\n/, "");
+  // Drop the single-line `type LineSegment = { ... };` declaration.
+  src = src.replace(/type LineSegment = \{[^}]*\};\n/, "");
 
   // Rewrite the node:crypto / node:fs imports to CommonJS requires.
   src = src.replace(
     /import \{ randomBytes \} from "node:crypto";/,
     'const { randomBytes } = require("node:crypto");',
   );
+  // Rewrite the fs import to LIVE-lookup wrappers so a test can monkey-patch fs.renameSync /
+  // fs.writeFileSync at runtime (a plain destructure would freeze the binding at load time and the
+  // override wouldn't take). All wrappers delegate to the SAME require("node:fs") singleton the
+  // test patches.
   src = src.replace(
-    /import \{ readFileSync, renameSync, unlinkSync, writeFileSync \} from "node:fs";/,
-    'const { readFileSync, renameSync, unlinkSync, writeFileSync } = require("node:fs");',
+    /import \{ existsSync, readFileSync, renameSync, unlinkSync, writeFileSync \} from "node:fs";/,
+    [
+      'const __wbfs = require("node:fs");',
+      "const existsSync = (...a) => __wbfs.existsSync(...a);",
+      "const readFileSync = (...a) => __wbfs.readFileSync(...a);",
+      "const renameSync = (...a) => __wbfs.renameSync(...a);",
+      "const unlinkSync = (...a) => __wbfs.unlinkSync(...a);",
+      "const writeFileSync = (...a) => __wbfs.writeFileSync(...a);",
+    ].join("\n"),
   );
 
   // Strip the `: PatchResult` return annotation on the helper + exported fn.
   src = src.replace(/\): PatchResult \{/g, ") {");
   src = src.replace(/function lineMatchesId\(line: string, id: string\): boolean/, "function lineMatchesId(line, id)");
+  // Strip splitLinesPreservingEol signature + inner annotations.
+  src = src.replace(/function splitLinesPreservingEol\(text: string\): LineSegment\[\]/, "function splitLinesPreservingEol(text)");
+  src = src.replace(/const segments: LineSegment\[\] = \[\];/, "const segments = [];");
+  src = src.replace(/let m: RegExpExecArray \| null;/, "let m;");
 
   // Strip param type annotations on patchChecklistItem.
   src = src.replace(/checklistPath: string,/, "checklistPath,");
@@ -237,6 +254,112 @@ ok("unknown-id-no-write", () => {
 
   // No tmp file left behind.
   assert.deepStrictEqual(listTmp(dir), [], "no stray .tmp file");
+
+  fs.rmSync(dir, { recursive: true, force: true });
+});
+
+// ── AC-A6 byte-preservation on MIXED / CRLF EOLs ────────────────────────────
+// The producer's .md may be edited on Windows (CRLF), unix (LF), or end up mixed after a
+// cross-platform edit. AC-A6 requires EVERY byte preserved except the one toggled glyph — a
+// CRLF-normalizing write-back would silently rewrite every \r\n -> \n (or vice-versa) and fail
+// this. We build a MIXED-EOL fixture and assert (a) only ONE byte changed and (b) every \r\n and
+// every bare-\n is preserved exactly where it was.
+ok("crlf-mixed-eol-preserved-only-one-byte-changes", () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "wb-eol-"));
+  const file = path.join(dir, "FOUNDERS_CHECKLIST.md");
+
+  // Deliberately MIXED: header block CRLF, the item lines LF, the close marker CRLF, and a final
+  // line with NO trailing newline. The target line itself ends in LF.
+  const mixed =
+    "<!-- warpos:founders-checklist v1 -->\r\n" +
+    "schema: warpos/founders-checklist/v1\r\n" +
+    "\r\n" +
+    "## Human-only launch gates\r\n" +
+    "<!-- NOTE: keep my CRLF endings intact -->\r\n" +
+    "- [ ] id=provider.accounts dim=product source=core Create production accounts\n" +
+    "- [x] id=domain.dns dim=deployment source=core Confirm domain ownership\n" +
+    "<!-- /warpos:founders-checklist -->\r\n" +
+    "trailing line with no newline";
+  fs.writeFileSync(file, mixed, "utf8");
+
+  const beforeBuf = fs.readFileSync(file);
+  const res = patchChecklistItem(file, "provider.accounts", true);
+  assert.strictEqual(res.ok, true, "patch should succeed on mixed-EOL file");
+  assert.strictEqual(res.changed, true, "target bit should flip");
+
+  const afterBuf = fs.readFileSync(file);
+
+  // (a) EXACTLY one byte differs, and it is the checkbox glyph going from space(0x20) to 'x'(0x78).
+  assert.strictEqual(afterBuf.length, beforeBuf.length, "file length unchanged (no EOL rewrite)");
+  const diffIdx = [];
+  for (let i = 0; i < beforeBuf.length; i += 1) {
+    if (beforeBuf[i] !== afterBuf[i]) diffIdx.push(i);
+  }
+  assert.strictEqual(diffIdx.length, 1, `exactly one byte changed, got ${diffIdx.length}`);
+  assert.strictEqual(beforeBuf[diffIdx[0]], 0x20, "changed byte was a space (unchecked glyph)");
+  assert.strictEqual(afterBuf[diffIdx[0]], 0x78, "changed byte is now 'x' (checked glyph)");
+
+  // (b) Every EOL preserved byte-for-byte: same count of \r\n and same count of bare \n.
+  const countCrlf = (b) => {
+    let n = 0;
+    for (let i = 0; i + 1 < b.length; i += 1) if (b[i] === 0x0d && b[i + 1] === 0x0a) n += 1;
+    return n;
+  };
+  const countBareLf = (b) => {
+    let n = 0;
+    for (let i = 0; i < b.length; i += 1) if (b[i] === 0x0a && b[i - 1] !== 0x0d) n += 1;
+    return n;
+  };
+  assert.strictEqual(countCrlf(afterBuf), countCrlf(beforeBuf), "CRLF count preserved");
+  assert.strictEqual(countBareLf(afterBuf), countBareLf(beforeBuf), "bare-LF count preserved");
+
+  // (c) No trailing newline was introduced (final line had none).
+  assert.notStrictEqual(afterBuf[afterBuf.length - 1], 0x0a, "no trailing newline added");
+
+  // No stray tmp.
+  assert.deepStrictEqual(listTmp(dir), [], "no stray .tmp file");
+
+  fs.rmSync(dir, { recursive: true, force: true });
+});
+
+// ── AC-A6 / FIX-5c — tmp cleanup on the RENAME failure path ──────────────────
+// The atomic write is writeFileSync(tmp) then renameSync(tmp, target). If renameSync throws AFTER
+// the tmp is fully written, the tmp MUST be removed — otherwise every failed toggle orphans a tmp
+// next to the user's checklist. We force renameSync to throw and assert: result is an error, the
+// original file is byte-identical, and ZERO .tmp files remain.
+ok("tmp-cleanup-on-rename-error-no-orphan", () => {
+  const { dir, file } = writeFixture();
+  const beforeRaw = fs.readFileSync(file, "utf8");
+
+  // Make the target path un-renameable-onto by making renameSync fail: point the rename at a
+  // directory that exists as a child path is awkward; instead, monkey-patch fs.renameSync for the
+  // duration of this call. The writeback module captured renameSync at load via the rewritten
+  // `require("node:fs")` — which returns the SAME singleton we patch here, so the override applies.
+  const realRename = fs.renameSync;
+  let renameAttempted = false;
+  fs.renameSync = () => {
+    renameAttempted = true;
+    const err = new Error("simulated rename failure (EXDEV)");
+    err.code = "EXDEV";
+    throw err;
+  };
+  let res;
+  try {
+    res = patchChecklistItem(file, "provider.accounts", true);
+  } finally {
+    fs.renameSync = realRename;
+  }
+
+  assert.strictEqual(renameAttempted, true, "rename was attempted (tmp was written first)");
+  assert.strictEqual(res.ok, false, "rename failure surfaces an error");
+  assert.ok(/atomic write failed/i.test(res.error), "error explains the failed atomic write");
+
+  // Original untouched (rename never landed).
+  const afterRaw = fs.readFileSync(file, "utf8");
+  assert.strictEqual(afterRaw, beforeRaw, "original untouched after failed rename");
+
+  // The fully-written tmp must have been cleaned up — NO orphan.
+  assert.deepStrictEqual(listTmp(dir), [], "no orphan .tmp after rename failure");
 
   fs.rmSync(dir, { recursive: true, force: true });
 });

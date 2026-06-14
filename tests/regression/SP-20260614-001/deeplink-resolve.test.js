@@ -48,11 +48,11 @@ function allowlistedGuideBasenames(repoRoot) {
 }
 function resolveGuideRef(rawRef, repoRoot) {
   if (!rawRef) return null;
-  const base = String(rawRef)
-    .split(/[\\/]/)
-    .pop()
-    .replace(/\.md$/i, "");
-  if (!base || base === "." || base === ".." || base.includes("..")) return null;
+  // Reject traversal-SHAPED refs outright, BEFORE the allowlist — so a traversal-shaped
+  // ref with an ALLOWLISTED basename (../../DEV_SETUP_GUIDE.md) 404s just like ../../etc/passwd.
+  if (/[\\/]/.test(rawRef) || rawRef.includes("..")) return null;
+  const base = String(rawRef).replace(/\.md$/i, "");
+  if (!base || base === "." || base === "..") return null;
   return allowlistedGuideBasenames(repoRoot).has(base) ? base : null;
 }
 
@@ -145,6 +145,7 @@ test("path-traversal-and-absent-ref-404-no-disk-read", () => {
       "..\\..\\windows\\win.ini",
       "/etc/shadow",
       "....//....//etc/passwd",
+      "../../DEV_SETUP_GUIDE.md", // traversal-SHAPED ref whose basename IS allowlisted — must STILL 404
       "DEFINITELY_NOT_A_REAL_GUIDE", // registry-absent basename
       "",
       ".",
@@ -172,18 +173,43 @@ test("path-traversal-and-absent-ref-404-no-disk-read", () => {
   }
 });
 
-// ── viewer-template-has-strip-and-allowlist-guard ─────────────────────────────────
-test("viewer-template-has-strip-and-allowlist-guard", () => {
-  const src = fs.readFileSync(GUIDE_PAGE, "utf8");
-  // Strips path separators (mirrors producer .split(/[\\/]/).pop()).
-  assert.ok(
-    /split\(\/\[\\\\\/\]\/\)/.test(src),
-    "viewer must strip path separators (.split(/[\\\\/]/)) before lookup",
+// ── traversal-shaped-allowlisted-basename-still-404 (FIX #3 — qa HIGH) ─────────────
+test("traversal-shaped-allowlisted-basename-still-404", () => {
+  // A bare allowlisted basename resolves; the SAME basename behind a traversal prefix
+  // must 404 — separators / ".." are rejected OUTRIGHT, before the allowlist check.
+  const guideFiles = loadGuideFiles(REPO);
+  const realBase = [...guideFiles][0].replace(/\.md$/i, ""); // e.g. DEV_SETUP_GUIDE
+  assert.strictEqual(
+    resolveGuideRef(realBase, REPO),
+    realBase,
+    "a bare allowlisted basename must still resolve",
   );
-  // Validates against an allowlist derived from the registry.
+  // ../../DEV_SETUP_GUIDE.md — allowlisted tail, traversal shape → null (404).
+  assert.strictEqual(
+    resolveGuideRef(`../../${realBase}.md`, REPO),
+    null,
+    "a traversal-shaped ref with an allowlisted basename must 404 (no strip-then-allow)",
+  );
+  // ../../etc/passwd — non-allowlisted traversal → null (404).
+  assert.strictEqual(
+    resolveGuideRef("../../etc/passwd", REPO),
+    null,
+    "a traversal ref must 404",
+  );
+});
+
+// ── viewer-template-has-traversal-reject-and-allowlist-guard ──────────────────────
+test("viewer-template-has-traversal-reject-and-allowlist-guard", () => {
+  const src = fs.readFileSync(GUIDE_PAGE, "utf8");
+  // Rejects traversal-SHAPED refs (separator or "..") outright, before the allowlist.
+  assert.ok(
+    /\[\\\\\/\]/.test(src) && /includes\("\.\."\)/.test(src),
+    "viewer must reject any ref containing a path separator or '..' outright",
+  );
+  // Validates the basename against an allowlist derived from the registry.
   assert.ok(
     /registry\.json/.test(src) && /\.has\(base\)/.test(src),
-    "viewer must validate the stripped basename against the registry allowlist",
+    "viewer must validate the basename against the registry allowlist",
   );
   // 404s (notFound) for non-allowlisted refs.
   assert.ok(/notFound\(\)/.test(src), "viewer must notFound() on a bad ref");

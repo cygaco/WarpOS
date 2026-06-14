@@ -99,6 +99,23 @@ function evaluateBrandLeak(dir = scaffoldDir()) {
   const errors = [];
   const surfaces = [];
 
+  // FAIL-CLOSED (AC-brand / project_enforcer_falsegreen_gauntlet): the scan dir MUST exist and
+  // be readable. Pointed at a missing/unreadable scaffold dir, a vacuous ok:true scanned:0 is the
+  // exact false-green class WarpOS hardens against — a brand leak would pass undetected because
+  // nothing was scanned. So a missing/unreadable scan dir is a hard FAIL, never a pass.
+  try {
+    fs.readdirSync(dir); // throws if the dir is missing or unreadable
+  } catch (e) {
+    return {
+      ok: false,
+      errors: [
+        `scan dir missing or unreadable (fail-closed): ${dir} — refusing to pass vacuously (${e.code || e.message})`,
+      ],
+      dir,
+      scanned: 0,
+    };
+  }
+
   for (const f of listFiles(path.join(dir, PANEL_GLOB_DIR), ".tsx.tmpl")) {
     surfaces.push({ file: f, kind: "tsx" });
   }
@@ -107,6 +124,23 @@ function evaluateBrandLeak(dir = scaffoldDir()) {
   }
   if (fs.existsSync(path.join(dir, GUIDE_VIEWER_ROUTE))) {
     surfaces.push({ file: path.join(dir, GUIDE_VIEWER_ROUTE), kind: "tsx" });
+  }
+
+  // FAIL-CLOSED: the readiness panel + guide surfaces are EXPECTED present on any real scaffold.
+  // scanned:0 means the dir exists but NONE of the product-facing surfaces were found (wrong dir,
+  // a partial/half-shipped install, or a silently-relocated surface) — passing that vacuously is
+  // the false-green we forbid. With zero surfaces there is nothing a leak could be caught in.
+  if (surfaces.length === 0) {
+    return {
+      ok: false,
+      errors: [
+        `no product-facing surfaces found to scan under ${dir} (fail-closed): expected ` +
+          `${PANEL_GLOB_DIR}/*.tsx.tmpl, ${GUIDE_CONTENT_DIR}/*.md.tmpl, or ${GUIDE_VIEWER_ROUTE} — ` +
+          `refusing to pass with scanned:0`,
+      ],
+      dir,
+      scanned: 0,
+    };
   }
 
   for (const { file, kind } of surfaces) {

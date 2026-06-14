@@ -1,5 +1,5 @@
 import { randomBytes } from "node:crypto";
-import { readFileSync, renameSync, unlinkSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, renameSync, unlinkSync, writeFileSync } from "node:fs";
 
 // ---------------------------------------------------------------------------
 // Surgical line-patch for the founders checklist (.md is the source of truth).
@@ -36,6 +36,38 @@ function lineMatchesId(line: string, id: string): boolean {
   return m !== null && m[4] === id;
 }
 
+type LineSegment = { content: string; eol: string };
+
+/**
+ * Split text into per-line { content, eol } segments WITHOUT normalizing line endings.
+ * Each segment carries its OWN original terminator (\r\n, \r, \n, or "" for the final line when
+ * the file has no trailing newline). The concatenation of `content + eol` over all segments
+ * equals the input byte-for-byte — that exact round-trip is what lets the patcher preserve
+ * CRLF/LF/mixed EOLs everywhere except the single glyph it toggles.
+ *
+ * Implementation: a global match for "run of non-EOL chars, optionally followed by ONE EOL".
+ * The regex is anchored to consume the whole string left-to-right with no gaps. We skip the
+ * final zero-length match the global form emits at end-of-string so we don't append a phantom
+ * empty segment after a trailing newline.
+ */
+function splitLinesPreservingEol(text: string): LineSegment[] {
+  const segments: LineSegment[] = [];
+  const re = /([^\r\n]*)(\r\n|\r|\n|$)/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(text)) !== null) {
+    // The trailing `$` alternative matches an empty string at end-of-input AFTER the last real
+    // line was already consumed; that yields content="" eol="" with index===text.length. Skip it
+    // so a "...\n"-terminated file does not gain a spurious empty segment.
+    if (m[0] === "" && m.index === text.length) break;
+    segments.push({ content: m[1], eol: m[2] === "" ? "" : m[2] });
+    // A zero-width match (only the `$` matched at a non-end position cannot happen, but guard
+    // against any zero-length advance to avoid an infinite loop).
+    if (m.index === re.lastIndex) re.lastIndex += 1;
+  }
+  if (segments.length === 0) segments.push({ content: "", eol: "" });
+  return segments;
+}
+
 /**
  * Toggle a single checklist item's checkbox in place.
  *
@@ -60,16 +92,17 @@ export function patchChecklistItem(
     };
   }
 
-  // Split preserving the exact line content; we rejoin with the same separator
-  // so non-target bytes are reproduced verbatim.
-  const usesCrlf = raw.includes("\r\n");
-  const newline = usesCrlf ? "\r\n" : "\n";
-  const lines = raw.split(/\r?\n/);
+  // Split into (content, eol) segments WITHOUT collapsing the line endings. Each segment keeps
+  // its OWN original terminator (\r\n, \r, \n, or "" for a final line with no trailing newline),
+  // so a CRLF / mixed-EOL file is reproduced byte-for-byte. A naive split(/\r?\n/) + join with a
+  // single chosen newline NORMALIZES every EOL and violates AC-A6 byte-preservation on mixed-EOL
+  // files — so we never do that.
+  const segments = splitLinesPreservingEol(raw);
 
   // (2) find the single line carrying this id.
   let targetIndex = -1;
-  for (let i = 0; i < lines.length; i += 1) {
-    if (lineMatchesId(lines[i], id)) {
+  for (let i = 0; i < segments.length; i += 1) {
+    if (lineMatchesId(segments[i].content, id)) {
       targetIndex = i;
       break;
     }
@@ -80,8 +113,9 @@ export function patchChecklistItem(
     return { ok: false, id, error: `checklist item not found: id=${id}` };
   }
 
-  // (3) toggle ONLY the checkbox glyph on that line; every other byte is preserved.
-  const original = lines[targetIndex];
+  // (3) toggle ONLY the checkbox glyph on that line's CONTENT; every other byte — including
+  // every other line's EOL AND this line's own EOL — is preserved exactly.
+  const original = segments[targetIndex].content;
   const desiredGlyph = nextChecked ? "x" : " ";
   const patched = original.replace(
     ID_TOKEN,
@@ -91,10 +125,12 @@ export function patchChecklistItem(
 
   const changed = patched !== original;
   if (changed) {
-    lines[targetIndex] = patched;
+    segments[targetIndex].content = patched;
   }
 
-  const nextRaw = lines.join(newline);
+  // Reassemble verbatim: content + its original eol, in order. Non-target bytes are identical to
+  // the input, so a raw byte-diff shows ONLY the single toggled glyph.
+  const nextRaw = segments.map((s) => s.content + s.eol).join("");
 
   // (4) atomic write: write a sibling tmp file, then renameSync over the original.
   // renameSync is atomic on the same filesystem, so a reader sees either the old
@@ -104,11 +140,14 @@ export function patchChecklistItem(
     writeFileSync(tmpPath, nextRaw, "utf8");
     renameSync(tmpPath, checklistPath);
   } catch (e) {
-    // Best-effort cleanup so a failed patch never leaves a stray tmp behind.
+    // Cleanup on EVERY failure path so a failed patch never leaves an orphan tmp:
+    //   - writeFileSync error: tmp may be partially written or absent.
+    //   - renameSync error: tmp is fully written but NOT moved — it MUST be removed here.
+    // existsSync-guard + try/catch makes the removal robust on both paths (and on a partial tmp).
     try {
-      unlinkSync(tmpPath);
+      if (existsSync(tmpPath)) unlinkSync(tmpPath);
     } catch {
-      /* tmp may not exist if writeFileSync failed; ignore */
+      /* last-resort: nothing more we can do; never throw out of cleanup */
     }
     return {
       ok: false,

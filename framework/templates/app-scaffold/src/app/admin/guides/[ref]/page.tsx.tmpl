@@ -51,19 +51,19 @@ function allowlistedGuideBasenames(): Set<string> {
   return set;
 }
 
-// Resolve a requested ref to a SAFE basename, or null. Strips any path separators in the
-// incoming ref FIRST (defeats ../../etc/passwd, absolute paths, encoded separators), then
-// requires membership in the registry allowlist. Returns null → caller 404s, NO disk read
-// of the target ever happens for a non-allowlisted ref.
+// Resolve a requested ref to a SAFE basename, or null. REJECTS any traversal-shaped ref
+// OUTRIGHT (path separator or "..") BEFORE the allowlist — even when the basename tail is
+// allowlisted — so BOTH ../../etc/passwd AND ../../DEV_SETUP_GUIDE.md 404 (no surprising
+// strip-then-allow). Then requires membership in the registry allowlist. Returns null →
+// caller 404s, NO disk read of the target ever happens for a non-allowlisted ref.
 function resolveGuideRef(rawRef: string): string | null {
   if (!rawRef) return null;
-  // Strip directory components and any .md the caller appended.
-  const base = String(rawRef)
-    .split(/[\\/]/)
-    .pop()!
-    .replace(/\.md$/i, "");
-  // Defense in depth: reject anything that still looks like traversal / hidden / empty.
-  if (!base || base === "." || base === ".." || base.includes("..")) return null;
+  // Reject traversal-SHAPED refs outright, before any stripping or allowlist check.
+  if (/[\\/]/.test(rawRef) || rawRef.includes("..")) return null;
+  // No separators remain — strip only a trailing .md the caller may have appended.
+  const base = String(rawRef).replace(/\.md$/i, "");
+  // Defense in depth: reject hidden / empty leftovers.
+  if (!base || base === "." || base === "..") return null;
   const allow = allowlistedGuideBasenames();
   return allow.has(base) ? base : null;
 }

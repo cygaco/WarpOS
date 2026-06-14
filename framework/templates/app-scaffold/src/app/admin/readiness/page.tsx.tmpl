@@ -166,6 +166,36 @@ function OpenItemRow({
   );
 }
 
+function InSprintItemRow({ item }: { item: ReadinessViewItem }) {
+  // DISPLAY-ONLY row for the "In the sprint" group (open sprint-work | waiver items).
+  // These are NOT founder-checkable — the server action rejects toggling them — so this
+  // row carries NO checkbox / toggle / form (no misleading affordance). Lighter framing
+  // ("We're handling these.") + the deep-link CTA only when the producer resolved a guide.
+  return (
+    <div className="flex flex-col gap-3 rounded-md border border-dashed p-4 opacity-90">
+      <div className="flex items-start gap-3">
+        <ShieldCheck
+          className="mt-0.5 size-[18px] shrink-0 text-muted-foreground"
+          aria-hidden
+        />
+        <span className="text-sm font-medium text-muted-foreground">
+          {item.label}
+        </span>
+      </div>
+
+      <div className="flex flex-col gap-3 pl-[30px] sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
+        <div className="flex flex-col gap-2">
+          <DimBadge dim={item.dim} />
+          <p className="text-xs text-muted-foreground">
+            We&rsquo;re handling these.
+          </p>
+        </div>
+        <DeepLinkCta item={item} />
+      </div>
+    </div>
+  );
+}
+
 function DoneItemRow({ item }: { item: ReadinessViewItem }) {
   return (
     <div className="flex flex-col gap-2 rounded-md border p-4 opacity-90">
@@ -318,6 +348,16 @@ export default async function ReadinessPage() {
         </Card>
       ) : null}
 
+      {phase === "warm" ? (
+        // Explicit warm cue (AC-A5): the warm board renders measurably differently from
+        // cold — no orientation banner, Done is collapsed, AND this "what's next" line
+        // foregrounds the remaining open work.
+        <p className="flex items-center gap-2 text-sm font-medium text-foreground">
+          <ArrowRight className="size-4 shrink-0" aria-hidden />
+          Good progress — here&rsquo;s what&rsquo;s next.
+        </p>
+      ) : null}
+
       {groups.map((group) => {
         if (group.key === "done") {
           return (
@@ -344,6 +384,12 @@ export default async function ReadinessPage() {
                 if (group.key === "blocked") {
                   return <BlockedItemRow key={item.id} item={item} />;
                 }
+                if (group.key === "in-sprint") {
+                  // sprint-work | waiver: status-display-only, NO toggle (the action
+                  // rejects toggling them — a toggle here would be misleading).
+                  return <InSprintItemRow key={item.id} item={item} />;
+                }
+                // "do-first" = open owner-action items — the ONLY checkable group.
                 return (
                   <OpenItemRow
                     key={item.id}
