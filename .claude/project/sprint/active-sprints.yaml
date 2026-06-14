@@ -1,5 +1,5 @@
 schema: warpos/sprint/active-sprints/v1
-primary: SP-20260613-001
+primary: S-PF-09a
 sprints:
   - id: SP-20260512-001
     title: Multi-sprint parallelism for Sprint Workflow
@@ -991,5 +991,16 @@ sprints:
     pointer: ".claude/project/sprint/sprints/SP-20260613-001"
     created_at: "2026-06-14T01:34:52.870Z"
     updated_at: "2026-06-14T02:00:00.000Z"
+  - id: S-PF-09a
+    title: "Founders launch-readiness panel — shared readiness model + producer + founder panel (E-PRODUCT-FOUNDATION-001 W3)"
+    status: planning
+    lane:
+      type: default
+      value: null
+      isolation_notes: ""
+    layout: per_sprint_subdir
+    pointer: ".claude/project/sprint/sprints/S-PF-09a"
+    created_at: "2026-06-14T02:56:34.665Z"
+    updated_at: "2026-06-14T02:56:34.665Z"
 created_at: "2026-05-12T22:57:35.667Z"
-updated_at: "2026-06-14T01:34:52.870Z"
+updated_at: "2026-06-14T02:56:34.665Z"
