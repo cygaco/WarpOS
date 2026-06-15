@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "generated": "2026-06-14T21:18:04.745Z",
-    "lastUpdated": "2026-06-14T21:18:04.745Z",
-    "total_systems": 81,
+    "generated": "2026-06-15T03:36:23.852Z",
+    "lastUpdated": "2026-06-15T03:36:23.852Z",
+    "total_systems": 82,
     "categories": 2,
-    "total_files_referenced": 80,
+    "total_files_referenced": 81,
     "missing_files_on_disk": 1,
     "regenerated_by": "scripts/regen-maps.js"
   },
@@ -16,7 +16,7 @@
       ]
     },
     "untested": {
-      "count": 80,
+      "count": 81,
       "ids": [
         "skill-roadmap-ideas",
         "skill-roadmap-next",
@@ -97,7 +97,8 @@
         "skill-session-resume",
         "skill-sprint-plan",
         "skill-sprint-design",
-        "skill-cockpit-readiness"
+        "skill-cockpit-readiness",
+        "skill-admin-preview"
       ]
     }
   },
@@ -114,7 +115,7 @@
       ]
     },
     "cognition": {
-      "count": 80,
+      "count": 81,
       "systems": [
         {
           "id": "skill-_report_skill_tmp",
@@ -122,6 +123,14 @@
           "status": "untested",
           "files": [
             ".claude/commands/_report_skill_tmp.md"
+          ]
+        },
+        {
+          "id": "skill-admin-preview",
+          "name": "Open/preview a PRODUCT's in-app founder admin panel in the browser. Scaffolds (or reuses) a fixed throwaway Next instance, boots `npm run dev`, waits for the real ready line + parses the actual port, then opens `/admin`. The keystone of the admin:* dev-tooling suite — never targets WarpOS itself.",
+          "status": "untested",
+          "files": [
+            ".claude/commands/admin/preview.md"
           ]
         },
         {

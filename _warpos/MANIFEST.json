@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-15T02:40:10.024Z",
+  "generatedAt": "2026-06-15T03:36:23.798Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.16.0",
   "migrations": [],
@@ -125,8 +125,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "eff30503c32d335ad4034a4f61077e05c01c77a12a629c2315b261252953adc7",
-      "installedSha": "eff30503c32d335ad4034a4f61077e05c01c77a12a629c2315b261252953adc7"
+      "sha256": "db54da60e3bd779aab44f2462059182cc9b23605daf7d1e1c07435554e1371f3",
+      "installedSha": "db54da60e3bd779aab44f2462059182cc9b23605daf7d1e1c07435554e1371f3"
     },
     "TRACKER.md": {
       "owner": "runtime",
@@ -2295,8 +2295,8 @@
       "owner": "framework",
       "managed": true,
       "source": null,
-      "sha256": "21c53ecd5dc806f6f0c0d37d95f8bc82c69382f5ac5e347c4393d921c27338df",
-      "installedSha": "21c53ecd5dc806f6f0c0d37d95f8bc82c69382f5ac5e347c4393d921c27338df"
+      "sha256": "b9c7e449ba3164bd5f6da96c89f1d244eb8561bda674d12a3cc79bd07863fe38",
+      "installedSha": "b9c7e449ba3164bd5f6da96c89f1d244eb8561bda674d12a3cc79bd07863fe38"
     },
     "tests/regression/SP-20260614-002/preview-reuse-default.test.js": {
       "owner": "framework",
@@ -4360,8 +4360,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/warpos/repo-role.js",
-      "sha256": "d01a7824b5485052bff2d5b326ffb06ed64b2074c3e868c48cc0707c6d8258d6",
-      "installedSha": "d01a7824b5485052bff2d5b326ffb06ed64b2074c3e868c48cc0707c6d8258d6"
+      "sha256": "21ac3a523ada6e8574dfd90692417846416730336097f0734311b1b5284ff3c1",
+      "installedSha": "21ac3a523ada6e8574dfd90692417846416730336097f0734311b1b5284ff3c1"
     },
     "scripts/warpos/report-format.js": {
       "owner": "framework",
@@ -4437,8 +4437,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/warpos/test-repo-role.js",
-      "sha256": "07105cd3825ce866302027277a0cd3aabb81459006a7786370970dfe6bb9330f",
-      "installedSha": "07105cd3825ce866302027277a0cd3aabb81459006a7786370970dfe6bb9330f"
+      "sha256": "3eb55ea96403af17dd11852caa33906797df139a46541b48dcd4f7d6f3138572",
+      "installedSha": "3eb55ea96403af17dd11852caa33906797df139a46541b48dcd4f7d6f3138572"
     },
     "scripts/warpos/test-rollback-cli-smoke.js": {
       "owner": "framework",
@@ -4542,8 +4542,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/warpos/manifest/bootstrap.js",
-      "sha256": "eab03445a0a2a56385b8758408b109aa0ef0e69f00955fd14167ed5e6f4afbb3",
-      "installedSha": "eab03445a0a2a56385b8758408b109aa0ef0e69f00955fd14167ed5e6f4afbb3"
+      "sha256": "d2b9d00f7ba82c2559bd04a391f89661d501832905c71c4ebc1859694c41665d",
+      "installedSha": "d2b9d00f7ba82c2559bd04a391f89661d501832905c71c4ebc1859694c41665d"
     },
     "scripts/warpos/manifest/build.js": {
       "owner": "framework",
@@ -7223,8 +7223,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/repo-role-single-source.js",
-      "sha256": "85754850a7f868ca983375ebf026091ca747a683b3c964e21eaacdba95ec8537",
-      "installedSha": "85754850a7f868ca983375ebf026091ca747a683b3c964e21eaacdba95ec8537"
+      "sha256": "7061692417b3957819ec54c5ce52a96fabf6610607714a148d3929c9784f14a7",
+      "installedSha": "7061692417b3957819ec54c5ce52a96fabf6610607714a148d3929c9784f14a7"
     },
     "scripts/checks/resonance-runner.js": {
       "owner": "framework",
@@ -7846,15 +7846,15 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/admin/preview.js",
-      "sha256": "32a18e5cb00cbfd4b6f57071e8ba277aee9f9df58bc7eba2dff837267c74d9db",
-      "installedSha": "32a18e5cb00cbfd4b6f57071e8ba277aee9f9df58bc7eba2dff837267c74d9db"
+      "sha256": "6c8c68aa2059533779c733760a71027fe501d04909395a816d2a2b99b568d290",
+      "installedSha": "6c8c68aa2059533779c733760a71027fe501d04909395a816d2a2b99b568d290"
     },
     "scripts/admin/seed.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/admin/seed.js",
-      "sha256": "42ea7e9236c5024c63c09e58dc3773a3fd88b5a281def16ded64d4261522108c",
-      "installedSha": "42ea7e9236c5024c63c09e58dc3773a3fd88b5a281def16ded64d4261522108c"
+      "sha256": "03ecb28fdccc20e650a3c8e27407d40fecb6c48d3fcd0dae832e3e718100ceab",
+      "installedSha": "03ecb28fdccc20e650a3c8e27407d40fecb6c48d3fcd0dae832e3e718100ceab"
     },
     "schemas/change-plan.schema.json": {
       "owner": "framework",
@@ -20351,8 +20351,8 @@
       "managed": true,
       "source": ".claude/commands/scan/full.md",
       "kind": "md",
-      "sha256": "19f5f12ab5e32ec51817c87817bc633002f47c0bed548ae54dbbe843607f1955",
-      "installedSha": "19f5f12ab5e32ec51817c87817bc633002f47c0bed548ae54dbbe843607f1955"
+      "sha256": "2cc052f7e1cf8eda893f076c19ad9478032909d643b11d05a55136b8263b8846",
+      "installedSha": "2cc052f7e1cf8eda893f076c19ad9478032909d643b11d05a55136b8263b8846"
     },
     ".claude/commands/scan/ingest-firewall.md": {
       "owner": "framework",
@@ -21655,8 +21655,8 @@
       "managed": true,
       "source": ".claude/commands/admin/preview.md",
       "kind": "md",
-      "sha256": "0570bda6d3b1832a615ce6fb2122eb5de45562b2b42e669f9d956b1b0688211c",
-      "installedSha": "0570bda6d3b1832a615ce6fb2122eb5de45562b2b42e669f9d956b1b0688211c"
+      "sha256": "c12a603a6d31f352d1002e13bfe1712f5795e97247ed0f68783e52fe67b5172a",
+      "installedSha": "c12a603a6d31f352d1002e13bfe1712f5795e97247ed0f68783e52fe67b5172a"
     },
     ".claude/commands/admin/readiness.md": {
       "owner": "framework",

@@ -19,7 +19,7 @@ const fs = require("fs");
 const os = require("os");
 const path = require("path");
 
-const { resolveRepoRole, ROLES } = require("./repo-role");
+const { resolveRepoRole, isCanonicalDir, ROLES } = require("./repo-role");
 
 // ── Tiny test harness ───────────────────────────────────────────────────────
 
@@ -501,6 +501,107 @@ section("FIX3 — enforcer pattern self-test (new regex patterns match role-deri
     !versionNamePattern.test("if (v.name === 'other-project') {"));
   ok("versionNamePattern does NOT match bare 'warpos' string without .name",
     !versionNamePattern.test('const n = "warpos";'));
+
+  // Optional-chaining accessor shapes (xprovider review 2026-06-15 BLOCKER-1b
+  // hardening): the (?:\?\.|[.\[]) group catches `warpos?.source` / `project?.slug`
+  // in addition to dot/bracket access. (Split-var + variable-indirection shapes
+  // remain line-local misses — the documented ramp-to-blocking precondition.)
+  const sourceSelfPattern =
+    /warpos(?:\?\.|[.\[]).*source.*===.*['"]self['"]|['"]self['"].*===.*warpos(?:\?\.|[.\[]).*source/;
+  const slugWarposPattern =
+    /project(?:\?\.|[.\[]).*slug.*===.*['"]warpos['"]|['"]warpos['"].*===.*project(?:\?\.|[.\[]).*slug/;
+  ok("sourceSelfPattern matches warpos.source === 'self' (dot access)",
+    sourceSelfPattern.test('if (m.warpos.source === "self") return true;'));
+  ok("sourceSelfPattern matches warpos?.source === 'self' (optional chaining)",
+    sourceSelfPattern.test('if (manifest.warpos?.source === "self") return true;'));
+  ok("sourceSelfPattern does NOT match a bare content read of warpos.source",
+    !sourceSelfPattern.test('const v = m.warpos.source;'));
+  ok("slugWarposPattern matches project?.slug === 'warpos' (optional chaining)",
+    slugWarposPattern.test('if (m.project?.slug === "warpos") refuse();'));
+}
+
+// 21. ED-009 adoption — isCanonicalDir() env-immune signals-only detector
+//     The shared resolver's env-IMMUNE arm: the single source the admin:* safety
+//     guards (preview.js / seed.js refuseIfTargetIsWarpOS) now call instead of
+//     re-deriving canonical signals inline. Locks BOTH the detection-by-signal
+//     behavior AND the env-immunity property (the xprovider HIGH #5 concern that
+//     previously justified hand-rolled detection).
+section("ED-009 — isCanonicalDir() env-immune canonical-tree detector (admin:* safety floor)");
+{
+  // 21a: canonical via _warpos/MANIFEST.json
+  {
+    const dir = makeTmpRepo({ warposManifest: true });
+    try {
+      ok("isCanonicalDir true for _warpos/MANIFEST.json tree", isCanonicalDir(dir) === true);
+    } finally { cleanup(dir); }
+  }
+
+  // 21b: canonical via .warpos-canonical marker
+  {
+    const dir = makeTmpRepo({ warposCanonicalMarker: true });
+    try {
+      ok("isCanonicalDir true for .warpos-canonical marker tree", isCanonicalDir(dir) === true);
+    } finally { cleanup(dir); }
+  }
+
+  // 21c: canonical via manifest project.slug
+  {
+    const dir = makeTmpRepo({ manifestJson: { project: { slug: "warpos" } } });
+    try {
+      ok("isCanonicalDir true for manifest project.slug canonical tree", isCanonicalDir(dir) === true);
+    } finally { cleanup(dir); }
+  }
+
+  // 21d: consumer repo (framework-installed only) → NOT canonical
+  {
+    const dir = makeTmpRepo({ frameworkInstalled: true });
+    try {
+      ok("isCanonicalDir false for a consumer install", isCanonicalDir(dir) === false);
+    } finally { cleanup(dir); }
+  }
+
+  // 21e: unknown/empty repo → NOT canonical
+  {
+    const dir = makeTmpRepo({});
+    try {
+      ok("isCanonicalDir false for an unsignaled (unknown) tree", isCanonicalDir(dir) === false);
+    } finally { cleanup(dir); }
+  }
+
+  // 21f: ENV-IMMUNITY (the whole point) — WARPOS_REPO_ROLE=consumer must NOT flip
+  //      a real canonical tree to non-canonical for the safety floor, even though
+  //      resolveRepoRole() (which honors env) DOES return 'consumer'.
+  {
+    const dir = makeTmpRepo({ warposManifest: true });
+    const origEnv = process.env.WARPOS_REPO_ROLE;
+    process.env.WARPOS_REPO_ROLE = "consumer";
+    try {
+      ok("isCanonicalDir IGNORES WARPOS_REPO_ROLE=consumer (stays true on canonical tree)",
+        isCanonicalDir(dir) === true);
+      ok("resolveRepoRole HONORS WARPOS_REPO_ROLE=consumer (the divergence isCanonicalDir defeats)",
+        resolveRepoRole({ root: dir }).role === "consumer");
+    } finally {
+      if (origEnv === undefined) delete process.env.WARPOS_REPO_ROLE;
+      else process.env.WARPOS_REPO_ROLE = origEnv;
+      cleanup(dir);
+    }
+  }
+
+  // 21g: env-immunity the OTHER direction — WARPOS_REPO_ROLE=canonical must NOT
+  //      make an unsignaled tree read as canonical (no env spoof INTO canonical).
+  {
+    const dir = makeTmpRepo({});
+    const origEnv = process.env.WARPOS_REPO_ROLE;
+    process.env.WARPOS_REPO_ROLE = "canonical";
+    try {
+      ok("isCanonicalDir IGNORES WARPOS_REPO_ROLE=canonical (stays false on unsignaled tree)",
+        isCanonicalDir(dir) === false);
+    } finally {
+      if (origEnv === undefined) delete process.env.WARPOS_REPO_ROLE;
+      else process.env.WARPOS_REPO_ROLE = origEnv;
+      cleanup(dir);
+    }
+  }
 }
 
 // ── Summary ─────────────────────────────────────────────────────────────────

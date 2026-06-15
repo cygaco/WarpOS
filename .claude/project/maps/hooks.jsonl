@@ -1,4 +1,4 @@
-{"_meta":true,"name":"Hooks Map","description":"All hook scripts under scripts/hooks/ + lib modules + settings.json wiring.","version":"2026-06-14","total_hooks":77,"total_lib_modules":18,"registered_hooks":65,"orphan_hooks":12,"wiring_count":74,"last_regenerated":"2026-06-14T21:18:04.745Z"}
+{"_meta":true,"name":"Hooks Map","description":"All hook scripts under scripts/hooks/ + lib modules + settings.json wiring.","version":"2026-06-15","total_hooks":77,"total_lib_modules":18,"registered_hooks":65,"orphan_hooks":12,"wiring_count":74,"last_regenerated":"2026-06-15T03:36:23.852Z"}
 {"id":"hook:authorization-gate","name":"authorization-gate.js","path":"scripts/hooks/authorization-gate.js","registered":true,"exists":true,"size":14829,"modified":"2026-06-11T20:50:28.863Z"}
 {"id":"hook:beta-gate","name":"beta-gate.js","path":"scripts/hooks/beta-gate.js","registered":true,"exists":true,"size":9095,"modified":"2026-06-08T20:28:50.013Z"}
 {"id":"hook:boss-boundary","name":"boss-boundary.js","path":"scripts/hooks/boss-boundary.js","registered":true,"exists":true,"size":3145,"modified":"2026-06-04T22:57:13.997Z"}
@@ -86,7 +86,7 @@
 {"id":"hook-lib:mode-lifecycle","name":"mode-lifecycle.js","path":"scripts/hooks/lib/mode-lifecycle.js","registered":false,"type":"lib","exists":true,"size":6175,"modified":"2026-06-10T00:04:52.690Z"}
 {"id":"hook-lib:mode","name":"mode.js","path":"scripts/hooks/lib/mode.js","registered":false,"type":"lib","exists":true,"size":2944,"modified":"2026-06-10T00:04:52.691Z"}
 {"id":"hook-lib:oneshot-store","name":"oneshot-store.js","path":"scripts/hooks/lib/oneshot-store.js","registered":false,"type":"lib","exists":true,"size":2337,"modified":"2026-06-08T21:07:45.656Z"}
-{"id":"hook-lib:paths.generated","name":"paths.generated.js","path":"scripts/hooks/lib/paths.generated.js","registered":false,"type":"lib","exists":true,"size":11170,"modified":"2026-06-14T21:13:08.438Z"}
+{"id":"hook-lib:paths.generated","name":"paths.generated.js","path":"scripts/hooks/lib/paths.generated.js","registered":false,"type":"lib","exists":true,"size":11170,"modified":"2026-06-14T22:00:46.951Z"}
 {"id":"hook-lib:paths","name":"paths.js","path":"scripts/hooks/lib/paths.js","registered":false,"type":"lib","exists":true,"size":6608,"modified":"2026-06-05T01:45:08.446Z"}
 {"id":"hook-lib:project-config","name":"project-config.js","path":"scripts/hooks/lib/project-config.js","registered":false,"type":"lib","exists":true,"size":4488,"modified":"2026-05-30T01:25:39.591Z"}
 {"id":"hook-lib:provider-health","name":"provider-health.js","path":"scripts/hooks/lib/provider-health.js","registered":false,"type":"lib","exists":true,"size":10306,"modified":"2026-05-30T01:25:39.592Z"}

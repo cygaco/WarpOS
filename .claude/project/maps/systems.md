@@ -1,23 +1,24 @@
 # Systems Manifest
 
-Generated: 2026-06-14T21:18:04.745Z
+Generated: 2026-06-15T03:36:23.852Z
 
-Total: **81** systems across **2** categories. Files referenced: 80, missing on disk: 1.
+Total: **82** systems across **2** categories. Files referenced: 81, missing on disk: 1.
 
 ## By status
 
 | Status | Count |
 |---|---|
 | active | 1 |
-| untested | 80 |
+| untested | 81 |
 
 ## By category
 
-### cognition (80)
+### cognition (81)
 
 | id | name | status | files |
 |---|---|---|---|
 | skill-_report_skill_tmp | File an ELI5 report (sprint \| milestone \| session \| checkpoint) into _reports | untested | 1 |
+| skill-admin-preview | Open/preview a PRODUCT's in-app founder admin panel in the browser. Scaffolds (o | untested | 1 |
 | skill-bootstrap-lastmile | "Prototype → monetizable product. Drives the 'last mile': readiness audit → laun | untested | 1 |
 | skill-bootstrap-spinup | "From 'just WarpOS' to something on screen — one in-project command: intent (gui | untested | 1 |
 | skill-cockpit-readiness | The launch-readiness cockpit — show how close every registered product is to lau | untested | 1 |

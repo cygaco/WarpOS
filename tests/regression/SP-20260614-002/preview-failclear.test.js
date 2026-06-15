@@ -4,9 +4,13 @@
 //
 // Two bindings:
 //   1. ::resolved-target-warpos-root-refused-precondition — if the resolved
-//      target is the WarpOS canonical root (path match OR manifest `warpos:`
-//      block OR project.slug==="warpos"), refuseIfTargetIsWarpOS refuses BEFORE
-//      any scaffold/boot, and run() returns non-ok with no side effects.
+//      target is the WarpOS canonical tree (path match, OR a canonical signal via
+//      the shared resolver's isCanonicalDir: _warpos/MANIFEST.json /
+//      warpos.source==="self" / project.slug==="warpos" / version.json#name —
+//      NOTE a consumer's own warpos install-record block, source != "self", is
+//      NOT a signal), refuseIfTargetIsWarpOS refuses BEFORE any scaffold/boot,
+//      and run() returns non-ok with no side effects. (ED-009: detection routed
+//      through scripts/warpos/repo-role.js; β DECIDE 0.88, session/2026-06-15.)
 //   2. ::missing-precondition-exact-message-nonzero — preconditions fail CLEAR
 //      with the exact missing step + remediation, exiting non-zero (no silent
 //      hang, no open against a dead server, no orphaned child).
@@ -52,17 +56,37 @@ async function main() {
     assert.ok(/canonical root/i.test(g.reason), "reason names the canonical root");
   });
 
-  // ── refusal: manifest top-level `warpos:` block ────────────────────────────
-  await ok("manifest warpos: self-block refuses", () => {
-    const dir = tmpDir("warpos-block");
+  // ── NOT refused: a consumer's own warpos install-record block ──────────────
+  // EVERY scaffolded consumer carries a top-level `warpos:{...,source:<provenance>}`
+  // block (scaffold-core.js:542) — refusing on its mere PRESENCE would refuse the
+  // very products admin:preview targets (the latent over-refusal bug ED-053's
+  // deferred live run never hit). Detection now flows through the shared resolver's
+  // signals-only isCanonicalDir (ED-009): a consumer block (source != "self") is
+  // NOT a canonical signal, so it is NOT refused. (β DECIDE 0.88.)
+  await ok("consumer warpos: block (source != self, slug != warpos) is NOT refused", () => {
+    const dir = tmpDir("warpos-consumer-block");
     fs.mkdirSync(path.join(dir, ".claude"), { recursive: true });
     fs.writeFileSync(
       path.join(dir, ".claude", "manifest.json"),
-      JSON.stringify({ project: { slug: "someproduct" }, warpos: { version: "x" } }),
+      JSON.stringify({ project: { slug: "someproduct" }, warpos: { version: "x", installed: true, source: "github:acme/someproduct" } }),
     );
     const g = preview.refuseIfTargetIsWarpOS(dir);
-    assert.strictEqual(g.refuse, true, "a `warpos:` self-block must be refused");
-    assert.ok(/warpos.*self-block/i.test(g.reason), "reason names the self-block");
+    assert.strictEqual(g.refuse, false, "a consumer's own warpos install-record must NOT be refused");
+  });
+
+  // ── refusal: manifest warpos.source === "self" (the canonical self-identity) ─
+  // Signal 3c — the field that distinguishes the canonical dev repo from a
+  // consumer (consumers carry source:<provenance>, the dev repo carries "self").
+  await ok("manifest warpos.source==='self' refuses (canonical self-identity)", () => {
+    const dir = tmpDir("warpos-self");
+    fs.mkdirSync(path.join(dir, ".claude"), { recursive: true });
+    fs.writeFileSync(
+      path.join(dir, ".claude", "manifest.json"),
+      JSON.stringify({ project: { slug: "someproduct" }, warpos: { source: "self" } }),
+    );
+    const g = preview.refuseIfTargetIsWarpOS(dir);
+    assert.strictEqual(g.refuse, true, "warpos.source==='self' is the canonical self-identity → refuse");
+    assert.ok(/canonical (tree|signal|root)/i.test(g.reason), "reason names the canonical detection");
   });
 
   // ── refusal: project.slug === "warpos" ─────────────────────────────────────
@@ -75,7 +99,7 @@ async function main() {
     );
     const g = preview.refuseIfTargetIsWarpOS(dir);
     assert.strictEqual(g.refuse, true, "project.slug==='warpos' must be refused");
-    assert.ok(/slug.*warpos/i.test(g.reason), "reason names the slug match");
+    assert.ok(/canonical (tree|signal|root)/i.test(g.reason), "reason names the canonical detection");
   });
 
   // ── NOT refused: ordinary product, no warpos markers ───────────────────────

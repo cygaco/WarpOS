@@ -30,6 +30,7 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const { spawn } = require("node:child_process");
+const { isCanonicalDir } = require("../warpos/repo-role");
 
 const IS_WIN = process.platform === "win32";
 
@@ -74,32 +75,22 @@ function openInBrowser(url) {
 }
 
 // ── WarpOS refusal guard (AC-R1c) ─────────────────────────────
-// Refuse if the resolved target is the WarpOS canonical root. Detection:
-//   (a) path.resolve(targetDir) === WARPOS_ROOT, OR
-//   (b) target's .claude/manifest.json has a top-level `warpos:` block, OR
-//   (c) that manifest's project.slug === "warpos".
-// Deliberately does NOT use getWarpProduct() (would false-positive a product
-// legitimately named "warpos").
+// Refuse if the resolved target is the WarpOS canonical tree. Detection:
+//   (a) fast belt: path.resolve(targetDir) === WARPOS_ROOT, OR
+//   (b) isCanonicalDir(targetDir) — the env-IMMUNE, signals-only detector in
+//       scripts/warpos/repo-role.js (the single source per ED-009). It covers
+//       the _warpos/MANIFEST.json marker, the manifest self-identity fields, and
+//       the version.json heuristic in ONE place, and ignores WARPOS_REPO_ROLE so
+//       the safety floor can't be env-spoofed (xprovider HIGH #5).
+// Delegates detection to the resolver rather than re-deriving canonical signals
+// inline (which would re-introduce the role-derivation drift ED-009 forbids).
 function refuseIfTargetIsWarpOS(targetDir) {
   const resolved = path.resolve(targetDir);
   if (resolved === WARPOS_ROOT) {
     return { refuse: true, reason: `resolved target is the WarpOS canonical root (${resolved})` };
   }
-  const manifestPath = path.join(resolved, ".claude", "manifest.json");
-  let manifest = null;
-  try {
-    manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
-  } catch {
-    manifest = null; // no manifest → not WarpOS-by-manifest; path check already passed
-  }
-  if (manifest) {
-    if (Object.prototype.hasOwnProperty.call(manifest, "warpos")) {
-      return { refuse: true, reason: `target manifest has a top-level \`warpos:\` self-block (${manifestPath})` };
-    }
-    const slug = manifest.project && manifest.project.slug;
-    if (String(slug || "").toLowerCase() === "warpos") {
-      return { refuse: true, reason: `target manifest project.slug === "warpos" (${manifestPath})` };
-    }
+  if (isCanonicalDir(resolved)) {
+    return { refuse: true, reason: `target resolves to the WarpOS canonical tree (repo-role canonical signal at ${resolved})` };
   }
   return { refuse: false };
 }

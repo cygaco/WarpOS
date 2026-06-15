@@ -39,9 +39,13 @@ const ALLOWLIST_FILES = new Set([
 
 // Entire directories allowlisted — files inside these dirs are legitimate
 // manifest-tool readers that reference _warpos/MANIFEST.json for CONTENT
-// (build, validate, test) rather than for role derivation.
+// (build, validate, walk-skip) rather than for role derivation. NOTE: this is a
+// CONTENT-reader carve-out, not a role-derivation hiding place — bootstrap.js's
+// canonical detection (detectMode) was refactored to flow through the resolver
+// (isCanonicalDir) so it no longer re-derives role inline here (xprovider review
+// 2026-06-15 BLOCKER-1a: the dir-allowlist must not mask a LIVE role detector).
 const ALLOWLIST_DIRS = [
-  path.join(SCRIPTS_DIR, "warpos", "manifest"), // build.js, validate.js, walk-skip.js, tests, etc.
+  path.join(SCRIPTS_DIR, "warpos", "manifest"), // build.js, validate.js, walk-skip.js content-readers (+ tests)
 ];
 
 function isAllowlisted(file) {
@@ -68,13 +72,15 @@ const PATTERNS = [
   {
     name: "warpos_source_self",
     // m.warpos.source === "self" or similar — specific canonical-dev-repo signal.
-    regex: /warpos[.\[].*source.*===.*['"]self['"]|['"]self['"].*===.*warpos[.\[].*source/,
+    // The (?:\?\.|[.\[]) accessor group also catches optional chaining (warpos?.source).
+    regex: /warpos(?:\?\.|[.\[]).*source.*===.*['"]self['"]|['"]self['"].*===.*warpos(?:\?\.|[.\[]).*source/,
     description: "warpos.source === \"self\" role check — use resolveRepoRole() instead",
   },
   {
     name: "project_slug_warpos",
     // m.project.slug === "warpos" — specific canonical role signal.
-    regex: /project[.\[].*slug.*===.*['"]warpos['"]|['"]warpos['"].*===.*project[.\[].*slug/,
+    // The (?:\?\.|[.\[]) accessor group also catches optional chaining (project?.slug).
+    regex: /project(?:\?\.|[.\[]).*slug.*===.*['"]warpos['"]|['"]warpos['"].*===.*project(?:\?\.|[.\[]).*slug/,
     description: "project.slug === \"warpos\" role check — use resolveRepoRole() instead",
   },
   {

@@ -37,6 +37,7 @@
 
 const fs = require("fs");
 const path = require("path");
+const { isCanonicalDir } = require("../warpos/repo-role");
 
 // Repo root resolved from this module's location (scripts/admin/../.. = root).
 const ROOT = path.resolve(__dirname, "..", "..");
@@ -100,30 +101,22 @@ function readPointer(pointerPath) {
 
 /**
  * refuseIfTargetIsWarpOS(targetDir) → { warpos: boolean, reason?: string }
- * Mirrors the keystone guard EXACTLY (preview.js): never seed into the WarpOS
- * canonical root. Detection is target-LOCAL and unforgeable — path identity OR the
- * target's own .claude/manifest.json self-identity (`warpos:` block / project.slug).
- * Deliberately does NOT use resolveRepoRole: that resolver gives the WARPOS_REPO_ROLE
- * env var precedence over filesystem signals, so a canonical checkout could be
- * misclassified as non-canonical when the env says consumer/unknown (xprovider
- * review HIGH #5). No env override here.
+ * Mirrors the keystone guard (preview.js): never seed into the WarpOS canonical
+ * tree. Detection is target-LOCAL and unforgeable — path identity OR
+ * isCanonicalDir(), the env-IMMUNE signals-only detector in
+ * scripts/warpos/repo-role.js (the single source per ED-009). isCanonicalDir
+ * intentionally ignores WARPOS_REPO_ROLE, so the safety floor cannot be
+ * env-spoofed (xprovider review HIGH #5 — the concern that previously pushed this
+ * guard to hand-roll its own detection). Routing through the resolver keeps the
+ * single-source invariant without losing the env-immunity property.
  */
 function refuseIfTargetIsWarpOS(targetDir) {
   const resolved = path.resolve(targetDir);
   if (resolved === ROOT) {
     return { warpos: true, reason: `resolved seed target is the WarpOS canonical root (${resolved})` };
   }
-  try {
-    const manifest = JSON.parse(fs.readFileSync(path.join(resolved, ".claude", "manifest.json"), "utf8"));
-    if (manifest && Object.prototype.hasOwnProperty.call(manifest, "warpos")) {
-      return { warpos: true, reason: "seed target manifest has a top-level `warpos:` self-block" };
-    }
-    const slug = manifest && manifest.project && manifest.project.slug;
-    if (String(slug || "").toLowerCase() === "warpos") {
-      return { warpos: true, reason: 'seed target manifest project.slug === "warpos"' };
-    }
-  } catch {
-    // no/invalid manifest → not WarpOS-by-manifest; the path-identity check already ran.
+  if (isCanonicalDir(resolved)) {
+    return { warpos: true, reason: `seed target resolves to the WarpOS canonical tree (repo-role canonical signal at ${resolved})` };
   }
   return { warpos: false };
 }

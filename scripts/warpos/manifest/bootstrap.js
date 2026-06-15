@@ -38,6 +38,7 @@
 const fs = require("fs");
 const path = require("path");
 const { spawnSync } = require("child_process");
+const { isCanonicalDir } = require("../repo-role");
 
 const FRAMEWORK_SUBDIRS = [
   "commands",
@@ -102,9 +103,6 @@ Exit codes: 0 ok, 1 refused, 2 cli, 3 no-source, 4 copy-fail, 5 manifest-fail, 6
 
 function detectMode(root) {
   const hasWarpos = fs.existsSync(path.join(root, "_warpos"));
-  const hasWarposManifest = fs.existsSync(
-    path.join(root, "_warpos", "MANIFEST.json"),
-  );
   const hasFramework = fs.existsSync(path.join(root, "framework"));
   const hasScriptsHooks = fs.existsSync(path.join(root, "scripts", "hooks"));
   const hasClaude = fs.existsSync(path.join(root, ".claude"));
@@ -112,12 +110,17 @@ function detectMode(root) {
     path.join(root, ".claude", "framework-installed.json"),
   );
 
-  // Canonical: has _warpos/MANIFEST.json AND has framework/ (the canonical source).
-  if (hasWarposManifest && hasFramework) {
+  // Canonical: the shared resolver flags this dir as the WarpOS canonical tree
+  // (ED-009 single source — the env-immune isCanonicalDir, which subsumes the
+  // _warpos/MANIFEST.json marker) AND framework/ is present (the canonical SOURCE
+  // clone, vs an already-migrated product that kept _warpos/ but shed framework/).
+  // Routing canonical detection through the resolver keeps bootstrap off an inline
+  // role-derivation check (the recurring false-green class the ED-009 invariant ends).
+  if (isCanonicalDir(root) && hasFramework) {
     return {
       mode: "canonical",
       reason:
-        "_warpos/MANIFEST.json + framework/ both present (canonical clone)",
+        "repo-role canonical signal + framework/ both present (canonical clone)",
     };
   }
   // Product (already bootstrapped): has _warpos/ but no framework/ — already migrated.

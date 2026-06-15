@@ -75,6 +75,80 @@ function makeResult(role, source) {
   };
 }
 
+// ── Canonical signal detection (filesystem only) ─────────────────────────────
+/**
+ * detectCanonicalSignal(root) → string|null
+ *
+ * Returns a source token if `root` carries a positive canonical filesystem
+ * signal, else null. This is the FILESYSTEM-ONLY detector: it deliberately does
+ * NOT consult the override arg or the WARPOS_REPO_ROLE env var. resolveRepoRole()
+ * layers override/env ON TOP of this; safety guards that must be env-IMMUNE call
+ * it through isCanonicalDir() so a hostile or misconfigured env can never spoof a
+ * canonical tree into looking non-canonical (xprovider review HIGH #5 — the very
+ * reason the admin:* guards previously hand-rolled their own detection).
+ *
+ * Fail-safe: any read/parse error yields null (safer = not canonical).
+ */
+function detectCanonicalSignal(root) {
+  // Signal 1: _warpos/MANIFEST.json — the strongest canonical marker. Only the
+  // canonical source tree ships this; consumer installs receive a product-side
+  // copy with a different shape. Presence alone is sufficient.
+  if (safeExists(path.join(root, "_warpos", "MANIFEST.json"))) {
+    return "marker:_warpos/MANIFEST.json";
+  }
+
+  // Signal 2: .warpos-canonical explicit marker file — written by maintainers in
+  // mid-build trees where _warpos/ isn't yet present.
+  if (safeExists(path.join(root, ".warpos-canonical"))) {
+    return "marker:.warpos-canonical";
+  }
+
+  // Signal 3: .claude/manifest.json — four fields can signal canonical.
+  try {
+    const mfp = path.join(root, ".claude", "manifest.json");
+    if (fs.existsSync(mfp)) {
+      // Strip BOM (this repo ships BOM'd JSON — mirror testsuite/role.js).
+      const m = JSON.parse(fs.readFileSync(mfp, "utf8").replace(/^﻿/, ""));
+      if (m) {
+        // Field 3a: explicit repoRole field.
+        if (typeof m.repoRole === "string" && CANONICAL_ROLE_VALUES.has(m.repoRole)) {
+          return "manifest.json#repoRole";
+        }
+        // Field 3b: warpos.repoRole (nested variant).
+        if (m.warpos && typeof m.warpos.repoRole === "string" && CANONICAL_ROLE_VALUES.has(m.warpos.repoRole)) {
+          return "manifest.json#warpos.repoRole";
+        }
+        // Field 3c: warpos.source === "self" (the canonical dev repo self-identifies).
+        if (m.warpos && m.warpos.source === "self") {
+          return "manifest.json#warpos.source";
+        }
+        // Field 3d: project.slug === the canonical slug.
+        if (m.project && m.project.slug === "warpos") {
+          return "manifest.json#project.slug";
+        }
+      }
+    }
+  } catch {
+    /* read/parse error — fall through; safer = not canonical */
+  }
+
+  // Signal 4 (structural heuristic): version.json#name === "warpos" — backup for
+  // trees mid-build before the manifest is fully written.
+  try {
+    const vjp = path.join(root, "version.json");
+    if (fs.existsSync(vjp)) {
+      const v = JSON.parse(fs.readFileSync(vjp, "utf8"));
+      if (v && v.name === "warpos") {
+        return "version.json#name";
+      }
+    }
+  } catch {
+    /* fall through */
+  }
+
+  return null;
+}
+
 // ── Resolver ─────────────────────────────────────────────────────────────────
 
 /**
@@ -120,65 +194,14 @@ function resolveRepoRole(opts) {
     // Invalid env value — fall through to signals.
   }
 
-  // ── (c) Manifest / marker signals ────────────────────────────────────────
-  // Canonical if ANY positive signal is present. Fail-safe: read/parse errors
-  // fall through so a corrupt file never causes a false-canonical verdict.
-
-  // Signal 1: _warpos/MANIFEST.json — the strongest canonical marker.
-  // Only the canonical source tree ships this; consumer installs receive a
-  // product-side copy with a different shape. Presence alone is sufficient.
-  if (safeExists(path.join(root, "_warpos", "MANIFEST.json"))) {
-    return makeResult("canonical", "marker:_warpos/MANIFEST.json");
-  }
-
-  // Signal 2: .warpos-canonical explicit marker file.
-  // Written by maintainers in mid-build trees where _warpos/ isn't yet present.
-  if (safeExists(path.join(root, ".warpos-canonical"))) {
-    return makeResult("canonical", "marker:.warpos-canonical");
-  }
-
-  // Signal 3: .claude/manifest.json — three fields can signal canonical.
-  try {
-    const mfp = path.join(root, ".claude", "manifest.json");
-    if (fs.existsSync(mfp)) {
-      // Strip BOM (this repo ships BOM'd JSON — mirror testsuite/role.js).
-      const m = JSON.parse(fs.readFileSync(mfp, "utf8").replace(/^﻿/, ""));
-      if (m) {
-        // Field 3a: explicit repoRole field.
-        if (typeof m.repoRole === "string" && CANONICAL_ROLE_VALUES.has(m.repoRole)) {
-          return makeResult("canonical", "manifest.json#repoRole");
-        }
-        // Field 3b: warpos.repoRole (nested variant).
-        if (m.warpos && typeof m.warpos.repoRole === "string" && CANONICAL_ROLE_VALUES.has(m.warpos.repoRole)) {
-          return makeResult("canonical", "manifest.json#warpos.repoRole");
-        }
-        // Field 3c: warpos.source === "self" (the canonical dev repo self-identifies).
-        if (m.warpos && m.warpos.source === "self") {
-          return makeResult("canonical", "manifest.json#warpos.source");
-        }
-        // Field 3d: project.slug === "warpos".
-        if (m.project && m.project.slug === "warpos") {
-          return makeResult("canonical", "manifest.json#project.slug");
-        }
-      }
-    }
-  } catch {
-    /* read/parse error — fall through; safer = not canonical */
-  }
-
-  // ── (d) Structural heuristic ─────────────────────────────────────────────
-  // version.json#name === "warpos" — backup for trees mid-build before manifest
-  // is fully written.
-  try {
-    const vjp = path.join(root, "version.json");
-    if (fs.existsSync(vjp)) {
-      const v = JSON.parse(fs.readFileSync(vjp, "utf8"));
-      if (v && v.name === "warpos") {
-        return makeResult("canonical", "version.json#name");
-      }
-    }
-  } catch {
-    /* fall through */
+  // ── (c)+(d) Filesystem canonical signals ─────────────────────────────────
+  // Delegated to detectCanonicalSignal() so the SAME detection logic backs both
+  // resolveRepoRole() (override/env on top) and the env-immune isCanonicalDir()
+  // (signals only). Canonical if ANY positive signal is present; read/parse
+  // errors yield null so a corrupt file never causes a false-canonical verdict.
+  const sig = detectCanonicalSignal(root);
+  if (sig) {
+    return makeResult("canonical", sig);
   }
 
   // ── (e) Consumer heuristic ───────────────────────────────────────────────
@@ -190,6 +213,25 @@ function resolveRepoRole(opts) {
 
   // ── (f) Unknown ──────────────────────────────────────────────────────────
   return makeResult("unknown", "none");
+}
+
+/**
+ * isCanonicalDir(dir) → boolean
+ *
+ * TRUE iff `dir` carries a positive canonical filesystem signal. Unlike
+ * resolveRepoRole(), this NEVER consults the override arg or the
+ * WARPOS_REPO_ROLE env var — it is the env-IMMUNE detector for safety floors
+ * that must not be spoofable (the admin:* "never run/seed against WarpOS itself"
+ * guards; xprovider review HIGH #5). It answers "is THIS directory the WarpOS
+ * canonical tree?", so it probes `dir` directly rather than the module root.
+ *
+ * Acceptable false-positive (fail-CLOSED): a product whose
+ * .claude/manifest.json#project.slug is literally the canonical slug reads as
+ * canonical. For a safety floor that is the SAFE direction (refuse), never the
+ * dangerous one (a false negative that lets a guard run against real WarpOS).
+ */
+function isCanonicalDir(dir) {
+  return detectCanonicalSignal(path.resolve(dir)) !== null;
 }
 
 // ── CLI entry ─────────────────────────────────────────────────────────────────
@@ -205,4 +247,4 @@ if (require.main === module) {
   process.exit(0); // always 0 — resolution is informational
 }
 
-module.exports = { resolveRepoRole, ROLES };
+module.exports = { resolveRepoRole, isCanonicalDir, ROLES };

@@ -18,9 +18,12 @@ product code.
 
 1. **Refuses WarpOS as a target FIRST.** Before any scaffold or boot it runs
    `refuseIfTargetIsWarpOS(targetDir)` — if the resolved instance dir is the
-   WarpOS canonical root (path match, or its `.claude/manifest.json` carries a
-   top-level `warpos:` block or `project.slug === "warpos"`) it refuses with a
-   non-zero exit and **no side effects**. admin:preview targets a PRODUCT app.
+   WarpOS canonical tree (path match, OR a canonical signal via the shared,
+   env-immune resolver `scripts/warpos/repo-role.js#isCanonicalDir`:
+   `_warpos/MANIFEST.json` / `warpos.source === "self"` / `project.slug === "warpos"`
+   / `version.json#name` — a consumer's own `warpos:` install-record block with
+   `source != "self"` is NOT a signal) it refuses with a non-zero exit and **no
+   side effects**. admin:preview targets a PRODUCT app. (ED-009 single-source.)
 2. **Reuse-default.** If the fixed throwaway instance
    (`runtime/admin-preview/instance/`) already has a `package.json` and you did
    not pass `--force`, it is **reused** — no re-scaffold, no second `npm install`.
