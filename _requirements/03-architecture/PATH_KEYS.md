@@ -74,6 +74,7 @@ Markdown convention: reference paths as `paths.X` in prose. Code: `const { PATHS
 | `oneshotStore` | `.claude/agents/president/_system/oneshot/store.json` | json | runtime | yes | 0.0.0 |  |
 | `oneshotSystem` | `.claude/agents/president/_system/oneshot` | dir | framework | no | 0.0.0 |  |
 | `orgRoleRegistry` | `.claude/agents/_org/role-registry.json` | json | framework | no | 0.13.0 |  |
+| `panelRegistry` | `framework/panel-registry.json` | json | framework | no | 0.19.0 | Unified panel registry (panels map: name -> opener -> descri |
 | `pathsLib` | `scripts/hooks/lib/paths.js` | js | framework | no | 0.0.0 |  |
 | `patterns` | `patterns` | dir | framework | no | 0.0.0 |  |
 | `plans` | `.claude/runtime/plans` | dir | runtime | yes | 0.0.0 |  |
@@ -103,6 +104,7 @@ Markdown convention: reference paths as `paths.X` in prose. Code: `const { PATHS
 | `roadmap` | `ROADMAP.md` | md | project | yes | 0.0.0 | Repo-root sprint+phase ledger. Auto-managed by scripts/sprin |
 | `runtime` | `.claude/runtime` | dir | runtime | yes | 0.0.0 |  |
 | `scriptsAdmin` | `scripts/admin` | dir | framework | no | 0.19.0 | admin:* dev-tooling suite backing scripts (preview.js keysto |
+| `scriptsPanel` | `scripts/panel` | dir | framework | no | 0.19.0 | panel:* unified panel-opener backing scripts (list.js enumer |
 | `settings` | `.claude/settings.json` | json | project | yes | 0.0.0 |  |
 | `skillCatalog` | `.claude/runtime/skill-catalog.json` | json | generated | yes | 0.5.1 | Generated compact index of every user-invocable slash comman |
 | `skillHookPoints` | `.claude/agents/_org/skill-hook-points.json` | json | framework | no | 0.13.1 |  |

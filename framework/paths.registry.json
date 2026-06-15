@@ -217,6 +217,24 @@
       "docsToken": "paths.adminPanelRegistry",
       "_note": "Generic admin-panel registry (panels map: route -> opener -> description). Alias-beside the eventual item-23 /panel:* registry. SP-20260614-002."
     },
+    "scriptsPanel": {
+      "path": "scripts/panel",
+      "kind": "dir",
+      "owner": "framework",
+      "mutable": false,
+      "introducedIn": "0.19.0",
+      "docsToken": "paths.scriptsPanel",
+      "_note": "panel:* unified panel-opener backing scripts (list.js enumerator + roadmap.js board). SP-20260615-001 (ROADMAP items 23+25)."
+    },
+    "panelRegistry": {
+      "path": "framework/panel-registry.json",
+      "kind": "json",
+      "owner": "framework",
+      "mutable": false,
+      "introducedIn": "0.19.0",
+      "docsToken": "paths.panelRegistry",
+      "_note": "Unified panel registry (panels map: name -> opener -> description -> run_context) consumed by the /panel:* forwarders + /panel:list enumerator + panel-registry-coverage enforcer. SP-20260615-001."
+    },
     "patterns": {
       "path": "patterns",
       "kind": "dir",

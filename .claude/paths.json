@@ -26,6 +26,8 @@
   "hookLib": "scripts/hooks/lib",
   "scriptsAdmin": "scripts/admin",
   "adminPanelRegistry": "framework/admin-panel-registry.json",
+  "scriptsPanel": "scripts/panel",
+  "panelRegistry": "framework/panel-registry.json",
   "patterns": "patterns",
   "requirements": "_requirements",
   "requirementsRoot": "_requirements",

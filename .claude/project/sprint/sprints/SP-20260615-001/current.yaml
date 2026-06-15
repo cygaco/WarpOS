@@ -1,0 +1,127 @@
+schema: warpos/sprint/current-sprint/v1
+id: SP-20260615-001
+title: "Panel namespace + roadmap panel (ROADMAP items 23+25)"
+objective: "Ship ONE discoverable panel-opener verb (/panel:*) that forwards to every existing panel via a single registry, plus a read-only roadmap 'what's next' board (/panel:roadmap) sourced from the live truth, with a fail-closed coverage enforcer so a registry row can never point at a dead opener."
+status: done
+created_at: "2026-06-15T03:50:11.558Z"
+updated_at: "2026-06-15T04:19:36.075Z"
+close_note: "Engine-sprint fast-close (RI-001): all 6 tickets done, 16/16 regression green, cross-family gauntlet FAIL->PASS (5 blockers fixed + re-review PASS), manifests+maps regenerated. Retro deferred to milestone close. ff-merged to main."
+source_request: "Build the /panel:* unified panel-opener namespace (item 23) + the roadmap panel/visualization (item 25), co-owned: /panel:roadmap is the roadmap panel's opener."
+interpreted_intent: "Stop the operator having to remember which namespace each panel lives under (or ask 'what's next'): one /panel: verb opens any registered panel, and /panel:roadmap renders the ranked next-action + in-flight + blocked at a glance from the files that are already the source of truth."
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260615-0079.yaml"
+risk_level: low
+approval_state: none_required
+current_phase: design
+recommended_mode: sprint
+mode_invocation_required_by_user: true
+external_services:
+  identified: []
+  blocked: []
+  ready: []
+  mocked: []
+  deferred: []
+tickets:
+  proposed: []
+  planned: []
+  designed: []
+  ready_for_execution: []
+  in_progress: []
+  blocked: []
+  waiting_on_human: []
+  waiting_on_external_service: []
+  in_review: []
+  qa_failed: []
+  redteam_failed: []
+  done:
+    - T-20260615-342
+    - T-20260615-343
+    - T-20260615-344
+    - T-20260615-345
+    - T-20260615-346
+    - T-20260615-347
+  released: []
+  deferred: []
+  abandoned: []
+  reopened: []
+  superseded: []
+requirements:
+  prd: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260615-001\\prd.md"
+  high_level_stories: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260615-001\\high-level-stories.md"
+  granular_stories: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260615-001\\granular-stories.md"
+  copy: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260615-001\\copy.md"
+  inputs: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260615-001\\inputs.md"
+  trace: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260615-001\\trace.md"
+  acceptance_criteria: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260615-001\\acceptance-criteria.md"
+  qa_plan: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260615-001\\qa-plan.md"
+  redteam_plan: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260615-001\\redteam-plan.md"
+  release_plan: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260615-001\\release-plan.md"
+checks:
+  lint:
+    status: not_run
+    last_run: null
+    evidence: ""
+  typecheck:
+    status: not_run
+    last_run: null
+    evidence: ""
+  tests:
+    status: not_run
+    last_run: null
+    evidence: ""
+  build:
+    status: not_run
+    last_run: null
+    evidence: ""
+  qa:
+    status: not_run
+    last_run: null
+    evidence: ""
+  redteam:
+    status: not_run
+    last_run: null
+    evidence: ""
+approvals:
+  plan:
+    required: false
+    state: not_required
+    ref: null
+  design:
+    required: false
+    state: not_required
+    ref: null
+  execution:
+    required: false
+    state: not_required
+    ref: null
+  release:
+    required: false
+    state: not_required
+    ref: null
+  external_services:
+    required: false
+    state: not_required
+    ref: null
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260615-0079.report.md"
+  design: null
+  execution: null
+  release: null
+ralph:
+  active: false
+  current_ticket: null
+  current_loop: null
+  status: idle
+  last_checkpoint: null
+  next_action: null
+crash_recovery:
+  last_checkpoint: ".claude/project/sprint/sprint-progress.yaml"
+  resume_command: "/sprint:design"
+  resume_summary: "Sprint SP-20260615-001 design scaffolded (scale=m). Next: mint tickets from granular-stories, then run /sprint:execute."
+  active_files: []
+  dirty_state: false
+  blockers: []
+  safe_to_continue: true
+lane:
+  type: branch
+  value: session/2026-06-15
+  isolation_notes: "Engine/tooling sprint on the active session branch; fast-close (ff-merge to main, defer retro to milestone close) per RI-001. main==session/2026-06-15 @8f48ba9c at sprint start."

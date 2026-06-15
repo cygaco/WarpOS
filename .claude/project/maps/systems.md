@@ -1,19 +1,19 @@
 # Systems Manifest
 
-Generated: 2026-06-15T03:36:23.852Z
+Generated: 2026-06-15T04:45:17.144Z
 
-Total: **82** systems across **2** categories. Files referenced: 81, missing on disk: 1.
+Total: **88** systems across **2** categories. Files referenced: 87, missing on disk: 1.
 
 ## By status
 
 | Status | Count |
 |---|---|
 | active | 1 |
-| untested | 81 |
+| untested | 87 |
 
 ## By category
 
-### cognition (81)
+### cognition (87)
 
 | id | name | status | files |
 |---|---|---|---|
@@ -52,6 +52,11 @@ Total: **82** systems across **2** categories. Files referenced: 81, missing on 
 | skill-models-router | Open the model router panel — ensure the catalog carries all the latest model op | untested | 1 |
 | skill-models-update | Update the dispatch catalog to the latest models — re-ingest vendor docs, migrat | untested | 1 |
 | skill-oneshot-preflight | Pre-run preflight — branch creation + skeleton gut + 7-pass verification audit.  | untested | 1 |
+| skill-panel-admin | Open a product's in-app founder admin panel in the browser (run-in-product, neve | untested | 1 |
+| skill-panel-list | List every registered panel — the one discoverable entry for "show me a panel".  | untested | 1 |
+| skill-panel-models | Open the model router — the Dispatch Console GUI (role → provider → model → effo | untested | 1 |
+| skill-panel-readiness | Open the cross-product launch-readiness board. A thin /panel:* forwarder to the  | untested | 1 |
+| skill-panel-roadmap | Open the roadmap "what's next" board — ranked next-action + in-flight sprints +  | untested | 1 |
 | skill-playbook-add | Append a play to the Playbook (.claude/project/reference/playbook.md) — a named, | untested | 1 |
 | skill-portfolio-new | Scaffold a new product repo (sibling to WarpOS) with the framework installed and | untested | 1 |
 | skill-portfolio-spinup | "From WarpOS, run the idea→on-screen on-ramp against a registered product: dispa | untested | 1 |
@@ -72,6 +77,7 @@ Total: **82** systems across **2** categories. Files referenced: 81, missing on 
 | skill-scan-full | Run every scan in parallel — a full system scan across project health, governanc | untested | 1 |
 | skill-scan-ingest-firewall | Audit the ingest stores (_docs/research, _docs/imports, _docs/briefs, _docs/clon | untested | 1 |
 | skill-scan-install | Verify a fresh WarpOS install — manifest, paths, agents, hooks, version, setting | untested | 1 |
+| skill-scan-panel-registry-coverage | Coverage enforcer for the panel-registry (the /panel:* suite) — every `panels` r | untested | 1 |
 | skill-scan-role-parity | The one check that owns role parity across the org map, the dispatch catalog, an | untested | 1 |
 | skill-scan-scaffold-coverage | Verify the WarpOS app scaffold (Next+Tailwind v4+shadcn/ui+Radix+Lucide) is comp | untested | 1 |
 | skill-scan-scan-coverage | Scan-suite self-inventory — asserts every /scan:* skill is delegated by /scan:fu | untested | 1 |

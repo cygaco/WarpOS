@@ -142,6 +142,16 @@
       "const": "framework/admin-panel-registry.json",
       "description": "json (framework) — paths.adminPanelRegistry"
     },
+    "scriptsPanel": {
+      "type": "string",
+      "const": "scripts/panel",
+      "description": "dir (framework) — paths.scriptsPanel"
+    },
+    "panelRegistry": {
+      "type": "string",
+      "const": "framework/panel-registry.json",
+      "description": "json (framework) — paths.panelRegistry"
+    },
     "patterns": {
       "type": "string",
       "const": "patterns",

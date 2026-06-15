@@ -1,7 +1,7 @@
 {
   "metadata": {
-    "generated": "2026-06-15T03:36:23.852Z",
-    "lastUpdated": "2026-06-15T03:36:23.852Z",
+    "generated": "2026-06-15T04:45:17.144Z",
+    "lastUpdated": "2026-06-15T04:45:17.144Z",
     "total_hooks": 77,
     "total_lib_modules": 18,
     "registered_hooks": 65,
@@ -809,8 +809,8 @@
       "registered": false,
       "type": "lib",
       "exists": true,
-      "size": 11170,
-      "modified": "2026-06-14T22:00:46.951Z"
+      "size": 11303,
+      "modified": "2026-06-15T04:16:17.743Z"
     },
     {
       "id": "hook-lib:paths",

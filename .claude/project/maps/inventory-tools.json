@@ -1,7 +1,7 @@
 {
   "metadata": {
-    "generated": "2026-06-15T03:36:23.852Z",
-    "lastUpdated": "2026-06-15T03:36:23.852Z",
+    "generated": "2026-06-15T04:45:17.144Z",
+    "lastUpdated": "2026-06-15T04:45:17.144Z",
     "total_tools": 181,
     "categories": 4,
     "regenerated_by": "scripts/regen-maps.js"
@@ -1639,7 +1639,7 @@
           "id": "xref:skills",
           "type": "xref",
           "note": "skills inventory lives in .claude/project/maps/inventory-skills.json",
-          "count": 224
+          "count": 230
         },
         {
           "id": "xref:hooks",

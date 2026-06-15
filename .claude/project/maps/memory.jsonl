@@ -1,11 +1,11 @@
-{"_meta":true,"name":"Memory Stores Map","description":"Centralized event log + semantic memory + beta events. Counts by line.","version":"2026-06-15","total_stores":10,"last_regenerated":"2026-06-15T03:36:23.852Z"}
-{"id":"events","path":".claude/project/events/events.jsonl","category":"events","tier":"centralized","entryCount":44047,"exists":true,"size":14215873,"modified":"2026-06-15T03:36:21.413Z"}
-{"id":"manager-consult","path":".claude/project/events/manager-consult.jsonl","category":"events","tier":"centralized","entryCount":499,"exists":true,"size":142763,"modified":"2026-06-14T21:48:55.397Z"}
-{"id":"requirements","path":".claude/project/events/requirements.jsonl","category":"events","tier":"centralized","entryCount":746,"exists":true,"size":410301,"modified":"2026-06-15T03:23:21.674Z"}
-{"id":"tools","path":".claude/project/events/tools.jsonl","category":"events","tier":"centralized","entryCount":23503,"exists":true,"size":7473379,"modified":"2026-06-15T03:36:08.591Z"}
+{"_meta":true,"name":"Memory Stores Map","description":"Centralized event log + semantic memory + beta events. Counts by line.","version":"2026-06-15","total_stores":10,"last_regenerated":"2026-06-15T04:45:17.144Z"}
+{"id":"events","path":".claude/project/events/events.jsonl","category":"events","tier":"centralized","entryCount":44436,"exists":true,"size":14342080,"modified":"2026-06-15T04:45:14.576Z"}
+{"id":"manager-consult","path":".claude/project/events/manager-consult.jsonl","category":"events","tier":"centralized","entryCount":503,"exists":true,"size":143941,"modified":"2026-06-15T03:56:43.060Z"}
+{"id":"requirements","path":".claude/project/events/requirements.jsonl","category":"events","tier":"centralized","entryCount":755,"exists":true,"size":414300,"modified":"2026-06-15T04:16:58.088Z"}
+{"id":"tools","path":".claude/project/events/tools.jsonl","category":"events","tier":"centralized","entryCount":23752,"exists":true,"size":7554989,"modified":"2026-06-15T04:45:04.646Z"}
 {"id":"beta-honesty-waivers","path":".claude/project/memory/beta-honesty-waivers.jsonl","category":"memory","tier":"semantic","entryCount":42,"exists":true,"size":25676,"modified":"2026-06-12T14:49:03.466Z"}
 {"id":"enforcement-debt","path":".claude/project/memory/enforcement-debt.jsonl","category":"memory","tier":"semantic","entryCount":46,"exists":true,"size":65172,"modified":"2026-06-15T03:34:35.654Z"}
 {"id":"learnings","path":".claude/project/memory/learnings.jsonl","category":"memory","tier":"semantic","entryCount":110,"exists":true,"size":97310,"modified":"2026-06-13T00:54:10.706Z"}
 {"id":"recurring-issues","path":".claude/project/memory/recurring-issues.jsonl","category":"memory","tier":"semantic","entryCount":7,"exists":true,"size":8996,"modified":"2026-06-11T07:21:23.988Z"}
-{"id":"systems","path":".claude/project/memory/systems.jsonl","category":"memory","tier":"semantic","entryCount":82,"exists":true,"size":72506,"modified":"2026-06-15T03:23:21.633Z"}
+{"id":"systems","path":".claude/project/memory/systems.jsonl","category":"memory","tier":"semantic","entryCount":88,"exists":true,"size":78434,"modified":"2026-06-15T04:16:58.103Z"}
 {"id":"traces","path":".claude/project/memory/traces.jsonl","category":"memory","tier":"semantic","entryCount":10,"exists":true,"size":17267,"modified":"2026-06-09T00:32:22.574Z"}

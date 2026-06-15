@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "generated": "2026-06-15T03:36:23.852Z",
-    "lastUpdated": "2026-06-15T03:36:23.852Z",
-    "total_skills": 222,
-    "namespaces": 46,
-    "user_invocable": 92,
+    "generated": "2026-06-15T04:45:17.144Z",
+    "lastUpdated": "2026-06-15T04:45:17.144Z",
+    "total_skills": 228,
+    "namespaces": 47,
+    "user_invocable": 98,
     "regenerated_by": "scripts/regen-maps.js"
   },
   "namespaces": {
@@ -1797,6 +1797,93 @@
         }
       ]
     },
+    "panel": {
+      "namespace": "panel",
+      "count": 5,
+      "skills": [
+        {
+          "id": "panel:admin",
+          "name": "admin",
+          "description": "Open a product's in-app founder admin panel in the browser (run-in-product, never WarpOS itself). A thin /panel:* forwarder to the canonical admin:preview opener — ZERO duplicated logic.",
+          "file": ".claude/commands/panel/admin.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/admin:preview",
+              "/panel:list"
+            ]
+          }
+        },
+        {
+          "id": "panel:list",
+          "name": "list",
+          "description": "List every registered panel — the one discoverable entry for \"show me a panel\". Enumerates framework/panel-registry.json (name, description, run_context, opener) so you don't have to remember which namespace each panel lives under.",
+          "file": ".claude/commands/panel/list.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/panel:admin",
+              "/panel:models",
+              "/panel:readiness",
+              "/panel:roadmap"
+            ]
+          }
+        },
+        {
+          "id": "panel:models",
+          "name": "models",
+          "description": "Open the model router — the Dispatch Console GUI (role → provider → model → effort). A thin /panel:* forwarder to the canonical /models:router opener — ZERO duplicated logic.",
+          "file": ".claude/commands/panel/models.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/models:router",
+              "/panel:list"
+            ]
+          }
+        },
+        {
+          "id": "panel:readiness",
+          "name": "readiness",
+          "description": "Open the cross-product launch-readiness board. A thin /panel:* forwarder to the canonical /cockpit:readiness opener — carries ZERO duplicated logic, just the unified `panel:` entry verb.",
+          "file": ".claude/commands/panel/readiness.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/cockpit:readiness",
+              "/panel:list"
+            ]
+          }
+        },
+        {
+          "id": "panel:roadmap",
+          "name": "roadmap",
+          "description": "Open the roadmap \"what's next\" board — ranked next-action + in-flight sprints + blockers, at a glance. A thin /panel:* forwarder to the canonical roadmap-board generator — ZERO duplicated logic.",
+          "file": ".claude/commands/panel/roadmap.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/panel:list"
+            ]
+          }
+        }
+      ]
+    },
     "paths": {
       "namespace": "paths",
       "count": 6,
@@ -2323,7 +2410,7 @@
     },
     "scan": {
       "namespace": "scan",
-      "count": 51,
+      "count": 52,
       "skills": [
         {
           "id": "scan:ac-coverage",
@@ -2592,6 +2679,7 @@
               "/scan:install",
               "/scan:issues",
               "/scan:node-procs",
+              "/scan:panel-registry-coverage",
               "/scan:patterns",
               "/scan:planning-principles",
               "/scan:privacy",
@@ -2694,6 +2782,24 @@
             ],
             "calls": [
               "/scan:full"
+            ]
+          }
+        },
+        {
+          "id": "scan:panel-registry-coverage",
+          "name": "panel-registry-coverage",
+          "description": "Coverage enforcer for the panel-registry (the /panel:* suite) — every `panels` row is well-shaped ({name, opener, description, run_context}; run_context ∈ {in_app, cli}) and its opener resolves to a real backing target (a `node <script>` file exists; a `/ns:name` skill resolves via dispatch-skill --resolve). An orphan/phantom/unsafe opener is a hard finding. Fail-CLOSED (exit ≥2) on the enforcer's OWN corrupt input — distinct from a clean pass (0) and a finding (1). Wired REPORT-ONLY into /scan:full.",
+          "file": ".claude/commands/scan/panel-registry-coverage.md",
+          "user_invocable": true,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/ns:name",
+              "/scan:admin-suite-coverage",
+              "/scan:full",
+              "/scan:scan-coverage"
             ]
           }
         },
@@ -4055,13 +4161,13 @@
   },
   "summary": {
     "by_invocability": {
-      "user_invocable": 92,
+      "user_invocable": 98,
       "system_only": 130
     },
     "most_referenced_namespaces": [
       {
         "namespace": "scan",
-        "count": 51
+        "count": 52
       },
       {
         "namespace": "warp",

@@ -1,0 +1,137 @@
+schema: warpos/sprint/plan-contract/v1
+id: PC-20260615-0079
+created_at: "2026-06-15T03:55:53.177Z"
+updated_at: "2026-06-15T03:55:53.177Z"
+sprint: SP-20260615-001
+source_request: "Build the /panel:* unified panel-opener namespace (item 23) + the roadmap panel/visualization (item 25), co-owned: /panel:roadmap is the roadmap panel's opener."
+source_request_verbatim: "Build the /panel:* unified panel-opener namespace (ROADMAP item 23) + the roadmap panel/visualization (item 25). (A) /panel:* thin synonyms forwarding to canonical openers + a /panel:list enumerator, off ONE panel registry, forwards-only no logic dup. (B) roadmap panel: read-only 'what's next' board from ROADMAP §Prioritized + TRACKER §Current-Highest-Priority-Next-Action + active-sprints.yaml + open-gaps; static regenerated board; /panel:roadmap opener; read-only v1, operator-facing. (C) fail-closed coverage enforcer report-only in /scan:full: every registry row resolves to a real opener."
+request_type: feature_add
+interpreted_intent: "Stop the operator having to remember which namespace each panel lives under (or ask 'what's next'): one /panel: verb opens any registered panel, and /panel:roadmap renders the ranked next-action + in-flight + blocked at a glance from the files that are already the source of truth."
+user_or_business_outcome: "The operator opens any panel with one consistent verb and sees 'what's next' without asking; adding a panel is a single registry row; a registry row that points at a non-existent opener is caught by an enforcer instead of failing silently at open time."
+affected_surfaces:
+  - surface: "framework/admin-panel-registry.json (or a new framework/panel-registry.json)"
+    evidence_level: verified_from_repo
+    notes: "admin-panel-registry.json already exists (admin:* suite, alias-beside item-23). Decide in design: extend it to a general `panels` map vs a new sibling registry. ONE source of truth either way."
+  - surface: ".claude/commands/panel/*.md (new skill namespace)"
+    evidence_level: assumed_from_convention
+    notes: "Thin forwarder skills + /panel:list enumerator, mirroring the admin:* thin-delegator shape."
+  - surface: "scripts/panel/roadmap.js (new) + the generated board artifact"
+    evidence_level: assumed_from_convention
+    notes: "Read-only generator: parse ROADMAP §Prioritized + TRACKER next-action + active-sprints.yaml + enforcement-debt/recurring-issues -> render a static board (regenerated like the maps)."
+  - surface: "scripts/checks/panel-registry-coverage.js (new) + /scan:full wiring"
+    evidence_level: verified_from_repo
+    notes: "Fail-closed, report-only; same shape as admin-suite-coverage.js / role-registry coverage. Wired into .claude/commands/scan/full.md."
+  - surface: "framework/paths.registry.json (SOURCE) -> build.js -> .claude/paths.json"
+    evidence_level: verified_from_repo
+    notes: "Any new path keys (scriptsPanel, panelRegistry) go in the SOURCE registry then regenerate; never hand-edit the generated view (item-24 guardrail (a))."
+current_behavior:
+  evidence_level: verified_from_repo
+  notes: "Panels exist but each lives under its own namespace (/cockpit:readiness, /models:router, /admin:preview); there is no unified opener verb and no single enumerator. No roadmap-at-a-glance view exists — 'what's next' currently requires reading ROADMAP.md/TRACKER.md or asking. admin-panel-registry.json exists but is admin-scoped."
+desired_behavior: "/panel:<x> opens any registered panel by forwarding to its canonical opener (no duplicated logic); /panel:list enumerates them from the registry; /panel:roadmap renders a read-only board of the ranked next-action + in-flight sprints + blockers from the live source files; a coverage enforcer (report-only in /scan:full) fails closed if any registry row's opener does not resolve to a real skill/script."
+scope:
+  size: s
+  risk_level: low
+  complexity_drivers:
+    - "Forwarders must NOT duplicate the canonical opener's logic (delegation only)."
+    - "The roadmap board parses several human-authored files (ROADMAP §Prioritized, TRACKER next-action) — must be resilient to formatting and fail-soft, never crash on a malformed section."
+    - "The coverage enforcer is itself a correctness gate — it must fail-closed on its own errors and not false-green."
+scope_variants:
+  minimal_safe:
+    summary: "Registry + 3-4 forwarders + /panel:list, no roadmap board."
+    tradeoffs:
+      - "Leaves item 25 (the operator's headline 'stop asking what's next' want) unbuilt."
+  recommended:
+    summary: "Full: panel registry + /panel:* forwarders + /panel:list enumerator + /panel:roadmap read-only board + fail-closed coverage enforcer wired report-only into /scan:full + path keys via SOURCE registry + both manifests/maps regen."
+    tradeoffs:
+      - "Slightly more surface, but item 25 is the operator's primary ask and /panel:roadmap is its opener — they ship together."
+  expanded:
+    summary: "Recommended plus an interactive browser GUI board (gui.js pattern) and mark-done/reorder from the panel."
+    tradeoffs:
+      - "Rejected for v1 as overbuild: read-only static board first; ROADMAP stays the source of truth; interactivity is a later wave."
+assumptions:
+  safe:
+    - "The admin:* thin-delegator shape is the proven forward-target pattern (shipped this cycle)."
+    - "A static regenerated board (like the maps) is sufficient for v1 — no browser GUI required."
+    - "ROADMAP §Prioritized + TRACKER §Current-Highest-Priority-Next-Action + active-sprints.yaml are the authoritative 'what's next' sources."
+  unsafe: []
+  needs_user_or_beta_review:
+    - "Registry shape: extend admin-panel-registry.json to a general panels map vs a new framework/panel-registry.json (design decision)."
+    - "alias-beside vs shadow-replace the canonical panel names (item 23 open Q)."
+open_questions:
+  blocking: []
+  non_blocking:
+    - "Static md board vs browser GUI for v1 (recommend static)."
+    - "Operator-facing roadmap vs product-shipped (recommend operator-facing v1)."
+non_goals:
+  - "No interactive/edit-from-panel board in v1 (read-only; ROADMAP stays source of truth)."
+  - No browser GUI for the roadmap board in v1.
+  - "No duplication of any canonical opener's logic — forwarders delegate only."
+  - "No retrofit of panels into sibling products from the WarpOS session (run-in-product openers are forwarded, not retrofitted)."
+  - "No flipping the coverage enforcer to blocking in v1 (report-only ramp)."
+  - No push to remote without explicit in-session approval.
+requirement_areas:
+  - "R-1 panel registry: ONE source of truth (extend framework/admin-panel-registry.json to a general panels map OR a new framework/panel-registry.json) — one row per panel {name, opener command, one-line description, run_context}; consumed by BOTH the forwarders and the enumerator (the synonym-layer analog of the role-registry)."
+  - "R-2 /panel:* forwarder skills: thin synonym skills that DELEGATE to the canonical opener with no logic duplication — /panel:readiness->/cockpit:readiness, /panel:models->/models:router, /panel:admin->/admin:preview, /panel:roadmap->the roadmap board; the canonical skill stays the source of truth."
+  - "R-3 /panel enumerator: /panel (or /panel:list) lists the available panels + one-line descriptions from the registry, so 'show me a panel' has one discoverable entry."
+  - "R-4 roadmap panel (item 25): a READ-ONLY 'what's next' board generated from ROADMAP §Prioritized + TRACKER §Current-Highest-Priority-Next-Action + active-sprints.yaml + the open-gaps registers (enforcement-debt/recurring-issues); static regenerated artifact (like the maps); resilient/fail-soft parsing; /panel:roadmap is its opener."
+  - "R-5 coverage enforcer + shipping integrity: a fail-closed scripts/checks/panel-registry-coverage.js wired REPORT-ONLY into /scan:full (every registry row's opener resolves to a real skill/script; the admin-suite-coverage/role-registry pattern), new path keys via the SOURCE registry, and both manifests + maps regenerated."
+high_level_story_candidates:
+  - "As the operator, I open any panel with one consistent /panel: verb instead of remembering each namespace."
+  - "As the operator, I run /panel:roadmap and see the ranked next-action + what's in flight + what's blocked at a glance, without asking."
+  - "As a maintainer, I add a new panel with a single registry row and a coverage check guarantees its opener actually exists."
+granular_story_candidates:
+  - "Define the panel registry (one row per panel: name, opener, description, run_context) as the single source."
+  - "Add the /panel:* thin forwarder skills that delegate to each canonical opener (no logic dup)."
+  - "Add /panel:list that enumerates the registry."
+  - "Add scripts/panel/roadmap.js that renders the read-only 'what's next' board from the live sources, fail-soft."
+  - "Add /panel:roadmap forwarder that opens the board."
+  - "Add scripts/checks/panel-registry-coverage.js (fail-closed) and wire it report-only into /scan:full; add path keys via the SOURCE registry; regen manifests+maps."
+workstream_candidates:
+  - "WS-1 registry + forwarders + enumerator (the /panel:* namespace, item 23)."
+  - "WS-2 roadmap board generator + /panel:roadmap opener (item 25)."
+  - "WS-3 coverage enforcer + path keys + manifests/maps regen."
+preliminary_ticket_candidates:
+  allowed: false
+  candidates: []
+  notes: "Tickets minted after the requirement bundle is populated by the product-lead in design; expected tickets map to the three workstreams."
+external_service_dependencies:
+  status: none_expected
+  required: []
+  possible: []
+  notes: "Pure framework/tooling — no signups, credentials, network, or billing."
+approval_boundaries:
+  - Do not flip the panel-registry-coverage enforcer from report-only to blocking in v1 without operator approval.
+  - Do not retrofit panels into sibling products from the WarpOS session.
+  - "Do not push to remote without explicit in-session approval (operator granted COMMIT/PUSH/MERGE 2026-06-15)."
+design_required: true
+execution_allowed_without_design: false
+recommended_mode: sprint
+mode_invocation_required_by_user: true
+lane:
+  type: branch
+  value: session/2026-06-15
+  isolation_notes: "Engine/tooling sprint on the active session branch; fast-close (ff-merge to main, defer retro to milestone close) per RI-001. main==session/2026-06-15 @8f48ba9c at sprint start."
+beta_review:
+  required: true
+  likely_founder_rejection_risks: []
+  overbuild_risks:
+    - "A browser GUI board in v1 would be premature — keep it static/read-only."
+    - "Forwarders that re-implement opener logic would duplicate the source of truth — delegate only."
+  missing_context_risks:
+    - "Registry-shape decision (extend admin-panel-registry vs new) should be settled in design before the builders fan out."
+plan_quality:
+  status: pass
+  confidence: high
+  evidence_gaps:
+    - Exact registry-shape decision deferred to design.
+  fail_reasons: []
+next_recommended_command: "/sprint:design --sprint SP-20260615-001 --documentation-scale s"
+resume_instructions: "Product-lead authors the requirement bundle for SP-20260615-001 (items 23+25) in design; req-reviewer verifies traceability; then mint tickets per the three workstreams and execute."
+tracker_paths:
+  current_sprint: ".claude/project/sprint/current-sprint.yaml"
+  sprint_progress: ".claude/project/sprint/sprint-progress.yaml"
+  plan_contract: ".claude/project/sprint/plan-contracts/PC-20260615-0079.yaml"
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260615-0079.report.md"
+created_by: alpha
+updated_by: alpha

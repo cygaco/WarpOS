@@ -1,7 +1,7 @@
 {
   "metadata": {
-    "generated": "2026-06-15T03:36:23.852Z",
-    "lastUpdated": "2026-06-15T03:36:23.852Z",
+    "generated": "2026-06-15T04:45:17.144Z",
+    "lastUpdated": "2026-06-15T04:45:17.144Z",
     "total_hooks": 75,
     "total_modules": 18,
     "uncurated": 0,
@@ -2434,8 +2434,8 @@
       ],
       "generated_from": "framework/paths.registry.json",
       "file": "scripts/hooks/lib/paths.generated.js",
-      "file_size": 11170,
-      "file_modified": "2026-06-14T22:00:46.951Z"
+      "file_size": 11303,
+      "file_modified": "2026-06-15T04:16:17.743Z"
     },
     {
       "id": "paths",

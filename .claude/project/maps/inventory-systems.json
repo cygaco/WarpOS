@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "generated": "2026-06-15T03:36:23.852Z",
-    "lastUpdated": "2026-06-15T03:36:23.852Z",
-    "total_systems": 82,
+    "generated": "2026-06-15T04:45:17.144Z",
+    "lastUpdated": "2026-06-15T04:45:17.144Z",
+    "total_systems": 88,
     "categories": 2,
-    "total_files_referenced": 81,
+    "total_files_referenced": 87,
     "missing_files_on_disk": 1,
     "regenerated_by": "scripts/regen-maps.js"
   },
@@ -16,7 +16,7 @@
       ]
     },
     "untested": {
-      "count": 81,
+      "count": 87,
       "ids": [
         "skill-roadmap-ideas",
         "skill-roadmap-next",
@@ -98,7 +98,13 @@
         "skill-sprint-plan",
         "skill-sprint-design",
         "skill-cockpit-readiness",
-        "skill-admin-preview"
+        "skill-admin-preview",
+        "skill-panel-readiness",
+        "skill-panel-models",
+        "skill-panel-admin",
+        "skill-panel-roadmap",
+        "skill-panel-list",
+        "skill-scan-panel-registry-coverage"
       ]
     }
   },
@@ -115,7 +121,7 @@
       ]
     },
     "cognition": {
-      "count": 81,
+      "count": 87,
       "systems": [
         {
           "id": "skill-_report_skill_tmp",
@@ -398,6 +404,46 @@
           ]
         },
         {
+          "id": "skill-panel-admin",
+          "name": "Open a product's in-app founder admin panel in the browser (run-in-product, never WarpOS itself). A thin /panel:* forwarder to the canonical admin:preview opener — ZERO duplicated logic.",
+          "status": "untested",
+          "files": [
+            ".claude/commands/panel/admin.md"
+          ]
+        },
+        {
+          "id": "skill-panel-list",
+          "name": "List every registered panel — the one discoverable entry for \"show me a panel\". Enumerates framework/panel-registry.json (name, description, run_context, opener) so you don't have to remember which namespace each panel lives under.",
+          "status": "untested",
+          "files": [
+            ".claude/commands/panel/list.md"
+          ]
+        },
+        {
+          "id": "skill-panel-models",
+          "name": "Open the model router — the Dispatch Console GUI (role → provider → model → effort). A thin /panel:* forwarder to the canonical /models:router opener — ZERO duplicated logic.",
+          "status": "untested",
+          "files": [
+            ".claude/commands/panel/models.md"
+          ]
+        },
+        {
+          "id": "skill-panel-readiness",
+          "name": "Open the cross-product launch-readiness board. A thin /panel:* forwarder to the canonical /cockpit:readiness opener — carries ZERO duplicated logic, just the unified `panel:` entry verb.",
+          "status": "untested",
+          "files": [
+            ".claude/commands/panel/readiness.md"
+          ]
+        },
+        {
+          "id": "skill-panel-roadmap",
+          "name": "Open the roadmap \"what's next\" board — ranked next-action + in-flight sprints + blockers, at a glance. A thin /panel:* forwarder to the canonical roadmap-board generator — ZERO duplicated logic.",
+          "status": "untested",
+          "files": [
+            ".claude/commands/panel/roadmap.md"
+          ]
+        },
+        {
           "id": "skill-playbook-add",
           "name": "Append a play to the Playbook (.claude/project/reference/playbook.md) — a named, example-anchored operating principle. Picks the right section, formats to match, appends without disturbing other plays.",
           "status": "untested",
@@ -555,6 +601,14 @@
           "status": "untested",
           "files": [
             ".claude/commands/scan/install.md"
+          ]
+        },
+        {
+          "id": "skill-scan-panel-registry-coverage",
+          "name": "Coverage enforcer for the panel-registry (the /panel:* suite) — every `panels` row is well-shaped ({name, opener, description, run_context}; run_context ∈ {in_app, cli}) and its opener resolves to a real backing target (a `node <script>` file exists; a `/ns:name` skill resolves via dispatch-skill --resolve). An orphan/phantom/unsafe opener is a hard finding. Fail-CLOSED (exit ≥2) on the enforcer's OWN corrupt input — distinct from a clean pass (0) and a finding (1). Wired REPORT-ONLY into /scan:full.",
+          "status": "untested",
+          "files": [
+            ".claude/commands/scan/panel-registry-coverage.md"
           ]
         },
         {
@@ -788,7 +842,7 @@
       "id": "skills",
       "name": "Skills",
       "category": "capability",
-      "count": 224
+      "count": 230
     },
     {
       "id": "hooks",
