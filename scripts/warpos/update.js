@@ -56,6 +56,11 @@ const updateEvents = require("./lib/update-events");
 
 const REPO_ROOT = path.resolve(__dirname, "..", "..");
 
+// Strip a leading UTF-8 BOM (U+FEFF) before JSON.parse. PowerShell-written /
+// fresh-migration JSON files carry a BOM that makes raw JSON.parse throw or
+// misclassify; mirror the inline fix at scripts/warpos/repo-role.js:113.
+const stripBom = (s) => (typeof s === "string" ? s.replace(/^﻿/, "") : s);
+
 function sha256File(filePath) {
   // contentHash returns the LF-normalized sha256 for text assets and raw
   // sha256 for binary. Path-based call infers text/binary from extension.
@@ -79,7 +84,7 @@ const hashMatches = cHash.hashMatches;
 function readJSON(file, fallback) {
   if (!fs.existsSync(file)) return fallback;
   try {
-    return JSON.parse(fs.readFileSync(file, "utf8"));
+    return JSON.parse(stripBom(fs.readFileSync(file, "utf8")));
   } catch {
     return fallback;
   }
@@ -122,7 +127,7 @@ function discoverCanonical(targetRoot, version) {
   try {
     const manifestPath = path.join(targetRoot, ".claude", "manifest.json");
     if (fs.existsSync(manifestPath)) {
-      const m = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+      const m = JSON.parse(stripBom(fs.readFileSync(manifestPath, "utf8")));
       const src = m && m.warpos && m.warpos.source;
       if (src && !/^https?:\/\//.test(src)) tries.push(path.resolve(src));
     }
@@ -133,7 +138,7 @@ function discoverCanonical(targetRoot, version) {
   try {
     const fi = path.join(targetRoot, ".claude", "framework-installed.json");
     if (fs.existsSync(fi)) {
-      const j = JSON.parse(fs.readFileSync(fi, "utf8"));
+      const j = JSON.parse(stripBom(fs.readFileSync(fi, "utf8")));
       if (j && j.source && !/^https?:\/\//.test(j.source)) {
         tries.push(path.resolve(j.source));
       }
@@ -174,7 +179,7 @@ function loadCapsule(sourceRoot, version) {
   }
   // Verify checksums match before trusting the capsule.
   if (fs.existsSync(checksumsFile)) {
-    const checksums = JSON.parse(fs.readFileSync(checksumsFile, "utf8"));
+    const checksums = JSON.parse(stripBom(fs.readFileSync(checksumsFile, "utf8")));
     const drift = [];
     for (const [file, expected] of Object.entries(checksums.entries || {})) {
       const abs = path.resolve(capsuleDir, file);
@@ -205,8 +210,8 @@ function loadCapsule(sourceRoot, version) {
   }
   return {
     dir: capsuleDir,
-    release: JSON.parse(fs.readFileSync(releaseFile, "utf8")),
-    manifest: JSON.parse(fs.readFileSync(manifestFile, "utf8")),
+    release: JSON.parse(stripBom(fs.readFileSync(releaseFile, "utf8"))),
+    manifest: JSON.parse(stripBom(fs.readFileSync(manifestFile, "utf8"))),
   };
 }
 
@@ -913,7 +918,7 @@ function createNewlyIntroducedDirs(targetRoot, toVersion) {
   if (!fs.existsSync(regFile)) return { created: [], reason: "no registry" };
   let reg;
   try {
-    reg = JSON.parse(fs.readFileSync(regFile, "utf8"));
+    reg = JSON.parse(stripBom(fs.readFileSync(regFile, "utf8")));
   } catch {
     return { created: [], reason: "registry unparseable" };
   }
@@ -1661,7 +1666,7 @@ function runRollbackCli(txId, opts) {
   }
   let header;
   try {
-    header = JSON.parse(fs.readFileSync(headerFile, "utf8"));
+    header = JSON.parse(stripBom(fs.readFileSync(headerFile, "utf8")));
   } catch (e) {
     const msg = `rollback: failed to parse header.json: ${e.message}`;
     if (opts.json) {

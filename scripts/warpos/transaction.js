@@ -45,6 +45,11 @@ const events = require("./lib/update-events");
 
 const TX_ROOT_REL = path.join(".warpos", "transactions");
 
+// Strip a leading UTF-8 BOM (U+FEFF) before JSON.parse. PowerShell-written /
+// fresh-migration JSON (header.json, snapshot.json) can carry a BOM that makes
+// raw JSON.parse throw; mirror the inline fix at scripts/warpos/repo-role.js:113.
+const stripBom = (s) => (typeof s === "string" ? s.replace(/^﻿/, "") : s);
+
 function sha256File(filePath) {
   if (!fs.existsSync(filePath)) return null;
   return crypto
@@ -339,12 +344,12 @@ function commitTransaction(txDir, opts) {
 
 function readHeader(txDir) {
   const file = path.join(txDir, "header.json");
-  return JSON.parse(fs.readFileSync(file, "utf8"));
+  return JSON.parse(stripBom(fs.readFileSync(file, "utf8")));
 }
 
 function readSnapshot(txDir) {
   const file = path.join(txDir, "snapshot.json");
-  return JSON.parse(fs.readFileSync(file, "utf8"));
+  return JSON.parse(stripBom(fs.readFileSync(file, "utf8")));
 }
 
 // ── rollbackTransaction (T-056) ─────────────────────────────────
