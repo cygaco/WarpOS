@@ -1,6 +1,6 @@
 # Systems Manifest
 
-Generated: 2026-06-16T08:32:20.587Z
+Generated: 2026-06-16T22:20:39.214Z
 
 Total: **88** systems across **2** categories. Files referenced: 87, missing on disk: 1.
 

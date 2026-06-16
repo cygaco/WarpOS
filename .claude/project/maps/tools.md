@@ -1,6 +1,6 @@
 # Tools Map
 
-Generated: 2026-06-16T08:32:20.587Z
+Generated: 2026-06-16T22:20:39.214Z
 
 Scripts: **176** | npm scripts: **0** | External CLIs: **3**
 
@@ -48,9 +48,9 @@ Scripts: **176** | npm scripts: **0** | External CLIs: **3**
 | delta-store-review.js | 1684 | 2026-06-05T01:45:08.445Z |
 | delta-update-heartbeat.js | 882 | 2026-06-08T21:05:42.942Z |
 | dismiss-drift-entry.js | 647 | 2026-05-30T01:25:39.566Z |
-| dispatch-agent.js | 35769 | 2026-06-11T20:57:17.824Z |
-| dispatch-claude.js | 35353 | 2026-06-11T21:00:46.791Z |
-| dispatch-skill.js | 32106 | 2026-06-10T21:04:52.972Z |
+| dispatch-agent.js | 36244 | 2026-06-16T19:14:31.872Z |
+| dispatch-claude.js | 35669 | 2026-06-16T19:14:31.873Z |
+| dispatch-skill.js | 33443 | 2026-06-16T19:14:31.873Z |
 | dispatch-skill.test.js | 11813 | 2026-06-08T21:08:33.109Z |
 | dispatch.js | 20217 | 2026-06-08T04:56:41.298Z |
 | drift-apply-decisions.js | 2075 | 2026-05-30T01:25:39.571Z |
@@ -64,7 +64,7 @@ Scripts: **176** | npm scripts: **0** | External CLIs: **3**
 | drift-verify.js | 5846 | 2026-05-30T01:25:39.574Z |
 | drift-write-decisions.js | 1743 | 2026-05-30T01:25:39.574Z |
 | fix-deep-trace-run09-cleanup.js | 3626 | 2026-05-30T01:25:39.575Z |
-| generate-framework-manifest.js | 26679 | 2026-06-12T05:24:46.588Z |
+| generate-framework-manifest.js | 27957 | 2026-06-16T10:30:04.428Z |
 | generate-maps.js | 12732 | 2026-05-30T01:25:39.577Z |
 | generate-skill-catalog.js | 9320 | 2026-05-30T01:25:39.577Z |
 | generate-steps-maps.js | 8346 | 2026-05-30T01:25:39.578Z |

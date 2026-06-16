@@ -1,7 +1,7 @@
 {
   "metadata": {
-    "generated": "2026-06-16T08:32:20.587Z",
-    "lastUpdated": "2026-06-16T08:32:20.587Z",
+    "generated": "2026-06-16T22:20:39.214Z",
+    "lastUpdated": "2026-06-16T22:20:39.214Z",
     "total_tools": 181,
     "categories": 4,
     "regenerated_by": "scripts/regen-maps.js"
@@ -376,8 +376,8 @@
           "path": "scripts/dispatch-agent.js",
           "type": "script",
           "exists": true,
-          "size": 35769,
-          "modified": "2026-06-11T20:57:17.824Z"
+          "size": 36244,
+          "modified": "2026-06-16T19:14:31.872Z"
         },
         {
           "id": "tool:dispatch-claude",
@@ -385,8 +385,8 @@
           "path": "scripts/dispatch-claude.js",
           "type": "script",
           "exists": true,
-          "size": 35353,
-          "modified": "2026-06-11T21:00:46.791Z"
+          "size": 35669,
+          "modified": "2026-06-16T19:14:31.873Z"
         },
         {
           "id": "tool:dispatch-skill",
@@ -394,8 +394,8 @@
           "path": "scripts/dispatch-skill.js",
           "type": "script",
           "exists": true,
-          "size": 32106,
-          "modified": "2026-06-10T21:04:52.972Z"
+          "size": 33443,
+          "modified": "2026-06-16T19:14:31.873Z"
         },
         {
           "id": "tool:dispatch-skill.test",
@@ -520,8 +520,8 @@
           "path": "scripts/generate-framework-manifest.js",
           "type": "script",
           "exists": true,
-          "size": 26679,
-          "modified": "2026-06-12T05:24:46.588Z"
+          "size": 27957,
+          "modified": "2026-06-16T10:30:04.428Z"
         },
         {
           "id": "tool:generate-maps",
