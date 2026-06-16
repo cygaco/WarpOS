@@ -1752,6 +1752,22 @@ function main() {
     return 2;
   }
 
+  // RI-007: when --sprint was OMITTED and we auto-resolved to the registry primary,
+  // refuse if that primary is a CLOSED sprint. Otherwise a fresh run (esp. the Master
+  // Console driving full.js programmatically without --sprint) silently absorbs the
+  // request into a finished sprint and it never ships. An EXPLICIT --sprint is honored
+  // (the caller chose it deliberately).
+  if (!args.sprint) {
+    const closedStatus = SPRINT.statusOf(sprintId);
+    if (closedStatus && SPRINT.CLOSED_STATUSES.has(closedStatus)) {
+      process.stderr.write(
+        `Auto-resolved sprint '${sprintId}' is '${closedStatus}' (closed). Refusing to absorb new work into a finished sprint. ` +
+          `Pass --sprint <open-SP-id> to target a specific sprint, or mint a new one via scripts/sprint/add-sprint.js.\n`,
+      );
+      return 2;
+    }
+  }
+
   // T-303 (N8): establish run-context env vars so all child dispatches (runHelper
   // spreads ...process.env) carry the same run identity. Rule: respect an inherited
   // WARPOS_RUN_ID — a parent orchestrator's run_id wins; only generate when absent.

@@ -202,6 +202,16 @@ function active() {
   return reg.primary;
 }
 
+// statusOf(id) — the sprint's lifecycle status from the registry, or null. Used by
+// RI-007's guard (full.js): refuse to AUTO-resolve (when --sprint is omitted) onto a
+// CLOSED sprint, so a new run never silently absorbs work into a finished sprint.
+function statusOf(id) {
+  const reg = loadRegistry();
+  if (!reg || !Array.isArray(reg.sprints)) return null;
+  const s = reg.sprints.find((x) => x && x.id === id);
+  return s && typeof s.status === "string" ? s.status : null;
+}
+
 // parseSprintArg — convention shared by every sprint helper.
 // Looks for "--sprint <SP-id>" in argv. If found, validates that id
 // exists in active-sprints.yaml and sets process.env.WARPOS_SPRINT_ID
@@ -294,6 +304,8 @@ SPRINT.active = active;
 SPRINT.entry = entry;
 SPRINT.forSprint = forSprint;
 SPRINT.parseSprintArg = parseSprintArg;
+SPRINT.statusOf = statusOf;
+SPRINT.CLOSED_STATUSES = new Set(["closed", "abandoned", "retrospected"]);
 
 // Back-compat: SPRINT.current and SPRINT.progress as getters that resolve
 // via the registry. If no registry, fall back to legacy singleton paths.
