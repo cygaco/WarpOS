@@ -33,8 +33,8 @@
 - SP-Pickup-Queue do-next #1/#2/#3/#5/#7/#8 — ranked in ../../ROADMAP.md § Sprint Pickup Queue (ledger sprints, referenced by rank, no file link)
 
 ## Dependencies
-- Shared repo-role resolver (ED-009) — open — unblocks the gate (the both-role half) and kills a recurring false-green class
-- Typed success semantics (BC-16) — open — unblocks the gate (without it the gate can itself lie)
+- Shared repo-role resolver (ED-009) — **SATISFIED (DONE 2026-06-15 `8f48ba9c`)** — `scripts/warpos/repo-role.js` (`resolveRepoRole`/`isCanonicalDir`/`ROLES`); the gate threads role via its override-arg (both-role half unblocked).
+- Typed success semantics (BC-16) — **SATISFIED (DONE)** — implemented as the gate's `verifyTyped()` → `scripts/dispatch/gauntlet-verify.js` (green = action occurred AND well-formed record; fail-closed on malformed/no-record/runner-error); the `--full` matrix's per-cell verify exercises it live. The gate cannot emit false-green.
 
 ## Blockers
 - None currently recorded.
@@ -76,7 +76,7 @@
 ### 2026-06-06 — Cheap-slice fresh-install smoke shipped and caught a real first-run bug
 - Evidence type: Command run
 - Detail/location: `scripts/warpos/test-fresh-install-smoke.js` (commit `ff04cd9`) — spins up a fresh empty repo, runs the consumer install, asserts `scan:install` certifies it (exit 0), fail-closed on a stale manifest; first run caught `manifest.warpos.version = "0.1.0"` ≠ `version.json`, fixed in `scaffold-core.js#resolveWarposVersion`.
-- Verified by: President Agent · Supports: the cheap-slice leading-indicator portion of DoD item 1 (full sealed gate still open).
+- Verified by: President Agent · Supports: the cheap-slice leading-indicator portion of DoD item 1 (the full sealed gate was subsequently BUILT 2026-06-01 + CERTIFIED 2026-06-16 — self-test 17/17 + bounded PASS + `--full` matrix 4/4 cells; see § Percent completion 2026-06-16 reconciliation).
 
 ## Verification log
 <!-- §10 states: Verified Exists | Verified Nonexistent | Verified Wired | Verified Not Wired | Exists But Stale | Exists But Incomplete | Missing But Required | Present But Should Be Removed | Unknown -->
