@@ -605,6 +605,8 @@ function addAdminSurfaceChecks(dir, errors) {
       "isFounderEmailAllowed",
       "verifyAdminSessionCookie",
       "signAdminSessionEmail",
+      "setAdminSessionCookie",
+      "clearAdminSessionCookie",
       "resolveAdminActor",
       "requireFounderAdmin",
     ]) {
@@ -626,8 +628,29 @@ function addAdminSurfaceChecks(dir, errors) {
     ) {
       errors.push("admin config must verify a signed request-bound admin session cookie");
     }
-    if (!/base64url/.test(configScan) || !/lastIndexOf\("\."\)/.test(configScan)) {
+    if (!/base64url/.test(configScan) || !/\.split\("\."\)/.test(configScan)) {
       errors.push("admin signed session cookie must encode the email segment safely");
+    }
+    // Session lifetime + revocation (E-MC-READINESS Track-2 HIGH): a signed admin cookie
+    // must EXPIRE (a leaked cookie must not be a permanent skeleton key) and carry a version
+    // revocation lever, with the signature binding email|iat|version.
+    if (
+      !/ADMIN_SESSION_MAX_AGE_SECONDS/.test(configScan) ||
+      !/adminSessionVersion\(|ADMIN_SESSION_VERSION/.test(configScan) ||
+      !/now - iat > ADMIN_SESSION_MAX_AGE_SECONDS/.test(configScan)
+    ) {
+      errors.push("admin session token must carry an expiry (iat + ADMIN_SESSION_MAX_AGE_SECONDS) and a version revocation lever");
+    }
+    // Reference secure cookie issuance (E-MC-READINESS Track-2 HIGH): the set path must ship
+    // with HttpOnly + Secure(prod) + SameSite + Max-Age so a hand-rolled login can't drop them.
+    if (
+      !/setAdminSessionCookie/.test(configScan) ||
+      !/httpOnly:\s*true/.test(configScan) ||
+      !/sameSite:/.test(configScan) ||
+      !/maxAge:/.test(configScan) ||
+      !/secure:\s*process\.env\.NODE_ENV/.test(configScan)
+    ) {
+      errors.push("admin config must ship setAdminSessionCookie with HttpOnly + Secure(prod) + SameSite + Max-Age flags");
     }
     if (!/NODE_ENV\s*!==\s*"production"/.test(configScan)) {
       errors.push("admin dev email fallback must fail closed in production");
