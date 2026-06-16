@@ -18,7 +18,7 @@
   6. Expectations-vs-reality / prose-vs-enforcement audit — every policy/contract/claim vs what's actually enforced (aspirational-vs-enforced; CLAUDE.md Policy-&-Enforcement-Hygiene + enforcement-debt register); each gap → named enforcer or logged debt.
 - **Out of scope:** ANY fix/change (that is E-MC-READINESS-EXECUTION-001).
 - **Current state:** Active
-- **Percent completion:** 0% — epic authored 2026-06-07; sprints not yet minted.
+- **Percent completion:** ~15% (2026-06-16) — 1 of 6 analysis tracks has a findings doc + 1 partial. **Track 4 (release-pipeline) COMPLETE** → `_reports/E-MC-READINESS-track4-release-pipeline-analysis.md` (the `ASSET_DIRS` hand-maintenance slip-through class, grounded in this session's live ship-coverage RED; root-caused to a hand-maintained INCLUDE list + `ship-coverage` running only at release/on-demand, not per-commit; 2 structural fixes proposed). **Track 6 (prose-vs-reality) PARTIAL** → the roadmap-state-honesty audit (`runtime/roadmap-audit/`, 2 agents) covered the tracker-claim-vs-code slice (5 stale-claimed-done + 1 claimed-green-but-RED found + reconciled). Remaining: hardening-sim, security triple-pass, edge-case, file-org + the rest of prose-vs-reality. (Epic authored 2026-06-07; these passes ran as autonomous analysis under the track structure — sprints not formally minted.)
 
 ## Definition of Done
 - [ ] All 6 analysis sprints complete, each with an evidence-grounded findings doc (no fixes applied).
@@ -55,6 +55,12 @@
 - Bundling boundaries — deferred to /roadmap:prioritize (director-of-product) to confirm which existing epics fold in as analysis inputs vs stay standalone.
 
 ## Session log
+### 2026-06-16 — Track 4 release-pipeline analysis (autonomous)
+- Agent(s): Alex α (Opus 4.8), autonomous · Mode: sprint
+- Work performed: authored the Track-4 release-pipeline slip-through findings doc (`_reports/E-MC-READINESS-track4-release-pipeline-analysis.md`), evidence-grounded in this session's live ship-coverage RED (the panels/admin/cockpit backing scripts shipped to nobody → broke `release --strict`, fixed `c7e97610`). Root cause: (1) `ASSET_DIRS` is a hand-maintained INCLUDE list (≥4 recurring slip instances); (2) `warpos-ship-coverage` runs at release + on-demand but NOT per-commit (verified absent from linters/testsuite/hooks) — a gap is invisible from commit→release. Proposed Fix A (invert `ASSET_DIRS` to auto-detect + EXCLUDE list) + Fix B (ship-coverage per-commit, report-only→ramp). Analysis-only, no change applied.
+- State change: 0% → ~15% (Track 4 done + Track 6 partial via the audit). · Next action: the hardening-sim / security / edge-case / file-org tracks (read-only); the recommended fixes belong to the EXECUTION epic.
+- Evidence/references: `_reports/E-MC-READINESS-track4-release-pipeline-analysis.md`; `runtime/roadmap-audit/` (Track-6 partial); commit `c7e97610`.
+
 ### 2026-06-07 — Session session/2026-06-07 (epic authored)
 - Agent(s): President Agent (α) · Mode: solo/α-foreground
 - Work performed: Authored this analysis epic + the execution epic at ROADMAP § Active epics ⭐⭐ TOP, per operator's masterconsole-release-readiness directive + analysis-then-execution strategy. Captured the 6 analysis dimensions (incl. the operator's prose-vs-reality addition + security triple-pass).
