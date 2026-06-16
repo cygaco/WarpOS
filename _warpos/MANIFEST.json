@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-16T23:18:49.314Z",
+  "generatedAt": "2026-06-16T23:51:04.383Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.16.0",
   "migrations": [],
@@ -2288,15 +2288,15 @@
       "owner": "framework",
       "managed": true,
       "source": null,
-      "sha256": "737e4bb616079d760506beba2206ae5da4c07dc07647f712a61eb3ef5051086f",
-      "installedSha": "737e4bb616079d760506beba2206ae5da4c07dc07647f712a61eb3ef5051086f"
+      "sha256": "4bb09d4b965ac56c30484be76c5b10c545df9c9497e97aae1abb71fb643a03b5",
+      "installedSha": "4bb09d4b965ac56c30484be76c5b10c545df9c9497e97aae1abb71fb643a03b5"
     },
     "tests/regression/SP-20260616-001/skill-door.test.js": {
       "owner": "framework",
       "managed": true,
       "source": null,
-      "sha256": "c9bbc28c6d1b7e9253f28f157b5b9ccbc4567a75c3cb999de494dcdec2f9f045",
-      "installedSha": "c9bbc28c6d1b7e9253f28f157b5b9ccbc4567a75c3cb999de494dcdec2f9f045"
+      "sha256": "f844d87a996258acdb1532018739943780e53b60acd535fe2c927e745d15c284",
+      "installedSha": "f844d87a996258acdb1532018739943780e53b60acd535fe2c927e745d15c284"
     },
     "tests/regression/SP-20260616-001/wrapper-door.test.js": {
       "owner": "framework",
@@ -3520,15 +3520,15 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/dispatch-agent.js",
-      "sha256": "dfa24ac640a88fabaf2c0a76a13ebdf6c2e7b1307b42737fca93dffc85ac924b",
-      "installedSha": "dfa24ac640a88fabaf2c0a76a13ebdf6c2e7b1307b42737fca93dffc85ac924b"
+      "sha256": "3341b5a6b62fd0b5f79cc7b5d1f67e9ca88ffb60d2fbdfb929b20fd8d196c702",
+      "installedSha": "3341b5a6b62fd0b5f79cc7b5d1f67e9ca88ffb60d2fbdfb929b20fd8d196c702"
     },
     "scripts/dispatch-claude.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/dispatch-claude.js",
-      "sha256": "e761d9c583b363b3f971a604b2560bf132b35444fe0d6c56f4b0731fca24600b",
-      "installedSha": "e761d9c583b363b3f971a604b2560bf132b35444fe0d6c56f4b0731fca24600b"
+      "sha256": "ddbc1265e4d075a78e24a875a0429a4987df97617c6263ed86f5f62e04a3b881",
+      "installedSha": "ddbc1265e4d075a78e24a875a0429a4987df97617c6263ed86f5f62e04a3b881"
     },
     "scripts/dispatch-skill.js": {
       "owner": "framework",
@@ -5088,8 +5088,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/sprint/epsilon-runtime.js",
-      "sha256": "9c5cdfe26088f66588255a616627b74a058b0a9a320c662cdd3fad065fca7f68",
-      "installedSha": "9c5cdfe26088f66588255a616627b74a058b0a9a320c662cdd3fad065fca7f68"
+      "sha256": "7ee5ddfc04b503caa2901f59389ce33dddb6ef956b79dd9ec9111bafab756dde",
+      "installedSha": "7ee5ddfc04b503caa2901f59389ce33dddb6ef956b79dd9ec9111bafab756dde"
     },
     "scripts/sprint/epsilon-runtime.test.js": {
       "owner": "framework",
@@ -6768,8 +6768,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/dispatch/dispatch-shape.js",
-      "sha256": "7acb01a4aaf139e00318ec70a73f66186244cc1737eb19696b0d02a32a65ba61",
-      "installedSha": "7acb01a4aaf139e00318ec70a73f66186244cc1737eb19696b0d02a32a65ba61"
+      "sha256": "5bf0a20d9d4cc38d3f924aca99e6eff851b82af3b3bdad6734f2ddc73d190eb6",
+      "installedSha": "5bf0a20d9d4cc38d3f924aca99e6eff851b82af3b3bdad6734f2ddc73d190eb6"
     },
     "scripts/dispatch/dispatch-shape.test.js": {
       "owner": "framework",
@@ -22434,8 +22434,8 @@
       "managed": true,
       "source": ".claude/agents/_system/guides/agent-dispatch-guide.md",
       "kind": "md",
-      "sha256": "78ae8df8067c0b68e26a41d32a03cb7cd26c16d66fdb71f29f812bca795da344",
-      "installedSha": "78ae8df8067c0b68e26a41d32a03cb7cd26c16d66fdb71f29f812bca795da344"
+      "sha256": "b6e4e8094a011a9a470a88ca8c537fa1bcbccbb8e46dec0bca7a0fa7dcfeef2b",
+      "installedSha": "b6e4e8094a011a9a470a88ca8c537fa1bcbccbb8e46dec0bca7a0fa7dcfeef2b"
     },
     ".claude/agents/_system/guides/gauntlet-contract.md": {
       "owner": "framework",

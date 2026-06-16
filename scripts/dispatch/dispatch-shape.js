@@ -242,13 +242,21 @@ function shapeMismatch(actualShape, unit) {
   //   2. subprocess-claude unit (build-chain role) dispatched as in-process-agent —
   //      violates worktree isolation: the builder runs inside the orchestrator's
   //      context and can touch files it must not (§2(iii) failure; G2 guardrail).
-  const unprovenSubprocess = !want.proven && /^subprocess/.test(actualShape);
+  // FIX (W2 gauntlet HIGH-1): a FAIL-OPEN resolution (source "fail-open" — the dispatch-contract
+  // was unavailable/unreadable) carries proven:false as "UNKNOWN", not "genuinely unproven". It
+  // must NOT count as the dangerous unproven-subprocess case, else a transient contract-read
+  // failure would make the ENFORCE door REFUSE every real subprocess dispatch (a self-inflicted
+  // outage — the opposite of fail-open). The earn-it FAIL-CLOSED cases (source "...-failclosed")
+  // are a REAL unproven verdict and DO stay high-severity.
+  const unprovenSubprocess =
+    !want.proven && want.source !== "fail-open" && /^subprocess/.test(actualShape);
   const buildChainInProcess = want.shape === "subprocess-claude" && actualShape === "in-process-agent";
   return {
     mismatch: true,
     actual: actualShape,
     expected: want.shape,
     proven: want.proven,
+    source: want.source,
     reason: `dispatched as '${actualShape}' but the resolver picks '${want.shape}'`,
     expectedReason: want.reason,
     severity: (unprovenSubprocess || buildChainInProcess) ? "high" : "medium",
@@ -258,8 +266,11 @@ function shapeMismatch(actualShape, unit) {
 // ── Public: the SHAPE DOOR — the per-wrapper enforce gate (W2-core, SP-20260616-001) ──
 // The ONE shared gate every dispatch entry point consults at spawn, so the
 // report→enforce ramp + kill-switch + fail-open live in ONE place instead of being
-// copy-pasted into 4 callers. Ships REPORT-ONLY by default; no wrapper enforces by
-// default (the operator-gated per-wrapper ramp is the whole point of W2).
+// copy-pasted into 4 callers. Shipped report-only, then RAMPED per-wrapper: the 3 agent
+// wrappers (dispatch-agent/dispatch-claude/epsilon CLAUDE_RAW) now pass enforceDefault:true and
+// ENFORCE by default (W2/N2 flip, 2026-06-16, dual-lane gauntlet-green); dispatch-skill stays
+// reportOnlyPin'd (ED-057 earn-it). The global env still overrides both ways (fleet kill /
+// fleet enforce); a per-wrapper env=report force-reports just that wrapper.
 //
 // This is THE shape-enforce authority for self-detection (β#2): the wrappers'
 // historical inline `WARPOS_DISPATCH_CONTRACT_ENFORCE === "block"` shape check is
@@ -288,6 +299,10 @@ function shapeMismatch(actualShape, unit) {
 //                            are not earned-subprocess), so an enforce gate would false-refuse
 //                            EVERY skill dispatch until the resolver gains a `subprocess-skill`
 //                            shape (logged enforcement-debt). Pin keeps the advisory, never refuses.
+//   enforceDefault {boolean} — the per-wrapper ENFORCE flip (W2/N2): this wrapper enforces by
+//                            DEFAULT when the global WARPOS_SHAPE_DOOR env is unset, so wrappers
+//                            ramp one at a time. A global WARPOS_SHAPE_DOOR=report (or the
+//                            kill-switch / pin) still overrides it back to report.
 //
 // Returns { action:"proceed"|"refuse", mode, severity, suppressed, reason, mismatch }.
 function shapeDoor(actualShape, unit, env, opts) {
@@ -296,10 +311,25 @@ function shapeDoor(actualShape, unit, env, opts) {
   const killed = /^(1|true|yes)$/i.test(String(e.WARPOS_DISABLE_SHAPE_DOOR || ""));
   const pinned = o.reportOnlyPin === true;
   const legacyBlock = String(e.WARPOS_DISPATCH_CONTRACT_ENFORCE || "") === "block";
-  const enforceRequested =
-    String(e.WARPOS_SHAPE_DOOR || "report").toLowerCase() === "enforce" || legacyBlock;
+  // W2 per-wrapper ENFORCE ramp (N2): a wrapper opts into enforce as its DEFAULT via
+  // opts.enforceDefault (the persistent, committed per-wrapper flip), so wrappers ramp ONE
+  // AT A TIME, lowest-blast first — instead of a single global all-or-nothing switch. The
+  // global env still wins both ways so an operator keeps a fleet-wide override + kill:
+  //   WARPOS_DISABLE_SHAPE_DOOR / reportOnlyPin  → force report (ultimate escapes, beat all)
+  //   WARPOS_SHAPE_DOOR=enforce (or legacy block) → force enforce fleet-wide
+  //   WARPOS_SHAPE_DOOR=report                    → force report fleet-wide (kills the flip)
+  //   else (env unset)                            → the wrapper's enforceDefault decides
+  const globalRaw = String(e.WARPOS_SHAPE_DOOR || "").toLowerCase(); // "" = unset
+  const wrapperEnforce = o.enforceDefault === true;
   // (1) kill-switch / pin checked FIRST — they beat enforce unconditionally (safe side).
-  const mode = (killed || pinned) ? "report" : (enforceRequested ? "enforce" : "report");
+  // FIX (W2 gauntlet HIGH-2): an EXPLICIT WARPOS_SHAPE_DOOR=report is the operator's fleet kill
+  // and must beat the legacy WARPOS_DISPATCH_CONTRACT_ENFORCE=block alias — so it is checked
+  // BEFORE enforce/legacyBlock (a stale legacy env must never override an explicit report kill).
+  let mode;
+  if (killed || pinned) mode = "report";
+  else if (globalRaw === "report") mode = "report";
+  else if (globalRaw === "enforce" || legacyBlock) mode = "enforce";
+  else mode = wrapperEnforce ? "enforce" : "report";
   // (2) resolver fault → fail-OPEN. A self-detection gate must never break a working dispatch.
   let mm;
   try {

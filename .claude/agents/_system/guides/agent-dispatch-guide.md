@@ -460,17 +460,27 @@ on every cold start.
 
 Every dispatch entry point consults the LIVE shape resolver
 (`scripts/dispatch/dispatch-shape.js#shapeDoor`) at spawn — the ONE shared gate so a
-role routed through the WRONG wrapper self-detects on a REAL dispatch. **Ships
-report-only; no wrapper enforces by default** (the per-wrapper report→enforce flip is
-operator-gated — that's the whole point of the W2 ramp).
+role routed through the WRONG wrapper self-detects on a REAL dispatch. Shipped report-only,
+then RAMPED per-wrapper. **The 3 agent wrappers — `dispatch-agent`, `dispatch-claude`, and
+`epsilon-runtime` CLAUDE_RAW — now ENFORCE by default** (the W2/N2 per-wrapper flip, landed
+2026-06-16, dual-lane cross-family gauntlet-green: GPT-5.5 backend-reviewer + qa-reviewer PASS
+on the fixed diff; the backend lane caught 4 real issues first — fail-open-not-preserved,
+report-vs-legacy precedence, weak per-wrapper kill, missing tests — all fixed + regression-locked).
+`dispatch-skill` stays report-pinned (below). **Safe-by-construction:** enforce REFUSES only a
+high-severity mismatch, and a legitimate agent dispatch resolves `proven:true` + the matching
+shape → never refused; a FAIL-OPEN resolution (contract unavailable/unreadable) is treated as
+UNKNOWN, not unproven, so a contract-read hiccup can never become a dispatch outage (see Severity
+model). Advisory noise is stderr-only — not yet persisted (**ED-059**).
 
 **Toggles** (read from the process env):
 
 | Var | Values | Effect |
 |---|---|---|
 | `WARPOS_SHAPE_DOOR` | `report` \| `enforce` | The shape-enforce authority. Default `report` (advisory only). `enforce` REFUSES a high-severity mismatch (exit **2**, named reason). |
-| `WARPOS_DISABLE_SHAPE_DOOR` | `1`/`true`/`yes` | KILL-SWITCH — forces report, beats `enforce` unconditionally. Set this if the door ever false-refuses in production, then file the planted-test gap. |
-| `WARPOS_DISPATCH_CONTRACT_ENFORCE` | `block` | DEPRECATED alias → enforce, back-compat only (a CI/fixture that set the old var keeps getting shape-refusal). |
+| `WARPOS_DISABLE_SHAPE_DOOR` | `1`/`true`/`yes` | **ULTIMATE KILL-SWITCH** — forces report fleet-wide, beats everything. Set this if the door ever false-refuses in production, then file the planted-test gap. |
+| `WARPOS_SHAPE_DOOR=report` | (explicit) | **FLEET KILL** — forces report on every wrapper; beats the per-wrapper flip AND the legacy `block` alias (gauntlet-fixed precedence). |
+| `WARPOS_SHAPE_DOOR_DISPATCH_AGENT` · `_DISPATCH_CLAUDE` · `_EPSILON` | `report` | **PER-WRAPPER KILL** — force-report (via `reportOnlyPin`) just that one flipped wrapper, leaving the others enforcing. Beats a global `enforce`. |
+| `WARPOS_DISPATCH_CONTRACT_ENFORCE` | `block` | DEPRECATED alias → enforce, back-compat only. An explicit `WARPOS_SHAPE_DOOR=report` BEATS it. |
 
 **The four entry points:**
 
@@ -478,10 +488,12 @@ operator-gated — that's the whole point of the W2 ramp).
   and `epsilon-runtime.js`'s **CLAUDE_RAW** path (raw `claude -p --agent`) ride the enforce
   ramp normally. (epsilon's `DISPATCH_AGENT`/`DISPATCH_CLAUDE` routes do NOT consult — they
   shell to the already-doored wrappers; doubling the consult would risk a divergent verdict.)
-- `dispatch-skill.js` is PINNED **report-only** (`reportOnlyPin:true`): the resolver routes
-  `{kind:skill}` to `inline` (skills are not earned-subprocess, §13.6/§13.7), so an enforce
-  gate would false-refuse EVERY skill dispatch. Enforce-for-skills is blocked on the resolver
-  gaining a `subprocess-skill` shape — logged **ED-057**.
+- `dispatch-skill.js` is PINNED **report-only** (`reportOnlyPin:true`): the resolver NOW HAS a
+  `subprocess-skill` shape (**ED-057**, built 2026-06-16 — added to `SHAPES` + `resolveSkill`
+  returns it for an EARNED skill, distinct from build-chain `subprocess-claude`). But the pin
+  LIFT is gated on the §13.6/§13.7 earn-it loop stamping the heavy-by-design skills
+  (scan:full/research:deep/…) — until they're stamped, an enforce gate would false-refuse them.
+  Wave-D earn-it lifts the pin.
 
 **Severity model.** The door REFUSES only a **high-severity** mismatch (an unproven unit
 dispatched as a subprocess, or a build-chain role dispatched in-process). A **medium**

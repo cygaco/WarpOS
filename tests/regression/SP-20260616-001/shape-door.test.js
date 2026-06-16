@@ -94,5 +94,80 @@ test("never-throws-on-adversarial-input", () => {
   }
 });
 
+// ── W2/N2 per-wrapper ENFORCE ramp (opts.enforceDefault) ─────────────────────
+// A wrapper opts into enforce as its default so wrappers ramp ONE AT A TIME, with the global
+// env retaining both a fleet-wide force-on and a fleet-wide force-off (kill) escape.
+test("enforceDefault-enforces-when-env-unset", () => {
+  const r = shapeDoor("subprocess-claude", hiUnit, {}, { enforceDefault: true });
+  assert.strictEqual(r.mode, "enforce", "enforceDefault enforces when the global env is unset");
+  assert.strictEqual(r.action, "refuse");
+  assert.strictEqual(r.severity, "high");
+});
+
+test("enforceDefault-does-not-false-refuse-a-matching-dispatch", () => {
+  // Safe-by-construction: a CORRECT shape never refuses even with the per-wrapper flip on.
+  const r = shapeDoor("inline", { kind: "skill", id: "scan:full" }, {}, { enforceDefault: true });
+  assert.strictEqual(r.action, "proceed", "a matching shape proceeds under the per-wrapper flip");
+});
+
+test("global-report-overrides-the-per-wrapper-flip", () => {
+  const r = shapeDoor("subprocess-claude", hiUnit, { WARPOS_SHAPE_DOOR: "report" }, { enforceDefault: true });
+  assert.strictEqual(r.mode, "report");
+  assert.strictEqual(r.action, "proceed", "the global report escape disables the flip fleet-wide");
+});
+
+test("kill-switch-beats-the-per-wrapper-flip", () => {
+  const r = shapeDoor("subprocess-claude", hiUnit, { WARPOS_DISABLE_SHAPE_DOOR: "1" }, { enforceDefault: true });
+  assert.strictEqual(r.mode, "report", "the kill-switch beats enforceDefault");
+  assert.strictEqual(r.action, "proceed");
+});
+
+test("no-enforceDefault-is-backward-compatible-report", () => {
+  const r = shapeDoor("subprocess-claude", hiUnit, {}, {});
+  assert.strictEqual(r.mode, "report", "a wrapper that does not opt in behaves exactly as before");
+  assert.strictEqual(r.action, "proceed");
+});
+
+// ── W2 GAUNTLET FIXES (GPT-5.5 backend-reviewer found these — regression-locked) ──
+// HIGH-2: an explicit WARPOS_SHAPE_DOOR=report is the operator's fleet kill and MUST beat the
+// legacy WARPOS_DISPATCH_CONTRACT_ENFORCE=block alias (a stale legacy env must not override it).
+test("explicit-report-beats-legacy-block-env", () => {
+  const r = shapeDoor("subprocess-claude", hiUnit, { WARPOS_SHAPE_DOOR: "report", WARPOS_DISPATCH_CONTRACT_ENFORCE: "block" }, {});
+  assert.strictEqual(r.mode, "report", "explicit report kill must beat the legacy block alias");
+  assert.strictEqual(r.action, "proceed");
+});
+
+// MED-1: the per-wrapper kill is implemented as reportOnlyPin — it must force report even under a
+// global enforce (a true per-wrapper kill, not a mere enforceDefault:false).
+test("reportOnlyPin-true-kill-beats-global-enforce", () => {
+  const r = shapeDoor("subprocess-claude", hiUnit, { WARPOS_SHAPE_DOOR: "enforce" }, { reportOnlyPin: true });
+  assert.strictEqual(r.mode, "report", "the per-wrapper reportOnlyPin kill beats a global enforce");
+  assert.strictEqual(r.action, "proceed");
+});
+
+// HIGH-1: a FAIL-OPEN resolution (the dispatch-contract is unavailable/unreadable) must NOT refuse
+// under enforce — a transient contract-read failure must never become a self-inflicted dispatch
+// outage. Poison the contract require so resolveAgent takes the fail-open branch, then assert the
+// ENFORCE door PROCEEDS. (Restores the real modules in finally so later tests are unaffected.)
+test("fail-open-contract-unavailable-proceeds-under-enforce", () => {
+  const contractPath = require.resolve(path.resolve(__dirname, "../../../scripts/dispatch/dispatch-contract.js"));
+  const shapePath = require.resolve(path.resolve(__dirname, "../../../scripts/dispatch/dispatch-shape.js"));
+  const savedContract = require.cache[contractPath];
+  const savedShape = require.cache[shapePath];
+  try {
+    // Exports with NO contractForRole/skillExecution → resolveAgent hits the fail-open branch.
+    require.cache[contractPath] = { id: contractPath, filename: contractPath, loaded: true, exports: {} };
+    delete require.cache[shapePath]; // re-bind a fresh dispatch-shape to the poisoned contract
+    const { shapeDoor: poisonedDoor } = require(shapePath);
+    const r = poisonedDoor("subprocess-claude", { kind: "agent", id: "backend-builder" }, { WARPOS_SHAPE_DOOR: "enforce" }, {});
+    assert.strictEqual(r.action, "proceed", "fail-open (contract-unavailable) must NOT refuse under enforce");
+    assert.notStrictEqual(r.mismatch && r.mismatch.severity, "high", "a fail-open mismatch must not be high-severity");
+  } finally {
+    if (savedContract) require.cache[contractPath] = savedContract; else delete require.cache[contractPath];
+    delete require.cache[shapePath];
+    if (savedShape) require.cache[shapePath] = savedShape;
+  }
+});
+
 console.log(`\n${failed === 0 ? "PASS" : "FAIL"} — shape-door: ${passed} passed, ${failed} failed`);
 if (failed) { console.error("\n" + fails.join("\n")); process.exit(1); }

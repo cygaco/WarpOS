@@ -471,7 +471,15 @@ try {
   // consult already noted; the resolver's name-heuristic resolves them to subprocess-claude
   // (a MATCH — no mismatch) — but keep the guard so they never surface a stray advisory.
   if (!GENERIC_BUILD_IDS.has(role.toLowerCase())) {
-    const door = shapeDoor("subprocess-claude", { kind: "agent", id: role }, process.env, { sanctioned: fallbackSanctioned });
+    // W2/N2 ENFORCE FLIP (2026-06-16): dispatch-claude enforces by default. Safe-by-construction
+    // (a real build-chain role resolves proven:true + 'subprocess-claude' MATCH → never refused;
+    // the FIX-A3 sanctioned lane still proceeds+suppressed in BOTH modes). Per-wrapper kill:
+    // WARPOS_SHAPE_DOOR_DISPATCH_CLAUDE=report; fleet kill: WARPOS_SHAPE_DOOR=report; ultimate:
+    // WARPOS_DISABLE_SHAPE_DOOR=1.
+    // Per-wrapper env is a TRUE kill (W2 gauntlet MED-1): report → force report via reportOnlyPin
+    // (beats a global enforce); unset → enforceDefault. sanctioned is preserved in BOTH branches.
+    const killThis = /^(report|off|0)$/i.test(String(process.env.WARPOS_SHAPE_DOOR_DISPATCH_CLAUDE || ""));
+    const door = shapeDoor("subprocess-claude", { kind: "agent", id: role }, process.env, killThis ? { sanctioned: fallbackSanctioned, reportOnlyPin: true } : { sanctioned: fallbackSanctioned, enforceDefault: true });
     if (door.mismatch && door.mismatch.mismatch && !door.suppressed) {
       // β#4: the report-mode advisory string stays BYTE-IDENTICAL to the pre-door legacy
       // (no `(mode)` label) — a consumer comparing dispatch stderr must see no change. The

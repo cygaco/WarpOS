@@ -565,7 +565,14 @@ function spawnAgent(agentPlan, sprintId, opts = {}) {
   // abort THIS spawn (a failed dispatch), never process.exit (ε is a long-running conductor).
   try {
     const { shapeDoor } = require(path.join(root, "scripts/dispatch/dispatch-shape.js"));
-    const door = shapeDoor("subprocess-claude", { kind: "agent", id: agentPlan.role }, env, {});
+    // W2/N2 ENFORCE FLIP (2026-06-16): CLAUDE_RAW enforces by default (it rides the ramp).
+    // Safe-by-construction (a real role resolves proven:true + 'subprocess-claude' MATCH → never
+    // refused). On REFUSE ε aborts THIS spawn (never process.exit). Per-wrapper kill:
+    // WARPOS_SHAPE_DOOR_EPSILON=report; fleet kill: WARPOS_SHAPE_DOOR=report; ultimate: WARPOS_DISABLE_SHAPE_DOOR=1.
+    // Per-wrapper env is a TRUE kill (W2 gauntlet MED-1): report → force report via reportOnlyPin
+    // (beats a global enforce); unset → enforceDefault (the ramp default).
+    const killThis = /^(report|off|0)$/i.test(String(env.WARPOS_SHAPE_DOOR_EPSILON || ""));
+    const door = shapeDoor("subprocess-claude", { kind: "agent", id: agentPlan.role }, env, killThis ? { reportOnlyPin: true } : { enforceDefault: true });
     if (door.mismatch && door.mismatch.mismatch && !door.suppressed) {
       process.stderr.write(
         `[epsilon-runtime] CLAUDE_RAW shape-resolver ${door.action === "refuse" ? "VIOLATION" : "advisory"} (${door.mode}): role '${agentPlan.role}' spawned raw as 'subprocess-claude' but the resolver picks '${door.mismatch.expected}' (${door.mismatch.expectedReason || door.mismatch.reason}).\n`,

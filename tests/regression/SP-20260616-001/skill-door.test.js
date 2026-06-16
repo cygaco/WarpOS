@@ -26,9 +26,11 @@ function ok(name, cond, detail) {
 }
 
 // AC-3.1: dispatch-skill consults the door for the skill unit with reportOnlyPin:true.
+// ED-057: the door call now passes its OWN shape "subprocess-skill" (added to the resolver
+// SHAPES + resolveSkill returns it for an earned skill), not the build-chain "subprocess-claude".
 const skillSrc = read("scripts/dispatch-skill.js");
 ok("skill-report-only-pinned-under-enforce: dispatch-skill consults the door for {kind:skill}",
-  /shapeDoor\(\s*"subprocess-claude",\s*\{\s*kind:\s*"skill",\s*id:\s*skill\s*\}/.test(skillSrc));
+  /shapeDoor\(\s*"subprocess-skill",\s*\{\s*kind:\s*"skill",\s*id:\s*skill\s*\}/.test(skillSrc));
 ok("skill-report-only-pinned-under-enforce: it passes reportOnlyPin:true (so enforce can never refuse a skill)",
   /reportOnlyPin:\s*true/.test(skillSrc));
 // The dispatch-skill shape block never refuses (no process.exit in the door region).

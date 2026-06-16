@@ -553,13 +553,24 @@ try {
 // This wrapper OWNS the subprocess-cross-provider shape. Consult the LIVE resolver as
 // the independent authority: if resolveShape picks a DIFFERENT shape for this role, the
 // role is routed through the wrong wrapper (e.g. a build-chain builder pushed through the
-// cross-provider path) — the wrong shape self-detects on a REAL dispatch. Gated by the
-// shared shapeDoor() (WARPOS_SHAPE_DOOR=report|enforce, default report; kill-switch +
-// legacy block flag honored as a deprecated alias inside the door); exit 2 on an enforce
-// refusal; fail-OPEN on any resolver error.
+// cross-provider path) — the wrong shape self-detects on a REAL dispatch. W2/N2 ENFORCE FLIP
+// (2026-06-16): dispatch-agent is the LOWEST-BLAST first flip — it ENFORCES by default
+// (enforceDefault). SAFE-BY-CONSTRUCTION: enforce only REFUSES high-severity mismatches
+// (unproven-subprocess / build-chain-in-process); a legitimate cross-provider reviewer resolves
+// through the contract to proven:true + 'subprocess-cross-provider' (MATCHES → never refused). A
+// mere wrong-wrapper (a builder shoved through this path) is only a MEDIUM advisory — still NOT
+// refused (conservative by design). So the flip cannot false-refuse a real reviewer dispatch; its
+// teeth apply only to a genuinely-dangerous unproven-subprocess unit. Escapes:
+// WARPOS_SHAPE_DOOR_DISPATCH_AGENT=report (per-wrapper kill), global
+// WARPOS_SHAPE_DOOR=report (fleet kill), WARPOS_DISABLE_SHAPE_DOOR=1 (ultimate). exit 2 on an
+// enforce refusal; fail-OPEN on any resolver error.
 try {
   const { shapeDoor } = require("./dispatch/dispatch-shape");
-  const door = shapeDoor("subprocess-cross-provider", { kind: "agent", id: role }, process.env, {});
+  // The per-wrapper env is a TRUE kill (W2 gauntlet MED-1): when set to report, force report via
+  // reportOnlyPin (which beats even a global WARPOS_SHAPE_DOOR=enforce) — not merely clear the
+  // flip. Unset → enforceDefault (the per-wrapper ramp default).
+  const killThis = /^(report|off|0)$/i.test(String(process.env.WARPOS_SHAPE_DOOR_DISPATCH_AGENT || ""));
+  const door = shapeDoor("subprocess-cross-provider", { kind: "agent", id: role }, process.env, killThis ? { reportOnlyPin: true } : { enforceDefault: true });
   if (door.mismatch && door.mismatch.mismatch && !door.suppressed) {
     // β#4: report-mode advisory string stays BYTE-IDENTICAL to the pre-door legacy (no `(mode)`
     // label); only the new refuse path (exit 2) carries the mode in its VIOLATION wording.
