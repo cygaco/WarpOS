@@ -13,7 +13,7 @@
     "pattern": 6,
     "fixture": 23,
     "warpos_script": 57,
-    "check_tool": 112,
+    "check_tool": 114,
     "agent_tool": 3,
     "decision_tool": 1,
     "runtime_tool": 1,
@@ -67,7 +67,7 @@
     "module_scope": 1,
     "framework_doc": 4
   },
-  "total": 1320,
+  "total": 1322,
   "assets": {
     "agent": [
       {
@@ -2873,7 +2873,7 @@
         "src": ".claude/commands/scan/full.md",
         "dest": ".claude/commands/scan/full.md",
         "kind": "skill",
-        "sha256": "b71bb6a22420fc815b4d177edf47c24613dd0538e79bab8722538aff1483d8fd",
+        "sha256": "7f7edbb0f1dcc897aea3f5b55c4b5bd1eec0a4bfc99a707b81a00bf9206b825b",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
@@ -7824,6 +7824,30 @@
         "dest": "scripts/checks/test-warpos-ship-coverage.js",
         "kind": "check_tool",
         "sha256": "b82d40fe76832344cb801f636e77c3b3341ecb6c0af414f96985a129f91163ed",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "check_tool.tracker-reality-drift.js",
+        "src": "scripts/checks/tracker-reality-drift.js",
+        "dest": "scripts/checks/tracker-reality-drift.js",
+        "kind": "check_tool",
+        "sha256": "6a137609794e5bd4b85ebc88f657118fdf62583d395f72749bbe522e3ce13a4e",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "check_tool.tracker-reality-drift.test.js",
+        "src": "scripts/checks/tracker-reality-drift.test.js",
+        "dest": "scripts/checks/tracker-reality-drift.test.js",
+        "kind": "check_tool",
+        "sha256": "41772b17311ffc8ca3df47d298590295fcf605c67f4facf9ee288d95ac103250",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",

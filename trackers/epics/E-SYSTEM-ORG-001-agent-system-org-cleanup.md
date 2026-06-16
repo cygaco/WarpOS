@@ -67,7 +67,7 @@
 3. **NEXT ACTION is a standing imperative** — no session ordinal as the subject. "NEXT ACTION (session 4): do Y" → "NEXT ACTION (open as of 2026-06-08 @<hash>): do Y". Any future reader executes the same thing; the "as of" date makes staleness visible.
 4. **Negatives are past-tense + dated**, never present-tense bare ("had not started as of <date>", not "no X this session").
 
-**Enforcer (named; not yet built — ED-034):** a `session-relative-language` check in `scripts/trackers/validate.js` that flags a banned deictic phrase lacking an absolute anchor (ISO date or 7–40-hex hash) within the same clause; allowlisted exceptions (e.g. inside a fenced quote of an old handoff); ramped report-only → blocking after the existing high-read lines are converted. Until built, this rule is documented-but-unenforced (S-10).
+**Enforcer (named; BUILT report-only — ED-034, reconciled 2026-06-16):** a `session-relative-language` check in `scripts/trackers/validate.js` that flags a banned deictic phrase lacking an absolute anchor (ISO date or 7–40-hex hash) within the same clause; allowlisted exceptions (e.g. inside a fenced quote of an old handoff); ramped report-only → blocking after the existing high-read lines are converted. **It IS built + running** — the `session-relative-language` advisory runs in `validate.js` OUTSIDE the 20 binding checks (19 un-anchored deictics flagged 2026-06-16); the flip-to-blocking ramp remains the open tail (S-10). (The "not yet built" claim above was stale — caught by the verify-don't-inherit sweep.)
 
 ## Handoff redesign (S-11) — design 2026-06-08 @9163f77 (build PENDING; RI-006)
 
