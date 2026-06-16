@@ -130,6 +130,12 @@ agree — keep them in sync.
 | security-reviewer | gemini | gemini-3.1-pro thinking-on — replaces redteam; + 2nd GPT jailbreak pass |
 | cabinet | openai | freeform cross-provider consult / second opinion — NO strict output schema (formerly `advisor`/`consult`) |
 
+> **`design-lead` is dispatched like a reviewer, NOT like a manager (the door to use).** It is the *one* product **lead** on a non-Claude provider — RULE 4 (operator: GPT is best at product design/UX/flows), the deliberate `cross_provider_consult_lead` class. So reach it via a subprocess:
+> ```bash
+> node scripts/dispatch-agent.js design-lead <prompt-file>
+> ```
+> **Do NOT** dispatch it via the in-process Agent tool (`Agent(subagent_type:"design-lead")`) or via `epsilon-runtime record-inprocess` — those are for the Claude **in-process** roster only (managers/leads/directors + design-quality/visual-review). `record-inprocess` will refuse it as a route mismatch **by design** (this is the system working, not a bug — ED-055, diagnosed-wrong 2026-06-16). Every other lead/director is Claude in-process; design-lead is the singular, intentional exception.
+
 Claude is the **fallback** for any non-Claude role on failure (`required-fallback.js`),
 not the default for the review layer — cross-provider diversity is the point.
 

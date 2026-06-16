@@ -589,7 +589,7 @@ function recordInProcessCompletion(agentPlan, sprintId, { evidenceFile, elapsedM
   if (agentPlan.route !== ROUTE.CLAUDE_AGENT && agentPlan.route !== ROUTE.AGENT_TOOL) {
     return {
       recorded: false,
-      reason: `record-inprocess is for in-process routes only (CLAUDE_AGENT / AGENT_TOOL); got route '${agentPlan.route}' — a CLI-routable role must go through spawnAgent (which captures real subprocess output), not here`,
+      reason: `record-inprocess is for in-process routes only (CLAUDE_AGENT / AGENT_TOOL); role '${agentPlan.role}' resolves to route '${agentPlan.route}', a CLI/subprocess role — dispatch it via 'node scripts/dispatch-agent.js ${agentPlan.role} <prompt-file>' (or spawnAgent), which capture real subprocess output. NB: design-lead is the common case here — it is a deliberate cross-provider consult lead (RULE 4), not an in-process teammate, so this refusal is correct (ED-055).`,
     };
   }
   // No evidence file → there is NO proof an Agent-tool spawn happened. Refuse — the in-process

@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-16T08:32:20.519Z",
+  "generatedAt": "2026-06-16T09:02:27.979Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.16.0",
   "migrations": [],
@@ -5039,8 +5039,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/sprint/epsilon-runtime.js",
-      "sha256": "7c583868a713b58c5bdb67957978ccb3fa99ba84abd6a1904e00e9470cc0dfbe",
-      "installedSha": "7c583868a713b58c5bdb67957978ccb3fa99ba84abd6a1904e00e9470cc0dfbe"
+      "sha256": "6abb6caa8f04db2d43c6609ffc8f8cc76d0de4e6ca2912ef3e41a21f5a9ee95a",
+      "installedSha": "6abb6caa8f04db2d43c6609ffc8f8cc76d0de4e6ca2912ef3e41a21f5a9ee95a"
     },
     "scripts/sprint/epsilon-runtime.test.js": {
       "owner": "framework",
@@ -22241,8 +22241,8 @@
       "managed": true,
       "source": ".claude/agents/_system/guides/agent-dispatch-guide.md",
       "kind": "md",
-      "sha256": "2567bbc7e69befaae8a490b4d1fa6b1d184e71a6e20a4ac1459540d85414bbb3",
-      "installedSha": "2567bbc7e69befaae8a490b4d1fa6b1d184e71a6e20a4ac1459540d85414bbb3"
+      "sha256": "dbc31b2c109f3b81fd74d41c631ef186fea7519f27a4e26fdc695996994e007f",
+      "installedSha": "dbc31b2c109f3b81fd74d41c631ef186fea7519f27a4e26fdc695996994e007f"
     },
     ".claude/agents/_system/guides/gauntlet-contract.md": {
       "owner": "framework",
@@ -22353,8 +22353,8 @@
       "managed": true,
       "source": ".claude/agents/product/design-lead.md",
       "kind": "md",
-      "sha256": "164215f2b27932a15655d7c86662c3800e9170a550ab7df215de3520943d0561",
-      "installedSha": "164215f2b27932a15655d7c86662c3800e9170a550ab7df215de3520943d0561"
+      "sha256": "86f693b64d8657090bcf2fd4ef6258ef13ae652f08597ef6db7774ba7e8a6b6a",
+      "installedSha": "86f693b64d8657090bcf2fd4ef6258ef13ae652f08597ef6db7774ba7e8a6b6a"
     },
     ".claude/agents/product/director-of-product.md": {
       "owner": "framework",
