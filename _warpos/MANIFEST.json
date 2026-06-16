@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-16T22:52:24.143Z",
+  "generatedAt": "2026-06-16T23:18:49.314Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.16.0",
   "migrations": [],
@@ -5123,8 +5123,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/sprint/fs.js",
-      "sha256": "a243d486784c2e434e8d273faf710c554c5de2a54c6926db1faee0f6b97fdcf2",
-      "installedSha": "a243d486784c2e434e8d273faf710c554c5de2a54c6926db1faee0f6b97fdcf2"
+      "sha256": "ec52f90420294d518a5f4308c823515ca408b39b1ab408053d5a252b944df6c7",
+      "installedSha": "ec52f90420294d518a5f4308c823515ca408b39b1ab408053d5a252b944df6c7"
     },
     "scripts/sprint/full.js": {
       "owner": "framework",
@@ -6467,8 +6467,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/lib/concurrency-lock.js",
-      "sha256": "e72db55ac20d4ea7b995116210c083e4e1c724dc456ded56680a4b2c09667841",
-      "installedSha": "e72db55ac20d4ea7b995116210c083e4e1c724dc456ded56680a4b2c09667841"
+      "sha256": "c45e0cacd3bb0022e7b5d28d104a1651369fe8269741174827c785036caac76d",
+      "installedSha": "c45e0cacd3bb0022e7b5d28d104a1651369fe8269741174827c785036caac76d"
     },
     "scripts/hooks/lib/context-sources.js": {
       "owner": "framework",

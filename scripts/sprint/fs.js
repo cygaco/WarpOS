@@ -213,6 +213,16 @@ function inferSprintSchemaKind(filePath) {
   return null;
 }
 
+// Atomic write: stage to a sibling `.tmp` then rename-over, so a concurrent reader / parallel
+// sprint resume never observes a HALF-written file (the torn progress.yaml / active-sprints.yaml
+// corruption class — raw writeFileSync is not atomic and a reader can catch a partial buffer).
+// renameSync is atomic within a filesystem. Ported from scripts/sprint/ledger.js#atomicWrite.
+function atomicWrite(file, content) {
+  const tmp = `${file}.tmp-${process.pid}-${Date.now()}`;
+  fs.writeFileSync(tmp, content, "utf8");
+  fs.renameSync(tmp, file);
+}
+
 function writeYaml(file, value) {
   ensureDir(path.dirname(file));
   // Schema injection at the canonical writer. If the file path matches a
@@ -234,7 +244,7 @@ function writeYaml(file, value) {
     }
   }
   const body = yamlDump(out, 0) + "\n";
-  fs.writeFileSync(file, body, "utf8");
+  atomicWrite(file, body);
   return { wrote: true, reason: "ok" };
 }
 

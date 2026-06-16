@@ -31,7 +31,15 @@ const fs = require("node:fs");
 const path = require("node:path");
 const crypto = require("node:crypto");
 
-const PROJECT_ROOT = process.cwd();
+// LOCK_ROOT must be CWD-INDEPENDENT. A worktree-cwd dispatch (cwd = an isolated builder
+// worktree) previously anchored its lock pool under the worktree via process.cwd(), getting a
+// SEPARATE pool that DEFEATED the per-provider concurrency cap (two worktree dispatches each saw
+// a free slot, so 15+ could launch and trip the provider's rate limit the cap exists to prevent).
+// Anchor to THIS FILE's repo root (path.resolve(__dirname,"../../..")) — the same cwd-independent
+// file-location anchor dispatch-agent.js#AGENT_ROOT uses for telemetry — so every dispatch that
+// loads the canonical module shares ONE pool and the cap actually binds. (MC-readiness Track-3
+// cap-defeat finding; ED-016 cwd-anchor class.)
+const PROJECT_ROOT = path.resolve(__dirname, "..", "..", "..");
 const LOCK_ROOT = path.join(
   PROJECT_ROOT,
   ".claude",
