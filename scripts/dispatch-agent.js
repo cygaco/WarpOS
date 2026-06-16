@@ -41,7 +41,6 @@ const {
   releaseSlot,
 } = require("./hooks/lib/concurrency-lock");
 const { record: recordProviderTrace } = require("./agents/provider-trace");
-const { validate: validateAgentOutput } = require("./agents/output-validator");
 
 // ── Canonical root anchor (AC2 / ED-016 / class-#20 fix) ──
 //
@@ -788,28 +787,12 @@ try {
   if (roleModel) result.specModel = roleModel;
   const parsed = parseProviderJson(result.output);
   if (parsed) result.parsed = parsed;
-  // S-7: `cabinet` is the registered freeform consult role (brainstorm, second
-  // opinion, research) — it carries no review envelope. advisor/consult are its
-  // legacy ids (kept here so a partially-migrated caller still skips validation;
-  // normalizeRole collapses them to cabinet). Skip strict validation so a
-  // freeform reply isn't logged as an invalid ComplianceResult ("invalid verdict
-  // null"), which would pollute review-role telemetry.
-  const FREEFORM_ROLES = new Set(["cabinet", "advisor", "consult"]);
-  const envelopeValidation = FREEFORM_ROLES.has(role)
-    ? { ok: true, errors: [], normalized: null, freeform: true }
-    : validateAgentOutput(role, parsed || result.output || "");
-  result.envelopeValidation = {
-    ok: envelopeValidation.ok,
-    errors: envelopeValidation.errors || [],
-    normalized: envelopeValidation.normalized
-      ? {
-          agent: envelopeValidation.normalized.agent,
-          verdict: envelopeValidation.normalized.verdict,
-          findings: envelopeValidation.normalized.findings.length,
-          requiresHuman: envelopeValidation.normalized.requiresHuman,
-        }
-      : null,
-  };
+  // ADR-0012: the per-dispatch envelope-validation gate is BURIED. It validated build-chain
+  // envelopes but ran on cross-provider REVIEW outputs (a category error → frequent ok:false,
+  // and grep-verified NEVER consumed → a dead gate, the "36/36" state NOTAGAIN named). The real
+  // per-dispatch validation is gauntlet-verify's ok:true completion record + the orchestrator's
+  // consumption of result.parsed (set above). The output-validator.js utility is unchanged
+  // (still used for build-chain output + its own self-test) — it just stops being stamped here.
   recordProviderTrace({
     role,
     domain: domainFlag || null,

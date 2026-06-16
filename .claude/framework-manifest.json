@@ -3,7 +3,7 @@
   "version": "0.16.0",
   "generated_by": "scripts/generate-framework-manifest.js",
   "counts": {
-    "agent": 84,
+    "agent": 85,
     "skill": 231,
     "reference": 27,
     "maps_baseline": 26,
@@ -67,7 +67,7 @@
     "module_scope": 1,
     "framework_doc": 4
   },
-  "total": 1325,
+  "total": 1326,
   "assets": {
     "agent": [
       {
@@ -767,11 +767,23 @@
         "replaces": null
       },
       {
+        "id": "agent.president._system.policy.adr.0012-envelope-validator-bury.md",
+        "src": ".claude/agents/president/_system/policy/adr/0012-envelope-validator-bury.md",
+        "dest": ".claude/agents/president/_system/policy/adr/0012-envelope-validator-bury.md",
+        "kind": "agent",
+        "sha256": "7e03258b13440a158b41e2a810598d7cc38eb29839df429e18b51b29ea34bf0f",
+        "owner": "framework",
+        "mergeStrategy": "three_way_markdown",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
         "id": "agent.president._system.policy.adr.INDEX.md",
         "src": ".claude/agents/president/_system/policy/adr/INDEX.md",
         "dest": ".claude/agents/president/_system/policy/adr/INDEX.md",
         "kind": "agent",
-        "sha256": "e01a8040f63f2b69ddd7760bb7bc9595f845b0b84c76ad277ab0051269658eb2",
+        "sha256": "95b95ac92a91d657822e28bdcee661d8b8a09938818cacac156293bd3bfc328c",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
@@ -15923,7 +15935,7 @@
         "src": "scripts/dispatch-agent.js",
         "dest": "scripts/dispatch-agent.js",
         "kind": "top_script",
-        "sha256": "3341b5a6b62fd0b5f79cc7b5d1f67e9ca88ffb60d2fbdfb929b20fd8d196c702",
+        "sha256": "95736bd951931a6ba6ecec15d91ec428967f983adbe9b7ba3a6215502a8fcbae",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",

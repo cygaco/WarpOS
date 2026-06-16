@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-16T23:51:04.383Z",
+  "generatedAt": "2026-06-16T23:58:21.749Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.16.0",
   "migrations": [],
@@ -3520,8 +3520,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/dispatch-agent.js",
-      "sha256": "3341b5a6b62fd0b5f79cc7b5d1f67e9ca88ffb60d2fbdfb929b20fd8d196c702",
-      "installedSha": "3341b5a6b62fd0b5f79cc7b5d1f67e9ca88ffb60d2fbdfb929b20fd8d196c702"
+      "sha256": "95736bd951931a6ba6ecec15d91ec428967f983adbe9b7ba3a6215502a8fcbae",
+      "installedSha": "95736bd951931a6ba6ecec15d91ec428967f983adbe9b7ba3a6215502a8fcbae"
     },
     "scripts/dispatch-claude.js": {
       "owner": "framework",
@@ -22843,13 +22843,21 @@
       "sha256": "230740e305038142e2a18d6be5d707a1c9c3ef2a99f7cd5e4e28831e5be59551",
       "installedSha": "230740e305038142e2a18d6be5d707a1c9c3ef2a99f7cd5e4e28831e5be59551"
     },
+    ".claude/agents/president/_system/policy/adr/0012-envelope-validator-bury.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/president/_system/policy/adr/0012-envelope-validator-bury.md",
+      "kind": "md",
+      "sha256": "7e03258b13440a158b41e2a810598d7cc38eb29839df429e18b51b29ea34bf0f",
+      "installedSha": "7e03258b13440a158b41e2a810598d7cc38eb29839df429e18b51b29ea34bf0f"
+    },
     ".claude/agents/president/_system/policy/adr/INDEX.md": {
       "owner": "framework",
       "managed": true,
       "source": ".claude/agents/president/_system/policy/adr/INDEX.md",
       "kind": "md",
-      "sha256": "e01a8040f63f2b69ddd7760bb7bc9595f845b0b84c76ad277ab0051269658eb2",
-      "installedSha": "e01a8040f63f2b69ddd7760bb7bc9595f845b0b84c76ad277ab0051269658eb2"
+      "sha256": "95b95ac92a91d657822e28bdcee661d8b8a09938818cacac156293bd3bfc328c",
+      "installedSha": "95b95ac92a91d657822e28bdcee661d8b8a09938818cacac156293bd3bfc328c"
     },
     ".claude/agents/president/_system/oneshot/ENV-SETUP.md": {
       "owner": "framework",

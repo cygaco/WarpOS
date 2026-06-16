@@ -54,5 +54,7 @@ When Beta returns DECIDE on a Class B decision with `OPEN_ADR: true`, Alpha drop
 | [0008](0008-dispatch-consumers-derive-from-registry.md) | Dispatch consumers derive from the role-registry keystone (v0.2; registry = source-of-truth for role→provider/effort/build_chain/kind) | 2026-06-05 | accepted | - |
 | [0009](0009-epsilon-sprint-runtime.md) | ε sprint-conductor runtime: registry-driven lifecycle engine with REAL dispatch (Phase D); closes ED-022 + ED-025 | 2026-06-06 | accepted | - |
 | [0010](0010-orgmap-reporting-collapse.md) | Collapse org-map's reporting-line view into the role-registry; role-parity anchors on the registry, witnessed by the on-disk spec tree (ED-024) | 2026-06-05 | accepted | - |
+| [0011](0011-turbo-spend-ceiling-and-push-honesty.md) | Turbo spend ceiling is source-vs-instance; push-to-main level pinned to confirm | 2026-06-10 | accepted | - |
+| [0012](0012-envelope-validator-bury.md) | Bury the per-dispatch envelope-validation gate (the 36/36 dead gate) | 2026-06-16 | accepted | - |
 
 When ADRs accrete, add a row here pointing at each file. Keep the table in sync with the filesystem; `/scan:references` will catch drift. (ADR 0009 is reserved for the parallel E7 ε-runtime sprint.)
