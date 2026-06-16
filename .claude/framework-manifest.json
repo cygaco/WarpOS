@@ -2873,7 +2873,7 @@
         "src": ".claude/commands/scan/full.md",
         "dest": ".claude/commands/scan/full.md",
         "kind": "skill",
-        "sha256": "1c5265b5bc8535298e16ee5a0ff54cbfe6bdd8f5c3eae2b89c9e40ab0bec5a74",
+        "sha256": "b71bb6a22420fc815b4d177edf47c24613dd0538e79bab8722538aff1483d8fd",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",

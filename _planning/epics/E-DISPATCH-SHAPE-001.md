@@ -113,4 +113,12 @@ W2 = the HIGH-blast wave: the resolver becomes the only door. Design decisions d
 ### 12.3 Rollback
 Every W2 component carries its own kill-switch env + report-only fallback; the wrapper refusal is 4 independent flips (one per wrapper), never a big bang. A false-refusal in production = set the kill-switch, file the planted-test gap, fix, re-flip.
 
+## Enforcer
+
+Per planning principle #7 (every plan names its enforcer). The epic's named enforcers (on disk):
+- **`scripts/dispatch/dispatch-shape.js`** (`resolveShape` / `shapeMismatch`) — the wrapper shape-door: each of the 3 wrappers + epsilon-runtime consults it at spawn; a requested-vs-resolved shape mismatch REFUSES (W2 core).
+- **`scripts/dispatch/dispatch-contract.js validate`** — the class↔shape permission matrix gate (wired into `/scan:full`).
+- **Per-wave planted-violation tests** (`*.test.js` per enforcer) — the named-enforcer rule (CLAUDE.md policy-hygiene), one per wave.
+- **Per-wrapper kill-switch + report-only ramp** (`WARPOS_SHAPE_DOOR=report|enforce`, `WARPOS_DISABLE_SHAPE_DOOR=1`) — the blast-radius control for the W2 flip.
+
 _End of plan artifact for E-DISPATCH-SHAPE-001. State lives in the epic tracker; this is the durable plan._

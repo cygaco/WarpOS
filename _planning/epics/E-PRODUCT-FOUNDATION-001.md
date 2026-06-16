@@ -112,4 +112,12 @@ real proof; a bare `proof: TODO` stub is "named but unproven" and is FLAGGED
 - scaffold-coverage / ship-coverage check surface (new assertions).
 
 ---
+## Enforcer
+
+Per planning principle #7 (every plan names its enforcer; β constraint 1 — every net-new contract names its enforcer at plan-time). The epic's named enforcers (on disk + green):
+- **`scripts/checks/scaffold-coverage-scan.js`** — W0 telemetry seam + W2 admin route + W3 founders-checklist presence, each with a planted-missing fixture that FAILS.
+- **`scripts/checks/canon-tech-stack.js`** — W1 `## Tech Stack` block presence + parseability canon gate.
+- **`scripts/checks/playbook-suite-coverage.js`** — T-P playbook-suite presence (wired into `/scan:full`).
+- **`scripts/checks/guides-coverage.js` + `scripts/checks/knowledge-coverage.js`** — T-G guides + T-K knowledge-domain coverage.
+
 _End of plan artifact for E-PRODUCT-FOUNDATION-001. State lives in the epic tracker; this is the durable plan._
