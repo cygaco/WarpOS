@@ -232,6 +232,33 @@ test("fail-open: a contract-read error resolves inline, proven=false (never thro
   assert.strictEqual(r.proven, false);
 }, true);
 
+// ── W2 fix-first: unknown-role name-heuristic (the resolver's "no distinguishing signal" weakness) ──
+// An UNKNOWN role (not in the registry) whose id NAME indicates a build-chain worker or an
+// independent reviewer must NOT fall to "no distinguishing signal → inline" — that WAS the W2
+// weakness (a real subprocess builder once resolved inline). The pick is name-derived + labeled
+// source="unknown-role-name-heuristic" so it stays auditable.
+test("unknown role 'custom-data-builder' → subprocess-claude (name-heuristic, NOT inline — W2 fix)", () => {
+  const r = resolveShape({ kind: "agent", id: "custom-data-builder" });
+  assert.strictEqual(r.shape, "subprocess-claude", JSON.stringify(r));
+  assert.strictEqual(r.source, "unknown-role-name-heuristic", JSON.stringify(r));
+}, true);
+test("unknown role 'widget-fixer' → subprocess-claude (name-heuristic)", () => {
+  assert.strictEqual(resolveShape({ kind: "agent", id: "widget-fixer" }).shape, "subprocess-claude");
+}, true);
+test("unknown role 'compliance-reviewer' → subprocess-cross-provider (name-heuristic)", () => {
+  const r = resolveShape({ kind: "agent", id: "compliance-reviewer" });
+  assert.strictEqual(r.shape, "subprocess-cross-provider", JSON.stringify(r));
+  assert.strictEqual(r.source, "unknown-role-name-heuristic");
+}, true);
+test("unknown role 'mystery-thing' (no name signal) → inline (safe default still holds)", () => {
+  assert.strictEqual(resolveShape({ kind: "agent", id: "mystery-thing" }).shape, "inline");
+}, true);
+test("regression: a KNOWN builder still resolves via the CONTRACT, not the name-heuristic", () => {
+  const r = resolveShape({ kind: "agent", id: "frontend-builder" });
+  assert.strictEqual(r.shape, "subprocess-claude", JSON.stringify(r));
+  assert.strictEqual(r.source, "contract", `known role must use contract, not name-heuristic: ${JSON.stringify(r)}`);
+}, true);
+
 // ── report ──────────────────────────────────────────────────────────────────
 if (failed) {
   process.stderr.write(fails.join("\n") + "\n");

@@ -60,6 +60,13 @@
 - Evidence/references: ../../_planning/epics/E-DISPATCH-SHAPE-001.md.
 
 ## Change log
+### 2026-06-16 — W2 fix-first: resolver unknown-role weakness fixed (autonomous)
+- Changed: `scripts/dispatch/dispatch-shape.js` `resolveAgent` unknown-role path — an unknown role (not in the registry, so `classForRole` returns null) whose id name indicates a build-chain worker (…builder/…fixer) or independent reviewer (…reviewer/redteam) now resolves to `subprocess-claude` / `subprocess-cross-provider` via a name-heuristic, instead of falling to "no distinguishing signal → inline" (the W2 plan's named "fix-first" weakness — it once picked inline for a real subprocess builder). Pick labeled `source="unknown-role-name-heuristic"` (auditable). +5 tests → `dispatch-shape.test.js` 31/31.
+- Reason: W2's "fix the resolver weakness FIRST" prerequisite (per the plan §17 / W2 entry). Advisory-safe (the resolver is not yet enforced-on) + self-contained; known roles still resolve via the contract (regression test asserts it).
+- Affected: `scripts/dispatch/dispatch-shape.js`, `scripts/dispatch/dispatch-shape.test.js`, `.claude/framework-manifest.json` (regen).
+- Previous state: unknown builder-like ids resolved inline (the weakness).
+- New state: unknown builder/reviewer ids resolve to their correct subprocess shape. W2 CORE (wrapper-refusal ENFORCE ramp + envelope ADR) remains unbuilt — the report-only ramp is safe to build next; the enforce-flip is operator-gated.
+
 ### 2026-06-10 — Session n/a
 - Changed: created E-DISPATCH-SHAPE-001 (epic file + companion plan artifact) from the /epic:plan payload.
 - Reason: operator directed planning this epic via /epic:plan.

@@ -97,7 +97,24 @@ function resolveAgent(id, signals) {
     const shape = allowed[0];
     return res(shape, true, `role '${id}' is contract class with allowed_shapes=[${allowed.join(", ")}]`, "contract", { kind: "agent", id });
   }
-  // Unknown role → treat as ad-hoc using its signals.
+  // Unknown role (not in the role-registry, so classForRole returned null) → before
+  // falling to a SIGNAL-LESS ad-hoc resolution (which picks "no distinguishing signal
+  // → inline" even for a REAL subprocess builder — the W2 "fix-first" resolver weakness:
+  // it once picked 'inline' for a real subprocess builder), derive the distinguishing
+  // signal from the role-id NAME. This mirrors W0's truthful-builder-advisory approach
+  // ('builder'→build_chain_worker for unknown ids). A build-chain worker (…builder/…fixer)
+  // is NEVER inline (Rule 4); an independent reviewer/redteam needs model diversity
+  // (Rule 5). The pick is labeled source="unknown-role-name-heuristic" so it is auditable
+  // + distinguishable from a registry/contract classification. (Known roles never reach
+  // here — they resolve via the contract above.)
+  const lname = String(id || "").toLowerCase();
+  if (/(^|[-_])(builder|fixer)([-_]|$)/.test(lname)) {
+    return res("subprocess-claude", true, `unknown role '${id}' — id name indicates a build-chain worker → subprocess-claude (Rule 4: build-chain is NEVER in-process; name-heuristic, not a registry match)`, "unknown-role-name-heuristic", { kind: "agent", id });
+  }
+  if (/(^|[-_])(reviewer|redteam)([-_]|$)/.test(lname)) {
+    return res("subprocess-cross-provider", true, `unknown role '${id}' — id name indicates an independent reviewer → cross-provider subprocess (Rule 5: no-verdict-on-own-work; name-heuristic, not a registry match)`, "unknown-role-name-heuristic", { kind: "agent", id });
+  }
+  // No name signal either → treat as ad-hoc using its signals (inline is the safe default).
   return resolveAdhoc({ ...(signals || {}), _unknownRole: id });
 }
 
