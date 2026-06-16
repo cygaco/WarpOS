@@ -246,6 +246,17 @@ const ASSET_DIRS = [
   // during the Wave 3 build. It must ship.
   { src: "scripts/teams", kind: "team_tool" },
   { src: "scripts/epic", kind: "epic_tool" }, // S-LC-09 epic-suite backing (plan.js/fold.js/lib.js) for /epic:plan + /epic:fold; must ship (Wave-3, 2026-06-10)
+  // 2026-06-16 fix-forward (ship-coverage RED, caught by the roadmap-state-honesty audit):
+  // the panels (SP-20260615-001/002), cockpit (/cockpit:readiness), and admin:* (SP-20260614-002)
+  // sprints added backing scripts + panel registries but never classified them — so the SHIPPED
+  // /panel:*, /cockpit:readiness, and /admin:* skills had no backing logic downstream, and
+  // warpos-ship-coverage exited 1 (2 essential-root registries + 7 framework-owned scripts shipping
+  // to nobody). E-CONTENT-DELIVERY DoD#2 (ship-coverage GREEN) was OVERSTATED until this. They must ship.
+  { src: "scripts/panel", kind: "panel_tool" },     // /panel:* unified opener namespace (list.js/roadmap.js/roadmap-gui.js)
+  { src: "scripts/cockpit", kind: "cockpit_tool" }, // /cockpit:readiness board (readiness-board.js + its .test.js, mirroring scripts/checks)
+  { src: "scripts/admin", kind: "admin_tool" },     // admin:* suite backing (preview.js/seed.js) for /admin:preview etc.
+  { src: "framework/panel-registry.json", kind: "panel_registry" },             // /panel:* synonym-layer registry (consumed by the forwarders + /panel:list)
+  { src: "framework/admin-panel-registry.json", kind: "admin_panel_registry" }, // admin:* panel registry (alias-beside panel-registry.json)
   // 2026-05-30 reconcile (gap E3, multiple downstream registers): bootstrap:spinup
   // + canon skills shipped their .md but NOT their backing scripts (spinup-orchestrate.js,
   // phases/onscreen.js, canon/generate.js) — so every consumer got DEAD skills. These

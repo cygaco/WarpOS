@@ -47,6 +47,11 @@
     "turbo_tool": 5,
     "team_tool": 1,
     "epic_tool": 3,
+    "panel_tool": 3,
+    "cockpit_tool": 2,
+    "admin_tool": 2,
+    "panel_registry": 1,
+    "admin_panel_registry": 1,
     "bootstrap_tool": 29,
     "canon_tool": 6,
     "schema": 32,
@@ -62,7 +67,7 @@
     "module_scope": 1,
     "framework_doc": 4
   },
-  "total": 1311,
+  "total": 1320,
   "assets": {
     "agent": [
       {
@@ -10148,6 +10153,124 @@
         "replaces": null
       }
     ],
+    "panel_tool": [
+      {
+        "id": "panel_tool.list.js",
+        "src": "scripts/panel/list.js",
+        "dest": "scripts/panel/list.js",
+        "kind": "panel_tool",
+        "sha256": "85fb22248fc5110f10e0f030b9604f9d2190b321f0a836fd8d1ec895d1740332",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "panel_tool.roadmap-gui.js",
+        "src": "scripts/panel/roadmap-gui.js",
+        "dest": "scripts/panel/roadmap-gui.js",
+        "kind": "panel_tool",
+        "sha256": "eb6f087bde18f66839ef8229b087312183bb76bec0b39833ec26998a465dbf23",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "panel_tool.roadmap.js",
+        "src": "scripts/panel/roadmap.js",
+        "dest": "scripts/panel/roadmap.js",
+        "kind": "panel_tool",
+        "sha256": "543f5cf8692396f95e91fc5b169e6b876d4d1badd6056ebe1fd953d11e5b8e30",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      }
+    ],
+    "cockpit_tool": [
+      {
+        "id": "cockpit_tool.readiness-board.js",
+        "src": "scripts/cockpit/readiness-board.js",
+        "dest": "scripts/cockpit/readiness-board.js",
+        "kind": "cockpit_tool",
+        "sha256": "4770140af1a7fcc99816bbd013aa2fc1d6f20aa97410bf0e88577349fbd25ced",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "cockpit_tool.readiness-board.test.js",
+        "src": "scripts/cockpit/readiness-board.test.js",
+        "dest": "scripts/cockpit/readiness-board.test.js",
+        "kind": "cockpit_tool",
+        "sha256": "f8128f448af4b2d8e37b97bf17f9170a06b91efad3d597791c1b51fd47343b4e",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      }
+    ],
+    "admin_tool": [
+      {
+        "id": "admin_tool.preview.js",
+        "src": "scripts/admin/preview.js",
+        "dest": "scripts/admin/preview.js",
+        "kind": "admin_tool",
+        "sha256": "6c8c68aa2059533779c733760a71027fe501d04909395a816d2a2b99b568d290",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "admin_tool.seed.js",
+        "src": "scripts/admin/seed.js",
+        "dest": "scripts/admin/seed.js",
+        "kind": "admin_tool",
+        "sha256": "03ecb28fdccc20e650a3c8e27407d40fecb6c48d3fcd0dae832e3e718100ceab",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      }
+    ],
+    "panel_registry": [
+      {
+        "id": "panel_registry.panel-registry.json",
+        "src": "framework/panel-registry.json",
+        "dest": "framework/panel-registry.json",
+        "kind": "panel_registry",
+        "sha256": "8da830d333e98257f90d3b27451a7d27b2e133ee4f7fc7046efe3a7acdb300d8",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      }
+    ],
+    "admin_panel_registry": [
+      {
+        "id": "admin_panel_registry.admin-panel-registry.json",
+        "src": "framework/admin-panel-registry.json",
+        "dest": "framework/admin-panel-registry.json",
+        "kind": "admin_panel_registry",
+        "sha256": "49cc7bf13413ec5688905bd4f9566116082f60387504ef3c98cde124201841bf",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      }
+    ],
     "bootstrap_tool": [
       {
         "id": "bootstrap_tool.lastmile.fixtures.js",
@@ -15764,7 +15887,7 @@
         "src": "scripts/generate-framework-manifest.js",
         "dest": "scripts/generate-framework-manifest.js",
         "kind": "top_script",
-        "sha256": "6cf40216cb6cb7ce6bb39f3fa9d3abbb794ad82167111dc0cdb111dd1b1526c2",
+        "sha256": "d02cfbed262289df4f6c87ac518607ebc9da6ad7e7183f44f741d5a2d4e4641c",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
