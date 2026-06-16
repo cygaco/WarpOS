@@ -1,0 +1,140 @@
+schema: warpos/sprint/plan-contract/v1
+id: PC-20260615-0080
+created_at: "2026-06-15T16:22:28.943Z"
+updated_at: "2026-06-15T16:22:28.943Z"
+sprint: SP-20260615-002
+source_request: "Operator: the v1 text board was a mistake — they explicitly asked for a NICE VISUAL, INTERACTIVE panel. Build it via /sprint:full. Must show ongoing sprints, the roadmap, epics, and sprint breakdown."
+source_request_verbatim: "That was a mistake on your part. I explicitly asked for a nice visual panel. /sprint:full to get it done; and I want it to look nice, and be interactive. I need info on current ongoing sprints, the roadmap, epics, and sprint breakdown."
+request_type: feature_add
+interpreted_intent: "Replace the v1 text-only /panel:roadmap with a real browser GUI panel (like /models:router's Dispatch Console): visually polished + interactive, surfacing the four data areas the operator named so they can SEE the portfolio state at a glance and drill in."
+user_or_business_outcome: "The operator runs /panel:roadmap and a clean, modern, interactive panel opens in their browser — active sprints, the prioritized roadmap, epics with progress, and the ticket breakdown per sprint — so 'what's next / where are we' is a visual glance + drill-down, not a text dump and not asking."
+affected_surfaces:
+  - surface: "scripts/panel/roadmap.js (extend → shared data aggregator)"
+    evidence_level: verified_from_repo
+    notes: "Already parses ROADMAP §Prioritized + TRACKER + active-sprints.yaml + open-gaps with --json + fail-soft. Extend it to ALSO aggregate epics (trackers/epics/*) + per-sprint ticket breakdown (sprint records). Stays the read-only, fail-soft data layer + the --text fallback."
+  - surface: "scripts/panel/roadmap-gui.js (NEW — serve + open browser)"
+    evidence_level: verified_from_repo
+    notes: "Mirror scripts/dispatch/gui.js: http.createServer on an OS-chosen port, loopback only, token-guarded, serves the panel HTML + the aggregated JSON, then openInBrowser. No external deps (Node http + child_process)."
+  - surface: "the panel frontend (HTML/CSS/JS — served by roadmap-gui.js)"
+    evidence_level: assumed_from_convention
+    notes: "Nice, modern, design-system-aligned visual layout (cards/columns/timeline/progress bars). Interactive: filter, expand/collapse, drill into a sprint/epic, click-for-detail. Client-side only, read-only. Mirror the Dispatch Console's visual idiom + any design-system docs."
+  - surface: ".claude/commands/panel/roadmap.md (rewire)"
+    evidence_level: verified_from_repo
+    notes: "Rewire the forwarder to open the GUI (node scripts/panel/roadmap-gui.js) by default; --text forwards to the v1 board. framework/panel-registry.json row `roadmap` opener updated accordingly; panel-registry-coverage stays green."
+  - surface: "trackers/epics/*.md (read-only source)"
+    evidence_level: verified_from_repo
+    notes: "Epic state + % + child sprints parsed for the EPICS data area. Read-only; fail-soft per epic."
+current_behavior:
+  evidence_level: verified_from_repo
+  notes: "/panel:roadmap (v1, SP-20260615-001) prints a static TEXT board to stdout — functional but NOT the visual panel requested. The other panels (/panel:models → Dispatch Console gui.js, /panel:admin → browser preview) DO open the browser; /panel:roadmap does not. No epics or per-sprint ticket breakdown in the v1 board."
+desired_behavior: "/panel:roadmap opens a polished interactive panel in the browser. It shows: (a) current ongoing/active sprints (id, status, phase, ticket counts); (b) the roadmap (prioritized do-next order + items/sections); (c) epics (state, % complete, child sprints); (d) per-sprint ticket breakdown (tickets + statuses). The operator can filter, expand/collapse, drill into a sprint/epic, and click an item for detail. Read-only (ROADMAP stays the source of truth). It genuinely LOOKS NICE (design-quality + visual-review gauntlet pass). The v1 text board remains as --text + the shared data layer."
+scope:
+  size: m
+  risk_level: medium
+  complexity_drivers:
+    - "A real frontend (HTML/CSS/JS) that must look polished + be interactive — visual quality is an explicit acceptance bar, not a nice-to-have."
+    - "A local web server (loopback, token-guarded, OS-chosen port) reusing gui.js safety properties."
+    - "The data aggregator must fail-soft across MANY human-authored sources (ROADMAP/TRACKER/active-sprints/epics/sprint-records) + now epics + ticket breakdown."
+    - "The design-quality/visual-review gauntlet needs the page actually running (the gui.js serve provides it)."
+scope_variants:
+  minimal_safe:
+    summary: "Serve the existing 4-section text board as HTML in the browser (minimal styling)."
+    tradeoffs:
+      - "Not 'nice' / not really interactive — fails the explicit visual+interactive bar."
+  recommended:
+    summary: "Full: extend the aggregator (epics + ticket breakdown), a gui.js-pattern server, a polished interactive frontend (cards/columns/progress/drill/filter) for all 4 data areas, /panel:roadmap rewired to open it, design-quality + visual-review gauntlet pass."
+    tradeoffs:
+      - "A real frontend build — larger than the text board, but it's exactly what was asked for."
+  expanded:
+    summary: "Recommended + edit-from-panel (reorder/mark-done writing back to ROADMAP/TRACKER)."
+    tradeoffs:
+      - "Rejected for v1: write-back is a confirm-class action + risks the source-of-truth; keep v1 read-only."
+assumptions:
+  safe:
+    - "scripts/dispatch/gui.js is the proven serve+open-browser pattern to reuse (loopback, token, OS port, no deps)."
+    - "scripts/panel/roadmap.js is the right data layer to extend (already fail-soft + --json)."
+    - "Read-only v1 is sufficient (interactivity = view/filter/drill, not edit)."
+  unsafe: []
+  needs_user_or_beta_review:
+    - "Visual design direction (layout idiom: board/columns vs timeline vs cards) — design-lead to propose, design-quality to verify against the design-system."
+    - Whether epics/ticket-breakdown depth is v1 or trimmed.
+open_questions:
+  blocking: []
+  non_blocking:
+    - "Exact visual layout (cards vs columns vs timeline) — design-lead decides + design-quality verifies."
+    - "Whether to also surface open-gaps in the GUI (the text board does)."
+non_goals:
+  - "No edit/write-back from the panel in v1 (read-only; ROADMAP stays source of truth)."
+  - "No external JS/CSS framework dependency (keep it Node-built-ins + vanilla or a single vendored lib, mirroring gui.js's no-deps posture)."
+  - "No public network exposure (loopback only, token-guarded)."
+  - "No replacement of the text board — it stays as --text + the data layer."
+  - "No push to remote without explicit in-session approval (operator granted COMMIT/PUSH/MERGE 2026-06-15)."
+requirement_areas:
+  - "R-1 data aggregator: extend scripts/panel/roadmap.js to emit a COMPLETE --json with the four data areas — (a) active sprints (id/status/phase/ticket-counts), (b) roadmap (prioritized do-next order + items/sections), (c) epics (state/%/child-sprints from trackers/epics/), (d) per-sprint ticket breakdown (tickets + statuses from sprint records); fail-SOFT per source (reuse v1's degrade-to-section-unavailable, never throw/write)."
+  - "R-2 browser GUI server: a NEW scripts/panel/roadmap-gui.js that mirrors scripts/dispatch/gui.js — http.createServer on an OS-chosen port, loopback-only, token-guarded, serves the panel HTML + the aggregated JSON, then openInBrowser; no external deps; clean shutdown."
+  - "R-3 visual frontend: a polished, modern, design-system-aligned panel (cards/columns/timeline/progress bars — NOT a text dump) rendering all four data areas; mirror the Dispatch Console visual idiom + the design-system docs."
+  - "R-4 interactivity: client-side filter, expand/collapse, drill into a sprint or epic, and click-an-item-for-detail — all read-only (no write-back to any source)."
+  - "R-5 wire-up: rewire .claude/commands/panel/roadmap.md + the framework/panel-registry.json `roadmap` opener to open the GUI by default (with --text forwarding to the v1 board); keep panel-registry-coverage green; regen path keys + both manifests + maps."
+  - "R-6 looks-nice gauntlet: a design-quality + visual-review pass (Playwright against the running served page) verifying the panel renders cleanly, is visually polished against the design-system, and the interactions work — the explicit 'it must look nice' acceptance bar."
+high_level_story_candidates:
+  - "As the operator, I run /panel:roadmap and a polished interactive panel opens in my browser."
+  - "As the operator, I see active sprints, the roadmap, epics (with progress), and the ticket breakdown — and can filter/expand/drill into any of them."
+  - "As the operator, the panel genuinely looks nice (verified by a visual-review/design-quality gauntlet)."
+granular_story_candidates:
+  - "Extend the roadmap.js aggregator with epics (trackers/epics/) + per-sprint ticket breakdown; complete --json; fail-soft."
+  - "Build scripts/panel/roadmap-gui.js (gui.js-pattern serve + open browser, loopback, token, OS port, no deps)."
+  - "Build the polished interactive frontend (4 data areas, cards/columns/progress, filter/expand/drill/detail), design-system-aligned."
+  - "Rewire /panel:roadmap + the registry opener to the GUI (default) with --text fallback; keep coverage green; regen."
+  - "Run the design-quality + visual-review gauntlet against the running page; fix to a clean visual pass."
+workstream_candidates:
+  - "WS-1 data layer (aggregator extension: epics + ticket breakdown, fail-soft)."
+  - "WS-2 server (roadmap-gui.js, gui.js pattern)."
+  - "WS-3 frontend (polished interactive HTML/CSS/JS, 4 data areas)."
+  - "WS-4 wire-up + integrity (registry/skill rewire, coverage, path keys, manifests/maps)."
+  - "WS-5 visual gauntlet (design-quality + visual-review)."
+preliminary_ticket_candidates:
+  allowed: false
+  candidates: []
+  notes: "Tickets minted after the product-lead authors the requirement bundle in design; expected tickets map to the five workstreams."
+external_service_dependencies:
+  status: none_expected
+  required: []
+  possible: []
+  notes: "Local loopback server only; no signups/credentials/network/billing. (Playwright for the visual gauntlet is the existing dev-tooling MCP, not a new service.)"
+approval_boundaries:
+  - "Read-only v1 — no edit/write-back from the panel without a separate operator decision."
+  - "No public network exposure (loopback + token only)."
+  - "Do not push to remote without explicit in-session approval (granted 2026-06-15)."
+design_required: true
+execution_allowed_without_design: false
+recommended_mode: sprint
+mode_invocation_required_by_user: true
+lane:
+  type: branch
+  value: session/2026-06-15
+  isolation_notes: "Engine/tooling sprint on the active session branch; fast-close (ff-merge to main) per RI-001. Supersedes the v1 text board (SP-20260615-001) as item 25's real deliverable."
+beta_review:
+  required: true
+  likely_founder_rejection_risks:
+    - "Shipping something that still doesn't 'look nice' — the visual bar is explicit; the design-quality gauntlet is the guard."
+  overbuild_risks:
+    - "A heavy JS framework dependency would violate the gui.js no-deps posture — keep it vanilla/vendored."
+    - "Edit-from-panel write-back is out of scope (confirm-class)."
+  missing_context_risks:
+    - "The design-system idiom for WarpOS dev-tooling panels — design-lead must ground in gui.js's existing style + any design-system docs before the frontend builder fans out."
+plan_quality:
+  status: pass
+  confidence: high
+  evidence_gaps:
+    - "Exact visual layout deferred to design-lead + design-quality."
+  fail_reasons: []
+next_recommended_command: "/sprint:design --sprint SP-20260615-002 --documentation-scale m"
+resume_instructions: "Product-lead + design-lead author the requirement bundle + visual direction for SP-20260615-002 (the browser GUI roadmap panel) in design; then mint tickets per the five workstreams, build (frontend + backend builders), and run the design-quality/visual-review gauntlet against the running served page before close."
+tracker_paths:
+  current_sprint: ".claude/project/sprint/current-sprint.yaml"
+  sprint_progress: ".claude/project/sprint/sprint-progress.yaml"
+  plan_contract: ".claude/project/sprint/plan-contracts/PC-20260615-0080.yaml"
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260615-0080.report.md"
+created_by: alpha
+updated_by: alpha

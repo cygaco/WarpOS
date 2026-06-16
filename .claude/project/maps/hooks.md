@@ -1,6 +1,6 @@
 # Hooks Map
 
-Generated: 2026-06-15T04:45:17.144Z
+Generated: 2026-06-16T08:32:20.587Z
 
 **77** hook scripts (65 registered, 12 orphan), **18** lib modules, **74** wiring entries.
 

@@ -1,6 +1,6 @@
 # Skills Map
 
-Generated: 2026-06-15T04:45:17.144Z
+Generated: 2026-06-16T08:32:20.587Z
 
 Total: **228** skills across **47** namespaces. 98 user-invocable.
 
@@ -257,7 +257,7 @@ Total: **228** skills across **47** namespaces. 98 user-invocable.
 | list | List every registered panel — the one discoverable entry for "show me a panel". Enumerates framework | 4 | 4 |
 | models | Open the model router — the Dispatch Console GUI (role → provider → model → effort). A thin /panel:* | 2 | 1 |
 | readiness | Open the cross-product launch-readiness board. A thin /panel:* forwarder to the canonical /cockpit:r | 2 | 1 |
-| roadmap | Open the roadmap "what's next" board — ranked next-action + in-flight sprints + blockers, at a glanc | 1 | 1 |
+| roadmap | Open the roadmap "what's next" panel in your BROWSER — an interactive visual board of active sprints | 1 | 1 |
 
 ### paths (6)
 

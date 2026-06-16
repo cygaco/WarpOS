@@ -21,8 +21,8 @@
     },
     "roadmap": {
       "name": "roadmap",
-      "opener": "node scripts/panel/roadmap.js",
-      "description": "Roadmap 'what's next' board — ranked next-action + in-flight sprints + blockers",
+      "opener": "node scripts/panel/roadmap-gui.js",
+      "description": "Roadmap 'what's next' visual panel (browser GUI) — active sprints, prioritized roadmap, epics, per-sprint ticket breakdown; interactive, read-only (--text for the terminal board)",
       "run_context": "cli"
     }
   }

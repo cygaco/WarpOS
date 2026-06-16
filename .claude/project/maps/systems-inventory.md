@@ -1,6 +1,6 @@
 # Systems Inventory (Category Rollup)
 
-Generated: 2026-06-15T04:45:17.144Z
+Generated: 2026-06-16T08:32:20.587Z
 
 | id | name | category | metric |
 |---|---|---|---|

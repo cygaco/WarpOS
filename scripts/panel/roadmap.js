@@ -432,16 +432,324 @@ function readJsonlOpen(file, pick) {
   return { count: items.length, items, absent: false };
 }
 
+// ── Source 5: epics — trackers/epics/*.md ────────────────────────────────────
+/**
+ * parseEpics(root) -> { epics: [{id,title,state,percent,childSprints[]} | {id,parseError}],
+ *                       error?: string, absent?: boolean }
+ *
+ * Walks `trackers/epics/*.md` and extracts, per epic file:
+ *   - id       ← the **Epic label and number:** line (falls back to the filename stem)
+ *   - title    ← the **Title:** line (falls back to the first `# ` heading text)
+ *   - state    ← the `**Current state:**` line value
+ *   - percent  ← the leading number on the `**Percent completion:**` line (null if
+ *                unparseable — NEVER a throw)
+ *   - childSprints ← the bolded ids in the `## Related sprints` list
+ *
+ * Fail-soft, two tiers (AC-R1a / β-4):
+ *   - PER-EPIC try/catch: a single malformed/renamed epic file degrades ONLY that
+ *     epic — it is marked `{ id, parseError }` (kept, not silently vanished) so the
+ *     other epics still render. ONE bad file NEVER blanks the area.
+ *   - The whole-area error (-> caller adds "epics" to sectionsUnavailable[]) fires
+ *     ONLY when the `trackers/epics/` directory itself is unreadable/absent.
+ *   - A present-but-empty directory is a valid empty state (epics: [], NOT an error).
+ */
+function parseEpics(root) {
+  try {
+    const dir = path.join(root, "trackers", "epics");
+    if (!fs.existsSync(dir)) {
+      // A MISSING epics directory degrades the whole area to "section unavailable"
+      // (distinct from a present-but-empty directory, which is a valid empty state).
+      throw new Error("trackers/epics/ not found");
+    }
+    // readdirSync is a READ-ONLY fs verb (the v1 read-only source scan allows it).
+    let names;
+    try {
+      names = fs.readdirSync(dir);
+    } catch (e) {
+      // An unreadable directory (e.g. EACCES / a file where a dir is expected) is a
+      // whole-area degrade — re-thrown to the outer try/catch.
+      throw new Error(`trackers/epics/ unreadable: ${e && e.message ? e.message : e}`);
+    }
+    const files = names
+      .filter((n) => /\.md$/i.test(n))
+      .sort();
+
+    const epics = [];
+    for (const name of files) {
+      const file = path.join(dir, name);
+      try {
+        epics.push(parseOneEpic(file, name));
+      } catch (e) {
+        // PER-EPIC degrade: ONE bad file is marked, never blanks the area.
+        epics.push({
+          id: epicIdFromFilename(name),
+          parseError: e && e.message ? e.message : String(e),
+        });
+      }
+    }
+    return { epics };
+  } catch (e) {
+    return { error: e && e.message ? e.message : String(e) };
+  }
+}
+
+// Derive a stable id from an epic filename stem (e.g.
+// "E-PRODUCT-FOUNDATION-001-product-foundation-seams.md" -> "E-PRODUCT-FOUNDATION-001").
+function epicIdFromFilename(name) {
+  const stem = String(name || "").replace(/\.md$/i, "");
+  const m = /^(E-[A-Z0-9-]*?-\d+)\b/.exec(stem);
+  return m ? m[1] : stem;
+}
+
+// Parse ONE epic file into { id, title, state, percent, childSprints[] }. Throws on
+// a genuinely unreadable/malformed file so the caller marks just that epic.
+function parseOneEpic(file, name) {
+  const text = fs.readFileSync(file, "utf8");
+  // A corrupt binary blob is a per-epic malformation.
+  if (text.indexOf(NUL) !== -1) {
+    throw new Error("epic file contains NUL bytes (corrupt)");
+  }
+  const lines = text.split(/\r?\n/);
+
+  // id ← `**Epic label and number:**`, else the filename stem.
+  const idLine = matchBoldField(lines, "Epic label and number");
+  const id = (idLine && idLine.trim()) || epicIdFromFilename(name);
+
+  // title ← `**Title:**`, else the first `# ` heading text, else the id.
+  let title = matchBoldField(lines, "Title");
+  if (!title) {
+    for (const ln of lines) {
+      const h = /^#\s+(.*\S)\s*$/.exec(ln);
+      if (h) {
+        title = h[1].trim();
+        break;
+      }
+    }
+  }
+  title = (title && title.trim()) || id;
+
+  // state ← `**Current state:**` (load-bearing — its absence is a per-epic error).
+  const state = matchBoldField(lines, "Current state");
+  if (!state || !state.trim()) {
+    throw new Error("no `**Current state:**` line (renamed/removed)");
+  }
+  // Some epics' `**Current state:**` line runs on into a narrative paragraph; the
+  // displayable/colorable STATE is just the leading token (e.g. "Active — EXECUTION
+  // session 3 …" -> "Active"). Cut at the first narrative separator (spaced em/en-dash
+  // or spaced hyphen, sentence-end, or newline) and cap length, so the epic card shows a
+  // tidy status label AND the status-group→color mapping matches a known state keyword.
+  const stateLabel = epicStateLabel(state);
+
+  // percent ← leading number on `**Percent completion:**`. NEVER throws: an
+  // unparseable/absent value degrades to null (evidence-over-invention).
+  const percent = parsePercent(matchBoldField(lines, "Percent completion"));
+
+  const childSprints = parseRelatedSprints(lines);
+
+  return { id: id.trim(), title, state: stateLabel, percent, childSprints };
+}
+
+// epicStateLabel(raw) -> the leading status token of a `**Current state:**` value.
+// Epic state lines sometimes run on into a paragraph; the label is the part before the
+// first narrative separator (spaced em/en-dash or hyphen, sentence-end, or newline),
+// length-capped. Pure + total: a short token passes through unchanged.
+function epicStateLabel(raw) {
+  let s = String(raw || "").trim();
+  const cut = s.search(/\s[—–-]\s|\.\s|\n/);
+  if (cut !== -1) s = s.slice(0, cut).trim();
+  if (s.length > 60) s = s.slice(0, 57).trimEnd() + "…";
+  return s;
+}
+
+/**
+ * matchBoldField(lines, label) -> string | null
+ * Finds a `- **<label>:** <value>` (or `**<label>:** <value>`) line and returns
+ * the trimmed value. Tolerant of a leading list bullet and surrounding whitespace.
+ */
+function matchBoldField(lines, label) {
+  const esc = label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const re = new RegExp(`^\\s*(?:[-*]\\s*)?\\*\\*\\s*${esc}\\s*:\\*\\*\\s*(.*)$`, "i");
+  for (const ln of lines) {
+    const m = re.exec(ln);
+    if (m) return m[1].trim();
+  }
+  return null;
+}
+
+/**
+ * parsePercent(value) -> number | null
+ * Extracts the FIRST number from a percent-completion value (e.g. "~99% — …" -> 99,
+ * "0% — …" -> 0, "100%" -> 100). Returns null when no number is present — never
+ * throws, never invents a value.
+ */
+function parsePercent(value) {
+  if (value == null) return null;
+  const m = /(\d+(?:\.\d+)?)/.exec(String(value));
+  if (!m) return null;
+  const n = Number(m[1]);
+  return Number.isFinite(n) ? n : null;
+}
+
+/**
+ * parseRelatedSprints(lines) -> [id, …]
+ * Collects the sprint ids listed under the `## Related sprints` heading. Each row is
+ * a list item whose id is the FIRST bolded token (e.g. `- **S-PF-01** — …`); rows
+ * with a plain leading token (e.g. `- SP-20260512-001 — …`) are also tolerated. A
+ * "None currently recorded." placeholder yields an empty list. Stops at the next
+ * `##`/`#` heading. Never throws (an absent section is just an empty list).
+ */
+function parseRelatedSprints(lines) {
+  let i = 0;
+  for (; i < lines.length; i++) {
+    if (/^##\s+Related sprints\s*$/i.test(lines[i].trim())) break;
+  }
+  if (i >= lines.length) return [];
+
+  const ids = [];
+  for (let j = i + 1; j < lines.length; j++) {
+    const ln = lines[j];
+    if (/^#{1,2}\s+\S/.test(ln)) break; // next heading terminates the section
+    const trimmed = ln.trim();
+    if (!trimmed) continue;
+    if (/^[-*]\s+/.test(trimmed)) {
+      const body = trimmed.replace(/^[-*]\s+/, "");
+      // Prefer the first **bolded** token; else the first whitespace-delimited token.
+      const bold = /^\*\*\s*([^*]+?)\s*\*\*/.exec(body);
+      const tokenSrc = bold ? bold[1] : body.split(/\s+/)[0];
+      const id = (tokenSrc || "").trim();
+      if (id && !/^none\b/i.test(id)) ids.push(id);
+    }
+  }
+  return ids;
+}
+
+// ── Source 6: per-sprint ticket breakdown — sprints/<id>/current.yaml ─────────
+/**
+ * parseSprintBreakdown(root, sprintIds) -> { byId: { <id>: <breakdown> } }
+ *
+ * For each in-flight sprint id, read `.claude/project/sprint/sprints/<id>/current.yaml`
+ * and derive the ticket breakdown from its `tickets:` state-column map:
+ *   { id, byState: { done[], in_progress[], in_review[], blocked[], … },
+ *     counts: { <state>: n, … }, total }
+ *
+ * Fail-soft PER SPRINT (AC-R1b / β-4): a missing/unparseable record degrades to
+ *   { id, breakdownUnavailable: true, reason }
+ * for THAT one sprint — it never throws and never blanks the other sprints. There
+ * is no whole-area error: an empty id list simply yields an empty map.
+ */
+function parseSprintBreakdown(root, sprintIds) {
+  const byId = {};
+  const ids = Array.isArray(sprintIds) ? sprintIds : [];
+  for (const id of ids) {
+    if (!id) continue;
+    try {
+      const file = path.join(
+        root,
+        ".claude",
+        "project",
+        "sprint",
+        "sprints",
+        id,
+        "current.yaml",
+      );
+      if (!fs.existsSync(file)) {
+        byId[id] = { id, breakdownUnavailable: true, reason: "current.yaml not found" };
+        continue;
+      }
+      const text = fs.readFileSync(file, "utf8");
+      if (text.indexOf(NUL) !== -1) {
+        byId[id] = { id, breakdownUnavailable: true, reason: "current.yaml contains NUL bytes (corrupt)" };
+        continue;
+      }
+      byId[id] = parseTicketsMap(id, text);
+    } catch (e) {
+      byId[id] = {
+        id,
+        breakdownUnavailable: true,
+        reason: e && e.message ? e.message : String(e),
+      };
+    }
+  }
+  return { byId };
+}
+
+/**
+ * parseTicketsMap(id, text) -> { id, byState, counts, total }
+ * Minimal dependency-free reader of the `tickets:` block in a current.yaml: each
+ * state key (`done:`/`in_progress:`/…) maps to either an inline `[]` (empty) or a
+ * following indented `- <ticket>` list. Throws (caught per-sprint) on a structurally
+ * corrupt YAML the line scanner would otherwise mis-read.
+ */
+function parseTicketsMap(id, text) {
+  // Reuse the structural guard so a corrupt record degrades that sprint, rather
+  // than silently parsing to an empty breakdown.
+  assertYamlNotCorrupt(text);
+
+  const lines = text.split(/\r?\n/);
+  // Locate the top-level `tickets:` key (no leading indent).
+  let start = -1;
+  let ticketsIndent = 0;
+  for (let i = 0; i < lines.length; i++) {
+    const m = /^(\s*)tickets:\s*$/.exec(lines[i]);
+    if (m) {
+      start = i;
+      ticketsIndent = m[1].length;
+      break;
+    }
+  }
+  if (start === -1) {
+    throw new Error("no `tickets:` block in current.yaml");
+  }
+
+  const byState = {};
+  let curState = null;
+  for (let i = start + 1; i < lines.length; i++) {
+    const raw = lines[i];
+    if (!raw.trim()) continue;
+    const indent = raw.length - raw.replace(/^\s+/, "").length;
+    // A sibling/parent key at or below `tickets:` indent ends the block.
+    if (indent <= ticketsIndent && /^\s*\S/.test(raw)) break;
+
+    // A `  <state>:` key (optionally with an inline `[]`).
+    const keyM = /^\s*([A-Za-z_][\w-]*):\s*(\[\s*\])?\s*$/.exec(raw);
+    if (keyM && indent === ticketsIndent + 2) {
+      curState = keyM[1];
+      byState[curState] = [];
+      continue;
+    }
+    // A `    - <ticket>` list item belongs to the current state column.
+    const itemM = /^\s*-\s*(.+?)\s*$/.exec(raw);
+    if (itemM && curState && indent > ticketsIndent + 2) {
+      byState[curState].push(stripYamlScalar(itemM[1]));
+      continue;
+    }
+  }
+
+  const counts = {};
+  let total = 0;
+  for (const k of Object.keys(byState)) {
+    counts[k] = byState[k].length;
+    total += byState[k].length;
+  }
+  return { id, byState, counts, total };
+}
+
 // ── Board assembly ───────────────────────────────────────────────────────────
 
 function buildBoard(root) {
+  const active = parseActiveSprints(root);
+  // The set of in-flight sprint ids the v1 board already computes — sprintBreakdown
+  // keys on exactly this set (AC-R1b), so the two areas stay consistent.
+  const inFlightIds = active.error ? [] : inFlight(active.sprints).map((s) => s.id);
   return {
     root,
     generatedAt: new Date().toISOString(),
     roadmap: parseRoadmap(root),
     tracker: parseTracker(root),
-    active: parseActiveSprints(root),
+    active,
     gaps: parseGaps(root),
+    epics: parseEpics(root),
+    sprintBreakdown: parseSprintBreakdown(root, inFlightIds),
   };
 }
 
@@ -578,11 +886,23 @@ function toJsonSummary(b) {
           recurringIssuesOpen: b.gaps.issues.count,
         },
     gapsAvailable: !b.gaps.error,
+    // ── NEW area: epics (AC-R1a) ──────────────────────────────────────────────
+    // A whole-area error -> []; otherwise the per-epic array (which may itself carry
+    // {parseError} markers for individually-bad files, never blanking the area).
+    epics: b.epics.error ? [] : b.epics.epics,
+    epicsAvailable: !b.epics.error,
+    // ── NEW area: sprintBreakdown (AC-R1b) ────────────────────────────────────
+    // Per-in-flight-sprint ticket breakdown map (each entry may be a healthy
+    // breakdown or a {breakdownUnavailable} marker for that one sprint).
+    sprintBreakdown: b.sprintBreakdown.byId,
     sectionsUnavailable: [
       b.tracker.error ? "nextAction" : null,
       b.roadmap.error ? "ranked" : null,
       b.active.error ? "inFlight" : null,
       b.gaps.error ? "gaps" : null,
+      // "epics" is added ONLY when the whole trackers/epics/ area is
+      // unreadable/absent — a single bad epic file does NOT add it (AC-R1a).
+      b.epics.error ? "epics" : null,
     ].filter(Boolean),
   };
 }
@@ -637,6 +957,8 @@ module.exports = {
   parseTracker,
   parseActiveSprints,
   parseGaps,
+  parseEpics,
+  parseSprintBreakdown,
   inFlight,
   isActivelyExecuting,
   isStalePlanning,

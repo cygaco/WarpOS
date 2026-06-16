@@ -1,0 +1,126 @@
+schema: warpos/sprint/current-sprint/v1
+id: SP-20260615-002
+title: "Visual interactive roadmap panel — browser GUI (ROADMAP item 25, redone)"
+objective: "Deliver the polished, interactive, BROWSER-based visual roadmap/portfolio panel the operator explicitly asked for: /panel:roadmap opens a nice-looking GUI in the browser (gui.js serve+open pattern) showing active sprints, the roadmap, epics, and per-sprint ticket breakdown — view/filter/drill, read-only."
+status: done
+close_note: "Engine-sprint fast-close (RI-001): visual interactive browser roadmap panel. All 5 WS tickets done; SP-002 suite 16/16 + epic-state-cap fix; design-quality/visual-review gauntlet VISUAL=PASS AREAS=4/4 CONSOLE_ERRORS=0 (real headless Chrome via CDP, epic bars state-driven confirmed). /panel:roadmap rewired to the GUI (--text -> v1 board). Retro deferred to milestone close. ff-merged to main."
+created_at: "2026-06-15T16:17:41.829Z"
+updated_at: "2026-06-15T17:15:26.976Z"
+source_request: "Operator: the v1 text board was a mistake — they explicitly asked for a NICE VISUAL, INTERACTIVE panel. Build it via /sprint:full. Must show ongoing sprints, the roadmap, epics, and sprint breakdown."
+interpreted_intent: "Replace the v1 text-only /panel:roadmap with a real browser GUI panel (like /models:router's Dispatch Console): visually polished + interactive, surfacing the four data areas the operator named so they can SEE the portfolio state at a glance and drill in."
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260615-0080.yaml"
+risk_level: medium
+approval_state: none_required
+current_phase: design
+recommended_mode: sprint
+mode_invocation_required_by_user: true
+external_services:
+  identified: []
+  blocked: []
+  ready: []
+  mocked: []
+  deferred: []
+tickets:
+  proposed: []
+  planned: []
+  designed: []
+  ready_for_execution: []
+  in_progress: []
+  blocked: []
+  waiting_on_human: []
+  waiting_on_external_service: []
+  in_review: []
+  qa_failed: []
+  redteam_failed: []
+  done:
+    - T-20260615-348
+    - T-20260615-349
+    - T-20260615-350
+    - T-20260615-351
+    - T-20260615-352
+  released: []
+  deferred: []
+  abandoned: []
+  reopened: []
+  superseded: []
+requirements:
+  prd: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260615-002\\prd.md"
+  high_level_stories: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260615-002\\high-level-stories.md"
+  granular_stories: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260615-002\\granular-stories.md"
+  copy: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260615-002\\copy.md"
+  inputs: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260615-002\\inputs.md"
+  trace: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260615-002\\trace.md"
+  acceptance_criteria: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260615-002\\acceptance-criteria.md"
+  qa_plan: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260615-002\\qa-plan.md"
+  redteam_plan: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260615-002\\redteam-plan.md"
+  release_plan: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260615-002\\release-plan.md"
+checks:
+  lint:
+    status: not_run
+    last_run: null
+    evidence: ""
+  typecheck:
+    status: not_run
+    last_run: null
+    evidence: ""
+  tests:
+    status: not_run
+    last_run: null
+    evidence: ""
+  build:
+    status: not_run
+    last_run: null
+    evidence: ""
+  qa:
+    status: not_run
+    last_run: null
+    evidence: ""
+  redteam:
+    status: not_run
+    last_run: null
+    evidence: ""
+approvals:
+  plan:
+    required: false
+    state: not_required
+    ref: null
+  design:
+    required: false
+    state: not_required
+    ref: null
+  execution:
+    required: false
+    state: not_required
+    ref: null
+  release:
+    required: false
+    state: not_required
+    ref: null
+  external_services:
+    required: false
+    state: not_required
+    ref: null
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260615-0080.report.md"
+  design: null
+  execution: null
+  release: null
+ralph:
+  active: false
+  current_ticket: null
+  current_loop: null
+  status: idle
+  last_checkpoint: null
+  next_action: null
+crash_recovery:
+  last_checkpoint: ".claude/project/sprint/sprint-progress.yaml"
+  resume_command: "/sprint:design"
+  resume_summary: "Sprint SP-20260615-002 design scaffolded (scale=m). Next: mint tickets from granular-stories, then run /sprint:execute."
+  active_files: []
+  dirty_state: false
+  blockers: []
+  safe_to_continue: true
+lane:
+  type: branch
+  value: session/2026-06-15
+  isolation_notes: "Engine/tooling sprint on the active session branch; fast-close (ff-merge to main) per RI-001. Supersedes the v1 text board (SP-20260615-001) as item 25's real deliverable."

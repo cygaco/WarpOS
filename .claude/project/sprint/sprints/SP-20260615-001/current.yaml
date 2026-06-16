@@ -4,7 +4,7 @@ title: "Panel namespace + roadmap panel (ROADMAP items 23+25)"
 objective: "Ship ONE discoverable panel-opener verb (/panel:*) that forwards to every existing panel via a single registry, plus a read-only roadmap 'what's next' board (/panel:roadmap) sourced from the live truth, with a fail-closed coverage enforcer so a registry row can never point at a dead opener."
 status: done
 created_at: "2026-06-15T03:50:11.558Z"
-updated_at: "2026-06-15T04:19:36.075Z"
+updated_at: "2026-06-15T16:30:37.718Z"
 close_note: "Engine-sprint fast-close (RI-001): all 6 tickets done, 16/16 regression green, cross-family gauntlet FAIL->PASS (5 blockers fixed + re-review PASS), manifests+maps regenerated. Retro deferred to milestone close. ff-merged to main."
 source_request: "Build the /panel:* unified panel-opener namespace (item 23) + the roadmap panel/visualization (item 25), co-owned: /panel:roadmap is the roadmap panel's opener."
 interpreted_intent: "Stop the operator having to remember which namespace each panel lives under (or ask 'what's next'): one /panel: verb opens any registered panel, and /panel:roadmap renders the ranked next-action + in-flight + blocked at a glance from the files that are already the source of truth."
