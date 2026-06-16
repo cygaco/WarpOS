@@ -404,19 +404,23 @@ function dispatchSkill(opts) {
   // mirroring dispatch-claude.js which also passes its prompt only on stdin.
   const claudeArgs = [...prefixArgs, "-p", "--agent", "general-purpose"];
 
-  // ── Shape-resolver self-detection (W2-core, report-only-PINNED) ──────────────
-  // dispatch-skill spawns `claude -p --agent general-purpose` (real transport =
-  // subprocess-claude) to run a skill. The resolver routes {kind:skill} to `inline`
-  // (skills are not earned-subprocess — §13.6/§13.7), so an ENFORCE gate here would
-  // false-refuse EVERY skill dispatch. Until the resolver gains a `subprocess-skill`
-  // shape (logged enforcement-debt ED-057), this wrapper is PINNED report-only: it
-  // surfaces the advisory but NEVER refuses (reportOnlyPin beats WARPOS_SHAPE_DOOR).
+  // ── Shape-resolver self-detection (W2-core; subprocess-skill shape = ED-057) ──
+  // dispatch-skill spawns `claude -p --agent general-purpose` (real transport) to run a
+  // skill — its OWN shape is `subprocess-skill` (ED-057 added this to the resolver SHAPES
+  // set + resolveSkill now returns it for an EARNED subprocess skill, distinct from a
+  // build-chain `subprocess-claude`). So a VERIFIED skill run here MATCHES the resolver
+  // (clean); an UNEARNED skill resolves to `inline` (proven:false) → a high-severity
+  // advisory here. The wrapper stays report-only-PINNED: lifting the pin (so an enforce
+  // gate REFUSES an unearned skill-subprocess) is gated on the §13.6/§13.7 earn-it loop
+  // stamping the heavy-by-design skills (scan:full/research:deep/…) — until they're
+  // stamped, an enforce gate would false-refuse them. Pin beats WARPOS_SHAPE_DOOR; the
+  // advisory always surfaces. The record (below) already stamps shape:"subprocess-skill".
   try {
     const { shapeDoor } = require("./dispatch/dispatch-shape");
-    const door = shapeDoor("subprocess-claude", { kind: "skill", id: skill }, process.env, { reportOnlyPin: true });
+    const door = shapeDoor("subprocess-skill", { kind: "skill", id: skill }, process.env, { reportOnlyPin: true });
     if (door.mismatch && door.mismatch.mismatch && !door.suppressed) {
       process.stderr.write(
-        `[dispatch-skill] shape-resolver advisory (report-only-pinned): skill '${skill}' dispatched as subprocess but the resolver picks '${door.mismatch.expected}' (${door.mismatch.expectedReason || door.mismatch.reason}). Enforce-for-skills is blocked on a resolver 'subprocess-skill' shape — see ED-057.\n`,
+        `[dispatch-skill] shape-resolver advisory (report-only-pinned): skill '${skill}' run as subprocess-skill but the resolver picks '${door.mismatch.expected}' (${door.mismatch.expectedReason || door.mismatch.reason}). Pin lifts once the §13.6/§13.7 earn-it loop stamps the heavy-by-design skills — see ED-057 (shape) + Wave-D earn-it.\n`,
       );
     }
   } catch {

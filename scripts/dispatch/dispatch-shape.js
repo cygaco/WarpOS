@@ -56,6 +56,7 @@ const SHAPES = new Set([
   "inline",
   "in-process-agent",
   "subprocess-claude",
+  "subprocess-skill",
   "subprocess-cross-provider",
   "api",
 ]);
@@ -161,7 +162,7 @@ function resolveSkill(id, signals) {
     // DECISION explicit + carry the `proven` signal so the caller never silently
     // runs an unproven subprocess.
     if (verified === true) {
-      return res("subprocess-claude", true, `skill '${id}' is subprocess + verified (earned §13.6+§13.7)`, "skill-registry", { kind: "skill", id });
+      return res("subprocess-skill", true, `skill '${id}' is subprocess + verified (earned §13.6+§13.7)`, "skill-registry", { kind: "skill", id });
     }
     return res("inline", false, `skill '${id}' is a SUBPROCESS CANDIDATE but NOT yet earned (verified=${verified}) — run inline until §13.6 ping + §13.7 measurement stamp it (fail-closed)`, "skill-registry-failclosed", { kind: "skill", id });
   }

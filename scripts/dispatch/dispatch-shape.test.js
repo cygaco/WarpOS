@@ -103,7 +103,7 @@ test("skill: a VERIFIED subprocess skill → subprocess-claude, proven=true (ear
     () => ({ skill: "fixture:earned", execution: "subprocess", verified: true, source: "candidate" }),
     () => {
       const r = resolveSkill("fixture:earned");
-      assert.strictEqual(r.shape, "subprocess-claude", `proven subprocess skill must route subprocess, got ${JSON.stringify(r)}`);
+      assert.strictEqual(r.shape, "subprocess-skill", `proven subprocess skill must route subprocess-skill (ED-057), got ${JSON.stringify(r)}`);
       assert.strictEqual(r.proven, true);
     },
   );
