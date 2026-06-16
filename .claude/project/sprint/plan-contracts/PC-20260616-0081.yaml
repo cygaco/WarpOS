@@ -1,0 +1,145 @@
+schema: warpos/sprint/plan-contract/v1
+id: PC-20260616-0081
+created_at: "2026-06-16T18:29:40.522Z"
+updated_at: "2026-06-16T18:29:40.522Z"
+sprint: SP-20260616-001
+source_request: "E-DISPATCH-SHAPE-001 W2-core, SAFE report-only slice: extend dispatch-skill.js + epsilon-runtime.js to consult dispatch-shape.js#shapeMismatch report-only (dispatch-agent.js + dispatch-claude.js already do); add the per-wrapper WARPOS_SHAPE_DOOR env-gate + kill-switch scaffolding across all 4; planted tests for both modes; cross-provider gauntlet required (W2 is high-blast)."
+source_request_verbatim: "Operator autonomous mandate 2026-06-16 (/session:resume --turbo /mode:sprint): finish current goals + bust out the roadmap via /sprint:full, dispatch agents correctly. Item #1 = E-DISPATCH-SHAPE-001 W2 core (the wrapper enforce-flip), per DUMP.md + TRACKER.md operator-named pickup. The fix-first resolver-weakness prerequisite landed 2026-06-16 @2662b9b0, so W2-core is unblocked; this slice is the SAFE report-only first step of the per-wrapper report-only->enforce ramp."
+request_type: feature_add
+interpreted_intent: "Make the shape resolver (dispatch-shape.js#resolveShape/shapeMismatch) consulted at the spawn point of ALL four dispatch entry points — not just two — so a role routed through the wrong wrapper self-detects on a real dispatch. Introduce a single per-wrapper door convention (WARPOS_SHAPE_DOOR=report|enforce, default report) plus a global kill-switch so the eventual enforce flip is a one-env-flip per wrapper, ramped, never a big bang. Everything ships report-only; the enforce path exists, is tested, but is dormant by default."
+user_or_business_outcome: "Every dispatch path (skill, epsilon-runtime, agent, claude) gains a uniform, kill-switchable self-detection seam for wrong-shape routing, closing the W2-core parity gap on the Master Console critical path while keeping operational behavior byte-identical until an operator-gated per-wrapper enforce flip."
+affected_surfaces:
+  - surface: scripts/dispatch-skill.js
+    evidence_level: verified_from_repo
+    notes: "Verified 0 shape refs (grep). Owns the subprocess-skill shape. Add shapeMismatch consultation at spawn, gated by the new WARPOS_SHAPE_DOOR door (report-only default)."
+  - surface: scripts/sprint/epsilon-runtime.js
+    evidence_level: verified_from_repo
+    notes: "Verified 0 shape refs (grep). The ADR-0009 dispatch runtime; spawns subprocess-claude builders + subprocess-cross-provider reviewers. Add shapeMismatch consultation at the spawn point for the role it routes, door-gated."
+  - surface: scripts/dispatch-agent.js
+    evidence_level: verified_from_repo
+    notes: "Already consults shapeMismatch report-only (line ~559, keyed subprocess-cross-provider, gated by WARPOS_DISPATCH_CONTRACT_ENFORCE=block). Migrate/augment to the unified WARPOS_SHAPE_DOOR door so all 4 share one convention; preserve existing behavior."
+  - surface: scripts/dispatch-claude.js
+    evidence_level: verified_from_repo
+    notes: "Already consults shapeMismatch report-only (line ~458, keyed subprocess-claude, with sanctioned-lane suppression). Migrate/augment to the unified door; preserve the --review-fallback sanctioned-lane suppression."
+  - surface: scripts/dispatch/dispatch-shape.js
+    evidence_level: verified_from_repo
+    notes: "The live resolver (resolveShape/shapeMismatch). Add a single shared shapeDoor(wrapperShape, unit, env) helper so the gate logic (report vs enforce vs kill-switch, severity, named-reason exit 2, fail-open) lives in ONE place instead of being copy-pasted into 4 callers."
+  - surface: scripts/dispatch/dispatch-shape.test.js
+    evidence_level: verified_from_repo
+    notes: "Existing resolver test (31/31). Extend with planted shapeDoor tests for both modes + kill-switch + fail-open."
+current_behavior:
+  evidence_level: verified_from_repo
+  notes: "Only dispatch-agent.js and dispatch-claude.js consult the shape resolver, both report-only gated by WARPOS_DISPATCH_CONTRACT_ENFORCE=block (a global, not per-wrapper, switch). dispatch-skill.js and epsilon-runtime.js do not consult the resolver at all (0 refs). There is no per-wrapper door, no kill-switch, and no enforce-mode planted test. The resolver's unknown-role distinguishing-signal weakness was fixed 2026-06-16 @2662b9b0."
+desired_behavior: "All four entry points consult dispatch-shape.js#shapeMismatch at their spawn point through one shared shapeDoor() helper. The door reads WARPOS_SHAPE_DOOR (report|enforce, default report) — optionally per-wrapper-overridable — and WARPOS_DISABLE_SHAPE_DOOR (kill-switch, forces report regardless). In report mode a mismatch logs an advisory and proceeds (exit unaffected). In enforce mode a high-severity mismatch refuses with exit 2 and a named reason. Any resolver error fails OPEN (advisory, never blocks). Default ships report-only across all four; no wrapper is enforce-by-default. Planted tests assert: report=>advisory+proceed, enforce=>refuse exit 2, kill-switch=>forces report even under enforce, resolver-error=>fail-open."
+scope:
+  size: m
+  risk_level: medium
+  complexity_drivers:
+    - "Four shared dispatch entry points; every dispatch flows through these (HIGH structural blast)."
+    - "Actual operational risk is LOW because the default is report-only — behavior is byte-identical until an operator-gated enforce flip."
+    - "The two already-consulting wrappers must migrate to the unified door WITHOUT regressing their existing suppression logic (claude --review-fallback sanctioned lane)."
+    - "The enforce path must be real and tested even though dormant, so the eventual flip is a one-env change, not new code."
+    - "epsilon-runtime is a node subprocess spawned in many contexts (sprint dispatch) — its consultation must be at the right spawn point and fail-open."
+scope_variants:
+  minimal_safe:
+    summary: "Only add report-only shapeMismatch consultation to dispatch-skill.js + epsilon-runtime.js; leave the existing two wrappers' WARPOS_DISPATCH_CONTRACT_ENFORCE gate as-is."
+    tradeoffs:
+      - "Leaves two gate conventions (old WARPOS_DISPATCH_CONTRACT_ENFORCE + new), so the eventual enforce ramp is non-uniform."
+      - "No kill-switch, no enforce-mode planted test — the flip would still need new code later."
+  recommended:
+    summary: "Add consultation to the two missing wrappers AND unify all four under one shared shapeDoor() helper with WARPOS_SHAPE_DOOR + WARPOS_DISABLE_SHAPE_DOOR, with planted tests for both modes + kill-switch + fail-open. Ship report-only."
+    tradeoffs:
+      - "Touches all four wrappers (higher review surface), mitigated by report-only default + the shared helper keeping logic in one place + a mandated cross-provider gauntlet."
+  expanded:
+    summary: "Recommended plus flipping dispatch-skill (the lowest-blast wrapper) to enforce-by-default as the first ramp step."
+    tradeoffs:
+      - "Rejected for this slice: any enforce-by-default flip is operator-gated and requires one clean sprint of advisory-noise-zero evidence per the plan ramp (12.1)."
+assumptions:
+  safe:
+    - "dispatch-shape.js#shapeMismatch is the correct authority and its unknown-role weakness is already fixed (@2662b9b0)."
+    - "Report-only default means no operational behavior change, so this slice is low ACTUAL risk despite the high-blast surface."
+    - The existing dispatch-agent/dispatch-claude consultation can be migrated to the unified door while preserving their current report-only outcome and the claude sanctioned-lane suppression.
+  unsafe: []
+  needs_user_or_beta_review:
+    - "Whether the door var is a single global WARPOS_SHAPE_DOOR or per-wrapper (WARPOS_SHAPE_DOOR_SKILL etc.) — the plan says per-wrapper ramp; design must pick the mechanism (recommend: single var + optional per-wrapper override key)."
+    - "Whether to retire WARPOS_DISPATCH_CONTRACT_ENFORCE=block in favor of the new door, or keep both for back-compat (recommend: keep both, door wins, log a deprecation note)."
+open_questions:
+  blocking: []
+  non_blocking:
+    - "Exact spawn-point insertion in epsilon-runtime (before the dispatch-claude/dispatch-agent shell-out vs inside the route resolution) — ground during design from the runtime's conduct path."
+    - "Whether design-quality/visual lanes are in scope (they are in-process Agent-tool, not subprocess wrappers) — out of scope for this slice."
+non_goals:
+  - "Do NOT flip any wrapper to enforce-by-default — the per-wrapper report->enforce flip is operator-gated and needs one clean advisory-noise-zero sprint each (plan 12.1)."
+  - "Do NOT change the resolver's shape decisions (the fix-first prerequisite already landed @2662b9b0)."
+  - "No dispatch-contract ENFORCE flip (W2 component 2 — separate, evidence-gated)."
+  - "No route-guard repoint (W2 component 3 — separate)."
+  - "No envelope ADR / generic-validator bury (W2 component 4 / ADR-0012 — separate)."
+  - "No push to remote inside the orchestrator (hard ceiling); the operator separately authorized post-sprint push/merge to main this session."
+requirement_areas:
+  - "R-1 dispatch-skill consultation: dispatch-skill.js consults dispatch-shape.js#shapeMismatch for the subprocess-skill shape at spawn, through the shared door, report-only by default, fail-open on resolver error"
+  - "R-2 epsilon-runtime consultation: epsilon-runtime.js consults shapeMismatch at its role spawn point for the shape it routes (subprocess-claude / subprocess-cross-provider), through the shared door, report-only, fail-open"
+  - "R-3 unified shape-door: a single shapeDoor() helper in dispatch-shape.js implements WARPOS_SHAPE_DOOR=report|enforce (default report) + WARPOS_DISABLE_SHAPE_DOOR kill-switch (forces report) + enforce-mode high-severity refusal (exit 2, named reason) + fail-open; all four wrappers route their consultation through it; dispatch-agent/dispatch-claude migrate without regressing existing behavior"
+  - "R-4 planted tests both modes: per-mode planted-violation tests assert report=>advisory+proceed(exit0), enforce=>refuse(exit2), kill-switch=>forces report under enforce, resolver-error=>fail-open; extend dispatch-shape.test.js and add per-wrapper coverage"
+  - "R-5 contract documentation: document the door convention + kill-switch + per-wrapper ramp in the dispatch guide (paths.agentDispatchGuide) + epsilon.md so callers know the contract (pair the transport-level seam with a referenced dispatch-contract rule, per CLAUDE.md lib-only-fix lesson)"
+high_level_story_candidates:
+  - "As the dispatch substrate, every entry point self-detects wrong-shape routing on a real dispatch, not just two of four"
+  - "As the operator, I can flip any single wrapper from report to enforce with one env var, and kill the whole door instantly if it false-refuses"
+  - "As a reviewer, I can see the enforce path is real and tested even though it ships dormant"
+granular_story_candidates:
+  - "Add the shared shapeDoor() helper to dispatch-shape.js with report/enforce/kill-switch/fail-open semantics"
+  - "Wire dispatch-skill.js to consult through the door (subprocess-skill shape)"
+  - Wire epsilon-runtime.js to consult through the door at its spawn point
+  - "Migrate dispatch-agent.js + dispatch-claude.js to the door, preserving current report-only + sanctioned-lane behavior"
+  - "Add planted-violation tests for both modes + kill-switch + fail-open"
+  - "Document the door + ramp + kill-switch in the dispatch guide and epsilon.md"
+workstream_candidates:
+  - "WS-1 shared door helper + resolver tests (dispatch-shape.js + dispatch-shape.test.js)"
+  - "WS-2 the two missing wrappers (dispatch-skill.js + epsilon-runtime.js) consult through the door"
+  - "WS-3 migrate the two existing wrappers (dispatch-agent.js + dispatch-claude.js) to the door without regression"
+  - "WS-4 contract docs (dispatch guide + epsilon.md) + per-wrapper planted tests"
+preliminary_ticket_candidates:
+  allowed: false
+  candidates: []
+  notes: "Tickets minted after the requirement bundle is populated; expected tickets map to the four workstreams."
+external_service_dependencies:
+  status: none_expected
+  required: []
+  possible: []
+  notes: "Pure internal dispatch-substrate change. The cross-provider gauntlet uses already-live providers (GPT via codex OAuth, gemini); no new signup, key, or billing."
+approval_boundaries:
+  - "Do not flip any wrapper to enforce-by-default (operator-gated per-wrapper ramp)."
+  - All four entry points ship report-only by default.
+  - "Do not retire WARPOS_DISPATCH_CONTRACT_ENFORCE without a back-compat path + deprecation note."
+  - "Push/merge to main happens post-sprint under the operator's explicit this-session authorization, never inside the orchestrator."
+design_required: true
+execution_allowed_without_design: false
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+lane:
+  type: branch
+  value: session/2026-06-16-3
+  isolation_notes: "Sprint executes on the current session branch; commits land here then ff-merge to main per the operator's this-session push/merge authorization."
+beta_review:
+  required: true
+  likely_founder_rejection_risks: []
+  overbuild_risks:
+    - "Per-wrapper env vars when a single var + override key would do — keep the mechanism minimal."
+    - "Building enforce-mode UX beyond a one-env flip — the dormant enforce path should be the smallest real thing that tests pass against."
+  missing_context_risks:
+    - Exact epsilon-runtime spawn-point insertion must be grounded from the conduct path during design.
+plan_quality:
+  status: pass
+  confidence: high
+  evidence_gaps:
+    - epsilon-runtime spawn-point insertion location to be grounded during design.
+  fail_reasons: []
+next_recommended_command: "/sprint:design --sprint SP-20260616-001 --documentation-scale s"
+resume_instructions: "Read _planning/epics/E-DISPATCH-SHAPE-001.md (section 12 W2 design prep) + trackers/epics/E-DISPATCH-SHAPE-001-dispatch-shape-decision-spine.md. Then run /sprint:design for SP-20260616-001, populate the requirement bundle from R-1..R-5, and dispatch qa-reviewer traceability before execution."
+tracker_paths:
+  current_sprint: ".claude/project/sprint/current-sprint.yaml"
+  sprint_progress: ".claude/project/sprint/sprint-progress.yaml"
+  plan_contract: ".claude/project/sprint/plan-contracts/PC-20260616-0081.yaml"
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260616-0081.report.md"
+created_by: alpha
+updated_by: alpha

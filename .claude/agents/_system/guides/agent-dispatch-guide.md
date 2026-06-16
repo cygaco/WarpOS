@@ -456,6 +456,48 @@ on every cold start.
 
 ---
 
+## §16.9 — Shape-door self-detection (W2-core, `WARPOS_SHAPE_DOOR`)
+
+Every dispatch entry point consults the LIVE shape resolver
+(`scripts/dispatch/dispatch-shape.js#shapeDoor`) at spawn — the ONE shared gate so a
+role routed through the WRONG wrapper self-detects on a REAL dispatch. **Ships
+report-only; no wrapper enforces by default** (the per-wrapper report→enforce flip is
+operator-gated — that's the whole point of the W2 ramp).
+
+**Toggles** (read from the process env):
+
+| Var | Values | Effect |
+|---|---|---|
+| `WARPOS_SHAPE_DOOR` | `report` \| `enforce` | The shape-enforce authority. Default `report` (advisory only). `enforce` REFUSES a high-severity mismatch (exit **2**, named reason). |
+| `WARPOS_DISABLE_SHAPE_DOOR` | `1`/`true`/`yes` | KILL-SWITCH — forces report, beats `enforce` unconditionally. Set this if the door ever false-refuses in production, then file the planted-test gap. |
+| `WARPOS_DISPATCH_CONTRACT_ENFORCE` | `block` | DEPRECATED alias → enforce, back-compat only (a CI/fixture that set the old var keeps getting shape-refusal). |
+
+**The four entry points:**
+
+- `dispatch-claude.js` (subprocess-claude), `dispatch-agent.js` (subprocess-cross-provider),
+  and `epsilon-runtime.js`'s **CLAUDE_RAW** path (raw `claude -p --agent`) ride the enforce
+  ramp normally. (epsilon's `DISPATCH_AGENT`/`DISPATCH_CLAUDE` routes do NOT consult — they
+  shell to the already-doored wrappers; doubling the consult would risk a divergent verdict.)
+- `dispatch-skill.js` is PINNED **report-only** (`reportOnlyPin:true`): the resolver routes
+  `{kind:skill}` to `inline` (skills are not earned-subprocess, §13.6/§13.7), so an enforce
+  gate would false-refuse EVERY skill dispatch. Enforce-for-skills is blocked on the resolver
+  gaining a `subprocess-skill` shape — logged **ED-057**.
+
+**Severity model.** The door REFUSES only a **high-severity** mismatch (an unproven unit
+dispatched as a subprocess, or a build-chain role dispatched in-process). A **medium**
+mismatch (wrong wrapper, but not dangerous) stays advisory even under `enforce` — a deliberate
+conservative default that keeps false-refusal risk near zero. For the subprocess wrappers with
+agent roles (always proven) that means the enforce flip surfaces wrong-wrapper routing as
+advisories without bricking working dispatches; the exit-2 refusal fires only on the genuinely
+dangerous cases. The sanctioned `--review-fallback` lane (FIX-A3) proceeds in BOTH modes — the
+door honors the sanctioned-lane VERDICT (not the bare flag).
+
+`exit 2` = the shape-DOOR refusal; `exit 1` = the separate contract-consult block — kept
+distinguishable so a post-mortem names WHICH gate fired. (E-DISPATCH-SHAPE-001 W2-core,
+SP-20260616-001.)
+
+---
+
 ## §17 — Cross-references
 
 - `.claude/agents/president/gamma.md` — Gamma dispatch rules (cites this guide).
@@ -467,6 +509,7 @@ on every cold start.
 - `scripts/dispatch/auth-resolver.js` — shared key-source resolver (N-3).
 - `scripts/dispatch/safe-spawn.js` — trusted tool-path + allowlist safety kernel.
 - `scripts/dispatch/dispatch-contract.js` — machine-readable dispatch shape rules.
+- `scripts/dispatch/dispatch-shape.js` — `resolveShape`/`shapeMismatch`/`shapeDoor` (the shape decision spine + the W2-core report→enforce door; see §16.9).
 - `scripts/dispatch/coverage-gate.js` — N-1 liveness gate (run-ledger).
 - `scripts/hooks/lib/providers.js` — `runProvider` implementation.
 - `scripts/hooks/dispatch-route-guard.js` — PreToolUse enforcement.

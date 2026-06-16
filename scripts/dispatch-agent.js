@@ -553,20 +553,24 @@ try {
 // This wrapper OWNS the subprocess-cross-provider shape. Consult the LIVE resolver as
 // the independent authority: if resolveShape picks a DIFFERENT shape for this role, the
 // role is routed through the wrong wrapper (e.g. a build-chain builder pushed through the
-// cross-provider path) — the wrong shape self-detects on a REAL dispatch. Report-only by
-// default; WARPOS_DISPATCH_CONTRACT_ENFORCE=block makes a high-severity mismatch fatal.
+// cross-provider path) — the wrong shape self-detects on a REAL dispatch. Gated by the
+// shared shapeDoor() (WARPOS_SHAPE_DOOR=report|enforce, default report; kill-switch +
+// legacy block flag honored as a deprecated alias inside the door); exit 2 on an enforce
+// refusal; fail-OPEN on any resolver error.
 try {
-  const { shapeMismatch } = require("./dispatch/dispatch-shape");
-  const mm = shapeMismatch("subprocess-cross-provider", { kind: "agent", id: role });
-  if (mm && mm.mismatch) {
-    const blocking = process.env.WARPOS_DISPATCH_CONTRACT_ENFORCE === "block" && mm.severity === "high";
+  const { shapeDoor } = require("./dispatch/dispatch-shape");
+  const door = shapeDoor("subprocess-cross-provider", { kind: "agent", id: role }, process.env, {});
+  if (door.mismatch && door.mismatch.mismatch && !door.suppressed) {
+    // β#4: report-mode advisory string stays BYTE-IDENTICAL to the pre-door legacy (no `(mode)`
+    // label); only the new refuse path (exit 2) carries the mode in its VIOLATION wording.
     process.stderr.write(
-      `[dispatch-agent] shape-resolver ${blocking ? "VIOLATION" : "advisory"}: role '${role}' dispatched as 'subprocess-cross-provider' but the resolver picks '${mm.expected}' (${mm.expectedReason || mm.reason}; severity=${mm.severity || "medium"}).\n`,
+      `[dispatch-agent] shape-resolver ${door.action === "refuse" ? `VIOLATION (${door.mode})` : "advisory"}: role '${role}' dispatched as 'subprocess-cross-provider' but the resolver picks '${door.mismatch.expected}' (${door.mismatch.expectedReason || door.mismatch.reason}; severity=${door.mismatch.severity || "medium"}).\n`,
     );
-    if (blocking) {
-      console.log(JSON.stringify({ ok: false, provider, role, error: "dispatch_shape_mismatch", expected: mm.expected, actual: "subprocess-cross-provider", severity: mm.severity }));
-      process.exit(1);
-    }
+  }
+  if (door.action === "refuse") {
+    // exit 2 = the shape-DOOR refusal (β#3 — distinct from the contract-consult block's exit 1).
+    console.log(JSON.stringify({ ok: false, provider, role, error: "dispatch_shape_mismatch", expected: door.mismatch.expected, actual: "subprocess-cross-provider", severity: door.mismatch.severity }));
+    process.exit(2);
   }
 } catch {
   /* fail-open — the resolver consult never crashes a working dispatch */

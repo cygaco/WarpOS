@@ -404,6 +404,25 @@ function dispatchSkill(opts) {
   // mirroring dispatch-claude.js which also passes its prompt only on stdin.
   const claudeArgs = [...prefixArgs, "-p", "--agent", "general-purpose"];
 
+  // ── Shape-resolver self-detection (W2-core, report-only-PINNED) ──────────────
+  // dispatch-skill spawns `claude -p --agent general-purpose` (real transport =
+  // subprocess-claude) to run a skill. The resolver routes {kind:skill} to `inline`
+  // (skills are not earned-subprocess — §13.6/§13.7), so an ENFORCE gate here would
+  // false-refuse EVERY skill dispatch. Until the resolver gains a `subprocess-skill`
+  // shape (logged enforcement-debt ED-057), this wrapper is PINNED report-only: it
+  // surfaces the advisory but NEVER refuses (reportOnlyPin beats WARPOS_SHAPE_DOOR).
+  try {
+    const { shapeDoor } = require("./dispatch/dispatch-shape");
+    const door = shapeDoor("subprocess-claude", { kind: "skill", id: skill }, process.env, { reportOnlyPin: true });
+    if (door.mismatch && door.mismatch.mismatch && !door.suppressed) {
+      process.stderr.write(
+        `[dispatch-skill] shape-resolver advisory (report-only-pinned): skill '${skill}' dispatched as subprocess but the resolver picks '${door.mismatch.expected}' (${door.mismatch.expectedReason || door.mismatch.reason}). Enforce-for-skills is blocked on a resolver 'subprocess-skill' shape — see ED-057.\n`,
+      );
+    }
+  } catch {
+    /* fail-open — the resolver consult never crashes a working dispatch */
+  }
+
   // T-20260610-304: clamp requested bound to foreground ceiling (540s). An env override
   // sets the *requested* bound but the foreground ceiling is the hard cap. Background
   // signal (WARPOS_DISPATCH_BACKGROUND=1) passes through the full requested bound.

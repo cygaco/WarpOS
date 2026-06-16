@@ -449,47 +449,46 @@ try {
 // (dispatch-shape.js) as the independent authority: if resolveShape would pick a
 // DIFFERENT shape for this role, the role is being routed through the WRONG wrapper
 // (e.g. a cross-provider reviewer pushed through dispatch-claude) — the wrong shape
-// self-detects on a REAL dispatch (the north star's 2nd clause). Report-only by default
-// (same ramp as the contract consult); WARPOS_DISPATCH_CONTRACT_ENFORCE=block makes a
-// high-severity mismatch fatal. Fail-OPEN on any resolver error.
+// self-detects on a REAL dispatch (the north star's 2nd clause). Gated by the shared
+// shapeDoor() (WARPOS_SHAPE_DOOR=report|enforce, default report; WARPOS_DISABLE_SHAPE_DOOR
+// kill-switch; the legacy block flag honored as a deprecated alias INSIDE the door — β#2
+// one-switch). exit 2 on an enforce refusal (distinct from the contract block's exit 1);
+// fail-OPEN on any resolver error.
 try {
-  const { shapeMismatch } = require("./dispatch/dispatch-shape");
+  const { shapeDoor } = require("./dispatch/dispatch-shape");
   const { sanctionedLane } = require("./dispatch/dispatch-contract");
-  const mm = shapeMismatch("subprocess-claude", { kind: "agent", id: role });
-  // FIX-A3: suppression is keyed on the SANCTIONED VERDICT, not the bare flag. A
-  // --review-fallback dispatch only earns the suppression when the contract layer actually
-  // sanctions this role/shape on the review_fallback lane (the same sanctionedLane the
-  // contract-consult block above consults). A --review-fallback on a NON-sanctioned role
-  // (e.g. a build-chain role, or a reviewer whose shape isn't lane-registered) must STILL
-  // emit the advisory (and refuse under ENFORCE) — the flag alone never silences a real
-  // mismatch.
+  // FIX-A3 (β#1): the suppression is keyed on the SANCTIONED-LANE VERDICT, not the bare
+  // --review-fallback flag. A --review-fallback only earns suppression when the contract
+  // layer actually sanctions this role/shape on the review_fallback lane (the same
+  // sanctionedLane the contract-consult block above consults). A --review-fallback on a
+  // NON-sanctioned role (a build-chain role, or a reviewer whose shape isn't lane-registered)
+  // must STILL emit the advisory AND refuse under enforce — the flag alone never silences a
+  // real mismatch. We pass that verdict to the door as opts.sanctioned; the door's sanctioned
+  // branch proceeds in BOTH modes (suppressed) so it never bricks the lane.
   const fallbackSanctioned =
     reviewFallback && sanctionedLane({ role, shape: "subprocess-claude", lane: "review_fallback" }).sanctioned === true;
-  if (mm && mm.mismatch) {
-    if (GENERIC_BUILD_IDS.has(role.toLowerCase())) {
-      // G1: the resolver falls back to adhoc/inline for 'builder' because it isn't
-      // in role-registry — but we KNOW it's a build-chain sentinel (class-resolved
-      // above). Suppress the misleading "resolver picks 'inline'" advisory; the
-      // contract consult block above already emitted the truthful note.
-    } else if (fallbackSanctioned) {
-      // --review-fallback on a SANCTIONED lane: shape mismatch (subprocess-claude for a
-      // cross-provider reviewer) is intentional and REGISTERED as a sanctioned lane (T-311).
-      // Suppress the advisory — the contract-consult block above already emitted the
-      // sanctioned-lane note. This branch suppresses in BOTH modes (no `!blocking`), so it
-      // never bricks the lane. A NON-sanctioned --review-fallback falls through to the else.
-    } else {
-      const blocking = process.env.WARPOS_DISPATCH_CONTRACT_ENFORCE === "block" && mm.severity === "high";
+  // GENERIC_BUILD_IDS (bare 'builder'/'fixer') are class-resolved sentinels the contract
+  // consult already noted; the resolver's name-heuristic resolves them to subprocess-claude
+  // (a MATCH — no mismatch) — but keep the guard so they never surface a stray advisory.
+  if (!GENERIC_BUILD_IDS.has(role.toLowerCase())) {
+    const door = shapeDoor("subprocess-claude", { kind: "agent", id: role }, process.env, { sanctioned: fallbackSanctioned });
+    if (door.mismatch && door.mismatch.mismatch && !door.suppressed) {
+      // β#4: the report-mode advisory string stays BYTE-IDENTICAL to the pre-door legacy
+      // (no `(mode)` label) — a consumer comparing dispatch stderr must see no change. The
+      // refuse path is new behavior (exit 2) so its VIOLATION wording may carry the mode.
       process.stderr.write(
-        `[dispatch-claude] shape-resolver ${blocking ? "VIOLATION" : "advisory"}: ` +
-          `role '${role}' dispatched as 'subprocess-claude' but the resolver picks '${mm.expected}' ` +
-          `(${mm.expectedReason || mm.reason}; severity=${mm.severity || "medium"}).\n`,
+        `[dispatch-claude] shape-resolver ${door.action === "refuse" ? `VIOLATION (${door.mode})` : "advisory"}: ` +
+          `role '${role}' dispatched as 'subprocess-claude' but the resolver picks '${door.mismatch.expected}' ` +
+          `(${door.mismatch.expectedReason || door.mismatch.reason}; severity=${door.mismatch.severity || "medium"}).\n`,
       );
-      if (blocking) {
-        console.log(
-          JSON.stringify({ ok: false, provider: PROVIDER, role, reaped: false, reason: "dispatch_shape_mismatch", expected: mm.expected, actual: "subprocess-claude", severity: mm.severity }),
-        );
-        process.exit(1);
-      }
+    }
+    if (door.action === "refuse") {
+      // exit 2 = the shape-DOOR refusal (β#3 — distinct from the contract-consult block's exit 1
+      // so a post-mortem names WHICH gate fired). The JSON ok:false signal is preserved.
+      console.log(
+        JSON.stringify({ ok: false, provider: PROVIDER, role, reaped: false, reason: "dispatch_shape_mismatch", expected: door.mismatch.expected, actual: "subprocess-claude", severity: door.mismatch.severity }),
+      );
+      process.exit(2);
     }
   }
 } catch {

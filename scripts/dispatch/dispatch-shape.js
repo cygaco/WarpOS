@@ -254,6 +254,72 @@ function shapeMismatch(actualShape, unit) {
   };
 }
 
+// ── Public: the SHAPE DOOR — the per-wrapper enforce gate (W2-core, SP-20260616-001) ──
+// The ONE shared gate every dispatch entry point consults at spawn, so the
+// report→enforce ramp + kill-switch + fail-open live in ONE place instead of being
+// copy-pasted into 4 callers. Ships REPORT-ONLY by default; no wrapper enforces by
+// default (the operator-gated per-wrapper ramp is the whole point of W2).
+//
+// This is THE shape-enforce authority for self-detection (β#2): the wrappers'
+// historical inline `WARPOS_DISPATCH_CONTRACT_ENFORCE === "block"` shape check is
+// folded in here as a DEPRECATED back-compat alias (so a CI/fixture/harness that set
+// the old var keeps getting shape-refusal — the anthropic→claude rename bug class).
+// The separate contract-CONSULT block keeps its OWN toggle; this gate governs only the
+// shape-resolver self-detection.
+//
+// Toggles (read from `env`, injected for testability):
+//   WARPOS_SHAPE_DOOR        = report | enforce   (per-process; default report)
+//   WARPOS_DISABLE_SHAPE_DOOR = 1|true|yes        (KILL-SWITCH; forces report, beats enforce)
+//   WARPOS_DISPATCH_CONTRACT_ENFORCE = block      (DEPRECATED alias → enforce, back-compat)
+//
+// Branch order is EXPLICIT (β#3 — never an implicit catch-all; the W1 breaker-TTL lesson):
+//   (1) kill-switch / report-only-pin  → force report+proceed
+//   (2) resolver throws                → fail-OPEN proceed (reason "resolver-threw-fail-open")
+//   (3) no mismatch OR opts.sanctioned → proceed (sanctioned suppresses the advisory; β#1)
+//   (4) enforce AND severity==="high"  → REFUSE (the caller exits 2 with a named reason)
+//   (5) otherwise (report, or non-high)→ advisory proceed
+//
+// opts:
+//   sanctioned   {boolean} — the SANCTIONED-LANE VERDICT (dispatch-claude fallbackSanctioned;
+//                            NEVER the bare --review-fallback flag — β#1 preserves FIX-A3).
+//   reportOnlyPin {boolean} — pin this wrapper to report regardless of the door mode. Used by
+//                            dispatch-skill: the resolver routes {kind:skill} to `inline` (skills
+//                            are not earned-subprocess), so an enforce gate would false-refuse
+//                            EVERY skill dispatch until the resolver gains a `subprocess-skill`
+//                            shape (logged enforcement-debt). Pin keeps the advisory, never refuses.
+//
+// Returns { action:"proceed"|"refuse", mode, severity, suppressed, reason, mismatch }.
+function shapeDoor(actualShape, unit, env, opts) {
+  const e = env || process.env;
+  const o = opts || {};
+  const killed = /^(1|true|yes)$/i.test(String(e.WARPOS_DISABLE_SHAPE_DOOR || ""));
+  const pinned = o.reportOnlyPin === true;
+  const legacyBlock = String(e.WARPOS_DISPATCH_CONTRACT_ENFORCE || "") === "block";
+  const enforceRequested =
+    String(e.WARPOS_SHAPE_DOOR || "report").toLowerCase() === "enforce" || legacyBlock;
+  // (1) kill-switch / pin checked FIRST — they beat enforce unconditionally (safe side).
+  const mode = (killed || pinned) ? "report" : (enforceRequested ? "enforce" : "report");
+  // (2) resolver fault → fail-OPEN. A self-detection gate must never break a working dispatch.
+  let mm;
+  try {
+    mm = shapeMismatch(actualShape, unit);
+  } catch (err) {
+    return { action: "proceed", mode, severity: null, suppressed: false, reason: `resolver-threw-fail-open (${err && err.message})`, mismatch: null };
+  }
+  // (3) right shape → proceed; sanctioned lane → proceed + suppress the advisory (β#1).
+  if (!mm || !mm.mismatch) {
+    return { action: "proceed", mode, severity: null, suppressed: false, reason: "shape matches resolver", mismatch: null };
+  }
+  if (o.sanctioned === true) {
+    return { action: "proceed", mode, severity: mm.severity || null, suppressed: true, reason: "sanctioned lane — shape mismatch is intentional + registered (advisory suppressed)", mismatch: mm };
+  }
+  // (4) enforce + high-severity → REFUSE (caller exits 2). (5) else → advisory proceed.
+  if (mode === "enforce" && mm.severity === "high") {
+    return { action: "refuse", mode, severity: "high", suppressed: false, reason: `shape-door REFUSE: ${mm.reason} (${mm.expectedReason || "wrong wrapper"})`, mismatch: mm };
+  }
+  return { action: "proceed", mode, severity: mm.severity || null, suppressed: false, reason: `advisory (${mode}): ${mm.reason}`, mismatch: mm };
+}
+
 // ── Public: the PARALLELISM AXIS (S-LC-06 / PLAN §8.7) ───────────────────────
 // The self-detection family extends from "is THIS unit's shape right?" (shapeMismatch)
 // to "is this BATCH dispatched with the right PARALLELISM?". Two advisory findings,
@@ -356,7 +422,7 @@ function parallelismFindings(plan) {
   }
 }
 
-module.exports = { resolveShape, shapeMismatch, resolveAgent, resolveSkill, resolveAdhoc, parallelismFindings, SHAPES };
+module.exports = { resolveShape, shapeMismatch, shapeDoor, resolveAgent, resolveSkill, resolveAdhoc, parallelismFindings, SHAPES };
 
 // ── CLI: `node dispatch-shape.js --agent backend-builder` etc. ────────────────
 if (require.main === module) {

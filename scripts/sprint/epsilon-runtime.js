@@ -556,6 +556,27 @@ function spawnAgent(agentPlan, sprintId, opts = {}) {
   // No child wrapper here (raw claude), so nothing reads DISPATCH_BUILDER_TIMEOUT_MS — but the parent
   // must still be BOUNDED (the `timeout` no longer lives in `common`). Use the epsilon-claude base +
   // grace so the raw route keeps the same bound it had before FIX-A1.
+  // ── Shape-resolver self-detection (W2-core) ──────────────────────────────────
+  // CLAUDE_RAW is the ONE epsilon spawn that does NOT delegate to an already-doored
+  // wrapper (the DISPATCH_AGENT/DISPATCH_CLAUDE routes above shell to dispatch-agent.js/
+  // dispatch-claude.js, which own the door — consulting here too would double-consult and
+  // risk a divergent verdict). It spawns `claude -p --agent <role>` raw → transport =
+  // subprocess-claude. Door-gated (NOT pinned — it rides the enforce ramp); on REFUSE,
+  // abort THIS spawn (a failed dispatch), never process.exit (ε is a long-running conductor).
+  try {
+    const { shapeDoor } = require(path.join(root, "scripts/dispatch/dispatch-shape.js"));
+    const door = shapeDoor("subprocess-claude", { kind: "agent", id: agentPlan.role }, env, {});
+    if (door.mismatch && door.mismatch.mismatch && !door.suppressed) {
+      process.stderr.write(
+        `[epsilon-runtime] CLAUDE_RAW shape-resolver ${door.action === "refuse" ? "VIOLATION" : "advisory"} (${door.mode}): role '${agentPlan.role}' spawned raw as 'subprocess-claude' but the resolver picks '${door.mismatch.expected}' (${door.mismatch.expectedReason || door.mismatch.reason}).\n`,
+      );
+    }
+    if (door.action === "refuse") {
+      return { spawned: false, ok: false, recorded: false, reason: "dispatch_shape_mismatch", expected: door.mismatch.expected, actual: "subprocess-claude", severity: door.mismatch.severity, role: agentPlan.role };
+    }
+  } catch {
+    /* fail-open — the resolver consult never crashes a conduct */
+  }
   const bin = env.DISPATCH_CLAUDE_BIN || "claude";
   const binArgs = env.DISPATCH_CLAUDE_BIN_ARGS ? JSON.parse(env.DISPATCH_CLAUDE_BIN_ARGS) : [];
   const prompt = fs.readFileSync(promptFile, "utf8");
