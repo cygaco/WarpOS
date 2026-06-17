@@ -22,6 +22,19 @@ Both are flipped to **enforce-by-default** (W2). The contract gate's flip is gov
 fleet / master kill). The DoD's separate "dispatch-contract ENFORCE flip" item is **SATISFIED BY
 FLIPPING IT** — it is a real, distinct gate, not redundant with the shape-door.
 
+**Implementation status (2026-06-16) — DECIDED, but the first default-enforce implementation was
+REVERTED to report-only / opt-in.** A cross-provider gauntlet (GPT-5.5, 0.94) caught that default-enforce
+**false-refused a legitimate `-w` build-chain dispatch**: `validateDispatch`'s `cwd_policy:worktree-required`
+check sees `cwd=canonical` because claude creates the worktree AFTER validation (no worktree path to pass,
+and "omitting cwd is not a bypass"). Two more findings: the generic `fixer` id is not in
+`GENERIC_BUILD_IDS` (refused as unknown under enforce), and `dispatch-agent` passes raw legacy names to
+`validateDispatch`. So `contractEnforceMode` now **defaults to report-only; enforce is opt-in**
+(`WARPOS_DISPATCH_CONTRACT_ENFORCE=enforce|block`, fleet or per-wrapper). **The correct flip (continuation)
+needs:** (1) **worktree-pending semantics** for the `-w` case — the wrapper's own `-w`/`--worktree`
+isolation gate already commits the worktree, so the contract's cwd check must honor that signal (or
+validate after worktree creation); (2) `fixer` in the generic-build re-validation path; (3) normalized
+roles into `validateDispatch` in `dispatch-agent`. The DECISION (flip, not supersede) is unchanged.
+
 ## Context
 
 When the shape-door became "THE shape-enforce authority" (§16.9) and was flipped to enforce, the

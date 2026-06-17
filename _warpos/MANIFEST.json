@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-17T00:55:26.673Z",
+  "generatedAt": "2026-06-17T01:08:50.134Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.16.0",
   "migrations": [],
@@ -125,8 +125,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "a9f310222314fb32b585154dc7c98e0c5b07783d6bbf6a72f7ae87caef566bf3",
-      "installedSha": "a9f310222314fb32b585154dc7c98e0c5b07783d6bbf6a72f7ae87caef566bf3"
+      "sha256": "b4c736a67d157c402dbc5043cac32452b8e258a90dc25e52e890f06f89149f64",
+      "installedSha": "b4c736a67d157c402dbc5043cac32452b8e258a90dc25e52e890f06f89149f64"
     },
     "TRACKER.md": {
       "owner": "runtime",
@@ -2302,8 +2302,8 @@
       "owner": "framework",
       "managed": true,
       "source": null,
-      "sha256": "4167bc519745bc810e015a2ed7031176b2ce5ac7667701e015aaa867e7c6a02a",
-      "installedSha": "4167bc519745bc810e015a2ed7031176b2ce5ac7667701e015aaa867e7c6a02a"
+      "sha256": "677862c22017cbc76ecfa4997088e0e75c13aae159329f6f5aa64efa2d236545",
+      "installedSha": "677862c22017cbc76ecfa4997088e0e75c13aae159329f6f5aa64efa2d236545"
     },
     "tests/regression/SP-20260615-002/aggregator-epics.test.js": {
       "owner": "framework",
@@ -6754,8 +6754,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/dispatch/dispatch-contract.js",
-      "sha256": "a87a366e285551b9f8a91505e701da5ed6a15ff1f852d27b17754129419ba1f2",
-      "installedSha": "a87a366e285551b9f8a91505e701da5ed6a15ff1f852d27b17754129419ba1f2"
+      "sha256": "622a91c579437bb3a8bdac156508f6fa525a67492af6a8d6c01d5467af5b9f60",
+      "installedSha": "622a91c579437bb3a8bdac156508f6fa525a67492af6a8d6c01d5467af5b9f60"
     },
     "scripts/dispatch/dispatch-contract.test.js": {
       "owner": "framework",
@@ -22856,8 +22856,8 @@
       "managed": true,
       "source": ".claude/agents/president/_system/policy/adr/0013-two-dispatch-shape-gates.md",
       "kind": "md",
-      "sha256": "2a6411b33e0baff65cd7186791afaa82fb67bdccc6497bc89300ec8c47799a42",
-      "installedSha": "2a6411b33e0baff65cd7186791afaa82fb67bdccc6497bc89300ec8c47799a42"
+      "sha256": "1cbda3b6b0a95457d09f98836093d0595b03a9107aabeaac28c9076e0fe85ba2",
+      "installedSha": "1cbda3b6b0a95457d09f98836093d0595b03a9107aabeaac28c9076e0fe85ba2"
     },
     ".claude/agents/president/_system/policy/adr/INDEX.md": {
       "owner": "framework",

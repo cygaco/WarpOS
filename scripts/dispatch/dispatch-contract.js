@@ -543,12 +543,20 @@ function validateContractFile() {
 //   (legacy WARPOS_DISPATCH_CONTRACT_ENFORCE=block still enforces — now the default)
 function contractEnforceMode(wrapperKey, env) {
   const e = env || process.env;
+  // SAFE DEFAULT = report-only (enforce is OPT-IN). ADR-0013 DECIDED the flip-to-enforce, but the
+  // cross-family gauntlet (2026-06-16) caught that default-enforce FALSE-REFUSED a legitimate `-w`
+  // build-chain dispatch: cwd_policy:worktree-required sees cwd=canonical because claude creates the
+  // worktree AFTER validation (no worktree path to pass yet, and "omitting cwd is not a bypass"); plus
+  // the generic `fixer` path (not in GENERIC_BUILD_IDS) + raw legacy names in dispatch-agent. Reverted
+  // to report-only pending those fixes (worktree-pending semantics for `-w`). Enforce is opt-in:
+  //   WARPOS_DISABLE_SHAPE_DOOR=1                              → force report (master)
+  //   WARPOS_DISPATCH_CONTRACT_ENFORCE=enforce|block          → opt INTO enforce (fleet)
+  //   WARPOS_DISPATCH_CONTRACT_ENFORCE_<WRAPPER>=enforce|block → opt INTO enforce (per-wrapper)
   if (/^(1|true|yes)$/i.test(String(e.WARPOS_DISABLE_SHAPE_DOOR || ""))) return false;
   const per = String(e[`WARPOS_DISPATCH_CONTRACT_ENFORCE_${wrapperKey}`] || "").toLowerCase();
-  if (per === "report" || per === "off" || per === "0") return false;
+  if (per === "enforce" || per === "block") return true;
   const g = String(e.WARPOS_DISPATCH_CONTRACT_ENFORCE || "").toLowerCase();
-  if (g === "report" || g === "off" || g === "0") return false;
-  return true; // enforce by default
+  return g === "enforce" || g === "block"; // else report-only (safe default)
 }
 
 module.exports = {
