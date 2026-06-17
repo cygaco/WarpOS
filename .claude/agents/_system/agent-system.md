@@ -853,7 +853,7 @@ After every builder or fix agent completes, the reviewer runs these five checks 
 
 - Every company name in the output appears in the input data.
 - Every metric or number in the output appears in the input data.
-- Every claim about the user's experience traces to the input resume.
+- Every claim about the user traces to the user's primary input document (the source artifact the product ingests, e.g. an uploaded document or imported profile — see the product's canon for the concrete entity).
 - If the output contains ANY entity (company, metric, date, achievement) not present in the input: **hard fail**.
 
 **Synthesis exception:** Steps marked `synthesis_allowed: true` in the context scoping table (section 12) intentionally generate new content (queries, questions, skill recommendations). For these steps, the grounding check applies ONLY to factual claims about the user (companies, dates, achievements, credentials). Generated queries, questions, and skill suggestions are exempt — they are the expected output, not fabrication. The reviewer MUST still fail if a synthesis step fabricates user history.
@@ -925,7 +925,7 @@ interface StepExpectation {
 | 3 (Profile)  | "Product Management", "Director", "AI/ML" | "Junior", "Entry-level"           | domains: 3-8, hardSkills: 5-15 |
 | 5 (Market)   | "contract", "hourly"                      | salary ranges for full-time roles | keywords: 5-20, jobTypes: 2-8  |
 | 8 (Resumes)  | "AI", persona's actual achievements       | fabricated companies, wrong dates | roles: 2-5                     |
-| 9 (LinkedIn) | "AI/ML", "Product"                        | the word "resume"                 | skills: 5+                     |
+| 9 (Profile export) | "AI/ML", "Product"                  | the name of an upstream artifact  | skills: 5+                     |
 
 ### Golden Pairs
 
@@ -1328,7 +1328,7 @@ These files already exist and MUST NOT be modified by feature agents. Wire into 
 | Retry + backoff      | `api.ts`              | Transient failure recovery. `callClaude()` handles retries internally.     |
 | Error classification | `api.ts`              | Distinguishes retryable (429, 503) from terminal (400, 401, 402) errors.   |
 | Step prerequisites   | `constants.ts`        | `STEP_REQUIRES` defines the dependency graph. Read it, do not modify it.   |
-| Rocket pre-flight    | `rockets.ts`          | `debitRockets()` checks balance before AI calls. Always call it first.     |
+| Billing pre-flight   | billing module        | `chargeCredits()` (the product's billing pre-flight) checks balance before AI calls. Always call it first. |
 | Rate limit awareness | API routes            | Routes return `429` with `Retry-After` header. Respect it.                 |
 | Manifest + tests     | `deus-mechanicus*.ts` | Step definitions and validation suites. Source of truth for step metadata. |
 | Dummy data           | `dummy-data.ts`       | `buildDummySession(step)` provides test fixtures at any step.              |

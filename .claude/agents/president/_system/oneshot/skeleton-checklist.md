@@ -2,6 +2,8 @@
 
 The skeleton is the instrumented starting point that all agents build against. It compiles and runs with zero features. Agents fill in implementation; the skeleton tells them if they got it wrong.
 
+> **Product-neutral template.** The concrete dependency list, folder structure, step names (e.g. the `Step*` components / `steps/` entries), and env-var set below are an ILLUSTRATIVE example from one product. For a real build, read the actual stack, step sequence, and primitives from the product's canon/manifest (`_requirements/00-canonical/STEPS.json` and the product manifest) — keep the SHAPE of this checklist (config → deps → structure → env → instrumentation), substitute the product's own entities.
+
 ---
 
 ## Config Files
@@ -187,7 +189,7 @@ The skeleton ships with a `.env.local.example` listing all required and optional
 4. **Pipeline tracing** — [PIPELINE] prefix logging built into pipeline.ts
 5. **Schema validation** — validators.ts provides sanitization at all boundaries
 6. **Rate limiting** — Upstash ratelimit configured in API routes
-7. **Rocket pre-flight** — debitRockets() enforced before billable Claude calls
+7. **Billing pre-flight** — the product's billing pre-flight (e.g. `chargeCredits()`) enforced before billable model calls
 
 ### Missing (to be added)
 

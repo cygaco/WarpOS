@@ -25,6 +25,21 @@
  *                      `flag.js`, `warpos-to-update.md`, etc.) closes
  *                      the door behind SP-20260522-001's purge commit.
  *
+ * Plus one REPORT-ONLY advisory (does NOT affect the exit code):
+ *
+ *   • DOMAIN-VOCAB   — Product-origin domain identifiers that leaked from
+ *                      the jobzooka-era resume/job-application product into
+ *                      framework-neutral surfaces (`debitRockets`,
+ *                      `untrusted_job_data`, `masterResume`,
+ *                      `targetedResumes`). These are NARROW hard-ref
+ *                      identifiers, not broad English words — we do NOT ban
+ *                      "resume"/"job"/"market" (false-positive storm:
+ *                      "resume" legitimately means continue-work). This
+ *                      detector is ADVISORY: it surfaces leaks for cleanup
+ *                      but never fails the gate, so a pre-existing canonical
+ *                      occurrence outside an edit's scope can't block an
+ *                      unrelated commit (E-DISPATCH-PERFECT-001 W4).
+ *
  * Modes:
  *   --full   Walk the entire on-disk tree. Reports every current
  *            violation. Useful for taking inventory of the pre-scrub
@@ -73,6 +88,19 @@ const CLIENT_SLUGS = [
   "ai-web",
   "companycam",
   "CompanyCam",
+];
+
+// REPORT-ONLY domain-vocabulary advisory. NARROW hard-ref identifiers from the
+// jobzooka-era resume/job-application origin product — NOT broad English words.
+// Deliberately excludes "resume"/"job"/"market" (false-positive storm). Findings
+// here are advisory and DO NOT contribute to the violation count / exit code; see
+// the DOMAIN-VOCAB note in the header (E-DISPATCH-PERFECT-001 W4). Matched on word
+// boundaries so substrings of unrelated identifiers don't trip it.
+const DOMAIN_VOCAB_TOKENS = [
+  "debitRockets",
+  "untrusted_job_data",
+  "masterResume",
+  "targetedResumes",
 ];
 
 const ABS_PATH_PATTERNS = [
@@ -128,6 +156,15 @@ const ALLOW_CLIENT_SLUG_PATHS = [
   /^ROADMAP\.md$/, // the purge plan itself
   /^RELEASES\.md$/, // shipped release history
   /^_index\//, // any product index
+];
+
+// File patterns where DOMAIN_VOCAB advisory hits are suppressed — surfaces that
+// legitimately name the identifiers (the detector's own definition + its test).
+// Report-only, so this allow-list only keeps the advisory list tidy; it never
+// changes the gate's pass/fail.
+const ALLOW_DOMAIN_VOCAB_PATHS = [
+  /^scripts\/checks\/framework-purity\.js$/, // self-reference (token list)
+  /^scripts\/checks\/framework-purity\.test\.js$/, // planted-fixture test
 ];
 
 // File patterns where PROMOTE_RELIC is allowed — historical docs +
@@ -207,6 +244,17 @@ function scanContent(rel, content, findings) {
           pattern: re.source,
         });
         break;
+      }
+    }
+  }
+  // Domain-vocab advisory (REPORT-ONLY — never counted toward violations).
+  // Word-boundary match on the narrow identifier list so it can't fire on a
+  // substring of an unrelated symbol.
+  if (!isAllowed(rel, ALLOW_DOMAIN_VOCAB_PATHS)) {
+    for (const tok of DOMAIN_VOCAB_TOKENS) {
+      const re = new RegExp(`\\b${tok}\\b`);
+      if (re.test(content)) {
+        findings.domain_vocab.push({ path: rel, token: tok });
       }
     }
   }
@@ -300,6 +348,7 @@ function run(opts) {
     client_slug: [],
     abs_path: [],
     promote_relic: [],
+    domain_vocab: [], // REPORT-ONLY advisory — not counted toward violations
   };
 
   let files;
@@ -336,6 +385,8 @@ function run(opts) {
     scanContent(rel, content, findings);
   }
 
+  // domain_vocab is ADVISORY and deliberately excluded from violationCount —
+  // it must never flip the exit code (E-DISPATCH-PERFECT-001 W4).
   const violationCount =
     findings.root_leak.length +
     findings.client_slug.length +
@@ -352,6 +403,7 @@ function run(opts) {
       client_slug: findings.client_slug.length,
       abs_path: findings.abs_path.length,
       promote_relic: findings.promote_relic.length,
+      domain_vocab: findings.domain_vocab.length, // advisory, not a violation
     },
     findings,
   };
@@ -394,6 +446,11 @@ Detectors:
   promote_relic   Reintroduction of /warp:promote-suite paths or
                   warposFlag/warposPromote token references
 
+Advisory (report-only — never affects the exit code):
+  domain_vocab    jobzooka-origin domain identifiers (debitRockets,
+                  untrusted_job_data, masterResume, targetedResumes) on
+                  framework-neutral surfaces — surfaced for cleanup, not a gate
+
 Modes:
   --diff  (default)  scan git diff --cached + git diff (staged + unstaged)
   --staged           scan git diff --cached only (the commit gate, WI-23)
@@ -416,16 +473,18 @@ function formatHuman(r) {
   lines.push(`    client_slug:     ${r.summary.client_slug}`);
   lines.push(`    abs_path:        ${r.summary.abs_path}`);
   lines.push(`    promote_relic:   ${r.summary.promote_relic}`);
+  lines.push("");
+  lines.push(`  advisory (report-only, does NOT affect exit code):`);
+  lines.push(`    domain_vocab:    ${r.summary.domain_vocab}`);
   for (const k of Object.keys(r.findings)) {
     const list = r.findings[k];
     if (list.length === 0) continue;
     lines.push("");
-    lines.push(`  ${k.toUpperCase()}:`);
+    const label = k === "domain_vocab" ? `${k.toUpperCase()} (advisory)` : k.toUpperCase();
+    lines.push(`  ${label}:`);
     for (const f of list.slice(0, 10)) {
-      const detail =
-        f.slug || f.pattern
-          ? `  [${f.slug || f.pattern}]`
-          : "";
+      const tag = f.slug || f.pattern || f.token;
+      const detail = tag ? `  [${tag}]` : "";
       lines.push(`    - ${f.path}${detail}`);
     }
     if (list.length > 10) {
