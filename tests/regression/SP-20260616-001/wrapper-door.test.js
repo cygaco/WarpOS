@@ -49,15 +49,23 @@ function runClaude({ role, extra = [], env = {} }) {
 
 console.log("(1) report-mode-no-regression-both-wrappers:");
 {
-  // backend-reviewer through dispatch-claude = a (medium) shape mismatch. Report mode (no toggles)
-  // → advisory only, the dispatch proceeds and the fake exits 0.
-  const r = runClaude({ role: "backend-reviewer" });
-  ok("dispatch-claude report mode → exit 0 (advisory, no refuse)", r.status === 0, `status=${r.status} stderr=${(r.stderr || "").slice(0, 220)}`);
-  // β#4: the report-mode advisory must be BYTE-IDENTICAL to the pre-door legacy — `advisory:`
-  // with NO `(mode)` label (the gauntlet finding GPT-5.5 caught). Guard against the regression.
-  ok("report-mode advisory is byte-identical legacy form (no mode label — β#4)",
+  // backend-reviewer through dispatch-claude = a routing error: the contract gate catches the
+  // shape-not-allowed VIOLATION and the shape-door sees a (medium) mismatch. ADR-0013 flipped the
+  // CONTRACT gate to enforce-by-default, so report mode is now explicit (=report).
+  const r = runClaude({ role: "backend-reviewer", env: { WARPOS_DISPATCH_CONTRACT_ENFORCE: "report" } });
+  ok("dispatch-claude report mode (CONTRACT_ENFORCE=report) → exit 0 (advisory, no refuse)", r.status === 0, `status=${r.status} stderr=${(r.stderr || "").slice(0, 220)}`);
+  // β#4: the report-mode SHAPE-DOOR advisory must be BYTE-IDENTICAL to the pre-door legacy —
+  // `advisory:` with NO `(mode)` label (the gauntlet finding GPT-5.5 caught). Guard the regression.
+  ok("report-mode shape-door advisory is byte-identical legacy form (no mode label — β#4)",
     /shape-resolver advisory: role/.test(r.stderr || "") && !/shape-resolver advisory \(/.test(r.stderr || ""),
     (r.stderr || "").slice(0, 220));
+  // ADR-0013: the contract gate ENFORCES BY DEFAULT — backend-reviewer via the claude wrapper is a
+  // real shape-not-allowed violation, refused exit 1 (contract VIOLATION, distinct from the door's
+  // exit 2). The non-redundant teeth the flip arms (the door's medium mismatch alone would NOT refuse).
+  const rEnf = runClaude({ role: "backend-reviewer" }); // clean env = enforce by default
+  ok("dispatch-claude contract enforce DEFAULT → exit 1 (VIOLATION) on a real shape-not-allowed", rEnf.status === 1, `status=${rEnf.status} stderr=${(rEnf.stderr || "").slice(0, 200)}`);
+  ok("dispatch-claude contract enforce → per-wrapper kill (_DISPATCH_CLAUDE=report) restores report (exit 0)",
+    runClaude({ role: "backend-reviewer", env: { WARPOS_DISPATCH_CONTRACT_ENFORCE_DISPATCH_CLAUDE: "report" } }).status === 0);
 }
 
 console.log("\n(2) dispatch-claude-sanctioned-lane-preserved (new WARPOS_SHAPE_DOOR toggle):");
@@ -82,8 +90,9 @@ console.log("\n(3) two-toggle-coherence-backcompat (β#2, DoE-C2 — STRUCTURAL)
   // The door refusal exits 2 (distinct from the contract-consult exit 1).
   ok("dispatch-claude door refusal uses exit 2", /door\.action === "refuse"/.test(dcShape) && /process\.exit\(2\)/.test(dcShape));
   ok("dispatch-agent door refusal uses exit 2", /door\.action === "refuse"/.test(daShape) && /process\.exit\(2\)/.test(daShape));
-  // The contract-consult block keeps its OWN process.env.WARPOS_DISPATCH_CONTRACT_ENFORCE toggle (one switch per concern).
-  ok("WARPOS_DISPATCH_CONTRACT_ENFORCE still drives the contract-consult block (kept, not removed)", /process\.env\.WARPOS_DISPATCH_CONTRACT_ENFORCE/.test(dcSrc));
+  // The contract-consult block keeps its OWN enforce toggle (one switch per concern), now via the
+  // shared contractEnforceMode helper (ADR-0013 flip: enforce-by-default + WARPOS_DISPATCH_CONTRACT_ENFORCE=report kill).
+  ok("the contract-consult enforce is env-controllable via contractEnforceMode (ADR-0013; kept, not removed)", /contractEnforceMode\(/.test(dcSrc));
   // The shape block no longer inlines a process.env.WARPOS_DISPATCH_CONTRACT_ENFORCE shape check (folded into the door — β#2 one-switch).
   ok("dispatch-claude shape block no longer inlines process.env.WARPOS_DISPATCH_CONTRACT_ENFORCE", !/process\.env\.WARPOS_DISPATCH_CONTRACT_ENFORCE/.test(dcShape));
 }

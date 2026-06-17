@@ -530,9 +530,30 @@ function validateContractFile() {
   return { ok: violations.length === 0, violations };
 }
 
+// W2 dispatch-contract ENFORCE flip (β DECIDE 0.87, ADR-0013). The contract gate (validateDispatch)
+// enforces by DEFAULT — it checks a STRICTLY LARGER surface than the shape-door: forbidden_shapes,
+// the api-when-CLI rule (operator failure ii), build-chain→NOT-in-process (iii), cwd-worktree-
+// required, mode-narrowing — none of which the shape-door (the canonical-PICK gate) evaluates. The
+// two overlap only on the canonical shape; the contract-consult runs BEFORE the door (exit 1 vs the
+// door's exit 2 — defined precedence, no double-refuse). Escapes mirror the shape-door so an
+// operator keeps a fleet + per-wrapper + master off-switch:
+//   WARPOS_DISABLE_SHAPE_DOOR=1                        → master kill (disables BOTH dispatch gates)
+//   WARPOS_DISPATCH_CONTRACT_ENFORCE=report|off|0      → fleet kill (contract gate)
+//   WARPOS_DISPATCH_CONTRACT_ENFORCE_<WRAPPER>=report  → per-wrapper kill (e.g. _DISPATCH_AGENT)
+//   (legacy WARPOS_DISPATCH_CONTRACT_ENFORCE=block still enforces — now the default)
+function contractEnforceMode(wrapperKey, env) {
+  const e = env || process.env;
+  if (/^(1|true|yes)$/i.test(String(e.WARPOS_DISABLE_SHAPE_DOOR || ""))) return false;
+  const per = String(e[`WARPOS_DISPATCH_CONTRACT_ENFORCE_${wrapperKey}`] || "").toLowerCase();
+  if (per === "report" || per === "off" || per === "0") return false;
+  const g = String(e.WARPOS_DISPATCH_CONTRACT_ENFORCE || "").toLowerCase();
+  if (g === "report" || g === "off" || g === "0") return false;
+  return true; // enforce by default
+}
+
 module.exports = {
   loadContract, loadRegistry, classForRole, contractForRole, validateDispatch,
-  validateDispatchForClass, sanctionedLane,
+  validateDispatchForClass, sanctionedLane, contractEnforceMode,
   skillExecution, validateContractFile, registryAttrs, CONTRACT_PATH, REGISTRY_PATH,
   ARGV_SCHEMA_VERSION, modeProfile, allowedShapesForRoleInMode, allowedShapesForClassInMode,
 };

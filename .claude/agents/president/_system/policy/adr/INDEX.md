@@ -56,5 +56,6 @@ When Beta returns DECIDE on a Class B decision with `OPEN_ADR: true`, Alpha drop
 | [0010](0010-orgmap-reporting-collapse.md) | Collapse org-map's reporting-line view into the role-registry; role-parity anchors on the registry, witnessed by the on-disk spec tree (ED-024) | 2026-06-05 | accepted | - |
 | [0011](0011-turbo-spend-ceiling-and-push-honesty.md) | Turbo spend ceiling is source-vs-instance; push-to-main level pinned to confirm | 2026-06-10 | accepted | - |
 | [0012](0012-envelope-validator-bury.md) | Bury the per-dispatch envelope-validation gate (the 36/36 dead gate) | 2026-06-16 | accepted | - |
+| [0013](0013-two-dispatch-shape-gates.md) | Two dispatch gates (shape-door canonical-pick + contract gate full-contract), one authority each, defined precedence | 2026-06-16 | accepted | - |
 
 When ADRs accrete, add a row here pointing at each file. Keep the table in sync with the filesystem; `/scan:references` will catch drift. (ADR 0009 is reserved for the parallel E7 ε-runtime sprint.)

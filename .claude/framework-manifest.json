@@ -3,7 +3,7 @@
   "version": "0.16.0",
   "generated_by": "scripts/generate-framework-manifest.js",
   "counts": {
-    "agent": 85,
+    "agent": 86,
     "skill": 231,
     "reference": 27,
     "maps_baseline": 26,
@@ -67,7 +67,7 @@
     "module_scope": 1,
     "framework_doc": 4
   },
-  "total": 1326,
+  "total": 1327,
   "assets": {
     "agent": [
       {
@@ -779,11 +779,23 @@
         "replaces": null
       },
       {
+        "id": "agent.president._system.policy.adr.0013-two-dispatch-shape-gates.md",
+        "src": ".claude/agents/president/_system/policy/adr/0013-two-dispatch-shape-gates.md",
+        "dest": ".claude/agents/president/_system/policy/adr/0013-two-dispatch-shape-gates.md",
+        "kind": "agent",
+        "sha256": "2a6411b33e0baff65cd7186791afaa82fb67bdccc6497bc89300ec8c47799a42",
+        "owner": "framework",
+        "mergeStrategy": "three_way_markdown",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
         "id": "agent.president._system.policy.adr.INDEX.md",
         "src": ".claude/agents/president/_system/policy/adr/INDEX.md",
         "dest": ".claude/agents/president/_system/policy/adr/INDEX.md",
         "kind": "agent",
-        "sha256": "95b95ac92a91d657822e28bdcee661d8b8a09938818cacac156293bd3bfc328c",
+        "sha256": "b81551b191b5e95b32fb71509590f48e3658c984cf6e0ac730b50e101715f82c",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
@@ -9233,7 +9245,7 @@
         "src": "scripts/dispatch/dispatch-contract.js",
         "dest": "scripts/dispatch/dispatch-contract.js",
         "kind": "dispatch_engine",
-        "sha256": "56058fc3f3e8c8b047e337ff24cfd6ab27e3969f5577363f7264b436731a2067",
+        "sha256": "a87a366e285551b9f8a91505e701da5ed6a15ff1f852d27b17754129419ba1f2",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -15935,7 +15947,7 @@
         "src": "scripts/dispatch-agent.js",
         "dest": "scripts/dispatch-agent.js",
         "kind": "top_script",
-        "sha256": "95736bd951931a6ba6ecec15d91ec428967f983adbe9b7ba3a6215502a8fcbae",
+        "sha256": "67fb95b9d09bfd7d56418e013699984f6af5ab80303b8c2d7a5cb1ec1fff30ac",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -15947,7 +15959,7 @@
         "src": "scripts/dispatch-claude.js",
         "dest": "scripts/dispatch-claude.js",
         "kind": "top_script",
-        "sha256": "ddbc1265e4d075a78e24a875a0429a4987df97617c6263ed86f5f62e04a3b881",
+        "sha256": "f4178fbde1292e38f58109a22d8c1bea98ee73bc4ae984d2c918ab3bdf628938",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",

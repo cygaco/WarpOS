@@ -526,7 +526,7 @@ if (provider === "claude") {
 // WARPOS_DISPATCH_CONTRACT_ENFORCE=block makes a violation fatal. Fail-OPEN on any
 // contract-read error so the contract never crashes a working cross-provider dispatch.
 try {
-  const { validateDispatch } = require("./dispatch/dispatch-contract");
+  const { validateDispatch, contractEnforceMode } = require("./dispatch/dispatch-contract");
   const currentMode = detectMode();
   const verdict = validateDispatch({
     role,
@@ -535,7 +535,9 @@ try {
     mode: currentMode,
   });
   if (!verdict.ok) {
-    const blocking = process.env.WARPOS_DISPATCH_CONTRACT_ENFORCE === "block";
+    // W2 flip (β DECIDE 0.87, ADR-0013): contract gate enforces by DEFAULT (it checks api-when-CLI
+    // + forbidden_shapes + in-process-hard + cwd the shape-door doesn't). Escapes via the helper.
+    const blocking = contractEnforceMode("DISPATCH_AGENT", process.env);
     process.stderr.write(
       `[dispatch-agent] dispatch-contract ${blocking ? "VIOLATION" : "advisory"}: ${verdict.violations.join("; ")}\n`,
     );

@@ -362,7 +362,7 @@ const currentMode = detectMode();
 // set WARPOS_DISPATCH_CONTRACT_ENFORCE=block to make a violation fatal. Fail-OPEN
 // on any contract-read error — the contract must never crash a working dispatch.
 try {
-  const { validateDispatch, validateDispatchForClass, sanctionedLane } = require("./dispatch/dispatch-contract");
+  const { validateDispatch, validateDispatchForClass, sanctionedLane, contractEnforceMode } = require("./dispatch/dispatch-contract");
   const verdict = validateDispatch({
     role,
     shape: "subprocess-claude",
@@ -394,7 +394,7 @@ try {
     } else {
       // A real violation (e.g. worktree-required + canonical cwd when using -w).
       // Report it honestly — still NOT "(fail-closed)", since the shape/tool are correct.
-      const blocking = process.env.WARPOS_DISPATCH_CONTRACT_ENFORCE === "block";
+      const blocking = contractEnforceMode("DISPATCH_CLAUDE", process.env); // W2 flip (ADR-0013): enforce by default
       process.stderr.write(
         `[dispatch-claude] dispatch-contract ${blocking ? "VIOLATION" : "advisory"}: ${classVerdict.violations.join("; ")}\n`,
       );
@@ -410,7 +410,7 @@ try {
   } else if (!verdict.ok) {
     // Genuinely unknown id (not in role-registry, not a GENERIC_BUILD_ID), or a real
     // violation for a registered role. Keep the honest fail-closed wording unchanged.
-    const blocking = process.env.WARPOS_DISPATCH_CONTRACT_ENFORCE === "block";
+    const blocking = contractEnforceMode("DISPATCH_CLAUDE", process.env); // W2 flip (ADR-0013): enforce by default
     // T-311 (crossfam A.2): consult the REGISTERED sanctioned lane instead of suppressing
     // via a wrapper-local `!blocking` conditional. A registered review-fallback lane
     // resolves valid in BOTH report-only AND blocking (ENFORCE) modes, so the W2 flip can

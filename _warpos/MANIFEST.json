@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-17T00:33:06.609Z",
+  "generatedAt": "2026-06-17T00:51:46.332Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.16.0",
   "migrations": [],
@@ -2302,8 +2302,8 @@
       "owner": "framework",
       "managed": true,
       "source": null,
-      "sha256": "267472fd8ee07cb522153df30ab0e2877bd7d2ee25b2f47caf04739ce88d9b48",
-      "installedSha": "267472fd8ee07cb522153df30ab0e2877bd7d2ee25b2f47caf04739ce88d9b48"
+      "sha256": "4167bc519745bc810e015a2ed7031176b2ce5ac7667701e015aaa867e7c6a02a",
+      "installedSha": "4167bc519745bc810e015a2ed7031176b2ce5ac7667701e015aaa867e7c6a02a"
     },
     "tests/regression/SP-20260615-002/aggregator-epics.test.js": {
       "owner": "framework",
@@ -3520,15 +3520,15 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/dispatch-agent.js",
-      "sha256": "95736bd951931a6ba6ecec15d91ec428967f983adbe9b7ba3a6215502a8fcbae",
-      "installedSha": "95736bd951931a6ba6ecec15d91ec428967f983adbe9b7ba3a6215502a8fcbae"
+      "sha256": "67fb95b9d09bfd7d56418e013699984f6af5ab80303b8c2d7a5cb1ec1fff30ac",
+      "installedSha": "67fb95b9d09bfd7d56418e013699984f6af5ab80303b8c2d7a5cb1ec1fff30ac"
     },
     "scripts/dispatch-claude.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/dispatch-claude.js",
-      "sha256": "ddbc1265e4d075a78e24a875a0429a4987df97617c6263ed86f5f62e04a3b881",
-      "installedSha": "ddbc1265e4d075a78e24a875a0429a4987df97617c6263ed86f5f62e04a3b881"
+      "sha256": "f4178fbde1292e38f58109a22d8c1bea98ee73bc4ae984d2c918ab3bdf628938",
+      "installedSha": "f4178fbde1292e38f58109a22d8c1bea98ee73bc4ae984d2c918ab3bdf628938"
     },
     "scripts/dispatch-skill.js": {
       "owner": "framework",
@@ -6754,8 +6754,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/dispatch/dispatch-contract.js",
-      "sha256": "56058fc3f3e8c8b047e337ff24cfd6ab27e3969f5577363f7264b436731a2067",
-      "installedSha": "56058fc3f3e8c8b047e337ff24cfd6ab27e3969f5577363f7264b436731a2067"
+      "sha256": "a87a366e285551b9f8a91505e701da5ed6a15ff1f852d27b17754129419ba1f2",
+      "installedSha": "a87a366e285551b9f8a91505e701da5ed6a15ff1f852d27b17754129419ba1f2"
     },
     "scripts/dispatch/dispatch-contract.test.js": {
       "owner": "framework",
@@ -22851,13 +22851,21 @@
       "sha256": "7e03258b13440a158b41e2a810598d7cc38eb29839df429e18b51b29ea34bf0f",
       "installedSha": "7e03258b13440a158b41e2a810598d7cc38eb29839df429e18b51b29ea34bf0f"
     },
+    ".claude/agents/president/_system/policy/adr/0013-two-dispatch-shape-gates.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/president/_system/policy/adr/0013-two-dispatch-shape-gates.md",
+      "kind": "md",
+      "sha256": "2a6411b33e0baff65cd7186791afaa82fb67bdccc6497bc89300ec8c47799a42",
+      "installedSha": "2a6411b33e0baff65cd7186791afaa82fb67bdccc6497bc89300ec8c47799a42"
+    },
     ".claude/agents/president/_system/policy/adr/INDEX.md": {
       "owner": "framework",
       "managed": true,
       "source": ".claude/agents/president/_system/policy/adr/INDEX.md",
       "kind": "md",
-      "sha256": "95b95ac92a91d657822e28bdcee661d8b8a09938818cacac156293bd3bfc328c",
-      "installedSha": "95b95ac92a91d657822e28bdcee661d8b8a09938818cacac156293bd3bfc328c"
+      "sha256": "b81551b191b5e95b32fb71509590f48e3658c984cf6e0ac730b50e101715f82c",
+      "installedSha": "b81551b191b5e95b32fb71509590f48e3658c984cf6e0ac730b50e101715f82c"
     },
     ".claude/agents/president/_system/oneshot/ENV-SETUP.md": {
       "owner": "framework",
