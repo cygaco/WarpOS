@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-17T01:08:50.134Z",
+  "generatedAt": "2026-06-17T22:04:09.963Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.16.0",
   "migrations": [],
@@ -125,8 +125,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "b4c736a67d157c402dbc5043cac32452b8e258a90dc25e52e890f06f89149f64",
-      "installedSha": "b4c736a67d157c402dbc5043cac32452b8e258a90dc25e52e890f06f89149f64"
+      "sha256": "c05f5ef932d9c7971db974fe0086775c769027d480e79e4aae4f8a63f1d79828",
+      "installedSha": "c05f5ef932d9c7971db974fe0086775c769027d480e79e4aae4f8a63f1d79828"
     },
     "TRACKER.md": {
       "owner": "runtime",
@@ -2148,6 +2148,10 @@
       "managed": false
     },
     "trackers/epics/E-DISPATCH-INTEGRITY-001-agent-dispatch-integrity.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    "trackers/epics/E-DISPATCH-PERFECT-001-perfecting-agent-dispatch.md": {
       "owner": "runtime",
       "managed": false
     },
@@ -20553,6 +20557,12 @@
       "class": "guide",
       "_note": "Operator's dream journal — written by /sleep:* skills + manual edits. Project-owned; never overwritten."
     },
+    ".claude/dreams/2026-06-17.md": {
+      "owner": "project",
+      "managed": false,
+      "class": "guide",
+      "_note": "Operator's dream journal — written by /sleep:* skills + manual edits. Project-owned; never overwritten."
+    },
     ".claude/dreams/coaching.md": {
       "owner": "project",
       "managed": false,
@@ -22938,8 +22948,8 @@
       "managed": true,
       "source": ".claude/agents/president/_system/beta/judgement-model-recommendations.md",
       "kind": "md",
-      "sha256": "1414198aa73c0131c5e1d02d73d97db3f06fc75715f9e81228508a2b06de2447",
-      "installedSha": "1414198aa73c0131c5e1d02d73d97db3f06fc75715f9e81228508a2b06de2447"
+      "sha256": "ed6c08b28ca669cf8edd3997868b08dd7e5fa0ba08870769c7f3472dd66a2c24",
+      "installedSha": "ed6c08b28ca669cf8edd3997868b08dd7e5fa0ba08870769c7f3472dd66a2c24"
     },
     ".claude/agents/president/_system/beta/judgement-model.md": {
       "owner": "framework",

@@ -121,6 +121,8 @@ When a Class B decision has multiple viable options, score each option on these 
 
 This complements — and is distinct from — the rename-hygiene rule (which is about the OLD literal specifically): this bar is about completeness of the *forward* search and the *precision* of the backing detector.
 
+**Policy-key-must-fire bar for "this policy is enforced" DECIDEs** (DP-gap #41(b), /beta:integrate 2026-06-17 — a verification-rigor check, not a new red line). A policy/registry KEY (e.g. a security `second_pass` / `third_pass` field, a role→provider map, a `requires_*` flag) enforces **nothing** unless a dispatch/execution loop actually **reads and fires it**. Before returning DECIDE that a policy is *enforced* — or that a declared "N passes / all 3 providers / required step" actually happens — require evidence that a **runtime consumer reads the key and acts on it**, not merely that an enforcer/validator *checks the key is present*. A field read only by validators (model-chain / role-parity) but never by a dispatch loop is a **declarative lie** — the same false-green class as a lying enforcer (BC-16) and the project-wide Policy-Enforcement-Hygiene rule ("every policy needs a named enforcer" applies to the *firing*, not just the *declaration*). Evidence this session: the security "2-pass" `second_pass` key was read only by enforcers, so the reviewer protocol structurally ran one provider while the registry "declared" two. β treats a policy key with no firing consumer as unenforced.
+
 ---
 
 ## Tech-introduction rule
