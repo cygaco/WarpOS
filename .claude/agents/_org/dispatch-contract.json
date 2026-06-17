@@ -74,6 +74,7 @@
       { "when": { "kind": "reviewer", "provider": "openai" }, "class": "cross_provider_reviewer" },
       { "when": { "kind": "reviewer", "provider": "gemini" }, "class": "cross_provider_reviewer" },
       { "when": { "kind": "reviewer", "provider": "claude" }, "class": "claude_pinned_reviewer" },
+      { "when": { "tier": "director", "provider": "openai" }, "class": "cross_provider_consult_lead" },
       { "when": { "tier": "director" }, "class": "manager" },
       { "when": { "tier": "lead", "provider": "openai" }, "class": "cross_provider_consult_lead" },
       { "when": { "tier": "lead" }, "class": "manager" },
@@ -137,7 +138,7 @@
       "coverage": { "binding_verdict": true, "completion_record_required": true, "cross_provider_required": false, "claude_pinned": true, "record_via": "record-inprocess" }
     },
     "cross_provider_consult_lead": {
-      "_doc": "cross-provider lead (design-lead/openai) — routes via subprocess-cross-provider like a reviewer; advises and authors but does not emit a binding verdict. Provider diversity preserved for the lead's authoring work. Mirrors cross_provider_reviewer shape with binding_verdict:false.",
+      "_doc": "cross-provider lead/director — the GPT product-leadership chain (design-lead, product-lead, director-of-product, director-of-growth): routes via subprocess-cross-provider like a reviewer; advises and authors but does not emit a binding verdict. The class encodes dispatch SHAPE, not org seniority (seniority lives in role-registry `tier`) — a GPT director and a GPT lead share this identical shape, so they REUSE this class rather than minting a director variant (β DECIDE 2026-06-17, E-DISPATCH-PERFECT-001 W2; the contract's anti-exception principle). Provider diversity preserved for the lead/director's authoring work. Mirrors cross_provider_reviewer shape with binding_verdict:false.",
       "allowed_shapes": ["subprocess-cross-provider"],
       "forbidden_shapes": ["in-process-agent", "api"],
       "tool_id": ["codex", "gemini"],
@@ -235,7 +236,7 @@
       "_doc": "The --review-fallback lane (dispatch-claude.js): a cross-provider REVIEW role is routed through subprocess-claude (a Claude clone) INTENTIONALLY when its normal provider (openai/gemini) is quota-dead. Honest visible debt — the completion record still stamps fallback:true + provider:claude + quota_fallback_from so coverage-gate sees the cross-provider debt; this lane only stops the W2 ENFORCE flip from BRICKING the fallback exactly when it is most needed. READ-ONLY review roles only — build-chain roles are refused this lane upstream (dispatch-claude.js guard, T-305 G2).",
       "flag": "--review-fallback",
       "shape": "subprocess-claude",
-      "applies_to_classes": ["cross_provider_reviewer"],
+      "applies_to_classes": ["cross_provider_reviewer", "cross_provider_consult_lead"],
       "completion_record": { "fallback": true, "provider": "claude", "requires": ["quota_fallback_from"] }
     }
   },

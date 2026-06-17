@@ -31,6 +31,14 @@ h.test("class derivation: builder=build_chain_worker, security-reviewer=cross_pr
   assert.strictEqual(classForRole("design-quality"), "claude_pinned_reviewer");
   assert.strictEqual(classForRole("alpha"), "face");
   assert.strictEqual(classForRole("director-of-engineering"), "manager");
+  // W2 (E-DISPATCH-PERFECT-001): the GPT product-leadership chain resolves to cross_provider_consult_lead
+  // — the {tier:director,provider:openai} rule FIRES before the generic {tier:director}→manager (β HOW-
+  // condition: prove RESOLUTION, not mere rule-string presence). The Claude director above stays manager,
+  // proving the first-match precedence is correct (provider discriminates, not tier).
+  assert.strictEqual(classForRole("director-of-product"), "cross_provider_consult_lead");
+  assert.strictEqual(classForRole("director-of-growth"), "cross_provider_consult_lead");
+  assert.strictEqual(classForRole("product-lead"), "cross_provider_consult_lead");
+  assert.strictEqual(classForRole("design-lead"), "cross_provider_consult_lead");
 });
 
 // ── happy shapes pass ───────────────────────────────────────

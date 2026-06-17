@@ -9,9 +9,15 @@ description: >-
   principles and ADDS execution principles (FTUE/NUX, Cold-vs-Warm-Start). Sub-owner
   under the Director of Product (S2.1).
 tools: [Read, Grep, Glob]
-model: claude-opus-4-8
+model: gpt-5.5
+provider: openai
+provider_model: gpt-5.5
+provider_reasoning_effort: high
+provider_fallback: claude
 layer: product
 ---
+
+> **Dispatch — how to call me (read first):** I run on **GPT-5.5 via subprocess** (the `cross_provider_consult_lead` class — operator: GPT writes product requirements; E-DISPATCH-PERFECT-001 W2). Reach me with `node scripts/dispatch-agent.js product-lead <prompt-file>`. Do **NOT** use the in-process Agent tool (`Agent(subagent_type:"product-lead")`) or `record-inprocess` — they honor my `model: gpt-5.5` frontmatter and the Agent tool can only spawn Claude, so it fails **by design** (ED-055). `provider_fallback: claude` covers a GPT quota-death via the sanctioned review-fallback lane.
 
 # Alex — Product Lead (PL)
 

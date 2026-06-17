@@ -124,17 +124,20 @@ agree — keep them in sync.
 | ops-analyst | openai | cross-run synthesis (formerly `learner`) |
 | redteam | gemini | different adversarial corpus, thinking-on |
 | design-lead | openai | gpt-5.5 xhigh — product design/UX/flows (ADR-0007) |
+| director-of-product | openai | gpt-5.5 xhigh — product strategy/sequencing/JTBD (E-DISPATCH-PERFECT-001 W2) |
+| product-lead | openai | gpt-5.5 high — requirement authoring PRD/stories/AC (operator: GPT writes product requirements) |
+| director-of-growth | openai | gpt-5.5 xhigh — go-to-market/message judgment (E-DISPATCH-PERFECT-001 W2) |
 | frontend-reviewer | openai | gpt-5.5 xhigh — code-quality review of the Claude FE builder |
 | backend-reviewer | openai | gpt-5.5 xhigh — code-quality review of the Claude BE builder |
 | qa-reviewer | openai | gpt-5.5 xhigh — traceability + integrity + functional |
 | security-reviewer | gemini | gemini-3.1-pro thinking-on — replaces redteam; + 2nd GPT jailbreak pass |
 | cabinet | openai | freeform cross-provider consult / second opinion — NO strict output schema (formerly `advisor`/`consult`) |
 
-> **`design-lead` is dispatched like a reviewer, NOT like a manager (the door to use).** It is the *one* product **lead** on a non-Claude provider — RULE 4 (operator: GPT is best at product design/UX/flows), the deliberate `cross_provider_consult_lead` class. So reach it via a subprocess:
+> **The GPT product-leadership chain (`design-lead`, `product-lead`, `director-of-product`, `director-of-growth`) is dispatched like a reviewer, NOT like a manager (the door to use).** These are the product/growth judgment + requirement-authoring roles on a non-Claude provider — RULE 4 (operator: GPT is best at product design/UX/flows + product requirements), the deliberate `cross_provider_consult_lead` class (E-DISPATCH-PERFECT-001 W2). So reach each via a subprocess (example shown for design-lead; identical for the other three):
 > ```bash
 > node scripts/dispatch-agent.js design-lead <prompt-file>
 > ```
-> **Do NOT** dispatch it via the in-process Agent tool (`Agent(subagent_type:"design-lead")`) or via `epsilon-runtime record-inprocess` — those are for the Claude **in-process** roster only (managers/leads/directors + design-quality/visual-review). `record-inprocess` will refuse it as a route mismatch **by design** (this is the system working, not a bug — ED-055, diagnosed-wrong 2026-06-16). Every other lead/director is Claude in-process; design-lead is the singular, intentional exception.
+> **Do NOT** dispatch it via the in-process Agent tool (`Agent(subagent_type:"design-lead")`) or via `epsilon-runtime record-inprocess` — those are for the Claude **in-process** roster only (managers/leads/directors + design-quality/visual-review). `record-inprocess` will refuse it as a route mismatch **by design** (this is the system working, not a bug — ED-055, diagnosed-wrong 2026-06-16). Every other lead/director (quality-lead, the frontend/backend/security leads, etc.) is Claude in-process; the GPT product-leadership chain (design-lead, product-lead, director-of-product, director-of-growth) is the intentional cross-provider set.
 
 Claude is the **fallback** for any non-Claude role on failure (`required-fallback.js`),
 not the default for the review layer — cross-provider diversity is the point.
