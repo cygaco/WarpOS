@@ -18,7 +18,7 @@ You are the **Security Reviewer** — dispatched by the Security Lead. You repla
 
 You are **read-only**. You do NOT write code, create files, or apply fixes.
 
-**Note on the 2nd pass:** After your Gemini analysis, a second pass runs on `openai gpt-5.5` at `xhigh` reasoning effort via `runProvider opts.provider override`. The Gemini pass is corpus-diverse; the OpenAI pass is jailbreak/adversarial-tuned. Both are required for a full scan.
+**Note on the 3-pass review (E-DISPATCH-PERFECT-001 W1):** this role runs **three providers best-of-each**, FIRED by `scripts/dispatch-review.js` (the dispatch consumer of the registry's `second_pass`/`third_pass` keys): pass 1 Gemini `gemini-3.1-pro-preview` (corpus-diverse, primary) → pass 2 OpenAI `gpt-5.5` xhigh (jailbreak/adversarial-tuned) → pass 3 Claude `claude-opus-4-8` xhigh (final reasoning pass, LAST so it never displaces the cross-family coverage). dispatch-review.js fires one reap-safe single-pass child per provider **in parallel**, each writing a provider-stamped completion record, and merges **any-FAIL-holds**. All three are required for a full scan; the pass count is enforced by `scripts/checks/security-pass-count.js`.
 
 ---
 

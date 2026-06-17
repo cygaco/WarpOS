@@ -442,6 +442,17 @@ function agentRoot() {
   return (t.ok && t.AGENT_ROOT) || path.resolve(__dirname, "..", "..");
 }
 
+/** The ordered provider passes for a role (primary + second_pass + third_pass), or [] if it can't
+ *  be resolved. Multi-pass roles (length > 1, e.g. security-reviewer) route through dispatch-review.js
+ *  so every declared pass FIRES as a reap-safe single-pass child (E-DISPATCH-PERFECT-001 W1). */
+function passesForRole(role) {
+  try {
+    return require(path.join(agentRoot(), "scripts", "dispatch", "registry-roles")).passesOf(role);
+  } catch {
+    return [];
+  }
+}
+
 /** Write a real per-agent prompt for the step; returns the file path. */
 function writeStepPrompt(agentPlan, sprintId) {
   const dir = path.join(agentRoot(), ".claude", "runtime", "epsilon-prompts");
@@ -528,7 +539,14 @@ function spawnAgent(agentPlan, sprintId, opts = {}) {
     // child re-clamp of the propagated value can never lift it above childBaseMs.
     const childBaseMs = foregroundAwareTimeout(opts.timeoutMs || WRAPPER_DEFAULTS["epsilon-agent"], opts);
     env.DISPATCH_BUILDER_TIMEOUT_MS = String(childBaseMs);
-    const r = run(process.execPath, [path.join(root, "scripts/dispatch-agent.js"), agentPlan.role, promptFile], {
+    // W1 (E-DISPATCH-PERFECT-001): a role with declared extra passes (second_pass/third_pass) routes
+    // through dispatch-review.js — it FIRES one reap-safe single-pass dispatch-agent child PER PASS
+    // in parallel, each self-recording a provider-stamped completion record (so gauntlet-verify +
+    // security-pass-count see N lanes). Single-pass roles go direct. Both self-record
+    // (recordedByCli=true) — ε never double-records.
+    const reviewScript =
+      passesForRole(agentPlan.role).length > 1 ? "scripts/dispatch-review.js" : "scripts/dispatch-agent.js";
+    const r = run(process.execPath, [path.join(root, reviewScript), agentPlan.role, promptFile], {
       ...common,
       timeout: childBaseMs + PARENT_GRACE_MS,
     });

@@ -84,6 +84,24 @@ const providerOf = (role, roles = loadRoles()) => (roles[role] ? roles[role].pro
 const effortOf = (role, roles = loadRoles()) => (roles[role] ? roles[role].effort : undefined);
 const modelOf = (role, roles = loadRoles()) => (roles[role] ? roles[role].model : undefined);
 
+/**
+ * The ORDERED list of provider passes for a role: the primary, then second_pass, then third_pass
+ * (each = { provider, model, effort, key }). A role with no extra passes returns just the primary
+ * (length 1). This is the single source the multi-provider review FIRING reads — dispatch-review.js
+ * fires one reap-safe single-pass dispatch per entry, and security-pass-count asserts the stamp
+ * count matches (E-DISPATCH-PERFECT-001 W1). Returns [] for an unknown role.
+ */
+function passesOf(role, roles = loadRoles()) {
+  const r = roles[role];
+  if (!r) return [];
+  const out = [{ provider: r.provider, model: r.model || null, effort: r.effort || null, key: "primary" }];
+  for (const key of ["second_pass", "third_pass"]) {
+    const p = r[key];
+    if (p && p.provider) out.push({ provider: p.provider, model: p.model || null, effort: p.effort || null, key });
+  }
+  return out;
+}
+
 /** Build-chain roles (dispatch-route-guard.BUILD_CHAIN_ROLES) — build_chain:true. */
 function buildChainRoles(roles = loadRoles()) {
   return roleIds(roles).filter((r) => roles[r].build_chain === true);
@@ -180,6 +198,7 @@ module.exports = {
   providerOf,
   effortOf,
   modelOf,
+  passesOf,
   buildChainRoles,
   geminiRoles,
   flagshipOpenaiRoles,

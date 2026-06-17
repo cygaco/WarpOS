@@ -390,6 +390,9 @@ function evaluateRegistry(reg, catalog) {
     if (r.second_pass && r.second_pass.model && !models.has(r.second_pass.model)) {
       errors.push(`registry role "${name}" second_pass.model "${r.second_pass.model}" is not in the catalog`);
     }
+    if (r.third_pass && r.third_pass.model && !models.has(r.third_pass.model)) {
+      errors.push(`registry role "${name}" third_pass.model "${r.third_pass.model}" is not in the catalog`);
+    }
     for (const d of r.dispatchable_by || []) {
       if (!roleNames.has(d)) errors.push(`registry role "${name}".dispatchable_by names unknown role "${d}"`);
     }

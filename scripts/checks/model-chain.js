@@ -51,6 +51,8 @@ function collectModelRefs(reg) {
     if (r.model != null) refs.push({ where: `roles.${name}.model`, model: r.model });
     if (r.second_pass && r.second_pass.model != null)
       refs.push({ where: `roles.${name}.second_pass.model`, model: r.second_pass.model });
+    if (r.third_pass && r.third_pass.model != null)
+      refs.push({ where: `roles.${name}.third_pass.model`, model: r.third_pass.model });
   }
   const policy = (reg && reg.model_policy) || {};
   for (const k of ["doers", "review_flagship", "security_2nd_pass"]) {

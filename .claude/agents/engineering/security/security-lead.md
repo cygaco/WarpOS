@@ -63,22 +63,28 @@ reviewer binding post-dispatch).
 
 ---
 
-## 2-Pass Review — Dispatch Property of the Reviewer
+## 3-Pass Review — best-of-each, FIRED by dispatch-review.js (E-DISPATCH-PERFECT-001 W1)
 
-The security-reviewer runs **two providers** as a single dispatch property — not two
-separate agents:
+The security-reviewer runs **three providers best-of-each**, in order — as a single dispatch
+property, not three separate agents:
 
 | Pass | Provider | Model | Purpose |
 |------|----------|-------|---------|
-| 1 | Gemini | `gemini-3.1-pro-preview` (thinking always-on) | Corpus-diverse attack surface — OWASP, injection chains, prompt-injection-prober, attack-chain-correlator |
-| 2 | OpenAI | `gpt-5.5` / effort: xhigh | Jailbreak-tuned adversarial pass — policy-bypass, prompt-injection, adversarial input shaping |
+| 1 (primary)     | Gemini | `gemini-3.1-pro-preview` (thinking always-on) | Corpus-diverse attack surface — OWASP, injection chains, prompt-injection-prober, attack-chain-correlator |
+| 2 (second_pass) | OpenAI | `gpt-5.5` / effort: xhigh | Jailbreak-tuned adversarial pass — policy-bypass, prompt-injection, adversarial input shaping |
+| 3 (third_pass)  | Claude | `claude-opus-4-8` / effort: xhigh | Final reasoning pass over the merged surface — LAST, so it never displaces the cross-family coverage (β: Claude pass additive + last is invariant-clean) |
 
-The Lead **dispatches the reviewer once**; the reviewer's internal spec handles the two
-passes and merges them into a single verdict. The Lead does not split the passes, does not
-re-order them, and does not short-circuit pass 2 on a pass-1 PASS.
+The passes are declared on the `security-reviewer` registry row (`provider` + `second_pass` +
+`third_pass`) and **FIRED by `scripts/dispatch-review.js`** — the dispatch CONSUMER of those keys.
+It spawns ONE reap-safe single-pass `dispatch-agent.js … --provider <p>` child **per pass, in
+parallel**, each writing its own provider-stamped completion record; it then merges
+**any-FAIL-holds** (the review is clean only if EVERY pass is both alive and clean). The Lead does
+not split, re-order, or short-circuit the passes — it dispatches the review **via dispatch-review.js**,
+which guarantees all three fire. Adding/removing a pass = editing the registry row, never this prose.
 
-This is the mandated **2nd-GPT security pass** from `model_policy.security_2nd_pass` in
-the role registry.
+This is the mandated cross-provider security pass from `model_policy.security_2nd_pass` in the role
+registry, now a **3-provider** chain. The pass count is enforced by `scripts/checks/security-pass-count.js`
+(a review with fewer than the declared number of distinct-provider stamps is flagged).
 
 ---
 
@@ -88,7 +94,7 @@ the role registry.
 
 ```
 1. security-builder   — hardening build (authn/z · secrets · validation · OWASP mitigations)
-2. security-reviewer  — 2-pass attack (Gemini → GPT-5.5); returns PASS | FAIL + findings
+2. security-reviewer  — 3-pass attack via dispatch-review.js (Gemini → GPT-5.5 → Claude); returns PASS | FAIL + findings
 3. [if FAIL] → security-fixer — fix-one-brief ≤3 attempts per finding
 4. security-reviewer  — re-runs after every fixer cycle until PASS
 ```
