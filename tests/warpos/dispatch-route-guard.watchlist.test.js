@@ -79,6 +79,11 @@ const BLOCKED_CMDS = [
   "gemini -p 'classify this'",
   // Bare `claude -p` without --agent
   "claude -p 'summarize this'",
+  // N5 (W2): raw `claude -p --agent <cross-provider-reviewer>` is RECORDLESS — must use the
+  // RECORDED --review-fallback lane (dispatch-claude.js). Blocked by role AND by legacy alias.
+  "claude -p --agent backend-reviewer /tmp/p.txt",
+  "claude -p --agent security-reviewer /tmp/p.txt",
+  "claude -p --agent qa-reviewer /tmp/prompt.txt", // current cross-provider reviewer name
 ];
 
 for (const cmd of BLOCKED_CMDS) {
@@ -103,8 +108,11 @@ const ALLOWED_CMDS = [
   // models list / auth status calls
   "codex models list",
   "gemini auth status",
-  // The Claude documented fallback — allowed
-  "claude -p --agent qa /tmp/prompt.txt",
+  // The Claude documented fallback — allowed for NON-review roles (N5 redirects cross-provider
+  // review roles to the recorded --review-fallback lane). general-purpose = dispatch-skill's path;
+  // design-quality = a claude-pinned judge — both still fall through (no recorded-fallback lane).
+  "claude -p --agent general-purpose /tmp/prompt.txt",
+  "claude -p --agent design-quality /tmp/prompt.txt",
   // Provider-smoke itself — never invokes a prompt CLI, just probes
   "node scripts/warpos/provider-smoke.js --providers claude,openai,gemini",
   "node scripts/warpos/provider-smoke.js --json --no-autofix",

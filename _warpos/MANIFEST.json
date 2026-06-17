@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-16T23:58:21.749Z",
+  "generatedAt": "2026-06-17T00:15:52.129Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.16.0",
   "migrations": [],
@@ -2218,8 +2218,8 @@
       "owner": "framework",
       "managed": true,
       "source": null,
-      "sha256": "d56cfd9c5d45746abf01c19c2f38f4565bcd1b4656b5f4b5583e188db4b573a6",
-      "installedSha": "d56cfd9c5d45746abf01c19c2f38f4565bcd1b4656b5f4b5583e188db4b573a6"
+      "sha256": "4f73d1aaf93dd7ba1061fab810d2c9df0676fc27815c609068beebc950e0b2bb",
+      "installedSha": "4f73d1aaf93dd7ba1061fab810d2c9df0676fc27815c609068beebc950e0b2bb"
     },
     "tests/warpos/product-bootstrap.unit.test.js": {
       "owner": "framework",
@@ -5977,8 +5977,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/dispatch-route-guard.js",
-      "sha256": "747db3a0dfb67c07f18767bd8f4624e5f5fb93bbd29513dd3978f2e05029fb78",
-      "installedSha": "747db3a0dfb67c07f18767bd8f4624e5f5fb93bbd29513dd3978f2e05029fb78"
+      "sha256": "532b9f6b0ea7a03973316f8d8ee3e57f33db943a8c1edd34fb7f05b2f6127590",
+      "installedSha": "532b9f6b0ea7a03973316f8d8ee3e57f33db943a8c1edd34fb7f05b2f6127590"
     },
     "scripts/hooks/edit-watcher.js": {
       "owner": "framework",
