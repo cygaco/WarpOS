@@ -4631,7 +4631,7 @@
         "src": "scripts/hooks/dispatch-route-guard.js",
         "dest": "scripts/hooks/dispatch-route-guard.js",
         "kind": "hook",
-        "sha256": "532b9f6b0ea7a03973316f8d8ee3e57f33db943a8c1edd34fb7f05b2f6127590",
+        "sha256": "f61b7b78b80b5e276672f75c9ed06e45f99dce67bec62a9fa314732dc4d12906",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",

@@ -84,6 +84,10 @@ const BLOCKED_CMDS = [
   "claude -p --agent backend-reviewer /tmp/p.txt",
   "claude -p --agent security-reviewer /tmp/p.txt",
   "claude -p --agent qa-reviewer /tmp/prompt.txt", // current cross-provider reviewer name
+  // N5 gauntlet hardening — quoted-token + multi-flag evasions must STILL block (they execute raw):
+  '"claude" -p --agent qa-reviewer /tmp/p.txt', // quoted claude token
+  'claude "-p" --agent backend-reviewer /tmp/p.txt', // quoted -p token
+  "claude -p --agent general-purpose --agent qa-reviewer /tmp/p.txt", // multi --agent (last-wins)
 ];
 
 for (const cmd of BLOCKED_CMDS) {
@@ -113,6 +117,9 @@ const ALLOWED_CMDS = [
   // design-quality = a claude-pinned judge — both still fall through (no recorded-fallback lane).
   "claude -p --agent general-purpose /tmp/prompt.txt",
   "claude -p --agent design-quality /tmp/prompt.txt",
+  // N5 false-positive guard: a literal `claude -p --agent <reviewer>` INSIDE a quoted arg (e.g. a
+  // commit message) is ONE shell token → must NOT block (the quoted-blob the detection preserves).
+  'git commit -m "switching from claude -p --agent qa-reviewer to the recorded lane"',
   // Provider-smoke itself — never invokes a prompt CLI, just probes
   "node scripts/warpos/provider-smoke.js --providers claude,openai,gemini",
   "node scripts/warpos/provider-smoke.js --json --no-autofix",
