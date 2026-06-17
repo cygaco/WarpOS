@@ -9,7 +9,6 @@ const fs = require("node:fs");
 const path = require("node:path");
 const {
   PROVIDERS,
-  ROLES,
   DEFAULT_PROVIDER_PER_ROLE,
   DEFAULT_EFFORT_PER_ROLE,
   resolveModelAlias,
@@ -199,7 +198,12 @@ function buildPanelState() {
   const roleFiles = buildRoleFileMap();
 
   const roles = [];
-  for (const role of ROLES) {
+  // Registry-derived rows (E-DISPATCH-PERFECT-001 W0): the panel reflects the REAL 34-role roster
+  // straight from the registry SoT (incl. the managers/leads/directors the catalog `ROLES` display
+  // subset omitted), and never the 6 pre-ADR-0007 scrapped back-compat aliases (builder/reviewer/
+  // compliance/qa/redteam/fixer) that ride along in catalog `ROLES` via the SCRAPPED_*_ALIASES shim.
+  // The shim itself stays untouched — dispatch-routing-parity depends on it.
+  for (const role of registryRoles.roleIds()) {
     const files = roleFiles[role] || [];
     const fm = readRoleFrontmatter(files);
     const provider = resolveProvider(role, manifest);

@@ -2,8 +2,9 @@
 "use strict";
 /**
  * Bite-test for model-chain.js (ED-058) — proves the pure evaluateModelChain() FIRES each finding
- * class (no-fable, alpha pin, top-model, completeness, effort validity, max-only-alpha, and the
- * registry↔consumer DRIFT detector) AND that the no-fable scan does NOT false-positive on a policy
+ * class (no-fable, alpha pin, top-model, completeness, effort validity, max-only-alpha, the
+ * registry↔consumer DRIFT detector, the spec-frontmatter EFFORT-drift check H, and the scrapped-role
+ * reintroduction guard I) AND that the no-fable scan does NOT false-positive on a policy
  * note that merely MENTIONS fable to reject it (the false-positive guard is the whole point — a
  * model-chain gate that flagged its own "fable is rejected" doc would be un-shippable).
  *
@@ -190,6 +191,89 @@ test("providers reasoning-effort drift → DRIFT", () => {
   consumers.providerEffortFn = (role) => (role === "qa-reviewer" ? "medium" : reg.roles[role] && reg.roles[role].effort); // stale literal
   const errs = evaluateModelChain({ reg, consumers });
   assert.ok(has(errs, "[DRIFT]") && has(errs, "getReasoningEffort"), errs.join(" | "));
+});
+
+// ── H. Spec-frontmatter EFFORT parity (ED-058 blind-spot — the gap that let beta/gamma/delta drift). ──
+test("spec effort drift (spec high vs registry max) → DRIFT", () => {
+  const reg = cleanReg();
+  const specs = { alpha: { exists: true, hasEffortKey: true, effort: "high", path: "x/alpha.md" } };
+  const errs = evaluateModelChain({ reg, specs });
+  assert.ok(has(errs, "[DRIFT]") && has(errs, "frontmatter effort"), errs.join(" | "));
+});
+test("spec effort matches registry → no spec-drift finding", () => {
+  const reg = cleanReg();
+  const specs = { alpha: { exists: true, hasEffortKey: true, effort: "max", path: "x/alpha.md" } };
+  const errs = evaluateModelChain({ reg, specs });
+  assert.ok(!has(errs, "frontmatter effort"), errs.join(" | "));
+});
+test("spec omits effort key → not flagged (omission ≠ drift, mirrors check G)", () => {
+  const reg = cleanReg();
+  const specs = { alpha: { exists: true, hasEffortKey: false, path: "x/alpha.md" } };
+  const errs = evaluateModelChain({ reg, specs });
+  assert.ok(!has(errs, "frontmatter effort"), errs.join(" | "));
+});
+test("spec missing on disk → not a spec-drift finding (role-parity's scope)", () => {
+  const reg = cleanReg();
+  const specs = { alpha: { exists: false, reason: "unreadable" } };
+  const errs = evaluateModelChain({ reg, specs });
+  assert.ok(!has(errs, "frontmatter effort"), errs.join(" | "));
+});
+
+test("H/HIGH-1: provider_reasoning_effort drift (the cross-provider key) → DRIFT", () => {
+  const reg = cleanReg(); // alpha effort = max
+  const specs = { alpha: { exists: true, hasProviderEffortKey: true, providerEffort: "high", path: "x/alpha.md" } };
+  const errs = evaluateModelChain({ reg, specs });
+  assert.ok(has(errs, "[DRIFT]") && has(errs, "provider_reasoning_effort"), errs.join(" | "));
+});
+test("H: provider_reasoning_effort matching registry → no finding", () => {
+  const reg = cleanReg();
+  const specs = { alpha: { exists: true, hasProviderEffortKey: true, providerEffort: "max", path: "x/alpha.md" } };
+  const errs = evaluateModelChain({ reg, specs });
+  assert.ok(!has(errs, "frontmatter"), errs.join(" | "));
+});
+test("H/HIGH-2: empty (YAML null) spec effort vs non-null registry → DRIFT", () => {
+  const reg = cleanReg(); // alpha effort = max
+  const specs = { alpha: { exists: true, hasEffortKey: true, effort: null, path: "x/alpha.md" } };
+  const errs = evaluateModelChain({ reg, specs });
+  assert.ok(has(errs, "[DRIFT]") && has(errs, "frontmatter effort"), errs.join(" | "));
+});
+
+// ── I. Scrapped-role reintroduction guard (ADR-0007): registry-only, the back-compat shim is exempt. ──
+test("scrapped name as a REAL registry role → SCRAPPED", () => {
+  const reg = cleanReg();
+  reg.roles.reviewer = { provider: "openai", model: "gpt-5.5", effort: "xhigh" };
+  const errs = evaluateModelChain({ reg });
+  assert.ok(has(errs, "[SCRAPPED]") && has(errs, "reviewer"), errs.join(" | "));
+});
+test("scrapped names in consumer maps (the SCRAPPED_*_ALIASES shim) → NOT flagged", () => {
+  const reg = cleanReg();
+  const consumers = cleanConsumers(reg);
+  consumers.catalogProvider.reviewer = "openai"; // the intentional back-compat shim alias
+  consumers.catalogProvider.qa = "openai";
+  const errs = evaluateModelChain({ reg, consumers });
+  assert.ok(!has(errs, "[SCRAPPED]"), "shim aliases in consumer maps must not be flagged: " + errs.join(" | "));
+});
+
+// ── parseFrontmatterEffort unit (the parser behind check H) ──
+test("parseFrontmatterEffort: both keys + null/empty/comment/quotes (W0 review HIGH-1/2, MED-3)", () => {
+  const P = require("./model-chain").parseFrontmatterEffort;
+  assert.equal(P("---\nname: x\neffort: xhigh\n---\nbody").effort, "xhigh");
+  assert.equal(P('---\neffort: "high"\n---').effort, "high");
+  assert.equal(P("---\neffort: null\n---").effort, null);
+  assert.equal(P("---\neffort: ~\n---").effort, null);
+  // HIGH-2: an empty `effort:` line is YAML null and MUST count as present (was treated as absent).
+  const empty = P("---\nname: x\neffort:\n---");
+  assert.equal(empty.hasEffortKey, true);
+  assert.equal(empty.effort, null);
+  // MED-3: an inline `# comment` is not part of the value (was a false-positive source).
+  assert.equal(P("---\neffort: high # intentional\n---").effort, "high");
+  // HIGH-1: provider_reasoning_effort (the cross-provider dispatch key) is parsed independently.
+  const pre = P("---\nprovider: gemini\nprovider_reasoning_effort: high\n---");
+  assert.equal(pre.hasProviderEffortKey, true);
+  assert.equal(pre.providerEffort, "high");
+  assert.equal(pre.hasEffortKey, false);
+  assert.equal(P("---\nname: x\n---").hasEffortKey, false);
+  assert.equal(P("no frontmatter here").hasFrontmatter, false);
 });
 
 // ── Integration: the REAL enforcer runs on the live registry, exits 0, emits OK. ──

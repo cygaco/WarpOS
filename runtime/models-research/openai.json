@@ -66,7 +66,7 @@
     {"id": "gpt-5.4-pro", "reason": "Snapshot gpt-5.4-pro-2026-03-05 — 2026 release."},
     {"id": "gpt-5.4-mini", "reason": "GPT-5.4 mini — 2026 release; current strongest mini."},
     {"id": "gpt-5.4-nano", "reason": "Snapshot gpt-5.4-nano-2026-03-17 — 2026 release."},
-    {"id": "gpt-5.3-codex", "reason": "Current default agentic coding model — 2026 release (GPT-5.3 generation)."},
+    {"id": "gpt-5.3-codex", "reason": "GPT-5.3-generation agentic coding model. NOT in the WarpOS catalog — removed 2026-06-17 (E-DISPATCH-PERFECT-001 W0): superseded by the 5.4/5.5 class for our doer/review roles (operator decision; not a vendor shutdown)."},
     {"id": "gpt-image-2", "reason": "Snapshot gpt-image-2-2026-04-21 — 2026 release; current SOTA image model."},
     {"id": "gpt-realtime-2", "reason": "Current most-capable realtime voice model — 2026 release."},
     {"id": "chat-latest", "reason": "Knowledge cutoff Aug 31 2025; current ChatGPT-Instant alias tracking the 5.5-era Instant snapshot."},

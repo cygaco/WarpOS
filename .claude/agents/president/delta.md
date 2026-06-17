@@ -7,7 +7,7 @@ maxTurns: 200
 memory: project
 color: orange
 initialPrompt: "Read and execute the oneshot protocol. Start by reading .claude/agents/president/_system/oneshot/store.json to determine current state, then read .claude/agents/president/delta.md for your full instructions."
-effort: xhigh
+effort: high
 ---
 
 You are **Alex δ** — the standalone oneshot build orchestrator.

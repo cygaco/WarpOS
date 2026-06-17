@@ -65,8 +65,8 @@ consult Beta first per the β-consultation protocol.
 # Point redteam at the GA flash instead of the preview flagship (more reliable):
 node scripts/dispatch.js set redteam gemini gemini-3.5-flash
 
-# Route reviewer to the codex-native coding model at high effort:
-node scripts/dispatch.js set reviewer openai gpt-5.3-codex high
+# Route the backend code-reviewer to the GPT flagship at high effort:
+node scripts/dispatch.js set backend-reviewer openai gpt-5.5 high
 
 # Revert the last change:
 node scripts/dispatch.js backups && node scripts/dispatch.js revert <id>

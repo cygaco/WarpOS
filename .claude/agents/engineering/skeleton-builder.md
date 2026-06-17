@@ -5,7 +5,6 @@ tools: Read, Grep, Glob, Write
 disallowedTools: Agent, Bash, Edit
 provider: claude
 model: claude-sonnet-4-6
-effort: medium
 build_chain: true
 maxTurns: 15
 color: yellow

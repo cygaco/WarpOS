@@ -90,19 +90,11 @@ const OPENAI = {
       pricing: { inPerMTok: 0.75, outPerMTok: 4.5 },
     },
     // Added 2026-06-01 (audit vs developers.openai.com/api/docs/models/all):
-    // gpt-5.3-codex is the codex-CLI-native agentic coding model (the codex CLI's
-    // own default). We keep gpt-5.5 as the flagship for REVIEW/QA roles (general
-    // reasoning > coding-tuned for adversarial review), but expose codex as an
-    // option. gpt-5.4-nano is the cheapest 5.4-class for high-volume/sub-agent use.
+    // gpt-5.4-nano is the cheapest 5.4-class for high-volume/sub-agent use.
     // NOT added: gpt-5.5-pro / gpt-5.4-pro — Responses-API-only (no streaming),
     // not cleanly dispatchable via `codex exec`; selecting them would fail.
-    {
-      id: "gpt-5.3-codex",
-      label: "GPT-5.3 Codex (agentic coding; codex-CLI native)",
-      effortLevels: ["low", "medium", "high", "xhigh"],
-      contextTokens: 400_000,
-      maxOutputTokens: 128_000,
-    },
+    // REMOVED 2026-06-17 (E-DISPATCH-PERFECT-001 W0): gpt-5.3-codex — superseded in
+    // the live OpenAI docs (5.4/5.5 class); doers floor at gpt-5.4/5.4-mini (operator).
     {
       id: "gpt-5.4-nano",
       label: "GPT-5.4 Nano (cheapest 5.4-class)",

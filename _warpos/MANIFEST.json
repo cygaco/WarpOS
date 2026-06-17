@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-17T22:04:09.963Z",
+  "generatedAt": "2026-06-17T22:52:02.088Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.16.0",
   "migrations": [],
@@ -5827,8 +5827,15 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/models/check.js",
-      "sha256": "ab7bf4aed3f1700fd77db3061bba530a33906f2770312fe1f1821dc5d7e88b44",
-      "installedSha": "ab7bf4aed3f1700fd77db3061bba530a33906f2770312fe1f1821dc5d7e88b44"
+      "sha256": "e6d18d1422656a731e21d6682658c1ddd2327ffdca36c182f7bcbdb5a2560423",
+      "installedSha": "e6d18d1422656a731e21d6682658c1ddd2327ffdca36c182f7bcbdb5a2560423"
+    },
+    "scripts/models/check.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/models/check.test.js",
+      "sha256": "d3a2447313724cd5cd0934369dbb9e4e2d6aaa8e34d014ae1b7c25ec175c4e22",
+      "installedSha": "d3a2447313724cd5cd0934369dbb9e4e2d6aaa8e34d014ae1b7c25ec175c4e22"
     },
     "scripts/memory/provenance.js": {
       "owner": "framework",
@@ -6716,8 +6723,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/dispatch/catalog.js",
-      "sha256": "332d62bab9c032d2d9a8df848b759925a0536d5c64d9de784ab44174e6801dfc",
-      "installedSha": "332d62bab9c032d2d9a8df848b759925a0536d5c64d9de784ab44174e6801dfc"
+      "sha256": "36654fb11b0863c4f3ef3225ccfb5021591627438d888d12b3ab5f076f667323",
+      "installedSha": "36654fb11b0863c4f3ef3225ccfb5021591627438d888d12b3ab5f076f667323"
     },
     "scripts/dispatch/cli-preview.js": {
       "owner": "framework",
@@ -6912,8 +6919,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/dispatch/state.js",
-      "sha256": "02e70aaded6293dca6e04cbe0b16e850601253c92132422ccb54269817785bb5",
-      "installedSha": "02e70aaded6293dca6e04cbe0b16e850601253c92132422ccb54269817785bb5"
+      "sha256": "dca2432f774359bec7563869775f83f2c5dcee697dd90fa49a8be2a658ad6439",
+      "installedSha": "dca2432f774359bec7563869775f83f2c5dcee697dd90fa49a8be2a658ad6439"
     },
     "scripts/dispatch/test-registry-roles.js": {
       "owner": "framework",
@@ -7437,15 +7444,15 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/model-chain.js",
-      "sha256": "9ea28d1c497b08f4bae7b2990f0423f0f7306b40520d21afd2cf556d399fe61a",
-      "installedSha": "9ea28d1c497b08f4bae7b2990f0423f0f7306b40520d21afd2cf556d399fe61a"
+      "sha256": "c4fe5922dfdd0f8e919c2eb79e865a2c1a05af14ca5116f094f4a28c75fe38e6",
+      "installedSha": "c4fe5922dfdd0f8e919c2eb79e865a2c1a05af14ca5116f094f4a28c75fe38e6"
     },
     "scripts/checks/model-chain.test.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/model-chain.test.js",
-      "sha256": "877687ec2a10f014911df324cb98818da5f16a05809b0c68d2ffd9bbc6c27f99",
-      "installedSha": "877687ec2a10f014911df324cb98818da5f16a05809b0c68d2ffd9bbc6c27f99"
+      "sha256": "9702315ba9d996f743c310395ef582e99af245b6ae950af5b3bb41ee31d1241b",
+      "installedSha": "9702315ba9d996f743c310395ef582e99af245b6ae950af5b3bb41ee31d1241b"
     },
     "scripts/checks/no-nul-bytes.js": {
       "owner": "framework",
@@ -21684,8 +21691,8 @@
       "managed": true,
       "source": ".claude/commands/models/route.md",
       "kind": "md",
-      "sha256": "90c8e5fa2639d6fff8d467612c9d15782f81c689857999725064a622e2eaf9c0",
-      "installedSha": "90c8e5fa2639d6fff8d467612c9d15782f81c689857999725064a622e2eaf9c0"
+      "sha256": "c3625a73d6063ceb9e1cf65ca00e6941c85ecb6317f4e574a68ae75cf967e711",
+      "installedSha": "c3625a73d6063ceb9e1cf65ca00e6941c85ecb6317f4e574a68ae75cf967e711"
     },
     ".claude/commands/models/router.md": {
       "owner": "framework",
@@ -22628,8 +22635,8 @@
       "managed": true,
       "source": ".claude/agents/president/beta.md",
       "kind": "md",
-      "sha256": "e1eb4d66c2ed6fb74827c072af96c76a5e8b4e114566ffa377eec4ee6b5a7ffb",
-      "installedSha": "e1eb4d66c2ed6fb74827c072af96c76a5e8b4e114566ffa377eec4ee6b5a7ffb"
+      "sha256": "2b9f9163a8ace4423c1d7cf7214c91a07c5c545dc446fb87d82b0334b5a19056",
+      "installedSha": "2b9f9163a8ace4423c1d7cf7214c91a07c5c545dc446fb87d82b0334b5a19056"
     },
     ".claude/agents/president/cabinet.md": {
       "owner": "framework",
@@ -22644,8 +22651,8 @@
       "managed": true,
       "source": ".claude/agents/president/delta.md",
       "kind": "md",
-      "sha256": "49800418dddb180ff5c431dffaf6093652d090ea5d321332b286c39e58bc9a34",
-      "installedSha": "49800418dddb180ff5c431dffaf6093652d090ea5d321332b286c39e58bc9a34"
+      "sha256": "f05498f35ebc260883c3a35827433b0f2f5efb6e542d9d5e8faa82cea6f92eea",
+      "installedSha": "f05498f35ebc260883c3a35827433b0f2f5efb6e542d9d5e8faa82cea6f92eea"
     },
     ".claude/agents/president/epsilon.md": {
       "owner": "framework",
@@ -22660,8 +22667,8 @@
       "managed": true,
       "source": ".claude/agents/president/gamma.md",
       "kind": "md",
-      "sha256": "f8e74f18dcd3911c11ed606820a7c630bf24fb4196e3dbc8fd261bb95be3bf1d",
-      "installedSha": "f8e74f18dcd3911c11ed606820a7c630bf24fb4196e3dbc8fd261bb95be3bf1d"
+      "sha256": "6f4ab54df18acab9ec84da74802425f571cfca0a4bb54e17daa1e0184dca14af",
+      "installedSha": "6f4ab54df18acab9ec84da74802425f571cfca0a4bb54e17daa1e0184dca14af"
     },
     ".claude/agents/president/ops-analyst.md": {
       "owner": "framework",
@@ -22993,8 +23000,8 @@
       "managed": true,
       "source": ".claude/agents/growth/director-of-growth.md",
       "kind": "md",
-      "sha256": "2ff74daa80485e31549414565b4eb37e0622bf46fdcd53160b09f9e1ea86f7e4",
-      "installedSha": "2ff74daa80485e31549414565b4eb37e0622bf46fdcd53160b09f9e1ea86f7e4"
+      "sha256": "5296d2072cbc76c81f7c4fcf82014d33c76e87eccdcac1db0f6e0b9ce512226d",
+      "installedSha": "5296d2072cbc76c81f7c4fcf82014d33c76e87eccdcac1db0f6e0b9ce512226d"
     },
     ".claude/agents/growth/marketing-lead.md": {
       "owner": "framework",
@@ -23025,8 +23032,8 @@
       "managed": true,
       "source": ".claude/agents/engineering/skeleton-builder.md",
       "kind": "md",
-      "sha256": "2ff880abd86b608093cf80d6a7c22a5dcd44aa4b9809246791c92c5f35f98233",
-      "installedSha": "2ff880abd86b608093cf80d6a7c22a5dcd44aa4b9809246791c92c5f35f98233"
+      "sha256": "a996fe4f0619b37488685751313f54e915d693f1dce6619b97c8e71fac5db98a",
+      "installedSha": "a996fe4f0619b37488685751313f54e915d693f1dce6619b97c8e71fac5db98a"
     },
     ".claude/agents/engineering/security/builder.md": {
       "owner": "framework",

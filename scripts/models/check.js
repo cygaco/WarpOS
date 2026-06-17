@@ -13,7 +13,10 @@
  * Flags per provider:
  *   ERROR  configured id is deprecated / shut down (ghost) → must migrate
  *   WARN   configured id not found in the latest docs (verify it is servable)
- *   WARN   research snapshot missing or stale (> --max-age-days, default 30)
+ *   WARN   research snapshot missing or stale (> --max-age-days, default 14)
+ *
+ * The snapshot age for every present vendor is ALWAYS surfaced (human + --json),
+ * so an "all current" claim can never hide an aging snapshot (W0 honest-age).
  *   INFO   a newer flagship exists than the configured default
  *
  * Usage:
@@ -35,7 +38,7 @@ const ROOT = path.resolve(__dirname, "..", "..");
 function parseArgs(argv) {
   const a = {
     json: false,
-    maxAgeDays: 30,
+    maxAgeDays: 14,
     researchDir: path.join(ROOT, "runtime", "models-research"),
     provider: null,
   };
@@ -152,6 +155,7 @@ function main() {
   const findings = []; // {provider, level, id, message}
   const add = (provider, level, id, message) =>
     findings.push({ provider, level, id, message });
+  const ages = []; // {provider, ageDays} — ALWAYS collected so an "all current" claim is honest (W0)
 
   let entries = Object.entries(PROVIDERS);
   if (args.provider) {
@@ -177,14 +181,19 @@ function main() {
         null,
         `no research snapshot at ${path.relative(ROOT, file)} — run \`/models:check --refresh\` to deep-ingest the vendor docs.`,
       );
+      ages.push({ provider: pid, ageDays: null, status: "missing" }); // exhaustive per-provider report (W0 review LOW-5)
       continue;
     }
 
-    // Staleness
+    // Staleness — record the age for EVERY present provider (honest age surfacing, W0), then flag if
+    // stale. Staleness compares EXACT elapsed ms (W0 review MED-4: a floored age let a snapshot 14d+
+    // hours old slip past a ">14d" threshold until a full 15d elapsed); the displayed `age` stays floored.
+    const fetchedMs = Date.parse(research.fetched_at);
     const age = ageDays(research.fetched_at);
-    if (age === null) {
+    ages.push({ provider: pid, ageDays: age, status: "present" });
+    if (age === null || !Number.isFinite(fetchedMs)) {
       add(pid, "WARN", null, `research snapshot has no parseable fetched_at.`);
-    } else if (age > args.maxAgeDays) {
+    } else if (Date.now() - fetchedMs > args.maxAgeDays * 86_400_000) {
       add(
         pid,
         "WARN",
@@ -241,7 +250,7 @@ function main() {
   if (args.json) {
     console.log(
       JSON.stringify(
-        { ok: errors.length === 0, counts: { error: errors.length, warn: warns.length, info: infos.length }, findings },
+        { ok: errors.length === 0, counts: { error: errors.length, warn: warns.length, info: infos.length }, snapshots: ages, findings },
         null,
         2,
       ),
@@ -265,6 +274,12 @@ function main() {
   console.log("");
   console.log(col.bold("Models Check — catalog vs latest vendor docs"));
   console.log(col.dim(`research dir: ${path.relative(ROOT, args.researchDir)} · max age ${args.maxAgeDays}d`));
+  if (ages.length) {
+    const agesStr = ages
+      .map((x) => `${x.provider} ${x.status === "missing" ? "missing" : x.ageDays === null ? "?" : x.ageDays + "d"}`)
+      .join(" · ");
+    console.log(col.dim(`snapshot age: ${agesStr}`));
+  }
   console.log("");
 
   if (!findings.length) {

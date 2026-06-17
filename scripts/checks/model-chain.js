@@ -11,8 +11,11 @@
 // This is the model-chain HOME. It is intentionally NOT a duplicate of scan:role-parity, which
 // owns registry-INTERNAL consistency (model-in-catalog, dispatch-graph, reporting-line, spec model-
 // pin). model-chain adds what role-parity does NOT cover: the no-fable rule, the alpha POSITIVE pin
-// (=opus-4.8/max, not merely "max only on alpha"), model+effort completeness, and the live
-// registry↔catalog↔providers parity (the drift detector). Report-only in /scan:full.
+// (=opus-4.8/max, not merely "max only on alpha"), model+effort completeness, the live
+// registry↔catalog↔providers parity (the drift detector), the spec-frontmatter EFFORT parity
+// (ED-058 blind-spot — the registry↔spec effort drift that role-parity's model-pin check does NOT
+// cover, the exact gap that let beta/gamma/delta drift), and scrapped-role detection (ADR-0007).
+// Report-only in /scan:full.
 //
 // Exit: 0 clean · 1 findings · 2 fail-closed (unreadable/unparseable registry or internal error).
 const fs = require("fs");
@@ -29,6 +32,11 @@ const VALID_EFFORTS = new Set(["low", "medium", "high", "xhigh", "max", null]);
 // DEFAULT_EFFORT_PER_ROLE default for that role) and any gemini-provider role (gemini has no
 // effort flag — thinking is always-on for the pro-preview tier).
 const NULL_EFFORT_ALLOW = new Set(["skeleton-builder"]);
+// Roles collapsed by ADR-0007 (builder→{frontend,backend,security}-builder; reviewer→pod reviewers;
+// qa→qa-reviewer; redteam→security-reviewer; fixer→pod fixers; compliance→qa-reviewer integrity scope).
+// They must never reappear as a registry role or a live-consumer route key.
+const SCRAPPED_ROLES = new Set(["builder", "reviewer", "compliance", "qa", "redteam", "fixer"]);
+const fmtEffort = (x) => (x === null || x === undefined ? "null" : `"${x}"`);
 
 function readJSON(p) {
   return JSON.parse(fs.readFileSync(p, "utf8"));
@@ -54,7 +62,7 @@ function collectModelRefs(reg) {
 
 // Pure, injectable core. `consumers` is the resolved-map snapshot (or null when a consumer could
 // not be loaded — the caller surfaces that as a separate finding). Returns a flat error list.
-function evaluateModelChain({ reg, consumers }) {
+function evaluateModelChain({ reg, consumers, specs }) {
   const errors = [];
   const roles = (reg && reg.roles) || {};
   const policy = (reg && reg.model_policy) || {};
@@ -144,7 +152,103 @@ function evaluateModelChain({ reg, consumers }) {
     }
   }
 
+  // ── H. Spec-frontmatter EFFORT parity (ED-058 blind-spot). The registry is the routing SoT; if a
+  //       role's agent-spec frontmatter declares a DIFFERENT effort, an in-process Agent-tool spawn
+  //       runs it at the wrong effort. Active-contradiction only — a spec that omits effort is not
+  //       flagged (mirrors the consumer-drift philosophy at G). This is the gap that let beta/gamma/
+  //       delta drift (model-chain validated registry↔catalog↔providers but never the spec pin). ──
+  if (specs) {
+    for (const [name, r] of Object.entries(roles)) {
+      const s = specs[name];
+      if (!s || !s.exists) continue; // missing spec = role-parity's scope
+      const regEffort = r.effort === undefined ? null : r.effort;
+      // A spec declares effort via `effort:` (in-process key) OR `provider_reasoning_effort:`
+      // (cross-provider dispatch key). Each, WHEN PRESENT, must match the registry SoT; omission
+      // is not drift (mirrors check G). Empty `effort:`/`null` IS present (value null) and is checked.
+      for (const [label, has, val] of [
+        ["effort", s.hasEffortKey, s.effort],
+        ["provider_reasoning_effort", s.hasProviderEffortKey, s.providerEffort],
+      ]) {
+        if (!has) continue;
+        const specEffort = val === undefined ? null : val;
+        if (specEffort !== regEffort)
+          errors.push(
+            `[DRIFT] spec "${name}" (${s.path}) frontmatter ${label}=${fmtEffort(specEffort)} ≠ registry effort=${fmtEffort(regEffort)} — the registry is the routing SoT; the spec pin must match`,
+          );
+      }
+    }
+  }
+
+  // ── I. Scrapped-role REINTRODUCTION guard (ADR-0007). The collapsed names (builder/reviewer/
+  //       compliance/qa/redteam/fixer) must never reappear as a REAL registry role — the registry is
+  //       the 34-role SoT, so a scrapped key in roles{} is genuine drift. They DO legitimately appear
+  //       in the live consumer maps via the NAMED, parity-checked `registry-roles.SCRAPPED_*_ALIASES`
+  //       back-compat shim (+ role-aliases.js); that shim is intentional and is NOT flagged here (the
+  //       panel drops them via registry-derived rows; dispatch-routing-parity asserts its cross-consumer
+  //       agreement). So this guard scans the registry roles ONLY — a zero-false-positive invariant. ──
+  for (const name of Object.keys(roles))
+    if (SCRAPPED_ROLES.has(name))
+      errors.push(`[SCRAPPED] registry role "${name}" was collapsed by ADR-0007 — it must not be a real registry role (use the pod-specific role)`);
+
   return errors;
+}
+
+// Extract a frontmatter scalar by key (top-level, col-0) from the frontmatter block. Handles
+// quotes, an unquoted inline `# comment`, and YAML null (`key:` empty / `null` / `~` → null).
+// Returns { has } or { has:true, value } where value===null means an explicit/empty null.
+function fmScalar(fmBlock, key) {
+  const m = new RegExp(`^${key}:[ \\t]*(.*)$`, "m").exec(fmBlock);
+  if (!m) return { has: false };
+  let raw = m[1].trim();
+  const q = raw[0];
+  if ((q === '"' || q === "'") && raw.indexOf(q, 1) > 0) {
+    return { has: true, value: raw.slice(1, raw.indexOf(q, 1)) }; // quoted — inline-# inside is literal
+  }
+  const hash = raw.indexOf("#"); // unquoted inline comment
+  if (hash >= 0) raw = raw.slice(0, hash).trim();
+  if (raw === "" || raw === "null" || raw === "~") return { has: true, value: null };
+  return { has: true, value: raw };
+}
+
+// Parse BOTH effort keys a spec may carry from its YAML frontmatter (first --- … --- block):
+// `effort:` (the in-process / Anthropic Agent-tool key the α-faces use) AND
+// `provider_reasoning_effort:` (the CROSS-PROVIDER dispatch key the reviewer/lead/cabinet specs
+// use). Either, when present, must match the registry effort SoT. (GPT-5.5 W0 review HIGH-1:
+// provider_reasoning_effort was the blind spot — cross-provider specs don't carry `effort:`.)
+function parseFrontmatterEffort(text) {
+  const m = /^---\r?\n([\s\S]*?)\r?\n---/.exec(String(text || ""));
+  if (!m) return { hasFrontmatter: false, hasEffortKey: false, hasProviderEffortKey: false };
+  const eff = fmScalar(m[1], "effort");
+  const pre = fmScalar(m[1], "provider_reasoning_effort");
+  return {
+    hasFrontmatter: true,
+    hasEffortKey: eff.has,
+    effort: eff.has ? eff.value : undefined,
+    hasProviderEffortKey: pre.has,
+    providerEffort: pre.has ? pre.value : undefined,
+  };
+}
+
+// For every registry role with a `spec` path, read its frontmatter effort. A role whose spec is
+// missing/unreadable is recorded exists:false (NOT an effort-drift finding — that is role-parity's scope).
+function loadSpecEfforts(reg, root) {
+  const out = {};
+  const roles = (reg && reg.roles) || {};
+  for (const [name, r] of Object.entries(roles)) {
+    if (!r.spec) {
+      out[name] = { exists: false, reason: "no spec field in registry" };
+      continue;
+    }
+    let text;
+    try {
+      text = fs.readFileSync(path.join(root, r.spec), "utf8");
+    } catch {
+      out[name] = { exists: false, reason: "spec file unreadable", path: r.spec };
+      continue;
+    }
+    out[name] = { exists: true, path: r.spec, ...parseFrontmatterEffort(text) };
+  }
+  return out;
 }
 
 // Load the real consumer maps via require() (uses the REAL resolution path, not regex). A consumer
@@ -182,7 +286,8 @@ function main(argv) {
     const consumers = loadConsumers(ROOT);
     for (const le of consumers.loadErrors)
       errors.push(`[DRIFT] ${le} — cannot verify registry↔consumer parity`);
-    errors.push(...evaluateModelChain({ reg, consumers }));
+    const specs = loadSpecEfforts(reg, ROOT);
+    errors.push(...evaluateModelChain({ reg, consumers, specs }));
   } catch (e) {
     process.stderr.write(`${NAME} error: ${e.message}\n`);
     return 2; // fail-closed
@@ -204,4 +309,15 @@ function main(argv) {
 }
 
 if (require.main === module) process.exit(main(process.argv));
-module.exports = { evaluateModelChain, collectModelRefs, loadConsumers, main, NAME, TOP_MODEL, VALID_EFFORTS };
+module.exports = {
+  evaluateModelChain,
+  collectModelRefs,
+  loadConsumers,
+  loadSpecEfforts,
+  parseFrontmatterEffort,
+  main,
+  NAME,
+  TOP_MODEL,
+  VALID_EFFORTS,
+  SCRAPPED_ROLES,
+};
