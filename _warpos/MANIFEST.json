@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-17T00:51:46.332Z",
+  "generatedAt": "2026-06-17T00:55:26.673Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.16.0",
   "migrations": [],
@@ -125,8 +125,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "dd06f620f1f5499005b3f9c921b1121563d13e096fa25d4ebe0e94e35437501c",
-      "installedSha": "dd06f620f1f5499005b3f9c921b1121563d13e096fa25d4ebe0e94e35437501c"
+      "sha256": "a9f310222314fb32b585154dc7c98e0c5b07783d6bbf6a72f7ae87caef566bf3",
+      "installedSha": "a9f310222314fb32b585154dc7c98e0c5b07783d6bbf6a72f7ae87caef566bf3"
     },
     "TRACKER.md": {
       "owner": "runtime",
