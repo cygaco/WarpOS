@@ -242,23 +242,48 @@ function roleFromAgentFlag(cmd) {
   return null;
 }
 
-// QUOTE-AWARE raw `claude -p --agent <role>` detection (N5 gauntlet HIGH/MED fix).
-// shellWords tokenizes with quotes STRIPPED, so a quoted-but-EXECUTING token like `"claude"` /
-// `"-p"` is caught as a real token — the exact evasion the old stripQuoted-regex skeleton missed
-// (`"claude" -p --agent qa-reviewer` executes raw but the regex saw no `claude`). A quoted LITERAL
-// BLOB (`git commit -m "…claude -p --agent builder…"`) stays ONE token, so `claude`/`--agent` are
-// NOT standalone tokens → it is NOT mis-matched (the false-positive the skeleton existed to avoid is
-// preserved). Returns EVERY --agent role (not just the first) so a `--agent a --agent b` last-wins
-// evasion can't slip a real build/review role past the gate.
+// COMMAND-POSITION-AWARE raw `claude -p --agent <role>` detection (N5 gauntlet rounds 1-2 fixes).
+// shellWords tokenizes with quotes STRIPPED, so a quoted-but-EXECUTING token (`"claude"` / `"-p"`)
+// is caught while a quoted LITERAL BLOB stays ONE token. CRITICALLY, `claude` must be at a COMMAND
+// POSITION — the first token of the segment OR the first token after a `|` pipe — so a separately-
+// quoted literal passed to ANOTHER program (`printf "claude" "-p" "--agent" "x"`) is NOT a false-
+// positive (round-2 MED). Tolerates a PATH-qualified executable (`/usr/local/bin/claude`,
+// `claude.exe`, `C:\Tools\claude.exe` — round-2 HIGH-1) and BACKSLASH-escaped tokens (`c\laude`,
+// `-\p` — round-2 HIGH-2) by collapsing `\` before comparing. Returns EVERY --agent role (multi-flag
+// last-wins safe). NOTE: this is a best-effort dispatch-INTEGRITY guard (it stops the team's own
+// tooling from ACCIDENTAL recordless dispatch), NOT a security boundary — exotic obfuscation
+// (base64, eval, var-expansion) is out of scope by design.
 function rawClaudeAgentRoles(cmd) {
+  const deescape = (w) => String(w).replace(/\\/g, "");
+  const isClaudeCmd = (w) => {
+    const b = deescape(w).toLowerCase();
+    return (
+      b === "claude" ||
+      b === "claude.exe" ||
+      b.endsWith("/claude") ||
+      b.endsWith("\\claude") ||
+      b.endsWith("/claude.exe") ||
+      b.endsWith("\\claude.exe")
+    );
+  };
   const words = shellWords(cmd);
-  if (!words.includes("claude")) return [];
-  if (!words.includes("-p")) return [];
   const roles = [];
-  for (let i = 0; i < words.length; i++) {
-    if (words[i] === "--agent" && i + 1 < words.length) roles.push(words[i + 1].toLowerCase());
-    const m = words[i].match(/^--agent=(.+)$/);
-    if (m) roles.push(m[1].toLowerCase());
+  // Walk each `|`-delimited command within the segment (segments are already split on ;/&&/||/& by
+  // splitSegments). A command at a command position whose head is `claude` + carries `-p` is a raw
+  // claude prompt dispatch; collect its --agent roles.
+  let start = 0;
+  for (let i = 0; i <= words.length; i++) {
+    if (i === words.length || words[i] === "|" || words[i] === "|&") {
+      const seg = words.slice(start, i);
+      if (seg.length && isClaudeCmd(seg[0]) && seg.some((w) => deescape(w) === "-p")) {
+        for (let j = 0; j < seg.length; j++) {
+          if (seg[j] === "--agent" && j + 1 < seg.length) roles.push(seg[j + 1].toLowerCase());
+          const m = seg[j].match(/^--agent=(.+)$/);
+          if (m) roles.push(m[1].toLowerCase());
+        }
+      }
+      start = i + 1;
+    }
   }
   return roles;
 }

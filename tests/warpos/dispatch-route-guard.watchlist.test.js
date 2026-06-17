@@ -88,6 +88,10 @@ const BLOCKED_CMDS = [
   '"claude" -p --agent qa-reviewer /tmp/p.txt', // quoted claude token
   'claude "-p" --agent backend-reviewer /tmp/p.txt', // quoted -p token
   "claude -p --agent general-purpose --agent qa-reviewer /tmp/p.txt", // multi --agent (last-wins)
+  // N5 gauntlet round-2 hardening — path-qualified + backslash-escaped command tokens still block:
+  "/usr/local/bin/claude -p --agent qa-reviewer /tmp/p.txt", // path-qualified executable
+  "claude.exe -p --agent backend-reviewer /tmp/p.txt", // .exe form
+  "c\\laude -p --agent security-reviewer /tmp/p.txt", // backslash-escaped command token (c\laude → claude)
 ];
 
 for (const cmd of BLOCKED_CMDS) {
@@ -120,6 +124,9 @@ const ALLOWED_CMDS = [
   // N5 false-positive guard: a literal `claude -p --agent <reviewer>` INSIDE a quoted arg (e.g. a
   // commit message) is ONE shell token → must NOT block (the quoted-blob the detection preserves).
   'git commit -m "switching from claude -p --agent qa-reviewer to the recorded lane"',
+  // N5 round-2 false-positive guard: separately-quoted literal tokens passed to ANOTHER program
+  // (claude is NOT at a command position) must NOT block.
+  'printf "%s " "claude" "-p" "--agent" "qa-reviewer"',
   // Provider-smoke itself — never invokes a prompt CLI, just probes
   "node scripts/warpos/provider-smoke.js --providers claude,openai,gemini",
   "node scripts/warpos/provider-smoke.js --json --no-autofix",
