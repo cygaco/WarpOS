@@ -12,7 +12,7 @@
     "tool": 2,
     "pattern": 6,
     "fixture": 23,
-    "warpos_script": 57,
+    "warpos_script": 59,
     "check_tool": 120,
     "agent_tool": 3,
     "decision_tool": 1,
@@ -67,7 +67,7 @@
     "module_scope": 1,
     "framework_doc": 4
   },
-  "total": 1330,
+  "total": 1332,
   "assets": {
     "agent": [
       {
@@ -6465,7 +6465,7 @@
         "src": "scripts/warpos/scaffold-core.js",
         "dest": "scripts/warpos/scaffold-core.js",
         "kind": "warpos_script",
-        "sha256": "cd16ce9199f9dfd18ea5bcaec9e5227dbefe0c3133cb273cf321d6fbc8f3ff4f",
+        "sha256": "312f4cc97f2ddc953827d3b5d44996577746367f789aa1593adeb9426bba687a",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -6629,6 +6629,18 @@
         "replaces": null
       },
       {
+        "id": "warpos_script.test-seed-provenance.js",
+        "src": "scripts/warpos/test-seed-provenance.js",
+        "dest": "scripts/warpos/test-seed-provenance.js",
+        "kind": "warpos_script",
+        "sha256": "0f6131d7e165a55c4801fb558765d895299d517a6c142145e8ef8d65c912f617",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
         "id": "warpos_script.test-status-cli.js",
         "src": "scripts/warpos/test-status-cli.js",
         "dest": "scripts/warpos/test-status-cli.js",
@@ -6682,6 +6694,18 @@
         "dest": "scripts/warpos/update.js",
         "kind": "warpos_script",
         "sha256": "f30cb2e48785260037c90ee85ea53b985b440253b03b4b4418c64d68325765ad",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "warpos_script.views.populate-seed-provenance.js",
+        "src": "scripts/warpos/views/populate-seed-provenance.js",
+        "dest": "scripts/warpos/views/populate-seed-provenance.js",
+        "kind": "warpos_script",
+        "sha256": "4b945daee82c10fd3e3f6d264f61e0bec148ebf5707409badd0251f87bcba516",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",

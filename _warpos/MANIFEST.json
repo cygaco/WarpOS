@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-18T21:22:44.470Z",
+  "generatedAt": "2026-06-18T22:24:31.127Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.16.0",
   "migrations": [],
@@ -7263,8 +7263,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/warpos/scaffold-core.js",
-      "sha256": "cd16ce9199f9dfd18ea5bcaec9e5227dbefe0c3133cb273cf321d6fbc8f3ff4f",
-      "installedSha": "cd16ce9199f9dfd18ea5bcaec9e5227dbefe0c3133cb273cf321d6fbc8f3ff4f"
+      "sha256": "312f4cc97f2ddc953827d3b5d44996577746367f789aa1593adeb9426bba687a",
+      "installedSha": "312f4cc97f2ddc953827d3b5d44996577746367f789aa1593adeb9426bba687a"
     },
     "scripts/warpos/snapshot-installed.js": {
       "owner": "framework",
@@ -7336,6 +7336,13 @@
       "sha256": "c8fc22b055c284251513a6054e01b39800a0dab7241a2cb22d5752ece393d847",
       "installedSha": "c8fc22b055c284251513a6054e01b39800a0dab7241a2cb22d5752ece393d847"
     },
+    "scripts/warpos/test-seed-provenance.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/warpos/test-seed-provenance.js",
+      "sha256": "0f6131d7e165a55c4801fb558765d895299d517a6c142145e8ef8d65c912f617",
+      "installedSha": "0f6131d7e165a55c4801fb558765d895299d517a6c142145e8ef8d65c912f617"
+    },
     "scripts/warpos/test-status-cli.js": {
       "owner": "framework",
       "managed": true,
@@ -7377,6 +7384,13 @@
       "source": "scripts/warpos/worktree-audit.js",
       "sha256": "851c9c568fd1902ecda42c995cb65c1069d86f86c0b87d9fd4057f6d6890f955",
       "installedSha": "851c9c568fd1902ecda42c995cb65c1069d86f86c0b87d9fd4057f6d6890f955"
+    },
+    "scripts/warpos/views/populate-seed-provenance.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/warpos/views/populate-seed-provenance.js",
+      "sha256": "4b945daee82c10fd3e3f6d264f61e0bec148ebf5707409badd0251f87bcba516",
+      "installedSha": "4b945daee82c10fd3e3f6d264f61e0bec148ebf5707409badd0251f87bcba516"
     },
     "scripts/warpos/views/populate-source.js": {
       "owner": "framework",

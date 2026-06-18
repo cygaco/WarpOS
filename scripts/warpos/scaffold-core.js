@@ -47,6 +47,22 @@ const fs = require("fs");
 const path = require("path");
 const { spawnSync } = require("child_process");
 
+// ── SKELETON_DIRS — the structure-parity seed zones (SP-20260525-018) ──
+// Every dir /scan:warpos-structure-parity declares, plus the _docs brief/clone
+// homes. Lifted to module scope (was inline in scaffoldProduct) so the seed-zone
+// PROVENANCE writer (views/populate-seed-provenance.js, SP-20260618-001/U2) reads
+// the SAME list scaffoldProduct ensures — one source of truth for "what is a seed
+// zone." Exported below.
+const SKELETON_DIRS = [
+  "_requirements/_audits", "_requirements/_index", "_requirements/_shared",
+  "_requirements/_standards", "_requirements/00-canonical",
+  "_requirements/01-design-system", "_requirements/02-copy-system",
+  "_requirements/03-architecture", "_requirements/04-features",
+  "_requirements/05-operations", "_requirements/06-security",
+  "_requirements/07-testing", "_requirements/08-automation",
+  "_docs", "_docs/briefs", "_docs/clones",
+];
+
 /**
  * scaffoldProduct — the EARLY scaffold bundle (blocks A + B + C).
  *
@@ -143,15 +159,8 @@ function scaffoldProduct({ target, warposRoot, log }) {
   // ── 5b. Structure-parity skeleton + _docs zones (SP-20260525-018) ──
   // Guarantee every dir /scan:warpos-structure-parity declares, plus the
   // _docs brief/clone homes, exist. Idempotent; .gitkeep so git tracks them.
-  const SKELETON_DIRS = [
-    "_requirements/_audits", "_requirements/_index", "_requirements/_shared",
-    "_requirements/_standards", "_requirements/00-canonical",
-    "_requirements/01-design-system", "_requirements/02-copy-system",
-    "_requirements/03-architecture", "_requirements/04-features",
-    "_requirements/05-operations", "_requirements/06-security",
-    "_requirements/07-testing", "_requirements/08-automation",
-    "_docs", "_docs/briefs", "_docs/clones",
-  ];
+  // (SKELETON_DIRS is module-scoped — see top of file — so the provenance
+  // writer below seeds the SAME zone set.)
   let _skeletonNew = 0;
   for (const d of SKELETON_DIRS) {
     const abs = path.join(TARGET, d);
@@ -165,6 +174,26 @@ function scaffoldProduct({ target, warposRoot, log }) {
     }
   }
   log("ok", `Skeleton zones ensured (_requirements/*, _docs/; ${_skeletonNew} created this run)`);
+
+  // ── 5b-prov. Seed-zone PROVENANCE markers (SP-20260618-001 / U2) ──
+  // A bare .gitkeep records nothing about where the seeded skeleton came from.
+  // After the zones exist, write a `.provenance.json` marker into each one
+  // recording `seeded_from` = `_warpos/BASELINE/<zone>` (the U1 baseline home —
+  // never the deleted framework templates location), the framework version, and
+  // a "seeded by /warp:setup" note. Idempotent + skip-if-modified (it leaves an
+  // operator-edited marker untouched). Lazy require so there is no load-time
+  // circular dependency. Fail-open: a provenance error must never block install.
+  try {
+    const { populateSeedProvenance } = require("./views/populate-seed-provenance");
+    populateSeedProvenance({
+      targetRoot: TARGET,
+      warposRoot: WARPOS,
+      zones: SKELETON_DIRS,
+      log,
+    });
+  } catch (err) {
+    log("warn", `Seed-zone provenance skipped (${err.message}) — zones still seeded, markers missing`);
+  }
 
   // ── 5c. ROADMAP scaffold (SP-20260525-018) ─────────────────
   // Idempotent — generate-roadmap-scaffold.js no-ops when ROADMAP.md exists.
@@ -1001,6 +1030,7 @@ function writeProductSettings({ target, warposRoot, hookTools = {}, log, HEADER 
 }
 
 module.exports = {
+  SKELETON_DIRS,
   scaffoldProduct,
   populateWarposMirror,
   regenerateWarposManifest,
