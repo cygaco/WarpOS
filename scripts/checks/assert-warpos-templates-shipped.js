@@ -97,7 +97,14 @@ function main() {
   if ([...shipped].some((p) => p.startsWith("_warpos/settings/"))) {
     failures.push(`NEGATIVE: a _warpos/settings/* path IS in the shipped set`);
   }
-  console.log(`NEGATIVE: confirmed _warpos/MANIFEST.json + _warpos/settings/* NOT shipped`);
+  // _warpos/BASELINE/ is owner=project build-output (per-install seed snapshot for the
+  // deferred validate.js seed-drift consumer) — NOT a shipped asset. Pin it symmetrically
+  // so a future accidental BASELINE ship fails this enforcer (gauntlet qa-reviewer LOW,
+  // SP-20260618-001).
+  if ([...shipped].some((p) => p.startsWith("_warpos/BASELINE/"))) {
+    failures.push(`NEGATIVE: a _warpos/BASELINE/* path IS in the shipped set`);
+  }
+  console.log(`NEGATIVE: confirmed _warpos/MANIFEST.json + _warpos/settings/* + _warpos/BASELINE/* NOT shipped`);
 
   if (failures.length) {
     console.error(`\nFAIL (${failures.length}):\n - ${failures.join("\n - ")}`);
