@@ -154,15 +154,15 @@ grep -E "\"(eval|exec|child_process|vm2?|unsafe)" node_modules/.package-lock.jso
 - Error responses leaking stack traces or internal state
 - Missing `Content-Type` validation on request bodies
 
-**Project-specific checks (regex only):**
-- Prompt injection — external data NOT wrapped in `<untrusted_job_data>` tags
-- Rocket billing — billable operations must call `debitRockets()` before Claude API call
+**Project-specific checks (regex only) — the concrete identifiers below are EXAMPLES; the product's canon defines the real tag/helper names:**
+- Prompt injection — external data NOT wrapped in `<untrusted_external_input>` tags
+- Metered billing — billable operations must call the product's charge helper (e.g. `chargeCredits()`) before the model API call
 - Client-controlled billing — debit/checkout routes must NOT accept `cost`/`amount`/`price` from request body
 - Stripe redirect injection — `success_url`/`cancel_url` hardcoded or allowlist-validated
 - CSRF — `validateOrigin()` return value checked with if-guard, NOT wrapped in try/catch
 - Error responses use `safeErrorMessage()` — never raw stack traces
 
-**Exempt routes:** `auth/login`, `auth/register`, `auth/oauth/*`, `stripe/webhook`, `test`, `extension`, `jobs`
+**Exempt routes:** `auth/login`, `auth/register`, `auth/oauth/*`, `stripe/webhook`, `test`, `extension`, `<product's public read-only routes>`
 
 **Commands:**
 ```
@@ -399,7 +399,7 @@ grep -rn "role\|isAdmin\|permission\|authorize" src/app/api/
 
 **Detection patterns:**
 - **Direct injection** — user input concatenated directly into system/user prompts without sanitization
-- **Indirect injection** — data from external sources (job listings, resumes, scraped content) injected into prompts
+- **Indirect injection** — data from external sources (third-party listings, user-uploaded documents, scraped content) injected into prompts
 - **Tool abuse** — LLM response used to construct tool calls, API requests, or database queries without validation
 - **Data exfiltration** — LLM can access sensitive data AND produce user-visible output (extraction channel)
 - **Instruction override** — no delimiter/boundary between system instructions and user data
@@ -421,7 +421,7 @@ grep -rn "tool_use\|function_call\|tools.*type" src/
 **Objective:** Reason about multi-step business logic abuse specific to this application.
 
 **Procedure:**
-1. Understand the app's core flows (job search, application, AI-assisted resume/cover letter generation)
+1. Understand the app's core flows (the product's primary user workflows — the concrete flows come from the product's canon, e.g. ingest of a primary document, AI-assisted generation of secondary documents)
 2. Identify trust assumptions in the business logic
 3. Think like an attacker: what would I manipulate to gain unfair advantage or extract value?
 4. Check for race conditions in stateful operations
@@ -432,9 +432,9 @@ grep -rn "tool_use\|function_call\|tools.*type" src/
 - **Data poisoning** — can a user inject content that affects other users' results?
 - **IDOR** — can user A access user B's data by modifying IDs in requests?
 - **State manipulation** — can session/onboarding state be modified to skip paid features or bypass gates?
-- **Enumeration** — can user enumerate other users, jobs, or internal resources via sequential IDs?
-- **Abuse of AI features** — using the AI pipeline for unintended purposes (e.g., general-purpose chat via job-matching prompts)
-- **Payment bypass** — accessing premium features without proper subscription check
+- **Enumeration** — can user enumerate other users, the product's primary entities, or internal resources via sequential IDs?
+- **Abuse of AI features** — using the AI pipeline for unintended purposes (e.g., general-purpose chat via the product's task-specific prompts)
+- **Payment bypass** — accessing premium features without a proper check against the product's billing/subscription model
 - **Race condition** — concurrent requests creating duplicate resources or bypassing limits
 
 **Commands:**

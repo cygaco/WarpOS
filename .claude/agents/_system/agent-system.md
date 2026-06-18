@@ -448,17 +448,17 @@ Instead of separate fix passes for eval, compliance, and security, the fix agent
 ## Fix Brief for: onboarding
 
 ### Evaluator Failures
-- Step1Resume.tsx: missing error state for parse failure (line 45-60)
+- Step1Ingest.tsx: missing error state for parse failure (line 45-60)
 - Step2Preferences.tsx: banner component not rendered during parsing
 
 ### Compliance Failures
 - Check 3 (spec compliance): GS-ONB-32 acceptance criteria "banner visible across all substeps" — no banner component found
 
 ### Security Failures
-- Step1Resume.tsx: file upload accepts all MIME types without server-side validation
+- Step1Ingest.tsx: file upload accepts all MIME types without server-side validation
 
 Fix ALL of the above. Do not fix them separately.
-Files in scope: Step1Resume.tsx, Step2Preferences.tsx, ParsingBanner.tsx
+Files in scope: Step1Ingest.tsx, Step2Preferences.tsx, ParsingBanner.tsx
 ```
 
 This typically reduces fix cycles from 3+ (one per reviewer) to 1.
@@ -924,7 +924,7 @@ interface StepExpectation {
 | ------------ | ----------------------------------------- | --------------------------------- | ------------------------------ |
 | 3 (Profile)  | "Product Management", "Director", "AI/ML" | "Junior", "Entry-level"           | domains: 3-8, hardSkills: 5-15 |
 | 5 (Market)   | "contract", "hourly"                      | salary ranges for full-time roles | keywords: 5-20, jobTypes: 2-8  |
-| 8 (Resumes)  | "AI", persona's actual achievements       | fabricated companies, wrong dates | roles: 2-5                     |
+| 8 (Tailored docs)  | "AI", persona's actual achievements       | fabricated companies, wrong dates | roles: 2-5                     |
 | 9 (Profile export) | "AI/ML", "Product"                  | the name of an upstream artifact  | skills: 5+                     |
 
 ### Golden Pairs
@@ -942,7 +942,7 @@ interface GoldenPair {
 | ---------- | ---------------------------------------- | ----------------------------------------------- |
 | exact      | Deterministic steps (query generation)   | Field values must match                         |
 | structural | Steps with fixed schema                  | Same shape, same field count ranges, same types |
-| semantic   | AI-generated content (resumes, LinkedIn) | Same topics and keywords, wording may differ    |
+| semantic   | AI-generated content (tailored documents, profile exports) | Same topics and keywords, wording may differ    |
 
 ### Non-deterministic output handling
 
@@ -956,15 +956,15 @@ Each builder agent receives ONLY the data it needs. This is enforced by the orch
 
 | Worker                    | Receives                                                                                                                                      | Does NOT receive                        | synthesis_allowed                         |
 | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------- | ----------------------------------------- |
-| Parser (step 1)           | Raw resume text                                                                                                                               | Nothing else                            | No                                        |
-| Profiler (step 3)         | Structured resume, user context                                                                                                               | Market data, preferences                | No                                        |
+| Parser (step 1)           | Raw primary-document text                                                                                                                               | Nothing else                            | No                                        |
+| Profiler (step 3)         | Structured primary document, user context                                                                                                               | Market data, preferences                | No                                        |
 | Query Generator (step 4)  | Profile, preferences                                                                                                                          | Market data (doesn't exist yet)         | **Yes** — generates search queries        |
-| Market Analyst (step 5)   | Raw job data, profile, preferences                                                                                                            | Resumes, mining results                 | No                                        |
-| Deep-Dive QA (step 6)     | Profile, market data, competitiveness scores                                                                                                  | Resumes, raw job data                   | **Yes** — generates mining questions      |
-| Skill Curation (step 7)   | Profile, market keywords, mining results                                                                                                      | Raw job data, resumes                   | **Yes** — generates skill recommendations |
-| Resume Writer (step 8)    | Profile, market keywords, exclusions, mining results                                                                                          | Raw job data, preferences, demographics | No                                        |
-| LinkedIn Writer (step 9)  | Profile, resumeStructured, masterResume, rankedCategories, exclusions, preferences, personal, education, context, miningResults, demographics | Raw job data                            | No                                        |
-| Apply Assembler (step 10) | Everything                                                                                                                                    | N/A — final step                        | No                                        |
+| Market Analyst (step 5)   | Raw ingested data, profile, preferences                                                                                                            | Tailored documents, mining results                 | No                                        |
+| Deep-Dive QA (step 6)     | Profile, market data, competitiveness scores                                                                                                  | Tailored documents, raw ingested data                   | **Yes** — generates mining questions      |
+| Skill Curation (step 7)   | Profile, market keywords, mining results                                                                                                      | Raw ingested data, tailored documents                   | **Yes** — generates skill recommendations |
+| Tailored-Document Writer (step 8)    | Profile, market keywords, exclusions, mining results                                                                                          | Raw ingested data, preferences, demographics | No                                        |
+| Profile Export Writer (step 9)  | Profile, primaryDocumentStructured, primaryDocument, rankedCategories, exclusions, preferences, personal, education, context, miningResults, demographics | Raw ingested data                            | No                                        |
+| Handoff Assembler (step 10) | Everything                                                                                                                                    | N/A — final step                        | No                                        |
 
 ### Why this matters
 
@@ -1005,8 +1005,8 @@ The Orchestrator MUST enforce this by excluding `_requirements/_shared/canonical
 Step 1 (Parse)       → Step 2 (Preferences)  → Step 3 (Profile)
 Step 3 (Profile)     → Step 4 (Queries + BD) → Step 5 (Market)
 Step 5 (Market)      → Step 6 (Deep-Dive QA) → Step 7 (Skill Curation)
-Step 7 (Skill Curation) → Step 8 (Resumes) ─┐
-                     → Step 9 (LinkedIn)   ──┤→ Step 10 (Apply)
+Step 7 (Skill Curation) → Step 8 (Tailored docs) ─┐
+                     → Step 9 (Profile export)   ──┤→ Step 10 (Handoff)
 ```
 
 - Steps 8 and 9 MAY run in parallel. They share the same inputs and do not depend on each other.
@@ -1027,7 +1027,7 @@ See `_requirements/00-canonical/GLOSSARY.md` → Steps section for the actual co
 `SessionData` in `types.ts` is the spine. Every feature reads from and writes to this interface. Features do NOT communicate directly — they communicate through the data.
 
 - Market research writes `marketAnalysis`.
-- Resume generation reads `marketAnalysis`.
+- Document generation reads `marketAnalysis`.
 - They never import each other's code.
 
 `types.ts` is foundation-owned. No feature agent may modify it. If you need a new field or type, flag it in the store as a `foundation-update` request.
@@ -1043,23 +1043,23 @@ market-research → deep-dive-qa
   Consumer: deep-dive-qa
   Rule: Producer defines the shape. Consumer adapts.
 
-auth → rockets
+auth → billing
   Contract: requireAuth() middleware, getUserBalance()
   Producer: auth
-  Consumer: rockets
-  Rule: Auth exports. Rockets imports. Never the reverse.
+  Consumer: billing
+  Rule: Auth exports. Billing imports. Never the reverse.
 
 auth → all API routes
   Contract: requireAuth(), verifyJWT(), getSession()
   Rule: Every API route that accesses user data MUST use auth exports.
 
-market-research → resume-generation
+market-research → document-generation
   Contract: marketAnalysis.keywords, marketAnalysis.categories
-  Rule: Resume generation reads market keywords. Does not re-derive them.
+  Rule: Document generation reads market keywords. Does not re-derive them.
 
-resume-generation → linkedin
-  Contract: SessionData.resumes (ResumeSet)
-  Rule: LinkedIn content builds on resume content. Does not start from scratch.
+document-generation → profile-export
+  Contract: SessionData.documents (DocumentSet)
+  Rule: Profile-export content builds on generated-document content. Does not start from scratch.
 ```
 
 If you are a consumer: import the type, trust the shape, adapt your code. Do NOT inspect or depend on the producer's implementation.
@@ -1072,10 +1072,10 @@ These files are read-only for all feature agents:
 
 ```
 src/lib/types.ts      — all interfaces
-src/lib/api.ts        — callClaude(), fetchJobs()
+src/lib/api.ts        — callClaude(), fetchExternalData()
 src/lib/storage.ts    — encrypted persistence
 src/lib/validators.ts — input sanitization
-src/lib/rockets.ts    — balance operations
+src/lib/billing.ts    — balance operations
 src/lib/constants.ts  — step/phase definitions
 ```
 
