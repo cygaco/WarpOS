@@ -83,7 +83,9 @@ function verdictOf(result) {
   const text = typeof result.output === "string" ? result.output : "";
   const m = /"verdict"\s*:\s*"(pass|warn|fail)"/i.exec(text);
   if (m) return m[1].toLowerCase();
-  return result.ok ? "pass" : "error";
+  // HIGH-2 (W1+W2 review): a BINDING review lane that is alive but emits no parseable verdict is
+  // fail-closed ("error") — NEVER an implicit PASS. A missing/garbled verdict must not green a review.
+  return "error";
 }
 
 async function main() {
@@ -118,20 +120,33 @@ async function main() {
     ok: !s.spawnError && !!(s.result && s.result.ok),
     verdict: verdictOf(s.result),
   }));
+  const merged = mergeLanes(role, lanes);
+  console.log(JSON.stringify(merged));
+  process.exit(merged.ok ? 0 : 1); // exit reflects the BINDING outcome (any-FAIL/dead lane → non-zero)
+}
+
+// Merge per-lane outcomes into the binding review result. PURE (unit-testable). any-FAIL holds; a
+// dead lane → "error" (the review did not fully run); else warn/pass. `ok` is the BINDING outcome —
+// clean ONLY if every lane is alive AND the merged verdict is pass/warn (HIGH-1: a FAIL/error merged
+// verdict can NEVER read as an ok dispatch). Output carries the reviewer-envelope shape (top-level +
+// parsed `verdict`) so a verdict-gate consumer reads the MERGED verdict exactly like a single reviewer's.
+function mergeLanes(role, lanes) {
   const anyFail = lanes.some((l) => l.verdict === "fail");
   const anyDead = lanes.some((l) => !l.ok);
-  const merged = {
-    ok: lanes[0] ? lanes[0].ok : false,
+  const mergedVerdict = anyFail ? "fail" : anyDead ? "error" : lanes.some((l) => l.verdict === "warn") ? "warn" : "pass";
+  const clean = lanes.every((l) => l.ok) && mergedVerdict !== "fail" && mergedVerdict !== "error";
+  return {
+    ok: clean,
     role,
     multipass: lanes.length > 1,
     passes_run: lanes.length,
     lanes,
     allLanesOk: lanes.every((l) => l.ok),
-    // any-FAIL holds; a dead lane → "error" (the review did not fully run); else warn/pass.
-    mergedVerdict: anyFail ? "fail" : anyDead ? "error" : lanes.some((l) => l.verdict === "warn") ? "warn" : "pass",
+    mergedVerdict,
+    verdict: mergedVerdict,
+    parsed: { agent: role, verdict: mergedVerdict, lanes },
   };
-  console.log(JSON.stringify(merged));
-  process.exit(merged.allLanesOk ? 0 : 1);
 }
 
-main();
+if (require.main === module) main();
+module.exports = { verdictOf, mergeLanes };

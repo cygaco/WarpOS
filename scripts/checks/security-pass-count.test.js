@@ -91,6 +91,33 @@ test("runtime: adhoc review with no run_id groups by shared prompt_digest (2/3 �
   assert.ok(has(evaluateRuntime(recs, 3), "2/3 distinct providers"), evaluateRuntime(recs, 3).join(" | "));
 });
 
+test("HIGH-3 config: a 2-provider chain (no third_pass) → HARD (full 3-provider chain required)", () => {
+  const { hard } = evaluateConfig([
+    { provider: "gemini", key: "primary" },
+    { provider: "openai", key: "second_pass" },
+  ]);
+  assert.ok(has(hard, "FULL 3-provider chain") || has(hard, "declares 2 pass"), hard.join(" | "));
+});
+test("HIGH-4a runtime: a 1/3 review (1 ok + 2 dead lanes, total 3) → WARN", () => {
+  const recs = [
+    { role: "security-reviewer", ok: true, provider: "gemini", completed_at: "2026-06-18T00:00:00Z", prompt_digest: "rev1" },
+    { role: "security-reviewer", ok: false, provider: "openai", completed_at: "2026-06-18T00:01:00Z", prompt_digest: "rev1" },
+    { role: "security-reviewer", ok: false, provider: "claude", completed_at: "2026-06-18T00:02:00Z", prompt_digest: "rev1" },
+  ];
+  assert.ok(has(evaluateRuntime(recs, 3), "1/3 distinct providers"), evaluateRuntime(recs, 3).join(" | "));
+});
+test("HIGH-4b runtime: two reviews sharing run_id but distinct prompt_digests are NOT collapsed/masked", () => {
+  const recs = [
+    { role: "security-reviewer", ok: true, provider: "gemini", completed_at: "2026-06-18T00:00:00Z", run_id: "R", prompt_digest: "A" },
+    { role: "security-reviewer", ok: true, provider: "openai", completed_at: "2026-06-18T00:01:00Z", run_id: "R", prompt_digest: "A" },
+    { role: "security-reviewer", ok: true, provider: "claude", completed_at: "2026-06-18T00:02:00Z", run_id: "R", prompt_digest: "B" },
+    { role: "security-reviewer", ok: true, provider: "openai", completed_at: "2026-06-18T00:03:00Z", run_id: "R", prompt_digest: "B" },
+  ];
+  // grouped by prompt_digest → TWO incomplete (2/3) reviews flagged; run_id grouping would have
+  // unioned them to a false "3/3" complete (the HIGH-4 collapse).
+  assert.equal(evaluateRuntime(recs, 3).length, 2, evaluateRuntime(recs, 3).join(" | "));
+});
+
 if (failures.length) {
   process.stderr.write(`FAIL [security-pass-count.test] ${failures.length} failure(s):\n${failures.map((f) => `  - ${f}`).join("\n")}\n`);
   process.exit(1);

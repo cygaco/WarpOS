@@ -45,8 +45,8 @@ function evaluateConfig(passes) {
   const hard = [];
   // registry: ≥2 passes (the cross-provider review), DISTINCT providers, claude present + LAST.
   const providers = passes.map((p) => p.provider);
-  if (passes.length < 2) {
-    hard.push(`registry "${ROLE}" declares ${passes.length} pass(es) — the cross-provider security review needs the primary + at least second_pass`);
+  if (passes.length < 3) {
+    hard.push(`registry "${ROLE}" declares ${passes.length} pass(es) — the W1 invariant is a FULL 3-provider chain (primary + second_pass + third_pass); a 2-provider chain is a regression (HIGH-3)`);
   }
   if (new Set(providers).size !== providers.length) {
     hard.push(`registry "${ROLE}" pass providers are not distinct (${providers.join(", ")}) — best-of-each requires different providers per pass`);
@@ -69,31 +69,33 @@ function evaluateConfig(passes) {
 //     distinct-provider count == expected. Returns WARN strings (report-only by default).
 function evaluateRuntime(records, expectedCount) {
   const warns = [];
+  // ALL post-cutoff security-reviewer records (ok:true AND ok:false) — we need the TOTAL pass count
+  // per review to detect a partial that lost lanes (HIGH-4: filtering to ok:true first hid a 1/3 review
+  // where 2 lanes died — only 1 ok record survived → looked like a standalone single dispatch).
   const sec = records.filter(
-    (r) =>
-      r &&
-      r.role === ROLE &&
-      r.ok === true &&
-      typeof r.completed_at === "string" &&
-      r.completed_at.slice(0, 10) >= RECORD_BACKED_CUTOFF,
+    (r) => r && r.role === ROLE && typeof r.completed_at === "string" && r.completed_at.slice(0, 10) >= RECORD_BACKED_CUTOFF,
   );
   if (!sec.length) return warns; // no post-cutoff security reviews yet → nothing to assert
-  // Group the passes of ONE review: they share a run_id|sprint_id (sprint path) OR — when neither is
-  // set (adhoc path) — the SAME prompt_digest (dispatch-review.js feeds all passes the same prompt).
-  // A record with none of those is an un-attributable standalone/manual dispatch — not a review.
+  // Group the passes of ONE review by the MOST SPECIFIC per-review key. prompt_digest is per-review
+  // (all passes of one review share the prompt); run_id/sprint_id are coarser — a full run has ONE
+  // run_id across MANY reviews, so run_id-first grouping let distinct reviews union their providers
+  // and mask each other (HIGH-4). Prefer prompt_digest; fall back to run_id|sprint_id only when absent.
   const groups = new Map();
   for (const r of sec) {
-    const key = r.run_id || r.sprint_id || r.prompt_digest;
+    const key = r.prompt_digest || r.run_id || r.sprint_id;
     if (!key) continue;
-    if (!groups.has(key)) groups.set(key, new Set());
-    if (r.provider) groups.get(key).add(r.provider);
+    if (!groups.has(key)) groups.set(key, { total: 0, okProviders: new Set() });
+    const g = groups.get(key);
+    g.total += 1;
+    if (r.ok === true && r.provider) g.okProviders.add(r.provider);
   }
-  for (const [key, provs] of groups) {
-    // Flag only an INCOMPLETE multi-pass review (≥2 providers fired but fewer than expected) — a lone
-    // single-provider group is a standalone dispatch, not an aborted 3-pass review (no false-positive).
-    if (provs.size >= 2 && provs.size < expectedCount) {
+  for (const [key, g] of groups) {
+    // A group with ≥2 pass records is a multi-pass review; flag it when FEWER than expectedCount
+    // distinct providers came back ok:true — catches 2/3 AND 1/3 (2 dead lanes: total≥2, okProviders<N).
+    // A lone single-record group is a standalone/manual dispatch, not an aborted review (no false-positive).
+    if (g.total >= 2 && g.okProviders.size < expectedCount) {
       warns.push(
-        `security review "${key}" fired ${provs.size}/${expectedCount} distinct providers (${[...provs].join(", ")}) — the ${expectedCount}-pass review did not fully run`,
+        `security review "${key}" completed ${g.okProviders.size}/${expectedCount} distinct providers ok (of ${g.total} pass records) — the ${expectedCount}-pass review did not fully succeed`,
       );
     }
   }
