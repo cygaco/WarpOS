@@ -766,7 +766,7 @@ function testInitTemplateValidates() {
   const tmp = setupProject();
   try {
     const { spawnSync } = require("child_process");
-    // also need framework/templates/sprint/init/* so init.js can render
+    // also need _warpos/templates/sprint/init/* so init.js can render
     function copyDir(src, dst) {
       fs.mkdirSync(dst, { recursive: true });
       for (const f of fs.readdirSync(src)) {
@@ -777,8 +777,8 @@ function testInitTemplateValidates() {
       }
     }
     copyDir(
-      path.join(REPO, "framework/templates/sprint"),
-      path.join(tmp, "framework/templates/sprint"),
+      path.join(REPO, "_warpos/templates/sprint"),
+      path.join(tmp, "_warpos/templates/sprint"),
     );
     const initRes = spawnSync(
       process.execPath,
@@ -1086,8 +1086,8 @@ function testTwoSprintsIsolation() {
       }
     }
     copyDir(
-      path.join(REPO, "framework/templates/sprint"),
-      path.join(tmp, "framework/templates/sprint"),
+      path.join(REPO, "_warpos/templates/sprint"),
+      path.join(tmp, "_warpos/templates/sprint"),
     );
     // First init creates SP-A.
     spawnSync(
@@ -1142,7 +1142,7 @@ function testSprintFlagAcceptsKnownId() {
   const tmp = setupProject();
   try {
     const { spawnSync } = require("child_process");
-    // Need framework/templates/sprint to init + a real sprint registry.
+    // Need _warpos/templates/sprint to init + a real sprint registry.
     function copyDir(src, dst) {
       fs.mkdirSync(dst, { recursive: true });
       for (const f of fs.readdirSync(src)) {
@@ -1153,8 +1153,8 @@ function testSprintFlagAcceptsKnownId() {
       }
     }
     copyDir(
-      path.join(REPO, "framework/templates/sprint"),
-      path.join(tmp, "framework/templates/sprint"),
+      path.join(REPO, "_warpos/templates/sprint"),
+      path.join(tmp, "_warpos/templates/sprint"),
     );
     spawnSync(
       process.execPath,
@@ -1196,8 +1196,8 @@ function testSprintFlagRejectsUnknownId() {
       }
     }
     copyDir(
-      path.join(REPO, "framework/templates/sprint"),
-      path.join(tmp, "framework/templates/sprint"),
+      path.join(REPO, "_warpos/templates/sprint"),
+      path.join(tmp, "_warpos/templates/sprint"),
     );
     spawnSync(
       process.execPath,
@@ -1245,8 +1245,8 @@ function testSprintFlagOmittedDefaultsToPrimary() {
       }
     }
     copyDir(
-      path.join(REPO, "framework/templates/sprint"),
-      path.join(tmp, "framework/templates/sprint"),
+      path.join(REPO, "_warpos/templates/sprint"),
+      path.join(tmp, "_warpos/templates/sprint"),
     );
     spawnSync(
       process.execPath,
@@ -1287,8 +1287,8 @@ function testSprintStatusListsActiveSprints() {
       }
     }
     copyDir(
-      path.join(REPO, "framework/templates/sprint"),
-      path.join(tmp, "framework/templates/sprint"),
+      path.join(REPO, "_warpos/templates/sprint"),
+      path.join(tmp, "_warpos/templates/sprint"),
     );
     spawnSync(
       process.execPath,

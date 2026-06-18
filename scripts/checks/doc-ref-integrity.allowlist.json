@@ -35,7 +35,7 @@
     ".claude/reference/architecture-map.md",
     ".claude/project/reference/agent-dispatch-guide.md",
     ".claude/agents/builder.md",
-    "framework/templates/app-scaffold/DESIGN_SYSTEM.md",
+    "_warpos/templates/app-scaffold/DESIGN_SYSTEM.md",
     "trackers/sprints/T1..T6",
     "scripts/warpos/promote.js",
     "scripts/warpos/migrate-machine.js",

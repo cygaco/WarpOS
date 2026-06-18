@@ -52,7 +52,7 @@ function withTempProject(fn) {
   for (const rel of [
     ".claude/paths.json",
     "schemas/sprint",
-    "framework/templates/sprint",
+    "_warpos/templates/sprint",
     ".claude/agents/president/_system/policy/sprint-routing.json",
   ]) {
     const src = path.join(repoRoot, rel);

@@ -14,10 +14,10 @@ const warposManifest = JSON.parse(
 );
 
 const REQUIRED = [
-  "framework/templates/app-scaffold/src/lib/telemetry/events.ts.tmpl",
-  "framework/templates/app-scaffold/src/lib/telemetry/sink.ts.tmpl",
-  "framework/templates/app-scaffold/src/lib/telemetry/track.ts.tmpl",
-  "framework/templates/app-scaffold/src/lib/telemetry/chain.ts.tmpl",
+  "_warpos/templates/app-scaffold/src/lib/telemetry/events.ts.tmpl",
+  "_warpos/templates/app-scaffold/src/lib/telemetry/sink.ts.tmpl",
+  "_warpos/templates/app-scaffold/src/lib/telemetry/track.ts.tmpl",
+  "_warpos/templates/app-scaffold/src/lib/telemetry/chain.ts.tmpl",
 ];
 
 function flattenFrameworkAssets(manifest) {

@@ -25,11 +25,11 @@ Creates a fresh product repo as a sibling directory to WarpOS on disk, installs 
 
 1. Validates slug (IN-1 regex + reserved-name guard — exits 2 before any filesystem ops).
 2. Resolves sibling path: `path.resolve(<warposRoot>, '..', <slug>)`.
-3. Creates the directory, runs `git init`, copies scaffold templates from `framework/templates/portfolio/`, makes an initial commit.
+3. Creates the directory, runs `git init`, copies scaffold templates from `_warpos/templates/portfolio/`, makes an initial commit.
 4. Runs `/warp:setup` inside the new directory.
 5. Registers the slug via `scripts/portfolio/register.js`.
 6. If `--from-brief` given, moves the brief files in (the folded-in adopt step).
-7. **Scaffolds the app (S0.3, default on):** materializes the pinned Next.js+Tailwind v4+shadcn/ui+Radix+Lucide scaffold (`scripts/scaffold/app.js` → `framework/templates/app-scaffold`) into the repo — a real component library + design tokens + security-header baseline + a smoke e2e. Skipped with `--no-scaffold`; `--install` also runs `npm install`. Fail-open (a scaffold error never invalidates the repo + warp install).
+7. **Scaffolds the app (S0.3, default on):** materializes the pinned Next.js+Tailwind v4+shadcn/ui+Radix+Lucide scaffold (`scripts/scaffold/app.js` → `_warpos/templates/app-scaffold`) into the repo — a real component library + design tokens + security-header baseline + a smoke e2e. Skipped with `--no-scaffold`; `--install` also runs `npm install`. Fail-open (a scaffold error never invalidates the repo + warp install).
 8. Commits the full scaffold (warp install + app scaffold + brief) so the repo opens clean and ready.
 9. **Default:** prints local-only next-steps (install + open it manually + how to create a remote). **With `--github`:** pre-checks `gh repo view`, then `gh repo create <slug> --private --source=. --remote=origin --push`, and persists `github_url` to the registry.
 10. Emits `portfolio_new` trace event (TR-7), recording the `github` flag.

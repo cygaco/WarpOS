@@ -17,7 +17,7 @@ const { scoreReadiness } = require("../../../scripts/bootstrap/lastmile/lib/scor
 const audit = require("../../../scripts/bootstrap/lastmile/phases/audit");
 
 const REPO_ROOT = path.resolve(__dirname, "..", "..", "..");
-const REAL_SCAFFOLD = path.join(REPO_ROOT, "framework", "templates", "app-scaffold");
+const REAL_SCAFFOLD = path.join(REPO_ROOT, "_warpos", "templates", "app-scaffold");
 
 const tests = [];
 function test(name, fn) {

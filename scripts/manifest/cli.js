@@ -41,7 +41,7 @@ function readManifest() {
     process.stderr.write(
       `manifest not found: ${file}\n` +
         `  fix: run \`/warp:setup\` (creates .claude/manifest.json from project scan)\n` +
-        `  or:  copy framework/templates/manifest.template.json (if framework template exists)\n`,
+        `  or:  copy _warpos/templates/manifest.template.json (if framework template exists)\n`,
     );
     process.exit(1);
   }

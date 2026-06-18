@@ -41,7 +41,7 @@ If no mode is given, ask which one. If a mode needs an id and none is supplied
 
 ## The hard rule — ELI5
 
-Every report uses `framework/templates/report/REPORT_TEMPLATE.md` and obeys, no
+Every report uses `_warpos/templates/report/REPORT_TEMPLATE.md` and obeys, no
 exceptions:
 
 1. **TL;DR first.** 2–4 sentences at the very top: what happened + why it
@@ -133,7 +133,7 @@ complete artifact set.
 
 ### Step 3 — Write the report from the template
 
-Read `framework/templates/report/REPORT_TEMPLATE.md`, fill every `{{placeholder}}`:
+Read `_warpos/templates/report/REPORT_TEMPLATE.md`, fill every `{{placeholder}}`:
 
 - `{{type}}` → `Sprint` | `Epic` | `Session` | `Checkpoint`
 - `{{title}}` → the id, version, date, or checkpoint title
@@ -184,7 +184,7 @@ README seed are framework-owned and shipped. See `_reports/README.md`.
 
 ## Reference
 
-- Template: `framework/templates/report/REPORT_TEMPLATE.md`
+- Template: `_warpos/templates/report/REPORT_TEMPLATE.md`
 - Folder + dual-identity: `_reports/README.md`
 - Design note (wiring, enforcer, paths delta):
   `runtime/notes/sp-20260531-001-reports-system.md`

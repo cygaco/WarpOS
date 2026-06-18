@@ -188,7 +188,7 @@ Writes `paths.sprintReleases/<RL-id>.report.md` from the template.
 When the sprint is done (closed or shipped), write a history entry:
 
 ```bash
-# Render framework/templates/sprint/history/sprint-history.yaml.tmpl
+# Render _warpos/templates/sprint/history/sprint-history.yaml.tmpl
 # and place it at paths.sprintHistory/<sprint-id>/sprint-history.yaml.
 ```
 

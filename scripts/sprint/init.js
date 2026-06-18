@@ -4,7 +4,7 @@
  * scripts/sprint/init.js — Sprint Workflow v0.1 downstream init.
  *
  * Creates the .claude/project/sprint/ tracker tree from templates
- * in framework/templates/sprint/init/. Safe to run multiple times —
+ * in _warpos/templates/sprint/init/. Safe to run multiple times —
  * refuses to overwrite existing files unless --force.
  *
  * Usage:
@@ -25,7 +25,7 @@
  *   init.js templates + ensureActiveRegistry() below already include the
  *   field — DO NOT remove it from a template "to simplify" it. If you
  *   add a new yaml writer (release.js, plan.js, checkpoint.js, etc.) or
- *   a fresh template under framework/templates/sprint/<kind>/, schema:
+ *   a fresh template under _warpos/templates/sprint/<kind>/, schema:
  *   is the FIRST key. Schemas live in schemas/sprint/*.schema.json.
  */
 

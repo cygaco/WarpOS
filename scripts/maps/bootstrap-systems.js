@@ -181,7 +181,7 @@ const ENRICH = {
     health: "paths.sprintTemplates exists with at least the seven core docs.",
     files: () =>
       relList(
-        walkExt(path.join(PROJECT, "framework", "templates", "sprint"), ".md"),
+        walkExt(path.join(PROJECT, "_warpos", "templates", "sprint"), ".md"),
       ),
   },
   installer: {

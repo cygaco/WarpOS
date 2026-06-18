@@ -37,7 +37,7 @@ const CANONICAL_STAGES = [
 ];
 
 function scaffoldDir() {
-  const fallback = path.join(REPO_ROOT, "framework", "templates", "app-scaffold");
+  const fallback = path.join(REPO_ROOT, "_warpos", "templates", "app-scaffold");
   try {
     const reg = JSON.parse(fs.readFileSync(path.join(REPO_ROOT, ".claude", "paths.json"), "utf8"));
     return reg.appScaffoldTemplates ? path.join(REPO_ROOT, reg.appScaffoldTemplates) : fallback;
@@ -352,7 +352,7 @@ function evaluateScaffold(dir = scaffoldDir()) {
 // ── Readiness surface (S-PF-09a R-5 / AC-ship) ──────────────────────────────────
 // The founders in-app panel is one feature with two halves that must ship together:
 //   - the PRODUCER  : scripts/scaffold/{app.js, readiness-report.js, founders-checklist.js}
-//   - the PANEL     : framework/templates/app-scaffold/src/app/admin/readiness/* + src/lib/readiness/*
+//   - the PANEL     : _warpos/templates/app-scaffold/src/app/admin/readiness/* + src/lib/readiness/*
 // A producer-present/panel-absent install (or vice versa) is the WG-23 failure that killed
 // doogle's lastmile — so we assert BOTH halves, fail-closed. The producer scripts live in the
 // repo (REPO_ROOT/scripts/scaffold); the panel templates live under the scaffold dir.

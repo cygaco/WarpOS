@@ -6,13 +6,13 @@ description: Verify the WarpOS app scaffold (Next+Tailwind v4+shadcn/ui+Radix+Lu
 
 The standing, **fail-closed** enforcer behind S0.3 (component-library scaffold wiring).
 It guarantees the pinned app scaffold at `paths.appScaffoldTemplates`
-(`framework/templates/app-scaffold`) stays complete and internally coherent, so the
+(`_warpos/templates/app-scaffold`) stays complete and internally coherent, so the
 scaffold engine (`scripts/scaffold/app.js`) can never materialize a half-wired
 ("vibe-coded") app into a product.
 
 ## What it does
 
-Audits `framework/templates/app-scaffold` and REJECTS (exit 1) when ANY:
+Audits `_warpos/templates/app-scaffold` and REJECTS (exit 1) when ANY:
 - a **required scaffold file** is missing (configs, `src/app/*`, `src/lib/utils`, the core
   `src/components/ui/` set: button · card · input · label · dialog);
 - `package.json.tmpl` lacks a **required stack dependency** (next, react, tailwindcss v4,
@@ -34,7 +34,7 @@ node scripts/checks/scaffold-coverage-scan.js [--json]
 ## On a finding
 
 - **Missing file / dep** → the scaffold is incomplete; add the file or pin the dep in
-  `framework/templates/app-scaffold/`.
+  `_warpos/templates/app-scaffold/`.
 - **import↔dep drift** → either add the missing dependency to `package.json.tmpl`, or
   remove the import. This is the check that keeps "deps match what the components actually
   import" true over time.
@@ -42,5 +42,5 @@ node scripts/checks/scaffold-coverage-scan.js [--json]
 ## Pairs with
 - `scripts/scaffold/app.js` — the engine that materializes the scaffold into a product
   (wired into `/portfolio:new` by default and `/bootstrap:spinup` on-screen).
-- `framework/templates/app-scaffold/DESIGN_SYSTEM.md` — the scaffold's design-system doc +
+- `_warpos/templates/app-scaffold/DESIGN_SYSTEM.md` — the scaffold's design-system doc +
   the S0.2 `design_brief` / `build_spec` contract linkage.

@@ -34,7 +34,7 @@ const REPO_ROOT = path.resolve(__dirname, "..", "..");
 // Resolve the template dir via the paths registry (paths.appScaffoldTemplates),
 // falling back to the documented default so an older clone still works.
 function templatesDir() {
-  const fallback = path.join(REPO_ROOT, "framework", "templates", "app-scaffold");
+  const fallback = path.join(REPO_ROOT, "_warpos", "templates", "app-scaffold");
   try {
     const reg = JSON.parse(
       fs.readFileSync(path.join(REPO_ROOT, ".claude", "paths.json"), "utf8"),

@@ -29,7 +29,7 @@ const RESERVED = new Set([
   "dispatch", "sync", "bootstrap", "clone", "ponder", "import",
 ]);
 
-const TEMPLATES_DIR = path.resolve(__dirname, "../../framework/templates/portfolio");
+const TEMPLATES_DIR = path.resolve(__dirname, "../../_warpos/templates/portfolio");
 const WARPOS_ROOT = path.resolve(__dirname, "../..");
 
 // ── Validation seam (reused by both create + the CLI) ───────────────────────

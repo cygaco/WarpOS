@@ -22,7 +22,7 @@ const Module = require("module");
 const ROOT = path.resolve(__dirname, "..", "..", "..");
 const TMPL = path.join(
   ROOT,
-  "framework",
+  "_warpos",
   "templates",
   "app-scaffold",
   "src",

@@ -70,7 +70,7 @@ function resolveProjectRoot() {
 // ── Constants ────────────────────────────────────────────────────
 const TEMPLATE_DIR = path.join(
   PROJECT,
-  "framework",
+  "_warpos",
   "templates",
   "product-bootstrap",
 );

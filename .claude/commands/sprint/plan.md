@@ -78,7 +78,7 @@ node scripts/sprint/init.js --project "$(basename "$PWD")"
 ```
 
 This creates the tracker tree from the templates in
-`framework/templates/sprint/init/` (see `paths.sprintTemplates`). Safe
+`_warpos/templates/sprint/init/` (see `paths.sprintTemplates`). Safe
 to re-run — it refuses to overwrite existing files unless `--force`.
 
 ### Step 2 — Preserve the request verbatim

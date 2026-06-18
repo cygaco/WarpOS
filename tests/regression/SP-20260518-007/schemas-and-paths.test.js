@@ -13,7 +13,7 @@
  *   - AC-1.2.2: regression-fixture YAML with empty justification + reproduction_kind=not_applicable is rejected
  *   - AC-1.3.1: .claude/paths.json has sprintRegressionCorpus
  *   - AC-1.3.2: scripts/hooks/lib/paths.js exposes sprintRegressionCorpus in lockstep
- *   - AC-2.1.1: framework/templates/sprint/requirements/acceptance-criteria.md.tmpl documents verified_by:
+ *   - AC-2.1.1: _warpos/templates/sprint/requirements/acceptance-criteria.md.tmpl documents verified_by:
  *
  * Convention (Sprint A): bespoke node script with passed/failed counters
  * + per-case lines (`ok    <name>` / `FAIL  <name>`). Same as
@@ -282,7 +282,7 @@ function test_ac_template_documents_verified_by_convention() {
   const tmpl = fs.readFileSync(
     path.join(
       REPO,
-      "framework",
+      "_warpos",
       "templates",
       "sprint",
       "requirements",

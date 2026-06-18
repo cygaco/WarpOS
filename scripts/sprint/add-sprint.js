@@ -118,7 +118,7 @@ try {
 process.stdout.write(`added ${id} as primary\n`);
 
 // ── WG-14 fallbacks: minimal schema-valid trackers when templates are absent.
-// Mirror framework/templates/sprint/init/{current-sprint,sprint-progress}.yaml.tmpl.
+// Mirror _warpos/templates/sprint/init/{current-sprint,sprint-progress}.yaml.tmpl.
 // writeYaml injects the `schema:` header from the file path, so it is omitted here.
 function minimalCurrent(id, title, now) {
   return {

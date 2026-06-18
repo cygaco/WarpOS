@@ -58,7 +58,7 @@ function buildProject(activeStatuses) {
   for (const rel of [
     ".claude/paths.json",
     "schemas/sprint",
-    "framework/templates/sprint",
+    "_warpos/templates/sprint",
     ROUTING_REL,
   ]) {
     const src = path.join(REPO, rel);

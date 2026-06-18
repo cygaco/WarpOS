@@ -169,14 +169,14 @@ function main() {
       }
     }),
     check("sprint templates present (init + requirements)", () => {
-      const base = path.join(REPO_ROOT, "framework", "templates", "sprint");
+      const base = path.join(REPO_ROOT, "_warpos", "templates", "sprint");
       const missing = ["init", "requirements"].filter(
         (d) => !fs.existsSync(path.join(base, d)),
       );
       if (missing.length)
         return {
           ok: false,
-          detail: `framework/templates/sprint/{${missing.join(",")}} missing — design phase would write a hollow bundle (WG-10). Run /warp:update.`,
+          detail: `_warpos/templates/sprint/{${missing.join(",")}} missing — design phase would write a hollow bundle (WG-10). Run /warp:update.`,
         };
       return true;
     }),

@@ -40,7 +40,7 @@ const SCHEMA_ID = "warpos/readiness/v1";
 const BRAND_TOKEN_RE = /warpos/i;
 
 function scaffoldDir() {
-  const fallback = path.join(REPO_ROOT, "framework", "templates", "app-scaffold");
+  const fallback = path.join(REPO_ROOT, "_warpos", "templates", "app-scaffold");
   try {
     const reg = JSON.parse(fs.readFileSync(path.join(REPO_ROOT, ".claude", "paths.json"), "utf8"));
     return reg.appScaffoldTemplates ? path.join(REPO_ROOT, reg.appScaffoldTemplates) : fallback;

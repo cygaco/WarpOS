@@ -26,7 +26,7 @@ const REPO = process.cwd();
 
 const PAGE = path.join(
   REPO,
-  "framework",
+  "_warpos",
   "templates",
   "app-scaffold",
   "src",
@@ -37,7 +37,7 @@ const PAGE = path.join(
 );
 const GROUP = path.join(
   REPO,
-  "framework",
+  "_warpos",
   "templates",
   "app-scaffold",
   "src",
@@ -47,7 +47,7 @@ const GROUP = path.join(
 );
 const TOGGLE = path.join(
   REPO,
-  "framework",
+  "_warpos",
   "templates",
   "app-scaffold",
   "src",
