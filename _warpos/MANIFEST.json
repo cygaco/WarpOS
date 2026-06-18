@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-18T21:20:10.681Z",
+  "generatedAt": "2026-06-18T21:22:44.470Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.16.0",
   "migrations": [],
@@ -10336,8 +10336,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/test-warpos-ship-coverage.js",
-      "sha256": "b82d40fe76832344cb801f636e77c3b3341ecb6c0af414f96985a129f91163ed",
-      "installedSha": "b82d40fe76832344cb801f636e77c3b3341ecb6c0af414f96985a129f91163ed"
+      "sha256": "72ff600633fb94a243aa5498f62f9141609e30969ef6dafbf38e23b92559c482",
+      "installedSha": "72ff600633fb94a243aa5498f62f9141609e30969ef6dafbf38e23b92559c482"
     },
     "scripts/checks/tracker-reality-drift.js": {
       "owner": "framework",
@@ -10455,8 +10455,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/warpos-ship-coverage.js",
-      "sha256": "5c53fb6a01980db80ade466b2d6421f7d3de880a7e5be76221045c24a459e6f2",
-      "installedSha": "5c53fb6a01980db80ade466b2d6421f7d3de880a7e5be76221045c24a459e6f2"
+      "sha256": "ae111bfca67b93269bd1e99ca8e35cd3b5fcc52e95251ed27598d8b38ae36fcd",
+      "installedSha": "ae111bfca67b93269bd1e99ca8e35cd3b5fcc52e95251ed27598d8b38ae36fcd"
     },
     "scripts/checks/warpos-staleness.js": {
       "owner": "framework",
