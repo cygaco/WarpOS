@@ -454,6 +454,91 @@ function mkAssert(scenarioResult) {
   };
 }
 
+// ── Migrated shipped-structure assertions (SP-20260618-001 / U3, DoD#4) ──
+//
+// CONFIRM the U1 templates migration reaches a REAL install (fresh + upgrade) —
+// the install-time e2e the GOLDEN user relies on. Asserted against the final
+// fixture state of scenario 1 (fresh) AND scenario 2 (upgrade) using the
+// existing assertion idiom (mkAssert + fs/path fixtureDir checks) — NO new
+// harness.
+//
+//   • _warpos/templates/ + its 9 master-seed subdirs are PLACED by the install.
+//     This is the install-actually-placed-them proof: the migrated templates
+//     ship via .claude/framework-manifest.json (ASSET_DIRS repoint) and the
+//     fixture receives them — stronger than ship-coverage, which only proves the
+//     manifest COVERS them, never that an install lays them down.
+//   • NO framework/templates/ in the installed tree — the deleted pre-migration
+//     home left behind no stale dependency.
+//
+// _warpos/BASELINE/ — DELIBERATE DIVERGENCE FROM THE SPEC, DOCUMENTED CALL:
+//   The U3 brief's step-1 / verified_by-2 ask for _warpos/BASELINE/ to be
+//   "present in the fixture". It is NOT — and must not be. U1 carved
+//   _warpos/BASELINE/ as build-output that is INTENTIONALLY NOT SHIPPED from
+//   canonical (warpos-ship-coverage.js KNOWN_NOT_SHIPPED, the narrow
+//   "_warpos/BASELINE/" entry; absent from framework-manifest.json). It is the
+//   per-install seed-snapshot / `seeded_from` pointer target (U2 provenance), with
+//   its per-install generator still pending (deferred debt). A consumer install
+//   legitimately does NOT receive it. Shipping it (or asserting its fixture
+//   presence) would alter U1's reviewed carve / the manifest — both explicitly
+//   out of U3 scope. So BASELINE is CONFIRMED at the CANONICAL layer (REPO_ROOT),
+//   where the snapshot actually lives, and its fixture status is recorded as a
+//   soft marker (never fails). See the U3 return notes for the flagged conflict.
+const EXPECTED_TEMPLATE_SUBDIRS = [
+  "app-scaffold",
+  "canonical",
+  "lastmile",
+  "portfolio",
+  "product-bootstrap",
+  "product-clone",
+  "product-import",
+  "report",
+  "sprint",
+];
+
+function assertMigratedShippedStructure(r, assert, fixtureDir, label) {
+  // (1) _warpos/templates/ is a shipped asset — the install must place it.
+  const tplDir = path.join(fixtureDir, "_warpos", "templates");
+  const tplIsDir = fs.existsSync(tplDir) && fs.statSync(tplDir).isDirectory();
+  assert(
+    `${label}: _warpos/templates/ placed by install (migrated shipped structure reaches a real install)`,
+    tplIsDir,
+    `exists=${fs.existsSync(tplDir)} isDir=${tplIsDir}`,
+  );
+  if (tplIsDir) {
+    const present = new Set(fs.readdirSync(tplDir));
+    const missing = EXPECTED_TEMPLATE_SUBDIRS.filter((d) => !present.has(d));
+    assert(
+      `${label}: _warpos/templates/ has all ${EXPECTED_TEMPLATE_SUBDIRS.length} master-seed subdirs`,
+      missing.length === 0,
+      `missing=[${missing.join(", ")}] present=[${[...present].slice(0, 12).join(", ")}]`,
+    );
+  }
+
+  // (2) NEGATIVE: the pre-migration framework/templates/ home must be GONE —
+  // no stale dependency shipped into the install.
+  assert(
+    `${label}: NO stale framework/templates/ in installed tree (no pre-migration dependency)`,
+    !fs.existsSync(path.join(fixtureDir, "framework", "templates")),
+    "framework/templates/ present in fixture — stale pre-migration dependency shipped",
+  );
+
+  // (3) _warpos/BASELINE/ — canonical build-output, intentionally NOT shipped
+  // (see header comment). Confirm at the CANONICAL layer (REPO_ROOT), NOT the
+  // fixture; record fixture status as a soft, non-failing marker.
+  assert(
+    `${label}: _warpos/BASELINE/ present in canonical (build-output home; not shipped to consumers by design)`,
+    fs.existsSync(path.join(REPO_ROOT, "_warpos", "BASELINE")),
+    "expected _warpos/BASELINE/ at canonical REPO_ROOT",
+  );
+  const baselineInFixture = fs.existsSync(
+    path.join(fixtureDir, "_warpos", "BASELINE"),
+  );
+  r.assertions.push({
+    name: `soft: ${label} fixture _warpos/BASELINE present = ${baselineInFixture} (consumer install legitimately omits it — KNOWN_NOT_SHIPPED build-output)`,
+    status: "pass",
+  });
+}
+
 // ── Capsule helpers ──────────────────────────────────────────────────
 
 function listCapsuleVersions() {
@@ -715,6 +800,11 @@ function scenario1_clean_install(scenario, fixtureDir, opts) {
       regen.code === 0,
       `code=${regen.code} ${(regen.stdout || regen.stderr || "").slice(0, 200)}`,
     );
+
+    // SP-20260618-001 / U3 (DoD#4): the fresh install must end with the migrated
+    // shipped structure — _warpos/templates/ + its 9 subdirs placed, no stale
+    // framework/templates/. (BASELINE confirmed canonical-side — see helper.)
+    assertMigratedShippedStructure(r, assert, fixtureDir, "fresh");
   }
 
   r.durationMs = Date.now() - t0;
@@ -827,6 +917,12 @@ function scenario2_existing_install_upgrade(scenario, fixtureDir, opts) {
     spUpdate.code === 0,
     `code=${spUpdate.code} ${(spUpdate.stdout || spUpdate.stderr || "").slice(0, 160)}`,
   );
+
+  // SP-20260618-001 / U3 (DoD#4): the upgraded install must ALSO end with the
+  // migrated shipped structure — _warpos/templates/ + its 9 subdirs present, no
+  // stale framework/templates/. Same guarantee as the fresh path, on the
+  // seed+re-setup+update fixture. (BASELINE confirmed canonical-side — see helper.)
+  assertMigratedShippedStructure(r, assert, fixtureDir, "upgrade");
 
   r.durationMs = Date.now() - t0;
   return r;
