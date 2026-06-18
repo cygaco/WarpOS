@@ -195,8 +195,9 @@ function buildRules(sourcePrefix) {
         // seeded_from must resolve to a real on-disk path (0.16.0 prefix-drift fix).
         // The old `${sourcePrefix}/templates/policy/decision-policy.md` dangled —
         // `framework/templates/policy/` never existed. The honest seed source is the
-        // matched file itself. (Future: flip to `_warpos/templates/...` once that
-        // end-state directory is built — SP-20260522-001.)
+        // matched file itself. (SP-20260618-001: NOT flipped to `_warpos/templates/` —
+        // policy/ is not one of the 9 template categories under _warpos/templates, so a
+        // flip would re-introduce a dangle. The matched file is the permanent seed source.)
         // ADR-0007: policy moved 00-alex/.system → president/_system.
         seeded_from: ".claude/agents/president/_system/policy/decision-policy.md",
         class: "fillable",
@@ -212,8 +213,9 @@ function buildRules(sourcePrefix) {
         // `${sourcePrefix}/templates/${rel.replace(/^_requirements\//,"_requirements/")}`
         // — the .replace() was a NO-OP, so it emitted `framework/templates/_requirements/<rest>`,
         // a path that never existed (the "100 dangling seeded_from"). `rel` itself
-        // (`_requirements/<rest>`) is the real, resolvable seed source. (Future: flip
-        // to `_warpos/templates/_requirements/<rest>` once that end-state is built.)
+        // (`_requirements/<rest>`) is the real, resolvable seed source. (SP-20260618-001:
+        // NOT flipped to `_warpos/templates/_requirements/` — _warpos/templates contains
+        // only the 9 template categories, no _requirements/ subtree, so a flip would dangle.)
         seeded_from: rel,
         class: "fillable",
       }),
