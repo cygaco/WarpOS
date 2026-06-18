@@ -84,14 +84,6 @@ const KNOWN_NOT_SHIPPED = [
   // not shipped from canonical (consumers generate their own). Narrow prefix so
   // _warpos/templates/ still falls through to the shipped set.
   { prefix: "_warpos/BASELINE/", reason: "build-output seed snapshot for the deferred validate.js:30 seed-drift diff; not shipped from canonical (per-install generator pending)" },
-  // ── SP-20260618-001 COEXISTENCE WINDOW — REMOVE in STEP11 after `git rm -r framework/templates` ──
-  // The generator was repointed to ship _warpos/templates (the SP-20260522-001 end-state
-  // home). framework/templates/ is the superseded old copy: still on disk during the brief
-  // two-copies-coexist safety window, deleted this sprint. Allowlisting it makes the
-  // pre-delete gate green WITHOUT masking the new ship source — _warpos/templates is NOT
-  // allowlisted, falls through, and IS shipped (proven by assert-warpos-templates-shipped.js).
-  // This entry is REMOVED post-delete; the end state has no framework/templates anywhere.
-  { prefix: "framework/templates/", reason: "SP-20260618-001 coexistence window — superseded by _warpos/templates, deleted this sprint (REMOVE post-delete)" },
   // WarpOS-as-product canon — root-leak pending 0.10.0 scrub; product content,
   // never shipped (consumers generate their own via the canon engine).
   { prefix: "_requirements/00-canonical/", reason: "WarpOS product canon (root-leak pending scrub); consumers generate their own" },

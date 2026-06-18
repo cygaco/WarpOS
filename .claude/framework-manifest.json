@@ -13,7 +13,7 @@
     "pattern": 6,
     "fixture": 23,
     "warpos_script": 57,
-    "check_tool": 119,
+    "check_tool": 120,
     "agent_tool": 3,
     "decision_tool": 1,
     "runtime_tool": 1,
@@ -67,7 +67,7 @@
     "module_scope": 1,
     "framework_doc": 4
   },
-  "total": 1329,
+  "total": 1330,
   "assets": {
     "agent": [
       {
@@ -6775,6 +6775,18 @@
         "replaces": null
       },
       {
+        "id": "check_tool.assert-warpos-templates-shipped.js",
+        "src": "scripts/checks/assert-warpos-templates-shipped.js",
+        "dest": "scripts/checks/assert-warpos-templates-shipped.js",
+        "kind": "check_tool",
+        "sha256": "ee19a1ee47a0511aa2555a4c51a8f81e8b9f9b7519a0bd1e3927faba5d06462c",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
         "id": "check_tool.beta-honesty-triage.js",
         "src": "scripts/checks/beta-honesty-triage.js",
         "dest": "scripts/checks/beta-honesty-triage.js",
@@ -8111,7 +8123,7 @@
         "src": "scripts/checks/warpos-ship-coverage.js",
         "dest": "scripts/checks/warpos-ship-coverage.js",
         "kind": "check_tool",
-        "sha256": "7c39494d9ccc38273f420b5ea54faab2a96b39f2f559386f039f9668d7d6701e",
+        "sha256": "5c53fb6a01980db80ade466b2d6421f7d3de880a7e5be76221045c24a459e6f2",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
