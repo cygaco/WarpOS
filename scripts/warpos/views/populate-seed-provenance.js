@@ -97,6 +97,47 @@ function normalizeZone(zone) {
 }
 
 /**
+ * STATIC path-traversal guard (SP-20260618-001 security fix). The exported
+ * writer must honor the "only within product seed zones" contract even when
+ * `opts.zones` is untrusted. A seed zone is trusted ONLY when it is a relative,
+ * non-traversing member of the CANONICAL allowlist (scaffold-core.SKELETON_DIRS
+ * via defaultZones()) — never validated against the caller-supplied list itself.
+ *
+ * `zoneRel` is already normalized (forward slashes, no trailing slash). Returns
+ * a human-readable reason when the zone must be REJECTED, or null when it is
+ * safe to use.
+ */
+function zoneRejectReason(zoneRel, allowedZones) {
+  if (path.isAbsolute(zoneRel)) return "absolute path not allowed";
+  if (/^[A-Za-z]:/.test(zoneRel)) return "drive-qualified path not allowed";
+  if (zoneRel.startsWith("/") || zoneRel.startsWith("\\")) return "rooted path not allowed";
+  if (zoneRel.split("/").some((seg) => seg === "..")) {
+    return "parent-traversal ('..') segment not allowed";
+  }
+  if (!allowedZones.has(zoneRel)) return "not a member of the canonical seed-zone allowlist";
+  return null;
+}
+
+/**
+ * Walk UP from `p` to the deepest path component that actually exists, so the
+ * caller can realpath it BEFORE creating any new dirs. This is the seam that
+ * defeats a symlink/junction escape (e.g. an existing `_docs` junction pointing
+ * outside the product tree): resolving the deepest existing ancestor reveals the
+ * real location, which the caller asserts stays under the real target root —
+ * refusing the write WITHOUT ever creating a directory outside the tree.
+ */
+function deepestExistingAncestor(p) {
+  let cur = path.resolve(p);
+  let parent = path.dirname(cur);
+  while (cur !== parent) {
+    if (fs.existsSync(cur)) return cur;
+    cur = parent;
+    parent = path.dirname(cur);
+  }
+  return cur; // filesystem root
+}
+
+/**
  * The deterministic marker body for a zone. No timestamp by design — the
  * framework_version is the temporal anchor, so a re-run is byte-stable.
  */
@@ -171,10 +212,53 @@ function populateSeedProvenance(opts) {
   });
   result.version = version;
 
+  // ── Path-traversal hardening (SP-20260618-001 security fix) ──
+  // Two guards, applied per zone below, so a write can NEVER land outside the
+  // product seed zones — even with untrusted opts.zones or a junction on disk:
+  //   (1) STATIC  — zoneRejectReason(): reject absolute / drive-qualified /
+  //       '..'-bearing zones, and any zone not in the CANONICAL allowlist
+  //       (scaffold-core.SKELETON_DIRS via defaultZones()), not opts.zones.
+  //   (2) REALPATH — resolve the deepest EXISTING ancestor of the marker's
+  //       parent and require it to stay under the real target root, defeating a
+  //       symlink/junction escape without creating any dir outside the tree.
+  const allowedZones = new Set(defaultZones().map(normalizeZone).filter(Boolean));
+  let realTarget;
+  try {
+    realTarget = fs.realpathSync(targetRoot);
+  } catch {
+    realTarget = targetRoot;
+  }
+  const underRealTarget = (p) => p === realTarget || p.startsWith(realTarget + path.sep);
+
   for (const rawZone of zones) {
     const zoneRel = normalizeZone(rawZone);
     if (!zoneRel) continue;
+
+    // Guard (1): static rejection — refuse before touching the filesystem.
+    const rejectReason = zoneRejectReason(zoneRel, allowedZones);
+    if (rejectReason) {
+      result.failed.push({ zone: zoneRel, reason: rejectReason });
+      continue;
+    }
+
     const markerAbs = path.join(targetRoot, zoneRel, PROVENANCE_FILE);
+    const markerDir = path.dirname(markerAbs);
+
+    // Guard (2): realpath the deepest existing ancestor of the marker dir and
+    // require it to stay under the real target root. Catches an existing
+    // junction/symlink escape BEFORE any read, mkdir, or write happens.
+    let realAncestor;
+    try {
+      realAncestor = fs.realpathSync(deepestExistingAncestor(markerDir));
+    } catch (err) {
+      result.failed.push({ zone: zoneRel, reason: `realpath check failed: ${err.message}` });
+      continue;
+    }
+    if (!underRealTarget(realAncestor)) {
+      result.failed.push({ zone: zoneRel, reason: "zone escapes target root" });
+      continue;
+    }
+
     const expected = expectedMarker(zoneRel, version);
     try {
       if (fs.existsSync(markerAbs)) {
@@ -185,7 +269,7 @@ function populateSeedProvenance(opts) {
         else result.preserved.push(zoneRel);
         continue;
       }
-      fs.mkdirSync(path.dirname(markerAbs), { recursive: true });
+      fs.mkdirSync(markerDir, { recursive: true });
       fs.writeFileSync(markerAbs, expected);
       result.written.push(zoneRel);
     } catch (err) {

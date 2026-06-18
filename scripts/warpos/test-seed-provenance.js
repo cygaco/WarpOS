@@ -139,6 +139,88 @@ try {
   ok(`module has zero "${FORBIDDEN_SOURCE}" references`,
     !moduleSrc.includes(FORBIDDEN_SOURCE));
   ok("module references the _warpos/ baseline source", moduleSrc.includes("_warpos/BASELINE"));
+
+  // ── 4. Path-traversal: a "../escape" zone is REFUSED + writes nothing out ──
+  // (mandatory + portable — no symlink/junction needed). The writer must reject
+  // a traversing zone, report it in result.failed, and leave the parent tree
+  // untouched (SP-20260618-001 security fix).
+  {
+    const escRoot = fs.mkdtempSync(path.join(os.tmpdir(), "warpos-seed-esc-"));
+    try {
+      const targetInside = path.join(escRoot, "product");
+      fs.mkdirSync(targetInside, { recursive: true });
+      const escZone = "../pwned";
+      // Where "../pwned" WOULD land if the write were not refused: escRoot/pwned.
+      const leakedDir = path.join(escRoot, "pwned");
+      const leakedMarker = path.join(leakedDir, PROVENANCE_FILE);
+
+      const rEsc = populateSeedProvenance({
+        targetRoot: targetInside,
+        warposVersion: VERSION,
+        zones: [escZone],
+        log: noop,
+      });
+
+      ok("'../pwned' zone reported in result.failed (not silently written)",
+        rEsc.failed.some((f) => f.zone === escZone) && rEsc.written.length === 0,
+        `failed=${JSON.stringify(rEsc.failed)} written=${JSON.stringify(rEsc.written)}`);
+      ok("'../pwned' wrote NOTHING outside the target root",
+        !fs.existsSync(leakedMarker) && !fs.existsSync(leakedDir),
+        `leaked=${leakedMarker}`);
+      ok("'../pwned' marks the run not-ok (ok=false, code=1)",
+        rEsc.ok === false && rEsc.code === 1,
+        `ok=${rEsc.ok} code=${rEsc.code}`);
+    } finally {
+      try { fs.rmSync(escRoot, { recursive: true, force: true }); } catch { /* best-effort */ }
+    }
+  }
+
+  // ── 5. Path-traversal: a "_docs" junction pointing OUTSIDE the tree is ──
+  // refused — the marker is never written through it. "_docs" is a VALID
+  // allowlisted zone NAME, so only the realpath guard can catch this. On an env
+  // that cannot create a junction/symlink the case is skipped-with-note (the
+  // mandatory "../escape" case above still proves traversal is blocked).
+  {
+    const jRoot = fs.mkdtempSync(path.join(os.tmpdir(), "warpos-seed-jct-"));
+    try {
+      const targetJ = path.join(jRoot, "product");
+      const outside = path.join(jRoot, "outside");
+      fs.mkdirSync(targetJ, { recursive: true });
+      fs.mkdirSync(outside, { recursive: true });
+
+      const junctionZone = "_docs";
+      const junctionPath = path.join(targetJ, junctionZone);
+      let junctionMade = false;
+      try {
+        fs.symlinkSync(outside, junctionPath, "junction"); // Windows junction (no admin)
+        junctionMade = true;
+      } catch {
+        try {
+          fs.symlinkSync(outside, junctionPath, "dir"); // POSIX / dev-mode symlink
+          junctionMade = true;
+        } catch { /* env cannot create links — skip below */ }
+      }
+
+      if (!junctionMade) {
+        ok("junction-escape test SKIPPED (env cannot create a junction/symlink) — '../escape' still covers traversal", true);
+      } else {
+        const rJ = populateSeedProvenance({
+          targetRoot: targetJ,
+          warposVersion: VERSION,
+          zones: [junctionZone],
+          log: noop,
+        });
+        const leakedMarker = path.join(outside, PROVENANCE_FILE);
+        ok("junction zone: marker NOT written through the junction",
+          !fs.existsSync(leakedMarker), `leaked=${leakedMarker}`);
+        ok("junction zone reported in result.failed (escape detected), nothing written",
+          rJ.failed.some((f) => f.zone === junctionZone) && rJ.written.length === 0,
+          `failed=${JSON.stringify(rJ.failed)} written=${JSON.stringify(rJ.written)}`);
+      }
+    } finally {
+      try { fs.rmSync(jRoot, { recursive: true, force: true }); } catch { /* best-effort */ }
+    }
+  }
 } finally {
   try {
     fs.rmSync(tmp, { recursive: true, force: true });
