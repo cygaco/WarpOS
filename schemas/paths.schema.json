@@ -214,7 +214,7 @@
     },
     "appScaffoldTemplates": {
       "type": "string",
-      "const": "framework/templates/app-scaffold",
+      "const": "_warpos/templates/app-scaffold",
       "description": "dir (framework) — paths.appScaffoldTemplates"
     },
     "manifest": {
@@ -509,7 +509,7 @@
     },
     "sprintTemplates": {
       "type": "string",
-      "const": "framework/templates/sprint",
+      "const": "_warpos/templates/sprint",
       "description": "dir (framework) — paths.sprintTemplates"
     },
     "sprintSchemas": {
@@ -589,7 +589,7 @@
     },
     "portfolioTemplates": {
       "type": "string",
-      "const": "framework/templates/portfolio",
+      "const": "_warpos/templates/portfolio",
       "description": "dir (framework) — paths.portfolioTemplates"
     },
     "skillCatalog": {
