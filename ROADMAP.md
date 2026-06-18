@@ -831,6 +831,7 @@ Every sprint that has been planned, executed, released, or retrospected — one 
 
 | Sprint | Title | Status | Started | Closed | Release |
 |---|---|---|---|---|---|
+| [SP-20260618-001](.claude/project/sprint/sprints/SP-20260618-001/) | E-CONTENT-DELIVERY-001: templates-migration to _warpos/ end-state + provenance-seed + update-parity confirm | done | 2026-06-18T19:19:43.785Z | 2026-06-18 | gauntlet GREEN (backend+qa+security, 1 security fix-cycle); ff-merge to main @5238dc44; engine-sprint RI-001 |
 | [SP-20260616-001](.claude/project/sprint/sprints/SP-20260616-001/) | E-DISPATCH-SHAPE-001 W2-core: shape-door report-only parity + per-wrapper enforce-ramp scaffolding | planning | 2026-06-16T18:24:59.291Z |  |  |
 | [SP-20260615-002](.claude/project/sprint/sprints/SP-20260615-002/) | Visual interactive roadmap panel (browser GUI, item 25 redo) | done | 2026-06-15T16:17:41.829Z | 2026-06-15 | gauntlet VISUAL=PASS 4/4; 16/16; item 25 v2 (browser GUI) |
 | [SP-20260615-001](.claude/project/sprint/sprints/SP-20260615-001/) | Panel namespace + roadmap panel (items 23+25) | done | 2026-06-15T03:50:11.558Z | 2026-06-15 | cross-family gauntlet FAIL→PASS; 16/16; items 23+25 SHIPPED |
