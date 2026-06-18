@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-18T22:24:31.127Z",
+  "generatedAt": "2026-06-18T23:17:12.739Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.16.0",
   "migrations": [],
@@ -7305,8 +7305,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/warpos/test-install-matrix.js",
-      "sha256": "79dbdc5914d207eb74e53525133efc55998ca9783b942240badb72d6e22f27fe",
-      "installedSha": "79dbdc5914d207eb74e53525133efc55998ca9783b942240badb72d6e22f27fe"
+      "sha256": "fb1bbd9eb1cdbf0edf9c540083a92926adff77a77da3066ed555285a4b003044",
+      "installedSha": "fb1bbd9eb1cdbf0edf9c540083a92926adff77a77da3066ed555285a4b003044"
     },
     "scripts/warpos/test-release-build-beta-honesty-gate.js": {
       "owner": "framework",
@@ -7340,8 +7340,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/warpos/test-seed-provenance.js",
-      "sha256": "0f6131d7e165a55c4801fb558765d895299d517a6c142145e8ef8d65c912f617",
-      "installedSha": "0f6131d7e165a55c4801fb558765d895299d517a6c142145e8ef8d65c912f617"
+      "sha256": "45fe5f75bd5d27fd3656c1d0490b54affe59c84d0e54c233623614d8b9a81c70",
+      "installedSha": "45fe5f75bd5d27fd3656c1d0490b54affe59c84d0e54c233623614d8b9a81c70"
     },
     "scripts/warpos/test-status-cli.js": {
       "owner": "framework",
@@ -7389,8 +7389,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/warpos/views/populate-seed-provenance.js",
-      "sha256": "4b945daee82c10fd3e3f6d264f61e0bec148ebf5707409badd0251f87bcba516",
-      "installedSha": "4b945daee82c10fd3e3f6d264f61e0bec148ebf5707409badd0251f87bcba516"
+      "sha256": "a50c6ab290c5f6056259d9333456410484649a25b37166d4ae5197c22a21a4a7",
+      "installedSha": "a50c6ab290c5f6056259d9333456410484649a25b37166d4ae5197c22a21a4a7"
     },
     "scripts/warpos/views/populate-source.js": {
       "owner": "framework",
@@ -9692,8 +9692,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/assert-warpos-templates-shipped.js",
-      "sha256": "ee19a1ee47a0511aa2555a4c51a8f81e8b9f9b7519a0bd1e3927faba5d06462c",
-      "installedSha": "ee19a1ee47a0511aa2555a4c51a8f81e8b9f9b7519a0bd1e3927faba5d06462c"
+      "sha256": "54c7c4ba50a2baf69204b8b50aa32693fcb4364372ce4cff475759b73d4fdde2",
+      "installedSha": "54c7c4ba50a2baf69204b8b50aa32693fcb4364372ce4cff475759b73d4fdde2"
     },
     "scripts/checks/beta-honesty-triage.js": {
       "owner": "framework",

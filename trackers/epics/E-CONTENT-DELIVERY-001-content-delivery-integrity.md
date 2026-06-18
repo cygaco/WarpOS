@@ -11,15 +11,15 @@
 - **Background:** WarpOS has two manifests that drifted with nothing gating reconciliation — `_warpos/MANIFEST.json` (authoritative ownership taxonomy: owner=framework|generated|project|runtime) vs `.claude/framework-manifest.json` (what install + update actually ship). `framework/templates/*` shipped to 0 consumers silently under green gates. SP-20260525-024 added the essential-roots patch (`framework/templates` + `hooks.registry` → ASSET_DIRS, `scaffoldProduct` + `populateWarposMirror` into `update.js`, `scripts/checks/warpos-ship-coverage.js` enforcer). This epic makes reconciliation structural + exhaustive.
 - **Scope:** Build `_warpos/templates/` + `_warpos/BASELINE/` in canonical; migrate `framework/templates` → `_warpos/templates`; fix the dangling `seeded_from` at `scripts/warpos/manifest/build.js:196-202`; extend `populate-source.js` to seed `_requirements/` / `_docs/` with provenance; harden `warpos-ship-coverage.js` to assert every `seeded_from` resolves + curate ~218 owner=framework dev-tooling paths into a reviewed KNOWN_NOT_SHIPPED allowlist (exhaustive, not essential-only); add an install-matrix update-parity assertion (every REQUIRED_DIR present post-update).
 - **Out of scope:** The executable consumer-contract gate (E-GOLDEN-FLOW-001); channels (E-STABLE-CHANNEL-001).
-- **Current state:** Active
-- **Percent completion:** ~60% (verified 2026-06-06; revised up from ~50% after a verify-first re-check found DoD #2 already landed). DONE & ENFORCED: DoD #2 — ship-coverage is exhaustive (`warpos-ship-coverage.js` green: 1304 paths, 0 hard_gaps / 0 info_gaps / 0 boundary_violations, info_gaps a hard failure, reviewed `KNOWN_NOT_SHIPPED` allowlist) and `seeded_from` integrity is zero-tolerance (0 dangling, `KNOWN_DANGLING_SET` empty) — the 0.16.0-themed work that the ROADMAP next-action was still (stalely) listing as TODO. OPEN: DoD #1 (`_warpos/templates/` + `_warpos/BASELINE/` build + `framework/templates` migration, verified absent), DoD #3 (provenance-seeding; `populate-source.js` absent), DoD #4 (install-matrix update-parity — partial: scenario 2 `existing_install_upgrade` + post-update checks exist, full REQUIRED_DIR assertion unconfirmed). Conservative per §20.
+- **Current state:** Completed
+- **Percent completion:** 100% (SP-20260618-001 templates-migration sprint, 2026-06-18 — gauntlet GREEN). All four DoD now satisfied + evidenced: DoD #1 (`_warpos/templates/` built as the sole home, 9 dirs/108 files; `framework/templates/` DELETED; `_warpos/BASELINE/` built; ship-coverage allowlist carved narrowly so templates SHIP while MANIFEST.json+settings+BASELINE stay not-shipped — U1 a35df99d), DoD #2 (ship-coverage exhaustive + `seeded_from` zero-tolerance — already DONE 2026-06-06, re-verified green at 1907 paths), DoD #3 (fresh install seeds `_requirements/`/`_docs/` with provenance via `scripts/warpos/views/populate-seed-provenance.js`, idempotent + skip-if-user-modified + path-traversal-hardened — U2 eff3b1a0 + security-fix 0c802292), DoD #4 (`test-install-matrix.js` scenarios 1+2 assert the migrated shipped structure reaches a real install fixture; structure-parity {ok:true,count:24} — U3 57476d73). Cross-provider gauntlet GREEN (backend+qa+security PASS; security caught + fixed a real path-traversal). Known pre-existing non-regression: test-install-matrix scenario-2 exits 1 on a 0.16.0 capsule checksum drift that predates this sprint (same hash on main; releases/0.16.0 untouched) — tracked as a separate release-rebuild item, waived at merge.
 
 ## Definition of Done
 <!-- Concrete, checkable criteria. Nothing reaches 100% until all are satisfied + evidenced (§20, §27). -->
-- [ ] `_warpos/templates/` + `_warpos/BASELINE/` exist; `framework/templates` migrated (no orphaned copy)
-- [x] All `seeded_from` pointers resolve, verified by hardened ship-coverage exiting 0 with zero unallowlisted owner=framework paths — **DONE** (verified 2026-06-06: `node scripts/checks/warpos-ship-coverage.js` → exit 0, 1304 paths, 0 gaps, 0 dangling, `KNOWN_DANGLING_SET` empty)
-- [ ] Fresh install seeds `_requirements/` / `_docs/` with provenance, not bare `.gitkeep`
-- [ ] `test-install-matrix.js` existing_install_upgrade asserts every REQUIRED_DIR present post-update
+- [x] `_warpos/templates/` + `_warpos/BASELINE/` exist; `framework/templates` migrated (no orphaned copy) — **DONE** (SP-20260618-001 U1 a35df99d: `_warpos/templates/` is the sole home, 9 dirs/108 files; `framework/templates/` deleted; `_warpos/BASELINE/` built as the per-install seed-snapshot; ship-coverage `--root` exit 0/1907 paths/0 gaps; the carve is narrow — templates ship, MANIFEST.json+settings+BASELINE do not)
+- [x] All `seeded_from` pointers resolve, verified by hardened ship-coverage exiting 0 with zero unallowlisted owner=framework paths — **DONE** (verified 2026-06-06; re-verified 2026-06-18 at 1907 paths, 0 gaps, 0 dangling, `KNOWN_DANGLING_SET` empty)
+- [x] Fresh install seeds `_requirements/` / `_docs/` with provenance, not bare `.gitkeep` — **DONE** (SP-20260618-001 U2 eff3b1a0 + security-fix 0c802292: `scripts/warpos/views/populate-seed-provenance.js` writes a `.provenance.json` per seed zone, `seeded_from` `_warpos/BASELINE`; idempotent, skip-if-user-modified, path-traversal-hardened; test-seed-provenance 14/14; fresh-install-smoke 8/8)
+- [x] `test-install-matrix.js` existing_install_upgrade asserts every REQUIRED_DIR present post-update — **DONE** (SP-20260618-001 U3 57476d73: scenarios 1+2 assert the migrated shipped structure reaches a real install fixture; structure-parity `REQUIRED_DIRS` {ok:true,count:24}; the matrix's scenario-2 overall exit-1 is solely a pre-existing 0.16.0 capsule drift unrelated to this work — waived, separate ticket)
 
 ## Related definitions
 <!-- Terms from ../../TRACKER.md §Definitions that govern this epic -->
@@ -51,6 +51,18 @@
 
 ## Session log
 <!-- Append-only (§24). One entry per meaningful session; use SESSION_LOG_TEMPLATE.md fields. -->
+### 2026-06-18 — Session session/2026-06-18 (SP-20260618-001 templates-migration — epic CLOSED)
+- Agent(s): Alex ε (sprint conductor) + α (U1 finish + merge) + β (boundary DECIDEs) + backend-builders + cross-provider gauntlet + security-fixer · Mode: sprint
+- Work performed: Conducted SP-20260618-001 to close the epic's remaining DoD. U1 — migrated `framework/templates` (9 dirs/108 files) → `_warpos/templates` end-state home (sole home; old deleted), built `_warpos/BASELINE`, carved the ship-coverage `KNOWN_NOT_SHIPPED` rule NARROWLY (templates ship; MANIFEST.json+settings+BASELINE do not), repointed the manifest generator + 3 paths.registry keys + ~20 regression tests + segmented `path.join` refs, added a standing `assert-warpos-templates-shipped.js` enforcer + a FIX1-pin planted-violation test. U2 — `populate-seed-provenance.js` seeds `_requirements/`/`_docs/` with `.provenance.json` (`seeded_from` `_warpos/BASELINE`), idempotent + skip-if-modified; the gauntlet caught a real path-traversal in it → security-fix added a static zone-allowlist + realpath guard. U3 — extended `test-install-matrix` scenarios 1+2 to assert the migrated shipped structure reaches a real install fixture.
+- Files changed: `_warpos/templates/**` (moved), `_warpos/BASELINE/**` (new), `scripts/warpos/views/populate-seed-provenance.js` (new), `scripts/warpos/test-seed-provenance.js` (new), `scripts/checks/assert-warpos-templates-shipped.js` (new), `scripts/checks/warpos-ship-coverage.js`, `scripts/generate-framework-manifest.js`, `scripts/warpos/manifest/build.js`, `scripts/warpos/scaffold-core.js`, `scripts/warpos/test-install-matrix.js`, `framework/paths.registry.json` + regenerated views/manifests, ~20 regression tests, this tracker.
+- Decisions: gauntlet security FAIL was a binding verdict (not overridden) → fix-cycle. BASELINE = owner=project build-output, NOT shipped (correct reality-consistent reading, reviewer-ratified). gemini tier-ineligible → sanctioned GPT 2nd-pass failover. Scenario-2 capsule drift = pre-existing non-regression → waived + separate ticket.
+- Issues discovered: a real path-traversal in the U2 writer (fixed); a pre-existing 0.16.0 capsule checksum drift (separate ticket); gemini→Antigravity tier-death (ED); three dispatch-infra reap modes (REAP-FIX-NOTE.md, candidate EDs).
+- Definitions added/changed: None
+- State change: Active ~60% → Completed 100% · Completion change: ~60% → 100%
+- Verification performed: gauntlet GREEN (backend+qa+security PASS; gauntlet-verify telemetry PASS); close-verify ALL GREEN — ship-coverage `--root` exit 0/1907 paths/0 gaps, assert-templates-shipped pos+neg, structure-parity {ok:true,24}, seed-provenance 14/14, ship-coverage-own-test 30/30.
+- Validation run: `node scripts/trackers/validate.js` → PASS (20/20 binding) · Next action: hand to α for convergence-battery + merge-to-main (operator-granted push this session).
+- Evidence/references: commit chain a35df99d→eff3b1a0→57476d73→0c802292→54a7acff (tag `sp-20260618-001-gauntlet-green`); runtime/sp-20260618-001/HANDOFF-AND-WAIVER.md.
+
 ### 2026-06-06 — Session 2026-06-06-t5-roadmap-to-epics
 - Agent(s): President Agent (via systems builder) · Mode: sprint
 - Work performed: Created this epic tracker file during the T5 roadmap→epic migration of `agentic_os_tracker_system_improvements.md` (§29) — captured the content-delivery-integrity work from the deprecated `🟡 0.16.0` milestone block as an enforced epic.
@@ -114,17 +126,17 @@
 
 ## Current next action
 <!-- Required while state is not Completed/Cancelled/Superseded -->
-Mint a scoped **templates-migration sprint** (β-DECIDE 2026-06-06: structural shipping-layer change → its own sprint with upfront design, not a session-tail re-scope): build `_warpos/templates/` + `_warpos/BASELINE/` and migrate `framework/templates` (9 dirs) to that end-state home, keeping the now-exhaustive ship-coverage gate green through the cutover. Then DoD #3 (provenance-seeding) + verify/complete DoD #4 (install-matrix update-parity). NOTE: `seeded_from` integrity + exhaustive ship-coverage (DoD #2) are DONE & enforced (verified 2026-06-06) — no longer next actions.
+None — epic COMPLETED by SP-20260618-001 (templates-migration), 2026-06-18, gauntlet GREEN. Residual follow-up (not part of this epic's DoD): the pre-existing 0.16.0 release-capsule checksum drift surfaced by U3's matrix assertions (tracked separately for a `release-build.js 0.16.0` rebuild); the `_warpos/BASELINE` regen-enforcer (deferred until the `validate.js` seed-drift consumer lands); the gemini→Antigravity provider-readiness gap.
 
 ## Completion record
 <!-- Fill only on completion (§15/§37). See COMPLETION_RECORD_TEMPLATE.md. -->
-- Final state: Not yet complete (Active, ~50%)
-- Percent completion: n/a
-- Completion timestamp: n/a
-- Definition of done used: see Definition of Done section above (spec §37)
-- Evidence of completion: n/a — in progress (SP-20260525-024 essential-roots patch + ship-coverage enforcer shipped; structural/exhaustive reconciliation + `_warpos/templates` migration + install-matrix update parity remain)
-- Session IDs / dates / agents: 2026-06-06-t5-roadmap-to-epics / 2026-06-06 / President Agent (via systems builder)
-- Related completed sprints: None
-- Remaining follow-up items: `_warpos/templates/` + `_warpos/BASELINE/` build + `framework/templates` migration; `seeded_from` resolution + exhaustive ship-coverage; provenance-seeded `_requirements/`/`_docs/`; install-matrix update-parity assertion
+- Final state: Completed
+- Percent completion: 100%
+- Completion timestamp: 2026-06-18
+- Definition of done used: see Definition of Done section above (spec §37) — all 4 DoD checked + evidenced
+- Evidence of completion: SP-20260618-001 templates-migration sprint, gauntlet GREEN. U1 a35df99d (`_warpos/templates` sole home 9 dirs/108 files; `framework/templates` deleted; `_warpos/BASELINE` built; narrow ship-coverage carve), U2 eff3b1a0 + security-fix 0c802292 (`populate-seed-provenance.js` seed-zone provenance, path-traversal-hardened; test 14/14), U3 57476d73 (matrix scenarios 1+2 assert shipped structure reaches a real install; structure-parity {ok:true,24}), qa-harden 54a7acff (BASELINE pinned not-shipped). Gauntlet: backend PASS, qa PASS, security FAIL→fix→PASS (real path-traversal caught + fixed); gauntlet-verify telemetry PASS. Close-verify ALL GREEN (ship-coverage 1907/0-gaps, assert-templates-shipped pos+neg, structure-parity 24, seed-provenance 14/14, ship-coverage-own-test 30/30).
+- Session IDs / dates / agents: SP-20260618-001 / 2026-06-18 / Alex ε (sprint conductor) + backend-builders + cross-provider gauntlet (backend/qa/security reviewers) + security-fixer; α (U1 finish + convergence-merge); β (phase-boundary DECIDEs)
+- Related completed sprints: SP-20260618-001 (templates-migration); SP-20260525-024 (essential-roots patch + ship-coverage enforcer, prior)
+- Remaining follow-up items: pre-existing 0.16.0 capsule checksum drift → `release-build.js 0.16.0` rebuild (separate ticket, waived at this merge); `_warpos/BASELINE` regen-enforcer (deferred-debt); gemini→Antigravity provider-readiness (ED)
 - Related untracked work: None
-- ../../TRACKER.md updated: No (pending T5 Active-Epics row) · Roadmap reconciled: No (pending 0.16.0 block deprecation)
+- ../../TRACKER.md updated: pending (this sprint's reconcile) · Roadmap reconciled: pending (epic → Completed)
