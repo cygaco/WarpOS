@@ -1,0 +1,52 @@
+{
+  "research_question": "What are the evidence-based principles for low-friction, high-trust web/app forms — minimal & forgiving fields, visible persistent labels, marking required vs optional, inline validation that states the requirement, trust signals, field reduction, and respecting the ad->lander->offer journey — and which can be expressed as mechanically-checkable rules for an AI designer building Next.js + Tailwind + Radix/shadcn forms?",
+  "topic": "FRICTION_TRUST_FORMS",
+  "phases": [
+    {
+      "name": "Landscape",
+      "objective": "Survey form-usability research: the cost of each field, single-column layout, visible labels over placeholders, top-aligned vs inline labels, required/optional marking, and the psychology of friction vs trust in the conversion funnel.",
+      "sub_questions": ["What does Baymard/NN/g/CXL research say about field count, label placement, and form layout for completion rate?", "What is the documented harm of placeholder-as-label and floating-label patterns?"],
+      "evidence_priorities": "Baymard form/checkout research, NN/g form-design articles, CXL form best practices, label-placement eye-tracking.",
+      "stop_condition": "Complete when the core form-structure rules (single column, visible labels, field minimization, required/optional marking) are enumerated with evidence."
+    },
+    {
+      "name": "Mechanics",
+      "objective": "How forgiving validation and trust are built: inline validation timing (on-blur not on-keystroke for errors; positive confirmation), error messages that state the requirement and the fix, accessible error association (aria-describedby, aria-invalid, role=alert), autocomplete/inputmode/type for mobile, input formatting tolerance (spaces in card/phone), trust signals near the submit and near sensitive fields, and the ad->lander->offer message-match / no cold-to-offer jump.",
+      "sub_questions": ["What is the optimal inline-validation timing and error-message content per research?", "Which HTML/ARIA attributes make a form low-friction AND accessible, and how do mobile keyboards (inputmode, autocomplete) reduce friction?"],
+      "evidence_priorities": "Baymard inline-validation + checkout, MDN autocomplete/inputmode, WAI form tutorial, CXL trust-signal research, Smashing mobile form design.",
+      "stop_condition": "Complete when validation, error-association, mobile-input, and trust-signal patterns are expressed as checkable rules."
+    },
+    {
+      "name": "Failure Modes",
+      "objective": "Friction- and trust-killing form defects: placeholder-only labels (vanish on input), unmarked required/optional, validate-on-every-keystroke, vague errors ('invalid input'), errors not tied to the field, too many fields / asking for data not yet needed, no autocomplete/wrong keyboard on mobile, reset-on-error, no submit feedback / double-submit, asking for sensitive data with no trust context, cold ad->offer jump with no message match.",
+      "sub_questions": ["Which form defects most increase abandonment per documented research?", "How does each defect manifest on mobile and to assistive-tech users?"],
+      "evidence_priorities": "Baymard abandonment data, NN/g error-message guidance, mobile-form research, checkout-usability findings.",
+      "stop_condition": "Complete when 10+ distinct friction/trust defects are documented with abandonment mechanism and detection signal."
+    },
+    {
+      "name": "Contrarian",
+      "objective": "Where form orthodoxy is contested: floating labels vs top-aligned (when acceptable), inline vs after-submit validation edge cases, multi-step vs single-page (does chunking actually help or hide length?), social-proof/trust-badge effectiveness debate, and friction that is GOOD (intentional confirmation for destructive/irreversible actions).",
+      "sub_questions": ["What is the strongest evidence against the 'fewer fields always wins' and 'inline validation always wins' rules?", "When is added form friction correct (security, irreversible actions)?"],
+      "evidence_priorities": "Baymard nuance articles, multi-step-form studies, trust-badge A/B debate, intentional-friction literature.",
+      "stop_condition": "Complete when 2+ substantive counter-arguments are documented with evidence."
+    }
+  ],
+  "search_strategy": [
+    "Baymard form usability label placement",
+    "placeholder text as label accessibility problem",
+    "required optional field marking form usability",
+    "inline validation timing on blur vs keystroke research",
+    "form error message best practices state the fix",
+    "accessible form errors aria-describedby aria-invalid role alert",
+    "single column form layout conversion",
+    "autocomplete inputmode mobile form keyboard",
+    "trust signals checkout form conversion",
+    "number of form fields conversion impact",
+    "multi-step form vs single page conversion",
+    "ad to landing page message match scent"
+  ],
+  "exclusion_criteria": ["Specific form-builder SaaS tutorials", "CAPTCHA-vendor marketing", "Pre-2017 form studies as sole evidence"],
+  "openai_instructions": "Deduce the minimal-friction form invariants from first principles + research: for any data-collection form, what makes completion most likely while staying accessible and trustworthy. Enumerate checkable assertions (visible persistent label per field, required/optional marked, inline validation that states the requirement, error tied to field via aria, correct input type/inputmode/autocomplete, field-count justification, trust signal near sensitive submit) and the conditions under which each fails.",
+  "gemini_instructions": "SKIP — Gemini engine disabled this run.",
+  "claude_instructions": "Verify label-placement, inline-validation-timing, and field-count claims against Baymard/NN/g. Investigate contrarian angles: floating labels, multi-step forms, trust-badge effectiveness, and good/intentional friction. Cross-check accessible-error patterns against the WAI forms tutorial."
+}

@@ -1,0 +1,90 @@
+{
+  "version": 1,
+  "description": "Authority hierarchy for spec files. When two docs disagree, the higher-level file wins. Specs are authoritative over code.",
+  "cascade": [
+    {
+      "level": 1,
+      "label": "CANONICAL",
+      "pattern": "_requirements/00-canonical/*.md",
+      "authority": "system-wide definitions, vocabulary, product model"
+    },
+    {
+      "level": 2,
+      "label": "PRD",
+      "pattern": "_requirements/04-features/*/PRD.md",
+      "authority": "product intent, goals, JTBD, feature scope"
+    },
+    {
+      "level": 3,
+      "label": "HL-STORIES",
+      "pattern": "_requirements/04-features/*/HL-STORIES.md",
+      "authority": "user outcomes, platform-neutral behavior"
+    },
+    {
+      "level": 4,
+      "label": "STORIES",
+      "pattern": "_requirements/04-features/*/STORIES.md",
+      "authority": "acceptance criteria, data contracts, entry states"
+    },
+    {
+      "level": 5,
+      "label": "INPUTS",
+      "pattern": "_requirements/04-features/*/INPUTS.md",
+      "authority": "control types, validation rules, defaults, downstream contracts"
+    },
+    {
+      "level": 6,
+      "label": "COPY",
+      "pattern": "_requirements/04-features/*/COPY.md",
+      "authority": "user-facing strings, labels, error messages"
+    },
+    {
+      "level": 7,
+      "label": "ARCHITECTURE",
+      "pattern": "_requirements/03-architecture/*.md",
+      "authority": "implementation contracts, data flow, error recovery"
+    },
+    {
+      "level": 8,
+      "label": "AGENT_SYSTEM",
+      "pattern": ".claude/agents/.system/oneshot/*.md",
+      "authority": "build orchestration, task ordering, agent roles"
+    },
+    {
+      "level": 9,
+      "label": "SKILLS",
+      "pattern": ".claude/commands/**/*.md",
+      "authority": "automation behaviors, audit protocols"
+    },
+    {
+      "level": 10,
+      "label": "AGENTS",
+      "pattern": ".claude/agents/*.md",
+      "authority": "agent identity, tools, permissions"
+    },
+    {
+      "level": 11,
+      "label": "HOOKS",
+      "pattern": "scripts/hooks/*.js",
+      "authority": "runtime enforcement, guards, logging"
+    },
+    {
+      "level": 12,
+      "label": "LINTERS",
+      "pattern": "scripts/lint-*.js",
+      "authority": "validation rules, format checks"
+    },
+    {
+      "level": 13,
+      "label": "CODE",
+      "pattern": "src/**/*.{ts,tsx}",
+      "authority": "runtime behavior — but specs override intent"
+    }
+  ],
+  "rules": {
+    "planned_change": "Higher level wins. Change flows downward through consumers.",
+    "bug_discovery": "Code fix applied immediately. All upstream levels flagged STALE for review.",
+    "value_conflict": "FIELD_REGISTRY.json is canonical for shared values. All files must match.",
+    "new_file_type": "Defaults to level of its nearest neighbor in the cascade. /evolve proposes exact placement."
+  }
+}

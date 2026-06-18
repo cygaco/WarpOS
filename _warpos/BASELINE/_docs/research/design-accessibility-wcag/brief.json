@@ -1,0 +1,52 @@
+{
+  "research_question": "What are the concrete, mechanically-checkable web accessibility requirements (WCAG 2.2 at Level A and AA, organized by POUR) that an AI front-end/design agent building Next.js + Tailwind + Radix/shadcn UIs must satisfy, and how is each one detected and remediated in code?",
+  "topic": "ACCESSIBILITY_WCAG",
+  "phases": [
+    {
+      "name": "Landscape",
+      "objective": "Survey WCAG 2.2 structure: the four POUR principles, conformance levels A/AA/AAA, the new 2.2 success criteria vs 2.1, and how WAI-ARIA / accessible name computation / semantic HTML relate.",
+      "sub_questions": ["What are all WCAG 2.2 Level A and AA success criteria most relevant to a visual UI builder (contrast, target size, focus, keyboard, names, headings, reflow, motion)?", "What changed in WCAG 2.2 vs 2.1 (the 9 new SC, and the removal of 4.1.1)?"],
+      "evidence_priorities": "W3C WCAG 2.2 Recommendation, Understanding docs, WebAIM, MDN ARIA, ARIA Authoring Practices Guide (APG).",
+      "stop_condition": "Complete when every AA SC touching color, focus, keyboard, target size, names, structure, reflow, and motion is enumerated with its SC number and threshold."
+    },
+    {
+      "name": "Mechanics",
+      "objective": "How each requirement is implemented and measured: contrast ratio math (1.4.3 4.5:1 / 3:1; 1.4.11 3:1 non-text), target-size 2.5.8 (24x24 CSS px and exceptions), visible focus 2.4.7 + 2.4.11/2.4.13 focus appearance/not-obscured, focus order 2.4.3, keyboard 2.1.1/2.1.2 no-trap, accessible names 4.1.2 + name-in-label 2.5.3, heading/structure 1.3.1, reflow 1.4.10 (320px), text spacing 1.4.12, reduced motion 2.3.3 + prefers-reduced-motion, 1.4.1 use of color, dragging 2.5.7, redundant entry 3.3.7, accessible authentication 3.3.8.",
+      "sub_questions": ["For each SC, what is the exact numeric threshold and the precise code/markup pattern (Tailwind/Radix/shadcn) that satisfies it?", "How does an automated checker (axe-core rules, Lighthouse) detect each violation, and what are the limits of automated detection?"],
+      "evidence_priorities": "W3C techniques (G, H, F failures), WebAIM articles, deque axe-core rule docs, MDN, contrast-ratio formula references.",
+      "stop_condition": "Complete when each SC has (a) numeric/structural test and (b) a code remediation pattern."
+    },
+    {
+      "name": "Failure Modes",
+      "objective": "The most common real-world accessibility defects an AI builder ships: div-as-button, icon-only controls without names, placeholder-as-label, focus removed via outline:none, color-only error states, low-contrast gray-on-gray and gray-on-color, tiny tap targets, broken heading order, non-reflowing fixed-width layouts, motion that ignores reduced-motion, modals without focus management.",
+      "sub_questions": ["Which defects appear most often in audits (WebAIM Million) and which are highest-impact for assistive-tech users?", "How does each defect manifest to a screen-reader / keyboard / low-vision user?"],
+      "evidence_priorities": "WebAIM Million annual report, deque/axe common-issue lists, NN/g accessibility findings, screen-reader behavior docs.",
+      "stop_condition": "Complete when 10+ distinct, high-frequency defects are documented with user impact and detection signal."
+    },
+    {
+      "name": "Contrarian",
+      "objective": "Where automated/contrast-only thinking fails: contrast ratio (WCAG 2.x relative luminance) vs perceptual models (APCA / WCAG 3 draft); the ~57% of issues axe cannot catch; over-ARIA harming usability; AA vs AAA trade-offs; when target-size exceptions legitimately apply.",
+      "sub_questions": ["What are the documented limits of WCAG 2.x contrast math and the status of APCA / WCAG 3?", "What proportion of accessibility issues are NOT machine-detectable, and what does that imply for an AI checker?"],
+      "evidence_priorities": "APCA/WCAG3 working drafts, 'first rule of ARIA', deque manual-vs-automated coverage stats.",
+      "stop_condition": "Complete when 2+ substantive limits of the AA/automated approach are documented with evidence."
+    }
+  ],
+  "search_strategy": [
+    "WCAG 2.2 success criteria list Level AA",
+    "WCAG 2.2 new success criteria 2.4.11 2.4.13 2.5.7 2.5.8 3.3.7 3.3.8",
+    "WCAG 1.4.3 contrast minimum 4.5:1 large text 3:1",
+    "WCAG 2.5.8 target size minimum 24 CSS pixels exceptions",
+    "WCAG 2.4.7 focus visible 2.4.13 focus appearance",
+    "accessible name computation aria-label aria-labelledby button",
+    "WCAG 1.4.10 reflow 320 CSS pixels no two-dimensional scroll",
+    "WCAG 1.4.12 text spacing line-height letter-spacing",
+    "prefers-reduced-motion WCAG 2.3.3 animation from interactions",
+    "WebAIM Million most common accessibility errors",
+    "axe-core rules what automated testing cannot detect",
+    "APCA WCAG 3 contrast vs WCAG 2 relative luminance"
+  ],
+  "exclusion_criteria": ["Pre-WCAG-2.1 guidance as primary", "Vendor accessibility-overlay product marketing", "Platform-native (iOS/Android) specifics except as principle"],
+  "openai_instructions": "Enumerate every WCAG 2.2 Level A and AA success criterion relevant to a visual web UI builder. For each, give: SC number, name, level, the exact numeric or structural threshold, a fault-tree of how it is violated, the automated detectability (fully/partially/not machine-checkable), and a concrete Next/Tailwind/Radix code remediation. Be exhaustive and precise on numbers (ratios, px, durations).",
+  "gemini_instructions": "SKIP — Gemini engine disabled this run.",
+  "claude_instructions": "Verify the exact WCAG 2.2 thresholds against the W3C Recommendation and WebAIM. Investigate the contrarian angle: limits of WCAG 2.x contrast math, APCA/WCAG3 status, and the share of issues automated tools miss. Cross-check the WebAIM Million top-error figures."
+}

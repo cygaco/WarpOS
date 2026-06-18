@@ -367,7 +367,7 @@
       "_note": "Track B 2026-05-03 renamed warpos -> framework (JTBD: framework distribution capsules + canonical registries). Bare 'warpos' is the framework brand name (used in version.json, schema URIs); deprecation handled via path-lint regex matchers, not deprecatedAliases."
     },
     "appScaffoldTemplates": {
-      "path": "framework/templates/app-scaffold",
+      "path": "_warpos/templates/app-scaffold",
       "kind": "dir",
       "owner": "framework",
       "mutable": true,
@@ -856,7 +856,7 @@
       "_note": "Sprint-scope requirement bundles (PRD/STORIES/COPY/INPUTS/TRACE/AC/QA/Release-plan). Distinct from paths.requirementsRoot (project-wide _requirements/)."
     },
     "sprintTemplates": {
-      "path": "framework/templates/sprint",
+      "path": "_warpos/templates/sprint",
       "kind": "dir",
       "owner": "framework",
       "mutable": false,
@@ -991,7 +991,7 @@
       "_note": "Portfolio skill backing scripts (bootstrap.js, clone.js, dispatch.js, adopt.js, alias.js, etc). Documented in RL-20260521-016 changelog; registry entry landed retroactively."
     },
     "portfolioTemplates": {
-      "path": "framework/templates/portfolio",
+      "path": "_warpos/templates/portfolio",
       "kind": "dir",
       "owner": "framework",
       "mutable": false,

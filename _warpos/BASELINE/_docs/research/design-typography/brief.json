@@ -1,0 +1,30 @@
+{
+  "research_question": "What is the evidence-based, teachable theory of TYPOGRAPHY for UI/web design — type scale, hierarchy, weight, line-length (measure), line-height (leading), font pairing, alignment, letter-spacing, and readability — and what mechanically-checkable PASS/FAIL rules can an AI design-review agent apply to type rendered in a Next/Tailwind/Radix/shadcn page?",
+  "openai_instructions": "Focus on deductive precision: derive the numeric craft constants (modular scale ratios 1.125-1.5; measure 45-75ch / ~66 ideal; body line-height 1.4-1.6; min readable body size ~16px on web; max ~2 typefaces; weight as a hierarchy lever). For each, state the perceptual/readability mechanism, the checkable assertion, and the computed-style proxy. Build the failure tree of bad type (too-long measure, tight leading, grey-on-color, too many fonts, justified rag). Cite Refactoring UI Designing Text + Butterick/typography readability research + Material/HIG type systems as principle sources.",
+  "claude_instructions": "Verify the contrarian angle: which 'rules' are myths or context-dependent (the 45-75ch range vs single optimum; line-height varying with measure and size; system-font stacks vs custom fonts performance tradeoff). Cross-verify the contrast coupling (type is also an accessibility surface — min size, contrast). Find measurable proxies an agent can compute via getComputedStyle (font-size, line-height, max-width/ch, font-family count, font-weight steps).",
+  "gemini_instructions": "SKIPPED — Gemini engine down.",
+  "search_strategy": [
+    "refactoring ui designing text typography",
+    "optimal line length measure characters per line readability",
+    "line height leading body text web",
+    "modular type scale ratio ui",
+    "font pairing rules ui design",
+    "minimum font size mobile readability accessibility",
+    "typography hierarchy weight vs size",
+    "20 common typography mistakes ui",
+    "material design type system",
+    "letter spacing tracking uppercase ui"
+  ],
+  "exclusion_criteria": ["print-only typography with no screen relevance", "font-recommendation listicles", "tool tutorials"],
+  "required_output_schema": {
+    "sections": ["Executive Summary", "Phase 1: Landscape", "Phase 2: Mechanics", "Phase 3: Failure Modes", "Phase 4: Contrarian", "Source Registry", "Confidence Matrix"],
+    "per_finding_format": "claim, evidence, confidence (HIGH/MEDIUM/LOW), source URLs, counter-evidence",
+    "per_source_format": "URL, title, credibility (1-5), recency, type"
+  },
+  "phases": [
+    {"name":"Landscape","objective":"Survey canonical UI typography theory","sub_questions":["What are the established typographic craft dimensions (scale, hierarchy, measure, leading, pairing, alignment, tracking) and how do the authorities define each?","Which dimensions carry hierarchy and which carry readability?"],"evidence_priorities":"Refactoring UI Designing Text, typography-mistakes articles, Material/HIG type systems","stop_condition":"Complete when all craft dimensions are enumerated with sources"},
+    {"name":"Mechanics","objective":"The numeric craft constants and how to build them with tokens","sub_questions":["What are the defensible numeric ranges (scale ratio, measure ch, line-height, min size, weight steps, max font count) and the mechanism behind each?","What computed-style proxies make each checkable?"],"evidence_priorities":"modular scale math, measure research, leading-vs-measure coupling, type tokens","stop_condition":"Complete when the numeric constants + computed proxies are documented"},
+    {"name":"Failure Modes","objective":"What bad type looks like and how it reads","sub_questions":["What are the named failures (long measure, tight/loose leading, too many fonts, grey-on-color, tiny mobile body, all-caps long runs, justified rag, faux-bold) and the user symptom of each?","How can a reviewer detect each from computed styles?"],"evidence_priorities":"20-typography-mistakes, readability studies, accessibility min-size","stop_condition":"Complete when 6+ failure modes with detection signals documented"},
+    {"name":"Contrarian","objective":"Which type rules are context-dependent or myths","sub_questions":["Which common typographic rules are oversimplified, and what is the nuanced truth (measure range vs optimum, leading varies, custom vs system font performance)?"],"evidence_priorities":"empirical readability studies vs folk rules, performance/CLS tradeoff of webfonts","stop_condition":"Complete when 2+ substantive counter-arguments with evidence found"}
+  ]
+}

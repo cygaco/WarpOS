@@ -1,0 +1,52 @@
+{
+  "research_question": "What are the evidence-based principles of conversion-focused visual hierarchy for a landing/marketing page — above-the-fold value proposition, a single dominant CTA, hook->proof->CTA flow, and elimination of competing focal points — and which of these can be expressed as mechanically-checkable rules for an AI web-conversion designer building Next.js + Tailwind pages?",
+  "topic": "CONVERSION_HIERARCHY",
+  "phases": [
+    {
+      "name": "Landscape",
+      "objective": "Survey the anatomy of a high-converting landing page: the one-page-one-goal principle, above-the-fold value proposition, the message-match / attention-ratio concept (1:1), and the hook->proof->CTA narrative structure.",
+      "sub_questions": ["What does conversion research (CXL, NN/g, Unbounce-style attention-ratio) say is the canonical structure and section order of a high-converting page?", "What belongs above the fold and how does 'the fold' still matter given scroll behavior?"],
+      "evidence_priorities": "CXL landing-page anatomy + above-the-fold articles, NN/g scanning/F-pattern research, attention-ratio concept, value-proposition frameworks.",
+      "stop_condition": "Complete when the canonical section model and the above-the-fold requirement set are enumerated with evidence."
+    },
+    {
+      "name": "Mechanics",
+      "objective": "How dominant-CTA hierarchy is built: one primary CTA repeated at decision points, visual weight via size/color/contrast/whitespace/isolation, directional cues, Von Restorff (isolation effect) and Serial-Position (primacy/recency), F- and Z- scanning patterns, and 'every element installs a belief or removes an objection.'",
+      "sub_questions": ["What concrete visual techniques make one CTA unmissable and how do you measure 'one dominant focal point'?", "How do serial-position and isolation effects dictate placement of the value prop, CTA, and proof?"],
+      "evidence_priorities": "Laws of UX (Von Restorff, Serial Position), CXL CTA/button research, eye-tracking studies, color-contrast-for-emphasis (not a11y) literature.",
+      "stop_condition": "Complete when CTA-dominance and focal-point techniques are expressed as measurable layout assertions."
+    },
+    {
+      "name": "Failure Modes",
+      "objective": "Conversion-killing hierarchy defects: multiple competing CTAs of equal weight, high attention-ratio (many nav links/links competing with the goal), buried or vague value prop, hero with no clear next action, low-contrast 'ghost' primary buttons, decorative imagery that out-weighs the message, slow/heavy hero, generic headline that states category not benefit.",
+      "sub_questions": ["Which hierarchy mistakes most reduce conversion in documented tests/case studies?", "How does each defect read to a first-time visitor scanning for 3-5 seconds?"],
+      "evidence_priorities": "CXL/landing-page teardown case studies, A/B-test write-ups, attention-ratio data, NN/g 'banner blindness' and scanning.",
+      "stop_condition": "Complete when 8+ distinct conversion-hierarchy defects are documented with mechanism and detection signal."
+    },
+    {
+      "name": "Contrarian",
+      "objective": "Where conversion-hierarchy dogma is wrong or overstated: 'the fold is dead' debate vs real scroll data; long-form vs short-form; when multiple CTAs are legitimate (different intents); benefit-vs-clarity tension; honest hierarchy vs manipulative urgency (links to ethics/dark patterns).",
+      "sub_questions": ["What is the strongest evidence against the single-CTA / above-the-fold orthodoxy?", "Where does aggressive conversion hierarchy cross into deceptive design?"],
+      "evidence_priorities": "Scroll-behavior studies, 'fold is dead' analyses, deceptive.design overlap, contrarian CRO writers.",
+      "stop_condition": "Complete when 2+ substantive counter-arguments are documented with evidence."
+    }
+  ],
+  "search_strategy": [
+    "high-converting landing page anatomy CXL",
+    "above the fold conversion 2024 scroll behavior research",
+    "attention ratio landing page 1:1 conversion",
+    "single dominant CTA call to action conversion research",
+    "Von Restorff effect isolation CTA button",
+    "serial position effect primacy recency UI",
+    "value proposition above the fold clarity test 5 second",
+    "F-pattern Z-pattern scanning eye tracking landing page",
+    "ghost button low contrast CTA conversion problem",
+    "competing CTAs hurt conversion case study",
+    "is the fold dead scroll depth data",
+    "landing page hook proof CTA structure"
+  ],
+  "exclusion_criteria": ["Specific SaaS product page-builder tutorials", "Pre-2018 eye-tracking as sole evidence", "Manipulative-urgency tactics presented as best practice"],
+  "openai_instructions": "Build a fault-tree of conversion-hierarchy failure: for a page with a goal, deduce the layout invariants that maximize a single focal path (value prop -> proof -> CTA). Enumerate measurable assertions (one dominant CTA, attention ratio, contrast-for-emphasis, above-fold value prop) and the conditions under which each is violated. Ground emphasis-contrast and serial-position/isolation claims in evidence.",
+  "gemini_instructions": "SKIP — Gemini engine disabled this run.",
+  "claude_instructions": "Verify the above-the-fold and single-CTA claims against current scroll-behavior research (investigate the 'fold is dead' contrarian angle). Cross-check attention-ratio and Von Restorff/serial-position claims. Flag where conversion hierarchy overlaps deceptive design."
+}

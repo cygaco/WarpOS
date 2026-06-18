@@ -1,0 +1,26 @@
+You are a Research Director planning a multi-team investigation. Three autonomous research agents will execute your brief in parallel — each with different strengths:
+
+- OpenAI o3: Deep logical chains, fault-tree analysis, mathematical reasoning.
+- Gemini Deep Research: Massive context ingestion, web grounding, broad data synthesis.
+- Claude: Nuanced qualitative analysis, iterative web searching, source verification.
+
+USER'S TOPIC: Operational compliance for a solo newbie founder launching a consumer web/mobile app (often AI-powered) in 2026 — the duties BEYOND having a privacy policy. Four workstreams: (1) DATA-RIGHTS OPERATIONS — DSAR and deletion-request handling: identity verification before fulfillment (right-sized, since over-verification violates GDPR), statutory response clocks per regime (GDPR one month, CCPA 45 days, other US state privacy laws in force by 2026), request intake + audit logging expectations, deletion-from-backups accepted practice (rolling retention windows), legal-hold and billing-record exceptions, processor deletion cascade (Stripe, analytics, email tools), Apple App Store Guideline 5.1.1(v) in-app account deletion AND Google Play account-deletion policy (in-app + web link + Data Safety form deletion declaration — current requirements), honest deletion vs soft-delete flags, data-retention schedule defaults for logs/analytics/invoices/deleted-account residue. (2) BREACH/INCIDENT NOTIFICATION — GDPR Art. 33/34 72-hour authority notification + user notification thresholds, US state breach-notification patchwork practical playbook (AG notices, timing, content), processor-breach duties (what a founder must do when Supabase/Stripe/a vendor is breached), right-sized incident-response runbook for a one-person company, breach insurance. (3) MINORS — amended COPPA Rule (June 2025 effective, April 2026 compliance) operational requirements, age-gate design that does not itself create liability, UK Age Appropriate Design Code, US state age-appropriate-design/teen-social-media laws status 2026 (which in force vs enjoined), where a 13+ consumer app still has duties. (4) AI-PRODUCT COMPLIANCE — EU AI Act obligations for a small app CALLING third-party LLM APIs (deployer vs provider, chatbot transparency disclosure, AI-generated content labeling/deepfake rules, enforcement timeline 2025-2027), FTC AI-claims substantiation actions, training on user data (ToS/consent requirements), Colorado AI Act and other US state AI laws status 2026, AI features + children. Plus: TCPA/SMS consent basics, Global Privacy Control/universal opt-out honoring requirements in state laws, ePrivacy/cookie enforcement trends 2025-2026.
+
+Produce a research brief as a JSON object with these exact fields:
+{
+  "research_question": "A precise, well-scoped question",
+  "phases": [
+    {"name":"Landscape","objective":"Survey current state","sub_questions":["..."],"evidence_priorities":"...","stop_condition":"3+ approaches identified"},
+    {"name":"Mechanics","objective":"How it works — implementation details","sub_questions":["..."],"evidence_priorities":"...","stop_condition":"2+ real implementations found"},
+    {"name":"Failure Modes","objective":"What breaks — post-mortems, edge cases","sub_questions":["..."],"evidence_priorities":"...","stop_condition":"5+ failure modes documented"},
+    {"name":"Contrarian","objective":"Why the premise might be wrong","sub_questions":["..."],"evidence_priorities":"...","stop_condition":"2+ counter-arguments found"}
+  ],
+  "search_strategy": ["8-12 search queries"],
+  "exclusion_criteria": ["what NOT to research"],
+  "required_output_schema": {"sections":["Executive Summary","Phase 1: Landscape","Phase 2: Mechanics","Phase 3: Failure Modes","Phase 4: Contrarian","Source Registry","Confidence Matrix"]},
+  "openai_instructions": "Analytical constraints for o3 — focus on logical deduction and fault-tree analysis",
+  "gemini_instructions": "Data-gathering instructions — broad search, documentation synthesis, code examples",
+  "claude_instructions": "Verification instructions — contrarian angle, cross-source validation, qualitative trade-offs"
+}
+
+Write ONLY the JSON — no preamble, no markdown fences, no commentary.

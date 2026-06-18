@@ -71,10 +71,13 @@ const KNOWN_DANGLING_SET = new Set([]);
 //   { prefix: "...", reason: "..." }  — path equals or starts with prefix
 //   { match: (p) => bool, reason: "..." } — custom predicate (use for patterns)
 const KNOWN_NOT_SHIPPED = [
-  // _warpos/ is the product-side source mirror — GENERATED at install time
-  // (populateWarposMirror), not shipped from canonical. Canonical's own _warpos/
-  // (MANIFEST.json + settings/defaults.json) is build output, not a shippable asset.
-  { prefix: "_warpos/", reason: "product-generated source mirror, not shipped from canonical" },
+  // _warpos/ is the framework source-of-truth zone. Most of it SHIPS from canonical
+  // (e.g. _warpos/templates/* — the master seeds — must fall through to the shipped
+  // set, NOT be allowlisted). Only the per-install build/compiler artifacts are
+  // not-shipped, carved narrowly so an unshipped template can never hide here again
+  // (the old blanket `_warpos/` entry masked exactly that gap).
+  { prefix: "_warpos/MANIFEST.json", reason: "build-output ownership manifest, not shipped from canonical" },
+  { prefix: "_warpos/settings/", reason: "layered-settings compiler source, not shipped from canonical" },
   // WarpOS-as-product canon — root-leak pending 0.10.0 scrub; product content,
   // never shipped (consumers generate their own via the canon engine).
   { prefix: "_requirements/00-canonical/", reason: "WarpOS product canon (root-leak pending scrub); consumers generate their own" },

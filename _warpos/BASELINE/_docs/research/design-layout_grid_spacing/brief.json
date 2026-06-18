@@ -1,0 +1,72 @@
+{
+  "research_question": "What are the authoritative, teachable principles for layout, grid, and spacing in product UI and conversion web design — covering the spacing/sizing scale (token-backed, non-arbitrary), whitespace and density, grids and alignment, proximity-based grouping, and responsive reflow — such that an AI designer agent can apply them directly in a Next/Tailwind/Radix/shadcn substrate and a vision-capable review gauntlet can mechanically PASS/FAIL a rendered layout against them?",
+  "phases": [
+    {
+      "name": "Landscape",
+      "objective": "Survey the consensus on spatial systems: why a constrained spacing scale (e.g., 4px/8px base unit, geometric-ish ramp) beats arbitrary values, how whitespace creates hierarchy and grouping, the role of grids/columns, and alignment as a grouping device.",
+      "sub_questions": [
+        "How do authoritative sources (Refactoring UI 'Layout and Spacing', Material 3 layout/spacing, 8pt grid systems) define a spacing scale and justify a small fixed set of values over ad-hoc pixels?",
+        "How does the Gestalt Law of Proximity / Common Region make spacing the primary tool for visual grouping, and how does whitespace drive perceived hierarchy?"
+      ],
+      "evidence_priorities": "Refactoring UI layout/spacing chapter; 8pt grid / 4pt grid system writeups; Material 3 spacing tokens; Laws of UX proximity/common-region; NN/g whitespace. Cite primary/authoritative sources.",
+      "stop_condition": "Complete when the spacing-scale rationale, the proximity-grouping principle, and the grid/alignment role are each documented from a primary source."
+    },
+    {
+      "name": "Mechanics",
+      "objective": "Document how spatial systems are implemented and reasoned about: the base unit and ramp, spacing tokens as CSS variables / a theme scale, the proximity rule (related items closer than unrelated; space inside a group < space between groups), alignment to a grid/edges, optical vs mathematical alignment, line-length/measure interaction, and density tiers.",
+      "sub_questions": [
+        "What is the concrete spacing-scale pattern (base unit, the ramp of allowed values) and how is it encoded as tokens so components consume scale steps, not magic numbers?",
+        "What are the precise, checkable rules for proximity, alignment, and consistent gaps (e.g., outer padding >= inner gaps, equal gaps between siblings, a single alignment grid) that a reviewer could verify on a rendered layout?"
+      ],
+      "evidence_priorities": "Spacing-token implementations (CSS custom props / utility scale); 8pt-grid math; proximity/alignment rules stated checkably; measure/line-length guidance. Include concrete numeric patterns.",
+      "stop_condition": "Complete when the token-scale pattern, the proximity rule, and the alignment-consistency rule are each documented with a citable source and a concrete form."
+    },
+    {
+      "name": "Failure Modes",
+      "objective": "Catalog how layout/spacing breaks and how each reads to the user and is detected: cramped/no breathing room, inconsistent/arbitrary gaps, ambiguous grouping (equal space inside and between groups), misalignment (off-grid elements), overflow/overlap, content too wide (long measure), uneven whitespace, broken responsive reflow at small viewports.",
+      "sub_questions": [
+        "What are the most common, highest-impact spacing/layout defects in production UI, and how does each manifest to a user (cluttered, ungrouped, unaligned, overflowing)?",
+        "How can each defect be DETECTED from a rendered page — computed margins/paddings off the scale, unequal sibling gaps, elements not on a shared alignment edge, horizontal overflow at mobile width, line length beyond ~75ch?"
+      ],
+      "evidence_priorities": "Common layout-mistake lists; NN/g spacing/whitespace; Refactoring UI don'ts; mobile overflow guidance. For each failure, an observed-vs-expected detection method (computed-style based).",
+      "stop_condition": "Complete when 6+ distinct layout/spacing failure modes are documented, each with a user-visible symptom AND a programmatic detection method."
+    },
+    {
+      "name": "Contrarian",
+      "objective": "Surface nuance: when a strict fixed scale over-constrains (optical adjustments, content-driven layout), the limits of the 8pt grid, and density tradeoffs (information-dense pro tools vs spacious consumer UI).",
+      "sub_questions": [
+        "Where does a rigid spacing scale / 8pt grid break down (optical alignment, dense data tables, fluid/clamp-based spacing), and how should a teachable rule allow disciplined exceptions without becoming arbitrary?"
+      ],
+      "evidence_priorities": "Critiques of rigid grids; optical-alignment essays; fluid spacing (clamp) vs fixed scale; density-tradeoff discussions. Note settled vs contextual.",
+      "stop_condition": "Complete when 2+ substantive critiques/nuances of the strict-scale approach are documented with the recommended hedge."
+    }
+  ],
+  "search_strategy": [
+    "Refactoring UI layout and spacing principles",
+    "8pt grid system spacing scale UI design",
+    "4px base unit spacing tokens design system",
+    "Gestalt law of proximity UI grouping spacing",
+    "whitespace negative space visual hierarchy NN/g",
+    "alignment grid consistency UI layout rules",
+    "optimal line length measure 45-75 characters readability",
+    "responsive reflow overflow mobile layout breakpoints",
+    "common spacing mistakes UI inconsistent padding",
+    "fluid spacing clamp vs fixed scale",
+    "Material 3 layout spacing tokens",
+    "density information dense UI tradeoff"
+  ],
+  "exclusion_criteria": [
+    "Tool/SaaS tutorials (how to use a specific design product)",
+    "CSS framework marketing without principle content",
+    "Pre-2016 articles superseded by modern responsive practice",
+    "Print-only grid theory without screen relevance"
+  ],
+  "required_output_schema": {
+    "sections": ["Executive Summary", "Phase 1: Landscape", "Phase 2: Mechanics", "Phase 3: Failure Modes", "Phase 4: Contrarian", "Source Registry", "Confidence Matrix"],
+    "per_finding_format": "claim, supporting evidence, confidence (HIGH/MEDIUM/LOW), source URLs, counter-evidence if any",
+    "per_source_format": "URL, title, credibility (1-5), recency, type (primary/secondary/opinion)"
+  },
+  "openai_instructions": "Focus on concrete, checkable numeric patterns: the spacing base unit and allowed ramp (4/8/12/16/24/32/48/64...), the proximity rule formalized (intra-group gap < inter-group gap), alignment-consistency, optimal measure (~45-75 characters). Build a fault tree of layout/spacing failures, each with a programmatic detection method from computed styles (margins/paddings off-scale, unequal sibling gaps, off-grid alignment, horizontal overflow at 375px, measure > ~75ch). Deductive and precise; prefer authoritative primary sources.",
+  "gemini_instructions": "SKIP — Gemini engine disabled for this run.",
+  "claude_instructions": "Investigate the contrarian angle (rigid grid limits, optical alignment, fluid clamp spacing, density tradeoffs), cross-verify the 8pt-grid rationale and the optimal-measure range against primary sources, and assess how proximity (Gestalt) underpins spacing decisions. Confirm the proximity rule is stated checkably (space-inside < space-between)."
+}

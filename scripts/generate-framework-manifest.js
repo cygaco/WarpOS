@@ -267,14 +267,16 @@ const ASSET_DIRS = [
   { src: "migrations", kind: "migration" },
   { src: "framework/releases", kind: "release_capsule" },
   { src: "framework/paths.registry.json", kind: "paths_registry" },
-  // SP-20260525-024 (downstream ship-coverage fix): framework/templates/* are
+  // SP-20260525-024 (downstream ship-coverage fix): the templates/* are
   // GENERIC framework templates (canon doc templates the canon engine renders,
   // product-bootstrap/clone/import, portfolio, sprint *.tmpl) — owner=framework,
   // no product content (framework-purity-guard enforces). They were NEVER
   // shipped, so every consumer's /bootstrap:spinup + /sprint:* + /canon hit
   // missing templates. hooks.registry.json is the hook source-of-truth the hook
   // build reads; also absent. Both surfaced by the ship-coverage enforcer.
-  { src: "framework/templates", kind: "template" },
+  // SP-20260618-001: migrated framework/templates → _warpos/templates (the
+  // SP-20260522-001 end-state home; framework/templates deleted in the same sprint).
+  { src: "_warpos/templates", kind: "template" },
   // 2026-06-06: trackers/templates/* are the enforced-tracker (Epic) system's
   // reusable scaffolding templates — owner=framework (build.js
   // framework-trackers-templates rule). The tracker validator (validate.js §33)
