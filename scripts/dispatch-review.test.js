@@ -55,6 +55,17 @@ test("warn (no fail, all alive) → ok:true, verdict warn", () => {
   assert.equal(m.mergedVerdict, "warn");
 });
 
+test("re-review NEW: an ALIVE lane with verdict:error (unparseable) → ok:FALSE, verdict error", () => {
+  const m = mergeLanes("security-reviewer", [L("gemini", true, "pass"), L("openai", true, "error"), L("claude", true, "pass")]);
+  assert.equal(m.ok, false, "an alive-but-no-parseable-verdict binding lane must HOLD the review (not merge to pass)");
+  assert.equal(m.mergedVerdict, "error");
+});
+test("fail beats error (anyFail precedence)", () => {
+  const m = mergeLanes("security-reviewer", [L("gemini", true, "error"), L("openai", true, "fail"), L("claude", true, "pass")]);
+  assert.equal(m.ok, false);
+  assert.equal(m.mergedVerdict, "fail");
+});
+
 if (failures.length) {
   process.stderr.write(`FAIL [dispatch-review.test] ${failures.length} failure(s):\n${failures.map((f) => `  - ${f}`).join("\n")}\n`);
   process.exit(1);

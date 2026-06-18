@@ -132,9 +132,13 @@ async function main() {
 // parsed `verdict`) so a verdict-gate consumer reads the MERGED verdict exactly like a single reviewer's.
 function mergeLanes(role, lanes) {
   const anyFail = lanes.some((l) => l.verdict === "fail");
-  const anyDead = lanes.some((l) => !l.ok);
-  const mergedVerdict = anyFail ? "fail" : anyDead ? "error" : lanes.some((l) => l.verdict === "warn") ? "warn" : "pass";
-  const clean = lanes.every((l) => l.ok) && mergedVerdict !== "fail" && mergedVerdict !== "error";
+  // anyError = a DEAD lane (not ok) OR an ALIVE lane whose verdict is "error" (verdictOf returns
+  // "error" for an alive-but-unparseable binding review — HIGH-2). The W1+W2 re-review caught that
+  // checking only `!l.ok` let an alive error-verdict lane merge to pass: an unresolved verdict on a
+  // binding security lane MUST hold the whole review.
+  const anyError = lanes.some((l) => !l.ok || l.verdict === "error");
+  const mergedVerdict = anyFail ? "fail" : anyError ? "error" : lanes.some((l) => l.verdict === "warn") ? "warn" : "pass";
+  const clean = !anyFail && !anyError; // clean iff EVERY lane is alive AND its verdict is pass/warn
   return {
     ok: clean,
     role,

@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-18T00:17:39.037Z",
+  "generatedAt": "2026-06-18T00:27:58.802Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.16.0",
   "migrations": [],
@@ -3538,15 +3538,15 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/dispatch-review.js",
-      "sha256": "d3b39619d70cd6c6b2fab5daf5c097d442b55519f66c509027d47601a4712331",
-      "installedSha": "d3b39619d70cd6c6b2fab5daf5c097d442b55519f66c509027d47601a4712331"
+      "sha256": "d4420c42d67354675b8e7615ef0bcbc869e14914867077836c6f80da6f1e5dd4",
+      "installedSha": "d4420c42d67354675b8e7615ef0bcbc869e14914867077836c6f80da6f1e5dd4"
     },
     "scripts/dispatch-review.test.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/dispatch-review.test.js",
-      "sha256": "48aa79ae53d3bb50562d94b8168120327a5dd96f49abedd752508a5869c2177f",
-      "installedSha": "48aa79ae53d3bb50562d94b8168120327a5dd96f49abedd752508a5869c2177f"
+      "sha256": "0ce344a613f44278a4724d84b5e825ca72c271b85fc756f23daf6f176ae2909d",
+      "installedSha": "0ce344a613f44278a4724d84b5e825ca72c271b85fc756f23daf6f176ae2909d"
     },
     "scripts/dispatch-skill.js": {
       "owner": "framework",
