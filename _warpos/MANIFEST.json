@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-19T00:33:55.388Z",
+  "generatedAt": "2026-06-19T15:47:32.023Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.16.0",
   "migrations": [],
@@ -20,8 +20,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "e1b48e9e39c44f4e4cb6aaa9e6ff356c7eed13cd5f38ccf8c7e56cabec86fa7d",
-      "installedSha": "e1b48e9e39c44f4e4cb6aaa9e6ff356c7eed13cd5f38ccf8c7e56cabec86fa7d"
+      "sha256": "c732b0d2b6e27f7f3423f1c203ee212d37bbadd721bdef11ee375f42ac62aea1",
+      "installedSha": "c732b0d2b6e27f7f3423f1c203ee212d37bbadd721bdef11ee375f42ac62aea1"
     },
     "AGENT-STRUCTURE.md": {
       "owner": "framework",
@@ -125,8 +125,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "79d2f84648d1c728f90401a09e60ce4af08ca8eb6198fe49593819f445891573",
-      "installedSha": "79d2f84648d1c728f90401a09e60ce4af08ca8eb6198fe49593819f445891573"
+      "sha256": "e370859fb250e27df9bbab1512cf6b74e61e29302e280477326fb1807bd623b3",
+      "installedSha": "e370859fb250e27df9bbab1512cf6b74e61e29302e280477326fb1807bd623b3"
     },
     "TRACKER.md": {
       "owner": "runtime",
@@ -1739,8 +1739,8 @@
       "managed": true,
       "source": "_warpos/BASELINE/_requirements/00-canonical/CORE_BRIEF.md",
       "_note": "_warpos/ is the framework source-of-truth zone in installed products (post-SP-20260522-001).",
-      "sha256": "cb73c5cbe1db08afdff650297f20a6bc7ba481e8387c123c29e3b54752ae0432",
-      "installedSha": "cb73c5cbe1db08afdff650297f20a6bc7ba481e8387c123c29e3b54752ae0432"
+      "sha256": "1eaa0fda4204662fa32c2d1923e94c39203ee941d092c91d69624203a44be54d",
+      "installedSha": "1eaa0fda4204662fa32c2d1923e94c39203ee941d092c91d69624203a44be54d"
     },
     "_warpos/BASELINE/_requirements/00-canonical/EVOLUTION.md": {
       "owner": "framework",
@@ -7487,8 +7487,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/warpos/manifest/walk-skip.js",
-      "sha256": "2d07cd3525923e4818e0d0e95ef280a3d244dadf0d868f17fbb505ae7d5621c3",
-      "installedSha": "2d07cd3525923e4818e0d0e95ef280a3d244dadf0d868f17fbb505ae7d5621c3"
+      "sha256": "65b345304cd3760dffb6c946ba1fcc38617150bd56d386ab7290ba2a3871f475",
+      "installedSha": "65b345304cd3760dffb6c946ba1fcc38617150bd56d386ab7290ba2a3871f475"
     },
     "scripts/warpos/lib/content-hash.js": {
       "owner": "framework",
@@ -14165,6 +14165,14 @@
       "managed": false
     },
     ".claude/project/sprint/sprints/_no-active-sprint/reasoning-auto-approval.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/sprints/SP-20260619-001/current.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/sprints/SP-20260619-001/progress.yaml": {
       "owner": "runtime",
       "managed": false
     },
@@ -24757,8 +24765,8 @@
       "managed": true,
       "source": ".claude/agents/president/_system/policy/adr/0011-epsilon-direct-roster-dispatch.md",
       "kind": "md",
-      "sha256": "21c94d85d0271ae7436a676ca318dd102a8250b022c6a1eeb559eb12966e11f1",
-      "installedSha": "21c94d85d0271ae7436a676ca318dd102a8250b022c6a1eeb559eb12966e11f1"
+      "sha256": "7041a27bb7c809562fcf5176fd9adf93cf62b14b0f7d1416bfe87fda8ff70265",
+      "installedSha": "7041a27bb7c809562fcf5176fd9adf93cf62b14b0f7d1416bfe87fda8ff70265"
     },
     ".claude/agents/president/_system/policy/adr/0011-turbo-spend-ceiling-and-push-honesty.md": {
       "owner": "framework",

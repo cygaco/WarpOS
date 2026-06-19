@@ -109,3 +109,6 @@ runtime/skill-runs/
 runtime/sprint/
 runtime/notes/
 runtime/agent-system-plan/
+
+# Per-session operator reports (transient, root-level)
+REPORT-*.md

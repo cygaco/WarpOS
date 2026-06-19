@@ -42,6 +42,10 @@ const WALK_SKIP_FILES = new Set([
   ".env.local",
   "DUMP.md",
   "CODEX-LOG.md",
+  // REPORT-*.md — per-session operator reports (transient root docs, e.g.
+  // REPORT-JULY-18.md, 2026-06-19); same per-repo-operator-doc class as DUMP.md,
+  // never shipped framework content.
+  "REPORT-JULY-18.md",
   // Transient/local root docs — operator input specs + per-repo registers, NOT
   // shipped framework (same class as DUMP.md). WARPOS.md is a per-repo gap register
   // (products generate their own via /warp:flag; canonical's is local, never shipped);
