@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 /**
- * HL-Stories Linter — Validates high-level stories for Jobzooka.
+ * HL-Stories Linter — Validates high-level stories for a product (product name read from canon).
  * Usage: node scripts/lint-hl-stories.js [feature] [--verbose]
  */
 const fs = require("fs");
 const path = require("path");
 const { PROJECT, PATHS } = require("./hooks/lib/paths");
+const { getProjectName } = require("./hooks/lib/project-config");
 
 const ROOT = PROJECT;
 const FEATURES_DIR = PATHS.specsRoot || path.join(ROOT, "requirements", "04-features");
@@ -257,7 +258,7 @@ function main() {
   const args = process.argv.slice(2);
   const singleFeature = args.find((a) => !a.startsWith("--"));
   const verbose = args.includes("--verbose") || args.includes("-v");
-  console.log(`\n${BOLD}${CYAN}🔍 HL-Stories Linter — Jobzooka${RESET}\n`);
+  console.log(`\n${BOLD}${CYAN}🔍 HL-Stories Linter — ${getProjectName()}${RESET}\n`);
 
   let featureDirs;
   if (singleFeature) {

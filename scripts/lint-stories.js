@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Granular Stories Linter — Automated validation for Jobzooka granular stories.
+ * Granular Stories Linter — Automated validation for a product's granular stories (product name read from canon).
  *
  * Checks:
  *   1. FORMAT      — Story format, role normalization, single behavior
@@ -20,6 +20,7 @@
 
 const fs = require("fs");
 const path = require("path");
+const { getProjectName } = require("./hooks/lib/project-config");
 const { PROJECT, PATHS } = require("./hooks/lib/paths");
 
 // ── Config ───────────────────────────────────────────────────────────────
@@ -446,7 +447,7 @@ function main() {
   const verbose = args.includes("--verbose") || args.includes("-v");
 
   console.log(
-    `\n${BOLD}${CYAN}🔍 Granular Stories Linter — Jobzooka${RESET}\n`,
+    `\n${BOLD}${CYAN}🔍 Granular Stories Linter — ${getProjectName()}${RESET}\n`,
   );
 
   // Load shared story IDs

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * PRD Linter — Automated validation for Jobzooka feature PRDs.
+ * PRD Linter — Automated validation for a product's feature PRDs (product name read from canon).
  *
  * Checks:
  *   1. STRUCTURAL  — All 16 sections present, non-empty, format rules
@@ -17,6 +17,7 @@
 const fs = require("fs");
 const path = require("path");
 const { PROJECT, PATHS } = require("./hooks/lib/paths");
+const { getProjectName } = require("./hooks/lib/project-config");
 
 // ── Config ───────────────────────────────────────────────────────────────
 
@@ -583,7 +584,7 @@ function main() {
   const singleFeature = args.find((a) => !a.startsWith("--"));
   const verbose = args.includes("--verbose") || args.includes("-v");
 
-  console.log(`\n${BOLD}${CYAN}🔍 PRD Linter — Jobzooka${RESET}\n`);
+  console.log(`\n${BOLD}${CYAN}🔍 PRD Linter — ${getProjectName()}${RESET}\n`);
 
   // Discover features
   let featureDirs;

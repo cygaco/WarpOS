@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-19T15:47:32.023Z",
+  "generatedAt": "2026-06-19T16:04:21.324Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.16.0",
   "migrations": [],
@@ -6304,8 +6304,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/lint-hl-stories.js",
-      "sha256": "42318407b256f9a74273441456dd1ea96cd883b9121c7d332a9e7baa52922221",
-      "installedSha": "42318407b256f9a74273441456dd1ea96cd883b9121c7d332a9e7baa52922221"
+      "sha256": "276a27c0cc2288f985de6420b89e14d1cc0bf697f33fcc65052bca79ed0a1745",
+      "installedSha": "276a27c0cc2288f985de6420b89e14d1cc0bf697f33fcc65052bca79ed0a1745"
     },
     "scripts/lint-json-bom.js": {
       "owner": "framework",
@@ -6318,8 +6318,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/lint-prds.js",
-      "sha256": "206dbbeb78399e68a2c8d31ee494c537b3539dceed59a6b6bc332a726b2fedd7",
-      "installedSha": "206dbbeb78399e68a2c8d31ee494c537b3539dceed59a6b6bc332a726b2fedd7"
+      "sha256": "090d0acd7cdf660df480601ceb69af73f93a200f7decf5037e0b9e80e18ed561",
+      "installedSha": "090d0acd7cdf660df480601ceb69af73f93a200f7decf5037e0b9e80e18ed561"
     },
     "scripts/lint-staleness.js": {
       "owner": "framework",
@@ -6332,8 +6332,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/lint-stories.js",
-      "sha256": "d5292bd2cc4ed7f9742bc97d680e14351ab130cb2b858d10390434f138a9c6d6",
-      "installedSha": "d5292bd2cc4ed7f9742bc97d680e14351ab130cb2b858d10390434f138a9c6d6"
+      "sha256": "92bd6c7a1e0b047599b8276e3768fe8735408abcb2cf46276de6ef7751ffc833",
+      "installedSha": "92bd6c7a1e0b047599b8276e3768fe8735408abcb2cf46276de6ef7751ffc833"
     },
     "scripts/market-research-fix-1-brief.md": {
       "owner": "framework",
