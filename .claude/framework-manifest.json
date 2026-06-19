@@ -3,10 +3,10 @@
   "version": "0.16.0",
   "generated_by": "scripts/generate-framework-manifest.js",
   "counts": {
-    "agent": 86,
+    "agent": 87,
     "skill": 231,
     "reference": 27,
-    "maps_baseline": 25,
+    "maps_baseline": 26,
     "hook": 79,
     "hook_lib": 18,
     "tool": 2,
@@ -67,7 +67,7 @@
     "module_scope": 1,
     "framework_doc": 4
   },
-  "total": 1332,
+  "total": 1334,
   "assets": {
     "agent": [
       {
@@ -748,6 +748,18 @@
         "dest": ".claude/agents/president/_system/policy/adr/0010-orgmap-reporting-collapse.md",
         "kind": "agent",
         "sha256": "171a87d36dfcb7f3c581f1680a62650b888fcb022caebf37793e1039146f80d0",
+        "owner": "framework",
+        "mergeStrategy": "three_way_markdown",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "agent.president._system.policy.adr.0011-epsilon-direct-roster-dispatch.md",
+        "src": ".claude/agents/president/_system/policy/adr/0011-epsilon-direct-roster-dispatch.md",
+        "dest": ".claude/agents/president/_system/policy/adr/0011-epsilon-direct-roster-dispatch.md",
+        "kind": "agent",
+        "sha256": "21c94d85d0271ae7436a676ca318dd102a8250b022c6a1eeb559eb12966e11f1",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
@@ -4450,6 +4462,18 @@
         "dest": ".claude/project/maps/SPEC_GRAPH.json",
         "kind": "maps_baseline",
         "sha256": "f3275b8f3d0676b16721fb839c34d3972ecdf8d4aaaa017137403a15df59c328",
+        "owner": "generated",
+        "mergeStrategy": "regenerate",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "maps_baseline.system-coherence.graph.json",
+        "src": ".claude/project/maps/system-coherence.graph.json",
+        "dest": ".claude/project/maps/system-coherence.graph.json",
+        "kind": "maps_baseline",
+        "sha256": "8c9189ca1564ff1a3b97dac84023882e1d09e83921e11253f496beee0bbdb924",
         "owner": "generated",
         "mergeStrategy": "regenerate",
         "introducedIn": "0.0.0",
